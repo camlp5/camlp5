@@ -1,0 +1,62 @@
+# $Id$
+
+include ../config/Makefile
+
+SHELL=/bin/sh
+
+INCLUDES=-I ../odyl -I ../boot -I $(OTOP)/utils -I $(OTOP)/parsing -I $(OTOP)/otherlibs/dynlink
+OCAMLCFLAGS=-warn-error A $(INCLUDES)
+LINKFLAGS=$(INCLUDES)
+CAMLP4_OBJS=../boot/stdpp.cmo ../boot/token.cmo ../boot/plexer.cmo ../boot/gramext.cmo ../boot/grammar.cmo ../boot/extfold.cmo ../boot/extfun.cmo ../boot/fstream.cmo $(OTOP)/utils/pconfig.cmo quotation.cmo ast2pt.cmo spretty.cmo reloc.cmo pcaml.cmo argl.cmo
+CAMLP4_XOBJS=../lib/stdpp.cmx ../lib/token.cmx ../lib/plexer.cmx ../lib/gramext.cmx ../lib/grammar.cmx ../lib/extfold.cmx ../lib/extfun.cmx ../lib/fstream.cmx $(OTOP)/utils/pconfig.cmx quotation.cmx ast2pt.cmx spretty.cmx reloc.cmx pcaml.cmx argl.cmx
+OBJS=../odyl/odyl.cma camlp4.cma
+CAMLP4M=
+
+CAMLP4=camlp4$(EXE)
+CAMLP4OPT=phony
+
+all: $(CAMLP4)
+opt: $(OBJS:.cma=.cmxa)
+optp4: $(CAMLP4OPT)
+
+$(CAMLP4): $(OBJS) ../odyl/odyl.cmo
+	$(OCAMLC) $(OBJS) $(CAMLP4M) ../odyl/odyl.cmo -linkall -o $(CAMLP4)
+
+$(CAMLP4OPT): $(OBJS:.cma=.cmxa) ../odyl/odyl.cmx
+	$(OCAMLOPT) $(OBJS:.cma=.cmxa) $(CAMLP4M) ../odyl/odyl.cmx -linkall -o $(CAMLP4OPT)
+
+camlp4.cma: $(CAMLP4_OBJS)
+	$(OCAMLC) $(LINKFLAGS) $(CAMLP4_OBJS) -a -o camlp4.cma
+
+camlp4.cmxa: $(CAMLP4_XOBJS)
+	$(OCAMLOPT) $(LINKFLAGS) $(CAMLP4_XOBJS) -a -o camlp4.cmxa
+
+clean::
+	rm -f *.cm* *.pp[io] *.o *.bak .*.bak *.out *.opt
+	rm -f $(CAMLP4)
+
+depend:
+	cp .depend .depend.bak
+	> .depend
+	@for i in *.mli *.ml; do \
+	  ../tools/apply.sh pr_depend.cmo -- $(INCLUDES) $$i | \
+	  sed -e 's|$(OTOP)/|$$(OTOP)/|g' >> .depend; \
+	done
+
+promote:
+	cp $(CAMLP4) ../boot/.
+
+compare:
+	@for j in $(CAMLP4); do \
+		if cmp $$j ../boot/$$j; then :; else exit 1; fi; \
+	done
+
+install:
+	-$(MKDIR) "$(BINDIR)"
+	-$(MKDIR) "$(LIBDIR)/camlp4"
+	cp $(CAMLP4) "$(BINDIR)/."
+	cp mLast.mli quotation.mli ast2pt.mli pcaml.mli spretty.mli "$(LIBDIR)/camlp4/."
+	cp mLast.cmi quotation.cmi ast2pt.cmi pcaml.cmi spretty.cmi "$(LIBDIR)/camlp4/."
+	cp camlp4.cma "$(LIBDIR)/camlp4/."
+
+include .depend

@@ -1,0 +1,161 @@
+#!/bin/sh
+# $Id: configure,v 1.1 2006/09/29 04:45:49 deraugla Exp $
+
+prefix=''
+bindir=''
+libdir=''
+mandir=''
+
+# a local which command for sh
+which () {
+IFS=":" # set words separator in PATH to be ':' (it allows spaces in dirnames)
+for i in $PATH; do
+  if test -z "$i"; then $i=.; fi 
+  if [ -f "$i/$1" ] ; then
+	IFS=" "
+        echo $i/$1
+	break
+  fi
+done
+}
+
+# Parse command-line arguments
+
+while : ; do
+  case "$1" in
+    "") break;;
+    -prefix|--prefix)
+        prefix=$2; shift;;
+    -bindir|--bindir)
+        bindir=$2; shift;;
+    -libdir|--libdir)
+        libdir=$2; shift;;
+    -mandir|--mandir)
+        mandir=$2; shift;;
+    *) echo "Unknown option \"$1\"." 1>&2; exit 2;;
+  esac
+  shift
+done
+
+# Sanity checks
+
+case "$prefix" in
+  /*) ;;
+  "") ;;
+   *) echo "The -prefix directory must be absolute." 1>&2; exit 2;;
+esac
+case "$bindir" in
+  /*) ;;
+  "") ;;
+   *) echo "The -bindir directory must be absolute." 1>&2; exit 2;;
+esac
+case "$libdir" in
+  /*) ;;
+  "") ;;
+   *) echo "The -libdir directory must be absolute." 1>&2; exit 2;;
+esac
+case "$mandir" in
+  /*) ;;
+  "") ;;
+   *) echo "The -mandir directory must be absolute." 1>&2; exit 2;;
+esac
+
+# Check Ocaml
+
+if ocamlc -v >/dev/null 2>&1; then :
+else
+    echo "You need the command ocamlc accessible in the path!"
+    echo "Configuration script failed!"
+    exit 1
+fi
+
+# Check versions
+
+oversion=`ocamlc -v | head -1 | sed 's/^.*version //'`
+version=`sed -n -e 's/value version = "\([^"]*\)".*$/\1/p' camlp4/pcaml.ml`
+echo "OCaml version:    $oversion"
+echo "Camlp4s version:  $version"
+
+echo "let version = \"$version\" in" > config/tmp.ml
+echo "let ov = \"$oversion\" in" >> config/tmp.ml
+cat >> config/tmp.ml << EOF
+try
+  let oi = try String.index ov ' ' with Not_found -> String.length ov in
+  let ov = String.sub ov 0 oi in
+  if String.sub version 0 (String.length ov) = ov then ()
+  else failwith "bad version"
+with _ -> exit 2
+EOF
+if `ocaml config/tmp.ml`; then :
+else
+  echo
+  echo "Sorry: these versions are incompatible. Please upgrade or report."
+  echo "Configuration failed."
+  exit 2
+fi
+rm config/tmp.ml
+
+# Evaluate installation directories
+
+x=`ocamlc -where`
+y=`echo $x | sed -e 's|\\\\|/|g'`
+x="`echo 'Sys.os_type;;' | ocaml | egrep 'Win32|Cygwin'`"
+if test "$x" = ""; then win=false; else win=true; fi
+OLIBDIR="$y"
+
+if test "$win" = "true"; then
+    EXE=.exe
+else
+    EXE=
+fi
+
+if test "$bindir" != ""; then
+    BINDIR=$bindir
+elif test "$prefix" != ""; then
+    BINDIR='$(PREFIX)/bin'
+else
+    BINDIR=`dirname "\`which ocamlc\`"`
+fi
+if test "$libdir" != ""; then
+    LIBDIR=$libdir
+elif test "$prefix" != ""; then
+    LIBDIR='$(PREFIX)/lib/ocaml'
+else
+    LIBDIR=`ocamlc -where`
+fi
+if test "$mandir" != ""; then
+    MANDIR=$mandir
+elif test "$prefix" != ""; then
+    MANDIR='$(PREFIX)/man'
+else
+    MANDIR=`dirname "$BINDIR"`/man
+fi
+
+if ocamlc.opt > /dev/null 2>&1 && ocamlopt.opt > /dev/null 2>&1; then
+    OPT=.opt
+else
+    OPT=
+fi
+
+(
+echo EXE=$EXE
+echo OPT=$OPT
+echo OTOP=../ocaml_stuff
+echo OLIBDIR=$OLIBDIR
+if test "$prefix" != ""; then
+  echo PREFIX=$prefix
+fi
+echo BINDIR=$BINDIR
+echo LIBDIR=$LIBDIR
+echo MANDIR=$MANDIR
+) > config/Makefile.cnf
+
+rm -f config/Makefile
+cat config/Makefile.tpl > config/Makefile
+echo >> config/Makefile
+cat config/Makefile.cnf >> config/Makefile
+
+echo
+echo "Resulting configuration file (config/Makefile.cnf):"
+echo
+cat config/Makefile.cnf

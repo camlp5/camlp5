@@ -1,0 +1,20 @@
+INSTALL UNDER UNIX
+
+  You need the OCaml compilers installed to compile. They must be
+  accessible in the path.
+
+  Do:
+     ./configure
+     make
+  Optionnally, do:
+     make bootstrap
+  Optionnally do:
+     make opt
+     make opt.opt
+  Become root and do:
+     make install
+
+INSTALL UNDER WINDOWS
+
+  Under Windows, you need the Cygwin environment. The above directives
+  apply.
