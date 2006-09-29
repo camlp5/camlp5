@@ -671,7 +671,7 @@ and check (strm__ : _ Stream.t) =
         with
           Stream.Failure -> raise (Stream.Error "")
       in
-      let ep = Stream.count strm__ in ()
+      ()
   | Some ('>' | '|') ->
       Stream.junk strm__;
       let _ =

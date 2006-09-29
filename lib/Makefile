@@ -1,9 +1,9 @@
-# $Id: Makefile,v 1.1 2006/09/29 04:45:49 deraugla Exp $
+# $Id: Makefile,v 1.2 2006/09/29 12:46:20 deraugla Exp $
 
 include ../config/Makefile
 
 INCLUDES=
-OCAMLCFLAGS=$(INCLUDES)
+OCAMLCFLAGS=-warn-error A $(INCLUDES)
 OBJS=stdpp.cmo token.cmo plexer.cmo gramext.cmo grammar.cmo extfold.cmo extfun.cmo fstream.cmo
 SHELL=/bin/sh
 TARGET=gramlib.cma

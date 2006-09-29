@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.2 2006/09/29 10:00:41 deraugla Exp $
+# $Id: Makefile,v 1.3 2006/09/29 12:46:20 deraugla Exp $
 
 include config/Makefile
 
@@ -82,7 +82,7 @@ cleanboot:
 
 # Core and core bootstrap
 
-bootstrap_core: backup promote clean_hot core compare
+coreboot: backup promote clean_hot core compare
 
 core: boot/camlp4$(EXE)
 	cd ocaml_stuff; $(MAKE) all
