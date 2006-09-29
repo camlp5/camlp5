@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_r.ml,v 1.1 2006/09/29 04:45:49 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.2 2006/09/29 10:20:33 deraugla Exp $ *)
 
 open Pcaml;
 open Spretty;
@@ -28,7 +28,7 @@ value gen_where = ref True;
 value old_sequences = ref False;
 value expand_declare = ref False;
 
-external is_printable : char -> bool = "is_printable";
+external is_printable : char -> bool = "caml_is_printable";
 
 value char_escaped =
   fun
