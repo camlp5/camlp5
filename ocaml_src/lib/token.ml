@@ -218,3 +218,6 @@ let default_match =
       fun (con, prm) ->
         if con = p_con && prm = p_prm then prm else raise Stream.Failure
 ;;
+
+let make_loc x = x;;
+let dummy_loc = 0, 0;;

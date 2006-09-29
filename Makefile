@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.1 2006/09/29 04:45:49 deraugla Exp $
+# $Id: Makefile,v 1.2 2006/09/29 10:00:41 deraugla Exp $
 
 include config/Makefile
 
@@ -157,6 +157,19 @@ bootstrap_sources:
 			OTOP=$(OTOP) ../tools/conv.sh $$j | \
 			sed 's/$$Id.*\$$/$(TXTGEN)/' > \
 			../ocaml_src.new/$$i/$$j; \
+		 done); \
+	done
+
+compare_sources:
+	cd etc; make pr_o.cmo
+	@-for i in $(FDIRS); do \
+		(cd $$i; \
+		 for j in *.ml*; do \
+			echo ============================================; \
+			echo ocaml_src/$$i/$$j; \
+			OTOP=$(OTOP) ../tools/conv.sh $$j | \
+			sed 's/$$Id.*\$$/$(TXTGEN)/' | \
+			diff ../ocaml_src/$$i/$$j -; \
 		 done); \
 	done
 

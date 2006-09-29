@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.ml,v 1.1 2006/09/29 04:45:49 deraugla Exp $ *)
+(* $Id: token.ml,v 1.2 2006/09/29 10:00:41 deraugla Exp $ *)
 
 type t = (string * string);
 type pattern = (string * string);
@@ -223,3 +223,6 @@ value default_match =
       fun (con, prm) ->
         if con = p_con && prm = p_prm then prm else raise Stream.Failure ]
 ;
+
+value make_loc x = x;
+value dummy_loc = (0, 0);

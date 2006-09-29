@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.mli,v 1.1 2006/09/29 04:45:49 deraugla Exp $ *)
+(* $Id: token.mli,v 1.2 2006/09/29 10:00:41 deraugla Exp $ *)
 
 (** Lexers for Camlp4 grammars.
 
@@ -41,6 +41,10 @@ type lexer_func 'te = Stream.t char -> (Stream.t 'te * location_function);
   (** The type for a lexer function. The character stream is the input
       stream to be lexed. The result is a pair of a token stream and
       a location function for this tokens stream. *)
+
+value make_loc : (int * int) -> location;
+value dummy_loc : location;
+  (** compatibility camlp4 distributed with ocaml *)
 
 type glexer 'te =
   { tok_func : lexer_func 'te;

@@ -42,6 +42,10 @@ type 'te lexer_func = char Stream.t -> 'te Stream.t * location_function;;
       stream to be lexed. The result is a pair of a token stream and
       a location function for this tokens stream. *)
 
+val make_loc : int * int -> location;;
+val dummy_loc : location;;
+  (** compatibility camlp4 distributed with ocaml *)
+
 type 'te glexer =
   { tok_func : 'te lexer_func;
     tok_using : pattern -> unit;
