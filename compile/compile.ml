@@ -1,5 +1,5 @@
 (* camlp4r *)
-(* $Id: compile.ml,v 1.1 2006/09/29 04:45:49 deraugla Exp $ *)
+(* $Id: compile.ml,v 1.2 2006/09/29 12:23:10 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -261,7 +261,6 @@ and parse_symbol entry nlevn s rkont fkont ending_act =
           if fst tok = "ANY" then <:patt< (_, $patt$) >>
           else <:patt< ($str:p_con$, $patt$) >>
         else
-          let p = <:patt< ($str:p_con$, $str:p_prm$) >> in
           match patt with
           [ <:patt< _ >> -> <:patt< ($str:p_con$, $str:p_prm$) >>
           | _ -> <:patt< ($str:p_con$, ($str:p_prm$ as $patt$)) >> ]
