@@ -48,9 +48,9 @@ module P =
       else parser [: `(con, prm) when con = p_con && prm = p_prm :] -> prm
     ;
     value orzero f f0 =
-      parser bp
+      parser
       [ [: x = f :] -> x
-      | [: x = f0 :] ep ->
+      | [: x = f0 :] ->
 (*
 let (loc1, loc2) = Grammar.loc_of_token_interval bp ep in
 let _ = do { Printf.eprintf "recovered or_zero at loc (%d, %d)\n" loc1 loc2; flush stderr } in
