@@ -110,7 +110,7 @@ value rec digits_under kind len =
 value digits kind bp len =
   parser
   [ [: d = kind; s :] -> ("INT", digits_under kind (Buff.store len d) s)
-  | [: s :] ep ->
+  | [: :] ep ->
       raise_with_loc (bp, ep) (Failure "ill-formed integer constant") ]
 ;
 
@@ -216,8 +216,7 @@ and question =
 and minus kwt =
   parser
   [ [: `'.' :] -> identifier kwt ("-.", False)
-  | [: `('0'..'9' as c); n = number (Buff.store (Buff.store 0 '-') c) :] ->
-      n
+  | [: `('0'..'9' as c); n = number (Buff.store (Buff.store 0 '-') c) :] -> n
   | [: id = ident (Buff.store 0 '-') :] -> identifier kwt id ]
 and less kwt =
   parser
@@ -313,18 +312,6 @@ value op_apply loc e1 e2 =
   [ "and" -> <:expr< $e1$ && $e2$ >>
   | "or" -> <:expr< $e1$ || $e2$ >>
   | x -> <:expr< $lid:x$ $e1$ $e2$ >> ]
-;
-
-value mkassert loc e =
-  let f = <:expr< $str:input_file.val$ >> in
-  let bp = string_of_int (fst loc) in
-  let ep = string_of_int (snd loc) in
-  let raiser = <:expr< raise (Assert_failure ($f$, $int:bp$, $int:ep$)) >> in
-  match e with
-  [ <:expr< False >> -> raiser
-  | _ ->
-      if no_assert.val then <:expr< () >>
-      else <:expr< if $e$ then () else $raiser$ >> ]
 ;
 
 value string_se =
@@ -654,7 +641,9 @@ and expr_se =
   | Sexpr loc [se] ->
       let e = expr_se se in
       <:expr< $e$ () >>
-  | Sexpr loc [Slid _ "assert"; se] -> mkassert loc (expr_se se)
+  | Sexpr loc [Slid _ "assert"; se] ->
+      let e = expr_se se in
+      <:expr< assert $e$ >>
   | Sexpr loc [Slid _ "lazy"; se] ->
       let e = expr_se se in
       <:expr< lazy $e$ >>

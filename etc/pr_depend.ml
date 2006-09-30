@@ -1,5 +1,5 @@
 (* camlp4r *)
-(* $Id: pr_depend.ml,v 1.1 2006/09/29 04:45:49 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.2 2006/09/30 02:04:00 deraugla Exp $ *)
 
 open MLast;
 
@@ -101,6 +101,7 @@ and expr =
   | ExApp _ e1 e2 -> do { expr e1; expr e2; }
   | ExAre _ e1 e2 -> do { expr e1; expr e2; }
   | ExArr _ el -> list expr el
+  | ExAsr _ e -> expr e
   | ExAss _ e1 e2 -> do { expr e1; expr e2; }
   | ExChr _ _ -> ()
   | ExCoe _ e t1 t2 -> do { expr e; option ctyp t1; ctyp t2 }

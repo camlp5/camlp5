@@ -81,6 +81,7 @@ and expr =
   | ExApp of loc and expr and expr
   | ExAre of loc and expr and expr
   | ExArr of loc and list expr
+  | ExAsr of loc and expr
   | ExAss of loc and expr and expr
   | ExChr of loc and string
   | ExCoe of loc and expr and option ctyp and ctyp

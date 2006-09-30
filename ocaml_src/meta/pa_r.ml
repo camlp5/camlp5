@@ -140,25 +140,6 @@ let mkexprident loc i j =
   loop (MLast.ExUid (loc, i)) j
 ;;
 
-let mkassert loc e =
-  let f = MLast.ExStr (loc, !input_file) in
-  let bp = string_of_int (fst loc) in
-  let ep = string_of_int (snd loc) in
-  let raiser =
-    MLast.ExApp
-      (loc, MLast.ExLid (loc, "raise"),
-       MLast.ExApp
-         (loc, MLast.ExUid (loc, "Assert_failure"),
-          MLast.ExTup
-            (loc, [f; MLast.ExInt (loc, bp); MLast.ExInt (loc, ep)])))
-  in
-  match e with
-    MLast.ExUid (_, "False") -> raiser
-  | _ ->
-      if !no_assert then MLast.ExUid (loc, "()")
-      else MLast.ExIfe (loc, e, MLast.ExUid (loc, "()"), raiser)
-;;
-
 let append_elem el e = el @ [e];;
 
 (* ...suppose to flush the input in case of syntax error to avoid multiple
@@ -966,7 +947,8 @@ Grammar.extend
            (MLast.ExLaz (loc, e) : 'expr));
       [Gramext.Stoken ("", "assert"); Gramext.Sself],
       Gramext.action
-        (fun (e : 'expr) _ (loc : int * int) -> (mkassert loc e : 'expr));
+        (fun (e : 'expr) _ (loc : int * int) ->
+           (MLast.ExAsr (loc, e) : 'expr));
       [Gramext.Sself; Gramext.Sself],
       Gramext.action
         (fun (e2 : 'expr) (e1 : 'expr) (loc : int * int) ->

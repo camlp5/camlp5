@@ -1,5 +1,5 @@
 ; camlp4 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.1 2006/09/29 04:45:49 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.2 2006/09/30 02:04:00 deraugla Exp $
 
 (open Pcaml)
 (open Stdpp)
@@ -296,18 +296,6 @@
    ("and" <:expr< $e1$ && $e2$ >>)
    ("or" <:expr< $e1$ || $e2$ >>)
    (x <:expr< $lid:x$ $e1$ $e2$ >>)))
-
-(define (mkassert loc e)
-  (let* ((f <:expr< $str:input_file.val$ >>)
-         (bp (string_of_int (fst loc)))
-         (ep (string_of_int (snd loc)))
-         (raiser
-           <:expr< raise (Assert_failure ($f$, $int:bp$, $int:ep$)) >>))
-    (match e
-      (<:expr< False >> raiser)
-      (_
-       (if no_assert.val <:expr< () >>
-           <:expr< if $e$ then () else $raiser$ >>)))))
 
 (define string_se
   (lambda_match
@@ -617,7 +605,8 @@
      ((Sexpr loc [(Slid _ ":") se1 se2])
       (let* ((e (expr_se se1)) (t (ctyp_se se2))) <:expr< ( $e$ : $t$ ) >>))
      ((Sexpr loc [se]) (let ((e (expr_se se))) <:expr< $e$ () >>))
-     ((Sexpr loc [(Slid _ "assert") se]) (mkassert loc (expr_se se)))
+     ((Sexpr loc [(Slid _ "assert") se])
+        (let ((e (expr_se se))) <:expr< assert $e$ >>))
      ((Sexpr loc [(Slid _ "lazy") se])
         (let ((e (expr_se se))) <:expr< lazy $e$ >>))
      ((Sexpr loc [se . sel])

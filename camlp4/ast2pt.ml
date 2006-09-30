@@ -554,6 +554,8 @@ value rec expr =
         | _ -> error loc "bad left part of assignment" ]
       in
       mkexp loc e
+  | ExAsr loc (ExUid _ "False") -> mkexp loc Pexp_assertfalse
+  | ExAsr loc e -> mkexp loc (Pexp_assert (expr e))
   | ExChr loc s ->
       mkexp loc (Pexp_constant (Const_char (char_of_char_token loc s)))
   | ExCoe loc e t1 t2 ->

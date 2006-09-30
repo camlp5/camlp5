@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_r.ml,v 1.2 2006/09/29 10:20:33 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.3 2006/09/30 02:04:00 deraugla Exp $ *)
 
 open Pcaml;
 open Spretty;
@@ -941,8 +941,6 @@ pr_expr.pr_levels :=
             [: `HVbox [: :];
                `BEbox [: `S LR "try"; `expr e [: :]; `S LR "with" :];
                `match_assoc_list pel k :]
-      | <:expr< if $_$ then () else raise (Assert_failure $_$) >> as e ->
-          fun curr next _ k -> [: `next e "" k :]
       | <:expr< if $e1$ then $e2$ else $e3$ >> ->
           fun curr next _ k ->
             let (eel, e) =
@@ -1107,12 +1105,10 @@ pr_expr.pr_levels :=
       extfun Extfun.empty with
       [ <:expr< [$_$ :: $_$] >> as e ->
           fun curr next _ k -> [: `next e "" k :]
-      | <:expr< lazy ($x$) >> ->
+      | <:expr< lazy $x$ >> ->
           fun curr next _ k -> [: `S LR "lazy"; `next x "" k :]
-      | <:expr< if $e$ then () else raise (Assert_failure $_$) >> ->
+      | <:expr< assert $e$ >> ->
           fun curr next _ k -> [: `S LR "assert"; `next e "" k :]
-      | <:expr< raise (Assert_failure $_$) >> ->
-          fun curr next _ k -> [: `S LR "assert"; `S LR "False"; k :]
       | <:expr< $lid:n$ $x$ $y$ >> as e ->
           fun curr next _ k ->
             if is_infix n then [: `next e "" k :]

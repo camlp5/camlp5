@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.1 2006/09/29 04:45:49 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.2 2006/09/30 02:04:00 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -88,18 +88,6 @@ value mklistpat loc last =
     | [p1 :: pl] ->
         let loc = if top then loc else (fst (MLast.loc_of_patt p1), snd loc) in
         <:patt< [$p1$ :: $loop False pl$] >> ]
-;
-
-value mkassert loc e =
-  let f = <:expr< $str:input_file.val$ >> in
-  let bp = string_of_int (fst loc) in
-  let ep = string_of_int (snd loc) in
-  let raiser = <:expr< raise (Assert_failure ($f$, $int:bp$, $int:ep$)) >> in
-  match e with
-  [ <:expr< False >> -> raiser
-  | _ ->
-      if no_assert.val then <:expr< () >>
-      else <:expr< if $e$ then () else $raiser$ >> ]
 ;
 
 value is_operator =
@@ -625,7 +613,7 @@ EXTEND
               [ <:expr< ( $list:el$ ) >> ->
                   List.fold_left (fun e1 e2 -> <:expr< $e1$ $e2$ >>) e1 el
               | _ -> <:expr< $e1$ $e2$ >> ] ]
-      | "assert"; e = SELF -> mkassert loc e
+      | "assert"; e = SELF -> <:expr< assert $e$ >>
       | "lazy"; e = SELF -> <:expr< lazy ($e$) >> ]
     | "." LEFTA
       [ e1 = SELF; "."; "("; e2 = SELF; ")" -> <:expr< $e1$ .( $e2$ ) >>

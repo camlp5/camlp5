@@ -99,6 +99,7 @@ and expr floc sh =
     | ExApp loc x1 x2 -> ExApp (floc loc) (self x1) (self x2)
     | ExAre loc x1 x2 -> ExAre (floc loc) (self x1) (self x2)
     | ExArr loc x1 -> ExArr (floc loc) (List.map self x1)
+    | ExAsr loc x1 -> let nloc = floc loc in ExAsr nloc (self x1)
     | ExAss loc x1 x2 -> ExAss (floc loc) (self x1) (self x2)
     | ExChr loc x1 -> ExChr (floc loc) x1
     | ExCoe loc x1 x2 x3 ->

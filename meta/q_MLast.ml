@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.1 2006/09/29 04:45:49 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.2 2006/09/30 02:04:00 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -227,26 +227,6 @@ value mkexprident loc i j =
     [ Qast.Node "ExAcc" [_; x; y] ->
         loop (Qast.Node "ExAcc" [Qast.Loc; m; x]) y
     | e -> Qast.Node "ExAcc" [Qast.Loc; m; e] ]
-;
-
-value mkassert _ e =
-  let f = Qast.Node "ExStr" [Qast.Loc; Qast.Str ""] in
-  let bp = Qast.Node "ExInt" [Qast.Loc; Qast.Str "0"] in
-  let ep = Qast.Node "ExInt" [Qast.Loc; Qast.Str "0"] in
-  let raiser =
-    Qast.Node "ExApp"
-      [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "raise"];
-       Qast.Node "ExApp"
-         [Qast.Loc; Qast.Node "ExUid" [Qast.Loc; Qast.Str "Assert_failure"];
-          Qast.Node "ExTup" [Qast.Loc; Qast.List [f; bp; ep]]]]
-  in
-  match e with
-  [ Qast.Node "ExUid" [_; Qast.Str "False"] -> raiser
-  | _ ->
-      if Pcaml.no_assert.val then Qast.Node "ExUid" [Qast.Loc; Qast.Str "()"]
-      else
-        Qast.Node "ExIfe"
-          [Qast.Loc; e; Qast.Node "ExUid" [Qast.Loc; Qast.Str "()"]; raiser] ]
 ;
 
 value append_elem el e = Qast.Apply "@" [el; Qast.List [e]];
@@ -607,7 +587,7 @@ EXTEND
       | "-."; e = SELF -> mkumin Qast.Loc (Qast.Str "-.") e ]
     | "apply" LEFTA
       [ e1 = SELF; e2 = SELF -> Qast.Node "ExApp" [Qast.Loc; e1; e2]
-      | "assert"; e = SELF -> mkassert Qast.Loc e
+      | "assert"; e = SELF -> Qast.Node "ExAsr" [Qast.Loc; e]
       | "lazy"; e = SELF -> Qast.Node "ExLaz" [Qast.Loc; e] ]
     | "." LEFTA
       [ e1 = SELF; "."; "("; e2 = SELF; ")" ->

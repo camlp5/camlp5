@@ -373,7 +373,6 @@ value report_error exn =
 ;
 
 value no_constructors_arity = Ast2pt.no_constructors_arity;
-value no_assert = ref False;
 
 value arg_spec_list_ref = ref [];
 value arg_spec_list () = arg_spec_list_ref.val;
