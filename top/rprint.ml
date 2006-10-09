@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: rprint.ml,v 1.1 2006/09/29 04:45:49 deraugla Exp $ *)
+(* $Id: rprint.ml,v 1.2 2006/10/09 03:31:13 deraugla Exp $ *)
 
 open Format;
 open Outcometree;
@@ -312,7 +312,9 @@ and print_out_sig_item ppf =
   | Osig_module name mty _ ->
       fprintf ppf "@[<2>module %s :@ %a@]" name
         Toploop.print_out_module_type.val mty
-  | Osig_type tdl _ -> failwith "not impl Osig_type tdl _"
+  | Osig_type td rs ->
+      print_out_type_decl (if rs = Orec_next then "and" else "type" )
+        ppf td
   | Osig_value name ty prims ->
       let kwd = if prims = [] then "value" else "external" in
       let pr_prims ppf =
@@ -326,17 +328,7 @@ and print_out_sig_item ppf =
       in
       fprintf ppf "@[<2>%s %a :@ %a%a@]" kwd value_ident name
         Toploop.print_out_type.val ty pr_prims prims ]
-and print_out_type_decl_list ppf =
-  fun
-  [ [] -> ()
-  | [x] -> print_out_type_decl "type" ppf x
-  | [x :: l] ->
-      do {
-        print_out_type_decl "type" ppf x;
-        List.iter (fun x -> fprintf ppf "@ %a" (print_out_type_decl "and") x)
-          l
-      } ]
-and print_out_type_decl kwd ppf (name, args, ty, constraints) =
+and print_out_type_decl kwd ppf (name, args, ty, priv, constraints) =
   let constrain ppf (ty, ty') =
     fprintf ppf "@ @[<2>constraint %a =@ %a@]" Toploop.print_out_type.val ty
       Toploop.print_out_type.val ty'
