@@ -170,7 +170,7 @@ let skip_opt_linefeed s i =
   if i = String.length s then i else if s.[i] = '\010' then i + 1 else i
 ;;
 
-let eval_char loc s =
+let eval_char s =
   if String.length s = 1 then s.[0]
   else if String.length s = 0 then failwith "invalid char token"
   else if s.[0] = '\\' then

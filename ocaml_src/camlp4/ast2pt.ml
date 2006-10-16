@@ -28,7 +28,7 @@ let get_tag x =
 let error loc str = raise_with_loc loc (Failure str);;
 
 let char_of_char_token loc s =
-  try Token.eval_char loc s with
+  try Token.eval_char s with
     Failure _ as exn -> raise_with_loc loc exn
 ;;
 

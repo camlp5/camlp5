@@ -112,7 +112,7 @@ val make_stream_and_location :
 
 (** {6 Useful functions} *)
 
-val eval_char : location -> string -> char;;
+val eval_char : string -> char;;
 val eval_string : location -> string -> string;;
    (** Convert a char or a string token, where the backslashes had not
        been interpreted into a real char or string; raise [Failure] if
