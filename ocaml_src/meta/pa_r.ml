@@ -207,8 +207,12 @@ Grammar.extend
    in
    let rebind_exn : 'rebind_exn Grammar.Entry.e =
      grammar_entry_create "rebind_exn"
-   and module_binding : 'module_binding Grammar.Entry.e =
-     grammar_entry_create "module_binding"
+   and mod_binding : 'mod_binding Grammar.Entry.e =
+     grammar_entry_create "mod_binding"
+   and mod_fun_binding : 'mod_fun_binding Grammar.Entry.e =
+     grammar_entry_create "mod_fun_binding"
+   and mod_decl_binding : 'mod_decl_binding Grammar.Entry.e =
+     grammar_entry_create "mod_decl_binding"
    and module_declaration : 'module_declaration Grammar.Entry.e =
      grammar_entry_create "module_declaration"
    and cons_expr_opt : 'cons_expr_opt Grammar.Entry.e =
@@ -386,14 +390,14 @@ Grammar.extend
            (MLast.StMty (loc, i, mt) : 'str_item));
       [Gramext.Stoken ("", "module");
        Gramext.Sopt (Gramext.Stoken ("", "rec"));
-       Gramext.Stoken ("UIDENT", "");
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (module_binding : 'module_binding Grammar.Entry.e))],
+       Gramext.Slist1sep
+         (Gramext.Snterm
+            (Grammar.Entry.obj (mod_binding : 'mod_binding Grammar.Entry.e)),
+          Gramext.Stoken ("", "and"))],
       Gramext.action
-        (fun (mb : 'module_binding) (i : string) (r : string option) _
+        (fun (l : 'mod_binding list) (r : string option) _
            (loc : int * int) ->
-           (MLast.StMod (loc, o2b r, [i, mb]) : 'str_item));
+           (MLast.StMod (loc, o2b r, l) : 'str_item));
       [Gramext.Stoken ("", "include");
        Gramext.Snterm
          (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e))],
@@ -440,7 +444,16 @@ Grammar.extend
          (Grammar.Entry.obj (mod_ident : 'mod_ident Grammar.Entry.e))],
       Gramext.action
         (fun (sl : 'mod_ident) _ (loc : int * int) -> (sl : 'rebind_exn))]];
-    Grammar.Entry.obj (module_binding : 'module_binding Grammar.Entry.e),
+    Grammar.Entry.obj (mod_binding : 'mod_binding Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Stoken ("UIDENT", "");
+       Gramext.Snterm
+         (Grammar.Entry.obj
+            (mod_fun_binding : 'mod_fun_binding Grammar.Entry.e))],
+      Gramext.action
+        (fun (me : 'mod_fun_binding) (i : string) (loc : int * int) ->
+           (i, me : 'mod_binding))]];
+    Grammar.Entry.obj (mod_fun_binding : 'mod_fun_binding Grammar.Entry.e),
     None,
     [None, Some Gramext.RightA,
      [[Gramext.Stoken ("", "=");
@@ -448,7 +461,7 @@ Grammar.extend
          (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e))],
       Gramext.action
         (fun (me : 'module_expr) _ (loc : int * int) ->
-           (me : 'module_binding));
+           (me : 'mod_fun_binding));
       [Gramext.Stoken ("", ":");
        Gramext.Snterm
          (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e));
@@ -457,16 +470,16 @@ Grammar.extend
          (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e))],
       Gramext.action
         (fun (me : 'module_expr) _ (mt : 'module_type) _ (loc : int * int) ->
-           (MLast.MeTyc (loc, me, mt) : 'module_binding));
+           (MLast.MeTyc (loc, me, mt) : 'mod_fun_binding));
       [Gramext.Stoken ("", "("); Gramext.Stoken ("UIDENT", "");
        Gramext.Stoken ("", ":");
        Gramext.Snterm
          (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e));
        Gramext.Stoken ("", ")"); Gramext.Sself],
       Gramext.action
-        (fun (mb : 'module_binding) _ (mt : 'module_type) _ (m : string) _
+        (fun (mb : 'mod_fun_binding) _ (mt : 'module_type) _ (m : string) _
            (loc : int * int) ->
-           (MLast.MeFun (loc, m, mt, mb) : 'module_binding))]];
+           (MLast.MeFun (loc, m, mt, mb) : 'mod_fun_binding))]];
     Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "functor"); Gramext.Stoken ("", "(");
@@ -559,14 +572,15 @@ Grammar.extend
            (MLast.SgMty (loc, i, mt) : 'sig_item));
       [Gramext.Stoken ("", "module");
        Gramext.Sopt (Gramext.Stoken ("", "rec"));
-       Gramext.Stoken ("UIDENT", "");
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (module_declaration : 'module_declaration Grammar.Entry.e))],
+       Gramext.Slist1sep
+         (Gramext.Snterm
+            (Grammar.Entry.obj
+               (mod_decl_binding : 'mod_decl_binding Grammar.Entry.e)),
+          Gramext.Stoken ("", "and"))],
       Gramext.action
-        (fun (mt : 'module_declaration) (i : string) (rf : string option) _
+        (fun (l : 'mod_decl_binding list) (rf : string option) _
            (loc : int * int) ->
-           (MLast.SgMod (loc, o2b rf, [i, mt]) : 'sig_item));
+           (MLast.SgMod (loc, o2b rf, l) : 'sig_item));
       [Gramext.Stoken ("", "include");
        Gramext.Snterm
          (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e))],
@@ -602,6 +616,16 @@ Grammar.extend
       Gramext.action
         (fun _ (st : 'e__4 list) _ (loc : int * int) ->
            (MLast.SgDcl (loc, st) : 'sig_item))]];
+    Grammar.Entry.obj (mod_decl_binding : 'mod_decl_binding Grammar.Entry.e),
+    None,
+    [None, None,
+     [[Gramext.Stoken ("UIDENT", "");
+       Gramext.Snterm
+         (Grammar.Entry.obj
+            (module_declaration : 'module_declaration Grammar.Entry.e))],
+      Gramext.action
+        (fun (mt : 'module_declaration) (i : string) (loc : int * int) ->
+           (i, mt : 'mod_decl_binding))]];
     Grammar.Entry.obj
       (module_declaration : 'module_declaration Grammar.Entry.e),
     None,
@@ -733,10 +757,10 @@ Grammar.extend
        Gramext.Stoken ("UIDENT", "");
        Gramext.Snterm
          (Grammar.Entry.obj
-            (module_binding : 'module_binding Grammar.Entry.e));
+            (mod_fun_binding : 'mod_fun_binding Grammar.Entry.e));
        Gramext.Stoken ("", "in"); Gramext.Sself],
       Gramext.action
-        (fun (e : 'expr) _ (mb : 'module_binding) (m : string) _ _
+        (fun (e : 'expr) _ (mb : 'mod_fun_binding) (m : string) _ _
            (loc : int * int) ->
            (MLast.ExLmd (loc, m, mb, e) : 'expr));
       [Gramext.Stoken ("", "let"); Gramext.Sopt (Gramext.Stoken ("", "rec"));

@@ -325,8 +325,12 @@ Grammar.extend
    in
    let rebind_exn : 'rebind_exn Grammar.Entry.e =
      grammar_entry_create "rebind_exn"
-   and module_binding : 'module_binding Grammar.Entry.e =
-     grammar_entry_create "module_binding"
+   and mod_binding : 'mod_binding Grammar.Entry.e =
+     grammar_entry_create "mod_binding"
+   and mod_fun_binding : 'mod_fun_binding Grammar.Entry.e =
+     grammar_entry_create "mod_fun_binding"
+   and mod_decl_binding : 'mod_decl_binding Grammar.Entry.e =
+     grammar_entry_create "mod_decl_binding"
    and module_declaration : 'module_declaration Grammar.Entry.e =
      grammar_entry_create "module_declaration"
    and cons_expr_opt : 'cons_expr_opt Grammar.Entry.e =
@@ -561,17 +565,22 @@ Grammar.extend
              (Grammar.Entry.obj (a_opt : 'a_opt Grammar.Entry.e))],
           Gramext.action
             (fun (a : 'a_opt) (loc : int * int) -> (a : 'a_opt))];
-       Gramext.Snterm
-         (Grammar.Entry.obj (a_UIDENT : 'a_UIDENT Grammar.Entry.e));
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (module_binding : 'module_binding Grammar.Entry.e))],
+       Gramext.srules
+         [[Gramext.Slist1sep
+             (Gramext.Snterm
+                (Grammar.Entry.obj
+                   (mod_binding : 'mod_binding Grammar.Entry.e)),
+              Gramext.Stoken ("", "and"))],
+          Gramext.action
+            (fun (a : 'mod_binding list) (loc : int * int) ->
+               (Qast.List a : 'a_list));
+          [Gramext.Snterm
+             (Grammar.Entry.obj (a_list : 'a_list Grammar.Entry.e))],
+          Gramext.action
+            (fun (a : 'a_list) (loc : int * int) -> (a : 'a_list))]],
       Gramext.action
-        (fun (mb : 'module_binding) (i : 'a_UIDENT) (r : 'a_opt) _
-           (loc : int * int) ->
-           (Qast.Node
-              ("StMod", [Qast.Loc; o2b r; Qast.List [Qast.Tuple [i; mb]]]) :
-            'str_item));
+        (fun (l : 'a_list) (r : 'a_opt) _ (loc : int * int) ->
+           (Qast.Node ("StMod", [Qast.Loc; o2b r; l]) : 'str_item));
       [Gramext.Stoken ("", "include");
        Gramext.Snterm
          (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e))],
@@ -649,7 +658,17 @@ Grammar.extend
          (Grammar.Entry.obj (mod_ident : 'mod_ident Grammar.Entry.e))],
       Gramext.action
         (fun (sl : 'mod_ident) _ (loc : int * int) -> (sl : 'rebind_exn))]];
-    Grammar.Entry.obj (module_binding : 'module_binding Grammar.Entry.e),
+    Grammar.Entry.obj (mod_binding : 'mod_binding Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Snterm
+         (Grammar.Entry.obj (a_UIDENT : 'a_UIDENT Grammar.Entry.e));
+       Gramext.Snterm
+         (Grammar.Entry.obj
+            (mod_fun_binding : 'mod_fun_binding Grammar.Entry.e))],
+      Gramext.action
+        (fun (me : 'mod_fun_binding) (i : 'a_UIDENT) (loc : int * int) ->
+           (Qast.Tuple [i; me] : 'mod_binding))]];
+    Grammar.Entry.obj (mod_fun_binding : 'mod_fun_binding Grammar.Entry.e),
     None,
     [None, Some Gramext.RightA,
      [[Gramext.Stoken ("", "=");
@@ -657,7 +676,7 @@ Grammar.extend
          (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e))],
       Gramext.action
         (fun (me : 'module_expr) _ (loc : int * int) ->
-           (me : 'module_binding));
+           (me : 'mod_fun_binding));
       [Gramext.Stoken ("", ":");
        Gramext.Snterm
          (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e));
@@ -666,7 +685,7 @@ Grammar.extend
          (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e))],
       Gramext.action
         (fun (me : 'module_expr) _ (mt : 'module_type) _ (loc : int * int) ->
-           (Qast.Node ("MeTyc", [Qast.Loc; me; mt]) : 'module_binding));
+           (Qast.Node ("MeTyc", [Qast.Loc; me; mt]) : 'mod_fun_binding));
       [Gramext.Stoken ("", "(");
        Gramext.Snterm
          (Grammar.Entry.obj (a_UIDENT : 'a_UIDENT Grammar.Entry.e));
@@ -675,9 +694,9 @@ Grammar.extend
          (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e));
        Gramext.Stoken ("", ")"); Gramext.Sself],
       Gramext.action
-        (fun (mb : 'module_binding) _ (mt : 'module_type) _ (m : 'a_UIDENT) _
+        (fun (mb : 'mod_fun_binding) _ (mt : 'module_type) _ (m : 'a_UIDENT) _
            (loc : int * int) ->
-           (Qast.Node ("MeFun", [Qast.Loc; m; mt; mb]) : 'module_binding))]];
+           (Qast.Node ("MeFun", [Qast.Loc; m; mt; mb]) : 'mod_fun_binding))]];
     Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "functor"); Gramext.Stoken ("", "(");
@@ -817,17 +836,22 @@ Grammar.extend
              (Grammar.Entry.obj (a_opt : 'a_opt Grammar.Entry.e))],
           Gramext.action
             (fun (a : 'a_opt) (loc : int * int) -> (a : 'a_opt))];
-       Gramext.Snterm
-         (Grammar.Entry.obj (a_UIDENT : 'a_UIDENT Grammar.Entry.e));
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (module_declaration : 'module_declaration Grammar.Entry.e))],
+       Gramext.srules
+         [[Gramext.Slist1sep
+             (Gramext.Snterm
+                (Grammar.Entry.obj
+                   (mod_decl_binding : 'mod_decl_binding Grammar.Entry.e)),
+              Gramext.Stoken ("", "and"))],
+          Gramext.action
+            (fun (a : 'mod_decl_binding list) (loc : int * int) ->
+               (Qast.List a : 'a_list));
+          [Gramext.Snterm
+             (Grammar.Entry.obj (a_list : 'a_list Grammar.Entry.e))],
+          Gramext.action
+            (fun (a : 'a_list) (loc : int * int) -> (a : 'a_list))]],
       Gramext.action
-        (fun (mt : 'module_declaration) (i : 'a_UIDENT) (rf : 'a_opt) _
-           (loc : int * int) ->
-           (Qast.Node
-              ("SgMod", [Qast.Loc; o2b rf; Qast.List [Qast.Tuple [i; mt]]]) :
-            'sig_item));
+        (fun (l : 'a_list) (rf : 'a_opt) _ (loc : int * int) ->
+           (Qast.Node ("SgMod", [Qast.Loc; o2b rf; l]) : 'sig_item));
       [Gramext.Stoken ("", "include");
        Gramext.Snterm
          (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e))],
@@ -867,7 +891,7 @@ Grammar.extend
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
               | _ ->
                   match () with
-                  _ -> raise (Match_failure ("q_MLast.ml", 346, 19))
+                  _ -> raise (Match_failure ("q_MLast.ml", 349, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -893,6 +917,17 @@ Grammar.extend
       Gramext.action
         (fun _ (st : 'a_list) _ (loc : int * int) ->
            (Qast.Node ("SgDcl", [Qast.Loc; st]) : 'sig_item))]];
+    Grammar.Entry.obj (mod_decl_binding : 'mod_decl_binding Grammar.Entry.e),
+    None,
+    [None, None,
+     [[Gramext.Snterm
+         (Grammar.Entry.obj (a_UIDENT : 'a_UIDENT Grammar.Entry.e));
+       Gramext.Snterm
+         (Grammar.Entry.obj
+            (module_declaration : 'module_declaration Grammar.Entry.e))],
+      Gramext.action
+        (fun (mt : 'module_declaration) (i : 'a_UIDENT) (loc : int * int) ->
+           (Qast.Tuple [i; mt] : 'mod_decl_binding))]];
     Grammar.Entry.obj
       (module_declaration : 'module_declaration Grammar.Entry.e),
     None,
@@ -1075,10 +1110,10 @@ Grammar.extend
          (Grammar.Entry.obj (a_UIDENT : 'a_UIDENT Grammar.Entry.e));
        Gramext.Snterm
          (Grammar.Entry.obj
-            (module_binding : 'module_binding Grammar.Entry.e));
+            (mod_fun_binding : 'mod_fun_binding Grammar.Entry.e));
        Gramext.Stoken ("", "in"); Gramext.Sself],
       Gramext.action
-        (fun (e : 'expr) _ (mb : 'module_binding) (m : 'a_UIDENT) _ _
+        (fun (e : 'expr) _ (mb : 'mod_fun_binding) (m : 'a_UIDENT) _ _
            (loc : int * int) ->
            (Qast.Node ("ExLmd", [Qast.Loc; m; mb; e]) : 'expr));
       [Gramext.Stoken ("", "let");

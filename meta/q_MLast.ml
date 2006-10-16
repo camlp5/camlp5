@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.4 2006/10/16 13:04:36 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.5 2006/10/16 13:30:45 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -297,8 +297,8 @@ EXTEND
       | "external"; i = a_LIDENT; ":"; t = ctyp; "="; pd = SLIST1 a_STRING ->
           Qast.Node "StExt" [Qast.Loc; i; t; pd]
       | "include"; me = module_expr -> Qast.Node "StInc" [Qast.Loc; me]
-      | "module"; r = SOPT "rec"; i = a_UIDENT; mb = module_binding ->
-          Qast.Node "StMod" [Qast.Loc; o2b r; Qast.List [Qast.Tuple [i; mb]]]
+      | "module"; r = SOPT "rec"; l = SLIST1 mod_binding SEP "and" ->
+          Qast.Node "StMod" [Qast.Loc; o2b r; l]
       | "module"; "type"; i = a_UIDENT; "="; mt = module_type ->
           Qast.Node "StMty" [Qast.Loc; i; mt]
       | "open"; i = mod_ident -> Qast.Node "StOpn" [Qast.Loc; i]
@@ -312,7 +312,10 @@ EXTEND
     [ [ "="; sl = mod_ident -> sl
       | -> Qast.List [] ] ]
   ;
-  module_binding:
+  mod_binding:
+    [ [ i = a_UIDENT; me = mod_fun_binding -> Qast.Tuple [i; me] ] ]
+  ;
+  mod_fun_binding:
     [ RIGHTA
       [ "("; m = a_UIDENT; ":"; mt = module_type; ")"; mb = SELF ->
           Qast.Node "MeFun" [Qast.Loc; m; mt; mb]
@@ -349,8 +352,8 @@ EXTEND
       | "external"; i = a_LIDENT; ":"; t = ctyp; "="; pd = SLIST1 a_STRING ->
           Qast.Node "SgExt" [Qast.Loc; i; t; pd]
       | "include"; mt = module_type -> Qast.Node "SgInc" [Qast.Loc; mt]
-      | "module"; rf = SOPT "rec"; i = a_UIDENT; mt = module_declaration ->
-          Qast.Node "SgMod" [Qast.Loc; o2b rf; Qast.List [Qast.Tuple [i; mt]]]
+      | "module"; rf = SOPT "rec"; l = SLIST1 mod_decl_binding SEP "and" ->
+          Qast.Node "SgMod" [Qast.Loc; o2b rf; l]
       | "module"; "type"; i = a_UIDENT; "="; mt = module_type ->
           Qast.Node "SgMty" [Qast.Loc; i; mt]
       | "open"; i = mod_ident -> Qast.Node "SgOpn" [Qast.Loc; i]
@@ -358,6 +361,9 @@ EXTEND
           Qast.Node "SgTyp" [Qast.Loc; tdl]
       | "value"; i = a_LIDENT; ":"; t = ctyp ->
           Qast.Node "SgVal" [Qast.Loc; i; t] ] ]
+  ;
+  mod_decl_binding:
+    [ [ i = a_UIDENT; mt = module_declaration -> Qast.Tuple [i; mt] ] ]
   ;
   module_declaration:
     [ RIGHTA
@@ -376,7 +382,7 @@ EXTEND
       [ "let"; r = SOPT "rec"; l = SLIST1 let_binding SEP "and"; "in";
         x = SELF ->
           Qast.Node "ExLet" [Qast.Loc; o2b r; l; x]
-      | "let"; "module"; m = a_UIDENT; mb = module_binding; "in"; e = SELF ->
+      | "let"; "module"; m = a_UIDENT; mb = mod_fun_binding; "in"; e = SELF ->
           Qast.Node "ExLmd" [Qast.Loc; m; mb; e]
       | "fun"; "["; l = SLIST0 match_case SEP "|"; "]" ->
           Qast.Node "ExFun" [Qast.Loc; l]

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.3 2006/10/16 13:04:36 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.4 2006/10/16 13:30:45 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -433,8 +433,8 @@ EXTEND
         pd = LIST1 STRING ->
           <:str_item< external $i$ : $t$ = $list:pd$ >>
       | "include"; me = module_expr -> <:str_item< include $me$ >>
-      | "module"; rf = OPT "rec"; i = UIDENT; mb = module_binding ->
-          <:str_item< module $opt:o2b rf$ $i$ = $mb$ >>
+      | "module"; r = OPT "rec"; l = LIST1 mod_binding SEP "and" ->
+          <:str_item< module $opt:o2b r$ $list:l$ >>
       | "module"; "type"; i = UIDENT; "="; mt = module_type ->
           <:str_item< module type $i$ = $mt$ >>
       | "open"; i = mod_ident -> <:str_item< open $i$ >>
@@ -448,7 +448,7 @@ EXTEND
           match l with
           [ [(<:patt< _ >>, e)] -> <:str_item< $exp:e$ >>
           | _ -> <:str_item< value $opt:o2b r$ $list:l$ >> ]
-      | "let"; "module"; m = UIDENT; mb = module_binding; "in"; e = expr ->
+      | "let"; "module"; m = UIDENT; mb = mod_fun_binding; "in"; e = expr ->
           <:str_item< let module $m$ = $mb$ in $e$ >>
       | e = expr -> <:str_item< $exp:e$ >> ] ]
   ;
@@ -456,7 +456,10 @@ EXTEND
     [ [ "="; sl = mod_ident -> sl
       | -> [] ] ]
   ;
-  module_binding:
+  mod_binding:
+    [ [ i = UIDENT; me = mod_fun_binding -> (i, me) ] ]
+  ;
+  mod_fun_binding:
     [ RIGHTA
       [ "("; m = UIDENT; ":"; mt = module_type; ")"; mb = SELF ->
           <:module_expr< functor ( $m$ : $mt$ ) -> $mb$ >>
@@ -492,8 +495,8 @@ EXTEND
         pd = LIST1 STRING ->
           <:sig_item< external $i$ : $t$ = $list:pd$ >>
       | "include"; mt = module_type -> <:sig_item< include $mt$ >>
-      | "module"; i = UIDENT; mt = module_declaration ->
-          <:sig_item< module $i$ : $mt$ >>
+      | "module"; rf = OPT "rec"; l = LIST1 mod_decl_binding SEP "and" ->
+          <:sig_item< module $opt:o2b rf$ $list:l$ >>
       | "module"; "type"; i = UIDENT; "="; mt = module_type ->
           <:sig_item< module type $i$ = $mt$ >>
       | "module"; "type"; i = UIDENT ->
@@ -504,6 +507,9 @@ EXTEND
       | "val"; i = LIDENT; ":"; t = ctyp -> <:sig_item< value $i$ : $t$ >>
       | "val"; "("; i = operator_rparen; ":"; t = ctyp ->
           <:sig_item< value $i$ : $t$ >> ] ]
+  ;
+  mod_decl_binding:
+    [ [ i = UIDENT; mt = module_declaration -> (i, mt) ] ]
   ;
   module_declaration:
     [ RIGHTA
@@ -529,7 +535,7 @@ EXTEND
       [ "let"; o = OPT "rec"; l = LIST1 let_binding SEP "and"; "in";
         x = expr LEVEL "top" ->
           <:expr< let $opt:o2b o$ $list:l$ in $x$ >>
-      | "let"; "module"; m = UIDENT; mb = module_binding; "in";
+      | "let"; "module"; m = UIDENT; mb = mod_fun_binding; "in";
         e = expr LEVEL "top" ->
           <:expr< let module $m$ = $mb$ in $e$ >>
       | "function"; OPT "|"; l = LIST1 match_case SEP "|" ->
