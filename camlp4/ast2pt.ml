@@ -670,7 +670,13 @@ and sig_item s l =
   | SgExc loc n tl -> [mksig loc (Psig_exception n (List.map ctyp tl)) :: l]
   | SgExt loc n t p -> [mksig loc (Psig_value n (mkvalue_desc t p)) :: l]
   | SgInc loc mt -> [mksig loc (Psig_include (module_type mt)) :: l]
-  | SgMod loc n mt -> [mksig loc (Psig_module n (module_type mt)) :: l]
+  | SgMod loc False ntl ->
+      List.fold_right
+        (fun (n, mt) l -> [mksig loc (Psig_module n (module_type mt)) :: l])
+        ntl l
+  | SgMod loc True ntl ->
+      let ntl = List.map (fun (n, mt) -> (n, module_type mt)) ntl in
+      [mksig loc (Psig_recmodule ntl) :: l]
   | SgMty loc n mt ->
       let si =
         match mt with

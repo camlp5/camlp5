@@ -127,7 +127,7 @@ and sig_item =
   | SgExc of loc and string and list ctyp
   | SgExt of loc and string and ctyp and list string
   | SgInc of loc and module_type
-  | SgMod of loc and string and module_type
+  | SgMod of loc and bool and list (string * module_type)
   | SgMty of loc and string and module_type
   | SgOpn of loc and list string
   | SgTyp of loc and list type_decl

@@ -190,7 +190,10 @@ and sig_item floc sh =
     | SgExc (loc, x1, x2) -> SgExc (floc loc, x1, List.map (ctyp floc sh) x2)
     | SgExt (loc, x1, x2, x3) -> SgExt (floc loc, x1, ctyp floc sh x2, x3)
     | SgInc (loc, x1) -> SgInc (floc loc, module_type floc sh x1)
-    | SgMod (loc, x1, x2) -> SgMod (floc loc, x1, module_type floc sh x2)
+    | SgMod (loc, x1, x2) ->
+        SgMod
+          (floc loc, x1,
+           List.map (fun (n, mt) -> n, module_type floc sh mt) x2)
     | SgMty (loc, x1, x2) -> SgMty (floc loc, x1, module_type floc sh x2)
     | SgOpn (loc, x1) -> SgOpn (floc loc, x1)
     | SgTyp (loc, x1) ->

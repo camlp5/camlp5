@@ -1,5 +1,5 @@
 (* camlp4r *)
-(* $Id: pr_depend.ml,v 1.3 2006/10/16 12:33:58 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.4 2006/10/16 13:04:36 deraugla Exp $ *)
 
 open MLast;
 
@@ -154,7 +154,7 @@ and sig_item =
   [ SgDcl _ sil -> list sig_item sil
   | SgExc _ _ tl -> list ctyp tl
   | SgExt _ _ t _ -> ctyp t
-  | SgMod _ _ mt -> module_type mt
+  | SgMod _ _ ntl -> list (fun (_, mt) -> module_type mt) ntl
   | SgMty _ _ mt -> module_type mt
   | SgOpn _ [s :: _] -> addmodule s
   | SgTyp _ tdl -> list type_decl tdl

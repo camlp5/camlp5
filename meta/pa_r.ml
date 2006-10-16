@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.3 2006/10/16 12:33:58 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.4 2006/10/16 13:04:36 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -262,8 +262,8 @@ EXTEND
       | "external"; i = LIDENT; ":"; t = ctyp; "="; pd = LIST1 STRING ->
           <:sig_item< external $i$ : $t$ = $list:pd$ >>
       | "include"; mt = module_type -> <:sig_item< include $mt$ >>
-      | "module"; i = UIDENT; mt = module_declaration ->
-          <:sig_item< module $i$ : $mt$ >>
+      | "module"; rf = OPT "rec"; i = UIDENT; mt = module_declaration ->
+          <:sig_item< module $opt:o2b rf$ $i$ : $mt$ >>
       | "module"; "type"; i = UIDENT; "="; mt = module_type ->
           <:sig_item< module type $i$ = $mt$ >>
       | "open"; i = mod_ident -> <:sig_item< open $i$ >>
