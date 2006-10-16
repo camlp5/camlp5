@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.mli,v 1.2 2006/09/29 10:00:41 deraugla Exp $ *)
+(* $Id: token.mli,v 1.3 2006/10/16 14:58:22 deraugla Exp $ *)
 
 (** Lexers for Camlp4 grammars.
 
@@ -112,8 +112,8 @@ value make_stream_and_location :
 
 (** {6 Useful functions} *)
 
-value eval_char : string -> char;
-value eval_string : string -> string;
+value eval_char : location -> string -> char;
+value eval_string : location -> string -> string;
    (** Convert a char or a string token, where the backslashes had not
        been interpreted into a real char or string; raise [Failure] if
        bad backslash sequence found; [Token.eval_char (Char.escaped c)]

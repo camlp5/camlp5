@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.ml,v 1.2 2006/09/29 10:00:41 deraugla Exp $ *)
+(* $Id: token.ml,v 1.3 2006/10/16 14:58:22 deraugla Exp $ *)
 
 type t = (string * string);
 type pattern = (string * string);
@@ -174,7 +174,7 @@ value skip_opt_linefeed s i =
   if i = String.length s then i else if s.[i] = '\010' then i + 1 else i
 ;
 
-value eval_char s =
+value eval_char loc s =
   if String.length s = 1 then s.[0]
   else if String.length s = 0 then failwith "invalid char token"
   else if s.[0] = '\\' then
@@ -188,7 +188,7 @@ value eval_char s =
   else failwith "invalid char token"
 ;
 
-value eval_string s =
+value eval_string loc s =
   loop 0 0 where rec loop len i =
     if i = String.length s then get_buff len
     else

@@ -1,5 +1,5 @@
 (* camlp4r *)
-(* $Id: pa_macro.ml,v 1.1 2006/09/29 04:45:49 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.2 2006/10/16 14:58:22 deraugla Exp $ *)
 
 (*
 Added statements:
@@ -60,7 +60,7 @@ value rec list_remove x =
   | [] -> [] ]
 ;
 
-value defined = ref [];
+value defined = ref [("CAMLP4S", None)];
 
 value is_defined i = List.mem_assoc i defined.val;
 

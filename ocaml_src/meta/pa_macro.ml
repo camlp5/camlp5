@@ -60,7 +60,7 @@ let rec list_remove x =
   | [] -> []
 ;;
 
-let defined = ref [];;
+let defined = ref ["CAMLP4S", None];;
 
 let is_defined i = List.mem_assoc i !defined;;
 

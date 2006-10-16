@@ -28,11 +28,13 @@ value get_tag x =
 value error loc str = raise_with_loc loc (Failure str);
 
 value char_of_char_token loc s =
-  try Token.eval_char s with [ Failure _ as exn -> raise_with_loc loc exn ]
+  try Token.eval_char loc s with
+  [ Failure _ as exn -> raise_with_loc loc exn ]
 ;
 
 value string_of_string_token loc s =
-  try Token.eval_string s with [ Failure _ as exn -> raise_with_loc loc exn ]
+  try Token.eval_string loc s with
+  [ Failure _ as exn -> raise_with_loc loc exn ]
 ;
 
 value glob_fname = ref "";
