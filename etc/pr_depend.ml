@@ -1,5 +1,5 @@
 (* camlp4r *)
-(* $Id: pr_depend.ml,v 1.2 2006/09/30 02:04:00 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.3 2006/10/16 12:33:58 deraugla Exp $ *)
 
 open MLast;
 
@@ -177,7 +177,7 @@ and str_item =
   | StExc _ _ tl _ -> list ctyp tl
   | StExp _ e -> expr e
   | StExt _ _ t _ -> ctyp t
-  | StMod _ _ me -> module_expr me
+  | StMod _ _ nel -> list (fun (_, me) -> module_expr me) nel
   | StMty _ _ mt -> module_type mt
   | StOpn _ [s :: _] -> addmodule s
   | StTyp _ tdl -> list type_decl tdl

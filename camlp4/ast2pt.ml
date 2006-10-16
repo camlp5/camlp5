@@ -717,7 +717,25 @@ and str_item s l =
   | StExp loc e -> [mkstr loc (Pstr_eval (expr e)) :: l]
   | StExt loc n t p -> [mkstr loc (Pstr_primitive n (mkvalue_desc t p)) :: l]
   | StInc loc me -> [mkstr loc (Pstr_include (module_expr me)) :: l]
-  | StMod loc n me -> [mkstr loc (Pstr_module n (module_expr me)) :: l]
+  | StMod loc False nel ->
+      List.fold_right
+        (fun (n, me) l -> [mkstr loc (Pstr_module n (module_expr me)) :: l])
+        nel l
+  | StMod loc True nel ->
+      let nel =
+        List.map
+          (fun (n, me) ->
+             let (me, mt) =
+               match me with
+               [ MeTyc _ me mt -> (me, mt)
+               | _ ->
+                   error (MLast.loc_of_module_expr me)
+                     "module rec needs module types constraints" ]
+             in
+             (n, module_type mt, module_expr me))
+          nel
+      in
+      [mkstr loc (Pstr_recmodule nel) :: l]
   | StMty loc n mt -> [mkstr loc (Pstr_modtype n (module_type mt)) :: l]
   | StOpn loc id ->
       [mkstr loc (Pstr_open (long_id_of_string_list loc id)) :: l]

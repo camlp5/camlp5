@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.2 2006/09/30 02:04:00 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.3 2006/10/16 12:33:58 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -297,8 +297,8 @@ EXTEND
       | "external"; i = a_LIDENT; ":"; t = ctyp; "="; pd = SLIST1 a_STRING ->
           Qast.Node "StExt" [Qast.Loc; i; t; pd]
       | "include"; me = module_expr -> Qast.Node "StInc" [Qast.Loc; me]
-      | "module"; i = a_UIDENT; mb = module_binding ->
-          Qast.Node "StMod" [Qast.Loc; i; mb]
+      | "module"; r = SOPT "rec"; i = a_UIDENT; mb = module_binding ->
+          Qast.Node "StMod" [Qast.Loc; o2b r; Qast.List [Qast.Tuple [i; mb]]]
       | "module"; "type"; i = a_UIDENT; "="; mt = module_type ->
           Qast.Node "StMty" [Qast.Loc; i; mt]
       | "open"; i = mod_ident -> Qast.Node "StOpn" [Qast.Loc; i]

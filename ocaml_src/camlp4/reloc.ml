@@ -239,7 +239,10 @@ and str_item floc sh =
     | StExp (loc, x1) -> StExp (floc loc, expr floc sh x1)
     | StExt (loc, x1, x2, x3) -> StExt (floc loc, x1, ctyp floc sh x2, x3)
     | StInc (loc, x1) -> StInc (floc loc, module_expr floc sh x1)
-    | StMod (loc, x1, x2) -> StMod (floc loc, x1, module_expr floc sh x2)
+    | StMod (loc, x1, x2) ->
+        StMod
+          (floc loc, x1,
+           List.map (fun (n, me) -> n, module_expr floc sh me) x2)
     | StMty (loc, x1, x2) -> StMty (floc loc, x1, module_type floc sh x2)
     | StOpn (loc, x1) -> StOpn (floc loc, x1)
     | StTyp (loc, x1) ->

@@ -152,7 +152,7 @@ and str_item =
   | StExp of loc * expr
   | StExt of loc * string * ctyp * string list
   | StInc of loc * module_expr
-  | StMod of loc * string * module_expr
+  | StMod of loc * bool * (string * module_expr) list
   | StMty of loc * string * module_type
   | StOpn of loc * string list
   | StTyp of loc * type_decl list

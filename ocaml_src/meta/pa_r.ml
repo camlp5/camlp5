@@ -384,13 +384,16 @@ Grammar.extend
       Gramext.action
         (fun (mt : 'module_type) _ (i : string) _ _ (loc : int * int) ->
            (MLast.StMty (loc, i, mt) : 'str_item));
-      [Gramext.Stoken ("", "module"); Gramext.Stoken ("UIDENT", "");
+      [Gramext.Stoken ("", "module");
+       Gramext.Sopt (Gramext.Stoken ("", "rec"));
+       Gramext.Stoken ("UIDENT", "");
        Gramext.Snterm
          (Grammar.Entry.obj
             (module_binding : 'module_binding Grammar.Entry.e))],
       Gramext.action
-        (fun (mb : 'module_binding) (i : string) _ (loc : int * int) ->
-           (MLast.StMod (loc, i, mb) : 'str_item));
+        (fun (mb : 'module_binding) (i : string) (r : string option) _
+           (loc : int * int) ->
+           (MLast.StMod (loc, o2b r, [i, mb]) : 'str_item));
       [Gramext.Stoken ("", "include");
        Gramext.Snterm
          (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e))],
