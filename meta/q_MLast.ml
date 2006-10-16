@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.5 2006/10/16 13:30:45 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.6 2006/10/16 14:20:34 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -956,7 +956,9 @@ EXTEND
   ;
   expr: LEVEL "apply"
     [ LEFTA
-      [ "new"; i = class_longident -> Qast.Node "ExNew" [Qast.Loc; i] ] ]
+      [ "new"; i = class_longident -> Qast.Node "ExNew" [Qast.Loc; i]
+      | "object"; cspo = SOPT class_self_patt; cf = class_structure; "end" ->
+          Qast.Node "ExObj" [Qast.Loc; cspo; cf] ] ]
   ;
   expr: LEVEL "."
     [ [ e = SELF; "#"; lab = label -> Qast.Node "ExSnd" [Qast.Loc; e; lab] ] ]

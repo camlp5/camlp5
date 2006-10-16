@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.4 2006/10/16 13:30:45 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.5 2006/10/16 14:20:34 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -1062,7 +1062,9 @@ EXTEND
   (* Expressions *)
   expr: LEVEL "simple"
     [ LEFTA
-      [ "new"; i = class_longident -> <:expr< new $list:i$ >> ] ]
+      [ "new"; i = class_longident -> <:expr< new $list:i$ >>
+      | "object"; cspo = OPT class_self_patt; cf = class_structure; "end" ->
+          <:expr< object $opt:cspo$ $list:cf$ end >> ] ]
   ;
   expr: LEVEL "."
     [ [ e = SELF; "#"; lab = label -> <:expr< $e$ # $lab$ >> ] ]

@@ -2062,7 +2062,20 @@ Grammar.extend
     Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
     Some (Gramext.Level "apply"),
     [None, Some Gramext.LeftA,
-     [[Gramext.Stoken ("", "new");
+     [[Gramext.Stoken ("", "object");
+       Gramext.Sopt
+         (Gramext.Snterm
+            (Grammar.Entry.obj
+               (class_self_patt : 'class_self_patt Grammar.Entry.e)));
+       Gramext.Snterm
+         (Grammar.Entry.obj
+            (class_structure : 'class_structure Grammar.Entry.e));
+       Gramext.Stoken ("", "end")],
+      Gramext.action
+        (fun _ (cf : 'class_structure) (cspo : 'class_self_patt option) _
+           (loc : int * int) ->
+           (MLast.ExObj (loc, cspo, cf) : 'expr));
+      [Gramext.Stoken ("", "new");
        Gramext.Snterm
          (Grammar.Entry.obj
             (class_longident : 'class_longident Grammar.Entry.e))],

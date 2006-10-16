@@ -131,6 +131,9 @@ and expr floc sh =
                 (patt floc sh x1, option_map self x2, self x3))
              x2)
     | ExNew loc x1 -> ExNew (floc loc) x1
+    | ExObj loc x1 x2 ->
+        ExObj (floc loc) (option_map (patt floc sh) x1)
+          (List.map (class_str_item floc sh) x2)
     | ExOlb loc x1 x2 -> ExOlb (floc loc) x1 (option_map self x2)
     | ExOvr loc x1 ->
         ExOvr (floc loc) (List.map (fun (x1, x2) -> (x1, self x2)) x1)
