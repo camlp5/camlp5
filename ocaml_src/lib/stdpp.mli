@@ -43,6 +43,10 @@ val make_loc : int * int -> location;;
 val first_pos : location -> int;;
 val last_pos : location -> int;;
 
+val make_lined_loc : int -> int -> int * int -> location;;
+val line_nb : location -> int;;
+val bol_pos : location -> int;;
+
 val encl_loc : location -> location -> location;;
 val shift_loc : int -> location -> location;;
 val sub_loc : location -> int -> int -> location;;

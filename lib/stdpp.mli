@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: stdpp.mli,v 1.4 2006/10/25 21:15:09 deraugla Exp $ *)
+(* $Id: stdpp.mli,v 1.5 2006/10/25 22:53:28 deraugla Exp $ *)
 
 (** Standard definitions. *)
 
@@ -42,6 +42,10 @@ value dummy_loc : location;
 value make_loc : (int * int) -> location;
 value first_pos : location -> int;
 value last_pos : location -> int;
+
+value make_lined_loc : int -> int -> (int * int) -> location;
+value line_nb : location -> int;
+value bol_pos : location -> int;
 
 value encl_loc : location -> location -> location;
 value shift_loc : int -> location -> location;

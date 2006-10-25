@@ -40,13 +40,17 @@ value string_of_string_token loc s =
 value glob_fname = ref "";
 
 value mkloc loc =
+  let lnum = Stdpp.line_nb loc in
+  let bolp = Stdpp.bol_pos loc in
+  let bp = Stdpp.first_pos loc in
+  let ep = Stdpp.last_pos loc in
   let loc_at n =
-    {Lexing.pos_fname = glob_fname.val; Lexing.pos_lnum = -1;
-     Lexing.pos_bol = 0; Lexing.pos_cnum = n}
+    {Lexing.pos_fname = if lnum = -1 then "" else glob_fname.val;
+     Lexing.pos_lnum = lnum; Lexing.pos_bol = bolp; Lexing.pos_cnum = n}
   in
-  {Location.loc_start = loc_at (Stdpp.first_pos loc);
-   Location.loc_end = loc_at (Stdpp.last_pos loc);
-   Location.loc_ghost = loc = Stdpp.dummy_loc}
+  {Location.loc_start = loc_at bp;
+   Location.loc_end = loc_at ep;
+   Location.loc_ghost = bp = 0 && ep = 0}
 ;
 
 value mktyp loc d = {ptyp_desc = d; ptyp_loc = mkloc loc};
@@ -837,24 +841,12 @@ and class_str_item c l =
 ;
 
 value interf fname ast = do {
-(*
-  Drawback: if file name correctly set, OCaml error messages from this
-  Camlp4 version are incorrectly displayed (source positions with lines
-  and columns not recomputed):
-
   glob_fname.val := fname;
-*)
   List.fold_right sig_item ast []
 };
 
 value implem fname ast = do {
-(*
-  Drawback: if file name correctly set, OCaml error messages from this
-  Camlp4 version are incorrectly displayed (source positions with lines
-  and columns not recomputed):
-
   glob_fname.val := fname;
-*)
   List.fold_right str_item ast []
 };
 

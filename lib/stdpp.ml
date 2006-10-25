@@ -10,9 +10,46 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: stdpp.ml,v 1.3 2006/10/25 21:15:09 deraugla Exp $ *)
+(* $Id: stdpp.ml,v 1.4 2006/10/25 22:53:28 deraugla Exp $ *)
 
+(*
 type location = (int * int);
+
+value dummy_loc = (0, 0);
+value make_loc x = x;
+value first_pos (bp, ep) = bp;
+value last_pos (bp, ep) = ep;
+value make_lined_loc line_nb bol_pos x = x;
+value line_nb _ = -1;
+value bol_pos _ = 0;
+value encl_loc (bp1, ep1) (bp2, ep2) = (min bp1 bp2, max ep1 ep2);
+value shift_loc sh (bp, ep) = (sh + bp, sh + ep);
+value sub_loc (bp, _) sh len = (bp + sh, bp + sh + len);
+value after_loc (_, ep) sh len = (ep + sh, ep + sh + len);
+*)
+
+type location = {line_nb : int; bol_pos : int; bp : int; ep : int};
+
+value dummy_loc = {line_nb = -1; bol_pos = 0; bp = 0; ep = 0};
+value make_loc (bp, ep) = {line_nb = -1; bol_pos = 0; bp = bp; ep = ep};
+value first_pos loc = loc.bp;
+value last_pos loc = loc.ep;
+value make_lined_loc line_nb bol_pos (bp, ep) =
+  {line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep}
+;
+value line_nb loc = loc.line_nb;
+value bol_pos loc = loc.bol_pos;
+value encl_loc loc1 loc2 =
+  {(loc1) with bp = min loc1.bp loc2.bp; ep = max loc1.ep loc2.ep}
+;
+value shift_loc sh loc = {(loc) with bp = sh + loc.bp; ep = sh + loc.ep};
+value sub_loc loc sh len =
+  {(loc) with bp = loc.bp + sh; ep = loc.bp + sh + len}
+;
+value after_loc loc sh len =
+  {(loc) with bp = loc.ep + sh; ep = loc.ep + sh + len}
+;
+(**)
 
 exception Exc_located of location and exn;
 
@@ -22,7 +59,8 @@ value raise_with_loc loc exc =
   | _ -> raise (Exc_located loc exc) ]
 ;
 
-value line_of_loc fname (bp, ep) =
+value line_of_loc fname loc =
+  let (bp, ep) = (first_pos loc, last_pos loc) in
   try
     let ic = open_in_bin fname in
     let strm = Stream.of_channel ic in
@@ -79,13 +117,3 @@ value line_of_loc fname (bp, ep) =
 ;
 
 value loc_name = ref "loc";
-
-value dummy_loc = (0, 0);
-value make_loc x = x;
-value first_pos (bp, ep) = bp;
-value last_pos (bp, ep) = ep;
-
-value encl_loc (bp1, ep1) (bp2, ep2) = (min bp1 bp2, max ep1 ep2);
-value shift_loc sh (bp, ep) = (sh + bp, sh + ep);
-value sub_loc (bp, _) sh len = (bp + sh, bp + sh + len);
-value after_loc (_, ep) sh len = (ep + sh, ep + sh + len);

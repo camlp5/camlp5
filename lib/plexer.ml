@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.5 2006/10/25 18:54:48 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.6 2006/10/25 22:53:28 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -126,6 +126,7 @@ value err loc msg =
 ;
 
 value next_token_fun dfa ssd find_kwd bolpos glexr =
+  let line_nb = ref 1 in
   let keyword_or_error loc s =
     try (("", find_kwd s), loc) with
     [ Not_found ->
@@ -135,7 +136,7 @@ value next_token_fun dfa ssd find_kwd bolpos glexr =
   let rec next_token after_space =
     parser bp
     [ [: `'\010' | '\013'; s :] ep ->
-        do { bolpos.val := ep; next_token True s }
+        do { bolpos.val := ep; incr line_nb; next_token True s }
     | [: `' ' | '\t' | '\026' | '\012'; s :] -> next_token True s
     | [: `'#' when bp = bolpos.val; s :] ->
         if linedir 1 s then do { any_to_nl s; next_token True s }
@@ -422,7 +423,7 @@ value next_token_fun dfa ssd find_kwd bolpos glexr =
               glex.tok_comm := Some [comm_loc :: list]
             else ()
         | None -> () ];
-        (r, make_loc loc)
+        (r, make_lined_loc line_nb.val bolpos.val loc)
       }
     with
     [ Stream.Error str ->

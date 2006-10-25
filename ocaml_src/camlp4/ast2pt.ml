@@ -40,13 +40,16 @@ let string_of_string_token loc s =
 let glob_fname = ref "";;
 
 let mkloc loc =
+  let lnum = Stdpp.line_nb loc in
+  let bolp = Stdpp.bol_pos loc in
+  let bp = Stdpp.first_pos loc in
+  let ep = Stdpp.last_pos loc in
   let loc_at n =
-    {Lexing.pos_fname = !glob_fname; Lexing.pos_lnum = -1; Lexing.pos_bol = 0;
-     Lexing.pos_cnum = n}
+    {Lexing.pos_fname = if lnum = -1 then "" else !glob_fname;
+     Lexing.pos_lnum = lnum; Lexing.pos_bol = bolp; Lexing.pos_cnum = n}
   in
-  {Location.loc_start = loc_at (Stdpp.first_pos loc);
-   Location.loc_end = loc_at (Stdpp.last_pos loc);
-   Location.loc_ghost = loc = Stdpp.dummy_loc}
+  {Location.loc_start = loc_at bp; Location.loc_end = loc_at ep;
+   Location.loc_ghost = bp = 0 && ep = 0}
 ;;
 
 let mktyp loc d = {ptyp_desc = d; ptyp_loc = mkloc loc};;
@@ -839,9 +842,9 @@ and class_str_item c l =
       Pcf_virt (s, mkprivate b, ctyp (mkpolytype t), mkloc loc) :: l
 ;;
 
-let interf fname ast = List.fold_right sig_item ast [];;
+let interf fname ast = glob_fname := fname; List.fold_right sig_item ast [];;
 
-let implem fname ast = List.fold_right str_item ast [];;
+let implem fname ast = glob_fname := fname; List.fold_right str_item ast [];;
 
 let directive loc =
   function
