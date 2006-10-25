@@ -1,5 +1,5 @@
 (* camlp4r *)
-(* $Id: pa_macro.ml,v 1.3 2006/10/25 15:55:31 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.4 2006/10/25 17:27:43 deraugla Exp $ *)
 
 (*
 Added statements:
@@ -228,7 +228,7 @@ EXTEND
   expr: LEVEL "simple"
     [ [ LIDENT "__FILE__" -> <:expr< $str:Pcaml.input_file.val$ >>
       | LIDENT "__LOCATION__" ->
-          let (bp, ep) = Token.unmake_loc loc in
+          let (bp, ep) = (Token.first_pos loc, Token.last_pos loc) in
           let bp = string_of_int bp in
           let ep = string_of_int ep in
           <:expr< ($int:bp$, $int:ep$) >> ] ]

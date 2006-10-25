@@ -357,7 +357,7 @@ Grammar.extend
      [[Gramext.Stoken ("LIDENT", "__LOCATION__")],
       Gramext.action
         (fun _ (loc : Token.location) ->
-           (let (bp, ep) = Token.unmake_loc loc in
+           (let (bp, ep) = Token.first_pos loc, Token.last_pos loc in
             let bp = string_of_int bp in
             let ep = string_of_int ep in
             MLast.ExTup

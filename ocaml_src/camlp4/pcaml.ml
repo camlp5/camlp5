@@ -75,7 +75,7 @@ let input_file = ref "";;
 let output_file = ref None;;
 
 let warning_default_function loc txt =
-  let (bp, ep) = Token.unmake_loc loc in
+  let (bp, ep) = Token.first_pos loc, Token.last_pos loc in
   Printf.eprintf "<W> loc %d %d: %s\n" bp ep txt; flush stderr
 ;;
 

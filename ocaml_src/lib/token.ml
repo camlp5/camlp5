@@ -18,7 +18,7 @@ type pattern = string * string;;
 exception Error of string;;
 
 type location = int * int;;
-type location_function = int -> int * int;;
+type location_function = int -> location;;
 type 'te lexer_func = char Stream.t -> 'te Stream.t * location_function;;
 
 type 'te glexer =
@@ -37,6 +37,15 @@ type lexer =
     text : pattern -> string }
 ;;
 
+let raise_with_loc = Stdpp.raise_with_loc;;
+let make_loc x = x;;
+let encl_loc (bp1, ep1) (bp2, ep2) = min bp1 bp2, max ep1 ep2;;
+let loc_of_char_after (bp, ep) = ep, ep + 1;;
+let dummy_loc = 0, 0;;
+let shift_loc sh (bp, ep) = sh + bp, sh + ep;;
+let first_pos (bp, ep) = bp;;
+let last_pos (bp, ep) = ep;;
+
 let lexer_text (con, prm) =
   if con = "" then "'" ^ prm ^ "'"
   else if prm = "" then con
@@ -47,7 +56,8 @@ let locerr () = invalid_arg "Lexer: location function";;
 let loct_create () = ref (Array.create 1024 None), ref false;;
 let loct_func (loct, ov) i =
   match
-    if i < 0 || i >= Array.length !loct then if !ov then Some (0, 0) else None
+    if i < 0 || i >= Array.length !loct then
+      if !ov then Some dummy_loc else None
     else Array.unsafe_get !loct i
   with
     Some loc -> loc
@@ -88,7 +98,8 @@ let lexer_func_of_ocamllex lexfun cs =
   in
   let next_token_loc _ =
     let tok = lexfun lb in
-    let loc = Lexing.lexeme_start lb, Lexing.lexeme_end lb in tok, loc
+    let loc = make_loc (Lexing.lexeme_start lb, Lexing.lexeme_end lb) in
+    tok, loc
   in
   make_stream_and_location next_token_loc
 ;;
@@ -218,13 +229,3 @@ let default_match =
       fun (con, prm) ->
         if con = p_con && prm = p_prm then prm else raise Stream.Failure
 ;;
-
-let raise_with_loc = Stdpp.raise_with_loc;;
-let make_loc x = x;;
-let unmake_loc x = x;;
-let encl_loc (bp1, ep1) (bp2, ep2) = min bp1 bp2, max ep1 ep2;;
-let loc_of_char_after (bp, ep) = ep, ep + 1;;
-let dummy_loc = 0, 0;;
-let shift_loc sh (bp, ep) = sh + bp, sh + ep;;
-let first_pos (bp, ep) = bp;;
-let last_pos (bp, ep) = ep;;

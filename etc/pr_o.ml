@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_o.ml,v 1.3 2006/10/25 15:55:31 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.4 2006/10/25 17:27:43 deraugla Exp $ *)
 
 open Pcaml;
 open Spretty;
@@ -341,7 +341,7 @@ pr_expr_fun_args.val :=
   | ge -> ([], ge) ];
 
 value raise_match_failure loc k =
-  let (bp, ep) = Token.unmake_loc loc in
+  let (bp, ep) = (Token.first_pos loc, Token.last_pos loc) in
   let (fname, line, char, _) =
     if Pcaml.input_file.val <> "-" then
       Stdpp.line_of_loc Pcaml.input_file.val (bp, ep)
@@ -1943,7 +1943,7 @@ value apply_printer printer ast =
       let (first, last_pos) =
         List.fold_left
           (fun (first, last_pos) (si, loc) ->
-             let (bp, ep) = Token.unmake_loc loc in
+             let (bp, ep) = (Token.first_pos loc, Token.last_pos loc) in
              do {
                copy_source ic oc first last_pos bp;
                flush oc;

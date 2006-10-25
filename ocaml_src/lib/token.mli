@@ -126,9 +126,6 @@ val eval_string : location -> string -> string;;
 
 (**/**)
 
-(* for system use *)
-val unmake_loc : location -> int * int;;
-
 (* deprecated since version 3.05; use rather type glexer *)
 type t = string * string;;
 type lexer =

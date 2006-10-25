@@ -439,7 +439,7 @@ let rec conv =
   | BEbox x -> BE (conv_stream x)
   | BEVbox x -> BV (conv_stream x)
   | LocInfo (loc, x) ->
-      let (bp, ep) = Token.unmake_loc loc in
+      let (bp, ep) = Token.first_pos loc, Token.last_pos loc in
       let (comm, nl_bef, tab_bef, cnt) =
         let len = bp - !last_ep in
         if len > 0 then !getcomm !last_ep len else "", 0, 0, 0

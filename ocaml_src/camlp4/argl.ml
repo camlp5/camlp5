@@ -105,7 +105,7 @@ let loc_fmt =
 ;;
 
 let print_location loc =
-  let loc = Token.unmake_loc loc in
+  let loc = Token.first_pos loc, Token.last_pos loc in
   if !(Pcaml.input_file) <> "-" then
     let (fname, line, bp, ep) = Stdpp.line_of_loc !(Pcaml.input_file) loc in
     eprintf loc_fmt fname line bp ep

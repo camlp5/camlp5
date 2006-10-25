@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.ml,v 1.5 2006/10/25 15:55:31 deraugla Exp $ *)
+(* $Id: token.ml,v 1.6 2006/10/25 17:27:43 deraugla Exp $ *)
 
 type t = (string * string);
 type pattern = (string * string);
@@ -18,7 +18,7 @@ type pattern = (string * string);
 exception Error of string;
 
 type location = (int * int);
-type location_function = int -> (int * int);
+type location_function = int -> location;
 type lexer_func 'te = Stream.t char -> (Stream.t 'te * location_function);
 
 type glexer 'te =
@@ -37,6 +37,15 @@ type lexer =
     text : pattern -> string }
 ;
 
+value raise_with_loc = Stdpp.raise_with_loc;
+value make_loc x = x;
+value encl_loc (bp1, ep1) (bp2, ep2) = (min bp1 bp2, max ep1 ep2);
+value loc_of_char_after (bp, ep) = (ep, ep + 1);
+value dummy_loc = (0, 0);
+value shift_loc sh (bp, ep) = (sh + bp, sh + ep);
+value first_pos (bp, ep) = bp;
+value last_pos (bp, ep) = ep;
+
 value lexer_text (con, prm) =
   if con = "" then "'" ^ prm ^ "'"
   else if prm = "" then con
@@ -48,7 +57,7 @@ value loct_create () = (ref (Array.create 1024 None), ref False);
 value loct_func (loct, ov) i =
   match
     if i < 0 || i >= Array.length loct.val then
-      if ov.val then Some (0, 0) else None
+      if ov.val then Some dummy_loc else None
     else Array.unsafe_get loct.val i
   with
   [ Some loc -> loc
@@ -90,7 +99,7 @@ value lexer_func_of_ocamllex lexfun cs =
   in
   let next_token_loc _ =
     let tok = lexfun lb in
-    let loc = (Lexing.lexeme_start lb, Lexing.lexeme_end lb) in
+    let loc = make_loc (Lexing.lexeme_start lb, Lexing.lexeme_end lb) in
     (tok, loc)
   in
   make_stream_and_location next_token_loc
@@ -223,13 +232,3 @@ value default_match =
       fun (con, prm) ->
         if con = p_con && prm = p_prm then prm else raise Stream.Failure ]
 ;
-
-value raise_with_loc = Stdpp.raise_with_loc;
-value make_loc x = x;
-value unmake_loc x = x;
-value encl_loc (bp1, ep1) (bp2, ep2) = (min bp1 bp2, max ep1 ep2);
-value loc_of_char_after (bp, ep) = (ep, ep + 1);
-value dummy_loc = (0, 0);
-value shift_loc sh (bp, ep) = (sh + bp, sh + ep);
-value first_pos (bp, ep) = bp;
-value last_pos (bp, ep) = ep;

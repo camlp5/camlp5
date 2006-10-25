@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.mli,v 1.5 2006/10/25 15:55:31 deraugla Exp $ *)
+(* $Id: token.mli,v 1.6 2006/10/25 17:27:43 deraugla Exp $ *)
 
 (** Lexers for Camlp4 grammars.
 
@@ -125,9 +125,6 @@ value eval_string : location -> string -> string;
        returns [c] and [Token.eval_string (String.escaped s)] returns [s] *)
 
 (**/**)
-
-(* for system use *)
-value unmake_loc : location -> (int * int);
 
 (* deprecated since version 3.05; use rather type glexer *)
 type t = (string * string);

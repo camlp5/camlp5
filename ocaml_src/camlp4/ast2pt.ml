@@ -40,7 +40,7 @@ let string_of_string_token loc s =
 let glob_fname = ref "";;
 
 let mkloc loc =
-  let (bp, ep) = Token.unmake_loc loc in
+  let (bp, ep) = Token.first_pos loc, Token.last_pos loc in
   let loc_at n =
     {Lexing.pos_fname = !glob_fname; Lexing.pos_lnum = -1; Lexing.pos_bol = 0;
      Lexing.pos_cnum = n}
