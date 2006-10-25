@@ -1,5 +1,5 @@
 ;; camlp4 ./pa_lispr.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-;; $Id: pa_lisp.ml,v 1.4 2006/10/25 18:54:48 deraugla Exp $
+;; $Id: pa_lisp.ml,v 1.5 2006/10/25 21:15:09 deraugla Exp $
 
 (open Pcaml)
 (open Stdpp)
@@ -385,10 +385,8 @@
              (if (= i (String.length s))
                  (if (> i ibeg)
                      (expr_id loc (String.sub s ibeg (- i ibeg)))
-                   (raise_with_loc
-                    (make_loc (, (- (+ (Stdpp.first_pos loc) i) 1)
-                                 (+ (Stdpp.first_pos loc) i)))
-                              (Stream.Error "expr expected")))
+                   (raise_with_loc (sub_loc loc (- i 1) 1)
+                                   (Stream.Error "expr expected")))
                (if (= ([] s i) '.')
                    (if (> i ibeg)
                        (let* ((e1 (expr_id
@@ -396,9 +394,7 @@
                                    (String.sub s ibeg (- i ibeg))))
                               (e2 (loop (+ i 1) (+ i 1))))
                          <:expr< $e1$ . $e2$ >>)
-                     (raise_with_loc
-                      (make_loc (, (- (+ (Stdpp.first_pos loc) i) 1)
-                                   (+ (Stdpp.first_pos loc) i)))
+                     (raise_with_loc (sub_loc loc (- i 1) 1)
                                      (Stream.Error "expr expected")))
                  (loop ibeg (+ i 1)))))))
          (loop 0 0))))
@@ -504,9 +500,7 @@
          (if (= i (String.length s))
              (if (> i ibeg)
                  (patt_id loc (String.sub s ibeg (- i ibeg)))
-               (raise_with_loc
-                  (make_loc (, (- (+ (Stdpp.first_pos loc) i) 1)
-                               (+ (Stdpp.first_pos loc) i)))
+               (raise_with_loc (sub_loc loc (- i 1) 1)
                                (Stream.Error "patt expected")))
            (if (= ([] s i) '.')
                (if (> i ibeg)
@@ -515,9 +509,7 @@
                                (String.sub s ibeg (- i ibeg))))
                           (p2 (loop (+ i 1) (+ i 1))))
                      <:patt< $p1$ . $p2$ >>)
-                 (raise_with_loc
-                  (make_loc (, (- (+ (Stdpp.first_pos loc) i) 1)
-                               (+ (Stdpp.first_pos loc) i)))
+                 (raise_with_loc (sub_loc loc (- i 1) 1)
                                  (Stream.Error "patt expected")))
              (loop ibeg (+ i 1)))))))
      (loop 0 0)))
@@ -577,20 +569,16 @@
               (if (= i (String.length s))
                   (if (> i ibeg)
                       (ctyp_id loc (String.sub s ibeg (- i ibeg)))
-                    (raise_with_loc
-                     (make_loc (, (- (+ (Stdpp.first_pos loc) i) 1)
-                                  (+ (Stdpp.first_pos loc) i)))
-                     (Stream.Error "ctyp expected")))
+                    (raise_with_loc (sub_loc loc (- i 1) 1)
+                                    (Stream.Error "ctyp expected")))
                 (if (= ([] s i) '.')
                     (if (> i ibeg)
                         (let* ((t1 (ctyp_id
                                     loc (String.sub s ibeg (- i ibeg))))
                                (t2 (loop (+ i 1) (+ i 1))))
                           <:ctyp< $t1$ . $t2$ >>)
-                      (raise_with_loc
-                       (make_loc (, (- (+ (Stdpp.first_pos loc) i) 1)
-                                    (+ (Stdpp.first_pos loc) i)))
-                       (Stream.Error "ctyp expected")))
+                      (raise_with_loc (sub_loc loc (- i 1) 1)
+                                      (Stream.Error "ctyp expected")))
                   (loop ibeg (+ i 1)))))))
      (loop 0 0)))
  constructor_declaration_se

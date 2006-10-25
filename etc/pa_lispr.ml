@@ -382,8 +382,7 @@ and expr_ident_se loc s =
       if i = String.length s then
         if i > ibeg then expr_id loc (String.sub s ibeg (i - ibeg))
         else
-          raise_with_loc
-            (make_loc (Stdpp.first_pos loc + i - 1, Stdpp.first_pos loc + i))
+          raise_with_loc (sub_loc loc (i - 1) 1)
             (Stream.Error "expr expected")
       else if s.[i] = '.' then
         if i > ibeg then
@@ -391,8 +390,7 @@ and expr_ident_se loc s =
           let e2 = loop (i + 1) (i + 1) in
           <:expr< $e1$ . $e2$ >>
         else
-          raise_with_loc
-            (make_loc (Stdpp.first_pos loc + i - 1, Stdpp.first_pos loc + i))
+          raise_with_loc (sub_loc loc (i - 1) 1)
             (Stream.Error "expr expected")
       else loop ibeg (i + 1)
     in
@@ -499,18 +497,14 @@ and patt_ident_se loc s =
     if i = String.length s then
       if i > ibeg then patt_id loc (String.sub s ibeg (i - ibeg))
       else
-        raise_with_loc
-          (make_loc (Stdpp.first_pos loc + i - 1, Stdpp.first_pos loc + i))
-          (Stream.Error "patt expected")
+        raise_with_loc (sub_loc loc (i - 1) 1) (Stream.Error "patt expected")
     else if s.[i] = '.' then
       if i > ibeg then
         let p1 = patt_id loc (String.sub s ibeg (i - ibeg)) in
         let p2 = loop (i + 1) (i + 1) in
         <:patt< $p1$ . $p2$ >>
       else
-        raise_with_loc
-          (make_loc (Stdpp.first_pos loc + i - 1, Stdpp.first_pos loc + i))
-          (Stream.Error "patt expected")
+        raise_with_loc (sub_loc loc (i - 1) 1) (Stream.Error "patt expected")
     else loop ibeg (i + 1)
 and ipatt_se se =
   match ipatt_opt_se se with
@@ -562,18 +556,14 @@ and ctyp_ident_se loc s =
     if i = String.length s then
       if i > ibeg then ctyp_id loc (String.sub s ibeg (i - ibeg))
       else
-        raise_with_loc
-          (make_loc (Stdpp.first_pos loc + i - 1, Stdpp.first_pos loc + i))
-          (Stream.Error "ctyp expected")
+        raise_with_loc (sub_loc loc (i - 1) 1) (Stream.Error "ctyp expected")
     else if s.[i] = '.' then
       if i > ibeg then
         let t1 = ctyp_id loc (String.sub s ibeg (i - ibeg)) in
         let t2 = loop (i + 1) (i + 1) in
         <:ctyp< $t1$ . $t2$ >>
       else
-        raise_with_loc
-          (make_loc (Stdpp.first_pos loc + i - 1, Stdpp.first_pos loc + i))
-          (Stream.Error "ctyp expected")
+        raise_with_loc (sub_loc loc (i - 1) 1) (Stream.Error "ctyp expected")
     else loop ibeg (i + 1)
 and constructor_declaration_se =
   fun

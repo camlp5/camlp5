@@ -357,9 +357,8 @@ Grammar.extend
      [[Gramext.Stoken ("LIDENT", "__LOCATION__")],
       Gramext.action
         (fun _ (loc : Token.location) ->
-           (let (bp, ep) = Stdpp.first_pos loc, Stdpp.last_pos loc in
-            let bp = string_of_int bp in
-            let ep = string_of_int ep in
+           (let bp = string_of_int (Stdpp.first_pos loc) in
+            let ep = string_of_int (Stdpp.last_pos loc) in
             MLast.ExTup
               (loc, [MLast.ExInt (loc, bp); MLast.ExInt (loc, ep)]) :
             'expr));

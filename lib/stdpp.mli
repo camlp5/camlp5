@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: stdpp.mli,v 1.3 2006/10/25 18:54:48 deraugla Exp $ *)
+(* $Id: stdpp.mli,v 1.4 2006/10/25 21:15:09 deraugla Exp $ *)
 
 (** Standard definitions. *)
 
@@ -38,10 +38,12 @@ value loc_name : ref string;
    (** Name of the location variable used in grammars and in the predefined
        quotations for OCaml syntax trees. Default: [loc] *)
 
+value dummy_loc : location;
 value make_loc : (int * int) -> location;
-value encl_loc : location -> location -> location;
-value loc_of_char_after : location -> location;
-value shift_loc : int -> location -> location;
 value first_pos : location -> int;
 value last_pos : location -> int;
-value dummy_loc : location;
+
+value encl_loc : location -> location -> location;
+value shift_loc : int -> location -> location;
+value sub_loc : location -> int -> int -> location;
+value after_loc : location -> int -> int -> location;

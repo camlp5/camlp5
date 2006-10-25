@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: stdpp.ml,v 1.2 2006/10/25 17:56:51 deraugla Exp $ *)
+(* $Id: stdpp.ml,v 1.3 2006/10/25 21:15:09 deraugla Exp $ *)
 
 type location = (int * int);
 
@@ -80,10 +80,12 @@ value line_of_loc fname (bp, ep) =
 
 value loc_name = ref "loc";
 
-value make_loc x = x;
-value encl_loc (bp1, ep1) (bp2, ep2) = (min bp1 bp2, max ep1 ep2);
-value loc_of_char_after (bp, ep) = (ep, ep + 1);
 value dummy_loc = (0, 0);
-value shift_loc sh (bp, ep) = (sh + bp, sh + ep);
+value make_loc x = x;
 value first_pos (bp, ep) = bp;
 value last_pos (bp, ep) = ep;
+
+value encl_loc (bp1, ep1) (bp2, ep2) = (min bp1 bp2, max ep1 ep2);
+value shift_loc sh (bp, ep) = (sh + bp, sh + ep);
+value sub_loc (bp, _) sh len = (bp + sh, bp + sh + len);
+value after_loc (_, ep) sh len = (ep + sh, ep + sh + len);

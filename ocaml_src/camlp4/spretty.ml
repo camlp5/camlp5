@@ -439,14 +439,14 @@ let rec conv =
   | BEbox x -> BE (conv_stream x)
   | BEVbox x -> BV (conv_stream x)
   | LocInfo (loc, x) ->
-      let (bp, ep) = Stdpp.first_pos loc, Stdpp.last_pos loc in
       let (comm, nl_bef, tab_bef, cnt) =
-        let len = bp - !last_ep in
+        let len = Stdpp.first_pos loc - !last_ep in
         if len > 0 then !getcomm !last_ep len else "", 0, 0, 0
       in
       last_ep := !last_ep + cnt;
       let v = conv x in
-      last_ep := max ep !last_ep; LI ((comm, nl_bef, tab_bef), v)
+      last_ep := max (Stdpp.last_pos loc) !last_ep;
+      LI ((comm, nl_bef, tab_bef), v)
 and conv_stream (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some p -> Stream.junk strm__; let x = conv p in x :: conv_stream strm__

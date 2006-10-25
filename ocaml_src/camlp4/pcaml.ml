@@ -141,8 +141,7 @@ let handle_quotation loc proj in_expr entry reloc (name, str) =
     try Quotation.find name with
       exc ->
         let exc1 = Qerror (name, Finding, exc) in
-        let loc = Stdpp.first_pos loc, Stdpp.first_pos loc + shift in
-        raise (Stdpp.Exc_located (Stdpp.make_loc loc, exc1))
+        raise (Stdpp.Exc_located (Stdpp.sub_loc loc 0 shift, exc1))
   in
   let shift = Stdpp.first_pos loc + shift in
   let ast =
@@ -206,7 +205,8 @@ let patt_reloc = Reloc.patt;;
 
 let rename_id = ref (fun x -> x);;
 
-let find_line (bp, ep) str =
+let find_line loc str =
+  let (bp, ep) = Stdpp.first_pos loc, Stdpp.last_pos loc in
   let rec find i line col =
     if i == String.length str then line, 0, col
     else if i == bp then line, col, col + ep - bp
@@ -236,13 +236,12 @@ let report_quotation_error name ctx =
     name;
   match ctx with
     ParsingResult (loc, str) ->
-      let (bp, ep) = Stdpp.first_pos loc, Stdpp.last_pos loc in
       begin match !quotation_dump_file with
         Some dump_file ->
           Printf.eprintf " dumping result...\n";
           flush stderr;
           begin try
-            let (line, c1, c2) = find_line (bp, ep) str in
+            let (line, c1, c2) = find_line loc str in
             let oc = open_out_bin dump_file in
             output_string oc str;
             output_string oc "\n";
@@ -376,47 +375,47 @@ and kont = pretty Stream.t
 ;;
 
 let pr_str_item =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 406, 30)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 405, 30)));
    pr_levels = []}
 ;;
 let pr_sig_item =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 407, 30)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 406, 30)));
    pr_levels = []}
 ;;
 let pr_module_type =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 408, 33)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 407, 33)));
    pr_levels = []}
 ;;
 let pr_module_expr =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 409, 33)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 408, 33)));
    pr_levels = []}
 ;;
 let pr_expr =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 410, 26)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 409, 26)));
    pr_levels = []}
 ;;
 let pr_patt =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 411, 26)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 410, 26)));
    pr_levels = []}
 ;;
 let pr_ctyp =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 412, 26)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 411, 26)));
    pr_levels = []}
 ;;
 let pr_class_sig_item =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 413, 36)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 412, 36)));
    pr_levels = []}
 ;;
 let pr_class_str_item =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 414, 36)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 413, 36)));
    pr_levels = []}
 ;;
 let pr_class_type =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 415, 32)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 414, 32)));
    pr_levels = []}
 ;;
 let pr_class_expr =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 416, 32)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 415, 32)));
    pr_levels = []}
 ;;
 let pr_expr_fun_args = ref Extfun.empty;;

@@ -445,16 +445,15 @@ value rec conv =
   | BEbox x -> BE (conv_stream x)
   | BEVbox x -> BV (conv_stream x)
   | LocInfo loc x ->
-      let (bp, ep) = (Stdpp.first_pos loc, Stdpp.last_pos loc) in
       let (comm, nl_bef, tab_bef, cnt) =
-        let len = bp - last_ep.val in
+        let len = Stdpp.first_pos loc - last_ep.val in
         if len > 0 then getcomm.val last_ep.val len
         else ("", 0, 0, 0)
       in
       do {
         last_ep.val := last_ep.val + cnt;
         let v = conv x in
-        last_ep.val := max ep last_ep.val;
+        last_ep.val := max (Stdpp.last_pos loc) last_ep.val;
         LI (comm, nl_bef, tab_bef) v
       } ]
 and conv_stream =

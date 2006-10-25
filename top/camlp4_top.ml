@@ -17,6 +17,7 @@ open Lexing;
 open Stdpp;
 
 value highlight_locations lb loc1 loc2 =
+  let loc1 = (Stdpp.first_pos loc1, Stdpp.last_pos loc1) in
   try
     let pos0 = - lb.lex_abs_pos in
     do {
@@ -59,7 +60,7 @@ value highlight_locations lb loc1 loc2 =
 
 value print_location lb loc =
   if String.length Toploop.input_name.val = 0 then
-    highlight_locations lb (Stdpp.first_pos loc, Stdpp.last_pos loc) (-1, -1)
+    highlight_locations lb loc (-1, -1)
   else Toploop.print_location Format.err_formatter (Ast2pt.mkloc loc)
 ;
 

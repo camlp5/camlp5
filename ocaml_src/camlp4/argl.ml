@@ -105,13 +105,12 @@ let loc_fmt =
 ;;
 
 let print_location loc =
-  let bp = Stdpp.first_pos loc in
-  let ep = Stdpp.last_pos loc in
   if !(Pcaml.input_file) <> "-" then
-    let loc = Stdpp.make_loc (bp, ep) in
     let (fname, line, bp, ep) = Stdpp.line_of_loc !(Pcaml.input_file) loc in
     eprintf loc_fmt fname line bp ep
-  else eprintf "At location %d-%d\n" bp ep
+  else
+    let bp = Stdpp.first_pos loc in
+    let ep = Stdpp.last_pos loc in eprintf "At location %d-%d\n" bp ep
 ;;
 
 let print_warning loc s = print_location loc; eprintf "Warning: %s\n" s;;

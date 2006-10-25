@@ -100,10 +100,12 @@ let line_of_loc fname (bp, ep) =
 
 let loc_name = ref "loc";;
 
-let make_loc x = x;;
-let encl_loc (bp1, ep1) (bp2, ep2) = min bp1 bp2, max ep1 ep2;;
-let loc_of_char_after (bp, ep) = ep, ep + 1;;
 let dummy_loc = 0, 0;;
-let shift_loc sh (bp, ep) = sh + bp, sh + ep;;
+let make_loc x = x;;
 let first_pos (bp, ep) = bp;;
 let last_pos (bp, ep) = ep;;
+
+let encl_loc (bp1, ep1) (bp2, ep2) = min bp1 bp2, max ep1 ep2;;
+let shift_loc sh (bp, ep) = sh + bp, sh + ep;;
+let sub_loc (bp, _) sh len = bp + sh, bp + sh + len;;
+let after_loc (_, ep) sh len = ep + sh, ep + sh + len;;

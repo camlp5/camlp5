@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.5 2006/10/25 18:54:48 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.6 2006/10/25 21:15:09 deraugla Exp $ *)
 
 open Stdpp;
 open Gramext;
@@ -203,8 +203,8 @@ external grammar_obj : g -> grammar Token.t = "%identity";
 value floc = ref (fun _ -> failwith "internal error when computing location");
 value loc_of_token_interval bp ep =
   if bp == ep then
-    if bp == 0 then Stdpp.make_loc (0, 1)
-    else Stdpp.loc_of_char_after (floc.val (bp - 1))
+    if bp == 0 then Stdpp.dummy_loc
+    else Stdpp.after_loc (floc.val (bp - 1)) 0 1
   else
     let loc1 = floc.val bp in
     let loc2 = floc.val (pred ep) in

@@ -40,13 +40,13 @@ let string_of_string_token loc s =
 let glob_fname = ref "";;
 
 let mkloc loc =
-  let (bp, ep) = Stdpp.first_pos loc, Stdpp.last_pos loc in
   let loc_at n =
     {Lexing.pos_fname = !glob_fname; Lexing.pos_lnum = -1; Lexing.pos_bol = 0;
      Lexing.pos_cnum = n}
   in
-  {Location.loc_start = loc_at bp; Location.loc_end = loc_at ep;
-   Location.loc_ghost = bp = 0 && ep = 0}
+  {Location.loc_start = loc_at (Stdpp.first_pos loc);
+   Location.loc_end = loc_at (Stdpp.last_pos loc);
+   Location.loc_ghost = loc = Stdpp.dummy_loc}
 ;;
 
 let mktyp loc d = {ptyp_desc = d; ptyp_loc = mkloc loc};;

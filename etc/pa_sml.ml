@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_sml.ml,v 1.3 2006/10/25 18:54:48 deraugla Exp $ *)
+(* $Id: pa_sml.ml,v 1.4 2006/10/25 21:15:09 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -821,8 +821,7 @@ EXTEND
     | "strdec"
       [ "structure"; x1 = LIST1 strb SEP "and" -> str_declare loc x1
       | "functor"; x1 = LIST1 fctb SEP "and" -> str_declare loc x1
-      | "local"; x1 = sdecs; "in"; x2 = sdecs; "end" ->
-          make_local loc x1 x2 ]
+      | "local"; x1 = sdecs; "in"; x2 = sdecs; "end" -> make_local loc x1 x2 ]
     | [ "val"; x1 = LIST1 vb SEP "and" -> <:str_item< value $list:x1$ >>
       | "val"; x1 = tyvarseq; x3 = LIST1 vb SEP "and" ->
           not_impl loc "ldec 2"

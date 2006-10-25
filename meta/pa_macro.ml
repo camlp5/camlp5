@@ -1,5 +1,5 @@
 (* camlp4r *)
-(* $Id: pa_macro.ml,v 1.5 2006/10/25 18:54:48 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.6 2006/10/25 21:15:09 deraugla Exp $ *)
 
 (*
 Added statements:
@@ -228,9 +228,8 @@ EXTEND
   expr: LEVEL "simple"
     [ [ LIDENT "__FILE__" -> <:expr< $str:Pcaml.input_file.val$ >>
       | LIDENT "__LOCATION__" ->
-          let (bp, ep) = (Stdpp.first_pos loc, Stdpp.last_pos loc) in
-          let bp = string_of_int bp in
-          let ep = string_of_int ep in
+          let bp = string_of_int (Stdpp.first_pos loc) in
+          let ep = string_of_int (Stdpp.last_pos loc) in
           <:expr< ($int:bp$, $int:ep$) >> ] ]
   ;
   patt:

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_r.ml,v 1.6 2006/10/25 18:54:48 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.7 2006/10/25 21:15:09 deraugla Exp $ *)
 
 open Pcaml;
 open Spretty;
@@ -158,7 +158,7 @@ value rec labels loc b vl k =
   | [v] ->
       [: `HVbox
             [: `HVbox [: :]; `label True b v [: :];
-               `LocInfo (Stdpp.loc_of_char_after loc) (HVbox k) :] :]
+               `LocInfo (Stdpp.after_loc loc 0 1) (HVbox k) :] :]
   | [v :: l] -> [: `label False b v [: :]; labels loc [: :] l k :] ]
 and label is_last b (loc, f, m, t) k =
   let m = flag "mutable" m in
@@ -179,7 +179,7 @@ value rec variants loc b vl k =
   | [v] ->
       [: `HVbox
             [: `HVbox [: :]; `variant b v [: :];
-               `LocInfo (Stdpp.loc_of_char_after loc) (HVbox k) :] :]
+               `LocInfo (Stdpp.after_loc loc 0 1) (HVbox k) :] :]
   | [v :: l] -> [: `variant b v [: :]; variants loc [: `S LR "|" :] l k :] ]
 and variant b (loc, c, tl) k =
   match tl with
@@ -580,7 +580,7 @@ and class_signature cs k =
         [: `clty_longident id [: :]; `S LO "[";
            listws ctyp (S RO ",") tl [: `S RO "]"; k :] :]
   | <:class_type< object $opt:cst$ $list:csf$ end >> ->
-      let loc = Stdpp.loc_of_char_after (MLast.loc_of_class_type cs) in
+      let loc = Stdpp.after_loc (MLast.loc_of_class_type cs) 0 1 in
       class_self_type [: `S LR "object" :] cst
         [: `HVbox
               [: `HVbox [: :]; list class_sig_item csf [: :];
@@ -634,7 +634,7 @@ pr_module_type.pr_levels :=
       extfun Extfun.empty with
       [ <:module_type< sig $list:s$ end >> as mt ->
           fun curr next _ k ->
-            let loc = Stdpp.loc_of_char_after (MLast.loc_of_module_type mt) in
+            let loc = Stdpp.after_loc (MLast.loc_of_module_type mt) 0 1 in
             [: `BEbox
                   [: `S LR "sig";
                      `HVbox
@@ -672,7 +672,7 @@ pr_module_expr.pr_levels :=
       extfun Extfun.empty with
       [ <:module_expr< struct $list:s$ end >> as me ->
           fun curr next _ k ->
-            let loc = Stdpp.loc_of_char_after (MLast.loc_of_module_expr me) in
+            let loc = Stdpp.after_loc (MLast.loc_of_module_expr me) 0 1 in
             [: `HVbox [: :];
                `HVbox
                   [: `S LR "struct"; list str_item s [: :];
@@ -1597,7 +1597,7 @@ pr_class_expr.pr_levels :=
                listws ctyp (S RO ",") ctcl [: `S RO "]"; k :] :]
       | MLast.CeStr _ csp cf as ce ->
           fun curr next _ k ->
-            let loc = Stdpp.loc_of_char_after (MLast.loc_of_class_expr ce) in
+            let loc = Stdpp.after_loc (MLast.loc_of_class_expr ce) 0 1 in
             [: `BEbox
                   [: `HVbox [: `S LR "object"; `class_self_patt_opt csp :];
                      `HVbox
@@ -1775,14 +1775,14 @@ value apply_printer printer ast =
       let (first, last_pos) =
         List.fold_left
           (fun (first, last_pos) (si, loc) ->
-             let (bp, ep) = (Stdpp.first_pos loc, Stdpp.last_pos loc) in
+             let bp = Stdpp.first_pos loc in
              do {
                copy_source ic oc first last_pos bp;
                flush oc;
                print_pretty pr_ch pr_str pr_nl "" "" maxl.val getcom bp
                  (printer si [: :]);
                flush oc;
-               (False, ep)
+               (False, Stdpp.last_pos loc)
              })
           (True, 0) ast
       in

@@ -149,8 +149,7 @@ value handle_quotation loc proj in_expr entry reloc (name, str) =
   let expander =
     try Quotation.find name with exc ->
       let exc1 = Qerror name Finding exc in
-      let loc = (Stdpp.first_pos loc, Stdpp.first_pos loc + shift) in
-      raise (Stdpp.Exc_located (Stdpp.make_loc loc) exc1)
+      raise (Stdpp.Exc_located (Stdpp.sub_loc loc 0 shift) exc1)
   in
   let shift = Stdpp.first_pos loc + shift in
   let ast =
@@ -210,7 +209,8 @@ value patt_reloc = Reloc.patt;
 
 value rename_id = ref (fun x -> x);
 
-value find_line (bp, ep) str =
+value find_line loc str =
+  let (bp, ep) = (Stdpp.first_pos loc, Stdpp.last_pos loc) in
   find 0 1 0 where rec find i line col =
     if i == String.length str then (line, 0, col)
     else if i == bp then (line, col, col + ep - bp)
@@ -240,14 +240,13 @@ value report_quotation_error name ctx =
       name;
     match ctx with
     [ ParsingResult loc str ->
-        let (bp, ep) = (Stdpp.first_pos loc, Stdpp.last_pos loc) in
         match quotation_dump_file.val with
         [ Some dump_file ->
             do {
               Printf.eprintf " dumping result...\n";
               flush stderr;
               try
-                let (line, c1, c2) = find_line (bp, ep) str in
+                let (line, c1, c2) = find_line loc str in
                 let oc = open_out_bin dump_file in
                 do {
                   output_string oc str;

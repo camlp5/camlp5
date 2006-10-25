@@ -194,8 +194,7 @@ external grammar_obj : g -> Token.t grammar = "%identity";;
 let floc = ref (fun _ -> failwith "internal error when computing location");;
 let loc_of_token_interval bp ep =
   if bp == ep then
-    if bp == 0 then Stdpp.make_loc (0, 1)
-    else Stdpp.loc_of_char_after (!floc (bp - 1))
+    if bp == 0 then Stdpp.dummy_loc else Stdpp.after_loc (!floc (bp - 1)) 0 1
   else
     let loc1 = !floc bp in
     let loc2 = !floc (pred ep) in Stdpp.encl_loc loc1 loc2
