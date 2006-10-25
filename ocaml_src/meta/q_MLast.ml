@@ -30,7 +30,7 @@ module Qast =
       | Loc
       | Antiquot of MLast.loc * string
     ;;
-    let loc = Token.dummy_loc;;
+    let loc = Stdpp.dummy_loc;;
     let rec to_expr =
       function
         Node (n, al) ->
@@ -66,7 +66,7 @@ module Qast =
           let e =
             try Grammar.Entry.parse Pcaml.expr_eoi (Stream.of_string s) with
               Stdpp.Exc_located (loc1, exc) ->
-                let shift = Token.first_pos loc in
+                let shift = Stdpp.first_pos loc in
                 raise (Stdpp.Exc_located (Stdpp.shift_loc shift loc1, exc))
           in
           MLast.ExAnt (loc, e)
@@ -107,7 +107,7 @@ module Qast =
           let p =
             try Grammar.Entry.parse Pcaml.patt_eoi (Stream.of_string s) with
               Stdpp.Exc_located (loc1, exc) ->
-                let shift = Token.first_pos loc in
+                let shift = Stdpp.first_pos loc in
                 raise (Stdpp.Exc_located (Stdpp.shift_loc shift loc1, exc))
           in
           MLast.PaAnt (loc, p)
@@ -123,7 +123,7 @@ let antiquot k loc x =
     if k = "" then String.length "$"
     else String.length "$" + String.length k + String.length ":"
   in
-  Qast.Antiquot (Token.shift_loc shift loc, x)
+  Qast.Antiquot (Stdpp.shift_loc shift loc, x)
 ;;
 
 let sig_item = Grammar.Entry.create gram "signature item";;
@@ -288,7 +288,7 @@ let warn_variant _ =
   if !not_yet_warned_variant then
     begin
       not_yet_warned_variant := false;
-      !(Pcaml.warning) Token.dummy_loc
+      !(Pcaml.warning) Stdpp.dummy_loc
         (Printf.sprintf
            "use of syntax of variants types deprecated since version 3.05")
     end
@@ -299,7 +299,7 @@ let warn_sequence _ =
   if !not_yet_warned_seq then
     begin
       not_yet_warned_seq := false;
-      !(Pcaml.warning) Token.dummy_loc
+      !(Pcaml.warning) Stdpp.dummy_loc
         (Printf.sprintf
            "use of syntax of sequences deprecated since version 3.01.1")
     end

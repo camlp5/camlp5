@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.7 2006/10/25 15:55:31 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.8 2006/10/25 18:54:48 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -115,7 +115,7 @@ value mklistexp loc last =
         | None -> <:expr< [] >> ]
     | [e1 :: el] ->
         let loc =
-          if top then loc else Token.encl_loc (MLast.loc_of_expr e1) loc
+          if top then loc else Stdpp.encl_loc (MLast.loc_of_expr e1) loc
         in
         <:expr< [$e1$ :: $loop False el$] >> ]
 ;
@@ -129,7 +129,7 @@ value mklistpat loc last =
         | None -> <:patt< [] >> ]
     | [p1 :: pl] ->
         let loc =
-          if top then loc else Token.encl_loc (MLast.loc_of_patt p1) loc
+          if top then loc else Stdpp.encl_loc (MLast.loc_of_patt p1) loc
         in
         <:patt< [$p1$ :: $loop False pl$] >> ]
 ;

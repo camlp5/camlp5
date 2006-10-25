@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.8 2006/10/25 17:56:51 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.9 2006/10/25 18:54:48 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -30,7 +30,7 @@ module Qast =
       | Loc
       | Antiquot of MLast.loc and string ]
     ;
-    value loc = Token.dummy_loc;
+    value loc = Stdpp.dummy_loc;
     value rec to_expr =
       fun
       [ Node n al ->
@@ -56,7 +56,7 @@ module Qast =
           let e =
             try Grammar.Entry.parse Pcaml.expr_eoi (Stream.of_string s) with
             [ Stdpp.Exc_located loc1 exc ->
-                let shift = Token.first_pos loc in
+                let shift = Stdpp.first_pos loc in
                 raise (Stdpp.Exc_located (Stdpp.shift_loc shift loc1) exc) ]
           in
           <:expr< $anti:e$ >> ]
@@ -84,7 +84,7 @@ module Qast =
           let p =
             try Grammar.Entry.parse Pcaml.patt_eoi (Stream.of_string s) with
             [ Stdpp.Exc_located loc1 exc ->
-                let shift = Token.first_pos loc in
+                let shift = Stdpp.first_pos loc in
                 raise (Stdpp.Exc_located (Stdpp.shift_loc shift loc1) exc) ]
           in
           <:patt< $anti:p$ >> ]
@@ -97,7 +97,7 @@ value antiquot k loc x =
     if k = "" then String.length "$"
     else String.length "$" + String.length k + String.length ":"
   in
-  Qast.Antiquot (Token.shift_loc shift loc) x
+  Qast.Antiquot (Stdpp.shift_loc shift loc) x
 ;
 
 value sig_item = Grammar.Entry.create gram "signature item";
@@ -248,7 +248,7 @@ value not_yet_warned_variant = ref True;
 value warn_variant _ =
   if not_yet_warned_variant.val then do {
     not_yet_warned_variant.val := False;
-    Pcaml.warning.val Token.dummy_loc
+    Pcaml.warning.val Stdpp.dummy_loc
       (Printf.sprintf
          "use of syntax of variants types deprecated since version 3.05");
   }
@@ -259,7 +259,7 @@ value not_yet_warned_seq = ref True;
 value warn_sequence _ =
   if not_yet_warned_seq.val then do {
     not_yet_warned_seq.val := False;
-    Pcaml.warning.val Token.dummy_loc
+    Pcaml.warning.val Stdpp.dummy_loc
       (Printf.sprintf
          "use of syntax of sequences deprecated since version 3.01.1");
   }

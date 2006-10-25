@@ -142,7 +142,7 @@ value lexer_gmake () =
   let kwt = Hashtbl.create 89
   and lexer2 kwt s =
     let (t, loc) = lexer kwt s in
-    (t, Token.make_loc loc)
+    (t, Stdpp.make_loc loc)
   in
   {Token.tok_func = Token.lexer_func_of_parser (lexer2 kwt);
    Token.tok_using = lexer_using kwt; Token.tok_removing = fun [];
@@ -165,7 +165,7 @@ and atom =
 ;
 
 value error_loc loc err =
-  Token.raise_with_loc loc (Stream.Error (err ^ " expected"))
+  Stdpp.raise_with_loc loc (Stream.Error (err ^ " expected"))
 ;
 value error se err =
   let loc =
@@ -383,7 +383,7 @@ and expr_ident_se loc s =
         if i > ibeg then expr_id loc (String.sub s ibeg (i - ibeg))
         else
           raise_with_loc
-            (make_loc (Token.first_pos loc + i - 1, Token.first_pos loc + i))
+            (make_loc (Stdpp.first_pos loc + i - 1, Stdpp.first_pos loc + i))
             (Stream.Error "expr expected")
       else if s.[i] = '.' then
         if i > ibeg then
@@ -392,7 +392,7 @@ and expr_ident_se loc s =
           <:expr< $e1$ . $e2$ >>
         else
           raise_with_loc
-            (make_loc (Token.first_pos loc + i - 1, Token.first_pos loc + i))
+            (make_loc (Stdpp.first_pos loc + i - 1, Stdpp.first_pos loc + i))
             (Stream.Error "expr expected")
       else loop ibeg (i + 1)
     in
@@ -500,7 +500,7 @@ and patt_ident_se loc s =
       if i > ibeg then patt_id loc (String.sub s ibeg (i - ibeg))
       else
         raise_with_loc
-          (make_loc (Token.first_pos loc + i - 1, Token.first_pos loc + i))
+          (make_loc (Stdpp.first_pos loc + i - 1, Stdpp.first_pos loc + i))
           (Stream.Error "patt expected")
     else if s.[i] = '.' then
       if i > ibeg then
@@ -509,7 +509,7 @@ and patt_ident_se loc s =
         <:patt< $p1$ . $p2$ >>
       else
         raise_with_loc
-          (make_loc (Token.first_pos loc + i - 1, Token.first_pos loc + i))
+          (make_loc (Stdpp.first_pos loc + i - 1, Stdpp.first_pos loc + i))
           (Stream.Error "patt expected")
     else loop ibeg (i + 1)
 and ipatt_se se =
@@ -563,7 +563,7 @@ and ctyp_ident_se loc s =
       if i > ibeg then ctyp_id loc (String.sub s ibeg (i - ibeg))
       else
         raise_with_loc
-          (make_loc (Token.first_pos loc + i - 1, Token.first_pos loc + i))
+          (make_loc (Stdpp.first_pos loc + i - 1, Stdpp.first_pos loc + i))
           (Stream.Error "ctyp expected")
     else if s.[i] = '.' then
       if i > ibeg then
@@ -572,7 +572,7 @@ and ctyp_ident_se loc s =
         <:ctyp< $t1$ . $t2$ >>
       else
         raise_with_loc
-          (make_loc (Token.first_pos loc + i - 1, Token.first_pos loc + i))
+          (make_loc (Stdpp.first_pos loc + i - 1, Stdpp.first_pos loc + i))
           (Stream.Error "ctyp expected")
     else loop ibeg (i + 1)
 and constructor_declaration_se =

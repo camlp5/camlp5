@@ -161,7 +161,7 @@ module MetaAction =
       in
       failwith (f ^ ", not impl: " ^ desc)
     ;;
-    let loc = Token.dummy_loc;;
+    let loc = Stdpp.dummy_loc;;
     let rec mlist mf =
       function
         [] -> MLast.ExUid (loc, "[]")
@@ -182,7 +182,7 @@ module MetaAction =
     ;;
     let mloc =
       MLast.ExAcc
-        (loc, MLast.ExUid (loc, "Token"), MLast.ExLid (loc, "dummy_loc"))
+        (loc, MLast.ExUid (loc, "Stdpp"), MLast.ExLid (loc, "dummy_loc"))
     ;;
     let rec mexpr =
       function
@@ -593,7 +593,7 @@ let mklistexp loc =
       [] -> MLast.ExUid (loc, "[]")
     | e1 :: el ->
         let loc =
-          if top then loc else Token.encl_loc (MLast.loc_of_expr e1) loc
+          if top then loc else Stdpp.encl_loc (MLast.loc_of_expr e1) loc
         in
         MLast.ExApp
           (loc, MLast.ExApp (loc, MLast.ExUid (loc, "::"), e1), loop false el)
@@ -607,7 +607,7 @@ let mklistpat loc =
       [] -> MLast.PaUid (loc, "[]")
     | p1 :: pl ->
         let loc =
-          if top then loc else Token.encl_loc (MLast.loc_of_patt p1) loc
+          if top then loc else Stdpp.encl_loc (MLast.loc_of_patt p1) loc
         in
         MLast.PaApp
           (loc, MLast.PaApp (loc, MLast.PaUid (loc, "::"), p1), loop false pl)
@@ -814,7 +814,7 @@ let quotify_action psl act =
     (fun e ps ->
        match ps.pattern with
          Some (MLast.PaTup (_, pl)) ->
-           let loc = Token.dummy_loc in
+           let loc = Stdpp.dummy_loc in
            let pname = pname_of_ptuple pl in
            let (pl1, el1) =
              let (l, _) =
@@ -854,7 +854,7 @@ let rec make_ctyp styp tvar =
   | STquo (loc, s) -> MLast.TyQuo (loc, s)
   | STself (loc, x) ->
       if tvar = "" then
-        Token.raise_with_loc loc
+        Stdpp.raise_with_loc loc
           (Stream.Error ("'" ^ x ^ "' illegal in anonymous entry level"))
       else MLast.TyQuo (loc, tvar)
   | STtyp t -> t
@@ -2022,13 +2022,13 @@ Grammar.extend
      [[Gramext.Stoken ("ANTIQUOT", "")],
       Gramext.action
         (fun (i : string) (loc : Token.location) ->
-           (let shift = Token.first_pos loc + String.length "$" in
+           (let shift = Stdpp.first_pos loc + String.length "$" in
             let e =
               try Grammar.Entry.parse Pcaml.expr_eoi (Stream.of_string i) with
                 Exc_located (loc, exc) ->
                   raise_with_loc (shift_loc shift loc) exc
             in
-            Pcaml.expr_reloc (Token.shift_loc shift) 0 e :
+            Pcaml.expr_reloc (Stdpp.shift_loc shift) 0 e :
             'string));
       [Gramext.Stoken ("STRING", "")],
       Gramext.action

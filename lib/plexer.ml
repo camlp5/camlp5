@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.4 2006/10/25 17:56:51 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.5 2006/10/25 18:54:48 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -418,7 +418,7 @@ value next_token_fun dfa ssd find_kwd bolpos glexr =
         match glex.tok_comm with
         [ Some list ->
             if fst loc > comm_bp then
-              let comm_loc = Token.make_loc (comm_bp, fst loc) in
+              let comm_loc = Stdpp.make_loc (comm_bp, fst loc) in
               glex.tok_comm := Some [comm_loc :: list]
             else ()
         | None -> () ];

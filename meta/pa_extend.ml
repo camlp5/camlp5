@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.4 2006/10/25 17:56:51 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.5 2006/10/25 18:54:48 deraugla Exp $ *)
 
 open Stdpp;
 
@@ -163,7 +163,7 @@ module MetaAction =
       in
       failwith (f ^ ", not impl: " ^ desc)
     ;
-    value loc = Token.dummy_loc;
+    value loc = Stdpp.dummy_loc;
     value rec mlist mf =
       fun
       [ [] -> <:expr< [] >>
@@ -179,7 +179,7 @@ module MetaAction =
       [ False -> <:expr< False >>
       | True -> <:expr< True >> ]
     ;
-    value mloc = <:expr< Token.dummy_loc >>;
+    value mloc = <:expr< Stdpp.dummy_loc >>;
     value rec mexpr =
       fun
       [ MLast.ExAcc loc e1 e2 ->
@@ -252,7 +252,7 @@ value mklistexp loc =
     [ [] -> <:expr< [] >>
     | [e1 :: el] ->
         let loc =
-          if top then loc else Token.encl_loc (MLast.loc_of_expr e1) loc
+          if top then loc else Stdpp.encl_loc (MLast.loc_of_expr e1) loc
         in
         <:expr< [$e1$ :: $loop False el$] >> ]
 ;
@@ -263,7 +263,7 @@ value mklistpat loc =
     [ [] -> <:patt< [] >>
     | [p1 :: pl] ->
         let loc =
-          if top then loc else Token.encl_loc (MLast.loc_of_patt p1) loc
+          if top then loc else Stdpp.encl_loc (MLast.loc_of_patt p1) loc
         in
         <:patt< [$p1$ :: $loop False pl$] >> ]
 ;
@@ -355,7 +355,7 @@ value quotify_action psl act =
     (fun e ps ->
        match ps.pattern with
        [ Some <:patt< ($list:pl$) >> ->
-           let loc = Token.dummy_loc in
+           let loc = Stdpp.dummy_loc in
            let pname = pname_of_ptuple pl in
            let (pl1, el1) =
              let (l, _) =
@@ -385,7 +385,7 @@ value rec make_ctyp styp tvar =
   | STquo loc s -> <:ctyp< '$s$ >>
   | STself loc x ->
       if tvar = "" then
-        Token.raise_with_loc loc
+        Stdpp.raise_with_loc loc
           (Stream.Error ("'" ^ x ^  "' illegal in anonymous entry level"))
       else <:ctyp< '$tvar$ >>
   | STtyp t -> t ]
@@ -901,13 +901,13 @@ EXTEND
   string:
     [ [ s = STRING -> <:expr< $str:s$ >>
       | i = ANTIQUOT ->
-          let shift = Token.first_pos loc + String.length "$" in
+          let shift = Stdpp.first_pos loc + String.length "$" in
           let e =
             try Grammar.Entry.parse Pcaml.expr_eoi (Stream.of_string i) with
             [ Exc_located loc exc ->
                 raise_with_loc (shift_loc shift loc) exc ]
           in
-          Pcaml.expr_reloc (Token.shift_loc shift) 0 e ] ]
+          Pcaml.expr_reloc (Stdpp.shift_loc shift) 0 e ] ]
   ;
 END;
 

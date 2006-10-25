@@ -10,11 +10,11 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: stdpp.mli,v 1.2 2006/10/25 17:56:51 deraugla Exp $ *)
+(* $Id: stdpp.mli,v 1.3 2006/10/25 18:54:48 deraugla Exp $ *)
 
 (** Standard definitions. *)
 
-type location = (int * int);
+type location = 'abstract;
 
 exception Exc_located of location and exn;
    (** [Exc_located loc e] is an encapsulation of the exception [e] with
@@ -38,7 +38,6 @@ value loc_name : ref string;
    (** Name of the location variable used in grammars and in the predefined
        quotations for OCaml syntax trees. Default: [loc] *)
 
-value raise_with_loc : location -> exn -> 'a;
 value make_loc : (int * int) -> location;
 value encl_loc : location -> location -> location;
 value loc_of_char_after : location -> location;

@@ -33,7 +33,7 @@ exception Error of string;;
 
 (** {6 Lexer type} *)
 
-type location = int * int;;
+type location = Stdpp.location;;
 type location_function = int -> location;;
   (** The type for a function associating a number of a token in a stream
       (starting from 0) to its source location. *)
@@ -42,14 +42,9 @@ type 'te lexer_func = char Stream.t -> 'te Stream.t * location_function;;
       stream to be lexed. The result is a pair of a token stream and
       a location function for this tokens stream. *)
 
-val raise_with_loc : location -> exn -> 'a;;
 val make_loc : int * int -> location;;
-val encl_loc : location -> location -> location;;
-val loc_of_char_after : location -> location;;
-val shift_loc : int -> location -> location;;
-val first_pos : location -> int;;
-val last_pos : location -> int;;
 val dummy_loc : location;;
+  (** compatibility camlp4 distributed with ocaml *)
 
 type 'te glexer =
   { tok_func : 'te lexer_func;

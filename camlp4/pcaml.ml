@@ -75,7 +75,7 @@ value input_file = ref "";
 value output_file = ref None;
 
 value warning_default_function loc txt =
-  let (bp, ep) = (Token.first_pos loc, Token.last_pos loc) in
+  let (bp, ep) = (Stdpp.first_pos loc, Stdpp.last_pos loc) in
   do { Printf.eprintf "<W> loc %d %d: %s\n" bp ep txt; flush stderr }
 ;
 
@@ -110,7 +110,7 @@ exception Qerror of string and err_ctx and exn;
 value expand_quotation loc expander shift name str =
   let new_warning =
     let warn = warning.val in
-    fun loc txt -> warn (Token.shift_loc shift loc) txt
+    fun loc txt -> warn (Stdpp.shift_loc shift loc) txt
   in
   apply_with_var warning new_warning
     (fun () ->
@@ -120,7 +120,7 @@ value expand_quotation loc expander shift name str =
            raise (Stdpp.Exc_located (Stdpp.shift_loc shift loc) exc1)
        | exc ->
            let exc1 = Qerror name Expanding exc in
-           Token.raise_with_loc  loc exc1 ])
+           Stdpp.raise_with_loc  loc exc1 ])
 ;
 
 value parse_quotation_result entry loc shift name str =
@@ -131,13 +131,13 @@ value parse_quotation_result entry loc shift name str =
   | Stdpp.Exc_located iloc (Qerror _ Expanding exc) ->
       let ctx = ParsingResult iloc str in
       let exc1 = Qerror name ctx exc in
-      Token.raise_with_loc loc exc1
+      Stdpp.raise_with_loc loc exc1
   | Stdpp.Exc_located _ (Qerror _ _ _ as exc) ->
-      Token.raise_with_loc loc exc
+      Stdpp.raise_with_loc loc exc
   | Stdpp.Exc_located iloc exc ->
       let ctx = ParsingResult iloc str in
       let exc1 = Qerror name ctx exc in
-      Token.raise_with_loc loc exc1 ]
+      Stdpp.raise_with_loc loc exc1 ]
 ;
 
 value handle_quotation loc proj in_expr entry reloc (name, str) =
@@ -149,10 +149,10 @@ value handle_quotation loc proj in_expr entry reloc (name, str) =
   let expander =
     try Quotation.find name with exc ->
       let exc1 = Qerror name Finding exc in
-      let loc = (Token.first_pos loc, Token.first_pos loc + shift) in
+      let loc = (Stdpp.first_pos loc, Stdpp.first_pos loc + shift) in
       raise (Stdpp.Exc_located (Stdpp.make_loc loc) exc1)
   in
-  let shift = Token.first_pos loc + shift in
+  let shift = Stdpp.first_pos loc + shift in
   let ast =
     match expander with
     [ Quotation.ExStr f ->
@@ -175,8 +175,8 @@ value parse_locate entry shift str =
 
 value handle_locate loc entry ast_f (pos, str) =
   let s = str in
-  let loc = Token.make_loc (pos, pos + String.length s) in
-  let x = parse_locate entry (Token.first_pos loc) s in
+  let loc = Stdpp.make_loc (pos, pos + String.length s) in
+  let x = parse_locate entry pos s in
   ast_f loc x
 ;
 

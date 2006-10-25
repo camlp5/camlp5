@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.4 2006/10/25 17:56:51 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.5 2006/10/25 18:54:48 deraugla Exp $ *)
 
 open Stdpp;
 open Gramext;
@@ -203,12 +203,12 @@ external grammar_obj : g -> grammar Token.t = "%identity";
 value floc = ref (fun _ -> failwith "internal error when computing location");
 value loc_of_token_interval bp ep =
   if bp == ep then
-    if bp == 0 then Token.make_loc (0, 1)
-    else Token.loc_of_char_after (floc.val (bp - 1))
+    if bp == 0 then Stdpp.make_loc (0, 1)
+    else Stdpp.loc_of_char_after (floc.val (bp - 1))
   else
     let loc1 = floc.val bp in
     let loc2 = floc.val (pred ep) in
-    Token.encl_loc loc1 loc2
+    Stdpp.encl_loc loc1 loc2
 ;
 
 value rec name_of_symbol entry =
@@ -734,9 +734,9 @@ value parse_parsable entry efun (cs, (ts, fun_loc)) =
       let cnt = Stream.count ts in
       let loc = fun_loc cnt in
       if token_count.val - 1 <= cnt then loc
-      else Token.encl_loc loc (fun_loc (token_count.val - 1))
+      else Stdpp.encl_loc loc (fun_loc (token_count.val - 1))
     with _ ->
-      Token.make_loc (Stream.count cs, Stream.count cs + 1)
+      Stdpp.make_loc (Stream.count cs, Stream.count cs + 1)
   in
   do {
     floc.val := fun_loc;
@@ -749,12 +749,12 @@ value parse_parsable entry efun (cs, (ts, fun_loc)) =
         let loc = get_loc () in
         do {
           restore ();
-          Token.raise_with_loc loc
+          Stdpp.raise_with_loc loc
              (Stream.Error ("illegal begin of " ^ entry.ename))
         }
     | Stream.Error _ as exc ->
         let loc = get_loc () in
-        do { restore (); Token.raise_with_loc loc exc }
+        do { restore (); Stdpp.raise_with_loc loc exc }
     | exc ->
         let loc = (Stream.count cs, Stream.count cs + 1) in
         do { restore (); raise_with_loc (make_loc loc) exc } ]

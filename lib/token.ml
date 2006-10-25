@@ -10,14 +10,14 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.ml,v 1.7 2006/10/25 17:56:51 deraugla Exp $ *)
+(* $Id: token.ml,v 1.8 2006/10/25 18:54:48 deraugla Exp $ *)
 
 type t = (string * string);
 type pattern = (string * string);
 
 exception Error of string;
 
-type location = (int * int);
+type location = Stdpp.location;
 type location_function = int -> location;
 type lexer_func 'te = Stream.t char -> (Stream.t 'te * location_function);
 
@@ -37,14 +37,8 @@ type lexer =
     text : pattern -> string }
 ;
 
-value raise_with_loc loc = Stdpp.raise_with_loc (Stdpp.make_loc loc);
-value make_loc x = x;
-value encl_loc (bp1, ep1) (bp2, ep2) = (min bp1 bp2, max ep1 ep2);
-value loc_of_char_after (bp, ep) = (ep, ep + 1);
-value dummy_loc = (0, 0);
-value shift_loc sh (bp, ep) = (sh + bp, sh + ep);
-value first_pos (bp, ep) = bp;
-value last_pos (bp, ep) = ep;
+value make_loc = Stdpp.make_loc;
+value dummy_loc = Stdpp.dummy_loc;
 
 value lexer_text (con, prm) =
   if con = "" then "'" ^ prm ^ "'"

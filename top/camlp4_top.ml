@@ -59,7 +59,7 @@ value highlight_locations lb loc1 loc2 =
 
 value print_location lb loc =
   if String.length Toploop.input_name.val = 0 then
-    highlight_locations lb (Token.first_pos loc, Token.last_pos loc) (-1, -1)
+    highlight_locations lb (Stdpp.first_pos loc, Stdpp.last_pos loc) (-1, -1)
   else Toploop.print_location Format.err_formatter (Ast2pt.mkloc loc)
 ;
 
@@ -90,11 +90,7 @@ value wrap f shfn lb =
   | x ->
       let x =
         match x with
-        [ Exc_located loc x -> do {
-            let loc = (Stdpp.first_pos loc, Stdpp.last_pos loc) in
-            print_location lb (Token.make_loc loc);
-            x
-          }
+        [ Exc_located loc x -> do { print_location lb loc; x }
         | x -> x ]
       in
       do {

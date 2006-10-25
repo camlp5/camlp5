@@ -109,7 +109,7 @@ let mklistexp loc last =
         end
     | e1 :: el ->
         let loc =
-          if top then loc else Token.encl_loc (MLast.loc_of_expr e1) loc
+          if top then loc else Stdpp.encl_loc (MLast.loc_of_expr e1) loc
         in
         MLast.ExApp
           (loc, MLast.ExApp (loc, MLast.ExUid (loc, "::"), e1), loop false el)
@@ -127,7 +127,7 @@ let mklistpat loc last =
         end
     | p1 :: pl ->
         let loc =
-          if top then loc else Token.encl_loc (MLast.loc_of_patt p1) loc
+          if top then loc else Stdpp.encl_loc (MLast.loc_of_patt p1) loc
         in
         MLast.PaApp
           (loc, MLast.PaApp (loc, MLast.PaUid (loc, "::"), p1), loop false pl)

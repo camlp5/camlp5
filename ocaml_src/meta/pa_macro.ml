@@ -64,7 +64,7 @@ let defined = ref ["CAMLP4S", None];;
 
 let is_defined i = List.mem_assoc i !defined;;
 
-let loc = Token.dummy_loc;;
+let loc = Stdpp.dummy_loc;;
 
 let subst mloc env =
   let rec loop =
@@ -106,7 +106,7 @@ let substp mloc env =
         let ppl = List.map (fun (p, e) -> p, loop e) pel in
         MLast.PaRec (loc, ppl)
     | x ->
-        Token.raise_with_loc mloc
+        Stdpp.raise_with_loc mloc
           (Failure
              "this macro cannot be used in a pattern (see its definition)")
   in
@@ -114,7 +114,7 @@ let substp mloc env =
 ;;
 
 let incorrect_number loc l1 l2 =
-  Token.raise_with_loc loc
+  Stdpp.raise_with_loc loc
     (Failure
        (Printf.sprintf "expected %d parameters; found %d" (List.length l2)
           (List.length l1)))
@@ -357,7 +357,7 @@ Grammar.extend
      [[Gramext.Stoken ("LIDENT", "__LOCATION__")],
       Gramext.action
         (fun _ (loc : Token.location) ->
-           (let (bp, ep) = Token.first_pos loc, Token.last_pos loc in
+           (let (bp, ep) = Stdpp.first_pos loc, Stdpp.last_pos loc in
             let bp = string_of_int bp in
             let ep = string_of_int ep in
             MLast.ExTup

@@ -14,7 +14,7 @@
 
 (** Standard definitions. *)
 
-type location = int * int;;
+type location;;
 
 exception Exc_located of location * exn;;
    (** [Exc_located loc e] is an encapsulation of the exception [e] with
@@ -38,7 +38,6 @@ val loc_name : string ref;;
    (** Name of the location variable used in grammars and in the predefined
        quotations for OCaml syntax trees. Default: [loc] *)
 
-val raise_with_loc : location -> exn -> 'a;;
 val make_loc : int * int -> location;;
 val encl_loc : location -> location -> location;;
 val loc_of_char_after : location -> location;;

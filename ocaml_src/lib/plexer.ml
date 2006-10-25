@@ -619,7 +619,7 @@ let next_token_fun dfa ssd find_kwd bolpos glexr =
       begin match glex.tok_comm with
         Some list ->
           if fst loc > comm_bp then
-            let comm_loc = Token.make_loc (comm_bp, fst loc) in
+            let comm_loc = Stdpp.make_loc (comm_bp, fst loc) in
             glex.tok_comm <- Some (comm_loc :: list)
       | None -> ()
       end;

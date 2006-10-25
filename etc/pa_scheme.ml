@@ -1,5 +1,5 @@
 ; camlp4 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.4 2006/10/25 17:56:51 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.5 2006/10/25 18:54:48 deraugla Exp $
 
 (open Pcaml)
 (open Stdpp)
@@ -253,7 +253,7 @@
         (lexer2
          (lambda (kwt s)
            (let (((values t loc) (lexer kwt s)))
-             (values t (Token.make_loc loc))))))
+             (values t (Stdpp.make_loc loc))))))
      {(Token.tok_func (Token.lexer_func_of_parser (lexer2 kwt)))
       (Token.tok_using (lexer_using kwt))
       (Token.tok_removing (lambda))
@@ -286,7 +286,7 @@
      (Srec loc _) (Sstring loc _) (Stid loc _) (Suid loc _))
     loc)))
 (define (error_loc loc err)
-  (Token.raise_with_loc loc (Stream.Error (^ err " expected"))))
+  (Stdpp.raise_with_loc loc (Stream.Error (^ err " expected"))))
 (define (error se err) (error_loc (loc_of_sexpr se) err))
 
 (define strm_n "strm__")
@@ -640,7 +640,7 @@
     ([se] (expr_se se))
     ((sel)
       (let* ((el (List.map expr_se sel))
-             (loc (Token.encl_loc (loc_of_sexpr (List.hd sel)) loc)))
+             (loc (Stdpp.encl_loc (loc_of_sexpr (List.hd sel)) loc)))
          <:expr< do { $list:el$ } >>))))
   (let_binding_se
    (lambda_match
@@ -659,7 +659,7 @@
                    (List.fold_right
                     (lambda (se e)
                       (let* ((loc
-                              (Token.encl_loc (loc_of_sexpr se)
+                              (Stdpp.encl_loc (loc_of_sexpr se)
                                               (MLast.loc_of_expr e)))
                              (p (ipatt_se se)))
                         <:expr< fun $p$ -> $e$ >>))
@@ -840,7 +840,7 @@
              ([se] (ctyp_se se))
              ([se . sel] 
                (let* ((t1 (ctyp_se se))
-                      (loc (Token.encl_loc (loc_of_sexpr se) loc))
+                      (loc (Stdpp.encl_loc (loc_of_sexpr se) loc))
                       (t2 (loop sel)))
                    <:ctyp< $t1$ -> $t2$ >>)))))
         (loop sel)))

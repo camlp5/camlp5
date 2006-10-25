@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_phony.ml,v 1.2 2006/10/25 15:55:31 deraugla Exp $ *)
+(* $Id: q_phony.ml,v 1.3 2006/10/25 18:54:48 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -23,14 +23,14 @@ Quotation.add ""
           if t.val = "" then "<<" ^ s ^ ">>"
           else "<:" ^ t.val ^ "<" ^ s ^ ">>"
         in
-        let loc = Token.dummy_loc in
+        let loc = Stdpp.dummy_loc in
         <:expr< $uid:t$ >>,
       fun s ->
         let t =
           if t.val = "" then "<<" ^ s ^ ">>"
           else "<:" ^ t.val ^ "<" ^ s ^ ">>"
         in
-        let loc = Token.dummy_loc in
+        let loc = Stdpp.dummy_loc in
         <:patt< $uid:t$ >>))
 ;
 
