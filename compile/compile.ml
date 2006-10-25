@@ -1,5 +1,5 @@
 (* camlp4r *)
-(* $Id: compile.ml,v 1.2 2006/09/29 12:23:10 deraugla Exp $ *)
+(* $Id: compile.ml,v 1.3 2006/10/25 13:23:53 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -101,7 +101,7 @@ value nth_patt_of_act (e, n) =
   let patt_list =
     loop e where rec loop =
       fun
-      [ <:expr< fun (loc : (int * int)) -> $_$ >> -> []
+      [ <:expr< fun (loc : Token.location) -> $_$ >> -> []
       | <:expr< fun ($p$ : $_$) -> $e$ >> -> [p :: loop e]
       | <:expr< fun $p$ -> $e$ >> -> [p :: loop e]
       | _ -> failwith "nth_patt_of_act" ]
@@ -111,14 +111,14 @@ value nth_patt_of_act (e, n) =
 
 value rec last_patt_of_act =
   fun
-  [ <:expr< fun ($p$ : $_$) (loc : (int * int)) -> $_$ >> -> p
+  [ <:expr< fun ($p$ : $_$) (loc : Token.location) -> $_$ >> -> p
   | <:expr< fun $_$ -> $e$ >> -> last_patt_of_act e
   | _ -> failwith "last_patt_of_act" ]
 ;
 
 value rec final_action =
   fun
-  [ <:expr< fun (loc : (int * int)) -> ($e$ : $_$) >> -> e
+  [ <:expr< fun (loc : Token.location) -> ($e$ : $_$) >> -> e
   | <:expr< fun $_$ -> $e$ >> -> final_action e
   | _ -> failwith "final_action" ]
 ;
