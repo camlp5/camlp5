@@ -383,7 +383,7 @@ and expr_ident_se loc s =
         if i > ibeg then expr_id loc (String.sub s ibeg (i - ibeg))
         else
           raise_with_loc
-            (Token.first_pos loc + i - 1, Token.first_pos loc + i)
+            (make_loc (Token.first_pos loc + i - 1, Token.first_pos loc + i))
             (Stream.Error "expr expected")
       else if s.[i] = '.' then
         if i > ibeg then
@@ -392,7 +392,7 @@ and expr_ident_se loc s =
           <:expr< $e1$ . $e2$ >>
         else
           raise_with_loc
-            (Token.first_pos loc + i - 1, Token.first_pos loc + i)
+            (make_loc (Token.first_pos loc + i - 1, Token.first_pos loc + i))
             (Stream.Error "expr expected")
       else loop ibeg (i + 1)
     in
@@ -499,7 +499,8 @@ and patt_ident_se loc s =
     if i = String.length s then
       if i > ibeg then patt_id loc (String.sub s ibeg (i - ibeg))
       else
-        raise_with_loc (Token.first_pos loc + i - 1, Token.first_pos loc + i)
+        raise_with_loc
+          (make_loc (Token.first_pos loc + i - 1, Token.first_pos loc + i))
           (Stream.Error "patt expected")
     else if s.[i] = '.' then
       if i > ibeg then
@@ -507,7 +508,8 @@ and patt_ident_se loc s =
         let p2 = loop (i + 1) (i + 1) in
         <:patt< $p1$ . $p2$ >>
       else
-        raise_with_loc (Token.first_pos loc + i - 1, Token.first_pos loc + i)
+        raise_with_loc
+          (make_loc (Token.first_pos loc + i - 1, Token.first_pos loc + i))
           (Stream.Error "patt expected")
     else loop ibeg (i + 1)
 and ipatt_se se =
@@ -560,7 +562,8 @@ and ctyp_ident_se loc s =
     if i = String.length s then
       if i > ibeg then ctyp_id loc (String.sub s ibeg (i - ibeg))
       else
-        raise_with_loc (Token.first_pos loc + i - 1, Token.first_pos loc + i)
+        raise_with_loc
+          (make_loc (Token.first_pos loc + i - 1, Token.first_pos loc + i))
           (Stream.Error "ctyp expected")
     else if s.[i] = '.' then
       if i > ibeg then
@@ -568,7 +571,8 @@ and ctyp_ident_se loc s =
         let t2 = loop (i + 1) (i + 1) in
         <:ctyp< $t1$ . $t2$ >>
       else
-        raise_with_loc (Token.first_pos loc + i - 1, Token.first_pos loc + i)
+        raise_with_loc
+          (make_loc (Token.first_pos loc + i - 1, Token.first_pos loc + i))
           (Stream.Error "ctyp expected")
     else loop ibeg (i + 1)
 and constructor_declaration_se =

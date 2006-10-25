@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.3 2006/10/25 15:55:31 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.4 2006/10/25 17:56:51 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -121,7 +121,9 @@ and end_exponent_part_under len =
 ;
 
 value error_on_unknown_keywords = ref False;
-value err loc msg = Stdpp.raise_with_loc loc (Token.Error msg);
+value err loc msg =
+  Stdpp.raise_with_loc (Stdpp.make_loc loc) (Token.Error msg)
+;
 
 value next_token_fun dfa ssd find_kwd bolpos glexr =
   let keyword_or_error loc s =

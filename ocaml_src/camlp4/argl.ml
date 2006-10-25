@@ -105,11 +105,13 @@ let loc_fmt =
 ;;
 
 let print_location loc =
-  let loc = Token.first_pos loc, Token.last_pos loc in
+  let bp = Token.first_pos loc in
+  let ep = Token.last_pos loc in
   if !(Pcaml.input_file) <> "-" then
+    let loc = Stdpp.make_loc (bp, ep) in
     let (fname, line, bp, ep) = Stdpp.line_of_loc !(Pcaml.input_file) loc in
     eprintf loc_fmt fname line bp ep
-  else eprintf "At location %d-%d\n" (fst loc) (snd loc)
+  else eprintf "At location %d-%d\n" bp ep
 ;;
 
 let print_warning loc s = print_location loc; eprintf "Warning: %s\n" s;;
@@ -358,8 +360,9 @@ let go () =
       Format.open_vbox 0;
       let exc =
         match exc with
-          Stdpp.Exc_located ((bp, ep), exc) ->
-            print_location (Token.make_loc (bp, ep)); exc
+          Stdpp.Exc_located (loc, exc) ->
+            let loc = Stdpp.first_pos loc, Stdpp.last_pos loc in
+            print_location (Token.make_loc loc); exc
         | _ -> exc
       in
       report_error exc; Format.close_box (); Format.print_newline (); exit 2

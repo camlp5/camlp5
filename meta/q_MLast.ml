@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.7 2006/10/25 15:55:31 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.8 2006/10/25 17:56:51 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -55,9 +55,9 @@ module Qast =
       | Antiquot loc s ->
           let e =
             try Grammar.Entry.parse Pcaml.expr_eoi (Stream.of_string s) with
-            [ Stdpp.Exc_located (bp, ep) exc ->
+            [ Stdpp.Exc_located loc1 exc ->
                 let shift = Token.first_pos loc in
-                raise (Stdpp.Exc_located (shift + bp, shift + ep) exc) ]
+                raise (Stdpp.Exc_located (Stdpp.shift_loc shift loc1) exc) ]
           in
           <:expr< $anti:e$ >> ]
     and to_expr_label (l, a) = (<:patt< MLast.$lid:l$ >>, to_expr a);
@@ -83,9 +83,9 @@ module Qast =
       | Antiquot loc s ->
           let p =
             try Grammar.Entry.parse Pcaml.patt_eoi (Stream.of_string s) with
-            [ Stdpp.Exc_located (bp, ep) exc ->
+            [ Stdpp.Exc_located loc1 exc ->
                 let shift = Token.first_pos loc in
-                raise (Stdpp.Exc_located (shift + bp, shift + ep) exc) ]
+                raise (Stdpp.Exc_located (Stdpp.shift_loc shift loc1) exc) ]
           in
           <:patt< $anti:p$ >> ]
     and to_patt_label (l, a) = (<:patt< MLast.$lid:l$ >>, to_patt a);

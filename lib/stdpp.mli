@@ -10,22 +10,24 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: stdpp.mli,v 1.1 2006/09/29 04:45:49 deraugla Exp $ *)
+(* $Id: stdpp.mli,v 1.2 2006/10/25 17:56:51 deraugla Exp $ *)
 
 (** Standard definitions. *)
 
-exception Exc_located of (int * int) and exn;
+type location = (int * int);
+
+exception Exc_located of location and exn;
    (** [Exc_located loc e] is an encapsulation of the exception [e] with
        the input location [loc]. To be used in quotation expanders
        and in grammars to specify some input location for an error.
        Do not raise this exception directly: rather use the following
        function [raise_with_loc]. *)
 
-value raise_with_loc : (int * int) -> exn -> 'a;
+value raise_with_loc : location -> exn -> 'a;
    (** [raise_with_loc loc e], if [e] is already the exception [Exc_located],
        re-raise it, else raise the exception [Exc_located loc e]. *)
 
-value line_of_loc : string -> (int * int) -> (string * int * int * int);
+value line_of_loc : string -> location -> (string * int * int * int);
    (** [line_of_loc fname loc] reads the file [fname] up to the
        location [loc] and returns the real input file, the line number
        and the characters location in the line; the real input file
@@ -35,3 +37,12 @@ value line_of_loc : string -> (int * int) -> (string * int * int * int);
 value loc_name : ref string;
    (** Name of the location variable used in grammars and in the predefined
        quotations for OCaml syntax trees. Default: [loc] *)
+
+value raise_with_loc : location -> exn -> 'a;
+value make_loc : (int * int) -> location;
+value encl_loc : location -> location -> location;
+value loc_of_char_after : location -> location;
+value shift_loc : int -> location -> location;
+value first_pos : location -> int;
+value last_pos : location -> int;
+value dummy_loc : location;

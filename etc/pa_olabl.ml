@@ -187,7 +187,9 @@ module Plexer =
     ;
     value error_on_unknown_keywords = ref False;
     value next_token_fun find_id_kwd find_spe_kwd =
-      let err bp ep msg = Stdpp.raise_with_loc (bp, ep) (Token.Error msg) in
+      let err bp ep msg =
+        Stdpp.raise_with_loc (Stdpp.make_loc (bp, ep)) (Token.Error msg)
+      in
       let keyword_or_error (bp, ep) s =
         try ("", find_spe_kwd s) with
         [ Not_found ->

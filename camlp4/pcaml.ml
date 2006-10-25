@@ -100,7 +100,10 @@ List.iter (fun (n, f) -> Quotation.add n f)
 value quotation_dump_file = ref (None : option string);
 
 type err_ctx =
-  [ Finding | Expanding | ParsingResult of (int * int) and string | Locating ]
+  [ Finding
+  | Expanding
+  | ParsingResult of Stdpp.location and string
+  | Locating ]
 ;
 exception Qerror of string and err_ctx and exn;
 
@@ -112,9 +115,9 @@ value expand_quotation loc expander shift name str =
   apply_with_var warning new_warning
     (fun () ->
        try expander str with
-       [ Stdpp.Exc_located (p1, p2) exc ->
+       [ Stdpp.Exc_located loc exc ->
            let exc1 = Qerror name Expanding exc in
-           raise (Stdpp.Exc_located (shift + p1, shift + p2) exc1)
+           raise (Stdpp.Exc_located (Stdpp.shift_loc shift loc) exc1)
        | exc ->
            let exc1 = Qerror name Expanding exc in
            Token.raise_with_loc  loc exc1 ])
@@ -124,7 +127,7 @@ value parse_quotation_result entry loc shift name str =
   let cs = Stream.of_string str in
   try Grammar.Entry.parse entry cs with
   [ Stdpp.Exc_located iloc (Qerror _ Locating _ as exc) ->
-      raise (Stdpp.Exc_located (shift + fst iloc, shift + snd iloc) exc)
+      raise (Stdpp.Exc_located (Stdpp.shift_loc shift iloc) exc)
   | Stdpp.Exc_located iloc (Qerror _ Expanding exc) ->
       let ctx = ParsingResult iloc str in
       let exc1 = Qerror name ctx exc in
@@ -147,7 +150,7 @@ value handle_quotation loc proj in_expr entry reloc (name, str) =
     try Quotation.find name with exc ->
       let exc1 = Qerror name Finding exc in
       let loc = (Token.first_pos loc, Token.first_pos loc + shift) in
-      raise (Stdpp.Exc_located loc exc1)
+      raise (Stdpp.Exc_located (Stdpp.make_loc loc) exc1)
   in
   let shift = Token.first_pos loc + shift in
   let ast =
@@ -164,10 +167,10 @@ value handle_quotation loc proj in_expr entry reloc (name, str) =
 value parse_locate entry shift str =
   let cs = Stream.of_string str in
   try Grammar.Entry.parse entry cs with
-  [ Stdpp.Exc_located (p1, p2) exc ->
+  [ Stdpp.Exc_located loc exc ->
       let ctx = Locating in
       let exc1 = Qerror (Grammar.Entry.name entry) ctx exc in
-      raise (Stdpp.Exc_located (shift + p1, shift + p2) exc1) ]
+      raise (Stdpp.Exc_located (Stdpp.shift_loc shift loc) exc1) ]
 ;
 
 value handle_locate loc entry ast_f (pos, str) =
@@ -236,7 +239,8 @@ value report_quotation_error name ctx =
        | Locating -> "parsing" ])
       name;
     match ctx with
-    [ ParsingResult (bp, ep) str ->
+    [ ParsingResult loc str ->
+        let (bp, ep) = (Stdpp.first_pos loc, Stdpp.last_pos loc) in
         match quotation_dump_file.val with
         [ Some dump_file ->
             do {

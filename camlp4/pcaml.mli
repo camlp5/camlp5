@@ -96,7 +96,10 @@ value rename_id : ref (string -> string);
 
 (** Allow user to catch exceptions in quotations *)
 type err_ctx =
-  [ Finding | Expanding | ParsingResult of (int * int) and string | Locating ]
+  [ Finding
+  | Expanding
+  | ParsingResult of Stdpp.location and string
+  | Locating ]
 ;
 exception Qerror of string and err_ctx and exn;
 

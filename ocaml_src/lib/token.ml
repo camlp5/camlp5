@@ -37,7 +37,7 @@ type lexer =
     text : pattern -> string }
 ;;
 
-let raise_with_loc = Stdpp.raise_with_loc;;
+let raise_with_loc loc = Stdpp.raise_with_loc (Stdpp.make_loc loc);;
 let make_loc x = x;;
 let encl_loc (bp1, ep1) (bp2, ep2) = min bp1 bp2, max ep1 ep2;;
 let loc_of_char_after (bp, ep) = ep, ep + 1;;

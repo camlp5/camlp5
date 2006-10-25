@@ -91,6 +91,7 @@ value wrap f shfn lb =
       let x =
         match x with
         [ Exc_located loc x -> do {
+            let loc = (Stdpp.first_pos loc, Stdpp.last_pos loc) in
             print_location lb (Token.make_loc loc);
             x
           }

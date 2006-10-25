@@ -111,7 +111,8 @@ value digits kind bp len =
   parser
   [ [: d = kind; s :] -> ("INT", digits_under kind (Buff.store len d) s)
   | [: :] ep ->
-      raise_with_loc (bp, ep) (Failure "ill-formed integer constant") ]
+      raise_with_loc (make_loc (bp, ep))
+        (Failure "ill-formed integer constant") ]
 ;
 
 value base_number kwt bp len =
@@ -133,7 +134,8 @@ value char_or_quote_id x =
   [ [: `''' :] -> ("CHAR", String.make 1 x)
   | [: s :] ep ->
       if List.mem x no_ident then
-        Stdpp.raise_with_loc (ep - 2, ep - 1) (Stream.Error "bad quote")
+        Stdpp.raise_with_loc (Stdpp.make_loc (ep - 2, ep - 1))
+          (Stream.Error "bad quote")
       else
         let len = Buff.store (Buff.store 0 ''') x in
         let (s, dot) = ident len s in
@@ -168,7 +170,8 @@ value rec lexer kwt = parser [: t = lexer0 kwt; _ = no_dot :] -> t
 and no_dot =
   parser
   [ [: `'.' :] ep ->
-      Stdpp.raise_with_loc (ep - 1, ep) (Stream.Error "bad dot")
+      Stdpp.raise_with_loc (Stdpp.make_loc (ep - 1, ep))
+        (Stream.Error "bad dot")
   | [: :] -> () ]
 and lexer0 kwt =
   parser bp

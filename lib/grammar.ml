@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.3 2006/10/25 15:55:31 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.4 2006/10/25 17:56:51 deraugla Exp $ *)
 
 open Stdpp;
 open Gramext;
@@ -757,7 +757,7 @@ value parse_parsable entry efun (cs, (ts, fun_loc)) =
         do { restore (); Token.raise_with_loc loc exc }
     | exc ->
         let loc = (Stream.count cs, Stream.count cs + 1) in
-        do { restore (); raise_with_loc loc exc } ]
+        do { restore (); raise_with_loc (make_loc loc) exc } ]
   }
 ;
 

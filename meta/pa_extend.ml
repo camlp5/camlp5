@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.3 2006/10/25 15:55:31 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.4 2006/10/25 17:56:51 deraugla Exp $ *)
 
 open Stdpp;
 
@@ -904,8 +904,8 @@ EXTEND
           let shift = Token.first_pos loc + String.length "$" in
           let e =
             try Grammar.Entry.parse Pcaml.expr_eoi (Stream.of_string i) with
-            [ Exc_located (bp, ep) exc ->
-                raise_with_loc (shift + bp, shift + ep) exc ]
+            [ Exc_located loc exc ->
+                raise_with_loc (shift_loc shift loc) exc ]
           in
           Pcaml.expr_reloc (Token.shift_loc shift) 0 e ] ]
   ;

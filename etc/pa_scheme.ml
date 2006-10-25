@@ -1,5 +1,5 @@
 ; camlp4 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.3 2006/10/25 15:55:31 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.4 2006/10/25 17:56:51 deraugla Exp $
 
 (open Pcaml)
 (open Stdpp)
@@ -99,7 +99,8 @@
   (parser
    (((d kind) s) (values "INT" (digits_under kind (Buff.store len d) s)))
    (() ep
-    (raise_with_loc (values bp ep) (Failure "ill-formed integer constant")))))
+    (raise_with_loc (make_loc (values bp ep))
+                    (Failure "ill-formed integer constant")))))
 
 (define (base_number kwt bp len)
   (parser
@@ -118,7 +119,7 @@
    (((` ''')) (values "CHAR" (String.make 1 x)))
    ((s) ep
     (if (List.mem x no_ident)
-        (Stdpp.raise_with_loc (values (- ep 2) (- ep 1))
+        (Stdpp.raise_with_loc (Stdpp.make_loc (values (- ep 2) (- ep 1)))
          (Stream.Error "bad quote"))
         (let* ((len (Buff.store (Buff.store 0 ''') x))
                ((values s dot) (ident len s)))
@@ -155,7 +156,8 @@
   (no_dot
     (parser
      (((` '.')) ep
-      (Stdpp.raise_with_loc (values (- ep 1) ep) (Stream.Error "bad dot")))
+      (Stdpp.raise_with_loc (Stdpp.make_loc (values (- ep 1) ep))
+                            (Stream.Error "bad dot")))
      (() ())))
   ((lexer0 kwt)
     (parser bp

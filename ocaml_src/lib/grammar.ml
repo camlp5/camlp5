@@ -819,7 +819,7 @@ let parse_parsable entry efun (cs, (ts, fun_loc)) =
       let loc = get_loc () in restore (); Token.raise_with_loc loc exc
   | exc ->
       let loc = Stream.count cs, Stream.count cs + 1 in
-      restore (); raise_with_loc loc exc
+      restore (); raise_with_loc (make_loc loc) exc
 ;;
 
 let wrap_parse entry efun cs =

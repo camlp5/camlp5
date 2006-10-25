@@ -96,7 +96,7 @@ val rename_id : (string -> string) ref;;
 type err_ctx =
     Finding
   | Expanding
-  | ParsingResult of (int * int) * string
+  | ParsingResult of Stdpp.location * string
   | Locating
 ;;
 exception Qerror of string * err_ctx * exn;;

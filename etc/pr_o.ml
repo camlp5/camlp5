@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_o.ml,v 1.4 2006/10/25 17:27:43 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.5 2006/10/25 17:56:51 deraugla Exp $ *)
 
 open Pcaml;
 open Spretty;
@@ -344,7 +344,7 @@ value raise_match_failure loc k =
   let (bp, ep) = (Token.first_pos loc, Token.last_pos loc) in
   let (fname, line, char, _) =
     if Pcaml.input_file.val <> "-" then
-      Stdpp.line_of_loc Pcaml.input_file.val (bp, ep)
+      Stdpp.line_of_loc Pcaml.input_file.val (Stdpp.make_loc (bp, ep))
     else
       ("-", 1, bp, ep)
   in

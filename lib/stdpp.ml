@@ -10,9 +10,11 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: stdpp.ml,v 1.1 2006/09/29 04:45:49 deraugla Exp $ *)
+(* $Id: stdpp.ml,v 1.2 2006/10/25 17:56:51 deraugla Exp $ *)
 
-exception Exc_located of (int * int) and exn;
+type location = (int * int);
+
+exception Exc_located of location and exn;
 
 value raise_with_loc loc exc =
   match exc with
@@ -77,3 +79,11 @@ value line_of_loc fname (bp, ep) =
 ;
 
 value loc_name = ref "loc";
+
+value make_loc x = x;
+value encl_loc (bp1, ep1) (bp2, ep2) = (min bp1 bp2, max ep1 ep2);
+value loc_of_char_after (bp, ep) = (ep, ep + 1);
+value dummy_loc = (0, 0);
+value shift_loc sh (bp, ep) = (sh + bp, sh + ep);
+value first_pos (bp, ep) = bp;
+value last_pos (bp, ep) = ep;

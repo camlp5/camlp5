@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.ml,v 1.6 2006/10/25 17:27:43 deraugla Exp $ *)
+(* $Id: token.ml,v 1.7 2006/10/25 17:56:51 deraugla Exp $ *)
 
 type t = (string * string);
 type pattern = (string * string);
@@ -37,7 +37,7 @@ type lexer =
     text : pattern -> string }
 ;
 
-value raise_with_loc = Stdpp.raise_with_loc;
+value raise_with_loc loc = Stdpp.raise_with_loc (Stdpp.make_loc loc);
 value make_loc x = x;
 value encl_loc (bp1, ep1) (bp2, ep2) = (min bp1 bp2, max ep1 ep2);
 value loc_of_char_after (bp, ep) = (ep, ep + 1);
