@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_extend.ml,v 1.1 2006/09/29 04:45:49 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.2 2006/10/25 13:16:47 deraugla Exp $ *)
 
 open Pcaml;
 open Spretty;
@@ -99,7 +99,7 @@ value unassoc =
 
 value rec unaction =
   fun
-  [ <:expr< fun ($lid:locp$ : (int * int)) -> ($a$ : $_$) >>
+  [ <:expr< fun ($lid:locp$ : Token.location) -> ($a$ : $_$) >>
     when locp = Stdpp.loc_name.val ->
       let ao =
         match a with

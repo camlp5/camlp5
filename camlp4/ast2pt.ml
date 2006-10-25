@@ -836,12 +836,24 @@ and class_str_item c l =
 ;
 
 value interf fname ast = do {
+(*
+  Drawback: if file name correctly set, OCaml error messages from this
+  Camlp4 version are incorrectly displayed (source positions with lines
+  and columns not recomputed):
+
   glob_fname.val := fname;
+*)
   List.fold_right sig_item ast []
 };
 
 value implem fname ast = do {
+(*
+  Drawback: if file name correctly set, OCaml error messages from this
+  Camlp4 version are incorrectly displayed (source positions with lines
+  and columns not recomputed):
+
   glob_fname.val := fname;
+*)
   List.fold_right str_item ast []
 };
 

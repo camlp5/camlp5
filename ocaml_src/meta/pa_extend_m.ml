@@ -20,12 +20,13 @@ Grammar.extend
    [None, Some Gramext.NonA,
     [[Gramext.Stoken ("UIDENT", "SOPT"); Gramext.Sself],
      Gramext.action
-       (fun (s : 'symbol) _ (loc : int * int) -> (ssopt loc s : 'symbol));
+       (fun (s : 'symbol) _ (loc : Token.location) ->
+          (ssopt loc s : 'symbol));
      [Gramext.srules
         [[Gramext.Stoken ("UIDENT", "SLIST1")],
-         Gramext.action (fun _ (loc : int * int) -> (true : 'e__1));
+         Gramext.action (fun _ (loc : Token.location) -> (true : 'e__1));
          [Gramext.Stoken ("UIDENT", "SLIST0")],
-         Gramext.action (fun _ (loc : int * int) -> (false : 'e__1))];
+         Gramext.action (fun _ (loc : Token.location) -> (false : 'e__1))];
       Gramext.Sself;
       Gramext.Sopt
         (Gramext.srules
@@ -33,8 +34,8 @@ Grammar.extend
              Gramext.Snterm
                (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
             Gramext.action
-              (fun (t : 'symbol) _ (loc : int * int) -> (t : 'e__2))])],
+              (fun (t : 'symbol) _ (loc : Token.location) -> (t : 'e__2))])],
      Gramext.action
        (fun (sep : 'e__2 option) (s : 'symbol) (min : 'e__1)
-          (loc : int * int) ->
+          (loc : Token.location) ->
           (sslist loc min sep s : 'symbol))]]];;

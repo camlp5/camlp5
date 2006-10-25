@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.1 2006/09/29 04:45:49 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.2 2006/10/25 13:16:47 deraugla Exp $ *)
 
 open Stdpp;
 
@@ -453,7 +453,9 @@ value text_of_action loc psl rtvar act tvar =
     [ Some act -> if quotify.val then quotify_action psl act else act
     | None -> <:expr< () >> ]
   in
-  let e = <:expr< fun [ ($locid$ : (int * int)) -> ($act$ : '$rtvar$) ] >> in
+  let e =
+    <:expr< fun [ ($locid$ : Token.location) -> ($act$ : '$rtvar$) ] >>
+  in
   let txt =
     List.fold_left
       (fun txt ps ->
