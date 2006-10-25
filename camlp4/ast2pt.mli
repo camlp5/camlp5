@@ -18,6 +18,6 @@ value mkloc : (int * int) -> Location.t;
 value long_id_of_string_list : (int * int) -> list string -> Longident.t;
 
 value str_item : MLast.str_item -> Parsetree.structure -> Parsetree.structure;
-value interf : list MLast.sig_item -> Parsetree.signature;
-value implem : list MLast.str_item -> Parsetree.structure;
+value interf : string -> list MLast.sig_item -> Parsetree.signature;
+value implem : string -> list MLast.str_item -> Parsetree.structure;
 value phrase : MLast.str_item -> Parsetree.toplevel_phrase;

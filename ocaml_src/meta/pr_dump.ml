@@ -19,9 +19,9 @@ let open_out_file () =
 ;;
 
 let interf ast =
-  let pt = Ast2pt.interf (List.map fst ast) in
-  let oc = open_out_file () in
   let fname = !(Pcaml.input_file) in
+  let pt = Ast2pt.interf fname (List.map fst ast) in
+  let oc = open_out_file () in
   output_string oc Pconfig.ast_intf_magic_number;
   output_value oc (if fname = "-" then "" else fname);
   output_value oc pt;
@@ -32,9 +32,9 @@ let interf ast =
 ;;
 
 let implem ast =
-  let pt = Ast2pt.implem (List.map fst ast) in
-  let oc = open_out_file () in
   let fname = !(Pcaml.input_file) in
+  let pt = Ast2pt.implem fname (List.map fst ast) in
+  let oc = open_out_file () in
   output_string oc Pconfig.ast_impl_magic_number;
   output_value oc (if fname = "-" then "" else fname);
   output_value oc pt;

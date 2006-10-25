@@ -838,8 +838,9 @@ and class_str_item c l =
       Pcf_virt (s, mkprivate b, ctyp (mkpolytype t), mkloc loc) :: l
 ;;
 
-let interf ast = List.fold_right sig_item ast [];;
-let implem ast = List.fold_right str_item ast [];;
+let interf fname ast = glob_fname := fname; List.fold_right sig_item ast [];;
+
+let implem fname ast = glob_fname := fname; List.fold_right str_item ast [];;
 
 let directive loc =
   function

@@ -835,8 +835,15 @@ and class_str_item c l =
       [Pcf_virt (s, mkprivate b, ctyp (mkpolytype t), mkloc loc) :: l] ]
 ;
 
-value interf ast = List.fold_right sig_item ast [];
-value implem ast = List.fold_right str_item ast [];
+value interf fname ast = do {
+  glob_fname.val := fname;
+  List.fold_right sig_item ast []
+};
+
+value implem fname ast = do {
+  glob_fname.val := fname;
+  List.fold_right str_item ast []
+};
 
 value directive loc =
   fun

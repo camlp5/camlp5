@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_dump.ml,v 1.1 2006/09/29 04:45:49 deraugla Exp $ *)
+(* $Id: pr_dump.ml,v 1.2 2006/10/25 10:28:11 deraugla Exp $ *)
 
 value open_out_file () =
   match Pcaml.output_file.val with
@@ -19,9 +19,9 @@ value open_out_file () =
 ;
 
 value interf ast =
-  let pt = Ast2pt.interf (List.map fst ast) in
-  let oc = open_out_file () in
   let fname = Pcaml.input_file.val in
+  let pt = Ast2pt.interf fname (List.map fst ast) in
+  let oc = open_out_file () in
   do {
     output_string oc Pconfig.ast_intf_magic_number;
     output_value oc (if fname = "-" then "" else fname);
@@ -34,9 +34,9 @@ value interf ast =
 ;
 
 value implem ast =
-  let pt = Ast2pt.implem (List.map fst ast) in
-  let oc = open_out_file () in
   let fname = Pcaml.input_file.val in
+  let pt = Ast2pt.implem fname (List.map fst ast) in
+  let oc = open_out_file () in
   do {
     output_string oc Pconfig.ast_impl_magic_number;
     output_value oc (if fname = "-" then "" else fname);

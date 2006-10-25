@@ -18,6 +18,6 @@ val mkloc : int * int -> Location.t;;
 val long_id_of_string_list : int * int -> string list -> Longident.t;;
 
 val str_item : MLast.str_item -> Parsetree.structure -> Parsetree.structure;;
-val interf : MLast.sig_item list -> Parsetree.signature;;
-val implem : MLast.str_item list -> Parsetree.structure;;
+val interf : string -> MLast.sig_item list -> Parsetree.signature;;
+val implem : string -> MLast.str_item list -> Parsetree.structure;;
 val phrase : MLast.str_item -> Parsetree.toplevel_phrase;;
