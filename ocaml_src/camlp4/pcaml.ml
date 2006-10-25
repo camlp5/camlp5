@@ -74,7 +74,8 @@ let sync = ref skip_to_eol;;
 let input_file = ref "";;
 let output_file = ref None;;
 
-let warning_default_function (bp, ep) txt =
+let warning_default_function loc txt =
+  let (bp, ep) = Token.unmake_loc loc in
   Printf.eprintf "<W> loc %d %d: %s\n" bp ep txt; flush stderr
 ;;
 
@@ -102,8 +103,7 @@ exception Qerror of string * err_ctx * exn;;
 
 let expand_quotation loc expander shift name str =
   let new_warning =
-    let warn = !warning in
-    fun (bp, ep) txt -> warn (shift + bp, shift + ep) txt
+    let warn = !warning in fun loc txt -> warn (Token.shift_loc shift loc) txt
   in
   apply_with_var warning new_warning
     (fun () ->
@@ -113,7 +113,7 @@ let expand_quotation loc expander shift name str =
            raise (Stdpp.Exc_located ((shift + p1, shift + p2), exc1))
        | exc ->
            let exc1 = Qerror (name, Expanding, exc) in
-           raise (Stdpp.Exc_located (loc, exc1)))
+           Token.raise_with_loc loc exc1)
 ;;
 
 let parse_quotation_result entry loc shift name str =
@@ -123,14 +123,12 @@ let parse_quotation_result entry loc shift name str =
       raise (Stdpp.Exc_located ((shift + fst iloc, shift + snd iloc), exc))
   | Stdpp.Exc_located (iloc, Qerror (_, Expanding, exc)) ->
       let ctx = ParsingResult (iloc, str) in
-      let exc1 = Qerror (name, ctx, exc) in
-      raise (Stdpp.Exc_located (loc, exc1))
+      let exc1 = Qerror (name, ctx, exc) in Token.raise_with_loc loc exc1
   | Stdpp.Exc_located (_, (Qerror (_, _, _) as exc)) ->
-      raise (Stdpp.Exc_located (loc, exc))
+      Token.raise_with_loc loc exc
   | Stdpp.Exc_located (iloc, exc) ->
       let ctx = ParsingResult (iloc, str) in
-      let exc1 = Qerror (name, ctx, exc) in
-      raise (Stdpp.Exc_located (loc, exc1))
+      let exc1 = Qerror (name, ctx, exc) in Token.raise_with_loc loc exc1
 ;;
 
 let handle_quotation loc proj in_expr entry reloc (name, str) =
@@ -139,13 +137,14 @@ let handle_quotation loc proj in_expr entry reloc (name, str) =
       "" -> String.length "<<"
     | _ -> String.length "<:" + String.length name + String.length "<"
   in
-  let shift = fst loc + shift in
   let expander =
     try Quotation.find name with
       exc ->
         let exc1 = Qerror (name, Finding, exc) in
-        let loc = fst loc, shift in raise (Stdpp.Exc_located (loc, exc1))
+        let loc = Token.first_pos loc, Token.first_pos loc + shift in
+        raise (Stdpp.Exc_located (loc, exc1))
   in
+  let shift = Token.first_pos loc + shift in
   let ast =
     match expander with
       Quotation.ExStr f ->
@@ -168,8 +167,8 @@ let parse_locate entry shift str =
 
 let handle_locate loc entry ast_f (pos, str) =
   let s = str in
-  let loc = pos, pos + String.length s in
-  let x = parse_locate entry (fst loc) s in ast_f loc x
+  let loc = Token.make_loc (pos, pos + String.length s) in
+  let x = parse_locate entry (Token.first_pos loc) s in ast_f loc x
 ;;
 
 let expr_anti loc e = MLast.ExAnt (loc, e);;
@@ -376,47 +375,47 @@ and kont = pretty Stream.t
 ;;
 
 let pr_str_item =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 401, 30)));
-   pr_levels = []}
-;;
-let pr_sig_item =
   {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 402, 30)));
    pr_levels = []}
 ;;
-let pr_module_type =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 403, 33)));
+let pr_sig_item =
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 403, 30)));
    pr_levels = []}
 ;;
-let pr_module_expr =
+let pr_module_type =
   {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 404, 33)));
    pr_levels = []}
 ;;
-let pr_expr =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 405, 26)));
+let pr_module_expr =
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 405, 33)));
    pr_levels = []}
 ;;
-let pr_patt =
+let pr_expr =
   {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 406, 26)));
    pr_levels = []}
 ;;
-let pr_ctyp =
+let pr_patt =
   {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 407, 26)));
    pr_levels = []}
 ;;
-let pr_class_sig_item =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 408, 36)));
+let pr_ctyp =
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 408, 26)));
    pr_levels = []}
 ;;
-let pr_class_str_item =
+let pr_class_sig_item =
   {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 409, 36)));
    pr_levels = []}
 ;;
+let pr_class_str_item =
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 410, 36)));
+   pr_levels = []}
+;;
 let pr_class_type =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 410, 32)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 411, 32)));
    pr_levels = []}
 ;;
 let pr_class_expr =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 411, 32)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 412, 32)));
    pr_levels = []}
 ;;
 let pr_expr_fun_args = ref Extfun.empty;;

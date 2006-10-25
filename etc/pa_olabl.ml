@@ -187,7 +187,7 @@ module Plexer =
     ;
     value error_on_unknown_keywords = ref False;
     value next_token_fun find_id_kwd find_spe_kwd =
-      let err bp ep msg = raise_with_loc (bp, ep) (Token.Error msg) in
+      let err bp ep msg = Stdpp.raise_with_loc (bp, ep) (Token.Error msg) in
       let keyword_or_error (bp, ep) s =
         try ("", find_spe_kwd s) with
         [ Not_found ->
@@ -437,7 +437,7 @@ module Plexer =
           Stream.from
             (fun i ->
                let (tok, loc) = next_token_loc cstrm in
-               do { loct_add loct i loc; Some tok })
+               do { loct_add loct i (Token.make_loc loc); Some tok })
         in
         let locf = loct_func loct in
         (ts, locf)
@@ -620,7 +620,7 @@ value mkumin loc f arg =
       <:expr< $lid:f$ $arg$ >> ]
 ;
 
-external loc_of_node : 'a -> (int * int) = "%field0";
+external loc_of_node : 'a -> Token.location = "%field0";
 
 value mklistexp loc last =
   loop True where rec loop top =
@@ -630,7 +630,7 @@ value mklistexp loc last =
         [ Some e -> e
         | None -> <:expr< [] >> ]
     | [e1 :: el] ->
-        let loc = if top then loc else (fst (loc_of_node e1), snd loc) in
+        let loc = if top then loc else Token.encl_loc (loc_of_node e1) loc in
         <:expr< [$e1$ :: $loop False el$] >> ]
 ;
 
@@ -642,7 +642,7 @@ value mklistpat loc last =
         [ Some p -> p
         | None -> <:patt< [] >> ]
     | [p1 :: pl] ->
-        let loc = if top then loc else (fst (loc_of_node p1), snd loc) in
+        let loc = if top then loc else Token.encl_loc (loc_of_node p1) loc in
         <:patt< [$p1$ :: $loop False pl$] >> ]
 ;
 
@@ -1394,13 +1394,15 @@ value rec class_type_of_ctyp loc t =
   match t with
   [ <:ctyp< $lid:i$ >> -> <:class_type< $list:[i]$ >>
   | <:ctyp< $uid:m$.$t$ >> -> <:class_type< $list:[m :: type_id_list t]$ >>
-  | _ -> raise_with_loc loc (Stream.Error "lowercase identifier expected") ]
+  | _ ->
+      Token.raise_with_loc loc
+        (Stream.Error "lowercase identifier expected") ]
 and type_id_list =
   fun
   [ <:ctyp< $uid:m$.$t$ >> -> [m :: type_id_list t]
   | <:ctyp< $lid:i$ >> -> [i]
   | t ->
-      raise_with_loc (loc_of_node t)
+      Token.raise_with_loc (loc_of_node t)
         (Stream.Error "lowercase identifier expected") ]
 ;
 

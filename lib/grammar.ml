@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.2 2006/09/29 12:46:20 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.3 2006/10/25 15:55:31 deraugla Exp $ *)
 
 open Stdpp;
 open Gramext;
@@ -203,14 +203,12 @@ external grammar_obj : g -> grammar Token.t = "%identity";
 value floc = ref (fun _ -> failwith "internal error when computing location");
 value loc_of_token_interval bp ep =
   if bp == ep then
-    if bp == 0 then (0, 1)
-    else
-      let a = snd (floc.val (bp - 1)) in
-      (a, a + 1)
+    if bp == 0 then Token.make_loc (0, 1)
+    else Token.loc_of_char_after (floc.val (bp - 1))
   else
-    let (bp1, bp2) = floc.val bp in
-    let (ep1, ep2) = floc.val (pred ep) in
-    (if bp1 < ep1 then bp1 else ep1, if bp2 > ep2 then bp2 else ep2)
+    let loc1 = floc.val bp in
+    let loc2 = floc.val (pred ep) in
+    Token.encl_loc loc1 loc2
 ;
 
 value rec name_of_symbol entry =
@@ -736,9 +734,9 @@ value parse_parsable entry efun (cs, (ts, fun_loc)) =
       let cnt = Stream.count ts in
       let loc = fun_loc cnt in
       if token_count.val - 1 <= cnt then loc
-      else (fst loc, snd (fun_loc (token_count.val - 1)))
+      else Token.encl_loc loc (fun_loc (token_count.val - 1))
     with _ ->
-      (Stream.count cs, Stream.count cs + 1)
+      Token.make_loc (Stream.count cs, Stream.count cs + 1)
   in
   do {
     floc.val := fun_loc;
@@ -751,12 +749,12 @@ value parse_parsable entry efun (cs, (ts, fun_loc)) =
         let loc = get_loc () in
         do {
           restore ();
-          raise_with_loc loc
-            (Stream.Error ("illegal begin of " ^ entry.ename))
+          Token.raise_with_loc loc
+             (Stream.Error ("illegal begin of " ^ entry.ename))
         }
     | Stream.Error _ as exc ->
         let loc = get_loc () in
-        do { restore (); raise_with_loc loc exc }
+        do { restore (); Token.raise_with_loc loc exc }
     | exc ->
         let loc = (Stream.count cs, Stream.count cs + 1) in
         do { restore (); raise_with_loc loc exc } ]

@@ -25,21 +25,22 @@ value get_tag x =
   if Obj.is_block (Obj.repr x) then Obj.tag (Obj.repr x) else Obj.magic x
 ;
 
-value error loc str = raise_with_loc loc (Failure str);
+value error loc str = Token.raise_with_loc loc (Failure str);
 
 value char_of_char_token loc s =
   try Token.eval_char s with
-  [ Failure _ as exn -> raise_with_loc loc exn ]
+  [ Failure _ as exn -> Token.raise_with_loc loc exn ]
 ;
 
 value string_of_string_token loc s =
   try Token.eval_string loc s with
-  [ Failure _ as exn -> raise_with_loc loc exn ]
+  [ Failure _ as exn -> Token.raise_with_loc loc exn ]
 ;
 
 value glob_fname = ref "";
 
-value mkloc (bp, ep) =
+value mkloc loc =
+  let (bp, ep) = Token.unmake_loc loc in
   let loc_at n =
     {Lexing.pos_fname = glob_fname.val; Lexing.pos_lnum = -1;
      Lexing.pos_bol = 0; Lexing.pos_cnum = n}
@@ -442,10 +443,11 @@ value rec class_expr_fa al =
 value rec sep_expr_acc l =
   fun
   [ ExAcc _ e1 e2 -> sep_expr_acc (sep_expr_acc l e2) e1
-  | ExUid ((bp, _) as loc) s as e ->
+  | ExUid loc s as e ->
       match l with
       [ [] -> [(loc, [], e)]
-      | [((_, ep), sl, e) :: l] -> [((bp, ep), [s :: sl], e) :: l] ]
+      | [(loc2, sl, e) :: l] ->
+          [(Token.encl_loc loc loc2, [s :: sl], e) :: l] ]
   | e -> [(loc_of_expr e, [], e) :: l] ]
 ;
 
@@ -495,10 +497,10 @@ value rec expr =
       in
       let (_, e) =
         List.fold_left
-          (fun ((bp, _), e1) ((_, ep), ml, e2) ->
+          (fun (loc1, e1) (loc2, ml, e2) ->
              match e2 with
              [ ExLid _ s ->
-                 let loc = (bp, ep) in
+                 let loc = Token.encl_loc loc1 loc2 in
                  (loc, mkexp loc (Pexp_field e1 (mkli (conv_lab s) ml)))
              | _ -> error (loc_of_expr e2) "lowercase identifier expected" ])
           (loc, e) l
@@ -612,7 +614,7 @@ value rec expr =
         [ [] -> expr (ExUid loc "()")
         | [e] -> expr e
         | [e :: el] ->
-            let loc = (fst (loc_of_expr e), snd loc) in
+            let loc = Token.encl_loc (loc_of_expr e) loc in
             mkexp loc (Pexp_sequence (expr e) (loop el)) ]
       in
       loop el
@@ -650,7 +652,7 @@ and mktype_decl ((loc, c), tl, td, cl) =
   let cl =
     List.map
       (fun (t1, t2) ->
-         let loc = (fst (loc_of_ctyp t1), snd (loc_of_ctyp t2)) in
+         let loc = Token.encl_loc (loc_of_ctyp t1) (loc_of_ctyp t2) in
          (ctyp t1, ctyp t2, mkloc loc))
       cl
   in
@@ -870,7 +872,7 @@ value directive loc =
           fun
           [ ExLid _ i | ExUid _ i -> [i]
           | ExAcc _ e (ExLid _ i) | ExAcc _ e (ExUid _ i) -> loop e @ [i]
-          | e -> raise_with_loc (loc_of_expr e) (Failure "bad ast") ]
+          | e -> Token.raise_with_loc (loc_of_expr e) (Failure "bad ast") ]
       in
       Pdir_ident (long_id_of_string_list loc sl) ]
 ;

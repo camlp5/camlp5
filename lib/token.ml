@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.ml,v 1.4 2006/10/16 15:22:16 deraugla Exp $ *)
+(* $Id: token.ml,v 1.5 2006/10/25 15:55:31 deraugla Exp $ *)
 
 type t = (string * string);
 type pattern = (string * string);
@@ -224,5 +224,12 @@ value default_match =
         if con = p_con && prm = p_prm then prm else raise Stream.Failure ]
 ;
 
+value raise_with_loc = Stdpp.raise_with_loc;
 value make_loc x = x;
+value unmake_loc x = x;
+value encl_loc (bp1, ep1) (bp2, ep2) = (min bp1 bp2, max ep1 ep2);
+value loc_of_char_after (bp, ep) = (ep, ep + 1);
 value dummy_loc = (0, 0);
+value shift_loc sh (bp, ep) = (sh + bp, sh + ep);
+value first_pos (bp, ep) = bp;
+value last_pos (bp, ep) = ep;

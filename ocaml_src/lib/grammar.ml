@@ -194,11 +194,11 @@ external grammar_obj : g -> Token.t grammar = "%identity";;
 let floc = ref (fun _ -> failwith "internal error when computing location");;
 let loc_of_token_interval bp ep =
   if bp == ep then
-    if bp == 0 then 0, 1 else let a = snd (!floc (bp - 1)) in a, a + 1
+    if bp == 0 then Token.make_loc (0, 1)
+    else Token.loc_of_char_after (!floc (bp - 1))
   else
-    let (bp1, bp2) = !floc bp in
-    let (ep1, ep2) = !floc (pred ep) in
-    (if bp1 < ep1 then bp1 else ep1), (if bp2 > ep2 then bp2 else ep2)
+    let loc1 = !floc bp in
+    let loc2 = !floc (pred ep) in Token.encl_loc loc1 loc2
 ;;
 
 let rec name_of_symbol entry =
@@ -803,9 +803,9 @@ let parse_parsable entry efun (cs, (ts, fun_loc)) =
       let cnt = Stream.count ts in
       let loc = fun_loc cnt in
       if !token_count - 1 <= cnt then loc
-      else fst loc, snd (fun_loc (!token_count - 1))
+      else Token.encl_loc loc (fun_loc (!token_count - 1))
     with
-      _ -> Stream.count cs, Stream.count cs + 1
+      _ -> Token.make_loc (Stream.count cs, Stream.count cs + 1)
   in
   floc := fun_loc;
   token_count := 0;
@@ -813,9 +813,10 @@ let parse_parsable entry efun (cs, (ts, fun_loc)) =
     Stream.Failure ->
       let loc = get_loc () in
       restore ();
-      raise_with_loc loc (Stream.Error ("illegal begin of " ^ entry.ename))
+      Token.raise_with_loc loc
+        (Stream.Error ("illegal begin of " ^ entry.ename))
   | Stream.Error _ as exc ->
-      let loc = get_loc () in restore (); raise_with_loc loc exc
+      let loc = get_loc () in restore (); Token.raise_with_loc loc exc
   | exc ->
       let loc = Stream.count cs, Stream.count cs + 1 in
       restore (); raise_with_loc loc exc

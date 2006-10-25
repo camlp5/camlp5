@@ -1,10 +1,10 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_extfun.ml,v 1.1 2006/09/29 04:45:49 deraugla Exp $ *)
+(* $Id: pr_extfun.ml,v 1.2 2006/10/25 15:55:31 deraugla Exp $ *)
 
 open Pcaml;
 open Spretty;
 
-value loc = (0, 0);
+value loc = Token.dummy_loc;
 
 value expr e dg k = pr_expr.pr_fun "top" e dg k;
 value patt e dg k = pr_patt.pr_fun "top" e dg k;

@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo pa_extend.cmo *)
-(* $Id: pa_extfun.ml,v 1.1 2006/09/29 04:45:49 deraugla Exp $ *)
+(* $Id: pa_extfun.ml,v 1.2 2006/10/25 15:55:31 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -36,7 +36,7 @@ value rec mexpr p =
   | <:patt< $lid:_$ >> -> <:expr< Extfun.Evar () >>
   | <:patt< _ >> -> <:expr< Extfun.Evar () >>
   | <:patt< $p1$ | $p2$ >> ->
-      Stdpp.raise_with_loc loc (Failure "or patterns not allowed in extfun")
+      Token.raise_with_loc loc (Failure "or patterns not allowed in extfun")
   | p -> not_impl "mexpr" p ]
 and mexpr_list loc =
   fun
@@ -61,7 +61,7 @@ value rec catch_any =
 
 value conv (p, wo, e) =
   let tst = mexpr p in
-  let loc = (fst (MLast.loc_of_patt p), snd (MLast.loc_of_expr e)) in
+  let loc = Token.encl_loc (MLast.loc_of_patt p) (MLast.loc_of_expr e) in
   let e =
     if wo = None && catch_any p then <:expr< fun $p$ -> Some $e$ >>
     else <:expr< fun [ $p$ $when:wo$ -> Some $e$ | _ -> None ] >>

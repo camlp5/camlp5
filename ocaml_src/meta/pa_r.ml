@@ -108,7 +108,9 @@ let mklistexp loc last =
         | None -> MLast.ExUid (loc, "[]")
         end
     | e1 :: el ->
-        let loc = if top then loc else fst (MLast.loc_of_expr e1), snd loc in
+        let loc =
+          if top then loc else Token.encl_loc (MLast.loc_of_expr e1) loc
+        in
         MLast.ExApp
           (loc, MLast.ExApp (loc, MLast.ExUid (loc, "::"), e1), loop false el)
   in
@@ -124,7 +126,9 @@ let mklistpat loc last =
         | None -> MLast.PaUid (loc, "[]")
         end
     | p1 :: pl ->
-        let loc = if top then loc else fst (MLast.loc_of_patt p1), snd loc in
+        let loc =
+          if top then loc else Token.encl_loc (MLast.loc_of_patt p1) loc
+        in
         MLast.PaApp
           (loc, MLast.PaApp (loc, MLast.PaUid (loc, "::"), p1), loop false pl)
   in

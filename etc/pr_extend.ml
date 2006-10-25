@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_extend.ml,v 1.2 2006/10/25 13:16:47 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.3 2006/10/25 15:55:31 deraugla Exp $ *)
 
 open Pcaml;
 open Spretty;
@@ -111,7 +111,7 @@ value rec unaction =
       let (pl, a) = unaction e in ([p :: pl], a)
   | <:expr< fun _ -> $e$ >> ->
       let (pl, a) = unaction e in
-      (let loc = (0, 0) in [<:patt< _ >> :: pl], a)
+      (let loc = Token.dummy_loc in [<:patt< _ >> :: pl], a)
   | _ -> raise Not_found ]
 ;
 
@@ -174,7 +174,7 @@ and unrule =
   [ <:expr< ($e1$, Gramext.action $e2$) >> ->
       let (pl, a) =
         match unaction e2 with
-        [ ([], None) -> let loc = (0, 0) in ([], Some <:expr< () >>)
+        [ ([], None) -> let loc = Token.dummy_loc in ([], Some <:expr< () >>)
         | x -> x ]
       in
       let sl = unpsymbol_list (List.rev pl) e1 in

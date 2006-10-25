@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.6 2006/10/16 14:20:34 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.7 2006/10/25 15:55:31 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -30,7 +30,7 @@ module Qast =
       | Loc
       | Antiquot of MLast.loc and string ]
     ;
-    value loc = (0, 0);
+    value loc = Token.dummy_loc;
     value rec to_expr =
       fun
       [ Node n al ->
@@ -56,7 +56,8 @@ module Qast =
           let e =
             try Grammar.Entry.parse Pcaml.expr_eoi (Stream.of_string s) with
             [ Stdpp.Exc_located (bp, ep) exc ->
-                raise (Stdpp.Exc_located (fst loc + bp, fst loc + ep) exc) ]
+                let shift = Token.first_pos loc in
+                raise (Stdpp.Exc_located (shift + bp, shift + ep) exc) ]
           in
           <:expr< $anti:e$ >> ]
     and to_expr_label (l, a) = (<:patt< MLast.$lid:l$ >>, to_expr a);
@@ -83,19 +84,20 @@ module Qast =
           let p =
             try Grammar.Entry.parse Pcaml.patt_eoi (Stream.of_string s) with
             [ Stdpp.Exc_located (bp, ep) exc ->
-                raise (Stdpp.Exc_located (fst loc + bp, fst loc + ep) exc) ]
+                let shift = Token.first_pos loc in
+                raise (Stdpp.Exc_located (shift + bp, shift + ep) exc) ]
           in
           <:patt< $anti:p$ >> ]
     and to_patt_label (l, a) = (<:patt< MLast.$lid:l$ >>, to_patt a);
   end
 ;
 
-value antiquot k (bp, ep) x =
+value antiquot k loc x =
   let shift =
     if k = "" then String.length "$"
     else String.length "$" + String.length k + String.length ":"
   in
-  Qast.Antiquot (shift + bp, shift + ep) x
+  Qast.Antiquot (Token.shift_loc shift loc) x
 ;
 
 value sig_item = Grammar.Entry.create gram "signature item";
@@ -246,7 +248,7 @@ value not_yet_warned_variant = ref True;
 value warn_variant _ =
   if not_yet_warned_variant.val then do {
     not_yet_warned_variant.val := False;
-    Pcaml.warning.val (0, 1)
+    Pcaml.warning.val Token.dummy_loc
       (Printf.sprintf
          "use of syntax of variants types deprecated since version 3.05");
   }
@@ -257,7 +259,7 @@ value not_yet_warned_seq = ref True;
 value warn_sequence _ =
   if not_yet_warned_seq.val then do {
     not_yet_warned_seq.val := False;
-    Pcaml.warning.val (0, 1)
+    Pcaml.warning.val Token.dummy_loc
       (Printf.sprintf
          "use of syntax of sequences deprecated since version 3.01.1");
   }

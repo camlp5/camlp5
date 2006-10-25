@@ -1,5 +1,5 @@
 (* camlp4r *)
-(* $Id: compile.ml,v 1.3 2006/10/25 13:23:53 deraugla Exp $ *)
+(* $Id: compile.ml,v 1.4 2006/10/25 15:55:31 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -8,7 +8,7 @@ open Gramext;
 value strict_parsing = ref False;
 value keywords = ref [];
 
-value loc = (0, 0);
+value loc = Token.dummy_loc;
 
 (* Watch the segmentation faults here! the compiled file must have been
    loaded in camlp4 with the option pa_extend.cmo -meta_action. *)
@@ -559,7 +559,7 @@ value compile () =
         $expr_list list$
     >>
   in
-  let loc = (1, 1) in
+  let loc = Token.dummy_loc in
   ([(si1, loc); (si2, loc)], False)
 ;
 

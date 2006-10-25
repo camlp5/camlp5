@@ -1,5 +1,5 @@
 ; camlp4 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.2 2006/09/30 02:04:00 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.3 2006/10/25 15:55:31 deraugla Exp $
 
 (open Pcaml)
 (open Stdpp)
@@ -247,8 +247,12 @@
    (else (^ con " \"" prm "\""))))
 
 (define (lexer_gmake ())
-  (let ((kwt (Hashtbl.create 89)))
-     {(Token.tok_func (Token.lexer_func_of_parser (lexer kwt)))
+  (let ((kwt (Hashtbl.create 89))
+        (lexer2
+         (lambda (kwt s)
+           (let (((values t loc) (lexer kwt s)))
+             (values t (Token.make_loc loc))))))
+     {(Token.tok_func (Token.lexer_func_of_parser (lexer2 kwt)))
       (Token.tok_using (lexer_using kwt))
       (Token.tok_removing (lambda))
       (Token.tok_match Token.default_match)
@@ -280,7 +284,7 @@
      (Srec loc _) (Sstring loc _) (Stid loc _) (Suid loc _))
     loc)))
 (define (error_loc loc err)
-  (raise_with_loc loc (Stream.Error (^ err " expected"))))
+  (Token.raise_with_loc loc (Stream.Error (^ err " expected"))))
 (define (error se err) (error_loc (loc_of_sexpr se) err))
 
 (define strm_n "strm__")
@@ -634,7 +638,7 @@
     ([se] (expr_se se))
     ((sel)
       (let* ((el (List.map expr_se sel))
-             (loc (values (fst (loc_of_sexpr (List.hd sel))) (snd loc))))
+             (loc (Token.encl_loc (loc_of_sexpr (List.hd sel)) loc)))
          <:expr< do { $list:el$ } >>))))
   (let_binding_se
    (lambda_match
@@ -653,8 +657,8 @@
                    (List.fold_right
                     (lambda (se e)
                       (let* ((loc
-                              (values (fst (loc_of_sexpr se))
-                                      (snd (MLast.loc_of_expr e))))
+                              (Token.encl_loc (loc_of_sexpr se)
+                                              (MLast.loc_of_expr e)))
                              (p (ipatt_se se)))
                         <:expr< fun $p$ -> $e$ >>))
                     sel e))
@@ -834,7 +838,7 @@
              ([se] (ctyp_se se))
              ([se . sel] 
                (let* ((t1 (ctyp_se se))
-                      (loc (values (fst (loc_of_sexpr se)) (snd loc)))
+                      (loc (Token.encl_loc (loc_of_sexpr se) loc))
                       (t2 (loop sel)))
                    <:ctyp< $t1$ -> $t2$ >>)))))
         (loop sel)))

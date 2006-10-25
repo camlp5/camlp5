@@ -219,5 +219,12 @@ let default_match =
         if con = p_con && prm = p_prm then prm else raise Stream.Failure
 ;;
 
+let raise_with_loc = Stdpp.raise_with_loc;;
 let make_loc x = x;;
+let unmake_loc x = x;;
+let encl_loc (bp1, ep1) (bp2, ep2) = min bp1 bp2, max ep1 ep2;;
+let loc_of_char_after (bp, ep) = ep, ep + 1;;
 let dummy_loc = 0, 0;;
+let shift_loc sh (bp, ep) = sh + bp, sh + ep;;
+let first_pos (bp, ep) = bp;;
+let last_pos (bp, ep) = ep;;

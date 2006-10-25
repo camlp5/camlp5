@@ -66,8 +66,7 @@ value rec patt floc sh =
     fun
     [ PaAcc loc x1 x2 -> PaAcc (floc loc) (self x1) (self x2)
     | PaAli loc x1 x2 -> PaAli (floc loc) (self x1) (self x2)
-    | PaAnt loc x1 ->
-        patt (fun (p1, p2) -> (sh + fst loc + p1, sh + fst loc + p2)) 0 x1
+    | PaAnt loc x1 -> patt (Token.shift_loc (sh + Token.first_pos loc)) 0 x1
     | PaAny loc -> PaAny (floc loc)
     | PaApp loc x1 x2 -> PaApp (floc loc) (self x1) (self x2)
     | PaArr loc x1 -> PaArr (floc loc) (List.map self x1)
@@ -94,8 +93,7 @@ and expr floc sh =
   self where rec self =
     fun
     [ ExAcc loc x1 x2 -> ExAcc (floc loc) (self x1) (self x2)
-    | ExAnt loc x1 ->
-        expr (fun (p1, p2) -> (sh + fst loc + p1, sh + fst loc + p2)) 0 x1
+    | ExAnt loc x1 -> expr (Token.shift_loc (sh + Token.first_pos loc)) 0 x1
     | ExApp loc x1 x2 -> ExApp (floc loc) (self x1) (self x2)
     | ExAre loc x1 x2 -> ExAre (floc loc) (self x1) (self x2)
     | ExArr loc x1 -> ExArr (floc loc) (List.map self x1)

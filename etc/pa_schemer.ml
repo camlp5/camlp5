@@ -260,8 +260,12 @@ value lexer_text (con, prm) =
 ;
 
 value lexer_gmake () =
-  let kwt = Hashtbl.create 89 in
-  {Token.tok_func = Token.lexer_func_of_parser (lexer kwt);
+  let kwt = Hashtbl.create 89
+  and lexer2 kwt s =
+    let (t, loc) = lexer kwt s in
+    (t, Token.make_loc loc)
+  in
+  {Token.tok_func = Token.lexer_func_of_parser (lexer2 kwt);
    Token.tok_using = lexer_using kwt; Token.tok_removing = fun [];
    Token.tok_match = Token.default_match; Token.tok_text = lexer_text;
    Token.tok_comm = None}
@@ -293,7 +297,7 @@ value loc_of_sexpr =
     loc ]
 ;
 value error_loc loc err =
-  raise_with_loc loc (Stream.Error (err ^ " expected"))
+  Token.raise_with_loc loc (Stream.Error (err ^ " expected"))
 ;
 value error se err = error_loc (loc_of_sexpr se) err;
 
@@ -674,7 +678,7 @@ and begin_se loc =
   | [se] -> expr_se se
   | sel ->
       let el = List.map expr_se sel in
-      let loc = (fst (loc_of_sexpr (List.hd sel)), snd loc) in
+      let loc = Token.encl_loc (loc_of_sexpr (List.hd sel)) loc in
       <:expr< do { $list:el$ } >> ]
 and let_binding_se =
   fun
@@ -692,7 +696,9 @@ and fun_binding_se se e =
       let e =
         List.fold_right
           (fun se e ->
-             let loc = (fst (loc_of_sexpr se), snd (MLast.loc_of_expr e)) in
+             let loc =
+               Token.encl_loc (loc_of_sexpr se) (MLast.loc_of_expr e)
+             in
              let p = ipatt_se se in
              <:expr< fun $p$ -> $e$ >>)
           sel e
@@ -886,7 +892,7 @@ and ctyp_se =
         | [se] -> ctyp_se se
         | [se :: sel] ->
             let t1 = ctyp_se se in
-            let loc = (fst (loc_of_sexpr se), snd loc) in
+            let loc = Token.encl_loc (loc_of_sexpr se) loc in
             let t2 = loop sel in
             <:ctyp< $t1$ -> $t2$ >> ]
       in

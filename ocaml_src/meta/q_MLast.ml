@@ -30,7 +30,7 @@ module Qast =
       | Loc
       | Antiquot of MLast.loc * string
     ;;
-    let loc = 0, 0;;
+    let loc = Token.dummy_loc;;
     let rec to_expr =
       function
         Node (n, al) ->
@@ -66,7 +66,8 @@ module Qast =
           let e =
             try Grammar.Entry.parse Pcaml.expr_eoi (Stream.of_string s) with
               Stdpp.Exc_located ((bp, ep), exc) ->
-                raise (Stdpp.Exc_located ((fst loc + bp, fst loc + ep), exc))
+                let shift = Token.first_pos loc in
+                raise (Stdpp.Exc_located ((shift + bp, shift + ep), exc))
           in
           MLast.ExAnt (loc, e)
     and to_expr_label (l, a) =
@@ -106,7 +107,8 @@ module Qast =
           let p =
             try Grammar.Entry.parse Pcaml.patt_eoi (Stream.of_string s) with
               Stdpp.Exc_located ((bp, ep), exc) ->
-                raise (Stdpp.Exc_located ((fst loc + bp, fst loc + ep), exc))
+                let shift = Token.first_pos loc in
+                raise (Stdpp.Exc_located ((shift + bp, shift + ep), exc))
           in
           MLast.PaAnt (loc, p)
     and to_patt_label (l, a) =
@@ -116,12 +118,12 @@ module Qast =
   end
 ;;
 
-let antiquot k (bp, ep) x =
+let antiquot k loc x =
   let shift =
     if k = "" then String.length "$"
     else String.length "$" + String.length k + String.length ":"
   in
-  Qast.Antiquot ((shift + bp, shift + ep), x)
+  Qast.Antiquot (Token.shift_loc shift loc, x)
 ;;
 
 let sig_item = Grammar.Entry.create gram "signature item";;
@@ -286,7 +288,7 @@ let warn_variant _ =
   if !not_yet_warned_variant then
     begin
       not_yet_warned_variant := false;
-      !(Pcaml.warning) (0, 1)
+      !(Pcaml.warning) Token.dummy_loc
         (Printf.sprintf
            "use of syntax of variants types deprecated since version 3.05")
     end
@@ -297,7 +299,7 @@ let warn_sequence _ =
   if !not_yet_warned_seq then
     begin
       not_yet_warned_seq := false;
-      !(Pcaml.warning) (0, 1)
+      !(Pcaml.warning) Token.dummy_loc
         (Printf.sprintf
            "use of syntax of sequences deprecated since version 3.01.1")
     end
@@ -626,7 +628,7 @@ Grammar.extend
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
               | _ ->
                   match () with
-                  _ -> raise (Match_failure ("q_MLast.ml", 294, 19))
+                  _ -> raise (Match_failure ("q_MLast.ml", 296, 19))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -899,7 +901,7 @@ Grammar.extend
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
               | _ ->
                   match () with
-                  _ -> raise (Match_failure ("q_MLast.ml", 349, 19))
+                  _ -> raise (Match_failure ("q_MLast.ml", 351, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));

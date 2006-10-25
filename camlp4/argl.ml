@@ -99,6 +99,7 @@ value loc_fmt =
 ;
 
 value print_location loc =
+  let loc = Token.unmake_loc loc in
   if Pcaml.input_file.val <> "-" then
     let (fname, line, bp, ep) = Stdpp.line_of_loc Pcaml.input_file.val loc in
     eprintf loc_fmt fname line bp ep
@@ -134,7 +135,8 @@ value rec parse_file pa getdir useast =
                       List.rev_append rpl
                         [(useast loc s (use_file pa getdir useast s), loc)]
                   | (loc, _, _) ->
-                      Stdpp.raise_with_loc loc (Stream.Error "bad directive") ]
+                      Token.raise_with_loc loc
+                        (Stream.Error "bad directive") ]
               | None -> pl ]
             in
             pl @ loop ()
@@ -365,7 +367,7 @@ value go () =
         let exc =
           match exc with
           [ Stdpp.Exc_located (bp, ep) exc ->
-              do { print_location (bp, ep); exc }
+              do { print_location (Token.make_loc (bp, ep)); exc }
           | _ -> exc ]
         in
         report_error exc;

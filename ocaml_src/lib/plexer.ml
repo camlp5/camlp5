@@ -140,7 +140,7 @@ and end_exponent_part_under len (strm__ : _ Stream.t) =
 ;;
 
 let error_on_unknown_keywords = ref false;;
-let err loc msg = raise_with_loc loc (Token.Error msg);;
+let err loc msg = Stdpp.raise_with_loc loc (Token.Error msg);;
 
 let next_token_fun dfa ssd find_kwd bolpos glexr =
   let keyword_or_error loc s =
@@ -613,15 +613,15 @@ let next_token_fun dfa ssd find_kwd bolpos glexr =
     try
       let glex = !glexr in
       let comm_bp = Stream.count cstrm in
-      let r = next_token false cstrm in
+      let (r, loc) = next_token false cstrm in
       begin match glex.tok_comm with
         Some list ->
-          if fst (snd r) > comm_bp then
-            let comm_loc = comm_bp, fst (snd r) in
+          if fst loc > comm_bp then
+            let comm_loc = Token.make_loc (comm_bp, fst loc) in
             glex.tok_comm <- Some (comm_loc :: list)
       | None -> ()
       end;
-      r
+      r, make_loc loc
     with
       Stream.Error str -> err (Stream.count cstrm, Stream.count cstrm + 1) str
 ;;

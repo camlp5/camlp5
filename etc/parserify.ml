@@ -1,7 +1,7 @@
 (* camlp4r q_MLast.cmo *)
 (* $Id$ *)
 
-value loc = (0, 0);
+value loc = Token.dummy_loc;
 
 type spc =
   [ SPCterm of (MLast.patt * option MLast.expr)

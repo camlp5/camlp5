@@ -19,7 +19,7 @@
    these values in concrete syntax (see the Camlp4 documentation).
    See also the file q_MLast.ml in Camlp4 sources. *)
 
-type loc = int * int;;
+type loc = Token.location;;
 
 type ctyp =
     TyAcc of loc * ctyp * ctyp

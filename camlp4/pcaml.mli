@@ -148,7 +148,7 @@ value inter_phrases : ref (option string);
 
 (* for system use *)
 
-value warning : ref ((int * int) -> string -> unit);
+value warning : ref (Token.location -> string -> unit);
 value expr_eoi : Grammar.Entry.e MLast.expr;
 value patt_eoi : Grammar.Entry.e MLast.patt;
 value arg_spec_list : unit -> list (string * Arg.spec * string);

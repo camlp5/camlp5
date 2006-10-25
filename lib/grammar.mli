@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.mli,v 1.1 2006/09/29 04:45:49 deraugla Exp $ *)
+(* $Id: grammar.mli,v 1.2 2006/10/25 15:55:31 deraugla Exp $ *)
 
 (** Extensible grammars.
 
@@ -192,7 +192,7 @@ value create : Token.lexer -> g;
 
 (*** For system use *)
 
-value loc_of_token_interval : int -> int -> (int * int);
+value loc_of_token_interval : int -> int -> Token.location;
 value extend :
   list
     (Gramext.g_entry 'te * option Gramext.position *

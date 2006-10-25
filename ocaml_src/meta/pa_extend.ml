@@ -22,9 +22,9 @@ Pcaml.add_option "-split_ext" (Arg.Set split_ext)
 Pcaml.add_option "-split_gext" (Arg.Set split_ext)
   "Old name for the option -split_ext.";;
 
-type loc = int * int;;
+type loc = Token.location;;
 
-type 'e name = { expr : 'e; tvar : string; loc : int * int };;
+type 'e name = { expr : 'e; tvar : string; loc : loc };;
 
 type styp =
     STlid of loc * string
@@ -161,7 +161,7 @@ module MetaAction =
       in
       failwith (f ^ ", not impl: " ^ desc)
     ;;
-    let loc = 0, 0;;
+    let loc = Token.dummy_loc;;
     let rec mlist mf =
       function
         [] -> MLast.ExUid (loc, "[]")
@@ -181,7 +181,8 @@ module MetaAction =
       | true -> MLast.ExUid (loc, "True")
     ;;
     let mloc =
-      MLast.ExTup (loc, [MLast.ExInt (loc, "0"); MLast.ExInt (loc, "0")])
+      MLast.ExAcc
+        (loc, MLast.ExUid (loc, "Token"), MLast.ExLid (loc, "dummy_loc"))
     ;;
     let rec mexpr =
       function
@@ -591,7 +592,9 @@ let mklistexp loc =
     function
       [] -> MLast.ExUid (loc, "[]")
     | e1 :: el ->
-        let loc = if top then loc else fst (MLast.loc_of_expr e1), snd loc in
+        let loc =
+          if top then loc else Token.encl_loc (MLast.loc_of_expr e1) loc
+        in
         MLast.ExApp
           (loc, MLast.ExApp (loc, MLast.ExUid (loc, "::"), e1), loop false el)
   in
@@ -603,7 +606,9 @@ let mklistpat loc =
     function
       [] -> MLast.PaUid (loc, "[]")
     | p1 :: pl ->
-        let loc = if top then loc else fst (MLast.loc_of_patt p1), snd loc in
+        let loc =
+          if top then loc else Token.encl_loc (MLast.loc_of_patt p1) loc
+        in
         MLast.PaApp
           (loc, MLast.PaApp (loc, MLast.PaUid (loc, "::"), p1), loop false pl)
   in
@@ -809,7 +814,7 @@ let quotify_action psl act =
     (fun e ps ->
        match ps.pattern with
          Some (MLast.PaTup (_, pl)) ->
-           let loc = 0, 0 in
+           let loc = Token.dummy_loc in
            let pname = pname_of_ptuple pl in
            let (pl1, el1) =
              let (l, _) =
@@ -849,7 +854,7 @@ let rec make_ctyp styp tvar =
   | STquo (loc, s) -> MLast.TyQuo (loc, s)
   | STself (loc, x) ->
       if tvar = "" then
-        Stdpp.raise_with_loc loc
+        Token.raise_with_loc loc
           (Stream.Error ("'" ^ x ^ "' illegal in anonymous entry level"))
       else MLast.TyQuo (loc, tvar)
   | STtyp t -> t
@@ -2017,13 +2022,13 @@ Grammar.extend
      [[Gramext.Stoken ("ANTIQUOT", "")],
       Gramext.action
         (fun (i : string) (loc : Token.location) ->
-           (let shift = fst loc + String.length "$" in
+           (let shift = Token.first_pos loc + String.length "$" in
             let e =
               try Grammar.Entry.parse Pcaml.expr_eoi (Stream.of_string i) with
                 Exc_located ((bp, ep), exc) ->
                   raise_with_loc (shift + bp, shift + ep) exc
             in
-            Pcaml.expr_reloc (fun (bp, ep) -> shift + bp, shift + ep) 0 e :
+            Pcaml.expr_reloc (Token.shift_loc shift) 0 e :
             'string));
       [Gramext.Stoken ("STRING", "")],
       Gramext.action

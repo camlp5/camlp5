@@ -37,7 +37,7 @@ type pretty =
   | Vbox of Stream.t pretty
   | BEbox of Stream.t pretty
   | BEVbox of Stream.t pretty
-  | LocInfo of (int * int) and pretty ]
+  | LocInfo of Token.location and pretty ]
 ;
 type getcomm = int -> int -> (string * int * int * int);
 

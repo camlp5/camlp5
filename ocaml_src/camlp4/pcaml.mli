@@ -149,7 +149,7 @@ val inter_phrases : string option ref;;
 
 (* for system use *)
 
-val warning : (int * int -> string -> unit) ref;;
+val warning : (Token.location -> string -> unit) ref;;
 val expr_eoi : MLast.expr Grammar.Entry.e;;
 val patt_eoi : MLast.patt Grammar.Entry.e;;
 val arg_spec_list : unit -> (string * Arg.spec * string) list;;

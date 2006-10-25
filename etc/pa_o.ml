@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.5 2006/10/16 14:20:34 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.6 2006/10/25 15:55:31 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -74,7 +74,9 @@ value mklistexp loc last =
         [ Some e -> e
         | None -> <:expr< [] >> ]
     | [e1 :: el] ->
-        let loc = if top then loc else (fst (MLast.loc_of_expr e1), snd loc) in
+        let loc =
+          if top then loc else Token.encl_loc (MLast.loc_of_expr e1) loc
+        in
         <:expr< [$e1$ :: $loop False el$] >> ]
 ;
 
@@ -86,7 +88,9 @@ value mklistpat loc last =
         [ Some p -> p
         | None -> <:patt< [] >> ]
     | [p1 :: pl] ->
-        let loc = if top then loc else (fst (MLast.loc_of_patt p1), snd loc) in
+        let loc =
+          if top then loc else Token.encl_loc (MLast.loc_of_patt p1) loc
+        in
         <:patt< [$p1$ :: $loop False pl$] >> ]
 ;
 
@@ -301,7 +305,7 @@ value rec constr_expr_arity loc =
   | <:expr< $uid:_$.$e$ >> -> constr_expr_arity loc e
   | <:expr< $e$ $_$ >> ->
       if is_expr_constr_call e then
-        Stdpp.raise_with_loc loc (Stream.Error "currified constructor")
+        Token.raise_with_loc loc (Stream.Error "currified constructor")
       else 1
   | _ -> 1 ]
 ;
@@ -321,7 +325,7 @@ value rec constr_patt_arity loc =
   | <:patt< $uid:_$.$p$ >> -> constr_patt_arity loc p
   | <:patt< $p$ $_$ >> ->
       if is_patt_constr_call p then
-        Stdpp.raise_with_loc loc (Stream.Error "currified constructor")
+        Token.raise_with_loc loc (Stream.Error "currified constructor")
       else 1
   | _ -> 1 ]
 ;

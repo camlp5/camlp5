@@ -22,7 +22,7 @@ type pretty =
   | Vbox of Stream.t pretty
   | BEbox of Stream.t pretty
   | BEVbox of Stream.t pretty
-  | LocInfo of (int * int) and pretty ]
+  | LocInfo of Token.location and pretty ]
 ;
 type prettyL =
   [ SL of int and glue and string
@@ -444,7 +444,8 @@ value rec conv =
   | Vbox x -> VL (conv_stream x)
   | BEbox x -> BE (conv_stream x)
   | BEVbox x -> BV (conv_stream x)
-  | LocInfo (bp, ep) x ->
+  | LocInfo loc x ->
+      let (bp, ep) = Token.unmake_loc loc in
       let (comm, nl_bef, tab_bef, cnt) =
         let len = bp - last_ep.val in
         if len > 0 then getcomm.val last_ep.val len

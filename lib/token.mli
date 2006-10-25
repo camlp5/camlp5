@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.mli,v 1.4 2006/10/16 15:22:16 deraugla Exp $ *)
+(* $Id: token.mli,v 1.5 2006/10/25 15:55:31 deraugla Exp $ *)
 
 (** Lexers for Camlp4 grammars.
 
@@ -42,9 +42,14 @@ type lexer_func 'te = Stream.t char -> (Stream.t 'te * location_function);
       stream to be lexed. The result is a pair of a token stream and
       a location function for this tokens stream. *)
 
+value raise_with_loc : location -> exn -> 'a;
 value make_loc : (int * int) -> location;
+value encl_loc : location -> location -> location;
+value loc_of_char_after : location -> location;
+value shift_loc : int -> location -> location;
+value first_pos : location -> int;
+value last_pos : location -> int;
 value dummy_loc : location;
-  (** compatibility camlp4 distributed with ocaml *)
 
 type glexer 'te =
   { tok_func : lexer_func 'te;
@@ -120,6 +125,9 @@ value eval_string : location -> string -> string;
        returns [c] and [Token.eval_string (String.escaped s)] returns [s] *)
 
 (**/**)
+
+(* for system use *)
+value unmake_loc : location -> (int * int);
 
 (* deprecated since version 3.05; use rather type glexer *)
 type t = (string * string);

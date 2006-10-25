@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_o.ml,v 1.2 2006/09/30 02:04:00 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.3 2006/10/25 15:55:31 deraugla Exp $ *)
 
 open Pcaml;
 open Spretty;
@@ -143,7 +143,7 @@ value conv_lab =
 
 (* default global loc *)
 
-value loc = (0, 0);
+value loc = Token.dummy_loc;
 
 value id_var s =
   if has_special_chars s || is_infix s then
@@ -208,7 +208,8 @@ value rec labels loc b vl _ k =
   match vl with
   [ [] -> [: b; k :]
   | [v] ->
-      [: `label True b v "" k; `LocInfo (snd loc, snd loc) (HVbox [: :]) :]
+      [: `label True b v "" k;
+         `LocInfo (Token.loc_of_char_after loc) (HVbox [: :]) :]
   | [v :: l] -> [: `label False b v "" [: :]; labels loc [: :] l "" k :] ]
 and label is_last b (loc, f, m, t) _ k =
   let m = flag "mutable" m in
@@ -226,7 +227,9 @@ value rec ctyp_list tel _ k = listws simple_ctyp (S LR "*") tel "" k;
 value rec variants loc b vl dg k =
   match vl with
   [ [] -> [: b; k :]
-  | [v] -> [: `variant b v "" k; `LocInfo (snd loc, snd loc) (HVbox [: :]) :]
+  | [v] ->
+      [: `variant b v "" k;
+         `LocInfo (Token.loc_of_char_after loc) (HVbox [: :]) :]
   | [v :: l] ->
       [: `variant b v "" [: :]; variants loc [: `S LR "|" :] l "" k :] ]
 and variant b (loc, c, tl) _ k =
@@ -337,7 +340,8 @@ pr_expr_fun_args.val :=
       else ([], ge)
   | ge -> ([], ge) ];
 
-value raise_match_failure (bp, ep) k =
+value raise_match_failure loc k =
+  let (bp, ep) = Token.unmake_loc loc in
   let (fname, line, char, _) =
     if Pcaml.input_file.val <> "-" then
       Stdpp.line_of_loc Pcaml.input_file.val (bp, ep)
@@ -357,11 +361,7 @@ value rec bind_list b pel _ k =
   | pel ->
       Vbox [: `HVbox [: :]; listwbws let_binding b (S LR "and") pel "" k :] ]
 and let_binding b (p, e) _ k =
-  let loc =
-    let (bp1, ep1) = MLast.loc_of_patt p in
-    let (bp2, ep2) = MLast.loc_of_expr e in
-    (min bp1 bp2, max ep1 ep2)
-  in
+  let loc = Token.encl_loc (MLast.loc_of_patt p) (MLast.loc_of_expr e) in
   LocInfo loc (BEbox (let_binding0 b p e k))
 and let_binding0 b p e k =
   let (pl, e) =
@@ -588,11 +588,11 @@ and class_signature cs k =
         [: `S LO "["; listws ctyp (S RO ",") tl "" [: `S RO "]" :];
            `clty_longident id "" k :]
   | MLast.CtSig _ cst csf ->
-      let ep = snd (MLast.loc_of_class_type cs) in
+      let loc = Token.loc_of_char_after (MLast.loc_of_class_type cs) in
       class_self_type [: `S LR "object" :] cst
         [: `HVbox
               [: `HVbox [: :]; list class_sig_item csf "" [: :];
-                 `LocInfo (ep, ep) (HVbox [: :]) :];
+                 `LocInfo loc (HVbox [: :]) :];
            `HVbox [: `S LR "end"; k :] :]
   | _ -> HVbox [: `not_impl "class_signature" cs; k :] ]
 and class_self_type b cst k =
@@ -645,12 +645,12 @@ pr_module_type.pr_levels :=
       extfun Extfun.empty with
       [ <:module_type< sig $list:s$ end >> as mt ->
           fun curr next dg k ->
-            let ep = snd (MLast.loc_of_module_type mt) in
+            let loc = Token.loc_of_char_after (MLast.loc_of_module_type mt) in
             [: `BEbox
                   [: `S LR "sig";
                      `HVbox
                         [: `HVbox [: :]; list sig_item s "" [: :];
-                           `LocInfo (ep, ep) (HVbox [: :]) :];
+                           `LocInfo loc (HVbox [: :]) :];
                      `HVbox [: `S LR "end"; k :] :] :]
       | e -> fun curr next dg k -> [: `next e dg k :] ]};
    {pr_label = ""; pr_box mt x = HVbox x;
@@ -679,11 +679,11 @@ pr_module_expr.pr_levels :=
       extfun Extfun.empty with
       [ <:module_expr< struct $list:s$ end >> as me ->
           fun curr next dg k ->
-            let ep = snd (MLast.loc_of_module_expr me) in
+            let loc = Token.loc_of_char_after (MLast.loc_of_module_expr me) in
             [: `HVbox [: :];
                `HVbox
                   [: `S LR "struct"; list str_item s "" [: :];
-                     `LocInfo (ep, ep) (HVbox [: :]) :];
+                     `LocInfo loc (HVbox [: :]) :];
                `HVbox [: `S LR "end"; k :] :]
       | <:module_expr< functor ($s$ : $mt$) -> $me$ >> ->
           fun curr next dg k ->
@@ -1766,13 +1766,13 @@ pr_class_expr.pr_levels :=
             [: `S LO "["; listws ctyp (S RO ",") ctcl "" [: `S RO "]" :];
                `class_longident ci "" k :]
       | MLast.CeStr _ csp cf as ce ->
-          let ep = snd (MLast.loc_of_class_expr ce) in
+          let loc = Token.loc_of_char_after (MLast.loc_of_class_expr ce) in
           fun curr next dg k ->
             [: `BEbox
                   [: `HVbox [: `S LR "object"; `class_self_patt_opt csp :];
                      `HVbox
                         [: `HVbox [: :]; list class_str_item cf "" [: :];
-                           `LocInfo (ep, ep) (HVbox [: :]) :];
+                           `LocInfo loc (HVbox [: :]) :];
                      `HVbox [: `S LR "end"; k :] :] :]
       | MLast.CeTyc _ ce ct ->
           fun curr next dg k ->
@@ -1942,7 +1942,8 @@ value apply_printer printer ast =
     try
       let (first, last_pos) =
         List.fold_left
-          (fun (first, last_pos) (si, (bp, ep)) ->
+          (fun (first, last_pos) (si, loc) ->
+             let (bp, ep) = Token.unmake_loc loc in
              do {
                copy_source ic oc first last_pos bp;
                flush oc;

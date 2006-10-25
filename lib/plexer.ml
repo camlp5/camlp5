@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.2 2006/09/29 12:46:20 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.3 2006/10/25 15:55:31 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -121,7 +121,7 @@ and end_exponent_part_under len =
 ;
 
 value error_on_unknown_keywords = ref False;
-value err loc msg = raise_with_loc loc (Token.Error msg);
+value err loc msg = Stdpp.raise_with_loc loc (Token.Error msg);
 
 value next_token_fun dfa ssd find_kwd bolpos glexr =
   let keyword_or_error loc s =
@@ -411,16 +411,16 @@ value next_token_fun dfa ssd find_kwd bolpos glexr =
     try
       let glex = glexr.val in
       let comm_bp = Stream.count cstrm in
-      let r = next_token False cstrm in
+      let (r, loc) = next_token False cstrm in
       do {
         match glex.tok_comm with
         [ Some list ->
-            if fst (snd r) > comm_bp then
-              let comm_loc = (comm_bp, fst (snd r)) in
+            if fst loc > comm_bp then
+              let comm_loc = Token.make_loc (comm_bp, fst loc) in
               glex.tok_comm := Some [comm_loc :: list]
             else ()
         | None -> () ];
-        r
+        (r, make_loc loc)
       }
     with
     [ Stream.Error str ->

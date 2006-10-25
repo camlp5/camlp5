@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.1 2006/09/29 04:45:49 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.2 2006/10/25 15:55:31 deraugla Exp $ *)
 
 open Pcaml;
 open Format;
@@ -787,7 +787,8 @@ value apply_printer printer ast =
     try
       let (first, last_pos) =
         List.fold_left
-          (fun (first, last_pos) (si, (bp, ep)) ->
+          (fun (first, last_pos) (si, loc) ->
+             let (bp, ep) = Token.unmake_loc loc in
              do {
                fprintf ppf "@[%a@]@?" copy_source (ic, first, last_pos, bp);
                fprintf ppf "@[%a@]@?" printer (si, nok);
