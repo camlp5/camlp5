@@ -153,6 +153,11 @@ let next_token_fun dfa ssd find_kwd glexr =
         if !error_on_unknown_keywords then err loc ("illegal token: " ^ s)
         else ("", s), loc
   in
+  let line_cnt c =
+    match c with
+      '\n' | '\r' -> incr line_nb; c
+    | c -> c
+  in
   let rec next_token after_space (strm__ : _ Stream.t) =
     let bp = Stream.count strm__ in
     match Stream.peek strm__ with
@@ -368,10 +373,11 @@ let next_token_fun dfa ssd find_kwd glexr =
         Stream.junk strm__;
         begin match Stream.peek strm__ with
           Some c ->
-            Stream.junk strm__; string bp (store (store len '\\') c) strm__
+            Stream.junk strm__;
+            string bp (store (store len '\\') (line_cnt c)) strm__
         | _ -> raise (Stream.Error "")
         end
-    | Some c -> Stream.junk strm__; string bp (store len c) strm__
+    | Some c -> Stream.junk strm__; string bp (store len (line_cnt c)) strm__
     | _ ->
         let ep = Stream.count strm__ in err (bp, ep) "string not terminated"
   and char bp len (strm__ : _ Stream.t) =
@@ -851,11 +857,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 624, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 624, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 624, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 625, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 625, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 629, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 629, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 629, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 630, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 630, 37)));
        tok_comm = None}
   in
   let glex =
@@ -885,11 +891,11 @@ let make () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 653, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 653, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 653, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 654, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 654, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 658, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 658, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 658, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 659, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 659, 37)));
        tok_comm = None}
   in
   {func = func kwd_table glexr; using = using_token kwd_table id_table;

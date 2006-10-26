@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.7 2006/10/26 05:35:49 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.8 2006/10/26 06:01:55 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -133,6 +133,11 @@ value next_token_fun dfa ssd find_kwd glexr =
     [ Not_found ->
         if error_on_unknown_keywords.val then err loc ("illegal token: " ^ s)
         else (("", s), loc) ]
+  in
+  let line_cnt c =
+    match c with
+    [ '\n' | '\r' -> do { incr line_nb; c }
+    | c -> c ]
   in
   let rec next_token after_space =
     parser bp
@@ -257,8 +262,8 @@ value next_token_fun dfa ssd find_kwd glexr =
   and string bp len =
     parser
     [ [: `'"' :] -> len
-    | [: `'\\'; `c; s :] -> string bp (store (store len '\\') c) s
-    | [: `c; s :] -> string bp (store len c) s
+    | [: `'\\'; `c; s :] -> string bp (store (store len '\\') (line_cnt c)) s
+    | [: `c; s :] -> string bp (store len (line_cnt c)) s
     | [: :] ep -> err (bp, ep) "string not terminated" ]
   and char bp len =
     parser
