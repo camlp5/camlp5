@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.8 2006/10/26 06:01:55 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.9 2006/10/26 13:04:07 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -330,7 +330,7 @@ value next_token_fun dfa ssd find_kwd glexr =
            | [: :] -> store len '\\' ];
          s :] ->
         quotation bp len s
-    | [: `c; s :] -> quotation bp (store len c) s
+    | [: `c; s :] -> quotation bp (store len (line_cnt c)) s
     | [: :] ep -> err (bp, ep) "quotation not terminated" ]
   and maybe_nested_quotation bp len =
     parser

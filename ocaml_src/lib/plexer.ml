@@ -503,7 +503,8 @@ let next_token_fun dfa ssd find_kwd glexr =
             Stream.Failure -> raise (Stream.Error "")
         in
         quotation bp len strm__
-    | Some c -> Stream.junk strm__; quotation bp (store len c) strm__
+    | Some c ->
+        Stream.junk strm__; quotation bp (store len (line_cnt c)) strm__
     | _ ->
         let ep = Stream.count strm__ in
         err (bp, ep) "quotation not terminated"
