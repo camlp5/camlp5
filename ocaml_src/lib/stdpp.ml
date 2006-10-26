@@ -26,6 +26,63 @@ value encl_loc (bp1, ep1) (bp2, ep2) = (min bp1 bp2, max ep1 ep2);
 value shift_loc sh (bp, ep) = (sh + bp, sh + ep);
 value sub_loc (bp, _) sh len = (bp + sh, bp + sh + len);
 value after_loc (_, ep) sh len = (ep + sh, ep + sh + len);
+
+value line_of_loc fname loc =
+  let (bp, ep) = (first_pos loc, last_pos loc) in
+  try
+    let ic = open_in_bin fname in
+    let strm = Stream.of_channel ic in
+    let rec loop fname lin =
+      let rec not_a_line_dir col =
+        parser cnt
+          [: `c; s :] ->
+            if cnt < bp then
+              if c = '\n' then loop fname (lin + 1)
+              else not_a_line_dir (col + 1) s
+            else
+              let col = col - (cnt - bp) in
+              (fname, lin, col, col + ep - bp)
+      in
+      let rec a_line_dir str n col =
+        parser
+        [ [: `'\n' :] -> loop str n
+        | [: `_; s :] -> a_line_dir str n (col + 1) s ]
+      in
+      let rec spaces col =
+        parser
+        [ [: `' '; s :] -> spaces (col + 1) s
+        | [: :] -> col ]
+      in
+      let rec check_string str n col =
+        parser
+        [ [: `'"'; col = spaces (col + 1); s :] -> a_line_dir str n col s
+        | [: `c when c <> '\n'; s :] ->
+            check_string (str ^ String.make 1 c) n (col + 1) s
+        | [: a = not_a_line_dir col :] -> a ]
+      in
+      let check_quote n col =
+        parser
+        [ [: `'"'; s :] -> check_string "" n (col + 1) s
+        | [: a = not_a_line_dir col :] -> a ]
+      in
+      let rec check_num n col =
+        parser
+        [ [: `('0'..'9' as c); s :] ->
+            check_num (10 * n + Char.code c - Char.code '0') (col + 1) s
+        | [: col = spaces col; s :] -> check_quote n col s ]
+      in
+      let begin_line =
+        parser
+        [ [: `'#'; col = spaces 1; s :] -> check_num 0 col s
+        | [: a = not_a_line_dir 0 :] -> a ]
+      in
+      begin_line strm
+    in
+    let r = try loop fname 1 with [ Stream.Failure -> (fname, 1, bp, ep) ] in
+    do { close_in ic; r }
+  with
+  [ Sys_error _ -> (fname, 1, bp, ep) ]
+;
 *)
 
 type location = { line_nb : int; bol_pos : int; bp : int; ep : int };;
@@ -35,7 +92,7 @@ let make_loc (bp, ep) = {line_nb = -1; bol_pos = 0; bp = bp; ep = ep};;
 let first_pos loc = loc.bp;;
 let last_pos loc = loc.ep;;
 let make_lined_loc line_nb bol_pos (bp, ep) =
-  {line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep}
+  {line_nb = line_nb; bol_pos = bol_pos - 1; bp = bp; ep = ep}
 ;;
 let line_nb loc = loc.line_nb;;
 let bol_pos loc = loc.bol_pos;;
@@ -47,6 +104,11 @@ let sub_loc loc sh len = {loc with bp = loc.bp + sh; ep = loc.bp + sh + len};;
 let after_loc loc sh len =
   {loc with bp = loc.ep + sh; ep = loc.ep + sh + len}
 ;;
+
+let line_of_loc fname loc =
+  fname, loc.line_nb, loc.bp - loc.bol_pos, loc.ep - loc.bol_pos
+;;
+
 (**)
 
 exception Exc_located of location * exn;;
@@ -55,83 +117,6 @@ let raise_with_loc loc exc =
   match exc with
     Exc_located (_, _) -> raise exc
   | _ -> raise (Exc_located (loc, exc))
-;;
-
-let line_of_loc fname loc =
-  let (bp, ep) = first_pos loc, last_pos loc in
-  try
-    let ic = open_in_bin fname in
-    let strm = Stream.of_channel ic in
-    let rec loop fname lin =
-      let rec not_a_line_dir col (strm__ : _ Stream.t) =
-        let cnt = Stream.count strm__ in
-        match Stream.peek strm__ with
-          Some c ->
-            Stream.junk strm__;
-            let s = strm__ in
-            if cnt < bp then
-              if c = '\n' then loop fname (lin + 1)
-              else not_a_line_dir (col + 1) s
-            else let col = col - (cnt - bp) in fname, lin, col, col + ep - bp
-        | _ -> raise Stream.Failure
-      in
-      let rec a_line_dir str n col (strm__ : _ Stream.t) =
-        match Stream.peek strm__ with
-          Some '\n' -> Stream.junk strm__; loop str n
-        | Some _ -> Stream.junk strm__; a_line_dir str n (col + 1) strm__
-        | _ -> raise Stream.Failure
-      in
-      let rec spaces col (strm__ : _ Stream.t) =
-        match Stream.peek strm__ with
-          Some ' ' -> Stream.junk strm__; spaces (col + 1) strm__
-        | _ -> col
-      in
-      let rec check_string str n col (strm__ : _ Stream.t) =
-        match Stream.peek strm__ with
-          Some '\"' ->
-            Stream.junk strm__;
-            let col =
-              try spaces (col + 1) strm__ with
-                Stream.Failure -> raise (Stream.Error "")
-            in
-            a_line_dir str n col strm__
-        | Some c when c <> '\n' ->
-            Stream.junk strm__;
-            check_string (str ^ String.make 1 c) n (col + 1) strm__
-        | _ -> not_a_line_dir col strm__
-      in
-      let check_quote n col (strm__ : _ Stream.t) =
-        match Stream.peek strm__ with
-          Some '\"' -> Stream.junk strm__; check_string "" n (col + 1) strm__
-        | _ -> not_a_line_dir col strm__
-      in
-      let rec check_num n col (strm__ : _ Stream.t) =
-        match Stream.peek strm__ with
-          Some ('0'..'9' as c) ->
-            Stream.junk strm__;
-            check_num (10 * n + Char.code c - Char.code '0') (col + 1) strm__
-        | _ -> let col = spaces col strm__ in check_quote n col strm__
-      in
-      let begin_line (strm__ : _ Stream.t) =
-        match Stream.peek strm__ with
-          Some '#' ->
-            Stream.junk strm__;
-            let col =
-              try spaces 1 strm__ with
-                Stream.Failure -> raise (Stream.Error "")
-            in
-            check_num 0 col strm__
-        | _ -> not_a_line_dir 0 strm__
-      in
-      begin_line strm
-    in
-    let r =
-      try loop fname 1 with
-        Stream.Failure -> fname, 1, bp, ep
-    in
-    close_in ic; r
-  with
-    Sys_error _ -> fname, 1, bp, ep
 ;;
 
 let loc_name = ref "loc";;
