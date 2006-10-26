@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.6 2006/10/25 22:53:28 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.7 2006/10/26 05:35:49 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -125,7 +125,8 @@ value err loc msg =
   Stdpp.raise_with_loc (Stdpp.make_loc loc) (Token.Error msg)
 ;
 
-value next_token_fun dfa ssd find_kwd bolpos glexr =
+value next_token_fun dfa ssd find_kwd glexr =
+  let bolpos = ref 0 in
   let line_nb = ref 1 in
   let keyword_or_error loc s =
     try (("", find_kwd s), loc) with
@@ -135,7 +136,7 @@ value next_token_fun dfa ssd find_kwd bolpos glexr =
   in
   let rec next_token after_space =
     parser bp
-    [ [: `'\010' | '\013'; s :] ep ->
+    [ [: `'\n' | '\r'; s :] ep ->
         do { bolpos.val := ep; incr line_nb; next_token True s }
     | [: `' ' | '\t' | '\026' | '\012'; s :] -> next_token True s
     | [: `'#' when bp = bolpos.val; s :] ->
@@ -350,6 +351,7 @@ value next_token_fun dfa ssd find_kwd bolpos glexr =
     | [: `'*'; s :] -> star_in_comment bp s
     | [: `'"'; _ = string bp 0; s :] -> comment bp s
     | [: `'''; s :] -> quote_in_comment bp s
+    | [: `'\n' | '\r'; s :] -> do { incr line_nb; comment bp s }
     | [: `c; s :] -> comment bp s
     | [: :] ep -> err (bp, ep) "comment not terminated" ]
   and quote_in_comment bp =
@@ -406,7 +408,7 @@ value next_token_fun dfa ssd find_kwd bolpos glexr =
     | _ -> False ]
   and any_to_nl =
     parser
-    [ [: `'\013' | '\010' :] ep -> bolpos.val := ep
+    [ [: `'\r' | '\n' :] ep -> bolpos.val := ep
     | [: `_; s :] -> any_to_nl s
     | [: :] -> () ]
   in
@@ -434,11 +436,10 @@ value dollar_for_antiquotation = ref True;
 value specific_space_dot = ref False;
 
 value func kwd_table glexr =
-  let bolpos = ref 0 in
   let find = Hashtbl.find kwd_table in
   let dfa = dollar_for_antiquotation.val in
   let ssd = specific_space_dot.val in
-  Token.lexer_func_of_parser (next_token_fun dfa ssd find bolpos glexr)
+  Token.lexer_func_of_parser (next_token_fun dfa ssd find glexr)
 ;
 
 value rec check_keyword_stream =
