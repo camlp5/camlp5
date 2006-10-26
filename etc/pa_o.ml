@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.7 2006/10/25 18:54:48 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.8 2006/10/26 12:23:29 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -643,8 +643,8 @@ EXTEND
       | UIDENT "True" -> <:expr< $uid:" True"$ >>
       | UIDENT "False" -> <:expr< $uid:" False"$ >>
       | i = expr_ident -> i
-      | s = "false" -> <:expr< False >>
-      | s = "true" -> <:expr< True >>
+      | "false" -> <:expr< False >>
+      | "true" -> <:expr< True >>
       | "["; "]" -> <:expr< [] >>
       | "["; el = expr1_semi_list; "]" -> <:expr< $mklistexp loc None el$ >>
       | "[|"; "|]" -> <:expr< [| |] >>
@@ -776,8 +776,8 @@ EXTEND
       | s = CHAR -> <:patt< $chr:s$ >>
       | UIDENT "True" -> <:patt< $uid:" True"$ >>
       | UIDENT "False" -> <:patt< $uid:" False"$ >>
-      | s = "false" -> <:patt< False >>
-      | s = "true" -> <:patt< True >>
+      | "false" -> <:patt< False >>
+      | "true" -> <:patt< True >>
       | "["; "]" -> <:patt< [] >>
       | "["; pl = patt_semi_list; "]" -> <:patt< $mklistpat loc None pl$ >>
       | "[|"; "|]" -> <:patt< [| |] >>
