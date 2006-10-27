@@ -69,7 +69,22 @@ let rec patt floc sh =
       PaAcc (loc, x1, x2) -> PaAcc (floc loc, self x1, self x2)
     | PaAli (loc, x1, x2) -> PaAli (floc loc, self x1, self x2)
     | PaAnt (loc, x1) ->
-        patt (Stdpp.shift_loc (sh + Stdpp.first_pos loc)) 0 x1
+        let new_floc loc1 =
+          let qloc = floc loc in
+          Stdpp.make_lined_loc
+            (Stdpp.line_nb qloc + Stdpp.line_nb loc + Stdpp.line_nb loc1 - 2)
+            (if Stdpp.line_nb loc1 = 1 then
+               if Stdpp.line_nb loc = 1 then Stdpp.bol_pos qloc
+               else Stdpp.first_pos qloc + sh + Stdpp.bol_pos loc
+             else
+               Stdpp.first_pos qloc + sh + Stdpp.first_pos loc +
+                 Stdpp.bol_pos loc1)
+            (Stdpp.first_pos qloc + sh + Stdpp.first_pos loc +
+               Stdpp.first_pos loc1,
+             Stdpp.first_pos qloc + sh + Stdpp.first_pos loc +
+               Stdpp.last_pos loc1)
+        in
+        patt new_floc sh x1
     | PaAny loc -> PaAny (floc loc)
     | PaApp (loc, x1, x2) -> PaApp (floc loc, self x1, self x2)
     | PaArr (loc, x1) -> PaArr (floc loc, List.map self x1)
@@ -100,7 +115,22 @@ and expr floc sh =
     function
       ExAcc (loc, x1, x2) -> ExAcc (floc loc, self x1, self x2)
     | ExAnt (loc, x1) ->
-        expr (Stdpp.shift_loc (sh + Stdpp.first_pos loc)) 0 x1
+        let new_floc loc1 =
+          let qloc = floc loc in
+          Stdpp.make_lined_loc
+            (Stdpp.line_nb qloc + Stdpp.line_nb loc + Stdpp.line_nb loc1 - 2)
+            (if Stdpp.line_nb loc1 = 1 then
+               if Stdpp.line_nb loc = 1 then Stdpp.bol_pos qloc
+               else Stdpp.first_pos qloc + sh + Stdpp.bol_pos loc
+             else
+               Stdpp.first_pos qloc + sh + Stdpp.first_pos loc +
+                 Stdpp.bol_pos loc1)
+            (Stdpp.first_pos qloc + sh + Stdpp.first_pos loc +
+               Stdpp.first_pos loc1,
+             Stdpp.first_pos qloc + sh + Stdpp.first_pos loc +
+               Stdpp.last_pos loc1)
+        in
+        expr new_floc sh x1
     | ExApp (loc, x1, x2) -> ExApp (floc loc, self x1, self x2)
     | ExAre (loc, x1, x2) -> ExAre (floc loc, self x1, self x2)
     | ExArr (loc, x1) -> ExArr (floc loc, List.map self x1)

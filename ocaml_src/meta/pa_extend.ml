@@ -2028,7 +2028,7 @@ Grammar.extend
                 Exc_located (loc, exc) ->
                   raise_with_loc (shift_loc shift loc) exc
             in
-            Pcaml.expr_reloc (Stdpp.shift_loc shift) 0 e :
+            Pcaml.expr_reloc (fun _ -> loc) shift e :
             'string));
       [Gramext.Stoken ("STRING", "")],
       Gramext.action

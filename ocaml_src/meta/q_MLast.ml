@@ -67,7 +67,15 @@ module Qast =
             try Grammar.Entry.parse Pcaml.expr_eoi (Stream.of_string s) with
               Stdpp.Exc_located (loc1, exc) ->
                 let shift = Stdpp.first_pos loc in
-                raise (Stdpp.Exc_located (Stdpp.shift_loc shift loc1, exc))
+                let loc =
+                  Stdpp.make_lined_loc
+                    (Stdpp.line_nb loc + Stdpp.line_nb loc1 - 1)
+                    (if Stdpp.line_nb loc1 = 1 then Stdpp.bol_pos loc
+                     else shift + Stdpp.bol_pos loc1)
+                    (shift + Stdpp.first_pos loc1,
+                     shift + Stdpp.last_pos loc1)
+                in
+                raise (Stdpp.Exc_located (loc, exc))
           in
           MLast.ExAnt (loc, e)
     and to_expr_label (l, a) =
@@ -119,11 +127,16 @@ module Qast =
 ;;
 
 let antiquot k loc x =
-  let shift =
+  let shift_bp =
     if k = "" then String.length "$"
     else String.length "$" + String.length k + String.length ":"
   in
-  Qast.Antiquot (Stdpp.shift_loc shift loc, x)
+  let shift_ep = String.length "$" in
+  let loc =
+    Stdpp.make_lined_loc (Stdpp.line_nb loc) (Stdpp.bol_pos loc)
+      (Stdpp.first_pos loc + shift_bp, Stdpp.last_pos loc - shift_ep)
+  in
+  Qast.Antiquot (loc, x)
 ;;
 
 let sig_item = Grammar.Entry.create gram "signature item";;
@@ -628,7 +641,7 @@ Grammar.extend
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
               | _ ->
                   match () with
-                  _ -> raise (Match_failure ("q_MLast.ml", 296, 20))
+                  _ -> raise (Match_failure ("q_MLast.ml", 309, 20))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -901,7 +914,7 @@ Grammar.extend
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
               | _ ->
                   match () with
-                  _ -> raise (Match_failure ("q_MLast.ml", 351, 20))
+                  _ -> raise (Match_failure ("q_MLast.ml", 364, 20))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.5 2006/10/25 18:54:48 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.6 2006/10/27 15:36:59 deraugla Exp $ *)
 
 open Stdpp;
 
@@ -418,7 +418,8 @@ value rec make_expr gmod tvar =
       [ Some lab ->
           <:expr<
              Gramext.Snterml
-               ($uid:gmod$.Entry.obj ($n.expr$ : $uid:gmod$.Entry.e '$n.tvar$))
+               ($uid:gmod$.Entry.obj
+                  ($n.expr$ : $uid:gmod$.Entry.e '$n.tvar$))
                $str:lab$ >>
       | None ->
           if n.tvar = tvar then <:expr< Gramext.Sself >>
@@ -907,7 +908,7 @@ EXTEND
             [ Exc_located loc exc ->
                 raise_with_loc (shift_loc shift loc) exc ]
           in
-          Pcaml.expr_reloc (Stdpp.shift_loc shift) 0 e ] ]
+          Pcaml.expr_reloc (fun _ -> loc) shift e ] ]
   ;
 END;
 

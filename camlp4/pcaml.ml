@@ -167,7 +167,6 @@ value handle_quotation loc proj in_expr entry reloc (name, str) =
     | Quotation.ExAst fe_fp ->
         expand_quotation loc (proj fe_fp) shift name str ]
   in
-  let shift = Stdpp.first_pos loc + shift in
   reloc (fun _ -> loc) shift ast
 ;
 
