@@ -143,7 +143,7 @@ let rec parse_file pa getdir useast =
                 end
             | None -> pl
           in
-          pl @ loop ()
+          Token.restore_line_nb := true; pl @ loop ()
         else pl
       in
       loop ()

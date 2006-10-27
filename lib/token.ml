@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.ml,v 1.9 2006/10/27 10:52:02 deraugla Exp $ *)
+(* $Id: token.ml,v 1.10 2006/10/27 20:57:11 deraugla Exp $ *)
 
 type t = (string * string);
 type pattern = (string * string);
@@ -230,3 +230,6 @@ value default_match =
       fun (con, prm) ->
         if con = p_con && prm = p_prm then prm else raise Stream.Failure ]
 ;
+
+value line_nb = ref (ref 0);
+value restore_line_nb = ref False;

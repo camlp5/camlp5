@@ -225,3 +225,6 @@ let default_match =
       fun (con, prm) ->
         if con = p_con && prm = p_prm then prm else raise Stream.Failure
 ;;
+
+let line_nb = ref (ref 0);;
+let restore_line_nb = ref false;;

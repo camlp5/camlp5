@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.mli,v 1.8 2006/10/27 10:52:02 deraugla Exp $ *)
+(* $Id: token.mli,v 1.9 2006/10/27 20:57:11 deraugla Exp $ *)
 
 (** Lexers for Camlp4 grammars.
 
@@ -121,6 +121,9 @@ value eval_string : location -> string -> string;
        been interpreted into a real char or string; raise [Failure] if
        bad backslash sequence found; [Token.eval_char (Char.escaped c)]
        returns [c] and [Token.eval_string (String.escaped s)] returns [s] *)
+
+value restore_line_nb : ref bool;
+value line_nb : ref (ref int);
 
 (**/**)
 

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.11 2006/10/27 20:39:28 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.12 2006/10/27 20:57:11 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -126,7 +126,7 @@ value err loc msg =
 ;
 
 value bol_pos = ref (ref 0);
-value line_nb = ref (ref 0);
+value line_nb = Token.line_nb;
 
 value next_token_fun dfa ssd find_kwd glexr =
   let keyword_or_error loc s =
@@ -427,6 +427,11 @@ value next_token_fun dfa ssd find_kwd glexr =
   in
   fun (cstrm, s_line_nb, s_bol_pos) ->
     try do {
+      if Token.restore_line_nb.val then do {
+        s_line_nb.val := line_nb.val.val;
+        Token.restore_line_nb.val := False;
+      }
+      else ();
       line_nb.val := s_line_nb;
       bol_pos.val := s_bol_pos;
       let glex = glexr.val in

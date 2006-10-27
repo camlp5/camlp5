@@ -145,7 +145,7 @@ let err loc msg =
 ;;
 
 let bol_pos = ref (ref 0);;
-let line_nb = ref (ref 0);;
+let line_nb = Token.line_nb;;
 
 let next_token_fun dfa ssd find_kwd glexr =
   let keyword_or_error loc s =
@@ -638,6 +638,8 @@ let next_token_fun dfa ssd find_kwd glexr =
   in
   fun (cstrm, s_line_nb, s_bol_pos) ->
     try
+      if !(Token.restore_line_nb) then
+        begin s_line_nb := !(!line_nb); Token.restore_line_nb := false end;
       line_nb := s_line_nb;
       bol_pos := s_bol_pos;
       let glex = !glexr in
@@ -873,11 +875,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 638, 18)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 638, 38)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 638, 61)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 639, 19)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 639, 38)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 643, 18)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 643, 38)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 643, 61)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 644, 19)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 644, 38)));
        tok_comm = None}
   in
   let glex =
@@ -907,11 +909,11 @@ let make () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 667, 18)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 667, 38)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 667, 61)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 668, 19)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 668, 38)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 672, 18)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 672, 38)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 672, 61)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 673, 19)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 673, 38)));
        tok_comm = None}
   in
   {func = func kwd_table glexr; using = using_token kwd_table id_table;
