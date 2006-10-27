@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.10 2006/10/27 10:52:02 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.11 2006/10/27 20:39:28 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -125,7 +125,7 @@ value err loc msg =
   Stdpp.raise_with_loc (Stdpp.make_loc loc) (Token.Error msg)
 ;
 
-value bolpos = ref (ref 0);
+value bol_pos = ref (ref 0);
 value line_nb = ref (ref 0);
 
 value next_token_fun dfa ssd find_kwd glexr =
@@ -137,21 +137,21 @@ value next_token_fun dfa ssd find_kwd glexr =
   in
   let line_cnt bp1 c =
     match c with
-    [ '\n' | '\r' -> do { incr line_nb.val; bolpos.val.val := bp1 + 1; c }
+    [ '\n' | '\r' -> do { incr line_nb.val; bol_pos.val.val := bp1 + 1; c }
     | c -> c ]
   in
   let rec next_token after_space strm =
     let t_line_nb = line_nb.val.val in
-    let t_bolpos = bolpos.val.val in
+    let t_bol_pos = bol_pos.val.val in
     match strm with parser bp
     [ [: `'\n' | '\r'; s :] ep ->
-        do { bolpos.val.val := ep; incr line_nb.val; next_token True s }
+        do { bol_pos.val.val := ep; incr line_nb.val; next_token True s }
     | [: `' ' | '\t' | '\026' | '\012'; s :] -> next_token True s
-    | [: `'#' when bp = bolpos.val.val; s :] ->
+    | [: `'#' when bp = bol_pos.val.val; s :] ->
         if linedir 1 s then do { any_to_nl s; next_token True s }
-        else (keyword_or_error (bp, bp + 1) "#", t_line_nb, t_bolpos)
+        else (keyword_or_error (bp, bp + 1) "#", t_line_nb, t_bol_pos)
     | [: `'('; s :] -> left_paren bp s
-    | [: s :] -> (next_token_kont after_space s, t_line_nb, t_bolpos) ]
+    | [: s :] -> (next_token_kont after_space s, t_line_nb, t_bol_pos) ]
   and next_token_kont after_space =
     parser bp
     [ [: `('A'..'Z' | '\192'..'\214' | '\216'..'\222' as c); s :] ->
@@ -357,7 +357,7 @@ value next_token_fun dfa ssd find_kwd glexr =
     parser
     [ [: `'*'; _ = comment bp; a = next_token True :] -> a
     | [: :] ep ->
-        (keyword_or_error (bp, ep) "(", line_nb.val.val, bolpos.val.val) ]
+        (keyword_or_error (bp, ep) "(", line_nb.val.val, bol_pos.val.val) ]
   and comment bp =
     parser
     [ [: `'('; s :] -> left_paren_in_comment bp s
@@ -421,17 +421,17 @@ value next_token_fun dfa ssd find_kwd glexr =
     | _ -> False ]
   and any_to_nl =
     parser
-    [ [: `'\r' | '\n' :] ep -> bolpos.val.val := ep
+    [ [: `'\r' | '\n' :] ep -> bol_pos.val.val := ep
     | [: `_; s :] -> any_to_nl s
     | [: :] -> () ]
   in
-  fun (cstrm, s_line_nb, s_bolpos) ->
+  fun (cstrm, s_line_nb, s_bol_pos) ->
     try do {
       line_nb.val := s_line_nb;
-      bolpos.val := s_bolpos;
+      bol_pos.val := s_bol_pos;
       let glex = glexr.val in
       let comm_bp = Stream.count cstrm in
-      let ((r, loc), t_line_nb, t_bolpos) = next_token False cstrm in
+      let ((r, loc), t_line_nb, t_bol_pos) = next_token False cstrm in
       match glex.tok_comm with
       [ Some list ->
           if fst loc > comm_bp then
@@ -439,7 +439,7 @@ value next_token_fun dfa ssd find_kwd glexr =
             glex.tok_comm := Some [comm_loc :: list]
           else ()
       | None -> () ];
-      (r, make_lined_loc t_line_nb t_bolpos loc)
+      (r, make_lined_loc t_line_nb t_bol_pos loc)
     }
   with
   [ Stream.Error str ->

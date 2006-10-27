@@ -144,7 +144,7 @@ let err loc msg =
   Stdpp.raise_with_loc (Stdpp.make_loc loc) (Token.Error msg)
 ;;
 
-let bolpos = ref (ref 0);;
+let bol_pos = ref (ref 0);;
 let line_nb = ref (ref 0);;
 
 let next_token_fun dfa ssd find_kwd glexr =
@@ -156,12 +156,12 @@ let next_token_fun dfa ssd find_kwd glexr =
   in
   let line_cnt bp1 c =
     match c with
-      '\n' | '\r' -> incr !line_nb; !bolpos := bp1 + 1; c
+      '\n' | '\r' -> incr !line_nb; !bol_pos := bp1 + 1; c
     | c -> c
   in
   let rec next_token after_space strm =
     let t_line_nb = !(!line_nb) in
-    let t_bolpos = !(!bolpos) in
+    let t_bol_pos = !(!bol_pos) in
     let (strm__ : _ Stream.t) = strm in
     let bp = Stream.count strm__ in
     match Stream.peek strm__ with
@@ -169,16 +169,16 @@ let next_token_fun dfa ssd find_kwd glexr =
         Stream.junk strm__;
         let s = strm__ in
         let ep = Stream.count strm__ in
-        !bolpos := ep; incr !line_nb; next_token true s
+        !bol_pos := ep; incr !line_nb; next_token true s
     | Some (' ' | '\t' | '\026' | '\012') ->
         Stream.junk strm__; next_token true strm__
-    | Some '#' when bp = !(!bolpos) ->
+    | Some '#' when bp = !(!bol_pos) ->
         Stream.junk strm__;
         let s = strm__ in
         if linedir 1 s then begin any_to_nl s; next_token true s end
-        else keyword_or_error (bp, bp + 1) "#", t_line_nb, t_bolpos
+        else keyword_or_error (bp, bp + 1) "#", t_line_nb, t_bol_pos
     | Some '(' -> Stream.junk strm__; left_paren bp strm__
-    | _ -> next_token_kont after_space strm__, t_line_nb, t_bolpos
+    | _ -> next_token_kont after_space strm__, t_line_nb, t_bol_pos
   and next_token_kont after_space (strm__ : _ Stream.t) =
     let bp = Stream.count strm__ in
     match Stream.peek strm__ with
@@ -556,7 +556,7 @@ let next_token_fun dfa ssd find_kwd glexr =
         end
     | _ ->
         let ep = Stream.count strm__ in
-        keyword_or_error (bp, ep) "(", !(!line_nb), !(!bolpos)
+        keyword_or_error (bp, ep) "(", !(!line_nb), !(!bol_pos)
   and comment bp (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
       Some '(' -> Stream.junk strm__; left_paren_in_comment bp strm__
@@ -632,17 +632,17 @@ let next_token_fun dfa ssd find_kwd glexr =
   and any_to_nl (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
       Some ('\r' | '\n') ->
-        Stream.junk strm__; let ep = Stream.count strm__ in !bolpos := ep
+        Stream.junk strm__; let ep = Stream.count strm__ in !bol_pos := ep
     | Some _ -> Stream.junk strm__; any_to_nl strm__
     | _ -> ()
   in
-  fun (cstrm, s_line_nb, s_bolpos) ->
+  fun (cstrm, s_line_nb, s_bol_pos) ->
     try
       line_nb := s_line_nb;
-      bolpos := s_bolpos;
+      bol_pos := s_bol_pos;
       let glex = !glexr in
       let comm_bp = Stream.count cstrm in
-      let ((r, loc), t_line_nb, t_bolpos) = next_token false cstrm in
+      let ((r, loc), t_line_nb, t_bol_pos) = next_token false cstrm in
       begin match glex.tok_comm with
         Some list ->
           if fst loc > comm_bp then
@@ -650,7 +650,7 @@ let next_token_fun dfa ssd find_kwd glexr =
             glex.tok_comm <- Some (comm_loc :: list)
       | None -> ()
       end;
-      r, make_lined_loc t_line_nb t_bolpos loc
+      r, make_lined_loc t_line_nb t_bol_pos loc
     with
       Stream.Error str -> err (Stream.count cstrm, Stream.count cstrm + 1) str
 ;;
