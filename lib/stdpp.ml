@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: stdpp.ml,v 1.5 2006/10/26 10:32:36 deraugla Exp $ *)
+(* $Id: stdpp.ml,v 1.6 2006/10/27 10:52:02 deraugla Exp $ *)
 
 (*
 type location = (int * int);
@@ -92,7 +92,7 @@ value make_loc (bp, ep) = {line_nb = -1; bol_pos = 0; bp = bp; ep = ep};
 value first_pos loc = loc.bp;
 value last_pos loc = loc.ep;
 value make_lined_loc line_nb bol_pos (bp, ep) =
-  {line_nb = line_nb; bol_pos = bol_pos - 1; bp = bp; ep = ep}
+  {line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep}
 ;
 value line_nb loc = loc.line_nb;
 value bol_pos loc = loc.bol_pos;
@@ -108,7 +108,7 @@ value after_loc loc sh len =
 ;
 
 value line_of_loc fname loc =
-  (fname, loc.line_nb, loc.bp - loc.bol_pos, loc.ep - loc.bol_pos)
+  (fname, loc.line_nb, loc.bp - loc.bol_pos + 1, loc.ep - loc.bol_pos)
 ;
 
 (**)

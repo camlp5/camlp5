@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.mli,v 1.7 2006/10/25 18:54:48 deraugla Exp $ *)
+(* $Id: token.mli,v 1.8 2006/10/27 10:52:02 deraugla Exp $ *)
 
 (** Lexers for Camlp4 grammars.
 
@@ -100,9 +100,12 @@ value default_match : pattern -> (string * string) -> string;
    as well. *)
 
 value lexer_func_of_parser :
-  (Stream.t char -> ('te * location)) -> lexer_func 'te;
+  ((Stream.t char * ref int * ref int) -> ('te * location)) ->
+    lexer_func 'te;
    (** A lexer function from a lexer written as a char stream parser
-       returning the next token and its location. *)
+       returning the next token and its location. The two references
+       with the char stream contain the current line number and the
+       position of the beginning of the current line. *)
 value lexer_func_of_ocamllex : (Lexing.lexbuf -> 'te) -> lexer_func 'te;
    (** A lexer function from a lexer created by [ocamllex] *)
 

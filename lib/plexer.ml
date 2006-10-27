@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.9 2006/10/26 13:04:07 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.10 2006/10/27 10:52:02 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -125,30 +125,36 @@ value err loc msg =
   Stdpp.raise_with_loc (Stdpp.make_loc loc) (Token.Error msg)
 ;
 
+value bolpos = ref (ref 0);
+value line_nb = ref (ref 0);
+
 value next_token_fun dfa ssd find_kwd glexr =
-  let bolpos = ref 0 in
-  let line_nb = ref 1 in
   let keyword_or_error loc s =
     try (("", find_kwd s), loc) with
     [ Not_found ->
         if error_on_unknown_keywords.val then err loc ("illegal token: " ^ s)
         else (("", s), loc) ]
   in
-  let line_cnt c =
+  let line_cnt bp1 c =
     match c with
-    [ '\n' | '\r' -> do { incr line_nb; c }
+    [ '\n' | '\r' -> do { incr line_nb.val; bolpos.val.val := bp1 + 1; c }
     | c -> c ]
   in
-  let rec next_token after_space =
-    parser bp
+  let rec next_token after_space strm =
+    let t_line_nb = line_nb.val.val in
+    let t_bolpos = bolpos.val.val in
+    match strm with parser bp
     [ [: `'\n' | '\r'; s :] ep ->
-        do { bolpos.val := ep; incr line_nb; next_token True s }
+        do { bolpos.val.val := ep; incr line_nb.val; next_token True s }
     | [: `' ' | '\t' | '\026' | '\012'; s :] -> next_token True s
-    | [: `'#' when bp = bolpos.val; s :] ->
+    | [: `'#' when bp = bolpos.val.val; s :] ->
         if linedir 1 s then do { any_to_nl s; next_token True s }
-        else keyword_or_error (bp, bp + 1) "#"
+        else (keyword_or_error (bp, bp + 1) "#", t_line_nb, t_bolpos)
     | [: `'('; s :] -> left_paren bp s
-    | [: `('A'..'Z' | '\192'..'\214' | '\216'..'\222' as c); s :] ->
+    | [: s :] -> (next_token_kont after_space s, t_line_nb, t_bolpos) ]
+  and next_token_kont after_space =
+    parser bp
+    [ [: `('A'..'Z' | '\192'..'\214' | '\216'..'\222' as c); s :] ->
         let id = get_buff (ident (store 0 c) s) in
         let loc = (bp, Stream.count s) in
         (try ("", find_kwd id) with [ Not_found -> ("UIDENT", id) ], loc)
@@ -260,10 +266,11 @@ value next_token_fun dfa ssd find_kwd glexr =
           let id = get_buff len in
           keyword_or_error (bp, ep) id ]
   and string bp len =
-    parser
+    parser bp1
     [ [: `'"' :] -> len
-    | [: `'\\'; `c; s :] -> string bp (store (store len '\\') (line_cnt c)) s
-    | [: `c; s :] -> string bp (store len (line_cnt c)) s
+    | [: `'\\'; `c; s :] ->
+        string bp (store (store len '\\') (line_cnt (bp1 + 1) c)) s
+    | [: `c; s :] -> string bp (store len (line_cnt bp1 c)) s
     | [: :] ep -> err (bp, ep) "string not terminated" ]
   and char bp len =
     parser
@@ -319,7 +326,7 @@ value next_token_fun dfa ssd find_kwd glexr =
     | [: `c; s :] -> locate_or_antiquot_rest bp (store len c) s
     | [: :] ep -> err (bp, ep) "antiquotation not terminated" ]
   and quotation bp len =
-    parser
+    parser bp1
     [ [: `'>'; s :] -> maybe_end_quotation bp len s
     | [: `'<'; s :] ->
         quotation bp (maybe_nested_quotation bp (store len '<') s) s
@@ -330,7 +337,7 @@ value next_token_fun dfa ssd find_kwd glexr =
            | [: :] -> store len '\\' ];
          s :] ->
         quotation bp len s
-    | [: `c; s :] -> quotation bp (store len (line_cnt c)) s
+    | [: `c; s :] -> quotation bp (store len (line_cnt bp1 c)) s
     | [: :] ep -> err (bp, ep) "quotation not terminated" ]
   and maybe_nested_quotation bp len =
     parser
@@ -349,14 +356,15 @@ value next_token_fun dfa ssd find_kwd glexr =
   and left_paren bp =
     parser
     [ [: `'*'; _ = comment bp; a = next_token True :] -> a
-    | [: :] ep -> keyword_or_error (bp, ep) "(" ]
+    | [: :] ep ->
+        (keyword_or_error (bp, ep) "(", line_nb.val.val, bolpos.val.val) ]
   and comment bp =
     parser
     [ [: `'('; s :] -> left_paren_in_comment bp s
     | [: `'*'; s :] -> star_in_comment bp s
     | [: `'"'; _ = string bp 0; s :] -> comment bp s
     | [: `'''; s :] -> quote_in_comment bp s
-    | [: `'\n' | '\r'; s :] -> do { incr line_nb; comment bp s }
+    | [: `'\n' | '\r'; s :] -> do { incr line_nb.val; comment bp s }
     | [: `c; s :] -> comment bp s
     | [: :] ep -> err (bp, ep) "comment not terminated" ]
   and quote_in_comment bp =
@@ -413,28 +421,29 @@ value next_token_fun dfa ssd find_kwd glexr =
     | _ -> False ]
   and any_to_nl =
     parser
-    [ [: `'\r' | '\n' :] ep -> bolpos.val := ep
+    [ [: `'\r' | '\n' :] ep -> bolpos.val.val := ep
     | [: `_; s :] -> any_to_nl s
     | [: :] -> () ]
   in
-  fun cstrm ->
-    try
+  fun (cstrm, s_line_nb, s_bolpos) ->
+    try do {
+      line_nb.val := s_line_nb;
+      bolpos.val := s_bolpos;
       let glex = glexr.val in
       let comm_bp = Stream.count cstrm in
-      let (r, loc) = next_token False cstrm in
-      do {
-        match glex.tok_comm with
-        [ Some list ->
-            if fst loc > comm_bp then
-              let comm_loc = Stdpp.make_loc (comm_bp, fst loc) in
-              glex.tok_comm := Some [comm_loc :: list]
-            else ()
-        | None -> () ];
-        (r, make_lined_loc line_nb.val bolpos.val loc)
-      }
-    with
-    [ Stream.Error str ->
-        err (Stream.count cstrm, Stream.count cstrm + 1) str ]
+      let ((r, loc), t_line_nb, t_bolpos) = next_token False cstrm in
+      match glex.tok_comm with
+      [ Some list ->
+          if fst loc > comm_bp then
+            let comm_loc = Stdpp.make_loc (comm_bp, fst loc) in
+            glex.tok_comm := Some [comm_loc :: list]
+          else ()
+      | None -> () ];
+      (r, make_lined_loc t_line_nb t_bolpos loc)
+    }
+  with
+  [ Stream.Error str ->
+      err (Stream.count cstrm, Stream.count cstrm + 1) str ]
 ;
 
 value dollar_for_antiquotation = ref True;

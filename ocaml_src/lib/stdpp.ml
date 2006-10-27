@@ -92,7 +92,7 @@ let make_loc (bp, ep) = {line_nb = -1; bol_pos = 0; bp = bp; ep = ep};;
 let first_pos loc = loc.bp;;
 let last_pos loc = loc.ep;;
 let make_lined_loc line_nb bol_pos (bp, ep) =
-  {line_nb = line_nb; bol_pos = bol_pos - 1; bp = bp; ep = ep}
+  {line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep}
 ;;
 let line_nb loc = loc.line_nb;;
 let bol_pos loc = loc.bol_pos;;
@@ -106,7 +106,7 @@ let after_loc loc sh len =
 ;;
 
 let line_of_loc fname loc =
-  fname, loc.line_nb, loc.bp - loc.bol_pos, loc.ep - loc.bol_pos
+  fname, loc.line_nb, loc.bp - loc.bol_pos + 1, loc.ep - loc.bol_pos
 ;;
 
 (**)

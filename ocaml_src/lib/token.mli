@@ -100,9 +100,11 @@ val default_match : pattern -> string * string -> string;;
    as well. *)
 
 val lexer_func_of_parser :
-  (char Stream.t -> 'te * location) -> 'te lexer_func;;
+  (char Stream.t * int ref * int ref -> 'te * location) -> 'te lexer_func;;
    (** A lexer function from a lexer written as a char stream parser
-       returning the next token and its location. *)
+       returning the next token and its location. The two references
+       with the char stream contain the current line number and the
+       position of the beginning of the current line. *)
 val lexer_func_of_ocamllex : (Lexing.lexbuf -> 'te) -> 'te lexer_func;;
    (** A lexer function from a lexer created by [ocamllex] *)
 

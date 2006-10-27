@@ -144,37 +144,45 @@ let err loc msg =
   Stdpp.raise_with_loc (Stdpp.make_loc loc) (Token.Error msg)
 ;;
 
+let bolpos = ref (ref 0);;
+let line_nb = ref (ref 0);;
+
 let next_token_fun dfa ssd find_kwd glexr =
-  let bolpos = ref 0 in
-  let line_nb = ref 1 in
   let keyword_or_error loc s =
     try ("", find_kwd s), loc with
       Not_found ->
         if !error_on_unknown_keywords then err loc ("illegal token: " ^ s)
         else ("", s), loc
   in
-  let line_cnt c =
+  let line_cnt bp1 c =
     match c with
-      '\n' | '\r' -> incr line_nb; c
+      '\n' | '\r' -> incr !line_nb; !bolpos := bp1 + 1; c
     | c -> c
   in
-  let rec next_token after_space (strm__ : _ Stream.t) =
+  let rec next_token after_space strm =
+    let t_line_nb = !(!line_nb) in
+    let t_bolpos = !(!bolpos) in
+    let (strm__ : _ Stream.t) = strm in
     let bp = Stream.count strm__ in
     match Stream.peek strm__ with
       Some ('\n' | '\r') ->
         Stream.junk strm__;
         let s = strm__ in
         let ep = Stream.count strm__ in
-        bolpos := ep; incr line_nb; next_token true s
+        !bolpos := ep; incr !line_nb; next_token true s
     | Some (' ' | '\t' | '\026' | '\012') ->
         Stream.junk strm__; next_token true strm__
-    | Some '#' when bp = !bolpos ->
+    | Some '#' when bp = !(!bolpos) ->
         Stream.junk strm__;
         let s = strm__ in
         if linedir 1 s then begin any_to_nl s; next_token true s end
-        else keyword_or_error (bp, bp + 1) "#"
+        else keyword_or_error (bp, bp + 1) "#", t_line_nb, t_bolpos
     | Some '(' -> Stream.junk strm__; left_paren bp strm__
-    | Some ('A'..'Z' | '\192'..'\214' | '\216'..'\222' as c) ->
+    | _ -> next_token_kont after_space strm__, t_line_nb, t_bolpos
+  and next_token_kont after_space (strm__ : _ Stream.t) =
+    let bp = Stream.count strm__ in
+    match Stream.peek strm__ with
+      Some ('A'..'Z' | '\192'..'\214' | '\216'..'\222' as c) ->
         Stream.junk strm__;
         let s = strm__ in
         let id = get_buff (ident (store 0 c) s) in
@@ -367,6 +375,7 @@ let next_token_fun dfa ssd find_kwd glexr =
           let ep = Stream.count strm__ in
           let id = get_buff len in keyword_or_error (bp, ep) id
   and string bp len (strm__ : _ Stream.t) =
+    let bp1 = Stream.count strm__ in
     match Stream.peek strm__ with
       Some '\"' -> Stream.junk strm__; len
     | Some '\\' ->
@@ -374,10 +383,11 @@ let next_token_fun dfa ssd find_kwd glexr =
         begin match Stream.peek strm__ with
           Some c ->
             Stream.junk strm__;
-            string bp (store (store len '\\') (line_cnt c)) strm__
+            string bp (store (store len '\\') (line_cnt (bp1 + 1) c)) strm__
         | _ -> raise (Stream.Error "")
         end
-    | Some c -> Stream.junk strm__; string bp (store len (line_cnt c)) strm__
+    | Some c ->
+        Stream.junk strm__; string bp (store len (line_cnt bp1 c)) strm__
     | _ ->
         let ep = Stream.count strm__ in err (bp, ep) "string not terminated"
   and char bp len (strm__ : _ Stream.t) =
@@ -487,6 +497,7 @@ let next_token_fun dfa ssd find_kwd glexr =
         let ep = Stream.count strm__ in
         err (bp, ep) "antiquotation not terminated"
   and quotation bp len (strm__ : _ Stream.t) =
+    let bp1 = Stream.count strm__ in
     match Stream.peek strm__ with
       Some '>' -> Stream.junk strm__; maybe_end_quotation bp len strm__
     | Some '<' ->
@@ -504,7 +515,7 @@ let next_token_fun dfa ssd find_kwd glexr =
         in
         quotation bp len strm__
     | Some c ->
-        Stream.junk strm__; quotation bp (store len (line_cnt c)) strm__
+        Stream.junk strm__; quotation bp (store len (line_cnt bp1 c)) strm__
     | _ ->
         let ep = Stream.count strm__ in
         err (bp, ep) "quotation not terminated"
@@ -543,7 +554,9 @@ let next_token_fun dfa ssd find_kwd glexr =
         begin try next_token true strm__ with
           Stream.Failure -> raise (Stream.Error "")
         end
-    | _ -> let ep = Stream.count strm__ in keyword_or_error (bp, ep) "("
+    | _ ->
+        let ep = Stream.count strm__ in
+        keyword_or_error (bp, ep) "(", !(!line_nb), !(!bolpos)
   and comment bp (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
       Some '(' -> Stream.junk strm__; left_paren_in_comment bp strm__
@@ -557,7 +570,7 @@ let next_token_fun dfa ssd find_kwd glexr =
         comment bp strm__
     | Some '\'' -> Stream.junk strm__; quote_in_comment bp strm__
     | Some ('\n' | '\r') ->
-        Stream.junk strm__; let s = strm__ in incr line_nb; comment bp s
+        Stream.junk strm__; let s = strm__ in incr !line_nb; comment bp s
     | Some c -> Stream.junk strm__; comment bp strm__
     | _ ->
         let ep = Stream.count strm__ in err (bp, ep) "comment not terminated"
@@ -619,15 +632,17 @@ let next_token_fun dfa ssd find_kwd glexr =
   and any_to_nl (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
       Some ('\r' | '\n') ->
-        Stream.junk strm__; let ep = Stream.count strm__ in bolpos := ep
+        Stream.junk strm__; let ep = Stream.count strm__ in !bolpos := ep
     | Some _ -> Stream.junk strm__; any_to_nl strm__
     | _ -> ()
   in
-  fun cstrm ->
+  fun (cstrm, s_line_nb, s_bolpos) ->
     try
+      line_nb := s_line_nb;
+      bolpos := s_bolpos;
       let glex = !glexr in
       let comm_bp = Stream.count cstrm in
-      let (r, loc) = next_token false cstrm in
+      let ((r, loc), t_line_nb, t_bolpos) = next_token false cstrm in
       begin match glex.tok_comm with
         Some list ->
           if fst loc > comm_bp then
@@ -635,7 +650,7 @@ let next_token_fun dfa ssd find_kwd glexr =
             glex.tok_comm <- Some (comm_loc :: list)
       | None -> ()
       end;
-      r, make_lined_loc !line_nb !bolpos loc
+      r, make_lined_loc t_line_nb t_bolpos loc
     with
       Stream.Error str -> err (Stream.count cstrm, Stream.count cstrm + 1) str
 ;;
@@ -858,11 +873,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 629, 18)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 629, 38)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 629, 61)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 630, 19)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 630, 38)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 638, 18)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 638, 38)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 638, 61)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 639, 19)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 639, 38)));
        tok_comm = None}
   in
   let glex =
@@ -892,11 +907,11 @@ let make () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 658, 18)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 658, 38)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 658, 61)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 659, 19)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 659, 38)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 667, 18)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 667, 38)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 667, 61)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 668, 19)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 668, 38)));
        tok_comm = None}
   in
   {func = func kwd_table glexr; using = using_token kwd_table id_table;

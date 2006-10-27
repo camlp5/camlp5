@@ -1,5 +1,5 @@
 ; camlp4 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.5 2006/10/25 18:54:48 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.6 2006/10/27 10:52:02 deraugla Exp $
 
 (open Pcaml)
 (open Stdpp)
@@ -251,7 +251,7 @@
 (define (lexer_gmake ())
   (let ((kwt (Hashtbl.create 89))
         (lexer2
-         (lambda (kwt s)
+         (lambda (kwt (values s _ _))
            (let (((values t loc) (lexer kwt s)))
              (values t (Stdpp.make_loc loc))))))
      {(Token.tok_func (Token.lexer_func_of_parser (lexer2 kwt)))

@@ -107,9 +107,10 @@ type err_ctx =
 ;
 exception Qerror of string and err_ctx and exn;
 
-value expand_quotation loc expander shift name str =
+value expand_quotation gloc expander shift name str =
   let new_warning =
     let warn = warning.val in
+    let shift = Stdpp.first_pos gloc + shift in
     fun loc txt -> warn (Stdpp.shift_loc shift loc) txt
   in
   apply_with_var warning new_warning
@@ -117,10 +118,17 @@ value expand_quotation loc expander shift name str =
        try expander str with
        [ Stdpp.Exc_located loc exc ->
            let exc1 = Qerror name Expanding exc in
-           raise (Stdpp.Exc_located (Stdpp.shift_loc shift loc) exc1)
+           let shift = Stdpp.first_pos gloc + shift in
+           let loc =
+             Stdpp.make_lined_loc (Stdpp.line_nb gloc + Stdpp.line_nb loc - 1)
+               (if Stdpp.line_nb loc = 1 then Stdpp.bol_pos gloc
+                else shift + Stdpp.bol_pos loc)
+               (shift + Stdpp.first_pos loc, shift + Stdpp.last_pos loc)
+           in
+           raise (Stdpp.Exc_located loc exc1)
        | exc ->
            let exc1 = Qerror name Expanding exc in
-           Stdpp.raise_with_loc  loc exc1 ])
+           Stdpp.raise_with_loc gloc exc1 ])
 ;
 
 value parse_quotation_result entry loc shift name str =
@@ -151,7 +159,6 @@ value handle_quotation loc proj in_expr entry reloc (name, str) =
       let exc1 = Qerror name Finding exc in
       raise (Stdpp.Exc_located (Stdpp.sub_loc loc 0 shift) exc1)
   in
-  let shift = Stdpp.first_pos loc + shift in
   let ast =
     match expander with
     [ Quotation.ExStr f ->
@@ -160,6 +167,7 @@ value handle_quotation loc proj in_expr entry reloc (name, str) =
     | Quotation.ExAst fe_fp ->
         expand_quotation loc (proj fe_fp) shift name str ]
   in
+  let shift = Stdpp.first_pos loc + shift in
   reloc (fun _ -> loc) shift ast
 ;
 

@@ -101,19 +101,28 @@ type err_ctx =
 ;;
 exception Qerror of string * err_ctx * exn;;
 
-let expand_quotation loc expander shift name str =
+let expand_quotation gloc expander shift name str =
   let new_warning =
-    let warn = !warning in fun loc txt -> warn (Stdpp.shift_loc shift loc) txt
+    let warn = !warning in
+    let shift = Stdpp.first_pos gloc + shift in
+    fun loc txt -> warn (Stdpp.shift_loc shift loc) txt
   in
   apply_with_var warning new_warning
     (fun () ->
        try expander str with
          Stdpp.Exc_located (loc, exc) ->
            let exc1 = Qerror (name, Expanding, exc) in
-           raise (Stdpp.Exc_located (Stdpp.shift_loc shift loc, exc1))
+           let shift = Stdpp.first_pos gloc + shift in
+           let loc =
+             Stdpp.make_lined_loc (Stdpp.line_nb gloc + Stdpp.line_nb loc - 1)
+               (if Stdpp.line_nb loc = 1 then Stdpp.bol_pos gloc
+                else shift + Stdpp.bol_pos loc)
+               (shift + Stdpp.first_pos loc, shift + Stdpp.last_pos loc)
+           in
+           raise (Stdpp.Exc_located (loc, exc1))
        | exc ->
            let exc1 = Qerror (name, Expanding, exc) in
-           Stdpp.raise_with_loc loc exc1)
+           Stdpp.raise_with_loc gloc exc1)
 ;;
 
 let parse_quotation_result entry loc shift name str =
@@ -143,7 +152,6 @@ let handle_quotation loc proj in_expr entry reloc (name, str) =
         let exc1 = Qerror (name, Finding, exc) in
         raise (Stdpp.Exc_located (Stdpp.sub_loc loc 0 shift, exc1))
   in
-  let shift = Stdpp.first_pos loc + shift in
   let ast =
     match expander with
       Quotation.ExStr f ->
@@ -152,7 +160,7 @@ let handle_quotation loc proj in_expr entry reloc (name, str) =
     | Quotation.ExAst fe_fp ->
         expand_quotation loc (proj fe_fp) shift name str
   in
-  reloc (fun _ -> loc) shift ast
+  let shift = Stdpp.first_pos loc + shift in reloc (fun _ -> loc) shift ast
 ;;
 
 let parse_locate entry shift str =
@@ -375,47 +383,47 @@ and kont = pretty Stream.t
 ;;
 
 let pr_str_item =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 405, 31)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 413, 31)));
    pr_levels = []}
 ;;
 let pr_sig_item =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 406, 31)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 414, 31)));
    pr_levels = []}
 ;;
 let pr_module_type =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 407, 34)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 415, 34)));
    pr_levels = []}
 ;;
 let pr_module_expr =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 408, 34)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 416, 34)));
    pr_levels = []}
 ;;
 let pr_expr =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 409, 27)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 417, 27)));
    pr_levels = []}
 ;;
 let pr_patt =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 410, 27)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 418, 27)));
    pr_levels = []}
 ;;
 let pr_ctyp =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 411, 27)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 419, 27)));
    pr_levels = []}
 ;;
 let pr_class_sig_item =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 412, 37)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 420, 37)));
    pr_levels = []}
 ;;
 let pr_class_str_item =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 413, 37)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 421, 37)));
    pr_levels = []}
 ;;
 let pr_class_type =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 414, 33)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 422, 33)));
    pr_levels = []}
 ;;
 let pr_class_expr =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 415, 33)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 423, 33)));
    pr_levels = []}
 ;;
 let pr_expr_fun_args = ref Extfun.empty;;

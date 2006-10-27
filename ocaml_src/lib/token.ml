@@ -80,7 +80,9 @@ let make_stream_and_location next_token_loc =
 ;;
 
 let lexer_func_of_parser next_token_loc cs =
-  make_stream_and_location (fun () -> next_token_loc cs)
+  let line_nb = ref 1 in
+  let bolpos = ref 0 in
+  make_stream_and_location (fun () -> next_token_loc (cs, line_nb, bolpos))
 ;;
 
 let lexer_func_of_ocamllex lexfun cs =

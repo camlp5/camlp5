@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.ml,v 1.8 2006/10/25 18:54:48 deraugla Exp $ *)
+(* $Id: token.ml,v 1.9 2006/10/27 10:52:02 deraugla Exp $ *)
 
 type t = (string * string);
 type pattern = (string * string);
@@ -74,15 +74,19 @@ value make_stream_and_location next_token_loc =
   let loct = loct_create () in
   let ts =
     Stream.from
-      (fun i ->
+      (fun i -> do {
          let (tok, loc) = next_token_loc () in
-         do { loct_add loct i loc; Some tok })
+         loct_add loct i loc;
+         Some tok
+       })
   in
   (ts, loct_func loct)
 ;
 
 value lexer_func_of_parser next_token_loc cs =
-  make_stream_and_location (fun () -> next_token_loc cs)
+  let line_nb = ref 1 in
+  let bolpos = ref 0 in
+  make_stream_and_location (fun () -> next_token_loc (cs, line_nb, bolpos))
 ;
 
 value lexer_func_of_ocamllex lexfun cs =

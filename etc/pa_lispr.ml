@@ -140,7 +140,7 @@ value lexer_text (con, prm) =
 
 value lexer_gmake () =
   let kwt = Hashtbl.create 89
-  and lexer2 kwt s =
+  and lexer2 kwt (s, _, _) =
     let (t, loc) = lexer kwt s in
     (t, Stdpp.make_loc loc)
   in
