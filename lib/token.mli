@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.mli,v 1.9 2006/10/27 20:57:11 deraugla Exp $ *)
+(* $Id: token.mli,v 1.10 2006/10/27 22:05:08 deraugla Exp $ *)
 
 (** Lexers for Camlp4 grammars.
 
@@ -113,7 +113,7 @@ value make_stream_and_location :
   (unit -> ('te * location)) -> (Stream.t 'te * location_function);
    (** General function *)
 
-(** {6 Useful functions} *)
+(** {6 Useful functions and values} *)
 
 value eval_char : string -> char;
 value eval_string : location -> string -> string;
@@ -124,6 +124,11 @@ value eval_string : location -> string -> string;
 
 value restore_line_nb : ref bool;
 value line_nb : ref (ref int);
+   (** Special variables used to reinitialize line numbers with their
+       correct current value when a parser is called several times with
+       the same character stream. Necessary for directives (e.g. #load)
+       which stop the parsing. Without usage of these variables, locations
+       after the directives can be wrong. *)
 
 (**/**)
 

@@ -112,7 +112,7 @@ val make_stream_and_location :
   (unit -> 'te * location) -> 'te Stream.t * location_function;;
    (** General function *)
 
-(** {6 Useful functions} *)
+(** {6 Useful functions and values} *)
 
 val eval_char : string -> char;;
 val eval_string : location -> string -> string;;
@@ -123,6 +123,11 @@ val eval_string : location -> string -> string;;
 
 val restore_line_nb : bool ref;;
 val line_nb : int ref ref;;
+   (** Special variables used to reinitialize line numbers with their
+       correct current value when a parser is called several times with
+       the same character stream. Necessary for directives (e.g. #load)
+       which stop the parsing. Without usage of these variables, locations
+       after the directives can be wrong. *)
 
 (**/**)
 

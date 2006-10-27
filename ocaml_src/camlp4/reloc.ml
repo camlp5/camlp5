@@ -63,27 +63,25 @@ let class_infos a floc sh x =
    ciExp = a floc sh x.ciExp}
 ;;
 
+let anti_loc qloc sh loc loc1 =
+  let sh1 = Stdpp.first_pos qloc + sh in
+  let sh2 = sh1 + Stdpp.first_pos loc in
+  Stdpp.make_lined_loc
+    (Stdpp.line_nb qloc + Stdpp.line_nb loc + Stdpp.line_nb loc1 - 2)
+    (if Stdpp.line_nb loc1 = 1 then
+       if Stdpp.line_nb loc = 1 then Stdpp.bol_pos qloc
+       else sh1 + Stdpp.bol_pos loc
+     else sh2 + Stdpp.bol_pos loc1)
+    (sh2 + Stdpp.first_pos loc1, sh2 + Stdpp.last_pos loc1)
+;;
+
 let rec patt floc sh =
   let rec self =
     function
       PaAcc (loc, x1, x2) -> PaAcc (floc loc, self x1, self x2)
     | PaAli (loc, x1, x2) -> PaAli (floc loc, self x1, self x2)
     | PaAnt (loc, x1) ->
-        let new_floc loc1 =
-          let qloc = floc loc in
-          Stdpp.make_lined_loc
-            (Stdpp.line_nb qloc + Stdpp.line_nb loc + Stdpp.line_nb loc1 - 2)
-            (if Stdpp.line_nb loc1 = 1 then
-               if Stdpp.line_nb loc = 1 then Stdpp.bol_pos qloc
-               else Stdpp.first_pos qloc + sh + Stdpp.bol_pos loc
-             else
-               Stdpp.first_pos qloc + sh + Stdpp.first_pos loc +
-                 Stdpp.bol_pos loc1)
-            (Stdpp.first_pos qloc + sh + Stdpp.first_pos loc +
-               Stdpp.first_pos loc1,
-             Stdpp.first_pos qloc + sh + Stdpp.first_pos loc +
-               Stdpp.last_pos loc1)
-        in
+        let new_floc loc1 = anti_loc (floc loc) sh loc loc1 in
         patt new_floc sh x1
     | PaAny loc -> PaAny (floc loc)
     | PaApp (loc, x1, x2) -> PaApp (floc loc, self x1, self x2)
@@ -115,21 +113,7 @@ and expr floc sh =
     function
       ExAcc (loc, x1, x2) -> ExAcc (floc loc, self x1, self x2)
     | ExAnt (loc, x1) ->
-        let new_floc loc1 =
-          let qloc = floc loc in
-          Stdpp.make_lined_loc
-            (Stdpp.line_nb qloc + Stdpp.line_nb loc + Stdpp.line_nb loc1 - 2)
-            (if Stdpp.line_nb loc1 = 1 then
-               if Stdpp.line_nb loc = 1 then Stdpp.bol_pos qloc
-               else Stdpp.first_pos qloc + sh + Stdpp.bol_pos loc
-             else
-               Stdpp.first_pos qloc + sh + Stdpp.first_pos loc +
-                 Stdpp.bol_pos loc1)
-            (Stdpp.first_pos qloc + sh + Stdpp.first_pos loc +
-               Stdpp.first_pos loc1,
-             Stdpp.first_pos qloc + sh + Stdpp.first_pos loc +
-               Stdpp.last_pos loc1)
-        in
+        let new_floc loc1 = anti_loc (floc loc) sh loc loc1 in
         expr new_floc sh x1
     | ExApp (loc, x1, x2) -> ExApp (floc loc, self x1, self x2)
     | ExAre (loc, x1, x2) -> ExAre (floc loc, self x1, self x2)
