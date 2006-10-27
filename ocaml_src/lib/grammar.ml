@@ -791,7 +791,16 @@ let start_parser_of_entry entry =
   | Dparser p -> fun levn strm -> p strm
 ;;
 
-let parse_parsable entry efun (cs, (ts, fun_loc)) =
+type 'a gen_parsable =
+  { pa_chr_strm : char Stream.t;
+    pa_tok_strm : 'a Stream.t;
+    pa_loc_func : Token.location_function }
+;;
+
+let parse_parsable entry efun p =
+  let ts = p.pa_tok_strm in
+  let cs = p.pa_chr_strm in
+  let fun_loc = p.pa_loc_func in
   let restore =
     let old_floc = !floc in
     let old_tc = !token_count in
@@ -822,7 +831,8 @@ let parse_parsable entry efun (cs, (ts, fun_loc)) =
 ;;
 
 let wrap_parse entry efun cs =
-  let parsable = cs, entry.egram.glexer.Token.tok_func cs in
+  let (ts, lf) = entry.egram.glexer.Token.tok_func cs in
+  let parsable = {pa_chr_strm = cs; pa_tok_strm = ts; pa_loc_func = lf} in
   parse_parsable entry efun parsable
 ;;
 
@@ -1060,9 +1070,12 @@ module type ReinitType = sig val reinit_gram : g -> Token.lexer -> unit;; end
 module GGMake (R : ReinitType) (L : GLexerType) =
   struct
     type te = L.te;;
-    type parsable = char Stream.t * (te Stream.t * Token.location_function);;
+    type parsable = te gen_parsable;;
     let gram = gcreate L.lexer;;
-    let parsable cs = cs, L.lexer.Token.tok_func cs;;
+    let parsable cs =
+      let (ts, lf) = L.lexer.Token.tok_func cs in
+      {pa_chr_strm = cs; pa_tok_strm = ts; pa_loc_func = lf}
+    ;;
     let tokens = tokens gram;;
     let glexer = glexer gram;;
     module Entry =

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.6 2006/10/25 21:15:09 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.7 2006/10/27 20:31:16 deraugla Exp $ *)
 
 open Stdpp;
 open Gramext;
@@ -723,7 +723,16 @@ value start_parser_of_entry entry =
   | Dparser p -> fun levn strm -> p strm ]
 ;
 
-value parse_parsable entry efun (cs, (ts, fun_loc)) =
+type gen_parsable 'a =
+  { pa_chr_strm : Stream.t char;
+    pa_tok_strm : Stream.t 'a;
+    pa_loc_func : Token.location_function }
+;
+
+value parse_parsable entry efun p =
+  let ts = p.pa_tok_strm in
+  let cs = p.pa_chr_strm in
+  let fun_loc = p.pa_loc_func in
   let restore =
     let old_floc = floc.val in
     let old_tc = token_count.val in
@@ -762,7 +771,8 @@ value parse_parsable entry efun (cs, (ts, fun_loc)) =
 ;
 
 value wrap_parse entry efun cs =
-  let parsable = (cs, entry.egram.glexer.Token.tok_func cs) in
+  let (ts, lf) = entry.egram.glexer.Token.tok_func cs in
+  let parsable = {pa_chr_strm = cs; pa_tok_strm = ts; pa_loc_func = lf} in
   parse_parsable entry efun parsable
 ;
 
@@ -1007,9 +1017,12 @@ module type ReinitType = sig value reinit_gram : g -> Token.lexer -> unit; end
 module GGMake (R : ReinitType) (L : GLexerType) =
   struct
     type te = L.te;
-    type parsable = (Stream.t char * (Stream.t te * Token.location_function));
+    type parsable = gen_parsable te;
     value gram = gcreate L.lexer;
-    value parsable cs = (cs, L.lexer.Token.tok_func cs);
+    value parsable cs =
+      let (ts, lf) = L.lexer.Token.tok_func cs in
+      {pa_chr_strm = cs; pa_tok_strm = ts; pa_loc_func = lf}
+    ;
     value tokens = tokens gram;
     value glexer = glexer gram;
     module Entry =
