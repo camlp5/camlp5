@@ -140,14 +140,17 @@ and end_exponent_part_under len (strm__ : _ Stream.t) =
 ;;
 
 let error_on_unknown_keywords = ref false;;
-let err loc msg =
-  Stdpp.raise_with_loc (Stdpp.make_loc loc) (Token.Error msg)
-;;
 
-let bol_pos = ref (ref 0);;
+let bol_pos = Token.bol_pos;;
 let line_nb = Token.line_nb;;
 
 let next_token_fun dfa ssd find_kwd glexr =
+  let t_line_nb = ref 0 in
+  let t_bol_pos = ref 0 in
+  let err loc msg =
+    Stdpp.raise_with_loc (Stdpp.make_lined_loc !t_line_nb !t_bol_pos loc)
+      (Token.Error msg)
+  in
   let keyword_or_error loc s =
     try ("", find_kwd s), loc with
       Not_found ->
@@ -160,8 +163,8 @@ let next_token_fun dfa ssd find_kwd glexr =
     | c -> c
   in
   let rec next_token after_space strm =
-    let t_line_nb = !(!line_nb) in
-    let t_bol_pos = !(!bol_pos) in
+    t_line_nb := !(!line_nb);
+    t_bol_pos := !(!bol_pos);
     let (strm__ : _ Stream.t) = strm in
     let bp = Stream.count strm__ in
     match Stream.peek strm__ with
@@ -176,9 +179,9 @@ let next_token_fun dfa ssd find_kwd glexr =
         Stream.junk strm__;
         let s = strm__ in
         if linedir 1 s then begin any_to_nl s; next_token true s end
-        else keyword_or_error (bp, bp + 1) "#", t_line_nb, t_bol_pos
+        else keyword_or_error (bp, bp + 1) "#", !t_line_nb, !t_bol_pos
     | Some '(' -> Stream.junk strm__; left_paren bp strm__
-    | _ -> next_token_kont after_space strm__, t_line_nb, t_bol_pos
+    | _ -> next_token_kont after_space strm__, !t_line_nb, !t_bol_pos
   and next_token_kont after_space (strm__ : _ Stream.t) =
     let bp = Stream.count strm__ in
     match Stream.peek strm__ with
@@ -638,8 +641,13 @@ let next_token_fun dfa ssd find_kwd glexr =
   in
   fun (cstrm, s_line_nb, s_bol_pos) ->
     try
-      if !(Token.restore_line_nb) then
-        begin s_line_nb := !(!line_nb); Token.restore_line_nb := false end;
+      begin match !(Token.restore_lexing_info) with
+        Some (line_nb, bol_pos) ->
+          s_line_nb := line_nb;
+          s_bol_pos := bol_pos;
+          Token.restore_lexing_info := None
+      | None -> ()
+      end;
       line_nb := s_line_nb;
       bol_pos := s_bol_pos;
       let glex = !glexr in
@@ -875,11 +883,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 643, 18)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 643, 38)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 643, 61)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 644, 19)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 644, 38)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 650, 18)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 650, 38)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 650, 61)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 651, 19)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 651, 38)));
        tok_comm = None}
   in
   let glex =
@@ -909,11 +917,11 @@ let make () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 672, 18)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 672, 38)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 672, 61)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 673, 19)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 673, 38)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 679, 18)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 679, 38)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 679, 61)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 680, 19)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 680, 38)));
        tok_comm = None}
   in
   {func = func kwd_table glexr; using = using_token kwd_table id_table;

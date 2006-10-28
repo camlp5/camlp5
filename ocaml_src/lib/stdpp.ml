@@ -39,7 +39,7 @@ let after_loc loc sh len =
 ;;
 
 let line_of_loc fname loc =
-  fname, loc.line_nb, loc.bp - loc.bol_pos + 1, loc.ep - loc.bol_pos
+  fname, loc.line_nb, loc.bp - loc.bol_pos + 1, loc.ep - loc.bol_pos + 1
 ;;
 
 (* Old implementation of type "location" as a couple of source positions.

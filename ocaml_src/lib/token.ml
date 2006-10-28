@@ -227,4 +227,5 @@ let default_match =
 ;;
 
 let line_nb = ref (ref 0);;
-let restore_line_nb = ref false;;
+let bol_pos = ref (ref 0);;
+let restore_lexing_info = ref None;;

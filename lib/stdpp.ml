@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: stdpp.ml,v 1.7 2006/10/27 22:05:08 deraugla Exp $ *)
+(* $Id: stdpp.ml,v 1.8 2006/10/28 05:47:05 deraugla Exp $ *)
 
 (* Two implementations of "locations" are available; both work. The
    following one is more recent. They are represented as "record",
@@ -41,7 +41,7 @@ value after_loc loc sh len =
 ;
 
 value line_of_loc fname loc =
-  (fname, loc.line_nb, loc.bp - loc.bol_pos + 1, loc.ep - loc.bol_pos)
+  (fname, loc.line_nb, loc.bp - loc.bol_pos + 1, loc.ep - loc.bol_pos + 1)
 ;
 
 (* Old implementation of type "location" as a couple of source positions.

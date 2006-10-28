@@ -121,13 +121,15 @@ val eval_string : location -> string -> string;;
        bad backslash sequence found; [Token.eval_char (Char.escaped c)]
        returns [c] and [Token.eval_string (String.escaped s)] returns [s] *)
 
-val restore_line_nb : bool ref;;
+val restore_lexing_info : (int * int) option ref;;
 val line_nb : int ref ref;;
-   (** Special variables used to reinitialize line numbers with their
-       correct current value when a parser is called several times with
-       the same character stream. Necessary for directives (e.g. #load)
-       which stop the parsing. Without usage of these variables, locations
-       after the directives can be wrong. *)
+val bol_pos : int ref ref;;
+   (** Special variables used to reinitialize line numbers and position
+       of beginning of line with their correct current values when a parser
+       is called several times with the same character stream. Necessary
+       for directives (e.g. #load or #use) which interrupt the parsing.
+       Without usage of these variables, locations after the directives
+       can be wrong. *)
 
 (**/**)
 

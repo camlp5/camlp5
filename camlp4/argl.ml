@@ -124,6 +124,9 @@ value rec parse_file pa getdir useast =
         loop () where rec loop () =
           let (pl, stopped_at_directive) = pa cs in
           if stopped_at_directive then do {
+            let lexing_info =
+              (Token.line_nb.val.val, Token.bol_pos.val.val)
+            in
             let pl =
               let rpl = List.rev pl in
               match getdir rpl with
@@ -141,7 +144,7 @@ value rec parse_file pa getdir useast =
                         (Stream.Error "bad directive") ]
               | None -> pl ]
             in
-            Token.restore_line_nb.val := True;
+            Token.restore_lexing_info.val := Some lexing_info;
             pl @ loop ()
           }
           else pl

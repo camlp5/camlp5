@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.mli,v 1.10 2006/10/27 22:05:08 deraugla Exp $ *)
+(* $Id: token.mli,v 1.11 2006/10/28 05:47:05 deraugla Exp $ *)
 
 (** Lexers for Camlp4 grammars.
 
@@ -122,13 +122,15 @@ value eval_string : location -> string -> string;
        bad backslash sequence found; [Token.eval_char (Char.escaped c)]
        returns [c] and [Token.eval_string (String.escaped s)] returns [s] *)
 
-value restore_line_nb : ref bool;
+value restore_lexing_info : ref (option (int * int));
 value line_nb : ref (ref int);
-   (** Special variables used to reinitialize line numbers with their
-       correct current value when a parser is called several times with
-       the same character stream. Necessary for directives (e.g. #load)
-       which stop the parsing. Without usage of these variables, locations
-       after the directives can be wrong. *)
+value bol_pos : ref (ref int);
+   (** Special variables used to reinitialize line numbers and position
+       of beginning of line with their correct current values when a parser
+       is called several times with the same character stream. Necessary
+       for directives (e.g. #load or #use) which interrupt the parsing.
+       Without usage of these variables, locations after the directives
+       can be wrong. *)
 
 (**/**)
 

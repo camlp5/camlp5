@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.ml,v 1.10 2006/10/27 20:57:11 deraugla Exp $ *)
+(* $Id: token.ml,v 1.11 2006/10/28 05:47:05 deraugla Exp $ *)
 
 type t = (string * string);
 type pattern = (string * string);
@@ -232,4 +232,5 @@ value default_match =
 ;
 
 value line_nb = ref (ref 0);
-value restore_line_nb = ref False;
+value bol_pos = ref (ref 0);
+value restore_lexing_info = ref None;

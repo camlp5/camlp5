@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.12 2006/10/27 20:57:11 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.13 2006/10/28 05:47:05 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -121,14 +121,17 @@ and end_exponent_part_under len =
 ;
 
 value error_on_unknown_keywords = ref False;
-value err loc msg =
-  Stdpp.raise_with_loc (Stdpp.make_loc loc) (Token.Error msg)
-;
 
-value bol_pos = ref (ref 0);
+value bol_pos = Token.bol_pos;
 value line_nb = Token.line_nb;
 
 value next_token_fun dfa ssd find_kwd glexr =
+  let t_line_nb = ref 0 in
+  let t_bol_pos = ref 0 in
+  let err loc msg =
+    Stdpp.raise_with_loc
+      (Stdpp.make_lined_loc t_line_nb.val t_bol_pos.val loc) (Token.Error msg)
+  in
   let keyword_or_error loc s =
     try (("", find_kwd s), loc) with
     [ Not_found ->
@@ -140,18 +143,20 @@ value next_token_fun dfa ssd find_kwd glexr =
     [ '\n' | '\r' -> do { incr line_nb.val; bol_pos.val.val := bp1 + 1; c }
     | c -> c ]
   in
-  let rec next_token after_space strm =
-    let t_line_nb = line_nb.val.val in
-    let t_bol_pos = bol_pos.val.val in
+  let rec next_token after_space strm = do {
+    t_line_nb.val := line_nb.val.val;
+    t_bol_pos.val := bol_pos.val.val;
     match strm with parser bp
     [ [: `'\n' | '\r'; s :] ep ->
         do { bol_pos.val.val := ep; incr line_nb.val; next_token True s }
     | [: `' ' | '\t' | '\026' | '\012'; s :] -> next_token True s
     | [: `'#' when bp = bol_pos.val.val; s :] ->
         if linedir 1 s then do { any_to_nl s; next_token True s }
-        else (keyword_or_error (bp, bp + 1) "#", t_line_nb, t_bol_pos)
+        else (keyword_or_error (bp, bp + 1) "#", t_line_nb.val, t_bol_pos.val)
     | [: `'('; s :] -> left_paren bp s
-    | [: s :] -> (next_token_kont after_space s, t_line_nb, t_bol_pos) ]
+    | [: s :] ->
+        (next_token_kont after_space s, t_line_nb.val, t_bol_pos.val) ]
+  }
   and next_token_kont after_space =
     parser bp
     [ [: `('A'..'Z' | '\192'..'\214' | '\216'..'\222' as c); s :] ->
@@ -427,11 +432,13 @@ value next_token_fun dfa ssd find_kwd glexr =
   in
   fun (cstrm, s_line_nb, s_bol_pos) ->
     try do {
-      if Token.restore_line_nb.val then do {
-        s_line_nb.val := line_nb.val.val;
-        Token.restore_line_nb.val := False;
-      }
-      else ();
+      match Token.restore_lexing_info.val with
+      [ Some (line_nb, bol_pos) -> do {
+          s_line_nb.val := line_nb;
+          s_bol_pos.val := bol_pos;
+          Token.restore_lexing_info.val := None
+        }
+      | None -> () ];
       line_nb.val := s_line_nb;
       bol_pos.val := s_bol_pos;
       let glex = glexr.val in
