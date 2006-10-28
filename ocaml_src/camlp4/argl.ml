@@ -115,6 +115,27 @@ let print_location loc =
 
 let print_warning loc s = print_location loc; eprintf "Warning: %s\n" s;;
 
+let report_error =
+  function
+    Odyl_main.Error (fname, msg) ->
+      Format.print_string "Error while loading \"";
+      Format.print_string fname;
+      Format.print_string "\": ";
+      Format.print_string msg
+  | exc -> Pcaml.report_error exc
+;;
+
+let report_error_and_exit exc =
+  Format.set_formatter_out_channel stderr;
+  Format.open_vbox 0;
+  let exc =
+    match exc with
+      Stdpp.Exc_located (loc, exc) -> print_location loc; exc
+    | _ -> exc
+  in
+  report_error exc; Format.close_box (); Format.print_newline (); exit 2
+;;
+
 let rec parse_file pa getdir useast =
   let name = !(Pcaml.input_file) in
   Pcaml.warning := print_warning;
@@ -153,13 +174,12 @@ let rec parse_file pa getdir useast =
   in
   clear (); phr
 and use_file pa getdir useast s =
-  let clear =
-    let v_input_file = !(Pcaml.input_file) in
-    fun () -> Pcaml.input_file := v_input_file
-  in
+  let v_input_file = !(Pcaml.input_file) in
   Pcaml.input_file := s;
-  try let r = parse_file pa getdir useast in clear (); r with
-    e -> clear (); raise e
+  try
+    let r = parse_file pa getdir useast in Pcaml.input_file := v_input_file; r
+  with
+    e -> report_error_and_exit e
 ;;
 
 let process pa pr getdir useast = pr (parse_file pa getdir useast);;
@@ -328,16 +348,6 @@ let remaining_args =
   List.rev (loop [] (!(Arg.current) + 1))
 ;;
 
-let report_error =
-  function
-    Odyl_main.Error (fname, msg) ->
-      Format.print_string "Error while loading \"";
-      Format.print_string fname;
-      Format.print_string "\": ";
-      Format.print_string msg
-  | exc -> Pcaml.report_error exc
-;;
-
 let go () =
   let ext_spec_list = Pcaml.arg_spec_list () in
   let arg_spec_list = initial_spec_list @ ext_spec_list in
@@ -355,15 +365,7 @@ let go () =
         Intf -> process_intf ()
       | Impl -> process_impl ()
   with
-    exc ->
-      Format.set_formatter_out_channel stderr;
-      Format.open_vbox 0;
-      let exc =
-        match exc with
-          Stdpp.Exc_located (loc, exc) -> print_location loc; exc
-        | _ -> exc
-      in
-      report_error exc; Format.close_box (); Format.print_newline (); exit 2
+    exc -> report_error_and_exit exc
 ;;
 
 Odyl_main.name := "camlp4";;
