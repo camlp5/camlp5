@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.3 2006/11/30 13:26:52 deraugla Exp $
+# $Id: Makefile,v 1.4 2006/11/30 15:31:45 deraugla Exp $
 
 include ../config/Makefile
 
@@ -39,8 +39,10 @@ steal:
 	cp common/parsing/Makefile $(OVERSION)/parsing/.
 	cp common/parsing/.cvsignore $(OVERSION)/parsing/.
 	cp common/parsing/.depend $(OVERSION)/parsing/.
+	echo "let ocaml_version = \"$(OVERSION)\"" > \
+	  $(OVERSION)/utils/pconfig.ml
 	grep "ast_.*_magic_number" $(OCAML_SRC)/utils/config.ml | \
-	sed -e 's/^and/let/' > $(OVERSION)/utils/pconfig.ml
+	sed -e 's/^and/let/' >> $(OVERSION)/utils/pconfig.ml
 	$(MAKE) copy_steal FILE=utils/warnings.mli
 	$(MAKE) copy_steal FILE=parsing/asttypes.mli
 	$(MAKE) copy_steal FILE=parsing/location.mli

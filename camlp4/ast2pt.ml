@@ -18,6 +18,17 @@ open Parsetree;
 open Longident;
 open Asttypes;
 
+if Sys.ocaml_version <> Pconfig.ocaml_version then do {
+  flush stdout;
+  Printf.eprintf "\n";
+  Printf.eprintf "This ocaml can this camlp4 are incompatible:\n";
+  Printf.eprintf "- OCaml version is %s\n" Sys.ocaml_version;
+  Printf.eprintf "- Camlp4 compiled with ocaml %s\n" Pconfig.ocaml_version;
+  flush stderr;
+  failwith "bad version";
+}
+else ();
+
 value fast = ref False;
 value no_constructors_arity = ref False;
 
