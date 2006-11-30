@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.4 2006/10/25 18:54:48 deraugla Exp $
+# $Id: Makefile,v 1.5 2006/11/30 19:15:10 deraugla Exp $
 
 include config/Makefile
 
@@ -154,11 +154,17 @@ bootstrap_sources:
 	@-for i in $(FDIRS); do \
 		(cd $$i; \
 		 for j in *.ml*; do \
+			k=$$j; \
+			opt=; \
+			if [ "$$k" = "ast2pt.ml" ]; then \
+				k=ast2pt.ml_$(OVERSION); \
+				opt="-D$(OVERSIOND)"; \
+			fi; \
 			echo ============================================; \
-			echo ocaml_src.new/$$i/$$j; \
-			OTOP=$(OTOP) ../tools/conv.sh $$j | \
+			echo ocaml_src.new/$$i/$$k; \
+			OTOP=$(OTOP) ../tools/conv.sh $$opt $$j | \
 			sed 's/$$Id.*\$$/$(TXTGEN)/' > \
-			../ocaml_src.new/$$i/$$j; \
+			../ocaml_src.new/$$i/$$k; \
 		 done); \
 	done
 
@@ -167,11 +173,17 @@ compare_sources:
 	@-for i in $(FDIRS); do \
 		(cd $$i; \
 		 for j in *.ml*; do \
+			k=$$j; \
+			opt=; \
+			if [ "$$k" = "ast2pt.ml" ]; then \
+				k=ast2pt.ml_$(OVERSION); \
+				opt="-D$(OVERSIOND)"; \
+			fi; \
 			echo ============================================; \
-			echo ocaml_src/$$i/$$j; \
-			OTOP=$(OTOP) ../tools/conv.sh $$j | \
+			echo ocaml_src/$$i/$$k; \
+			OTOP=$(OTOP) ../tools/conv.sh $$opt $$j | \
 			sed 's/$$Id.*\$$/$(TXTGEN)/' | \
-			diff ../ocaml_src/$$i/$$j -; \
+			diff ../ocaml_src/$$i/$$k -; \
 		 done); \
 	done
 

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: configure,v 1.6 2006/11/30 14:52:15 deraugla Exp $
+# $Id: configure,v 1.7 2006/11/30 19:15:10 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -128,10 +128,13 @@ else
     OPT=
 fi
 
+OVERSIOND=$(echo $OVERSION | sed -e 's/[^a-bA-Z0-9]/_/g' -e 's/^/OCAML_/')
+
 (
 echo EXE=$EXE
 echo OPT=$OPT
 echo OVERSION=$OVERSION
+echo OVERSIOND=$OVERSIOND
 echo OTOP=../ocaml_stuff/$OVERSION
 echo OLIBDIR=$OLIBDIR
 if test "$prefix" != ""; then
@@ -151,3 +154,8 @@ echo
 echo "Resulting configuration file (config/Makefile.cnf):"
 echo
 cat config/Makefile.cnf
+
+if [ -f "ocaml_src/camlp4/ast2pt.ml_$OVERSION" ]; then
+  cd ocaml_src/camlp4
+  cp "ast2pt.ml_$OVERSION" ast2pt.ml
+fi

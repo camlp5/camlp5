@@ -1,4 +1,4 @@
-(* camlp4r q_MLast.cmo *)
+(* camlp4r q_MLast.cmo pa_macro.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp4                                  *)
@@ -170,4 +170,5 @@ Toploop.parse_use_file.val :=
 Pcaml.warning.val :=
   fun loc txt ->
     Toploop.print_warning (Ast2pt.mkloc loc) Format.err_formatter
-      (Warnings.Camlp4 txt);
+      (IFDEF OCAML_3_08_3 THEN Warnings.Other txt
+       ELSE Warnings.Camlp4 txt END);

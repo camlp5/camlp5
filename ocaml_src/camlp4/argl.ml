@@ -218,8 +218,8 @@ let file_kind_of_name name =
 ;;
 
 let print_version () =
-  eprintf "Camlp4s version %s\n" Pcaml.version;
-  eprintf "Compiled with ocaml version %s\n" Pconfig.ocaml_version;
+  eprintf "Camlp4s version %s (ocaml %s)\n" Pcaml.version
+    Pconfig.ocaml_version;
   flush stderr;
   exit 0
 ;;

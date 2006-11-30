@@ -3,9 +3,11 @@ DIR=$(expr "$0" : "\(.*\)/.*" "|" ".")
 
 INCL=
 FILE=
+OPTS=
 while test "" != "$1"; do
 	case $1 in
 	-I) INCL="$INCL -I $2"; shift;;
+	-D*) OPTS="$OPTS $1";;
 	*) FILE=$1;;
 	esac
 	shift
@@ -19,7 +21,7 @@ if test "$2" = "camlp4r" -o "$2" = "camlp4"; then
         fi
 	shift; shift
 	ARGS=$(echo $* | sed -e "s/[()*]//g")
-	$COMM $ARGS -ss $FILE
+	$COMM $ARGS $OPTS -ss $FILE
 else
 	cat $FILE
 fi

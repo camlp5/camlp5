@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.2 2006/11/30 14:32:03 deraugla Exp $
+# $Id: Makefile,v 1.3 2006/11/30 19:15:10 deraugla Exp $
 
 include ../config/Makefile
 
@@ -52,6 +52,12 @@ install:
 OVERSIOND=$$(echo $(OVERSION) | sed -e 's/[^a-bA-Z0-9]/_/g' -e 's/^/OCAML_/')
 
 rprint.cmo: rprint.ml
+	@$(TEST_DIR)
+	@$(CAMLP4_COMM) -D$(OVERSIOND) -DCOMP $< -o $*.ppo
+	$(OCAMLC) $(OCAMLCFLAGS) -c -impl $*.ppo
+	rm -f $*.ppo
+
+camlp4_top.cmo: camlp4_top.ml
 	@$(TEST_DIR)
 	@$(CAMLP4_COMM) -D$(OVERSIOND) -DCOMP $< -o $*.ppo
 	$(OCAMLC) $(OCAMLCFLAGS) -c -impl $*.ppo
