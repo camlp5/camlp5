@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: configure,v 1.1 2006/09/29 04:45:49 deraugla Exp $
+# $Id: configure,v 1.2 2006/11/30 09:51:37 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -71,8 +71,8 @@ fi
 
 # Check versions
 
-oversion=`ocamlc -v | head -1 | sed 's/^.*version //'`
-version=`sed -n -e 's/value version = "\([^"]*\)".*$/\1/p' camlp4/pcaml.ml`
+oversion=$(ocamlc -v | head -1 | sed 's/^.*version //')
+version=$(sed -n -e 's/value version = "\([^"]*\)".*$/\1/p' camlp4/pcaml.ml)
 echo "OCaml version:    $oversion"
 echo "Camlp4s version:  $version"
 
@@ -86,7 +86,7 @@ try
   else failwith "bad version"
 with _ -> exit 2
 EOF
-if `ocaml config/tmp.ml`; then :
+if $(ocaml config/tmp.ml); then :
 else
   echo
   echo "Sorry: these versions are incompatible. Please upgrade or report."
@@ -97,9 +97,9 @@ rm config/tmp.ml
 
 # Evaluate installation directories
 
-x=`ocamlc -where`
-y=`echo $x | sed -e 's|\\\\|/|g'`
-x="`echo 'Sys.os_type;;' | ocaml | egrep 'Win32|Cygwin'`"
+x=$(ocamlc -where)
+y=$(echo $x | sed -e 's|\\\\|/|g')
+x="$(echo 'Sys.os_type;;' | ocaml | egrep 'Win32|Cygwin')"
 if test "$x" = ""; then win=false; else win=true; fi
 OLIBDIR="$y"
 
@@ -114,21 +114,21 @@ if test "$bindir" != ""; then
 elif test "$prefix" != ""; then
     BINDIR='$(PREFIX)/bin'
 else
-    BINDIR=`dirname "\`which ocamlc\`"`
+    BINDIR=$(dirname "$(which ocamlc)")
 fi
 if test "$libdir" != ""; then
     LIBDIR=$libdir
 elif test "$prefix" != ""; then
     LIBDIR='$(PREFIX)/lib/ocaml'
 else
-    LIBDIR=`ocamlc -where`
+    LIBDIR=$(ocamlc -where)
 fi
 if test "$mandir" != ""; then
     MANDIR=$mandir
 elif test "$prefix" != ""; then
     MANDIR='$(PREFIX)/man'
 else
-    MANDIR=`dirname "$BINDIR"`/man
+    MANDIR=$(dirname "$BINDIR")/man
 fi
 
 if ocamlc.opt > /dev/null 2>&1 && ocamlopt.opt > /dev/null 2>&1; then
