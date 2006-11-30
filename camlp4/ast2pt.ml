@@ -1,4 +1,4 @@
-(* camlp4r *)
+(* camlp4r pa_macro.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp4                                  *)
@@ -793,7 +793,15 @@ and class_sig_item c l =
   | CgMth loc s pf t ->
       [Pctf_meth (s, mkprivate pf, ctyp (mkpolytype t), mkloc loc) :: l]
   | CgVal loc s b t ->
-      [Pctf_val (s, mkmutable b, Some (ctyp t), mkloc loc) :: l]
+      IFDEF COMP THEN
+        IFDEF OCAML_3_10 THEN
+          failwith "not impl CgVal"
+        ELSE
+          [Pctf_val (s, mkmutable b, Some (ctyp t), mkloc loc) :: l]
+        END
+      ELSE
+        failwith "not impl Astpt.class_sig_item CgVal"
+      END
   | CgVir loc s b t ->
       [Pctf_virt (s, mkprivate b, ctyp (mkpolytype t), mkloc loc) :: l] ]
 and class_expr =

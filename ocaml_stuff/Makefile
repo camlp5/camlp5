@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.2 2006/11/30 10:56:31 deraugla Exp $
+# $Id: Makefile,v 1.3 2006/11/30 13:26:52 deraugla Exp $
 
 include ../config/Makefile
 
@@ -30,6 +30,15 @@ steal:
 	@if test "$(OCAML_SRC)" = ""; then \
 		echo "usage: make steal OCAML_SRC=..."; exit 1; \
 	fi
+	mkdir -p "$(OVERSION)"
+	cd "$(OVERSION)"; mkdir -p utils parsing
+	cp common/utils/pconfig.mli $(OVERSION)/utils/.
+	cp common/utils/Makefile $(OVERSION)/utils/.
+	cp common/utils/.cvsignore $(OVERSION)/utils/.
+	cp common/utils/.depend $(OVERSION)/utils/.
+	cp common/parsing/Makefile $(OVERSION)/parsing/.
+	cp common/parsing/.cvsignore $(OVERSION)/parsing/.
+	cp common/parsing/.depend $(OVERSION)/parsing/.
 	grep "ast_.*_magic_number" $(OCAML_SRC)/utils/config.ml | \
 	sed -e 's/^and/let/' > $(OVERSION)/utils/pconfig.ml
 	$(MAKE) copy_steal FILE=utils/warnings.mli
