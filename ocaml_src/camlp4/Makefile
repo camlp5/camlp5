@@ -61,13 +61,13 @@ install:
 
 ast2pt.cmo: ast2pt.ml
 	@$(TEST_DIR)
-	@$(CAMLP4_COMM) -D$(OVERSIOND) -DCOMP $< -o $*.ppo
+	@$(CAMLP4_COMM) -D$(OVERSIOND) $< -o $*.ppo
 	$(OCAMLC) $(OCAMLCFLAGS) -c -impl $*.ppo
 	rm -f $*.ppo
 
 ast2pt.cmx: ast2pt.ml
 	@$(TEST_DIR)
-	@$(CAMLP4_COMM) -D$(OVERSIOND) -DCOMP $< -o $*.ppo
+	@$(CAMLP4_COMM) -D$(OVERSIOND) $< -o $*.ppo
 	$(OCAMLOPT) $(OCAMLCFLAGS) -c -impl $*.ppo
 	rm -f $*.ppo
 
