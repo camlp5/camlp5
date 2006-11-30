@@ -1,27 +1,28 @@
-# $Id: Makefile.tpl,v 1.1 2006/09/29 04:45:49 deraugla Exp $
+# $Id: Makefile.tpl,v 1.2 2006/11/30 10:58:22 deraugla Exp $
 
 CAMLP4_COMM=OTOP=$(OTOP) OPT=$(OPT) EXE=$(EXE) ../tools/camlp4_comm.sh
 OCAMLC=@OTOP=$(OTOP) OPT=$(OPT) EXE=$(EXE) ../tools/ocamlc.sh
 OCAMLOPT=@OTOP=$(OTOP) OPT=$(OPT) EXE=$(EXE) ../tools/ocamlopt.sh
 OCAMLCFLAGS=
 MKDIR=mkdir -p
+TEST_DIR=test $$(basename "$<") = "$<" || { echo "Please run 'make' in directory '$$(dirname "$<")' first"; exit 1; }
 
 .SUFFIXES: .cmx .cmo .cmi .ml .mli
 
 .mli.cmi:
-	@if test `basename $<` != $<; then echo "Bad directory"; exit 1; fi
+	@$(TEST_DIR)
 	@$(CAMLP4_COMM) $< -o $*.ppi
 	$(OCAMLC) $(OCAMLCFLAGS) -c -intf $*.ppi
-	rm -f $*.ppi	
+	rm -f $*.ppi
 
 .ml.cmo:
-	@if test `basename $<` != $<; then echo "Bad directory"; exit 1; fi
+	@$(TEST_DIR)
 	@$(CAMLP4_COMM) $< -o $*.ppo
 	$(OCAMLC) $(OCAMLCFLAGS) -c -impl $*.ppo
 	rm -f $*.ppo
 
 .ml.cmx:
-	@if test `basename $<` != $<; then echo "Bad directory"; exit 1; fi
+	@$(TEST_DIR)
 	@$(CAMLP4_COMM) $< -o $*.ppo
 	$(OCAMLOPT) $(OCAMLCFLAGS) -c -impl $*.ppo
 	rm -f $*.ppo

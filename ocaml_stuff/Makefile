@@ -1,22 +1,26 @@
-# $Id: Makefile,v 1.1 2006/09/29 04:45:49 deraugla Exp $
+# $Id: Makefile,v 1.2 2006/11/30 10:56:31 deraugla Exp $
 
 include ../config/Makefile
 
-DIRS=utils parsing
+DIRS=$(OVERSION)/utils $(OVERSION)/parsing
 
 all:
-	if test "$(OTOP)" = "../ocaml_stuff"; then \
+	if test "$(OTOP)" = "../ocaml_stuff/$(OVERSION)"; then \
 	  set -e; \
-	  for i in $(DIRS); do cd $$i; $(MAKE) all EXE=$(EXE); cd ..; done; \
+	  for i in $(DIRS); do \
+	    cd $$i; $(MAKE) all EXE=$(EXE); cd ../..; \
+          done; \
 	fi
 
 opt:
-	cd utils; $(MAKE) opt
+	cd $(OVERSION)/utils; $(MAKE) opt
 
 clean:
-	if test "$(OTOP)" = "../ocaml_stuff"; then \
+	if test "$(OTOP)" = "../ocaml_stuff/$(OVERSION)"; then \
 	  set -e; \
-	  for i in $(DIRS); do cd $$i; $(MAKE) clean EXE=$(EXE); cd ..; done; \
+	  for i in $(DIRS); do \
+	    cd $$i; $(MAKE) clean EXE=$(EXE); cd ../..; \
+	  done; \
 	fi
 
 depend:
@@ -27,7 +31,7 @@ steal:
 		echo "usage: make steal OCAML_SRC=..."; exit 1; \
 	fi
 	grep "ast_.*_magic_number" $(OCAML_SRC)/utils/config.ml | \
-	sed -e 's/^and/let/' > utils/pconfig.ml
+	sed -e 's/^and/let/' > $(OVERSION)/utils/pconfig.ml
 	$(MAKE) copy_steal FILE=utils/warnings.mli
 	$(MAKE) copy_steal FILE=parsing/asttypes.mli
 	$(MAKE) copy_steal FILE=parsing/location.mli
@@ -35,7 +39,7 @@ steal:
 	$(MAKE) copy_steal FILE=parsing/parsetree.mli
 
 copy_steal:
-	sed 's/\$$Id.*\$$/Id/' $(OCAML_SRC)/$(FILE) > $(FILE)
+	sed 's/\$$Id.*\$$/Id/' $(OCAML_SRC)/$(FILE) > $(OVERSION)/$(FILE)
 
 compare_stolen:
 	@if test "$(OCAML_SRC)" = ""; then \
@@ -44,24 +48,24 @@ compare_stolen:
 	@echo =================================================
 	@echo warnings.ml
 	@sed 's/\$$Id.*\$$/Id/' $(OCAML_SRC)/utils/warnings.mli | \
-	diff utils/warnings.mli -; exit 0
+	diff $(OVERSION)/utils/warnings.mli -; exit 0
 	@echo =================================================
 	@echo pconfig.ml
 	@grep "ast_.*_magic_number" $(OCAML_SRC)/utils/config.ml | \
-	sed -e 's/^and/let/' | diff utils/pconfig.ml -; exit 0
+	sed -e 's/^and/let/' | diff $(OVERSION)/utils/pconfig.ml -; exit 0
 	@echo =================================================
 	@echo asttypes.mli
 	@sed 's/\$$Id.*\$$/Id/' $(OCAML_SRC)/parsing/asttypes.mli | \
-	diff parsing/asttypes.mli -; exit 0
+	diff $(OVERSION)/parsing/asttypes.mli -; exit 0
 	@echo =================================================
 	@echo location.mli
 	@sed 's/\$$Id.*\$$/Id/' $(OCAML_SRC)/parsing/location.mli | \
-	diff parsing/location.mli -; exit 0
+	diff $(OVERSION)/parsing/location.mli -; exit 0
 	@echo =================================================
 	@echo longident.mli
 	@sed 's/\$$Id.*\$$/Id/' $(OCAML_SRC)/parsing/longident.mli | \
-	diff parsing/longident.mli -; exit 0
+	diff $(OVERSION)/parsing/longident.mli -; exit 0
 	@echo =================================================
 	@echo parsetree.mli
 	@sed 's/\$$Id.*\$$/Id/' $(OCAML_SRC)/parsing/parsetree.mli | \
-	diff parsing/parsetree.mli -; exit 0
+	diff $(OVERSION)/parsing/parsetree.mli -; exit 0

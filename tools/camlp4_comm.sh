@@ -15,22 +15,22 @@ done
 
 head -1 $FILE >/dev/null || exit 1
 
-set - `head -1 $FILE`
+set - $(head -1 $FILE)
 if test "$2" = "camlp4r" -o "$2" = "camlp4"; then
 	COMM="ocamlrun$EXE ../boot/$2$EXE -nolib -I ../boot"
-        if test "`basename $OTOP`" != "ocaml_stuff"; then
+        if test "$(basename "$(dirname $OTOP)")" != "ocaml_stuff"; then
             COMM="$OTOP/boot/$COMM"
         fi
 	shift; shift
-	ARGS2=`echo $* | sed -e "s/[()*]//g"`
+	ARGS2=$(echo $* | sed -e "s/[()*]//g")
 #	ARGS1="$ARGS1 -verbose"
 	if test "$QUIET" = "no"; then echo $COMM $ARGS2 $ARGS1 $FILE; fi
 	$COMM $ARGS2 $ARGS1 $FILE
 else
-	if test "`basename $FILE .mli`.mli" = "$FILE"; then
-		OFILE=`basename $FILE .mli`.ppi
+	if test "$(basename $FILE .mli).mli" = "$FILE"; then
+		OFILE=$(basename $FILE .mli).ppi
 	else
-		OFILE=`basename $FILE .ml`.ppo
+		OFILE=$(basename $FILE .ml).ppo
 	fi
 	if test "$QUIET" = "no"; then echo cp $FILE $OFILE; fi
 	cp $FILE $OFILE
