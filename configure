@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: configure,v 1.4 2006/11/30 13:26:52 deraugla Exp $
+# $Id: configure,v 1.5 2006/11/30 14:32:03 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -72,28 +72,18 @@ fi
 # Check versions
 
 oversion=$(ocamlc -v | head -1 | sed 's/^.*version //')
-version=$(sed -n -e 's/value version = "\([^"]*\)".*$/\1/p' camlp4/pcaml.ml)
-echo "OCaml version:    $oversion"
-echo "Camlp4s version:  $version"
+OVERSION=$(echo "$oversion" | sed -e 's/[ +].*$//')
 
-echo "let version = \"$version\" in" > config/tmp.ml
-echo "let ov = \"$oversion\" in" >> config/tmp.ml
-cat >> config/tmp.ml << EOF
-try
-  let oi = try String.index ov ' ' with Not_found -> String.length ov in
-  let ov = String.sub ov 0 oi in
-  if String.sub version 0 (String.length ov) = ov then ()
-  else failwith "bad version"
-with _ -> exit 2
-EOF
-if $(ocaml config/tmp.ml); then :
+if [ -d "ocaml_stuff/$OVERSION" ]; then :
 else
   echo
-  echo "Sorry: these versions are incompatible. Please upgrade or report."
+  echo "Sorry: the compatibility with ocaml version \"$oversion\""
+  echo "is not yet implemented. Please report."
+  echo
   echo "Configuration failed."
+  echo "OVERSION=$OVERSION" > config/Makefile
   exit 2
 fi
-rm config/tmp.ml
 
 # Evaluate installation directories
 
@@ -136,8 +126,6 @@ if ocamlc.opt > /dev/null 2>&1 && ocamlopt.opt > /dev/null 2>&1; then
 else
     OPT=
 fi
-
-OVERSION=$(echo "$oversion" | sed -e 's/[ +].*$//')
 
 (
 echo EXE=$EXE

@@ -1,4 +1,4 @@
-(* camlp4r *)
+(* camlp4r pa_macro.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp4                                  *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: rprint.ml,v 1.2 2006/10/09 03:31:13 deraugla Exp $ *)
+(* $Id: rprint.ml,v 1.3 2006/11/30 14:32:03 deraugla Exp $ *)
 
 open Format;
 open Outcometree;
@@ -270,9 +270,17 @@ and print_out_class_sig_item ppf =
       fprintf ppf "@[<2>method %s%s%s :@ %a;@]"
         (if priv then "private " else "") (if virt then "virtual " else "")
         name Toploop.print_out_type.val ty
-  | Ocsg_value name mut ty ->
-      fprintf ppf "@[<2>value %s%s :@ %a;@]" (if mut then "mutable " else "")
-        name Toploop.print_out_type.val ty ]
+  | x ->
+      IFDEF OCAML_3_10 THEN
+        failwith "Rprint.print_out_class_sig_item: not impl"
+      ELSE
+        match x with
+        [ Ocsg_value name mut ty ->
+            fprintf ppf "@[<2>value %s%s :@ %a;@]"
+               (if mut then "mutable " else "") name
+               Toploop.print_out_type.val ty
+        | _ -> assert False ]
+      END ]
 ;
 
 value rec print_out_module_type ppf =
