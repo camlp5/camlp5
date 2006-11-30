@@ -18,12 +18,25 @@ open Parsetree;
 open Longident;
 open Asttypes;
 
-if Sys.ocaml_version <> Pconfig.ocaml_version then do {
+let ov = Sys.ocaml_version in
+let oi =
+  loop 0 where rec loop i =
+    if i = String.length ov then i
+    else
+      match ov.[i] with
+      [ ' ' | '+' -> i
+      | _ -> loop (i + 1) ]
+in
+let ov = String.sub ov 0 oi in
+if ov <> Pconfig.ocaml_version then do {
   flush stdout;
   Printf.eprintf "\n";
-  Printf.eprintf "This ocaml can this camlp4 are incompatible:\n";
+  Printf.eprintf "This ocaml can this camlp4 are not compatible:\n";
   Printf.eprintf "- OCaml version is %s\n" Sys.ocaml_version;
   Printf.eprintf "- Camlp4 compiled with ocaml %s\n" Pconfig.ocaml_version;
+  Printf.eprintf "\n";
+  Printf.eprintf "You need to recompile camlp4.\n";
+  Printf.eprintf "\n";
   flush stderr;
   failwith "bad version";
 }
