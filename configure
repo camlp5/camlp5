@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: configure,v 1.5 2006/11/30 14:32:03 deraugla Exp $
+# $Id: configure,v 1.6 2006/11/30 14:52:15 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -81,6 +81,7 @@ else
   echo "is not yet implemented. Please report."
   echo
   echo "Configuration failed."
+  # to give the ability to do "make steal":
   echo "OVERSION=$OVERSION" > config/Makefile
   exit 2
 fi
