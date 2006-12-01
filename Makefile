@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.5 2006/11/30 19:15:10 deraugla Exp $
+# $Id: Makefile,v 1.6 2006/12/01 05:10:49 deraugla Exp $
 
 include config/Makefile
 
@@ -203,6 +203,11 @@ promote_sources:
 		make mv_cvs FROM=ocaml_src/$$i TO=ocaml_src.new/$$i; \
 	done
 	mv ocaml_src/tools ocaml_src.new/.
+	cd ocaml_src; for i in camlp4/ast2pt.ml_*; do \
+	  if [ ! -f ../ocaml_src.new/$$i ]; then \
+	    mv $$i ../ocaml_src.new/$$i; \
+	  fi; \
+	done
 	mv ocaml_src ocaml_src.new/SAVED
 	mv ocaml_src.new ocaml_src
 

@@ -233,14 +233,22 @@ value mktrecord (loc, n, m, t) =
   IFDEF OCAML_3_08_3 THEN
     (n, mkmutable m, ctyp (mkpolytype t))
   ELSE
-    (n, mkmutable m, ctyp (mkpolytype t), mkloc loc)
+    IFDEF OCAML_3_08_4 THEN
+      (n, mkmutable m, ctyp (mkpolytype t))
+    ELSE
+      (n, mkmutable m, ctyp (mkpolytype t), mkloc loc)
+    END
   END
 ;
 value mkvariant (loc, c, tl) =
   IFDEF OCAML_3_08_3 THEN
     (c, List.map ctyp tl)
   ELSE
-    (c, List.map ctyp tl, mkloc loc)
+    IFDEF OCAML_3_08_4 THEN
+      (c, List.map ctyp tl)
+    ELSE
+      (c, List.map ctyp tl, mkloc loc)
+    END
   END
 ;
 value type_decl tl cl =

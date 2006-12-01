@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: rprint.ml,v 1.4 2006/11/30 19:15:10 deraugla Exp $ *)
+(* $Id: rprint.ml,v 1.5 2006/12/01 05:10:49 deraugla Exp $ *)
 
 open Format;
 open Outcometree;
@@ -174,7 +174,25 @@ and print_simple_out_type ppf =
       fprintf ppf "@[<1>(%a)@]" print_out_type ty
   | x ->
       IFDEF OCAML_3_08_3 THEN
-        failwith "Rprint.print_simple_out_type: case not implemented"
+        match x with
+        [ Otyp_sum constrs _ ->
+            fprintf ppf "@[<hv>[ %a ]@]"
+              (print_list print_out_constr (fun ppf -> fprintf ppf "@ | "))
+              constrs
+        | Otyp_record lbls _ ->
+            fprintf ppf "@[<hv 2>{ %a }@]"
+              (print_list print_out_label (fun ppf -> fprintf ppf ";@ ")) lbls
+        | _ -> assert False ]
+      ELSE IFDEF OCAML_3_08_4 THEN
+        match x with
+        [ Otyp_sum constrs _ ->
+            fprintf ppf "@[<hv>[ %a ]@]"
+              (print_list print_out_constr (fun ppf -> fprintf ppf "@ | "))
+              constrs
+        | Otyp_record lbls _ ->
+            fprintf ppf "@[<hv 2>{ %a }@]"
+              (print_list print_out_label (fun ppf -> fprintf ppf ";@ ")) lbls
+        | _ -> assert False ]
       ELSE
         match x with
         [ Otyp_sum constrs ->
@@ -185,7 +203,7 @@ and print_simple_out_type ppf =
             fprintf ppf "@[<hv 2>{ %a }@]"
               (print_list print_out_label (fun ppf -> fprintf ppf ";@ ")) lbls
         | _ -> assert False ]
-      END ]
+      END END ]
 and print_out_constr ppf (name, tyl) =
   match tyl with
   [ [] -> fprintf ppf "%s" name
@@ -339,6 +357,8 @@ and print_out_sig_item ppf =
   | x ->
       IFDEF OCAML_3_08_3 THEN
         failwith "Rprint.print_out_sig_item: not implemented case"
+      ELSE IFDEF OCAML_3_08_4 THEN
+        failwith "Rprint.print_out_sig_item: not implemented case"
       ELSE
         match x with
         [ Osig_class vir_flag name params clt _ ->
@@ -350,15 +370,18 @@ and print_out_sig_item ppf =
               (if vir_flag then " virtual" else "") print_out_class_params
               params name Toploop.print_out_class_type.val clt
         | _ -> assert False ]
-      END ]
+      END END ]
 and print_out_type_decl kwd ppf x =
   let (name, args, ty, priv, constraints) =
     IFDEF OCAML_3_08_3 THEN
       let (name, args, ty, priv) = x in
       (name, args, ty, priv, [])
+    ELSE IFDEF OCAML_3_08_4 THEN
+      let (name, args, ty, priv) = x in
+      (name, args, ty, priv, [])
     ELSE
       x
-    END
+    END END
   in
   let constrain ppf (ty, ty') =
     fprintf ppf "@ @[<2>constraint %a =@ %a@]" Toploop.print_out_type.val ty
