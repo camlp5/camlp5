@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.5 2006/12/01 10:37:34 deraugla Exp $
+# $Id: Makefile,v 1.6 2006/12/01 22:22:31 deraugla Exp $
 
 include ../config/Makefile
 
@@ -24,7 +24,7 @@ clean:
 	fi
 
 depend:
-	set -e; for i in $(DIRS); do cd $$i; $(MAKE) depend; cd ..; done
+	set -e; for i in $(DIRS); do cd $$i; $(MAKE) depend; cd ../..; done
 
 steal:
 	@if test "$(OCAML_SRC)" = ""; then \
