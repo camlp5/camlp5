@@ -6,7 +6,6 @@ INSTALL UNDER UNIX
   Do:
      ./configure
      make
-  Optionnally, do:
      make bootstrap
   Optionnally do:
      make opt
