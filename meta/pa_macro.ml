@@ -1,5 +1,5 @@
 (* camlp4r *)
-(* $Id: pa_macro.ml,v 1.6 2006/10/25 21:15:09 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.7 2006/12/01 11:13:33 deraugla Exp $ *)
 
 (*
 Added statements:
@@ -9,22 +9,30 @@ Added statements:
      DEFINE <uident>
      DEFINE <uident> = <expression>
      DEFINE <uident> (<parameters>) = <expression>
-     IFDEF <uident> THEN <structure_items> END
-     IFDEF <uident> THEN <structure_items> ELSE <structure_items> END
-     IFNDEF <uident> THEN <structure_items> END
-     IFNDEF <uident> THEN <structure_items> ELSE <structure_items> END
+     IFDEF <dexpr> THEN <structure_items> END
+     IFDEF <dexpr> THEN <structure_items> ELSE <structure_items> END
+     IFNDEF <dexpr> THEN <structure_items> END
+     IFNDEF <dexpr> THEN <structure_items> ELSE <structure_items> END
 
   In expressions:
 
-     IFDEF <uident> THEN <expression> ELSE <expression> END
-     IFNDEF <uident> THEN <expression> ELSE <expression> END
+     IFDEF <dexpr> THEN <expression> ELSE <expression> END
+     IFNDEF <dexpr> THEN <expression> ELSE <expression> END
      __FILE__
      __LOCATION__
 
   In patterns:
 
-     IFDEF <uident> THEN <pattern> ELSE <pattern> END
-     IFNDEF <uident> THEN <pattern> ELSE <pattern> END
+     IFDEF <dexpr> THEN <pattern> ELSE <pattern> END
+     IFNDEF <dexpr> THEN <pattern> ELSE <pattern> END
+
+  A <dexpr> is either:
+
+     <dexpr> OR <dexpr>
+     <dexpr> AND <dexpr>
+     NOT <dexpr>
+     ( <dexpr> )
+     <uident>
 
   As Camlp4 options:
 
@@ -199,16 +207,16 @@ EXTEND
   macro_def:
     [ [ "DEFINE"; i = uident; def = opt_macro_value -> SdDef i def
       | "UNDEF"; i = uident -> SdUnd i
-      | "IFDEF"; i = uident; "THEN"; d = str_item_or_macro; "END" ->
-          if is_defined i then d else SdNop
-      | "IFDEF"; i = uident; "THEN"; d1 = str_item_or_macro; "ELSE";
+      | "IFDEF"; e = dexpr; "THEN"; d = str_item_or_macro; "END" ->
+          if e then d else SdNop
+      | "IFDEF"; e = dexpr; "THEN"; d1 = str_item_or_macro; "ELSE";
         d2 = str_item_or_macro; "END" ->
-          if is_defined i then d1 else d2
-      | "IFNDEF"; i = uident; "THEN"; d = str_item_or_macro; "END" ->
-          if is_defined i then SdNop else d
-      | "IFNDEF"; i = uident; "THEN"; d1 = str_item_or_macro; "ELSE";
+          if e then d1 else d2
+      | "IFNDEF"; e = dexpr; "THEN"; d = str_item_or_macro; "END" ->
+          if e then SdNop else d
+      | "IFNDEF"; e = dexpr; "THEN"; d1 = str_item_or_macro; "ELSE";
         d2 = str_item_or_macro; "END" ->
-          if is_defined i then d2 else d1 ] ]
+          if e then d2 else d1 ] ]
   ;
   str_item_or_macro:
     [ [ d = macro_def -> d
@@ -220,10 +228,10 @@ EXTEND
       | -> None ] ]
   ;
   expr: LEVEL "top"
-    [ [ "IFDEF"; i = uident; "THEN"; e1 = expr; "ELSE"; e2 = expr; "END" ->
-          if is_defined i then e1 else e2
-      | "IFNDEF"; i = uident; "THEN"; e1 = expr; "ELSE"; e2 = expr; "END" ->
-          if is_defined i then e2 else e1 ] ]
+    [ [ "IFDEF"; e = dexpr; "THEN"; e1 = expr; "ELSE"; e2 = expr; "END" ->
+          if e then e1 else e2
+      | "IFNDEF"; e = dexpr; "THEN"; e1 = expr; "ELSE"; e2 = expr; "END" ->
+          if e then e2 else e1 ] ]
   ;
   expr: LEVEL "simple"
     [ [ LIDENT "__FILE__" -> <:expr< $str:Pcaml.input_file.val$ >>
@@ -233,10 +241,17 @@ EXTEND
           <:expr< ($int:bp$, $int:ep$) >> ] ]
   ;
   patt:
-    [ [ "IFDEF"; i = uident; "THEN"; p1 = patt; "ELSE"; p2 = patt; "END" ->
-          if is_defined i then p1 else p2
-      | "IFNDEF"; i = uident; "THEN"; p1 = patt; "ELSE"; p2 = patt; "END" ->
-          if is_defined i then p2 else p1 ] ]
+    [ [ "IFDEF"; e = dexpr; "THEN"; p1 = patt; "ELSE"; p2 = patt; "END" ->
+          if e then p1 else p2
+      | "IFNDEF"; e = dexpr; "THEN"; p1 = patt; "ELSE"; p2 = patt; "END" ->
+          if e then p2 else p1 ] ]
+  ;
+  dexpr:
+    [ [ x = SELF; "OR"; y = SELF -> x || y ]
+    | [ x = SELF; "AND"; y = SELF -> y && y ]
+    | [ "NOT"; x = SELF -> not x ]
+    | [ i = uident -> is_defined i
+      | "("; x = dexpr; ")" -> x ] ]
   ;
   uident:
     [ [ i = UIDENT -> i ] ]

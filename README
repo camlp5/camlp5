@@ -1,19 +1,14 @@
-INSTALL UNDER UNIX
+OVERVIEW
 
-  You need the OCaml compilers installed to compile. They must be
-  accessible in the path.
+This is an alternative version of Camlp4 distributed separately.
+Started from an old version of Camlp4 and upgraded to make it work
+with modern compilers.
 
-  Do:
-     ./configure
-     make
-     make bootstrap
-  Optionnally do:
-     make opt
-     make opt.opt
-  Become root and do:
-     make install
+Version 1.0.
 
-INSTALL UNDER WINDOWS
+Compatible with ocaml versions :
+  3.08.3, 3.08.4, 3.09.0, 3.09.1, 3.09.2, 3.09.3, 3.10.
 
-  Under Windows, you need the Cygwin environment. The above directives
-  apply.
+INSTALL
+
+Read the file INSTALL to compile.

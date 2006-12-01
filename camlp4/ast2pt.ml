@@ -230,25 +230,17 @@ value mktype loc tl cl tk tm =
 value mkmutable m = if m then Mutable else Immutable;
 value mkprivate m = if m then Private else Public;
 value mktrecord (loc, n, m, t) =
-  IFDEF OCAML_3_08_3 THEN
+  IFDEF OCAML_3_08_3 OR OCAML_3_08_4 THEN
     (n, mkmutable m, ctyp (mkpolytype t))
   ELSE
-    IFDEF OCAML_3_08_4 THEN
-      (n, mkmutable m, ctyp (mkpolytype t))
-    ELSE
-      (n, mkmutable m, ctyp (mkpolytype t), mkloc loc)
-    END
+     (n, mkmutable m, ctyp (mkpolytype t), mkloc loc)
   END
 ;
 value mkvariant (loc, c, tl) =
-  IFDEF OCAML_3_08_3 THEN
+  IFDEF OCAML_3_08_3 OR OCAML_3_08_4 THEN
     (c, List.map ctyp tl)
   ELSE
-    IFDEF OCAML_3_08_4 THEN
-      (c, List.map ctyp tl)
-    ELSE
-      (c, List.map ctyp tl, mkloc loc)
-    END
+    (c, List.map ctyp tl, mkloc loc)
   END
 ;
 value type_decl tl cl =
