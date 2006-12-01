@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.4 2006/11/30 15:31:45 deraugla Exp $
+# $Id: Makefile,v 1.5 2006/12/01 10:37:34 deraugla Exp $
 
 include ../config/Makefile
 
@@ -30,6 +30,9 @@ steal:
 	@if test "$(OCAML_SRC)" = ""; then \
 		echo "usage: make steal OCAML_SRC=..."; exit 1; \
 	fi
+	@$(MAKE) real_steal OCAML_SRC="$$(cd ..; cd $(OCAML_SRC); pwd)"
+
+real_steal:
 	mkdir -p "$(OVERSION)"
 	cd "$(OVERSION)"; mkdir -p utils parsing
 	cp common/utils/pconfig.mli $(OVERSION)/utils/.
@@ -39,10 +42,9 @@ steal:
 	cp common/parsing/Makefile $(OVERSION)/parsing/.
 	cp common/parsing/.cvsignore $(OVERSION)/parsing/.
 	cp common/parsing/.depend $(OVERSION)/parsing/.
-	echo "let ocaml_version = \"$(OVERSION)\"" > \
-	  $(OVERSION)/utils/pconfig.ml
-	grep "ast_.*_magic_number" $(OCAML_SRC)/utils/config.ml | \
-	sed -e 's/^and/let/' >> $(OVERSION)/utils/pconfig.ml
+	(echo "let ocaml_version = \"$(OVERSION)\""; \
+	 grep "ast_.*_magic_number" $(OCAML_SRC)/utils/config.ml | \
+	 sed -e 's/^and/let/') > $(OVERSION)/utils/pconfig.ml
 	$(MAKE) copy_steal FILE=utils/warnings.mli
 	$(MAKE) copy_steal FILE=parsing/asttypes.mli
 	$(MAKE) copy_steal FILE=parsing/location.mli
@@ -56,13 +58,17 @@ compare_stolen:
 	@if test "$(OCAML_SRC)" = ""; then \
 		echo "usage: make compare_stolen OCAML_SRC=..."; exit 1; \
 	fi
+	$(MAKE) real_compare_stolen OCAML_SRC="$$(cd ..; cd $(OCAML_SRC); pwd)"
+
+real_compare_stolen:
 	@echo =================================================
 	@echo warnings.ml
 	@sed 's/\$$Id.*\$$/Id/' $(OCAML_SRC)/utils/warnings.mli | \
 	diff $(OVERSION)/utils/warnings.mli -; exit 0
 	@echo =================================================
 	@echo pconfig.ml
-	@grep "ast_.*_magic_number" $(OCAML_SRC)/utils/config.ml | \
+	@(echo "let ocaml_version = \"$(OVERSION)\""; \
+	  grep "ast_.*_magic_number" $(OCAML_SRC)/utils/config.ml) | \
 	sed -e 's/^and/let/' | diff $(OVERSION)/utils/pconfig.ml -; exit 0
 	@echo =================================================
 	@echo asttypes.mli
