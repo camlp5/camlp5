@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.6 2006/12/01 05:10:49 deraugla Exp $
+# $Id: Makefile,v 1.7 2006/12/01 11:21:32 deraugla Exp $
 
 include config/Makefile
 
@@ -171,20 +171,22 @@ bootstrap_sources:
 compare_sources:
 	cd etc; make pr_o.cmo
 	@-for i in $(FDIRS); do \
-		(cd $$i; \
-		 for j in *.ml*; do \
-			k=$$j; \
-			opt=; \
-			if [ "$$k" = "ast2pt.ml" ]; then \
-				k=ast2pt.ml_$(OVERSION); \
-				opt="-D$(OVERSIOND)"; \
-			fi; \
-			echo ============================================; \
-			echo ocaml_src/$$i/$$k; \
-			OTOP=$(OTOP) ../tools/conv.sh $$opt $$j | \
-			sed 's/$$Id.*\$$/$(TXTGEN)/' | \
-			diff ../ocaml_src/$$i/$$k -; \
-		 done); \
+	  (cd $$i; \
+	   for j in *.ml*; do \
+	     if [ "$$j" != "odyl_config.ml" ]; then \
+	       k=$$j; \
+	       opt=; \
+	       if [ "$$k" = "ast2pt.ml" ]; then \
+	         k=ast2pt.ml_$(OVERSION); \
+	         opt="-D$(OVERSIOND)"; \
+	       fi; \
+	       echo ============================================; \
+	       echo ocaml_src/$$i/$$k; \
+	       OTOP=$(OTOP) ../tools/conv.sh $$opt $$j | \
+	       sed 's/$$Id.*\$$/$(TXTGEN)/' | \
+	       diff ../ocaml_src/$$i/$$k -; \
+	     fi; \
+	   done); \
 	done
 
 untouch_sources:
