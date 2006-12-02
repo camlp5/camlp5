@@ -173,7 +173,7 @@ let warn_variant loc =
       not_yet_warned_variant := false;
       !(Pcaml.warning) loc
         (Printf.sprintf
-           "use of syntax of variants types deprecated since version 3.05")
+           "use of syntax of variants types deprecated since version 1.00")
     end
 ;;
 
@@ -183,7 +183,7 @@ let warn_sequence loc =
     begin
       not_yet_warned := false;
       !(Pcaml.warning) loc
-        "use of syntax of sequences deprecated since version 3.01.1"
+        "use of syntax of sequences deprecated since version 1.00"
     end
 ;;
 Pcaml.add_option "-no_warn_seq" (Arg.Clear not_yet_warned)

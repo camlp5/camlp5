@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.8 2006/10/25 18:54:48 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.9 2006/12/02 15:03:34 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -171,7 +171,7 @@ value warn_variant loc =
     not_yet_warned_variant.val := False;
     Pcaml.warning.val loc
       (Printf.sprintf
-         "use of syntax of variants types deprecated since version 3.05");
+         "use of syntax of variants types deprecated since version 1.00");
   }
   else ()
 ;
@@ -181,7 +181,7 @@ value warn_sequence loc =
   if not_yet_warned.val then do {
     not_yet_warned.val := False;
     Pcaml.warning.val loc
-      ("use of syntax of sequences deprecated since version 3.01.1");
+      ("use of syntax of sequences deprecated since version 1.00");
   }
   else ()
 ;

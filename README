@@ -1,14 +1,19 @@
 OVERVIEW
 
-This is an alternative version of Camlp4 distributed separately from
-ocaml. Started from an old version of camlp4 and upgraded to make it
-work with modern ocaml compilers.
+  This is an alternative version of Camlp4 distributed separately from
+  ocaml. Started from an old version of camlp4 and upgraded to make it
+  work with modern ocaml compilers.
 
-The current version is 1.0.
+  The current version is 1.0.
 
-Compatible with ocaml versions :
-  3.08.3, 3.08.4, 3.09.0, 3.09.1, 3.09.2, 3.09.3, 3.10.
+  Compatible with ocaml versions :
+    3.08.3, 3.08.4, 3.09.0, 3.09.1, 3.09.2, 3.09.3, 3.10.
 
 INSTALL
 
-Read the file INSTALL to compile.
+  Read the file INSTALL to compile.
+
+DEVELOPPERS
+
+  The file DEVEL gives information for people who want to make changes
+  in camlp4, or who are just curious.

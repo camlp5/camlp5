@@ -1,0 +1,122 @@
+Information for developpers
+
+OVERVIEW
+
+   Although the sources of camlp4 are written in camlp4 syntaxes, the
+   distribution contain no 'magic' binary file for the first compilation.
+
+     This first compilation can be done thanks to a version of the core of
+   camlp4 written in pure ocaml syntax. Once this 'core' is compiled, all
+   sources in revised syntax with syntax extensions can be compiled.
+
+TREE STRUCTURE
+
+   The directory 'ocaml_src' contains images in pure ocaml syntax of the
+   directories odyl lib camlp4 and meta. This allow to create a core version
+   of camlp4 from only the ocaml compiler installed.
+
+     You can decompose the building of the camlp4 core into:
+       1. make library_cold
+            just makes the directory 'ocaml_src/lib' and copy the cmo and cmi
+            files into the directory 'boot'
+       2. make compile_cold
+            makes the other directories of ocaml_src
+       3. make promote_cold
+            copies the executables "camlp4", "camlp4r" and the syntax
+            extensions (cmo files) into the directory 'boot'
+
+     From that point, the core camlp4 is in directory 'boot'. The real
+   sources in the top directories odyl lib camlp4 and meta, which are
+   written in revised syntax with some syntax extensions (grammars,
+   quotations) can be compiled. To achieve their compilation, you can
+   do:
+       make core
+
+     Or to compile everything do:
+       make all
+     or just:
+       make
+
+     Notice that doing "make core" or "make all" from scratch (after a
+   make clean), automatically start by making the core files from their
+   pure ocaml versions.
+
+FAST COMPILATION FROM SCRATCH
+
+   ./configure
+   make clean core compare
+   make coreboot
+   make all opt opt.opt
+
+TESTING CHANGES
+
+   1. do your changes
+   2. do:
+         make core compare
+      if it says that the bootstrap is ok, you can do:
+         make all
+         make opt
+         make opt.opt
+      otherwise, to make sure everything is ok, first do:
+         make coreboot
+      sometimes two bootstraps ('make coreboot' twice) are necessary,
+      in particular if you change things in the directory 'lib'. It is
+      even possible that three bootstraps are necessary.
+
+BEFORE COMMITTING YOUR CHANGES
+
+   Make sure that the cold start with pure ocaml sources work. For that, do:
+       make compare_sources | less
+
+     This shows you the changes that would be done in the ocaml pure sources
+   of the directory ocaml_src.
+
+     To make the new versions, do:
+       make bootstrap_sources
+       make promote_sources
+
+     Notice that these pure ocaml sources are not supposed to be modified
+   by hand, but only created by the above commands. Besides, their source,
+   although pretty printed, are often not understandable, particularly for
+   expanded grammars (of the statement 'EXTEND').
+     However, if these source do not compile, due to changes in the ocaml
+   compiler, it is possible to edit them. In this case, similar changes
+   may have to be done in the normal sources in revised syntax.
+
+     After doing 'make bootstrap_sources' above, and before doing 'make
+   promote_sources' below, it is possible to do 'make untouch_sources'
+   which change the dates of the new created files with the dates of the
+   old files if they are not modified. This way, the "cvs commit" will not
+   have to compare these files, which may have some importance if you
+   network is not fast.
+
+     The 'make bootstrap_sources' builds a directory named 'ocaml_src.new'.
+   If this directory still exists, due to a previous 'make bootstrap_sources',
+   the command fails. In this case, just delete it (rm -rf ocaml_src.new)
+   without problem: this directory is not part of the distribution, it is
+   just temporary.
+
+     After having rebuilt the pure ocaml sources, check they work by
+   rebuilding everything from scratch, starting with "configure".
+
+IF YOU CHANGE THE MAIN PARSER
+
+   If you change the main parser 'meta/pa_r.ml', you may check that the
+   quotations expanders of syntax tree 'meta/q_MLast.ml' match the new
+   version. For that, do:
+       cd meta
+       ./mk_q_MLast.sh > foo
+
+     This creates a file 'foo' which is supposed to be the new version
+   of 'q_MLast.ml'. Check its validity by typing:
+       diff q_MLast.ml foo | less
+
+     If you think it is ok, do:
+       mv foo q_MLast.ml
+
+     Then returning to the top directory, do 'make core compare' and
+   possibly 'make coreboot' (one of several times) to check the
+   correctness of the file.
+
+     And don't forget, if you want to commit, to re-create the pure ocaml
+   sources like indicated above.
