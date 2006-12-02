@@ -8,10 +8,11 @@ while test "" != "$1"; do
 	shift
 done
 
+CP="ln -sf"
 if test "$(basename $FILE .mli).mli" = "$FILE"; then
-  echo cp $FILE $(basename $FILE .mli).ppi
-  cp $FILE $(basename $FILE .mli).ppi
+  echo $CP $FILE $(basename $FILE .mli).ppi
+  $CP $FILE $(basename $FILE .mli).ppi
 else
-  echo cp $FILE $(basename $FILE .ml).ppo
-  cp $FILE $(basename $FILE .ml).ppo
+  echo $CP $FILE $(basename $FILE .ml).ppo
+  $CP $FILE $(basename $FILE .ml).ppo
 fi
