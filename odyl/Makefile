@@ -1,6 +1,7 @@
-# $Id: Makefile,v 1.1 2006/09/29 04:45:49 deraugla Exp $
+# $Id: Makefile,v 1.2 2006/12/02 12:45:48 deraugla Exp $
 
-include ../config/Makefile
+TOP=..
+include $(TOP)/config/Makefile
 
 SHELL=/bin/sh
 

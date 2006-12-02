@@ -1,14 +1,14 @@
 # $Id$
 
 TOP=..
-include ../config/Makefile
+include $(TOP)/config/Makefile
 
 SHELL=/bin/sh
 
-INCLUDES=-I ../odyl -I ../boot -I $(OTOP)/utils -I $(OTOP)/parsing -I $(OTOP)/otherlibs/dynlink
+INCLUDES=-I ../odyl -I $(TOP)/boot -I $(OTOP)/utils -I $(OTOP)/parsing -I $(OTOP)/otherlibs/dynlink
 OCAMLCFLAGS=-warn-error A $(INCLUDES)
 LINKFLAGS=$(INCLUDES)
-CAMLP4_OBJS=../boot/stdpp.cmo ../boot/token.cmo ../boot/plexer.cmo ../boot/gramext.cmo ../boot/grammar.cmo ../boot/extfold.cmo ../boot/extfun.cmo ../boot/fstream.cmo $(OTOP)/utils/pconfig.cmo quotation.cmo ast2pt.cmo spretty.cmo reloc.cmo pcaml.cmo argl.cmo
+CAMLP4_OBJS=$(TOP)/boot/stdpp.cmo $(TOP)/boot/token.cmo $(TOP)/boot/plexer.cmo $(TOP)/boot/gramext.cmo $(TOP)/boot/grammar.cmo $(TOP)/boot/extfold.cmo $(TOP)/boot/extfun.cmo $(TOP)/boot/fstream.cmo $(OTOP)/utils/pconfig.cmo quotation.cmo ast2pt.cmo spretty.cmo reloc.cmo pcaml.cmo argl.cmo
 CAMLP4_XOBJS=../lib/stdpp.cmx ../lib/token.cmx ../lib/plexer.cmx ../lib/gramext.cmx ../lib/grammar.cmx ../lib/extfold.cmx ../lib/extfun.cmx ../lib/fstream.cmx $(OTOP)/utils/pconfig.cmx quotation.cmx ast2pt.cmx spretty.cmx reloc.cmx pcaml.cmx argl.cmx
 OBJS=../odyl/odyl.cma camlp4.cma
 CAMLP4M=
@@ -45,11 +45,11 @@ depend:
 	done
 
 promote:
-	cp $(CAMLP4) ../boot/.
+	cp $(CAMLP4) $(TOP)/boot/.
 
 compare:
 	@for j in $(CAMLP4); do \
-		if cmp $$j ../boot/$$j; then :; else exit 1; fi; \
+		if cmp $$j $(TOP)/boot/$$j; then :; else exit 1; fi; \
 	done
 
 install:

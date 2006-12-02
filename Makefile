@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.9 2006/12/02 12:19:56 deraugla Exp $
+# $Id: Makefile,v 1.10 2006/12/02 12:45:48 deraugla Exp $
 
 include config/Makefile
 
@@ -146,9 +146,7 @@ bootstrap_sources:
 	   echo ============================================; \
 	   echo ocaml_src.new/$$i/Makefile; \
 	   sed 's/# $$Id.*\$$/# $(TXTGEN)/' ../../$$i/Makefile | \
-	   sed 's-^TOP=..$$-TOP=../..-' | \
-	   sed 's-include ../config-include ../../config-' | \
-	   sed 's-../boot-../../boot-g' > Makefile; \
+	   sed 's-^TOP=..$$-TOP=../..-' > Makefile; \
 	   echo ============================================; \
 	   echo ocaml_src.new/$$i/.depend; \
 	   cp ../../$$i/.depend .); \
@@ -179,9 +177,7 @@ compare_sources:
 	   echo ============================================; \
 	   echo ocaml_src/$$i/Makefile; \
 	   sed 's/# $$Id.*\$$/# $(TXTGEN)/' ../../$$i/Makefile | \
-	   sed 's-^TOP=..$$-TOP=../..-' | \
-	   sed 's-include ../config-include ../../config-' | \
-	   sed 's-../boot-../../boot-g' | diff Makefile -; \
+	   sed 's-^TOP=..$$-TOP=../..-' | diff Makefile -; \
 	   echo ============================================; \
 	   echo ocaml_src/$$i/.depend; \
 	   diff ../../$$i/.depend .); \
