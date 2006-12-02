@@ -1,16 +1,17 @@
-# $Id: Makefile,v 1.3 2006/11/30 19:15:10 deraugla Exp $
+# $Id: Makefile,v 1.4 2006/12/02 13:44:48 deraugla Exp $
 
+TOP=..
 include ../config/Makefile
 
 INCLUDES=-I ../camlp4 -I ../boot -I $(OTOP)/utils -I $(OTOP)/parsing -I $(OTOP)/typing -I $(OTOP)/toplevel
 OCAMLCFLAGS=-warn-error A $(INCLUDES)
 
 CAMLP4_OBJS=$(OTOP)/utils/pconfig.cmo ../boot/stdpp.cmo ../boot/token.cmo ../boot/plexer.cmo ../boot/gramext.cmo ../boot/grammar.cmo ../boot/extfold.cmo ../boot/extfun.cmo ../boot/fstream.cmo ../camlp4/quotation.cmo ../camlp4/ast2pt.cmo ../camlp4/reloc.cmo ../camlp4/spretty.cmo ../camlp4/pcaml.cmo
-TOP=camlp4_top.cmo
-ROBJS=$(CAMLP4_OBJS) ../meta/pa_r.cmo ../meta/pa_rp.cmo rprint.cmo $(TOP)
-OOBJS=$(CAMLP4_OBJS) ../etc/pa_o.cmo ../etc/pa_op.cmo $(TOP)
-SOBJS=$(CAMLP4_OBJS) ../etc/pa_scheme.cmo $(TOP)
-OOOBJS=$(CAMLP4_OBJS) ../etc/pa_o.cmo ../etc/pa_oop.cmo $(TOP)
+CTOP=camlp4_top.cmo
+ROBJS=$(CAMLP4_OBJS) ../meta/pa_r.cmo ../meta/pa_rp.cmo rprint.cmo $(CTOP)
+OOBJS=$(CAMLP4_OBJS) ../etc/pa_o.cmo ../etc/pa_op.cmo $(CTOP)
+SOBJS=$(CAMLP4_OBJS) ../etc/pa_scheme.cmo $(CTOP)
+OOOBJS=$(CAMLP4_OBJS) ../etc/pa_o.cmo ../etc/pa_oop.cmo $(CTOP)
 OBJS=$(OTOP)/utils/pconfig.cmo ../camlp4/quotation.cmo ../camlp4/reloc.cmo ../camlp4/ast2pt.cmo ../camlp4/spretty.cmo ../camlp4/pcaml.cmo camlp4_top.cmo
 
 TARGET=camlp4o.cma camlp4r.cma camlp4sch.cma camlp4_top.cma

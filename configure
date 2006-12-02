@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: configure,v 1.8 2006/12/02 12:19:56 deraugla Exp $
+# $Id: configure,v 1.9 2006/12/02 13:44:48 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -135,7 +135,7 @@ echo EXE=$EXE
 echo OPT=$OPT
 echo OVERSION=$OVERSION
 echo OVERSIOND=$OVERSIOND
-echo OTOP=../ocaml_stuff/$OVERSION
+echo "OTOP=\$(TOP)/ocaml_stuff/$OVERSION"
 echo OLIBDIR=$OLIBDIR
 if test "$prefix" != ""; then
   echo PREFIX=$prefix

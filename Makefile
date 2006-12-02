@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.10 2006/12/02 12:45:48 deraugla Exp $
+# $Id: Makefile,v 1.11 2006/12/02 13:44:48 deraugla Exp $
 
 include config/Makefile
 
@@ -108,12 +108,12 @@ library:
 # Cold start using pure Objective Caml sources
 
 library_cold:
-	cd ocaml_src/lib; $(MAKE) all promote OTOP=../$(OTOP)
+	cd ocaml_src/lib; $(MAKE) all promote
 
 compile_cold:
 	cd ocaml_src; set -e; \
 	for i in $(FDIRS); do \
-	  cd $$i; $(MAKE) all OTOP=../$(OTOP); cd ..; \
+	  cd $$i; $(MAKE) all; cd ..; \
 	done
 
 promote_cold:
