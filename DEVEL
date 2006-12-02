@@ -9,6 +9,56 @@ OVERVIEW
    camlp4 written in pure ocaml syntax. Once this 'core' is compiled, all
    sources in revised syntax with syntax extensions can be compiled.
 
+COMPATIBILITY
+
+   This distribution of camlp4 is compatible with several versions of
+   ocaml. The problem is about the definition of ocaml syntax trees which
+   may change from a version of ocaml to another. Since ocaml does not
+   install the sources nor the compiled versions of its syntax tree, a
+   copy of the necessary source files, borrowed from the source of the
+   ocaml compiler has been done in the directory 'ocaml_stuff', in
+   subdirectories with the ocaml version number.
+
+     If the present distribution of camlp4 is not compatible with the
+   version of ocaml you have (the command 'configure' tells you), it
+   is possible to add it. For that, you need the sources of the ocaml
+   distribution you have. Once done, after a 'configure' telling you
+   that it is not compatible, do:
+       make steal OCAML_SRC=<path-to-ocaml-sources>
+
+     This creates a new directory in 'ocaml_stuff' with sources of the
+   syntax tree of your ocaml compiler.
+
+     If you want to check that the sources of the syntax tree of ocaml
+   are up-to-date (e.g. if this is the current ocaml developpement), do:
+       make compare_stolen OCAML_SRC=<path-to-ocaml-sources>
+
+     The compatibility is done also with the file 'meta/ast2pt.ml', which
+   is the module converting camlp4 syntax tree into ocaml syntax tree.
+
+     In the directory 'ocaml_src' with containt the pure ocaml sources of
+   the camlp4 core (see chapter TREE STRUCTURE), there are as versions of
+   this files as version of ocaml. They are named 'ast2pt.ml_<version>'.
+   If you are adding a new version of ocaml, you need this file. Make a
+   copy of the closer version of your ocaml version.
+
+     Then, you can redo "configure" and do "make core". If the file
+   'ocaml_src/meta/ast2pt.ml' has a compilation problems, fix them and
+   to 'make core' again.
+
+     Later, the same file 'meta/ast2pt.ml' in camlp4 syntax may have
+   similar compilation problem. This file is in one examplary, thanks to
+   IFDEF used here or there.
+
+     While compiling with some specific version of ocaml, this file is
+   compiled with 'OCAML_vers' defined where 'vers' is the version number
+   form the beginning to the first space or charcter '+' with all dots
+   converted into underscores. For example, if you ocaml version is
+   7.04.2+dev35, you can see in the compilation process of ast2pt.ml
+   that OCAML_7_04_2 is defined, and you can add statements defined
+   by the syntax extension 'pa_macro.cmo', for example IFDEF OCAML_7_04_2.
+   Add statements like that in 'meta/ast2pt.ml' to make it compile.
+
 TREE STRUCTURE
 
    The directory 'ocaml_src' contains images in pure ocaml syntax of the
