@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.8 2006/12/01 22:22:31 deraugla Exp $
+# $Id: Makefile,v 1.9 2006/12/02 12:19:56 deraugla Exp $
 
 include config/Makefile
 
@@ -142,31 +142,50 @@ bootstrap_sources:
 	cd etc; make pr_o.cmo
 	mkdir ocaml_src.new
 	@-for i in $(FDIRS); do \
-		(mkdir ocaml_src.new/$$i; cd ocaml_src.new/$$i; \
-		 sed 's/# $$Id.*\$$/# $(TXTGEN)/' ../../$$i/Makefile | \
-		 sed 's-include ../config-include ../../config-g' | \
-		 sed 's-../boot-../../boot-g' > Makefile; \
-		 cp ../../$$i/.depend .); \
+	  (mkdir ocaml_src.new/$$i; cd ocaml_src.new/$$i; \
+	   echo ============================================; \
+	   echo ocaml_src.new/$$i/Makefile; \
+	   sed 's/# $$Id.*\$$/# $(TXTGEN)/' ../../$$i/Makefile | \
+	   sed 's-^TOP=..$$-TOP=../..-' | \
+	   sed 's-include ../config-include ../../config-' | \
+	   sed 's-../boot-../../boot-g' > Makefile; \
+	   echo ============================================; \
+	   echo ocaml_src.new/$$i/.depend; \
+	   cp ../../$$i/.depend .); \
 	 done
 	@-for i in $(FDIRS); do \
-		(cd $$i; \
-		 for j in *.ml*; do \
-			k=$$j; \
-			opt=; \
-			if [ "$$k" = "ast2pt.ml" ]; then \
-				k=ast2pt.ml_$(OVERSION); \
-				opt="-D$(OVERSIOND)"; \
-			fi; \
-			echo ============================================; \
-			echo ocaml_src.new/$$i/$$k; \
-			OTOP=$(OTOP) ../tools/conv.sh $$opt $$j | \
-			sed 's/$$Id.*\$$/$(TXTGEN)/' > \
-			../ocaml_src.new/$$i/$$k; \
-		 done); \
+	  (cd $$i; \
+	   for j in *.ml*; do \
+	     if [ "$$j" != "odyl_config.ml" ]; then \
+	       k=$$j; \
+	       opt=; \
+	       if [ "$$k" = "ast2pt.ml" ]; then \
+	         k=ast2pt.ml_$(OVERSION); \
+	         opt="-D$(OVERSIOND)"; \
+	       fi; \
+	       echo ============================================; \
+	       echo ocaml_src.new/$$i/$$k; \
+	       OTOP=$(OTOP) ../tools/conv.sh $$opt $$j | \
+	       sed 's/$$Id.*\$$/$(TXTGEN)/' > \
+	       ../ocaml_src.new/$$i/$$k; \
+	     fi; \
+	   done); \
 	done
 
 compare_sources:
 	cd etc; make pr_o.cmo
+	@-for i in $(FDIRS); do \
+	  (cd ocaml_src/$$i; \
+	   echo ============================================; \
+	   echo ocaml_src/$$i/Makefile; \
+	   sed 's/# $$Id.*\$$/# $(TXTGEN)/' ../../$$i/Makefile | \
+	   sed 's-^TOP=..$$-TOP=../..-' | \
+	   sed 's-include ../config-include ../../config-' | \
+	   sed 's-../boot-../../boot-g' | diff Makefile -; \
+	   echo ============================================; \
+	   echo ocaml_src/$$i/.depend; \
+	   diff ../../$$i/.depend .); \
+	 done
 	@-for i in $(FDIRS); do \
 	  (cd $$i; \
 	   for j in *.ml*; do \

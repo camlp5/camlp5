@@ -1,10 +1,10 @@
 OVERVIEW
 
-This is an alternative version of Camlp4 distributed separately.
-Started from an old version of Camlp4 and upgraded to make it work
-with modern compilers.
+This is an alternative version of Camlp4 distributed separately from
+ocaml. Started from an old version of camlp4 and upgraded to make it
+work with modern ocaml compilers.
 
-Version 1.0.
+The current version is 1.0.
 
 Compatible with ocaml versions :
   3.08.3, 3.08.4, 3.09.0, 3.09.1, 3.09.2, 3.09.3, 3.10.

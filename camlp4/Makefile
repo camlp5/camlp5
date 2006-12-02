@@ -1,5 +1,6 @@
 # $Id$
 
+TOP=..
 include ../config/Makefile
 
 SHELL=/bin/sh
