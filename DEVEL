@@ -33,20 +33,22 @@ COMPATIBILITY
    are up-to-date (e.g. if this is the current ocaml developpement), do:
        make compare_stolen OCAML_SRC=<path-to-ocaml-sources>
 
-     The compatibility is done also with the file 'meta/ast2pt.ml', which
-   is the module converting camlp4 syntax tree into ocaml syntax tree.
+     The compatibility is done also with the file 'camlp4/ast2pt.ml',
+   which is the module converting camlp4 syntax tree into ocaml syntax tree.
 
      In the directory 'ocaml_src' with containt the pure ocaml sources of
    the camlp4 core (see chapter TREE STRUCTURE), there are as versions of
    this files as version of ocaml. They are named 'ast2pt.ml_<version>'.
-   If you are adding a new version of ocaml, you need this file. Make a
-   copy of the closer version of your ocaml version.
+   If you are adding a new version of ocaml, you need this file. In a first
+   step, make a copy from a close version:
+         cd ocaml_src/camlp4
+         cp ast2pt.ml_<close_version> ast2pt.ml_<version>
 
      Then, you can redo "configure" and do "make core". If the file
-   'ocaml_src/meta/ast2pt.ml' has a compilation problems, fix them and
+   'ocaml_src/camlp4/ast2pt.ml' has a compilation problems, fix them and
    to 'make core' again.
 
-     Later, the same file 'meta/ast2pt.ml' in camlp4 syntax may have
+     Later, the same file 'camlp4/ast2pt.ml' in camlp4 syntax may have
    similar compilation problem. This file is in one examplary, thanks to
    IFDEF used here or there.
 
@@ -57,7 +59,7 @@ COMPATIBILITY
    7.04.2+dev35, you can see in the compilation process of ast2pt.ml
    that OCAML_7_04_2 is defined, and you can add statements defined
    by the syntax extension 'pa_macro.cmo', for example IFDEF OCAML_7_04_2.
-   Add statements like that in 'meta/ast2pt.ml' to make it compile.
+   Add statements like that in 'camlp4/ast2pt.ml' to make it compile.
 
 TREE STRUCTURE
 
