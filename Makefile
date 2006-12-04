@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.11 2006/12/02 13:44:48 deraugla Exp $
+# $Id: Makefile,v 1.12 2006/12/04 10:39:13 deraugla Exp $
 
 include config/Makefile
 
@@ -242,3 +242,5 @@ clean_sources:
 mv_cvs:
 	test ! -d $(FROM)/CVS || mv $(FROM)/CVS $(TO)/.
 	test ! -f $(FROM)/.cvsignore || mv $(FROM)/.cvsignore $(TO)/.
+
+.PHONY: install

@@ -9,6 +9,7 @@ while test "" != "$1"; do
 done
 
 CP="ln -sf"
+CP=cp
 if test "$(basename $FILE .mli).mli" = "$FILE"; then
   echo $CP $FILE $(basename $FILE .mli).ppi
   $CP $FILE $(basename $FILE .mli).ppi

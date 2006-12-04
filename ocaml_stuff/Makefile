@@ -1,5 +1,6 @@
-# $Id: Makefile,v 1.6 2006/12/01 22:22:31 deraugla Exp $
+# $Id: Makefile,v 1.7 2006/12/04 10:39:13 deraugla Exp $
 
+TOP=..
 include ../config/Makefile
 
 DIRS=$(OVERSION)/utils $(OVERSION)/parsing
