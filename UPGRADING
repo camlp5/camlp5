@@ -1,0 +1,15 @@
+Version 1.0
+
+  If your files do not compile, it may be due to the new type 'location'
+  which is not abstract. In particular, you can see it as first parameter
+  of the exception Exc_located raised by the function Stdpp.raise_with_loc.
+  If you handled that exception and looked at the 'location' by considering
+  it is a couple of source positions (integer of lex_position), it does not
+  work any more.
+
+    Look at the function defined in stdpp.mli.
+
+    To get the first and last positions of a location, use the functions
+  Stdpp.first_pos and Stdpp.last_pos. They return integers, which are
+  positions in characters from the beginning of the file. But you can
+  also get the line number by the function Stdpp.line_nb.

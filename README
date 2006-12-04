@@ -17,3 +17,9 @@ DEVELOPPERS
 
   The file DEVEL gives information for people who want to make changes
   in camlp4, or who are just curious.
+
+PROBLEMS
+
+  If you have problems to compile your source files with this version of
+  Camlp4, the reason may be that there the new type 'location' is now
+  abstract. Consider looking at the file UPGRADING.
