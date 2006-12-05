@@ -1,6 +1,10 @@
 Camlp4s Version 1.0:
 --------------------
 
+* [05 Dec 06] Fixed old bug: "camlp4 foo/bar.cmo" now searchs from the
+  current directory (i.e in its subdirectory "foo"), instead of searching
+  in the path. Before, we had to write "camlp4 ./foo/bar.cmo".
+
 * [01 Dec 06] In "pa_macro.cmo", the expression after IFDEF can use
   the infix operators OR and AND, the prefix one NOT and expressions
   between parentheses.

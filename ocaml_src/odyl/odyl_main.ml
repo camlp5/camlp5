@@ -38,7 +38,7 @@ Arg.current := first_arg_no_load () - 1;;
 (* Load files in core *)
 
 let find_in_path path name =
-  if not (Filename.is_implicit name) then
+  if Filename.basename name <> name then
     if Sys.file_exists name then name else raise Not_found
   else
     let rec try_dir =

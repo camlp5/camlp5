@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: odyl_main.ml,v 1.1 2006/09/29 04:45:49 deraugla Exp $ *)
+(* $Id: odyl_main.ml,v 1.2 2006/12/05 22:38:14 deraugla Exp $ *)
 
 value go = ref (fun () -> ());
 value name = ref "odyl";
@@ -35,7 +35,7 @@ Arg.current.val := first_arg_no_load () - 1;
 (* Load files in core *)
 
 value find_in_path path name =
-  if not (Filename.is_implicit name) then
+  if Filename.basename name <> name then
     if Sys.file_exists name then name else raise Not_found
   else
     let rec try_dir =
