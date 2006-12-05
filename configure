@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: configure,v 1.10 2006/12/02 18:44:21 deraugla Exp $
+# $Id: configure,v 1.11 2006/12/05 11:16:34 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -74,7 +74,8 @@ fi
 oversion=$(ocamlc -v | head -1 | sed 's/^.*version //')
 OVERSION=$(echo "$oversion" | sed -e 's/[ +].*$//')
 
-if [ -d "ocaml_stuff/$OVERSION" ]; then :
+if [ -d "ocaml_stuff/$OVERSION" -a -f "ocaml_src/camlp4/ast2pt.ml_$OVERSION" ]
+then :
 else
   echo
   echo "Sorry: the compatibility with ocaml version \"$oversion\""
@@ -128,12 +129,6 @@ else
     OPT=
 fi
 
-if [ -f "ocaml_src/camlp4/ast2pt.ml_$OVERSION" ]; then
-  cd ocaml_src/camlp4
-  cp "ast2pt.ml_$OVERSION" ast2pt.ml
-  cd ../..
-fi
-
 OVERSIOND=$(echo $OVERSION | sed -e 's/[^a-bA-Z0-9]/_/g' -e 's/^/OCAML_/')
 
 (
@@ -155,6 +150,10 @@ rm -f config/Makefile
 cat config/Makefile.tpl > config/Makefile
 echo >> config/Makefile
 cat config/Makefile.cnf >> config/Makefile
+
+cd ocaml_src/camlp4
+cp "ast2pt.ml_$OVERSION" ast2pt.ml
+cd ../..
 
 echo
 echo "Resulting configuration file (config/Makefile.cnf):"

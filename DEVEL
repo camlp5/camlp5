@@ -37,8 +37,8 @@ COMPATIBILITY
    which is the module converting camlp4 syntax tree into ocaml syntax tree.
 
      In the directory 'ocaml_src' with containt the pure ocaml sources of
-   the camlp4 core (see chapter TREE STRUCTURE), there are as versions of
-   this files as version of ocaml. They are named 'ast2pt.ml_<version>'.
+   the camlp4 core (see chapter TREE STRUCTURE below), there are as versions
+   of this files as version of ocaml. They are named 'ast2pt.ml_<version>'.
    If you are adding a new version of ocaml, you need this file. In a first
    step, make a copy from a close version:
          cd ocaml_src/camlp4
