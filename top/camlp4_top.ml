@@ -167,9 +167,12 @@ Toploop.parse_use_file.val :=
   wrap use_file (fun lb -> lb.lex_curr_pos - lb.lex_start_pos)
 ;
 
+IFDEF OCAML_3_08_1 OR OCAML_3_08_2 OR OCAML_3_08_3 OR OCAML_3_08_4 THEN
+  DEFINE OCAML_3_08
+END;
+
 Pcaml.warning.val :=
   fun loc txt ->
     Toploop.print_warning (Ast2pt.mkloc loc) Format.err_formatter
-      (IFDEF OCAML_3_08_1 OR OCAML_3_08_3 OR OCAML_3_08_4 THEN
-         Warnings.Other txt
+      (IFDEF OCAML_3_08 THEN Warnings.Other txt
        ELSE Warnings.Camlp4 txt END);

@@ -5,7 +5,7 @@
 (*                                                                     *)
 (*        Daniel de Rauglaudre, projet Cristal, INRIA Rocquencourt     *)
 (*                                                                     *)
-(*  Copyright 2002 Institut National de Recherche en Informatique et   *)
+(*  Copyright 2006 Institut National de Recherche en Informatique et   *)
 (*  Automatique.  Distributed only by permission.                      *)
 (*                                                                     *)
 (***********************************************************************)
@@ -17,6 +17,10 @@ open MLast;
 open Parsetree;
 open Longident;
 open Asttypes;
+
+IFDEF OCAML_3_08_1 OR OCAML_3_08_2 OR OCAML_3_08_3 OR OCAML_3_08_4 THEN
+  DEFINE OCAML_3_08
+END;
 
 let ov = Sys.ocaml_version in
 let oi =
@@ -230,14 +234,14 @@ value mktype loc tl cl tk tm =
 value mkmutable m = if m then Mutable else Immutable;
 value mkprivate m = if m then Private else Public;
 value mktrecord (loc, n, m, t) =
-  IFDEF OCAML_3_08_1 OR OCAML_3_08_3 OR OCAML_3_08_4 THEN
+  IFDEF OCAML_3_08 THEN
     (n, mkmutable m, ctyp (mkpolytype t))
   ELSE
      (n, mkmutable m, ctyp (mkpolytype t), mkloc loc)
   END
 ;
 value mkvariant (loc, c, tl) =
-  IFDEF OCAML_3_08_1 OR OCAML_3_08_3 OR OCAML_3_08_4 THEN
+  IFDEF OCAML_3_08 THEN
     (c, List.map ctyp tl)
   ELSE
     (c, List.map ctyp tl, mkloc loc)
