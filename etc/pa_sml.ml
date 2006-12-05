@@ -3,14 +3,14 @@
 (*                                                                     *)
 (*                             Camlp4                                  *)
 (*                                                                     *)
-(*        Daniel de Rauglaudre, projet Cristal, INRIA Rocquencourt     *)
+(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
-(*  Copyright 2002 Institut National de Recherche en Informatique et   *)
+(*  Copyright 2006 Institut National de Recherche en Informatique et   *)
 (*  Automatique.  Distributed only by permission.                      *)
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_sml.ml,v 1.4 2006/10/25 21:15:09 deraugla Exp $ *)
+(* $Id: pa_sml.ml,v 1.5 2006/12/05 22:48:33 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;

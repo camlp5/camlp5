@@ -3,14 +3,14 @@
 (*                                                                     *)
 (*                             Camlp4                                  *)
 (*                                                                     *)
-(*        Daniel de Rauglaudre, projet Cristal, INRIA Rocquencourt     *)
+(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
-(*  Copyright 2002 Institut National de Recherche en Informatique et   *)
+(*  Copyright 2006 Institut National de Recherche en Informatique et   *)
 (*  Automatique.  Distributed only by permission.                      *)
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.10 2006/10/27 15:36:59 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.11 2006/12/05 22:48:33 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 

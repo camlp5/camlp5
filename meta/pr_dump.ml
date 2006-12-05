@@ -3,14 +3,14 @@
 (*                                                                     *)
 (*                             Camlp4                                  *)
 (*                                                                     *)
-(*        Daniel de Rauglaudre, projet Cristal, INRIA Rocquencourt     *)
+(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
-(*  Copyright 2001 Institut National de Recherche en Informatique et   *)
+(*  Copyright 2006 Institut National de Recherche en Informatique et   *)
 (*  Automatique.  Distributed only by permission.                      *)
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_dump.ml,v 1.2 2006/10/25 10:28:11 deraugla Exp $ *)
+(* $Id: pr_dump.ml,v 1.3 2006/12/05 22:48:33 deraugla Exp $ *)
 
 value open_out_file () =
   match Pcaml.output_file.val with

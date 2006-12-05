@@ -3,14 +3,14 @@
 (*                                                                     *)
 (*                             Camlp4                                  *)
 (*                                                                     *)
-(*        Daniel de Rauglaudre, projet Cristal, INRIA Rocquencourt     *)
+(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
-(*  Copyright 2001 Institut National de Recherche en Informatique et   *)
+(*  Copyright 2006 Institut National de Recherche en Informatique et   *)
 (*  Automatique.  Distributed only by permission.                      *)
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: odyl_main.ml,v 1.2 2006/12/05 22:38:14 deraugla Exp $ *)
+(* $Id: odyl_main.ml,v 1.3 2006/12/05 22:48:33 deraugla Exp $ *)
 
 value go = ref (fun () -> ());
 value name = ref "odyl";
