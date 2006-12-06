@@ -35,7 +35,7 @@ let ov = String.sub ov 0 oi in
 if ov <> Pconfig.ocaml_version then do {
   flush stdout;
   Printf.eprintf "\n";
-  Printf.eprintf "This ocaml can this camlp4 are not compatible:\n";
+  Printf.eprintf "This ocaml and this camlp4 are not compatible:\n";
   Printf.eprintf "- OCaml version is %s\n" Sys.ocaml_version;
   Printf.eprintf "- Camlp4 compiled with ocaml %s\n" Pconfig.ocaml_version;
   Printf.eprintf "\n";
