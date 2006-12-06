@@ -1,15 +1,14 @@
 INSTALL UNDER UNIX
 
-  You need the OCaml compilers installed to compile. They must be
-  accessible in the path.
+  You need the ocaml compiler installed. It must be accessible in the path.
 
   Do:
      ./configure
      make
-     make bootstrap
   Optionnally do:
-     make opt
-     make opt.opt
+     make bootstrap    # checks camlp4 by itself
+     make opt          # make the native-code library
+     make opt.opt      # make other native-code programs
   Become root and do:
      make install
 
