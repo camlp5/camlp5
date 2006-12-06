@@ -1,11 +1,10 @@
-# $Id: Makefile,v 1.4 2006/12/05 11:10:05 deraugla Exp $
+# $Id: Makefile,v 1.5 2006/12/06 14:37:03 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
 
 INCLUDES=-I ../camlp4 -I ../boot
-OCAMLCFLAGS=-w y -warn-error A $(INCLUDES)
-# OCAMLCFLAGS=-warn-error A $(INCLUDES)
+OCAMLCFLAGS=$(OCAMLC_W_Y) -warn-error A $(INCLUDES)
 SRC=../etc/pa_o.ml ../etc/pa_op.ml
 D=o
 COMP_OPT=-strict_parsing
