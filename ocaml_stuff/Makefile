@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.7 2006/12/04 10:39:13 deraugla Exp $
+# $Id: Makefile,v 1.8 2006/12/06 13:28:00 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -37,10 +37,12 @@ real_steal:
 	mkdir -p "$(OVERSION)"
 	cd "$(OVERSION)"; mkdir -p utils parsing
 	cp common/utils/pconfig.mli $(OVERSION)/utils/.
-	cp common/utils/Makefile $(OVERSION)/utils/.
+	sed 's/\$$Id.*\$$/Id/' common/utils/Makefile > \
+	  $(OVERSION)/utils/Makefile
 	cp common/utils/.cvsignore $(OVERSION)/utils/.
 	cp common/utils/.depend $(OVERSION)/utils/.
-	cp common/parsing/Makefile $(OVERSION)/parsing/.
+	sed 's/\$$Id.*\$$/Id/' common/parsing/Makefile > \
+	  $(OVERSION)/parsing/Makefile
 	cp common/parsing/.cvsignore $(OVERSION)/parsing/.
 	cp common/parsing/.depend $(OVERSION)/parsing/.
 	(echo "let ocaml_version = \"$(OVERSION)\""; \
