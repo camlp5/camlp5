@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.13 2006/12/06 15:53:18 deraugla Exp $
+# $Id: Makefile,v 1.14 2006/12/06 17:21:08 deraugla Exp $
 
 include config/Makefile
 
@@ -94,13 +94,11 @@ clean_core:
 	for i in $(FDIRS); do (cd $$i; $(MAKE) clean); done
 
 
-# The very beginning
+# Everything in one command
 
 world:
-	cd ocaml_stuff; $(MAKE)
-	$(MAKE) clean_cold library_cold compile_cold
-	$(MAKE) promote_cold
-	$(MAKE) clean_cold clean_hot library all
+	$(MAKE) core
+	$(MAKE) coreboot all
 
 world.opt:
 	$(MAKE) core
