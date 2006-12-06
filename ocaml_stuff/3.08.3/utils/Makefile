@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.1 2006/11/30 19:15:10 deraugla Exp $
+# Id
 
 FILES=warnings.cmi pconfig.cmo
 INCL=
