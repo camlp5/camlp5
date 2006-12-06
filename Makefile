@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.12 2006/12/04 10:39:13 deraugla Exp $
+# $Id: Makefile,v 1.13 2006/12/06 15:53:18 deraugla Exp $
 
 include config/Makefile
 
@@ -101,6 +101,10 @@ world:
 	$(MAKE) clean_cold library_cold compile_cold
 	$(MAKE) promote_cold
 	$(MAKE) clean_cold clean_hot library all
+
+world.opt:
+	$(MAKE) core
+	$(MAKE) coreboot all opt opt.opt
 
 library:
 	cd lib; $(MAKE) all promote

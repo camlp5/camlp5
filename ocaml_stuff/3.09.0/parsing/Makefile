@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.1 2006/12/01 10:37:34 deraugla Exp $
+# Id
 
 FILES=asttypes.cmi location.cmi longident.cmi parsetree.cmi
 INCL=-I ../utils
