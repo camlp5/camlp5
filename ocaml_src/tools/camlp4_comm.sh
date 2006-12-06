@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 FILE=
 while test "" != "$1"; do

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.4 2006/12/02 13:44:48 deraugla Exp $
+# $Id: Makefile,v 1.5 2006/12/06 17:02:03 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -49,8 +49,6 @@ get_promote:
 install:
 	-$(MKDIR) "$(LIBDIR)/camlp4"
 	cp $(TARGET) "$(LIBDIR)/camlp4/."
-
-OVERSIOND=$$(echo $(OVERSION) | sed -e 's/[^a-bA-Z0-9]/_/g' -e 's/^/OCAML_/')
 
 rprint.cmo: rprint.ml
 	@$(TEST_DIR)

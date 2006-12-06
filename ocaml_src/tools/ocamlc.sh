@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e
 if test "$(basename "$(dirname $OTOP)")" != "ocaml_stuff"; then
     COMM="$OTOP/boot/ocamlrun$EXE $OTOP/ocamlc -I $OTOP/stdlib"
 else
