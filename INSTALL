@@ -2,14 +2,22 @@ INSTALL UNDER UNIX
 
   You need the ocaml compiler installed. It must be accessible in the path.
 
-  Do:
+1. Do:
      ./configure
-     make
-  Optionnally do:
-     make bootstrap    # checks camlp4 by itself
-     make opt          # make the native-code library
-     make opt.opt      # make other native-code programs
-  Become root and do:
+  
+2. Then, to make everything, do:
+     make world.opt
+
+    Alternatively, you can decompose the operations into:
+       make
+    Then, to make camlp4 check itself:
+       make bootstrap
+    Further, to make the native-code library:
+       make opt
+    At end, to make more native-code programs:
+       make opt.opt
+
+3. Become root and do:
      make install
 
 INSTALL UNDER WINDOWS
