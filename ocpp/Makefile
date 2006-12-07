@@ -1,10 +1,10 @@
-# $Id: Makefile,v 1.1 2006/09/29 04:45:49 deraugla Exp $
+# $Id: Makefile,v 1.2 2006/12/07 14:23:24 deraugla Exp $
 
 include ../config/Makefile
 
 SHELL=/bin/sh
 
-INCLUDES=-I ../camlp4 -I ../boot -I ../odyl -I $(OTOP)/otherlibs/dynlink
+INCLUDES=-I ../camlp4 -I ../boot -I ../odyl
 OCAMLCFLAGS=-warn-error A $(INCLUDES)
 LINKFLAGS=$(INCLUDES)
 OBJS=ocpp.cmo

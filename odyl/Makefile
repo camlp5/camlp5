@@ -1,11 +1,11 @@
-# $Id: Makefile,v 1.2 2006/12/02 12:45:48 deraugla Exp $
+# $Id: Makefile,v 1.3 2006/12/07 14:23:24 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
 
 SHELL=/bin/sh
 
-INCLUDES=-I $(OTOP)/otherlibs/dynlink
+INCLUDES=
 OCAMLCFLAGS=-warn-error A $(INCLUDES)
 LINKFLAGS=$(INCLUDES)
 
@@ -44,7 +44,6 @@ depend:
 	> .depend
 	@for i in *.mli *.ml; do \
 	  ../tools/apply.sh pr_depend.cmo -- $(INCLUDES) $$i | \
-	  sed -e 's| $(OTOP)/otherlibs/dynlink/dynlink.cmx||' | \
 	  sed -e 's| \.\./\.\.| $$(OTOP)|g' >> .depend; \
 	done
 
