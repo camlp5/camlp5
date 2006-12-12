@@ -36,7 +36,7 @@ if ov <> Pconfig.ocaml_version then
   begin
     flush stdout;
     Printf.eprintf "\n";
-    Printf.eprintf "This ocaml can this camlp4 are not compatible:\n";
+    Printf.eprintf "This ocaml and this camlp4 are not compatible:\n";
     Printf.eprintf "- OCaml version is %s\n" Sys.ocaml_version;
     Printf.eprintf "- Camlp4 compiled with ocaml %s\n" Pconfig.ocaml_version;
     Printf.eprintf "\n";
@@ -434,7 +434,9 @@ let rec patt =
   | PaArr (loc, pl) -> mkpat loc (Ppat_array (List.map patt pl))
   | PaChr (loc, s) ->
       mkpat loc (Ppat_constant (Const_char (char_of_char_token loc s)))
-  | PaInt (loc, s) -> mkpat loc (Ppat_constant (Const_int (int_of_string s)))
+  | PaInt (loc, s, "") ->
+      mkpat loc (Ppat_constant (Const_int (int_of_string s)))
+  | PaInt (loc, _, _) -> error loc "special int not impl in patt"
   | PaFlo (loc, s) -> mkpat loc (Ppat_constant (Const_float s))
   | PaLab (loc, _, _) -> error loc "labeled pattern not allowed here"
   | PaLid (loc, s) -> mkpat loc (Ppat_var s)
@@ -610,7 +612,11 @@ let rec expr =
       mkexp loc (Pexp_function ("", None, List.map mkpwe pel))
   | ExIfe (loc, e1, e2, e3) ->
       mkexp loc (Pexp_ifthenelse (expr e1, expr e2, Some (expr e3)))
-  | ExInt (loc, s) -> mkexp loc (Pexp_constant (Const_int (int_of_string s)))
+  | ExInt (loc, s, "") ->
+      mkexp loc (Pexp_constant (Const_int (int_of_string s)))
+  | ExInt (loc, s, "l") ->
+      mkexp loc (Pexp_constant (Const_int32 (Int32.of_string s)))
+  | ExInt (loc, _, _) -> error loc "special int not implemented"
   | ExLab (loc, _, _) -> error loc "labeled expression not allowed here"
   | ExLaz (loc, e) -> mkexp loc (Pexp_lazy (expr e))
   | ExLet (loc, rf, pel, e) ->
@@ -876,7 +882,7 @@ let directive loc =
   function
     None -> Pdir_none
   | Some (ExStr (_, s)) -> Pdir_string s
-  | Some (ExInt (_, i)) -> Pdir_int (int_of_string i)
+  | Some (ExInt (_, i, "")) -> Pdir_int (int_of_string i)
   | Some (ExUid (_, "True")) -> Pdir_bool true
   | Some (ExUid (_, "False")) -> Pdir_bool false
   | Some e ->
