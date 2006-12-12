@@ -428,3 +428,15 @@ Pcaml.add_option "-D" (Arg.String (define None))
   "<string> Define for IFDEF instruction.";;
 Pcaml.add_option "-U" (Arg.String undef)
   "<string> Undefine for IFDEF instruction.";;
+
+let oversion =
+  let v = String.copy Pconfig.ocaml_version in
+  for i = 0 to String.length v - 1 do
+    match v.[i] with
+      '0'..'9' -> ()
+    | _ -> v.[i] <- '_'
+  done;
+  v
+;;
+
+define None ("OCAML_" ^ oversion);;

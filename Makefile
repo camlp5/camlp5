@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.14 2006/12/06 17:21:08 deraugla Exp $
+# $Id: Makefile,v 1.15 2006/12/12 14:19:56 deraugla Exp $
 
 include config/Makefile
 
@@ -161,7 +161,6 @@ bootstrap_sources:
 	       opt=; \
 	       if [ "$$k" = "ast2pt.ml" ]; then \
 	         k=ast2pt.ml_$(OVERSION); \
-	         opt="-D$(OVERSIOND)"; \
 	       fi; \
 	       echo ============================================; \
 	       echo ocaml_src.new/$$i/$$k; \
@@ -192,7 +191,6 @@ compare_sources:
 	       opt=; \
 	       if [ "$$k" = "ast2pt.ml" ]; then \
 	         k=ast2pt.ml_$(OVERSION); \
-	         opt="-D$(OVERSIOND)"; \
 	       fi; \
 	       echo ============================================; \
 	       echo ocaml_src/$$i/$$k; \

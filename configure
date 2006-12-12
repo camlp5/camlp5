@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: configure,v 1.13 2006/12/06 17:02:03 deraugla Exp $
+# $Id: configure,v 1.14 2006/12/12 14:19:56 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -129,13 +129,10 @@ else
     OPT=
 fi
 
-OVERSIOND=$(echo $OVERSION | sed -e 's/[^a-bA-Z0-9]/_/g' -e 's/^/OCAML_/')
-
 (
 echo EXE=$EXE
 echo OPT=$OPT
 echo OVERSION=$OVERSION
-echo OVERSIOND=$OVERSIOND
 echo "OTOP=\$(TOP)/ocaml_stuff/$OVERSION"
 if ocamlc -w y 2>/dev/null; then
   echo "OCAMLC_W_Y=\"-w y\""

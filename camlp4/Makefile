@@ -60,16 +60,4 @@ install:
 	cp mLast.cmi quotation.cmi ast2pt.cmi pcaml.cmi spretty.cmi "$(LIBDIR)/camlp4/."
 	cp camlp4.cma "$(LIBDIR)/camlp4/."
 
-ast2pt.cmo: ast2pt.ml
-	@$(TEST_DIR)
-	@$(CAMLP4_COMM) -D$(OVERSIOND) $< -o $*.ppo
-	$(OCAMLC) $(OCAMLCFLAGS) -c -impl $*.ppo
-	rm -f $*.ppo
-
-ast2pt.cmx: ast2pt.ml
-	@$(TEST_DIR)
-	@$(CAMLP4_COMM) -D$(OVERSIOND) $< -o $*.ppo
-	$(OCAMLOPT) $(OCAMLCFLAGS) -c -impl $*.ppo
-	rm -f $*.ppo
-
 include .depend

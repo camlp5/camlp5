@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.5 2006/12/06 17:02:03 deraugla Exp $
+# $Id: Makefile,v 1.6 2006/12/12 14:19:56 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -49,17 +49,5 @@ get_promote:
 install:
 	-$(MKDIR) "$(LIBDIR)/camlp4"
 	cp $(TARGET) "$(LIBDIR)/camlp4/."
-
-rprint.cmo: rprint.ml
-	@$(TEST_DIR)
-	@$(CAMLP4_COMM) -D$(OVERSIOND) -DCOMP $< -o $*.ppo
-	$(OCAMLC) $(OCAMLCFLAGS) -c -impl $*.ppo
-	rm -f $*.ppo
-
-camlp4_top.cmo: camlp4_top.ml
-	@$(TEST_DIR)
-	@$(CAMLP4_COMM) -D$(OVERSIOND) -DCOMP $< -o $*.ppo
-	$(OCAMLC) $(OCAMLCFLAGS) -c -impl $*.ppo
-	rm -f $*.ppo
 
 include .depend

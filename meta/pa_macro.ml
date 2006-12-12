@@ -1,5 +1,5 @@
 (* camlp4r *)
-(* $Id: pa_macro.ml,v 1.7 2006/12/01 11:13:33 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.8 2006/12/12 14:19:56 deraugla Exp $ *)
 
 (*
 Added statements:
@@ -264,3 +264,15 @@ Pcaml.add_option "-D" (Arg.String (define None))
 Pcaml.add_option "-U" (Arg.String undef)
   "<string> Undefine for IFDEF instruction."
 ;
+
+value oversion = do {
+  let v = String.copy Pconfig.ocaml_version in
+  for i = 0 to String.length v - 1 do {
+    match v.[i] with
+    [ '0'..'9' -> ()
+    | _ -> v.[i] := '_' ];
+  };
+  v
+};
+
+define None ("OCAML_" ^ oversion);
