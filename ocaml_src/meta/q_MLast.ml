@@ -164,6 +164,7 @@ let a_opt = Grammar.Entry.create gram "a_opt";;
 let a_UIDENT = Grammar.Entry.create gram "a_UIDENT";;
 let a_LIDENT = Grammar.Entry.create gram "a_LIDENT";;
 let a_INT = Grammar.Entry.create gram "a_INT";;
+let a_INT_l = Grammar.Entry.create gram "a_INT_l";;
 let a_FLOAT = Grammar.Entry.create gram "a_FLOAT";;
 let a_STRING = Grammar.Entry.create gram "a_STRING";;
 let a_CHAR = Grammar.Entry.create gram "a_CHAR";;
@@ -643,7 +644,7 @@ Grammar.extend
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
               | _ ->
                   match () with
-                  _ -> raise (Match_failure ("q_MLast.ml", 310, 20))
+                  _ -> raise (Match_failure ("q_MLast.ml", 311, 20))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -916,7 +917,7 @@ Grammar.extend
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
               | _ ->
                   match () with
-                  _ -> raise (Match_failure ("q_MLast.ml", 365, 20))
+                  _ -> raise (Match_failure ("q_MLast.ml", 366, 20))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -1733,6 +1734,11 @@ Grammar.extend
       Gramext.action
         (fun (s : 'a_FLOAT) (loc : Token.location) ->
            (Qast.Node ("ExFlo", [Qast.Loc; s]) : 'expr));
+      [Gramext.Snterm
+         (Grammar.Entry.obj (a_INT_l : 'a_INT_l Grammar.Entry.e))],
+      Gramext.action
+        (fun (s : 'a_INT_l) (loc : Token.location) ->
+           (Qast.Node ("ExInt", [Qast.Loc; s; Qast.Str "l"]) : 'expr));
       [Gramext.Snterm (Grammar.Entry.obj (a_INT : 'a_INT Grammar.Entry.e))],
       Gramext.action
         (fun (s : 'a_INT) (loc : Token.location) ->
@@ -4439,6 +4445,19 @@ Grammar.extend
      Gramext.action
        (fun (a : string) (loc : Token.location) ->
           (antiquot "int" loc a : 'a_INT))]];
+   Grammar.Entry.obj (a_INT_l : 'a_INT_l Grammar.Entry.e), None,
+   [None, None,
+    [[Gramext.Stoken ("INT_l", "")],
+     Gramext.action
+       (fun (s : string) (loc : Token.location) -> (Qast.Str s : 'a_INT_l));
+     [Gramext.Stoken ("ANTIQUOT", "")],
+     Gramext.action
+       (fun (a : string) (loc : Token.location) ->
+          (antiquot "" loc a : 'a_INT_l));
+     [Gramext.Stoken ("ANTIQUOT", "intl")],
+     Gramext.action
+       (fun (a : string) (loc : Token.location) ->
+          (antiquot "intl" loc a : 'a_INT_l))]];
    Grammar.Entry.obj (a_FLOAT : 'a_FLOAT Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Stoken ("FLOAT", "")],

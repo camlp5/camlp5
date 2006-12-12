@@ -1107,6 +1107,10 @@ Grammar.extend
       Gramext.action
         (fun (s : string) (loc : Token.location) ->
            (MLast.ExFlo (loc, s) : 'expr));
+      [Gramext.Stoken ("INT_l", "")],
+      Gramext.action
+        (fun (s : string) (loc : Token.location) ->
+           (MLast.ExInt (loc, s, "l") : 'expr));
       [Gramext.Stoken ("INT", "")],
       Gramext.action
         (fun (s : string) (loc : Token.location) ->

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.15 2006/12/12 15:34:11 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.16 2006/12/12 16:08:21 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -584,7 +584,8 @@ value using_token kwd_table ident_table (p_con, p_prm) =
             if Hashtbl.mem kwd_table p_prm then
               error_ident_and_keyword p_con p_prm
             else Hashtbl.add ident_table p_prm p_con ]
-  | "TILDEIDENT" | "QUESTIONIDENT" | "INT" | "FLOAT" | "CHAR" | "STRING" |
+  | "TILDEIDENT" | "QUESTIONIDENT" | "INT" | "INT_l" | "INT_L" | "INT_n" |
+    "FLOAT" | "CHAR" | "STRING" |
     "QUOTATION" | "ANTIQUOT" | "LOCATE" | "EOI" ->
       ()
   | _ ->

@@ -623,6 +623,8 @@ value rec expr =
   | ExIfe loc e1 e2 e3 ->
       mkexp loc (Pexp_ifthenelse (expr e1) (expr e2) (Some (expr e3)))
   | ExInt loc s "" -> mkexp loc (Pexp_constant (Const_int (int_of_string s)))
+  | ExInt loc s "l" ->
+      mkexp loc (Pexp_constant (Const_int32 (Int32.of_string s)))
   | ExInt loc _ _ -> error loc "special int not implemented"
   | ExLab loc _ _ -> error loc "labeled expression not allowed here"
   | ExLaz loc e -> mkexp loc (Pexp_lazy (expr e))

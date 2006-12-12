@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: rprint.ml,v 1.9 2006/12/05 22:48:33 deraugla Exp $ *)
+(* $Id: rprint.ml,v 1.10 2006/12/12 16:08:21 deraugla Exp $ *)
 
 open Format;
 open Outcometree;
@@ -57,6 +57,9 @@ value print_out_value ppf tree =
   and print_simple_tree ppf =
     fun
     [ Oval_int i -> fprintf ppf "%i" i
+    | Oval_int32 i -> fprintf ppf "%li" i
+    | Oval_int64 i -> fprintf ppf "%Li" i
+    | Oval_nativeint i -> fprintf ppf "%ni" i
     | Oval_float f -> fprintf ppf "%.12g" f
     | Oval_char c -> fprintf ppf "'%s'" (Char.escaped c)
     | Oval_string s ->

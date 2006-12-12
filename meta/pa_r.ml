@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.10 2006/12/05 22:48:33 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.11 2006/12/12 16:08:21 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -372,6 +372,7 @@ EXTEND
       | "~-."; e = SELF -> <:expr< ~-. $e$ >> ]
     | "simple"
       [ s = INT -> <:expr< $int:s$ >>
+      | s = INT_l -> <:expr< $intl:s$ >>
       | s = FLOAT -> <:expr< $flo:s$ >>
       | s = STRING -> <:expr< $str:s$ >>
       | s = CHAR -> <:expr< $chr:s$ >>
