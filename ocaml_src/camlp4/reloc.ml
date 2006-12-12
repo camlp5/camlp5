@@ -135,7 +135,7 @@ and expr floc sh =
                 patt floc sh x1, option_map self x2, self x3)
              x1)
     | ExIfe (loc, x1, x2, x3) -> ExIfe (floc loc, self x1, self x2, self x3)
-    | ExInt (loc, x1) -> ExInt (floc loc, x1)
+    | ExInt (loc, x1, x2) -> ExInt (floc loc, x1, x2)
     | ExLab (loc, x1, x2) -> ExLab (floc loc, x1, option_map self x2)
     | ExLaz (loc, x1) -> ExLaz (floc loc, self x1)
     | ExLet (loc, x1, x2, x3) ->

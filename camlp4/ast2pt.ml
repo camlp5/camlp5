@@ -621,7 +621,8 @@ value rec expr =
   | ExFun loc pel -> mkexp loc (Pexp_function "" None (List.map mkpwe pel))
   | ExIfe loc e1 e2 e3 ->
       mkexp loc (Pexp_ifthenelse (expr e1) (expr e2) (Some (expr e3)))
-  | ExInt loc s -> mkexp loc (Pexp_constant (Const_int (int_of_string s)))
+  | ExInt loc s "" -> mkexp loc (Pexp_constant (Const_int (int_of_string s)))
+  | ExInt loc _ _ -> error loc "special int not implemented"
   | ExLab loc _ _ -> error loc "labeled expression not allowed here"
   | ExLaz loc e -> mkexp loc (Pexp_lazy (expr e))
   | ExLet loc rf pel e ->
@@ -896,7 +897,7 @@ value directive loc =
   fun
   [ None -> Pdir_none
   | Some (ExStr _ s) -> Pdir_string s
-  | Some (ExInt _ i) -> Pdir_int (int_of_string i)
+  | Some (ExInt _ i "") -> Pdir_int (int_of_string i)
   | Some (ExUid _ "True") -> Pdir_bool True
   | Some (ExUid _ "False") -> Pdir_bool False
   | Some e ->

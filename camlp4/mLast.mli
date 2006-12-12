@@ -89,7 +89,7 @@ and expr =
   | ExFor of loc and string and expr and expr and bool and list expr
   | ExFun of loc and list (patt * option expr * expr)
   | ExIfe of loc and expr and expr and expr
-  | ExInt of loc and string
+  | ExInt of loc and string and string
   | ExLab of loc and string and option expr
   | ExLaz of loc and expr
   | ExLet of loc and bool and list (patt * expr) and expr

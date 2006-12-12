@@ -89,7 +89,7 @@ let neg_string n =
 
 let mkumin loc f arg =
   match arg with
-    MLast.ExInt (_, n) -> MLast.ExInt (loc, neg_string n)
+    MLast.ExInt (_, n, "") -> MLast.ExInt (loc, neg_string n, "")
   | MLast.ExFlo (_, n) -> MLast.ExFlo (loc, neg_string n)
   | _ -> let f = "~" ^ f in MLast.ExApp (loc, MLast.ExLid (loc, f), arg)
 ;;
@@ -1110,7 +1110,7 @@ Grammar.extend
       [Gramext.Stoken ("INT", "")],
       Gramext.action
         (fun (s : string) (loc : Token.location) ->
-           (MLast.ExInt (loc, s) : 'expr))]];
+           (MLast.ExInt (loc, s, "") : 'expr))]];
     Grammar.Entry.obj (cons_expr_opt : 'cons_expr_opt Grammar.Entry.e), None,
     [None, None,
      [[],

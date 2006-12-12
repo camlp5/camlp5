@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.14 2006/12/05 22:48:33 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.15 2006/12/12 15:34:11 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -88,6 +88,9 @@ and digits_under kind len =
   parser
   [ [: d = kind; s :] -> digits_under kind (store len d) s
   | [: `'_'; s :] -> digits_under kind len s
+  | [: `'l' :] -> ("INT_l", get_buff len)
+  | [: `'L' :] -> ("INT_L", get_buff len)
+  | [: `'n' :] -> ("INT_n", get_buff len)
   | [: :] -> ("INT", get_buff len) ]
 and octal = parser [: `('0'..'7' as d) :] -> d
 and hexa = parser [: `('0'..'9' | 'a'..'f' | 'A'..'F' as d) :] -> d
@@ -98,6 +101,9 @@ and number len =
   | [: `'_'; s :] -> number len s
   | [: `'.'; s :] -> decimal_part (store len '.') s
   | [: `'e' | 'E'; s :] -> exponent_part (store len 'E') s
+  | [: `'l' :] -> ("INT_l", get_buff len)
+  | [: `'L' :] -> ("INT_L", get_buff len)
+  | [: `'n' :] -> ("INT_n", get_buff len)
   | [: :] -> ("INT", get_buff len) ]
 and decimal_part len =
   parser

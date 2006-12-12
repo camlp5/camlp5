@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.11 2006/12/05 22:48:33 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.12 2006/12/12 15:34:11 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -175,9 +175,10 @@ value neg_string n =
 
 value mkumin _ f arg =
   match arg with
-  [ Qast.Node "ExInt" [Qast.Loc; Qast.Str n] when int_of_string n > 0 ->
+  [ Qast.Node "ExInt" [Qast.Loc; Qast.Str n; Qast.Str c]
+    when int_of_string n > 0 ->
       let n = neg_string n in
-      Qast.Node "ExInt" [Qast.Loc; Qast.Str n]
+      Qast.Node "ExInt" [Qast.Loc; Qast.Str n; Qast.Str c]
   | Qast.Node "ExFlo" [Qast.Loc; Qast.Str n] when float_of_string n > 0.0 ->
       let n = neg_string n in
       Qast.Node "ExFlo" [Qast.Loc; Qast.Str n]
@@ -624,7 +625,7 @@ EXTEND
           Qast.Node "ExApp"
             [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "~-."]; e] ]
     | "simple"
-      [ s = a_INT -> Qast.Node "ExInt" [Qast.Loc; s]
+      [ s = a_INT -> Qast.Node "ExInt" [Qast.Loc; s; Qast.Str ""]
       | s = a_FLOAT -> Qast.Node "ExFlo" [Qast.Loc; s]
       | s = a_STRING -> Qast.Node "ExStr" [Qast.Loc; s]
       | s = a_CHAR -> Qast.Node "ExChr" [Qast.Loc; s]

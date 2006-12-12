@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.7 2006/12/05 22:48:33 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.8 2006/12/12 15:34:11 deraugla Exp $ *)
 
 open Stdpp;
 
@@ -190,7 +190,7 @@ module MetaAction =
       | MLast.ExFun loc pwel -> <:expr< MLast.ExFun $mloc$ $mlist mpwe pwel$ >>
       | MLast.ExIfe loc e1 e2 e3 ->
           <:expr< MLast.ExIfe $mloc$ $mexpr e1$ $mexpr e2$ $mexpr e3$ >>
-      | MLast.ExInt loc s -> <:expr< MLast.ExInt $mloc$ $str:s$ >>
+      | MLast.ExInt loc s c -> <:expr< MLast.ExInt $mloc$ $str:s$ $str:c$ >>
       | MLast.ExFlo loc s -> <:expr< MLast.ExFlo $mloc$ $str:s$ >>
       | MLast.ExLet loc rf pel e ->
           <:expr< MLast.ExLet $mloc$ $mbool rf$ $mlist mpe pel$ $mexpr e$ >>

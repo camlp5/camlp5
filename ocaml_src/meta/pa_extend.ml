@@ -248,16 +248,19 @@ module MetaAction =
                    mexpr e1),
                 mexpr e2),
              mexpr e3)
-      | MLast.ExInt (loc, s) ->
+      | MLast.ExInt (loc, s, c) ->
           MLast.ExApp
             (loc,
              MLast.ExApp
                (loc,
-                MLast.ExAcc
-                  (loc, MLast.ExUid (loc, "MLast"),
-                   MLast.ExUid (loc, "ExInt")),
-                mloc),
-             MLast.ExStr (loc, s))
+                MLast.ExApp
+                  (loc,
+                   MLast.ExAcc
+                     (loc, MLast.ExUid (loc, "MLast"),
+                      MLast.ExUid (loc, "ExInt")),
+                   mloc),
+                MLast.ExStr (loc, s)),
+             MLast.ExStr (loc, c))
       | MLast.ExFlo (loc, s) ->
           MLast.ExApp
             (loc,

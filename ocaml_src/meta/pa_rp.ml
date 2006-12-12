@@ -77,7 +77,7 @@ let rec handle_failure e =
         pel
   | MLast.ExLet (_, false, pel, e) ->
       List.for_all (fun (p, e) -> handle_failure e) pel && handle_failure e
-  | MLast.ExLid (_, _) | MLast.ExInt (_, _) | MLast.ExStr (_, _) |
+  | MLast.ExLid (_, _) | MLast.ExInt (_, _, "") | MLast.ExStr (_, _) |
     MLast.ExChr (_, _) | MLast.ExFun (_, _) | MLast.ExUid (_, _) ->
       true
   | MLast.ExApp (_, MLast.ExLid (_, "raise"), e) ->
@@ -104,7 +104,7 @@ let rec subst v e =
     MLast.ExLid (_, x) ->
       let x = if x = v then strm_n else x in MLast.ExLid (loc, x)
   | MLast.ExUid (_, _) -> e
-  | MLast.ExInt (_, _) -> e
+  | MLast.ExInt (_, _, "") -> e
   | MLast.ExChr (_, _) -> e
   | MLast.ExStr (_, _) -> e
   | MLast.ExAcc (_, _, _) -> e
@@ -364,7 +364,7 @@ let cparser_match loc me bpo pc =
 
 let rec not_computing =
   function
-    MLast.ExLid (_, _) | MLast.ExUid (_, _) | MLast.ExInt (_, _) |
+    MLast.ExLid (_, _) | MLast.ExUid (_, _) | MLast.ExInt (_, _, "") |
     MLast.ExFlo (_, _) | MLast.ExChr (_, _) | MLast.ExStr (_, _) ->
       true
   | MLast.ExApp (_, x, y) -> is_cons_apply_not_computing x && not_computing y

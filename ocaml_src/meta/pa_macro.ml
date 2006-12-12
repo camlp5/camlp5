@@ -108,7 +108,7 @@ let substp mloc env =
         begin try MLast.PaAnt (loc, List.assoc x env) with
           Not_found -> MLast.PaUid (loc, x)
         end
-    | MLast.ExInt (_, x) -> MLast.PaInt (loc, x)
+    | MLast.ExInt (_, x, "") -> MLast.PaInt (loc, x)
     | MLast.ExTup (_, x) -> MLast.PaTup (loc, List.map loop x)
     | MLast.ExRec (_, pel, None) ->
         let ppl = List.map (fun (p, e) -> p, loop e) pel in
@@ -369,7 +369,7 @@ Grammar.extend
            (let bp = string_of_int (Stdpp.first_pos loc) in
             let ep = string_of_int (Stdpp.last_pos loc) in
             MLast.ExTup
-              (loc, [MLast.ExInt (loc, bp); MLast.ExInt (loc, ep)]) :
+              (loc, [MLast.ExInt (loc, bp, ""); MLast.ExInt (loc, ep, "")]) :
             'expr));
       [Gramext.Stoken ("LIDENT", "__FILE__")],
       Gramext.action

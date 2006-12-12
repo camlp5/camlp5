@@ -49,7 +49,7 @@ module Qast =
       | Option None -> MLast.ExUid (loc, "None")
       | Option (Some a) ->
           MLast.ExApp (loc, MLast.ExUid (loc, "Some"), to_expr a)
-      | Int s -> MLast.ExInt (loc, s)
+      | Int s -> MLast.ExInt (loc, s, "")
       | Str s -> MLast.ExStr (loc, s)
       | Bool true -> MLast.ExUid (loc, "True")
       | Bool false -> MLast.ExUid (loc, "False")
@@ -200,8 +200,10 @@ let neg_string n =
 
 let mkumin _ f arg =
   match arg with
-    Qast.Node ("ExInt", [Qast.Loc; Qast.Str n]) when int_of_string n > 0 ->
-      let n = neg_string n in Qast.Node ("ExInt", [Qast.Loc; Qast.Str n])
+    Qast.Node ("ExInt", [Qast.Loc; Qast.Str n; Qast.Str c])
+    when int_of_string n > 0 ->
+      let n = neg_string n in
+      Qast.Node ("ExInt", [Qast.Loc; Qast.Str n; Qast.Str c])
   | Qast.Node ("ExFlo", [Qast.Loc; Qast.Str n])
     when float_of_string n > 0.0 ->
       let n = neg_string n in Qast.Node ("ExFlo", [Qast.Loc; Qast.Str n])
@@ -641,7 +643,7 @@ Grammar.extend
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
               | _ ->
                   match () with
-                  _ -> raise (Match_failure ("q_MLast.ml", 309, 20))
+                  _ -> raise (Match_failure ("q_MLast.ml", 310, 20))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -914,7 +916,7 @@ Grammar.extend
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
               | _ ->
                   match () with
-                  _ -> raise (Match_failure ("q_MLast.ml", 364, 20))
+                  _ -> raise (Match_failure ("q_MLast.ml", 365, 20))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -1734,7 +1736,7 @@ Grammar.extend
       [Gramext.Snterm (Grammar.Entry.obj (a_INT : 'a_INT Grammar.Entry.e))],
       Gramext.action
         (fun (s : 'a_INT) (loc : Token.location) ->
-           (Qast.Node ("ExInt", [Qast.Loc; s]) : 'expr))]];
+           (Qast.Node ("ExInt", [Qast.Loc; s; Qast.Str ""]) : 'expr))]];
     Grammar.Entry.obj (cons_expr_opt : 'cons_expr_opt Grammar.Entry.e), None,
     [None, None,
      [[],
