@@ -95,7 +95,7 @@ let mkumin loc f arg =
 ;;
 
 let mkuminpat loc f is_int n =
-  if is_int then MLast.PaInt (loc, neg_string n)
+  if is_int then MLast.PaInt (loc, neg_string n, "")
   else MLast.PaFlo (loc, neg_string n)
 ;;
 
@@ -1352,7 +1352,7 @@ Grammar.extend
       [Gramext.Stoken ("INT", "")],
       Gramext.action
         (fun (s : string) (loc : Token.location) ->
-           (MLast.PaInt (loc, s) : 'patt));
+           (MLast.PaInt (loc, s, "") : 'patt));
       [Gramext.Stoken ("UIDENT", "")],
       Gramext.action
         (fun (s : string) (loc : Token.location) ->

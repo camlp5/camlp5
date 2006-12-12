@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.12 2006/12/12 15:34:11 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.13 2006/12/12 15:42:45 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -198,7 +198,7 @@ value mkuminpat _ f is_int s =
     | s -> failwith "bad unary minus" ]
   in
   match is_int with
-  [ Qast.Bool True -> Qast.Node "PaInt" [Qast.Loc; s]
+  [ Qast.Bool True -> Qast.Node "PaInt" [Qast.Loc; s; Qast.Str ""]
   | Qast.Bool False -> Qast.Node "PaFlo" [Qast.Loc; s]
   | _ -> assert False ]
 ;
@@ -714,7 +714,7 @@ EXTEND
     | "simple"
       [ s = a_LIDENT -> Qast.Node "PaLid" [Qast.Loc; s]
       | s = a_UIDENT -> Qast.Node "PaUid" [Qast.Loc; s]
-      | s = a_INT -> Qast.Node "PaInt" [Qast.Loc; s]
+      | s = a_INT -> Qast.Node "PaInt" [Qast.Loc; s; Qast.Str ""]
       | s = a_FLOAT -> Qast.Node "PaFlo" [Qast.Loc; s]
       | s = a_STRING -> Qast.Node "PaStr" [Qast.Loc; s]
       | s = a_CHAR -> Qast.Node "PaChr" [Qast.Loc; s]

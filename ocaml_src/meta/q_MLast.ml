@@ -100,7 +100,7 @@ module Qast =
       | Option None -> MLast.PaUid (loc, "None")
       | Option (Some a) ->
           MLast.PaApp (loc, MLast.PaUid (loc, "Some"), to_patt a)
-      | Int s -> MLast.PaInt (loc, s)
+      | Int s -> MLast.PaInt (loc, s, "")
       | Str s -> MLast.PaStr (loc, s)
       | Bool true -> MLast.PaUid (loc, "True")
       | Bool false -> MLast.PaUid (loc, "False")
@@ -224,7 +224,7 @@ let mkuminpat _ f is_int s =
     | s -> failwith "bad unary minus"
   in
   match is_int with
-    Qast.Bool true -> Qast.Node ("PaInt", [Qast.Loc; s])
+    Qast.Bool true -> Qast.Node ("PaInt", [Qast.Loc; s; Qast.Str ""])
   | Qast.Bool false -> Qast.Node ("PaFlo", [Qast.Loc; s])
   | _ -> assert false
 ;;
@@ -2062,7 +2062,7 @@ Grammar.extend
       [Gramext.Snterm (Grammar.Entry.obj (a_INT : 'a_INT Grammar.Entry.e))],
       Gramext.action
         (fun (s : 'a_INT) (loc : Token.location) ->
-           (Qast.Node ("PaInt", [Qast.Loc; s]) : 'patt));
+           (Qast.Node ("PaInt", [Qast.Loc; s; Qast.Str ""]) : 'patt));
       [Gramext.Snterm
          (Grammar.Entry.obj (a_UIDENT : 'a_UIDENT Grammar.Entry.e))],
       Gramext.action

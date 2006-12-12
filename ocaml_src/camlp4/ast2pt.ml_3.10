@@ -436,7 +436,9 @@ let rec patt =
   | PaArr (loc, pl) -> mkpat loc (Ppat_array (List.map patt pl))
   | PaChr (loc, s) ->
       mkpat loc (Ppat_constant (Const_char (char_of_char_token loc s)))
-  | PaInt (loc, s) -> mkpat loc (Ppat_constant (Const_int (int_of_string s)))
+  | PaInt (loc, s, "") ->
+      mkpat loc (Ppat_constant (Const_int (int_of_string s)))
+  | PaInt (loc, _, _) -> error loc "special int not impl in patt"
   | PaFlo (loc, s) -> mkpat loc (Ppat_constant (Const_float s))
   | PaLab (loc, _, _) -> error loc "labeled pattern not allowed here"
   | PaLid (loc, s) -> mkpat loc (Ppat_var s)

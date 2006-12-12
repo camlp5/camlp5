@@ -61,7 +61,7 @@ type patt =
   | PaApp of loc * patt * patt
   | PaArr of loc * patt list
   | PaChr of loc * string
-  | PaInt of loc * string
+  | PaInt of loc * string * string
   | PaFlo of loc * string
   | PaLab of loc * string * patt option
   | PaLid of loc * string

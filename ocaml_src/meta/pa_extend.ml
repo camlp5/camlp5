@@ -437,16 +437,19 @@ module MetaAction =
                    mloc),
                 mpatt p1),
              mpatt p2)
-      | MLast.PaInt (loc, s) ->
+      | MLast.PaInt (loc, s, c) ->
           MLast.ExApp
             (loc,
              MLast.ExApp
                (loc,
-                MLast.ExAcc
-                  (loc, MLast.ExUid (loc, "MLast"),
-                   MLast.ExUid (loc, "PaInt")),
-                mloc),
-             MLast.ExStr (loc, s))
+                MLast.ExApp
+                  (loc,
+                   MLast.ExAcc
+                     (loc, MLast.ExUid (loc, "MLast"),
+                      MLast.ExUid (loc, "PaInt")),
+                   mloc),
+                MLast.ExStr (loc, s)),
+             MLast.ExStr (loc, c))
       | MLast.PaLid (loc, s) ->
           MLast.ExApp
             (loc,

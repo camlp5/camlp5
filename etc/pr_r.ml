@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_r.ml,v 1.8 2006/12/05 22:48:33 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.9 2006/12/12 15:42:45 deraugla Exp $ *)
 
 open Pcaml;
 open Spretty;
@@ -256,6 +256,7 @@ value rec get_defined_ident =
   | <:patt< $lid:x$ >> -> [x]
   | <:patt< ($p1$ as $p2$) >> -> get_defined_ident p1 @ get_defined_ident p2
   | <:patt< $int:_$ >> -> []
+  | MLast.PaInt _ _ _ -> failwith "not impl Pr_r.PaInt"
   | <:patt< $flo:_$ >> -> []
   | <:patt< $str:_$ >> -> []
   | <:patt< $chr:_$ >> -> []

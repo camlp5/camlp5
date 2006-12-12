@@ -1,5 +1,5 @@
 (* camlp4r *)
-(* $Id: pr_depend.ml,v 1.5 2006/12/12 15:34:11 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.6 2006/12/12 15:42:45 deraugla Exp $ *)
 
 open MLast;
 
@@ -75,7 +75,7 @@ value rec patt =
   | PaApp _ p1 p2 -> do { patt p1; patt p2; }
   | PaArr _ pl -> list patt pl
   | PaChr _ _ -> ()
-  | PaInt _ _ -> ()
+  | PaInt _ _ _ -> ()
   | PaLab _ _ po -> option patt po
   | PaLid _ _ -> ()
   | PaOlb _ _ peoo ->
