@@ -625,6 +625,10 @@ value rec expr =
   | ExInt loc s "" -> mkexp loc (Pexp_constant (Const_int (int_of_string s)))
   | ExInt loc s "l" ->
       mkexp loc (Pexp_constant (Const_int32 (Int32.of_string s)))
+  | ExInt loc s "L" ->
+      mkexp loc (Pexp_constant (Const_int64 (Int64.of_string s)))
+  | ExInt loc s "n" ->
+      mkexp loc (Pexp_constant (Const_nativeint (Nativeint.of_string s)))
   | ExInt loc _ _ -> error loc "special int not implemented"
   | ExLab loc _ _ -> error loc "labeled expression not allowed here"
   | ExLaz loc e -> mkexp loc (Pexp_lazy (expr e))

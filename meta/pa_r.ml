@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.11 2006/12/12 16:08:21 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.12 2006/12/12 19:07:01 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -373,6 +373,8 @@ EXTEND
     | "simple"
       [ s = INT -> <:expr< $int:s$ >>
       | s = INT_l -> <:expr< $intl:s$ >>
+      | s = INT_L -> <:expr< $intL:s$ >>
+      | s = INT_n -> <:expr< $intn:s$ >>
       | s = FLOAT -> <:expr< $flo:s$ >>
       | s = STRING -> <:expr< $str:s$ >>
       | s = CHAR -> <:expr< $chr:s$ >>
