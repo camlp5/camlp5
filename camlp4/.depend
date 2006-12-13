@@ -4,10 +4,8 @@ ast2pt.cmi: $(OTOP)/parsing/parsetree.cmi mLast.cmi \
 pcaml.cmi: spretty.cmi mLast.cmi 
 quotation.cmi: mLast.cmi 
 reloc.cmi: mLast.cmi 
-argl.cmo: $(OTOP)/utils/pconfig.cmi pcaml.cmi \
-    ../odyl/odyl_main.cmi mLast.cmi ast2pt.cmi 
-argl.cmx: $(OTOP)/utils/pconfig.cmx pcaml.cmx \
-    ../odyl/odyl_main.cmx mLast.cmi ast2pt.cmx 
+argl.cmo: argl.cmi 
+argl.cmx: argl.cmi 
 ast2pt.cmo: $(OTOP)/utils/pconfig.cmi \
     $(OTOP)/parsing/parsetree.cmi mLast.cmi \
     $(OTOP)/parsing/longident.cmi \
@@ -18,6 +16,10 @@ ast2pt.cmx: $(OTOP)/utils/pconfig.cmx \
     $(OTOP)/parsing/longident.cmi \
     $(OTOP)/parsing/location.cmi \
     $(OTOP)/parsing/asttypes.cmi ast2pt.cmi 
+main.cmo: $(OTOP)/utils/pconfig.cmi pcaml.cmi \
+    ../odyl/odyl_main.cmi mLast.cmi ast2pt.cmi argl.cmi 
+main.cmx: $(OTOP)/utils/pconfig.cmx pcaml.cmx \
+    ../odyl/odyl_main.cmx mLast.cmi ast2pt.cmx argl.cmx 
 pcaml.cmo: spretty.cmi reloc.cmi quotation.cmi mLast.cmi ast2pt.cmi pcaml.cmi 
 pcaml.cmx: spretty.cmx reloc.cmx quotation.cmx mLast.cmi ast2pt.cmx pcaml.cmi 
 quotation.cmo: mLast.cmi quotation.cmi 
