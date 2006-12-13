@@ -184,18 +184,26 @@ value remaining_args =
 value go () = do {
   let ext_spec_list = Pcaml.arg_spec_list () in
   let arg_spec_list = initial_spec_list @ ext_spec_list in
-  match Argl.parse arg_spec_list anon_fun remaining_args with
-  [ [] -> ()
-  | ["-help" :: sl] -> do {
-      Argl.usage initial_spec_list ext_spec_list;
-      exit 0
-    }
-  | [s :: sl] ->
-      do {
-        eprintf "%s: unknown or misused option\n" s;
-        eprintf "Use option -help for usage\n";
-        exit 2
-      } ];
+  try
+    match Argl.parse arg_spec_list anon_fun remaining_args with
+    [ [] -> ()
+    | ["-help" :: sl] -> do {
+        Argl.usage initial_spec_list ext_spec_list;
+        exit 0
+      }
+    | [s :: sl] ->
+        do {
+          eprintf "%s: unknown or misused option\n" s;
+          eprintf "Use option -help for usage\n";
+          exit 2
+        } ]
+  with
+  [ Arg.Bad s -> do {
+      eprintf "Error: %s\n" s;
+      eprintf "Use option -help for usage\n";
+      flush stderr;
+      exit 2
+    } ];
   try
     if Pcaml.input_file.val <> "" then
       match file_kind.val with

@@ -180,10 +180,5 @@ let parse spec_list anon_fun remaining_args =
   let spec_list =
     Sort.list (fun (k1, _, _) (k2, _, _) -> k1 >= k2) spec_list
   in
-  try parse_aux spec_list anon_fun remaining_args with
-    Arg.Bad s ->
-      eprintf "Error: %s\n" s;
-      eprintf "Use option -help for usage\n";
-      flush stderr;
-      exit 2
+  parse_aux spec_list anon_fun remaining_args
 ;;
