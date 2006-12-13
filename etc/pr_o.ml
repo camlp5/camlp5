@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_o.ml,v 1.8 2006/12/05 22:48:33 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.9 2006/12/13 13:52:11 deraugla Exp $ *)
 
 open Pcaml;
 open Spretty;
@@ -1995,6 +1995,3 @@ Pcaml.add_option "-sep" (Arg.String (fun x -> sep.val := Some x))
 Pcaml.add_option "-cip" (Arg.Clear ncip) "Add comments in phrases.";
 
 Pcaml.add_option "-ncip" (Arg.Set ncip) "No comments in phrases (default).";
-
-Pcaml.add_option "-tc" (Arg.Clear ncip)
-  "Deprecated since version 3.05; equivalent to -cip.";

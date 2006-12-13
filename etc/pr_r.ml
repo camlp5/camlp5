@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_r.ml,v 1.9 2006/12/12 15:42:45 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.10 2006/12/13 13:52:11 deraugla Exp $ *)
 
 open Pcaml;
 open Spretty;
@@ -25,7 +25,6 @@ value not_impl name x =
 ;
 
 value gen_where = ref True;
-value old_sequences = ref False;
 value expand_declare = ref False;
 
 external is_printable : char -> bool = "caml_is_printable";
@@ -411,11 +410,9 @@ value rec let_sequence e =
 ;
 
 value ifbox b1 b2 b3 e k =
-  if old_sequences.val then HVbox [: `HOVbox [: b1; b2; b3 :]; `expr e k :]
-  else
-    match let_sequence e with
-    [ Some el -> sequence b1 b2 b3 el k
-    | None -> HVbox [: `BEbox [: b1; b2; b3 :]; `expr e k :] ]
+  match let_sequence e with
+  [ Some el -> sequence b1 b2 b3 el k
+  | None -> HVbox [: `BEbox [: b1; b2; b3 :]; `expr e k :] ]
 ;
 
 value rec type_params sl k =
@@ -958,39 +955,8 @@ pr_expr.pr_levels :=
                             [: `expr e1 [: :] :] [: `S LR "then" :] e2 k)
                        eel [: :];
                      `ifbox [: `S LR "else" :] [: :] [: :] e k :] :]
-      | <:expr< do { $list:el$ } >> when old_sequences.val ->
-          fun curr next _ k ->
-            let (el, e) =
-              match List.rev el with
-              [ [e :: el] -> (List.rev el, e)
-              | [] -> ([], <:expr< () >>) ]
-            in
-            [: `HOVCbox
-                  [: `HVbox [: :];
-                     `BEbox
-                        [: `S LR "do";
-                           `HVbox
-                              [: `HVbox [: :];
-                                 list (fun e k -> expr e [: `S RO ";"; k :])
-                                   el [: :] :];
-                           `S LR "return" :];
-                     `expr e k :] :]
       | <:expr< do { $list:el$ } >> ->
           fun curr next _ k -> [: `sequence [: :] [: :] [: :] el k :]
-      | <:expr< for $i$ = $e1$ $to:d$ $e2$ do { $list:el$ } >>
-        when old_sequences.val ->
-          fun curr next _ k ->
-            let d = if d then "to" else "downto" in
-            [: `BEbox
-                  [: `HOVbox
-                        [: `S LR "for"; `S LR i; `S LR "=";
-                           `expr e1 [: `S LR d :];
-                           `expr e2 [: `S LR "do" :] :];
-                     `HVbox
-                        [: `HVbox [: :];
-                           list (fun e k -> expr e [: `S RO ";"; k :]) el
-                             [: :] :];
-                     `HVbox [: `S LR "done"; k :] :] :]
       | <:expr< for $i$ = $e1$ $to:d$ $e2$ do { $list:el$ } >> ->
           fun curr next _ k ->
             let d = if d then "to" else "downto" in
@@ -999,15 +965,6 @@ pr_expr.pr_levels :=
                         [: `S LR "for"; `S LR i; `S LR "=";
                            `expr e1 [: `S LR d :]; `expr e2 [: :] :] :]
                   [: :] [: :] el k :]
-      | <:expr< while $e1$ do { $list:el$ } >> when old_sequences.val ->
-          fun curr next _ k ->
-            [: `BEbox
-                  [: `BEbox [: `S LR "while"; `expr e1 [: :]; `S LR "do" :];
-                     `HVbox
-                        [: `HVbox [: :];
-                           list (fun e k -> expr e [: `S RO ";"; k :]) el
-                             [: :] :];
-                     `HVbox [: `S LR "done"; k :] :] :]
       | <:expr< while $e1$ do { $list:el$ } >> ->
           fun curr next _ k ->
             [: `sequence [: `S LR "while"; `expr e1 [: :] :] [: :] [: :] el
@@ -1828,11 +1785,5 @@ Pcaml.add_option "-cip" (Arg.Clear ncip) "Add comments in phrases.";
 
 Pcaml.add_option "-ncip" (Arg.Set ncip) "No comments in phrases (default).";
 
-Pcaml.add_option "-old_seq" (Arg.Set old_sequences)
-  "Pretty print with old syntax for sequences.";
-
 Pcaml.add_option "-exp_dcl" (Arg.Set expand_declare)
   "Expand the \"declare\" items.";
-
-Pcaml.add_option "-tc" (Arg.Clear ncip)
-  "Deprecated since version 3.05; equivalent to -cip.";

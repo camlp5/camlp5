@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.9 2006/12/12 15:42:45 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.10 2006/12/13 13:52:11 deraugla Exp $ *)
 
 open Stdpp;
 
@@ -18,9 +18,6 @@ value split_ext = ref False;
 
 Pcaml.add_option "-split_ext" (Arg.Set split_ext)
   "Split EXTEND by functions to turn around a PowerPC problem.";
-
-Pcaml.add_option "-split_gext" (Arg.Set split_ext)
-  "Old name for the option -split_ext.";
 
 type loc = Token.location;
 

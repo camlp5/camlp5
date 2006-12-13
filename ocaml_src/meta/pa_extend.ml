@@ -19,9 +19,6 @@ let split_ext = ref false;;
 Pcaml.add_option "-split_ext" (Arg.Set split_ext)
   "Split EXTEND by functions to turn around a PowerPC problem.";;
 
-Pcaml.add_option "-split_gext" (Arg.Set split_ext)
-  "Old name for the option -split_ext.";;
-
 type loc = Token.location;;
 
 type 'e name = { expr : 'e; tvar : string; loc : loc };;
