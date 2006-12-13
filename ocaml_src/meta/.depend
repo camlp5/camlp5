@@ -2,8 +2,10 @@ pa_extend.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi
 pa_extend.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
 pa_extend_m.cmo: pa_extend.cmo 
 pa_extend_m.cmx: pa_extend.cmx 
-pa_macro.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
-pa_macro.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
+pa_macro.cmo:  $(OTOP)/utils/pconfig.cmi ../camlp4/pcaml.cmi \
+    ../camlp4/mLast.cmi 
+pa_macro.cmx:  $(OTOP)/utils/pconfig.cmx ../camlp4/pcaml.cmx \
+    ../camlp4/mLast.cmi 
 pa_r.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
 pa_r.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
 pa_rp.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 

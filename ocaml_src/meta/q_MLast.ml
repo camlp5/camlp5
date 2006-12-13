@@ -4070,10 +4070,10 @@ Grammar.extend
      Gramext.action
        (fun (a : string) (loc : Token.location) ->
           (antiquot "" loc a : 'a_INT_l));
-     [Gramext.Stoken ("ANTIQUOT", "intl")],
+     [Gramext.Stoken ("ANTIQUOT", "int32")],
      Gramext.action
        (fun (a : string) (loc : Token.location) ->
-          (antiquot "intl" loc a : 'a_INT_l))]];
+          (antiquot "int32" loc a : 'a_INT_l))]];
    Grammar.Entry.obj (a_INT_L : 'a_INT_L Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Stoken ("INT_L", "")],
@@ -4083,10 +4083,10 @@ Grammar.extend
      Gramext.action
        (fun (a : string) (loc : Token.location) ->
           (antiquot "" loc a : 'a_INT_L));
-     [Gramext.Stoken ("ANTIQUOT", "intL")],
+     [Gramext.Stoken ("ANTIQUOT", "int64")],
      Gramext.action
        (fun (a : string) (loc : Token.location) ->
-          (antiquot "intL" loc a : 'a_INT_L))]];
+          (antiquot "int64" loc a : 'a_INT_L))]];
    Grammar.Entry.obj (a_INT_n : 'a_INT_n Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Stoken ("INT_n", "")],
@@ -4096,10 +4096,10 @@ Grammar.extend
      Gramext.action
        (fun (a : string) (loc : Token.location) ->
           (antiquot "" loc a : 'a_INT_n));
-     [Gramext.Stoken ("ANTIQUOT", "intn")],
+     [Gramext.Stoken ("ANTIQUOT", "nativeint")],
      Gramext.action
        (fun (a : string) (loc : Token.location) ->
-          (antiquot "intn" loc a : 'a_INT_n))]];
+          (antiquot "nativeint" loc a : 'a_INT_n))]];
    Grammar.Entry.obj (a_FLOAT : 'a_FLOAT Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Stoken ("FLOAT", "")],

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.15 2006/12/12 14:19:56 deraugla Exp $
+# $Id: Makefile,v 1.16 2006/12/13 11:07:09 deraugla Exp $
 
 include config/Makefile
 
@@ -181,7 +181,7 @@ compare_sources:
 	   sed 's-^TOP=..$$-TOP=../..-' | diff Makefile -; \
 	   echo ============================================; \
 	   echo ocaml_src/$$i/.depend; \
-	   diff ../../$$i/.depend .); \
+	   diff . ../../$$i/.depend); \
 	 done
 	@-for i in $(FDIRS); do \
 	  (cd $$i; \

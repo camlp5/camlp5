@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.17 2006/12/13 04:51:01 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.18 2006/12/13 11:07:09 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -1207,17 +1207,17 @@ EXTEND
       | s = INT -> Qast.Str s ] ]
   ;
   a_INT_l:
-    [ [ a = ANTIQUOT "intl" -> antiquot "intl" loc a
+    [ [ a = ANTIQUOT "int32" -> antiquot "int32" loc a
       | a = ANTIQUOT -> antiquot "" loc a
       | s = INT_l -> Qast.Str s ] ]
   ;
   a_INT_L:
-    [ [ a = ANTIQUOT "intL" -> antiquot "intL" loc a
+    [ [ a = ANTIQUOT "int64" -> antiquot "int64" loc a
       | a = ANTIQUOT -> antiquot "" loc a
       | s = INT_L -> Qast.Str s ] ]
   ;
   a_INT_n:
-    [ [ a = ANTIQUOT "intn" -> antiquot "intn" loc a
+    [ [ a = ANTIQUOT "nativeint" -> antiquot "nativeint" loc a
       | a = ANTIQUOT -> antiquot "" loc a
       | s = INT_n -> Qast.Str s ] ]
   ;

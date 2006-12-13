@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.14 2006/12/13 04:51:01 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.15 2006/12/13 11:07:09 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -313,9 +313,9 @@ EXTEND
       | "~-."; e = SELF -> <:expr< ~-. $e$ >> ]
     | "simple"
       [ s = INT -> <:expr< $int:s$ >>
-      | s = INT_l -> <:expr< $intl:s$ >>
-      | s = INT_L -> <:expr< $intL:s$ >>
-      | s = INT_n -> <:expr< $intn:s$ >>
+      | s = INT_l -> <:expr< $int32:s$ >>
+      | s = INT_L -> <:expr< $int64:s$ >>
+      | s = INT_n -> <:expr< $nativeint:s$ >>
       | s = FLOAT -> <:expr< $flo:s$ >>
       | s = STRING -> <:expr< $str:s$ >>
       | s = CHAR -> <:expr< $chr:s$ >>
@@ -397,9 +397,9 @@ EXTEND
       [ s = LIDENT -> <:patt< $lid:s$ >>
       | s = UIDENT -> <:patt< $uid:s$ >>
       | s = INT -> <:patt< $int:s$ >>
-      | s = INT_l -> <:patt< $intl:s$ >>
-      | s = INT_L -> <:patt< $intL:s$ >>
-      | s = INT_n -> <:patt< $intn:s$ >>
+      | s = INT_l -> <:patt< $int32:s$ >>
+      | s = INT_L -> <:patt< $int64:s$ >>
+      | s = INT_n -> <:patt< $nativeint:s$ >>
       | s = FLOAT -> <:patt< $flo:s$ >>
       | s = STRING -> <:patt< $str:s$ >>
       | s = CHAR -> <:patt< $chr:s$ >>
