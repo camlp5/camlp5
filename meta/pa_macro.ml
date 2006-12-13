@@ -1,5 +1,5 @@
 (* camlp4r *)
-(* $Id: pa_macro.ml,v 1.8 2006/12/12 14:19:56 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.9 2006/12/13 11:15:25 deraugla Exp $ *)
 
 (*
 Added statements:
@@ -68,7 +68,17 @@ value rec list_remove x =
   | [] -> [] ]
 ;
 
-value defined = ref [("CAMLP4S", None)];
+value oversion = do {
+  let v = String.copy Pconfig.ocaml_version in
+  for i = 0 to String.length v - 1 do {
+    match v.[i] with
+    [ '0'..'9' -> ()
+    | _ -> v.[i] := '_' ];
+  };
+  v
+};
+
+value defined = ref [("CAMLP4S", None); ("OCAML_" ^ oversion, None)];
 
 value is_defined i = List.mem_assoc i defined.val;
 
@@ -264,15 +274,3 @@ Pcaml.add_option "-D" (Arg.String (define None))
 Pcaml.add_option "-U" (Arg.String undef)
   "<string> Undefine for IFDEF instruction."
 ;
-
-value oversion = do {
-  let v = String.copy Pconfig.ocaml_version in
-  for i = 0 to String.length v - 1 do {
-    match v.[i] with
-    [ '0'..'9' -> ()
-    | _ -> v.[i] := '_' ];
-  };
-  v
-};
-
-define None ("OCAML_" ^ oversion);

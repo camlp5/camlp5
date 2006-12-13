@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.9 2006/12/05 22:48:33 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.10 2006/12/13 11:15:25 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -637,6 +637,9 @@ EXTEND
       | f = prefixop; e = SELF -> <:expr< $lid:f$ $e$ >> ]
     | "simple" LEFTA
       [ s = INT -> <:expr< $int:s$ >>
+      | s = INT_l -> <:expr< $int32:s$ >>
+      | s = INT_L -> <:expr< $int64:s$ >>
+      | s = INT_n -> <:expr< $nativeint:s$ >>
       | s = FLOAT -> <:expr< $flo:s$ >>
       | s = STRING -> <:expr< $str:s$ >>
       | c = CHAR -> <:expr< $chr:c$ >>
@@ -769,6 +772,9 @@ EXTEND
       [ s = LIDENT -> <:patt< $lid:s$ >>
       | s = UIDENT -> <:patt< $uid:s$ >>
       | s = INT -> <:patt< $int:s$ >>
+      | s = INT_l -> <:patt< $int32:s$ >>
+      | s = INT_L -> <:patt< $int64:s$ >>
+      | s = INT_n -> <:patt< $nativeint:s$ >>
       | "-"; s = INT -> <:patt< $int:"-" ^ s$ >>
       | "-"; s = FLOAT -> <:patt< $flo:"-" ^ s$ >>
       | s = FLOAT -> <:patt< $flo:s$ >>
