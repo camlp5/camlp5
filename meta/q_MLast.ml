@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.15 2006/12/12 19:07:01 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.16 2006/12/13 03:38:30 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -721,6 +721,9 @@ EXTEND
       [ s = a_LIDENT -> Qast.Node "PaLid" [Qast.Loc; s]
       | s = a_UIDENT -> Qast.Node "PaUid" [Qast.Loc; s]
       | s = a_INT -> Qast.Node "PaInt" [Qast.Loc; s; Qast.Str ""]
+      | s = a_INT_l -> Qast.Node "PaInt" [Qast.Loc; s; Qast.Str "l"]
+      | s = a_INT_L -> Qast.Node "PaInt" [Qast.Loc; s; Qast.Str "L"]
+      | s = a_INT_n -> Qast.Node "PaInt" [Qast.Loc; s; Qast.Str "n"]
       | s = a_FLOAT -> Qast.Node "PaFlo" [Qast.Loc; s]
       | s = a_STRING -> Qast.Node "PaStr" [Qast.Loc; s]
       | s = a_CHAR -> Qast.Node "PaChr" [Qast.Loc; s]

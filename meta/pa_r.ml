@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.12 2006/12/12 19:07:01 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.13 2006/12/13 03:38:30 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -456,6 +456,9 @@ EXTEND
       [ s = LIDENT -> <:patt< $lid:s$ >>
       | s = UIDENT -> <:patt< $uid:s$ >>
       | s = INT -> <:patt< $int:s$ >>
+      | s = INT_l -> <:patt< $intl:s$ >>
+      | s = INT_L -> <:patt< $intL:s$ >>
+      | s = INT_n -> <:patt< $intn:s$ >>
       | s = FLOAT -> <:patt< $flo:s$ >>
       | s = STRING -> <:patt< $str:s$ >>
       | s = CHAR -> <:patt< $chr:s$ >>
