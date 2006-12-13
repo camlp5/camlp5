@@ -187,9 +187,8 @@ let fold_entry f e init =
   do_entry init e
 ;;
 
-type g = Token.t Gramext.grammar;;
-
-external grammar_obj : g -> Token.t grammar = "%identity";;
+type token = string * string;;
+type g = token Gramext.grammar;;
 
 let floc = ref (fun _ -> failwith "internal error when computing location");;
 let loc_of_token_interval bp ep =
@@ -839,19 +838,6 @@ let wrap_parse entry efun cs =
 let create_toktab () = Hashtbl.create 301;;
 let gcreate glexer = {gtokens = create_toktab (); glexer = glexer};;
 
-let tematch tparse tok =
-  match tparse tok with
-    Some p -> (fun x -> p (Stream.ising x))
-  | None -> Token.default_match tok
-;;
-let glexer_of_lexer lexer =
-  {Token.tok_func = lexer.Token.func; Token.tok_using = lexer.Token.using;
-   Token.tok_removing = lexer.Token.removing;
-   Token.tok_match = tematch lexer.Token.tparse;
-   Token.tok_text = lexer.Token.text; Token.tok_comm = None}
-;;
-let create lexer = gcreate (glexer_of_lexer lexer);;
-
 (* Extend syntax *)
 
 let extend_entry entry position rules =
@@ -921,14 +907,8 @@ let clear_entry e =
 
 let gram_reinit g glexer = Hashtbl.clear g.gtokens; g.glexer <- glexer;;
 
-let reinit_gram g lexer = gram_reinit g (glexer_of_lexer lexer);;
-
 module Unsafe =
-  struct
-    let gram_reinit = gram_reinit;;
-    let clear_entry = clear_entry;;
-    let reinit_gram = reinit_gram;;
-  end
+  struct let gram_reinit = gram_reinit;; let clear_entry = clear_entry;; end
 ;;
 
 let find_entry e s =
@@ -989,7 +969,7 @@ let of_entry e = e.egram;;
 
 module Entry =
   struct
-    type te = Token.t;;
+    type te = token;;
     type 'a e = te g_entry;;
     let create g n =
       {egram = g; ename = n; estart = empty_entry n;
@@ -1051,7 +1031,6 @@ module type S =
       sig
         val gram_reinit : te Token.glexer -> unit;;
         val clear_entry : 'a Entry.e -> unit;;
-        val reinit_gram : Token.lexer -> unit;;
       end
     ;;
     val extend :
@@ -1064,10 +1043,7 @@ module type S =
   end
 ;;
 
-module type ReinitType = sig val reinit_gram : g -> Token.lexer -> unit;; end
-;;
-
-module GGMake (R : ReinitType) (L : GLexerType) =
+module GMake (L : GLexerType) =
   struct
     type te = L.te;;
     type parsable = te gen_parsable;;
@@ -1106,27 +1082,9 @@ module GGMake (R : ReinitType) (L : GLexerType) =
       struct
         let gram_reinit = gram_reinit gram;;
         let clear_entry = Unsafe.clear_entry;;
-        let reinit_gram = R.reinit_gram (Obj.magic gram);;
       end
     ;;
     let extend = extend_entry;;
     let delete_rule e r = delete_rule (Entry.obj e) r;;
   end
-;;
-
-module GMake (L : GLexerType) =
-  GGMake
-    (struct
-       let reinit_gram _ _ =
-         failwith "call of deprecated reinit_gram in grammar built by GMake"
-       ;;
-     end)
-    (L)
-;;
-
-module type LexerType = sig val lexer : Token.lexer;; end;;
-
-module Make (L : LexerType) =
-  GGMake (struct let reinit_gram = reinit_gram;; end)
-    (struct type te = Token.t;; let lexer = glexer_of_lexer L.lexer;; end)
 ;;

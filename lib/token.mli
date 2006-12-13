@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.mli,v 1.12 2006/12/05 22:48:33 deraugla Exp $ *)
+(* $Id: token.mli,v 1.13 2006/12/13 04:51:01 deraugla Exp $ *)
 
 (** Lexers for Camlp4 grammars.
 
@@ -29,7 +29,7 @@ type pattern = (string * string);
         done by the lexer, function [tok_match] below. *)
 
 exception Error of string;
-    (** An lexing error exception to be used by lexers. *)
+    (** A lexing error exception to be used by lexers. *)
 
 (** {6 Lexer type} *)
 
@@ -131,15 +131,3 @@ value bol_pos : ref (ref int);
        for directives (e.g. #load or #use) which interrupt the parsing.
        Without usage of these variables, locations after the directives
        can be wrong. *)
-
-(**/**)
-
-(* deprecated since version 3.05; use rather type glexer *)
-type t = (string * string);
-type lexer =
-  { func : lexer_func t;
-    using : pattern -> unit;
-    removing : pattern -> unit;
-    tparse : pattern -> option (Stream.t t -> string);
-    text : pattern -> string }
-;

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.mli,v 1.3 2006/12/05 22:48:33 deraugla Exp $ *)
+(* $Id: grammar.mli,v 1.4 2006/12/13 04:51:01 deraugla Exp $ *)
 
 (** Extensible grammars.
 
@@ -20,7 +20,8 @@
 
 type g = 'x;
    (** The type for grammars, holding entries. *)
-value gcreate : Token.glexer Token.t -> g;
+type token = (string * string);
+value gcreate : Token.glexer token -> g;
    (** Create a new grammar, without keywords, using the lexer given
        as parameter. *)
 value tokens : g -> string -> list (string * int);
@@ -35,7 +36,7 @@ value tokens : g -> string -> list (string * int);
        list.
 -      The call [Grammar.token g "IDENT"] returns the list of all usages
        of the pattern "IDENT" in the [EXTEND] statements. *)
-value glexer : g -> Token.glexer Token.t;
+value glexer : g -> Token.glexer token;
    (** Return the lexer used by the grammar *)
 
 module Entry :
@@ -43,12 +44,12 @@ module Entry :
     type e 'a = 'x;
     value create : g -> string -> e 'a;
     value parse : e 'a -> Stream.t char -> 'a;
-    value parse_token : e 'a -> Stream.t Token.t -> 'a;
+    value parse_token : e 'a -> Stream.t token -> 'a;
     value name : e 'a -> string;
-    value of_parser : g -> string -> (Stream.t Token.t -> 'a) -> e 'a;
+    value of_parser : g -> string -> (Stream.t token -> 'a) -> e 'a;
     value print : e 'a -> unit;
     value find : e 'a -> string -> e Obj.t;
-    external obj : e 'a -> Gramext.g_entry Token.t = "%identity";
+    external obj : e 'a -> Gramext.g_entry token = "%identity";
   end
 ;
    (** Module to handle entries.
@@ -70,11 +71,8 @@ value of_entry : Entry.e 'a -> g;
 
 module Unsafe :
   sig
-    value gram_reinit : g -> Token.glexer Token.t -> unit;
+    value gram_reinit : g -> Token.glexer token -> unit;
     value clear_entry : Entry.e 'a -> unit;
-    (**/**)
-    (* deprecated since version 3.05; use rather function [gram_reinit] *)
-    value reinit_gram : g -> Token.lexer -> unit;
   end
 ;
    (** Module for clearing grammars and entries. To be manipulated with
@@ -125,10 +123,6 @@ module type S =
       sig
         value gram_reinit : Token.glexer te -> unit;
         value clear_entry : Entry.e 'a -> unit;
-        (**/**)
-        (* deprecated since version 3.05; use rather [gram_reinit] *)
-        (* warning: [reinit_gram] fails if used with GMake *)
-        value reinit_gram : Token.lexer -> unit;
       end
     ;
     value extend :
@@ -182,14 +176,6 @@ value fold_entry :
       The order in which the entries are passed to [f] is the order they
       appear in each entry. Each entry is passed only once. *)
 
-(**/**)
-
-(*** deprecated since version 3.05; use rather the functor GMake *)
-module type LexerType = sig value lexer : Token.lexer; end;
-module Make (L : LexerType) : S with type te = Token.t;
-(*** deprecated since version 3.05; use rather the function gcreate *)
-value create : Token.lexer -> g;
-
 (*** For system use *)
 
 value loc_of_token_interval : int -> int -> Token.location;
@@ -200,7 +186,7 @@ value extend :
        (option string * option Gramext.g_assoc *
         list (list (Gramext.g_symbol 'te) * Gramext.g_action))) ->
     unit;
-value delete_rule : Entry.e 'a -> list (Gramext.g_symbol Token.t) -> unit;
+value delete_rule : Entry.e 'a -> list (Gramext.g_symbol token) -> unit;
 
 value parse_top_symb :
   Gramext.g_entry 'te -> Gramext.g_symbol 'te -> Stream.t 'te -> Obj.t;

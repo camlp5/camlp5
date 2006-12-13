@@ -905,32 +905,3 @@ let gmake () =
   in
   glexr := glex; glex
 ;;
-
-let tparse =
-  function
-    "ANTIQUOT", p_prm ->
-      let p (strm__ : _ Stream.t) =
-        match Stream.peek strm__ with
-          Some ("ANTIQUOT", prm) when eq_before_colon p_prm prm ->
-            Stream.junk strm__; after_colon prm
-        | _ -> raise Stream.Failure
-      in
-      Some p
-  | _ -> None
-;;
-
-let make () =
-  let kwd_table = Hashtbl.create 301 in
-  let id_table = Hashtbl.create 301 in
-  let glexr =
-    ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 686, 18)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 686, 38)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 686, 61)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 687, 19)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 687, 38)));
-       tok_comm = None}
-  in
-  {func = func kwd_table glexr; using = using_token kwd_table id_table;
-   removing = removing_token kwd_table id_table; tparse = tparse; text = text}
-;;

@@ -18,24 +18,6 @@ open Pcaml;;
 Pcaml.syntax_name := "Revised";;
 Pcaml.no_constructors_arity := false;;
 
-let help_sequences () =
-  Printf.eprintf "\
-New syntax:
-     do {e1; e2; ... ; en}
-     while e do {e1; e2; ... ; en}
-     for v = v1 to/downto v2 do {e1; e2; ... ; en}
-Old (discouraged) syntax:
-     do e1; e2; ... ; en-1; return en
-     while e do e1; e2; ... ; en; done
-     for v = v1 to/downto v2 do e1; e2; ... ; en; done
-To avoid compilation warning use the new syntax.
-";
-  flush stderr;
-  exit 1
-;;
-Pcaml.add_option "-help_seq" (Arg.Unit help_sequences)
-  "Print explanations about new sequences and exit.";;
-
 let odfa = !(Plexer.dollar_for_antiquotation) in
 Plexer.dollar_for_antiquotation := false;
 Grammar.Unsafe.gram_reinit gram (Plexer.gmake ());
@@ -146,48 +128,9 @@ let mkexprident loc i j =
 
 let append_elem el e = el @ [e];;
 
-(* ...suppose to flush the input in case of syntax error to avoid multiple
-   errors in case of cut-and-paste in the xterm, but work bad: for example
-   the input "for x = 1;" waits for another line before displaying the
-   error...
-value rec sync cs =
-  match cs with parser
-  [ [: `';' :] -> sync_semi cs
-  | [: `_ :] -> sync cs ]
-and sync_semi cs =
-  match Stream.peek cs with 
-  [ Some ('\010' | '\013') -> ()
-  | _ -> sync cs ]
-;
-Pcaml.sync.val := sync;
-*)
-
 let ipatt = Grammar.Entry.create gram "ipatt";;
 let with_constr = Grammar.Entry.create gram "with_constr";;
 let row_field = Grammar.Entry.create gram "row_field";;
-
-let not_yet_warned_variant = ref true;;
-let warn_variant loc =
-  if !not_yet_warned_variant then
-    begin
-      not_yet_warned_variant := false;
-      !(Pcaml.warning) loc
-        (Printf.sprintf
-           "use of syntax of variants types deprecated since version 1.00")
-    end
-;;
-
-let not_yet_warned = ref true;;
-let warn_sequence loc =
-  if !not_yet_warned then
-    begin
-      not_yet_warned := false;
-      !(Pcaml.warning) loc
-        "use of syntax of sequences deprecated since version 1.00"
-    end
-;;
-Pcaml.add_option "-no_warn_seq" (Arg.Clear not_yet_warned)
-  "No warning when using old syntax for sequences.";;
 
 Grammar.extend
   (let _ = (sig_item : 'sig_item Grammar.Entry.e)
@@ -299,10 +242,6 @@ Grammar.extend
    and eq_expr : 'eq_expr Grammar.Entry.e = grammar_entry_create "eq_expr"
    and direction_flag : 'direction_flag Grammar.Entry.e =
      grammar_entry_create "direction_flag"
-   and warning_variant : 'warning_variant Grammar.Entry.e =
-     grammar_entry_create "warning_variant"
-   and warning_sequence : 'warning_sequence Grammar.Entry.e =
-     grammar_entry_create "warning_sequence"
    in
    [Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e), None,
     [None, None,
@@ -2505,131 +2444,7 @@ Grammar.extend
         (fun _ (loc : Token.location) -> (false : 'direction_flag));
       [Gramext.Stoken ("", "to")],
       Gramext.action
-        (fun _ (loc : Token.location) -> (true : 'direction_flag))]];
-    Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e),
-    Some (Gramext.Level "simple"),
-    [None, None,
-     [[Gramext.Stoken ("", "[|");
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (warning_variant : 'warning_variant Grammar.Entry.e));
-       Gramext.Stoken ("", "<");
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (row_field_list : 'row_field_list Grammar.Entry.e));
-       Gramext.Stoken ("", ">");
-       Gramext.Slist1
-         (Gramext.Snterm
-            (Grammar.Entry.obj (name_tag : 'name_tag Grammar.Entry.e)));
-       Gramext.Stoken ("", "|]")],
-      Gramext.action
-        (fun _ (ntl : 'name_tag list) _ (rfl : 'row_field_list) _ _ _
-           (loc : Token.location) ->
-           (MLast.TyVrn (loc, rfl, Some (Some ntl)) : 'ctyp));
-      [Gramext.Stoken ("", "[|");
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (warning_variant : 'warning_variant Grammar.Entry.e));
-       Gramext.Stoken ("", "<");
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (row_field_list : 'row_field_list Grammar.Entry.e));
-       Gramext.Stoken ("", "|]")],
-      Gramext.action
-        (fun _ (rfl : 'row_field_list) _ _ _ (loc : Token.location) ->
-           (MLast.TyVrn (loc, rfl, Some (Some [])) : 'ctyp));
-      [Gramext.Stoken ("", "[|");
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (warning_variant : 'warning_variant Grammar.Entry.e));
-       Gramext.Stoken ("", ">");
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (row_field_list : 'row_field_list Grammar.Entry.e));
-       Gramext.Stoken ("", "|]")],
-      Gramext.action
-        (fun _ (rfl : 'row_field_list) _ _ _ (loc : Token.location) ->
-           (MLast.TyVrn (loc, rfl, Some None) : 'ctyp));
-      [Gramext.Stoken ("", "[|");
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (warning_variant : 'warning_variant Grammar.Entry.e));
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (row_field_list : 'row_field_list Grammar.Entry.e));
-       Gramext.Stoken ("", "|]")],
-      Gramext.action
-        (fun _ (rfl : 'row_field_list) _ _ (loc : Token.location) ->
-           (MLast.TyVrn (loc, rfl, None) : 'ctyp))]];
-    Grammar.Entry.obj (warning_variant : 'warning_variant Grammar.Entry.e),
-    None,
-    [None, None,
-     [[],
-      Gramext.action
-        (fun (loc : Token.location) ->
-           (warn_variant loc : 'warning_variant))]];
-    Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
-    Some (Gramext.Level "top"),
-    [None, None,
-     [[Gramext.Stoken ("", "while"); Gramext.Sself; Gramext.Stoken ("", "do");
-       Gramext.Slist0
-         (Gramext.srules
-            [[Gramext.Snterm
-                (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e));
-              Gramext.Stoken ("", ";")],
-             Gramext.action
-               (fun _ (e : 'expr) (loc : Token.location) -> (e : 'e__12))]);
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (warning_sequence : 'warning_sequence Grammar.Entry.e));
-       Gramext.Stoken ("", "done")],
-      Gramext.action
-        (fun _ _ (seq : 'e__12 list) _ (e : 'expr) _ (loc : Token.location) ->
-           (MLast.ExWhi (loc, e, seq) : 'expr));
-      [Gramext.Stoken ("", "for"); Gramext.Stoken ("LIDENT", "");
-       Gramext.Stoken ("", "="); Gramext.Sself;
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (direction_flag : 'direction_flag Grammar.Entry.e));
-       Gramext.Sself; Gramext.Stoken ("", "do");
-       Gramext.Slist0
-         (Gramext.srules
-            [[Gramext.Snterm
-                (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e));
-              Gramext.Stoken ("", ";")],
-             Gramext.action
-               (fun _ (e : 'expr) (loc : Token.location) -> (e : 'e__11))]);
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (warning_sequence : 'warning_sequence Grammar.Entry.e));
-       Gramext.Stoken ("", "done")],
-      Gramext.action
-        (fun _ _ (seq : 'e__11 list) _ (e2 : 'expr) (df : 'direction_flag)
-           (e1 : 'expr) _ (i : string) _ (loc : Token.location) ->
-           (MLast.ExFor (loc, i, e1, e2, df, seq) : 'expr));
-      [Gramext.Stoken ("", "do");
-       Gramext.Slist0
-         (Gramext.srules
-            [[Gramext.Snterm
-                (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e));
-              Gramext.Stoken ("", ";")],
-             Gramext.action
-               (fun _ (e : 'expr) (loc : Token.location) -> (e : 'e__10))]);
-       Gramext.Stoken ("", "return");
-       Gramext.Snterm
-         (Grammar.Entry.obj
-            (warning_sequence : 'warning_sequence Grammar.Entry.e));
-       Gramext.Sself],
-      Gramext.action
-        (fun (e : 'expr) _ _ (seq : 'e__10 list) _ (loc : Token.location) ->
-           (MLast.ExSeq (loc, append_elem seq e) : 'expr))]];
-    Grammar.Entry.obj (warning_sequence : 'warning_sequence Grammar.Entry.e),
-    None,
-    [None, None,
-     [[],
-      Gramext.action
-        (fun (loc : Token.location) ->
-           (warn_sequence loc : 'warning_sequence))]]]);;
+        (fun _ (loc : Token.location) -> (true : 'direction_flag))]]]);;
 
 Grammar.extend
   (let _ = (interf : 'interf Grammar.Entry.e)

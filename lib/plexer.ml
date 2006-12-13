@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.16 2006/12/12 16:08:21 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.17 2006/12/13 04:51:01 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -664,28 +664,4 @@ value gmake () =
      tok_text = text; tok_comm = None}
   in
   do { glexr.val := glex; glex }
-;
-
-value tparse =
-  fun
-  [ ("ANTIQUOT", p_prm) ->
-      let p =
-        parser
-          [: `("ANTIQUOT", prm) when eq_before_colon p_prm prm :] ->
-            after_colon prm
-      in
-      Some p
-  | _ -> None ]
-;
-
-value make () =
-  let kwd_table = Hashtbl.create 301 in
-  let id_table = Hashtbl.create 301 in
-  let glexr =
-    ref
-     {tok_func = fun []; tok_using = fun []; tok_removing = fun [];
-      tok_match = fun []; tok_text = fun []; tok_comm = None}
-  in
-  {func = func kwd_table glexr; using = using_token kwd_table id_table;
-   removing = removing_token kwd_table id_table; tparse = tparse; text = text}
 ;

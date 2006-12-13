@@ -20,7 +20,8 @@
 
 type g;;
    (** The type for grammars, holding entries. *)
-val gcreate : Token.t Token.glexer -> g;;
+type token = string * string;;
+val gcreate : token Token.glexer -> g;;
    (** Create a new grammar, without keywords, using the lexer given
        as parameter. *)
 val tokens : g -> string -> (string * int) list;;
@@ -35,7 +36,7 @@ val tokens : g -> string -> (string * int) list;;
        list.
 -      The call [Grammar.token g "IDENT"] returns the list of all usages
        of the pattern "IDENT" in the [EXTEND] statements. *)
-val glexer : g -> Token.t Token.glexer;;
+val glexer : g -> token Token.glexer;;
    (** Return the lexer used by the grammar *)
 
 module Entry :
@@ -43,12 +44,12 @@ module Entry :
     type 'a e;;
     val create : g -> string -> 'a e;;
     val parse : 'a e -> char Stream.t -> 'a;;
-    val parse_token : 'a e -> Token.t Stream.t -> 'a;;
+    val parse_token : 'a e -> token Stream.t -> 'a;;
     val name : 'a e -> string;;
-    val of_parser : g -> string -> (Token.t Stream.t -> 'a) -> 'a e;;
+    val of_parser : g -> string -> (token Stream.t -> 'a) -> 'a e;;
     val print : 'a e -> unit;;
     val find : 'a e -> string -> Obj.t e;;
-    external obj : 'a e -> Token.t Gramext.g_entry = "%identity";;
+    external obj : 'a e -> token Gramext.g_entry = "%identity";;
   end
 ;;
    (** Module to handle entries.
@@ -70,9 +71,8 @@ val of_entry : 'a Entry.e -> g;;
 
 module Unsafe :
   sig
-    val gram_reinit : g -> Token.t Token.glexer -> unit;;
+    val gram_reinit : g -> token Token.glexer -> unit;;
     val clear_entry : 'a Entry.e -> unit;;
-    val reinit_gram : g -> Token.lexer -> unit;;
   end
 ;;
    (** Module for clearing grammars and entries. To be manipulated with
@@ -119,7 +119,6 @@ module type S =
       sig
         val gram_reinit : te Token.glexer -> unit;;
         val clear_entry : 'a Entry.e -> unit;;
-        val reinit_gram : Token.lexer -> unit;;
       end
     ;;
     val extend :
@@ -173,14 +172,6 @@ val fold_entry :
       The order in which the entries are passed to [f] is the order they
       appear in each entry. Each entry is passed only once. *)
 
-(**/**)
-
-(*** deprecated since version 3.05; use rather the functor GMake *)
-module type LexerType = sig val lexer : Token.lexer;; end;;
-module Make (L : LexerType) : S with type te = Token.t;;
-(*** deprecated since version 3.05; use rather the function gcreate *)
-val create : Token.lexer -> g;;
-
 (*** For system use *)
 
 val loc_of_token_interval : int -> int -> Token.location;;
@@ -191,7 +182,7 @@ val extend :
        list)
     list ->
     unit;;
-val delete_rule : 'a Entry.e -> Token.t Gramext.g_symbol list -> unit;;
+val delete_rule : 'a Entry.e -> token Gramext.g_symbol list -> unit;;
 
 val parse_top_symb :
   'te Gramext.g_entry -> 'te Gramext.g_symbol -> 'te Stream.t -> Obj.t;;

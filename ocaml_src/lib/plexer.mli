@@ -14,7 +14,7 @@
 
 (** A lexical analyzer. *)
 
-val gmake : unit -> Token.t Token.glexer;;
+val gmake : unit -> (string * string) Token.glexer;;
    (** Some lexer provided. See the module [Token]. The tokens returned
        follow the Objective Caml and the Revised syntax lexing rules.
 
@@ -64,8 +64,3 @@ val no_quotations : bool ref;;
    (** When True, all lexers built by [Plexer.make ()] do not lex the
        quotation syntax any more. Default is False (quotations are
        lexed). *)
-
-(**/**)
-
-(* deprecated since version 3.05; use rather function gmake *)
-val make : unit -> Token.lexer;;

@@ -10,33 +10,13 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.13 2006/12/13 03:38:30 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.14 2006/12/13 04:51:01 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
 
 Pcaml.syntax_name.val := "Revised";
 Pcaml.no_constructors_arity.val := False;
-
-value help_sequences () =
-  do {
-    Printf.eprintf "\
-New syntax:
-     do {e1; e2; ... ; en}
-     while e do {e1; e2; ... ; en}
-     for v = v1 to/downto v2 do {e1; e2; ... ; en}
-Old (discouraged) syntax:
-     do e1; e2; ... ; en-1; return en
-     while e do e1; e2; ... ; en; done
-     for v = v1 to/downto v2 do e1; e2; ... ; en; done
-To avoid compilation warning use the new syntax.
-";
-    flush stderr;
-    exit 1
-  }
-;
-Pcaml.add_option "-help_seq" (Arg.Unit help_sequences)
-  "Print explanations about new sequences and exit.";
 
 do {
   let odfa = Plexer.dollar_for_antiquotation.val in
@@ -145,48 +125,9 @@ value mkexprident loc i j =
 
 value append_elem el e = el @ [e];
 
-(* ...suppose to flush the input in case of syntax error to avoid multiple
-   errors in case of cut-and-paste in the xterm, but work bad: for example
-   the input "for x = 1;" waits for another line before displaying the
-   error...
-value rec sync cs =
-  match cs with parser
-  [ [: `';' :] -> sync_semi cs
-  | [: `_ :] -> sync cs ]
-and sync_semi cs =
-  match Stream.peek cs with 
-  [ Some ('\010' | '\013') -> ()
-  | _ -> sync cs ]
-;
-Pcaml.sync.val := sync;
-*)
-
 value ipatt = Grammar.Entry.create gram "ipatt";
 value with_constr = Grammar.Entry.create gram "with_constr";
 value row_field = Grammar.Entry.create gram "row_field";
-
-value not_yet_warned_variant = ref True;
-value warn_variant loc =
-  if not_yet_warned_variant.val then do {
-    not_yet_warned_variant.val := False;
-    Pcaml.warning.val loc
-      (Printf.sprintf
-         "use of syntax of variants types deprecated since version 1.00");
-  }
-  else ()
-;
-
-value not_yet_warned = ref True;
-value warn_sequence loc =
-  if not_yet_warned.val then do {
-    not_yet_warned.val := False;
-    Pcaml.warning.val loc
-      ("use of syntax of sequences deprecated since version 1.00");
-  }
-  else ()
-;
-Pcaml.add_option "-no_warn_seq" (Arg.Clear not_yet_warned)
-  "No warning when using old syntax for sequences.";
 
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr class_type
@@ -808,36 +749,6 @@ EXTEND
   direction_flag:
     [ [ "to" -> True
       | "downto" -> False ] ]
-  ;
-  (* Compatibility old syntax of variant types definitions *)
-  ctyp: LEVEL "simple"
-    [ [ "[|"; warning_variant; rfl = row_field_list; "|]" ->
-          <:ctyp< [ = $list:rfl$ ] >>
-      | "[|"; warning_variant; ">"; rfl = row_field_list; "|]" ->
-          <:ctyp< [ > $list:rfl$ ] >>
-      | "[|"; warning_variant; "<"; rfl = row_field_list; "|]" ->
-          <:ctyp< [ < $list:rfl$ ] >>
-      | "[|"; warning_variant; "<"; rfl = row_field_list; ">";
-        ntl = LIST1 name_tag; "|]" ->
-          <:ctyp< [ < $list:rfl$ > $list:ntl$ ] >> ] ]
-  ;
-  warning_variant:
-    [ [ -> warn_variant loc ] ]
-  ;
-  (* Compatibility old syntax of sequences *)
-  expr: LEVEL "top"
-    [ [ "do"; seq = LIST0 [ e = expr; ";" -> e ]; "return"; warning_sequence;
-        e = SELF ->
-          <:expr< do { $list:append_elem seq e$ } >>
-      | "for"; i = LIDENT; "="; e1 = SELF; df = direction_flag; e2 = SELF;
-        "do"; seq = LIST0 [ e = expr; ";" -> e ]; warning_sequence; "done" ->
-          <:expr< for $i$ = $e1$ $to:df$ $e2$ do { $list:seq$ } >>
-      | "while"; e = SELF; "do"; seq = LIST0 [ e = expr; ";" -> e ];
-        warning_sequence; "done" ->
-          <:expr< while $e$ do { $list:seq$ } >> ] ]
-  ;
-  warning_sequence:
-    [ [ -> warn_sequence loc ] ]
   ;
 END;
 

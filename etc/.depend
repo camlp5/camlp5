@@ -7,8 +7,6 @@ pa_format.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi
 pa_format.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
 pa_fstream.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
 pa_fstream.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
-pa_ifdef.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
-pa_ifdef.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
 pa_lefteval.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
 pa_lefteval.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
 pa_lisp.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 

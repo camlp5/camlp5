@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.16 2006/12/13 03:38:30 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.17 2006/12/13 04:51:01 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -249,39 +249,6 @@ value mkexprident loc i j =
 ;
 
 value append_elem el e = Qast.Apply "@" [el; Qast.List [e]];
-
-value not_yet_warned_antiq = ref True;
-value warn_antiq loc vers =
-  if not_yet_warned_antiq.val then do {
-    not_yet_warned_antiq.val := False;
-    Pcaml.warning.val loc
-      (Printf.sprintf
-         "use of antiquotation syntax deprecated since version %s" vers);
-  }
-  else ()
-;
-
-value not_yet_warned_variant = ref True;
-value warn_variant _ =
-  if not_yet_warned_variant.val then do {
-    not_yet_warned_variant.val := False;
-    Pcaml.warning.val Stdpp.dummy_loc
-      (Printf.sprintf
-         "use of syntax of variants types deprecated since version 3.05");
-  }
-  else ()
-;
-
-value not_yet_warned_seq = ref True;
-value warn_sequence _ =
-  if not_yet_warned_seq.val then do {
-    not_yet_warned_seq.val := False;
-    Pcaml.warning.val Stdpp.dummy_loc
-      (Printf.sprintf
-         "use of syntax of sequences deprecated since version 3.01.1");
-  }
-  else ()
-;
 
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr class_type
@@ -1111,40 +1078,6 @@ EXTEND
     [ [ "to" -> Qast.Bool True
       | "downto" -> Qast.Bool False ] ]
   ;
-  (* Compatibility old syntax of variant types definitions *)
-  ctyp: LEVEL "simple"
-    [ [ "[|"; warning_variant; rfl = row_field_list; "|]" ->
-          Qast.Node "TyVrn" [Qast.Loc; rfl; Qast.Option None]
-      | "[|"; warning_variant; ">"; rfl = row_field_list; "|]" ->
-          Qast.Node "TyVrn"
-            [Qast.Loc; rfl; Qast.Option (Some (Qast.Option None))]
-      | "[|"; warning_variant; "<"; rfl = row_field_list; "|]" ->
-          Qast.Node "TyVrn"
-            [Qast.Loc; rfl;
-             Qast.Option (Some (Qast.Option (Some (Qast.List []))))]
-      | "[|"; warning_variant; "<"; rfl = row_field_list; ">";
-        ntl = SLIST1 name_tag; "|]" ->
-          Qast.Node "TyVrn"
-            [Qast.Loc; rfl; Qast.Option (Some (Qast.Option (Some ntl)))] ] ]
-  ;
-  warning_variant:
-    [ [ -> warn_variant Qast.Loc ] ]
-  ;
-  (* Compatibility old syntax of sequences *)
-  expr: LEVEL "top"
-    [ [ "do"; seq = SLIST0 [ e = expr; ";" -> e ]; "return"; warning_sequence;
-        e = SELF ->
-          Qast.Node "ExSeq" [Qast.Loc; append_elem seq e]
-      | "for"; i = a_LIDENT; "="; e1 = SELF; df = direction_flag; e2 = SELF;
-        "do"; seq = SLIST0 [ e = expr; ";" -> e ]; warning_sequence; "done" ->
-          Qast.Node "ExFor" [Qast.Loc; i; e1; e2; df; seq]
-      | "while"; e = SELF; "do"; seq = SLIST0 [ e = expr; ";" -> e ];
-        warning_sequence; "done" ->
-          Qast.Node "ExWhi" [Qast.Loc; e; seq] ] ]
-  ;
-  warning_sequence:
-    [ [ -> warn_sequence Qast.Loc ] ]
-  ;
   (* Antiquotations for local entries *)
   sequence:
     [ [ a = ANTIQUOT "list" -> antiquot "list" loc a ] ]
@@ -1169,61 +1102,6 @@ EXTEND
   ;
   direction_flag:
     [ [ a = ANTIQUOT "to" -> antiquot "to" loc a ] ]
-  ;
-  (* deprecated since version 3.05; code for compatibility *)
-  class_expr: LEVEL "simple"
-    [ [ "object"; x = ANTIQUOT; cf = class_structure; "end" ->
-          let _ = warn_antiq loc "3.05" in
-          Qast.Node "CeStr" [Qast.Loc; antiquot "" loc x; cf]
-      | "object"; x = ANTIQUOT; ";";
-        csl = SLIST0 [ cf = class_str_item; ";" -> cf ] ; "end" ->
-          let _ = warn_antiq loc "3.05" in
-          Qast.Node "CeStr"
-            [Qast.Loc; Qast.Option None;
-             Qast.Cons (antiquot "" loc x) csl] ] ]
-  ;
-  class_type:
-    [ [ "object"; x = ANTIQUOT;
-        csf = SLIST0 [ csf = class_sig_item; ";" -> csf ]; "end" ->
-          let _ = warn_antiq loc "3.05" in
-          Qast.Node "CtSig" [Qast.Loc; antiquot "" loc x; csf]
-      | "object"; x = ANTIQUOT; ";";
-        csf = SLIST0 [ csf = class_sig_item; ";" -> csf ]; "end" ->
-          let _ = warn_antiq loc "3.05" in
-          Qast.Node "CtSig"
-            [Qast.Loc; Qast.Option None;
-             Qast.Cons (antiquot "" loc x) csf] ] ]
-  ;
-  (* deprecated since version 3.06+18; code for compatibility *)
-  expr: LEVEL "top"
-    [ [ "let"; r = ANTIQUOT "rec"; l = SLIST1 let_binding SEP "and"; "in";
-        x = SELF ->
-          let _ = warn_antiq loc "3.06+18" in
-          Qast.Node "ExLet" [Qast.Loc; antiquot "rec" loc r; l; x] ] ]
-  ;
-  str_item: LEVEL "top"
-    [ [ "value"; r = ANTIQUOT "rec"; l = SLIST1 let_binding SEP "and" ->
-          let _ = warn_antiq loc "3.06+18" in
-          Qast.Node "StVal" [Qast.Loc; antiquot "rec" loc r; l] ] ]
-  ;
-  class_expr: LEVEL "top"
-    [ [ "let"; r = ANTIQUOT "rec"; lb = SLIST1 let_binding SEP "and"; "in";
-        ce = SELF ->
-          let _ = warn_antiq loc "3.06+18" in
-          Qast.Node "CeLet" [Qast.Loc; antiquot "rec" loc r; lb; ce] ] ]
-  ;
-  class_str_item:
-    [ [ "inherit"; ce = class_expr; pb = ANTIQUOT "as" ->
-          let _ = warn_antiq loc "3.06+18" in
-          Qast.Node "CrInh" [Qast.Loc; ce; antiquot "as" loc pb]
-      | "value"; mf = ANTIQUOT "mut"; lab = label; e = cvalue_binding ->
-          let _ = warn_antiq loc "3.06+18" in
-          Qast.Node "CrVal" [Qast.Loc; lab; antiquot "mut" loc mf; e] ] ]
-  ;
-  class_sig_item:
-    [ [ "value"; mf = ANTIQUOT "mut"; l = label; ":"; t = ctyp ->
-          let _ = warn_antiq loc "3.06+18" in
-          Qast.Node "CgVal" [Qast.Loc; l; antiquot "mut" loc mf; t] ] ]
   ;
 END;
 

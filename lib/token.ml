@@ -10,9 +10,8 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.ml,v 1.12 2006/12/05 22:48:33 deraugla Exp $ *)
+(* $Id: token.ml,v 1.13 2006/12/13 04:51:01 deraugla Exp $ *)
 
-type t = (string * string);
 type pattern = (string * string);
 
 exception Error of string;
@@ -28,13 +27,6 @@ type glexer 'te =
     tok_match : pattern -> 'te -> string;
     tok_text : pattern -> string;
     tok_comm : mutable option (list location) }
-;
-type lexer =
-  { func : lexer_func t;
-    using : pattern -> unit;
-    removing : pattern -> unit;
-    tparse : pattern -> option (Stream.t t -> string);
-    text : pattern -> string }
 ;
 
 value make_loc = Stdpp.make_loc;
@@ -114,10 +106,6 @@ value store len x =
     buff.val.[len] := x;
     succ len
   }
-;
-value mstore len s =
-  add_rec len 0 where rec add_rec len i =
-    if i == String.length s then len else add_rec (store len s.[i]) (succ i)
 ;
 value get_buff len = String.sub buff.val 0 len;
 

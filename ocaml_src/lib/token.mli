@@ -29,7 +29,7 @@ type pattern = string * string;;
         done by the lexer, function [tok_match] below. *)
 
 exception Error of string;;
-    (** An lexing error exception to be used by lexers. *)
+    (** A lexing error exception to be used by lexers. *)
 
 (** {6 Lexer type} *)
 
@@ -130,15 +130,3 @@ val bol_pos : int ref ref;;
        for directives (e.g. #load or #use) which interrupt the parsing.
        Without usage of these variables, locations after the directives
        can be wrong. *)
-
-(**/**)
-
-(* deprecated since version 3.05; use rather type glexer *)
-type t = string * string;;
-type lexer =
-  { func : t lexer_func;
-    using : pattern -> unit;
-    removing : pattern -> unit;
-    tparse : pattern -> (t Stream.t -> string) option;
-    text : pattern -> string }
-;;
