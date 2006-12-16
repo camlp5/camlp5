@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.2 2006/12/16 13:48:47 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.3 2006/12/16 14:27:17 deraugla Exp $ *)
 
 open Printf;
 
@@ -21,7 +21,7 @@ module Type =
       | TyApp of loc and t and t
       | TyArr of loc and t and t
       | TyLid of loc and string
-      | TyQuo of loc and ref int
+      | TyQuo of loc and ref (option t)
       | TyTup of loc and list t
       | TyUid of loc and string ]
     ;
@@ -32,9 +32,8 @@ type typed 'a = { ctyp : Type.t; item : 'a };
 type expr_v = typed Obj.t;
 
 value ty_var =
-  let cnt = ref 0 in
   let loc = Stdpp.dummy_loc in
-  fun () -> do { incr cnt; <:ctyp< '$ref cnt.val$ >> }
+  fun () -> <:ctyp< '$ref None$ >>
 ;
 
 value vars = ref [];
@@ -69,7 +68,10 @@ and str_of_ty2 loc =
       List.fold_left (fun s t -> if s = "" then t else s ^ " * " ^ t) "" sl ^
       ")"
   | <:ctyp< $t1$ . $t2$ >> -> str_of_ty loc t1 ^ "." ^ str_of_ty loc t2
-  | <:ctyp< '$s$ >> -> "'a" ^ string_of_int s.val
+  | <:ctyp< '$s$ >> ->
+      match s.val with
+      [ Some t -> str_of_ty2 loc t
+      | None -> "'a?" ]
   | <:ctyp< $lid:s$ >> -> s
   | <:ctyp< $uid:s$ >> -> s
   | t -> not_impl loc "str_of_ty2" t ]
@@ -86,60 +88,51 @@ value unbound_var loc s =
   Stdpp.raise_with_loc loc (Failure (sprintf "Unbound variable: %s" s))
 ;
 
-value rec unify loc env t1 t2 =
+value rec unify loc t1 t2 =
   match (t1, t2) with
   [ (<:ctyp< $t11$ $t12$ >>, <:ctyp< $t21$ $t22$ >>) ->
-      match unify loc env t11 t21 with
-      [ Some env -> unify loc env t12 t22
-      | None -> None ]
+      unify loc t11 t21 && unify loc t12 t22
   | (<:ctyp< $t11$ . $t12$ >>, <:ctyp< $t21$ . $t22$ >>) ->
-      match unify loc env t11 t21 with
-      [ Some env -> unify loc env t12 t22
-      | None -> None ]
+      unify loc t11 t21 && unify loc t12 t22
   | (<:ctyp< $t11$ -> $t12$ >>, <:ctyp< $t21$ -> $t22$ >>) ->
-      match unify loc env t11 t21 with
-      [ Some env -> unify loc env t12 t22
-      | None -> None ]
+      unify loc t11 t21 && unify loc t12 t22
   | (<:ctyp< ( $list:tl1$ ) >>, <:ctyp< ( $list:tl2$ ) >>) ->
-      loop env tl1 tl2 where rec loop env l1 l2 =
+      loop tl1 tl2 where rec loop l1 l2 =
         match (l1, l2) with
         [ ([t1 :: rest1], [t2 :: rest2]) ->
-            match unify loc env t1 t2 with
-            [ Some env -> loop env rest1 rest2
-            | None -> None ]
-        | ([], []) -> Some env
-        | _ -> None ]
+            unify loc t1 t2 && loop rest1 rest2
+        | ([], []) -> True
+        | _ -> False ]
 
-  | (t1, <:ctyp< '$s$ >>) -> Some [(s, t1) :: env]
+  | (t1, <:ctyp< '$s$ >>) ->
+      match s.val with
+      [ Some t2 ->
+          if unify loc t1 t2 then do { s.val := Some t1; True }
+          else False
+      | None -> do { s.val := Some t1; True } ]
+  | (<:ctyp< '$s$ >>, t2) -> unify loc t2 t1
 
   | (<:ctyp< $_$ $_$ >>, t2) -> not_impl loc "2/unify" t2
-  | (<:ctyp< '$s$ >>, t2) -> Some [(s, t2) :: env]
-  | (<:ctyp< Token.pattern >>, <:ctyp< (string * string) >>) -> Some env
-  | (<:ctyp< $lid:s1$ >>, <:ctyp< $lid:s2$ >>) ->
-      if s1 = s2 then Some env else None
-  | (<:ctyp< $lid:s$ >>, <:ctyp< $_$ . $_$ >>) -> bad_type loc t1 t2
-  | (<:ctyp< $lid:s$ >>, t2) -> not_impl loc "4/unify" t2
-  | (<:ctyp< $uid:s1$ >>, <:ctyp< $uid:s2$ >>) ->
-      if s1 = s2 then Some env else None
-  | (<:ctyp< $uid:s$ >>, t2) -> not_impl loc "5/unify" t2
-  | (<:ctyp< ( $list:tl$ ) >>, t2) -> not_impl loc "7/unify" t2
-  | (<:ctyp< _ >>, _) -> Some env
-  | (t1, t2) -> not_impl loc "6/unify" t1 ]
+  | (<:ctyp< Token.pattern >>, <:ctyp< (string * string) >>) -> True
+  | (<:ctyp< $lid:s1$ >>, <:ctyp< $lid:s2$ >>) -> s1 = s2
+  | (<:ctyp< $uid:s1$ >>, <:ctyp< $uid:s2$ >>) -> s1 = s2
+  | (<:ctyp< _ >>, _) -> True
+  | (t1, t2) -> False ]
 ;
 
-value rec eval_type loc env t =
+value rec eval_type loc t =
   match t with
   [ <:ctyp< $t1$ -> $t2$ >> ->
-      <:ctyp< $eval_type loc env t1$ -> $eval_type loc env t2$ >>
+      <:ctyp< $eval_type loc t1$ -> $eval_type loc t2$ >>
   | <:ctyp< $t1$ . $t2$ >> ->
-      <:ctyp< $eval_type loc env t1$ . $eval_type loc env t2$ >>
+      <:ctyp< $eval_type loc t1$ . $eval_type loc t2$ >>
   | <:ctyp< $t1$ $t2$ >> ->
-      <:ctyp< $eval_type loc env t1$ $eval_type loc env t2$ >>
+      <:ctyp< $eval_type loc t1$ $eval_type loc t2$ >>
   | <:ctyp< ( $list:tl$ ) >> ->
-      <:ctyp< ( $list:List.map (eval_type loc env) tl$ ) >>
+      <:ctyp< ( $list:List.map (eval_type loc) tl$ ) >>
   | <:ctyp< '$s$ >> ->
-      match try Some (List.assoc s env) with [ Not_found -> None ] with
-      [ Some t -> eval_type loc env t
+      match s.val with
+      [ Some t -> eval_type loc t
       | None -> t ]
   | <:ctyp< $lid:_$ >> | <:ctyp< $uid:_$ >> -> t
   | <:ctyp< _ >> -> <:ctyp< _ >> ]
@@ -175,18 +168,21 @@ value rec eval_expr loc env =
       in
       {ctyp = t; item = Obj.repr Grammar.extend}
   | <:expr< MLast.ExIfe >> ->
-      let t = <:ctyp< Token.location -> cd -> ef -> gh -> ij -> kl >> in
+      let t =
+        <:ctyp<
+          Token.location -> MLast.expr -> MLast.expr -> MLast.expr ->
+            MLast.expr >>
+      in
       let e loc e1 e2 e3 = MLast.ExIfe loc e1 e2 e3 in
       {ctyp = t; item = Obj.repr e}
 
   | <:expr< ( $e$ : $t$ ) >> ->
       let v = eval_expr loc env e in
       let t = type_of_ctyp t in
-      match unify loc [] t v.ctyp with
-      [ Some env ->
-          let t = eval_type loc env t in
-          {ctyp = t; item = v.item}
-      | None -> bad_type loc t v.ctyp ]
+      if unify loc t v.ctyp then
+        let t = eval_type loc t in
+        {ctyp = t; item = v.item}
+      else bad_type loc t v.ctyp
 
   | <:expr< ( $list:el$ ) >> ->
       let vl = List.map (eval_expr loc env) el in
@@ -231,48 +227,47 @@ and eval_expr_fun loc env pel =
   let t1 = ty_var () in
   let t2 = ty_var () in
   let t = <:ctyp< $t1$ -> $t2$ >> in
-  let e param = (eval_match_assoc_list loc env t1 t2 [] pel param).item in
+  let e param = (eval_match_assoc_list loc env t1 t2 pel param).item in
   {ctyp = t; item = Obj.repr e}
 
-and eval_match_assoc_list loc env t1 t2 tenv pel param =
+and eval_match_assoc_list loc env t1 t2 pel param =
   match pel with
   [ [pe :: pel] ->
-      match eval_match_assoc loc env t1 t2 tenv pe param with
+      match eval_match_assoc loc env t1 t2 pe param with
       [ Some v -> v
-      | None -> eval_match_assoc_list loc env t1 t2 tenv pel param ]
+      | None -> eval_match_assoc_list loc env t1 t2 pel param ]
   | [] ->
       raise
         (Match_failure
            (Pcaml.input_file.val, Stdpp.line_nb loc,
             Stdpp.first_pos loc - Stdpp.bol_pos loc)) ]
 
-and eval_match_assoc loc env t1 t2 tenv (p, eo, e) param =
-  match eval_patt loc p env t1 tenv param with
-  [ Some (env, tenv) ->
+and eval_match_assoc loc env t1 t2 (p, eo, e) param =
+  match eval_patt loc p env t1 param with
+  [ Some env ->
       let cond =
         if eo = None then True
         else not_impl loc "eval_match_assoc eo = Some..." p
       in
       if cond then
-        let t = eval_type loc tenv t2 in
+        let t = eval_type loc t2 in
         let v = eval_expr loc env e in
-        match unify loc tenv t v.ctyp with
-        [ Some tenv -> Some {ctyp = eval_type loc tenv t; item = v.item}
-        | None -> bad_type loc t v.ctyp ]
+        if unify loc t v.ctyp then
+          Some {ctyp = eval_type loc t; item = v.item}
+        else bad_type loc t v.ctyp
       else None
   | None -> None ]
 
-and eval_patt loc p env t1 tenv param =
+and eval_patt loc p env t1 param =
   match p with
   [ <:patt< ($p$ : $t$) >> ->
       let t = type_of_ctyp t in
-      match unify loc tenv t1 t with
-      [ Some tenv -> eval_patt loc p env (eval_type loc tenv t1) tenv param
-      | None -> bad_type loc t1 t ]
+      if unify loc t1 t then eval_patt loc p env (eval_type loc t1) param
+      else bad_type loc t1 t
   | <:patt< $lid:s$ >> ->
       let v = {ctyp = t1; item = param} in
-      Some ([(s, v) :: env], tenv)
-  | <:patt< _ >> -> Some (env, tenv)
+      Some [(s, v) :: env]
+  | <:patt< _ >> -> Some env
   | p -> not_impl loc "1/eval_patt" p ]
 
 and eval_expr_apply loc env e1 e2 =
@@ -280,14 +275,12 @@ and eval_expr_apply loc env e1 e2 =
   let v2 = eval_expr loc env e2 in
   let t11 = ty_var () in
   let t12 = ty_var () in
-  match unify loc [] v1.ctyp <:ctyp< $t11$ -> $t12$ >> with
-  [ Some env ->
-      match unify loc env (eval_type loc env t11) v2.ctyp with
-      [ Some env ->
-          let t = eval_type loc env t12 in
-          {ctyp = t; item = Obj.magic v1.item v2.item}
-      | None -> bad_type loc v1.ctyp v2.ctyp ]
-  | None -> bad_type loc v1.ctyp v2.ctyp ]
+  if unify loc v1.ctyp <:ctyp< $t11$ -> $t12$ >> then
+    if unify loc (eval_type loc t11) v2.ctyp then
+      let t = eval_type loc t12 in
+      {ctyp = t; item = Obj.magic v1.item v2.item}
+    else bad_type loc v1.ctyp v2.ctyp
+  else bad_type loc v1.ctyp v2.ctyp
 ;
 
 value eval_unit_expr loc e =
