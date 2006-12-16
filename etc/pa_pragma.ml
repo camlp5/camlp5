@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.6 2006/12/16 19:45:22 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.7 2006/12/16 20:12:50 deraugla Exp $ *)
 
 open Printf;
 
@@ -162,8 +162,7 @@ value rec eval_type loc t =
       match s.val with
       [ Some t -> eval_type loc t
       | None -> t ]
-  | <:ctyp< $lid:_$ >> | <:ctyp< $uid:_$ >> -> t
-  | <:ctyp< _ >> -> <:ctyp< _ >> ]
+  | <:ctyp< $lid:_$ >> | <:ctyp< $uid:_$ >> | <:ctyp< _ >> -> t ]
 ;
 
 value loc = Token.dummy_loc;
@@ -173,6 +172,15 @@ value val_tab =
       let t = ty_var () in
       {ctyp = <:ctyp< $t$ -> list $t$ -> list $t$ >>;
        item = Obj.repr (fun a l -> [a :: l])});
+   ("=",
+    fun () ->
+      let t = ty_var () in
+      {ctyp = <:ctyp< $t$ -> $t$ -> bool >>;
+       item = Obj.repr \=});
+   ("+",
+    fun () ->
+      {ctyp = <:ctyp< int -> int -> int >>;
+       item = Obj.repr \+});
    ("[]",
     fun () ->
       {ctyp = <:ctyp< list $ty_var ()$ >>;
@@ -237,6 +245,10 @@ value val_tab =
     fun () ->
       {ctyp = <:ctyp< string -> unit >>;
        item = Obj.repr prerr_endline});
+   ("print_endline",
+    fun () ->
+      {ctyp = <:ctyp< string -> unit >>;
+       item = Obj.repr print_endline});
    ("Some",
     fun () ->
       let t = ty_var () in
@@ -247,8 +259,17 @@ value val_tab =
 value rec eval_expr env e =
   let loc = MLast.loc_of_expr e in
   match e with
-  [ <:expr< $e1$ $e2$ >> -> eval_expr_apply loc env e1 e2
-  | <:expr< fun [ $list:pel$ ] >> -> eval_expr_fun loc env pel
+  [ <:expr< fun [ $list:pel$ ] >> ->
+      eval_expr_fun loc env pel
+  | <:expr< let $p$ = $e$ in $f$ >> ->
+      eval_expr env <:expr< (fun $p$ -> $f$) $e$ >>
+  | <:expr< if $e1$ then $e2$ else $e3$ >> ->
+      let v = eval_expr env e1 in
+      match v.ctyp with
+      [ <:ctyp< bool >> -> eval_expr env (if Obj.magic v.item then e2 else e3)
+      | t -> bad_type (MLast.loc_of_expr e1) <:ctyp< bool >> t ]
+
+  | <:expr< $e1$ $e2$ >> -> eval_expr_apply loc env e1 e2
 
   | <:expr< ( $e$ : $t$ ) >> ->
       let v = eval_expr env e in
@@ -264,7 +285,10 @@ value rec eval_expr env e =
       let xl = List.map (fun v -> v.item) vl in
       {ctyp = <:ctyp< ( $list:tl$ ) >>; item = Obj.repr (Array.of_list xl)}
 
-  | <:expr< $str:s$ >> -> {ctyp = <:ctyp< string >>; item = Obj.repr s}
+  | <:expr< $str:s$ >> ->
+      {ctyp = <:ctyp< string >>; item = Obj.repr s}
+  | <:expr< $int:s$ >> ->
+      {ctyp = <:ctyp< int >>; item = Obj.repr (int_of_string s)}
 
   | <:expr< $lid:s$ >> ->
       match try Some (List.assoc s env) with [ Not_found -> None ] with
@@ -344,7 +368,7 @@ and eval_expr_apply loc env e1 e2 =
 ;
 
 value eval_unit_expr loc e =
-  match (eval_expr [] e).ctyp with
+  match eval_type loc (eval_expr [] e).ctyp with
   [ <:ctyp< unit >> -> ()
   | t -> bad_type loc <:ctyp< unit >> t ]
 ;
