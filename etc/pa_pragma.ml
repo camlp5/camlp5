@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.5 2006/12/16 19:21:42 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.6 2006/12/16 19:45:22 deraugla Exp $ *)
 
 open Printf;
 
@@ -100,12 +100,18 @@ value str_of_ty loc t = do {
   str_of_ty1 loc t
 };
 
-value bad_type loc expected_t found_t = do {
-  Printf.eprintf "Type expected:\n  %s\nType found:\n  %s\n"
-    (str_of_ty loc expected_t) (str_of_ty loc found_t);
-  flush stderr;
-  Stdpp.raise_with_loc loc (Failure "bad type")
-};
+value bad_type loc expected_t found_t =
+  let s1 = str_of_ty loc expected_t in
+  let s2 = str_of_ty loc found_t in
+  let s =
+    if String.length s1 > 40 || String.length s2 > 40 then
+      Printf.sprintf "\nType expected:\n  %s\nType found:\n  %s\n"
+        s1 s2
+    else
+      Printf.sprintf "\n  type expected: %s\n     type found: %s\n" s1 s2
+  in
+  Stdpp.raise_with_loc loc (Stream.Error s)
+;
 
 value unbound_var loc s =
   Stdpp.raise_with_loc loc (Failure (sprintf "Unbound variable: %s" s))
@@ -227,6 +233,10 @@ value val_tab =
     fun () ->
       {ctyp = <:ctyp< option $ty_var ()$ >>;
        item = Obj.repr None});
+   ("prerr_endline",
+    fun () ->
+      {ctyp = <:ctyp< string -> unit >>;
+       item = Obj.repr prerr_endline});
    ("Some",
     fun () ->
       let t = ty_var () in
@@ -336,7 +346,7 @@ and eval_expr_apply loc env e1 e2 =
 value eval_unit_expr loc e =
   match (eval_expr [] e).ctyp with
   [ <:ctyp< unit >> -> ()
-  | t -> not_impl loc "expr not unit" t ]
+  | t -> bad_type loc <:ctyp< unit >> t ]
 ;
 
 value pragma =
