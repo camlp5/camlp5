@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.3 2006/12/16 14:27:17 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.4 2006/12/16 16:26:11 deraugla Exp $ *)
 
 open Printf;
 
@@ -53,36 +53,59 @@ value rec type_of_ctyp =
   | t -> not_impl (MLast.loc_of_ctyp t) "Type.of_ctyp" t ]
 ;
 
-value rec str_of_ty loc =
+value ty_var_name_tab = ref [];
+
+value rec str_of_ty1 loc =
   fun
   [ <:ctyp< $t1$ -> $t2$ >> ->
       let s1 = str_of_ty2 loc t1 in
-      let s2 = str_of_ty loc t2 in
+      let s2 = str_of_ty1 loc t2 in
       s1 ^ " -> " ^ s2
   | t -> str_of_ty2 loc t ]
 and str_of_ty2 loc =
   fun
+  [ <:ctyp< $t1$ $t2$ >> ->
+      let s1 = str_of_ty2 loc t1 in
+      let s2 = str_of_ty3 loc t2 in
+      s1 ^ " " ^ s2
+  | t -> str_of_ty3 loc t ]
+and str_of_ty3 loc t =
+  match t with
   [ <:ctyp< ( $list:tl$ ) >> ->
-      let sl = List.map (str_of_ty loc) tl in
+      let sl = List.map (str_of_ty1 loc) tl in
       "(" ^
       List.fold_left (fun s t -> if s = "" then t else s ^ " * " ^ t) "" sl ^
       ")"
-  | <:ctyp< $t1$ . $t2$ >> -> str_of_ty loc t1 ^ "." ^ str_of_ty loc t2
+  | <:ctyp< $t1$ . $t2$ >> -> str_of_ty1 loc t1 ^ "." ^ str_of_ty1 loc t2
   | <:ctyp< '$s$ >> ->
       match s.val with
-      [ Some t -> str_of_ty2 loc t
-      | None -> "'a?" ]
+      [ Some t -> str_of_ty3 loc t
+      | None ->
+          try List.assq s ty_var_name_tab.val with
+          [ Not_found -> do {
+              let len = List.length ty_var_name_tab.val in
+              let n = "'" ^ String.make 1 (Char.chr (Char.code 'a' + len)) in
+              ty_var_name_tab.val := [(s, n) :: ty_var_name_tab.val];
+              n
+            } ] ]
+              
   | <:ctyp< $lid:s$ >> -> s
   | <:ctyp< $uid:s$ >> -> s
-  | t -> not_impl loc "str_of_ty2" t ]
+  | <:ctyp< $_$ $_$ >> -> "(" ^ str_of_ty1 loc t ^ ")"
+  | t -> not_impl loc "str_of_ty3" t ]
 ;
 
-value bad_type loc expected_t found_t =
-  Stdpp.raise_with_loc loc
-    (Failure
-       (sprintf "Type expected %s; type found = %s"
-          (str_of_ty loc expected_t) (str_of_ty loc found_t)))
-;
+value str_of_ty loc t = do {
+  ty_var_name_tab.val := [];
+  str_of_ty1 loc t
+};
+
+value bad_type loc expected_t found_t = do {
+  Printf.eprintf "Type expected:\n  %s\nType found:\n  %s\n"
+    (str_of_ty loc expected_t) (str_of_ty loc found_t);
+  flush stderr;
+  Stdpp.raise_with_loc loc (Failure "bad type")
+};
 
 value unbound_var loc s =
   Stdpp.raise_with_loc loc (Failure (sprintf "Unbound variable: %s" s))
@@ -112,7 +135,6 @@ value rec unify loc t1 t2 =
       | None -> do { s.val := Some t1; True } ]
   | (<:ctyp< '$s$ >>, t2) -> unify loc t2 t1
 
-  | (<:ctyp< $_$ $_$ >>, t2) -> not_impl loc "2/unify" t2
   | (<:ctyp< Token.pattern >>, <:ctyp< (string * string) >>) -> True
   | (<:ctyp< $lid:s1$ >>, <:ctyp< $lid:s2$ >>) -> s1 = s2
   | (<:ctyp< $uid:s1$ >>, <:ctyp< $uid:s2$ >>) -> s1 = s2
@@ -138,20 +160,25 @@ value rec eval_type loc t =
   | <:ctyp< _ >> -> <:ctyp< _ >> ]
 ;
 
-value rec eval_expr loc env =
-  fun
+value rec eval_expr env e =
+  let loc = MLast.loc_of_expr e in
+  match e with
   [ <:expr< $e1$ $e2$ >> -> eval_expr_apply loc env e1 e2
   | <:expr< fun [ $list:pel$ ] >> -> eval_expr_fun loc env pel
 
-  | <:expr< Gramext.Stoken >> ->
-      let t = <:ctyp< Token.pattern -> Gramext.g_symbol $ty_var ()$ >> in
-      {ctyp = t; item = Obj.repr (fun tp -> Gramext.Stoken tp)}
-  | <:expr< Gramext . Sself >> ->
-      let t = <:ctyp< Gramext.g_symbol $ty_var ()$ >> in
-      {ctyp = t; item = Obj.repr Gramext.Sself}
   | <:expr< Gramext.action >> ->
       let t = <:ctyp< $ty_var ()$ -> Gramext.g_action >> in
       {ctyp = t; item = Obj.repr Gramext.action}
+  | <:expr< Gramext.Level >> ->
+      let t = <:ctyp< string -> Gramext.position >> in
+      {ctyp = t; item = Obj.repr (fun s -> Gramext.Level s)}
+  | <:expr< Gramext.Sself >> ->
+      let t = <:ctyp< Gramext.g_symbol $ty_var ()$ >> in
+      {ctyp = t; item = Obj.repr Gramext.Sself}
+  | <:expr< Gramext.Stoken >> ->
+      let t = <:ctyp< Token.pattern -> Gramext.g_symbol $ty_var ()$ >> in
+      {ctyp = t; item = Obj.repr (fun tp -> Gramext.Stoken tp)}
+
   | <:expr< Grammar.Entry.obj >> ->
       let t = <:ctyp< Grammar.Entry.e _ -> Gramext.g_entry token >> in
       {ctyp = t; item = Obj.repr Grammar.Entry.obj}
@@ -167,6 +194,13 @@ value rec eval_expr loc env =
           unit >>
       in
       {ctyp = t; item = Obj.repr Grammar.extend}
+
+  | <:expr< MLast.ExApp >> ->
+      let t =
+        <:ctyp< Token.location -> MLast.expr -> MLast.expr -> MLast.expr >>
+      in
+      let e loc e1 e2 = MLast.ExApp loc e1 e2 in
+      {ctyp = t; item = Obj.repr e}
   | <:expr< MLast.ExIfe >> ->
       let t =
         <:ctyp<
@@ -175,9 +209,13 @@ value rec eval_expr loc env =
       in
       let e loc e1 e2 e3 = MLast.ExIfe loc e1 e2 e3 in
       {ctyp = t; item = Obj.repr e}
+  | <:expr< MLast.ExLid >> ->
+      let t = <:ctyp< Token.location -> string -> MLast.expr >> in
+      let e loc s = MLast.ExLid loc s in
+      {ctyp = t; item = Obj.repr e}
 
   | <:expr< ( $e$ : $t$ ) >> ->
-      let v = eval_expr loc env e in
+      let v = eval_expr env e in
       let t = type_of_ctyp t in
       if unify loc t v.ctyp then
         let t = eval_type loc t in
@@ -185,7 +223,7 @@ value rec eval_expr loc env =
       else bad_type loc t v.ctyp
 
   | <:expr< ( $list:el$ ) >> ->
-      let vl = List.map (eval_expr loc env) el in
+      let vl = List.map (eval_expr env) el in
       let tl = List.map (fun v -> v.ctyp) vl in
       let xl = List.map (fun v -> v.item) vl in
       {ctyp = <:ctyp< ( $list:tl$ ) >>; item = Obj.repr (Array.of_list xl)}
@@ -204,15 +242,19 @@ value rec eval_expr loc env =
       let t = ty_var () in
       let t = <:ctyp< $t$ -> list $t$ -> list $t$ >> in
       {ctyp = t; item = Obj.repr (fun a l -> [a :: l])}
-  | <:expr< None >> ->
-      {ctyp = <:ctyp< option $ty_var ()$ >>; item = Obj.repr None}
   | <:expr< [] >> ->
       {ctyp = <:ctyp< list $ty_var ()$ >>; item = Obj.repr []}
+  | <:expr< Some >> ->
+      let t = ty_var () in
+      let t = <:ctyp< $t$ -> option $t$ >> in
+      {ctyp = t; item = Obj.repr (fun x -> Some x)}
+  | <:expr< None >> ->
+      {ctyp = <:ctyp< option $ty_var ()$ >>; item = Obj.repr None}
 
   | <:expr< Grammar. $lid:s$ >> -> not_impl loc ("expr access Grammar." ^ s) 0
   | <:expr< Gramext . $uid:s$ >> -> not_impl loc ("4/expr Gramext." ^ s) 0
   | <:expr< Gramext . $lid:s$ >> -> not_impl loc ("8/expr access " ^ s) 0
-  | <:expr< MLast . $uid:s$ >> -> not_impl loc ("9/expr access = " ^ s) 0
+  | <:expr< MLast . $uid:s$ >> -> not_impl loc ("9/expr access MLast." ^ s) 0
   | <:expr< $uid:s$ . $e2$ >> -> not_impl loc ("7/expr access = " ^ s) e2
   | <:expr< Grammar. $uid:s$ . $e3$ >> -> not_impl loc ("Grammar." ^ s) e3
   | <:expr< $uid:s$ . $e2$ . $e3$ >> -> not_impl loc ("2/expr access " ^ s) e2
@@ -251,7 +293,7 @@ and eval_match_assoc loc env t1 t2 (p, eo, e) param =
       in
       if cond then
         let t = eval_type loc t2 in
-        let v = eval_expr loc env e in
+        let v = eval_expr env e in
         if unify loc t v.ctyp then
           Some {ctyp = eval_type loc t; item = v.item}
         else bad_type loc t v.ctyp
@@ -271,8 +313,8 @@ and eval_patt loc p env t1 param =
   | p -> not_impl loc "1/eval_patt" p ]
 
 and eval_expr_apply loc env e1 e2 =
-  let v1 = eval_expr loc env e1 in
-  let v2 = eval_expr loc env e2 in
+  let v1 = eval_expr env e1 in
+  let v2 = eval_expr env e2 in
   let t11 = ty_var () in
   let t12 = ty_var () in
   if unify loc v1.ctyp <:ctyp< $t11$ -> $t12$ >> then
@@ -284,7 +326,7 @@ and eval_expr_apply loc env e1 e2 =
 ;
 
 value eval_unit_expr loc e =
-  match (eval_expr loc [] e).ctyp with
+  match (eval_expr [] e).ctyp with
   [ <:ctyp< unit >> -> ()
   | t -> not_impl loc "expr not unit" t ]
 ;
