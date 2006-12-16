@@ -1,5 +1,5 @@
-(* camlp4r q_MLast.cmo *)
-(* $Id: pa_pragma.ml,v 1.1 2006/12/16 04:56:23 deraugla Exp $ *)
+(* camlp4r q_MLast.cmo -qmod ctyp,Type *)
+(* $Id: pa_pragma.ml,v 1.2 2006/12/16 13:48:47 deraugla Exp $ *)
 
 open Printf;
 
@@ -12,8 +12,47 @@ value not_impl loc name x =
   Stdpp.raise_with_loc loc (Failure ("Main: not impl " ^ name ^ " " ^ desc))
 ;
 
-type typed 'a = { ctyp : MLast.ctyp; item : 'a };
+module Type =
+  struct
+    type loc = Stdpp.location;
+    type t =
+      [ TyAcc of loc and t and t
+      | TyAny of loc
+      | TyApp of loc and t and t
+      | TyArr of loc and t and t
+      | TyLid of loc and string
+      | TyQuo of loc and ref int
+      | TyTup of loc and list t
+      | TyUid of loc and string ]
+    ;
+  end
+;
+
+type typed 'a = { ctyp : Type.t; item : 'a };
 type expr_v = typed Obj.t;
+
+value ty_var =
+  let cnt = ref 0 in
+  let loc = Stdpp.dummy_loc in
+  fun () -> do { incr cnt; <:ctyp< '$ref cnt.val$ >> }
+;
+
+value vars = ref [];
+value rec type_of_ctyp =
+  fun
+  [ MLast.TyAcc loc t1 t2 -> <:ctyp< $type_of_ctyp t1$ . $type_of_ctyp t2$ >>
+  | MLast.TyApp loc t1 t2 -> <:ctyp< $type_of_ctyp t1$ $type_of_ctyp t2$ >>
+  | MLast.TyLid loc s -> <:ctyp< $lid:s$ >>
+  | MLast.TyQuo loc s ->
+      try List.assoc s vars.val with
+      [ Not_found -> do {
+          let v = ty_var () in
+          vars.val := [(s, v) :: vars.val];
+          v
+        } ]
+  | MLast.TyUid loc s -> <:ctyp< $uid:s$ >>
+  | t -> not_impl (MLast.loc_of_ctyp t) "Type.of_ctyp" t ]
+;
 
 value rec str_of_ty loc =
   fun
@@ -30,7 +69,7 @@ and str_of_ty2 loc =
       List.fold_left (fun s t -> if s = "" then t else s ^ " * " ^ t) "" sl ^
       ")"
   | <:ctyp< $t1$ . $t2$ >> -> str_of_ty loc t1 ^ "." ^ str_of_ty loc t2
-  | <:ctyp< '$s$ >> -> "'" ^ s
+  | <:ctyp< '$s$ >> -> "'a" ^ string_of_int s.val
   | <:ctyp< $lid:s$ >> -> s
   | <:ctyp< $uid:s$ >> -> s
   | t -> not_impl loc "str_of_ty2" t ]
@@ -84,6 +123,7 @@ value rec unify loc env t1 t2 =
       if s1 = s2 then Some env else None
   | (<:ctyp< $uid:s$ >>, t2) -> not_impl loc "5/unify" t2
   | (<:ctyp< ( $list:tl$ ) >>, t2) -> not_impl loc "7/unify" t2
+  | (<:ctyp< _ >>, _) -> Some env
   | (t1, t2) -> not_impl loc "6/unify" t1 ]
 ;
 
@@ -102,13 +142,7 @@ value rec eval_type loc env t =
       [ Some t -> eval_type loc env t
       | None -> t ]
   | <:ctyp< $lid:_$ >> | <:ctyp< $uid:_$ >> -> t
-  | t -> not_impl loc "1/eval_type" t ]
-;
-
-value ty_var =
-  let cnt = ref 0 in
-  let loc = Stdpp.dummy_loc in
-  fun () -> do { incr cnt; <:ctyp< '$"aa" ^ string_of_int cnt.val$ >> }
+  | <:ctyp< _ >> -> <:ctyp< _ >> ]
 ;
 
 value rec eval_expr loc env =
@@ -126,16 +160,17 @@ value rec eval_expr loc env =
       let t = <:ctyp< $ty_var ()$ -> Gramext.g_action >> in
       {ctyp = t; item = Obj.repr Gramext.action}
   | <:expr< Grammar.Entry.obj >> ->
-      let t = <:ctyp< Grammar.Entry.e 'a -> Gramext.g_entry token >> in
+      let t = <:ctyp< Grammar.Entry.e _ -> Gramext.g_entry token >> in
       {ctyp = t; item = Obj.repr Grammar.Entry.obj}
   | <:expr< Grammar.extend >> ->
       let t =
+        let te = ty_var () in
         <:ctyp<
           list
-            (Gramext.g_entry 'te * option Gramext.position *
+            (Gramext.g_entry $te$ * option Gramext.position *
              list
                (option string * option Gramext.g_assoc *
-                list (list (Gramext.g_symbol 'te) * Gramext.g_action))) ->
+                list (list (Gramext.g_symbol $te$) * Gramext.g_action))) ->
           unit >>
       in
       {ctyp = t; item = Obj.repr Grammar.extend}
@@ -146,6 +181,7 @@ value rec eval_expr loc env =
 
   | <:expr< ( $e$ : $t$ ) >> ->
       let v = eval_expr loc env e in
+      let t = type_of_ctyp t in
       match unify loc [] t v.ctyp with
       [ Some env ->
           let t = eval_type loc env t in
@@ -229,6 +265,7 @@ and eval_match_assoc loc env t1 t2 tenv (p, eo, e) param =
 and eval_patt loc p env t1 tenv param =
   match p with
   [ <:patt< ($p$ : $t$) >> ->
+      let t = type_of_ctyp t in
       match unify loc tenv t1 t with
       [ Some tenv -> eval_patt loc p env (eval_type loc tenv t1) tenv param
       | None -> bad_type loc t1 t ]

@@ -102,10 +102,10 @@ value align_doc key s =
       if s.[0] = '<' then
         loop 0 where rec loop i =
           if i = String.length s then ("", s)
-          else if s.[i] <> '>' then loop (i + 1)
+          else if s.[i] <> ' ' then loop (i + 1)
           else
-            let p = String.sub s 0 (i + 1) in
-            loop (i + 1) where rec loop i =
+            let p = String.sub s 0 i in
+            loop i where rec loop i =
               if i >= String.length s then (p, "")
               else if s.[i] = ' ' then loop (i + 1)
               else (p, String.sub s i (String.length s - i))

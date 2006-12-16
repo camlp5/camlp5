@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.18 2006/12/13 11:07:09 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.19 2006/12/16 13:48:47 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -31,26 +31,32 @@ module Qast =
       | Antiquot of MLast.loc and string ]
     ;
     value loc = Stdpp.dummy_loc;
-    value rec to_expr =
+    value expr_node m n =
+      if m = "" then <:expr< $uid:n$ >> else <:expr< $uid:m$ . $uid:n$ >>
+    ;
+    value patt m n =
+      if m = "" then <:patt< $uid:n$ >> else <:patt< $uid:m$ . $uid:n$ >>
+    ;
+    value rec to_expr m =
       fun
       [ Node n al ->
-          List.fold_left (fun e a -> <:expr< $e$ $to_expr a$ >>)
-            <:expr< MLast.$uid:n$ >> al
+          List.fold_left (fun e a -> <:expr< $e$ $to_expr m a$ >>)
+            (expr_node m n) al
       | List al ->
-          List.fold_right (fun a e -> <:expr< [$to_expr a$ :: $e$] >>) al
+          List.fold_right (fun a e -> <:expr< [$to_expr m a$ :: $e$] >>) al
             <:expr< [] >>
-      | Tuple al -> <:expr< ($list:List.map to_expr al$) >>
+      | Tuple al -> <:expr< ($list:List.map (to_expr m) al$) >>
       | Option None -> <:expr< None >>
-      | Option (Some a) -> <:expr< Some $to_expr a$ >>
+      | Option (Some a) -> <:expr< Some $to_expr m a$ >>
       | Int s -> <:expr< $int:s$ >>
       | Str s -> <:expr< $str:s$ >>
       | Bool True -> <:expr< True >>
       | Bool False -> <:expr< False >>
-      | Cons a1 a2 -> <:expr< [$to_expr a1$ :: $to_expr a2$] >>
+      | Cons a1 a2 -> <:expr< [$to_expr m a1$ :: $to_expr m a2$] >>
       | Apply f al ->
-          List.fold_left (fun e a -> <:expr< $e$ $to_expr a$ >>)
+          List.fold_left (fun e a -> <:expr< $e$ $to_expr m a$ >>)
             <:expr< $lid:f$ >> al
-      | Record lal -> <:expr< {$list:List.map to_expr_label lal$} >>
+      | Record lal -> <:expr< {$list:List.map (to_expr_label m) lal$} >>
       | Loc -> <:expr< $lid:Stdpp.loc_name.val$ >>
       | Antiquot loc s ->
           let e =
@@ -68,25 +74,25 @@ module Qast =
                 raise (Stdpp.Exc_located loc exc) ]
           in
           <:expr< $anti:e$ >> ]
-    and to_expr_label (l, a) = (<:patt< MLast.$lid:l$ >>, to_expr a);
-    value rec to_patt =
+    and to_expr_label m (l, a) = (<:patt< MLast.$lid:l$ >>, to_expr m a);
+    value rec to_patt m =
       fun
       [ Node n al ->
-          List.fold_left (fun e a -> <:patt< $e$ $to_patt a$ >>)
-            <:patt< MLast.$uid:n$ >> al
+          List.fold_left (fun e a -> <:patt< $e$ $to_patt m a$ >>)
+            (patt m n) al
       | List al ->
-          List.fold_right (fun a p -> <:patt< [$to_patt a$ :: $p$] >>) al
+          List.fold_right (fun a p -> <:patt< [$to_patt m a$ :: $p$] >>) al
             <:patt< [] >>
-      | Tuple al -> <:patt< ($list:List.map to_patt al$) >>
+      | Tuple al -> <:patt< ($list:List.map (to_patt m) al$) >>
       | Option None -> <:patt< None >>
-      | Option (Some a) -> <:patt< Some $to_patt a$ >>
+      | Option (Some a) -> <:patt< Some $to_patt m a$ >>
       | Int s -> <:patt< $int:s$ >>
       | Str s -> <:patt< $str:s$ >>
       | Bool True -> <:patt< True >>
       | Bool False -> <:patt< False >>
-      | Cons a1 a2 -> <:patt< [$to_patt a1$ :: $to_patt a2$] >>
+      | Cons a1 a2 -> <:patt< [$to_patt m a1$ :: $to_patt m a2$] >>
       | Apply _ _ -> failwith "bad pattern"
-      | Record lal -> <:patt< {$list:List.map to_patt_label lal$} >>
+      | Record lal -> <:patt< {$list:List.map (to_patt_label m) lal$} >>
       | Loc -> <:patt< _ >>
       | Antiquot loc s ->
           let p =
@@ -96,7 +102,7 @@ module Qast =
                 raise (Stdpp.Exc_located (Stdpp.shift_loc shift loc1) exc) ]
           in
           <:patt< $anti:p$ >> ]
-    and to_patt_label (l, a) = (<:patt< MLast.$lid:l$ >>, to_patt a);
+    and to_patt_label m (l, a) = (<:patt< MLast.$lid:l$ >>, to_patt m a);
   end
 ;
 
@@ -1246,139 +1252,74 @@ EXTEND
   ;
 END;
 
-value apply_entry e =
+value quot_mod = ref [];
+value any_quot_mod = ref "MLast";
+
+Pcaml.add_option "-qmod"
+  (Arg.String
+     (fun s ->
+        match try Some (String.index s ',') with [ Not_found -> None ] with
+        [ Some i ->
+            let q = String.sub s 0 i in
+            let m = String.sub s (i + 1) (String.length s - i - 1) in
+            quot_mod.val := [(q, m) :: quot_mod.val]
+        | None ->
+            any_quot_mod.val := s ]))
+  "<q>,<m> Set quotation module <m> for quotation <q>."
+;
+
+value apply_entry e q =
   let f s = Grammar.Entry.parse e (Stream.of_string s) in
-  let expr s = Qast.to_expr (f s) in
-  let patt s = Qast.to_patt (f s) in
+  let m () =
+    try List.assoc q quot_mod.val with
+    [ Not_found -> any_quot_mod.val ]
+  in
+  let expr s = Qast.to_expr (m ()) (f s) in
+  let patt s = Qast.to_patt (m ()) (f s) in
   Quotation.ExAst (expr, patt)
 ;
 
 let sig_item_eoi = Grammar.Entry.create gram "signature item" in
-do {
-  EXTEND
-    sig_item_eoi:
-      [ [ x = sig_item; EOI -> x ] ]
-    ;
-  END;
-  Quotation.add "sig_item" (apply_entry sig_item_eoi)
-};
-
 let str_item_eoi = Grammar.Entry.create gram "structure item" in
-do {
-  EXTEND
-    str_item_eoi:
-      [ [ x = str_item; EOI -> x ] ]
-    ;
-  END;
-  Quotation.add "str_item" (apply_entry str_item_eoi)
-};
-
 let ctyp_eoi = Grammar.Entry.create gram "type" in
-do {
-  EXTEND
-    ctyp_eoi:
-      [ [ x = ctyp; EOI -> x ] ]
-    ;
-  END;
-  Quotation.add "ctyp" (apply_entry ctyp_eoi)
-};
-
 let patt_eoi = Grammar.Entry.create gram "pattern" in
-do {
-  EXTEND
-    patt_eoi:
-      [ [ x = patt; EOI -> x ] ]
-    ;
-  END;
-  Quotation.add "patt" (apply_entry patt_eoi)
-};
-
-let expr_eoi = Grammar.Entry.create gram "expression" in
-do {
-  EXTEND
-    expr_eoi:
-      [ [ x = expr; EOI -> x ] ]
-    ;
-  END;
-  Quotation.add "expr" (apply_entry expr_eoi)
-};
-
+let expr_eoi = Grammar.Entry.create gram "epression" in
 let module_type_eoi = Grammar.Entry.create gram "module type" in
-do {
-  EXTEND
-    module_type_eoi:
-      [ [ x = module_type; EOI -> x ] ]
-    ;
-  END;
-  Quotation.add "module_type" (apply_entry module_type_eoi)
-};
-
 let module_expr_eoi = Grammar.Entry.create gram "module expression" in
-do {
-  EXTEND
-    module_expr_eoi:
-      [ [ x = module_expr; EOI -> x ] ]
-    ;
-  END;
-  Quotation.add "module_expr" (apply_entry module_expr_eoi)
-};
-
-let class_type_eoi = Grammar.Entry.create gram "class_type" in
-do {
-  EXTEND
-    class_type_eoi:
-      [ [ x = class_type; EOI -> x ] ]
-    ;
-  END;
-  Quotation.add "class_type" (apply_entry class_type_eoi)
-};
-
-let class_expr_eoi = Grammar.Entry.create gram "class_expr" in
-do {
-  EXTEND
-    class_expr_eoi:
-      [ [ x = class_expr; EOI -> x ] ]
-    ;
-  END;
-  Quotation.add "class_expr" (apply_entry class_expr_eoi)
-};
-
-let class_sig_item_eoi = Grammar.Entry.create gram "class_sig_item" in
-do {
-  EXTEND
-    class_sig_item_eoi:
-      [ [ x = class_sig_item; EOI -> x ] ]
-    ;
-  END;
-  Quotation.add "class_sig_item" (apply_entry class_sig_item_eoi)
-};
-
-let class_str_item_eoi = Grammar.Entry.create gram "class_str_item" in
-do {
-  EXTEND
-    class_str_item_eoi:
-      [ [ x = class_str_item; EOI -> x ] ]
-    ;
-  END;
-  Quotation.add "class_str_item" (apply_entry class_str_item_eoi)
-};
-
+let class_type_eoi = Grammar.Entry.create gram "class type" in
+let class_expr_eoi = Grammar.Entry.create gram "class expression" in
+let class_sig_item_eoi = Grammar.Entry.create gram "class signature item" in
+let class_str_item_eoi = Grammar.Entry.create gram "class structure item" in
 let with_constr_eoi = Grammar.Entry.create gram "with constr" in
+let row_field_eoi = Grammar.Entry.create gram "row field" in
 do {
   EXTEND
-    with_constr_eoi:
-      [ [ x = with_constr; EOI -> x ] ]
-    ;
+    sig_item_eoi: [ [ x = sig_item; EOI -> x ] ];
+    str_item_eoi: [ [ x = str_item; EOI -> x ] ];
+    ctyp_eoi: [ [ x = ctyp; EOI -> x ] ];
+    patt_eoi: [ [ x = patt; EOI -> x ] ];
+    expr_eoi: [ [ x = expr; EOI -> x ] ];
+    module_type_eoi: [ [ x = module_type; EOI -> x ] ];
+    module_expr_eoi: [ [ x = module_expr; EOI -> x ] ];
+    class_type_eoi: [ [ x = class_type; EOI -> x ] ];
+    class_expr_eoi: [ [ x = class_expr; EOI -> x ] ];
+    class_sig_item_eoi: [ [ x = class_sig_item; EOI -> x ] ];
+    class_str_item_eoi: [ [ x = class_str_item; EOI -> x ] ];
+    with_constr_eoi: [ [ x = with_constr; EOI -> x ] ];
+    row_field_eoi: [ [ x = row_field; EOI -> x ] ];
   END;
-  Quotation.add "with_constr" (apply_entry with_constr_eoi)
-};
-
-let row_field_eoi = Grammar.Entry.create gram "row_field" in
-do {
-  EXTEND
-    row_field_eoi:
-      [ [ x = row_field; EOI -> x ] ]
-    ;
-  END;
-  Quotation.add "row_field" (apply_entry row_field_eoi)
+  List.iter (fun (q, f) -> Quotation.add q (f q))
+    [("sig_item", apply_entry sig_item_eoi);
+     ("str_item", apply_entry str_item_eoi);
+     ("ctyp", apply_entry ctyp_eoi);
+     ("patt", apply_entry patt_eoi);
+     ("expr", apply_entry expr_eoi);
+     ("module_type", apply_entry module_type_eoi);
+     ("module_expr", apply_entry module_expr_eoi);
+     ("class_type", apply_entry class_type_eoi);
+     ("class_expr", apply_entry class_expr_eoi);
+     ("class_sig_item", apply_entry class_sig_item_eoi);
+     ("class_str_item", apply_entry class_str_item_eoi);
+     ("with_constr", apply_entry with_constr_eoi);
+     ("row_field", apply_entry row_field_eoi)];
 };

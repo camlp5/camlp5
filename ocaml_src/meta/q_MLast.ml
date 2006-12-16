@@ -31,36 +31,42 @@ module Qast =
       | Antiquot of MLast.loc * string
     ;;
     let loc = Stdpp.dummy_loc;;
-    let rec to_expr =
+    let expr_node m n =
+      if m = "" then MLast.ExUid (loc, n)
+      else MLast.ExAcc (loc, MLast.ExUid (loc, m), MLast.ExUid (loc, n))
+    ;;
+    let patt m n =
+      if m = "" then MLast.PaUid (loc, n)
+      else MLast.PaAcc (loc, MLast.PaUid (loc, m), MLast.PaUid (loc, n))
+    ;;
+    let rec to_expr m =
       function
         Node (n, al) ->
-          List.fold_left (fun e a -> MLast.ExApp (loc, e, to_expr a))
-            (MLast.ExAcc
-               (loc, MLast.ExUid (loc, "MLast"), MLast.ExUid (loc, n)))
-            al
+          List.fold_left (fun e a -> MLast.ExApp (loc, e, to_expr m a))
+            (expr_node m n) al
       | List al ->
           List.fold_right
             (fun a e ->
                MLast.ExApp
-                 (loc, MLast.ExApp (loc, MLast.ExUid (loc, "::"), to_expr a),
-                  e))
+                 (loc,
+                  MLast.ExApp (loc, MLast.ExUid (loc, "::"), to_expr m a), e))
             al (MLast.ExUid (loc, "[]"))
-      | Tuple al -> MLast.ExTup (loc, List.map to_expr al)
+      | Tuple al -> MLast.ExTup (loc, List.map (to_expr m) al)
       | Option None -> MLast.ExUid (loc, "None")
       | Option (Some a) ->
-          MLast.ExApp (loc, MLast.ExUid (loc, "Some"), to_expr a)
+          MLast.ExApp (loc, MLast.ExUid (loc, "Some"), to_expr m a)
       | Int s -> MLast.ExInt (loc, s, "")
       | Str s -> MLast.ExStr (loc, s)
       | Bool true -> MLast.ExUid (loc, "True")
       | Bool false -> MLast.ExUid (loc, "False")
       | Cons (a1, a2) ->
           MLast.ExApp
-            (loc, MLast.ExApp (loc, MLast.ExUid (loc, "::"), to_expr a1),
-             to_expr a2)
+            (loc, MLast.ExApp (loc, MLast.ExUid (loc, "::"), to_expr m a1),
+             to_expr m a2)
       | Apply (f, al) ->
-          List.fold_left (fun e a -> MLast.ExApp (loc, e, to_expr a))
+          List.fold_left (fun e a -> MLast.ExApp (loc, e, to_expr m a))
             (MLast.ExLid (loc, f)) al
-      | Record lal -> MLast.ExRec (loc, List.map to_expr_label lal, None)
+      | Record lal -> MLast.ExRec (loc, List.map (to_expr_label m) lal, None)
       | Loc -> MLast.ExLid (loc, !(Stdpp.loc_name))
       | Antiquot (loc, s) ->
           let e =
@@ -78,38 +84,36 @@ module Qast =
                 raise (Stdpp.Exc_located (loc, exc))
           in
           MLast.ExAnt (loc, e)
-    and to_expr_label (l, a) =
+    and to_expr_label m (l, a) =
       MLast.PaAcc (loc, MLast.PaUid (loc, "MLast"), MLast.PaLid (loc, l)),
-      to_expr a
+      to_expr m a
     ;;
-    let rec to_patt =
+    let rec to_patt m =
       function
         Node (n, al) ->
-          List.fold_left (fun e a -> MLast.PaApp (loc, e, to_patt a))
-            (MLast.PaAcc
-               (loc, MLast.PaUid (loc, "MLast"), MLast.PaUid (loc, n)))
-            al
+          List.fold_left (fun e a -> MLast.PaApp (loc, e, to_patt m a))
+            (patt m n) al
       | List al ->
           List.fold_right
             (fun a p ->
                MLast.PaApp
-                 (loc, MLast.PaApp (loc, MLast.PaUid (loc, "::"), to_patt a),
-                  p))
+                 (loc,
+                  MLast.PaApp (loc, MLast.PaUid (loc, "::"), to_patt m a), p))
             al (MLast.PaUid (loc, "[]"))
-      | Tuple al -> MLast.PaTup (loc, List.map to_patt al)
+      | Tuple al -> MLast.PaTup (loc, List.map (to_patt m) al)
       | Option None -> MLast.PaUid (loc, "None")
       | Option (Some a) ->
-          MLast.PaApp (loc, MLast.PaUid (loc, "Some"), to_patt a)
+          MLast.PaApp (loc, MLast.PaUid (loc, "Some"), to_patt m a)
       | Int s -> MLast.PaInt (loc, s, "")
       | Str s -> MLast.PaStr (loc, s)
       | Bool true -> MLast.PaUid (loc, "True")
       | Bool false -> MLast.PaUid (loc, "False")
       | Cons (a1, a2) ->
           MLast.PaApp
-            (loc, MLast.PaApp (loc, MLast.PaUid (loc, "::"), to_patt a1),
-             to_patt a2)
+            (loc, MLast.PaApp (loc, MLast.PaUid (loc, "::"), to_patt m a1),
+             to_patt m a2)
       | Apply (_, _) -> failwith "bad pattern"
-      | Record lal -> MLast.PaRec (loc, List.map to_patt_label lal)
+      | Record lal -> MLast.PaRec (loc, List.map (to_patt_label m) lal)
       | Loc -> MLast.PaAny loc
       | Antiquot (loc, s) ->
           let p =
@@ -119,9 +123,9 @@ module Qast =
                 raise (Stdpp.Exc_located (Stdpp.shift_loc shift loc1, exc))
           in
           MLast.PaAnt (loc, p)
-    and to_patt_label (l, a) =
+    and to_patt_label m (l, a) =
       MLast.PaAcc (loc, MLast.PaUid (loc, "MLast"), MLast.PaLid (loc, l)),
-      to_patt a
+      to_patt m a
     ;;
   end
 ;;
@@ -609,7 +613,7 @@ Grammar.extend
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
               | _ ->
                   match () with
-                  _ -> raise (Match_failure ("q_MLast.ml", 280, 20))
+                  _ -> raise (Match_failure ("q_MLast.ml", 286, 20))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -882,7 +886,7 @@ Grammar.extend
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
               | _ ->
                   match () with
-                  _ -> raise (Match_failure ("q_MLast.ml", 335, 20))
+                  _ -> raise (Match_failure ("q_MLast.ml", 341, 20))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -4161,13 +4165,46 @@ Grammar.extend
        (fun (a : string) _ (loc : Token.location) ->
           (antiquot "" loc a : 'a_QUESTIONIDENT))]]];;
 
-let apply_entry e =
+let quot_mod = ref [];;
+let any_quot_mod = ref "MLast";;
+
+Pcaml.add_option "-qmod"
+  (Arg.String
+     (fun s ->
+        match
+          try Some (String.index s ',') with
+            Not_found -> None
+        with
+          Some i ->
+            let q = String.sub s 0 i in
+            let m = String.sub s (i + 1) (String.length s - i - 1) in
+            quot_mod := (q, m) :: !quot_mod
+        | None -> any_quot_mod := s))
+  "<q>,<m> Set quotation module <m> for quotation <q>.";;
+
+let apply_entry e q =
   let f s = Grammar.Entry.parse e (Stream.of_string s) in
-  let expr s = Qast.to_expr (f s) in
-  let patt s = Qast.to_patt (f s) in Quotation.ExAst (expr, patt)
+  let m () =
+    try List.assoc q !quot_mod with
+      Not_found -> !any_quot_mod
+  in
+  let expr s = Qast.to_expr (m ()) (f s) in
+  let patt s = Qast.to_patt (m ()) (f s) in Quotation.ExAst (expr, patt)
 ;;
 
 let sig_item_eoi = Grammar.Entry.create gram "signature item" in
+let str_item_eoi = Grammar.Entry.create gram "structure item" in
+let ctyp_eoi = Grammar.Entry.create gram "type" in
+let patt_eoi = Grammar.Entry.create gram "pattern" in
+let expr_eoi = Grammar.Entry.create gram "epression" in
+let module_type_eoi = Grammar.Entry.create gram "module type" in
+let module_expr_eoi = Grammar.Entry.create gram "module expression" in
+let class_type_eoi = Grammar.Entry.create gram "class type" in
+let class_expr_eoi = Grammar.Entry.create gram "class expression" in
+let class_sig_item_eoi = Grammar.Entry.create gram "class signature item" in
+let class_str_item_eoi = Grammar.Entry.create gram "class structure item" in
+let with_constr_eoi = Grammar.Entry.create gram "with constr" in
+let row_field_eoi = Grammar.Entry.create gram "row field" in
 Grammar.extend
   [Grammar.Entry.obj (sig_item_eoi : 'sig_item_eoi Grammar.Entry.e), None,
    [None, None,
@@ -4176,54 +4213,34 @@ Grammar.extend
       Gramext.Stoken ("EOI", "")],
      Gramext.action
        (fun _ (x : 'sig_item) (loc : Token.location) ->
-          (x : 'sig_item_eoi))]]];
-Quotation.add "sig_item" (apply_entry sig_item_eoi);;
-
-let str_item_eoi = Grammar.Entry.create gram "structure item" in
-Grammar.extend
-  [Grammar.Entry.obj (str_item_eoi : 'str_item_eoi Grammar.Entry.e), None,
+          (x : 'sig_item_eoi))]];
+   Grammar.Entry.obj (str_item_eoi : 'str_item_eoi Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Snterm
         (Grammar.Entry.obj (str_item : 'str_item Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
        (fun _ (x : 'str_item) (loc : Token.location) ->
-          (x : 'str_item_eoi))]]];
-Quotation.add "str_item" (apply_entry str_item_eoi);;
-
-let ctyp_eoi = Grammar.Entry.create gram "type" in
-Grammar.extend
-  [Grammar.Entry.obj (ctyp_eoi : 'ctyp_eoi Grammar.Entry.e), None,
+          (x : 'str_item_eoi))]];
+   Grammar.Entry.obj (ctyp_eoi : 'ctyp_eoi Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (x : 'ctyp) (loc : Token.location) -> (x : 'ctyp_eoi))]]];
-Quotation.add "ctyp" (apply_entry ctyp_eoi);;
-
-let patt_eoi = Grammar.Entry.create gram "pattern" in
-Grammar.extend
-  [Grammar.Entry.obj (patt_eoi : 'patt_eoi Grammar.Entry.e), None,
+       (fun _ (x : 'ctyp) (loc : Token.location) -> (x : 'ctyp_eoi))]];
+   Grammar.Entry.obj (patt_eoi : 'patt_eoi Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Snterm (Grammar.Entry.obj (patt : 'patt Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (x : 'patt) (loc : Token.location) -> (x : 'patt_eoi))]]];
-Quotation.add "patt" (apply_entry patt_eoi);;
-
-let expr_eoi = Grammar.Entry.create gram "expression" in
-Grammar.extend
-  [Grammar.Entry.obj (expr_eoi : 'expr_eoi Grammar.Entry.e), None,
+       (fun _ (x : 'patt) (loc : Token.location) -> (x : 'patt_eoi))]];
+   Grammar.Entry.obj (expr_eoi : 'expr_eoi Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (x : 'expr) (loc : Token.location) -> (x : 'expr_eoi))]]];
-Quotation.add "expr" (apply_entry expr_eoi);;
-
-let module_type_eoi = Grammar.Entry.create gram "module type" in
-Grammar.extend
-  [Grammar.Entry.obj (module_type_eoi : 'module_type_eoi Grammar.Entry.e),
+       (fun _ (x : 'expr) (loc : Token.location) -> (x : 'expr_eoi))]];
+   Grammar.Entry.obj (module_type_eoi : 'module_type_eoi Grammar.Entry.e),
    None,
    [None, None,
     [[Gramext.Snterm
@@ -4231,12 +4248,8 @@ Grammar.extend
       Gramext.Stoken ("EOI", "")],
      Gramext.action
        (fun _ (x : 'module_type) (loc : Token.location) ->
-          (x : 'module_type_eoi))]]];
-Quotation.add "module_type" (apply_entry module_type_eoi);;
-
-let module_expr_eoi = Grammar.Entry.create gram "module expression" in
-Grammar.extend
-  [Grammar.Entry.obj (module_expr_eoi : 'module_expr_eoi Grammar.Entry.e),
+          (x : 'module_type_eoi))]];
+   Grammar.Entry.obj (module_expr_eoi : 'module_expr_eoi Grammar.Entry.e),
    None,
    [None, None,
     [[Gramext.Snterm
@@ -4244,36 +4257,24 @@ Grammar.extend
       Gramext.Stoken ("EOI", "")],
      Gramext.action
        (fun _ (x : 'module_expr) (loc : Token.location) ->
-          (x : 'module_expr_eoi))]]];
-Quotation.add "module_expr" (apply_entry module_expr_eoi);;
-
-let class_type_eoi = Grammar.Entry.create gram "class_type" in
-Grammar.extend
-  [Grammar.Entry.obj (class_type_eoi : 'class_type_eoi Grammar.Entry.e), None,
+          (x : 'module_expr_eoi))]];
+   Grammar.Entry.obj (class_type_eoi : 'class_type_eoi Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Snterm
         (Grammar.Entry.obj (class_type : 'class_type Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
        (fun _ (x : 'class_type) (loc : Token.location) ->
-          (x : 'class_type_eoi))]]];
-Quotation.add "class_type" (apply_entry class_type_eoi);;
-
-let class_expr_eoi = Grammar.Entry.create gram "class_expr" in
-Grammar.extend
-  [Grammar.Entry.obj (class_expr_eoi : 'class_expr_eoi Grammar.Entry.e), None,
+          (x : 'class_type_eoi))]];
+   Grammar.Entry.obj (class_expr_eoi : 'class_expr_eoi Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Snterm
         (Grammar.Entry.obj (class_expr : 'class_expr Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
        (fun _ (x : 'class_expr) (loc : Token.location) ->
-          (x : 'class_expr_eoi))]]];
-Quotation.add "class_expr" (apply_entry class_expr_eoi);;
-
-let class_sig_item_eoi = Grammar.Entry.create gram "class_sig_item" in
-Grammar.extend
-  [Grammar.Entry.obj
+          (x : 'class_expr_eoi))]];
+   Grammar.Entry.obj
      (class_sig_item_eoi : 'class_sig_item_eoi Grammar.Entry.e),
    None,
    [None, None,
@@ -4283,12 +4284,8 @@ Grammar.extend
       Gramext.Stoken ("EOI", "")],
      Gramext.action
        (fun _ (x : 'class_sig_item) (loc : Token.location) ->
-          (x : 'class_sig_item_eoi))]]];
-Quotation.add "class_sig_item" (apply_entry class_sig_item_eoi);;
-
-let class_str_item_eoi = Grammar.Entry.create gram "class_str_item" in
-Grammar.extend
-  [Grammar.Entry.obj
+          (x : 'class_sig_item_eoi))]];
+   Grammar.Entry.obj
      (class_str_item_eoi : 'class_str_item_eoi Grammar.Entry.e),
    None,
    [None, None,
@@ -4298,12 +4295,8 @@ Grammar.extend
       Gramext.Stoken ("EOI", "")],
      Gramext.action
        (fun _ (x : 'class_str_item) (loc : Token.location) ->
-          (x : 'class_str_item_eoi))]]];
-Quotation.add "class_str_item" (apply_entry class_str_item_eoi);;
-
-let with_constr_eoi = Grammar.Entry.create gram "with constr" in
-Grammar.extend
-  [Grammar.Entry.obj (with_constr_eoi : 'with_constr_eoi Grammar.Entry.e),
+          (x : 'class_str_item_eoi))]];
+   Grammar.Entry.obj (with_constr_eoi : 'with_constr_eoi Grammar.Entry.e),
    None,
    [None, None,
     [[Gramext.Snterm
@@ -4311,12 +4304,8 @@ Grammar.extend
       Gramext.Stoken ("EOI", "")],
      Gramext.action
        (fun _ (x : 'with_constr) (loc : Token.location) ->
-          (x : 'with_constr_eoi))]]];
-Quotation.add "with_constr" (apply_entry with_constr_eoi);;
-
-let row_field_eoi = Grammar.Entry.create gram "row_field" in
-Grammar.extend
-  [Grammar.Entry.obj (row_field_eoi : 'row_field_eoi Grammar.Entry.e), None,
+          (x : 'with_constr_eoi))]];
+   Grammar.Entry.obj (row_field_eoi : 'row_field_eoi Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Snterm
         (Grammar.Entry.obj (row_field : 'row_field Grammar.Entry.e));
@@ -4324,4 +4313,14 @@ Grammar.extend
      Gramext.action
        (fun _ (x : 'row_field) (loc : Token.location) ->
           (x : 'row_field_eoi))]]];
-Quotation.add "row_field" (apply_entry row_field_eoi);;
+List.iter (fun (q, f) -> Quotation.add q (f q))
+  ["sig_item", apply_entry sig_item_eoi; "str_item", apply_entry str_item_eoi;
+   "ctyp", apply_entry ctyp_eoi; "patt", apply_entry patt_eoi;
+   "expr", apply_entry expr_eoi; "module_type", apply_entry module_type_eoi;
+   "module_expr", apply_entry module_expr_eoi;
+   "class_type", apply_entry class_type_eoi;
+   "class_expr", apply_entry class_expr_eoi;
+   "class_sig_item", apply_entry class_sig_item_eoi;
+   "class_str_item", apply_entry class_str_item_eoi;
+   "with_constr", apply_entry with_constr_eoi;
+   "row_field", apply_entry row_field_eoi];;
