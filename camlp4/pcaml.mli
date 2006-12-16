@@ -147,6 +147,12 @@ value string_of : printer_t 'a -> 'a -> string;
 
 value inter_phrases : ref (option string);
 
+(** {6 Directives} *)
+
+type directive_fun = option MLast.expr -> unit;
+value add_directive : string -> directive_fun -> unit;
+value find_directive : string -> directive_fun;
+
 (**/**)
 
 (* for system use *)

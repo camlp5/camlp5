@@ -467,3 +467,10 @@ let string_of pr x =
 ;;
 
 let inter_phrases = ref None;;
+
+(* Directives *)
+
+type directive_fun = MLast.expr option -> unit;;
+let directives = ref [];;
+let add_directive d f = directives := (d, f) :: !directives;;
+let find_directive d = List.assoc d !directives;;

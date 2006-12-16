@@ -42,6 +42,16 @@ let report_error_and_exit exc =
   report_error exc; Format.close_box (); Format.print_newline (); exit 2
 ;;
 
+Pcaml.add_directive "load"
+  (function
+     Some (MLast.ExStr (_, s)) -> Odyl_main.loadfile s
+   | Some _ | None -> raise Not_found);;
+
+Pcaml.add_directive "directory"
+  (function
+     Some (MLast.ExStr (_, s)) -> Odyl_main.directory s
+   | Some _ | None -> raise Not_found);;
+
 let rec parse_file pa getdir useast =
   let name = !(Pcaml.input_file) in
   Pcaml.warning := print_warning;
@@ -59,15 +69,16 @@ let rec parse_file pa getdir useast =
             match getdir rpl with
               Some x ->
                 begin match x with
-                  loc, "load", Some (MLast.ExStr (_, s)) ->
-                    Odyl_main.loadfile s; pl
-                | loc, "directory", Some (MLast.ExStr (_, s)) ->
-                    Odyl_main.directory s; pl
-                | loc, "use", Some (MLast.ExStr (_, s)) ->
+                  loc, "use", Some (MLast.ExStr (_, s)) ->
                     List.rev_append rpl
                       [useast loc s (use_file pa getdir useast s), loc]
-                | loc, _, _ ->
-                    Stdpp.raise_with_loc loc (Stream.Error "bad directive")
+                | loc, x, eo ->
+                    begin try Pcaml.find_directive x eo with
+                      Not_found ->
+                        Stdpp.raise_with_loc loc
+                          (Stream.Error "bad directive")
+                    end;
+                    pl
                 end
             | None -> pl
           in

@@ -145,6 +145,12 @@ val string_of : 'a printer_t -> 'a -> string;;
 
 val inter_phrases : string option ref;;
 
+(** {6 Directives} *)
+
+type directive_fun = MLast.expr option -> unit;;
+val add_directive : string -> directive_fun -> unit;;
+val find_directive : string -> directive_fun;;
+
 (**/**)
 
 (* for system use *)

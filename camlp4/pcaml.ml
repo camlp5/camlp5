@@ -464,3 +464,10 @@ value string_of pr x =
 ;
 
 value inter_phrases = ref None;
+
+(* Directives *)
+
+type directive_fun = option MLast.expr -> unit;
+value directives = ref [];
+value add_directive d f = directives.val := [(d, f) :: directives.val];
+value find_directive d = List.assoc d directives.val;

@@ -51,6 +51,18 @@ value report_error_and_exit exc = do {
   exit 2
 };
 
+Pcaml.add_directive "load"
+  (fun
+   [ Some <:expr< $str:s$ >> -> Odyl_main.loadfile s
+   | Some _ | None -> raise Not_found ])
+;
+
+Pcaml.add_directive "directory"
+  (fun
+   [ Some <:expr< $str:s$ >> -> Odyl_main.directory s
+   | Some _ | None -> raise Not_found ])
+;
+
 value rec parse_file pa getdir useast =
   let name = Pcaml.input_file.val in
   do {
@@ -71,16 +83,16 @@ value rec parse_file pa getdir useast =
               match getdir rpl with
               [ Some x ->
                   match x with
-                  [ (loc, "load", Some <:expr< $str:s$ >>) ->
-                      do { Odyl_main.loadfile s; pl }
-                  | (loc, "directory", Some <:expr< $str:s$ >>) ->
-                      do { Odyl_main.directory s; pl }
-                  | (loc, "use", Some <:expr< $str:s$ >>) ->
+                  [ (loc, "use", Some <:expr< $str:s$ >>) ->
                       List.rev_append rpl
                         [(useast loc s (use_file pa getdir useast s), loc)]
-                  | (loc, _, _) ->
-                      Stdpp.raise_with_loc loc
-                        (Stream.Error "bad directive") ]
+                  | (loc, x, eo) -> do {
+                      try Pcaml.find_directive x eo with
+                      [ Not_found ->
+                          Stdpp.raise_with_loc loc
+                            (Stream.Error "bad directive") ];
+                      pl
+                    } ]
               | None -> pl ]
             in
             Token.restore_lexing_info.val := Some lexing_info;
