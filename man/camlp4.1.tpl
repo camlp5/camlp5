@@ -211,7 +211,6 @@ Parsing files:
 	pa_macro.cmo: add macros (ifdef, define) like in C
 	pa_lefteval.cmo: left-to-right evaluation of parameters
 	pa_olabl.cmo: old syntax for labels
-	pa_pragma.cmo: add directive #pragma
 .fi
 .LP
 Printing files:

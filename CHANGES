@@ -2,8 +2,6 @@ Camlp4s Version 1.0:
 --------------------
 
 * [16 Dec 06] Added ability to add directives: "Pcaml.add_directive".
-  Added "pa_pragma.cmo" which add directive "#pragma". Parameter evaluated
-  in the context of the preprocessor (e.g. for a syntax extension).
 
 * [05 Dec 06] Fixed old bug: "camlp4 foo/bar.cmo" now searchs from the
   current directory (i.e in its subdirectory "foo"), instead of searching
