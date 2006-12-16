@@ -74,7 +74,7 @@ let mkloc loc =
   let ep = Stdpp.last_pos loc in
   let loc_at n =
     {Lexing.pos_fname = if lnum = -1 then "" else !glob_fname;
-     Lexing.pos_lnum = lnum; Lexing.pos_bol = bolp - 1; Lexing.pos_cnum = n}
+     Lexing.pos_lnum = lnum; Lexing.pos_bol = bolp; Lexing.pos_cnum = n}
   in
   {Location.loc_start = loc_at bp; Location.loc_end = loc_at ep;
    Location.loc_ghost = bp = 0 && ep = 0}

@@ -613,7 +613,7 @@ Grammar.extend
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
               | _ ->
                   match () with
-                  _ -> raise (Match_failure ("q_MLast.ml", 286, 20))
+                  _ -> raise (Match_failure ("q_MLast.ml", 286, 19))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -886,7 +886,7 @@ Grammar.extend
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
               | _ ->
                   match () with
-                  _ -> raise (Match_failure ("q_MLast.ml", 341, 20))
+                  _ -> raise (Match_failure ("q_MLast.ml", 341, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));

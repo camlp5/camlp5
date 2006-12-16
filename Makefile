@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.16 2006/12/13 11:07:09 deraugla Exp $
+# $Id: Makefile,v 1.17 2006/12/16 19:21:42 deraugla Exp $
 
 include config/Makefile
 
@@ -199,6 +199,30 @@ compare_sources:
 	       diff ../ocaml_src/$$i/$$k -; \
 	     fi; \
 	   done); \
+	done
+
+bootstrap_all_ast2pt:
+	cd etc; make pr_o.cmo
+	@cd camlp4; \
+	for i in ../ocaml_src/camlp4/ast2pt.ml_*; do \
+	  echo ============================================; \
+	  echo $$i; \
+	  j=$$(echo $$(basename $$i) | \
+	       sed -e 's/ast2pt.ml/OCAML/' -e 's/\./_/g'); \
+	  OTOP=$(OTOP) ../tools/conv.sh -D$$j ast2pt.ml | \
+	  sed -e 's/\$$Id.*\$$/$(TXTGEN)/' > $$i -; \
+	done
+
+compare_all_ast2pt:
+	cd etc; make pr_o.cmo
+	@cd camlp4; \
+	for i in ../ocaml_src/camlp4/ast2pt.ml_*; do \
+	  echo ============================================; \
+	  echo $$i; \
+	  j=$$(echo $$(basename $$i) | \
+	       sed -e 's/ast2pt.ml/OCAML/' -e 's/\./_/g'); \
+	  OTOP=$(OTOP) ../tools/conv.sh -D$$j ast2pt.ml | \
+	  sed -e 's/\$$Id.*\$$/$(TXTGEN)/' | diff $$i -; \
 	done
 
 untouch_sources:

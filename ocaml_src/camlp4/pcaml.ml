@@ -19,7 +19,7 @@ let gram =
   Grammar.gcreate
     {Token.tok_func = (fun _ -> failwith "no loaded parsing module");
      Token.tok_using = (fun _ -> ()); Token.tok_removing = (fun _ -> ());
-     Token.tok_match = (fun _ -> raise (Match_failure ("pcaml.ml", 22, 24)));
+     Token.tok_match = (fun _ -> raise (Match_failure ("pcaml.ml", 22, 23)));
      Token.tok_text = (fun _ -> ""); Token.tok_comm = None}
 ;;
 
@@ -365,47 +365,47 @@ and kont = pretty Stream.t
 ;;
 
 let pr_str_item =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 394, 31)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 394, 30)));
    pr_levels = []}
 ;;
 let pr_sig_item =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 395, 31)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 395, 30)));
    pr_levels = []}
 ;;
 let pr_module_type =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 396, 34)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 396, 33)));
    pr_levels = []}
 ;;
 let pr_module_expr =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 397, 34)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 397, 33)));
    pr_levels = []}
 ;;
 let pr_expr =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 398, 27)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 398, 26)));
    pr_levels = []}
 ;;
 let pr_patt =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 399, 27)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 399, 26)));
    pr_levels = []}
 ;;
 let pr_ctyp =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 400, 27)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 400, 26)));
    pr_levels = []}
 ;;
 let pr_class_sig_item =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 401, 37)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 401, 36)));
    pr_levels = []}
 ;;
 let pr_class_str_item =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 402, 37)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 402, 36)));
    pr_levels = []}
 ;;
 let pr_class_type =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 403, 33)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 403, 32)));
    pr_levels = []}
 ;;
 let pr_class_expr =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 404, 33)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 404, 32)));
    pr_levels = []}
 ;;
 let pr_expr_fun_args = ref Extfun.empty;;

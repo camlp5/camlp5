@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.4 2006/12/16 16:26:11 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.5 2006/12/16 19:21:42 deraugla Exp $ *)
 
 open Printf;
 
@@ -160,59 +160,85 @@ value rec eval_type loc t =
   | <:ctyp< _ >> -> <:ctyp< _ >> ]
 ;
 
+value loc = Token.dummy_loc;
+value val_tab =
+  [("::",
+    fun () ->
+      let t = ty_var () in
+      {ctyp = <:ctyp< $t$ -> list $t$ -> list $t$ >>;
+       item = Obj.repr (fun a l -> [a :: l])});
+   ("[]",
+    fun () ->
+      {ctyp = <:ctyp< list $ty_var ()$ >>;
+       item = Obj.repr []});
+   ("expr",
+    fun () ->
+      {ctyp = <:ctyp< Grammar.Entry.e MLast.expr >>;
+       item = Obj.repr Pcaml.expr});
+   ("Gramext.action",
+    fun () ->
+      {ctyp = <:ctyp< $ty_var ()$ -> Gramext.g_action >>;
+       item = Obj.repr Gramext.action});
+   ("Gramext.Level",
+    fun () ->
+      {ctyp = <:ctyp< string -> Gramext.position >>;
+       item = Obj.repr (fun s -> Gramext.Level s)});
+   ("Gramext.Sself",
+    fun () ->
+      {ctyp = <:ctyp< Gramext.g_symbol $ty_var ()$ >>;
+       item = Obj.repr Gramext.Sself});
+   ("Gramext.Stoken",
+    fun () ->
+      {ctyp = <:ctyp< Token.pattern -> Gramext.g_symbol $ty_var ()$ >>;
+       item = Obj.repr (fun tp -> Gramext.Stoken tp)});
+   ("Grammar.Entry.obj",
+    fun () ->
+      {ctyp = <:ctyp< Grammar.Entry.e _ -> Gramext.g_entry token >>;
+       item = Obj.repr Grammar.Entry.obj});
+   ("Grammar.extend",
+    fun () ->
+      let te = ty_var () in
+      {ctyp =
+         <:ctyp<
+           list
+             (Gramext.g_entry $te$ * option Gramext.position *
+              list
+                (option string * option Gramext.g_assoc *
+                 list (list (Gramext.g_symbol $te$) * Gramext.g_action))) ->
+           unit >>;
+       item = Obj.repr Grammar.extend});
+   ("MLast.ExApp",
+    fun () ->
+      {ctyp =
+         <:ctyp< Token.location -> MLast.expr -> MLast.expr -> MLast.expr >>;
+       item = Obj.repr (fun loc e1 e2 -> MLast.ExApp loc e1 e2)});
+   ("MLast.ExIfe",
+    fun () ->
+      {ctyp =
+         <:ctyp<
+           Token.location -> MLast.expr -> MLast.expr -> MLast.expr ->
+             MLast.expr >>;
+       item = Obj.repr (fun loc e1 e2 e3 -> MLast.ExIfe loc e1 e2 e3)});
+   ("MLast.ExLid",
+    fun () ->
+      {ctyp = <:ctyp< Token.location -> string -> MLast.expr >>;
+       item = Obj.repr (fun loc s -> MLast.ExLid loc s)});
+   ("None",
+    fun () ->
+      {ctyp = <:ctyp< option $ty_var ()$ >>;
+       item = Obj.repr None});
+   ("Some",
+    fun () ->
+      let t = ty_var () in
+      {ctyp = <:ctyp< $t$ -> option $t$ >>;
+       item = Obj.repr (fun x -> Some x)})]
+;
+
 value rec eval_expr env e =
   let loc = MLast.loc_of_expr e in
   match e with
   [ <:expr< $e1$ $e2$ >> -> eval_expr_apply loc env e1 e2
   | <:expr< fun [ $list:pel$ ] >> -> eval_expr_fun loc env pel
-
-  | <:expr< Gramext.action >> ->
-      let t = <:ctyp< $ty_var ()$ -> Gramext.g_action >> in
-      {ctyp = t; item = Obj.repr Gramext.action}
-  | <:expr< Gramext.Level >> ->
-      let t = <:ctyp< string -> Gramext.position >> in
-      {ctyp = t; item = Obj.repr (fun s -> Gramext.Level s)}
-  | <:expr< Gramext.Sself >> ->
-      let t = <:ctyp< Gramext.g_symbol $ty_var ()$ >> in
-      {ctyp = t; item = Obj.repr Gramext.Sself}
-  | <:expr< Gramext.Stoken >> ->
-      let t = <:ctyp< Token.pattern -> Gramext.g_symbol $ty_var ()$ >> in
-      {ctyp = t; item = Obj.repr (fun tp -> Gramext.Stoken tp)}
-
-  | <:expr< Grammar.Entry.obj >> ->
-      let t = <:ctyp< Grammar.Entry.e _ -> Gramext.g_entry token >> in
-      {ctyp = t; item = Obj.repr Grammar.Entry.obj}
-  | <:expr< Grammar.extend >> ->
-      let t =
-        let te = ty_var () in
-        <:ctyp<
-          list
-            (Gramext.g_entry $te$ * option Gramext.position *
-             list
-               (option string * option Gramext.g_assoc *
-                list (list (Gramext.g_symbol $te$) * Gramext.g_action))) ->
-          unit >>
-      in
-      {ctyp = t; item = Obj.repr Grammar.extend}
-
-  | <:expr< MLast.ExApp >> ->
-      let t =
-        <:ctyp< Token.location -> MLast.expr -> MLast.expr -> MLast.expr >>
-      in
-      let e loc e1 e2 = MLast.ExApp loc e1 e2 in
-      {ctyp = t; item = Obj.repr e}
-  | <:expr< MLast.ExIfe >> ->
-      let t =
-        <:ctyp<
-          Token.location -> MLast.expr -> MLast.expr -> MLast.expr ->
-            MLast.expr >>
-      in
-      let e loc e1 e2 e3 = MLast.ExIfe loc e1 e2 e3 in
-      {ctyp = t; item = Obj.repr e}
-  | <:expr< MLast.ExLid >> ->
-      let t = <:ctyp< Token.location -> string -> MLast.expr >> in
-      let e loc s = MLast.ExLid loc s in
-      {ctyp = t; item = Obj.repr e}
 
   | <:expr< ( $e$ : $t$ ) >> ->
       let v = eval_expr env e in
@@ -228,40 +254,22 @@ value rec eval_expr env e =
       let xl = List.map (fun v -> v.item) vl in
       {ctyp = <:ctyp< ( $list:tl$ ) >>; item = Obj.repr (Array.of_list xl)}
 
+  | <:expr< $str:s$ >> -> {ctyp = <:ctyp< string >>; item = Obj.repr s}
+
   | <:expr< $lid:s$ >> ->
       match try Some (List.assoc s env) with [ Not_found -> None ] with
       [ Some v -> v
       | None ->
-          match s with
-          [ "expr" ->
-              {ctyp = <:ctyp< Grammar.Entry.e MLast.expr >>;
-               item = Obj.repr Pcaml.expr}
-          | _ -> unbound_var loc s ] ]
-
-  | <:expr< $uid:"::"$ >> ->
-      let t = ty_var () in
-      let t = <:ctyp< $t$ -> list $t$ -> list $t$ >> in
-      {ctyp = t; item = Obj.repr (fun a l -> [a :: l])}
-  | <:expr< [] >> ->
-      {ctyp = <:ctyp< list $ty_var ()$ >>; item = Obj.repr []}
-  | <:expr< Some >> ->
-      let t = ty_var () in
-      let t = <:ctyp< $t$ -> option $t$ >> in
-      {ctyp = t; item = Obj.repr (fun x -> Some x)}
-  | <:expr< None >> ->
-      {ctyp = <:ctyp< option $ty_var ()$ >>; item = Obj.repr None}
-
-  | <:expr< Grammar. $lid:s$ >> -> not_impl loc ("expr access Grammar." ^ s) 0
-  | <:expr< Gramext . $uid:s$ >> -> not_impl loc ("4/expr Gramext." ^ s) 0
-  | <:expr< Gramext . $lid:s$ >> -> not_impl loc ("8/expr access " ^ s) 0
-  | <:expr< MLast . $uid:s$ >> -> not_impl loc ("9/expr access MLast." ^ s) 0
-  | <:expr< $uid:s$ . $e2$ >> -> not_impl loc ("7/expr access = " ^ s) e2
-  | <:expr< Grammar. $uid:s$ . $e3$ >> -> not_impl loc ("Grammar." ^ s) e3
-  | <:expr< $uid:s$ . $e2$ . $e3$ >> -> not_impl loc ("2/expr access " ^ s) e2
-  | <:expr< $e1$ . $e2$ . $e3$ >> -> not_impl loc "2/expr access" e1
-  | <:expr< $e1$ . $e2$ >> -> not_impl loc "expr access" e1
-  | <:expr< $uid:s$ >> -> not_impl loc ("1/expr uid = " ^ s) 0
-  | <:expr< $str:s$ >> -> {ctyp = <:ctyp< string >>; item = Obj.repr s}
+          try List.assoc s val_tab () with
+          [ Not_found -> unbound_var loc s ] ]
+  | <:expr< $uid:s$ >> ->
+      try List.assoc s val_tab () with [ Not_found -> unbound_var loc s ]
+  | <:expr< $uid:a$ . $lid:b$ >> | <:expr< $uid:a$ . $uid:b$ >> ->
+      let s = a ^ "." ^ b in
+      try List.assoc s val_tab () with [ Not_found -> unbound_var loc s ]
+  | <:expr< $uid:a$ . $uid:b$ . $lid:c$ >> ->
+      let s = a ^ "." ^ b ^ "." ^ c in
+      try List.assoc s val_tab () with [ Not_found -> unbound_var loc s ]
 
   | e -> not_impl loc "11/expr" e ]
 
