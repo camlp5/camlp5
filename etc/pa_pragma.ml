@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.8 2006/12/17 10:44:52 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.9 2006/12/17 11:13:32 deraugla Exp $ *)
 
 open Printf;
 
@@ -166,8 +166,6 @@ value rec unify loc t1 t2 =
         } ]
   | (<:ctyp< '$s$ >>, t2) -> unify loc t2 t1
 
-  | (<:ctyp< format $_$ $_$ $_$ >>, <:ctyp< string >>) -> True
-
   | (<:ctyp< Token.pattern >>, <:ctyp< (string * string) >>) -> True
   | (<:ctyp< $lid:s1$ >>, <:ctyp< $lid:s2$ >>) -> s1 = s2
   | (<:ctyp< $uid:s1$ >>, <:ctyp< $uid:s2$ >>) -> s1 = s2
@@ -217,6 +215,10 @@ value val_tab = do {
       fun () ->
         {ctyp = <:ctyp< string -> Gramext.position >>;
          item = Obj.repr (fun s -> Gramext.Level s)});
+     ("Gramext.RightA",
+      fun () ->
+        {ctyp = <:ctyp< Gramext.g_assoc >>;
+         item = Obj.repr Gramext.RightA});
      ("Gramext.Slist0",
       fun () ->
         let t = ty_var () in
@@ -227,6 +229,14 @@ value val_tab = do {
         let t = ty_var () in
         {ctyp = <:ctyp< Gramext.g_symbol $t$ -> Gramext.g_symbol $t$ >>;
          item = Obj.repr (fun s -> Gramext.Slist1 s)});
+     ("Gramext.Slist0sep",
+      fun () ->
+        let t = ty_var () in
+        {ctyp =
+           <:ctyp<
+             Gramext.g_symbol $t$ -> Gramext.g_symbol $t$ ->
+               Gramext.g_symbol $t$ >>;
+         item = Obj.repr (fun s1 s2 -> Gramext.Slist0sep s1 s2)});
      ("Gramext.Slist1sep",
       fun () ->
         let t = ty_var () in
@@ -493,7 +503,16 @@ and eval_expr_apply loc env e1 e2 =
   let t12 = ty_var () in
   let tt = <:ctyp< $t11$ -> $t12$ >> in
   if unify loc v1.ctyp tt then
-    if unify loc (eval_type loc t11) v2.ctyp then
+    let unify_ok =
+      match (eval_type loc t11, eval_type loc v2.ctyp) with
+      [ (<:ctyp< format $tf1$ $_$ $tf3$ >>, <:ctyp< string >>) ->
+          let s = (Obj.magic v2.item : string) in
+          match try Some (String.index s '%') with [ Not_found -> None ] with
+          [ Some i -> failwith ("not impl format " ^ s)
+          | None -> unify loc tf1 tf3 ]
+      | (t1, t2) -> unify loc t1 t2 ]
+    in
+    if unify_ok then
       let t = eval_type loc t12 in
       {ctyp = t; item = Obj.magic v1.item v2.item}
     else bad_type loc t11 v2.ctyp
