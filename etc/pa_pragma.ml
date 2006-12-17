@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.11 2006/12/17 21:28:04 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.12 2006/12/17 22:02:56 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax (in revised syntax):
@@ -18,7 +18,8 @@ value string_of_obj_tag x =
 
 value not_impl loc name x =
   let desc = string_of_obj_tag x in
-  Stdpp.raise_with_loc loc (Failure ("Main: not impl " ^ name ^ " " ^ desc))
+  Stdpp.raise_with_loc loc
+    (Failure ("pa_pragma: not impl " ^ name ^ " " ^ desc))
 ;
 
 module Type =
@@ -144,6 +145,10 @@ value unbound_var loc s =
   Stdpp.raise_with_loc loc (Failure (sprintf "Unbound variable: %s" s))
 ;
 
+value unbound_cons loc s =
+  Stdpp.raise_with_loc loc (Failure (sprintf "Unbound constructor: %s" s))
+;
+
 value inst_vars = ref [];
 value rec inst loc t =
   match t with
@@ -236,6 +241,10 @@ value val_tab = do {
       fun () ->
         {ctyp = <:ctyp< Grammar.Entry.e MLast.expr >>;
          item = Obj.repr Pcaml.expr});
+     ("Failure",
+      fun () ->
+        {ctyp = <:ctyp< string -> exn >>;
+         item = Obj.repr (fun s -> Failure s)});
      ("flush",
       fun () ->
         {ctyp = <:ctyp< out_channel -> unit >>;
@@ -365,6 +374,10 @@ value val_tab = do {
       fun () ->
         {ctyp = <:ctyp< Token.location -> string -> MLast.expr >>;
          item = Obj.repr (fun loc s -> MLast.ExUid loc s)});
+     ("MLast.PaLid",
+      fun () ->
+        {ctyp = <:ctyp< Token.location -> string -> MLast.patt >>;
+         item = Obj.repr (fun loc s -> MLast.PaLid loc s)});
      ("module_expr",
       fun () ->
         {ctyp = <:ctyp< Grammar.Entry.e MLast.module_expr >>;
@@ -390,6 +403,10 @@ value val_tab = do {
         let t = ty_var () in
         {ctyp = <:ctyp< format $t$ out_channel unit -> $t$ >>;
          item = Obj.repr Printf.eprintf});
+     ("raise",
+      fun () ->
+        {ctyp = <:ctyp< exn -> $ty_var ()$ >>;
+         item = Obj.repr raise});
      ("sig_item",
       fun () ->
         {ctyp = <:ctyp< Grammar.Entry.e MLast.sig_item >>;
@@ -486,23 +503,21 @@ value rec eval_expr env e =
   | e -> not_impl loc "11/expr" e ]
 
 and eval_let loc env rf pel e =
-  if rf then not_impl loc "let rec" 0
-  else
-    let new_env =
-      loop env pel where rec loop new_env =
-        fun
-        [ [(p, e) :: pel] ->
-            let v = eval_expr env e in
-            let new_env =
-              match p with
-              [ <:patt< $lid:s$ >> -> [(s, (True, v)) :: new_env]
-              | <:patt< _ >> -> new_env
-              | p -> not_impl loc "14/patt" p ]
-            in
-            loop new_env pel
-        | [] -> new_env ]
-    in
-    eval_expr new_env e
+  let new_env =
+    loop env pel where rec loop new_env =
+      fun
+      [ [(p, e) :: pel] ->
+          let v = eval_expr env e in
+          let new_env =
+            match p with
+            [ <:patt< $lid:s$ >> -> [(s, (True, v)) :: new_env]
+            | <:patt< _ >> -> new_env
+            | p -> not_impl loc "14/patt" p ]
+          in
+          loop new_env pel
+      | [] -> new_env ]
+  in
+  eval_expr new_env e
 
 and eval_expr_fun loc env pel =
   let t1 = ty_var () in
@@ -540,15 +555,24 @@ and eval_match_assoc loc env t1 t2 (p, eo, e) param =
       else None
   | None -> None ]
 
-and eval_patt loc p env t1 param =
+and eval_patt loc p env tp param =
   match p with
   [ <:patt< ($p$ : $t$) >> ->
       let t = type_of_ctyp t in
-      if unify loc t1 t then eval_patt loc p env (eval_type loc t1) param
-      else bad_type loc t1 t
+      if unify loc tp t then eval_patt loc p env (eval_type loc tp) param
+      else bad_type loc tp t
   | <:patt< $lid:s$ >> ->
-      let v = {ctyp = t1; item = param} in
+      let v = {ctyp = tp; item = param} in
       Some [(s, (False, v)) :: env]
+  | <:patt< $uid:s$ >> ->
+      match
+        try Some (Hashtbl.find val_tab s ()) with [ Not_found -> None ]
+      with
+      [ Some v ->
+          if unify loc tp v.ctyp then
+            if param = v.item then Some env else None
+          else bad_type loc tp v.ctyp
+      | None -> unbound_cons loc s ]
   | <:patt< _ >> -> Some env
   | p -> not_impl loc "1/eval_patt" p ]
 
