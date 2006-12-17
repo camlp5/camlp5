@@ -1,5 +1,10 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.9 2006/12/17 11:13:32 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.10 2006/12/17 17:16:21 deraugla Exp $ *)
+
+(* expressions evaluated in the context of the preprocessor *)
+(* syntax (in revised syntax):
+     #pragma <expr>;
+ *)
 
 open Printf;
 
@@ -139,6 +144,27 @@ value unbound_var loc s =
   Stdpp.raise_with_loc loc (Failure (sprintf "Unbound variable: %s" s))
 ;
 
+value inst_vars = ref [];
+value rec inst loc =
+  fun
+  [ <:ctyp< $t1$ -> $t2$ >> -> <:ctyp< $inst loc t1$ -> $inst loc t2$ >>
+  | <:ctyp< '$s$ >> ->
+      match s.val with
+      [ Some t -> inst loc t
+      | None ->
+          try List.assq s inst_vars.val with
+          [ Not_found -> do {
+             let t = ty_var () in
+             inst_vars.val := [(s, t) :: inst_vars.val];
+             t
+           } ] ]
+  | t -> not_impl loc "instanciate" t]
+;
+value instanciate loc s t = do {
+  inst_vars.val := [];
+  inst loc t
+};
+
 value rec unify loc t1 t2 =
   match (eval_type loc t1, eval_type loc t2) with 
   [ (<:ctyp< $t11$ $t12$ >>, <:ctyp< $t21$ $t22$ >>) ->
@@ -161,7 +187,12 @@ value rec unify loc t1 t2 =
           if unify loc t1 t2 then do { s.val := Some t1; True }
           else False
       | None -> do {
-          if t1 != t2 then s.val := Some t1 else ();
+          let same =
+            match t1 with
+            [ <:ctyp< '$s1$ >> -> s1 == s
+            | _ -> False ]
+          in
+          if not same then s.val := Some t1 else ();
           True
         } ]
   | (<:ctyp< '$s$ >>, t2) -> unify loc t2 t1
@@ -211,10 +242,18 @@ value val_tab = do {
       fun () ->
         {ctyp = <:ctyp< $ty_var ()$ -> Gramext.g_action >>;
          item = Obj.repr Gramext.action});
+     ("Gramext.LeftA",
+      fun () ->
+        {ctyp = <:ctyp< Gramext.g_assoc >>;
+         item = Obj.repr Gramext.LeftA});
      ("Gramext.Level",
       fun () ->
         {ctyp = <:ctyp< string -> Gramext.position >>;
          item = Obj.repr (fun s -> Gramext.Level s)});
+     ("Gramext.NonA",
+      fun () ->
+        {ctyp = <:ctyp< Gramext.g_assoc >>;
+         item = Obj.repr Gramext.NonA});
      ("Gramext.RightA",
       fun () ->
         {ctyp = <:ctyp< Gramext.g_assoc >>;
@@ -316,6 +355,14 @@ value val_tab = do {
       fun () ->
         {ctyp = <:ctyp< Token.location -> string -> MLast.expr >>;
          item = Obj.repr (fun loc s -> MLast.ExLid loc s)});
+     ("MLast.ExTup",
+      fun () ->
+        {ctyp = <:ctyp< Token.location -> list MLast.expr -> MLast.expr >>;
+         item = Obj.repr (fun loc el -> MLast.ExTup loc el)});
+     ("MLast.ExUid",
+      fun () ->
+        {ctyp = <:ctyp< Token.location -> string -> MLast.expr >>;
+         item = Obj.repr (fun loc s -> MLast.ExUid loc s)});
      ("module_expr",
       fun () ->
         {ctyp = <:ctyp< Grammar.Entry.e MLast.module_expr >>;
@@ -362,6 +409,10 @@ value val_tab = do {
       fun () ->
         {ctyp = <:ctyp< Grammar.Entry.e MLast.str_item >>;
          item = Obj.repr Pcaml.str_item});
+     ("True",
+      fun () ->
+        {ctyp = <:ctyp< bool >>;
+         item = Obj.repr True});
      ("type_declaration",
       fun () ->
         {ctyp = <:ctyp< Grammar.Entry.e MLast.type_decl >>;
@@ -415,7 +466,9 @@ value rec eval_expr env e =
 
   | <:expr< $lid:s$ >> ->
       match try Some (List.assoc s env) with [ Not_found -> None ] with
-      [ Some v -> v
+      [ Some (by_let, v) ->
+          if by_let then {(v) with ctyp = instanciate loc s v.ctyp}
+          else v
       | None ->
           try Hashtbl.find val_tab s () with
           [ Not_found -> unbound_var loc s ] ]
@@ -440,7 +493,7 @@ and eval_let loc env rf pel e =
             let v = eval_expr env e in
             let new_env =
               match p with
-              [ <:patt< $lid:s$ >> -> [(s, v) :: new_env]
+              [ <:patt< $lid:s$ >> -> [(s, (True, v)) :: new_env]
               | <:patt< _ >> -> new_env
               | p -> not_impl loc "14/patt" p ]
             in
@@ -480,7 +533,8 @@ and eval_match_assoc loc env t1 t2 (p, eo, e) param =
         let v = eval_expr env e in
         if unify loc t v.ctyp then
           Some {ctyp = eval_type loc t; item = v.item}
-        else bad_type loc t v.ctyp
+        else
+          bad_type loc t v.ctyp
       else None
   | None -> None ]
 
@@ -492,7 +546,7 @@ and eval_patt loc p env t1 param =
       else bad_type loc t1 t
   | <:patt< $lid:s$ >> ->
       let v = {ctyp = t1; item = param} in
-      Some [(s, v) :: env]
+      Some [(s, (False, v)) :: env]
   | <:patt< _ >> -> Some env
   | p -> not_impl loc "1/eval_patt" p ]
 
@@ -515,8 +569,10 @@ and eval_expr_apply loc env e1 e2 =
     if unify_ok then
       let t = eval_type loc t12 in
       {ctyp = t; item = Obj.magic v1.item v2.item}
-    else bad_type loc t11 v2.ctyp
-  else bad_type loc v1.ctyp tt
+    else
+      bad_type loc t11 v2.ctyp
+  else
+    bad_type loc v1.ctyp tt
 ;
 
 value eval_unit_expr loc e =
@@ -527,7 +583,10 @@ value eval_unit_expr loc e =
 
 value pragma =
   fun
-  [ Some e -> eval_unit_expr (MLast.loc_of_expr e) e
+  [ Some e -> do {
+      vars.val := [];
+      eval_unit_expr (MLast.loc_of_expr e) e;
+    }
   | None -> failwith "bad directive" ]
 ;
 
