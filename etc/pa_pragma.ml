@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.10 2006/12/17 17:16:21 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.11 2006/12/17 21:28:04 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax (in revised syntax):
@@ -145,9 +145,10 @@ value unbound_var loc s =
 ;
 
 value inst_vars = ref [];
-value rec inst loc =
-  fun
+value rec inst loc t =
+  match t with
   [ <:ctyp< $t1$ -> $t2$ >> -> <:ctyp< $inst loc t1$ -> $inst loc t2$ >>
+  | <:ctyp< $t1$ $t2$ >> -> <:ctyp< $inst loc t1$ $inst loc t2$ >>
   | <:ctyp< '$s$ >> ->
       match s.val with
       [ Some t -> inst loc t
@@ -158,6 +159,7 @@ value rec inst loc =
              inst_vars.val := [(s, t) :: inst_vars.val];
              t
            } ] ]
+  | <:ctyp< $_$ . $_$ >> | <:ctyp< $lid:_$ >> -> t
   | t -> not_impl loc "instanciate" t]
 ;
 value instanciate loc s t = do {
