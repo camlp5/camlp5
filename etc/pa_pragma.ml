@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.13 2006/12/18 10:38:03 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.14 2006/12/18 11:37:45 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -441,9 +441,11 @@ value rec eval_expr env e =
   let loc = MLast.loc_of_expr e in
   match e with
   [ <:expr< fun [ $list:pel$ ] >> ->
-      eval_expr_fun loc env pel
+      eval_fun loc env pel
   | <:expr< let $opt:rf$ $list:pel$ in $e$ >> ->
       eval_let loc env rf pel e
+  | <:expr< match $e$ with [ $list:pel$ ] >> ->
+      eval_match loc env e pel
   | <:expr< if $e1$ then $e2$ else $e3$ >> ->
       let v = eval_expr env e1 in
       match v.ctyp with
@@ -500,6 +502,10 @@ value rec eval_expr env e =
 
   | e -> not_impl loc "11/expr" e ]
 
+and eval_match loc env e pel =
+  let v = eval_expr env e in
+  eval_match_assoc_list loc env (ty_var ()) v.ctyp pel v.item
+
 and eval_let loc env rf pel e =
   let new_env =
     loop env pel where rec loop new_env =
@@ -517,7 +523,7 @@ and eval_let loc env rf pel e =
   in
   eval_expr new_env e
 
-and eval_expr_fun loc env pel =
+and eval_fun loc env pel =
   let t1 = ty_var () in
   let t2 = ty_var () in
   let t = <:ctyp< $t1$ -> $t2$ >> in
