@@ -1,10 +1,8 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.12 2006/12/17 22:02:56 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.13 2006/12/18 10:38:03 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
-(* syntax (in revised syntax):
-     #pragma <expr>;
- *)
+(* syntax at toplevel: #pragma <expr> *)
 
 open Printf;
 
