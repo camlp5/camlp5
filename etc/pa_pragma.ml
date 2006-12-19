@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.14 2006/12/18 11:37:45 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.15 2006/12/19 23:16:11 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -348,6 +348,11 @@ value val_tab = do {
       fun () ->
         {ctyp = <:ctyp< Grammar.Entry.e (MLast.patt * MLast.expr) >>;
          item = Obj.repr Pcaml.let_binding});
+     ("MLast.ExAcc",
+      fun () ->
+        {ctyp =
+           <:ctyp< Token.location -> MLast.expr -> MLast.expr -> MLast.expr >>;
+         item = Obj.repr (fun loc e1 e2 -> MLast.ExAcc loc e1 e2)});
      ("MLast.ExApp",
       fun () ->
         {ctyp =
@@ -561,7 +566,12 @@ and eval_match_assoc loc env t1 t2 (p, eo, e) param =
 
 and eval_patt loc p env tp param =
   match p with
-  [ <:patt< ($p$ : $t$) >> ->
+  [ <:patt< $p1$ $p2$ >> ->
+      let t1 = ty_var () in
+      let _v1 = eval_patt loc p1 env <:ctyp< $t1$ -> $tp$ >> param in
+      let _v2 = eval_patt loc p1 env t1 param in
+      failwith "bof"
+  | <:patt< ($p$ : $t$) >> ->
       let t = type_of_ctyp t in
       if unify loc tp t then eval_patt loc p env (eval_type loc tp) param
       else bad_type loc tp t
@@ -574,7 +584,17 @@ and eval_patt loc p env tp param =
       with
       [ Some v ->
           if unify loc tp v.ctyp then
-            if param = v.item then Some env else None
+            let phony_val =
+              loop v.item (eval_type loc v.ctyp) where rec loop f =
+                fun
+                [ <:ctyp< $t1$ -> $t2$ >> -> loop (Obj.magic f 0) t2
+                | t -> f ]
+            in
+            if Obj.is_block param && Obj.tag param = Obj.tag phony_val ||
+               not (Obj.is_block param) && Obj.magic param = phony_val
+            then
+              failwith "I am happy but I don't know what to do"
+            else None
           else bad_type loc tp v.ctyp
       | None -> unbound_cons loc s ]
   | <:patt< _ >> -> Some env
