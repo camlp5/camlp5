@@ -1,6 +1,9 @@
 Camlp4s Version 1.0:
 --------------------
 
+* [19 Dec 06] Added "pa_pragma.cmo" adding the directive "#pragma <expr>"
+  which executes <expr> in the context of the preprocessor.
+
 * [16 Dec 06] Added ability to add directives: "Pcaml.add_directive".
 
 * [05 Dec 06] Fixed old bug: "camlp4 foo/bar.cmo" now searchs from the
