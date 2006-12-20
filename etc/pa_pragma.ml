@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.17 2006/12/20 07:31:36 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.18 2006/12/20 09:05:29 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -152,6 +152,7 @@ value rec inst loc t =
   match t with
   [ <:ctyp< $t1$ -> $t2$ >> -> <:ctyp< $inst loc t1$ -> $inst loc t2$ >>
   | <:ctyp< $t1$ $t2$ >> -> <:ctyp< $inst loc t1$ $inst loc t2$ >>
+  | <:ctyp< ( $list:tl$ ) >> -> <:ctyp< ( $list:List.map (inst loc) tl$ ) >>
   | <:ctyp< '$s$ >> ->
       match s.val with
       [ Some t -> inst loc t
@@ -237,6 +238,10 @@ value val_tab = do {
       fun () ->
         {ctyp = <:ctyp< int -> int -> int >>;
          item = Obj.repr \+});
+     ("^",
+      fun () ->
+        {ctyp = <:ctyp< string -> string -> string >>;
+         item = Obj.repr \^});
      ("[]",
       fun () ->
         {ctyp = <:ctyp< list $ty_var ()$ >>;
@@ -362,6 +367,32 @@ value val_tab = do {
       fun () ->
         {ctyp = <:ctyp< Grammar.Entry.e (MLast.patt * MLast.expr) >>;
          item = Obj.repr Pcaml.let_binding});
+     ("List.fold_right",
+      fun () ->
+        let a = ty_var () in
+        let b = ty_var () in
+        {ctyp = <:ctyp< ($a$ -> $b$ -> $b$) -> list $a$ -> $b$ -> $b$ >>;
+         item = Obj.repr List.fold_right});
+     ("List.length",
+      fun () ->
+        let a = ty_var () in
+        {ctyp = <:ctyp< list $a$ -> int >>;
+         item = Obj.repr List.length});
+     ("List.map",
+      fun () ->
+        let a = ty_var () in
+        let b = ty_var () in
+        {ctyp = <:ctyp< ($a$ -> $b$) -> list $a$ -> list $b$ >>;
+         item = Obj.repr List.map});
+     ("match_with_some",
+      fun () ->
+        let a = ty_var () in
+        {ctyp = <:ctyp< option $a$ -> $a$ >>;
+         item =
+           Obj.repr
+             (fun
+              [ Some a -> a
+              | None -> failwith "match failure" ])});
      ("MLast.ExAcc",
       fun () ->
         {ctyp =
@@ -468,6 +499,10 @@ value val_tab = do {
       fun () ->
         {ctyp = <:ctyp< string -> unit >>;
          item = Obj.repr prerr_endline});
+     ("prerr_int",
+      fun () ->
+        {ctyp = <:ctyp< int -> unit >>;
+         item = Obj.repr prerr_int});
      ("print_endline",
       fun () ->
         {ctyp = <:ctyp< string -> unit >>;
@@ -649,6 +684,22 @@ and eval_patt loc p env tp param =
   | <:patt< $lid:s$ >> ->
       let v = {ctyp = tp; item = param} in
       Some [(s, (False, v)) :: env]
+  | <:patt< ( $list:pl$ ) >> -> 
+      let tpl = List.map (fun _ -> ty_var ()) pl in
+      let exp_tp = <:ctyp< ($list:tpl$) >> in
+      if unify loc exp_tp tp && Obj.is_block param && Obj.tag param = 0 &&
+         Obj.size param = List.length pl
+      then
+        let param_list = Array.to_list (Obj.magic param) in
+        loop env param_list pl tpl where rec loop env param_list pl tpl =
+          match (param_list, pl, tpl) with
+          [ ([param :: param_list], [p :: pl], [tp :: tpl]) ->
+              match eval_patt loc p env tp param with
+              [ Some env -> loop env param_list pl tpl
+              | None -> None ]
+          | ([], [], []) -> Some env
+          | _ -> assert False ]
+      else bad_type loc exp_tp tp
   | <:patt< $uid:s$ >> ->
       match
         try Some (Hashtbl.find val_tab s ()) with [ Not_found -> None ]
