@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.19 2006/12/20 11:01:18 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.20 2006/12/20 13:06:06 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -446,6 +446,12 @@ value val_tab = do {
       fun () ->
         {ctyp = <:ctyp< Token.location -> list MLast.expr -> MLast.expr >>;
          item = Obj.repr (fun loc el -> MLast.ExTup loc el)});
+     ("MLast.ExTyc",
+      fun () ->
+        {ctyp =
+           <:ctyp<
+             Token.location -> MLast.expr -> MLast.ctyp -> MLast.expr >>;
+         item = Obj.repr (fun loc e t -> MLast.ExTyc loc e t)});
      ("MLast.ExUid",
       fun () ->
         {ctyp = <:ctyp< Token.location -> string -> MLast.expr >>;
@@ -456,14 +462,39 @@ value val_tab = do {
            <:ctyp<
              Token.location -> list MLast.str_item -> MLast.module_expr >>;
          item = Obj.repr (fun loc sil -> MLast.MeStr loc sil)});
+     ("MLast.MeTyc",
+      fun () ->
+        {ctyp =
+           <:ctyp<
+             Token.location -> MLast.module_expr -> MLast.module_type ->
+               MLast.module_expr >>;
+         item = Obj.repr (fun loc me mt -> MLast.MeTyc loc me mt)});
+     ("MLast.MtSig",
+      fun () ->
+        {ctyp =
+           <:ctyp<
+             Token.location -> list MLast.sig_item -> MLast.module_type >>;
+         item = Obj.repr (fun loc sil -> MLast.MtSig loc sil)});
      ("MLast.PaLid",
       fun () ->
         {ctyp = <:ctyp< Token.location -> string -> MLast.patt >>;
          item = Obj.repr (fun loc s -> MLast.PaLid loc s)});
+     ("MLast.PaTyc",
+      fun () ->
+        {ctyp =
+           <:ctyp<
+             Token.location -> MLast.patt -> MLast.ctyp -> MLast.patt >>;
+         item = Obj.repr (fun loc p t -> MLast.PaTyc loc p t)});
      ("MLast.PaUid",
       fun () ->
         {ctyp = <:ctyp< Token.location -> string -> MLast.patt >>;
          item = Obj.repr (fun loc s -> MLast.PaUid loc s)});
+     ("MLast.SgVal",
+      fun () ->
+        {ctyp =
+           <:ctyp<
+             Token.location -> string -> MLast.ctyp -> MLast.sig_item >>;
+         item = Obj.repr (fun loc s t -> MLast.SgVal loc s t)});
      ("MLast.StDcl",
       fun () ->
         {ctyp =
@@ -490,6 +521,10 @@ value val_tab = do {
              Token.location -> bool -> list (MLast.patt * MLast.expr) ->
                MLast.str_item >>;
          item = Obj.repr (fun loc rf pel -> MLast.StVal loc rf pel)});
+     ("MLast.TyAny",
+      fun () ->
+        {ctyp = <:ctyp< Token.location -> MLast.ctyp >>;
+         item = Obj.repr (fun loc -> MLast.TyAny loc)});
      ("MLast.TyArr",
       fun () ->
         {ctyp =
