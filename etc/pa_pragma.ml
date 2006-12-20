@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.18 2006/12/20 09:05:29 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.19 2006/12/20 11:01:18 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -367,6 +367,12 @@ value val_tab = do {
       fun () ->
         {ctyp = <:ctyp< Grammar.Entry.e (MLast.patt * MLast.expr) >>;
          item = Obj.repr Pcaml.let_binding});
+     ("List.fold_left",
+      fun () ->
+        let a = ty_var () in
+        let b = ty_var () in
+        {ctyp = <:ctyp< ($a$ -> $b$ -> $a$) -> $a$ -> list $b$ -> $a$ >>;
+         item = Obj.repr List.fold_left});
      ("List.fold_right",
       fun () ->
         let a = ty_var () in
@@ -444,6 +450,12 @@ value val_tab = do {
       fun () ->
         {ctyp = <:ctyp< Token.location -> string -> MLast.expr >>;
          item = Obj.repr (fun loc s -> MLast.ExUid loc s)});
+     ("MLast.MeStr",
+      fun () ->
+        {ctyp =
+           <:ctyp<
+             Token.location -> list MLast.str_item -> MLast.module_expr >>;
+         item = Obj.repr (fun loc sil -> MLast.MeStr loc sil)});
      ("MLast.PaLid",
       fun () ->
         {ctyp = <:ctyp< Token.location -> string -> MLast.patt >>;
@@ -452,6 +464,19 @@ value val_tab = do {
       fun () ->
         {ctyp = <:ctyp< Token.location -> string -> MLast.patt >>;
          item = Obj.repr (fun loc s -> MLast.PaUid loc s)});
+     ("MLast.StDcl",
+      fun () ->
+        {ctyp =
+           <:ctyp<
+             Token.location -> list MLast.str_item -> MLast.str_item >>;
+         item = Obj.repr (fun loc sil -> MLast.StDcl loc sil)});
+     ("MLast.StMod",
+      fun () ->
+        {ctyp =
+           <:ctyp<
+             Token.location -> bool -> list (string * MLast.module_expr) ->
+               MLast.str_item >>;
+         item = Obj.repr (fun loc rf mel -> MLast.StMod loc rf mel)});
      ("MLast.StTyp",
       fun () ->
         {ctyp =
