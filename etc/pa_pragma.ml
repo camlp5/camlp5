@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.21 2006/12/21 19:16:48 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.22 2006/12/21 22:19:02 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -203,7 +203,6 @@ value rec unify loc t1 t2 =
         } ]
   | (<:ctyp< '$s$ >>, t2) -> unify loc t2 t1
 
-  | (<:ctyp< Token.pattern >>, <:ctyp< (string * string) >>) -> True
   | (<:ctyp< MLast.type_decl >>, t2) ->
       let t1 =
         <:ctyp<
@@ -212,6 +211,9 @@ value rec unify loc t1 t2 =
            MLast.ctyp *
            list (MLast.ctyp * MLast.ctyp)) >>
       in
+      unify loc t1 t2
+  | (<:ctyp< Token.pattern >>, t2) ->
+      let t1 = <:ctyp< (string * string) >> in
       unify loc t1 t2
 
   | (<:ctyp< $lid:s1$ >>, <:ctyp< $lid:s2$ >>) -> s1 = s2
@@ -312,6 +314,11 @@ value val_tab = do {
              Gramext.g_symbol $t$ -> Gramext.g_symbol $t$ ->
                Gramext.g_symbol $t$ >>;
          item = Obj.repr (fun s1 s2 -> Gramext.Slist1sep s1 s2)});
+     ("Gramext.Snext",
+      fun () ->
+        let a = ty_var () in
+        {ctyp = <:ctyp< Gramext.g_symbol $a$ >>;
+         item = Obj.repr Gramext.Snext});
      ("Gramext.Snterm",
       fun () ->
         let t = ty_var () in
@@ -475,10 +482,18 @@ value val_tab = do {
            <:ctyp<
              Token.location -> list MLast.sig_item -> MLast.module_type >>;
          item = Obj.repr (fun loc sil -> MLast.MtSig loc sil)});
+     ("MLast.PaAny",
+      fun () ->
+        {ctyp = <:ctyp< Token.location -> MLast.patt >>;
+         item = Obj.repr (fun loc -> MLast.PaAny loc)});
      ("MLast.PaLid",
       fun () ->
         {ctyp = <:ctyp< Token.location -> string -> MLast.patt >>;
          item = Obj.repr (fun loc s -> MLast.PaLid loc s)});
+     ("MLast.PaTup",
+      fun () ->
+        {ctyp = <:ctyp< Token.location -> list MLast.patt -> MLast.patt >>;
+         item = Obj.repr (fun loc pl -> MLast.PaTup loc pl)});
      ("MLast.PaTyc",
       fun () ->
         {ctyp =
@@ -535,6 +550,10 @@ value val_tab = do {
       fun () ->
         {ctyp = <:ctyp< Token.location -> string -> MLast.ctyp >>;
          item = Obj.repr (fun loc s -> MLast.TyLid loc s)});
+     ("MLast.TyQuo",
+      fun () ->
+        {ctyp = <:ctyp< Token.location -> string -> MLast.ctyp >>;
+         item = Obj.repr (fun loc s -> MLast.TyQuo loc s)});
      ("MLast.TyRec",
       fun () ->
         {ctyp =
