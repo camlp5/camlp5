@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_r.ml,v 1.11 2006/12/14 14:35:15 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.12 2006/12/21 23:24:25 deraugla Exp $ *)
 
 open Pcaml;
 open Spretty;
@@ -303,7 +303,39 @@ pr_expr_fun_args.val :=
       else ([], ge)
   | ge -> ([], ge) ];
 
-value rec bind_list b pel k =
+value rec let_sequence e =
+  match e with
+  [ <:expr< do { $list:el$ } >> -> Some el
+  | <:expr< let $opt:_$ $list:_$ in $e1$ >> ->
+      match let_sequence e1 with
+      [ Some _ -> Some [e]
+      | None -> None ]
+  | _ -> None ]
+;
+
+value rec sequence_loop =
+  fun
+  [ [<:expr< let $opt:r$ $list:pel$ in $e$ >>] ->
+      let el =
+        match e with
+        [ <:expr< do { $list:el$ } >> -> el
+        | _ -> [e] ]
+      in
+      let r = flag "rec" r in
+      [: listwbws (fun b (p, e) k -> let_binding b (p, e) k)
+           [: `S LR "let"; r :] (S LR "and") pel [: `S LR "in" :];
+         sequence_loop el :]
+  | [(<:expr< let $opt:_$ $list:_$ in $_$ >> as e) :: el] ->
+      [: `simple_expr e [: `S RO ";" :]; sequence_loop el :]
+  | [e] -> [: `expr e [: :] :]
+  | [e :: el] -> [: `expr e [: `S RO ";" :]; sequence_loop el :]
+  | [] -> [: :] ]
+and sequence b1 b2 b3 el k =
+  BEbox
+    [: `BEbox [: b1; b2; `HVbox [: b3; `S LR "do {" :] :];
+       `HVbox [: `HVbox [: :]; sequence_loop el :];
+       `HVbox [: `S LR "}"; k :] :]
+and bind_list b pel k =
   match pel with
   [ [pe] -> let_binding b pe k
   | pel ->
@@ -372,42 +404,6 @@ and match_assoc b (p, w, e) k =
 value label lab = S LR (var_escaped lab);
 
 value field_expr (lab, e) k = HVbox [: `label lab; `S LR "="; `expr e k :];
-
-value rec sequence_loop =
-  fun
-  [ [<:expr< let $opt:r$ $list:pel$ in $e$ >>] ->
-      let el =
-        match e with
-        [ <:expr< do { $list:el$ } >> -> el
-        | _ -> [e] ]
-      in
-      let r = flag "rec" r in
-      [: listwbws (fun b (p, e) k -> let_binding b (p, e) k)
-           [: `S LR "let"; r :] (S LR "and") pel [: `S LR "in" :];
-         sequence_loop el :]
-  | [(<:expr< let $opt:_$ $list:_$ in $_$ >> as e) :: el] ->
-      [: `simple_expr e [: `S RO ";" :]; sequence_loop el :]
-  | [e] -> [: `expr e [: :] :]
-  | [e :: el] -> [: `expr e [: `S RO ";" :]; sequence_loop el :]
-  | [] -> [: :] ]
-;
-
-value sequence b1 b2 b3 el k =
-  BEbox
-    [: `BEbox [: b1; b2; `HVbox [: b3; `S LR "do {" :] :];
-       `HVbox [: `HVbox [: :]; sequence_loop el :];
-       `HVbox [: `S LR "}"; k :] :]
-;
-
-value rec let_sequence e =
-  match e with
-  [ <:expr< do { $list:el$ } >> -> Some el
-  | <:expr< let $opt:_$ $list:_$ in $e1$ >> ->
-      match let_sequence e1 with
-      [ Some _ -> Some [e]
-      | None -> None ]
-  | _ -> None ]
-;
 
 value ifbox b1 b2 b3 e k =
   match let_sequence e with
