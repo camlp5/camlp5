@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.20 2006/12/20 13:06:06 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.21 2006/12/21 19:16:48 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -754,7 +754,7 @@ and eval_patt loc p env tp param =
         loop env param_list pl tpl where rec loop env param_list pl tpl =
           match (param_list, pl, tpl) with
           [ ([param :: param_list], [p :: pl], [tp :: tpl]) ->
-              match eval_patt loc p env tp param with
+              match eval_patt loc p env (eval_type loc tp) param with
               [ Some env -> loop env param_list pl tpl
               | None -> None ]
           | ([], [], []) -> Some env
