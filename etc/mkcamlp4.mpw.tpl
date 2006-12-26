@@ -4,7 +4,7 @@
 #                                                                     #
 #            Damien Doligez, projet Para, INRIA Rocquencourt          #
 #                                                                     #
-#  Copyright 2006 Institut National de Recherche en Informatique et   #
+#  Copyright 2007 Institut National de Recherche en Informatique et   #
 #  en Automatique.  Distributed only by permission.                   #
 #                                                                     #
 #######################################################################

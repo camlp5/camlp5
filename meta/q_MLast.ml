@@ -5,12 +5,12 @@
 (*                                                                     *)
 (*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
-(*  Copyright 2006 Institut National de Recherche en Informatique et   *)
+(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
 (*  Automatique.  Distributed only by permission.                      *)
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.19 2006/12/16 13:48:47 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.20 2006/12/26 08:54:09 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 

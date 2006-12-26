@@ -5,12 +5,12 @@
 (*                                                                     *)
 (*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
-(*  Copyright 2006 Institut National de Recherche en Informatique et   *)
+(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
 (*  Automatique.  Distributed only by permission.                      *)
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: gramext.ml,v 1.2 2006/12/05 22:48:33 deraugla Exp $ *)
+(* $Id: gramext.ml,v 1.3 2006/12/26 08:54:09 deraugla Exp $ *)
 
 open Printf;
 

@@ -5,12 +5,12 @@
 (*                                                                     *)
 (*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
-(*  Copyright 2006 Institut National de Recherche en Informatique et   *)
+(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
 (*  Automatique.  Distributed only by permission.                      *)
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.15 2006/12/13 11:07:09 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.16 2006/12/26 08:54:09 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
