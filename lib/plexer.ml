@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.21 2006/12/31 17:02:12 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.22 2006/12/31 18:05:06 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -201,36 +201,32 @@ value next_token_fun dfa ssd find_kwd glexr =
     | [: `('~' as c);
          a =
            parser
-           [ [: `('a'..'z' as c); len = ident (store 0 c) :] ep ->
+           [ [: `('a'..'z' as c); len = ident (store 0 c) ! :] ep ->
                (("TILDEIDENT", get_buff len), (bp, ep))
-           | [: s :] ->
-               let id = get_buff (ident2 (store 0 c) s) in
-               keyword_or_error (bp, Stream.count s) id ] :] ->
+           | [: len = ident2 (store 0 c) :] ep ->
+               keyword_or_error (bp, ep) (get_buff len) ] ! :] ->
         a
     | [: `('?' as c);
          a =
            parser
-           [ [: `('a'..'z' as c); len = ident (store 0 c) :] ep ->
+           [ [: `('a'..'z' as c); len = ident (store 0 c) ! :] ep ->
                (("QUESTIONIDENT", get_buff len), (bp, ep))
-           | [: s :] ->
-               let id = get_buff (ident2 (store 0 c) s) in
-               keyword_or_error (bp, Stream.count s) id ] :] ->
+           | [: len = ident2 (store 0 c) :] ep ->
+               keyword_or_error (bp, ep) (get_buff len) ] ! :] ->
         a
     | [: `'<'; s :] -> less bp s
     | [: `(':' as c1);
          len =
            parser
            [ [: `(']' | ':' | '=' | '>' as c2) :] -> store (store 0 c1) c2
-           | [: :] -> store 0 c1 ] :] ep ->
-        let id = get_buff len in
-        keyword_or_error (bp, ep) id
+           | [: :] -> store 0 c1 ] ! :] ep ->
+        keyword_or_error (bp, ep) (get_buff len)
     | [: `('>' | '|' as c1);
          len =
            parser
            [ [: `(']' | '}' as c2) :] -> store (store 0 c1) c2
-           | [: a = ident2 (store 0 c1) :] -> a ] :] ep ->
-        let id = get_buff len in
-        keyword_or_error (bp, ep) id
+           | [: a = ident2 (store 0 c1) :] -> a ] ! :] ep ->
+        keyword_or_error (bp, ep) (get_buff len)
     | [: `('[' | '{' as c1); s :] ->
         let len =
           match Stream.npeek 2 s with
@@ -247,23 +243,22 @@ value next_token_fun dfa ssd find_kwd glexr =
          id =
            parser
            [ [: `'.' :] -> ".."
-           | [: :] -> if ssd && after_space then " ." else "." ] :] ep ->
+           | [: :] -> if ssd && after_space then " ." else "." ] ! :] ep ->
         keyword_or_error (bp, ep) id
     | [: `';';
          id =
            parser
            [ [: `';' :] -> ";;"
-           | [: :] -> ";" ] :] ep ->
+           | [: :] -> ";" ] ! :] ep ->
         keyword_or_error (bp, ep) id
-    | [: `'\\'; s :] ep -> (("LIDENT", get_buff (ident3 0 s)), (bp, ep))
+    | [: `'\\'; len = ident3 0 ! :] ep -> (("LIDENT", get_buff len), (bp, ep))
     | [: `c :] ep -> keyword_or_error (bp, ep) (String.make 1 c)
     | [: _ = Stream.empty :] -> (("EOI", ""), (bp, succ bp)) ]
   and less bp strm =
     if no_quotations.val then
       match strm with parser
       [ [: len = ident2 (store 0 '<') :] ep ->
-          let id = get_buff len in
-          keyword_or_error (bp, ep) id ]
+          keyword_or_error (bp, ep) (get_buff len) ]
     else
       match strm with parser
       [ [: `'<'; len = quotation bp 0 :] ep ->
@@ -272,8 +267,7 @@ value next_token_fun dfa ssd find_kwd glexr =
            `'<' ? "character '<' expected"; len = quotation bp 0 :] ep ->
           (("QUOTATION", i ^ ":" ^ get_buff len), (bp, ep))
       | [: len = ident2 (store 0 '<') :] ep ->
-          let id = get_buff len in
-          keyword_or_error (bp, ep) id ]
+          keyword_or_error (bp, ep) (get_buff len) ]
   and string bp len =
     parser bp1
     [ [: `'"' :] -> len

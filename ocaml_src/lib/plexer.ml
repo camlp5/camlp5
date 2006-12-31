@@ -245,67 +245,51 @@ let next_token_fun dfa ssd find_kwd glexr =
         keyword_or_error (bp, ep) (get_buff len)
     | Some ('~' as c) ->
         Stream.junk strm__;
-        begin try
-          match Stream.peek strm__ with
-            Some ('a'..'z' as c) ->
-              Stream.junk strm__;
-              let len =
-                try ident (store 0 c) strm__ with
-                  Stream.Failure -> raise (Stream.Error "")
-              in
-              let ep = Stream.count strm__ in
-              ("TILDEIDENT", get_buff len), (bp, ep)
-          | _ ->
-              let id = get_buff (ident2 (store 0 c) strm__) in
-              keyword_or_error (bp, Stream.count strm__) id
-        with
-          Stream.Failure -> raise (Stream.Error "")
+        begin match Stream.peek strm__ with
+          Some ('a'..'z' as c) ->
+            Stream.junk strm__;
+            let len = ident (store 0 c) strm__ in
+            let ep = Stream.count strm__ in
+            ("TILDEIDENT", get_buff len), (bp, ep)
+        | _ ->
+            let len = ident2 (store 0 c) strm__ in
+            let ep = Stream.count strm__ in
+            keyword_or_error (bp, ep) (get_buff len)
         end
     | Some ('?' as c) ->
         Stream.junk strm__;
-        begin try
-          match Stream.peek strm__ with
-            Some ('a'..'z' as c) ->
-              Stream.junk strm__;
-              let len =
-                try ident (store 0 c) strm__ with
-                  Stream.Failure -> raise (Stream.Error "")
-              in
-              let ep = Stream.count strm__ in
-              ("QUESTIONIDENT", get_buff len), (bp, ep)
-          | _ ->
-              let id = get_buff (ident2 (store 0 c) strm__) in
-              keyword_or_error (bp, Stream.count strm__) id
-        with
-          Stream.Failure -> raise (Stream.Error "")
+        begin match Stream.peek strm__ with
+          Some ('a'..'z' as c) ->
+            Stream.junk strm__;
+            let len = ident (store 0 c) strm__ in
+            let ep = Stream.count strm__ in
+            ("QUESTIONIDENT", get_buff len), (bp, ep)
+        | _ ->
+            let len = ident2 (store 0 c) strm__ in
+            let ep = Stream.count strm__ in
+            keyword_or_error (bp, ep) (get_buff len)
         end
     | Some '<' -> Stream.junk strm__; less bp strm__
     | Some (':' as c1) ->
         Stream.junk strm__;
         let len =
-          try
-            match Stream.peek strm__ with
-              Some (']' | ':' | '=' | '>' as c2) ->
-                Stream.junk strm__; store (store 0 c1) c2
-            | _ -> store 0 c1
-          with
-            Stream.Failure -> raise (Stream.Error "")
+          match Stream.peek strm__ with
+            Some (']' | ':' | '=' | '>' as c2) ->
+              Stream.junk strm__; store (store 0 c1) c2
+          | _ -> store 0 c1
         in
         let ep = Stream.count strm__ in
-        let id = get_buff len in keyword_or_error (bp, ep) id
+        keyword_or_error (bp, ep) (get_buff len)
     | Some ('>' | '|' as c1) ->
         Stream.junk strm__;
         let len =
-          try
-            match Stream.peek strm__ with
-              Some (']' | '}' as c2) ->
-                Stream.junk strm__; store (store 0 c1) c2
-            | _ -> ident2 (store 0 c1) strm__
-          with
-            Stream.Failure -> raise (Stream.Error "")
+          match Stream.peek strm__ with
+            Some (']' | '}' as c2) ->
+              Stream.junk strm__; store (store 0 c1) c2
+          | _ -> ident2 (store 0 c1) strm__
         in
         let ep = Stream.count strm__ in
-        let id = get_buff len in keyword_or_error (bp, ep) id
+        keyword_or_error (bp, ep) (get_buff len)
     | Some ('[' | '{' as c1) ->
         Stream.junk strm__;
         let s = strm__ in
@@ -324,29 +308,23 @@ let next_token_fun dfa ssd find_kwd glexr =
     | Some '.' ->
         Stream.junk strm__;
         let id =
-          try
-            match Stream.peek strm__ with
-              Some '.' -> Stream.junk strm__; ".."
-            | _ -> if ssd && after_space then " ." else "."
-          with
-            Stream.Failure -> raise (Stream.Error "")
+          match Stream.peek strm__ with
+            Some '.' -> Stream.junk strm__; ".."
+          | _ -> if ssd && after_space then " ." else "."
         in
         let ep = Stream.count strm__ in keyword_or_error (bp, ep) id
     | Some ';' ->
         Stream.junk strm__;
         let id =
-          try
-            match Stream.peek strm__ with
-              Some ';' -> Stream.junk strm__; ";;"
-            | _ -> ";"
-          with
-            Stream.Failure -> raise (Stream.Error "")
+          match Stream.peek strm__ with
+            Some ';' -> Stream.junk strm__; ";;"
+          | _ -> ";"
         in
         let ep = Stream.count strm__ in keyword_or_error (bp, ep) id
     | Some '\\' ->
         Stream.junk strm__;
-        let ep = Stream.count strm__ in
-        ("LIDENT", get_buff (ident3 0 strm__)), (bp, ep)
+        let len = ident3 0 strm__ in
+        let ep = Stream.count strm__ in ("LIDENT", get_buff len), (bp, ep)
     | Some c ->
         Stream.junk strm__;
         let ep = Stream.count strm__ in
@@ -356,8 +334,7 @@ let next_token_fun dfa ssd find_kwd glexr =
     if !no_quotations then
       let (strm__ : _ Stream.t) = strm in
       let len = ident2 (store 0 '<') strm__ in
-      let ep = Stream.count strm__ in
-      let id = get_buff len in keyword_or_error (bp, ep) id
+      let ep = Stream.count strm__ in keyword_or_error (bp, ep) (get_buff len)
     else
       let (strm__ : _ Stream.t) = strm in
       match Stream.peek strm__ with
@@ -389,7 +366,7 @@ let next_token_fun dfa ssd find_kwd glexr =
       | _ ->
           let len = ident2 (store 0 '<') strm__ in
           let ep = Stream.count strm__ in
-          let id = get_buff len in keyword_or_error (bp, ep) id
+          keyword_or_error (bp, ep) (get_buff len)
   and string bp len (strm__ : _ Stream.t) =
     let bp1 = Stream.count strm__ in
     match Stream.peek strm__ with
@@ -897,11 +874,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 655, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 655, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 655, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 656, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 656, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 649, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 649, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 649, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 650, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 650, 37)));
        tok_comm = None}
   in
   let glex =
