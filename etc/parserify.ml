@@ -222,15 +222,11 @@ value rewrite_parser =
         in
         rewrite top e
     | <:expr< $f$ strm__ >> ->
-        if top then
-          <:expr<
-            match try Some ($f$ strm__) with [ Stream.Failure -> None ] with
-            [ Some a -> a
-            | _  -> raise Stream.Failure ]
-          >>
-        else
-          let v = free_var_in_expr 's' f in
-          <:expr< let $lid:v$ = strm__ in $subst v f$ $lid:v$ >>
+        <:expr<
+          match try Some ($f$ strm__) with [ Stream.Failure -> None ] with
+          [ Some a -> a
+          | _  -> raise Stream.Failure ]
+        >>
     | e -> semantic e ]
 ;
 

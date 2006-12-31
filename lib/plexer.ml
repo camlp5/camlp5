@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.22 2006/12/31 18:05:06 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.23 2006/12/31 18:30:07 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -214,7 +214,7 @@ value next_token_fun dfa ssd find_kwd glexr =
            | [: len = ident2 (store 0 c) :] ep ->
                keyword_or_error (bp, ep) (get_buff len) ] ! :] ->
         a
-    | [: `'<'; s :] -> less bp s
+    | [: `'<'; r = less bp ! :] -> r
     | [: `(':' as c1);
          len =
            parser
