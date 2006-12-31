@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.19 2006/12/31 12:48:47 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.20 2006/12/31 16:30:10 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -160,28 +160,28 @@ value next_token_fun dfa ssd find_kwd glexr =
   and next_token_kont after_space =
     parser bp
     [ [: `('A'..'Z' | '\192'..'\214' | '\216'..'\222' as c);
-         len = ident (store 0 c) :] ep ->
+         len = ident (store 0 c) ! :] ep ->
         let id = get_buff len in
         let tok =
           try ("", find_kwd id) with [ Not_found -> ("UIDENT", id) ]
         in
         (tok, (bp, ep))
     | [: `('a'..'z' | '\223'..'\246' | '\248'..'\255' | '_' as c);
-         len = ident (store 0 c) :] ep ->
+         len = ident (store 0 c) ! :] ep ->
         let id = get_buff len in
         let tok =
           try ("", find_kwd id) with [ Not_found -> ("LIDENT", id) ]
         in
         (tok, (bp, ep))
-    | [: `('1'..'9' as c); tok = number (store 0 c) :] ep ->
+    | [: `('1'..'9' as c); tok = number (store 0 c) ! :] ep ->
         (tok, (bp, ep))
     | [: `'0';
          tok =
            parser
-           [ [: `'o' | 'O'; tok = digits octal (mstore 0 "0o") :] -> tok
-           | [: `'x' | 'X'; tok = digits hexa (mstore 0 "0x") :] -> tok
-           | [: `'b' | 'B'; tok = digits binary (mstore 0 "0b") :] -> tok
-           | [: tok = number (store 0 '0') :] -> tok ] :] ep ->
+           [ [: `'o' | 'O'; tok = digits octal (mstore 0 "0o") ! :] -> tok
+           | [: `'x' | 'X'; tok = digits hexa (mstore 0 "0x") ! :] -> tok
+           | [: `'b' | 'B'; tok = digits binary (mstore 0 "0b") ! :] -> tok
+           | [: tok = number (store 0 '0') :] -> tok ] ! :] ep ->
         (tok, (bp, ep))
     | [: `'''; s :] ->
         match Stream.npeek 2 s with

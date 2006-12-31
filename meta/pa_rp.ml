@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_rp.ml,v 1.3 2006/12/26 08:54:09 deraugla Exp $ *)
+(* $Id: pa_rp.ml,v 1.4 2006/12/31 16:30:10 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -149,13 +149,11 @@ value rec stream_pattern loc epo e ekont =
       | _ -> e ]
   | [(spc, err) :: spcl] ->
       let skont =
-        let ekont err =
-          let str =
-            match err with
-            [ Some estr -> estr
-            | _ -> <:expr< "" >> ]
-          in
-          <:expr< raise (Stream.Error $str$) >>
+        let ekont =
+          fun
+          [ Some (Some estr) -> <:expr< raise (Stream.Error $estr$) >>
+          | Some None -> <:expr< raise Stream.Failure >>
+          | None -> <:expr< raise (Stream.Error "") >> ]
         in
         stream_pattern loc epo e ekont spcl
       in
@@ -168,13 +166,11 @@ value stream_patterns_term loc ekont tspel =
       (fun (p, w, loc, spcl, epo, e) ->
          let p = <:patt< Some $p$ >> in
          let e =
-           let ekont err =
-             let str =
-               match err with
-               [ Some estr -> estr
-               | _ -> <:expr< "" >> ]
-             in
-             <:expr< raise (Stream.Error $str$) >>
+           let ekont =
+             fun
+             [ Some (Some estr) -> <:expr< raise (Stream.Error $estr$) >>
+             | Some None -> <:expr< raise Stream.Failure >>
+             | None -> <:expr< raise (Stream.Error "") >> ]
            in
            let skont = stream_pattern loc epo e ekont spcl in
            <:expr< do { $junk_fun loc$ $lid:strm_n$; $skont$ } >>
@@ -297,8 +293,9 @@ EXTEND
       | -> [] ] ]
   ;
   stream_patt_comp_err:
-    [ [ spc = stream_patt_comp; eo = OPT [ "?"; e = expr -> e ] ->
-          (spc, eo) ] ]
+    [ [ spc = stream_patt_comp; "?"; e = expr -> (spc, Some (Some e))
+      | spc = stream_patt_comp; "!" -> (spc, Some None)
+      | spc = stream_patt_comp -> (spc, None) ] ]
   ;
   stream_patt_comp:
     [ [ "`"; p = patt; eo = OPT [ "when"; e = expr -> e ] -> SpTrm loc p eo

@@ -185,10 +185,7 @@ let next_token_fun dfa ssd find_kwd glexr =
     match Stream.peek strm__ with
       Some ('A'..'Z' | '\192'..'\214' | '\216'..'\222' as c) ->
         Stream.junk strm__;
-        let len =
-          try ident (store 0 c) strm__ with
-            Stream.Failure -> raise (Stream.Error "")
-        in
+        let len = ident (store 0 c) strm__ in
         let ep = Stream.count strm__ in
         let id = get_buff len in
         let tok =
@@ -198,10 +195,7 @@ let next_token_fun dfa ssd find_kwd glexr =
         tok, (bp, ep)
     | Some ('a'..'z' | '\223'..'\246' | '\248'..'\255' | '_' as c) ->
         Stream.junk strm__;
-        let len =
-          try ident (store 0 c) strm__ with
-            Stream.Failure -> raise (Stream.Error "")
-        in
+        let len = ident (store 0 c) strm__ in
         let ep = Stream.count strm__ in
         let id = get_buff len in
         let tok =
@@ -211,34 +205,19 @@ let next_token_fun dfa ssd find_kwd glexr =
         tok, (bp, ep)
     | Some ('1'..'9' as c) ->
         Stream.junk strm__;
-        let tok =
-          try number (store 0 c) strm__ with
-            Stream.Failure -> raise (Stream.Error "")
-        in
+        let tok = number (store 0 c) strm__ in
         let ep = Stream.count strm__ in tok, (bp, ep)
     | Some '0' ->
         Stream.junk strm__;
         let tok =
-          try
-            match Stream.peek strm__ with
-              Some ('o' | 'O') ->
-                Stream.junk strm__;
-                begin try digits octal (mstore 0 "0o") strm__ with
-                  Stream.Failure -> raise (Stream.Error "")
-                end
-            | Some ('x' | 'X') ->
-                Stream.junk strm__;
-                begin try digits hexa (mstore 0 "0x") strm__ with
-                  Stream.Failure -> raise (Stream.Error "")
-                end
-            | Some ('b' | 'B') ->
-                Stream.junk strm__;
-                begin try digits binary (mstore 0 "0b") strm__ with
-                  Stream.Failure -> raise (Stream.Error "")
-                end
-            | _ -> number (store 0 '0') strm__
-          with
-            Stream.Failure -> raise (Stream.Error "")
+          match Stream.peek strm__ with
+            Some ('o' | 'O') ->
+              Stream.junk strm__; digits octal (mstore 0 "0o") strm__
+          | Some ('x' | 'X') ->
+              Stream.junk strm__; digits hexa (mstore 0 "0x") strm__
+          | Some ('b' | 'B') ->
+              Stream.junk strm__; digits binary (mstore 0 "0b") strm__
+          | _ -> number (store 0 '0') strm__
         in
         let ep = Stream.count strm__ in tok, (bp, ep)
     | Some '\'' ->

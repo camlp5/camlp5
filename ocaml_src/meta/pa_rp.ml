@@ -220,20 +220,32 @@ let rec stream_pattern loc epo e ekont =
       end
   | (spc, err) :: spcl ->
       let skont =
-        let ekont err =
-          let str =
-            match err with
-              Some estr -> estr
-            | _ -> MLast.ExStr (loc, "")
-          in
-          MLast.ExApp
-            (loc, MLast.ExLid (loc, "raise"),
-             MLast.ExApp
-               (loc,
-                MLast.ExAcc
-                  (loc, MLast.ExUid (loc, "Stream"),
-                   MLast.ExUid (loc, "Error")),
-                str))
+        let ekont =
+          function
+            Some (Some estr) ->
+              MLast.ExApp
+                (loc, MLast.ExLid (loc, "raise"),
+                 MLast.ExApp
+                   (loc,
+                    MLast.ExAcc
+                      (loc, MLast.ExUid (loc, "Stream"),
+                       MLast.ExUid (loc, "Error")),
+                    estr))
+          | Some None ->
+              MLast.ExApp
+                (loc, MLast.ExLid (loc, "raise"),
+                 MLast.ExAcc
+                   (loc, MLast.ExUid (loc, "Stream"),
+                    MLast.ExUid (loc, "Failure")))
+          | None ->
+              MLast.ExApp
+                (loc, MLast.ExLid (loc, "raise"),
+                 MLast.ExApp
+                   (loc,
+                    MLast.ExAcc
+                      (loc, MLast.ExUid (loc, "Stream"),
+                       MLast.ExUid (loc, "Error")),
+                    MLast.ExStr (loc, "")))
         in
         stream_pattern loc epo e ekont spcl
       in
@@ -246,20 +258,32 @@ let stream_patterns_term loc ekont tspel =
       (fun (p, w, loc, spcl, epo, e) ->
          let p = MLast.PaApp (loc, MLast.PaUid (loc, "Some"), p) in
          let e =
-           let ekont err =
-             let str =
-               match err with
-                 Some estr -> estr
-               | _ -> MLast.ExStr (loc, "")
-             in
-             MLast.ExApp
-               (loc, MLast.ExLid (loc, "raise"),
-                MLast.ExApp
-                  (loc,
-                   MLast.ExAcc
-                     (loc, MLast.ExUid (loc, "Stream"),
-                      MLast.ExUid (loc, "Error")),
-                   str))
+           let ekont =
+             function
+               Some (Some estr) ->
+                 MLast.ExApp
+                   (loc, MLast.ExLid (loc, "raise"),
+                    MLast.ExApp
+                      (loc,
+                       MLast.ExAcc
+                         (loc, MLast.ExUid (loc, "Stream"),
+                          MLast.ExUid (loc, "Error")),
+                       estr))
+             | Some None ->
+                 MLast.ExApp
+                   (loc, MLast.ExLid (loc, "raise"),
+                    MLast.ExAcc
+                      (loc, MLast.ExUid (loc, "Stream"),
+                       MLast.ExUid (loc, "Failure")))
+             | None ->
+                 MLast.ExApp
+                   (loc, MLast.ExLid (loc, "raise"),
+                    MLast.ExApp
+                      (loc,
+                       MLast.ExAcc
+                         (loc, MLast.ExUid (loc, "Stream"),
+                          MLast.ExUid (loc, "Error")),
+                       MLast.ExStr (loc, "")))
            in
            let skont = stream_pattern loc epo e ekont spcl in
            MLast.ExSeq
@@ -572,18 +596,25 @@ Grammar.extend
     [None, None,
      [[Gramext.Snterm
          (Grammar.Entry.obj
-            (stream_patt_comp : 'stream_patt_comp Grammar.Entry.e));
-       Gramext.Sopt
-         (Gramext.srules
-            [[Gramext.Stoken ("", "?");
-              Gramext.Snterm
-                (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
-             Gramext.action
-               (fun (e : 'expr) _ (loc : Token.location) -> (e : 'e__1))])],
+            (stream_patt_comp : 'stream_patt_comp Grammar.Entry.e))],
       Gramext.action
-        (fun (eo : 'e__1 option) (spc : 'stream_patt_comp)
-           (loc : Token.location) ->
-           (spc, eo : 'stream_patt_comp_err))]];
+        (fun (spc : 'stream_patt_comp) (loc : Token.location) ->
+           (spc, None : 'stream_patt_comp_err));
+      [Gramext.Snterm
+         (Grammar.Entry.obj
+            (stream_patt_comp : 'stream_patt_comp Grammar.Entry.e));
+       Gramext.Stoken ("", "!")],
+      Gramext.action
+        (fun _ (spc : 'stream_patt_comp) (loc : Token.location) ->
+           (spc, Some None : 'stream_patt_comp_err));
+      [Gramext.Snterm
+         (Grammar.Entry.obj
+            (stream_patt_comp : 'stream_patt_comp Grammar.Entry.e));
+       Gramext.Stoken ("", "?");
+       Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
+      Gramext.action
+        (fun (e : 'expr) _ (spc : 'stream_patt_comp) (loc : Token.location) ->
+           (spc, Some (Some e) : 'stream_patt_comp_err))]];
     Grammar.Entry.obj (stream_patt_comp : 'stream_patt_comp Grammar.Entry.e),
     None,
     [None, None,
@@ -605,9 +636,9 @@ Grammar.extend
               Gramext.Snterm
                 (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
              Gramext.action
-               (fun (e : 'expr) _ (loc : Token.location) -> (e : 'e__2))])],
+               (fun (e : 'expr) _ (loc : Token.location) -> (e : 'e__1))])],
       Gramext.action
-        (fun (eo : 'e__2 option) (p : 'patt) _ (loc : Token.location) ->
+        (fun (eo : 'e__1 option) (p : 'patt) _ (loc : Token.location) ->
            (SpTrm (loc, p, eo) : 'stream_patt_comp))]];
     Grammar.Entry.obj (ipatt : 'ipatt Grammar.Entry.e), None,
     [None, None,

@@ -40,13 +40,13 @@ value parser_cases ppf (spel, k) =
   and stream_patt ppf (sp, k) =
     match sp with
     [ [] -> k ppf
-    | [(spc, None)] -> fprintf ppf "%a" stream_patt_comp (spc, k)
-    | [(spc, Some e)] ->
+    | [(spc, None | Some None)] -> fprintf ppf "%a" stream_patt_comp (spc, k)
+    | [(spc, Some (Some e))] ->
         fprintf ppf "(@[? %a@ %a@]" stream_patt_comp (spc, nok)
           expr (e, ks ")" k)
-    | [(spc, None) :: spcl] ->
+    | [(spc, None | Some None) :: spcl] ->
         fprintf ppf "%a@ %a" stream_patt_comp (spc, nok) stream_patt (spcl, k)
-    | [(spc, Some e) :: spcl] ->
+    | [(spc, Some (Some e)) :: spcl] ->
         fprintf ppf "(@[? %a@ %a@]@ %a" stream_patt_comp (spc, nok)
           expr (e, ks ")" nok) stream_patt (spcl, k) ]
   and stream_patt_comp ppf (spc, k) =

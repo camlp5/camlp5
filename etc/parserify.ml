@@ -122,7 +122,7 @@ value rewrite_parser =
         [ NotImpl -> ge ]
     | <:expr< let $p$ = strm__ in $e$ >> ->
         <:expr< let $p$ = strm__ in $rewrite False e$ >>
-    | <:expr< let $p$ = $f$ strm__ in $sp_kont$ >> when top ->
+    | <:expr< let $p$ = $f$ strm__ in $sp_kont$ >> (*when top*) ->
         <:expr<
           match try Some ($f$ strm__) with [ Stream.Failure -> None ] with
           [ Some $p$ -> $rewrite False sp_kont$
@@ -131,7 +131,7 @@ value rewrite_parser =
     | <:expr< let $p$ = $e$ in $sp_kont$ >> ->
         if match e with
            [ <:expr< match try Some $_$ with [ Stream.Failure -> None ] with
-                      [ $list:_$ ] >>
+                     [ $list:_$ ] >>
            | <:expr< match Stream.peek strm__ with [ $list:_$ ] >>
            | <:expr< try $_$ with [ Stream.Failure -> $_$ ] >>
            | <:expr< let $_$ = Stream.count strm__ in $_$ >> -> True
@@ -149,8 +149,8 @@ value rewrite_parser =
           >>
         else semantic ge
     | <:expr< match try Some $e$ with [ Stream.Failure -> None ] with
-               [ Some $p$ -> $sp_kont$
-               | _ -> $p_kont$ ] >> ->
+              [ Some $p$ -> $sp_kont$
+              | _ -> $p_kont$ ] >> ->
         let f = parserify e in
         if not top && is_raise_failure p_kont then semantic ge
         else
@@ -265,29 +265,39 @@ value spc_of_parser =
     [ <:expr<
         match try Some ($f$ strm__) with [ Stream.Failure -> None ] with
         [ Some $p$ -> $sp_kont$
-        | _ -> raise (Stream.Error $err$) ]
+        | _ -> raise $err$ ]
       >> ->
         let err =
           match err with
-          [ <:expr< "" >> -> None
-          | _ -> Some err ]
+          [ <:expr< Stream.Error "" >> -> Some None
+          | <:expr< Stream.Error $err$ >> -> Some (Some (Some err))
+          | <:expr< Stream.Failure >> -> Some (Some None)
+          | _ -> None ]
         in
-        let spc = (SPCnterm p f, err) in
-        let (sp, epo, e) = kont sp_kont in
-        ([spc :: sp], epo, e)
+        match err with
+        [ Some err ->
+            let spc = (SPCnterm p f, err) in
+            let (sp, epo, e) = kont sp_kont in
+            ([spc :: sp], epo, e)
+        | None -> ([], None, e) ]
     | <:expr<
         match Stream.peek strm__ with
         [ Some $p$ $when:wo$ -> do { Stream.junk strm__; $sp_kont$ }
-        | _ -> raise (Stream.Error $err$) ]
+        | _ -> raise $err$ ]
       >> ->
         let err =
           match err with
-          [ <:expr< "" >> -> None
-          | _ -> Some err ]
+          [ <:expr< Stream.Error "" >> -> Some None
+          | <:expr< Stream.Error $err$ >> -> Some (Some (Some err))
+          | <:expr< Stream.Failure >> -> Some (Some None)
+          | _ -> None ]
         in
-        let spc = (SPCterm (p, wo), err) in
-        let (sp, epo, e) = kont sp_kont in
-        ([spc :: sp], epo, e)
+        match err with
+        [ Some err ->
+            let spc = (SPCterm (p, wo), err) in
+            let (sp, epo, e) = kont sp_kont in
+            ([spc :: sp], epo, e)
+        | None -> ([], None, e) ]
     | <:expr< let $p$ = strm__ in $sp_kont$ >> ->
         let spc = (SPCsterm p, None) in
         let (sp, epo, e) = kont sp_kont in

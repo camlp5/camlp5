@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.11 2006/12/26 08:54:09 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.12 2006/12/31 16:30:10 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -142,7 +142,7 @@ value symbolchar =
 
 value prefixop =
   let list = ['!'; '?'; '~'] in
-  let excl = ["!="; "??"] in
+  let excl = ["!="; "??"; "?!"] in
   Grammar.Entry.of_parser gram "prefixop"
     (parser
        [: `("", x)

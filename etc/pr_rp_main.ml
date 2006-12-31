@@ -66,7 +66,7 @@ value parser_cases b spel k =
     let epo =
       match epo with
       [ Some p -> [: `patt p "" [: `S LR "->" :] :]
-      | _ -> [: `S LR "->" :] ]
+      | None -> [: `S LR "->" :] ]
     in
     HVbox
       [: b;
@@ -79,14 +79,20 @@ value parser_cases b spel k =
     match sp with
     [ [] -> [: `HVbox [: b; k :] :]
     | [(spc, None)] -> [: `stream_patt_comp b spc k :]
-    | [(spc, Some e)] ->
+    | [(spc, Some None)] -> [: `stream_patt_comp b spc [: `S LR "!"; k :] :]
+    | [(spc, Some (Some e))] ->
         [: `HVbox
               [: `stream_patt_comp b spc [: :];
                  `HVbox [: `S LR "?"; `expr e "" k :] :] :]
     | [(spc, None) :: spcl] ->
         [: `stream_patt_comp b spc [: `S RO ";" :];
            stream_patt [: :] spcl k :]
-    | [(spc, Some e) :: spcl] ->
+    | [(spc, Some None) :: spcl] ->
+        [: `HVbox
+              [: `stream_patt_comp b spc [: :];
+                 `HVbox [: `S LR "!"; `S RO ";" :] :];
+           stream_patt [: :] spcl k :]
+    | [(spc, Some (Some e)) :: spcl] ->
         [: `HVbox
               [: `stream_patt_comp b spc [: :];
                  `HVbox [: `S LR "?"; `expr e "" [: `S RO ";" :] :] :];

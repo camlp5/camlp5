@@ -9,4 +9,6 @@ type spc =
 
 value parser_of_expr :
   MLast.expr ->
-    list (list (spc * option MLast.expr) * option MLast.patt * MLast.expr);
+    list
+      (list
+         (spc * option (option MLast.expr)) * option MLast.patt * MLast.expr);

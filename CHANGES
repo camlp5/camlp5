@@ -1,6 +1,14 @@
 Camlp4s Version 1.0:
 --------------------
 
+* [31 Dec 06] Added the ability to add "!" (in Revised syntax) or "?!"
+  (in normal syntax) after a stream parser component to hint the preprocessor
+  that the called parser cannot fail (which must be true, but not checked)
+  which allows shorter code. E.g.
+     parser [: x = f; y = g ! :] -> (x, y)
+  This example is equivalent to:
+     parser [: x = f; s :] -> let y = g s in (x, y)
+
 * [19 Dec 06] Added "pa_pragma.cmo" adding the directive "#pragma <expr>"
   which executes <expr> in the context of the preprocessor.
 
