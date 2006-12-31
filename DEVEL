@@ -124,29 +124,36 @@ BEFORE COMMITTING YOUR CHANGES
    of the directory ocaml_src.
 
      To make the new versions, do:
-       make bootstrap_sources
+       make new_sources
        make promote_sources
 
      Notice that these pure ocaml sources are not supposed to be modified
-   by hand, but only created by the above commands. Besides, their source,
-   although pretty printed, are often not understandable, particularly for
+   by hand, but only created by the above commands. Besides, their sources,
+   although pretty printed, are often not easy to read, particularly for
    expanded grammars (of the statement 'EXTEND').
-     However, if these source do not compile, due to changes in the ocaml
+     However, if these sources do not compile, due to changes in the ocaml
    compiler, it is possible to edit them. In this case, similar changes
    may have to be done in the normal sources in revised syntax.
 
-     After doing 'make bootstrap_sources' above, and before doing 'make
+     After doing 'make new_sources' above, and before doing 'make
    promote_sources' below, it is possible to do 'make untouch_sources'
    which change the dates of the new created files with the dates of the
    old files if they are not modified. This way, the "cvs commit" will not
    have to compare these files, which may have some importance if you
    network is not fast.
 
-     The 'make bootstrap_sources' builds a directory named 'ocaml_src.new'.
-   If this directory still exists, due to a previous 'make bootstrap_sources',
+     The 'make new_sources' builds a directory named 'ocaml_src.new'.
+   If this directory still exists, due to a previous 'make new_sources',
    the command fails. In this case, just delete it (rm -rf ocaml_src.new)
    without problem: this directory is not part of the distribution, it is
    just temporary.
+
+     The command:
+       make bootstrap_sources
+   is a shortcut for:
+       make new_sources
+       make untouch_sources
+       make promote_sources
 
      After having rebuilt the pure ocaml sources, check they work by
    rebuilding everything from scratch, starting with "configure".

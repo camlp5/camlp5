@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.18 2006/12/26 08:54:09 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.19 2006/12/31 12:48:47 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -74,12 +74,6 @@ and ident3 len =
        s :] ->
       ident3 (store len c) s
   | [: :] -> len ]
-and base_number len =
-  parser
-  [ [: `'o' | 'O'; s :] -> digits octal (store len 'o') s
-  | [: `'x' | 'X'; s :] -> digits hexa (store len 'x') s
-  | [: `'b' | 'B'; s :] -> digits binary (store len 'b') s
-  | [: a = number len :] -> a ]
 and digits kind len =
   parser
   [ [: d = kind; s :] -> digits_under kind (store len d) s
@@ -165,22 +159,30 @@ value next_token_fun dfa ssd find_kwd glexr =
   }
   and next_token_kont after_space =
     parser bp
-    [ [: `('A'..'Z' | '\192'..'\214' | '\216'..'\222' as c); s :] ->
-        let id = get_buff (ident (store 0 c) s) in
-        let loc = (bp, Stream.count s) in
-        (try ("", find_kwd id) with [ Not_found -> ("UIDENT", id) ], loc)
-    | [: `('a'..'z' | '\223'..'\246' | '\248'..'\255' | '_' as c); s :] ->
-        let id = get_buff (ident (store 0 c) s) in
-        let loc = (bp, Stream.count s) in
-        (try ("", find_kwd id) with [ Not_found -> ("LIDENT", id) ], loc)
-    | [: `('1'..'9' as c); s :] ->
-        let tok = number (store 0 c) s in
-        let loc = (bp, Stream.count s) in
-        (tok, loc)
-    | [: `'0'; s :] ->
-        let tok = base_number (store 0 '0') s in
-        let loc = (bp, Stream.count s) in
-        (tok, loc)
+    [ [: `('A'..'Z' | '\192'..'\214' | '\216'..'\222' as c);
+         len = ident (store 0 c) :] ep ->
+        let id = get_buff len in
+        let tok =
+          try ("", find_kwd id) with [ Not_found -> ("UIDENT", id) ]
+        in
+        (tok, (bp, ep))
+    | [: `('a'..'z' | '\223'..'\246' | '\248'..'\255' | '_' as c);
+         len = ident (store 0 c) :] ep ->
+        let id = get_buff len in
+        let tok =
+          try ("", find_kwd id) with [ Not_found -> ("LIDENT", id) ]
+        in
+        (tok, (bp, ep))
+    | [: `('1'..'9' as c); tok = number (store 0 c) :] ep ->
+        (tok, (bp, ep))
+    | [: `'0';
+         tok =
+           parser
+           [ [: `'o' | 'O'; tok = digits octal (mstore 0 "0o") :] -> tok
+           | [: `'x' | 'X'; tok = digits hexa (mstore 0 "0x") :] -> tok
+           | [: `'b' | 'B'; tok = digits binary (mstore 0 "0b") :] -> tok
+           | [: tok = number (store 0 '0') :] -> tok ] :] ep ->
+        (tok, (bp, ep))
     | [: `'''; s :] ->
         match Stream.npeek 2 s with
         [ [_; '''] | ['\\'; _] ->
