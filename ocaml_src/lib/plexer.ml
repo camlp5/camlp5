@@ -231,16 +231,18 @@ let next_token_fun dfa ssd find_kwd glexr =
         end
     | Some '\"' ->
         Stream.junk strm__;
-        let tok = "STRING", get_buff (string bp 0 strm__) in
-        let loc = bp, Stream.count strm__ in tok, loc
+        let len = string bp 0 strm__ in
+        let ep = Stream.count strm__ in
+        let tok = "STRING", get_buff len in tok, (bp, ep)
     | Some '$' ->
         Stream.junk strm__;
         let tok = dollar bp 0 strm__ in
-        let loc = bp, Stream.count strm__ in tok, loc
+        let ep = Stream.count strm__ in tok, (bp, ep)
     | Some ('!' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' as c) ->
         Stream.junk strm__;
-        let id = get_buff (ident2 (store 0 c) strm__) in
-        keyword_or_error (bp, Stream.count strm__) id
+        let len = ident2 (store 0 c) strm__ in
+        let ep = Stream.count strm__ in
+        keyword_or_error (bp, ep) (get_buff len)
     | Some ('~' as c) ->
         Stream.junk strm__;
         begin try
@@ -895,11 +897,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 659, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 659, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 659, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 660, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 660, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 655, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 655, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 655, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 656, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 656, 37)));
        tok_comm = None}
   in
   let glex =

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.20 2006/12/31 16:30:10 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.21 2006/12/31 17:02:12 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -190,18 +190,14 @@ value next_token_fun dfa ssd find_kwd glexr =
             let loc = (bp, Stream.count s) in
             (tok, loc)
         | _ -> keyword_or_error (bp, Stream.count s) "'" ]
-    | [: `'"'; s :] ->
-        let tok = ("STRING", get_buff (string bp 0 s)) in
-        let loc = (bp, Stream.count s) in
-        (tok, loc)
-    | [: `'$'; s :] ->
-        let tok = dollar bp 0 s in
-        let loc = (bp, Stream.count s) in
-        (tok, loc)
+    | [: `'"'; len = string bp 0 ! :] ep ->
+        let tok = ("STRING", get_buff len) in
+        (tok, (bp, ep))
+    | [: `'$'; tok = dollar bp 0 ! :] ep ->
+        (tok, (bp, ep))
     | [: `('!' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' as c);
-         s :] ->
-        let id = get_buff (ident2 (store 0 c) s) in
-        keyword_or_error (bp, Stream.count s) id
+         len = ident2 (store 0 c) ! :] ep ->
+        keyword_or_error (bp, ep) (get_buff len)
     | [: `('~' as c);
          a =
            parser
