@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.28 2007/01/01 22:51:50 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.29 2007/01/01 23:23:55 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -723,11 +723,32 @@ value pat_tab = do {
     [("[]",
       fun () ->
         {ctyp = <:ctyp< list $ty_var ()$ >>;
-         item param = Obj.magic param = []});
+         item param =
+           match Obj.magic param with
+           [ [] -> Some []
+           | _ -> None ]});
+     ("Failure",
+      fun () ->
+        {ctyp = <:ctyp< string -> exn >>;
+         item param =
+           match Obj.magic param with
+           [ Failure x -> Some [Obj.repr x]
+           | _ -> None ]});
      ("None",
       fun () ->
         {ctyp = <:ctyp< option $ty_var ()$ >>;
-         item param = Obj.magic param = None})];
+         item param =
+           match Obj.magic param with
+           [ None -> Some []
+           | Some _ -> None ]});
+     ("Some",
+      fun () ->
+        let ta = ty_var () in
+        {ctyp = <:ctyp< $ta$ -> option $ta$ >>;
+         item param =
+           match Obj.magic param with
+           [ Some x -> Some [Obj.repr x]
+           | _ -> None ]})];
   ht
 };
 
@@ -815,12 +836,20 @@ value rec eval_expr env e =
 
 and eval_match loc env e pel =
   let v = eval_expr env e in
-  eval_match_assoc_list loc env v.ctyp (ty_var ()) pel v.item
+  match eval_match_assoc_list loc env v.ctyp (ty_var ()) pel v.item with
+  [ Some v -> v
+  | None ->
+      raise
+        (Match_failure
+           (Pcaml.input_file.val, Stdpp.line_nb loc,
+            Stdpp.first_pos loc - Stdpp.bol_pos loc)) ]
 
 and eval_try loc env e pel =
   try eval_expr env e with exn ->
     let v = {ctyp = <:ctyp< exn >>; item = Obj.magic exn} in
-    eval_match_assoc_list loc env v.ctyp (ty_var ()) pel v.item
+    match eval_match_assoc_list loc env v.ctyp (ty_var ()) pel v.item with
+    [ Some v -> v
+    | None -> raise exn ]
 
 and eval_let loc env rf pel e =
   if rf then do {
@@ -882,20 +911,24 @@ and eval_fun loc env pel =
   let t1 = ty_var () in
   let t2 = ty_var () in
   let t = <:ctyp< $t1$ -> $t2$ >> in
-  let e param = (eval_match_assoc_list loc env t1 t2 pel param).item in
+  let e param =
+    match eval_match_assoc_list loc env t1 t2 pel param with
+    [ Some v -> v.item
+    | None ->
+        raise
+          (Match_failure
+             (Pcaml.input_file.val, Stdpp.line_nb loc,
+              Stdpp.first_pos loc - Stdpp.bol_pos loc)) ]
+  in
   {ctyp = t; item = Obj.repr e}
 
 and eval_match_assoc_list loc env t1 t2 pel param =
   match pel with
   [ [pe :: pel] ->
       match eval_match_assoc loc env t1 t2 pe param with
-      [ Some v -> v
+      [ Some v -> Some v
       | None -> eval_match_assoc_list loc env t1 t2 pel param ]
-  | [] ->
-      raise
-        (Match_failure
-           (Pcaml.input_file.val, Stdpp.line_nb loc,
-            Stdpp.first_pos loc - Stdpp.bol_pos loc)) ]
+  | [] -> None ]
 
 and eval_match_assoc loc env t1 t2 (p, eo, e) param =
   match eval_patt loc p env t1 param with
@@ -915,6 +948,7 @@ and eval_match_assoc loc env t1 t2 (p, eo, e) param =
   | None -> None ]
 
 and eval_patt loc p env tp param =
+  let loc = MLast.loc_of_patt p in
   match p with
   [ <:patt< $uid:"::"$ $p1$ $p2$ >> ->
       let ta = ty_var () in
@@ -928,22 +962,20 @@ and eval_patt loc p env tp param =
         | [] -> None ]
       else bad_type loc t tp
 
-  | <:patt< Failure $p$ >> ->
-      let ta = <:ctyp< string >> in
-      let t = <:ctyp< exn >> in
-      if unify loc t tp then
-        match Obj.magic param with
-        [ Failure x -> eval_patt loc p env ta (Obj.repr x)
-        | _ -> None ]
-      else bad_type loc t tp
-  | <:patt< Some $p$ >> ->
-      let ta = ty_var () in
-      let t = <:ctyp< option $ta$ >> in
-      if unify loc t tp then
-        match Obj.magic param with
-        [ Some x -> eval_patt loc p env ta x
-        | None -> None ]
-      else bad_type loc t tp
+  | <:patt< $uid:s$ $p$ >> ->
+      match
+        try Some (Hashtbl.find pat_tab s ()) with [ Not_found -> None ]
+      with
+      [ Some pt ->
+          match pt.ctyp with
+          [ <:ctyp< $t1$ -> $t2$ >> ->
+              if unify loc t2 tp then
+                match pt.item param with
+                [ Some [x] -> eval_patt loc p env t1 (Obj.repr x)
+                | Some _ | None -> None ]
+              else bad_type loc t2 tp
+          | _ -> unbound_cons loc s ]
+      | None -> unbound_cons loc s ]
 
   | <:patt< $uid:s$ >> ->
       match
@@ -951,9 +983,11 @@ and eval_patt loc p env tp param =
       with
       [ Some pt ->
           if unify loc pt.ctyp tp then
-            if pt.item param then Some env else None
+            match pt.item param with
+            [ Some [] -> Some env
+            | Some _ | None -> None ]
           else bad_type loc pt.ctyp tp
-      | None -> unbound_cons (MLast.loc_of_patt p) s ]
+      | None -> unbound_cons loc s ]
 
   | <:patt< $p1$ $p2$ >> ->
       let t1 = ty_var () in
