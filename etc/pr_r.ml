@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_r.ml,v 1.13 2006/12/26 08:54:09 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.14 2007/01/01 01:53:12 deraugla Exp $ *)
 
 open Pcaml;
 open Spretty;
@@ -374,8 +374,18 @@ and let_binding0 b e k =
                `ctyp t [: `S LR "=" :] :];
          `expr e k :]
   | _ ->
-      [: `HVbox [: `HVbox b; `HOVbox (list patt pl [: `S LR "=" :]) :];
-         `expr e k :] ]
+      match let_sequence e with
+      [ Some el ->
+          [: `BEbox
+               [: `HVbox
+                    [: `HVbox b;
+                       `HOVbox
+                          (list patt pl [: `S LR "="; `S LR "do {" :]) :] :];
+             `HVbox [: `HVbox [: :]; sequence_loop el :];
+             `HVbox [: `S LO "}"; k :] :]
+      | None ->
+          [: `HVbox [: `HVbox b; `HOVbox (list patt pl [: `S LR "=" :]) :];
+             `expr e k :] ] ]
 and match_assoc_list pwel k =
   match pwel with
   [ [pwe] -> match_assoc [: `S LR "[" :] pwe [: `S LR "]"; k :]
@@ -398,7 +408,9 @@ and match_assoc b (p, w, e) k =
                  `HVbox [: `S LR "when"; `expr e1 [: `S LR "->" :] :] :] :]
     | _ -> [: `patt p [: k; `S LR "->" :] :] ]
   in
-  HVbox [: b; `HVbox [: `HVbox s; `expr e k :] :]
+  match let_sequence e with
+  [ Some el -> HVbox [: b; `sequence [: :] [: :] s el k :]
+  | None -> HVbox [: b; `HVbox [: `HVbox s; `expr e k :] :] ]
 ;
 
 value label lab = S LR (var_escaped lab);
