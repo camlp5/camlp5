@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.26 2007/01/01 22:20:31 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.27 2007/01/01 22:45:59 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -720,7 +720,7 @@ value pat_tab = do {
   let ht = Hashtbl.create 1 in
   let loc = Token.dummy_loc in
   List.iter (fun (k, v) -> Hashtbl.add ht k v)
-    [("[]1",
+    [("[]",
       fun () ->
         {ctyp = <:ctyp< list $ty_var ()$ >>;
          item param = Obj.magic param = []});
@@ -740,6 +740,8 @@ value rec eval_expr env e =
       eval_let loc env rf pel e
   | <:expr< match $e$ with [ $list:pel$ ] >> ->
       eval_match loc env e pel
+  | <:expr< try $e$ with [ $list:pel$ ] >> ->
+      eval_try loc env e pel
   | <:expr< if $e1$ then $e2$ else $e3$ >> ->
       let v = eval_expr env e1 in
       match v.ctyp with
@@ -814,6 +816,11 @@ value rec eval_expr env e =
 and eval_match loc env e pel =
   let v = eval_expr env e in
   eval_match_assoc_list loc env v.ctyp (ty_var ()) pel v.item
+
+and eval_try loc env e pel =
+  try eval_expr env e with exn ->
+    let v = {ctyp = <:ctyp< exn >>; item = Obj.magic exn} in
+    eval_match_assoc_list loc env v.ctyp (ty_var ()) pel v.item
 
 and eval_let loc env rf pel e =
   if rf then do {
@@ -921,6 +928,14 @@ and eval_patt loc p env tp param =
         | [] -> None ]
       else bad_type loc t tp
 
+  | <:patt< Failure $p$ >> ->
+      let ta = <:ctyp< string >> in
+      let t = <:ctyp< exn >> in
+      if unify loc t tp then
+        match Obj.magic param with
+        [ Some x -> eval_patt loc p env ta x
+        | None -> None ]
+      else bad_type loc t tp
   | <:patt< Some $p$ >> ->
       let ta = ty_var () in
       let t = <:ctyp< option $ta$ >> in
