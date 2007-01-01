@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.23 2007/01/01 10:14:11 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.24 2007/01/01 13:56:17 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -38,6 +38,7 @@ module Type =
 
 type typed 'a = { ctyp : Type.t; item : 'a };
 type expr_v = typed Obj.t;
+type bind_v = { by_let : bool; expr : mutable expr_v };
 
 value ty_var =
   let loc = Stdpp.dummy_loc in
@@ -50,6 +51,7 @@ value rec type_of_ctyp =
   [ MLast.TyAcc loc t1 t2 -> <:ctyp< $type_of_ctyp t1$ . $type_of_ctyp t2$ >>
   | MLast.TyAny loc -> <:ctyp< _ >>
   | MLast.TyApp loc t1 t2 -> <:ctyp< $type_of_ctyp t1$ $type_of_ctyp t2$ >>
+  | MLast.TyArr loc t1 t2 -> <:ctyp< $type_of_ctyp t1$ -> $type_of_ctyp t2$ >>
   | MLast.TyLid loc s -> <:ctyp< $lid:s$ >>
   | MLast.TyQuo loc s ->
       try List.assoc s vars.val with
@@ -242,10 +244,18 @@ value val_tab = do {
         let t = ty_var () in
         {ctyp = <:ctyp< $t$ -> $t$ -> bool >>;
          item = Obj.repr \=});
+     ("*",
+      fun () ->
+        {ctyp = <:ctyp< int -> int -> int >>;
+         item = Obj.repr \*});
      ("+",
       fun () ->
         {ctyp = <:ctyp< int -> int -> int >>;
          item = Obj.repr \+});
+     ("-",
+      fun () ->
+        {ctyp = <:ctyp< int -> int -> int >>;
+         item = Obj.repr \-});
      ("^",
       fun () ->
         {ctyp = <:ctyp< string -> string -> string >>;
@@ -254,6 +264,14 @@ value val_tab = do {
       fun () ->
         {ctyp = <:ctyp< list $ty_var ()$ >>;
          item = Obj.repr []});
+     ("Char.chr",
+      fun () ->
+        {ctyp = <:ctyp< int -> char >>;
+         item = Obj.repr Char.chr});
+     ("Char.code",
+      fun () ->
+        {ctyp = <:ctyp< char -> int >>;
+         item = Obj.repr Char.code});
      ("ctyp",
       fun () ->
         {ctyp = <:ctyp< Grammar.Entry.e MLast.ctyp >>;
@@ -646,10 +664,18 @@ value val_tab = do {
       fun () ->
         {ctyp = <:ctyp< out_channel >>;
          item = Obj.repr stderr});
+     ("Stdpp.raise_with_loc",
+      fun () ->
+        {ctyp = <:ctyp< Token.location -> exn -> _ >>;
+         item = Obj.repr Stdpp.raise_with_loc});
      ("str_item",
       fun () ->
         {ctyp = <:ctyp< Grammar.Entry.e MLast.str_item >>;
          item = Obj.repr Pcaml.str_item});
+     ("Stream.Error",
+      fun () ->
+        {ctyp = <:ctyp< string -> exn >>;
+         item = Obj.repr (fun s -> Stream.Error s)});
      ("Stream.of_string",
       fun () ->
         {ctyp = <:ctyp< string -> Stream.t char >>;
@@ -671,6 +697,14 @@ value val_tab = do {
       fun () ->
         {ctyp = <:ctyp< int -> char -> string >>;
          item = Obj.repr String.make});
+     ("String.set",
+      fun () ->
+        {ctyp = <:ctyp< string -> int -> char -> unit >>;
+         item = Obj.repr String.set});
+     ("String.sub",
+      fun () ->
+        {ctyp = <:ctyp< string -> int -> int -> string >>;
+         item = Obj.repr String.sub});
      ("True",
       fun () ->
         {ctyp = <:ctyp< bool >>;
@@ -716,6 +750,9 @@ value rec eval_expr env e =
   | <:expr< $e1$ $e2$ >> ->
       eval_expr_apply loc env e1 e2
 
+  | <:expr< $e1$ .[ $e2$ ] := $e3$ >> ->
+      eval_expr env <:expr< String.set $e1$ $e2$ $e3$ >>
+
   | <:expr< $e1$ .[ $e2$ ] >> ->
       eval_expr env <:expr< String.get $e1$ $e2$ >>
 
@@ -743,9 +780,8 @@ value rec eval_expr env e =
 
   | <:expr< $lid:s$ >> ->
       match try Some (List.assoc s env) with [ Not_found -> None ] with
-      [ Some (by_let, v) ->
-          if by_let then {(v) with ctyp = instanciate loc s v.ctyp}
-          else v
+      [ Some {by_let = by_let; expr = v} ->
+          if by_let then {(v) with ctyp = instanciate loc s v.ctyp} else v
       | None ->
           try Hashtbl.find val_tab s () with
           [ Not_found -> unbound_var loc s ] ]
@@ -762,25 +798,63 @@ value rec eval_expr env e =
 
 and eval_match loc env e pel =
   let v = eval_expr env e in
-  eval_match_assoc_list loc env (ty_var ()) v.ctyp pel v.item
+  eval_match_assoc_list loc env v.ctyp (ty_var ()) pel v.item
 
 and eval_let loc env rf pel e =
-  let new_env =
-    loop env pel where rec loop new_env =
-      fun
-      [ [(p, e) :: pel] ->
-          let v = eval_expr env e in
-          let new_env =
-            loop new_env v p where rec loop new_env v =
-              fun
-              [ <:patt< $lid:s$ >> -> [(s, (True, v)) :: new_env]
-              | <:patt< _ >> -> new_env
-              | p -> not_impl loc "14/patt" p ]
-          in
-          loop new_env pel
-      | [] -> new_env ]
-  in
-  eval_expr new_env e
+  if rf then do {
+    let extra_env =
+      loop [] pel where rec loop extra_env =
+        fun
+        [ [(p, e) :: pel] ->
+            match p with
+            [ <:patt< $lid:s$ >> ->
+                [(s, {by_let = True; expr = Obj.magic e}) :: extra_env]
+            | <:patt< _ >> -> extra_env
+            | p -> not_impl loc "15/patt" p ]
+        | [] -> extra_env ]
+    in
+    let new_env = List.rev_append extra_env env in
+    List.iter
+      (fun (s, bv) -> bv.expr := eval_expr new_env (Obj.magic bv.expr))         
+      extra_env;
+    eval_expr new_env e
+  }
+  else
+    let new_env =
+      loop env pel where rec loop new_env =
+        fun
+        [ [(p, e) :: pel] ->
+            let v = eval_expr env e in
+            let new_env =
+              loop new_env v p where rec loop new_env v =
+                fun
+                [ <:patt< ( $list:pl$ ) >> ->
+                    let tl = List.map (fun _ -> <:ctyp< $ty_var ()$ >>) pl in
+                    let t = <:ctyp< ( $list:tl$ ) >> in
+                    if unify loc t v.ctyp then
+                      let el =
+                        Array.to_list (Obj.magic v.item : array Obj.t)
+                      in
+                      loop2 new_env pl tl el
+                      where rec loop2 new_env pl tl el =
+                        match (pl, tl, el) with
+                        [ ([p :: pl], [t :: tl], [e :: el]) ->
+                            let new_env =
+                              loop new_env {ctyp = t; item = e} p
+                            in
+                            loop2 new_env pl tl el
+                        | ([], [], []) -> new_env
+                        | _ -> assert False ]
+                    else bad_type loc t v.ctyp
+                | <:patt< $lid:s$ >> ->
+                    [(s, {by_let = True; expr = v}) :: new_env]
+                | <:patt< _ >> -> new_env
+                | p -> not_impl loc "14/patt" p ]
+            in
+            loop new_env pel
+        | [] -> new_env ]
+    in
+    eval_expr new_env e
 
 and eval_fun loc env pel =
   let t1 = ty_var () in
@@ -820,7 +894,24 @@ and eval_match_assoc loc env t1 t2 (p, eo, e) param =
 
 and eval_patt loc p env tp param =
   match p with
-  [ <:patt< $p1$ $p2$ >> ->
+  [ <:patt< Some $p$ >> ->
+      let ta = ty_var () in
+      let t = <:ctyp< option $ta$ >> in
+      if unify loc t tp then
+        match Obj.magic param with
+        [ Some x -> eval_patt loc p env ta x
+        | None -> None ]
+      else bad_type loc t tp
+  | <:patt< None >> ->
+      let ta = ty_var () in
+      let t = <:ctyp< option $ta$ >> in
+      if unify loc t tp then
+        match Obj.magic param with
+        [ Some x -> None
+        | None -> Some env ]
+      else bad_type loc t tp
+
+  | <:patt< $p1$ $p2$ >> ->
       let t1 = ty_var () in
       let _v1 = eval_patt loc p1 env <:ctyp< $t1$ -> $tp$ >> param in
       let _v2 = eval_patt loc p1 env t1 param in
@@ -831,7 +922,7 @@ and eval_patt loc p env tp param =
       else bad_type loc tp t
   | <:patt< $lid:s$ >> ->
       let v = {ctyp = tp; item = param} in
-      Some [(s, (False, v)) :: env]
+      Some [(s, {by_let = False; expr = v}) :: env]
   | <:patt< ( $list:pl$ ) >> -> 
       let tpl = List.map (fun _ -> ty_var ()) pl in
       let exp_tp = <:ctyp< ($list:tpl$) >> in
