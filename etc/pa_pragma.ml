@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.24 2007/01/01 13:56:17 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.25 2007/01/01 21:19:02 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -910,6 +910,25 @@ and eval_patt loc p env tp param =
         [ Some x -> None
         | None -> Some env ]
       else bad_type loc t tp
+  | <:patt< [$p1$ :: $p2$] >> ->
+      let ta = ty_var () in
+      let t = <:ctyp< list $ta$ >> in
+      if unify loc t tp then
+        match Obj.magic param with
+        [ [x :: l] ->
+            match eval_patt loc p1 env ta x with
+            [ Some env -> eval_patt loc p2 env t (Obj.repr l)
+            | None -> None ]
+        | [] -> None ]
+      else bad_type loc t tp
+  | <:patt< [] >> ->
+      let ta = ty_var () in
+      let t = <:ctyp< list $ta$ >> in
+      if unify loc t tp then
+        match Obj.magic param with
+        [ [x :: l] -> None
+        | [] -> Some env ]
+      else bad_type loc t tp
 
   | <:patt< $p1$ $p2$ >> ->
       let t1 = ty_var () in
@@ -973,7 +992,20 @@ and eval_expr_apply loc env e1 e2 =
       [ (<:ctyp< format $tf1$ $_$ $tf3$ >>, <:ctyp< string >>) ->
           let s = (Obj.magic v2.item : string) in
           match try Some (String.index s '%') with [ Not_found -> None ] with
-          [ Some i -> failwith ("not impl format " ^ s)
+          [ Some i ->
+              if i + 1 = String.length s then failwith "% at end of format"
+              else
+                let u =
+                  match s.[i+1] with
+                  [ 'd' -> unify loc <:ctyp< int -> $tf3$ >> tf1
+                  | c -> failwith ("not impl format %" ^ String.make 1 c) ]
+                in
+                match
+                  try Some (String.index_from s (i + 1) '%') with
+                  [ Not_found -> None ]
+                with
+                [ Some _ -> failwith "not impl format with several %"
+                | None -> u ]
           | None -> unify loc tf1 tf3 ]
       | (t1, t2) -> unify loc t1 t2 ]
     in
