@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.27 2007/01/01 22:45:59 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.28 2007/01/01 22:51:50 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -933,8 +933,8 @@ and eval_patt loc p env tp param =
       let t = <:ctyp< exn >> in
       if unify loc t tp then
         match Obj.magic param with
-        [ Some x -> eval_patt loc p env ta x
-        | None -> None ]
+        [ Failure x -> eval_patt loc p env ta (Obj.repr x)
+        | _ -> None ]
       else bad_type loc t tp
   | <:patt< Some $p$ >> ->
       let ta = ty_var () in
