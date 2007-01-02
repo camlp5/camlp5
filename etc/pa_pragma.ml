@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.37 2007/01/02 13:02:33 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.38 2007/01/02 13:11:36 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -36,16 +36,14 @@ module Type =
   end
 ;
 
-type expr_v =
+type expr_v 'e =
   { ctyp : Type.t;
-    expr : Obj.t;
+    expr : 'e;
     patt :
-      (list (string * bind_v) -> MLast.patt -> Type.t -> Obj.t ->
-        option (list (string * bind_v))) ->
-        list (string * bind_v) -> list MLast.patt -> Obj.t ->
-        option (list (string * bind_v)) }
-and bind_v = { by_let : bool; valu : mutable expr_v }
-;
+      (env 'e -> MLast.patt -> Type.t -> Obj.t -> option (env 'e)) ->
+        env 'e -> list MLast.patt -> Obj.t -> option (env 'e) }
+and bind_v 'e = { by_let : bool; valu : mutable expr_v 'e }
+and env 'e = list (string * bind_v 'e);
 
 value ty_var =
   let loc = Stdpp.dummy_loc in
