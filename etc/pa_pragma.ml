@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.31 2007/01/02 06:18:43 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.32 2007/01/02 06:22:12 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -742,6 +742,13 @@ value pat_tab = do {
            match Obj.magic param with
            [ None -> Some env
            | Some _ -> None ]});
+     ("Not_found",
+      fun () ->
+        {ctyp = <:ctyp< exn >>;
+         item eval_patt env param =
+           match Obj.magic param with
+           [ Not_found -> Some env
+           | _ -> None ]});
      ("Some",
       fun () ->
         let ta = ty_var () in
