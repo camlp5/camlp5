@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.23 2006/12/31 18:30:07 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.24 2007/01/02 23:50:54 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -48,31 +48,22 @@ value stream_peek_nth n strm =
 value rec ident len =
   parser
   [ [: `('A'..'Z' | 'a'..'z' | '\192'..'\214' | '\216'..'\246' |
-         '\248'..'\255' | '0'..'9' | '_' | ''' as
-         c)
-        ;
-       s :] ->
-      ident (store len c) s
+         '\248'..'\255' | '0'..'9' | '_' | ''' as c);
+       len = ident (store len c) ! :] -> len
   | [: :] -> len ]
 and ident2 len =
   parser
   [ [: `('!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' |
-         '%' | '.' | ':' | '<' | '>' | '|' | '$' as
-         c)
-        ;
-       s :] ->
-      ident2 (store len c) s
+         '%' | '.' | ':' | '<' | '>' | '|' | '$' as c);
+       len = ident2 (store len c) ! :] -> len
   | [: :] -> len ]
 and ident3 len =
   parser
   [ [: `('0'..'9' | 'A'..'Z' | 'a'..'z' | '\192'..'\214' | '\216'..'\246' |
          '\248'..'\255' | '_' | '!' | '%' | '&' | '*' | '+' | '-' | '.' |
          '/' | ':' | '<' | '=' | '>' | '?' | '@' | '^' | '|' | '~' | ''' |
-         '$' as
-         c)
-        ;
-       s :] ->
-      ident3 (store len c) s
+         '$' as c);
+       len = ident3 (store len c) ! :] -> len
   | [: :] -> len ]
 and digits kind len =
   parser
@@ -91,32 +82,32 @@ and hexa = parser [: `('0'..'9' | 'a'..'f' | 'A'..'F' as d) :] -> d
 and binary = parser [: `('0'..'1' as d) :] -> d
 and number len =
   parser
-  [ [: `('0'..'9' as c); s :] -> number (store len c) s
-  | [: `'_'; s :] -> number len s
-  | [: `'.'; s :] -> decimal_part (store len '.') s
-  | [: `'e' | 'E'; s :] -> exponent_part (store len 'E') s
+  [ [: `('0'..'9' as c); a = number (store len c) ! :] -> a
+  | [: `'_'; a = number len ! :] -> a
+  | [: `'.'; a = decimal_part (store len '.') ! :] -> a
+  | [: `'e' | 'E'; a = exponent_part (store len 'E') ! :] -> a
   | [: `'l' :] -> ("INT_l", get_buff len)
   | [: `'L' :] -> ("INT_L", get_buff len)
   | [: `'n' :] -> ("INT_n", get_buff len)
   | [: :] -> ("INT", get_buff len) ]
 and decimal_part len =
   parser
-  [ [: `('0'..'9' as c); s :] -> decimal_part (store len c) s
-  | [: `'_'; s :] -> decimal_part len s
-  | [: `'e' | 'E'; s :] -> exponent_part (store len 'E') s
+  [ [: `('0'..'9' as c); a = decimal_part (store len c) ! :] -> a
+  | [: `'_'; a = decimal_part len ! :] -> a
+  | [: `'e' | 'E'; a = exponent_part (store len 'E') ! :] -> a
   | [: :] -> ("FLOAT", get_buff len) ]
 and exponent_part len =
   parser
-  [ [: `('+' | '-' as c); s :] -> end_exponent_part (store len c) s
+  [ [: `('+' | '-' as c); a = end_exponent_part (store len c) ! :] -> a
   | [: a = end_exponent_part len :] -> a ]
 and end_exponent_part len =
   parser
-  [ [: `('0'..'9' as c); s :] -> end_exponent_part_under (store len c) s
+  [ [: `('0'..'9' as c); a = end_exponent_part_under (store len c) ! :] -> a
   | [: :] -> raise (Stream.Error "ill-formed floating-point constant") ]
 and end_exponent_part_under len =
   parser
-  [ [: `('0'..'9' as c); s :] -> end_exponent_part_under (store len c) s
-  | [: `'_'; s :] -> end_exponent_part_under len s
+  [ [: `('0'..'9' as c); a = end_exponent_part_under (store len c) ! :] -> a
+  | [: `'_'; a = end_exponent_part_under len ! :] -> a
   | [: :] -> ("FLOAT", get_buff len) ]
 ;
 

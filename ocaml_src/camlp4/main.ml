@@ -19,7 +19,9 @@ let print_location loc =
     let ep = Stdpp.last_pos loc in eprintf "At location %d-%d\n" bp ep
 ;;
 
-let print_warning loc s = print_location loc; eprintf "Warning: %s\n" s;;
+let print_warning loc s =
+  print_location loc; eprintf "Warning: %s\n" s; flush stderr
+;;
 
 let report_error =
   function
