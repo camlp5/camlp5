@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.34 2007/01/02 07:30:28 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.35 2007/01/02 10:53:08 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -38,7 +38,7 @@ module Type =
 
 type typed 'a = { ctyp : Type.t; item : 'a };
 type expr_v = typed Obj.t;
-type bind_v = { by_let : bool; expr : mutable expr_v };
+type bind_v = { by_let : bool; valu : mutable expr_v };
 
 value ty_var =
   let loc = Stdpp.dummy_loc in
@@ -843,7 +843,7 @@ value rec eval_expr env e =
 
   | <:expr< $lid:s$ >> ->
       match try Some (List.assoc s env) with [ Not_found -> None ] with
-      [ Some {by_let = by_let; expr = v} ->
+      [ Some {by_let = by_let; valu = v} ->
           if by_let then {(v) with ctyp = instanciate loc s v.ctyp} else v
       | None ->
           try Hashtbl.find val_tab s () with
@@ -884,14 +884,14 @@ and eval_let loc env rf pel e =
         [ [(p, e) :: pel] ->
             match p with
             [ <:patt< $lid:s$ >> ->
-                [(s, {by_let = True; expr = Obj.magic e}) :: extra_env]
+                [(s, {by_let = True; valu = Obj.magic e}) :: extra_env]
             | <:patt< _ >> -> extra_env
             | p -> not_impl loc "15/patt" p ]
         | [] -> extra_env ]
     in
     let new_env = List.rev_append extra_env env in
     List.iter
-      (fun (s, bv) -> bv.expr := eval_expr new_env (Obj.magic bv.expr))         
+      (fun (s, bv) -> bv.valu := eval_expr new_env (Obj.magic bv.valu))
       extra_env;
     eval_expr new_env e
   }
@@ -923,7 +923,7 @@ and eval_let loc env rf pel e =
                         | _ -> assert False ]
                     else bad_type loc t v.ctyp
                 | <:patt< $lid:s$ >> ->
-                    [(s, {by_let = True; expr = v}) :: new_env]
+                    [(s, {by_let = True; valu = v}) :: new_env]
                 | <:patt< _ >> -> new_env
                 | p -> not_impl loc "14/patt" p ]
             in
@@ -1031,7 +1031,7 @@ and eval_patt env p tp param =
           else bad_type loc t tp
       | <:patt< $lid:s$ >> ->
           let v = {ctyp = tp; item = param} in
-          Some [(s, {by_let = False; expr = v}) :: env]
+          Some [(s, {by_let = False; valu = v}) :: env]
 
       | <:patt< _ >> -> Some env
       | p -> not_impl loc "1/eval_patt" p ] ]
