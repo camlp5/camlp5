@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.35 2007/01/02 10:53:08 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.36 2007/01/02 12:30:04 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -730,13 +730,13 @@ value pat_tab = do {
         let t1 = ta in
         let t2 = <:ctyp< list $ta$ >> in
         {ctyp = <:ctyp< $t1$ -> list $t2$ -> list $ta$ >>;
-        item eval_patt env pl param =
-          match (pl, Obj.magic param) with
-          [ ([p1; p2], [x :: l]) ->
-              match eval_patt env p1 t1 x with
-              [ Some env -> eval_patt env p2 t2 (Obj.repr l)
-              | None -> None ]
-          | _ -> None ]});
+         item eval_patt env pl param =
+           match (pl, Obj.magic param) with
+           [ ([p1; p2], [x :: l]) ->
+               match eval_patt env p1 t1 x with
+               [ Some env -> eval_patt env p2 t2 (Obj.repr l)
+               | None -> None ]
+           | _ -> None ]});
      ("[]",
       fun () ->
         {ctyp = <:ctyp< list $ty_var ()$ >>;
