@@ -22,7 +22,7 @@ value print_location loc =
 ;
 
 value print_warning loc s =
-  do { print_location loc; eprintf "Warning: %s\n" s }
+  do { print_location loc; eprintf "Warning: %s\n" s; flush stderr }
 ;
 
 value report_error =
