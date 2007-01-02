@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.32 2007/01/02 06:22:12 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.33 2007/01/02 06:40:30 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -720,42 +720,55 @@ value pat_tab = do {
   let ht = Hashtbl.create 1 in
   let loc = Token.dummy_loc in
   List.iter (fun (k, v) -> Hashtbl.add ht k v)
-    [("[]",
+    [("::",
+      fun () ->
+        let ta = ty_var () in
+        let t1 = ta in
+        let t2 = <:ctyp< list $ta$ >> in
+        {ctyp = <:ctyp< $t1$ -> list $t2$ -> list $ta$ >>;
+        item eval_patt env pl param =
+          match (pl, Obj.magic param) with
+          [ ([p1; p2], [x :: l]) ->
+              match eval_patt env p1 t1 x with
+              [ Some env -> eval_patt env p2 t2 (Obj.repr l)
+              | None -> None ]
+          | _ -> None ]});
+     ("[]",
       fun () ->
         {ctyp = <:ctyp< list $ty_var ()$ >>;
-         item eval_patt env param =
-           match Obj.magic param with
-           [ [] -> Some env
+         item eval_patt env pl param =
+           match (pl, Obj.magic param) with
+           [ ([], []) -> Some env
            | _ -> None ]});
      ("Failure",
       fun () ->
         let t1 = <:ctyp< string >> in
         {ctyp = <:ctyp< $t1$ -> exn >>;
-         item eval_patt env param =
-           match Obj.magic param with
-           [ Failure x -> eval_patt env t1 (Obj.repr x)
+         item eval_patt env pl param =
+           match (pl, Obj.magic param) with
+           [ ([p], Failure x) -> eval_patt env p t1 (Obj.repr x)
            | _ -> None ]});
      ("None",
       fun () ->
         {ctyp = <:ctyp< option $ty_var ()$ >>;
-         item eval_patt env param =
-           match Obj.magic param with
-           [ None -> Some env
-           | Some _ -> None ]});
+         item eval_patt env pl param =
+           match (pl, Obj.magic param) with
+           [ ([], None) -> Some env
+           | _ -> None ]});
      ("Not_found",
       fun () ->
         {ctyp = <:ctyp< exn >>;
-         item eval_patt env param =
-           match Obj.magic param with
-           [ Not_found -> Some env
+         item eval_patt env pl param =
+           match (pl, Obj.magic param) with
+           [ ([], Not_found) -> Some env
            | _ -> None ]});
      ("Some",
       fun () ->
         let ta = ty_var () in
         {ctyp = <:ctyp< $ta$ -> option $ta$ >>;
-         item eval_patt env param =
-           match Obj.magic param with
-           [ Some x -> eval_patt env ta (Obj.repr x)
+         item eval_patt env pl param =
+           match (pl, Obj.magic param) with
+           [ ([p], Some x) -> eval_patt env p ta (Obj.repr x)
            | _ -> None ]})];
   ht
 };
@@ -958,30 +971,17 @@ and eval_match_assoc loc env t1 t2 (p, eo, e) param =
 and eval_patt env p tp param =
   let loc = MLast.loc_of_patt p in
   match p with
-  [ <:patt< $uid:"::"$ $p1$ $p2$ >> ->
-(*
-      let pt () =
-        let ta = ty_var () in
-        {ctyp = <:ctyp< $ta$ -> list $ta$ -> list $ta$ >>;
-        item param =
-          match Obj.magic param with
-          [ [x :: l] ->
-              match eval_patt env p1 ta x with
-              [ Some env -> eval_patt env p2 t (Obj.repr l)
-              | None -> None ]
-          | [] -> None ]}
-      in
-*)
-      let ta = ty_var () in
-      let t = <:ctyp< list $ta$ >> in
-      if unify loc t tp then
-        match Obj.magic param with
-        [ [x :: l] ->
-            match eval_patt env p1 ta x with
-            [ Some env -> eval_patt env p2 t (Obj.repr l)
-            | None -> None ]
-        | [] -> None ]
-      else bad_type loc t tp
+  [ <:patt< $uid:s$ $p1$ $p2$ >> ->
+      match
+        try Some (Hashtbl.find pat_tab s ()) with [ Not_found -> None ]
+      with
+      [ Some pt ->
+          match pt.ctyp with
+          [ <:ctyp< $_$ -> $_$ -> $t$ >> ->
+              if unify loc t tp then pt.item eval_patt env [p1; p2] param
+              else bad_type loc t tp
+          | _ -> unbound_cons loc s ]
+      | _ -> unbound_cons loc s ]
 
   | <:patt< $uid:s$ $p$ >> ->
       match
@@ -989,10 +989,9 @@ and eval_patt env p tp param =
       with
       [ Some pt ->
           match pt.ctyp with
-          [ <:ctyp< $t1$ -> $t2$ >> ->
-              if unify loc t2 tp then
-                pt.item (fun env -> eval_patt env p) env param
-              else bad_type loc t2 tp
+          [ <:ctyp< $_$ -> $t$ >> ->
+              if unify loc t tp then pt.item eval_patt env [p] param
+              else bad_type loc t tp
           | _ -> unbound_cons loc s ]
       | None -> unbound_cons loc s ]
 
@@ -1001,7 +1000,7 @@ and eval_patt env p tp param =
         try Some (Hashtbl.find pat_tab s ()) with [ Not_found -> None ]
       with
       [ Some pt ->
-          if unify loc pt.ctyp tp then pt.item (fun []) env param
+          if unify loc pt.ctyp tp then pt.item eval_patt env [] param
           else bad_type loc pt.ctyp tp
       | None -> unbound_cons loc s ]
 
