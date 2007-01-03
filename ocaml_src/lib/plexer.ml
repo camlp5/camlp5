@@ -495,16 +495,14 @@ let next_token_fun dfa ssd find_kwd glexr =
       Some '>' -> Stream.junk strm__; maybe_end_quotation bp len strm__
     | Some '<' ->
         Stream.junk strm__;
-        quotation bp (maybe_nested_quotation bp (store len '<') strm__) strm__
+        let len = maybe_nested_quotation bp (store len '<') strm__ in
+        quotation bp len strm__
     | Some '\\' ->
         Stream.junk strm__;
         let len =
-          try
-            match Stream.peek strm__ with
-              Some ('>' | '<' | '\\' as c) -> Stream.junk strm__; store len c
-            | _ -> store len '\\'
-          with
-            Stream.Failure -> raise (Stream.Error "")
+          match Stream.peek strm__ with
+            Some ('>' | '<' | '\\' as c) -> Stream.junk strm__; store len c
+          | _ -> store len '\\'
         in
         quotation bp len strm__
     | Some c ->
@@ -515,18 +513,16 @@ let next_token_fun dfa ssd find_kwd glexr =
   and maybe_nested_quotation bp len (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
       Some '<' ->
-        Stream.junk strm__; mstore (quotation bp (store len '<') strm__) ">>"
+        Stream.junk strm__;
+        let len = quotation bp (store len '<') strm__ in mstore len ">>"
     | Some ':' ->
         Stream.junk strm__;
-        let len =
-          try ident (store len ':') strm__ with
-            Stream.Failure -> raise (Stream.Error "")
-        in
+        let len = ident (store len ':') strm__ in
         begin try
           match Stream.peek strm__ with
             Some '<' ->
               Stream.junk strm__;
-              mstore (quotation bp (store len '<') strm__) ">>"
+              let len = quotation bp (store len '<') strm__ in mstore len ">>"
           | _ -> len
         with
           Stream.Failure -> raise (Stream.Error "")
@@ -602,7 +598,7 @@ let next_token_fun dfa ssd find_kwd glexr =
   and left_paren_in_comment bp (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
       Some '*' ->
-        Stream.junk strm__; let s = strm__ in comment bp s; comment bp s
+        Stream.junk strm__; let _ = comment bp strm__ in comment bp strm__
     | _ -> comment bp strm__
   and star_in_comment bp (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
@@ -874,11 +870,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 640, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 640, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 640, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 641, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 641, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 644, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 644, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 644, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 645, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 645, 37)));
        tok_comm = None}
   in
   let glex =

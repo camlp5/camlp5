@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.24 2007/01/02 23:50:54 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.25 2007/01/03 00:24:34 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -262,21 +262,22 @@ value next_token_fun dfa ssd find_kwd glexr =
   and string bp len =
     parser bp1
     [ [: `'"' :] -> len
-    | [: `'\\'; `c; s :] ->
-        string bp (store (store len '\\') (line_cnt (bp1 + 1) c)) s
-    | [: `c; s :] -> string bp (store len (line_cnt bp1 c)) s
+    | [: `'\\'; `c;
+         a = string bp (store (store len '\\') (line_cnt (bp1 + 1) c)) ! :] ->
+        a
+    | [: `c; a = string bp (store len (line_cnt bp1 c)) ! :] -> a
     | [: :] ep -> err (bp, ep) "string not terminated" ]
   and char bp len =
     parser
     [ [: `'''; s :] -> if len = 0 then char bp (store len ''') s else len
-    | [: `'\\'; `c; s :] -> char bp (store (store len '\\') c) s
-    | [: `c; s :] -> char bp (store len c) s
+    | [: `'\\'; `c; a = char bp (store (store len '\\') c) ! :] -> a
+    | [: `c; a = char bp (store len c) ! :] -> a
     | [: :] ep -> err (bp, ep) "char not terminated" ]
   and dollar bp len =
     parser
     [ [: `'$' :] -> ("ANTIQUOT", ":" ^ get_buff len)
-    | [: `('a'..'z' | 'A'..'Z' as c); s :] -> antiquot bp (store len c) s
-    | [: `('0'..'9' as c); s :] -> maybe_locate bp (store len c) s
+    | [: `('a'..'z' | 'A'..'Z' as c); a = antiquot bp (store len c) ! :] -> a
+    | [: `('0'..'9' as c); a = maybe_locate bp (store len c) ! :] -> a
     | [: `':'; s :] ->
         let k = get_buff len in
         ("ANTIQUOT", k ^ ":" ^ locate_or_antiquot_rest bp 0 s)
@@ -292,7 +293,7 @@ value next_token_fun dfa ssd find_kwd glexr =
   and maybe_locate bp len =
     parser
     [ [: `'$' :] -> ("ANTIQUOT", ":" ^ get_buff len)
-    | [: `('0'..'9' as c); s :] -> maybe_locate bp (store len c) s
+    | [: `('0'..'9' as c); a = maybe_locate bp (store len c) ! :] -> a
     | [: `':'; s :] ->
         ("LOCATE", get_buff len ^ ":" ^ locate_or_antiquot_rest bp 0 s)
     | [: `'\\'; `c; s :] ->
@@ -303,8 +304,9 @@ value next_token_fun dfa ssd find_kwd glexr =
   and antiquot bp len =
     parser
     [ [: `'$' :] -> ("ANTIQUOT", ":" ^ get_buff len)
-    | [: `('a'..'z' | 'A'..'Z' | '0'..'9' as c); s :] ->
-        antiquot bp (store len c) s
+    | [: `('a'..'z' | 'A'..'Z' | '0'..'9' as c);
+         a = antiquot bp (store len c) ! :] ->
+        a
     | [: `':'; s :] ->
         let k = get_buff len in
         ("ANTIQUOT", k ^ ":" ^ locate_or_antiquot_rest bp 0 s)
@@ -316,30 +318,31 @@ value next_token_fun dfa ssd find_kwd glexr =
   and locate_or_antiquot_rest bp len =
     parser
     [ [: `'$' :] -> get_buff len
-    | [: `'\\'; `c; s :] -> locate_or_antiquot_rest bp (store len c) s
-    | [: `c; s :] -> locate_or_antiquot_rest bp (store len c) s
+    | [: `'\\'; `c; a = locate_or_antiquot_rest bp (store len c) ! :] -> a
+    | [: `c; a = locate_or_antiquot_rest bp (store len c) ! :] -> a
     | [: :] ep -> err (bp, ep) "antiquotation not terminated" ]
   and quotation bp len =
     parser bp1
-    [ [: `'>'; s :] -> maybe_end_quotation bp len s
-    | [: `'<'; s :] ->
-        quotation bp (maybe_nested_quotation bp (store len '<') s) s
+    [ [: `'>'; a = maybe_end_quotation bp len ! :] -> a
+    | [: `'<'; len = maybe_nested_quotation bp (store len '<') ! ;
+         a = quotation bp len ! :] -> a
     | [: `'\\';
          len =
            parser
            [ [: `('>' | '<' | '\\' as c) :] -> store len c
-           | [: :] -> store len '\\' ];
-         s :] ->
-        quotation bp len s
-    | [: `c; s :] -> quotation bp (store len (line_cnt bp1 c)) s
+           | [: :] -> store len '\\' ] ! ;
+         a = quotation bp len ! :] ->
+        a
+    | [: `c; a = quotation bp (store len (line_cnt bp1 c)) ! :] -> a
     | [: :] ep -> err (bp, ep) "quotation not terminated" ]
   and maybe_nested_quotation bp len =
     parser
-    [ [: `'<'; s :] -> mstore (quotation bp (store len '<') s) ">>"
-    | [: `':'; len = ident (store len ':');
+    [ [: `'<'; len = quotation bp (store len '<') ! :] -> mstore len ">>"
+    | [: `':'; len = ident (store len ':') !;
          a =
            parser
-           [ [: `'<'; s :] -> mstore (quotation bp (store len '<') s) ">>"
+           [ [: `'<'; len = quotation bp (store len '<') ! :] ->
+               mstore len ">>"
            | [: :] -> len ] :] ->
         a
     | [: :] -> len ]
@@ -354,17 +357,17 @@ value next_token_fun dfa ssd find_kwd glexr =
         (keyword_or_error (bp, ep) "(", line_nb.val.val, bol_pos.val.val) ]
   and comment bp =
     parser
-    [ [: `'('; s :] -> left_paren_in_comment bp s
-    | [: `'*'; s :] -> star_in_comment bp s
-    | [: `'"'; _ = string bp 0; s :] -> comment bp s
-    | [: `'''; s :] -> quote_in_comment bp s
+    [ [: `'('; a = left_paren_in_comment bp ! :] -> a
+    | [: `'*'; a = star_in_comment bp ! :] -> a
+    | [: `'"'; _ = string bp 0; a = comment bp ! :] -> a
+    | [: `'''; a = quote_in_comment bp ! :] -> a
     | [: `'\n' | '\r'; s :] -> do { incr line_nb.val; comment bp s }
-    | [: `c; s :] -> comment bp s
+    | [: `c; a = comment bp ! :] -> a
     | [: :] ep -> err (bp, ep) "comment not terminated" ]
   and quote_in_comment bp =
     parser
-    [ [: `'''; s :] -> comment bp s
-    | [: `'\\'; s :] -> quote_antislash_in_comment bp 0 s
+    [ [: `'''; a = comment bp ! :] -> a
+    | [: `'\\'; a = quote_antislash_in_comment bp 0 ! :] -> a
     | [: s :] ->
         do {
           match Stream.npeek 2 s with
@@ -374,14 +377,15 @@ value next_token_fun dfa ssd find_kwd glexr =
         } ]
   and quote_any_in_comment bp =
     parser
-    [ [: `'''; s :] -> comment bp s
+    [ [: `'''; a = comment bp ! :] -> a
     | [: a = comment bp :] -> a ]
   and quote_antislash_in_comment bp len =
     parser
-    [ [: `'''; s :] -> comment bp s
-    | [: `'\\' | '"' | 'n' | 't' | 'b' | 'r'; s :] ->
-        quote_any_in_comment bp s
-    | [: `'0'..'9'; s :] -> quote_antislash_digit_in_comment bp s
+    [ [: `'''; a = comment bp ! :] -> a
+    | [: `'\\' | '"' | 'n' | 't' | 'b' | 'r';
+         a = quote_any_in_comment bp ! :] ->
+        a
+    | [: `'0'..'9'; a = quote_antislash_digit_in_comment bp ! :] -> a
     | [: a = comment bp :] -> a ]
   and quote_antislash_digit_in_comment bp =
     parser
@@ -389,11 +393,11 @@ value next_token_fun dfa ssd find_kwd glexr =
     | [: a = comment bp :] -> a ]
   and quote_antislash_digit2_in_comment bp =
     parser
-    [ [: `'0'..'9'; s :] -> quote_any_in_comment bp s
+    [ [: `'0'..'9'; a = quote_any_in_comment bp ! :] -> a
     | [: a = comment bp :] -> a ]
   and left_paren_in_comment bp =
     parser
-    [ [: `'*'; s :] -> do { comment bp s; comment bp s }
+    [ [: `'*'; _ = comment bp !; a = comment bp ! :] -> a
     | [: a = comment bp :] -> a ]
   and star_in_comment bp =
     parser
