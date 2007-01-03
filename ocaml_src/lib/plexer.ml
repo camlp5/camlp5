@@ -19,20 +19,42 @@ let no_quotations = ref false;;
 
 (* The string buffering machinery *)
 
-let buff = ref (String.create 80);;
-let store len x =
-  if len >= String.length !buff then
-    buff := !buff ^ String.create (String.length !buff);
-  !buff.[len] <- x;
-  succ len
+module B :
+  sig
+    type t;;
+    val empty : t;;
+    val char : char -> t;;
+    val string : string -> t;;
+    val is_empty : t -> bool;;
+    val add : t -> char -> t;;
+    val add_str : t -> string -> t;;
+    val get : t -> string;;
+  end =
+  struct
+    type t = char list;;
+    let empty = [];;
+    let is_empty l = l = [];;
+    let add l c = c :: l;;
+    let add_str l s =
+      let rec loop l i =
+        if i = String.length s then l
+        else loop (String.unsafe_get s i :: l) (i + 1)
+      in
+      loop l 0
+    ;;
+    let char c = [c];;
+    let string = add_str [];;
+    let get l =
+      let s = String.create (List.length l) in
+      let rec loop i =
+        function
+          c :: l -> String.unsafe_set s i c; loop (i - 1) l
+        | [] -> s
+      in
+      loop (String.length s - 1) l
+    ;;
+  end
 ;;
-let mstore len s =
-  let rec add_rec len i =
-    if i == String.length s then len else add_rec (store len s.[i]) (succ i)
-  in
-  add_rec len 0
-;;
-let get_buff len = String.sub !buff 0 len;;
 
 (* The lexer *)
 
@@ -46,48 +68,48 @@ let stream_peek_nth n strm =
   loop n (Stream.npeek n strm)
 ;;
 
-let rec ident len (strm__ : _ Stream.t) =
+let rec ident buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some
       ('A'..'Z' | 'a'..'z' | '\192'..'\214' | '\216'..'\246' |
        '\248'..'\255' | '0'..'9' | '_' | '\'' as c) ->
-      Stream.junk strm__; ident (store len c) strm__
-  | _ -> len
-and ident2 len (strm__ : _ Stream.t) =
+      Stream.junk strm__; ident (B.add buf c) strm__
+  | _ -> buf
+and ident2 buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some
       ('!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' |
        '.' | ':' | '<' | '>' | '|' | '$' as c) ->
-      Stream.junk strm__; ident2 (store len c) strm__
-  | _ -> len
-and ident3 len (strm__ : _ Stream.t) =
+      Stream.junk strm__; ident2 (B.add buf c) strm__
+  | _ -> buf
+and ident3 buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some
       ('0'..'9' | 'A'..'Z' | 'a'..'z' | '\192'..'\214' | '\216'..'\246' |
        '\248'..'\255' | '_' | '!' | '%' | '&' | '*' | '+' | '-' | '.' | '/' |
        ':' | '<' | '=' | '>' | '?' | '@' | '^' | '|' | '~' | '\'' | '$' as c
          ) ->
-      Stream.junk strm__; ident3 (store len c) strm__
-  | _ -> len
-and digits kind len (strm__ : _ Stream.t) =
+      Stream.junk strm__; ident3 (B.add buf c) strm__
+  | _ -> buf
+and digits kind buf (strm__ : _ Stream.t) =
   let d =
     try kind strm__ with
       Stream.Failure -> raise (Stream.Error "ill-formed integer constant")
   in
-  digits_under kind (store len d) strm__
-and digits_under kind len (strm__ : _ Stream.t) =
+  digits_under kind (B.add buf d) strm__
+and digits_under kind buf (strm__ : _ Stream.t) =
   match
     try Some (kind strm__) with
       Stream.Failure -> None
   with
-    Some d -> digits_under kind (store len d) strm__
+    Some d -> digits_under kind (B.add buf d) strm__
   | _ ->
       match Stream.peek strm__ with
-        Some '_' -> Stream.junk strm__; digits_under kind len strm__
-      | Some 'l' -> Stream.junk strm__; "INT_l", get_buff len
-      | Some 'L' -> Stream.junk strm__; "INT_L", get_buff len
-      | Some 'n' -> Stream.junk strm__; "INT_n", get_buff len
-      | _ -> "INT", get_buff len
+        Some '_' -> Stream.junk strm__; digits_under kind buf strm__
+      | Some 'l' -> Stream.junk strm__; "INT_l", B.get buf
+      | Some 'L' -> Stream.junk strm__; "INT_L", B.get buf
+      | Some 'n' -> Stream.junk strm__; "INT_n", B.get buf
+      | _ -> "INT", B.get buf
 and octal (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some ('0'..'7' as d) -> Stream.junk strm__; d
@@ -100,41 +122,41 @@ and binary (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some ('0'..'1' as d) -> Stream.junk strm__; d
   | _ -> raise Stream.Failure
-and number len (strm__ : _ Stream.t) =
+and number buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
-    Some ('0'..'9' as c) -> Stream.junk strm__; number (store len c) strm__
-  | Some '_' -> Stream.junk strm__; number len strm__
-  | Some '.' -> Stream.junk strm__; decimal_part (store len '.') strm__
+    Some ('0'..'9' as c) -> Stream.junk strm__; number (B.add buf c) strm__
+  | Some '_' -> Stream.junk strm__; number buf strm__
+  | Some '.' -> Stream.junk strm__; decimal_part (B.add buf '.') strm__
   | Some ('e' | 'E') ->
-      Stream.junk strm__; exponent_part (store len 'E') strm__
-  | Some 'l' -> Stream.junk strm__; "INT_l", get_buff len
-  | Some 'L' -> Stream.junk strm__; "INT_L", get_buff len
-  | Some 'n' -> Stream.junk strm__; "INT_n", get_buff len
-  | _ -> "INT", get_buff len
-and decimal_part len (strm__ : _ Stream.t) =
+      Stream.junk strm__; exponent_part (B.add buf 'E') strm__
+  | Some 'l' -> Stream.junk strm__; "INT_l", B.get buf
+  | Some 'L' -> Stream.junk strm__; "INT_L", B.get buf
+  | Some 'n' -> Stream.junk strm__; "INT_n", B.get buf
+  | _ -> "INT", B.get buf
+and decimal_part buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some ('0'..'9' as c) ->
-      Stream.junk strm__; decimal_part (store len c) strm__
-  | Some '_' -> Stream.junk strm__; decimal_part len strm__
+      Stream.junk strm__; decimal_part (B.add buf c) strm__
+  | Some '_' -> Stream.junk strm__; decimal_part buf strm__
   | Some ('e' | 'E') ->
-      Stream.junk strm__; exponent_part (store len 'E') strm__
-  | _ -> "FLOAT", get_buff len
-and exponent_part len (strm__ : _ Stream.t) =
+      Stream.junk strm__; exponent_part (B.add buf 'E') strm__
+  | _ -> "FLOAT", B.get buf
+and exponent_part buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some ('+' | '-' as c) ->
-      Stream.junk strm__; end_exponent_part (store len c) strm__
-  | _ -> end_exponent_part len strm__
-and end_exponent_part len (strm__ : _ Stream.t) =
+      Stream.junk strm__; end_exponent_part (B.add buf c) strm__
+  | _ -> end_exponent_part buf strm__
+and end_exponent_part buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some ('0'..'9' as c) ->
-      Stream.junk strm__; end_exponent_part_under (store len c) strm__
+      Stream.junk strm__; end_exponent_part_under (B.add buf c) strm__
   | _ -> raise (Stream.Error "ill-formed floating-point constant")
-and end_exponent_part_under len (strm__ : _ Stream.t) =
+and end_exponent_part_under buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some ('0'..'9' as c) ->
-      Stream.junk strm__; end_exponent_part_under (store len c) strm__
-  | Some '_' -> Stream.junk strm__; end_exponent_part_under len strm__
-  | _ -> "FLOAT", get_buff len
+      Stream.junk strm__; end_exponent_part_under (B.add buf c) strm__
+  | Some '_' -> Stream.junk strm__; end_exponent_part_under buf strm__
+  | _ -> "FLOAT", B.get buf
 ;;
 
 let error_on_unknown_keywords = ref false;;
@@ -185,9 +207,9 @@ let next_token_fun dfa ssd find_kwd glexr =
     match Stream.peek strm__ with
       Some ('A'..'Z' | '\192'..'\214' | '\216'..'\222' as c) ->
         Stream.junk strm__;
-        let len = ident (store 0 c) strm__ in
+        let buf = ident (B.char c) strm__ in
         let ep = Stream.count strm__ in
-        let id = get_buff len in
+        let id = B.get buf in
         let tok =
           try "", find_kwd id with
             Not_found -> "UIDENT", id
@@ -195,9 +217,9 @@ let next_token_fun dfa ssd find_kwd glexr =
         tok, (bp, ep)
     | Some ('a'..'z' | '\223'..'\246' | '\248'..'\255' | '_' as c) ->
         Stream.junk strm__;
-        let len = ident (store 0 c) strm__ in
+        let buf = ident (B.char c) strm__ in
         let ep = Stream.count strm__ in
-        let id = get_buff len in
+        let id = B.get buf in
         let tok =
           try "", find_kwd id with
             Not_found -> "LIDENT", id
@@ -205,19 +227,19 @@ let next_token_fun dfa ssd find_kwd glexr =
         tok, (bp, ep)
     | Some ('1'..'9' as c) ->
         Stream.junk strm__;
-        let tok = number (store 0 c) strm__ in
+        let tok = number (B.char c) strm__ in
         let ep = Stream.count strm__ in tok, (bp, ep)
     | Some '0' ->
         Stream.junk strm__;
         let tok =
           match Stream.peek strm__ with
             Some ('o' | 'O') ->
-              Stream.junk strm__; digits octal (mstore 0 "0o") strm__
+              Stream.junk strm__; digits octal (B.string "0o") strm__
           | Some ('x' | 'X') ->
-              Stream.junk strm__; digits hexa (mstore 0 "0x") strm__
+              Stream.junk strm__; digits hexa (B.string "0x") strm__
           | Some ('b' | 'B') ->
-              Stream.junk strm__; digits binary (mstore 0 "0b") strm__
-          | _ -> number (store 0 '0') strm__
+              Stream.junk strm__; digits binary (B.string "0b") strm__
+          | _ -> number (B.char '0') strm__
         in
         let ep = Stream.count strm__ in tok, (bp, ep)
     | Some '\'' ->
@@ -225,86 +247,82 @@ let next_token_fun dfa ssd find_kwd glexr =
         let s = strm__ in
         begin match Stream.npeek 2 s with
           [_; '\''] | ['\\'; _] ->
-            let tok = "CHAR", get_buff (char bp 0 s) in
+            let tok = "CHAR", B.get (char bp B.empty s) in
             let loc = bp, Stream.count s in tok, loc
         | _ -> keyword_or_error (bp, Stream.count s) "'"
         end
     | Some '\"' ->
         Stream.junk strm__;
-        let len = string bp 0 strm__ in
+        let buf = string bp B.empty strm__ in
         let ep = Stream.count strm__ in
-        let tok = "STRING", get_buff len in tok, (bp, ep)
+        let tok = "STRING", B.get buf in tok, (bp, ep)
     | Some '$' ->
         Stream.junk strm__;
-        let tok = dollar bp 0 strm__ in
+        let tok = dollar bp B.empty strm__ in
         let ep = Stream.count strm__ in tok, (bp, ep)
     | Some ('!' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' as c) ->
         Stream.junk strm__;
-        let len = ident2 (store 0 c) strm__ in
-        let ep = Stream.count strm__ in
-        keyword_or_error (bp, ep) (get_buff len)
+        let buf = ident2 (B.char c) strm__ in
+        let ep = Stream.count strm__ in keyword_or_error (bp, ep) (B.get buf)
     | Some ('~' as c) ->
         Stream.junk strm__;
         begin match Stream.peek strm__ with
           Some ('a'..'z' as c) ->
             Stream.junk strm__;
-            let len = ident (store 0 c) strm__ in
+            let buf = ident (B.char c) strm__ in
             let ep = Stream.count strm__ in
-            ("TILDEIDENT", get_buff len), (bp, ep)
+            ("TILDEIDENT", B.get buf), (bp, ep)
         | _ ->
-            let len = ident2 (store 0 c) strm__ in
+            let buf = ident2 (B.char c) strm__ in
             let ep = Stream.count strm__ in
-            keyword_or_error (bp, ep) (get_buff len)
+            keyword_or_error (bp, ep) (B.get buf)
         end
     | Some ('?' as c) ->
         Stream.junk strm__;
         begin match Stream.peek strm__ with
           Some ('a'..'z' as c) ->
             Stream.junk strm__;
-            let len = ident (store 0 c) strm__ in
+            let buf = ident (B.char c) strm__ in
             let ep = Stream.count strm__ in
-            ("QUESTIONIDENT", get_buff len), (bp, ep)
+            ("QUESTIONIDENT", B.get buf), (bp, ep)
         | _ ->
-            let len = ident2 (store 0 c) strm__ in
+            let buf = ident2 (B.char c) strm__ in
             let ep = Stream.count strm__ in
-            keyword_or_error (bp, ep) (get_buff len)
+            keyword_or_error (bp, ep) (B.get buf)
         end
     | Some '<' -> Stream.junk strm__; less bp strm__
     | Some (':' as c1) ->
         Stream.junk strm__;
-        let len =
+        let buf =
           match Stream.peek strm__ with
             Some (']' | ':' | '=' | '>' as c2) ->
-              Stream.junk strm__; store (store 0 c1) c2
-          | _ -> store 0 c1
+              Stream.junk strm__; B.add (B.char c1) c2
+          | _ -> B.char c1
         in
-        let ep = Stream.count strm__ in
-        keyword_or_error (bp, ep) (get_buff len)
+        let ep = Stream.count strm__ in keyword_or_error (bp, ep) (B.get buf)
     | Some ('>' | '|' as c1) ->
         Stream.junk strm__;
-        let len =
+        let buf =
           match Stream.peek strm__ with
-            Some (']' | '}' as c2) ->
-              Stream.junk strm__; store (store 0 c1) c2
-          | _ -> ident2 (store 0 c1) strm__
+            Some (']' | '}' as c2) -> Stream.junk strm__; B.add (B.char c1) c2
+          | _ -> ident2 (B.char c1) strm__
         in
-        let ep = Stream.count strm__ in
-        keyword_or_error (bp, ep) (get_buff len)
+        let ep = Stream.count strm__ in keyword_or_error (bp, ep) (B.get buf)
     | Some ('[' | '{' as c1) ->
         Stream.junk strm__;
         let s = strm__ in
-        let len =
+        let buf =
           match Stream.npeek 2 s with
-            ['<'; '<' | ':'] -> store 0 c1
+            ['<'; '<' | ':'] -> B.char c1
           | _ ->
               let (strm__ : _ Stream.t) = s in
               match Stream.peek strm__ with
                 Some ('|' | '<' | ':' as c2) ->
-                  Stream.junk strm__; store (store 0 c1) c2
-              | _ -> store 0 c1
+                  Stream.junk strm__; B.add (B.char c1) c2
+              | _ -> B.char c1
         in
         let ep = Stream.count s in
-        let id = get_buff len in keyword_or_error (bp, ep) id
+        let id = B.get buf in keyword_or_error (bp, ep) id
     | Some '.' ->
         Stream.junk strm__;
         let id =
@@ -323,8 +341,8 @@ let next_token_fun dfa ssd find_kwd glexr =
         let ep = Stream.count strm__ in keyword_or_error (bp, ep) id
     | Some '\\' ->
         Stream.junk strm__;
-        let len = ident3 0 strm__ in
-        let ep = Stream.count strm__ in ("LIDENT", get_buff len), (bp, ep)
+        let buf = ident3 B.empty strm__ in
+        let ep = Stream.count strm__ in ("LIDENT", B.get buf), (bp, ep)
     | Some c ->
         Stream.junk strm__;
         let ep = Stream.count strm__ in
@@ -333,87 +351,88 @@ let next_token_fun dfa ssd find_kwd glexr =
   and less bp strm =
     if !no_quotations then
       let (strm__ : _ Stream.t) = strm in
-      let len = ident2 (store 0 '<') strm__ in
-      let ep = Stream.count strm__ in keyword_or_error (bp, ep) (get_buff len)
+      let buf = ident2 (B.char '<') strm__ in
+      let ep = Stream.count strm__ in keyword_or_error (bp, ep) (B.get buf)
     else
       let (strm__ : _ Stream.t) = strm in
       match Stream.peek strm__ with
         Some '<' ->
           Stream.junk strm__;
-          let len =
-            try quotation bp 0 strm__ with
+          let buf =
+            try quotation bp B.empty strm__ with
               Stream.Failure -> raise (Stream.Error "")
           in
           let ep = Stream.count strm__ in
-          ("QUOTATION", ":" ^ get_buff len), (bp, ep)
+          ("QUOTATION", ":" ^ B.get buf), (bp, ep)
       | Some ':' ->
           Stream.junk strm__;
           let i =
-            try let len = ident 0 strm__ in get_buff len with
+            try let buf = ident B.empty strm__ in B.get buf with
               Stream.Failure -> raise (Stream.Error "")
           in
           begin match Stream.peek strm__ with
             Some '<' ->
               Stream.junk strm__;
-              let len =
-                try quotation bp 0 strm__ with
+              let buf =
+                try quotation bp B.empty strm__ with
                   Stream.Failure -> raise (Stream.Error "")
               in
               let ep = Stream.count strm__ in
-              ("QUOTATION", i ^ ":" ^ get_buff len), (bp, ep)
+              ("QUOTATION", i ^ ":" ^ B.get buf), (bp, ep)
           | _ -> raise (Stream.Error "character '<' expected")
           end
       | _ ->
-          let len = ident2 (store 0 '<') strm__ in
+          let buf = ident2 (B.char '<') strm__ in
           let ep = Stream.count strm__ in
-          keyword_or_error (bp, ep) (get_buff len)
-  and string bp len (strm__ : _ Stream.t) =
+          keyword_or_error (bp, ep) (B.get buf)
+  and string bp buf (strm__ : _ Stream.t) =
     let bp1 = Stream.count strm__ in
     match Stream.peek strm__ with
-      Some '\"' -> Stream.junk strm__; len
+      Some '\"' -> Stream.junk strm__; buf
     | Some '\\' ->
         Stream.junk strm__;
         begin match Stream.peek strm__ with
           Some c ->
             Stream.junk strm__;
-            string bp (store (store len '\\') (line_cnt (bp1 + 1) c)) strm__
+            string bp (B.add (B.add buf '\\') (line_cnt (bp1 + 1) c)) strm__
         | _ -> raise (Stream.Error "")
         end
     | Some c ->
-        Stream.junk strm__; string bp (store len (line_cnt bp1 c)) strm__
+        Stream.junk strm__; string bp (B.add buf (line_cnt bp1 c)) strm__
     | _ ->
         let ep = Stream.count strm__ in err (bp, ep) "string not terminated"
-  and char bp len (strm__ : _ Stream.t) =
+  and char bp buf (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
       Some '\'' ->
         Stream.junk strm__;
-        let s = strm__ in if len = 0 then char bp (store len '\'') s else len
+        let s = strm__ in
+        if B.is_empty buf then char bp (B.add buf '\'') s else buf
     | Some '\\' ->
         Stream.junk strm__;
         begin match Stream.peek strm__ with
           Some c ->
-            Stream.junk strm__; char bp (store (store len '\\') c) strm__
+            Stream.junk strm__; char bp (B.add (B.add buf '\\') c) strm__
         | _ -> raise (Stream.Error "")
         end
-    | Some c -> Stream.junk strm__; char bp (store len c) strm__
+    | Some c -> Stream.junk strm__; char bp (B.add buf c) strm__
     | _ -> let ep = Stream.count strm__ in err (bp, ep) "char not terminated"
-  and dollar bp len (strm__ : _ Stream.t) =
+  and dollar bp buf (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
-      Some '$' -> Stream.junk strm__; "ANTIQUOT", ":" ^ get_buff len
+      Some '$' -> Stream.junk strm__; "ANTIQUOT", ":" ^ B.get buf
     | Some ('a'..'z' | 'A'..'Z' as c) ->
-        Stream.junk strm__; antiquot bp (store len c) strm__
+        Stream.junk strm__; antiquot bp (B.add buf c) strm__
     | Some ('0'..'9' as c) ->
-        Stream.junk strm__; maybe_locate bp (store len c) strm__
+        Stream.junk strm__; maybe_locate bp (B.add buf c) strm__
     | Some ':' ->
         Stream.junk strm__;
-        let k = get_buff len in
-        "ANTIQUOT", k ^ ":" ^ locate_or_antiquot_rest bp 0 strm__
+        let k = B.get buf in
+        "ANTIQUOT", k ^ ":" ^ locate_or_antiquot_rest bp B.empty strm__
     | Some '\\' ->
         Stream.junk strm__;
         begin match Stream.peek strm__ with
           Some c ->
             Stream.junk strm__;
-            "ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (store len c) strm__
+            "ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (B.add buf c) strm__
         | _ -> raise (Stream.Error "")
         end
     | _ ->
@@ -423,115 +442,116 @@ let next_token_fun dfa ssd find_kwd glexr =
           match Stream.peek strm__ with
             Some c ->
               Stream.junk strm__;
-              "ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (store len c) s
+              "ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (B.add buf c) s
           | _ ->
               let ep = Stream.count strm__ in
               err (bp, ep) "antiquotation not terminated"
-        else "", get_buff (ident2 (store 0 '$') s)
-  and maybe_locate bp len (strm__ : _ Stream.t) =
+        else "", B.get (ident2 (B.char '$') s)
+  and maybe_locate bp buf (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
-      Some '$' -> Stream.junk strm__; "ANTIQUOT", ":" ^ get_buff len
+      Some '$' -> Stream.junk strm__; "ANTIQUOT", ":" ^ B.get buf
     | Some ('0'..'9' as c) ->
-        Stream.junk strm__; maybe_locate bp (store len c) strm__
+        Stream.junk strm__; maybe_locate bp (B.add buf c) strm__
     | Some ':' ->
         Stream.junk strm__;
-        "LOCATE", get_buff len ^ ":" ^ locate_or_antiquot_rest bp 0 strm__
+        "LOCATE", B.get buf ^ ":" ^ locate_or_antiquot_rest bp B.empty strm__
     | Some '\\' ->
         Stream.junk strm__;
         begin match Stream.peek strm__ with
           Some c ->
             Stream.junk strm__;
-            "ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (store len c) strm__
+            "ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (B.add buf c) strm__
         | _ -> raise (Stream.Error "")
         end
     | Some c ->
         Stream.junk strm__;
-        "ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (store len c) strm__
+        "ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (B.add buf c) strm__
     | _ ->
         let ep = Stream.count strm__ in
         err (bp, ep) "antiquotation not terminated"
-  and antiquot bp len (strm__ : _ Stream.t) =
+  and antiquot bp buf (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
-      Some '$' -> Stream.junk strm__; "ANTIQUOT", ":" ^ get_buff len
+      Some '$' -> Stream.junk strm__; "ANTIQUOT", ":" ^ B.get buf
     | Some ('a'..'z' | 'A'..'Z' | '0'..'9' as c) ->
-        Stream.junk strm__; antiquot bp (store len c) strm__
+        Stream.junk strm__; antiquot bp (B.add buf c) strm__
     | Some ':' ->
         Stream.junk strm__;
-        let k = get_buff len in
-        "ANTIQUOT", k ^ ":" ^ locate_or_antiquot_rest bp 0 strm__
+        let k = B.get buf in
+        "ANTIQUOT", k ^ ":" ^ locate_or_antiquot_rest bp B.empty strm__
     | Some '\\' ->
         Stream.junk strm__;
         begin match Stream.peek strm__ with
           Some c ->
             Stream.junk strm__;
-            "ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (store len c) strm__
+            "ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (B.add buf c) strm__
         | _ -> raise (Stream.Error "")
         end
     | Some c ->
         Stream.junk strm__;
-        "ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (store len c) strm__
+        "ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (B.add buf c) strm__
     | _ ->
         let ep = Stream.count strm__ in
         err (bp, ep) "antiquotation not terminated"
-  and locate_or_antiquot_rest bp len (strm__ : _ Stream.t) =
+  and locate_or_antiquot_rest bp buf (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
-      Some '$' -> Stream.junk strm__; get_buff len
+      Some '$' -> Stream.junk strm__; B.get buf
     | Some '\\' ->
         Stream.junk strm__;
         begin match Stream.peek strm__ with
           Some c ->
             Stream.junk strm__;
-            locate_or_antiquot_rest bp (store len c) strm__
+            locate_or_antiquot_rest bp (B.add buf c) strm__
         | _ -> raise (Stream.Error "")
         end
     | Some c ->
-        Stream.junk strm__; locate_or_antiquot_rest bp (store len c) strm__
+        Stream.junk strm__; locate_or_antiquot_rest bp (B.add buf c) strm__
     | _ ->
         let ep = Stream.count strm__ in
         err (bp, ep) "antiquotation not terminated"
-  and quotation bp len (strm__ : _ Stream.t) =
+  and quotation bp buf (strm__ : _ Stream.t) =
     let bp1 = Stream.count strm__ in
     match Stream.peek strm__ with
-      Some '>' -> Stream.junk strm__; maybe_end_quotation bp len strm__
+      Some '>' -> Stream.junk strm__; maybe_end_quotation bp buf strm__
     | Some '<' ->
         Stream.junk strm__;
-        let len = maybe_nested_quotation bp (store len '<') strm__ in
-        quotation bp len strm__
+        let buf = maybe_nested_quotation bp (B.add buf '<') strm__ in
+        quotation bp buf strm__
     | Some '\\' ->
         Stream.junk strm__;
-        let len =
+        let buf =
           match Stream.peek strm__ with
-            Some ('>' | '<' | '\\' as c) -> Stream.junk strm__; store len c
-          | _ -> store len '\\'
+            Some ('>' | '<' | '\\' as c) -> Stream.junk strm__; B.add buf c
+          | _ -> B.add buf '\\'
         in
-        quotation bp len strm__
+        quotation bp buf strm__
     | Some c ->
-        Stream.junk strm__; quotation bp (store len (line_cnt bp1 c)) strm__
+        Stream.junk strm__; quotation bp (B.add buf (line_cnt bp1 c)) strm__
     | _ ->
         let ep = Stream.count strm__ in
         err (bp, ep) "quotation not terminated"
-  and maybe_nested_quotation bp len (strm__ : _ Stream.t) =
+  and maybe_nested_quotation bp buf (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
       Some '<' ->
         Stream.junk strm__;
-        let len = quotation bp (store len '<') strm__ in mstore len ">>"
+        let buf = quotation bp (B.add buf '<') strm__ in B.add_str buf ">>"
     | Some ':' ->
         Stream.junk strm__;
-        let len = ident (store len ':') strm__ in
+        let buf = ident (B.add buf ':') strm__ in
         begin try
           match Stream.peek strm__ with
             Some '<' ->
               Stream.junk strm__;
-              let len = quotation bp (store len '<') strm__ in mstore len ">>"
-          | _ -> len
+              let buf = quotation bp (B.add buf '<') strm__ in
+              B.add_str buf ">>"
+          | _ -> buf
         with
           Stream.Failure -> raise (Stream.Error "")
         end
-    | _ -> len
-  and maybe_end_quotation bp len (strm__ : _ Stream.t) =
+    | _ -> buf
+  and maybe_end_quotation bp buf (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
-      Some '>' -> Stream.junk strm__; len
-    | _ -> quotation bp (store len '>') strm__
+      Some '>' -> Stream.junk strm__; buf
+    | _ -> quotation bp (B.add buf '>') strm__
   and left_paren bp (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
       Some '*' ->
@@ -553,7 +573,7 @@ let next_token_fun dfa ssd find_kwd glexr =
     | Some '\"' ->
         Stream.junk strm__;
         let _ =
-          try string bp 0 strm__ with
+          try string bp B.empty strm__ with
             Stream.Failure -> raise (Stream.Error "")
         in
         comment bp strm__
@@ -578,7 +598,7 @@ let next_token_fun dfa ssd find_kwd glexr =
     match Stream.peek strm__ with
       Some '\'' -> Stream.junk strm__; comment bp strm__
     | _ -> comment bp strm__
-  and quote_antislash_in_comment bp len (strm__ : _ Stream.t) =
+  and quote_antislash_in_comment bp buf (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
       Some '\'' -> Stream.junk strm__; comment bp strm__
     | Some ('\\' | '\"' | 'n' | 't' | 'b' | 'r') ->
@@ -870,11 +890,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 644, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 644, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 644, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 645, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 645, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 663, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 663, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 663, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 664, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 664, 37)));
        tok_comm = None}
   in
   let glex =

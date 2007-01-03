@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.25 2007/01/03 00:24:34 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.26 2007/01/03 19:05:03 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -19,21 +19,38 @@ value no_quotations = ref False;
 
 (* The string buffering machinery *)
 
-value buff = ref (String.create 80);
-value store len x =
-  do {
-    if len >= String.length buff.val then
-      buff.val := buff.val ^ String.create (String.length buff.val)
-    else ();
-    buff.val.[len] := x;
-    succ len
-  }
+module B :
+  sig
+    type t = 'abstract;
+    value empty : t;
+    value char : char -> t;
+    value string : string -> t;
+    value is_empty : t -> bool;
+    value add : t -> char -> t;
+    value add_str : t -> string -> t;
+    value get : t -> string;
+  end =
+  struct
+    type t = list char;
+    value empty = [];
+    value is_empty l = l = [];
+    value add l c = [c :: l];
+    value add_str l s =
+      loop l 0 where rec loop l i =
+        if i = String.length s then l
+        else loop [String.unsafe_get s i :: l] (i + 1)
+    ;
+    value char c = [c];
+    value string = add_str [];
+    value get l =
+      let s = String.create (List.length l) in
+      loop (String.length s - 1) l where rec loop i =
+        fun
+        [ [c :: l] -> do { String.unsafe_set s i c; loop (i - 1) l }
+        | [] -> s ]
+    ;
+  end
 ;
-value mstore len s =
-  add_rec len 0 where rec add_rec len i =
-    if i == String.length s then len else add_rec (store len s.[i]) (succ i)
-;
-value get_buff len = String.sub buff.val 0 len;
 
 (* The lexer *)
 
@@ -45,70 +62,70 @@ value stream_peek_nth n strm =
     | [_ :: l] -> loop (n - 1) l ]
 ;
 
-value rec ident len =
+value rec ident buf =
   parser
   [ [: `('A'..'Z' | 'a'..'z' | '\192'..'\214' | '\216'..'\246' |
          '\248'..'\255' | '0'..'9' | '_' | ''' as c);
-       len = ident (store len c) ! :] -> len
-  | [: :] -> len ]
-and ident2 len =
+       buf = ident (B.add buf c) ! :] -> buf
+  | [: :] -> buf ]
+and ident2 buf =
   parser
   [ [: `('!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' |
          '%' | '.' | ':' | '<' | '>' | '|' | '$' as c);
-       len = ident2 (store len c) ! :] -> len
-  | [: :] -> len ]
-and ident3 len =
+       buf = ident2 (B.add buf c) ! :] -> buf
+  | [: :] -> buf ]
+and ident3 buf =
   parser
   [ [: `('0'..'9' | 'A'..'Z' | 'a'..'z' | '\192'..'\214' | '\216'..'\246' |
          '\248'..'\255' | '_' | '!' | '%' | '&' | '*' | '+' | '-' | '.' |
          '/' | ':' | '<' | '=' | '>' | '?' | '@' | '^' | '|' | '~' | ''' |
          '$' as c);
-       len = ident3 (store len c) ! :] -> len
-  | [: :] -> len ]
-and digits kind len =
+       buf = ident3 (B.add buf c) ! :] -> buf
+  | [: :] -> buf ]
+and digits kind buf =
   parser
-  [ [: d = kind; s :] -> digits_under kind (store len d) s
+  [ [: d = kind; s :] -> digits_under kind (B.add buf d) s
   | [: :] -> raise (Stream.Error "ill-formed integer constant") ]
-and digits_under kind len =
+and digits_under kind buf =
   parser
-  [ [: d = kind; s :] -> digits_under kind (store len d) s
-  | [: `'_'; s :] -> digits_under kind len s
-  | [: `'l' :] -> ("INT_l", get_buff len)
-  | [: `'L' :] -> ("INT_L", get_buff len)
-  | [: `'n' :] -> ("INT_n", get_buff len)
-  | [: :] -> ("INT", get_buff len) ]
+  [ [: d = kind; s :] -> digits_under kind (B.add buf d) s
+  | [: `'_'; s :] -> digits_under kind buf s
+  | [: `'l' :] -> ("INT_l", B.get buf)
+  | [: `'L' :] -> ("INT_L", B.get buf)
+  | [: `'n' :] -> ("INT_n", B.get buf)
+  | [: :] -> ("INT", B.get buf) ]
 and octal = parser [: `('0'..'7' as d) :] -> d
 and hexa = parser [: `('0'..'9' | 'a'..'f' | 'A'..'F' as d) :] -> d
 and binary = parser [: `('0'..'1' as d) :] -> d
-and number len =
+and number buf =
   parser
-  [ [: `('0'..'9' as c); a = number (store len c) ! :] -> a
-  | [: `'_'; a = number len ! :] -> a
-  | [: `'.'; a = decimal_part (store len '.') ! :] -> a
-  | [: `'e' | 'E'; a = exponent_part (store len 'E') ! :] -> a
-  | [: `'l' :] -> ("INT_l", get_buff len)
-  | [: `'L' :] -> ("INT_L", get_buff len)
-  | [: `'n' :] -> ("INT_n", get_buff len)
-  | [: :] -> ("INT", get_buff len) ]
-and decimal_part len =
+  [ [: `('0'..'9' as c); a = number (B.add buf c) ! :] -> a
+  | [: `'_'; a = number buf ! :] -> a
+  | [: `'.'; a = decimal_part (B.add buf '.') ! :] -> a
+  | [: `'e' | 'E'; a = exponent_part (B.add buf 'E') ! :] -> a
+  | [: `'l' :] -> ("INT_l", B.get buf)
+  | [: `'L' :] -> ("INT_L", B.get buf)
+  | [: `'n' :] -> ("INT_n", B.get buf)
+  | [: :] -> ("INT", B.get buf) ]
+and decimal_part buf =
   parser
-  [ [: `('0'..'9' as c); a = decimal_part (store len c) ! :] -> a
-  | [: `'_'; a = decimal_part len ! :] -> a
-  | [: `'e' | 'E'; a = exponent_part (store len 'E') ! :] -> a
-  | [: :] -> ("FLOAT", get_buff len) ]
-and exponent_part len =
+  [ [: `('0'..'9' as c); a = decimal_part (B.add buf c) ! :] -> a
+  | [: `'_'; a = decimal_part buf ! :] -> a
+  | [: `'e' | 'E'; a = exponent_part (B.add buf 'E') ! :] -> a
+  | [: :] -> ("FLOAT", B.get buf) ]
+and exponent_part buf =
   parser
-  [ [: `('+' | '-' as c); a = end_exponent_part (store len c) ! :] -> a
-  | [: a = end_exponent_part len :] -> a ]
-and end_exponent_part len =
+  [ [: `('+' | '-' as c); a = end_exponent_part (B.add buf c) ! :] -> a
+  | [: a = end_exponent_part buf :] -> a ]
+and end_exponent_part buf =
   parser
-  [ [: `('0'..'9' as c); a = end_exponent_part_under (store len c) ! :] -> a
+  [ [: `('0'..'9' as c); a = end_exponent_part_under (B.add buf c) ! :] -> a
   | [: :] -> raise (Stream.Error "ill-formed floating-point constant") ]
-and end_exponent_part_under len =
+and end_exponent_part_under buf =
   parser
-  [ [: `('0'..'9' as c); a = end_exponent_part_under (store len c) ! :] -> a
-  | [: `'_'; a = end_exponent_part_under len ! :] -> a
-  | [: :] -> ("FLOAT", get_buff len) ]
+  [ [: `('0'..'9' as c); a = end_exponent_part_under (B.add buf c) ! :] -> a
+  | [: `'_'; a = end_exponent_part_under buf ! :] -> a
+  | [: :] -> ("FLOAT", B.get buf) ]
 ;
 
 value error_on_unknown_keywords = ref False;
@@ -151,84 +168,83 @@ value next_token_fun dfa ssd find_kwd glexr =
   and next_token_kont after_space =
     parser bp
     [ [: `('A'..'Z' | '\192'..'\214' | '\216'..'\222' as c);
-         len = ident (store 0 c) ! :] ep ->
-        let id = get_buff len in
+         buf = ident (B.char c) ! :] ep ->
+        let id = B.get buf in
         let tok =
           try ("", find_kwd id) with [ Not_found -> ("UIDENT", id) ]
         in
         (tok, (bp, ep))
     | [: `('a'..'z' | '\223'..'\246' | '\248'..'\255' | '_' as c);
-         len = ident (store 0 c) ! :] ep ->
-        let id = get_buff len in
+         buf = ident (B.char c) ! :] ep ->
+        let id = B.get buf in
         let tok =
           try ("", find_kwd id) with [ Not_found -> ("LIDENT", id) ]
         in
         (tok, (bp, ep))
-    | [: `('1'..'9' as c); tok = number (store 0 c) ! :] ep ->
-        (tok, (bp, ep))
+    | [: `('1'..'9' as c); tok = number (B.char c) ! :] ep -> (tok, (bp, ep))
     | [: `'0';
          tok =
            parser
-           [ [: `'o' | 'O'; tok = digits octal (mstore 0 "0o") ! :] -> tok
-           | [: `'x' | 'X'; tok = digits hexa (mstore 0 "0x") ! :] -> tok
-           | [: `'b' | 'B'; tok = digits binary (mstore 0 "0b") ! :] -> tok
-           | [: tok = number (store 0 '0') :] -> tok ] ! :] ep ->
+           [ [: `'o' | 'O'; tok = digits octal (B.string "0o") ! :] -> tok
+           | [: `'x' | 'X'; tok = digits hexa (B.string "0x") ! :] -> tok
+           | [: `'b' | 'B'; tok = digits binary (B.string "0b") ! :] -> tok
+           | [: tok = number (B.char '0') :] -> tok ] ! :] ep ->
         (tok, (bp, ep))
     | [: `'''; s :] ->
         match Stream.npeek 2 s with
         [ [_; '''] | ['\\'; _] ->
-            let tok = ("CHAR", get_buff (char bp 0 s)) in
+            let tok = ("CHAR", B.get (char bp B.empty s)) in
             let loc = (bp, Stream.count s) in
             (tok, loc)
         | _ -> keyword_or_error (bp, Stream.count s) "'" ]
-    | [: `'"'; len = string bp 0 ! :] ep ->
-        let tok = ("STRING", get_buff len) in
+    | [: `'"'; buf = string bp B.empty ! :] ep ->
+        let tok = ("STRING", B.get buf) in
         (tok, (bp, ep))
-    | [: `'$'; tok = dollar bp 0 ! :] ep ->
+    | [: `'$'; tok = dollar bp B.empty ! :] ep ->
         (tok, (bp, ep))
     | [: `('!' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' as c);
-         len = ident2 (store 0 c) ! :] ep ->
-        keyword_or_error (bp, ep) (get_buff len)
+         buf = ident2 (B.char c) ! :] ep ->
+        keyword_or_error (bp, ep) (B.get buf)
     | [: `('~' as c);
          a =
            parser
-           [ [: `('a'..'z' as c); len = ident (store 0 c) ! :] ep ->
-               (("TILDEIDENT", get_buff len), (bp, ep))
-           | [: len = ident2 (store 0 c) :] ep ->
-               keyword_or_error (bp, ep) (get_buff len) ] ! :] ->
+           [ [: `('a'..'z' as c); buf = ident (B.char c) ! :] ep ->
+               (("TILDEIDENT", B.get buf), (bp, ep))
+           | [: buf = ident2 (B.char c) :] ep ->
+               keyword_or_error (bp, ep) (B.get buf) ] ! :] ->
         a
     | [: `('?' as c);
          a =
            parser
-           [ [: `('a'..'z' as c); len = ident (store 0 c) ! :] ep ->
-               (("QUESTIONIDENT", get_buff len), (bp, ep))
-           | [: len = ident2 (store 0 c) :] ep ->
-               keyword_or_error (bp, ep) (get_buff len) ] ! :] ->
+           [ [: `('a'..'z' as c); buf = ident (B.char c) ! :] ep ->
+               (("QUESTIONIDENT", B.get buf), (bp, ep))
+           | [: buf = ident2 (B.char c) :] ep ->
+               keyword_or_error (bp, ep) (B.get buf) ] ! :] ->
         a
     | [: `'<'; r = less bp ! :] -> r
     | [: `(':' as c1);
-         len =
+         buf =
            parser
-           [ [: `(']' | ':' | '=' | '>' as c2) :] -> store (store 0 c1) c2
-           | [: :] -> store 0 c1 ] ! :] ep ->
-        keyword_or_error (bp, ep) (get_buff len)
+           [ [: `(']' | ':' | '=' | '>' as c2) :] -> B.add (B.char c1) c2
+           | [: :] -> B.char c1 ] ! :] ep ->
+        keyword_or_error (bp, ep) (B.get buf)
     | [: `('>' | '|' as c1);
-         len =
+         buf =
            parser
-           [ [: `(']' | '}' as c2) :] -> store (store 0 c1) c2
-           | [: a = ident2 (store 0 c1) :] -> a ] ! :] ep ->
-        keyword_or_error (bp, ep) (get_buff len)
+           [ [: `(']' | '}' as c2) :] -> B.add (B.char c1) c2
+           | [: a = ident2 (B.char c1) :] -> a ] ! :] ep ->
+        keyword_or_error (bp, ep) (B.get buf)
     | [: `('[' | '{' as c1); s :] ->
-        let len =
+        let buf =
           match Stream.npeek 2 s with
-          [ ['<'; '<' | ':'] -> store 0 c1
+          [ ['<'; '<' | ':'] -> B.char c1
           | _ ->
               match s with parser
-              [ [: `('|' | '<' | ':' as c2) :] -> store (store 0 c1) c2
-              | [: :] -> store 0 c1 ] ]
+              [ [: `('|' | '<' | ':' as c2) :] -> B.add (B.char c1) c2
+              | [: :] -> B.char c1 ] ]
         in
         let ep = Stream.count s in
-        let id = get_buff len in
+        let id = B.get buf in
         keyword_or_error (bp, ep) id
     | [: `'.';
          id =
@@ -242,114 +258,117 @@ value next_token_fun dfa ssd find_kwd glexr =
            [ [: `';' :] -> ";;"
            | [: :] -> ";" ] ! :] ep ->
         keyword_or_error (bp, ep) id
-    | [: `'\\'; len = ident3 0 ! :] ep -> (("LIDENT", get_buff len), (bp, ep))
+    | [: `'\\'; buf = ident3 B.empty ! :] ep ->
+        (("LIDENT", B.get buf), (bp, ep))
     | [: `c :] ep -> keyword_or_error (bp, ep) (String.make 1 c)
     | [: _ = Stream.empty :] -> (("EOI", ""), (bp, succ bp)) ]
   and less bp strm =
     if no_quotations.val then
       match strm with parser
-      [ [: len = ident2 (store 0 '<') :] ep ->
-          keyword_or_error (bp, ep) (get_buff len) ]
+      [ [: buf = ident2 (B.char '<') :] ep ->
+          keyword_or_error (bp, ep) (B.get buf) ]
     else
       match strm with parser
-      [ [: `'<'; len = quotation bp 0 :] ep ->
-          (("QUOTATION", ":" ^ get_buff len), (bp, ep))
-      | [: `':'; i = parser [: len = ident 0 :] -> get_buff len;
-           `'<' ? "character '<' expected"; len = quotation bp 0 :] ep ->
-          (("QUOTATION", i ^ ":" ^ get_buff len), (bp, ep))
-      | [: len = ident2 (store 0 '<') :] ep ->
-          keyword_or_error (bp, ep) (get_buff len) ]
-  and string bp len =
+      [ [: `'<'; buf = quotation bp B.empty :] ep ->
+          (("QUOTATION", ":" ^ B.get buf), (bp, ep))
+      | [: `':'; i = parser [: buf = ident B.empty :] -> B.get buf;
+           `'<' ? "character '<' expected";
+           buf = quotation bp B.empty :] ep ->
+          (("QUOTATION", i ^ ":" ^ B.get buf), (bp, ep))
+      | [: buf = ident2 (B.char '<') :] ep ->
+          keyword_or_error (bp, ep) (B.get buf) ]
+  and string bp buf =
     parser bp1
-    [ [: `'"' :] -> len
+    [ [: `'"' :] -> buf
     | [: `'\\'; `c;
-         a = string bp (store (store len '\\') (line_cnt (bp1 + 1) c)) ! :] ->
+         a = string bp (B.add (B.add buf '\\') (line_cnt (bp1 + 1) c)) ! :] ->
         a
-    | [: `c; a = string bp (store len (line_cnt bp1 c)) ! :] -> a
+    | [: `c; a = string bp (B.add buf (line_cnt bp1 c)) ! :] -> a
     | [: :] ep -> err (bp, ep) "string not terminated" ]
-  and char bp len =
+  and char bp buf =
     parser
-    [ [: `'''; s :] -> if len = 0 then char bp (store len ''') s else len
-    | [: `'\\'; `c; a = char bp (store (store len '\\') c) ! :] -> a
-    | [: `c; a = char bp (store len c) ! :] -> a
+    [ [: `'''; s :] ->
+        if B.is_empty buf then char bp (B.add buf ''') s else buf
+    | [: `'\\'; `c; a = char bp (B.add (B.add buf '\\') c) ! :] -> a
+    | [: `c; a = char bp (B.add buf c) ! :] -> a
     | [: :] ep -> err (bp, ep) "char not terminated" ]
-  and dollar bp len =
+  and dollar bp buf =
     parser
-    [ [: `'$' :] -> ("ANTIQUOT", ":" ^ get_buff len)
-    | [: `('a'..'z' | 'A'..'Z' as c); a = antiquot bp (store len c) ! :] -> a
-    | [: `('0'..'9' as c); a = maybe_locate bp (store len c) ! :] -> a
+    [ [: `'$' :] -> ("ANTIQUOT", ":" ^ B.get buf)
+    | [: `('a'..'z' | 'A'..'Z' as c); a = antiquot bp (B.add buf c) ! :] -> a
+    | [: `('0'..'9' as c); a = maybe_locate bp (B.add buf c) ! :] -> a
     | [: `':'; s :] ->
-        let k = get_buff len in
-        ("ANTIQUOT", k ^ ":" ^ locate_or_antiquot_rest bp 0 s)
+        let k = B.get buf in
+        ("ANTIQUOT", k ^ ":" ^ locate_or_antiquot_rest bp B.empty s)
     | [: `'\\'; `c; s :] ->
-        ("ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (store len c) s)
+        ("ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (B.add buf c) s)
     | [: s :] ->
         if dfa then
           match s with parser
           [ [: `c :] ->
-              ("ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (store len c) s)
+              ("ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (B.add buf c) s)
           | [: :] ep -> err (bp, ep) "antiquotation not terminated" ]
-        else ("", get_buff (ident2 (store 0 '$') s)) ]
-  and maybe_locate bp len =
+        else ("", B.get (ident2 (B.char '$') s)) ]
+  and maybe_locate bp buf =
     parser
-    [ [: `'$' :] -> ("ANTIQUOT", ":" ^ get_buff len)
-    | [: `('0'..'9' as c); a = maybe_locate bp (store len c) ! :] -> a
+    [ [: `'$' :] -> ("ANTIQUOT", ":" ^ B.get buf)
+    | [: `('0'..'9' as c); a = maybe_locate bp (B.add buf c) ! :] -> a
     | [: `':'; s :] ->
-        ("LOCATE", get_buff len ^ ":" ^ locate_or_antiquot_rest bp 0 s)
+        ("LOCATE", B.get buf ^ ":" ^ locate_or_antiquot_rest bp B.empty s)
     | [: `'\\'; `c; s :] ->
-        ("ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (store len c) s)
+        ("ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (B.add buf c) s)
     | [: `c; s :] ->
-        ("ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (store len c) s)
+        ("ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (B.add buf c) s)
     | [: :] ep -> err (bp, ep) "antiquotation not terminated" ]
-  and antiquot bp len =
+  and antiquot bp buf =
     parser
-    [ [: `'$' :] -> ("ANTIQUOT", ":" ^ get_buff len)
+    [ [: `'$' :] -> ("ANTIQUOT", ":" ^ B.get buf)
     | [: `('a'..'z' | 'A'..'Z' | '0'..'9' as c);
-         a = antiquot bp (store len c) ! :] ->
+         a = antiquot bp (B.add buf c) ! :] ->
         a
     | [: `':'; s :] ->
-        let k = get_buff len in
-        ("ANTIQUOT", k ^ ":" ^ locate_or_antiquot_rest bp 0 s)
+        let k = B.get buf in
+        ("ANTIQUOT", k ^ ":" ^ locate_or_antiquot_rest bp B.empty s)
     | [: `'\\'; `c; s :] ->
-        ("ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (store len c) s)
+        ("ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (B.add buf c) s)
     | [: `c; s :] ->
-        ("ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (store len c) s)
+        ("ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (B.add buf c) s)
     | [: :] ep -> err (bp, ep) "antiquotation not terminated" ]
-  and locate_or_antiquot_rest bp len =
+  and locate_or_antiquot_rest bp buf =
     parser
-    [ [: `'$' :] -> get_buff len
-    | [: `'\\'; `c; a = locate_or_antiquot_rest bp (store len c) ! :] -> a
-    | [: `c; a = locate_or_antiquot_rest bp (store len c) ! :] -> a
+    [ [: `'$' :] -> B.get buf
+    | [: `'\\'; `c; a = locate_or_antiquot_rest bp (B.add buf c) ! :] -> a
+    | [: `c; a = locate_or_antiquot_rest bp (B.add buf c) ! :] -> a
     | [: :] ep -> err (bp, ep) "antiquotation not terminated" ]
-  and quotation bp len =
+  and quotation bp buf =
     parser bp1
-    [ [: `'>'; a = maybe_end_quotation bp len ! :] -> a
-    | [: `'<'; len = maybe_nested_quotation bp (store len '<') ! ;
-         a = quotation bp len ! :] -> a
+    [ [: `'>'; a = maybe_end_quotation bp buf ! :] -> a
+    | [: `'<'; buf = maybe_nested_quotation bp (B.add buf '<') ! ;
+         a = quotation bp buf ! :] -> a
     | [: `'\\';
-         len =
+         buf =
            parser
-           [ [: `('>' | '<' | '\\' as c) :] -> store len c
-           | [: :] -> store len '\\' ] ! ;
-         a = quotation bp len ! :] ->
+           [ [: `('>' | '<' | '\\' as c) :] -> B.add buf c
+           | [: :] -> B.add buf '\\' ] ! ;
+         a = quotation bp buf ! :] ->
         a
-    | [: `c; a = quotation bp (store len (line_cnt bp1 c)) ! :] -> a
+    | [: `c; a = quotation bp (B.add buf (line_cnt bp1 c)) ! :] -> a
     | [: :] ep -> err (bp, ep) "quotation not terminated" ]
-  and maybe_nested_quotation bp len =
+  and maybe_nested_quotation bp buf =
     parser
-    [ [: `'<'; len = quotation bp (store len '<') ! :] -> mstore len ">>"
-    | [: `':'; len = ident (store len ':') !;
+    [ [: `'<'; buf = quotation bp (B.add buf '<') ! :] -> B.add_str buf ">>"
+    | [: `':'; buf = ident (B.add buf ':') !;
          a =
            parser
-           [ [: `'<'; len = quotation bp (store len '<') ! :] ->
-               mstore len ">>"
-           | [: :] -> len ] :] ->
+           [ [: `'<'; buf = quotation bp (B.add buf '<') ! :] ->
+               B.add_str buf ">>"
+           | [: :] -> buf ] :] ->
         a
-    | [: :] -> len ]
-  and maybe_end_quotation bp len =
+    | [: :] -> buf ]
+  and maybe_end_quotation bp buf =
     parser
-    [ [: `'>' :] -> len
-    | [: a = quotation bp (store len '>') :] -> a ]
+    [ [: `'>' :] -> buf
+    | [: a = quotation bp (B.add buf '>') :] -> a ]
   and left_paren bp =
     parser
     [ [: `'*'; _ = comment bp; a = next_token True :] -> a
@@ -359,7 +378,7 @@ value next_token_fun dfa ssd find_kwd glexr =
     parser
     [ [: `'('; a = left_paren_in_comment bp ! :] -> a
     | [: `'*'; a = star_in_comment bp ! :] -> a
-    | [: `'"'; _ = string bp 0; a = comment bp ! :] -> a
+    | [: `'"'; _ = string bp B.empty; a = comment bp ! :] -> a
     | [: `'''; a = quote_in_comment bp ! :] -> a
     | [: `'\n' | '\r'; s :] -> do { incr line_nb.val; comment bp s }
     | [: `c; a = comment bp ! :] -> a
@@ -379,7 +398,7 @@ value next_token_fun dfa ssd find_kwd glexr =
     parser
     [ [: `'''; a = comment bp ! :] -> a
     | [: a = comment bp :] -> a ]
-  and quote_antislash_in_comment bp len =
+  and quote_antislash_in_comment bp buf =
     parser
     [ [: `'''; a = comment bp ! :] -> a
     | [: `'\\' | '"' | 'n' | 't' | 'b' | 'r';

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_rp.ml,v 1.4 2006/12/31 16:30:10 deraugla Exp $ *)
+(* $Id: pa_rp.ml,v 1.5 2007/01/03 19:05:03 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -102,6 +102,8 @@ and subst_pe v (p, e) =
   | _ -> raise Not_found ]
 ;
 
+value optim = ref True;
+
 value stream_pattern_component skont ckont =
   fun
   [ SpTrm loc p wo ->
@@ -115,19 +117,25 @@ value stream_pattern_component skont ckont =
         [ <:expr< fun [ ($lid:v$ : Stream.t _) -> $e$ ] >> when v = strm_n -> e
         | _ -> <:expr< $e$ $lid:strm_n$ >> ]
       in
-      if pattern_eq_expression p skont then
-        if is_raise_failure ckont then e
-        else if handle_failure e then e
-        else <:expr< try $e$ with [ Stream.Failure -> $ckont$ ] >>
-      else if is_raise_failure ckont then <:expr< let $p$ = $e$ in $skont$ >>
-      else if pattern_eq_expression <:patt< Some $p$ >> skont then
-        <:expr< try Some $e$ with [ Stream.Failure -> $ckont$ ] >>
-      else if is_raise ckont then
-        let tst =
-          if handle_failure e then e
+      if optim.val then
+        if pattern_eq_expression p skont then
+          if is_raise_failure ckont then e
+          else if handle_failure e then e
           else <:expr< try $e$ with [ Stream.Failure -> $ckont$ ] >>
-        in
-        <:expr< let $p$ = $tst$ in $skont$ >>
+        else if is_raise_failure ckont then
+          <:expr< let $p$ = $e$ in $skont$ >>
+        else if pattern_eq_expression <:patt< Some $p$ >> skont then
+        <:expr< try Some $e$ with [ Stream.Failure -> $ckont$ ] >>
+        else if is_raise ckont then
+          let tst =
+            if handle_failure e then e
+            else <:expr< try $e$ with [ Stream.Failure -> $ckont$ ] >>
+          in
+          <:expr< let $p$ = $tst$ in $skont$ >>
+        else
+          <:expr< match try Some $e$ with [ Stream.Failure -> None ] with
+                  [ Some $p$ -> $skont$
+                  | _ -> $ckont$ ] >>
       else
         <:expr< match try Some $e$ with [ Stream.Failure -> None ] with
                 [ Some $p$ -> $skont$
@@ -194,11 +202,17 @@ value rec parser_cases loc =
   fun
   [ [] -> <:expr< raise Stream.Failure >>
   | spel ->
-      match group_terms spel with
-      [ ([], [(spcl, epo, e) :: spel]) ->
-          stream_pattern loc epo e (fun _ -> parser_cases loc spel) spcl
-      | (tspel, spel) ->
-          stream_patterns_term loc (fun _ -> parser_cases loc spel) tspel ] ]
+      if optim.val then
+        match group_terms spel with
+        [ ([], [(spcl, epo, e) :: spel]) ->
+            stream_pattern loc epo e (fun _ -> parser_cases loc spel) spcl
+        | (tspel, spel) ->
+            stream_patterns_term loc (fun _ -> parser_cases loc spel) tspel ]
+      else
+        match spel with
+        [ [(spcl, epo, e) :: spel] ->
+            stream_pattern loc epo e (fun _ -> parser_cases loc spel) spcl
+        | [] -> <:expr< raise Stream.Failure >> ] ]
 ;
 
 value cparser loc bpo pc =

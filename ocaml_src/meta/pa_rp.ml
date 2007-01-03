@@ -119,6 +119,8 @@ and subst_pe v (p, e) =
   | _ -> raise Not_found
 ;;
 
+let optim = ref true;;
+
 let stream_pattern_component skont ckont =
   function
     SpTrm (loc, p, wo) ->
@@ -146,31 +148,10 @@ let stream_pattern_component skont ckont =
             e
         | _ -> MLast.ExApp (loc, e, MLast.ExLid (loc, strm_n))
       in
-      if pattern_eq_expression p skont then
-        if is_raise_failure ckont then e
-        else if handle_failure e then e
-        else
-          MLast.ExTry
-            (loc, e,
-             [MLast.PaAcc
-                (loc, MLast.PaUid (loc, "Stream"),
-                 MLast.PaUid (loc, "Failure")),
-              None, ckont])
-      else if is_raise_failure ckont then
-        MLast.ExLet (loc, false, [p, e], skont)
-      else if
-        pattern_eq_expression
-          (MLast.PaApp (loc, MLast.PaUid (loc, "Some"), p)) skont
-      then
-        MLast.ExTry
-          (loc, MLast.ExApp (loc, MLast.ExUid (loc, "Some"), e),
-           [MLast.PaAcc
-              (loc, MLast.PaUid (loc, "Stream"),
-               MLast.PaUid (loc, "Failure")),
-            None, ckont])
-      else if is_raise ckont then
-        let tst =
-          if handle_failure e then e
+      if !optim then
+        if pattern_eq_expression p skont then
+          if is_raise_failure ckont then e
+          else if handle_failure e then e
           else
             MLast.ExTry
               (loc, e,
@@ -178,8 +159,41 @@ let stream_pattern_component skont ckont =
                   (loc, MLast.PaUid (loc, "Stream"),
                    MLast.PaUid (loc, "Failure")),
                 None, ckont])
-        in
-        MLast.ExLet (loc, false, [p, tst], skont)
+        else if is_raise_failure ckont then
+          MLast.ExLet (loc, false, [p, e], skont)
+        else if
+          pattern_eq_expression
+            (MLast.PaApp (loc, MLast.PaUid (loc, "Some"), p)) skont
+        then
+          MLast.ExTry
+            (loc, MLast.ExApp (loc, MLast.ExUid (loc, "Some"), e),
+             [MLast.PaAcc
+                (loc, MLast.PaUid (loc, "Stream"),
+                 MLast.PaUid (loc, "Failure")),
+              None, ckont])
+        else if is_raise ckont then
+          let tst =
+            if handle_failure e then e
+            else
+              MLast.ExTry
+                (loc, e,
+                 [MLast.PaAcc
+                    (loc, MLast.PaUid (loc, "Stream"),
+                     MLast.PaUid (loc, "Failure")),
+                  None, ckont])
+          in
+          MLast.ExLet (loc, false, [p, tst], skont)
+        else
+          MLast.ExMat
+            (loc,
+             MLast.ExTry
+               (loc, MLast.ExApp (loc, MLast.ExUid (loc, "Some"), e),
+                [MLast.PaAcc
+                   (loc, MLast.PaUid (loc, "Stream"),
+                    MLast.PaUid (loc, "Failure")),
+                 None, MLast.ExUid (loc, "None")]),
+             [MLast.PaApp (loc, MLast.PaUid (loc, "Some"), p), None, skont;
+              MLast.PaAny loc, None, ckont])
       else
         MLast.ExMat
           (loc,
@@ -315,11 +329,22 @@ let rec parser_cases loc =
          MLast.ExAcc
            (loc, MLast.ExUid (loc, "Stream"), MLast.ExUid (loc, "Failure")))
   | spel ->
-      match group_terms spel with
-        [], (spcl, epo, e) :: spel ->
-          stream_pattern loc epo e (fun _ -> parser_cases loc spel) spcl
-      | tspel, spel ->
-          stream_patterns_term loc (fun _ -> parser_cases loc spel) tspel
+      if !optim then
+        match group_terms spel with
+          [], (spcl, epo, e) :: spel ->
+            stream_pattern loc epo e (fun _ -> parser_cases loc spel) spcl
+        | tspel, spel ->
+            stream_patterns_term loc (fun _ -> parser_cases loc spel) tspel
+      else
+        match spel with
+          (spcl, epo, e) :: spel ->
+            stream_pattern loc epo e (fun _ -> parser_cases loc spel) spcl
+        | [] ->
+            MLast.ExApp
+              (loc, MLast.ExLid (loc, "raise"),
+               MLast.ExAcc
+                 (loc, MLast.ExUid (loc, "Stream"),
+                  MLast.ExUid (loc, "Failure")))
 ;;
 
 let cparser loc bpo pc =
