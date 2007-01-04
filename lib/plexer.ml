@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.27 2007/01/04 15:16:31 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.28 2007/01/04 17:04:10 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -98,7 +98,7 @@ and ident3 buf =
   | [: :] -> buf ]
 and digits kind buf =
   parser
-  [ [: d = kind; s :] -> digits_under kind (B.add buf d) s
+  [ [: d = kind; tok = digits_under kind (B.add buf d) ! :] -> tok
   | [: :] -> raise (Stream.Error "ill-formed integer constant") ]
 and digits_under kind buf =
   parser
