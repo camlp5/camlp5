@@ -68,6 +68,22 @@ let stream_peek_nth n strm =
   loop n (Stream.npeek n strm)
 ;;
 
+let p_opt f buf (strm__ : _ Stream.t) =
+  match
+    try Some (f buf strm__) with
+      Stream.Failure -> None
+  with
+    Some c -> buf
+  | _ -> buf
+;;
+
+let rec decimal_digits_under buf (strm__ : _ Stream.t) =
+  match Stream.peek strm__ with
+    Some ('0'..'9' | '_' as c) ->
+      Stream.junk strm__; decimal_digits_under (B.add buf c) strm__
+  | _ -> buf
+;;
+
 let rec ident buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some
@@ -122,41 +138,51 @@ and binary (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some ('0'..'1' as d) -> Stream.junk strm__; d
   | _ -> raise Stream.Failure
-and number buf (strm__ : _ Stream.t) =
+;;
+
+let exponant_part buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
-    Some ('0'..'9' as c) -> Stream.junk strm__; number (B.add buf c) strm__
-  | Some '_' -> Stream.junk strm__; number buf strm__
-  | Some '.' -> Stream.junk strm__; decimal_part (B.add buf '.') strm__
-  | Some ('e' | 'E') ->
-      Stream.junk strm__; exponent_part (B.add buf 'E') strm__
-  | Some 'l' -> Stream.junk strm__; "INT_l", B.get buf
-  | Some 'L' -> Stream.junk strm__; "INT_L", B.get buf
-  | Some 'n' -> Stream.junk strm__; "INT_n", B.get buf
-  | _ -> "INT", B.get buf
-and decimal_part buf (strm__ : _ Stream.t) =
+    Some ('e' | 'E' as c) ->
+      Stream.junk strm__;
+      let buf =
+        p_opt
+          (fun buf (strm__ : _ Stream.t) ->
+             match Stream.peek strm__ with
+               Some ('+' | '-' as c) -> Stream.junk strm__; B.add buf c
+             | _ -> raise Stream.Failure)
+          (B.add buf c) strm__
+      in
+      begin try
+        match Stream.peek strm__ with
+          Some ('0'..'9' as c) ->
+            Stream.junk strm__; decimal_digits_under (B.add buf c) strm__
+        | _ -> raise Stream.Failure
+      with
+        Stream.Failure ->
+          raise (Stream.Error "ill-formed floating-point constant")
+      end
+  | _ -> raise Stream.Failure
+;;
+
+let number buf (strm__ : _ Stream.t) =
+  let buf = decimal_digits_under buf strm__ in
   match Stream.peek strm__ with
-    Some ('0'..'9' as c) ->
-      Stream.junk strm__; decimal_part (B.add buf c) strm__
-  | Some '_' -> Stream.junk strm__; decimal_part buf strm__
-  | Some ('e' | 'E') ->
-      Stream.junk strm__; exponent_part (B.add buf 'E') strm__
-  | _ -> "FLOAT", B.get buf
-and exponent_part buf (strm__ : _ Stream.t) =
-  match Stream.peek strm__ with
-    Some ('+' | '-' as c) ->
-      Stream.junk strm__; end_exponent_part (B.add buf c) strm__
-  | _ -> end_exponent_part buf strm__
-and end_exponent_part buf (strm__ : _ Stream.t) =
-  match Stream.peek strm__ with
-    Some ('0'..'9' as c) ->
-      Stream.junk strm__; end_exponent_part_under (B.add buf c) strm__
-  | _ -> raise (Stream.Error "ill-formed floating-point constant")
-and end_exponent_part_under buf (strm__ : _ Stream.t) =
-  match Stream.peek strm__ with
-    Some ('0'..'9' as c) ->
-      Stream.junk strm__; end_exponent_part_under (B.add buf c) strm__
-  | Some '_' -> Stream.junk strm__; end_exponent_part_under buf strm__
-  | _ -> "FLOAT", B.get buf
+    Some '.' ->
+      Stream.junk strm__;
+      let buf = decimal_digits_under (B.add buf '.') strm__ in
+      let buf = p_opt exponant_part buf strm__ in "FLOAT", B.get buf
+  | _ ->
+      match
+        try Some (exponant_part buf strm__) with
+          Stream.Failure -> None
+      with
+        Some buf -> "FLOAT", B.get buf
+      | _ ->
+          match Stream.peek strm__ with
+            Some 'l' -> Stream.junk strm__; "INT_l", B.get buf
+          | Some 'L' -> Stream.junk strm__; "INT_L", B.get buf
+          | Some 'n' -> Stream.junk strm__; "INT_n", B.get buf
+          | _ -> "INT", B.get buf
 ;;
 
 let error_on_unknown_keywords = ref false;;
@@ -890,11 +916,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 663, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 663, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 663, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 664, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 664, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 674, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 674, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 674, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 675, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 675, 37)));
        tok_comm = None}
   in
   let glex =

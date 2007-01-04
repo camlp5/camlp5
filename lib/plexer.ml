@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.26 2007/01/03 19:05:03 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.27 2007/01/04 15:16:31 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -62,6 +62,20 @@ value stream_peek_nth n strm =
     | [_ :: l] -> loop (n - 1) l ]
 ;
 
+value p_opt f buf =
+  parser
+  [ [: c = f buf :] -> buf
+  | [: :] -> buf ]
+;
+
+value rec decimal_digits_under buf =
+  parser
+  [ [: `('0'..'9' | '_' as c);
+       buf = decimal_digits_under (B.add buf c) ! :] ->
+      buf
+  | [: :] -> buf ]
+;
+
 value rec ident buf =
   parser
   [ [: `('A'..'Z' | 'a'..'z' | '\192'..'\214' | '\216'..'\246' |
@@ -96,36 +110,33 @@ and digits_under kind buf =
   | [: :] -> ("INT", B.get buf) ]
 and octal = parser [: `('0'..'7' as d) :] -> d
 and hexa = parser [: `('0'..'9' | 'a'..'f' | 'A'..'F' as d) :] -> d
-and binary = parser [: `('0'..'1' as d) :] -> d
-and number buf =
+and binary = parser [: `('0'..'1' as d) :] -> d;
+
+value exponant_part buf =
   parser
-  [ [: `('0'..'9' as c); a = number (B.add buf c) ! :] -> a
-  | [: `'_'; a = number buf ! :] -> a
-  | [: `'.'; a = decimal_part (B.add buf '.') ! :] -> a
-  | [: `'e' | 'E'; a = exponent_part (B.add buf 'E') ! :] -> a
-  | [: `'l' :] -> ("INT_l", B.get buf)
-  | [: `'L' :] -> ("INT_L", B.get buf)
-  | [: `'n' :] -> ("INT_n", B.get buf)
-  | [: :] -> ("INT", B.get buf) ]
-and decimal_part buf =
+  [ [: `('e' | 'E' as c);
+       buf =
+         p_opt (fun buf -> parser [: `('+' | '-' as c) :] -> B.add buf c)
+           (B.add buf c) !;
+       buf =
+         parser
+         [ [: `('0'..'9' as c);
+              buf = decimal_digits_under (B.add buf c) ! :] -> buf ] ?
+         "ill-formed floating-point constant" :] -> buf ]
+;
+
+value number buf =
   parser
-  [ [: `('0'..'9' as c); a = decimal_part (B.add buf c) ! :] -> a
-  | [: `'_'; a = decimal_part buf ! :] -> a
-  | [: `'e' | 'E'; a = exponent_part (B.add buf 'E') ! :] -> a
-  | [: :] -> ("FLOAT", B.get buf) ]
-and exponent_part buf =
-  parser
-  [ [: `('+' | '-' as c); a = end_exponent_part (B.add buf c) ! :] -> a
-  | [: a = end_exponent_part buf :] -> a ]
-and end_exponent_part buf =
-  parser
-  [ [: `('0'..'9' as c); a = end_exponent_part_under (B.add buf c) ! :] -> a
-  | [: :] -> raise (Stream.Error "ill-formed floating-point constant") ]
-and end_exponent_part_under buf =
-  parser
-  [ [: `('0'..'9' as c); a = end_exponent_part_under (B.add buf c) ! :] -> a
-  | [: `'_'; a = end_exponent_part_under buf ! :] -> a
-  | [: :] -> ("FLOAT", B.get buf) ]
+  [ [: buf = decimal_digits_under buf;
+       tok =
+         parser
+         [ [: `'.'; buf = decimal_digits_under (B.add buf '.') !;
+              buf = p_opt exponant_part buf ! :] -> ("FLOAT", B.get buf)
+         | [: buf = exponant_part buf :] -> ("FLOAT", B.get buf)
+         | [: `'l' :] -> ("INT_l", B.get buf)
+         | [: `'L' :] -> ("INT_L", B.get buf)
+         | [: `'n' :] -> ("INT_n", B.get buf)
+         | [: :] -> ("INT", B.get buf) ] ! :] -> tok ]
 ;
 
 value error_on_unknown_keywords = ref False;
