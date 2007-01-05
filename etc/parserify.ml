@@ -1,6 +1,8 @@
 (* camlp4r q_MLast.cmo *)
 (* $Id$ *)
 
+(* heuristic to rebuild the parsers with their initial syntax *)
+
 value loc = Stdpp.dummy_loc;
 
 type spc =
