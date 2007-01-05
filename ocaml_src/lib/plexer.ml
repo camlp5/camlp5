@@ -140,7 +140,7 @@ and binary (strm__ : _ Stream.t) =
   | _ -> raise Stream.Failure
 ;;
 
-let exponant_part buf (strm__ : _ Stream.t) =
+let exponent_part buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some ('e' | 'E' as c) ->
       Stream.junk strm__;
@@ -170,10 +170,10 @@ let number buf (strm__ : _ Stream.t) =
     Some '.' ->
       Stream.junk strm__;
       let buf = decimal_digits_under (B.add buf '.') strm__ in
-      let buf = p_opt exponant_part buf strm__ in "FLOAT", B.get buf
+      let buf = p_opt exponent_part buf strm__ in "FLOAT", B.get buf
   | _ ->
       match
-        try Some (exponant_part buf strm__) with
+        try Some (exponent_part buf strm__) with
           Stream.Failure -> None
       with
         Some buf -> "FLOAT", B.get buf

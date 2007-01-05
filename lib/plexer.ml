@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.28 2007/01/04 17:04:10 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.29 2007/01/05 02:39:19 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -112,7 +112,7 @@ and octal = parser [: `('0'..'7' as d) :] -> d
 and hexa = parser [: `('0'..'9' | 'a'..'f' | 'A'..'F' as d) :] -> d
 and binary = parser [: `('0'..'1' as d) :] -> d;
 
-value exponant_part buf =
+value exponent_part buf =
   parser
   [ [: `('e' | 'E' as c);
        buf =
@@ -131,8 +131,8 @@ value number buf =
        tok =
          parser
          [ [: `'.'; buf = decimal_digits_under (B.add buf '.') !;
-              buf = p_opt exponant_part buf ! :] -> ("FLOAT", B.get buf)
-         | [: buf = exponant_part buf :] -> ("FLOAT", B.get buf)
+              buf = p_opt exponent_part buf ! :] -> ("FLOAT", B.get buf)
+         | [: buf = exponent_part buf :] -> ("FLOAT", B.get buf)
          | [: `'l' :] -> ("INT_l", B.get buf)
          | [: `'L' :] -> ("INT_L", B.get buf)
          | [: `'n' :] -> ("INT_n", B.get buf)
