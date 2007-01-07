@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.30 2007/01/07 13:18:03 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.31 2007/01/07 14:11:18 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -174,11 +174,16 @@ value next_token_fun dfa ssd find_kwd glexr =
         else
           let loc = (bp, bp + 1) in
           ((keyword_or_error loc "#", loc), t_line_nb.val, t_bol_pos.val)
-    | [: `'('; s :] -> left_paren bp s
-    | [: s :] bp ->
-        let tok = next_token_kont after_space s in
-        let ep = max (bp + 1) (Stream.count s) in
-        ((tok, (bp, ep)), t_line_nb.val, t_bol_pos.val) ]
+    | [: `'(';
+         a =
+           parser
+           [ [: `'*'; _ = comment bp !; a = next_token True ! :] -> a
+           | [: :] ep ->
+               let loc = (bp, ep) in
+               ((keyword_or_error (bp, ep) "(", loc), line_nb.val.val,
+                bol_pos.val.val) ] ! :] -> a
+    | [: tok = next_token_kont after_space :] ep ->
+        ((tok, (bp, max (bp + 1) ep)), t_line_nb.val, t_bol_pos.val) ]
   }
   and next_token_kont after_space =
     parser bp
@@ -369,13 +374,6 @@ value next_token_fun dfa ssd find_kwd glexr =
     parser
     [ [: `'>' :] -> buf
     | [: a = quotation bp (B.add buf '>') :] -> a ]
-  and left_paren bp =
-    parser
-    [ [: `'*'; _ = comment bp; a = next_token True :] -> a
-    | [: :] ep ->
-        let loc = (bp, ep) in
-        ((keyword_or_error (bp, ep) "(", loc), line_nb.val.val,
-         bol_pos.val.val) ]
   and comment bp =
     parser
     [ [: `'('; a = left_paren_in_comment bp ! :] -> a

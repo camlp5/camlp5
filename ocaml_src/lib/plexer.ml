@@ -228,12 +228,21 @@ let next_token_fun dfa ssd find_kwd glexr =
         else
           let loc = bp, bp + 1 in
           (keyword_or_error loc "#", loc), !t_line_nb, !t_bol_pos
-    | Some '(' -> Stream.junk strm__; left_paren bp strm__
+    | Some '(' ->
+        Stream.junk strm__;
+        begin match Stream.peek strm__ with
+          Some '*' ->
+            Stream.junk strm__;
+            let _ = comment bp strm__ in next_token true strm__
+        | _ ->
+            let ep = Stream.count strm__ in
+            let loc = bp, ep in
+            (keyword_or_error (bp, ep) "(", loc), !(!line_nb), !(!bol_pos)
+        end
     | _ ->
-        let bp = Stream.count strm__ in
         let tok = next_token_kont after_space strm__ in
-        let ep = max (bp + 1) (Stream.count strm__) in
-        (tok, (bp, ep)), !t_line_nb, !t_bol_pos
+        let ep = Stream.count strm__ in
+        (tok, (bp, max (bp + 1) ep)), !t_line_nb, !t_bol_pos
   and next_token_kont after_space (strm__ : _ Stream.t) =
     let bp = Stream.count strm__ in
     match Stream.peek strm__ with
@@ -559,21 +568,6 @@ let next_token_fun dfa ssd find_kwd glexr =
     match Stream.peek strm__ with
       Some '>' -> Stream.junk strm__; buf
     | _ -> quotation bp (B.add buf '>') strm__
-  and left_paren bp (strm__ : _ Stream.t) =
-    match Stream.peek strm__ with
-      Some '*' ->
-        Stream.junk strm__;
-        let _ =
-          try comment bp strm__ with
-            Stream.Failure -> raise (Stream.Error "")
-        in
-        begin try next_token true strm__ with
-          Stream.Failure -> raise (Stream.Error "")
-        end
-    | _ ->
-        let ep = Stream.count strm__ in
-        let loc = bp, ep in
-        (keyword_or_error (bp, ep) "(", loc), !(!line_nb), !(!bol_pos)
   and comment bp (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
       Some '(' -> Stream.junk strm__; left_paren_in_comment bp strm__
@@ -898,11 +892,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 665, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 665, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 665, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 666, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 666, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 663, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 663, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 663, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 664, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 664, 37)));
        tok_comm = None}
   in
   let glex =
