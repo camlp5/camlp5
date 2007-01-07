@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.29 2007/01/05 02:39:19 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.30 2007/01/07 13:18:03 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -152,10 +152,10 @@ value next_token_fun dfa ssd find_kwd glexr =
       (Stdpp.make_lined_loc t_line_nb.val t_bol_pos.val loc) (Token.Error msg)
   in
   let keyword_or_error loc s =
-    try (("", find_kwd s), loc) with
+    try ("", find_kwd s) with
     [ Not_found ->
         if error_on_unknown_keywords.val then err loc ("illegal token: " ^ s)
-        else (("", s), loc) ]
+        else ("", s) ]
   in
   let line_cnt bp1 c =
     match c with
@@ -171,64 +171,56 @@ value next_token_fun dfa ssd find_kwd glexr =
     | [: `' ' | '\t' | '\026' | '\012'; s :] -> next_token True s
     | [: `'#' when bp = bol_pos.val.val; s :] ->
         if linedir 1 s then do { any_to_nl s; next_token True s }
-        else (keyword_or_error (bp, bp + 1) "#", t_line_nb.val, t_bol_pos.val)
+        else
+          let loc = (bp, bp + 1) in
+          ((keyword_or_error loc "#", loc), t_line_nb.val, t_bol_pos.val)
     | [: `'('; s :] -> left_paren bp s
-    | [: s :] ->
-        (next_token_kont after_space s, t_line_nb.val, t_bol_pos.val) ]
+    | [: s :] bp ->
+        let tok = next_token_kont after_space s in
+        let ep = max (bp + 1) (Stream.count s) in
+        ((tok, (bp, ep)), t_line_nb.val, t_bol_pos.val) ]
   }
   and next_token_kont after_space =
     parser bp
     [ [: `('A'..'Z' | '\192'..'\214' | '\216'..'\222' as c);
-         buf = ident (B.char c) ! :] ep ->
+         buf = ident (B.char c) ! :] ->
         let id = B.get buf in
-        let tok =
-          try ("", find_kwd id) with [ Not_found -> ("UIDENT", id) ]
-        in
-        (tok, (bp, ep))
+        try ("", find_kwd id) with [ Not_found -> ("UIDENT", id) ]
     | [: `('a'..'z' | '\223'..'\246' | '\248'..'\255' | '_' as c);
-         buf = ident (B.char c) ! :] ep ->
+         buf = ident (B.char c) ! :] ->
         let id = B.get buf in
-        let tok =
-          try ("", find_kwd id) with [ Not_found -> ("LIDENT", id) ]
-        in
-        (tok, (bp, ep))
-    | [: `('1'..'9' as c); tok = number (B.char c) ! :] ep -> (tok, (bp, ep))
+        try ("", find_kwd id) with [ Not_found -> ("LIDENT", id) ]
+    | [: `('1'..'9' as c); tok = number (B.char c) ! :] -> tok
     | [: `'0';
          tok =
            parser
            [ [: `'o' | 'O'; tok = digits octal (B.string "0o") ! :] -> tok
            | [: `'x' | 'X'; tok = digits hexa (B.string "0x") ! :] -> tok
            | [: `'b' | 'B'; tok = digits binary (B.string "0b") ! :] -> tok
-           | [: tok = number (B.char '0') :] -> tok ] ! :] ep ->
-        (tok, (bp, ep))
-    | [: `'''; s :] ->
+           | [: tok = number (B.char '0') :] -> tok ] ! :] ->
+        tok
+    | [: `'''; s :] ep ->
         match Stream.npeek 2 s with
-        [ [_; '''] | ['\\'; _] ->
-            let tok = ("CHAR", B.get (char bp B.empty s)) in
-            let loc = (bp, Stream.count s) in
-            (tok, loc)
-        | _ -> keyword_or_error (bp, Stream.count s) "'" ]
-    | [: `'"'; buf = string bp B.empty ! :] ep ->
-        let tok = ("STRING", B.get buf) in
-        (tok, (bp, ep))
-    | [: `'$'; tok = dollar bp B.empty ! :] ep ->
-        (tok, (bp, ep))
+        [ [_; '''] | ['\\'; _] -> ("CHAR", B.get (char bp B.empty s))
+        | _ -> keyword_or_error (bp, ep) "'" ]
+    | [: `'"'; buf = string bp B.empty ! :] -> ("STRING", B.get buf)
+    | [: `'$'; tok = dollar bp B.empty ! :] -> tok
     | [: `('!' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' as c);
          buf = ident2 (B.char c) ! :] ep ->
         keyword_or_error (bp, ep) (B.get buf)
     | [: `('~' as c);
          a =
            parser
-           [ [: `('a'..'z' as c); buf = ident (B.char c) ! :] ep ->
-               (("TILDEIDENT", B.get buf), (bp, ep))
+           [ [: `('a'..'z' as c); buf = ident (B.char c) ! :] ->
+               ("TILDEIDENT", B.get buf)
            | [: buf = ident2 (B.char c) :] ep ->
                keyword_or_error (bp, ep) (B.get buf) ] ! :] ->
         a
     | [: `('?' as c);
          a =
            parser
-           [ [: `('a'..'z' as c); buf = ident (B.char c) ! :] ep ->
-               (("QUESTIONIDENT", B.get buf), (bp, ep))
+           [ [: `('a'..'z' as c); buf = ident (B.char c) ! :] ->
+               ("QUESTIONIDENT", B.get buf)
            | [: buf = ident2 (B.char c) :] ep ->
                keyword_or_error (bp, ep) (B.get buf) ] ! :] ->
         a
@@ -254,9 +246,7 @@ value next_token_fun dfa ssd find_kwd glexr =
               [ [: `('|' | '<' | ':' as c2) :] -> B.add (B.char c1) c2
               | [: :] -> B.char c1 ] ]
         in
-        let ep = Stream.count s in
-        let id = B.get buf in
-        keyword_or_error (bp, ep) id
+        keyword_or_error (bp, Stream.count s) (B.get buf)
     | [: `'.';
          id =
            parser
@@ -269,10 +259,9 @@ value next_token_fun dfa ssd find_kwd glexr =
            [ [: `';' :] -> ";;"
            | [: :] -> ";" ] ! :] ep ->
         keyword_or_error (bp, ep) id
-    | [: `'\\'; buf = ident3 B.empty ! :] ep ->
-        (("LIDENT", B.get buf), (bp, ep))
+    | [: `'\\'; buf = ident3 B.empty ! :] -> ("LIDENT", B.get buf)
     | [: `c :] ep -> keyword_or_error (bp, ep) (String.make 1 c)
-    | [: _ = Stream.empty :] -> (("EOI", ""), (bp, succ bp)) ]
+    | [: _ = Stream.empty :] -> ("EOI", "") ]
   and less bp strm =
     if no_quotations.val then
       match strm with parser
@@ -280,12 +269,12 @@ value next_token_fun dfa ssd find_kwd glexr =
           keyword_or_error (bp, ep) (B.get buf) ]
     else
       match strm with parser
-      [ [: `'<'; buf = quotation bp B.empty :] ep ->
-          (("QUOTATION", ":" ^ B.get buf), (bp, ep))
+      [ [: `'<'; buf = quotation bp B.empty :] ->
+          ("QUOTATION", ":" ^ B.get buf)
       | [: `':'; i = parser [: buf = ident B.empty :] -> B.get buf;
            `'<' ? "character '<' expected";
-           buf = quotation bp B.empty :] ep ->
-          (("QUOTATION", i ^ ":" ^ B.get buf), (bp, ep))
+           buf = quotation bp B.empty :] ->
+          ("QUOTATION", i ^ ":" ^ B.get buf)
       | [: buf = ident2 (B.char '<') :] ep ->
           keyword_or_error (bp, ep) (B.get buf) ]
   and string bp buf =
@@ -384,7 +373,9 @@ value next_token_fun dfa ssd find_kwd glexr =
     parser
     [ [: `'*'; _ = comment bp; a = next_token True :] -> a
     | [: :] ep ->
-        (keyword_or_error (bp, ep) "(", line_nb.val.val, bol_pos.val.val) ]
+        let loc = (bp, ep) in
+        ((keyword_or_error (bp, ep) "(", loc), line_nb.val.val,
+         bol_pos.val.val) ]
   and comment bp =
     parser
     [ [: `'('; a = left_paren_in_comment bp ! :] -> a

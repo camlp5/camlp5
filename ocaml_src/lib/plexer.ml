@@ -198,10 +198,10 @@ let next_token_fun dfa ssd find_kwd glexr =
       (Token.Error msg)
   in
   let keyword_or_error loc s =
-    try ("", find_kwd s), loc with
+    try "", find_kwd s with
       Not_found ->
         if !error_on_unknown_keywords then err loc ("illegal token: " ^ s)
-        else ("", s), loc
+        else "", s
   in
   let line_cnt bp1 c =
     match c with
@@ -225,67 +225,56 @@ let next_token_fun dfa ssd find_kwd glexr =
         Stream.junk strm__;
         let s = strm__ in
         if linedir 1 s then begin any_to_nl s; next_token true s end
-        else keyword_or_error (bp, bp + 1) "#", !t_line_nb, !t_bol_pos
+        else
+          let loc = bp, bp + 1 in
+          (keyword_or_error loc "#", loc), !t_line_nb, !t_bol_pos
     | Some '(' -> Stream.junk strm__; left_paren bp strm__
-    | _ -> next_token_kont after_space strm__, !t_line_nb, !t_bol_pos
+    | _ ->
+        let bp = Stream.count strm__ in
+        let tok = next_token_kont after_space strm__ in
+        let ep = max (bp + 1) (Stream.count strm__) in
+        (tok, (bp, ep)), !t_line_nb, !t_bol_pos
   and next_token_kont after_space (strm__ : _ Stream.t) =
     let bp = Stream.count strm__ in
     match Stream.peek strm__ with
       Some ('A'..'Z' | '\192'..'\214' | '\216'..'\222' as c) ->
         Stream.junk strm__;
         let buf = ident (B.char c) strm__ in
-        let ep = Stream.count strm__ in
         let id = B.get buf in
-        let tok =
-          try "", find_kwd id with
-            Not_found -> "UIDENT", id
-        in
-        tok, (bp, ep)
+        begin try "", find_kwd id with
+          Not_found -> "UIDENT", id
+        end
     | Some ('a'..'z' | '\223'..'\246' | '\248'..'\255' | '_' as c) ->
         Stream.junk strm__;
         let buf = ident (B.char c) strm__ in
-        let ep = Stream.count strm__ in
         let id = B.get buf in
-        let tok =
-          try "", find_kwd id with
-            Not_found -> "LIDENT", id
-        in
-        tok, (bp, ep)
-    | Some ('1'..'9' as c) ->
-        Stream.junk strm__;
-        let tok = number (B.char c) strm__ in
-        let ep = Stream.count strm__ in tok, (bp, ep)
+        begin try "", find_kwd id with
+          Not_found -> "LIDENT", id
+        end
+    | Some ('1'..'9' as c) -> Stream.junk strm__; number (B.char c) strm__
     | Some '0' ->
         Stream.junk strm__;
-        let tok =
-          match Stream.peek strm__ with
-            Some ('o' | 'O') ->
-              Stream.junk strm__; digits octal (B.string "0o") strm__
-          | Some ('x' | 'X') ->
-              Stream.junk strm__; digits hexa (B.string "0x") strm__
-          | Some ('b' | 'B') ->
-              Stream.junk strm__; digits binary (B.string "0b") strm__
-          | _ -> number (B.char '0') strm__
-        in
-        let ep = Stream.count strm__ in tok, (bp, ep)
+        begin match Stream.peek strm__ with
+          Some ('o' | 'O') ->
+            Stream.junk strm__; digits octal (B.string "0o") strm__
+        | Some ('x' | 'X') ->
+            Stream.junk strm__; digits hexa (B.string "0x") strm__
+        | Some ('b' | 'B') ->
+            Stream.junk strm__; digits binary (B.string "0b") strm__
+        | _ -> number (B.char '0') strm__
+        end
     | Some '\'' ->
         Stream.junk strm__;
         let s = strm__ in
+        let ep = Stream.count strm__ in
         begin match Stream.npeek 2 s with
-          [_; '\''] | ['\\'; _] ->
-            let tok = "CHAR", B.get (char bp B.empty s) in
-            let loc = bp, Stream.count s in tok, loc
-        | _ -> keyword_or_error (bp, Stream.count s) "'"
+          [_; '\''] | ['\\'; _] -> "CHAR", B.get (char bp B.empty s)
+        | _ -> keyword_or_error (bp, ep) "'"
         end
     | Some '\"' ->
         Stream.junk strm__;
-        let buf = string bp B.empty strm__ in
-        let ep = Stream.count strm__ in
-        let tok = "STRING", B.get buf in tok, (bp, ep)
-    | Some '$' ->
-        Stream.junk strm__;
-        let tok = dollar bp B.empty strm__ in
-        let ep = Stream.count strm__ in tok, (bp, ep)
+        let buf = string bp B.empty strm__ in "STRING", B.get buf
+    | Some '$' -> Stream.junk strm__; dollar bp B.empty strm__
     | Some ('!' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' as c) ->
         Stream.junk strm__;
         let buf = ident2 (B.char c) strm__ in
@@ -295,9 +284,7 @@ let next_token_fun dfa ssd find_kwd glexr =
         begin match Stream.peek strm__ with
           Some ('a'..'z' as c) ->
             Stream.junk strm__;
-            let buf = ident (B.char c) strm__ in
-            let ep = Stream.count strm__ in
-            ("TILDEIDENT", B.get buf), (bp, ep)
+            let buf = ident (B.char c) strm__ in "TILDEIDENT", B.get buf
         | _ ->
             let buf = ident2 (B.char c) strm__ in
             let ep = Stream.count strm__ in
@@ -308,9 +295,7 @@ let next_token_fun dfa ssd find_kwd glexr =
         begin match Stream.peek strm__ with
           Some ('a'..'z' as c) ->
             Stream.junk strm__;
-            let buf = ident (B.char c) strm__ in
-            let ep = Stream.count strm__ in
-            ("QUESTIONIDENT", B.get buf), (bp, ep)
+            let buf = ident (B.char c) strm__ in "QUESTIONIDENT", B.get buf
         | _ ->
             let buf = ident2 (B.char c) strm__ in
             let ep = Stream.count strm__ in
@@ -347,8 +332,7 @@ let next_token_fun dfa ssd find_kwd glexr =
                   Stream.junk strm__; B.add (B.char c1) c2
               | _ -> B.char c1
         in
-        let ep = Stream.count s in
-        let id = B.get buf in keyword_or_error (bp, ep) id
+        keyword_or_error (bp, Stream.count s) (B.get buf)
     | Some '.' ->
         Stream.junk strm__;
         let id =
@@ -367,13 +351,12 @@ let next_token_fun dfa ssd find_kwd glexr =
         let ep = Stream.count strm__ in keyword_or_error (bp, ep) id
     | Some '\\' ->
         Stream.junk strm__;
-        let buf = ident3 B.empty strm__ in
-        let ep = Stream.count strm__ in ("LIDENT", B.get buf), (bp, ep)
+        let buf = ident3 B.empty strm__ in "LIDENT", B.get buf
     | Some c ->
         Stream.junk strm__;
         let ep = Stream.count strm__ in
         keyword_or_error (bp, ep) (String.make 1 c)
-    | _ -> let _ = Stream.empty strm__ in ("EOI", ""), (bp, succ bp)
+    | _ -> let _ = Stream.empty strm__ in "EOI", ""
   and less bp strm =
     if !no_quotations then
       let (strm__ : _ Stream.t) = strm in
@@ -388,8 +371,7 @@ let next_token_fun dfa ssd find_kwd glexr =
             try quotation bp B.empty strm__ with
               Stream.Failure -> raise (Stream.Error "")
           in
-          let ep = Stream.count strm__ in
-          ("QUOTATION", ":" ^ B.get buf), (bp, ep)
+          "QUOTATION", ":" ^ B.get buf
       | Some ':' ->
           Stream.junk strm__;
           let i =
@@ -403,8 +385,7 @@ let next_token_fun dfa ssd find_kwd glexr =
                 try quotation bp B.empty strm__ with
                   Stream.Failure -> raise (Stream.Error "")
               in
-              let ep = Stream.count strm__ in
-              ("QUOTATION", i ^ ":" ^ B.get buf), (bp, ep)
+              "QUOTATION", i ^ ":" ^ B.get buf
           | _ -> raise (Stream.Error "character '<' expected")
           end
       | _ ->
@@ -591,7 +572,8 @@ let next_token_fun dfa ssd find_kwd glexr =
         end
     | _ ->
         let ep = Stream.count strm__ in
-        keyword_or_error (bp, ep) "(", !(!line_nb), !(!bol_pos)
+        let loc = bp, ep in
+        (keyword_or_error (bp, ep) "(", loc), !(!line_nb), !(!bol_pos)
   and comment bp (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
       Some '(' -> Stream.junk strm__; left_paren_in_comment bp strm__
@@ -916,11 +898,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 674, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 674, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 674, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 675, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 675, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 665, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 665, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 665, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 666, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 666, 37)));
        tok_comm = None}
   in
   let glex =
