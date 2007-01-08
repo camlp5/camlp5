@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.31 2007/01/07 14:11:18 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.32 2007/01/08 01:27:06 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -386,7 +386,7 @@ value next_token_fun dfa ssd find_kwd glexr =
   and quote_in_comment bp =
     parser
     [ [: `'''; a = comment bp ! :] -> a
-    | [: `'\\'; a = quote_antislash_in_comment bp 0 ! :] -> a
+    | [: `'\\'; a = quote_backslash_in_comment bp 0 ! :] -> a
     | [: s :] ->
         do {
           match Stream.npeek 2 s with
@@ -398,19 +398,19 @@ value next_token_fun dfa ssd find_kwd glexr =
     parser
     [ [: `'''; a = comment bp ! :] -> a
     | [: a = comment bp :] -> a ]
-  and quote_antislash_in_comment bp buf =
+  and quote_backslash_in_comment bp buf =
     parser
     [ [: `'''; a = comment bp ! :] -> a
     | [: `'\\' | '"' | 'n' | 't' | 'b' | 'r';
          a = quote_any_in_comment bp ! :] ->
         a
-    | [: `'0'..'9'; a = quote_antislash_digit_in_comment bp ! :] -> a
+    | [: `'0'..'9'; a = quote_backslash_digit_in_comment bp ! :] -> a
     | [: a = comment bp :] -> a ]
-  and quote_antislash_digit_in_comment bp =
+  and quote_backslash_digit_in_comment bp =
     parser
-    [ [: `'0'..'9'; s :] -> quote_antislash_digit2_in_comment bp s
+    [ [: `'0'..'9'; s :] -> quote_backslash_digit2_in_comment bp s
     | [: a = comment bp :] -> a ]
-  and quote_antislash_digit2_in_comment bp =
+  and quote_backslash_digit2_in_comment bp =
     parser
     [ [: `'0'..'9'; a = quote_any_in_comment bp ! :] -> a
     | [: a = comment bp :] -> a ]

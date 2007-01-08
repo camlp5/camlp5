@@ -588,7 +588,7 @@ let next_token_fun dfa ssd find_kwd glexr =
   and quote_in_comment bp (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
       Some '\'' -> Stream.junk strm__; comment bp strm__
-    | Some '\\' -> Stream.junk strm__; quote_antislash_in_comment bp 0 strm__
+    | Some '\\' -> Stream.junk strm__; quote_backslash_in_comment bp 0 strm__
     | _ ->
         let s = strm__ in
         begin match Stream.npeek 2 s with
@@ -600,20 +600,20 @@ let next_token_fun dfa ssd find_kwd glexr =
     match Stream.peek strm__ with
       Some '\'' -> Stream.junk strm__; comment bp strm__
     | _ -> comment bp strm__
-  and quote_antislash_in_comment bp buf (strm__ : _ Stream.t) =
+  and quote_backslash_in_comment bp buf (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
       Some '\'' -> Stream.junk strm__; comment bp strm__
     | Some ('\\' | '\"' | 'n' | 't' | 'b' | 'r') ->
         Stream.junk strm__; quote_any_in_comment bp strm__
     | Some ('0'..'9') ->
-        Stream.junk strm__; quote_antislash_digit_in_comment bp strm__
+        Stream.junk strm__; quote_backslash_digit_in_comment bp strm__
     | _ -> comment bp strm__
-  and quote_antislash_digit_in_comment bp (strm__ : _ Stream.t) =
+  and quote_backslash_digit_in_comment bp (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
       Some ('0'..'9') ->
-        Stream.junk strm__; quote_antislash_digit2_in_comment bp strm__
+        Stream.junk strm__; quote_backslash_digit2_in_comment bp strm__
     | _ -> comment bp strm__
-  and quote_antislash_digit2_in_comment bp (strm__ : _ Stream.t) =
+  and quote_backslash_digit2_in_comment bp (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
       Some ('0'..'9') -> Stream.junk strm__; quote_any_in_comment bp strm__
     | _ -> comment bp strm__
