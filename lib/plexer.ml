@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.33 2007/01/08 10:36:32 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.34 2007/01/08 11:17:51 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -223,6 +223,37 @@ value next_token_fun dfa ssd find_kwd glexr =
     | [: `c; a = comment bp ! :] -> a
     | [: :] ep -> err (bp, ep) "comment not terminated" ]
   in
+  let rec quotation bp buf =
+    parser bp1
+    [ [: `'>';
+        a =
+          parser
+          [ [: `'>' :] -> buf
+          | [: a = quotation bp (B.add buf '>') :] -> a ] ! :] -> a
+    | [: `'<';
+         buf =
+           parser
+           [ [: `'<'; buf = quotation bp (B.add_str buf "<<") ! :] ->
+               B.add_str buf ">>"
+           | [: `':'; buf = ident (B.add_str buf "<:") !;
+                a =
+                  parser
+                  [ [: `'<'; buf = quotation bp (B.add buf '<') ! :] ->
+                      B.add_str buf ">>"
+                  | [: :] -> buf ] ! :] ->
+               a
+           | [: :] -> B.add buf '<' ] !;
+         a = quotation bp buf ! :] -> a
+    | [: `'\\';
+         buf =
+           parser
+           [ [: `('>' | '<' | '\\' as c) :] -> B.add buf c
+           | [: :] -> B.add buf '\\' ] ! ;
+         a = quotation bp buf ! :] ->
+        a
+    | [: `c; a = quotation bp (B.add buf (line_cnt bp1 c)) ! :] -> a
+    | [: :] ep -> err (bp, ep) "quotation not terminated" ]
+  in
   let rec next_token after_space strm = do {
     t_line_nb.val := line_nb.val.val;
     t_bol_pos.val := bol_pos.val.val;
@@ -398,35 +429,6 @@ value next_token_fun dfa ssd find_kwd glexr =
     | [: `'\\'; `c; a = locate_or_antiquot_rest bp (B.add buf c) ! :] -> a
     | [: `c; a = locate_or_antiquot_rest bp (B.add buf c) ! :] -> a
     | [: :] ep -> err (bp, ep) "antiquotation not terminated" ]
-  and quotation bp buf =
-    parser bp1
-    [ [: `'>'; a = maybe_end_quotation bp buf ! :] -> a
-    | [: `'<'; buf = maybe_nested_quotation bp (B.add buf '<') ! ;
-         a = quotation bp buf ! :] -> a
-    | [: `'\\';
-         buf =
-           parser
-           [ [: `('>' | '<' | '\\' as c) :] -> B.add buf c
-           | [: :] -> B.add buf '\\' ] ! ;
-         a = quotation bp buf ! :] ->
-        a
-    | [: `c; a = quotation bp (B.add buf (line_cnt bp1 c)) ! :] -> a
-    | [: :] ep -> err (bp, ep) "quotation not terminated" ]
-  and maybe_nested_quotation bp buf =
-    parser
-    [ [: `'<'; buf = quotation bp (B.add buf '<') ! :] -> B.add_str buf ">>"
-    | [: `':'; buf = ident (B.add buf ':') !;
-         a =
-           parser
-           [ [: `'<'; buf = quotation bp (B.add buf '<') ! :] ->
-               B.add_str buf ">>"
-           | [: :] -> buf ] :] ->
-        a
-    | [: :] -> buf ]
-  and maybe_end_quotation bp buf =
-    parser
-    [ [: `'>' :] -> buf
-    | [: a = quotation bp (B.add buf '>') :] -> a ]
   and linedir n s =
     match stream_peek_nth n s with
     [ Some (' ' | '\t') -> linedir (n + 1) s

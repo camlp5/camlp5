@@ -293,6 +293,50 @@ let next_token_fun dfa ssd find_kwd glexr =
     | _ ->
         let ep = Stream.count strm__ in err (bp, ep) "comment not terminated"
   in
+  let rec quotation bp buf (strm__ : _ Stream.t) =
+    let bp1 = Stream.count strm__ in
+    match Stream.peek strm__ with
+      Some '>' ->
+        Stream.junk strm__;
+        begin match Stream.peek strm__ with
+          Some '>' -> Stream.junk strm__; buf
+        | _ -> quotation bp (B.add buf '>') strm__
+        end
+    | Some '<' ->
+        Stream.junk strm__;
+        let buf =
+          match Stream.peek strm__ with
+            Some '<' ->
+              Stream.junk strm__;
+              let buf = quotation bp (B.add_str buf "<<") strm__ in
+              B.add_str buf ">>"
+          | Some ':' ->
+              Stream.junk strm__;
+              let buf = ident (B.add_str buf "<:") strm__ in
+              begin match Stream.peek strm__ with
+                Some '<' ->
+                  Stream.junk strm__;
+                  let buf = quotation bp (B.add buf '<') strm__ in
+                  B.add_str buf ">>"
+              | _ -> buf
+              end
+          | _ -> B.add buf '<'
+        in
+        quotation bp buf strm__
+    | Some '\\' ->
+        Stream.junk strm__;
+        let buf =
+          match Stream.peek strm__ with
+            Some ('>' | '<' | '\\' as c) -> Stream.junk strm__; B.add buf c
+          | _ -> B.add buf '\\'
+        in
+        quotation bp buf strm__
+    | Some c ->
+        Stream.junk strm__; quotation bp (B.add buf (line_cnt bp1 c)) strm__
+    | _ ->
+        let ep = Stream.count strm__ in
+        err (bp, ep) "quotation not terminated"
+  in
   let rec next_token after_space strm =
     t_line_nb := !(!line_nb);
     t_bol_pos := !(!bol_pos);
@@ -593,50 +637,6 @@ let next_token_fun dfa ssd find_kwd glexr =
     | _ ->
         let ep = Stream.count strm__ in
         err (bp, ep) "antiquotation not terminated"
-  and quotation bp buf (strm__ : _ Stream.t) =
-    let bp1 = Stream.count strm__ in
-    match Stream.peek strm__ with
-      Some '>' -> Stream.junk strm__; maybe_end_quotation bp buf strm__
-    | Some '<' ->
-        Stream.junk strm__;
-        let buf = maybe_nested_quotation bp (B.add buf '<') strm__ in
-        quotation bp buf strm__
-    | Some '\\' ->
-        Stream.junk strm__;
-        let buf =
-          match Stream.peek strm__ with
-            Some ('>' | '<' | '\\' as c) -> Stream.junk strm__; B.add buf c
-          | _ -> B.add buf '\\'
-        in
-        quotation bp buf strm__
-    | Some c ->
-        Stream.junk strm__; quotation bp (B.add buf (line_cnt bp1 c)) strm__
-    | _ ->
-        let ep = Stream.count strm__ in
-        err (bp, ep) "quotation not terminated"
-  and maybe_nested_quotation bp buf (strm__ : _ Stream.t) =
-    match Stream.peek strm__ with
-      Some '<' ->
-        Stream.junk strm__;
-        let buf = quotation bp (B.add buf '<') strm__ in B.add_str buf ">>"
-    | Some ':' ->
-        Stream.junk strm__;
-        let buf = ident (B.add buf ':') strm__ in
-        begin try
-          match Stream.peek strm__ with
-            Some '<' ->
-              Stream.junk strm__;
-              let buf = quotation bp (B.add buf '<') strm__ in
-              B.add_str buf ">>"
-          | _ -> buf
-        with
-          Stream.Failure -> raise (Stream.Error "")
-        end
-    | _ -> buf
-  and maybe_end_quotation bp buf (strm__ : _ Stream.t) =
-    match Stream.peek strm__ with
-      Some '>' -> Stream.junk strm__; buf
-    | _ -> quotation bp (B.add buf '>') strm__
   and linedir n s =
     match stream_peek_nth n s with
       Some (' ' | '\t') -> linedir (n + 1) s
@@ -903,11 +903,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 668, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 668, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 668, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 669, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 669, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 670, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 670, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 670, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 671, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 671, 37)));
        tok_comm = None}
   in
   let glex =
