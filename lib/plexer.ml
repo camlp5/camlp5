@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.32 2007/01/08 01:27:06 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.33 2007/01/08 10:36:32 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -162,6 +162,67 @@ value next_token_fun dfa ssd find_kwd glexr =
     [ '\n' | '\r' -> do { incr line_nb.val; bol_pos.val.val := bp1 + 1; c }
     | c -> c ]
   in
+  let rec string bp buf =
+    parser bp1
+    [ [: `'"' :] -> buf
+    | [: `'\\'; `c;
+         a = string bp (B.add (B.add buf '\\') (line_cnt (bp1 + 1) c)) ! :] ->
+        a
+    | [: `c; a = string bp (B.add buf (line_cnt bp1 c)) ! :] -> a
+    | [: :] ep -> err (bp, ep) "string not terminated" ]
+  in
+  let rec comment bp =
+    parser
+    [ [: `'(';
+        a =
+          parser
+          [ [: `'*'; _ = comment bp !; a = comment bp ! :] -> a
+          | [: a = comment bp :] -> a ] ! :] -> a
+    | [: `'*';
+        a =
+          parser
+          [ [: `')' :] -> ()
+          | [: a = comment bp :] -> a ] ! :] -> a
+    | [: `'"'; _ = string bp B.empty; a = comment bp ! :] -> a
+    | [: `''';
+         a =
+           parser
+           [ [: `'''; a = comment bp ! :] -> a
+           | [: `'\\';
+                a =
+                  parser
+                  [ [: `'''; a = comment bp ! :] -> a
+                  | [: `'\\' | '"' | 'n' | 't' | 'b' | 'r';
+                       a =
+                         parser
+                         [ [: `'''; a = comment bp ! :] -> a
+                         | [: a = comment bp :] -> a ] ! :] -> a
+                  | [: `'0'..'9';
+                       a =
+                         parser
+                          [ [: `'0'..'9';
+                              a =
+                                parser
+                                [ [: `'0'..'9';
+                                     a =
+                                       parser
+                                       [ [: `'''; a = comment bp ! :] -> a
+                                       | [: a = comment bp :] -> a ] ! :] -> a
+                                | [: a = comment bp :] -> a ] ! :] -> a
+
+                          | [: a = comment bp :] -> a ] ! :] -> a
+                  | [: a = comment bp :] -> a ] ! :] -> a
+           | [: s :] ->
+               do {
+                 match Stream.npeek 2 s with
+                 [ [_; '''] -> do { Stream.junk s; Stream.junk s }
+                 | _ -> () ];
+                 comment bp s
+               } ] ! :] -> a
+    | [: `'\n' | '\r'; s :] -> do { incr line_nb.val; comment bp s }
+    | [: `c; a = comment bp ! :] -> a
+    | [: :] ep -> err (bp, ep) "comment not terminated" ]
+  in
   let rec next_token after_space strm = do {
     t_line_nb.val := line_nb.val.val;
     t_bol_pos.val := bol_pos.val.val;
@@ -282,14 +343,6 @@ value next_token_fun dfa ssd find_kwd glexr =
           ("QUOTATION", i ^ ":" ^ B.get buf)
       | [: buf = ident2 (B.char '<') :] ep ->
           keyword_or_error (bp, ep) (B.get buf) ]
-  and string bp buf =
-    parser bp1
-    [ [: `'"' :] -> buf
-    | [: `'\\'; `c;
-         a = string bp (B.add (B.add buf '\\') (line_cnt (bp1 + 1) c)) ! :] ->
-        a
-    | [: `c; a = string bp (B.add buf (line_cnt bp1 c)) ! :] -> a
-    | [: :] ep -> err (bp, ep) "string not terminated" ]
   and char bp buf =
     parser
     [ [: `'''; s :] ->
@@ -374,54 +427,6 @@ value next_token_fun dfa ssd find_kwd glexr =
     parser
     [ [: `'>' :] -> buf
     | [: a = quotation bp (B.add buf '>') :] -> a ]
-  and comment bp =
-    parser
-    [ [: `'('; a = left_paren_in_comment bp ! :] -> a
-    | [: `'*'; a = star_in_comment bp ! :] -> a
-    | [: `'"'; _ = string bp B.empty; a = comment bp ! :] -> a
-    | [: `'''; a = quote_in_comment bp ! :] -> a
-    | [: `'\n' | '\r'; s :] -> do { incr line_nb.val; comment bp s }
-    | [: `c; a = comment bp ! :] -> a
-    | [: :] ep -> err (bp, ep) "comment not terminated" ]
-  and quote_in_comment bp =
-    parser
-    [ [: `'''; a = comment bp ! :] -> a
-    | [: `'\\'; a = quote_backslash_in_comment bp 0 ! :] -> a
-    | [: s :] ->
-        do {
-          match Stream.npeek 2 s with
-          [ [_; '''] -> do { Stream.junk s; Stream.junk s }
-          | _ -> () ];
-          comment bp s
-        } ]
-  and quote_any_in_comment bp =
-    parser
-    [ [: `'''; a = comment bp ! :] -> a
-    | [: a = comment bp :] -> a ]
-  and quote_backslash_in_comment bp buf =
-    parser
-    [ [: `'''; a = comment bp ! :] -> a
-    | [: `'\\' | '"' | 'n' | 't' | 'b' | 'r';
-         a = quote_any_in_comment bp ! :] ->
-        a
-    | [: `'0'..'9'; a = quote_backslash_digit_in_comment bp ! :] -> a
-    | [: a = comment bp :] -> a ]
-  and quote_backslash_digit_in_comment bp =
-    parser
-    [ [: `'0'..'9'; s :] -> quote_backslash_digit2_in_comment bp s
-    | [: a = comment bp :] -> a ]
-  and quote_backslash_digit2_in_comment bp =
-    parser
-    [ [: `'0'..'9'; a = quote_any_in_comment bp ! :] -> a
-    | [: a = comment bp :] -> a ]
-  and left_paren_in_comment bp =
-    parser
-    [ [: `'*'; _ = comment bp !; a = comment bp ! :] -> a
-    | [: a = comment bp :] -> a ]
-  and star_in_comment bp =
-    parser
-    [ [: `')' :] -> ()
-    | [: a = comment bp :] -> a ]
   and linedir n s =
     match stream_peek_nth n s with
     [ Some (' ' | '\t') -> linedir (n + 1) s

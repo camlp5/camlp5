@@ -208,6 +208,91 @@ let next_token_fun dfa ssd find_kwd glexr =
       '\n' | '\r' -> incr !line_nb; !bol_pos := bp1 + 1; c
     | c -> c
   in
+  let rec string bp buf (strm__ : _ Stream.t) =
+    let bp1 = Stream.count strm__ in
+    match Stream.peek strm__ with
+      Some '\"' -> Stream.junk strm__; buf
+    | Some '\\' ->
+        Stream.junk strm__;
+        begin match Stream.peek strm__ with
+          Some c ->
+            Stream.junk strm__;
+            string bp (B.add (B.add buf '\\') (line_cnt (bp1 + 1) c)) strm__
+        | _ -> raise (Stream.Error "")
+        end
+    | Some c ->
+        Stream.junk strm__; string bp (B.add buf (line_cnt bp1 c)) strm__
+    | _ ->
+        let ep = Stream.count strm__ in err (bp, ep) "string not terminated"
+  in
+  let rec comment bp (strm__ : _ Stream.t) =
+    match Stream.peek strm__ with
+      Some '(' ->
+        Stream.junk strm__;
+        begin match Stream.peek strm__ with
+          Some '*' ->
+            Stream.junk strm__; let _ = comment bp strm__ in comment bp strm__
+        | _ -> comment bp strm__
+        end
+    | Some '*' ->
+        Stream.junk strm__;
+        begin match Stream.peek strm__ with
+          Some ')' -> Stream.junk strm__; ()
+        | _ -> comment bp strm__
+        end
+    | Some '\"' ->
+        Stream.junk strm__;
+        let _ =
+          try string bp B.empty strm__ with
+            Stream.Failure -> raise (Stream.Error "")
+        in
+        comment bp strm__
+    | Some '\'' ->
+        Stream.junk strm__;
+        begin match Stream.peek strm__ with
+          Some '\'' -> Stream.junk strm__; comment bp strm__
+        | Some '\\' ->
+            Stream.junk strm__;
+            begin match Stream.peek strm__ with
+              Some '\'' -> Stream.junk strm__; comment bp strm__
+            | Some ('\\' | '\"' | 'n' | 't' | 'b' | 'r') ->
+                Stream.junk strm__;
+                begin match Stream.peek strm__ with
+                  Some '\'' -> Stream.junk strm__; comment bp strm__
+                | _ -> comment bp strm__
+                end
+            | Some ('0'..'9') ->
+                Stream.junk strm__;
+                begin match Stream.peek strm__ with
+                  Some ('0'..'9') ->
+                    Stream.junk strm__;
+                    begin match Stream.peek strm__ with
+                      Some ('0'..'9') ->
+                        Stream.junk strm__;
+                        begin match Stream.peek strm__ with
+                          Some '\'' -> Stream.junk strm__; comment bp strm__
+                        | _ -> comment bp strm__
+                        end
+                    | _ -> comment bp strm__
+                    end
+                | _ -> comment bp strm__
+                end
+            | _ -> comment bp strm__
+            end
+        | _ ->
+            let s = strm__ in
+            begin match Stream.npeek 2 s with
+              [_; '\''] -> Stream.junk s; Stream.junk s
+            | _ -> ()
+            end;
+            comment bp s
+        end
+    | Some ('\n' | '\r') ->
+        Stream.junk strm__; let s = strm__ in incr !line_nb; comment bp s
+    | Some c -> Stream.junk strm__; comment bp strm__
+    | _ ->
+        let ep = Stream.count strm__ in err (bp, ep) "comment not terminated"
+  in
   let rec next_token after_space strm =
     t_line_nb := !(!line_nb);
     t_bol_pos := !(!bol_pos);
@@ -401,22 +486,6 @@ let next_token_fun dfa ssd find_kwd glexr =
           let buf = ident2 (B.char '<') strm__ in
           let ep = Stream.count strm__ in
           keyword_or_error (bp, ep) (B.get buf)
-  and string bp buf (strm__ : _ Stream.t) =
-    let bp1 = Stream.count strm__ in
-    match Stream.peek strm__ with
-      Some '\"' -> Stream.junk strm__; buf
-    | Some '\\' ->
-        Stream.junk strm__;
-        begin match Stream.peek strm__ with
-          Some c ->
-            Stream.junk strm__;
-            string bp (B.add (B.add buf '\\') (line_cnt (bp1 + 1) c)) strm__
-        | _ -> raise (Stream.Error "")
-        end
-    | Some c ->
-        Stream.junk strm__; string bp (B.add buf (line_cnt bp1 c)) strm__
-    | _ ->
-        let ep = Stream.count strm__ in err (bp, ep) "string not terminated"
   and char bp buf (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
       Some '\'' ->
@@ -568,64 +637,6 @@ let next_token_fun dfa ssd find_kwd glexr =
     match Stream.peek strm__ with
       Some '>' -> Stream.junk strm__; buf
     | _ -> quotation bp (B.add buf '>') strm__
-  and comment bp (strm__ : _ Stream.t) =
-    match Stream.peek strm__ with
-      Some '(' -> Stream.junk strm__; left_paren_in_comment bp strm__
-    | Some '*' -> Stream.junk strm__; star_in_comment bp strm__
-    | Some '\"' ->
-        Stream.junk strm__;
-        let _ =
-          try string bp B.empty strm__ with
-            Stream.Failure -> raise (Stream.Error "")
-        in
-        comment bp strm__
-    | Some '\'' -> Stream.junk strm__; quote_in_comment bp strm__
-    | Some ('\n' | '\r') ->
-        Stream.junk strm__; let s = strm__ in incr !line_nb; comment bp s
-    | Some c -> Stream.junk strm__; comment bp strm__
-    | _ ->
-        let ep = Stream.count strm__ in err (bp, ep) "comment not terminated"
-  and quote_in_comment bp (strm__ : _ Stream.t) =
-    match Stream.peek strm__ with
-      Some '\'' -> Stream.junk strm__; comment bp strm__
-    | Some '\\' -> Stream.junk strm__; quote_backslash_in_comment bp 0 strm__
-    | _ ->
-        let s = strm__ in
-        begin match Stream.npeek 2 s with
-          [_; '\''] -> Stream.junk s; Stream.junk s
-        | _ -> ()
-        end;
-        comment bp s
-  and quote_any_in_comment bp (strm__ : _ Stream.t) =
-    match Stream.peek strm__ with
-      Some '\'' -> Stream.junk strm__; comment bp strm__
-    | _ -> comment bp strm__
-  and quote_backslash_in_comment bp buf (strm__ : _ Stream.t) =
-    match Stream.peek strm__ with
-      Some '\'' -> Stream.junk strm__; comment bp strm__
-    | Some ('\\' | '\"' | 'n' | 't' | 'b' | 'r') ->
-        Stream.junk strm__; quote_any_in_comment bp strm__
-    | Some ('0'..'9') ->
-        Stream.junk strm__; quote_backslash_digit_in_comment bp strm__
-    | _ -> comment bp strm__
-  and quote_backslash_digit_in_comment bp (strm__ : _ Stream.t) =
-    match Stream.peek strm__ with
-      Some ('0'..'9') ->
-        Stream.junk strm__; quote_backslash_digit2_in_comment bp strm__
-    | _ -> comment bp strm__
-  and quote_backslash_digit2_in_comment bp (strm__ : _ Stream.t) =
-    match Stream.peek strm__ with
-      Some ('0'..'9') -> Stream.junk strm__; quote_any_in_comment bp strm__
-    | _ -> comment bp strm__
-  and left_paren_in_comment bp (strm__ : _ Stream.t) =
-    match Stream.peek strm__ with
-      Some '*' ->
-        Stream.junk strm__; let _ = comment bp strm__ in comment bp strm__
-    | _ -> comment bp strm__
-  and star_in_comment bp (strm__ : _ Stream.t) =
-    match Stream.peek strm__ with
-      Some ')' -> Stream.junk strm__; ()
-    | _ -> comment bp strm__
   and linedir n s =
     match stream_peek_nth n s with
       Some (' ' | '\t') -> linedir (n + 1) s
@@ -892,11 +903,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 663, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 663, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 663, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 664, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 664, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 668, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 668, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 668, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 669, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 669, 37)));
        tok_comm = None}
   in
   let glex =
