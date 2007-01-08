@@ -10,12 +10,20 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.34 2007/01/08 11:17:51 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.35 2007/01/08 21:29:58 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
 
+(* These variables can be changed at any time to change the behaviour
+   of lexers. *)
 value no_quotations = ref False;
+value error_on_unknown_keywords = ref False;
+
+(* These variables give different behaviours to lexers definitively at
+   lexer creation *)
+value dollar_for_antiquotation = ref True;
+value specific_space_dot = ref False;
 
 (* The string buffering machinery *)
 
@@ -53,6 +61,28 @@ module B :
 ;
 
 (* The lexer *)
+
+type context =
+  { line_nb : mutable int;
+    bol_pos : mutable int;
+    dollar_for_antiquotation : bool;
+    specific_space_dot : bool;
+    find_kwd : string -> string;
+    line_cnt : int -> char -> char }
+;
+
+value err ctx loc msg =
+  Stdpp.raise_with_loc
+    (Stdpp.make_lined_loc ctx.line_nb ctx.bol_pos loc) (Token.Error msg)
+;
+
+value keyword_or_error ctx loc s =
+  try ("", ctx.find_kwd s) with
+  [ Not_found ->
+      if error_on_unknown_keywords.val then
+        err ctx loc ("illegal token: " ^ s)
+      else ("", s) ]
+;
 
 value stream_peek_nth n strm =
   loop n (Stream.npeek n strm) where rec loop n =
@@ -139,154 +169,235 @@ value number buf =
          | [: :] -> ("INT", B.get buf) ] ! :] -> tok ]
 ;
 
-value error_on_unknown_keywords = ref False;
+value rec char ctx bp buf =
+  parser
+  [ [: `'''; s :] ->
+      if B.is_empty buf then char ctx bp (B.add buf ''') s else buf
+  | [: `'\\'; `c; a = char ctx bp (B.add (B.add buf '\\') c) ! :] -> a
+  | [: `c; a = char ctx bp (B.add buf c) ! :] -> a
+  | [: :] ep -> err ctx (bp, ep) "char not terminated" ]
+;
 
-value bol_pos = Token.bol_pos;
-value line_nb = Token.line_nb;
+value rec string ctx bp buf =
+  parser bp1
+  [ [: `'"' :] -> buf
+  | [: `'\\'; `c;
+       a =
+         string ctx bp
+           (B.add (B.add buf '\\') (ctx.line_cnt (bp1 + 1) c)) ! :] ->
+      a
+  | [: `c; a = string ctx bp (B.add buf (ctx.line_cnt bp1 c)) ! :] -> a
+  | [: :] ep -> err ctx (bp, ep) "string not terminated" ]
+;
 
-value next_token_fun dfa ssd find_kwd glexr =
-  let t_line_nb = ref 0 in
-  let t_bol_pos = ref 0 in
-  let err loc msg =
-    Stdpp.raise_with_loc
-      (Stdpp.make_lined_loc t_line_nb.val t_bol_pos.val loc) (Token.Error msg)
-  in
-  let keyword_or_error loc s =
-    try ("", find_kwd s) with
-    [ Not_found ->
-        if error_on_unknown_keywords.val then err loc ("illegal token: " ^ s)
-        else ("", s) ]
-  in
-  let line_cnt bp1 c =
-    match c with
-    [ '\n' | '\r' -> do { incr line_nb.val; bol_pos.val.val := bp1 + 1; c }
-    | c -> c ]
-  in
-  let rec string bp buf =
-    parser bp1
-    [ [: `'"' :] -> buf
-    | [: `'\\'; `c;
-         a = string bp (B.add (B.add buf '\\') (line_cnt (bp1 + 1) c)) ! :] ->
-        a
-    | [: `c; a = string bp (B.add buf (line_cnt bp1 c)) ! :] -> a
-    | [: :] ep -> err (bp, ep) "string not terminated" ]
-  in
-  let rec comment bp =
-    parser
-    [ [: `'(';
-        a =
-          parser
-          [ [: `'*'; _ = comment bp !; a = comment bp ! :] -> a
-          | [: a = comment bp :] -> a ] ! :] -> a
-    | [: `'*';
-        a =
-          parser
-          [ [: `')' :] -> ()
-          | [: a = comment bp :] -> a ] ! :] -> a
-    | [: `'"'; _ = string bp B.empty; a = comment bp ! :] -> a
-    | [: `''';
-         a =
-           parser
-           [ [: `'''; a = comment bp ! :] -> a
-           | [: `'\\';
-                a =
-                  parser
-                  [ [: `'''; a = comment bp ! :] -> a
-                  | [: `'\\' | '"' | 'n' | 't' | 'b' | 'r';
-                       a =
-                         parser
-                         [ [: `'''; a = comment bp ! :] -> a
-                         | [: a = comment bp :] -> a ] ! :] -> a
-                  | [: `'0'..'9';
-                       a =
-                         parser
-                          [ [: `'0'..'9';
-                              a =
-                                parser
-                                [ [: `'0'..'9';
-                                     a =
-                                       parser
-                                       [ [: `'''; a = comment bp ! :] -> a
-                                       | [: a = comment bp :] -> a ] ! :] -> a
-                                | [: a = comment bp :] -> a ] ! :] -> a
+value rec comment ctx bp =
+  parser
+  [ [: `'(';
+      a =
+        parser
+        [ [: `'*'; _ = comment ctx bp !; a = comment ctx bp ! :] -> a
+        | [: a = comment ctx bp :] -> a ] ! :] -> a
+  | [: `'*';
+      a =
+        parser
+        [ [: `')' :] -> ()
+        | [: a = comment ctx bp :] -> a ] ! :] -> a
+  | [: `'"'; _ = string ctx bp B.empty; a = comment ctx bp ! :] -> a
+  | [: `''';
+       a =
+         parser
+         [ [: `'''; a = comment ctx bp ! :] -> a
+         | [: `'\\';
+              a =
+                parser
+                [ [: `'''; a = comment ctx bp ! :] -> a
+                | [: `'\\' | '"' | 'n' | 't' | 'b' | 'r';
+                     a =
+                       parser
+                       [ [: `'''; a = comment ctx bp ! :] -> a
+                       | [: a = comment ctx bp :] -> a ] ! :] -> a
+                | [: `'0'..'9';
+                     a =
+                       parser
+                        [ [: `'0'..'9';
+                            a =
+                              parser
+                              [ [: `'0'..'9';
+                                   a =
+                                     parser
+                                     [ [: `'''; a = comment ctx bp ! :] -> a
+                                     | [: a = comment ctx bp :] ->
+                                         a ] ! :] -> a
+                              | [: a = comment ctx bp :] -> a ] ! :] -> a
 
-                          | [: a = comment bp :] -> a ] ! :] -> a
-                  | [: a = comment bp :] -> a ] ! :] -> a
-           | [: s :] ->
-               do {
-                 match Stream.npeek 2 s with
-                 [ [_; '''] -> do { Stream.junk s; Stream.junk s }
-                 | _ -> () ];
-                 comment bp s
-               } ] ! :] -> a
-    | [: `'\n' | '\r'; s :] -> do { incr line_nb.val; comment bp s }
-    | [: `c; a = comment bp ! :] -> a
-    | [: :] ep -> err (bp, ep) "comment not terminated" ]
-  in
-  let rec quotation bp buf =
-    parser bp1
-    [ [: `'>';
-        a =
-          parser
-          [ [: `'>' :] -> buf
-          | [: a = quotation bp (B.add buf '>') :] -> a ] ! :] -> a
-    | [: `'<';
-         buf =
-           parser
-           [ [: `'<'; buf = quotation bp (B.add_str buf "<<") ! :] ->
-               B.add_str buf ">>"
-           | [: `':'; buf = ident (B.add_str buf "<:") !;
-                a =
-                  parser
-                  [ [: `'<'; buf = quotation bp (B.add buf '<') ! :] ->
-                      B.add_str buf ">>"
-                  | [: :] -> buf ] ! :] ->
-               a
-           | [: :] -> B.add buf '<' ] !;
-         a = quotation bp buf ! :] -> a
-    | [: `'\\';
-         buf =
-           parser
-           [ [: `('>' | '<' | '\\' as c) :] -> B.add buf c
-           | [: :] -> B.add buf '\\' ] ! ;
-         a = quotation bp buf ! :] ->
-        a
-    | [: `c; a = quotation bp (B.add buf (line_cnt bp1 c)) ! :] -> a
-    | [: :] ep -> err (bp, ep) "quotation not terminated" ]
+                        | [: a = comment ctx bp :] -> a ] ! :] -> a
+                | [: a = comment ctx bp :] -> a ] ! :] -> a
+         | [: s :] -> do {
+             match Stream.npeek 2 s with
+             [ [_; '''] -> do { Stream.junk s; Stream.junk s }
+             | _ -> () ];
+             comment ctx bp s
+           } ] ! :] -> a
+  | [: `'\n' | '\r'; s :] -> do { incr Token.line_nb.val; comment ctx bp s }
+  | [: `c; a = comment ctx bp ! :] -> a
+  | [: :] ep -> err ctx (bp, ep) "comment not terminated" ]
+;
+
+value rec quotation ctx bp buf =
+  parser bp1
+  [ [: `'>';
+      a =
+        parser
+        [ [: `'>' :] -> buf
+        | [: a = quotation ctx bp (B.add buf '>') :] -> a ] ! :] -> a
+  | [: `'<';
+       buf =
+         parser
+         [ [: `'<'; buf = quotation ctx bp (B.add_str buf "<<") ! :] ->
+             B.add_str buf ">>"
+         | [: `':'; buf = ident (B.add_str buf "<:") !;
+              a =
+                parser
+                [ [: `'<'; buf = quotation ctx bp (B.add buf '<') ! :] ->
+                    B.add_str buf ">>"
+                | [: :] -> buf ] ! :] ->
+             a
+         | [: :] -> B.add buf '<' ] !;
+       a = quotation ctx bp buf ! :] -> a
+  | [: `'\\';
+       buf =
+         parser
+         [ [: `('>' | '<' | '\\' as c) :] -> B.add buf c
+         | [: :] -> B.add buf '\\' ] ! ;
+       a = quotation ctx bp buf ! :] ->
+      a
+  | [: `c; a = quotation ctx bp (B.add buf (ctx.line_cnt bp1 c)) ! :] -> a
+  | [: :] ep -> err ctx (bp, ep) "quotation not terminated" ]
+;
+
+value less ctx bp strm =
+  if no_quotations.val then
+    match strm with parser
+    [ [: buf = ident2 (B.char '<') :] ep ->
+        keyword_or_error ctx (bp, ep) (B.get buf) ]
+  else
+    match strm with parser
+    [ [: `'<'; buf = quotation ctx bp B.empty :] ->
+        ("QUOTATION", ":" ^ B.get buf)
+    | [: `':'; i = parser [: buf = ident B.empty :] -> B.get buf;
+         `'<' ? "character '<' expected";
+         buf = quotation ctx bp B.empty :] ->
+        ("QUOTATION", i ^ ":" ^ B.get buf)
+    | [: buf = ident2 (B.char '<') :] ep ->
+        keyword_or_error ctx (bp, ep) (B.get buf) ]
+;
+
+value rec antiquot ctx bp buf =
+  parser
+  [ [: `'$' :] -> ("ANTIQUOT", ":" ^ B.get buf)
+  | [: `('a'..'z' | 'A'..'Z' | '0'..'9' as c);
+       a = antiquot ctx bp (B.add buf c) ! :] ->
+      a
+  | [: `':'; s :] ->
+      let k = B.get buf in
+      ("ANTIQUOT", k ^ ":" ^ locate_or_antiquot_rest ctx bp B.empty s)
+  | [: `'\\'; `c; s :] ->
+      ("ANTIQUOT", ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) s)
+  | [: `c; s :] ->
+      ("ANTIQUOT", ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) s)
+  | [: :] ep -> err ctx (bp, ep) "antiquotation not terminated" ]
+and locate_or_antiquot_rest ctx bp buf =
+  parser
+  [ [: `'$' :] -> B.get buf
+  | [: `'\\'; `c; a = locate_or_antiquot_rest ctx bp (B.add buf c) ! :] -> a
+  | [: `c; a = locate_or_antiquot_rest ctx bp (B.add buf c) ! :] -> a
+  | [: :] ep -> err ctx (bp, ep) "antiquotation not terminated" ]
+;
+
+value rec maybe_locate ctx bp buf =
+  parser
+  [ [: `'$' :] -> ("ANTIQUOT", ":" ^ B.get buf)
+  | [: `('0'..'9' as c); a = maybe_locate ctx bp (B.add buf c) ! :] -> a
+  | [: `':'; s :] ->
+      ("LOCATE", B.get buf ^ ":" ^ locate_or_antiquot_rest ctx bp B.empty s)
+  | [: `'\\'; `c; s :] ->
+      ("ANTIQUOT", ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) s)
+  | [: `c; s :] ->
+      ("ANTIQUOT", ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) s)
+  | [: :] ep -> err ctx (bp, ep) "antiquotation not terminated" ]
+;
+
+value dollar ctx bp buf =
+  parser
+  [ [: `'$' :] -> ("ANTIQUOT", ":" ^ B.get buf)
+  | [: `('a'..'z' | 'A'..'Z' as c); a = antiquot ctx bp (B.add buf c) ! :] ->
+      a
+  | [: `('0'..'9' as c); a = maybe_locate ctx bp (B.add buf c) ! :] -> a
+  | [: `':'; s :] ->
+      let k = B.get buf in
+      ("ANTIQUOT", k ^ ":" ^ locate_or_antiquot_rest ctx bp B.empty s)
+  | [: `'\\'; `c; s :] ->
+      ("ANTIQUOT", ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) s)
+  | [: s :] ->
+      if ctx.dollar_for_antiquotation then
+        match s with parser
+        [ [: `c :] ->
+            ("ANTIQUOT", ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) s)
+        | [: :] ep -> err ctx (bp, ep) "antiquotation not terminated" ]
+      else ("", B.get (ident2 (B.char '$') s)) ]
+;
+
+value next_token_fun kwd_table glexr =
+  let ctx =
+    {line_nb = 0; bol_pos = 0;
+     dollar_for_antiquotation = dollar_for_antiquotation.val;
+     specific_space_dot = specific_space_dot.val;
+     find_kwd = Hashtbl.find kwd_table;
+     line_cnt bp1 c =
+       match c with
+       [ '\n' | '\r' -> do {
+           incr Token.line_nb.val;
+           Token.bol_pos.val.val := bp1 + 1;
+           c
+         }
+       | c -> c ]}
   in
   let rec next_token after_space strm = do {
-    t_line_nb.val := line_nb.val.val;
-    t_bol_pos.val := bol_pos.val.val;
+    ctx.line_nb := Token.line_nb.val.val;
+    ctx.bol_pos := Token.bol_pos.val.val;
     match strm with parser bp
-    [ [: `'\n' | '\r'; s :] ep ->
-        do { bol_pos.val.val := ep; incr line_nb.val; next_token True s }
+    [ [: `'\n' | '\r'; s :] ep -> do {
+        incr Token.line_nb.val;
+        Token.bol_pos.val.val := ep;
+        next_token True s
+      }
     | [: `' ' | '\t' | '\026' | '\012'; s :] -> next_token True s
-    | [: `'#' when bp = bol_pos.val.val; s :] ->
+    | [: `'#' when bp = Token.bol_pos.val.val; s :] ->
         if linedir 1 s then do { any_to_nl s; next_token True s }
         else
           let loc = (bp, bp + 1) in
-          ((keyword_or_error loc "#", loc), t_line_nb.val, t_bol_pos.val)
+          ((keyword_or_error ctx loc "#", loc), ctx.line_nb, ctx.bol_pos)
     | [: `'(';
          a =
            parser
-           [ [: `'*'; _ = comment bp !; a = next_token True ! :] -> a
+           [ [: `'*'; _ = comment ctx bp !; a = next_token True ! :] -> a
            | [: :] ep ->
                let loc = (bp, ep) in
-               ((keyword_or_error (bp, ep) "(", loc), line_nb.val.val,
-                bol_pos.val.val) ] ! :] -> a
+               ((keyword_or_error ctx (bp, ep) "(", loc),
+                Token.line_nb.val.val, Token.bol_pos.val.val) ] ! :] -> a
     | [: tok = next_token_kont after_space :] ep ->
-        ((tok, (bp, max (bp + 1) ep)), t_line_nb.val, t_bol_pos.val) ]
+        ((tok, (bp, max (bp + 1) ep)), ctx.line_nb, ctx.bol_pos) ]
   }
   and next_token_kont after_space =
     parser bp
     [ [: `('A'..'Z' | '\192'..'\214' | '\216'..'\222' as c);
          buf = ident (B.char c) ! :] ->
         let id = B.get buf in
-        try ("", find_kwd id) with [ Not_found -> ("UIDENT", id) ]
+        try ("", ctx.find_kwd id) with [ Not_found -> ("UIDENT", id) ]
     | [: `('a'..'z' | '\223'..'\246' | '\248'..'\255' | '_' as c);
          buf = ident (B.char c) ! :] ->
         let id = B.get buf in
-        try ("", find_kwd id) with [ Not_found -> ("LIDENT", id) ]
+        try ("", ctx.find_kwd id) with [ Not_found -> ("LIDENT", id) ]
     | [: `('1'..'9' as c); tok = number (B.char c) ! :] -> tok
     | [: `'0';
          tok =
@@ -298,20 +409,20 @@ value next_token_fun dfa ssd find_kwd glexr =
         tok
     | [: `'''; s :] ep ->
         match Stream.npeek 2 s with
-        [ [_; '''] | ['\\'; _] -> ("CHAR", B.get (char bp B.empty s))
-        | _ -> keyword_or_error (bp, ep) "'" ]
-    | [: `'"'; buf = string bp B.empty ! :] -> ("STRING", B.get buf)
-    | [: `'$'; tok = dollar bp B.empty ! :] -> tok
+        [ [_; '''] | ['\\'; _] -> ("CHAR", B.get (char ctx bp B.empty s))
+        | _ -> keyword_or_error ctx (bp, ep) "'" ]
+    | [: `'"'; buf = string ctx bp B.empty ! :] -> ("STRING", B.get buf)
+    | [: `'$'; tok = dollar ctx bp B.empty ! :] -> tok
     | [: `('!' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' as c);
          buf = ident2 (B.char c) ! :] ep ->
-        keyword_or_error (bp, ep) (B.get buf)
+        keyword_or_error ctx (bp, ep) (B.get buf)
     | [: `('~' as c);
          a =
            parser
            [ [: `('a'..'z' as c); buf = ident (B.char c) ! :] ->
                ("TILDEIDENT", B.get buf)
            | [: buf = ident2 (B.char c) :] ep ->
-               keyword_or_error (bp, ep) (B.get buf) ] ! :] ->
+               keyword_or_error ctx (bp, ep) (B.get buf) ] ! :] ->
         a
     | [: `('?' as c);
          a =
@@ -319,21 +430,21 @@ value next_token_fun dfa ssd find_kwd glexr =
            [ [: `('a'..'z' as c); buf = ident (B.char c) ! :] ->
                ("QUESTIONIDENT", B.get buf)
            | [: buf = ident2 (B.char c) :] ep ->
-               keyword_or_error (bp, ep) (B.get buf) ] ! :] ->
+               keyword_or_error ctx (bp, ep) (B.get buf) ] ! :] ->
         a
-    | [: `'<'; r = less bp ! :] -> r
+    | [: `'<'; tok = less ctx bp ! :] -> tok
     | [: `(':' as c1);
          buf =
            parser
            [ [: `(']' | ':' | '=' | '>' as c2) :] -> B.add (B.char c1) c2
            | [: :] -> B.char c1 ] ! :] ep ->
-        keyword_or_error (bp, ep) (B.get buf)
+        keyword_or_error ctx (bp, ep) (B.get buf)
     | [: `('>' | '|' as c1);
          buf =
            parser
            [ [: `(']' | '}' as c2) :] -> B.add (B.char c1) c2
            | [: a = ident2 (B.char c1) :] -> a ] ! :] ep ->
-        keyword_or_error (bp, ep) (B.get buf)
+        keyword_or_error ctx (bp, ep) (B.get buf)
     | [: `('[' | '{' as c1); s :] ->
         let buf =
           match Stream.npeek 2 s with
@@ -343,92 +454,24 @@ value next_token_fun dfa ssd find_kwd glexr =
               [ [: `('|' | '<' | ':' as c2) :] -> B.add (B.char c1) c2
               | [: :] -> B.char c1 ] ]
         in
-        keyword_or_error (bp, Stream.count s) (B.get buf)
+        keyword_or_error ctx (bp, Stream.count s) (B.get buf)
     | [: `'.';
          id =
            parser
            [ [: `'.' :] -> ".."
-           | [: :] -> if ssd && after_space then " ." else "." ] ! :] ep ->
-        keyword_or_error (bp, ep) id
+           | [: :] ->
+               if ctx.specific_space_dot && after_space then " ."
+               else "." ] ! :] ep ->
+        keyword_or_error ctx (bp, ep) id
     | [: `';';
          id =
            parser
            [ [: `';' :] -> ";;"
            | [: :] -> ";" ] ! :] ep ->
-        keyword_or_error (bp, ep) id
+        keyword_or_error ctx (bp, ep) id
     | [: `'\\'; buf = ident3 B.empty ! :] -> ("LIDENT", B.get buf)
-    | [: `c :] ep -> keyword_or_error (bp, ep) (String.make 1 c)
+    | [: `c :] ep -> keyword_or_error ctx (bp, ep) (String.make 1 c)
     | [: _ = Stream.empty :] -> ("EOI", "") ]
-  and less bp strm =
-    if no_quotations.val then
-      match strm with parser
-      [ [: buf = ident2 (B.char '<') :] ep ->
-          keyword_or_error (bp, ep) (B.get buf) ]
-    else
-      match strm with parser
-      [ [: `'<'; buf = quotation bp B.empty :] ->
-          ("QUOTATION", ":" ^ B.get buf)
-      | [: `':'; i = parser [: buf = ident B.empty :] -> B.get buf;
-           `'<' ? "character '<' expected";
-           buf = quotation bp B.empty :] ->
-          ("QUOTATION", i ^ ":" ^ B.get buf)
-      | [: buf = ident2 (B.char '<') :] ep ->
-          keyword_or_error (bp, ep) (B.get buf) ]
-  and char bp buf =
-    parser
-    [ [: `'''; s :] ->
-        if B.is_empty buf then char bp (B.add buf ''') s else buf
-    | [: `'\\'; `c; a = char bp (B.add (B.add buf '\\') c) ! :] -> a
-    | [: `c; a = char bp (B.add buf c) ! :] -> a
-    | [: :] ep -> err (bp, ep) "char not terminated" ]
-  and dollar bp buf =
-    parser
-    [ [: `'$' :] -> ("ANTIQUOT", ":" ^ B.get buf)
-    | [: `('a'..'z' | 'A'..'Z' as c); a = antiquot bp (B.add buf c) ! :] -> a
-    | [: `('0'..'9' as c); a = maybe_locate bp (B.add buf c) ! :] -> a
-    | [: `':'; s :] ->
-        let k = B.get buf in
-        ("ANTIQUOT", k ^ ":" ^ locate_or_antiquot_rest bp B.empty s)
-    | [: `'\\'; `c; s :] ->
-        ("ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (B.add buf c) s)
-    | [: s :] ->
-        if dfa then
-          match s with parser
-          [ [: `c :] ->
-              ("ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (B.add buf c) s)
-          | [: :] ep -> err (bp, ep) "antiquotation not terminated" ]
-        else ("", B.get (ident2 (B.char '$') s)) ]
-  and maybe_locate bp buf =
-    parser
-    [ [: `'$' :] -> ("ANTIQUOT", ":" ^ B.get buf)
-    | [: `('0'..'9' as c); a = maybe_locate bp (B.add buf c) ! :] -> a
-    | [: `':'; s :] ->
-        ("LOCATE", B.get buf ^ ":" ^ locate_or_antiquot_rest bp B.empty s)
-    | [: `'\\'; `c; s :] ->
-        ("ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (B.add buf c) s)
-    | [: `c; s :] ->
-        ("ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (B.add buf c) s)
-    | [: :] ep -> err (bp, ep) "antiquotation not terminated" ]
-  and antiquot bp buf =
-    parser
-    [ [: `'$' :] -> ("ANTIQUOT", ":" ^ B.get buf)
-    | [: `('a'..'z' | 'A'..'Z' | '0'..'9' as c);
-         a = antiquot bp (B.add buf c) ! :] ->
-        a
-    | [: `':'; s :] ->
-        let k = B.get buf in
-        ("ANTIQUOT", k ^ ":" ^ locate_or_antiquot_rest bp B.empty s)
-    | [: `'\\'; `c; s :] ->
-        ("ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (B.add buf c) s)
-    | [: `c; s :] ->
-        ("ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (B.add buf c) s)
-    | [: :] ep -> err (bp, ep) "antiquotation not terminated" ]
-  and locate_or_antiquot_rest bp buf =
-    parser
-    [ [: `'$' :] -> B.get buf
-    | [: `'\\'; `c; a = locate_or_antiquot_rest bp (B.add buf c) ! :] -> a
-    | [: `c; a = locate_or_antiquot_rest bp (B.add buf c) ! :] -> a
-    | [: :] ep -> err (bp, ep) "antiquotation not terminated" ]
   and linedir n s =
     match stream_peek_nth n s with
     [ Some (' ' | '\t') -> linedir (n + 1) s
@@ -445,7 +488,7 @@ value next_token_fun dfa ssd find_kwd glexr =
     | _ -> False ]
   and any_to_nl =
     parser
-    [ [: `'\r' | '\n' :] ep -> bol_pos.val.val := ep
+    [ [: `'\r' | '\n' :] ep -> Token.bol_pos.val.val := ep
     | [: `_; s :] -> any_to_nl s
     | [: :] -> () ]
   in
@@ -458,8 +501,8 @@ value next_token_fun dfa ssd find_kwd glexr =
           Token.restore_lexing_info.val := None
         }
       | None -> () ];
-      line_nb.val := s_line_nb;
-      bol_pos.val := s_bol_pos;
+      Token.line_nb.val := s_line_nb;
+      Token.bol_pos.val := s_bol_pos;
       let glex = glexr.val in
       let comm_bp = Stream.count cstrm in
       let ((r, loc), t_line_nb, t_bol_pos) = next_token False cstrm in
@@ -474,17 +517,11 @@ value next_token_fun dfa ssd find_kwd glexr =
     }
   with
   [ Stream.Error str ->
-      err (Stream.count cstrm, Stream.count cstrm + 1) str ]
+      err ctx (Stream.count cstrm, Stream.count cstrm + 1) str ]
 ;
 
-value dollar_for_antiquotation = ref True;
-value specific_space_dot = ref False;
-
 value func kwd_table glexr =
-  let find = Hashtbl.find kwd_table in
-  let dfa = dollar_for_antiquotation.val in
-  let ssd = specific_space_dot.val in
-  Token.lexer_func_of_parser (next_token_fun dfa ssd find glexr)
+  Token.lexer_func_of_parser (next_token_fun kwd_table glexr)
 ;
 
 value rec check_keyword_stream =

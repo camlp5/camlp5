@@ -15,7 +15,15 @@
 open Stdpp;;
 open Token;;
 
+(* These variables can be changed at any time to change the behaviour
+   of lexers. *)
 let no_quotations = ref false;;
+let error_on_unknown_keywords = ref false;;
+
+(* These variables give different behaviours to lexers definitively at
+   lexer creation *)
+let dollar_for_antiquotation = ref true;;
+let specific_space_dot = ref false;;
 
 (* The string buffering machinery *)
 
@@ -57,6 +65,27 @@ module B :
 ;;
 
 (* The lexer *)
+
+type context =
+  { mutable line_nb : int;
+    mutable bol_pos : int;
+    dollar_for_antiquotation : bool;
+    specific_space_dot : bool;
+    find_kwd : string -> string;
+    line_cnt : int -> char -> char }
+;;
+
+let err ctx loc msg =
+  Stdpp.raise_with_loc (Stdpp.make_lined_loc ctx.line_nb ctx.bol_pos loc)
+    (Token.Error msg)
+;;
+
+let keyword_or_error ctx loc s =
+  try "", ctx.find_kwd s with
+    Not_found ->
+      if !error_on_unknown_keywords then err ctx loc ("illegal token: " ^ s)
+      else "", s
+;;
 
 let stream_peek_nth n strm =
   let rec loop n =
@@ -185,161 +214,317 @@ let number buf (strm__ : _ Stream.t) =
           | _ -> "INT", B.get buf
 ;;
 
-let error_on_unknown_keywords = ref false;;
+let rec char ctx bp buf (strm__ : _ Stream.t) =
+  match Stream.peek strm__ with
+    Some '\'' ->
+      Stream.junk strm__;
+      let s = strm__ in
+      if B.is_empty buf then char ctx bp (B.add buf '\'') s else buf
+  | Some '\\' ->
+      Stream.junk strm__;
+      begin match Stream.peek strm__ with
+        Some c ->
+          Stream.junk strm__; char ctx bp (B.add (B.add buf '\\') c) strm__
+      | _ -> raise (Stream.Error "")
+      end
+  | Some c -> Stream.junk strm__; char ctx bp (B.add buf c) strm__
+  | _ ->
+      let ep = Stream.count strm__ in err ctx (bp, ep) "char not terminated"
+;;
 
-let bol_pos = Token.bol_pos;;
-let line_nb = Token.line_nb;;
+let rec string ctx bp buf (strm__ : _ Stream.t) =
+  let bp1 = Stream.count strm__ in
+  match Stream.peek strm__ with
+    Some '\"' -> Stream.junk strm__; buf
+  | Some '\\' ->
+      Stream.junk strm__;
+      begin match Stream.peek strm__ with
+        Some c ->
+          Stream.junk strm__;
+          string ctx bp (B.add (B.add buf '\\') (ctx.line_cnt (bp1 + 1) c))
+            strm__
+      | _ -> raise (Stream.Error "")
+      end
+  | Some c ->
+      Stream.junk strm__;
+      string ctx bp (B.add buf (ctx.line_cnt bp1 c)) strm__
+  | _ ->
+      let ep = Stream.count strm__ in err ctx (bp, ep) "string not terminated"
+;;
 
-let next_token_fun dfa ssd find_kwd glexr =
-  let t_line_nb = ref 0 in
-  let t_bol_pos = ref 0 in
-  let err loc msg =
-    Stdpp.raise_with_loc (Stdpp.make_lined_loc !t_line_nb !t_bol_pos loc)
-      (Token.Error msg)
-  in
-  let keyword_or_error loc s =
-    try "", find_kwd s with
-      Not_found ->
-        if !error_on_unknown_keywords then err loc ("illegal token: " ^ s)
-        else "", s
-  in
-  let line_cnt bp1 c =
-    match c with
-      '\n' | '\r' -> incr !line_nb; !bol_pos := bp1 + 1; c
-    | c -> c
-  in
-  let rec string bp buf (strm__ : _ Stream.t) =
-    let bp1 = Stream.count strm__ in
-    match Stream.peek strm__ with
-      Some '\"' -> Stream.junk strm__; buf
-    | Some '\\' ->
-        Stream.junk strm__;
-        begin match Stream.peek strm__ with
-          Some c ->
+let rec comment ctx bp (strm__ : _ Stream.t) =
+  match Stream.peek strm__ with
+    Some '(' ->
+      Stream.junk strm__;
+      begin match Stream.peek strm__ with
+        Some '*' ->
+          Stream.junk strm__;
+          let _ = comment ctx bp strm__ in comment ctx bp strm__
+      | _ -> comment ctx bp strm__
+      end
+  | Some '*' ->
+      Stream.junk strm__;
+      begin match Stream.peek strm__ with
+        Some ')' -> Stream.junk strm__; ()
+      | _ -> comment ctx bp strm__
+      end
+  | Some '\"' ->
+      Stream.junk strm__;
+      let _ =
+        try string ctx bp B.empty strm__ with
+          Stream.Failure -> raise (Stream.Error "")
+      in
+      comment ctx bp strm__
+  | Some '\'' ->
+      Stream.junk strm__;
+      begin match Stream.peek strm__ with
+        Some '\'' -> Stream.junk strm__; comment ctx bp strm__
+      | Some '\\' ->
+          Stream.junk strm__;
+          begin match Stream.peek strm__ with
+            Some '\'' -> Stream.junk strm__; comment ctx bp strm__
+          | Some ('\\' | '\"' | 'n' | 't' | 'b' | 'r') ->
+              Stream.junk strm__;
+              begin match Stream.peek strm__ with
+                Some '\'' -> Stream.junk strm__; comment ctx bp strm__
+              | _ -> comment ctx bp strm__
+              end
+          | Some ('0'..'9') ->
+              Stream.junk strm__;
+              begin match Stream.peek strm__ with
+                Some ('0'..'9') ->
+                  Stream.junk strm__;
+                  begin match Stream.peek strm__ with
+                    Some ('0'..'9') ->
+                      Stream.junk strm__;
+                      begin match Stream.peek strm__ with
+                        Some '\'' -> Stream.junk strm__; comment ctx bp strm__
+                      | _ -> comment ctx bp strm__
+                      end
+                  | _ -> comment ctx bp strm__
+                  end
+              | _ -> comment ctx bp strm__
+              end
+          | _ -> comment ctx bp strm__
+          end
+      | _ ->
+          let s = strm__ in
+          begin match Stream.npeek 2 s with
+            [_; '\''] -> Stream.junk s; Stream.junk s
+          | _ -> ()
+          end;
+          comment ctx bp s
+      end
+  | Some ('\n' | '\r') ->
+      Stream.junk strm__;
+      let s = strm__ in incr !(Token.line_nb); comment ctx bp s
+  | Some c -> Stream.junk strm__; comment ctx bp strm__
+  | _ ->
+      let ep = Stream.count strm__ in
+      err ctx (bp, ep) "comment not terminated"
+;;
+
+let rec quotation ctx bp buf (strm__ : _ Stream.t) =
+  let bp1 = Stream.count strm__ in
+  match Stream.peek strm__ with
+    Some '>' ->
+      Stream.junk strm__;
+      begin match Stream.peek strm__ with
+        Some '>' -> Stream.junk strm__; buf
+      | _ -> quotation ctx bp (B.add buf '>') strm__
+      end
+  | Some '<' ->
+      Stream.junk strm__;
+      let buf =
+        match Stream.peek strm__ with
+          Some '<' ->
             Stream.junk strm__;
-            string bp (B.add (B.add buf '\\') (line_cnt (bp1 + 1) c)) strm__
-        | _ -> raise (Stream.Error "")
-        end
-    | Some c ->
-        Stream.junk strm__; string bp (B.add buf (line_cnt bp1 c)) strm__
-    | _ ->
-        let ep = Stream.count strm__ in err (bp, ep) "string not terminated"
-  in
-  let rec comment bp (strm__ : _ Stream.t) =
+            let buf = quotation ctx bp (B.add_str buf "<<") strm__ in
+            B.add_str buf ">>"
+        | Some ':' ->
+            Stream.junk strm__;
+            let buf = ident (B.add_str buf "<:") strm__ in
+            begin match Stream.peek strm__ with
+              Some '<' ->
+                Stream.junk strm__;
+                let buf = quotation ctx bp (B.add buf '<') strm__ in
+                B.add_str buf ">>"
+            | _ -> buf
+            end
+        | _ -> B.add buf '<'
+      in
+      quotation ctx bp buf strm__
+  | Some '\\' ->
+      Stream.junk strm__;
+      let buf =
+        match Stream.peek strm__ with
+          Some ('>' | '<' | '\\' as c) -> Stream.junk strm__; B.add buf c
+        | _ -> B.add buf '\\'
+      in
+      quotation ctx bp buf strm__
+  | Some c ->
+      Stream.junk strm__;
+      quotation ctx bp (B.add buf (ctx.line_cnt bp1 c)) strm__
+  | _ ->
+      let ep = Stream.count strm__ in
+      err ctx (bp, ep) "quotation not terminated"
+;;
+
+let less ctx bp strm =
+  if !no_quotations then
+    let (strm__ : _ Stream.t) = strm in
+    let buf = ident2 (B.char '<') strm__ in
+    let ep = Stream.count strm__ in keyword_or_error ctx (bp, ep) (B.get buf)
+  else
+    let (strm__ : _ Stream.t) = strm in
     match Stream.peek strm__ with
-      Some '(' ->
+      Some '<' ->
         Stream.junk strm__;
-        begin match Stream.peek strm__ with
-          Some '*' ->
-            Stream.junk strm__; let _ = comment bp strm__ in comment bp strm__
-        | _ -> comment bp strm__
-        end
-    | Some '*' ->
-        Stream.junk strm__;
-        begin match Stream.peek strm__ with
-          Some ')' -> Stream.junk strm__; ()
-        | _ -> comment bp strm__
-        end
-    | Some '\"' ->
-        Stream.junk strm__;
-        let _ =
-          try string bp B.empty strm__ with
+        let buf =
+          try quotation ctx bp B.empty strm__ with
             Stream.Failure -> raise (Stream.Error "")
         in
-        comment bp strm__
-    | Some '\'' ->
+        "QUOTATION", ":" ^ B.get buf
+    | Some ':' ->
         Stream.junk strm__;
+        let i =
+          try let buf = ident B.empty strm__ in B.get buf with
+            Stream.Failure -> raise (Stream.Error "")
+        in
         begin match Stream.peek strm__ with
-          Some '\'' -> Stream.junk strm__; comment bp strm__
-        | Some '\\' ->
+          Some '<' ->
             Stream.junk strm__;
-            begin match Stream.peek strm__ with
-              Some '\'' -> Stream.junk strm__; comment bp strm__
-            | Some ('\\' | '\"' | 'n' | 't' | 'b' | 'r') ->
-                Stream.junk strm__;
-                begin match Stream.peek strm__ with
-                  Some '\'' -> Stream.junk strm__; comment bp strm__
-                | _ -> comment bp strm__
-                end
-            | Some ('0'..'9') ->
-                Stream.junk strm__;
-                begin match Stream.peek strm__ with
-                  Some ('0'..'9') ->
-                    Stream.junk strm__;
-                    begin match Stream.peek strm__ with
-                      Some ('0'..'9') ->
-                        Stream.junk strm__;
-                        begin match Stream.peek strm__ with
-                          Some '\'' -> Stream.junk strm__; comment bp strm__
-                        | _ -> comment bp strm__
-                        end
-                    | _ -> comment bp strm__
-                    end
-                | _ -> comment bp strm__
-                end
-            | _ -> comment bp strm__
-            end
-        | _ ->
-            let s = strm__ in
-            begin match Stream.npeek 2 s with
-              [_; '\''] -> Stream.junk s; Stream.junk s
-            | _ -> ()
-            end;
-            comment bp s
+            let buf =
+              try quotation ctx bp B.empty strm__ with
+                Stream.Failure -> raise (Stream.Error "")
+            in
+            "QUOTATION", i ^ ":" ^ B.get buf
+        | _ -> raise (Stream.Error "character '<' expected")
         end
-    | Some ('\n' | '\r') ->
-        Stream.junk strm__; let s = strm__ in incr !line_nb; comment bp s
-    | Some c -> Stream.junk strm__; comment bp strm__
     | _ ->
-        let ep = Stream.count strm__ in err (bp, ep) "comment not terminated"
-  in
-  let rec quotation bp buf (strm__ : _ Stream.t) =
-    let bp1 = Stream.count strm__ in
-    match Stream.peek strm__ with
-      Some '>' ->
-        Stream.junk strm__;
-        begin match Stream.peek strm__ with
-          Some '>' -> Stream.junk strm__; buf
-        | _ -> quotation bp (B.add buf '>') strm__
-        end
-    | Some '<' ->
-        Stream.junk strm__;
-        let buf =
-          match Stream.peek strm__ with
-            Some '<' ->
-              Stream.junk strm__;
-              let buf = quotation bp (B.add_str buf "<<") strm__ in
-              B.add_str buf ">>"
-          | Some ':' ->
-              Stream.junk strm__;
-              let buf = ident (B.add_str buf "<:") strm__ in
-              begin match Stream.peek strm__ with
-                Some '<' ->
-                  Stream.junk strm__;
-                  let buf = quotation bp (B.add buf '<') strm__ in
-                  B.add_str buf ">>"
-              | _ -> buf
-              end
-          | _ -> B.add buf '<'
-        in
-        quotation bp buf strm__
-    | Some '\\' ->
-        Stream.junk strm__;
-        let buf =
-          match Stream.peek strm__ with
-            Some ('>' | '<' | '\\' as c) -> Stream.junk strm__; B.add buf c
-          | _ -> B.add buf '\\'
-        in
-        quotation bp buf strm__
-    | Some c ->
-        Stream.junk strm__; quotation bp (B.add buf (line_cnt bp1 c)) strm__
-    | _ ->
+        let buf = ident2 (B.char '<') strm__ in
         let ep = Stream.count strm__ in
-        err (bp, ep) "quotation not terminated"
+        keyword_or_error ctx (bp, ep) (B.get buf)
+;;
+
+let rec antiquot ctx bp buf (strm__ : _ Stream.t) =
+  match Stream.peek strm__ with
+    Some '$' -> Stream.junk strm__; "ANTIQUOT", ":" ^ B.get buf
+  | Some ('a'..'z' | 'A'..'Z' | '0'..'9' as c) ->
+      Stream.junk strm__; antiquot ctx bp (B.add buf c) strm__
+  | Some ':' ->
+      Stream.junk strm__;
+      let k = B.get buf in
+      "ANTIQUOT", k ^ ":" ^ locate_or_antiquot_rest ctx bp B.empty strm__
+  | Some '\\' ->
+      Stream.junk strm__;
+      begin match Stream.peek strm__ with
+        Some c ->
+          Stream.junk strm__;
+          "ANTIQUOT",
+          ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) strm__
+      | _ -> raise (Stream.Error "")
+      end
+  | Some c ->
+      Stream.junk strm__;
+      "ANTIQUOT", ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) strm__
+  | _ ->
+      let ep = Stream.count strm__ in
+      err ctx (bp, ep) "antiquotation not terminated"
+and locate_or_antiquot_rest ctx bp buf (strm__ : _ Stream.t) =
+  match Stream.peek strm__ with
+    Some '$' -> Stream.junk strm__; B.get buf
+  | Some '\\' ->
+      Stream.junk strm__;
+      begin match Stream.peek strm__ with
+        Some c ->
+          Stream.junk strm__;
+          locate_or_antiquot_rest ctx bp (B.add buf c) strm__
+      | _ -> raise (Stream.Error "")
+      end
+  | Some c ->
+      Stream.junk strm__; locate_or_antiquot_rest ctx bp (B.add buf c) strm__
+  | _ ->
+      let ep = Stream.count strm__ in
+      err ctx (bp, ep) "antiquotation not terminated"
+;;
+
+let rec maybe_locate ctx bp buf (strm__ : _ Stream.t) =
+  match Stream.peek strm__ with
+    Some '$' -> Stream.junk strm__; "ANTIQUOT", ":" ^ B.get buf
+  | Some ('0'..'9' as c) ->
+      Stream.junk strm__; maybe_locate ctx bp (B.add buf c) strm__
+  | Some ':' ->
+      Stream.junk strm__;
+      "LOCATE",
+      B.get buf ^ ":" ^ locate_or_antiquot_rest ctx bp B.empty strm__
+  | Some '\\' ->
+      Stream.junk strm__;
+      begin match Stream.peek strm__ with
+        Some c ->
+          Stream.junk strm__;
+          "ANTIQUOT",
+          ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) strm__
+      | _ -> raise (Stream.Error "")
+      end
+  | Some c ->
+      Stream.junk strm__;
+      "ANTIQUOT", ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) strm__
+  | _ ->
+      let ep = Stream.count strm__ in
+      err ctx (bp, ep) "antiquotation not terminated"
+;;
+
+let dollar ctx bp buf (strm__ : _ Stream.t) =
+  match Stream.peek strm__ with
+    Some '$' -> Stream.junk strm__; "ANTIQUOT", ":" ^ B.get buf
+  | Some ('a'..'z' | 'A'..'Z' as c) ->
+      Stream.junk strm__; antiquot ctx bp (B.add buf c) strm__
+  | Some ('0'..'9' as c) ->
+      Stream.junk strm__; maybe_locate ctx bp (B.add buf c) strm__
+  | Some ':' ->
+      Stream.junk strm__;
+      let k = B.get buf in
+      "ANTIQUOT", k ^ ":" ^ locate_or_antiquot_rest ctx bp B.empty strm__
+  | Some '\\' ->
+      Stream.junk strm__;
+      begin match Stream.peek strm__ with
+        Some c ->
+          Stream.junk strm__;
+          "ANTIQUOT",
+          ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) strm__
+      | _ -> raise (Stream.Error "")
+      end
+  | _ ->
+      let s = strm__ in
+      if ctx.dollar_for_antiquotation then
+        let (strm__ : _ Stream.t) = s in
+        match Stream.peek strm__ with
+          Some c ->
+            Stream.junk strm__;
+            "ANTIQUOT", ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) s
+        | _ ->
+            let ep = Stream.count strm__ in
+            err ctx (bp, ep) "antiquotation not terminated"
+      else "", B.get (ident2 (B.char '$') s)
+;;
+
+let next_token_fun kwd_table glexr =
+  let ctx =
+    {line_nb = 0; bol_pos = 0;
+     dollar_for_antiquotation = !dollar_for_antiquotation;
+     specific_space_dot = !specific_space_dot;
+     find_kwd = Hashtbl.find kwd_table;
+     line_cnt =
+       fun bp1 c ->
+         match c with
+           '\n' | '\r' ->
+             incr !(Token.line_nb); !(Token.bol_pos) := bp1 + 1; c
+         | c -> c}
   in
   let rec next_token after_space strm =
-    t_line_nb := !(!line_nb);
-    t_bol_pos := !(!bol_pos);
+    ctx.line_nb <- !(!(Token.line_nb));
+    ctx.bol_pos <- !(!(Token.bol_pos));
     let (strm__ : _ Stream.t) = strm in
     let bp = Stream.count strm__ in
     match Stream.peek strm__ with
@@ -347,31 +532,32 @@ let next_token_fun dfa ssd find_kwd glexr =
         Stream.junk strm__;
         let s = strm__ in
         let ep = Stream.count strm__ in
-        !bol_pos := ep; incr !line_nb; next_token true s
+        incr !(Token.line_nb); !(Token.bol_pos) := ep; next_token true s
     | Some (' ' | '\t' | '\026' | '\012') ->
         Stream.junk strm__; next_token true strm__
-    | Some '#' when bp = !(!bol_pos) ->
+    | Some '#' when bp = !(!(Token.bol_pos)) ->
         Stream.junk strm__;
         let s = strm__ in
         if linedir 1 s then begin any_to_nl s; next_token true s end
         else
           let loc = bp, bp + 1 in
-          (keyword_or_error loc "#", loc), !t_line_nb, !t_bol_pos
+          (keyword_or_error ctx loc "#", loc), ctx.line_nb, ctx.bol_pos
     | Some '(' ->
         Stream.junk strm__;
         begin match Stream.peek strm__ with
           Some '*' ->
             Stream.junk strm__;
-            let _ = comment bp strm__ in next_token true strm__
+            let _ = comment ctx bp strm__ in next_token true strm__
         | _ ->
             let ep = Stream.count strm__ in
             let loc = bp, ep in
-            (keyword_or_error (bp, ep) "(", loc), !(!line_nb), !(!bol_pos)
+            (keyword_or_error ctx (bp, ep) "(", loc), !(!(Token.line_nb)),
+            !(!(Token.bol_pos))
         end
     | _ ->
         let tok = next_token_kont after_space strm__ in
         let ep = Stream.count strm__ in
-        (tok, (bp, max (bp + 1) ep)), !t_line_nb, !t_bol_pos
+        (tok, (bp, max (bp + 1) ep)), ctx.line_nb, ctx.bol_pos
   and next_token_kont after_space (strm__ : _ Stream.t) =
     let bp = Stream.count strm__ in
     match Stream.peek strm__ with
@@ -379,14 +565,14 @@ let next_token_fun dfa ssd find_kwd glexr =
         Stream.junk strm__;
         let buf = ident (B.char c) strm__ in
         let id = B.get buf in
-        begin try "", find_kwd id with
+        begin try "", ctx.find_kwd id with
           Not_found -> "UIDENT", id
         end
     | Some ('a'..'z' | '\223'..'\246' | '\248'..'\255' | '_' as c) ->
         Stream.junk strm__;
         let buf = ident (B.char c) strm__ in
         let id = B.get buf in
-        begin try "", find_kwd id with
+        begin try "", ctx.find_kwd id with
           Not_found -> "LIDENT", id
         end
     | Some ('1'..'9' as c) -> Stream.junk strm__; number (B.char c) strm__
@@ -406,17 +592,18 @@ let next_token_fun dfa ssd find_kwd glexr =
         let s = strm__ in
         let ep = Stream.count strm__ in
         begin match Stream.npeek 2 s with
-          [_; '\''] | ['\\'; _] -> "CHAR", B.get (char bp B.empty s)
-        | _ -> keyword_or_error (bp, ep) "'"
+          [_; '\''] | ['\\'; _] -> "CHAR", B.get (char ctx bp B.empty s)
+        | _ -> keyword_or_error ctx (bp, ep) "'"
         end
     | Some '\"' ->
         Stream.junk strm__;
-        let buf = string bp B.empty strm__ in "STRING", B.get buf
-    | Some '$' -> Stream.junk strm__; dollar bp B.empty strm__
+        let buf = string ctx bp B.empty strm__ in "STRING", B.get buf
+    | Some '$' -> Stream.junk strm__; dollar ctx bp B.empty strm__
     | Some ('!' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' as c) ->
         Stream.junk strm__;
         let buf = ident2 (B.char c) strm__ in
-        let ep = Stream.count strm__ in keyword_or_error (bp, ep) (B.get buf)
+        let ep = Stream.count strm__ in
+        keyword_or_error ctx (bp, ep) (B.get buf)
     | Some ('~' as c) ->
         Stream.junk strm__;
         begin match Stream.peek strm__ with
@@ -426,7 +613,7 @@ let next_token_fun dfa ssd find_kwd glexr =
         | _ ->
             let buf = ident2 (B.char c) strm__ in
             let ep = Stream.count strm__ in
-            keyword_or_error (bp, ep) (B.get buf)
+            keyword_or_error ctx (bp, ep) (B.get buf)
         end
     | Some ('?' as c) ->
         Stream.junk strm__;
@@ -437,9 +624,9 @@ let next_token_fun dfa ssd find_kwd glexr =
         | _ ->
             let buf = ident2 (B.char c) strm__ in
             let ep = Stream.count strm__ in
-            keyword_or_error (bp, ep) (B.get buf)
+            keyword_or_error ctx (bp, ep) (B.get buf)
         end
-    | Some '<' -> Stream.junk strm__; less bp strm__
+    | Some '<' -> Stream.junk strm__; less ctx bp strm__
     | Some (':' as c1) ->
         Stream.junk strm__;
         let buf =
@@ -448,7 +635,8 @@ let next_token_fun dfa ssd find_kwd glexr =
               Stream.junk strm__; B.add (B.char c1) c2
           | _ -> B.char c1
         in
-        let ep = Stream.count strm__ in keyword_or_error (bp, ep) (B.get buf)
+        let ep = Stream.count strm__ in
+        keyword_or_error ctx (bp, ep) (B.get buf)
     | Some ('>' | '|' as c1) ->
         Stream.junk strm__;
         let buf =
@@ -456,7 +644,8 @@ let next_token_fun dfa ssd find_kwd glexr =
             Some (']' | '}' as c2) -> Stream.junk strm__; B.add (B.char c1) c2
           | _ -> ident2 (B.char c1) strm__
         in
-        let ep = Stream.count strm__ in keyword_or_error (bp, ep) (B.get buf)
+        let ep = Stream.count strm__ in
+        keyword_or_error ctx (bp, ep) (B.get buf)
     | Some ('[' | '{' as c1) ->
         Stream.junk strm__;
         let s = strm__ in
@@ -470,15 +659,15 @@ let next_token_fun dfa ssd find_kwd glexr =
                   Stream.junk strm__; B.add (B.char c1) c2
               | _ -> B.char c1
         in
-        keyword_or_error (bp, Stream.count s) (B.get buf)
+        keyword_or_error ctx (bp, Stream.count s) (B.get buf)
     | Some '.' ->
         Stream.junk strm__;
         let id =
           match Stream.peek strm__ with
             Some '.' -> Stream.junk strm__; ".."
-          | _ -> if ssd && after_space then " ." else "."
+          | _ -> if ctx.specific_space_dot && after_space then " ." else "."
         in
-        let ep = Stream.count strm__ in keyword_or_error (bp, ep) id
+        let ep = Stream.count strm__ in keyword_or_error ctx (bp, ep) id
     | Some ';' ->
         Stream.junk strm__;
         let id =
@@ -486,157 +675,15 @@ let next_token_fun dfa ssd find_kwd glexr =
             Some ';' -> Stream.junk strm__; ";;"
           | _ -> ";"
         in
-        let ep = Stream.count strm__ in keyword_or_error (bp, ep) id
+        let ep = Stream.count strm__ in keyword_or_error ctx (bp, ep) id
     | Some '\\' ->
         Stream.junk strm__;
         let buf = ident3 B.empty strm__ in "LIDENT", B.get buf
     | Some c ->
         Stream.junk strm__;
         let ep = Stream.count strm__ in
-        keyword_or_error (bp, ep) (String.make 1 c)
+        keyword_or_error ctx (bp, ep) (String.make 1 c)
     | _ -> let _ = Stream.empty strm__ in "EOI", ""
-  and less bp strm =
-    if !no_quotations then
-      let (strm__ : _ Stream.t) = strm in
-      let buf = ident2 (B.char '<') strm__ in
-      let ep = Stream.count strm__ in keyword_or_error (bp, ep) (B.get buf)
-    else
-      let (strm__ : _ Stream.t) = strm in
-      match Stream.peek strm__ with
-        Some '<' ->
-          Stream.junk strm__;
-          let buf =
-            try quotation bp B.empty strm__ with
-              Stream.Failure -> raise (Stream.Error "")
-          in
-          "QUOTATION", ":" ^ B.get buf
-      | Some ':' ->
-          Stream.junk strm__;
-          let i =
-            try let buf = ident B.empty strm__ in B.get buf with
-              Stream.Failure -> raise (Stream.Error "")
-          in
-          begin match Stream.peek strm__ with
-            Some '<' ->
-              Stream.junk strm__;
-              let buf =
-                try quotation bp B.empty strm__ with
-                  Stream.Failure -> raise (Stream.Error "")
-              in
-              "QUOTATION", i ^ ":" ^ B.get buf
-          | _ -> raise (Stream.Error "character '<' expected")
-          end
-      | _ ->
-          let buf = ident2 (B.char '<') strm__ in
-          let ep = Stream.count strm__ in
-          keyword_or_error (bp, ep) (B.get buf)
-  and char bp buf (strm__ : _ Stream.t) =
-    match Stream.peek strm__ with
-      Some '\'' ->
-        Stream.junk strm__;
-        let s = strm__ in
-        if B.is_empty buf then char bp (B.add buf '\'') s else buf
-    | Some '\\' ->
-        Stream.junk strm__;
-        begin match Stream.peek strm__ with
-          Some c ->
-            Stream.junk strm__; char bp (B.add (B.add buf '\\') c) strm__
-        | _ -> raise (Stream.Error "")
-        end
-    | Some c -> Stream.junk strm__; char bp (B.add buf c) strm__
-    | _ -> let ep = Stream.count strm__ in err (bp, ep) "char not terminated"
-  and dollar bp buf (strm__ : _ Stream.t) =
-    match Stream.peek strm__ with
-      Some '$' -> Stream.junk strm__; "ANTIQUOT", ":" ^ B.get buf
-    | Some ('a'..'z' | 'A'..'Z' as c) ->
-        Stream.junk strm__; antiquot bp (B.add buf c) strm__
-    | Some ('0'..'9' as c) ->
-        Stream.junk strm__; maybe_locate bp (B.add buf c) strm__
-    | Some ':' ->
-        Stream.junk strm__;
-        let k = B.get buf in
-        "ANTIQUOT", k ^ ":" ^ locate_or_antiquot_rest bp B.empty strm__
-    | Some '\\' ->
-        Stream.junk strm__;
-        begin match Stream.peek strm__ with
-          Some c ->
-            Stream.junk strm__;
-            "ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (B.add buf c) strm__
-        | _ -> raise (Stream.Error "")
-        end
-    | _ ->
-        let s = strm__ in
-        if dfa then
-          let (strm__ : _ Stream.t) = s in
-          match Stream.peek strm__ with
-            Some c ->
-              Stream.junk strm__;
-              "ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (B.add buf c) s
-          | _ ->
-              let ep = Stream.count strm__ in
-              err (bp, ep) "antiquotation not terminated"
-        else "", B.get (ident2 (B.char '$') s)
-  and maybe_locate bp buf (strm__ : _ Stream.t) =
-    match Stream.peek strm__ with
-      Some '$' -> Stream.junk strm__; "ANTIQUOT", ":" ^ B.get buf
-    | Some ('0'..'9' as c) ->
-        Stream.junk strm__; maybe_locate bp (B.add buf c) strm__
-    | Some ':' ->
-        Stream.junk strm__;
-        "LOCATE", B.get buf ^ ":" ^ locate_or_antiquot_rest bp B.empty strm__
-    | Some '\\' ->
-        Stream.junk strm__;
-        begin match Stream.peek strm__ with
-          Some c ->
-            Stream.junk strm__;
-            "ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (B.add buf c) strm__
-        | _ -> raise (Stream.Error "")
-        end
-    | Some c ->
-        Stream.junk strm__;
-        "ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (B.add buf c) strm__
-    | _ ->
-        let ep = Stream.count strm__ in
-        err (bp, ep) "antiquotation not terminated"
-  and antiquot bp buf (strm__ : _ Stream.t) =
-    match Stream.peek strm__ with
-      Some '$' -> Stream.junk strm__; "ANTIQUOT", ":" ^ B.get buf
-    | Some ('a'..'z' | 'A'..'Z' | '0'..'9' as c) ->
-        Stream.junk strm__; antiquot bp (B.add buf c) strm__
-    | Some ':' ->
-        Stream.junk strm__;
-        let k = B.get buf in
-        "ANTIQUOT", k ^ ":" ^ locate_or_antiquot_rest bp B.empty strm__
-    | Some '\\' ->
-        Stream.junk strm__;
-        begin match Stream.peek strm__ with
-          Some c ->
-            Stream.junk strm__;
-            "ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (B.add buf c) strm__
-        | _ -> raise (Stream.Error "")
-        end
-    | Some c ->
-        Stream.junk strm__;
-        "ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (B.add buf c) strm__
-    | _ ->
-        let ep = Stream.count strm__ in
-        err (bp, ep) "antiquotation not terminated"
-  and locate_or_antiquot_rest bp buf (strm__ : _ Stream.t) =
-    match Stream.peek strm__ with
-      Some '$' -> Stream.junk strm__; B.get buf
-    | Some '\\' ->
-        Stream.junk strm__;
-        begin match Stream.peek strm__ with
-          Some c ->
-            Stream.junk strm__;
-            locate_or_antiquot_rest bp (B.add buf c) strm__
-        | _ -> raise (Stream.Error "")
-        end
-    | Some c ->
-        Stream.junk strm__; locate_or_antiquot_rest bp (B.add buf c) strm__
-    | _ ->
-        let ep = Stream.count strm__ in
-        err (bp, ep) "antiquotation not terminated"
   and linedir n s =
     match stream_peek_nth n s with
       Some (' ' | '\t') -> linedir (n + 1) s
@@ -654,7 +701,8 @@ let next_token_fun dfa ssd find_kwd glexr =
   and any_to_nl (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
       Some ('\r' | '\n') ->
-        Stream.junk strm__; let ep = Stream.count strm__ in !bol_pos := ep
+        Stream.junk strm__;
+        let ep = Stream.count strm__ in !(Token.bol_pos) := ep
     | Some _ -> Stream.junk strm__; any_to_nl strm__
     | _ -> ()
   in
@@ -667,8 +715,8 @@ let next_token_fun dfa ssd find_kwd glexr =
           Token.restore_lexing_info := None
       | None -> ()
       end;
-      line_nb := s_line_nb;
-      bol_pos := s_bol_pos;
+      Token.line_nb := s_line_nb;
+      Token.bol_pos := s_bol_pos;
       let glex = !glexr in
       let comm_bp = Stream.count cstrm in
       let ((r, loc), t_line_nb, t_bol_pos) = next_token false cstrm in
@@ -681,17 +729,12 @@ let next_token_fun dfa ssd find_kwd glexr =
       end;
       r, make_lined_loc t_line_nb t_bol_pos loc
     with
-      Stream.Error str -> err (Stream.count cstrm, Stream.count cstrm + 1) str
+      Stream.Error str ->
+        err ctx (Stream.count cstrm, Stream.count cstrm + 1) str
 ;;
 
-let dollar_for_antiquotation = ref true;;
-let specific_space_dot = ref false;;
-
 let func kwd_table glexr =
-  let find = Hashtbl.find kwd_table in
-  let dfa = !dollar_for_antiquotation in
-  let ssd = !specific_space_dot in
-  Token.lexer_func_of_parser (next_token_fun dfa ssd find glexr)
+  Token.lexer_func_of_parser (next_token_fun kwd_table glexr)
 ;;
 
 let rec check_keyword_stream (strm__ : _ Stream.t) =
@@ -903,11 +946,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 670, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 670, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 670, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 671, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 671, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 707, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 707, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 707, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 708, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 708, 37)));
        tok_comm = None}
   in
   let glex =
