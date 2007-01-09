@@ -14,13 +14,9 @@
 
 open Token;;
 
-(* These variables can be changed at any time to change the behaviour
-   of lexers. *)
 let no_quotations = ref false;;
 let error_on_unknown_keywords = ref false;;
 
-(* These variables give different behaviours to lexers definitively at
-   lexer creation *)
 let dollar_for_antiquotation = ref true;;
 let specific_space_dot = ref false;;
 
@@ -66,19 +62,17 @@ module B :
 (* The lexer *)
 
 type context =
-  { mutable line_nb : int;
-    mutable bol_pos : int;
-    mutable after_space : bool;
+  { mutable after_space : bool;
     dollar_for_antiquotation : bool;
     specific_space_dot : bool;
     find_kwd : string -> string;
     line_cnt : int -> char -> char;
-    set_line : unit -> unit;
-    make_loc : int * int -> Stdpp.location }
+    set_line_nb : unit -> unit;
+    make_lined_loc : int * int -> Stdpp.location }
 ;;
 
 let err ctx loc msg =
-  Stdpp.raise_with_loc (ctx.make_loc loc) (Token.Error msg)
+  Stdpp.raise_with_loc (ctx.make_lined_loc loc) (Token.Error msg)
 ;;
 
 let keyword_or_error ctx loc s =
@@ -545,7 +539,7 @@ let rec next_token ctx (strm__ : _ Stream.t) =
       let ep = Stream.count strm__ in
       incr !(Token.line_nb);
       !(Token.bol_pos) := ep;
-      ctx.set_line ();
+      ctx.set_line_nb ();
       ctx.after_space <- true;
       next_token ctx s
   | Some (' ' | '\t' | '\026' | '\012') ->
@@ -557,12 +551,12 @@ let rec next_token ctx (strm__ : _ Stream.t) =
       if linedir 1 s then
         begin
           any_to_nl s;
-          ctx.set_line ();
+          ctx.set_line_nb ();
           ctx.after_space <- true;
           next_token ctx s
         end
       else
-        let loc = ctx.make_loc (bp, bp + 1) in
+        let loc = ctx.make_lined_loc (bp, bp + 1) in
         keyword_or_error ctx (bp, bp + 1) "#", loc
   | Some '(' ->
       Stream.junk strm__;
@@ -571,16 +565,16 @@ let rec next_token ctx (strm__ : _ Stream.t) =
           Stream.junk strm__;
           let _ = comment ctx bp strm__ in
           let s = strm__ in
-          ctx.set_line (); ctx.after_space <- true; next_token ctx s
+          ctx.set_line_nb (); ctx.after_space <- true; next_token ctx s
       | _ ->
           let ep = Stream.count strm__ in
-          let loc = ctx.make_loc (bp, ep) in
+          let loc = ctx.make_lined_loc (bp, ep) in
           keyword_or_error ctx (bp, ep) "(", loc
       end
   | _ ->
       let tok = next_token_kont ctx strm__ in
       let ep = Stream.count strm__ in
-      let loc = ctx.make_loc (bp, max (bp + 1) ep) in tok, loc
+      let loc = ctx.make_lined_loc (bp, max (bp + 1) ep) in tok, loc
 and next_token_kont ctx (strm__ : _ Stream.t) =
   let bp = Stream.count strm__ in
   match Stream.peek strm__ with
@@ -721,7 +715,7 @@ let next_token_fun ctx glexr (cstrm, s_line_nb, s_bol_pos) =
     Token.line_nb := s_line_nb;
     Token.bol_pos := s_bol_pos;
     let comm_bp = Stream.count cstrm in
-    ctx.set_line ();
+    ctx.set_line_nb ();
     ctx.after_space <- false;
     let (r, loc) = next_token ctx cstrm in
     begin match !glexr.tok_comm with
@@ -738,8 +732,10 @@ let next_token_fun ctx glexr (cstrm, s_line_nb, s_bol_pos) =
 ;;
 
 let func kwd_table glexr =
-  let rec ctx =
-    {line_nb = 0; bol_pos = 0; after_space = false;
+  let ctx =
+    let line_nb = ref 0 in
+    let bol_pos = ref 0 in
+    {after_space = false;
      dollar_for_antiquotation = !dollar_for_antiquotation;
      specific_space_dot = !specific_space_dot;
      find_kwd = Hashtbl.find kwd_table;
@@ -749,11 +745,10 @@ let func kwd_table glexr =
             '\n' | '\r' ->
               incr !(Token.line_nb); !(Token.bol_pos) := bp1 + 1; c
           | c -> c);
-     set_line =
+     set_line_nb =
        (fun () ->
-          ctx.line_nb <- !(!(Token.line_nb));
-          ctx.bol_pos <- !(!(Token.bol_pos)));
-     make_loc = fun loc -> Stdpp.make_lined_loc ctx.line_nb ctx.bol_pos loc}
+          line_nb := !(!(Token.line_nb)); bol_pos := !(!(Token.bol_pos)));
+     make_lined_loc = fun loc -> Stdpp.make_lined_loc !line_nb !bol_pos loc}
   in
   Token.lexer_func_of_parser (next_token_fun ctx glexr)
 ;;
@@ -967,11 +962,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 733, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 733, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 733, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 734, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 734, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 729, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 729, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 729, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 730, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 730, 37)));
        tok_comm = None}
   in
   let glex =
