@@ -10,9 +10,8 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.36 2007/01/09 04:03:21 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.37 2007/01/09 04:57:47 deraugla Exp $ *)
 
-open Stdpp;
 open Token;
 
 (* These variables can be changed at any time to change the behaviour
@@ -65,16 +64,17 @@ module B :
 type context =
   { line_nb : mutable int;
     bol_pos : mutable int;
+    after_space : mutable bool;
     dollar_for_antiquotation : bool;
     specific_space_dot : bool;
     find_kwd : string -> string;
     line_cnt : int -> char -> char;
-    set_line : unit -> unit }
+    set_line : unit -> unit;
+    make_loc : (int * int) -> Stdpp.location }
 ;
 
 value err ctx loc msg =
-  Stdpp.raise_with_loc
-    (Stdpp.make_lined_loc ctx.line_nb ctx.bol_pos loc) (Token.Error msg)
+  Stdpp.raise_with_loc (ctx.make_loc loc) (Token.Error msg)
 ;
 
 value keyword_or_error ctx loc s =
@@ -366,49 +366,53 @@ and linedir_quote n s =
 
 value rec any_to_nl =
   parser
-  [ [: `'\r' | '\n' :] ep -> Token.bol_pos.val.val := ep
+  [ [: `'\r' | '\n' :] ep -> do {
+      incr Token.line_nb.val;
+      Token.bol_pos.val.val := ep;
+    }
   | [: `_; s :] -> any_to_nl s
   | [: :] -> () ]
 ;
 
-value rec next_token ctx after_space =
+value rec next_token ctx =
   parser bp
   [ [: `'\n' | '\r'; s :] ep -> do {
       incr Token.line_nb.val;
       Token.bol_pos.val.val := ep;
       ctx.set_line ();
-      next_token ctx True s
+      ctx.after_space := True;
+      next_token ctx s
     }
-  | [: `' ' | '\t' | '\026' | '\012'; a = next_token ctx True ! :] -> a
+  | [: `' ' | '\t' | '\026' | '\012'; s :] -> do {
+      ctx.after_space := True;
+      next_token ctx s
+    }
   | [: `'#' when bp = Token.bol_pos.val.val; s :] ->
       if linedir 1 s then do {
         any_to_nl s;
         ctx.set_line ();
-        next_token ctx True s
+        ctx.after_space := True;
+        next_token ctx s
       }
       else
-        let loc = make_lined_loc ctx.line_nb ctx.bol_pos (bp, bp + 1) in
+        let loc = ctx.make_loc (bp, bp + 1) in
         (keyword_or_error ctx (bp, bp + 1) "#", loc)
   | [: `'(';
        a =
          parser
          [ [: `'*'; _ = comment ctx bp !; s :] -> do {
              ctx.set_line ();
-             next_token ctx True s
+             ctx.after_space := True;
+             next_token ctx s
            }
          | [: :] ep ->
-             let loc =
-               make_lined_loc Token.line_nb.val.val Token.bol_pos.val.val
-                 (bp, ep)
-             in
+             let loc = ctx.make_loc (bp, ep) in
              (keyword_or_error ctx (bp, ep) "(", loc) ] ! :] -> a
-  | [: tok = next_token_kont ctx after_space :] ep ->
-      let loc =
-        make_lined_loc ctx.line_nb ctx.bol_pos (bp, max (bp + 1) ep)
-      in
+  | [: tok = next_token_kont ctx :] ep ->
+      let loc = ctx.make_loc (bp, max (bp + 1) ep) in
       (tok, loc) ]
 
-and next_token_kont ctx after_space =
+and next_token_kont ctx =
   parser bp
   [ [: `('A'..'Z' | '\192'..'\214' | '\216'..'\222' as c);
        buf = ident (B.char c) ! :] ->
@@ -480,7 +484,7 @@ and next_token_kont ctx after_space =
          parser
          [ [: `'.' :] -> ".."
          | [: :] ->
-             if ctx.specific_space_dot && after_space then " ."
+             if ctx.specific_space_dot && ctx.after_space then " ."
              else "." ] ! :] ep ->
       keyword_or_error ctx (bp, ep) id
   | [: `';';
@@ -507,7 +511,8 @@ value next_token_fun ctx glexr (cstrm, s_line_nb, s_bol_pos) =
     Token.bol_pos.val := s_bol_pos;
     let comm_bp = Stream.count cstrm in
     ctx.set_line ();
-    let (r, loc) = next_token ctx False cstrm in
+    ctx.after_space := False;
+    let (r, loc) = next_token ctx cstrm in
     match glexr.val.tok_comm with
     [ Some list ->
         if Stdpp.first_pos loc > comm_bp then
@@ -524,7 +529,7 @@ value next_token_fun ctx glexr (cstrm, s_line_nb, s_bol_pos) =
 
 value func kwd_table glexr =
   let rec ctx =
-    {line_nb = 0; bol_pos = 0;
+    {line_nb = 0; bol_pos = 0; after_space = False;
      dollar_for_antiquotation = dollar_for_antiquotation.val;
      specific_space_dot = specific_space_dot.val;
      find_kwd = Hashtbl.find kwd_table;
@@ -539,7 +544,8 @@ value func kwd_table glexr =
      set_line () = do {
        ctx.line_nb := Token.line_nb.val.val;
        ctx.bol_pos := Token.bol_pos.val.val;
-     }}
+     };
+     make_loc loc = Stdpp.make_lined_loc ctx.line_nb ctx.bol_pos loc}
   in
   Token.lexer_func_of_parser (next_token_fun ctx glexr)
 ;
