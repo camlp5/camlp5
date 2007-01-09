@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.35 2007/01/08 21:29:58 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.36 2007/01/09 04:03:21 deraugla Exp $ *)
 
 open Stdpp;
 open Token;
@@ -68,7 +68,8 @@ type context =
     dollar_for_antiquotation : bool;
     specific_space_dot : bool;
     find_kwd : string -> string;
-    line_cnt : int -> char -> char }
+    line_cnt : int -> char -> char;
+    set_line : unit -> unit }
 ;
 
 value err ctx loc msg =
@@ -347,8 +348,182 @@ value dollar ctx bp buf =
       else ("", B.get (ident2 (B.char '$') s)) ]
 ;
 
-value next_token_fun kwd_table glexr =
-  let ctx =
+value rec linedir n s =
+  match stream_peek_nth n s with
+  [ Some (' ' | '\t') -> linedir (n + 1) s
+  | Some ('0'..'9') -> linedir_digits (n + 1) s
+  | _ -> False ]
+and linedir_digits n s =
+  match stream_peek_nth n s with
+  [ Some ('0'..'9') -> linedir_digits (n + 1) s
+  | _ -> linedir_quote n s ]
+and linedir_quote n s =
+  match stream_peek_nth n s with
+  [ Some (' ' | '\t') -> linedir_quote (n + 1) s
+  | Some '"' -> True
+  | _ -> False ]
+;
+
+value rec any_to_nl =
+  parser
+  [ [: `'\r' | '\n' :] ep -> Token.bol_pos.val.val := ep
+  | [: `_; s :] -> any_to_nl s
+  | [: :] -> () ]
+;
+
+value rec next_token ctx after_space =
+  parser bp
+  [ [: `'\n' | '\r'; s :] ep -> do {
+      incr Token.line_nb.val;
+      Token.bol_pos.val.val := ep;
+      ctx.set_line ();
+      next_token ctx True s
+    }
+  | [: `' ' | '\t' | '\026' | '\012'; a = next_token ctx True ! :] -> a
+  | [: `'#' when bp = Token.bol_pos.val.val; s :] ->
+      if linedir 1 s then do {
+        any_to_nl s;
+        ctx.set_line ();
+        next_token ctx True s
+      }
+      else
+        let loc = make_lined_loc ctx.line_nb ctx.bol_pos (bp, bp + 1) in
+        (keyword_or_error ctx (bp, bp + 1) "#", loc)
+  | [: `'(';
+       a =
+         parser
+         [ [: `'*'; _ = comment ctx bp !; s :] -> do {
+             ctx.set_line ();
+             next_token ctx True s
+           }
+         | [: :] ep ->
+             let loc =
+               make_lined_loc Token.line_nb.val.val Token.bol_pos.val.val
+                 (bp, ep)
+             in
+             (keyword_or_error ctx (bp, ep) "(", loc) ] ! :] -> a
+  | [: tok = next_token_kont ctx after_space :] ep ->
+      let loc =
+        make_lined_loc ctx.line_nb ctx.bol_pos (bp, max (bp + 1) ep)
+      in
+      (tok, loc) ]
+
+and next_token_kont ctx after_space =
+  parser bp
+  [ [: `('A'..'Z' | '\192'..'\214' | '\216'..'\222' as c);
+       buf = ident (B.char c) ! :] ->
+      let id = B.get buf in
+      try ("", ctx.find_kwd id) with [ Not_found -> ("UIDENT", id) ]
+  | [: `('a'..'z' | '\223'..'\246' | '\248'..'\255' | '_' as c);
+       buf = ident (B.char c) ! :] ->
+      let id = B.get buf in
+      try ("", ctx.find_kwd id) with [ Not_found -> ("LIDENT", id) ]
+  | [: `('1'..'9' as c); tok = number (B.char c) ! :] -> tok
+  | [: `'0';
+       tok =
+         parser
+         [ [: `'o' | 'O'; tok = digits octal (B.string "0o") ! :] -> tok
+         | [: `'x' | 'X'; tok = digits hexa (B.string "0x") ! :] -> tok
+         | [: `'b' | 'B'; tok = digits binary (B.string "0b") ! :] -> tok
+         | [: tok = number (B.char '0') :] -> tok ] ! :] ->
+      tok
+  | [: `'''; s :] ep ->
+      match Stream.npeek 2 s with
+      [ [_; '''] | ['\\'; _] -> ("CHAR", B.get (char ctx bp B.empty s))
+      | _ -> keyword_or_error ctx (bp, ep) "'" ]
+  | [: `'"'; buf = string ctx bp B.empty ! :] -> ("STRING", B.get buf)
+  | [: `'$'; tok = dollar ctx bp B.empty ! :] -> tok
+  | [: `('!' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' as c);
+       buf = ident2 (B.char c) ! :] ep ->
+      keyword_or_error ctx (bp, ep) (B.get buf)
+  | [: `('~' as c);
+       a =
+         parser
+         [ [: `('a'..'z' as c); buf = ident (B.char c) ! :] ->
+             ("TILDEIDENT", B.get buf)
+         | [: buf = ident2 (B.char c) :] ep ->
+             keyword_or_error ctx (bp, ep) (B.get buf) ] ! :] ->
+      a
+  | [: `('?' as c);
+       a =
+         parser
+         [ [: `('a'..'z' as c); buf = ident (B.char c) ! :] ->
+             ("QUESTIONIDENT", B.get buf)
+         | [: buf = ident2 (B.char c) :] ep ->
+             keyword_or_error ctx (bp, ep) (B.get buf) ] ! :] ->
+      a
+  | [: `'<'; tok = less ctx bp ! :] -> tok
+  | [: `(':' as c1);
+       buf =
+         parser
+         [ [: `(']' | ':' | '=' | '>' as c2) :] -> B.add (B.char c1) c2
+         | [: :] -> B.char c1 ] ! :] ep ->
+      keyword_or_error ctx (bp, ep) (B.get buf)
+  | [: `('>' | '|' as c1);
+       buf =
+         parser
+         [ [: `(']' | '}' as c2) :] -> B.add (B.char c1) c2
+         | [: a = ident2 (B.char c1) :] -> a ] ! :] ep ->
+      keyword_or_error ctx (bp, ep) (B.get buf)
+  | [: `('[' | '{' as c1); s :] ->
+      let buf =
+        match Stream.npeek 2 s with
+        [ ['<'; '<' | ':'] -> B.char c1
+        | _ ->
+            match s with parser
+            [ [: `('|' | '<' | ':' as c2) :] -> B.add (B.char c1) c2
+            | [: :] -> B.char c1 ] ]
+      in
+      keyword_or_error ctx (bp, Stream.count s) (B.get buf)
+  | [: `'.';
+       id =
+         parser
+         [ [: `'.' :] -> ".."
+         | [: :] ->
+             if ctx.specific_space_dot && after_space then " ."
+             else "." ] ! :] ep ->
+      keyword_or_error ctx (bp, ep) id
+  | [: `';';
+       id =
+         parser
+         [ [: `';' :] -> ";;"
+         | [: :] -> ";" ] ! :] ep ->
+      keyword_or_error ctx (bp, ep) id
+  | [: `'\\'; buf = ident3 B.empty ! :] -> ("LIDENT", B.get buf)
+  | [: `c :] ep -> keyword_or_error ctx (bp, ep) (String.make 1 c)
+  | [: _ = Stream.empty :] -> ("EOI", "") ]
+;
+
+value next_token_fun ctx glexr (cstrm, s_line_nb, s_bol_pos) =
+  try do {
+    match Token.restore_lexing_info.val with
+    [ Some (line_nb, bol_pos) -> do {
+        s_line_nb.val := line_nb;
+        s_bol_pos.val := bol_pos;
+        Token.restore_lexing_info.val := None
+      }
+    | None -> () ];
+    Token.line_nb.val := s_line_nb;
+    Token.bol_pos.val := s_bol_pos;
+    let comm_bp = Stream.count cstrm in
+    ctx.set_line ();
+    let (r, loc) = next_token ctx False cstrm in
+    match glexr.val.tok_comm with
+    [ Some list ->
+        if Stdpp.first_pos loc > comm_bp then
+          let comm_loc = Stdpp.make_loc (comm_bp, Stdpp.last_pos loc) in
+          glexr.val.tok_comm := Some [comm_loc :: list]
+        else ()
+    | None -> () ];
+    (r, loc)
+  }
+  with
+  [ Stream.Error str ->
+      err ctx (Stream.count cstrm, Stream.count cstrm + 1) str ]
+;
+
+value func kwd_table glexr =
+  let rec ctx =
     {line_nb = 0; bol_pos = 0;
      dollar_for_antiquotation = dollar_for_antiquotation.val;
      specific_space_dot = specific_space_dot.val;
@@ -360,168 +535,13 @@ value next_token_fun kwd_table glexr =
            Token.bol_pos.val.val := bp1 + 1;
            c
          }
-       | c -> c ]}
+       | c -> c ];
+     set_line () = do {
+       ctx.line_nb := Token.line_nb.val.val;
+       ctx.bol_pos := Token.bol_pos.val.val;
+     }}
   in
-  let rec next_token after_space strm = do {
-    ctx.line_nb := Token.line_nb.val.val;
-    ctx.bol_pos := Token.bol_pos.val.val;
-    match strm with parser bp
-    [ [: `'\n' | '\r'; s :] ep -> do {
-        incr Token.line_nb.val;
-        Token.bol_pos.val.val := ep;
-        next_token True s
-      }
-    | [: `' ' | '\t' | '\026' | '\012'; s :] -> next_token True s
-    | [: `'#' when bp = Token.bol_pos.val.val; s :] ->
-        if linedir 1 s then do { any_to_nl s; next_token True s }
-        else
-          let loc = (bp, bp + 1) in
-          ((keyword_or_error ctx loc "#", loc), ctx.line_nb, ctx.bol_pos)
-    | [: `'(';
-         a =
-           parser
-           [ [: `'*'; _ = comment ctx bp !; a = next_token True ! :] -> a
-           | [: :] ep ->
-               let loc = (bp, ep) in
-               ((keyword_or_error ctx (bp, ep) "(", loc),
-                Token.line_nb.val.val, Token.bol_pos.val.val) ] ! :] -> a
-    | [: tok = next_token_kont after_space :] ep ->
-        ((tok, (bp, max (bp + 1) ep)), ctx.line_nb, ctx.bol_pos) ]
-  }
-  and next_token_kont after_space =
-    parser bp
-    [ [: `('A'..'Z' | '\192'..'\214' | '\216'..'\222' as c);
-         buf = ident (B.char c) ! :] ->
-        let id = B.get buf in
-        try ("", ctx.find_kwd id) with [ Not_found -> ("UIDENT", id) ]
-    | [: `('a'..'z' | '\223'..'\246' | '\248'..'\255' | '_' as c);
-         buf = ident (B.char c) ! :] ->
-        let id = B.get buf in
-        try ("", ctx.find_kwd id) with [ Not_found -> ("LIDENT", id) ]
-    | [: `('1'..'9' as c); tok = number (B.char c) ! :] -> tok
-    | [: `'0';
-         tok =
-           parser
-           [ [: `'o' | 'O'; tok = digits octal (B.string "0o") ! :] -> tok
-           | [: `'x' | 'X'; tok = digits hexa (B.string "0x") ! :] -> tok
-           | [: `'b' | 'B'; tok = digits binary (B.string "0b") ! :] -> tok
-           | [: tok = number (B.char '0') :] -> tok ] ! :] ->
-        tok
-    | [: `'''; s :] ep ->
-        match Stream.npeek 2 s with
-        [ [_; '''] | ['\\'; _] -> ("CHAR", B.get (char ctx bp B.empty s))
-        | _ -> keyword_or_error ctx (bp, ep) "'" ]
-    | [: `'"'; buf = string ctx bp B.empty ! :] -> ("STRING", B.get buf)
-    | [: `'$'; tok = dollar ctx bp B.empty ! :] -> tok
-    | [: `('!' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' as c);
-         buf = ident2 (B.char c) ! :] ep ->
-        keyword_or_error ctx (bp, ep) (B.get buf)
-    | [: `('~' as c);
-         a =
-           parser
-           [ [: `('a'..'z' as c); buf = ident (B.char c) ! :] ->
-               ("TILDEIDENT", B.get buf)
-           | [: buf = ident2 (B.char c) :] ep ->
-               keyword_or_error ctx (bp, ep) (B.get buf) ] ! :] ->
-        a
-    | [: `('?' as c);
-         a =
-           parser
-           [ [: `('a'..'z' as c); buf = ident (B.char c) ! :] ->
-               ("QUESTIONIDENT", B.get buf)
-           | [: buf = ident2 (B.char c) :] ep ->
-               keyword_or_error ctx (bp, ep) (B.get buf) ] ! :] ->
-        a
-    | [: `'<'; tok = less ctx bp ! :] -> tok
-    | [: `(':' as c1);
-         buf =
-           parser
-           [ [: `(']' | ':' | '=' | '>' as c2) :] -> B.add (B.char c1) c2
-           | [: :] -> B.char c1 ] ! :] ep ->
-        keyword_or_error ctx (bp, ep) (B.get buf)
-    | [: `('>' | '|' as c1);
-         buf =
-           parser
-           [ [: `(']' | '}' as c2) :] -> B.add (B.char c1) c2
-           | [: a = ident2 (B.char c1) :] -> a ] ! :] ep ->
-        keyword_or_error ctx (bp, ep) (B.get buf)
-    | [: `('[' | '{' as c1); s :] ->
-        let buf =
-          match Stream.npeek 2 s with
-          [ ['<'; '<' | ':'] -> B.char c1
-          | _ ->
-              match s with parser
-              [ [: `('|' | '<' | ':' as c2) :] -> B.add (B.char c1) c2
-              | [: :] -> B.char c1 ] ]
-        in
-        keyword_or_error ctx (bp, Stream.count s) (B.get buf)
-    | [: `'.';
-         id =
-           parser
-           [ [: `'.' :] -> ".."
-           | [: :] ->
-               if ctx.specific_space_dot && after_space then " ."
-               else "." ] ! :] ep ->
-        keyword_or_error ctx (bp, ep) id
-    | [: `';';
-         id =
-           parser
-           [ [: `';' :] -> ";;"
-           | [: :] -> ";" ] ! :] ep ->
-        keyword_or_error ctx (bp, ep) id
-    | [: `'\\'; buf = ident3 B.empty ! :] -> ("LIDENT", B.get buf)
-    | [: `c :] ep -> keyword_or_error ctx (bp, ep) (String.make 1 c)
-    | [: _ = Stream.empty :] -> ("EOI", "") ]
-  and linedir n s =
-    match stream_peek_nth n s with
-    [ Some (' ' | '\t') -> linedir (n + 1) s
-    | Some ('0'..'9') -> linedir_digits (n + 1) s
-    | _ -> False ]
-  and linedir_digits n s =
-    match stream_peek_nth n s with
-    [ Some ('0'..'9') -> linedir_digits (n + 1) s
-    | _ -> linedir_quote n s ]
-  and linedir_quote n s =
-    match stream_peek_nth n s with
-    [ Some (' ' | '\t') -> linedir_quote (n + 1) s
-    | Some '"' -> True
-    | _ -> False ]
-  and any_to_nl =
-    parser
-    [ [: `'\r' | '\n' :] ep -> Token.bol_pos.val.val := ep
-    | [: `_; s :] -> any_to_nl s
-    | [: :] -> () ]
-  in
-  fun (cstrm, s_line_nb, s_bol_pos) ->
-    try do {
-      match Token.restore_lexing_info.val with
-      [ Some (line_nb, bol_pos) -> do {
-          s_line_nb.val := line_nb;
-          s_bol_pos.val := bol_pos;
-          Token.restore_lexing_info.val := None
-        }
-      | None -> () ];
-      Token.line_nb.val := s_line_nb;
-      Token.bol_pos.val := s_bol_pos;
-      let glex = glexr.val in
-      let comm_bp = Stream.count cstrm in
-      let ((r, loc), t_line_nb, t_bol_pos) = next_token False cstrm in
-      match glex.tok_comm with
-      [ Some list ->
-          if fst loc > comm_bp then
-            let comm_loc = Stdpp.make_loc (comm_bp, fst loc) in
-            glex.tok_comm := Some [comm_loc :: list]
-          else ()
-      | None -> () ];
-      (r, make_lined_loc t_line_nb t_bol_pos loc)
-    }
-  with
-  [ Stream.Error str ->
-      err ctx (Stream.count cstrm, Stream.count cstrm + 1) str ]
-;
-
-value func kwd_table glexr =
-  Token.lexer_func_of_parser (next_token_fun kwd_table glexr)
+  Token.lexer_func_of_parser (next_token_fun ctx glexr)
 ;
 
 value rec check_keyword_stream =

@@ -72,7 +72,8 @@ type context =
     dollar_for_antiquotation : bool;
     specific_space_dot : bool;
     find_kwd : string -> string;
-    line_cnt : int -> char -> char }
+    line_cnt : int -> char -> char;
+    set_line : unit -> unit }
 ;;
 
 let err ctx loc msg =
@@ -509,232 +510,246 @@ let dollar ctx bp buf (strm__ : _ Stream.t) =
       else "", B.get (ident2 (B.char '$') s)
 ;;
 
-let next_token_fun kwd_table glexr =
-  let ctx =
+let rec linedir n s =
+  match stream_peek_nth n s with
+    Some (' ' | '\t') -> linedir (n + 1) s
+  | Some ('0'..'9') -> linedir_digits (n + 1) s
+  | _ -> false
+and linedir_digits n s =
+  match stream_peek_nth n s with
+    Some ('0'..'9') -> linedir_digits (n + 1) s
+  | _ -> linedir_quote n s
+and linedir_quote n s =
+  match stream_peek_nth n s with
+    Some (' ' | '\t') -> linedir_quote (n + 1) s
+  | Some '\"' -> true
+  | _ -> false
+;;
+
+let rec any_to_nl (strm__ : _ Stream.t) =
+  match Stream.peek strm__ with
+    Some ('\r' | '\n') ->
+      Stream.junk strm__;
+      let ep = Stream.count strm__ in !(Token.bol_pos) := ep
+  | Some _ -> Stream.junk strm__; any_to_nl strm__
+  | _ -> ()
+;;
+
+let rec next_token ctx after_space (strm__ : _ Stream.t) =
+  let bp = Stream.count strm__ in
+  match Stream.peek strm__ with
+    Some ('\n' | '\r') ->
+      Stream.junk strm__;
+      let s = strm__ in
+      let ep = Stream.count strm__ in
+      incr !(Token.line_nb);
+      !(Token.bol_pos) := ep;
+      ctx.set_line ();
+      next_token ctx true s
+  | Some (' ' | '\t' | '\026' | '\012') ->
+      Stream.junk strm__; next_token ctx true strm__
+  | Some '#' when bp = !(!(Token.bol_pos)) ->
+      Stream.junk strm__;
+      let s = strm__ in
+      if linedir 1 s then
+        begin any_to_nl s; ctx.set_line (); next_token ctx true s end
+      else
+        let loc = make_lined_loc ctx.line_nb ctx.bol_pos (bp, bp + 1) in
+        keyword_or_error ctx (bp, bp + 1) "#", loc
+  | Some '(' ->
+      Stream.junk strm__;
+      begin match Stream.peek strm__ with
+        Some '*' ->
+          Stream.junk strm__;
+          let _ = comment ctx bp strm__ in
+          let s = strm__ in ctx.set_line (); next_token ctx true s
+      | _ ->
+          let ep = Stream.count strm__ in
+          let loc =
+            make_lined_loc !(!(Token.line_nb)) !(!(Token.bol_pos)) (bp, ep)
+          in
+          keyword_or_error ctx (bp, ep) "(", loc
+      end
+  | _ ->
+      let tok = next_token_kont ctx after_space strm__ in
+      let ep = Stream.count strm__ in
+      let loc =
+        make_lined_loc ctx.line_nb ctx.bol_pos (bp, max (bp + 1) ep)
+      in
+      tok, loc
+and next_token_kont ctx after_space (strm__ : _ Stream.t) =
+  let bp = Stream.count strm__ in
+  match Stream.peek strm__ with
+    Some ('A'..'Z' | '\192'..'\214' | '\216'..'\222' as c) ->
+      Stream.junk strm__;
+      let buf = ident (B.char c) strm__ in
+      let id = B.get buf in
+      begin try "", ctx.find_kwd id with
+        Not_found -> "UIDENT", id
+      end
+  | Some ('a'..'z' | '\223'..'\246' | '\248'..'\255' | '_' as c) ->
+      Stream.junk strm__;
+      let buf = ident (B.char c) strm__ in
+      let id = B.get buf in
+      begin try "", ctx.find_kwd id with
+        Not_found -> "LIDENT", id
+      end
+  | Some ('1'..'9' as c) -> Stream.junk strm__; number (B.char c) strm__
+  | Some '0' ->
+      Stream.junk strm__;
+      begin match Stream.peek strm__ with
+        Some ('o' | 'O') ->
+          Stream.junk strm__; digits octal (B.string "0o") strm__
+      | Some ('x' | 'X') ->
+          Stream.junk strm__; digits hexa (B.string "0x") strm__
+      | Some ('b' | 'B') ->
+          Stream.junk strm__; digits binary (B.string "0b") strm__
+      | _ -> number (B.char '0') strm__
+      end
+  | Some '\'' ->
+      Stream.junk strm__;
+      let s = strm__ in
+      let ep = Stream.count strm__ in
+      begin match Stream.npeek 2 s with
+        [_; '\''] | ['\\'; _] -> "CHAR", B.get (char ctx bp B.empty s)
+      | _ -> keyword_or_error ctx (bp, ep) "'"
+      end
+  | Some '\"' ->
+      Stream.junk strm__;
+      let buf = string ctx bp B.empty strm__ in "STRING", B.get buf
+  | Some '$' -> Stream.junk strm__; dollar ctx bp B.empty strm__
+  | Some ('!' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' as c) ->
+      Stream.junk strm__;
+      let buf = ident2 (B.char c) strm__ in
+      let ep = Stream.count strm__ in
+      keyword_or_error ctx (bp, ep) (B.get buf)
+  | Some ('~' as c) ->
+      Stream.junk strm__;
+      begin match Stream.peek strm__ with
+        Some ('a'..'z' as c) ->
+          Stream.junk strm__;
+          let buf = ident (B.char c) strm__ in "TILDEIDENT", B.get buf
+      | _ ->
+          let buf = ident2 (B.char c) strm__ in
+          let ep = Stream.count strm__ in
+          keyword_or_error ctx (bp, ep) (B.get buf)
+      end
+  | Some ('?' as c) ->
+      Stream.junk strm__;
+      begin match Stream.peek strm__ with
+        Some ('a'..'z' as c) ->
+          Stream.junk strm__;
+          let buf = ident (B.char c) strm__ in "QUESTIONIDENT", B.get buf
+      | _ ->
+          let buf = ident2 (B.char c) strm__ in
+          let ep = Stream.count strm__ in
+          keyword_or_error ctx (bp, ep) (B.get buf)
+      end
+  | Some '<' -> Stream.junk strm__; less ctx bp strm__
+  | Some (':' as c1) ->
+      Stream.junk strm__;
+      let buf =
+        match Stream.peek strm__ with
+          Some (']' | ':' | '=' | '>' as c2) ->
+            Stream.junk strm__; B.add (B.char c1) c2
+        | _ -> B.char c1
+      in
+      let ep = Stream.count strm__ in
+      keyword_or_error ctx (bp, ep) (B.get buf)
+  | Some ('>' | '|' as c1) ->
+      Stream.junk strm__;
+      let buf =
+        match Stream.peek strm__ with
+          Some (']' | '}' as c2) -> Stream.junk strm__; B.add (B.char c1) c2
+        | _ -> ident2 (B.char c1) strm__
+      in
+      let ep = Stream.count strm__ in
+      keyword_or_error ctx (bp, ep) (B.get buf)
+  | Some ('[' | '{' as c1) ->
+      Stream.junk strm__;
+      let s = strm__ in
+      let buf =
+        match Stream.npeek 2 s with
+          ['<'; '<' | ':'] -> B.char c1
+        | _ ->
+            let (strm__ : _ Stream.t) = s in
+            match Stream.peek strm__ with
+              Some ('|' | '<' | ':' as c2) ->
+                Stream.junk strm__; B.add (B.char c1) c2
+            | _ -> B.char c1
+      in
+      keyword_or_error ctx (bp, Stream.count s) (B.get buf)
+  | Some '.' ->
+      Stream.junk strm__;
+      let id =
+        match Stream.peek strm__ with
+          Some '.' -> Stream.junk strm__; ".."
+        | _ -> if ctx.specific_space_dot && after_space then " ." else "."
+      in
+      let ep = Stream.count strm__ in keyword_or_error ctx (bp, ep) id
+  | Some ';' ->
+      Stream.junk strm__;
+      let id =
+        match Stream.peek strm__ with
+          Some ';' -> Stream.junk strm__; ";;"
+        | _ -> ";"
+      in
+      let ep = Stream.count strm__ in keyword_or_error ctx (bp, ep) id
+  | Some '\\' ->
+      Stream.junk strm__;
+      let buf = ident3 B.empty strm__ in "LIDENT", B.get buf
+  | Some c ->
+      Stream.junk strm__;
+      let ep = Stream.count strm__ in
+      keyword_or_error ctx (bp, ep) (String.make 1 c)
+  | _ -> let _ = Stream.empty strm__ in "EOI", ""
+;;
+
+let next_token_fun ctx glexr (cstrm, s_line_nb, s_bol_pos) =
+  try
+    begin match !(Token.restore_lexing_info) with
+      Some (line_nb, bol_pos) ->
+        s_line_nb := line_nb;
+        s_bol_pos := bol_pos;
+        Token.restore_lexing_info := None
+    | None -> ()
+    end;
+    Token.line_nb := s_line_nb;
+    Token.bol_pos := s_bol_pos;
+    let comm_bp = Stream.count cstrm in
+    ctx.set_line ();
+    let (r, loc) = next_token ctx false cstrm in
+    begin match !glexr.tok_comm with
+      Some list ->
+        if Stdpp.first_pos loc > comm_bp then
+          let comm_loc = Stdpp.make_loc (comm_bp, Stdpp.last_pos loc) in
+          !glexr.tok_comm <- Some (comm_loc :: list)
+    | None -> ()
+    end;
+    r, loc
+  with
+    Stream.Error str ->
+      err ctx (Stream.count cstrm, Stream.count cstrm + 1) str
+;;
+
+let func kwd_table glexr =
+  let rec ctx =
     {line_nb = 0; bol_pos = 0;
      dollar_for_antiquotation = !dollar_for_antiquotation;
      specific_space_dot = !specific_space_dot;
      find_kwd = Hashtbl.find kwd_table;
      line_cnt =
-       fun bp1 c ->
-         match c with
-           '\n' | '\r' ->
-             incr !(Token.line_nb); !(Token.bol_pos) := bp1 + 1; c
-         | c -> c}
+       (fun bp1 c ->
+          match c with
+            '\n' | '\r' ->
+              incr !(Token.line_nb); !(Token.bol_pos) := bp1 + 1; c
+          | c -> c);
+     set_line =
+       fun () ->
+         ctx.line_nb <- !(!(Token.line_nb));
+         ctx.bol_pos <- !(!(Token.bol_pos))}
   in
-  let rec next_token after_space strm =
-    ctx.line_nb <- !(!(Token.line_nb));
-    ctx.bol_pos <- !(!(Token.bol_pos));
-    let (strm__ : _ Stream.t) = strm in
-    let bp = Stream.count strm__ in
-    match Stream.peek strm__ with
-      Some ('\n' | '\r') ->
-        Stream.junk strm__;
-        let s = strm__ in
-        let ep = Stream.count strm__ in
-        incr !(Token.line_nb); !(Token.bol_pos) := ep; next_token true s
-    | Some (' ' | '\t' | '\026' | '\012') ->
-        Stream.junk strm__; next_token true strm__
-    | Some '#' when bp = !(!(Token.bol_pos)) ->
-        Stream.junk strm__;
-        let s = strm__ in
-        if linedir 1 s then begin any_to_nl s; next_token true s end
-        else
-          let loc = bp, bp + 1 in
-          (keyword_or_error ctx loc "#", loc), ctx.line_nb, ctx.bol_pos
-    | Some '(' ->
-        Stream.junk strm__;
-        begin match Stream.peek strm__ with
-          Some '*' ->
-            Stream.junk strm__;
-            let _ = comment ctx bp strm__ in next_token true strm__
-        | _ ->
-            let ep = Stream.count strm__ in
-            let loc = bp, ep in
-            (keyword_or_error ctx (bp, ep) "(", loc), !(!(Token.line_nb)),
-            !(!(Token.bol_pos))
-        end
-    | _ ->
-        let tok = next_token_kont after_space strm__ in
-        let ep = Stream.count strm__ in
-        (tok, (bp, max (bp + 1) ep)), ctx.line_nb, ctx.bol_pos
-  and next_token_kont after_space (strm__ : _ Stream.t) =
-    let bp = Stream.count strm__ in
-    match Stream.peek strm__ with
-      Some ('A'..'Z' | '\192'..'\214' | '\216'..'\222' as c) ->
-        Stream.junk strm__;
-        let buf = ident (B.char c) strm__ in
-        let id = B.get buf in
-        begin try "", ctx.find_kwd id with
-          Not_found -> "UIDENT", id
-        end
-    | Some ('a'..'z' | '\223'..'\246' | '\248'..'\255' | '_' as c) ->
-        Stream.junk strm__;
-        let buf = ident (B.char c) strm__ in
-        let id = B.get buf in
-        begin try "", ctx.find_kwd id with
-          Not_found -> "LIDENT", id
-        end
-    | Some ('1'..'9' as c) -> Stream.junk strm__; number (B.char c) strm__
-    | Some '0' ->
-        Stream.junk strm__;
-        begin match Stream.peek strm__ with
-          Some ('o' | 'O') ->
-            Stream.junk strm__; digits octal (B.string "0o") strm__
-        | Some ('x' | 'X') ->
-            Stream.junk strm__; digits hexa (B.string "0x") strm__
-        | Some ('b' | 'B') ->
-            Stream.junk strm__; digits binary (B.string "0b") strm__
-        | _ -> number (B.char '0') strm__
-        end
-    | Some '\'' ->
-        Stream.junk strm__;
-        let s = strm__ in
-        let ep = Stream.count strm__ in
-        begin match Stream.npeek 2 s with
-          [_; '\''] | ['\\'; _] -> "CHAR", B.get (char ctx bp B.empty s)
-        | _ -> keyword_or_error ctx (bp, ep) "'"
-        end
-    | Some '\"' ->
-        Stream.junk strm__;
-        let buf = string ctx bp B.empty strm__ in "STRING", B.get buf
-    | Some '$' -> Stream.junk strm__; dollar ctx bp B.empty strm__
-    | Some ('!' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' as c) ->
-        Stream.junk strm__;
-        let buf = ident2 (B.char c) strm__ in
-        let ep = Stream.count strm__ in
-        keyword_or_error ctx (bp, ep) (B.get buf)
-    | Some ('~' as c) ->
-        Stream.junk strm__;
-        begin match Stream.peek strm__ with
-          Some ('a'..'z' as c) ->
-            Stream.junk strm__;
-            let buf = ident (B.char c) strm__ in "TILDEIDENT", B.get buf
-        | _ ->
-            let buf = ident2 (B.char c) strm__ in
-            let ep = Stream.count strm__ in
-            keyword_or_error ctx (bp, ep) (B.get buf)
-        end
-    | Some ('?' as c) ->
-        Stream.junk strm__;
-        begin match Stream.peek strm__ with
-          Some ('a'..'z' as c) ->
-            Stream.junk strm__;
-            let buf = ident (B.char c) strm__ in "QUESTIONIDENT", B.get buf
-        | _ ->
-            let buf = ident2 (B.char c) strm__ in
-            let ep = Stream.count strm__ in
-            keyword_or_error ctx (bp, ep) (B.get buf)
-        end
-    | Some '<' -> Stream.junk strm__; less ctx bp strm__
-    | Some (':' as c1) ->
-        Stream.junk strm__;
-        let buf =
-          match Stream.peek strm__ with
-            Some (']' | ':' | '=' | '>' as c2) ->
-              Stream.junk strm__; B.add (B.char c1) c2
-          | _ -> B.char c1
-        in
-        let ep = Stream.count strm__ in
-        keyword_or_error ctx (bp, ep) (B.get buf)
-    | Some ('>' | '|' as c1) ->
-        Stream.junk strm__;
-        let buf =
-          match Stream.peek strm__ with
-            Some (']' | '}' as c2) -> Stream.junk strm__; B.add (B.char c1) c2
-          | _ -> ident2 (B.char c1) strm__
-        in
-        let ep = Stream.count strm__ in
-        keyword_or_error ctx (bp, ep) (B.get buf)
-    | Some ('[' | '{' as c1) ->
-        Stream.junk strm__;
-        let s = strm__ in
-        let buf =
-          match Stream.npeek 2 s with
-            ['<'; '<' | ':'] -> B.char c1
-          | _ ->
-              let (strm__ : _ Stream.t) = s in
-              match Stream.peek strm__ with
-                Some ('|' | '<' | ':' as c2) ->
-                  Stream.junk strm__; B.add (B.char c1) c2
-              | _ -> B.char c1
-        in
-        keyword_or_error ctx (bp, Stream.count s) (B.get buf)
-    | Some '.' ->
-        Stream.junk strm__;
-        let id =
-          match Stream.peek strm__ with
-            Some '.' -> Stream.junk strm__; ".."
-          | _ -> if ctx.specific_space_dot && after_space then " ." else "."
-        in
-        let ep = Stream.count strm__ in keyword_or_error ctx (bp, ep) id
-    | Some ';' ->
-        Stream.junk strm__;
-        let id =
-          match Stream.peek strm__ with
-            Some ';' -> Stream.junk strm__; ";;"
-          | _ -> ";"
-        in
-        let ep = Stream.count strm__ in keyword_or_error ctx (bp, ep) id
-    | Some '\\' ->
-        Stream.junk strm__;
-        let buf = ident3 B.empty strm__ in "LIDENT", B.get buf
-    | Some c ->
-        Stream.junk strm__;
-        let ep = Stream.count strm__ in
-        keyword_or_error ctx (bp, ep) (String.make 1 c)
-    | _ -> let _ = Stream.empty strm__ in "EOI", ""
-  and linedir n s =
-    match stream_peek_nth n s with
-      Some (' ' | '\t') -> linedir (n + 1) s
-    | Some ('0'..'9') -> linedir_digits (n + 1) s
-    | _ -> false
-  and linedir_digits n s =
-    match stream_peek_nth n s with
-      Some ('0'..'9') -> linedir_digits (n + 1) s
-    | _ -> linedir_quote n s
-  and linedir_quote n s =
-    match stream_peek_nth n s with
-      Some (' ' | '\t') -> linedir_quote (n + 1) s
-    | Some '\"' -> true
-    | _ -> false
-  and any_to_nl (strm__ : _ Stream.t) =
-    match Stream.peek strm__ with
-      Some ('\r' | '\n') ->
-        Stream.junk strm__;
-        let ep = Stream.count strm__ in !(Token.bol_pos) := ep
-    | Some _ -> Stream.junk strm__; any_to_nl strm__
-    | _ -> ()
-  in
-  fun (cstrm, s_line_nb, s_bol_pos) ->
-    try
-      begin match !(Token.restore_lexing_info) with
-        Some (line_nb, bol_pos) ->
-          s_line_nb := line_nb;
-          s_bol_pos := bol_pos;
-          Token.restore_lexing_info := None
-      | None -> ()
-      end;
-      Token.line_nb := s_line_nb;
-      Token.bol_pos := s_bol_pos;
-      let glex = !glexr in
-      let comm_bp = Stream.count cstrm in
-      let ((r, loc), t_line_nb, t_bol_pos) = next_token false cstrm in
-      begin match glex.tok_comm with
-        Some list ->
-          if fst loc > comm_bp then
-            let comm_loc = Stdpp.make_loc (comm_bp, fst loc) in
-            glex.tok_comm <- Some (comm_loc :: list)
-      | None -> ()
-      end;
-      r, make_lined_loc t_line_nb t_bol_pos loc
-    with
-      Stream.Error str ->
-        err ctx (Stream.count cstrm, Stream.count cstrm + 1) str
-;;
-
-let func kwd_table glexr =
-  Token.lexer_func_of_parser (next_token_fun kwd_table glexr)
+  Token.lexer_func_of_parser (next_token_fun ctx glexr)
 ;;
 
 let rec check_keyword_stream (strm__ : _ Stream.t) =
@@ -946,11 +961,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 707, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 707, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 707, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 708, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 708, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 727, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 727, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 727, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 728, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 728, 37)));
        tok_comm = None}
   in
   let glex =
