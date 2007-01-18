@@ -93,12 +93,8 @@ let stream_peek_nth n strm =
 ;;
 
 let p_opt f buf (strm__ : _ Stream.t) =
-  match
-    try Some (f buf strm__) with
-      Stream.Failure -> None
-  with
-    Some c -> buf
-  | _ -> buf
+  try f buf strm__ with
+    Stream.Failure -> buf
 ;;
 
 let rec decimal_digits_under buf (strm__ : _ Stream.t) =

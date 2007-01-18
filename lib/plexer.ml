@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.38 2007/01/09 08:46:21 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.39 2007/01/18 13:55:18 deraugla Exp $ *)
 
 open Token;
 
@@ -89,7 +89,7 @@ value stream_peek_nth n strm =
 
 value p_opt f buf =
   parser
-  [ [: c = f buf :] -> buf
+  [ [: buf = f buf :] -> buf
   | [: :] -> buf ]
 ;
 
