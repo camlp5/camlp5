@@ -19,8 +19,8 @@ pa_o.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi
 pa_o.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
 pa_oop.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
 pa_oop.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
-pa_op.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
-pa_op.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
+pa_op.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi ../camlp4/exparser.cmi 
+pa_op.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi ../camlp4/exparser.cmx 
 parserify.cmo: ../camlp4/mLast.cmi parserify.cmi 
 parserify.cmx: ../camlp4/mLast.cmi parserify.cmi 
 pa_ru.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
