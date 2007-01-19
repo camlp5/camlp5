@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.41 2007/01/19 11:43:42 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.42 2007/01/19 14:48:33 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -185,7 +185,11 @@ value instanciate loc s t = do {
 
 value rec unify loc t1 t2 =
   match (eval_type loc t1, eval_type loc t2) with 
-  [ (<:ctyp< $t11$ $t12$ >>, <:ctyp< $t21$ $t22$ >>) ->
+  [ (<:ctyp< MLast.loc >>, t2) ->
+      let t1 = <:ctyp< Token.location >> in
+      unify loc t1 t2
+
+  | (<:ctyp< $t11$ $t12$ >>, <:ctyp< $t21$ $t22$ >>) ->
       unify loc t11 t21 && unify loc t12 t22
   | (<:ctyp< $t11$ . $t12$ >>, <:ctyp< $t21$ . $t22$ >>) ->
       unify loc t11 t21 && unify loc t12 t22
@@ -218,7 +222,7 @@ value rec unify loc t1 t2 =
   | (<:ctyp< MLast.type_decl >>, t2) ->
       let t1 =
         <:ctyp<
-          ((Token.location * string) *
+          ((MLast.loc * string) *
            list (string * (bool * bool)) *
            MLast.ctyp *
            list (MLast.ctyp * MLast.ctyp)) >>
@@ -325,6 +329,37 @@ value val_tab = do {
       fun loc ->
         {ctyp = <:ctyp< Grammar.Entry.e MLast.ctyp >>;
          expr = Obj.repr Pcaml.ctyp;
+         patt = no_patt loc});
+     ("Exparser.cparser",
+      fun loc ->
+        {ctyp =
+           <:ctyp<
+             MLast.loc -> option MLast.patt ->
+               list
+                 (list (Exparser.spat_comp * option (option MLast.expr)) *
+                  option MLast.patt * MLast.expr) ->
+               MLast.expr >>;
+         expr = Obj.repr Exparser.cparser;
+         patt = no_patt loc});
+     ("Exparser.SpNtr",
+      fun loc ->
+        {ctyp =
+           <:ctyp<
+             MLast.loc -> MLast.patt -> MLast.expr -> Exparser.spat_comp >>;
+         expr = Obj.repr (fun loc p e -> Exparser.SpNtr loc p e);
+         patt = no_patt loc});
+     ("Exparser.SpStr",
+      fun loc ->
+        {ctyp = <:ctyp< MLast.loc -> MLast.patt -> Exparser.spat_comp >>;
+         expr = Obj.repr (fun loc p -> Exparser.SpStr loc p);
+         patt = no_patt loc});
+     ("Exparser.SpTrm",
+      fun loc ->
+        {ctyp =
+           <:ctyp<
+             MLast.loc -> MLast.patt -> option MLast.expr ->
+               Exparser.spat_comp >>;
+         expr = Obj.repr (fun loc p eo -> Exparser.SpTrm loc p eo);
          patt = no_patt loc});
      ("expr",
       fun loc ->
@@ -524,12 +559,12 @@ value val_tab = do {
      ("MLast.ExAcc",
       fun loc ->
         {ctyp =
-           <:ctyp< Token.location -> MLast.expr -> MLast.expr -> MLast.expr >>;
+           <:ctyp< MLast.loc -> MLast.expr -> MLast.expr -> MLast.expr >>;
          expr = Obj.repr (fun loc e1 e2 -> MLast.ExAcc loc e1 e2);
          patt = no_patt loc});
      ("MLast.ExApp",
       fun loc ->
-        let t1 = <:ctyp< Token.location >> in
+        let t1 = <:ctyp< MLast.loc >> in
         let t2 = <:ctyp< MLast.expr >> in
         let t3 = <:ctyp< MLast.expr >> in
         {ctyp = <:ctyp< $t1$ -> $t2$ -> $t3$ -> MLast.expr >>;
@@ -542,14 +577,14 @@ value val_tab = do {
            | _ -> None ]});
      ("MLast.ExChr",
       fun loc ->
-        {ctyp = <:ctyp< Token.location -> string -> MLast.expr >>;
+        {ctyp = <:ctyp< MLast.loc -> string -> MLast.expr >>;
          expr = Obj.repr (fun loc s -> MLast.ExChr loc s);
          patt = no_patt loc});
      ("MLast.ExFun",
       fun loc ->
         {ctyp =
            <:ctyp<
-             Token.location ->
+             MLast.loc ->
                list (MLast.patt * option MLast.expr * MLast.expr) ->
                MLast.expr >>;
          expr = Obj.repr (fun loc pel -> MLast.ExFun loc pel);
@@ -558,7 +593,7 @@ value val_tab = do {
       fun loc ->
         {ctyp =
            <:ctyp<
-             Token.location -> MLast.expr -> MLast.expr -> MLast.expr ->
+             MLast.loc -> MLast.expr -> MLast.expr -> MLast.expr ->
                MLast.expr >>;
          expr = Obj.repr (fun loc e1 e2 e3 -> MLast.ExIfe loc e1 e2 e3);
          patt = no_patt loc});
@@ -566,13 +601,13 @@ value val_tab = do {
       fun loc ->
         {ctyp =
            <:ctyp<
-             Token.location -> bool -> list (MLast.patt * MLast.expr) ->
+             MLast.loc -> bool -> list (MLast.patt * MLast.expr) ->
                MLast.expr -> MLast.expr >>;
          expr = Obj.repr (fun loc rf pel e -> MLast.ExLet loc rf pel e);
          patt = no_patt loc});
      ("MLast.ExLid",
       fun loc ->
-        let t1 = <:ctyp< Token.location >> in
+        let t1 = <:ctyp< MLast.loc >> in
         let t2 = <:ctyp< string >> in
         {ctyp = <:ctyp< $t1$ -> $t2$ -> MLast.expr >>;
          expr = Obj.repr (fun loc s -> MLast.ExLid loc s);
@@ -585,53 +620,53 @@ value val_tab = do {
       fun loc ->
         {ctyp =
            <:ctyp<
-             Token.location -> list (MLast.patt * MLast.expr) ->
+             MLast.loc -> list (MLast.patt * MLast.expr) ->
                option MLast.expr -> MLast.expr >>;
          expr = Obj.repr (fun loc lel eo -> MLast.ExRec loc lel eo);
          patt = no_patt loc});
      ("MLast.ExStr",
       fun loc ->
-        {ctyp = <:ctyp< Token.location -> string -> MLast.expr >>;
+        {ctyp = <:ctyp< MLast.loc -> string -> MLast.expr >>;
          expr = Obj.repr (fun loc s -> MLast.ExStr loc s);
          patt = no_patt loc});
      ("MLast.ExTry",
       fun loc ->
         {ctyp =
            <:ctyp<
-             Token.location -> MLast.expr ->
+             MLast.loc -> MLast.expr ->
                list (MLast.patt * option MLast.expr * MLast.expr) ->
                MLast.expr >>;
          expr = Obj.repr (fun loc e pel -> MLast.ExTry loc e pel);
          patt = no_patt loc});
      ("MLast.ExTup",
       fun loc ->
-        {ctyp = <:ctyp< Token.location -> list MLast.expr -> MLast.expr >>;
+        {ctyp = <:ctyp< MLast.loc -> list MLast.expr -> MLast.expr >>;
          expr = Obj.repr (fun loc el -> MLast.ExTup loc el);
          patt = no_patt loc});
      ("MLast.ExTyc",
       fun loc ->
         {ctyp =
            <:ctyp<
-             Token.location -> MLast.expr -> MLast.ctyp -> MLast.expr >>;
+             MLast.loc -> MLast.expr -> MLast.ctyp -> MLast.expr >>;
          expr = Obj.repr (fun loc e t -> MLast.ExTyc loc e t);
          patt = no_patt loc});
      ("MLast.ExUid",
       fun loc ->
-        {ctyp = <:ctyp< Token.location -> string -> MLast.expr >>;
+        {ctyp = <:ctyp< MLast.loc -> string -> MLast.expr >>;
          expr = Obj.repr (fun loc s -> MLast.ExUid loc s);
          patt = no_patt loc});
      ("MLast.MeStr",
       fun loc ->
         {ctyp =
            <:ctyp<
-             Token.location -> list MLast.str_item -> MLast.module_expr >>;
+             MLast.loc -> list MLast.str_item -> MLast.module_expr >>;
          expr = Obj.repr (fun loc sil -> MLast.MeStr loc sil);
          patt = no_patt loc});
      ("MLast.MeTyc",
       fun loc ->
         {ctyp =
            <:ctyp<
-             Token.location -> MLast.module_expr -> MLast.module_type ->
+             MLast.loc -> MLast.module_expr -> MLast.module_type ->
                MLast.module_expr >>;
          expr = Obj.repr (fun loc me mt -> MLast.MeTyc loc me mt);
          patt = no_patt loc});
@@ -639,88 +674,88 @@ value val_tab = do {
       fun loc ->
         {ctyp =
            <:ctyp<
-             Token.location -> list MLast.sig_item -> MLast.module_type >>;
+             MLast.loc -> list MLast.sig_item -> MLast.module_type >>;
          expr = Obj.repr (fun loc sil -> MLast.MtSig loc sil);
          patt = no_patt loc});
      ("MLast.PaAcc",
       fun loc ->
         {ctyp =
            <:ctyp<
-             Token.location -> MLast.patt -> MLast.patt -> MLast.patt >>;
+             MLast.loc -> MLast.patt -> MLast.patt -> MLast.patt >>;
          expr = Obj.repr (fun loc p1 p2 -> MLast.PaAcc loc p1 p2);
          patt = no_patt loc});
      ("MLast.PaAny",
       fun loc ->
-        {ctyp = <:ctyp< Token.location -> MLast.patt >>;
+        {ctyp = <:ctyp< MLast.loc -> MLast.patt >>;
          expr = Obj.repr (fun loc -> MLast.PaAny loc);
          patt = no_patt loc});
      ("MLast.PaApp",
       fun loc ->
         {ctyp =
            <:ctyp<
-             Token.location -> MLast.patt -> MLast.patt -> MLast.patt >>;
+             MLast.loc -> MLast.patt -> MLast.patt -> MLast.patt >>;
          expr = Obj.repr (fun loc p1 p2 -> MLast.PaApp loc p1 p2);
          patt = no_patt loc});
      ("MLast.PaChr",
       fun loc ->
-        {ctyp = <:ctyp< Token.location -> string -> MLast.patt >>;
+        {ctyp = <:ctyp< MLast.loc -> string -> MLast.patt >>;
          expr = Obj.repr (fun loc s -> MLast.PaChr loc s);
          patt = no_patt loc});
      ("MLast.PaLid",
       fun loc ->
-        {ctyp = <:ctyp< Token.location -> string -> MLast.patt >>;
+        {ctyp = <:ctyp< MLast.loc -> string -> MLast.patt >>;
          expr = Obj.repr (fun loc s -> MLast.PaLid loc s);
          patt = no_patt loc});
      ("MLast.PaOrp",
       fun loc ->
         {ctyp =
            <:ctyp<
-             Token.location -> MLast.patt -> MLast.patt -> MLast.patt >>;
+             MLast.loc -> MLast.patt -> MLast.patt -> MLast.patt >>;
          expr = Obj.repr (fun loc p1 p2 -> MLast.PaOrp loc p1 p2);
          patt = no_patt loc});
      ("MLast.PaRng",
       fun loc ->
         {ctyp =
            <:ctyp<
-             Token.location -> MLast.patt -> MLast.patt -> MLast.patt >>;
+             MLast.loc -> MLast.patt -> MLast.patt -> MLast.patt >>;
          expr = Obj.repr (fun loc p1 p2 -> MLast.PaRng loc p1 p2);
          patt = no_patt loc});
      ("MLast.PaTup",
       fun loc ->
-        {ctyp = <:ctyp< Token.location -> list MLast.patt -> MLast.patt >>;
+        {ctyp = <:ctyp< MLast.loc -> list MLast.patt -> MLast.patt >>;
          expr = Obj.repr (fun loc pl -> MLast.PaTup loc pl);
          patt = no_patt loc});
      ("MLast.PaTyc",
       fun loc ->
         {ctyp =
            <:ctyp<
-             Token.location -> MLast.patt -> MLast.ctyp -> MLast.patt >>;
+             MLast.loc -> MLast.patt -> MLast.ctyp -> MLast.patt >>;
          expr = Obj.repr (fun loc p t -> MLast.PaTyc loc p t);
          patt = no_patt loc});
      ("MLast.PaUid",
       fun loc ->
-        {ctyp = <:ctyp< Token.location -> string -> MLast.patt >>;
+        {ctyp = <:ctyp< MLast.loc -> string -> MLast.patt >>;
          expr = Obj.repr (fun loc s -> MLast.PaUid loc s);
          patt = no_patt loc});
      ("MLast.SgVal",
       fun loc ->
         {ctyp =
            <:ctyp<
-             Token.location -> string -> MLast.ctyp -> MLast.sig_item >>;
+             MLast.loc -> string -> MLast.ctyp -> MLast.sig_item >>;
          expr = Obj.repr (fun loc s t -> MLast.SgVal loc s t);
          patt = no_patt loc});
      ("MLast.StDcl",
       fun loc ->
         {ctyp =
            <:ctyp<
-             Token.location -> list MLast.str_item -> MLast.str_item >>;
+             MLast.loc -> list MLast.str_item -> MLast.str_item >>;
          expr = Obj.repr (fun loc sil -> MLast.StDcl loc sil);
          patt = no_patt loc});
      ("MLast.StMod",
       fun loc ->
         {ctyp =
            <:ctyp<
-             Token.location -> bool -> list (string * MLast.module_expr) ->
+             MLast.loc -> bool -> list (string * MLast.module_expr) ->
                MLast.str_item >>;
          expr = Obj.repr (fun loc rf mel -> MLast.StMod loc rf mel);
          patt = no_patt loc});
@@ -728,14 +763,14 @@ value val_tab = do {
       fun loc ->
         {ctyp =
            <:ctyp<
-             Token.location -> list MLast.type_decl -> MLast.str_item >>;
+             MLast.loc -> list MLast.type_decl -> MLast.str_item >>;
          expr = Obj.repr (fun loc tdl -> MLast.StTyp loc tdl);
          patt = no_patt loc});
      ("MLast.StVal",
       fun loc ->
         {ctyp =
            <:ctyp<
-             Token.location -> bool -> list (MLast.patt * MLast.expr) ->
+             MLast.loc -> bool -> list (MLast.patt * MLast.expr) ->
                MLast.str_item >>;
          expr = Obj.repr (fun loc rf pel -> MLast.StVal loc rf pel);
          patt = no_patt loc});
@@ -743,50 +778,50 @@ value val_tab = do {
       fun loc ->
         {ctyp =
            <:ctyp<
-             Token.location -> MLast.ctyp -> MLast.ctyp -> MLast.ctyp >>;
+             MLast.loc -> MLast.ctyp -> MLast.ctyp -> MLast.ctyp >>;
          expr = Obj.repr (fun loc t1 t2 -> MLast.TyAcc loc t1 t2);
          patt = no_patt loc});
      ("MLast.TyAny",
       fun loc ->
-        {ctyp = <:ctyp< Token.location -> MLast.ctyp >>;
+        {ctyp = <:ctyp< MLast.loc -> MLast.ctyp >>;
          expr = Obj.repr (fun loc -> MLast.TyAny loc);
          patt = no_patt loc});
      ("MLast.TyApp",
       fun loc ->
         {ctyp =
            <:ctyp<
-             Token.location -> MLast.ctyp -> MLast.ctyp -> MLast.ctyp >>;
+             MLast.loc -> MLast.ctyp -> MLast.ctyp -> MLast.ctyp >>;
          expr = Obj.repr (fun loc t1 t2 -> MLast.TyApp loc t1 t2);
          patt = no_patt loc});
      ("MLast.TyArr",
       fun loc ->
         {ctyp =
            <:ctyp<
-             Token.location -> MLast.ctyp -> MLast.ctyp -> MLast.ctyp >>;
+             MLast.loc -> MLast.ctyp -> MLast.ctyp -> MLast.ctyp >>;
          expr = Obj.repr (fun loc t1 t2 -> MLast.TyArr loc t1 t2);
          patt = no_patt loc});
      ("MLast.TyLid",
       fun loc ->
-        {ctyp = <:ctyp< Token.location -> string -> MLast.ctyp >>;
+        {ctyp = <:ctyp< MLast.loc -> string -> MLast.ctyp >>;
          expr = Obj.repr (fun loc s -> MLast.TyLid loc s);
          patt = no_patt loc});
      ("MLast.TyQuo",
       fun loc ->
-        {ctyp = <:ctyp< Token.location -> string -> MLast.ctyp >>;
+        {ctyp = <:ctyp< MLast.loc -> string -> MLast.ctyp >>;
          expr = Obj.repr (fun loc s -> MLast.TyQuo loc s);
          patt = no_patt loc});
      ("MLast.TyRec",
       fun loc ->
         {ctyp =
            <:ctyp<
-             Token.location ->
-               list (Token.location * string * bool * MLast.ctyp) ->
+             MLast.loc ->
+               list (MLast.loc * string * bool * MLast.ctyp) ->
                MLast.ctyp >>;
          expr = Obj.repr (fun loc ldl -> MLast.TyRec loc ldl);
          patt = no_patt loc});
      ("MLast.TyUid",
       fun loc ->
-        {ctyp = <:ctyp< Token.location -> string -> MLast.ctyp >>;
+        {ctyp = <:ctyp< MLast.loc -> string -> MLast.ctyp >>;
          expr = Obj.repr (fun loc s -> MLast.TyUid loc s);
          patt = no_patt loc});
      ("module_expr",
@@ -868,7 +903,7 @@ value val_tab = do {
          patt = no_patt loc});
      ("Stdpp.raise_with_loc",
       fun loc ->
-        {ctyp = <:ctyp< Token.location -> exn -> _ >>;
+        {ctyp = <:ctyp< MLast.loc -> exn -> _ >>;
          expr = Obj.repr Stdpp.raise_with_loc;
          patt = no_patt loc});
      ("str_item",
