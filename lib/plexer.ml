@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.39 2007/01/18 13:55:18 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.40 2007/01/19 09:22:28 deraugla Exp $ *)
 
 open Token;
 
@@ -87,12 +87,6 @@ value stream_peek_nth n strm =
     | [_ :: l] -> loop (n - 1) l ]
 ;
 
-value p_opt f buf =
-  parser
-  [ [: buf = f buf :] -> buf
-  | [: :] -> buf ]
-;
-
 value rec decimal_digits_under buf =
   parser
   [ [: `('0'..'9' | '_' as c);
@@ -141,8 +135,9 @@ value exponent_part buf =
   parser
   [ [: `('e' | 'E' as c);
        buf =
-         p_opt (fun buf -> parser [: `('+' | '-' as c) :] -> B.add buf c)
-           (B.add buf c) !;
+         parser
+         [ [: `('+' | '-' as c1) :] -> B.add (B.add buf c) c1
+         | [: :] -> B.add buf c ] !;
        buf =
          parser
          [ [: `('0'..'9' as c);
@@ -156,7 +151,10 @@ value number buf =
        tok =
          parser
          [ [: `'.'; buf = decimal_digits_under (B.add buf '.') !;
-              buf = p_opt exponent_part buf ! :] -> ("FLOAT", B.get buf)
+              buf =
+                parser
+                [ [: buf = exponent_part buf :] -> buf
+                | [: :] -> buf ] ! :] -> ("FLOAT", B.get buf)
          | [: buf = exponent_part buf :] -> ("FLOAT", B.get buf)
          | [: `'l' :] -> ("INT_l", B.get buf)
          | [: `'L' :] -> ("INT_L", B.get buf)
