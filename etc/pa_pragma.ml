@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.40 2007/01/03 01:21:47 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.41 2007/01/19 11:43:42 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -234,14 +234,26 @@ value rec unify loc t1 t2 =
   | (t1, t2) -> False ]
 ;
 
-value no_patt loc _ =
+value no_patt loc eval_patt env pl param =
   error loc
-    "pattern matching not implemented for that constructor; please report"
+    (sprintf
+       "pattern matching not implemented for that constructor (%s)"
+       (string_of_obj_tag param) ^ "\nplease report")
 ;
 
 value std_patt c eval_patt env pl param =
   match pl with
   [ [] -> if Obj.magic param = Obj.magic c then Some env else None
+  | _ -> None ]
+;
+
+value rec serial eval_patt env pl tl el =
+  match (pl, tl, el) with
+  [ ([p :: pl], [t :: tl], [e :: el]) ->
+      match eval_patt env p t e with
+      [ Some env -> serial eval_patt env pl tl el
+      | None -> None ]
+  | ([], [], []) -> Some env
   | _ -> None ]
 ;
 
@@ -517,9 +529,21 @@ value val_tab = do {
          patt = no_patt loc});
      ("MLast.ExApp",
       fun loc ->
-        {ctyp =
-           <:ctyp< Token.location -> MLast.expr -> MLast.expr -> MLast.expr >>;
+        let t1 = <:ctyp< Token.location >> in
+        let t2 = <:ctyp< MLast.expr >> in
+        let t3 = <:ctyp< MLast.expr >> in
+        {ctyp = <:ctyp< $t1$ -> $t2$ -> $t3$ -> MLast.expr >>;
          expr = Obj.repr (fun loc e1 e2 -> MLast.ExApp loc e1 e2);
+         patt eval_patt env pl param =
+           match Obj.magic param with
+           [ MLast.ExApp loc e1 e2 ->
+              serial eval_patt env pl [t1; t2; t3]
+                [Obj.repr loc; Obj.repr e1; Obj.repr e2]
+           | _ -> None ]});
+     ("MLast.ExChr",
+      fun loc ->
+        {ctyp = <:ctyp< Token.location -> string -> MLast.expr >>;
+         expr = Obj.repr (fun loc s -> MLast.ExChr loc s);
          patt = no_patt loc});
      ("MLast.ExFun",
       fun loc ->
@@ -548,9 +572,15 @@ value val_tab = do {
          patt = no_patt loc});
      ("MLast.ExLid",
       fun loc ->
-        {ctyp = <:ctyp< Token.location -> string -> MLast.expr >>;
+        let t1 = <:ctyp< Token.location >> in
+        let t2 = <:ctyp< string >> in
+        {ctyp = <:ctyp< $t1$ -> $t2$ -> MLast.expr >>;
          expr = Obj.repr (fun loc s -> MLast.ExLid loc s);
-         patt = no_patt loc});
+         patt eval_patt env pl param =
+           match Obj.magic param with
+           [ MLast.ExLid loc s ->
+              serial eval_patt env pl [t1; t2] [Obj.repr loc; Obj.repr s]
+           | _ -> None ]});
      ("MLast.ExRec",
       fun loc ->
         {ctyp =
@@ -558,6 +588,20 @@ value val_tab = do {
              Token.location -> list (MLast.patt * MLast.expr) ->
                option MLast.expr -> MLast.expr >>;
          expr = Obj.repr (fun loc lel eo -> MLast.ExRec loc lel eo);
+         patt = no_patt loc});
+     ("MLast.ExStr",
+      fun loc ->
+        {ctyp = <:ctyp< Token.location -> string -> MLast.expr >>;
+         expr = Obj.repr (fun loc s -> MLast.ExStr loc s);
+         patt = no_patt loc});
+     ("MLast.ExTry",
+      fun loc ->
+        {ctyp =
+           <:ctyp<
+             Token.location -> MLast.expr ->
+               list (MLast.patt * option MLast.expr * MLast.expr) ->
+               MLast.expr >>;
+         expr = Obj.repr (fun loc e pel -> MLast.ExTry loc e pel);
          patt = no_patt loc});
      ("MLast.ExTup",
       fun loc ->
@@ -598,10 +642,24 @@ value val_tab = do {
              Token.location -> list MLast.sig_item -> MLast.module_type >>;
          expr = Obj.repr (fun loc sil -> MLast.MtSig loc sil);
          patt = no_patt loc});
+     ("MLast.PaAcc",
+      fun loc ->
+        {ctyp =
+           <:ctyp<
+             Token.location -> MLast.patt -> MLast.patt -> MLast.patt >>;
+         expr = Obj.repr (fun loc p1 p2 -> MLast.PaAcc loc p1 p2);
+         patt = no_patt loc});
      ("MLast.PaAny",
       fun loc ->
         {ctyp = <:ctyp< Token.location -> MLast.patt >>;
          expr = Obj.repr (fun loc -> MLast.PaAny loc);
+         patt = no_patt loc});
+     ("MLast.PaApp",
+      fun loc ->
+        {ctyp =
+           <:ctyp<
+             Token.location -> MLast.patt -> MLast.patt -> MLast.patt >>;
+         expr = Obj.repr (fun loc p1 p2 -> MLast.PaApp loc p1 p2);
          patt = no_patt loc});
      ("MLast.PaChr",
       fun loc ->
@@ -681,10 +739,24 @@ value val_tab = do {
                MLast.str_item >>;
          expr = Obj.repr (fun loc rf pel -> MLast.StVal loc rf pel);
          patt = no_patt loc});
+     ("MLast.TyAcc",
+      fun loc ->
+        {ctyp =
+           <:ctyp<
+             Token.location -> MLast.ctyp -> MLast.ctyp -> MLast.ctyp >>;
+         expr = Obj.repr (fun loc t1 t2 -> MLast.TyAcc loc t1 t2);
+         patt = no_patt loc});
      ("MLast.TyAny",
       fun loc ->
         {ctyp = <:ctyp< Token.location -> MLast.ctyp >>;
          expr = Obj.repr (fun loc -> MLast.TyAny loc);
+         patt = no_patt loc});
+     ("MLast.TyApp",
+      fun loc ->
+        {ctyp =
+           <:ctyp<
+             Token.location -> MLast.ctyp -> MLast.ctyp -> MLast.ctyp >>;
+         expr = Obj.repr (fun loc t1 t2 -> MLast.TyApp loc t1 t2);
          patt = no_patt loc});
      ("MLast.TyArr",
       fun loc ->
@@ -711,6 +783,11 @@ value val_tab = do {
                list (Token.location * string * bool * MLast.ctyp) ->
                MLast.ctyp >>;
          expr = Obj.repr (fun loc ldl -> MLast.TyRec loc ldl);
+         patt = no_patt loc});
+     ("MLast.TyUid",
+      fun loc ->
+        {ctyp = <:ctyp< Token.location -> string -> MLast.ctyp >>;
+         expr = Obj.repr (fun loc s -> MLast.TyUid loc s);
          patt = no_patt loc});
      ("module_expr",
       fun loc ->
@@ -965,11 +1042,14 @@ and eval_let loc env rf pel e =
       loop [] pel where rec loop extra_env =
         fun
         [ [(p, e) :: pel] ->
-            match p with
-            [ <:patt< $lid:s$ >> ->
-                [(s, {by_let = True; valu = Obj.magic e}) :: extra_env]
-            | <:patt< _ >> -> extra_env
-            | p -> not_impl loc "15/patt" p ]
+            let extra_env =
+              match p with
+              [ <:patt< $lid:s$ >> ->
+                  [(s, {by_let = True; valu = Obj.magic e}) :: extra_env]
+              | <:patt< _ >> -> extra_env
+              | p -> not_impl loc "15/patt" p ]
+            in
+            loop extra_env pel
         | [] -> extra_env ]
     in
     let new_env = List.rev_append extra_env env in
@@ -1111,6 +1191,11 @@ and eval_patt env p tp param =
           let t = <:ctyp< int >> in
           if unify loc t tp then
             if int_of_string s = Obj.magic param then Some env else None
+          else bad_type loc t tp
+      | <:patt< $str:s$ >> ->
+          let t = <:ctyp< string >> in
+          if unify loc t tp then
+            if s = Obj.magic param then Some env else None
           else bad_type loc t tp
       | <:patt< $lid:s$ >> ->
           let v = {ctyp = tp; expr = param; patt = no_patt loc} in
