@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.42 2007/01/19 14:48:33 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.43 2007/01/19 15:23:39 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -355,12 +355,17 @@ value val_tab = do {
          patt = no_patt loc});
      ("Exparser.SpTrm",
       fun loc ->
-        {ctyp =
-           <:ctyp<
-             MLast.loc -> MLast.patt -> option MLast.expr ->
-               Exparser.spat_comp >>;
+        let t1 = <:ctyp< MLast.loc >> in
+        let t2 = <:ctyp< MLast.patt >> in
+        let t3 = <:ctyp< option MLast.expr >> in
+        {ctyp = <:ctyp< $t1$ -> $t2$ -> $t3$ -> Exparser.spat_comp >>;
          expr = Obj.repr (fun loc p eo -> Exparser.SpTrm loc p eo);
-         patt = no_patt loc});
+         patt eval_patt env pl param =
+           match Obj.magic param with
+           [ Exparser.SpTrm loc p eo ->
+              serial eval_patt env pl [t1; t2; t3]
+                [Obj.repr loc; Obj.repr p; Obj.repr eo]
+           | _ -> None ]});
      ("expr",
       fun loc ->
         {ctyp = <:ctyp< Grammar.Entry.e MLast.expr >>;
@@ -556,6 +561,12 @@ value val_tab = do {
         {ctyp = <:ctyp< $ta$ -> list $ta$ -> bool >>;
          expr = Obj.repr List.mem;
          patt = no_patt loc});
+     ("List.rev",
+      fun loc ->
+        let ta = ty_var () in
+        {ctyp = <:ctyp< $ta$ -> list $ta$ >>;
+         expr = Obj.repr List.rev;
+         patt = no_patt loc});
      ("MLast.ExAcc",
       fun loc ->
         {ctyp =
@@ -683,6 +694,13 @@ value val_tab = do {
            <:ctyp<
              MLast.loc -> MLast.patt -> MLast.patt -> MLast.patt >>;
          expr = Obj.repr (fun loc p1 p2 -> MLast.PaAcc loc p1 p2);
+         patt = no_patt loc});
+     ("MLast.PaAli",
+      fun loc ->
+        {ctyp =
+           <:ctyp<
+             MLast.loc -> MLast.patt -> MLast.patt -> MLast.patt >>;
+         expr = Obj.repr (fun loc p1 p2 -> MLast.PaAli loc p1 p2);
          patt = no_patt loc});
      ("MLast.PaAny",
       fun loc ->

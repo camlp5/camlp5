@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.6 2006/12/12 14:19:56 deraugla Exp $
+# $Id: Makefile,v 1.7 2007/01/19 15:23:39 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -6,7 +6,7 @@ include ../config/Makefile
 INCLUDES=-I ../camlp4 -I ../boot -I $(OTOP)/utils -I $(OTOP)/parsing -I $(OTOP)/typing -I $(OTOP)/toplevel
 OCAMLCFLAGS=-warn-error A $(INCLUDES)
 
-CAMLP4_OBJS=$(OTOP)/utils/pconfig.cmo ../boot/stdpp.cmo ../boot/token.cmo ../boot/plexer.cmo ../boot/gramext.cmo ../boot/grammar.cmo ../boot/extfold.cmo ../boot/extfun.cmo ../boot/fstream.cmo ../camlp4/quotation.cmo ../camlp4/ast2pt.cmo ../camlp4/reloc.cmo ../camlp4/spretty.cmo ../camlp4/pcaml.cmo
+CAMLP4_OBJS=$(OTOP)/utils/pconfig.cmo ../boot/stdpp.cmo ../boot/token.cmo ../boot/plexer.cmo ../boot/gramext.cmo ../boot/grammar.cmo ../boot/extfold.cmo ../boot/extfun.cmo ../boot/fstream.cmo ../camlp4/quotation.cmo ../camlp4/ast2pt.cmo ../camlp4/reloc.cmo ../camlp4/exparser.cmo ../camlp4/spretty.cmo ../camlp4/pcaml.cmo
 CTOP=camlp4_top.cmo
 ROBJS=$(CAMLP4_OBJS) ../meta/pa_r.cmo ../meta/pa_rp.cmo rprint.cmo $(CTOP)
 OOBJS=$(CAMLP4_OBJS) ../etc/pa_o.cmo ../etc/pa_op.cmo $(CTOP)
