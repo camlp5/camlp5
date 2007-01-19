@@ -164,14 +164,10 @@ let exponent_part buf (strm__ : _ Stream.t) =
           Some ('+' | '-' as c1) -> Stream.junk strm__; B.add (B.add buf c) c1
         | _ -> B.add buf c
       in
-      begin try
-        match Stream.peek strm__ with
-          Some ('0'..'9' as c) ->
-            Stream.junk strm__; decimal_digits_under (B.add buf c) strm__
-        | _ -> raise Stream.Failure
-      with
-        Stream.Failure ->
-          raise (Stream.Error "ill-formed floating-point constant")
+      begin match Stream.peek strm__ with
+        Some ('0'..'9' as c) ->
+          Stream.junk strm__; decimal_digits_under (B.add buf c) strm__
+      | _ -> raise (Stream.Error "ill-formed floating-point constant")
       end
   | _ -> raise Stream.Failure
 ;;
@@ -954,11 +950,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 727, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 727, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 727, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 728, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 728, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 724, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 724, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 724, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 725, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 725, 37)));
        tok_comm = None}
   in
   let glex =

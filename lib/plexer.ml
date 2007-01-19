@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.40 2007/01/19 09:22:28 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.41 2007/01/19 09:44:58 deraugla Exp $ *)
 
 open Token;
 
@@ -138,11 +138,8 @@ value exponent_part buf =
          parser
          [ [: `('+' | '-' as c1) :] -> B.add (B.add buf c) c1
          | [: :] -> B.add buf c ] !;
-       buf =
-         parser
-         [ [: `('0'..'9' as c);
-              buf = decimal_digits_under (B.add buf c) ! :] -> buf ] ?
-         "ill-formed floating-point constant" :] -> buf ]
+       `('0'..'9' as c) ? "ill-formed floating-point constant";
+       buf = decimal_digits_under (B.add buf c) ! :] -> buf ]
 ;
 
 value number buf =
