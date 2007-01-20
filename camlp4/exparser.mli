@@ -12,6 +12,8 @@
 
 (* $Id$ *)
 
+(* expand parser ast into normal one *)
+
 type spat_comp =
   [ SpTrm of MLast.loc and MLast.patt and option MLast.expr
   | SpNtr of MLast.loc and MLast.patt and MLast.expr
