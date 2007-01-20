@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.42 2007/01/20 15:34:50 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.43 2007/01/20 21:42:56 deraugla Exp $ *)
 
 open Token;
 
@@ -222,12 +222,9 @@ value comment ctx bp =
                                 | [: a = comment :] -> a ] ! :] -> a
                           | [: a = comment :] -> a ] ! :] -> a
                   | [: a = comment :] -> a ] ! :] -> a
-           | [: s :] -> do {
-               match Stream.npeek 2 s with
-               [ [_; '''] -> do { Stream.junk s; Stream.junk s }
-               | _ -> () ];
-               comment s
-             } ] ! :] -> a
+           | [: ?= [_; ''']; _ = Stream.junk !; _ = Stream.junk !;
+                a = comment ! :] -> a
+           | [: a = comment :] -> a ] ! :] -> a
     | [: `'\n' | '\r'; s :] -> do { incr Token.line_nb.val; comment s }
     | [: `c; a = comment ! :] -> a
     | [: :] ep -> err ctx (bp, ep) "comment not terminated" ]
@@ -420,10 +417,13 @@ and next_token_kont ctx =
          | [: `'b' | 'B'; tok = digits binary (B.string "0b") ! :] -> tok
          | [: tok = number (B.char '0') :] -> tok ] ! :] ->
       tok
-  | [: `'''; s :] ep ->
-      match Stream.npeek 2 s with
-      [ [_; '''] | ['\\'; _] -> ("CHAR", B.get (char ctx bp B.empty s))
-      | _ -> keyword_or_error ctx (bp, ep) "'" ]
+  | [: `''';
+       tok =
+         parser
+         [ [: ?= [_; '''] | ['\\'; _]; buf = char ctx bp B.empty ! :] ->
+             ("CHAR", B.get buf)
+         | [: :] ep -> keyword_or_error ctx (bp, ep) "'" ] ! :] ->
+      tok
   | [: `'"'; buf = string ctx bp B.empty ! :] -> ("STRING", B.get buf)
   | [: `'$'; tok = dollar ctx bp B.empty ! :] -> tok
   | [: `('!' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' as c);
@@ -458,16 +458,13 @@ and next_token_kont ctx =
          [ [: `(']' | '}' as c2) :] -> B.add (B.char c1) c2
          | [: a = ident2 (B.char c1) :] -> a ] ! :] ep ->
       keyword_or_error ctx (bp, ep) (B.get buf)
-  | [: `('[' | '{' as c1); s :] ->
-      let buf =
-        match Stream.npeek 2 s with
-        [ ['<'; '<' | ':'] -> B.char c1
-        | _ ->
-            match s with parser
-            [ [: `('|' | '<' | ':' as c2) :] -> B.add (B.char c1) c2
-            | [: :] -> B.char c1 ] ]
-      in
-      keyword_or_error ctx (bp, Stream.count s) (B.get buf)
+  | [: `('[' | '{' as c1);
+       buf =
+         parser
+         [ [: ?= ['<'; '<' | ':'] :] -> B.char c1
+         | [: `('|' | '<' | ':' as c2) :] -> B.add (B.char c1) c2
+         | [: :] -> B.char c1 ] ! :] ep ->
+      keyword_or_error ctx (bp, ep) (B.get buf)
   | [: `'.';
        id =
          parser
@@ -554,10 +551,11 @@ and check =
         ;
        s :] ->
       check_ident2 s
-  | [: `'<'; s :] ->
-      match Stream.npeek 1 s with
-      [ [':' | '<'] -> ()
-      | _ -> check_ident2 s ]
+  | [: `'<';
+       a =
+         parser
+         [ [: ?= [':' | '<'] :] -> ()
+         | [: a = check_ident2 :] -> a ] ! :] -> a
   | [: `':';
        _ =
          parser
@@ -570,13 +568,13 @@ and check =
          [ [: `']' | '}' :] -> ()
          | [: a = check_ident2 :] -> a ] :] ->
       ()
-  | [: `'[' | '{'; s :] ->
-      match Stream.npeek 2 s with
-      [ ['<'; '<' | ':'] -> ()
-      | _ ->
-          match s with parser
-          [ [: `'|' | '<' | ':' :] -> ()
-          | [: :] -> () ] ]
+  | [: `'[' | '{';
+       _ =
+         parser
+         [ [: ?= ['<'; '<' | ':'] :] -> ()
+         | [: `'|' | '<' | ':' :] -> ()
+         | [: :] -> () ] ! :] ->
+      ()
   | [: `';';
        _ =
          parser

@@ -30,6 +30,8 @@ Grammar.extend
      grammar_entry_create "stream_patt_comp_err"
    and stream_patt_comp : 'stream_patt_comp Grammar.Entry.e =
      grammar_entry_create "stream_patt_comp"
+   and lookahead : 'lookahead Grammar.Entry.e =
+     grammar_entry_create "lookahead"
    and ipatt : 'ipatt Grammar.Entry.e = grammar_entry_create "ipatt"
    and stream_expr_comp : 'stream_expr_comp Grammar.Entry.e =
      grammar_entry_create "stream_expr_comp"
@@ -163,6 +165,14 @@ Grammar.extend
       Gramext.action
         (fun (e : 'expr) _ (p : 'patt) (loc : Token.location) ->
            (SpNtr (loc, p, e) : 'stream_patt_comp));
+      [Gramext.Stoken ("", "?=");
+       Gramext.Slist1sep
+         (Gramext.Snterm
+            (Grammar.Entry.obj (lookahead : 'lookahead Grammar.Entry.e)),
+          Gramext.Stoken ("", "|"))],
+      Gramext.action
+        (fun (pll : 'lookahead list) _ (loc : Token.location) ->
+           (SpLhd (loc, pll) : 'stream_patt_comp));
       [Gramext.Stoken ("", "`");
        Gramext.Snterm (Grammar.Entry.obj (patt : 'patt Grammar.Entry.e));
        Gramext.Sopt
@@ -175,6 +185,16 @@ Grammar.extend
       Gramext.action
         (fun (eo : 'e__1 option) (p : 'patt) _ (loc : Token.location) ->
            (SpTrm (loc, p, eo) : 'stream_patt_comp))]];
+    Grammar.Entry.obj (lookahead : 'lookahead Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Stoken ("", "[");
+       Gramext.Slist1sep
+         (Gramext.Snterm (Grammar.Entry.obj (patt : 'patt Grammar.Entry.e)),
+          Gramext.Stoken ("", ";"));
+       Gramext.Stoken ("", "]")],
+      Gramext.action
+        (fun _ (pl : 'patt list) _ (loc : Token.location) ->
+           (pl : 'lookahead))]];
     Grammar.Entry.obj (ipatt : 'ipatt Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("LIDENT", "")],

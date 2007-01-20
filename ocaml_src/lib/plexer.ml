@@ -291,12 +291,11 @@ let comment ctx bp =
             | _ -> comment strm__
             end
         | _ ->
-            let s = strm__ in
-            begin match Stream.npeek 2 s with
-              [_; '\''] -> Stream.junk s; Stream.junk s
-            | _ -> ()
-            end;
-            comment s
+            match Stream.npeek 2 strm__ with
+              [_; '\''] ->
+                let _ = Stream.junk strm__ in
+                let _ = Stream.junk strm__ in comment strm__
+            | _ -> comment strm__
         end
     | Some ('\n' | '\r') ->
         Stream.junk strm__; let s = strm__ in incr !(Token.line_nb); comment s
@@ -595,11 +594,10 @@ and next_token_kont ctx (strm__ : _ Stream.t) =
       end
   | Some '\'' ->
       Stream.junk strm__;
-      let s = strm__ in
-      let ep = Stream.count strm__ in
-      begin match Stream.npeek 2 s with
-        [_; '\''] | ['\\'; _] -> "CHAR", B.get (char ctx bp B.empty s)
-      | _ -> keyword_or_error ctx (bp, ep) "'"
+      begin match Stream.npeek 2 strm__ with
+        [_; '\''] | ['\\'; _] ->
+          let buf = char ctx bp B.empty strm__ in "CHAR", B.get buf
+      | _ -> let ep = Stream.count strm__ in keyword_or_error ctx (bp, ep) "'"
       end
   | Some '\"' ->
       Stream.junk strm__;
@@ -654,18 +652,17 @@ and next_token_kont ctx (strm__ : _ Stream.t) =
       keyword_or_error ctx (bp, ep) (B.get buf)
   | Some ('[' | '{' as c1) ->
       Stream.junk strm__;
-      let s = strm__ in
       let buf =
-        match Stream.npeek 2 s with
+        match Stream.npeek 2 strm__ with
           ['<'; '<' | ':'] -> B.char c1
         | _ ->
-            let (strm__ : _ Stream.t) = s in
             match Stream.peek strm__ with
               Some ('|' | '<' | ':' as c2) ->
                 Stream.junk strm__; B.add (B.char c1) c2
             | _ -> B.char c1
       in
-      keyword_or_error ctx (bp, Stream.count s) (B.get buf)
+      let ep = Stream.count strm__ in
+      keyword_or_error ctx (bp, ep) (B.get buf)
   | Some '.' ->
       Stream.junk strm__;
       let id =
@@ -761,10 +758,9 @@ and check (strm__ : _ Stream.t) =
       Stream.junk strm__; check_ident2 strm__
   | Some '<' ->
       Stream.junk strm__;
-      let s = strm__ in
-      begin match Stream.npeek 1 s with
+      begin match Stream.npeek 1 strm__ with
         [':' | '<'] -> ()
-      | _ -> check_ident2 s
+      | _ -> check_ident2 strm__
       end
   | Some ':' ->
       Stream.junk strm__;
@@ -790,15 +786,15 @@ and check (strm__ : _ Stream.t) =
       ()
   | Some ('[' | '{') ->
       Stream.junk strm__;
-      let s = strm__ in
-      begin match Stream.npeek 2 s with
-        ['<'; '<' | ':'] -> ()
-      | _ ->
-          let (strm__ : _ Stream.t) = s in
-          match Stream.peek strm__ with
-            Some ('|' | '<' | ':') -> Stream.junk strm__; ()
-          | _ -> ()
-      end
+      let _ =
+        match Stream.npeek 2 strm__ with
+          ['<'; '<' | ':'] -> ()
+        | _ ->
+            match Stream.peek strm__ with
+              Some ('|' | '<' | ':') -> Stream.junk strm__; ()
+            | _ -> ()
+      in
+      ()
   | Some ';' ->
       Stream.junk strm__;
       let _ =
@@ -951,11 +947,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 724, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 724, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 724, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 725, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 725, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 722, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 722, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 722, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 723, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 723, 37)));
        tok_comm = None}
   in
   let glex =

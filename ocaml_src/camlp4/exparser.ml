@@ -15,6 +15,7 @@
 type spat_comp =
     SpTrm of MLast.loc * MLast.patt * MLast.expr option
   | SpNtr of MLast.loc * MLast.patt * MLast.expr
+  | SpLhd of MLast.loc * MLast.patt list list
   | SpStr of MLast.loc * MLast.patt
 ;;
 type sexp_comp =
@@ -202,6 +203,37 @@ let stream_pattern_component skont ckont =
                None, MLast.ExUid (loc, "None")]),
            [MLast.PaApp (loc, MLast.PaUid (loc, "Some"), p), None, skont;
             MLast.PaAny loc, None, ckont])
+  | SpLhd (loc, (pl :: pll)) ->
+      let mklistpat loc pl =
+        List.fold_right
+          (fun p1 p2 ->
+             MLast.PaApp
+               (loc, MLast.PaApp (loc, MLast.PaUid (loc, "::"), p1), p2))
+          pl (MLast.PaUid (loc, "[]"))
+      in
+      let len = List.length pl in
+      if List.exists (fun pl -> List.length pl <> len) pll then
+        Stdpp.raise_with_loc loc
+          (Stream.Error "lookahead patterns must be of the same lengths")
+      else
+        let p =
+          let p = mklistpat loc pl in
+          let pl = List.map (mklistpat loc) pll in
+          List.fold_left (fun p1 p2 -> MLast.PaOrp (loc, p1, p2)) p pl
+        in
+        MLast.ExMat
+          (loc,
+           MLast.ExApp
+             (loc,
+              MLast.ExApp
+                (loc,
+                 MLast.ExAcc
+                   (loc, MLast.ExUid (loc, "Stream"),
+                    MLast.ExLid (loc, "npeek")),
+                 MLast.ExInt (loc, string_of_int len, "")),
+              MLast.ExLid (loc, "strm__")),
+           [p, None, skont; MLast.PaAny loc, None, ckont])
+  | SpLhd (loc, []) -> ckont
   | SpStr (loc, p) ->
       try
         match p with

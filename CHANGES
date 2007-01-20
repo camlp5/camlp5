@@ -1,5 +1,14 @@
-Camlp4s Version 1.0:
---------------------
+Camlp4s Version 4.00:
+---------------------
+
+* [20 Jan 07] Added stream pattern component kind: "lookahead".
+          syntax ::= "?=" list lookhd_patt sep_by "|"
+     lookhd_patt ::= "[" list pattern sep_by ";" "]"
+  Checks the first stream elements against the pattern, without removing
+  them from the stream (but possibly unfreezing them), continues the stream
+  pattern if ok, fails (Stream.Failure or Stream.Error depending on the
+  position of the component) if not. If there are more than one lookahead
+  pattern, they must be of the same length. Examples in lib/plexer.ml.
 
 * [31 Dec 06] Added the ability to add "!" (in Revised syntax) or "?!"
   (in normal syntax) after a stream parser component to hint the preprocessor

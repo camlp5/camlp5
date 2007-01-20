@@ -15,6 +15,7 @@
 type spat_comp =
   [ SpTrm of MLast.loc and MLast.patt and option MLast.expr
   | SpNtr of MLast.loc and MLast.patt and MLast.expr
+  | SpLhd of MLast.loc and list (list MLast.patt)
   | SpStr of MLast.loc and MLast.patt ]
 ;
 type sexp_comp =
@@ -138,6 +139,25 @@ value stream_pattern_component skont ckont =
         <:expr< match try Some $e$ with [ Stream.Failure -> None ] with
                 [ Some $p$ -> $skont$
                 | _ -> $ckont$ ] >>
+  | SpLhd loc [pl :: pll] ->
+      let mklistpat loc pl =
+        List.fold_right (fun p1 p2 -> <:patt< [$p1$ :: $p2$] >>) pl
+          <:patt< [] >>
+      in
+      let len = List.length pl in
+      if List.exists (fun pl -> List.length pl <> len) pll then
+        Stdpp.raise_with_loc loc
+          (Stream.Error "lookahead patterns must be of the same lengths")
+      else
+        let p =
+          let p = mklistpat loc pl in
+          let pl = List.map (mklistpat loc) pll in
+          List.fold_left (fun p1 p2 -> <:patt< $p1$ | $p2$ >>) p pl
+        in
+        <:expr< match Stream.npeek $int:string_of_int len$ strm__ with
+                [ $p$ -> $skont$
+                | _ -> $ckont$ ] >>
+  | SpLhd loc [] -> ckont
   | SpStr loc p ->
       try
         match p with

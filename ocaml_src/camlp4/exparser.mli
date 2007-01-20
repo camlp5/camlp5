@@ -17,6 +17,7 @@
 type spat_comp =
     SpTrm of MLast.loc * MLast.patt * MLast.expr option
   | SpNtr of MLast.loc * MLast.patt * MLast.expr
+  | SpLhd of MLast.loc * MLast.patt list list
   | SpStr of MLast.loc * MLast.patt
 ;;
 
