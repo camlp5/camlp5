@@ -235,76 +235,77 @@ let rec string ctx bp buf (strm__ : _ Stream.t) =
       let ep = Stream.count strm__ in err ctx (bp, ep) "string not terminated"
 ;;
 
-let rec comment ctx bp (strm__ : _ Stream.t) =
-  match Stream.peek strm__ with
-    Some '(' ->
-      Stream.junk strm__;
-      begin match Stream.peek strm__ with
-        Some '*' ->
-          Stream.junk strm__;
-          let _ = comment ctx bp strm__ in comment ctx bp strm__
-      | _ -> comment ctx bp strm__
-      end
-  | Some '*' ->
-      Stream.junk strm__;
-      begin match Stream.peek strm__ with
-        Some ')' -> Stream.junk strm__; ()
-      | _ -> comment ctx bp strm__
-      end
-  | Some '\"' ->
-      Stream.junk strm__;
-      let _ =
-        try string ctx bp B.empty strm__ with
-          Stream.Failure -> raise (Stream.Error "")
-      in
-      comment ctx bp strm__
-  | Some '\'' ->
-      Stream.junk strm__;
-      begin match Stream.peek strm__ with
-        Some '\'' -> Stream.junk strm__; comment ctx bp strm__
-      | Some '\\' ->
-          Stream.junk strm__;
-          begin match Stream.peek strm__ with
-            Some '\'' -> Stream.junk strm__; comment ctx bp strm__
-          | Some ('\\' | '\"' | 'n' | 't' | 'b' | 'r') ->
-              Stream.junk strm__;
-              begin match Stream.peek strm__ with
-                Some '\'' -> Stream.junk strm__; comment ctx bp strm__
-              | _ -> comment ctx bp strm__
-              end
-          | Some ('0'..'9') ->
-              Stream.junk strm__;
-              begin match Stream.peek strm__ with
-                Some ('0'..'9') ->
-                  Stream.junk strm__;
-                  begin match Stream.peek strm__ with
-                    Some ('0'..'9') ->
-                      Stream.junk strm__;
-                      begin match Stream.peek strm__ with
-                        Some '\'' -> Stream.junk strm__; comment ctx bp strm__
-                      | _ -> comment ctx bp strm__
-                      end
-                  | _ -> comment ctx bp strm__
-                  end
-              | _ -> comment ctx bp strm__
-              end
-          | _ -> comment ctx bp strm__
-          end
-      | _ ->
-          let s = strm__ in
-          begin match Stream.npeek 2 s with
-            [_; '\''] -> Stream.junk s; Stream.junk s
-          | _ -> ()
-          end;
-          comment ctx bp s
-      end
-  | Some ('\n' | '\r') ->
-      Stream.junk strm__;
-      let s = strm__ in incr !(Token.line_nb); comment ctx bp s
-  | Some c -> Stream.junk strm__; comment ctx bp strm__
-  | _ ->
-      let ep = Stream.count strm__ in
-      err ctx (bp, ep) "comment not terminated"
+let comment ctx bp =
+  let rec comment (strm__ : _ Stream.t) =
+    match Stream.peek strm__ with
+      Some '(' ->
+        Stream.junk strm__;
+        begin match Stream.peek strm__ with
+          Some '*' ->
+            Stream.junk strm__; let _ = comment strm__ in comment strm__
+        | _ -> comment strm__
+        end
+    | Some '*' ->
+        Stream.junk strm__;
+        begin match Stream.peek strm__ with
+          Some ')' -> Stream.junk strm__; ()
+        | _ -> comment strm__
+        end
+    | Some '\"' ->
+        Stream.junk strm__;
+        let _ =
+          try string ctx bp B.empty strm__ with
+            Stream.Failure -> raise (Stream.Error "")
+        in
+        comment strm__
+    | Some '\'' ->
+        Stream.junk strm__;
+        begin match Stream.peek strm__ with
+          Some '\'' -> Stream.junk strm__; comment strm__
+        | Some '\\' ->
+            Stream.junk strm__;
+            begin match Stream.peek strm__ with
+              Some '\'' -> Stream.junk strm__; comment strm__
+            | Some ('\\' | '\"' | 'n' | 't' | 'b' | 'r') ->
+                Stream.junk strm__;
+                begin match Stream.peek strm__ with
+                  Some '\'' -> Stream.junk strm__; comment strm__
+                | _ -> comment strm__
+                end
+            | Some ('0'..'9') ->
+                Stream.junk strm__;
+                begin match Stream.peek strm__ with
+                  Some ('0'..'9') ->
+                    Stream.junk strm__;
+                    begin match Stream.peek strm__ with
+                      Some ('0'..'9') ->
+                        Stream.junk strm__;
+                        begin match Stream.peek strm__ with
+                          Some '\'' -> Stream.junk strm__; comment strm__
+                        | _ -> comment strm__
+                        end
+                    | _ -> comment strm__
+                    end
+                | _ -> comment strm__
+                end
+            | _ -> comment strm__
+            end
+        | _ ->
+            let s = strm__ in
+            begin match Stream.npeek 2 s with
+              [_; '\''] -> Stream.junk s; Stream.junk s
+            | _ -> ()
+            end;
+            comment s
+        end
+    | Some ('\n' | '\r') ->
+        Stream.junk strm__; let s = strm__ in incr !(Token.line_nb); comment s
+    | Some c -> Stream.junk strm__; comment strm__
+    | _ ->
+        let ep = Stream.count strm__ in
+        err ctx (bp, ep) "comment not terminated"
+  in
+  comment
 ;;
 
 let rec quotation ctx bp buf (strm__ : _ Stream.t) =

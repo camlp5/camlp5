@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.41 2007/01/19 09:44:58 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.42 2007/01/20 15:34:50 deraugla Exp $ *)
 
 open Token;
 
@@ -180,57 +180,57 @@ value rec string ctx bp buf =
   | [: :] ep -> err ctx (bp, ep) "string not terminated" ]
 ;
 
-value rec comment ctx bp =
-  parser
-  [ [: `'(';
-      a =
-        parser
-        [ [: `'*'; _ = comment ctx bp !; a = comment ctx bp ! :] -> a
-        | [: a = comment ctx bp :] -> a ] ! :] -> a
-  | [: `'*';
-      a =
-        parser
-        [ [: `')' :] -> ()
-        | [: a = comment ctx bp :] -> a ] ! :] -> a
-  | [: `'"'; _ = string ctx bp B.empty; a = comment ctx bp ! :] -> a
-  | [: `''';
-       a =
-         parser
-         [ [: `'''; a = comment ctx bp ! :] -> a
-         | [: `'\\';
-              a =
-                parser
-                [ [: `'''; a = comment ctx bp ! :] -> a
-                | [: `'\\' | '"' | 'n' | 't' | 'b' | 'r';
-                     a =
-                       parser
-                       [ [: `'''; a = comment ctx bp ! :] -> a
-                       | [: a = comment ctx bp :] -> a ] ! :] -> a
-                | [: `'0'..'9';
-                     a =
-                       parser
-                        [ [: `'0'..'9';
-                            a =
-                              parser
-                              [ [: `'0'..'9';
-                                   a =
-                                     parser
-                                     [ [: `'''; a = comment ctx bp ! :] -> a
-                                     | [: a = comment ctx bp :] ->
-                                         a ] ! :] -> a
-                              | [: a = comment ctx bp :] -> a ] ! :] -> a
-
-                        | [: a = comment ctx bp :] -> a ] ! :] -> a
-                | [: a = comment ctx bp :] -> a ] ! :] -> a
-         | [: s :] -> do {
-             match Stream.npeek 2 s with
-             [ [_; '''] -> do { Stream.junk s; Stream.junk s }
-             | _ -> () ];
-             comment ctx bp s
-           } ] ! :] -> a
-  | [: `'\n' | '\r'; s :] -> do { incr Token.line_nb.val; comment ctx bp s }
-  | [: `c; a = comment ctx bp ! :] -> a
-  | [: :] ep -> err ctx (bp, ep) "comment not terminated" ]
+value comment ctx bp =
+  comment where rec comment =
+    parser
+    [ [: `'(';
+        a =
+          parser
+          [ [: `'*'; _ = comment !; a = comment ! :] -> a
+          | [: a = comment :] -> a ] ! :] -> a
+    | [: `'*';
+        a =
+          parser
+          [ [: `')' :] -> ()
+          | [: a = comment :] -> a ] ! :] -> a
+    | [: `'"'; _ = string ctx bp B.empty; a = comment ! :] -> a
+    | [: `''';
+         a =
+           parser
+           [ [: `'''; a = comment ! :] -> a
+           | [: `'\\';
+                a =
+                  parser
+                  [ [: `'''; a = comment ! :] -> a
+                  | [: `'\\' | '"' | 'n' | 't' | 'b' | 'r';
+                       a =
+                         parser
+                         [ [: `'''; a = comment ! :] -> a
+                         | [: a = comment :] -> a ] ! :] -> a
+                  | [: `'0'..'9';
+                       a =
+                         parser
+                          [ [: `'0'..'9';
+                              a =
+                                parser
+                                [ [: `'0'..'9';
+                                     a =
+                                       parser
+                                       [ [: `'''; a = comment ! :] -> a
+                                       | [: a = comment :] ->
+                                           a ] ! :] -> a
+                                | [: a = comment :] -> a ] ! :] -> a
+                          | [: a = comment :] -> a ] ! :] -> a
+                  | [: a = comment :] -> a ] ! :] -> a
+           | [: s :] -> do {
+               match Stream.npeek 2 s with
+               [ [_; '''] -> do { Stream.junk s; Stream.junk s }
+               | _ -> () ];
+               comment s
+             } ] ! :] -> a
+    | [: `'\n' | '\r'; s :] -> do { incr Token.line_nb.val; comment s }
+    | [: `c; a = comment ! :] -> a
+    | [: :] ep -> err ctx (bp, ep) "comment not terminated" ]
 ;
 
 value rec quotation ctx bp buf =
