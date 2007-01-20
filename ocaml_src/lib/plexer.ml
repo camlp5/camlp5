@@ -235,6 +235,8 @@ let rec string ctx bp buf (strm__ : _ Stream.t) =
       let ep = Stream.count strm__ in err ctx (bp, ep) "string not terminated"
 ;;
 
+let incr_line_nb _ = incr !(Token.line_nb);;
+
 let comment ctx bp =
   let rec comment (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
@@ -298,7 +300,7 @@ let comment ctx bp =
             | _ -> comment strm__
         end
     | Some ('\n' | '\r') ->
-        Stream.junk strm__; let s = strm__ in incr !(Token.line_nb); comment s
+        Stream.junk strm__; let _ = incr_line_nb strm__ in comment strm__
     | Some c -> Stream.junk strm__; comment strm__
     | _ ->
         let ep = Stream.count strm__ in
@@ -947,11 +949,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 722, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 722, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 722, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 723, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 723, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 724, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 724, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 724, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 725, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 725, 37)));
        tok_comm = None}
   in
   let glex =

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.43 2007/01/20 21:42:56 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.44 2007/01/20 23:18:44 deraugla Exp $ *)
 
 open Token;
 
@@ -180,6 +180,8 @@ value rec string ctx bp buf =
   | [: :] ep -> err ctx (bp, ep) "string not terminated" ]
 ;
 
+value incr_line_nb _ = incr Token.line_nb.val;
+
 value comment ctx bp =
   comment where rec comment =
     parser
@@ -225,7 +227,7 @@ value comment ctx bp =
            | [: ?= [_; ''']; _ = Stream.junk !; _ = Stream.junk !;
                 a = comment ! :] -> a
            | [: a = comment :] -> a ] ! :] -> a
-    | [: `'\n' | '\r'; s :] -> do { incr Token.line_nb.val; comment s }
+    | [: `'\n' | '\r'; _ = incr_line_nb !; a = comment ! :] -> a
     | [: `c; a = comment ! :] -> a
     | [: :] ep -> err ctx (bp, ep) "comment not terminated" ]
 ;
