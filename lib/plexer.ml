@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.45 2007/01/21 05:37:57 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.46 2007/01/21 07:35:37 deraugla Exp $ *)
 
 open Token;
 
@@ -151,7 +151,7 @@ value number buf =
               buf =
                 parser
                 [ [: buf = exponent_part buf :] -> buf
-                | [: :] -> buf ] ! :] -> ("FLOAT", B.get buf)
+                | [: :] -> buf ] :] -> ("FLOAT", B.get buf)
          | [: buf = exponent_part buf :] -> ("FLOAT", B.get buf)
          | [: `'l' :] -> ("INT_l", B.get buf)
          | [: `'L' :] -> ("INT_L", B.get buf)
@@ -219,8 +219,7 @@ value comment ctx bp =
                                      a =
                                        parser
                                        [ [: `'''; a = comment ! :] -> a
-                                       | [: a = comment :] ->
-                                           a ] ! :] -> a
+                                       | [: a = comment :] -> a ] ! :] -> a
                                 | [: a = comment :] -> a ] ! :] -> a
                           | [: a = comment :] -> a ] ! :] -> a
                   | [: a = comment :] -> a ] ! :] -> a

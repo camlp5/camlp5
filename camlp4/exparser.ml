@@ -77,8 +77,7 @@ and no_raising_failure_fun =
   fun
   [ <:expr< $uid:_$ >> -> True
   | <:expr< $lid:_$ >> -> False
-  | <:expr< Stream.peek >> -> True
-  | <:expr< Stream.junk >> -> True
+  | <:expr< Stream.peek >> | <:expr< Stream.junk >> -> True
   | <:expr< $x$ $y$ >> -> no_raising_failure_fun x && handle_failure y
   | _ -> False ]
 ;
