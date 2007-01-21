@@ -1,11 +1,11 @@
-# $Id: Makefile,v 1.2 2006/12/02 12:45:48 deraugla Exp $
+# $Id: Makefile,v 1.3 2007/01/21 12:34:10 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
 
 INCLUDES=-I ../camlp4 -I $(TOP)/boot -I $(OTOP)/utils
 OCAMLCFLAGS=-warn-error A $(INCLUDES)
-OBJS=q_MLast.cmo pa_r.cmo pa_rp.cmo pa_extend.cmo pa_extend_m.cmo pa_macro.cmo pr_dump.cmo
+OBJS=q_MLast.cmo pa_r.cmo pa_rp.cmo pa_extend.cmo pa_extend_m.cmo pa_macro.cmo pr_dump.cmo pa_lex.cmo
 CAMLP4RM=pa_r.cmo pa_rp.cmo pr_dump.cmo
 CAMLP4RMX=pa_r.cmx pa_rp.cmx pr_dump.cmx
 SHELL=/bin/sh

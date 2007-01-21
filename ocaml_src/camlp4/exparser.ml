@@ -94,9 +94,8 @@ and no_raising_failure_fun =
   function
     MLast.ExUid (_, _) -> true
   | MLast.ExLid (_, _) -> false
-  | MLast.ExAcc (_, MLast.ExUid (_, "Stream"), MLast.ExLid (_, "peek")) ->
-      true
-  | MLast.ExAcc (_, MLast.ExUid (_, "Stream"), MLast.ExLid (_, "junk")) ->
+  | MLast.ExAcc (_, MLast.ExUid (_, "Stream"), MLast.ExLid (_, "peek")) |
+    MLast.ExAcc (_, MLast.ExUid (_, "Stream"), MLast.ExLid (_, "junk")) ->
       true
   | MLast.ExApp (_, x, y) -> no_raising_failure_fun x && handle_failure y
   | _ -> false
