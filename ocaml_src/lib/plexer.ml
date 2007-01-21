@@ -235,7 +235,7 @@ let rec string ctx bp buf (strm__ : _ Stream.t) =
       let ep = Stream.count strm__ in err ctx (bp, ep) "string not terminated"
 ;;
 
-let incr_line_nb _ = incr !(Token.line_nb);;
+let incr_line_nb buf _ = incr !(Token.line_nb); buf;;
 
 let comment ctx bp =
   let rec comment (strm__ : _ Stream.t) =
@@ -300,7 +300,7 @@ let comment ctx bp =
             | _ -> comment strm__
         end
     | Some ('\n' | '\r') ->
-        Stream.junk strm__; let _ = incr_line_nb strm__ in comment strm__
+        Stream.junk strm__; let () = incr_line_nb () strm__ in comment strm__
     | Some c -> Stream.junk strm__; comment strm__
     | _ ->
         let ep = Stream.count strm__ in
@@ -766,48 +766,40 @@ and check (strm__ : _ Stream.t) =
       end
   | Some ':' ->
       Stream.junk strm__;
-      let _ =
-        try
-          match Stream.peek strm__ with
-            Some (']' | ':' | '=' | '>') -> Stream.junk strm__; ()
-          | _ -> ()
-        with
-          Stream.Failure -> raise (Stream.Error "")
-      in
-      ()
+      begin try
+        match Stream.peek strm__ with
+          Some (']' | ':' | '=' | '>') -> Stream.junk strm__; ()
+        | _ -> ()
+      with
+        Stream.Failure -> raise (Stream.Error "")
+      end
   | Some ('>' | '|') ->
       Stream.junk strm__;
-      let _ =
-        try
-          match Stream.peek strm__ with
-            Some (']' | '}') -> Stream.junk strm__; ()
-          | _ -> check_ident2 strm__
-        with
-          Stream.Failure -> raise (Stream.Error "")
-      in
-      ()
+      begin try
+        match Stream.peek strm__ with
+          Some (']' | '}') -> Stream.junk strm__; ()
+        | _ -> check_ident2 strm__
+      with
+        Stream.Failure -> raise (Stream.Error "")
+      end
   | Some ('[' | '{') ->
       Stream.junk strm__;
-      let _ =
-        match Stream.npeek 2 strm__ with
-          ['<'; '<' | ':'] -> ()
-        | _ ->
-            match Stream.peek strm__ with
-              Some ('|' | '<' | ':') -> Stream.junk strm__; ()
-            | _ -> ()
-      in
-      ()
+      begin match Stream.npeek 2 strm__ with
+        ['<'; '<' | ':'] -> ()
+      | _ ->
+          match Stream.peek strm__ with
+            Some ('|' | '<' | ':') -> Stream.junk strm__; ()
+          | _ -> ()
+      end
   | Some ';' ->
       Stream.junk strm__;
-      let _ =
-        try
-          match Stream.peek strm__ with
-            Some ';' -> Stream.junk strm__; ()
-          | _ -> ()
-        with
-          Stream.Failure -> raise (Stream.Error "")
-      in
-      ()
+      begin try
+        match Stream.peek strm__ with
+          Some ';' -> Stream.junk strm__; ()
+        | _ -> ()
+      with
+        Stream.Failure -> raise (Stream.Error "")
+      end
   | Some _ -> Stream.junk strm__; ()
   | _ -> raise Stream.Failure
 and check_ident (strm__ : _ Stream.t) =
@@ -949,11 +941,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 724, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 724, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 724, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 725, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 725, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 721, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 721, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 721, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 722, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 722, 37)));
        tok_comm = None}
   in
   let glex =

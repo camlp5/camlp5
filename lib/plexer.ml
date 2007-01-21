@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.44 2007/01/20 23:18:44 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.45 2007/01/21 05:37:57 deraugla Exp $ *)
 
 open Token;
 
@@ -180,7 +180,7 @@ value rec string ctx bp buf =
   | [: :] ep -> err ctx (bp, ep) "string not terminated" ]
 ;
 
-value incr_line_nb _ = incr Token.line_nb.val;
+value incr_line_nb buf _ = do { incr Token.line_nb.val; buf };
 
 value comment ctx bp =
   comment where rec comment =
@@ -227,7 +227,7 @@ value comment ctx bp =
            | [: ?= [_; ''']; _ = Stream.junk !; _ = Stream.junk !;
                 a = comment ! :] -> a
            | [: a = comment :] -> a ] ! :] -> a
-    | [: `'\n' | '\r'; _ = incr_line_nb !; a = comment ! :] -> a
+    | [: `'\n' | '\r'; () = incr_line_nb () !; a = comment ! :] -> a
     | [: `c; a = comment ! :] -> a
     | [: :] ep -> err ctx (bp, ep) "comment not terminated" ]
 ;
@@ -544,14 +544,11 @@ value rec check_keyword_stream =
   parser [: _ = check; _ = Stream.empty :] -> True
 and check =
   parser
-  [ [: `'A'..'Z' | 'a'..'z' | '\192'..'\214' | '\216'..'\246' | '\248'..'\255'
-        ;
-       s :] ->
+  [ [: `'A'..'Z' | 'a'..'z' | '\192'..'\214' | '\216'..'\246' |
+        '\248'..'\255'; s :] ->
       check_ident s
   | [: `'!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' |
-        '%' | '.'
-        ;
-       s :] ->
+        '%' | '.'; s :] ->
       check_ident2 s
   | [: `'<';
        a =
@@ -559,30 +556,30 @@ and check =
          [ [: ?= [':' | '<'] :] -> ()
          | [: a = check_ident2 :] -> a ] ! :] -> a
   | [: `':';
-       _ =
+       a =
          parser
          [ [: `']' | ':' | '=' | '>' :] -> ()
          | [: :] -> () ] :] ->
-      ()
+      a
   | [: `'>' | '|';
-       _ =
+       a =
          parser
          [ [: `']' | '}' :] -> ()
          | [: a = check_ident2 :] -> a ] :] ->
-      ()
+      a
   | [: `'[' | '{';
-       _ =
+       a =
          parser
          [ [: ?= ['<'; '<' | ':'] :] -> ()
          | [: `'|' | '<' | ':' :] -> ()
          | [: :] -> () ] ! :] ->
-      ()
+      a
   | [: `';';
-       _ =
+       a =
          parser
          [ [: `';' :] -> ()
          | [: :] -> () ] :] ->
-      ()
+      a
   | [: `_ :] -> () ]
 and check_ident =
   parser
