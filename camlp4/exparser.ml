@@ -61,21 +61,25 @@ value rec handle_failure e =
         pel
   | <:expr< let $list:pel$ in $e$ >> ->
       List.for_all (fun (p, e) -> handle_failure e) pel && handle_failure e
-  | <:expr< $lid:_$ >> | <:expr< $int:_$ >> | <:expr< $str:_$ >> |
-    <:expr< $chr:_$ >> | <:expr< fun [ $list:_$ ] >> | <:expr< $uid:_$ >> ->
+  | <:expr< do { $list:el$ } >> -> List.for_all handle_failure el
+  | <:expr< $uid:_$ . $_$ >> | <:expr< $lid:_$ >> | <:expr< $int:_$ >> |
+    <:expr< $str:_$ >> | <:expr< $chr:_$ >> | <:expr< fun [ $list:_$ ] >> |
+    <:expr< $uid:_$ >> ->
       True
   | <:expr< raise $e$ >> ->
       match e with
       [ <:expr< Stream.Failure >> -> False
       | _ -> True ]
   | <:expr< $f$ $x$ >> ->
-      is_constr_apply f && handle_failure f && handle_failure x
+      no_raising_failure_fun f && handle_failure f && handle_failure x
   | _ -> False ]
-and is_constr_apply =
+and no_raising_failure_fun =
   fun
   [ <:expr< $uid:_$ >> -> True
   | <:expr< $lid:_$ >> -> False
-  | <:expr< $x$ $_$ >> -> is_constr_apply x
+  | <:expr< Stream.peek >> -> True
+  | <:expr< Stream.junk >> -> True
+  | <:expr< $x$ $y$ >> -> no_raising_failure_fun x && handle_failure y
   | _ -> False ]
 ;
 
@@ -124,7 +128,7 @@ value stream_pattern_component skont ckont =
         else if is_raise_failure ckont then
           <:expr< let $p$ = $e$ in $skont$ >>
         else if pattern_eq_expression <:patt< Some $p$ >> skont then
-        <:expr< try Some $e$ with [ Stream.Failure -> $ckont$ ] >>
+          <:expr< try Some $e$ with [ Stream.Failure -> $ckont$ ] >>
         else if is_raise ckont then
           let tst =
             if handle_failure e then e

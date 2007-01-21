@@ -766,12 +766,9 @@ and check (strm__ : _ Stream.t) =
       end
   | Some ':' ->
       Stream.junk strm__;
-      begin try
-        match Stream.peek strm__ with
-          Some (']' | ':' | '=' | '>') -> Stream.junk strm__; ()
-        | _ -> ()
-      with
-        Stream.Failure -> raise (Stream.Error "")
+      begin match Stream.peek strm__ with
+        Some (']' | ':' | '=' | '>') -> Stream.junk strm__; ()
+      | _ -> ()
       end
   | Some ('>' | '|') ->
       Stream.junk strm__;
@@ -793,12 +790,9 @@ and check (strm__ : _ Stream.t) =
       end
   | Some ';' ->
       Stream.junk strm__;
-      begin try
-        match Stream.peek strm__ with
-          Some ';' -> Stream.junk strm__; ()
-        | _ -> ()
-      with
-        Stream.Failure -> raise (Stream.Error "")
+      begin match Stream.peek strm__ with
+        Some ';' -> Stream.junk strm__; ()
+      | _ -> ()
       end
   | Some _ -> Stream.junk strm__; ()
   | _ -> raise Stream.Failure

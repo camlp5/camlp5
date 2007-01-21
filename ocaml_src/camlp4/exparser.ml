@@ -75,8 +75,10 @@ let rec handle_failure e =
         pel
   | MLast.ExLet (_, false, pel, e) ->
       List.for_all (fun (p, e) -> handle_failure e) pel && handle_failure e
-  | MLast.ExLid (_, _) | MLast.ExInt (_, _, "") | MLast.ExStr (_, _) |
-    MLast.ExChr (_, _) | MLast.ExFun (_, _) | MLast.ExUid (_, _) ->
+  | MLast.ExSeq (_, el) -> List.for_all handle_failure el
+  | MLast.ExAcc (_, MLast.ExUid (_, _), _) | MLast.ExLid (_, _) |
+    MLast.ExInt (_, _, "") | MLast.ExStr (_, _) | MLast.ExChr (_, _) |
+    MLast.ExFun (_, _) | MLast.ExUid (_, _) ->
       true
   | MLast.ExApp (_, MLast.ExLid (_, "raise"), e) ->
       begin match e with
@@ -86,13 +88,17 @@ let rec handle_failure e =
       | _ -> true
       end
   | MLast.ExApp (_, f, x) ->
-      is_constr_apply f && handle_failure f && handle_failure x
+      no_raising_failure_fun f && handle_failure f && handle_failure x
   | _ -> false
-and is_constr_apply =
+and no_raising_failure_fun =
   function
     MLast.ExUid (_, _) -> true
   | MLast.ExLid (_, _) -> false
-  | MLast.ExApp (_, x, _) -> is_constr_apply x
+  | MLast.ExAcc (_, MLast.ExUid (_, "Stream"), MLast.ExLid (_, "peek")) ->
+      true
+  | MLast.ExAcc (_, MLast.ExUid (_, "Stream"), MLast.ExLid (_, "junk")) ->
+      true
+  | MLast.ExApp (_, x, y) -> no_raising_failure_fun x && handle_failure y
   | _ -> false
 ;;
 
