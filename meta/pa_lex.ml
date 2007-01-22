@@ -74,10 +74,10 @@ EXTEND
             (Exparser.SpTrm loc p None, errk)
           in
           ([s :: sl], [<:expr< $lid:c$ >> :: cl])
-      | (sl, cl) = symbs; i = LIDENT; errk = err_kont ->
+      | (sl, cl) = symbs; f = simple_expr; errk = err_kont ->
           let s =
             let buf = accum_chars loc cl in
-            let e = <:expr< $lid:i$ $buf$ >> in
+            let e = <:expr< $f$ $buf$ >> in
             (Exparser.SpNtr loc <:patt< $lid:var$ >> e, errk)
           in
           ([s :: sl], [])
@@ -102,6 +102,10 @@ EXTEND
           in
           ([s :: sl], [])
       | -> ([], []) ] ]
+  ;
+  simple_expr:
+    [ [ i = LIDENT -> <:expr< $lid:i$ >>
+      | "("; e = expr; ")" -> e ] ]
   ;
   lookahead:
     [ [ pl = LIST1 lookahead_char -> pl ] ]
