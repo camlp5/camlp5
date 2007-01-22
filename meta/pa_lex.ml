@@ -73,8 +73,20 @@ EXTEND
           let s = (Exparser.SpLhd loc pll, errk) in
           ([s :: sl], cl)
       | (sl, cl) = symbs; rl = rules; errk = err_kont ->
-          let e = mk_parser loc rl in
-          let s = (Exparser.SpNtr loc <:patt< $lid:var$ >> e, errk) in
+          let sl =
+            if cl = [] then sl
+            else
+              let s =
+                let b = accum_chars loc cl in
+                let e = <:expr< fun (strm__ : Stream.t _) -> $b$ >> in
+                (Exparser.SpNtr loc <:patt< $lid:var$ >> e, Some None)
+              in
+              [s :: sl]
+          in
+          let s =
+            let e = mk_parser loc rl in
+            (Exparser.SpNtr loc <:patt< $lid:var$ >> e, errk)
+          in
           ([s :: sl], [])
       | -> ([], []) ] ]
   ;
