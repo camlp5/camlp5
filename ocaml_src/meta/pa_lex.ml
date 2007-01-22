@@ -28,15 +28,28 @@ value add_char loc c cl = <:expr< [$c$ :: $cl$] >>;
 value get_buf loc cl = cl;
 *)
 
+let fresh_c cl =
+  let n =
+    List.fold_left
+      (fun n c ->
+         match c with
+           MLast.ExLid (_, _) -> n + 1
+         | _ -> n)
+      0 cl
+  in
+  if n = 0 then "c" else "c" ^ string_of_int n
+;;
+
+let accum_chars loc cl =
+  List.fold_right (add_char loc) cl (MLast.ExLid (loc, var))
+;;
+
 let mk_parser loc rl =
   let rl =
     List.map
       (fun (sl, cl, a) ->
          let a =
-           let b =
-             let b = MLast.ExLid (loc, var) in
-             if cl = [] then b else List.fold_right (add_char loc) cl b
-           in
+           let b = accum_chars loc cl in
            match a with
              Some e -> MLast.ExTup (loc, [e; get_buf loc b])
            | None -> b
@@ -67,7 +80,9 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (rules : 'rules Grammar.Entry.e))],
       Gramext.action
         (fun (rl : 'rules) _ (loc : Token.location) ->
-           (mk_parser loc rl : 'expr))]];
+           (MLast.ExFun
+              (loc, [MLast.PaLid (loc, var), None, mk_parser loc rl]) :
+            'expr))]];
     Grammar.Entry.obj (rules : 'rules Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "[");
@@ -94,8 +109,32 @@ Grammar.extend
       Gramext.action
         (fun (errk : 'err_kont) (rl : 'rules) (sl, cl : 'symbs)
            (loc : Token.location) ->
-           (let e = mk_parser loc rl in
-            let s = Exparser.SpNtr (loc, MLast.PaLid (loc, var), e), errk in
+           (let sl =
+              if cl = [] then sl
+              else
+                let s =
+                  let b = accum_chars loc cl in
+                  let e =
+                    MLast.ExFun
+                      (loc,
+                       [MLast.PaTyc
+                          (loc, MLast.PaLid (loc, "strm__"),
+                           MLast.TyApp
+                             (loc,
+                              MLast.TyAcc
+                                (loc, MLast.TyUid (loc, "Stream"),
+                                 MLast.TyLid (loc, "t")),
+                              MLast.TyAny loc)),
+                        None, b])
+                  in
+                  Exparser.SpNtr (loc, MLast.PaLid (loc, var), e), Some None
+                in
+                s :: sl
+            in
+            let s =
+              let e = mk_parser loc rl in
+              Exparser.SpNtr (loc, MLast.PaLid (loc, var), e), errk
+            in
             s :: sl, [] :
             'symbs));
       [Gramext.Sself; Gramext.Stoken ("", "?="); Gramext.Stoken ("", "[");
@@ -117,9 +156,7 @@ Grammar.extend
         (fun (errk : 'err_kont) (i : string) (sl, cl : 'symbs)
            (loc : Token.location) ->
            (let s =
-              let buf =
-                List.fold_right (add_char loc) cl (MLast.ExLid (loc, var))
-              in
+              let buf = accum_chars loc cl in
               let e = MLast.ExApp (loc, MLast.ExLid (loc, i), buf) in
               Exparser.SpNtr (loc, MLast.PaLid (loc, var), e), errk
             in
@@ -132,18 +169,18 @@ Grammar.extend
       Gramext.action
         (fun (errk : 'err_kont) (c2 : string) _ (c1 : string)
            (sl, cl : 'symbs) (loc : Token.location) ->
-           (let s =
-              Exparser.SpTrm
-                (loc,
-                 MLast.PaAli
-                   (loc,
-                    MLast.PaRng
-                      (loc, MLast.PaChr (loc, c1), MLast.PaChr (loc, c2)),
-                    MLast.PaLid (loc, "c")),
-                 None),
-              errk
+           (let c = fresh_c cl in
+            let s =
+              let p =
+                MLast.PaAli
+                  (loc,
+                   MLast.PaRng
+                     (loc, MLast.PaChr (loc, c1), MLast.PaChr (loc, c2)),
+                   MLast.PaLid (loc, c))
+              in
+              Exparser.SpTrm (loc, p, None), errk
             in
-            s :: sl, MLast.ExLid (loc, "c") :: cl :
+            s :: sl, MLast.ExLid (loc, c) :: cl :
             'symbs));
       [Gramext.Sself; Gramext.Stoken ("CHAR", ""); Gramext.Stoken ("", "/")],
       Gramext.action
