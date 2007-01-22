@@ -16,6 +16,18 @@ value add_char loc c cl = <:expr< [$c$ :: $cl$] >>;
 value get_buf loc cl = cl;
 *)
 
+value fresh_c cl =
+  let n =
+    List.fold_left
+      (fun n c ->
+         match c with
+         [ <:expr< $lid:_$ >> -> n + 1
+         | _ -> n ])
+      0 cl
+  in
+  if n = 0 then "c" else "c" ^ string_of_int n
+;
+
 value accum_chars loc cl =
   List.fold_right (add_char loc) cl <:expr< $lid:var$ >>
 ;
@@ -56,11 +68,12 @@ EXTEND
           let s = (Exparser.SpTrm loc <:patt< $chr:c$ >> None, None) in
           ([s :: sl], cl)
       | (sl, cl) = symbs; c1 = CHAR; ".."; c2 = CHAR; errk = err_kont ->
+          let c = fresh_c cl in
           let s =
-            (Exparser.SpTrm loc <:patt< ($chr:c1$ .. $chr:c2$ as c) >> None,
-             errk)
+            let p = <:patt< ($chr:c1$ .. $chr:c2$ as $lid:c$) >> in
+            (Exparser.SpTrm loc p None, errk)
           in
-          ([s :: sl], [<:expr< c >> :: cl])
+          ([s :: sl], [<:expr< $lid:c$ >> :: cl])
       | (sl, cl) = symbs; i = LIDENT; errk = err_kont ->
           let s =
             let buf = accum_chars loc cl in
@@ -68,8 +81,8 @@ EXTEND
             (Exparser.SpNtr loc <:patt< $lid:var$ >> e, errk)
           in
           ([s :: sl], [])
-      | (sl, cl) = symbs; "?="; "["; pll = LIST1 lookahead SEP "|";
-        "]"; errk = err_kont ->
+      | (sl, cl) = symbs; "?="; "["; pll = LIST1 lookahead SEP "|"; "]";
+        errk = err_kont ->
           let s = (Exparser.SpLhd loc pll, errk) in
           ([s :: sl], cl)
       | (sl, cl) = symbs; rl = rules; errk = err_kont ->
