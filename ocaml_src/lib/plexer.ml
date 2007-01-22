@@ -122,7 +122,9 @@ and ident3 buf (strm__ : _ Stream.t) =
          ) ->
       Stream.junk strm__; ident3 (B.add buf c) strm__
   | _ -> buf
-and digits kind buf (strm__ : _ Stream.t) =
+;;
+
+let rec digits kind buf (strm__ : _ Stream.t) =
   let d =
     try kind strm__ with
       Stream.Failure -> raise (Stream.Error "ill-formed integer constant")
@@ -136,7 +138,8 @@ and digits_under kind buf (strm__ : _ Stream.t) =
     Some d -> digits_under kind (B.add buf d) strm__
   | _ ->
       match Stream.peek strm__ with
-        Some '_' -> Stream.junk strm__; digits_under kind buf strm__
+        Some '_' ->
+          Stream.junk strm__; digits_under kind (B.add buf '_') strm__
       | Some 'l' -> Stream.junk strm__; "INT_l", B.get buf
       | Some 'L' -> Stream.junk strm__; "INT_L", B.get buf
       | Some 'n' -> Stream.junk strm__; "INT_n", B.get buf
@@ -935,11 +938,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 720, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 720, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 720, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 721, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 721, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 722, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 722, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 722, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 723, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 723, 37)));
        tok_comm = None}
   in
   let glex =

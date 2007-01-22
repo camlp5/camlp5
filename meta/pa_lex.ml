@@ -39,7 +39,9 @@ value mk_parser loc rl =
          let a =
            let b = accum_chars loc cl in
            match a with
-           [ Some e -> <:expr< ($e$, $get_buf loc b$) >>
+           [ Some e ->
+               let loc = MLast.loc_of_expr e in
+               <:expr< let lexbuf = $get_buf loc b$ in $e$ >>
            | None -> b ]
          in
          (List.rev sl, None, a))
