@@ -200,22 +200,30 @@ let number buf (strm__ : _ Stream.t) =
           | _ -> "INT", B.get buf
 ;;
 
-let rec char ctx bp buf (strm__ : _ Stream.t) =
+let rec char_aux ctx bp buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
-    Some '\'' ->
-      Stream.junk strm__;
-      let s = strm__ in
-      if B.is_empty buf then char ctx bp (B.add buf '\'') s else buf
+    Some '\'' -> Stream.junk strm__; buf
   | Some '\\' ->
       Stream.junk strm__;
       begin match Stream.peek strm__ with
         Some c ->
-          Stream.junk strm__; char ctx bp (B.add (B.add buf '\\') c) strm__
+          Stream.junk strm__;
+          char_aux ctx bp (B.add (B.add buf '\\') c) strm__
       | _ -> raise (Stream.Error "")
       end
-  | Some c -> Stream.junk strm__; char ctx bp (B.add buf c) strm__
+  | Some c -> Stream.junk strm__; char_aux ctx bp (B.add buf c) strm__
   | _ ->
       let ep = Stream.count strm__ in err ctx (bp, ep) "char not terminated"
+;;
+
+let char ctx bp buf (strm__ : _ Stream.t) =
+  match Stream.peek strm__ with
+    Some '\'' ->
+      Stream.junk strm__;
+      begin try char_aux ctx bp (B.add buf '\'') strm__ with
+        Stream.Failure -> raise (Stream.Error "")
+      end
+  | _ -> char_aux ctx bp buf strm__
 ;;
 
 let rec string ctx bp buf (strm__ : _ Stream.t) =
@@ -938,11 +946,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 722, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 722, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 722, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 723, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 723, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 727, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 727, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 727, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 728, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 728, 37)));
        tok_comm = None}
   in
   let glex =

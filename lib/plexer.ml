@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.47 2007/01/22 15:17:03 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.48 2007/01/23 19:41:36 deraugla Exp $ *)
 
 open Token;
 
@@ -161,13 +161,18 @@ value number buf =
          | [: :] -> ("INT", B.get buf) ] ! :] -> tok ]
 ;
 
-value rec char ctx bp buf =
+value rec char_aux ctx bp buf =
   parser
-  [ [: `'''; s :] ->
-      if B.is_empty buf then char ctx bp (B.add buf ''') s else buf
-  | [: `'\\'; `c; a = char ctx bp (B.add (B.add buf '\\') c) ! :] -> a
-  | [: `c; a = char ctx bp (B.add buf c) ! :] -> a
+  [ [: `''' :] -> buf
+  | [: `'\\'; `c; buf = char_aux ctx bp (B.add (B.add buf '\\') c) ! :] -> buf
+  | [: `c; buf = char_aux ctx bp (B.add buf c) ! :] -> buf
   | [: :] ep -> err ctx (bp, ep) "char not terminated" ]
+;
+
+value char ctx bp buf =
+  parser
+  [ [: `'''; buf = char_aux ctx bp (B.add buf ''') :] -> buf
+  | [: buf = char_aux ctx bp buf :] -> buf ]
 ;
 
 value rec string ctx bp buf =

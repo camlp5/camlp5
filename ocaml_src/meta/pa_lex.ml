@@ -82,7 +82,7 @@ Grammar.extend
    and act : 'act Grammar.Entry.e = grammar_entry_create "act" in
    [Grammar.Entry.obj (expr : 'expr Grammar.Entry.e), None,
     [None, None,
-     [[Gramext.Stoken ("", "lexbuf")],
+     [[Gramext.Stoken ("", "$")],
       Gramext.action
         (fun _ (loc : Token.location) ->
            (let b = accum_chars loc !gcl in get_buf loc b : 'expr));
