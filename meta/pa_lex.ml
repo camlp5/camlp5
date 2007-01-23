@@ -39,9 +39,7 @@ value mk_parser loc rl =
          let a =
            let b = accum_chars loc cl in
            match a with
-           [ Some e ->
-               let loc = MLast.loc_of_expr e in
-               <:expr< let lexbuf = $get_buf loc b$ in $e$ >>
+           [ Some e -> e
            | None -> b ]
          in
          (List.rev sl, None, a))
@@ -50,24 +48,45 @@ value mk_parser loc rl =
   Exparser.cparser loc None rl
 ;
 
+value gcl = ref [];
+
 EXTEND
   GLOBAL: expr;
   expr:
     [ [ "lexer"; rl = rules ->
-          <:expr< fun $lid:var$ -> $mk_parser loc rl$ >> ] ]
+          <:expr< fun $lid:var$ -> $mk_parser loc rl$ >>
+      | "$" ->
+          let b = accum_chars loc gcl.val in
+          <:expr< $get_buf loc b$ >> ] ]
   ;
   rules:
     [ [ "["; rl = LIST0 rule SEP "|"; "]" -> rl ] ]
   ;
   rule:
-    [ [ (sl, cl) = symbs; a = act -> (sl, cl, a) ] ]
+    [ [ (sl, cl) = symb_list; a = act -> (sl, cl, a) ] ]
+  ;
+  symb_list:
+    [ [ (sl, cl) = symbs -> do { gcl.val := cl; (sl, cl) } ] ]
   ;
   symbs:
-    [ [ (sl, cl) = symbs; c = CHAR ->
-          let s = (Exparser.SpTrm loc <:patt< $chr:c$ >> None, None) in
+    [ [ (sl, cl) = symbs; c = CHAR; errk = err_kont ->
+          let s = (Exparser.SpTrm loc <:patt< $chr:c$ >> None, errk) in
           ([s :: sl], [<:expr< $chr:c$ >> :: cl])
-      | (sl, cl) = symbs; c = CHAR; "/" ->
-          let s = (Exparser.SpTrm loc <:patt< $chr:c$ >> None, None) in
+      | (sl, cl) = symbs; c = CHAR; "/"; errk = err_kont ->
+          let s = (Exparser.SpTrm loc <:patt< $chr:c$ >> None, errk) in
+          ([s :: sl], cl)
+      | (sl, cl) = symbs; "_"; errk = err_kont ->
+          let c = fresh_c cl in
+          let s =
+            let p = <:patt< $lid:c$ >> in
+            (Exparser.SpTrm loc p None, errk)
+          in
+          ([s :: sl], [<:expr< $lid:c$ >> :: cl])
+      | (sl, cl) = symbs; "_"; "/"; errk = err_kont ->
+          let s =
+            let p = <:patt< _ >> in
+            (Exparser.SpTrm loc p None, errk)
+          in
           ([s :: sl], cl)
       | (sl, cl) = symbs; c1 = CHAR; ".."; c2 = CHAR; errk = err_kont ->
           let c = fresh_c cl in

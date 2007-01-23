@@ -51,10 +51,7 @@ let mk_parser loc rl =
          let a =
            let b = accum_chars loc cl in
            match a with
-             Some e ->
-               let loc = MLast.loc_of_expr e in
-               MLast.ExLet
-                 (loc, false, [MLast.PaLid (loc, "lexbuf"), get_buf loc b], e)
+             Some e -> e
            | None -> b
          in
          List.rev sl, None, a)
@@ -63,6 +60,8 @@ let mk_parser loc rl =
   Exparser.cparser loc None rl
 ;;
 
+let gcl = ref [];;
+
 Grammar.extend
   (let _ = (expr : 'expr Grammar.Entry.e) in
    let grammar_entry_create s =
@@ -70,6 +69,8 @@ Grammar.extend
    in
    let rules : 'rules Grammar.Entry.e = grammar_entry_create "rules"
    and rule : 'rule Grammar.Entry.e = grammar_entry_create "rule"
+   and symb_list : 'symb_list Grammar.Entry.e =
+     grammar_entry_create "symb_list"
    and symbs : 'symbs Grammar.Entry.e = grammar_entry_create "symbs"
    and simple_expr : 'simple_expr Grammar.Entry.e =
      grammar_entry_create "simple_expr"
@@ -81,7 +82,11 @@ Grammar.extend
    and act : 'act Grammar.Entry.e = grammar_entry_create "act" in
    [Grammar.Entry.obj (expr : 'expr Grammar.Entry.e), None,
     [None, None,
-     [[Gramext.Stoken ("", "lexer");
+     [[Gramext.Stoken ("", "lexbuf")],
+      Gramext.action
+        (fun _ (loc : Token.location) ->
+           (let b = accum_chars loc !gcl in get_buf loc b : 'expr));
+      [Gramext.Stoken ("", "lexer");
        Gramext.Snterm (Grammar.Entry.obj (rules : 'rules Grammar.Entry.e))],
       Gramext.action
         (fun (rl : 'rules) _ (loc : Token.location) ->
@@ -99,11 +104,18 @@ Grammar.extend
         (fun _ (rl : 'rule list) _ (loc : Token.location) -> (rl : 'rules))]];
     Grammar.Entry.obj (rule : 'rule Grammar.Entry.e), None,
     [None, None,
-     [[Gramext.Snterm (Grammar.Entry.obj (symbs : 'symbs Grammar.Entry.e));
+     [[Gramext.Snterm
+         (Grammar.Entry.obj (symb_list : 'symb_list Grammar.Entry.e));
        Gramext.Snterm (Grammar.Entry.obj (act : 'act Grammar.Entry.e))],
       Gramext.action
-        (fun (a : 'act) (sl, cl : 'symbs) (loc : Token.location) ->
+        (fun (a : 'act) (sl, cl : 'symb_list) (loc : Token.location) ->
            (sl, cl, a : 'rule))]];
+    Grammar.Entry.obj (symb_list : 'symb_list Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Snterm (Grammar.Entry.obj (symbs : 'symbs Grammar.Entry.e))],
+      Gramext.action
+        (fun (sl, cl : 'symbs) (loc : Token.location) ->
+           (gcl := cl; sl, cl : 'symb_list))]];
     Grammar.Entry.obj (symbs : 'symbs Grammar.Entry.e), None,
     [None, None,
      [[], Gramext.action (fun (loc : Token.location) -> ([], [] : 'symbs));
@@ -189,16 +201,45 @@ Grammar.extend
             in
             s :: sl, MLast.ExLid (loc, c) :: cl :
             'symbs));
-      [Gramext.Sself; Gramext.Stoken ("CHAR", ""); Gramext.Stoken ("", "/")],
+      [Gramext.Sself; Gramext.Stoken ("", "_"); Gramext.Stoken ("", "/");
+       Gramext.Snterm
+         (Grammar.Entry.obj (err_kont : 'err_kont Grammar.Entry.e))],
       Gramext.action
-        (fun _ (c : string) (sl, cl : 'symbs) (loc : Token.location) ->
-           (let s = Exparser.SpTrm (loc, MLast.PaChr (loc, c), None), None in
+        (fun (errk : 'err_kont) _ _ (sl, cl : 'symbs)
+           (loc : Token.location) ->
+           (let s =
+              let p = MLast.PaAny loc in Exparser.SpTrm (loc, p, None), errk
+            in
             s :: sl, cl :
             'symbs));
-      [Gramext.Sself; Gramext.Stoken ("CHAR", "")],
+      [Gramext.Sself; Gramext.Stoken ("", "_");
+       Gramext.Snterm
+         (Grammar.Entry.obj (err_kont : 'err_kont Grammar.Entry.e))],
       Gramext.action
-        (fun (c : string) (sl, cl : 'symbs) (loc : Token.location) ->
-           (let s = Exparser.SpTrm (loc, MLast.PaChr (loc, c), None), None in
+        (fun (errk : 'err_kont) _ (sl, cl : 'symbs) (loc : Token.location) ->
+           (let c = fresh_c cl in
+            let s =
+              let p = MLast.PaLid (loc, c) in
+              Exparser.SpTrm (loc, p, None), errk
+            in
+            s :: sl, MLast.ExLid (loc, c) :: cl :
+            'symbs));
+      [Gramext.Sself; Gramext.Stoken ("CHAR", ""); Gramext.Stoken ("", "/");
+       Gramext.Snterm
+         (Grammar.Entry.obj (err_kont : 'err_kont Grammar.Entry.e))],
+      Gramext.action
+        (fun (errk : 'err_kont) _ (c : string) (sl, cl : 'symbs)
+           (loc : Token.location) ->
+           (let s = Exparser.SpTrm (loc, MLast.PaChr (loc, c), None), errk in
+            s :: sl, cl :
+            'symbs));
+      [Gramext.Sself; Gramext.Stoken ("CHAR", "");
+       Gramext.Snterm
+         (Grammar.Entry.obj (err_kont : 'err_kont Grammar.Entry.e))],
+      Gramext.action
+        (fun (errk : 'err_kont) (c : string) (sl, cl : 'symbs)
+           (loc : Token.location) ->
+           (let s = Exparser.SpTrm (loc, MLast.PaChr (loc, c), None), errk in
             s :: sl, MLast.ExChr (loc, c) :: cl :
             'symbs))]];
     Grammar.Entry.obj (simple_expr : 'simple_expr Grammar.Entry.e), None,
