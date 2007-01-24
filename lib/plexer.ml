@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.52 2007/01/24 13:31:11 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.53 2007/01/24 13:43:56 deraugla Exp $ *)
 
 open Token;
 
@@ -133,21 +133,15 @@ value exponent_part =
     decimal_digits_under! ]
 ;
 
-value number buf =
-  parser
-  [ [: buf = decimal_digits_under buf;
-       tok =
-         parser
-         [ [: `'.'; buf = decimal_digits_under (B.add buf '.') !;
-              buf =
-                parser
-                [ [: buf = exponent_part buf :] -> buf
-                | [: :] -> buf ] :] -> ("FLOAT", B.get buf)
-         | [: buf = exponent_part buf :] -> ("FLOAT", B.get buf)
-         | [: `'l' :] -> ("INT_l", B.get buf)
-         | [: `'L' :] -> ("INT_L", B.get buf)
-         | [: `'n' :] -> ("INT_n", B.get buf)
-         | [: :] -> ("INT", B.get buf) ] ! :] -> tok ]
+value number =
+  lexer
+  [ decimal_digits_under
+    [ '.' decimal_digits_under! [ exponent_part | ] -> ("FLOAT", $)
+    | exponent_part -> ("FLOAT", $)
+    | 'l'/ -> ("INT_l", $)
+    | 'L'/ -> ("INT_L", $)
+    | 'n'/ -> ("INT_n", $)
+    | -> ("INT", $) ] ]
 ;
 
 value rec char_aux ctx bp buf =
