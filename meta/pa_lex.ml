@@ -74,6 +74,14 @@ EXTEND
   GLOBAL: expr;
   expr:
     [ [ "lexer"; rl = rules ->
+          let rl =
+            match only_or_patt_rules loc rl with
+            [ Some p ->
+                let p = <:patt< ($p$ as c) >> in
+                let e = <:expr< c >> in
+                [([(Exparser.SpTrm loc p None, None)], [e], None)]
+            | None -> rl ]
+          in
           <:expr< fun $lid:var$ -> $mk_parser loc rl$ >>
       | "$" ->
           let b = accum_chars loc gcl.val in

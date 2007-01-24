@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.50 2007/01/24 09:47:23 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.51 2007/01/24 10:26:48 deraugla Exp $ *)
 
 open Token;
 
@@ -110,21 +110,21 @@ and ident3 =
   | ]
 ;
 
-value rec digits kind buf =
-  parser
-  [ [: d = kind; tok = digits_under kind (B.add buf d) ! :] -> tok
-  | [: :] -> raise (Stream.Error "ill-formed integer constant") ]
-and digits_under kind buf =
-  parser
-  [ [: d = kind; s :] -> digits_under kind (B.add buf d) s
-  | [: `'_'; s :] -> digits_under kind (B.add buf '_') s
-  | [: `'l' :] -> ("INT_l", B.get buf)
-  | [: `'L' :] -> ("INT_L", B.get buf)
-  | [: `'n' :] -> ("INT_n", B.get buf)
-  | [: :] -> ("INT", B.get buf) ]
-and octal = parser [: `('0'..'7' as d) :] -> d
-and hexa = parser [: `('0'..'9' | 'a'..'f' | 'A'..'F' as d) :] -> d
-and binary = parser [: `('0'..'1' as d) :] -> d;
+value rec digits kind =
+  lexer
+  [ kind (digits_under kind)!
+  | -> raise (Stream.Error "ill-formed integer constant") ]
+and digits_under kind =
+  lexer
+  [ kind (digits_under kind)!
+  | '_' (digits_under kind)!
+  | 'l'/ -> ("INT_l", $)
+  | 'L'/ -> ("INT_L", $)
+  | 'n'/ -> ("INT_n", $)
+  | -> ("INT", $) ]
+and octal = lexer [ '0'..'7' ]
+and hexa = lexer [ '0'..'9' | 'a'..'f' | 'A'..'F' ]
+and binary = lexer [ '0'..'1' ];
 
 value exponent_part buf =
   parser

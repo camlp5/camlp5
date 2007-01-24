@@ -114,7 +114,15 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (rules : 'rules Grammar.Entry.e))],
       Gramext.action
         (fun (rl : 'rules) _ (loc : Token.location) ->
-           (MLast.ExFun
+           (let rl =
+              match only_or_patt_rules loc rl with
+                Some p ->
+                  let p = MLast.PaAli (loc, p, MLast.PaLid (loc, "c")) in
+                  let e = MLast.ExLid (loc, "c") in
+                  [[Exparser.SpTrm (loc, p, None), None], [e], None]
+              | None -> rl
+            in
+            MLast.ExFun
               (loc, [MLast.PaLid (loc, var), None, mk_parser loc rl]) :
             'expr))]];
     Grammar.Entry.obj (rules : 'rules Grammar.Entry.e), None,
