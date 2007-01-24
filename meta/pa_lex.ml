@@ -1,5 +1,6 @@
 (* camlp4r *)
 (* $Id$ *)
+(* Copyright (c) INRIA 2007 *)
 
 (* Simplified syntax of parsers of characters streams *)
 
