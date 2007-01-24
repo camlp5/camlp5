@@ -163,10 +163,11 @@ let exponent_part buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some ('e' | 'E' as c) ->
       Stream.junk strm__;
+      let buf = B.add buf c in
       let buf =
         match Stream.peek strm__ with
-          Some ('+' | '-' as c1) -> Stream.junk strm__; B.add (B.add buf c) c1
-        | _ -> B.add buf c
+          Some ('+' | '-' as c) -> Stream.junk strm__; B.add buf c
+        | _ -> buf
       in
       begin match Stream.peek strm__ with
         Some ('0'..'9' as c) ->
@@ -947,11 +948,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 720, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 720, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 720, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 721, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 721, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 716, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 716, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 716, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 717, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 717, 37)));
        tok_comm = None}
   in
   let glex =

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.51 2007/01/24 10:26:48 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.52 2007/01/24 13:31:11 deraugla Exp $ *)
 
 open Token;
 
@@ -126,15 +126,11 @@ and octal = lexer [ '0'..'7' ]
 and hexa = lexer [ '0'..'9' | 'a'..'f' | 'A'..'F' ]
 and binary = lexer [ '0'..'1' ];
 
-value exponent_part buf =
-  parser
-  [ [: `('e' | 'E' as c);
-       buf =
-         parser
-         [ [: `('+' | '-' as c1) :] -> B.add (B.add buf c) c1
-         | [: :] -> B.add buf c ] !;
-       `('0'..'9' as c) ? "ill-formed floating-point constant";
-       buf = decimal_digits_under (B.add buf c) ! :] -> buf ]
+value exponent_part =
+  lexer
+  [ [ 'e' | 'E' ] [ '+' | '-' | ]
+    '0'..'9' ? "ill-formed floating-point constant"
+    decimal_digits_under! ]
 ;
 
 value number buf =

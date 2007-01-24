@@ -60,28 +60,28 @@ let mk_parser loc rl =
   Exparser.cparser loc None rl
 ;;
 
-let list_patt_of_rules rl =
-  List.map
-    (function
-       [Exparser.SpTrm (_, p, None), None], [_], None ->
-         begin match p with
-           MLast.PaChr (_, _) -> p
-         | MLast.PaAli (_, p, MLast.PaLid (_, _)) -> p
-         | p -> p
-         end
-     | _ -> raise Not_found)
-    rl
+let isolate_char_patt_list =
+  let rec loop pl =
+    function
+      ([Exparser.SpTrm (_, p, None), None], [_], None) :: rl ->
+        let p =
+          match p with
+            MLast.PaChr (_, _) -> p
+          | MLast.PaAli (_, p, MLast.PaLid (_, _)) -> p
+          | p -> p
+        in
+        loop (p :: pl) rl
+    | rl -> List.rev pl, rl
+  in
+  loop []
 ;;
 
-let only_or_patt_rules loc rl =
-  match
-    try Some (list_patt_of_rules rl) with
-      Not_found -> None
-  with
-    Some (p :: pl) ->
+let isolate_char_patt loc rl =
+  match isolate_char_patt_list rl with
+    p :: pl, rl ->
       let p = List.fold_left (fun p1 p2 -> MLast.PaOrp (loc, p1, p2)) p pl in
-      Some p
-  | Some [] | None -> None
+      Some p, rl
+  | _ -> None, rl
 ;;
 
 let gcl = ref [];;
@@ -115,12 +115,12 @@ Grammar.extend
       Gramext.action
         (fun (rl : 'rules) _ (loc : Token.location) ->
            (let rl =
-              match only_or_patt_rules loc rl with
-                Some p ->
+              match isolate_char_patt loc rl with
+                Some p, rl ->
                   let p = MLast.PaAli (loc, p, MLast.PaLid (loc, "c")) in
                   let e = MLast.ExLid (loc, "c") in
-                  [[Exparser.SpTrm (loc, p, None), None], [e], None]
-              | None -> rl
+                  ([Exparser.SpTrm (loc, p, None), None], [e], None) :: rl
+              | None, rl -> rl
             in
             MLast.ExFun
               (loc, [MLast.PaLid (loc, var), None, mk_parser loc rl]) :
@@ -158,15 +158,33 @@ Grammar.extend
       Gramext.action
         (fun (errk : 'err_kont) (rl : 'rules) (sl, cl : 'symbs)
            (loc : Token.location) ->
-           (match only_or_patt_rules loc rl with
-              Some p ->
+           (match isolate_char_patt loc rl with
+              Some p, [] ->
                 let c = fresh_c cl in
                 let s =
                   let p = MLast.PaAli (loc, p, MLast.PaLid (loc, c)) in
                   Exparser.SpTrm (loc, p, None), errk
                 in
                 s :: sl, MLast.ExLid (loc, c) :: cl
-            | None ->
+            | x ->
+                let rl =
+                  match x with
+                    Some p, rl ->
+                      let r =
+                        let p =
+                          MLast.PaAli (loc, p, MLast.PaLid (loc, "c"))
+                        in
+                        let e = MLast.ExLid (loc, "c") in
+                        [Exparser.SpTrm (loc, p, None), None], [e], None
+                      in
+                      r :: rl
+                  | None, rl -> rl
+                in
+                let errk =
+                  match List.rev rl with
+                    ([], _, _) :: _ -> Some None
+                  | _ -> errk
+                in
                 let sl =
                   if cl = [] then sl
                   else

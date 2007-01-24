@@ -48,24 +48,27 @@ value mk_parser loc rl =
   Exparser.cparser loc None rl
 ;
 
-value list_patt_of_rules rl =
-  List.map
-   (fun
-    [ ([(Exparser.SpTrm _ p None, None)], [_], None) ->
-        match p with
-        [ <:patt< $chr:_$ >> -> p
-        | <:patt< ($p$ as $lid:_$) >> -> p
-        | p -> p ]
-    | _ -> raise Not_found ])
-   rl
+value isolate_char_patt_list =
+  loop [] where rec loop pl =
+    fun
+    [ [([(Exparser.SpTrm _ p None, None)], [_], None) :: rl] ->
+        let p =
+          match p with
+          [ <:patt< $chr:_$ >> -> p
+          | <:patt< ($p$ as $lid:_$) >> -> p
+          | p -> p ]
+        in
+        loop [p :: pl] rl
+    | rl -> (List.rev pl, rl) ]
 ;
 
-value only_or_patt_rules loc rl =
-  match try Some (list_patt_of_rules rl) with [ Not_found -> None ] with
-  [ Some [p :: pl] ->
+value isolate_char_patt loc rl =
+  match isolate_char_patt_list rl with
+  [ ([p :: pl], rl) ->
       let p = List.fold_left (fun p1 p2 -> <:patt< $p1$ | $p2$ >>) p pl in
-      Some p
-  | Some [] | None -> None ]
+      (Some p, rl)
+  | _ ->
+      (None, rl) ]
 ;
 
 value gcl = ref [];
@@ -75,12 +78,12 @@ EXTEND
   expr:
     [ [ "lexer"; rl = rules ->
           let rl =
-            match only_or_patt_rules loc rl with
-            [ Some p ->
+            match isolate_char_patt loc rl with
+            [ (Some p, rl) ->
                 let p = <:patt< ($p$ as c) >> in
                 let e = <:expr< c >> in
-                [([(Exparser.SpTrm loc p None, None)], [e], None)]
-            | None -> rl ]
+                [([(Exparser.SpTrm loc p None, None)], [e], None) :: rl]
+            | (None, rl) -> rl ]
           in
           <:expr< fun $lid:var$ -> $mk_parser loc rl$ >>
       | "$" ->
@@ -135,15 +138,31 @@ EXTEND
           let s = (Exparser.SpLhd loc pll, errk) in
           ([s :: sl], cl)
       | (sl, cl) = symbs; rl = rules; errk = err_kont ->
-          match only_or_patt_rules loc rl with
-          [ Some p ->
+          match isolate_char_patt loc rl with
+          [ (Some p, []) ->
               let c = fresh_c cl in
               let s =
                 let p = <:patt< ($p$ as $lid:c$) >> in
                 (Exparser.SpTrm loc p None, errk)
               in
               ([s :: sl], [<:expr< $lid:c$ >> :: cl])
-          | None ->
+          | x ->
+              let rl =
+                match x with
+                [ (Some p, rl) ->
+                    let r =
+                      let p = <:patt< ($p$ as c) >> in
+                      let e = <:expr< c >> in
+                      ([(Exparser.SpTrm loc p None, None)], [e], None)
+                    in
+                    [r :: rl]
+                | (None, rl) -> rl ]
+              in
+              let errk =
+                match List.rev rl with
+                [ [([], _, _) :: _] -> Some None
+                | _ -> errk ]
+              in
               let sl =
                 if cl = [] then sl
                 else
