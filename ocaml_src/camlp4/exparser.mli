@@ -26,6 +26,8 @@ type sexp_comp =
   | SeNtr of MLast.loc * MLast.expr
 ;;
 
+val strm_n : string;;
+
 val cparser :
   MLast.loc -> MLast.patt option ->
     ((spat_comp * MLast.expr option option) list * MLast.patt option *

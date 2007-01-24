@@ -1,6 +1,8 @@
 (* camlp4r *)
 (* $Id$ *)
 
+(* Simplified syntax of parsers of characters streams *)
+
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
 

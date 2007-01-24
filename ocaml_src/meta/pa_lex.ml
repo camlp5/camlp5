@@ -190,19 +190,7 @@ Grammar.extend
                   else
                     let s =
                       let b = accum_chars loc cl in
-                      let e =
-                        MLast.ExFun
-                          (loc,
-                           [MLast.PaTyc
-                              (loc, MLast.PaLid (loc, "strm__"),
-                               MLast.TyApp
-                                 (loc,
-                                  MLast.TyAcc
-                                    (loc, MLast.TyUid (loc, "Stream"),
-                                     MLast.TyLid (loc, "t")),
-                                  MLast.TyAny loc)),
-                            None, b])
-                      in
+                      let e = Exparser.cparser loc None [[], None, b] in
                       Exparser.SpNtr (loc, MLast.PaLid (loc, var), e),
                       Some None
                     in
