@@ -1,4 +1,4 @@
-(* camlp4r *)
+(* camlp4r pa_lex.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp4                                  *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.48 2007/01/23 19:41:36 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.49 2007/01/24 03:39:24 deraugla Exp $ *)
 
 open Token;
 
@@ -87,12 +87,8 @@ value stream_peek_nth n strm =
     | [_ :: l] -> loop (n - 1) l ]
 ;
 
-value rec decimal_digits_under buf =
-  parser
-  [ [: `('0'..'9' | '_' as c);
-       buf = decimal_digits_under (B.add buf c) ! :] ->
-      buf
-  | [: :] -> buf ]
+value rec decimal_digits_under =
+  lexer [ [ '0'..'9' | '_' ] decimal_digits_under! | ]
 ;
 
 value rec ident buf =

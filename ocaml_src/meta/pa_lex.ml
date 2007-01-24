@@ -60,6 +60,30 @@ let mk_parser loc rl =
   Exparser.cparser loc None rl
 ;;
 
+let list_patt_of_rules rl =
+  List.map
+    (function
+       [Exparser.SpTrm (_, p, None), None], [_], None ->
+         begin match p with
+           MLast.PaChr (_, _) -> p
+         | MLast.PaAli (_, p, MLast.PaLid (_, _)) -> p
+         | p -> p
+         end
+     | _ -> raise Not_found)
+    rl
+;;
+
+let only_or_patt_rules loc rl =
+  match
+    try Some (list_patt_of_rules rl) with
+      Not_found -> None
+  with
+    Some (p :: pl) ->
+      let p = List.fold_left (fun p1 p2 -> MLast.PaOrp (loc, p1, p2)) p pl in
+      Some p
+  | Some [] | None -> None
+;;
+
 let gcl = ref [];;
 
 Grammar.extend
@@ -126,33 +150,43 @@ Grammar.extend
       Gramext.action
         (fun (errk : 'err_kont) (rl : 'rules) (sl, cl : 'symbs)
            (loc : Token.location) ->
-           (let sl =
-              if cl = [] then sl
-              else
+           (match only_or_patt_rules loc rl with
+              Some p ->
+                let c = fresh_c cl in
                 let s =
-                  let b = accum_chars loc cl in
-                  let e =
-                    MLast.ExFun
-                      (loc,
-                       [MLast.PaTyc
-                          (loc, MLast.PaLid (loc, "strm__"),
-                           MLast.TyApp
-                             (loc,
-                              MLast.TyAcc
-                                (loc, MLast.TyUid (loc, "Stream"),
-                                 MLast.TyLid (loc, "t")),
-                              MLast.TyAny loc)),
-                        None, b])
-                  in
-                  Exparser.SpNtr (loc, MLast.PaLid (loc, var), e), Some None
+                  let p = MLast.PaAli (loc, p, MLast.PaLid (loc, c)) in
+                  Exparser.SpTrm (loc, p, None), errk
                 in
-                s :: sl
-            in
-            let s =
-              let e = mk_parser loc rl in
-              Exparser.SpNtr (loc, MLast.PaLid (loc, var), e), errk
-            in
-            s :: sl, [] :
+                s :: sl, MLast.ExLid (loc, c) :: cl
+            | None ->
+                let sl =
+                  if cl = [] then sl
+                  else
+                    let s =
+                      let b = accum_chars loc cl in
+                      let e =
+                        MLast.ExFun
+                          (loc,
+                           [MLast.PaTyc
+                              (loc, MLast.PaLid (loc, "strm__"),
+                               MLast.TyApp
+                                 (loc,
+                                  MLast.TyAcc
+                                    (loc, MLast.TyUid (loc, "Stream"),
+                                     MLast.TyLid (loc, "t")),
+                                  MLast.TyAny loc)),
+                            None, b])
+                      in
+                      Exparser.SpNtr (loc, MLast.PaLid (loc, var), e),
+                      Some None
+                    in
+                    s :: sl
+                in
+                let s =
+                  let e = mk_parser loc rl in
+                  Exparser.SpNtr (loc, MLast.PaLid (loc, var), e), errk
+                in
+                s :: sl, [] :
             'symbs));
       [Gramext.Sself; Gramext.Stoken ("", "?="); Gramext.Stoken ("", "[");
        Gramext.Slist1sep

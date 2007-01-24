@@ -48,6 +48,26 @@ value mk_parser loc rl =
   Exparser.cparser loc None rl
 ;
 
+value list_patt_of_rules rl =
+  List.map
+   (fun
+    [ ([(Exparser.SpTrm _ p None, None)], [_], None) ->
+        match p with
+        [ <:patt< $chr:_$ >> -> p
+        | <:patt< ($p$ as $lid:_$) >> -> p
+        | p -> p ]
+    | _ -> raise Not_found ])
+   rl
+;
+
+value only_or_patt_rules loc rl =
+  match try Some (list_patt_of_rules rl) with [ Not_found -> None ] with
+  [ Some [p :: pl] ->
+      let p = List.fold_left (fun p1 p2 -> <:patt< $p1$ | $p2$ >>) p pl in
+      Some p
+  | Some [] | None -> None ]
+;
+
 value gcl = ref [];
 
 EXTEND
@@ -107,21 +127,30 @@ EXTEND
           let s = (Exparser.SpLhd loc pll, errk) in
           ([s :: sl], cl)
       | (sl, cl) = symbs; rl = rules; errk = err_kont ->
-          let sl =
-            if cl = [] then sl
-            else
+          match only_or_patt_rules loc rl with
+          [ Some p ->
+              let c = fresh_c cl in
               let s =
-                let b = accum_chars loc cl in
-                let e = <:expr< fun (strm__ : Stream.t _) -> $b$ >> in
-                (Exparser.SpNtr loc <:patt< $lid:var$ >> e, Some None)
+                let p = <:patt< ($p$ as $lid:c$) >> in
+                (Exparser.SpTrm loc p None, errk)
               in
-              [s :: sl]
-          in
-          let s =
-            let e = mk_parser loc rl in
-            (Exparser.SpNtr loc <:patt< $lid:var$ >> e, errk)
-          in
-          ([s :: sl], [])
+              ([s :: sl], [<:expr< $lid:c$ >> :: cl])
+          | None ->
+              let sl =
+                if cl = [] then sl
+                else
+                  let s =
+                    let b = accum_chars loc cl in
+                    let e = <:expr< fun (strm__ : Stream.t _) -> $b$ >> in
+                    (Exparser.SpNtr loc <:patt< $lid:var$ >> e, Some None)
+                  in
+                  [s :: sl]
+              in
+              let s =
+                let e = mk_parser loc rl in
+                (Exparser.SpNtr loc <:patt< $lid:var$ >> e, errk)
+              in
+              ([s :: sl], []) ]
       | -> ([], []) ] ]
   ;
   simple_expr:

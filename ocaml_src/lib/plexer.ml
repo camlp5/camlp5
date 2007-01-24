@@ -1,4 +1,4 @@
-(* camlp4r *)
+(* camlp4r pa_lex.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp4                                  *)
@@ -946,11 +946,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 727, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 727, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 727, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 728, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 728, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 723, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 723, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 723, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 724, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 724, 37)));
        tok_comm = None}
   in
   let glex =

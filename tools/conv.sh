@@ -1,6 +1,6 @@
 #!/bin/bash
-DIR=$(expr "$0" : "\(.*\)/.*" "|" ".")
 
+DIR=$(expr "$0" : "\(.*\)/.*" "|" ".")
 INCL=
 FILE=
 OPTS=
