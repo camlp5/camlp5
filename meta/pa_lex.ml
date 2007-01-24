@@ -168,7 +168,7 @@ EXTEND
                 else
                   let s =
                     let b = accum_chars loc cl in
-                    let e = <:expr< fun (strm__ : Stream.t _) -> $b$ >> in
+                    let e = Exparser.cparser loc None [([], None, b)] in
                     (Exparser.SpNtr loc <:patt< $lid:var$ >> e, Some None)
                   in
                   [s :: sl]
