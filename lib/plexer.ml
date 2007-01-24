@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.54 2007/01/24 19:54:55 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.55 2007/01/24 21:04:22 deraugla Exp $ *)
 
 open Token;
 
@@ -144,31 +144,30 @@ value number =
     | -> ("INT", $buf) ] ]
 ;
 
-value rec char_aux ctx bp buf =
-  parser
-  [ [: `''' :] -> buf
-  | [: `'\\'; `c; buf = char_aux ctx bp (B.add (B.add buf '\\') c) ! :] -> buf
-  | [: `c; buf = char_aux ctx bp (B.add buf c) ! :] -> buf
-  | [: :] ep -> err ctx (bp, ep) "char not terminated" ]
+value rec char_aux ctx bp =
+  lexer
+  [ '''/
+  | '\\' _ (char_aux ctx bp)!
+  | _ (char_aux ctx bp)!
+  | -> err ctx (bp, $pos) "char not terminated" ]
 ;
 
 value char ctx bp =
   lexer [ ''' (char_aux ctx bp) | (char_aux ctx bp) ]
 ;
 
-value rec string ctx bp buf =
-  parser bp1
-  [ [: `'"' :] -> buf
-  | [: `'\\'; `c;
-       a =
-         string ctx bp
-           (B.add (B.add buf '\\') (ctx.line_cnt (bp1 + 1) c)) ! :] ->
-      a
-  | [: `c; a = string ctx bp (B.add buf (ctx.line_cnt bp1 c)) ! :] -> a
-  | [: :] ep -> err ctx (bp, ep) "string not terminated" ]
+value any ctx buf =
+  parser bp
+  [ [: `c :] -> B.add buf (ctx.line_cnt bp c) ]
 ;
 
-value incr_line_nb buf _ = do { incr Token.line_nb.val; buf };
+value rec string ctx bp =
+  lexer
+  [ '"'/
+  | '\\' (any ctx) (string ctx bp)!
+  | (any ctx) (string ctx bp)!
+  | -> err ctx (bp, $pos) "string not terminated" ]
+;
 
 value comment ctx bp =
   comment where rec comment =
@@ -177,8 +176,7 @@ value comment ctx bp =
     | '(' [ '*' comment! | ] comment!
     | '"' (string ctx bp) comment!
     | ''' [ ?= [ _ ''' | '\\' _ ] (char ctx bp)! | ] comment!
-    | [ '\n' | '\r' ] incr_line_nb! comment!
-    | _ comment!
+    | (any ctx) comment!
     | -> err ctx (bp, $pos) "comment not terminated" ]
 ;
 

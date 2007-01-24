@@ -214,8 +214,7 @@ let rec char_aux ctx bp buf (strm__ : _ Stream.t) =
       | _ -> raise (Stream.Error "")
       end
   | Some c -> Stream.junk strm__; char_aux ctx bp (B.add buf c) strm__
-  | _ ->
-      let ep = Stream.count strm__ in err ctx (bp, ep) "char not terminated"
+  | _ -> err ctx (bp, Stream.count strm__) "char not terminated"
 ;;
 
 let char ctx bp buf (strm__ : _ Stream.t) =
@@ -228,27 +227,31 @@ let char ctx bp buf (strm__ : _ Stream.t) =
   | _ -> char_aux ctx bp buf strm__
 ;;
 
+let any ctx buf (strm__ : _ Stream.t) =
+  let bp = Stream.count strm__ in
+  match Stream.peek strm__ with
+    Some c -> Stream.junk strm__; B.add buf (ctx.line_cnt bp c)
+  | _ -> raise Stream.Failure
+;;
+
 let rec string ctx bp buf (strm__ : _ Stream.t) =
-  let bp1 = Stream.count strm__ in
   match Stream.peek strm__ with
     Some '\"' -> Stream.junk strm__; buf
   | Some '\\' ->
       Stream.junk strm__;
-      begin match Stream.peek strm__ with
-        Some c ->
-          Stream.junk strm__;
-          string ctx bp (B.add (B.add buf '\\') (ctx.line_cnt (bp1 + 1) c))
-            strm__
-      | _ -> raise (Stream.Error "")
-      end
-  | Some c ->
-      Stream.junk strm__;
-      string ctx bp (B.add buf (ctx.line_cnt bp1 c)) strm__
+      let buf =
+        try any ctx (B.add buf '\\') strm__ with
+          Stream.Failure -> raise (Stream.Error "")
+      in
+      string ctx bp buf strm__
   | _ ->
-      let ep = Stream.count strm__ in err ctx (bp, ep) "string not terminated"
+      match
+        try Some (any ctx buf strm__) with
+          Stream.Failure -> None
+      with
+        Some buf -> string ctx bp buf strm__
+      | _ -> err ctx (bp, Stream.count strm__) "string not terminated"
 ;;
-
-let incr_line_nb buf _ = incr !(Token.line_nb); buf;;
 
 let comment ctx bp =
   let rec comment buf (strm__ : _ Stream.t) =
@@ -285,11 +288,13 @@ let comment ctx bp =
           | _ -> buf
         in
         comment buf strm__
-    | Some ('\n' | '\r' as c) ->
-        Stream.junk strm__;
-        let buf = incr_line_nb (B.add buf c) strm__ in comment buf strm__
-    | Some c -> Stream.junk strm__; comment (B.add buf c) strm__
-    | _ -> err ctx (bp, Stream.count strm__) "comment not terminated"
+    | _ ->
+        match
+          try Some (any ctx buf strm__) with
+            Stream.Failure -> None
+        with
+          Some buf -> comment buf strm__
+        | _ -> err ctx (bp, Stream.count strm__) "comment not terminated"
   in
   comment
 ;;
@@ -919,11 +924,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 672, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 672, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 672, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 673, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 673, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 670, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 670, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 670, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 671, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 671, 37)));
        tok_comm = None}
   in
   let glex =
