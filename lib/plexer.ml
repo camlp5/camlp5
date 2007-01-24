@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.53 2007/01/24 13:43:56 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.54 2007/01/24 19:54:55 deraugla Exp $ *)
 
 open Token;
 
@@ -118,10 +118,10 @@ and digits_under kind =
   lexer
   [ kind (digits_under kind)!
   | '_' (digits_under kind)!
-  | 'l'/ -> ("INT_l", $)
-  | 'L'/ -> ("INT_L", $)
-  | 'n'/ -> ("INT_n", $)
-  | -> ("INT", $) ]
+  | 'l'/ -> ("INT_l", $buf)
+  | 'L'/ -> ("INT_L", $buf)
+  | 'n'/ -> ("INT_n", $buf)
+  | -> ("INT", $buf) ]
 and octal = lexer [ '0'..'7' ]
 and hexa = lexer [ '0'..'9' | 'a'..'f' | 'A'..'F' ]
 and binary = lexer [ '0'..'1' ];
@@ -136,12 +136,12 @@ value exponent_part =
 value number =
   lexer
   [ decimal_digits_under
-    [ '.' decimal_digits_under! [ exponent_part | ] -> ("FLOAT", $)
-    | exponent_part -> ("FLOAT", $)
-    | 'l'/ -> ("INT_l", $)
-    | 'L'/ -> ("INT_L", $)
-    | 'n'/ -> ("INT_n", $)
-    | -> ("INT", $) ] ]
+    [ '.' decimal_digits_under! [ exponent_part | ] -> ("FLOAT", $buf)
+    | exponent_part -> ("FLOAT", $buf)
+    | 'l'/ -> ("INT_l", $buf)
+    | 'L'/ -> ("INT_L", $buf)
+    | 'n'/ -> ("INT_n", $buf)
+    | -> ("INT", $buf) ] ]
 ;
 
 value rec char_aux ctx bp buf =
@@ -152,10 +152,8 @@ value rec char_aux ctx bp buf =
   | [: :] ep -> err ctx (bp, ep) "char not terminated" ]
 ;
 
-value char ctx bp buf =
-  parser
-  [ [: `'''; buf = char_aux ctx bp (B.add buf ''') :] -> buf
-  | [: buf = char_aux ctx bp buf :] -> buf ]
+value char ctx bp =
+  lexer [ ''' (char_aux ctx bp) | (char_aux ctx bp) ]
 ;
 
 value rec string ctx bp buf =
@@ -174,51 +172,14 @@ value incr_line_nb buf _ = do { incr Token.line_nb.val; buf };
 
 value comment ctx bp =
   comment where rec comment =
-    parser
-    [ [: `'(';
-        a =
-          parser
-          [ [: `'*'; _ = comment !; a = comment ! :] -> a
-          | [: a = comment :] -> a ] ! :] -> a
-    | [: `'*';
-        a =
-          parser
-          [ [: `')' :] -> ()
-          | [: a = comment :] -> a ] ! :] -> a
-    | [: `'"'; _ = string ctx bp B.empty; a = comment ! :] -> a
-    | [: `''';
-         a =
-           parser
-           [ [: `'''; a = comment ! :] -> a
-           | [: `'\\';
-                a =
-                  parser
-                  [ [: `'''; a = comment ! :] -> a
-                  | [: `'\\' | '"' | 'n' | 't' | 'b' | 'r';
-                       a =
-                         parser
-                         [ [: `'''; a = comment ! :] -> a
-                         | [: a = comment :] -> a ] ! :] -> a
-                  | [: `'0'..'9';
-                       a =
-                         parser
-                          [ [: `'0'..'9';
-                              a =
-                                parser
-                                [ [: `'0'..'9';
-                                     a =
-                                       parser
-                                       [ [: `'''; a = comment ! :] -> a
-                                       | [: a = comment :] -> a ] ! :] -> a
-                                | [: a = comment :] -> a ] ! :] -> a
-                          | [: a = comment :] -> a ] ! :] -> a
-                  | [: a = comment :] -> a ] ! :] -> a
-           | [: ?= [_; ''']; _ = Stream.junk !; _ = Stream.junk !;
-                a = comment ! :] -> a
-           | [: a = comment :] -> a ] ! :] -> a
-    | [: `'\n' | '\r'; () = incr_line_nb () !; a = comment ! :] -> a
-    | [: `c; a = comment ! :] -> a
-    | [: :] ep -> err ctx (bp, ep) "comment not terminated" ]
+    lexer
+    [ '*' [ ')' | comment ]!
+    | '(' [ '*' comment! | ] comment!
+    | '"' (string ctx bp) comment!
+    | ''' [ ?= [ _ ''' | '\\' _ ] (char ctx bp)! | ] comment!
+    | [ '\n' | '\r' ] incr_line_nb! comment!
+    | _ comment!
+    | -> err ctx (bp, $pos) "comment not terminated" ]
 ;
 
 value rec quotation ctx bp buf =
@@ -305,7 +266,7 @@ value rec maybe_locate ctx bp buf =
   | [: :] ep -> err ctx (bp, ep) "antiquotation not terminated" ]
 ;
 
-value dollar ctx bp buf =
+value dollar_for_anti ctx bp buf =
   parser
   [ [: `'$' :] -> ("ANTIQUOT", ":" ^ B.get buf)
   | [: `('a'..'z' | 'A'..'Z' as c); a = antiquot ctx bp (B.add buf c) ! :] ->
@@ -316,13 +277,14 @@ value dollar ctx bp buf =
       ("ANTIQUOT", k ^ ":" ^ locate_or_antiquot_rest ctx bp B.empty s)
   | [: `'\\'; `c; s :] ->
       ("ANTIQUOT", ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) s)
-  | [: s :] ->
-      if ctx.dollar_for_antiquotation then
-        match s with parser
-        [ [: `c :] ->
-            ("ANTIQUOT", ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) s)
-        | [: :] ep -> err ctx (bp, ep) "antiquotation not terminated" ]
-      else ("", B.get (ident2 (B.char '$') s)) ]
+  | [: `c; s :] ->
+      ("ANTIQUOT", ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) s)
+  | [: :] ep -> err ctx (bp, ep) "antiquotation not terminated" ]
+;
+
+value dollar ctx bp buf strm =
+  if ctx.dollar_for_antiquotation then dollar_for_anti ctx bp buf strm
+  else ("", B.get (ident2 (B.char '$') strm))
 ;
 
 value rec linedir n s =
@@ -377,7 +339,7 @@ value rec next_token ctx =
   | [: `'(';
        a =
          parser
-         [ [: `'*'; _ = comment ctx bp !; s :] -> do {
+         [ [: `'*'; _ = comment ctx bp B.empty !; s :] -> do {
              ctx.set_line_nb ();
              ctx.after_space := True;
              next_token ctx s

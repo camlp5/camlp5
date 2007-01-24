@@ -67,7 +67,9 @@ value isolate_char_patt_list =
 
 value isolate_char_patt loc rl =
   match isolate_char_patt_list rl with
-  [ ([p :: pl], rl) ->
+  [ ([_], _) ->
+      (None, rl)
+  | ([p :: pl], rl) ->
       let p = List.fold_left (fun p1 p2 -> <:patt< $p1$ | $p2$ >>) p pl in
       (Some p, rl)
   | _ ->
@@ -89,9 +91,11 @@ EXTEND
             | (None, rl) -> rl ]
           in
           <:expr< fun $lid:var$ -> $mk_parser loc rl$ >>
-      | "$" ->
+      | "$"; LIDENT "buf" ->
           let b = accum_chars loc gcl.val in
-          <:expr< $get_buf loc b$ >> ] ]
+          <:expr< $get_buf loc b$ >>
+      | "$"; LIDENT "pos" ->
+          <:expr< Stream.count $lid:Exparser.strm_n$ >> ] ]
   ;
   rules:
     [ [ "["; rl = LIST0 rule SEP "|"; "]" -> rl ] ]

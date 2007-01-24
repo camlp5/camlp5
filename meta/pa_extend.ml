@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.11 2006/12/26 08:54:09 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.12 2007/01/24 19:54:55 deraugla Exp $ *)
 
 open Stdpp;
 
@@ -898,14 +898,7 @@ EXTEND
   ;
   string:
     [ [ s = STRING -> <:expr< $str:s$ >>
-      | i = ANTIQUOT ->
-          let shift = Stdpp.first_pos loc + String.length "$" in
-          let e =
-            try Grammar.Entry.parse Pcaml.expr_eoi (Stream.of_string i) with
-            [ Exc_located loc exc ->
-                raise_with_loc (shift_loc shift loc) exc ]
-          in
-          Pcaml.expr_reloc (fun _ -> loc) shift e ] ]
+      | "$"; e = expr; "$" -> e ] ]
   ;
 END;
 

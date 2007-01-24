@@ -2022,17 +2022,11 @@ Grammar.extend
            (MLast.ExUid (loc, i) : 'qualid))]];
     Grammar.Entry.obj (string : 'string Grammar.Entry.e), None,
     [None, None,
-     [[Gramext.Stoken ("ANTIQUOT", "")],
+     [[Gramext.Stoken ("", "$");
+       Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e));
+       Gramext.Stoken ("", "$")],
       Gramext.action
-        (fun (i : string) (loc : Token.location) ->
-           (let shift = Stdpp.first_pos loc + String.length "$" in
-            let e =
-              try Grammar.Entry.parse Pcaml.expr_eoi (Stream.of_string i) with
-                Exc_located (loc, exc) ->
-                  raise_with_loc (shift_loc shift loc) exc
-            in
-            Pcaml.expr_reloc (fun _ -> loc) shift e :
-            'string));
+        (fun _ (e : 'expr) _ (loc : Token.location) -> (e : 'string));
       [Gramext.Stoken ("STRING", "")],
       Gramext.action
         (fun (s : string) (loc : Token.location) ->

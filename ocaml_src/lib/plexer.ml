@@ -251,73 +251,45 @@ let rec string ctx bp buf (strm__ : _ Stream.t) =
 let incr_line_nb buf _ = incr !(Token.line_nb); buf;;
 
 let comment ctx bp =
-  let rec comment (strm__ : _ Stream.t) =
+  let rec comment buf (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
-      Some '(' ->
+      Some '*' ->
         Stream.junk strm__;
+        let buf = B.add buf '*' in
         begin match Stream.peek strm__ with
-          Some '*' ->
-            Stream.junk strm__; let _ = comment strm__ in comment strm__
-        | _ -> comment strm__
+          Some ')' -> Stream.junk strm__; B.add buf ')'
+        | _ -> comment buf strm__
         end
-    | Some '*' ->
+    | Some '(' ->
         Stream.junk strm__;
-        begin match Stream.peek strm__ with
-          Some ')' -> Stream.junk strm__; ()
-        | _ -> comment strm__
-        end
+        let buf = B.add buf '(' in
+        let buf =
+          match Stream.peek strm__ with
+            Some '*' -> Stream.junk strm__; comment (B.add buf '*') strm__
+          | _ -> buf
+        in
+        comment buf strm__
     | Some '\"' ->
         Stream.junk strm__;
-        let _ =
-          try string ctx bp B.empty strm__ with
+        let buf =
+          try string ctx bp (B.add buf '\"') strm__ with
             Stream.Failure -> raise (Stream.Error "")
         in
-        comment strm__
+        comment buf strm__
     | Some '\'' ->
         Stream.junk strm__;
-        begin match Stream.peek strm__ with
-          Some '\'' -> Stream.junk strm__; comment strm__
-        | Some '\\' ->
-            Stream.junk strm__;
-            begin match Stream.peek strm__ with
-              Some '\'' -> Stream.junk strm__; comment strm__
-            | Some ('\\' | '\"' | 'n' | 't' | 'b' | 'r') ->
-                Stream.junk strm__;
-                begin match Stream.peek strm__ with
-                  Some '\'' -> Stream.junk strm__; comment strm__
-                | _ -> comment strm__
-                end
-            | Some ('0'..'9') ->
-                Stream.junk strm__;
-                begin match Stream.peek strm__ with
-                  Some ('0'..'9') ->
-                    Stream.junk strm__;
-                    begin match Stream.peek strm__ with
-                      Some ('0'..'9') ->
-                        Stream.junk strm__;
-                        begin match Stream.peek strm__ with
-                          Some '\'' -> Stream.junk strm__; comment strm__
-                        | _ -> comment strm__
-                        end
-                    | _ -> comment strm__
-                    end
-                | _ -> comment strm__
-                end
-            | _ -> comment strm__
-            end
-        | _ ->
-            match Stream.npeek 2 strm__ with
-              [_; '\''] ->
-                let _ = Stream.junk strm__ in
-                let _ = Stream.junk strm__ in comment strm__
-            | _ -> comment strm__
-        end
-    | Some ('\n' | '\r') ->
-        Stream.junk strm__; let () = incr_line_nb () strm__ in comment strm__
-    | Some c -> Stream.junk strm__; comment strm__
-    | _ ->
-        let ep = Stream.count strm__ in
-        err ctx (bp, ep) "comment not terminated"
+        let buf = B.add buf '\'' in
+        let buf =
+          match Stream.npeek 2 strm__ with
+            [_; '\''] | ['\\'; _] -> char ctx bp buf strm__
+          | _ -> buf
+        in
+        comment buf strm__
+    | Some ('\n' | '\r' as c) ->
+        Stream.junk strm__;
+        let buf = incr_line_nb (B.add buf c) strm__ in comment buf strm__
+    | Some c -> Stream.junk strm__; comment (B.add buf c) strm__
+    | _ -> err ctx (bp, Stream.count strm__) "comment not terminated"
   in
   comment
 ;;
@@ -473,7 +445,7 @@ let rec maybe_locate ctx bp buf (strm__ : _ Stream.t) =
       err ctx (bp, ep) "antiquotation not terminated"
 ;;
 
-let dollar ctx bp buf (strm__ : _ Stream.t) =
+let dollar_for_anti ctx bp buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some '$' -> Stream.junk strm__; "ANTIQUOT", ":" ^ B.get buf
   | Some ('a'..'z' | 'A'..'Z' as c) ->
@@ -493,18 +465,17 @@ let dollar ctx bp buf (strm__ : _ Stream.t) =
           ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) strm__
       | _ -> raise (Stream.Error "")
       end
+  | Some c ->
+      Stream.junk strm__;
+      "ANTIQUOT", ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) strm__
   | _ ->
-      let s = strm__ in
-      if ctx.dollar_for_antiquotation then
-        let (strm__ : _ Stream.t) = s in
-        match Stream.peek strm__ with
-          Some c ->
-            Stream.junk strm__;
-            "ANTIQUOT", ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) s
-        | _ ->
-            let ep = Stream.count strm__ in
-            err ctx (bp, ep) "antiquotation not terminated"
-      else "", B.get (ident2 (B.char '$') s)
+      let ep = Stream.count strm__ in
+      err ctx (bp, ep) "antiquotation not terminated"
+;;
+
+let dollar ctx bp buf strm =
+  if ctx.dollar_for_antiquotation then dollar_for_anti ctx bp buf strm
+  else "", B.get (ident2 (B.char '$') strm)
 ;;
 
 let rec linedir n s =
@@ -566,7 +537,7 @@ let rec next_token ctx (strm__ : _ Stream.t) =
       begin match Stream.peek strm__ with
         Some '*' ->
           Stream.junk strm__;
-          let _ = comment ctx bp strm__ in
+          let _ = comment ctx bp B.empty strm__ in
           let s = strm__ in
           ctx.set_line_nb (); ctx.after_space <- true; next_token ctx s
       | _ ->
@@ -948,11 +919,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 710, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 710, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 710, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 711, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 711, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 672, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 672, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 672, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 673, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 673, 37)));
        tok_comm = None}
   in
   let glex =
