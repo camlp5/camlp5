@@ -35,20 +35,25 @@ value accum_chars loc cl =
   List.fold_right (add_char loc) cl <:expr< $lid:var$ >>
 ;
 
-value mk_parser loc rl =
-  let rl =
-    List.map
-      (fun (sl, cl, a) ->
-         let a =
-           let b = accum_chars loc cl in
-           match a with
-           [ Some e -> e
-           | None -> b ]
-         in
-         (List.rev sl, None, a))
-      rl
-  in
-  Exparser.cparser loc None rl
+value conv_rules loc rl =
+  List.map
+    (fun (sl, cl, a) ->
+       let a =
+         let b = accum_chars loc cl in
+         match a with
+         [ Some e -> e
+         | None -> b ]
+       in
+       (List.rev sl, None, a))
+    rl
+;
+
+value mk_lexer loc rl =
+  Exparser.cparser loc None (conv_rules loc rl)
+;
+
+value mk_lexer_match loc e rl =
+  Exparser.cparser_match loc e None (conv_rules loc rl)
 ;
 
 value isolate_char_patt_list =
@@ -90,8 +95,12 @@ EXTEND
                 [([(Exparser.SpTrm loc p None, None)], [e], None) :: rl]
             | (None, rl) -> rl ]
           in
-          <:expr< fun $lid:var$ -> $mk_parser loc rl$ >>
-      | "$"; LIDENT "buf" ->
+          <:expr< fun $lid:var$ -> $mk_lexer loc rl$ >>
+      | "match"; e = expr; "with"; "lexer"; rl = rules ->
+          mk_lexer_match loc e rl ] ]
+  ;
+  expr: LEVEL "simple"
+    [ [ "$"; LIDENT "buf" ->
           let b = accum_chars loc gcl.val in
           <:expr< $get_buf loc b$ >>
       | "$"; LIDENT "pos" ->
@@ -127,11 +136,16 @@ EXTEND
             (Exparser.SpTrm loc p None, errk)
           in
           ([s :: sl], [<:expr< $lid:c$ >> :: cl])
-      | (sl, cl) = symbs; f = simple_expr; errk = err_kont ->
+      | (sl, cl) = symbs; (f, po) = simple_expr; errk = err_kont ->
           let s =
             let buf = accum_chars loc cl in
             let e = <:expr< $f$ $buf$ >> in
-            (Exparser.SpNtr loc <:patt< $lid:var$ >> e, errk)
+            let p =
+              match po with
+              [ Some p -> p
+              | None -> <:patt< $lid:var$ >> ]
+            in
+            (Exparser.SpNtr loc p e, errk)
           in
           ([s :: sl], [])
       | (sl, cl) = symbs; "?="; "["; pll = LIST1 lookahead SEP "|"; "]";
@@ -175,15 +189,16 @@ EXTEND
                   [s :: sl]
               in
               let s =
-                let e = mk_parser loc rl in
+                let e = mk_lexer loc rl in
                 (Exparser.SpNtr loc <:patt< $lid:var$ >> e, errk)
               in
               ([s :: sl], []) ]
       | -> ([], []) ] ]
   ;
   simple_expr:
-    [ [ i = LIDENT -> <:expr< $lid:i$ >>
-      | "("; e = expr; ")" -> e ] ]
+    [ [ i = LIDENT -> (<:expr< $lid:i$ >>, None)
+      | "("; e = expr; ")" -> (e, None)
+      | "("; e = expr; "as"; p = patt; ")" -> (e, Some p) ] ]
   ;
   lookahead:
     [ [ pl = LIST1 lookahead_char -> pl ] ]

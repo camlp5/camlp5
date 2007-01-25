@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.56 2007/01/25 06:03:26 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.57 2007/01/25 18:02:47 deraugla Exp $ *)
 
 open Token;
 
@@ -197,19 +197,17 @@ value rec quotation ctx bp =
 
 value less ctx bp strm =
   if no_quotations.val then
-    match strm with parser
-    [ [: buf = ident2 (B.char '<') :] ep ->
-        keyword_or_error ctx (bp, ep) (B.get buf) ]
+    let buf = B.char '<' in
+    match strm with lexer
+    [ ident2 -> keyword_or_error ctx (bp, $pos) $buf ]
   else
-    match strm with parser
-    [ [: `'<'; buf = quotation ctx bp B.empty :] ->
-        ("QUOTATION", ":" ^ B.get buf)
-    | [: `':'; i = parser [: buf = ident B.empty :] -> B.get buf;
-         `'<' ? "character '<' expected";
-         buf = quotation ctx bp B.empty :] ->
-        ("QUOTATION", i ^ ":" ^ B.get buf)
-    | [: buf = ident2 (B.char '<') :] ep ->
-        keyword_or_error ctx (bp, ep) (B.get buf) ]
+    let buf = B.empty in
+    match strm with lexer
+    [ '<'/ (quotation ctx bp) -> ("QUOTATION", ":" ^ $buf)
+    | ':'/ ident! (add ':')! '<'/ ? "character '<' expected"
+      (quotation ctx bp) ->
+        ("QUOTATION", $buf)
+    | (add '<') ident2! -> keyword_or_error ctx (bp, $pos) $buf ]
 ;
 
 value rec antiquot ctx bp buf =

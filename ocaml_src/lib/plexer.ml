@@ -350,39 +350,39 @@ let rec quotation ctx bp buf (strm__ : _ Stream.t) =
 
 let less ctx bp strm =
   if !no_quotations then
+    let buf = B.char '<' in
     let (strm__ : _ Stream.t) = strm in
-    let buf = ident2 (B.char '<') strm__ in
-    let ep = Stream.count strm__ in keyword_or_error ctx (bp, ep) (B.get buf)
+    let buf = ident2 buf strm__ in
+    keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
   else
+    let buf = B.empty in
     let (strm__ : _ Stream.t) = strm in
     match Stream.peek strm__ with
       Some '<' ->
         Stream.junk strm__;
         let buf =
-          try quotation ctx bp B.empty strm__ with
+          try quotation ctx bp buf strm__ with
             Stream.Failure -> raise (Stream.Error "")
         in
         "QUOTATION", ":" ^ B.get buf
     | Some ':' ->
         Stream.junk strm__;
-        let i =
-          try let buf = ident B.empty strm__ in B.get buf with
-            Stream.Failure -> raise (Stream.Error "")
-        in
+        let buf = ident buf strm__ in
+        let buf = add ':' buf strm__ in
         begin match Stream.peek strm__ with
           Some '<' ->
             Stream.junk strm__;
             let buf =
-              try quotation ctx bp B.empty strm__ with
+              try quotation ctx bp buf strm__ with
                 Stream.Failure -> raise (Stream.Error "")
             in
-            "QUOTATION", i ^ ":" ^ B.get buf
+            "QUOTATION", B.get buf
         | _ -> raise (Stream.Error "character '<' expected")
         end
     | _ ->
-        let buf = ident2 (B.char '<') strm__ in
-        let ep = Stream.count strm__ in
-        keyword_or_error ctx (bp, ep) (B.get buf)
+        let buf = add '<' buf strm__ in
+        let buf = ident2 buf strm__ in
+        keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
 ;;
 
 let rec antiquot ctx bp buf (strm__ : _ Stream.t) =
@@ -927,11 +927,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 653, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 653, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 653, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 654, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 654, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 670, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 670, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 670, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 671, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 671, 37)));
        tok_comm = None}
   in
   let glex =
