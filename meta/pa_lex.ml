@@ -107,24 +107,18 @@ EXTEND
     [ [ (sl, cl) = symbs -> do { gcl.val := cl; (sl, cl) } ] ]
   ;
   symbs:
-    [ [ (sl, cl) = symbs; c = CHAR; errk = err_kont ->
+    [ [ (sl, cl) = symbs; c = CHAR; norec = no_rec; errk = err_kont ->
           let s = (Exparser.SpTrm loc <:patt< $chr:c$ >> None, errk) in
-          ([s :: sl], [<:expr< $chr:c$ >> :: cl])
-      | (sl, cl) = symbs; c = CHAR; "/"; errk = err_kont ->
-          let s = (Exparser.SpTrm loc <:patt< $chr:c$ >> None, errk) in
+          let cl = if norec then cl else [<:expr< $chr:c$ >> :: cl] in
           ([s :: sl], cl)
-      | (sl, cl) = symbs; "_"; errk = err_kont ->
-          let c = fresh_c cl in
-          let s =
-            let p = <:patt< $lid:c$ >> in
-            (Exparser.SpTrm loc p None, errk)
+      | (sl, cl) = symbs; "_"; norec = no_rec; errk = err_kont ->
+          let (p, cl) =
+            if norec then (<:patt< _ >>, cl)
+            else
+              let c = fresh_c cl in
+              (<:patt< $lid:c$ >>, [<:expr< $lid:c$ >> :: cl])
           in
-          ([s :: sl], [<:expr< $lid:c$ >> :: cl])
-      | (sl, cl) = symbs; "_"; "/"; errk = err_kont ->
-          let s =
-            let p = <:patt< _ >> in
-            (Exparser.SpTrm loc p None, errk)
-          in
+          let s = (Exparser.SpTrm loc p None, errk) in
           ([s :: sl], cl)
       | (sl, cl) = symbs; c1 = CHAR; ".."; c2 = CHAR; errk = err_kont ->
           let c = fresh_c cl in
@@ -197,6 +191,10 @@ EXTEND
   lookahead_char:
     [ [ c = CHAR -> <:patt< $chr:c$ >>
       | "_" -> <:patt< _ >> ] ]
+  ;
+  no_rec:
+    [ [ "/" -> True
+      | -> False ] ]
   ;
   err_kont:
     [ [ "!" -> Some None

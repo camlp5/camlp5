@@ -299,34 +299,36 @@ let comment ctx bp =
   comment
 ;;
 
+let add c buf (strm__ : _ Stream.t) = B.add buf c;;
+
 let rec quotation ctx bp buf (strm__ : _ Stream.t) =
-  let bp1 = Stream.count strm__ in
   match Stream.peek strm__ with
     Some '>' ->
       Stream.junk strm__;
       begin match Stream.peek strm__ with
         Some '>' -> Stream.junk strm__; buf
-      | _ -> quotation ctx bp (B.add buf '>') strm__
+      | _ -> let buf = add '>' buf strm__ in quotation ctx bp buf strm__
       end
   | Some '<' ->
       Stream.junk strm__;
+      let buf = B.add buf '<' in
       let buf =
         match Stream.peek strm__ with
           Some '<' ->
             Stream.junk strm__;
-            let buf = quotation ctx bp (B.add_str buf "<<") strm__ in
-            B.add_str buf ">>"
+            let buf = quotation ctx bp (B.add buf '<') strm__ in
+            let buf = add '>' buf strm__ in add '>' buf strm__
         | Some ':' ->
             Stream.junk strm__;
-            let buf = ident (B.add_str buf "<:") strm__ in
+            let buf = ident (B.add buf ':') strm__ in
             begin match Stream.peek strm__ with
               Some '<' ->
                 Stream.junk strm__;
                 let buf = quotation ctx bp (B.add buf '<') strm__ in
-                B.add_str buf ">>"
+                let buf = add '>' buf strm__ in add '>' buf strm__
             | _ -> buf
             end
-        | _ -> B.add buf '<'
+        | _ -> buf
       in
       quotation ctx bp buf strm__
   | Some '\\' ->
@@ -334,15 +336,16 @@ let rec quotation ctx bp buf (strm__ : _ Stream.t) =
       let buf =
         match Stream.peek strm__ with
           Some ('>' | '<' | '\\' as c) -> Stream.junk strm__; B.add buf c
-        | _ -> B.add buf '\\'
+        | _ -> add '\\' buf strm__
       in
       quotation ctx bp buf strm__
-  | Some c ->
-      Stream.junk strm__;
-      quotation ctx bp (B.add buf (ctx.line_cnt bp1 c)) strm__
   | _ ->
-      let ep = Stream.count strm__ in
-      err ctx (bp, ep) "quotation not terminated"
+      match
+        try Some (any ctx buf strm__) with
+          Stream.Failure -> None
+      with
+        Some buf -> quotation ctx bp buf strm__
+      | _ -> err ctx (bp, Stream.count strm__) "quotation not terminated"
 ;;
 
 let less ctx bp strm =
@@ -924,11 +927,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 670, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 670, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 670, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 671, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 671, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 653, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 653, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 653, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 654, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 654, 37)));
        tok_comm = None}
   in
   let glex =

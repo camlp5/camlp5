@@ -106,6 +106,7 @@ Grammar.extend
      grammar_entry_create "lookahead"
    and lookahead_char : 'lookahead_char Grammar.Entry.e =
      grammar_entry_create "lookahead_char"
+   and no_rec : 'no_rec Grammar.Entry.e = grammar_entry_create "no_rec"
    and err_kont : 'err_kont Grammar.Entry.e = grammar_entry_create "err_kont"
    and act : 'act Grammar.Entry.e = grammar_entry_create "act" in
    [Grammar.Entry.obj (expr : 'expr Grammar.Entry.e), None,
@@ -263,46 +264,31 @@ Grammar.extend
             in
             s :: sl, MLast.ExLid (loc, c) :: cl :
             'symbs));
-      [Gramext.Sself; Gramext.Stoken ("", "_"); Gramext.Stoken ("", "/");
-       Gramext.Snterm
-         (Grammar.Entry.obj (err_kont : 'err_kont Grammar.Entry.e))],
-      Gramext.action
-        (fun (errk : 'err_kont) _ _ (sl, cl : 'symbs)
-           (loc : Token.location) ->
-           (let s =
-              let p = MLast.PaAny loc in Exparser.SpTrm (loc, p, None), errk
-            in
-            s :: sl, cl :
-            'symbs));
       [Gramext.Sself; Gramext.Stoken ("", "_");
+       Gramext.Snterm (Grammar.Entry.obj (no_rec : 'no_rec Grammar.Entry.e));
        Gramext.Snterm
          (Grammar.Entry.obj (err_kont : 'err_kont Grammar.Entry.e))],
       Gramext.action
-        (fun (errk : 'err_kont) _ (sl, cl : 'symbs) (loc : Token.location) ->
-           (let c = fresh_c cl in
-            let s =
-              let p = MLast.PaLid (loc, c) in
-              Exparser.SpTrm (loc, p, None), errk
-            in
-            s :: sl, MLast.ExLid (loc, c) :: cl :
-            'symbs));
-      [Gramext.Sself; Gramext.Stoken ("CHAR", ""); Gramext.Stoken ("", "/");
-       Gramext.Snterm
-         (Grammar.Entry.obj (err_kont : 'err_kont Grammar.Entry.e))],
-      Gramext.action
-        (fun (errk : 'err_kont) _ (c : string) (sl, cl : 'symbs)
+        (fun (errk : 'err_kont) (norec : 'no_rec) _ (sl, cl : 'symbs)
            (loc : Token.location) ->
-           (let s = Exparser.SpTrm (loc, MLast.PaChr (loc, c), None), errk in
-            s :: sl, cl :
+           (let (p, cl) =
+              if norec then MLast.PaAny loc, cl
+              else
+                let c = fresh_c cl in
+                MLast.PaLid (loc, c), MLast.ExLid (loc, c) :: cl
+            in
+            let s = Exparser.SpTrm (loc, p, None), errk in s :: sl, cl :
             'symbs));
       [Gramext.Sself; Gramext.Stoken ("CHAR", "");
+       Gramext.Snterm (Grammar.Entry.obj (no_rec : 'no_rec Grammar.Entry.e));
        Gramext.Snterm
          (Grammar.Entry.obj (err_kont : 'err_kont Grammar.Entry.e))],
       Gramext.action
-        (fun (errk : 'err_kont) (c : string) (sl, cl : 'symbs)
-           (loc : Token.location) ->
+        (fun (errk : 'err_kont) (norec : 'no_rec) (c : string)
+           (sl, cl : 'symbs) (loc : Token.location) ->
            (let s = Exparser.SpTrm (loc, MLast.PaChr (loc, c), None), errk in
-            s :: sl, MLast.ExChr (loc, c) :: cl :
+            let cl = if norec then cl else MLast.ExChr (loc, c) :: cl in
+            s :: sl, cl :
             'symbs))]];
     Grammar.Entry.obj (simple_expr : 'simple_expr Grammar.Entry.e), None,
     [None, None,
@@ -334,6 +320,11 @@ Grammar.extend
       Gramext.action
         (fun (c : string) (loc : Token.location) ->
            (MLast.PaChr (loc, c) : 'lookahead_char))]];
+    Grammar.Entry.obj (no_rec : 'no_rec Grammar.Entry.e), None,
+    [None, None,
+     [[], Gramext.action (fun (loc : Token.location) -> (false : 'no_rec));
+      [Gramext.Stoken ("", "/")],
+      Gramext.action (fun _ (loc : Token.location) -> (true : 'no_rec))]];
     Grammar.Entry.obj (err_kont : 'err_kont Grammar.Entry.e), None,
     [None, None,
      [[], Gramext.action (fun (loc : Token.location) -> (None : 'err_kont));

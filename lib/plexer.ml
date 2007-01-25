@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.55 2007/01/24 21:04:22 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.56 2007/01/25 06:03:26 deraugla Exp $ *)
 
 open Token;
 
@@ -180,36 +180,19 @@ value comment ctx bp =
     | -> err ctx (bp, $pos) "comment not terminated" ]
 ;
 
-value rec quotation ctx bp buf =
-  parser bp1
-  [ [: `'>';
-      a =
-        parser
-        [ [: `'>' :] -> buf
-        | [: a = quotation ctx bp (B.add buf '>') :] -> a ] ! :] -> a
-  | [: `'<';
-       buf =
-         parser
-         [ [: `'<'; buf = quotation ctx bp (B.add_str buf "<<") ! :] ->
-             B.add_str buf ">>"
-         | [: `':'; buf = ident (B.add_str buf "<:") !;
-              a =
-                parser
-                [ [: `'<'; buf = quotation ctx bp (B.add buf '<') ! :] ->
-                    B.add_str buf ">>"
-                | [: :] -> buf ] ! :] ->
-             a
-         | [: :] -> B.add buf '<' ] !;
-       a = quotation ctx bp buf ! :] -> a
-  | [: `'\\';
-       buf =
-         parser
-         [ [: `('>' | '<' | '\\' as c) :] -> B.add buf c
-         | [: :] -> B.add buf '\\' ] ! ;
-       a = quotation ctx bp buf ! :] ->
-      a
-  | [: `c; a = quotation ctx bp (B.add buf (ctx.line_cnt bp1 c)) ! :] -> a
-  | [: :] ep -> err ctx (bp, ep) "quotation not terminated" ]
+value add c buf = parser [: :] -> B.add buf c;
+
+value rec quotation ctx bp =
+  lexer
+  [ '>'/ [ '>'/ | (add '>') (quotation ctx bp)! ]!
+  | '<'
+    [ '<' (quotation ctx bp)! (add '>')! (add '>')!
+    | ':' ident! [ '<' (quotation ctx bp)! (add '>')! (add '>')! | ]
+    | ]
+    (quotation ctx bp)!
+  | '\\'/ [ '>' | '<' | '\\' | (add '\\') ]! (quotation ctx bp)!
+  | (any ctx) (quotation ctx bp)!
+  | -> err ctx (bp, $pos) "quotation not terminated" ]
 ;
 
 value less ctx bp strm =
