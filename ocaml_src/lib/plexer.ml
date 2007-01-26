@@ -392,7 +392,7 @@ let rec antiquot ctx bp buf (strm__ : _ Stream.t) =
       Stream.junk strm__; antiquot ctx bp (B.add buf c) strm__
   | Some ':' ->
       Stream.junk strm__;
-      let buf = locate_or_antiquot_rest ctx bp (B.add buf ':') strm__ in
+      let buf = antiquot_rest ctx bp (B.add buf ':') strm__ in
       "ANTIQUOT", B.get buf
   | Some '\\' ->
       Stream.junk strm__;
@@ -400,18 +400,17 @@ let rec antiquot ctx bp buf (strm__ : _ Stream.t) =
         try any ctx buf strm__ with
           Stream.Failure -> raise (Stream.Error "")
       in
-      let buf = locate_or_antiquot_rest ctx bp buf strm__ in
-      "ANTIQUOT", ":" ^ B.get buf
+      let buf = antiquot_rest ctx bp buf strm__ in "ANTIQUOT", ":" ^ B.get buf
   | _ ->
       match
         try Some (any ctx buf strm__) with
           Stream.Failure -> None
       with
         Some buf ->
-          let buf = locate_or_antiquot_rest ctx bp buf strm__ in
+          let buf = antiquot_rest ctx bp buf strm__ in
           "ANTIQUOT", ":" ^ B.get buf
       | _ -> err ctx (bp, Stream.count strm__) "antiquotation not terminated"
-and locate_or_antiquot_rest ctx bp buf (strm__ : _ Stream.t) =
+and antiquot_rest ctx bp buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some '$' -> Stream.junk strm__; buf
   | Some '\\' ->
@@ -420,61 +419,18 @@ and locate_or_antiquot_rest ctx bp buf (strm__ : _ Stream.t) =
         try any ctx buf strm__ with
           Stream.Failure -> raise (Stream.Error "")
       in
-      locate_or_antiquot_rest ctx bp buf strm__
+      antiquot_rest ctx bp buf strm__
   | _ ->
       match
         try Some (any ctx buf strm__) with
           Stream.Failure -> None
       with
-        Some buf -> locate_or_antiquot_rest ctx bp buf strm__
+        Some buf -> antiquot_rest ctx bp buf strm__
       | _ -> err ctx (bp, Stream.count strm__) "antiquotation not terminated"
-;;
-
-let rec maybe_locate ctx bp buf (strm__ : _ Stream.t) =
-  match Stream.peek strm__ with
-    Some '$' -> Stream.junk strm__; "ANTIQUOT", ":" ^ B.get buf
-  | Some ('0'..'9' as c) ->
-      Stream.junk strm__;
-      begin try maybe_locate ctx bp (B.add buf c) strm__ with
-        Stream.Failure -> raise (Stream.Error "")
-      end
-  | Some ':' ->
-      Stream.junk strm__;
-      let buf = locate_or_antiquot_rest ctx bp (B.add buf ':') strm__ in
-      "LOCATE", B.get buf
-  | Some '\\' ->
-      Stream.junk strm__;
-      let buf =
-        try any ctx buf strm__ with
-          Stream.Failure -> raise (Stream.Error "")
-      in
-      let buf = locate_or_antiquot_rest ctx bp buf strm__ in
-      "ANTIQUOT", ":" ^ B.get buf
-  | _ ->
-      match
-        try Some (any ctx buf strm__) with
-          Stream.Failure -> None
-      with
-        Some buf ->
-          let buf = locate_or_antiquot_rest ctx bp buf strm__ in
-          "ANTIQUOT", ":" ^ B.get buf
-      | _ -> err ctx (bp, Stream.count strm__) "antiquotation not terminated"
-;;
-
-let dollar_for_anti ctx bp buf (strm__ : _ Stream.t) =
-  match Stream.peek strm__ with
-    Some '$' -> Stream.junk strm__; "ANTIQUOT", ":" ^ B.get buf
-  | Some ('a'..'z' | 'A'..'Z' as c) ->
-      Stream.junk strm__; antiquot ctx bp (B.add buf c) strm__
-  | Some ':' ->
-      Stream.junk strm__;
-      let buf = locate_or_antiquot_rest ctx bp (B.add buf ':') strm__ in
-      "ANTIQUOT", B.get buf
-  | _ -> maybe_locate ctx bp buf strm__
 ;;
 
 let dollar ctx bp buf strm =
-  if ctx.dollar_for_antiquotation then dollar_for_anti ctx bp buf strm
+  if ctx.dollar_for_antiquotation then antiquot ctx bp buf strm
   else "", B.get (ident2 (B.char '$') strm)
 ;;
 
@@ -848,8 +804,7 @@ let using_token kwd_table ident_table (p_con, p_prm) =
             else Hashtbl.add ident_table p_prm p_con
         end
   | "TILDEIDENT" | "QUESTIONIDENT" | "INT" | "INT_l" | "INT_L" | "INT_n" |
-    "FLOAT" | "CHAR" | "STRING" | "QUOTATION" | "ANTIQUOT" | "LOCATE" |
-    "EOI" ->
+    "FLOAT" | "CHAR" | "STRING" | "QUOTATION" | "ANTIQUOT" | "EOI" ->
       ()
   | _ ->
       raise
@@ -879,7 +834,6 @@ let text =
   | "CHAR", "" -> "char"
   | "QUOTATION", "" -> "quotation"
   | "ANTIQUOT", k -> "antiquot \"" ^ k ^ "\""
-  | "LOCATE", "" -> "locate"
   | "EOI", "" -> "end of input"
   | con, "" -> con
   | con, prm -> con ^ " \"" ^ prm ^ "\""
@@ -919,11 +873,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 638, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 638, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 638, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 639, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 639, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 615, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 615, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 615, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 616, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 616, 37)));
        tok_comm = None}
   in
   let glex =

@@ -80,10 +80,7 @@ value no_constructors_arity : ref bool;
 value sync : ref (Stream.t char -> unit);
 
 value handle_expr_quotation : MLast.loc -> (string * string) -> MLast.expr;
-value handle_expr_locate : MLast.loc -> (int * string) -> MLast.expr;
-
 value handle_patt_quotation : MLast.loc -> (string * string) -> MLast.patt;
-value handle_patt_locate : MLast.loc -> (int * string) -> MLast.patt;
 
 value expr_reloc :
   (MLast.loc -> MLast.loc) -> int -> MLast.expr -> MLast.expr;
@@ -98,8 +95,7 @@ value rename_id : ref (string -> string);
 type err_ctx =
   [ Finding
   | Expanding
-  | ParsingResult of Stdpp.location and string
-  | Locating ]
+  | ParsingResult of Stdpp.location and string ]
 ;
 exception Qerror of string and err_ctx and exn;
 

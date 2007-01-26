@@ -307,8 +307,6 @@ module Plexer =
         parser
         [ [: `'$' :] -> ("ANTIQUOT", ":" ^ get_buff len)
         | [: `('0'..'9' as c); s :] -> maybe_locate bp (store len c) s
-        | [: `':'; s :] ->
-            ("LOCATE", get_buff len ^ ":" ^ locate_or_antiquot_rest bp 0 s)
         | [: `'\\'; `c; s :] ->
             ("ANTIQUOT", ":" ^ locate_or_antiquot_rest bp (store len c) s)
         | [: `c; s :] ->
@@ -519,7 +517,7 @@ module Plexer =
                      ("the token \"" ^ p_prm ^
                         "\" does not respect Plexer rules")) ]
       | "LIDENT" | "UIDENT" | "INT" | "FLOAT" | "CHAR" | "STRING" |
-        "QUOTATION" | "ANTIQUOT" | "LOCATE" | "LABEL" | "ELABEL" | "EOI" ->
+        "QUOTATION" | "ANTIQUOT" | "LABEL" | "ELABEL" | "EOI" ->
           ()
       | _ ->
           raise
@@ -544,7 +542,6 @@ module Plexer =
       | ("CHAR", "") -> "char"
       | ("QUOTATION", "") -> "quotation"
       | ("ANTIQUOT", k) -> "antiquot \"" ^ k ^ "\""
-      | ("LOCATE", "") -> "locate"
       | ("LABEL", "") -> "label"
       | ("ELABEL", "") -> "elabel"
       | ("EOI", "") -> "end of input"
@@ -1135,16 +1132,6 @@ EXTEND
       | "("; "-."; ")" -> <:expr< $lid:"-."$ >>
       | "("; op = operator; ")" -> <:expr< $lid:op$ >>
       | "begin"; e = SELF; "end" -> <:expr< $e$ >>
-      | x = LOCATE ->
-          let x =
-            try
-              let i = String.index x ':' in
-              (int_of_string (String.sub x 0 i),
-               String.sub x (i + 1) (String.length x - i - 1))
-            with
-            [ Not_found | Failure _ -> (0, x) ]
-          in
-          Pcaml.handle_expr_locate loc x
       | x = QUOTATION ->
           let x =
             try
@@ -1261,16 +1248,6 @@ EXTEND
       | "("; "-"; ")" -> <:patt< $lid:"-"$ >>
       | "("; op = operator; ")" -> <:patt< $lid:op$ >>
       | "_" -> <:patt< _ >>
-      | x = LOCATE ->
-          let x =
-            try
-              let i = String.index x ':' in
-              (int_of_string (String.sub x 0 i),
-               String.sub x (i + 1) (String.length x - i - 1))
-            with
-            [ Not_found | Failure _ -> (0, x) ]
-          in
-          Pcaml.handle_patt_locate loc x
       | x = QUOTATION ->
           let x =
             try

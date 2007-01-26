@@ -1,6 +1,9 @@
 Camlp4s Version 4.00:
 ---------------------
 
+* [26 Jan 07] Deleted "LOCATE" lexing token kind and associated parsing
+  stuff. Seems to be an old thing never used.
+
 * [20 Jan 07] Added "lookahead" stream pattern component kind.
           syntax ::= "?=" list lookhd_patt sep_by "|"
      lookhd_patt ::= "[" list pattern sep_by ";" "]"

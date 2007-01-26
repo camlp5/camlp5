@@ -84,8 +84,7 @@ value quotation_dump_file = ref (None : option string);
 type err_ctx =
   [ Finding
   | Expanding
-  | ParsingResult of Stdpp.location and string
-  | Locating ]
+  | ParsingResult of Stdpp.location and string ]
 ;
 exception Qerror of string and err_ctx and exn;
 
@@ -116,9 +115,7 @@ value expand_quotation gloc expander shift name str =
 value parse_quotation_result entry loc shift name str =
   let cs = Stream.of_string str in
   try Grammar.Entry.parse entry cs with
-  [ Stdpp.Exc_located iloc (Qerror _ Locating _ as exc) ->
-      raise (Stdpp.Exc_located (Stdpp.shift_loc shift iloc) exc)
-  | Stdpp.Exc_located iloc (Qerror _ Expanding exc) ->
+  [ Stdpp.Exc_located iloc (Qerror _ Expanding exc) ->
       let ctx = ParsingResult iloc str in
       let exc1 = Qerror name ctx exc in
       Stdpp.raise_with_loc loc exc1
@@ -152,22 +149,6 @@ value handle_quotation loc proj in_expr entry reloc (name, str) =
   reloc (fun _ -> loc) shift ast
 ;
 
-value parse_locate entry shift str =
-  let cs = Stream.of_string str in
-  try Grammar.Entry.parse entry cs with
-  [ Stdpp.Exc_located loc exc ->
-      let ctx = Locating in
-      let exc1 = Qerror (Grammar.Entry.name entry) ctx exc in
-      raise (Stdpp.Exc_located (Stdpp.shift_loc shift loc) exc1) ]
-;
-
-value handle_locate loc entry ast_f (pos, str) =
-  let s = str in
-  let loc = Stdpp.make_loc (pos, pos + String.length s) in
-  let x = parse_locate entry pos s in
-  ast_f loc x
-;
-
 value expr_anti loc e = MLast.ExAnt loc e;
 value patt_anti loc p = MLast.PaAnt loc p;
 value expr_eoi = Grammar.Entry.create gram "expression";
@@ -185,13 +166,9 @@ value handle_expr_quotation loc x =
   handle_quotation loc fst True expr_eoi Reloc.expr x
 ;
 
-value handle_expr_locate loc x = handle_locate loc expr_eoi expr_anti x;
-
 value handle_patt_quotation loc x =
   handle_quotation loc snd False patt_eoi Reloc.patt x
 ;
-
-value handle_patt_locate loc x = handle_locate loc patt_eoi patt_anti x;
 
 value expr_reloc = Reloc.expr;
 value patt_reloc = Reloc.patt;
@@ -224,8 +201,7 @@ value report_quotation_error name ctx =
       (match ctx with
        [ Finding -> "finding quotation"
        | Expanding -> "expanding quotation"
-       | ParsingResult _ _ -> "parsing result of quotation"
-       | Locating -> "parsing" ])
+       | ParsingResult _ _ -> "parsing result of quotation" ])
       name;
     match ctx with
     [ ParsingResult loc str ->

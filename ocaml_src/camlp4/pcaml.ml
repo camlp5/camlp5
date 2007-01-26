@@ -79,7 +79,6 @@ type err_ctx =
     Finding
   | Expanding
   | ParsingResult of Stdpp.location * string
-  | Locating
 ;;
 exception Qerror of string * err_ctx * exn;;
 
@@ -110,9 +109,7 @@ let expand_quotation gloc expander shift name str =
 let parse_quotation_result entry loc shift name str =
   let cs = Stream.of_string str in
   try Grammar.Entry.parse entry cs with
-    Stdpp.Exc_located (iloc, (Qerror (_, Locating, _) as exc)) ->
-      raise (Stdpp.Exc_located (Stdpp.shift_loc shift iloc, exc))
-  | Stdpp.Exc_located (iloc, Qerror (_, Expanding, exc)) ->
+    Stdpp.Exc_located (iloc, Qerror (_, Expanding, exc)) ->
       let ctx = ParsingResult (iloc, str) in
       let exc1 = Qerror (name, ctx, exc) in Stdpp.raise_with_loc loc exc1
   | Stdpp.Exc_located (_, (Qerror (_, _, _) as exc)) ->
@@ -145,21 +142,6 @@ let handle_quotation loc proj in_expr entry reloc (name, str) =
   reloc (fun _ -> loc) shift ast
 ;;
 
-let parse_locate entry shift str =
-  let cs = Stream.of_string str in
-  try Grammar.Entry.parse entry cs with
-    Stdpp.Exc_located (loc, exc) ->
-      let ctx = Locating in
-      let exc1 = Qerror (Grammar.Entry.name entry, ctx, exc) in
-      raise (Stdpp.Exc_located (Stdpp.shift_loc shift loc, exc1))
-;;
-
-let handle_locate loc entry ast_f (pos, str) =
-  let s = str in
-  let loc = Stdpp.make_loc (pos, pos + String.length s) in
-  let x = parse_locate entry pos s in ast_f loc x
-;;
-
 let expr_anti loc e = MLast.ExAnt (loc, e);;
 let patt_anti loc p = MLast.PaAnt (loc, p);;
 let expr_eoi = Grammar.Entry.create gram "expression";;
@@ -182,13 +164,9 @@ let handle_expr_quotation loc x =
   handle_quotation loc fst true expr_eoi Reloc.expr x
 ;;
 
-let handle_expr_locate loc x = handle_locate loc expr_eoi expr_anti x;;
-
 let handle_patt_quotation loc x =
   handle_quotation loc snd false patt_eoi Reloc.patt x
 ;;
-
-let handle_patt_locate loc x = handle_locate loc patt_eoi patt_anti x;;
 
 let expr_reloc = Reloc.expr;;
 let patt_reloc = Reloc.patt;;
@@ -221,8 +199,7 @@ let report_quotation_error name ctx =
     (match ctx with
        Finding -> "finding quotation"
      | Expanding -> "expanding quotation"
-     | ParsingResult (_, _) -> "parsing result of quotation"
-     | Locating -> "parsing")
+     | ParsingResult (_, _) -> "parsing result of quotation")
     name;
   match ctx with
     ParsingResult (loc, str) ->
@@ -365,47 +342,47 @@ and kont = pretty Stream.t
 ;;
 
 let pr_str_item =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 394, 30)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 370, 30)));
    pr_levels = []}
 ;;
 let pr_sig_item =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 395, 30)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 371, 30)));
    pr_levels = []}
 ;;
 let pr_module_type =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 396, 33)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 372, 33)));
    pr_levels = []}
 ;;
 let pr_module_expr =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 397, 33)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 373, 33)));
    pr_levels = []}
 ;;
 let pr_expr =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 398, 26)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 374, 26)));
    pr_levels = []}
 ;;
 let pr_patt =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 399, 26)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 375, 26)));
    pr_levels = []}
 ;;
 let pr_ctyp =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 400, 26)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 376, 26)));
    pr_levels = []}
 ;;
 let pr_class_sig_item =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 401, 36)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 377, 36)));
    pr_levels = []}
 ;;
 let pr_class_str_item =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 402, 36)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 378, 36)));
    pr_levels = []}
 ;;
 let pr_class_type =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 403, 32)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 379, 32)));
    pr_levels = []}
 ;;
 let pr_class_expr =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 404, 32)));
+  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 380, 32)));
    pr_levels = []}
 ;;
 let pr_expr_fun_args = ref Extfun.empty;;

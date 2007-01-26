@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.16 2006/12/26 08:54:09 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.17 2007/01/26 01:19:31 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -788,17 +788,7 @@ EXTEND
       | sti = str_item; ";" -> sti ] ]
   ;
   expr: LEVEL "simple"
-    [ [ x = LOCATE ->
-          let x =
-            try
-              let i = String.index x ':' in
-              (int_of_string (String.sub x 0 i),
-               String.sub x (i + 1) (String.length x - i - 1))
-            with
-            [ Not_found | Failure _ -> (0, x) ]
-          in
-          Pcaml.handle_expr_locate loc x
-      | x = QUOTATION ->
+    [ [ x = QUOTATION ->
           let x =
             try
               let i = String.index x ':' in
@@ -810,17 +800,7 @@ EXTEND
           Pcaml.handle_expr_quotation loc x ] ]
   ;
   patt: LEVEL "simple"
-    [ [ x = LOCATE ->
-          let x =
-            try
-              let i = String.index x ':' in
-              (int_of_string (String.sub x 0 i),
-               String.sub x (i + 1) (String.length x - i - 1))
-            with
-            [ Not_found | Failure _ -> (0, x) ]
-          in
-          Pcaml.handle_patt_locate loc x
-      | x = QUOTATION ->
+    [ [ x = QUOTATION ->
           let x =
             try
               let i = String.index x ':' in

@@ -80,10 +80,7 @@ val no_constructors_arity : bool ref;;
 val sync : (char Stream.t -> unit) ref;;
 
 val handle_expr_quotation : MLast.loc -> string * string -> MLast.expr;;
-val handle_expr_locate : MLast.loc -> int * string -> MLast.expr;;
-
 val handle_patt_quotation : MLast.loc -> string * string -> MLast.patt;;
-val handle_patt_locate : MLast.loc -> int * string -> MLast.patt;;
 
 val expr_reloc : (MLast.loc -> MLast.loc) -> int -> MLast.expr -> MLast.expr;;
 val patt_reloc : (MLast.loc -> MLast.loc) -> int -> MLast.patt -> MLast.patt;;
@@ -97,7 +94,6 @@ type err_ctx =
     Finding
   | Expanding
   | ParsingResult of Stdpp.location * string
-  | Locating
 ;;
 exception Qerror of string * err_ctx * exn;;
 

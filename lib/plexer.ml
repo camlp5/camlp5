@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.58 2007/01/26 00:35:24 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.59 2007/01/26 01:19:31 deraugla Exp $ *)
 
 open Token;
 
@@ -214,42 +214,20 @@ value rec antiquot ctx bp =
   lexer
   [ '$'/ -> ("ANTIQUOT", ":" ^ $buf)
   | [ 'a'..'z' | 'A'..'Z' | '0'..'9' ] (antiquot ctx bp)!
-  | ':' (locate_or_antiquot_rest ctx bp)! -> ("ANTIQUOT", $buf)
-  | '\\'/ (any ctx) (locate_or_antiquot_rest ctx bp)! ->
-      ("ANTIQUOT", ":" ^ $buf)
-  | (any ctx) (locate_or_antiquot_rest ctx bp)! ->
-      ("ANTIQUOT", ":" ^ $buf)
+  | ':' (antiquot_rest ctx bp)! -> ("ANTIQUOT", $buf)
+  | '\\'/ (any ctx) (antiquot_rest ctx bp)! -> ("ANTIQUOT", ":" ^ $buf)
+  | (any ctx) (antiquot_rest ctx bp)! -> ("ANTIQUOT", ":" ^ $buf)
   | -> err ctx (bp, $pos) "antiquotation not terminated" ]
-and locate_or_antiquot_rest ctx bp =
+and antiquot_rest ctx bp =
   lexer
   [ '$'/
-  | '\\'/ (any ctx) (locate_or_antiquot_rest ctx bp)!
-  | (any ctx) (locate_or_antiquot_rest ctx bp)!
+  | '\\'/ (any ctx) (antiquot_rest ctx bp)!
+  | (any ctx) (antiquot_rest ctx bp)!
   | -> err ctx (bp, $pos) "antiquotation not terminated" ]
-;
-
-value rec maybe_locate ctx bp =
-  lexer
-  [ '$'/ -> ("ANTIQUOT", ":" ^ $buf)
-  | '0'..'9' (maybe_locate ctx bp)
-  | ':' (locate_or_antiquot_rest ctx bp)! -> ("LOCATE", $buf)
-  | '\\'/ (any ctx) (locate_or_antiquot_rest ctx bp)! ->
-      ("ANTIQUOT", ":" ^ $buf)
-  | (any ctx) (locate_or_antiquot_rest ctx bp)! ->
-      ("ANTIQUOT", ":" ^ $buf)
-  | -> err ctx (bp, $pos) "antiquotation not terminated" ]
-;
-
-value dollar_for_anti ctx bp =
-  lexer
-  [ '$'/ -> ("ANTIQUOT", ":" ^ $buf)
-  | [ 'a'..'z' | 'A'..'Z' ] (antiquot ctx bp)!
-  | ':' (locate_or_antiquot_rest ctx bp)! -> ("ANTIQUOT", $buf)
-  | (maybe_locate ctx bp) ]
 ;
 
 value dollar ctx bp buf strm =
-  if ctx.dollar_for_antiquotation then dollar_for_anti ctx bp buf strm
+  if ctx.dollar_for_antiquotation then antiquot ctx bp buf strm
   else ("", B.get (ident2 (B.char '$') strm))
 ;
 
@@ -567,7 +545,7 @@ value using_token kwd_table ident_table (p_con, p_prm) =
             else Hashtbl.add ident_table p_prm p_con ]
   | "TILDEIDENT" | "QUESTIONIDENT" | "INT" | "INT_l" | "INT_L" | "INT_n" |
     "FLOAT" | "CHAR" | "STRING" |
-    "QUOTATION" | "ANTIQUOT" | "LOCATE" | "EOI" ->
+    "QUOTATION" | "ANTIQUOT" | "EOI" ->
       ()
   | _ ->
       raise
@@ -598,7 +576,6 @@ value text =
   | ("CHAR", "") -> "char"
   | ("QUOTATION", "") -> "quotation"
   | ("ANTIQUOT", k) -> "antiquot \"" ^ k ^ "\""
-  | ("LOCATE", "") -> "locate"
   | ("EOI", "") -> "end of input"
   | (con, "") -> con
   | (con, prm) -> con ^ " \"" ^ prm ^ "\"" ]

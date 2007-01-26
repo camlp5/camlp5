@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.12 2006/12/31 16:30:10 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.13 2007/01/26 01:19:31 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -662,16 +662,6 @@ EXTEND
       | "("; e = SELF; ")" -> <:expr< $e$ >>
       | "begin"; e = SELF; "end" -> <:expr< $e$ >>
       | "begin"; "end" -> <:expr< () >>
-      | x = LOCATE ->
-          let x =
-            try
-              let i = String.index x ':' in
-              (int_of_string (String.sub x 0 i),
-               String.sub x (i + 1) (String.length x - i - 1))
-            with
-            [ Not_found | Failure _ -> (0, x) ]
-          in
-          Pcaml.handle_expr_locate loc x
       | x = QUOTATION ->
           let x =
             try
@@ -794,16 +784,6 @@ EXTEND
       | "("; p = SELF; ":"; t = ctyp; ")" -> <:patt< ($p$ : $t$) >>
       | "("; p = SELF; ")" -> <:patt< $p$ >>
       | "_" -> <:patt< _ >>
-      | x = LOCATE ->
-          let x =
-            try
-              let i = String.index x ':' in
-              (int_of_string (String.sub x 0 i),
-               String.sub x (i + 1) (String.length x - i - 1))
-            with
-            [ Not_found | Failure _ -> (0, x) ]
-          in
-          Pcaml.handle_patt_locate loc x
       | x = QUOTATION ->
           let x =
             try

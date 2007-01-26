@@ -2569,19 +2569,6 @@ Grammar.extend
                 Not_found -> "", x
             in
             Pcaml.handle_expr_quotation loc x :
-            'expr));
-      [Gramext.Stoken ("LOCATE", "")],
-      Gramext.action
-        (fun (x : string) (loc : Token.location) ->
-           (let x =
-              try
-                let i = String.index x ':' in
-                int_of_string (String.sub x 0 i),
-                String.sub x (i + 1) (String.length x - i - 1)
-              with
-                Not_found | Failure _ -> 0, x
-            in
-            Pcaml.handle_expr_locate loc x :
             'expr))]];
     Grammar.Entry.obj (patt : 'patt Grammar.Entry.e),
     Some (Gramext.Level "simple"),
@@ -2598,17 +2585,4 @@ Grammar.extend
                 Not_found -> "", x
             in
             Pcaml.handle_patt_quotation loc x :
-            'patt));
-      [Gramext.Stoken ("LOCATE", "")],
-      Gramext.action
-        (fun (x : string) (loc : Token.location) ->
-           (let x =
-              try
-                let i = String.index x ':' in
-                int_of_string (String.sub x 0 i),
-                String.sub x (i + 1) (String.length x - i - 1)
-              with
-                Not_found | Failure _ -> 0, x
-            in
-            Pcaml.handle_patt_locate loc x :
             'patt))]]]);;
