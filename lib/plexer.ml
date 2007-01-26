@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.60 2007/01/26 03:03:21 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.61 2007/01/26 21:03:55 deraugla Exp $ *)
 
 open Token;
 
@@ -26,25 +26,13 @@ module B :
   sig
     type t = 'abstract;
     value empty : t;
-    value char : char -> t;
-    value string : string -> t;
-    value is_empty : t -> bool;
     value add : t -> char -> t;
-    value add_str : t -> string -> t;
     value get : t -> string;
   end =
   struct
     type t = list char;
     value empty = [];
-    value is_empty l = l = [];
     value add l c = [c :: l];
-    value add_str l s =
-      loop l 0 where rec loop l i =
-        if i = String.length s then l
-        else loop [String.unsafe_get s i :: l] (i + 1)
-    ;
-    value char c = [c];
-    value string = add_str [];
     value get l =
       let s = String.create (List.length l) in
       loop (String.length s - 1) l where rec loop i =
@@ -227,7 +215,7 @@ and antiquot_rest ctx bp =
 
 value dollar ctx bp buf strm =
   if ctx.dollar_for_antiquotation then antiquot ctx bp buf strm
-  else ("", B.get (ident2 (B.char '$') strm))
+  else ("", B.get (ident2 (B.add buf '$') strm))
 ;
 
 value rec linedir n s =

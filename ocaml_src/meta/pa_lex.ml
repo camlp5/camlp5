@@ -25,6 +25,7 @@ let get_buf loc cl =
     (loc, MLast.ExAcc (loc, MLast.ExUid (loc, "B"), MLast.ExLid (loc, "get")),
      cl)
 ;;
+
 (*
 value var = "cl";
 value add_char loc c cl = <:expr< [$c$ :: $cl$] >>;

@@ -26,27 +26,13 @@ module B :
   sig
     type t;;
     val empty : t;;
-    val char : char -> t;;
-    val string : string -> t;;
-    val is_empty : t -> bool;;
     val add : t -> char -> t;;
-    val add_str : t -> string -> t;;
     val get : t -> string;;
   end =
   struct
     type t = char list;;
     let empty = [];;
-    let is_empty l = l = [];;
     let add l c = c :: l;;
-    let add_str l s =
-      let rec loop l i =
-        if i = String.length s then l
-        else loop (String.unsafe_get s i :: l) (i + 1)
-      in
-      loop l 0
-    ;;
-    let char c = [c];;
-    let string = add_str [];;
     let get l =
       let s = String.create (List.length l) in
       let rec loop i =
@@ -430,7 +416,7 @@ and antiquot_rest ctx bp buf (strm__ : _ Stream.t) =
 
 let dollar ctx bp buf strm =
   if ctx.dollar_for_antiquotation then antiquot ctx bp buf strm
-  else "", B.get (ident2 (B.char '$') strm)
+  else "", B.get (ident2 (B.add buf '$') strm)
 ;;
 
 let rec linedir n s =
@@ -882,11 +868,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 577, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 577, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 577, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 578, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 578, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 565, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 565, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 565, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 566, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 566, 37)));
        tok_comm = None}
   in
   let glex =

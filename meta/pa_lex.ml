@@ -13,6 +13,7 @@ open Pcaml;
 value var = "buf";
 value add_char loc c cl = <:expr< B.add $cl$ $c$ >>;
 value get_buf loc cl = <:expr< B.get $cl$ >>;
+
 (*
 value var = "cl";
 value add_char loc c cl = <:expr< [$c$ :: $cl$] >>;
