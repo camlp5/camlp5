@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.59 2007/01/26 01:19:31 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.60 2007/01/26 03:03:21 deraugla Exp $ *)
 
 open Token;
 
@@ -195,13 +195,12 @@ value rec quotation ctx bp =
   | -> err ctx (bp, $pos) "quotation not terminated" ]
 ;
 
-value less ctx bp strm =
+value less ctx bp buf strm =
   if no_quotations.val then
-    let buf = B.char '<' in
+    let buf = B.add buf '<' in
     match strm with lexer
     [ ident2 -> keyword_or_error ctx (bp, $pos) $buf ]
   else
-    let buf = B.empty in
     match strm with lexer
     [ '<'/ (quotation ctx bp) -> ("QUOTATION", ":" ^ $buf)
     | ':'/ ident! (add ':')! '<'/ ? "character '<' expected"
@@ -257,6 +256,51 @@ value rec any_to_nl =
   | [: :] -> () ]
 ;
 
+value next_token_after_spaces ctx bp =
+  lexer
+  [ [ 'A'..'Z' | '\192'..'\214' | '\216'..'\222' ] ident! ->
+      let id = $buf in
+      try ("", ctx.find_kwd id) with [ Not_found -> ("UIDENT", id) ]
+  | [ 'a'..'z' | '\223'..'\246' | '\248'..'\255' | '_' ] ident! ->
+      let id = $buf in
+      try ("", ctx.find_kwd id) with [ Not_found -> ("LIDENT", id) ]
+  | '1'..'9' number!
+  | '0'
+    [ [ 'o' | 'O' ] (digits octal)!
+    | [ 'x' | 'X' ] (digits hexa)!
+    | [ 'b' | 'B' ] (digits binary)!
+    | number ]!
+  | '''/
+    [ ?= [_ ''' | '\\' _] (char ctx bp)! -> ("CHAR", $buf)
+    | -> keyword_or_error ctx (bp, $pos) "'" ]!
+  | '"'/ (string ctx bp)! -> ("STRING", $buf)
+  | '$'/ (dollar ctx bp)!
+  | [ '!' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' ] ident2! ->
+      keyword_or_error ctx (bp, $pos) $buf
+  | '~'
+    [ 'a'..'z' ident! -> ("TILDEIDENT", $buf)
+    | ident2 -> keyword_or_error ctx (bp, $pos) $buf ]!
+  | '?'
+    [ 'a'..'z' ident! -> ("QUESTIONIDENT", $buf)
+    | ident2 -> keyword_or_error ctx (bp, $pos) $buf ]!
+  | '<'/ (less ctx bp)!
+  | ':' [ ']' | ':' | '=' | '>' | ] -> keyword_or_error ctx (bp, $pos) $buf
+  | [ '>' | '|' ] [ ']' | '}' | ident2! ]! ->
+      keyword_or_error ctx (bp, $pos) $buf
+  | [ '[' | '{' ] [ ?= [ '<' '<' | '<' ':' ] | [ '|' | '<' | ':' ] | ] ->
+      keyword_or_error ctx (bp, $pos) $buf
+  | '.' [ '.' | ] ->
+      let id =
+        if $buf = ".." then ".."
+        else if ctx.specific_space_dot && ctx.after_space then " ."
+        else "."
+      in
+      keyword_or_error ctx (bp, $pos) id
+  | ';' [ ';' | ] -> keyword_or_error ctx (bp, $pos) $buf
+  | '\\'/ ident3! -> ("LIDENT", $buf)
+  | (any ctx) -> keyword_or_error ctx (bp, $pos) $buf ]
+;
+
 value rec next_token ctx =
   parser bp
   [ [: `'\n' | '\r'; s :] ep -> do {
@@ -291,94 +335,12 @@ value rec next_token ctx =
          | [: :] ep ->
              let loc = ctx.make_lined_loc (bp, ep) in
              (keyword_or_error ctx (bp, ep) "(", loc) ] ! :] -> a
-  | [: tok = next_token_kont ctx :] ep ->
+  | [: tok = next_token_after_spaces ctx bp B.empty :] ep ->
       let loc = ctx.make_lined_loc (bp, max (bp + 1) ep) in
-      (tok, loc) ]
-
-and next_token_kont ctx =
-  parser bp
-  [ [: `('A'..'Z' | '\192'..'\214' | '\216'..'\222' as c);
-       buf = ident (B.char c) ! :] ->
-      let id = B.get buf in
-      try ("", ctx.find_kwd id) with [ Not_found -> ("UIDENT", id) ]
-  | [: `('a'..'z' | '\223'..'\246' | '\248'..'\255' | '_' as c);
-       buf = ident (B.char c) ! :] ->
-      let id = B.get buf in
-      try ("", ctx.find_kwd id) with [ Not_found -> ("LIDENT", id) ]
-  | [: `('1'..'9' as c); tok = number (B.char c) ! :] -> tok
-  | [: `'0';
-       tok =
-         parser
-         [ [: `'o' | 'O'; tok = digits octal (B.string "0o") ! :] -> tok
-         | [: `'x' | 'X'; tok = digits hexa (B.string "0x") ! :] -> tok
-         | [: `'b' | 'B'; tok = digits binary (B.string "0b") ! :] -> tok
-         | [: tok = number (B.char '0') :] -> tok ] ! :] ->
-      tok
-  | [: `''';
-       tok =
-         parser
-         [ [: ?= [_; '''] | ['\\'; _]; buf = char ctx bp B.empty ! :] ->
-             ("CHAR", B.get buf)
-         | [: :] ep -> keyword_or_error ctx (bp, ep) "'" ] ! :] ->
-      tok
-  | [: `'"'; buf = string ctx bp B.empty ! :] -> ("STRING", B.get buf)
-  | [: `'$'; tok = dollar ctx bp B.empty ! :] -> tok
-  | [: `('!' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' as c);
-       buf = ident2 (B.char c) ! :] ep ->
-      keyword_or_error ctx (bp, ep) (B.get buf)
-  | [: `('~' as c);
-       a =
-         parser
-         [ [: `('a'..'z' as c); buf = ident (B.char c) ! :] ->
-             ("TILDEIDENT", B.get buf)
-         | [: buf = ident2 (B.char c) :] ep ->
-             keyword_or_error ctx (bp, ep) (B.get buf) ] ! :] ->
-      a
-  | [: `('?' as c);
-       a =
-         parser
-         [ [: `('a'..'z' as c); buf = ident (B.char c) ! :] ->
-             ("QUESTIONIDENT", B.get buf)
-         | [: buf = ident2 (B.char c) :] ep ->
-             keyword_or_error ctx (bp, ep) (B.get buf) ] ! :] ->
-      a
-  | [: `'<'; tok = less ctx bp ! :] -> tok
-  | [: `(':' as c1);
-       buf =
-         parser
-         [ [: `(']' | ':' | '=' | '>' as c2) :] -> B.add (B.char c1) c2
-         | [: :] -> B.char c1 ] ! :] ep ->
-      keyword_or_error ctx (bp, ep) (B.get buf)
-  | [: `('>' | '|' as c1);
-       buf =
-         parser
-         [ [: `(']' | '}' as c2) :] -> B.add (B.char c1) c2
-         | [: a = ident2 (B.char c1) :] -> a ] ! :] ep ->
-      keyword_or_error ctx (bp, ep) (B.get buf)
-  | [: `('[' | '{' as c1);
-       buf =
-         parser
-         [ [: ?= ['<'; '<' | ':'] :] -> B.char c1
-         | [: `('|' | '<' | ':' as c2) :] -> B.add (B.char c1) c2
-         | [: :] -> B.char c1 ] ! :] ep ->
-      keyword_or_error ctx (bp, ep) (B.get buf)
-  | [: `'.';
-       id =
-         parser
-         [ [: `'.' :] -> ".."
-         | [: :] ->
-             if ctx.specific_space_dot && ctx.after_space then " ."
-             else "." ] ! :] ep ->
-      keyword_or_error ctx (bp, ep) id
-  | [: `';';
-       id =
-         parser
-         [ [: `';' :] -> ";;"
-         | [: :] -> ";" ] ! :] ep ->
-      keyword_or_error ctx (bp, ep) id
-  | [: `'\\'; buf = ident3 B.empty ! :] -> ("LIDENT", B.get buf)
-  | [: `c :] ep -> keyword_or_error ctx (bp, ep) (String.make 1 c)
-  | [: _ = Stream.empty :] -> ("EOI", "") ]
+      (tok, loc)
+  | [: _ = Stream.empty :] ->
+      let loc = ctx.make_lined_loc (bp, bp + 1) in
+      (("EOI", ""), loc) ]
 ;
 
 value next_token_fun ctx glexr (cstrm, s_line_nb, s_bol_pos) =
