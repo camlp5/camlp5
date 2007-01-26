@@ -392,65 +392,73 @@ let rec antiquot ctx bp buf (strm__ : _ Stream.t) =
       Stream.junk strm__; antiquot ctx bp (B.add buf c) strm__
   | Some ':' ->
       Stream.junk strm__;
-      let k = B.get buf in
-      "ANTIQUOT", k ^ ":" ^ locate_or_antiquot_rest ctx bp B.empty strm__
+      let buf = locate_or_antiquot_rest ctx bp (B.add buf ':') strm__ in
+      "ANTIQUOT", B.get buf
   | Some '\\' ->
       Stream.junk strm__;
-      begin match Stream.peek strm__ with
-        Some c ->
-          Stream.junk strm__;
-          "ANTIQUOT",
-          ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) strm__
-      | _ -> raise (Stream.Error "")
-      end
-  | Some c ->
-      Stream.junk strm__;
-      "ANTIQUOT", ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) strm__
+      let buf =
+        try any ctx buf strm__ with
+          Stream.Failure -> raise (Stream.Error "")
+      in
+      let buf = locate_or_antiquot_rest ctx bp buf strm__ in
+      "ANTIQUOT", ":" ^ B.get buf
   | _ ->
-      let ep = Stream.count strm__ in
-      err ctx (bp, ep) "antiquotation not terminated"
+      match
+        try Some (any ctx buf strm__) with
+          Stream.Failure -> None
+      with
+        Some buf ->
+          let buf = locate_or_antiquot_rest ctx bp buf strm__ in
+          "ANTIQUOT", ":" ^ B.get buf
+      | _ -> err ctx (bp, Stream.count strm__) "antiquotation not terminated"
 and locate_or_antiquot_rest ctx bp buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
-    Some '$' -> Stream.junk strm__; B.get buf
+    Some '$' -> Stream.junk strm__; buf
   | Some '\\' ->
       Stream.junk strm__;
-      begin match Stream.peek strm__ with
-        Some c ->
-          Stream.junk strm__;
-          locate_or_antiquot_rest ctx bp (B.add buf c) strm__
-      | _ -> raise (Stream.Error "")
-      end
-  | Some c ->
-      Stream.junk strm__; locate_or_antiquot_rest ctx bp (B.add buf c) strm__
+      let buf =
+        try any ctx buf strm__ with
+          Stream.Failure -> raise (Stream.Error "")
+      in
+      locate_or_antiquot_rest ctx bp buf strm__
   | _ ->
-      let ep = Stream.count strm__ in
-      err ctx (bp, ep) "antiquotation not terminated"
+      match
+        try Some (any ctx buf strm__) with
+          Stream.Failure -> None
+      with
+        Some buf -> locate_or_antiquot_rest ctx bp buf strm__
+      | _ -> err ctx (bp, Stream.count strm__) "antiquotation not terminated"
 ;;
 
 let rec maybe_locate ctx bp buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some '$' -> Stream.junk strm__; "ANTIQUOT", ":" ^ B.get buf
   | Some ('0'..'9' as c) ->
-      Stream.junk strm__; maybe_locate ctx bp (B.add buf c) strm__
+      Stream.junk strm__;
+      begin try maybe_locate ctx bp (B.add buf c) strm__ with
+        Stream.Failure -> raise (Stream.Error "")
+      end
   | Some ':' ->
       Stream.junk strm__;
-      "LOCATE",
-      B.get buf ^ ":" ^ locate_or_antiquot_rest ctx bp B.empty strm__
+      let buf = locate_or_antiquot_rest ctx bp (B.add buf ':') strm__ in
+      "LOCATE", B.get buf
   | Some '\\' ->
       Stream.junk strm__;
-      begin match Stream.peek strm__ with
-        Some c ->
-          Stream.junk strm__;
-          "ANTIQUOT",
-          ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) strm__
-      | _ -> raise (Stream.Error "")
-      end
-  | Some c ->
-      Stream.junk strm__;
-      "ANTIQUOT", ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) strm__
+      let buf =
+        try any ctx buf strm__ with
+          Stream.Failure -> raise (Stream.Error "")
+      in
+      let buf = locate_or_antiquot_rest ctx bp buf strm__ in
+      "ANTIQUOT", ":" ^ B.get buf
   | _ ->
-      let ep = Stream.count strm__ in
-      err ctx (bp, ep) "antiquotation not terminated"
+      match
+        try Some (any ctx buf strm__) with
+          Stream.Failure -> None
+      with
+        Some buf ->
+          let buf = locate_or_antiquot_rest ctx bp buf strm__ in
+          "ANTIQUOT", ":" ^ B.get buf
+      | _ -> err ctx (bp, Stream.count strm__) "antiquotation not terminated"
 ;;
 
 let dollar_for_anti ctx bp buf (strm__ : _ Stream.t) =
@@ -458,27 +466,11 @@ let dollar_for_anti ctx bp buf (strm__ : _ Stream.t) =
     Some '$' -> Stream.junk strm__; "ANTIQUOT", ":" ^ B.get buf
   | Some ('a'..'z' | 'A'..'Z' as c) ->
       Stream.junk strm__; antiquot ctx bp (B.add buf c) strm__
-  | Some ('0'..'9' as c) ->
-      Stream.junk strm__; maybe_locate ctx bp (B.add buf c) strm__
   | Some ':' ->
       Stream.junk strm__;
-      let k = B.get buf in
-      "ANTIQUOT", k ^ ":" ^ locate_or_antiquot_rest ctx bp B.empty strm__
-  | Some '\\' ->
-      Stream.junk strm__;
-      begin match Stream.peek strm__ with
-        Some c ->
-          Stream.junk strm__;
-          "ANTIQUOT",
-          ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) strm__
-      | _ -> raise (Stream.Error "")
-      end
-  | Some c ->
-      Stream.junk strm__;
-      "ANTIQUOT", ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) strm__
-  | _ ->
-      let ep = Stream.count strm__ in
-      err ctx (bp, ep) "antiquotation not terminated"
+      let buf = locate_or_antiquot_rest ctx bp (B.add buf ':') strm__ in
+      "ANTIQUOT", B.get buf
+  | _ -> maybe_locate ctx bp buf strm__
 ;;
 
 let dollar ctx bp buf strm =
@@ -927,11 +919,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 670, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 670, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 670, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 671, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 671, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 638, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 638, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 638, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 639, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 639, 37)));
        tok_comm = None}
   in
   let glex =

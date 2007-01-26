@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.57 2007/01/25 18:02:47 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.58 2007/01/26 00:35:24 deraugla Exp $ *)
 
 open Token;
 
@@ -210,55 +210,42 @@ value less ctx bp strm =
     | (add '<') ident2! -> keyword_or_error ctx (bp, $pos) $buf ]
 ;
 
-value rec antiquot ctx bp buf =
-  parser
-  [ [: `'$' :] -> ("ANTIQUOT", ":" ^ B.get buf)
-  | [: `('a'..'z' | 'A'..'Z' | '0'..'9' as c);
-       a = antiquot ctx bp (B.add buf c) ! :] ->
-      a
-  | [: `':'; s :] ->
-      let k = B.get buf in
-      ("ANTIQUOT", k ^ ":" ^ locate_or_antiquot_rest ctx bp B.empty s)
-  | [: `'\\'; `c; s :] ->
-      ("ANTIQUOT", ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) s)
-  | [: `c; s :] ->
-      ("ANTIQUOT", ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) s)
-  | [: :] ep -> err ctx (bp, ep) "antiquotation not terminated" ]
-and locate_or_antiquot_rest ctx bp buf =
-  parser
-  [ [: `'$' :] -> B.get buf
-  | [: `'\\'; `c; a = locate_or_antiquot_rest ctx bp (B.add buf c) ! :] -> a
-  | [: `c; a = locate_or_antiquot_rest ctx bp (B.add buf c) ! :] -> a
-  | [: :] ep -> err ctx (bp, ep) "antiquotation not terminated" ]
+value rec antiquot ctx bp =
+  lexer
+  [ '$'/ -> ("ANTIQUOT", ":" ^ $buf)
+  | [ 'a'..'z' | 'A'..'Z' | '0'..'9' ] (antiquot ctx bp)!
+  | ':' (locate_or_antiquot_rest ctx bp)! -> ("ANTIQUOT", $buf)
+  | '\\'/ (any ctx) (locate_or_antiquot_rest ctx bp)! ->
+      ("ANTIQUOT", ":" ^ $buf)
+  | (any ctx) (locate_or_antiquot_rest ctx bp)! ->
+      ("ANTIQUOT", ":" ^ $buf)
+  | -> err ctx (bp, $pos) "antiquotation not terminated" ]
+and locate_or_antiquot_rest ctx bp =
+  lexer
+  [ '$'/
+  | '\\'/ (any ctx) (locate_or_antiquot_rest ctx bp)!
+  | (any ctx) (locate_or_antiquot_rest ctx bp)!
+  | -> err ctx (bp, $pos) "antiquotation not terminated" ]
 ;
 
-value rec maybe_locate ctx bp buf =
-  parser
-  [ [: `'$' :] -> ("ANTIQUOT", ":" ^ B.get buf)
-  | [: `('0'..'9' as c); a = maybe_locate ctx bp (B.add buf c) ! :] -> a
-  | [: `':'; s :] ->
-      ("LOCATE", B.get buf ^ ":" ^ locate_or_antiquot_rest ctx bp B.empty s)
-  | [: `'\\'; `c; s :] ->
-      ("ANTIQUOT", ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) s)
-  | [: `c; s :] ->
-      ("ANTIQUOT", ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) s)
-  | [: :] ep -> err ctx (bp, ep) "antiquotation not terminated" ]
+value rec maybe_locate ctx bp =
+  lexer
+  [ '$'/ -> ("ANTIQUOT", ":" ^ $buf)
+  | '0'..'9' (maybe_locate ctx bp)
+  | ':' (locate_or_antiquot_rest ctx bp)! -> ("LOCATE", $buf)
+  | '\\'/ (any ctx) (locate_or_antiquot_rest ctx bp)! ->
+      ("ANTIQUOT", ":" ^ $buf)
+  | (any ctx) (locate_or_antiquot_rest ctx bp)! ->
+      ("ANTIQUOT", ":" ^ $buf)
+  | -> err ctx (bp, $pos) "antiquotation not terminated" ]
 ;
 
-value dollar_for_anti ctx bp buf =
-  parser
-  [ [: `'$' :] -> ("ANTIQUOT", ":" ^ B.get buf)
-  | [: `('a'..'z' | 'A'..'Z' as c); a = antiquot ctx bp (B.add buf c) ! :] ->
-      a
-  | [: `('0'..'9' as c); a = maybe_locate ctx bp (B.add buf c) ! :] -> a
-  | [: `':'; s :] ->
-      let k = B.get buf in
-      ("ANTIQUOT", k ^ ":" ^ locate_or_antiquot_rest ctx bp B.empty s)
-  | [: `'\\'; `c; s :] ->
-      ("ANTIQUOT", ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) s)
-  | [: `c; s :] ->
-      ("ANTIQUOT", ":" ^ locate_or_antiquot_rest ctx bp (B.add buf c) s)
-  | [: :] ep -> err ctx (bp, ep) "antiquotation not terminated" ]
+value dollar_for_anti ctx bp =
+  lexer
+  [ '$'/ -> ("ANTIQUOT", ":" ^ $buf)
+  | [ 'a'..'z' | 'A'..'Z' ] (antiquot ctx bp)!
+  | ':' (locate_or_antiquot_rest ctx bp)! -> ("ANTIQUOT", $buf)
+  | (maybe_locate ctx bp) ]
 ;
 
 value dollar ctx bp buf strm =
