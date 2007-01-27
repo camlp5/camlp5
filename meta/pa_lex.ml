@@ -71,15 +71,16 @@ value isolate_char_patt_list =
     | rl -> (List.rev pl, rl) ]
 ;
 
+value or_patt_of_patt_list loc =
+  fun
+  [ [p :: pl] -> List.fold_left (fun p1 p2 -> <:patt< $p1$ | $p2$ >>) p pl
+  | [] -> invalid_arg "or_patt_of_patt_list" ]
+;
+
 value isolate_char_patt loc rl =
   match isolate_char_patt_list rl with
-  [ ([_], _) ->
-      (None, rl)
-  | ([p :: pl], rl) ->
-      let p = List.fold_left (fun p1 p2 -> <:patt< $p1$ | $p2$ >>) p pl in
-      (Some p, rl)
-  | _ ->
-      (None, rl) ]
+  [ ([] | [_], _) -> (None, rl)
+  | (pl, rl) -> (Some (or_patt_of_patt_list loc pl), rl) ]
 ;
 
 value gcl = ref [];
@@ -117,11 +118,7 @@ EXTEND
     [ [ (sl, cl) = symbs -> do { gcl.val := cl; (sl, cl) } ] ]
   ;
   symbs:
-    [ [ (sl, cl) = symbs; c = CHAR; norec = no_rec; errk = err_kont ->
-          let s = (Exparser.SpTrm loc <:patt< $chr:c$ >> None, errk) in
-          let cl = if norec then cl else [<:expr< $chr:c$ >> :: cl] in
-          ([s :: sl], cl)
-      | (sl, cl) = symbs; "_"; norec = no_rec; errk = err_kont ->
+    [ [ (sl, cl) = symbs; "_"; norec = no_rec; errk = err_kont ->
           let (p, cl) =
             if norec then (<:patt< _ >>, cl)
             else
@@ -130,13 +127,55 @@ EXTEND
           in
           let s = (Exparser.SpTrm loc p None, errk) in
           ([s :: sl], cl)
-      | (sl, cl) = symbs; c1 = CHAR; ".."; c2 = CHAR; errk = err_kont ->
-          let c = fresh_c cl in
-          let s =
-            let p = <:patt< ($chr:c1$ .. $chr:c2$ as $lid:c$) >> in
-            (Exparser.SpTrm loc p None, errk)
+      | (sl, cl) = symbs; s = STRING; norec = no_rec; errk = err_kont ->
+          let pl =
+            let next_char s i =
+              if i = String.length s then invalid_arg "next_char"
+              else if s.[i] = '\\' then
+                if i + 1 = String.length s then ("\\", i + 1)
+                else
+                  match s.[i+1] with
+                  [ '0'..'9' ->
+                      if i + 3 < String.length s then
+                        (Printf.sprintf "\\%c%c%c" s.[i+1] s.[i+2] s.[i+3],
+                         i + 4)
+                      else ("\\", i + 1)
+                  | c -> ("\\" ^ String.make 1 c, i + 2) ]
+              else (String.make 1 s.[i], i + 1)
+            in
+            loop 0 where rec loop i =
+              if i = String.length s then []
+              else
+                let (c, i) = next_char s i in
+                let p = <:patt< $chr:c$ >> in
+                let (p, i) =
+                  if i < String.length s - 2 && s.[i] = '.' &&
+                      s.[i+1] = '.'
+                  then
+                    let (c, i) = next_char s (i + 2) in
+                    (<:patt< $p$ .. $chr:c$ >>, i)
+                  else
+                    (p, i)
+                in
+                [p :: loop i]
           in
-          ([s :: sl], [<:expr< $lid:c$ >> :: cl])
+          match pl with
+          [ [] -> (sl, cl)
+          | [<:patt< $chr:c$ >>] ->
+              let s = (Exparser.SpTrm loc <:patt< $chr:c$ >> None, errk) in
+              let cl = if norec then cl else [<:expr< $chr:c$ >> :: cl] in
+              ([s :: sl], cl)
+          | pl ->
+              let c = fresh_c cl in
+              let s =
+                let p =
+                  let p = or_patt_of_patt_list loc pl in
+                  if norec then p else <:patt< ($p$ as $lid:c$) >>
+                in
+                (Exparser.SpTrm loc p None, errk)
+              in
+              let cl = if norec then cl else [<:expr< $lid:c$ >> :: cl] in
+              ([s :: sl], cl) ]
       | (sl, cl) = symbs; (f, po) = simple_expr; errk = err_kont ->
           let s =
             let buf = accum_chars loc cl in

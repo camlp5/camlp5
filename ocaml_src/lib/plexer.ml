@@ -92,14 +92,18 @@ let rec ident buf (strm__ : _ Stream.t) =
        '\248'..'\255' | '0'..'9' | '_' | '\'' as c) ->
       Stream.junk strm__; ident (B.add buf c) strm__
   | _ -> buf
-and ident2 buf (strm__ : _ Stream.t) =
+;;
+
+let rec ident2 buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some
       ('!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' |
        '.' | ':' | '<' | '>' | '|' | '$' as c) ->
       Stream.junk strm__; ident2 (B.add buf c) strm__
   | _ -> buf
-and ident3 buf (strm__ : _ Stream.t) =
+;;
+
+let rec ident3 buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some
       ('0'..'9' | 'A'..'Z' | 'a'..'z' | '\192'..'\214' | '\216'..'\246' |
@@ -141,7 +145,7 @@ and hexa buf (strm__ : _ Stream.t) =
   | _ -> raise Stream.Failure
 and binary buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
-    Some ('0'..'1' as c) -> Stream.junk strm__; B.add buf c
+    Some ('0' | '1' as c) -> Stream.junk strm__; B.add buf c
   | _ -> raise Stream.Failure
 ;;
 
@@ -205,11 +209,7 @@ let rec char_aux ctx bp buf (strm__ : _ Stream.t) =
 
 let char ctx bp buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
-    Some '\'' ->
-      Stream.junk strm__;
-      begin try char_aux ctx bp (B.add buf '\'') strm__ with
-        Stream.Failure -> raise (Stream.Error "")
-      end
+    Some '\'' -> Stream.junk strm__; char_aux ctx bp (B.add buf '\'') strm__
   | _ -> char_aux ctx bp buf strm__
 ;;
 
@@ -721,9 +721,7 @@ and check buf (strm__ : _ Stream.t) =
         ['<'; '<'] | ['<'; ':'] -> buf
       | _ ->
           match Stream.peek strm__ with
-            Some '|' -> Stream.junk strm__; B.add buf '|'
-          | Some '<' -> Stream.junk strm__; B.add buf '<'
-          | Some ':' -> Stream.junk strm__; B.add buf ':'
+            Some ('|' | '<' | ':' as c) -> Stream.junk strm__; B.add buf c
           | _ -> buf
       end
   | Some ';' ->
@@ -872,11 +870,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 532, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 532, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 532, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 533, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 533, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 513, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 513, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 513, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 514, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 514, 37)));
        tok_comm = None}
   in
   let glex =

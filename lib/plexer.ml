@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.62 2007/01/27 11:29:36 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.63 2007/01/27 13:52:02 deraugla Exp $ *)
 
 open Token;
 
@@ -75,26 +75,19 @@ value stream_peek_nth n strm =
     | [_ :: l] -> loop (n - 1) l ]
 ;
 
-value rec decimal_digits_under =
-  lexer [ [ '0'..'9' | '_' ] decimal_digits_under! | ]
-;
+value rec decimal_digits_under = lexer [ "0..9_" decimal_digits_under! | ];
 
 value rec ident =
+  lexer [ "A..Za..z\192..\214\216..\246\248..\2550..9_'" ident! | ]
+;
+
+value rec ident2 =
+  lexer [ "!?~=@^&+-*/%.:<>|$" ident2! | ]
+;
+
+value rec ident3 =
   lexer
-  [ [ 'A'..'Z' | 'a'..'z' | '\192'..'\214' | '\216'..'\246' |
-      '\248'..'\255' | '0'..'9' | '_' | ''' ] ident!
-  | ]
-and ident2 =
-  lexer
-  [ [ '!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' |
-      '%' | '.' | ':' | '<' | '>' | '|' | '$' ] ident2!
-  | ]
-and ident3 =
-  lexer
-  [ [ '0'..'9' | 'A'..'Z' | 'a'..'z' | '\192'..'\214' | '\216'..'\246' |
-      '\248'..'\255' | '_' | '!' | '%' | '&' | '*' | '+' | '-' | '.' |
-      '/' | ':' | '<' | '=' | '>' | '?' | '@' | '^' | '|' | '~' | ''' | '$' ]
-    ident3!
+  [ "0..9A..Za..z\192..\214\216..\246\248..\255_!%&*+-./:<=>?@^|~'$" ident3!
   | ]
 ;
 
@@ -105,41 +98,41 @@ value rec digits kind =
 and digits_under kind =
   lexer
   [ kind (digits_under kind)!
-  | '_' (digits_under kind)!
-  | 'l'/ -> ("INT_l", $buf)
-  | 'L'/ -> ("INT_L", $buf)
-  | 'n'/ -> ("INT_n", $buf)
+  | "_" (digits_under kind)!
+  | "l"/ -> ("INT_l", $buf)
+  | "L"/ -> ("INT_L", $buf)
+  | "n"/ -> ("INT_n", $buf)
   | -> ("INT", $buf) ]
-and octal = lexer [ '0'..'7' ]
-and hexa = lexer [ '0'..'9' | 'a'..'f' | 'A'..'F' ]
-and binary = lexer [ '0'..'1' ];
+and octal = lexer [ "0..7" ]
+and hexa = lexer [ "0..9a..fA..F" ]
+and binary = lexer [ "01" ];
 
 value exponent_part =
   lexer
-  [ [ 'e' | 'E' ] [ '+' | '-' | ]
-    '0'..'9' ? "ill-formed floating-point constant" decimal_digits_under! ]
+  [ "eE" [ "+-" | ] "0..9" ? "ill-formed floating-point constant"
+    decimal_digits_under! ]
 ;
 
 value number =
   lexer
   [ decimal_digits_under
-    [ '.' decimal_digits_under! [ exponent_part | ] -> ("FLOAT", $buf)
+    [ "." decimal_digits_under! [ exponent_part | ] -> ("FLOAT", $buf)
     | exponent_part -> ("FLOAT", $buf)
-    | 'l'/ -> ("INT_l", $buf)
-    | 'L'/ -> ("INT_L", $buf)
-    | 'n'/ -> ("INT_n", $buf)
+    | "l"/ -> ("INT_l", $buf)
+    | "L"/ -> ("INT_L", $buf)
+    | "n"/ -> ("INT_n", $buf)
     | -> ("INT", $buf) ] ]
 ;
 
 value rec char_aux ctx bp =
   lexer
-  [ '''/
-  | '\\' _ (char_aux ctx bp)!
+  [ "'"/
+  | "\\" _ (char_aux ctx bp)!
   | _ (char_aux ctx bp)!
   | -> err ctx (bp, $pos) "char not terminated" ]
 ;
 
-value char ctx bp = lexer [ ''' (char_aux ctx bp) | (char_aux ctx bp) ];
+value char ctx bp = lexer [ "'" (char_aux ctx bp)! | (char_aux ctx bp) ];
 
 value any ctx buf =
   parser bp
@@ -148,8 +141,8 @@ value any ctx buf =
 
 value rec string ctx bp =
   lexer
-  [ '"'/
-  | '\\' (any ctx) (string ctx bp)!
+  [ "\""/
+  | "\\" (any ctx) (string ctx bp)!
   | (any ctx) (string ctx bp)!
   | -> err ctx (bp, $pos) "string not terminated" ]
 ;
@@ -157,10 +150,10 @@ value rec string ctx bp =
 value comment ctx bp =
   comment where rec comment =
     lexer
-    [ '*' [ ')' | comment ]!
-    | '(' [ '*' comment! | ] comment!
-    | '"' (string ctx bp) comment!
-    | ''' [ ?= [ _ ''' | '\\' _ ] (char ctx bp)! | ] comment!
+    [ "*" [ ")" | comment ]!
+    | "(" [ "*" comment! | ] comment!
+    | "\"" (string ctx bp) comment!
+    | "'" [ ?= [ _ ''' | '\\' _ ] (char ctx bp)! | ] comment!
     | (any ctx) comment!
     | -> err ctx (bp, $pos) "comment not terminated" ]
 ;
@@ -169,13 +162,13 @@ value add c buf = parser [: :] -> B.add buf c;
 
 value rec quotation ctx bp =
   lexer
-  [ '>'/ [ '>'/ | (add '>') (quotation ctx bp)! ]!
-  | '<'
-    [ '<' (quotation ctx bp)! (add '>')! (add '>')!
-    | ':' ident! [ '<' (quotation ctx bp)! (add '>')! (add '>')! | ]
+  [ ">"/ [ ">"/ | (add '>') (quotation ctx bp)! ]!
+  | "<"
+    [ "<" (quotation ctx bp)! (add '>')! (add '>')!
+    | ":" ident! [ "<" (quotation ctx bp)! (add '>')! (add '>')! | ]
     | ]
     (quotation ctx bp)!
-  | '\\'/ [ '>' | '<' | '\\' | (add '\\') ]! (quotation ctx bp)!
+  | "\\"/ [ "><\\" | (add '\\') ]! (quotation ctx bp)!
   | (any ctx) (quotation ctx bp)!
   | -> err ctx (bp, $pos) "quotation not terminated" ]
 ;
@@ -187,8 +180,8 @@ value less ctx bp buf strm =
     [ ident2 -> keyword_or_error ctx (bp, $pos) $buf ]
   else
     match strm with lexer
-    [ '<'/ (quotation ctx bp) -> ("QUOTATION", ":" ^ $buf)
-    | ':'/ ident! (add ':')! '<'/ ? "character '<' expected"
+    [ "<"/ (quotation ctx bp) -> ("QUOTATION", ":" ^ $buf)
+    | ":"/ ident! (add ':')! "<"/ ? "character '<' expected"
       (quotation ctx bp) ->
         ("QUOTATION", $buf)
     | (add '<') ident2! -> keyword_or_error ctx (bp, $pos) $buf ]
@@ -196,16 +189,16 @@ value less ctx bp buf strm =
 
 value rec antiquot ctx bp =
   lexer
-  [ '$'/ -> ("ANTIQUOT", ":" ^ $buf)
-  | [ 'a'..'z' | 'A'..'Z' | '0'..'9' ] (antiquot ctx bp)!
-  | ':' (antiquot_rest ctx bp)! -> ("ANTIQUOT", $buf)
-  | '\\'/ (any ctx) (antiquot_rest ctx bp)! -> ("ANTIQUOT", ":" ^ $buf)
+  [ "$"/ -> ("ANTIQUOT", ":" ^ $buf)
+  | "a..zA..Z0..9" (antiquot ctx bp)!
+  | ":" (antiquot_rest ctx bp)! -> ("ANTIQUOT", $buf)
+  | "\\"/ (any ctx) (antiquot_rest ctx bp)! -> ("ANTIQUOT", ":" ^ $buf)
   | (any ctx) (antiquot_rest ctx bp)! -> ("ANTIQUOT", ":" ^ $buf)
   | -> err ctx (bp, $pos) "antiquotation not terminated" ]
 and antiquot_rest ctx bp =
   lexer
-  [ '$'/
-  | '\\'/ (any ctx) (antiquot_rest ctx bp)!
+  [ "$"/
+  | "\\"/ (any ctx) (antiquot_rest ctx bp)!
   | (any ctx) (antiquot_rest ctx bp)!
   | -> err ctx (bp, $pos) "antiquotation not terminated" ]
 ;
@@ -243,46 +236,44 @@ value rec any_to_nl =
 
 value next_token_after_spaces ctx bp =
   lexer
-  [ [ 'A'..'Z' | '\192'..'\214' | '\216'..'\222' ] ident! ->
+  [ "A..Z\192..\214\216..\222" ident! ->
       let id = $buf in
       try ("", ctx.find_kwd id) with [ Not_found -> ("UIDENT", id) ]
-  | [ 'a'..'z' | '\223'..'\246' | '\248'..'\255' | '_' ] ident! ->
+  | "a..z\223..\246\248..\255_" ident! ->
       let id = $buf in
       try ("", ctx.find_kwd id) with [ Not_found -> ("LIDENT", id) ]
-  | '1'..'9' number!
-  | '0'
-    [ [ 'o' | 'O' ] (digits octal)!
-    | [ 'x' | 'X' ] (digits hexa)!
-    | [ 'b' | 'B' ] (digits binary)!
+  | "1..9" number!
+  | "0"
+    [ "oO" (digits octal)!
+    | "xX" (digits hexa)!
+    | "bB" (digits binary)!
     | number ]!
-  | '''/
-    [ ?= [_ ''' | '\\' _] (char ctx bp)! -> ("CHAR", $buf)
+  | "'"/
+    [ ?= [ _ ''' | '\\' _ ] (char ctx bp)! -> ("CHAR", $buf)
     | -> keyword_or_error ctx (bp, $pos) "'" ]!
-  | '"'/ (string ctx bp)! -> ("STRING", $buf)
-  | '$'/ (dollar ctx bp)!
-  | [ '!' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' ] ident2! ->
-      keyword_or_error ctx (bp, $pos) $buf
-  | '~'
-    [ 'a'..'z' ident! -> ("TILDEIDENT", $buf)
+  | "\""/ (string ctx bp)! -> ("STRING", $buf)
+  | "$"/ (dollar ctx bp)!
+  | "!=@^&+-*/%" ident2! -> keyword_or_error ctx (bp, $pos) $buf
+  | "~"
+    [ "a..z" ident! -> ("TILDEIDENT", $buf)
     | ident2 -> keyword_or_error ctx (bp, $pos) $buf ]!
-  | '?'
-    [ 'a'..'z' ident! -> ("QUESTIONIDENT", $buf)
+  | "?"
+    [ "a..z" ident! -> ("QUESTIONIDENT", $buf)
     | ident2 -> keyword_or_error ctx (bp, $pos) $buf ]!
-  | '<'/ (less ctx bp)!
-  | ':' [ ']' | ':' | '=' | '>' | ] -> keyword_or_error ctx (bp, $pos) $buf
-  | [ '>' | '|' ] [ ']' | '}' | ident2! ]! ->
+  | "<"/ (less ctx bp)!
+  | ":" [ "]:=>" | ] -> keyword_or_error ctx (bp, $pos) $buf
+  | ">|" [ "]}" | ident2! ]! -> keyword_or_error ctx (bp, $pos) $buf
+  | "[{" [ ?= [ '<' '<' | '<' ':' ] | "|<:" | ] ->
       keyword_or_error ctx (bp, $pos) $buf
-  | [ '[' | '{' ] [ ?= [ '<' '<' | '<' ':' ] | [ '|' | '<' | ':' ] | ] ->
-      keyword_or_error ctx (bp, $pos) $buf
-  | '.' [ '.' | ] ->
+  | "." [ "." | ] ->
       let id =
         if $buf = ".." then ".."
         else if ctx.specific_space_dot && ctx.after_space then " ."
         else "."
       in
       keyword_or_error ctx (bp, $pos) id
-  | ';' [ ';' | ] -> keyword_or_error ctx (bp, $pos) $buf
-  | '\\'/ ident3! -> ("LIDENT", $buf)
+  | ";" [ ";" | ] -> keyword_or_error ctx (bp, $pos) $buf
+  | "\\"/ ident3! -> ("LIDENT", $buf)
   | (any ctx) -> keyword_or_error ctx (bp, $pos) $buf ]
 ;
 
@@ -386,29 +377,19 @@ value rec check_keyword_stream =
   parser [: _ = check B.empty; _ = Stream.empty :] -> True
 and check =
   lexer
-  [ [ 'A'..'Z' | 'a'..'z' | '\192'..'\214' | '\216'..'\246' | '\248'..'\255' ]
-      check_ident!
-  | [ '!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' |
-      '.' ]
-      check_ident2!
-  | '<' [ ?= [':' | '<'] | check_ident2 ]!
-  | ':' [ ']' | ':' | '=' | '>' | ]
-  | [ '>' | '|' ] [ ']' | '}' | check_ident2 ]!
-  | [ '[' | '{' ] [ ?= ['<' '<' | '<' ':' ] | '|' | '<' | ':' | ]
-  | ';' [ ';' | ]
+  [ "A..Za..z\192..\214\216..\246\248..\255" check_ident!
+  | "!?~=@^&+-*/%." check_ident2!
+  | "<" [ ?= [ ':' | '<' ] | check_ident2 ]!
+  | ":" [ "]:=>" | ]
+  | ">|" [ "]}" | check_ident2 ]!
+  | "[{" [ ?= [ '<' '<' | '<' ':' ] | "|<:" | ]
+  | ";" [ ";" | ]
   | _ ]
 and check_ident =
   lexer
-  [ [ 'A'..'Z' | 'a'..'z' | '\192'..'\214' | '\216'..'\246' | '\248'..'\255' |
-      '0'..'9' | '_' | ''' ]
-    check_ident!
-  | ]
+  [ "A..Za..z\192..\214\216..\246\248..\2550..9_'" check_ident! | ]
 and check_ident2 =
-  lexer
-  [ [ '!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' |
-      '.' | ':' | '<' | '>' | '|' ]
-    check_ident2!
-  | ]
+  lexer [ "!?~=@^&+-*/%.:<>|" check_ident2! | ]
 ;
 
 value check_keyword s =
