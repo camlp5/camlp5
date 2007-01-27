@@ -251,16 +251,12 @@ Grammar.extend
        Gramext.Snterm
          (Grammar.Entry.obj (err_kont : 'err_kont Grammar.Entry.e))],
       Gramext.action
-        (fun (errk : 'err_kont) (f, po : 'simple_expr) (sl, cl : 'symbs)
+        (fun (errk : 'err_kont) (f : 'simple_expr) (sl, cl : 'symbs)
            (loc : Token.location) ->
            (let s =
               let buf = accum_chars loc cl in
               let e = MLast.ExApp (loc, f, buf) in
-              let p =
-                match po with
-                  Some p -> p
-                | None -> MLast.PaLid (loc, var)
-              in
+              let p = MLast.PaLid (loc, var) in
               Exparser.SpNtr (loc, p, e), errk
             in
             s :: sl, [] :
@@ -345,22 +341,13 @@ Grammar.extend
     [None, None,
      [[Gramext.Stoken ("", "(");
        Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e));
-       Gramext.Stoken ("", "as");
-       Gramext.Snterm (Grammar.Entry.obj (patt : 'patt Grammar.Entry.e));
        Gramext.Stoken ("", ")")],
       Gramext.action
-        (fun _ (p : 'patt) _ (e : 'expr) _ (loc : Token.location) ->
-           (e, Some p : 'simple_expr));
-      [Gramext.Stoken ("", "(");
-       Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e));
-       Gramext.Stoken ("", ")")],
-      Gramext.action
-        (fun _ (e : 'expr) _ (loc : Token.location) ->
-           (e, None : 'simple_expr));
+        (fun _ (e : 'expr) _ (loc : Token.location) -> (e : 'simple_expr));
       [Gramext.Stoken ("LIDENT", "")],
       Gramext.action
         (fun (i : string) (loc : Token.location) ->
-           (MLast.ExLid (loc, i), None : 'simple_expr))]];
+           (MLast.ExLid (loc, i) : 'simple_expr))]];
     Grammar.Entry.obj (lookahead : 'lookahead Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Slist1
@@ -388,6 +375,12 @@ Grammar.extend
     Grammar.Entry.obj (err_kont : 'err_kont Grammar.Entry.e), None,
     [None, None,
      [[], Gramext.action (fun (loc : Token.location) -> (None : 'err_kont));
+      [Gramext.Stoken ("", "?");
+       Gramext.Snterm
+         (Grammar.Entry.obj (simple_expr : 'simple_expr Grammar.Entry.e))],
+      Gramext.action
+        (fun (e : 'simple_expr) _ (loc : Token.location) ->
+           (Some (Some e) : 'err_kont));
       [Gramext.Stoken ("", "?"); Gramext.Stoken ("STRING", "")],
       Gramext.action
         (fun (s : string) _ (loc : Token.location) ->

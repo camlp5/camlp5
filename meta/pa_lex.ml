@@ -176,15 +176,11 @@ EXTEND
               in
               let cl = if norec then cl else [<:expr< $lid:c$ >> :: cl] in
               ([s :: sl], cl) ]
-      | (sl, cl) = symbs; (f, po) = simple_expr; errk = err_kont ->
+      | (sl, cl) = symbs; f = simple_expr; errk = err_kont ->
           let s =
             let buf = accum_chars loc cl in
             let e = <:expr< $f$ $buf$ >> in
-            let p =
-              match po with
-              [ Some p -> p
-              | None -> <:patt< $lid:var$ >> ]
-            in
+            let p = <:patt< $lid:var$ >> in
             (Exparser.SpNtr loc p e, errk)
           in
           ([s :: sl], [])
@@ -236,9 +232,8 @@ EXTEND
       | -> ([], []) ] ]
   ;
   simple_expr:
-    [ [ i = LIDENT -> (<:expr< $lid:i$ >>, None)
-      | "("; e = expr; ")" -> (e, None)
-      | "("; e = expr; "as"; p = patt; ")" -> (e, Some p) ] ]
+    [ [ i = LIDENT -> <:expr< $lid:i$ >>
+      | "("; e = expr; ")" -> e ] ]
   ;
   lookahead:
     [ [ pl = LIST1 lookahead_char -> pl ] ]
@@ -254,6 +249,7 @@ EXTEND
   err_kont:
     [ [ "!" -> Some None
       | "?"; s = STRING -> Some (Some <:expr< $str:s$ >>)
+      | "?"; e = simple_expr -> Some (Some e)
       | -> None ] ]
   ;
   act:
