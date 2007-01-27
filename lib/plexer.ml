@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.61 2007/01/26 21:03:55 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.62 2007/01/27 11:29:36 deraugla Exp $ *)
 
 open Token;
 
@@ -117,8 +117,7 @@ and binary = lexer [ '0'..'1' ];
 value exponent_part =
   lexer
   [ [ 'e' | 'E' ] [ '+' | '-' | ]
-    '0'..'9' ? "ill-formed floating-point constant"
-    decimal_digits_under! ]
+    '0'..'9' ? "ill-formed floating-point constant" decimal_digits_under! ]
 ;
 
 value number =
@@ -140,9 +139,7 @@ value rec char_aux ctx bp =
   | -> err ctx (bp, $pos) "char not terminated" ]
 ;
 
-value char ctx bp =
-  lexer [ ''' (char_aux ctx bp) | (char_aux ctx bp) ]
-;
+value char ctx bp = lexer [ ''' (char_aux ctx bp) | (char_aux ctx bp) ];
 
 value any ctx buf =
   parser bp
@@ -386,62 +383,32 @@ value func kwd_table glexr =
 ;
 
 value rec check_keyword_stream =
-  parser [: _ = check; _ = Stream.empty :] -> True
+  parser [: _ = check B.empty; _ = Stream.empty :] -> True
 and check =
-  parser
-  [ [: `'A'..'Z' | 'a'..'z' | '\192'..'\214' | '\216'..'\246' |
-        '\248'..'\255'; s :] ->
-      check_ident s
-  | [: `'!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' |
-        '%' | '.'; s :] ->
-      check_ident2 s
-  | [: `'<';
-       a =
-         parser
-         [ [: ?= [':' | '<'] :] -> ()
-         | [: a = check_ident2 :] -> a ] ! :] -> a
-  | [: `':';
-       a =
-         parser
-         [ [: `']' | ':' | '=' | '>' :] -> ()
-         | [: :] -> () ] :] ->
-      a
-  | [: `'>' | '|';
-       a =
-         parser
-         [ [: `']' | '}' :] -> ()
-         | [: a = check_ident2 :] -> a ] :] ->
-      a
-  | [: `'[' | '{';
-       a =
-         parser
-         [ [: ?= ['<'; '<' | ':'] :] -> ()
-         | [: `'|' | '<' | ':' :] -> ()
-         | [: :] -> () ] ! :] ->
-      a
-  | [: `';';
-       a =
-         parser
-         [ [: `';' :] -> ()
-         | [: :] -> () ] :] ->
-      a
-  | [: `_ :] -> () ]
+  lexer
+  [ [ 'A'..'Z' | 'a'..'z' | '\192'..'\214' | '\216'..'\246' | '\248'..'\255' ]
+      check_ident!
+  | [ '!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' |
+      '.' ]
+      check_ident2!
+  | '<' [ ?= [':' | '<'] | check_ident2 ]!
+  | ':' [ ']' | ':' | '=' | '>' | ]
+  | [ '>' | '|' ] [ ']' | '}' | check_ident2 ]!
+  | [ '[' | '{' ] [ ?= ['<' '<' | '<' ':' ] | '|' | '<' | ':' | ]
+  | ';' [ ';' | ]
+  | _ ]
 and check_ident =
-  parser
-  [ [: `'A'..'Z' | 'a'..'z' | '\192'..'\214' | '\216'..'\246' |
-        '\248'..'\255' | '0'..'9' | '_' | '''
-        ;
-       s :] ->
-      check_ident s
-  | [: :] -> () ]
+  lexer
+  [ [ 'A'..'Z' | 'a'..'z' | '\192'..'\214' | '\216'..'\246' | '\248'..'\255' |
+      '0'..'9' | '_' | ''' ]
+    check_ident!
+  | ]
 and check_ident2 =
-  parser
-  [ [: `'!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' |
-        '%' | '.' | ':' | '<' | '>' | '|'
-        ;
-       s :] ->
-      check_ident2 s
-  | [: :] -> () ]
+  lexer
+  [ [ '!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' |
+      '.' | ':' | '<' | '>' | '|' ]
+    check_ident2!
+  | ]
 ;
 
 value check_keyword s =

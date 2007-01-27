@@ -677,74 +677,78 @@ let func kwd_table glexr =
 ;;
 
 let rec check_keyword_stream (strm__ : _ Stream.t) =
-  let _ = check strm__ in
+  let _ = check B.empty strm__ in
   let _ =
     try Stream.empty strm__ with
       Stream.Failure -> raise (Stream.Error "")
   in
   true
-and check (strm__ : _ Stream.t) =
+and check buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some
-      ('A'..'Z' | 'a'..'z' | '\192'..'\214' | '\216'..'\246' |
-       '\248'..'\255') ->
-      Stream.junk strm__; check_ident strm__
+      ('A'..'Z' | 'a'..'z' | '\192'..'\214' | '\216'..'\246' | '\248'..'\255'
+         as c) ->
+      Stream.junk strm__; check_ident (B.add buf c) strm__
   | Some
       ('!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' |
-       '.') ->
-      Stream.junk strm__; check_ident2 strm__
+       '.' as c) ->
+      Stream.junk strm__; check_ident2 (B.add buf c) strm__
   | Some '<' ->
       Stream.junk strm__;
+      let buf = B.add buf '<' in
       begin match Stream.npeek 1 strm__ with
-        [':' | '<'] -> ()
-      | _ -> check_ident2 strm__
+        [':'] | ['<'] -> buf
+      | _ -> check_ident2 buf strm__
       end
   | Some ':' ->
       Stream.junk strm__;
+      let buf = B.add buf ':' in
       begin match Stream.peek strm__ with
-        Some (']' | ':' | '=' | '>') -> Stream.junk strm__; ()
-      | _ -> ()
+        Some (']' | ':' | '=' | '>' as c) -> Stream.junk strm__; B.add buf c
+      | _ -> buf
       end
-  | Some ('>' | '|') ->
+  | Some ('>' | '|' as c) ->
       Stream.junk strm__;
-      begin try
-        match Stream.peek strm__ with
-          Some (']' | '}') -> Stream.junk strm__; ()
-        | _ -> check_ident2 strm__
-      with
-        Stream.Failure -> raise (Stream.Error "")
+      let buf = B.add buf c in
+      begin match Stream.peek strm__ with
+        Some (']' | '}' as c) -> Stream.junk strm__; B.add buf c
+      | _ -> check_ident2 buf strm__
       end
-  | Some ('[' | '{') ->
+  | Some ('[' | '{' as c) ->
       Stream.junk strm__;
+      let buf = B.add buf c in
       begin match Stream.npeek 2 strm__ with
-        ['<'; '<' | ':'] -> ()
+        ['<'; '<'] | ['<'; ':'] -> buf
       | _ ->
           match Stream.peek strm__ with
-            Some ('|' | '<' | ':') -> Stream.junk strm__; ()
-          | _ -> ()
+            Some '|' -> Stream.junk strm__; B.add buf '|'
+          | Some '<' -> Stream.junk strm__; B.add buf '<'
+          | Some ':' -> Stream.junk strm__; B.add buf ':'
+          | _ -> buf
       end
   | Some ';' ->
       Stream.junk strm__;
+      let buf = B.add buf ';' in
       begin match Stream.peek strm__ with
-        Some ';' -> Stream.junk strm__; ()
-      | _ -> ()
+        Some ';' -> Stream.junk strm__; B.add buf ';'
+      | _ -> buf
       end
-  | Some _ -> Stream.junk strm__; ()
+  | Some c -> Stream.junk strm__; B.add buf c
   | _ -> raise Stream.Failure
-and check_ident (strm__ : _ Stream.t) =
+and check_ident buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some
       ('A'..'Z' | 'a'..'z' | '\192'..'\214' | '\216'..'\246' |
-       '\248'..'\255' | '0'..'9' | '_' | '\'') ->
-      Stream.junk strm__; check_ident strm__
-  | _ -> ()
-and check_ident2 (strm__ : _ Stream.t) =
+       '\248'..'\255' | '0'..'9' | '_' | '\'' as c) ->
+      Stream.junk strm__; check_ident (B.add buf c) strm__
+  | _ -> buf
+and check_ident2 buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some
       ('!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' |
-       '.' | ':' | '<' | '>' | '|') ->
-      Stream.junk strm__; check_ident2 strm__
-  | _ -> ()
+       '.' | ':' | '<' | '>' | '|' as c) ->
+      Stream.junk strm__; check_ident2 (B.add buf c) strm__
+  | _ -> buf
 ;;
 
 let check_keyword s =
@@ -868,11 +872,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 565, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 565, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 565, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 566, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 566, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 532, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 532, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 532, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 533, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 533, 37)));
        tok_comm = None}
   in
   let glex =
