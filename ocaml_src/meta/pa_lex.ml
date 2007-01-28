@@ -10,7 +10,7 @@
 open Pcaml;;
 
 (**)
-let var = "buf";;
+let var () = "buf";;
 let empty loc =
   MLast.ExAcc (loc, MLast.ExUid (loc, "B"), MLast.ExLid (loc, "empty"))
 ;;
@@ -20,20 +20,19 @@ let add_char loc c cl =
      MLast.ExApp
        (loc,
         MLast.ExAcc (loc, MLast.ExUid (loc, "B"), MLast.ExLid (loc, "add")),
-        cl),
-     c)
+        c),
+     cl)
 ;;
 let get_buf loc cl =
   MLast.ExApp
     (loc, MLast.ExAcc (loc, MLast.ExUid (loc, "B"), MLast.ExLid (loc, "get")),
      cl)
 ;;
-
 (*
-value var = "cl";
-value empty = <:expr< [] >>;
+value var () = "buf";
+value empty loc = <:expr< [] >>;
 value add_char loc c cl = <:expr< [$c$ :: $cl$] >>;
-value get_buf loc cl = cl;
+value get_buf loc cl = <:expr< List.rev $cl$ >>;
 *)
 
 let fresh_c cl =
@@ -49,7 +48,7 @@ let fresh_c cl =
 ;;
 
 let accum_chars loc cl =
-  List.fold_right (add_char loc) cl (MLast.ExLid (loc, var))
+  List.fold_right (add_char loc) cl (MLast.ExLid (loc, var ()))
 ;;
 
 let conv_rules loc rl =
@@ -131,13 +130,13 @@ let make_rules loc rl sl cl errk =
           let s =
             let b = accum_chars loc cl in
             let e = Exparser.cparser loc None [[], None, b] in
-            Exparser.SpNtr (loc, MLast.PaLid (loc, var), e), Some None
+            Exparser.SpNtr (loc, MLast.PaLid (loc, var ()), e), Some None
           in
           s :: sl
       in
       let s =
         let e = mk_lexer loc rl in
-        Exparser.SpNtr (loc, MLast.PaLid (loc, var), e), errk
+        Exparser.SpNtr (loc, MLast.PaLid (loc, var ()), e), errk
       in
       s :: sl, []
 ;;
@@ -202,7 +201,7 @@ let make_sub_lexer loc f sl cl errk =
   let s =
     let buf = accum_chars loc cl in
     let e = MLast.ExApp (loc, f, buf) in
-    let p = MLast.PaLid (loc, var) in Exparser.SpNtr (loc, p, e), errk
+    let p = MLast.PaLid (loc, var ()) in Exparser.SpNtr (loc, p, e), errk
   in
   s :: sl, []
 ;;
@@ -254,7 +253,7 @@ Grammar.extend
               | None, rl -> rl
             in
             MLast.ExFun
-              (loc, [MLast.PaLid (loc, var), None, mk_lexer loc rl]) :
+              (loc, [MLast.PaLid (loc, var ()), None, mk_lexer loc rl]) :
             'expr))]];
     Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
     Some (Gramext.Level "simple"),
@@ -274,7 +273,13 @@ Grammar.extend
       [Gramext.Stoken ("", "$"); Gramext.Stoken ("LIDENT", "buf")],
       Gramext.action
         (fun _ _ (loc : Token.location) ->
-           (get_buf loc (accum_chars loc !gcl) : 'expr))]];
+           (get_buf loc (accum_chars loc !gcl) : 'expr));
+      [Gramext.Stoken ("", "$"); Gramext.Stoken ("LIDENT", "add");
+       Gramext.Snterm
+         (Grammar.Entry.obj (simple_expr : 'simple_expr Grammar.Entry.e))],
+      Gramext.action
+        (fun (e : 'simple_expr) _ _ (loc : Token.location) ->
+           (add_char loc e (MLast.ExLid (loc, var ())) : 'expr))]];
     Grammar.Entry.obj (rules : 'rules Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "[");

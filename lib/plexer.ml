@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.65 2007/01/28 19:13:49 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.66 2007/01/28 21:29:34 deraugla Exp $ *)
 
 open Token;
 
@@ -26,13 +26,13 @@ module B :
   sig
     type t = 'abstract;
     value empty : t;
-    value add : t -> char -> t;
+    value add : char -> t -> t;
     value get : t -> string;
   end =
   struct
     type t = list char;
     value empty = [];
-    value add l c = [c :: l];
+    value add c l = [c :: l];
     value get l =
       let s = String.create (List.length l) in
       loop (String.length s - 1) l where rec loop i =
@@ -90,6 +90,14 @@ value octal = lexer [ "0..7" ];
 value decimal = lexer [ "0..9" ];
 value hexa = lexer [ "0..9a..fA..F" ];
 
+value rev_implode l =
+  let s = String.create (List.length l) in
+  loop (String.length s - 1) l where rec loop i =
+    fun
+    [ [c :: l] -> do { String.unsafe_set s i c; loop (i - 1) l }
+    | [] -> s ]
+;
+
 value end_integer =
   lexer
   [ "l"/ -> ("INT_l", $buf)
@@ -140,8 +148,8 @@ value char ctx bp =
   [ ?= [ _ ''' | '\\' _ ] [ "'" (char_aux ctx bp)! | (char_aux ctx bp) ]! ]
 ;
 
-value add c buf = parser [: :] -> B.add buf c;
-value any ctx buf = parser bp [: `c :] -> B.add buf (ctx.line_cnt bp c);
+value add c = lexer [ -> $add c ];
+value any ctx buf = parser bp [: `c :] -> $add (ctx.line_cnt bp c);
 
 value rec string ctx bp =
   lexer

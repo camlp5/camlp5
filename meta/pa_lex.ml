@@ -10,16 +10,15 @@
 open Pcaml;
 
 (**)
-value var = "buf";
+value var () = "buf";
 value empty loc = <:expr< B.empty >>;
-value add_char loc c cl = <:expr< B.add $cl$ $c$ >>;
+value add_char loc c cl = <:expr< B.add $c$ $cl$ >>;
 value get_buf loc cl = <:expr< B.get $cl$ >>;
-
 (*
-value var = "cl";
-value empty = <:expr< [] >>;
+value var () = "buf";
+value empty loc = <:expr< [] >>;
 value add_char loc c cl = <:expr< [$c$ :: $cl$] >>;
-value get_buf loc cl = cl;
+value get_buf loc cl = <:expr< List.rev $cl$ >>;
 *)
 
 value fresh_c cl =
@@ -35,7 +34,7 @@ value fresh_c cl =
 ;
 
 value accum_chars loc cl =
-  List.fold_right (add_char loc) cl <:expr< $lid:var$ >>
+  List.fold_right (add_char loc) cl <:expr< $lid:var ()$ >>
 ;
 
 value conv_rules loc rl =
@@ -117,13 +116,13 @@ value make_rules loc rl sl cl errk =
           let s =
             let b = accum_chars loc cl in
             let e = Exparser.cparser loc None [([], None, b)] in
-            (Exparser.SpNtr loc <:patt< $lid:var$ >> e, Some None)
+            (Exparser.SpNtr loc <:patt< $lid:var ()$ >> e, Some None)
           in
           [s :: sl]
       in
       let s =
         let e = mk_lexer loc rl in
-        (Exparser.SpNtr loc <:patt< $lid:var$ >> e, errk)
+        (Exparser.SpNtr loc <:patt< $lid:var ()$ >> e, errk)
       in
       ([s :: sl], []) ]
 ;
@@ -191,7 +190,7 @@ value make_sub_lexer loc f sl cl errk =
   let s =
     let buf = accum_chars loc cl in
     let e = <:expr< $f$ $buf$ >> in
-    let p = <:patt< $lid:var$ >> in
+    let p = <:patt< $lid:var ()$ >> in
     (Exparser.SpNtr loc p e, errk)
   in
   ([s :: sl], [])
@@ -216,12 +215,14 @@ EXTEND
                 [([(Exparser.SpTrm loc p None, None)], [e], None) :: rl]
             | (None, rl) -> rl ]
           in
-          <:expr< fun $lid:var$ -> $mk_lexer loc rl$ >>
+          <:expr< fun $lid:var ()$ -> $mk_lexer loc rl$ >>
       | "match"; e = expr; "with"; "lexer"; rl = rules ->
           mk_lexer_match loc e rl ] ]
   ;
   expr: LEVEL "simple"
-    [ [ "$"; LIDENT "buf" ->
+    [ [ "$"; LIDENT "add"; e = simple_expr ->
+          add_char loc e <:expr< $lid:var ()$ >>
+      | "$"; LIDENT "buf" ->
           get_buf loc (accum_chars loc gcl.val)
       | "$"; LIDENT "empty" ->
           empty loc
