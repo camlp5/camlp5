@@ -83,6 +83,123 @@ value isolate_char_patt loc rl =
   | (pl, rl) -> (Some (or_patt_of_patt_list loc pl), rl) ]
 ;
 
+value make_rules loc rl sl cl errk =
+  match isolate_char_patt loc rl with
+  [ (Some p, []) ->
+      let c = fresh_c cl in
+      let s =
+        let p = <:patt< ($p$ as $lid:c$) >> in
+        (Exparser.SpTrm loc p None, errk)
+      in
+      ([s :: sl], [<:expr< $lid:c$ >> :: cl])
+  | x ->
+      let rl =
+        match x with
+        [ (Some p, rl) ->
+            let r =
+              let p = <:patt< ($p$ as c) >> in
+              let e = <:expr< c >> in
+              ([(Exparser.SpTrm loc p None, None)], [e], None)
+            in
+            [r :: rl]
+        | (None, rl) -> rl ]
+      in
+      let errk =
+        match List.rev rl with
+        [ [([], _, _) :: _] -> Some None
+        | _ -> errk ]
+      in
+      let sl =
+        if cl = [] then sl
+        else
+          let s =
+            let b = accum_chars loc cl in
+            let e = Exparser.cparser loc None [([], None, b)] in
+            (Exparser.SpNtr loc <:patt< $lid:var$ >> e, Some None)
+          in
+          [s :: sl]
+      in
+      let s =
+        let e = mk_lexer loc rl in
+        (Exparser.SpNtr loc <:patt< $lid:var$ >> e, errk)
+      in
+      ([s :: sl], []) ]
+;
+
+value make_any loc norec sl cl errk =
+  let (p, cl) =
+    if norec then (<:patt< _ >>, cl)
+    else
+      let c = fresh_c cl in
+      (<:patt< $lid:c$ >>, [<:expr< $lid:c$ >> :: cl])
+  in
+  let s = (Exparser.SpTrm loc p None, errk) in
+  ([s :: sl], cl)
+;
+
+value make_or_chars loc s norec sl cl errk =
+  let pl =
+    let next_char s i =
+      if i = String.length s then invalid_arg "next_char"
+      else if s.[i] = '\\' then
+        if i + 1 = String.length s then ("\\", i + 1)
+        else
+          match s.[i+1] with
+          [ '0'..'9' ->
+              if i + 3 < String.length s then
+                (Printf.sprintf "\\%c%c%c" s.[i+1] s.[i+2] s.[i+3], i + 4)
+              else ("\\", i + 1)
+          | c -> ("\\" ^ String.make 1 c, i + 2) ]
+      else (String.make 1 s.[i], i + 1)
+    in
+    loop 0 where rec loop i =
+      if i = String.length s then []
+      else
+        let (c, i) = next_char s i in
+        let p = <:patt< $chr:c$ >> in
+        let (p, i) =
+          if i < String.length s - 2 && s.[i] = '.' && s.[i+1] = '.' then
+            let (c, i) = next_char s (i + 2) in
+            (<:patt< $p$ .. $chr:c$ >>, i)
+          else
+            (p, i)
+        in
+        [p :: loop i]
+  in
+  match pl with
+  [ [] -> (sl, cl)
+  | [<:patt< $chr:c$ >>] ->
+      let s = (Exparser.SpTrm loc <:patt< $chr:c$ >> None, errk) in
+      let cl = if norec then cl else [<:expr< $chr:c$ >> :: cl] in
+      ([s :: sl], cl)
+  | pl ->
+      let c = fresh_c cl in
+      let s =
+        let p =
+          let p = or_patt_of_patt_list loc pl in
+          if norec then p else <:patt< ($p$ as $lid:c$) >>
+        in
+        (Exparser.SpTrm loc p None, errk)
+      in
+      let cl = if norec then cl else [<:expr< $lid:c$ >> :: cl] in
+      ([s :: sl], cl) ]
+;
+
+value make_sub_lexer loc f sl cl errk =
+  let s =
+    let buf = accum_chars loc cl in
+    let e = <:expr< $f$ $buf$ >> in
+    let p = <:patt< $lid:var$ >> in
+    (Exparser.SpNtr loc p e, errk)
+  in
+  ([s :: sl], [])
+;
+
+value make_lookahd loc pll sl cl errk =
+  let s = (Exparser.SpLhd loc pll, errk) in
+  ([s :: sl], cl)
+;
+
 value gcl = ref [];
 
 EXTEND
@@ -118,118 +235,15 @@ EXTEND
     [ [ (sl, cl) = symbs -> do { gcl.val := cl; (sl, cl) } ] ]
   ;
   symbs:
-    [ [ (sl, cl) = symbs; "_"; norec = no_rec; errk = err_kont ->
-          let (p, cl) =
-            if norec then (<:patt< _ >>, cl)
-            else
-              let c = fresh_c cl in
-              (<:patt< $lid:c$ >>, [<:expr< $lid:c$ >> :: cl])
-          in
-          let s = (Exparser.SpTrm loc p None, errk) in
-          ([s :: sl], cl)
-      | (sl, cl) = symbs; s = STRING; norec = no_rec; errk = err_kont ->
-          let pl =
-            let next_char s i =
-              if i = String.length s then invalid_arg "next_char"
-              else if s.[i] = '\\' then
-                if i + 1 = String.length s then ("\\", i + 1)
-                else
-                  match s.[i+1] with
-                  [ '0'..'9' ->
-                      if i + 3 < String.length s then
-                        (Printf.sprintf "\\%c%c%c" s.[i+1] s.[i+2] s.[i+3],
-                         i + 4)
-                      else ("\\", i + 1)
-                  | c -> ("\\" ^ String.make 1 c, i + 2) ]
-              else (String.make 1 s.[i], i + 1)
-            in
-            loop 0 where rec loop i =
-              if i = String.length s then []
-              else
-                let (c, i) = next_char s i in
-                let p = <:patt< $chr:c$ >> in
-                let (p, i) =
-                  if i < String.length s - 2 && s.[i] = '.' &&
-                      s.[i+1] = '.'
-                  then
-                    let (c, i) = next_char s (i + 2) in
-                    (<:patt< $p$ .. $chr:c$ >>, i)
-                  else
-                    (p, i)
-                in
-                [p :: loop i]
-          in
-          match pl with
-          [ [] -> (sl, cl)
-          | [<:patt< $chr:c$ >>] ->
-              let s = (Exparser.SpTrm loc <:patt< $chr:c$ >> None, errk) in
-              let cl = if norec then cl else [<:expr< $chr:c$ >> :: cl] in
-              ([s :: sl], cl)
-          | pl ->
-              let c = fresh_c cl in
-              let s =
-                let p =
-                  let p = or_patt_of_patt_list loc pl in
-                  if norec then p else <:patt< ($p$ as $lid:c$) >>
-                in
-                (Exparser.SpTrm loc p None, errk)
-              in
-              let cl = if norec then cl else [<:expr< $lid:c$ >> :: cl] in
-              ([s :: sl], cl) ]
-      | (sl, cl) = symbs; f = simple_expr; errk = err_kont ->
-          let s =
-            let buf = accum_chars loc cl in
-            let e = <:expr< $f$ $buf$ >> in
-            let p = <:patt< $lid:var$ >> in
-            (Exparser.SpNtr loc p e, errk)
-          in
-          ([s :: sl], [])
-      | (sl, cl) = symbs; "?="; "["; pll = LIST1 lookahead SEP "|"; "]";
-        errk = err_kont ->
-          let s = (Exparser.SpLhd loc pll, errk) in
-          ([s :: sl], cl)
-      | (sl, cl) = symbs; rl = rules; errk = err_kont ->
-          match isolate_char_patt loc rl with
-          [ (Some p, []) ->
-              let c = fresh_c cl in
-              let s =
-                let p = <:patt< ($p$ as $lid:c$) >> in
-                (Exparser.SpTrm loc p None, errk)
-              in
-              ([s :: sl], [<:expr< $lid:c$ >> :: cl])
-          | x ->
-              let rl =
-                match x with
-                [ (Some p, rl) ->
-                    let r =
-                      let p = <:patt< ($p$ as c) >> in
-                      let e = <:expr< c >> in
-                      ([(Exparser.SpTrm loc p None, None)], [e], None)
-                    in
-                    [r :: rl]
-                | (None, rl) -> rl ]
-              in
-              let errk =
-                match List.rev rl with
-                [ [([], _, _) :: _] -> Some None
-                | _ -> errk ]
-              in
-              let sl =
-                if cl = [] then sl
-                else
-                  let s =
-                    let b = accum_chars loc cl in
-                    let e = Exparser.cparser loc None [([], None, b)] in
-                    (Exparser.SpNtr loc <:patt< $lid:var$ >> e, Some None)
-                  in
-                  [s :: sl]
-              in
-              let s =
-                let e = mk_lexer loc rl in
-                (Exparser.SpNtr loc <:patt< $lid:var$ >> e, errk)
-              in
-              ([s :: sl], []) ]
+    [ [ (sl, cl) = symbs; f = symb; kont = err_kont -> f sl cl kont
       | -> ([], []) ] ]
+  ;
+  symb:
+    [ [ "_"; norec = no_rec -> make_any loc norec
+      | s = STRING; norec = no_rec -> make_or_chars loc s norec
+      | f = simple_expr -> make_sub_lexer loc f
+      | "?="; "["; pll = LIST1 lookahead SEP "|"; "]" -> make_lookahd loc pll
+      | rl = rules -> make_rules loc rl ] ]
   ;
   simple_expr:
     [ [ i = LIDENT -> <:expr< $lid:i$ >>

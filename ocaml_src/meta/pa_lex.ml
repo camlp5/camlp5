@@ -95,6 +95,118 @@ let isolate_char_patt loc rl =
   | pl, rl -> Some (or_patt_of_patt_list loc pl), rl
 ;;
 
+let make_rules loc rl sl cl errk =
+  match isolate_char_patt loc rl with
+    Some p, [] ->
+      let c = fresh_c cl in
+      let s =
+        let p = MLast.PaAli (loc, p, MLast.PaLid (loc, c)) in
+        Exparser.SpTrm (loc, p, None), errk
+      in
+      s :: sl, MLast.ExLid (loc, c) :: cl
+  | x ->
+      let rl =
+        match x with
+          Some p, rl ->
+            let r =
+              let p = MLast.PaAli (loc, p, MLast.PaLid (loc, "c")) in
+              let e = MLast.ExLid (loc, "c") in
+              [Exparser.SpTrm (loc, p, None), None], [e], None
+            in
+            r :: rl
+        | None, rl -> rl
+      in
+      let errk =
+        match List.rev rl with
+          ([], _, _) :: _ -> Some None
+        | _ -> errk
+      in
+      let sl =
+        if cl = [] then sl
+        else
+          let s =
+            let b = accum_chars loc cl in
+            let e = Exparser.cparser loc None [[], None, b] in
+            Exparser.SpNtr (loc, MLast.PaLid (loc, var), e), Some None
+          in
+          s :: sl
+      in
+      let s =
+        let e = mk_lexer loc rl in
+        Exparser.SpNtr (loc, MLast.PaLid (loc, var), e), errk
+      in
+      s :: sl, []
+;;
+
+let make_any loc norec sl cl errk =
+  let (p, cl) =
+    if norec then MLast.PaAny loc, cl
+    else
+      let c = fresh_c cl in MLast.PaLid (loc, c), MLast.ExLid (loc, c) :: cl
+  in
+  let s = Exparser.SpTrm (loc, p, None), errk in s :: sl, cl
+;;
+
+let make_or_chars loc s norec sl cl errk =
+  let pl =
+    let next_char s i =
+      if i = String.length s then invalid_arg "next_char"
+      else if s.[i] = '\\' then
+        if i + 1 = String.length s then "\\", i + 1
+        else
+          match s.[i + 1] with
+            '0'..'9' ->
+              if i + 3 < String.length s then
+                Printf.sprintf "\\%c%c%c" s.[i + 1] s.[i + 2] s.[i + 3], i + 4
+              else "\\", i + 1
+          | c -> "\\" ^ String.make 1 c, i + 2
+      else String.make 1 s.[i], i + 1
+    in
+    let rec loop i =
+      if i = String.length s then []
+      else
+        let (c, i) = next_char s i in
+        let p = MLast.PaChr (loc, c) in
+        let (p, i) =
+          if i < String.length s - 2 && s.[i] = '.' && s.[i + 1] = '.' then
+            let (c, i) = next_char s (i + 2) in
+            MLast.PaRng (loc, p, MLast.PaChr (loc, c)), i
+          else p, i
+        in
+        p :: loop i
+    in
+    loop 0
+  in
+  match pl with
+    [] -> sl, cl
+  | [MLast.PaChr (_, c)] ->
+      let s = Exparser.SpTrm (loc, MLast.PaChr (loc, c), None), errk in
+      let cl = if norec then cl else MLast.ExChr (loc, c) :: cl in s :: sl, cl
+  | pl ->
+      let c = fresh_c cl in
+      let s =
+        let p =
+          let p = or_patt_of_patt_list loc pl in
+          if norec then p else MLast.PaAli (loc, p, MLast.PaLid (loc, c))
+        in
+        Exparser.SpTrm (loc, p, None), errk
+      in
+      let cl = if norec then cl else MLast.ExLid (loc, c) :: cl in s :: sl, cl
+;;
+
+let make_sub_lexer loc f sl cl errk =
+  let s =
+    let buf = accum_chars loc cl in
+    let e = MLast.ExApp (loc, f, buf) in
+    let p = MLast.PaLid (loc, var) in Exparser.SpNtr (loc, p, e), errk
+  in
+  s :: sl, []
+;;
+
+let make_lookahd loc pll sl cl errk =
+  let s = Exparser.SpLhd (loc, pll), errk in s :: sl, cl
+;;
+
 let gcl = ref [];;
 
 Grammar.extend
@@ -107,6 +219,7 @@ Grammar.extend
    and symb_list : 'symb_list Grammar.Entry.e =
      grammar_entry_create "symb_list"
    and symbs : 'symbs Grammar.Entry.e = grammar_entry_create "symbs"
+   and symb : 'symb Grammar.Entry.e = grammar_entry_create "symb"
    and simple_expr : 'simple_expr Grammar.Entry.e =
      grammar_entry_create "simple_expr"
    and lookahead : 'lookahead Grammar.Entry.e =
@@ -183,160 +296,43 @@ Grammar.extend
     [None, None,
      [[], Gramext.action (fun (loc : Token.location) -> ([], [] : 'symbs));
       [Gramext.Sself;
-       Gramext.Snterm (Grammar.Entry.obj (rules : 'rules Grammar.Entry.e));
+       Gramext.Snterm (Grammar.Entry.obj (symb : 'symb Grammar.Entry.e));
        Gramext.Snterm
          (Grammar.Entry.obj (err_kont : 'err_kont Grammar.Entry.e))],
       Gramext.action
-        (fun (errk : 'err_kont) (rl : 'rules) (sl, cl : 'symbs)
+        (fun (kont : 'err_kont) (f : 'symb) (sl, cl : 'symbs)
            (loc : Token.location) ->
-           (match isolate_char_patt loc rl with
-              Some p, [] ->
-                let c = fresh_c cl in
-                let s =
-                  let p = MLast.PaAli (loc, p, MLast.PaLid (loc, c)) in
-                  Exparser.SpTrm (loc, p, None), errk
-                in
-                s :: sl, MLast.ExLid (loc, c) :: cl
-            | x ->
-                let rl =
-                  match x with
-                    Some p, rl ->
-                      let r =
-                        let p =
-                          MLast.PaAli (loc, p, MLast.PaLid (loc, "c"))
-                        in
-                        let e = MLast.ExLid (loc, "c") in
-                        [Exparser.SpTrm (loc, p, None), None], [e], None
-                      in
-                      r :: rl
-                  | None, rl -> rl
-                in
-                let errk =
-                  match List.rev rl with
-                    ([], _, _) :: _ -> Some None
-                  | _ -> errk
-                in
-                let sl =
-                  if cl = [] then sl
-                  else
-                    let s =
-                      let b = accum_chars loc cl in
-                      let e = Exparser.cparser loc None [[], None, b] in
-                      Exparser.SpNtr (loc, MLast.PaLid (loc, var), e),
-                      Some None
-                    in
-                    s :: sl
-                in
-                let s =
-                  let e = mk_lexer loc rl in
-                  Exparser.SpNtr (loc, MLast.PaLid (loc, var), e), errk
-                in
-                s :: sl, [] :
-            'symbs));
-      [Gramext.Sself; Gramext.Stoken ("", "?="); Gramext.Stoken ("", "[");
+           (f sl cl kont : 'symbs))]];
+    Grammar.Entry.obj (symb : 'symb Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Snterm (Grammar.Entry.obj (rules : 'rules Grammar.Entry.e))],
+      Gramext.action
+        (fun (rl : 'rules) (loc : Token.location) ->
+           (make_rules loc rl : 'symb));
+      [Gramext.Stoken ("", "?="); Gramext.Stoken ("", "[");
        Gramext.Slist1sep
          (Gramext.Snterm
             (Grammar.Entry.obj (lookahead : 'lookahead Grammar.Entry.e)),
           Gramext.Stoken ("", "|"));
-       Gramext.Stoken ("", "]");
-       Gramext.Snterm
-         (Grammar.Entry.obj (err_kont : 'err_kont Grammar.Entry.e))],
+       Gramext.Stoken ("", "]")],
       Gramext.action
-        (fun (errk : 'err_kont) _ (pll : 'lookahead list) _ _
-           (sl, cl : 'symbs) (loc : Token.location) ->
-           (let s = Exparser.SpLhd (loc, pll), errk in s :: sl, cl : 'symbs));
-      [Gramext.Sself;
-       Gramext.Snterm
-         (Grammar.Entry.obj (simple_expr : 'simple_expr Grammar.Entry.e));
-       Gramext.Snterm
-         (Grammar.Entry.obj (err_kont : 'err_kont Grammar.Entry.e))],
+        (fun _ (pll : 'lookahead list) _ _ (loc : Token.location) ->
+           (make_lookahd loc pll : 'symb));
+      [Gramext.Snterm
+         (Grammar.Entry.obj (simple_expr : 'simple_expr Grammar.Entry.e))],
       Gramext.action
-        (fun (errk : 'err_kont) (f : 'simple_expr) (sl, cl : 'symbs)
-           (loc : Token.location) ->
-           (let s =
-              let buf = accum_chars loc cl in
-              let e = MLast.ExApp (loc, f, buf) in
-              let p = MLast.PaLid (loc, var) in
-              Exparser.SpNtr (loc, p, e), errk
-            in
-            s :: sl, [] :
-            'symbs));
-      [Gramext.Sself; Gramext.Stoken ("STRING", "");
-       Gramext.Snterm (Grammar.Entry.obj (no_rec : 'no_rec Grammar.Entry.e));
-       Gramext.Snterm
-         (Grammar.Entry.obj (err_kont : 'err_kont Grammar.Entry.e))],
+        (fun (f : 'simple_expr) (loc : Token.location) ->
+           (make_sub_lexer loc f : 'symb));
+      [Gramext.Stoken ("STRING", "");
+       Gramext.Snterm (Grammar.Entry.obj (no_rec : 'no_rec Grammar.Entry.e))],
       Gramext.action
-        (fun (errk : 'err_kont) (norec : 'no_rec) (s : string)
-           (sl, cl : 'symbs) (loc : Token.location) ->
-           (let pl =
-              let next_char s i =
-                if i = String.length s then invalid_arg "next_char"
-                else if s.[i] = '\\' then
-                  if i + 1 = String.length s then "\\", i + 1
-                  else
-                    match s.[i + 1] with
-                      '0'..'9' ->
-                        if i + 3 < String.length s then
-                          Printf.sprintf "\\%c%c%c" s.[i + 1] s.[i + 2]
-                            s.[i + 3],
-                          i + 4
-                        else "\\", i + 1
-                    | c -> "\\" ^ String.make 1 c, i + 2
-                else String.make 1 s.[i], i + 1
-              in
-              let rec loop i =
-                if i = String.length s then []
-                else
-                  let (c, i) = next_char s i in
-                  let p = MLast.PaChr (loc, c) in
-                  let (p, i) =
-                    if i < String.length s - 2 && s.[i] = '.' &&
-                       s.[i + 1] = '.'
-                    then
-                      let (c, i) = next_char s (i + 2) in
-                      MLast.PaRng (loc, p, MLast.PaChr (loc, c)), i
-                    else p, i
-                  in
-                  p :: loop i
-              in
-              loop 0
-            in
-            match pl with
-              [] -> sl, cl
-            | [MLast.PaChr (_, c)] ->
-                let s =
-                  Exparser.SpTrm (loc, MLast.PaChr (loc, c), None), errk
-                in
-                let cl = if norec then cl else MLast.ExChr (loc, c) :: cl in
-                s :: sl, cl
-            | pl ->
-                let c = fresh_c cl in
-                let s =
-                  let p =
-                    let p = or_patt_of_patt_list loc pl in
-                    if norec then p
-                    else MLast.PaAli (loc, p, MLast.PaLid (loc, c))
-                  in
-                  Exparser.SpTrm (loc, p, None), errk
-                in
-                let cl = if norec then cl else MLast.ExLid (loc, c) :: cl in
-                s :: sl, cl :
-            'symbs));
-      [Gramext.Sself; Gramext.Stoken ("", "_");
-       Gramext.Snterm (Grammar.Entry.obj (no_rec : 'no_rec Grammar.Entry.e));
-       Gramext.Snterm
-         (Grammar.Entry.obj (err_kont : 'err_kont Grammar.Entry.e))],
+        (fun (norec : 'no_rec) (s : string) (loc : Token.location) ->
+           (make_or_chars loc s norec : 'symb));
+      [Gramext.Stoken ("", "_");
+       Gramext.Snterm (Grammar.Entry.obj (no_rec : 'no_rec Grammar.Entry.e))],
       Gramext.action
-        (fun (errk : 'err_kont) (norec : 'no_rec) _ (sl, cl : 'symbs)
-           (loc : Token.location) ->
-           (let (p, cl) =
-              if norec then MLast.PaAny loc, cl
-              else
-                let c = fresh_c cl in
-                MLast.PaLid (loc, c), MLast.ExLid (loc, c) :: cl
-            in
-            let s = Exparser.SpTrm (loc, p, None), errk in s :: sl, cl :
-            'symbs))]];
+        (fun (norec : 'no_rec) _ (loc : Token.location) ->
+           (make_any loc norec : 'symb))]];
     Grammar.Entry.obj (simple_expr : 'simple_expr Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "(");
