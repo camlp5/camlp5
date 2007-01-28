@@ -11,11 +11,13 @@ open Pcaml;
 
 (**)
 value var = "buf";
+value empty loc = <:expr< B.empty >>;
 value add_char loc c cl = <:expr< B.add $cl$ $c$ >>;
 value get_buf loc cl = <:expr< B.get $cl$ >>;
 
 (*
 value var = "cl";
+value empty = <:expr< [] >>;
 value add_char loc c cl = <:expr< [$c$ :: $cl$] >>;
 value get_buf loc cl = cl;
 *)
@@ -220,8 +222,9 @@ EXTEND
   ;
   expr: LEVEL "simple"
     [ [ "$"; LIDENT "buf" ->
-          let b = accum_chars loc gcl.val in
-          <:expr< $get_buf loc b$ >>
+          get_buf loc (accum_chars loc gcl.val)
+      | "$"; LIDENT "empty" ->
+          empty loc
       | "$"; LIDENT "pos" ->
           <:expr< Stream.count $lid:Exparser.strm_n$ >> ] ]
   ;
@@ -247,6 +250,7 @@ EXTEND
   ;
   simple_expr:
     [ [ i = LIDENT -> <:expr< $lid:i$ >>
+      | c = CHAR -> <:expr< $chr:c$ >>
       | "("; e = expr; ")" -> e ] ]
   ;
   lookahead:

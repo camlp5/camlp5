@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.64 2007/01/28 04:55:04 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.65 2007/01/28 19:13:49 deraugla Exp $ *)
 
 open Token;
 
@@ -75,18 +75,14 @@ value stream_peek_nth n strm =
     | [_ :: l] -> loop (n - 1) l ]
 ;
 
-value rec ident =
-  lexer [ "A..Za..z\192..\214\216..\246\248..\2550..9_'" ident! | ]
-;
+value rec ident = lexer [ "A..Za..z0..9_'\128..\255" ident! | ];
 
 value rec ident2 =
   lexer [ "!?~=@^&+-*/%.:<>|$" ident2! | ]
 ;
 
 value rec ident3 =
-  lexer
-  [ "0..9A..Za..z\192..\214\216..\246\248..\255_!%&*+-./:<=>?@^|~'$" ident3!
-  | ]
+  lexer [ "0..9A..Za..z_!%&*+-./:<=>?@^|~'$\128..\255" ident3! | ]
 ;
 
 value binary = lexer [ "01" ];
@@ -181,9 +177,8 @@ value rec quotation ctx bp =
 
 value less ctx bp buf strm =
   if no_quotations.val then
-    let buf = B.add buf '<' in
     match strm with lexer
-    [ ident2 -> keyword_or_error ctx (bp, $pos) $buf ]
+    [ (add '<') ident2! -> keyword_or_error ctx (bp, $pos) $buf ]
   else
     match strm with lexer
     [ "<"/ (quotation ctx bp) -> ("QUOTATION", ":" ^ $buf)
@@ -211,7 +206,9 @@ and antiquot_rest ctx bp =
 
 value dollar ctx bp buf strm =
   if ctx.dollar_for_antiquotation then antiquot ctx bp buf strm
-  else ("", B.get (ident2 (B.add buf '$') strm))
+  else
+    match strm with lexer
+    [ (add '$') ident2! -> ("", $buf) ]
 ;
 
 value rec linedir n s =
@@ -239,10 +236,10 @@ value rec any_to_nl =
 
 value next_token_after_spaces ctx bp =
   lexer
-  [ "A..Z\192..\214\216..\222" ident! ->
+  [ "A..Z" ident! ->
       let id = $buf in
       try ("", ctx.find_kwd id) with [ Not_found -> ("UIDENT", id) ]
-  | "a..z\223..\246\248..\255_" ident! ->
+  | "a..z_\128..\255" ident! ->
       let id = $buf in
       try ("", ctx.find_kwd id) with [ Not_found -> ("LIDENT", id) ]
   | "1..9" number!
@@ -306,7 +303,7 @@ value rec next_token ctx =
   | [: `'(';
        a =
          parser
-         [ [: `'*'; _ = comment ctx bp B.empty !; s :] -> do {
+         [ [: `'*'; _ = comment ctx bp $empty !; s :] -> do {
              ctx.set_line_nb ();
              ctx.after_space := True;
              next_token ctx s
@@ -314,7 +311,7 @@ value rec next_token ctx =
          | [: :] ep ->
              let loc = ctx.make_lined_loc (bp, ep) in
              (keyword_or_error ctx (bp, ep) "(", loc) ] ! :] -> a
-  | [: tok = next_token_after_spaces ctx bp B.empty :] ep ->
+  | [: tok = next_token_after_spaces ctx bp $empty :] ep ->
       let loc = ctx.make_lined_loc (bp, max (bp + 1) ep) in
       (tok, loc)
   | [: _ = Stream.empty :] ->
@@ -377,10 +374,10 @@ value func kwd_table glexr =
 ;
 
 value rec check_keyword_stream =
-  parser [: _ = check B.empty; _ = Stream.empty :] -> True
+  parser [: _ = check $empty; _ = Stream.empty :] -> True
 and check =
   lexer
-  [ "A..Za..z\192..\214\216..\246\248..\255" check_ident!
+  [ "A..Za..z\128..\255" check_ident!
   | "!?~=@^&+-*/%." check_ident2!
   | "<" [ ?= [ ':' | '<' ] | check_ident2 ]!
   | ":" [ "]:=>" | ]
@@ -389,7 +386,7 @@ and check =
   | ";" [ ";" | ]
   | _ ]
 and check_ident =
-  lexer [ "A..Za..z\192..\214\216..\246\248..\2550..9_'" check_ident! | ]
+  lexer [ "A..Za..z0..9_'\128..\255" check_ident! | ]
 and check_ident2 =
   lexer [ "!?~=@^&+-*/%.:<>|" check_ident2! | ]
 ;

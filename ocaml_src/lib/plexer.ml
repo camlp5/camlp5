@@ -81,8 +81,7 @@ let stream_peek_nth n strm =
 let rec ident buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some
-      ('A'..'Z' | 'a'..'z' | '\192'..'\214' | '\216'..'\246' |
-       '\248'..'\255' | '0'..'9' | '_' | '\'' as c) ->
+      ('A'..'Z' | 'a'..'z' | '0'..'9' | '_' | '\'' | '\128'..'\255' as c) ->
       Stream.junk strm__; ident (B.add buf c) strm__
   | _ -> buf
 ;;
@@ -99,10 +98,9 @@ let rec ident2 buf (strm__ : _ Stream.t) =
 let rec ident3 buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some
-      ('0'..'9' | 'A'..'Z' | 'a'..'z' | '\192'..'\214' | '\216'..'\246' |
-       '\248'..'\255' | '_' | '!' | '%' | '&' | '*' | '+' | '-' | '.' | '/' |
-       ':' | '<' | '=' | '>' | '?' | '@' | '^' | '|' | '~' | '\'' | '$' as c
-         ) ->
+      ('0'..'9' | 'A'..'Z' | 'a'..'z' | '_' | '!' | '%' | '&' | '*' | '+' |
+       '-' | '.' | '/' | ':' | '<' | '=' | '>' | '?' | '@' | '^' | '|' | '~' |
+       '\'' | '$' | '\128'..'\255' as c) ->
       Stream.junk strm__; ident3 (B.add buf c) strm__
   | _ -> buf
 ;;
@@ -346,8 +344,8 @@ let rec quotation ctx bp buf (strm__ : _ Stream.t) =
 
 let less ctx bp buf strm =
   if !no_quotations then
-    let buf = B.add buf '<' in
     let (strm__ : _ Stream.t) = strm in
+    let buf = add '<' buf strm__ in
     let buf = ident2 buf strm__ in
     keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
   else
@@ -426,7 +424,10 @@ and antiquot_rest ctx bp buf (strm__ : _ Stream.t) =
 
 let dollar ctx bp buf strm =
   if ctx.dollar_for_antiquotation then antiquot ctx bp buf strm
-  else "", B.get (ident2 (B.add buf '$') strm)
+  else
+    let (strm__ : _ Stream.t) = strm in
+    let buf = add '$' buf strm__ in
+    let buf = ident2 buf strm__ in "", B.get buf
 ;;
 
 let rec linedir n s =
@@ -456,14 +457,14 @@ let rec any_to_nl buf (strm__ : _ Stream.t) =
 
 let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
-    Some ('A'..'Z' | '\192'..'\214' | '\216'..'\222' as c) ->
+    Some ('A'..'Z' as c) ->
       Stream.junk strm__;
       let buf = ident (B.add buf c) strm__ in
       let id = B.get buf in
       begin try "", ctx.find_kwd id with
         Not_found -> "UIDENT", id
       end
-  | Some ('a'..'z' | '\223'..'\246' | '\248'..'\255' | '_' as c) ->
+  | Some ('a'..'z' | '_' | '\128'..'\255' as c) ->
       Stream.junk strm__;
       let buf = ident (B.add buf c) strm__ in
       let id = B.get buf in
@@ -696,9 +697,7 @@ let rec check_keyword_stream (strm__ : _ Stream.t) =
   true
 and check buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
-    Some
-      ('A'..'Z' | 'a'..'z' | '\192'..'\214' | '\216'..'\246' | '\248'..'\255'
-         as c) ->
+    Some ('A'..'Z' | 'a'..'z' | '\128'..'\255' as c) ->
       Stream.junk strm__; check_ident (B.add buf c) strm__
   | Some
       ('!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' |
@@ -747,8 +746,7 @@ and check buf (strm__ : _ Stream.t) =
 and check_ident buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some
-      ('A'..'Z' | 'a'..'z' | '\192'..'\214' | '\216'..'\246' |
-       '\248'..'\255' | '0'..'9' | '_' | '\'' as c) ->
+      ('A'..'Z' | 'a'..'z' | '0'..'9' | '_' | '\'' | '\128'..'\255' as c) ->
       Stream.junk strm__; check_ident (B.add buf c) strm__
   | _ -> buf
 and check_ident2 buf (strm__ : _ Stream.t) =
@@ -881,11 +879,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 515, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 515, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 515, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 516, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 516, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 512, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 512, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 512, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 513, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 513, 37)));
        tok_comm = None}
   in
   let glex =

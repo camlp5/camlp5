@@ -11,6 +11,9 @@ open Pcaml;;
 
 (**)
 let var = "buf";;
+let empty loc =
+  MLast.ExAcc (loc, MLast.ExUid (loc, "B"), MLast.ExLid (loc, "empty"))
+;;
 let add_char loc c cl =
   MLast.ExApp
     (loc,
@@ -28,6 +31,7 @@ let get_buf loc cl =
 
 (*
 value var = "cl";
+value empty = <:expr< [] >>;
 value add_char loc c cl = <:expr< [$c$ :: $cl$] >>;
 value get_buf loc cl = cl;
 *)
@@ -265,10 +269,12 @@ Grammar.extend
                   MLast.ExLid (loc, "count")),
                MLast.ExLid (loc, Exparser.strm_n)) :
             'expr));
+      [Gramext.Stoken ("", "$"); Gramext.Stoken ("LIDENT", "empty")],
+      Gramext.action (fun _ _ (loc : Token.location) -> (empty loc : 'expr));
       [Gramext.Stoken ("", "$"); Gramext.Stoken ("LIDENT", "buf")],
       Gramext.action
         (fun _ _ (loc : Token.location) ->
-           (let b = accum_chars loc !gcl in get_buf loc b : 'expr))]];
+           (get_buf loc (accum_chars loc !gcl) : 'expr))]];
     Grammar.Entry.obj (rules : 'rules Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "[");
@@ -340,6 +346,10 @@ Grammar.extend
        Gramext.Stoken ("", ")")],
       Gramext.action
         (fun _ (e : 'expr) _ (loc : Token.location) -> (e : 'simple_expr));
+      [Gramext.Stoken ("CHAR", "")],
+      Gramext.action
+        (fun (c : string) (loc : Token.location) ->
+           (MLast.ExChr (loc, c) : 'simple_expr));
       [Gramext.Stoken ("LIDENT", "")],
       Gramext.action
         (fun (i : string) (loc : Token.location) ->
