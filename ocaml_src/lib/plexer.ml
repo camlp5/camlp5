@@ -78,13 +78,6 @@ let stream_peek_nth n strm =
   loop n (Stream.npeek n strm)
 ;;
 
-let rec decimal_digits_under buf (strm__ : _ Stream.t) =
-  match Stream.peek strm__ with
-    Some ('0'..'9' | '_' as c) ->
-      Stream.junk strm__; decimal_digits_under (B.add buf c) strm__
-  | _ -> buf
-;;
-
 let rec ident buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some
@@ -114,13 +107,37 @@ let rec ident3 buf (strm__ : _ Stream.t) =
   | _ -> buf
 ;;
 
-let rec digits kind buf (strm__ : _ Stream.t) =
-  let buf =
-    try kind buf strm__ with
-      Stream.Failure -> raise (Stream.Error "ill-formed integer constant")
-  in
-  digits_under kind buf strm__
-and digits_under kind buf (strm__ : _ Stream.t) =
+let binary buf (strm__ : _ Stream.t) =
+  match Stream.peek strm__ with
+    Some ('0' | '1' as c) -> Stream.junk strm__; B.add buf c
+  | _ -> raise Stream.Failure
+;;
+let octal buf (strm__ : _ Stream.t) =
+  match Stream.peek strm__ with
+    Some ('0'..'7' as c) -> Stream.junk strm__; B.add buf c
+  | _ -> raise Stream.Failure
+;;
+let decimal buf (strm__ : _ Stream.t) =
+  match Stream.peek strm__ with
+    Some ('0'..'9' as c) -> Stream.junk strm__; B.add buf c
+  | _ -> raise Stream.Failure
+;;
+let hexa buf (strm__ : _ Stream.t) =
+  match Stream.peek strm__ with
+    Some ('0'..'9' | 'a'..'f' | 'A'..'F' as c) ->
+      Stream.junk strm__; B.add buf c
+  | _ -> raise Stream.Failure
+;;
+
+let end_integer buf (strm__ : _ Stream.t) =
+  match Stream.peek strm__ with
+    Some 'l' -> Stream.junk strm__; "INT_l", B.get buf
+  | Some 'L' -> Stream.junk strm__; "INT_L", B.get buf
+  | Some 'n' -> Stream.junk strm__; "INT_n", B.get buf
+  | _ -> "INT", B.get buf
+;;
+
+let rec digits_under kind buf (strm__ : _ Stream.t) =
   match
     try Some (kind buf strm__) with
       Stream.Failure -> None
@@ -130,23 +147,22 @@ and digits_under kind buf (strm__ : _ Stream.t) =
       match Stream.peek strm__ with
         Some '_' ->
           Stream.junk strm__; digits_under kind (B.add buf '_') strm__
-      | Some 'l' -> Stream.junk strm__; "INT_l", B.get buf
-      | Some 'L' -> Stream.junk strm__; "INT_L", B.get buf
-      | Some 'n' -> Stream.junk strm__; "INT_n", B.get buf
-      | _ -> "INT", B.get buf
-and octal buf (strm__ : _ Stream.t) =
+      | _ -> end_integer buf strm__
+;;
+
+let digits kind buf (strm__ : _ Stream.t) =
+  let buf =
+    try kind buf strm__ with
+      Stream.Failure -> raise (Stream.Error "ill-formed integer constant")
+  in
+  digits_under kind buf strm__
+;;
+
+let rec decimal_digits_under buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
-    Some ('0'..'7' as c) -> Stream.junk strm__; B.add buf c
-  | _ -> raise Stream.Failure
-and hexa buf (strm__ : _ Stream.t) =
-  match Stream.peek strm__ with
-    Some ('0'..'9' | 'a'..'f' | 'A'..'F' as c) ->
-      Stream.junk strm__; B.add buf c
-  | _ -> raise Stream.Failure
-and binary buf (strm__ : _ Stream.t) =
-  match Stream.peek strm__ with
-    Some ('0' | '1' as c) -> Stream.junk strm__; B.add buf c
-  | _ -> raise Stream.Failure
+    Some ('0'..'9' | '_' as c) ->
+      Stream.junk strm__; decimal_digits_under (B.add buf c) strm__
+  | _ -> buf
 ;;
 
 let exponent_part buf (strm__ : _ Stream.t) =
@@ -184,12 +200,7 @@ let number buf (strm__ : _ Stream.t) =
           Stream.Failure -> None
       with
         Some buf -> "FLOAT", B.get buf
-      | _ ->
-          match Stream.peek strm__ with
-            Some 'l' -> Stream.junk strm__; "INT_l", B.get buf
-          | Some 'L' -> Stream.junk strm__; "INT_L", B.get buf
-          | Some 'n' -> Stream.junk strm__; "INT_n", B.get buf
-          | _ -> "INT", B.get buf
+      | _ -> end_integer buf strm__
 ;;
 
 let rec char_aux ctx bp buf (strm__ : _ Stream.t) =
@@ -208,11 +219,17 @@ let rec char_aux ctx bp buf (strm__ : _ Stream.t) =
 ;;
 
 let char ctx bp buf (strm__ : _ Stream.t) =
-  match Stream.peek strm__ with
-    Some '\'' -> Stream.junk strm__; char_aux ctx bp (B.add buf '\'') strm__
-  | _ -> char_aux ctx bp buf strm__
+  match Stream.npeek 2 strm__ with
+    [_; '\''] | ['\\'; _] ->
+      begin match Stream.peek strm__ with
+        Some '\'' ->
+          Stream.junk strm__; char_aux ctx bp (B.add buf '\'') strm__
+      | _ -> char_aux ctx bp buf strm__
+      end
+  | _ -> raise Stream.Failure
 ;;
 
+let add c buf (strm__ : _ Stream.t) = B.add buf c;;
 let any ctx buf (strm__ : _ Stream.t) =
   let bp = Stream.count strm__ in
   match Stream.peek strm__ with
@@ -260,18 +277,13 @@ let comment ctx bp =
         comment buf strm__
     | Some '\"' ->
         Stream.junk strm__;
-        let buf =
-          try string ctx bp (B.add buf '\"') strm__ with
-            Stream.Failure -> raise (Stream.Error "")
-        in
-        comment buf strm__
+        let buf = string ctx bp (B.add buf '\"') strm__ in comment buf strm__
     | Some '\'' ->
         Stream.junk strm__;
         let buf = B.add buf '\'' in
         let buf =
-          match Stream.npeek 2 strm__ with
-            [_; '\''] | ['\\'; _] -> char ctx bp buf strm__
-          | _ -> buf
+          try char ctx bp buf strm__ with
+            Stream.Failure -> buf
         in
         comment buf strm__
     | _ ->
@@ -284,8 +296,6 @@ let comment ctx bp =
   in
   comment
 ;;
-
-let add c buf (strm__ : _ Stream.t) = B.add buf c;;
 
 let rec quotation ctx bp buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
@@ -435,13 +445,12 @@ and linedir_quote n s =
   | _ -> false
 ;;
 
-let rec any_to_nl (strm__ : _ Stream.t) =
+let rec any_to_nl buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some ('\r' | '\n') ->
       Stream.junk strm__;
-      let ep = Stream.count strm__ in
-      incr !(Token.line_nb); !(Token.bol_pos) := ep
-  | Some _ -> Stream.junk strm__; any_to_nl strm__
+      begin incr !(Token.line_nb); !(Token.bol_pos) := Stream.count strm__ end
+  | Some _ -> Stream.junk strm__; any_to_nl buf strm__
   | _ -> ()
 ;;
 
@@ -476,9 +485,11 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
       end
   | Some '\'' ->
       Stream.junk strm__;
-      begin match Stream.npeek 2 strm__ with
-        [_; '\''] | ['\\'; _] ->
-          let buf = char ctx bp buf strm__ in "CHAR", B.get buf
+      begin match
+        try Some (char ctx bp buf strm__) with
+          Stream.Failure -> None
+      with
+        Some buf -> "CHAR", B.get buf
       | _ -> keyword_or_error ctx (bp, Stream.count strm__) "'"
       end
   | Some '\"' ->
@@ -592,7 +603,7 @@ let rec next_token ctx (strm__ : _ Stream.t) =
       let s = strm__ in
       if linedir 1 s then
         begin
-          any_to_nl s;
+          any_to_nl () s;
           ctx.set_line_nb ();
           ctx.after_space <- true;
           next_token ctx s
@@ -870,11 +881,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 513, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 513, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 513, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 514, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 514, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 515, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 515, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 515, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 516, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 516, 37)));
        tok_comm = None}
   in
   let glex =

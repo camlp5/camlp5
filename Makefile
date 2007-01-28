@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.18 2006/12/31 12:48:47 deraugla Exp $
+# $Id: Makefile,v 1.19 2007/01/28 04:55:04 deraugla Exp $
 
 include config/Makefile
 
@@ -19,6 +19,9 @@ opt:
 
 opt.opt:
 	set -e; for i in $(OPTDIRS); do cd $$i; $(MAKE) opt; cd ..; done
+
+ocaml_src/camlp4/ast2pt.ml:
+	@echo "Please run 'configure' first"; exit 2
 
 boot/camlp4$(EXE): $(COLD_FILES)
 	cd ocaml_stuff; $(MAKE)
@@ -264,6 +267,9 @@ unpromote_sources:
 
 clean_sources:
 	rm -rf ocaml_src/SAVED/SAVED
+
+printer:
+	cd etc; make pr_o.cmo
 
 # Utility
 

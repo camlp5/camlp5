@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.63 2007/01/27 13:52:02 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.64 2007/01/28 04:55:04 deraugla Exp $ *)
 
 open Token;
 
@@ -75,8 +75,6 @@ value stream_peek_nth n strm =
     | [_ :: l] -> loop (n - 1) l ]
 ;
 
-value rec decimal_digits_under = lexer [ "0..9_" decimal_digits_under! | ];
-
 value rec ident =
   lexer [ "A..Za..z\192..\214\216..\246\248..\2550..9_'" ident! | ]
 ;
@@ -91,21 +89,33 @@ value rec ident3 =
   | ]
 ;
 
-value rec digits kind =
+value binary = lexer [ "01" ];
+value octal = lexer [ "0..7" ];
+value decimal = lexer [ "0..9" ];
+value hexa = lexer [ "0..9a..fA..F" ];
+
+value end_integer =
   lexer
-  [ kind (digits_under kind)!
-  | -> raise (Stream.Error "ill-formed integer constant") ]
-and digits_under kind =
-  lexer
-  [ kind (digits_under kind)!
-  | "_" (digits_under kind)!
-  | "l"/ -> ("INT_l", $buf)
+  [ "l"/ -> ("INT_l", $buf)
   | "L"/ -> ("INT_L", $buf)
   | "n"/ -> ("INT_n", $buf)
   | -> ("INT", $buf) ]
-and octal = lexer [ "0..7" ]
-and hexa = lexer [ "0..9a..fA..F" ]
-and binary = lexer [ "01" ];
+;
+
+value rec digits_under kind =
+  lexer
+  [ kind (digits_under kind)!
+  | "_" (digits_under kind)!
+  | end_integer ]
+;
+
+value digits kind =
+  lexer
+  [ kind (digits_under kind)!
+  | -> raise (Stream.Error "ill-formed integer constant") ]
+;
+
+value rec decimal_digits_under = lexer [ "0..9_" decimal_digits_under! | ];
 
 value exponent_part =
   lexer
@@ -118,10 +128,7 @@ value number =
   [ decimal_digits_under
     [ "." decimal_digits_under! [ exponent_part | ] -> ("FLOAT", $buf)
     | exponent_part -> ("FLOAT", $buf)
-    | "l"/ -> ("INT_l", $buf)
-    | "L"/ -> ("INT_L", $buf)
-    | "n"/ -> ("INT_n", $buf)
-    | -> ("INT", $buf) ] ]
+    | end_integer ]! ]
 ;
 
 value rec char_aux ctx bp =
@@ -132,12 +139,13 @@ value rec char_aux ctx bp =
   | -> err ctx (bp, $pos) "char not terminated" ]
 ;
 
-value char ctx bp = lexer [ "'" (char_aux ctx bp)! | (char_aux ctx bp) ];
-
-value any ctx buf =
-  parser bp
-  [ [: `c :] -> B.add buf (ctx.line_cnt bp c) ]
+value char ctx bp =
+  lexer
+  [ ?= [ _ ''' | '\\' _ ] [ "'" (char_aux ctx bp)! | (char_aux ctx bp) ]! ]
 ;
+
+value add c buf = parser [: :] -> B.add buf c;
+value any ctx buf = parser bp [: `c :] -> B.add buf (ctx.line_cnt bp c);
 
 value rec string ctx bp =
   lexer
@@ -152,13 +160,11 @@ value comment ctx bp =
     lexer
     [ "*" [ ")" | comment ]!
     | "(" [ "*" comment! | ] comment!
-    | "\"" (string ctx bp) comment!
-    | "'" [ ?= [ _ ''' | '\\' _ ] (char ctx bp)! | ] comment!
+    | "\"" (string ctx bp)! comment!
+    | "'" [ (char ctx bp) | ] comment!
     | (any ctx) comment!
     | -> err ctx (bp, $pos) "comment not terminated" ]
 ;
-
-value add c buf = parser [: :] -> B.add buf c;
 
 value rec quotation ctx bp =
   lexer
@@ -225,13 +231,10 @@ and linedir_quote n s =
 ;
 
 value rec any_to_nl =
-  parser
-  [ [: `'\r' | '\n' :] ep -> do {
-      incr Token.line_nb.val;
-      Token.bol_pos.val.val := ep;
-    }
-  | [: `_; s :] -> any_to_nl s
-  | [: :] -> () ]
+  lexer
+  [ "\r\n"/ -> do { incr Token.line_nb.val; Token.bol_pos.val.val := $pos; }
+  | _/ any_to_nl!
+  | -> () ]
 ;
 
 value next_token_after_spaces ctx bp =
@@ -249,7 +252,7 @@ value next_token_after_spaces ctx bp =
     | "bB" (digits binary)!
     | number ]!
   | "'"/
-    [ ?= [ _ ''' | '\\' _ ] (char ctx bp)! -> ("CHAR", $buf)
+    [ (char ctx bp) -> ("CHAR", $buf)
     | -> keyword_or_error ctx (bp, $pos) "'" ]!
   | "\""/ (string ctx bp)! -> ("STRING", $buf)
   | "$"/ (dollar ctx bp)!
@@ -292,7 +295,7 @@ value rec next_token ctx =
     }
   | [: `'#' when bp = Token.bol_pos.val.val; s :] ->
       if linedir 1 s then do {
-        any_to_nl s;
+        any_to_nl () s;
         ctx.set_line_nb ();
         ctx.after_space := True;
         next_token ctx s
@@ -386,8 +389,7 @@ and check =
   | ";" [ ";" | ]
   | _ ]
 and check_ident =
-  lexer
-  [ "A..Za..z\192..\214\216..\246\248..\2550..9_'" check_ident! | ]
+  lexer [ "A..Za..z\192..\214\216..\246\248..\2550..9_'" check_ident! | ]
 and check_ident2 =
   lexer [ "!?~=@^&+-*/%.:<>|" check_ident2! | ]
 ;
