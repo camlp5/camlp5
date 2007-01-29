@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_o.ml,v 1.11 2007/01/27 13:52:02 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.12 2007/01/29 20:50:53 deraugla Exp $ *)
 
 open Pcaml;
 open Spretty;
@@ -789,7 +789,7 @@ pr_str_item.pr_levels :=
               "(* #" ^ s ^ " " ^
                 (match x with
                  [ Some <:expr< $str:s$ >> -> "\"" ^ s ^ "\""
-                 | _ -> "?" ]) ^
+                 | _ -> "<expr>" ]) ^
                 " *)"
             in
             [: `S LR s :]
