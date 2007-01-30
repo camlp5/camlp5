@@ -54,7 +54,7 @@ type context =
     dollar_for_antiquotation : bool;
     specific_space_dot : bool;
     find_kwd : string -> string;
-    line_cnt : int -> char -> char;
+    line_cnt : int -> char -> unit;
     set_line_nb : unit -> unit;
     make_lined_loc : int * int -> Stdpp.location }
 ;;
@@ -231,7 +231,7 @@ let char ctx bp buf (strm__ : _ Stream.t) =
 let any ctx buf (strm__ : _ Stream.t) =
   let bp = Stream.count strm__ in
   match Stream.peek strm__ with
-    Some c -> Stream.junk strm__; B.add (ctx.line_cnt bp c) buf
+    Some c -> Stream.junk strm__; begin ctx.line_cnt bp c; B.add c buf end
   | _ -> raise Stream.Failure
 ;;
 
@@ -676,9 +676,8 @@ let func kwd_table glexr =
      line_cnt =
        (fun bp1 c ->
           match c with
-            '\n' | '\r' ->
-              incr !(Token.line_nb); !(Token.bol_pos) := bp1 + 1; c
-          | c -> c);
+            '\n' | '\r' -> incr !(Token.line_nb); !(Token.bol_pos) := bp1 + 1
+          | c -> ());
      set_line_nb =
        (fun () ->
           line_nb := !(!(Token.line_nb)); bol_pos := !(!(Token.bol_pos)));
@@ -878,11 +877,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 510, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 510, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 510, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 511, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 511, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 509, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 509, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 509, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 510, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 510, 37)));
        tok_comm = None}
   in
   let glex =

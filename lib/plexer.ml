@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.70 2007/01/30 13:42:06 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.71 2007/01/30 19:09:14 deraugla Exp $ *)
 
 open Token;
 
@@ -52,7 +52,7 @@ type context =
     dollar_for_antiquotation : bool;
     specific_space_dot : bool;
     find_kwd : string -> string;
-    line_cnt : int -> char -> char;
+    line_cnt : int -> char -> unit;
     set_line_nb : unit -> unit;
     make_lined_loc : (int * int) -> Stdpp.location }
 ;
@@ -139,7 +139,7 @@ value char ctx bp =
   [ ?= [ _ ''' | '\\' _ ] [ "'" (char_aux ctx bp)! | (char_aux ctx bp) ]! ]
 ;
 
-value any ctx buf = parser bp [: `c :] -> $add (ctx.line_cnt bp c);
+value any ctx buf = parser bp [: `c :] -> do { ctx.line_cnt bp c; $add c };
 
 value rec string ctx bp =
   lexer
@@ -359,9 +359,8 @@ value func kwd_table glexr =
        [ '\n' | '\r' -> do {
            incr Token.line_nb.val;
            Token.bol_pos.val.val := bp1 + 1;
-           c
          }
-       | c -> c ];
+       | c -> () ];
      set_line_nb () = do {
        line_nb.val := Token.line_nb.val.val;
        bol_pos.val := Token.bol_pos.val.val;
