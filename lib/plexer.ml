@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.68 2007/01/30 04:53:26 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.69 2007/01/30 10:41:42 deraugla Exp $ *)
 
 open Token;
 
@@ -21,6 +21,14 @@ value dollar_for_antiquotation = ref True;
 value specific_space_dot = ref False;
 
 (* The string buffering machinery *)
+
+value rev_implode l =
+  let s = String.create (List.length l) in
+  loop (String.length s - 1) l where rec loop i =
+    fun
+    [ [c :: l] -> do { String.unsafe_set s i c; loop (i - 1) l }
+    | [] -> s ]
+;
 
 module B :
   sig
@@ -33,13 +41,7 @@ module B :
     type t = list char;
     value empty = [];
     value add c l = [c :: l];
-    value get l =
-      let s = String.create (List.length l) in
-      loop (String.length s - 1) l where rec loop i =
-        fun
-        [ [c :: l] -> do { String.unsafe_set s i c; loop (i - 1) l }
-        | [] -> s ]
-    ;
+    value get = rev_implode;
   end
 ;
 
@@ -76,10 +78,7 @@ value stream_peek_nth n strm =
 ;
 
 value rec ident = lexer [ "A..Za..z0..9_'\128..\255" ident! | ];
-
-value rec ident2 =
-  lexer [ "!?~=@^&+-*/%.:<>|$" ident2! | ]
-;
+value rec ident2 = lexer [ "!?~=@^&+-*/%.:<>|$" ident2! | ];
 
 value rec ident3 =
   lexer [ "0..9A..Za..z_!%&*+-./:<=>?@^|~'$\128..\255" ident3! | ]
@@ -89,14 +88,6 @@ value binary = lexer [ "01" ];
 value octal = lexer [ "0..7" ];
 value decimal = lexer [ "0..9" ];
 value hexa = lexer [ "0..9a..fA..F" ];
-
-value rev_implode l =
-  let s = String.create (List.length l) in
-  loop (String.length s - 1) l where rec loop i =
-    fun
-    [ [c :: l] -> do { String.unsafe_set s i c; loop (i - 1) l }
-    | [] -> s ]
-;
 
 value end_integer =
   lexer

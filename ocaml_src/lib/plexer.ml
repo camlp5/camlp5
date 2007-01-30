@@ -22,6 +22,16 @@ let specific_space_dot = ref false;;
 
 (* The string buffering machinery *)
 
+let rev_implode l =
+  let s = String.create (List.length l) in
+  let rec loop i =
+    function
+      c :: l -> String.unsafe_set s i c; loop (i - 1) l
+    | [] -> s
+  in
+  loop (String.length s - 1) l
+;;
+
 module B :
   sig
     type t;;
@@ -33,15 +43,7 @@ module B :
     type t = char list;;
     let empty = [];;
     let add c l = c :: l;;
-    let get l =
-      let s = String.create (List.length l) in
-      let rec loop i =
-        function
-          c :: l -> String.unsafe_set s i c; loop (i - 1) l
-        | [] -> s
-      in
-      loop (String.length s - 1) l
-    ;;
+    let get = rev_implode;;
   end
 ;;
 
@@ -85,7 +87,6 @@ let rec ident buf (strm__ : _ Stream.t) =
       Stream.junk strm__; ident (B.add c buf) strm__
   | _ -> buf
 ;;
-
 let rec ident2 buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some
@@ -125,16 +126,6 @@ let hexa buf (strm__ : _ Stream.t) =
     Some ('0'..'9' | 'a'..'f' | 'A'..'F' as c) ->
       Stream.junk strm__; B.add c buf
   | _ -> raise Stream.Failure
-;;
-
-let rev_implode l =
-  let s = String.create (List.length l) in
-  let rec loop i =
-    function
-      c :: l -> String.unsafe_set s i c; loop (i - 1) l
-    | [] -> s
-  in
-  loop (String.length s - 1) l
 ;;
 
 let end_integer buf (strm__ : _ Stream.t) =
@@ -887,11 +878,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 519, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 519, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 519, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 520, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 520, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 510, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 510, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 510, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 511, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 511, 37)));
        tok_comm = None}
   in
   let glex =
