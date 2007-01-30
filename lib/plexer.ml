@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.69 2007/01/30 10:41:42 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.70 2007/01/30 13:42:06 deraugla Exp $ *)
 
 open Token;
 
@@ -261,7 +261,7 @@ value next_token_after_spaces ctx bp =
   | "<"/ (less ctx bp)!
   | ":" [ "]:=>" | ] -> keyword_or_error ctx (bp, $pos) $buf
   | ">|" [ "]}" | ident2! ]! -> keyword_or_error ctx (bp, $pos) $buf
-  | "[{" [ ?= [ '<' '<' | '<' ':' ] | "|<:" | ] ->
+  | "[{" [ ?= [ "<<" | "<:" ] | "|<:" | ] ->
       keyword_or_error ctx (bp, $pos) $buf
   | "." [ "." | ] ->
       let id =
@@ -377,10 +377,10 @@ and check =
   lexer
   [ "A..Za..z\128..\255" check_ident!
   | "!?~=@^&+-*/%." check_ident2!
-  | "<" [ ?= [ ':' | '<' ] | check_ident2 ]!
+  | "<" [ ?= [ ":" | "<" ] | check_ident2 ]!
   | ":" [ "]:=>" | ]
   | ">|" [ "]}" | check_ident2 ]!
-  | "[{" [ ?= [ '<' '<' | '<' ':' ] | "|<:" | ]
+  | "[{" [ ?= [ "<<" | "<:" ] | "|<:" | ]
   | ";" [ ";" | ]
   | _ ]
 and check_ident =

@@ -164,6 +164,14 @@ let next_char s i =
   else String.make 1 s.[i], i + 1
 ;;
 
+let fold_string_chars f s a =
+  let rec loop i a =
+    if i = String.length s then a
+    else let (c, i) = next_char s i in loop i (f c a)
+  in
+  loop 0 a
+;;
+
 let make_or_chars loc s norec sl cl errk =
   let pl =
     let rec loop i =
@@ -374,7 +382,14 @@ Grammar.extend
            (MLast.ExLid (loc, i) : 'simple_expr))]];
     Grammar.Entry.obj (lookahead : 'lookahead Grammar.Entry.e), None,
     [None, None,
-     [[Gramext.Slist1
+     [[Gramext.Stoken ("STRING", "")],
+      Gramext.action
+        (fun (s : string) (loc : Token.location) ->
+           (List.rev
+              (fold_string_chars (fun c pl -> MLast.PaChr (loc, c) :: pl) s
+                 []) :
+            'lookahead));
+      [Gramext.Slist1
          (Gramext.Snterm
             (Grammar.Entry.obj
                (lookahead_char : 'lookahead_char Grammar.Entry.e)))],

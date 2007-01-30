@@ -152,6 +152,14 @@ value next_char s i =
   else (String.make 1 s.[i], i + 1)
 ;
 
+value fold_string_chars f s a =
+  loop 0 a where rec loop i a =
+    if i = String.length s then a
+    else
+      let (c, i) = next_char s i in
+      loop i (f c a)
+;
+
 value make_or_chars loc s norec sl cl errk =
   let pl =
     loop 0 where rec loop i =
@@ -262,7 +270,11 @@ EXTEND
       | "("; e = expr; ")" -> e ] ]
   ;
   lookahead:
-    [ [ pl = LIST1 lookahead_char -> pl ] ]
+    [ [ pl = LIST1 lookahead_char -> pl
+      | s = STRING ->
+          List.rev
+            (fold_string_chars
+               (fun c pl -> [<:patt< $chr:c$ >> :: pl]) s []) ] ]
   ;
   lookahead_char:
     [ [ c = CHAR -> <:patt< $chr:c$ >>
