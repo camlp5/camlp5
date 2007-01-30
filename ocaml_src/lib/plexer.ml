@@ -237,7 +237,6 @@ let char ctx bp buf (strm__ : _ Stream.t) =
   | _ -> raise Stream.Failure
 ;;
 
-let add c buf (strm__ : _ Stream.t) = B.add c buf;;
 let any ctx buf (strm__ : _ Stream.t) =
   let bp = Stream.count strm__ in
   match Stream.peek strm__ with
@@ -311,7 +310,7 @@ let rec quotation ctx bp buf (strm__ : _ Stream.t) =
       Stream.junk strm__;
       begin match Stream.peek strm__ with
         Some '>' -> Stream.junk strm__; buf
-      | _ -> let buf = add '>' buf strm__ in quotation ctx bp buf strm__
+      | _ -> let buf = B.add '>' buf in quotation ctx bp buf strm__
       end
   | Some '<' ->
       Stream.junk strm__;
@@ -321,7 +320,7 @@ let rec quotation ctx bp buf (strm__ : _ Stream.t) =
           Some '<' ->
             Stream.junk strm__;
             let buf = quotation ctx bp (B.add '<' buf) strm__ in
-            let buf = add '>' buf strm__ in add '>' buf strm__
+            let buf = B.add '>' buf in B.add '>' buf
         | Some ':' ->
             Stream.junk strm__;
             let buf = ident (B.add ':' buf) strm__ in
@@ -329,7 +328,7 @@ let rec quotation ctx bp buf (strm__ : _ Stream.t) =
               Some '<' ->
                 Stream.junk strm__;
                 let buf = quotation ctx bp (B.add '<' buf) strm__ in
-                let buf = add '>' buf strm__ in add '>' buf strm__
+                let buf = B.add '>' buf in B.add '>' buf
             | _ -> buf
             end
         | _ -> buf
@@ -340,7 +339,7 @@ let rec quotation ctx bp buf (strm__ : _ Stream.t) =
       let buf =
         match Stream.peek strm__ with
           Some ('>' | '<' | '\\' as c) -> Stream.junk strm__; B.add c buf
-        | _ -> add '\\' buf strm__
+        | _ -> B.add '\\' buf
       in
       quotation ctx bp buf strm__
   | _ ->
@@ -355,7 +354,7 @@ let rec quotation ctx bp buf (strm__ : _ Stream.t) =
 let less ctx bp buf strm =
   if !no_quotations then
     let (strm__ : _ Stream.t) = strm in
-    let buf = add '<' buf strm__ in
+    let buf = B.add '<' buf in
     let buf = ident2 buf strm__ in
     keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
   else
@@ -371,7 +370,7 @@ let less ctx bp buf strm =
     | Some ':' ->
         Stream.junk strm__;
         let buf = ident buf strm__ in
-        let buf = add ':' buf strm__ in
+        let buf = B.add ':' buf in
         begin match Stream.peek strm__ with
           Some '<' ->
             Stream.junk strm__;
@@ -383,7 +382,7 @@ let less ctx bp buf strm =
         | _ -> raise (Stream.Error "character '<' expected")
         end
     | _ ->
-        let buf = add '<' buf strm__ in
+        let buf = B.add '<' buf in
         let buf = ident2 buf strm__ in
         keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
 ;;
@@ -436,8 +435,7 @@ let dollar ctx bp buf strm =
   if ctx.dollar_for_antiquotation then antiquot ctx bp buf strm
   else
     let (strm__ : _ Stream.t) = strm in
-    let buf = add '$' buf strm__ in
-    let buf = ident2 buf strm__ in "", B.get buf
+    let buf = B.add '$' buf in let buf = ident2 buf strm__ in "", B.get buf
 ;;
 
 let rec linedir n s =

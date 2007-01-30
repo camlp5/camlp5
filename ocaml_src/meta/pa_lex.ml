@@ -279,7 +279,7 @@ Grammar.extend
          (Grammar.Entry.obj (simple_expr : 'simple_expr Grammar.Entry.e))],
       Gramext.action
         (fun (e : 'simple_expr) _ _ (loc : Token.location) ->
-           (add_char loc e (MLast.ExLid (loc, var ())) : 'expr))]];
+           (add_char loc e (accum_chars loc !gcl) : 'expr))]];
     Grammar.Entry.obj (rules : 'rules Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "[");

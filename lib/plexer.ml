@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.66 2007/01/28 21:29:34 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.67 2007/01/30 03:38:37 deraugla Exp $ *)
 
 open Token;
 
@@ -148,7 +148,6 @@ value char ctx bp =
   [ ?= [ _ ''' | '\\' _ ] [ "'" (char_aux ctx bp)! | (char_aux ctx bp) ]! ]
 ;
 
-value add c = lexer [ -> $add c ];
 value any ctx buf = parser bp [: `c :] -> $add (ctx.line_cnt bp c);
 
 value rec string ctx bp =
@@ -172,13 +171,14 @@ value comment ctx bp =
 
 value rec quotation ctx bp =
   lexer
-  [ ">"/ [ ">"/ | (add '>') (quotation ctx bp)! ]!
+  [ ">"/ [ ">"/ | [ -> $add '>' ] (quotation ctx bp)! ]!
   | "<"
-    [ "<" (quotation ctx bp)! (add '>')! (add '>')!
-    | ":" ident! [ "<" (quotation ctx bp)! (add '>')! (add '>')! | ]
+    [ "<" (quotation ctx bp)! [ -> $add '>']! [ -> $add '>' ]!
+    | ":" ident! [ "<" (quotation ctx bp)! [ -> $add '>' ]!
+      [ -> $add '>']! | ]
     | ]
     (quotation ctx bp)!
-  | "\\"/ [ "><\\" | (add '\\') ]! (quotation ctx bp)!
+  | "\\"/ [ "><\\" | [ -> $add '\\' ] ]! (quotation ctx bp)!
   | (any ctx) (quotation ctx bp)!
   | -> err ctx (bp, $pos) "quotation not terminated" ]
 ;
@@ -186,14 +186,14 @@ value rec quotation ctx bp =
 value less ctx bp buf strm =
   if no_quotations.val then
     match strm with lexer
-    [ (add '<') ident2! -> keyword_or_error ctx (bp, $pos) $buf ]
+    [ [ -> $add '<' ] ident2! -> keyword_or_error ctx (bp, $pos) $buf ]
   else
     match strm with lexer
     [ "<"/ (quotation ctx bp) -> ("QUOTATION", ":" ^ $buf)
-    | ":"/ ident! (add ':')! "<"/ ? "character '<' expected"
+    | ":"/ ident! [ -> $add ':' ]! "<"/ ? "character '<' expected"
       (quotation ctx bp) ->
         ("QUOTATION", $buf)
-    | (add '<') ident2! -> keyword_or_error ctx (bp, $pos) $buf ]
+    | [ -> $add '<' ] ident2! -> keyword_or_error ctx (bp, $pos) $buf ]
 ;
 
 value rec antiquot ctx bp =
@@ -216,7 +216,7 @@ value dollar ctx bp buf strm =
   if ctx.dollar_for_antiquotation then antiquot ctx bp buf strm
   else
     match strm with lexer
-    [ (add '$') ident2! -> ("", $buf) ]
+    [ [ -> $add '$' ] ident2! -> ("", $buf) ]
 ;
 
 value rec linedir n s =

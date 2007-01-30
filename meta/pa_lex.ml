@@ -221,7 +221,7 @@ EXTEND
   ;
   expr: LEVEL "simple"
     [ [ "$"; LIDENT "add"; e = simple_expr ->
-          add_char loc e <:expr< $lid:var ()$ >>
+          add_char loc e (accum_chars loc gcl.val)
       | "$"; LIDENT "buf" ->
           get_buf loc (accum_chars loc gcl.val)
       | "$"; LIDENT "empty" ->
