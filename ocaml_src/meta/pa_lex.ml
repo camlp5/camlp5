@@ -150,21 +150,22 @@ let make_any loc norec sl cl errk =
   let s = Exparser.SpTrm (loc, p, None), errk in s :: sl, cl
 ;;
 
+let next_char s i =
+  if i = String.length s then invalid_arg "next_char"
+  else if s.[i] = '\\' then
+    if i + 1 = String.length s then "\\", i + 1
+    else
+      match s.[i + 1] with
+        '0'..'9' ->
+          if i + 3 < String.length s then
+            Printf.sprintf "\\%c%c%c" s.[i + 1] s.[i + 2] s.[i + 3], i + 4
+          else "\\", i + 1
+      | c -> "\\" ^ String.make 1 c, i + 2
+  else String.make 1 s.[i], i + 1
+;;
+
 let make_or_chars loc s norec sl cl errk =
   let pl =
-    let next_char s i =
-      if i = String.length s then invalid_arg "next_char"
-      else if s.[i] = '\\' then
-        if i + 1 = String.length s then "\\", i + 1
-        else
-          match s.[i + 1] with
-            '0'..'9' ->
-              if i + 3 < String.length s then
-                Printf.sprintf "\\%c%c%c" s.[i + 1] s.[i + 2] s.[i + 3], i + 4
-              else "\\", i + 1
-          | c -> "\\" ^ String.make 1 c, i + 2
-      else String.make 1 s.[i], i + 1
-    in
     let rec loop i =
       if i = String.length s then []
       else
@@ -279,7 +280,19 @@ Grammar.extend
          (Grammar.Entry.obj (simple_expr : 'simple_expr Grammar.Entry.e))],
       Gramext.action
         (fun (e : 'simple_expr) _ _ (loc : Token.location) ->
-           (add_char loc e (accum_chars loc !gcl) : 'expr))]];
+           (add_char loc e (accum_chars loc !gcl) : 'expr));
+      [Gramext.Stoken ("", "$"); Gramext.Stoken ("LIDENT", "add");
+       Gramext.Stoken ("STRING", "")],
+      Gramext.action
+        (fun (s : string) _ _ (loc : Token.location) ->
+           (let rec loop v i =
+              if i = String.length s then v
+              else
+                let (c, i) = next_char s i in
+                loop (add_char loc (MLast.ExChr (loc, c)) v) i
+            in
+            loop (accum_chars loc !gcl) 0 :
+            'expr))]];
     Grammar.Entry.obj (rules : 'rules Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "[");

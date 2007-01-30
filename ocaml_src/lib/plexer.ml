@@ -320,7 +320,7 @@ let rec quotation ctx bp buf (strm__ : _ Stream.t) =
           Some '<' ->
             Stream.junk strm__;
             let buf = quotation ctx bp (B.add '<' buf) strm__ in
-            let buf = B.add '>' buf in B.add '>' buf
+            B.add '>' (B.add '>' buf)
         | Some ':' ->
             Stream.junk strm__;
             let buf = ident (B.add ':' buf) strm__ in
@@ -328,7 +328,7 @@ let rec quotation ctx bp buf (strm__ : _ Stream.t) =
               Some '<' ->
                 Stream.junk strm__;
                 let buf = quotation ctx bp (B.add '<' buf) strm__ in
-                let buf = B.add '>' buf in B.add '>' buf
+                B.add '>' (B.add '>' buf)
             | _ -> buf
             end
         | _ -> buf
@@ -887,11 +887,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 520, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 520, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 520, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 521, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 521, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 519, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 519, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 519, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 520, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 520, 37)));
        tok_comm = None}
   in
   let glex =

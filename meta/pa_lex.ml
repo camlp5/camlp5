@@ -138,21 +138,22 @@ value make_any loc norec sl cl errk =
   ([s :: sl], cl)
 ;
 
+value next_char s i =
+  if i = String.length s then invalid_arg "next_char"
+  else if s.[i] = '\\' then
+    if i + 1 = String.length s then ("\\", i + 1)
+    else
+      match s.[i+1] with
+      [ '0'..'9' ->
+          if i + 3 < String.length s then
+            (Printf.sprintf "\\%c%c%c" s.[i+1] s.[i+2] s.[i+3], i + 4)
+          else ("\\", i + 1)
+      | c -> ("\\" ^ String.make 1 c, i + 2) ]
+  else (String.make 1 s.[i], i + 1)
+;
+
 value make_or_chars loc s norec sl cl errk =
   let pl =
-    let next_char s i =
-      if i = String.length s then invalid_arg "next_char"
-      else if s.[i] = '\\' then
-        if i + 1 = String.length s then ("\\", i + 1)
-        else
-          match s.[i+1] with
-          [ '0'..'9' ->
-              if i + 3 < String.length s then
-                (Printf.sprintf "\\%c%c%c" s.[i+1] s.[i+2] s.[i+3], i + 4)
-              else ("\\", i + 1)
-          | c -> ("\\" ^ String.make 1 c, i + 2) ]
-      else (String.make 1 s.[i], i + 1)
-    in
     loop 0 where rec loop i =
       if i = String.length s then []
       else
@@ -220,7 +221,13 @@ EXTEND
           mk_lexer_match loc e rl ] ]
   ;
   expr: LEVEL "simple"
-    [ [ "$"; LIDENT "add"; e = simple_expr ->
+    [ [ "$"; LIDENT "add"; s = STRING ->
+          loop (accum_chars loc gcl.val) 0 where rec loop v i =
+            if i = String.length s then v
+            else
+              let (c, i) = next_char s i in
+              loop (add_char loc <:expr< $chr:c$ >> v) i
+      | "$"; LIDENT "add"; e = simple_expr ->
           add_char loc e (accum_chars loc gcl.val)
       | "$"; LIDENT "buf" ->
           get_buf loc (accum_chars loc gcl.val)
