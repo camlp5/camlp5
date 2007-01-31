@@ -1,3 +1,5 @@
+% $Id$
+
 \documentclass[11pt]{article}
 \usepackage{geometry}
 
@@ -26,8 +28,8 @@ using the type string to represent several characters and to simplify
 them by hidding the management of the lexing buffer.
 
 The rest of the paper is structured as follows: section 2 gives the
-new implemented syntax, section 3 describes the semantics. We conclude
-and give future work (tu parles!) in section 4.
+new implemented syntax, section 3 describes the semantics and the
+directives for use. We conclude and give future work in section 4.
 
 In order to motivate our work, we give the following example:
 
@@ -152,7 +154,7 @@ according to the applied rule. Some characters may not be inserted if
 using the ``no record'' feature (see below). The second parameter of
 a lexer is the stream itself, like any other Camlp4 parser.
 
-\section{Symbols}
+\subsection{Symbols}
 
 The different kinds or symbols in a rule are:
 
@@ -209,7 +211,7 @@ A symbol can be followed by an optional error directive, which can be:
 
 \end{itemize}
 
-\section{Specific expressions}
+\subsection{Specific expressions}
 
 Some expressions can be used in the program starting with \verb/$/:
 
@@ -228,7 +230,7 @@ Some expressions can be used in the program starting with \verb/$/:
 
 \end{itemize}
 
-\section{Lookahead syntax}
+\subsection{Lookahead syntax}
 
 A lookahead as rule symbol starts with \verb/?=/ and is followed by
 one or several lookaheads separated by the vertical bar \verb/|/ and
@@ -256,14 +258,14 @@ matches a stream starting with the two characters \verb/</ and
 \verb/</ or a stream starting with the two characters \verb/</ and
 \verb/:/.
 
-\section{Semantic actions of rules}
+\subsection{Semantic actions of rules}
 
 It is actually possible to return another type as \verb/B.t/ in the
 semantic action, provided that the type system agrees. In particular,
 returning the value \verb/$buf/ returns a string corresponding of the
 lexing buffer obtained.
 
-\section{Compiling}
+\subsection{Compiling}
 
 To compile a file containing lexers, just load \verb/pa_lex.cmo/ using
 one of the following methods:
@@ -275,7 +277,7 @@ one of the following methods:
 
 \end{itemize}
 
-\section{How to see the generated code}
+\subsection{How to see the generated code}
 
 You can see the generated code, for a file ``bar.ml'' containing lexers, by
 typing:
@@ -283,5 +285,16 @@ typing:
 \begin{verbatim}
      camlp4r pr_r.cmo bar.ml
 \end{verbatim}
+
+\section{Conclusion and future works}
+
+We hope that this new feature allows programmers to use recursive
+descend parsing, which is natural in functional languages, with the
+same comfort and the same readability as programming with ``lex''.
+
+A good possible improvement is a way to extend these lexers
+dynamically, to allow Camlp4 to be able to change the lexing of OCaml
+programs on the fly, as it already does for the parsing with the
+extensible grammars, with the statement EXTEND.
 
 \end{document}
