@@ -1,6 +1,9 @@
 Camlp4s Version 4.00:
 ---------------------
 
+* [31 Jan 07] Added a new syntax, "lexer", to write parsers of characters
+  in a shorter way. New syntax extension "pa_lex.cmo".
+
 * [26 Jan 07] Deleted "LOCATE" lexing token kind and associated parsing
   stuff. Seems to be an old thing never used.
 
