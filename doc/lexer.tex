@@ -1,7 +1,7 @@
 % $Id$
 
 \documentclass[11pt]{article}
-\usepackage{geometry}
+\usepackage{geometry}[]
 
 \begin{document}
 
@@ -9,18 +9,14 @@
   in OCaml using Camlp4}
 
 \date{}
-\author{Daniel de Rauglaudre, Fadoi Lakhal\\
+\author{Daniel de Rauglaudre\\
 INRIA Rocquencourt,
 78153 Le Chesnay Cedex \\
-\{daniel.de\_rauglaudre, fadoi.lakhal\}@inria.fr}
+daniel.de\_rauglaudre@inria.fr}
 
 \thispagestyle{empty}
 
 \maketitle
-
-\begin{flushright}
-{\em \`{A} ma ch\`{e}re Maman.}
-\end{flushright}
 
 \begin{abstract}
 In this paper, we give a new simplified syntax for lexers,
@@ -57,9 +53,8 @@ parsers:
 
 The rest of the paper is structured as follows: section~\ref{syntax}
 gives the description of this new syntax, section~\ref{semantics}
-details the semantics and the directions for use. The future work
-follows, section~\ref{future}. We give the conclusion
-section~\ref{conclusion}.
+details the semantics and the directions for use. The conclusion and
+the future work follow, in section~\ref{conclusion}.
 
 \section{Syntax}
 \label{syntax}
@@ -104,7 +99,7 @@ The identifiers ``\verb/STRING/'', ``\verb/CHAR/'' and
 character and lowercase identifier (identifier starting with a
 lowercase character).
 
-The syntax of the entry \verb/expression/ of the OCaml language
+The syntax of the entry \verb/expression/ of the Camlp4 OCaml grammar
 is also extended this way:
 
 \begin{verbatim}
@@ -369,16 +364,7 @@ or, possibly, if ``\verb/pa_lex.cmo/'' is not loaded in the file ``bar.ml'':
      camlp4r pa_lex.cmo pr_r.cmo bar.ml
 \end{verbatim}
 
-\section{Future work}
-\label{future}
-
-We plan to experiment these lexer in real OCaml programs. Perhaps
-syntax might change, or other features be added. An interesting one
-could be a way to allow lexers to be extended at run time, to give to
-lexers the same power as the Camlp4 extensible grammars offers at
-parsing level.
-
-\section{Conclusion}
+\section{Conclusion and future work}
 \label{conclusion}
 
 We think that this new feature can encourage programmers to use the
@@ -390,5 +376,16 @@ characters lookaheads must be necessary, they are more functional
 (they can have extra parameters, and the lexing buffer is not a
 mutable variable) and are more included in the language, since they
 are pure syntactic sugar.
+
+We plan to experiment these lexer in real OCaml programs. Perhaps
+syntax might change, or other features be added. An interesting one
+could be a way to allow lexers to be extended at run time, to give to
+lexers the same power as the Camlp4 extensible grammars offers at
+parsing level.
+
+\nocite{Goscinny}
+
+\bibliographystyle{plain}
+\bibliography{camlp4}
 
 \end{document}
