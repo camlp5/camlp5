@@ -9,14 +9,18 @@
   in OCaml using Camlp4}
 
 \date{}
-\author{Daniel de Rauglaudre, Patrick Meumeu Yomsi, Omar Kermia\\
+\author{Daniel de Rauglaudre, Fadoi Lakhal\\
 INRIA Rocquencourt,
 78153 Le Chesnay Cedex \\
-\{daniel.de\_rauglaudre, patrick.meumeu, omar.kermia\}@inria.fr}
+\{daniel.de\_rauglaudre, fadoi.lakhal\}@inria.fr}
 
 \thispagestyle{empty}
 
 \maketitle
+
+\begin{flushright}
+{\em \`{A} ma ch\`{e}re Maman.}
+\end{flushright}
 
 \begin{abstract}
 In this paper, we give a new simplified syntax for lexers,
@@ -44,11 +48,11 @@ This code is strictly equivalent to the following function, using classical
 parsers:
 
 \begin{verbatim}
-       value rec ident buf =
-         parser
-         [ [: `('A'..'Z' | 'a'..'z' | '0'..'9' | '_' | ''' | '\128'..'\255' as c);
-               buf = ident (B.add c buf) ! :] -> buf
-         | [: :] -> buf ];
+     value rec ident buf =
+       parser
+       [ [: `('A'..'Z' | 'a'..'z' | '0'..'9' | '_' | ''' | '\128'..'\255'
+            as c); buf = ident (B.add c buf) ! :] -> buf
+       | [: :] -> buf ];
 \end{verbatim}
 
 The rest of the paper is structured as follows: section~\ref{syntax}
