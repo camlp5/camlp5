@@ -109,11 +109,11 @@ is also extended this way:
                          | "$" "pos"
 \end{verbatim}
 
-Remark: in the above syntax extension, the identifiers ``add'',
-``buf'', ``empty'' and ``pos'' are not recorded as new keywords, they
-do not become reserved words. On the contrary, ``\verb/lexer/'' which
-introduces the syntax, is a new keyword and cannot be used as
-variable identifier.
+Remark: in this syntax extension, the identifiers ``add'', ``buf'',
+``empty'' and ``pos'' are not recorded as new keywords, they do not
+become reserved words. On the contrary, the identifier
+``\verb/lexer/'', which introduces the syntax, is a new keyword and
+cannot be used as variable identifier.
 
 \section{Semantics}
 \label{semantics}
@@ -349,7 +349,7 @@ one of the following methods:
 
 \end{itemize}
 
-\subsection{How to control the generated code}
+\subsection{How to display the generated code}
 
 You can see the generated code, for a file ``bar.ml'' containing
 lexers, by typing in a command line:
@@ -377,8 +377,8 @@ characters lookaheads must be necessary, they are more functional
 mutable variable) and are more included in the language, since they
 are pure syntactic sugar.
 
-We plan to experiment these lexer in real OCaml programs. Perhaps
-syntax might change, or other features be added. An interesting one
+We plan to experiment these lexers in real OCaml programs. Perhaps
+syntax might change, or other features are added. An interesting one
 could be a way to allow lexers to be extended at run time, to give to
 lexers the same power as the Camlp4 extensible grammars offers at
 parsing level.
