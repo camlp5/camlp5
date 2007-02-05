@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.71 2007/01/30 19:09:14 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.72 2007/02/05 01:47:02 deraugla Exp $ *)
 
 open Token;
 
@@ -139,7 +139,9 @@ value char ctx bp =
   [ ?= [ _ ''' | '\\' _ ] [ "'" (char_aux ctx bp)! | (char_aux ctx bp) ]! ]
 ;
 
-value any ctx buf = parser bp [: `c :] -> do { ctx.line_cnt bp c; $add c };
+value any ctx buf =
+  parser bp [: `c :] -> do { ctx.line_cnt bp c; B.add c buf }
+;
 
 value rec string ctx bp =
   lexer

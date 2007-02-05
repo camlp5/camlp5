@@ -13,8 +13,6 @@ pa_lisp.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi
 pa_lisp.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
 pa_lispr.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
 pa_lispr.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
-pa_olabl.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
-pa_olabl.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
 pa_o.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
 pa_o.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
 pa_oop.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
