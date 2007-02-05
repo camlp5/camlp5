@@ -877,11 +877,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 509, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 509, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 509, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 510, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 510, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 511, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 511, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 511, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 512, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 512, 37)));
        tok_comm = None}
   in
   let glex =
