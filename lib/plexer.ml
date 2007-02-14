@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.72 2007/02/05 01:47:02 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.73 2007/02/14 15:48:48 deraugla Exp $ *)
 
 open Token;
 
@@ -254,12 +254,12 @@ value next_token_after_spaces ctx bp =
   | "\""/ (string ctx bp)! -> ("STRING", $buf)
   | "$"/ (dollar ctx bp)!
   | "!=@^&+-*/%" ident2! -> keyword_or_error ctx (bp, $pos) $buf
-  | "~"
+  | "~"/
     [ "a..z" ident! -> ("TILDEIDENT", $buf)
-    | ident2 -> keyword_or_error ctx (bp, $pos) $buf ]!
-  | "?"
+    | [ -> $add "~" ] ident2! -> keyword_or_error ctx (bp, $pos) $buf ]!
+  | "?"/
     [ "a..z" ident! -> ("QUESTIONIDENT", $buf)
-    | ident2 -> keyword_or_error ctx (bp, $pos) $buf ]!
+    | [ -> $add "?" ] ident2! -> keyword_or_error ctx (bp, $pos) $buf ]!
   | "<"/ (less ctx bp)!
   | ":" [ "]:=>" | ] -> keyword_or_error ctx (bp, $pos) $buf
   | ">|" [ "]}" | ident2! ]! -> keyword_or_error ctx (bp, $pos) $buf

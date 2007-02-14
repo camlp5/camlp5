@@ -502,23 +502,23 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
       keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
   | Some '~' ->
       Stream.junk strm__;
-      let buf = B.add '~' buf in
       begin match Stream.peek strm__ with
         Some ('a'..'z' as c) ->
           Stream.junk strm__;
           let buf = ident (B.add c buf) strm__ in "TILDEIDENT", B.get buf
       | _ ->
+          let buf = B.add '~' buf in
           let buf = ident2 buf strm__ in
           keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
       end
   | Some '?' ->
       Stream.junk strm__;
-      let buf = B.add '?' buf in
       begin match Stream.peek strm__ with
         Some ('a'..'z' as c) ->
           Stream.junk strm__;
           let buf = ident (B.add c buf) strm__ in "QUESTIONIDENT", B.get buf
       | _ ->
+          let buf = B.add '?' buf in
           let buf = ident2 buf strm__ in
           keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
       end
