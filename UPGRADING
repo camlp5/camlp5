@@ -1,4 +1,4 @@
-Version 1.0
+Version 4.0
 
   Once this version of Camlp4 installed, if your files do not compile, it
   be due to the new type 'location' which is now abstract. In particular,
