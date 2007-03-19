@@ -122,6 +122,18 @@ value toplevel_phrase cs =
   }
 ;
 
+Pcaml.add_directive "load"
+  (fun
+   [ Some <:expr< $str:s$ >> -> Topdirs.dir_load Format.std_formatter s
+   | Some _ | None -> raise Not_found ])
+;
+
+Pcaml.add_directive "directory"
+  (fun
+   [ Some <:expr< $str:s$ >> -> Topdirs.dir_directory s
+   | Some _ | None -> raise Not_found ])
+;
+
 value use_file cs =
   let v = Pcaml.input_file.val in
   do {
@@ -129,16 +141,23 @@ value use_file cs =
     let restore () = Pcaml.input_file.val := v in
     try
       let (pl0, eoi) =
+        (* directives at beginning of the file are executed at once,
+           to allow them to do possible syntax extensions *)
         loop () where rec loop () =
           let (pl, stopped_at_directive) =
             Grammar.Entry.parse Pcaml.use_file cs
           in
           if stopped_at_directive then
             match pl with
-            [ [MLast.StDir _ "load" (Some <:expr< $str:s$ >>)] ->
-                do { Topdirs.dir_load Format.std_formatter s; loop () }
-            | [MLast.StDir _ "directory" (Some <:expr< $str:s$ >>)] ->
-                do { Topdirs.dir_directory s; loop () }
+            [ [MLast.StDir loc s eo] -> do {
+                try
+                  let f = Pcaml.find_directive s in
+                  f eo
+                with
+                [ Not_found ->
+                    Stdpp.raise_with_loc loc (Stream.Error "bad directive") ];
+                loop ()
+              }
             | _ -> (pl, False) ]
           else (pl, True)
       in
@@ -146,6 +165,7 @@ value use_file cs =
         if eoi then []
         else
           loop () where rec loop () =
+            (* in the middle of the file, directives are treated by ocaml *)
             let (pl, stopped_at_directive) =
               Grammar.Entry.parse Pcaml.use_file cs
             in

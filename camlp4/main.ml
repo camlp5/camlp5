@@ -87,7 +87,10 @@ value rec parse_file pa getdir useast =
                       List.rev_append rpl
                         [(useast loc s (use_file pa getdir useast s), loc)]
                   | (loc, x, eo) -> do {
-                      try Pcaml.find_directive x eo with
+                      try
+                        let f = Pcaml.find_directive x in
+                        f eo
+                      with
                       [ Not_found ->
                           Stdpp.raise_with_loc loc
                             (Stream.Error "bad directive") ];
