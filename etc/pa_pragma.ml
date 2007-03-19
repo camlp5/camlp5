@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.45 2007/01/20 22:53:43 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.46 2007/03/19 04:59:55 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -148,11 +148,13 @@ value bad_type loc expected_t found_t =
 ;
 
 value unbound_var loc s =
-  Stdpp.raise_with_loc loc (Failure (sprintf "Unbound variable: %s" s))
+  Stdpp.raise_with_loc loc
+    (Failure (sprintf "Variable not implemented in pa_pragma: %s" s))
 ;
 
 value unbound_cons loc s =
-  Stdpp.raise_with_loc loc (Failure (sprintf "Unbound constructor: %s" s))
+  Stdpp.raise_with_loc loc
+    (Failure (sprintf "Constructor not implemented in pa_pragma: %s" s))
 ;
 
 value error loc s =
@@ -413,6 +415,11 @@ value val_tab = do {
       fun loc ->
         {ctyp = <:ctyp< $ty_var ()$ -> Gramext.g_action >>;
          expr = Obj.repr Gramext.action;
+         patt = no_patt loc});
+     ("Gramext.After",
+      fun loc ->
+        {ctyp = <:ctyp< string -> Gramext.position >>;
+         expr = Obj.repr (fun s -> Gramext.After s);
          patt = no_patt loc});
      ("Gramext.LeftA",
       fun loc ->
