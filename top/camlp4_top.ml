@@ -150,13 +150,16 @@ value use_file cs =
           if stopped_at_directive then
             match pl with
             [ [MLast.StDir loc s eo] -> do {
-                try
-                  let f = Pcaml.find_directive s in
-                  f eo
-                with
-                [ Not_found ->
-                    Stdpp.raise_with_loc loc (Stream.Error "bad directive") ];
-                loop ()
+                let ok =
+                  try do {
+                    let f = Pcaml.find_directive s in
+                    f eo;
+                    True
+                  }
+                  with
+                  [ Not_found -> False ]
+                in
+                if ok then loop () else (pl, False)
               }
             | _ -> (pl, False) ]
           else (pl, True)
