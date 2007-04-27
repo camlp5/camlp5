@@ -839,7 +839,7 @@ and class_sig_item c l =
   | CgMth loc s pf t ->
       [Pctf_meth (s, mkprivate pf, ctyp (mkpolytype t), mkloc loc) :: l]
   | CgVal loc s b t ->
-      IFDEF OCAML_3_10 THEN
+      IFDEF OCAML_3_10 OR OCAML_3_11 THEN
         failwith "not impl CgVal"
       ELSE
         [Pctf_val (s, mkmutable b, Some (ctyp t), mkloc loc) :: l]
