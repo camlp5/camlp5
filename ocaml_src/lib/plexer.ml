@@ -56,11 +56,11 @@ type context =
     find_kwd : string -> string;
     line_cnt : int -> char -> unit;
     set_line_nb : unit -> unit;
-    make_lined_loc : int * int -> Stdpp.location }
+    make_lined_loc : int * int -> string -> Stdpp.location }
 ;;
 
 let err ctx loc msg =
-  Stdpp.raise_with_loc (ctx.make_lined_loc loc) (Token.Error msg)
+  Stdpp.raise_with_loc (ctx.make_lined_loc loc "") (Token.Error msg)
 ;;
 
 let keyword_or_error ctx loc s =
@@ -447,11 +447,9 @@ and linedir_quote n s =
 
 let rec any_to_nl buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
-    Some ('\r' | '\n') ->
-      Stream.junk strm__;
-      begin incr !(Token.line_nb); !(Token.bol_pos) := Stream.count strm__ end
-  | Some _ -> Stream.junk strm__; any_to_nl buf strm__
-  | _ -> ()
+    Some ('\r' | '\n' as c) -> Stream.junk strm__; B.add c buf
+  | Some c -> Stream.junk strm__; any_to_nl (B.add c buf) strm__
+  | _ -> buf
 ;;
 
 let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
@@ -583,10 +581,10 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
       keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
 ;;
 
-let rec next_token ctx (strm__ : _ Stream.t) =
+let rec next_token ctx buf (strm__ : _ Stream.t) =
   let bp = Stream.count strm__ in
   match Stream.peek strm__ with
-    Some ('\n' | '\r') ->
+    Some ('\n' | '\r' as c) ->
       Stream.junk strm__;
       let s = strm__ in
       let ep = Stream.count strm__ in
@@ -594,34 +592,35 @@ let rec next_token ctx (strm__ : _ Stream.t) =
       !(Token.bol_pos) := ep;
       ctx.set_line_nb ();
       ctx.after_space <- true;
-      next_token ctx s
-  | Some (' ' | '\t' | '\026' | '\012') ->
+      next_token ctx (B.add c buf) s
+  | Some (' ' | '\t' | '\026' | '\012' as c) ->
       Stream.junk strm__;
-      let s = strm__ in ctx.after_space <- true; next_token ctx s
+      let s = strm__ in
+      ctx.after_space <- true; next_token ctx (B.add c buf) s
   | Some '#' when bp = !(!(Token.bol_pos)) ->
       Stream.junk strm__;
       let s = strm__ in
       if linedir 1 s then
-        begin
-          any_to_nl () s;
-          ctx.set_line_nb ();
-          ctx.after_space <- true;
-          next_token ctx s
-        end
+        let buf = any_to_nl (B.add '#' buf) s in
+        incr !(Token.line_nb);
+        !(Token.bol_pos) := Stream.count s;
+        ctx.set_line_nb ();
+        ctx.after_space <- true;
+        next_token ctx buf s
       else
-        let loc = ctx.make_lined_loc (bp, bp + 1) in
+        let loc = ctx.make_lined_loc (bp, bp + 1) (B.get buf) in
         keyword_or_error ctx (bp, bp + 1) "#", loc
   | Some '(' ->
       Stream.junk strm__;
       begin match Stream.peek strm__ with
         Some '*' ->
           Stream.junk strm__;
-          let _ = comment ctx bp B.empty strm__ in
+          let buf = comment ctx bp (B.add '*' (B.add '(' buf)) strm__ in
           let s = strm__ in
-          ctx.set_line_nb (); ctx.after_space <- true; next_token ctx s
+          ctx.set_line_nb (); ctx.after_space <- true; next_token ctx buf s
       | _ ->
           let ep = Stream.count strm__ in
-          let loc = ctx.make_lined_loc (bp, ep) in
+          let loc = ctx.make_lined_loc (bp, ep) (B.get buf) in
           keyword_or_error ctx (bp, ep) "(", loc
       end
   | _ ->
@@ -631,10 +630,12 @@ let rec next_token ctx (strm__ : _ Stream.t) =
       with
         Some tok ->
           let ep = Stream.count strm__ in
-          let loc = ctx.make_lined_loc (bp, max (bp + 1) ep) in tok, loc
+          let loc = ctx.make_lined_loc (bp, max (bp + 1) ep) (B.get buf) in
+          tok, loc
       | _ ->
           let _ = Stream.empty strm__ in
-          let loc = ctx.make_lined_loc (bp, bp + 1) in ("EOI", ""), loc
+          let loc = ctx.make_lined_loc (bp, bp + 1) (B.get buf) in
+          ("EOI", ""), loc
 ;;
 
 let next_token_fun ctx glexr (cstrm, s_line_nb, s_bol_pos) =
@@ -651,7 +652,7 @@ let next_token_fun ctx glexr (cstrm, s_line_nb, s_bol_pos) =
     let comm_bp = Stream.count cstrm in
     ctx.set_line_nb ();
     ctx.after_space <- false;
-    let (r, loc) = next_token ctx cstrm in
+    let (r, loc) = next_token ctx B.empty cstrm in
     begin match !glexr.tok_comm with
       Some list ->
         if Stdpp.first_pos loc > comm_bp then
@@ -681,7 +682,10 @@ let func kwd_table glexr =
      set_line_nb =
        (fun () ->
           line_nb := !(!(Token.line_nb)); bol_pos := !(!(Token.bol_pos)));
-     make_lined_loc = fun loc -> Stdpp.make_lined_loc !line_nb !bol_pos loc}
+     make_lined_loc =
+       fun loc comm ->
+         let loc = Stdpp.make_lined_loc !line_nb !bol_pos loc in
+         Stdpp.set_comment loc comm; loc}
   in
   Token.lexer_func_of_parser (next_token_fun ctx glexr)
 ;;
@@ -877,11 +881,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 511, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 511, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 511, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 512, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 512, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 518, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 518, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 518, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 519, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 519, 37)));
        tok_comm = None}
   in
   let glex =

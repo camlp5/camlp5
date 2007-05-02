@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: stdpp.mli,v 1.8 2006/12/26 08:54:09 deraugla Exp $ *)
+(* $Id: stdpp.mli,v 1.9 2007/05/02 19:36:05 deraugla Exp $ *)
 
 (** Standard definitions. *)
 
@@ -72,6 +72,9 @@ value loc_name : ref string;
        quotations for OCaml syntax trees. Default: [loc] *)
 
 value dummy_loc : location;
+
+value set_comment : location -> string -> unit;
+value get_comment : location -> string;
 
 (* for compatibility with other versions using locations *)
 

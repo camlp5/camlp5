@@ -1,3 +1,8 @@
+Camlp4s Version 4.02:
+---------------------
+
+* [02 May 07] Added ability to attach comments to locations.
+
 Camlp4s Version 4.01:
 ---------------------
 
