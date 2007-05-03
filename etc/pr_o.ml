@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_o.ml,v 1.12 2007/01/29 20:50:53 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.13 2007/05/03 01:26:36 deraugla Exp $ *)
 
 open Pcaml;
 open Spretty;
@@ -322,6 +322,7 @@ value rec is_irrefut_patt =
       List.for_all (fun (_, p) -> is_irrefut_patt p) fpl
   | <:patt< ($p$ : $_$) >> -> is_irrefut_patt p
   | <:patt< ($list:pl$) >> -> List.for_all is_irrefut_patt pl
+  | <:patt< ? $_$ >> -> True
   | <:patt< ? $_$ : ($p$) >> -> is_irrefut_patt p
   | <:patt< ? $_$ : ($p$ = $_$) >> -> is_irrefut_patt p
   | <:patt< ~ $_$ >> -> True
@@ -1499,6 +1500,12 @@ pr_patt.pr_levels :=
       | <:patt< ~ $i$ : $p$ >> ->
           fun curr next dg k ->
             [: `S LO ("~" ^ i ^ ":"); `simple_patt p "" k :]
+      | <:patt< ? $i$ >> ->
+          fun curr next dg k -> [: `S LR ("?" ^ i); k :]
+      | <:patt< ? $i$ : ($p$ : $t$) >> ->
+          fun curr next dg k ->
+            [: `S LO ("?" ^ i ^ ":"); `S LO "("; `patt p "" [: `S LR ":" :];
+               `ctyp t "" [: `S RO ")"; k :] :]
       | <:patt< ? $i$ : ($p$) >> ->
           fun curr next dg k ->
             if i = "" then [: `S LO "?"; `simple_patt p "" k :]

@@ -1,6 +1,8 @@
 Camlp4s Version 4.02:
 ---------------------
 
+* [03 May 07] Fixed bug in pr_o: did not print "let f ?a = ()".
+
 * [02 May 07] Added ability to attach comments to locations.
 
 Camlp4s Version 4.01:
