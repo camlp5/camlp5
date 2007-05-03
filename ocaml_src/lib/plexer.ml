@@ -275,7 +275,8 @@ let comment ctx bp =
         comment buf strm__
     | Some '\"' ->
         Stream.junk strm__;
-        let buf = string ctx bp (B.add '\"' buf) strm__ in comment buf strm__
+        let buf = string ctx bp (B.add '\"' buf) strm__ in
+        let buf = B.add '\"' buf in comment buf strm__
     | Some '\'' ->
         Stream.junk strm__;
         let buf = B.add '\'' buf in

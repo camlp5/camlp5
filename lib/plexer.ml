@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.74 2007/05/02 19:36:05 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.75 2007/05/03 10:06:21 deraugla Exp $ *)
 
 open Token;
 
@@ -156,7 +156,7 @@ value comment ctx bp =
     lexer
     [ "*" [ ")" | comment ]!
     | "(" [ "*" comment! | ] comment!
-    | "\"" (string ctx bp)! comment!
+    | "\"" (string ctx bp)! [ -> $add "\"" ] comment!
     | "'" [ (char ctx bp) | ] comment!
     | (any ctx) comment!
     | -> err ctx (bp, $pos) "comment not terminated" ]
