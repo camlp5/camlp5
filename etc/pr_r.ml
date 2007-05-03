@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_r.ml,v 1.14 2007/01/01 01:53:12 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.15 2007/05/03 08:30:19 deraugla Exp $ *)
 
 open Pcaml;
 open Spretty;
@@ -1704,9 +1704,9 @@ value extract_comment strm =
   find_comm 0 0 strm
 ;
 
-value get_no_comment _ _ = ("", 0, 0, 0);
+value get_no_comment _ _ _ = ("", 0, 0, 0);
 
-value get_comment ic beg len =
+value get_comment ic loc beg len =
   do {
     seek_in ic beg;
     let strm =

@@ -420,7 +420,7 @@ value top_printer pr x =
     Format.force_newline ();
     Spretty.print_pretty Format.print_char Format.print_string
       Format.print_newline "<< " "   " 78
-      (fun _ _ -> ("", 0, 0, 0)) 0 (pr.pr_fun "top" x "" [: :]);
+      (fun _ _ _ -> ("", 0, 0, 0)) 0 (pr.pr_fun "top" x "" [: :]);
     Format.print_string " >>";
   }
 ;
@@ -434,7 +434,7 @@ value string_of pr x =
   do {
     Buffer.clear buff;
     Spretty.print_pretty buffer_char buffer_string buffer_newline "" "" 78
-      (fun _ _ -> ("", 0, 0, 0)) 0 (pr.pr_fun "top" x "" [: :]);
+      (fun _ _ _ -> ("", 0, 0, 0)) 0 (pr.pr_fun "top" x "" [: :]);
     Buffer.contents buff
   }
 ;

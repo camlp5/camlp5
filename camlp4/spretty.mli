@@ -39,7 +39,7 @@ type pretty =
   | BEVbox of Stream.t pretty
   | LocInfo of Token.location and pretty ]
 ;
-type getcomm = int -> int -> (string * int * int * int);
+type getcomm = Token.location -> int -> int -> (string * int * int * int);
 
 value print_pretty :
   (char -> unit) -> (string -> unit) -> (unit -> unit) ->

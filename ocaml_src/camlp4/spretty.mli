@@ -44,7 +44,7 @@ type pretty =
   | BEVbox of pretty Stream.t
   | LocInfo of Token.location * pretty
 ;;
-type getcomm = int -> int -> string * int * int * int;;
+type getcomm = Token.location -> int -> int -> string * int * int * int;;
 
 val print_pretty :
   (char -> unit) -> (string -> unit) -> (unit -> unit) -> string -> string ->

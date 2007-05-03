@@ -426,7 +426,7 @@ let print_implem = undef "no printer";;
 let top_printer pr x =
   Format.force_newline ();
   Spretty.print_pretty Format.print_char Format.print_string
-    Format.print_newline "<< " "   " 78 (fun _ _ -> "", 0, 0, 0) 0
+    Format.print_newline "<< " "   " 78 (fun _ _ _ -> "", 0, 0, 0) 0
     (pr.pr_fun "top" x "" Stream.sempty);
   Format.print_string " >>"
 ;;
@@ -439,7 +439,7 @@ let buffer_newline () = Buffer.add_char buff '\n';;
 let string_of pr x =
   Buffer.clear buff;
   Spretty.print_pretty buffer_char buffer_string buffer_newline "" "" 78
-    (fun _ _ -> "", 0, 0, 0) 0 (pr.pr_fun "top" x "" Stream.sempty);
+    (fun _ _ _ -> "", 0, 0, 0) 0 (pr.pr_fun "top" x "" Stream.sempty);
   Buffer.contents buff
 ;;
 

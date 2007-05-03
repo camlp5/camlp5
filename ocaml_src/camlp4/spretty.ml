@@ -40,7 +40,7 @@ type prettyL =
   | BV of prettyL list
   | LI of (string * int * int) * prettyL
 ;;
-type getcomm = int -> int -> string * int * int * int;;
+type getcomm = Token.location -> int -> int -> string * int * int * int;;
 
 let quiet = ref true;;
 let maxl = ref 20;;
@@ -48,7 +48,7 @@ let dt = ref 2;;
 let tol = ref 1;;
 let sp = ref ' ';;
 let last_ep = ref 0;;
-let getcomm = ref (fun _ _ -> "", 0, 0, 0);;
+let getcomm = ref (fun _ _ _ -> "", 0, 0, 0);;
 let prompt = ref "";;
 let print_char_fun = ref (output_char stdout);;
 let print_string_fun = ref (output_string stdout);;
@@ -441,7 +441,7 @@ let rec conv =
   | LocInfo (loc, x) ->
       let (comm, nl_bef, tab_bef, cnt) =
         let len = Stdpp.first_pos loc - !last_ep in
-        if len > 0 then !getcomm !last_ep len else "", 0, 0, 0
+        if len > 0 then !getcomm loc !last_ep len else "", 0, 0, 0
       in
       last_ep := !last_ep + cnt;
       let v = conv x in
