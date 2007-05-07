@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: stdpp.ml,v 1.12 2007/05/02 19:36:05 deraugla Exp $ *)
+(* $Id: stdpp.ml,v 1.13 2007/05/07 08:38:53 deraugla Exp $ *)
 
 (* Two implementations of "locations" are available; both work. The
    following one is more recent. They are represented as "record",
@@ -22,18 +22,16 @@ type location =
   { line_nb : int;
     bol_pos : int;
     bp : int;
-    ep : int;
-    comm : mutable string }
+    ep : int }
 ;
 
-value dummy_loc = {line_nb = -1; bol_pos = 0; bp = 0; ep = 0; comm = ""};
-value make_loc (bp, ep) =
-  {line_nb = -1; bol_pos = 0; bp = bp; ep = ep; comm = ""}
-;
+value dummy_loc = {line_nb = -1; bol_pos = 0; bp = 0; ep = 0};
+value make_loc (bp, ep) = {line_nb = -1; bol_pos = 0; bp = bp; ep = ep};
+
 value first_pos loc = loc.bp;
 value last_pos loc = loc.ep;
 value make_lined_loc line_nb bol_pos (bp, ep) =
-  {line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep; comm = ""}
+  {line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep}
 ;
 value line_nb loc = loc.line_nb;
 value bol_pos loc = loc.bol_pos;
@@ -47,9 +45,6 @@ value sub_loc loc sh len =
 value after_loc loc sh len =
   {(loc) with bp = loc.ep + sh; ep = loc.ep + sh + len}
 ;
-
-value set_comment loc s = loc.comm := s;
-value get_comment loc = loc.comm;
 
 value line_of_loc fname loc =
   (fname, loc.line_nb, loc.bp - loc.bol_pos, loc.ep - loc.bol_pos)

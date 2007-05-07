@@ -18,18 +18,15 @@
    the source files in error messages. And conversion into OCaml
    locations is direct. *)
 
-type location =
-  { line_nb : int; bol_pos : int; bp : int; ep : int; mutable comm : string }
-;;
+type location = { line_nb : int; bol_pos : int; bp : int; ep : int };;
 
-let dummy_loc = {line_nb = -1; bol_pos = 0; bp = 0; ep = 0; comm = ""};;
-let make_loc (bp, ep) =
-  {line_nb = -1; bol_pos = 0; bp = bp; ep = ep; comm = ""}
-;;
+let dummy_loc = {line_nb = -1; bol_pos = 0; bp = 0; ep = 0};;
+let make_loc (bp, ep) = {line_nb = -1; bol_pos = 0; bp = bp; ep = ep};;
+
 let first_pos loc = loc.bp;;
 let last_pos loc = loc.ep;;
 let make_lined_loc line_nb bol_pos (bp, ep) =
-  {line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep; comm = ""}
+  {line_nb = line_nb; bol_pos = bol_pos; bp = bp; ep = ep}
 ;;
 let line_nb loc = loc.line_nb;;
 let bol_pos loc = loc.bol_pos;;
@@ -41,9 +38,6 @@ let sub_loc loc sh len = {loc with bp = loc.bp + sh; ep = loc.bp + sh + len};;
 let after_loc loc sh len =
   {loc with bp = loc.ep + sh; ep = loc.ep + sh + len}
 ;;
-
-let set_comment loc s = loc.comm <- s;;
-let get_comment loc = loc.comm;;
 
 let line_of_loc fname loc =
   fname, loc.line_nb, loc.bp - loc.bol_pos, loc.ep - loc.bol_pos

@@ -684,9 +684,7 @@ let func kwd_table glexr =
        (fun () ->
           line_nb := !(!(Token.line_nb)); bol_pos := !(!(Token.bol_pos)));
      make_lined_loc =
-       fun loc comm ->
-         let loc = Stdpp.make_lined_loc !line_nb !bol_pos loc in
-         Stdpp.set_comment loc comm; loc}
+       fun loc comm -> Stdpp.make_lined_loc !line_nb !bol_pos loc}
   in
   Token.lexer_func_of_parser (next_token_fun ctx glexr)
 ;;
@@ -882,11 +880,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 518, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 518, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 518, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 519, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 519, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 515, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 515, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 515, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 516, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 516, 37)));
        tok_comm = None}
   in
   let glex =

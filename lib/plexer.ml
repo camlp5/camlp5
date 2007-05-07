@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.75 2007/05/03 10:06:21 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.76 2007/05/07 08:38:53 deraugla Exp $ *)
 
 open Token;
 
@@ -370,11 +370,8 @@ value func kwd_table glexr =
        line_nb.val := Token.line_nb.val.val;
        bol_pos.val := Token.bol_pos.val.val;
      };
-     make_lined_loc loc comm = do {
-       let loc = Stdpp.make_lined_loc line_nb.val bol_pos.val loc in
-       Stdpp.set_comment loc comm;
-       loc
-     }}
+     make_lined_loc loc comm =
+       Stdpp.make_lined_loc line_nb.val bol_pos.val loc}
   in
   Token.lexer_func_of_parser (next_token_fun ctx glexr)
 ;

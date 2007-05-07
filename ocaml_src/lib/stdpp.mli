@@ -73,9 +73,6 @@ val loc_name : string ref;;
 
 val dummy_loc : location;;
 
-val set_comment : location -> string -> unit;;
-val get_comment : location -> string;;
-
 (* for compatibility with other versions using locations *)
 
 val line_of_loc : string -> location -> string * int * int * int;;
