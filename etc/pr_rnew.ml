@@ -236,9 +236,9 @@ value not_impl name ind b x k =
   sprintf "%s\"pr_r: not impl: %s; %s\"%s" b name (String.escaped desc) k
 ;
 
-(*
 value tab ind = String.make ind ' ';
 
+(*
 value last_line_starts_with_space ind s =
   try
     let i = String.rindex s '\n' + ind + 1 in
@@ -279,11 +279,20 @@ value option ind elem b z k =
 ;
 *)
 
-(* list *)
-value rec list elem ind b xl k =
+(* horizontal list *)
+value rec hlist elem ind b xl k =
   match xl with
   [ [] -> sprintf "%s%s" b k
-  | [x :: xl] -> sprintf "%s%s" (elem ind b x "") (list elem ind "" xl k) ]
+  | [x :: xl] -> sprintf "%s%s" (elem ind b x "") (hlist elem ind "" xl k) ]
+;
+
+(* vertical list *)
+value rec vlist elem ind b xl k =
+  match xl with
+  [ [] -> sprintf "%s%s" b k
+  | [x] -> elem ind b x k
+  | [x :: xl] ->
+      sprintf "%s\n%s" (elem ind b x "") (vlist elem ind (tab ind) xl k) ]
 ;
 
 (*
@@ -411,9 +420,7 @@ value sprint_indent_unindent ind sh f1 f2 f3 =
 ;
 *)
 
-value with_comma elem ind b x k =
-  not_impl "with_comma" ind b x k
-;
+value with_comma elem ind b x k = elem ind b x (sprintf ";%s" k);
 
 (*
 
@@ -1794,7 +1801,9 @@ value str_item_top =
         horiz_vertic
           (fun _ ->
              sprintf "%smodule %s = %s%s" b m (module_expr 0 "" me "") k)
-          (fun () -> not_impl "module vertic" ind b 0 k)
+          (fun () ->
+             sprintf "%smodule %s =\n%s\n%s" b m
+               (module_expr (ind + 2) (tab (ind + 2)) me "") k)
 (*
   | <:str_item< module type $m$ = $mt$ >> ->
       fun curr next ind b k ->
@@ -1882,8 +1891,11 @@ value module_expr_top =
         horiz_vertic
           (fun _ ->
              sprintf "%sstruct %s end%s" b
-               (list (with_comma str_item) ind b sil "") k)
-          (fun () -> not_impl "struct vertic" ind b 0 k)
+               (hlist (with_comma str_item) ind "" sil "") k)
+          (fun () ->
+             sprintf "%sstruct\n%s\n%send%s" b
+               (vlist (with_comma str_item) (ind + 2) (tab (ind + 2)) sil "")
+               (tab ind) k)
   | z ->
       fun curr next ind b k -> next ind b z k ]
 ;
