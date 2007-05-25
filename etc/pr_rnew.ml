@@ -283,7 +283,8 @@ value option ind elem b z k =
 value rec hlist elem ind b xl k =
   match xl with
   [ [] -> sprintf "%s%s" b k
-  | [x :: xl] -> sprintf "%s%s" (elem ind b x "") (hlist elem ind "" xl k) ]
+  | [x] -> elem ind b x k
+  | [x :: xl] -> sprintf "%s %s" (elem ind b x "") (hlist elem ind "" xl k) ]
 ;
 
 (* vertical list *)
@@ -420,7 +421,8 @@ value sprint_indent_unindent ind sh f1 f2 f3 =
 ;
 *)
 
-value with_comma elem ind b x k = elem ind b x (sprintf ";%s" k);
+value comma_after elem ind b x k = elem ind b x (sprintf ";%s" k);
+value and_before elem ind b x k = elem ind (sprintf "%sand" b) x k;
 
 (*
 
@@ -545,7 +547,7 @@ value patt_as ind b z k =
   | z -> patt ind b z k ]
 ;
 
-(* utilities specific to pr_s *)
+(* utilities specific to pr_r *)
 
 Pcaml.pr_expr_fun_args.val :=
   extfun Extfun.empty with
@@ -556,7 +558,11 @@ Pcaml.pr_expr_fun_args.val :=
       else ([], z)
   | z -> ([], z) ]
 ;
+*)
 
+value binding ind b pe k = not_impl "binding" ind b pe k;
+
+(*
 value rec binding_list ind (b, bsp) pel (ksp, k) =
   match pel with
   [ [] -> sprintf "%s%s%s" b ksp k
@@ -1819,10 +1825,14 @@ value str_item_top =
       fun curr next ind b k ->
         type_decl_list ind (sprintf "%s%s" b "type") tdl k
 *)
-  | <:str_item< value $opt:rf$ $list:pel$ >> ->
+  | <:str_item< value $opt:rf$ $list:[pe :: pel]$ >> ->
       fun curr next ind b k ->
-        horiz_vertic (fun _ -> not_impl "value horiz" ind b pel k)
-          (fun () -> not_impl "value vertic" ind b pel k)
+        horiz_vertic
+          (fun _ ->
+             sprintf "%svalue %s%s%s%s%s" b (if rf then "rec " else "")
+               (binding 0 "" pe "") (if pel = [] then "" else " ")
+               (hlist (and_before binding) 0 "" pel "") k)
+          (fun () -> not_impl "value vertic" ind b [pe :: pel] k)
 (*
   | <:str_item< $exp:e$ >> ->
       fun curr next ind b k ->
@@ -1893,10 +1903,10 @@ value module_expr_top =
         horiz_vertic
           (fun _ ->
              sprintf "%sstruct %s end%s" b
-               (hlist (with_comma str_item) ind "" sil "") k)
+               (hlist (comma_after str_item) ind "" sil "") k)
           (fun () ->
              sprintf "%sstruct\n%s\n%send%s" b
-               (vlist (with_comma str_item) (ind + 2) (tab (ind + 2)) sil "")
+               (vlist (comma_after str_item) (ind + 2) (tab (ind + 2)) sil "")
                (tab ind) k)
   | z ->
       fun curr next ind b k -> next ind b z k ]
