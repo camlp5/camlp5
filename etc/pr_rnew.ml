@@ -281,7 +281,9 @@ value option ind elem b z k =
 
 (* list *)
 value rec list elem ind b xl k =
-  not_impl "list" ind b xl k
+  match xl with
+  [ [] -> sprintf "%s%s" b k
+  | [x :: xl] -> sprintf "%s%s" (elem ind b x "") (list elem ind "" xl k) ]
 ;
 
 (*
