@@ -1818,10 +1818,12 @@ value str_item_top =
   | <:str_item< type $list:tdl$ >> ->
       fun curr next ind b k ->
         type_decl_list ind (sprintf "%s%s" b "type") tdl k
+*)
   | <:str_item< value $opt:rf$ $list:pel$ >> ->
       fun curr next ind b k ->
-        let b1 = if rf then "value rec" else "value" in
-        binding_list ind (sprintf "%s%s" b b1, " ") pel ("", k)
+        horiz_vertic (fun _ -> not_impl "value horiz" ind b pel k)
+          (fun () -> not_impl "value vertic" ind b pel k)
+(*
   | <:str_item< $exp:e$ >> ->
       fun curr next ind b k ->
         horiz_vertic (fun _ -> expr ind b e k)
