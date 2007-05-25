@@ -1718,8 +1718,11 @@ value patt_simple =
           (fun ind b _ -> ctyp ind b t (sprintf ")%s" k))
   | <:patt< $int:s$ >> ->
       fun curr next ind b k -> sprintf "%s%s%s" b s k
-  | <:patt< $lid:s$ >> | <:patt< ~ $s$ >> ->
+  |
+*)
+    <:patt< $lid:s$ >> | <:patt< ~ $s$ >> ->
       fun curr next ind b k -> var_escaped ind b s k
+(*
   | <:patt< $uid:s$ >> | <:patt< `$uid:s$ >> ->
       fun curr next ind b k -> ident ind b s k
   | <:patt< $chr:s$ >> ->
@@ -1733,9 +1736,8 @@ value patt_simple =
   | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >> as z ->
       fun curr next ind b k ->
         patt (ind + 1) (sprintf "%s(" b) z (sprintf ")%s" k)
-  |
 *)
-    z ->
+  | z ->
       fun curr next ind b k -> not_impl "patt" ind b z k ]
 ;
 
