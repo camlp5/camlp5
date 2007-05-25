@@ -518,8 +518,8 @@ value printer loc_of name = do {
 };
 
 value pr_expr = printer MLast.loc_of_expr "expr";
-(*
 value pr_patt = printer MLast.loc_of_patt "patt";
+(*
 value pr_ctyp = printer MLast.loc_of_ctyp "type";
 *)
 value pr_str_item = printer MLast.loc_of_str_item "str_item";
@@ -530,8 +530,8 @@ value pr_module_type = printer MLast.loc_of_module_type "module_type";
 *)
 
 value expr ind b z k = pr_expr.pr_fun "top" ind b z k;
-(*
 value patt ind b z k = pr_patt.pr_fun "top" ind b z k;
+(*
 value ctyp ind b z k = pr_ctyp.pr_fun "top" ind b z k;
 *)
 value str_item ind b z k = pr_str_item.pr_fun "top" ind b z k;
@@ -560,7 +560,11 @@ Pcaml.pr_expr_fun_args.val :=
 ;
 *)
 
-value binding ind b pe k = not_impl "binding" ind b pe k;
+value binding ind b (p, e) k =
+  horiz_vertic
+    (fun _ -> sprintf "%s%s = %s%s" b (patt 0 "" p "") (expr 0 "" e "") k)
+    (fun () -> not_impl "binding vertic" ind b (p, e) k)
+;
 
 (*
 value rec binding_list ind (b, bsp) pel (ksp, k) =
@@ -1650,19 +1654,14 @@ value expr_simple =
       fun curr next ind b k -> not_impl "expr" ind b z k ]
 ;
 
-(*
 value patt_top =
   extfun Extfun.empty with
-  [ z ->
-      fun curr next ind b k ->
-        let unfold =
-          fun
-          [ <:patt< $x$ | $y$ >> -> Some (x, " |", y)
-          | _ -> None ]
-        in
-        left_operator ind 0 unfold next b z k ]
+  [ <:patt< $_$ | $_$ >> as z ->
+      fun curr next ind b k -> not_impl "|" ind b z k
+  | z -> fun curr next ind b k -> next ind b z k ]
 ;
 
+(*
 value patt_range =
   extfun Extfun.empty with
   [ <:patt< $x$ .. $y$ >> ->
@@ -1690,10 +1689,13 @@ value patt_dot =
       fun curr next ind b k -> curr ind (curr ind b x ".") y k
   | z -> fun curr next ind b k -> next ind b z k ]
 ;
+*)
 
 value patt_simple =
   extfun Extfun.empty with
-  [ <:patt< ($x$ as $y$) >> ->
+  [
+(*
+    <:patt< ($x$ as $y$) >> ->
       fun curr next ind b k ->
         sprint_indent (ind + 1) 2
           (fun ind _ -> patt ind (sprintf "%s(" b) x " as")
@@ -1731,10 +1733,13 @@ value patt_simple =
   | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >> as z ->
       fun curr next ind b k ->
         patt (ind + 1) (sprintf "%s(" b) z (sprintf ")%s" k)
-  | z ->
+  |
+*)
+    z ->
       fun curr next ind b k -> not_impl "patt" ind b z k ]
 ;
 
+(*
 value external_item ind b n t sl k =
   horiz_vertic
     (fun _ ->
@@ -2017,15 +2022,17 @@ pr_expr.pr_levels :=
    {pr_label = "simple"; pr_rules = expr_simple}]
 ;
 
-(*
 pr_patt.pr_levels :=
   [{pr_label = "top"; pr_rules = patt_top};
+(*
    {pr_label = "range"; pr_rules = patt_range};
    {pr_label = "apply"; pr_rules = patt_apply};
    {pr_label = "dot"; pr_rules = patt_dot};
+*)
    {pr_label = "simple"; pr_rules = patt_simple}]
 ;
 
+(*
 pr_ctyp.pr_levels :=
   [{pr_label = "top"; pr_rules = ctyp_top};
    {pr_label = "arrow"; pr_rules = ctyp_arrow};
