@@ -277,7 +277,14 @@ value option ind elem b z k =
   [ Some z -> elem ind b z k
   | None -> sprintf "%s%s" b k ]
 ;
+*)
 
+(* list *)
+value rec list elem ind b xl k =
+  not_impl "list" ind b xl k
+;
+
+(*
 (* list with separator *)
 value rec listws1 ind elem b nl xl k =
   match xl with
@@ -400,6 +407,13 @@ value sprint_indent_unindent ind sh f1 f2 f3 =
        let s = sprintf "%s%s\n" s (f2 (ind + sh) (tab (ind + sh)) True) in
        sprintf "%s%s" s (f3 ind (tab ind) ""))
 ;
+*)
+
+value with_comma elem ind b x k =
+  not_impl "with_comma" ind b x k
+;
+
+(*
 
 (* *)
 
@@ -1863,7 +1877,10 @@ value module_expr_top =
           (fun () -> not_impl "functor vertic" ind b 0 k)
   | <:module_expr< struct $list:sil$ end >> ->
       fun curr next ind b k ->
-        horiz_vertic (fun _ -> not_impl "struct horiz" ind b 0 k)
+        horiz_vertic
+          (fun _ ->
+             sprintf "%sstruct %s end%s" b
+               (list (with_comma str_item) ind b sil "") k)
           (fun () -> not_impl "struct vertic" ind b 0 k)
   | z ->
       fun curr next ind b k -> next ind b z k ]
