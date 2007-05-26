@@ -207,7 +207,6 @@ value has_special_chars s =
     | _ -> True ]
 ;
 
-(*
 value rec is_irrefut_patt =
   fun
   [ <:patt< $lid:_$ >> -> True
@@ -223,7 +222,6 @@ value rec is_irrefut_patt =
   | <:patt< ~ $_$ >> -> True
   | _ -> False ]
 ;
-*)
 
 value not_impl name ind b x k =
   let desc =
@@ -287,6 +285,15 @@ value rec hlist elem ind b xl k =
   | [x :: xl] -> sprintf "%s %s" (elem ind b x "") (hlist elem ind "" xl k) ]
 ;
 
+(* horizontal list with different function from 2nd elem on *)
+value rec hlist2 elem elem2 ind b xl k =
+  match xl with
+  [ [] -> sprintf "%s%s" b k
+  | [x] -> elem ind b x k
+  | [x :: xl] ->
+      sprintf "%s %s" (elem ind b x "") (hlist2 elem2 elem2 ind "" xl k) ]
+;
+
 (* vertical list *)
 value rec vlist elem ind b xl k =
   match xl with
@@ -294,6 +301,16 @@ value rec vlist elem ind b xl k =
   | [x] -> elem ind b x k
   | [x :: xl] ->
       sprintf "%s\n%s" (elem ind b x "") (vlist elem ind (tab ind) xl k) ]
+;
+
+(* vertical list with different function from 2nd elem on *)
+value rec vlist2 elem elem2 ind b xl k =
+  match xl with
+  [ [] -> sprintf "%s%s" b k
+  | [x] -> elem ind b x k
+  | [x :: xl] ->
+      sprintf "%s\n%s" (elem ind b x "")
+        (vlist2 elem2 elem2 ind (tab ind) xl k) ]
 ;
 
 (*
@@ -1158,8 +1175,16 @@ value expr_top =
 *)
     <:expr< fun [ $list:pwel$ ] >> ->
       fun curr next ind b k ->
-        horiz_vertic (fun _ -> not_impl "fun horiz" ind b pwel k)
-         (fun () -> not_impl "fun vertic" ind b pwel k)
+        match pwel with
+        [ [(p1, None, e1)] when is_irrefut_patt p1 ->
+            horiz_vertic
+              (fun _ ->
+                 sprintf "%sfun %s -> %s%s" b (patt 0 "" p1 "")
+                   (expr 0 "" e1 "") k)
+              (fun () -> not_impl "fun vertic irr pat" ind b pwel k)
+        | pwel ->
+            horiz_vertic (fun _ -> not_impl "fun horiz" ind b pwel k)
+              (fun () -> not_impl "fun vertic" ind b pwel k) ]
 (*
   | <:expr< try $e1$ with [ $list:pwel$ ] >> |
     <:expr< match $e1$ with [ $list:pwel$ ] >> as e ->
@@ -1506,27 +1531,13 @@ value expr_dot =
 
 value expr_simple =
   extfun Extfun.empty with
-  [ (*
-    <:expr< do { $list:el$ } >> as z ->
+  [ <:expr< do { $list:el$ } >> ->
       fun curr next ind b k ->
         horiz_vertic
-          (fun nofit ->
-             let ind = ind + 1 in
-             let has_comm =
-               List.exists (fun e -> comm_bef 0 (MLast.loc_of_expr e) <> "")
-                 el
-             in
-             if has_comm then nofit ()
-             else
-               listws ind expr (sprintf "%s(" b) ";" False el
-                 (sprintf ")%s" k))
-          (fun () ->
-             let (letexprl, has_seq) = let_and_seq_list z in
-             let (ind, k) =
-               if has_seq then (ind + 1, ")" ^ k) else (ind, k)
-             in
-             let b = if has_seq then sprintf "%s(" b else b in
-             let_in_and_sequence_combination ind b letexprl k)
+          (fun _ ->
+             sprintf "%sdo { %s }%s" b (hlist (comma_after expr) 0 "" el "") k)
+          (fun () -> not_impl "seq vertic" ind b el k)
+(*
   | <:expr< ($list:el$) >> ->
       fun curr next ind b k ->
         let el = List.map (fun e -> (e, ",")) el in
@@ -1564,9 +1575,8 @@ value expr_simple =
         sprint_indent (ind + 1) 0
           (fun ind _ -> expr ind (sprintf "%s(" b) e " :")
           (fun ind b _ -> ctyp ind b t (sprintf ")%s" k))
-  |
 *)
-    <:expr< $int:s$ >> | <:expr< $flo:s$ >> ->
+  | <:expr< $int:s$ >> | <:expr< $flo:s$ >> ->
       fun curr next ind b k ->
         if String.length s > 0 && s.[0] = '-' then sprintf "%s(%s)%s" b s k
         else sprintf "%s%s%s" b s k
@@ -1800,14 +1810,15 @@ value str_item_top =
       fun curr next ind b k ->
         type_decl_list ind (sprintf "%s%s" b "type") tdl k
 *)
-  | <:str_item< value $opt:rf$ $list:[pe :: pel]$ >> ->
+  | <:str_item< value $opt:rf$ $list:pel$ >> ->
       fun curr next ind b k ->
         horiz_vertic
           (fun _ ->
-             sprintf "%svalue %s%s%s%s%s" b (if rf then "rec " else "")
-               (binding 0 "" pe "") (if pel = [] then "" else " ")
-               (hlist (and_before binding) 0 "" pel "") k)
-          (fun () -> not_impl "value vertic" ind b [pe :: pel] k)
+             sprintf "%svalue %s%s" b
+               (hlist2 binding (and_before binding) 0 "" pel "") k)
+          (fun () ->
+             vlist2 binding (and_before binding) ind
+               (sprintf "%svalue " b) pel k)
 (*
   | <:str_item< $exp:e$ >> ->
       fun curr next ind b k ->
