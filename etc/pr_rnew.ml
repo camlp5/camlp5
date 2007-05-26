@@ -313,6 +313,16 @@ value rec vlist2 elem elem2 ind b xl k =
         (vlist2 elem2 elem2 ind (tab ind) xl k) ]
 ;
 
+(* vertical list with different function for the last elem *)
+value rec vlistl elem eleml ind b xl k =
+  match xl with
+  [ [] -> sprintf "%s%s" b k
+  | [x] -> eleml ind b x k
+  | [x :: xl] ->
+      sprintf "%s\n%s" (elem ind b x "")
+        (vlist2 elem eleml ind (tab ind) xl k) ]
+;
+
 (*
 (* list with separator *)
 value rec listws1 ind elem b nl xl k =
@@ -1424,7 +1434,8 @@ value expr_simple =
                (hlist (comma_after expr) 0 "" el "") " " k)
           (fun () ->
              sprintf "%sdo {%s%s%s}%s" b "\n"
-               (vlist (comma_after expr) (ind + 2) (tab (ind + 2)) el "")
+               (vlistl (comma_after expr) expr (ind + 2) (tab (ind + 2)) el
+                  "")
                ("\n" ^ tab ind) k)
 (*
   | <:expr< ($list:el$) >> ->
