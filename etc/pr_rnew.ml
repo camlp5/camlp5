@@ -323,6 +323,43 @@ value rec vlistl elem eleml ind b xl k =
         (vlist2 elem eleml ind (tab ind) xl k) ]
 ;
 
+(* paragraph list *)
+value rec plist elem ind sh b xl k =
+  match xl with
+  [ [] -> assert False
+  | [(x, op)] -> not_impl "plist 1" ind b xl k
+  | [(x, op) :: xl] ->
+      let s =
+        horiz_vertic (fun _ -> Some (elem ind b x op)) (fun () -> None)
+      in
+      match s with
+      [ Some b ->
+          loop b xl where rec loop b =
+            fun
+            [ [] -> assert False
+            | [(x, op)] ->
+                let _ = assert (op = "") in
+                horiz_vertic (fun _ -> elem ind (sprintf "%s " b) x k)
+                  (fun () ->
+                     let s = elem (ind + sh) (tab (ind + sh)) x k in
+                     sprintf "%s\n%s" b s)
+            | [(x, op) :: xl] ->
+                let s =
+                  horiz_vertic
+                    (fun _ -> Some (elem ind (sprintf "%s " b) x op))
+                    (fun () -> None)
+                in
+                match s with
+                [ Some b -> loop b xl
+                | None ->
+                    let s =
+                      plist elem (ind + sh) 0 (tab (ind + sh))
+                        [(x, op) :: xl] k
+                    in
+                    sprintf "%s\n%s" b s ] ]
+      | None -> not_impl "plist 2" ind b xl k ] ]
+;
+
 (*
 (* list with separator *)
 value rec listws1 ind elem b nl xl k =
@@ -474,42 +511,6 @@ and let_and_seq_list_of_list letexprlr =
 value let_and_seq_list = let_and_seq_list_loop [];
 *)
 
-value rec hvlist elem ind sh b xl k =
-  match xl with
-  [ [] -> assert False
-  | [(x, op)] -> not_impl "hvlist 1" ind b xl k
-  | [(x, op) :: xl] ->
-      let s =
-        horiz_vertic (fun _ -> Some (elem ind b x op)) (fun () -> None)
-      in
-      match s with
-      [ Some b ->
-          loop b xl where rec loop b =
-            fun
-            [ [] -> assert False
-            | [(x, op)] ->
-                let _ = assert (op = "") in
-                horiz_vertic (fun _ -> elem ind (sprintf "%s " b) x k)
-                  (fun () ->
-                     let s = elem (ind + sh) (tab (ind + sh)) x k in
-                     sprintf "%s\n%s" b s)
-            | [(x, op) :: xl] ->
-                let s =
-                  horiz_vertic
-                    (fun _ -> Some (elem ind (sprintf "%s " b) x op))
-                    (fun () -> None)
-                in
-                match s with
-                [ Some b -> loop b xl
-                | None ->
-                    let s =
-                      hvlist elem (ind + sh) 0 (tab (ind + sh))
-                        [(x, op) :: xl] k
-                    in
-                    sprintf "%s\n%s" b s ] ]
-      | None -> not_impl "hvlist 2" ind b xl k ] ]
-;
-
 value operator ind left right sh b op x y k =
   let op = if op = "" then "" else " " ^ op in
   horiz_vertic
@@ -529,7 +530,7 @@ value left_operator ind sh unfold next b x k =
   [ [(x, _)] -> next ind b x k
   | _ ->
       horiz_vertic (fun _ -> hlist (op_after next) ind b xl k)
-        (fun () -> hvlist next ind 2 b xl k) ]
+        (fun () -> plist next ind 2 b xl k) ]
 ;
 
 value right_operator ind sh unfold next b x k =
@@ -1559,8 +1560,8 @@ value expr_simple =
     when snd (let_and_seq_list e) ->
       fun curr next ind b k -> expr ind b z k
 *)
-  | <:expr< $_$ $_$ >> (* | <:expr< $_$ := $_$ >> |
-    <:expr< fun [ $list:_$ ] >> | <:expr< if $_$ then $_$ else $_$ >> |
+  | <:expr< $_$ $_$ >> (* | <:expr< $_$ := $_$ >> *) |
+    <:expr< fun [ $list:_$ ] >> (* | <:expr< if $_$ then $_$ else $_$ >> |
     <:expr< let $opt:_$ $list:_$ in $_$ >> |
     <:expr< match $_$ with [ $list:_$ ] >> |
     <:expr< try $_$ with [ $list:_$ ] >> *) as z ->
