@@ -1686,7 +1686,7 @@ value str_item_top =
              sprintf "%smodule %s = %s%s" b m (module_expr 0 "" me "") k)
           (fun () ->
              sprintf "%smodule %s =\n%s\n%s" b m
-               (module_expr (ind + 2) (tab (ind + 2)) me "") k)
+               (module_expr (ind + 2) (tab (ind + 2)) me "") (tab ind ^ k))
 (*
   | <:str_item< module type $m$ = $mt$ >> ->
       fun curr next ind b k ->
@@ -1709,8 +1709,10 @@ value str_item_top =
              hlist2 binding (and_before binding) ind (sprintf "%svalue " b)
                pel k)
           (fun () ->
-             vlist2 binding (and_before binding) ind (sprintf "%svalue " b)
-               pel k)
+             sprintf "%s\n%s"
+               (vlist2 binding (and_before binding) ind (sprintf "%svalue " b)
+                  pel "")
+               (tab ind ^ k))
 (*
   | <:str_item< $exp:e$ >> ->
       fun curr next ind b k ->
