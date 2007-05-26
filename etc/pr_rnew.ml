@@ -1090,7 +1090,8 @@ value expr_top =
                    sprintf "%s\n%s" s1 s2)
             in
             let s2 =
-              horiz_vertic (fun _ -> not_impl "else horiz" ind (tab ind) e3 k)
+              horiz_vertic
+                (fun _ -> sprintf "%selse %s%s" (tab ind) (expr 0 "" e3 "") k)
                 (fun () -> not_impl "else vertic" ind (tab ind) e3 k)
             in
             sprintf "%s\n%s" s1 s2)
