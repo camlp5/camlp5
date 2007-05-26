@@ -184,10 +184,13 @@ value is_infix = do {
 };
 
 (* temporary, just before all expr infixes are implemented *)
-value is_implemented_infix = do {
+value is_not_yet_implemented_infix = do {
   let infixes = Hashtbl.create 73 in
   List.iter (fun s -> Hashtbl.add infixes s True)
-    ["!="; "<"; "<="; "<>"; "="; "=="; ">"; ">="];
+    ["!="; "&&"; "*"; "**"; "*."; "+"; "+."; "-"; "-."; "/"; "/."; "<"; "<.";
+     "<="; "<=."; "<>"; "<>."; "="; "=."; "=="; ">"; ">."; ">="; ">=."; "@";
+     "^"; "asr"; "land"; "lor"; "lsl"; "lsr"; "lxor"; "mod"; "or"; "||";
+     "~-"; "~-."];
   fun s -> try Hashtbl.find infixes s with [ Not_found -> False ]
 };
 
@@ -483,7 +486,6 @@ value left_operator ind sh unfold next b x k =
         (fun () -> not_impl "left_operator vertic" ind b xl k) ]
 ;
 
-(*
 value right_operator ind sh unfold next b x k =
   let xl =
     loop [] x where rec loop xl x =
@@ -493,9 +495,10 @@ value right_operator ind sh unfold next b x k =
   in
   match xl with
   [ [(x, _)] -> next ind b x k
-  | _ -> listws_hv ind sh next b xl k ]
+  | _ ->
+      horiz_vertic (fun _ -> hlist (op_after next) ind b xl k)
+        (fun () -> not_impl "right_operator vertic" ind b xl k) ]
 ;
-*)
 
 (*
  * Extensible printers
@@ -1331,7 +1334,6 @@ value expr_less =
   | z -> fun curr next ind b k -> next ind b z k ]
 ;
 
-(*
 value expr_concat =
   extfun Extfun.empty with
   [ z ->
@@ -1345,6 +1347,7 @@ value expr_concat =
         right_operator ind 0 unfold next b z k ]
 ;
 
+(*
 value expr_add =
   let ops = ["+"; "+."; "-"; "-."] in
   extfun Extfun.empty with
@@ -1548,8 +1551,7 @@ value expr_simple =
       fun curr next ind b k ->
         let (inf, n) =
           match z with
-          [ <:expr< $lid:n$ $_$ $_$ >> ->
-              (not (is_implemented_infix n) && is_infix n, n)
+          [ <:expr< $lid:n$ $_$ $_$ >> -> (is_not_yet_implemented_infix n, n)
           | _ -> (False, "") ]
         in
         if inf then not_impl "op" ind b n k
@@ -1920,8 +1922,8 @@ pr_expr.pr_levels :=
    {pr_label = "amp"; pr_rules = expr_and};
 *)
    {pr_label = "less"; pr_rules = expr_less};
-(*
    {pr_label = "concat"; pr_rules = expr_concat};
+(*
    {pr_label = "add"; pr_rules = expr_add};
    {pr_label = "mul"; pr_rules = expr_mul};
    {pr_label = "pow"; pr_rules = expr_pow};
