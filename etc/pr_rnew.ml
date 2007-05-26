@@ -588,8 +588,8 @@ value binding ind b (p, e) k =
   horiz_vertic
     (fun _ -> sprintf "%s %s%s" (patt 0 b p " =") (expr 0 "" e "") k)
     (fun () ->
-       sprintf "%s\n%s\n%s" (patt ind b p " =")
-         (expr (ind + 2) (tab (ind + 2)) e "") (tab ind ^ k))
+       sprintf "%s\n%s" (patt ind b p " =")
+         (expr (ind + 2) (tab (ind + 2)) e k))
 ;
 
 (*
@@ -1202,63 +1202,22 @@ value expr_top =
                      (sprintf " ]%s" k)
                  in
                  sprintf "%s%s" s1 s2) ]
-  | <:expr< let $opt:rf1$ $list:pel1$ in $e1$ >> as e ->
+*)
+  | <:expr< let $opt:rf1$ $list:pel1$ in $e1$ >> ->
       fun curr next ind b k ->
-        match
-          match e with
-          [ <:expr< let rec $p$ = $body$ in $e$ >> ->
-              let e1 =
-                loop e where rec loop =
-                  fun
-                  [ <:expr< $e$ $_$ >> -> loop e
-                  | e -> e ]
-              in
-              match (p, e1, body) with
-              [ (<:patt< $lid:f$ >>, <:expr< $lid:g$ >>,
-                 <:expr< fun [ $list:_$ ] >>) ->
-                  if f = g then Some (p, e, body) else None
-              | _ -> None ]
-          | _ -> None ]
-        with
-        [ Some (p, e, body) ->
-            horiz_vertic
-              (fun _ ->
-                 let b = sprintf "%s where rec" (curr ind b e "") in
-                 binding ind False (b, " ") (p, body) ("", k))
-              (fun () ->
-                 match
-                   horiz_vertic (fun _ -> Some (curr 0 b e ""))
-                     (fun () -> None)
-                 with
-                 [ Some s1 ->
-                     binding ind False (sprintf "%s where rec" s1, " ") (p, body)
-                       ("", k)
-                 | None ->
-                     let s1 = curr ind b e "" in
-                     let s1 = sprintf "%s\n" s1 in
-                     let s2 =
-                       binding ind False (sprintf "%swhere rec" (tab ind), " ")
-                         (p, body) ("", k)
-                     in
-                     sprintf "%s%s" s1 s2 ])
-        | None ->
-            horiz_vertic (fun nofit -> nofit ())
-              (fun () ->
-                 let (letexprl, has_seq) = let_and_seq_list e in
-                 let (ind, k) =
-                   if has_seq then (ind + 1, ")" ^ k) else (ind, k)
-                 in
-                 if has_seq then
-                   let_in_and_sequence_combination ind (sprintf "%s(" b)
-                     letexprl k
-                 else
-                   let b =
-                     sprintf "%s%s" b (if rf1 then "let rec" else "let")
-                   in
-                   let sb = binding_list ind (b, " ") pel1 (" ", "in") in
-                   let ccc = comm_bef ind (MLast.loc_of_expr e1) in
-                   let sb = sprintf "%s\n%s" sb ccc in
-                   sprintf "%s%s" sb (curr ind (tab ind) e1 k)) ]
+        horiz_vertic
+          (fun _ ->
+             sprintf "%slet %s in %s%s" b
+               (hlist2 binding (and_before binding) 0 "" pel1 "")
+               (expr 0 "" e1 "") k)
+          (fun () ->
+             let s1 =
+               vlist2 binding (and_before binding) ind (sprintf "%slet " b)
+                 pel1 " in"
+             in
+             let s2 = expr ind (tab ind) e1 k in
+             sprintf "%s\n%s" s1 s2)
+(*
   | <:expr< while $e1$ do { $list:el$ } >> ->
       fun curr next ind b k ->
         sprint_indent_unindent ind 2
@@ -1447,10 +1406,10 @@ value expr_dot =
   | <:expr< $x$ .( $y$ ) >> ->
       fun curr next ind b k ->
         expr ind (curr ind b x ".(") y (sprintf ")%s" k)
+*)
   | <:expr< $x$ .[ $y$ ] >> ->
       fun curr next ind b k ->
         expr ind (curr ind b x ".[") y (sprintf "]%s" k)
-*)
   | z ->
       fun curr next ind b k -> next ind b z k ]
 ;
@@ -1492,8 +1451,12 @@ value expr_simple =
           let el = List.map (fun e -> (e, ";")) el in
           listws_hv (ind + 3) 0 expr (sprintf "%s[| " b) el
             (sprintf " |]%s" k)
+*)
   | <:expr< [$_$ :: $_$] >> as z ->
-      fun curr next ind b k -> x_list ind expr b (make_expr_list z) k
+      fun curr next ind b k ->
+        horiz_vertic (fun _ -> not_impl "[...] horiz" ind b z k)
+          (fun _ -> not_impl "[...] vertic" ind b z k)
+(*
   | <:expr< ($e$ : $t$) >> ->
       fun curr next ind b k ->
         let expr =
