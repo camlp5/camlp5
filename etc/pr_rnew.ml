@@ -585,7 +585,9 @@ Pcaml.pr_expr_fun_args.val :=
 value binding ind b (p, e) k =
   horiz_vertic
     (fun _ -> sprintf "%s%s = %s%s" b (patt 0 "" p "") (expr 0 "" e "") k)
-    (fun () -> not_impl "binding vertic" ind b (p, e) k)
+    (fun () ->
+       sprintf "%s\n%s\n%s" (patt ind b p " =")
+         (expr (ind + 2) (tab (ind + 2)) e "") (tab ind ^ k))
 ;
 
 (*
