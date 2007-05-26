@@ -294,6 +294,15 @@ value rec hlist2 elem elem2 ind b xl k =
       sprintf "%s %s" (elem ind b x "") (hlist2 elem2 elem2 ind "" xl k) ]
 ;
 
+(* horizontal list with different function for the last element *)
+value rec hlistl elem eleml ind b xl k =
+  match xl with
+  [ [] -> sprintf "%s%s" b k
+  | [x] -> eleml ind b x k
+  | [x :: xl] ->
+      sprintf "%s %s" (elem ind b x "") (hlistl elem eleml ind "" xl k) ]
+;
+
 (* vertical list *)
 value rec vlist elem ind b xl k =
   match xl with
@@ -320,7 +329,7 @@ value rec vlistl elem eleml ind b xl k =
   | [x] -> eleml ind b x k
   | [x :: xl] ->
       sprintf "%s\n%s" (elem ind b x "")
-        (vlist2 elem eleml ind (tab ind) xl k) ]
+        (vlistl elem eleml ind (tab ind) xl k) ]
 ;
 
 (* paragraph list with different function for the last element *)
@@ -1410,7 +1419,7 @@ value expr_simple =
         horiz_vertic
           (fun _ ->
              sprintf "%sdo {%s%s%s}%s" b " "
-               (hlist (comma_after expr) 0 "" el "") " " k)
+               (hlistl (comma_after expr) expr 0 "" el "") " " k)
           (fun () ->
              sprintf "%sdo {%s%s%s}%s" b "\n"
                (vlistl (comma_after expr) expr (ind + 2) (tab (ind + 2)) el
@@ -1457,7 +1466,7 @@ value expr_simple =
           [ Some y -> not_impl "expr2 1" ind b x k
           | None -> expr ind b x (sprintf "]%s" k) ]
         in
-        plistl expr expr2 (ind + 1) 0 (sprintf "%s[" b) xl ""
+        plistl expr expr2 (ind + 1) 0 (sprintf "%s[" b) xl k
 (*
   | <:expr< ($e$ : $t$) >> ->
       fun curr next ind b k ->
