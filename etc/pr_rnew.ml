@@ -285,7 +285,7 @@ value rec hlist elem ind b xl k =
   | [x :: xl] -> sprintf "%s %s" (elem ind b x "") (hlist elem ind "" xl k) ]
 ;
 
-(* horizontal list with different function from 2nd elem on *)
+(* horizontal list with different function from 2nd element on *)
 value rec hlist2 elem elem2 ind b xl k =
   match xl with
   [ [] -> sprintf "%s%s" b k
@@ -303,7 +303,7 @@ value rec vlist elem ind b xl k =
       sprintf "%s\n%s" (elem ind b x "") (vlist elem ind (tab ind) xl k) ]
 ;
 
-(* vertical list with different function from 2nd elem on *)
+(* vertical list with different function from 2nd element on *)
 value rec vlist2 elem elem2 ind b xl k =
   match xl with
   [ [] -> sprintf "%s%s" b k
@@ -313,7 +313,7 @@ value rec vlist2 elem elem2 ind b xl k =
         (vlist2 elem2 elem2 ind (tab ind) xl k) ]
 ;
 
-(* vertical list with different function for the last elem *)
+(* vertical list with different function for the last element *)
 value rec vlistl elem eleml ind b xl k =
   match xl with
   [ [] -> sprintf "%s%s" b k
@@ -323,11 +323,11 @@ value rec vlistl elem eleml ind b xl k =
         (vlist2 elem eleml ind (tab ind) xl k) ]
 ;
 
-(* paragraph list *)
-value rec plist elem ind sh b xl k =
+(* paragraph list with different function for the last element *)
+value rec plistl elem eleml ind sh b xl k =
   match xl with
   [ [] -> assert False
-  | [(x, op)] -> not_impl "plist 1" ind b xl k
+  | [(x, op)] -> not_impl "plistl 1" ind b xl k
   | [(x, op) :: xl] ->
       let s =
         horiz_vertic (fun _ -> Some (elem ind b x op)) (fun () -> None)
@@ -339,9 +339,9 @@ value rec plist elem ind sh b xl k =
             [ [] -> assert False
             | [(x, op)] ->
                 let _ = assert (op = "") in
-                horiz_vertic (fun _ -> elem ind (sprintf "%s " b) x k)
+                horiz_vertic (fun _ -> eleml ind (sprintf "%s " b) x k)
                   (fun () ->
-                     let s = elem (ind + sh) (tab (ind + sh)) x k in
+                     let s = eleml (ind + sh) (tab (ind + sh)) x k in
                      sprintf "%s\n%s" b s)
             | [(x, op) :: xl] ->
                 let s =
@@ -353,12 +353,15 @@ value rec plist elem ind sh b xl k =
                 [ Some b -> loop b xl
                 | None ->
                     let s =
-                      plist elem (ind + sh) 0 (tab (ind + sh))
+                      plistl elem eleml (ind + sh) 0 (tab (ind + sh))
                         [(x, op) :: xl] k
                     in
                     sprintf "%s\n%s" b s ] ]
-      | None -> not_impl "plist 2" ind b xl k ] ]
+      | None -> not_impl "plistl 2" ind b xl k ] ]
 ;
+
+(* paragraph list *)
+value plist elem ind sh b xl k = plistl elem elem ind sh b xl k;
 
 (*
 (* list with separator *)
@@ -791,6 +794,7 @@ value record_assoc elem ind b (lab, x) k =
   sprint_indent ind 2 (fun ind _ -> patt ind b lab " =")
     (fun ind b _ -> elem ind b x k)
 ;
+*)
 
 value rec make_expr_list =
   fun
@@ -801,6 +805,7 @@ value rec make_expr_list =
   | x -> ([], Some x) ]
 ;
 
+(*
 value rec make_patt_list =
   fun
   [ <:patt< [$x$ :: $y$] >> ->
@@ -1507,8 +1512,16 @@ value expr_simple =
 *)
   | <:expr< [$_$ :: $_$] >> as z ->
       fun curr next ind b k ->
-        horiz_vertic (fun _ -> not_impl "[...] horiz" ind b z k)
-          (fun _ -> not_impl "[...] vertic" ind b z k)
+        let (xl, x) = make_expr_list z in
+        let xl =
+          loop xl where rec loop =
+            fun
+            [ [] -> []
+            | [x] -> [(x, "")]
+            | [x :: xl] -> [(x, ";") :: loop xl] ]
+        in
+        let expr2 ind b x k = not_impl "expr2" ind b x k in
+        plistl expr expr2 (ind + 1) 0 (sprintf "%s[" b) xl ""
 (*
   | <:expr< ($e$ : $t$) >> ->
       fun curr next ind b k ->
