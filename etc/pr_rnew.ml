@@ -1181,9 +1181,11 @@ value expr_top =
         [ [(p1, None, e1)] when is_irrefut_patt p1 ->
             horiz_vertic
               (fun _ ->
-                 sprintf "%sfun %s -> %s%s" b (patt 0 "" p1 "")
-                   (expr 0 "" e1 "") k)
-              (fun () -> not_impl "fun vertic irr pat" ind b pwel k)
+                 sprintf "%s %s" (patt ind (sprintf "%sfun " b) p1 " ->")
+                   (expr 0 "" e1 k))
+              (fun () ->
+                 sprintf "%s\n%s" (patt ind (sprintf "%sfun " b) p1 " ->")
+                   (expr (ind + 2) (tab (ind + 2)) e1 k))
         | pwel ->
             horiz_vertic (fun _ -> not_impl "fun horiz" ind b pwel k)
               (fun () -> not_impl "fun vertic" ind b pwel k) ]
