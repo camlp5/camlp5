@@ -1888,12 +1888,13 @@ value module_expr_top =
       fun curr next ind b k ->
         horiz_vertic
           (fun _ ->
-             sprintf "%sstruct %s end%s" b
-               (hlist (comma_after str_item) ind "" sil "") k)
+             sprintf "%sstruct%s%s%send%s" b " "
+               (hlist (comma_after str_item) 0 "" sil "")
+               " " k)
           (fun () ->
-             sprintf "%sstruct\n%s\n%send%s" b
+             sprintf "%sstruct%s%s%send%s" b "\n"
                (vlist (comma_after str_item) (ind + 2) (tab (ind + 2)) sil "")
-               (tab ind) k)
+               ("\n" ^ tab ind) k)
   | z ->
       fun curr next ind b k -> next ind b z k ]
 ;
