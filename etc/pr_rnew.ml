@@ -1512,7 +1512,7 @@ value expr_simple =
 *)
   | <:expr< [$_$ :: $_$] >> as z ->
       fun curr next ind b k ->
-        let (xl, x) = make_expr_list z in
+        let (xl, y) = make_expr_list z in
         let xl =
           loop xl where rec loop =
             fun
@@ -1520,7 +1520,11 @@ value expr_simple =
             | [x] -> [(x, "")]
             | [x :: xl] -> [(x, ";") :: loop xl] ]
         in
-        let expr2 ind b x k = not_impl "expr2" ind b x k in
+        let expr2 ind b x k =
+          match y with
+          [ Some y -> not_impl "expr2 1" ind b x k
+          | None -> expr ind b x (sprintf "]%s" k) ]
+        in
         plistl expr expr2 (ind + 1) 0 (sprintf "%s[" b) xl ""
 (*
   | <:expr< ($e$ : $t$) >> ->
