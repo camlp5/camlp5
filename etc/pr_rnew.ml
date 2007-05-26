@@ -1253,12 +1253,17 @@ value expr_top =
       fun curr next ind b k ->
         horiz_vertic
           (fun _ ->
-             sprintf "%slet %s in %s%s" b
-               (hlist2 binding (and_before binding) 0 "" pel1 "")
-               (expr 0 "" e1 "") k)
+             let s1 =
+               hlist2 binding (and_before binding) ind
+                 (sprintf "%slet %s" b (if rf1 then "rec " else ""))
+                 pel1 " in"
+             in
+             let s2 = expr 0 "" e1 k in
+             sprintf "%s %s" s1 s2)
           (fun () ->
              let s1 =
-               vlist2 binding (and_before binding) ind (sprintf "%slet " b)
+               vlist2 binding (and_before binding) ind
+                 (sprintf "%slet %s" b (if rf1 then "rec " else ""))
                  pel1 " in"
              in
              let s2 = expr ind (tab ind) e1 k in
@@ -1753,13 +1758,17 @@ value str_item_top =
       fun curr next ind b k ->
         horiz_vertic
           (fun _ ->
-             hlist2 binding (and_before binding) ind (sprintf "%svalue " b)
-               pel k)
+             let s =
+               hlist2 binding (and_before binding) ind
+                 (sprintf "%svalue %s" b (if rf then "rec " else "")) pel ""
+             in
+             sprintf "%s%s" s k)
           (fun () ->
-             sprintf "%s\n%s"
-               (vlist2 binding (and_before binding) ind (sprintf "%svalue " b)
-                  pel "")
-               (tab ind ^ k))
+             let s =
+               vlist2 binding (and_before binding) ind
+                 (sprintf "%svalue %s" b (if rf then "rec " else "")) pel ""
+             in
+             sprintf "%s\n%s%s" s (tab ind) k)
 (*
   | <:str_item< $exp:e$ >> ->
       fun curr next ind b k ->
