@@ -490,7 +490,8 @@ value sprint_indent_unindent ind sh f1 f2 f3 =
 
 value comma_after elem ind b x k = elem ind b x (sprintf ";%s" k);
 value op_after elem ind b (x, op) k = elem ind b x (sprintf "%s%s" op k);
-value and_before elem ind b x k = elem ind (sprintf "%sand" b) x k;
+value and_before elem ind b x k = elem ind (sprintf "%sand " b) x k;
+value bar_before elem ind b x k = elem ind (sprintf "%s| " b) x k;
 
 (*
 
@@ -795,6 +796,15 @@ value record_assoc elem ind b (lab, x) k =
     (fun ind b _ -> elem ind b x k)
 ;
 *)
+
+value match_assoc ind b pwe k =
+  not_impl "match_assoc" ind b pwe k
+;
+
+value match_assoc_list ind b pwel k =
+  vlist2 match_assoc (bar_before match_assoc) ind (sprintf "%s[ " b) pwel
+    (sprintf " ]%s" k)
+;
 
 value rec make_expr_list =
   fun
@@ -1161,7 +1171,6 @@ value expr_top =
         | pwel ->
             horiz_vertic (fun _ -> not_impl "fun horiz" ind b pwel k)
               (fun () -> not_impl "fun vertic" ind b pwel k) ]
-(*
   | <:expr< try $e1$ with [ $list:pwel$ ] >> |
     <:expr< match $e1$ with [ $list:pwel$ ] >> as e ->
       fun curr next ind b k ->
@@ -1170,91 +1179,14 @@ value expr_top =
           [ <:expr< try $_$ with [ $list:_$ ] >> -> "try"
           | _ -> "match" ]
         in
-        let ind2 = ind + 2 in
-        match pwel with
-        [ [(p2, None, e2)] when is_irrefut_patt p2 ->
-            horiz_vertic
-              (fun _ ->
-                 curr 0 (sprintf "%s%s " b op) e1
-                   (patt 0 " with " p2 (expr 0 " -> " e2 k)))
-              (fun () ->
-                 let (letexprl, has_seq) = let_and_seq_list e2 in
-                 let s1 =
-                   let k = if has_seq then " (" else "" in
-                   horiz_vertic
-                     (fun _ ->
-                        curr ind (sprintf "%s%s " b op) e1
-                          (patt ind " with " p2 (sprintf " ->%s" k)))
-                     (fun () ->
-                        let (letexprl, has_seq) = let_and_seq_list e1 in
-                        let b1 = if has_seq then " (" else "" in
-                        let s1 = sprintf "%s%s%s\n" b op b1 in
-                        let s2 =
-                          let_in_and_sequence_combination ind2 (tab ind2)
-                            letexprl ""
-                        in
-                        let s1 = sprintf "%s%s" s1 s2 in
-                        let s1 =
-                          if has_seq then sprintf "%s\n%s)" s1 (tab ind)
-                          else s1
-                        in
-                        let s1 = sprintf "%s\n" s1 in
-                        let s2 =
-                          patt ind (sprintf "%swith " (tab ind)) p2
-                            (sprintf " ->%s" k)
-                        in
-                        sprintf "%s%s" s1 s2)
-                 in
-                 let s1 = sprintf "%s\n" s1 in
-                 let s2 =
-                   if has_seq then
-                     let s =
-                       let_in_and_sequence_combination ind2 (tab ind2)
-                         letexprl ""
-                     in
-                     sprintf "%s\n%s)%s" s (tab ind) k
-                   else curr ind2 (tab ind2) e2 k
-                 in
-                 sprintf "%s%s" s1 s2)
-        | [] ->
-            curr 0 (sprintf "%s%s " b op) e1 (sprintf " with []%s" k)
-        | _ ->
-            horiz_vertic
-              (fun nofit ->
-                 match pwel with
-                 [ [pwe] ->
-                     curr 0 (sprintf "%s%s " b op) e1
-                       (match_assoc 0 0 " with [ " False pwe
-                          (sprintf " ]%s" k))
-                 | _ -> nofit () ])
-              (fun () ->
-                 let s1 =
-                   horiz_vertic
-                     (fun _ -> curr ind (sprintf "%s%s " b op) e1 " with")
-                     (fun () ->
-                        let (letexprl, has_seq) = let_and_seq_list e1 in
-                        let b1 = if has_seq then " (" else "" in
-                        let s1 = sprintf "%s%s%s\n" b op b1 in
-                        let s2 =
-                          if has_seq then
-                            let_in_and_sequence_combination ind2 (tab ind2)
-                              letexprl ""
-                          else curr ind2 (tab ind2) e1 ""
-                        in
-                        let s3 = sprintf "%s%s" s1 s2 in
-                        let s =
-                          if has_seq then sprintf "%s\n%s)" s3 (tab ind)
-                          else s3
-                        in
-                        sprintf "%s\n%swith" s (tab ind))
-                 in
-                 let s1 = sprintf "%s\n" s1 in
-                 let s2 =
-                   match_assoc_list ind (sprintf "%s[ " (tab ind)) pwel
-                     (sprintf " ]%s" k)
-                 in
-                 sprintf "%s%s" s1 s2) ]
-*)
+        horiz_vertic
+          (fun _ ->
+             sprintf "%s%s %s with %s%s" b op (expr 0 "" e1 "")
+               (match_assoc_list 0 "" pwel "") k)
+          (fun () ->
+             let s1 = sprintf "%s%s %s with" b op (expr ind "" e1 "") in
+             let s2 = match_assoc_list ind (tab ind) pwel k in
+             sprintf "%s\n%s" s1 s2)
   | <:expr< let $opt:rf1$ $list:pel1$ in $e1$ >> ->
       fun curr next ind b k ->
         horiz_vertic
