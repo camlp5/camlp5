@@ -187,10 +187,7 @@ value is_infix = do {
 value is_implemented_infix = do {
   let infixes = Hashtbl.create 73 in
   List.iter (fun s -> Hashtbl.add infixes s True)
-    ["!="; "&&"; "*"; "**"; "*."; "+"; "+."; "-"; "-."; "/"; "/."; "<"; "<.";
-     "<="; "<=."; "<>"; "<>."; "="; "=."; "=="; ">"; ">."; ">="; ">=."; "@";
-     "^"; "asr"; "land"; "lor"; "lsl"; "lsr"; "lxor"; "mod"; "or"; "||";
-     "~-"; "~-."];
+    ["!="; "<"; "<="; "<>"; "="; "=="; ">"; ">="];
   fun s -> try Hashtbl.find infixes s with [ Not_found -> False ]
 };
 
@@ -462,13 +459,15 @@ and let_and_seq_list_of_list letexprlr =
 ;
 
 value let_and_seq_list = let_and_seq_list_loop [];
+*)
 
 value operator ind left right sh b op x y k =
   let op = if op = "" then "" else " " ^ op in
-  sprint_indent ind sh (fun ind _ -> left ind b x op)
-    (fun ind b _ -> right ind b y k)
+  horiz_vertic
+    (fun _ ->
+       sprintf "%s%s%s %s%s" b (left 0 "" x "") op (right 0 "" y "") k)
+    (fun () -> not_impl "operator vertic" ind b op k)
 ;
-*)
 
 value left_operator ind sh unfold next b x k =
   let xl =
@@ -1063,119 +1062,36 @@ value must_be_printed_identically f x1 x2 =
 
 value expr_top =
   extfun Extfun.empty with
-  [
-(*
-    <:expr< if $e1$ then $e2$ else $e3$ >> ->
+  [ <:expr< if $e1$ then $e2$ else $e3$ >> ->
       fun curr next ind b k ->
         horiz_vertic
-          (fun _ ->
-             sprintf "%sif %s then %s%s else %s%s" b (curr ind "" e1 "")
-               (comm_bef ind (MLast.loc_of_expr e2)) (curr ind "" e2 "")
-               (if is_unit e3 then ""
-                else comm_bef ind (MLast.loc_of_expr e3))
-               (curr ind "" e3 k))
-          (fun () ->
-             let mbpi = must_be_printed_identically curr e2 e3 in
-             let (eel, e3) =
-               if mbpi then ([], e3)
-               else
-                 let b1 = sprintf "%selse " (tab ind) in
-                 elseif [] e3 where rec elseif reel e =
-                   match e with
-                   [ <:expr< if $e1$ then $e2$ else $e3$ >> ->
-                       elseif [(False, b1, e1, e2) :: reel] e3
-                   | _ -> (List.rev reel, e) ]
-             in
-             let eel = [(True, b, e1, e2) :: eel] in
-             let e2_holds_in_line = ref False in
-             let s1 =
-               List.fold_left
-                 (fun s1 (is_first, b1, e1, e2) ->
-                    let nl = if is_first then "" else "\n" in
-                    let s1 = sprintf "%s%s" s1 nl in
-                    let s2 =
-                      horiz_vertic
-                        (fun nofit -> (
-                           let r =
-                             sprintf "%sif %s then %s%s" b1 (curr ind "" e1 "")
-                               (comm_bef ind (MLast.loc_of_expr e2))
-                               (curr ind "" e2 "")
-                           in
-                           e2_holds_in_line.val := True;
-                           r
-                         ))
-                        (fun () ->
-                           let (letexprl, has_seq) = let_and_seq_list e2 in
-                           let k = if has_seq then " (" else "" in
-                           let se1 =
-                             if is_first then
-                               sprint_indent ind 0
-                                 (fun ind _ ->
-                                    let ind3 = ind + 3 in
-                                    curr ind3 (sprintf "%sif " b1) e1 "")
-                                 (fun ind b _ -> sprintf "%sthen%s" b k)
-                             else
-                               sprint_indent_unindent ind 2
-                                 (fun ind -> sprintf "%sif" b1)
-                                 (fun ind b _ -> curr ind b e1 "")
-                                 (fun ind b c -> sprintf "%s%sthen%s" b c k)
-                           in
-                           let se1 = sprintf "%s\n" se1 in
-                           let ind2 = ind + 2 in
-                           let se1 =
-                             if has_seq then se1
-                             else
-                               let ccc2 =
-                                 comm_bef ind2 (MLast.loc_of_expr e2)
-                               in
-                               sprintf "%s%s" se1 ccc2
-                           in
-                           let se2 =
-                             if has_seq then
-                               sprintf "%s\n%s)"
-                                 (let_in_and_sequence_combination ind2
-                                    (tab ind2) letexprl "")
-                                 (tab ind)
-                             else curr ind2 (tab ind2) e2 ""
-                           in
-                           sprintf "%s%s" se1 se2)
-                    in
-                    sprintf "%s%s" s1 s2)
-                 "" eel
-             in
-             let s1 = sprintf "%s\n" s1 in
-             let s2 =
-               horiz_vertic
-                 (fun nofit ->
-                    if mbpi && not e2_holds_in_line.val then nofit ()
-                    else
-                      let ccc3 =
-                        if is_unit e3 then ""
-                        else remove_nl (comm_bef 0 (MLast.loc_of_expr e3))
-                      in
-                      if String.contains ccc3 '\n' then nofit ()
-                      else
-                        curr ind (sprintf "%selse %s" (tab ind) ccc3) e3 k)
-                 (fun () ->
-                    let (letexprl, has_seq) = let_and_seq_list e3 in
-                    let ind2 = ind + 2 in
-                    if has_seq then
-                      let s1 = sprintf "%selse (\n" (tab ind) in
-                      let s2 =
-                        let_in_and_sequence_combination ind2 (tab ind2)
-                          letexprl ""
-                      in
-                      sprintf "%s%s\n%s)%s" s1 s2 (tab ind) k
-                    else
-                      let ccc3 = comm_bef ind2 (MLast.loc_of_expr e3) in
-                      let s = sprintf "%selse\n%s" (tab ind) ccc3 in
-                      let se3 = curr ind2 (tab ind2) e3 k in
-                      sprintf "%s%s" s se3)
-             in
-             sprintf "%s%s" s1 s2)
-  |
-*)
-    <:expr< fun [ $list:pwel$ ] >> ->
+         (fun _ ->
+            sprintf "%sif %s then %s else %s%s" b (expr 0 "" e1 "")
+              (expr 0 "" e2 "") (expr 0 "" e3 "") k)
+         (fun () ->
+            let s1 =
+              horiz_vertic
+                (fun _ ->
+                   sprintf "%sif %s then %s" b (expr 0 "" e1 "")
+                     (expr 0 "" e2 ""))
+                (fun () ->
+                   let s1 =
+                     horiz_vertic
+                       (fun _ -> sprintf "%sif %s then" b (expr 0 "" e1 ""))
+                       (fun () ->
+                          let s1 = expr (ind + 3) (sprintf "%sif " b) e1 "" in
+                          let s2 = sprintf "%sthen" (tab ind) in
+                          sprintf "%s\n%s" s1 s2)
+                   in
+                   let s2 = expr (ind + 2) (tab (ind + 2)) e2 "" in
+                   sprintf "%s\n%s" s1 s2)
+            in
+            let s2 =
+              horiz_vertic (fun _ -> not_impl "else horiz" ind (tab ind) e3 k)
+                (fun () -> not_impl "else vertic" ind (tab ind) e3 k)
+            in
+            sprintf "%s\n%s" s1 s2)
+  | <:expr< fun [ $list:pwel$ ] >> ->
       fun curr next ind b k ->
         match pwel with
         [ [(p1, None, e1)] when is_irrefut_patt p1 ->
@@ -1369,7 +1285,6 @@ value expr_top =
       fun curr next ind b k -> next ind b z k ]
 ;
 
-(*
 value expr_assign =
   extfun Extfun.empty with
   [ <:expr< $x$ := $y$ >> ->
@@ -1377,6 +1292,7 @@ value expr_assign =
   | z -> fun curr next ind b k -> next ind b z k ]
 ;
 
+(*
 value expr_or =
   extfun Extfun.empty with
   [ z ->
@@ -1402,6 +1318,7 @@ value expr_and =
         in
         right_operator ind 0 unfold next b z k ]
 ;
+*)
 
 value expr_less =
   extfun Extfun.empty with
@@ -1414,6 +1331,7 @@ value expr_less =
   | z -> fun curr next ind b k -> next ind b z k ]
 ;
 
+(*
 value expr_concat =
   extfun Extfun.empty with
   [ z ->
@@ -1996,11 +1914,13 @@ value module_type_simple =
 
 pr_expr.pr_levels :=
   [{pr_label = "top"; pr_rules = expr_top};
-(*
    {pr_label = "ass"; pr_rules = expr_assign};
+(*
    {pr_label = "bar"; pr_rules = expr_or};
    {pr_label = "amp"; pr_rules = expr_and};
+*)
    {pr_label = "less"; pr_rules = expr_less};
+(*
    {pr_label = "concat"; pr_rules = expr_concat};
    {pr_label = "add"; pr_rules = expr_add};
    {pr_label = "mul"; pr_rules = expr_mul};
