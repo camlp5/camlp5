@@ -1814,11 +1814,11 @@ value str_item_top =
       fun curr next ind b k ->
         horiz_vertic
           (fun _ ->
-             sprintf "%svalue %s%s" b
-               (hlist2 binding (and_before binding) 0 "" pel "") k)
+             hlist2 binding (and_before binding) ind (sprintf "%svalue " b)
+               pel k)
           (fun () ->
-             vlist2 binding (and_before binding) ind
-               (sprintf "%svalue " b) pel k)
+             vlist2 binding (and_before binding) ind (sprintf "%svalue " b)
+               pel k)
 (*
   | <:str_item< $exp:e$ >> ->
       fun curr next ind b k ->
