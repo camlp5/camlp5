@@ -1539,8 +1539,12 @@ value expr_simple =
       fun curr next ind b k ->
         horiz_vertic
           (fun _ ->
-             sprintf "%sdo { %s }%s" b (hlist (comma_after expr) 0 "" el "") k)
-          (fun () -> not_impl "seq vertic" ind b el k)
+             sprintf "%sdo {%s%s%s}%s" b " "
+               (hlist (comma_after expr) 0 "" el "") " " k)
+          (fun () ->
+             sprintf "%sdo {%s%s%s}%s" b "\n"
+               (vlist (comma_after expr) (ind + 2) (tab (ind + 2)) el "")
+               ("\n" ^ tab ind) k)
 (*
   | <:expr< ($list:el$) >> ->
       fun curr next ind b k ->
