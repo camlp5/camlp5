@@ -293,9 +293,7 @@ value printer loc_of name = do {
 
 value pr_expr = printer MLast.loc_of_expr "expr";
 value pr_patt = printer MLast.loc_of_patt "patt";
-(*
 value pr_ctyp = printer MLast.loc_of_ctyp "type";
-*)
 value pr_str_item = printer MLast.loc_of_str_item "str_item";
 value pr_sig_item = printer MLast.loc_of_sig_item "sig_item";
 value pr_module_expr = printer MLast.loc_of_module_expr "module_expr";
@@ -305,9 +303,7 @@ value pr_module_type = printer MLast.loc_of_module_type "module_type";
 
 value expr ind b z k = pr_expr.pr_fun "top" ind b z k;
 value patt ind b z k = pr_patt.pr_fun "top" ind b z k;
-(*
 value ctyp ind b z k = pr_ctyp.pr_fun "top" ind b z k;
-*)
 value str_item ind b z k = pr_str_item.pr_fun "top" ind b z k;
 value sig_item ind b z k = pr_sig_item.pr_fun "top" ind b z k;
 value module_expr ind b z k = pr_module_expr.pr_fun "top" ind b z k;
@@ -442,6 +438,42 @@ value rec type_decl_list ind b tdl k =
       sprintf "%s%s" s1
         (type_decl_list ind (sprintf "%sand" (tab ind)) tdl k) ]
 ;
+*)
+
+value type_decl ind b ((_, tn), tp, te, cl) k =
+  horiz_vertic
+    (fun () ->
+       sprintf "%s%s%s = %s%s%s" b tn
+         (match tp with
+          [ [] -> ""
+          | _ -> not_impl "type_decl param" ind "" tp "" ])
+         (ctyp 0 "" te "")
+         (match cl with
+          [ [] -> ""
+          | _ -> not_impl "type_decl cl" ind "" cl "" ])
+         k)
+    (fun () ->
+       let s1 =
+         horiz_vertic
+           (fun () ->
+              sprintf "%s%s%s =" b tn
+                (match tp with
+                 [ [] -> ""
+                 | _ -> not_impl "type_decl param 1" ind "" tp "" ]))
+           (fun () -> not_impl "type_decl vertic 1" ind b tn k)
+       in
+       let s2 =
+         horiz_vertic
+           (fun () ->
+              sprintf "%s%s%s%s" (tab (ind + 2)) (ctyp 0 "" te "")
+                (match cl with
+                 [ [] -> ""
+                 | _ -> not_impl "type_decl cl 2" ind "" cl "" ])
+                k)
+           (fun () -> not_impl "type_decl vertic 2" ind b tn k)
+       in
+       sprintf "%s\n%s" s1 s2)
+;
 
 (* definitions of printers by decreasing level *)
 
@@ -452,6 +484,7 @@ value ctyp_top =
   | z -> fun curr next ind b k -> next ind b z k ]
 ;
 
+(*
 value ctyp_arrow =
   extfun Extfun.empty with
   [ z ->
@@ -482,10 +515,13 @@ value ctyp_dot =
       fun curr next ind b k -> curr ind (curr ind b x ".") y k
   | z -> fun curr next ind b k -> next ind b z k ]
 ;
+*)
 
 value ctyp_simple =
   extfun Extfun.empty with
-  [ <:ctyp< ($x$ as $y$) >> ->
+  [
+(*
+    <:ctyp< ($x$ as $y$) >> ->
       fun curr next ind b k ->
         sprint_indent (ind + 1) 2
           (fun ind _ -> ctyp 0 (sprintf "%s(" b) x " as")
@@ -572,10 +608,13 @@ value ctyp_simple =
   | <:ctyp< $_$ $_$ >> | <:ctyp< $_$ -> $_$ >> as z ->
       fun curr next ind b k ->
         ctyp (ind + 1) (sprintf "%s(" b) z (sprintf ")%s" k)
-  | z ->
+  |
+*)
+    z ->
       fun curr next ind b k -> not_impl "ctyp" ind b z k ]
 ;
 
+(*
 (* used for 'else' parts of 'if' expressions to prevent comments to be
    added because the source can come from normal OCaml syntax where rec 'else'
    parts are optional, converted into 'else ()' with a location of the
@@ -1297,11 +1336,10 @@ value str_item_top =
 *)
   | <:str_item< open $i$ >> ->
       fun curr next ind b k -> mod_ident ind (sprintf "%sopen " b) i k
-(*
   | <:str_item< type $list:tdl$ >> ->
       fun curr next ind b k ->
-        type_decl_list ind (sprintf "%s%s" b "type") tdl k
-*)
+        vlist2 type_decl (and_before type_decl) ind (sprintf "%stype " b) tdl
+          k
   | <:str_item< value $opt:rf$ $list:pel$ >> ->
       fun curr next ind b k ->
         horiz_vertic
@@ -1510,15 +1548,15 @@ pr_patt.pr_levels :=
    {pr_label = "simple"; pr_rules = patt_simple}]
 ;
 
-(*
 pr_ctyp.pr_levels :=
   [{pr_label = "top"; pr_rules = ctyp_top};
+(*
    {pr_label = "arrow"; pr_rules = ctyp_arrow};
    {pr_label = "apply"; pr_rules = ctyp_apply};
    {pr_label = "dot"; pr_rules = ctyp_dot};
+*)
    {pr_label = "simple"; pr_rules = ctyp_simple}]
 ;
-*)
 
 pr_str_item.pr_levels := [{pr_label = "top"; pr_rules = str_item_top}];
 
