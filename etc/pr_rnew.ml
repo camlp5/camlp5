@@ -81,7 +81,7 @@ value not_impl name ind b x k =
       "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
     else "int_val = " ^ string_of_int (Obj.magic x)
   in
-  sprintf "%s\"pr_r: not impl: %s; %s\"%s" b name (String.escaped desc) k
+  sprintf "%s\"pr_r, not impl: %s; %s\"%s" b name (String.escaped desc) k
 ;
 
 value tab ind = String.make ind ' ';
@@ -440,13 +440,15 @@ value rec type_decl_list ind b tdl k =
 ;
 *)
 
+value type_var ind b (tv, (p, m)) k =
+  sprintf "%s%s'%s%s" b (if p then "+" else if m then "-" else "") tv k
+;
+
 value type_decl ind b ((_, tn), tp, te, cl) k =
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s = %s%s%s" b tn
-         (match tp with
-          [ [] -> ""
-          | _ -> not_impl "type_decl param" ind "" tp "" ])
+         (if tp = [] then "" else sprintf " %s" (hlist type_var 0 "" tp ""))
          (ctyp 0 "" te "")
          (match cl with
           [ [] -> ""
