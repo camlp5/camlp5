@@ -806,8 +806,15 @@ value record_assoc elem ind b (lab, x) k =
 ;
 *)
 
-value match_assoc ind b pwe k =
-  not_impl "match_assoc" ind b pwe k
+value match_assoc ind b (p, w, e) k =
+  horiz_vertic
+    (fun _ ->
+       sprintf "%s%s%s -> %s%s" b (patt 0 "" p "")
+         (match w with
+          [ Some e -> sprintf " when %s" (expr 0 "" e "")
+          | None -> "" ])
+         (expr 0 "" e "") k)
+    (fun () -> not_impl "match_assoc vertic" ind b p k)
 ;
 
 value match_assoc_list ind b pwel k =
@@ -1603,9 +1610,9 @@ value patt_simple =
 *)
     <:patt< $lid:s$ >> | <:patt< ~ $s$ >> ->
       fun curr next ind b k -> var_escaped ind b s k
-(*
   | <:patt< $uid:s$ >> | <:patt< `$uid:s$ >> ->
       fun curr next ind b k -> ident ind b s k
+(*
   | <:patt< $chr:s$ >> ->
       fun curr next ind b k -> sprintf "%s'%s'%s" b s k
   | <:patt< $str:s$ >> ->
