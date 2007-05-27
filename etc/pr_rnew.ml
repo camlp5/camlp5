@@ -987,11 +987,11 @@ value expr_simple =
                (vlistl (comma_after expr) expr (ind + 2) (tab (ind + 2)) el
                   "")
                ("\n" ^ tab ind) k)
-(*
   | <:expr< ($list:el$) >> ->
       fun curr next ind b k ->
         let el = List.map (fun e -> (e, ",")) el in
-        listws_hv (ind + 1) 0 expr (sprintf "%s(" b) el (sprintf ")%s" k)
+        plist expr ind 1 (sprintf "%s(" b) el (sprintf ")%s" k)
+(*
   | <:expr< {$list:lel$} >> ->
       fun curr next ind b k ->
         let lxl = List.map (fun lx -> (lx, ";")) lel in
@@ -1019,7 +1019,17 @@ value expr_simple =
         let xl = List.map (fun x -> (x, ";")) xl in
         let expr2 ind b x k =
           match y with
-          [ Some y -> not_impl "expr2 1" ind b x k
+          [ Some y ->
+              horiz_vertic
+                (fun () ->
+                   sprintf "%s%s :: %s]%s" b (expr ind "" x "")
+                     (expr ind "" y "") k)
+                (fun () ->
+                   let s1 = expr ind b x " ::" in
+                   let s2 =
+                     expr (ind + 2) (tab (ind + 2)) y (sprintf "]%s" k)
+                   in
+                   sprintf "%s\n%s" s1 s2)
           | None -> expr ind b x (sprintf "]%s" k) ]
         in
         plistl expr expr2 (ind + 1) 0 (sprintf "%s[" b) xl k
