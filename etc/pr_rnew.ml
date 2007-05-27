@@ -735,8 +735,8 @@ value expr_top =
                  sprintf "%s\n%s" (patt ind (sprintf "%sfun " b) p1 " ->")
                    (expr (ind + 2) (tab (ind + 2)) e1 k))
         | pwel ->
-            horiz_vertic (fun () -> not_impl "fun horiz" ind b pwel k)
-              (fun () -> not_impl "fun vertic" ind b pwel k) ]
+            let s = match_assoc_list ind (tab ind) pwel k in
+            sprintf "%sfun\n%s" b s ]
   | <:expr< try $e1$ with [ $list:pwel$ ] >> |
     <:expr< match $e1$ with [ $list:pwel$ ] >> as e ->
       fun curr next ind b k ->
@@ -1133,14 +1133,12 @@ value patt_apply =
   | z -> fun curr next ind b k -> next ind b z k ]
 ;
 
-(*
 value patt_dot =
   extfun Extfun.empty with
   [ <:patt< $x$ . $y$ >> ->
       fun curr next ind b k -> curr ind (curr ind b x ".") y k
   | z -> fun curr next ind b k -> next ind b z k ]
 ;
-*)
 
 value patt_simple =
   extfun Extfun.empty with
@@ -1193,19 +1191,18 @@ value patt_simple =
       fun curr next ind b k -> sprintf "%s%s%s" b s k
   | <:patt< $chr:s$ >> ->
       fun curr next ind b k -> sprintf "%s'%s'%s" b s k
-(*
   | <:patt< $str:s$ >> ->
       fun curr next ind b k -> sprintf "%s\"%s\"%s" b s k
-*)
   | <:patt< _ >> ->
       fun curr next ind b k -> sprintf "%s_%s" b k
 (*
   | <:patt< ? $s$ >> | <:patt< ? ($lid:s$ = $_$) >> ->
       fun curr next ind b k -> var_escaped ind b s k
-  | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >> as z ->
+*)
+  | <:patt< $_$ $_$ >> (* | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >> *)
+    as z ->
       fun curr next ind b k ->
         patt (ind + 1) (sprintf "%s(" b) z (sprintf ")%s" k)
-*)
   | z ->
       fun curr next ind b k -> not_impl "patt" ind b z k ]
 ;
@@ -1507,9 +1504,7 @@ pr_patt.pr_levels :=
   [{pr_label = "top"; pr_rules = patt_top};
    {pr_label = "range"; pr_rules = patt_range};
    {pr_label = "apply"; pr_rules = patt_apply};
-(*
    {pr_label = "dot"; pr_rules = patt_dot};
-*)
    {pr_label = "simple"; pr_rules = patt_simple}]
 ;
 
