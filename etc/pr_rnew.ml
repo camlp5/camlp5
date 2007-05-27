@@ -352,13 +352,14 @@ value match_assoc ind b (p, w, e) k =
          (expr 0 "" e "") k)
     (fun () ->
        let s1 =
-         horiz_vertic
-           (fun () -> 
-              sprintf "%s%s%s ->" b (patt 0 "" p "")
-                (match w with
-                 [ Some e -> sprintf " when %s" (expr 0 "" e "")
-                 | None -> "" ]))
-           (fun () -> not_impl "match_assoc vertic" ind b p k)
+         match w with
+         [ Some e ->
+             horiz_vertic
+               (fun () -> 
+                  sprintf "%s%s when %s ->" b (patt 0 "" p "")
+                    (expr 0 "" e ""))
+               (fun () -> not_impl "match_assoc vertic" ind b p k)
+         | None -> patt ind b p " ->" ]
        in
        let s2 = expr (ind + 4) (tab (ind + 4)) e k in
        sprintf "%s\n%s" s1 s2)
@@ -1110,7 +1111,6 @@ value patt_top =
   | z -> fun curr next ind b k -> next ind b z k ]
 ;
 
-(*
 value patt_range =
   extfun Extfun.empty with
   [ <:patt< $x$ .. $y$ >> ->
@@ -1118,7 +1118,6 @@ value patt_range =
         sprintf "%s..%s" (next ind b x "") (next ind "" y k)
   | z -> fun curr next ind b k -> next ind b z k ]
 ;
-*)
 
 value patt_apply =
   extfun Extfun.empty with
@@ -1192,13 +1191,15 @@ value patt_simple =
       fun curr next ind b k -> var_escaped ind b s k
   | <:patt< $uid:s$ >> | <:patt< `$uid:s$ >> ->
       fun curr next ind b k -> sprintf "%s%s%s" b s k
-(*
   | <:patt< $chr:s$ >> ->
       fun curr next ind b k -> sprintf "%s'%s'%s" b s k
+(*
   | <:patt< $str:s$ >> ->
       fun curr next ind b k -> sprintf "%s\"%s\"%s" b s k
+*)
   | <:patt< _ >> ->
       fun curr next ind b k -> sprintf "%s_%s" b k
+(*
   | <:patt< ? $s$ >> | <:patt< ? ($lid:s$ = $_$) >> ->
       fun curr next ind b k -> var_escaped ind b s k
   | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >> as z ->
@@ -1504,9 +1505,7 @@ pr_expr.pr_levels :=
 
 pr_patt.pr_levels :=
   [{pr_label = "top"; pr_rules = patt_top};
-(*
    {pr_label = "range"; pr_rules = patt_range};
-*)
    {pr_label = "apply"; pr_rules = patt_apply};
 (*
    {pr_label = "dot"; pr_rules = patt_dot};
