@@ -22,156 +22,8 @@ module Buff =
     value get len = String.sub buff.val 0 len;
   end
 ;
-(*
-
-(*
- * Getting comments inside phrases.
- *)
-
-value rev_extract_comment strm =
-  let rec find_comm len =
-    parser
-    [ [: `' '; a = find_comm (Buff.store len ' ') :] -> a
-    | [: `'\t'; a = find_comm (Buff.mstore len (String.make 8 ' ')) :] -> a
-    | [: `'\n'; a = find_comm (Buff.store len '\n') :] -> a
-    | [: `')'; a = find_star_bef_rparen (Buff.store len ')') :] -> a
-    | [: :] -> 0 ]
-  and find_star_bef_rparen len =
-    parser
-    [ [: `'*'; a = insert (Buff.store len '*') :] -> a
-    | [: :] -> 0 ]
-  and insert len =
-    parser
-    [ [: `')'; a = find_star_bef_rparen_in_comm (Buff.store len ')') :] -> a
-    | [: `'*'; a = find_lparen_aft_star (Buff.store len '*') :] -> a
-    | [: `x; a = insert (Buff.store len x) :] -> a
-    | [: :] -> len ]
-  and find_star_bef_rparen_in_comm len =
-    parser
-    [ [: `'*'; len = insert (Buff.store len '*'); s :] -> insert len s
-    | [: a = insert len :] -> a ]
-  and find_lparen_aft_star len =
-    parser
-    [ [: `'('; a = while_space (Buff.store len '(') :] -> a
-    | [: a = insert len :] -> a ]
-  and while_space len =
-    parser
-    [ [: `' '; a = while_space (Buff.store len ' ') :] -> a
-    | [: `'\t'; a = while_space (Buff.mstore len (String.make 8 ' ')) :] -> a
-    | [: `'\n'; a = while_space (Buff.store len '\n') :] -> a
-    | [: `')'; a = find_star_bef_rparen_again len :] -> a
-    | [: :] -> len ]
-  and find_star_bef_rparen_again len =
-    parser
-    [ [: `'*'; a = insert (Buff.mstore len ")*") :] -> a
-    | [: :] -> len ]
-  in
-  let len = find_comm 0 strm in
-  let s = Buff.get len in
-  loop (len - 1) 0 0 where rec loop i nl_bef ind_bef =
-    if i <= 0 then ("", 0, 0)
-    else if s.[i] = '\n' then loop (i - 1) (nl_bef + 1) ind_bef
-    else if s.[i] = ' ' then loop (i - 1) nl_bef (ind_bef + 1)
-    else (
-      let s = String.sub s 0 (i + 1) in
-      for i = 0 to String.length s / 2 - 1 do
-        let t = s.[i] in
-        s.[i] := s.[String.length s - i - 1];
-        s.[String.length s - i - 1] := t;
-      done;
-      (s, nl_bef, ind_bef)
-    )
-;
-*)
 
 value file = ref "";
-
-(*
-value rev_read_comment_in_file bp ep =
-  let strm =
-    Stream.from
-      (fun i ->
-         let j = bp - i - 1 in
-         if j < 0 || j >= String.length file.val then None
-         else Some file.val.[j])
-  in
-  rev_extract_comment strm
-;
-
-value adjust_comment_indentation ind s nl_bef ind_bef =
-  if s = "" then ""
-  else
-    let (ind_aft, i_bef_ind) =
-      loop 0 (String.length s - 1) where rec loop ind_aft i =
-        if i >= 0 && s.[i] = ' ' then loop (ind_aft + 1) (i - 1)
-        else (ind_aft, i)
-    in
-    let ind_bef = if nl_bef > 0 then ind_bef else ind in
-    let len = i_bef_ind + 1 in
-    let olen = Buff.mstore 0 (String.make ind ' ') in
-    loop olen 0 where rec loop olen i =
-      if i = len then Buff.get olen
-      else
-        let olen = Buff.store olen s.[i] in
-        let (olen, i) =
-          if s.[i] = '\n' && (i + 1 = len || s.[i + 1] <> '\n') then
-            let delta_ind = if i = i_bef_ind then 0 else ind - ind_bef in
-            if delta_ind >= 0 then
-              (Buff.mstore olen (String.make delta_ind ' '), i + 1)
-            else
-              let i =
-                loop delta_ind (i + 1) where rec loop cnt i =
-                  if cnt = 0 then i
-                  else if i = len then i
-                  else if s.[i] = ' ' then loop (cnt + 1) (i + 1)
-                  else i
-              in
-              (olen, i)
-          else (olen, i + 1)
-        in
-        loop olen i
-;
-
-value comm_bef ind loc =
-  let bp = Stdpp.first_pos loc in
-  let ep = Stdpp.last_pos loc in
-  let (s, nl_bef, ind_bef) = rev_read_comment_in_file bp ep in
-  adjust_comment_indentation ind s nl_bef ind_bef
-;
-
-value add_nl s =
-  if String.length s > 0 && s.[String.length s - 1] <> '\n' then s ^ "\n"
-  else s
-;
-
-value add_sp s =
-  if String.length s > 0 && s.[String.length s - 1] <> ' ' then s ^ " "
-  else s
-;
-
-value remove_nl s =
-  if String.length s > 0 && s.[String.length s - 1] = '\n' then
-    String.sub s 0 (String.length s - 1) ^ " "
-  else s
-;
-
-value indent ind s =
-  if s = "" then ""
-  else
-    let t = String.make ind ' ' in
-    loop True 0 0 where rec loop bol len i =
-      if i = String.length s then Buff.get len
-      else
-        let len = if bol && s.[i] <> '\n' then Buff.mstore len t else len in
-        loop (s.[i] = '\n') (Buff.store len s.[i]) (i + 1)
-;
-
-(*
- * Other functions.
- *)
-
-type alt 'a 'b = [ Left of 'a | Right of 'b ];
-*)
 
 value is_infix = do {
   let infixes = Hashtbl.create 73 in
@@ -235,16 +87,6 @@ value not_impl name ind b x k =
 ;
 
 value tab ind = String.make ind ' ';
-
-(*
-value last_line_starts_with_space ind s =
-  try
-    let i = String.rindex s '\n' + ind + 1 in
-    i < String.length s && s.[i] = ' '
-  with
-  [ Not_found -> False ]
-;
-*)
 
 value ident ind b x k =
   horiz_vertic
@@ -336,7 +178,9 @@ value rec vlistl elem eleml ind b xl k =
 value rec plistl elem eleml ind sh b xl k =
   match xl with
   [ [] -> assert False
-  | [(x, op)] -> not_impl "plistl 1" ind b xl k
+  | [(x, op)] ->
+      let _ = assert (op = "") in
+      eleml ind b x k
   | [(x, op) :: xl] ->
       let s =
         horiz_vertic (fun _ -> Some (elem ind b x op)) (fun () -> None)
@@ -372,157 +216,10 @@ value rec plistl elem eleml ind sh b xl k =
 (* paragraph list *)
 value plist elem ind sh b xl k = plistl elem elem ind sh b xl k;
 
-(*
-(* list with separator *)
-value rec listws1 ind elem b nl xl k =
-  match xl with
-  [ [] -> sprintf "%s%s" b k
-  | [(x, _)] -> elem ind b x k
-  | [(x, sep) :: xl] ->
-      if nl then
-        let s1 = elem ind b x sep in
-        let s1 = sprintf "%s\n" s1 in
-        let s2 = listws1 ind elem (tab ind) nl xl k in
-        sprintf "%s%s" s1 s2
-      else listws1 ind elem (elem ind b x (sprintf "%s " sep)) nl xl k ]
-;
-
-value listws ind elem b sep nl xl k =
-  listws1 ind elem b nl (List.map (fun x -> (x, sep)) xl) k
-;
-
-(* list with separator, cumulative *)
-value listwscum ind sh elem (b, bsp) xl k =
-  let ind_sh = ind + sh in
-  let () =
-    try
-      let _ : int = String.index k '\n' in
-      invalid_arg (sprintf "listwscum %s" k)
-    with
-    [ Not_found -> () ]
-  in
-  loop ind (b, bsp) xl where rec loop ind (b, bsp) =
-    fun
-    [ [] -> sprintf "%s%s" b k
-    | [(x, _)] -> elem ind (sprintf "%s%s" b bsp) x k
-    | [(x, sep1) :: xl] ->
-        match
-          horiz_vertic (fun _ -> Some (elem 0 (sprintf "%s%s" b bsp) x sep1))
-            (fun () -> None)
-        with
-        [ Some s1 ->
-            (* current holds on line; accumulating all next ones which hold
-               on line also *)
-            let (s, xl) =
-              loop s1 xl where rec loop s1 =
-                fun
-                [ [] ->
-                    assert False
-                | [(x, sep)] ->
-                    horiz_vertic
-                      (fun _ -> (elem 0 (sprintf "%s " s1) x k, []))
-                      (fun () -> (s1, [(x, sep)]))
-                | [(x, sep) :: xl] ->
-                    let r =
-                      horiz_vertic
-                        (fun _ -> Some (elem 0 (sprintf "%s " s1) x sep))
-                        (fun () -> None)
-                    in
-                    match r with
-                    [ Some s2 -> loop s2 xl
-                    | None -> (s1, [(x, sep) :: xl]) ] ]
-            in
-            if xl = [] then s
-            else if String.length s <= ind_sh then
-              (* small left part, typically an apply of a function with
-                 a short name *)
-              let ind2 = String.length s + 1 in
-              loop ind2 (s, " ") xl
-            else
-              let s1 = sprintf "%s\n" s in
-              sprintf "%s%s" s1 (loop ind_sh (tab ind_sh, "") xl)
-        | None ->
-            (* current does not hold on line; printing it and restarting
-               with a fresh line. *)
-            let s = elem ind (sprintf "%s%s" b bsp) x sep1 in
-            let s1 = sprintf "%s\n" s in
-            sprintf "%s%s" s1 (loop ind_sh (tab ind_sh, "") xl) ] ]
-;
-
-(* list with separator; trying to print it horizontally; if failing,
-   print elements accumulating them into as few lines as possible. *)
-value listws_hv ind sh elem b xl k =
-  horiz_vertic (fun _ -> listws1 0 elem b False xl k)
-    (fun () -> listwscum ind sh elem (b, "") xl k)
-;
-
-(* other kind of list with separator... *)
-value listws_be ind elem (b, bsp) xl k1 k2 =
-  let xl = List.map (fun x -> (x, "")) xl in
-  horiz_vertic
-    (fun _ ->
-       let s =
-         listws1 0 elem (sprintf "%s%s" b bsp) False xl
-           (sprintf "%s %s" k1 k2)
-       in
-       ("", s))
-    (fun () ->
-       let ind1 = String.length b + String.length bsp in
-       let sh1 = ind + 2 - ind1 in
-       let s = listwscum ind1 sh1 elem (b, bsp) xl k1 in
-       let sp = sprintf "%s\n" s in
-       (sp, sprintf "%s%s" (tab ind) k2))
-;
-
-value sprint_indent ind sh f1 f2 =
-  horiz_vertic
-    (fun _ ->
-       let s = f1 0 False in
-       sprintf "%s%s" s (f2 0 " " False))
-    (fun () ->
-       let s = sprintf "%s\n" (f1 ind True) in
-       sprintf "%s%s" s (f2 (ind + sh) (tab (ind + sh)) True))
-;
-
-value sprint_indent_unindent ind sh f1 f2 f3 =
-  horiz_vertic
-    (fun _ ->
-       let s = f1 0 in
-       let s = sprintf "%s %s" s (f2 0 "" False) in
-       sprintf "%s%s" s (f3 0 "" " "))
-    (fun () ->
-       let s = sprintf "%s\n" (f1 ind) in
-       let s = sprintf "%s%s\n" s (f2 (ind + sh) (tab (ind + sh)) True) in
-       sprintf "%s%s" s (f3 ind (tab ind) ""))
-;
-*)
-
 value comma_after elem ind b x k = elem ind b x (sprintf ";%s" k);
 value op_after elem ind b (x, op) k = elem ind b x (sprintf "%s%s" op k);
 value and_before elem ind b x k = elem ind (sprintf "%sand " b) x k;
 value bar_before elem ind b x k = elem ind (sprintf "%s| " b) x k;
-
-(*
-
-(* *)
-
-value rec let_and_seq_list_loop letexprlr e =
-  match e with
-  [ <:expr< let $opt:rf$ $list:pel$ in $e1$ >> ->
-      let_and_seq_list_loop [Left (e, rf, pel) :: letexprlr] e1
-  | <:expr< do { $list:el$ } >> ->
-      (let_and_seq_list_of_list letexprlr el, True)
-  | e ->
-      (List.rev [Right e :: letexprlr], False) ]
-and let_and_seq_list_of_list letexprlr =
-  fun
-  [ [] -> List.rev letexprlr
-  | [e] -> fst (let_and_seq_list_loop letexprlr e)
-  | [e :: el] -> let_and_seq_list_of_list [Right e :: letexprlr] el ]
-;
-
-value let_and_seq_list = let_and_seq_list_loop [];
-*)
 
 value operator ind left right sh b op x y k =
   let op = if op = "" then "" else " " ^ op in
@@ -651,160 +348,6 @@ value binding ind b (p, e) k =
        sprintf "%s\n%s" (patt ind b p " =")
          (expr (ind + 2) (tab (ind + 2)) e k))
 ;
-
-(*
-value rec binding_list ind (b, bsp) pel (ksp, k) =
-  match pel with
-  [ [] -> sprintf "%s%s%s" b ksp k
-  | [pe] -> binding ind True (b, bsp) pe (ksp, k)
-  | [pe :: pel] ->
-      let s1 = binding ind False (b, bsp) pe ("", "") in
-      let s1 = sprintf "%s\n" s1 in
-      let s2 =
-        binding_list ind (sprintf "%sand" (tab ind), " ") pel (ksp, k)
-      in
-      sprintf "%s%s" s1 s2 ]
-and binding ind last (b, bsp) (p, e1) (ksp, k) =
-  let (pl, e) = expr_fun_args e1 in
-  let (sp, b, e) =
-    let (e, k) =
-      match e with
-      [ <:expr< ($e$ : $t$) >> -> (e, ctyp ind " : " t "")
-      | _ -> (e, "") ]
-    in
-    let (sp, b) = listws_be ind patt (b, bsp) [p :: pl] k "=" in
-    (sp, b, e)
-  in
-  let se =
-    horiz_vertic
-      (fun nofit ->
-         let ccc = comm_bef ind (MLast.loc_of_expr e) in
-         if String.contains ccc '\n' then nofit ()
-         else expr 0 (sprintf "%s%s " b ccc) e (sprintf "%s%s" ksp k))
-      (fun () ->
-         let (letexprl, has_seq) = let_and_seq_list e in
-         let ind2 = ind + 2 in
-         if has_seq then
-           let b =
-             sprint_indent ind 0 (fun _ _ -> b)
-               (fun ind b _ -> sprintf "%s(" b)
-           in
-           let b = sprintf "%s\n" b in
-           let se =
-             let_in_and_sequence_combination ind2 (tab ind2) letexprl ""
-           in
-           sprintf "%s%s\n%s)%s%s" b se (tab ind)
-             (if ksp = " " then "\n" ^ tab ind else "") k
-         else
-           let ccc = comm_bef ind2 (MLast.loc_of_expr e) in
-           let sp = sprintf "%s\n%s" b ccc in
-           if last then
-             let se = expr ind2 (tab ind2) e "" in
-             sprintf "%s%s\n%s%s" sp se (tab ind) k
-           else
-             let se = expr ind2 (tab ind2) e (ksp ^ k) in
-             sprintf "%s%s" sp se)
-  in
-  sprintf "%s%s" sp se
-and match_assoc_list ind b pwel k =
-  let (nb_cut, _) =
-    List.fold_right
-      (fun pwe (cnt, k) ->
-         (horiz_vertic
-            (fun _ -> let _ : string = match_assoc 0 0 b False pwe k in cnt)
-            (fun () -> cnt + 1),
-          ""))
-      pwel (0, k)
-  in
-  match_assoc_list_loop ind b (nb_cut > 1) pwel k
-and match_assoc_list_loop ind b glob_cut pwel k =
-  match pwel with
-  [ [] -> sprintf "%s%s" b k
-  | [pwe] -> match_assoc ind 2 b glob_cut pwe k
-  | [pwe :: pwel] ->
-      horiz_vertic (fun nofit -> nofit ())
-        (fun () ->
-           let s = match_assoc ind 2 b glob_cut pwe "" in
-           let s1 = sprintf "%s\n" s in
-           sprintf "%s%s" s1
-             (match_assoc_list_loop ind (sprintf "%s| " (tab ind)) glob_cut
-                pwel k)) ]
-and match_assoc ind dind b glob_cut (p, w, e) k =
-  let when_expr ind _ z k = expr 0 " when " z k in
-  horiz_vertic
-    (fun nofit ->
-       if glob_cut then nofit ()
-       else
-         let ccc = comm_bef 0 (MLast.loc_of_expr e) in
-         if String.contains ccc '\n' then nofit ()
-         else
-           patt_as 0 b p
-             (option 0 when_expr "" w
-                (sprintf " -> %s%s" (add_sp ccc) (expr 0 "" e k))))
-    (fun () ->
-       let (letexprl, has_seq) = let_and_seq_list e in
-       let sp =
-         let k = if has_seq then " (" else "" in
-         let ind = ind + dind in
-         match w with
-         [ Some e ->
-             horiz_vertic
-               (fun _ ->
-                  patt_as 0 b p (expr 0 " when " e (sprintf " ->%s" k)))
-               (fun () ->
-                  let sp = patt_as ind b p "" in
-                  let sp = sprintf "%s\n" sp in
-                  let k = sprintf " ->%s" k in
-                  let se =
-                    sprint_indent ind 4
-                      (fun ind2 nl ->
-                         let ind = if nl then ind2 + 2 else ind in
-                         sprintf "%swhen" (tab ind))
-                      (fun ind b nl -> expr ind b e k)
-                  in
-                  sprintf "%s%s" sp se)
-         | None -> patt_as ind b p (sprintf " ->%s" k) ]
-       in
-       let sp = sprintf "%s\n" sp in
-       if has_seq then
-         let ind2 = ind + dind + 2 in
-         let se =
-           let_in_and_sequence_combination ind2 (tab ind2) letexprl ""
-         in
-         sprintf "%s%s\n%s)%s" sp se (tab (ind + dind)) k
-       else
-         let ccc = comm_bef (ind + dind + 2) (MLast.loc_of_expr e) in
-         let sp = sprintf "%s%s" sp (add_nl ccc) in
-         let se = expr (ind + dind + 2) (tab (ind + dind + 2)) e k in
-         sprintf "%s%s" sp se)
-and let_in_and_sequence_combination ind b letexprl k =
-  loop "" b letexprl where rec loop s b =
-    fun
-    [ [] ->
-        sprintf "%s%s" s b
-    | [Right e] ->
-        let ccc = comm_bef ind (MLast.loc_of_expr e) in
-        let s = sprintf "%s%s" s ccc in
-        sprintf "%s%s" s (expr ind b e k)
-    | [Left (e, rf, pel) :: l] ->
-        let ccc = comm_bef ind (MLast.loc_of_expr e) in
-        let s = sprintf "%s%s" s ccc in
-        let b = sprintf "%s%s" b (if rf then "let rec" else "let") in
-        let sb = binding_list ind (b, " ") pel (" ", "in") in
-        let s = sprintf "%s%s\n" s sb in
-        loop s (tab ind) l
-    | [Right e :: l] ->
-        let ccc = comm_bef ind (MLast.loc_of_expr e) in
-        let s = sprintf "%s%s" s ccc in
-        let s = sprintf "%s%s\n" s (expr ind b e ";") in
-        loop s (tab ind) l ]
-;
-
-value record_assoc elem ind b (lab, x) k =
-  sprint_indent ind 2 (fun ind _ -> patt ind b lab " =")
-    (fun ind b _ -> elem ind b x k)
-;
-*)
 
 value match_assoc ind b (p, w, e) k =
   horiz_vertic
@@ -1170,7 +713,9 @@ value expr_top =
             let s2 =
               horiz_vertic
                 (fun _ -> sprintf "%selse %s%s" (tab ind) (expr 0 "" e3 "") k)
-                (fun () -> not_impl "else vertic" ind (tab ind) e3 k)
+                (fun () ->
+                   let s = expr (ind + 2) (tab (ind + 2)) e3 k in
+                   sprintf "%selse\n%s" b s)
             in
             sprintf "%s\n%s" s1 s2)
   | <:expr< fun [ $list:pwel$ ] >> ->
@@ -1200,7 +745,13 @@ value expr_top =
              sprintf "%s%s %s with %s%s" b op (expr 0 "" e1 "")
                (match_assoc_list 0 "" pwel "") k)
           (fun () ->
-             let s1 = sprintf "%s%s %s with" b op (expr ind "" e1 "") in
+             let s1 =
+               horiz_vertic
+                 (fun _ -> sprintf "%s%s %s with" b op (expr ind "" e1 ""))
+                 (fun () ->
+                    let s = expr (ind + 2) (tab (ind + 2)) e1 "" in
+                    sprintf "%s%s\n%s\n%swith" b op s (tab ind))
+             in
              let s2 = match_assoc_list ind (tab ind) pwel k in
              sprintf "%s\n%s" s1 s2)
   | <:expr< let $opt:rf1$ $list:pel1$ in $e1$ >> ->
