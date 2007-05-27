@@ -39,10 +39,8 @@ value is_infix = do {
 value is_not_yet_implemented_infix = do {
   let infixes = Hashtbl.create 73 in
   List.iter (fun s -> Hashtbl.add infixes s True)
-    ["!="; "&&"; "*"; "**"; "*."; "+"; "+."; "-"; "-."; "/"; "/."; "<"; "<.";
-     "<="; "<=."; "<>"; "<>."; "="; "=."; "=="; ">"; ">."; ">="; ">=."; "@";
-     "^"; "asr"; "land"; "lor"; "lsl"; "lsr"; "lxor"; "mod"; "or"; "||";
-     "~-"; "~-."];
+    ["*"; "**"; "*."; "/"; "/."; "<."; "<=."; "<>."; "=."; ">."; ">=.";
+     "asr"; "land"; "lor"; "lsl"; "lsr"; "lxor"; "mod"; "or"; "~-"; "~-."];
   fun s -> try Hashtbl.find infixes s with [ Not_found -> False ]
 };
 
@@ -167,32 +165,31 @@ value rec vlistl elem eleml ind b xl k =
         (vlistl elem eleml ind (tab ind) xl k) ]
 ;
 
-(* paragraph list with different function for the last element *)
+(* paragraph list with different function for the last element;
+   the list elements are pairs where second elements are separators
+   (the last separator is ignored) *)
 value rec plistl elem eleml ind sh b xl k =
   match xl with
   [ [] -> assert False
-  | [(x, op)] ->
-      let _ = assert (op = "") in
-      eleml ind b x k
-  | [(x, op) :: xl] ->
+  | [(x, _)] -> eleml ind b x k
+  | [(x, sep) :: xl] ->
       let s =
-        horiz_vertic (fun () -> Some (elem ind b x op)) (fun () -> None)
+        horiz_vertic (fun () -> Some (elem ind b x sep)) (fun () -> None)
       in
       match s with
       [ Some b ->
           loop b xl where rec loop b =
             fun
             [ [] -> assert False
-            | [(x, op)] ->
-                let _ = assert (op = "") in
+            | [(x, _)] ->
                 horiz_vertic (fun () -> eleml ind (sprintf "%s " b) x k)
                   (fun () ->
                      let s = eleml (ind + sh) (tab (ind + sh)) x k in
                      sprintf "%s\n%s" b s)
-            | [(x, op) :: xl] ->
+            | [(x, sep) :: xl] ->
                 let s =
                   horiz_vertic
-                    (fun () -> Some (elem ind (sprintf "%s " b) x op))
+                    (fun () -> Some (elem ind (sprintf "%s " b) x sep))
                     (fun () -> None)
                 in
                 match s with
@@ -200,10 +197,13 @@ value rec plistl elem eleml ind sh b xl k =
                 | None ->
                     let s =
                       plistl elem eleml (ind + sh) 0 (tab (ind + sh))
-                        [(x, op) :: xl] k
+                        [(x, sep) :: xl] k
                     in
                     sprintf "%s\n%s" b s ] ]
-      | None -> not_impl "plistl 2" ind b xl k ] ]
+      | None ->
+          let s1 = elem ind b x sep in
+          let s2 = plistl elem eleml (ind + sh) 0 (tab (ind + sh)) xl k in
+          sprintf "%s\n%s" s1 s2 ] ]
 ;
 
 (* paragraph list *)
@@ -816,7 +816,6 @@ value expr_assign =
   | z -> fun curr next ind b k -> next ind b z k ]
 ;
 
-(*
 value expr_or =
   extfun Extfun.empty with
   [ z ->
@@ -842,7 +841,6 @@ value expr_and =
         in
         right_operator ind 0 unfold next b z k ]
 ;
-*)
 
 value expr_less =
   extfun Extfun.empty with
@@ -868,7 +866,6 @@ value expr_concat =
         right_operator ind 0 unfold next b z k ]
 ;
 
-(*
 value expr_add =
   let ops = ["+"; "+."; "-"; "-."] in
   extfun Extfun.empty with
@@ -883,6 +880,7 @@ value expr_add =
         left_operator ind 0 unfold next b z k ]
 ;
 
+(*
 value expr_mul =
   let ops = ["*"; "*."; "/"; "/."; "land"; "lor"; "lxor"; "mod"] in
   extfun Extfun.empty with
@@ -924,10 +922,11 @@ value expr_unary_minus =
 
 value expr_apply =
   extfun Extfun.empty with
-  [ (* <:expr< assert $e$ >> ->
+  [ <:expr< assert $e$ >> ->
       fun curr next ind b k ->
-        sprint_indent ind 2 (fun _ _ -> sprintf "%sassert" b)
-          (fun ind b _ -> next ind b e k)
+        horiz_vertic (fun () -> sprintf "%sassert %s%s" b (next 0 "" e "") k)
+          (fun () -> not_impl "assert vertical" ind b e k)
+(*
   | <:expr< lazy $e$ >> ->
       fun curr next ind b k ->
         sprint_indent ind 2 (fun _ _ -> sprintf "%slazy" b)
@@ -936,8 +935,8 @@ value expr_apply =
       fun curr next ind b k ->
         if String.length s > 0 && s.[0] = '-' then sprintf "%s%s%s" b s k
         else next ind b e k
-  | *)
-    <:expr< $_$ $_$ >> as z ->
+*)
+  | <:expr< $_$ $_$ >> as z ->
       fun curr next ind b k ->
         let inf =
           match z with
@@ -1017,13 +1016,7 @@ value expr_simple =
   | <:expr< [$_$ :: $_$] >> as z ->
       fun curr next ind b k ->
         let (xl, y) = make_expr_list z in
-        let xl =
-          loop xl where rec loop =
-            fun
-            [ [] -> []
-            | [x] -> [(x, "")]
-            | [x :: xl] -> [(x, ";") :: loop xl] ]
-        in
+        let xl = List.map (fun x -> (x, ";")) xl in
         let expr2 ind b x k =
           match y with
           [ Some y -> not_impl "expr2 1" ind b x k
@@ -1070,9 +1063,9 @@ value expr_simple =
       fun curr next ind b k -> sprintf "%s%s%s" b s k
   | <:expr< $str:s$ >> ->
       fun curr next ind b k -> sprintf "%s\"%s\"%s" b s k
-(*
   | <:expr< $chr:s$ >> ->
       fun curr next ind b k -> sprintf "%s'%s'%s" b s k
+(*
   | <:expr< ? $s$ >> ->
       fun curr next ind b k -> var_escaped ind b s k
   | <:expr< ~ $_$ : $z$ >> ->
@@ -1149,30 +1142,31 @@ value patt_simple =
         sprint_indent (ind + 1) 2
           (fun ind _ -> patt ind (sprintf "%s(" b) x " as")
           (fun ind b _ -> patt ind b y (sprintf ")%s" k))
-  | <:patt< ($list:pl$) >> ->
+  |
+*)
+    <:patt< ($list:pl$) >> ->
       fun curr next ind b k ->
         let pl = List.map (fun p -> (p, ",")) pl in
-        listws_hv (ind + 1) 0 patt (sprintf "%s(" b) pl (sprintf ")%s" k)
+        plist patt ind 1 (sprintf "%s(" b) pl (sprintf ")%s" k)
+(*
   | <:patt< {$list:lpl$} >> ->
       fun curr next ind b k ->
         let lxl = List.map (fun lx -> (lx, ";")) lpl in
         listws_hv (ind + 1) 0 (record_assoc patt) (sprintf "%s{" b) lxl
           (sprintf "}%s" k)
-  |
 *)
-    <:patt< [$_$ :: $_$] >> as z ->
+  | <:patt< [$_$ :: $_$] >> as z ->
       fun curr next ind b k ->
         let (xl, y) = make_patt_list z in
-        let xl =
-          loop xl where rec loop =
-            fun
-            [ [] -> []
-            | [x] -> [(x, "")]
-            | [x :: xl] -> [(x, ";") :: loop xl] ]
-        in
+        let xl = List.map (fun x -> (x, ";")) xl in
         let patt2 ind b x k =
           match y with
-          [ Some y -> not_impl "patt2 1" ind b x k
+          [ Some y ->
+              horiz_vertic
+                (fun () ->
+                   sprintf "%s%s :: %s]%s" b (patt ind "" x "")
+                     (patt ind "" y "") k)
+                (fun () -> not_impl "patt2 2" ind b x k)
           | None -> patt ind b x (sprintf "]%s" k) ]
         in
         plistl patt patt2 (ind + 1) 0 (sprintf "%s[" b) xl k
@@ -1483,14 +1477,12 @@ value module_type_simple =
 pr_expr.pr_levels :=
   [{pr_label = "top"; pr_rules = expr_top};
    {pr_label = "ass"; pr_rules = expr_assign};
-(*
    {pr_label = "bar"; pr_rules = expr_or};
    {pr_label = "amp"; pr_rules = expr_and};
-*)
    {pr_label = "less"; pr_rules = expr_less};
    {pr_label = "concat"; pr_rules = expr_concat};
-(*
    {pr_label = "add"; pr_rules = expr_add};
+(*
    {pr_label = "mul"; pr_rules = expr_mul};
    {pr_label = "pow"; pr_rules = expr_pow};
    {pr_label = "unary"; pr_rules = expr_unary_minus};
