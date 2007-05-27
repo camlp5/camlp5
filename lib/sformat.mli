@@ -4,14 +4,12 @@
 
 (** Pretty printing on strings *)
 
-value horiz_vertic : ((unit -> _) -> 'a) -> (unit -> 'a) -> 'a;
+value horiz_vertic : (unit -> 'a) -> (unit -> 'a) -> 'a;
 (** [horiz_vertic h v] first calls [h] to print the data horizontally,
-    i.e. without newlines. If displaying contains newlines or if its
-    size exceeds the maximum line length (see variable [line_length]
-    below), then the function [h] is stopped and the function [v] is
-    called which can print using several lines.
-      [h] is called with a parameter, a function that the user can call
-    to explicitely give up [h]. *)
+    i.e. without newlines. If the displaying contains newlines or if
+    its size exceeds the maximum line length (see variable [line_length]
+    below), then the function [h] stops and the function [v] is called
+    which can print using several lines. *)
 
 value sprintf : format 'a unit string -> 'a;
 (** [sprintf fmt ...] formats some string like [Printf.sprintf]

@@ -23,9 +23,7 @@ let call_with r v f a =
     e -> r := saved; raise e
 ;;
 
-let give_up () = raise GiveUp;;
-
 let horiz_vertic horiz vertic =
-  try call_with horiz_ctx true horiz give_up with
+  try call_with horiz_ctx true horiz () with
     GiveUp -> if !horiz_ctx then raise GiveUp else vertic ()
 ;;

@@ -88,12 +88,14 @@ value not_impl name ind b x k =
 
 value tab ind = String.make ind ' ';
 
+(*
 value ident ind b x k =
   horiz_vertic
     (fun nofit ->
        if String.contains x '\n' then nofit () else sprintf "%s%s%s" b x k)
     (fun () -> sprintf "%s%s%s" b x k)
 ;
+*)
 
 value var_escaped ind b v k =
   let x =
@@ -101,7 +103,7 @@ value var_escaped ind b v k =
     else if is_keyword v then v ^ "__"
     else v
   in
-  ident ind b x k
+  sprintf "%s%s%s" b x k
 ;
 
 value rec mod_ident ind b sl k =
@@ -1073,9 +1075,9 @@ value expr_simple =
   | <:expr< $lid:s$ >> ->
       fun curr next ind b k -> var_escaped ind b s k
   | <:expr< $uid:s$ >> | <:expr< `$uid:s$ >> ->
-      fun curr next ind b k -> ident ind b s k
+      fun curr next ind b k -> sprintf "%s%s%s" b s k
   | <:expr< $str:s$ >> ->
-      fun curr next ind b k -> ident ind b ("\"" ^ s ^ "\"") k
+      fun curr next ind b k -> sprintf "%s\"%s\"%s" b s k
 (*
   | <:expr< $chr:s$ >> ->
       fun curr next ind b k -> sprintf "%s'%s'%s" b s k
@@ -1198,7 +1200,7 @@ value patt_simple =
   | <:patt< $lid:s$ >> | <:patt< ~ $s$ >> ->
       fun curr next ind b k -> var_escaped ind b s k
   | <:patt< $uid:s$ >> | <:patt< `$uid:s$ >> ->
-      fun curr next ind b k -> ident ind b s k
+      fun curr next ind b k -> sprintf "%s%s%s" b s k
 (*
   | <:patt< $chr:s$ >> ->
       fun curr next ind b k -> sprintf "%s'%s'%s" b s k

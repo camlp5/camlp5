@@ -28,9 +28,7 @@ value call_with r v f a =
   with e -> do { r.val := saved; raise e }
 ;
 
-value give_up () = raise GiveUp;
-
 value horiz_vertic horiz vertic =
-  try call_with horiz_ctx True horiz give_up with
+  try call_with horiz_ctx True horiz () with
   [ GiveUp -> if horiz_ctx.val then raise GiveUp else vertic () ]
 ;
