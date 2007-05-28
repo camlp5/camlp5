@@ -608,9 +608,9 @@ value ctyp_simple =
       fun curr next ind b k -> sprintf "%s%s%s" b t k
   | <:ctyp< ' $s$ >> ->
       fun curr next ind b k -> sprintf "%s'%s%s" b s k
-(*
   | <:ctyp< _ >> ->
       fun curr next ind b k -> sprintf "%s_%s" b k
+(*
   | <:ctyp< ? $_$ : $t$ >> | <:ctyp< ~ $_$ : $t$ >> ->
       fun curr next ind b k -> pr_ctyp.pr_fun "apply" ind b t k
   | <:ctyp< < $list:_$ $opt:_$ > >> ->
@@ -1084,7 +1084,7 @@ value patt_simple =
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
-             sprintf "%s%s as %s%s" b (patt 0 "" x "") (patt 0 "" y "") k)
+             sprintf "%s(%s as %s)%s" b (patt 0 "" x "") (patt 0 "" y "") k)
           (fun () -> not_impl "patt as vertic" ind b x k)
   | <:patt< ($list:pl$) >> ->
       fun curr next ind b k ->
