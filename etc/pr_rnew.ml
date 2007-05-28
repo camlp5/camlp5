@@ -725,19 +725,30 @@ value expr_top =
                let_in_and_sequence_combination ind b letexprl ";"
              else listws ind curr "" ";" False el ";")
           (fun ind b1 b2 -> sprintf "%s%sdone%s" b1 b2 k)
+*)
   | <:expr< for $v$ = $e1$ $to:d$ $e2$ do { $list:el$ } >> ->
       fun curr next ind b k ->
-        sprint_indent_unindent ind 2
-          (fun ind ->
-             sprintf "%sfor %s = %s %s %s do" b v (curr ind "" e1 "")
-               (if d then "to" else "downto") (curr ind "" e2 ""))
-          (fun ind b nl ->
-             if nl then
-               let letexprl = let_and_seq_list_of_list [] el in
-               let_in_and_sequence_combination ind b letexprl ";"
-             else listws ind curr "" ";" False el ";")
-          (fun ind b1 b2 -> sprintf "%s%sdone%s" b1 b2 k)
-*)
+        horiz_vertic
+          (fun () ->
+             sprintf "%sfor %s = %s %s %s do { %s }%s" b v
+               (curr ind "" e1 "") (if d then "to" else "downto")
+               (curr ind "" e2 "")
+               (hlistl (comma_after expr) expr 0 "" el "") k)
+          (fun () ->
+             let s1 =
+               horiz_vertic
+                 (fun () ->
+                    sprintf "%sfor %s = %s %s %s do {" b v
+                      (curr ind "" e1 "") (if d then "to" else "downto")
+                      (curr ind "" e2 ""))
+                 (fun () -> not_impl "for vertic 1" ind b v "")
+             in
+             let s2 =
+               vlistl (comma_after expr) expr (ind + 2) (tab (ind + 2)) el
+                 ""
+             in
+             let s3 = sprintf "%s}%s" (tab ind) k in
+             sprintf "%s\n%s\n%s" s1 s2 s3)
   | z ->
       fun curr next ind b k -> next ind b z k ]
 ;
@@ -1099,12 +1110,13 @@ value patt_simple =
           | None -> patt ind b x (sprintf "]%s" k) ]
         in
         plistl patt patt2 (ind + 1) 0 (sprintf "%s[" b) xl k
-(*
   | <:patt< ($p$ : $t$) >> ->
       fun curr next ind b k ->
-        sprint_indent (ind + 1) 0
-          (fun ind _ -> patt ind (sprintf "%s(" b) p " :")
-          (fun ind b _ -> ctyp ind b t (sprintf ")%s" k))
+        horiz_vertic
+          (fun () ->
+             sprintf "%s(%s : %s)%s" b (patt 0 "" p "") (ctyp 0 "" t "") k)
+          (fun () -> not_impl "type constraint vertic" ind b p k)
+(*
   | <:patt< $int:s$ >> ->
       fun curr next ind b k -> sprintf "%s%s%s" b s k
 *)
