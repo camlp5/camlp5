@@ -472,7 +472,16 @@ value type_decl ind b ((_, tn), tp, te, cl) k =
        sprintf "%s\n%s" s1 s2)
 ;
 
-value label_decl ind b td k = not_impl "label_decl" ind b td k;
+value label_decl ind b (_, l, m, t) k =
+  horiz_vertic
+    (fun () ->
+       sprintf "%s%s : %s%s%s" b l (if m then "mutable " else "")
+         (ctyp 0 "" t "") k)
+    (fun () ->
+       let s1 = sprintf "%s%s :%s" b l (if m then "mutable " else "") in
+       let s2 = ctyp (ind + 2) (tab (ind + 2)) t k in
+       sprintf "%s\n%s" s1 s2)
+;
 
 (* definitions of printers by decreasing level *)
 
@@ -483,29 +492,30 @@ value ctyp_top =
   | z -> fun curr next ind b k -> next ind b z k ]
 ;
 
-(*
 value ctyp_arrow =
   extfun Extfun.empty with
-  [ z ->
+  [ <:ctyp< $_$ -> $_$ >> as z ->
       fun curr next ind b k ->
         let unfold =
           fun
           [ <:ctyp< $x$ -> $y$ >> -> Some (x, " ->", y)
           | _ -> None ]
         in
-        right_operator ind 2 unfold next b z k ]
+        right_operator ind 2 unfold next b z k
+  | z -> fun curr next ind b k -> next ind b z k ]
 ;
 
 value ctyp_apply =
   extfun Extfun.empty with
-  [ z ->
+  [ <:ctyp< $_$ $_$ >> as z ->
       fun curr next ind b k ->
         let unfold =
           fun
           [ <:ctyp< $x$ $y$ >> -> Some (x, "", y)
           | _ -> None ]
         in
-        left_operator ind 0 unfold next b z k ]
+        left_operator ind 0 unfold next b z k
+  | z -> fun curr next ind b k -> next ind b z k ]
 ;
 
 value ctyp_dot =
@@ -514,7 +524,6 @@ value ctyp_dot =
       fun curr next ind b k -> curr ind (curr ind b x ".") y k
   | z -> fun curr next ind b k -> next ind b z k ]
 ;
-*)
 
 value ctyp_simple =
   extfun Extfun.empty with
@@ -586,12 +595,14 @@ value ctyp_simple =
       fun curr next ind b k ->
         let tl = List.map (fun t -> (t, " *")) tl in
         listws_hv (ind + 1) 0 ctyp (sprintf "%s(" b) tl (sprintf ")%s" k)
+*)
   | <:ctyp< $lid:t$ >> ->
       fun curr next ind b k -> var_escaped ind b t k
   | <:ctyp< $uid:t$ >> ->
       fun curr next ind b k -> sprintf "%s%s%s" b t k
   | <:ctyp< ' $s$ >> ->
       fun curr next ind b k -> sprintf "%s'%s%s" b s k
+(*
   | <:ctyp< _ >> ->
       fun curr next ind b k -> sprintf "%s_%s" b k
   | <:ctyp< ? $_$ : $t$ >> | <:ctyp< ~ $_$ : $t$ >> ->
@@ -599,10 +610,10 @@ value ctyp_simple =
   | <:ctyp< < $list:_$ $opt:_$ > >> ->
       fun curr next ind b k ->
         failwith "cannot convert objects in syntax 's'"
+*)
   | <:ctyp< $_$ $_$ >> | <:ctyp< $_$ -> $_$ >> as z ->
       fun curr next ind b k ->
         ctyp (ind + 1) (sprintf "%s(" b) z (sprintf ")%s" k)
-*)
   | z ->
       fun curr next ind b k -> not_impl "ctyp" ind b z k ]
 ;
@@ -1117,7 +1128,7 @@ value expr_simple =
       fun curr next ind b k -> expr ind b z k
 *)
   | <:expr< $_$ $_$ >> (* | <:expr< $_$ := $_$ >> *) |
-    <:expr< fun [ $list:_$ ] >> (* | <:expr< if $_$ then $_$ else $_$ >> |
+    <:expr< fun [ $list:_$ ] >> | <:expr< if $_$ then $_$ else $_$ >> (* |
     <:expr< let $opt:_$ $list:_$ in $_$ >> |
     <:expr< match $_$ with [ $list:_$ ] >> |
     <:expr< try $_$ with [ $list:_$ ] >> *) as z ->
@@ -1543,11 +1554,9 @@ pr_patt.pr_levels :=
 
 pr_ctyp.pr_levels :=
   [{pr_label = "top"; pr_rules = ctyp_top};
-(*
    {pr_label = "arrow"; pr_rules = ctyp_arrow};
    {pr_label = "apply"; pr_rules = ctyp_apply};
    {pr_label = "dot"; pr_rules = ctyp_dot};
-*)
    {pr_label = "simple"; pr_rules = ctyp_simple}]
 ;
 
