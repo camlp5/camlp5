@@ -658,7 +658,7 @@ value expr_top =
                 (fun () -> sprintf "%selse %s%s" (tab ind) (expr 0 "" e3 "") k)
                 (fun () ->
                    let s = expr (ind + 2) (tab (ind + 2)) e3 k in
-                   sprintf "%selse\n%s" b s)
+                   sprintf "%selse\n%s" (tab ind) s)
             in
             sprintf "%s\n%s" s1 s2)
   | <:expr< fun [ $list:pwel$ ] >> ->
@@ -985,7 +985,7 @@ value expr_simple =
           (fun () ->
              sprintf "%s(%s : %s)%s" b (expr 0 "" e "") (ctyp 0 "" t "") k)
           (fun () ->
-             let s1 = expr ind (sprintf "%s(" b) e " :" in
+             let s1 = expr (ind + 1) (sprintf "%s(" b) e " :" in
              let s2 = ctyp (ind + 1) (tab (ind + 1)) t (sprintf ")%s" k) in
              sprintf "%s\n%s" s1 s2)
   | <:expr< $int:s$ >> | <:expr< $flo:s$ >> ->
@@ -1092,7 +1092,13 @@ value patt_simple =
         horiz_vertic
           (fun () ->
              sprintf "%s(%s as %s)%s" b (patt 0 "" x "") (patt 0 "" y "") k)
-          (fun () -> not_impl "patt as vertic" ind b x k)
+          (fun () ->
+             let s1 = patt (ind + 1) (sprintf "%s(" b) x "" in
+             let s2 =
+               patt (ind + 1) (sprintf "%sas " (tab (ind + 1))) y
+                 (sprintf ")%s" k)
+             in
+             sprintf "%s\n%s" s1 s2)
   | <:patt< ($list:pl$) >> ->
       fun curr next ind b k ->
         let pl = List.map (fun p -> (p, ",")) pl in
@@ -1113,7 +1119,12 @@ value patt_simple =
                 (fun () ->
                    sprintf "%s%s :: %s]%s" b (patt ind "" x "")
                      (patt ind "" y "") k)
-                (fun () -> not_impl "patt2 2" ind b x k)
+                (fun () ->
+                   let s1 = patt ind b x " ::" in
+                   let s2 =
+                     patt (ind + 2) (tab (ind + 2)) y (sprintf "]%s" k)
+                   in
+                   sprintf "%s\n%s" s1 s2)
           | None -> patt ind b x (sprintf "]%s" k) ]
         in
         plistl patt patt2 (ind + 1) 0 (sprintf "%s[" b) xl k
@@ -1122,7 +1133,10 @@ value patt_simple =
         horiz_vertic
           (fun () ->
              sprintf "%s(%s : %s)%s" b (patt 0 "" p "") (ctyp 0 "" t "") k)
-          (fun () -> not_impl "type constraint vertic" ind b p k)
+          (fun () ->
+             let s1 = patt ind (sprintf "%s(" b) p " :" in
+             let s2 = ctyp (ind + 1) (tab (ind + 1)) t (sprintf ")%s" k) in
+             sprintf "%s\n%s" s1 s2)
   | <:patt< $int:s$ >> ->
       fun curr next ind b k -> sprintf "%s%s%s" b s k
   | <:patt< $lid:s$ >> | <:patt< ~ $s$ >> ->
@@ -1322,17 +1336,18 @@ value module_expr_top =
       fun curr next ind b k -> next ind b z k ]
 ;
 
-(*
 value module_expr_apply =
   extfun Extfun.empty with
-  [ z ->
+  [ <:module_expr< $x$ $y$ >> as z ->
       fun curr next ind b k ->
         let unfold =
           fun
           [ <:module_expr< $x$ $y$ >> -> Some (x, "", y)
           | e -> None ]
         in
-        left_operator ind 2 unfold next b z k ]
+        left_operator ind 2 unfold next b z k
+  | z ->
+      fun curr next ind b k -> next ind b z k ]
 ;
 
 value module_expr_dot =
@@ -1346,11 +1361,13 @@ value module_expr_simple =
   extfun Extfun.empty with
   [ <:module_expr< $uid:s$ >> ->
       fun curr next ind b k -> sprintf "%s%s%s" b s k
+(*
   | <:module_expr< ($me$ : $mt$) >> ->
       fun curr next ind b k ->
         sprint_indent (ind + 1) 2
           (fun ind _ -> module_expr ind (sprintf "%s(" b) me " :")
           (fun ind b _ -> module_type ind b mt (sprintf ")%s" k))
+*)
   | <:module_expr< struct $list:_$ end >> as z ->
       fun curr next ind b k ->
         module_expr (ind + 1) (sprintf "%s(" b) z (sprintf ")%s" k)
@@ -1358,6 +1375,7 @@ value module_expr_simple =
       fun curr next ind b k -> not_impl "module_expr" ind b z k ]
 ;
 
+(*
 value with_constraint ind b wc k =
   match wc with
   [ <:with_constr< type $sl$ $list:tpl$ = $t$ >> ->
@@ -1450,10 +1468,10 @@ pr_sig_item.pr_levels := [{pr_label = "top"; pr_rules = sig_item_top}];
 *)
 
 pr_module_expr.pr_levels :=
-  [{pr_label = "top"; pr_rules = module_expr_top}(*;
+  [{pr_label = "top"; pr_rules = module_expr_top};
    {pr_label = "apply"; pr_rules = module_expr_apply};
    {pr_label = "dot"; pr_rules = module_expr_dot};
-   {pr_label = "simple"; pr_rules = module_expr_simple}*)]
+   {pr_label = "simple"; pr_rules = module_expr_simple}]
 ;
 
 (*
