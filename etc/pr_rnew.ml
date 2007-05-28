@@ -366,7 +366,10 @@ value match_assoc ind b (p, w, e) k =
                       (fun () ->
                          sprintf "%swhen %s ->" (tab (ind + 2))
                            (expr 0 "" e ""))
-                      (fun () -> not_impl "when vertic" ind b e k)
+                      (fun () ->
+                         let s1 = sprintf "%swhen" (tab (ind + 2)) in
+                         let s2 = expr (ind + 4) (tab (ind + 4)) e " ->" in
+                         sprintf "%s\n%s" s1 s2)
                   in
                   sprintf "%s\n%s" s1 s2)
          | None -> patt (ind + 2) b p " ->" ]
@@ -981,7 +984,10 @@ value expr_simple =
         horiz_vertic
           (fun () ->
              sprintf "%s(%s : %s)%s" b (expr 0 "" e "") (ctyp 0 "" t "") k)
-          (fun () -> not_impl "type constraint vertic" ind b e k)
+          (fun () ->
+             let s1 = expr ind (sprintf "%s(" b) e " :" in
+             let s2 = ctyp (ind + 1) (tab (ind + 1)) t (sprintf ")%s" k) in
+             sprintf "%s\n%s" s1 s2)
   | <:expr< $int:s$ >> | <:expr< $flo:s$ >> ->
       fun curr next ind b k ->
         if String.length s > 0 && s.[0] = '-' then sprintf "%s(%s)%s" b s k
@@ -1021,8 +1027,8 @@ value expr_simple =
       fun curr next ind b k -> expr ind b z k
 *)
   | <:expr< $_$ $_$ >> (* | <:expr< $_$ := $_$ >> *) |
-    <:expr< fun [ $list:_$ ] >> | <:expr< if $_$ then $_$ else $_$ >> (* |
-    <:expr< let $opt:_$ $list:_$ in $_$ >> *) |
+    <:expr< fun [ $list:_$ ] >> | <:expr< if $_$ then $_$ else $_$ >> |
+    <:expr< let $opt:_$ $list:_$ in $_$ >> |
     <:expr< match $_$ with [ $list:_$ ] >> |
     <:expr< try $_$ with [ $list:_$ ] >> as z ->
       fun curr next ind b k ->
@@ -1117,10 +1123,8 @@ value patt_simple =
           (fun () ->
              sprintf "%s(%s : %s)%s" b (patt 0 "" p "") (ctyp 0 "" t "") k)
           (fun () -> not_impl "type constraint vertic" ind b p k)
-(*
   | <:patt< $int:s$ >> ->
       fun curr next ind b k -> sprintf "%s%s%s" b s k
-*)
   | <:patt< $lid:s$ >> | <:patt< ~ $s$ >> ->
       fun curr next ind b k -> var_escaped ind b s k
   | <:patt< $uid:s$ >> | <:patt< `$uid:s$ >> ->
@@ -1135,7 +1139,7 @@ value patt_simple =
   | <:patt< ? $s$ >> | <:patt< ? ($lid:s$ = $_$) >> ->
       fun curr next ind b k -> var_escaped ind b s k
 *)
-  | <:patt< $_$ $_$ >> (* | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >> *)
+  | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> (* | <:patt< $_$ .. $_$ >> *)
     as z ->
       fun curr next ind b k ->
         patt (ind + 1) (sprintf "%s(" b) z (sprintf ")%s" k)
