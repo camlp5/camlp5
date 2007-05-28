@@ -210,7 +210,9 @@ value rec plistl elem eleml ind sh b xl k =
 value plist elem ind sh b xl k = plistl elem elem ind sh b xl k;
 
 value comma_after elem ind b x k = elem ind b x (sprintf ";%s" k);
+value star_after elem ind b x k = elem ind b x (sprintf "*%s" k);
 value op_after elem ind b (x, op) k = elem ind b x (sprintf "%s%s" op k);
+
 value and_before elem ind b x k = elem ind (sprintf "%sand " b) x k;
 value bar_before elem ind b x k = elem ind (sprintf "%s| " b) x k;
 
@@ -593,12 +595,13 @@ value ctyp_simple =
           (fun () ->
              vlist2 cons_decl (bar_before cons_decl) ind
                (sprintf "%s[ " b) vdl (sprintf " ]%s" k))
-(*
   | <:ctyp< ($list:tl$) >> ->
       fun curr next ind b k ->
-        let tl = List.map (fun t -> (t, " *")) tl in
-        listws_hv (ind + 1) 0 ctyp (sprintf "%s(" b) tl (sprintf ")%s" k)
-*)
+        horiz_vertic
+          (fun () ->
+             sprintf "%s(%s)%s" b (hlistl (star_after ctyp) ctyp 0 "" tl "")
+               k)
+          (fun () -> not_impl "type tuple vertic" ind b tl k)
   | <:ctyp< $lid:t$ >> ->
       fun curr next ind b k -> var_escaped ind b t k
   | <:ctyp< $uid:t$ >> ->
@@ -744,8 +747,7 @@ value expr_top =
                  (fun () -> not_impl "for vertic 1" ind b v "")
              in
              let s2 =
-               vlistl (comma_after expr) expr (ind + 2) (tab (ind + 2)) el
-                 ""
+               vlistl (comma_after expr) expr (ind + 2) (tab (ind + 2)) el ""
              in
              let s3 = sprintf "%s}%s" (tab ind) k in
              sprintf "%s\n%s\n%s" s1 s2 s3)
@@ -1539,3 +1541,6 @@ value apply_printer f ast = do {
 
 Pcaml.print_interf.val := apply_printer sig_item;
 Pcaml.print_implem.val := apply_printer str_item;
+
+Pcaml.add_option "-l" (Arg.Int (fun x -> Sformat.line_length.val := x))
+  "<length> Maximum line length for pretty printing.";
