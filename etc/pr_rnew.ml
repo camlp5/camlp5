@@ -343,6 +343,14 @@ value binding ind b (p, e) k =
          (expr (ind + 2) (tab (ind + 2)) e k))
 ;
 
+value patt_binding ind b (p, e) k =
+  horiz_vertic
+    (fun () -> sprintf "%s %s%s" (patt 0 b p " =") (patt 0 "" e "") k)
+    (fun () ->
+       sprintf "%s\n%s" (patt ind b p " =")
+         (patt (ind + 2) (tab (ind + 2)) e k))
+;
+
 value match_assoc ind b (p, w, e) k =
   horiz_vertic
     (fun () ->
@@ -1090,13 +1098,10 @@ value patt_simple =
       fun curr next ind b k ->
         let pl = List.map (fun p -> (p, ",")) pl in
         plist patt ind 1 (sprintf "%s(" b) pl (sprintf ")%s" k)
-(*
   | <:patt< {$list:lpl$} >> ->
       fun curr next ind b k ->
         let lxl = List.map (fun lx -> (lx, ";")) lpl in
-        listws_hv (ind + 1) 0 (record_assoc patt) (sprintf "%s{" b) lxl
-          (sprintf "}%s" k)
-*)
+        plist patt_binding (ind + 1) 0 (sprintf "%s{" b) lxl (sprintf "}%s" k)
   | <:patt< [$_$ :: $_$] >> as z ->
       fun curr next ind b k ->
         let (xl, y) = make_patt_list z in
