@@ -250,7 +250,7 @@ value right_operator ind sh unfold next b x k =
   [ [(x, _)] -> next ind b x k
   | _ ->
       horiz_vertic (fun () -> hlist (op_after next) ind b xl k)
-        (fun () -> not_impl "right_operator vertic" ind b xl k) ]
+        (fun () -> plist next ind 2 b xl k) ]
 ;
 
 (*
@@ -357,7 +357,16 @@ value match_assoc ind b (p, w, e) k =
                (fun () -> 
                   sprintf "%s%s when %s ->" b (patt 0 "" p "")
                     (expr 0 "" e ""))
-               (fun () -> not_impl "match_assoc vertic" ind b p k)
+               (fun () ->
+                  let s1 = patt (ind + 2) b p "" in
+                  let s2 =
+                    horiz_vertic
+                      (fun () ->
+                         sprintf "%swhen %s ->" (tab (ind + 2))
+                           (expr 0 "" e ""))
+                      (fun () -> not_impl "when vertic" ind b e k)
+                  in
+                  sprintf "%s\n%s" s1 s2)
          | None -> patt (ind + 2) b p " ->" ]
        in
        let s2 = expr (ind + 4) (tab (ind + 4)) e k in
@@ -486,6 +495,18 @@ value label_decl ind b (_, l, m, t) k =
        sprintf "%s\n%s" s1 s2)
 ;
 
+value cons_decl ind b (_, c, tl) k =
+  horiz_vertic
+    (fun () ->
+       let s1 = sprintf "%s%s" b c in
+       let s2 =
+         if tl = [] then ""
+         else sprintf " of %s" (hlist2 ctyp (and_before ctyp) 0 "" tl "")
+       in
+       sprintf "%s%s%s" s1 s2 k)
+    (fun () -> not_impl "cons_decl vertic" ind b c k)
+;
+
 (* definitions of printers by decreasing level *)
 
 value ctyp_top =
@@ -562,38 +583,17 @@ value ctyp_simple =
         in
         let loc = MLast.loc_of_ctyp t in
         curr ind b <:ctyp< [ $list:vdl$ ] >> k
+*)
   | <:ctyp< [ $list:vdl$ ] >> ->
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
-             if vdl = [] then sprintf "%s[ ]%s" b k
-             else
-               listws 0
-                 (fun ind b (_, c, tl) k ->
-                    if tl = [] then sprintf "%s%s%s" b c k
-                    else
-                      listws ind ctyp (sprintf "%s%s of " b c) " and" False
-                        tl k)
-                 (sprintf "%s[ " b) " |" False vdl (" ]" ^ k))
+             hlist2 cons_decl (bar_before cons_decl) 0
+               (sprintf "%s[ " b) vdl (sprintf " ]%s" k))
           (fun () ->
-             let sep = sprintf "%s| " (tab ind) in
-             loop (sprintf "%s[ " b) vdl where rec loop b =
-               fun
-               [ [] -> sprintf "%s%s" b k
-               | [(_, c, tl) :: vdl] ->
-                   let k = if vdl = [] then sprintf " ]%s" k else "" in
-                   let se =
-                     if tl = [] then sprintf "%s%s%s" b c k
-                     else
-                       let tl = List.map (fun t -> (t, " and")) tl in
-                       sprint_indent (ind + 4) 0
-                         (fun _ _ -> sprintf "%s%s of" b c)
-                         (fun ind b _ -> listws_hv (ind + 2) 0 ctyp b tl k)
-                   in
-                   if vdl = [] then se
-                   else
-                     let se = sprintf "%s\n" se in
-                     sprintf "%s%s" se (loop sep vdl) ])
+             vlist2 cons_decl (bar_before cons_decl) ind
+               (sprintf "%s[ " b) vdl (sprintf " ]%s" k))
+(*
   | <:ctyp< ($list:tl$) >> ->
       fun curr next ind b k ->
         let tl = List.map (fun t -> (t, " *")) tl in
