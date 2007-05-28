@@ -450,32 +450,29 @@ value type_decl ind b ((_, tn), tp, te, cl) k =
        sprintf "%s%s%s = %s%s%s" b tn
          (if tp = [] then "" else sprintf " %s" (hlist type_var 0 "" tp ""))
          (ctyp 0 "" te "")
-         (match cl with
-          [ [] -> ""
-          | _ -> not_impl "type_decl cl" ind "" cl "" ])
-         k)
+         (if cl = [] then "" else not_impl "type_decl cl" ind "" cl "") k)
     (fun () ->
        let s1 =
          horiz_vertic
            (fun () ->
               sprintf "%s%s%s =" b tn
-                (match tp with
-                 [ [] -> ""
-                 | _ -> not_impl "type_decl param 1" ind "" tp "" ]))
+                (if tp = [] then "" else
+                 sprintf " %s" (hlist type_var 0 "" tp "")))
            (fun () -> not_impl "type_decl vertic 1" ind b tn k)
        in
        let s2 =
-         horiz_vertic
-           (fun () ->
-              sprintf "%s%s%s%s" (tab (ind + 2)) (ctyp 0 "" te "")
-                (match cl with
-                 [ [] -> ""
-                 | _ -> not_impl "type_decl cl 2" ind "" cl "" ])
-                k)
-           (fun () -> not_impl "type_decl vertic 2" ind b tn k)
+         if cl = [] then ctyp (ind + 2) (tab (ind + 2)) te k
+        else
+           horiz_vertic
+             (fun () ->
+                sprintf "%s%s%s%s" (tab (ind + 2)) (ctyp 0 "" te "")
+                  (not_impl "type_decl cl 2" ind "" cl "") k)
+             (fun () -> not_impl "type_decl vertic 2" ind "" tn k)
        in
        sprintf "%s\n%s" s1 s2)
 ;
+
+value label_decl ind b td k = not_impl "label_decl" ind b td k;
 
 (* definitions of printers by decreasing level *)
 
@@ -528,23 +525,18 @@ value ctyp_simple =
         sprint_indent (ind + 1) 2
           (fun ind _ -> ctyp 0 (sprintf "%s(" b) x " as")
           (fun ind b _ -> ctyp ind b y (sprintf ")%s" k))
-  | <:ctyp< { $list:ltl$ } >> ->
+  |
+*)
+    <:ctyp< { $list:ltl$ } >> ->
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
-             listws 0
-               (fun ind b (_, l, m, t) k ->
-                  let sm = if m then "mutable " else "" in
-                  ctyp ind (sprintf "%s%s : %s" b l sm) t k)
-               (sprintf "%s{ " b) ";" False ltl (sprintf " }%s" k))
+             hlistl (comma_after label_decl) label_decl 0
+               (sprintf "%s{ " b) ltl (sprintf " }%s" k))
           (fun () ->
-             listws (ind + 2)
-               (fun ind b (_, l, m, t) k ->
-                  let b = sprintf "%s%s :" b l in
-                  let sm = if m then "mutable " else "" in
-                  sprint_indent ind 2 (fun _ _ -> b)
-                    (fun ind b _ -> ctyp ind (sprintf "%s%s" b sm) t k))
-               (sprintf "%s{ " b) ";" True ltl (sprintf " }%s" k))
+             vlistl (comma_after label_decl) label_decl (ind + 2)
+               (sprintf "%s{ " b) ltl (sprintf " }%s" k))
+(*
   | <:ctyp< [= $list:rfl$ ] >> as t ->
       fun curr next ind b k ->
         let vdl =
@@ -610,9 +602,8 @@ value ctyp_simple =
   | <:ctyp< $_$ $_$ >> | <:ctyp< $_$ -> $_$ >> as z ->
       fun curr next ind b k ->
         ctyp (ind + 1) (sprintf "%s(" b) z (sprintf ")%s" k)
-  |
 *)
-    z ->
+  | z ->
       fun curr next ind b k -> not_impl "ctyp" ind b z k ]
 ;
 
