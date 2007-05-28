@@ -964,19 +964,12 @@ value expr_simple =
           | None -> expr ind b x (sprintf "]%s" k) ]
         in
         plistl expr expr2 (ind + 1) 0 (sprintf "%s[" b) xl k
-(*
   | <:expr< ($e$ : $t$) >> ->
       fun curr next ind b k ->
-        let expr =
-          (* beuh... *)
-          match e with
-          [ <:expr< let $opt:_$ $list:_$ in $_$ >> -> curr
-          | _ -> expr ]
-        in
-        sprint_indent (ind + 1) 0
-          (fun ind _ -> expr ind (sprintf "%s(" b) e " :")
-          (fun ind b _ -> ctyp ind b t (sprintf ")%s" k))
-*)
+        horiz_vertic
+          (fun () ->
+             sprintf "%s(%s : %s)%s" b (expr 0 "" e "") (ctyp 0 "" t "") k)
+          (fun () -> not_impl "type constraint vertic" ind b e k)
   | <:expr< $int:s$ >> | <:expr< $flo:s$ >> ->
       fun curr next ind b k ->
         if String.length s > 0 && s.[0] = '-' then sprintf "%s(%s)%s" b s k
@@ -1188,20 +1181,14 @@ value str_item_top =
   extfun Extfun.empty with
   [ <:str_item< # $s$ $e$ >> ->
       fun curr next ind b k -> expr ind (sprintf "%s#%s " b s) e k
-(*
   | <:str_item< declare $list:sil$ end >> ->
       fun curr next ind b k ->
-        if sil = [] then sprintf "%sdeclare end%s" b k
-        else
-          horiz_vertic
-            (fun () ->
-               sprintf "%sdeclare %s end%s" b
-                 (listws ind str_item "" ";" False sil ";") k)
-            (fun () ->
-               let ind2 = ind + 2 in
-               sprintf "%sdeclare\n%s\n%send%s" b
-                 (listws ind2 str_item (tab ind2) ";" True sil ";") (tab ind)
-                 k)
+        horiz_vertic
+          (fun () ->
+             if sil = [] then sprintf "%sdeclare end%s" b k
+             else not_impl "declare horiz" ind b sil k)
+          (fun () -> not_impl "declare vertic" ind b sil k)
+(*
   | <:str_item< exception $e$ of $list:tl$ = $c$ >> ->
       fun curr next ind b k -> exception_item ind b e tl c k
   | <:str_item< external $n$ : $t$ = $list:sl$ >> ->
