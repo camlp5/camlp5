@@ -895,11 +895,9 @@ value expr_dot =
       fun curr next ind b k ->
         horiz_vertic (fun () -> curr 0 (curr 0 b x ".") y k)
           (fun () -> not_impl ". vertic" ind b x k)
-(*
   | <:expr< $x$ .( $y$ ) >> ->
       fun curr next ind b k ->
         expr ind (curr ind b x ".(") y (sprintf ")%s" k)
-*)
   | <:expr< $x$ .[ $y$ ] >> ->
       fun curr next ind b k ->
         expr ind (curr ind b x ".[") y (sprintf "]%s" k)
@@ -1188,9 +1186,19 @@ value str_item_top =
              if sil = [] then sprintf "%sdeclare end%s" b k
              else not_impl "declare horiz" ind b sil k)
           (fun () -> not_impl "declare vertic" ind b sil k)
+  | <:str_item< exception $e$ of $list:tl$ = $id$ >> ->
+      fun curr next ind b k ->
+        horiz_vertic
+          (fun () ->
+             sprintf "%sexception %s%s%s%s" b e
+               (if tl = [] then ""
+                else
+                  sprintf " of %s" (hlist2 ctyp (and_before ctyp) 0 "" tl ""))
+               (if id = [] then ""
+                else sprintf " = %s" (mod_ident 0 "" id ""))
+               k)
+          (fun () -> not_impl "exception vertic" ind b e k)
 (*
-  | <:str_item< exception $e$ of $list:tl$ = $c$ >> ->
-      fun curr next ind b k -> exception_item ind b e tl c k
   | <:str_item< external $n$ : $t$ = $list:sl$ >> ->
       fun curr next ind b k -> external_item ind b n t sl k
 *)
