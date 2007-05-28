@@ -1547,3 +1547,6 @@ Pcaml.print_implem.val := apply_printer str_item;
 
 Pcaml.add_option "-l" (Arg.Int (fun x -> Sformat.line_length.val := x))
   "<length> Maximum line length for pretty printing.";
+
+Pcaml.add_option "-sep" (Arg.String (fun x -> sep.val := Some x))
+  "<string> Use this string between phrases instead of reading source.";
