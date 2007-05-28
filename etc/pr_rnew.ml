@@ -355,7 +355,7 @@ value match_assoc ind b (p, w, e) k =
                   sprintf "%s%s when %s ->" b (patt 0 "" p "")
                     (expr 0 "" e ""))
                (fun () -> not_impl "match_assoc vertic" ind b p k)
-         | None -> patt ind b p " ->" ]
+         | None -> patt (ind + 2) b p " ->" ]
        in
        let s2 = expr (ind + 4) (tab (ind + 4)) e k in
        sprintf "%s\n%s" s1 s2)
@@ -618,120 +618,6 @@ value ctyp_simple =
       fun curr next ind b k -> not_impl "ctyp" ind b z k ]
 ;
 
-(*
-(* used for 'else' parts of 'if' expressions to prevent comments to be
-   added because the source can come from normal OCaml syntax where rec 'else'
-   parts are optional, converted into 'else ()' with a location of the
-   whole 'else' (actually bug of pa_o.ml) *)
-value is_unit =
-  fun
-  [ <:expr< () >> -> True
-  | _ -> False ]
-;
-
-(* [must_be_printed_identically]
-
-   Heuristic to decide to print two items identically or not.
-
-   Printing identically means:
-     - either put a newline before *both*
-     - or print *both* in one only line
-
-   The two items are printed, and the resulting two strings are compared
-   using the "diff" library module; if they are "almost" equal, (i.e. their
-   difference is greater than [equality_threshold]), the decision is taken.
-
-   Examples of printing which were improved thanks to this heuristic
-   (borrowed to some real codes):
-
-   1/
-     displaying without heuristic:
-        if String.length s > 0 && s.[0] = '-' then
-          sprintf "%s(%s%s)%s" b s a k
-        else sprintf "%s%s%s%s" b s a k
-     displaying with heuristic:
-        if String.length s > 0 && s.[0] = '-' then
-          sprintf "%s(%s%s)%s" b s a k
-        else
-          sprintf "%s%s%s%s" b s a k
-
-   2/
-     displaying without heuristic:
-        if ligne.cs_sel then (
-          ligne.cs_sel := False;
-          state.nbMarques := state.nbMarques - 1
-        )
-        else (ligne.cs_sel := True; state.nbMarques := state.nbMarques + 1)
-     displaying with heuristic:
-        if ligne.cs_sel then (
-          ligne.cs_sel := False;
-          state.nbMarques := state.nbMarques - 1
-        )
-        else (
-          ligne.cs_sel := True;
-          state.nbMarques := state.nbMarques + 1
-        )
-
-   3/
-     displaying without heuristic:
-        if define_class then
-          fun ppf -> Printtyp.class_declaration id ppf clty
-        else fun ppf -> Printtyp.cltype_declaration id ppf cltydef
-     displaying with heuristic:
-        if define_class then
-          fun ppf -> Printtyp.class_declaration id ppf clty
-        else
-          fun ppf -> Printtyp.cltype_declaration id ppf cltydef
-
-   4/
-     displaying without heuristic:
-        if closed then if tags = None then " " else "< "
-        else if tags = None then "> "
-        else "? "
-     displaying with heuristic:
-        if closed then if tags = None then " " else "< "
-        else if tags = None then "> " else "? "
-
-*)
-value equality_threshold = 0.51;
-value must_be_printed_identically f x1 x2 =
-  let (s1, s2) = (
-    (* the two strings; this code tries to prevents computing possible
-       too long lines (which might slow down the program) *)
-    let v = Sformat.line_length.val in
-    Sformat.line_length.val := 2 * v;
-    let s1 = horiz_vertic (fun () -> Some (f 0 "" x1 "")) (fun () -> None) in
-    let s2 = horiz_vertic (fun () -> Some (f 0 "" x2 "")) (fun () -> None) in
-    Sformat.line_length.val := v;
-    (s1, s2)
-  )
-  in
-  match (s1, s2) with
-  [ (Some s1, Some s2) ->
-      (* one string at least could hold in the line; comparing them; if
-         they are "close" to each other, return True, meaning that they
-         should be displayed *both* in one line or *both* in several lines *)
-      let (d1, d2) =
-        let a1 = Array.init (String.length s1) (fun i -> s1.[i]) in
-        let a2 = Array.init (String.length s2) (fun i -> s2.[i]) in
-        Diff.f a1 a2
-      in
-      let eq =
-        loop 0 0 where rec loop i eq =
-          if i = Array.length d1 then eq
-          else loop (i + 1) (if d1.(i) then eq else eq + 1)
-      in
-      let r1 = float eq /. float (Array.length d1) in
-      let r2 = float eq /. float (Array.length d2) in
-      r1 >= equality_threshold && r2 >= equality_threshold
-  | _ -> False ]
-;
-
-value must_be_printed_identically f x1 x2 =
-  call_with Sformat.output Ostring (must_be_printed_identically f x1) x2
-;
-*)
-
 value expr_top =
   extfun Extfun.empty with
   [ <:expr< if $e1$ then $e2$ else $e3$ >> ->
@@ -777,6 +663,7 @@ value expr_top =
               (fun () ->
                  sprintf "%s\n%s" (patt ind (sprintf "%sfun " b) p1 " ->")
                    (expr (ind + 2) (tab (ind + 2)) e1 k))
+        | [] -> sprintf "%sfun []%s" b k
         | pwel ->
             let s = match_assoc_list ind (tab ind) pwel k in
             sprintf "%sfun\n%s" b s ]
@@ -1034,13 +921,11 @@ value expr_simple =
       fun curr next ind b k ->
         let el = List.map (fun e -> (e, ",")) el in
         plist expr ind 1 (sprintf "%s(" b) el (sprintf ")%s" k)
-(*
   | <:expr< {$list:lel$} >> ->
       fun curr next ind b k ->
         let lxl = List.map (fun lx -> (lx, ";")) lel in
-        listws_hv (ind + 1) 0
-          (fun ind b pe k -> binding ind False (b, "") pe ("", k))
-          (sprintf "%s{" b) lxl (sprintf "}%s" k)
+        plist binding (ind + 1) 0 (sprintf "%s{" b) lxl (sprintf "}%s" k)
+(*
   | <:expr< {($e$) with $list:lel$} >> ->
       fun curr next ind b k ->
         let b1 = expr ind "(" e ") with " in
@@ -1129,9 +1014,9 @@ value expr_simple =
 *)
   | <:expr< $_$ $_$ >> (* | <:expr< $_$ := $_$ >> *) |
     <:expr< fun [ $list:_$ ] >> | <:expr< if $_$ then $_$ else $_$ >> (* |
-    <:expr< let $opt:_$ $list:_$ in $_$ >> |
+    <:expr< let $opt:_$ $list:_$ in $_$ >> *) |
     <:expr< match $_$ with [ $list:_$ ] >> |
-    <:expr< try $_$ with [ $list:_$ ] >> *) as z ->
+    <:expr< try $_$ with [ $list:_$ ] >> as z ->
       fun curr next ind b k ->
         let (inf, n) =
           match z with
@@ -1188,16 +1073,13 @@ value patt_dot =
 
 value patt_simple =
   extfun Extfun.empty with
-  [
-(*
-    <:patt< ($x$ as $y$) >> ->
+  [ <:patt< ($x$ as $y$) >> ->
       fun curr next ind b k ->
-        sprint_indent (ind + 1) 2
-          (fun ind _ -> patt ind (sprintf "%s(" b) x " as")
-          (fun ind b _ -> patt ind b y (sprintf ")%s" k))
-  |
-*)
-    <:patt< ($list:pl$) >> ->
+        horiz_vertic
+          (fun () ->
+             sprintf "%s%s as %s%s" b (patt 0 "" x "") (patt 0 "" y "") k)
+          (fun () -> not_impl "patt as vertic" ind b x k)
+  | <:patt< ($list:pl$) >> ->
       fun curr next ind b k ->
         let pl = List.map (fun p -> (p, ",")) pl in
         plist patt ind 1 (sprintf "%s(" b) pl (sprintf ")%s" k)
