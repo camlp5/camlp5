@@ -210,7 +210,7 @@ value rec plistl elem eleml ind sh b xl k =
 value plist elem ind sh b xl k = plistl elem elem ind sh b xl k;
 
 value comma_after elem ind b x k = elem ind b x (sprintf ";%s" k);
-value star_after elem ind b x k = elem ind b x (sprintf "*%s" k);
+value star_after elem ind b x k = elem ind b x (sprintf " *%s" k);
 value op_after elem ind b (x, op) k = elem ind b x (sprintf "%s%s" op k);
 
 value and_before elem ind b x k = elem ind (sprintf "%sand " b) x k;
@@ -302,9 +302,7 @@ value pr_ctyp = printer MLast.loc_of_ctyp "type";
 value pr_str_item = printer MLast.loc_of_str_item "str_item";
 value pr_sig_item = printer MLast.loc_of_sig_item "sig_item";
 value pr_module_expr = printer MLast.loc_of_module_expr "module_expr";
-(*
 value pr_module_type = printer MLast.loc_of_module_type "module_type";
-*)
 
 value expr ind b z k = pr_expr.pr_fun "top" ind b z k;
 value patt ind b z k = pr_patt.pr_fun "top" ind b z k;
@@ -312,8 +310,8 @@ value ctyp ind b z k = pr_ctyp.pr_fun "top" ind b z k;
 value str_item ind b z k = pr_str_item.pr_fun "top" ind b z k;
 value sig_item ind b z k = pr_sig_item.pr_fun "top" ind b z k;
 value module_expr ind b z k = pr_module_expr.pr_fun "top" ind b z k;
-(*
 value module_type ind b z k = pr_module_type.pr_fun "top" ind b z k;
+(*
 value expr_fun_args ge = Extfun.apply Pcaml.pr_expr_fun_args.val ge;
 
 value patt_as ind b z k =
@@ -604,7 +602,9 @@ value ctyp_simple =
           (fun () ->
              sprintf "%s(%s)%s" b (hlistl (star_after ctyp) ctyp 0 "" tl "")
                k)
-          (fun () -> not_impl "type tuple vertic" ind b tl k)
+          (fun () ->
+             let tl = List.map (fun t -> (t, " * ")) tl in
+             plist ctyp ind 1 (sprintf "%s(" b) tl (sprintf ")%s" k))
   | <:ctyp< $lid:t$ >> ->
       fun curr next ind b k -> var_escaped ind b t k
   | <:ctyp< $uid:t$ >> ->
@@ -1153,7 +1153,7 @@ value patt_simple =
   | <:patt< ? $s$ >> | <:patt< ? ($lid:s$ = $_$) >> ->
       fun curr next ind b k -> var_escaped ind b s k
 *)
-  | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> (* | <:patt< $_$ .. $_$ >> *)
+  | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >>
     as z ->
       fun curr next ind b k ->
         patt (ind + 1) (sprintf "%s(" b) z (sprintf ")%s" k)
@@ -1161,50 +1161,28 @@ value patt_simple =
       fun curr next ind b k -> not_impl "patt" ind b z k ]
 ;
 
-(*
-value external_item ind b n t sl k =
+value string ind b s k = sprintf "%s\"%s\"%s" b s k;
+
+value external_decl ind b (n, t, sl) k =
   horiz_vertic
     (fun () ->
-       var_escaped ind (sprintf "%sexternal " b) n
-         (ctyp ind " : " t
-            (listws ind (fun ind b z k -> sprintf "%s\"%s\"%s" b z k) " = "
-               "" False sl k)))
-    (fun () ->
-       match
-         horiz_vertic
-           (fun () -> Some (ctyp ind (sprintf "%sexternal %s : " b n) t " ="))
-           (fun () -> None)
-       with
-       [ Some s1 ->
-           let s2 =
-             let ind2 = ind + 2 in
-             listws ind2 (fun ind b z k -> sprintf "%s\"%s\"%s" b z k)
-               (tab ind2) "" False sl k
-           in
-           sprintf "%s\n%s" s1 s2
-       | None ->
-           let ind2 = ind + 2 in
-           let s1 = sprintf "%sexternal %s :" b n in
-           let s1 = sprintf "%s\n" s1 in
-           let s2 =
-             sprint_indent ind2 2 (fun ind _ -> ctyp ind (tab ind2) t " =")
-               (fun ind b _ ->
-                  listws ind (fun ind b z k -> sprintf "%s\"%s\"%s" b z k) b
-                    "" False sl k)
-           in
-           sprintf "%s%s" s1 s2 ])
+       sprintf "%sexternal %s : %s = %s%s" b n (ctyp 0 "" t "")
+         (hlist string 0 "" sl "") k)
+    (fun () -> not_impl "external_decl vertic" ind b n k)
 ;
 
-value exception_item ind b e tl c k =
-  sprint_indent ind 2
-    (fun ind _ ->
-       sprintf "%sexception %s%s" b e (if tl = [] then "" else " of"))
-    (fun ind b _ ->
-       sprintf "%s%s%s"
-         (if tl = [] then "" else listws ind ctyp b " and" False tl "")
-         (if c = [] then "" else sprintf " = chaispasquoi") k)
+value exception_decl ind b (e, tl, id) k =
+  horiz_vertic
+    (fun () ->
+       sprintf "%sexception %s%s%s%s" b e
+         (if tl = [] then ""
+          else
+            sprintf " of %s" (hlist2 ctyp (and_before ctyp) 0 "" tl ""))
+         (if id = [] then ""
+          else sprintf " = %s" (mod_ident 0 "" id ""))
+         k)
+    (fun () -> not_impl "exception vertic" ind b e k)
 ;
-*)
 
 value str_item_top =
   extfun Extfun.empty with
@@ -1218,21 +1196,9 @@ value str_item_top =
              else not_impl "declare horiz" ind b sil k)
           (fun () -> not_impl "declare vertic" ind b sil k)
   | <:str_item< exception $e$ of $list:tl$ = $id$ >> ->
-      fun curr next ind b k ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%sexception %s%s%s%s" b e
-               (if tl = [] then ""
-                else
-                  sprintf " of %s" (hlist2 ctyp (and_before ctyp) 0 "" tl ""))
-               (if id = [] then ""
-                else sprintf " = %s" (mod_ident 0 "" id ""))
-               k)
-          (fun () -> not_impl "exception vertic" ind b e k)
-(*
+      fun curr next ind b k -> exception_decl ind b (e, tl, id) k
   | <:str_item< external $n$ : $t$ = $list:sl$ >> ->
-      fun curr next ind b k -> external_item ind b n t sl k
-*)
+      fun curr next ind b k -> external_decl ind b (n, t, sl) k
   | <:str_item< module $m$ = $me$ >> ->
       fun curr next ind b k ->
         horiz_vertic
@@ -1241,14 +1207,14 @@ value str_item_top =
           (fun () ->
              sprintf "%smodule %s =\n%s\n%s" b m
                (module_expr (ind + 2) (tab (ind + 2)) me "") (tab ind ^ k))
-(*
   | <:str_item< module type $m$ = $mt$ >> ->
       fun curr next ind b k ->
-        sprint_indent_unindent ind 2
-          (fun ind -> sprintf "%smodule type %s =" b m)
-          (fun ind b _ -> module_type ind b mt "")
-          (fun ind b _ -> sprintf "%s%s" b k)
-*)
+        horiz_vertic
+          (fun () ->
+             sprintf "%smodule type %s = %s%s" b m (module_type 0 "" mt "") k)
+          (fun () ->
+             sprintf "%smodule type %s =\n%s\n%s" b m
+               (module_type (ind + 2) (tab (ind + 2)) mt "") (tab ind ^ k))
   | <:str_item< open $i$ >> ->
       fun curr next ind b k -> mod_ident ind (sprintf "%sopen " b) i k
   | <:str_item< type $list:tdl$ >> ->
@@ -1282,18 +1248,25 @@ value str_item_top =
       fun curr next ind b k -> not_impl "str_item" ind b z k ]
 ;
 
-(*
 value sig_item_top =
   extfun Extfun.empty with
-  [ <:sig_item< exception $e$ of $list:tl$ >> ->
+  [
+(*
+    <:sig_item< exception $e$ of $list:tl$ >> ->
       fun curr next ind b k -> exception_item ind b e tl [] k
-  | <:sig_item< external $n$ : $t$ = $list:sl$ >> ->
-      fun curr next ind b k -> external_item ind b n t sl k
+  |
+*)
+    <:sig_item< external $n$ : $t$ = $list:sl$ >> ->
+      fun curr next ind b k -> external_decl ind b (n, t, sl) k
   | <:sig_item< module $m$ : $mt$ >> ->
       fun curr next ind b k ->
-        sprint_indent_unindent ind 2 (fun ind -> sprintf "%smodule %s :" b m)
-          (fun ind b _ -> module_type ind b mt "")
-          (fun ind b _ -> sprintf "%s%s" b k)
+        horiz_vertic
+          (fun () ->
+             sprintf "%smodule %s : %s%s" b m (module_type 0 "" mt "") k)
+          (fun () ->
+             sprintf "%smodule %s :\n%s\n%s" b m
+               (module_type (ind + 2) (tab (ind + 2)) mt "") (tab ind ^ k))
+(*
   | <:sig_item< module type $m$ = $mt$ >> ->
       fun curr next ind b k ->
         sprint_indent_unindent ind 2
@@ -1302,25 +1275,43 @@ value sig_item_top =
           (fun ind b _ -> sprintf "%s%s" b k)
   | <:sig_item< open $i$ >> ->
       fun curr next ind b k -> mod_ident ind (sprintf "%sopen " b) i k
+*)
   | <:sig_item< type $list:tdl$ >> ->
       fun curr next ind b k ->
-        type_decl_list ind (sprintf "%s%s" b "type") tdl k
+        vlist2 type_decl (and_before type_decl) ind (sprintf "%stype " b) tdl
+          k
   | <:sig_item< value $s$ : $t$ >> ->
       fun curr next ind b k ->
-        sprint_indent ind 2
-          (fun ind _ -> var_escaped ind (sprintf "%svalue " b) s " :")
-          (fun ind b _ -> ctyp ind b t k)
+        horiz_vertic
+          (fun () ->
+             sprintf "%svalue %s : %s%s" b (var_escaped 0 "" s "")
+               (ctyp 0 "" t "") k)
+          (fun () ->
+             let s1 = sprintf "%svalue %s :" b (var_escaped 0 "" s "") in
+             let s2 = ctyp (ind + 2) (tab (ind + 2)) t k in
+             sprintf "%s\n%s" s1 s2)
   | z ->
       fun curr next ind b k -> not_impl "sig_item" ind b z k ]
 ;
-*)
 
 value module_expr_top =
   extfun Extfun.empty with
   [ <:module_expr< functor ($s$ : $mt$) -> $me$ >> ->
       fun curr next ind b k ->
-        horiz_vertic (fun () -> not_impl "functor horiz" ind b 0 k)
-          (fun () -> not_impl "functor vertic" ind b 0 k)
+        horiz_vertic
+          (fun () ->
+             sprintf "%sfunctor (%s: %s) -> %s%s" b s (module_type 0 "" mt "")
+               (module_expr 0 "" me "") k)
+          (fun () ->
+             let s1 =
+               horiz_vertic
+                 (fun () ->
+                    sprintf "%sfunctor (%s: %s) ->" b s
+                      (module_type 0 "" mt ""))
+                 (fun () -> not_impl "functor vertic" ind b 0 "")
+             in
+             let s2 = module_expr (ind + 2) (tab (ind + 2)) me k in
+             sprintf "%s\n%s" s1 s2)
   | <:module_expr< struct $list:sil$ end >> ->
       fun curr next ind b k ->
         horiz_vertic
@@ -1361,13 +1352,18 @@ value module_expr_simple =
   extfun Extfun.empty with
   [ <:module_expr< $uid:s$ >> ->
       fun curr next ind b k -> sprintf "%s%s%s" b s k
-(*
   | <:module_expr< ($me$ : $mt$) >> ->
       fun curr next ind b k ->
-        sprint_indent (ind + 1) 2
-          (fun ind _ -> module_expr ind (sprintf "%s(" b) me " :")
-          (fun ind b _ -> module_type ind b mt (sprintf ")%s" k))
-*)
+        horiz_vertic
+          (fun () ->
+             sprintf "%s(%s : %s)%s" b (module_expr 0 "" me "")
+               (module_type 0 "" mt "") k)
+          (fun () ->
+             let s1 = module_expr (ind + 1) (sprintf "%s(" b) me " :" in
+             let s2 =
+               module_type (ind + 1) (tab (ind + 1)) mt (sprintf ")%s" k)
+             in
+             sprintf "%s\n%s" s1 s2)
   | <:module_expr< struct $list:_$ end >> as z ->
       fun curr next ind b k ->
         module_expr (ind + 1) (sprintf "%s(" b) z (sprintf ")%s" k)
@@ -1388,34 +1384,49 @@ value with_constraint ind b wc k =
       module_expr ind (mod_ident ind (sprintf "%swith module " b) sl " = ")
         me k ]
 ;
+*)
 
 value module_type_top =
   extfun Extfun.empty with
-  [ <:module_type< functor ($s$ : $mt1$) -> $mt2$ >> ->
+  [
+(*
+    <:module_type< functor ($s$ : $mt1$) -> $mt2$ >> ->
       fun curr next ind b k ->
         sprint_indent (ind + 2) 0
           (fun ind _ ->
              module_type ind (sprintf "%sfunctor (%s : " b s) mt1 ") ->")
           (fun ind b _ -> module_type ind b mt2 k)
-  | <:module_type< sig $list:sil$ end >> ->
+  |
+*)
+    <:module_type< sig $list:sil$ end >> ->
       fun curr next ind b k ->
-        sprint_indent_unindent ind 2 (fun _ -> sprintf "%ssig" b)
-          (fun ind b nl -> listws ind sig_item b ";" nl sil ";")
-          (fun ind b1 b2 -> sprintf "%s%send%s" b1 b2 k)
+        horiz_vertic
+          (fun () ->
+             sprintf "%ssig%s%s%send%s" b " "
+               (hlist (comma_after sig_item) 0 "" sil "")
+               " " k)
+          (fun () ->
+             sprintf "%ssig%s%s%send%s" b "\n"
+               (vlist (comma_after sig_item) (ind + 2) (tab (ind + 2)) sil "")
+               ("\n" ^ tab ind) k)
+(*
   | <:module_type< $mt$ with $list:wcl$ >> ->
       fun curr next ind b k ->
         sprint_indent ind 2 (fun ind _ -> module_type ind b mt "")
           (fun ind b nl -> listws ind with_constraint b b nl wcl k)
+*)
   | z ->
       fun curr next ind b k -> next ind b z k ]
 ;
 
+(*
 value module_type_dot =
   extfun Extfun.empty with
   [ <:module_type< $x$ . $y$ >> ->
       fun curr next ind b k -> curr ind (curr ind b x ".") y k
   | z -> fun curr next ind b k -> next ind b z k ]
 ;
+*)
 
 value module_type_simple =
   extfun Extfun.empty with
@@ -1423,7 +1434,6 @@ value module_type_simple =
       fun curr next ind b k -> sprintf "%s%s%s" b s k
   | z -> fun curr next ind b k -> not_impl "module_type" ind b z k ]
 ;
-*)
 
 (* initialization or re-initialization of predefined printers *)
 
@@ -1462,10 +1472,7 @@ pr_ctyp.pr_levels :=
 ;
 
 pr_str_item.pr_levels := [{pr_label = "top"; pr_rules = str_item_top}];
-
-(*
 pr_sig_item.pr_levels := [{pr_label = "top"; pr_rules = sig_item_top}];
-*)
 
 pr_module_expr.pr_levels :=
   [{pr_label = "top"; pr_rules = module_expr_top};
@@ -1474,13 +1481,13 @@ pr_module_expr.pr_levels :=
    {pr_label = "simple"; pr_rules = module_expr_simple}]
 ;
 
-(*
 pr_module_type.pr_levels :=
   [{pr_label = "top"; pr_rules = module_type_top};
+(*
    {pr_label = "dot"; pr_rules = module_type_dot};
+*)
    {pr_label = "simple"; pr_rules = module_type_simple}]
 ;
-*)
 
 (* main part *)
 
