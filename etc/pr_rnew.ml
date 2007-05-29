@@ -1194,13 +1194,9 @@ value str_item_top =
 
 value sig_item_top =
   extfun Extfun.empty with
-  [
-(*
-    <:sig_item< exception $e$ of $list:tl$ >> ->
-      fun curr next ind b k -> exception_item ind b e tl [] k
-  |
-*)
-    <:sig_item< external $n$ : $t$ = $list:sl$ >> ->
+  [ <:sig_item< exception $e$ of $list:tl$ >> ->
+      fun curr next ind b k -> exception_decl ind b (e, tl, []) k
+  | <:sig_item< external $n$ : $t$ = $list:sl$ >> ->
       fun curr next ind b k -> external_decl ind b (n, t, sl) k
   | <:sig_item< module $m$ : $mt$ >> ->
       fun curr next ind b k ->
@@ -1210,16 +1206,16 @@ value sig_item_top =
           (fun () ->
              sprintf "%smodule %s :\n%s\n%s" b m
                (module_type (ind + 2) (tab (ind + 2)) mt "") (tab ind ^ k))
-(*
   | <:sig_item< module type $m$ = $mt$ >> ->
       fun curr next ind b k ->
-        sprint_indent_unindent ind 2
-          (fun ind -> sprintf "%smodule type %s =" b m)
-          (fun ind b _ -> module_type ind b mt "")
-          (fun ind b _ -> sprintf "%s%s" b k)
+        horiz_vertic
+          (fun () ->
+             sprintf "%smodule type %s = %s%s" b m (module_type 0 "" mt "") k)
+          (fun () ->
+             sprintf "%smodule type %s =\n%s\n%s" b m
+               (module_type (ind + 2) (tab (ind + 2)) mt "") (tab ind ^ k))
   | <:sig_item< open $i$ >> ->
       fun curr next ind b k -> mod_ident ind (sprintf "%sopen " b) i k
-*)
   | <:sig_item< type $list:tdl$ >> ->
       fun curr next ind b k ->
         vlist2 type_decl (and_before type_decl) ind (sprintf "%stype " b) tdl
@@ -1315,12 +1311,11 @@ value module_expr_simple =
       fun curr next ind b k -> not_impl "module_expr" ind b z k ]
 ;
 
-(*
 value with_constraint ind b wc k =
   match wc with
   [ <:with_constr< type $sl$ $list:tpl$ = $t$ >> ->
       let b =
-        let k = type_params ind "" tpl " = " in
+        let k = hlist type_var 0 "" tpl " = " in
         mod_ident ind (sprintf "%swith type " b) sl k
       in
       ctyp ind b t k
@@ -1328,21 +1323,26 @@ value with_constraint ind b wc k =
       module_expr ind (mod_ident ind (sprintf "%swith module " b) sl " = ")
         me k ]
 ;
-*)
 
 value module_type_top =
   extfun Extfun.empty with
-  [
-(*
-    <:module_type< functor ($s$ : $mt1$) -> $mt2$ >> ->
+  [ <:module_type< functor ($s$ : $mt1$) -> $mt2$ >> ->
       fun curr next ind b k ->
-        sprint_indent (ind + 2) 0
-          (fun ind _ ->
-             module_type ind (sprintf "%sfunctor (%s : " b s) mt1 ") ->")
-          (fun ind b _ -> module_type ind b mt2 k)
-  |
-*)
-    <:module_type< sig $list:sil$ end >> ->
+        horiz_vertic
+          (fun () ->
+             sprintf "%sfunctor (%s: %s) -> %s%s" b s
+               (module_type 0 "" mt1 "") (module_type 0 "" mt2 "") k)
+          (fun () ->
+             let s1 =
+               horiz_vertic
+                 (fun () ->
+                    sprintf "%sfunctor (%s: %s) ->" b s
+                      (module_type 0 "" mt1 ""))
+                 (fun () -> not_impl "functor vertic" ind b 0 "")
+             in
+             let s2 = module_type (ind + 2) (tab (ind + 2)) mt2 k in
+             sprintf "%s\n%s" s1 s2)
+  | <:module_type< sig $list:sil$ end >> ->
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
@@ -1353,12 +1353,13 @@ value module_type_top =
              sprintf "%ssig%s%s%send%s" b "\n"
                (vlist (comma_after sig_item) (ind + 2) (tab (ind + 2)) sil "")
                ("\n" ^ tab ind) k)
-(*
   | <:module_type< $mt$ with $list:wcl$ >> ->
       fun curr next ind b k ->
-        sprint_indent ind 2 (fun ind _ -> module_type ind b mt "")
-          (fun ind b nl -> listws ind with_constraint b b nl wcl k)
-*)
+        horiz_vertic
+          (fun () ->
+             sprintf "%s%s %s%s" b (module_type 0 "" mt "")
+               (hlist with_constraint 0 "" wcl "") k)
+          (fun () -> not_impl "module type with vertic" ind b wcl k)
   | z ->
       fun curr next ind b k -> next ind b z k ]
 ;
