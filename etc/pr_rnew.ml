@@ -971,9 +971,14 @@ value expr_simple =
       fun curr next ind b k -> sprintf "%s\"%s\"%s" b s k
   | <:expr< $chr:s$ >> ->
       fun curr next ind b k -> sprintf "%s'%s'%s" b s k
-(*
   | <:expr< ? $s$ >> ->
-      fun curr next ind b k -> var_escaped ind b s k
+      fun curr next ind b k -> var_escaped ind (sprintf "%s?" b) s k
+  | <:expr< ~ $s$ >> ->
+      fun curr next ind b k -> var_escaped ind (sprintf "%s~" b) s k
+  | <:expr< ~ $s$ : $e$ >> ->
+      fun curr next ind b k ->
+        curr ind (var_escaped ind (sprintf "%s~" b) s ":") e k
+(*
   | <:expr< ~ $_$ : $z$ >> ->
       fun curr next ind b k -> curr ind b z k
   | <:expr< let $opt:_$ $list:_$ in $e$ >> as z
@@ -1103,14 +1108,8 @@ value patt_simple =
       fun curr next ind b k -> sprintf "%s\"%s\"%s" b s k
   | <:patt< _ >> ->
       fun curr next ind b k -> sprintf "%s_%s" b k
-(*
-  | <:patt< ? $s$ >> | <:patt< ? ($lid:s$ = $_$) >> ->
-      fun curr next ind b k -> var_escaped ind b s k
-*)
-  | <:patt< ? $p$ >> ->
-      fun curr next ind b k ->
-        horiz_vertic (fun () -> not_impl "patt ?p horiz" ind b p k)
-          (fun () -> not_impl "patt ?p vertic" ind b p k)
+  | <:patt< ? $s$ >> ->
+      fun curr next ind b k -> var_escaped ind (sprintf "%s?" b) s k
   | <:patt< ? ($p$ = $e$) >> ->
       fun curr next ind b k ->
         horiz_vertic
@@ -1137,7 +1136,14 @@ value external_decl ind b (n, t, sl) k =
     (fun () ->
        sprintf "%sexternal %s : %s = %s%s" b n (ctyp 0 "" t "")
          (hlist string 0 "" sl "") k)
-    (fun () -> not_impl "external_decl vertic" ind b n k)
+    (fun () ->
+       let s1 = sprintf "%sexternal %s :" b n in
+       let s2 =
+         ctyp (ind + 2) (tab (ind + 2)) t
+           (if sl = [] then k
+            else sprintf " = %s%s" (hlist string 0 "" sl "") k)
+       in
+       sprintf "%s\n%s" s1 s2)
 ;
 
 value exception_decl ind b (e, tl, id) k =
