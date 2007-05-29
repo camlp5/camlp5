@@ -95,6 +95,16 @@ value var_escaped ind b v k =
   sprintf "%s%s%s" b x k
 ;
 
+value cons_escaped ind b v k =
+  let x =
+    if v = "()" || v = "[]" then v
+    else if v = " True" then "True_"
+    else if v = " False" then "False_"
+    else v
+  in
+  sprintf "%s%s%s" b x k
+;
+
 value rec mod_ident ind b sl k =
   match sl with
   [ [] -> sprintf "%s%s" b k
@@ -406,7 +416,7 @@ value type_var ind b (tv, (p, m)) k =
 value type_decl ind b ((_, tn), tp, te, cl) k =
   horiz_vertic
     (fun () ->
-       sprintf "%s%s%s = %s%s%s" b tn
+       sprintf "%s%s%s = %s%s%s" b (var_escaped 0 "" tn "")
          (if tp = [] then "" else sprintf " %s" (hlist type_var 0 "" tp ""))
          (ctyp 0 "" te "")
          (if cl = [] then "" else not_impl "type_decl cl" ind "" cl "") k)
@@ -414,7 +424,7 @@ value type_decl ind b ((_, tn), tp, te, cl) k =
        let s1 =
          horiz_vertic
            (fun () ->
-              sprintf "%s%s%s =" b tn
+              sprintf "%s%s%s =" b (var_escaped 0 "" tn "")
                 (if tp = [] then "" else
                  sprintf " %s" (hlist type_var 0 "" tp "")))
            (fun () -> not_impl "type_decl vertic 1" ind b tn k)
@@ -443,7 +453,7 @@ value label_decl ind b (_, l, m, t) k =
 ;
 
 value cons_decl ind b (_, c, tl) k =
-  if tl = [] then sprintf "%s%s%s" b c k
+  if tl = [] then cons_escaped ind b c k
   else
     horiz_vertic
       (fun () ->
@@ -1101,7 +1111,7 @@ value patt_simple =
   | <:patt< $lid:s$ >> | <:patt< ~ $s$ >> ->
       fun curr next ind b k -> var_escaped ind b s k
   | <:patt< $uid:s$ >> | <:patt< `$uid:s$ >> ->
-      fun curr next ind b k -> sprintf "%s%s%s" b s k
+      fun curr next ind b k -> cons_escaped ind b s k
   | <:patt< $chr:s$ >> ->
       fun curr next ind b k -> sprintf "%s'%s'%s" b s k
   | <:patt< $str:s$ >> ->
@@ -1295,9 +1305,24 @@ value module_expr_top =
              let s1 =
                horiz_vertic
                  (fun () ->
-                    sprintf "%sfunctor (%s: %s) ->" b s
+                    sprintf "%sfunctor (%s : %s) ->" b s
                       (module_type 0 "" mt ""))
-                 (fun () -> not_impl "functor vertic" ind b 0 "")
+                 (fun () ->
+                    let s1 = sprintf "%sfunctor" b in
+                    let s2 =
+                      horiz_vertic
+                        (fun () ->
+                           sprintf "%s(%s : %s)" (tab (ind + 2)) s
+                             (module_type 0 "" mt ""))
+                        (fun () ->
+                           let s1 = sprintf "%s(%s :" (tab (ind + 2)) s in
+                           let s2 =
+                             module_type (ind + 3) (tab (ind + 3)) mt ")"
+                           in
+                           sprintf "%s\n%s" s1 s2)
+                    in
+                    let s3 = sprintf "%s->" (tab ind) in
+                    sprintf "%s\n%s\n%s" s1 s2 s3)
              in
              let s2 = module_expr (ind + 2) (tab (ind + 2)) me k in
              sprintf "%s\n%s" s1 s2)
