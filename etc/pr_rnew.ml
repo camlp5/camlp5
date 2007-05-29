@@ -39,8 +39,8 @@ value is_infix = do {
 value is_not_yet_implemented_infix = do {
   let infixes = Hashtbl.create 73 in
   List.iter (fun s -> Hashtbl.add infixes s True)
-    ["*"; "**"; "*."; "/"; "/."; "<."; "<=."; "<>."; "=."; ">."; ">=.";
-     "asr"; "land"; "lor"; "lsl"; "lsr"; "lxor"; "mod"; "or"; "~-"; "~-."];
+    ["**"; "<."; "<=."; "<>."; "=."; ">."; ">=."; "asr"; "lsl"; "lsr"; "or";
+     "~-"; "~-."];
   fun s -> try Hashtbl.find infixes s with [ Not_found -> False ]
 };
 
@@ -784,7 +784,6 @@ value expr_add =
         left_operator ind 0 unfold next b z k ]
 ;
 
-(*
 value expr_mul =
   let ops = ["*"; "*."; "/"; "/."; "land"; "lor"; "lxor"; "mod"] in
   extfun Extfun.empty with
@@ -799,6 +798,7 @@ value expr_mul =
         left_operator ind 0 unfold next b z k ]
 ;
 
+(*
 value expr_pow =
   extfun Extfun.empty with
   [ z ->
@@ -898,14 +898,13 @@ value expr_simple =
         let lxl = List.map (fun lx -> (lx, ";")) lel in
         plist (binding expr) (ind + 1) 0 (sprintf "%s{" b) lxl
           (sprintf "}%s" k)
-(*
   | <:expr< {($e$) with $list:lel$} >> ->
       fun curr next ind b k ->
-        let b1 = expr ind "(" e ") with " in
         let lxl = List.map (fun lx -> (lx, ";")) lel in
-        listws_hv (ind + 1) 0
-          (fun ind b pe k -> binding ind False (b, "") pe ("", k))
-          (sprintf "%s{%s" b b1) lxl (sprintf "}%s" k)
+        plist (binding expr) (ind + 1) 0
+          (expr ind (sprintf "%s{(" b) e ") with ") lxl
+          (sprintf "}%s" k)
+(*
   | <:expr< [| $list:el$ |] >> ->
       fun curr next ind b k ->
         if el = [] then sprintf "%s[| |]%s" b k
@@ -1108,6 +1107,21 @@ value patt_simple =
   | <:patt< ? $s$ >> | <:patt< ? ($lid:s$ = $_$) >> ->
       fun curr next ind b k -> var_escaped ind b s k
 *)
+  | <:patt< ? $p$ >> ->
+      fun curr next ind b k ->
+        horiz_vertic (fun () -> not_impl "patt ?p horiz" ind b p k)
+          (fun () -> not_impl "patt ?p vertic" ind b p k)
+  | <:patt< ? ($p$ = $e$) >> ->
+      fun curr next ind b k ->
+        horiz_vertic
+          (fun () ->
+             sprintf "%s?(%s = %s)%s" b (patt 0 "" p "") (expr 0 "" e "") k)
+          (fun () -> not_impl "patt ?(p=e) vertic" ind b p k)
+  | <:patt< ? $i$ : ($p$ = $eo$) >> ->
+      fun curr next ind b k ->
+        horiz_vertic (fun () -> not_impl "patt ?i:(p=e) horiz" ind b i k)
+          (fun () -> not_impl "patt ?i:(p=e) vertic" ind b i k)
+(**)
   | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >>
     as z ->
       fun curr next ind b k ->
@@ -1417,8 +1431,8 @@ pr_expr.pr_levels :=
    {pr_label = "less"; pr_rules = expr_less};
    {pr_label = "concat"; pr_rules = expr_concat};
    {pr_label = "add"; pr_rules = expr_add};
-(*
    {pr_label = "mul"; pr_rules = expr_mul};
+(*
    {pr_label = "pow"; pr_rules = expr_pow};
    {pr_label = "unary"; pr_rules = expr_unary_minus};
 *)
