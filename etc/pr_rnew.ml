@@ -443,15 +443,24 @@ value label_decl ind b (_, l, m, t) k =
 ;
 
 value cons_decl ind b (_, c, tl) k =
-  horiz_vertic
-    (fun () ->
-       let s1 = sprintf "%s%s" b c in
-       let s2 =
-         if tl = [] then ""
-         else sprintf " of %s" (hlist2 ctyp (and_before ctyp) 0 "" tl "")
-       in
-       sprintf "%s%s%s" s1 s2 k)
-    (fun () -> not_impl "cons_decl vertic" ind b c k)
+  if tl = [] then sprintf "%s%s%s" b c k
+  else
+    horiz_vertic
+      (fun () ->
+         sprintf "%s%s of %s%s" b c
+           (hlist2 ctyp (and_before ctyp) 0 "" tl "") k)
+      (fun () ->
+         let s1 = sprintf "%s%s of" b c in
+         let s2 =
+           horiz_vertic
+             (fun () ->
+                sprintf "%s%s%s" (tab (ind + 4))
+                  (hlist2 ctyp (and_before ctyp) 0 "" tl "") k)
+             (fun () ->
+                let tl = List.map (fun t -> (t, " and")) tl in
+                plist ctyp (ind + 4) 2 (tab (ind + 4)) tl k)
+         in
+         sprintf "%s\n%s" s1 s2)
 ;
 
 (* definitions of printers by decreasing level *)
@@ -557,8 +566,10 @@ value ctyp_simple =
       fun curr next ind b k -> sprintf "%s'%s%s" b s k
   | <:ctyp< _ >> ->
       fun curr next ind b k -> sprintf "%s_%s" b k
+  | <:ctyp< ? $i$ : $t$ >> ->
+      fun curr next ind b k -> ctyp ind (sprintf "%s?%s:" b i) t k
 (*
-  | <:ctyp< ? $_$ : $t$ >> | <:ctyp< ~ $_$ : $t$ >> ->
+  | <:ctyp< ~ $_$ : $t$ >> ->
       fun curr next ind b k -> pr_ctyp.pr_fun "apply" ind b t k
   | <:ctyp< < $list:_$ $opt:_$ > >> ->
       fun curr next ind b k ->
@@ -1125,7 +1136,25 @@ value exception_decl ind b (e, tl, id) k =
          (if id = [] then ""
           else sprintf " = %s" (mod_ident 0 "" id ""))
          k)
-    (fun () -> not_impl "exception vertic" ind b e k)
+    (fun () ->
+       let s1 =
+         sprintf "%sexception %s%s" b e (if tl = [] then "" else " of")
+       in
+       let s2 =
+         if tl = [] then ""
+         else
+           let tl = List.map (fun t -> (t, " and")) tl in
+           sprintf "\n%s"
+             (plist ctyp 0 (ind + 2) (tab (ind + 2)) tl
+                (if id = [] then k else ""))
+       in
+       let s3 =
+         if id = [] then ""
+         else
+           sprintf "\n%s"
+             (mod_ident (ind + 2) (sprintf "%s= " (tab (ind + 2))) id k)
+       in
+       sprintf "%s%s%s" s1 s2 s3)
 ;
 
 value str_item_top =
@@ -1364,14 +1393,12 @@ value module_type_top =
       fun curr next ind b k -> next ind b z k ]
 ;
 
-(*
 value module_type_dot =
   extfun Extfun.empty with
   [ <:module_type< $x$ . $y$ >> ->
       fun curr next ind b k -> curr ind (curr ind b x ".") y k
   | z -> fun curr next ind b k -> next ind b z k ]
 ;
-*)
 
 value module_type_simple =
   extfun Extfun.empty with
@@ -1428,9 +1455,7 @@ pr_module_expr.pr_levels :=
 
 pr_module_type.pr_levels :=
   [{pr_label = "top"; pr_rules = module_type_top};
-(*
    {pr_label = "dot"; pr_rules = module_type_dot};
-*)
    {pr_label = "simple"; pr_rules = module_type_simple}]
 ;
 
