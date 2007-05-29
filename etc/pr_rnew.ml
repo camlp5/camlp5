@@ -399,62 +399,6 @@ value rec make_patt_list =
   | x -> ([], Some x) ]
 ;
 
-(*
-value x_list ind elem b (xl, c) k =
-  let ini =
-    match c with
-    [ None -> ("", [])
-    | Some x -> (" ::", [(x, "")]) ]
-  in
-  let (_, xl) =
-    List.fold_right (fun x (sep, xl) -> (";", [(x, sep) :: xl])) xl ini
-  in
-  listws_hv (ind + 1) 0 elem (sprintf "%s[" b) xl (sprintf "]%s" k)
-;
-
-value rec type_params ind b l k =
-  match l with
-  [ [(s, vari) :: l] ->
-      let b =
-        match vari with
-        [ (True, False) -> sprintf "%s+" b
-        | (False, True) -> sprintf "%s-" b
-        | _ -> b ]
-      in
-      sprintf " %s'%s%s%s" b s "" (type_params ind "" l k)
-  | [] -> sprintf "%s%s" b k ]
-;
-
-value type_decl ind last b ((_, tn), tp, te, cl) k =
-  let tn = var_escaped ind "" tn "" in
-  if last then
-    sprint_indent_unindent ind 2
-      (fun ind -> sprintf "%s %s%s =" b tn (type_params ind "" tp ""))
-      (fun ind b _ ->
-         ctyp ind b te
-           (sprintf "%s%s" (if cl = [] then "" else " \"constraint\"") ""))
-      (fun ind b _ -> sprintf "%s%s" b k)
-  else
-    sprint_indent ind 2
-      (fun ind _ -> sprintf "%s %s%s =" b tn (type_params ind "" tp ""))
-      (fun ind b _ ->
-         ctyp ind b te
-           (sprintf "%s%s" (if cl = [] then "" else " \"constraint\"") k))
-;
-
-value rec type_decl_list ind b tdl k =
-  match tdl with
-  [ [] -> sprintf "%s%s" b k
-  | [td] -> type_decl ind True b td k
-  | [td :: tdl] ->
-      let () = horiz_vertic (fun nofit -> nofit ()) (fun () -> ()) in
-      let s1 = type_decl ind False b td "" in
-      let s1 = sprintf "%s\n" s1 in
-      sprintf "%s%s" s1
-        (type_decl_list ind (sprintf "%sand" (tab ind)) tdl k) ]
-;
-*)
-
 value type_var ind b (tv, (p, m)) k =
   sprintf "%s%s'%s%s" b (if p then "+" else if m then "-" else "") tv k
 ;
