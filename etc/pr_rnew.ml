@@ -67,9 +67,6 @@ value rec is_irrefut_patt =
       List.for_all (fun (_, p) -> is_irrefut_patt p) fpl
   | <:patt< ($p$ : $_$) >> -> is_irrefut_patt p
   | <:patt< ($list:pl$) >> -> List.for_all is_irrefut_patt pl
-  | <:patt< ? $_$ >> -> True
-  | <:patt< ? ($_$ = $_$) >> -> True
-  | <:patt< ~ $_$ >> -> True
   | _ -> False ]
 ;
 
@@ -577,7 +574,7 @@ value ctyp_simple =
   | <:ctyp< _ >> ->
       fun curr next ind b k -> sprintf "%s_%s" b k
   | <:ctyp< ? $i$ : $t$ >> ->
-      fun curr next ind b k -> ctyp ind (sprintf "%s?%s:" b i) t k
+      fun curr next ind b k -> failwith "labels not pretty printed"
 (*
   | <:ctyp< ~ $_$ : $t$ >> ->
       fun curr next ind b k -> pr_ctyp.pr_fun "apply" ind b t k
@@ -981,16 +978,9 @@ value expr_simple =
       fun curr next ind b k -> sprintf "%s\"%s\"%s" b s k
   | <:expr< $chr:s$ >> ->
       fun curr next ind b k -> sprintf "%s'%s'%s" b s k
-  | <:expr< ? $s$ >> ->
-      fun curr next ind b k -> var_escaped ind (sprintf "%s?" b) s k
-  | <:expr< ~ $s$ >> ->
-      fun curr next ind b k -> var_escaped ind (sprintf "%s~" b) s k
-  | <:expr< ~ $s$ : $e$ >> ->
-      fun curr next ind b k ->
-        curr ind (var_escaped ind (sprintf "%s~" b) s ":") e k
+  | <:expr< ? $_$ >> | <:expr< ~ $_$ >> | <:expr< ~ $_$ : $_$ >> ->
+      fun curr next ind b k -> failwith "labels not pretty printed"
 (*
-  | <:expr< ~ $_$ : $z$ >> ->
-      fun curr next ind b k -> curr ind b z k
   | <:expr< let $opt:_$ $list:_$ in $e$ >> as z
     when snd (let_and_seq_list e) ->
       fun curr next ind b k -> expr ind b z k
@@ -1108,9 +1098,9 @@ value patt_simple =
              sprintf "%s\n%s" s1 s2)
   | <:patt< $int:s$ >> ->
       fun curr next ind b k -> sprintf "%s%s%s" b s k
-  | <:patt< $lid:s$ >> | <:patt< ~ $s$ >> ->
+  | <:patt< $lid:s$ >> ->
       fun curr next ind b k -> var_escaped ind b s k
-  | <:patt< $uid:s$ >> | <:patt< `$uid:s$ >> ->
+  | <:patt< $uid:s$ >> ->
       fun curr next ind b k -> cons_escaped ind b s k
   | <:patt< $chr:s$ >> ->
       fun curr next ind b k -> sprintf "%s'%s'%s" b s k
@@ -1118,19 +1108,11 @@ value patt_simple =
       fun curr next ind b k -> sprintf "%s\"%s\"%s" b s k
   | <:patt< _ >> ->
       fun curr next ind b k -> sprintf "%s_%s" b k
-  | <:patt< ? $s$ >> ->
-      fun curr next ind b k -> var_escaped ind (sprintf "%s?" b) s k
-  | <:patt< ? ($p$ = $e$) >> ->
-      fun curr next ind b k ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s?(%s = %s)%s" b (patt 0 "" p "") (expr 0 "" e "") k)
-          (fun () -> not_impl "patt ?(p=e) vertic" ind b p k)
-  | <:patt< ? $i$ : ($p$ = $eo$) >> ->
-      fun curr next ind b k ->
-        horiz_vertic (fun () -> not_impl "patt ?i:(p=e) horiz" ind b i k)
-          (fun () -> not_impl "patt ?i:(p=e) vertic" ind b i k)
-(**)
+  | <:patt< ? $s$ >> | <:patt< ? ($p$ = $e$) >> |
+    <:patt< ? $i$ : ($p$ = $eo$) >> | <:patt< ~ $s$ >> ->
+      fun curr next ind b k -> failwith "labels not pretty printed"
+  | <:patt< `$uid:s$ >> ->
+      fun curr next ind b k -> failwith "row fields not pretty printed"
   | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >>
     as z ->
       fun curr next ind b k ->
@@ -1289,6 +1271,9 @@ value sig_item_top =
              let s1 = sprintf "%svalue %s :" b (var_escaped 0 "" s "") in
              let s2 = ctyp (ind + 2) (tab (ind + 2)) t k in
              sprintf "%s\n%s" s1 s2)
+  | <:sig_item< class type $list:cd$ >> ->
+      fun curr next ind b k ->
+        failwith "classes and objects not pretty printed"
   | z ->
       fun curr next ind b k -> not_impl "sig_item" ind b z k ]
 ;
