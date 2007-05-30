@@ -2,6 +2,7 @@
 (* $Id$ *)
 (* Copyright (c) INRIA 2007 *)
 
+open Pcaml.NewPrinter;
 open Sformat;
 
 module Buff =
@@ -266,14 +267,6 @@ value right_operator ind sh unfold next b x k =
  * Extensible printers
  *)
 
-type printer_t 'a =
-  { pr_fun : mutable string -> pr_fun 'a;
-    pr_levels : mutable list (pr_level 'a) }
-and pr_level 'a = { pr_label : string; pr_rules : mutable pr_rule 'a }
-and pr_rule 'a =
-  Extfun.t 'a (pr_fun 'a -> pr_fun 'a -> int -> string -> string -> string)
-and pr_fun 'a = int -> string -> 'a -> string -> string;
-
 (*
 value rec find_pr_level lab =
   fun
@@ -282,34 +275,6 @@ value rec find_pr_level lab =
       if lev.pr_label = lab then lev else find_pr_level lab levl ]
 ;
 *)
-
-value printer loc_of name = do {
-  let pr_fun name pr lab =
-    loop False pr.pr_levels where rec loop app =
-      fun
-      [ [] -> fun ind b z k ->
-          failwith
-            (Printf.sprintf "unable to print %s%s" name
-               (if lab = "" then "" else " \"" ^ lab ^ "\""))
-      | [lev :: levl] ->
-          if app || lev.pr_label = lab then
-            let next = loop True levl in
-            curr where rec curr ind b z k =
-              Extfun.apply lev.pr_rules z curr next ind b k
-          else loop app levl ]
-  in
-  let pr = {pr_fun = fun []; pr_levels = []} in
-  pr.pr_fun := pr_fun name pr;
-  pr
-};
-
-value pr_expr = printer MLast.loc_of_expr "expr";
-value pr_patt = printer MLast.loc_of_patt "patt";
-value pr_ctyp = printer MLast.loc_of_ctyp "type";
-value pr_str_item = printer MLast.loc_of_str_item "str_item";
-value pr_sig_item = printer MLast.loc_of_sig_item "sig_item";
-value pr_module_expr = printer MLast.loc_of_module_expr "module_expr";
-value pr_module_type = printer MLast.loc_of_module_type "module_type";
 
 value expr ind b z k = pr_expr.pr_fun "top" ind b z k;
 value patt ind b z k = pr_patt.pr_fun "top" ind b z k;
@@ -574,7 +539,7 @@ value ctyp_simple =
   | <:ctyp< _ >> ->
       fun curr next ind b k -> sprintf "%s_%s" b k
   | <:ctyp< ? $i$ : $t$ >> ->
-      fun curr next ind b k -> failwith "labels not pretty printed"
+      fun curr next ind b k -> failwith "labels not pretty printed (in type)"
 (*
   | <:ctyp< ~ $_$ : $t$ >> ->
       fun curr next ind b k -> pr_ctyp.pr_fun "apply" ind b t k
@@ -979,7 +944,8 @@ value expr_simple =
   | <:expr< $chr:s$ >> ->
       fun curr next ind b k -> sprintf "%s'%s'%s" b s k
   | <:expr< ? $_$ >> | <:expr< ~ $_$ >> | <:expr< ~ $_$ : $_$ >> ->
-      fun curr next ind b k -> failwith "labels not pretty printed"
+      fun curr next ind b k ->
+        failwith "labels not pretty printed (in expr); add pr_ro.cmo"
 (*
   | <:expr< let $opt:_$ $list:_$ in $e$ >> as z
     when snd (let_and_seq_list e) ->
@@ -1110,7 +1076,8 @@ value patt_simple =
       fun curr next ind b k -> sprintf "%s_%s" b k
   | <:patt< ? $s$ >> | <:patt< ? ($p$ = $e$) >> |
     <:patt< ? $i$ : ($p$ = $eo$) >> | <:patt< ~ $s$ >> ->
-      fun curr next ind b k -> failwith "labels not pretty printed"
+      fun curr next ind b k ->
+        failwith "labels not pretty printed (in patt); add pr_ro.cmo"
   | <:patt< `$uid:s$ >> ->
       fun curr next ind b k -> failwith "row fields not pretty printed"
   | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >>

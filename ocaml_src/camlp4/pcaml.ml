@@ -325,6 +325,67 @@ let add_option name spec descr =
 
 (* Printers *)
 
+module NewPrinter =
+  struct
+    type 'a printer_t =
+      { mutable pr_fun : string -> 'a pr_fun;
+        mutable pr_levels : 'a pr_level list }
+    and 'a pr_level = { pr_label : string; mutable pr_rules : 'a pr_rule }
+    and 'a pr_rule =
+      ('a, ('a pr_fun -> 'a pr_fun -> int -> string -> string -> string))
+       Extfun.t
+    and 'a pr_fun = int -> string -> 'a -> string -> string
+    ;;
+    let printer loc_of name =
+      let pr_fun name pr lab =
+        let rec loop app =
+          function
+            [] ->
+              (fun ind b z k ->
+                 failwith
+                   (Printf.sprintf "unable to print %s%s" name
+                      (if lab = "" then "" else " \"" ^ lab ^ "\"")))
+          | lev :: levl ->
+              if app || lev.pr_label = lab then
+                let next = loop true levl in
+                let rec curr ind b z k =
+                  Extfun.apply lev.pr_rules z curr next ind b k
+                in
+                curr
+              else loop app levl
+        in
+        loop false pr.pr_levels
+      in
+      let pr =
+        {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 379, 25)));
+         pr_levels = []}
+      in
+      pr.pr_fun <- pr_fun name pr; pr
+    ;;
+    let pr_expr = printer MLast.loc_of_expr "expr";;
+    let pr_patt = printer MLast.loc_of_patt "patt";;
+    let pr_ctyp = printer MLast.loc_of_ctyp "type";;
+    let pr_str_item = printer MLast.loc_of_str_item "str_item";;
+    let pr_sig_item = printer MLast.loc_of_sig_item "sig_item";;
+    let pr_module_expr = printer MLast.loc_of_module_expr "module_expr";;
+    let pr_module_type = printer MLast.loc_of_module_type "module_type";;
+    let pr_class_sig_item =
+      printer MLast.loc_of_class_sig_item "class_sig_item"
+    ;;
+    let pr_class_str_item =
+      printer MLast.loc_of_class_str_item "class_str_item"
+    ;;
+    let pr_class_expr = printer MLast.loc_of_class_expr "class_expr";;
+    let pr_class_type = printer MLast.loc_of_class_type "class_type";;
+    let rec find_pr_level lab =
+      function
+        [] -> failwith ("level " ^ lab ^ " not found")
+      | lev :: levl ->
+          if lev.pr_label = lab then lev else find_pr_level lab levl
+    ;;
+  end
+;;
+
 module Printer =
   struct
     open Spretty;;
@@ -342,47 +403,47 @@ module Printer =
     and kont = pretty Stream.t
     ;;
     let pr_str_item =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 369, 34)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 420, 34)));
        pr_levels = []}
     ;;
     let pr_sig_item =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 370, 34)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 421, 34)));
        pr_levels = []}
     ;;
     let pr_module_type =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 371, 37)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 422, 37)));
        pr_levels = []}
     ;;
     let pr_module_expr =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 372, 37)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 423, 37)));
        pr_levels = []}
     ;;
     let pr_expr =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 373, 30)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 424, 30)));
        pr_levels = []}
     ;;
     let pr_patt =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 374, 30)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 425, 30)));
        pr_levels = []}
     ;;
     let pr_ctyp =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 375, 30)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 426, 30)));
        pr_levels = []}
     ;;
     let pr_class_sig_item =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 376, 40)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 427, 40)));
        pr_levels = []}
     ;;
     let pr_class_str_item =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 377, 40)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 428, 40)));
        pr_levels = []}
     ;;
     let pr_class_type =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 378, 36)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 429, 36)));
        pr_levels = []}
     ;;
     let pr_class_expr =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 379, 36)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 430, 36)));
        pr_levels = []}
     ;;
     let pr_expr_fun_args = ref Extfun.empty;;

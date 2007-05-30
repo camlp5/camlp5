@@ -103,6 +103,33 @@ val print_interf : ((MLast.sig_item * MLast.loc) list -> unit) ref;;
 val print_implem : ((MLast.str_item * MLast.loc) list -> unit) ref;;
    (** Some printers, set by [pr_dump.cmo], [pr_o.cmo] and [pr_r.cmo]. *)
 
+module NewPrinter :
+  sig
+    type 'a printer_t =
+      { mutable pr_fun : string -> 'a pr_fun;
+        mutable pr_levels : 'a pr_level list }
+    and 'a pr_level = { pr_label : string; mutable pr_rules : 'a pr_rule }
+    and 'a pr_rule =
+      ('a, ('a pr_fun -> 'a pr_fun -> int -> string -> string -> string))
+       Extfun.t
+    and 'a pr_fun = int -> string -> 'a -> string -> string
+    ;;
+    val printer : 'a -> string -> 'b printer_t;;
+    val pr_expr : MLast.expr printer_t;;
+    val pr_patt : MLast.patt printer_t;;
+    val pr_ctyp : MLast.ctyp printer_t;;
+    val pr_str_item : MLast.str_item printer_t;;
+    val pr_sig_item : MLast.sig_item printer_t;;
+    val pr_module_expr : MLast.module_expr printer_t;;
+    val pr_module_type : MLast.module_type printer_t;;
+    val pr_class_sig_item : MLast.class_sig_item printer_t;;
+    val pr_class_str_item : MLast.class_str_item printer_t;;
+    val pr_class_type : MLast.class_type printer_t;;
+    val pr_class_expr : MLast.class_expr printer_t;;
+    val find_pr_level : string -> 'a pr_level list -> 'a pr_level;;
+  end
+;;
+
 module Printer :
   sig
     open Spretty;;
