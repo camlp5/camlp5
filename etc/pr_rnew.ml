@@ -539,7 +539,8 @@ value ctyp_simple =
   | <:ctyp< _ >> ->
       fun curr next ind b k -> sprintf "%s_%s" b k
   | <:ctyp< ? $i$ : $t$ >> ->
-      fun curr next ind b k -> failwith "labels not pretty printed (in type)"
+      fun curr next ind b k ->
+        failwith "labels not pretty printed (in type); add pr_ro.cmo"
 (*
   | <:ctyp< ~ $_$ : $t$ >> ->
       fun curr next ind b k -> pr_ctyp.pr_fun "apply" ind b t k
@@ -1240,7 +1241,7 @@ value sig_item_top =
              sprintf "%s\n%s" s1 s2)
   | <:sig_item< class type $list:cd$ >> ->
       fun curr next ind b k ->
-        failwith "classes and objects not pretty printed"
+        failwith "classes and objects not pretty printed; add pr_ro.cmo"
   | z ->
       fun curr next ind b k -> not_impl "sig_item" ind b z k ]
 ;
