@@ -12,7 +12,7 @@
 
 (* $Id$ *)
 
-open Pcaml;
+open Pcaml.Printer;
 open Spretty;
 
 value loc = Stdpp.dummy_loc;

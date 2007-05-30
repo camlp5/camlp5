@@ -19,6 +19,8 @@ pa_oop.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi
 pa_oop.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
 pa_op.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi ../camlp4/exparser.cmi 
 pa_op.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi ../camlp4/exparser.cmx 
+parserify.cmo: ../camlp4/mLast.cmi parserify.cmi 
+parserify.cmx: ../camlp4/mLast.cmi parserify.cmi 
 pa_ru.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
 pa_ru.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
 pa_scheme.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
@@ -27,8 +29,6 @@ pa_schemer.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi
 pa_schemer.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
 pa_sml.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
 pa_sml.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
-parserify.cmo: ../camlp4/mLast.cmi parserify.cmi 
-parserify.cmx: ../camlp4/mLast.cmi parserify.cmi 
 pr_depend.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
 pr_depend.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
 pr_extend.cmo: ../camlp4/spretty.cmi ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 

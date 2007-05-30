@@ -101,47 +101,44 @@ exception Qerror of string and err_ctx and exn;
 
 (** {6 Printers} *)
 
-open Spretty;
-
 value print_interf : ref (list (MLast.sig_item * MLast.loc) -> unit);
 value print_implem : ref (list (MLast.str_item * MLast.loc) -> unit);
    (** Some printers, set by [pr_dump.cmo], [pr_o.cmo] and [pr_r.cmo]. *)
 
-type printer_t 'a =
-  { pr_fun : mutable string -> 'a -> string -> kont -> pretty;
-    pr_levels : mutable list (pr_level 'a) }
-and pr_level 'a =
-  { pr_label : string;
-    pr_box : 'a -> Stream.t pretty -> pretty;
-    pr_rules : mutable pr_rule 'a }
-and pr_rule 'a =
-  Extfun.t 'a (curr 'a -> next 'a -> string -> kont -> Stream.t pretty)
-and curr 'a = 'a -> string -> kont -> Stream.t pretty
-and next 'a = 'a -> string -> kont -> pretty
-and kont = Stream.t pretty
+module Printer :
+  sig
+    open Spretty;
+    type printer_t 'a =
+      { pr_fun : mutable string -> 'a -> string -> kont -> pretty;
+        pr_levels : mutable list (pr_level 'a) }
+    and pr_level 'a =
+      { pr_label : string;
+        pr_box : 'a -> Stream.t pretty -> pretty;
+        pr_rules : mutable pr_rule 'a }
+    and pr_rule 'a =
+      Extfun.t 'a (curr 'a -> next 'a -> string -> kont -> Stream.t pretty)
+    and curr 'a = 'a -> string -> kont -> Stream.t pretty
+    and next 'a = 'a -> string -> kont -> pretty
+    and kont = Stream.t pretty;
+    value pr_sig_item : printer_t MLast.sig_item;
+    value pr_str_item : printer_t MLast.str_item;
+    value pr_module_type : printer_t MLast.module_type;
+    value pr_module_expr : printer_t MLast.module_expr;
+    value pr_expr : printer_t MLast.expr;
+    value pr_patt : printer_t MLast.patt;
+    value pr_ctyp : printer_t MLast.ctyp;
+    value pr_class_sig_item : printer_t MLast.class_sig_item;
+    value pr_class_str_item : printer_t MLast.class_str_item;
+    value pr_class_type : printer_t MLast.class_type;
+    value pr_class_expr : printer_t MLast.class_expr;
+    value pr_expr_fun_args :
+      ref (Extfun.t MLast.expr (list MLast.patt * MLast.expr));
+    value find_pr_level : string -> list (pr_level 'a) -> pr_level 'a;
+    value top_printer : printer_t 'a -> 'a -> unit;
+    value string_of : printer_t 'a -> 'a -> string;
+    value inter_phrases : ref (option string);
+  end
 ;
-
-value pr_sig_item : printer_t MLast.sig_item;
-value pr_str_item : printer_t MLast.str_item;
-value pr_module_type : printer_t MLast.module_type;
-value pr_module_expr : printer_t MLast.module_expr;
-value pr_expr : printer_t MLast.expr;
-value pr_patt : printer_t MLast.patt;
-value pr_ctyp : printer_t MLast.ctyp;
-value pr_class_sig_item : printer_t MLast.class_sig_item;
-value pr_class_str_item : printer_t MLast.class_str_item;
-value pr_class_type : printer_t MLast.class_type;
-value pr_class_expr : printer_t MLast.class_expr;
-
-value pr_expr_fun_args :
-  ref (Extfun.t MLast.expr (list MLast.patt * MLast.expr));
-
-value find_pr_level : string -> list (pr_level 'a) -> pr_level 'a;
-
-value top_printer : printer_t 'a -> 'a -> unit;
-value string_of : printer_t 'a -> 'a -> string;
-
-value inter_phrases : ref (option string);
 
 (** {6 Directives} *)
 

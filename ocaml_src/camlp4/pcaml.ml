@@ -325,125 +325,123 @@ let add_option name spec descr =
 
 (* Printers *)
 
-open Spretty;;
-
-type 'a printer_t =
-  { mutable pr_fun : string -> 'a -> string -> kont -> pretty;
-    mutable pr_levels : 'a pr_level list }
-and 'a pr_level =
-  { pr_label : string;
-    pr_box : 'a -> pretty Stream.t -> pretty;
-    mutable pr_rules : 'a pr_rule }
-and 'a pr_rule =
-  ('a, ('a curr -> 'a next -> string -> kont -> pretty Stream.t)) Extfun.t
-and 'a curr = 'a -> string -> kont -> pretty Stream.t
-and 'a next = 'a -> string -> kont -> pretty
-and kont = pretty Stream.t
-;;
-
-let pr_str_item =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 370, 30)));
-   pr_levels = []}
-;;
-let pr_sig_item =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 371, 30)));
-   pr_levels = []}
-;;
-let pr_module_type =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 372, 33)));
-   pr_levels = []}
-;;
-let pr_module_expr =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 373, 33)));
-   pr_levels = []}
-;;
-let pr_expr =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 374, 26)));
-   pr_levels = []}
-;;
-let pr_patt =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 375, 26)));
-   pr_levels = []}
-;;
-let pr_ctyp =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 376, 26)));
-   pr_levels = []}
-;;
-let pr_class_sig_item =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 377, 36)));
-   pr_levels = []}
-;;
-let pr_class_str_item =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 378, 36)));
-   pr_levels = []}
-;;
-let pr_class_type =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 379, 32)));
-   pr_levels = []}
-;;
-let pr_class_expr =
-  {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 380, 32)));
-   pr_levels = []}
-;;
-let pr_expr_fun_args = ref Extfun.empty;;
-
-let pr_fun name pr lab =
-  let rec loop app =
-    function
-      [] -> (fun x dg k -> failwith ("unable to print " ^ name))
-    | lev :: levl ->
-        if app || lev.pr_label = lab then
-          let next = loop true levl in
-          let rec curr x dg k = Extfun.apply lev.pr_rules x curr next dg k in
-          fun x dg k -> lev.pr_box x (curr x dg k)
-        else loop app levl
-  in
-  loop false pr.pr_levels
-;;
-
-pr_str_item.pr_fun <- pr_fun "str_item" pr_str_item;;
-pr_sig_item.pr_fun <- pr_fun "sig_item" pr_sig_item;;
-pr_module_type.pr_fun <- pr_fun "module_type" pr_module_type;;
-pr_module_expr.pr_fun <- pr_fun "module_expr" pr_module_expr;;
-pr_expr.pr_fun <- pr_fun "expr" pr_expr;;
-pr_patt.pr_fun <- pr_fun "patt" pr_patt;;
-pr_ctyp.pr_fun <- pr_fun "ctyp" pr_ctyp;;
-pr_class_sig_item.pr_fun <- pr_fun "class_sig_item" pr_class_sig_item;;
-pr_class_str_item.pr_fun <- pr_fun "class_str_item" pr_class_str_item;;
-pr_class_type.pr_fun <- pr_fun "class_type" pr_class_type;;
-pr_class_expr.pr_fun <- pr_fun "class_expr" pr_class_expr;;
-
-let rec find_pr_level lab =
-  function
-    [] -> failwith ("level " ^ lab ^ " not found")
-  | lev :: levl -> if lev.pr_label = lab then lev else find_pr_level lab levl
+module Printer =
+  struct
+    open Spretty;;
+    type 'a printer_t =
+      { mutable pr_fun : string -> 'a -> string -> kont -> pretty;
+        mutable pr_levels : 'a pr_level list }
+    and 'a pr_level =
+      { pr_label : string;
+        pr_box : 'a -> pretty Stream.t -> pretty;
+        mutable pr_rules : 'a pr_rule }
+    and 'a pr_rule =
+      ('a, ('a curr -> 'a next -> string -> kont -> pretty Stream.t)) Extfun.t
+    and 'a curr = 'a -> string -> kont -> pretty Stream.t
+    and 'a next = 'a -> string -> kont -> pretty
+    and kont = pretty Stream.t
+    ;;
+    let pr_str_item =
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 369, 34)));
+       pr_levels = []}
+    ;;
+    let pr_sig_item =
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 370, 34)));
+       pr_levels = []}
+    ;;
+    let pr_module_type =
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 371, 37)));
+       pr_levels = []}
+    ;;
+    let pr_module_expr =
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 372, 37)));
+       pr_levels = []}
+    ;;
+    let pr_expr =
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 373, 30)));
+       pr_levels = []}
+    ;;
+    let pr_patt =
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 374, 30)));
+       pr_levels = []}
+    ;;
+    let pr_ctyp =
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 375, 30)));
+       pr_levels = []}
+    ;;
+    let pr_class_sig_item =
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 376, 40)));
+       pr_levels = []}
+    ;;
+    let pr_class_str_item =
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 377, 40)));
+       pr_levels = []}
+    ;;
+    let pr_class_type =
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 378, 36)));
+       pr_levels = []}
+    ;;
+    let pr_class_expr =
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 379, 36)));
+       pr_levels = []}
+    ;;
+    let pr_expr_fun_args = ref Extfun.empty;;
+    let pr_fun name pr lab =
+      let rec loop app =
+        function
+          [] -> (fun x dg k -> failwith ("unable to print " ^ name))
+        | lev :: levl ->
+            if app || lev.pr_label = lab then
+              let next = loop true levl in
+              let rec curr x dg k =
+                Extfun.apply lev.pr_rules x curr next dg k
+              in
+              fun x dg k -> lev.pr_box x (curr x dg k)
+            else loop app levl
+      in
+      loop false pr.pr_levels
+    ;;
+    pr_str_item.pr_fun <- pr_fun "str_item" pr_str_item;;
+    pr_sig_item.pr_fun <- pr_fun "sig_item" pr_sig_item;;
+    pr_module_type.pr_fun <- pr_fun "module_type" pr_module_type;;
+    pr_module_expr.pr_fun <- pr_fun "module_expr" pr_module_expr;;
+    pr_expr.pr_fun <- pr_fun "expr" pr_expr;;
+    pr_patt.pr_fun <- pr_fun "patt" pr_patt;;
+    pr_ctyp.pr_fun <- pr_fun "ctyp" pr_ctyp;;
+    pr_class_sig_item.pr_fun <- pr_fun "class_sig_item" pr_class_sig_item;;
+    pr_class_str_item.pr_fun <- pr_fun "class_str_item" pr_class_str_item;;
+    pr_class_type.pr_fun <- pr_fun "class_type" pr_class_type;;
+    pr_class_expr.pr_fun <- pr_fun "class_expr" pr_class_expr;;
+    let rec find_pr_level lab =
+      function
+        [] -> failwith ("level " ^ lab ^ " not found")
+      | lev :: levl ->
+          if lev.pr_label = lab then lev else find_pr_level lab levl
+    ;;
+    let top_printer pr x =
+      Format.force_newline ();
+      Spretty.print_pretty Format.print_char Format.print_string
+        Format.print_newline "<< " "   " 78 (fun _ _ _ -> "", 0, 0, 0) 0
+        (pr.pr_fun "top" x "" Stream.sempty);
+      Format.print_string " >>"
+    ;;
+    let buff = Buffer.create 73;;
+    let buffer_char = Buffer.add_char buff;;
+    let buffer_string = Buffer.add_string buff;;
+    let buffer_newline () = Buffer.add_char buff '\n';;
+    let string_of pr x =
+      Buffer.clear buff;
+      Spretty.print_pretty buffer_char buffer_string buffer_newline "" "" 78
+        (fun _ _ _ -> "", 0, 0, 0) 0 (pr.pr_fun "top" x "" Stream.sempty);
+      Buffer.contents buff
+    ;;
+    let inter_phrases = ref None;;
+  end
 ;;
 
 let undef x = ref (fun _ -> failwith x);;
 let print_interf = undef "no printer";;
 let print_implem = undef "no printer";;
-
-let top_printer pr x =
-  Format.force_newline ();
-  Spretty.print_pretty Format.print_char Format.print_string
-    Format.print_newline "<< " "   " 78 (fun _ _ _ -> "", 0, 0, 0) 0
-    (pr.pr_fun "top" x "" Stream.sempty);
-  Format.print_string " >>"
-;;
-
-let buff = Buffer.create 73;;
-let buffer_char = Buffer.add_char buff;;
-let buffer_string = Buffer.add_string buff;;
-let buffer_newline () = Buffer.add_char buff '\n';;
-
-let string_of pr x =
-  Buffer.clear buff;
-  Spretty.print_pretty buffer_char buffer_string buffer_newline "" "" 78
-    (fun _ _ _ -> "", 0, 0, 0) 0 (pr.pr_fun "top" x "" Stream.sempty);
-  Buffer.contents buff
-;;
-
-let inter_phrases = ref None;;
 
 (* Directives *)
 

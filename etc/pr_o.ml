@@ -10,9 +10,9 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_o.ml,v 1.14 2007/05/03 08:30:19 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.15 2007/05/30 09:54:20 deraugla Exp $ *)
 
-open Pcaml;
+open Pcaml.Printer;
 open Spretty;
 open Stdpp;
 
@@ -1801,7 +1801,7 @@ value output_string_eval oc s =
 ;
 
 value maxl = ref 78;
-value sep = Pcaml.inter_phrases;
+value sep = Pcaml.Printer.inter_phrases;
 value ncip = ref True;
 
 value input_source ic len =
