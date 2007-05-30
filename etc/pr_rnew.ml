@@ -217,7 +217,7 @@ value rec plistl elem eleml ind sh b xl k =
 (* paragraph list *)
 value plist elem ind sh b xl k = plistl elem elem ind sh b xl k;
 
-value comma_after elem ind b x k = elem ind b x (sprintf ";%s" k);
+value semi_after elem ind b x k = elem ind b x (sprintf ";%s" k);
 value star_after elem ind b x k = elem ind b x (sprintf " *%s" k);
 value op_after elem ind b (x, op) k = elem ind b x (sprintf "%s%s" op k);
 
@@ -492,10 +492,10 @@ value ctyp_simple =
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
-             hlistl (comma_after label_decl) label_decl 0
+             hlistl (semi_after label_decl) label_decl 0
                (sprintf "%s{ " b) ltl (sprintf " }%s" k))
           (fun () ->
-             vlistl (comma_after label_decl) label_decl (ind + 2)
+             vlistl (semi_after label_decl) label_decl (ind + 2)
                (sprintf "%s{ " b) ltl (sprintf " }%s" k))
 (*
   | <:ctyp< [= $list:rfl$ ] >> as t ->
@@ -667,7 +667,7 @@ value expr_top =
              sprintf "%sfor %s = %s %s %s do { %s }%s" b v
                (curr ind "" e1 "") (if d then "to" else "downto")
                (curr ind "" e2 "")
-               (hlistl (comma_after expr) expr 0 "" el "") k)
+               (hlistl (semi_after expr) expr 0 "" el "") k)
           (fun () ->
              let s1 =
                horiz_vertic
@@ -678,7 +678,7 @@ value expr_top =
                  (fun () -> not_impl "for vertic 1" ind b v "")
              in
              let s2 =
-               vlistl (comma_after expr) expr (ind + 2) (tab (ind + 2)) el ""
+               vlistl (semi_after expr) expr (ind + 2) (tab (ind + 2)) el ""
              in
              let s3 = sprintf "%s}%s" (tab ind) k in
              sprintf "%s\n%s\n%s" s1 s2 s3)
@@ -856,10 +856,10 @@ value expr_simple =
         horiz_vertic
           (fun () ->
              sprintf "%sdo {%s%s%s}%s" b " "
-               (hlistl (comma_after expr) expr 0 "" el "") " " k)
+               (hlistl (semi_after expr) expr 0 "" el "") " " k)
           (fun () ->
              sprintf "%sdo {%s%s%s}%s" b "\n"
-               (vlistl (comma_after expr) expr (ind + 2) (tab (ind + 2)) el
+               (vlistl (semi_after expr) expr (ind + 2) (tab (ind + 2)) el
                   "")
                ("\n" ^ tab ind) k)
   | <:expr< ($list:el$) >> ->
@@ -1284,11 +1284,11 @@ value module_expr_top =
         horiz_vertic
           (fun () ->
              sprintf "%sstruct%s%s%send%s" b " "
-               (hlist (comma_after str_item) 0 "" sil "")
+               (hlist (semi_after str_item) 0 "" sil "")
                " " k)
           (fun () ->
              sprintf "%sstruct%s%s%send%s" b "\n"
-               (vlist (comma_after str_item) (ind + 2) (tab (ind + 2)) sil "")
+               (vlist (semi_after str_item) (ind + 2) (tab (ind + 2)) sil "")
                ("\n" ^ tab ind) k)
   | z ->
       fun curr next ind b k -> next ind b z k ]
@@ -1374,11 +1374,11 @@ value module_type_top =
         horiz_vertic
           (fun () ->
              sprintf "%ssig%s%s%send%s" b " "
-               (hlist (comma_after sig_item) 0 "" sil "")
+               (hlist (semi_after sig_item) 0 "" sil "")
                " " k)
           (fun () ->
              sprintf "%ssig%s%s%send%s" b "\n"
-               (vlist (comma_after sig_item) (ind + 2) (tab (ind + 2)) sil "")
+               (vlist (semi_after sig_item) (ind + 2) (tab (ind + 2)) sil "")
                ("\n" ^ tab ind) k)
   | <:module_type< $mt$ with $list:wcl$ >> ->
       fun curr next ind b k ->
