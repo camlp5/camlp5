@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_ro.ml,v 1.8 2007/05/31 16:51:25 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.9 2007/05/31 18:34:36 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -63,12 +63,12 @@ value class_def_or_type_decl char ind b ci k =
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s %s%c %s%s" b (if ci.MLast.ciVir then " virtual" else "")
-         ci.MLast.ciNam (class_type_params  0 "" (snd ci.MLast.ciPrm) "") char
+         ci.MLast.ciNam (class_type_params 0 "" (snd ci.MLast.ciPrm) "") char
          (class_type 0 "" ci.MLast.ciExp "") k)
     (fun () ->
        let s1 =
          sprintf "%s%s%s %s%c" b (if ci.MLast.ciVir then " virtual" else "")
-           ci.MLast.ciNam (class_type_params  0 "" (snd ci.MLast.ciPrm) "")
+           ci.MLast.ciNam (class_type_params 0 "" (snd ci.MLast.ciPrm) "")
            char
        in
        let s2 = class_type (ind + 2) (tab (ind + 2)) ci.MLast.ciExp k in
@@ -92,12 +92,12 @@ value class_type_decl_list ind b cd k =
 value class_decl ind b ci k =
   horiz_vertic
     (fun () ->
-       sprintf "%s%s%s %s= %s%s" b (if ci.MLast.ciVir then " virtual" else "")
+       sprintf "%s%s%s %s= %s%s" b (if ci.MLast.ciVir then "virtual " else "")
          ci.MLast.ciNam (class_type_params  0 "" (snd ci.MLast.ciPrm) "")
          (class_expr 0 "" ci.MLast.ciExp "") k)
     (fun () ->
        let s1 =
-         sprintf "%s%s%s %s =" b (if ci.MLast.ciVir then " virtual" else "")
+         sprintf "%s%s%s %s=" b (if ci.MLast.ciVir then "virtual " else "")
            ci.MLast.ciNam (class_type_params  0 "" (snd ci.MLast.ciPrm) "")
        in
        let s2 = class_expr (ind + 2) (tab (ind + 2)) ci.MLast.ciExp k in
@@ -124,6 +124,8 @@ value rec class_longident ind b cl k =
   | [c] -> sprintf "%s%s%s" b c k
   | [c :: cl] -> sprintf "%s%s.%s" b c (class_longident ind "" cl k) ]
 ;
+
+value typevar ind b tv k = sprintf "%s'%s%s" b tv k;
 
 let lev = find_pr_level "simple" pr_patt.pr_levels in
 lev.pr_rules :=
@@ -172,7 +174,8 @@ lev.pr_rules :=
   | <:expr< ~ $s$ >> ->
       fun curr next ind b k -> sprintf "%s~%s%s" b s k
   | <:expr< ~ $s$ : $e$ >> ->
-      fun curr next ind b k -> curr ind (sprintf "%s~%s:" b s) e k ]
+      fun curr next ind b k ->
+        pr_expr.pr_fun "dot" ind (sprintf "%s~%s:" b s) e k ]
 ;
 
 let lev = find_pr_level "simple" pr_ctyp.pr_levels in
@@ -311,7 +314,7 @@ value class_sig_item_top =
           (fun () ->
              sprintf "%smethod%s %s : %s%s" b
                (if priv then " private" else "") s (ctyp 0 "" t "") k)
-          (fun () -> not_impl "method vertic" ind b s k)
+          (fun () -> not_impl "method vertic 1" ind b s k)
   | z -> fun curr next ind b k -> not_impl "class_sig_item" ind b z k ]
 ;
 
@@ -326,6 +329,30 @@ value class_str_item_top =
                 [ Some s -> sprintf " as %s" s
                 | None -> "" ]) k)
           (fun () -> not_impl "inherit vertic" ind b ce k)
+  | <:class_str_item< initializer $e$ >> ->
+      fun curr next ind b k ->
+        horiz_vertic
+          (fun () -> sprintf "%sinitializer %s%s" b (expr 0 "" e "") k)
+          (fun () ->
+             let s1 = sprintf "%sinitializer" b in
+             let s2 = expr (ind + 2) (tab (ind + 2)) e k in
+             sprintf "%s\n%s" s1 s2)
+  | <:class_str_item< method virtual $opt:priv$ $s$ : $t$ >> ->
+      fun curr next ind b k ->
+        horiz_vertic
+          (fun () ->
+             sprintf "%smethod virtual%s %s : %s%s" b
+               (if priv then " private" else "") s (ctyp 0 "" t "") k)
+          (fun () ->
+             let s1 =
+               horiz_vertic
+                 (fun () ->
+                    sprintf "%smethod virtual%s %s :" b
+                      (if priv then " private" else "") s)
+                 (fun () -> not_impl "method vertic 2" ind b s k)
+             in
+             let s2 = ctyp (ind + 2) (tab (ind + 2)) t k in
+             sprintf "%s\n%s" s1 s2)
   | <:class_str_item< method $opt:priv$ $s$ $opt:topt$ = $e$ >> ->
       fun curr next ind b k ->
         horiz_vertic
@@ -338,14 +365,23 @@ value class_str_item_top =
                (expr 0 "" e "") k)
           (fun () ->
              let s1 =
-               horiz_vertic
-                 (fun () ->
-                    sprintf "%smethod%s %s%s =" b
-                      (if priv then " private" else "") s
-                      (match topt with
-                       [ Some t -> sprintf " : %s" (ctyp 0 "" t "")
-                       | None -> "" ]))
-                 (fun () -> not_impl "method vertic" ind b s k)
+               match topt with
+               [ None ->
+                   sprintf "%smethod%s %s =" b
+                     (if priv then " private" else "") s
+               | Some t ->
+                   horiz_vertic
+                     (fun () ->
+                        sprintf "%smethod%s %s : %s =" b
+                          (if priv then " private" else "") s
+                          (ctyp 0 "" t ""))
+                     (fun () ->
+                        let s1 =
+                          sprintf "%smethod%s %s :" b
+                            (if priv then " private" else "") s
+                        in
+                        let s2 = ctyp (ind + 4) (tab (ind + 4)) t " =" in
+                        sprintf "%s\n%s" s1 s2) ]
              in
              let s2 = expr (ind + 2) (tab (ind + 2)) e k in
              sprintf "%s\n%s" s1 s2)
@@ -362,6 +398,30 @@ value class_str_item_top =
              let s2 = expr (ind + 2) (tab (ind + 2)) e k in
              sprintf "%s\n%s" s1 s2)
   | z -> fun curr next ind b k -> not_impl "class_str_item" ind b z k ]
+;
+
+value ctyp_poly =
+  extfun Extfun.empty with
+  [ <:ctyp< ! $list:pl$ . $t$ >> ->
+      fun curr next ind b k ->
+        horiz_vertic
+          (fun () ->
+             sprintf "%s! %s . %s%s" b (hlist typevar 0 "" pl "")
+               (ctyp 0 "" t "") k)
+          (fun () ->
+             let s1 = sprintf "%s! %s ." b (hlist typevar 0 "" pl "") in
+             let s2 = ctyp (ind + 2) (tab (ind + 2)) t k in
+             sprintf "%s\n%s" s1 s2)
+  | z -> fun curr next ind b k -> next ind b z k ]
+;
+
+pr_ctyp.pr_levels :=
+  [find_pr_level "top" pr_ctyp.pr_levels;
+   {pr_label = "poly"; pr_rules = ctyp_poly};
+   find_pr_level "arrow" pr_ctyp.pr_levels;
+   find_pr_level "apply" pr_ctyp.pr_levels;
+   find_pr_level "dot" pr_ctyp.pr_levels;
+   find_pr_level "simple" pr_ctyp.pr_levels]
 ;
 
 pr_class_expr.pr_levels :=

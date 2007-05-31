@@ -635,6 +635,26 @@ value expr_top =
              in
              let s2 = expr ind (tab ind) e1 k in
              sprintf "%s\n%s" s1 s2)
+  | <:expr< let module $s$ = $me$ in $e$ >> ->
+      fun curr next ind b k ->
+        horiz_vertic
+          (fun () ->
+             sprintf "%slet module %s = %s in %s%s" b s
+               (module_expr 0 "" me "") (expr 0 "" e "") k)
+          (fun () ->
+             let s1 =
+               horiz_vertic
+                 (fun () ->
+                    sprintf "%slet module %s = %s in" b s
+                      (module_expr 0 "" me ""))
+                 (fun () ->
+                    let s1 = sprintf "%slet module %s =" b s in
+                    let s2 = module_expr (ind + 2) (tab (ind + 2)) me "" in
+                    let s3 = sprintf "%sin" (tab ind) in
+                    sprintf "%s\n%s\n%s" s1 s2 s3)
+             in
+             let s2 = expr ind (tab ind) e k in
+             sprintf "%s\n%s" s1 s2)
 (*
   | <:expr< while $e1$ do { $list:el$ } >> ->
       fun curr next ind b k ->
