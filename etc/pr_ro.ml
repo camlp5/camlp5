@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_ro.ml,v 1.6 2007/05/31 12:13:23 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.7 2007/05/31 13:55:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -76,6 +76,18 @@ value class_def_or_type_decl char ind b ci k =
 ;
 value class_def = class_def_or_type_decl ':';
 value class_type_decl = class_def_or_type_decl '=';
+
+value class_type_decl_list ind b cd k =
+  horiz_vertic
+    (fun () ->
+       sprintf "%sclass type %s%s" b
+         (hlist2 class_type_decl (and_before class_type_decl) 0 "" cd
+            "")
+         k)
+    (fun () ->
+       vlist2 class_type_decl (and_before class_type_decl) ind
+         (sprintf "%sclass type " b) cd k)
+;
 
 value class_decl ind b ci k =
   horiz_vertic
@@ -174,16 +186,7 @@ lev.pr_rules :=
              vlist2 class_def (and_before class_def) ind
                (sprintf "%sclass " b) cd k)
   | <:sig_item< class type $list:cd$ >> ->
-      fun curr next ind b k ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%sclass type %s%s" b
-               (hlist2 class_type_decl (and_before class_type_decl) 0 "" cd
-                  "")
-               k)
-          (fun () ->
-             vlist2 class_type_decl (and_before class_type_decl) ind
-               (sprintf "%sclass type " b) cd k) ]
+      fun curr next ind b k -> class_type_decl_list ind b cd k ]
 ;
 
 let lev = find_pr_level "top" pr_str_item.pr_levels in
@@ -199,9 +202,8 @@ lev.pr_rules :=
           (fun () ->
              vlist2 class_decl (and_before class_decl) ind
                (sprintf "%sclass " b) cd k)
-  | <:str_item< class type $list:_$ >> ->
-      fun curr next ind b k ->
-        failwith "class 2" ]
+  | <:str_item< class type $list:cd$ >> ->
+      fun curr next ind b k -> class_type_decl_list ind b cd k ]
 ;
 
 value class_type_top =
