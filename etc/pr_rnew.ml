@@ -497,21 +497,6 @@ value ctyp_simple =
           (fun () ->
              vlistl (semi_after label_decl) label_decl (ind + 2)
                (sprintf "%s{ " b) ltl (sprintf " }%s" k))
-(*
-  | <:ctyp< [= $list:rfl$ ] >> as t ->
-      fun curr next ind b k ->
-        let vdl =
-          List.map
-            (fun rf ->
-               match rf with
-               [ <:poly_variant< `$s$ of $opt:_$ $list:tl$ >> ->
-                   (MLast.loc_of_ctyp t, s, tl)
-               | <:poly_variant< $t$ >> -> (MLast.loc_of_ctyp t, "Foo", []) ])
-            rfl
-        in
-        let loc = MLast.loc_of_ctyp t in
-        curr ind b <:ctyp< [ $list:vdl$ ] >> k
-*)
   | <:ctyp< [ $list:vdl$ ] >> ->
       fun curr next ind b k ->
         horiz_vertic
@@ -541,6 +526,10 @@ value ctyp_simple =
   | <:ctyp< ? $i$ : $t$ >> | <:ctyp< ~ $_$ : $t$ >> ->
       fun curr next ind b k ->
         failwith "labels not pretty printed (in type); add pr_ro.cmo"
+  | <:ctyp< [ = $list:_$ ] >> | <:ctyp< [ > $list:_$ ] >> |
+    <:ctyp< [ < $list:_$ ] >> | <:ctyp< [ < $list:_$ > $list:_$ ] >> ->
+      fun curr next ind b k ->
+        failwith "variants not pretty printed (in type); add pr_ro.cmo"
 (*
   | <:ctyp< < $list:_$ $opt:_$ > >> ->
       fun curr next ind b k ->
@@ -1193,6 +1182,9 @@ value str_item_top =
              sprintf "%s\n%s%s" s (tab ind) k)
   | <:str_item< $exp:e$ >> ->
       fun curr next ind b k -> expr ind b e k
+  | <:str_item< class type $list:_$ >> | <:str_item< class $list:_$ >> ->
+      fun curr next ind b k ->
+        failwith "classes and objects not pretty printed; add pr_ro.cmo"
 (*
   | MLast.StUse _ _ _ ->
       fun curr next ind b k ->
