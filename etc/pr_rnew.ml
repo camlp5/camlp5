@@ -836,7 +836,10 @@ value expr_dot =
   [ <:expr< $x$ . $y$ >> ->
       fun curr next ind b k ->
         horiz_vertic (fun () -> curr 0 (curr 0 b x ".") y k)
-          (fun () -> not_impl ". vertic" ind b x k)
+          (fun () ->
+             let s1 = curr ind b x "." in
+             let s2 = curr ind (tab ind) y k in
+             sprintf "%s\n%s" s1 s2)
   | <:expr< $x$ .( $y$ ) >> ->
       fun curr next ind b k ->
         expr ind (curr ind b x ".(") y (sprintf ")%s" k)
@@ -1078,7 +1081,8 @@ value patt_simple =
       fun curr next ind b k ->
         failwith "labels not pretty printed (in patt); add pr_ro.cmo"
   | <:patt< `$uid:s$ >> ->
-      fun curr next ind b k -> failwith "row fields not pretty printed"
+      fun curr next ind b k ->
+        failwith "row fields not pretty printed; add pr_ro.cmo"
   | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >>
     as z ->
       fun curr next ind b k ->

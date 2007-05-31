@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_ro.ml,v 1.4 2007/05/31 03:27:02 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.5 2007/05/31 03:58:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -88,7 +88,9 @@ lev.pr_rules :=
   | <:patt< ? $i$ : ($p$ = $eo$) >> ->
       fun curr next ind b k -> failwith "label in pr_ro 3"
   | <:patt< ~ $s$ >> ->
-      fun curr next ind b k -> sprintf "%s?%s%s" b s k ]
+      fun curr next ind b k -> sprintf "%s?%s%s" b s k
+  | <:patt< `$uid:s$ >> ->
+      fun curr next ind b k -> sprintf "%s`%s%s" b s k ]
 ;
 
 let lev = find_pr_level "simple" pr_expr.pr_levels in
