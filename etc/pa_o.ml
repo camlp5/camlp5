@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.13 2007/01/26 01:19:31 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.14 2007/05/31 03:27:02 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -310,23 +310,11 @@ value rec constr_expr_arity loc =
   | _ -> 1 ]
 ;
 
-value rec is_patt_constr_call =
-  fun
-  [ <:patt< $uid:_$ >> -> True
-  | <:patt< $uid:_$.$p$ >> -> is_patt_constr_call p
-  | <:patt< $p$ $_$ >> -> is_patt_constr_call p
-  | _ -> False ]
-;
-
 value rec constr_patt_arity loc =
   fun
   [ <:patt< $uid:c$ >> ->
       try List.assoc c constr_arity.val with [ Not_found -> 0 ]
   | <:patt< $uid:_$.$p$ >> -> constr_patt_arity loc p
-  | <:patt< $p$ $_$ >> ->
-      if is_patt_constr_call p then
-        Stdpp.raise_with_loc loc (Stream.Error "currified constructor")
-      else 1
   | _ -> 1 ]
 ;
 
@@ -737,7 +725,7 @@ EXTEND
       [ p1 = SELF; ".."; p2 = SELF -> <:patt< $p1$ .. $p2$ >> ]
     | RIGHTA
       [ p1 = SELF; "::"; p2 = SELF -> <:patt< [$p1$ :: $p2$] >> ]
-    | LEFTA
+    | RIGHTA
       [ p1 = SELF; p2 = SELF ->
           match constr_patt_arity loc p1 with
           [ 1 -> <:patt< $p1$ $p2$ >>

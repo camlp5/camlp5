@@ -538,12 +538,10 @@ value ctyp_simple =
       fun curr next ind b k -> sprintf "%s'%s%s" b s k
   | <:ctyp< _ >> ->
       fun curr next ind b k -> sprintf "%s_%s" b k
-  | <:ctyp< ? $i$ : $t$ >> ->
+  | <:ctyp< ? $i$ : $t$ >> | <:ctyp< ~ $_$ : $t$ >> ->
       fun curr next ind b k ->
         failwith "labels not pretty printed (in type); add pr_ro.cmo"
 (*
-  | <:ctyp< ~ $_$ : $t$ >> ->
-      fun curr next ind b k -> pr_ctyp.pr_fun "apply" ind b t k
   | <:ctyp< < $list:_$ $opt:_$ > >> ->
       fun curr next ind b k ->
         failwith "cannot convert objects in syntax 's'"
@@ -1239,7 +1237,7 @@ value sig_item_top =
              let s1 = sprintf "%svalue %s :" b (var_escaped 0 "" s "") in
              let s2 = ctyp (ind + 2) (tab (ind + 2)) t k in
              sprintf "%s\n%s" s1 s2)
-  | <:sig_item< class type $list:cd$ >> ->
+  | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->
       fun curr next ind b k ->
         failwith "classes and objects not pretty printed; add pr_ro.cmo"
   | z ->
