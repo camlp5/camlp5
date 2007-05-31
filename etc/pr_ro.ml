@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_ro.ml,v 1.7 2007/05/31 13:55:25 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.8 2007/05/31 16:51:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -118,6 +118,13 @@ value variant_decl ind b pv k =
        ctyp ind b t k ]
 ;
 
+value rec class_longident ind b cl k =
+  match cl with
+  [ [] -> sprintf "%s%s" b k
+  | [c] -> sprintf "%s%s%s" b c k
+  | [c :: cl] -> sprintf "%s%s.%s" b c (class_longident ind "" cl k) ]
+;
+
 let lev = find_pr_level "simple" pr_patt.pr_levels in
 lev.pr_rules :=
   extfun lev.pr_rules with
@@ -135,6 +142,26 @@ lev.pr_rules :=
       fun curr next ind b k -> sprintf "%s?%s%s" b s k
   | <:patt< `$uid:s$ >> ->
       fun curr next ind b k -> sprintf "%s`%s%s" b s k ]
+;
+
+let lev = find_pr_level "apply" pr_expr.pr_levels in
+lev.pr_rules :=
+  extfun lev.pr_rules with
+  [ <:expr< new $list:cl$ >> ->
+      fun curr next ind b k ->
+        horiz_vertic
+          (fun () -> sprintf "%snew %s%s" b (class_longident 0 "" cl "") k)
+          (fun () -> not_impl "new vertic" ind b cl k) ]
+;
+
+let lev = find_pr_level "dot" pr_expr.pr_levels in
+lev.pr_rules :=
+  extfun lev.pr_rules with
+  [ <:expr< $e$ # $s$ >> ->
+      fun curr next ind b k ->
+        horiz_vertic
+          (fun () -> sprintf "%s%s#%s%s" b (curr 0 "" e "") s k)
+          (fun () -> not_impl "# vertic" ind b e k) ]
 ;
 
 let lev = find_pr_level "simple" pr_expr.pr_levels in
@@ -237,7 +264,14 @@ value class_type_top =
 
 value class_expr_top =
   extfun Extfun.empty with
-  [ <:class_expr< object $opt:csp$ $list:csl$ end >> ->
+  [ z -> fun curr next ind b k -> next ind b z k ]
+;
+
+value class_expr_simple =
+  extfun Extfun.empty with
+  [ <:class_expr< $list:cl$ >> ->
+      fun curr next ind b k -> class_longident ind b cl k
+  | <:class_expr< object $opt:csp$ $list:csl$ end >> ->
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
@@ -283,7 +317,16 @@ value class_sig_item_top =
 
 value class_str_item_top =
   extfun Extfun.empty with
-  [ <:class_str_item< method $opt:priv$ $s$ $opt:topt$ = $e$ >> ->
+  [ <:class_str_item< inherit $ce$ $opt:pb$ >> ->
+      fun curr next ind b k ->
+        horiz_vertic
+          (fun () ->
+             sprintf "%sinherit %s%s%s" b (class_expr 0 "" ce "")
+               (match pb with
+                [ Some s -> sprintf " as %s" s
+                | None -> "" ]) k)
+          (fun () -> not_impl "inherit vertic" ind b ce k)
+  | <:class_str_item< method $opt:priv$ $s$ $opt:topt$ = $e$ >> ->
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
@@ -293,7 +336,19 @@ value class_str_item_top =
                 [ Some t -> sprintf " : %s" (ctyp 0 "" t "")
                 | None -> "" ])
                (expr 0 "" e "") k)
-          (fun () -> not_impl "method vertic" ind b s k)
+          (fun () ->
+             let s1 =
+               horiz_vertic
+                 (fun () ->
+                    sprintf "%smethod%s %s%s =" b
+                      (if priv then " private" else "") s
+                      (match topt with
+                       [ Some t -> sprintf " : %s" (ctyp 0 "" t "")
+                       | None -> "" ]))
+                 (fun () -> not_impl "method vertic" ind b s k)
+             in
+             let s2 = expr (ind + 2) (tab (ind + 2)) e k in
+             sprintf "%s\n%s" s1 s2)
   | <:class_str_item< value $opt:mf$ $s$ = $e$ >> ->
       fun curr next ind b k ->
         horiz_vertic
@@ -310,7 +365,8 @@ value class_str_item_top =
 ;
 
 pr_class_expr.pr_levels :=
-  [{pr_label = "top"; pr_rules = class_expr_top}]
+  [{pr_label = "top"; pr_rules = class_expr_top};
+   {pr_label = "simple"; pr_rules = class_expr_simple}]
 ;
 
 pr_class_type.pr_levels :=

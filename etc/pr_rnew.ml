@@ -40,7 +40,7 @@ value is_infix = do {
 value is_not_yet_implemented_infix = do {
   let infixes = Hashtbl.create 73 in
   List.iter (fun s -> Hashtbl.add infixes s True)
-    ["**"; "<."; "<=."; "<>."; "=."; ">."; ">=."; "asr"; "lsl"; "lsr"; "or";
+    ["**"; "<."; "<=."; "<>."; "=."; ">."; ">=."; "asr"; "lsl"; "lsr";
      "~-"; "~-."];
   fun s -> try Hashtbl.find infixes s with [ Not_found -> False ]
 };
@@ -249,7 +249,7 @@ value left_operator ind sh unfold next b x k =
   [ [(x, _)] -> next ind b x k
   | _ ->
       horiz_vertic (fun () -> hlist (op_after next) ind b xl k)
-        (fun () -> plist next ind 2 b xl k) ]
+        (fun () -> plist next ind sh b xl k) ]
 ;
 
 value right_operator ind sh unfold next b x k =
@@ -263,7 +263,7 @@ value right_operator ind sh unfold next b x k =
   [ [(x, _)] -> next ind b x k
   | _ ->
       horiz_vertic (fun () -> hlist (op_after next) ind b xl k)
-        (fun () -> plist next ind 2 b xl k) ]
+        (fun () -> plist next ind sh b xl k) ]
 ;
 
 (*
@@ -690,7 +690,7 @@ value expr_or =
         let unfold =
           fun
           [ <:expr< $lid:op$ $x$ $y$ >> ->
-              if List.mem op ["||"] then Some (x, " " ^ op, y) else None
+              if List.mem op ["||"; "or"] then Some (x, " ||", y) else None
           | _ -> None ]
         in
         right_operator ind 0 unfold next b z k ]

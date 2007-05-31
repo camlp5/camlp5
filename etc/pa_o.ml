@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.16 2007/05/31 13:55:25 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.17 2007/05/31 16:51:25 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -298,23 +298,11 @@ value rec is_expr_constr_call =
   | _ -> False ]
 ;
 
-value rec is_patt_constr_call =
-  fun
-  [ <:patt< $uid:_$ >> -> True
-  | <:patt< $uid:_$.$e$ >> -> is_patt_constr_call e
-  | <:patt< $e$ $_$ >> -> is_patt_constr_call e
-  | _ -> False ]
-;
-
 value rec constr_expr_arity loc =
   fun
   [ <:expr< $uid:c$ >> ->
       try List.assoc c constr_arity.val with [ Not_found -> 0 ]
   | <:expr< $uid:_$.$e$ >> -> constr_expr_arity loc e
-  | <:expr< $e$ $_$ >> ->
-      if is_expr_constr_call e then
-        Stdpp.raise_with_loc loc (Stream.Error "currified constructor")
-      else 1
   | _ -> 1 ]
 ;
 
@@ -323,10 +311,6 @@ value rec constr_patt_arity loc =
   [ <:patt< $uid:c$ >> ->
       try List.assoc c constr_arity.val with [ Not_found -> 0 ]
   | <:patt< $uid:_$.$p$ >> -> constr_patt_arity loc p
-  | <:patt< $p$ $_$ >> ->
-      if is_patt_constr_call p then
-        Stdpp.raise_with_loc loc (Stream.Error "currified constructor")
-      else 1
   | _ -> 1 ]
 ;
 
@@ -616,6 +600,13 @@ EXTEND
       | "-."; e = SELF -> <:expr< $mkumin loc "-." e$ >> ]
     | "apply" LEFTA
       [ e1 = SELF; e2 = SELF ->
+          let (e1, e2) =
+            if is_expr_constr_call e1 then
+              match e1 with
+              [ <:expr< $e11$ $e12$ >> -> (e11, <:expr< $e12$ $e2$ >>)
+              | _ -> (e1, e2) ]
+            else (e1, e2)
+          in
           match constr_expr_arity loc e1 with
           [ 1 -> <:expr< $e1$ $e2$ >>
           | _ ->
@@ -739,6 +730,11 @@ EXTEND
       [ p1 = SELF; "::"; p2 = SELF -> <:patt< [$p1$ :: $p2$] >> ]
     | LEFTA
       [ p1 = SELF; p2 = SELF ->
+          let (p1, p2) =
+            match p1 with
+            [ <:patt< $p11$ $p12$ >> -> (p11, <:patt< $p12$ $p2$ >>)
+            | _ -> (p1, p2) ]
+          in
           match constr_patt_arity loc p1 with
           [ 1 -> <:patt< $p1$ $p2$ >>
           | n ->
