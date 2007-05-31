@@ -208,8 +208,8 @@ value rec ctyp =
       let catl =
         List.map
           (fun
-           [ RfTag c a t -> Rtag c a (List.map ctyp t)
-           | RfInh t -> Rinherit (ctyp t) ])
+           [ PvTag c a t -> Rtag c a (List.map ctyp t)
+           | PvInh t -> Rinherit (ctyp t) ])
           catl
       in
       let (clos, sl) =

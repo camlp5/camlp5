@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.17 2007/01/26 01:19:31 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.18 2007/05/31 08:53:27 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -127,12 +127,12 @@ value append_elem el e = el @ [e];
 
 value ipatt = Grammar.Entry.create gram "ipatt";
 value with_constr = Grammar.Entry.create gram "with_constr";
-value row_field = Grammar.Entry.create gram "row_field";
+value poly_variant = Grammar.Entry.create gram "poly_variant";
 
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr class_type
     class_expr class_sig_item class_str_item let_binding type_declaration
-    ipatt with_constr row_field;
+    ipatt with_constr poly_variant;
   module_expr:
     [ [ "functor"; "("; i = UIDENT; ":"; t = module_type; ")"; "->";
         me = SELF ->
@@ -682,23 +682,23 @@ EXTEND
       | i = QUESTIONIDENT; ":"; t = SELF -> <:ctyp< ? $i$ : $t$ >> ] ]
   ;
   ctyp: LEVEL "simple"
-    [ [ "["; "="; rfl = row_field_list; "]" ->
+    [ [ "["; "="; rfl = poly_variant_list; "]" ->
           <:ctyp< [ = $list:rfl$ ] >>
-      | "["; ">"; rfl = row_field_list; "]" ->
+      | "["; ">"; rfl = poly_variant_list; "]" ->
           <:ctyp< [ > $list:rfl$ ] >>
-      | "["; "<"; rfl = row_field_list; "]" ->
+      | "["; "<"; rfl = poly_variant_list; "]" ->
           <:ctyp< [ < $list:rfl$ ] >>
-      | "["; "<"; rfl = row_field_list; ">"; ntl = LIST1 name_tag; "]" ->
+      | "["; "<"; rfl = poly_variant_list; ">"; ntl = LIST1 name_tag; "]" ->
           <:ctyp< [ < $list:rfl$ > $list:ntl$ ] >> ] ]
   ;
-  row_field_list:
-    [ [ rfl = LIST0 row_field SEP "|" -> rfl ] ]
+  poly_variant_list:
+    [ [ rfl = LIST0 poly_variant SEP "|" -> rfl ] ]
   ;
-  row_field:
-    [ [ "`"; i = ident -> <:row_field< ` $i$ >>
+  poly_variant:
+    [ [ "`"; i = ident -> <:poly_variant< ` $i$ >>
       | "`"; i = ident; "of"; ao = OPT "&"; l = LIST1 ctyp SEP "&" ->
-          <:row_field< ` $i$ of $opt:o2b ao$ $list:l$ >>
-      | t = ctyp -> <:row_field< $t$ >> ] ]
+          <:poly_variant< ` $i$ of $opt:o2b ao$ $list:l$ >>
+      | t = ctyp -> <:poly_variant< $t$ >> ] ]
   ;
   name_tag:
     [ [ "`"; i = ident -> i ] ]

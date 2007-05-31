@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_r.ml,v 1.16 2007/05/30 09:54:20 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.17 2007/05/31 08:53:27 deraugla Exp $ *)
 
 open Pcaml.Printer;
 open Spretty;
@@ -189,10 +189,10 @@ and variant b (loc, c, tl) k =
            `HOVbox [: `S LR c; `S LR "of"; ctyp_list tl k :] :] ]
 ;
 
-value rec row_fields b rfl k = listwbws row_field b (S LR "|") rfl k
-and row_field b rf k =
+value rec poly_variants b rfl k = listwbws poly_variant b (S LR "|") rfl k
+and poly_variant b rf k =
   match rf with
-  [ MLast.RfTag c ao tl ->
+  [ <:poly_variant< `$c$ of $opt:ao$ $list:tl$ >> ->
       let c = "`" ^ c in
       match tl with
       [ [] -> HVbox [: b; `HOVbox [: `S LR c; k :] :]
@@ -200,7 +200,7 @@ and row_field b rf k =
           let ao = if ao then [: `S LR "&" :] else [: :] in
           HVbox
             [: b; `HOVbox [: `S LR c; `S LR "of"; ao; ctyp_list tl k :] :] ]
-  | MLast.RfInh t -> HVbox [: b; `ctyp t k :] ]
+  | <:poly_variant< $t$ >> -> HVbox [: b; `ctyp t k :] ]
 ;
 
 (* *)
@@ -1405,12 +1405,14 @@ pr_ctyp.pr_levels :=
           fun curr next _ k ->
             [: `HVbox
                   [: `HVbox [: :];
-                     row_fields [: `S LR "[ =" :] rfl [: `S LR "]" :]; k :] :]
+                     poly_variants
+                       [: `S LR "[ =" :] rfl [: `S LR "]" :]; k :] :]
       | <:ctyp< [ > $list:rfl$ ] >> ->
           fun curr next _ k ->
             [: `HVbox
                   [: `HVbox [: :];
-                     row_fields [: `S LR "[ >" :] rfl [: `S LR "]" :]; k :] :]
+                     poly_variants
+                       [: `S LR "[ >" :] rfl [: `S LR "]" :]; k :] :]
       | <:ctyp< [ < $list:rfl$ > $list:sl$ ] >> ->
           fun curr next _ k ->
             let k1 = [: `S LR "]" :] in
@@ -1422,7 +1424,7 @@ pr_ctyp.pr_levels :=
                      list (fun x k -> HVbox [: `S LR x; k :]) l k1 :] ]
             in
             [: `HVbox
-                  [: `HVbox [: :]; row_fields [: `S LR "[ <" :] rfl k1;
+                  [: `HVbox [: :]; poly_variants [: `S LR "[ <" :] rfl k1;
                      k :] :]
       | <:ctyp< # $list:id$ >> ->
           fun curr next _ k -> [: `S LO "#"; `class_longident id k :]

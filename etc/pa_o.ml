@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.14 2007/05/31 03:27:02 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.15 2007/05/31 08:53:27 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -1100,22 +1100,22 @@ EXTEND
       | i = QUESTIONIDENT; ":"; t = SELF -> <:ctyp< ? $i$ : $t$ >> ] ]
   ;
   ctyp: LEVEL "simple"
-    [ [ "["; OPT "|"; rfl = LIST1 row_field SEP "|"; "]" ->
+    [ [ "["; OPT "|"; rfl = LIST1 poly_variant SEP "|"; "]" ->
           <:ctyp< [ = $list:rfl$ ] >>
       | "["; ">"; "]" -> <:ctyp< [ > $list:[]$ ] >>
-      | "["; ">"; OPT "|"; rfl = LIST1 row_field SEP "|"; "]" ->
+      | "["; ">"; OPT "|"; rfl = LIST1 poly_variant SEP "|"; "]" ->
           <:ctyp< [ > $list:rfl$ ] >>
-      | "[<"; OPT "|"; rfl = LIST1 row_field SEP "|"; "]" ->
+      | "[<"; OPT "|"; rfl = LIST1 poly_variant SEP "|"; "]" ->
           <:ctyp< [ < $list:rfl$ ] >>
-      | "[<"; OPT "|"; rfl = LIST1 row_field SEP "|"; ">";
+      | "[<"; OPT "|"; rfl = LIST1 poly_variant SEP "|"; ">";
         ntl = LIST1 name_tag; "]" ->
           <:ctyp< [ < $list:rfl$ > $list:ntl$ ] >> ] ]
   ;
-  row_field:
-    [ [ "`"; i = ident -> MLast.RfTag i True []
+  poly_variant:
+    [ [ "`"; i = ident -> <:poly_variant< ` $i$ >>
       | "`"; i = ident; "of"; ao = OPT "&"; l = LIST1 ctyp SEP "&" ->
-          MLast.RfTag i (o2b ao) l
-      | t = ctyp -> MLast.RfInh t ] ]
+          <:poly_variant< `$i$ of $opt:o2b ao$ $list:l$ >>
+      | t = ctyp -> MLast.PvInh t ] ]
   ;
   name_tag:
     [ [ "`"; i = ident -> i ] ]

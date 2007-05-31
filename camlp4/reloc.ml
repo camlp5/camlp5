@@ -46,11 +46,11 @@ value rec ctyp floc sh =
     | TyTup loc x1 -> TyTup (floc loc) (List.map self x1)
     | TyUid loc x1 -> TyUid (floc loc) x1
     | TyVrn loc x1 x2 ->
-        TyVrn (floc loc) (List.map (row_field floc sh) x1) x2 ]
-and row_field floc sh =
+        TyVrn (floc loc) (List.map (poly_variant floc sh) x1) x2 ]
+and poly_variant floc sh =
   fun
-  [ RfTag x1 x2 x3 -> RfTag x1 x2 (List.map (ctyp floc sh) x3)
-  | RfInh x1 -> RfInh (ctyp floc sh x1) ]
+  [ PvTag x1 x2 x3 -> PvTag x1 x2 (List.map (ctyp floc sh) x3)
+  | PvInh x1 -> PvInh (ctyp floc sh x1) ]
 ;
 
 value class_infos a floc sh x =

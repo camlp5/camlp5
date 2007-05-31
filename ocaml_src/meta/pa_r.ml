@@ -130,7 +130,7 @@ let append_elem el e = el @ [e];;
 
 let ipatt = Grammar.Entry.create gram "ipatt";;
 let with_constr = Grammar.Entry.create gram "with_constr";;
-let row_field = Grammar.Entry.create gram "row_field";;
+let poly_variant = Grammar.Entry.create gram "poly_variant";;
 
 Grammar.extend
   (let _ = (sig_item : 'sig_item Grammar.Entry.e)
@@ -148,7 +148,7 @@ Grammar.extend
    and _ = (type_declaration : 'type_declaration Grammar.Entry.e)
    and _ = (ipatt : 'ipatt Grammar.Entry.e)
    and _ = (with_constr : 'with_constr Grammar.Entry.e)
-   and _ = (row_field : 'row_field Grammar.Entry.e) in
+   and _ = (poly_variant : 'poly_variant Grammar.Entry.e) in
    let grammar_entry_create s =
      Grammar.Entry.create (Grammar.of_entry sig_item) s
    in
@@ -232,8 +232,8 @@ Grammar.extend
      grammar_entry_create "clty_longident"
    and class_longident : 'class_longident Grammar.Entry.e =
      grammar_entry_create "class_longident"
-   and row_field_list : 'row_field_list Grammar.Entry.e =
-     grammar_entry_create "row_field_list"
+   and poly_variant_list : 'poly_variant_list Grammar.Entry.e =
+     grammar_entry_create "poly_variant_list"
    and name_tag : 'name_tag Grammar.Entry.e = grammar_entry_create "name_tag"
    and patt_tcon : 'patt_tcon Grammar.Entry.e =
      grammar_entry_create "patt_tcon"
@@ -2220,56 +2220,58 @@ Grammar.extend
      [[Gramext.Stoken ("", "["); Gramext.Stoken ("", "<");
        Gramext.Snterm
          (Grammar.Entry.obj
-            (row_field_list : 'row_field_list Grammar.Entry.e));
+            (poly_variant_list : 'poly_variant_list Grammar.Entry.e));
        Gramext.Stoken ("", ">");
        Gramext.Slist1
          (Gramext.Snterm
             (Grammar.Entry.obj (name_tag : 'name_tag Grammar.Entry.e)));
        Gramext.Stoken ("", "]")],
       Gramext.action
-        (fun _ (ntl : 'name_tag list) _ (rfl : 'row_field_list) _ _
+        (fun _ (ntl : 'name_tag list) _ (rfl : 'poly_variant_list) _ _
            (loc : Token.location) ->
            (MLast.TyVrn (loc, rfl, Some (Some ntl)) : 'ctyp));
       [Gramext.Stoken ("", "["); Gramext.Stoken ("", "<");
        Gramext.Snterm
          (Grammar.Entry.obj
-            (row_field_list : 'row_field_list Grammar.Entry.e));
+            (poly_variant_list : 'poly_variant_list Grammar.Entry.e));
        Gramext.Stoken ("", "]")],
       Gramext.action
-        (fun _ (rfl : 'row_field_list) _ _ (loc : Token.location) ->
+        (fun _ (rfl : 'poly_variant_list) _ _ (loc : Token.location) ->
            (MLast.TyVrn (loc, rfl, Some (Some [])) : 'ctyp));
       [Gramext.Stoken ("", "["); Gramext.Stoken ("", ">");
        Gramext.Snterm
          (Grammar.Entry.obj
-            (row_field_list : 'row_field_list Grammar.Entry.e));
+            (poly_variant_list : 'poly_variant_list Grammar.Entry.e));
        Gramext.Stoken ("", "]")],
       Gramext.action
-        (fun _ (rfl : 'row_field_list) _ _ (loc : Token.location) ->
+        (fun _ (rfl : 'poly_variant_list) _ _ (loc : Token.location) ->
            (MLast.TyVrn (loc, rfl, Some None) : 'ctyp));
       [Gramext.Stoken ("", "["); Gramext.Stoken ("", "=");
        Gramext.Snterm
          (Grammar.Entry.obj
-            (row_field_list : 'row_field_list Grammar.Entry.e));
+            (poly_variant_list : 'poly_variant_list Grammar.Entry.e));
        Gramext.Stoken ("", "]")],
       Gramext.action
-        (fun _ (rfl : 'row_field_list) _ _ (loc : Token.location) ->
+        (fun _ (rfl : 'poly_variant_list) _ _ (loc : Token.location) ->
            (MLast.TyVrn (loc, rfl, None) : 'ctyp))]];
-    Grammar.Entry.obj (row_field_list : 'row_field_list Grammar.Entry.e),
+    Grammar.Entry.obj
+      (poly_variant_list : 'poly_variant_list Grammar.Entry.e),
     None,
     [None, None,
      [[Gramext.Slist0sep
          (Gramext.Snterm
-            (Grammar.Entry.obj (row_field : 'row_field Grammar.Entry.e)),
+            (Grammar.Entry.obj
+               (poly_variant : 'poly_variant Grammar.Entry.e)),
           Gramext.Stoken ("", "|"))],
       Gramext.action
-        (fun (rfl : 'row_field list) (loc : Token.location) ->
-           (rfl : 'row_field_list))]];
-    Grammar.Entry.obj (row_field : 'row_field Grammar.Entry.e), None,
+        (fun (rfl : 'poly_variant list) (loc : Token.location) ->
+           (rfl : 'poly_variant_list))]];
+    Grammar.Entry.obj (poly_variant : 'poly_variant Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
         (fun (t : 'ctyp) (loc : Token.location) ->
-           (MLast.RfInh t : 'row_field));
+           (MLast.PvInh t : 'poly_variant));
       [Gramext.Stoken ("", "`");
        Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e));
        Gramext.Stoken ("", "of"); Gramext.Sopt (Gramext.Stoken ("", "&"));
@@ -2279,12 +2281,12 @@ Grammar.extend
       Gramext.action
         (fun (l : 'ctyp list) (ao : string option) _ (i : 'ident) _
            (loc : Token.location) ->
-           (MLast.RfTag (i, o2b ao, l) : 'row_field));
+           (MLast.PvTag (i, o2b ao, l) : 'poly_variant));
       [Gramext.Stoken ("", "`");
        Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
       Gramext.action
         (fun (i : 'ident) _ (loc : Token.location) ->
-           (MLast.RfTag (i, true, []) : 'row_field))]];
+           (MLast.PvTag (i, true, []) : 'poly_variant))]];
     Grammar.Entry.obj (name_tag : 'name_tag Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "`");

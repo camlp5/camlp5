@@ -161,7 +161,7 @@ let ipatt = Grammar.Entry.create gram "ipatt";;
 let let_binding = Grammar.Entry.create gram "let_binding";;
 let type_declaration = Grammar.Entry.create gram "type_declaration";;
 let with_constr = Grammar.Entry.create gram "with_constr";;
-let row_field = Grammar.Entry.create gram "row_field";;
+let poly_variant = Grammar.Entry.create gram "poly_variant";;
 
 let a_list = Grammar.Entry.create gram "a_list";;
 let a_opt = Grammar.Entry.create gram "a_opt";;
@@ -310,7 +310,7 @@ Grammar.extend
    and _ = (type_declaration : 'type_declaration Grammar.Entry.e)
    and _ = (ipatt : 'ipatt Grammar.Entry.e)
    and _ = (with_constr : 'with_constr Grammar.Entry.e)
-   and _ = (row_field : 'row_field Grammar.Entry.e) in
+   and _ = (poly_variant : 'poly_variant Grammar.Entry.e) in
    let grammar_entry_create s =
      Grammar.Entry.create (Grammar.of_entry sig_item) s
    in
@@ -381,8 +381,8 @@ Grammar.extend
      grammar_entry_create "field_expr"
    and field : 'field Grammar.Entry.e = grammar_entry_create "field"
    and typevar : 'typevar Grammar.Entry.e = grammar_entry_create "typevar"
-   and row_field_list : 'row_field_list Grammar.Entry.e =
-     grammar_entry_create "row_field_list"
+   and poly_variant_list : 'poly_variant_list Grammar.Entry.e =
+     grammar_entry_create "poly_variant_list"
    and name_tag : 'name_tag Grammar.Entry.e = grammar_entry_create "name_tag"
    and patt_tcon : 'patt_tcon Grammar.Entry.e =
      grammar_entry_create "patt_tcon"
@@ -3408,7 +3408,7 @@ Grammar.extend
      [[Gramext.Stoken ("", "["); Gramext.Stoken ("", "<");
        Gramext.Snterm
          (Grammar.Entry.obj
-            (row_field_list : 'row_field_list Grammar.Entry.e));
+            (poly_variant_list : 'poly_variant_list Grammar.Entry.e));
        Gramext.Stoken ("", ">");
        Gramext.srules
          [[Gramext.Slist1
@@ -3423,7 +3423,7 @@ Grammar.extend
             (fun (a : 'a_list) (loc : Token.location) -> (a : 'a_list))];
        Gramext.Stoken ("", "]")],
       Gramext.action
-        (fun _ (ntl : 'a_list) _ (rfl : 'row_field_list) _ _
+        (fun _ (ntl : 'a_list) _ (rfl : 'poly_variant_list) _ _
            (loc : Token.location) ->
            (Qast.Node
               ("TyVrn",
@@ -3432,10 +3432,10 @@ Grammar.extend
       [Gramext.Stoken ("", "["); Gramext.Stoken ("", "<");
        Gramext.Snterm
          (Grammar.Entry.obj
-            (row_field_list : 'row_field_list Grammar.Entry.e));
+            (poly_variant_list : 'poly_variant_list Grammar.Entry.e));
        Gramext.Stoken ("", "]")],
       Gramext.action
-        (fun _ (rfl : 'row_field_list) _ _ (loc : Token.location) ->
+        (fun _ (rfl : 'poly_variant_list) _ _ (loc : Token.location) ->
            (Qast.Node
               ("TyVrn",
                [Qast.Loc; rfl;
@@ -3444,10 +3444,10 @@ Grammar.extend
       [Gramext.Stoken ("", "["); Gramext.Stoken ("", ">");
        Gramext.Snterm
          (Grammar.Entry.obj
-            (row_field_list : 'row_field_list Grammar.Entry.e));
+            (poly_variant_list : 'poly_variant_list Grammar.Entry.e));
        Gramext.Stoken ("", "]")],
       Gramext.action
-        (fun _ (rfl : 'row_field_list) _ _ (loc : Token.location) ->
+        (fun _ (rfl : 'poly_variant_list) _ _ (loc : Token.location) ->
            (Qast.Node
               ("TyVrn",
                [Qast.Loc; rfl; Qast.Option (Some (Qast.Option None))]) :
@@ -3455,22 +3455,24 @@ Grammar.extend
       [Gramext.Stoken ("", "["); Gramext.Stoken ("", "=");
        Gramext.Snterm
          (Grammar.Entry.obj
-            (row_field_list : 'row_field_list Grammar.Entry.e));
+            (poly_variant_list : 'poly_variant_list Grammar.Entry.e));
        Gramext.Stoken ("", "]")],
       Gramext.action
-        (fun _ (rfl : 'row_field_list) _ _ (loc : Token.location) ->
+        (fun _ (rfl : 'poly_variant_list) _ _ (loc : Token.location) ->
            (Qast.Node ("TyVrn", [Qast.Loc; rfl; Qast.Option None]) :
             'ctyp))]];
-    Grammar.Entry.obj (row_field_list : 'row_field_list Grammar.Entry.e),
+    Grammar.Entry.obj
+      (poly_variant_list : 'poly_variant_list Grammar.Entry.e),
     None,
     [None, None,
      [[Gramext.srules
          [[Gramext.Slist0sep
              (Gramext.Snterm
-                (Grammar.Entry.obj (row_field : 'row_field Grammar.Entry.e)),
+                (Grammar.Entry.obj
+                   (poly_variant : 'poly_variant Grammar.Entry.e)),
               Gramext.Stoken ("", "|"))],
           Gramext.action
-            (fun (a : 'row_field list) (loc : Token.location) ->
+            (fun (a : 'poly_variant list) (loc : Token.location) ->
                (Qast.List a : 'a_list));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list : 'a_list Grammar.Entry.e))],
@@ -3478,13 +3480,13 @@ Grammar.extend
             (fun (a : 'a_list) (loc : Token.location) -> (a : 'a_list))]],
       Gramext.action
         (fun (rfl : 'a_list) (loc : Token.location) ->
-           (rfl : 'row_field_list))]];
-    Grammar.Entry.obj (row_field : 'row_field Grammar.Entry.e), None,
+           (rfl : 'poly_variant_list))]];
+    Grammar.Entry.obj (poly_variant : 'poly_variant Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
         (fun (t : 'ctyp) (loc : Token.location) ->
-           (Qast.Node ("RfInh", [t]) : 'row_field));
+           (Qast.Node ("PvInh", [t]) : 'poly_variant));
       [Gramext.Stoken ("", "`");
        Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e));
        Gramext.Stoken ("", "of");
@@ -3517,13 +3519,13 @@ Grammar.extend
       Gramext.action
         (fun (l : 'a_list) (ao : 'a_opt) _ (i : 'ident) _
            (loc : Token.location) ->
-           (Qast.Node ("RfTag", [i; o2b ao; l]) : 'row_field));
+           (Qast.Node ("PvTag", [i; o2b ao; l]) : 'poly_variant));
       [Gramext.Stoken ("", "`");
        Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
       Gramext.action
         (fun (i : 'ident) _ (loc : Token.location) ->
-           (Qast.Node ("RfTag", [i; Qast.Bool true; Qast.List []]) :
-            'row_field))]];
+           (Qast.Node ("PvTag", [i; Qast.Bool true; Qast.List []]) :
+            'poly_variant))]];
     Grammar.Entry.obj (name_tag : 'name_tag Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "`");
@@ -4204,7 +4206,7 @@ let class_expr_eoi = Grammar.Entry.create gram "class expression" in
 let class_sig_item_eoi = Grammar.Entry.create gram "class signature item" in
 let class_str_item_eoi = Grammar.Entry.create gram "class structure item" in
 let with_constr_eoi = Grammar.Entry.create gram "with constr" in
-let row_field_eoi = Grammar.Entry.create gram "row field" in
+let poly_variant_eoi = Grammar.Entry.create gram "polymorphic variant" in
 Grammar.extend
   [Grammar.Entry.obj (sig_item_eoi : 'sig_item_eoi Grammar.Entry.e), None,
    [None, None,
@@ -4305,14 +4307,15 @@ Grammar.extend
      Gramext.action
        (fun _ (x : 'with_constr) (loc : Token.location) ->
           (x : 'with_constr_eoi))]];
-   Grammar.Entry.obj (row_field_eoi : 'row_field_eoi Grammar.Entry.e), None,
+   Grammar.Entry.obj (poly_variant_eoi : 'poly_variant_eoi Grammar.Entry.e),
+   None,
    [None, None,
     [[Gramext.Snterm
-        (Grammar.Entry.obj (row_field : 'row_field Grammar.Entry.e));
+        (Grammar.Entry.obj (poly_variant : 'poly_variant Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (x : 'row_field) (loc : Token.location) ->
-          (x : 'row_field_eoi))]]];
+       (fun _ (x : 'poly_variant) (loc : Token.location) ->
+          (x : 'poly_variant_eoi))]]];
 List.iter (fun (q, f) -> Quotation.add q (f q))
   ["sig_item", apply_entry sig_item_eoi; "str_item", apply_entry str_item_eoi;
    "ctyp", apply_entry ctyp_eoi; "patt", apply_entry patt_eoi;
@@ -4323,4 +4326,4 @@ List.iter (fun (q, f) -> Quotation.add q (f q))
    "class_sig_item", apply_entry class_sig_item_eoi;
    "class_str_item", apply_entry class_str_item_eoi;
    "with_constr", apply_entry with_constr_eoi;
-   "row_field", apply_entry row_field_eoi];;
+   "poly_variant", apply_entry poly_variant_eoi];;

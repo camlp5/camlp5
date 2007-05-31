@@ -39,10 +39,10 @@ type ctyp =
   | TySum of loc and list (loc * string * list ctyp)
   | TyTup of loc and list ctyp
   | TyUid of loc and string
-  | TyVrn of loc and list row_field and option (option (list string)) ]
-and row_field =
-  [ RfTag of string and bool and list ctyp
-  | RfInh of ctyp ]
+  | TyVrn of loc and list poly_variant and option (option (list string)) ]
+and poly_variant =
+  [ PvTag of string and bool and list ctyp
+  | PvInh of ctyp ]
 ;
 
 type class_infos 'a =

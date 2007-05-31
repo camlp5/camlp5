@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_o.ml,v 1.15 2007/05/30 09:54:20 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.16 2007/05/31 08:53:27 deraugla Exp $ *)
 
 open Pcaml.Printer;
 open Spretty;
@@ -241,10 +241,11 @@ and variant b (loc, c, tl) _ k =
            `HOVbox [: `S LR c; `S LR "of"; ctyp_list tl "" k :] :] ]
 ;
 
-value rec row_fields b rfl _ k = listwbws row_field b (S LR "|") rfl "" k
-and row_field b rf _ k =
+value rec poly_variants b rfl _ k =
+  listwbws poly_variant b (S LR "|") rfl "" k
+and poly_variant b rf _ k =
   match rf with
-  [ MLast.RfTag c ao tl ->
+  [ <:poly_variant< `$c$ of $opt:ao$ $list:tl$ >> ->
       let c = "`" ^ c in
       match tl with
       [ [] -> HVbox [: b; `HOVbox [: `S LR c; k :] :]
@@ -253,7 +254,7 @@ and row_field b rf _ k =
           HVbox
             [: b;
                `HOVbox [: `S LR c; `S LR "of"; ao; ctyp_list tl "" k :] :] ]
-  | MLast.RfInh t -> HVbox [: b; `ctyp t "" k :] ]
+  | <:poly_variant< $t$ >> -> HVbox [: b; `ctyp t "" k :] ]
 ;
 
 value rec get_type_args t tl =
@@ -1623,13 +1624,13 @@ pr_ctyp.pr_levels :=
           fun curr next dg k ->
             [: `HVbox
                   [: `HVbox [: :];
-                     row_fields [: `S LR "[" :] rfl "" [: `S LR "]" :];
+                     poly_variants [: `S LR "[" :] rfl "" [: `S LR "]" :];
                      k :] :]
       | <:ctyp< [ > $list:rfl$ ] >> ->
           fun curr next dg k ->
             [: `HVbox
                   [: `HVbox [: :];
-                     row_fields [: `S LR "[>" :] rfl "" [: `S LR "]" :];
+                     poly_variants [: `S LR "[>" :] rfl "" [: `S LR "]" :];
                      k :] :]
       | <:ctyp< [ < $list:rfl$ > $list:sl$ ] >> ->
           fun curr next dg k ->
@@ -1642,7 +1643,7 @@ pr_ctyp.pr_levels :=
                      list (fun x _ k -> HVbox [: `S LR x; k :]) l "" k1 :] ]
             in
             [: `HVbox
-                  [: `HVbox [: :]; row_fields [: `S LR "[<" :] rfl "" k1;
+                  [: `HVbox [: :]; poly_variants [: `S LR "[<" :] rfl "" k1;
                      k :] :]
       | MLast.TyCls _ id ->
           fun curr next dg k -> [: `S LO "#"; `class_longident id "" k :]

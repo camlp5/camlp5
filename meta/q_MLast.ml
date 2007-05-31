@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.20 2006/12/26 08:54:09 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.21 2007/05/31 08:53:27 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -137,7 +137,7 @@ value ipatt = Grammar.Entry.create gram "ipatt";
 value let_binding = Grammar.Entry.create gram "let_binding";
 value type_declaration = Grammar.Entry.create gram "type_declaration";
 value with_constr = Grammar.Entry.create gram "with_constr";
-value row_field = Grammar.Entry.create gram "row_field";
+value poly_variant = Grammar.Entry.create gram "poly_variant";
 
 value a_list = Grammar.Entry.create gram "a_list";
 value a_opt = Grammar.Entry.create gram "a_opt";
@@ -259,7 +259,7 @@ value append_elem el e = Qast.Apply "@" [el; Qast.List [e]];
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr class_type
     class_expr class_sig_item class_str_item let_binding type_declaration
-    ipatt with_constr row_field;
+    ipatt with_constr poly_variant;
   module_expr:
     [ [ "functor"; "("; i = a_UIDENT; ":"; t = module_type; ")"; "->";
         me = SELF ->
@@ -999,27 +999,27 @@ EXTEND
           Qast.Node "TyOlb" [Qast.Loc; i; t] ] ]
   ;
   ctyp: LEVEL "simple"
-    [ [ "["; "="; rfl = row_field_list; "]" ->
+    [ [ "["; "="; rfl = poly_variant_list; "]" ->
           Qast.Node "TyVrn" [Qast.Loc; rfl; Qast.Option None]
-      | "["; ">"; rfl = row_field_list; "]" ->
+      | "["; ">"; rfl = poly_variant_list; "]" ->
           Qast.Node "TyVrn"
             [Qast.Loc; rfl; Qast.Option (Some (Qast.Option None))]
-      | "["; "<"; rfl = row_field_list; "]" ->
+      | "["; "<"; rfl = poly_variant_list; "]" ->
           Qast.Node "TyVrn"
             [Qast.Loc; rfl;
              Qast.Option (Some (Qast.Option (Some (Qast.List []))))]
-      | "["; "<"; rfl = row_field_list; ">"; ntl = SLIST1 name_tag; "]" ->
+      | "["; "<"; rfl = poly_variant_list; ">"; ntl = SLIST1 name_tag; "]" ->
           Qast.Node "TyVrn"
             [Qast.Loc; rfl; Qast.Option (Some (Qast.Option (Some ntl)))] ] ]
   ;
-  row_field_list:
-    [ [ rfl = SLIST0 row_field SEP "|" -> rfl ] ]
+  poly_variant_list:
+    [ [ rfl = SLIST0 poly_variant SEP "|" -> rfl ] ]
   ;
-  row_field:
-    [ [ "`"; i = ident -> Qast.Node "RfTag" [i; Qast.Bool True; Qast.List []]
+  poly_variant:
+    [ [ "`"; i = ident -> Qast.Node "PvTag" [i; Qast.Bool True; Qast.List []]
       | "`"; i = ident; "of"; ao = SOPT "&"; l = SLIST1 ctyp SEP "&" ->
-          Qast.Node "RfTag" [i; o2b ao; l]
-      | t = ctyp -> Qast.Node "RfInh" [t] ] ]
+          Qast.Node "PvTag" [i; o2b ao; l]
+      | t = ctyp -> Qast.Node "PvInh" [t] ] ]
   ;
   name_tag:
     [ [ "`"; i = ident -> i ] ]
@@ -1291,7 +1291,7 @@ let class_expr_eoi = Grammar.Entry.create gram "class expression" in
 let class_sig_item_eoi = Grammar.Entry.create gram "class signature item" in
 let class_str_item_eoi = Grammar.Entry.create gram "class structure item" in
 let with_constr_eoi = Grammar.Entry.create gram "with constr" in
-let row_field_eoi = Grammar.Entry.create gram "row field" in
+let poly_variant_eoi = Grammar.Entry.create gram "polymorphic variant" in
 do {
   EXTEND
     sig_item_eoi: [ [ x = sig_item; EOI -> x ] ];
@@ -1306,7 +1306,7 @@ do {
     class_sig_item_eoi: [ [ x = class_sig_item; EOI -> x ] ];
     class_str_item_eoi: [ [ x = class_str_item; EOI -> x ] ];
     with_constr_eoi: [ [ x = with_constr; EOI -> x ] ];
-    row_field_eoi: [ [ x = row_field; EOI -> x ] ];
+    poly_variant_eoi: [ [ x = poly_variant; EOI -> x ] ];
   END;
   List.iter (fun (q, f) -> Quotation.add q (f q))
     [("sig_item", apply_entry sig_item_eoi);
@@ -1321,5 +1321,5 @@ do {
      ("class_sig_item", apply_entry class_sig_item_eoi);
      ("class_str_item", apply_entry class_str_item_eoi);
      ("with_constr", apply_entry with_constr_eoi);
-     ("row_field", apply_entry row_field_eoi)];
+     ("poly_variant", apply_entry poly_variant_eoi)];
 };

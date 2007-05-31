@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: oprint.ml,v 1.4 2006/12/26 08:54:09 deraugla Exp $ *)
+(* $Id: oprint.ml,v 1.5 2007/05/31 08:53:27 deraugla Exp $ *)
 
 open Format;
 open Outcometree;
@@ -151,7 +151,7 @@ and print_simple_out_type ppf =
       fprintf ppf "@[<2>< %a >@]" (print_fields rest) fields
   | Otyp_stuff s -> fprintf ppf "%s" s
   | Otyp_var ng s -> fprintf ppf "'%s%s" (if ng then "_" else "") s
-  | Otyp_variant non_gen row_fields closed tags ->
+  | Otyp_variant non_gen poly_variants closed tags ->
       let print_present ppf =
         fun
         [ None | Some [] -> ()
@@ -160,7 +160,7 @@ and print_simple_out_type ppf =
       let print_fields ppf =
         fun
         [ Ovar_fields fields ->
-            print_list print_row_field (fun ppf -> fprintf ppf "@;<1 -2>| ")
+            print_list print_poly_variant (fun ppf -> fprintf ppf "@;<1 -2>| ")
               ppf fields
         | Ovar_name id tyl ->
             fprintf ppf "@[%a%a@]" print_typargs tyl print_ident id ]
@@ -169,7 +169,7 @@ and print_simple_out_type ppf =
         (if closed then if tags = None then " " else "< "
          else if tags = None then "> "
          else "? ")
-        print_fields row_fields print_present tags
+        print_fields poly_variants print_present tags
   | Otyp_alias _ _ | Otyp_arrow _ _ _ | Otyp_tuple _ as ty ->
       fprintf ppf "@[<1>(%a)@]" print_out_type ty
   | Otyp_abstract | Otyp_sum _ | Otyp_record _ | Otyp_manifest _ _ -> () ]
@@ -189,7 +189,7 @@ and print_fields rest ppf =
       }
   | [(s, t) :: l] ->
       fprintf ppf "%s : %a;@ %a" s print_out_type t (print_fields rest) l ]
-and print_row_field ppf (l, opt_amp, tyl) =
+and print_poly_variant ppf (l, opt_amp, tyl) =
   let pr_of ppf =
     if opt_amp then fprintf ppf " of@ &@ "
     else if tyl <> [] then fprintf ppf " of@ "

@@ -504,9 +504,9 @@ value ctyp_simple =
           List.map
             (fun rf ->
                match rf with
-               [ <:row_field< `$s$ of $opt:_$ $list:tl$ >> ->
+               [ <:poly_variant< `$s$ of $opt:_$ $list:tl$ >> ->
                    (MLast.loc_of_ctyp t, s, tl)
-               | <:row_field< $t$ >> -> (MLast.loc_of_ctyp t, "Foo", []) ])
+               | <:poly_variant< $t$ >> -> (MLast.loc_of_ctyp t, "Foo", []) ])
             rfl
         in
         let loc = MLast.loc_of_ctyp t in
@@ -1082,7 +1082,7 @@ value patt_simple =
         failwith "labels not pretty printed (in patt); add pr_ro.cmo"
   | <:patt< `$uid:s$ >> ->
       fun curr next ind b k ->
-        failwith "row fields not pretty printed; add pr_ro.cmo"
+        failwith "polymorphic variants not pretty printed; add pr_ro.cmo"
   | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >>
     as z ->
       fun curr next ind b k ->

@@ -1,5 +1,5 @@
 (* camlp4r *)
-(* $Id: pr_depend.ml,v 1.6 2006/12/12 15:42:45 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.7 2007/05/31 08:53:27 deraugla Exp $ *)
 
 open MLast;
 
@@ -57,8 +57,8 @@ and constr_decl (_, _, tl) = list ctyp tl
 and label_decl (_, _, _, t) = ctyp t
 and variant =
   fun
-  [ RfTag _ _ tl -> list ctyp tl
-  | RfInh t -> ctyp t ]
+  [ PvTag _ _ tl -> list ctyp tl
+  | PvInh t -> ctyp t ]
 and ctyp_module =
   fun
   [ TyAcc _ t _ -> ctyp_module t
