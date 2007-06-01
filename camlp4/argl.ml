@@ -115,7 +115,7 @@ value align_doc key s =
   let tab =
     String.make (max 1 (13 - String.length key - String.length p)) ' '
   in
-  p ^ tab  ^ s
+  p ^ tab ^ s
 ;
 
 value make_symlist l =
