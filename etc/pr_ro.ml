@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_ro.ml,v 1.10 2007/06/01 00:35:04 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.11 2007/06/01 02:24:57 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -48,6 +48,45 @@ value rec vlist2 elem elem2 ind b xl k =
 ;
 
 value vlist elem ind b xl k = vlist2 elem elem ind b xl k;
+
+value rec plistl elem eleml ind sh b xl k =
+  match xl with
+  [ [] -> assert False
+  | [(x, _)] -> eleml ind b x k
+  | [(x, sep) :: xl] ->
+      let s =
+        horiz_vertic (fun () -> Some (elem ind b x sep)) (fun () -> None)
+      in
+      match s with
+      [ Some b ->
+          loop b xl where rec loop b =
+            fun
+            [ [] -> assert False
+            | [(x, _)] ->
+                horiz_vertic (fun () -> eleml ind (sprintf "%s " b) x k)
+                  (fun () ->
+                     let s = eleml (ind + sh) (tab (ind + sh)) x k in
+                     sprintf "%s\n%s" b s)
+            | [(x, sep) :: xl] ->
+                let s =
+                  horiz_vertic
+                    (fun () -> Some (elem ind (sprintf "%s " b) x sep))
+                    (fun () -> None)
+                in
+                match s with
+                [ Some b -> loop b xl
+                | None ->
+                    let s =
+                      plistl elem eleml (ind + sh) 0 (tab (ind + sh))
+                        [(x, sep) :: xl] k
+                    in
+                    sprintf "%s\n%s" b s ] ]
+      | None ->
+          let s1 = elem ind b x sep in
+          let s2 = plistl elem eleml (ind + sh) 0 (tab (ind + sh)) xl k in
+          sprintf "%s\n%s" s1 s2 ] ]
+;
+value plist elem ind sh b xl k = plistl elem elem ind sh b xl k;
 
 value semi_after elem ind b x k = elem ind b x (sprintf ";%s" k);
 value amp_before elem ind b x k = elem ind (sprintf "%s& " b) x k;
@@ -133,7 +172,10 @@ value binding elem ind b (p, e) k =
          (elem (ind + 2) (tab (ind + 2)) e k))
 ;
 
-value typevar ind b tv k = sprintf "%s'%s%s" b tv k;
+value field ind b (s, t) k =
+  horiz_vertic (fun () -> sprintf "%s%s : %s%s" b s (ctyp 0 "" t "") k)
+    (fun () -> not_impl "field vertic" ind b s k)
+;
 
 value patt_tcon ind b p k =
   match p with
@@ -144,6 +186,8 @@ value patt_tcon ind b p k =
         (fun () -> not_impl "patt_tcon vertic" ind b p k)
   | p -> patt ind b p k ]
 ;
+
+value typevar ind b tv k = sprintf "%s'%s%s" b tv k;
 
 (* *)
 
@@ -165,7 +209,9 @@ lev.pr_rules :=
   | <:patt< ? $i$ : ($p$ $opt:eo$) >> ->
       fun curr next ind b k -> failwith "label in pr_ro 3"
   | <:patt< ~ $s$ >> ->
-      fun curr next ind b k -> sprintf "%s?%s%s" b s k
+      fun curr next ind b k -> sprintf "%s~%s%s" b s k
+  | <:patt< ~ $s$ : $p$ >> ->
+      fun curr next ind b k -> curr ind (sprintf "%s~%s:" b s) p k
   | <:patt< `$uid:s$ >> ->
       fun curr next ind b k -> sprintf "%s`%s%s" b s k ]
 ;
@@ -220,6 +266,13 @@ lev.pr_rules :=
       fun curr next ind b k -> ctyp ind (sprintf "%s?%s:" b i) t k
   | <:ctyp< ~ $i$ : $t$ >> ->
       fun curr next ind b k -> ctyp ind (sprintf "%s~%s:" b i) t k
+  | <:ctyp< < $list:ml$ $opt:v$ > >> ->
+      fun curr next ind b k ->
+        if ml = [] then sprintf "%s<%s >%s" b (if v then " .." else "") k
+        else
+          let ml = List.map (fun e -> (e, ";")) ml in
+          plist field (ind + 2) 0 (sprintf "%s< " b) ml
+            (sprintf "%s >%s" (if v then " .." else "") k)
   | <:ctyp< [ = $list:pvl$ ] >> ->
       fun curr next ind b k ->
         horiz_vertic
@@ -234,7 +287,10 @@ lev.pr_rules :=
   | <:ctyp< [ < $list:pvl$ ] >> ->
       fun curr next ind b k -> not_impl "variants 3" ind b pvl k
   | <:ctyp< [ < $list:pvl$ > $list:_$ ] >> ->
-      fun curr next ind b k -> not_impl "variants 4" ind b pvl k ]
+      fun curr next ind b k -> not_impl "variants 4" ind b pvl k
+  | <:ctyp< $_$ as $_$ >> as z ->
+      fun curr next ind b k ->
+        ctyp (ind + 1) (sprintf "%s(" b) z (sprintf ")%s" k) ]
 ;
 
 let lev = find_pr_level "top" pr_sig_item.pr_levels in
@@ -454,6 +510,17 @@ value class_str_item_top =
   | z -> fun curr next ind b k -> not_impl "class_str_item" ind b z k ]
 ;
 
+value ctyp_as =
+  extfun Extfun.empty with
+  [ <:ctyp< $t1$ as $t2$ >> ->
+      fun curr next ind b k ->
+        horiz_vertic
+          (fun () ->
+             sprintf "%s%s as %s%s" b (curr 0 "" t1 "") (next 0 "" t2 "") k)
+          (fun () -> not_impl "ctyp as vertic" ind b t1 k)
+  | z -> fun curr next ind b k -> next ind b z k ]
+;
+
 value ctyp_poly =
   extfun Extfun.empty with
   [ <:ctyp< ! $list:pl$ . $t$ >> ->
@@ -471,6 +538,7 @@ value ctyp_poly =
 
 pr_ctyp.pr_levels :=
   [find_pr_level "top" pr_ctyp.pr_levels;
+   {pr_label = "as"; pr_rules = ctyp_as};
    {pr_label = "poly"; pr_rules = ctyp_poly};
    find_pr_level "arrow" pr_ctyp.pr_levels;
    find_pr_level "apply" pr_ctyp.pr_levels;
