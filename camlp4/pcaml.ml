@@ -399,6 +399,7 @@ module NewPrinter =
       | [lev :: levl] ->
           if lev.pr_label = lab then lev else find_pr_level lab levl ]
     ;
+    value pr_expr_fun_args = ref Extfun.empty;
   end
 ;
 

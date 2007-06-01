@@ -127,6 +127,8 @@ module NewPrinter :
     val pr_class_type : MLast.class_type printer_t;;
     val pr_class_expr : MLast.class_expr printer_t;;
     val find_pr_level : string -> 'a pr_level list -> 'a pr_level;;
+    val pr_expr_fun_args :
+      (MLast.expr, (MLast.patt list * MLast.expr)) Extfun.t ref;;
   end
 ;;
 

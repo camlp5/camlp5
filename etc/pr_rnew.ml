@@ -286,18 +286,19 @@ value str_item ind b z k = pr_str_item.pr_fun "top" ind b z k;
 value sig_item ind b z k = pr_sig_item.pr_fun "top" ind b z k;
 value module_expr ind b z k = pr_module_expr.pr_fun "top" ind b z k;
 value module_type ind b z k = pr_module_type.pr_fun "top" ind b z k;
-(*
-value expr_fun_args ge = Extfun.apply Pcaml.pr_expr_fun_args.val ge;
+value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
 
+(*
 value patt_as ind b z k =
   match z with
   [ <:patt< ($x$ as $y$) >> -> patt ind b x (patt ind " as " y k)
   | z -> patt ind b z k ]
 ;
+*)
 
 (* utilities specific to pr_r *)
 
-Pcaml.pr_expr_fun_args.val :=
+pr_expr_fun_args.val :=
   extfun Extfun.empty with
   [ <:expr< fun $p$ -> $e$ >> as z ->
       if is_irrefut_patt p then
@@ -306,7 +307,6 @@ Pcaml.pr_expr_fun_args.val :=
       else ([], z)
   | z -> ([], z) ]
 ;
-*)
 
 value binding elem ind b (p, e) k =
   horiz_vertic
@@ -314,6 +314,18 @@ value binding elem ind b (p, e) k =
     (fun () ->
        sprintf "%s\n%s" (patt ind b p " =")
          (elem (ind + 2) (tab (ind + 2)) e k))
+;
+
+(* pretty printing improvement (optional):
+     prints "value f x = e" instead of "value f = fun x -> e" *)
+value binding_expr ind b (p, e) k =
+  let (pl, e) = expr_fun_args e in
+  let pl = [p :: pl] in
+  horiz_vertic
+    (fun () -> sprintf "%s %s%s" (hlist patt 0 b pl " =") (expr 0 "" e "") k)
+    (fun () ->
+       sprintf "%s\n%s" (hlist patt ind b pl " =")
+         (expr (ind + 2) (tab (ind + 2)) e k))
 ;
 
 value match_assoc ind b (p, w, e) k =
@@ -607,7 +619,7 @@ value expr_top =
         horiz_vertic
           (fun () ->
              let s1 =
-               hlist2 (binding expr) (and_before (binding expr)) ind
+               hlist2 binding_expr (and_before binding_expr) ind
                  (sprintf "%slet %s" b (if rf then "rec " else ""))
                  pel " in"
              in
@@ -615,7 +627,7 @@ value expr_top =
              sprintf "%s %s" s1 s2)
           (fun () ->
              let s1 =
-               vlist2 (binding expr) (and_before (binding expr)) ind
+               vlist2 binding_expr (and_before binding_expr) ind
                  (sprintf "%slet %s" b (if rf then "rec " else ""))
                  pel " in"
              in
@@ -876,12 +888,12 @@ value expr_simple =
   | <:expr< {$list:lel$} >> ->
       fun curr next ind b k ->
         let lxl = List.map (fun lx -> (lx, ";")) lel in
-        plist (binding expr) (ind + 1) 0 (sprintf "%s{" b) lxl
+        plist binding_expr (ind + 1) 0 (sprintf "%s{" b) lxl
           (sprintf "}%s" k)
   | <:expr< {($e$) with $list:lel$} >> ->
       fun curr next ind b k ->
         let lxl = List.map (fun lx -> (lx, ";")) lel in
-        plist (binding expr) (ind + 1) 0
+        plist binding_expr (ind + 1) 0
           (expr ind (sprintf "%s{(" b) e ") with ") lxl
           (sprintf "}%s" k)
   | <:expr< [| $list:el$ |] >> ->
@@ -1189,13 +1201,13 @@ value str_item_top =
         horiz_vertic
           (fun () ->
              let s =
-               hlist2 (binding expr) (and_before (binding expr)) ind
+               hlist2 binding_expr (and_before binding_expr) ind
                  (sprintf "%svalue %s" b (if rf then "rec " else "")) pel ""
              in
              sprintf "%s%s" s k)
           (fun () ->
              let s =
-               vlist2 (binding expr) (and_before (binding expr)) ind
+               vlist2 binding_expr (and_before binding_expr) ind
                  (sprintf "%svalue %s" b (if rf then "rec " else "")) pel ""
              in
              sprintf "%s\n%s%s" s (tab ind) k)

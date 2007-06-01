@@ -35,11 +35,11 @@ value action_arg s sl =
       if s = "" then
         match sl with
         [ [s :: sl] ->
-            try do { r.val := (int_of_string s); Some sl } with
+            try do { r.val := int_of_string s; Some sl } with
             [ Failure "int_of_string" -> None ]
         | [] -> None ]
       else
-        try do { r.val := (int_of_string s); Some sl } with
+        try do { r.val := int_of_string s; Some sl } with
         [ Failure "int_of_string" -> None ]
   | Arg.Float f ->
       if s = "" then
@@ -50,9 +50,9 @@ value action_arg s sl =
   | Arg.Set_float r ->
       if s = "" then
         match sl with
-        [ [s :: sl] -> do { r.val := (float_of_string s); Some sl }
+        [ [s :: sl] -> do { r.val := float_of_string s; Some sl }
         | [] -> None ]
-      else do { r.val := (float_of_string s); Some sl }
+      else do { r.val := float_of_string s; Some sl }
   | Arg.Symbol syms f ->
       match (if s = "" then sl else [s :: sl]) with
       [ [s :: sl] when List.mem s syms -> do { f s; Some sl }

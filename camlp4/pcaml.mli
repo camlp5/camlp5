@@ -128,6 +128,8 @@ module NewPrinter :
     value pr_class_type : printer_t MLast.class_type;
     value pr_class_expr : printer_t MLast.class_expr;
     value find_pr_level : string -> list (pr_level 'a) -> pr_level 'a;
+    value pr_expr_fun_args :
+      ref (Extfun.t MLast.expr (list MLast.patt * MLast.expr));
   end
 ;
 
