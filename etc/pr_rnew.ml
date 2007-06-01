@@ -317,7 +317,7 @@ value binding elem ind b (p, e) k =
 ;
 
 (* pretty printing improvement (optional):
-     prints "value f x = e" instead of "value f = fun x -> e" *)
+   - prints "value f x = e" instead of "value f = fun x -> e" *)
 value binding_expr ind b (p, e) k =
   let (pl, e) = expr_fun_args e in
   let pl = [p :: pl] in
@@ -581,12 +581,16 @@ value expr_top =
       fun curr next ind b k ->
         match pwel with
         [ [(p1, None, e1)] when is_irrefut_patt p1 ->
+            let (pl, e1) = expr_fun_args e1 in
+            let pl = [p1 :: pl] in
             horiz_vertic
               (fun () ->
-                 sprintf "%s %s" (patt ind (sprintf "%sfun " b) p1 " ->")
+                 sprintf "%s %s"
+                   (hlist patt ind (sprintf "%sfun " b) pl " ->")
                    (expr 0 "" e1 k))
               (fun () ->
-                 sprintf "%s\n%s" (patt ind (sprintf "%sfun " b) p1 " ->")
+                 sprintf "%s\n%s"
+                   (hlist patt ind (sprintf "%sfun " b) pl " ->")
                    (expr (ind + 2) (tab (ind + 2)) e1 k))
         | [] -> sprintf "%sfun []%s" b k
         | pwel ->

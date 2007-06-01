@@ -127,12 +127,12 @@ value make_symlist l =
 value print_usage_list l =
   List.iter
     (fun (key, spec, doc) ->
-      match spec with
-      [ Arg.Symbol symbs _ ->
-          let s = make_symlist symbs in
-          let synt = key ^ " " ^ s in
-          eprintf "  %s %s\n" synt (align_doc synt doc)
-      | _ -> eprintf "  %s %s\n" key (align_doc key doc) ] )
+       match spec with
+       [ Arg.Symbol symbs _ ->
+           let s = make_symlist symbs in
+           let synt = key ^ " " ^ s in
+           eprintf "  %s %s\n" synt (align_doc synt doc)
+       | _ -> eprintf "  %s %s\n" key (align_doc key doc) ] )
     l
 ;
 
