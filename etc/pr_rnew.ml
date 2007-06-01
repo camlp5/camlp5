@@ -324,8 +324,15 @@ value binding_expr ind b (p, e) k =
   horiz_vertic
     (fun () -> sprintf "%s %s%s" (hlist patt 0 b pl " =") (expr 0 "" e "") k)
     (fun () ->
-       sprintf "%s\n%s" (hlist patt ind b pl " =")
-         (expr (ind + 2) (tab (ind + 2)) e k))
+       if k = " in" then
+         (* hack for displaying the "in" in a new line in this case;
+            this is not beautiful, I should find a more elegant solution *)
+         sprintf "%s\n%s\n%s" (hlist patt ind b pl " =")
+           (expr (ind + 2) (tab (ind + 2)) e "")
+           (sprintf "%sin" (tab ind))
+       else
+         sprintf "%s\n%s" (hlist patt ind b pl " =")
+           (expr (ind + 2) (tab (ind + 2)) e k))
 ;
 
 value match_assoc ind b (p, w, e) k =
