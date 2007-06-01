@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.17 2007/05/31 16:51:25 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.18 2007/06/01 00:35:04 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -665,7 +665,7 @@ EXTEND
           Pcaml.handle_expr_quotation loc x ] ]
   ;
   let_binding:
-    [ [ p = patt; e = fun_binding ->
+    [ [ p = patt LEVEL "simple"; e = fun_binding ->
           match patt_lid p with
           [ Some (loc, i, pl) ->
               let e =

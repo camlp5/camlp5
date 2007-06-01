@@ -616,24 +616,24 @@ value expr_top =
              in
              let s2 = match_assoc_list ind (tab ind) pwel k in
              sprintf "%s\n%s" s1 s2)
-  | <:expr< let $opt:rf1$ $list:pel1$ in $e1$ >> ->
+  | <:expr< let $opt:rf$ $list:pel$ in $e$ >> ->
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
              let s1 =
                hlist2 (binding expr) (and_before (binding expr)) ind
-                 (sprintf "%slet %s" b (if rf1 then "rec " else ""))
-                 pel1 " in"
+                 (sprintf "%slet %s" b (if rf then "rec " else ""))
+                 pel " in"
              in
-             let s2 = expr 0 "" e1 k in
+             let s2 = expr 0 "" e k in
              sprintf "%s %s" s1 s2)
           (fun () ->
              let s1 =
                vlist2 (binding expr) (and_before (binding expr)) ind
-                 (sprintf "%slet %s" b (if rf1 then "rec " else ""))
-                 pel1 " in"
+                 (sprintf "%slet %s" b (if rf then "rec " else ""))
+                 pel " in"
              in
-             let s2 = expr ind (tab ind) e1 k in
+             let s2 = expr ind (tab ind) e k in
              sprintf "%s\n%s" s1 s2)
   | <:expr< let module $s$ = $me$ in $e$ >> ->
       fun curr next ind b k ->
@@ -723,7 +723,7 @@ value expr_and =
         let unfold =
           fun
           [ <:expr< $lid:op$ $x$ $y$ >> ->
-              if List.mem op ["&&"] then Some (x, " " ^ op, y) else None
+              if List.mem op ["&&"; "&"] then Some (x, " &&", y) else None
           | _ -> None ]
         in
         right_operator ind 0 unfold next b z k ]
@@ -890,15 +890,12 @@ value expr_simple =
         plist (binding expr) (ind + 1) 0
           (expr ind (sprintf "%s{(" b) e ") with ") lxl
           (sprintf "}%s" k)
-(*
   | <:expr< [| $list:el$ |] >> ->
       fun curr next ind b k ->
         if el = [] then sprintf "%s[| |]%s" b k
         else
           let el = List.map (fun e -> (e, ";")) el in
-          listws_hv (ind + 3) 0 expr (sprintf "%s[| " b) el
-            (sprintf " |]%s" k)
-*)
+          plist expr (ind + 3) 0 (sprintf "%s[| " b) el (sprintf " |]%s" k)
   | <:expr< [$_$ :: $_$] >> as z ->
       fun curr next ind b k ->
         let (xl, y) = make_expr_list z in
@@ -1088,8 +1085,8 @@ value patt_simple =
       fun curr next ind b k -> sprintf "%s\"%s\"%s" b s k
   | <:patt< _ >> ->
       fun curr next ind b k -> sprintf "%s_%s" b k
-  | <:patt< ? $s$ >> | <:patt< ? ($p$ = $e$) >> |
-    <:patt< ? $i$ : ($p$ = $eo$) >> | <:patt< ~ $s$ >> ->
+  | <:patt< ? $_$ >> | <:patt< ? ($_$ $opt:_$) >> |
+    <:patt< ? $_$ : ($_$ $opt:_$) >> | <:patt< ~ $_$ >> ->
       fun curr next ind b k ->
         failwith "labels not pretty printed (in patt); add pr_ro.cmo"
   | <:patt< `$uid:s$ >> ->

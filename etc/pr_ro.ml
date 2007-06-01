@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_ro.ml,v 1.9 2007/05/31 18:34:36 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.10 2007/06/01 00:35:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -125,20 +125,44 @@ value rec class_longident ind b cl k =
   | [c :: cl] -> sprintf "%s%s.%s" b c (class_longident ind "" cl k) ]
 ;
 
+value binding elem ind b (p, e) k =
+  horiz_vertic
+    (fun () -> sprintf "%s %s%s" (patt 0 b p " =") (elem 0 "" e "") k)
+    (fun () ->
+       sprintf "%s\n%s" (patt ind b p " =")
+         (elem (ind + 2) (tab (ind + 2)) e k))
+;
+
 value typevar ind b tv k = sprintf "%s'%s%s" b tv k;
+
+value patt_tcon ind b p k =
+  match p with
+  [ <:patt< ($p$ : $t$) >> ->
+      horiz_vertic
+        (fun () ->
+           sprintf "%s%s : %s%s" b (patt 0 "" p "") (ctyp 0 "" t "") k)
+        (fun () -> not_impl "patt_tcon vertic" ind b p k)
+  | p -> patt ind b p k ]
+;
+
+(* *)
 
 let lev = find_pr_level "simple" pr_patt.pr_levels in
 lev.pr_rules :=
   extfun lev.pr_rules with
   [ <:patt< ? $s$ >> ->
       fun curr next ind b k -> sprintf "%s?%s%s" b s k
-  | <:patt< ? ($p$ = $e$) >> ->
+  | <:patt< ? ($p$ $opt:eo$) >> ->
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
-             sprintf "%s?(%s = %s)%s" b (patt 0 "" p "") (expr 0 "" e "") k)
+             sprintf "%s?(%s%s)%s" b (patt_tcon 0 "" p "")
+               (match eo with
+                [ Some e -> sprintf " = %s" (expr 0 "" e "")
+                | None -> "" ])
+               k)
           (fun () -> not_impl "patt ?(p=e) vertic" ind b p k)
-  | <:patt< ? $i$ : ($p$ = $eo$) >> ->
+  | <:patt< ? $i$ : ($p$ $opt:eo$) >> ->
       fun curr next ind b k -> failwith "label in pr_ro 3"
   | <:patt< ~ $s$ >> ->
       fun curr next ind b k -> sprintf "%s?%s%s" b s k
@@ -169,7 +193,18 @@ lev.pr_rules :=
 let lev = find_pr_level "simple" pr_expr.pr_levels in
 lev.pr_rules :=
   extfun lev.pr_rules with
-  [ <:expr< ? $s$ >> ->
+  [ <:expr< ( $e$ : $t$ :> $t2$ ) >> ->
+      fun curr next ind b k -> not_impl "expr : :>" ind b e k
+  | <:expr< ( $e$ :> $t$ ) >> ->
+      fun curr next ind b k ->
+        horiz_vertic
+          (fun () ->
+             sprintf "%s(%s :> %s)%s" b (expr 0 "" e "") (ctyp 0 "" t "") k)
+          (fun () ->
+             let s1 = expr (ind + 1) (sprintf "%s(" b) e " :>" in
+             let s2 = ctyp (ind + 1) (tab (ind + 1)) t (sprintf ")%s" k) in
+             sprintf "%s\n%s" s1 s2)
+  | <:expr< ? $s$ >> ->
       fun curr next ind b k -> sprintf "%s?%s%s" b s k
   | <:expr< ~ $s$ >> ->
       fun curr next ind b k -> sprintf "%s~%s%s" b s k
@@ -267,7 +302,26 @@ value class_type_top =
 
 value class_expr_top =
   extfun Extfun.empty with
-  [ z -> fun curr next ind b k -> next ind b z k ]
+  [ <:class_expr< let $opt:rf$ $list:pel$ in $ce$ >> ->
+      fun curr next ind b k ->
+        horiz_vertic
+          (fun () ->
+             let s1 =
+               hlist2 (binding expr) (and_before (binding expr)) ind
+                 (sprintf "%slet %s" b (if rf then "rec " else ""))
+                 pel " in"
+             in
+             let s2 = class_expr 0 "" ce k in
+             sprintf "%s %s" s1 s2)
+          (fun () ->
+             let s1 =
+               vlist2 (binding expr) (and_before (binding expr)) ind
+                 (sprintf "%slet %s" b (if rf then "rec " else ""))
+                 pel " in"
+             in
+             let s2 = class_expr ind (tab ind) ce k in
+             sprintf "%s\n%s" s1 s2)
+  | z -> fun curr next ind b k -> next ind b z k ]
 ;
 
 value class_expr_simple =
