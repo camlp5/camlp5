@@ -926,9 +926,7 @@ value expr_simple =
                      (expr ind "" y "") k)
                 (fun () ->
                    let s1 = expr ind b x " ::" in
-                   let s2 =
-                     expr (ind + 2) (tab (ind + 2)) y (sprintf "]%s" k)
-                   in
+                   let s2 = expr ind (tab ind) y (sprintf "]%s" k) in
                    sprintf "%s\n%s" s1 s2)
           | None -> expr ind b x (sprintf "]%s" k) ]
         in
