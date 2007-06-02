@@ -426,30 +426,58 @@ value match_assoc ind b (p, w, e) k =
           | None -> "" ])
          (expr 0 "" e "") k)
     (fun () ->
-       let s1 =
-         match w with
-         [ Some e ->
-             horiz_vertic
-               (fun () -> 
-                  sprintf "%s%s when %s ->" b (patt 0 "" p "")
-                    (expr 0 "" e ""))
-               (fun () ->
-                  let s1 = patt (ind + 2) b p "" in
-                  let s2 =
+       match sequencify e with
+       [ Some el ->
+           sequence_box (ind + 2) (fun () -> sprintf "\n")
+             (fun () ->
+                match w with
+                [ Some e ->
                     horiz_vertic
-                      (fun () ->
-                         sprintf "%swhen %s ->" (tab (ind + 2))
+                      (fun () -> 
+                         sprintf "%s%s when %s ->" b (patt 0 "" p "")
                            (expr 0 "" e ""))
                       (fun () ->
-                         let s1 = sprintf "%swhen" (tab (ind + 2)) in
-                         let s2 = expr (ind + 4) (tab (ind + 4)) e " ->" in
+                         let s1 = patt (ind + 2) b p "" in
+                         let s2 =
+                           horiz_vertic
+                             (fun () ->
+                                sprintf "%swhen %s ->" (tab (ind + 2))
+                                  (expr 0 "" e ""))
+                             (fun () ->
+                                let s1 = sprintf "%swhen" (tab (ind + 2)) in
+                                let s2 =
+                                  expr (ind + 4) (tab (ind + 4)) e " ->"
+                                in
+                                sprintf "%s\n%s" s1 s2)
+                         in
                          sprintf "%s\n%s" s1 s2)
-                  in
-                  sprintf "%s\n%s" s1 s2)
-         | None -> patt (ind + 2) b p " ->" ]
-       in
-       let s2 = expr (ind + 4) (tab (ind + 4)) e k in
-       sprintf "%s\n%s" s1 s2)
+                | None -> patt (ind + 2) b p " ->" ])
+             el k
+       | None ->
+           let s1 =
+             match w with
+             [ Some e ->
+                 horiz_vertic
+                   (fun () -> 
+                      sprintf "%s%s when %s ->" b (patt 0 "" p "")
+                        (expr 0 "" e ""))
+                   (fun () ->
+                      let s1 = patt (ind + 2) b p "" in
+                      let s2 =
+                        horiz_vertic
+                          (fun () ->
+                             sprintf "%swhen %s ->" (tab (ind + 2))
+                               (expr 0 "" e ""))
+                          (fun () ->
+                             let s1 = sprintf "%swhen" (tab (ind + 2)) in
+                             let s2 = expr (ind + 4) (tab (ind + 4)) e " ->" in
+                             sprintf "%s\n%s" s1 s2)
+                      in
+                      sprintf "%s\n%s" s1 s2)
+             | None -> patt (ind + 2) b p " ->" ]
+           in
+           let s2 = expr (ind + 4) (tab (ind + 4)) e k in
+           sprintf "%s\n%s" s1 s2 ])
 ;
 
 value match_assoc_list ind b pwel k =
