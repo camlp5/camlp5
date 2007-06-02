@@ -54,7 +54,7 @@ value action_arg s sl =
         | [] -> None ]
       else do { r.val := float_of_string s; Some sl }
   | Arg.Symbol syms f ->
-      match (if s = "" then sl else [s :: sl]) with
+      match if s = "" then sl else [s :: sl] with
       [ [s :: sl] when List.mem s syms -> do { f s; Some sl }
       | _ -> None ]
   | Arg.Tuple _ -> failwith "Arg.Tuple not implemented"
@@ -121,7 +121,7 @@ value align_doc key s =
 value make_symlist l =
   match l with
   [ [] -> "<none>"
-  | [h :: t] -> (List.fold_left (fun x y -> x ^ "|" ^ y) ("{" ^ h) t) ^ "}" ]
+  | [h :: t] -> List.fold_left (fun x y -> x ^ "|" ^ y) ("{" ^ h) t ^ "}" ]
 ;
 
 value print_usage_list l =
@@ -132,13 +132,12 @@ value print_usage_list l =
            let s = make_symlist symbs in
            let synt = key ^ " " ^ s in
            eprintf "  %s %s\n" synt (align_doc synt doc)
-       | _ -> eprintf "  %s %s\n" key (align_doc key doc) ] )
+       | _ -> eprintf "  %s %s\n" key (align_doc key doc) ])
     l
 ;
 
-value usage ini_sl ext_sl =
-  do {
-    eprintf "\
+value usage ini_sl ext_sl = do {
+  eprintf "\
 Usage: camlp4 [load-options] [--] [other-options]
 Load options:
   -I directory  Add directory in search patch for object files.
@@ -147,19 +146,18 @@ Load options:
   <object-file> Load this file in Camlp4 core.
 Other options:
   <file>        Parse this file.\n";
-    print_usage_list ini_sl;
-    loop (ini_sl @ ext_sl) where rec loop =
-      fun
-      [ [(y, _, _) :: _] when y = "-help" -> ()
-      | [_ :: sl] -> loop sl
-      | [] -> eprintf "  -help         Display this list of options.\n" ];
-    if ext_sl <> [] then do {
-      eprintf "Options added by loaded object files:\n";
-      print_usage_list ext_sl;
-    }
-    else ();
+  print_usage_list ini_sl;
+  loop (ini_sl @ ext_sl) where rec loop =
+    fun
+    [ [(y, _, _) :: _] when y = "-help" -> ()
+    | [_ :: sl] -> loop sl
+    | [] -> eprintf "  -help         Display this list of options.\n" ];
+  if ext_sl <> [] then do {
+    eprintf "Options added by loaded object files:\n";
+    print_usage_list ext_sl;
   }
-;
+  else ();
+};
 
 value parse spec_list anon_fun remaining_args =
   let spec_list =

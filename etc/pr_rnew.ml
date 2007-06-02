@@ -308,26 +308,42 @@ value binding elem ind b (p, e) k =
 ;
 
 (* pretty printing improvement (optional):
-   - first, change    let ... in do { e1 .. en }
-              into    do { let ... in e1; ... en }
-   - then return Some el if the expression is a sequence *)
-value rec sequencify =
-  fun
-  [ <:expr< do { $list:el$ } >> -> Some el
-  | <:expr< let $opt:rf$ $list:pel$ in $e$ >> as se ->
-      match sequencify e with
-      [ Some [e :: el] ->
-          let e =
-            let loc =
-              let loc1 = MLast.loc_of_expr se in
-              let loc2 = MLast.loc_of_expr e in
-              Stdpp.encl_loc loc1 loc2
+   - if e is a "sequence" or a "let..in sequence", get "the list of its
+     expressions", which is flattened (merging sequences inside sequences
+     and changing "let..in do {e1; .. en}" into "do {let..in e1; .. en}",
+     and return Some "the resulting expression list".
+   - otherwise return None *)
+value sequencify e =
+  let rec get_sequence =
+    fun
+    [ <:expr< do { $list:el$ } >> -> Some el
+    | <:expr< let $opt:rf$ $list:pel$ in $e$ >> as se ->
+        match get_sequence e with
+        [ Some [e :: el] ->
+            let e =
+              let loc =
+                let loc1 = MLast.loc_of_expr se in
+                let loc2 = MLast.loc_of_expr e in
+                Stdpp.encl_loc loc1 loc2
+              in
+              <:expr< let $opt:rf$ $list:pel$ in $e$ >>
             in
-            <:expr< let $opt:rf$ $list:pel$ in $e$ >>
-          in
-          Some [e :: el]
-      | None | _ -> None ]
-  | _ -> None ]
+            Some [e :: el]
+        | None | _ -> None ]
+    | _ -> None ]
+  in
+  match get_sequence e with
+  [ Some el ->
+      let rec list_of_sequence =
+        fun
+        [ [e :: el] ->
+            match get_sequence e with
+            [ Some el1 -> list_of_sequence (el1 @ el)
+            | None -> [e :: list_of_sequence el] ]
+        | [] -> [] ]
+      in
+      Some (list_of_sequence el)
+  | None -> None ]
 ;
 
 (* pretty printing improvement (optional):
@@ -426,63 +442,42 @@ value match_assoc ind b (p, w, e) k =
           | None -> "" ])
          (expr 0 "" e "") k)
     (fun () ->
-       match sequencify e with
-       [ Some el ->
-           sequence_box (ind + 2) (fun () -> sprintf "\n")
-             (fun () ->
-                match w with
-                [ Some e ->
+       let patt_arrow () =
+         match w with
+         [ Some e ->
+             horiz_vertic
+               (fun () -> 
+                  sprintf "%s%s when %s ->" b (patt 0 "" p "")
+                    (expr 0 "" e ""))
+               (fun () ->
+                  let s1 = patt (ind + 2) b p "" in
+                  let s2 =
                     horiz_vertic
-                      (fun () -> 
-                         sprintf "%s%s when %s ->" b (patt 0 "" p "")
+                      (fun () ->
+                         sprintf "%swhen %s ->" (tab (ind + 2))
                            (expr 0 "" e ""))
                       (fun () ->
-                         let s1 = patt (ind + 2) b p "" in
-                         let s2 =
-                           horiz_vertic
-                             (fun () ->
-                                sprintf "%swhen %s ->" (tab (ind + 2))
-                                  (expr 0 "" e ""))
-                             (fun () ->
-                                let s1 = sprintf "%swhen" (tab (ind + 2)) in
-                                let s2 =
-                                  expr (ind + 4) (tab (ind + 4)) e " ->"
-                                in
-                                sprintf "%s\n%s" s1 s2)
-                         in
+                         let s1 = sprintf "%swhen" (tab (ind + 2)) in
+                         let s2 = expr (ind + 4) (tab (ind + 4)) e " ->" in
                          sprintf "%s\n%s" s1 s2)
-                | None -> patt (ind + 2) b p " ->" ])
-             el k
+                  in
+                  sprintf "%s\n%s" s1 s2)
+         | None -> patt (ind + 2) b p " ->" ]
+       in
+       match sequencify e with
+       [ Some el ->
+           sequence_box (ind + 2) (fun () -> sprintf "\n") patt_arrow el k
        | None ->
-           let s1 =
-             match w with
-             [ Some e ->
-                 horiz_vertic
-                   (fun () -> 
-                      sprintf "%s%s when %s ->" b (patt 0 "" p "")
-                        (expr 0 "" e ""))
-                   (fun () ->
-                      let s1 = patt (ind + 2) b p "" in
-                      let s2 =
-                        horiz_vertic
-                          (fun () ->
-                             sprintf "%swhen %s ->" (tab (ind + 2))
-                               (expr 0 "" e ""))
-                          (fun () ->
-                             let s1 = sprintf "%swhen" (tab (ind + 2)) in
-                             let s2 = expr (ind + 4) (tab (ind + 4)) e " ->" in
-                             sprintf "%s\n%s" s1 s2)
-                      in
-                      sprintf "%s\n%s" s1 s2)
-             | None -> patt (ind + 2) b p " ->" ]
-           in
+           let s1 = patt_arrow () in
            let s2 = expr (ind + 4) (tab (ind + 4)) e k in
            sprintf "%s\n%s" s1 s2 ])
 ;
 
 value match_assoc_list ind b pwel k =
-  vlist2 match_assoc (bar_before match_assoc) ind (sprintf "%s[ " b) pwel
-    "" (sprintf " ]%s" k)
+  if pwel = [] then sprintf "%s[]%s" b k
+  else
+    vlist2 match_assoc (bar_before match_assoc) ind (sprintf "%s[ " b) pwel
+      "" (sprintf " ]%s" k)
 ;
 
 value rec make_expr_list =
@@ -675,30 +670,21 @@ value expr_top =
                    sprintf "%sif %s then %s" b (expr 0 "" e1 "")
                      (expr 0 "" e2 ""))
                 (fun () ->
+                   let horiz_if_then () =
+                     sprintf "%sif %s then" b (expr 0 "" e1 "")
+                   in
+                   let vertic_if_then () =
+                     let s1 =
+                       expr (ind + 3) (sprintf "%sif " b) e1 ""
+                     in
+                     let s2 = sprintf "%sthen" (tab ind) in
+                     sprintf "%s\n%s" s1 s2
+                   in
                    match sequencify e2 with
                    [ Some el ->
-                       sequence_box ind
-                         (fun () ->
-                            sprintf "%sif %s then" b (expr 0 "" e1 ""))
-                         (fun () ->
-                            let s1 =
-                              expr (ind + 3) (sprintf "%sif " b) e1 ""
-                            in
-                            let s2 = sprintf "%sthen" (tab ind) in
-                            sprintf "%s\n%s" s1 s2)
-                         el ""
+                       sequence_box ind horiz_if_then vertic_if_then el ""
                    | None ->
-                       let s1 =
-                         horiz_vertic
-                           (fun () ->
-                              sprintf "%sif %s then" b (expr 0 "" e1 ""))
-                           (fun () ->
-                              let s1 =
-                                expr (ind + 3) (sprintf "%sif " b) e1 ""
-                              in
-                              let s2 = sprintf "%sthen" (tab ind) in
-                              sprintf "%s\n%s" s1 s2)
-                       in
+                       let s1 = horiz_vertic horiz_if_then vertic_if_then in
                        let s2 = expr (ind + 2) (tab (ind + 2)) e2 "" in
                        sprintf "%s\n%s" s1 s2 ])
             in
@@ -722,9 +708,17 @@ value expr_top =
                    (hlist patt ind (sprintf "%sfun " b) pl " ->")
                    (expr 0 "" e1 k))
               (fun () ->
-                 sprintf "%s\n%s"
-                   (hlist patt ind (sprintf "%sfun " b) pl " ->")
-                   (expr (ind + 2) (tab (ind + 2)) e1 k))
+                 let fun_arrow () =
+                   let pl = List.map (fun p -> (p, "")) pl in
+                   plist patt ind 4 (sprintf "%sfun " b) pl " ->"
+                 in
+                 match sequencify e1 with
+                 [ Some el ->
+                     sequence_box ind (fun () -> sprintf "\n") fun_arrow el k
+                 | None ->
+                     let s1 = fun_arrow () in
+                     let s2 = expr (ind + 2) (tab (ind + 2)) e1 k in
+                     sprintf "%s\n%s" s1 s2 ])
         | [] -> sprintf "%sfun []%s" b k
         | pwel ->
             let s = match_assoc_list ind (tab ind) pwel k in
@@ -1298,11 +1292,17 @@ value str_item_top =
       fun curr next ind b k -> expr ind (sprintf "%s#%s " b s) e k
   | <:str_item< declare $list:sil$ end >> ->
       fun curr next ind b k ->
-        horiz_vertic
-          (fun () ->
-             if sil = [] then sprintf "%sdeclare end%s" b k
-             else not_impl "declare horiz" ind b sil k)
-          (fun () -> not_impl "declare vertic" ind b sil k)
+        if sil = [] then sprintf "%sdeclare end%s" b k
+        else
+          horiz_vertic
+            (fun () ->
+               sprintf "%sdeclare%s%s%send%s" b " "
+                 (hlist (semi_after str_item) 0 "" sil "")
+                 " " k)
+            (fun () ->
+               sprintf "%sdeclare%s%s%send%s" b "\n"
+                 (vlist (semi_after str_item) (ind + 2) (tab (ind + 2)) sil "")
+                 ("\n" ^ tab ind) k)
   | <:str_item< exception $e$ of $list:tl$ = $id$ >> ->
       fun curr next ind b k -> exception_decl ind b (e, tl, id) k
   | <:str_item< external $n$ : $t$ = $list:sl$ >> ->

@@ -42,7 +42,7 @@ if ov <> Pconfig.ocaml_version then do {
   Printf.eprintf "You need to recompile camlp4.\n";
   Printf.eprintf "\n";
   flush stderr;
-  failwith "bad version";
+  failwith "bad version"
 }
 else ();
 
@@ -100,23 +100,19 @@ value mkpolytype t =
 value lident s = Lident s;
 value ldot l s = Ldot l s;
 
-value conv_con =
+value conv_con = do {
   let t = Hashtbl.create 73 in
-  do {
-    List.iter (fun (s, s') -> Hashtbl.add t s s')
-      [("True", "true"); ("False", "false"); (" True", "True");
-       (" False", "False")];
-    fun s -> try Hashtbl.find t s with [ Not_found -> s ]
-  }
-;
+  List.iter (fun (s, s') -> Hashtbl.add t s s')
+    [("True", "true"); ("False", "false"); (" True", "True");
+     (" False", "False")];
+  fun s -> try Hashtbl.find t s with [ Not_found -> s ]
+};
 
-value conv_lab =
+value conv_lab = do {
   let t = Hashtbl.create 73 in
-  do {
-    List.iter (fun (s, s') -> Hashtbl.add t s s') [("val", "contents")];
-    fun s -> try Hashtbl.find t s with [ Not_found -> s ]
-  }
-;
+  List.iter (fun (s, s') -> Hashtbl.add t s s') [("val", "contents")];
+  fun s -> try Hashtbl.find t s with [ Not_found -> s ]
+};
 
 value array_function str name =
   ldot (lident str) (if fast.val then "unsafe_" ^ name else name)
