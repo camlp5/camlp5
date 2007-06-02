@@ -130,12 +130,12 @@ value rec hlist elem ind b xl k =
 ;
 
 (* horizontal list with different function from 2nd element on *)
-value rec hlist2 elem elem2 ind b xl k =
+value rec hlist2 elem elem2 ind b xl k0 k =
   match xl with
-  [ [] -> sprintf "%s%s" b k
+  [ [] -> invalid_arg "hlist2"
   | [x] -> elem ind b x k
   | [x :: xl] ->
-      sprintf "%s %s" (elem ind b x "") (hlist2 elem2 elem2 ind "" xl k) ]
+      sprintf "%s %s" (elem ind b x k0) (hlist2 elem2 elem2 ind "" xl k0 k) ]
 ;
 
 (* horizontal list with different function for the last element *)
@@ -157,13 +157,13 @@ value rec vlist elem ind b xl k =
 ;
 
 (* vertical list with different function from 2nd element on *)
-value rec vlist2 elem elem2 ind b xl k =
+value rec vlist2 elem elem2 ind b xl k0 k =
   match xl with
-  [ [] -> sprintf "%s%s" b k
+  [ [] -> invalid_arg "vlist2"
   | [x] -> elem ind b x k
   | [x :: xl] ->
-      sprintf "%s\n%s" (elem ind b x "")
-        (vlist2 elem2 elem2 ind (tab ind) xl k) ]
+      sprintf "%s\n%s" (elem ind b x k0)
+        (vlist2 elem2 elem2 ind (tab ind) xl k0 k) ]
 ;
 
 (* vertical list with different function for the last element *)
@@ -270,15 +270,6 @@ value right_operator ind sh unfold next b x k =
  * Extensible printers
  *)
 
-(*
-value rec find_pr_level lab =
-  fun
-  [ [] -> failwith ("level " ^ lab ^ " not found")
-  | [lev :: levl] ->
-      if lev.pr_label = lab then lev else find_pr_level lab levl ]
-;
-*)
-
 value expr ind b z k = pr_expr.pr_fun "top" ind b z k;
 value patt ind b z k = pr_patt.pr_fun "top" ind b z k;
 value ctyp ind b z k = pr_ctyp.pr_fun "top" ind b z k;
@@ -317,22 +308,87 @@ value binding elem ind b (p, e) k =
 ;
 
 (* pretty printing improvement (optional):
-   - prints "value f x = e" instead of "value f = fun x -> e" *)
+   - first, change    let ... in do { e1 .. en }
+              into    do { let ... in e1; ... en }
+   - then return Some el if the expression is a sequence *)
+value rec sequencify =
+  fun
+  [ <:expr< do { $list:el$ } >> -> Some el
+  | <:expr< let $opt:rf$ $list:pel$ in $e$ >> as se ->
+      match sequencify e with
+      [ Some [e :: el] ->
+          let e =
+            let loc =
+              let loc1 = MLast.loc_of_expr se in
+              let loc2 = MLast.loc_of_expr e in
+              Stdpp.encl_loc loc1 loc2
+            in
+            <:expr< let $opt:rf$ $list:pel$ in $e$ >>
+          in
+          Some [e :: el]
+      | None | _ -> None ]
+  | _ -> None ]
+;
+
+(* pretty printing improvement (optional):
+   - print the "do {" of the sequences at end of previous lines,
+     therefore printing the sequence with one tabulation less
+   - example:
+          value f x =
+            do {
+              ...
+            }
+     is printed :
+          value f x = do {
+            ...
+          }
+ *)
+value sequence_box ind horiz vertic el k =
+  let s1 =
+    horiz_vertic (fun () -> sprintf "%s do {" (horiz ()))
+      (fun () -> sprintf "%s do {" (vertic ()))
+  in
+  let s2 = vlistl (semi_after expr) expr (ind + 2) (tab (ind + 2)) el "" in
+  let s3 = sprintf "%s}%s" (tab ind) k in
+  sprintf "%s\n%s\n%s" s1 s2 s3
+;
+
+(* pretty printing improvements (optional):
+   - prints "value f x = e" instead of "value f = fun x -> e"
+   - if vertical and "e" is a sequence, put the "do {" at after the "=" *)
 value binding_expr ind b (p, e) k =
   let (pl, e) = expr_fun_args e in
   let pl = [p :: pl] in
   horiz_vertic
-    (fun () -> sprintf "%s %s%s" (hlist patt 0 b pl " =") (expr 0 "" e "") k)
     (fun () ->
-       if k = " in" then
-         (* hack for displaying the "in" in a new line in this case;
-            this is not beautiful, I should find a more elegant solution *)
-         sprintf "%s\n%s\n%s" (hlist patt ind b pl " =")
-           (expr (ind + 2) (tab (ind + 2)) e "")
-           (sprintf "%sin" (tab ind))
-       else
-         sprintf "%s\n%s" (hlist patt ind b pl " =")
-           (expr (ind + 2) (tab (ind + 2)) e k))
+       sprintf "%s %s%s" (hlist patt 0 b pl " =") (expr 0 "" e "") k)
+    (fun () ->
+       match sequencify e with
+       [ Some el ->
+           sequence_box ind
+             (fun () -> hlist patt ind b pl " =")
+             (fun () -> hlist patt ind b pl " =")
+             el k
+       | None ->
+           sprintf "%s\n%s" (hlist patt ind b pl " =")
+             (expr (ind + 2) (tab (ind + 2)) e k) ])
+;
+
+(* pretty printing improvements (optional):
+   - prints "let f x = e" instead of "let f = fun x -> e"
+   - prints a newline before the "in" if last element not horizontal
+*)
+value let_binding_expr ind b (p, e) is_last =
+  let (pl, e) = expr_fun_args e in
+  let pl = [p :: pl] in
+  horiz_vertic
+    (fun () ->
+       sprintf "%s %s%s" (hlist patt 0 b pl " =") (expr 0 "" e "")
+         (if is_last then " in" else ""))
+    (fun () ->
+       sprintf "%s\n%s%s" (hlist patt ind b pl " =")
+         (expr (ind + 2) (tab (ind + 2)) e "")
+         (if is_last then sprintf "\n%sin" (tab ind) else ""))
 ;
 
 value match_assoc ind b (p, w, e) k =
@@ -372,7 +428,7 @@ value match_assoc ind b (p, w, e) k =
 
 value match_assoc_list ind b pwel k =
   vlist2 match_assoc (bar_before match_assoc) ind (sprintf "%s[ " b) pwel
-    (sprintf " ]%s" k)
+    "" (sprintf " ]%s" k)
 ;
 
 value rec make_expr_list =
@@ -442,14 +498,14 @@ value cons_decl ind b (_, c, tl) k =
     horiz_vertic
       (fun () ->
          sprintf "%s%s of %s%s" b c
-           (hlist2 ctyp (and_before ctyp) 0 "" tl "") k)
+           (hlist2 ctyp (and_before ctyp) 0 "" tl "" "") k)
       (fun () ->
          let s1 = sprintf "%s%s of" b c in
          let s2 =
            horiz_vertic
              (fun () ->
                 sprintf "%s%s%s" (tab (ind + 4))
-                  (hlist2 ctyp (and_before ctyp) 0 "" tl "") k)
+                  (hlist2 ctyp (and_before ctyp) 0 "" tl "" "") k)
              (fun () ->
                 let tl = List.map (fun t -> (t, " and")) tl in
                 plist ctyp (ind + 4) 2 (tab (ind + 4)) tl k)
@@ -515,10 +571,10 @@ value ctyp_simple =
         horiz_vertic
           (fun () ->
              hlist2 cons_decl (bar_before cons_decl) 0
-               (sprintf "%s[ " b) vdl (sprintf " ]%s" k))
+               (sprintf "%s[ " b) vdl "" (sprintf " ]%s" k))
           (fun () ->
              vlist2 cons_decl (bar_before cons_decl) ind
-               (sprintf "%s[ " b) vdl (sprintf " ]%s" k))
+               (sprintf "%s[ " b) vdl "" (sprintf " ]%s" k))
   | <:ctyp< ($list:tl$) >> ->
       fun curr next ind b k ->
         horiz_vertic
@@ -565,16 +621,32 @@ value expr_top =
                    sprintf "%sif %s then %s" b (expr 0 "" e1 "")
                      (expr 0 "" e2 ""))
                 (fun () ->
-                   let s1 =
-                     horiz_vertic
-                       (fun () -> sprintf "%sif %s then" b (expr 0 "" e1 ""))
-                       (fun () ->
-                          let s1 = expr (ind + 3) (sprintf "%sif " b) e1 "" in
-                          let s2 = sprintf "%sthen" (tab ind) in
-                          sprintf "%s\n%s" s1 s2)
-                   in
-                   let s2 = expr (ind + 2) (tab (ind + 2)) e2 "" in
-                   sprintf "%s\n%s" s1 s2)
+                   match sequencify e2 with
+                   [ Some el ->
+                       sequence_box ind
+                         (fun () ->
+                            sprintf "%sif %s then" b (expr 0 "" e1 ""))
+                         (fun () ->
+                            let s1 =
+                              expr (ind + 3) (sprintf "%sif " b) e1 ""
+                            in
+                            let s2 = sprintf "%sthen" (tab ind) in
+                            sprintf "%s\n%s" s1 s2)
+                         el ""
+                   | None ->
+                       let s1 =
+                         horiz_vertic
+                           (fun () ->
+                              sprintf "%sif %s then" b (expr 0 "" e1 ""))
+                           (fun () ->
+                              let s1 =
+                                expr (ind + 3) (sprintf "%sif " b) e1 ""
+                              in
+                              let s2 = sprintf "%sthen" (tab ind) in
+                              sprintf "%s\n%s" s1 s2)
+                       in
+                       let s2 = expr (ind + 2) (tab (ind + 2)) e2 "" in
+                       sprintf "%s\n%s" s1 s2 ])
             in
             let s2 =
               horiz_vertic
@@ -630,17 +702,17 @@ value expr_top =
         horiz_vertic
           (fun () ->
              let s1 =
-               hlist2 binding_expr (and_before binding_expr) ind
+               hlist2 let_binding_expr (and_before let_binding_expr) ind
                  (sprintf "%slet %s" b (if rf then "rec " else ""))
-                 pel " in"
+                 pel False True
              in
              let s2 = expr 0 "" e k in
              sprintf "%s %s" s1 s2)
           (fun () ->
              let s1 =
-               vlist2 binding_expr (and_before binding_expr) ind
+               vlist2 let_binding_expr (and_before let_binding_expr) ind
                  (sprintf "%slet %s" b (if rf then "rec " else ""))
-                 pel " in"
+                 pel False True
              in
              let s2 = expr ind (tab ind) e k in
              sprintf "%s\n%s" s1 s2)
@@ -1141,7 +1213,7 @@ value exception_decl ind b (e, tl, id) k =
        sprintf "%sexception %s%s%s%s" b e
          (if tl = [] then ""
           else
-            sprintf " of %s" (hlist2 ctyp (and_before ctyp) 0 "" tl ""))
+            sprintf " of %s" (hlist2 ctyp (and_before ctyp) 0 "" tl "" ""))
          (if id = [] then ""
           else sprintf " = %s" (mod_ident 0 "" id ""))
          k)
@@ -1204,7 +1276,7 @@ value str_item_top =
   | <:str_item< type $list:tdl$ >> ->
       fun curr next ind b k ->
         vlist2 type_decl (and_before type_decl) ind (sprintf "%stype " b) tdl
-          k
+          "" k
   | <:str_item< value $opt:rf$ $list:pel$ >> ->
       fun curr next ind b k ->
         horiz_vertic
@@ -1212,12 +1284,14 @@ value str_item_top =
              let s =
                hlist2 binding_expr (and_before binding_expr) ind
                  (sprintf "%svalue %s" b (if rf then "rec " else "")) pel ""
+                 ""
              in
              sprintf "%s%s" s k)
           (fun () ->
              let s =
                vlist2 binding_expr (and_before binding_expr) ind
                  (sprintf "%svalue %s" b (if rf then "rec " else "")) pel ""
+                 ""
              in
              sprintf "%s\n%s%s" s (tab ind) k)
   | <:str_item< $exp:e$ >> ->
@@ -1262,7 +1336,7 @@ value sig_item_top =
   | <:sig_item< type $list:tdl$ >> ->
       fun curr next ind b k ->
         vlist2 type_decl (and_before type_decl) ind (sprintf "%stype " b) tdl
-          k
+          "" k
   | <:sig_item< value $s$ : $t$ >> ->
       fun curr next ind b k ->
         horiz_vertic
