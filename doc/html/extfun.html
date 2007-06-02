@@ -1,0 +1,116 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
+ "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+<head>
+  <!-- $Id$ -->
+  <!-- Copyright (c) 2007 INRIA -->
+  <title>Extfun</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="robots" content="none" />
+  <link rel="shortcut icon" href="c4logo.png" />
+  <style type="text/css"><!--
+    body { counter-reset: h2cnt }
+    h1 { text-align: center }
+    h2:before { content: counter(h2cnt) " - "; counter-increment: h2cnt }
+    h2 { border: 1px solid; text-align: center; background: #9bf }
+    h2 { counter-reset: h3cnt }
+    h3:before {
+      content: counter(h2cnt) "." counter(h3cnt) " - ";
+      counter-increment: h3cnt
+    }
+    p { text-align: justify; margin: 1em 1cm }
+    li { margin-left: 1cm }
+    pre {
+      border-left: silver solid 3px; margin-bottom: 1.5em; margin-left: 2cm;
+      padding-left: 1em; padding-right: 0.5em; line-height: 1.2
+    }
+    tt { font-weight: bold }
+    .value { background : #0f0 }
+  --></style>
+</head>
+<body>
+
+<h1>Module Extfun (with syntax extension)</h1>
+
+<p>The module Extfun allows to write dynamically extensible functions. It
+is proposed with the syntax extension named "pa_extfun.cmo".</p>
+
+<p>The functions are defined by pattern matching. The value
+"Extfun.empty" is an empty function (always raising "Match_failure").
+Adding match associations is done by a syntactic construction which
+works exactly like "match" or "try" except that the keyword is
+"extfun". Patterns can have "when" statements. When adding an match
+case, if the pattern still exists, the new match case replaces the old
+one.</p>
+
+<p>The pattern cases are ordered according to syntax trees
+representing them. "When" statements are inserted before the cases
+without "when".</p>
+
+<p>Notice that extensible functions are functionnal: when extending a
+function, a new function is returned.</p>
+
+<p>The extensible functions are used in the <a
+href="pretty.html">pretty printing</a> system of Camlp4s.</p>
+
+<h2>Variables, Functions and Types</h2>
+
+<h3><span class="value">Extfun.t</span></h3>
+
+<p>This is the type with two parameters <tt>'a</tt> and <tt>'b</tt>
+representing a function of the type <tt>'a -> 'b</tt>.</p>
+
+<h3><span class="value">Extfun.empty</span></h3>
+
+<p>The empty function of type <tt>Extfun.t 'a 'b</tt>. When applied,
+it raises the exception <tt>Extfun.Failure</tt>.</p>
+
+<h3><span class="value">Extfun.apply</span></h3>
+
+<p>The function "Extfun.apply" returns the associated function of an
+extensible function. Its type is:</p>
+
+<pre>
+Extfun.t 'a 'b -> 'a -> 'b
+</pre>
+
+<h3><span class="value">Extfun.Failure</span></h3>
+
+<p>Raised when no pattern matches the expression given as parameter.</p>
+
+<h3><span class="value">Extfun.print</span></h3>
+
+<p>For debugging purposes, display the current list of patterns of the
+extensible function. Can be interesting to know in which order they
+have been included.</p>
+
+<h3>Adding cases</h3>
+
+<p>Adding cases are done with the statement "extfun" (see next
+section). It generates a call to an appropriate function of the
+library, which is not supposed to be used directly. It is not possible
+to extend a function without using the syntax extension, except if you
+are sure of what you do.</p>
+
+<h2>Statement "extend" (syntax extension)</h2>
+
+<p>When adding the correct syntax kit, <tt>pa_extfun.cmo</tt>, a new
+statement is added. It is introduced by the keyword <tt>extend</tt>
+followed by an expression, the keyword <tt>with</tt> and the list of
+match cases, exactly like in the <tt>match</tt> syntax.</p>
+
+<p>There is no test of exhaustivity of the syntax extension, nor test
+of doubly defined cases. Cases are added one by one in the library, in
+the order given in the <tt>extend</tt> statement.</p>
+
+<p>When adding a case, the match case (pattern + expression) is
+inserted in the internal list of match cases of the function,
+according to the order of the syntax trees of the patterns. If a
+pattern still existed, its previous version is deleted.</p>
+
+<hr style="margin:0" /><div style="font-size: 80%"><em>Copyright 2007
+Daniel de Rauglaudre (INRIA)</em>
+
+</body>
+</html>
