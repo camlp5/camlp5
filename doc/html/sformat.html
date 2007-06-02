@@ -123,6 +123,8 @@ printing.</p>
 
 <h2>3. How to program with Sformat</h2>
 
+<h3>3.1. Hints</h3>
+
 <p>Just start with a call to "horiz_vertic".</p>
 
 <p>As its first function, use "sprintf" just to concat the strings
@@ -166,7 +168,7 @@ value print ind (x, y) =
     (fun () -> sprintf "%s\n%s" (print_other ind x) (print_things (ind ^ "  ") y));
 </pre>
 
-<h3>How to cancel a horizontal print</h3>
+<h3>3.2. How to cancel a horizontal print</h3>
 
 <p>If you want to prevent a pretty printing function to be called in
 an horizontal context, constraining the pretty print to be on several
