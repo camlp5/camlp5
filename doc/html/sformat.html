@@ -61,13 +61,13 @@ function of the OCaml library module "Printf".<p>
 
 <h3>1.2. sprintf</h3>
 
-<p>The function "sprintf" works like its equivalent in the module "Printf"
-of the OCaml library, and takes the same parameter. Its difference is
-that if it is called in the context of the first function (the "horizontal"
-function) of the function "horiz_vertic" (above), each resulting strings
-built by "sprintf" are checked if they contain newlines or if their length
-is greater than the maximum line length. If it is the case, the "sprintf"
-function fails, and the horizontal function fails also.</p>
+<p>The function "sprintf" works like its equivalent in the module
+"Printf" of the OCaml library, and takes the same parameters. Its
+difference is that if it is called in the context of the first
+function (the "horizontal" function) of the function "horiz_vertic"
+(above), all strings built by "sprintf" are checked for newlines or
+length greater than the maximum line length. If it is the case, the
+"sprintf" function fails, and the horizontal function fails also.</p>
 
 <p>If "sprintf" is not in the context of the horizontal function, it
 behaves like the usual "sprintf" function.</p>
@@ -165,6 +165,21 @@ value print ind (x, y) =
     (fun () -> sprintf "%s%s %s" ind (print_other 0 x) (print_things 0 y))
     (fun () -> sprintf "%s\n%s" (print_other ind x) (print_things (ind ^ "  ") y));
 </pre>
+
+<h3>How to cancel a horizontal print</h3>
+
+<p>If you want to prevent a pretty printing function to be called in
+an horizontal context, constraining the pretty print to be on several
+lines in the calling function, just do:</p>
+
+<pre>
+horiz_vertic
+  (fun () -> sprintf "\n")
+  (fun () -> ... (* your normal pretty print *))
+</pre>
+
+<p>In this case, the horizontal print always fails, due to the newline
+character in the sprintf format.</p>
 
 <h2>4. Discussion</h2>
 
