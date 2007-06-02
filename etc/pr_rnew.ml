@@ -354,9 +354,10 @@ value sequence_box ind horiz vertic el k =
 ;
 
 (* pretty printing improvements (optional):
-   - prints "value f x = e" instead of "value f = fun x -> e"
-   - if vertical and "e" is a sequence, put the "do {" at after the "=" *)
-value binding_expr ind b (p, e) k =
+   - prints "field x = e" instead of "field = fun x -> e" in a record
+   - if vertical and "e" is a sequence, put the "do {" at after the "="
+   cancellation of improvement could be done by a call to "binding expr" *)
+value record_binding ind b (p, e) k =
   let (pl, e) = expr_fun_args e in
   let pl = [p :: pl] in
   horiz_vertic
@@ -375,10 +376,35 @@ value binding_expr ind b (p, e) k =
 ;
 
 (* pretty printing improvements (optional):
+   - prints "value x = e" instead of "value = fun x -> e"
+   - if vertical and "e" is a sequence, put the "do {" at after the "="
+   - the semicolon after the expression is on next line if it not a sequence
+   cancellation of improvement could be done by a call to "binding expr" *)
+value value_binding ind b (p, e) is_last =
+  let (pl, e) = expr_fun_args e in
+  let pl = [p :: pl] in
+  horiz_vertic
+    (fun () ->
+       sprintf "%s %s%s" (hlist patt 0 b pl " =") (expr 0 "" e "")
+         (if is_last then ";" else ""))
+    (fun () ->
+       match sequencify e with
+       [ Some el ->
+           sequence_box ind
+             (fun () -> hlist patt ind b pl " =")
+             (fun () -> hlist patt ind b pl " =")
+             el (if is_last then ";" else "")
+       | None ->
+           sprintf "%s\n%s%s" (hlist patt ind b pl " =")
+             (expr (ind + 2) (tab (ind + 2)) e "")
+             (if is_last then sprintf "\n%s;" (tab ind) else "") ])
+;
+
+(* pretty printing improvements (optional):
    - prints "let f x = e" instead of "let f = fun x -> e"
    - prints a newline before the "in" if last element not horizontal
-*)
-value let_binding_expr ind b (p, e) is_last =
+   cancellation of improvement could be done by a call to "binding expr" *)
+value let_binding ind b (p, e) is_last =
   let (pl, e) = expr_fun_args e in
   let pl = [p :: pl] in
   horiz_vertic
@@ -702,7 +728,7 @@ value expr_top =
         horiz_vertic
           (fun () ->
              let s1 =
-               hlist2 let_binding_expr (and_before let_binding_expr) ind
+               hlist2 let_binding (and_before let_binding) ind
                  (sprintf "%slet %s" b (if rf then "rec " else ""))
                  pel False True
              in
@@ -710,7 +736,7 @@ value expr_top =
              sprintf "%s %s" s1 s2)
           (fun () ->
              let s1 =
-               vlist2 let_binding_expr (and_before let_binding_expr) ind
+               vlist2 let_binding (and_before let_binding) ind
                  (sprintf "%slet %s" b (if rf then "rec " else ""))
                  pel False True
              in
@@ -971,12 +997,12 @@ value expr_simple =
   | <:expr< {$list:lel$} >> ->
       fun curr next ind b k ->
         let lxl = List.map (fun lx -> (lx, ";")) lel in
-        plist binding_expr (ind + 1) 0 (sprintf "%s{" b) lxl
+        plist record_binding (ind + 1) 0 (sprintf "%s{" b) lxl
           (sprintf "}%s" k)
   | <:expr< {($e$) with $list:lel$} >> ->
       fun curr next ind b k ->
         let lxl = List.map (fun lx -> (lx, ";")) lel in
-        plist binding_expr (ind + 1) 0
+        plist record_binding (ind + 1) 0
           (expr ind (sprintf "%s{(" b) e ") with ") lxl
           (sprintf "}%s" k)
   | <:expr< [| $list:el$ |] >> ->
@@ -1281,19 +1307,13 @@ value str_item_top =
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
-             let s =
-               hlist2 binding_expr (and_before binding_expr) ind
-                 (sprintf "%svalue %s" b (if rf then "rec " else "")) pel ""
-                 ""
-             in
-             sprintf "%s%s" s k)
+             hlist2 value_binding (and_before value_binding) ind
+               (sprintf "%svalue %s" b (if rf then "rec " else "")) pel
+               False True)
           (fun () ->
-             let s =
-               vlist2 binding_expr (and_before binding_expr) ind
-                 (sprintf "%svalue %s" b (if rf then "rec " else "")) pel ""
-                 ""
-             in
-             sprintf "%s\n%s%s" s (tab ind) k)
+             vlist2 value_binding (and_before value_binding) ind
+               (sprintf "%svalue %s" b (if rf then "rec " else "")) pel
+               False True)
   | <:str_item< $exp:e$ >> ->
       fun curr next ind b k -> expr ind b e k
   | <:str_item< class type $list:_$ >> | <:str_item< class $list:_$ >> ->
