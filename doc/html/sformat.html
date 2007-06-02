@@ -10,38 +10,50 @@
   <meta name="robots" content="none" />
   <link rel="shortcut icon" href="c4logo.png" />
   <style type="text/css"><!--
-    pre
-      { border-left: silver solid 3px; margin-bottom: 1.5em; margin-left: 3em;
-        padding-left: 1em; padding-right: 0.5em; line-height: 1.2 }
+    body { counter-reset: h2cnt }
+    h1 { text-align: center }
+    h2:before { content: counter(h2cnt) " - "; counter-increment: h2cnt }
+    h2 { border: 1px solid; text-align: center; background: #9bf }
+    h2 { counter-reset: h3cnt }
+    h3:before {
+      content: counter(h2cnt) "." counter(h3cnt) " - ";
+      counter-increment: h3cnt
+    }
+    p { text-align: justify; margin: 1em 1cm }
+    pre {
+      border-left: silver solid 3px; margin-bottom: 1.5em; margin-left: 2cm;
+      padding-left: 1em; padding-right: 0.5em; line-height: 1.2
+    }
+    .value { background : #0f0 }
   --></style>
 </head>
 <body>
 
-<h1>Library module Sformat</h1>
+<h1>Module Sformat</h1>
 
 <p>
-Sformat is a very simple library module to pretty print data or programs.
+Sformat is a very simple library module to pretty print data.
 It contains:
 </p>
 
 <ul>
 <li>The function "horiz_vertic" to specify how data has to be printed.</li>
-<li>The function "sprintf" to format strings and whose behaviour depends
-on the printing context.</li>
+<li>The function "sprintf" to format strings.</li>
 <li>The variable "line_length" which is a reference specifying the
 maximum lines lengths.</li>
 </ul>
 
-<h2>1. Module description</h2>
+<h2>Module description</h2>
 
-<h3>1.1. horiz_vertic</h3>
+<h3><span class="value">horiz_vertic</span></h3>
 
 <p>The function "horiz_vertic" takes two functions as parameters. When
-called, its first function is called. If that function fails, the
+called, it calls its first function. If that function fails, the
 second function is called.</p>
 
-<p>The type of "horiz_vertic" is: <tt>(unit -> 'a) -> (unit -> 'a) ->
-'a</tt></p>
+<p>The type of "horiz_vertic" is:</p>
+
+<pre>(unit -> 'a) -> (unit -> 'a) -> 'a</tt></pre>
 
 <h4>horizontal</h4>
 
@@ -59,7 +71,7 @@ of "horiz_vertic", the "vertical" function is called. In the context of
 that function, the "sprintf" function behaves like the normal "sprintf"
 function of the OCaml library module "Printf".<p>
 
-<h3>1.2. sprintf</h3>
+<h3><span class="value">sprintf</span></h3>
 
 <p>The function "sprintf" works like its equivalent in the module
 "Printf" of the OCaml library, and takes the same parameters. Its
@@ -72,13 +84,13 @@ length greater than the maximum line length. If it is the case, the
 <p>If "sprintf" is not in the context of the horizontal function, it
 behaves like the usual "sprintf" function.</p>
 
-<h3>1.3. line_length</h3>
+<h3><span class="value">line_length</span></h3>
 
 <p>The variable "line_length" is a reference holding the maximum line
 length of lines printed horizontally. Its default is 77. This can be
 changed by the user before using "horiz_vertic".</p>
 
-<h2>2. Example</h2>
+<h2>Example</h2>
 
 <p>Suppose you want to pretty print the XML code
 <tt>"&lt;li&gt;something&lt;/li&gt;"</tt>. If the "something" is
@@ -121,9 +133,9 @@ above, only horizontal functions are accepted: the first failing
 "horizontal" function triggers the failure of the horizontal pretty
 printing.</p>
 
-<h2>3. How to program with Sformat</h2>
+<h2>Programming with Sformat</h2>
 
-<h3>3.1. Hints</h3>
+<h3>Hints</h3>
 
 <p>Just start with a call to "horiz_vertic".</p>
 
@@ -168,7 +180,7 @@ value print ind (x, y) =
     (fun () -> sprintf "%s\n%s" (print_other ind x) (print_things (ind ^ "  ") y));
 </pre>
 
-<h3>3.2. How to cancel a horizontal print</h3>
+<h3>How to cancel a horizontal print</h3>
 
 <p>If you want to prevent a pretty printing function to be called in
 an horizontal context, constraining the pretty print to be on several
@@ -183,9 +195,9 @@ horiz_vertic
 <p>In this case, the horizontal print always fails, due to the newline
 character in the sprintf format.</p>
 
-<h2>4. Discussion</h2>
+<h2>Discussion</h2>
 
-<h3>4.1. Kernel</h3>
+<h3>Kernel</h3>
 
 <p>The module "Sformat" is supposed to be a basic, a "kernel" module
 to pretty print data. It supposes that the user takes care himself of
@@ -196,9 +208,9 @@ use a short syntax similar to the "@" convention of the function
 "printf" of "Format", and taking care of the indentation for you,
 resulting on shorter programs.</p>
 
-<h3>4.2. Strings vs Channels</h3>
+<h3>Strings vs Channels</h3>
 
-</p>In "Sformat", the pretty print is done only on strings, not on
+<p>In "Sformat", the pretty print is done only on strings, not on
 files. To pretty print on files, just built the strings and print them
 afterwards with the usual output functions. Notice that OCaml
 allocates and frees strings very fast, and if pretty printed values
@@ -206,7 +218,7 @@ are not huge, which is generally the case, it is not a real problem,
 memory sizes these days being much more than enough for this
 job.</p>
 
-<h3>4.3. Strings or other types</h3>
+<h3>Strings or other types</h3>
 
 <p>The "horiz_vertic" function can return values of other types than
 "string". For example, if you are interested only in the result of
@@ -220,7 +232,7 @@ horiz_vertic
 </pre>
 </li>
 
-<h3>4.4. Why raising internal exceptions ?</h3>
+<h3>Why raising exceptions ?</h3>
 
 <p>One could ask why this pretty print system has to raise internal
 exceptions. Why not simply write the pretty printing program like
