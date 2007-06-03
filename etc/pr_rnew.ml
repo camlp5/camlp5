@@ -262,6 +262,12 @@ value module_expr ind b z k = pr_module_expr.pr_fun "top" ind b z k;
 value module_type ind b z k = pr_module_type.pr_fun "top" ind b z k;
 value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
 
+value patt_as ind b z k =
+  match z with
+  [ <:patt< ($x$ as $y$) >> -> patt ind b x (patt ind " as " y k)
+  | z -> patt ind b z k ]
+;
+
 (* utilities specific to pr_r *)
 
 pr_expr_fun_args.val :=
@@ -467,7 +473,7 @@ value match_assoc ind b (p, w, e) k =
                          sprintf "%s\n%s" s1 s2)
                   in
                   sprintf "%s\n%s" s1 s2)
-         | None -> patt (ind + 2) b p " ->" ]
+         | None -> patt_as (ind + 2) b p " ->" ]
        in
        match sequencify e with
        [ Some el ->
