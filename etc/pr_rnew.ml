@@ -29,18 +29,9 @@ value file = ref "";
 value is_infix = do {
   let infixes = Hashtbl.create 73 in
   List.iter (fun s -> Hashtbl.add infixes s True)
-    ["!="; "&&"; "*"; "**"; "*."; "+"; "+."; "-"; "-."; "/"; "/."; "<"; "<.";
-     "<="; "<=."; "<>"; "<>."; "="; "=."; "=="; ">"; ">."; ">="; ">=."; "@";
-     "^"; "asr"; "land"; "lor"; "lsl"; "lsr"; "lxor"; "mod"; "or"; "||";
-     "~-"; "~-."];
-  fun s -> try Hashtbl.find infixes s with [ Not_found -> False ]
-};
-
-(* temporary, just before all expr infixes are implemented *)
-value is_not_yet_implemented_infix = do {
-  let infixes = Hashtbl.create 73 in
-  List.iter (fun s -> Hashtbl.add infixes s True)
-    ["<."; "<=."; "<>."; "=."; ">."; ">=."];
+    ["!="; "&&"; "*"; "**"; "*."; "+"; "+."; "-"; "-."; "/"; "/."; "<"; "<=";
+     "<>"; "="; "=="; ">"; ">="; "@"; "^"; "asr"; "land"; "lor"; "lsl"; "lsr";
+     "lxor"; "mod"; "or"; "||"; "~-"; "~-."];
   fun s -> try Hashtbl.find infixes s with [ Not_found -> False ]
 };
 
@@ -112,14 +103,6 @@ value rec mod_ident ind b sl k =
   | [s] -> var_escaped ind b s k
   | [s :: sl] -> mod_ident ind (sprintf "%s%s." b s) sl k ]
 ;
-
-(*
-value option ind elem b z k =
-  match z with
-  [ Some z -> elem ind b z k
-  | None -> sprintf "%s%s" b k ]
-;
-*)
 
 (* horizontal list *)
 value rec hlist elem ind b xl k =
@@ -278,14 +261,6 @@ value sig_item ind b z k = pr_sig_item.pr_fun "top" ind b z k;
 value module_expr ind b z k = pr_module_expr.pr_fun "top" ind b z k;
 value module_type ind b z k = pr_module_type.pr_fun "top" ind b z k;
 value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
-
-(*
-value patt_as ind b z k =
-  match z with
-  [ <:patt< ($x$ as $y$) >> -> patt ind b x (patt ind " as " y k)
-  | z -> patt ind b z k ]
-;
-*)
 
 (* utilities specific to pr_r *)
 
@@ -1113,11 +1088,6 @@ value expr_simple =
   | <:expr< ? $_$ >> | <:expr< ~ $_$ >> | <:expr< ~ $_$ : $_$ >> ->
       fun curr next ind b k ->
         failwith "labels not pretty printed (in expr); add pr_ro.cmo"
-(*
-  | <:expr< let $opt:_$ $list:_$ in $e$ >> as z
-    when snd (let_and_seq_list e) ->
-      fun curr next ind b k -> expr ind b z k
-*)
   | <:expr< $_$ $_$ >> | <:expr< assert $_$ >> | <:expr< lazy $_$ >> |
     <:expr< $_$ := $_$ >> |
     <:expr< fun [ $list:_$ ] >> | <:expr< if $_$ then $_$ else $_$ >> |
@@ -1128,13 +1098,7 @@ value expr_simple =
     <:expr< match $_$ with [ $list:_$ ] >> |
     <:expr< try $_$ with [ $list:_$ ] >> as z ->
       fun curr next ind b k ->
-        let (inf, n) =
-          match z with
-          [ <:expr< $lid:n$ $_$ $_$ >> -> (is_not_yet_implemented_infix n, n)
-          | _ -> (False, "") ]
-        in
-        if inf then not_impl "op" ind b n k
-        else expr (ind + 1) (sprintf "%s(" b) z (sprintf ")%s" k)
+        expr (ind + 1) (sprintf "%s(" b) z (sprintf ")%s" k)
   | z ->
       fun curr next ind b k -> not_impl "expr" ind b z k ]
 ;
