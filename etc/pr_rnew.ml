@@ -582,6 +582,14 @@ value cons_decl ind b (_, c, tl) k =
          sprintf "%s\n%s" s1 s2)
 ;
 
+value rec get_else_if =
+  fun
+  [ <:expr< if $e1$ then $e2$ else $e3$ >> ->
+      let (eel, e3) = get_else_if e3 in
+      ([(e1, e2) :: eel], e3)
+  | e -> ([], e) ]
+;
+
 (* definitions of printers by decreasing level *)
 
 value ctyp_top =
@@ -684,19 +692,17 @@ value expr_top =
             sprintf "%sif %s then %s else %s%s" b (expr 0 "" e1 "")
               (expr 0 "" e2 "") (expr 0 "" e3 "") k)
          (fun () ->
-            let s1 =
+            let if_then ind b_if e1 e2 =
               horiz_vertic
                 (fun () ->
-                   sprintf "%sif %s then %s" b (expr 0 "" e1 "")
+                   sprintf "%s%s then %s" b_if (expr 0 "" e1 "")
                      (expr 0 "" e2 ""))
                 (fun () ->
                    let horiz_if_then () =
-                     sprintf "%sif %s then" b (expr 0 "" e1 "")
+                     sprintf "%s%s then" b_if (expr 0 "" e1 "")
                    in
                    let vertic_if_then () =
-                     let s1 =
-                       expr (ind + 3) (sprintf "%sif " b) e1 ""
-                     in
+                     let s1 = expr (ind + 3) b_if e1 "" in
                      let s2 = sprintf "%sthen" (tab ind) in
                      sprintf "%s\n%s" s1 s2
                    in
@@ -708,7 +714,18 @@ value expr_top =
                        let s2 = expr (ind + 2) (tab (ind + 2)) e2 "" in
                        sprintf "%s\n%s" s1 s2 ])
             in
+            let s1 = if_then ind (sprintf "%sif " b) e1 e2 in
+            let (eel, e3) = get_else_if e3 in
             let s2 =
+              loop eel where rec loop =
+                fun
+                [ [(e1, e2) :: eel] ->
+                    sprintf "\n%s%s"
+                      (if_then ind (sprintf "%selse if " (tab ind)) e1 e2)
+                      (loop eel)
+                | [] -> "" ]
+            in
+            let s3 =
               horiz_vertic
                 (fun () -> sprintf "%selse %s%s" (tab ind) (expr 0 "" e3 "") k)
                 (fun () ->
@@ -720,7 +737,7 @@ value expr_top =
                        let s = expr (ind + 2) (tab (ind + 2)) e3 k in
                        sprintf "%selse\n%s" (tab ind) s ])
             in
-            sprintf "%s\n%s" s1 s2)
+            sprintf "%s%s\n%s" s1 s2 s3)
   | <:expr< fun [ $list:pwel$ ] >> ->
       fun curr next ind b k ->
         match pwel with
