@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.12 2007/01/24 19:54:55 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.13 2007/06/03 03:31:46 deraugla Exp $ *)
 
 open Stdpp;
 
@@ -719,7 +719,9 @@ value text_of_functorial_extend loc gmod gl el =
            if split_ext.val then <:expr< let aux () = $e$ in aux () >> else e)
         el
     in
-    <:expr< do { $list:el$ } >>
+    match el with
+    [ [e] -> e
+    | _ -> <:expr< do { $list:el$ } >> ]
   in
   let_in_of_extend loc gmod True gl el args
 ;

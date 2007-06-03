@@ -1463,7 +1463,9 @@ let text_of_functorial_extend loc gmod gl el =
            else e)
         el
     in
-    MLast.ExSeq (loc, el)
+    match el with
+      [e] -> e
+    | _ -> MLast.ExSeq (loc, el)
   in
   let_in_of_extend loc gmod true gl el args
 ;;

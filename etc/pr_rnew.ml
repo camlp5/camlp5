@@ -428,9 +428,19 @@ value let_binding ind b (p, e) is_last =
        sprintf "%s %s%s" (hlist patt 0 b pl " =") (expr 0 "" e "")
          (if is_last then " in" else ""))
     (fun () ->
-       sprintf "%s\n%s%s" (hlist patt ind b pl " =")
-         (expr (ind + 2) (tab (ind + 2)) e "")
-         (if is_last then sprintf "\n%sin" (tab ind) else ""))
+       let s =
+         match sequencify e with
+         [ Some el ->
+             sequence_box ind
+               (fun () -> hlist patt ind b pl " =")
+               (fun () -> hlist patt ind b pl " =")
+               el ""
+         | None ->
+             let s1 = hlist patt ind b pl " =" in
+             let s2 = expr (ind + 2) (tab (ind + 2)) e "" in
+             sprintf "%s\n%s" s1 s2 ]
+       in
+       if is_last then sprintf "%s\n%sin" s (tab ind) else s)
 ;
 
 value match_assoc ind b (p, w, e) k =
@@ -692,8 +702,13 @@ value expr_top =
               horiz_vertic
                 (fun () -> sprintf "%selse %s%s" (tab ind) (expr 0 "" e3 "") k)
                 (fun () ->
-                   let s = expr (ind + 2) (tab (ind + 2)) e3 k in
-                   sprintf "%selse\n%s" (tab ind) s)
+                   match sequencify e3 with
+                   [ Some el ->
+                       sequence_box ind (fun () -> sprintf "\n")
+                         (fun () -> sprintf "%selse" (tab ind)) el k
+                   | None ->
+                       let s = expr (ind + 2) (tab (ind + 2)) e3 k in
+                       sprintf "%selse\n%s" (tab ind) s ])
             in
             sprintf "%s\n%s" s1 s2)
   | <:expr< fun [ $list:pwel$ ] >> ->
@@ -740,8 +755,16 @@ value expr_top =
                horiz_vertic
                  (fun () -> sprintf "%s%s %s with" b op (expr ind "" e1 ""))
                  (fun () ->
-                    let s = expr (ind + 2) (tab (ind + 2)) e1 "" in
-                    sprintf "%s%s\n%s\n%swith" b op s (tab ind))
+                    let s =
+                      match sequencify e1 with
+                      [ Some el ->
+                          sequence_box ind (fun () -> sprintf "\n")
+                            (fun () -> sprintf "%s%s" b op) el ""
+                      | None ->
+                          let s = expr (ind + 2) (tab (ind + 2)) e1 "" in
+                          sprintf "%s%s\n%s" b op s ]
+                    in
+                    sprintf "%s\n%swith" s (tab ind))
              in
              let s2 = match_assoc_list ind (tab ind) pwel k in
              sprintf "%s\n%s" s1 s2)
