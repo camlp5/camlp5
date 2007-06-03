@@ -1,5 +1,5 @@
 (* camlp4r *)
-(* $Id: extfun.ml,v 1.3 2006/12/26 08:54:09 deraugla Exp $ *)
+(* $Id: extfun.ml,v 1.4 2007/06/03 11:04:42 deraugla Exp $ *)
 (* Copyright 2007 INRIA *)
 
 (* Extensible Functions *)
@@ -14,8 +14,7 @@ and patt =
   | Eint of string
   | Etup of list patt
   | Evar of unit ]
-and expr 'a 'b = 'a -> option 'b
-;
+and expr 'a 'b = 'a -> option 'b;
 
 exception Failure;
 
@@ -61,24 +60,25 @@ and print_patt1 =
   | Estr s -> do { print_string "\""; print_string s; print_string "\"" }
   | Eint s -> print_string s
   | Evar () -> print_string "_"
-  | Etup pl ->
-      do {
-        print_string "(";
-        list_iter_sep print_patt (fun () -> print_string ", ") pl;
-        print_string ")"
-      }
-  | Eapp _ | Eacc _ as p ->
-      do { print_string "("; print_patt p; print_string ")" } ]
+  | Etup pl -> do {
+      print_string "(";
+      list_iter_sep print_patt (fun () -> print_string ", ") pl;
+      print_string ")"
+    }
+  | Eapp _ | Eacc _ as p -> do {
+      print_string "(";
+      print_patt p;
+      print_string ")"
+    } ]
 ;
 
 value print ef =
   List.iter
-    (fun m ->
-       do {
-         print_patt m.patt;
-         if m.has_when then print_string " when ..." else ();
-         print_newline ()
-       })
+    (fun m -> do {
+       print_patt m.patt;
+       if m.has_when then print_string " when ..." else ();
+       print_newline ()
+     })
     ef
 ;
 

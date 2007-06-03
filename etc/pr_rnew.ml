@@ -282,7 +282,7 @@ value binding elem ind b (p, e) k =
          (elem (ind + 2) (tab (ind + 2)) e k))
 ;
 
-(* pretty printing improvement (optional):
+(* Pretty printing improvement (optional):
    - if e is a "sequence" or a "let..in sequence", get "the list of its
      expressions", which is flattened (merging sequences inside sequences
      and changing "let..in do {e1; .. en}" into "do {let..in e1; .. en}",
@@ -321,7 +321,7 @@ value sequencify e =
   | None -> None ]
 ;
 
-(* pretty printing improvement (optional):
+(* Pretty printing improvement (optional):
    - print the "do {" of the sequences at end of previous lines,
      therefore printing the sequence with one tabulation less
    - example:
@@ -344,10 +344,10 @@ value sequence_box ind horiz vertic el k =
   sprintf "%s\n%s\n%s" s1 s2 s3
 ;
 
-(* pretty printing improvements (optional):
+(* Pretty printing improvements (optional):
    - prints "field x = e" instead of "field = fun x -> e" in a record
    - if vertical and "e" is a sequence, put the "do {" at after the "="
-   cancellation of improvement could be done by a call to "binding expr" *)
+   Cancellation of improvement could be done by a call to "binding expr" *)
 value record_binding ind b (p, e) k =
   let (pl, e) = expr_fun_args e in
   let pl = [p :: pl] in
@@ -366,29 +366,49 @@ value record_binding ind b (p, e) k =
              (expr (ind + 2) (tab (ind + 2)) e k) ])
 ;
 
-(* pretty printing improvements (optional):
+(* Pretty printing improvements (optional):
    - prints "value x = e" instead of "value = fun x -> e"
    - if vertical and "e" is a sequence, put the "do {" at after the "="
-   - the semicolon after the expression is on next line if it not a sequence
-   cancellation of improvement could be done by a call to "binding expr" *)
-value value_binding ind b (p, e) is_last =
+   - the continuation after the expression is optionally on next line if
+     it not a sequence (see 'particularity for the parameter 'ko' below)
+   Cancellation of improvement could be done by a call to "binding expr"
+   Particularity for the parameter 'ko':
+     It is of type option (bool * string). The boolean asks whether we
+     want that a newline be displayed before the continuation string if
+     the value binding is vertical (does not fit on the line). If False,
+     the continuation string is displayed in the last (possibly alone) line
+     of the value binding. The string is the continuation, which is the
+     empty string if the ko value is None.
+       If the expression is a sequence, with the sequence beginner after
+     the "=", it is not taken into account, the continuation will always be
+     in the same line than the sequence closer.
+*)
+value value_binding ind b (p, e) ko =
   let (pl, e) = expr_fun_args e in
   let pl = [p :: pl] in
   horiz_vertic
     (fun () ->
        sprintf "%s %s%s" (hlist patt 0 b pl " =") (expr 0 "" e "")
-         (if is_last then ";" else ""))
+         (match ko with [ Some (_, k) -> k | None -> "" ]))
     (fun () ->
        match sequencify e with
        [ Some el ->
            sequence_box ind
              (fun () -> hlist patt ind b pl " =")
              (fun () -> hlist patt ind b pl " =")
-             el (if is_last then ";" else "")
+             el (match ko with [ Some (_, k) -> k | None -> "" ])
        | None ->
-           sprintf "%s\n%s%s" (hlist patt ind b pl " =")
-             (expr (ind + 2) (tab (ind + 2)) e "")
-             (if is_last then sprintf "\n%s;" (tab ind) else "") ])
+           let s1 = hlist patt ind b pl " =" in
+           let s2 =
+             expr (ind + 2) (tab (ind + 2)) e
+               (match ko with [ Some (False, k) -> k | _ -> "" ])
+           in
+           let s3 =
+             match ko with
+             [ Some (True, k) -> sprintf "\n%s%s" (tab ind) k
+             | _ -> "" ]
+           in
+           sprintf "%s\n%s%s" s1 s2 s3 ])
 ;
 
 (* pretty printing improvements (optional):
@@ -487,13 +507,15 @@ value type_var ind b (tv, (p, m)) k =
   sprintf "%s%s'%s%s" b (if p then "+" else if m then "-" else "") tv k
 ;
 
-value type_decl ind b ((_, tn), tp, te, cl) k =
+(* type_decl: particularity for the parameter 'ko' -> see 'value_binding' *)
+value type_decl ind b ((_, tn), tp, te, cl) ko =
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s = %s%s%s" b (var_escaped 0 "" tn "")
          (if tp = [] then "" else sprintf " %s" (hlist type_var 0 "" tp ""))
          (ctyp 0 "" te "")
-         (if cl = [] then "" else not_impl "type_decl cl" ind "" cl "") k)
+         (if cl = [] then "" else not_impl "type_decl cl" ind "" cl "")
+         (match ko with [ Some (_, k) -> k | None -> "" ]))
     (fun () ->
        let s1 =
          horiz_vertic
@@ -501,18 +523,25 @@ value type_decl ind b ((_, tn), tp, te, cl) k =
               sprintf "%s%s%s =" b (var_escaped 0 "" tn "")
                 (if tp = [] then "" else
                  sprintf " %s" (hlist type_var 0 "" tp "")))
-           (fun () -> not_impl "type_decl vertic 1" ind b tn k)
+           (fun () -> not_impl "type_decl vertic 1" ind b tn "")
        in
        let s2 =
-         if cl = [] then ctyp (ind + 2) (tab (ind + 2)) te k
-        else
+         if cl = [] then
+           ctyp (ind + 2) (tab (ind + 2)) te
+             (match ko with [ Some (False, k) -> k | _ -> "" ])
+         else
            horiz_vertic
              (fun () ->
                 sprintf "%s%s%s%s" (tab (ind + 2)) (ctyp 0 "" te "")
-                  (not_impl "type_decl cl 2" ind "" cl "") k)
-             (fun () -> not_impl "type_decl vertic 2" ind "" tn k)
+                  (not_impl "type_decl cl 2" ind "" cl "") "")
+             (fun () -> not_impl "type_decl vertic 2" ind "" tn "")
        in
-       sprintf "%s\n%s" s1 s2)
+       let s3 =
+         match ko with
+         [ Some (True, k) -> sprintf "\n%s%s" (tab ind) k
+         | _ -> "" ]
+       in
+       sprintf "%s\n%s%s" s1 s2 s3)
 ;
 
 value label_decl ind b (_, l, m, t) k =
@@ -521,7 +550,7 @@ value label_decl ind b (_, l, m, t) k =
        sprintf "%s%s : %s%s%s" b l (if m then "mutable " else "")
          (ctyp 0 "" t "") k)
     (fun () ->
-       let s1 = sprintf "%s%s :%s" b l (if m then "mutable " else "") in
+       let s1 = sprintf "%s%s :%s" b l (if m then " mutable" else "") in
        let s2 = ctyp (ind + 2) (tab (ind + 2)) t k in
        sprintf "%s\n%s" s1 s2)
 ;
@@ -1322,18 +1351,18 @@ value str_item_top =
   | <:str_item< type $list:tdl$ >> ->
       fun curr next ind b k ->
         vlist2 type_decl (and_before type_decl) ind (sprintf "%stype " b) tdl
-          "" k
+          None (Some (True, k))
   | <:str_item< value $opt:rf$ $list:pel$ >> ->
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
              hlist2 value_binding (and_before value_binding) ind
                (sprintf "%svalue %s" b (if rf then "rec " else "")) pel
-               False True)
+               None (Some (False, ";")))
           (fun () ->
              vlist2 value_binding (and_before value_binding) ind
                (sprintf "%svalue %s" b (if rf then "rec " else "")) pel
-               False True)
+               None (Some (True, ";")))
   | <:str_item< $exp:e$ >> ->
       fun curr next ind b k -> expr ind b e k
   | <:str_item< class type $list:_$ >> | <:str_item< class $list:_$ >> ->
@@ -1376,7 +1405,7 @@ value sig_item_top =
   | <:sig_item< type $list:tdl$ >> ->
       fun curr next ind b k ->
         vlist2 type_decl (and_before type_decl) ind (sprintf "%stype " b) tdl
-          "" k
+          None (Some (True, k))
   | <:sig_item< value $s$ : $t$ >> ->
       fun curr next ind b k ->
         horiz_vertic
