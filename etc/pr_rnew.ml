@@ -782,8 +782,13 @@ value expr_top =
              in
              let s2 = expr ind (tab ind) e k in
              sprintf "%s\n%s" s1 s2)
-  | <:expr< do { $list:el$ } >> ->
+  | <:expr< do { $list:el$ } >> as ge ->
       fun curr next ind b k ->
+        let el =
+          match sequencify ge with
+          [ Some el -> el
+          | None -> el ]
+        in
         horiz_vertic
           (fun () ->
              sprintf "%sdo {%s%s%s}%s" b " "
