@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: gramext.ml,v 1.3 2006/12/26 08:54:09 deraugla Exp $ *)
+(* $Id: gramext.ml,v 1.4 2007/06/04 01:58:31 deraugla Exp $ *)
 
 open Printf;
 
@@ -119,18 +119,17 @@ value insert_tree entry_name gsymbols action tree =
         match tree with
         [ Node {node = s; son = son; brother = bro} ->
             Node {node = s; son = son; brother = insert [] bro}
-        | LocAct old_action action_list ->
-            do {
-              if warning_verbose.val then do {
-                eprintf "<W> Grammar extension: ";
-                if entry_name <> "" then eprintf "in [%s], " entry_name
-                else ();
-                eprintf "some rule has been masked\n";
-                flush stderr
-              }
+        | LocAct old_action action_list -> do {
+            if warning_verbose.val then do {
+              eprintf "<W> Grammar extension: ";
+              if entry_name <> "" then eprintf "in [%s], " entry_name
               else ();
-              LocAct action [old_action :: action_list]
+              eprintf "some rule has been masked\n";
+              flush stderr
             }
+            else ();
+            LocAct action [old_action :: action_list]
+          }
         | DeadEnd -> LocAct action [] ] ]
   and insert_in_tree s sl tree =
     match try_insert s sl tree with
@@ -203,32 +202,29 @@ value empty_lev lname assoc =
   {assoc = assoc; lname = lname; lsuffix = DeadEnd; lprefix = DeadEnd}
 ;
 
-value change_lev lev n lname assoc =
+value change_lev lev n lname assoc = do {
   let a =
     match assoc with
     [ None -> lev.assoc
-    | Some a ->
-        do {
-          if a <> lev.assoc && warning_verbose.val then do {
-            eprintf "<W> Changing associativity of level \"%s\"\n" n;
-            flush stderr
-          }
-          else ();
-          a
-        } ]
-  in
-  do {
-    match lname with
-    [ Some n ->
-        if lname <> lev.lname && warning_verbose.val then do {
-          eprintf "<W> Level label \"%s\" ignored\n" n; flush stderr
+    | Some a -> do {
+        if a <> lev.assoc && warning_verbose.val then do {
+          eprintf "<W> Changing associativity of level \"%s\"\n" n;
+          flush stderr
         }
-        else ()
-    | None -> () ];
-    {assoc = a; lname = lev.lname; lsuffix = lev.lsuffix;
-     lprefix = lev.lprefix}
-  }
-;
+        else ();
+        a
+      } ]
+  in
+  match lname with
+  [ Some n ->
+      if lname <> lev.lname && warning_verbose.val then do {
+        eprintf "<W> Level label \"%s\" ignored\n" n; flush stderr
+      }
+      else ()
+  | None -> () ];
+  {assoc = a; lname = lev.lname; lsuffix = lev.lsuffix;
+   lprefix = lev.lprefix}
+};
 
 value get_level entry position levs =
   match position with
@@ -237,13 +233,12 @@ value get_level entry position levs =
   | Some (Level n) ->
       let rec get =
         fun
-        [ [] ->
-            do {
-              eprintf "No level labelled \"%s\" in entry \"%s\"\n" n
-                entry.ename;
-              flush stderr;
-              failwith "Grammar.extend"
-            }
+        [ [] -> do {
+            eprintf "No level labelled \"%s\" in entry \"%s\"\n" n
+              entry.ename;
+            flush stderr;
+            failwith "Grammar.extend"
+          }
         | [lev :: levs] ->
             if is_level_labelled n lev then ([], change_lev lev n, levs)
             else
@@ -254,13 +249,12 @@ value get_level entry position levs =
   | Some (Before n) ->
       let rec get =
         fun
-        [ [] ->
-            do {
-              eprintf "No level labelled \"%s\" in entry \"%s\"\n" n
-                entry.ename;
-              flush stderr;
-              failwith "Grammar.extend"
-            }
+        [ [] -> do {
+            eprintf "No level labelled \"%s\" in entry \"%s\"\n" n
+              entry.ename;
+            flush stderr;
+            failwith "Grammar.extend"
+          }
         | [lev :: levs] ->
             if is_level_labelled n lev then ([], empty_lev, [lev :: levs])
             else
@@ -271,13 +265,12 @@ value get_level entry position levs =
   | Some (After n) ->
       let rec get =
         fun
-        [ [] ->
-            do {
-              eprintf "No level labelled \"%s\" in entry \"%s\"\n" n
-                entry.ename;
-              flush stderr;
-              failwith "Grammar.extend"
-            }
+        [ [] -> do {
+            eprintf "No level labelled \"%s\" in entry \"%s\"\n" n
+              entry.ename;
+            flush stderr;
+            failwith "Grammar.extend"
+          }
         | [lev :: levs] ->
             if is_level_labelled n lev then ([lev], empty_lev, levs)
             else
@@ -321,12 +314,11 @@ Error: entries \"%s\" and \"%s\" do not belong to the same grammar.\n"
   | Snext | Sself | Stoken _ -> () ]
 and tree_check_gram entry =
   fun
-  [ Node {node = n; brother = bro; son = son} ->
-      do {
-        check_gram entry n;
-        tree_check_gram entry bro;
-        tree_check_gram entry son
-      }
+  [ Node {node = n; brother = bro; son = son} -> do {
+      check_gram entry n;
+      tree_check_gram entry bro;
+      tree_check_gram entry son
+    }
   | LocAct _ _ | DeadEnd -> () ]
 ;
 
@@ -353,17 +345,16 @@ value insert_tokens gram symbols =
     | Sopt s -> insert s
     | Stree t -> tinsert t
     | Stoken ("ANY", _) -> ()
-    | Stoken tok ->
-        do {
-          gram.glexer.Token.tok_using tok;
-          let r =
-            try Hashtbl.find gram.gtokens tok with
-            [ Not_found ->
-                let r = ref 0 in
-                do { Hashtbl.add gram.gtokens tok r; r } ]
-          in
-          incr r
-        }
+    | Stoken tok -> do {
+        gram.glexer.Token.tok_using tok;
+        let r =
+          try Hashtbl.find gram.gtokens tok with
+          [ Not_found ->
+              let r = ref 0 in
+              do { Hashtbl.add gram.gtokens tok r; r } ]
+        in
+        incr r
+      }
     | Snterm _ | Snterml _ _ | Snext | Sself -> () ]
   and tinsert =
     fun
@@ -378,12 +369,11 @@ value levels_of_rules entry position rules =
   let elev =
     match entry.edesc with
     [ Dlevels elev -> elev
-    | Dparser _ ->
-        do {
-          eprintf "Error: entry not extensible: \"%s\"\n" entry.ename;
-          flush stderr;
-          failwith "Grammar.extend"
-        } ]
+    | Dparser _ -> do {
+        eprintf "Error: entry not extensible: \"%s\"\n" entry.ename;
+        flush stderr;
+        failwith "Grammar.extend"
+      } ]
   in
   if rules = [] then elev
   else
