@@ -270,6 +270,30 @@ value patt_as ind b z k =
 
 (* utilities specific to pr_r *)
 
+(* Basic displaying of a 'binding' (let, value, expr or patt record field).
+   The pretty printing is done correctly, but there are no syntax shortcuts
+   (e.g. "let f = fun x -> y" is *not* shortened as "let f x = y"), nor
+   pretty printing shortcuts (e.g.
+       let f =
+         do {
+           ...
+         }
+   is not shortened as
+       let f = do {
+         ...
+       }
+
+   Some functions follow (some of them with '_binding' in their name) which
+   use syntax or pretty printing shortcuts.
+*)
+value binding elem ind b (p, e) k =
+  horiz_vertic
+    (fun () -> sprintf "%s%s = %s%s" b (patt 0 "" p "") (elem 0 "" e "") k)
+    (fun () ->
+       sprintf "%s\n%s" (patt ind b p " =")
+         (elem (ind + 2) (tab (ind + 2)) e k))
+;
+
 pr_expr_fun_args.val :=
   extfun Extfun.empty with
   [ <:expr< fun $p$ -> $e$ >> as z ->
@@ -390,18 +414,18 @@ value where_binding ind b (p, e, body) k =
            sprintf "%s\n%s" s1 s2 ])
 ;
 
-value binding elem ind b (p, e) k =
-  horiz_vertic
-    (fun () -> sprintf "%s%s = %s%s" b (patt 0 "" p "") (elem 0 "" e "") k)
-    (fun () ->
-       sprintf "%s\n%s" (patt ind b p " =")
-         (elem (ind + 2) (tab (ind + 2)) e k))
+value expr_wh ind b e k =
+  match can_be_displayed_as_where e with
+  [ Some (p, e, body) -> where_binding ind b (p, e, body) k
+  | None -> expr ind b e k ]
 ;
 
 (* Pretty printing improvements (optional):
    - prints "field x = e" instead of "field = fun x -> e" in a record
    - if vertical and "e" is a sequence, put the "do {" at after the "="
-   Cancellation of improvement could be done by a call to "binding expr" *)
+   Cancellation of all these improvements could be done by changing calls
+   to this function to a call to "binding expr" above.
+*)
 value record_binding ind b (p, e) k =
   let (pl, e) = expr_fun_args e in
   let pl = [p :: pl] in
@@ -425,7 +449,7 @@ value record_binding ind b (p, e) k =
    - if vertical and "e" is a sequence, put the "do {" at after the "="
    - the continuation after the expression is optionally on next line if
      it not a sequence (see 'particularity for the parameter 'ko' below)
-   Cancellation of improvement could be done by a call to "binding expr"
+   - the expression after '=' is displayed as 'where' if possible (expr_wh)
    Particularity for the parameter 'ko':
      It is of type option (bool * string). The boolean asks whether we
      want that a newline be displayed before the continuation string if
@@ -436,13 +460,15 @@ value record_binding ind b (p, e) k =
        If the expression is a sequence, with the sequence beginner after
      the "=", it is not taken into account, the continuation will always be
      in the same line than the sequence closer.
+   Cancellation of all these improvements could be done by changing calls
+   to this function to a call to "binding expr" above.
 *)
 value value_binding ind b (p, e) ko =
   let (pl, e) = expr_fun_args e in
   let pl = [p :: pl] in
   horiz_vertic
     (fun () ->
-       sprintf "%s%s = %s%s" b (hlist patt 0 "" pl "") (expr 0 "" e "")
+       sprintf "%s%s = %s%s" b (hlist patt 0 "" pl "") (expr_wh 0 "" e "")
          (match ko with [ Some (_, k) -> k | None -> "" ]))
     (fun () ->
        match sequencify e with
@@ -454,7 +480,7 @@ value value_binding ind b (p, e) ko =
        | None ->
            let s1 = hlist patt ind b pl " =" in
            let s2 =
-             expr (ind + 2) (tab (ind + 2)) e
+             expr_wh (ind + 2) (tab (ind + 2)) e
                (match ko with [ Some (False, k) -> k | _ -> "" ])
            in
            let s3 =
@@ -465,10 +491,13 @@ value value_binding ind b (p, e) ko =
            sprintf "%s\n%s%s" s1 s2 s3 ])
 ;
 
-(* pretty printing improvements (optional):
+(* Pretty printing improvements (optional):
    - prints "let f x = e" instead of "let f = fun x -> e"
    - prints a newline before the "in" if last element not horizontal
-   cancellation of improvement could be done by a call to "binding expr" *)
+   - the expression after '=' is displayed as 'where' if possible (expr_wh)
+   Cancellation of all these improvements could be done by changing calls
+   to this function to a call to "binding expr" above.
+*)
 value let_binding ind b (p, e) is_last =
   let (pl, e) = expr_fun_args e in
   let pl = [p :: pl] in
@@ -486,7 +515,7 @@ value let_binding ind b (p, e) is_last =
                el ""
          | None ->
              let s1 = hlist patt ind b pl " =" in
-             let s2 = expr (ind + 2) (tab (ind + 2)) e "" in
+             let s2 = expr_wh (ind + 2) (tab (ind + 2)) e "" in
              sprintf "%s\n%s" s1 s2 ]
        in
        if is_last then sprintf "%s\n%sin" s (tab ind) else s)
@@ -843,28 +872,25 @@ value expr_top =
              in
              let s2 = match_assoc_list ind (tab ind) pwel k in
              sprintf "%s\n%s" s1 s2)
-  | <:expr< let $opt:rf$ $list:pel$ in $e$ >> as ge ->
+  | <:expr< let $opt:rf$ $list:pel$ in $e$ >> ->
       fun curr next ind b k ->
-        match can_be_displayed_as_where ge with
-        [ Some (p, e, body) -> where_binding ind b (p, e, body) k
-        | None ->
-            horiz_vertic
-              (fun () ->
-                 let s1 =
-                   hlist2 let_binding (and_before let_binding) ind
-                     (sprintf "%slet %s" b (if rf then "rec " else ""))
-                     pel False True
-                 in
-                 let s2 = expr 0 "" e k in
-                 sprintf "%s %s" s1 s2)
-              (fun () ->
-                 let s1 =
-                   vlist2 let_binding (and_before let_binding) ind
-                     (sprintf "%slet %s" b (if rf then "rec " else ""))
-                     pel False True
-                 in
-                 let s2 = expr ind (tab ind) e k in
-                 sprintf "%s\n%s" s1 s2) ]
+        horiz_vertic
+          (fun () ->
+             let s1 =
+               hlist2 let_binding (and_before let_binding) ind
+                 (sprintf "%slet %s" b (if rf then "rec " else ""))
+                 pel False True
+             in
+             let s2 = expr 0 "" e k in
+             sprintf "%s %s" s1 s2)
+          (fun () ->
+             let s1 =
+               vlist2 let_binding (and_before let_binding) ind
+                 (sprintf "%slet %s" b (if rf then "rec " else ""))
+                 pel False True
+             in
+             let s2 = expr ind (tab ind) e k in
+             sprintf "%s\n%s" s1 s2)
   | <:expr< let module $s$ = $me$ in $e$ >> ->
       fun curr next ind b k ->
         horiz_vertic
