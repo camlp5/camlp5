@@ -509,7 +509,7 @@ value apply_with_var v x f =
   let vx = v.val in
   try do {
     v.val := x;
-    let r = f ();
+    let r = f () in
     v.val := vx;
     r
   }

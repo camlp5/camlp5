@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.18 2007/05/31 08:53:27 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.19 2007/06/04 12:11:17 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -342,7 +342,7 @@ EXTEND
     [ [ -> () ] ]
   ;
   sequence:
-    [ [ "let"; rf = OPT "rec"; l = LIST1 let_binding SEP "and"; [ "in" | ";" ];
+    [ [ "let"; rf = OPT "rec"; l = LIST1 let_binding SEP "and"; "in";
         el = SELF ->
           [<:expr< let $opt:o2b rf$ $list:l$ in $mksequence loc el$ >>]
       | e = expr; ";"; el = SELF -> [e :: el]

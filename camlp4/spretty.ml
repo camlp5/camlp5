@@ -82,7 +82,7 @@ value print_comment tab s nl_bef tab_bef empty_stmt =
       loop 0 (String.length s - 1) where rec loop tab_aft i =
         if i >= 0 && s.[i] = ' ' then loop (tab_aft + 1) (i - 1)
         else (tab_aft, i)
-    ;
+    in
     let tab_bef = if nl_bef > 0 then tab_bef else tab in
     let len = if empty_stmt then i_bef_tab else String.length s in
     loop 0 where rec loop i =

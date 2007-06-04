@@ -1093,14 +1093,7 @@ Grammar.extend
          (Gramext.Snterm
             (Grammar.Entry.obj (let_binding : 'let_binding Grammar.Entry.e)),
           Gramext.Stoken ("", "and"));
-       Gramext.srules
-         [[Gramext.Stoken ("", ";")],
-          Gramext.action
-            (fun (x : string) (loc : Token.location) -> (x : 'e__5));
-          [Gramext.Stoken ("", "in")],
-          Gramext.action
-            (fun (x : string) (loc : Token.location) -> (x : 'e__5))];
-       Gramext.Sself],
+       Gramext.Stoken ("", "in"); Gramext.Sself],
       Gramext.action
         (fun (el : 'sequence) _ (l : 'let_binding list) (rf : string option) _
            (loc : Token.location) ->
@@ -1796,9 +1789,9 @@ Grammar.extend
               Gramext.Stoken ("", ";")],
              Gramext.action
                (fun _ (cf : 'class_str_item) (loc : Token.location) ->
-                  (cf : 'e__6))])],
+                  (cf : 'e__5))])],
       Gramext.action
-        (fun (cf : 'e__6 list) (loc : Token.location) ->
+        (fun (cf : 'e__5 list) (loc : Token.location) ->
            (cf : 'class_structure))]];
     Grammar.Entry.obj (class_self_patt : 'class_self_patt Grammar.Entry.e),
     None,
@@ -1882,10 +1875,10 @@ Grammar.extend
               Gramext.Stoken ("", ";")],
              Gramext.action
                (fun _ (s : 'class_str_item) (loc : Token.location) ->
-                  (s : 'e__7))]);
+                  (s : 'e__6))]);
        Gramext.Stoken ("", "end")],
       Gramext.action
-        (fun _ (st : 'e__7 list) _ (loc : Token.location) ->
+        (fun _ (st : 'e__6 list) _ (loc : Token.location) ->
            (MLast.CrDcl (loc, st) : 'class_str_item))]];
     Grammar.Entry.obj (as_lident : 'as_lident Grammar.Entry.e), None,
     [None, None,
@@ -1949,10 +1942,10 @@ Grammar.extend
               Gramext.Stoken ("", ";")],
              Gramext.action
                (fun _ (csf : 'class_sig_item) (loc : Token.location) ->
-                  (csf : 'e__8))]);
+                  (csf : 'e__7))]);
        Gramext.Stoken ("", "end")],
       Gramext.action
-        (fun _ (csf : 'e__8 list) (cst : 'class_self_type option) _
+        (fun _ (csf : 'e__7 list) (cst : 'class_self_type option) _
            (loc : Token.location) ->
            (MLast.CtSig (loc, cst, csf) : 'class_type));
       [Gramext.Snterm
@@ -2040,10 +2033,10 @@ Grammar.extend
               Gramext.Stoken ("", ";")],
              Gramext.action
                (fun _ (s : 'class_sig_item) (loc : Token.location) ->
-                  (s : 'e__9))]);
+                  (s : 'e__8))]);
        Gramext.Stoken ("", "end")],
       Gramext.action
-        (fun _ (st : 'e__9 list) _ (loc : Token.location) ->
+        (fun _ (st : 'e__8 list) _ (loc : Token.location) ->
            (MLast.CgDcl (loc, st) : 'class_sig_item))]];
     Grammar.Entry.obj
       (class_description : 'class_description Grammar.Entry.e),
