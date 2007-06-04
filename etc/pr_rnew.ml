@@ -280,14 +280,6 @@ pr_expr_fun_args.val :=
   | z -> ([], z) ]
 ;
 
-value binding elem ind b (p, e) k =
-  horiz_vertic
-    (fun () -> sprintf "%s%s = %s%s" b (patt 0 "" p "") (elem 0 "" e "") k)
-    (fun () ->
-       sprintf "%s\n%s" (patt ind b p " =")
-         (elem (ind + 2) (tab (ind + 2)) e k))
-;
-
 (* Pretty printing improvement (optional):
    - if e is a "sequence" or a "let..in sequence", get "the list of its
      expressions", which is flattened (merging sequences inside sequences
@@ -348,6 +340,62 @@ value sequence_box ind horiz vertic el k =
   let s2 = vlistl (semi_after expr) expr (ind + 2) (tab (ind + 2)) el "" in
   let s3 = sprintf "%s}%s" (tab ind) k in
   sprintf "%s\n%s\n%s" s1 s2 s3
+;
+
+(* Pretty printing improvement (optional):
+   - test a "let" binding can be displayed as "where"
+ *)
+value can_be_displayed_as_where e =
+  match e with
+  [ <:expr< let rec $p$ = $body$ in $e$ >> ->
+      let e1 =
+        loop e where rec loop =
+          fun
+          [ <:expr< $e$ $_$ >> -> loop e
+          | e -> e ]
+      in
+      match (p, e1, body) with
+      [ (<:patt< $lid:f$ >>, <:expr< $lid:g$ >>,
+         <:expr< fun [ $list:_$ ] >>) ->
+          if f = g then Some (p, e, body) else None
+      | _ -> None ]
+  | _ -> None ]
+;
+
+(* Pretty printing improvement (optional):
+   - display a "let" binding with the "where" construct
+*)
+value where_binding ind b (p, e, body) k =
+  let (pl, body) = expr_fun_args body in
+  let pl = [p :: pl] in
+  horiz_vertic
+    (fun () ->
+       sprintf "%s%s where rec %s = %s" b (expr 0 "" e "")
+         (hlist patt 0 "" pl "") (expr 0 "" body ""))
+    (fun () ->
+       let horiz_where () =
+         sprintf "%s%s where rec %s =" b (expr 0 "" e "")
+           (hlist patt 0 "" pl "")
+       in
+       let vertic_where () =
+         let s1 = expr ind b e "" in
+         let s2 = hlist patt ind (sprintf "%swhere rec" (tab ind)) pl " =" in
+         sprintf "%s\n%s" s1 s2
+       in
+       match sequencify body with
+       [ Some el -> sequence_box ind horiz_where vertic_where el k
+       | None ->
+           let s1 = horiz_vertic horiz_where vertic_where in
+           let s2 = expr (ind + 2) (tab (ind + 2)) body k in
+           sprintf "%s\n%s" s1 s2 ])
+;
+
+value binding elem ind b (p, e) k =
+  horiz_vertic
+    (fun () -> sprintf "%s%s = %s%s" b (patt 0 "" p "") (elem 0 "" e "") k)
+    (fun () ->
+       sprintf "%s\n%s" (patt ind b p " =")
+         (elem (ind + 2) (tab (ind + 2)) e k))
 ;
 
 (* Pretty printing improvements (optional):
@@ -442,54 +490,6 @@ value let_binding ind b (p, e) is_last =
              sprintf "%s\n%s" s1 s2 ]
        in
        if is_last then sprintf "%s\n%sin" s (tab ind) else s)
-;
-
-(* Pretty printing improvement (optional):
-   - test a "let" binding can be displayed as "where"
- *)
-value can_be_displayed_as_where e =
-  match e with
-  [ <:expr< let rec $p$ = $body$ in $e$ >> ->
-      let e1 =
-        loop e where rec loop =
-          fun
-          [ <:expr< $e$ $_$ >> -> loop e
-          | e -> e ]
-      in
-      match (p, e1, body) with
-      [ (<:patt< $lid:f$ >>, <:expr< $lid:g$ >>,
-         <:expr< fun [ $list:_$ ] >>) ->
-          if f = g then Some (p, e, body) else None
-      | _ -> None ]
-  | _ -> None ]
-;
-
-(* Pretty printing improvement (optional):
-   - display a "let" binding with the "where" construct
-*)
-value where_binding ind b (p, e, body) k =
-  horiz_vertic
-    (fun () ->
-       sprintf "%s%s where rec %s%s" b (expr 0 "" e "")
-         (value_binding ind "" (p, body) None) k)
-    (fun () ->
-       let (pl, body) = expr_fun_args body in
-       let pl = [p :: pl] in
-       let horiz_where () =
-         sprintf "%s%s where rec %s =" b (expr 0 "" e "")
-           (hlist patt 0 "" pl "")
-       in
-       let vertic_where () =
-         let s1 = expr ind b e "" in
-         let s2 = hlist patt ind (sprintf "%swhere rec" (tab ind)) pl " =" in
-         sprintf "%s\n%s" s1 s2
-       in
-       match sequencify body with
-       [ Some el -> sequence_box ind horiz_where vertic_where el k
-       | None ->
-           let s1 = horiz_vertic horiz_where vertic_where in
-           let s2 = expr (ind + 2) (tab (ind + 2)) body k in
-           sprintf "%s\n%s" s1 s2 ])
 ;
 
 value match_assoc ind b (p, w, e) k =
