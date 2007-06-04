@@ -507,13 +507,12 @@ value class_info class_expr ci =
 
 value apply_with_var v x f =
   let vx = v.val in
-  try
-    do {
-      v.val := x;
-      let r = f ();
-      v.val := vx;
-      r
-    }
+  try do {
+    v.val := x;
+    let r = f ();
+    v.val := vx;
+    r
+  }
   with e -> do { v.val := vx; raise e }
 ;
 

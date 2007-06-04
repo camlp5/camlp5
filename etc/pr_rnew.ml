@@ -5,9 +5,11 @@
 open Pcaml.NewPrinter;
 open Sformat;
 
+value flag_expand_declare = ref False;
 value flag_horiz_let_in = ref False;
 value flag_where_after_in = ref False;
 value flag_where_after_let_eq = ref True;
+value flag_sequ_begin_at_eol = ref True;
 value flag_where_after_value_eq = ref True;
 value flag_where_after_field_eq = ref False;
 value flag_where_after_then = ref False;
@@ -338,18 +340,20 @@ value sequencify e =
         | None | _ -> None ]
     | _ -> None ]
   in
-  match get_sequence e with
-  [ Some el ->
-      let rec list_of_sequence =
-        fun
-        [ [e :: el] ->
-            match get_sequence e with
-            [ Some el1 -> list_of_sequence (el1 @ el)
-            | None -> [e :: list_of_sequence el] ]
-        | [] -> [] ]
-      in
-      Some (list_of_sequence el)
-  | None -> None ]
+  if not flag_sequ_begin_at_eol.val then None
+  else
+    match get_sequence e with
+    [ Some el ->
+        let rec list_of_sequence =
+          fun
+          [ [e :: el] ->
+              match get_sequence e with
+              [ Some el1 -> list_of_sequence (el1 @ el)
+              | None -> [e :: list_of_sequence el] ]
+          | [] -> [] ]
+        in
+        Some (list_of_sequence el)
+    | None -> None ]
 ;
 
 (* Pretty printing improvement (optional):
@@ -1434,7 +1438,10 @@ value str_item_top =
       fun curr next ind b k -> expr ind (sprintf "%s#%s " b s) e k
   | <:str_item< declare $list:sil$ end >> ->
       fun curr next ind b k ->
-        if sil = [] then sprintf "%sdeclare end%s" b k
+        if flag_expand_declare.val then
+          horiz_vertic (fun () -> hlist (semi_after str_item) 0 "" sil "")
+            (fun () -> not_impl "expand declare vertic" ind b sil k)
+        else if sil = [] then sprintf "%sdeclare end%s" b k
         else
           horiz_vertic
             (fun () ->
@@ -1849,22 +1856,26 @@ value set_flags s =
   for i = 0 to String.length s - 1 do {
     match s.[i] with
     [ 'a' | 'A' -> do {
+        flag_expand_declare.val := s.[i] = 'A';
         flag_horiz_let_in.val := s.[i] = 'A';
         flag_where_after_in.val := s.[i] = 'A';
         flag_where_after_let_eq.val := s.[i] = 'A';
+        flag_sequ_begin_at_eol.val := s.[i] = 'A';
         flag_where_after_value_eq.val := s.[i] = 'A';
         flag_where_after_field_eq.val := s.[i] = 'A';
         flag_where_after_then.val := s.[i] = 'A';
         flag_where_in_sequences.val := s.[i] = 'A';
         flag_where_all.val := s.[i] = 'A'
       }
-    | 'h' | 'H' ->  flag_horiz_let_in.val := s.[i] = 'H'
-    | 'i' | 'I' ->  flag_where_after_in.val := s.[i] = 'I'
-    | 'l' | 'L' ->  flag_where_after_let_eq.val := s.[i] = 'L'
-    | 'r' | 'R' ->  flag_where_after_field_eq.val := s.[i] = 'R'
-    | 's' | 'S' ->  flag_where_in_sequences.val := s.[i] = 'S'
-    | 't' | 'T' ->  flag_where_after_then.val := s.[i] = 'T'
-    | 'v' | 'V' ->  flag_where_after_value_eq.val := s.[i] = 'V'
+    | 'd' | 'D' -> flag_expand_declare.val := s.[i] = 'D'
+    | 'h' | 'H' -> flag_horiz_let_in.val := s.[i] = 'H'
+    | 'i' | 'I' -> flag_where_after_in.val := s.[i] = 'I'
+    | 'l' | 'L' -> flag_where_after_let_eq.val := s.[i] = 'L'
+    | 'q' | 'Q' -> flag_sequ_begin_at_eol.val := s.[i] = 'Q'
+    | 'r' | 'R' -> flag_where_after_field_eq.val := s.[i] = 'R'
+    | 's' | 'S' -> flag_where_in_sequences.val := s.[i] = 'S'
+    | 't' | 'T' -> flag_where_after_then.val := s.[i] = 'T'
+    | 'v' | 'V' -> flag_where_after_value_eq.val := s.[i] = 'V'
     | c -> failwith ("bad wh flag " ^ String.make 1 c) ];
   }
 ;
@@ -1872,11 +1883,13 @@ value set_flags s =
 Pcaml.add_option "-flg" (Arg.String set_flags)
   "<flags>  Change pretty printing behaviour according to <flags>:
      A/a enable/disable all flags
+     D/d enable/disable allowing expanding 'declare'
      H/h enable/disable allowing printing 'let..in' horizontally
      I/i enable/disable allowing printing 'where' after 'in'
      L/l enable/disable allowing printing 'where' after 'let..='
-     S/s enable/disable allowing printing 'where' in sequences
+     Q/q enable/disable printing sequences beginners at end of lines
      R/r enable/disable allowing printing 'where' after 'record_field..='
+     S/s enable/disable allowing printing 'where' in sequences
      T/t enable/disable allowing printing 'where' after 'then' or 'else'
      V/v enable/disable allowing printing 'where' after 'value..='
-     default setting is \"aLV\".";
+     default setting is \"aLQV\".";
