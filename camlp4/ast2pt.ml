@@ -76,8 +76,7 @@ value mkloc loc =
     {Lexing.pos_fname = if lnum = -1 then "" else glob_fname.val;
      Lexing.pos_lnum = lnum; Lexing.pos_bol = bolp; Lexing.pos_cnum = n}
   in
-  {Location.loc_start = loc_at bp;
-   Location.loc_end = loc_at ep;
+  {Location.loc_start = loc_at bp; Location.loc_end = loc_at ep;
    Location.loc_ghost = bp = 0 && ep = 0}
 ;
 
@@ -219,7 +218,8 @@ and meth_list loc fl v =
   match fl with
   [ [] -> if v then [mkfield loc Pfield_var] else []
   | [(lab, t) :: fl] ->
-      [mkfield loc (Pfield lab (ctyp (mkpolytype t))) :: meth_list loc fl v] ]
+      [mkfield loc (Pfield lab (ctyp (mkpolytype t))) ::
+       meth_list loc fl v] ]
 ;
 
 value mktype loc tl cl tk tm =

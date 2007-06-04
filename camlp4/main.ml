@@ -6,9 +6,9 @@ open Printf;
 value loc_fmt =
   match Sys.os_type with
   [ "MacOS" ->
-     format_of_string "File \"%s\"; line %d; characters %d to %d\n### "
+      format_of_string "File \"%s\"; line %d; characters %d to %d\n### "
   | _ ->
-     format_of_string "File \"%s\", line %d, characters %d-%d:\n" ]
+      format_of_string "File \"%s\", line %d, characters %d-%d:\n" ]
 ;
 
 value print_location loc =

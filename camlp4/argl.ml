@@ -154,9 +154,9 @@ Other options:
     | [] -> eprintf "  -help         Display this list of options.\n" ];
   if ext_sl <> [] then do {
     eprintf "Options added by loaded object files:\n";
-    print_usage_list ext_sl;
+    print_usage_list ext_sl
   }
-  else ();
+  else ()
 };
 
 value parse spec_list anon_fun remaining_args =

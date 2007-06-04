@@ -5,6 +5,15 @@
 open Pcaml.NewPrinter;
 open Sformat;
 
+value flag_horiz_let_in = ref False;
+value flag_where_after_in = ref False;
+value flag_where_after_let_eq = ref True;
+value flag_where_after_value_eq = ref True;
+value flag_where_after_field_eq = ref False;
+value flag_where_after_then = ref False;
+value flag_where_in_sequences = ref False;
+value flag_where_all = ref True;
+
 module Buff =
   struct
     value buff = ref (String.create 80);
@@ -344,29 +353,6 @@ value sequencify e =
 ;
 
 (* Pretty printing improvement (optional):
-   - print the "do {" of the sequences at end of previous lines,
-     therefore printing the sequence with one tabulation less
-   - example:
-          value f x =
-            do {
-              ...
-            }
-     is printed :
-          value f x = do {
-            ...
-          }
- *)
-value sequence_box ind horiz vertic el k =
-  let s1 =
-    horiz_vertic (fun () -> sprintf "%s do {" (horiz ()))
-      (fun () -> sprintf "%s do {" (vertic ()))
-  in
-  let s2 = vlistl (semi_after expr) expr (ind + 2) (tab (ind + 2)) el "" in
-  let s3 = sprintf "%s}%s" (tab ind) k in
-  sprintf "%s\n%s\n%s" s1 s2 s3
-;
-
-(* Pretty printing improvement (optional):
    - test a "let" binding can be displayed as "where"
  *)
 value can_be_displayed_as_where e =
@@ -387,9 +373,34 @@ value can_be_displayed_as_where e =
 ;
 
 (* Pretty printing improvement (optional):
+   - print the "do {" of the sequences at end of previous lines,
+     therefore printing the sequence with one tabulation less
+   - example:
+          value f x =
+            do {
+              ...
+            }
+     is printed :
+          value f x = do {
+            ...
+          }
+ *)
+value rec sequence_box ind horiz vertic el k =
+  let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
+  let s1 =
+    horiz_vertic (fun () -> sprintf "%s do {" (horiz ()))
+      (fun () -> sprintf "%s do {" (vertic ()))
+  in
+  let s2 =
+    vlistl (semi_after expr_wh) expr_wh (ind + 2) (tab (ind + 2)) el ""
+  in
+  let s3 = sprintf "%s}%s" (tab ind) k in
+  sprintf "%s\n%s\n%s" s1 s2 s3
+
+(* Pretty printing improvement (optional):
    - display a "let" binding with the "where" construct
 *)
-value where_binding ind b (p, e, body) k =
+and where_binding ind b (p, e, body) k =
   let (pl, body) = expr_fun_args body in
   let pl = [p :: pl] in
   horiz_vertic
@@ -412,12 +423,13 @@ value where_binding ind b (p, e, body) k =
            let s1 = horiz_vertic horiz_where vertic_where in
            let s2 = expr (ind + 2) (tab (ind + 2)) body k in
            sprintf "%s\n%s" s1 s2 ])
-;
 
-value expr_wh ind b e k =
-  match can_be_displayed_as_where e with
-  [ Some (p, e, body) -> where_binding ind b (p, e, body) k
-  | None -> expr ind b e k ]
+and expr_wh ind b e k =
+  if flag_where_all.val then
+    match can_be_displayed_as_where e with
+    [ Some (p, e, body) -> where_binding ind b (p, e, body) k
+    | None -> expr ind b e k ]
+  else expr ind b e k
 ;
 
 (* Pretty printing improvements (optional):
@@ -429,9 +441,10 @@ value expr_wh ind b e k =
 value record_binding ind b (p, e) k =
   let (pl, e) = expr_fun_args e in
   let pl = [p :: pl] in
+  let expr_wh = if flag_where_after_field_eq.val then expr_wh else expr in
   horiz_vertic
     (fun () ->
-       sprintf "%s%s = %s%s" b (hlist patt 0 "" pl "") (expr 0 "" e "") k)
+       sprintf "%s%s = %s%s" b (hlist patt 0 "" pl "") (expr_wh 0 "" e "") k)
     (fun () ->
        match sequencify e with
        [ Some el ->
@@ -441,7 +454,7 @@ value record_binding ind b (p, e) k =
              el k
        | None ->
            sprintf "%s\n%s" (hlist patt ind b pl " =")
-             (expr (ind + 2) (tab (ind + 2)) e k) ])
+             (expr_wh (ind + 2) (tab (ind + 2)) e k) ])
 ;
 
 (* Pretty printing improvements (optional):
@@ -466,6 +479,7 @@ value record_binding ind b (p, e) k =
 value value_binding ind b (p, e) ko =
   let (pl, e) = expr_fun_args e in
   let pl = [p :: pl] in
+  let expr_wh = if flag_where_after_value_eq.val then expr_wh else expr in
   horiz_vertic
     (fun () ->
        sprintf "%s%s = %s%s" b (hlist patt 0 "" pl "") (expr_wh 0 "" e "")
@@ -501,9 +515,10 @@ value value_binding ind b (p, e) ko =
 value let_binding ind b (p, e) is_last =
   let (pl, e) = expr_fun_args e in
   let pl = [p :: pl] in
+  let expr_wh = if flag_where_after_let_eq.val then expr_wh else expr in
   horiz_vertic
     (fun () ->
-       sprintf "%s%s = %s%s" b (hlist patt 0 "" pl "") (expr 0 "" e "")
+       sprintf "%s%s = %s%s" b (hlist patt 0 "" pl "") (expr_wh 0 "" e "")
          (if is_last then " in" else ""))
     (fun () ->
        let s =
@@ -524,7 +539,7 @@ value let_binding ind b (p, e) is_last =
 value match_assoc ind b (p, w, e) k =
   horiz_vertic
     (fun () ->
-       sprintf "%s%s%s -> %s%s" b (patt 0 "" p "")
+       sprintf "%s%s%s -> %s%s" b (patt_as 0 "" p "")
          (match w with
           [ Some e -> sprintf " when %s" (expr 0 "" e "")
           | None -> "" ])
@@ -535,10 +550,10 @@ value match_assoc ind b (p, w, e) k =
          [ Some e ->
              horiz_vertic
                (fun () -> 
-                  sprintf "%s%s when %s ->" b (patt 0 "" p "")
+                  sprintf "%s%s when %s ->" b (patt_as 0 "" p "")
                     (expr 0 "" e ""))
                (fun () ->
-                  let s1 = patt (ind + 2) b p "" in
+                  let s1 = patt_as (ind + 2) b p "" in
                   let s2 =
                     horiz_vertic
                       (fun () ->
@@ -764,6 +779,7 @@ value expr_top =
   extfun Extfun.empty with
   [ <:expr< if $e1$ then $e2$ else $e3$ >> ->
       fun curr next ind b k ->
+        let expr_wh = if flag_where_after_then.val then expr_wh else expr in
         horiz_vertic
          (fun () ->
             sprintf "%sif %s then %s else %s%s" b (expr 0 "" e1 "")
@@ -788,7 +804,7 @@ value expr_top =
                        sequence_box ind horiz_if_then vertic_if_then el ""
                    | None ->
                        let s1 = horiz_vertic horiz_if_then vertic_if_then in
-                       let s2 = expr (ind + 2) (tab (ind + 2)) e2 "" in
+                       let s2 = expr_wh (ind + 2) (tab (ind + 2)) e2 "" in
                        sprintf "%s\n%s" s1 s2 ])
             in
             let s1 = if_then ind (sprintf "%sif " b) e1 e2 in
@@ -811,7 +827,7 @@ value expr_top =
                        sequence_box ind (fun () -> sprintf "\n")
                          (fun () -> sprintf "%selse" (tab ind)) el k
                    | None ->
-                       let s = expr (ind + 2) (tab (ind + 2)) e3 k in
+                       let s = expr_wh (ind + 2) (tab (ind + 2)) e3 k in
                        sprintf "%selse\n%s" (tab ind) s ])
             in
             sprintf "%s%s\n%s" s1 s2 s3)
@@ -874,22 +890,25 @@ value expr_top =
              sprintf "%s\n%s" s1 s2)
   | <:expr< let $opt:rf$ $list:pel$ in $e$ >> ->
       fun curr next ind b k ->
+        let expr_wh = if flag_where_after_in.val then expr_wh else expr in
         horiz_vertic
           (fun () ->
-             let s1 =
-               hlist2 let_binding (and_before let_binding) ind
-                 (sprintf "%slet %s" b (if rf then "rec " else ""))
-                 pel False True
-             in
-             let s2 = expr 0 "" e k in
-             sprintf "%s %s" s1 s2)
+             if not flag_horiz_let_in.val then sprintf "\n"
+             else
+               let s1 =
+                 hlist2 let_binding (and_before let_binding) ind
+                   (sprintf "%slet %s" b (if rf then "rec " else ""))
+                   pel False True
+               in
+               let s2 = expr 0 "" e k in
+               sprintf "%s %s" s1 s2)
           (fun () ->
              let s1 =
                vlist2 let_binding (and_before let_binding) ind
                  (sprintf "%slet %s" b (if rf then "rec " else ""))
                  pel False True
              in
-             let s2 = expr ind (tab ind) e k in
+             let s2 = expr_wh ind (tab ind) e k in
              sprintf "%s\n%s" s1 s2)
   | <:expr< let module $s$ = $me$ in $e$ >> ->
       fun curr next ind b k ->
@@ -1086,6 +1105,8 @@ value expr_unary_minus =
       fun curr next ind b k -> curr ind (sprintf "%s-" b) x k
   | <:expr< ~-. $x$ >> ->
       fun curr next ind b k -> curr ind (sprintf "%s-." b) x k
+  | <:expr< $int:i$ >> ->
+      fun curr next ind b k -> sprintf "%s%s%s" b i k
   | z ->
       fun curr next ind b k -> next ind b z k ]
 ;
@@ -1823,3 +1844,39 @@ Pcaml.add_option "-l" (Arg.Int (fun x -> Sformat.line_length.val := x))
 
 Pcaml.add_option "-sep" (Arg.String (fun x -> sep.val := Some x))
   "<string> Use this string between phrases instead of reading source.";
+
+value set_flags s =
+  for i = 0 to String.length s - 1 do {
+    match s.[i] with
+    [ 'a' | 'A' -> do {
+        flag_horiz_let_in.val := s.[i] = 'A';
+        flag_where_after_in.val := s.[i] = 'A';
+        flag_where_after_let_eq.val := s.[i] = 'A';
+        flag_where_after_value_eq.val := s.[i] = 'A';
+        flag_where_after_field_eq.val := s.[i] = 'A';
+        flag_where_after_then.val := s.[i] = 'A';
+        flag_where_in_sequences.val := s.[i] = 'A';
+        flag_where_all.val := s.[i] = 'A'
+      }
+    | 'h' | 'H' ->  flag_horiz_let_in.val := s.[i] = 'H'
+    | 'i' | 'I' ->  flag_where_after_in.val := s.[i] = 'I'
+    | 'l' | 'L' ->  flag_where_after_let_eq.val := s.[i] = 'L'
+    | 'r' | 'R' ->  flag_where_after_field_eq.val := s.[i] = 'R'
+    | 's' | 'S' ->  flag_where_in_sequences.val := s.[i] = 'S'
+    | 't' | 'T' ->  flag_where_after_then.val := s.[i] = 'T'
+    | 'v' | 'V' ->  flag_where_after_value_eq.val := s.[i] = 'V'
+    | c -> failwith ("bad wh flag " ^ String.make 1 c) ];
+  }
+;
+
+Pcaml.add_option "-flg" (Arg.String set_flags)
+  "<flags>  Change pretty printing behaviour according to <flags>:
+     A/a enable/disable all flags
+     H/h enable/disable allowing printing 'let..in' horizontally
+     I/i enable/disable allowing printing 'where' after 'in'
+     L/l enable/disable allowing printing 'where' after 'let..='
+     S/s enable/disable allowing printing 'where' in sequences
+     R/r enable/disable allowing printing 'where' after 'record_field..='
+     T/t enable/disable allowing printing 'where' after 'then' or 'else'
+     V/v enable/disable allowing printing 'where' after 'value..='
+     default setting is \"aLV\".";
