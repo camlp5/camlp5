@@ -170,7 +170,7 @@ value rec vlistl elem eleml ind b xl k =
         (vlistl elem eleml ind (tab ind) xl k) ]
 ;
 
-(* paragraph list with different function for the last element;
+(* paragraph list with a different function for the last element;
    the list elements are pairs where second elements are separators
    (the last separator is ignored) *)
 value rec plistl elem eleml ind sh b xl k =
@@ -182,33 +182,31 @@ value rec plistl elem eleml ind sh b xl k =
         horiz_vertic (fun () -> Some (elem ind b x sep)) (fun () -> None)
       in
       match s with
-      [ Some b ->
-          loop b xl where rec loop b =
-            fun
-            [ [] -> assert False
-            | [(x, _)] ->
-                horiz_vertic (fun () -> eleml ind (sprintf "%s " b) x k)
-                  (fun () ->
-                     let s = eleml (ind + sh) (tab (ind + sh)) x k in
-                     sprintf "%s\n%s" b s)
-            | [(x, sep) :: xl] ->
-                let s =
-                  horiz_vertic
-                    (fun () -> Some (elem ind (sprintf "%s " b) x sep))
-                    (fun () -> None)
-                in
-                match s with
-                [ Some b -> loop b xl
-                | None ->
-                    let s =
-                      plistl elem eleml (ind + sh) 0 (tab (ind + sh))
-                        [(x, sep) :: xl] k
-                    in
-                    sprintf "%s\n%s" b s ] ]
+      [ Some b -> plistl_loop elem eleml ind sh b xl k
       | None ->
           let s1 = elem ind b x sep in
           let s2 = plistl elem eleml (ind + sh) 0 (tab (ind + sh)) xl k in
           sprintf "%s\n%s" s1 s2 ] ]
+and plistl_loop elem eleml ind sh b xl k =
+  match xl with
+  [ [] -> assert False
+  | [(x, _)] ->
+      horiz_vertic (fun () -> eleml ind (sprintf "%s " b) x k)
+        (fun () ->
+           let s = eleml (ind + sh) (tab (ind + sh)) x k in
+           sprintf "%s\n%s" b s)
+  | [(x, sep) :: xl] ->
+      let s =
+        horiz_vertic (fun () -> Some (elem ind (sprintf "%s " b) x sep))
+          (fun () -> None)
+      in
+      match s with
+      [ Some b -> plistl_loop elem eleml ind sh b xl k
+      | None ->
+          let s =
+            plistl elem eleml (ind + sh) 0 (tab (ind + sh)) [(x, sep) :: xl] k
+          in
+          sprintf "%s\n%s" b s ] ]
 ;
 
 (* paragraph list *)
