@@ -182,12 +182,12 @@ value rec plistl elem eleml ind sh b xl k =
         horiz_vertic (fun () -> Some (elem ind b x sep)) (fun () -> None)
       in
       match s with
-      [ Some b -> plistl_loop elem eleml ind sh b xl k
+      [ Some b -> plistl_kont_same_line elem eleml ind sh b xl k
       | None ->
           let s1 = elem ind b x sep in
           let s2 = plistl elem eleml (ind + sh) 0 (tab (ind + sh)) xl k in
           sprintf "%s\n%s" s1 s2 ] ]
-and plistl_loop elem eleml ind sh b xl k =
+and plistl_kont_same_line elem eleml ind sh b xl k =
   match xl with
   [ [] -> assert False
   | [(x, _)] ->
@@ -201,7 +201,7 @@ and plistl_loop elem eleml ind sh b xl k =
           (fun () -> None)
       in
       match s with
-      [ Some b -> plistl_loop elem eleml ind sh b xl k
+      [ Some b -> plistl_kont_same_line elem eleml ind sh b xl k
       | None ->
           let s =
             plistl elem eleml (ind + sh) 0 (tab (ind + sh)) [(x, sep) :: xl] k
