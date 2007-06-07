@@ -81,9 +81,7 @@ List.iter (fun (n, f) -> Quotation.add n f)
 value quotation_dump_file = ref (None : option string);
 
 type err_ctx =
-  [ Finding
-  | Expanding
-  | ParsingResult of Stdpp.location and string ]
+  [ Finding | Expanding | ParsingResult of Stdpp.location and string ]
 ;
 exception Qerror of string and err_ctx and exn;
 

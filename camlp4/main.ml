@@ -98,8 +98,7 @@ value rec parse_file pa getdir useast = do {
           pl @ loop ()
         }
         else pl
-    with x ->
-      do { clear (); raise x }
+    with x -> do { clear (); raise x }
   in
   clear ();
   phr

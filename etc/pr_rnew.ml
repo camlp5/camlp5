@@ -186,13 +186,13 @@ value rise_string ind sh b s =
   if String.length s > ind + sh && s.[ind+sh] = '"' then
     match try Some (String.index s '\n') with [ Not_found -> None ] with
     [ Some i ->
-        let s = String.sub s (ind + sh) (String.length s - ind - sh) in
+        let t = String.sub s (ind + sh) (String.length s - ind - sh) in
         let i = i - ind - sh in
         match
-          horiz_vertic (fun () -> Some (sprintf "%s %s" b (String.sub s 0 i)))
+          horiz_vertic (fun () -> Some (sprintf "%s %s" b (String.sub t 0 i)))
             (fun () -> None)
         with
-        [ Some b -> (b, String.sub s (i + 1) (String.length s - i - 1))
+        [ Some b -> (b, String.sub t (i + 1) (String.length t - i - 1))
         | None -> (b, s) ]
     | None -> (b, s) ]
   else (b, s)
@@ -911,29 +911,66 @@ value expr_top =
           [ <:expr< try $_$ with [ $list:_$ ] >> -> "try"
           | _ -> "match" ]
         in
-        horiz_vertic
-          (fun () ->
-             sprintf "%s%s %s with %s%s" b op (expr_wh 0 "" e1 "")
-               (match_assoc_list 0 "" pwel "") k)
-          (fun () ->
-             let s1 =
-               horiz_vertic
-                 (fun () ->
-                    sprintf "%s%s %s with" b op (expr_wh ind "" e1 ""))
-                 (fun () ->
-                    let s =
-                      match sequencify e1 with
-                      [ Some el ->
-                          sequence_box ind (fun () -> sprintf "\n")
-                            (fun () -> sprintf "%s%s" b op) el ""
-                      | None ->
-                          let s = expr_wh (ind + 2) (tab (ind + 2)) e1 "" in
-                          sprintf "%s%s\n%s" b op s ]
-                    in
-                    sprintf "%s\n%swith" s (tab ind))
-             in
-             let s2 = match_assoc_list ind (tab ind) pwel k in
-             sprintf "%s\n%s" s1 s2)
+        match pwel with
+        [ [(p, wo, e)] when is_irrefut_patt p ->
+            horiz_vertic
+              (fun () ->
+                 sprintf "%s%s %s with %s%s" b op (expr_wh 0 "" e1 "")
+                   (match_assoc ind "" (p, wo, e) "") k)
+              (fun () ->
+                 match
+                   horiz_vertic
+                     (fun () ->
+                        Some
+                          (sprintf "%s%s %s with %s%s ->" b op
+                             (expr_wh 0 "" e1 "") (patt ind "" p "")
+                             (match wo with
+                              [ Some e -> expr 0 " when" e ""
+                              | None -> "" ])))
+                      (fun () -> None)
+                 with
+                 [ Some s1 ->
+                     let s2 = expr (ind + 2) (tab (ind + 2)) e k in
+                     sprintf "%s\n%s" s1 s2
+                 | None ->
+                     let s1 =
+                       match sequencify e1 with
+                       [ Some el ->
+                           sequence_box ind (fun () -> sprintf "%s%s" b op)
+                             (fun () -> sprintf "%s%s" b op) el ""
+                       | None ->
+                           let s = expr_wh (ind + 2) (tab (ind + 2)) e1 "" in
+                           sprintf "%s%s\n%s" b op s ]
+                     in
+                     let s2 =
+                       match_assoc ind (sprintf "%swith " (tab ind))
+                         (p, wo, e) k
+                     in
+                     sprintf "%s\n%s" s1 s2 ])
+        | _ ->
+            horiz_vertic
+              (fun () ->
+                 sprintf "%s%s %s with %s%s" b op (expr_wh 0 "" e1 "")
+                   (match_assoc_list 0 "" pwel "") k)
+              (fun () ->
+                 let s1 =
+                   horiz_vertic
+                     (fun () ->
+                        sprintf "%s%s %s with" b op (expr_wh ind "" e1 ""))
+                     (fun () ->
+                        let s =
+                          match sequencify e1 with
+                          [ Some el ->
+                              sequence_box ind (fun () -> sprintf "\n")
+                                (fun () -> sprintf "%s%s" b op) el ""
+                          | None ->
+                              let s = expr_wh (ind + 2) (tab (ind + 2)) e1 "" in
+                              sprintf "%s%s\n%s" b op s ]
+                        in
+                        sprintf "%s\n%swith" s (tab ind))
+                 in
+                 let s2 = match_assoc_list ind (tab ind) pwel k in
+                 sprintf "%s\n%s" s1 s2) ]
   | <:expr< let $opt:rf$ $list:pel$ in $e$ >> ->
       fun curr next ind b k ->
         let expr_wh = if flag_where_after_in.val then expr_wh else expr in
