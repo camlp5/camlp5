@@ -171,23 +171,55 @@ value rec vlistl elem eleml ind b xl k =
         (vlistl elem eleml ind (tab ind) xl k) ]
 ;
 
+value rise_string ind sh b s =
+  (* hack for "plistl" (below): if s is a "string" (i.e. starting with
+     double-quote) which contains newlines, attempt to concat its first
+     line in the previous line, and, instead of displaying this:
+              eprintf
+                "\
+           hello, world"
+     displays that:
+              eprintf "\
+           hello, world"
+     what "saves" one line.
+   *)
+  if String.length s > ind + sh && s.[ind+sh] = '"' then
+    match try Some (String.index s '\n') with [ Not_found -> None ] with
+    [ Some i ->
+        let s = String.sub s (ind + sh) (String.length s - ind - sh) in
+        let i = i - ind - sh in
+        match
+          horiz_vertic (fun () -> Some (sprintf "%s %s" b (String.sub s 0 i)))
+            (fun () -> None)
+        with
+        [ Some b -> (b, String.sub s (i + 1) (String.length s - i - 1))
+        | None -> (b, s) ]
+    | None -> (b, s) ]
+  else (b, s)
+;
+
 (* paragraph list with a different function for the last element;
    the list elements are pairs where second elements are separators
    (the last separator is ignored) *)
 value rec plistl elem eleml ind sh b xl k =
+  let (s1, s2o) = plistl_two_parts elem eleml ind sh b xl k in
+  match s2o with
+  [ Some s2 -> sprintf "%s\n%s" s1 s2
+  | None -> s1 ]
+and plistl_two_parts elem eleml ind sh b xl k =
   match xl with
   [ [] -> assert False
-  | [(x, _)] -> eleml ind b x k
+  | [(x, _)] -> (eleml ind b x k, None)
   | [(x, sep) :: xl] ->
       let s =
         horiz_vertic (fun () -> Some (elem ind b x sep)) (fun () -> None)
       in
       match s with
-      [ Some b -> plistl_kont_same_line elem eleml ind sh b xl k
+      [ Some b -> (plistl_kont_same_line elem eleml ind sh b xl k, None)
       | None ->
           let s1 = elem ind b x sep in
           let s2 = plistl elem eleml (ind + sh) 0 (tab (ind + sh)) xl k in
-          sprintf "%s\n%s" s1 s2 ] ]
+          (s1, Some s2) ] ]
 and plistl_kont_same_line elem eleml ind sh b xl k =
   match xl with
   [ [] -> assert False
@@ -195,6 +227,7 @@ and plistl_kont_same_line elem eleml ind sh b xl k =
       horiz_vertic (fun () -> eleml ind (sprintf "%s " b) x k)
         (fun () ->
            let s = eleml (ind + sh) (tab (ind + sh)) x k in
+           let (b, s) = rise_string ind sh b s in
            sprintf "%s\n%s" b s)
   | [(x, sep) :: xl] ->
       let s =
@@ -204,10 +237,15 @@ and plistl_kont_same_line elem eleml ind sh b xl k =
       match s with
       [ Some b -> plistl_kont_same_line elem eleml ind sh b xl k
       | None ->
-          let s =
-            plistl elem eleml (ind + sh) 0 (tab (ind + sh)) [(x, sep) :: xl] k
+          let (s1, s2o) =
+            plistl_two_parts elem eleml (ind + sh) 0 (tab (ind + sh))
+              [(x, sep) :: xl] k
           in
-          sprintf "%s\n%s" b s ] ]
+          match s2o with
+          [ Some s2 ->
+              let (b, s1) = rise_string ind sh b s1 in
+              sprintf "%s\n%s\n%s" b s1 s2
+          | None -> sprintf "%s\n%s" b s1 ] ] ]
 ;
 
 (* paragraph list *)
