@@ -9,11 +9,12 @@ value flag_expand_declare = ref False;
 value flag_horiz_let_in = ref False;
 value flag_where_after_in = ref False;
 value flag_where_after_let_eq = ref True;
+value flag_where_after_match = ref False;
 value flag_sequ_begin_at_eol = ref True;
-value flag_where_after_value_eq = ref True;
 value flag_where_after_field_eq = ref False;
 value flag_where_after_then = ref False;
 value flag_where_in_sequences = ref False;
+value flag_where_after_value_eq = ref True;
 value flag_where_all = ref True;
 
 module Buff =
@@ -715,7 +716,7 @@ value ctyp_apply =
           [ <:ctyp< $x$ $y$ >> -> Some (x, "", y)
           | _ -> None ]
         in
-        left_operator ind 0 unfold next b z k
+        left_operator ind 2 unfold next b z k
   | z -> fun curr next ind b k -> next ind b z k ]
 ;
 
@@ -863,6 +864,7 @@ value expr_top =
   | <:expr< try $e1$ with [ $list:pwel$ ] >> |
     <:expr< match $e1$ with [ $list:pwel$ ] >> as e ->
       fun curr next ind b k ->
+        let expr_wh = if flag_where_after_match.val then expr_wh else expr in
         let op =
           match e with
           [ <:expr< try $_$ with [ $list:_$ ] >> -> "try"
@@ -870,12 +872,13 @@ value expr_top =
         in
         horiz_vertic
           (fun () ->
-             sprintf "%s%s %s with %s%s" b op (expr 0 "" e1 "")
+             sprintf "%s%s %s with %s%s" b op (expr_wh 0 "" e1 "")
                (match_assoc_list 0 "" pwel "") k)
           (fun () ->
              let s1 =
                horiz_vertic
-                 (fun () -> sprintf "%s%s %s with" b op (expr ind "" e1 ""))
+                 (fun () ->
+                    sprintf "%s%s %s with" b op (expr_wh ind "" e1 ""))
                  (fun () ->
                     let s =
                       match sequencify e1 with
@@ -883,7 +886,7 @@ value expr_top =
                           sequence_box ind (fun () -> sprintf "\n")
                             (fun () -> sprintf "%s%s" b op) el ""
                       | None ->
-                          let s = expr (ind + 2) (tab (ind + 2)) e1 "" in
+                          let s = expr_wh (ind + 2) (tab (ind + 2)) e1 "" in
                           sprintf "%s%s\n%s" b op s ]
                     in
                     sprintf "%s\n%swith" s (tab ind))
@@ -1844,12 +1847,6 @@ value apply_printer f ast = do {
 Pcaml.print_interf.val := apply_printer sig_item;
 Pcaml.print_implem.val := apply_printer str_item;
 
-Pcaml.add_option "-l" (Arg.Int (fun x -> Sformat.line_length.val := x))
-  "<length> Maximum line length for pretty printing.";
-
-Pcaml.add_option "-sep" (Arg.String (fun x -> sep.val := Some x))
-  "<string> Use this string between phrases instead of reading source.";
-
 value set_flags s =
   for i = 0 to String.length s - 1 do {
     match s.[i] with
@@ -1858,6 +1855,7 @@ value set_flags s =
         flag_horiz_let_in.val := s.[i] = 'A';
         flag_where_after_in.val := s.[i] = 'A';
         flag_where_after_let_eq.val := s.[i] = 'A';
+        flag_where_after_match.val := s.[i] = 'A';
         flag_sequ_begin_at_eol.val := s.[i] = 'A';
         flag_where_after_value_eq.val := s.[i] = 'A';
         flag_where_after_field_eq.val := s.[i] = 'A';
@@ -1869,6 +1867,7 @@ value set_flags s =
     | 'h' | 'H' -> flag_horiz_let_in.val := s.[i] = 'H'
     | 'i' | 'I' -> flag_where_after_in.val := s.[i] = 'I'
     | 'l' | 'L' -> flag_where_after_let_eq.val := s.[i] = 'L'
+    | 'm' | 'M' -> flag_where_after_match.val := s.[i] = 'M'
     | 'q' | 'Q' -> flag_sequ_begin_at_eol.val := s.[i] = 'Q'
     | 'r' | 'R' -> flag_where_after_field_eq.val := s.[i] = 'R'
     | 's' | 'S' -> flag_where_in_sequences.val := s.[i] = 'S'
@@ -1885,9 +1884,17 @@ Pcaml.add_option "-flg" (Arg.String set_flags)
      H/h enable/disable allowing printing 'let..in' horizontally
      I/i enable/disable allowing printing 'where' after 'in'
      L/l enable/disable allowing printing 'where' after 'let..='
+     M/m enable/disable allowing printing 'where' after 'match' and 'try'
      Q/q enable/disable printing sequences beginners at end of lines
      R/r enable/disable allowing printing 'where' after 'record_field..='
      S/s enable/disable allowing printing 'where' in sequences
      T/t enable/disable allowing printing 'where' after 'then' or 'else'
      V/v enable/disable allowing printing 'where' after 'value..='
      default setting is \"aLQV\".";
+
+Pcaml.add_option "-l" (Arg.Int (fun x -> Sformat.line_length.val := x))
+  ("<length> Maximum line length for pretty printing (default " ^
+     string_of_int Sformat.line_length.val ^ ")");
+
+Pcaml.add_option "-sep" (Arg.String (fun x -> sep.val := Some x))
+  "<string> Use this string between phrases instead of reading source.";

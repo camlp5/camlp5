@@ -19,8 +19,7 @@ value gram =
   Grammar.gcreate
     {Token.tok_func _ = failwith "no loaded parsing module";
      Token.tok_using _ = (); Token.tok_removing _ = ();
-     Token.tok_match = fun []; Token.tok_text _ = "";
-     Token.tok_comm = None}
+     Token.tok_match = fun []; Token.tok_text _ = ""; Token.tok_comm = None}
 ;
 
 value interf = Grammar.Entry.create gram "interf";
@@ -56,22 +55,22 @@ value sync = ref skip_to_eol;
 value input_file = ref "";
 value output_file = ref None;
 
-value warning_default_function loc txt =
+value warning_default_function loc txt = do {
   let (bp, ep) = (Stdpp.first_pos loc, Stdpp.last_pos loc) in
-  do { Printf.eprintf "<W> loc %d %d: %s\n" bp ep txt; flush stderr }
-;
+  Printf.eprintf "<W> loc %d %d: %s\n" bp ep txt;
+  flush stderr
+};
 
 value warning = ref warning_default_function;
 
 value apply_with_var v x f =
   let vx = v.val in
-  try
-    do {
-      v.val := x;
-      let r = f () in
-      v.val := vx;
-      r
-    }
+  try do {
+    v.val := x;
+    let r = f () in
+    v.val := vx;
+    r
+  }
   with e -> do { v.val := vx; raise e }
 ;
 
@@ -187,61 +186,55 @@ value find_line loc str =
 value loc_fmt =
   match Sys.os_type with
   [ "MacOS" ->
-     format_of_string "File \"%s\"; line %d; characters %d to %d\n### "
+      format_of_string "File \"%s\"; line %d; characters %d to %d\n### "
   | _ ->
-     format_of_string "File \"%s\", line %d, characters %d-%d:\n" ]
+      format_of_string "File \"%s\", line %d, characters %d-%d:\n" ]
 ;
 
-value report_quotation_error name ctx =
+value report_quotation_error name ctx = do {
   let name = if name = "" then Quotation.default.val else name in
-  do {
-    Format.print_flush ();
-    Format.open_hovbox 2;
-    Printf.eprintf "While %s \"%s\":"
-      (match ctx with
-       [ Finding -> "finding quotation"
-       | Expanding -> "expanding quotation"
-       | ParsingResult _ _ -> "parsing result of quotation" ])
-      name;
-    match ctx with
-    [ ParsingResult loc str ->
-        match quotation_dump_file.val with
-        [ Some dump_file ->
-            do {
-              Printf.eprintf " dumping result...\n";
-              flush stderr;
-              try
-                let (line, c1, c2) = find_line loc str in
-                let oc = open_out_bin dump_file in
-                do {
-                  output_string oc str;
-                  output_string oc "\n";
-                  flush oc;
-                  close_out oc;
-                  Printf.eprintf loc_fmt dump_file line c1 c2;
-                  flush stderr
-                }
-              with _ ->
-                do {
-                  Printf.eprintf "Error while dumping result in file \"%s\""
-                    dump_file;
-                  Printf.eprintf "; dump aborted.\n";
-                  flush stderr
-                }
-            }
-        | None ->
-            do {
-              if input_file.val = "" then
-                Printf.eprintf
-                  "\n(consider setting variable Pcaml.quotation_dump_file)\n"
-              else Printf.eprintf " (consider using option -QD)\n";
-              flush stderr
-            } ]
-    | _ -> do { Printf.eprintf "\n"; flush stderr } ]
-  }
-;
+  Format.print_flush ();
+  Format.open_hovbox 2;
+  Printf.eprintf "While %s \"%s\":"
+    (match ctx with
+     [ Finding -> "finding quotation"
+     | Expanding -> "expanding quotation"
+     | ParsingResult _ _ -> "parsing result of quotation" ])
+    name;
+  match ctx with
+  [ ParsingResult loc str ->
+      match quotation_dump_file.val with
+      [ Some dump_file -> do {
+          Printf.eprintf " dumping result...\n";
+          flush stderr;
+          try do {
+            let (line, c1, c2) = find_line loc str in
+            let oc = open_out_bin dump_file in
+            output_string oc str;
+            output_string oc "\n";
+            flush oc;
+            close_out oc;
+            Printf.eprintf loc_fmt dump_file line c1 c2;
+            flush stderr
+          }
+          with _ -> do {
+            Printf.eprintf "Error while dumping result in file \"%s\""
+              dump_file;
+            Printf.eprintf "; dump aborted.\n";
+            flush stderr
+          }
+        }
+      | None -> do {
+          if input_file.val = "" then
+            Printf.eprintf
+              "\n(consider setting variable Pcaml.quotation_dump_file)\n"
+          else Printf.eprintf " (consider using option -QD)\n";
+          flush stderr
+        } ]
+  | _ -> do { Printf.eprintf "\n"; flush stderr } ]
+};
 
-value print_format str =
+value print_format str = do {
   let rec flush ini cnt =
     if cnt > ini then Format.print_string (String.sub str ini (cnt - ini))
     else ()
@@ -250,94 +243,100 @@ value print_format str =
     if cnt == String.length str then flush ini cnt
     else
       match str.[cnt] with
-      [ '\n' ->
-          do {
-            flush ini cnt;
-            Format.close_box ();
-            Format.force_newline ();
-            Format.open_box 2;
-            loop (cnt + 1) (cnt + 1)
-          }
-      | ' ' ->
-          do {
-            flush ini cnt; Format.print_space (); loop (cnt + 1) (cnt + 1)
-          }
+      [ '\n' -> do {
+          flush ini cnt;
+          Format.close_box ();
+          Format.force_newline ();
+          Format.open_box 2;
+          loop (cnt + 1) (cnt + 1)
+        }
+      | ' ' -> do {
+          flush ini cnt;
+          Format.print_space ();
+          loop (cnt + 1) (cnt + 1)
+        }
       | _ -> loop ini (cnt + 1) ]
   in
-  do { Format.open_box 2; loop 0 0; Format.close_box () }
-;
+  Format.open_box 2;
+  loop 0 0;
+  Format.close_box ()
+};
 
-value print_file_failed file line char =
-  do {
-    Format.print_string ", file \"";
-    Format.print_string file;
-    Format.print_string "\", line ";
-    Format.print_int line;
-    Format.print_string ", char ";
-    Format.print_int char
-  }
-;
+value print_file_failed file line char = do {
+  Format.print_string ", file \"";
+  Format.print_string file;
+  Format.print_string "\", line ";
+  Format.print_int line;
+  Format.print_string ", char ";
+  Format.print_int char
+};
 
 value print_exn =
   fun
   [ Out_of_memory -> Format.print_string "Out of memory\n"
-  | Assert_failure (file, line, char) ->
-      do {
-        Format.print_string "Assertion failed";
-        print_file_failed file line char;
-      }
-  | Match_failure (file, line, char) ->
-      do {
-        Format.print_string "Pattern matching failed";
-        print_file_failed file line char;
-      }
+  | Assert_failure (file, line, char) -> do {
+      Format.print_string "Assertion failed";
+      print_file_failed file line char
+    }
+  | Match_failure (file, line, char) -> do {
+      Format.print_string "Pattern matching failed";
+      print_file_failed file line char
+    }
   | Stream.Error str -> print_format ("Parse error: " ^ str)
   | Stream.Failure -> Format.print_string "Parse failure"
-  | Token.Error str ->
-      do { Format.print_string "Lexing error: "; Format.print_string str }
-  | Failure str ->
-      do { Format.print_string "Failure: "; Format.print_string str }
-  | Invalid_argument str ->
-      do { Format.print_string "Invalid argument: "; Format.print_string str }
-  | Sys_error msg ->
-      do { Format.print_string "I/O error: "; Format.print_string msg }
-  | x ->
-      do {
-        Format.print_string "Uncaught exception: ";
-        Format.print_string
-          (Obj.magic (Obj.field (Obj.field (Obj.repr x) 0) 0));
-        if Obj.size (Obj.repr x) > 1 then do {
-          Format.print_string " (";
-          for i = 1 to Obj.size (Obj.repr x) - 1 do {
-            if i > 1 then Format.print_string ", " else ();
-            let arg = Obj.field (Obj.repr x) i in
-            if not (Obj.is_block arg) then
-              Format.print_int (Obj.magic arg : int)
-            else if Obj.tag arg = Obj.tag (Obj.repr "a") then do {
-              Format.print_char '"';
-              Format.print_string (Obj.magic arg : string);
-              Format.print_char '"'
-            }
-            else Format.print_char '_'
-          };
-          Format.print_char ')'
-        }
-        else ()
-      } ]
+  | Token.Error str -> do {
+      Format.print_string "Lexing error: ";
+      Format.print_string str
+    }
+  | Failure str -> do {
+      Format.print_string "Failure: ";
+      Format.print_string str
+    }
+  | Invalid_argument str -> do {
+      Format.print_string "Invalid argument: ";
+      Format.print_string str
+    }
+  | Sys_error msg -> do {
+      Format.print_string "I/O error: ";
+      Format.print_string msg
+    }
+  | x -> do {
+      Format.print_string "Uncaught exception: ";
+      Format.print_string
+        (Obj.magic (Obj.field (Obj.field (Obj.repr x) 0) 0));
+      if Obj.size (Obj.repr x) > 1 then do {
+        Format.print_string " (";
+        for i = 1 to Obj.size (Obj.repr x) - 1 do {
+          if i > 1 then Format.print_string ", " else ();
+          let arg = Obj.field (Obj.repr x) i in
+          if not (Obj.is_block arg) then
+            Format.print_int (Obj.magic arg : int)
+          else if Obj.tag arg = Obj.tag (Obj.repr "a") then do {
+            Format.print_char '"';
+            Format.print_string (Obj.magic arg : string);
+            Format.print_char '"'
+          }
+          else Format.print_char '_'
+        };
+        Format.print_char ')'
+      }
+      else ()
+    } ]
 ;
 
 value report_error exn =
   match exn with
-  [ Qerror name Finding Not_found ->
+  [ Qerror name Finding Not_found -> do {
       let name = if name = "" then Quotation.default.val else name in
-      do {
-        Format.print_flush ();
-        Format.open_hovbox 2;
-        Format.printf "Unbound quotation: \"%s\"" name;
-        Format.close_box ()
-      }
-  | Qerror name ctx exn ->
-      do { report_quotation_error name ctx; print_exn exn }
+      Format.print_flush ();
+      Format.open_hovbox 2;
+      Format.printf "Unbound quotation: \"%s\"" name;
+      Format.close_box ()
+    }
+  | Qerror name ctx exn -> do {
+      report_quotation_error name ctx;
+      print_exn exn
+    }
   | e -> print_exn exn ]
 ;
 
@@ -365,10 +364,11 @@ module NewPrinter =
       let pr_fun name pr lab =
         loop False pr.pr_levels where rec loop app =
           fun
-          [ [] -> fun ind b z k ->
-              failwith
-                (Printf.sprintf "unable to print %s%s" name
-                   (if lab = "" then "" else " \"" ^ lab ^ "\""))
+          [ [] ->
+              fun ind b z k ->
+                failwith
+                  (Printf.sprintf "unable to print %s%s" name
+                     (if lab = "" then "" else " \"" ^ lab ^ "\""))
           | [lev :: levl] ->
               if app || lev.pr_label = lab then
                 let next = loop True levl in
@@ -388,9 +388,11 @@ module NewPrinter =
     value pr_module_expr = printer MLast.loc_of_module_expr "module_expr";
     value pr_module_type = printer MLast.loc_of_module_type "module_type";
     value pr_class_sig_item =
-       printer MLast.loc_of_class_sig_item "class_sig_item";
+      printer MLast.loc_of_class_sig_item "class_sig_item"
+    ;
     value pr_class_str_item =
-       printer MLast.loc_of_class_str_item "class_str_item";
+      printer MLast.loc_of_class_str_item "class_str_item"
+    ;
     value pr_class_expr = printer MLast.loc_of_class_expr "class_expr";
     value pr_class_type = printer MLast.loc_of_class_type "class_type";
     value rec find_pr_level lab =
@@ -460,27 +462,23 @@ module Printer =
       | [lev :: levl] ->
           if lev.pr_label = lab then lev else find_pr_level lab levl ]
     ;
-    value top_printer pr x =
-      do {
-        Format.force_newline ();
-        Spretty.print_pretty Format.print_char Format.print_string
-          Format.print_newline "<< " "   " 78
-          (fun _ _ _ -> ("", 0, 0, 0)) 0 (pr.pr_fun "top" x "" [: :]);
-        Format.print_string " >>";
-      }
-    ;
+    value top_printer pr x = do {
+      Format.force_newline ();
+      Spretty.print_pretty Format.print_char Format.print_string
+        Format.print_newline "<< " "   " 78 (fun _ _ _ -> ("", 0, 0, 0)) 0
+        (pr.pr_fun "top" x "" [: :]);
+      Format.print_string " >>"
+    };
     value buff = Buffer.create 73;
     value buffer_char = Buffer.add_char buff;
     value buffer_string = Buffer.add_string buff;
     value buffer_newline () = Buffer.add_char buff '\n';
-    value string_of pr x =
-      do {
-        Buffer.clear buff;
-        Spretty.print_pretty buffer_char buffer_string buffer_newline "" "" 78
-          (fun _ _ _ -> ("", 0, 0, 0)) 0 (pr.pr_fun "top" x "" [: :]);
-        Buffer.contents buff
-      }
-    ;
+    value string_of pr x = do {
+      Buffer.clear buff;
+      Spretty.print_pretty buffer_char buffer_string buffer_newline "" "" 78
+        (fun _ _ _ -> ("", 0, 0, 0)) 0 (pr.pr_fun "top" x "" [: :]);
+      Buffer.contents buff
+    };
     value inter_phrases = ref None;
   end
 ;

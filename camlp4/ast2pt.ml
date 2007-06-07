@@ -218,8 +218,7 @@ and meth_list loc fl v =
   match fl with
   [ [] -> if v then [mkfield loc Pfield_var] else []
   | [(lab, t) :: fl] ->
-      [mkfield loc (Pfield lab (ctyp (mkpolytype t))) ::
-       meth_list loc fl v] ]
+      [mkfield loc (Pfield lab (ctyp (mkpolytype t))) :: meth_list loc fl v] ]
 ;
 
 value mktype loc tl cl tk tm =
@@ -233,7 +232,7 @@ value mktrecord (loc, n, m, t) =
   IFDEF OCAML_3_08 THEN
     (n, mkmutable m, ctyp (mkpolytype t))
   ELSE
-     (n, mkmutable m, ctyp (mkpolytype t), mkloc loc)
+    (n, mkmutable m, ctyp (mkpolytype t), mkloc loc)
   END
 ;
 value mkvariant (loc, c, tl) =

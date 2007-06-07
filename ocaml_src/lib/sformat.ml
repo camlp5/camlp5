@@ -4,7 +4,7 @@
 
 exception GiveUp;;
 
-let line_length = ref 77;;
+let line_length = ref 78;;
 let horiz_ctx = ref false;;
 
 let after_print s =

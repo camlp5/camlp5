@@ -21,19 +21,20 @@ value print_location loc =
     eprintf "At location %d-%d\n" bp ep
 ;
 
-value print_warning loc s =
-  do { print_location loc; eprintf "Warning: %s\n" s; flush stderr }
-;
+value print_warning loc s = do {
+  print_location loc;
+  eprintf "Warning: %s\n" s;
+  flush stderr
+};
 
 value report_error =
   fun
-  [ Odyl_main.Error fname msg ->
-      do {
-        Format.print_string "Error while loading \"";
-        Format.print_string fname;
-        Format.print_string "\": ";
-        Format.print_string msg
-      }
+  [ Odyl_main.Error fname msg -> do {
+      Format.print_string "Error while loading \"";
+      Format.print_string fname;
+      Format.print_string "\": ";
+      Format.print_string msg
+    }
   | exc -> Pcaml.report_error exc ]
 ;
 
@@ -63,51 +64,48 @@ Pcaml.add_directive "directory"
    | Some _ | None -> raise Not_found ])
 ;
 
-value rec parse_file pa getdir useast =
+value rec parse_file pa getdir useast = do {
   let name = Pcaml.input_file.val in
-  do {
-    Pcaml.warning.val := print_warning;
-    let ic = if name = "-" then stdin else open_in_bin name in
-    let cs = Stream.of_channel ic in
-    let clear () = if name = "-" then () else close_in ic in
-    let phr =
-      try
-        loop () where rec loop () =
-          let (pl, stopped_at_directive) = pa cs in
-          if stopped_at_directive then do {
-            let lexing_info =
-              (Token.line_nb.val.val, Token.bol_pos.val.val)
-            in
-            let pl =
-              let rpl = List.rev pl in
-              match getdir rpl with
-              [ Some x ->
-                  match x with
-                  [ (loc, "use", Some <:expr< $str:s$ >>) ->
-                      List.rev_append rpl
-                        [(useast loc s (use_file pa getdir useast s), loc)]
-                  | (loc, x, eo) -> do {
-                      try
-                        let f = Pcaml.find_directive x in
-                        f eo
-                      with
-                      [ Not_found ->
-                          Stdpp.raise_with_loc loc
-                            (Stream.Error "bad directive") ];
-                      pl
-                    } ]
-              | None -> pl ]
-            in
-            Token.restore_lexing_info.val := Some lexing_info;
-            pl @ loop ()
-          }
-          else pl
-      with x ->
-        do { clear (); raise x }
-    in
-    clear ();
-    phr
-  }
+  Pcaml.warning.val := print_warning;
+  let ic = if name = "-" then stdin else open_in_bin name in
+  let cs = Stream.of_channel ic in
+  let clear () = if name = "-" then () else close_in ic in
+  let phr =
+    try
+      loop () where rec loop () =
+        let (pl, stopped_at_directive) = pa cs in
+        if stopped_at_directive then do {
+          let lexing_info = (Token.line_nb.val.val, Token.bol_pos.val.val) in
+          let pl =
+            let rpl = List.rev pl in
+            match getdir rpl with
+            [ Some x ->
+                match x with
+                [ (loc, "use", Some <:expr< $str:s$ >>) ->
+                    List.rev_append rpl
+                      [(useast loc s (use_file pa getdir useast s), loc)]
+                | (loc, x, eo) -> do {
+                    try
+                      let f = Pcaml.find_directive x in
+                      f eo
+                    with
+                    [ Not_found ->
+                        Stdpp.raise_with_loc loc
+                          (Stream.Error "bad directive") ];
+                    pl
+                  } ]
+            | None -> pl ]
+          in
+          Token.restore_lexing_info.val := Some lexing_info;
+          pl @ loop ()
+        }
+        else pl
+    with x ->
+      do { clear (); raise x }
+  in
+  clear ();
+  phr
+}
 and use_file pa getdir useast s = do {
   let v_input_file = Pcaml.input_file.val in
   Pcaml.input_file.val := s;
@@ -137,14 +135,13 @@ value usesig loc fname ast = MLast.SgUse loc fname ast;
 value usestr loc fname ast = MLast.StUse loc fname ast;
 
 value process_intf () =
-  process Pcaml.parse_interf.val Pcaml.print_interf.val gind usesig;
-value process_impl () =
-  process Pcaml.parse_implem.val Pcaml.print_implem.val gimd usestr;
-
-type file_kind =
-  [ Intf
-  | Impl ]
+  process Pcaml.parse_interf.val Pcaml.print_interf.val gind usesig
 ;
+value process_impl () =
+  process Pcaml.parse_implem.val Pcaml.print_implem.val gimd usestr
+;
+
+type file_kind = [ Intf | Impl ];
 value file_kind = ref Intf;
 value file_kind_of_name name =
   if Filename.check_suffix name ".mli" then Intf
@@ -152,14 +149,12 @@ value file_kind_of_name name =
   else raise (Arg.Bad ("don't know what to do with " ^ name))
 ;
 
-value print_version () =
-  do {
-    eprintf "Camlp4s version %s (ocaml %s)\n" Pcaml.version
-      Pconfig.ocaml_version;
-    flush stderr;
-    exit 0
-  }
-;
+value print_version () = do {
+  eprintf "Camlp4s version %s (ocaml %s)\n" Pcaml.version
+    Pconfig.ocaml_version;
+  flush stderr;
+  exit 0
+};
 
 value initial_spec_list =
   [("-intf",
@@ -185,9 +180,10 @@ value initial_spec_list =
     "Print Camlp4s version and exit.")]
 ;
 
-value anon_fun x =
-  do { Pcaml.input_file.val := x; file_kind.val := file_kind_of_name x }
-;
+value anon_fun x = do {
+  Pcaml.input_file.val := x;
+  file_kind.val := file_kind_of_name x
+};
 
 value remaining_args =
   let rec loop l i =
@@ -206,12 +202,11 @@ value go () = do {
         Argl.usage initial_spec_list ext_spec_list;
         exit 0
       }
-    | [s :: sl] ->
-        do {
-          eprintf "%s: unknown or misused option\n" s;
-          eprintf "Use option -help for usage\n";
-          exit 2
-        } ]
+    | [s :: sl] -> do {
+        eprintf "%s: unknown or misused option\n" s;
+        eprintf "Use option -help for usage\n";
+        exit 2
+      } ]
   with
   [ Arg.Bad s -> do {
       eprintf "Error: %s\n" s;

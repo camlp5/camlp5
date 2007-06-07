@@ -25,5 +25,5 @@ val sprintf : ('a, unit, string) format -> 'a;;
 
 val line_length : int ref;;
 (** [line_length] is the maximum length (in characters) of the
-    line. Default = 77. Can be set to any other value before
+    line. Default = 78. Can be set to any other value before
     printing. *)

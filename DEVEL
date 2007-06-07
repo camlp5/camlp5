@@ -148,12 +148,16 @@ BEFORE COMMITTING YOUR CHANGES
    without problem: this directory is not part of the distribution, it is
    just temporary.
 
+     The 'make clean_sources' deletes old versions of ocaml_src, keeping
+   only the last and the before last ones.
+
      The command:
        make bootstrap_sources
    is a shortcut for:
        make new_sources
        make untouch_sources
        make promote_sources
+       make clean_sources
 
      After having rebuilt the pure ocaml sources, check they work by
    rebuilding everything from scratch, starting with "configure".

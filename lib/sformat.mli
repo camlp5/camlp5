@@ -25,5 +25,5 @@ value sprintf : format 'a unit string -> 'a;
 
 value line_length : ref int;
 (** [line_length] is the maximum length (in characters) of the
-    line. Default = 77. Can be set to any other value before
+    line. Default = 78. Can be set to any other value before
     printing. *)

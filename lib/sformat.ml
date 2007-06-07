@@ -4,7 +4,7 @@
 
 exception GiveUp;
 
-value line_length = ref 77;
+value line_length = ref 78;
 value horiz_ctx = ref False;
 
 value after_print s =
