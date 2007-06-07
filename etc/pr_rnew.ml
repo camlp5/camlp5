@@ -274,7 +274,10 @@ value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
 
 value patt_as ind b z k =
   match z with
-  [ <:patt< ($x$ as $y$) >> -> patt ind b x (patt ind " as " y k)
+  [ <:patt< ($x$ as $y$) >> ->
+      let p1 = patt ind b x "" in
+      let p2 = patt ind "" y k in
+      sprintf "%s as %s" p1 p2
   | z -> patt ind b z k ]
 ;
 
