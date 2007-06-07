@@ -42,7 +42,8 @@ value rec ctyp floc sh =
           (List.map (fun (loc, x1, x2, x3) -> (floc loc, x1, x2, self x3)) x1)
     | TySum loc x1 ->
         TySum (floc loc)
-          (List.map (fun (loc, x1, x2) -> (floc loc, x1, List.map self x2)) x1)
+          (List.map (fun (loc, x1, x2) -> (floc loc, x1, List.map self x2))
+             x1)
     | TyTup loc x1 -> TyTup (floc loc) (List.map self x1)
     | TyUid loc x1 -> TyUid (floc loc) x1
     | TyVrn loc x1 x2 ->
@@ -120,7 +121,9 @@ and expr floc sh =
     | ExApp loc x1 x2 -> ExApp (floc loc) (self x1) (self x2)
     | ExAre loc x1 x2 -> ExAre (floc loc) (self x1) (self x2)
     | ExArr loc x1 -> ExArr (floc loc) (List.map self x1)
-    | ExAsr loc x1 -> let nloc = floc loc in ExAsr nloc (self x1)
+    | ExAsr loc x1 ->
+        let nloc = floc loc in
+        ExAsr nloc (self x1)
     | ExAss loc x1 x2 -> ExAss (floc loc) (self x1) (self x2)
     | ExChr loc x1 -> ExChr (floc loc) x1
     | ExCoe loc x1 x2 x3 ->
@@ -240,7 +243,8 @@ and str_item floc sh =
         StClt (floc loc) (List.map (class_infos class_type floc sh) x1)
     | StDcl loc x1 -> StDcl (floc loc) (List.map self x1)
     | StDir loc x1 x2 -> StDir (floc loc) x1 x2
-    | StExc loc x1 x2 x3 -> StExc (floc loc) x1 (List.map (ctyp floc sh) x2) x3
+    | StExc loc x1 x2 x3 ->
+        StExc (floc loc) x1 (List.map (ctyp floc sh) x2) x3
     | StExp loc x1 -> StExp (floc loc) (expr floc sh x1)
     | StExt loc x1 x2 x3 -> StExt (floc loc) x1 (ctyp floc sh x2) x3
     | StInc loc x1 -> StInc (floc loc) (module_expr floc sh x1)
@@ -300,7 +304,8 @@ and class_str_item floc sh =
     | CrInh loc x1 x2 -> CrInh (floc loc) (class_expr floc sh x1) x2
     | CrIni loc x1 -> CrIni (floc loc) (expr floc sh x1)
     | CrMth loc x1 x2 x3 x4 ->
-        CrMth (floc loc) x1 x2 (expr floc sh x3) (option_map (ctyp floc sh) x4)
+        CrMth (floc loc) x1 x2 (expr floc sh x3)
+          (option_map (ctyp floc sh) x4)
     | CrVal loc x1 x2 x3 -> CrVal (floc loc) x1 x2 (expr floc sh x3)
     | CrVir loc x1 x2 x3 -> CrVir (floc loc) x1 x2 (ctyp floc sh x3) ]
 ;

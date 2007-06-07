@@ -116,7 +116,8 @@ value stream_pattern_component skont ckont =
   | SpNtr loc p e ->
       let e =
         match e with
-        [ <:expr< fun [ ($lid:v$ : Stream.t _) -> $e$ ] >> when v = strm_n -> e
+        [ <:expr< fun [ ($lid:v$ : Stream.t _) -> $e$ ] >> when v = strm_n ->
+            e
         | _ -> <:expr< $e$ $lid:strm_n$ >> ]
       in
       if optim.val then
@@ -186,7 +187,8 @@ value rec stream_pattern loc epo e ekont =
         in
         stream_pattern loc epo e ekont spcl
       in
-      let ckont = ekont err in stream_pattern_component skont ckont spc ]
+      let ckont = ekont err in
+      stream_pattern_component skont ckont spc ]
 ;
 
 value stream_patterns_term loc ekont tspel =
@@ -287,7 +289,9 @@ value slazy loc e =
 
 value rec cstream gloc =
   fun
-  [ [] -> let loc = gloc in <:expr< Stream.sempty >>
+  [ [] ->
+      let loc = gloc in
+      <:expr< Stream.sempty >>
   | [SeTrm loc e] ->
       if not_computing e then <:expr< Stream.ising $e$ >>
       else <:expr< Stream.lsing $slazy loc e$ >>

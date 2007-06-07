@@ -55,14 +55,12 @@ value report_error_and_exit exc = do {
 Pcaml.add_directive "load"
   (fun
    [ Some <:expr< $str:s$ >> -> Odyl_main.loadfile s
-   | Some _ | None -> raise Not_found ])
-;
+   | Some _ | None -> raise Not_found ]);
 
 Pcaml.add_directive "directory"
   (fun
    [ Some <:expr< $str:s$ >> -> Odyl_main.directory s
-   | Some _ | None -> raise Not_found ])
-;
+   | Some _ | None -> raise Not_found ]);
 
 value rec parse_file pa getdir useast = do {
   let name = Pcaml.input_file.val in
@@ -176,8 +174,7 @@ value initial_spec_list =
     "<file> Dump quotation expander result in case of syntax error.");
    ("-o", Arg.String (fun x -> Pcaml.output_file.val := Some x),
     "<file> Output on <file> instead of standard output.");
-   ("-v", Arg.Unit print_version,
-    "Print Camlp4s version and exit.")]
+   ("-v", Arg.Unit print_version, "Print Camlp4s version and exit.")]
 ;
 
 value anon_fun x = do {

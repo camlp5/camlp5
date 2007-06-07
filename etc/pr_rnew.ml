@@ -1059,7 +1059,7 @@ value expr_concat =
               if List.mem op ["^"; "@"] then Some (x, " " ^ op, y) else None
           | _ -> None ]
         in
-        right_operator ind 0 unfold next b z k ]
+        right_operator ind 2 unfold next b z k ]
 ;
 
 value expr_add =

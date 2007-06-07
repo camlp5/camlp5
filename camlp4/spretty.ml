@@ -63,9 +63,7 @@ value print_newline_and_tab tab = lazy_tab.val := tab;
 value print_char c = do { flush_tab (); print_char_fun.val c };
 value print_string s = do { flush_tab (); print_string_fun.val s };
 
-value rec print_spaces nsp =
-  for i = 1 to nsp do { print_char sp.val }
-;
+value rec print_spaces nsp = for i = 1 to nsp do { print_char sp.val };
 
 value end_with_tab s =
   loop (String.length s - 1) where rec loop i =
@@ -77,7 +75,7 @@ value end_with_tab s =
 
 value print_comment tab s nl_bef tab_bef empty_stmt =
   if s = "" then ()
-  else do {
+  else
     let (tab_aft, i_bef_tab) =
       loop 0 (String.length s - 1) where rec loop tab_aft i =
         if i >= 0 && s.[i] = ' ' then loop (tab_aft + 1) (i - 1)
@@ -90,8 +88,7 @@ value print_comment tab s nl_bef tab_bef empty_stmt =
       else do {
         print_char_fun.val s.[i];
         let i =
-          if s.[i] = '\n' && (i+1 = len || s.[i+1] <> '\n')
-          then
+          if s.[i] = '\n' && (i+1 = len || s.[i+1] <> '\n') then
             let delta_ind =
               if i = i_bef_tab then tab - tab_aft else tab - tab_bef
             in
@@ -109,7 +106,6 @@ value print_comment tab s nl_bef tab_bef empty_stmt =
         in
         loop i
       }
-  }
 ;
 
 value string_np pos np = pos + np;
@@ -125,14 +121,18 @@ value trace_ov pos =
 
 value tolerate tab pos spc = pos + spc <= tab + dt.val + tol.val;
 
-value h_print_string pos spc np x =
+value h_print_string pos spc np x = do {
   let npos = string_np (pos + spc) np in
-  do { print_spaces spc; print_string x; npos }
-;
+  print_spaces spc;
+  print_string x;
+  npos
+};
 
-value n_print_string pos spc np x =
-  do { print_spaces spc; print_string x; string_np (pos + spc) np }
-;
+value n_print_string pos spc np x = do {
+  print_spaces spc;
+  print_string x;
+  string_np (pos + spc) np
+};
 
 value rec hnps ((pos, spc) as ps) =
   fun
@@ -216,16 +216,15 @@ value rec hprint_pretty tab pos spc =
   | VL x -> hprint_box tab pos spc x
   | BE x -> hprint_box tab pos spc x
   | BV x -> invalid_arg "hprint_pretty"
-  | LI (comm, nl_bef, tab_bef) x ->
-      do {
-        if lazy_tab.val >= 0 then do {
-          for i = 2 to nl_bef do { print_char_fun.val '\n' };
-          flush_tab ()
-        }
-        else ();
-        print_comment tab comm nl_bef tab_bef False;
-        hprint_pretty tab pos spc x
-      } ]
+  | LI (comm, nl_bef, tab_bef) x -> do {
+      if lazy_tab.val >= 0 then do {
+        for i = 2 to nl_bef do { print_char_fun.val '\n' };
+        flush_tab ()
+      }
+      else ();
+      print_comment tab comm nl_bef tab_bef False;
+      hprint_pretty tab pos spc x
+    } ]
 and hprint_box tab pos spc =
   fun
   [ [p :: pl] ->
@@ -247,22 +246,21 @@ value rec print_pretty tab pos spc =
   | VL x -> print_vertic tab pos spc x
   | BE x as p -> print_begin_end tab pos spc (too_long tab (pos, spc) p) x
   | BV x -> print_beg_end tab pos spc x
-  | LI (comm, nl_bef, tab_bef) x ->
-      do {
-        if lazy_tab.val >= 0 then do {
-          for i = 2 to nl_bef do { print_char_fun.val '\n' };
-          if comm <> "" && nl_bef = 0 then
-            for i = 1 to tab_bef do { print_char_fun.val ' ' }
-          else if comm = "" && x = BL [] then lazy_tab.val := -1
-          else flush_tab ()
-        }
-        else ();
-        print_comment tab comm nl_bef tab_bef (x = BL []);
+  | LI (comm, nl_bef, tab_bef) x -> do {
+      if lazy_tab.val >= 0 then do {
+        for i = 2 to nl_bef do { print_char_fun.val '\n' };
         if comm <> "" && nl_bef = 0 then
-          if end_with_tab comm then lazy_tab.val := -1 else flush_tab ()
-        else ();
-        print_pretty tab pos spc x
-      } ]
+          for i = 1 to tab_bef do { print_char_fun.val ' ' }
+        else if comm = "" && x = BL [] then lazy_tab.val := -1
+        else flush_tab ()
+      }
+      else ();
+      print_comment tab comm nl_bef tab_bef (x = BL []);
+      if comm <> "" && nl_bef = 0 then
+        if end_with_tab comm then lazy_tab.val := -1 else flush_tab ()
+      else ();
+      print_pretty tab pos spc x
+    } ]
 and print_horiz tab pos spc =
   fun
   [ [p :: pl] ->
@@ -287,7 +285,8 @@ and print_vertic tab pos spc =
       then
         (npos, nspc)
       else if tolerate tab npos nspc then do {
-        print_spaces nspc; print_vertic_rest (npos + nspc) pl
+        print_spaces nspc;
+        print_vertic_rest (npos + nspc) pl
       }
       else do {
         print_newline_and_tab (tab + dt.val);
@@ -327,7 +326,8 @@ and print_parag tab pos spc =
         print_parag_rest (tab + dt.val) (tab + dt.val) 0 pl
       }
       else if tolerate tab npos nspc then do {
-        print_spaces nspc; print_parag_rest (npos + nspc) (npos + nspc) 0 pl
+        print_spaces nspc;
+        print_parag_rest (npos + nspc) (npos + nspc) 0 pl
       }
       else print_parag_rest (tab + dt.val) npos nspc pl
   | [] -> (pos, spc) ]
@@ -370,7 +370,8 @@ and print_sparag tab pos spc =
       then
         (npos, nspc)
       else if tolerate tab npos nspc then do {
-        print_spaces nspc; print_sparag_rest (npos + nspc) (npos + nspc) 0 pl
+        print_spaces nspc;
+        print_sparag_rest (npos + nspc) (npos + nspc) 0 pl
       }
       else print_sparag_rest (tab + dt.val) npos nspc pl
   | [] -> (pos, spc) ]
@@ -379,7 +380,8 @@ and print_sparag_rest tab pos spc =
   [ [p :: pl] ->
       let (pos, spc) =
         if pos > tab && too_long tab (pos, spc) p then do {
-          print_newline_and_tab tab; (tab, 0)
+          print_newline_and_tab tab;
+          (tab, 0)
         }
         else (pos, spc)
       in
@@ -444,35 +446,32 @@ value rec conv =
   | Vbox x -> VL (conv_stream x)
   | BEbox x -> BE (conv_stream x)
   | BEVbox x -> BV (conv_stream x)
-  | LocInfo loc x ->
+  | LocInfo loc x -> do {
       let (comm, nl_bef, tab_bef, cnt) =
         let len = Stdpp.first_pos loc - last_ep.val in
         if len > 0 then getcomm.val loc last_ep.val len
         else ("", 0, 0, 0)
       in
-      do {
-        last_ep.val := last_ep.val + cnt;
-        let v = conv x in
-        last_ep.val := max (Stdpp.last_pos loc) last_ep.val;
-        LI (comm, nl_bef, tab_bef) v
-      } ]
+      last_ep.val := last_ep.val + cnt;
+      let v = conv x in
+      last_ep.val := max (Stdpp.last_pos loc) last_ep.val;
+      LI (comm, nl_bef, tab_bef) v
+    } ]
 and conv_stream =
   parser
   [ [: `p; s :] -> let x = conv p in [x :: conv_stream s]
   | [: :] -> [] ]
 ;
 
-value print_pretty pr_ch pr_str pr_nl pr pr2 m lf bp p =
-  do {
-    maxl.val := m;
-    print_char_fun.val := pr_ch;
-    print_string_fun.val := pr_str;
-    print_newline_fun.val := pr_nl;
-    prompt.val := pr2;
-    getcomm.val := lf;
-    last_ep.val := bp;
-    print_string pr;
-    let _ = print_pretty 0 0 0 (conv p) in
-    ()
-  }
-;
+value print_pretty pr_ch pr_str pr_nl pr pr2 m lf bp p = do {
+  maxl.val := m;
+  print_char_fun.val := pr_ch;
+  print_string_fun.val := pr_str;
+  print_newline_fun.val := pr_nl;
+  prompt.val := pr2;
+  getcomm.val := lf;
+  last_ep.val := bp;
+  print_string pr;
+  let _ = print_pretty 0 0 0 (conv p) in
+  ()
+};
