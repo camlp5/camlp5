@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.13 2007/06/03 03:31:46 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.14 2007/06/08 16:08:12 deraugla Exp $ *)
 
 open Stdpp;
 
@@ -48,8 +48,7 @@ and level 'e 'p =
   { label : option string; assoc : option 'e; rules : list (rule 'e 'p) }
 and rule 'e 'p = { prod : list (psymbol 'e 'p); action : option 'e }
 and psymbol 'e 'p = { pattern : option 'p; symbol : symbol 'e 'p }
-and symbol 'e 'p = { used : list string; text : text 'e; styp : styp }
-;
+and symbol 'e 'p = { used : list string; text : text 'e; styp : styp };
 
 type used = [ Unused | UsedScanned | UsedNotScanned ];
 
@@ -59,7 +58,8 @@ value mark_used modif ht n =
     List.iter
       (fun (r, _) ->
          if r.val == Unused then do {
-           r.val := UsedNotScanned; modif.val := True;
+           r.val := UsedNotScanned;
+           modif.val := True
          }
          else ())
       rll
@@ -71,60 +71,58 @@ value rec mark_symbol modif ht symb =
   List.iter (fun e -> mark_used modif ht e) symb.used
 ;
 
-value check_use nl el =
+value check_use nl el = do {
   let ht = Hashtbl.create 301 in
   let modif = ref False in
-  do {
-    List.iter
-      (fun e ->
-         let u =
-           match e.name.expr with
-           [ <:expr< $lid:_$ >> -> Unused
-           | _ -> UsedNotScanned ]
-         in
-         Hashtbl.add ht e.name.tvar (ref u, e))
-      el;
-    List.iter
-      (fun n ->
-         try
-           let rll = Hashtbl.find_all ht n.tvar in
-           List.iter (fun (r, _) -> r.val := UsedNotScanned) rll
-         with _ ->
-           ())
-      nl;
-    modif.val := True;
-    while modif.val do {
-      modif.val := False;
-      Hashtbl.iter
-        (fun s (r, e) ->
-           if r.val = UsedNotScanned then do {
-             r.val := UsedScanned;
-             List.iter
-               (fun level ->
-                  let rules = level.rules in
-                  List.iter
-                    (fun rule ->
-                       List.iter (fun ps -> mark_symbol modif ht ps.symbol)
-                         rule.prod)
-                    rules)
-               e.levels
-           }
-           else ())
-        ht
-    };
+  List.iter
+    (fun e ->
+       let u =
+         match e.name.expr with
+         [ <:expr< $lid:_$ >> -> Unused
+         | _ -> UsedNotScanned ]
+       in
+       Hashtbl.add ht e.name.tvar (ref u, e))
+    el;
+  List.iter
+    (fun n ->
+       try
+         let rll = Hashtbl.find_all ht n.tvar in
+         List.iter (fun (r, _) -> r.val := UsedNotScanned) rll
+       with _ -> ())
+    nl;
+  modif.val := True;
+  while modif.val do {
+    modif.val := False;
     Hashtbl.iter
       (fun s (r, e) ->
-         if r.val = Unused then
-           Pcaml.warning.val e.name.loc ("Unused local entry \"" ^ s ^ "\"")
+         if r.val = UsedNotScanned then do {
+           r.val := UsedScanned;
+           List.iter
+             (fun level ->
+                let rules = level.rules in
+                List.iter
+                  (fun rule ->
+                     List.iter (fun ps -> mark_symbol modif ht ps.symbol)
+                       rule.prod)
+                  rules)
+             e.levels
+         }
          else ())
-      ht;
-  }
-;
+      ht
+  };
+  Hashtbl.iter
+    (fun s (r, e) ->
+       if r.val = Unused then
+         Pcaml.warning.val e.name.loc ("Unused local entry \"" ^ s ^ "\"")
+       else ())
+    ht
+};
 
 value locate n = <:expr< $n.expr$ >>;
 
 value new_type_var =
-  let i = ref 0 in fun () -> do { incr i; "e__" ^ string_of_int i.val }
+  let i = ref 0 in
+  fun () -> do { incr i; "e__" ^ string_of_int i.val }
 ;
 
 value used_of_rule_list rl =
@@ -184,7 +182,8 @@ module MetaAction =
       | MLast.ExApp loc e1 e2 ->
           <:expr< MLast.ExApp $mloc$ $mexpr e1$ $mexpr e2$ >>
       | MLast.ExChr loc s -> <:expr< MLast.ExChr $mloc$ $str:s$ >>
-      | MLast.ExFun loc pwel -> <:expr< MLast.ExFun $mloc$ $mlist mpwe pwel$ >>
+      | MLast.ExFun loc pwel ->
+          <:expr< MLast.ExFun $mloc$ $mlist mpwe pwel$ >>
       | MLast.ExIfe loc e1 e2 e3 ->
           <:expr< MLast.ExIfe $mloc$ $mexpr e1$ $mexpr e2$ $mexpr e3$ >>
       | MLast.ExInt loc s c -> <:expr< MLast.ExInt $mloc$ $str:s$ $str:c$ >>
@@ -227,7 +226,7 @@ module MetaAction =
       | MLast.PaUid loc s -> <:expr< MLast.PaUid $mloc$ $str:s$ >>
       | x -> not_impl "mpatt" x ]
     and mctyp =
-      fun 
+      fun
       [ MLast.TyAcc loc t1 t2 ->
           <:expr< MLast.TyAcc $mloc$ $mctyp t1$ $mctyp t2$ >>
       | MLast.TyApp loc t1 t2 ->
@@ -238,8 +237,7 @@ module MetaAction =
       | MLast.TyUid loc s -> <:expr< MLast.TyUid $mloc$ $str:s$ >>
       | x -> not_impl "mctyp" x ]
     and mpe (p, e) = <:expr< ($mpatt p$, $mexpr e$) >>
-    and mpwe (p, w, e) = <:expr< ($mpatt p$, $moption mexpr w$, $mexpr e$) >>
-    ;
+    and mpwe (p, w, e) = <:expr< ($mpatt p$, $moption mexpr w$, $mexpr e$) >>;
   end
 ;
 
@@ -300,8 +298,7 @@ value rec quot_expr e =
           <:expr< Qast.Node $str:m ^ "." ^ c$ $mklistexp loc al$ >>
       | <:expr< $lid:f$ >> ->
           let al = List.map quot_expr al in
-          List.fold_left (fun f e -> <:expr< $f$ $e$ >>)
-            <:expr< $lid:f$ >> al
+          List.fold_left (fun f e -> <:expr< $f$ $e$ >>) <:expr< $lid:f$ >> al
       | _ -> e ]
   | <:expr< {$list:pel$} >> ->
       try
@@ -383,7 +380,7 @@ value rec make_ctyp styp tvar =
   | STself loc x ->
       if tvar = "" then
         Stdpp.raise_with_loc loc
-          (Stream.Error ("'" ^ x ^  "' illegal in anonymous entry level"))
+          (Stream.Error ("'" ^ x ^ "' illegal in anonymous entry level"))
       else <:ctyp< '$tvar$ >>
   | STtyp t -> t ]
 ;
@@ -393,8 +390,8 @@ value rec make_expr gmod tvar =
   [ TXmeta loc n tl e t ->
       let el =
         List.fold_right
-          (fun t el -> <:expr< [$make_expr gmod "" t$ :: $el$] >>)
-          tl <:expr< [] >>
+          (fun t el -> <:expr< [$make_expr gmod "" t$ :: $el$] >>) tl
+          <:expr< [] >>
       in
       <:expr<
         Gramext.Smeta $str:n$ $el$ (Obj.repr ($e$ : $make_ctyp t tvar$)) >>
@@ -471,8 +468,7 @@ value text_of_action loc psl rtvar act tvar =
       e psl
   in
   let txt =
-    if meta_action.val then
-      <:expr< Obj.magic $MetaAction.mexpr txt$ >>
+    if meta_action.val then <:expr< Obj.magic $MetaAction.mexpr txt$ >>
     else txt
   in
   <:expr< Gramext.action $txt$ >>
@@ -631,54 +627,54 @@ value text_of_entry loc gmod e =
 
 value let_in_of_extend loc gmod functor_version gl el args =
   match gl with
-  [ Some ([n1 :: _] as nl) ->
-      do {
-        check_use nl el;
-        let ll =
-          let same_tvar e n = e.name.tvar = n.tvar in
-          List.fold_right
-            (fun e ll ->
-               match e.name.expr with
-               [ <:expr< $lid:_$ >> ->
-                   if List.exists (same_tvar e) nl then ll
-                   else if List.exists (same_tvar e) ll then ll
-                   else [e.name :: ll]
-               | _ -> ll ])
-            el []
-        in
-        let globals =
-          List.map
-            (fun {expr = e; tvar = x; loc = loc} ->
-               (<:patt< _ >>, <:expr< ($e$ : $uid:gmod$.Entry.e '$x$) >>))
-            nl
-        in
-        let locals =
-          List.map
-            (fun {expr = e; tvar = x; loc = loc} ->
-               let i =
-                 match e with
-                 [ <:expr< $lid:i$ >> -> i
-                 | _ -> failwith "internal error in pa_extend" ]
-               in
-               (<:patt< $lid:i$ >>, <:expr<
+  [ Some ([n1 :: _] as nl) -> do {
+      check_use nl el;
+      let ll =
+        let same_tvar e n = e.name.tvar = n.tvar in
+        List.fold_right
+          (fun e ll ->
+             match e.name.expr with
+             [ <:expr< $lid:_$ >> ->
+                 if List.exists (same_tvar e) nl then ll
+                 else if List.exists (same_tvar e) ll then ll
+                 else [e.name :: ll]
+             | _ -> ll ])
+          el []
+      in
+      let globals =
+        List.map
+          (fun {expr = e; tvar = x; loc = loc} ->
+             (<:patt< _ >>, <:expr< ($e$ : $uid:gmod$.Entry.e '$x$) >>))
+          nl
+      in
+      let locals =
+        List.map
+          (fun {expr = e; tvar = x; loc = loc} ->
+             let i =
+               match e with
+               [ <:expr< $lid:i$ >> -> i
+               | _ -> failwith "internal error in pa_extend" ]
+             in
+             (<:patt< $lid:i$ >>,
+              <:expr<
                 (grammar_entry_create $str:i$ : $uid:gmod$.Entry.e '$x$) >>))
-            ll
-        in
-        let e =
-          if ll = [] then args
-          else if functor_version then
-            <:expr<
-            let grammar_entry_create = $uid:gmod$.Entry.create in
-            let $list:locals$ in $args$ >>
-          else
-            <:expr<
-            let grammar_entry_create s =
-              $uid:gmod$.Entry.create ($uid:gmod$.of_entry $locate n1$) s
-            in
-            let $list:locals$ in $args$ >>
-        in
-        <:expr< let $list:globals$ in $e$ >>
-      }
+          ll
+      in
+      let e =
+        if ll = [] then args
+        else if functor_version then
+          <:expr<
+          let grammar_entry_create = $uid:gmod$.Entry.create in
+          let $list:locals$ in $args$ >>
+        else
+          <:expr<
+          let grammar_entry_create s =
+            $uid:gmod$.Entry.create ($uid:gmod$.of_entry $locate n1$) s
+          in
+          let $list:locals$ in $args$ >>
+      in
+      <:expr< let $list:globals$ in $e$ >>
+    }
   | _ -> args ]
 ;
 
@@ -749,7 +745,8 @@ EXTEND
           text_of_extend loc "Grammar" sl el f ] ]
   ;
   gextend_body:
-    [ [ g = UIDENT; sl = OPT global; el = LIST1 [ e = entry; semi_sep -> e ] ->
+    [ [ g = UIDENT; sl = OPT global;
+        el = LIST1 [ e = entry; semi_sep -> e ] ->
           text_of_functorial_extend loc g sl el ] ]
   ;
   delete_rule_body:

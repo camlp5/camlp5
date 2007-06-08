@@ -375,12 +375,22 @@ and psymbol ind b (p, s) k =
         (fun () ->
            sprintf "%s%s = %s%s" b (patt 0 "" p "") (symbol 0 "" s "") k)
         (fun () -> not_impl "psymbol" ind b s k) ]
-and symbol ind b s k =
-  match s with
+and symbol ind b sy k =
+  match sy with
   [ Snterm e -> expr ind b e k
-  | Sself -> sprintf "%sSELF%s" b k
+  | Slist1 sy -> sprintf "%sLIST1 %s" b (simple_symbol ind "" sy k)
+  | Sopt sy -> sprintf "%sOPT %s" b (simple_symbol ind "" sy k)
   | Stoken tok -> token ind b tok k
-  | s -> not_impl "symbol" ind b s k ]
+  | sy -> simple_symbol ind b sy k ]
+and simple_symbol ind b sy k =
+  match sy with  
+  [ Snterm <:expr< $lid:s$ >> -> sprintf "%s%s%s" b s k
+  | Sself -> sprintf "%sSELF%s" b k
+  | Srules rl ->
+      vlist2 rule (bar_before rule) (ind + 2) (sprintf "%s[ " b) rl ""
+        (sprintf " ]%s" k)
+  | Slist1 _ -> symbol ind (sprintf "%s(" b) sy (sprintf ")%s" k)
+  | sy -> not_impl "simple_symbol" ind b sy k ]
 ;
 
 value label =
