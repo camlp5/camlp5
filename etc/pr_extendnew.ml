@@ -28,6 +28,15 @@ value rec hlist elem ind b xl k =
   | [x :: xl] -> sprintf "%s %s" (elem ind b x "") (hlist elem ind "" xl k) ]
 ;
 
+(* horizontal list with different function for the last element *)
+value rec hlistl elem eleml ind b xl k =
+  match xl with
+  [ [] -> sprintf "%s%s" b k
+  | [x] -> eleml ind b x k
+  | [x :: xl] ->
+      sprintf "%s %s" (elem ind b x "") (hlistl elem eleml ind "" xl k) ]
+;
+
 (* vertical list *)
 value rec vlist elem ind b xl k =
   match xl with
@@ -125,9 +134,7 @@ and plistl_kont_same_line elem eleml ind sh b xl k =
 ;
 
 value bar_before elem ind b x k = elem ind (sprintf "%s| " b) x k;
-(*
 value semi_after elem ind b x k = elem ind b x (sprintf ";%s" k);
-*)
 
 (* Extracting *)
 
@@ -353,20 +360,34 @@ value rec rule ind b (sl, a) k =
   match a with
   [ None -> not_impl "rule 1" ind b sl k
   | Some a ->
-      if sl = [] then not_impl "rule 2" ind b sl k
+      if sl = [] then action expr (ind + 4) (sprintf "%s-> " b) a k
       else
-        let sl = List.map (fun s -> (s, ";")) sl in
-        let psymbol_arrow_action ind b ps k =
+        match
           horiz_vertic
             (fun () ->
-               sprintf "%s%s -> %s%s" b (psymbol 0 "" ps "")
-                 (action expr 0 "" a "") k)
-            (fun () ->
-               let s1 = psymbol ind b ps " ->" in
-               let s2 = action expr (ind + 2) (tab (ind + 2)) a k in
-               sprintf "%s\n%s" s1 s2)
-        in
-        plistl psymbol psymbol_arrow_action (ind + 2) 0 b sl k ]
+               let s = hlistl (semi_after psymbol) psymbol 0 "" sl "" in
+               Some (sprintf "%s%s ->" b s))
+            (fun () -> None)
+        with
+        [ Some s1 ->
+            horiz_vertic
+              (fun () -> sprintf "%s %s%s" s1 (action expr 0 "" a "") k)
+              (fun () ->
+                 let s2 = action expr (ind + 4) (tab (ind + 4)) a k in
+                 sprintf "%s\n%s" s1 s2)
+        | None ->
+            let sl = List.map (fun s -> (s, ";")) sl in
+            let psymbol_arrow_action ind b ps k =
+              horiz_vertic
+                (fun () ->
+                   sprintf "%s%s -> %s%s" b (psymbol 0 "" ps "")
+                     (action expr 0 "" a "") k)
+                (fun () ->
+                   let s1 = psymbol ind b ps " ->" in
+                   let s2 = action expr (ind + 2) (tab (ind + 2)) a k in
+                   sprintf "%s\n%s" s1 s2)
+            in
+            plistl psymbol psymbol_arrow_action (ind + 2) 0 b sl k ] ]
 and psymbol ind b (p, s) k =
   match p with
   [ None -> symbol ind b s k
@@ -378,7 +399,14 @@ and psymbol ind b (p, s) k =
 and symbol ind b sy k =
   match sy with
   [ Snterm e -> expr ind b e k
+  | Slist0 sy -> sprintf "%sLIST0 %s" b (simple_symbol ind "" sy k)
+  | Slist0sep sy sep ->
+      sprintf "%sLIST0 %s SEP %s" b (simple_symbol ind "" sy "")
+        (simple_symbol ind "" sep k)
   | Slist1 sy -> sprintf "%sLIST1 %s" b (simple_symbol ind "" sy k)
+  | Slist1sep sy sep ->
+      sprintf "%sLIST1 %s SEP %s" b (simple_symbol ind "" sy "")
+        (simple_symbol ind "" sep k)
   | Sopt sy -> sprintf "%sOPT %s" b (simple_symbol ind "" sy k)
   | Stoken tok -> token ind b tok k
   | sy -> simple_symbol ind b sy k ]
@@ -389,7 +417,9 @@ and simple_symbol ind b sy k =
   | Srules rl ->
       vlist2 rule (bar_before rule) (ind + 2) (sprintf "%s[ " b) rl ""
         (sprintf " ]%s" k)
-  | Slist1 _ -> symbol ind (sprintf "%s(" b) sy (sprintf ")%s" k)
+  | Stoken ("", _) | Stoken (_, "") -> symbol ind b sy k
+  | Slist0 _ | Slist0sep _ _ | Slist1 _ | Slist1sep _ _ ->
+      symbol ind (sprintf "%s(" b) sy (sprintf ")%s" k)
   | sy -> not_impl "simple_symbol" ind b sy k ]
 ;
 

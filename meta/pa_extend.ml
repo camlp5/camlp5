@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.14 2007/06/08 16:08:12 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.15 2007/06/08 17:01:15 deraugla Exp $ *)
 
 open Stdpp;
 
@@ -791,7 +791,7 @@ EXTEND
   ;
   rule_list:
     [ [ "["; "]" -> []
-      | "["; rules = LIST1 rule SEP "|"; "]" -> 
+      | "["; rules = LIST1 rule SEP "|"; "]" ->
           retype_rule_list_without_patterns loc rules ] ]
   ;
   rule:
