@@ -22,6 +22,25 @@ value tab ind = String.make ind ' ';
 
 value expr ind b z k = pr_expr.pr_fun "top" ind b z k;
 
+(* *)
+
+(* horizontal list *)
+value rec hlist elem ind b xl k =
+  match xl with
+  [ [] -> sprintf "%s%s" b k
+  | [x] -> elem ind b x k
+  | [x :: xl] -> sprintf "%s %s" (elem ind b x "") (hlist elem ind "" xl k) ]
+;
+
+(* vertical list *)
+value rec vlist elem ind b xl k =
+  match xl with
+  [ [] -> sprintf "%s%s" b k
+  | [x] -> elem ind b x k
+  | [x :: xl] ->
+      sprintf "%s\n%s" (elem ind b x "") (vlist elem ind (tab ind) xl k) ]
+;
+
 (* Extracting *)
 
 type symbol =
@@ -217,7 +236,63 @@ value unextend_body e =
   (globals, el)
 ;
 
-value extend_body ind b ex k = not_impl "extend_body" ind b ex k;
+(* Printing *)
+
+value string s = sprintf "\"%s\"" s;
+
+value position ind b pos k =
+  match pos with
+  [ None -> sprintf "%s%s" b k
+  | Some Gramext.First -> sprintf "%sFIRST%s" b k
+  | Some Gramext.Last -> sprintf "%sLAST%s" b k
+  | Some (Gramext.Before s) -> sprintf "%sBEFORE%s" b k
+  | Some (Gramext.After s) -> sprintf "%sAFTER %s%s" b (string s) k
+  | Some (Gramext.Level s) -> sprintf "%sLEVEL %s%s" b (string s) k ]
+;
+
+value rule ind b (sl, a) k = not_impl "rule" ind b sl k;
+
+value label =
+  fun
+  [ Some s -> sprintf " \"%s\"" s
+  | None -> "" ]
+;
+
+value assoc =
+  fun
+  [ Some Gramext.NonA -> " NONA"
+  | Some Gramext.LeftA -> " LEFTA"
+  | Some Gramext.RightA -> " RIGHTA"
+  | None -> "" ]
+;
+
+value level ind b (lab, ass, rl) k =
+  match (lab, ass) with
+  [ (None, None) ->
+      if rl = [] then sprintf "%s[ ]%s" b k
+      else vlist rule ind (sprintf "%s[ " b) rl (sprintf " ]%s" k)
+  | _ ->
+      let s1 = sprintf "%s%s%s" b (label lab) (assoc ass) in
+      let s2 =
+        if rl = [] then sprintf "%s[ ]%s" (tab ind) k
+        else vlist rule ind (sprintf "%s[ " (tab ind)) rl (sprintf " ]%s" k)
+      in
+      sprintf "%s\n%s" s1 s2 ]
+;
+
+value entry ind b (e, pos, ll) k =
+  sprintf "%s%s:%s\n%s\n;" b (expr ind "" e "") (position ind "" pos "")
+    (vlist level (ind + 2) (tab (ind + 2)) ll "")
+;
+
+value extend_body ind b (globals, entries) k =
+  match globals with
+  [ [] -> vlist entry ind b entries k
+  | _ ->
+      let s1 = sprintf "%sGLOBAL: %s;" b (hlist expr ind "" globals "") in
+      let s2 = vlist entry ind (tab ind) entries k in
+      sprintf "%s\n%s" s1 s2 ]
+;
 
 value extend ind b e k =
   match e with
