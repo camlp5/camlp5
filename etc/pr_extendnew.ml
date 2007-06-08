@@ -28,6 +28,15 @@ value rec hlist elem ind b xl k =
   | [x :: xl] -> sprintf "%s %s" (elem ind b x "") (hlist elem ind "" xl k) ]
 ;
 
+(* horizontal list with different function from 2nd element on *)
+value rec hlist2 elem elem2 ind b xl k0 k =
+  match xl with
+  [ [] -> invalid_arg "hlist2"
+  | [x] -> elem ind b x k
+  | [x :: xl] ->
+      sprintf "%s %s" (elem ind b x k0) (hlist2 elem2 elem2 ind "" xl k0 k) ]
+;
+
 (* horizontal list with different function for the last element *)
 value rec hlistl elem eleml ind b xl k =
   match xl with
@@ -415,8 +424,13 @@ and simple_symbol ind b sy k =
   [ Snterm <:expr< $lid:s$ >> -> sprintf "%s%s%s" b s k
   | Sself -> sprintf "%sSELF%s" b k
   | Srules rl ->
-      vlist2 rule (bar_before rule) (ind + 2) (sprintf "%s[ " b) rl ""
-        (sprintf " ]%s" k)
+      horiz_vertic
+        (fun () ->
+           hlist2 rule (bar_before rule) (ind + 2) (sprintf "%s[ " b) rl ""
+             (sprintf " ]%s" k))
+        (fun () ->
+           vlist2 rule (bar_before rule) (ind + 2) (sprintf "%s[ " b) rl ""
+             (sprintf " ]%s" k))
   | Stoken ("", _) | Stoken (_, "") -> symbol ind b sy k
   | Slist0 _ | Slist0sep _ _ | Slist1 _ | Slist1sep _ _ ->
       symbol ind (sprintf "%s(" b) sy (sprintf ")%s" k)
@@ -425,15 +439,15 @@ and simple_symbol ind b sy k =
 
 value label =
   fun
-  [ Some s -> sprintf " \"%s\"" s
+  [ Some s -> sprintf "\"%s\"" s
   | None -> "" ]
 ;
 
 value assoc =
   fun
-  [ Some Gramext.NonA -> " NONA"
-  | Some Gramext.LeftA -> " LEFTA"
-  | Some Gramext.RightA -> " RIGHTA"
+  [ Some Gramext.NonA -> "NONA"
+  | Some Gramext.LeftA -> "LEFTA"
+  | Some Gramext.RightA -> "RIGHTA"
   | None -> "" ]
 ;
 
@@ -442,22 +456,29 @@ value level ind b (lab, ass, rl) k =
   [ (None, None) ->
       if rl = [] then sprintf "%s[ ]%s" b k
       else
-        vlist2 rule (bar_before rule) (ind + 2) (sprintf "%s[ [ " b) rl ""
-          (sprintf " ] ]%s" k)
+        vlist2 rule (bar_before rule) (ind + 2) (sprintf "%s[ " b) rl ""
+          (sprintf " ]%s" k)
   | _ ->
-      let s1 = sprintf "%s[%s%s" b (label lab) (assoc ass) in
+      let s1 =
+        match (lab, ass) with
+        [ (Some _, None) -> sprintf "%s%s" b (label lab)
+        | (None, Some _) -> sprintf "%s%s" b (assoc ass)
+        | (Some _, Some _) -> sprintf "%s%s %s" b (label lab) (assoc ass)
+        | _ -> assert False ]
+      in
       let s2 =
         if rl = [] then not_impl "level" ind "" rl k
         else
           vlist2 rule (bar_before rule) (ind + 2)
-            (sprintf "%s[ " (tab (ind + 2))) rl "" (sprintf " ] ]%s" k)
+            (sprintf "%s[ " (tab (ind + 2))) rl "" (sprintf " ]%s" k)
       in
       sprintf "%s\n%s" s1 s2 ]
 ;
 
 value entry ind b (e, pos, ll) k =
-  sprintf "%s%s:%s\n%s\n%s;" b (expr ind "" e "") (position ind "" pos "")
-    (vlist level (ind + 2) (tab (ind + 2)) ll "") (tab ind)
+  sprintf "%s%s:%s\n%s\n%s;%s" b (expr ind "" e "") (position ind "" pos "")
+    (vlist2 level (bar_before level) (ind + 2)
+       (sprintf "%s[ " (tab (ind + 2))) ll "" " ]") (tab ind) k
 ;
 
 value extend_body ind b (globals, entries) k =

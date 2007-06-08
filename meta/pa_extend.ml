@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.15 2007/06/08 17:01:15 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.16 2007/06/08 18:34:03 deraugla Exp $ *)
 
 open Stdpp;
 
@@ -852,12 +852,10 @@ EXTEND
           let rl = retype_rule_list_without_patterns loc rl in
           let t = new_type_var () in
           {used = used_of_rule_list rl;
-           text = TXrules loc (srules loc t rl "");
-           styp = STquo loc t}
+           text = TXrules loc (srules loc t rl ""); styp = STquo loc t}
       | x = UIDENT ->
           let text =
-            if quotify.val then sstoken loc x
-            else TXtok loc x <:expr< "" >>
+            if quotify.val then sstoken loc x else TXtok loc x <:expr< "" >>
           in
           {used = []; text = text; styp = STlid loc "string"}
       | x = UIDENT; e = string ->
@@ -869,11 +867,9 @@ EXTEND
       | i = UIDENT; "."; e = qualid;
         lev = OPT [ UIDENT "LEVEL"; s = STRING -> s ] ->
           let n = mk_name loc <:expr< $uid:i$ . $e$ >> in
-          {used = [n.tvar]; text = TXnterm loc n lev;
-           styp = STquo loc n.tvar}
+          {used = [n.tvar]; text = TXnterm loc n lev; styp = STquo loc n.tvar}
       | n = name; lev = OPT [ UIDENT "LEVEL"; s = STRING -> s ] ->
-          {used = [n.tvar]; text = TXnterm loc n lev;
-           styp = STquo loc n.tvar}
+          {used = [n.tvar]; text = TXnterm loc n lev; styp = STquo loc n.tvar}
       | "("; s_t = SELF; ")" -> s_t ] ]
   ;
   pattern:
@@ -901,8 +897,5 @@ EXTEND
   ;
 END;
 
-Pcaml.add_option "-quotify" (Arg.Set quotify)
-  "Generate code for quotations";
-
-Pcaml.add_option "-meta_action" (Arg.Set meta_action)
-  "Undocumented";
+Pcaml.add_option "-quotify" (Arg.Set quotify) "Generate code for quotations";
+Pcaml.add_option "-meta_action" (Arg.Set meta_action) "Undocumented";
