@@ -327,8 +327,9 @@ value unextend_body e =
 (* Printing *)
 
 value expr ind b z k = pr_expr.pr_fun "top" ind b z k;
+value patt ind b z k = pr_patt.pr_fun "top" ind b z k;
 
-value string s = sprintf "\"%s\"" s;
+value string ind b s k = sprintf "%s\"%s\"%s" b s k;
 
 value position ind b pos k =
   match pos with
@@ -336,11 +337,17 @@ value position ind b pos k =
   | Some Gramext.First -> sprintf "%s FIRST%s" b k
   | Some Gramext.Last -> sprintf "%s LAST%s" b k
   | Some (Gramext.Before s) -> sprintf "%s BEFORE%s" b k
-  | Some (Gramext.After s) -> sprintf "%s AFTER %s%s" b (string s) k
-  | Some (Gramext.Level s) -> sprintf "%s LEVEL %s%s" b (string s) k ]
+  | Some (Gramext.After s) -> sprintf "%s AFTER %s%s" b (string 0 "" s "") k
+  | Some (Gramext.Level s) -> sprintf "%s LEVEL %s%s" b (string 0 "" s "") k ]
 ;
 
 value action expr ind b a k = expr ind b a k;
+
+value token ind b (con, prm) k =
+  if con = "" then string ind b prm k
+  else if prm = "" then sprintf "%s%s%s" b con k
+  else sprintf "%s%s %s%s" b con (string 0 "" prm "") k
+;
 
 value rec rule ind b (sl, a) k =
   match a with
@@ -361,7 +368,19 @@ value rec rule ind b (sl, a) k =
         in
         plistl psymbol psymbol_arrow_action (ind + 2) 0 b sl k ]
 and psymbol ind b (p, s) k =
-  not_impl "psymbol" ind b p k
+  match p with
+  [ None -> symbol ind b s k
+  | Some p ->
+      horiz_vertic
+        (fun () ->
+           sprintf "%s%s = %s%s" b (patt 0 "" p "") (symbol 0 "" s "") k)
+        (fun () -> not_impl "psymbol" ind b s k) ]
+and symbol ind b s k =
+  match s with
+  [ Snterm e -> expr ind b e k
+  | Sself -> sprintf "%sSELF%s" b k
+  | Stoken tok -> token ind b tok k
+  | s -> not_impl "symbol" ind b s k ]
 ;
 
 value label =
