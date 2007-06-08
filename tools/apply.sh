@@ -1,14 +1,12 @@
 #!/bin/sh
-# $Id: apply.sh,v 1.3 2007/06/04 10:22:38 deraugla Exp $
+# $Id: apply.sh,v 1.4 2007/06/08 01:59:33 deraugla Exp $
 
 ARGS1=
 FILE=
 while test "" != "$1"; do
 	case $1 in
 	*.ml*) FILE=$1;;
-	*.cm[oa]) ARGS1="$ARGS1 $1";;
-	-I) ARGS1="$ARGS1 $1 $2"; shift;;
-	*) ARGS3="$ARGS3 $1";;
+	*) ARGS1="$ARGS1 $1";;
 	esac
 	shift
 done
@@ -26,5 +24,5 @@ else
 fi
 
 OTOP=../..
-echo ocamlrun $COMM $ARGS1 $ARGS2 $ARGS3 $FILE 1>&2
-ocamlrun $COMM $ARGS1 $ARGS2 $ARGS3 $FILE
+echo ocamlrun $COMM $ARGS2 $ARGS1 $FILE 1>&2
+ocamlrun $COMM $ARGS2 $ARGS1 $FILE

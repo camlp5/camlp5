@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.4 2007/02/07 23:32:45 deraugla Exp $
+# $Id: Makefile,v 1.5 2007/06/08 01:59:33 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -24,8 +24,9 @@ clean::
 depend:
 	cp .depend .depend.bak
 	> .depend
-	@for i in *.mli *.ml; do \
-	  ../tools/apply.sh pr_depend.cmo -- $(INCLUDES) $$i >> .depend; \
+	@export LC_ALL=C; for i in $$(ls *.mli *.ml); do \
+	  ../tools/apply.sh pr_depend.cmo -- $(INCLUDES) $$i | \
+	  sed -e 's| \.\./\.\.| $$(OTOP)|g' >> .depend; \
 	done
 
 promote:

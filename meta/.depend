@@ -4,17 +4,17 @@ pa_extend_m.cmo: pa_extend.cmo
 pa_extend_m.cmx: pa_extend.cmx 
 pa_lex.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi ../camlp4/exparser.cmi 
 pa_lex.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi ../camlp4/exparser.cmx 
-pa_macro.cmo:  $(OTOP)/utils/pconfig.cmi ../camlp4/pcaml.cmi \
+pa_macro.cmo: ../ocaml_stuff/3.09.3/utils/pconfig.cmi ../camlp4/pcaml.cmi \
     ../camlp4/mLast.cmi 
-pa_macro.cmx:  $(OTOP)/utils/pconfig.cmx ../camlp4/pcaml.cmx \
+pa_macro.cmx: ../ocaml_stuff/3.09.3/utils/pconfig.cmx ../camlp4/pcaml.cmx \
     ../camlp4/mLast.cmi 
 pa_r.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
 pa_r.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
 pa_rp.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi ../camlp4/exparser.cmi 
 pa_rp.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi ../camlp4/exparser.cmx 
-pr_dump.cmo:  $(OTOP)/utils/pconfig.cmi ../camlp4/pcaml.cmi \
+pr_dump.cmo: ../ocaml_stuff/3.09.3/utils/pconfig.cmi ../camlp4/pcaml.cmi \
     ../camlp4/ast2pt.cmi 
-pr_dump.cmx:  $(OTOP)/utils/pconfig.cmx ../camlp4/pcaml.cmx \
+pr_dump.cmx: ../ocaml_stuff/3.09.3/utils/pconfig.cmx ../camlp4/pcaml.cmx \
     ../camlp4/ast2pt.cmx 
 q_MLast.cmo: ../camlp4/quotation.cmi ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
 q_MLast.cmx: ../camlp4/quotation.cmx ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
