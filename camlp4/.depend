@@ -1,33 +1,33 @@
-ast2pt.cmi: $(OTOP)/parsing/parsetree.cmi mLast.cmi \
-    $(OTOP)/parsing/longident.cmi \
-    $(OTOP)/parsing/location.cmi 
-exparser.cmi: mLast.cmi 
-pcaml.cmi: spretty.cmi mLast.cmi 
-quotation.cmi: mLast.cmi 
-reloc.cmi: mLast.cmi 
 argl.cmo: argl.cmi 
 argl.cmx: argl.cmi 
-ast2pt.cmo: $(OTOP)/utils/pconfig.cmi \
-    $(OTOP)/parsing/parsetree.cmi mLast.cmi \
-    $(OTOP)/parsing/longident.cmi \
-    $(OTOP)/parsing/location.cmi \
-    $(OTOP)/parsing/asttypes.cmi ast2pt.cmi 
-ast2pt.cmx: $(OTOP)/utils/pconfig.cmx \
-    $(OTOP)/parsing/parsetree.cmi mLast.cmi \
-    $(OTOP)/parsing/longident.cmi \
-    $(OTOP)/parsing/location.cmi \
-    $(OTOP)/parsing/asttypes.cmi ast2pt.cmi 
+ast2pt.cmo: ../ocaml_stuff/3.09.3/utils/pconfig.cmi \
+    ../ocaml_stuff/3.09.3/parsing/parsetree.cmi mLast.cmi \
+    ../ocaml_stuff/3.09.3/parsing/longident.cmi \
+    ../ocaml_stuff/3.09.3/parsing/location.cmi \
+    ../ocaml_stuff/3.09.3/parsing/asttypes.cmi ast2pt.cmi 
+ast2pt.cmx: ../ocaml_stuff/3.09.3/utils/pconfig.cmx \
+    ../ocaml_stuff/3.09.3/parsing/parsetree.cmi mLast.cmi \
+    ../ocaml_stuff/3.09.3/parsing/longident.cmi \
+    ../ocaml_stuff/3.09.3/parsing/location.cmi \
+    ../ocaml_stuff/3.09.3/parsing/asttypes.cmi ast2pt.cmi 
+ast2pt.cmi: ../ocaml_stuff/3.09.3/parsing/parsetree.cmi mLast.cmi \
+    ../ocaml_stuff/3.09.3/parsing/longident.cmi \
+    ../ocaml_stuff/3.09.3/parsing/location.cmi 
 exparser.cmo: mLast.cmi exparser.cmi 
 exparser.cmx: mLast.cmi exparser.cmi 
-main.cmo: $(OTOP)/utils/pconfig.cmi pcaml.cmi \
+exparser.cmi: mLast.cmi 
+main.cmo: ../ocaml_stuff/3.09.3/utils/pconfig.cmi pcaml.cmi \
     ../odyl/odyl_main.cmi mLast.cmi ast2pt.cmi argl.cmi 
-main.cmx: $(OTOP)/utils/pconfig.cmx pcaml.cmx \
+main.cmx: ../ocaml_stuff/3.09.3/utils/pconfig.cmx pcaml.cmx \
     ../odyl/odyl_main.cmx mLast.cmi ast2pt.cmx argl.cmx 
 pcaml.cmo: spretty.cmi reloc.cmi quotation.cmi mLast.cmi ast2pt.cmi pcaml.cmi 
 pcaml.cmx: spretty.cmx reloc.cmx quotation.cmx mLast.cmi ast2pt.cmx pcaml.cmi 
+pcaml.cmi: spretty.cmi mLast.cmi 
 quotation.cmo: mLast.cmi quotation.cmi 
 quotation.cmx: mLast.cmi quotation.cmi 
+quotation.cmi: mLast.cmi 
 reloc.cmo: mLast.cmi reloc.cmi 
 reloc.cmx: mLast.cmi reloc.cmi 
+reloc.cmi: mLast.cmi 
 spretty.cmo: spretty.cmi 
 spretty.cmx: spretty.cmi 
