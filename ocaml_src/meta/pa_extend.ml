@@ -2035,5 +2035,4 @@ Grammar.extend
            (MLast.ExStr (loc, s) : 'string))]]]);;
 
 Pcaml.add_option "-quotify" (Arg.Set quotify) "Generate code for quotations";;
-
 Pcaml.add_option "-meta_action" (Arg.Set meta_action) "Undocumented";;
