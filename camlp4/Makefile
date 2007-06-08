@@ -40,8 +40,8 @@ depend:
 	cp .depend .depend.bak
 	> .depend
 	@export LC_ALL=C; for i in $$(ls *.mli *.ml); do \
-	  ../tools/apply.sh pr_depend.cmo -- $(INCLUDES) $$i | \
-	  sed -e 's| \.\./\.\.| $$(OTOP)|g' >> .depend; \
+	  ../tools/depend.sh $(INCLUDES) $$i | \
+	  sed -e 's| $(OTOP)| $$(OTOP)|g' >> .depend; \
 	done
 
 promote:

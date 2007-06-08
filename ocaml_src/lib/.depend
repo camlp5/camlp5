@@ -1,23 +1,23 @@
-extfold.cmi: gramext.cmi 
-gramext.cmi: token.cmi 
-grammar.cmi: token.cmi gramext.cmi 
-plexer.cmi: token.cmi 
-token.cmi: stdpp.cmi 
 extfold.cmo: grammar.cmi gramext.cmi extfold.cmi 
 extfold.cmx: grammar.cmx gramext.cmx extfold.cmi 
+extfold.cmi: gramext.cmi 
 extfun.cmo: extfun.cmi 
 extfun.cmx: extfun.cmi 
 fstream.cmo: fstream.cmi 
 fstream.cmx: fstream.cmi 
 gramext.cmo: token.cmi gramext.cmi 
 gramext.cmx: token.cmx gramext.cmi 
+gramext.cmi: token.cmi 
 grammar.cmo: token.cmi stdpp.cmi gramext.cmi grammar.cmi 
 grammar.cmx: token.cmx stdpp.cmx gramext.cmx grammar.cmi 
+grammar.cmi: token.cmi gramext.cmi 
 plexer.cmo: token.cmi stdpp.cmi plexer.cmi 
 plexer.cmx: token.cmx stdpp.cmx plexer.cmi 
+plexer.cmi: token.cmi 
 sformat.cmo: sformat.cmi 
 sformat.cmx: sformat.cmi 
 stdpp.cmo: stdpp.cmi 
 stdpp.cmx: stdpp.cmi 
 token.cmo: stdpp.cmi token.cmi 
 token.cmx: stdpp.cmx token.cmi 
+token.cmi: stdpp.cmi 

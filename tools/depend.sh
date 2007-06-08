@@ -1,14 +1,12 @@
 #!/bin/sh
-# $Id: apply.sh,v 1.5 2007/06/08 02:25:23 deraugla Exp $
+# $Id: depend.sh,v 1.1 2007/06/08 02:25:23 deraugla Exp $
 
-ARGS1=
+ARGS1="pr_depend.cmo --"
 FILE=
 while test "" != "$1"; do
 	case $1 in
 	*.ml*) FILE=$1;;
-	*.cm[oa]) ARGS1="$ARGS1 $1";;
-	-I) ARGS1="$ARGS1 $1 $2"; shift;;
-	*) ARGS3="$ARGS3 $1";;
+	*) ARGS1="$ARGS1 $1";;
 	esac
 	shift
 done
@@ -26,5 +24,5 @@ else
 fi
 
 OTOP=../..
-echo ocamlrun $COMM $ARGS1 $ARGS2 $ARGS3 $FILE 1>&2
-ocamlrun $COMM $ARGS1 $ARGS2 $ARGS3 $FILE
+echo ocamlrun $COMM $ARGS2 $ARGS1 $FILE 1>&2
+ocamlrun $COMM $ARGS2 $ARGS1 $FILE
