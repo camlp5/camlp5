@@ -20,10 +20,6 @@ value not_impl name ind b x k =
 
 value tab ind = String.make ind ' ';
 
-value expr ind b z k = pr_expr.pr_fun "top" ind b z k;
-
-(* *)
-
 (* horizontal list *)
 value rec hlist elem ind b xl k =
   match xl with
@@ -40,6 +36,98 @@ value rec vlist elem ind b xl k =
   | [x :: xl] ->
       sprintf "%s\n%s" (elem ind b x "") (vlist elem ind (tab ind) xl k) ]
 ;
+
+(* vertical list with different function from 2nd element on *)
+value rec vlist2 elem elem2 ind b xl k0 k =
+  match xl with
+  [ [] -> invalid_arg "vlist2"
+  | [x] -> elem ind b x k
+  | [x :: xl] ->
+      sprintf "%s\n%s" (elem ind b x k0)
+        (vlist2 elem2 elem2 ind (tab ind) xl k0 k) ]
+;
+
+value rise_string ind sh b s =
+  (* hack for "plistl" (below): if s is a "string" (i.e. starting with
+     double-quote) which contains newlines, attempt to concat its first
+     line in the previous line, and, instead of displaying this:
+              eprintf
+                "\
+           hello, world"
+     displays that:
+              eprintf "\
+           hello, world"
+     what "saves" one line.
+   *)
+  if String.length s > ind + sh && s.[ind+sh] = '"' then
+    match try Some (String.index s '\n') with [ Not_found -> None ] with
+    [ Some i ->
+        let t = String.sub s (ind + sh) (String.length s - ind - sh) in
+        let i = i - ind - sh in
+        match
+          horiz_vertic (fun () -> Some (sprintf "%s %s" b (String.sub t 0 i)))
+            (fun () -> None)
+        with
+        [ Some b -> (b, String.sub t (i + 1) (String.length t - i - 1))
+        | None -> (b, s) ]
+    | None -> (b, s) ]
+  else (b, s)
+;
+
+(* paragraph list with a different function for the last element;
+   the list elements are pairs where second elements are separators
+   (the last separator is ignored) *)
+value rec plistl elem eleml ind sh b xl k =
+  let (s1, s2o) = plistl_two_parts elem eleml ind sh b xl k in
+  match s2o with
+  [ Some s2 -> sprintf "%s\n%s" s1 s2
+  | None -> s1 ]
+and plistl_two_parts elem eleml ind sh b xl k =
+  match xl with
+  [ [] -> assert False
+  | [(x, _)] -> (eleml ind b x k, None)
+  | [(x, sep) :: xl] ->
+      let s =
+        horiz_vertic (fun () -> Some (elem ind b x sep)) (fun () -> None)
+      in
+      match s with
+      [ Some b -> (plistl_kont_same_line elem eleml ind sh b xl k, None)
+      | None ->
+          let s1 = elem ind b x sep in
+          let s2 = plistl elem eleml (ind + sh) 0 (tab (ind + sh)) xl k in
+          (s1, Some s2) ] ]
+and plistl_kont_same_line elem eleml ind sh b xl k =
+  match xl with
+  [ [] -> assert False
+  | [(x, _)] ->
+      horiz_vertic (fun () -> eleml ind (sprintf "%s " b) x k)
+        (fun () ->
+           let s = eleml (ind + sh) (tab (ind + sh)) x k in
+           let (b, s) = rise_string ind sh b s in
+           sprintf "%s\n%s" b s)
+  | [(x, sep) :: xl] ->
+      let s =
+        horiz_vertic (fun () -> Some (elem ind (sprintf "%s " b) x sep))
+          (fun () -> None)
+      in
+      match s with
+      [ Some b -> plistl_kont_same_line elem eleml ind sh b xl k
+      | None ->
+          let (s1, s2o) =
+            plistl_two_parts elem eleml (ind + sh) 0 (tab (ind + sh))
+              [(x, sep) :: xl] k
+          in
+          match s2o with
+          [ Some s2 ->
+              let (b, s1) = rise_string ind sh b s1 in
+              sprintf "%s\n%s\n%s" b s1 s2
+          | None -> sprintf "%s\n%s" b s1 ] ] ]
+;
+
+value bar_before elem ind b x k = elem ind (sprintf "%s| " b) x k;
+(*
+value semi_after elem ind b x k = elem ind b x (sprintf ";%s" k);
+*)
 
 (* Extracting *)
 
@@ -238,19 +326,43 @@ value unextend_body e =
 
 (* Printing *)
 
+value expr ind b z k = pr_expr.pr_fun "top" ind b z k;
+
 value string s = sprintf "\"%s\"" s;
 
 value position ind b pos k =
   match pos with
   [ None -> sprintf "%s%s" b k
-  | Some Gramext.First -> sprintf "%sFIRST%s" b k
-  | Some Gramext.Last -> sprintf "%sLAST%s" b k
-  | Some (Gramext.Before s) -> sprintf "%sBEFORE%s" b k
-  | Some (Gramext.After s) -> sprintf "%sAFTER %s%s" b (string s) k
-  | Some (Gramext.Level s) -> sprintf "%sLEVEL %s%s" b (string s) k ]
+  | Some Gramext.First -> sprintf "%s FIRST%s" b k
+  | Some Gramext.Last -> sprintf "%s LAST%s" b k
+  | Some (Gramext.Before s) -> sprintf "%s BEFORE%s" b k
+  | Some (Gramext.After s) -> sprintf "%s AFTER %s%s" b (string s) k
+  | Some (Gramext.Level s) -> sprintf "%s LEVEL %s%s" b (string s) k ]
 ;
 
-value rule ind b (sl, a) k = not_impl "rule" ind b sl k;
+value action expr ind b a k = expr ind b a k;
+
+value rec rule ind b (sl, a) k =
+  match a with
+  [ None -> not_impl "rule 1" ind b sl k
+  | Some a ->
+      if sl = [] then not_impl "rule 2" ind b sl k
+      else
+        let sl = List.map (fun s -> (s, ";")) sl in
+        let psymbol_arrow_action ind b ps k =
+          horiz_vertic
+            (fun () ->
+               sprintf "%s%s -> %s%s" b (psymbol 0 "" ps "")
+                 (action expr 0 "" a "") k)
+            (fun () ->
+               let s1 = psymbol ind b ps " ->" in
+               let s2 = action expr (ind + 2) (tab (ind + 2)) a k in
+               sprintf "%s\n%s" s1 s2)
+        in
+        plistl psymbol psymbol_arrow_action (ind + 2) 0 b sl k ]
+and psymbol ind b (p, s) k =
+  not_impl "psymbol" ind b p k
+;
 
 value label =
   fun
@@ -270,19 +382,23 @@ value level ind b (lab, ass, rl) k =
   match (lab, ass) with
   [ (None, None) ->
       if rl = [] then sprintf "%s[ ]%s" b k
-      else vlist rule ind (sprintf "%s[ " b) rl (sprintf " ]%s" k)
+      else
+        vlist2 rule (bar_before rule) (ind + 2) (sprintf "%s[ [ " b) rl ""
+          (sprintf " ] ]%s" k)
   | _ ->
-      let s1 = sprintf "%s%s%s" b (label lab) (assoc ass) in
+      let s1 = sprintf "%s[%s%s" b (label lab) (assoc ass) in
       let s2 =
-        if rl = [] then sprintf "%s[ ]%s" (tab ind) k
-        else vlist rule ind (sprintf "%s[ " (tab ind)) rl (sprintf " ]%s" k)
+        if rl = [] then not_impl "level" ind "" rl k
+        else
+          vlist2 rule (bar_before rule) (ind + 2)
+            (sprintf "%s[ " (tab (ind + 2))) rl "" (sprintf " ] ]%s" k)
       in
       sprintf "%s\n%s" s1 s2 ]
 ;
 
 value entry ind b (e, pos, ll) k =
-  sprintf "%s%s:%s\n%s\n;" b (expr ind "" e "") (position ind "" pos "")
-    (vlist level (ind + 2) (tab (ind + 2)) ll "")
+  sprintf "%s%s:%s\n%s\n%s;" b (expr ind "" e "") (position ind "" pos "")
+    (vlist level (ind + 2) (tab (ind + 2)) ll "") (tab ind)
 ;
 
 value extend_body ind b (globals, entries) k =
