@@ -157,8 +157,10 @@ type symbol =
   | Sopt of symbol
   | Sself
   | Snext
-  | Stoken of Token.pattern
+  | Stoken of alt Token.pattern MLast.expr
   | Srules of list (list (option MLast.patt * symbol) * option MLast.expr) ]
+and alt 'a 'b =
+  [ Left of 'a | Right of 'b ]
 ;
 
 value rec get_globals =
@@ -227,7 +229,8 @@ value rec unaction =
 
 value untoken =
   fun
-  [ <:expr< ($str:x$, $str:y$) >> -> (x, y)
+  [ <:expr< ($str:x$, $str:y$) >> -> Left (x, y)
+  | <:expr< ($str:_$, $lid:_$) >> as e -> Right e
   | _ -> raise Not_found ]
 ;
 
@@ -359,10 +362,15 @@ value position ind b pos k =
 
 value action expr ind b a k = expr ind b a k;
 
-value token ind b (con, prm) k =
-  if con = "" then string ind b prm k
-  else if prm = "" then sprintf "%s%s%s" b con k
-  else sprintf "%s%s %s%s" b con (string 0 "" prm "") k
+value token ind b tok k =
+  match tok with
+  [ Left (con, prm) ->
+      if con = "" then string ind b prm k
+      else if prm = "" then sprintf "%s%s%s" b con k
+      else sprintf "%s%s %s%s" b con (string 0 "" prm "") k
+  | Right <:expr< ($str:con$, $x$) >> ->
+      sprintf "%s%s $%s$%s" b con (expr 0 "" x "") k
+  | Right _ -> assert False ]
 ;
 
 value rec rule ind b (sl, a) k =
@@ -431,7 +439,7 @@ and simple_symbol ind b sy k =
         (fun () ->
            vlist2 rule (bar_before rule) (ind + 2) (sprintf "%s[ " b) rl ""
              (sprintf " ]%s" k))
-  | Stoken ("", _) | Stoken (_, "") -> symbol ind b sy k
+  | Stoken (Left ("", _) | Left (_, "")) -> symbol ind b sy k
   | Slist0 _ | Slist0sep _ _ | Slist1 _ | Slist1sep _ _ ->
       symbol ind (sprintf "%s(" b) sy (sprintf ")%s" k)
   | sy -> not_impl "simple_symbol" ind b sy k ]
@@ -496,7 +504,7 @@ value extend ind b e k =
       try
         let ex = unextend_body e in
         let s = extend_body (ind + 2) (tab (ind + 2)) ex "" in
-        sprintf "EXTEND\n%s\nEND%s" s k
+        sprintf "%sEXTEND\n%s\n%sEND%s" b s (tab ind) k
       with
       [ Not_found ->
           sprintf "%sGrammar.extend\n%s" b

@@ -225,7 +225,7 @@ EXTEND
             | (None, rl) -> rl ]
           in
           <:expr< fun $lid:var ()$ -> $mk_lexer loc rl$ >>
-      | "match"; e = expr; "with"; "lexer"; rl = rules ->
+      | "match"; e = SELF; "with"; "lexer"; rl = rules ->
           mk_lexer_match loc e rl ] ]
   ;
   expr: LEVEL "simple"
@@ -254,7 +254,7 @@ EXTEND
     [ [ (sl, cl) = symbs -> do { gcl.val := cl; (sl, cl) } ] ]
   ;
   symbs:
-    [ [ (sl, cl) = symbs; f = symb; kont = err_kont -> f sl cl kont
+    [ [ (sl, cl) = SELF; f = symb; kont = err_kont -> f sl cl kont
       | -> ([], []) ] ]
   ;
   symb:
@@ -273,8 +273,8 @@ EXTEND
     [ [ pl = LIST1 lookahead_char -> pl
       | s = STRING ->
           List.rev
-            (fold_string_chars
-               (fun c pl -> [<:patt< $chr:c$ >> :: pl]) s []) ] ]
+            (fold_string_chars (fun c pl -> [<:patt< $chr:c$ >> :: pl]) s
+               []) ] ]
   ;
   lookahead_char:
     [ [ c = CHAR -> <:patt< $chr:c$ >>

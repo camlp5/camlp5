@@ -726,6 +726,40 @@ value rec get_else_if =
   | e -> ([], e) ]
 ;
 
+(* Expressions displayed without spaces separating elements; special
+   for expressions as strings or arrays indexes (x.[...] or x.(...).
+   Applied only if only containing +, -, *, /, integers and variables. *)
+value expr_short ind b x k =
+  let rec expr1 ind b x k =
+    match x with
+    [ <:expr< $lid:op$ $x$ $y$ >> ->
+        if op = "+" || op = "-" then
+          sprintf "%s%s%s%s%s" b (expr1 0 "" x "") op (expr2 0 "" y "") k
+        else expr2 ind b x k
+    | _ -> expr2 ind b x k ]
+  and expr2 ind b x k =
+    match x with
+    [ <:expr< $lid:op$ $x$ $y$ >> ->
+        if op = "*" || op = "/" then
+          sprintf "%s%s%s%s%s" b (expr2 0 "" x "") op (expr3 0 "" y "") k
+        else expr3 ind b x k
+    | _ -> expr3 ind b x k ]
+  and expr3 ind b x k =
+    match x with
+    [ <:expr< $lid:v$ >> ->
+        if is_infix v || has_special_chars v then raise Exit
+        else var_escaped ind b v k
+    | <:expr< $int:s$ >> -> sprintf "%s%s%s" b s k
+    | <:expr< $lid:op$ $_$ $_$ >> ->
+        if List.mem op ["+"; "-"; "*"; "/"] then
+          sprintf "%s(%s)%s" b (expr1 0 "" x "") k
+        else raise Exit
+    | _ -> raise Exit ]
+  in
+  try horiz_vertic (fun () -> expr1 ind b x k) (fun () -> raise Exit) with
+  [ Exit -> expr ind b x k ]
+;
+
 (* definitions of printers by decreasing level *)
 
 value ctyp_top =
@@ -1075,7 +1109,7 @@ value expr_top =
                     sprintf "%s\n%s\n%s" s1 s2 s3)
              in
              let s2 =
-               vlistl (semi_after expr) expr (ind + 2) (tab (ind + 2)) el ""
+               vlist (semi_after expr) (ind + 2) (tab (ind + 2)) el ""
              in
              let s3 = sprintf "%s}%s" (tab ind) k in
              sprintf "%s\n%s\n%s" s1 s2 s3)
@@ -1241,7 +1275,7 @@ value expr_dot =
         expr ind (curr ind b x ".(") y (sprintf ")%s" k)
   | <:expr< $x$ .[ $y$ ] >> ->
       fun curr next ind b k ->
-        expr ind (curr ind b x ".[") y (sprintf "]%s" k)
+        expr_short ind (curr ind b x ".[") y (sprintf "]%s" k)
   | z ->
       fun curr next ind b k -> next ind b z k ]
 ;

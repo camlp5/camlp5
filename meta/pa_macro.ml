@@ -1,5 +1,5 @@
 (* camlp4r *)
-(* $Id: pa_macro.ml,v 1.9 2006/12/13 11:15:25 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.10 2007/06/09 02:46:05 deraugla Exp $ *)
 
 (*
 Added statements:
@@ -91,11 +91,10 @@ value subst mloc env =
         let pel = List.map (fun (p, e) -> (p, loop e)) pel in
         <:expr< let $opt:rf$ $list:pel$ in $loop e$ >>
     | <:expr< if $e1$ then $e2$ else $e3$ >> ->
-         <:expr< if $loop e1$ then $loop e2$ else $loop e3$ >>
+        <:expr< if $loop e1$ then $loop e2$ else $loop e3$ >>
     | <:expr< $e1$ $e2$ >> -> <:expr< $loop e1$ $loop e2$ >>
     | <:expr< $lid:x$ >> | <:expr< $uid:x$ >> as e ->
-        try <:expr< $anti:List.assoc x env$ >> with
-        [ Not_found -> e ]
+        try <:expr< $anti:List.assoc x env$ >> with [ Not_found -> e ]
     | <:expr< ($list:x$) >> -> <:expr< ($list:List.map loop x$) >>
     | <:expr< { $list:pel$ } >> ->
         let pel = List.map (fun (p, e) -> (p, loop e)) pel in
@@ -127,78 +126,73 @@ value substp mloc env =
 value incorrect_number loc l1 l2 =
   Stdpp.raise_with_loc loc
     (Failure
-       (Printf.sprintf "expected %d parameters; found %d"
-          (List.length l2) (List.length l1)))
+       (Printf.sprintf "expected %d parameters; found %d" (List.length l2)
+          (List.length l1)))
 ;
 
-value define eo x =
-  do {
-    match eo with
-    [ Some ([], e) ->
-        EXTEND
-          expr: LEVEL "simple"
-            [ [ UIDENT $x$ -> Pcaml.expr_reloc (fun _ -> loc) 0 e ] ]
-          ;
-          patt: LEVEL "simple"
-            [ [ UIDENT $x$ ->
-                  let p = substp loc [] e in
-                  Pcaml.patt_reloc (fun _ -> loc) 0 p ] ]
-          ;
-        END
-    | Some (sl, e) ->
-        EXTEND
-          expr: LEVEL "apply"
-            [ [ UIDENT $x$; param = SELF ->
-                  let el =
-                    match param with
-                    [ <:expr< ($list:el$) >> -> el
-                    | e -> [e] ]
-                  in
-                  if List.length el = List.length sl then
-                    let env = List.combine sl el in
-                    let e = subst loc env e in
-                    Pcaml.expr_reloc (fun _ -> loc) 0 e
-                  else
-                    incorrect_number loc el sl ] ]
-          ;
-          patt: LEVEL "simple"
-            [ [ UIDENT $x$; param = SELF ->
-                  let pl =
-                    match param with
-                    [ <:patt< ($list:pl$) >> -> pl
-                    | p -> [p] ]
-                  in
-                  if List.length pl = List.length sl then
-                    let env = List.combine sl pl in
-                    let p = substp loc env e in
-                    Pcaml.patt_reloc (fun _ -> loc) 0 p
-                  else
-                    incorrect_number loc pl sl ] ]
-          ;
-        END
-    | None -> () ];
-    defined.val := [(x, eo) :: defined.val];
-  }
-;
+value define eo x = do {
+  match eo with
+  [ Some ([], e) ->
+      EXTEND
+        expr: LEVEL "simple"
+          [ [ UIDENT $x$ -> Pcaml.expr_reloc (fun _ -> loc) 0 e ] ]
+        ;
+        patt: LEVEL "simple"
+          [ [ UIDENT $x$ ->
+                let p = substp loc [] e in
+                Pcaml.patt_reloc (fun _ -> loc) 0 p ] ]
+        ;
+      END
+  | Some (sl, e) ->
+      EXTEND
+        expr: LEVEL "apply"
+          [ [ UIDENT $x$; param = SELF ->
+                let el =
+                  match param with
+                  [ <:expr< ($list:el$) >> -> el
+                  | e -> [e] ]
+                in
+                if List.length el = List.length sl then
+                  let env = List.combine sl el in
+                  let e = subst loc env e in
+                  Pcaml.expr_reloc (fun _ -> loc) 0 e
+                else
+                  incorrect_number loc el sl ] ]
+        ;
+        patt: LEVEL "simple"
+          [ [ UIDENT $x$; param = SELF ->
+                let pl =
+                  match param with
+                  [ <:patt< ($list:pl$) >> -> pl
+                  | p -> [p] ]
+                in
+                if List.length pl = List.length sl then
+                  let env = List.combine sl pl in
+                  let p = substp loc env e in
+                  Pcaml.patt_reloc (fun _ -> loc) 0 p
+                else
+                  incorrect_number loc pl sl ] ]
+        ;
+      END
+  | None -> () ];
+  defined.val := [(x, eo) :: defined.val]
+};
 
 value undef x =
-  try
-    do {
-      let eo = List.assoc x defined.val in
-      match eo with
-      [ Some ([], _) ->
-          do {
-            DELETE_RULE expr: UIDENT $x$ END;
-            DELETE_RULE patt: UIDENT $x$ END;
-          }
-      | Some (_, _) ->
-          do {
-            DELETE_RULE expr: UIDENT $x$; SELF END;
-            DELETE_RULE patt: UIDENT $x$; SELF END;
-          }
-      | None -> () ];
-      defined.val := list_remove x defined.val;
-    }
+  try do {
+    let eo = List.assoc x defined.val in
+    match eo with
+    [ Some ([], _) -> do {
+        DELETE_RULE expr: UIDENT $x$ END;
+        DELETE_RULE patt: UIDENT $x$ END;
+      }
+    | Some (_, _) -> do {
+        DELETE_RULE expr: UIDENT $x$; SELF END;
+        DELETE_RULE patt: UIDENT $x$; SELF END;
+      }
+    | None -> () ];
+    defined.val := list_remove x defined.val
+  }
   with
   [ Not_found -> () ]
 ;
@@ -238,9 +232,9 @@ EXTEND
       | -> None ] ]
   ;
   expr: LEVEL "top"
-    [ [ "IFDEF"; e = dexpr; "THEN"; e1 = expr; "ELSE"; e2 = expr; "END" ->
+    [ [ "IFDEF"; e = dexpr; "THEN"; e1 = SELF; "ELSE"; e2 = SELF; "END" ->
           if e then e1 else e2
-      | "IFNDEF"; e = dexpr; "THEN"; e1 = expr; "ELSE"; e2 = expr; "END" ->
+      | "IFNDEF"; e = dexpr; "THEN"; e1 = SELF; "ELSE"; e2 = SELF; "END" ->
           if e then e2 else e1 ] ]
   ;
   expr: LEVEL "simple"
@@ -251,9 +245,9 @@ EXTEND
           <:expr< ($int:bp$, $int:ep$) >> ] ]
   ;
   patt:
-    [ [ "IFDEF"; e = dexpr; "THEN"; p1 = patt; "ELSE"; p2 = patt; "END" ->
+    [ [ "IFDEF"; e = dexpr; "THEN"; p1 = SELF; "ELSE"; p2 = SELF; "END" ->
           if e then p1 else p2
-      | "IFNDEF"; e = dexpr; "THEN"; p1 = patt; "ELSE"; p2 = patt; "END" ->
+      | "IFNDEF"; e = dexpr; "THEN"; p1 = SELF; "ELSE"; p2 = SELF; "END" ->
           if e then p2 else p1 ] ]
   ;
   dexpr:
@@ -261,7 +255,7 @@ EXTEND
     | [ x = SELF; "AND"; y = SELF -> y && y ]
     | [ "NOT"; x = SELF -> not x ]
     | [ i = uident -> is_defined i
-      | "("; x = dexpr; ")" -> x ] ]
+      | "("; x = SELF; ")" -> x ] ]
   ;
   uident:
     [ [ i = UIDENT -> i ] ]
@@ -269,8 +263,7 @@ EXTEND
 END;
 
 Pcaml.add_option "-D" (Arg.String (define None))
-  "<string> Define for IFDEF instruction."
-;
+  "<string> Define for IFDEF instruction.";
+
 Pcaml.add_option "-U" (Arg.String undef)
-  "<string> Undefine for IFDEF instruction."
-;
+  "<string> Undefine for IFDEF instruction.";
