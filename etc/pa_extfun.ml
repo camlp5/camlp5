@@ -1,18 +1,17 @@
 (* camlp4r q_MLast.cmo pa_extend.cmo *)
-(* $Id: pa_extfun.ml,v 1.3 2006/10/25 18:54:48 deraugla Exp $ *)
+(* $Id: pa_extfun.ml,v 1.4 2007/06/09 07:40:29 deraugla Exp $ *)
 
 open Pcaml;
 
-value not_impl name x =
+value not_impl name x = do {
   let desc =
     if Obj.is_block (Obj.repr x) then
       "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
     else "int_val = " ^ string_of_int (Obj.magic x)
   in
-  do {
-    print_newline (); failwith ("pa_extfun: not impl " ^ name ^ " " ^ desc)
-  }
-;
+  print_newline ();
+  failwith ("pa_extfun: not impl " ^ name ^ " " ^ desc)
+};
 
 value rec mexpr p =
   let loc = MLast.loc_of_patt p in

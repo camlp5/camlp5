@@ -395,6 +395,11 @@ value rec rule ind b (sl, a) k =
                  sprintf "%s\n%s" s1 s2)
         | None ->
             let sl = List.map (fun s -> (s, ";")) sl in
+(**)
+            let s1 = plist psymbol (ind + 2) 0 b sl " ->" in
+            let s2 = action expr (ind + 4) (tab (ind + 4)) a k in
+            sprintf "%s\n%s" s1 s2 ] ]
+(*
             let psymbol_arrow_action ind b ps k =
               horiz_vertic
                 (fun () ->
@@ -406,6 +411,7 @@ value rec rule ind b (sl, a) k =
                    sprintf "%s\n%s" s1 s2)
             in
             plistl psymbol psymbol_arrow_action (ind + 2) 0 b sl k ] ]
+*)
 and psymbol ind b (p, s) k =
   match p with
   [ None -> symbol ind b s k

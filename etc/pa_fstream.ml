@@ -27,8 +27,7 @@ value rec pattern_eq_expression p e =
   | (<:patt< ($list:pl$) >>, <:expr< ($list:el$) >>) ->
       loop pl el where rec loop pl el =
         match (pl, el) with
-        [ ([p :: pl], [e :: el]) ->
-            pattern_eq_expression p e && loop pl el
+        [ ([p :: pl], [e :: el]) -> pattern_eq_expression p e && loop pl el
         | ([], []) -> True
         | _ -> False ]
   | _ -> False ]
@@ -98,7 +97,8 @@ value cparser loc bpo pc =
     [ Some bp -> <:expr< let $bp$ = Fstream.count $lid:strm_n$ in $e$ >>
     | None -> e ]
   in
-  let p = <:patt< ($lid:strm_n$ : Fstream.t _) >> in <:expr< fun $p$ -> $e$ >>
+  let p = <:patt< ($lid:strm_n$ : Fstream.t _) >> in
+  <:expr< fun $p$ -> $e$ >>
 ;
 
 (* streams *)
@@ -112,8 +112,7 @@ value rec cstream loc =
       let e2 = cstream loc sel in
       let x = <:expr< Fstream.cons $e$ $e2$ >> in
       <:expr< Fstream.flazy $slazy loc x$ >>
-  | [SeNtr loc e] ->
-      e
+  | [SeNtr loc e] -> e
   | [SeNtr loc e :: sel] ->
       let e2 = cstream loc sel in
       let x = <:expr< Fstream.app $e$ $e2$ >> in
@@ -123,7 +122,8 @@ value rec cstream loc =
 EXTEND
   GLOBAL: expr;
   expr: LEVEL "top"
-    [ [ "fparser"; po = OPT ipatt; "["; pcl = LIST0 parser_case SEP "|"; "]" ->
+    [ [ "fparser"; po = OPT ipatt; "["; pcl = LIST0 parser_case SEP "|";
+        "]" ->
           <:expr< $cparser loc po pcl$ >>
       | "fparser"; po = OPT ipatt; pc = parser_case ->
           <:expr< $cparser loc po [pc]$ >>

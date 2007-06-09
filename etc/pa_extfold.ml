@@ -1,5 +1,5 @@
 (* camlp4r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extfold.ml,v 1.1 2006/09/29 04:45:49 deraugla Exp $ *)
+(* $Id: pa_extfold.ml,v 1.2 2007/06/09 07:40:29 deraugla Exp $ *)
 
 open Pcaml;
 open Pa_extend;
@@ -29,10 +29,10 @@ EXTEND
       | UIDENT "FOLD1"; f = simple_expr; e = simple_expr; s = SELF ->
           sfold loc "FOLD1" "sfold1" f e s
       | UIDENT "FOLD0"; f = simple_expr; e = simple_expr; s = SELF;
-        UIDENT "SEP"; sep = symbol ->
+        UIDENT "SEP"; sep = SELF ->
           sfoldsep loc "FOLD0 SEP" "sfold0sep" f e s sep
       | UIDENT "FOLD1"; f = simple_expr; e = simple_expr; s = SELF;
-        UIDENT "SEP"; sep = symbol ->
+        UIDENT "SEP"; sep = SELF ->
           sfoldsep loc "FOLD1 SEP" "sfold1sep" f e s sep ] ]
   ;
   simple_expr:

@@ -15,6 +15,7 @@ value flag_where_after_field_eq = ref False;
 value flag_where_after_then = ref False;
 value flag_where_in_sequences = ref False;
 value flag_where_after_value_eq = ref True;
+value flag_where_after_arrow = ref True;
 value flag_where_all = ref True;
 
 module Buff =
@@ -458,7 +459,7 @@ and where_binding ind b (p, e, body) k =
        in
        let vertic_where () =
          let s1 = expr ind b e "" in
-         let s2 = hlist patt ind (sprintf "%swhere rec" (tab ind)) pl " =" in
+         let s2 = hlist patt ind (sprintf "%swhere rec " (tab ind)) pl " =" in
          sprintf "%s\n%s" s1 s2
        in
        match sequencify body with
@@ -581,6 +582,7 @@ value let_binding ind b (p, e) is_last =
 ;
 
 value match_assoc ind b (p, w, e) k =
+  let expr_wh = if flag_where_after_arrow.val then expr_wh else expr in
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s -> %s%s" b (patt_as 0 "" p "")
@@ -614,7 +616,7 @@ value match_assoc ind b (p, w, e) k =
        [ Some el -> sequence_box ind (fun () -> sprintf "\n") patt_arrow el k
        | None ->
            let s1 = patt_arrow () in
-           let s2 = expr (ind + 2) (tab (ind + 2)) e k in
+           let s2 = expr_wh (ind + 2) (tab (ind + 2)) e k in
            sprintf "%s\n%s" s1 s2 ])
 ;
 
@@ -1972,6 +1974,7 @@ value set_flags s =
         flag_where_after_value_eq.val := s.[i] = 'A';
         flag_where_after_field_eq.val := s.[i] = 'A';
         flag_where_after_then.val := s.[i] = 'A';
+        flag_where_after_arrow.val := s.[i] = 'A';
         flag_where_in_sequences.val := s.[i] = 'A';
         flag_where_all.val := s.[i] = 'A'
       }
@@ -1985,6 +1988,7 @@ value set_flags s =
     | 's' | 'S' -> flag_where_in_sequences.val := s.[i] = 'S'
     | 't' | 'T' -> flag_where_after_then.val := s.[i] = 'T'
     | 'v' | 'V' -> flag_where_after_value_eq.val := s.[i] = 'V'
+    | 'w' | 'W' -> flag_where_after_arrow.val := s.[i] = 'W'
     | c -> failwith ("bad wh flag " ^ String.make 1 c) ];
   }
 ;
@@ -2002,7 +2006,8 @@ Pcaml.add_option "-flg" (Arg.String set_flags)
      S/s enable/disable allowing printing 'where' in sequences
      T/t enable/disable allowing printing 'where' after 'then' or 'else'
      V/v enable/disable allowing printing 'where' after 'value..='
-     default setting is \"aLQV\".";
+     W/w enable/disable allowing printing 'where' after '->'
+     default setting is \"aLQVW\".";
 
 Pcaml.add_option "-l" (Arg.Int (fun x -> Sformat.line_length.val := x))
   ("<length> Maximum line length for pretty printing (default " ^

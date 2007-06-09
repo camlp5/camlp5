@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_lefteval.ml,v 1.3 2006/12/26 08:54:09 deraugla Exp $ *)
+(* $Id: pa_lefteval.ml,v 1.4 2007/06/09 07:40:29 deraugla Exp $ *)
 
 value not_impl name x =
   let desc =
@@ -30,14 +30,12 @@ value rec expr_fa al =
 (* generating let..in before functions calls which evaluates
    several (more than one) of their arguments *)
 
-value no_side_effects_ht =
+value no_side_effects_ht = do {
   let ht = Hashtbl.create 73 in
-  do {
-    List.iter (fun s -> Hashtbl.add ht s True)
-      ["<"; "="; "@"; "^"; "+"; "-"; "ref"];
-    ht
-  }
-;
+  List.iter (fun s -> Hashtbl.add ht s True)
+    ["<"; "="; "@"; "^"; "+"; "-"; "ref"];
+  ht
+};
 
 value no_side_effects =
   fun
@@ -69,8 +67,8 @@ value rec may_be_side_effect_victim =
 ;
 
 value rec may_depend_on_order el =
-  loop False False el where rec loop
-    side_effect_found side_effect_victim_found =
+  loop False False el
+  where rec loop side_effect_found side_effect_victim_found =
     fun
     [ [e :: el] ->
         if may_side_effect e then
