@@ -314,7 +314,7 @@ value print_exn =
             Format.print_string (Obj.magic arg : string);
             Format.print_char '"'
           }
-          else Format.print_char '_'
+          else Format.print_char '_';
         };
         Format.print_char ')'
       }

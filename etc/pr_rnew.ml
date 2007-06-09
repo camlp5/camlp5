@@ -597,34 +597,34 @@ value match_assoc ind b (p, w, e) k =
                   sprintf "%s%s when %s ->" b (patt_as 0 "" p "")
                     (expr 0 "" e ""))
                (fun () ->
-                  let s1 = patt_as (ind + 2) b p "" in
+                  let s1 = patt_as ind b p "" in
                   let s2 =
                     horiz_vertic
                       (fun () ->
-                         sprintf "%swhen %s ->" (tab (ind + 2))
-                           (expr 0 "" e ""))
+                         sprintf "%swhen %s ->" (tab ind) (expr 0 "" e ""))
                       (fun () ->
-                         let s1 = sprintf "%swhen" (tab (ind + 2)) in
-                         let s2 = expr (ind + 4) (tab (ind + 4)) e " ->" in
+                         let s1 = sprintf "%swhen" (tab ind) in
+                         let s2 = expr (ind + 2) (tab (ind + 2)) e " ->" in
                          sprintf "%s\n%s" s1 s2)
                   in
                   sprintf "%s\n%s" s1 s2)
-         | None -> patt_as (ind + 2) b p " ->" ]
+         | None -> patt_as ind b p " ->" ]
        in
        match sequencify e with
-       [ Some el ->
-           sequence_box (ind + 2) (fun () -> sprintf "\n") patt_arrow el k
+       [ Some el -> sequence_box ind (fun () -> sprintf "\n") patt_arrow el k
        | None ->
            let s1 = patt_arrow () in
-           let s2 = expr (ind + 4) (tab (ind + 4)) e k in
+           let s2 = expr (ind + 2) (tab (ind + 2)) e k in
            sprintf "%s\n%s" s1 s2 ])
 ;
+
+value match_assoc_sh ind b pwe k = match_assoc (ind + 2) b pwe k;
 
 value match_assoc_list ind b pwel k =
   if pwel = [] then sprintf "%s[]%s" b k
   else
-    vlist2 match_assoc (bar_before match_assoc) ind (sprintf "%s[ " b) pwel
-      "" (sprintf " ]%s" k)
+    vlist2 match_assoc_sh (bar_before match_assoc_sh) ind (sprintf "%s[ " b)
+      pwel "" (sprintf " ]%s" k)
 ;
 
 value rec make_expr_list =

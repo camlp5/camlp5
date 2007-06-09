@@ -141,6 +141,7 @@ and plistl_kont_same_line elem eleml ind sh b xl k =
               sprintf "%s\n%s\n%s" b s1 s2
           | None -> sprintf "%s\n%s" b s1 ] ] ]
 ;
+value plist elem ind sh b xl k = plistl elem elem ind sh b xl k;
 
 value bar_before elem ind b x k = elem ind (sprintf "%s| " b) x k;
 value semi_after elem ind b x k = elem ind b x (sprintf ";%s" k);
@@ -493,7 +494,8 @@ value extend_body ind b (globals, entries) k =
   match globals with
   [ [] -> vlist entry ind b entries k
   | _ ->
-      let s1 = sprintf "%sGLOBAL: %s;" b (hlist expr ind "" globals "") in
+      let globals = List.map (fun g -> (g, "")) globals in
+      let s1 = plist expr ind 2 (sprintf "%sGLOBAL: " b) globals ";" in
       let s2 = vlist entry ind (tab ind) entries k in
       sprintf "%s\n%s" s1 s2 ]
 ;
