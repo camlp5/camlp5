@@ -19,7 +19,8 @@ type spat_comp =
   | SpStr of MLast.loc and MLast.patt ]
 ;
 type sexp_comp =
-  [ SeTrm of MLast.loc and MLast.expr | SeNtr of MLast.loc and MLast.expr ]
+  [ SeTrm of MLast.loc and MLast.expr
+  | SeNtr of MLast.loc and MLast.expr ]
 ;
 
 value strm_n = "strm__";
