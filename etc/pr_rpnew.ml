@@ -78,6 +78,8 @@ value unparser_body e =
         in
         let spe2 = ([], None, e2) in
         [spe1; spe2]
+    | <:expr< let $p$ = $f$ strm__ in $e$ >> ->
+        [([(SpNtr loc p f, None)], None, e)]
     | _ ->
         [([], None, e)] ]
   in
@@ -153,11 +155,26 @@ value parser_case_sh ind b spe k = parser_case (ind + 2) b spe k;
 
 value parser_body ind b (po, spel) k =
   let s1 = ident_option po in
-  let s2 =
-    vlist2 parser_case_sh (bar_before parser_case_sh) ind (sprintf "%s[ "
-      (tab ind)) spel "" (sprintf " ]%s" k)
+  let s2o =
+    match spel with
+    [ [spe] ->
+        horiz_vertic
+          (fun () ->
+             let s =
+               sprintf "%sparser%s %s%s" b s1 (parser_case 0 "" spe "") k
+             in
+             Some s)
+          (fun () -> None)
+    | _ -> None ]
   in
-  sprintf "%sparser%s\n%s" b s1 s2
+  match s2o with
+  [ Some s -> s
+  | None ->
+      let s2 =
+        vlist2 parser_case_sh (bar_before parser_case_sh) ind
+          (sprintf "%s[ " (tab ind)) spel "" (sprintf " ]%s" k)
+      in
+      sprintf "%sparser%s\n%s" b s1 s2 ]
 ;
 
 (* Main *)
