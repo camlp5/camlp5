@@ -14,10 +14,6 @@ type spat_comp =
   | SpStr of MLast.loc and MLast.patt ]
 ;
 
-value strm_n = "strm__";
-value peek_fun loc = <:expr< Stream.peek >>;
-value junk_fun loc = <:expr< Stream.junk >>;
-
 value not_impl name ind b x k =
   let desc =
     if Obj.tag (Obj.repr x) = Obj.tag (Obj.repr "") then
@@ -28,6 +24,32 @@ value not_impl name ind b x k =
   in
   sprintf "%s\"pr_rp, not impl: %s; %s\"%s" b name (String.escaped desc) k
 ;
+
+(* General purpose printing functions *)
+
+value tab ind = String.make ind ' ';
+
+(* horizontal list with different function for the last element *)
+value rec hlistl elem eleml ind b xl k =
+  match xl with
+  [ [] -> sprintf "%s%s" b k
+  | [x] -> eleml ind b x k
+  | [x :: xl] ->
+      sprintf "%s %s" (elem ind b x "") (hlistl elem eleml ind "" xl k) ]
+;
+
+(* vertical list with different function from 2nd element on *)
+value rec vlist2 elem elem2 ind b xl k0 k =
+  match xl with
+  [ [] -> invalid_arg "vlist2"
+  | [x] -> elem ind b x k
+  | [x :: xl] ->
+      sprintf "%s\n%s" (elem ind b x k0)
+        (vlist2 elem2 elem2 ind (tab ind) xl k0 k) ]
+;
+
+value bar_before elem ind b x k = elem ind (sprintf "%s| " b) x k;
+value semi_after elem ind b x k = elem ind b x (sprintf ";%s" k);
 
 (* Rebuilding syntax tree *)
 
@@ -44,35 +66,28 @@ value unparser_body e =
     match e with
     [ <:expr<
         match try Some ($f$ strm__) with [ Stream.Failure -> None ] with
-        [ Some $p1$ -> $e1$
+        [ Some $p1$ -> $e1$ strm__
         | _ -> $e2$ ]
       >> ->
-        [([SpNtr loc p1 e1], None, e1); ([], None, e2)]
+        let spe1 =
+          let sp =
+            [(SpNtr loc p1 f, None);
+             (SpNtr loc <:patt< a >> e1, Some None)]
+          in
+          (sp, None, <:expr< a >>)
+        in
+        let spe2 = ([], None, e2) in
+        [spe1; spe2]
     | _ ->
         [([], None, e)] ]
   in
   (po, spel)
 ;
 
-(* General purpose printing functions *)
-
-value tab ind = String.make ind ' ';
-
-(* vertical list with different function from 2nd element on *)
-value rec vlist2 elem elem2 ind b xl k0 k =
-  match xl with
-  [ [] -> invalid_arg "vlist2"
-  | [x] -> elem ind b x k
-  | [x :: xl] ->
-      sprintf "%s\n%s" (elem ind b x k0)
-        (vlist2 elem2 elem2 ind (tab ind) xl k0 k) ]
-;
-
-value bar_before elem ind b x k = elem ind (sprintf "%s| " b) x k;
-
 (* Printing *)
 
 value expr ind b z k = pr_expr.pr_fun "top" ind b z k;
+value patt ind b z k = pr_patt.pr_fun "top" ind b z k;
 
 value ident_option =
   fun
@@ -80,7 +95,35 @@ value ident_option =
   | None -> "" ]
 ;
 
-value stream_patt ind b sp k = not_impl "stream_patt" ind b sp k;
+value stream_patt_comp ind b spc k =
+  match spc with
+  [ SpNtr _ p e ->
+      horiz_vertic
+        (fun () ->
+           sprintf "%s%s = %s%s" b (patt 0 "" p "") (expr 0 "" e "") k)
+        (fun () -> not_impl "stream_patt_comp 1" ind b spc k)
+  | _ -> not_impl "stream_patt_comp" ind b spc k ]
+;
+
+value stream_patt_comp_err ind b (spc, err) k =
+  let s = stream_patt_comp ind b spc "" in
+  let serr =
+    match err with
+    [ None -> k
+    | Some None -> sprintf " !%s" k
+    | Some (Some e) -> not_impl "stream_patt_comp_err" ind "" e k ]
+  in
+  sprintf "%s%s" s serr
+;
+
+value stream_patt ind b sp k =
+  horiz_vertic
+    (fun () ->
+       sprintf "%s%s%s" b
+         (hlistl (semi_after stream_patt_comp_err) stream_patt_comp_err
+            0 "" sp "") k)
+    (fun () -> not_impl "stream_patt" ind b sp k)
+;
 
 value parser_case ind b (sp, po, e) k =
   match sp with
@@ -95,9 +138,15 @@ value parser_case ind b (sp, po, e) k =
   | _ ->
       horiz_vertic
         (fun () ->
-           sprintf "%s[:%s:]%s -> %s%s" b (stream_patt 0 "" sp "")
+           sprintf "%s[: %s :]%s -> %s%s" b (stream_patt 0 "" sp "")
              (ident_option po) (expr 0 "" e "") k)
-        (fun () -> not_impl "parser_case 1" ind b sp k) ]
+        (fun () ->
+           let s1 =
+             stream_patt ind (sprintf "%s[: " b) sp
+               (sprintf " :]%s ->" (ident_option po))
+           in
+           let s2 = expr (ind + 2) (tab (ind + 2)) e k in
+           sprintf "%s\n%s" s1 s2) ]
 ;
 
 value parser_case_sh ind b spe k = parser_case (ind + 2) b spe k;
