@@ -652,15 +652,13 @@ value rec expr =
         in
         mkexp loc (Pexp_record (List.map mklabexp lel) eo)
   | ExSeq loc el ->
-      let rec loop =
+      loop el where rec loop =
         fun
         [ [] -> expr (ExUid loc "()")
         | [e] -> expr e
         | [e :: el] ->
             let loc = Stdpp.encl_loc (loc_of_expr e) loc in
             mkexp loc (Pexp_sequence (expr e) (loop el)) ]
-      in
-      loop el
   | ExSnd loc e s -> mkexp loc (Pexp_send (expr e) s)
   | ExSte loc e1 e2 ->
       mkexp loc

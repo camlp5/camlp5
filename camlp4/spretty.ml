@@ -336,7 +336,8 @@ and print_parag_rest tab pos spc =
   [ [p :: pl] ->
       let (pos, spc) =
         if pos > tab && too_long tab (pos, spc) p then do {
-          print_newline_and_tab tab; (tab, 0)
+          print_newline_and_tab tab;
+          (tab, 0)
         }
         else (pos, spc)
       in
