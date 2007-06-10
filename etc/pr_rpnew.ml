@@ -29,6 +29,33 @@ value not_impl name ind b x k =
   sprintf "%s\"pr_rp, not impl: %s; %s\"%s" b name (String.escaped desc) k
 ;
 
+(* Rebuilding syntax tree *)
+
+value loc = Token.dummy_loc;
+
+value unparser_body e =
+  let (po, e) =
+    match e with
+    [ <:expr< let $lid:bp$ = Stream.count $lid:strm_n$ in $e$ >> ->
+        (Some bp, e)
+    | _ -> (None, e) ]
+  in
+  let spel =
+    match e with
+    [ <:expr<
+        match try Some ($f$ strm__) with [ Stream.Failure -> None ] with
+        [ Some $p1$ -> $e1$
+        | _ -> $e2$ ]
+      >> ->
+        [([SpNtr loc p1 e1], None, e1); ([], None, e2)]
+    | _ ->
+        [([], None, e)] ]
+  in
+  (po, spel)
+;
+
+(* General purpose printing functions *)
+
 value tab ind = String.make ind ' ';
 
 (* vertical list with different function from 2nd element on *)
@@ -43,35 +70,43 @@ value rec vlist2 elem elem2 ind b xl k0 k =
 
 value bar_before elem ind b x k = elem ind (sprintf "%s| " b) x k;
 
-(* Rebuilding syntax tree *)
-
-value unparser_body e =
-  let (po, e) =
-    match e with
-    [ <:expr< let $lid:bp$ = Stream.count $lid:strm_n$ in $e$ >> ->
-        (Some bp, e)
-    | _ -> (None, e) ]
-  in
-  (po, [([], None, e)])
-;
-
 (* Printing *)
 
 value expr ind b z k = pr_expr.pr_fun "top" ind b z k;
 
-value parser_case ind b (sp, po, e) k =
-  not_impl "parser_case" ind b sp k
+value ident_option =
+  fun
+  [ Some s -> sprintf " %s" s
+  | None -> "" ]
 ;
 
+value stream_patt ind b sp k = not_impl "stream_patt" ind b sp k;
+
+value parser_case ind b (sp, po, e) k =
+  match sp with
+  [ [] ->
+      horiz_vertic
+        (fun () ->
+           sprintf "%s[: :]%s -> %s%s" b (ident_option po) (expr 0 "" e "") k)
+        (fun () ->
+           let s1 = sprintf "%s[: :]%s ->" b (ident_option po) in
+           let s2 = expr (ind + 2) (tab (ind + 2)) e k in
+           sprintf "%s\n%s" s1 s2)
+  | _ ->
+      horiz_vertic
+        (fun () ->
+           sprintf "%s[:%s:]%s -> %s%s" b (stream_patt 0 "" sp "")
+             (ident_option po) (expr 0 "" e "") k)
+        (fun () -> not_impl "parser_case 1" ind b sp k) ]
+;
+
+value parser_case_sh ind b spe k = parser_case (ind + 2) b spe k;
+
 value parser_body ind b (po, spel) k =
-  let s1 =
-    match po with
-    [ Some s -> sprintf " %s" s
-    | None -> "" ]
-  in
+  let s1 = ident_option po in
   let s2 =
-    vlist2 parser_case (bar_before parser_case) ind (sprintf "%s[ " (tab ind))
-      spel "" (sprintf " ]%s" k)
+    vlist2 parser_case_sh (bar_before parser_case_sh) ind (sprintf "%s[ "
+      (tab ind)) spel "" (sprintf " ]%s" k)
   in
   sprintf "%sparser%s\n%s" b s1 s2
 ;
