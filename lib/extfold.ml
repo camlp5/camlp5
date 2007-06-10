@@ -1,5 +1,5 @@
 (* camlp4r *)
-(* $Id: extfold.ml,v 1.3 2007/06/10 13:47:23 deraugla Exp $ *)
+(* $Id: extfold.ml,v 1.4 2007/06/10 18:39:15 deraugla Exp $ *)
 
 type t 'te 'a 'b =
   Gramext.g_entry 'te -> list (Gramext.g_symbol 'te) ->
@@ -37,11 +37,11 @@ value gen_fold0sep final f e entry symbl psymb psep =
   in
   let rec kont accu =
     parser
-    [ [: v = psep; a = psymb ? failed symbl; s :] -> kont (f a accu) s
+    [ [: v = psep; a = psymb ? failed symbl; a = kont (f a accu) ! :] -> a
     | [: :] -> accu ]
   in
   parser
-  [ [: a = psymb; s :] -> final (kont (f a e) s)
+  [ [: a = psymb; a = kont (f a e) ! :] -> final a
   | [: :] -> e ]
 ;
 

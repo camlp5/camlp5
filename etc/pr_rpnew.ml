@@ -135,7 +135,7 @@ value semi_after elem ind b x k = elem ind b x (sprintf ";%s" k);
 
 value loc = Token.dummy_loc;
 
-value unstream_pattern_kont =
+value rec unstream_pattern_kont =
   fun
   [ <:expr<
       let $p$ =
@@ -148,27 +148,21 @@ value unstream_pattern_kont =
         [ <:expr< "" >> -> None
         | e -> Some (Some e) ]
       in
-      ([(SpNtr loc p f, err)], e)
+      let (sp, e) = unstream_pattern_kont e in
+      ([(SpNtr loc p f, err) :: sp], e)
+  | <:expr< let $p$ = $f$ strm__ in $e$ >> ->
+      ([(SpNtr loc p f, Some None)], e)
+  | <:expr< let $p$ = $f$ in $e$ >> ->
+      let f = <:expr< fun (strm__ : Stream.t _) -> $f$ >> in
+      ([(SpNtr loc p f, Some None)], e)
+  | <:expr< $f$ strm__ >> ->
+      ([(SpNtr loc <:patt< a >> f, Some None)], <:expr< a >>)
   | e -> ([], e) ]
 ;
 
 value unparser_cases_list =
   fun
   [ <:expr<
-      match try Some ($f$ strm__) with [ Stream.Failure -> None ] with
-      [ Some $p1$ -> $e1$ strm__
-      | _ -> $e2$ ]
-    >> ->
-      let spe1 =
-        let sp =
-          [(SpNtr loc p1 f, None);
-           (SpNtr loc <:patt< a >> e1, Some None)]
-        in
-        (sp, None, <:expr< a >>)
-      in
-      let spe2 = ([], None, e2) in
-      [spe1; spe2]
-  | <:expr<
       match try Some ($f$ strm__) with [ Stream.Failure -> None ] with
       [ Some $p1$ -> $e1$
       | _ -> $e2$ ]
@@ -177,7 +171,8 @@ value unparser_cases_list =
         match unstream_pattern_kont e1 with
         [ ([], _) ->
             let sp  =
-              [(SpNtr loc p1 f, None); (SpNtr loc <:patt< a >> e1, Some None)]
+              [(SpNtr loc p1 f, None);
+               (SpNtr loc <:patt< a >> e1, Some None)]
             in
             (sp, None, <:expr< a >>)
         | (sp, e) ->
@@ -221,7 +216,10 @@ value stream_patt_comp ind b spc k =
       horiz_vertic
         (fun () ->
            sprintf "%s%s = %s%s" b (patt 0 "" p "") (expr 0 "" e "") k)
-        (fun () -> not_impl "stream_patt_comp 1" ind b spc k)
+        (fun () ->
+           let s1 = patt ind b p " =" in
+           let s2 = expr (ind + 2) (tab (ind + 2)) e k in
+           sprintf "%s\n%s" s1 s2)
   | _ -> not_impl "stream_patt_comp" ind b spc k ]
 ;
 
