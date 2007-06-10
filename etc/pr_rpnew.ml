@@ -48,6 +48,86 @@ value rec vlist2 elem elem2 ind b xl k0 k =
         (vlist2 elem2 elem2 ind (tab ind) xl k0 k) ]
 ;
 
+value rise_string ind sh b s =
+  (* hack for "plistl" (below): if s is a "string" (i.e. starting with
+     double-quote) which contains newlines, attempt to concat its first
+     line in the previous line, and, instead of displaying this:
+              eprintf
+                "\
+           hello, world"
+     displays that:
+              eprintf "\
+           hello, world"
+     what "saves" one line.
+   *)
+  if String.length s > ind + sh && s.[ind+sh] = '"' then
+    match try Some (String.index s '\n') with [ Not_found -> None ] with
+    [ Some i ->
+        let t = String.sub s (ind + sh) (String.length s - ind - sh) in
+        let i = i - ind - sh in
+        match
+          horiz_vertic (fun () -> Some (sprintf "%s %s" b (String.sub t 0 i)))
+            (fun () -> None)
+        with
+        [ Some b -> (b, String.sub t (i + 1) (String.length t - i - 1))
+        | None -> (b, s) ]
+    | None -> (b, s) ]
+  else (b, s)
+;
+
+(* paragraph list with a different function for the last element;
+   the list elements are pairs where second elements are separators
+   (the last separator is ignored) *)
+value rec plistl elem eleml ind sh b xl k =
+  let (s1, s2o) = plistl_two_parts elem eleml ind sh b xl k in
+  match s2o with
+  [ Some s2 -> sprintf "%s\n%s" s1 s2
+  | None -> s1 ]
+and plistl_two_parts elem eleml ind sh b xl k =
+  match xl with
+  [ [] -> assert False
+  | [(x, _)] -> (eleml ind b x k, None)
+  | [(x, sep) :: xl] ->
+      let s =
+        horiz_vertic (fun () -> Some (elem ind b x sep)) (fun () -> None)
+      in
+      match s with
+      [ Some b -> (plistl_kont_same_line elem eleml ind sh b xl k, None)
+      | None ->
+          let s1 = elem ind b x sep in
+          let s2 = plistl elem eleml (ind + sh) 0 (tab (ind + sh)) xl k in
+          (s1, Some s2) ] ]
+and plistl_kont_same_line elem eleml ind sh b xl k =
+  match xl with
+  [ [] -> assert False
+  | [(x, _)] ->
+      horiz_vertic (fun () -> eleml ind (sprintf "%s " b) x k)
+        (fun () ->
+           let s = eleml (ind + sh) (tab (ind + sh)) x k in
+           let (b, s) = rise_string ind sh b s in
+           sprintf "%s\n%s" b s)
+  | [(x, sep) :: xl] ->
+      let s =
+        horiz_vertic (fun () -> Some (elem ind (sprintf "%s " b) x sep))
+          (fun () -> None)
+      in
+      match s with
+      [ Some b -> plistl_kont_same_line elem eleml ind sh b xl k
+      | None ->
+          let (s1, s2o) =
+            plistl_two_parts elem eleml (ind + sh) 0 (tab (ind + sh))
+              [(x, sep) :: xl] k
+          in
+          match s2o with
+          [ Some s2 ->
+              let (b, s1) = rise_string ind sh b s1 in
+              sprintf "%s\n%s\n%s" b s1 s2
+          | None -> sprintf "%s\n%s" b s1 ] ] ]
+;
+
+(* paragraph list *)
+value plist elem ind sh b xl k = plistl elem elem ind sh b xl k;
+
 value bar_before elem ind b x k = elem ind (sprintf "%s| " b) x k;
 value semi_after elem ind b x k = elem ind b x (sprintf ";%s" k);
 
@@ -85,6 +165,24 @@ value unparser_cases_list =
            (SpNtr loc <:patt< a >> e1, Some None)]
         in
         (sp, None, <:expr< a >>)
+      in
+      let spe2 = ([], None, e2) in
+      [spe1; spe2]
+  | <:expr<
+      match try Some ($f$ strm__) with [ Stream.Failure -> None ] with
+      [ Some $p1$ -> $e1$
+      | _ -> $e2$ ]
+    >> ->
+      let spe1 =
+        match unstream_pattern_kont e1 with
+        [ ([], _) ->
+            let sp  =
+              [(SpNtr loc p1 f, None); (SpNtr loc <:patt< a >> e1, Some None)]
+            in
+            (sp, None, <:expr< a >>)
+        | (sp, e) ->
+            let sp = [(SpNtr loc p1 f, None) :: sp] in
+            (sp, None, e) ]
       in
       let spe2 = ([], None, e2) in
       [spe1; spe2]
@@ -133,7 +231,7 @@ value stream_patt_comp_err ind b (spc, err) k =
     match err with
     [ None -> k
     | Some None -> sprintf " !%s" k
-    | Some (Some e) -> not_impl "stream_patt_comp_err" ind "" e k ]
+    | Some (Some e) -> sprintf " ? %s%s" (expr 0 "" e "") k ]
   in
   sprintf "%s%s" s serr
 ;
@@ -144,7 +242,9 @@ value stream_patt ind b sp k =
        sprintf "%s%s%s" b
          (hlistl (semi_after stream_patt_comp_err) stream_patt_comp_err
             0 "" sp "") k)
-    (fun () -> not_impl "stream_patt" ind b sp k)
+    (fun () ->
+       let sp = List.map (fun spc -> (spc, ";")) sp in
+       plist stream_patt_comp_err (ind + 3) 0 b sp k)
 ;
 
 value parser_case ind b (sp, po, e) k =
