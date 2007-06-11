@@ -169,13 +169,13 @@ value rec unparser_cases_list =
       [ Some $p1$ -> $e1$
       | _ -> $e2$ ]
     >> ->
-      let spe1 =
+      let spe =
         let (sp, e) = unstream_pattern_kont e1 in
         let sp = [(SpNtr loc p1 f, None) :: sp] in
         (sp, None, e)
       in
-      let spe2 = ([], None, e2) in
-      [spe1; spe2]
+      let spel = unparser_cases_list e2 in
+      [spe :: spel]
   | <:expr< let $p$ = $f$ strm__ in $e$ >> ->
       let (sp, e) = unstream_pattern_kont e in
       [([(SpNtr loc p f, None) :: sp], None, e)]

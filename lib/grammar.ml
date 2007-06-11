@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.11 2007/06/11 11:25:05 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.12 2007/06/11 19:10:07 deraugla Exp $ *)
 
 open Stdpp;
 open Gramext;
@@ -546,10 +546,7 @@ and parser_of_token_list gram p1 tokl =
               | None -> raise Stream.Failure ]
             in
             let p1 = loop (n + 1) tokl in
-            parser
-              [: a = ps; s :] ->
-                let act = p1 s in
-                app act a ]
+            parser [: a = ps; act = p1 ! :] -> app act a ]
     | [] -> invalid_arg "parser_of_token_list" ]
 and parser_of_symbol entry nlevn =
   fun
@@ -563,7 +560,7 @@ and parser_of_symbol entry nlevn =
       let ps = parser_of_symbol entry nlevn s in
       let rec loop al =
         parser
-        [ [: a = ps; s :] -> loop [a :: al] s
+        [ [: a = ps; a = loop [a :: al] ! :] -> a
         | [: :] -> al ]
       in
       parser [: a = loop [] :] -> Obj.repr (List.rev a)
@@ -572,8 +569,9 @@ and parser_of_symbol entry nlevn =
       let pt = parser_of_symbol entry nlevn sep in
       let rec kont al =
         parser
-        [ [: v = pt; a = ps ? symb_failed entry v sep symb; s :] ->
-            kont [a :: al] s
+        [ [: v = pt; a = ps ? symb_failed entry v sep symb;
+             a = kont [a :: al] ! :] ->
+            a
         | [: :] -> al ]
       in
       parser
@@ -583,7 +581,7 @@ and parser_of_symbol entry nlevn =
       let ps = parser_of_symbol entry nlevn s in
       let rec loop al =
         parser
-        [ [: a = ps; s :] -> loop [a :: al] s
+        [ [: a = ps; a = loop [a :: al] ! :] -> a
         | [: :] -> al ]
       in
       parser [: a = ps; s :] -> Obj.repr (List.rev (loop [a] s))
