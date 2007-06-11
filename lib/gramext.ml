@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: gramext.ml,v 1.4 2007/06/04 01:58:31 deraugla Exp $ *)
+(* $Id: gramext.ml,v 1.5 2007/06/11 11:25:05 deraugla Exp $ *)
 
 open Printf;
 
@@ -122,8 +122,7 @@ value insert_tree entry_name gsymbols action tree =
         | LocAct old_action action_list -> do {
             if warning_verbose.val then do {
               eprintf "<W> Grammar extension: ";
-              if entry_name <> "" then eprintf "in [%s], " entry_name
-              else ();
+              if entry_name <> "" then eprintf "in [%s], " entry_name else ();
               eprintf "some rule has been masked\n";
               flush stderr
             }
@@ -218,12 +217,12 @@ value change_lev lev n lname assoc = do {
   match lname with
   [ Some n ->
       if lname <> lev.lname && warning_verbose.val then do {
-        eprintf "<W> Level label \"%s\" ignored\n" n; flush stderr
+        eprintf "<W> Level label \"%s\" ignored\n" n;
+        flush stderr
       }
       else ()
   | None -> () ];
-  {assoc = a; lname = lev.lname; lsuffix = lev.lsuffix;
-   lprefix = lev.lprefix}
+  {assoc = a; lname = lev.lname; lsuffix = lev.lsuffix; lprefix = lev.lprefix}
 };
 
 value get_level entry position levs =
@@ -349,17 +348,22 @@ value insert_tokens gram symbols =
         gram.glexer.Token.tok_using tok;
         let r =
           try Hashtbl.find gram.gtokens tok with
-          [ Not_found ->
+          [ Not_found -> do {
               let r = ref 0 in
-              do { Hashtbl.add gram.gtokens tok r; r } ]
+              Hashtbl.add gram.gtokens tok r;
+              r
+            } ]
         in
         incr r
       }
     | Snterm _ | Snterml _ _ | Snext | Sself -> () ]
   and tinsert =
     fun
-    [ Node {node = s; brother = bro; son = son} ->
-        do { insert s; tinsert bro; tinsert son }
+    [ Node {node = s; brother = bro; son = son} -> do {
+        insert s;
+        tinsert bro;
+        tinsert son
+      }
     | LocAct _ _ | DeadEnd -> () ]
   in
   List.iter insert symbols
@@ -384,14 +388,13 @@ value levels_of_rules entry position rules =
            let lev = make_lev lname assoc in
            let lev =
              List.fold_left
-               (fun lev (symbols, action) ->
+               (fun lev (symbols, action) -> do {
                   let symbols = List.map (change_to_self entry) symbols in
-                  do {
-                    List.iter (check_gram entry) symbols;
-                    let (e1, symbols) = get_initial entry symbols in
-                    insert_tokens entry.egram symbols;
-                    insert_level entry.ename e1 symbols action lev
-                  })
+                  List.iter (check_gram entry) symbols;
+                  let (e1, symbols) = get_initial entry symbols in
+                  insert_tokens entry.egram symbols;
+                  insert_level entry.ename e1 symbols action lev
+                })
                lev level
            in
            ([lev :: levs], empty_lev))
@@ -470,15 +473,15 @@ value delete_rule_in_tree entry =
 
 value rec decr_keyw_use gram =
   fun
-  [ Stoken tok ->
+  [ Stoken tok -> do {
       let r = Hashtbl.find gram.gtokens tok in
-      do {
-        decr r;
-        if r.val == 0 then do {
-          Hashtbl.remove gram.gtokens tok; gram.glexer.Token.tok_removing tok
-        }
-        else ()
+      decr r;
+      if r.val == 0 then do {
+        Hashtbl.remove gram.gtokens tok;
+        gram.glexer.Token.tok_removing tok
       }
+      else ()
+    }
   | Smeta _ sl _ -> List.iter (decr_keyw_use gram) sl
   | Slist0 s -> decr_keyw_use gram s
   | Slist1 s -> decr_keyw_use gram s
@@ -490,32 +493,30 @@ value rec decr_keyw_use gram =
 and decr_keyw_use_in_tree gram =
   fun
   [ DeadEnd | LocAct _ _ -> ()
-  | Node n ->
-      do {
-        decr_keyw_use gram n.node;
-        decr_keyw_use_in_tree gram n.son;
-        decr_keyw_use_in_tree gram n.brother
-      } ]
+  | Node n -> do {
+      decr_keyw_use gram n.node;
+      decr_keyw_use_in_tree gram n.son;
+      decr_keyw_use_in_tree gram n.brother
+    } ]
 ;
 
 value rec delete_rule_in_suffix entry symbols =
   fun
   [ [lev :: levs] ->
       match delete_rule_in_tree entry symbols lev.lsuffix with
-      [ Some (dsl, t) ->
-          do {
-            match dsl with
-            [ Some dsl -> List.iter (decr_keyw_use entry.egram) dsl
-            | None -> () ];
-            match t with
-            [ DeadEnd when lev.lprefix == DeadEnd -> levs
-            | _ ->
-                let lev =
-                  {assoc = lev.assoc; lname = lev.lname; lsuffix = t;
-                   lprefix = lev.lprefix}
-                in
-                [lev :: levs] ]
-          }
+      [ Some (dsl, t) -> do {
+          match dsl with
+          [ Some dsl -> List.iter (decr_keyw_use entry.egram) dsl
+          | None -> () ];
+          match t with
+          [ DeadEnd when lev.lprefix == DeadEnd -> levs
+          | _ ->
+              let lev =
+                {assoc = lev.assoc; lname = lev.lname; lsuffix = t;
+                 lprefix = lev.lprefix}
+              in
+              [lev :: levs] ]
+        }
       | None ->
           let levs = delete_rule_in_suffix entry symbols levs in
           [lev :: levs] ]
@@ -526,20 +527,19 @@ value rec delete_rule_in_prefix entry symbols =
   fun
   [ [lev :: levs] ->
       match delete_rule_in_tree entry symbols lev.lprefix with
-      [ Some (dsl, t) ->
-          do {
-            match dsl with
-            [ Some dsl -> List.iter (decr_keyw_use entry.egram) dsl
-            | None -> () ];
-            match t with
-            [ DeadEnd when lev.lsuffix == DeadEnd -> levs
-            | _ ->
-                let lev =
-                  {assoc = lev.assoc; lname = lev.lname;
-                   lsuffix = lev.lsuffix; lprefix = t}
-                in
-                [lev :: levs] ]
-          }
+      [ Some (dsl, t) -> do {
+          match dsl with
+          [ Some dsl -> List.iter (decr_keyw_use entry.egram) dsl
+          | None -> () ];
+          match t with
+          [ DeadEnd when lev.lsuffix == DeadEnd -> levs
+          | _ ->
+              let lev =
+                {assoc = lev.assoc; lname = lev.lname; lsuffix = lev.lsuffix;
+                 lprefix = t}
+              in
+              [lev :: levs] ]
+        }
       | None ->
           let levs = delete_rule_in_prefix entry symbols levs in
           [lev :: levs] ]

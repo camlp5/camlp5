@@ -65,7 +65,7 @@ let gen_fold0sep final f e entry symbl psymb psep =
       try Some (psymb strm__) with
         Stream.Failure -> None
     with
-      Some a -> final (kont (f a e) strm__)
+      Some a -> let a = kont (f a e) strm__ in final a
     | _ -> e
 ;;
 
@@ -102,7 +102,7 @@ let gen_fold1sep final f e entry symbl psymb psep =
     | _ -> accu
   in
   fun (strm__ : _ Stream.t) ->
-    let a = psymb strm__ in final (kont (f a e) strm__)
+    let a = psymb strm__ in let a = kont (f a e) strm__ in final a
 ;;
 
 let sfold0 f e = gen_fold0 (fun x -> x) f e;;

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.10 2006/12/26 08:54:09 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.11 2007/06/11 11:25:05 deraugla Exp $ *)
 
 open Stdpp;
 open Gramext;
@@ -45,15 +45,14 @@ and print_meta ppf n sl =
   loop 0 sl where rec loop i =
     fun
     [ [] -> ()
-    | [s :: sl] ->
+    | [s :: sl] -> do {
         let j =
           try String.index_from n i ' ' with [ Not_found -> String.length n ]
         in
-        do {
-          fprintf ppf "%s %a" (String.sub n i (j - i)) print_symbol1 s;
-          if sl = [] then ()
-          else do { fprintf ppf " "; loop (min (j + 1) (String.length n)) sl }
-        } ]
+        fprintf ppf "%s %a" (String.sub n i (j - i)) print_symbol1 s;
+        if sl = [] then ()
+        else do { fprintf ppf " "; loop (min (j + 1) (String.length n)) sl }
+      } ]
 and print_symbol1 ppf =
   fun
   [ Snterm e -> pp_print_string ppf e.ename
@@ -65,71 +64,63 @@ and print_symbol1 ppf =
   | Smeta _ _ _ | Snterml _ _ | Slist0 _ | Slist0sep _ _ | Slist1 _ |
     Slist1sep _ _ | Sopt _ | Stoken _ as s ->
       fprintf ppf "(%a)" print_symbol s ]
-and print_rule ppf symbols =
-  do {
-    fprintf ppf "@[<hov 0>";
-    let _ =
-      List.fold_left
-        (fun sep symbol ->
-           do {
-             fprintf ppf "%t%a" sep print_symbol symbol;
-             fun ppf -> fprintf ppf ";@ "
-           })
-        (fun ppf -> ()) symbols
-    in
-    fprintf ppf "@]"
-  }
-and print_level ppf pp_print_space rules =
-  do {
-    fprintf ppf "@[<hov 0>[ ";
-    let _ =
-      List.fold_left
-        (fun sep rule ->
-           do {
-             fprintf ppf "%t%a" sep print_rule rule;
-             fun ppf -> fprintf ppf "%a| " pp_print_space ()
-           })
-        (fun ppf -> ()) rules
-    in
-    fprintf ppf " ]@]"
-  }
-;
+and print_rule ppf symbols = do {
+  fprintf ppf "@[<hov 0>";
+  let _ =
+    List.fold_left
+      (fun sep symbol -> do {
+         fprintf ppf "%t%a" sep print_symbol symbol;
+         fun ppf -> fprintf ppf ";@ "
+       })
+      (fun ppf -> ()) symbols
+  in
+  fprintf ppf "@]"
+}
+and print_level ppf pp_print_space rules = do {
+  fprintf ppf "@[<hov 0>[ ";
+  let _ =
+    List.fold_left
+      (fun sep rule -> do {
+         fprintf ppf "%t%a" sep print_rule rule;
+         fun ppf -> fprintf ppf "%a| " pp_print_space ()
+       })
+      (fun ppf -> ()) rules
+  in
+  fprintf ppf " ]@]"
+};
 
 value print_levels ppf elev =
   let _ =
     List.fold_left
-      (fun sep lev ->
+      (fun sep lev -> do {
          let rules =
            List.map (fun t -> [Sself :: t]) (flatten_tree lev.lsuffix) @
              flatten_tree lev.lprefix
          in
-         do {
-           fprintf ppf "%t@[<hov 2>" sep;
-           match lev.lname with
-           [ Some n -> fprintf ppf "%a@;<1 2>" print_str n
-           | None -> () ];
-           match lev.assoc with
-           [ LeftA -> fprintf ppf "LEFTA"
-           | RightA -> fprintf ppf "RIGHTA"
-           | NonA -> fprintf ppf "NONA" ];
-           fprintf ppf "@]@;<1 2>";
-           print_level ppf pp_force_newline rules;
-           fun ppf -> fprintf ppf "@,| "
-         })
+         fprintf ppf "%t@[<hov 2>" sep;
+         match lev.lname with
+         [ Some n -> fprintf ppf "%a@;<1 2>" print_str n
+         | None -> () ];
+         match lev.assoc with
+         [ LeftA -> fprintf ppf "LEFTA"
+         | RightA -> fprintf ppf "RIGHTA"
+         | NonA -> fprintf ppf "NONA" ];
+         fprintf ppf "@]@;<1 2>";
+         print_level ppf pp_force_newline rules;
+         fun ppf -> fprintf ppf "@,| "
+       })
       (fun ppf -> ()) elev
   in
   ()
 ;
 
-value print_entry ppf e =
-  do {
-    fprintf ppf "@[<v 0>[ ";
-    match e.edesc with
-    [ Dlevels elev -> print_levels ppf elev
-    | Dparser _ -> fprintf ppf "<parser>" ];
-    fprintf ppf " ]@]"
-  }
-;
+value print_entry ppf e = do {
+  fprintf ppf "@[<v 0>[ ";
+  match e.edesc with
+  [ Dlevels elev -> print_levels ppf elev
+  | Dparser _ -> fprintf ppf "<parser>" ];
+  fprintf ppf " ]@]"
+};
 
 value iter_entry f e =
   let treated = ref [] in
@@ -340,7 +331,7 @@ value search_tree_in_entry prev_symb tree =
 
 value error_verbose = ref False;
 
-value tree_failed entry prev_symb_result prev_symb tree =
+value tree_failed entry prev_symb_result prev_symb tree = do {
   let txt = name_of_tree_failed entry tree in
   let txt =
     match prev_symb with
@@ -369,23 +360,21 @@ value tree_failed entry prev_symb_result prev_symb tree =
     | Sopt _ | Stree _ -> txt ^ " expected"
     | _ -> txt ^ " expected after " ^ name_of_symbol entry prev_symb ]
   in
-  do {
-    if error_verbose.val then do {
-      let tree = search_tree_in_entry prev_symb tree entry.edesc in
-      let ppf = err_formatter in
-      fprintf ppf "@[<v 0>@,";
-      fprintf ppf "----------------------------------@,";
-      fprintf ppf "Parse error in entry [%s], rule:@;<0 2>" entry.ename;
-      fprintf ppf "@[";
-      print_level ppf pp_force_newline (flatten_tree tree);
-      fprintf ppf "@]@,";
-      fprintf ppf "----------------------------------@,";
-      fprintf ppf "@]@."
-    }
-    else ();
-    txt ^ " (in [" ^ entry.ename ^ "])"
+  if error_verbose.val then do {
+    let tree = search_tree_in_entry prev_symb tree entry.edesc in
+    let ppf = err_formatter in
+    fprintf ppf "@[<v 0>@,";
+    fprintf ppf "----------------------------------@,";
+    fprintf ppf "Parse error in entry [%s], rule:@;<0 2>" entry.ename;
+    fprintf ppf "@[";
+    print_level ppf pp_force_newline (flatten_tree tree);
+    fprintf ppf "@]@,";
+    fprintf ppf "----------------------------------@,";
+    fprintf ppf "@]@."
   }
-;
+  else ();
+  txt ^ " (in [" ^ entry.ename ^ "])"
+};
 
 value symb_failed entry prev_symb_result prev_symb symb =
   let tree = Node {node = symb; brother = DeadEnd; son = DeadEnd} in
@@ -466,19 +455,17 @@ value recover parser_of_tree entry nlevn alevn bp a s son strm =
 
 value token_count = ref 0;
 
-value peek_nth n strm =
+value peek_nth n strm = do {
   let list = Stream.npeek n strm in
-  do {
-    token_count.val := Stream.count strm + n;
-    let rec loop list n =
-      match (list, n) with
-      [ ([x :: _], 1) -> Some x
-      | ([_ :: l], n) -> loop l (n - 1)
-      | ([], _) -> None ]
-    in
-    loop list n
-  }
-;
+  token_count.val := Stream.count strm + n;
+  let rec loop list n =
+    match (list, n) with
+    [ ([x :: _], 1) -> Some x
+    | ([_ :: l], n) -> loop l (n - 1)
+    | ([], _) -> None ]
+  in
+  loop list n
+};
 
 value rec parser_of_tree entry nlevn alevn =
   fun
@@ -544,9 +531,11 @@ and parser_of_token_list gram p1 tokl =
         [ [] ->
             let ps strm =
               match peek_nth n strm with
-              [ Some tok ->
+              [ Some tok -> do {
                   let r = tematch tok in
-                  do { for i = 1 to n do { Stream.junk strm }; Obj.repr r }
+                  for i = 1 to n do { Stream.junk strm };
+                  Obj.repr r
+                }
               | None -> raise Stream.Failure ]
             in
             parser bp [: a = ps; act = p1 bp a :] -> app act a
@@ -634,9 +623,11 @@ and parser_of_symbol entry nlevn =
       let f = entry.egram.glexer.Token.tok_match tok in
       fun strm ->
         match Stream.peek strm with
-        [ Some tok ->
+        [ Some tok -> do {
             let r = f tok in
-            do { Stream.junk strm; Obj.repr r }
+            Stream.junk strm;
+            Obj.repr r
+          }
         | None -> raise Stream.Failure ] ]
 and parse_top_symb entry symb =
   parser_of_symbol entry 0 (top_symb entry symb)
@@ -728,7 +719,7 @@ type gen_parsable 'a =
     pa_loc_func : Token.location_function }
 ;
 
-value parse_parsable entry efun p =
+value parse_parsable entry efun p = do {
   let ts = p.pa_tok_strm in
   let cs = p.pa_chr_strm in
   let fun_loc = p.pa_loc_func in
@@ -746,28 +737,31 @@ value parse_parsable entry efun p =
     with _ ->
       Stdpp.make_loc (Stream.count cs, Stream.count cs + 1)
   in
-  do {
-    floc.val := fun_loc;
-    token_count.val := 0;
-    try
-      let r = efun ts in
-      do { restore (); r }
-    with
-    [ Stream.Failure ->
-        let loc = get_loc () in
-        do {
-          restore ();
-          Stdpp.raise_with_loc loc
-             (Stream.Error ("illegal begin of " ^ entry.ename))
-        }
-    | Stream.Error _ as exc ->
-        let loc = get_loc () in
-        do { restore (); Stdpp.raise_with_loc loc exc }
-    | exc ->
-        let loc = (Stream.count cs, Stream.count cs + 1) in
-        do { restore (); raise_with_loc (make_loc loc) exc } ]
+  floc.val := fun_loc;
+  token_count.val := 0;
+  try do {
+    let r = efun ts in
+    restore ();
+    r
   }
-;
+  with
+  [ Stream.Failure -> do {
+      let loc = get_loc () in
+      restore ();
+      Stdpp.raise_with_loc loc
+        (Stream.Error ("illegal begin of " ^ entry.ename))
+    }
+  | Stream.Error _ as exc -> do {
+      let loc = get_loc () in
+      restore ();
+      Stdpp.raise_with_loc loc exc
+    }
+  | exc -> do {
+      let loc = (Stream.count cs, Stream.count cs + 1) in
+      restore ();
+      raise_with_loc (make_loc loc) exc
+    } ]
+};
 
 value wrap_parse entry efun cs =
   let (ts, lf) = entry.egram.glexer.Token.tok_func cs in
@@ -781,44 +775,45 @@ value gcreate glexer = {gtokens = create_toktab (); glexer = glexer};
 (* Extend syntax *)
 
 value extend_entry entry position rules =
-  try
+  try do {
     let elev = Gramext.levels_of_rules entry position rules in
-    do {
-      entry.edesc := Dlevels elev;
-      entry.estart :=
-        fun lev strm ->
-          let f = start_parser_of_entry entry in
-          do { entry.estart := f; f lev strm };
-      entry.econtinue :=
-        fun lev bp a strm ->
-          let f = continue_parser_of_entry entry in
-          do { entry.econtinue := f; f lev bp a strm }
-    }
+    entry.edesc := Dlevels elev;
+    entry.estart :=
+      fun lev strm -> do {
+        let f = start_parser_of_entry entry in
+        entry.estart := f;
+        f lev strm
+      };
+    entry.econtinue :=
+      fun lev bp a strm -> do {
+        let f = continue_parser_of_entry entry in
+        entry.econtinue := f;
+        f lev bp a strm
+      }
+  }
   with
-  [ Token.Error s ->
-      do {
-        Printf.eprintf "Lexer initialization error:\n- %s\n" s;
-        flush stderr;
-        failwith "Grammar.extend"
-      } ]
+  [ Token.Error s -> do {
+      Printf.eprintf "Lexer initialization error:\n- %s\n" s;
+      flush stderr;
+      failwith "Grammar.extend"
+    } ]
 ;
 
 value extend entry_rules_list =
   let gram = ref None in
   List.iter
-    (fun (entry, position, rules) ->
-       do {
-         match gram.val with
-         [ Some g ->
-             if g != entry.egram then do {
-               Printf.eprintf "Error: entries with different grammars\n";
-               flush stderr;
-               failwith "Grammar.extend"
-             }
-             else ()
-         | None -> gram.val := Some entry.egram ];
-         extend_entry entry position rules
-       })
+    (fun (entry, position, rules) -> do {
+       match gram.val with
+       [ Some g ->
+           if g != entry.egram then do {
+             Printf.eprintf "Error: entries with different grammars\n";
+             flush stderr;
+             failwith "Grammar.extend"
+           }
+           else ()
+       | None -> gram.val := Some entry.egram ];
+       extend_entry entry position rules
+     })
     entry_rules_list
 ;
 
@@ -826,37 +821,39 @@ value extend entry_rules_list =
 
 value delete_rule entry sl =
   match entry.edesc with
-  [ Dlevels levs ->
+  [ Dlevels levs -> do {
       let levs = Gramext.delete_rule_in_level_list entry sl levs in
-      do {
-        entry.edesc := Dlevels levs;
-        entry.estart :=
-          fun lev strm ->
-            let f = start_parser_of_entry entry in
-            do { entry.estart := f; f lev strm };
-        entry.econtinue :=
-          fun lev bp a strm ->
-            let f = continue_parser_of_entry entry in
-            do { entry.econtinue := f; f lev bp a strm }
-      }
+      entry.edesc := Dlevels levs;
+      entry.estart :=
+        fun lev strm -> do {
+          let f = start_parser_of_entry entry in
+          entry.estart := f;
+          f lev strm
+        };
+      entry.econtinue :=
+        fun lev bp a strm -> do {
+          let f = continue_parser_of_entry entry in
+          entry.econtinue := f;
+          f lev bp a strm
+        }
+    }
   | Dparser _ -> () ]
 ;
 
 (* Unsafe *)
 
-value clear_entry e =
-  do {
-    e.estart := fun _ -> parser [];
-    e.econtinue := fun _ _ _ -> parser [];
-    match e.edesc with
-    [ Dlevels _ -> e.edesc := Dlevels []
-    | Dparser _ -> () ]
-  }
-;
+value clear_entry e = do {
+  e.estart := fun _ -> parser [];
+  e.econtinue := fun _ _ _ -> parser [];
+  match e.edesc with
+  [ Dlevels _ -> e.edesc := Dlevels []
+  | Dparser _ -> () ]
+};
 
-value gram_reinit g glexer =
-  do { Hashtbl.clear g.gtokens; g.glexer := glexer }
-;
+value gram_reinit g glexer = do {
+  Hashtbl.clear g.gtokens;
+  g.glexer := glexer
+};
 
 module Unsafe =
   struct
@@ -939,16 +936,14 @@ module Entry =
   end
 ;
 
-value tokens g con =
+value tokens g con = do {
   let list = ref [] in
-  do {
-    Hashtbl.iter
-      (fun (p_con, p_prm) c ->
-         if p_con = con then list.val := [(p_prm, c.val) :: list.val] else ())
-      g.gtokens;
-    list.val
-  }
-;
+  Hashtbl.iter
+    (fun (p_con, p_prm) c ->
+       if p_con = con then list.val := [(p_prm, c.val) :: list.val] else ())
+    g.gtokens;
+  list.val
+};
 
 value glexer g = g.glexer;
 
