@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.12 2007/06/11 19:10:07 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.13 2007/06/11 19:44:01 deraugla Exp $ *)
 
 open Stdpp;
 open Gramext;
@@ -575,7 +575,7 @@ and parser_of_symbol entry nlevn =
         | [: :] -> al ]
       in
       parser
-      [ [: a = ps; s :] -> Obj.repr (List.rev (kont [a] s))
+      [ [: a = ps; a = kont [a] ! :] -> Obj.repr (List.rev a)
       | [: :] -> Obj.repr [] ]
   | Slist1 s ->
       let ps = parser_of_symbol entry nlevn s in
@@ -584,7 +584,7 @@ and parser_of_symbol entry nlevn =
         [ [: a = ps; a = loop [a :: al] ! :] -> a
         | [: :] -> al ]
       in
-      parser [: a = ps; s :] -> Obj.repr (List.rev (loop [a] s))
+      parser [: a = ps; a = loop [a] ! :] -> Obj.repr (List.rev a)
   | Slist1sep symb sep ->
       let ps = parser_of_symbol entry nlevn symb in
       let pt = parser_of_symbol entry nlevn sep in

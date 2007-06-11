@@ -635,7 +635,7 @@ and parser_of_symbol entry nlevn =
            try Some (ps strm__) with
              Stream.Failure -> None
          with
-           Some a -> Obj.repr (List.rev (kont [a] strm__))
+           Some a -> let a = kont [a] strm__ in Obj.repr (List.rev a)
          | _ -> Obj.repr [])
   | Slist1 s ->
       let ps = parser_of_symbol entry nlevn s in
@@ -648,7 +648,8 @@ and parser_of_symbol entry nlevn =
         | _ -> al
       in
       (fun (strm__ : _ Stream.t) ->
-         let a = ps strm__ in Obj.repr (List.rev (loop [a] strm__)))
+         let a = ps strm__ in
+         let a = loop [a] strm__ in Obj.repr (List.rev a))
   | Slist1sep (symb, sep) ->
       let ps = parser_of_symbol entry nlevn symb in
       let pt = parser_of_symbol entry nlevn sep in
