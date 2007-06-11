@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: gramext.ml,v 1.5 2007/06/11 11:25:05 deraugla Exp $ *)
+(* $Id: gramext.ml,v 1.6 2007/06/11 15:21:27 deraugla Exp $ *)
 
 open Printf;
 
@@ -230,7 +230,7 @@ value get_level entry position levs =
   [ Some First -> ([], empty_lev, levs)
   | Some Last -> (levs, empty_lev, [])
   | Some (Level n) ->
-      let rec get =
+      get levs where rec get =
         fun
         [ [] -> do {
             eprintf "No level labelled \"%s\" in entry \"%s\"\n" n
@@ -243,10 +243,8 @@ value get_level entry position levs =
             else
               let (levs1, rlev, levs2) = get levs in
               ([lev :: levs1], rlev, levs2) ]
-      in
-      get levs
   | Some (Before n) ->
-      let rec get =
+      get levs where rec get =
         fun
         [ [] -> do {
             eprintf "No level labelled \"%s\" in entry \"%s\"\n" n
@@ -259,10 +257,8 @@ value get_level entry position levs =
             else
               let (levs1, rlev, levs2) = get levs in
               ([lev :: levs1], rlev, levs2) ]
-      in
-      get levs
   | Some (After n) ->
-      let rec get =
+      get levs where rec get =
         fun
         [ [] -> do {
             eprintf "No level labelled \"%s\" in entry \"%s\"\n" n
@@ -275,8 +271,6 @@ value get_level entry position levs =
             else
               let (levs1, rlev, levs2) = get levs in
               ([lev :: levs1], rlev, levs2) ]
-      in
-      get levs
   | None ->
       match levs with
       [ [lev :: levs] -> ([], change_lev lev "<top>", levs)

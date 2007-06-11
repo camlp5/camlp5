@@ -537,7 +537,12 @@ value value_binding ind b (p, e) ko =
              (fun () -> hlist patt ind b pl " =")
              el (match ko with [ Some (_, k) -> k | None -> "" ])
        | None ->
-           let s1 = hlist patt ind b pl " =" in
+           let s1 =
+             horiz_vertic (fun () -> hlist patt ind b pl " =")
+               (fun () ->
+                  let pl = List.map (fun p -> (p, "")) pl in
+                  plist patt ind 4 b pl " =")
+           in
            let s2 =
              expr_wh (ind + 2) (tab (ind + 2)) e
                (match ko with [ Some (False, k) -> k | _ -> "" ])

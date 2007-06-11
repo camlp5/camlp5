@@ -200,6 +200,11 @@ value rec unparser_cases_list =
       let spe = ([(SpNtr loc <:patt< a >> f, None)], None, <:expr< a >>) in
       let spel = unparser_cases_list e in
       [spe :: spel]
+  | <:expr< $f$ strm__ >> ->
+      let spe = ([(SpNtr loc <:patt< a >> f, None)], None, <:expr< a >>) in
+      [spe]
+  | <:expr< raise Stream.Failure >> ->
+      []
   | e ->
       [([], None, e)] ]
 ;
@@ -240,14 +245,13 @@ value stream_patt_comp ind b spc k =
 ;
 
 value stream_patt_comp_err ind b (spc, err) k =
-  let s = stream_patt_comp ind b spc "" in
-  let serr =
+  let k =
     match err with
     [ None -> k
     | Some None -> sprintf " !%s" k
     | Some (Some e) -> sprintf " ? %s%s" (expr 0 "" e "") k ]
   in
-  sprintf "%s%s" s serr
+  stream_patt_comp ind b spc k
 ;
 
 value stream_patt ind b sp k =
@@ -304,11 +308,13 @@ value parser_body ind b (po, spel) k =
   match s2o with
   [ Some s -> s
   | None ->
-      let s2 =
-        vlist2 parser_case_sh (bar_before parser_case_sh) ind
-          (sprintf "%s[ " (tab ind)) spel "" (sprintf " ]%s" k)
-      in
-      sprintf "%sparser%s\n%s" b s1 s2 ]
+      if spel = [] then sprintf "%sparser []%s" b k
+      else
+        let s2 =
+          vlist2 parser_case_sh (bar_before parser_case_sh) ind
+            (sprintf "%s[ " (tab ind)) spel "" (sprintf " ]%s" k)
+        in
+        sprintf "%sparser%s\n%s" b s1 s2 ]
 ;
 
 (* Main *)
