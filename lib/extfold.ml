@@ -1,5 +1,5 @@
 (* camlp4r *)
-(* $Id: extfold.ml,v 1.4 2007/06/10 18:39:15 deraugla Exp $ *)
+(* $Id: extfold.ml,v 1.5 2007/06/11 02:44:42 deraugla Exp $ *)
 
 type t 'te 'a 'b =
   Gramext.g_entry 'te -> list (Gramext.g_symbol 'te) ->
@@ -64,11 +64,11 @@ value gen_fold1sep final f e entry symbl psymb psep =
            [ [: a = psymb :] -> a
            | [: a = parse_top symbl :] -> Obj.magic a
            | [: :] -> raise (Stream.Error (failed symbl)) ];
-         s :] ->
-        kont (f a accu) s
+         a = kont (f a accu) ! :] ->
+        a
     | [: :] -> accu ]
   in
-  parser [: a = psymb; s :] -> final (kont (f a e) s)
+  parser [: a = psymb; a = kont (f a e) ! :] -> final a
 ;
 
 value sfold0 f e = gen_fold0 (fun x -> x) f e;
