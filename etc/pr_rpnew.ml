@@ -170,16 +170,9 @@ value rec unparser_cases_list =
       | _ -> $e2$ ]
     >> ->
       let spe1 =
-        match unstream_pattern_kont e1 with
-        [ ([], _) ->
-            let sp  =
-              [(SpNtr loc p1 f, None);
-               (SpNtr loc <:patt< a >> e1, Some None)]
-            in
-            (sp, None, <:expr< a >>)
-        | (sp, e) ->
-            let sp = [(SpNtr loc p1 f, None) :: sp] in
-            (sp, None, e) ]
+        let (sp, e) = unstream_pattern_kont e1 in
+        let sp = [(SpNtr loc p1 f, None) :: sp] in
+        (sp, None, e)
       in
       let spe2 = ([], None, e2) in
       [spe1; spe2]
@@ -194,6 +187,12 @@ value rec unparser_cases_list =
       [spe1; spe2]
   | <:expr< try $f$ strm__ with [ Stream.Failure -> $e$ ] >> ->
       let spe = ([(SpNtr loc <:patt< a >> f, None)], None, <:expr< a >>) in
+      let spel = unparser_cases_list e in
+      [spe :: spel]
+  | <:expr< try Some ($f$ strm__) with [ Stream.Failure -> $e$ ] >> ->
+      let spe =
+        ([(SpNtr loc <:patt< a >> f, None)], None, <:expr< Some a >>)
+      in
       let spel = unparser_cases_list e in
       [spe :: spel]
   | <:expr< try $f$ with [ Stream.Failure -> $e$ ] >> ->
