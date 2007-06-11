@@ -308,13 +308,17 @@ value parser_body ind b (po, spel) k =
   match s2o with
   [ Some s -> s
   | None ->
-      if spel = [] then sprintf "%sparser []%s" b k
-      else
-        let s2 =
-          vlist2 parser_case_sh (bar_before parser_case_sh) ind
-            (sprintf "%s[ " (tab ind)) spel "" (sprintf " ]%s" k)
-        in
-        sprintf "%sparser%s\n%s" b s1 s2 ]
+      match spel with
+      [ [] -> sprintf "%sparser []%s" b k
+      | [spe] ->
+          let s2 = parser_case (ind + 2) (tab (ind + 2)) spe k in
+          sprintf "%sparser%s\n%s" b s1 s2
+      | _ ->
+          let s2 =
+            vlist2 parser_case_sh (bar_before parser_case_sh) ind
+              (sprintf "%s[ " (tab ind)) spel "" (sprintf " ]%s" k)
+          in
+          sprintf "%sparser%s\n%s" b s1 s2 ] ]
 ;
 
 (* Main *)

@@ -1,5 +1,5 @@
 (* camlp4r *)
-(* $Id: extfun.ml,v 1.4 2007/06/03 11:04:42 deraugla Exp $ *)
+(* $Id: extfun.ml,v 1.5 2007/06/11 15:50:57 deraugla Exp $ *)
 (* Copyright 2007 INRIA *)
 
 (* Extensible Functions *)
@@ -86,7 +86,7 @@ value print ef =
 
 value insert_matching matchings (patt, has_when, expr) =
   let m1 = {patt = patt; has_when = has_when; expr = expr} in
-  let rec loop =
+  loop matchings where rec loop =
     fun
     [ [m :: ml] as gml ->
         if m1.has_when && not m.has_when then [m1 :: gml]
@@ -98,8 +98,6 @@ value insert_matching matchings (patt, has_when, expr) =
           else if m.has_when then [m1 :: gml]
           else [m1 :: ml]
     | [] -> [m1] ]
-  in
-  loop matchings
 ;
 
 (* available extension function *)
