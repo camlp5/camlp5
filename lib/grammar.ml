@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.14 2007/06/12 01:19:12 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.15 2007/06/12 11:47:00 deraugla Exp $ *)
 
 open Stdpp;
 open Gramext;
@@ -675,9 +675,9 @@ value rec start_parser_of_levels entry clevn =
           [ [] ->
               fun levn strm ->
                 match strm with parser bp
-                [ [: act = p2 :] ep ->
+                  [: act = p2 :] ep ->
                     let a = app act (loc_of_token_interval bp ep) in
-                    entry.econtinue levn bp a strm ]
+                    entry.econtinue levn bp a strm
           | _ ->
               fun levn strm ->
                 if levn > clevn then p1 levn strm

@@ -1645,15 +1645,43 @@ value str_item_top =
                sprintf "%s (%s : %s)%s" b s (module_type zc "" mt "") k)
             (fun () -> not_impl "module_arg" ctx b s k)
         in
+        let (me, mto) =
+          match me with
+          [ <:module_expr< ($me$ : $mt$) >> -> (me, Some mt)
+          | _ -> (me, None) ]
+        in
         horiz_vertic
           (fun () ->
-             sprintf "%smodule %s%s = %s%s" b m
-               (hlist module_arg zc "" mal "") (module_expr zc "" me "") k)
-          (fun () ->
-             sprintf "%smodule %s%s =\n%s\n%s" b m
+             sprintf "%smodule %s%s%s = %s%s" b m
                (hlist module_arg zc "" mal "")
-               (module_expr (shi ctx 2) (tab (shi ctx 2)) me "")
-                  (tab ctx ^ k))
+               (match mto with
+                [ Some mt -> sprintf " : %s" (module_type zc "" mt "")
+                | None -> "" ])
+               (module_expr zc "" me "") k)
+          (fun () ->
+             let s1 =
+               match mto with
+               [ Some mt ->
+                   horiz_vertic
+                     (fun () ->
+                        sprintf "%smodule %s%s : %s =" b m
+                          (hlist module_arg zc "" mal "")
+                          (module_type zc "" mt ""))
+                     (fun () ->
+                        let s1 =
+                          sprintf "%smodule %s%s :" b m
+                            (hlist module_arg zc "" mal "")
+                        in
+                        let s2 =
+                          module_type (shi ctx 2) (tab (shi ctx 2)) mt " ="
+                        in
+                        sprintf "%s\n%s" s1 s2)
+               | None ->
+                   sprintf "%smodule %s%s =" b m
+                     (hlist module_arg zc "" mal "") ]
+             in
+             let s2 = module_expr (shi ctx 2) (tab (shi ctx 2)) me "" in
+             sprintf "%s\n%s\n%s" s1 s2 (tab ctx ^ k))
   | <:str_item< module type $m$ = $mt$ >> ->
       fun curr next ctx b k ->
         horiz_vertic

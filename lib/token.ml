@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.ml,v 1.14 2006/12/26 08:54:09 deraugla Exp $ *)
+(* $Id: token.ml,v 1.15 2007/06/12 11:47:00 deraugla Exp $ *)
 
 type pattern = (string * string);
 
@@ -98,15 +98,13 @@ value lexer_func_of_ocamllex lexfun cs =
 (* Char and string tokens to real chars and string *)
 
 value buff = ref (String.create 80);
-value store len x =
-  do {
-    if len >= String.length buff.val then
-      buff.val := buff.val ^ String.create (String.length buff.val)
-    else ();
-    buff.val.[len] := x;
-    succ len
-  }
-;
+value store len x = do {
+  if len >= String.length buff.val then
+    buff.val := buff.val ^ String.create (String.length buff.val)
+  else ();
+  buff.val.[len] := x;
+  succ len
+};
 value get_buff len = String.sub buff.val 0 len;
 
 value valch x = Char.code x - Char.code '0';
