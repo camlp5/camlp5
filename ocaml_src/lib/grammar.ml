@@ -670,7 +670,8 @@ and parser_of_symbol entry nlevn =
         | _ -> al
       in
       (fun (strm__ : _ Stream.t) ->
-         let a = ps strm__ in Obj.repr (List.rev (kont [a] strm__)))
+         let a = ps strm__ in
+         let a = kont [a] strm__ in Obj.repr (List.rev a))
   | Sopt s ->
       let ps = parser_of_symbol entry nlevn s in
       (fun (strm__ : _ Stream.t) ->

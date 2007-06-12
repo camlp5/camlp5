@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.13 2007/06/11 19:44:01 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.14 2007/06/12 01:19:12 deraugla Exp $ *)
 
 open Stdpp;
 open Gramext;
@@ -597,11 +597,11 @@ and parser_of_symbol entry nlevn =
                | [: a = parse_top_symb entry symb :] -> a
                | [: :] ->
                    raise (Stream.Error (symb_failed entry v sep symb)) ];
-             s :] ->
-            kont [a :: al] s
+             a = kont [a :: al] ! :] ->
+            a
         | [: :] -> al ]
       in
-      parser [: a = ps; s :] -> Obj.repr (List.rev (kont [a] s))
+      parser [: a = ps; a = kont [a] ! :] -> Obj.repr (List.rev a)
   | Sopt s ->
       let ps = parser_of_symbol entry nlevn s in
       parser

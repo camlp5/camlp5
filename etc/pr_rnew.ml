@@ -507,7 +507,12 @@ value record_binding ind b (p, e) k =
    - if vertical and "e" is a sequence, put the "do {" at after the "="
    - the continuation after the expression is optionally on next line if
      it not a sequence (see 'particularity for the parameter 'ko' below)
-   - the expression after '=' is displayed as 'where' if possible (expr_wh)
+   - the expression after '=' is displayed with the 'where' statement if
+     possible (expr_wh)
+   - if "e" is a type constraint, put the constraint after the params. E.g.
+        value f x y = (e : t)
+     is displayed:
+        value f x y : t = e
    Particularity for the parameter 'ko':
      It is of type option (bool * string). The boolean asks whether we
      want that a newline be displayed before the continuation string if
@@ -523,25 +528,52 @@ value record_binding ind b (p, e) k =
 *)
 value value_binding ind b (p, e) ko =
   let (pl, e) = expr_fun_args e in
+  let (e, tyo) =
+    match e with
+    [ <:expr< ($e$ : $t$) >>  -> (e, Some t)
+    | _ -> (e, None) ]
+  in
   let pl = [p :: pl] in
   let expr_wh = if flag_where_after_value_eq.val then expr_wh else expr in
   horiz_vertic
     (fun () ->
-       sprintf "%s%s = %s%s" b (hlist patt 0 "" pl "") (expr_wh 0 "" e "")
+       sprintf "%s%s%s = %s%s" b (hlist patt 0 "" pl "")
+         (match tyo with
+          [ Some t -> sprintf " : %s" (ctyp 0 "" t "")
+          | None -> "" ])
+         (expr_wh 0 "" e "")
          (match ko with [ Some (_, k) -> k | None -> "" ]))
     (fun () ->
        match sequencify e with
        [ Some el ->
            sequence_box ind
-             (fun () -> hlist patt ind b pl " =")
-             (fun () -> hlist patt ind b pl " =")
+             (fun () ->
+                sprintf "%s%s%s =" b (hlist patt 0 "" pl "")
+                  (match tyo with
+                   [ Some t -> sprintf " : %s" (ctyp 0 "" t "")
+                   | None -> "" ]))
+             (fun () ->
+                sprintf "%s%s%s =" b (hlist patt 0 "" pl "")
+                  (match tyo with
+                   [ Some t -> sprintf " : %s" (ctyp 0 "" t "")
+                   | None -> "" ]))
              el (match ko with [ Some (_, k) -> k | None -> "" ])
        | None ->
            let s1 =
-             horiz_vertic (fun () -> hlist patt ind b pl " =")
+             horiz_vertic
                (fun () ->
+                  sprintf "%s%s%s =" b (hlist patt 0 "" pl "")
+                    (match tyo with
+                     [ Some t -> sprintf " : %s" (ctyp 0 "" t "")
+                     | None -> "" ]))
+               (fun () ->
+                  let patt_tycon tyo ind b p k =
+                    match tyo with
+                    [ Some t -> patt ind b p (ctyp ind " : " t k)
+                    | None -> patt ind b p k ]
+                  in
                   let pl = List.map (fun p -> (p, "")) pl in
-                  plist patt ind 4 b pl " =")
+                  plistl patt (patt_tycon tyo) ind 4 b pl " =")
            in
            let s2 =
              expr_wh (ind + 2) (tab (ind + 2)) e
@@ -836,7 +868,7 @@ value ctyp_simple =
              sprintf "%s(%s)%s" b (hlistl (star_after ctyp) ctyp 0 "" tl "")
                k)
           (fun () ->
-             let tl = List.map (fun t -> (t, " * ")) tl in
+             let tl = List.map (fun t -> (t, " *")) tl in
              plist ctyp ind 1 (sprintf "%s(" b) tl (sprintf ")%s" k))
   | <:ctyp< $lid:t$ >> ->
       fun curr next ind b k -> var_escaped ind b t k
@@ -1580,11 +1612,27 @@ value str_item_top =
       fun curr next ind b k -> module_expr ind (sprintf "%sinclude " b) me k
   | <:str_item< module $m$ = $me$ >> ->
       fun curr next ind b k ->
+        let (mal, me) =
+          loop me where rec loop =
+            fun
+            [ <:module_expr< functor ($s$ : $mt$) -> $me$ >> ->
+                let (mal, me) = loop me in
+                ([(s, mt) :: mal], me)
+            | me -> ([], me) ]
+        in
+        let module_arg ind b (s, mt) k =
+          horiz_vertic
+            (fun () ->
+               sprintf "%s (%s : %s)%s" b s (module_type 0 "" mt "") k)
+            (fun () -> not_impl "module_arg" ind b s k)
+        in
         horiz_vertic
           (fun () ->
-             sprintf "%smodule %s = %s%s" b m (module_expr 0 "" me "") k)
+             sprintf "%smodule %s%s = %s%s" b m (hlist module_arg 0 "" mal "")
+               (module_expr 0 "" me "") k)
           (fun () ->
-             sprintf "%smodule %s =\n%s\n%s" b m
+             sprintf "%smodule %s%s =\n%s\n%s" b m
+               (hlist module_arg 0 "" mal "")
                (module_expr (ind + 2) (tab (ind + 2)) me "") (tab ind ^ k))
   | <:str_item< module type $m$ = $mt$ >> ->
       fun curr next ind b k ->
