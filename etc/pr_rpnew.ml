@@ -14,7 +14,7 @@ type spat_comp =
   | SpStr of MLast.loc and MLast.patt ]
 ;
 
-value not_impl name ind b x k =
+value not_impl name ctx b x k =
   let desc =
     if Obj.tag (Obj.repr x) = Obj.tag (Obj.repr "") then
       sprintf "\"%s\"" (Obj.magic x)
@@ -32,25 +32,25 @@ value shi ctx sh = {ind = ctx.ind + sh};
 value tab ctx = String.make ctx.ind ' ';
 
 (* horizontal list with different function for the last element *)
-value rec hlistl elem eleml ind b xl k =
+value rec hlistl elem eleml ctx b xl k =
   match xl with
   [ [] -> sprintf "%s%s" b k
-  | [x] -> eleml ind b x k
+  | [x] -> eleml ctx b x k
   | [x :: xl] ->
-      sprintf "%s %s" (elem ind b x "") (hlistl elem eleml ind "" xl k) ]
+      sprintf "%s %s" (elem ctx b x "") (hlistl elem eleml ctx "" xl k) ]
 ;
 
 (* vertical list with different function from 2nd element on *)
-value rec vlist2 elem elem2 ind b xl k0 k =
+value rec vlist2 elem elem2 ctx b xl k0 k =
   match xl with
   [ [] -> invalid_arg "vlist2"
-  | [x] -> elem ind b x k
+  | [x] -> elem ctx b x k
   | [x :: xl] ->
-      sprintf "%s\n%s" (elem ind b x k0)
-        (vlist2 elem2 elem2 ind (tab ind) xl k0 k) ]
+      sprintf "%s\n%s" (elem ctx b x k0)
+        (vlist2 elem2 elem2 ctx (tab ctx) xl k0 k) ]
 ;
 
-value rise_string ind sh b s =
+value rise_string ctx sh b s =
   (* hack for "plistl" (below): if s is a "string" (i.e. starting with
      double-quote) which contains newlines, attempt to concat its first
      line in the previous line, and, instead of displaying this:
@@ -62,7 +62,7 @@ value rise_string ind sh b s =
            hello, world"
      what "saves" one line.
    *)
-  let ind = ind.ind in
+  let ind = ctx.ind in
   if String.length s > ind + sh && s.[ind+sh] = '"' then
     match try Some (String.index s '\n') with [ Not_found -> None ] with
     [ Some i ->
@@ -81,58 +81,58 @@ value rise_string ind sh b s =
 (* paragraph list with a different function for the last element;
    the list elements are pairs where second elements are separators
    (the last separator is ignored) *)
-value rec plistl elem eleml ind sh b xl k =
-  let (s1, s2o) = plistl_two_parts elem eleml ind sh b xl k in
+value rec plistl elem eleml ctx sh b xl k =
+  let (s1, s2o) = plistl_two_parts elem eleml ctx sh b xl k in
   match s2o with
   [ Some s2 -> sprintf "%s\n%s" s1 s2
   | None -> s1 ]
-and plistl_two_parts elem eleml ind sh b xl k =
+and plistl_two_parts elem eleml ctx sh b xl k =
   match xl with
   [ [] -> assert False
-  | [(x, _)] -> (eleml ind b x k, None)
+  | [(x, _)] -> (eleml ctx b x k, None)
   | [(x, sep) :: xl] ->
       let s =
-        horiz_vertic (fun () -> Some (elem ind b x sep)) (fun () -> None)
+        horiz_vertic (fun () -> Some (elem ctx b x sep)) (fun () -> None)
       in
       match s with
-      [ Some b -> (plistl_kont_same_line elem eleml ind sh b xl k, None)
+      [ Some b -> (plistl_kont_same_line elem eleml ctx sh b xl k, None)
       | None ->
-          let s1 = elem ind b x sep in
-          let s2 = plistl elem eleml (shi ind sh) 0 (tab (shi ind sh)) xl k in
+          let s1 = elem ctx b x sep in
+          let s2 = plistl elem eleml (shi ctx sh) 0 (tab (shi ctx sh)) xl k in
           (s1, Some s2) ] ]
-and plistl_kont_same_line elem eleml ind sh b xl k =
+and plistl_kont_same_line elem eleml ctx sh b xl k =
   match xl with
   [ [] -> assert False
   | [(x, _)] ->
-      horiz_vertic (fun () -> eleml ind (sprintf "%s " b) x k)
+      horiz_vertic (fun () -> eleml ctx (sprintf "%s " b) x k)
         (fun () ->
-           let s = eleml (shi ind sh) (tab (shi ind sh)) x k in
-           let (b, s) = rise_string ind sh b s in
+           let s = eleml (shi ctx sh) (tab (shi ctx sh)) x k in
+           let (b, s) = rise_string ctx sh b s in
            sprintf "%s\n%s" b s)
   | [(x, sep) :: xl] ->
       let s =
-        horiz_vertic (fun () -> Some (elem ind (sprintf "%s " b) x sep))
+        horiz_vertic (fun () -> Some (elem ctx (sprintf "%s " b) x sep))
           (fun () -> None)
       in
       match s with
-      [ Some b -> plistl_kont_same_line elem eleml ind sh b xl k
+      [ Some b -> plistl_kont_same_line elem eleml ctx sh b xl k
       | None ->
           let (s1, s2o) =
-            plistl_two_parts elem eleml (shi ind sh) 0 (tab (shi ind sh))
+            plistl_two_parts elem eleml (shi ctx sh) 0 (tab (shi ctx sh))
               [(x, sep) :: xl] k
           in
           match s2o with
           [ Some s2 ->
-              let (b, s1) = rise_string ind sh b s1 in
+              let (b, s1) = rise_string ctx sh b s1 in
               sprintf "%s\n%s\n%s" b s1 s2
           | None -> sprintf "%s\n%s" b s1 ] ] ]
 ;
 
 (* paragraph list *)
-value plist elem ind sh b xl k = plistl elem elem ind sh b xl k;
+value plist elem ctx sh b xl k = plistl elem elem ctx sh b xl k;
 
-value bar_before elem ind b x k = elem ind (sprintf "%s| " b) x k;
-value semi_after elem ind b x k = elem ind b x (sprintf ";%s" k);
+value bar_before elem ctx b x k = elem ctx (sprintf "%s| " b) x k;
+value semi_after elem ctx b x k = elem ctx b x (sprintf ";%s" k);
 
 (* Rebuilding syntax tree *)
 
@@ -248,8 +248,8 @@ value unparser_body e =
 
 (* Printing *)
 
-value expr ind b z k = pr_expr.pr_fun "top" ind b z k;
-value patt ind b z k = pr_patt.pr_fun "top" ind b z k;
+value expr ctx b z k = pr_expr.pr_fun "top" ctx b z k;
+value patt ctx b z k = pr_patt.pr_fun "top" ctx b z k;
 
 value ident_option =
   fun
@@ -257,30 +257,30 @@ value ident_option =
   | None -> "" ]
 ;
 
-value stream_patt_comp ind b spc k =
+value stream_patt_comp ctx b spc k =
   match spc with
   [ SpNtr _ p e ->
       horiz_vertic
         (fun () ->
            sprintf "%s%s = %s%s" b (patt zc "" p "") (expr zc "" e "") k)
         (fun () ->
-           let s1 = patt ind b p " =" in
-           let s2 = expr (shi ind 2) (tab (shi ind 2)) e k in
+           let s1 = patt ctx b p " =" in
+           let s2 = expr (shi ctx 2) (tab (shi ctx 2)) e k in
            sprintf "%s\n%s" s1 s2)
-  | _ -> not_impl "stream_patt_comp" ind b spc k ]
+  | _ -> not_impl "stream_patt_comp" ctx b spc k ]
 ;
 
-value stream_patt_comp_err ind b (spc, err) k =
+value stream_patt_comp_err ctx b (spc, err) k =
   let k =
     match err with
     [ None -> k
     | Some None -> sprintf " !%s" k
     | Some (Some e) -> sprintf " ? %s%s" (expr zc "" e "") k ]
   in
-  stream_patt_comp ind b spc k
+  stream_patt_comp ctx b spc k
 ;
 
-value stream_patt ind b sp k =
+value stream_patt ctx b sp k =
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s" b
@@ -288,10 +288,10 @@ value stream_patt ind b sp k =
             zc "" sp "") k)
     (fun () ->
        let sp = List.map (fun spc -> (spc, ";")) sp in
-       plist stream_patt_comp_err (shi ind 3) 0 b sp k)
+       plist stream_patt_comp_err (shi ctx 3) 0 b sp k)
 ;
 
-value parser_case ind b (sp, po, e) k =
+value parser_case ctx b (sp, po, e) k =
   match sp with
   [ [] ->
       horiz_vertic
@@ -300,7 +300,7 @@ value parser_case ind b (sp, po, e) k =
              k)
         (fun () ->
            let s1 = sprintf "%s[: :]%s ->" b (ident_option po) in
-           let s2 = expr (shi ind 2) (tab (shi ind 2)) e k in
+           let s2 = expr (shi ctx 2) (tab (shi ctx 2)) e k in
            sprintf "%s\n%s" s1 s2)
   | _ ->
       horiz_vertic
@@ -309,16 +309,16 @@ value parser_case ind b (sp, po, e) k =
              (ident_option po) (expr zc "" e "") k)
         (fun () ->
            let s1 =
-             stream_patt ind (sprintf "%s[: " b) sp
+             stream_patt ctx (sprintf "%s[: " b) sp
                (sprintf " :]%s ->" (ident_option po))
            in
-           let s2 = expr (shi ind 2) (tab (shi ind 2)) e k in
+           let s2 = expr (shi ctx 2) (tab (shi ctx 2)) e k in
            sprintf "%s\n%s" s1 s2) ]
 ;
 
-value parser_case_sh ind b spe k = parser_case (shi ind 2) b spe k;
+value parser_case_sh ctx b spe k = parser_case (shi ctx 2) b spe k;
 
-value parser_body ind b (po, spel) k =
+value parser_body ctx b (po, spel) k =
   let s1 = ident_option po in
   let s2o =
     match spel with
@@ -338,24 +338,24 @@ value parser_body ind b (po, spel) k =
       match spel with
       [ [] -> sprintf "%sparser []%s" b k
       | [spe] ->
-          let s2 = parser_case (shi ind 2) (tab (shi ind 2)) spe k in
+          let s2 = parser_case (shi ctx 2) (tab (shi ctx 2)) spe k in
           sprintf "%sparser%s\n%s" b s1 s2
       | _ ->
           let s2 =
-            vlist2 parser_case_sh (bar_before parser_case_sh) ind
-              (sprintf "%s[ " (tab ind)) spel "" (sprintf " ]%s" k)
+            vlist2 parser_case_sh (bar_before parser_case_sh) ctx
+              (sprintf "%s[ " (tab ctx)) spel "" (sprintf " ]%s" k)
           in
           sprintf "%sparser%s\n%s" b s1 s2 ] ]
 ;
 
 (* Main *)
 
-value print_parser ind b e k =
+value print_parser ctx b e k =
   match e with
   [ <:expr< fun (strm__ : Stream.t _) -> $e$ >> ->
       let pa = unparser_body e in
-      parser_body ind b pa k
-  | e -> expr ind b e k ]
+      parser_body ctx b pa k
+  | e -> expr ctx b e k ]
 ;
 
 pr_expr_fun_args.val :=
@@ -366,6 +366,6 @@ let lev = find_pr_level "top" pr_expr.pr_levels in
 lev.pr_rules :=
   extfun lev.pr_rules with
   [ <:expr< fun (strm__ : Stream.t _) -> $_$ >> as e ->
-      fun curr next ind b k -> print_parser ind b e k ]
+      fun curr next ctx b k -> print_parser ctx b e k ]
 ;
 
