@@ -326,7 +326,7 @@ value parser_body ctx b (po, spel) k =
         horiz_vertic
           (fun () ->
              let s =
-               sprintf "%sparser%s %s%s" b s1 (parser_case zc "" spe "") k
+               sprintf "%s%s %s%s" b s1 (parser_case zc "" spe "") k
              in
              Some s)
           (fun () -> None)
@@ -336,27 +336,36 @@ value parser_body ctx b (po, spel) k =
   [ Some s -> s
   | None ->
       match spel with
-      [ [] -> sprintf "%sparser []%s" b k
+      [ [] -> sprintf "%s []%s" b k
       | [spe] ->
           let s2 = parser_case (shi ctx 2) (tab (shi ctx 2)) spe k in
-          sprintf "%sparser%s\n%s" b s1 s2
+          sprintf "%s%s\n%s" b s1 s2
       | _ ->
           let s2 =
             vlist2 parser_case_sh (bar_before parser_case_sh) ctx
               (sprintf "%s[ " (tab ctx)) spel "" (sprintf " ]%s" k)
           in
-          sprintf "%sparser%s\n%s" b s1 s2 ] ]
+          sprintf "%s%s\n%s" b s1 s2 ] ]
 ;
-
-(* Main *)
 
 value print_parser ctx b e k =
   match e with
   [ <:expr< fun (strm__ : Stream.t _) -> $e$ >> ->
       let pa = unparser_body e in
+      parser_body ctx (sprintf "%sparser" b) pa k
+  | e -> expr ctx b e k ]
+;
+
+value print_match_with_parser ctx b e k =
+  match e with
+  [ <:expr< let (strm__ : Stream.t _) = $e1$ in $e2$ >> ->
+      let pa = unparser_body e2 in
+      let b = sprintf "%smatch %s with parser" b (expr zc "" e1 "") in
       parser_body ctx b pa k
   | e -> expr ctx b e k ]
 ;
+
+(* Printers extensions *)
 
 pr_expr_fun_args.val :=
   extfun pr_expr_fun_args.val with
@@ -366,6 +375,7 @@ let lev = find_pr_level "top" pr_expr.pr_levels in
 lev.pr_rules :=
   extfun lev.pr_rules with
   [ <:expr< fun (strm__ : Stream.t _) -> $_$ >> as e ->
-      fun curr next ctx b k -> print_parser ctx b e k ]
+      fun curr next ctx b k -> print_parser ctx b e k
+  | <:expr< let (strm__ : Stream.t _) = $_$ in $_$ >> as e ->
+      fun curr next ctx b k -> print_match_with_parser ctx b e k ]
 ;
-
