@@ -203,6 +203,18 @@ value rec unparser_cases_list =
       let spel = unparser_cases_list e2 in
       [spe :: spel]
   | <:expr<
+      match Stream.peek strm__ with
+      [ Some $p$ -> do { Stream.junk strm__; $e1$ }
+      | _ -> $e2$ ]
+    >> ->
+      let spe =
+        let (sp, epo, e) = unstream_pattern_kont e1 in
+        let sp = [(SpTrm loc p None, None) :: sp] in
+        (sp, epo, e)
+      in
+      let spel = unparser_cases_list e2 in
+      [spe :: spel]
+  | <:expr<
       let $p$ = try $f$ strm__ with [ Stream.Failure -> raise $e2$ ] in $e1$
     >> ->
       let spe1 = ([(SpNtr loc p f, None)], None, e1) in
@@ -259,7 +271,8 @@ value ident_option =
 
 value stream_patt_comp ctx b spc k =
   match spc with
-  [ SpNtr _ p e ->
+  [ SpTrm _ p None -> patt (shi ctx 1) (sprintf "%s`" b) p k
+  | SpNtr _ p e ->
       horiz_vertic
         (fun () ->
            sprintf "%s%s = %s%s" b (patt zc "" p "") (expr zc "" e "") k)
