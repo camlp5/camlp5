@@ -18,7 +18,9 @@ value not_impl name ind b x k =
   sprintf "%s\"pr_extend, not impl: %s; %s\"%s" b name (String.escaped desc) k
 ;
 
-value tab ind = String.make ind ' ';
+value zc = {ind = 0};
+value shi ctx sh = {ind = ctx.ind + sh};
+value tab ctx = String.make ctx.ind ' ';
 
 (* horizontal list *)
 value rec hlist elem ind b xl k =
@@ -77,6 +79,7 @@ value rise_string ind sh b s =
            hello, world"
      what "saves" one line.
    *)
+  let ind = ind.ind in
   if String.length s > ind + sh && s.[ind+sh] = '"' then
     match try Some (String.index s '\n') with [ Not_found -> None ] with
     [ Some i ->
@@ -112,7 +115,7 @@ and plistl_two_parts elem eleml ind sh b xl k =
       [ Some b -> (plistl_kont_same_line elem eleml ind sh b xl k, None)
       | None ->
           let s1 = elem ind b x sep in
-          let s2 = plistl elem eleml (ind + sh) 0 (tab (ind + sh)) xl k in
+          let s2 = plistl elem eleml (shi ind sh) 0 (tab (shi ind sh)) xl k in
           (s1, Some s2) ] ]
 and plistl_kont_same_line elem eleml ind sh b xl k =
   match xl with
@@ -120,7 +123,7 @@ and plistl_kont_same_line elem eleml ind sh b xl k =
   | [(x, _)] ->
       horiz_vertic (fun () -> eleml ind (sprintf "%s " b) x k)
         (fun () ->
-           let s = eleml (ind + sh) (tab (ind + sh)) x k in
+           let s = eleml (shi ind sh) (tab (shi ind sh)) x k in
            let (b, s) = rise_string ind sh b s in
            sprintf "%s\n%s" b s)
   | [(x, sep) :: xl] ->
@@ -132,7 +135,7 @@ and plistl_kont_same_line elem eleml ind sh b xl k =
       [ Some b -> plistl_kont_same_line elem eleml ind sh b xl k
       | None ->
           let (s1, s2o) =
-            plistl_two_parts elem eleml (ind + sh) 0 (tab (ind + sh))
+            plistl_two_parts elem eleml (shi ind sh) 0 (tab (shi ind sh))
               [(x, sep) :: xl] k
           in
           match s2o with
@@ -303,7 +306,9 @@ value rec unlevel_list =
 
 value unentry =
   fun
-  [ <:expr< (Grammar.Entry.obj ($e$ : Grammar.Entry.e '$_$), $pos$, $ll$) >> ->
+  [ <:expr<
+      (Grammar.Entry.obj ($e$ : Grammar.Entry.e '$_$), $pos$, $ll$)
+    >> ->
       (e, unposition pos, unlevel_list ll)
   | _ -> raise Not_found ]
 ;
@@ -357,8 +362,10 @@ value position ind b pos k =
   | Some Gramext.First -> sprintf "%s FIRST%s" b k
   | Some Gramext.Last -> sprintf "%s LAST%s" b k
   | Some (Gramext.Before s) -> sprintf "%s BEFORE%s" b k
-  | Some (Gramext.After s) -> sprintf "%s AFTER %s%s" b (string 0 "" s "") k
-  | Some (Gramext.Level s) -> sprintf "%s LEVEL %s%s" b (string 0 "" s "") k ]
+  | Some (Gramext.After s) ->
+      sprintf "%s AFTER %s%s" b (string zc "" s "") k
+  | Some (Gramext.Level s) ->
+      sprintf "%s LEVEL %s%s" b (string zc "" s "") k ]
 ;
 
 value action expr ind b a k = expr ind b a k;
@@ -368,9 +375,9 @@ value token ind b tok k =
   [ Left (con, prm) ->
       if con = "" then string ind b prm k
       else if prm = "" then sprintf "%s%s%s" b con k
-      else sprintf "%s%s %s%s" b con (string 0 "" prm "") k
+      else sprintf "%s%s %s%s" b con (string zc "" prm "") k
   | Right <:expr< ($str:con$, $x$) >> ->
-      sprintf "%s%s $%s$%s" b con (expr 0 "" x "") k
+      sprintf "%s%s $%s$%s" b con (expr zc "" x "") k
   | Right _ -> assert False ]
 ;
 
@@ -378,39 +385,39 @@ value rec rule ind b (sl, a) k =
   match a with
   [ None -> not_impl "rule 1" ind b sl k
   | Some a ->
-      if sl = [] then action expr (ind + 4) (sprintf "%s-> " b) a k
+      if sl = [] then action expr (shi ind 4) (sprintf "%s-> " b) a k
       else
         match
           horiz_vertic
             (fun () ->
-               let s = hlistl (semi_after psymbol) psymbol 0 "" sl "" in
+               let s = hlistl (semi_after psymbol) psymbol zc "" sl "" in
                Some (sprintf "%s%s ->" b s))
             (fun () -> None)
         with
         [ Some s1 ->
             horiz_vertic
-              (fun () -> sprintf "%s %s%s" s1 (action expr 0 "" a "") k)
+              (fun () -> sprintf "%s %s%s" s1 (action expr zc "" a "") k)
               (fun () ->
-                 let s2 = action expr (ind + 4) (tab (ind + 4)) a k in
+                 let s2 = action expr (shi ind 4) (tab (shi ind 4)) a k in
                  sprintf "%s\n%s" s1 s2)
         | None ->
             let sl = List.map (fun s -> (s, ";")) sl in
 (**)
-            let s1 = plist psymbol (ind + 2) 0 b sl " ->" in
-            let s2 = action expr (ind + 4) (tab (ind + 4)) a k in
+            let s1 = plist psymbol (shi ind 2) 0 b sl " ->" in
+            let s2 = action expr (shi ind 4) (tab (shi ind 4)) a k in
             sprintf "%s\n%s" s1 s2 ] ]
 (*
             let psymbol_arrow_action ind b ps k =
               horiz_vertic
                 (fun () ->
-                   sprintf "%s%s -> %s%s" b (psymbol 0 "" ps "")
-                     (action expr 0 "" a "") k)
+                   sprintf "%s%s -> %s%s" b (psymbol zc "" ps "")
+                     (action expr zc "" a "") k)
                 (fun () ->
                    let s1 = psymbol ind b ps " ->" in
-                   let s2 = action expr (ind + 2) (tab (ind + 2)) a k in
+                   let s2 = action expr (shi ind 2) (tab (shi ind 2)) a k in
                    sprintf "%s\n%s" s1 s2)
             in
-            plistl psymbol psymbol_arrow_action (ind + 2) 0 b sl k ] ]
+            plistl psymbol psymbol_arrow_action (shi ind 2) 0 b sl k ] ]
 *)
 and psymbol ind b (p, s) k =
   match p with
@@ -418,7 +425,7 @@ and psymbol ind b (p, s) k =
   | Some p ->
       horiz_vertic
         (fun () ->
-           sprintf "%s%s = %s%s" b (patt 0 "" p "") (symbol 0 "" s "") k)
+           sprintf "%s%s = %s%s" b (patt zc "" p "") (symbol zc "" s "") k)
         (fun () -> not_impl "psymbol" ind b s k) ]
 and symbol ind b sy k =
   match sy with
@@ -441,10 +448,10 @@ and simple_symbol ind b sy k =
   | Srules rl ->
       horiz_vertic
         (fun () ->
-           hlist2 rule (bar_before rule) (ind + 2) (sprintf "%s[ " b) rl ""
+           hlist2 rule (bar_before rule) (shi ind 2) (sprintf "%s[ " b) rl ""
              (sprintf " ]%s" k))
         (fun () ->
-           vlist2 rule (bar_before rule) (ind + 2) (sprintf "%s[ " b) rl ""
+           vlist2 rule (bar_before rule) (shi ind 2) (sprintf "%s[ " b) rl ""
              (sprintf " ]%s" k))
   | Stoken (Left ("", _) | Left (_, "")) -> symbol ind b sy k
   | Slist0 _ | Slist0sep _ _ | Slist1 _ | Slist1sep _ _ ->
@@ -471,7 +478,7 @@ value level ind b (lab, ass, rl) k =
   [ (None, None) ->
       if rl = [] then sprintf "%s[ ]%s" b k
       else
-        vlist2 rule (bar_before rule) (ind + 2) (sprintf "%s[ " b) rl ""
+        vlist2 rule (bar_before rule) (shi ind 2) (sprintf "%s[ " b) rl ""
           (sprintf " ]%s" k)
   | _ ->
       let s1 =
@@ -484,16 +491,16 @@ value level ind b (lab, ass, rl) k =
       let s2 =
         if rl = [] then not_impl "level" ind "" rl k
         else
-          vlist2 rule (bar_before rule) (ind + 2)
-            (sprintf "%s[ " (tab (ind + 2))) rl "" (sprintf " ]%s" k)
+          vlist2 rule (bar_before rule) (shi ind 2)
+            (sprintf "%s[ " (tab (shi ind 2))) rl "" (sprintf " ]%s" k)
       in
       sprintf "%s\n%s" s1 s2 ]
 ;
 
 value entry ind b (e, pos, ll) k =
   sprintf "%s%s:%s\n%s\n%s;%s" b (expr ind "" e "") (position ind "" pos "")
-    (vlist2 level (bar_before level) (ind + 2)
-       (sprintf "%s[ " (tab (ind + 2))) ll "" " ]") (tab ind) k
+    (vlist2 level (bar_before level) (shi ind 2)
+       (sprintf "%s[ " (tab (shi ind 2))) ll "" " ]") (tab ind) k
 ;
 
 value extend_body ind b (globals, entries) k =
@@ -511,12 +518,12 @@ value extend ind b e k =
   [ <:expr< Grammar.extend $e$ >> ->
       try
         let ex = unextend_body e in
-        let s = extend_body (ind + 2) (tab (ind + 2)) ex "" in
+        let s = extend_body (shi ind 2) (tab (shi ind 2)) ex "" in
         sprintf "%sEXTEND\n%s\n%sEND%s" b s (tab ind) k
       with
       [ Not_found ->
           sprintf "%sGrammar.extend\n%s" b
-            (expr (ind + 2) (sprintf "%s(" (tab (ind + 2))) e k) ]
+            (expr (shi ind 2) (sprintf "%s(" (tab (shi ind 2))) e k) ]
   | e -> expr ind b e k ]
 ;
 

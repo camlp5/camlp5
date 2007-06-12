@@ -89,7 +89,9 @@ value not_impl name ind b x k =
   sprintf "%s\"pr_r, not impl: %s; %s\"%s" b name (String.escaped desc) k
 ;
 
-value tab ind = String.make ind ' ';
+value zc = {ind = 0};
+value shi ctx sh = {ind = ctx.ind + sh};
+value tab ctx = String.make ctx.ind ' ';
 
 value var_escaped ind b v k =
   let x =
@@ -184,6 +186,7 @@ value rise_string ind sh b s =
            hello, world"
      what "saves" one line.
    *)
+  let ind = ind.ind in
   if String.length s > ind + sh && s.[ind+sh] = '"' then
     match try Some (String.index s '\n') with [ Not_found -> None ] with
     [ Some i ->
@@ -219,7 +222,7 @@ and plistl_two_parts elem eleml ind sh b xl k =
       [ Some b -> (plistl_kont_same_line elem eleml ind sh b xl k, None)
       | None ->
           let s1 = elem ind b x sep in
-          let s2 = plistl elem eleml (ind + sh) 0 (tab (ind + sh)) xl k in
+          let s2 = plistl elem eleml (shi ind sh) 0 (tab (shi ind sh)) xl k in
           (s1, Some s2) ] ]
 and plistl_kont_same_line elem eleml ind sh b xl k =
   match xl with
@@ -227,7 +230,7 @@ and plistl_kont_same_line elem eleml ind sh b xl k =
   | [(x, _)] ->
       horiz_vertic (fun () -> eleml ind (sprintf "%s " b) x k)
         (fun () ->
-           let s = eleml (ind + sh) (tab (ind + sh)) x k in
+           let s = eleml (shi ind sh) (tab (shi ind sh)) x k in
            let (b, s) = rise_string ind sh b s in
            sprintf "%s\n%s" b s)
   | [(x, sep) :: xl] ->
@@ -239,7 +242,7 @@ and plistl_kont_same_line elem eleml ind sh b xl k =
       [ Some b -> plistl_kont_same_line elem eleml ind sh b xl k
       | None ->
           let (s1, s2o) =
-            plistl_two_parts elem eleml (ind + sh) 0 (tab (ind + sh))
+            plistl_two_parts elem eleml (shi ind sh) 0 (tab (shi ind sh))
               [(x, sep) :: xl] k
           in
           match s2o with
@@ -263,10 +266,10 @@ value operator ind left right sh b op x y k =
   let op = if op = "" then "" else " " ^ op in
   horiz_vertic
     (fun () ->
-       sprintf "%s%s%s %s%s" b (left 0 "" x "") op (right 0 "" y "") k)
+       sprintf "%s%s%s %s%s" b (left zc "" x "") op (right zc "" y "") k)
     (fun () ->
        let s1 = left ind b x op in
-       let s2 = right (ind + 2) (tab (ind + 2)) y k in
+       let s2 = right (shi ind 2) (tab (shi ind 2)) y k in
        sprintf "%s\n%s" s1 s2)
 ;
 
@@ -340,10 +343,10 @@ value patt_as ind b z k =
 *)
 value binding elem ind b (p, e) k =
   horiz_vertic
-    (fun () -> sprintf "%s%s = %s%s" b (patt 0 "" p "") (elem 0 "" e "") k)
+    (fun () -> sprintf "%s%s = %s%s" b (patt zc "" p "") (elem zc "" e "") k)
     (fun () ->
        sprintf "%s\n%s" (patt ind b p " =")
-         (elem (ind + 2) (tab (ind + 2)) e k))
+         (elem (shi ind 2) (tab (shi ind 2)) e k))
 ;
 
 pr_expr_fun_args.val :=
@@ -437,7 +440,7 @@ value rec sequence_box ind horiz vertic el k =
       (fun () -> sprintf "%s do {" (vertic ()))
   in
   let s2 =
-    vlistl (semi_after expr_wh) expr_wh (ind + 2) (tab (ind + 2)) el ""
+    vlistl (semi_after expr_wh) expr_wh (shi ind 2) (tab (shi ind 2)) el ""
   in
   let s3 = sprintf "%s}%s" (tab ind) k in
   sprintf "%s\n%s\n%s" s1 s2 s3
@@ -450,12 +453,12 @@ and where_binding ind b (p, e, body) k =
   let pl = [p :: pl] in
   horiz_vertic
     (fun () ->
-       sprintf "%s%s where rec %s = %s" b (expr 0 "" e "")
-         (hlist patt 0 "" pl "") (expr 0 "" body ""))
+       sprintf "%s%s where rec %s = %s" b (expr zc "" e "")
+         (hlist patt zc "" pl "") (expr zc "" body ""))
     (fun () ->
        let horiz_where () =
-         sprintf "%s%s where rec %s =" b (expr 0 "" e "")
-           (hlist patt 0 "" pl "")
+         sprintf "%s%s where rec %s =" b (expr zc "" e "")
+           (hlist patt zc "" pl "")
        in
        let vertic_where () =
          let s1 = expr ind b e "" in
@@ -466,7 +469,7 @@ and where_binding ind b (p, e, body) k =
        [ Some el -> sequence_box ind horiz_where vertic_where el k
        | None ->
            let s1 = horiz_vertic horiz_where vertic_where in
-           let s2 = expr (ind + 2) (tab (ind + 2)) body k in
+           let s2 = expr (shi ind 2) (tab (shi ind 2)) body k in
            sprintf "%s\n%s" s1 s2 ])
 
 and expr_wh ind b e k =
@@ -489,7 +492,8 @@ value record_binding ind b (p, e) k =
   let expr_wh = if flag_where_after_field_eq.val then expr_wh else expr in
   horiz_vertic
     (fun () ->
-       sprintf "%s%s = %s%s" b (hlist patt 0 "" pl "") (expr_wh 0 "" e "") k)
+       sprintf "%s%s = %s%s" b (hlist patt zc "" pl "") (expr_wh zc "" e "")
+         k)
     (fun () ->
        match sequencify e with
        [ Some el ->
@@ -499,7 +503,7 @@ value record_binding ind b (p, e) k =
              el k
        | None ->
            sprintf "%s\n%s" (hlist patt ind b pl " =")
-             (expr_wh (ind + 2) (tab (ind + 2)) e k) ])
+             (expr_wh (shi ind 2) (tab (shi ind 2)) e k) ])
 ;
 
 (* Pretty printing improvements (optional):
@@ -537,34 +541,34 @@ value value_binding ind b (p, e) ko =
   let expr_wh = if flag_where_after_value_eq.val then expr_wh else expr in
   horiz_vertic
     (fun () ->
-       sprintf "%s%s%s = %s%s" b (hlist patt 0 "" pl "")
+       sprintf "%s%s%s = %s%s" b (hlist patt zc "" pl "")
          (match tyo with
-          [ Some t -> sprintf " : %s" (ctyp 0 "" t "")
+          [ Some t -> sprintf " : %s" (ctyp zc "" t "")
           | None -> "" ])
-         (expr_wh 0 "" e "")
+         (expr_wh zc "" e "")
          (match ko with [ Some (_, k) -> k | None -> "" ]))
     (fun () ->
        match sequencify e with
        [ Some el ->
            sequence_box ind
              (fun () ->
-                sprintf "%s%s%s =" b (hlist patt 0 "" pl "")
+                sprintf "%s%s%s =" b (hlist patt zc "" pl "")
                   (match tyo with
-                   [ Some t -> sprintf " : %s" (ctyp 0 "" t "")
+                   [ Some t -> sprintf " : %s" (ctyp zc "" t "")
                    | None -> "" ]))
              (fun () ->
-                sprintf "%s%s%s =" b (hlist patt 0 "" pl "")
+                sprintf "%s%s%s =" b (hlist patt zc "" pl "")
                   (match tyo with
-                   [ Some t -> sprintf " : %s" (ctyp 0 "" t "")
+                   [ Some t -> sprintf " : %s" (ctyp zc "" t "")
                    | None -> "" ]))
              el (match ko with [ Some (_, k) -> k | None -> "" ])
        | None ->
            let s1 =
              horiz_vertic
                (fun () ->
-                  sprintf "%s%s%s =" b (hlist patt 0 "" pl "")
+                  sprintf "%s%s%s =" b (hlist patt zc "" pl "")
                     (match tyo with
-                     [ Some t -> sprintf " : %s" (ctyp 0 "" t "")
+                     [ Some t -> sprintf " : %s" (ctyp zc "" t "")
                      | None -> "" ]))
                (fun () ->
                   let patt_tycon tyo ind b p k =
@@ -576,7 +580,7 @@ value value_binding ind b (p, e) ko =
                   plistl patt (patt_tycon tyo) ind 4 b pl " =")
            in
            let s2 =
-             expr_wh (ind + 2) (tab (ind + 2)) e
+             expr_wh (shi ind 2) (tab (shi ind 2)) e
                (match ko with [ Some (False, k) -> k | _ -> "" ])
            in
            let s3 =
@@ -600,7 +604,7 @@ value let_binding ind b (p, e) is_last =
   let expr_wh = if flag_where_after_let_eq.val then expr_wh else expr in
   horiz_vertic
     (fun () ->
-       sprintf "%s%s = %s%s" b (hlist patt 0 "" pl "") (expr_wh 0 "" e "")
+       sprintf "%s%s = %s%s" b (hlist patt zc "" pl "") (expr_wh zc "" e "")
          (if is_last then " in" else ""))
     (fun () ->
        let s =
@@ -612,7 +616,7 @@ value let_binding ind b (p, e) is_last =
                el ""
          | None ->
              let s1 = hlist patt ind b pl " =" in
-             let s2 = expr_wh (ind + 2) (tab (ind + 2)) e "" in
+             let s2 = expr_wh (shi ind 2) (tab (shi ind 2)) e "" in
              sprintf "%s\n%s" s1 s2 ]
        in
        if is_last then sprintf "%s\n%sin" s (tab ind) else s)
@@ -622,28 +626,30 @@ value match_assoc ind b (p, w, e) k =
   let expr_wh = if flag_where_after_arrow.val then expr_wh else expr in
   horiz_vertic
     (fun () ->
-       sprintf "%s%s%s -> %s%s" b (patt_as 0 "" p "")
+       sprintf "%s%s%s -> %s%s" b (patt_as zc "" p "")
          (match w with
-          [ Some e -> sprintf " when %s" (expr 0 "" e "")
+          [ Some e -> sprintf " when %s" (expr zc "" e "")
           | None -> "" ])
-         (expr 0 "" e "") k)
+         (expr zc "" e "") k)
     (fun () ->
        let patt_arrow () =
          match w with
          [ Some e ->
              horiz_vertic
                (fun () -> 
-                  sprintf "%s%s when %s ->" b (patt_as 0 "" p "")
-                    (expr 0 "" e ""))
+                  sprintf "%s%s when %s ->" b (patt_as zc "" p "")
+                    (expr zc "" e ""))
                (fun () ->
                   let s1 = patt_as ind b p "" in
                   let s2 =
                     horiz_vertic
                       (fun () ->
-                         sprintf "%swhen %s ->" (tab ind) (expr 0 "" e ""))
+                         sprintf "%swhen %s ->" (tab ind) (expr zc "" e ""))
                       (fun () ->
                          let s1 = sprintf "%swhen" (tab ind) in
-                         let s2 = expr (ind + 2) (tab (ind + 2)) e " ->" in
+                         let s2 =
+                           expr (shi ind 2) (tab (shi ind 2)) e " ->"
+                         in
                          sprintf "%s\n%s" s1 s2)
                   in
                   sprintf "%s\n%s" s1 s2)
@@ -653,11 +659,11 @@ value match_assoc ind b (p, w, e) k =
        [ Some el -> sequence_box ind (fun () -> sprintf "\n") patt_arrow el k
        | None ->
            let s1 = patt_arrow () in
-           let s2 = expr_wh (ind + 2) (tab (ind + 2)) e k in
+           let s2 = expr_wh (shi ind 2) (tab (shi ind 2)) e k in
            sprintf "%s\n%s" s1 s2 ])
 ;
 
-value match_assoc_sh ind b pwe k = match_assoc (ind + 2) b pwe k;
+value match_assoc_sh ind b pwe k = match_assoc (shi ind 2) b pwe k;
 
 value match_assoc_list ind b pwel k =
   if pwel = [] then sprintf "%s[]%s" b k
@@ -692,28 +698,28 @@ value type_var ind b (tv, (p, m)) k =
 value type_decl ind b ((_, tn), tp, te, cl) ko =
   horiz_vertic
     (fun () ->
-       sprintf "%s%s%s = %s%s%s" b (var_escaped 0 "" tn "")
-         (if tp = [] then "" else sprintf " %s" (hlist type_var 0 "" tp ""))
-         (ctyp 0 "" te "")
+       sprintf "%s%s%s = %s%s%s" b (var_escaped zc "" tn "")
+         (if tp = [] then "" else sprintf " %s" (hlist type_var zc "" tp ""))
+         (ctyp zc "" te "")
          (if cl = [] then "" else not_impl "type_decl cl" ind "" cl "")
          (match ko with [ Some (_, k) -> k | None -> "" ]))
     (fun () ->
        let s1 =
          horiz_vertic
            (fun () ->
-              sprintf "%s%s%s =" b (var_escaped 0 "" tn "")
+              sprintf "%s%s%s =" b (var_escaped zc "" tn "")
                 (if tp = [] then "" else
-                 sprintf " %s" (hlist type_var 0 "" tp "")))
+                 sprintf " %s" (hlist type_var zc "" tp "")))
            (fun () -> not_impl "type_decl vertic 1" ind b tn "")
        in
        let s2 =
          if cl = [] then
-           ctyp (ind + 2) (tab (ind + 2)) te
+           ctyp (shi ind 2) (tab (shi ind 2)) te
              (match ko with [ Some (False, k) -> k | _ -> "" ])
          else
            horiz_vertic
              (fun () ->
-                sprintf "%s%s%s%s" (tab (ind + 2)) (ctyp 0 "" te "")
+                sprintf "%s%s%s%s" (tab (shi ind 2)) (ctyp zc "" te "")
                   (not_impl "type_decl cl 2" ind "" cl "") "")
              (fun () -> not_impl "type_decl vertic 2" ind "" tn "")
        in
@@ -729,10 +735,10 @@ value label_decl ind b (_, l, m, t) k =
   horiz_vertic
     (fun () ->
        sprintf "%s%s : %s%s%s" b l (if m then "mutable " else "")
-         (ctyp 0 "" t "") k)
+         (ctyp zc "" t "") k)
     (fun () ->
        let s1 = sprintf "%s%s :%s" b l (if m then " mutable" else "") in
-       let s2 = ctyp (ind + 2) (tab (ind + 2)) t k in
+       let s2 = ctyp (shi ind 2) (tab (shi ind 2)) t k in
        sprintf "%s\n%s" s1 s2)
 ;
 
@@ -742,17 +748,17 @@ value cons_decl ind b (_, c, tl) k =
     horiz_vertic
       (fun () ->
          sprintf "%s%s of %s%s" b c
-           (hlist2 ctyp (and_before ctyp) 0 "" tl "" "") k)
+           (hlist2 ctyp (and_before ctyp) zc "" tl "" "") k)
       (fun () ->
          let s1 = sprintf "%s%s of" b c in
          let s2 =
            horiz_vertic
              (fun () ->
-                sprintf "%s%s%s" (tab (ind + 4))
-                  (hlist2 ctyp (and_before ctyp) 0 "" tl "" "") k)
+                sprintf "%s%s%s" (tab (shi ind 4))
+                  (hlist2 ctyp (and_before ctyp) zc "" tl "" "") k)
              (fun () ->
                 let tl = List.map (fun t -> (t, " and")) tl in
-                plist ctyp (ind + 4) 2 (tab (ind + 4)) tl k)
+                plist ctyp (shi ind 4) 2 (tab (shi ind 4)) tl k)
          in
          sprintf "%s\n%s" s1 s2)
 ;
@@ -773,14 +779,14 @@ value expr_short ind b x k =
     match x with
     [ <:expr< $lid:op$ $x$ $y$ >> ->
         if op = "+" || op = "-" then
-          sprintf "%s%s%s%s%s" b (expr1 0 "" x "") op (expr2 0 "" y "") k
+          sprintf "%s%s%s%s%s" b (expr1 zc "" x "") op (expr2 zc "" y "") k
         else expr2 ind b x k
     | _ -> expr2 ind b x k ]
   and expr2 ind b x k =
     match x with
     [ <:expr< $lid:op$ $x$ $y$ >> ->
         if op = "*" || op = "/" then
-          sprintf "%s%s%s%s%s" b (expr2 0 "" x "") op (expr3 0 "" y "") k
+          sprintf "%s%s%s%s%s" b (expr2 zc "" x "") op (expr3 zc "" y "") k
         else expr3 ind b x k
     | _ -> expr3 ind b x k ]
   and expr3 ind b x k =
@@ -791,7 +797,7 @@ value expr_short ind b x k =
     | <:expr< $int:s$ >> -> sprintf "%s%s%s" b s k
     | <:expr< $lid:op$ $_$ $_$ >> ->
         if List.mem op ["+"; "-"; "*"; "/"] then
-          sprintf "%s(%s)%s" b (expr1 0 "" x "") k
+          sprintf "%s(%s)%s" b (expr1 zc "" x "") k
         else raise Exit
     | _ -> raise Exit ]
   in
@@ -847,16 +853,16 @@ value ctyp_simple =
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
-             hlistl (semi_after label_decl) label_decl 0
+             hlistl (semi_after label_decl) label_decl zc
                (sprintf "%s{ " b) ltl (sprintf " }%s" k))
           (fun () ->
-             vlistl (semi_after label_decl) label_decl (ind + 2)
+             vlistl (semi_after label_decl) label_decl (shi ind 2)
                (sprintf "%s{ " b) ltl (sprintf " }%s" k))
   | <:ctyp< [ $list:vdl$ ] >> ->
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
-             hlist2 cons_decl (bar_before cons_decl) 0
+             hlist2 cons_decl (bar_before cons_decl) zc
                (sprintf "%s[ " b) vdl "" (sprintf " ]%s" k))
           (fun () ->
              vlist2 cons_decl (bar_before cons_decl) ind
@@ -865,7 +871,7 @@ value ctyp_simple =
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
-             sprintf "%s(%s)%s" b (hlistl (star_after ctyp) ctyp 0 "" tl "")
+             sprintf "%s(%s)%s" b (hlistl (star_after ctyp) ctyp zc "" tl "")
                k)
           (fun () ->
              let tl = List.map (fun t -> (t, " *")) tl in
@@ -887,7 +893,7 @@ value ctyp_simple =
         failwith "variants not pretty printed (in type); add pr_ro.cmo"
   | <:ctyp< $_$ $_$ >> | <:ctyp< $_$ -> $_$ >> as z ->
       fun curr next ind b k ->
-        ctyp (ind + 1) (sprintf "%s(" b) z (sprintf ")%s" k)
+        ctyp (shi ind 1) (sprintf "%s(" b) z (sprintf ")%s" k)
   | z ->
       fun curr next ind b k -> not_impl "ctyp" ind b z k ]
 ;
@@ -899,20 +905,20 @@ value expr_top =
         let expr_wh = if flag_where_after_then.val then expr_wh else expr in
         horiz_vertic
          (fun () ->
-            sprintf "%sif %s then %s else %s%s" b (expr 0 "" e1 "")
-              (expr 0 "" e2 "") (expr 0 "" e3 "") k)
+            sprintf "%sif %s then %s else %s%s" b (expr zc "" e1 "")
+              (expr zc "" e2 "") (expr zc "" e3 "") k)
          (fun () ->
             let if_then ind b_if e1 e2 =
               horiz_vertic
                 (fun () ->
-                   sprintf "%s%s then %s" b_if (expr 0 "" e1 "")
-                     (expr 0 "" e2 ""))
+                   sprintf "%s%s then %s" b_if (expr zc "" e1 "")
+                     (expr zc "" e2 ""))
                 (fun () ->
                    let horiz_if_then () =
-                     sprintf "%s%s then" b_if (expr 0 "" e1 "")
+                     sprintf "%s%s then" b_if (expr zc "" e1 "")
                    in
                    let vertic_if_then () =
-                     let s1 = expr (ind + 3) b_if e1 "" in
+                     let s1 = expr (shi ind 3) b_if e1 "" in
                      let s2 = sprintf "%sthen" (tab ind) in
                      sprintf "%s\n%s" s1 s2
                    in
@@ -921,7 +927,7 @@ value expr_top =
                        sequence_box ind horiz_if_then vertic_if_then el ""
                    | None ->
                        let s1 = horiz_vertic horiz_if_then vertic_if_then in
-                       let s2 = expr_wh (ind + 2) (tab (ind + 2)) e2 "" in
+                       let s2 = expr_wh (shi ind 2) (tab (shi ind 2)) e2 "" in
                        sprintf "%s\n%s" s1 s2 ])
             in
             let s1 = if_then ind (sprintf "%sif " b) e1 e2 in
@@ -937,14 +943,15 @@ value expr_top =
             in
             let s3 =
               horiz_vertic
-                (fun () -> sprintf "%selse %s%s" (tab ind) (expr 0 "" e3 "") k)
+                (fun () ->
+                   sprintf "%selse %s%s" (tab ind) (expr zc "" e3 "") k)
                 (fun () ->
                    match sequencify e3 with
                    [ Some el ->
                        sequence_box ind (fun () -> sprintf "\n")
                          (fun () -> sprintf "%selse" (tab ind)) el k
                    | None ->
-                       let s = expr_wh (ind + 2) (tab (ind + 2)) e3 k in
+                       let s = expr_wh (shi ind 2) (tab (shi ind 2)) e3 k in
                        sprintf "%selse\n%s" (tab ind) s ])
             in
             sprintf "%s%s\n%s" s1 s2 s3)
@@ -958,7 +965,7 @@ value expr_top =
               (fun () ->
                  sprintf "%s %s"
                    (hlist patt ind (sprintf "%sfun " b) pl " ->")
-                   (expr 0 "" e1 k))
+                   (expr zc "" e1 k))
               (fun () ->
                  let fun_arrow () =
                    let pl = List.map (fun p -> (p, "")) pl in
@@ -969,7 +976,7 @@ value expr_top =
                      sequence_box ind (fun () -> sprintf "\n") fun_arrow el k
                  | None ->
                      let s1 = fun_arrow () in
-                     let s2 = expr (ind + 2) (tab (ind + 2)) e1 k in
+                     let s2 = expr (shi ind 2) (tab (shi ind 2)) e1 k in
                      sprintf "%s\n%s" s1 s2 ])
         | [] -> sprintf "%sfun []%s" b k
         | pwel ->
@@ -988,7 +995,7 @@ value expr_top =
         [ [(p, wo, e)] when is_irrefut_patt p ->
             horiz_vertic
               (fun () ->
-                 sprintf "%s%s %s with %s%s" b op (expr_wh 0 "" e1 "")
+                 sprintf "%s%s %s with %s%s" b op (expr_wh zc "" e1 "")
                    (match_assoc ind "" (p, wo, e) "") k)
               (fun () ->
                  match
@@ -996,14 +1003,14 @@ value expr_top =
                      (fun () ->
                         Some
                           (sprintf "%s%s %s with %s%s ->" b op
-                             (expr_wh 0 "" e1 "") (patt ind "" p "")
+                             (expr_wh zc "" e1 "") (patt ind "" p "")
                              (match wo with
-                              [ Some e -> expr 0 " when" e ""
+                              [ Some e -> expr zc " when" e ""
                               | None -> "" ])))
                       (fun () -> None)
                  with
                  [ Some s1 ->
-                     let s2 = expr (ind + 2) (tab (ind + 2)) e k in
+                     let s2 = expr (shi ind 2) (tab (shi ind 2)) e k in
                      sprintf "%s\n%s" s1 s2
                  | None ->
                      let s1 =
@@ -1012,7 +1019,9 @@ value expr_top =
                            sequence_box ind (fun () -> sprintf "%s%s" b op)
                              (fun () -> sprintf "%s%s" b op) el ""
                        | None ->
-                           let s = expr_wh (ind + 2) (tab (ind + 2)) e1 "" in
+                           let s =
+                             expr_wh (shi ind 2) (tab (shi ind 2)) e1 ""
+                           in
                            sprintf "%s%s\n%s" b op s ]
                      in
                      let s2 =
@@ -1023,8 +1032,8 @@ value expr_top =
         | _ ->
             horiz_vertic
               (fun () ->
-                 sprintf "%s%s %s with %s%s" b op (expr_wh 0 "" e1 "")
-                   (match_assoc_list 0 "" pwel "") k)
+                 sprintf "%s%s %s with %s%s" b op (expr_wh zc "" e1 "")
+                   (match_assoc_list zc "" pwel "") k)
               (fun () ->
                  let s1 =
                    horiz_vertic
@@ -1037,7 +1046,9 @@ value expr_top =
                               sequence_box ind (fun () -> sprintf "\n")
                                 (fun () -> sprintf "%s%s" b op) el ""
                           | None ->
-                              let s = expr_wh (ind + 2) (tab (ind + 2)) e1 "" in
+                              let s =
+                                expr_wh (shi ind 2) (tab (shi ind 2)) e1 ""
+                              in
                               sprintf "%s%s\n%s" b op s ]
                         in
                         sprintf "%s\n%swith" s (tab ind))
@@ -1056,7 +1067,7 @@ value expr_top =
                    (sprintf "%slet %s" b (if rf then "rec " else ""))
                    pel False True
                in
-               let s2 = expr 0 "" e k in
+               let s2 = expr zc "" e k in
                sprintf "%s %s" s1 s2)
           (fun () ->
              let s1 =
@@ -1071,16 +1082,18 @@ value expr_top =
         horiz_vertic
           (fun () ->
              sprintf "%slet module %s = %s in %s%s" b s
-               (module_expr 0 "" me "") (expr 0 "" e "") k)
+               (module_expr zc "" me "") (expr zc "" e "") k)
           (fun () ->
              let s1 =
                horiz_vertic
                  (fun () ->
                     sprintf "%slet module %s = %s in" b s
-                      (module_expr 0 "" me ""))
+                      (module_expr zc "" me ""))
                  (fun () ->
                     let s1 = sprintf "%slet module %s =" b s in
-                    let s2 = module_expr (ind + 2) (tab (ind + 2)) me "" in
+                    let s2 =
+                      module_expr (shi ind 2) (tab (shi ind 2)) me ""
+                    in
                     let s3 = sprintf "%sin" (tab ind) in
                     sprintf "%s\n%s\n%s" s1 s2 s3)
              in
@@ -1096,10 +1109,10 @@ value expr_top =
         horiz_vertic
           (fun () ->
              sprintf "%sdo {%s%s%s}%s" b " "
-               (hlistl (semi_after expr) expr 0 "" el "") " " k)
+               (hlistl (semi_after expr) expr zc "" el "") " " k)
           (fun () ->
              sprintf "%sdo {%s%s%s}%s" b "\n"
-               (vlistl (semi_after expr) expr (ind + 2) (tab (ind + 2)) el
+               (vlistl (semi_after expr) expr (shi ind 2) (tab (shi ind 2)) el
                   "")
                ("\n" ^ tab ind) k)
   | <:expr< while $e1$ do { $list:el$ } >> ->
@@ -1107,19 +1120,20 @@ value expr_top =
         horiz_vertic
           (fun () ->
              sprintf "%swhile %s do { %s }%s" b (curr ind "" e1 "")
-               (hlistl (semi_after expr) expr 0 "" el "") k)
+               (hlistl (semi_after expr) expr zc "" el "") k)
           (fun () ->
              let s1 =
                horiz_vertic
                  (fun () -> sprintf "%swhile %s do {" b (curr ind "" e1 ""))
                  (fun () ->
                     let s1 = sprintf "%swhile" b in
-                    let s2 = curr (ind + 2) (tab (ind + 2)) e1 "" in
+                    let s2 = curr (shi ind 2) (tab (shi ind 2)) e1 "" in
                     let s3 = sprintf "%sdo {" (tab ind) in
                     sprintf "%s\n%s\n%s" s1 s2 s3)
              in
              let s2 =
-               vlistl (semi_after expr) expr (ind + 2) (tab (ind + 2)) el ""
+               vlistl (semi_after expr) expr (shi ind 2) (tab (shi ind 2)) el
+                 ""
              in
              let s3 = sprintf "%s}%s" (tab ind) k in
              sprintf "%s\n%s\n%s" s1 s2 s3)
@@ -1130,7 +1144,7 @@ value expr_top =
              sprintf "%sfor %s = %s %s %s do { %s }%s" b v
                (curr ind "" e1 "") (if d then "to" else "downto")
                (curr ind "" e2 "")
-               (hlistl (semi_after expr) expr 0 "" el "") k)
+               (hlistl (semi_after expr) expr zc "" el "") k)
           (fun () ->
              let s1 =
                horiz_vertic
@@ -1143,12 +1157,12 @@ value expr_top =
                       curr ind (sprintf "%sfor %s = " b v) e1
                         (if d then " to" else " downto")
                     in
-                    let s2 = curr (ind + 4) (tab (ind + 4)) e2 "" in
+                    let s2 = curr (shi ind 4) (tab (shi ind 4)) e2 "" in
                     let s3 = sprintf "%sdo {" (tab ind) in
                     sprintf "%s\n%s\n%s" s1 s2 s3)
              in
              let s2 =
-               vlist (semi_after expr) (ind + 2) (tab (ind + 2)) el ""
+               vlist (semi_after expr) (shi ind 2) (tab (shi ind 2)) el ""
              in
              let s3 = sprintf "%s}%s" (tab ind) k in
              sprintf "%s\n%s\n%s" s1 s2 s3)
@@ -1271,14 +1285,14 @@ value expr_apply =
   extfun Extfun.empty with
   [ <:expr< assert $e$ >> ->
       fun curr next ind b k ->
-        horiz_vertic (fun () -> sprintf "%sassert %s%s" b (next 0 "" e "") k)
+        horiz_vertic (fun () -> sprintf "%sassert %s%s" b (next zc "" e "") k)
           (fun () -> not_impl "assert vertical" ind b e k)
   | <:expr< lazy $e$ >> ->
       fun curr next ind b k ->
-        horiz_vertic (fun () -> sprintf "%slazy %s%s" b (next 0 "" e "") k)
+        horiz_vertic (fun () -> sprintf "%slazy %s%s" b (next zc "" e "") k)
           (fun () ->
              let s1 = sprintf "%slazy" b in
-             let s2 = next (ind + 2) (tab (ind + 2)) e k in
+             let s2 = next (shi ind 2) (tab (shi ind 2)) e k in
              sprintf "%s\n%s" s1 s2)
   | <:expr< $_$ $_$ >> as z ->
       fun curr next ind b k ->
@@ -1304,7 +1318,7 @@ value expr_dot =
   extfun Extfun.empty with
   [ <:expr< $x$ . $y$ >> ->
       fun curr next ind b k ->
-        horiz_vertic (fun () -> curr 0 (curr 0 b x ".") y k)
+        horiz_vertic (fun () -> curr zc (curr zc b x ".") y k)
           (fun () ->
              let s1 = curr ind b x "." in
              let s2 = curr ind (tab ind) y k in
@@ -1328,12 +1342,12 @@ value expr_simple =
   | <:expr< {$list:lel$} >> ->
       fun curr next ind b k ->
         let lxl = List.map (fun lx -> (lx, ";")) lel in
-        plist record_binding (ind + 1) 0 (sprintf "%s{" b) lxl
+        plist record_binding (shi ind 1) 0 (sprintf "%s{" b) lxl
           (sprintf "}%s" k)
   | <:expr< {($e$) with $list:lel$} >> ->
       fun curr next ind b k ->
         let lxl = List.map (fun lx -> (lx, ";")) lel in
-        plist record_binding (ind + 1) 0
+        plist record_binding (shi ind 1) 0
           (expr ind (sprintf "%s{(" b) e ") with ") lxl
           (sprintf "}%s" k)
   | <:expr< [| $list:el$ |] >> ->
@@ -1341,7 +1355,7 @@ value expr_simple =
         if el = [] then sprintf "%s[| |]%s" b k
         else
           let el = List.map (fun e -> (e, ";")) el in
-          plist expr (ind + 3) 0 (sprintf "%s[| " b) el (sprintf " |]%s" k)
+          plist expr (shi ind 3) 0 (sprintf "%s[| " b) el (sprintf " |]%s" k)
   | <:expr< [$_$ :: $_$] >> as z ->
       fun curr next ind b k ->
         let (xl, y) = make_expr_list z in
@@ -1359,15 +1373,17 @@ value expr_simple =
                    sprintf "%s\n%s" s1 s2)
           | None -> expr ind b x (sprintf "]%s" k) ]
         in
-        plistl expr expr2 (ind + 1) 0 (sprintf "%s[" b) xl k
+        plistl expr expr2 (shi ind 1) 0 (sprintf "%s[" b) xl k
   | <:expr< ($e$ : $t$) >> ->
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
-             sprintf "%s(%s : %s)%s" b (expr 0 "" e "") (ctyp 0 "" t "") k)
+             sprintf "%s(%s : %s)%s" b (expr zc "" e "") (ctyp zc "" t "") k)
           (fun () ->
-             let s1 = expr (ind + 1) (sprintf "%s(" b) e " :" in
-             let s2 = ctyp (ind + 1) (tab (ind + 1)) t (sprintf ")%s" k) in
+             let s1 = expr (shi ind 1) (sprintf "%s(" b) e " :" in
+             let s2 =
+               ctyp (shi ind 1) (tab (shi ind 1)) t (sprintf ")%s" k)
+             in
              sprintf "%s\n%s" s1 s2)
   | <:expr< $int:s$ >> | <:expr< $flo:s$ >> ->
       fun curr next ind b k ->
@@ -1409,7 +1425,7 @@ value expr_simple =
     <:expr< match $_$ with [ $list:_$ ] >> |
     <:expr< try $_$ with [ $list:_$ ] >> as z ->
       fun curr next ind b k ->
-        expr (ind + 1) (sprintf "%s(" b) z (sprintf ")%s" k)
+        expr (shi ind 1) (sprintf "%s(" b) z (sprintf ")%s" k)
   | z ->
       fun curr next ind b k -> not_impl "expr" ind b z k ]
 ;
@@ -1462,11 +1478,11 @@ value patt_simple =
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
-             sprintf "%s(%s as %s)%s" b (patt 0 "" x "") (patt 0 "" y "") k)
+             sprintf "%s(%s as %s)%s" b (patt zc "" x "") (patt zc "" y "") k)
           (fun () ->
-             let s1 = patt (ind + 1) (sprintf "%s(" b) x "" in
+             let s1 = patt (shi ind 1) (sprintf "%s(" b) x "" in
              let s2 =
-               patt (ind + 1) (sprintf "%sas " (tab (ind + 1))) y
+               patt (shi ind 1) (sprintf "%sas " (tab (shi ind 1))) y
                  (sprintf ")%s" k)
              in
              sprintf "%s\n%s" s1 s2)
@@ -1477,7 +1493,7 @@ value patt_simple =
   | <:patt< {$list:lpl$} >> ->
       fun curr next ind b k ->
         let lxl = List.map (fun lx -> (lx, ";")) lpl in
-        plist (binding patt) (ind + 1) 0 (sprintf "%s{" b) lxl
+        plist (binding patt) (shi ind 1) 0 (sprintf "%s{" b) lxl
           (sprintf "}%s" k)
   | <:patt< [$_$ :: $_$] >> as z ->
       fun curr next ind b k ->
@@ -1493,20 +1509,22 @@ value patt_simple =
                 (fun () ->
                    let s1 = patt ind b x " ::" in
                    let s2 =
-                     patt (ind + 2) (tab (ind + 2)) y (sprintf "]%s" k)
+                     patt (shi ind 2) (tab (shi ind 2)) y (sprintf "]%s" k)
                    in
                    sprintf "%s\n%s" s1 s2)
           | None -> patt ind b x (sprintf "]%s" k) ]
         in
-        plistl patt patt2 (ind + 1) 0 (sprintf "%s[" b) xl k
+        plistl patt patt2 (shi ind 1) 0 (sprintf "%s[" b) xl k
   | <:patt< ($p$ : $t$) >> ->
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
-             sprintf "%s(%s : %s)%s" b (patt 0 "" p "") (ctyp 0 "" t "") k)
+             sprintf "%s(%s : %s)%s" b (patt zc "" p "") (ctyp zc "" t "") k)
           (fun () ->
              let s1 = patt ind (sprintf "%s(" b) p " :" in
-             let s2 = ctyp (ind + 1) (tab (ind + 1)) t (sprintf ")%s" k) in
+             let s2 =
+               ctyp (shi ind 1) (tab (shi ind 1)) t (sprintf ")%s" k)
+             in
              sprintf "%s\n%s" s1 s2)
   | <:patt< $int:s$ >> ->
       fun curr next ind b k -> sprintf "%s%s%s" b s k
@@ -1531,7 +1549,7 @@ value patt_simple =
   | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >>
     as z ->
       fun curr next ind b k ->
-        patt (ind + 1) (sprintf "%s(" b) z (sprintf ")%s" k)
+        patt (shi ind 1) (sprintf "%s(" b) z (sprintf ")%s" k)
   | z ->
       fun curr next ind b k -> not_impl "patt" ind b z k ]
 ;
@@ -1541,14 +1559,14 @@ value string ind b s k = sprintf "%s\"%s\"%s" b s k;
 value external_decl ind b (n, t, sl) k =
   horiz_vertic
     (fun () ->
-       sprintf "%sexternal %s : %s = %s%s" b (var_escaped 0 "" n "")
-         (ctyp 0 "" t "") (hlist string 0 "" sl "") k)
+       sprintf "%sexternal %s : %s = %s%s" b (var_escaped zc "" n "")
+         (ctyp zc "" t "") (hlist string zc "" sl "") k)
     (fun () ->
        let s1 = var_escaped ind (sprintf "%sexternal " b) n " :" in
        let s2 =
-         ctyp (ind + 2) (tab (ind + 2)) t
+         ctyp (shi ind 2) (tab (shi ind 2)) t
            (if sl = [] then k
-            else sprintf " = %s%s" (hlist string 0 "" sl "") k)
+            else sprintf " = %s%s" (hlist string zc "" sl "") k)
        in
        sprintf "%s\n%s" s1 s2)
 ;
@@ -1559,9 +1577,9 @@ value exception_decl ind b (e, tl, id) k =
        sprintf "%sexception %s%s%s%s" b e
          (if tl = [] then ""
           else
-            sprintf " of %s" (hlist2 ctyp (and_before ctyp) 0 "" tl "" ""))
+            sprintf " of %s" (hlist2 ctyp (and_before ctyp) zc "" tl "" ""))
          (if id = [] then ""
-          else sprintf " = %s" (mod_ident 0 "" id ""))
+          else sprintf " = %s" (mod_ident zc "" id ""))
          k)
     (fun () ->
        let s1 =
@@ -1572,14 +1590,14 @@ value exception_decl ind b (e, tl, id) k =
          else
            let tl = List.map (fun t -> (t, " and")) tl in
            sprintf "\n%s"
-             (plist ctyp 0 (ind + 2) (tab (ind + 2)) tl
+             (plist ctyp ind 2 (tab (shi ind 2)) tl
                 (if id = [] then k else ""))
        in
        let s3 =
          if id = [] then ""
          else
            sprintf "\n%s"
-             (mod_ident (ind + 2) (sprintf "%s= " (tab (ind + 2))) id k)
+             (mod_ident (shi ind 2) (sprintf "%s= " (tab (shi ind 2))) id k)
        in
        sprintf "%s%s%s" s1 s2 s3)
 ;
@@ -1591,18 +1609,19 @@ value str_item_top =
   | <:str_item< declare $list:sil$ end >> ->
       fun curr next ind b k ->
         if flag_expand_declare.val then
-          horiz_vertic (fun () -> hlist (semi_after str_item) 0 "" sil "")
+          horiz_vertic (fun () -> hlist (semi_after str_item) zc "" sil "")
             (fun () -> not_impl "expand declare vertic" ind b sil k)
         else if sil = [] then sprintf "%sdeclare end%s" b k
         else
           horiz_vertic
             (fun () ->
                sprintf "%sdeclare%s%s%send%s" b " "
-                 (hlist (semi_after str_item) 0 "" sil "")
+                 (hlist (semi_after str_item) zc "" sil "")
                  " " k)
             (fun () ->
                sprintf "%sdeclare%s%s%send%s" b "\n"
-                 (vlist (semi_after str_item) (ind + 2) (tab (ind + 2)) sil "")
+                 (vlist (semi_after str_item) (shi ind 2) (tab (shi ind 2))
+                    sil "")
                  ("\n" ^ tab ind) k)
   | <:str_item< exception $e$ of $list:tl$ = $id$ >> ->
       fun curr next ind b k -> exception_decl ind b (e, tl, id) k
@@ -1623,25 +1642,28 @@ value str_item_top =
         let module_arg ind b (s, mt) k =
           horiz_vertic
             (fun () ->
-               sprintf "%s (%s : %s)%s" b s (module_type 0 "" mt "") k)
+               sprintf "%s (%s : %s)%s" b s (module_type zc "" mt "") k)
             (fun () -> not_impl "module_arg" ind b s k)
         in
         horiz_vertic
           (fun () ->
-             sprintf "%smodule %s%s = %s%s" b m (hlist module_arg 0 "" mal "")
-               (module_expr 0 "" me "") k)
+             sprintf "%smodule %s%s = %s%s" b m
+               (hlist module_arg zc "" mal "") (module_expr zc "" me "") k)
           (fun () ->
              sprintf "%smodule %s%s =\n%s\n%s" b m
-               (hlist module_arg 0 "" mal "")
-               (module_expr (ind + 2) (tab (ind + 2)) me "") (tab ind ^ k))
+               (hlist module_arg zc "" mal "")
+               (module_expr (shi ind 2) (tab (shi ind 2)) me "")
+                  (tab ind ^ k))
   | <:str_item< module type $m$ = $mt$ >> ->
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
-             sprintf "%smodule type %s = %s%s" b m (module_type 0 "" mt "") k)
+             sprintf "%smodule type %s = %s%s" b m (module_type zc "" mt "")
+               k)
           (fun () ->
              sprintf "%smodule type %s =\n%s\n%s" b m
-               (module_type (ind + 2) (tab (ind + 2)) mt "") (tab ind ^ k))
+               (module_type (shi ind 2) (tab (shi ind 2)) mt "")
+                  (tab ind ^ k))
   | <:str_item< open $i$ >> ->
       fun curr next ind b k -> mod_ident ind (sprintf "%sopen " b) i k
   | <:str_item< type $list:tdl$ >> ->
@@ -1684,18 +1706,21 @@ value sig_item_top =
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
-             sprintf "%smodule %s : %s%s" b m (module_type 0 "" mt "") k)
+             sprintf "%smodule %s : %s%s" b m (module_type zc "" mt "") k)
           (fun () ->
              sprintf "%smodule %s :\n%s\n%s" b m
-               (module_type (ind + 2) (tab (ind + 2)) mt "") (tab ind ^ k))
+               (module_type (shi ind 2) (tab (shi ind 2)) mt "")
+                  (tab ind ^ k))
   | <:sig_item< module type $m$ = $mt$ >> ->
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
-             sprintf "%smodule type %s = %s%s" b m (module_type 0 "" mt "") k)
+             sprintf "%smodule type %s = %s%s" b m (module_type zc "" mt "")
+               k)
           (fun () ->
              sprintf "%smodule type %s =\n%s\n%s" b m
-               (module_type (ind + 2) (tab (ind + 2)) mt "") (tab ind ^ k))
+               (module_type (shi ind 2) (tab (shi ind 2)) mt "")
+               (tab ind ^ k))
   | <:sig_item< open $i$ >> ->
       fun curr next ind b k -> mod_ident ind (sprintf "%sopen " b) i k
   | <:sig_item< type $list:tdl$ >> ->
@@ -1706,11 +1731,11 @@ value sig_item_top =
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
-             sprintf "%svalue %s : %s%s" b (var_escaped 0 "" s "")
-               (ctyp 0 "" t "") k)
+             sprintf "%svalue %s : %s%s" b (var_escaped zc "" s "")
+               (ctyp zc "" t "") k)
           (fun () ->
-             let s1 = sprintf "%svalue %s :" b (var_escaped 0 "" s "") in
-             let s2 = ctyp (ind + 2) (tab (ind + 2)) t k in
+             let s1 = sprintf "%svalue %s :" b (var_escaped zc "" s "") in
+             let s2 = ctyp (shi ind 2) (tab (shi ind 2)) t k in
              sprintf "%s\n%s" s1 s2)
   | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->
       fun curr next ind b k ->
@@ -1725,43 +1750,44 @@ value module_expr_top =
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
-             sprintf "%sfunctor (%s: %s) -> %s%s" b s (module_type 0 "" mt "")
-               (module_expr 0 "" me "") k)
+             sprintf "%sfunctor (%s: %s) -> %s%s" b s
+               (module_type zc "" mt "") (module_expr zc "" me "") k)
           (fun () ->
              let s1 =
                horiz_vertic
                  (fun () ->
                     sprintf "%sfunctor (%s : %s) ->" b s
-                      (module_type 0 "" mt ""))
+                      (module_type zc "" mt ""))
                  (fun () ->
                     let s1 = sprintf "%sfunctor" b in
                     let s2 =
                       horiz_vertic
                         (fun () ->
-                           sprintf "%s(%s : %s)" (tab (ind + 2)) s
-                             (module_type 0 "" mt ""))
+                           sprintf "%s(%s : %s)" (tab (shi ind 2)) s
+                             (module_type zc "" mt ""))
                         (fun () ->
-                           let s1 = sprintf "%s(%s :" (tab (ind + 2)) s in
+                           let s1 = sprintf "%s(%s :" (tab (shi ind 2)) s in
                            let s2 =
-                             module_type (ind + 3) (tab (ind + 3)) mt ")"
+                             module_type (shi ind 3) (tab (shi ind 3)) mt ")"
                            in
                            sprintf "%s\n%s" s1 s2)
                     in
                     let s3 = sprintf "%s->" (tab ind) in
                     sprintf "%s\n%s\n%s" s1 s2 s3)
              in
-             let s2 = module_expr (ind + 2) (tab (ind + 2)) me k in
+             let s2 = module_expr (shi ind 2) (tab (shi ind 2)) me k in
              sprintf "%s\n%s" s1 s2)
   | <:module_expr< struct $list:sil$ end >> ->
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
              sprintf "%sstruct%s%s%send%s" b " "
-               (hlist (semi_after str_item) 0 "" sil "")
+               (hlist (semi_after str_item) zc "" sil "")
                " " k)
           (fun () ->
              sprintf "%sstruct%s%s%send%s" b "\n"
-               (vlist (semi_after str_item) (ind + 2) (tab (ind + 2)) sil "")
+               (vlist (semi_after str_item) (shi ind 2) (tab (shi ind 2)) sil
+                  "")
                ("\n" ^ tab ind) k)
   | z ->
       fun curr next ind b k -> next ind b z k ]
@@ -1796,17 +1822,17 @@ value module_expr_simple =
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
-             sprintf "%s(%s : %s)%s" b (module_expr 0 "" me "")
-               (module_type 0 "" mt "") k)
+             sprintf "%s(%s : %s)%s" b (module_expr zc "" me "")
+               (module_type zc "" mt "") k)
           (fun () ->
-             let s1 = module_expr (ind + 1) (sprintf "%s(" b) me " :" in
+             let s1 = module_expr (shi ind 1) (sprintf "%s(" b) me " :" in
              let s2 =
-               module_type (ind + 1) (tab (ind + 1)) mt (sprintf ")%s" k)
+               module_type (shi ind 1) (tab (shi ind 1)) mt (sprintf ")%s" k)
              in
              sprintf "%s\n%s" s1 s2)
   | <:module_expr< struct $list:_$ end >> as z ->
       fun curr next ind b k ->
-        module_expr (ind + 1) (sprintf "%s(" b) z (sprintf ")%s" k)
+        module_expr (shi ind 1) (sprintf "%s(" b) z (sprintf ")%s" k)
   | z ->
       fun curr next ind b k -> not_impl "module_expr" ind b z k ]
 ;
@@ -1815,7 +1841,7 @@ value with_constraint ind b wc k =
   match wc with
   [ <:with_constr< type $sl$ $list:tpl$ = $t$ >> ->
       let b =
-        let k = hlist type_var 0 "" tpl " = " in
+        let k = hlist type_var zc "" tpl " = " in
         mod_ident ind (sprintf "%swith type " b) sl k
       in
       ctyp ind b t k
@@ -1831,34 +1857,35 @@ value module_type_top =
         horiz_vertic
           (fun () ->
              sprintf "%sfunctor (%s: %s) -> %s%s" b s
-               (module_type 0 "" mt1 "") (module_type 0 "" mt2 "") k)
+               (module_type zc "" mt1 "") (module_type zc "" mt2 "") k)
           (fun () ->
              let s1 =
                horiz_vertic
                  (fun () ->
                     sprintf "%sfunctor (%s: %s) ->" b s
-                      (module_type 0 "" mt1 ""))
+                      (module_type zc "" mt1 ""))
                  (fun () -> not_impl "functor vertic" ind b 0 "")
              in
-             let s2 = module_type (ind + 2) (tab (ind + 2)) mt2 k in
+             let s2 = module_type (shi ind 2) (tab (shi ind 2)) mt2 k in
              sprintf "%s\n%s" s1 s2)
   | <:module_type< sig $list:sil$ end >> ->
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
              sprintf "%ssig%s%s%send%s" b " "
-               (hlist (semi_after sig_item) 0 "" sil "")
+               (hlist (semi_after sig_item) zc "" sil "")
                " " k)
           (fun () ->
              sprintf "%ssig%s%s%send%s" b "\n"
-               (vlist (semi_after sig_item) (ind + 2) (tab (ind + 2)) sil "")
+               (vlist (semi_after sig_item) (shi ind 2) (tab (shi ind 2)) sil
+                  "")
                ("\n" ^ tab ind) k)
   | <:module_type< $mt$ with $list:wcl$ >> ->
       fun curr next ind b k ->
         horiz_vertic
           (fun () ->
-             sprintf "%s%s %s%s" b (module_type 0 "" mt "")
-               (hlist with_constraint 0 "" wcl "") k)
+             sprintf "%s%s %s%s" b (module_type zc "" mt "")
+               (hlist with_constraint zc "" wcl "") k)
           (fun () -> not_impl "module type with vertic" ind b wcl k)
   | z ->
       fun curr next ind b k -> next ind b z k ]
@@ -2002,7 +2029,7 @@ value apply_printer f ast = do {
          let ep = Stdpp.last_pos loc in
          copy_source file.val oc first last_pos bp;
          flush oc;
-         output_string oc (f 0 "" si ";");
+         output_string oc (f zc "" si ";");
          (False, ep)
        })
       (True, 0) ast
