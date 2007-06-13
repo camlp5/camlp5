@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_ro.ml,v 1.15 2007/06/13 01:15:25 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.16 2007/06/13 01:39:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -214,7 +214,7 @@ lev.pr_rules :=
         if ml = [] then sprintf "%s<%s >%s" b (if v then " .." else "") k
         else
           let ml = List.map (fun e -> (e, ";")) ml in
-          plist field (shi ctx 2) 0 (sprintf "%s< " b) ml
+          plist field 0 (shi ctx 2) (sprintf "%s< " b) ml
             (sprintf "%s >%s" (if v then " .." else "") k)
   | <:ctyp< [ = $list:pvl$ ] >> ->
       fun curr next ctx b k ->

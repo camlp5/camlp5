@@ -5,6 +5,8 @@
 open Sformat;
 open Pcaml.NewPrinter;
 
+type pr_gfun 'a 'b = pr_ctx -> string -> 'a -> 'b -> string;
+
 value shi ctx sh = {ind = ctx.ind + sh};
 value tab ctx = String.make ctx.ind ' ';
 
@@ -94,12 +96,12 @@ value rise_string ctx sh b s =
 (* paragraph list with a different function for the last element;
    the list elements are pairs where second elements are separators
    (the last separator is ignored) *)
-value rec plistl elem eleml ctx sh b xl k =
-  let (s1, s2o) = plistl_two_parts elem eleml ctx sh b xl k in
+value rec plistl elem eleml sh ctx b xl k =
+  let (s1, s2o) = plistl_two_parts elem eleml sh ctx b xl k in
   match s2o with
   [ Some s2 -> sprintf "%s\n%s" s1 s2
   | None -> s1 ]
-and plistl_two_parts elem eleml ctx sh b xl k =
+and plistl_two_parts elem eleml sh ctx b xl k =
   match xl with
   [ [] -> assert False
   | [(x, _)] -> (eleml ctx b x k, None)
@@ -108,12 +110,12 @@ and plistl_two_parts elem eleml ctx sh b xl k =
         horiz_vertic (fun () -> Some (elem ctx b x sep)) (fun () -> None)
       in
       match s with
-      [ Some b -> (plistl_kont_same_line elem eleml ctx sh b xl k, None)
+      [ Some b -> (plistl_kont_same_line elem eleml sh ctx b xl k, None)
       | None ->
           let s1 = elem ctx b x sep in
-          let s2 = plistl elem eleml (shi ctx sh) 0 (tab (shi ctx sh)) xl k in
+          let s2 = plistl elem eleml 0 (shi ctx sh) (tab (shi ctx sh)) xl k in
           (s1, Some s2) ] ]
-and plistl_kont_same_line elem eleml ctx sh b xl k =
+and plistl_kont_same_line elem eleml sh ctx b xl k =
   match xl with
   [ [] -> assert False
   | [(x, _)] ->
@@ -128,10 +130,10 @@ and plistl_kont_same_line elem eleml ctx sh b xl k =
           (fun () -> None)
       in
       match s with
-      [ Some b -> plistl_kont_same_line elem eleml ctx sh b xl k
+      [ Some b -> plistl_kont_same_line elem eleml sh ctx b xl k
       | None ->
           let (s1, s2o) =
-            plistl_two_parts elem eleml (shi ctx sh) 0 (tab (shi ctx sh))
+            plistl_two_parts elem eleml 0 (shi ctx sh) (tab (shi ctx sh))
               [(x, sep) :: xl] k
           in
           match s2o with
@@ -142,4 +144,4 @@ and plistl_kont_same_line elem eleml ctx sh b xl k =
 ;
 
 (* paragraph list *)
-value plist elem ctx sh b xl k = plistl elem elem ctx sh b xl k;
+value plist elem sh ctx b xl k = plistl elem elem sh ctx b xl k;

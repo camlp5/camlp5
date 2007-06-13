@@ -196,7 +196,7 @@ value stream_patt ctx b sp k =
             ctx "" sp "") k)
     (fun () ->
        let sp = List.map (fun spc -> (spc, ";")) sp in
-       plist stream_patt_comp_err (shi ctx 3) 0 b sp k)
+       plist stream_patt_comp_err 0 (shi ctx 3) b sp k)
 ;
 
 value parser_case ctx b (sp, po, e) k =

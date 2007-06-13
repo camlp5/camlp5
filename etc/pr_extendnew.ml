@@ -275,23 +275,9 @@ value rec rule ctx b (sl, a) k =
                  sprintf "%s\n%s" s1 s2)
         | None ->
             let sl = List.map (fun s -> (s, ";")) sl in
-(**)
-            let s1 = plist psymbol (shi ctx 2) 0 b sl " ->" in
+            let s1 = plist psymbol 0 (shi ctx 2) b sl " ->" in
             let s2 = action expr (shi ctx 4) (tab (shi ctx 4)) a k in
             sprintf "%s\n%s" s1 s2 ] ]
-(*
-            let psymbol_arrow_action ctx b ps k =
-              horiz_vertic
-                (fun () ->
-                   sprintf "%s%s -> %s%s" b (psymbol ctx "" ps "")
-                     (action expr ctx "" a "") k)
-                (fun () ->
-                   let s1 = psymbol ctx b ps " ->" in
-                   let s2 = action expr (shi ctx 2) (tab (shi ctx 2)) a k in
-                   sprintf "%s\n%s" s1 s2)
-            in
-            plistl psymbol psymbol_arrow_action (shi ctx 2) 0 b sl k ] ]
-*)
 and psymbol ctx b (p, s) k =
   match p with
   [ None -> symbol ctx b s k
@@ -381,7 +367,7 @@ value extend_body ctx b (globals, entries) k =
   [ [] -> vlist entry ctx b entries k
   | _ ->
       let globals = List.map (fun g -> (g, "")) globals in
-      let s1 = plist expr ctx 2 (sprintf "%sGLOBAL: " b) globals ";" in
+      let s1 = plist expr 2 ctx (sprintf "%sGLOBAL: " b) globals ";" in
       let s2 = vlist entry ctx (tab ctx) entries k in
       sprintf "%s\n%s" s1 s2 ]
 ;

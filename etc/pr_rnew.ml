@@ -145,7 +145,7 @@ value left_operator ctx sh unfold next b x k =
   [ [(x, _)] -> next ctx b x k
   | _ ->
       horiz_vertic (fun () -> hlist (op_after next) ctx b xl k)
-        (fun () -> plist next ctx sh b xl k) ]
+        (fun () -> plist next sh ctx b xl k) ]
 ;
 
 value right_operator ctx sh unfold next b x k =
@@ -159,7 +159,7 @@ value right_operator ctx sh unfold next b x k =
   [ [(x, _)] -> next ctx b x k
   | _ ->
       horiz_vertic (fun () -> hlist (op_after next) ctx b xl k)
-        (fun () -> plist next ctx sh b xl k) ]
+        (fun () -> plist next sh ctx b xl k) ]
 ;
 
 (*
@@ -439,7 +439,7 @@ value value_binding ctx b (p, e) ko =
                     | None -> patt ctx b p k ]
                   in
                   let pl = List.map (fun p -> (p, "")) pl in
-                  plistl patt (patt_tycon tyo) ctx 4 b pl " =")
+                  plistl patt (patt_tycon tyo) 4 ctx b pl " =")
            in
            let s2 =
              expr_wh (shi ctx 2) (tab (shi ctx 2)) e
@@ -620,7 +620,7 @@ value cons_decl ctx b (_, c, tl) k =
                   (hlist2 ctyp (and_before ctyp) ctx "" tl "" "") k)
              (fun () ->
                 let tl = List.map (fun t -> (t, " and")) tl in
-                plist ctyp (shi ctx 4) 2 (tab (shi ctx 4)) tl k)
+                plist ctyp 2 (shi ctx 4) (tab (shi ctx 4)) tl k)
          in
          sprintf "%s\n%s" s1 s2)
 ;
@@ -737,7 +737,7 @@ value ctyp_simple =
                k)
           (fun () ->
              let tl = List.map (fun t -> (t, " *")) tl in
-             plist ctyp ctx 1 (sprintf "%s(" b) tl (sprintf ")%s" k))
+             plist ctyp 1 ctx (sprintf "%s(" b) tl (sprintf ")%s" k))
   | <:ctyp< $lid:t$ >> ->
       fun curr next ctx b k -> var_escaped ctx b t k
   | <:ctyp< $uid:t$ >> ->
@@ -831,7 +831,7 @@ value expr_top =
               (fun () ->
                  let fun_arrow () =
                    let pl = List.map (fun p -> (p, "")) pl in
-                   plist patt ctx 4 (sprintf "%sfun " b) pl " ->"
+                   plist patt 4 ctx (sprintf "%sfun " b) pl " ->"
                  in
                  match sequencify e1 with
                  [ Some el ->
@@ -1201,16 +1201,16 @@ value expr_simple =
   [ <:expr< ($list:el$) >> ->
       fun curr next ctx b k ->
         let el = List.map (fun e -> (e, ",")) el in
-        plist expr ctx 1 (sprintf "%s(" b) el (sprintf ")%s" k)
+        plist expr 1 ctx (sprintf "%s(" b) el (sprintf ")%s" k)
   | <:expr< {$list:lel$} >> ->
       fun curr next ctx b k ->
         let lxl = List.map (fun lx -> (lx, ";")) lel in
-        plist record_binding (shi ctx 1) 0 (sprintf "%s{" b) lxl
+        plist record_binding 0 (shi ctx 1) (sprintf "%s{" b) lxl
           (sprintf "}%s" k)
   | <:expr< {($e$) with $list:lel$} >> ->
       fun curr next ctx b k ->
         let lxl = List.map (fun lx -> (lx, ";")) lel in
-        plist record_binding (shi ctx 1) 0
+        plist record_binding 0 (shi ctx 1)
           (expr ctx (sprintf "%s{(" b) e ") with ") lxl
           (sprintf "}%s" k)
   | <:expr< [| $list:el$ |] >> ->
@@ -1218,7 +1218,7 @@ value expr_simple =
         if el = [] then sprintf "%s[| |]%s" b k
         else
           let el = List.map (fun e -> (e, ";")) el in
-          plist expr (shi ctx 3) 0 (sprintf "%s[| " b) el (sprintf " |]%s" k)
+          plist expr 0 (shi ctx 3) (sprintf "%s[| " b) el (sprintf " |]%s" k)
   | <:expr< [$_$ :: $_$] >> as z ->
       fun curr next ctx b k ->
         let (xl, y) = make_expr_list z in
@@ -1236,7 +1236,7 @@ value expr_simple =
                    sprintf "%s\n%s" s1 s2)
           | None -> expr ctx b x (sprintf "]%s" k) ]
         in
-        plistl expr expr2 (shi ctx 1) 0 (sprintf "%s[" b) xl k
+        plistl expr expr2 0 (shi ctx 1) (sprintf "%s[" b) xl k
   | <:expr< ($e$ : $t$) >> ->
       fun curr next ctx b k ->
         horiz_vertic
@@ -1354,11 +1354,11 @@ value patt_simple =
   | <:patt< ($list:pl$) >> ->
       fun curr next ctx b k ->
         let pl = List.map (fun p -> (p, ",")) pl in
-        plist patt ctx 1 (sprintf "%s(" b) pl (sprintf ")%s" k)
+        plist patt 1 ctx (sprintf "%s(" b) pl (sprintf ")%s" k)
   | <:patt< {$list:lpl$} >> ->
       fun curr next ctx b k ->
         let lxl = List.map (fun lx -> (lx, ";")) lpl in
-        plist (binding patt) (shi ctx 1) 0 (sprintf "%s{" b) lxl
+        plist (binding patt) 0 (shi ctx 1) (sprintf "%s{" b) lxl
           (sprintf "}%s" k)
   | <:patt< [$_$ :: $_$] >> as z ->
       fun curr next ctx b k ->
@@ -1379,7 +1379,7 @@ value patt_simple =
                    sprintf "%s\n%s" s1 s2)
           | None -> patt ctx b x (sprintf "]%s" k) ]
         in
-        plistl patt patt2 (shi ctx 1) 0 (sprintf "%s[" b) xl k
+        plistl patt patt2 0 (shi ctx 1) (sprintf "%s[" b) xl k
   | <:patt< ($p$ : $t$) >> ->
       fun curr next ctx b k ->
         horiz_vertic
@@ -1456,7 +1456,7 @@ value exception_decl ctx b (e, tl, id) k =
          else
            let tl = List.map (fun t -> (t, " and")) tl in
            sprintf "\n%s"
-             (plist ctyp ctx 2 (tab (shi ctx 2)) tl
+             (plist ctyp 2 ctx (tab (shi ctx 2)) tl
                 (if id = [] then k else ""))
        in
        let s3 =
