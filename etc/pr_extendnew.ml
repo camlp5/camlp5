@@ -307,11 +307,11 @@ and simple_symbol ctx b sy k =
   | Srules rl ->
       horiz_vertic
         (fun () ->
-           hlist2 rule (bar_before rule) (shi ctx 2) (sprintf "%s[ " b) rl ""
-             (sprintf " ]%s" k))
+           hlist2 rule (bar_before rule) (shi ctx 2) (sprintf "%s[ " b) rl
+             ("", sprintf " ]%s" k))
         (fun () ->
-           vlist2 rule (bar_before rule) (shi ctx 2) (sprintf "%s[ " b) rl ""
-             (sprintf " ]%s" k))
+           vlist2 rule (bar_before rule) (shi ctx 2) (sprintf "%s[ " b) rl
+             ("", sprintf " ]%s" k))
   | Stoken (Left ("", _) | Left (_, "")) -> symbol ctx b sy k
   | Slist0 _ | Slist0sep _ _ | Slist1 _ | Slist1sep _ _ ->
       symbol ctx (sprintf "%s(" b) sy (sprintf ")%s" k)
@@ -337,8 +337,8 @@ value level ctx b (lab, ass, rl) k =
   [ (None, None) ->
       if rl = [] then sprintf "%s[ ]%s" b k
       else
-        vlist2 rule (bar_before rule) (shi ctx 2) (sprintf "%s[ " b) rl ""
-          (sprintf " ]%s" k)
+        vlist2 rule (bar_before rule) (shi ctx 2) (sprintf "%s[ " b) rl
+          ("", sprintf " ]%s" k)
   | _ ->
       let s1 =
         match (lab, ass) with
@@ -351,7 +351,7 @@ value level ctx b (lab, ass, rl) k =
         if rl = [] then not_impl "level" ctx "" rl k
         else
           vlist2 rule (bar_before rule) (shi ctx 2)
-            (sprintf "%s[ " (tab (shi ctx 2))) rl "" (sprintf " ]%s" k)
+            (sprintf "%s[ " (tab (shi ctx 2))) rl ("", sprintf " ]%s" k)
       in
       sprintf "%s\n%s" s1 s2 ]
 ;
@@ -359,7 +359,7 @@ value level ctx b (lab, ass, rl) k =
 value entry ctx b (e, pos, ll) k =
   sprintf "%s%s:%s\n%s\n%s;%s" b (expr ctx "" e "") (position ctx "" pos "")
     (vlist2 level (bar_before level) (shi ctx 2)
-       (sprintf "%s[ " (tab (shi ctx 2))) ll "" " ]") (tab ctx) k
+       (sprintf "%s[ " (tab (shi ctx 2))) ll ("", " ]")) (tab ctx) k
 ;
 
 value extend_body ctx b (globals, entries) k =

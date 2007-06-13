@@ -251,7 +251,7 @@ value parser_body ctx b (po, spel) k =
       | _ ->
           let s2 =
             vlist2 parser_case_sh (bar_before parser_case_sh) ctx
-              (sprintf "%s[ " (tab ctx)) spel "" (sprintf " ]%s" k)
+              (sprintf "%s[ " (tab ctx)) spel ("", sprintf " ]%s" k)
           in
           sprintf "%s%s\n%s" b s1 s2 ] ]
 ;

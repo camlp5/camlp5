@@ -531,7 +531,7 @@ value match_assoc_list ctx b pwel k =
   if pwel = [] then sprintf "%s[]%s" b k
   else
     vlist2 match_assoc_sh (bar_before match_assoc_sh) ctx (sprintf "%s[ " b)
-      pwel "" (sprintf " ]%s" k)
+      pwel ("", sprintf " ]%s" k)
 ;
 
 value rec make_expr_list =
@@ -610,14 +610,14 @@ value cons_decl ctx b (_, c, tl) k =
     horiz_vertic
       (fun () ->
          sprintf "%s%s of %s%s" b c
-           (hlist2 ctyp (and_before ctyp) ctx "" tl "" "") k)
+           (hlist2 ctyp (and_before ctyp) ctx "" tl ("", "")) k)
       (fun () ->
          let s1 = sprintf "%s%s of" b c in
          let s2 =
            horiz_vertic
              (fun () ->
                 sprintf "%s%s%s" (tab (shi ctx 4))
-                  (hlist2 ctyp (and_before ctyp) ctx "" tl "" "") k)
+                  (hlist2 ctyp (and_before ctyp) ctx "" tl ("", "")) k)
              (fun () ->
                 let tl = List.map (fun t -> (t, " and")) tl in
                 plist ctyp 2 (shi ctx 4) (tab (shi ctx 4)) tl k)
@@ -725,10 +725,10 @@ value ctyp_simple =
         horiz_vertic
           (fun () ->
              hlist2 cons_decl (bar_before cons_decl) ctx
-               (sprintf "%s[ " b) vdl "" (sprintf " ]%s" k))
+               (sprintf "%s[ " b) vdl ("", sprintf " ]%s" k))
           (fun () ->
              vlist2 cons_decl (bar_before cons_decl) ctx
-               (sprintf "%s[ " b) vdl "" (sprintf " ]%s" k))
+               (sprintf "%s[ " b) vdl ("", sprintf " ]%s" k))
   | <:ctyp< ($list:tl$) >> ->
       fun curr next ctx b k ->
         horiz_vertic
@@ -927,7 +927,7 @@ value expr_top =
                let s1 =
                  hlist2 let_binding (and_before let_binding) ctx
                    (sprintf "%slet %s" b (if rf then "rec " else ""))
-                   pel False True
+                   pel (False, True)
                in
                let s2 = expr ctx "" e k in
                sprintf "%s %s" s1 s2)
@@ -935,7 +935,7 @@ value expr_top =
              let s1 =
                vlist2 let_binding (and_before let_binding) ctx
                  (sprintf "%slet %s" b (if rf then "rec " else ""))
-                 pel False True
+                 pel (False, True)
              in
              let s2 = expr_wh ctx (tab ctx) e k in
              sprintf "%s\n%s" s1 s2)
@@ -1443,7 +1443,8 @@ value exception_decl ctx b (e, tl, id) k =
        sprintf "%sexception %s%s%s%s" b e
          (if tl = [] then ""
           else
-            sprintf " of %s" (hlist2 ctyp (and_before ctyp) ctx "" tl "" ""))
+            sprintf " of %s" (hlist2 ctyp (and_before ctyp) ctx "" tl
+              ("", "")))
          (if id = [] then ""
           else sprintf " = %s" (mod_ident ctx "" id ""))
          k)
@@ -1563,18 +1564,18 @@ value str_item_top =
   | <:str_item< type $list:tdl$ >> ->
       fun curr next ctx b k ->
         vlist2 type_decl (and_before type_decl) ctx (sprintf "%stype " b) tdl
-          None (Some (True, k))
+          (None, Some (True, k))
   | <:str_item< value $opt:rf$ $list:pel$ >> ->
       fun curr next ctx b k ->
         horiz_vertic
           (fun () ->
              hlist2 value_binding (and_before value_binding) ctx
                (sprintf "%svalue %s" b (if rf then "rec " else "")) pel
-               None (Some (False, ";")))
+               (None, Some (False, ";")))
           (fun () ->
              vlist2 value_binding (and_before value_binding) ctx
                (sprintf "%svalue %s" b (if rf then "rec " else "")) pel
-               None (Some (True, ";")))
+               (None, Some (True, ";")))
   | <:str_item< $exp:e$ >> ->
       fun curr next ctx b k -> expr ctx b e k
   | <:str_item< class type $list:_$ >> | <:str_item< class $list:_$ >> ->
@@ -1620,7 +1621,7 @@ value sig_item_top =
   | <:sig_item< type $list:tdl$ >> ->
       fun curr next ctx b k ->
         vlist2 type_decl (and_before type_decl) ctx (sprintf "%stype " b) tdl
-          None (Some (True, k))
+          (None, Some (True, k))
   | <:sig_item< value $s$ : $t$ >> ->
       fun curr next ctx b k ->
         horiz_vertic

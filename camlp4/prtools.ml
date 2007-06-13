@@ -19,12 +19,13 @@ value rec hlist elem ctx b xl k =
 ;
 
 (* horizontal list with different function from 2nd element on *)
-value rec hlist2 elem elem2 ctx b xl k0 k =
+value rec hlist2 elem elem2 ctx b xl (k0, k) =
   match xl with
   [ [] -> invalid_arg "hlist2"
   | [x] -> elem ctx b x k
   | [x :: xl] ->
-      sprintf "%s %s" (elem ctx b x k0) (hlist2 elem2 elem2 ctx "" xl k0 k) ]
+      sprintf "%s %s" (elem ctx b x k0) (hlist2 elem2 elem2 ctx "" xl
+        (k0, k)) ]
 ;
 
 (* horizontal list with different function for the last element *)
@@ -46,13 +47,13 @@ value rec vlist elem ctx b xl k =
 ;
 
 (* vertical list with different function from 2nd element on *)
-value rec vlist2 elem elem2 ctx b xl k0 k =
+value rec vlist2 elem elem2 ctx b xl (k0, k) =
   match xl with
   [ [] -> invalid_arg "vlist2"
   | [x] -> elem ctx b x k
   | [x :: xl] ->
       sprintf "%s\n%s" (elem ctx b x k0)
-        (vlist2 elem2 elem2 ctx (tab ctx) xl k0 k) ]
+        (vlist2 elem2 elem2 ctx (tab ctx) xl (k0, k)) ]
 ;
 
 (* vertical list with different function for the last element *)

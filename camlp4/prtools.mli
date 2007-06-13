@@ -10,15 +10,11 @@ value shi : pr_ctx -> int -> pr_ctx;
 value tab : pr_ctx -> string;
 
 value hlist : pr_fun 'a -> pr_fun (list 'a);
-value hlist2 :
-  pr_gfun 'a 'b -> pr_gfun 'a 'b ->
-    pr_ctx -> string -> list 'a -> 'b -> 'b -> string;
+value hlist2 : pr_gfun 'a 'b -> pr_gfun 'a 'b -> pr_gfun (list 'a) ('b * 'b);
 value hlistl : pr_fun 'a -> pr_fun 'a -> pr_fun (list 'a);
 
 value vlist : pr_fun 'a -> pr_fun (list 'a);
-value vlist2 :
-  pr_gfun 'a 'b -> pr_gfun 'a 'b ->
-    pr_ctx -> string -> list 'a -> 'b -> 'b -> string;
+value vlist2 : pr_gfun 'a 'b -> pr_gfun 'a 'b -> pr_gfun (list 'a) ('b * 'b);
 value vlistl : pr_fun 'a -> pr_fun 'a -> pr_fun (list 'a);
 
 value plist : pr_fun 'a -> int -> pr_fun (list ('a * string));
