@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.19 2007/06/13 15:37:59 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.20 2007/06/13 21:55:45 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -535,8 +535,8 @@ EXTEND
           <:expr< match $e$ with [ $list:l$ ] >>
       | "try"; e = SELF; "with"; OPT "|"; l = LIST1 match_case SEP "|" ->
           <:expr< try $e$ with [ $list:l$ ] >>
-      | "if"; e1 = SELF; "then"; e2 = expr LEVEL "expr1";
-        "else"; e3 = expr LEVEL "expr1" ->
+      | "if"; e1 = SELF; "then"; e2 = expr LEVEL "expr1"; "else";
+        e3 = expr LEVEL "expr1" ->
           <:expr< if $e1$ then $e2$ else $e3$ >>
       | "if"; e1 = SELF; "then"; e2 = expr LEVEL "expr1" ->
           <:expr< if $e1$ then $e2$ else () >>
@@ -848,7 +848,7 @@ EXTEND
       | "-"; "'"; i = ident -> (i, (False, True)) ] ]
   ;
   constructor_declaration:
-    [ [ ci = UIDENT; "of"; cal = LIST1 ctyp LEVEL "ctyp1" SEP "*" ->
+    [ [ ci = UIDENT; "of"; cal = LIST1 (ctyp LEVEL "ctyp1") SEP "*" ->
           (loc, ci, cal)
       | ci = UIDENT -> (loc, ci, []) ] ]
   ;

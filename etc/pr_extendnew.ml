@@ -254,11 +254,15 @@ value token ctx b tok k =
   | Right _ -> assert False ]
 ;
 
+value ind i = {ind = i};
+
 value rec rule ctx b (sl, a) k =
   match a with
   [ None -> not_impl "rule 1" ctx b sl k
   | Some a ->
-      if sl = [] then action expr (shi ctx 4) (sprintf "%s-> " b) a k
+      if sl = [] then
+        action expr (shi ctx 4)
+          (sprintf "%s->%s " b (comm_bef (ind 1) (MLast.loc_of_expr a))) a k
       else
         match
           horiz_vertic
@@ -285,10 +289,14 @@ and psymbol ctx b (p, s) k =
       horiz_vertic
         (fun () ->
            sprintf "%s%s = %s%s" b (patt ctx "" p "") (symbol ctx "" s "") k)
-        (fun () -> not_impl "psymbol" ctx b s k) ]
+        (fun () ->
+           let s1 = patt ctx b p " =" in
+           let s2 = symbol (shi ctx 2) (tab (shi ctx 2)) s k in
+           sprintf "%s\n%s" s1 s2) ]
 and symbol ctx b sy k =
   match sy with
   [ Snterm e -> expr ctx b e k
+  | Snterml e s -> expr ctx b e (sprintf " LEVEL \"%s\"%s" s k)
   | Slist0 sy -> sprintf "%sLIST0 %s" b (simple_symbol ctx "" sy k)
   | Slist0sep sy sep ->
       sprintf "%sLIST0 %s SEP %s" b (simple_symbol ctx "" sy "")
@@ -304,6 +312,7 @@ and simple_symbol ctx b sy k =
   match sy with  
   [ Snterm <:expr< $lid:s$ >> -> sprintf "%s%s%s" b s k
   | Sself -> sprintf "%sSELF%s" b k
+  | Snext -> sprintf "%sNEXT%s" b k
   | Srules rl ->
       horiz_vertic
         (fun () ->
@@ -313,7 +322,7 @@ and simple_symbol ctx b sy k =
            vlist2 rule (bar_before rule) (shi ctx 2) (sprintf "%s[ " b) rl
              ("", sprintf " ]%s" k))
   | Stoken (Left ("", _) | Left (_, "")) -> symbol ctx b sy k
-  | Slist0 _ | Slist0sep _ _ | Slist1 _ | Slist1sep _ _ ->
+  | Snterml _ _ | Slist0 _ | Slist0sep _ _ | Slist1 _ | Slist1sep _ _ ->
       symbol ctx (sprintf "%s(" b) sy (sprintf ")%s" k)
   | sy -> not_impl "simple_symbol" ctx b sy k ]
 ;
