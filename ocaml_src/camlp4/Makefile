@@ -8,8 +8,8 @@ SHELL=/bin/sh
 INCLUDES=-I ../odyl -I $(TOP)/boot -I $(OTOP)/utils -I $(OTOP)/parsing
 OCAMLCFLAGS=-warn-error A $(INCLUDES)
 LINKFLAGS=$(INCLUDES)
-CAMLP4_OBJS=$(TOP)/boot/stdpp.cmo $(TOP)/boot/token.cmo $(TOP)/boot/plexer.cmo $(TOP)/boot/gramext.cmo $(TOP)/boot/grammar.cmo $(TOP)/boot/extfold.cmo $(TOP)/boot/extfun.cmo $(TOP)/boot/fstream.cmo $(TOP)/boot/sformat.cmo $(OTOP)/utils/pconfig.cmo quotation.cmo ast2pt.cmo exparser.cmo spretty.cmo reloc.cmo pcaml.cmo argl.cmo main.cmo
-CAMLP4_XOBJS=../lib/stdpp.cmx ../lib/token.cmx ../lib/plexer.cmx ../lib/gramext.cmx ../lib/grammar.cmx ../lib/extfold.cmx ../lib/extfun.cmx ../lib/fstream.cmx ../lib/sformat.cmx $(OTOP)/utils/pconfig.cmx quotation.cmx ast2pt.cmx exparser.cmx spretty.cmx reloc.cmx pcaml.cmx argl.cmx main.cmx
+CAMLP4_OBJS=$(TOP)/boot/stdpp.cmo $(TOP)/boot/token.cmo $(TOP)/boot/plexer.cmo $(TOP)/boot/gramext.cmo $(TOP)/boot/grammar.cmo $(TOP)/boot/extfold.cmo $(TOP)/boot/extfun.cmo $(TOP)/boot/fstream.cmo $(TOP)/boot/sformat.cmo $(OTOP)/utils/pconfig.cmo quotation.cmo ast2pt.cmo exparser.cmo spretty.cmo reloc.cmo pcaml.cmo prtools.cmo argl.cmo main.cmo
+CAMLP4_XOBJS=../lib/stdpp.cmx ../lib/token.cmx ../lib/plexer.cmx ../lib/gramext.cmx ../lib/grammar.cmx ../lib/extfold.cmx ../lib/extfun.cmx ../lib/fstream.cmx ../lib/sformat.cmx $(OTOP)/utils/pconfig.cmx quotation.cmx ast2pt.cmx exparser.cmx spretty.cmx reloc.cmx pcaml.cmx prtools.cmx argl.cmx main.cmx
 OBJS=../odyl/odyl.cma camlp4.cma
 CAMLP4M=
 
@@ -56,8 +56,8 @@ install:
 	-$(MKDIR) "$(BINDIR)"
 	-$(MKDIR) "$(LIBDIR)/camlp4"
 	cp $(CAMLP4) "$(BINDIR)/."
-	cp mLast.mli quotation.mli ast2pt.mli pcaml.mli spretty.mli "$(LIBDIR)/camlp4/."
-	cp mLast.cmi quotation.cmi ast2pt.cmi pcaml.cmi spretty.cmi "$(LIBDIR)/camlp4/."
+	cp mLast.mli quotation.mli ast2pt.mli pcaml.mli spretty.mli prtools.mli "$(LIBDIR)/camlp4/."
+	cp mLast.cmi quotation.cmi ast2pt.cmi pcaml.cmi spretty.cmi prtools.cmi "$(LIBDIR)/camlp4/."
 	cp camlp4.cma "$(LIBDIR)/camlp4/."
 
 include .depend

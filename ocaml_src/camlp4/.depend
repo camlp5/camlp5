@@ -23,6 +23,9 @@ main.cmx: $(OTOP)/utils/pconfig.cmx pcaml.cmx \
 pcaml.cmo: spretty.cmi reloc.cmi quotation.cmi mLast.cmi ast2pt.cmi pcaml.cmi 
 pcaml.cmx: spretty.cmx reloc.cmx quotation.cmx mLast.cmi ast2pt.cmx pcaml.cmi 
 pcaml.cmi: spretty.cmi mLast.cmi 
+prtools.cmo: pcaml.cmi prtools.cmi 
+prtools.cmx: pcaml.cmx prtools.cmi 
+prtools.cmi: pcaml.cmi 
 quotation.cmo: mLast.cmi quotation.cmi 
 quotation.cmx: mLast.cmi quotation.cmi 
 quotation.cmi: mLast.cmi 
