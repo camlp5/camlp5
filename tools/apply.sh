@@ -1,20 +1,21 @@
 #!/bin/sh
-# $Id: apply.sh,v 1.6 2007/06/13 08:48:45 deraugla Exp $
+# $Id: apply.sh,v 1.7 2007/06/13 19:44:01 deraugla Exp $
 
 ARGS1=
 ARGS3=
 FILE=
-while test "" != "$1"; do
-	case $1 in
+while [ $# -gt 0 ]; do
+	case "$1" in
 	*.ml*) FILE=$1;;
 	*.cm[oa]) ARGS1="$ARGS1 $1";;
 	-I) ARGS1="$ARGS1 $1 $2"; shift;;
+        '') ARGS3="$ARGS3 ''";;
 	*) ARGS3="$ARGS3 $1";;
 	esac
 	shift
 done
 
-head -1 $FILE >/dev/null || exit 1
+head -1 "$FILE" >/dev/null || exit 1
 
 set - `head -1 $FILE`
 if test "$2" = "camlp4r" -o "$2" = "camlp4"; then

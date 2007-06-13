@@ -7,18 +7,18 @@ open Pcaml.NewPrinter;
 open Prtools;
 
 value flag_expand_declare = ref False;
-value flag_where_starting = ref True;
 value flag_horiz_let_in = ref False;
-value flag_where_after_in = ref False;
-value flag_where_after_let_eq = ref True;
-value flag_where_after_match = ref False;
 value flag_sequ_begin_at_eol = ref True;
+
+value flag_where_after_in = ref True;
+value flag_where_after_let_eq = ref True;
+value flag_where_after_match = ref True;
+value flag_where_after_lparen = ref True;
 value flag_where_after_field_eq = ref False;
-value flag_where_after_then = ref False;
 value flag_where_in_sequences = ref False;
+value flag_where_after_then = ref True;
 value flag_where_after_value_eq = ref True;
 value flag_where_after_arrow = ref True;
-value flag_where_all = ref True;
 
 module Buff =
   struct
@@ -448,11 +448,9 @@ and where_binding ctx b (p, e, body) k =
            sprintf "%s\n%s" s1 s2 ])
 
 and expr_wh ctx b e k =
-  if flag_where_all.val then
-    match can_be_displayed_as_where e with
-    [ Some (p, e, body) -> where_binding ctx b (p, e, body) k
-    | None -> expr ctx b e k ]
-  else expr ctx b e k
+  match can_be_displayed_as_where e with
+  [ Some (p, e, body) -> where_binding ctx b (p, e, body) k
+  | None -> expr ctx b e k ]
 ;
 
 (* Pretty printing improvements (optional):
@@ -1040,38 +1038,31 @@ value expr_top =
                  sprintf "%s\n%s" s1 s2) ]
   | <:expr< let $opt:rf$ $list:pel$ in $e$ >> as ge ->
       fun curr next ctx b k ->
-        let can_where =
-          if flag_where_starting.val then can_be_displayed_as_where ge
-          else None
-        in
-        match can_where with
-        [ Some (p, e, body) -> where_binding ctx b (p, e, body) k
-        | None ->
-            let expr_wh = if flag_where_after_in.val then expr_wh else expr in
-            horiz_vertic
-              (fun () ->
-                 if not flag_horiz_let_in.val then sprintf "\n"
-                 else
-                   let s1 =
-                     hlist2 let_binding (and_before let_binding) ctx
-                       (sprintf "%slet %s" b (if rf then "rec " else ""))
-                       pel (False, True)
-                   in
-                   let s2 = expr ctx "" e k in
-                   sprintf "%s %s" s1 s2)
-              (fun () ->
-                 match sequencify ge with
-                 [ Some el ->
-                     let loc = MLast.loc_of_expr ge in
-                     curr ctx b <:expr< do { $list:el$ } >> k
-                 | None ->
-                     let s1 =
-                       vlist2 let_binding (and_before let_binding) ctx
-                         (sprintf "%slet %s" b (if rf then "rec " else ""))
-                         pel (False, True)
-                     in
-                     let s2 = expr_wh ctx (tab ctx) e k in
-                     sprintf "%s\n%s" s1 s2 ]) ]
+        let expr_wh = if flag_where_after_in.val then expr_wh else expr in
+        horiz_vertic
+          (fun () ->
+             if not flag_horiz_let_in.val then sprintf "\n"
+             else
+               let s1 =
+                 hlist2 let_binding (and_before let_binding) ctx
+                   (sprintf "%slet %s" b (if rf then "rec " else ""))
+                   pel (False, True)
+               in
+               let s2 = expr ctx "" e k in
+               sprintf "%s %s" s1 s2)
+          (fun () ->
+             match sequencify ge with
+             [ Some el ->
+                 let loc = MLast.loc_of_expr ge in
+                 curr ctx b <:expr< do { $list:el$ } >> k
+             | None ->
+                 let s1 =
+                   vlist2 let_binding (and_before let_binding) ctx
+                     (sprintf "%slet %s" b (if rf then "rec " else ""))
+                     pel (False, True)
+                 in
+                 let s2 = expr_wh ctx (tab ctx) e k in
+                 sprintf "%s\n%s" s1 s2 ])
   | <:expr< let module $s$ = $me$ in $e$ >> ->
       fun curr next ctx b k ->
         horiz_vertic
@@ -1422,7 +1413,8 @@ value expr_simple =
     <:expr< match $_$ with [ $list:_$ ] >> |
     <:expr< try $_$ with [ $list:_$ ] >> as z ->
       fun curr next ctx b k ->
-        expr (shi ctx 1) (sprintf "%s(" b) z (sprintf ")%s" k)
+        let expr_wh = if flag_where_after_lparen.val then expr_wh else expr in
+        expr_wh (shi ctx 1) (sprintf "%s(" b) z (sprintf ")%s" k)
   | z ->
       fun curr next ctx b k -> not_impl "expr" ctx b z k ]
 ;
@@ -2078,56 +2070,114 @@ value apply_printer f ast = do {
 Pcaml.print_interf.val := apply_printer sig_item;
 Pcaml.print_implem.val := apply_printer str_item;
 
+value is_uppercase c = Char.uppercase c = c;
+
 value set_flags s =
-  for i = 0 to String.length s - 1 do {
-    match s.[i] with
-    [ 'a' | 'A' -> do {
-        flag_expand_declare.val := s.[i] = 'A';
-        flag_where_starting.val := s.[i] = 'A';
-        flag_horiz_let_in.val := s.[i] = 'A';
-        flag_where_after_in.val := s.[i] = 'A';
-        flag_where_after_let_eq.val := s.[i] = 'A';
-        flag_where_after_match.val := s.[i] = 'A';
-        flag_sequ_begin_at_eol.val := s.[i] = 'A';
-        flag_where_after_value_eq.val := s.[i] = 'A';
-        flag_where_after_field_eq.val := s.[i] = 'A';
-        flag_where_after_then.val := s.[i] = 'A';
-        flag_where_after_arrow.val := s.[i] = 'A';
-        flag_where_in_sequences.val := s.[i] = 'A';
-        flag_where_all.val := s.[i] = 'A'
-      }
-    | 'd' | 'D' -> flag_expand_declare.val := s.[i] = 'D'
-    | 'g' | 'G' -> flag_where_starting.val := s.[i] = 'G'
-    | 'h' | 'H' -> flag_horiz_let_in.val := s.[i] = 'H'
-    | 'i' | 'I' -> flag_where_after_in.val := s.[i] = 'I'
-    | 'l' | 'L' -> flag_where_after_let_eq.val := s.[i] = 'L'
-    | 'm' | 'M' -> flag_where_after_match.val := s.[i] = 'M'
-    | 'q' | 'Q' -> flag_sequ_begin_at_eol.val := s.[i] = 'Q'
-    | 'r' | 'R' -> flag_where_after_field_eq.val := s.[i] = 'R'
-    | 's' | 'S' -> flag_where_in_sequences.val := s.[i] = 'S'
-    | 't' | 'T' -> flag_where_after_then.val := s.[i] = 'T'
-    | 'v' | 'V' -> flag_where_after_value_eq.val := s.[i] = 'V'
-    | 'w' | 'W' -> flag_where_after_arrow.val := s.[i] = 'W'
-    | c -> failwith ("bad wh flag " ^ String.make 1 c) ];
-  }
+  loop 0 where rec loop i =
+    if i = String.length s then ()
+    else do {
+      match s.[i] with
+      [ 'A' | 'a' -> do {
+          let v = is_uppercase s.[i] in
+          flag_expand_declare.val := v;
+          flag_horiz_let_in.val := v;
+          flag_sequ_begin_at_eol.val := v;
+        }
+      | 'D' | 'd' -> flag_expand_declare.val := is_uppercase s.[i]
+      | 'L' | 'l' -> flag_horiz_let_in.val := is_uppercase s.[i]
+      | 'S' | 's' -> flag_sequ_begin_at_eol.val := is_uppercase s.[i]
+      | c -> failwith ("bad flag " ^ String.make 1 c) ];
+      loop (i + 1)
+    }
 ;
 
-Pcaml.add_option "-flg" (Arg.String set_flags)
-  "<flags>  Change pretty printing behaviour according to <flags>:
-     A/a enable/disable all flags
-     D/d enable/disable allowing expanding 'declare'
-     G/g enable/disable allowing printing 'where' starting expr
-     H/h enable/disable allowing printing 'let..in' horizontally
-     I/i enable/disable allowing printing 'where' after 'in'
-     L/l enable/disable allowing printing 'where' after 'let..='
-     M/m enable/disable allowing printing 'where' after 'match' and 'try'
-     Q/q enable/disable printing sequences beginners at end of lines
-     R/r enable/disable allowing printing 'where' after 'record_field..='
-     S/s enable/disable allowing printing 'where' in sequences
-     T/t enable/disable allowing printing 'where' after 'then' or 'else'
-     V/v enable/disable allowing printing 'where' after 'value..='
-     W/w enable/disable allowing printing 'where' after '->'
-     default setting is \"aGLQVW\".";
+value default_flag () =
+  let flag_on b t f = if b then t else "" in 
+  let flag_off b t f = if b then "" else f in
+  let on_off flag =
+    sprintf "%s%s%s"
+      (flag flag_expand_declare.val "D" "d")
+      (flag flag_horiz_let_in.val "L" "l")
+      (flag flag_sequ_begin_at_eol.val "S" "s")
+  in
+  let on = on_off flag_on in
+  let off = on_off flag_off in
+  if String.length on < String.length off then sprintf "a%s" on
+  else sprintf "A%s" off
+;
+
+value set_wflags s =
+  loop 0 where rec loop i =
+    if i = String.length s then ()
+    else do {
+      match s.[i] with
+      [ 'A' | 'a' -> do {
+          let v = is_uppercase s.[i] in
+          flag_where_after_in.val := v;
+          flag_where_after_let_eq.val := v;
+          flag_where_after_match.val := v;
+          flag_where_after_field_eq.val := v;
+          flag_where_in_sequences.val := v;
+          flag_where_after_then.val := v;
+          flag_where_after_value_eq.val := v;
+          flag_where_after_arrow.val := v;
+        }
+      | 'I' | 'i' -> flag_where_after_in.val := is_uppercase s.[i]
+      | 'L' | 'l' -> flag_where_after_let_eq.val := is_uppercase s.[i]
+      | 'M' | 'm' -> flag_where_after_match.val := is_uppercase s.[i]
+      | 'P' | 'p' -> flag_where_after_lparen.val := is_uppercase s.[i]
+      | 'R' | 'r' -> flag_where_after_field_eq.val := is_uppercase s.[i]
+      | 'S' | 's' -> flag_where_in_sequences.val := is_uppercase s.[i]
+      | 'T' | 't' -> flag_where_after_then.val := is_uppercase s.[i]
+      | 'V' | 'v' -> flag_where_after_value_eq.val := is_uppercase s.[i]
+      | 'W' | 'w' -> flag_where_after_arrow.val := is_uppercase s.[i]
+      | c -> failwith ("bad wflag " ^ String.make 1 c) ];
+      loop (i + 1)
+    }
+;
+
+value default_wflag () =
+  let flag_on b t f = if b then t else "" in 
+  let flag_off b t f = if b then "" else f in
+  let on_off flag =
+    sprintf "%s%s%s%s%s%s%s%s%s"
+      (flag flag_where_after_in.val "I" "i")
+      (flag flag_where_after_let_eq.val "L" "l")
+      (flag flag_where_after_match.val "M" "m")
+      (flag flag_where_after_lparen.val "P" "p")
+      (flag flag_where_after_field_eq.val "R" "r")
+      (flag flag_where_in_sequences.val "S" "s")
+      (flag flag_where_after_then.val "T" "t")
+      (flag flag_where_after_value_eq.val "V" "v")
+      (flag flag_where_after_arrow.val "W" "w")
+  in
+  let on = on_off flag_on in
+  let off = on_off flag_off in
+  if String.length on < String.length off then sprintf "a%s" on
+  else sprintf "A%s" off
+;
+
+Pcaml.add_option "-flag" (Arg.String set_flags)
+  ("<str> Change pretty printing behaviour according to <flags>:
+       A/a enable/disable all flags
+       D/d enable/disable allowing expanding 'declare'
+       L/l enable/disable allowing printing 'let..in' horizontally
+       S/s enable/disable printing sequences beginners at end of lines
+       default setting is \"" ^ default_flag () ^ "\".");
+
+Pcaml.add_option "-wflag" (Arg.String set_wflags)
+  ("<str> Change displaying 'where' statements instead of 'let':
+       A/a enable/disable all flags
+       I/i enable/disable 'where' after 'in'
+       L/l enable/disable 'where' after 'let..='
+       M/m enable/disable 'where' after 'match' and 'try'
+       P/p enable/disable 'where' after left parenthesis
+       R/r enable/disable 'where' after 'record_field..='
+       S/s enable/disable 'where' in sequences
+       T/t enable/disable 'where' after 'then' or 'else'
+       V/v enable/disable 'where' after 'value..='
+       W/w enable/disable 'where' after '->'
+       default setting is \"" ^ default_wflag () ^ "\".");
 
 Pcaml.add_option "-l" (Arg.Int (fun x -> Sformat.line_length.val := x))
   ("<length> Maximum line length for pretty printing (default " ^
