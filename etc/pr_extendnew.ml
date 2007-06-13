@@ -18,7 +18,6 @@ value not_impl name ctx b x k =
   sprintf "%s\"pr_extend, not impl: %s; %s\"%s" b name (String.escaped desc) k
 ;
 
-value zc = {ind = 0};
 value shi ctx sh = {ind = ctx.ind + sh};
 value tab ctx = String.make ctx.ind ' ';
 
@@ -363,9 +362,9 @@ value position ctx b pos k =
   | Some Gramext.Last -> sprintf "%s LAST%s" b k
   | Some (Gramext.Before s) -> sprintf "%s BEFORE%s" b k
   | Some (Gramext.After s) ->
-      sprintf "%s AFTER %s%s" b (string zc "" s "") k
+      sprintf "%s AFTER %s%s" b (string ctx "" s "") k
   | Some (Gramext.Level s) ->
-      sprintf "%s LEVEL %s%s" b (string zc "" s "") k ]
+      sprintf "%s LEVEL %s%s" b (string ctx "" s "") k ]
 ;
 
 value action expr ctx b a k = expr ctx b a k;
@@ -375,9 +374,9 @@ value token ctx b tok k =
   [ Left (con, prm) ->
       if con = "" then string ctx b prm k
       else if prm = "" then sprintf "%s%s%s" b con k
-      else sprintf "%s%s %s%s" b con (string zc "" prm "") k
+      else sprintf "%s%s %s%s" b con (string ctx "" prm "") k
   | Right <:expr< ($str:con$, $x$) >> ->
-      sprintf "%s%s $%s$%s" b con (expr zc "" x "") k
+      sprintf "%s%s $%s$%s" b con (expr ctx "" x "") k
   | Right _ -> assert False ]
 ;
 
@@ -390,13 +389,13 @@ value rec rule ctx b (sl, a) k =
         match
           horiz_vertic
             (fun () ->
-               let s = hlistl (semi_after psymbol) psymbol zc "" sl "" in
+               let s = hlistl (semi_after psymbol) psymbol ctx "" sl "" in
                Some (sprintf "%s%s ->" b s))
             (fun () -> None)
         with
         [ Some s1 ->
             horiz_vertic
-              (fun () -> sprintf "%s %s%s" s1 (action expr zc "" a "") k)
+              (fun () -> sprintf "%s %s%s" s1 (action expr ctx "" a "") k)
               (fun () ->
                  let s2 = action expr (shi ctx 4) (tab (shi ctx 4)) a k in
                  sprintf "%s\n%s" s1 s2)
@@ -410,8 +409,8 @@ value rec rule ctx b (sl, a) k =
             let psymbol_arrow_action ctx b ps k =
               horiz_vertic
                 (fun () ->
-                   sprintf "%s%s -> %s%s" b (psymbol zc "" ps "")
-                     (action expr zc "" a "") k)
+                   sprintf "%s%s -> %s%s" b (psymbol ctx "" ps "")
+                     (action expr ctx "" a "") k)
                 (fun () ->
                    let s1 = psymbol ctx b ps " ->" in
                    let s2 = action expr (shi ctx 2) (tab (shi ctx 2)) a k in
@@ -425,7 +424,7 @@ and psymbol ctx b (p, s) k =
   | Some p ->
       horiz_vertic
         (fun () ->
-           sprintf "%s%s = %s%s" b (patt zc "" p "") (symbol zc "" s "") k)
+           sprintf "%s%s = %s%s" b (patt ctx "" p "") (symbol ctx "" s "") k)
         (fun () -> not_impl "psymbol" ctx b s k) ]
 and symbol ctx b sy k =
   match sy with

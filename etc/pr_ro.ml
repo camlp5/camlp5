@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_ro.ml,v 1.13 2007/06/12 03:52:16 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.14 2007/06/13 01:04:08 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -26,7 +26,6 @@ value class_type ctx b z k = pr_class_type.pr_fun "top" ctx b z k;
 value class_str_item ctx b z k = pr_class_str_item.pr_fun "top" ctx b z k;
 value class_sig_item ctx b z k = pr_class_sig_item.pr_fun "top" ctx b z k;
 
-value zc = {ind = 0};
 value shi ctx sh = {ind = ctx.ind + sh};
 value tab ctx = String.make ctx.ind ' ';
 
@@ -106,11 +105,11 @@ value class_def_or_type_decl char ctx b ci k =
        sprintf "%s%s%s %s%c %s%s" b
          (if ci.MLast.ciVir then " virtual" else "") ci.MLast.ciNam
          (class_type_params 0 "" (snd ci.MLast.ciPrm) "") char
-         (class_type zc "" ci.MLast.ciExp "") k)
+         (class_type ctx "" ci.MLast.ciExp "") k)
     (fun () ->
        let s1 =
          sprintf "%s%s%s %s%c" b (if ci.MLast.ciVir then " virtual" else "")
-           ci.MLast.ciNam (class_type_params zc "" (snd ci.MLast.ciPrm) "")
+           ci.MLast.ciNam (class_type_params ctx "" (snd ci.MLast.ciPrm) "")
            char
        in
        let s2 = class_type (shi ctx 2) (tab (shi ctx 2)) ci.MLast.ciExp k in
@@ -123,7 +122,7 @@ value class_type_decl_list ctx b cd k =
   horiz_vertic
     (fun () ->
        sprintf "%sclass type %s%s" b
-         (hlist2 class_type_decl (and_before class_type_decl) zc "" cd
+         (hlist2 class_type_decl (and_before class_type_decl) ctx "" cd
             "")
          k)
     (fun () ->
@@ -135,12 +134,12 @@ value class_decl ctx b ci k =
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s %s= %s%s" b (if ci.MLast.ciVir then "virtual " else "")
-         ci.MLast.ciNam (class_type_params  zc "" (snd ci.MLast.ciPrm) "")
-         (class_expr zc "" ci.MLast.ciExp "") k)
+         ci.MLast.ciNam (class_type_params  ctx "" (snd ci.MLast.ciPrm) "")
+         (class_expr ctx "" ci.MLast.ciExp "") k)
     (fun () ->
        let s1 =
          sprintf "%s%s%s %s=" b (if ci.MLast.ciVir then "virtual " else "")
-           ci.MLast.ciNam (class_type_params  zc "" (snd ci.MLast.ciPrm) "")
+           ci.MLast.ciNam (class_type_params  ctx "" (snd ci.MLast.ciPrm) "")
        in
        let s2 = class_expr (shi ctx 2) (tab (shi ctx 2)) ci.MLast.ciExp k in
        sprintf "%s\n%s" s1 s2)
@@ -154,7 +153,7 @@ value variant_decl ctx b pv k =
        horiz_vertic
          (fun () ->
             sprintf "%s`%s of %s%s%s" b s (if ao then "& " else "")
-              (hlist2 ctyp (amp_before ctyp) zc "" tl "") k)
+              (hlist2 ctyp (amp_before ctyp) ctx "" tl "") k)
          (fun () -> not_impl "variant_decl 2 vertic" ctx b s k)
   | <:poly_variant< $t$ >> ->
        ctyp ctx b t k ]
@@ -169,14 +168,14 @@ value rec class_longident ctx b cl k =
 
 value binding elem ctx b (p, e) k =
   horiz_vertic
-    (fun () -> sprintf "%s %s%s" (patt zc b p " =") (elem zc "" e "") k)
+    (fun () -> sprintf "%s %s%s" (patt ctx b p " =") (elem ctx "" e "") k)
     (fun () ->
        sprintf "%s\n%s" (patt ctx b p " =")
          (elem (shi ctx 2) (tab (shi ctx 2)) e k))
 ;
 
 value field ctx b (s, t) k =
-  horiz_vertic (fun () -> sprintf "%s%s : %s%s" b s (ctyp zc "" t "") k)
+  horiz_vertic (fun () -> sprintf "%s%s : %s%s" b s (ctyp ctx "" t "") k)
     (fun () -> not_impl "field vertic" ctx b s k)
 ;
 
@@ -185,7 +184,7 @@ value patt_tcon ctx b p k =
   [ <:patt< ($p$ : $t$) >> ->
       horiz_vertic
         (fun () ->
-           sprintf "%s%s : %s%s" b (patt zc "" p "") (ctyp zc "" t "") k)
+           sprintf "%s%s : %s%s" b (patt ctx "" p "") (ctyp ctx "" t "") k)
         (fun () -> not_impl "patt_tcon vertic" ctx b p k)
   | p -> patt ctx b p k ]
 ;
@@ -203,9 +202,9 @@ lev.pr_rules :=
       fun curr next ctx b k ->
         horiz_vertic
           (fun () ->
-             sprintf "%s?(%s%s)%s" b (patt_tcon zc "" p "")
+             sprintf "%s?(%s%s)%s" b (patt_tcon ctx "" p "")
                (match eo with
-                [ Some e -> sprintf " = %s" (expr zc "" e "")
+                [ Some e -> sprintf " = %s" (expr ctx "" e "")
                 | None -> "" ])
                k)
           (fun () -> not_impl "patt ?(p=e) vertic" ctx b p k)
@@ -225,7 +224,7 @@ lev.pr_rules :=
   [ <:expr< new $list:cl$ >> ->
       fun curr next ctx b k ->
         horiz_vertic
-          (fun () -> sprintf "%snew %s%s" b (class_longident zc "" cl "") k)
+          (fun () -> sprintf "%snew %s%s" b (class_longident ctx "" cl "") k)
           (fun () -> not_impl "new vertic" ctx b cl k) ]
 ;
 
@@ -235,7 +234,7 @@ lev.pr_rules :=
   [ <:expr< $e$ # $s$ >> ->
       fun curr next ctx b k ->
         horiz_vertic
-          (fun () -> sprintf "%s%s#%s%s" b (curr zc "" e "") s k)
+          (fun () -> sprintf "%s%s#%s%s" b (curr ctx "" e "") s k)
           (fun () -> not_impl "# vertic" ctx b e k) ]
 ;
 
@@ -248,7 +247,8 @@ lev.pr_rules :=
       fun curr next ctx b k ->
         horiz_vertic
           (fun () ->
-             sprintf "%s(%s :> %s)%s" b (expr zc "" e "") (ctyp zc "" t "") k)
+             sprintf "%s(%s :> %s)%s" b (expr ctx "" e "") (ctyp ctx "" t "")
+               k)
           (fun () ->
              let s1 = expr (shi ctx 1) (sprintf "%s(" b) e " :>" in
              let s2 =
@@ -282,7 +282,7 @@ lev.pr_rules :=
       fun curr next ctx b k ->
         horiz_vertic
           (fun () ->
-             hlist2 variant_decl (bar_before variant_decl) zc
+             hlist2 variant_decl (bar_before variant_decl) ctx
                (sprintf "%s[ = " b) pvl (sprintf " ]%s" k))
           (fun () ->
              vlist2 variant_decl (bar_before variant_decl) ctx
@@ -306,7 +306,7 @@ lev.pr_rules :=
         horiz_vertic
           (fun () ->
              sprintf "%sclass %s%s" b
-               (hlist2 class_def (and_before class_def) zc "" cd "")
+               (hlist2 class_def (and_before class_def) ctx "" cd "")
                k)
           (fun () ->
              vlist2 class_def (and_before class_def) ctx
@@ -323,7 +323,7 @@ lev.pr_rules :=
         horiz_vertic
           (fun () ->
              sprintf "%sclass %s%s" b
-               (hlist2 class_decl (and_before class_decl) zc "" cd "")
+               (hlist2 class_decl (and_before class_decl) ctx "" cd "")
                k)
           (fun () ->
              vlist2 class_decl (and_before class_decl) ctx
@@ -340,16 +340,16 @@ value class_type_top =
           (fun () ->
              sprintf "%sobject%s %s end%s" b
                (match cst with
-                [ Some t -> sprintf " (%s)" (ctyp zc "" t "")
+                [ Some t -> sprintf " (%s)" (ctyp ctx "" t "")
                 | None -> "" ])
-               (hlist (semi_after class_sig_item) zc "" csi "") k)
+               (hlist (semi_after class_sig_item) ctx "" csi "") k)
           (fun () ->
              let s1 =
                match cst with
                [ None -> sprintf "%sobject" b
                | Some t ->
                    horiz_vertic
-                     (fun () -> sprintf "%sobject (%s)" b (ctyp zc "" t ""))
+                     (fun () -> sprintf "%sobject (%s)" b (ctyp ctx "" t ""))
                      (fun () -> not_impl "class_type vertic 1" ctx b t "") ]
              in
              let s2 =
@@ -372,7 +372,7 @@ value class_expr_top =
                  (sprintf "%slet %s" b (if rf then "rec " else ""))
                  pel " in"
              in
-             let s2 = class_expr zc "" ce k in
+             let s2 = class_expr ctx "" ce k in
              sprintf "%s %s" s1 s2)
           (fun () ->
              let s1 =
@@ -398,7 +398,7 @@ value class_expr_simple =
                 [ Some (<:patt< ($_$ : $_$) >> as p) -> patt ctx " " p ""
                 | Some p -> patt ctx " (" p ")"
                 | None -> "" ])
-               (hlist (semi_after class_str_item) zc "" csl "") k)
+               (hlist (semi_after class_str_item) ctx "" csl "") k)
           (fun () ->
              let s1 =
                match csp with
@@ -428,7 +428,7 @@ value class_sig_item_top =
         horiz_vertic
           (fun () ->
              sprintf "%smethod%s %s : %s%s" b
-               (if priv then " private" else "") s (ctyp zc "" t "") k)
+               (if priv then " private" else "") s (ctyp ctx "" t "") k)
           (fun () -> not_impl "method vertic 1" ctx b s k)
   | z -> fun curr next ctx b k -> not_impl "class_sig_item" ctx b z k ]
 ;
@@ -439,7 +439,7 @@ value class_str_item_top =
       fun curr next ctx b k ->
         horiz_vertic
           (fun () ->
-             sprintf "%sinherit %s%s%s" b (class_expr zc "" ce "")
+             sprintf "%sinherit %s%s%s" b (class_expr ctx "" ce "")
                (match pb with
                 [ Some s -> sprintf " as %s" s
                 | None -> "" ]) k)
@@ -447,7 +447,7 @@ value class_str_item_top =
   | <:class_str_item< initializer $e$ >> ->
       fun curr next ctx b k ->
         horiz_vertic
-          (fun () -> sprintf "%sinitializer %s%s" b (expr zc "" e "") k)
+          (fun () -> sprintf "%sinitializer %s%s" b (expr ctx "" e "") k)
           (fun () ->
              let s1 = sprintf "%sinitializer" b in
              let s2 = expr (shi ctx 2) (tab (shi ctx 2)) e k in
@@ -457,7 +457,7 @@ value class_str_item_top =
         horiz_vertic
           (fun () ->
              sprintf "%smethod virtual%s %s : %s%s" b
-               (if priv then " private" else "") s (ctyp zc "" t "") k)
+               (if priv then " private" else "") s (ctyp ctx "" t "") k)
           (fun () ->
              let s1 =
                horiz_vertic
@@ -475,9 +475,9 @@ value class_str_item_top =
              sprintf "%smethod%s %s%s = %s%s" b
                (if priv then " private" else "") s
                (match topt with
-                [ Some t -> sprintf " : %s" (ctyp zc "" t "")
+                [ Some t -> sprintf " : %s" (ctyp ctx "" t "")
                 | None -> "" ])
-               (expr zc "" e "") k)
+               (expr ctx "" e "") k)
           (fun () ->
              let s1 =
                match topt with
@@ -489,7 +489,7 @@ value class_str_item_top =
                      (fun () ->
                         sprintf "%smethod%s %s : %s =" b
                           (if priv then " private" else "") s
-                          (ctyp zc "" t ""))
+                          (ctyp ctx "" t ""))
                      (fun () ->
                         let s1 =
                           sprintf "%smethod%s %s :" b
@@ -505,7 +505,7 @@ value class_str_item_top =
         horiz_vertic
           (fun () ->
              sprintf "%svalue%s %s = %s%s" b
-               (if mf then " mutable" else "") s (expr zc "" e "") k)
+               (if mf then " mutable" else "") s (expr ctx "" e "") k)
           (fun () ->
              let s1 =
                sprintf "%svalue%s %s =" b (if mf then " mutable" else "") s
@@ -521,7 +521,8 @@ value ctyp_as =
       fun curr next ctx b k ->
         horiz_vertic
           (fun () ->
-             sprintf "%s%s as %s%s" b (curr zc "" t1 "") (next zc "" t2 "") k)
+             sprintf "%s%s as %s%s" b (curr ctx "" t1 "") (next ctx "" t2 "")
+               k)
           (fun () -> not_impl "ctyp as vertic" ctx b t1 k)
   | z -> fun curr next ctx b k -> next ctx b z k ]
 ;
@@ -532,10 +533,10 @@ value ctyp_poly =
       fun curr next ctx b k ->
         horiz_vertic
           (fun () ->
-             sprintf "%s! %s . %s%s" b (hlist typevar zc "" pl "")
-               (ctyp zc "" t "") k)
+             sprintf "%s! %s . %s%s" b (hlist typevar ctx "" pl "")
+               (ctyp ctx "" t "") k)
           (fun () ->
-             let s1 = sprintf "%s! %s ." b (hlist typevar zc "" pl "") in
+             let s1 = sprintf "%s! %s ." b (hlist typevar ctx "" pl "") in
              let s2 = ctyp (shi ctx 2) (tab (shi ctx 2)) t k in
              sprintf "%s\n%s" s1 s2)
   | z -> fun curr next ctx b k -> next ctx b z k ]

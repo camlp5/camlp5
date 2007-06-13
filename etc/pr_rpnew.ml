@@ -27,7 +27,6 @@ value not_impl name ctx b x k =
 
 (* General purpose printing functions *)
 
-value zc = {ind = 0};
 value shi ctx sh = {ind = ctx.ind + sh};
 value tab ctx = String.make ctx.ind ' ';
 
@@ -275,7 +274,7 @@ value stream_patt_comp ctx b spc k =
   | SpNtr _ p e ->
       horiz_vertic
         (fun () ->
-           sprintf "%s%s = %s%s" b (patt zc "" p "") (expr zc "" e "") k)
+           sprintf "%s%s = %s%s" b (patt ctx "" p "") (expr ctx "" e "") k)
         (fun () ->
            let s1 = patt ctx b p " =" in
            let s2 = expr (shi ctx 2) (tab (shi ctx 2)) e k in
@@ -288,7 +287,7 @@ value stream_patt_comp_err ctx b (spc, err) k =
     match err with
     [ None -> k
     | Some None -> sprintf " !%s" k
-    | Some (Some e) -> sprintf " ? %s%s" (expr zc "" e "") k ]
+    | Some (Some e) -> sprintf " ? %s%s" (expr ctx "" e "") k ]
   in
   stream_patt_comp ctx b spc k
 ;
@@ -298,7 +297,7 @@ value stream_patt ctx b sp k =
     (fun () ->
        sprintf "%s%s%s" b
          (hlistl (semi_after stream_patt_comp_err) stream_patt_comp_err
-            zc "" sp "") k)
+            ctx "" sp "") k)
     (fun () ->
        let sp = List.map (fun spc -> (spc, ";")) sp in
        plist stream_patt_comp_err (shi ctx 3) 0 b sp k)
@@ -309,7 +308,7 @@ value parser_case ctx b (sp, po, e) k =
   [ [] ->
       horiz_vertic
         (fun () ->
-           sprintf "%s[: :]%s -> %s%s" b (ident_option po) (expr zc "" e "")
+           sprintf "%s[: :]%s -> %s%s" b (ident_option po) (expr ctx "" e "")
              k)
         (fun () ->
            let s1 = sprintf "%s[: :]%s ->" b (ident_option po) in
@@ -318,8 +317,8 @@ value parser_case ctx b (sp, po, e) k =
   | _ ->
       horiz_vertic
         (fun () ->
-           sprintf "%s[: %s :]%s -> %s%s" b (stream_patt zc "" sp "")
-             (ident_option po) (expr zc "" e "") k)
+           sprintf "%s[: %s :]%s -> %s%s" b (stream_patt ctx "" sp "")
+             (ident_option po) (expr ctx "" e "") k)
         (fun () ->
            let s1 =
              stream_patt ctx (sprintf "%s[: " b) sp
@@ -339,7 +338,7 @@ value parser_body ctx b (po, spel) k =
         horiz_vertic
           (fun () ->
              let s =
-               sprintf "%s%s %s%s" b s1 (parser_case zc "" spe "") k
+               sprintf "%s%s %s%s" b s1 (parser_case ctx "" spe "") k
              in
              Some s)
           (fun () -> None)
@@ -373,7 +372,7 @@ value print_match_with_parser ctx b e k =
   match e with
   [ <:expr< let (strm__ : Stream.t _) = $e1$ in $e2$ >> ->
       let pa = unparser_body e2 in
-      let b = sprintf "%smatch %s with parser" b (expr zc "" e1 "") in
+      let b = sprintf "%smatch %s with parser" b (expr ctx "" e1 "") in
       parser_body ctx b pa k
   | e -> expr ctx b e k ]
 ;
