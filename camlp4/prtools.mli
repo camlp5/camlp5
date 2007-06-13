@@ -17,7 +17,7 @@ value hlist : pr_fun 'a -> pr_fun (list 'a);
        in the context of the [horiz] function of the function [horiz_vertic]
        of the module Sformat, and if the line overflows or contains newlines,
        the function fails (the exception is catched by [horiz_vertic] for
-       a vertical pretty print).
+       a vertical pretty print). *)
 value hlist2 : pr_gfun 'a 'b -> pr_gfun 'a 'b -> pr_gfun (list 'a) ('b * 'b);
    (** horizontal list with different function from 2nd element on *)
 value hlistl : pr_fun 'a -> pr_fun 'a -> pr_fun (list 'a);
