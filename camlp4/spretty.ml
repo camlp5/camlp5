@@ -67,9 +67,7 @@ value rec print_spaces nsp = for i = 1 to nsp do { print_char sp.val };
 
 value end_with_tab s =
   loop (String.length s - 1) where rec loop i =
-    if i >= 0 then
-      if s.[i] = ' ' then loop (i - 1)
-      else s.[i] = '\n'
+    if i >= 0 then if s.[i] = ' ' then loop (i - 1) else s.[i] = '\n'
     else False
 ;
 
@@ -88,7 +86,7 @@ value print_comment tab s nl_bef tab_bef empty_stmt =
       else do {
         print_char_fun.val s.[i];
         let i =
-          if s.[i] = '\n' && (i+1 = len || s.[i+1] <> '\n') then
+          if s.[i] = '\n' && (i + 1 = len || s.[i+1] <> '\n') then
             let delta_ind =
               if i = i_bef_tab then tab - tab_aft else tab - tab_bef
             in
@@ -450,8 +448,7 @@ value rec conv =
   | LocInfo loc x -> do {
       let (comm, nl_bef, tab_bef, cnt) =
         let len = Stdpp.first_pos loc - last_ep.val in
-        if len > 0 then getcomm.val loc last_ep.val len
-        else ("", 0, 0, 0)
+        if len > 0 then getcomm.val loc last_ep.val len else ("", 0, 0, 0)
       in
       last_ep.val := last_ep.val + cnt;
       let v = conv x in
