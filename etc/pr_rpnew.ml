@@ -285,5 +285,10 @@ lev.pr_rules :=
   [ <:expr< fun (strm__ : Stream.t _) -> $_$ >> as e ->
       fun curr next ctx b k -> print_parser ctx b e k
   | <:expr< let (strm__ : Stream.t _) = $_$ in $_$ >> as e ->
-      fun curr next ctx b k -> print_match_with_parser ctx b e k ]
-;
+      fun curr next ctx b k -> print_match_with_parser ctx b e k ];
+
+let lev = find_pr_level "dot" pr_expr.pr_levels in
+lev.pr_rules :=
+  extfun lev.pr_rules with
+  [ <:expr< Stream.sempty >> ->
+      fun curr next ctx b k -> sprintf "%s[: :]%s" b k ];
