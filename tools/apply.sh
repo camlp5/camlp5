@@ -1,7 +1,8 @@
 #!/bin/sh
-# $Id: apply.sh,v 1.5 2007/06/08 02:25:23 deraugla Exp $
+# $Id: apply.sh,v 1.6 2007/06/13 08:48:45 deraugla Exp $
 
 ARGS1=
+ARGS3=
 FILE=
 while test "" != "$1"; do
 	case $1 in

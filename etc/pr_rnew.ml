@@ -636,7 +636,7 @@ value rec get_else_if =
 ;
 
 (* Expressions displayed without spaces separating elements; special
-   for expressions as strings or arrays indexes (x.[...] or x.(...).
+   for expressions as strings or arrays indexes (x.[...] or x.(...)).
    Applied only if only containing +, -, *, /, integers and variables. *)
 value expr_short ctx b x k =
   let rec expr1 ctx b x k =
