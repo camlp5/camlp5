@@ -625,6 +625,8 @@ value cons_decl ctx b (_, c, tl) k =
          sprintf "%s\n%s" s1 s2)
 ;
 
+value has_cons_with_params vdl = List.exists (fun (_, _, tl) -> tl <> []) vdl;
+
 value rec get_else_if =
   fun
   [ <:expr< if $e1$ then $e2$ else $e3$ >> ->
@@ -724,8 +726,10 @@ value ctyp_simple =
       fun curr next ctx b k ->
         horiz_vertic
           (fun () ->
-             hlist2 cons_decl (bar_before cons_decl) ctx
-               (sprintf "%s[ " b) vdl ("", sprintf " ]%s" k))
+             if has_cons_with_params vdl then sprintf "\n"
+             else
+               hlist2 cons_decl (bar_before cons_decl) ctx
+                 (sprintf "%s[ " b) vdl ("", sprintf " ]%s" k))
           (fun () ->
              vlist2 cons_decl (bar_before cons_decl) ctx
                (sprintf "%s[ " b) vdl ("", sprintf " ]%s" k))

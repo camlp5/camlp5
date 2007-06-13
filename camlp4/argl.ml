@@ -147,11 +147,13 @@ Load options:
 Other options:
   <file>        Parse this file.\n";
   print_usage_list ini_sl;
-  loop (ini_sl @ ext_sl) where rec loop =
+  let rec loop =
     fun
     [ [(y, _, _) :: _] when y = "-help" -> ()
     | [_ :: sl] -> loop sl
-    | [] -> eprintf "  -help         Display this list of options.\n" ];
+    | [] -> eprintf "  -help         Display this list of options.\n" ]
+  in
+  loop (ini_sl @ ext_sl);
   if ext_sl <> [] then do {
     eprintf "Options added by loaded object files:\n";
     print_usage_list ext_sl

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: gramext.ml,v 1.6 2007/06/11 15:21:27 deraugla Exp $ *)
+(* $Id: gramext.ml,v 1.7 2007/06/13 08:35:02 deraugla Exp $ *)
 
 open Printf;
 
@@ -33,10 +33,7 @@ and g_level 'te =
     lname : option string;
     lsuffix : g_tree 'te;
     lprefix : g_tree 'te }
-and g_assoc =
-  [ NonA
-  | RightA
-  | LeftA ]
+and g_assoc = [ NonA | RightA | LeftA ]
 and g_symbol 'te =
   [ Smeta of string and list (g_symbol 'te) and Obj.t
   | Snterm of g_entry 'te

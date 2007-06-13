@@ -1,9 +1,13 @@
 (* camlp4r *)
-(* $Id: fstream.ml,v 1.4 2007/06/03 16:57:13 deraugla Exp $ *)
+(* $Id: fstream.ml,v 1.5 2007/06/13 08:35:02 deraugla Exp $ *)
 (* Copyright 2007 INRIA *)
 
 type t 'a = { count : int; data : Lazy.t (data 'a) }
-and data 'a = [ Nil | Cons of 'a and t 'a | App of t 'a and t 'a ];
+and data 'a =
+  [ Nil
+  | Cons of 'a and t 'a
+  | App of t 'a and t 'a ]
+;
 
 value from f =
   loop 0 where rec loop i =

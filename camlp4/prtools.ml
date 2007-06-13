@@ -24,8 +24,8 @@ value rec hlist2 elem elem2 ctx b xl (k0, k) =
   [ [] -> invalid_arg "hlist2"
   | [x] -> elem ctx b x k
   | [x :: xl] ->
-      sprintf "%s %s" (elem ctx b x k0) (hlist2 elem2 elem2 ctx "" xl
-        (k0, k)) ]
+      sprintf "%s %s" (elem ctx b x k0)
+        (hlist2 elem2 elem2 ctx "" xl (k0, k)) ]
 ;
 
 (* horizontal list with different function for the last element *)
