@@ -114,12 +114,12 @@ value rec unparser_cases_list =
         fun
         [ [(<:patt< _ >>, None, e)] ->
             List.rev_append rev_spel (unparser_cases_list e)
-        | [(<:patt< Some $p$ >>, None,
+        | [(<:patt< Some $p$ >>, eo,
             <:expr< do { Stream.junk strm__; $e$ } >>) ::
            pel] ->
             let spe =
               let (sp, epo, e) = unstream_pattern_kont e in
-              let sp = [(SpTrm loc p None, None) :: sp] in
+              let sp = [(SpTrm loc p eo, None) :: sp] in
               (sp, epo, e)
             in
             loop [spe :: rev_spel] pel
@@ -186,6 +186,24 @@ value ident_option =
 value stream_patt_comp ctx b spc k =
   match spc with
   [ SpTrm _ p None -> patt (shi ctx 1) (sprintf "%s`" b) p k
+  | SpTrm _ p (Some e) ->
+      horiz_vertic
+        (fun () ->
+           sprintf "%s`%s when %s%s" b (patt (shi ctx 1) "" p "")
+             (expr ctx "" e "") k)
+        (fun () ->
+           let s1 = patt ctx (sprintf "%s`" b) p "" in
+           let s2 =
+             horiz_vertic
+               (fun () ->
+                  sprintf "%swhen %s%s" (tab (shi ctx 1)) (expr ctx "" e "")
+                    k)
+               (fun () ->
+                  let s1 = sprintf "%swhen" (tab (shi ctx 1)) in
+                  let s2 = expr (shi ctx 3) (tab (shi ctx 3)) e k in
+                  sprintf "%s\n%s" s1 s2)
+           in
+           sprintf "%s\n%s" s1 s2)
   | SpNtr _ p e ->
       horiz_vertic
         (fun () ->

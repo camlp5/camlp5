@@ -7,6 +7,7 @@ open Pcaml.NewPrinter;
 open Prtools;
 
 value flag_expand_declare = ref False;
+value flag_where_starting = ref True;
 value flag_horiz_let_in = ref False;
 value flag_where_after_in = ref False;
 value flag_where_after_let_eq = ref True;
@@ -1037,28 +1038,40 @@ value expr_top =
                  in
                  let s2 = match_assoc_list ctx (tab ctx) pwel k in
                  sprintf "%s\n%s" s1 s2) ]
-  | <:expr< let $opt:rf$ $list:pel$ in $e$ >> ->
+  | <:expr< let $opt:rf$ $list:pel$ in $e$ >> as ge ->
       fun curr next ctx b k ->
-        let expr_wh = if flag_where_after_in.val then expr_wh else expr in
-        horiz_vertic
-          (fun () ->
-             if not flag_horiz_let_in.val then sprintf "\n"
-             else
-               let s1 =
-                 hlist2 let_binding (and_before let_binding) ctx
-                   (sprintf "%slet %s" b (if rf then "rec " else ""))
-                   pel (False, True)
-               in
-               let s2 = expr ctx "" e k in
-               sprintf "%s %s" s1 s2)
-          (fun () ->
-             let s1 =
-               vlist2 let_binding (and_before let_binding) ctx
-                 (sprintf "%slet %s" b (if rf then "rec " else ""))
-                 pel (False, True)
-             in
-             let s2 = expr_wh ctx (tab ctx) e k in
-             sprintf "%s\n%s" s1 s2)
+        let can_where =
+          if flag_where_starting.val then can_be_displayed_as_where ge
+          else None
+        in
+        match can_where with
+        [ Some (p, e, body) -> where_binding ctx b (p, e, body) k
+        | None ->
+            let expr_wh = if flag_where_after_in.val then expr_wh else expr in
+            horiz_vertic
+              (fun () ->
+                 if not flag_horiz_let_in.val then sprintf "\n"
+                 else
+                   let s1 =
+                     hlist2 let_binding (and_before let_binding) ctx
+                       (sprintf "%slet %s" b (if rf then "rec " else ""))
+                       pel (False, True)
+                   in
+                   let s2 = expr ctx "" e k in
+                   sprintf "%s %s" s1 s2)
+              (fun () ->
+                 match sequencify ge with
+                 [ Some el ->
+                     let loc = MLast.loc_of_expr ge in
+                     curr ctx b <:expr< do { $list:el$ } >> k
+                 | None ->
+                     let s1 =
+                       vlist2 let_binding (and_before let_binding) ctx
+                         (sprintf "%slet %s" b (if rf then "rec " else ""))
+                         pel (False, True)
+                     in
+                     let s2 = expr_wh ctx (tab ctx) e k in
+                     sprintf "%s\n%s" s1 s2 ]) ]
   | <:expr< let module $s$ = $me$ in $e$ >> ->
       fun curr next ctx b k ->
         horiz_vertic
@@ -2070,6 +2083,7 @@ value set_flags s =
     match s.[i] with
     [ 'a' | 'A' -> do {
         flag_expand_declare.val := s.[i] = 'A';
+        flag_where_starting.val := s.[i] = 'A';
         flag_horiz_let_in.val := s.[i] = 'A';
         flag_where_after_in.val := s.[i] = 'A';
         flag_where_after_let_eq.val := s.[i] = 'A';
@@ -2083,6 +2097,7 @@ value set_flags s =
         flag_where_all.val := s.[i] = 'A'
       }
     | 'd' | 'D' -> flag_expand_declare.val := s.[i] = 'D'
+    | 'g' | 'G' -> flag_where_starting.val := s.[i] = 'G'
     | 'h' | 'H' -> flag_horiz_let_in.val := s.[i] = 'H'
     | 'i' | 'I' -> flag_where_after_in.val := s.[i] = 'I'
     | 'l' | 'L' -> flag_where_after_let_eq.val := s.[i] = 'L'
@@ -2101,6 +2116,7 @@ Pcaml.add_option "-flg" (Arg.String set_flags)
   "<flags>  Change pretty printing behaviour according to <flags>:
      A/a enable/disable all flags
      D/d enable/disable allowing expanding 'declare'
+     G/g enable/disable allowing printing 'where' starting expr
      H/h enable/disable allowing printing 'let..in' horizontally
      I/i enable/disable allowing printing 'where' after 'in'
      L/l enable/disable allowing printing 'where' after 'let..='
@@ -2111,7 +2127,7 @@ Pcaml.add_option "-flg" (Arg.String set_flags)
      T/t enable/disable allowing printing 'where' after 'then' or 'else'
      V/v enable/disable allowing printing 'where' after 'value..='
      W/w enable/disable allowing printing 'where' after '->'
-     default setting is \"aLQVW\".";
+     default setting is \"aGLQVW\".";
 
 Pcaml.add_option "-l" (Arg.Int (fun x -> Sformat.line_length.val := x))
   ("<length> Maximum line length for pretty printing (default " ^

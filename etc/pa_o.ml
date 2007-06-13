@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.18 2007/06/01 00:35:04 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.19 2007/06/13 15:37:59 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -53,8 +53,7 @@ value o2b =
       
 value neg_string n =
   let len = String.length n in
-  if len > 0 && n.[0] = '-' then String.sub n 1 (len - 1)
-  else "-" ^ n
+  if len > 0 && n.[0] = '-' then String.sub n 1 (len - 1) else "-" ^ n
 ;
 
 value mkumin loc f arg =
@@ -94,27 +93,28 @@ value mklistpat loc last =
         <:patt< [$p1$ :: $loop False pl$] >> ]
 ;
 
-value is_operator =
+value is_operator = do {
   let ht = Hashtbl.create 73 in
   let ct = Hashtbl.create 73 in
-  do {
-    List.iter (fun x -> Hashtbl.add ht x True)
-      ["asr"; "land"; "lor"; "lsl"; "lsr"; "lxor"; "mod"; "or"];
-    List.iter (fun x -> Hashtbl.add ct x True)
-      ['!'; '&'; '*'; '+'; '-'; '/'; ':'; '<'; '='; '>'; '@'; '^'; '|'; '~';
-       '?'; '%'; '.'; '$'];
-    fun x ->
-      try Hashtbl.find ht x with
-      [ Not_found -> try Hashtbl.find ct x.[0] with _ -> False ]
-  }
-;
+  List.iter (fun x -> Hashtbl.add ht x True)
+    ["asr"; "land"; "lor"; "lsl"; "lsr"; "lxor"; "mod"; "or"];
+  List.iter (fun x -> Hashtbl.add ct x True)
+    ['!'; '&'; '*'; '+'; '-'; '/'; ':'; '<'; '='; '>'; '@'; '^'; '|'; '~';
+     '?'; '%'; '.'; '$'];
+  fun x ->
+    try Hashtbl.find ht x with
+    [ Not_found -> try Hashtbl.find ct x.[0] with _ -> False ]
+};
 
 value operator_rparen =
   Grammar.Entry.of_parser gram "operator_rparen"
     (fun strm ->
        match Stream.npeek 2 strm with
-       [ [("", s); ("", ")")] when is_operator s ->
-           do { Stream.junk strm; Stream.junk strm; s }
+       [ [("", s); ("", ")")] when is_operator s -> do {
+           Stream.junk strm;
+           Stream.junk strm;
+           s
+         }
        | _ -> raise Stream.Failure ])
 ;
 
@@ -122,8 +122,11 @@ value lident_colon =
   Grammar.Entry.of_parser gram "lident_colon"
     (fun strm ->
        match Stream.npeek 2 strm with
-       [ [("LIDENT", i); ("", ":")] ->
-           do { Stream.junk strm; Stream.junk strm; i }
+       [ [("LIDENT", i); ("", ":")] -> do {
+           Stream.junk strm;
+           Stream.junk strm;
+           i
+         }
        | _ -> raise Stream.Failure ])
 ;
 
@@ -132,12 +135,10 @@ value symbolchar =
     ['!'; '$'; '%'; '&'; '*'; '+'; '-'; '.'; '/'; ':'; '<'; '='; '>'; '?';
      '@'; '^'; '|'; '~']
   in
-  let rec loop s i =
+  loop where rec loop s i =
     if i == String.length s then True
     else if List.mem s.[i] list then loop s (i + 1)
     else False
-  in
-  loop
 ;
 
 value prefixop =
@@ -280,12 +281,12 @@ value test_typevar_list_dot =
        [ Some ("", "'") -> test2 (lev + 1) strm
        | Some ("", ".") -> ()
        | _ -> raise Stream.Failure ]
-    and test2 lev strm =
+     and test2 lev strm =
        match stream_peek_nth lev strm with
        [ Some ("UIDENT" | "LIDENT", _) -> test (lev + 1) strm
        | _ -> raise Stream.Failure ]
-    in
-    test 1)
+     in
+     test 1)
 ;
 
 value constr_arity = ref [("Some", 1); ("Match_Failure", 1)];
