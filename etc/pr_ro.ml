@@ -1,11 +1,12 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_ro.ml,v 1.14 2007/06/13 01:04:08 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.15 2007/06/13 01:15:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
 
-open Pcaml.NewPrinter;
 open Sformat;
+open Pcaml.NewPrinter;
+open Prtools;
 
 value not_impl name ctx b x k =
   let desc =
@@ -25,69 +26,6 @@ value class_expr ctx b z k = pr_class_expr.pr_fun "top" ctx b z k;
 value class_type ctx b z k = pr_class_type.pr_fun "top" ctx b z k;
 value class_str_item ctx b z k = pr_class_str_item.pr_fun "top" ctx b z k;
 value class_sig_item ctx b z k = pr_class_sig_item.pr_fun "top" ctx b z k;
-
-value shi ctx sh = {ind = ctx.ind + sh};
-value tab ctx = String.make ctx.ind ' ';
-
-value rec hlist2 elem elem2 ctx b xl k =
-  match xl with
-  [ [] -> sprintf "%s%s" b k
-  | [x] -> elem ctx b x k
-  | [x :: xl] ->
-      sprintf "%s %s" (elem ctx b x "") (hlist2 elem2 elem2 ctx "" xl k) ]
-;
-
-value hlist elem ctx b xl k = hlist2 elem elem ctx b xl k;
-
-value rec vlist2 elem elem2 ctx b xl k =
-  match xl with
-  [ [] -> sprintf "%s%s" b k
-  | [x] -> elem ctx b x k
-  | [x :: xl] ->
-      sprintf "%s\n%s" (elem ctx b x "")
-        (vlist2 elem2 elem2 ctx (tab ctx) xl k) ]
-;
-
-value vlist elem ctx b xl k = vlist2 elem elem ctx b xl k;
-
-value rec plistl elem eleml ctx sh b xl k =
-  match xl with
-  [ [] -> assert False
-  | [(x, _)] -> eleml ctx b x k
-  | [(x, sep) :: xl] ->
-      let s =
-        horiz_vertic (fun () -> Some (elem ctx b x sep)) (fun () -> None)
-      in
-      match s with
-      [ Some b ->
-          loop b xl where rec loop b =
-            fun
-            [ [] -> assert False
-            | [(x, _)] ->
-                horiz_vertic (fun () -> eleml ctx (sprintf "%s " b) x k)
-                  (fun () ->
-                     let s = eleml (shi ctx sh) (tab (shi ctx sh)) x k in
-                     sprintf "%s\n%s" b s)
-            | [(x, sep) :: xl] ->
-                let s =
-                  horiz_vertic
-                    (fun () -> Some (elem ctx (sprintf "%s " b) x sep))
-                    (fun () -> None)
-                in
-                match s with
-                [ Some b -> loop b xl
-                | None ->
-                    let s =
-                      plistl elem eleml (shi ctx sh) 0 (tab (shi ctx sh))
-                        [(x, sep) :: xl] k
-                    in
-                    sprintf "%s\n%s" b s ] ]
-      | None ->
-          let s1 = elem ctx b x sep in
-          let s2 = plistl elem eleml (shi ctx sh) 0 (tab (shi ctx sh)) xl k in
-          sprintf "%s\n%s" s1 s2 ] ]
-;
-value plist elem ctx sh b xl k = plistl elem elem ctx sh b xl k;
 
 value semi_after elem ctx b x k = elem ctx b x (sprintf ";%s" k);
 value amp_before elem ctx b x k = elem ctx (sprintf "%s& " b) x k;
@@ -123,11 +61,11 @@ value class_type_decl_list ctx b cd k =
     (fun () ->
        sprintf "%sclass type %s%s" b
          (hlist2 class_type_decl (and_before class_type_decl) ctx "" cd
-            "")
+            "" "")
          k)
     (fun () ->
        vlist2 class_type_decl (and_before class_type_decl) ctx
-         (sprintf "%sclass type " b) cd k)
+         (sprintf "%sclass type " b) cd "" k)
 ;
 
 value class_decl ctx b ci k =
@@ -153,7 +91,7 @@ value variant_decl ctx b pv k =
        horiz_vertic
          (fun () ->
             sprintf "%s`%s of %s%s%s" b s (if ao then "& " else "")
-              (hlist2 ctyp (amp_before ctyp) ctx "" tl "") k)
+              (hlist2 ctyp (amp_before ctyp) ctx "" tl "" "") k)
          (fun () -> not_impl "variant_decl 2 vertic" ctx b s k)
   | <:poly_variant< $t$ >> ->
        ctyp ctx b t k ]
@@ -283,10 +221,10 @@ lev.pr_rules :=
         horiz_vertic
           (fun () ->
              hlist2 variant_decl (bar_before variant_decl) ctx
-               (sprintf "%s[ = " b) pvl (sprintf " ]%s" k))
+               (sprintf "%s[ = " b) pvl "" (sprintf " ]%s" k))
           (fun () ->
              vlist2 variant_decl (bar_before variant_decl) ctx
-               (sprintf "%s[ = " b) pvl (sprintf " ]%s" k))
+               (sprintf "%s[ = " b) pvl "" (sprintf " ]%s" k))
   | <:ctyp< [ > $list:pvl$ ] >> ->
       fun curr next ctx b k -> not_impl "variants 2" ctx b pvl k
   | <:ctyp< [ < $list:pvl$ ] >> ->
@@ -306,11 +244,10 @@ lev.pr_rules :=
         horiz_vertic
           (fun () ->
              sprintf "%sclass %s%s" b
-               (hlist2 class_def (and_before class_def) ctx "" cd "")
-               k)
+               (hlist2 class_def (and_before class_def) ctx "" cd "" "") k)
           (fun () ->
              vlist2 class_def (and_before class_def) ctx
-               (sprintf "%sclass " b) cd k)
+               (sprintf "%sclass " b) cd "" k)
   | <:sig_item< class type $list:cd$ >> ->
       fun curr next ctx b k -> class_type_decl_list ctx b cd k ]
 ;
@@ -323,11 +260,10 @@ lev.pr_rules :=
         horiz_vertic
           (fun () ->
              sprintf "%sclass %s%s" b
-               (hlist2 class_decl (and_before class_decl) ctx "" cd "")
-               k)
+               (hlist2 class_decl (and_before class_decl) ctx "" cd "" "") k)
           (fun () ->
              vlist2 class_decl (and_before class_decl) ctx
-               (sprintf "%sclass " b) cd k)
+               (sprintf "%sclass " b) cd "" k)
   | <:str_item< class type $list:cd$ >> ->
       fun curr next ctx b k -> class_type_decl_list ctx b cd k ]
 ;
@@ -370,7 +306,7 @@ value class_expr_top =
              let s1 =
                hlist2 (binding expr) (and_before (binding expr)) ctx
                  (sprintf "%slet %s" b (if rf then "rec " else ""))
-                 pel " in"
+                 pel "" " in"
              in
              let s2 = class_expr ctx "" ce k in
              sprintf "%s %s" s1 s2)
@@ -378,7 +314,7 @@ value class_expr_top =
              let s1 =
                vlist2 (binding expr) (and_before (binding expr)) ctx
                  (sprintf "%slet %s" b (if rf then "rec " else ""))
-                 pel " in"
+                 pel "" " in"
              in
              let s2 = class_expr ctx (tab ctx) ce k in
              sprintf "%s\n%s" s1 s2)

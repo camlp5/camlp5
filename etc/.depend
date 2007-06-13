@@ -33,8 +33,10 @@ pr_depend.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi
 pr_depend.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
 pr_extend.cmo: ../camlp4/spretty.cmi ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
 pr_extend.cmx: ../camlp4/spretty.cmx ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
-pr_extendnew.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
-pr_extendnew.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
+pr_extendnew.cmo: ../camlp4/prtools.cmi ../camlp4/pcaml.cmi \
+    ../camlp4/mLast.cmi 
+pr_extendnew.cmx: ../camlp4/prtools.cmx ../camlp4/pcaml.cmx \
+    ../camlp4/mLast.cmi 
 pr_extfun.cmo: ../camlp4/spretty.cmi ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
 pr_extfun.cmx: ../camlp4/spretty.cmx ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
 pr_null.cmo: ../camlp4/pcaml.cmi 
@@ -47,16 +49,16 @@ pr_op_main.cmx: ../camlp4/spretty.cmx ../camlp4/pcaml.cmx parserify.cmx \
     ../camlp4/mLast.cmi 
 pr_r.cmo: ../camlp4/spretty.cmi ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
 pr_r.cmx: ../camlp4/spretty.cmx ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
-pr_rnew.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
-pr_rnew.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
-pr_ro.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
-pr_ro.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
+pr_rnew.cmo: ../camlp4/prtools.cmi ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
+pr_rnew.cmx: ../camlp4/prtools.cmx ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
+pr_ro.cmo: ../camlp4/prtools.cmi ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
+pr_ro.cmx: ../camlp4/prtools.cmx ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
 pr_rp_main.cmo: ../camlp4/spretty.cmi ../camlp4/pcaml.cmi parserify.cmi \
     ../camlp4/mLast.cmi 
 pr_rp_main.cmx: ../camlp4/spretty.cmx ../camlp4/pcaml.cmx parserify.cmx \
     ../camlp4/mLast.cmi 
-pr_rpnew.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
-pr_rpnew.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
+pr_rpnew.cmo: ../camlp4/prtools.cmi ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
+pr_rpnew.cmx: ../camlp4/prtools.cmx ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
 pr_scheme.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
 pr_scheme.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
 pr_schp_main.cmo: pr_scheme.cmo ../camlp4/pcaml.cmi parserify.cmi \
