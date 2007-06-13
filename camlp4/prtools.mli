@@ -10,14 +10,24 @@ value shi : pr_ctx -> int -> pr_ctx;
 value tab : pr_ctx -> string;
 
 value hlist : pr_fun 'a -> pr_fun (list 'a);
-   (** horizontal list *)
+   (** horizontal list
+       [hlist elem ctx b e k] returns the horizontally pretty printed
+       string of a list of elements; elements are separated with spaces.
+       The list is displayed in one only line. If this function is called
+       in the context of the [horiz] function of the function [horiz_vertic]
+       of the module Sformat, and if the line overflows or contains newlines,
+       the function fails (the exception is catched by [horiz_vertic] for
+       a vertical pretty print).
 value hlist2 : pr_gfun 'a 'b -> pr_gfun 'a 'b -> pr_gfun (list 'a) ('b * 'b);
    (** horizontal list with different function from 2nd element on *)
 value hlistl : pr_fun 'a -> pr_fun 'a -> pr_fun (list 'a);
    (** horizontal list with different function for the last element *)
 
 value vlist : pr_fun 'a -> pr_fun (list 'a);
-   (** vertical list *)
+   (** vertical list
+       [vlist elem ctx b e k] returns the vertically pretty printed
+       string of a list of elements; elements are separated with newlines
+       and indentations. *)
 value vlist2 : pr_gfun 'a 'b -> pr_gfun 'a 'b -> pr_gfun (list 'a) ('b * 'b);
    (** vertical list with different function from 2nd element on *)
 value vlistl : pr_fun 'a -> pr_fun 'a -> pr_fun (list 'a);
