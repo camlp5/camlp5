@@ -1796,9 +1796,18 @@ value module_expr_top =
       fun curr next ctx b k ->
         horiz_vertic
           (fun () ->
-             sprintf "%sstruct%s%s%send%s" b " "
-               (hlist (semi_after str_item) ctx "" sil "")
-               " " k)
+             if loop 0 where rec loop i =
+                  if i >= String.length b then True
+                  else if b.[i] = ' ' then loop (i + 1)
+                  else False
+             then
+               (* Heuristic : I don't like to print structs horizontally
+                  when starting a line. *)
+               sprintf "\n"
+             else
+               sprintf "%sstruct%s%s%send%s" b " "
+                 (hlist (semi_after str_item) ctx "" sil "")
+                 " " k)
           (fun () ->
              sprintf "%sstruct%s%s%send%s" b "\n"
                (vlist (semi_after str_item) (shi ctx 2) (tab (shi ctx 2)) sil
