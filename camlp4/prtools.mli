@@ -45,3 +45,6 @@ value plist : pr_fun 'a -> int -> pr_fun (list ('a * string));
        (the last separator is ignored), and [k] the end of the line *)
 value plistl : pr_fun 'a -> pr_fun 'a -> int -> pr_fun (list ('a * string));
    (** paragraph list with a different function for the last element *)
+
+value source : ref string;
+value comm_bef : pr_ctx -> MLast.loc -> string;

@@ -357,7 +357,8 @@ value level ctx b (lab, ass, rl) k =
 ;
 
 value entry ctx b (e, pos, ll) k =
-  sprintf "%s%s:%s\n%s\n%s;%s" b (expr ctx "" e "") (position ctx "" pos "")
+  sprintf "%s%s%s:%s\n%s\n%s;%s" (comm_bef ctx (MLast.loc_of_expr e)) b
+    (expr ctx "" e "") (position ctx "" pos "")
     (vlist2 level (bar_before level) (shi ctx 2)
        (sprintf "%s[ " (tab (shi ctx 2))) ll ("", " ]")) (tab ctx) k
 ;
