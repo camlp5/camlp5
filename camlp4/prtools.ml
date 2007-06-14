@@ -188,7 +188,7 @@ value rev_extract_comment strm =
     | [: :] -> len ]
   and find_star_bef_rparen_in_comm len =
     parser
-    [ [: `'*'; len = insert (Buff.store len '*'); s :] -> insert len s
+    [ [: `'*'; len = insert (Buff.store len '*'); a = insert len ! :] -> a
     | [: a = insert len :] -> a ]
   and find_lparen_aft_star len =
     parser
@@ -252,7 +252,7 @@ value adjust_comment_indentation ind s nl_bef ind_bef =
       else
         let olen = Buff.store olen s.[i] in
         let (olen, i) =
-          if s.[i] = '\n' && (i + 1 = len || s.[i + 1] <> '\n') then
+          if s.[i] = '\n' && (i + 1 = len || s.[i+1] <> '\n') then
             let delta_ind = if i = i_bef_ind then 0 else ind - ind_bef in
             if delta_ind >= 0 then
               (Buff.mstore olen (String.make delta_ind ' '), i + 1)

@@ -1013,6 +1013,14 @@ value expr_top =
              sprintf "%s\n%s\n%s" s1 s2 s3)
   | <:expr< for $v$ = $e1$ $to:d$ $e2$ do { $list:el$ } >> ->
       fun curr next ctx b k ->
+        let el =
+          match el with
+          [ [e] ->
+              match sequencify e with
+              [ Some el -> el
+              | None -> el ]
+          | _ -> el ]
+        in
         horiz_vertic
           (fun () ->
              sprintf "%sfor %s = %s %s %s do { %s }%s" b v

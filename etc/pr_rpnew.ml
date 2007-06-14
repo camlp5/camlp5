@@ -90,6 +90,15 @@ value rec unstream_pattern_kont =
         ([(SpNtr loc p f, err) :: sp], epo, e)
       else
         ([], None, ge)
+  | <:expr<
+      try $f$ strm__ with [ Stream.Failure -> raise (Stream.Error $e$) ]
+    >> ->
+      let err =
+        match e with
+        [ <:expr< "" >> -> None
+        | _ -> Some (Some e) ]
+      in
+      ([(SpNtr loc <:patt< a >> f, err)], None, <:expr< a >>)
   | <:expr< $f$ strm__ >> ->
       ([(SpNtr loc <:patt< a >> f, Some None)], None, <:expr< a >>)
   | e -> ([], None, e) ]
