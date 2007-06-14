@@ -874,14 +874,15 @@ value expr_expr1 =
         [ [(p, wo, e)] when is_irrefut_patt p ->
             horiz_vertic
               (fun () ->
-                 sprintf "%s%s %s with %s%s" b op (expr_wh ctx "" e1 "")
+                 sprintf "%sbegin %s %s with %s end%s" b op
+                   (expr_wh ctx "" e1 "")
                    (match_assoc ctx "" (p, wo, e) "") k)
               (fun () ->
                  match
                    horiz_vertic
                      (fun () ->
                         Some
-                          (sprintf "%s%s %s with %s%s ->" b op
+                          (sprintf "%sbegin %s %s with %s%s ->" b op
                              (expr_wh ctx "" e1 "") (patt ctx "" p "")
                              (match wo with
                               [ Some e -> expr ctx " when" e ""
@@ -890,13 +891,14 @@ value expr_expr1 =
                  with
                  [ Some s1 ->
                      let s2 = expr (shi ctx 2) (tab (shi ctx 2)) e k in
-                     sprintf "%s\n%s" s1 s2
+                     sprintf "%s\n%s end" s1 s2
                  | None ->
                      let s1 =
                        match sequencify e1 with
                        [ Some el ->
-                           sequence_box ctx (fun () -> sprintf "%s%s" b op)
-                             (fun () -> sprintf "%s%s" b op) el ""
+                           sequence_box ctx
+                             (fun () -> sprintf "%sbegin %s" b op)
+                             (fun () -> sprintf "%sbegin %s" b op) el ""
                        | None ->
                            let s =
                              expr_wh (shi ctx 2) (tab (shi ctx 2)) e1 ""
@@ -905,9 +907,9 @@ value expr_expr1 =
                      in
                      let s2 =
                        match_assoc ctx (sprintf "%swith " (tab ctx))
-                         (p, wo, e) k
+                         (p, wo, e) ""
                      in
-                     sprintf "%s\n%s" s1 s2 ])
+                     sprintf "%s\n%s\n%send%s" s1 s2 (tab ctx) k ])
         | _ ->
             horiz_vertic
               (fun () ->
@@ -992,10 +994,10 @@ value expr_expr1 =
         in
         horiz_vertic
           (fun () ->
-             sprintf "%sdo {%s%s%s}%s" b " "
+             sprintf "%s(%s%s%s)%s" b " "
                (hlistl (semi_after expr) expr ctx "" el "") " " k)
           (fun () ->
-             sprintf "%sdo {%s%s%s}%s" b "\n"
+             sprintf "%s(%s%s%s)%s" b "\n"
                (vlistl (semi_after expr) expr (shi ctx 2) (tab (shi ctx 2)) el
                   "")
                ("\n" ^ tab ctx) k)
@@ -1064,8 +1066,10 @@ value expr_expr1 =
 
 value expr_assign =
   extfun Extfun.empty with
-  [ <:expr< $x$ := $y$ >> ->
+  [ <:expr< $x$.val := $y$ >> ->
       fun curr next ctx b k -> operator ctx next expr 2 b ":=" x y k
+  | <:expr< $x$ := $y$ >> ->
+      fun curr next ctx b k -> operator ctx next expr 2 b "<-" x y k
   | z -> fun curr next ctx b k -> next ctx b z k ]
 ;
 
@@ -1225,7 +1229,10 @@ value expr_apply =
 
 value expr_dot =
   extfun Extfun.empty with
-  [ <:expr< $x$ . $y$ >> ->
+  [ <:expr< $x$ . val >> ->
+      fun curr next ctx b k ->
+        curr ctx (sprintf "%s!" b) x k
+  | <:expr< $x$ . $y$ >> ->
       fun curr next ctx b k ->
         horiz_vertic (fun () -> curr ctx (curr ctx b x ".") y k)
           (fun () ->
