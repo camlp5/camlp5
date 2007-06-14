@@ -6,9 +6,9 @@ open Sformat;
 open Pcaml.NewPrinter;
 open Prtools;
 
+value flag_sequ_begin_at_eol = ref True;
 value flag_expand_declare = ref False;
 value flag_horiz_let_in = ref False;
-value flag_sequ_begin_at_eol = ref True;
 
 value flag_where_after_in = ref True;
 value flag_where_after_let_eq = ref True;
@@ -102,10 +102,10 @@ value var_escaped ctx b v k =
 
 value cons_escaped ctx b v k =
   let x =
-    if v = "()" || v = "[]" then v
-    else if v = " True" then "True_"
-    else if v = " False" then "False_"
-    else v
+    match v with
+    [ " True" -> "True_"
+    | " False" -> "False_"
+    | _ -> v ]
   in
   sprintf "%s%s%s" b x k
 ;
@@ -1290,7 +1290,9 @@ value expr_simple =
         else sprintf "%s%s%s" b s k
   | <:expr< $lid:s$ >> ->
       fun curr next ctx b k -> var_escaped ctx b s k
-  | <:expr< $uid:s$ >> | <:expr< `$uid:s$ >> ->
+  | <:expr< $uid:s$ >> ->
+      fun curr next ctx b k -> cons_escaped ctx b s k
+  | <:expr< `$uid:s$ >> ->
       fun curr next ctx b k -> sprintf "%s%s%s" b s k
   | <:expr< $str:s$ >> ->
       fun curr next ctx b k -> sprintf "%s\"%s\"%s" b s k
@@ -1592,11 +1594,11 @@ value str_item_top =
           (fun () ->
              hlist2 value_binding (and_before value_binding) ctx
                (sprintf "%svalue %s" b (if rf then "rec " else "")) pel
-               (None, Some (False, ";")))
+               (None, Some (False, k)))
           (fun () ->
              vlist2 value_binding (and_before value_binding) ctx
                (sprintf "%svalue %s" b (if rf then "rec " else "")) pel
-               (None, Some (True, ";")))
+               (None, Some (True, k)))
   | <:str_item< $exp:e$ >> ->
       fun curr next ctx b k -> expr ctx b e k
   | <:str_item< class type $list:_$ >> | <:str_item< class $list:_$ >> ->
@@ -1979,9 +1981,9 @@ value set_flags s =
           flag_horiz_let_in.val := v;
           flag_sequ_begin_at_eol.val := v;
         }
+      | 'B' | 'b' -> flag_sequ_begin_at_eol.val := is_uppercase s.[i]
       | 'D' | 'd' -> flag_expand_declare.val := is_uppercase s.[i]
       | 'L' | 'l' -> flag_horiz_let_in.val := is_uppercase s.[i]
-      | 'S' | 's' -> flag_sequ_begin_at_eol.val := is_uppercase s.[i]
       | c -> failwith ("bad flag " ^ String.make 1 c) ];
       loop (i + 1)
     }
@@ -1992,9 +1994,9 @@ value default_flag () =
   let flag_off b t f = if b then "" else f in
   let on_off flag =
     sprintf "%s%s%s"
+      (flag flag_sequ_begin_at_eol.val "B" "b")
       (flag flag_expand_declare.val "D" "d")
       (flag flag_horiz_let_in.val "L" "l")
-      (flag flag_sequ_begin_at_eol.val "S" "s")
   in
   let on = on_off flag_on in
   let off = on_off flag_off in
@@ -2056,9 +2058,9 @@ value default_wflag () =
 Pcaml.add_option "-flag" (Arg.String set_flags)
   ("<str> Change pretty printing behaviour according to <flags>:
        A/a enable/disable all flags
+       B/b enable/disable printing sequences beginners at end of lines
        D/d enable/disable allowing expanding 'declare'
        L/l enable/disable allowing printing 'let..in' horizontally
-       S/s enable/disable printing sequences beginners at end of lines
        default setting is \"" ^ default_flag () ^ "\".");
 
 Pcaml.add_option "-wflag" (Arg.String set_wflags)
