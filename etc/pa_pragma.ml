@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.47 2007/06/14 02:48:39 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.48 2007/06/14 03:03:31 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -10,7 +10,8 @@ value string_of_obj_tag x =
   if Obj.is_block (Obj.repr x) then
     let t = Obj.tag (Obj.repr x) in
     "tag = " ^ string_of_int t ^
-    (if t = 0 then " size = " ^ string_of_int (Obj.size (Obj.repr x)) else "")
+      (if t = 0 then " size = " ^ string_of_int (Obj.size (Obj.repr x))
+       else "")
   else "int_val = " ^ string_of_int (Obj.magic x)
 ;
 
@@ -41,7 +42,7 @@ type expr_v 'e =
     expr : 'e;
     patt :
       (env 'e -> MLast.patt -> Type.t -> Obj.t -> option (env 'e)) ->
-         env 'e -> list MLast.patt -> Obj.t -> option (env 'e) }
+        env 'e -> list MLast.patt -> Obj.t -> option (env 'e) }
 and bind_v 'e = { by_let : bool; valu : mutable expr_v 'e }
 and env 'e = list (string * bind_v 'e);
 
@@ -157,9 +158,7 @@ value unbound_cons loc s =
     (Failure (sprintf "Constructor not implemented in pa_pragma: %s" s))
 ;
 
-value error loc s =
-  Stdpp.raise_with_loc loc (Failure s)
-;
+value error loc s = Stdpp.raise_with_loc loc (Failure s);
 
 value inst_vars = ref [];
 value rec inst loc t =
@@ -173,20 +172,20 @@ value rec inst loc t =
       | None ->
           try List.assq s inst_vars.val with
           [ Not_found -> do {
-             let t = ty_var () in
-             inst_vars.val := [(s, t) :: inst_vars.val];
-             t
-           } ] ]
+              let t = ty_var () in
+              inst_vars.val := [(s, t) :: inst_vars.val];
+              t
+            } ] ]
   | <:ctyp< $_$ . $_$ >> | <:ctyp< $lid:_$ >> -> t
-  | t -> not_impl loc "instanciate" t]
+  | t -> not_impl loc "instantiate" t ]
 ;
-value instanciate loc s t = do {
+value instantiate loc s t = do {
   inst_vars.val := [];
   inst loc t
 };
 
 value rec unify loc t1 t2 =
-  match (eval_type loc t1, eval_type loc t2) with 
+  match (eval_type loc t1, eval_type loc t2) with
   [ (<:ctyp< MLast.loc >>, t2) ->
       let t1 = <:ctyp< Token.location >> in
       unify loc t1 t2
@@ -208,8 +207,7 @@ value rec unify loc t1 t2 =
   | (t1, <:ctyp< '$s$ >>) ->
       match s.val with
       [ Some t2 ->
-          if unify loc t1 t2 then do { s.val := Some t1; True }
-          else False
+          if unify loc t1 t2 then do { s.val := Some t1; True } else False
       | None -> do {
           let same =
             match t1 with
@@ -242,8 +240,7 @@ value rec unify loc t1 t2 =
 
 value no_patt loc eval_patt env pl param =
   error loc
-    (sprintf
-       "pattern matching not implemented for that constructor (%s)"
+    (sprintf "pattern matching not implemented for that constructor (%s)"
        (string_of_obj_tag param) ^ "\nplease report")
 ;
 
@@ -1081,7 +1078,7 @@ value rec eval_expr env e =
   | <:expr< $lid:s$ >> ->
       match try Some (List.assoc s env) with [ Not_found -> None ] with
       [ Some {by_let = by_let; valu = v} ->
-          if by_let then {(v) with ctyp = instanciate loc s v.ctyp} else v
+          if by_let then {(v) with ctyp = instantiate loc s v.ctyp} else v
       | None ->
           try Hashtbl.find val_tab s loc with
           [ Not_found -> unbound_var loc s ] ]
