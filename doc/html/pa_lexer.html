@@ -68,19 +68,13 @@ at the following parser:</p>
 <p>The two codes are strictly equivalent. To be sure of that, you can
 use the camlp4 pretty printer kit "pa_r.cmo".</p>
 
+<h2>Syntax</h2>
 
+<p>When loading the syntax extension, the OCaml syntax is extended as
+follows:</p>
 
-
-
-<p>The rest of the paper is structured as follows:
-section&#XA0;<A HREF="#syntax">2</A> gives the description of this new
-syntax, section&#XA0;<A HREF="#semantics">3</A> details the semantics
-and the directions for use. The conclusion and the future work follow,
-in section&#XA0;<A HREF="#conclusion">4</A>.</p>
-
-<H2 CLASS="section"><!--SEC ANCHOR --><A NAME="htoc2">2</A>&#XA0;&#XA0;Syntax</H2><!--SEC END --><p>
-<A NAME="syntax"></A></p><p>When loading the syntax extension, the OCaml syntax is extended as
-follows:</p><PRE CLASS="verbatim">            expression ::= lexer
+<pre>
+            expression ::= lexer
                  lexer ::= "lexer" "[" rules "]"
                  rules ::= rules rule
                          | &lt;nothing&gt;
@@ -108,20 +102,31 @@ follows:</p><PRE CLASS="verbatim">            expression ::= lexer
                  error ::= "?" simple_expression
                          | "!"
                          | &lt;nothing&gt;
-               action ::= expression
-</PRE><p>The identifiers &#X201C;<CODE>STRING</CODE>&#X201D;, &#X201C;<CODE>CHAR</CODE>&#X201D; and
-&#X201C;<CODE>LIDENT</CODE>&#X201D; represent the OCaml tokens corresponding to string,
-character and lowercase identifier (identifier starting with a
-lowercase character).</p><p>The syntax of the entry <CODE>expression</CODE> of the Camlp4 OCaml grammar
-is also extended this way:</p><PRE CLASS="verbatim">            expression ::= "$" "add" STRING
+                action ::= expression
+</pre>
+
+<p>The identifiers "<code>STRING</code>", "<code>CHAR</code>" and
+"<code>LIDENT</code>" represent the OCaml tokens corresponding to
+string, character and lowercase identifier (identifier starting with a
+lowercase character).</p>
+
+<p>The syntax of the entry <code>expression</code> of the Camlp4 OCaml
+grammar is also extended this way:</p>
+
+<pre>
+            expression ::= "$" "add" STRING
                          | "$" "buf"
                          | "$" "empty"
                          | "$" "pos"
-</PRE><p>Remark: in this syntax extension, the identifiers &#X201C;add&#X201D;, &#X201C;buf&#X201D;,
-&#X201C;empty&#X201D; and &#X201C;pos&#X201D; are not recorded as new keywords, they do not
-become reserved words. On the contrary, the identifier
-&#X201C;<CODE>lexer</CODE>&#X201D;, which introduces the syntax, is a new keyword and
-cannot be used as variable identifier.</p><!--TOC section Semantics-->
+</pre>
+
+<p>Remark: in the syntax extension above, the identifiers "add",
+"buf", "empty" and "pos" are not keywords (they are not reserved
+words) but just identifiers. On the contrary, the identifier
+<code>lexer</code>, which introduces the syntax, is a new keyword and
+cannot be used as variable identifier.</p>
+
+<!--TOC section Semantics-->
 <H2 CLASS="section"><!--SEC ANCHOR --><A NAME="htoc3">3</A>&#XA0;&#XA0;Semantics</H2><!--SEC END --><p>
 <A NAME="semantics"></A></p><p>A lexer defined in the syntax above is a shortcut version of a parser
 applied to the specific case of streams of characters. It could be
