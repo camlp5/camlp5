@@ -121,6 +121,7 @@ value rec mod_ident ctx b sl k =
 ;
 
 value semi_after elem ctx b x k = elem ctx b x (sprintf ";%s" k);
+value semi_semi_after elem ctx b x k = elem ctx b x (sprintf ";;%s" k);
 value comma_after elem ctx b x k = elem ctx b x (sprintf ",%s" k);
 value star_after elem ctx b x k = elem ctx b x (sprintf " *%s" k);
 value op_after elem ctx b (x, op) k = elem ctx b x (sprintf "%s%s" op k);
@@ -903,7 +904,7 @@ value expr_expr1 =
                            let s =
                              expr_wh (shi ctx 2) (tab (shi ctx 2)) e1 ""
                            in
-                           sprintf "%s%s\n%s" b op s ]
+                           sprintf "%sbegin %s\n%s" b op s ]
                      in
                      let s2 =
                        match_assoc ctx (sprintf "%swith " (tab ctx))
@@ -913,13 +914,14 @@ value expr_expr1 =
         | _ ->
             horiz_vertic
               (fun () ->
-                 sprintf "%s%s %s with %s%s" b op (expr_wh ctx "" e1 "")
-                   (match_assoc_list ctx "" pwel "") k)
+                 sprintf "%sbegin %s %s with %s end%s" b op
+                   (expr_wh ctx "" e1 "") (match_assoc_list ctx "" pwel "") k)
               (fun () ->
                  let s1 =
                    horiz_vertic
                      (fun () ->
-                        sprintf "%s%s %s with" b op (expr_wh ctx "" e1 ""))
+                        sprintf "%sbegin %s %s with" b op
+                          (expr_wh ctx "" e1 ""))
                      (fun () ->
                         let s =
                           match sequencify e1 with
@@ -930,12 +932,12 @@ value expr_expr1 =
                               let s =
                                 expr_wh (shi ctx 2) (tab (shi ctx 2)) e1 ""
                               in
-                              sprintf "%s%s\n%s" b op s ]
+                              sprintf "%sbegin %s\n%s" b op s ]
                         in
                         sprintf "%s\n%swith" s (tab ctx))
                  in
-                 let s2 = match_assoc_list ctx (tab ctx) pwel k in
-                 sprintf "%s\n%s" s1 s2) ]
+                 let s2 = match_assoc_list ctx (tab ctx) pwel "" in
+                 sprintf "%s\n%s\n%send%s" s1 s2 (tab ctx) k) ]
   | <:expr< let $opt:rf$ $list:pel$ in $e$ >> as ge ->
       fun curr next ctx b k ->
         let expr_wh = if flag_where_after_in.val then expr_wh else expr in
@@ -1383,7 +1385,7 @@ value patt_apply =
             | _ -> None ]
         in
         match cons_args_opt with
-        [ Some (s, ([_; _ :: _] as al)) ->
+        [ Some (s, ([_; _ :: _] as al)) when s <> "::" ->
             horiz_vertic
               (fun () ->
                  sprintf "%s%s (%s)%s" b s
@@ -1440,7 +1442,7 @@ value patt_simple =
           [ Some y ->
               horiz_vertic
                 (fun () ->
-                   sprintf "%s%s :: %s]%s" b (patt ctx "" x "")
+                   sprintf "%s%s :: %s)%s" b (patt ctx "" x "")
                      (patt ctx "" y "") k)
                 (fun () ->
                    let s1 = patt ctx b x " ::" in
@@ -1448,9 +1450,9 @@ value patt_simple =
                      patt (shi ctx 2) (tab (shi ctx 2)) y (sprintf "]%s" k)
                    in
                    sprintf "%s\n%s" s1 s2)
-          | None -> patt ctx b x (sprintf "]%s" k) ]
+          | None -> patt ctx b x (sprintf ")%s" k) ]
         in
-        plistl patt patt2 0 (shi ctx 1) (sprintf "%s[" b) xl k
+        plistl patt patt2 0 (shi ctx 1) (sprintf "%s(" b) xl k
   | <:patt< ($p$ : $t$) >> ->
       fun curr next ctx b k ->
         horiz_vertic
@@ -1747,6 +1749,10 @@ value module_expr_top =
              sprintf "%s\n%s" s1 s2)
   | <:module_expr< struct $list:sil$ end >> ->
       fun curr next ctx b k ->
+        let str_item_sep =
+          if flag_semi_semi.val then semi_semi_after str_item
+          else str_item
+        in
         horiz_vertic
           (fun () ->
              if loop 0 where rec loop i =
@@ -1759,12 +1765,10 @@ value module_expr_top =
                sprintf "\n"
              else
                sprintf "%sstruct%s%s%send%s" b " "
-                 (hlist (semi_after str_item) ctx "" sil "")
-                 " " k)
+                 (hlist str_item_sep ctx "" sil "") " " k)
           (fun () ->
              sprintf "%sstruct%s%s%send%s" b "\n"
-               (vlist (semi_after str_item) (shi ctx 2) (tab (shi ctx 2)) sil
-                  "")
+               (vlist str_item_sep (shi ctx 2) (tab (shi ctx 2)) sil "")
                ("\n" ^ tab ctx) k)
   | z ->
       fun curr next ctx b k -> next ctx b z k ]
