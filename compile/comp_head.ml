@@ -7,7 +7,7 @@ module P =
     value list0 symb =
       let rec loop al =
         parser
-        [ [: a = symb; s :] -> loop [a :: al] s
+        [ [: a = symb; a = loop [a :: al] ! :] -> a
         | [: :] -> al ]
       in
       parser [: a = loop [] :] -> List.rev a
@@ -15,32 +15,32 @@ module P =
     value list0sep symb sep =
       let rec kont al =
         parser
-        [ [: v = sep; a = symb; s :] -> kont [a :: al] s
+        [ [: v = sep; a = symb; a = kont [a :: al] ! :] -> a
         | [: :] -> al ]
       in
       parser
-      [ [: a = symb; s :] -> List.rev (kont [a] s)
+      [ [: a = symb; a = kont [a] ! :] -> List.rev a
       | [: :] -> [] ]
     ;
     value list1 symb =
       let rec loop al =
         parser
-        [ [: a = symb; s :] -> loop [a :: al] s
+        [ [: a = symb; a = loop [a :: al] ! :] -> a
         | [: :] -> al ]
       in
-      parser [: a = symb; s :] -> List.rev (loop [a] s)
+      parser [: a = symb; a = loop [a] ! :] -> List.rev a
     ;
     value list1sep symb sep =
       let rec kont al =
         parser
-        [ [: v = sep; a = symb; s :] -> kont [a :: al] s
+        [ [: v = sep; a = symb; a = kont [a :: al] ! :] -> a
         | [: :] -> al ]
       in
-      parser [: a = symb; s :] -> List.rev (kont [a] s)
+      parser [: a = symb; a = kont [a] ! :] -> List.rev a
     ;
     value option f =
       parser
-      [ [: x = f :] -> Some x
+      [ [: a = f :] -> Some a
       | [: :] -> None ]
     ;
     value token (p_con, p_prm) =
@@ -49,18 +49,13 @@ module P =
     ;
     value orzero f f0 =
       parser
-      [ [: x = f :] -> x
-      | [: x = f0 :] ->
-(*
-let (loc1, loc2) = Grammar.loc_of_token_interval bp ep in
-let _ = do { Printf.eprintf "recovered or_zero at loc (%d, %d)\n" loc1 loc2; flush stderr } in
-*)
-           x ]
+      [ [: a = f :] -> a
+      | [: a = f0 :] -> a ]
     ;
     value error entry prev_symb symb =
       symb ^ " expected" ^
-      (if prev_symb = "" then "" else " after " ^ prev_symb) ^
-      " (in [" ^ entry ^ "])"
+        (if prev_symb = "" then "" else " after " ^ prev_symb) ^ " (in [" ^
+        entry ^ "])"
     ;
     value lexer = Plexer.gmake ();
   end

@@ -1,5 +1,5 @@
 (* camlp4r *)
-(* $Id: compile.ml,v 1.5 2006/10/25 18:54:48 deraugla Exp $ *)
+(* $Id: compile.ml,v 1.6 2007/06/14 11:49:39 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -228,7 +228,8 @@ and parse_symbol entry nlevn s rkont fkont ending_act =
       let kont = <:expr< raise Stream.Failure >> in
       let act_kont _ act = gen_let_loc loc (final_action act) in
       let e = parse_tree phony_entry 0 0 (tree, True) act_kont kont in
-      parse_standard_symbol <:expr< fun strm__ -> $e$ >> rkont fkont ending_act
+      parse_standard_symbol <:expr< fun strm__ -> $e$ >> rkont fkont
+        ending_act
   | Snterm e ->
       let n =
         match e.edesc with
@@ -247,11 +248,9 @@ and parse_symbol entry nlevn s rkont fkont ending_act =
       parse_standard_symbol <:expr< $lid:n$ >> rkont fkont ending_act
   | Stoken tok ->
       let _ =
-        do {
-          if fst tok = "" && not (List.mem (snd tok) keywords.val) then
-            keywords.val := [snd tok :: keywords.val]
-          else ()
-        }
+        if fst tok = "" && not (List.mem (snd tok) keywords.val) then
+          keywords.val := [snd tok :: keywords.val]
+        else ()
       in
       let p =
         let patt = nth_patt_of_act ending_act in
@@ -288,11 +287,9 @@ and symbol_parser entry nlevn =
         <:expr< P.orzero $lid:n$ $lid:n0$ >>
   | Stoken tok ->
       let _ =
-        do {
-          if fst tok = "" && not (List.mem (snd tok) keywords.val) then
-            keywords.val := [snd tok :: keywords.val]
-          else ()
-        }
+        if fst tok = "" && not (List.mem (snd tok) keywords.val) then
+          keywords.val := [snd tok :: keywords.val]
+        else ()
       in
       let p_con = String.escaped (fst tok) in
       let p_prm = String.escaped (snd tok) in
@@ -319,9 +316,9 @@ value rec start_parser_of_levels entry clevn levs =
       match lev.lprefix with
       [ DeadEnd ->
           let ncont =
-             if not strict_parsing.val && clevn = 0 then
-               entry.ename ^ "_gen_cont"
-             else entry.ename ^ "_" ^ string_of_int clevn ^ "_cont"
+            if not strict_parsing.val && clevn = 0 then
+              entry.ename ^ "_gen_cont"
+            else entry.ename ^ "_" ^ string_of_int clevn ^ "_cont"
           in
           let curr =
             <:expr< let a = $lid:next$ strm__ in $lid:ncont$ bp a strm__ >>
@@ -373,8 +370,7 @@ value rec continue_parser_of_levels entry clevn levs =
   | [lev :: levs] ->
       let pel = continue_parser_of_levels entry (succ clevn) levs in
       match lev.lsuffix with
-      [ DeadEnd ->
-          [None :: pel]
+      [ DeadEnd -> [None :: pel]
       | tree ->
           let alevn =
             match lev.assoc with
@@ -513,9 +509,7 @@ and scan_entry list entry =
     | Dparser _ -> list ]
 ;
 
-value all_entries_in_graph list entry =
-  List.rev (scan_entry list entry)
-;
+value all_entries_in_graph list entry = List.rev (scan_entry list entry);
 
 (* main *)
 
@@ -534,7 +528,7 @@ value rec expr_list =
 ;
 
 value compile () =
-  let _ = do { keywords.val := []; } in
+  let _ = keywords.val := [] in
   let list = List.fold_left all_entries_in_graph [] entries.val in
   let list =
     List.filter (fun e -> List.memq e list) entries.val @
