@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_op.ml,v 1.5 2007/01/19 14:09:58 deraugla Exp $ *)
+(* $Id: pa_op.ml,v 1.6 2007/06/14 02:48:39 deraugla Exp $ *)
 
 open Exparser;
 open Pcaml;
@@ -22,7 +22,7 @@ EXTEND
   expr: LEVEL "expr1"
     [ [ "parser"; po = OPT ipatt; OPT "|"; pcl = LIST1 parser_case SEP "|" ->
           <:expr< $cparser loc po pcl$ >>
-      | "match"; e = expr; "with"; "parser"; po = OPT ipatt; OPT "|";
+      | "match"; e = SELF; "with"; "parser"; po = OPT ipatt; OPT "|";
         pcl = LIST1 parser_case SEP "|" ->
           <:expr< $cparser_match loc e po pcl$ >> ] ]
   ;
@@ -40,14 +40,13 @@ EXTEND
   stream_patt_comp_err_list:
     [ [ spc = stream_patt_comp_err -> [spc]
       | spc = stream_patt_comp_err; ";" -> [spc]
-      | spc = stream_patt_comp_err; ";"; sp = stream_patt_comp_err_list ->
-          [spc :: sp] ] ]
+      | spc = stream_patt_comp_err; ";"; sp = SELF -> [spc :: sp] ] ]
   ;
   stream_patt_comp:
-    [ [ "'"; p = patt; eo = OPT [ "when"; e = (expr LEVEL "expr1") -> e ] ->
-         SpTrm loc p eo
-     | p = patt; "="; e = (expr LEVEL "expr1") -> SpNtr loc p e
-     | p = patt -> SpStr loc p ] ]
+    [ [ "'"; p = patt; eo = OPT [ "when"; e = expr LEVEL "expr1" -> e ] ->
+          SpTrm loc p eo
+      | p = patt; "="; e = expr LEVEL "expr1" -> SpNtr loc p e
+      | p = patt -> SpStr loc p ] ]
   ;
   stream_patt_comp_err:
     [ [ spc = stream_patt_comp; "??"; e = expr LEVEL "expr1" ->
@@ -68,7 +67,7 @@ EXTEND
           <:expr< $cstream loc sel$ >> ] ]
   ;
   stream_expr_comp_list:
-    [ [ se = stream_expr_comp; ";"; sel = stream_expr_comp_list -> [se :: sel]
+    [ [ se = stream_expr_comp; ";"; sel = SELF -> [se :: sel]
       | se = stream_expr_comp; ";" -> [se]
       | se = stream_expr_comp -> [se] ] ]
   ;

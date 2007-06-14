@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.46 2007/03/19 04:59:55 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.47 2007/06/14 02:48:39 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -649,6 +649,11 @@ value val_tab = do {
                option MLast.expr -> MLast.expr >>;
          expr = Obj.repr (fun loc lel eo -> MLast.ExRec loc lel eo);
          patt = no_patt loc});
+     ("MLast.ExSeq",
+      fun loc ->
+        {ctyp = <:ctyp< MLast.loc -> list MLast.expr -> MLast.expr >>;
+         expr = Obj.repr (fun loc el -> MLast.ExSeq loc el);
+         patt = no_patt loc});
      ("MLast.ExStr",
       fun loc ->
         {ctyp = <:ctyp< MLast.loc -> string -> MLast.expr >>;
@@ -679,6 +684,13 @@ value val_tab = do {
       fun loc ->
         {ctyp = <:ctyp< MLast.loc -> string -> MLast.expr >>;
          expr = Obj.repr (fun loc s -> MLast.ExUid loc s);
+         patt = no_patt loc});
+     ("MLast.ExWhi",
+      fun loc ->
+        {ctyp =
+           <:ctyp<
+             MLast.loc -> MLast.expr -> list MLast.expr -> MLast.expr >>;
+         expr = Obj.repr (fun loc e el -> MLast.ExWhi loc e el);
          patt = no_patt loc});
      ("MLast.MeStr",
       fun loc ->

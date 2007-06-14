@@ -1,6 +1,12 @@
 Camlp4s Version 4.02:
 ---------------------
 
+* [14 Jun 07] Added html documentation for:
+  - the module Sformat (general pretty print),
+  - the "extensible functions" (module Extfun + pa_extfun.cmo),
+  - the new pretty print in Camlp4 (using Sformat and Extfun)
+  - the syntax extension for lexers (pa_lexer.cmo),
+  - the syntax extension for the directive #pragma (pa_pragma.cmo).
 * [31 May 07] Renamed "row_field" into "poly_variant".
 * [27 May 07] Simplified interface of Sformat. The first parameter of
   the function horiz_vertic is now a function of type "unit -> 'a".
