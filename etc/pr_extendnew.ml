@@ -37,7 +37,8 @@ type symbol =
   | Stoken of alt Token.pattern MLast.expr
   | Srules of list (list (option MLast.patt * symbol) * option MLast.expr) ]
 and alt 'a 'b =
-  [ Left of 'a | Right of 'b ]
+  [ Left of 'a
+  | Right of 'b ]
 ;
 
 value rec get_globals =
@@ -52,9 +53,8 @@ value rec get_globals =
 
 value rec get_locals =
   fun
-  [ [(<:patt< $_$ >>,
-      <:expr< (grammar_entry_create $_$ : $_$) >>) :: pel] ->
-        get_locals pel
+  [ [(<:patt< $_$ >>, <:expr< (grammar_entry_create $_$ : $_$) >>) :: pel] ->
+      get_locals pel
   | [] -> ()
   | _ -> raise Not_found ]
 ;
@@ -97,7 +97,8 @@ value rec unaction =
       in
       ([], ao)
   | <:expr< fun ($p$ : $_$) -> $e$ >> ->
-      let (pl, a) = unaction e in ([p :: pl], a)
+      let (pl, a) = unaction e in
+      ([p :: pl], a)
   | <:expr< fun _ -> $e$ >> ->
       let (pl, a) = unaction e in
       (let loc = Stdpp.dummy_loc in [<:patt< _ >> :: pl], a)
@@ -197,8 +198,7 @@ value unextend_body e =
   let ((_, globals), e) =
     match e with
     [ <:expr< let $list:pel$ in $e1$ >> ->
-        try (get_globals pel, e1) with
-        [ Not_found -> (("", []), e) ]
+        try (get_globals pel, e1) with [ Not_found -> (("", []), e) ]
     | _ -> (("", []), e) ]
   in
   let e =
