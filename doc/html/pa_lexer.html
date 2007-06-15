@@ -126,20 +126,31 @@ words) but just identifiers. On the contrary, the identifier
 <code>lexer</code>, which introduces the syntax, is a new keyword and
 cannot be used as variable identifier.</p>
 
-<!--TOC section Semantics-->
-<H2 CLASS="section"><!--SEC ANCHOR --><A NAME="htoc3">3</A>&#XA0;&#XA0;Semantics</H2><!--SEC END --><p>
-<A NAME="semantics"></A></p><p>A lexer defined in the syntax above is a shortcut version of a parser
-applied to the specific case of streams of characters. It could be
-written with a normal parser. The proposed syntax is much shorter,
-easier to use and to understand, and it silently takes care of the
-lexing buffer for the programmer. The lexing buffers are data
-structures, which are passed as parameters to called lexers and
-returned by them.</p><p>Lexers are of the type:</p><PRE CLASS="verbatim">      B.t -&gt; Stream.t char -&gt; a
-</PRE><p>where &#X201C;<CODE>a</CODE>&#X201D; is a type which depends on what the lexer
+<h2>Semantics</h2>
+
+<p>A lexer defined in the syntax above is a shortcut version of a
+parser applied to the specific case of streams of characters. It could
+be written with a normal parser. The proposed syntax is much shorter,
+easier to use and to understand, and silently takes care of the lexing
+buffer for the programmer. The lexing buffers are data structures,
+which are passed as parameters to called lexers and returned by
+them.</p>
+
+<p>Lexers are of the type:</p>
+
+<pre>
+      B.t -&gt; Stream.t char -&gt; t
+</pre>
+
+<p>where "<code>t</code>" is a type which depends on what the lexer
 returns. If there is no semantic action (since it it optional), this
-type is &#X201C;<CODE>B.t</CODE>&#X201D;.</p><p>&#X201C;<CODE>B</CODE>&#X201D; is a module which must be defined by the user. It has to
-contain the lexing buffer type &#X201C;<CODE>t</CODE>&#X201D; and some variables and
-functions:</p><UL CLASS="itemize"><LI CLASS="li-itemize">
+type is "<code>B.t</code>".</p>
+
+<p>"<code>B</code>" is a module which must be defined by the user. It
+has to contain the lexing buffer type "<code>t</code>" and some
+variables and functions:</p>
+
+<UL CLASS="itemize"><LI CLASS="li-itemize">
 <CODE>empty</CODE>: the empty lexing buffer
 </LI><LI CLASS="li-itemize"><CODE>add</CODE>: the way to add a character to a lexing buffer
 </LI><LI CLASS="li-itemize"><CODE>get</CODE>: the way to get a string from the lexing buffer
