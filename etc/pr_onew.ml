@@ -704,12 +704,26 @@ value ctyp_apply =
   extfun Extfun.empty with
   [ <:ctyp< $_$ $_$ >> as z ->
       fun curr next ctx b k ->
-        let unfold =
-          fun
-          [ <:ctyp< $x$ $y$ >> -> Some (x, "", y)
-          | _ -> None ]
+        let (t, tl) =
+          loop [] z where rec loop args =
+            fun
+            [ <:ctyp< $x$ $y$ >> -> loop [y :: args] x
+            | t -> (t, args) ]
         in
-        left_operator ctx 2 unfold next b z k
+        match tl with
+        [ [t2] ->
+            horiz_vertic
+              (fun () ->
+                 sprintf "%s%s %s%s" b (curr ctx "" t2 "")
+                   (next ctx "" t "") k)
+              (fun () -> not_impl "ctyp_apply vertic" ctx b t k)
+        | _ ->
+            horiz_vertic
+              (fun () ->
+                 sprintf "%s(%s) %s%s" b
+                   (hlistl (comma_after ctyp) ctyp ctx "" tl "")
+                      (curr ctx "" t "") k)
+              (fun () -> not_impl "ctyp_apply vertic" ctx b t k) ]
   | z -> fun curr next ctx b k -> next ctx b z k ]
 ;
 
@@ -1283,15 +1297,15 @@ value expr_simple =
           [ Some y ->
               horiz_vertic
                 (fun () ->
-                   sprintf "%s%s :: %s]%s" b (expr ctx "" x "")
+                   sprintf "%s%s :: %s)%s" b (expr ctx "" x "")
                      (expr ctx "" y "") k)
                 (fun () ->
                    let s1 = expr ctx b x " ::" in
-                   let s2 = expr ctx (tab ctx) y (sprintf "]%s" k) in
+                   let s2 = expr ctx (tab ctx) y (sprintf ")%s" k) in
                    sprintf "%s\n%s" s1 s2)
-          | None -> expr ctx b x (sprintf "]%s" k) ]
+          | None -> expr ctx b x (sprintf ")%s" k) ]
         in
-        plistl expr expr2 0 (shi ctx 1) (sprintf "%s[" b) xl k
+        plistl expr expr2 0 (shi ctx 1) (sprintf "%s(" b) xl k
   | <:expr< ($e$ : $t$) >> ->
       fun curr next ctx b k ->
         horiz_vertic
@@ -1377,28 +1391,27 @@ value patt_apply =
   extfun Extfun.empty with
   [ <:patt< $_$ $_$ >> as z ->
       fun curr next ctx b k ->
-        let cons_args_opt =
-          loop [] z where rec loop args =
+        let p_pl_opt =
+          loop [] z where rec loop pl =
             fun
-            [ <:patt< $x$ $y$ >> -> loop [y :: args] x
-            | <:patt< $uid:s$ >> -> Some (s, args)
-            | _ -> None ]
+            [ <:patt< $x$ $y$ >> -> loop [y :: pl] x
+            | <:patt< $uid:"::"$ >> -> None
+            | p -> Some (p, pl) ]
         in
-        match cons_args_opt with
-        [ Some (s, ([_; _ :: _] as al)) when s <> "::" ->
+        match p_pl_opt with
+        [ None -> next ctx b z k
+        | Some (p1, [p2]) ->
             horiz_vertic
               (fun () ->
-                 sprintf "%s%s (%s)%s" b s
-                   (hlistl (comma_after patt) patt ctx "" al "") k)
-              (fun () -> not_impl "cons patt vertic" ctx b s k)
-        | _ ->
-            let unfold =
-              fun
-              [ <:patt< [ $_$ :: $_$ ] >> -> None
-              | <:patt< $x$ $y$ >> -> Some (x, "", y)
-              | p -> None ]
-            in
-            left_operator ctx 2 unfold next b z k ]
+                 sprintf "%s%s %s%s" b (curr ctx "" p1 "")
+                   (next ctx "" p2 "") k)
+              (fun () -> not_impl "patt_apply vertic" ctx b p1 k)
+        | Some (p, pl) ->
+            horiz_vertic
+              (fun () ->
+                 sprintf "%s%s (%s)%s" b (next ctx "" p "")
+                   (hlistl (comma_after patt) patt ctx "" pl "") k)
+              (fun () -> not_impl "cons patt vertic" ctx b p k) ]
   | z -> fun curr next ctx b k -> next ctx b z k ]
 ;
 
