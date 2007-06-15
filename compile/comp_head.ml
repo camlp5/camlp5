@@ -54,8 +54,8 @@ module P =
     ;
     value error entry prev_symb symb =
       symb ^ " expected" ^
-        (if prev_symb = "" then "" else " after " ^ prev_symb) ^ " (in [" ^
-        entry ^ "])"
+      (if prev_symb = "" then "" else " after " ^ prev_symb) ^ " (in [" ^
+      entry ^ "])"
     ;
     value lexer = Plexer.gmake ();
   end

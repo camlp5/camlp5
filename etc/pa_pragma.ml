@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.48 2007/06/14 03:03:31 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.49 2007/06/15 08:26:04 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -10,8 +10,7 @@ value string_of_obj_tag x =
   if Obj.is_block (Obj.repr x) then
     let t = Obj.tag (Obj.repr x) in
     "tag = " ^ string_of_int t ^
-      (if t = 0 then " size = " ^ string_of_int (Obj.size (Obj.repr x))
-       else "")
+    (if t = 0 then " size = " ^ string_of_int (Obj.size (Obj.repr x)) else "")
   else "int_val = " ^ string_of_int (Obj.magic x)
 ;
 
@@ -140,8 +139,7 @@ value bad_type loc expected_t found_t =
   let s2 = str_of_ty loc found_t in
   let s =
     if String.length s1 > 40 || String.length s2 > 40 then
-      Printf.sprintf "\nType expected:\n  %s\nType found:\n  %s\n"
-        s1 s2
+      Printf.sprintf "\nType expected:\n  %s\nType found:\n  %s\n" s1 s2
     else
       Printf.sprintf "\n  type expected: %s\n     type found: %s\n" s1 s2
   in
@@ -179,10 +177,8 @@ value rec inst loc t =
   | <:ctyp< $_$ . $_$ >> | <:ctyp< $lid:_$ >> -> t
   | t -> not_impl loc "instantiate" t ]
 ;
-value instantiate loc s t = do {
-  inst_vars.val := [];
-  inst loc t
-};
+
+value instantiate loc s t = do { inst_vars.val := []; inst loc t };
 
 value rec unify loc t1 t2 =
   match (eval_type loc t1, eval_type loc t2) with
@@ -241,7 +237,8 @@ value rec unify loc t1 t2 =
 value no_patt loc eval_patt env pl param =
   error loc
     (sprintf "pattern matching not implemented for that constructor (%s)"
-       (string_of_obj_tag param) ^ "\nplease report")
+       (string_of_obj_tag param) ^
+     "\nplease report")
 ;
 
 value std_patt c eval_patt env pl param =
@@ -369,8 +366,8 @@ value val_tab = do {
          patt eval_patt env pl param =
            match Obj.magic param with
            [ Exparser.SpTrm loc p eo ->
-              serial eval_patt env pl [t1; t2; t3]
-                [Obj.repr loc; Obj.repr p; Obj.repr eo]
+               serial eval_patt env pl [t1; t2; t3]
+                 [Obj.repr loc; Obj.repr p; Obj.repr eo]
            | _ -> None ]});
      ("expr",
       fun loc ->
@@ -594,8 +591,8 @@ value val_tab = do {
          patt eval_patt env pl param =
            match Obj.magic param with
            [ MLast.ExApp loc e1 e2 ->
-              serial eval_patt env pl [t1; t2; t3]
-                [Obj.repr loc; Obj.repr e1; Obj.repr e2]
+               serial eval_patt env pl [t1; t2; t3]
+                 [Obj.repr loc; Obj.repr e1; Obj.repr e2]
            | _ -> None ]});
      ("MLast.ExChr",
       fun loc ->
@@ -636,7 +633,7 @@ value val_tab = do {
          patt eval_patt env pl param =
            match Obj.magic param with
            [ MLast.ExLid loc s ->
-              serial eval_patt env pl [t1; t2] [Obj.repr loc; Obj.repr s]
+               serial eval_patt env pl [t1; t2] [Obj.repr loc; Obj.repr s]
            | _ -> None ]});
      ("MLast.ExRec",
       fun loc ->
@@ -1235,8 +1232,7 @@ and eval_patt env p tp param =
               [ <:ctyp< $_$ -> $t$ >> -> loop (len - 1) t
               | _ ->
                   error loc
-                    (sprintf
-                       "Too many arguments (%d) to constructor %s\n\
+                    (sprintf "Too many arguments (%d) to constructor %s\n\
                         It expects %d argument(s)."
                        (List.length pl) s (List.length pl - len)) ]
       | _ -> unbound_cons loc s ]

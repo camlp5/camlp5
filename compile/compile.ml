@@ -1,5 +1,5 @@
 (* camlp4r *)
-(* $Id: compile.ml,v 1.6 2007/06/14 11:49:39 deraugla Exp $ *)
+(* $Id: compile.ml,v 1.7 2007/06/15 08:26:04 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -538,10 +538,9 @@ value compile () =
     let set = ref [] in
     List.fold_right
       (fun entry list ->
-         if List.mem entry.ename set.val then
-           list
+         if List.mem entry.ename set.val then list
          else do { set.val := [entry.ename :: set.val]; [entry :: list] })
-        list []
+      list []
   in
   let pell = List.map compile_entry list in
   let pel = List.flatten pell in
@@ -560,5 +559,4 @@ value compile () =
 Pcaml.parse_implem.val := fun _ -> compile ();
 
 Pcaml.add_option "-strict_parsing" (Arg.Set strict_parsing)
-  "Don't generate error recovering by trying continuations or first levels"
-;
+  "Don't generate error recovering by trying continuations or first levels";
