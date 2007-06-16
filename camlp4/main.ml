@@ -168,7 +168,7 @@ value initial_spec_list =
     "More verbose in parsing errors.");
    ("-loc", Arg.String (fun x -> Stdpp.loc_name.val := x),
     "<name>   Name of the location variable (default: " ^ Stdpp.loc_name.val ^
-      ")");
+    ")");
    ("-QD", Arg.String (fun x -> Pcaml.quotation_dump_file.val := Some x),
     "<file> Dump quotation expander result in case of syntax error.");
    ("-o", Arg.String (fun x -> Pcaml.output_file.val := Some x),

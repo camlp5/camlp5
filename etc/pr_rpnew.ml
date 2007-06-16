@@ -333,9 +333,15 @@ value parser_case ctx b (sp, po, e) k =
            sprintf "%s[: :]%s -> %s%s" b (ident_option po) (expr ctx "" e "")
              k)
         (fun () ->
-           let s1 = sprintf "%s[: :]%s ->" b (ident_option po) in
-           let s2 = expr (shi ctx 2) (tab (shi ctx 2)) e k in
-           sprintf "%s\n%s" s1 s2)
+           match flatten_sequence e with
+           [ Some el ->
+               sequence_box ctx
+                 (fun k -> sprintf "%s[: :]%s ->%s" b (ident_option po) k)
+                 expr el k
+           | None ->
+               let s1 = sprintf "%s[: :]%s ->" b (ident_option po) in
+               let s2 = expr (shi ctx 2) (tab (shi ctx 2)) e k in
+               sprintf "%s\n%s" s1 s2 ])
   | _ ->
       horiz_vertic
         (fun () ->
