@@ -222,13 +222,13 @@ pr_expr_fun_args.val :=
   | z -> ([], z) ]
 ;
 
-(* Pretty printing improvement (optional):
+(* For pretty printing improvement (optional):
    - if e is a "sequence" or a "let..in sequence", get "the list of its
      expressions", which is flattened (merging sequences inside sequences
      and changing "let..in do {e1; .. en}" into "do {let..in e1; .. en}",
      and return Some "the resulting expression list".
    - otherwise return None *)
-value sequencify e =
+value flatten_sequence e =
   let rec get_sequence =
     fun
     [ <:expr< do { $list:el$ } >> -> Some el
@@ -247,20 +247,22 @@ value sequencify e =
         | None | _ -> None ]
     | _ -> None ]
   in
-  if not flag_sequ_begin_at_eol.val then None
-  else
-    match get_sequence e with
-    [ Some el ->
-        let rec list_of_sequence =
-          fun
-          [ [e :: el] ->
-              match get_sequence e with
-              [ Some el1 -> list_of_sequence (el1 @ el)
-              | None -> [e :: list_of_sequence el] ]
-          | [] -> [] ]
-        in
-        Some (list_of_sequence el)
-    | None -> None ]
+  match get_sequence e with
+  [ Some el ->
+      let rec list_of_sequence =
+        fun
+        [ [e :: el] ->
+            match get_sequence e with
+            [ Some el1 -> list_of_sequence (el1 @ el)
+            | None -> [e :: list_of_sequence el] ]
+        | [] -> [] ]
+      in
+      Some (list_of_sequence el)
+  | None -> None ]
+;
+
+value sequencify e =
+  if not flag_sequ_begin_at_eol.val then None else flatten_sequence e
 ;
 
 (* Pretty printing improvement (optional):
@@ -961,7 +963,7 @@ value expr_top =
                let s2 = expr ctx "" e k in
                sprintf "%s %s" s1 s2)
           (fun () ->
-             match sequencify ge with
+             match flatten_sequence ge with
              [ Some el ->
                  let loc = MLast.loc_of_expr ge in
                  curr ctx b <:expr< do { $list:el$ } >> k
@@ -998,7 +1000,7 @@ value expr_top =
   | <:expr< do { $list:el$ } >> as ge ->
       fun curr next ctx b k ->
         let el =
-          match sequencify ge with
+          match flatten_sequence ge with
           [ Some el -> el
           | None -> el ]
         in
