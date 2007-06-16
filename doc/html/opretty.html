@@ -1,0 +1,138 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
+ "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+<head>
+  <!-- $Id$ -->
+  <!-- Copyright (c) 2007 INRIA -->
+  <title>Pretty Printing OCaml Programs</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <link rel="shortcut icon" href="c4logo.png" />
+  <style type="text/css"><!--
+    body { counter-reset: h2cnt }
+    h1 { text-align: center }
+    h2:before { content: counter(h2cnt) " - "; counter-increment: h2cnt }
+    h2 { border: 1px solid; text-align: center; background: #9bf }
+    h2 { counter-reset: h3cnt }
+    h3:before {
+      content: counter(h2cnt) "." counter(h3cnt) " - ";
+      counter-increment: h3cnt
+    }
+    p { text-align: justify; margin: 1em 1cm }
+    li { margin-left: 1cm }
+    pre {
+      border-left: silver solid 3px; margin-bottom: 1.5em; margin-left: 2cm;
+      padding-left: 1em; padding-right: 0.5em; line-height: 1.2
+    }
+    tt { font-weight: bold }
+    .value { background: #0f0 }
+  --></style>
+</head>
+<body>
+
+<h1>Camlp4s - Pretty Printing OCaml Programs</h1>
+
+<p>The extensible pretty printing of OCaml programs in Camlp4s use the
+library modules <a href="pretty.html">Pretty</a> (formatting output)
+and <a href="extfun.html">Extfun</a> (extensible functions) and needs
+the syntax extension <tt>pa_extfun.cmo</tt> to be compiled.</p>
+
+<p>The pretty printing operators of the OCaml syntax trees are defined
+in the module <tt>Pcaml.Printer</tt>. They are:</p>
+
+<ul>
+<li>pr_expr : expressions</li>
+<li>pr_patt : patterns</li>
+<li>pr_ctyp : types </li>
+<li>pr_str_item : structure items</li>
+<li>pr_sig_item : signature items</li>
+<li>pr_module_expr : module expressions</li>
+<li>pr_module_type : module types</li>
+</ul>
+
+<p>All are of a specific type, <tt>Pcaml.Printer.printer_t</tt> which
+contains the mutable list of the mutable printing "levels". To extend
+a specific level, the function <tt>Pcaml.Printer.find_pr_level</tt>
+allows to find the desired level by its name, and the extension can be
+done using the "<a href="extfun.html">extend</a>" statement.</p>
+
+<p>All extensible functions are defined by pattern matching, whose
+type is the syntax tree type to be printed (<tt>MLast.expr</tt> for
+expressions, <tt>MLast.patt</tt> for patterns, and so on). They all
+return a function holding five parameters and returning the pretty
+printed string.</p>
+
+<p>These five parameters are:</p>
+
+<ul>
+
+<li><tt>curr</tt> : the current function. It can be called directly
+(without having to use <tt>Extfun.apply</tt>).</li>
+
+<li><tt>next</tt> : the function of the next pretty printing level. Same
+usage than <tt>curr</tt> above.</li>
+
+<li><tt>ctx</tt> : the current context, a record including the
+indentation (a number).</li>
+
+<li><tt>b</tt> : what has to be displayed from the beginning of the
+line before the data.</li>
+
+<li><tt>k</tt> : what has to be displayed up to the end of the line
+after the data.</li>
+
+</ul>
+
+<p>Generally, the code of the pretty printing is a call to the
+formatting function <tt>horiz_vertic</tt> of the module <a
+href="pretty.html">Pretty</a>.</p>
+
+<p>To display the thing <em>horizontally</em> (first function
+parameter of the <tt>horiz_vertic</tt> function), just use
+<tt>sprintf</tt> (of that module) concating:</p>
+
+<ul>
+<li>The <tt>b</tt> value, which is string representing the current
+indendation string, and the possible things which have to be displayed
+before the data.</li>
+<li>The pretty printed data where elements are separated by spaces,
+parentheses, commas, depending of how they have to be displayed.</li>
+<li>The <tt>k</tt> value, which is the continuation string up to the
+end of the line.</li>
+</ul>
+
+<p>To display the thing <em>vertically</em>, i.e. in several lines,
+(second function parameter of the <tt>horiz_vertic</tt> function),
+you have to determine which are the cutting points, create and
+concate the lines separating them with newlines characters.</p>
+
+<p>Pretty printing modules are separated into several Camlp4 extension
+kits:</p>
+
+<ul>
+<li><tt>pr_r.cmo</tt> : for basic revised syntax</li>
+<li><tt>pr_ro.cmo</tt> : for objects, labels, variants in revised syntax</li>
+<li><tt>pr_rp.cmo</tt> : for rebuilding parsers and stream in their
+initial revised syntax</li>
+<li><tt>pr_o.cmo</tt> : for basic normal syntax</li>
+<li><tt>pr_oo.cmo</tt> : for objects, labels, variants in normal syntax</li>
+<li><tt>pr_op.cmo</tt> : for rebuilding parsers and stream in their
+initial normal syntax</li>
+<li><tt>pr_extend.cmo</tt> : for the <tt>EXTEND</tt> statement</li>
+</ul>
+
+<p>For example, to pretty print a source file from normal to revised
+syntax with rebuilding the parsers and the <tt>EXTEND</tt> statements,
+the command is:</p>
+
+<pre>
+camlp4o pr_r.cmo pr_rp.cmo pr_extend.cmo foo.ml
+</pre>
+
+<p>Details can be found in the <tt>camlp4</tt> manual page.</p>
+
+<hr style="margin:0" /><div style="font-size: 80%"><em>Copyright 2007
+Daniel de Rauglaudre (INRIA)</em>
+
+</body>
+</html>
