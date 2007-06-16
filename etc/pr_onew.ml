@@ -11,16 +11,6 @@ value flag_expand_declare = ref False;
 value flag_horiz_let_in = ref False;
 value flag_semi_semi = ref False;
 
-value flag_where_after_in = ref True;
-value flag_where_after_let_eq = ref True;
-value flag_where_after_match = ref True;
-value flag_where_after_lparen = ref True;
-value flag_where_after_field_eq = ref False;
-value flag_where_in_sequences = ref False;
-value flag_where_after_then = ref True;
-value flag_where_after_value_eq = ref True;
-value flag_where_after_arrow = ref True;
-
 module Buff =
   struct
     value buff = ref (String.create 80);
@@ -270,26 +260,6 @@ value sequencify e =
 ;
 
 (* Pretty printing improvement (optional):
-   - test a "let" binding can be displayed as "where"
- *)
-value can_be_displayed_as_where e =
-  match e with
-  [ <:expr< let rec $p$ = $body$ in $e$ >> ->
-      let e1 =
-        loop e where rec loop =
-          fun
-          [ <:expr< $e$ $_$ >> -> loop e
-          | e -> e ]
-      in
-      match (p, e1, body) with
-      [ (<:patt< $lid:f$ >>, <:expr< $lid:g$ >>,
-         <:expr< fun [ $list:_$ ] >>) ->
-          if f = g then Some (p, e, body) else None
-      | _ -> None ]
-  | _ -> None ]
-;
-
-(* Pretty printing improvement (optional):
    - print the "do {" of the sequences at end of previous lines,
      therefore printing the sequence with one tabulation less
    - example:
@@ -303,13 +273,12 @@ value can_be_displayed_as_where e =
           }
  *)
 value rec sequence_box ctx horiz vertic el k =
-  let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
   let s1 =
     horiz_vertic (fun () -> sprintf "%s (" (horiz ()))
       (fun () -> sprintf "%s (" (vertic ()))
   in
   let s2 =
-    vlistl (semi_after expr_wh) expr_wh (shi ctx 2) (tab (shi ctx 2)) el ""
+    vlistl (semi_after expr) expr (shi ctx 2) (tab (shi ctx 2)) el ""
   in
   let s3 = sprintf "%s)%s" (tab ctx) k in
   sprintf "%s\n%s\n%s" s1 s2 s3
@@ -340,11 +309,6 @@ and where_binding ctx b (p, e, body) k =
            let s1 = horiz_vertic horiz_where vertic_where in
            let s2 = expr (shi ctx 2) (tab (shi ctx 2)) body k in
            sprintf "%s\n%s" s1 s2 ])
-
-and expr_wh ctx b e k =
-  match can_be_displayed_as_where e with
-  [ Some (p, e, body) -> where_binding ctx b (p, e, body) k
-  | None -> expr ctx b e k ]
 ;
 
 (* Pretty printing improvements (optional):
@@ -356,10 +320,9 @@ and expr_wh ctx b e k =
 value record_binding ctx b (p, e) k =
   let (pl, e) = expr_fun_args e in
   let pl = [p :: pl] in
-  let expr_wh = if flag_where_after_field_eq.val then expr_wh else expr in
   horiz_vertic
     (fun () ->
-       sprintf "%s%s = %s%s" b (hlist patt ctx "" pl "") (expr_wh ctx "" e "")
+       sprintf "%s%s = %s%s" b (hlist patt ctx "" pl "") (expr ctx "" e "")
          k)
     (fun () ->
        match sequencify e with
@@ -370,7 +333,7 @@ value record_binding ctx b (p, e) k =
              el k
        | None ->
            sprintf "%s\n%s" (hlist patt ctx b pl " =")
-             (expr_wh (shi ctx 2) (tab (shi ctx 2)) e k) ])
+             (expr (shi ctx 2) (tab (shi ctx 2)) e k) ])
 ;
 
 (* Pretty printing improvements (optional):
@@ -379,7 +342,7 @@ value record_binding ctx b (p, e) k =
    - the continuation after the expression is optionally on next line if
      it not a sequence (see 'particularity for the parameter 'ko' below)
    - the expression after '=' is displayed with the 'where' statement if
-     possible (expr_wh)
+     possible (expr)
    - if "e" is a type constraint, put the constraint after the params. E.g.
         value f x y = (e : t)
      is displayed:
@@ -405,14 +368,13 @@ value value_binding ctx b (p, e) ko =
     | _ -> (e, None) ]
   in
   let pl = [p :: pl] in
-  let expr_wh = if flag_where_after_value_eq.val then expr_wh else expr in
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s = %s%s" b (hlist patt ctx "" pl "")
          (match tyo with
           [ Some t -> sprintf " : %s" (ctyp ctx "" t "")
           | None -> "" ])
-         (expr_wh ctx "" e "")
+         (expr ctx "" e "")
          (match ko with [ Some (_, k) -> k | None -> "" ]))
     (fun () ->
        match sequencify e with
@@ -449,7 +411,7 @@ value value_binding ctx b (p, e) ko =
            let s2 =
              let ccc = comm_bef (shi ctx 2) (MLast.loc_of_expr e) in
              let s =
-               expr_wh (shi ctx 2) (tab (shi ctx 2)) e
+               expr (shi ctx 2) (tab (shi ctx 2)) e
                  (match ko with [ Some (False, k) -> k | _ -> "" ])
              in
              sprintf "%s%s" ccc s
@@ -465,17 +427,16 @@ value value_binding ctx b (p, e) ko =
 (* Pretty printing improvements (optional):
    - prints "let f x = e" instead of "let f = fun x -> e"
    - prints a newline before the "in" if last element not horizontal
-   - the expression after '=' is displayed as 'where' if possible (expr_wh)
+   - the expression after '=' is displayed as 'where' if possible (expr)
    Cancellation of all these improvements could be done by changing calls
    to this function to a call to "binding expr" above.
 *)
 value let_binding ctx b (p, e) is_last =
   let (pl, e) = expr_fun_args e in
   let pl = [p :: pl] in
-  let expr_wh = if flag_where_after_let_eq.val then expr_wh else expr in
   horiz_vertic
     (fun () ->
-       sprintf "%s%s = %s%s" b (hlist patt ctx "" pl "") (expr_wh ctx "" e "")
+       sprintf "%s%s = %s%s" b (hlist patt ctx "" pl "") (expr ctx "" e "")
          (if is_last then " in" else ""))
     (fun () ->
        let s =
@@ -487,14 +448,13 @@ value let_binding ctx b (p, e) is_last =
                el ""
          | None ->
              let s1 = hlist patt ctx b pl " =" in
-             let s2 = expr_wh (shi ctx 2) (tab (shi ctx 2)) e "" in
+             let s2 = expr (shi ctx 2) (tab (shi ctx 2)) e "" in
              sprintf "%s\n%s" s1 s2 ]
        in
        if is_last then sprintf "%s\n%sin" s (tab ctx) else s)
 ;
 
 value match_assoc ctx b (p, w, e) k =
-  let expr_wh = if flag_where_after_arrow.val then expr_wh else expr in
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s -> %s%s" b (patt_as ctx "" p "")
@@ -530,7 +490,7 @@ value match_assoc ctx b (p, w, e) k =
        [ Some el -> sequence_box ctx (fun () -> sprintf "\n") patt_arrow el k
        | None ->
            let s1 = patt_arrow () in
-           let s2 = expr_wh (shi ctx 2) (tab (shi ctx 2)) e k in
+           let s2 = expr (shi ctx 2) (tab (shi ctx 2)) e k in
            sprintf "%s\n%s" s1 s2 ])
 ;
 
@@ -796,59 +756,58 @@ value expr_expr1 =
   extfun Extfun.empty with
   [ <:expr< if $e1$ then $e2$ else $e3$ >> ->
       fun curr next ctx b k ->
-        let expr_wh = if flag_where_after_then.val then expr_wh else expr in
         horiz_vertic
-         (fun () ->
-            sprintf "%sif %s then %s else %s%s" b (expr ctx "" e1 "")
-              (expr ctx "" e2 "") (expr ctx "" e3 "") k)
-         (fun () ->
-            let if_then ctx b_if e1 e2 =
-              horiz_vertic
-                (fun () ->
-                   sprintf "%s%s then %s" b_if (expr ctx "" e1 "")
-                     (expr ctx "" e2 ""))
-                (fun () ->
-                   let horiz_if_then () =
-                     sprintf "%s%s then" b_if (expr ctx "" e1 "")
-                   in
-                   let vertic_if_then () =
-                     let s1 = expr (shi ctx 3) b_if e1 "" in
-                     let s2 = sprintf "%sthen" (tab ctx) in
-                     sprintf "%s\n%s" s1 s2
-                   in
-                   match sequencify e2 with
-                   [ Some el ->
-                       sequence_box ctx horiz_if_then vertic_if_then el ""
-                   | None ->
-                       let s1 = horiz_vertic horiz_if_then vertic_if_then in
-                       let s2 = expr_wh (shi ctx 2) (tab (shi ctx 2)) e2 "" in
-                       sprintf "%s\n%s" s1 s2 ])
-            in
-            let s1 = if_then ctx (sprintf "%sif " b) e1 e2 in
-            let (eel, e3) = get_else_if e3 in
-            let s2 =
-              loop eel where rec loop =
-                fun
-                [ [(e1, e2) :: eel] ->
-                    sprintf "\n%s%s"
-                      (if_then ctx (sprintf "%selse if " (tab ctx)) e1 e2)
-                      (loop eel)
-                | [] -> "" ]
-            in
-            let s3 =
-              horiz_vertic
-                (fun () ->
-                   sprintf "%selse %s%s" (tab ctx) (expr ctx "" e3 "") k)
-                (fun () ->
-                   match sequencify e3 with
-                   [ Some el ->
-                       sequence_box ctx (fun () -> sprintf "\n")
-                         (fun () -> sprintf "%selse" (tab ctx)) el k
-                   | None ->
-                       let s = expr_wh (shi ctx 2) (tab (shi ctx 2)) e3 k in
-                       sprintf "%selse\n%s" (tab ctx) s ])
-            in
-            sprintf "%s%s\n%s" s1 s2 s3)
+          (fun () ->
+             sprintf "%sif %s then %s else %s%s" b (expr ctx "" e1 "")
+               (expr ctx "" e2 "") (expr ctx "" e3 "") k)
+          (fun () ->
+             let if_then ctx b_if e1 e2 =
+               horiz_vertic
+                 (fun () ->
+                    sprintf "%s%s then %s" b_if (expr ctx "" e1 "")
+                      (expr ctx "" e2 ""))
+                 (fun () ->
+                    let horiz_if_then () =
+                      sprintf "%s%s then" b_if (expr ctx "" e1 "")
+                    in
+                    let vertic_if_then () =
+                      let s1 = expr (shi ctx 3) b_if e1 "" in
+                      let s2 = sprintf "%sthen" (tab ctx) in
+                      sprintf "%s\n%s" s1 s2
+                    in
+                    match sequencify e2 with
+                    [ Some el ->
+                        sequence_box ctx horiz_if_then vertic_if_then el ""
+                    | None ->
+                        let s1 = horiz_vertic horiz_if_then vertic_if_then in
+                        let s2 = expr (shi ctx 2) (tab (shi ctx 2)) e2 "" in
+                        sprintf "%s\n%s" s1 s2 ])
+             in
+             let s1 = if_then ctx (sprintf "%sif " b) e1 e2 in
+             let (eel, e3) = get_else_if e3 in
+             let s2 =
+               loop eel where rec loop =
+                 fun
+                 [ [(e1, e2) :: eel] ->
+                     sprintf "\n%s%s"
+                       (if_then ctx (sprintf "%selse if " (tab ctx)) e1 e2)
+                       (loop eel)
+                 | [] -> "" ]
+             in
+             let s3 =
+               horiz_vertic
+                 (fun () ->
+                    sprintf "%selse %s%s" (tab ctx) (expr ctx "" e3 "") k)
+                 (fun () ->
+                    match sequencify e3 with
+                    [ Some el ->
+                        sequence_box ctx (fun () -> sprintf "\n")
+                          (fun () -> sprintf "%selse" (tab ctx)) el k
+                    | None ->
+                        let s = expr (shi ctx 2) (tab (shi ctx 2)) e3 k in
+                        sprintf "%selse\n%s" (tab ctx) s ])
+             in
+             sprintf "%s%s\n%s" s1 s2 s3)
   | <:expr< fun [ $list:pwel$ ] >> ->
       fun curr next ctx b k ->
         match pwel with
@@ -879,7 +838,6 @@ value expr_expr1 =
   | <:expr< try $e1$ with [ $list:pwel$ ] >> |
     <:expr< match $e1$ with [ $list:pwel$ ] >> as e ->
       fun curr next ctx b k ->
-        let expr_wh = if flag_where_after_match.val then expr_wh else expr in
         let op =
           match e with
           [ <:expr< try $_$ with [ $list:_$ ] >> -> "try"
@@ -890,7 +848,7 @@ value expr_expr1 =
             horiz_vertic
               (fun () ->
                  sprintf "%sbegin %s %s with %s end%s" b op
-                   (expr_wh ctx "" e1 "")
+                   (expr ctx "" e1 "")
                    (match_assoc ctx "" (p, wo, e) "") k)
               (fun () ->
                  match
@@ -898,7 +856,7 @@ value expr_expr1 =
                      (fun () ->
                         Some
                           (sprintf "%sbegin %s %s with %s%s ->" b op
-                             (expr_wh ctx "" e1 "") (patt ctx "" p "")
+                             (expr ctx "" e1 "") (patt ctx "" p "")
                              (match wo with
                               [ Some e -> expr ctx " when" e ""
                               | None -> "" ])))
@@ -916,7 +874,7 @@ value expr_expr1 =
                              (fun () -> sprintf "%sbegin %s" b op) el ""
                        | None ->
                            let s =
-                             expr_wh (shi ctx 2) (tab (shi ctx 2)) e1 ""
+                             expr (shi ctx 2) (tab (shi ctx 2)) e1 ""
                            in
                            sprintf "%sbegin %s\n%s" b op s ]
                      in
@@ -929,13 +887,13 @@ value expr_expr1 =
             horiz_vertic
               (fun () ->
                  sprintf "%sbegin %s %s with %s end%s" b op
-                   (expr_wh ctx "" e1 "") (match_assoc_list ctx "" pwel "") k)
+                   (expr ctx "" e1 "") (match_assoc_list ctx "" pwel "") k)
               (fun () ->
                  let s1 =
                    horiz_vertic
                      (fun () ->
                         sprintf "%sbegin %s %s with" b op
-                          (expr_wh ctx "" e1 ""))
+                          (expr ctx "" e1 ""))
                      (fun () ->
                         let s =
                           match sequencify e1 with
@@ -944,7 +902,7 @@ value expr_expr1 =
                                 (fun () -> sprintf "%s%s" b op) el ""
                           | None ->
                               let s =
-                                expr_wh (shi ctx 2) (tab (shi ctx 2)) e1 ""
+                                expr (shi ctx 2) (tab (shi ctx 2)) e1 ""
                               in
                               sprintf "%sbegin %s\n%s" b op s ]
                         in
@@ -954,7 +912,6 @@ value expr_expr1 =
                  sprintf "%s\n%s\n%send%s" s1 s2 (tab ctx) k) ]
   | <:expr< let $opt:rf$ $list:pel$ in $e$ >> as ge ->
       fun curr next ctx b k ->
-        let expr_wh = if flag_where_after_in.val then expr_wh else expr in
         horiz_vertic
           (fun () ->
              if not flag_horiz_let_in.val then sprintf "\n"
@@ -977,7 +934,7 @@ value expr_expr1 =
                      (sprintf "%slet %s" b (if rf then "rec " else ""))
                      pel (False, True)
                  in
-                 let s2 = expr_wh ctx (tab ctx) e k in
+                 let s2 = expr ctx (tab ctx) e k in
                  sprintf "%s\n%s" s1 s2 ])
   | <:expr< let module $s$ = $me$ in $e$ >> ->
       fun curr next ctx b k ->
@@ -1360,8 +1317,7 @@ value expr_simple =
     <:expr< match $_$ with [ $list:_$ ] >> |
     <:expr< try $_$ with [ $list:_$ ] >> as z ->
       fun curr next ctx b k ->
-        let expr_wh = if flag_where_after_lparen.val then expr_wh else expr in
-        expr_wh (shi ctx 1) (sprintf "%s(" b) z (sprintf ")%s" k)
+        expr (shi ctx 1) (sprintf "%s(" b) z (sprintf ")%s" k)
   | z ->
       fun curr next ctx b k -> not_impl "expr" ctx b z k ]
 ;
