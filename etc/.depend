@@ -2,8 +2,6 @@ pa_extfold.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi
 pa_extfold.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
 pa_extfun.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
 pa_extfun.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
-pa_format.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
-pa_format.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
 pa_fstream.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
 pa_fstream.cmx: ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
 pa_lefteval.cmo: ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
