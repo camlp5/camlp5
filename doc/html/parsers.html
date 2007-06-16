@@ -4,7 +4,7 @@
 <head>
   <!-- $Id$ -->
   <!-- Copyright (c) 2007 INRIA -->
-  <title>pa_lexer</title>
+  <title>parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <link rel="shortcut icon" href="c4logo.png" />
@@ -30,54 +30,26 @@
 </head>
 <body>
 
-<h1>Lexers of streams - pa_lexer.cmo</h1>
+<h1>Parsers of streams</h1>
 
-<p>The file pa_lexer.cmo is a Camlp4 syntax extension for parsers for
-streams of the type 'char'. This syntax is shorter in length and more
-readable than its equivalent version written with classical stream
-parsers.  Like classical parsers, they use recursive descendant
-parsing. They are pure syntax sugar for parsers: each lexer written
-with this syntax can be written with normal parsers syntax.</p>
+<p>We describe here the syntax of the classical parsers of streams of
+Camlp4. They have existed since many years, but some new extensions
+were added: lookahead, indicator of "no error" to generate shorter
+code and "let..in" statement.</p>
+
+<p>Parsers use recursive descendent algorithm and are normal OCaml
+functions, taking a stream as parameter and returning a value whose
+type depend on the semantic actions, like patterns matchings.</p>
 
 <h2>Introduction</h2>
 
-<p>Classical parsers in OCaml apply to streams of any type of
-values. But, for the specific type "char", it has been possible to
-shorten codes in several ways, in particular by using strings to group
-several characters together, and by hidding the management of the
-"lexing buffer", a data structure recording the matched
-characters.</p>
-
-<p>In order to motivate our work, here is a small example. Let us look
-at the following parser. It parses an identifier, composed of letters,
-digits, underscores, quotes and utf-8 characters, and record the
-result in a buffer:</p>
-
-<pre>
-     value rec ident buf =
-       parser
-       [ [: `('A'..'Z' | 'a'..'z' | '0'..'9' | '_' | ''' | '\128'..'\255'
-            as c); buf = ident (B.add c buf) ! :] -&gt; buf
-       | [: :] -&gt; buf ];
-</pre>
-
-<p> With the new syntax, it is possible to write it as:</p>
-
-<pre>
-     value rec ident = lexer [ "A..Za..z0..9_'\128..\255" ident! | ];
-</pre>
-
-<p>The two codes are strictly equivalent, but the lexer version is easier
-to write and understand, and is much shorter.</p>
-
 <h2>Syntax</h2>
 
-<p>When loading the syntax extension, the OCaml syntax is extended as
-follows:</p>
+<p>The syntax of parsers is the following:</p>
 
 <pre>
-            expression ::= lexer
-                 lexer ::= "lexer" "[" rules "]"
+            expression ::= parser
+                parser ::= "parser" "[" rules "]"
                  rules ::= rules rule
                          | &lt;nothing&gt;
                   rule ::= symbols [ "-&gt;" action ]
