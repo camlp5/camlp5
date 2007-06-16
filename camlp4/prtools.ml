@@ -1,4 +1,4 @@
-(* camlp4r *)
+(* camlp4r q_MLast.cmo *)
 (* $Id$ *)
 (* Copyright (c) INRIA 2007 *)
 
@@ -276,4 +276,43 @@ value comm_bef ctx loc =
   let ep = Stdpp.last_pos loc in
   let (s, nl_bef, ind_bef) = rev_read_comment_in_file bp ep in
   adjust_comment_indentation ind s nl_bef ind_bef
+;
+
+(* For pretty printing improvement:
+   - if e is a "sequence" or a "let..in sequence", get "the list of its
+     expressions", which is flattened (merging sequences inside sequences
+     and changing "let..in do {e1; .. en}" into "do {let..in e1; .. en}",
+     and return Some "the resulting expression list".
+   - otherwise return None *)
+value flatten_sequence e =
+  let rec get_sequence =
+    fun
+    [ <:expr< do { $list:el$ } >> -> Some el
+    | <:expr< let $opt:rf$ $list:pel$ in $e$ >> as se ->
+        match get_sequence e with
+        [ Some [e :: el] ->
+            let e =
+              let loc =
+                let loc1 = MLast.loc_of_expr se in
+                let loc2 = MLast.loc_of_expr e in
+                Stdpp.encl_loc loc1 loc2
+              in
+              <:expr< let $opt:rf$ $list:pel$ in $e$ >>
+            in
+            Some [e :: el]
+        | None | _ -> None ]
+    | _ -> None ]
+  in
+  match get_sequence e with
+  [ Some el ->
+      let rec list_of_sequence =
+        fun
+        [ [e :: el] ->
+            match get_sequence e with
+            [ Some el1 -> list_of_sequence (el1 @ el)
+            | None -> [e :: list_of_sequence el] ]
+        | [] -> [] ]
+      in
+      Some (list_of_sequence el)
+  | None -> None ]
 ;

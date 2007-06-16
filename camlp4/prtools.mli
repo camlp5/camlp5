@@ -46,5 +46,21 @@ value plist : pr_fun 'a -> int -> pr_fun (list ('a * string));
 value plistl : pr_fun 'a -> pr_fun 'a -> int -> pr_fun (list ('a * string));
    (** paragraph list with a different function for the last element *)
 
+value flatten_sequence : MLast.expr -> option (list MLast.expr);
+   (** [flatten_sequence e]. If [e] is an expression representing a sequence,
+       return the list of expressions of the sequence. If some of these
+       expressions are already sequences, they are expanded in the list.
+       If that list contains expressions of the form let..in sequence, this
+       sub-sequence is also flattened with the let..in spplies only to the
+       first expression of the sequence. If [e] is a let..in sequence, it
+       works the same way. If [e] is not a sequence nor a let..in sequence,
+       return None. *)
+
 value source : ref string;
+   (** The initial source string, which must be set by the pretty printing
+       kit. Used by [comm_bef] below. *)
 value comm_bef : pr_ctx -> MLast.loc -> string;
+   (** [comm_bef ctx loc] get the comment from the source (in the global
+       variable [source] just before the given location [loc]. May be
+       reindented using the printing context [ctx]. No comment returns
+       the empty string. *)

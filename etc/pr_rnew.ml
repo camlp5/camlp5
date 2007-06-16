@@ -6,9 +6,9 @@ open Sformat;
 open Pcaml.NewPrinter;
 open Prtools;
 
-value flag_sequ_begin_at_eol = ref True;
 value flag_expand_declare = ref False;
 value flag_horiz_let_in = ref False;
+value flag_sequ_begin_at_eol = ref True;
 
 value flag_where_after_in = ref True;
 value flag_where_after_let_eq = ref True;
@@ -222,45 +222,6 @@ pr_expr_fun_args.val :=
   | z -> ([], z) ]
 ;
 
-(* For pretty printing improvement (optional):
-   - if e is a "sequence" or a "let..in sequence", get "the list of its
-     expressions", which is flattened (merging sequences inside sequences
-     and changing "let..in do {e1; .. en}" into "do {let..in e1; .. en}",
-     and return Some "the resulting expression list".
-   - otherwise return None *)
-value flatten_sequence e =
-  let rec get_sequence =
-    fun
-    [ <:expr< do { $list:el$ } >> -> Some el
-    | <:expr< let $opt:rf$ $list:pel$ in $e$ >> as se ->
-        match get_sequence e with
-        [ Some [e :: el] ->
-            let e =
-              let loc =
-                let loc1 = MLast.loc_of_expr se in
-                let loc2 = MLast.loc_of_expr e in
-                Stdpp.encl_loc loc1 loc2
-              in
-              <:expr< let $opt:rf$ $list:pel$ in $e$ >>
-            in
-            Some [e :: el]
-        | None | _ -> None ]
-    | _ -> None ]
-  in
-  match get_sequence e with
-  [ Some el ->
-      let rec list_of_sequence =
-        fun
-        [ [e :: el] ->
-            match get_sequence e with
-            [ Some el1 -> list_of_sequence (el1 @ el)
-            | None -> [e :: list_of_sequence el] ]
-        | [] -> [] ]
-      in
-      Some (list_of_sequence el)
-  | None -> None ]
-;
-
 value sequencify e =
   if not flag_sequ_begin_at_eol.val then None else flatten_sequence e
 ;
@@ -268,7 +229,7 @@ value sequencify e =
 (* Pretty printing improvement (optional):
    - print the sequence beginner at end of previous lines,
      therefore printing the sequence with one tabulation less
-   - example (in revised syntax):
+   - example:
           value f x =
             do {
               ...
@@ -278,8 +239,9 @@ value sequencify e =
             ...
           }
  *)
-value sequence_box ctx horiz vertic bs expr el es k =
-  let bs = sprintf " %s" bs in
+value sequence_box ctx horiz vertic expr el k =
+  let bs = " do {" in
+  let es = "}" in
   let s1 = horiz_vertic (fun () -> horiz bs) (fun () -> vertic bs) in
   let s2 =
     vlistl (semi_after expr) expr (shi ctx 2) (tab (shi ctx 2)) el ""
@@ -336,7 +298,7 @@ value rec where_binding ctx b (p, e, body) k =
            let expr_wh =
              if flag_where_in_sequences.val then expr_wh else expr
            in
-           sequence_box ctx horiz_where vertic_where "do {" expr_wh el "}" k
+           sequence_box ctx horiz_where vertic_where expr_wh el k
        | None ->
            let s1 =
              horiz_vertic (fun () -> horiz_where "")
@@ -353,7 +315,7 @@ and expr_wh ctx b e k =
 
 value sequence_box2 ctx horiz vertic el k =
   let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
-  sequence_box ctx horiz vertic "do {" expr_wh el "}" k
+  sequence_box ctx horiz vertic expr_wh el k
 ;
 
 (* Pretty printing improvements (optional):
@@ -2005,9 +1967,9 @@ value set_flags s =
           flag_horiz_let_in.val := v;
           flag_sequ_begin_at_eol.val := v;
         }
-      | 'B' | 'b' -> flag_sequ_begin_at_eol.val := is_uppercase s.[i]
       | 'D' | 'd' -> flag_expand_declare.val := is_uppercase s.[i]
       | 'L' | 'l' -> flag_horiz_let_in.val := is_uppercase s.[i]
+      | 'S' | 's' -> flag_sequ_begin_at_eol.val := is_uppercase s.[i]
       | c -> failwith ("bad flag " ^ String.make 1 c) ];
       loop (i + 1)
     }
@@ -2018,9 +1980,9 @@ value default_flag () =
   let flag_off b t f = if b then "" else f in
   let on_off flag =
     sprintf "%s%s%s"
-      (flag flag_sequ_begin_at_eol.val "B" "b")
       (flag flag_expand_declare.val "D" "d")
       (flag flag_horiz_let_in.val "L" "l")
+      (flag flag_sequ_begin_at_eol.val "S" "s")
   in
   let on = on_off flag_on in
   let off = on_off flag_off in
@@ -2082,9 +2044,9 @@ value default_wflag () =
 Pcaml.add_option "-flag" (Arg.String set_flags)
   ("<str> Change pretty printing behaviour according to <flags>:
        A/a enable/disable all flags
-       B/b enable/disable printing sequences beginners at end of lines
        D/d enable/disable allowing expanding 'declare'
        L/l enable/disable allowing printing 'let..in' horizontally
+       S/s enable/disable printing sequences beginners at end of lines
        default setting is \"" ^ default_flag () ^ "\".");
 
 Pcaml.add_option "-wflag" (Arg.String set_wflags)
