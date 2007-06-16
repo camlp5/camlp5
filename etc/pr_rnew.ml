@@ -2,8 +2,8 @@
 (* $Id$ *)
 (* Copyright (c) INRIA 2007 *)
 
-open Sformat;
-open Pcaml.NewPrinter;
+open Pretty;
+open Pcaml.NewPrinters;
 open Prtools;
 
 value flag_expand_declare = ref False;
@@ -2063,9 +2063,9 @@ Pcaml.add_option "-wflag" (Arg.String set_wflags)
        W/w enable/disable 'where' after '->'
        default setting is \"" ^ default_wflag () ^ "\".");
 
-Pcaml.add_option "-l" (Arg.Int (fun x -> Sformat.line_length.val := x))
+Pcaml.add_option "-l" (Arg.Int (fun x -> Pretty.line_length.val := x))
   ("<length> Maximum line length for pretty printing (default " ^
-     string_of_int Sformat.line_length.val ^ ")");
+     string_of_int Pretty.line_length.val ^ ")");
 
 Pcaml.add_option "-sep" (Arg.String (fun x -> sep.val := Some x))
   "<string> Use this string between phrases instead of reading source.";

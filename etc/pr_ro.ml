@@ -1,11 +1,11 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_ro.ml,v 1.17 2007/06/13 01:49:56 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.18 2007/06/16 07:44:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
 
-open Sformat;
-open Pcaml.NewPrinter;
+open Pretty;
+open Pcaml.NewPrinters;
 open Prtools;
 
 value not_impl name ctx b x k =

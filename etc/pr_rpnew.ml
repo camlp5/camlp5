@@ -4,8 +4,8 @@
 
 (* Heuristic to rebuild parsers and streams from the AST *)
 
-open Sformat;
-open Pcaml.NewPrinter;
+open Pretty;
+open Pcaml.NewPrinters;
 open Prtools;
 
 type spat_comp =

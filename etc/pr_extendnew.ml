@@ -4,8 +4,8 @@
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
 
-open Sformat;
-open Pcaml.NewPrinter;
+open Pretty;
+open Pcaml.NewPrinters;
 open Prtools;
 
 value not_impl name ctx b x k =

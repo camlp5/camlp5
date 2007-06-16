@@ -2,8 +2,8 @@
 (* $Id$ *)
 (* Copyright (c) INRIA 2007 *)
 
-open Sformat;
-open Pcaml.NewPrinter;
+open Pretty;
+open Pcaml.NewPrinters;
 open Prtools;
 
 value flag_sequ_begin_at_eol = ref True;
@@ -2084,9 +2084,9 @@ Pcaml.add_option "-flag" (Arg.String set_flags)
        S/s enable/disable allowing printing ';;' at end of phrases
        default setting is \"" ^ default_flag () ^ "\".");
 
-Pcaml.add_option "-l" (Arg.Int (fun x -> Sformat.line_length.val := x))
+Pcaml.add_option "-l" (Arg.Int (fun x -> Pretty.line_length.val := x))
   ("<length> Maximum line length for pretty printing (default " ^
-     string_of_int Sformat.line_length.val ^ ")");
+     string_of_int Pretty.line_length.val ^ ")");
 
 Pcaml.add_option "-sep" (Arg.String (fun x -> sep.val := Some x))
   "<string> Use this string between phrases instead of reading source.";

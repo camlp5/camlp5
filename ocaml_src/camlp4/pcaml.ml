@@ -325,7 +325,7 @@ let add_option name spec descr =
 
 (* Printers *)
 
-module NewPrinter =
+module NewPrinters =
   struct
     type 'a printer_t =
       { mutable pr_fun : string -> 'a pr_fun;

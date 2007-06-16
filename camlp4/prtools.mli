@@ -2,7 +2,7 @@
 (* $Id$ *)
 (* Copyright (c) INRIA 2007 *)
 
-open Pcaml.NewPrinter;
+open Pcaml.NewPrinters;
 
 type pr_gfun 'a 'b = pr_ctx -> string -> 'a -> 'b -> string;
 
@@ -15,7 +15,7 @@ value hlist : pr_fun 'a -> pr_fun (list 'a);
        string of a list of elements; elements are separated with spaces.
        The list is displayed in one only line. If this function is called
        in the context of the [horiz] function of the function [horiz_vertic]
-       of the module Sformat, and if the line overflows or contains newlines,
+       of the module Printing, and if the line overflows or contains newlines,
        the function fails (the exception is catched by [horiz_vertic] for
        a vertical pretty print). *)
 value hlist2 : pr_gfun 'a 'b -> pr_gfun 'a 'b -> pr_gfun (list 'a) ('b * 'b);

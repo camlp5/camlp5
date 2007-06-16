@@ -14,8 +14,8 @@ grammar.cmi: token.cmi gramext.cmi
 plexer.cmo: token.cmi stdpp.cmi plexer.cmi 
 plexer.cmx: token.cmx stdpp.cmx plexer.cmi 
 plexer.cmi: token.cmi 
-sformat.cmo: sformat.cmi 
-sformat.cmx: sformat.cmi 
+pretty.cmo: pretty.cmi 
+pretty.cmx: pretty.cmi 
 stdpp.cmo: stdpp.cmi 
 stdpp.cmx: stdpp.cmi 
 token.cmo: stdpp.cmi token.cmi 

@@ -2,8 +2,8 @@
 (* $Id$ *)
 (* Copyright (c) INRIA 2007 *)
 
-open Sformat;
-open Pcaml.NewPrinter;
+open Pretty;
+open Pcaml.NewPrinters;
 
 type pr_gfun 'a 'b = pr_ctx -> string -> 'a -> 'b -> string;
 

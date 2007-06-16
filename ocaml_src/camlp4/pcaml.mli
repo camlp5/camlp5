@@ -103,7 +103,7 @@ val print_interf : ((MLast.sig_item * MLast.loc) list -> unit) ref;;
 val print_implem : ((MLast.str_item * MLast.loc) list -> unit) ref;;
    (** Some printers, set by [pr_dump.cmo], [pr_o.cmo] and [pr_r.cmo]. *)
 
-module NewPrinter :
+module NewPrinters :
   sig
     type 'a printer_t =
       { mutable pr_fun : string -> 'a pr_fun;
