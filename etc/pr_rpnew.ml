@@ -11,8 +11,15 @@ open Prtools;
 type spat_comp =
   [ SpTrm of MLast.loc and MLast.patt and option MLast.expr
   | SpNtr of MLast.loc and MLast.patt and MLast.expr
+  | SpLet of MLast.loc and MLast.patt and MLast.expr
   | SpLhd of MLast.loc and list (list MLast.patt)
   | SpStr of MLast.loc and MLast.patt ]
+;
+
+type spat_comp_opt =
+  [ SpoNoth
+  | SpoBang
+  | SpoQues of MLast.expr ]
 ;
 
 type alt 'a 'b =
@@ -67,6 +74,7 @@ value rec contains_strm__ =
   fun
   [ <:expr< $e1$ $e2$ >> -> contains_strm__ e1 || contains_strm__ e2
   | <:expr< strm__ >> -> True
+  | <:expr< let $opt:_$ $list:pel$ in $e$ >> -> contains_strm__ e
   | <:expr< try $e$ with [ $list:pel$ ] >> -> contains_strm__ e
   | <:expr< match $e$ with [ $list:pel$ ] >> -> contains_strm__ e
   | _ -> False ]
@@ -74,8 +82,8 @@ value rec contains_strm__ =
 
 value err =
   fun
-  [ <:expr< "" >> -> None
-  | e -> Some (Some e) ]
+  [ <:expr< "" >> -> SpoNoth
+  | e -> SpoQues e ]
 ;
 
 value rec unstream_pattern_kont =
@@ -97,21 +105,23 @@ value rec unstream_pattern_kont =
       ([], Some p, e)
   | <:expr< let $p$ = strm__ in $e$ >> ->
       let (sp, epo, e) = unstream_pattern_kont e in
-      ([(SpStr loc p, None) :: sp], epo, e)
+      ([(SpStr loc p, SpoNoth) :: sp], epo, e)
   | <:expr< let $p$ = $e1$ in $e2$ >> as ge ->
       if contains_strm__ e1 then
         let (f, err) =
           match e1 with
-          [ <:expr< $f$ strm__ >> -> (f, Some None)
+          [ <:expr< $f$ strm__ >> -> (f, SpoBang)
           | _ ->
               let f = <:expr< fun (strm__ : Stream.t _) -> $e1$ >> in
-              let err = if handle_failure e1 then None else Some None in
+              let err = if handle_failure e1 then SpoNoth else SpoBang in
               (f, err) ]
         in
         let (sp, epo, e) = unstream_pattern_kont e2 in
         ([(SpNtr loc p f, err) :: sp], epo, e)
       else
-        ([], None, ge)
+        let (sp, epo, e) = unstream_pattern_kont e2 in
+        if sp = [] then ([], None, ge)
+        else ([(SpLet loc p e1, SpoNoth) :: sp], epo, e)
   | <:expr<
       match Stream.peek strm__ with
       [ Some $p$ -> do { Stream.junk strm__; $e$ }
@@ -127,7 +137,7 @@ value rec unstream_pattern_kont =
       | _ -> $_$ ]
     >> as ge ->
       let f = <:expr< fun (strm__ : Stream.t _) -> $ge$ >> in
-      let err = if handle_failure ge then None else Some None in
+      let err = if handle_failure ge then SpoNoth else SpoBang in
       ([(SpNtr loc <:patt< a >> f, err)], None, <:expr< a >>)
   | <:expr<
       try $f$ strm__ with [ Stream.Failure -> raise (Stream.Error $e$) ]
@@ -137,7 +147,7 @@ value rec unstream_pattern_kont =
       let f = <:expr< fun (strm__ : Stream.t _) -> $f$ >> in
       ([(SpNtr loc <:patt< a >> f, err e)], None, <:expr< a >>)
   | <:expr< $f$ strm__ >> ->
-      ([(SpNtr loc <:patt< a >> f, Some None)], None, <:expr< a >>)
+      ([(SpNtr loc <:patt< a >> f, SpoBang)], None, <:expr< a >>)
   | e -> ([], None, e) ]
 ;
 
@@ -148,13 +158,13 @@ value rec unparser_cases_list =
     >> ->
       let spe1 =
         let (sp, epo, e) = unstream_pattern_kont e1 in
-        ([(SpNtr loc p f, None) :: sp], epo, e)
+        ([(SpNtr loc p f, SpoNoth) :: sp], epo, e)
       in
       let spe2 = ([], None, <:expr< raise $e2$ >>) in
       [spe1; spe2]
   | <:expr< let $p$ = $f$ strm__ in $e$ >> ->
       let (sp, epo, e) = unstream_pattern_kont e in
-      [([(SpNtr loc p f, None) :: sp], epo, e)]
+      [([(SpNtr loc p f, SpoNoth) :: sp], epo, e)]
   | <:expr< match Stream.peek strm__ with [ $list:pel$ ] >> as ge ->
       loop [] pel where rec loop rev_spel =
         fun
@@ -165,7 +175,7 @@ value rec unparser_cases_list =
            pel] ->
             let spe =
               let (sp, epo, e) = unstream_pattern_kont e in
-              let sp = [(SpTrm loc p eo, None) :: sp] in
+              let sp = [(SpTrm loc p eo, SpoNoth) :: sp] in
               (sp, epo, e)
             in
             loop [spe :: rev_spel] pel
@@ -178,28 +188,28 @@ value rec unparser_cases_list =
     >> ->
       let spe =
         let (sp, epo, e) = unstream_pattern_kont e1 in
-        let sp = [(SpNtr loc p1 f, None) :: sp] in
+        let sp = [(SpNtr loc p1 f, SpoNoth) :: sp] in
         (sp, epo, e)
       in
       let spel = unparser_cases_list e2 in
       [spe :: spel]
   | <:expr< try $f$ strm__ with [ Stream.Failure -> $e$ ] >> ->
-      let spe = ([(SpNtr loc <:patt< a >> f, None)], None, <:expr< a >>) in
+      let spe = ([(SpNtr loc <:patt< a >> f, SpoNoth)], None, <:expr< a >>) in
       let spel = unparser_cases_list e in
       [spe :: spel]
   | <:expr< try Some ($f$ strm__) with [ Stream.Failure -> $e$ ] >> ->
       let spe =
-        ([(SpNtr loc <:patt< a >> f, None)], None, <:expr< Some a >>)
+        ([(SpNtr loc <:patt< a >> f, SpoNoth)], None, <:expr< Some a >>)
       in
       let spel = unparser_cases_list e in
       [spe :: spel]
   | <:expr< try $f$ with [ Stream.Failure -> $e$ ] >> ->
       let f = <:expr< fun (strm__ : Stream.t _) -> $f$ >> in
-      let spe = ([(SpNtr loc <:patt< a >> f, None)], None, <:expr< a >>) in
+      let spe = ([(SpNtr loc <:patt< a >> f, SpoNoth)], None, <:expr< a >>) in
       let spel = unparser_cases_list e in
       [spe :: spel]
   | <:expr< $f$ strm__ >> ->
-      let spe = ([(SpNtr loc <:patt< a >> f, None)], None, <:expr< a >>) in
+      let spe = ([(SpNtr loc <:patt< a >> f, SpoNoth)], None, <:expr< a >>) in
       [spe]
   | <:expr< raise Stream.Failure >> ->
       []
@@ -267,15 +277,27 @@ value stream_patt_comp ctx b spc k =
            let s1 = patt ctx b p " =" in
            let s2 = expr (shi ctx 2) (tab (shi ctx 2)) e k in
            sprintf "%s\n%s" s1 s2)
+  | SpLet _ p e ->
+      horiz_vertic (fun () -> sprintf "\n")
+        (fun () ->
+           horiz_vertic
+             (fun () ->
+                sprintf "%slet %s = %s in%s" b (patt ctx "" p "")
+                  (expr ctx "" e "") k)
+             (fun () ->
+                let s1 = patt ctx (sprintf "%slet " b) p " =" in
+                let s2 = expr (shi ctx 2) (tab (shi ctx 2)) e "" in
+                let s3 = sprintf "%sin%s" (tab ctx) k in
+                sprintf "%s\n%s\n%s" s1 s2 s3))
   | SpStr _ p -> patt ctx b p k
   | _ -> not_impl "stream_patt_comp" ctx b spc k ]
 ;
 
 value stream_patt_comp_err ctx b (spc, err) k =
   match err with
-  [ None -> stream_patt_comp ctx b spc k
-  | Some None -> stream_patt_comp ctx b spc (sprintf " !%s" k)
-  | Some (Some e) ->
+  [ SpoNoth -> stream_patt_comp ctx b spc k
+  | SpoBang -> stream_patt_comp ctx b spc (sprintf " !%s" k)
+  | SpoQues e ->
       horiz_vertic
         (fun () ->
            sprintf "%s%s ? %s%s" b (stream_patt_comp ctx "" spc "")
@@ -286,6 +308,12 @@ value stream_patt_comp_err ctx b (spc, err) k =
            sprintf "%s\n%s" s1 s2) ]
 ;
 
+value spc_kont =
+  fun
+  [ (SpLet _ _ _, _) -> ""
+  | _ -> ";" ]
+;
+
 value stream_patt ctx b sp k =
   horiz_vertic
     (fun () ->
@@ -293,7 +321,7 @@ value stream_patt ctx b sp k =
          (hlistl (semi_after stream_patt_comp_err) stream_patt_comp_err
             ctx "" sp "") k)
     (fun () ->
-       let sp = List.map (fun spc -> (spc, ";")) sp in
+       let sp = List.map (fun spc -> (spc, spc_kont spc)) sp in
        plist stream_patt_comp_err 0 (shi ctx 3) b sp k)
 ;
 

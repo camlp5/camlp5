@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_rp.ml,v 1.8 2007/06/16 14:17:43 deraugla Exp $ *)
+(* $Id: pa_rp.ml,v 1.9 2007/06/16 22:31:35 deraugla Exp $ *)
 
 open Exparser;
 open Pcaml;
@@ -37,10 +37,15 @@ EXTEND
   ;
   stream_patt:
     [ [ spc = stream_patt_comp -> [(spc, SpoNoth)]
-      | spc = stream_patt_comp; ";";
-        sp = LIST1 stream_patt_comp_err SEP ";" ->
+      | spc = stream_patt_comp; ";"; sp = stream_patt_kont ->
           [(spc, SpoNoth) :: sp]
+      | spc = stream_patt_let; sp = stream_patt -> [spc :: sp]
       | -> [] ] ]
+  ;
+  stream_patt_kont:
+    [ [ spc = stream_patt_comp_err -> [spc]
+      | spc = stream_patt_comp_err; ";"; sp = stream_patt_kont -> [spc :: sp]
+      | spc = stream_patt_let; sp = stream_patt_kont -> [spc :: sp] ] ]
   ;
   stream_patt_comp_err:
     [ [ spc = stream_patt_comp; "?"; e = expr -> (spc, SpoQues e)
@@ -52,6 +57,9 @@ EXTEND
       | "?="; pll = LIST1 lookahead SEP "|" -> SpLhd loc pll
       | p = patt; "="; e = expr -> SpNtr loc p e
       | p = patt -> SpStr loc p ] ]
+  ;
+  stream_patt_let:
+    [ [ "let"; p = ipatt; "="; e = expr; "in" -> (SpLet loc p e, SpoNoth) ] ]
   ;
   lookahead:
     [ [ "["; pl = LIST1 patt SEP ";"; "]" -> pl ] ]

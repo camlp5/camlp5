@@ -15,6 +15,7 @@
 type spat_comp =
   [ SpTrm of MLast.loc and MLast.patt and option MLast.expr
   | SpNtr of MLast.loc and MLast.patt and MLast.expr
+  | SpLet of MLast.loc and MLast.patt and MLast.expr
   | SpLhd of MLast.loc and list (list MLast.patt)
   | SpStr of MLast.loc and MLast.patt ]
 ;
@@ -150,6 +151,7 @@ value stream_pattern_component skont ckont =
         <:expr< match try Some $e$ with [ Stream.Failure -> None ] with
                 [ Some $p$ -> $skont$
                 | _ -> $ckont$ ] >>
+  | SpLet _ _ _ -> assert False
   | SpLhd loc [pl :: pll] ->
       let mklistpat loc pl =
         List.fold_right (fun p1 p2 -> <:patt< [$p1$ :: $p2$] >>) pl
@@ -184,6 +186,9 @@ value rec stream_pattern loc epo e ekont =
       match epo with
       [ Some ep -> <:expr< let $ep$ = Stream.count $lid:strm_n$ in $e$ >>
       | _ -> e ]
+  | [(SpLet loc p1 e1, _) :: spcl] ->
+      let skont = stream_pattern loc epo e ekont spcl in
+      <:expr< let $p1$ = $e1$ in $skont$ >>
   | [(spc, err) :: spcl] ->
       let skont =
         let ekont =
