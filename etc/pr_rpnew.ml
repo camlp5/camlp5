@@ -223,6 +223,15 @@ value unparser_body e =
 value expr ctx b z k = pr_expr.pr_fun "top" ctx b z k;
 value patt ctx b z k = pr_patt.pr_fun "top" ctx b z k;
 
+value sequence_box ctx bfun expr el k =
+  let s1 = bfun " do {" in
+  let s2 =
+    vlistl (semi_after expr) expr (shi ctx 2) (tab (shi ctx 2)) el ""
+  in
+  let s3 = sprintf "%s%s%s" (tab ctx) "}" k in
+  sprintf "%s\n%s\n%s" s1 s2 s3
+;
+
 value ident_option =
   fun
   [ Some s -> sprintf " %s" s
@@ -306,7 +315,12 @@ value parser_case ctx b (sp, po, e) k =
              (ident_option po) (expr ctx "" e "") k)
         (fun () ->
            match flatten_sequence e with
-           [ Some el -> not_impl "sequence" ctx b sp k
+           [ Some el ->
+               sequence_box ctx
+                 (fun k ->
+                    stream_patt ctx (sprintf "%s[: " b) sp
+                      (sprintf " :]%s ->%s" (ident_option po) k))
+                 expr el k
            | None ->
                let s1 =
                  stream_patt ctx (sprintf "%s[: " b) sp
