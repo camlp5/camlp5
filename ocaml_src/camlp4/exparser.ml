@@ -23,6 +23,12 @@ type sexp_comp =
   | SeNtr of MLast.loc * MLast.expr
 ;;
 
+type spat_comp_opt =
+    SpoNoth
+  | SpoBang
+  | SpoQues of MLast.expr
+;;
+
 let strm_n = "strm__";;
 let peek_fun loc =
   MLast.ExAcc (loc, MLast.ExUid (loc, "Stream"), MLast.ExLid (loc, "peek"))
@@ -270,7 +276,7 @@ let rec stream_pattern loc epo e ekont =
       let skont =
         let ekont =
           function
-            Some (Some estr) ->
+            SpoQues estr ->
               MLast.ExApp
                 (loc, MLast.ExLid (loc, "raise"),
                  MLast.ExApp
@@ -279,13 +285,13 @@ let rec stream_pattern loc epo e ekont =
                       (loc, MLast.ExUid (loc, "Stream"),
                        MLast.ExUid (loc, "Error")),
                     estr))
-          | Some None ->
+          | SpoBang ->
               MLast.ExApp
                 (loc, MLast.ExLid (loc, "raise"),
                  MLast.ExAcc
                    (loc, MLast.ExUid (loc, "Stream"),
                     MLast.ExUid (loc, "Failure")))
-          | None ->
+          | SpoNoth ->
               MLast.ExApp
                 (loc, MLast.ExLid (loc, "raise"),
                  MLast.ExApp
@@ -308,7 +314,7 @@ let stream_patterns_term loc ekont tspel =
          let e =
            let ekont =
              function
-               Some (Some estr) ->
+               SpoQues estr ->
                  MLast.ExApp
                    (loc, MLast.ExLid (loc, "raise"),
                     MLast.ExApp
@@ -317,13 +323,13 @@ let stream_patterns_term loc ekont tspel =
                          (loc, MLast.ExUid (loc, "Stream"),
                           MLast.ExUid (loc, "Error")),
                        estr))
-             | Some None ->
+             | SpoBang ->
                  MLast.ExApp
                    (loc, MLast.ExLid (loc, "raise"),
                     MLast.ExAcc
                       (loc, MLast.ExUid (loc, "Stream"),
                        MLast.ExUid (loc, "Failure")))
-             | None ->
+             | SpoNoth ->
                  MLast.ExApp
                    (loc, MLast.ExLid (loc, "raise"),
                     MLast.ExApp
@@ -349,7 +355,7 @@ let stream_patterns_term loc ekont tspel =
 
 let rec group_terms =
   function
-    ((SpTrm (loc, p, w), None) :: spcl, epo, e) :: spel ->
+    ((SpTrm (loc, p, w), SpoNoth) :: spcl, epo, e) :: spel ->
       let (tspel, spel) = group_terms spel in
       (p, w, loc, spcl, epo, e) :: tspel, spel
   | spel -> [], spel

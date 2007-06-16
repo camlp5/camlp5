@@ -120,13 +120,13 @@ Grammar.extend
       Gramext.action
         (fun (sp : 'stream_patt_comp_err list) _ (spc : 'stream_patt_comp)
            (loc : Token.location) ->
-           ((spc, None) :: sp : 'stream_patt));
+           ((spc, SpoNoth) :: sp : 'stream_patt));
       [Gramext.Snterm
          (Grammar.Entry.obj
             (stream_patt_comp : 'stream_patt_comp Grammar.Entry.e))],
       Gramext.action
         (fun (spc : 'stream_patt_comp) (loc : Token.location) ->
-           ([spc, None] : 'stream_patt))]];
+           ([spc, SpoNoth] : 'stream_patt))]];
     Grammar.Entry.obj
       (stream_patt_comp_err : 'stream_patt_comp_err Grammar.Entry.e),
     None,
@@ -136,14 +136,14 @@ Grammar.extend
             (stream_patt_comp : 'stream_patt_comp Grammar.Entry.e))],
       Gramext.action
         (fun (spc : 'stream_patt_comp) (loc : Token.location) ->
-           (spc, None : 'stream_patt_comp_err));
+           (spc, SpoNoth : 'stream_patt_comp_err));
       [Gramext.Snterm
          (Grammar.Entry.obj
             (stream_patt_comp : 'stream_patt_comp Grammar.Entry.e));
        Gramext.Stoken ("", "!")],
       Gramext.action
         (fun _ (spc : 'stream_patt_comp) (loc : Token.location) ->
-           (spc, Some None : 'stream_patt_comp_err));
+           (spc, SpoBang : 'stream_patt_comp_err));
       [Gramext.Snterm
          (Grammar.Entry.obj
             (stream_patt_comp : 'stream_patt_comp Grammar.Entry.e));
@@ -151,7 +151,7 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
       Gramext.action
         (fun (e : 'expr) _ (spc : 'stream_patt_comp) (loc : Token.location) ->
-           (spc, Some (Some e) : 'stream_patt_comp_err))]];
+           (spc, SpoQues e : 'stream_patt_comp_err))]];
     Grammar.Entry.obj (stream_patt_comp : 'stream_patt_comp Grammar.Entry.e),
     None,
     [None, None,

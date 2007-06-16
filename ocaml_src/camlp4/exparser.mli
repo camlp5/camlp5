@@ -26,19 +26,23 @@ type sexp_comp =
   | SeNtr of MLast.loc * MLast.expr
 ;;
 
+type spat_comp_opt =
+    SpoNoth
+  | SpoBang
+  | SpoQues of MLast.expr
+;;
+
 val strm_n : string;;
 
 val cparser :
   MLast.loc -> MLast.patt option ->
-    ((spat_comp * MLast.expr option option) list * MLast.patt option *
-       MLast.expr)
+    ((spat_comp * spat_comp_opt) list * MLast.patt option * MLast.expr)
       list ->
     MLast.expr;;
 
 val cparser_match :
   MLast.loc -> MLast.expr -> MLast.patt option ->
-    ((spat_comp * MLast.expr option option) list * MLast.patt option *
-       MLast.expr)
+    ((spat_comp * spat_comp_opt) list * MLast.patt option * MLast.expr)
       list ->
     MLast.expr;;
 

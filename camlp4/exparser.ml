@@ -23,6 +23,12 @@ type sexp_comp =
   | SeNtr of MLast.loc and MLast.expr ]
 ;
 
+type spat_comp_opt =
+  [ SpoNoth
+  | SpoBang
+  | SpoQues of MLast.expr ]
+;
+
 value strm_n = "strm__";
 value peek_fun loc = <:expr< Stream.peek >>;
 value junk_fun loc = <:expr< Stream.junk >>;
@@ -182,9 +188,9 @@ value rec stream_pattern loc epo e ekont =
       let skont =
         let ekont =
           fun
-          [ Some (Some estr) -> <:expr< raise (Stream.Error $estr$) >>
-          | Some None -> <:expr< raise Stream.Failure >>
-          | None -> <:expr< raise (Stream.Error "") >> ]
+          [ SpoQues estr -> <:expr< raise (Stream.Error $estr$) >>
+          | SpoBang -> <:expr< raise Stream.Failure >>
+          | SpoNoth -> <:expr< raise (Stream.Error "") >> ]
         in
         stream_pattern loc epo e ekont spcl
       in
@@ -200,9 +206,9 @@ value stream_patterns_term loc ekont tspel =
          let e =
            let ekont =
              fun
-             [ Some (Some estr) -> <:expr< raise (Stream.Error $estr$) >>
-             | Some None -> <:expr< raise Stream.Failure >>
-             | None -> <:expr< raise (Stream.Error "") >> ]
+             [ SpoQues estr -> <:expr< raise (Stream.Error $estr$) >>
+             | SpoBang -> <:expr< raise Stream.Failure >>
+             | SpoNoth -> <:expr< raise (Stream.Error "") >> ]
            in
            let skont = stream_pattern loc epo e ekont spcl in
            <:expr< do { $junk_fun loc$ $lid:strm_n$; $skont$ } >>
@@ -216,7 +222,7 @@ value stream_patterns_term loc ekont tspel =
 
 value rec group_terms =
   fun
-  [ [([(SpTrm loc p w, None) :: spcl], epo, e) :: spel] ->
+  [ [([(SpTrm loc p w, SpoNoth) :: spcl], epo, e) :: spel] ->
       let (tspel, spel) = group_terms spel in
       ([(p, w, loc, spcl, epo, e) :: tspel], spel)
   | spel -> ([], spel) ]

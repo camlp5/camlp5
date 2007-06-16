@@ -26,20 +26,24 @@ type sexp_comp =
   | SeNtr of MLast.loc and MLast.expr ]
 ;
 
+type spat_comp_opt =
+  [ SpoNoth
+  | SpoBang
+  | SpoQues of MLast.expr ]
+;
+
 value strm_n : string;
 
 value cparser :
   MLast.loc -> option MLast.patt ->
     list
-      (list (spat_comp * option (option MLast.expr)) * option MLast.patt *
-       MLast.expr) ->
+      (list (spat_comp * spat_comp_opt) * option MLast.patt * MLast.expr) ->
     MLast.expr;
 
 value cparser_match :
   MLast.loc -> MLast.expr -> option MLast.patt ->
     list
-      (list (spat_comp * option (option MLast.expr)) * option MLast.patt *
-       MLast.expr) ->
+      (list (spat_comp * spat_comp_opt) * option MLast.patt * MLast.expr) ->
     MLast.expr;
 
 value cstream : MLast.loc -> list sexp_comp -> MLast.expr;

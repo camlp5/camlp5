@@ -8,6 +8,7 @@
 (* #load "q_MLast.cmo" *)
 
 open Pcaml;;
+open Exparser;;
 
 (**)
 let var () = "buf";;
@@ -64,16 +65,14 @@ let conv_rules loc rl =
     rl
 ;;
 
-let mk_lexer loc rl = Exparser.cparser loc None (conv_rules loc rl);;
+let mk_lexer loc rl = cparser loc None (conv_rules loc rl);;
 
-let mk_lexer_match loc e rl =
-  Exparser.cparser_match loc e None (conv_rules loc rl)
-;;
+let mk_lexer_match loc e rl = cparser_match loc e None (conv_rules loc rl);;
 
 let isolate_char_patt_list =
   let rec loop pl =
     function
-      ([Exparser.SpTrm (_, p, None), None], [_], None) :: rl ->
+      ([SpTrm (_, p, None), SpoNoth], [_], None) :: rl ->
         let p =
           match p with
             MLast.PaChr (_, _) -> p
@@ -104,7 +103,7 @@ let make_rules loc rl sl cl errk =
       let c = fresh_c cl in
       let s =
         let p = MLast.PaAli (loc, p, MLast.PaLid (loc, c)) in
-        Exparser.SpTrm (loc, p, None), errk
+        SpTrm (loc, p, None), errk
       in
       s :: sl, MLast.ExLid (loc, c) :: cl
   | x ->
@@ -114,14 +113,14 @@ let make_rules loc rl sl cl errk =
             let r =
               let p = MLast.PaAli (loc, p, MLast.PaLid (loc, "c")) in
               let e = MLast.ExLid (loc, "c") in
-              [Exparser.SpTrm (loc, p, None), None], [e], None
+              [SpTrm (loc, p, None), SpoNoth], [e], None
             in
             r :: rl
         | None, rl -> rl
       in
       let errk =
         match List.rev rl with
-          ([], _, _) :: _ -> Some None
+          ([], _, _) :: _ -> SpoBang
         | _ -> errk
       in
       let sl =
@@ -129,14 +128,14 @@ let make_rules loc rl sl cl errk =
         else
           let s =
             let b = accum_chars loc cl in
-            let e = Exparser.cparser loc None [[], None, b] in
-            Exparser.SpNtr (loc, MLast.PaLid (loc, var ()), e), Some None
+            let e = cparser loc None [[], None, b] in
+            SpNtr (loc, MLast.PaLid (loc, var ()), e), SpoBang
           in
           s :: sl
       in
       let s =
         let e = mk_lexer loc rl in
-        Exparser.SpNtr (loc, MLast.PaLid (loc, var ()), e), errk
+        SpNtr (loc, MLast.PaLid (loc, var ()), e), errk
       in
       s :: sl, []
 ;;
@@ -147,7 +146,7 @@ let make_any loc norec sl cl errk =
     else
       let c = fresh_c cl in MLast.PaLid (loc, c), MLast.ExLid (loc, c) :: cl
   in
-  let s = Exparser.SpTrm (loc, p, None), errk in s :: sl, cl
+  let s = SpTrm (loc, p, None), errk in s :: sl, cl
 ;;
 
 let next_char s i =
@@ -192,7 +191,7 @@ let make_or_chars loc s norec sl cl errk =
   match pl with
     [] -> sl, cl
   | [MLast.PaChr (_, c)] ->
-      let s = Exparser.SpTrm (loc, MLast.PaChr (loc, c), None), errk in
+      let s = SpTrm (loc, MLast.PaChr (loc, c), None), errk in
       let cl = if norec then cl else MLast.ExChr (loc, c) :: cl in s :: sl, cl
   | pl ->
       let c = fresh_c cl in
@@ -201,7 +200,7 @@ let make_or_chars loc s norec sl cl errk =
           let p = or_patt_of_patt_list loc pl in
           if norec then p else MLast.PaAli (loc, p, MLast.PaLid (loc, c))
         in
-        Exparser.SpTrm (loc, p, None), errk
+        SpTrm (loc, p, None), errk
       in
       let cl = if norec then cl else MLast.ExLid (loc, c) :: cl in s :: sl, cl
 ;;
@@ -210,13 +209,13 @@ let make_sub_lexer loc f sl cl errk =
   let s =
     let buf = accum_chars loc cl in
     let e = MLast.ExApp (loc, f, buf) in
-    let p = MLast.PaLid (loc, var ()) in Exparser.SpNtr (loc, p, e), errk
+    let p = MLast.PaLid (loc, var ()) in SpNtr (loc, p, e), errk
   in
   s :: sl, []
 ;;
 
 let make_lookahd loc pll sl cl errk =
-  let s = Exparser.SpLhd (loc, pll), errk in s :: sl, cl
+  let s = SpLhd (loc, pll), errk in s :: sl, cl
 ;;
 
 let gcl = ref [];;
@@ -258,7 +257,7 @@ Grammar.extend
                 Some p, rl ->
                   let p = MLast.PaAli (loc, p, MLast.PaLid (loc, "c")) in
                   let e = MLast.ExLid (loc, "c") in
-                  ([Exparser.SpTrm (loc, p, None), None], [e], None) :: rl
+                  ([SpTrm (loc, p, None), SpoNoth], [e], None) :: rl
               | None, rl -> rl
             in
             MLast.ExFun
@@ -275,7 +274,7 @@ Grammar.extend
                MLast.ExAcc
                  (loc, MLast.ExUid (loc, "Stream"),
                   MLast.ExLid (loc, "count")),
-               MLast.ExLid (loc, Exparser.strm_n)) :
+               MLast.ExLid (loc, strm_n)) :
             'expr));
       [Gramext.Stoken ("", "$"); Gramext.Stoken ("LIDENT", "empty")],
       Gramext.action (fun _ _ (loc : Token.location) -> (empty loc : 'expr));
@@ -413,20 +412,21 @@ Grammar.extend
       Gramext.action (fun _ (loc : Token.location) -> (true : 'no_rec))]];
     Grammar.Entry.obj (err_kont : 'err_kont Grammar.Entry.e), None,
     [None, None,
-     [[], Gramext.action (fun (loc : Token.location) -> (None : 'err_kont));
+     [[],
+      Gramext.action (fun (loc : Token.location) -> (SpoNoth : 'err_kont));
       [Gramext.Stoken ("", "?");
        Gramext.Snterm
          (Grammar.Entry.obj (simple_expr : 'simple_expr Grammar.Entry.e))],
       Gramext.action
         (fun (e : 'simple_expr) _ (loc : Token.location) ->
-           (Some (Some e) : 'err_kont));
+           (SpoQues e : 'err_kont));
       [Gramext.Stoken ("", "?"); Gramext.Stoken ("STRING", "")],
       Gramext.action
         (fun (s : string) _ (loc : Token.location) ->
-           (Some (Some (MLast.ExStr (loc, s))) : 'err_kont));
+           (SpoQues (MLast.ExStr (loc, s)) : 'err_kont));
       [Gramext.Stoken ("", "!")],
       Gramext.action
-        (fun _ (loc : Token.location) -> (Some None : 'err_kont))]];
+        (fun _ (loc : Token.location) -> (SpoBang : 'err_kont))]];
     Grammar.Entry.obj (act : 'act Grammar.Entry.e), None,
     [None, None,
      [[], Gramext.action (fun (loc : Token.location) -> (None : 'act));

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_rp.ml,v 1.7 2007/01/20 21:42:56 deraugla Exp $ *)
+(* $Id: pa_rp.ml,v 1.8 2007/06/16 14:17:43 deraugla Exp $ *)
 
 open Exparser;
 open Pcaml;
@@ -36,16 +36,16 @@ EXTEND
           (sp, po, e) ] ]
   ;
   stream_patt:
-    [ [ spc = stream_patt_comp -> [(spc, None)]
+    [ [ spc = stream_patt_comp -> [(spc, SpoNoth)]
       | spc = stream_patt_comp; ";";
         sp = LIST1 stream_patt_comp_err SEP ";" ->
-          [(spc, None) :: sp]
+          [(spc, SpoNoth) :: sp]
       | -> [] ] ]
   ;
   stream_patt_comp_err:
-    [ [ spc = stream_patt_comp; "?"; e = expr -> (spc, Some (Some e))
-      | spc = stream_patt_comp; "!" -> (spc, Some None)
-      | spc = stream_patt_comp -> (spc, None) ] ]
+    [ [ spc = stream_patt_comp; "?"; e = expr -> (spc, SpoQues e)
+      | spc = stream_patt_comp; "!" -> (spc, SpoBang)
+      | spc = stream_patt_comp -> (spc, SpoNoth) ] ]
   ;
   stream_patt_comp:
     [ [ "`"; p = patt; eo = OPT [ "when"; e = expr -> e ] -> SpTrm loc p eo

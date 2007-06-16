@@ -8,6 +8,7 @@
 #load "q_MLast.cmo";
 
 open Pcaml;
+open Exparser;
 
 (**)
 value var () = "buf";
@@ -51,17 +52,17 @@ value conv_rules loc rl =
 ;
 
 value mk_lexer loc rl =
-  Exparser.cparser loc None (conv_rules loc rl)
+  cparser loc None (conv_rules loc rl)
 ;
 
 value mk_lexer_match loc e rl =
-  Exparser.cparser_match loc e None (conv_rules loc rl)
+  cparser_match loc e None (conv_rules loc rl)
 ;
 
 value isolate_char_patt_list =
   loop [] where rec loop pl =
     fun
-    [ [([(Exparser.SpTrm _ p None, None)], [_], None) :: rl] ->
+    [ [([(SpTrm _ p None, SpoNoth)], [_], None) :: rl] ->
         let p =
           match p with
           [ <:patt< $chr:_$ >> -> p
@@ -90,7 +91,7 @@ value make_rules loc rl sl cl errk =
       let c = fresh_c cl in
       let s =
         let p = <:patt< ($p$ as $lid:c$) >> in
-        (Exparser.SpTrm loc p None, errk)
+        (SpTrm loc p None, errk)
       in
       ([s :: sl], [<:expr< $lid:c$ >> :: cl])
   | x ->
@@ -100,14 +101,14 @@ value make_rules loc rl sl cl errk =
             let r =
               let p = <:patt< ($p$ as c) >> in
               let e = <:expr< c >> in
-              ([(Exparser.SpTrm loc p None, None)], [e], None)
+              ([(SpTrm loc p None, SpoNoth)], [e], None)
             in
             [r :: rl]
         | (None, rl) -> rl ]
       in
       let errk =
         match List.rev rl with
-        [ [([], _, _) :: _] -> Some None
+        [ [([], _, _) :: _] -> SpoBang
         | _ -> errk ]
       in
       let sl =
@@ -115,14 +116,14 @@ value make_rules loc rl sl cl errk =
         else
           let s =
             let b = accum_chars loc cl in
-            let e = Exparser.cparser loc None [([], None, b)] in
-            (Exparser.SpNtr loc <:patt< $lid:var ()$ >> e, Some None)
+            let e = cparser loc None [([], None, b)] in
+            (SpNtr loc <:patt< $lid:var ()$ >> e, SpoBang)
           in
           [s :: sl]
       in
       let s =
         let e = mk_lexer loc rl in
-        (Exparser.SpNtr loc <:patt< $lid:var ()$ >> e, errk)
+        (SpNtr loc <:patt< $lid:var ()$ >> e, errk)
       in
       ([s :: sl], []) ]
 ;
@@ -134,7 +135,7 @@ value make_any loc norec sl cl errk =
       let c = fresh_c cl in
       (<:patt< $lid:c$ >>, [<:expr< $lid:c$ >> :: cl])
   in
-  let s = (Exparser.SpTrm loc p None, errk) in
+  let s = (SpTrm loc p None, errk) in
   ([s :: sl], cl)
 ;
 
@@ -179,7 +180,7 @@ value make_or_chars loc s norec sl cl errk =
   match pl with
   [ [] -> (sl, cl)
   | [<:patt< $chr:c$ >>] ->
-      let s = (Exparser.SpTrm loc <:patt< $chr:c$ >> None, errk) in
+      let s = (SpTrm loc <:patt< $chr:c$ >> None, errk) in
       let cl = if norec then cl else [<:expr< $chr:c$ >> :: cl] in
       ([s :: sl], cl)
   | pl ->
@@ -189,7 +190,7 @@ value make_or_chars loc s norec sl cl errk =
           let p = or_patt_of_patt_list loc pl in
           if norec then p else <:patt< ($p$ as $lid:c$) >>
         in
-        (Exparser.SpTrm loc p None, errk)
+        (SpTrm loc p None, errk)
       in
       let cl = if norec then cl else [<:expr< $lid:c$ >> :: cl] in
       ([s :: sl], cl) ]
@@ -200,13 +201,13 @@ value make_sub_lexer loc f sl cl errk =
     let buf = accum_chars loc cl in
     let e = <:expr< $f$ $buf$ >> in
     let p = <:patt< $lid:var ()$ >> in
-    (Exparser.SpNtr loc p e, errk)
+    (SpNtr loc p e, errk)
   in
   ([s :: sl], [])
 ;
 
 value make_lookahd loc pll sl cl errk =
-  let s = (Exparser.SpLhd loc pll, errk) in
+  let s = (SpLhd loc pll, errk) in
   ([s :: sl], cl)
 ;
 
@@ -221,7 +222,7 @@ EXTEND
             [ (Some p, rl) ->
                 let p = <:patt< ($p$ as c) >> in
                 let e = <:expr< c >> in
-                [([(Exparser.SpTrm loc p None, None)], [e], None) :: rl]
+                [([(SpTrm loc p None, SpoNoth)], [e], None) :: rl]
             | (None, rl) -> rl ]
           in
           <:expr< fun $lid:var ()$ -> $mk_lexer loc rl$ >>
@@ -242,7 +243,7 @@ EXTEND
       | "$"; LIDENT "empty" ->
           empty loc
       | "$"; LIDENT "pos" ->
-          <:expr< Stream.count $lid:Exparser.strm_n$ >> ] ]
+          <:expr< Stream.count $lid:strm_n$ >> ] ]
   ;
   rules:
     [ [ "["; rl = LIST0 rule SEP "|"; "]" -> rl ] ]
@@ -285,10 +286,10 @@ EXTEND
       | -> False ] ]
   ;
   err_kont:
-    [ [ "!" -> Some None
-      | "?"; s = STRING -> Some (Some <:expr< $str:s$ >>)
-      | "?"; e = simple_expr -> Some (Some e)
-      | -> None ] ]
+    [ [ "!" -> SpoBang
+      | "?"; s = STRING -> SpoQues <:expr< $str:s$ >>
+      | "?"; e = simple_expr -> SpoQues e
+      | -> SpoNoth ] ]
   ;
   act:
     [ [ "->"; e = expr -> Some e
