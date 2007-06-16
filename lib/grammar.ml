@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.15 2007/06/12 11:47:00 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.16 2007/06/16 00:30:42 deraugla Exp $ *)
 
 open Stdpp;
 open Gramext;
@@ -95,7 +95,7 @@ value print_levels ppf elev =
       (fun sep lev -> do {
          let rules =
            List.map (fun t -> [Sself :: t]) (flatten_tree lev.lsuffix) @
-             flatten_tree lev.lprefix
+           flatten_tree lev.lprefix
          in
          fprintf ppf "%t@[<hov 2>" sep;
          match lev.lname with
@@ -254,7 +254,7 @@ and name_of_tree_failed entry =
           List.fold_left
             (fun s tok ->
                (if s = "" then "" else s ^ " ") ^
-                 entry.egram.glexer.Token.tok_text tok)
+               entry.egram.glexer.Token.tok_text tok)
             "" tokl ]
   | DeadEnd | LocAct _ _ -> "???" ]
 ;
