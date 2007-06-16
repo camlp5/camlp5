@@ -95,6 +95,9 @@ value rec unstream_pattern_kont =
       ([(SpNtr loc p f, err e2) :: sp], epo, e)
   | <:expr< let $lid:p$ = Stream.count strm__ in $e$ >> ->
       ([], Some p, e)
+  | <:expr< let $p$ = strm__ in $e$ >> ->
+      let (sp, epo, e) = unstream_pattern_kont e in
+      ([(SpStr loc p, None) :: sp], epo, e)
   | <:expr< let $p$ = $e1$ in $e2$ >> as ge ->
       if contains_strm__ e1 then
         let (f, err) =
@@ -255,6 +258,7 @@ value stream_patt_comp ctx b spc k =
            let s1 = patt ctx b p " =" in
            let s2 = expr (shi ctx 2) (tab (shi ctx 2)) e k in
            sprintf "%s\n%s" s1 s2)
+  | SpStr _ p -> patt ctx b p k
   | _ -> not_impl "stream_patt_comp" ctx b spc k ]
 ;
 
@@ -301,12 +305,15 @@ value parser_case ctx b (sp, po, e) k =
            sprintf "%s[: %s :]%s -> %s%s" b (stream_patt ctx "" sp "")
              (ident_option po) (expr ctx "" e "") k)
         (fun () ->
-           let s1 =
-             stream_patt ctx (sprintf "%s[: " b) sp
-               (sprintf " :]%s ->" (ident_option po))
-           in
-           let s2 = expr (shi ctx 2) (tab (shi ctx 2)) e k in
-           sprintf "%s\n%s" s1 s2) ]
+           match flatten_sequence e with
+           [ Some el -> not_impl "sequence" ctx b sp k
+           | None ->
+               let s1 =
+                 stream_patt ctx (sprintf "%s[: " b) sp
+                   (sprintf " :]%s ->" (ident_option po))
+               in
+               let s2 = expr (shi ctx 2) (tab (shi ctx 2)) e k in
+               sprintf "%s\n%s" s1 s2 ]) ]
 ;
 
 value parser_case_sh ctx b spe k = parser_case (shi ctx 2) b spe k;

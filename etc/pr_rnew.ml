@@ -239,14 +239,12 @@ value sequencify e =
             ...
           }
  *)
-value sequence_box ctx horiz vertic expr el k =
-  let bs = " do {" in
-  let es = "}" in
-  let s1 = horiz_vertic (fun () -> horiz bs) (fun () -> vertic bs) in
+value sequence_box ctx bfun expr el k =
+  let s1 = bfun " do {" in
   let s2 =
     vlistl (semi_after expr) expr (shi ctx 2) (tab (shi ctx 2)) el ""
   in
-  let s3 = sprintf "%s%s%s" (tab ctx) es k in
+  let s3 = sprintf "%s%s%s" (tab ctx) "}" k in
   sprintf "%s\n%s\n%s" s1 s2 s3
 ;
 
@@ -298,7 +296,11 @@ value rec where_binding ctx b (p, e, body) k =
            let expr_wh =
              if flag_where_in_sequences.val then expr_wh else expr
            in
-           sequence_box ctx horiz_where vertic_where expr_wh el k
+           sequence_box ctx
+             (fun k ->
+                horiz_vertic (fun () -> horiz_where k)
+                  (fun () -> vertic_where k))
+             expr_wh el k
        | None ->
            let s1 =
              horiz_vertic (fun () -> horiz_where "")
@@ -313,9 +315,9 @@ and expr_wh ctx b e k =
   | None -> expr ctx b e k ]
 ;
 
-value sequence_box2 ctx horiz vertic el k =
+value sequence_box2 ctx bfun el k =
   let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
-  sequence_box ctx horiz vertic expr_wh el k
+  sequence_box ctx bfun expr_wh el k
 ;
 
 (* Pretty printing improvements (optional):
@@ -335,9 +337,7 @@ value record_binding ctx b (p, e) k =
     (fun () ->
        match sequencify e with
        [ Some el ->
-           sequence_box2 ctx
-             (fun k -> hlist patt ctx b pl (sprintf " =%s" k))
-             (fun k -> hlist patt ctx b pl (sprintf " =%s" k))
+           sequence_box2 ctx (fun k -> hlist patt ctx b pl (sprintf " =%s" k))
              el k
        | None ->
            sprintf "%s\n%s" (hlist patt ctx b pl " =")
@@ -390,17 +390,19 @@ value value_binding ctx b (p, e) ko =
        [ Some el ->
            sequence_box2 ctx
              (fun k ->
-                sprintf "%s%s%s =%s" b (hlist patt ctx "" pl "")
-                  (match tyo with
-                   [ Some t -> sprintf " : %s" (ctyp ctx "" t "")
-                   | None -> "" ])
-                  k)
-             (fun k ->
-                sprintf "%s%s%s =%s" b (hlist patt ctx "" pl "")
-                  (match tyo with
-                   [ Some t -> sprintf " : %s" (ctyp ctx "" t "")
-                   | None -> "" ])
-                  k)
+                horiz_vertic
+                  (fun () ->
+                     sprintf "%s%s%s =%s" b (hlist patt ctx "" pl "")
+                       (match tyo with
+                        [ Some t -> sprintf " : %s" (ctyp ctx "" t "")
+                        | None -> "" ])
+                       k)
+                  (fun () ->
+                     sprintf "%s%s%s =%s" b (hlist patt ctx "" pl "")
+                       (match tyo with
+                        [ Some t -> sprintf " : %s" (ctyp ctx "" t "")
+                        | None -> "" ])
+                       k))
              el (match ko with [ Some (_, k) -> k | None -> "" ])
        | None ->
            let s1 =
@@ -455,9 +457,7 @@ value let_binding ctx b (p, e) is_last =
          match sequencify e with
          [ Some el ->
              sequence_box2 ctx
-               (fun k -> hlist patt ctx b pl (sprintf " =%s" k))
-               (fun k -> hlist patt ctx b pl (sprintf " =%s" k))
-               el ""
+               (fun k -> hlist patt ctx b pl (sprintf " =%s" k)) el ""
          | None ->
              let s1 = hlist patt ctx b pl " =" in
              let s2 = expr_wh (shi ctx 2) (tab (shi ctx 2)) e "" in
@@ -502,7 +502,11 @@ value match_assoc ctx b (p, w, e) k =
          | None -> patt_as ctx b p (sprintf " ->%s" k) ]
        in
        match sequencify e with
-       [ Some el -> sequence_box2 ctx (fun _ -> sprintf "\n") patt_arrow el k
+       [ Some el ->
+           sequence_box2 ctx
+             (fun k ->
+                horiz_vertic (fun _ -> sprintf "\n") (fun () -> patt_arrow k))
+                el k
        | None ->
            let s1 = patt_arrow "" in
            let s2 = expr_wh (shi ctx 2) (tab (shi ctx 2)) e k in
@@ -774,7 +778,11 @@ value expr_top =
                    in
                    match sequencify e2 with
                    [ Some el ->
-                       sequence_box2 ctx horiz_if_then vertic_if_then el ""
+                       sequence_box2 ctx
+                         (fun k ->
+                            horiz_vertic (fun () -> horiz_if_then k)
+                              (fun () -> vertic_if_then k))
+                          el ""
                    | None ->
                        let s1 =
                          horiz_vertic (fun () -> horiz_if_then "")
@@ -801,8 +809,11 @@ value expr_top =
                 (fun () ->
                    match sequencify e3 with
                    [ Some el ->
-                       sequence_box2 ctx (fun _ -> sprintf "\n")
-                         (fun k -> sprintf "%selse%s" (tab ctx) k) el k
+                       sequence_box2 ctx
+                         (fun k ->
+                            horiz_vertic (fun () -> sprintf "\n")
+                              (fun () -> sprintf "%selse%s" (tab ctx) k))
+                         el k
                    | None ->
                        let s = expr_wh (shi ctx 2) (tab (shi ctx 2)) e3 k in
                        sprintf "%selse\n%s" (tab ctx) s ])
@@ -827,7 +838,11 @@ value expr_top =
                  in
                  match sequencify e1 with
                  [ Some el ->
-                     sequence_box2 ctx (fun _ -> sprintf "\n") fun_arrow el k
+                     sequence_box2 ctx
+                       (fun k ->
+                          horiz_vertic (fun _ -> sprintf "\n")
+                            (fun () -> fun_arrow k))
+                       el k
                  | None ->
                      let s1 = fun_arrow "" in
                      let s2 = expr (shi ctx 2) (tab (shi ctx 2)) e1 k in
@@ -871,7 +886,6 @@ value expr_top =
                        match sequencify e1 with
                        [ Some el ->
                            sequence_box2 ctx
-                             (fun k -> sprintf "%s%s%s" b op k)
                              (fun k -> sprintf "%s%s%s" b op k) el ""
                        | None ->
                            let s =
@@ -898,8 +912,11 @@ value expr_top =
                         let s =
                           match sequencify e1 with
                           [ Some el ->
-                              sequence_box2 ctx (fun _ -> sprintf "\n")
-                                (fun k -> sprintf "%s%s%s" b op k) el ""
+                              sequence_box2 ctx
+                                (fun k ->
+                                   horiz_vertic (fun _ -> sprintf "\n")
+                                     (fun () -> sprintf "%s%s%s" b op k))
+                                el ""
                           | None ->
                               let s =
                                 expr_wh (shi ctx 2) (tab (shi ctx 2)) e1 ""
