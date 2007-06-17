@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: oprint.ml,v 1.5 2007/05/31 08:53:27 deraugla Exp $ *)
+(* $Id: oprint.ml,v 1.6 2007/06/17 20:01:36 deraugla Exp $ *)
 
 open Format;
 open Outcometree;
@@ -83,23 +83,21 @@ value print_out_value ppf tree =
   and print_fields first ppf =
     fun
     [ [] -> ()
-    | [(name, tree) :: fields] ->
-        do {
-          if not first then fprintf ppf ";@ " else ();
-          fprintf ppf "@[<1>%a@ =@ %a@]" print_ident name
-            (cautious print_tree) tree;
-          print_fields False ppf fields
-        } ]
+    | [(name, tree) :: fields] -> do {
+        if not first then fprintf ppf ";@ " else ();
+        fprintf ppf "@[<1>%a@ =@ %a@]" print_ident name (cautious print_tree)
+          tree;
+        print_fields False ppf fields
+      } ]
   and print_tree_list print_item sep ppf tree_list =
     let rec print_list first ppf =
       fun
       [ [] -> ()
-      | [tree :: tree_list] ->
-          do {
-            if not first then fprintf ppf "%s@ " sep else ();
-            print_item ppf tree;
-            print_list False ppf tree_list
-          } ]
+      | [tree :: tree_list] -> do {
+          if not first then fprintf ppf "%s@ " sep else ();
+          print_item ppf tree;
+          print_list False ppf tree_list
+        } ]
     in
     cautious (print_list True) ppf tree_list
   in
@@ -160,8 +158,8 @@ and print_simple_out_type ppf =
       let print_fields ppf =
         fun
         [ Ovar_fields fields ->
-            print_list print_poly_variant (fun ppf -> fprintf ppf "@;<1 -2>| ")
-              ppf fields
+            print_list print_poly_variant
+              (fun ppf -> fprintf ppf "@;<1 -2>| ") ppf fields
         | Ovar_name id tyl ->
             fprintf ppf "@[%a%a@]" print_typargs tyl print_ident id ]
       in
@@ -179,14 +177,13 @@ and print_fields rest ppf =
       match rest with
       [ Some non_gen -> fprintf ppf "%s.." (if non_gen then "_" else "")
       | None -> () ]
-  | [(s, t)] ->
-      do {
-        fprintf ppf "%s : %a" s print_out_type t;
-        match rest with
-        [ Some _ -> fprintf ppf ";@ "
-        | None -> () ];
-        print_fields rest ppf []
-      }
+  | [(s, t)] -> do {
+      fprintf ppf "%s : %a" s print_out_type t;
+      match rest with
+      [ Some _ -> fprintf ppf ";@ "
+      | None -> () ];
+      print_fields rest ppf []
+    }
   | [(s, t) :: l] ->
       fprintf ppf "%s : %a;@ %a" s print_out_type t (print_fields rest) l ]
 and print_poly_variant ppf (l, opt_amp, tyl) =
@@ -275,8 +272,8 @@ and print_signature_body ppf =
   [ [] -> ()
   | [item] -> print_out_sig_item ppf item
   | [item :: items] ->
-      fprintf ppf "%a@ %a" print_out_sig_item item
-        print_signature_body items ]
+      fprintf ppf "%a@ %a" print_out_sig_item item print_signature_body
+        items ]
 and print_out_sig_item ppf =
   fun
   [ Osig_class vir_flag name params clt ->
@@ -301,30 +298,27 @@ and print_out_sig_item ppf =
       let pr_prims ppf =
         fun
         [ [] -> ()
-        | [s :: sl] ->
-            do {
-              fprintf ppf "@ = \"%s\"" s;
-              List.iter (fun s -> fprintf ppf "@ \"%s\"" s) sl
-            } ]
+        | [s :: sl] -> do {
+            fprintf ppf "@ = \"%s\"" s;
+            List.iter (fun s -> fprintf ppf "@ \"%s\"" s) sl
+          } ]
       in
-      fprintf ppf "@[<2>%s %a :@ %a%a@]" kwd value_ident name
-        print_out_type ty pr_prims prims ]
+      fprintf ppf "@[<2>%s %a :@ %a%a@]" kwd value_ident name print_out_type
+        ty pr_prims prims ]
 and print_out_type_decl_list ppf =
   fun
   [ [] -> ()
   | [x] -> print_out_type_decl "type" ppf x
-  | [x :: l] ->
-      do {
-        print_out_type_decl "type" ppf x;
-        List.iter (fun x -> fprintf ppf "@ %a" (print_out_type_decl "and") x)
-          l
-      } ]
+  | [x :: l] -> do {
+      print_out_type_decl "type" ppf x;
+      List.iter (fun x -> fprintf ppf "@ %a" (print_out_type_decl "and") x) l
+    } ]
 and print_out_type_decl kwd ppf (name, args, ty, constraints) =
   let print_constraints ppf params =
     List.iter
       (fun (ty1, ty2) ->
-         fprintf ppf "@ @[<2>constraint %a =@ %a@]" print_out_type
-           ty1 print_out_type ty2)
+         fprintf ppf "@ @[<2>constraint %a =@ %a@]" print_out_type ty1
+           print_out_type ty2)
       params
   in
   let type_parameter ppf (ty, (co, cn)) =
@@ -366,8 +360,8 @@ and print_out_type_decl kwd ppf (name, args, ty, constraints) =
         (print_list print_out_constr (fun ppf -> fprintf ppf "@ | ")) constrs
         print_constraints constraints
   | ty ->
-      fprintf ppf "@[<2>@[<hv 2>%t =@ %a@]%a@]" print_name_args
-        print_out_type ty print_constraints constraints ]
+      fprintf ppf "@[<2>@[<hv 2>%t =@ %a@]%a@]" print_name_args print_out_type
+        ty print_constraints constraints ]
 and print_out_constr ppf (name, tyl) =
   match tyl with
   [ [] -> fprintf ppf "%s" name
@@ -398,8 +392,8 @@ value rec print_out_class_type ppf =
         fun
         [ [] -> ()
         | tyl ->
-            fprintf ppf "@[<1>[%a]@]@ "
-              (print_typlist print_out_type ",") tyl ]
+            fprintf ppf "@[<1>[%a]@]@ " (print_typlist print_out_type ",")
+              tyl ]
       in
       fprintf ppf "@[%a%a@]" pr_tyl tyl print_ident id
   | Octy_fun lab ty cty ->
@@ -468,11 +462,10 @@ and print_out_sig_item ppf =
       let pr_prims ppf =
         fun
         [ [] -> ()
-        | [s :: sl] ->
-            do {
-              fprintf ppf "@ = \"%s\"" s;
-              List.iter (fun s -> fprintf ppf "@ \"%s\"" s) sl
-            } ]
+        | [s :: sl] -> do {
+            fprintf ppf "@ = \"%s\"" s;
+            List.iter (fun s -> fprintf ppf "@ \"%s\"" s) sl
+          } ]
       in
       fprintf ppf "@[<2>%s %a :@ %a%a@]" kwd value_ident name print_out_type
         ty pr_prims prims ]
@@ -480,12 +473,10 @@ and print_out_type_decl_list ppf =
   fun
   [ [] -> ()
   | [x] -> print_out_type_decl "type" ppf x
-  | [x :: l] ->
-      do {
-        print_out_type_decl "type" ppf x;
-        List.iter (fun x -> fprintf ppf "@ %a" (print_out_type_decl "and") x)
-          l
-      } ]
+  | [x :: l] -> do {
+      print_out_type_decl "type" ppf x;
+      List.iter (fun x -> fprintf ppf "@ %a" (print_out_type_decl "and") x) l
+    } ]
 and print_out_type_decl kwd ppf (name, args, ty, constraints) =
   let print_constraints ppf params =
     List.iter
@@ -533,8 +524,8 @@ and print_out_type_decl kwd ppf (name, args, ty, constraints) =
         (print_list print_out_constr (fun ppf -> fprintf ppf "@ | ")) constrs
         print_constraints constraints
   | ty ->
-      fprintf ppf "@[<2>@[<hv 2>%t =@ %a@]%a@]" print_name_args
-        print_out_type ty print_constraints constraints ]
+      fprintf ppf "@[<2>@[<hv 2>%t =@ %a@]%a@]" print_name_args print_out_type
+        ty print_constraints constraints ]
 and print_out_constr ppf (name, tyl) =
   match tyl with
   [ [] -> fprintf ppf "%s" name
@@ -561,15 +552,14 @@ value print_out_exception ppf exn outv =
 value rec print_items ppf =
   fun
   [ [] -> ()
-  | [(tree, valopt) :: items] ->
-      do {
-        match valopt with
-        [ Some v ->
-            fprintf ppf "@[<2>%a =@ %a@]" Toploop.print_out_sig_item.val tree
-              Toploop.print_out_value.val v
-        | None -> fprintf ppf "@[%a@]" Toploop.print_out_sig_item.val tree ];
-        if items <> [] then fprintf ppf "@ %a" print_items items else ()
-      } ]
+  | [(tree, valopt) :: items] -> do {
+      match valopt with
+      [ Some v ->
+          fprintf ppf "@[<2>%a =@ %a@]" Toploop.print_out_sig_item.val tree
+            Toploop.print_out_value.val v
+      | None -> fprintf ppf "@[%a@]" Toploop.print_out_sig_item.val tree ];
+      if items <> [] then fprintf ppf "@ %a" print_items items else ()
+    } ]
 ;
 
 value print_out_phrase ppf =
