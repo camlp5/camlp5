@@ -18,42 +18,39 @@ open Stdpp;
 
 value highlight_locations lb loc1 loc2 =
   let loc1 = (Stdpp.first_pos loc1, Stdpp.last_pos loc1) in
-  try
-    let pos0 = - lb.lex_abs_pos in
-    do {
-      if pos0 < 0 then raise Exit else ();
-      let pos_at_bol = ref 0 in
-      print_string "Toplevel input:\n# ";
-      for pos = 0 to lb.lex_buffer_len - pos0 - 1 do {
-        let c = lb.lex_buffer.[pos + pos0] in
-        if c = '\n' then do {
-          if pos_at_bol.val <= fst loc1 && snd loc1 <= pos then do {
-            print_string "\n  ";
-            for i = pos_at_bol.val to fst loc1 - 1 do { print_char ' ' };
-            for i = fst loc1 to snd loc1 - 1 do { print_char '^' };
-            print_char '\n'
-          }
-          else if pos_at_bol.val <= fst loc1 && fst loc1 < pos then do {
-            print_char '\r';
-            print_char (if pos_at_bol.val = 0 then '#' else ' ');
-            print_char ' ';
-            for i = pos_at_bol.val to fst loc1 - 1 do { print_char '.' };
-            print_char '\n'
-          }
-          else if pos_at_bol.val <= snd loc1 && snd loc1 < pos then do {
-            for i = pos - 1 downto snd loc1 do { print_string "\008.\008" };
-            print_char '\n'
-          }
-          else print_char '\n';
-          pos_at_bol.val := pos + 1;
-          if pos < lb.lex_buffer_len - pos0 - 1 then
-            print_string "  "
-          else ()
+  try do {
+    let pos0 = -lb.lex_abs_pos in
+    if pos0 < 0 then raise Exit else ();
+    let pos_at_bol = ref 0 in
+    print_string "Toplevel input:\n# ";
+    for pos = 0 to lb.lex_buffer_len - pos0 - 1 do {
+      let c = lb.lex_buffer.[pos+pos0] in
+      if c = '\n' then do {
+        if pos_at_bol.val <= fst loc1 && snd loc1 <= pos then do {
+          print_string "\n  ";
+          for i = pos_at_bol.val to fst loc1 - 1 do { print_char ' ' };
+          for i = fst loc1 to snd loc1 - 1 do { print_char '^' };
+          print_char '\n'
         }
-        else print_char c
-      };
-      flush stdout
-    }
+        else if pos_at_bol.val <= fst loc1 && fst loc1 < pos then do {
+          print_char '\r';
+          print_char (if pos_at_bol.val = 0 then '#' else ' ');
+          print_char ' ';
+          for i = pos_at_bol.val to fst loc1 - 1 do { print_char '.' };
+          print_char '\n'
+        }
+        else if pos_at_bol.val <= snd loc1 && snd loc1 < pos then do {
+          for i = pos - 1 downto snd loc1 do { print_string "\008.\008" };
+          print_char '\n'
+        }
+        else print_char '\n';
+        pos_at_bol.val := pos + 1;
+        if pos < lb.lex_buffer_len - pos0 - 1 then print_string "  " else ()
+      }
+      else print_char c;
+    };
+    flush stdout
+  }
   with
   [ Exit -> () ]
 ;
@@ -88,99 +85,93 @@ value wrap f shfn lb =
   try f cs with
   [ Exc_located _ (Sys.Break as x) -> raise x
   | End_of_file as x -> raise x
-  | x ->
+  | x -> do {
       let x =
         match x with
         [ Exc_located loc x -> do { print_location lb loc; x }
         | x -> x ]
       in
-      do {
-        match x with
-        [ Stream.Failure | Stream.Error _ -> Pcaml.sync.val cs
-        | _ -> () ];
-        Format.open_hovbox 0;
-        Pcaml.report_error x;
-        Format.close_box ();
-        Format.print_newline ();
-        raise Exit
-      } ]
+      match x with
+      [ Stream.Failure | Stream.Error _ -> Pcaml.sync.val cs
+      | _ -> () ];
+      Format.open_hovbox 0;
+      Pcaml.report_error x;
+      Format.close_box ();
+      Format.print_newline ();
+      raise Exit
+    } ]
 ;
 
 value first_phrase = ref True;
 
-value toplevel_phrase cs =
-  do {
-    if Sys.interactive.val && first_phrase.val then do {
-      first_phrase.val := False;
-      Printf.eprintf "\tCamlp4s Parsing version %s\n\n" Pcaml.version;
-      flush stderr;
-    }
-    else ();
-    match Grammar.Entry.parse Pcaml.top_phrase cs with
-    [ Some phr -> Ast2pt.phrase phr
-    | None -> raise End_of_file ];
+value toplevel_phrase cs = do {
+  if Sys.interactive.val && first_phrase.val then do {
+    first_phrase.val := False;
+    Printf.eprintf "\tCamlp4s Parsing version %s\n\n" Pcaml.version;
+    flush stderr
   }
-;
+  else ();
+  match Grammar.Entry.parse Pcaml.top_phrase cs with
+  [ Some phr -> Ast2pt.phrase phr
+  | None -> raise End_of_file ]
+};
 
 Pcaml.add_directive "load"
   (fun
    [ Some <:expr< $str:s$ >> -> Topdirs.dir_load Format.std_formatter s
-   | Some _ | None -> raise Not_found ])
-;
+   | Some _ | None -> raise Not_found ]);
 
 Pcaml.add_directive "directory"
   (fun
    [ Some <:expr< $str:s$ >> -> Topdirs.dir_directory s
-   | Some _ | None -> raise Not_found ])
-;
+   | Some _ | None -> raise Not_found ]);
 
-value use_file cs =
+value use_file cs = do {
   let v = Pcaml.input_file.val in
-  do {
-    Pcaml.input_file.val := Toploop.input_name.val;
-    let restore () = Pcaml.input_file.val := v in
-    try
-      let (pl0, eoi) =
-        (* directives at beginning of the file are executed at once,
-           to allow them to do possible syntax extensions *)
+  Pcaml.input_file.val := Toploop.input_name.val;
+  let restore () = Pcaml.input_file.val := v in
+  try do {
+    let (pl0, eoi) =
+      (* directives at beginning of the file are executed at once,
+         to allow them to do possible syntax extensions *)
+      loop () where rec loop () =
+        let (pl, stopped_at_directive) =
+          Grammar.Entry.parse Pcaml.use_file cs
+        in
+        if stopped_at_directive then
+          match pl with
+          [ [MLast.StDir loc s eo] ->
+              let ok =
+                try do {
+                  let f = Pcaml.find_directive s in
+                  f eo;
+                  True
+                }
+                with
+                [ Not_found -> False ]
+              in
+              if ok then loop () else (pl, False)
+          | _ -> (pl, False) ]
+        else (pl, True)
+    in
+    let pl =
+      if eoi then []
+      else
         loop () where rec loop () =
+          (* in the middle of the file, directives are treated by ocaml *)
           let (pl, stopped_at_directive) =
             Grammar.Entry.parse Pcaml.use_file cs
           in
-          if stopped_at_directive then
-            match pl with
-            [ [MLast.StDir loc s eo] -> do {
-                let ok =
-                  try do {
-                    let f = Pcaml.find_directive s in
-                    f eo;
-                    True
-                  }
-                  with
-                  [ Not_found -> False ]
-                in
-                if ok then loop () else (pl, False)
-              }
-            | _ -> (pl, False) ]
-          else (pl, True)
-      in
-      let pl =
-        if eoi then []
-        else
-          loop () where rec loop () =
-            (* in the middle of the file, directives are treated by ocaml *)
-            let (pl, stopped_at_directive) =
-              Grammar.Entry.parse Pcaml.use_file cs
-            in
-            if stopped_at_directive then pl @ loop () else pl
-      in
-      let r = pl0 @ pl in
-      let r = List.map Ast2pt.phrase r in
-      do { restore (); r }
-    with e ->
-      do { restore (); raise e }
+          if stopped_at_directive then pl @ loop () else pl
+    in
+    let r = pl0 @ pl in
+    let r = List.map Ast2pt.phrase r in
+    restore ();
+    r
   }
-;
+  with e ->
+    do { restore (); raise e }
+};
 
 Toploop.parse_toplevel_phrase.val :=
   wrap toplevel_phrase (fun _ -> 0)

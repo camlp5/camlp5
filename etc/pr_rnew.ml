@@ -306,7 +306,11 @@ value rec where_binding ctx b (p, e, body) k =
              horiz_vertic (fun () -> horiz_where "")
                (fun () -> vertic_where "")
            in
-           let s2 = expr (shi ctx 2) (tab (shi ctx 2)) body k in
+           let s2 =
+             let ccc = comm_bef (shi ctx 2) (MLast.loc_of_expr body) in
+             let s = expr (shi ctx 2) (tab (shi ctx 2)) body k in
+             sprintf "%s%s" ccc s
+           in
            sprintf "%s\n%s" s1 s2 ])
 
 and expr_wh ctx b e k =
@@ -460,7 +464,11 @@ value let_binding ctx b (p, e) is_last =
                (fun k -> hlist patt ctx b pl (sprintf " =%s" k)) el ""
          | None ->
              let s1 = hlist patt ctx b pl " =" in
-             let s2 = expr_wh (shi ctx 2) (tab (shi ctx 2)) e "" in
+             let s2 =
+               let ccc = comm_bef (shi ctx 2) (MLast.loc_of_expr e) in
+               let s = expr_wh (shi ctx 2) (tab (shi ctx 2)) e "" in
+               sprintf "%s%s" ccc s
+             in
              sprintf "%s\n%s" s1 s2 ]
        in
        if is_last then sprintf "%s\n%sin" s (tab ctx) else s)

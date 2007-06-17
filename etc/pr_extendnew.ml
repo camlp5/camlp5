@@ -316,10 +316,10 @@ and simple_symbol ctx b sy k =
   | Srules rl ->
       horiz_vertic
         (fun () ->
-           hlist2 rule (bar_before rule) (shi ctx 2) (sprintf "%s[ " b) rl
+           hlist2 rule (bar_before rule) ctx (sprintf "%s[ " b) rl
              ("", sprintf " ]%s" k))
         (fun () ->
-           vlist2 rule (bar_before rule) (shi ctx 2) (sprintf "%s[ " b) rl
+           vlist2 rule (bar_before rule) ctx (sprintf "%s[ " b) rl
              ("", sprintf " ]%s" k))
   | Stoken (Left ("", _) | Left (_, "")) -> symbol ctx b sy k
   | Snterml _ _ | Slist0 _ | Slist0sep _ _ | Slist1 _ | Slist1sep _ _ ->
