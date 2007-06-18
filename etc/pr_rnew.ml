@@ -176,12 +176,14 @@ value module_expr ctx b z k = pr_module_expr.pr_fun "top" ctx b z k;
 value module_type ctx b z k = pr_module_type.pr_fun "top" ctx b z k;
 value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
 
+(* expression with adding the possible comment before *)
 value comm_expr expr ctx b z k =
   let ccc = comm_bef ctx (MLast.loc_of_expr z) in
   sprintf "%s%s" ccc (expr ctx b z k)
 ;
 
-value comm_patt_expr f ctx b z k =
+(* couple pattern/anytype with adding the possible comment before *)
+value comm_patt_any f ctx b z k =
   let ccc = comm_bef ctx (MLast.loc_of_patt (fst z)) in
   sprintf "%s%s" ccc (f ctx b z k)
 ;
@@ -1242,7 +1244,7 @@ value expr_simple =
   | <:expr< {$list:lel$} >> ->
       fun curr next ctx b k ->
         let lxl = List.map (fun lx -> (lx, ";")) lel in
-        plist (comm_patt_expr record_binding) 0 (shi ctx 1) (sprintf "%s{" b)
+        plist (comm_patt_any record_binding) 0 (shi ctx 1) (sprintf "%s{" b)
           lxl (sprintf "}%s" k)
   | <:expr< {($e$) with $list:lel$} >> ->
       fun curr next ctx b k ->
