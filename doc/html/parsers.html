@@ -32,16 +32,46 @@
 
 <h1>Parsers of streams</h1>
 
-<p>We describe here the syntax of the classical parsers of streams of
-Camlp4. They have existed since many years, but some new extensions
-were added: lookahead, indicator of "no error" to generate shorter
-code and "let..in" statement.</p>
+<p>We describe here the syntax and the semantics of the parsers of
+streams of Camlp4. Streams are kinds of lazy lists. The parsers of
+these streams use recursive descendent method, which is the most
+natural one in functionnal languages. In particular, parsers are
+normal functions.
 
-<p>Parsers use recursive descendent algorithm and are normal OCaml
-functions, taking a stream as parameter and returning a value whose
-type depend on the semantic actions, like patterns matchings.</p>
+<p>Notice that the parsers have existed in OCaml since many years (the
+beginning of the 90ies), but some new features have been added in 2007
+(lookahead, "no error" optimization, and let..in statement) in Camlp4s
+distribution. This page describes them also.</p>
 
 <h2>Introduction</h2>
+
+<p>Parsers apply to values of type "Stream.t" defined in the module
+"Stream" of the standard library of OCaml. Like the type "list", the
+type "Stream.t" has a type parameter, indicating the type of its
+elements. They differ from the lists that they are lazy (the elements
+are evaluated as long as the parser need them for its actions), and
+imperative (parsers deletes their first elements when they take their
+parsing decisions) : notice that pure functional parsers exist in
+Camlp4, where the corresponding streams are lazy and functional, the
+analyzed elements remaining in the initial stream and the semantic
+action returning the resulting stream together with the normal
+result, which allow natural limited backtrack but have the drawback
+that it is not easy to find the position of parsing errors when they
+happen.</p>
+
+<p>Parsers of lazy/imperative streams, which are described here, use a
+method named "recursive descendent" : they look at the first element,
+they decide what to do in function of its value, and continue the
+parsing with the remaining elements. Parsers can call other parsers,
+and can be recursive, like normal functions.<p>
+
+<p>Actually, parsers are just pure syntactic sugar. When writing a
+parser in the syntax of the parser, Camlp4 transforms them into normal
+call to functions, use of patterns matchings and try..with statements.
+The pretty printer of Camlp4, by default, display this expanded
+result, without syntax of parsers. A pretty printing kit, when added,
+can rebuild the parsers in their initial syntax and display it.<p>
+
 
 <h2>Syntax</h2>
 
@@ -49,223 +79,36 @@ type depend on the semantic actions, like patterns matchings.</p>
 
 <pre>
             expression ::= parser
-                parser ::= "parser" "[" rules "]"
-                 rules ::= rules rule
+                parser ::= "parser" pos_opt "[" parser_cases "]"
+                         | "parser" pos_opt parser_case
+          parser_cases ::= parser_cases parser_case
                          | &lt;nothing&gt;
-                  rule ::= symbols [ "-&gt;" action ]
-               symbols ::= symbols symbol error
+           parser_case ::= "[:" stream_pattern ":]" pos_opt "->" expression
+        stream_pattern ::= stream_patt_comp
+                         | stream_patt_comp ";" stream_pattern_cont
+                         | "let" LIDENT "=" expression "in" stream_pattern
+   stream_pattern_cont ::= stream_patt_comp_err
+                         | stream_patt_comp_err ";" stream_pattern_cont
+                         | "let" LIDENT "=" expression "in" stream_pattern_cont
+  stream_patt_comp_err ::= stream_patt_comp
+                         | stream_patt_comp "?" expression
+                         | stream_patt_comp "!"
+      stream_patt_comp ::= "`" pattern
+                         | "`" pattern "when" expression
+                         | "?=" lookaheads
+                         | pattern "=" expression
+                         | pattern
+            lookaheads ::= lookaheads "|" lookahead
+                         | lookahead
+             lookahead ::= "[" patterns "]"
+              patterns ::= patterns pattern
+                         | pattern
+               pos_opt ::= pattern
                          | &lt;nothing&gt;
-                symbol ::= "_" no_record
-                         | STRING no_record
-                         | simple_expression
-                         | "?=" "[" lookaheads "]"
-                         | "[" rules "]"
-             no_record ::= "/"
-                         | &lt;nothing&gt;
-     simple_expression ::= LIDENT
-                         | CHAR
-                         | "(" &lt;expression&gt; ")"
-            lookaheads ::= lookaheads "|" lookahead_sequence
-                         | lookahead_sequence
-    lookahead_sequence ::= lookahead_symbols
-                         | STRING
-     lookahead_symbols ::= lookahead_symbols lookahead_symbol
-                         | lookahead_symbol
-      lookahead_symbol ::= CHAR
-                         | "_"
-                 error ::= "?" simple_expression
-                         | "!"
-                         | &lt;nothing&gt;
-                action ::= expression
 </pre>
 
-<p>The identifiers "<code>STRING</code>", "<code>CHAR</code>" and
-"<code>LIDENT</code>" represent the OCaml tokens corresponding to
-string, character and lowercase identifier (identifier starting with a
-lowercase character).</p>
+<hr style="margin:0" /><div style="font-size: 80%"><em>Copyright 2007
+Daniel de Rauglaudre (INRIA)</em>
 
-<p>The syntax of the entry <code>expression</code> of the Camlp4 OCaml
-grammar is also extended this way:</p>
-
-<pre>
-            expression ::= "$" "add" STRING
-                         | "$" "buf"
-                         | "$" "empty"
-                         | "$" "pos"
-</pre>
-
-<p>Remark: in the syntax extension above, the identifiers "add",
-"buf", "empty" and "pos" are not keywords (they are not reserved
-words) but just identifiers. On the contrary, the identifier
-<code>lexer</code>, which introduces the syntax, is a new keyword and
-cannot be used as variable identifier.</p>
-
-<h2>Semantics</h2>
-
-<p>A lexer defined in the syntax above is a shortcut version of a
-parser applied to the specific case of streams of characters. It could
-be written with a normal parser. The proposed syntax is much shorter,
-easier to use and to understand, and silently takes care of the lexing
-buffer for the programmer. The lexing buffers are data structures,
-which are passed as parameters to called lexers and returned by
-them.</p>
-
-<p>Lexers are of the type:</p>
-
-<pre>
-      B.t -&gt; Stream.t char -&gt; t
-</pre>
-
-<p>where "<code>t</code>" is a type which depends on what the lexer
-returns. If there is no semantic action (since it it optional), this
-type is "<code>B.t</code>".</p>
-
-<p>"<code>B</code>" is a module which must be defined by the user. It
-has to contain the lexing buffer type "<code>t</code>" and some
-variables and functions:</p>
-
-<UL CLASS="itemize"><LI CLASS="li-itemize">
-<CODE>empty</CODE>: the empty lexing buffer
-</LI><LI CLASS="li-itemize"><CODE>add</CODE>: the way to add a character to a lexing buffer
-</LI><LI CLASS="li-itemize"><CODE>get</CODE>: the way to get a string from the lexing buffer
-</LI></UL><p>A possible implementation, using &#X201C;<CODE>list char</CODE>&#X201D; as lexing buffer
-type, recording the characters at top of the list (therefore creating
-a list in reverse order) could be:</p><PRE CLASS="verbatim">       (* converting a reversed list of char into a string *)
-       value rev_implode cl =
-         let s = String.create (List.length cl) in
-         loop (String.length s - 1) cl where rec loop i =
-           fun
-           [ [c :: cl] -&gt; do { s.[i] := c; loop (i - 1) cl }
-           | [] -&gt; s ]
-       ;
-
-       (* the lexing buffer module *)
-       module B =
-         struct
-           type t = list char;
-           value empty = [];
-           value add c l = [c :: l];
-           value get = rev_implode;
-         end
-       ;
-</PRE><p>A lexer gets a lexing buffer as first parameter, and the stream of
-characters as second one. It tries to match the stream according
-to its first rule. If it fails, it applies its second rule, and so
-one, up to its last rule. If the last rule fails, the lexer fails
-by raising the exception &#X201C;<CODE>Stream.Failure</CODE>&#X201D;. All of this
-is the usual behaviour of stream parsers.</p><p>In a rule, when a character is matched, it is inserted into the lexing
-buffer, except if the &#X201C;no record&#X201D; feature is used (see further).</p><p>Rules which have no semantic action return the lexing buffer itself.</p><!--TOC subsection Symbols-->
-<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc4">3.1</A>&#XA0;&#XA0;Symbols</H3><!--SEC END --><p>The different kinds or symbols in a rule are:</p><UL CLASS="itemize"><LI CLASS="li-itemize">The token &#X201C;underscore&#X201D;, which represents any
-character. Fails only if the stream is empty.</LI><LI CLASS="li-itemize">A string which represent a matching of any character in the
-string. Notice that it is a choice between all the characters, not
-the sequence of these characters. To indicate a sequence, you have
-to use several symbols, the ones behind the others. Character ranges
-can be inserted using the characters &#X201C;<CODE>..</CODE>&#X201D;. For example, to
-specify a match of any letter or digit, you can write
-<CODE>"A..Za..z0..9"</CODE>&#X201D;. The beginning of a comment in the OCaml
-language must be written: <CODE>"(" "*"</CODE>.</LI><LI CLASS="li-itemize">An expression corresponding to a call to another lexer, which
-takes the buffer as first parameter and has to return another lexing
-buffer with all characters found in the stream catened to the lexing
-buffer.</LI><LI CLASS="li-itemize">The sequence &#X201C;<CODE>?=</CODE>&#X201D; introducing lookahead characters.
-See the section&#XA0;<A HREF="#lookahead">3.3</A>.</LI><LI CLASS="li-itemize">A rule, recursively, between brackets, inlining a lexer.</LI></UL><p>In the first two cases (underscore or string), the symbol can be
-followed by the character &#X201C;slash&#X201D; specifying that the symbol found
-has not to be added in the lexing buffer. By default, it is. Useful,
-for example, when writing a lexer parsing strings, when the initial
-double quote and final double quote have not to be part of the string
-itself.</p><p>
-
-Moreover, a symbol can be followed by an optional error indicator,
-which can be:</p><UL CLASS="itemize"><LI CLASS="li-itemize">The character <CODE>?</CODE> (question mark) followed by a string
-expression, telling that, if there is a syntax error at this point
-(i.e. the symbol is not matched although the beginning of the rule
-was), the exception <CODE>Stream.Error</CODE> is raised with that string
-as parameter. Without this indicator, it is raised with the empty
-string.</LI><LI CLASS="li-itemize">The character <CODE>!</CODE> (exclamation mark), which is just an
-indicator to let the syntax expander optimize the code. If the
-programmer is sure that the previous symbol never fails (i.e. never
-raises <CODE>Stream.Failure</CODE>), in particular if this symbol
-recognizes the empty rule, she can add this exclamation mark. If it
-is used correctly (the compiler cannot check it), the behaviour is
-identical as without the <CODE>!</CODE>, except that the code is shorter
-and faster, and can sometimes be tail recursive. If the indication
-is not correct, the behaviour of the lexer is undefined.</LI></UL><!--TOC subsection Specific expressions-->
-<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc5">3.2</A>&#XA0;&#XA0;Specific expressions</H3><!--SEC END --><p>
-<A NAME="specific"></A></p><p>When loading this syntax extension, the entry <CODE>&lt;expression&gt;</CODE>, at
-level labelled &#X201C;simple&#X201D; of the OCaml language is extended with the
-following rules:</p><UL CLASS="itemize"><LI CLASS="li-itemize"><CODE>$add</CODE> followed by a string, specifing that the programmer
-wants to add all characters of the string in the lexing buffer. It
-returns the new lexing buffer. It corresponds to an iteration of
-calls to <CODE>B.add</CODE> with all characters of the string with the
-current lexing buffer as initial parameter.</LI><LI CLASS="li-itemize"><CODE>$buf</CODE> which returns the lexing buffer converted into
-string.</LI><LI CLASS="li-itemize"><CODE>$empty</CODE> which returns the empty lexing buffer.</LI><LI CLASS="li-itemize"><CODE>$pos</CODE> which return the current position in the stream in
-number of characters (starting at zero).</LI></UL><!--TOC subsection Lookahead-->
-<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc6">3.3</A>&#XA0;&#XA0;Lookahead</H3><!--SEC END --><p>
-<A NAME="lookahead"></A></p><p>Lookahead is useful in some cases, when factorization of rules is
-impossible. To understand how it is useful, a first remark must
-be done, about the usual behaviour of Camlp4 stream parsers.</p><p>Stream parsers (including these lexers) use a limited parsing
-algorithm, in a way that when the first symbol of a rule is matched,
-all the following symbols of the same rule must apply, otherwise it is
-a syntax error. There is no backtrack. In most of the cases, left
-factorization of rules resolve conflicting problems. For example, when
-one writes a parser of tokens to recognize both the typicall grammar
-rules &#X201C;if..then..else&#X201D; and the shorter &#X201C;if..then..&#X201D;, the solution
-is to write a rule starting with &#X201C;if..then..&#X201D; followed with a call
-to a parser recognizing &#X201C;else..&#X201D; or nothing.</p><p>Sometimes, however, this left factorization is not possible. A
-lookahead of the stream to check the presence of some elements (these
-element being characters, if we are using this &#X201C;lexer&#X201D; syntax) might
-be necessary to decide whether or not it is a good idea to continue
-the rule. This lookahead feature may unfreeze the first stream
-characters but does not remove them from the stream.</p><p>Syntactically, a lookahead starts with <CODE>?=</CODE> and is followed by
-one or several lookahead sequences separated by the vertical bar
-<CODE>|</CODE>, the whole list being enclosed by braces.</p><p>If there are several lookaheads, they must all be of the same size
-(contain the same number of characters).</p><p>If lookahead sequence is just a string, it corresponds to all characters
-of this string in the order.</p><p>Examples of lookaheads:</p><PRE CLASS="verbatim">       ?= [ _ ''' | '\\' _ ]
-       ?= [ "&lt;&lt;" | "&lt;:" ]
-</PRE><p>The first line above matches a stream whose second character is a
-quote or a stream whose first character is a backslash. The second
-line matches a stream starting with the two characters <CODE>&lt;</CODE> and
-<CODE>&lt;</CODE> or starting with the two characters <CODE>&lt;</CODE> and <CODE>:</CODE>.</p><!--TOC subsection Semantic actions of rules-->
-<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc7">3.4</A>&#XA0;&#XA0;Semantic actions of rules</H3><!--SEC END --><p>By default, the result of a &#X201C;lexer&#X201D; is the current lexing buffer,
-which is of type &#X201C;<CODE>B.t</CODE>&#X201D;. But it is possible to return other
-values, by adding &#X201C;<CODE>-&gt;</CODE>&#X201D; at end of rules followed by the
-expression you want to return, like in usual pattern matching in
-OCaml.</p><p>An interesting result, for example, could be the string corresponding
-to the characters of the lexing buffer. This can be obtained by
-returning the value &#X201C;<CODE>$buf</CODE>&#X201D; (see section&#XA0;<A HREF="#specific">3.2</A>)</p><!--TOC subsection A complete example-->
-<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc8">3.5</A>&#XA0;&#XA0;A complete example</H3><!--SEC END --><p>A complete example can be seen in the sources of Camlp4, file
-&#X201C;lib/plexer.ml&#X201D;. This is the lexer of OCaml, either &#X201C;normal&#X201D; or
-&#X201C;revised&#X201D; syntax.</p><!--TOC subsection Compiling-->
-<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc9">3.6</A>&#XA0;&#XA0;Compiling</H3><!--SEC END --><p>To compile a file containing lexers, just load <CODE>pa_lex.cmo</CODE> using
-one of the following methods:</p><UL CLASS="itemize"><LI CLASS="li-itemize">Either by adding <CODE>pa_lex.cmo</CODE> among the camlp4 options. See
-the camlp4 manual page or documentation.
-</LI><LI CLASS="li-itemize">Or by adding <CODE>#load "pa_lex.cmo";</CODE> anywhere in the file,
-before the usages of this &#X201C;lexer&#X201D; syntax.</LI></UL><!--TOC subsection How to display the generated code-->
-<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc10">3.7</A>&#XA0;&#XA0;How to display the generated code</H3><!--SEC END --><p>You can see the generated code, for a file &#X201C;bar.ml&#X201D; containing
-lexers, by typing in a command line:</p><PRE CLASS="verbatim">     camlp4r pr_r.cmo bar.ml
-</PRE><p>or, possibly, if &#X201C;<CODE>pa_lex.cmo</CODE>&#X201D; is not loaded in the file &#X201C;bar.ml&#X201D;:</p><PRE CLASS="verbatim">     camlp4r pa_lex.cmo pr_r.cmo bar.ml
-</PRE><!--TOC section Conclusion and future work-->
-<H2 CLASS="section"><!--SEC ANCHOR --><A NAME="htoc11">4</A>&#XA0;&#XA0;Conclusion and future work</H2><!--SEC END --><p>
-<A NAME="conclusion"></A></p><p>We think that this new feature can encourage programmers to use the
-stream parsers technology for their lexers. Their shorter syntax has
-almost the same comfort and the same readability as the programs
-written in &#X201C;ocamllex&#X201D;. Although these lexers are not as powerful as
-&#X201C;ocamllex&#X201D; since, sometimes, explicit left factorization or
-characters lookaheads must be necessary, they are more functional
-(they can have extra parameters, and the lexing buffer is not a
-mutable variable) and are more included in the language, since they
-are pure syntactic sugar.</p><p>We plan to experiment these lexers in real OCaml programs. Perhaps
-syntax might change, or other features are added. An interesting one
-could be a way to allow lexers to be extended at run time, to give to
-lexers the same power as the Camlp4 extensible grammars offers at
-parsing level.</p><!--TOC section References-->
-<H2 CLASS="section"><!--SEC ANCHOR -->References</H2><!--SEC END --><DL CLASS="thebibliography"><DT CLASS="dt-thebibliography">
-<A NAME="Goscinny"><FONT COLOR=purple>[1]</FONT></A></DT><DD CLASS="dd-thebibliography">
-Goscinny et&#XA0;Uderzo.
-<EM>Ast&#XE9;rix et Cl&#XE9;opatre</EM>.
-Dargaud, 1974.</DD></DL><!--CUT END -->
-<!--HTMLFOOT-->
-<!--ENDHTML-->
-<!--FOOTER-->
-<HR SIZE=2><BLOCKQUOTE CLASS="quote"><EM>This document was translated from L<sup>A</sup>T<sub>E</sub>X by
-</EM><A HREF="http://hevea.inria.fr/index.html"><EM>H</EM><EM><FONT SIZE=2><sup>E</sup></FONT></EM><EM>V</EM><EM><FONT SIZE=2><sup>E</sup></FONT></EM><EM>A</EM></A><EM>.</EM></BLOCKQUOTE></BODY>
-</HTML>
+</body>
+</html>
