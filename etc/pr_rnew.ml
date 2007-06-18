@@ -20,25 +20,6 @@ value flag_where_after_then = ref True;
 value flag_where_after_value_eq = ref True;
 value flag_where_after_arrow = ref True;
 
-module Buff =
-  struct
-    value buff = ref (String.create 80);
-    value store len x = do {
-      if len >= String.length buff.val then
-        buff.val := buff.val ^ String.create (String.length buff.val)
-      else ();
-      buff.val.[len] := x;
-      succ len
-    };
-    value mstore len s =
-      add_rec len 0 where rec add_rec len i =
-        if i == String.length s then len
-        else add_rec (store len s.[i]) (succ i)
-    ;
-    value get len = String.sub buff.val 0 len;
-  end
-;
-
 (* general functions *)
 
 value is_infix = do {
@@ -1952,6 +1933,25 @@ value copy_to_end src oc first bp =
   let ilen = String.length src in
   if bp < ilen then copy_source src oc first bp ilen
   else output_string oc "\n"
+;
+
+module Buff =
+  struct
+    value buff = ref (String.create 80);
+    value store len x = do {
+      if len >= String.length buff.val then
+        buff.val := buff.val ^ String.create (String.length buff.val)
+      else ();
+      buff.val.[len] := x;
+      succ len
+    };
+    value mstore len s =
+      add_rec len 0 where rec add_rec len i =
+        if i == String.length s then len
+        else add_rec (store len s.[i]) (succ i)
+    ;
+    value get len = String.sub buff.val 0 len;
+  end
 ;
 
 value apply_printer f ast = do {
