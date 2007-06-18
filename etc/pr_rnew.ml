@@ -176,6 +176,11 @@ value module_expr ctx b z k = pr_module_expr.pr_fun "top" ctx b z k;
 value module_type ctx b z k = pr_module_type.pr_fun "top" ctx b z k;
 value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
 
+value comm_expr ctx b z k =
+  let ccc = comm_bef ctx (MLast.loc_of_expr z) in
+  sprintf "%s%s" ccc (expr ctx b z k)
+;
+
 value patt_as ctx b z k =
   match z with
   [ <:patt< ($x$ as $y$) >> ->
@@ -242,7 +247,8 @@ value sequencify e =
 value sequence_box ctx bfun expr el k =
   let s1 = bfun " do {" in
   let s2 =
-    vlistl (semi_after expr) expr (shi ctx 2) (tab (shi ctx 2)) el ""
+    vlistl (semi_after comm_expr) comm_expr (shi ctx 2) (tab (shi ctx 2)) el
+      ""
   in
   let s3 = sprintf "%s%s%s" (tab ctx) "}" k in
   sprintf "%s\n%s\n%s" s1 s2 s3
@@ -306,17 +312,18 @@ value rec where_binding ctx b (p, e, body) k =
              horiz_vertic (fun () -> horiz_where "")
                (fun () -> vertic_where "")
            in
-           let s2 =
-             let ccc = comm_bef (shi ctx 2) (MLast.loc_of_expr body) in
-             let s = expr (shi ctx 2) (tab (shi ctx 2)) body k in
-             sprintf "%s%s" ccc s
-           in
+           let s2 = comm_expr (shi ctx 2) (tab (shi ctx 2)) body k in
            sprintf "%s\n%s" s1 s2 ])
 
 and expr_wh ctx b e k =
   match can_be_displayed_as_where e with
   [ Some (p, e, body) -> where_binding ctx b (p, e, body) k
   | None -> expr ctx b e k ]
+;
+
+value comm_expr_wh ctx b z k =
+  let ccc = comm_bef ctx (MLast.loc_of_expr z) in
+  sprintf "%s%s" ccc (expr_wh ctx b z k)
 ;
 
 value sequence_box2 ctx bfun el k =
@@ -426,12 +433,8 @@ value value_binding ctx b (p, e) ko =
                   plistl patt (patt_tycon tyo) 4 ctx b pl " =")
            in
            let s2 =
-             let ccc = comm_bef (shi ctx 2) (MLast.loc_of_expr e) in
-             let s =
-               expr_wh (shi ctx 2) (tab (shi ctx 2)) e
-                 (match ko with [ Some (False, k) -> k | _ -> "" ])
-             in
-             sprintf "%s%s" ccc s
+             comm_expr_wh (shi ctx 2) (tab (shi ctx 2)) e
+               (match ko with [ Some (False, k) -> k | _ -> "" ])
            in
            let s3 =
              match ko with
@@ -464,25 +467,23 @@ value let_binding ctx b (p, e) is_last =
                (fun k -> hlist patt ctx b pl (sprintf " =%s" k)) el ""
          | None ->
              let s1 = hlist patt ctx b pl " =" in
-             let s2 =
-               let ccc = comm_bef (shi ctx 2) (MLast.loc_of_expr e) in
-               let s = expr_wh (shi ctx 2) (tab (shi ctx 2)) e "" in
-               sprintf "%s%s" ccc s
-             in
+             let s2 = comm_expr_wh (shi ctx 2) (tab (shi ctx 2)) e "" in
              sprintf "%s\n%s" s1 s2 ]
        in
        if is_last then sprintf "%s\n%sin" s (tab ctx) else s)
 ;
 
 value match_assoc ctx b (p, w, e) k =
-  let expr_wh = if flag_where_after_arrow.val then expr_wh else expr in
+  let comm_expr_wh =
+    if flag_where_after_arrow.val then comm_expr_wh else comm_expr
+  in
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s -> %s%s" b (patt_as ctx "" p "")
          (match w with
           [ Some e -> sprintf " when %s" (expr ctx "" e "")
           | None -> "" ])
-         (expr ctx "" e "") k)
+         (comm_expr ctx "" e "") k)
     (fun () ->
        let patt_arrow k =
          match w with
@@ -517,7 +518,7 @@ value match_assoc ctx b (p, w, e) k =
                 el k
        | None ->
            let s1 = patt_arrow "" in
-           let s2 = expr_wh (shi ctx 2) (tab (shi ctx 2)) e k in
+           let s2 = comm_expr_wh (shi ctx 2) (tab (shi ctx 2)) e k in
            sprintf "%s\n%s" s1 s2 ])
 ;
 
@@ -994,7 +995,7 @@ value expr_top =
         horiz_vertic
           (fun () ->
              sprintf "%sdo {%s%s%s}%s" b " "
-               (hlistl (semi_after expr) expr ctx "" el "") " " k)
+               (hlistl (semi_after comm_expr) comm_expr ctx "" el "") " " k)
           (fun () ->
              sprintf "%sdo {%s%s%s}%s" b "\n"
                (vlistl (semi_after expr) expr (shi ctx 2) (tab (shi ctx 2)) el
