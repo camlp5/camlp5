@@ -267,6 +267,8 @@ undefined.</li>
 
 </ul>
 
+<p><a name="specific"></a></p>
+
 <h3>Specific expressions</h3>
 
 <p>When loading this syntax extension, the
@@ -299,70 +301,119 @@ the stream in number of characters (starting at zero).</li>
 
 <p>Lookahead is useful in some cases, when factorization of rules is
 impossible. To understand how it is useful, a first remark must
-be done, about the usual behaviour of Camlp4 stream parsers.</p><p>Stream parsers (including these lexers) use a limited parsing
+be done, about the usual behaviour of Camlp4 stream parsers.</p>
+
+<p>Stream parsers (including these lexers) use a limited parsing
 algorithm, in a way that when the first symbol of a rule is matched,
 all the following symbols of the same rule must apply, otherwise it is
 a syntax error. There is no backtrack. In most of the cases, left
 factorization of rules resolve conflicting problems. For example, when
 one writes a parser of tokens to recognize both the typicall grammar
-rules &#X201C;if..then..else&#X201D; and the shorter &#X201C;if..then..&#X201D;, the solution
-is to write a rule starting with &#X201C;if..then..&#X201D; followed with a call
-to a parser recognizing &#X201C;else..&#X201D; or nothing.</p><p>Sometimes, however, this left factorization is not possible. A
+rules "if..then..else" and the shorter "if..then..", the solution is
+to write a rule starting with "if..then.." followed with a call to a
+parser recognizing "else.." or nothing.</p>
+
+<p>Sometimes, however, this left factorization is not possible. A
 lookahead of the stream to check the presence of some elements (these
-element being characters, if we are using this &#X201C;lexer&#X201D; syntax) might
+element being characters, if we are using this "lexer" syntax) might
 be necessary to decide whether or not it is a good idea to continue
 the rule. This lookahead feature may unfreeze the first stream
-characters but does not remove them from the stream.</p><p>Syntactically, a lookahead starts with <code>?=</code> and is followed by
-one or several lookahead sequences separated by the vertical bar
-<code>|</code>, the whole list being enclosed by braces.</p><p>If there are several lookaheads, they must all be of the same size
-(contain the same number of characters).</p><p>If lookahead sequence is just a string, it corresponds to all characters
-of this string in the order.</p><p>Examples of lookaheads:</p><PRE CLASS="verbatim">       ?= [ _ ''' | '\\' _ ]
+characters but does not remove them from the stream.</p>
+
+<p>Syntactically, a lookahead starts with <code>?=</code> and is
+followed by one or several lookahead sequences separated by the
+vertical bar <code>|</code>, the whole list being enclosed by
+braces.</p>
+
+<p>If there are several lookaheads, they must all be of the same size
+(contain the same number of characters).</p>
+
+<p>If lookahead sequence is just a string, it corresponds to all
+characters of this string in the order.</p>
+
+<p>Examples of lookaheads:</p>
+
+<pre>
+       ?= [ _ ''' | '\\' _ ]
        ?= [ "&lt;&lt;" | "&lt;:" ]
-</PRE><p>The first line above matches a stream whose second character is a
+</pre>
+
+<p>The first line above matches a stream whose second character is a
 quote or a stream whose first character is a backslash. The second
-line matches a stream starting with the two characters <code>&lt;</code> and
-<code>&lt;</code> or starting with the two characters <code>&lt;</code> and <code>:</code>.</p><!--TOC subsection Semantic actions of rules-->
-<h3><!--SEC ANCHOR --><A NAME="htoc7">3.4</A>&#XA0;&#XA0;Semantic actions of rules</H3><!--SEC END --><p>By default, the result of a &#X201C;lexer&#X201D; is the current lexing buffer,
-which is of type "<code>B.t</code>". But it is possible to return other
-values, by adding "<code>-&gt;</code>" at end of rules followed by the
-expression you want to return, like in usual pattern matching in
-OCaml.</p><p>An interesting result, for example, could be the string corresponding
-to the characters of the lexing buffer. This can be obtained by
-returning the value "<code>$buf</code>" (see section&#XA0;<A HREF="#specific">3.2</A>)</p><!--TOC subsection A complete example-->
-<h3><!--SEC ANCHOR --><A NAME="htoc8">3.5</A>&#XA0;&#XA0;A complete example</H3><!--SEC END --><p>A complete example can be seen in the sources of Camlp4, file
-&#X201C;lib/plexer.ml&#X201D;. This is the lexer of OCaml, either &#X201C;normal&#X201D; or
-&#X201C;revised&#X201D; syntax.</p><!--TOC subsection Compiling-->
-<h3><!--SEC ANCHOR --><A NAME="htoc9">3.6</A>&#XA0;&#XA0;Compiling</H3><!--SEC END --><p>To compile a file containing lexers, just load <code>pa_lex.cmo</code> using
-one of the following methods:</p><UL CLASS="itemize"><li>Either by adding <code>pa_lex.cmo</code> among the camlp4 options. See
-the camlp4 manual page or documentation.
-</li><li>Or by adding <code>#load "pa_lex.cmo";</code> anywhere in the file,
-before the usages of this &#X201C;lexer&#X201D; syntax.</li></ul><!--TOC subsection How to display the generated code-->
-<h3><!--SEC ANCHOR --><A NAME="htoc10">3.7</A>&#XA0;&#XA0;How to display the generated code</H3><!--SEC END --><p>You can see the generated code, for a file &#X201C;bar.ml&#X201D; containing
-lexers, by typing in a command line:</p><PRE CLASS="verbatim">     camlp4r pr_r.cmo bar.ml
-</PRE><p>or, possibly, if "<code>pa_lex.cmo</code>" is not loaded in the file &#X201C;bar.ml&#X201D;:</p><PRE CLASS="verbatim">     camlp4r pa_lex.cmo pr_r.cmo bar.ml
-</PRE><!--TOC section Conclusion and future work-->
-<H2 CLASS="section"><!--SEC ANCHOR --><A NAME="htoc11">4</A>&#XA0;&#XA0;Conclusion and future work</H2><!--SEC END --><p>
-<A NAME="conclusion"></A></p><p>We think that this new feature can encourage programmers to use the
+line matches a stream starting with the two
+characters <code>&lt;</code> and <code>&lt;</code> or starting with
+the two characters <code>&lt;</code> and <code>:</code>.</p>
+
+<h3>Semantic actions of rules</H3>
+
+<p>By default, the result of a "lexer" is the current lexing buffer,
+which is of type "<code>B.t</code>". But it is possible to return
+other values, by adding "<code>-&gt;</code>" at end of rules followed
+by the expression you want to return, like in usual pattern matching
+in OCaml.</p>
+
+<p>An interesting result, for example, could be the string
+corresponding to the characters of the lexing buffer. This can be
+obtained by returning the value "<code>$buf</code>" (see
+section <a href="#specific">3.2</A>)</p>
+
+<h3>A complete example</h3>
+
+<p>A complete example can be seen in the sources of Camlp4, file
+"lib/plexer.ml". This is the lexer of OCaml, either "normal" or
+"revised" syntax.</p>
+
+<h3>Compiling</h3>
+
+<p>To compile a file containing lexers, just
+load <code>pa_lex.cmo</code> using one of the following methods:</p>
+
+<ul>
+
+<li>Either by adding <code>pa_lex.cmo</code> among the camlp4
+options. See the camlp4 manual page or documentation.
+</li>
+
+<li>Or by adding <code>#load "pa_lex.cmo";</code> anywhere in the
+file, before the usages of this "lexer" syntax.</li>
+
+</ul>
+
+<h3>How to display the generated code</h3>
+
+<p>You can see the generated code, for a file "bar.ml" containing
+lexers, by typing in a command line:</p>
+
+<pre>
+     camlp4r pr_r.cmo bar.ml
+</pre>
+
+<p>or, possibly, if "<code>pa_lex.cmo</code>" is not loaded in the
+file "bar.ml":</p>
+
+<pre>
+     camlp4r pa_lex.cmo pr_r.cmo bar.ml
+</pre>
+
+<h2>Conclusion and future work</h2>
+
+<p>We think that this new feature can encourage programmers to use the
 stream parsers technology for their lexers. Their shorter syntax has
 almost the same comfort and the same readability as the programs
-written in &#X201C;ocamllex&#X201D;. Although these lexers are not as powerful as
-&#X201C;ocamllex&#X201D; since, sometimes, explicit left factorization or
-characters lookaheads must be necessary, they are more functional
-(they can have extra parameters, and the lexing buffer is not a
-mutable variable) and are more included in the language, since they
-are pure syntactic sugar.</p><p>We plan to experiment these lexers in real OCaml programs. Perhaps
+written in "ocamllex". Although these lexers are not as powerful as
+"ocamllex" since, sometimes, explicit left factorization or characters
+lookaheads must be necessary, they are more functional (they can have
+extra parameters, and the lexing buffer is not a mutable variable) and
+are more included in the language, since they are pure syntactic
+sugar.</p>
+
+<p>We plan to experiment these lexers in real OCaml programs. Perhaps
 syntax might change, or other features are added. An interesting one
 could be a way to allow lexers to be extended at run time, to give to
 lexers the same power as the Camlp4 extensible grammars offers at
-parsing level.</p><!--TOC section References-->
-<H2 CLASS="section"><!--SEC ANCHOR -->References</H2><!--SEC END --><DL CLASS="thebibliography"><DT CLASS="dt-thebibliography">
-<A NAME="Goscinny"><FONT COLOR=purple>[1]</FONT></A></DT><DD CLASS="dd-thebibliography">
-Goscinny et&#XA0;Uderzo.
-<EM>Ast&#XE9;rix et Cl&#XE9;opatre</EM>.
-Dargaud, 1974.</DD></DL><!--CUT END -->
-<!--HTMLFOOT-->
-<!--ENDHTML-->
-<!--FOOTER-->
-<HR SIZE=2><BLOCKQUOTE CLASS="quote"><EM>This document was translated from L<sup>A</sup>T<sub>E</sub>X by
-</EM><A HREF="http://hevea.inria.fr/index.html"><EM>H</EM><EM><FONT SIZE=2><sup>E</sup></FONT></EM><EM>V</EM><EM><FONT SIZE=2><sup>E</sup></FONT></EM><EM>A</EM></A><EM>.</EM></BLOCKQUOTE></BODY>
-</HTML>
+parsing level.</p>
+
+<hr size=2>
+
+</body>
+</html>
