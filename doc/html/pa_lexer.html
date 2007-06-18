@@ -205,19 +205,41 @@ further).</p>
 <p>Rules which have no semantic action return the lexing buffer
 itself.</p>
 
-<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc4">3.1</A>&#XA0;&#XA0;Symbols</H3><!--SEC END --><p>The different kinds or symbols in a rule are:</p><UL CLASS="itemize"><LI CLASS="li-itemize">The token &#X201C;underscore&#X201D;, which represents any
-character. Fails only if the stream is empty.</LI><LI CLASS="li-itemize">A string which represent a matching of any character in the
-string. Notice that it is a choice between all the characters, not
-the sequence of these characters. To indicate a sequence, you have
-to use several symbols, the ones behind the others. Character ranges
-can be inserted using the characters &#X201C;<CODE>..</CODE>&#X201D;. For example, to
+<h3>Symbols</H3>
+
+<p>The different kinds or symbols in a rule are:</p>
+
+<ul>
+
+<li>The token "underscore", which represents any character. Fails only
+if the stream is empty.</li>
+
+<li>A string which represent a matching of any character in the
+string. Notice that it is a choice between all the characters, not the
+sequence of these characters. To indicate a sequence, you have to use
+several symbols, the ones behind the others. Character ranges can be
+inserted using the characters "<code>..</code>". For example, to
 specify a match of any letter or digit, you can write
-<CODE>"A..Za..z0..9"</CODE>&#X201D;. The beginning of a comment in the OCaml
-language must be written: <CODE>"(" "*"</CODE>.</LI><LI CLASS="li-itemize">An expression corresponding to a call to another lexer, which
+"<code>A..Za..z0..9</code>". The beginning of a comment in the OCaml
+language must be written: <code>"(" "*"</code>.</li>
+
+<li>An expression corresponding to a call to another lexer, which
 takes the buffer as first parameter and has to return another lexing
 buffer with all characters found in the stream catened to the lexing
-buffer.</LI><LI CLASS="li-itemize">The sequence &#X201C;<CODE>?=</CODE>&#X201D; introducing lookahead characters.
-See the section&#XA0;<A HREF="#lookahead">3.3</A>.</LI><LI CLASS="li-itemize">A rule, recursively, between brackets, inlining a lexer.</LI></UL><p>In the first two cases (underscore or string), the symbol can be
+buffer.</li>
+
+<li>The sequence "<code>?=</code>" introducing lookahead characters.
+See the section <a href="#lookahead">3.3</a>.</li>
+
+<li>A rule, recursively, between brackets, inlining a lexer.</li>
+
+</ul>
+
+
+
+
+
+<p>In the first two cases (underscore or string), the symbol can be
 followed by the character &#X201C;slash&#X201D; specifying that the symbol found
 has not to be added in the lexing buffer. By default, it is. Useful,
 for example, when writing a lexer parsing strings, when the initial
@@ -249,8 +271,12 @@ calls to <CODE>B.add</CODE> with all characters of the string with the
 current lexing buffer as initial parameter.</LI><LI CLASS="li-itemize"><CODE>$buf</CODE> which returns the lexing buffer converted into
 string.</LI><LI CLASS="li-itemize"><CODE>$empty</CODE> which returns the empty lexing buffer.</LI><LI CLASS="li-itemize"><CODE>$pos</CODE> which return the current position in the stream in
 number of characters (starting at zero).</LI></UL><!--TOC subsection Lookahead-->
-<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc6">3.3</A>&#XA0;&#XA0;Lookahead</H3><!--SEC END --><p>
-<A NAME="lookahead"></A></p><p>Lookahead is useful in some cases, when factorization of rules is
+
+<p><a name="lookahead"></a></p>
+
+<h3>Lookahead</h3>
+
+<p>Lookahead is useful in some cases, when factorization of rules is
 impossible. To understand how it is useful, a first remark must
 be done, about the usual behaviour of Camlp4 stream parsers.</p><p>Stream parsers (including these lexers) use a limited parsing
 algorithm, in a way that when the first symbol of a rule is matched,
@@ -276,12 +302,12 @@ quote or a stream whose first character is a backslash. The second
 line matches a stream starting with the two characters <CODE>&lt;</CODE> and
 <CODE>&lt;</CODE> or starting with the two characters <CODE>&lt;</CODE> and <CODE>:</CODE>.</p><!--TOC subsection Semantic actions of rules-->
 <H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc7">3.4</A>&#XA0;&#XA0;Semantic actions of rules</H3><!--SEC END --><p>By default, the result of a &#X201C;lexer&#X201D; is the current lexing buffer,
-which is of type &#X201C;<CODE>B.t</CODE>&#X201D;. But it is possible to return other
-values, by adding &#X201C;<CODE>-&gt;</CODE>&#X201D; at end of rules followed by the
+which is of type "<code>B.t</code>". But it is possible to return other
+values, by adding "<code>-&gt;</code>" at end of rules followed by the
 expression you want to return, like in usual pattern matching in
 OCaml.</p><p>An interesting result, for example, could be the string corresponding
 to the characters of the lexing buffer. This can be obtained by
-returning the value &#X201C;<CODE>$buf</CODE>&#X201D; (see section&#XA0;<A HREF="#specific">3.2</A>)</p><!--TOC subsection A complete example-->
+returning the value "<code>$buf</code>" (see section&#XA0;<A HREF="#specific">3.2</A>)</p><!--TOC subsection A complete example-->
 <H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc8">3.5</A>&#XA0;&#XA0;A complete example</H3><!--SEC END --><p>A complete example can be seen in the sources of Camlp4, file
 &#X201C;lib/plexer.ml&#X201D;. This is the lexer of OCaml, either &#X201C;normal&#X201D; or
 &#X201C;revised&#X201D; syntax.</p><!--TOC subsection Compiling-->
@@ -292,7 +318,7 @@ the camlp4 manual page or documentation.
 before the usages of this &#X201C;lexer&#X201D; syntax.</LI></UL><!--TOC subsection How to display the generated code-->
 <H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc10">3.7</A>&#XA0;&#XA0;How to display the generated code</H3><!--SEC END --><p>You can see the generated code, for a file &#X201C;bar.ml&#X201D; containing
 lexers, by typing in a command line:</p><PRE CLASS="verbatim">     camlp4r pr_r.cmo bar.ml
-</PRE><p>or, possibly, if &#X201C;<CODE>pa_lex.cmo</CODE>&#X201D; is not loaded in the file &#X201C;bar.ml&#X201D;:</p><PRE CLASS="verbatim">     camlp4r pa_lex.cmo pr_r.cmo bar.ml
+</PRE><p>or, possibly, if "<code>pa_lex.cmo</code>" is not loaded in the file &#X201C;bar.ml&#X201D;:</p><PRE CLASS="verbatim">     camlp4r pa_lex.cmo pr_r.cmo bar.ml
 </PRE><!--TOC section Conclusion and future work-->
 <H2 CLASS="section"><!--SEC ANCHOR --><A NAME="htoc11">4</A>&#XA0;&#XA0;Conclusion and future work</H2><!--SEC END --><p>
 <A NAME="conclusion"></A></p><p>We think that this new feature can encourage programmers to use the
