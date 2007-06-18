@@ -235,42 +235,63 @@ See the section <a href="#lookahead">3.3</a>.</li>
 
 </ul>
 
+<p>In the first two cases (namely, underscore and string), the symbol
+can be followed by the character "slash" specifying that the found
+symbol must not be added into the lexing buffer. By default, it
+is. Useful, for example, when writing a lexer parsing strings, when
+the initial double quote and final double quote have not to be part of
+the string itself.</p>
 
+<p>Moreover, a symbol can be followed by an optional error indicator,
+which can be:</p>
 
+<ul>
 
-
-<p>In the first two cases (underscore or string), the symbol can be
-followed by the character &#X201C;slash&#X201D; specifying that the symbol found
-has not to be added in the lexing buffer. By default, it is. Useful,
-for example, when writing a lexer parsing strings, when the initial
-double quote and final double quote have not to be part of the string
-itself.</p><p>
-
-Moreover, a symbol can be followed by an optional error indicator,
-which can be:</p><UL CLASS="itemize"><LI CLASS="li-itemize">The character <CODE>?</CODE> (question mark) followed by a string
+<li>The character <code>?</code> (question mark) followed by a string
 expression, telling that, if there is a syntax error at this point
 (i.e. the symbol is not matched although the beginning of the rule
-was), the exception <CODE>Stream.Error</CODE> is raised with that string
-as parameter. Without this indicator, it is raised with the empty
-string.</LI><LI CLASS="li-itemize">The character <CODE>!</CODE> (exclamation mark), which is just an
+was), the exception <code>Stream.Error</code> is raised with that
+string as parameter. Without this indicator, it is raised with the
+empty string.</li>
+
+<li>The character <code>!</code> (exclamation mark), which is just an
 indicator to let the syntax expander optimize the code. If the
 programmer is sure that the previous symbol never fails (i.e. never
-raises <CODE>Stream.Failure</CODE>), in particular if this symbol
-recognizes the empty rule, she can add this exclamation mark. If it
-is used correctly (the compiler cannot check it), the behaviour is
-identical as without the <CODE>!</CODE>, except that the code is shorter
-and faster, and can sometimes be tail recursive. If the indication
-is not correct, the behaviour of the lexer is undefined.</LI></UL><!--TOC subsection Specific expressions-->
-<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc5">3.2</A>&#XA0;&#XA0;Specific expressions</H3><!--SEC END --><p>
-<A NAME="specific"></A></p><p>When loading this syntax extension, the entry <CODE>&lt;expression&gt;</CODE>, at
-level labelled &#X201C;simple&#X201D; of the OCaml language is extended with the
-following rules:</p><UL CLASS="itemize"><LI CLASS="li-itemize"><CODE>$add</CODE> followed by a string, specifing that the programmer
-wants to add all characters of the string in the lexing buffer. It
-returns the new lexing buffer. It corresponds to an iteration of
-calls to <CODE>B.add</CODE> with all characters of the string with the
-current lexing buffer as initial parameter.</LI><LI CLASS="li-itemize"><CODE>$buf</CODE> which returns the lexing buffer converted into
-string.</LI><LI CLASS="li-itemize"><CODE>$empty</CODE> which returns the empty lexing buffer.</LI><LI CLASS="li-itemize"><CODE>$pos</CODE> which return the current position in the stream in
-number of characters (starting at zero).</LI></UL><!--TOC subsection Lookahead-->
+raises <code>Stream.Failure</code>), in particular if this symbol
+recognizes the empty rule, she can add this exclamation mark. If it is
+used correctly (the compiler cannot check it), the behaviour is
+identical as without the <code>!</code>, except that the code is
+shorter and faster, and can sometimes be tail recursive. If the
+indication is not correct, the behaviour of the lexer is
+undefined.</li>
+
+</ul>
+
+<h3>Specific expressions</h3>
+
+<p>When loading this syntax extension, the
+entry <code>&lt;expression&gt;</code>, at level labelled "simple" of
+the OCaml language is extended with the following
+rules:</p>
+
+<ul>
+
+<li><code>$add</code> followed by a string, specifing that the
+programmer wants to add all characters of the string in the lexing
+buffer. It returns the new lexing buffer. It corresponds to an
+iteration of calls to <code>B.add</code> with all characters of the
+string with the current lexing buffer as initial
+parameter.</li>
+
+<li><code>$buf</code> which returns the lexing buffer converted into
+string.</li>
+
+<li><code>$empty</code> which returns the empty lexing buffer.</li>
+
+<li><code>$pos</code> which return the current position in
+the stream in number of characters (starting at zero).</li>
+
+</ul>
 
 <p><a name="lookahead"></a></p>
 
@@ -291,32 +312,32 @@ lookahead of the stream to check the presence of some elements (these
 element being characters, if we are using this &#X201C;lexer&#X201D; syntax) might
 be necessary to decide whether or not it is a good idea to continue
 the rule. This lookahead feature may unfreeze the first stream
-characters but does not remove them from the stream.</p><p>Syntactically, a lookahead starts with <CODE>?=</CODE> and is followed by
+characters but does not remove them from the stream.</p><p>Syntactically, a lookahead starts with <code>?=</code> and is followed by
 one or several lookahead sequences separated by the vertical bar
-<CODE>|</CODE>, the whole list being enclosed by braces.</p><p>If there are several lookaheads, they must all be of the same size
+<code>|</code>, the whole list being enclosed by braces.</p><p>If there are several lookaheads, they must all be of the same size
 (contain the same number of characters).</p><p>If lookahead sequence is just a string, it corresponds to all characters
 of this string in the order.</p><p>Examples of lookaheads:</p><PRE CLASS="verbatim">       ?= [ _ ''' | '\\' _ ]
        ?= [ "&lt;&lt;" | "&lt;:" ]
 </PRE><p>The first line above matches a stream whose second character is a
 quote or a stream whose first character is a backslash. The second
-line matches a stream starting with the two characters <CODE>&lt;</CODE> and
-<CODE>&lt;</CODE> or starting with the two characters <CODE>&lt;</CODE> and <CODE>:</CODE>.</p><!--TOC subsection Semantic actions of rules-->
-<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc7">3.4</A>&#XA0;&#XA0;Semantic actions of rules</H3><!--SEC END --><p>By default, the result of a &#X201C;lexer&#X201D; is the current lexing buffer,
+line matches a stream starting with the two characters <code>&lt;</code> and
+<code>&lt;</code> or starting with the two characters <code>&lt;</code> and <code>:</code>.</p><!--TOC subsection Semantic actions of rules-->
+<h3><!--SEC ANCHOR --><A NAME="htoc7">3.4</A>&#XA0;&#XA0;Semantic actions of rules</H3><!--SEC END --><p>By default, the result of a &#X201C;lexer&#X201D; is the current lexing buffer,
 which is of type "<code>B.t</code>". But it is possible to return other
 values, by adding "<code>-&gt;</code>" at end of rules followed by the
 expression you want to return, like in usual pattern matching in
 OCaml.</p><p>An interesting result, for example, could be the string corresponding
 to the characters of the lexing buffer. This can be obtained by
 returning the value "<code>$buf</code>" (see section&#XA0;<A HREF="#specific">3.2</A>)</p><!--TOC subsection A complete example-->
-<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc8">3.5</A>&#XA0;&#XA0;A complete example</H3><!--SEC END --><p>A complete example can be seen in the sources of Camlp4, file
+<h3><!--SEC ANCHOR --><A NAME="htoc8">3.5</A>&#XA0;&#XA0;A complete example</H3><!--SEC END --><p>A complete example can be seen in the sources of Camlp4, file
 &#X201C;lib/plexer.ml&#X201D;. This is the lexer of OCaml, either &#X201C;normal&#X201D; or
 &#X201C;revised&#X201D; syntax.</p><!--TOC subsection Compiling-->
-<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc9">3.6</A>&#XA0;&#XA0;Compiling</H3><!--SEC END --><p>To compile a file containing lexers, just load <CODE>pa_lex.cmo</CODE> using
-one of the following methods:</p><UL CLASS="itemize"><LI CLASS="li-itemize">Either by adding <CODE>pa_lex.cmo</CODE> among the camlp4 options. See
+<h3><!--SEC ANCHOR --><A NAME="htoc9">3.6</A>&#XA0;&#XA0;Compiling</H3><!--SEC END --><p>To compile a file containing lexers, just load <code>pa_lex.cmo</code> using
+one of the following methods:</p><UL CLASS="itemize"><li>Either by adding <code>pa_lex.cmo</code> among the camlp4 options. See
 the camlp4 manual page or documentation.
-</LI><LI CLASS="li-itemize">Or by adding <CODE>#load "pa_lex.cmo";</CODE> anywhere in the file,
-before the usages of this &#X201C;lexer&#X201D; syntax.</LI></UL><!--TOC subsection How to display the generated code-->
-<H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc10">3.7</A>&#XA0;&#XA0;How to display the generated code</H3><!--SEC END --><p>You can see the generated code, for a file &#X201C;bar.ml&#X201D; containing
+</li><li>Or by adding <code>#load "pa_lex.cmo";</code> anywhere in the file,
+before the usages of this &#X201C;lexer&#X201D; syntax.</li></ul><!--TOC subsection How to display the generated code-->
+<h3><!--SEC ANCHOR --><A NAME="htoc10">3.7</A>&#XA0;&#XA0;How to display the generated code</H3><!--SEC END --><p>You can see the generated code, for a file &#X201C;bar.ml&#X201D; containing
 lexers, by typing in a command line:</p><PRE CLASS="verbatim">     camlp4r pr_r.cmo bar.ml
 </PRE><p>or, possibly, if "<code>pa_lex.cmo</code>" is not loaded in the file &#X201C;bar.ml&#X201D;:</p><PRE CLASS="verbatim">     camlp4r pa_lex.cmo pr_r.cmo bar.ml
 </PRE><!--TOC section Conclusion and future work-->
