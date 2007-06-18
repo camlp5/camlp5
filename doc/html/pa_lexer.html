@@ -152,19 +152,32 @@ type is "<code>B.t</code>".</p>
 has to contain the lexing buffer type "<code>t</code>" and some
 variables and functions:</p>
 
-<UL CLASS="itemize"><LI CLASS="li-itemize">
-<CODE>empty</CODE>: the empty lexing buffer
-</LI><LI CLASS="li-itemize"><CODE>add</CODE>: the way to add a character to a lexing buffer
-</LI><LI CLASS="li-itemize"><CODE>get</CODE>: the way to get a string from the lexing buffer
-</LI></UL><p>A possible implementation, using &#X201C;<CODE>list char</CODE>&#X201D; as lexing buffer
-type, recording the characters at top of the list (therefore creating
-a list in reverse order) could be:</p><PRE CLASS="verbatim">       (* converting a reversed list of char into a string *)
-       value rev_implode cl =
-         let s = String.create (List.length cl) in
-         loop (String.length s - 1) cl where rec loop i =
-           fun
-           [ [c :: cl] -&gt; do { s.[i] := c; loop (i - 1) cl }
-           | [] -&gt; s ]
+<ul>
+
+<li>
+<code>empty</code>: the empty lexing buffer
+</li>
+
+<li><code>add</code>: the way to add a character to a lexing buffer
+</li>
+
+<li><code>get</code>: the way to get a string from the lexing buffer
+</li>
+
+</ul>
+
+<p>A possible implementation, using "<code>list char</code>"; as
+lexing buffer type, recording the characters at top of the list
+(therefore creating a list in reverse order) could be:</p>
+
+<pre>
+      (* converting a reversed list of char into a string *)
+      value rev_implode cl =
+        let s = String.create (List.length cl) in
+        loop (String.length s - 1) cl where rec loop i =
+          fun
+          [ [c :: cl] -&gt; do { s.[i] := c; loop (i - 1) cl }
+          | [] -&gt; s ]
        ;
 
        (* the lexing buffer module *)
@@ -176,13 +189,22 @@ a list in reverse order) could be:</p><PRE CLASS="verbatim">       (* converting
            value get = rev_implode;
          end
        ;
-</PRE><p>A lexer gets a lexing buffer as first parameter, and the stream of
-characters as second one. It tries to match the stream according
-to its first rule. If it fails, it applies its second rule, and so
-one, up to its last rule. If the last rule fails, the lexer fails
-by raising the exception &#X201C;<CODE>Stream.Failure</CODE>&#X201D;. All of this
-is the usual behaviour of stream parsers.</p><p>In a rule, when a character is matched, it is inserted into the lexing
-buffer, except if the &#X201C;no record&#X201D; feature is used (see further).</p><p>Rules which have no semantic action return the lexing buffer itself.</p><!--TOC subsection Symbols-->
+</pre>
+
+<p>A lexer gets a lexing buffer as first parameter, and the stream of
+characters as second one. It tries to match the stream according to
+its first rule. If it fails, it applies its second rule, and so one,
+up to its last rule. If the last rule fails, the lexer fails by
+raising the exception "<code>Stream.Failure</code>". All of this is
+the usual behaviour of stream parsers.</p>
+
+<p>In a rule, when a character is matched, it is inserted into the
+lexing buffer, except if the "no record" feature is used (see
+further).</p>
+
+<p>Rules which have no semantic action return the lexing buffer
+itself.</p>
+
 <H3 CLASS="subsection"><!--SEC ANCHOR --><A NAME="htoc4">3.1</A>&#XA0;&#XA0;Symbols</H3><!--SEC END --><p>The different kinds or symbols in a rule are:</p><UL CLASS="itemize"><LI CLASS="li-itemize">The token &#X201C;underscore&#X201D;, which represents any
 character. Fails only if the stream is empty.</LI><LI CLASS="li-itemize">A string which represent a matching of any character in the
 string. Notice that it is a choice between all the characters, not
