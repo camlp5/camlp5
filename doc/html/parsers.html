@@ -565,7 +565,7 @@ expr (Stream.of_string "2^3^2");
 programming parsers returning other parsers.</p>
 
 <p>A third solution, to resolve the problem of associativity, is to
-use the grammars of Camlp4, which has the other advantage that they
+use the grammars of Camlp4, which have the other advantage that they
 are extensible.</p>
 
 <h3>Lexing vs Parsing</h3>
@@ -607,8 +607,8 @@ both.</p>
 is a stream of characters, it is possible to use a shorter syntax. See
 the page on <a href="lexers.html">lexers</a>. They are another syntax
 for this case, adapted for the specific type "<code>char</code>" and
-much shorter and simple to use, but they still are internally parsers
-of streams.</p>
+much shorter and simple to use. But they still are internally parsers
+of streams with the same semantics.</p>
 
 <hr style="margin:0" /><div style="font-size: 80%"><em>Copyright 2007
 Daniel de Rauglaudre (INRIA)</em>
