@@ -107,6 +107,275 @@ can rebuild the parsers in their initial syntax and display it.<p>
                          | &lt;nothing&gt;
 </pre>
 
+<h3>Semantics</h3>
+
+<p>A parser, defined with the syntax "parser" above, is of type
+"<code>Stream.t a -> b</code>" where "a" is the type of the elements
+of the streams and "b" the type of the result. The parser cases are
+tested in the order they are defined until one of them applies. The
+result is the semantic action of the parser case which applies. If no
+parser case applies, the exception "<code>Stream.Failure</code>" is
+raised.</p>
+
+<p>When testing a parser case, if the first stream pattern component
+matches, all remaining stream pattern component of the stream pattern
+must match also. If one does not match, the parser return with the
+exception "<code>Stream.Error</code>" which has a parameter of type
+string : by default, this string is the empty string, but if the
+stream pattern component which does not match is followed by a
+question mark and an expression, this expression is evaluated and
+given as parameter to "<code>Stream.Error</code>".<p>
+
+<p>In short, a parser can return with three ways:<p>
+
+<ul>
+
+<li>A normal result, of type "<code>b</code>" for a parser of type "<code>Stream.t a -> b</code>".</li>
+
+<li>Raising the exception "<code>Stream.Failure</code>".</li>
+
+<li>Raising the exception "<code>Stream.Error</code>".</li>
+
+</ul>
+
+<p>Fundamentally, the exception "<code>Stream.Failure</code>" means
+"this parser does not apply and no element have been removed from the
+initial stream". This is a normal case when parsing : the parser fails,
+but the parsing can continue.</p>
+
+<p>Conversely, the exception "<code>Stream.Error</code>" means that
+"this parsers encountered a syntax error". In this case, the parsing
+definitively fails.</p>
+
+<p>Like said above, when a parser case applies partially but not completely,
+the exception "<code>Stream.Error</code>" is raised. This means that if
+two parser cases start with the same stream pattern components, only the
+first one have chances to work. This is a limitation of this parsing
+method. To turn over this limitation, one must factorize the rules to
+make both work. A typical example is a language having a rule for the
+statement "if..then..else" and a rule for the shorter "if..then". If
+written that way:</p>
+
+<pre>
+      parser
+      [ [: `If; e1 = expr; `Then; e2 = expr; `Else; e3 = expr :] -> f e1 e2 e3
+      | [: `If; e1 = expr; `Then; e2 = expr :] -> g e1 e2 ]
+</pre>
+
+<p>the second pattern case cannot work.</p>
+
+<p>Indeed, if the input is a stream containg the syntax with
+"if..then..else", the first pattern case apply and it is
+ok. Conversely, if the input contains just "if..then", the matching
+fails when arriving at the "<code>Else</code>" stream pattern
+component above. Since it is not the first stream pattern component of
+the parser case, the parser fails with "<code>Stream.Error</code>".</p>
+
+<p>Reversing the parser cases like this does not help:</p>
+
+<pre>
+      parser
+      [ [: `If; e1 = expr; `Then; e2 = expr :] -> g e1 e2
+      | [: `If; e1 = expr; `Then; e2 = expr; `Else; e3 = expr :] -> f e1 e2 e3 ]
+</pre>
+
+<p>In this case, whatever the input, containing the "if..then"
+construction, or the "if..then..else.." construction, the first parser
+case applies. If the input is "if..then..else..", only the part
+"if..then.." is removed from the stream and the part "else.." remains.
+When a parser case is applied, like for a function, the next case will
+never apply.</p>
+
+<p>The solution, with this parsing technology, is to do a left
+factorization of the parsing cases, namely programming it like
+this:<p>
+
+<pre>
+      parser
+        [: `If; e1 = expr; `Then; e2 = expr;
+           a =
+             parser
+             [ [: `Else; e3 = expr :] -> f e1 e2 e3
+             | [: :] -> g e1 e2 ] :] ->
+          a
+</pre>
+
+<h3>Stream pattern component</h3>
+
+<p>In a stream pattern (starting with "<code>[:</code>" and ending
+with "<code>:]</code>"), are the stream pattern components separated
+with the semicolon character. There are three cases of stream pattern
+components with some sub-cases for some of them, and an extra syntax
+can be used with a "let..in" construction. The three cases are:</p>
+
+<ul>
+
+<li>A direct test of one or several stream elements (called "terminal"
+elements), in three ways:
+
+  <ol>
+
+  <li>The character "backquote" followed by a pattern, meaning: if the
+  stream starts with an element which is matched by this pattern, the
+  stream pattern component matches, and the stream element is removed
+  from the stream.</li>
+
+  <li>The character "backquote" followed by a pattern, the keyword
+  "when" and an expression of type "<code>bool</code>", meaning: if the
+  stream starts with an element which is matched by this pattern and
+  then if the evaluation of the expression is "<code>True</code>", the
+  stream pattern component matches, and the first element of the stream
+  is removed.</li>
+
+  <li>The character "question mark" followed by the character "equal"
+  (new feature 2007) and a lookahead expression (see further), meaning:
+  if the lookahead applies, the stream pattern component matches. The
+  lookahead may unfreeze one or several elements on the stream, but
+  does not remove them.</p>
+
+  </ol>
+
+</li>
+
+<li>A pattern followed by the "equal" sign and an expression of type
+"<code>Stream.t x -> y</code>" for some types "<code>x</code>" and
+"<code>y</code>". meaning: call the expression (which is a parser)
+with the current stream. If this sub-parser:
+
+  <ol>
+
+  <li>Returns an element, the pattern is bound to this result and the
+  next stream pattern component is tested.</li>
+
+  <li>Raises the exception "<code>Stream.Failure</code>", there are two
+  cases:
+
+    <ul>
+
+    <li>if the stream pattern component is the first one of the stream
+    case, the current parser fails with "<code>Stream.Failure</code>"
+    also.</li>
+
+    <li>if the stream pattern component is not the first one of the stream
+    case, the current parser fails with the exception
+    "<code>Stream.Error</code>".</li>
+    
+    </ul>
+
+  In this second case:
+
+    <ul>
+
+    <li>If the stream pattern component is followed by a "question mark"
+    and an expression (which must be of type "<code>string</code>"), the
+    expression is evaluated and given as parameter of the exception.</li>
+
+    <li>If the expression is followed by an "exclamation mark" (new feature
+    2007), the test and conversion from "<code>Stream.Failure</code>" to
+    "<code>Stream.Error</code>" is not done, and the parser just raises
+    "<code>Stream.Failure</code>" again. This is an optimization which
+    must be assumed by the programmer, in general when he knows that
+    the sub-parser called never raises "<code>Stream.Failure</code>" (for
+    example if the called parser ends with a parser case containing an
+    empty stream pattern). See "no error optionization" below.</li>
+
+    <li>Otherwize the exception parameter is the empty string</li>
+
+    </ul>
+
+  </li>
+
+  </ol>
+
+</li>
+
+<li>A pattern, which is bound to the current stream.</li>
+
+</ul>
+
+<p>Between stream pattern components, it is possible to use the
+"let..in" construction. This is not considered as a real stream
+pattern component, in the fact that is is not tested against the
+exception "<code>Stream.Failure</code>" it may raise. It can be useful
+for an intermediate computation. In particular, it is used internally
+by the <a href="pa_lexer.html">lexers</a> (this can be seen by
+printing a code using these lexers into parsers by Camlp4 using the
+pretty printing kit "pr_r.cmo").</p>
+
+<p>Example of use, when an expression have to be used several times
+(in the example, "<code>d a</code>", which is bound to the variable
+"<code>c</code>"):</p>
+
+<pre>
+   parser
+     [: a = b;
+        let c = d a in
+        e =
+          parser
+          [ [: f = g :] -> h c
+          | [: :] -> c ] :] ->
+       e
+</pre>
+
+<h3>Lookahead</h3>
+
+<h3>No error optimization</h3>
+
+<p>The "no error optimization" is a new feature 2007. This is the fact
+to end a stream pattern component of kind "pattern" "equal"
+"expression" by the character "exclamation mark". Like said above,
+this inhibits the transformation of the exception
+"<code>Stream.Failure</code>", possibly raised by the called parser
+into the exception "<code>Stream.Error</code>".<p>
+
+<p>The code:</p>
+
+<pre>
+    parser [: a = b; c = d ! :] -> e
+</pre>
+
+<p>is equivalent to:</p>
+
+<pre>
+    parser [: a = b; s :] -> let c = d s in e
+</pre>
+
+<p>On interest of the first syntax is that it shows to readers that
+"<code>d</code>" is indeed a sub-parser. In the second syntax, it
+is called in the semantic action, which makes the parser case not
+no clear, as far as readability is concerned.</p>
+
+<p>If the stream pattern component is the last one of the stream pattern,
+this allow possible tail recursion done by the OCaml compiler, in the
+following case:</p>
+
+<pre>
+    parser [: a = b; c = d ! :] -> c
+</pre>
+
+<p>since it is equivalent (with the fact that "<code>c</code>" is at
+the same time the pattern of the last case and the expression of the
+parser case semantic action:</p>
+
+<pre>
+    parser [: a = b; s :] -> d s
+</pre>
+
+<p>The call to "<code>d s</code>" can be a tail recursive call. Without
+the use of the "exclamation mark" in the rule, the equivalent code is:</p>
+
+<pre>
+    parser [: a = b; s :] ->
+      try d s with [ Stream.Failure -> raise (Stream.Error "")
+</pre>
+
+<p>which is not tail recursive (because the "try..with" construction
+pushes a context), preventing the compiler to optimize its code. It
+can have some importance when many recursive calls happen, since it
+can overflow the OCaml stack.</p>
+
+<h3>Position</h3>
+
 <hr style="margin:0" /><div style="font-size: 80%"><em>Copyright 2007
 Daniel de Rauglaudre (INRIA)</em>
 
