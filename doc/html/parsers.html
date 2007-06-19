@@ -293,6 +293,9 @@ with the current stream. If this sub-parser:
 
 </ul>
 
+<p>Notice that patterns are bound immediately and can be used in the
+next stream pattern component.</p>
+
 <p>Between stream pattern components, it is possible to use the
 "let..in" construction. This is not considered as a real stream
 pattern component, in the fact that is is not tested against the
@@ -375,6 +378,42 @@ can have some importance when many recursive calls happen, since it
 can overflow the OCaml stack.</p>
 
 <h3>Position</h3>
+
+<p>The optional "pattern" before and after a stream pattern is bound to
+the current stream count. Indeed, streams contains internally the count
+of its elements. At the beginning the count is zero. When an element is
+removed, the count is incremented. The example:</p>
+
+<pre>
+    parser [: a = b :] ep -> c
+</pre>
+
+<p>is equivalent to:</p>
+
+<pre>
+    parser [: a = b; s :] -> let ep = Stream.count s in c
+</pre>
+
+<p>There is not direct syntax equivalent to the optional pattern at
+beginning of the stream pattern:</p>
+
+<pre>
+    parser bp [: a = b :] -> c
+</pre>
+
+<p>These optional patterns allow to dispose of the stream count at the
+beginning and at the end of the parser case, allowing to compute
+locations of the rule in the source. In particular, if the stream is a
+stream of characters, these counts are the source location in numberr
+of characters.</p>
+
+<h3>Semantic action</h3>
+
+<p>In a parser case, after the stream pattern, there is an "arrow" and
+an expression, called the "semantic action". If the parser case is
+matched the parser returns with the expression evaluated, in a context
+of the possibly patterns bound in the stream pattern (position,
+backquote patterns, pattern equal expression, pattern).</p>
 
 <hr style="margin:0" /><div style="font-size: 80%"><em>Copyright 2007
 Daniel de Rauglaudre (INRIA)</em>
