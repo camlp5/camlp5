@@ -304,7 +304,7 @@ next stream pattern component.</p>
 real stream pattern component, in the fact that is is not tested
 against the exception "<code>Stream.Failure</code>" it may raise. It
 can be useful for an intermediate computation. In particular, it is
-used internally by the <a href="pa_lexer.html">lexers</a> (this can be
+used internally by the <a href="lexers.html">lexers</a> (this can be
 seen by printing a code using these lexers into parsers by Camlp4
 using the pretty printing kit "pr_r.cmo").</p>
 
@@ -313,14 +313,14 @@ using the pretty printing kit "pr_r.cmo").</p>
 "<code>c</code>"):</p>
 
 <pre>
-   parser
-     [: a = b;
-        let c = d a in
-        e =
-          parser
-          [ [: f = g :] -> h c
-          | [: :] -> c ] :] ->
-       e
+parser
+  [: a = b;
+     let c = d a in
+     e =
+       parser
+       [ [: f = g :] -> h c
+       | [: :] -> c ] :] ->
+    e
 </pre>
 
 <h3>Lookahead</h3>
@@ -391,8 +391,9 @@ parser
 </pre>
 
 <p>It is possible to put several lists of patterns separated by a
-vertical bar in the lookahead construction, but with a limitation: all
-lists of patterns must have the same number of elements.</p>
+vertical bar in the lookahead construction, but with a limitation (due
+to the implementation): all lists of patterns must have the same
+number of elements.</p>
 
 <h3>No error optimization</h3>
 
@@ -406,16 +407,16 @@ into the exception "<code>Stream.Error</code>".<p>
 <p>The code:</p>
 
 <pre>
-    parser [: a = b; c = d ! :] -> e
+parser [: a = b; c = d ! :] -> e
 </pre>
 
 <p>is equivalent to:</p>
 
 <pre>
-    parser [: a = b; s :] -> let c = d s in e
+parser [: a = b; s :] -> let c = d s in e
 </pre>
 
-<p>On interest of the first syntax is that it shows to readers that
+<p>One interest of the first syntax is that it shows to readers that
 "<code>d</code>" is indeed a sub-parser. In the second syntax, it
 is called in the semantic action, which makes the parser case not
 no clear, as far as readability is concerned.</p>
@@ -425,7 +426,7 @@ this allow possible tail recursion done by the OCaml compiler, in the
 following case:</p>
 
 <pre>
-    parser [: a = b; c = d ! :] -> c
+parser [: a = b; c = d ! :] -> c
 </pre>
 
 <p>since it is equivalent (with the fact that "<code>c</code>" is at
@@ -433,15 +434,15 @@ the same time the pattern of the last case and the expression of the
 parser case semantic action:</p>
 
 <pre>
-    parser [: a = b; s :] -> d s
+parser [: a = b; s :] -> d s
 </pre>
 
 <p>The call to "<code>d s</code>" can be a tail recursive call. Without
 the use of the "exclamation mark" in the rule, the equivalent code is:</p>
 
 <pre>
-    parser [: a = b; s :] ->
-      try d s with [ Stream.Failure -> raise (Stream.Error "")
+parser [: a = b; s :] ->
+  try d s with [ Stream.Failure -> raise (Stream.Error "")
 </pre>
 
 <p>which is not tail recursive (because the "try..with" construction
@@ -457,20 +458,20 @@ of its elements. At the beginning the count is zero. When an element is
 removed, the count is incremented. The example:</p>
 
 <pre>
-    parser [: a = b :] ep -> c
+parser [: a = b :] ep -> c
 </pre>
 
 <p>is equivalent to:</p>
 
 <pre>
-    parser [: a = b; s :] -> let ep = Stream.count s in c
+parser [: a = b; s :] -> let ep = Stream.count s in c
 </pre>
 
 <p>There is not direct syntax equivalent to the optional pattern at
 beginning of the stream pattern:</p>
 
 <pre>
-    parser bp [: a = b :] -> c
+parser bp [: a = b :] -> c
 </pre>
 
 <p>These optional patterns allow to dispose of the stream count at the
@@ -486,6 +487,128 @@ an expression, called the "semantic action". If the parser case is
 matched the parser returns with the expression evaluated, in a context
 of the possibly patterns bound in the stream pattern (position,
 backquote patterns, pattern equal expression, pattern).</p>
+
+<h2>Remarks</h2>
+
+<h3>Simplicity vs Associativity</h3>
+
+<p>This parsing technology has the advantage to be simple to use and
+to understand. But is supposes to sometimes left factorize the rules.
+Moreover, it does not treat the associativity of operators. For
+example, if you try to write a parser like this (to compute arithmetic
+expressions):</p>
+
+<pre>
+value rec expr =
+  parser
+  [ [: e1 = expr; `'+'; e2 = expr :] -> e1 + e2
+  | [: `('0'..'9' as c) :] -> Char.code c - Char.code '0' ]
+</pre>
+
+<p>this would endless loop, exactly like if you wrote a code starting
+like:<p>
+
+<pre>
+value rec expr e =
+  let e1 = expr e in
+  ...
+</pre>
+
+<p>A solution to that is to treat the associavity "by hand", by reading
+a sub-expression, then looping with a parser case parsing the operator
+and another sub-expression, and so on.</p>
+
+<p>Another solution is to previously write parsing "combinators". Indeed,
+parsers being normal functions, it is possible to make a function which
+takes a parser as parameter and returning a parser using it. For example,
+left and right associativity parsing combinators:</p>
+
+<pre>
+value rec left_assoc op elem =
+  let rec op_elem x =
+    parser
+    [ [: t = op; y = elem; r = op_elem (t x y) :] -> r
+    | [: :] -> x ]
+  in
+  parser [: x = elem; r = op_elem x :] -> r
+;
+
+value rec right_assoc op elem =
+  let rec op_elem x =
+    parser
+    [ [: t = op; y = elem; r = op_elem y :] -> t x r
+    | [: :] -> x ]
+  in
+  parser [: x = elem; r = op_elem x :] -> r
+;
+</pre>
+
+<p>which can be used, e.g. like this:</p>
+
+<pre>
+value expr =
+  List.fold_right (fun op elem -> op elem)
+    [left_assoc (parser [: `'+' :] -> fun x y -> x +. y);
+     left_assoc (parser [: `'*' :] -> fun x y -> x *. y);
+     right_assoc (parser [: `'^' :] -> fun x y -> x ** y)]
+    (parser [: `('0'..'9' as c) :] -> float (Char.code c - Char.code '0'))
+;
+</pre>
+
+<p>and tested, e.g. in the toplevel, like that:</p>
+
+<pre>
+expr (Stream.of_string "2^3^2");
+</pre>
+
+<p>The same way, it is possible to parser non-context free grammars, by
+programming parsers returning other parsers.</p>
+
+<p>A third solution, to resolve the problem of associativity, is to
+use the grammars of Camlp4, which has the other advantage that they
+are extensible.</p>
+
+<h3>Lexing vs Parsing</h3>
+
+<p>In general, while analyzing a language, there are two levels:</p>
+
+<ul>
+
+<li>The level where the input, considered as a stream of characters,
+is read to make a stream of tokens (for example "words", if it is a
+human language, or punctuation). This level is generally called
+"lexing".</li>
+
+<li>The level where on read a stream of token to parse grammar rules.
+This level is generally called "parsing".</li>
+
+</ul>
+
+<p>The "parser" construction described here can be used for both, thanks
+to the polymorphism of OCaml:<p>
+
+<ul>
+
+<li>The lexing level is a "parser" of streams of characters returning
+tokens.</li>
+
+<li>The parsing level is a "parser" of streams of tokens returning syntax
+trees.</li>
+
+</ul>
+
+<p>By comparison, the programs "lex" and "yacc" use two different
+technologies. With "parser"s, it is possible to use the same one for
+both.</p>
+
+<h3>Lexer syntax vs Parser syntax</h3>
+
+<p>For "lexers", i.e. for the specific case of parsers when the input
+is a stream of characters, it is possible to use a shorter syntax. See
+the page on <a href="lexers.html">lexers</a>. They are another syntax
+for this case, adapted for the specific type "<code>char</code>" and
+much shorter and simple to use, but they still are internally parsers
+of streams.</p>
 
 <hr style="margin:0" /><div style="font-size: 80%"><em>Copyright 2007
 Daniel de Rauglaudre (INRIA)</em>
