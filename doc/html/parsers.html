@@ -629,12 +629,12 @@ case of "if..then..else.." and the shorter "if..then.." work without
 having to left factorize the parser cases, and there is no need to
 lookahead. They have no equivalent to the exception
 "<code>Stream.Error</code>": when all cases are tested, and have
-failed, the parsers return the equivalent of
-"<code>Stream.Failure</code>". Their drawback is that, when a parsing
-error happens, it is not easily possible to know where, since the
+failed, the parsers return the value "<code>None</code>". Their
+drawback is that, when a parsing error happens, it is not easily
+possible to know the location of the error in the input, since the
 initial stream has not been modified: the system would indicate a
-syntax error at the first character of the first line: this is a
-general drawback of backtracking. See the solutions found to this
+failure at the first character of the first line: this is a general
+drawback of backtracking parsers. See the solutions found to this
 problem in the <a href="fstream.html">page about purely functional
 parsers</a>.</p>
 
