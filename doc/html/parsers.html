@@ -610,6 +610,34 @@ for this case, adapted for the specific type "<code>char</code>" and
 much shorter and simple to use. But they still are internally parsers
 of streams with the same semantics.</p>
 
+<h3>Purely functionnal parsers</h3>
+
+<p>This system of parsers are not purely functionnal in the sense that
+the stream structure is lazy and imperative: while parsing, the stream
+advances and the terminals already parsed disappear from the stream
+structure. This is useful because it is not necessary to return the
+remaining stream together with the normal result. And it is the reason
+why there is this <code>"Stream.Error"</code> exception: when it
+happens, it means that some terminals have been consummed from the
+stream, definitively lost, and that therefore it is no more possible
+to try other parser cases.</p>
+
+<p>An alternative of that is using <a href="fstream.html">purely
+functionnal parsers</a> using a new stream type, lazy but not
+destructive. Their advantage is that they use a limited backtrack: the
+case of "if..then..else.." and the shorter "if..then.." work without
+having to left factorize the parser cases, and there is no need to
+lookahead. They have no equivalent to the exception
+"<code>Stream.Error</code>": when all cases are tested, and have
+failed, the parsers return the equivalent of
+"<code>Stream.Failure</code>". Their drawback is that, when a parsing
+error happens, it is not easily possible to know where, since the
+initial stream has not been modified: the system would indicate a
+syntax error at the first character of the first line: this is a
+general drawback of backtracking. See the solutions found to this
+problem in the <a href="fstream.html">page about purely functional
+parsers</a>.</p>
+
 <hr style="margin:0" /><div style="font-size: 80%"><em>Copyright 2007
 Daniel de Rauglaudre (INRIA)</em>
 
