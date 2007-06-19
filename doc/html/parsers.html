@@ -21,7 +21,7 @@
     p { text-align: justify; margin: 1em 1cm }
     li { margin-left: 1cm }
     pre {
-      border-left: silver solid 3px; margin-bottom: 1.5em; margin-left: 2cm;
+      border-left: silver solid 3px; margin-bottom: 1.5em; margin-left: 1.5cm;
       padding-left: 1em; padding-right: 0.5em; line-height: 1.2
     }
     tt { font-weight: bold }
@@ -78,33 +78,33 @@ can rebuild the parsers in their initial syntax and display it.<p>
 <p>The syntax of parsers is the following:</p>
 
 <pre>
-            expression ::= parser
-                parser ::= "parser" pos_opt "[" parser_cases "]"
-                         | "parser" pos_opt parser_case
-          parser_cases ::= parser_cases parser_case
-                         | &lt;nothing&gt;
-           parser_case ::= "[:" stream_pattern ":]" pos_opt "->" expression
-        stream_pattern ::= stream_patt_comp
-                         | stream_patt_comp ";" stream_pattern_cont
-                         | "let" LIDENT "=" expression "in" stream_pattern
-   stream_pattern_cont ::= stream_patt_comp_err
-                         | stream_patt_comp_err ";" stream_pattern_cont
-                         | "let" LIDENT "=" expression "in" stream_pattern_cont
-  stream_patt_comp_err ::= stream_patt_comp
-                         | stream_patt_comp "?" expression
-                         | stream_patt_comp "!"
-      stream_patt_comp ::= "`" pattern
-                         | "`" pattern "when" expression
-                         | "?=" lookaheads
-                         | pattern "=" expression
-                         | pattern
-            lookaheads ::= lookaheads "|" lookahead
-                         | lookahead
-             lookahead ::= "[" patterns "]"
-              patterns ::= patterns pattern
-                         | pattern
-               pos_opt ::= pattern
-                         | &lt;nothing&gt;
+          expression ::= parser
+              parser ::= "parser" pos_opt "[" parser_cases "]"
+                       | "parser" pos_opt parser_case
+        parser_cases ::= parser_cases parser_case
+                       | &lt;nothing&gt;
+         parser_case ::= "[:" stream_pattern ":]" pos_opt "->" expression
+      stream_pattern ::= stream_patt_comp
+                       | stream_patt_comp ";" stream_patt_cont
+                       | "let" LIDENT "=" expression "in" stream_pattern
+    stream_patt_cont ::= stream_patt_comp_err
+                       | stream_patt_comp_err ";" stream_patt_cont
+                       | "let" LIDENT "=" expression "in" stream_patt_cont
+stream_patt_comp_err ::= stream_patt_comp
+                       | stream_patt_comp "?" expression
+                       | stream_patt_comp "!"
+    stream_patt_comp ::= "`" pattern
+                       | "`" pattern "when" expression
+                       | "?=" lookaheads
+                       | pattern "=" expression
+                       | pattern
+          lookaheads ::= lookaheads "|" lookahead
+                       | lookahead
+           lookahead ::= "[" patterns "]"
+            patterns ::= patterns pattern
+                       | pattern
+             pos_opt ::= pattern
+                       | &lt;nothing&gt;
 </pre>
 
 <h3>Semantics</h3>
@@ -157,9 +157,9 @@ statement "if..then..else" and a rule for the shorter "if..then". If
 written that way:</p>
 
 <pre>
-      parser
-      [ [: `If; e1 = expr; `Then; e2 = expr; `Else; e3 = expr :] -> f e1 e2 e3
-      | [: `If; e1 = expr; `Then; e2 = expr :] -> g e1 e2 ]
+parser
+[ [: `If; e1 = expr; `Then; e2 = expr; `Else; e3 = expr :] -> f e1 e2 e3
+| [: `If; e1 = expr; `Then; e2 = expr :] -> g e1 e2 ]
 </pre>
 
 <p>the second pattern case cannot work.</p>
@@ -174,9 +174,9 @@ the parser case, the parser fails with "<code>Stream.Error</code>".</p>
 <p>Reversing the parser cases like this does not help:</p>
 
 <pre>
-      parser
-      [ [: `If; e1 = expr; `Then; e2 = expr :] -> g e1 e2
-      | [: `If; e1 = expr; `Then; e2 = expr; `Else; e3 = expr :] -> f e1 e2 e3 ]
+parser
+[ [: `If; e1 = expr; `Then; e2 = expr :] -> g e1 e2
+| [: `If; e1 = expr; `Then; e2 = expr; `Else; e3 = expr :] -> f e1 e2 e3 ]
 </pre>
 
 <p>In this case, whatever the input, containing the "if..then"
@@ -191,13 +191,13 @@ factorization of the parsing cases, namely programming it like
 this:<p>
 
 <pre>
-      parser
-        [: `If; e1 = expr; `Then; e2 = expr;
-           a =
-             parser
-             [ [: `Else; e3 = expr :] -> f e1 e2 e3
-             | [: :] -> g e1 e2 ] :] ->
-          a
+parser
+  [: `If; e1 = expr; `Then; e2 = expr;
+     a =
+       parser
+       [ [: `Else; e3 = expr :] -> f e1 e2 e3
+       | [: :] -> g e1 e2 ] :] ->
+    a
 </pre>
 
 <h3>Stream pattern component</h3>
@@ -210,8 +210,8 @@ can be used with a "let..in" construction. The three cases are:</p>
 
 <ul>
 
-<li>A direct test of one or several stream elements (called "terminal"
-elements), in three ways:
+<li>A direct test of one or several stream elements
+(called <b>terminal</b> symbol), in three ways:
 
   <ol>
 
@@ -239,8 +239,9 @@ elements), in three ways:
 
 <li>A pattern followed by the "equal" sign and an expression of type
 "<code>Stream.t x -> y</code>" for some types "<code>x</code>" and
-"<code>y</code>". meaning: call the expression (which is a parser)
-with the current stream. If this sub-parser:
+"<code>y</code>". This expression is called a <b>non terminal</b>
+symbol. It means: call the expression (which is a parser) with the
+current stream. If this sub-parser:
 
   <ol>
 
@@ -296,14 +297,16 @@ with the current stream. If this sub-parser:
 <p>Notice that patterns are bound immediately and can be used in the
 next stream pattern component.</p>
 
+<h3>Let statement</h3>
+
 <p>Between stream pattern components, it is possible to use the
-"let..in" construction. This is not considered as a real stream
-pattern component, in the fact that is is not tested against the
-exception "<code>Stream.Failure</code>" it may raise. It can be useful
-for an intermediate computation. In particular, it is used internally
-by the <a href="pa_lexer.html">lexers</a> (this can be seen by
-printing a code using these lexers into parsers by Camlp4 using the
-pretty printing kit "pr_r.cmo").</p>
+"let..in" construction (new feature 2007). This is not considered as a
+real stream pattern component, in the fact that is is not tested
+against the exception "<code>Stream.Failure</code>" it may raise. It
+can be useful for an intermediate computation. In particular, it is
+used internally by the <a href="pa_lexer.html">lexers</a> (this can be
+seen by printing a code using these lexers into parsers by Camlp4
+using the pretty printing kit "pr_r.cmo").</p>
 
 <p>Example of use, when an expression have to be used several times
 (in the example, "<code>d a</code>", which is bound to the variable
@@ -322,13 +325,82 @@ pretty printing kit "pr_r.cmo").</p>
 
 <h3>Lookahead</h3>
 
+<p>The lookahead feature allows to look at several terminals in the
+stream without removing them, in order to take decisions when more
+than one terminal is necessary.</p>
+
+<p>For example, if parsing a the normal syntax of the OCaml language,
+there is a problem, in recursing descendent parsing, for the cases
+where to treat and differentiate the following inputs:</p>
+
+<pre>
+(-x+1)
+(-)
+</pre>
+
+<p>The first case is treated in a rule, telling: "a left parenthesis,
+followed by an expression, and a right parenthesis". The second one
+is "a left parenthesis, an operator, a right parenthesis". If programming
+it like this (left factorizing the first parenthesis):<p>
+
+<pre>
+parser
+  [: `Lparen;
+     e =
+       parser
+       [ [: e = expr; `Rparen :] -> e
+       | [: `Minus; `Rparen :] -> minus_op ] :] ->
+    e
+</pre>
+
+<p>this does not work if the input is "<code>(-)</code>" because the
+rule "<code>e = expr</code>" accepts the minus sign as expression
+starting, removing it from the input stream and fails as parsing
+error, while encountering the right parenthesis.<p>
+
+<p>Conversely, writing it this way:<p>
+
+<pre>
+parser
+  [: `Lparen;
+     e =
+       parser
+       [ [: `Minus; `Rparen :] -> minus_op
+       | [: e = expr; `Rparen :] -> e ] :] ->
+    e
+</pre>
+
+<p>does not help, because if the input is "<code>(-x+1)</code>" the
+rule above starting with "<code>`Minus</code>" is accepted and the
+exception "<code>Stream.Error</code>" is raised while encountering the
+variable "<code>x</code>" since a right parenthesis is expected.<p>
+
+<p>In general, these cases are resolved by a left factorization of the
+parser cases (see the section "Semantics" above), but it is not possible
+in this case. The solution is to test whether the character after the
+minus sign is a right parenthesis:</p>
+
+<pre>
+parser
+  [: `Lparen;
+     e =
+       parser
+       [ [: ?= [ _ Rparen ]; `Minus; `Rparen :] -> minus_op
+       | [: e = expr; `Rparen :] -> e ] :] ->
+    e
+</pre>
+
+<p>It is possible to put several lists of patterns separated by a
+vertical bar in the lookahead construction, but with a limitation: all
+lists of patterns must have the same number of elements.</p>
+
 <h3>No error optimization</h3>
 
 <p>The "no error optimization" is a new feature 2007. This is the fact
-to end a stream pattern component of kind "pattern" "equal"
-"expression" by the character "exclamation mark". Like said above,
-this inhibits the transformation of the exception
-"<code>Stream.Failure</code>", possibly raised by the called parser
+to end a stream pattern component of kind "non-terminal" ("pattern"
+"equal" "expression") by the character "exclamation mark". Like said
+above, this inhibits the transformation of the exception
+"<code>Stream.Failure</code>", possibly raised by the called parser,
 into the exception "<code>Stream.Error</code>".<p>
 
 <p>The code:</p>
