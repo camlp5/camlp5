@@ -32,11 +32,40 @@
 
 <h1>Camlp4 - Pretty Printing OCaml Programs</h1>
 
-<p>The extensible pretty printing of OCaml programs in Camlp4 sources
-use the library modules <a href="pretty.html">Pretty</a> (formatting
-output) and <a href="extfun.html">Extfun</a> (extensible functions)
-and needs the syntax extension <tt>pa_extfun.cmo</tt> to be
-compiled.</p>
+<p>Camlp4 provides extensions kits to pretty print programs in revised
+syntax and normal syntax. Some other extensions kits also allow to
+rebuild the parsers, or the EXTEND statements in their initial
+syntax. The pretty print system is itself extensible, by adding new
+rules. We present here how it works in the Camlp4 sources.</p>
+
+<p>The pretty print system of Camlp4 uses the library modules
+<a href="pretty.html">Pretty</a>, an original system to format
+output) and <a href="extfun.html">Extfun</a>, another original
+system of extensible functions.
+
+<h2>Introduction</h2>
+
+<p>The files doing the pretty prints are located in Camlp4 sources
+in the directory "etc". Look at them if you are interested on creating
+new ones. The main ones are:</p>
+
+<ul>
+
+<li>"pr_r.ml": pretty print in revised syntax.</li>
+
+<li>"pr_o.ml": pretty print in normal syntax.</li>
+
+<li>"pr_rp.ml": rebuilding parsers in their original revised syntax.</li>
+
+<li>"pr_op.ml": rebuilding parsers in their original normal syntax.</li>
+
+<li>"pr_extend.ml": rebuilding EXTEND in its original syntax.</li>
+
+</ul>
+
+<p>We present here how this system work inside these files.</p>
+
+<h2>Description</h2>
 
 <p>The pretty printing operators of the OCaml syntax trees are defined
 in the module <tt>Pcaml.Printer</tt>. They are:</p>
