@@ -32,8 +32,7 @@
 <h1>Module Pretty</h1>
 
 <p>
-Pretty is a very simple library module to pretty print data.
-It contains:
+Pretty is a library module to pretty print data. It contains:
 </p>
 
 <ul>
@@ -48,14 +47,15 @@ maximum lines lengths.</li>
 <h3><span class="value">horiz_vertic</span></h3>
 
 <p>The function "horiz_vertic" takes two functions as parameters. When
-called, it calls its first function. If that function fails, the
-second function is called.</p>
+called, it calls its first function. If that function fails with some
+internal error that the function "<code>sprintf</code>" below may
+raise, the second function is called.</p>
 
 <p>The type of "horiz_vertic" is:</p>
 
 <pre>(unit -> 'a) -> (unit -> 'a) -> 'a</tt></pre>
 
-<h4>horizontal</h4>
+<h4>the horizontal function</h4>
 
 <p>The first function is said to be the "horizontal" function. It
 tries to pretty print the data on a single line. In the context of
@@ -64,10 +64,10 @@ below) contain newlines or have lengths greater than "line_length",
 the function fails (with a internal exception local to the
 module).</p>
 
-<h4>vertical</h4>
+<h4>the vertical function</h4>
 
 <p>In case of failure of the "horizontal function", the second function
-of "horiz_vertic", the "vertical" function is called. In the context of
+of "horiz_vertic", the "vertical" function, is called. In the context of
 that function, the "sprintf" function behaves like the normal "sprintf"
 function of the OCaml library module "Printf".<p>
 
@@ -115,9 +115,13 @@ horiz_vertic
   (fun () -> sprintf "&lt;li&gt;\n  something\n&lt/li&gt;");
 </pre>
 
-<p>Notice that, in a program displaying XML code, this "something" may
-contain other XML tags, and is therefore generally the result of other
-pretty printing functions, and the program should rather look like:</p>
+<p>Notice that the "<code>sprintf</code>" above is the one of the
+library Pretty.</p>
+
+<p>Notice also that, in a program displaying XML code, this
+"something" may contain other XML tags, and is therefore generally the
+result of other pretty printing functions, and the program should
+rather look like:</p>
 
 <pre>
 horiz_vertic
@@ -143,11 +147,11 @@ printing.</p>
 without putting any newlines or indentations, just using e.g. spaces to
 separate pieces of data.</p>
 
-<p>As its second function, wonder how you want how your data has to
-be cut at a first level. At the cutting point or points, add newlines.
-Notice that you probably need to give the current indentation string as
-parameter of the called functions because they need to be taken into
-account in the called "horizontal" functions.</p>
+<p>As its second function, wonder how you want your data to be cut.
+At the cutting point or points, add newlines. Notice that you probably
+need to give the current indentation string as parameter of the called
+functions because they need to be taken into account in the called
+"horizontal" functions.</p>
 
 <p>In the example below, don't put the indentation in the sprintf function
 but give it as parameter of your "print" function:</p>
@@ -199,13 +203,13 @@ character in the sprintf format.</p>
 
 <h3>Kernel</h3>
 
-<p>The module "Pretty" is supposed to be a basic, a "kernel" module
-to pretty print data. It supposes that the user takes care himself of
-the indentation. Programs using "Pretty" are not as short as the ones
+<p>The module "Pretty" is supposed to be a basic, a "kernel" module to
+pretty print data. It supposes that the user takes care himself of the
+indentation. Programs using "Pretty" are not as short as the ones
 using "Format" of the OCaml library, but are more flexible. Later, it
 is planed to find a way to extend "Pretty" with functions allowing to
 use a short syntax similar to the "@" convention of the function
-"printf" of "Format", and taking care of the indentation for you,
+"printf" of "Format", and taking care of the indentation for the user,
 resulting on shorter programs.</p>
 
 <h3>Strings vs Channels</h3>
@@ -244,10 +248,11 @@ this:</p>
 <li>if not, build the string by adding newlines in the specific places</li>
 </ol>
 
-<p>This method works but is generally very slow. Because while printing
-horizontally, many unuseful strings are built. If, for example, the
-final printed data holds on 50 lines, tenth of lines may be build and
-build again unusefully before the overflowing is tested.</p>
+<p>This method works but is generally very slow (exponential in
+time). Because while printing horizontally, many unuseful strings are
+built. If, for example, the final printed data holds on 50 lines,
+tenth of lines may be build and build again unusefully before the
+overflowing is tested.</p>
 
 </ul>
 
