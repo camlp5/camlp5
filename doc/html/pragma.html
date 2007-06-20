@@ -30,47 +30,52 @@
 </head>
 <body>
 
-<h1>pa_pragma.cmo: syntax adding a directive #pragma</h1>
+<h1>Directive #pragma</h1>
 
-<p>pa_pragma.cmo is a Camlp4 syntax extension adding a directive
-#pragma.  This directive takes an expression as parameter, which is
-evaluated at compile time by the preprocessor.
+<p>The directive "<code>#pragma</code>" allows to evaluate expressions
+at parse time, useful, for example, to test syntax extensions by the
+statement EXTEND without having to compile it in a separate file.</p>
 
-It is useful, for example, when one wants to add a syntax
-extension, using the EXTEND statement, without having to put
-it in a separated file.</p>
+<p>To use it, add the syntax extension "<code>pa_pragma.cmo</code>" in
+the camlp4 command line. It add the ability to use this directive.</p>
 
 <p>Example in a file, adding a syntax for the statement 'repeat' and
 using it just after:</p>
 
 <pre>
-    #pragma
-      EXTEND
-        GLOBAL: expr;
-        expr: LEVEL "top"
-          [ [ "repeat"; e1 = sequence; "until"; e2 = SELF ->
-                <:expr< do { $e1$; while not $e2$ do { $e1$ } } >> ] ]
-        ;
-        sequence:
-          [ [ el = LIST1 expr_semi -> <:expr< do { $list:el$ } >>  ] ]
-        ;
-        expr_semi:
-          [ [ e = expr; ";" -> e ] ]
-        ;
-      END;
-    let i = ref 1 in
-    repeat print_int i.val; print_endline ""; incr i; until i.val = 10;
+#pragma
+  EXTEND
+    GLOBAL: expr;
+    expr: LEVEL "top"
+      [ [ "repeat"; e1 = sequence; "until"; e2 = SELF ->
+            <:expr< do { $e1$; while not $e2$ do { $e1$ } } >> ] ]
+    ;
+    sequence:
+      [ [ el = LIST1 expr_semi -> <:expr< do { $list:el$ } >>  ] ]
+    ;
+    expr_semi:
+      [ [ e = expr; ";" -> e ] ]
+    ;
+  END;
+
+let i = ref 1 in
+repeat print_int i.val; print_endline ""; incr i; until i.val = 10;
 </pre>
 
 <p>The compilation of this example (naming it "foo.ml") can be done with
 the command:</p>
 
 <pre>
-    ocamlc -pp "camlp4r q_MLast.cmo pa_extend.cmo pa_pragma.cmo" -I +camlp4 foo.ml
+ocamlc -pp "camlp4r q_MLast.cmo pa_extend.cmo pa_pragma.cmo" -I +camlp4 foo.ml
 </pre>
 
-<p>Notice that it is experimental and probably incomplete, for the
+<p>Notice that it is still experimental and probably incomplete, for the
 moment.</p>
+
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+
+<hr style="margin:0" /><div style="font-size: 80%"><em>Copyright 2007
+Daniel de Rauglaudre (INRIA)</em>
 
 </body>
 </html>
