@@ -148,11 +148,12 @@ is the same).<p>
 stream. Like its name says, it returns the number of unfrozen elements
 of the stream, which is exactly the longuest match found. If the input
 is a stream of characters, the return of this function is exactly the
-position in number of characters from the beginning of the stream.
-However, it is not possible to know directly which rule failed and it
-is not possible, like in classical parsers, to get a clear error
-message. Future versions of purely functional parsers may propose
-solutions to resolve this problem.</p>
+position in number of characters from the beginning of the stream.</p>
+
+<p>However, it is not possible to know directly which rule failed and
+therefore it is not possible, like in classical parsers, to specify
+and get clear error messages. Future versions of purely functional
+parsers may propose solutions to resolve this problem.</p>
 
 <p>Notice that, if using that method, it is not possible to reuse the
 same stream to call another parser, and hope to get the right position

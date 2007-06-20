@@ -269,6 +269,34 @@ match expression with ...
 (parser ...) expression
 </pre>
 
+<h3>Error messages</h3>
+
+<p>A "<code>Stream.Error</code>" exception is raised when a stream
+pattern component does not match and that it is not the first one
+of the parser case. This exception has a parameter of type string,
+useful to specify the error message. By default, this is the empty
+string. To specify an error message, add a question mark and an
+expression after the stream pattern component. A typical error
+message is "that stream pattern component expected". Example with
+the parser of "if..then..else.." above:</p>
+
+<pre>
+parser
+  [: `If; e1 = expr ? "expression expected after 'if'";
+     `Then ? "'then' expected";
+     e2 = expr ? "expression expected after 'then'";
+     a =
+       parser
+       [ [: `Else; e3 = expr ? "expression expected" :] -> f e1 e2 e3
+       | [: :] -> g e1 e2 ] :] ->
+    a
+</pre>
+
+<p>Notice that the expression after the question mark is evaluated
+only in case of syntax error. Therefore, it can be a complicated call
+to a complicated function without slowing down the normal parsing.</p>
+
+
 <h3>Stream pattern component</h3>
 
 <p>In a stream pattern (starting with "<code>[:</code>" and ending
