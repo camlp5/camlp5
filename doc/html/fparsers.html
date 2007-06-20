@@ -1,0 +1,116 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
+ "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+<head>
+  <!-- $Id$ -->
+  <!-- Copyright (c) 2007 INRIA -->
+  <title>purely functional parsers of streams</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <link rel="shortcut icon" href="c4logo.png" />
+  <style type="text/css"><!--
+    body { counter-reset: h2cnt }
+    h1 { text-align: center }
+    h2:before { content: counter(h2cnt) " - "; counter-increment: h2cnt }
+    h2 { border: 1px solid; text-align: center; background: #9bf }
+    h2 { counter-reset: h3cnt }
+    h3:before {
+      content: counter(h2cnt) "." counter(h3cnt) " - ";
+      counter-increment: h3cnt
+    }
+    p { text-align: justify; margin: 1em 1cm }
+    li { margin-left: 1cm }
+    pre {
+      border-left: silver solid 3px; margin-bottom: 1.5em; margin-left: 1.5cm;
+      padding-left: 1em; padding-right: 0.5em; line-height: 1.2
+    }
+    tt { font-weight: bold }
+    .value { background: #0f0 }
+  --></style>
+</head>
+<body>
+
+<h1>Purely functional parsers of streams</h1>
+
+<p>Purely functional parsers are an alternative
+of <a href="parsers.html">parsers of streams</a> where the used stream
+type is a lazy non-destructive type : these streams are lazy values,
+like in classical parsers of streams, but the values are not removed
+as long as the parsing advances. To make them work, the parsers of
+purely functional streams return, not the simple values, but a value
+of type option : "<code>Node</code>" meaning "mo match" (the equivalent
+of the exception "<code>Parse.Failure</code>" of normal streams) and
+"<code>Some (r, s)</code>" meaning "the result is r and the remaining
+stream is s".</p>
+
+<h2>Syntax</h2>
+
+<p>The syntax of purely functional parsers, when loading
+"pa_fstream.cmo", is the following:</p>
+
+<pre>
+          expression ::= fparser
+                       | match_with_fparser
+             fparser ::= "fparser" pos_opt "[" parser_cases "]"
+                       | "fparser" pos_opt parser_case
+  match_with_fparser ::= "match" expression with "fparser" pos_opt "[" parser_cases "]"
+                       | "match" expression with "fparser" pos_opt parser_case
+        parser_cases ::= parser_cases parser_case
+                       | &lt;nothing&gt;
+         parser_case ::= "[:" stream_pattern ":]" pos_opt "->" expression
+                       | "[:" ":]" pos_opt "->" expression
+      stream_pattern ::= stream_patt_comp
+                       | stream_patt_comp ";" stream_pattern
+    stream_patt_comp ::= "`" pattern
+                       | pattern "=" expression
+                       | pattern
+             pos_opt ::= pattern
+                       | &lt;nothing&gt;
+</pre>
+
+<p>Notice that, in difference with classical parsers, there is no
+difference, in a stream pattern, between the first stream pattern
+component and the other ones. In particular, there is not this syntax
+"question mark" and expression optionnally ending those
+components. Moreover, the "lookahead" case is not necessary, we see
+further why. On the contrary, the syntaxes "pattern when" and "let..in"
+inside stream patterns we see in classical parsers are just not
+implemented. </p>
+
+<h2>Streams</h2>
+
+<p>The functional parsers are functions taking as parameters
+functional streams, which are values of type "<code>Fstream.t
+a</code>" for some type "<code>a</code>". It is possible to build
+functional streams using the functions defined in the module
+"<code>Fstream</code>":</p>
+
+<h3>Fstream.from</h3>
+
+<p>"<code>Fstream.from f</code>" returns a stream built from the
+function "<code>f</code>". To create a new stream element, the
+function "<code>f</code>" is called with the current stream count,
+starting with zero. The user function "<code>f</code>" must return
+either "<code>Some &lt;value&gt;</code>" for a value or
+"<code>None</code>" to specify the end of the stream.
+
+<h3>Fstream.of_list</h3>
+
+<p>Return a stream built from the list in the same order.</p>
+
+<h3>Fstream.of_string</h3>
+
+<p>Return a stream of the characters of the string parameter.</p>
+
+<h3>Fstream.of_channel</h3>
+
+<p>Return a stream of the characters read from the input channel
+parameter.</p>
+
+<h2>Semantics of parsers</h2>
+
+<hr style="margin:0" /><div style="font-size: 80%"><em>Copyright 2007
+Daniel de Rauglaudre (INRIA)</em>
+
+</body>
+</html>

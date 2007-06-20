@@ -18,6 +18,11 @@
       content: counter(h2cnt) "." counter(h3cnt) " - ";
       counter-increment: h3cnt
     }
+    h3 { counter-reset: h4cnt }
+    h4:before {
+      content: counter(h2cnt) "." counter(h3cnt) "." counter(h4cnt) " - ";
+      counter-increment: h4cnt
+    }
     p { text-align: justify; margin: 1em 1cm }
     li { margin-left: 1cm }
     pre {
@@ -35,8 +40,8 @@
 <p>We describe here the syntax and the semantics of the parsers of
 streams of Camlp4. Streams are kinds of lazy lists. The parsers of
 these streams use recursive descendent method, which is the most
-natural one in functionnal languages. In particular, parsers are
-normal functions.
+natural one in functional languages. In particular, parsers are normal
+functions.
 
 <p>Notice that the parsers have existed in OCaml since many years (the
 beginning of the 90ies), but some new features have been added in 2007
@@ -75,7 +80,8 @@ can rebuild the parsers in their initial syntax and display it.<p>
 
 <h2>Syntax</h2>
 
-<p>The syntax of parsers is the following:</p>
+<p>The syntax of the parsers, when loading "pa_rp.cmo" (or already
+included in the command "camlp4r"), is the following:</p>
 
 <pre>
           expression ::= parser
@@ -90,6 +96,7 @@ can rebuild the parsers in their initial syntax and display it.<p>
       stream_pattern ::= stream_patt_comp
                        | stream_patt_comp ";" stream_patt_cont
                        | "let" LIDENT "=" expression "in" stream_pattern
+                       | &lt;nothing&gt;
     stream_patt_cont ::= stream_patt_comp_err
                        | stream_patt_comp_err ";" stream_patt_cont
                        | "let" LIDENT "=" expression "in" stream_patt_cont
@@ -110,7 +117,36 @@ stream_patt_comp_err ::= stream_patt_comp
                        | &lt;nothing&gt;
 </pre>
 
-<h2>Semantics</h2>
+<h2>Streams</h2>
+
+<p>The parsers are functions taking as parameters streams, which are
+values of type "<code>Stream.t a</code>" for some type
+"<code>a</code>". It is possible to build streams using the functions
+defined in the module "<code>Stream</code>":</p>
+
+<h3>Stream.from</h3>
+
+<p>"<code>Stream.from f</code>" returns a stream built from the
+function "<code>f</code>". To create a new stream element, the
+function "<code>f</code>" is called with the current stream count,
+starting with zero. The user function "<code>f</code>" must return
+either "<code>Some &lt;value&gt;</code>" for a value or
+"<code>None</code>" to specify the end of the stream.
+
+<h3>Stream.of_list</h3>
+
+<p>Return a stream built from the list in the same order.</p>
+
+<h3>Stream.of_string</h3>
+
+<p>Return a stream of the characters of the string parameter.</p>
+
+<h3>Stream.of_channel</h3>
+
+<p>Return a stream of the characters read from the input channel
+parameter.</p>
+
+<h2>Semantics of parsers</h2>
 
 <h3>Parser</h3>
 
@@ -643,9 +679,9 @@ for this case, adapted for the specific type "<code>char</code>" and
 much shorter and simple to use. But they still are internally parsers
 of streams with the same semantics.</p>
 
-<h3>Purely functionnal parsers</h3>
+<h3>Purely functional parsers</h3>
 
-<p>This system of parsers are not purely functionnal in the sense that
+<p>This system of parsers are not purely functional in the sense that
 the stream structure is lazy and imperative: while parsing, the stream
 advances and the terminals already parsed disappear from the stream
 structure. This is useful because it is not necessary to return the
@@ -655,8 +691,8 @@ happens, it means that some terminals have been consummed from the
 stream, definitively lost, and that therefore it is no more possible
 to try other parser cases.</p>
 
-<p>An alternative of that is using <a href="fstream.html">purely
-functionnal parsers</a> using a new stream type, lazy but not
+<p>An alternative of that is using <a href="fparsers.html">purely
+functional parsers</a> using a new stream type, lazy but not
 destructive. Their advantage is that they use a limited backtrack: the
 case of "if..then..else.." and the shorter "if..then.." work without
 having to left factorize the parser cases, and there is no need to
@@ -668,7 +704,7 @@ possible to know the location of the error in the input, since the
 initial stream has not been modified: the system would indicate a
 failure at the first character of the first line: this is a general
 drawback of backtracking parsers. See the solutions found to this
-problem in the <a href="fstream.html">page about purely functional
+problem in the <a href="fparsers.html">page about purely functional
 parsers</a>.</p>
 
 <hr style="margin:0" /><div style="font-size: 80%"><em>Copyright 2007
