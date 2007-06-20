@@ -79,8 +79,11 @@ can rebuild the parsers in their initial syntax and display it.<p>
 
 <pre>
           expression ::= parser
+                       | match_with_parser
               parser ::= "parser" pos_opt "[" parser_cases "]"
                        | "parser" pos_opt parser_case
+   match_with_parser ::= "match" expression with "parser" pos_opt "[" parser_cases "]"
+                       | "match" expression with "parser" pos_opt parser_case
         parser_cases ::= parser_cases parser_case
                        | &lt;nothing&gt;
          parser_case ::= "[:" stream_pattern ":]" pos_opt "->" expression
@@ -107,7 +110,9 @@ stream_patt_comp_err ::= stream_patt_comp
                        | &lt;nothing&gt;
 </pre>
 
-<h3>Semantics</h3>
+<h2>Semantics</h2>
+
+<h3>Parser</h3>
 
 <p>A parser, defined with the syntax "parser" above, is of type
 "<code>Stream.t a -> b</code>" where "a" is the type of the elements
@@ -198,6 +203,34 @@ parser
        [ [: `Else; e3 = expr :] -> f e1 e2 e3
        | [: :] -> g e1 e2 ] :] ->
     a
+</pre>
+
+<h3>Match with parser</h3>
+
+<p>The syntax "match expression with parser" allows to match a stream
+against a parser. It is, for "parser", the equivalent of "match
+expression with" for "fun". The same way we could say:</p>
+
+<pre>
+match expression with ...
+</pre>
+
+<p>could be considered as an equivalent to:</p>
+
+<pre>
+(fun ...) expression
+</pre>
+
+<p>we could consider that:</p>
+
+<pre>
+match expression with ...
+</pre>
+
+<p>is an equivalent to:</p>
+
+<pre>
+(parser ...) expression
 </pre>
 
 <h3>Stream pattern component</h3>

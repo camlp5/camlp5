@@ -33,12 +33,27 @@
 <h1>Purely functional parsers</h1>
 
 <p>Purely functional parsers are an alternative
-of <a href="parsers.html">parsers of streams</a> where the stream type
-used is a lazy non-destructive type. These streams are lazy values,
+of <a href="parsers.html">parsers of streams</a> where the used stream
+type is a lazy non-destructive type : these streams are lazy values,
 like in classical parsers of streams, but the values are not removed
 as long as the parsing advances. To make them work, the parsers of
-purely functional streams return, not the simple values, but a couple
-of the value and the remaining stream.</p>
+purely functional streams return, not the simple values, but a value
+of type option : "<code>Node</code>" meaning "mo match" (the equivalent
+of the exception "<code>Parse.Failure</code>" of normal streams) and
+"<code>Some (r, s)</code>" meaning "the result is r and the remaining
+stream is s".</p>
+
+<h2>Syntax</h2>
+
+When loading the syntax extension pa_fstream.cmo, the OCaml syntax is
+extended as follows:
+
+<pre>
+        expression ::= fparser
+           fparser ::= "fparser" "[" rules "]"
+                     | "match" expression with parser_case
+             rules ::= rules rule
+<pre>
 
 <hr style="margin:0" /><div style="font-size: 80%"><em>Copyright 2007
 Daniel de Rauglaudre (INRIA)</em>
