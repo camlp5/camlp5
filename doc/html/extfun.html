@@ -4,7 +4,7 @@
 <head>
   <!-- $Id$ -->
   <!-- Copyright (c) 2007 INRIA -->
-  <title>Extfun</title>
+  <title>Extensible functions</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <link rel="shortcut icon" href="c4logo.png" />
@@ -30,83 +30,85 @@
 </head>
 <body>
 
-<h1>Module Extfun (and syntax extension)</h1>
+<h1>Extensible functions</h1>
 
-<p>The module Extfun allows to write dynamically extensible functions. It
-is proposed with the syntax extension named "pa_extfun.cmo".</p>
-
-<p>The functions are defined by pattern matching. The value
-"Extfun.empty" is an empty function (always raising "Match_failure").
-Adding match associations is done by a syntactic construction which
-works exactly like "match" or "try" except that the keyword is
-"extfun". Patterns can have "when" statements. When adding an match
-case, if the pattern still exists, the new match case replaces the old
-one.</p>
-
-<p>The pattern cases are ordered according to syntax trees
-representing them. "When" statements are inserted before the cases
-without "when".</p>
+<p>Extensible functions allow to define functions by pattern matching
+which are extensible by adding of new cases which are inserted
+automatically at the good place by comparing the patterns. The pattern
+cases are ordered according to syntax trees representing them, "when"
+statements being inserted before the cases without "when".</p>
 
 <p>Notice that extensible functions are functional: when extending a
 function, a new function is returned.</p>
 
-<p>The extensible functions are used in the <a
-href="pretty.html">pretty printing</a> system of Camlp4s.</p>
+<p>The extensible functions are used in
+the <a href="pretty.html">pretty printing</a> system of Camlp4.</p>
 
-<h2>Variables, Functions and Types</h2>
+<h2>Syntax</h2>
 
-<h3><span class="value">Extfun.t</span></h3>
-
-<p>This is the type with two parameters <tt>'a</tt> and <tt>'b</tt>
-representing a function of the type <tt>'a -> 'b</tt>.</p>
-
-<h3><span class="value">Extfun.empty</span></h3>
-
-<p>The empty function of type <tt>Extfun.t 'a 'b</tt>. When applied,
-it raises the exception <tt>Extfun.Failure</tt>.</p>
-
-<h3><span class="value">Extfun.apply</span></h3>
-
-<p>The function "Extfun.apply" returns the associated function of an
-extensible function. Its type is:</p>
+<p>The syntax of the extensible functions, when loading
+"pa_extfun.cmo" is the following:</p>
 
 <pre>
-Extfun.t 'a 'b -> 'a -> 'b
+          expression ::= extensible_function
+ extensible_function ::= "extfun" expression "with" "[" match_cases "]"
+         match_cases ::= match_case "|" match_cases
+          match_case ::= pattern "->" expression
+                       | pattern "when" expression "->" expression
 </pre>
 
-<h3><span class="value">Extfun.Failure</span></h3>
+<p>It is actually the same syntax than the one of "match" and "try"
+constructions.</p>
 
-<p>Raised when no pattern matches the expression given as parameter.</p>
+<h2>Semantics</h2>
 
-<h3><span class="value">Extfun.print</span></h3>
+<p>The statement "extend" defined by the syntax takes an extensible
+function and return another extensible function with the new match
+cases inserted at good places into the initial extensible
+function.</p>
 
-<p>For debugging purposes, display the current list of patterns of the
-extensible function. Can be interesting to know in which order they
-have been included.</p>
+<p>Extensibles functions are of type "<code>Extfun.t a b</code>",
+which is an abstract type, where "<code>a</code>" and "<code>b</code>"
+are respectively the type of the patterns and the type of the
+expressions. It corresponds to a function of type "<code>a ->
+b</code>".</p>
 
-<h3>Adding cases</h3>
+<p>The function "<code>Extfun.apply</code>" takes an extensible
+function as parameter and return the function which can be applied
+like a normal function.</p>
 
-<p>Adding cases are done with the statement "extfun" (see next
-section). It generates a call to an appropriate function of the
-library, which is not supposed to be used directly. It is not possible
-to extend a function without using the syntax extension, except if you
-are sure of what you do.</p>
+<p>The value "<code>Extfun.empty</code>" is an empty extensible
+function, of type "<code>Extfun.t 'a 'b</code>". When applied with
+"<code>Extfun.apply</code>" and a parameter, it raises the exception
+"<code>Extfun.Failure</code>" whatever the parameter.</p>
 
-<h2>Statement "extend" (syntax extension)</h2>
+<p>For debugging, it is possible to use the function
+"<code>Extfun.print</code>" which displays the match cases of the
+extensible functions. Actually, only the patterns are displayed in
+clear, the associated expressions are not.</p>
 
-<p>When adding the correct syntax kit, <tt>pa_extfun.cmo</tt>, a new
-statement is added. It is introduced by the keyword <tt>extend</tt>
-followed by an expression, the keyword <tt>with</tt> and the list of
-match cases, exactly like in the <tt>match</tt> syntax.</p>
+<p>The match cases are inserted according to the following rules:</p>
 
-<p>There is no test of exhaustivity of the syntax extension, nor test
-of doubly defined cases. Cases are added one by one in the library, in
-the order given in the <tt>extend</tt> statement.</p>
+<ul>
 
-<p>When adding a case, the match case (pattern + expression) is
-inserted in the internal list of match cases of the function,
-according to the order of the syntax trees of the patterns. If a
-pattern still existed, its previous version is deleted.</p>
+<li>The match cases are inserted in the order they are defined in the
+syntax "<code>extend</code>"</li>
+
+<li>A match case pattern with "when" is insered before a match case
+pattern without "when".</li>
+
+<li>Two match cases patterns both with "when" or both without "when"
+are insered according to the alphabetic order of some internal syntax
+tree of the patterns where bound variables names are <u>not</u> taken
+into account.</li>
+
+<li>If two match cases patterns without "when" have the same patterns
+internal syntax tree, the initial one is silently removed.</li>
+
+<li>If two match cases patterns with "when" have the same patterns
+internal syntax tree, the new one is inserted before the old one.</li>
+
+</ul>
 
 <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
 
