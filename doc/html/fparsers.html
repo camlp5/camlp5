@@ -109,6 +109,56 @@ parameter.</p>
 
 <h2>Semantics of parsers</h2>
 
+<h3>Fparser</h3>
+
+<p>The purely functional parsers act like classical parsers, with a
+recursive descent algorithm, except that:</p>
+
+<ul>
+
+<li>If the first stream pattern component matches the beginning of the
+stream, there is no error if the following stream patterns components
+do not match: the control simply passes to the next parser case with
+the initial stream.</li>
+
+<li>If the semantic actions are of type "<code>t</code>", the result
+of the parser is of type "<code>option (t * Fstream.t)</code>", not
+just "<code>t</code>" like in classical parsers. If a stream pattern
+matches, the semantic action is evaluated, giving some result
+"<code>e</code>" and the result of the parser is "<code>Some (e,
+strm)</code>" where "<code>strm</code>" is the remaining stream.</li>
+
+<li>If no parser case matches, the result of the parser is
+"<code>None</code>".</li>
+
+</ul>
+
+<h3>Error position</h3>
+
+<p>A difficulty, with purely functional parsers, is how to find the
+position of the syntax error, when the input is wrong. Since the
+system tries all parsers cases before returning "<code>None</code>",
+and that the initial stream is not affected, it is not possible to
+directly find where the error happened. This is a problem for parsing
+using backtracking (here, it is limited backtracking, but the problem
+is the same).<p>
+
+<p>The solution is to use the function
+"<code>Fstream.count_unfrozen</code>" applied to the initial
+stream. Like its name says, it returns the number of unfrozen elements
+of the stream, which is exactly the longuest match found. If the input
+is a stream of characters, the return of this function is exactly the
+position in number of characters from the beginning of the stream.
+However, it is not possible to know directly which rule failed and it
+is not possible, like in classical parsers, to get a clear error
+message. Future versions of purely functional parsers may propose
+solutions to resolve this problem.</p>
+
+<p>Notice that, if using that method, it is not possible to reuse the
+same stream to call another parser, and hope to get the right position
+of the error, if another error happens, since it may test less terminals
+than the first parser. Use a fresh stream in this case, if possible.</p>
+
 <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
 
 <hr style="margin:0" /><div style="font-size: 80%"><em>Copyright 2007
