@@ -26,10 +26,14 @@ Grammar.extend
      grammar_entry_create "parser_case"
    and stream_patt : 'stream_patt Grammar.Entry.e =
      grammar_entry_create "stream_patt"
+   and stream_patt_kont : 'stream_patt_kont Grammar.Entry.e =
+     grammar_entry_create "stream_patt_kont"
    and stream_patt_comp_err : 'stream_patt_comp_err Grammar.Entry.e =
      grammar_entry_create "stream_patt_comp_err"
    and stream_patt_comp : 'stream_patt_comp Grammar.Entry.e =
      grammar_entry_create "stream_patt_comp"
+   and stream_patt_let : 'stream_patt_let Grammar.Entry.e =
+     grammar_entry_create "stream_patt_let"
    and lookahead : 'lookahead Grammar.Entry.e =
      grammar_entry_create "lookahead"
    and ipatt : 'ipatt Grammar.Entry.e = grammar_entry_create "ipatt"
@@ -109,16 +113,21 @@ Grammar.extend
      [[], Gramext.action (fun (loc : Token.location) -> ([] : 'stream_patt));
       [Gramext.Snterm
          (Grammar.Entry.obj
+            (stream_patt_let : 'stream_patt_let Grammar.Entry.e));
+       Gramext.Sself],
+      Gramext.action
+        (fun (sp : 'stream_patt) (spc : 'stream_patt_let)
+           (loc : Token.location) ->
+           (spc :: sp : 'stream_patt));
+      [Gramext.Snterm
+         (Grammar.Entry.obj
             (stream_patt_comp : 'stream_patt_comp Grammar.Entry.e));
        Gramext.Stoken ("", ";");
-       Gramext.Slist1sep
-         (Gramext.Snterm
-            (Grammar.Entry.obj
-               (stream_patt_comp_err :
-                'stream_patt_comp_err Grammar.Entry.e)),
-          Gramext.Stoken ("", ";"))],
+       Gramext.Snterm
+         (Grammar.Entry.obj
+            (stream_patt_kont : 'stream_patt_kont Grammar.Entry.e))],
       Gramext.action
-        (fun (sp : 'stream_patt_comp_err list) _ (spc : 'stream_patt_comp)
+        (fun (sp : 'stream_patt_kont) _ (spc : 'stream_patt_comp)
            (loc : Token.location) ->
            ((spc, SpoNoth) :: sp : 'stream_patt));
       [Gramext.Snterm
@@ -127,6 +136,31 @@ Grammar.extend
       Gramext.action
         (fun (spc : 'stream_patt_comp) (loc : Token.location) ->
            ([spc, SpoNoth] : 'stream_patt))]];
+    Grammar.Entry.obj (stream_patt_kont : 'stream_patt_kont Grammar.Entry.e),
+    None,
+    [None, None,
+     [[Gramext.Snterm
+         (Grammar.Entry.obj
+            (stream_patt_let : 'stream_patt_let Grammar.Entry.e));
+       Gramext.Sself],
+      Gramext.action
+        (fun (sp : 'stream_patt_kont) (spc : 'stream_patt_let)
+           (loc : Token.location) ->
+           (spc :: sp : 'stream_patt_kont));
+      [Gramext.Snterm
+         (Grammar.Entry.obj
+            (stream_patt_comp_err : 'stream_patt_comp_err Grammar.Entry.e));
+       Gramext.Stoken ("", ";"); Gramext.Sself],
+      Gramext.action
+        (fun (sp : 'stream_patt_kont) _ (spc : 'stream_patt_comp_err)
+           (loc : Token.location) ->
+           (spc :: sp : 'stream_patt_kont));
+      [Gramext.Snterm
+         (Grammar.Entry.obj
+            (stream_patt_comp_err : 'stream_patt_comp_err Grammar.Entry.e))],
+      Gramext.action
+        (fun (spc : 'stream_patt_comp_err) (loc : Token.location) ->
+           ([spc] : 'stream_patt_kont))]];
     Grammar.Entry.obj
       (stream_patt_comp_err : 'stream_patt_comp_err Grammar.Entry.e),
     None,
@@ -185,6 +219,17 @@ Grammar.extend
       Gramext.action
         (fun (eo : 'e__1 option) (p : 'patt) _ (loc : Token.location) ->
            (SpTrm (loc, p, eo) : 'stream_patt_comp))]];
+    Grammar.Entry.obj (stream_patt_let : 'stream_patt_let Grammar.Entry.e),
+    None,
+    [None, None,
+     [[Gramext.Stoken ("", "let");
+       Gramext.Snterm (Grammar.Entry.obj (ipatt : 'ipatt Grammar.Entry.e));
+       Gramext.Stoken ("", "=");
+       Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e));
+       Gramext.Stoken ("", "in")],
+      Gramext.action
+        (fun _ (e : 'expr) _ (p : 'ipatt) _ (loc : Token.location) ->
+           (SpLet (loc, p, e), SpoNoth : 'stream_patt_let))]];
     Grammar.Entry.obj (lookahead : 'lookahead Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "[");

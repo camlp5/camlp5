@@ -15,6 +15,7 @@
 type spat_comp =
     SpTrm of MLast.loc * MLast.patt * MLast.expr option
   | SpNtr of MLast.loc * MLast.patt * MLast.expr
+  | SpLet of MLast.loc * MLast.patt * MLast.expr
   | SpLhd of MLast.loc * MLast.patt list list
   | SpStr of MLast.loc * MLast.patt
 ;;
@@ -214,6 +215,7 @@ let stream_pattern_component skont ckont =
                None, MLast.ExUid (loc, "None")]),
            [MLast.PaApp (loc, MLast.PaUid (loc, "Some"), p), None, skont;
             MLast.PaAny loc, None, ckont])
+  | SpLet (_, _, _) -> assert false
   | SpLhd (loc, (pl :: pll)) ->
       let mklistpat loc pl =
         List.fold_right
@@ -272,6 +274,9 @@ let rec stream_pattern loc epo e ekont =
              e)
       | _ -> e
       end
+  | (SpLet (loc, p1, e1), _) :: spcl ->
+      let skont = stream_pattern loc epo e ekont spcl in
+      MLast.ExLet (loc, false, [p1, e1], skont)
   | (spc, err) :: spcl ->
       let skont =
         let ekont =

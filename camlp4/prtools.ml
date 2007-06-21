@@ -233,7 +233,18 @@ value rev_read_comment_in_file bp ep =
          if j < 0 || j >= String.length source.val then None
          else Some source.val.[j])
   in
-  rev_extract_comment strm
+  let (s, nl_bef, ind_bef) = rev_extract_comment strm in
+  if s = "" then
+    (* heuristic to find the possible comment before 'begin' or left
+       parenthesis *)
+    loop 0 where rec loop i =
+      match strm with parser
+      [ [: `'(' when i = 0 :] -> rev_extract_comment strm
+      | [: `c when c = "begin".[4-i] :] ->
+          if i = String.length "begin" - 1 then rev_extract_comment strm
+          else loop (i + 1)
+      | [: :] -> (s, nl_bef, ind_bef) ]
+  else (s, nl_bef, ind_bef)
 ;
 
 value adjust_comment_indentation ind s nl_bef ind_bef =

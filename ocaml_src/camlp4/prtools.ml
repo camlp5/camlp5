@@ -291,7 +291,20 @@ let rev_read_comment_in_file bp ep =
          if j < 0 || j >= String.length !source then None
          else Some !source.[j])
   in
-  rev_extract_comment strm
+  let (s, nl_bef, ind_bef) = rev_extract_comment strm in
+  if s = "" then
+    let rec loop i =
+      let (strm__ : _ Stream.t) = strm in
+      match Stream.peek strm__ with
+        Some '(' when i = 0 -> Stream.junk strm__; rev_extract_comment strm
+      | Some c when c = "begin".[4 - i] ->
+          Stream.junk strm__;
+          if i = String.length "begin" - 1 then rev_extract_comment strm
+          else loop (i + 1)
+      | _ -> s, nl_bef, ind_bef
+    in
+    loop 0
+  else s, nl_bef, ind_bef
 ;;
 
 let adjust_comment_indentation ind s nl_bef ind_bef =
