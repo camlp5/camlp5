@@ -1288,17 +1288,25 @@ value expr_apply =
             loop [] z where rec loop args =
               fun
               [ <:expr< $x$ $y$ >> -> loop [y :: args] x
-              | <:expr< $uid:s$ >> -> Some (s, args)
+              | <:expr< $uid:_$ >> as e -> Some (e, args)
+              | <:expr< $_$ . $uid:_$ >> as e -> Some (e, args)
               | _ -> None ]
           in
           match cons_args_opt with
-          [ Some (s, ([_; _ :: _] as al)) ->
+          [ Some (e, ([_; _ :: _] as al)) ->
               let expr1 = pr_expr.pr_fun "expr1" in
               horiz_vertic
                 (fun () ->
-                   sprintf "%s%s (%s)%s" b s
+                   sprintf "%s%s (%s)%s" b (next ctx "" e "")
                      (hlistl (comma_after expr1) expr1 ctx "" al "") k)
-                (fun () -> not_impl "cons vertic" ctx b s k)
+                (fun () ->
+                   let al = List.map (fun a -> (a, ",")) al in
+                   let s1 = next ctx b e "" in
+                   let s2 =
+                     plist expr1 0 (shi ctx 3) (sprintf "%s("
+                        (tab (shi ctx 2))) al (sprintf ")%s" k)
+                   in
+                   sprintf "%s\n%s" s1 s2)
           | _ ->
               let unfold =
                 fun
@@ -1321,7 +1329,7 @@ value expr_dot =
   extfun Extfun.empty with
   [ <:expr< $x$ . val >> when normal_syntax.val ->
       fun curr next ctx b k ->
-        curr ctx (sprintf "%s!" b) x k
+        next ctx (sprintf "%s!" b) x k
   | <:expr< $x$ . $y$ >> ->
       fun curr next ctx b k ->
         horiz_vertic (fun () -> curr ctx (curr ctx b x ".") y k)
@@ -1365,9 +1373,14 @@ value expr_simple =
   | <:expr< [$_$ :: $_$] >> as z ->
       fun curr next ctx b k ->
         let (xl, y) = make_expr_list z in
-        let xl = List.map (fun x -> (x, ";")) xl in
         match y with
         [ Some y ->
+            let xl =
+              if normal_syntax.val then
+                List.map (fun x -> (x, " ::")) xl
+              else
+                List.map (fun x -> (x, ";")) xl
+            in
             let blst = if normal_syntax.val then "(" else "[" in
             let elst = if normal_syntax.val then ")" else "]" in
             let expr2 ctx b x k =
@@ -1382,6 +1395,7 @@ value expr_simple =
             in
             plistl expr expr2 0 (shi ctx 1) (sprintf "%s%s" b blst) xl k
         | None ->
+            let xl = List.map (fun x -> (x, ";")) xl in
             plist expr 0 (shi ctx 1) (sprintf "%s[" b) xl (sprintf "]%s" k) ]
   | <:expr< ($e$ : $t$) >> ->
       fun curr next ctx b k ->
@@ -1428,7 +1442,7 @@ value expr_simple =
       fun curr next ctx b k ->
         failwith "labels not pretty printed (in expr); add pr_ro.cmo"
   | <:expr< $_$ $_$ >> | <:expr< assert $_$ >> | <:expr< lazy $_$ >> |
-    <:expr< $_$ := $_$ >> |
+    <:expr< $_$ . $_$ >> | <:expr< $_$ := $_$ >> |
     <:expr< fun [ $list:_$ ] >> | <:expr< if $_$ then $_$ else $_$ >> |
     <:expr< do { $list:_$ } >> |
     <:expr< for $_$ = $_$ $to:_$ $_$ do { $list:_$ } >> |
@@ -1526,6 +1540,9 @@ value patt_simple =
   | <:patt< ($list:pl$) >> ->
       fun curr next ctx b k ->
         let pl = List.map (fun p -> (p, ",")) pl in
+        let patt =
+          if normal_syntax.val then pr_patt.pr_fun "range" else patt
+        in
         plist patt 1 ctx (sprintf "%s(" b) pl (sprintf ")%s" k)
   | <:patt< {$list:lpl$} >> ->
       fun curr next ctx b k ->
@@ -1726,7 +1743,8 @@ value str_item_top =
                      (hlist module_arg ctx "" mal "") ]
              in
              let s2 = module_expr (shi ctx 2) (tab (shi ctx 2)) me "" in
-             sprintf "%s\n%s\n%s" s1 s2 (tab ctx ^ k))
+             let s3 = if k = "" then "" else sprintf "\n%s%s" (tab ctx) k in
+             sprintf "%s\n%s%s" s1 s2 s3)
   | <:str_item< module type $m$ = $mt$ >> ->
       fun curr next ctx b k ->
         horiz_vertic
@@ -1761,7 +1779,13 @@ value str_item_top =
              vlist2 value_binding (and_before value_binding) ctx b pel
                (None, Some (nl, k)))
   | <:str_item< $exp:e$ >> ->
-      fun curr next ctx b k -> expr ctx b e k
+      fun curr next ctx b k ->
+        if normal_syntax.val then
+          if k = ";;" then expr ctx b e k
+          else
+            let loc = MLast.loc_of_expr e in
+            curr ctx b <:str_item< value _ = $e$ >> k
+        else expr ctx b e k
   | <:str_item< class type $list:_$ >> | <:str_item< class $list:_$ >> ->
       fun curr next ctx b k ->
         failwith "classes and objects not pretty printed; add pr_ro.cmo"
