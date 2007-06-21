@@ -564,8 +564,9 @@ value type_var ctx b (tv, (p, m)) k =
 value type_decl ctx b ((_, tn), tp, te, cl) ko =
   horiz_vertic
     (fun () ->
-       sprintf "%s%s%s = %s%s%s" b (var_escaped ctx "" tn "")
-         (if tp = [] then "" else sprintf " %s" (hlist type_var ctx "" tp ""))
+       sprintf "%s%s%s = %s%s%s" b
+         (if tp = [] then "" else sprintf "%s " (hlist type_var ctx "" tp ""))
+         (var_escaped ctx "" tn "")
          (ctyp ctx "" te "")
          (if cl = [] then "" else not_impl "type_decl cl" ctx "" cl "")
          (match ko with [ Some (_, k) -> k | None -> "" ]))
@@ -573,9 +574,10 @@ value type_decl ctx b ((_, tn), tp, te, cl) ko =
        let s1 =
          horiz_vertic
            (fun () ->
-              sprintf "%s%s%s =" b (var_escaped ctx "" tn "")
+              sprintf "%s%s%s =" b
                 (if tp = [] then "" else
-                 sprintf " %s" (hlist type_var ctx "" tp "")))
+                 sprintf "%s " (hlist type_var ctx "" tp ""))
+                (var_escaped ctx "" tn ""))
            (fun () -> not_impl "type_decl vertic 1" ctx b tn "")
        in
        let s2 =
@@ -782,11 +784,11 @@ value ctyp_simple =
       fun curr next ctx b k -> sprintf "%s_%s" b k
   | <:ctyp< ? $i$ : $t$ >> | <:ctyp< ~ $_$ : $t$ >> ->
       fun curr next ctx b k ->
-        failwith "labels not pretty printed (in type); add pr_ro.cmo"
+        failwith "labels not pretty printed (in type); add pr_oo.cmo"
   | <:ctyp< [ = $list:_$ ] >> | <:ctyp< [ > $list:_$ ] >> |
     <:ctyp< [ < $list:_$ ] >> | <:ctyp< [ < $list:_$ > $list:_$ ] >> ->
       fun curr next ctx b k ->
-        failwith "variants not pretty printed (in type); add pr_ro.cmo"
+        failwith "variants not pretty printed (in type); add pr_oo.cmo"
   | <:ctyp< $_$ $_$ >> | <:ctyp< $_$ -> $_$ >> as z ->
       fun curr next ctx b k ->
         ctyp (shi ctx 1) (sprintf "%s(" b) z (sprintf ")%s" k)
@@ -1383,6 +1385,9 @@ value expr_simple =
             in
             let blst = if normal_syntax.val then "(" else "[" in
             let elst = if normal_syntax.val then ")" else "]" in
+            let expr =
+              if normal_syntax.val then pr_expr.pr_fun "apply" else expr
+            in
             let expr2 ctx b x k =
               horiz_vertic
                 (fun () ->
@@ -1390,7 +1395,10 @@ value expr_simple =
                      (expr ctx "" y "") elst k)
                 (fun () ->
                    let s1 = expr ctx b x " ::" in
-                   let s2 = expr ctx (tab ctx) y (sprintf "%s%s" elst k) in
+                   let s2 =
+                     expr (shi ctx 2) (tab (shi ctx 2)) y
+                       (sprintf "%s%s" elst k)
+                   in
                    sprintf "%s\n%s" s1 s2)
             in
             plistl expr expr2 0 (shi ctx 1) (sprintf "%s%s" b blst) xl k
@@ -1440,7 +1448,7 @@ value expr_simple =
       fun curr next ctx b k -> sprintf "%s'%s'%s" b s k
   | <:expr< ? $_$ >> | <:expr< ~ $_$ >> | <:expr< ~ $_$ : $_$ >> ->
       fun curr next ctx b k ->
-        failwith "labels not pretty printed (in expr); add pr_ro.cmo"
+        failwith "labels not pretty printed (in expr); add pr_oo.cmo"
   | <:expr< $_$ $_$ >> | <:expr< assert $_$ >> | <:expr< lazy $_$ >> |
     <:expr< $_$ . $_$ >> | <:expr< $_$ := $_$ >> |
     <:expr< fun [ $list:_$ ] >> | <:expr< if $_$ then $_$ else $_$ >> |
@@ -1552,11 +1560,19 @@ value patt_simple =
   | <:patt< [$_$ :: $_$] >> as z ->
       fun curr next ctx b k ->
         let (xl, y) = make_patt_list z in
-        let xl = List.map (fun x -> (x, ";")) xl in
         match y with
         [ Some y ->
+            let xl =
+              if normal_syntax.val then
+                List.map (fun x -> (x, " ::")) xl
+              else
+                List.map (fun x -> (x, ";")) xl
+            in
             let blst = if normal_syntax.val then "(" else "[" in
             let elst = if normal_syntax.val then ")" else "]" in
+            let patt =
+              if normal_syntax.val then pr_patt.pr_fun "range" else patt
+            in
             let patt2 ctx b x k =
               horiz_vertic
                 (fun () ->
@@ -1572,6 +1588,7 @@ value patt_simple =
             in
             plistl patt patt2 0 (shi ctx 1) (sprintf "%s%s" b blst) xl k
         | None ->
+            let xl = List.map (fun x -> (x, ";")) xl in
             plist patt 0 (shi ctx 1) (sprintf "%s[" b) xl (sprintf "]%s" k) ]
   | <:patt< ($p$ : $t$) >> ->
       fun curr next ctx b k ->
@@ -1601,10 +1618,10 @@ value patt_simple =
     <:patt< ? $_$ : ($_$ $opt:_$) >> | <:patt< ~ $_$ >> |
     <:patt< ~ $_$ : $_$ >> ->
       fun curr next ctx b k ->
-        failwith "labels not pretty printed (in patt); add pr_ro.cmo"
+        failwith "labels not pretty printed (in patt); add pr_oo.cmo"
   | <:patt< `$uid:s$ >> ->
       fun curr next ctx b k ->
-        failwith "polymorphic variants not pretty printed; add pr_ro.cmo"
+        failwith "polymorphic variants not pretty printed; add pr_oo.cmo"
   | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >>
     as z ->
       fun curr next ctx b k ->
@@ -1788,7 +1805,7 @@ value str_item_top =
         else expr ctx b e k
   | <:str_item< class type $list:_$ >> | <:str_item< class $list:_$ >> ->
       fun curr next ctx b k ->
-        failwith "classes and objects not pretty printed; add pr_ro.cmo"
+        failwith "classes and objects not pretty printed; add pr_oo.cmo"
 (*
   | MLast.StUse _ _ _ ->
       fun curr next ctx b k ->
@@ -1842,7 +1859,7 @@ value sig_item_top =
              sprintf "%s\n%s" s1 s2)
   | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->
       fun curr next ctx b k ->
-        failwith "classes and objects not pretty printed; add pr_ro.cmo"
+        failwith "classes and objects not pretty printed; add pr_oo.cmo"
   | z ->
       fun curr next ctx b k -> not_impl "sig_item" ctx b z k ]
 ;
