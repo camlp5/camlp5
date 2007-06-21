@@ -11,7 +11,7 @@ value normal_syntax = ref True;
 value flag_expand_declare = ref False;
 value flag_horiz_let_in = ref False;
 value flag_sequ_begin_at_eol = ref True;
-value flag_semi_semi = ref False;
+value flag_semi_semi = ref True;
 
 value flag_where_after_in = ref True;
 value flag_where_after_let_eq = ref True;
@@ -2216,12 +2216,12 @@ value set_flags s =
       match s.[i] with
       [ 'A' | 'a' -> do {
           let v = is_uppercase s.[i] in
-          flag_expand_declare.val := v;
           flag_horiz_let_in.val := v;
           flag_sequ_begin_at_eol.val := v;
+          flag_semi_semi.val := v;
         }
-      | 'D' | 'd' -> flag_expand_declare.val := is_uppercase s.[i]
       | 'L' | 'l' -> flag_horiz_let_in.val := is_uppercase s.[i]
+      | 'M' | 'm' -> flag_semi_semi.val := is_uppercase s.[i]
       | 'S' | 's' -> flag_sequ_begin_at_eol.val := is_uppercase s.[i]
       | c -> failwith ("bad flag " ^ String.make 1 c) ];
       loop (i + 1)
@@ -2233,8 +2233,8 @@ value default_flag () =
   let flag_off b t f = if b then "" else f in
   let on_off flag =
     sprintf "%s%s%s"
-      (flag flag_expand_declare.val "D" "d")
       (flag flag_horiz_let_in.val "L" "l")
+      (flag flag_semi_semi.val "M" "m")
       (flag flag_sequ_begin_at_eol.val "S" "s")
   in
   let on = on_off flag_on in
@@ -2297,11 +2297,12 @@ value default_wflag () =
 Pcaml.add_option "-flag" (Arg.String set_flags)
   ("<str> Change pretty printing behaviour according to <flags>:
        A/a enable/disable all flags
-       D/d enable/disable allowing expanding 'declare'
        L/l enable/disable allowing printing 'let..in' horizontally
+       M/m enable/disable printing double semicolons
        S/s enable/disable printing sequences beginners at end of lines
        default setting is \"" ^ default_flag () ^ "\".");
 
+(*
 Pcaml.add_option "-wflag" (Arg.String set_wflags)
   ("<str> Change displaying 'where' statements instead of 'let':
        A/a enable/disable all flags
@@ -2315,6 +2316,7 @@ Pcaml.add_option "-wflag" (Arg.String set_wflags)
        V/v enable/disable 'where' after 'value..='
        W/w enable/disable 'where' after '->'
        default setting is \"" ^ default_wflag () ^ "\".");
+*)
 
 Pcaml.add_option "-l" (Arg.Int (fun x -> Pretty.line_length.val := x))
   ("<length> Maximum line length for pretty printing (default " ^
@@ -2327,17 +2329,6 @@ Pcaml.add_option "-sep" (Arg.String (fun x -> sep.val := Some x))
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
-
-value not_impl name ctx b x k =
-  let desc =
-    if Obj.tag (Obj.repr x) = Obj.tag (Obj.repr "") then
-      sprintf "\"%s\"" (Obj.magic x)
-    else if Obj.is_block (Obj.repr x) then
-      "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
-    else "int_val = " ^ string_of_int (Obj.magic x)
-  in
-  sprintf "%s\"pr_oo, not impl: %s; %s\"%s" b name (String.escaped desc) k
-;
 
 value expr ctx b z k = pr_expr.pr_fun "top" ctx b z k;
 value patt ctx b z k = pr_patt.pr_fun "top" ctx b z k;
