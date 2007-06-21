@@ -1,12 +1,15 @@
 Camlp4s Version 4.02:
 ---------------------
 
+* [21 Jun 07] Added "let..in" in parsers
 * [14 Jun 07] Added html documentation for:
-  - the module Pretty (general pretty print),
-  - the "extensible functions" (module Extfun + pa_extfun.cmo),
-  - the new pretty print in Camlp4 (using Pretty and Extfun)
-  - the syntax extension for lexers (pa_lexer.cmo),
-  - the syntax extension for the directive #pragma (pa_pragma.cmo).
+  - the "extfun" statement
+  - the "fparser" statement
+  - the "lexer" statement
+  - the "parser" statement
+  - the "#pragma" directive
+  - the module Pretty
+  - the new pretty print in Camlp4 (using Pretty and "extfun")
 * [14 Jun 07] Library module Sformat renamed Pretty. The first parameter
   of the function horiz_vertic is now a function of type "unit -> 'a".
 * [31 May 07] Quotation "row_field" renamed "poly_variant".
