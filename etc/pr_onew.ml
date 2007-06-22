@@ -768,6 +768,9 @@ value ctyp_simple =
              vlist2 cons_decl (bar_before cons_decl) ctx b vdl ("", k))
   | <:ctyp< ($list:tl$) >> ->
       fun curr next ctx b k ->
+        let ctyp =
+          if normal_syntax.val then pr_ctyp.pr_fun "apply" else ctyp
+        in
         horiz_vertic
           (fun () ->
              sprintf "%s(%s)%s" b (hlistl (star_after ctyp) ctyp ctx "" tl "")
@@ -958,6 +961,9 @@ value expr_expr1 =
         [ [(p, wo, e)] when is_irrefut_patt p ->
             horiz_vertic
               (fun () ->
+                 let k =
+                   if normal_syntax.val then sprintf " end%s" k else k
+                 in
                  sprintf "%s%s %s with %s%s" b op (expr_wh ctx "" e1 "")
                    (match_assoc ctx "" (p, wo, e) "") k)
               (fun () ->
@@ -1535,7 +1541,10 @@ value patt_apply =
                 (fun () ->
                    sprintf "%s%s %s%s" b (curr ctx "" p1 "")
                      (next ctx "" p2 "") k)
-                (fun () -> not_impl "patt_apply vertic" ctx b p1 k)
+                (fun () ->
+                   let s1 = curr ctx b p1 "" in
+                   let s2 = next (shi ctx 2) (tab (shi ctx 2)) p2 k in
+                   sprintf "%s\n%s" s1 s2)
           | Some (p, pl) ->
               let patt =
                 if normal_syntax.val then pr_patt.pr_fun "range" else patt
@@ -2680,6 +2689,12 @@ value class_expr_simple =
       fun curr next ctx b k -> class_longident ctx b cl k
   | <:class_expr< object $opt:csp$ $list:csl$ end >> ->
       fun curr next ctx b k ->
+        let class_str_item_sep =
+          if normal_syntax.val then
+            if flag_semi_semi.val then semi_semi_after class_str_item
+            else class_str_item
+          else semi_after class_str_item
+        in
         horiz_vertic
           (fun () ->
              sprintf "%sobject%s %s end%s" b
@@ -2687,7 +2702,7 @@ value class_expr_simple =
                 [ Some (<:patt< ($_$ : $_$) >> as p) -> patt ctx " " p ""
                 | Some p -> patt ctx " (" p ")"
                 | None -> "" ])
-               (hlist (semi_after class_str_item) ctx "" csl "") k)
+               (hlist class_str_item_sep ctx "" csl "") k)
           (fun () ->
              let s1 =
                match csp with
@@ -2702,8 +2717,7 @@ value class_expr_simple =
                      (fun () -> not_impl "class_type vertic 1" ctx b p "") ]
              in
              let s2 =
-               vlist (semi_after class_str_item) (shi ctx 2) (tab (shi ctx 2))
-                 csl ""
+               vlist class_str_item_sep (shi ctx 2) (tab (shi ctx 2)) csl ""
              in
              let s3 = sprintf "%send%s" (tab ctx) k in
              sprintf "%s\n%s\n%s" s1 s2 s3)
@@ -2791,13 +2805,16 @@ value class_str_item_top =
              sprintf "%s\n%s" s1 s2)
   | <:class_str_item< value $opt:mf$ $s$ = $e$ >> ->
       fun curr next ctx b k ->
+        let b =
+          if normal_syntax.val then sprintf "%sval" b else sprintf "%svalue" b
+        in
         horiz_vertic
           (fun () ->
-             sprintf "%svalue%s %s = %s%s" b
+             sprintf "%s%s %s = %s%s" b
                (if mf then " mutable" else "") s (expr ctx "" e "") k)
           (fun () ->
              let s1 =
-               sprintf "%svalue%s %s =" b (if mf then " mutable" else "") s
+               sprintf "%s%s %s =" b (if mf then " mutable" else "") s
              in
              let s2 = expr (shi ctx 2) (tab (shi ctx 2)) e k in
              sprintf "%s\n%s" s1 s2)
