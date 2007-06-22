@@ -6,6 +6,11 @@ open Pretty;
 open Pcaml.NewPrinters;
 open Prtools;
 
+type alt 'a 'b =
+  [ Left of 'a
+  | Right of 'b ]
+;
+
 value flag_expand_declare = ref False;
 value flag_horiz_let_in = ref False;
 value flag_sequ_begin_at_eol = ref True;
@@ -1530,8 +1535,14 @@ value str_item_top =
         let module_arg ctx b (s, mt) k =
           horiz_vertic
             (fun () ->
-               sprintf "%s (%s : %s)%s" b s (module_type ctx "" mt "") k)
-            (fun () -> not_impl "module_arg" ctx b s k)
+               sprintf "%s(%s : %s)%s" b s (module_type ctx "" mt "") k)
+            (fun () ->
+               let s1 = sprintf "%s(%s :" b s in
+               let s2 =
+                 module_type (shi ctx 1) (tab (shi ctx 1)) mt
+                   (sprintf ")%s" k)
+               in
+               sprintf "%s\n%s" s1 s2)
         in
         let (me, mto) =
           match me with
@@ -1541,7 +1552,7 @@ value str_item_top =
         horiz_vertic
           (fun () ->
              sprintf "%smodule %s%s%s = %s%s" b m
-               (hlist module_arg ctx "" mal "")
+               (if mal = [] then "" else hlist module_arg ctx " " mal "")
                (match mto with
                 [ Some mt -> sprintf " : %s" (module_type ctx "" mt "")
                 | None -> "" ])
@@ -1553,20 +1564,29 @@ value str_item_top =
                    horiz_vertic
                      (fun () ->
                         sprintf "%smodule %s%s : %s =" b m
-                          (hlist module_arg ctx "" mal "")
+                          (if mal = [] then ""
+                           else hlist module_arg ctx " " mal "")
                           (module_type ctx "" mt ""))
                      (fun () ->
                         let s1 =
                           sprintf "%smodule %s%s :" b m
-                            (hlist module_arg ctx "" mal "")
+                            (if mal = [] then "" else
+                             hlist module_arg ctx " " mal "")
                         in
                         let s2 =
                           module_type (shi ctx 2) (tab (shi ctx 2)) mt " ="
                         in
                         sprintf "%s\n%s" s1 s2)
                | None ->
-                   sprintf "%smodule %s%s =" b m
-                     (hlist module_arg ctx "" mal "") ]
+                   let mal =
+                     [(Left m, "") :: List.map (fun ma -> (Right ma, "")) mal]
+                   in
+                   let module_arg2 ctx b maa k =
+                     match maa with
+                     [ Left s -> sprintf "%s%s%s" b s k
+                     | Right ma -> module_arg ctx b ma k ]
+                   in
+                   plist module_arg2 2 ctx (sprintf "%smodule " b) mal " =" ]
              in
              let s2 = module_expr (shi ctx 2) (tab (shi ctx 2)) me "" in
              sprintf "%s\n%s\n%s" s1 s2 (tab ctx ^ k))
