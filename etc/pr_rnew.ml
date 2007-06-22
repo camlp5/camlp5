@@ -822,9 +822,8 @@ value expr_top =
             let pl = [p1 :: pl] in
             horiz_vertic
               (fun () ->
-                 sprintf "%s %s"
-                   (hlist patt ctx (sprintf "%sfun " b) pl " ->")
-                   (expr ctx "" e1 k))
+                 sprintf "%sfun %s -> %s%s" b (hlist patt ctx "" pl "")
+                   (expr ctx "" e1 "") k)
               (fun () ->
                  let fun_arrow k =
                    let pl = List.map (fun p -> (p, "")) pl in
@@ -1579,9 +1578,10 @@ value str_item_top =
              sprintf "%smodule type %s = %s%s" b m (module_type ctx "" mt "")
                k)
           (fun () ->
-             sprintf "%smodule type %s =\n%s\n%s" b m
-               (module_type (shi ctx 2) (tab (shi ctx 2)) mt "")
-                  (tab ctx ^ k))
+             let s1 = sprintf "%smodule type %s =" b m in
+             let s2 = module_type (shi ctx 2) (tab (shi ctx 2)) mt "" in
+             let s3 = sprintf "%s%s" (tab ctx) k in
+             sprintf "%s\n%s\n%s" s1 s2 s3)
   | <:str_item< open $i$ >> ->
       fun curr next ctx b k -> mod_ident ctx (sprintf "%sopen " b) i k
   | <:str_item< type $list:tdl$ >> ->
@@ -1636,9 +1636,10 @@ value sig_item_top =
              sprintf "%smodule type %s = %s%s" b m (module_type ctx "" mt "")
                k)
           (fun () ->
-             sprintf "%smodule type %s =\n%s\n%s" b m
-               (module_type (shi ctx 2) (tab (shi ctx 2)) mt "")
-               (tab ctx ^ k))
+             let s1 = sprintf "%smodule type %s =" b m in
+             let s2 = module_type (shi ctx 2) (tab (shi ctx 2)) mt "" in
+             let s3 = sprintf "%s%s" (tab ctx) k in
+             sprintf "%s\n%s\n%s" s1 s2 s3)
   | <:sig_item< open $i$ >> ->
       fun curr next ctx b k -> mod_ident ctx (sprintf "%sopen " b) i k
   | <:sig_item< type $list:tdl$ >> ->

@@ -11,7 +11,7 @@ value normal_syntax = ref True;
 value flag_expand_declare = ref False;
 value flag_horiz_let_in = ref False;
 value flag_sequ_begin_at_eol = ref True;
-value flag_semi_semi = ref True;
+value flag_semi_semi = ref False;
 
 value flag_where_after_in = ref True;
 value flag_where_after_let_eq = ref True;
@@ -339,7 +339,7 @@ value sequence_box2 ctx bfun el k =
    to this function to a call to "binding expr" above.
 *)
 value record_binding ctx b (p, e) k =
-  let (pl, e) = expr_fun_args e in
+  let (pl, e) = if normal_syntax.val then ([], e) else expr_fun_args e in
   let pl = [p :: pl] in
   let expr_wh = if flag_where_after_field_eq.val then expr_wh else expr in
   horiz_vertic
@@ -810,8 +810,12 @@ value expr_expr1 =
         let expr_wh = if flag_where_after_then.val then expr_wh else expr in
         horiz_vertic
          (fun () ->
-            sprintf "%sif %s then %s else %s%s" b (expr ctx "" e1 "")
-              (expr ctx "" e2 "") (expr ctx "" e3 "") k)
+            if normal_syntax.val then
+              sprintf "%sbegin if %s then %s else %s end%s" b
+                (expr ctx "" e1 "") (expr ctx "" e2 "") (expr ctx "" e3 "") k
+            else
+              sprintf "%sif %s then %s else %s%s" b (expr ctx "" e1 "")
+                (expr ctx "" e2 "") (expr ctx "" e3 "") k)
          (fun () ->
             let if_then ctx b_if e1 e2 =
               horiz_vertic
@@ -844,7 +848,13 @@ value expr_expr1 =
                        in
                        sprintf "%s\n%s" s1 s2 ])
             in
-            let s1 = if_then ctx (sprintf "%sif " b) e1 e2 in
+            let s1 =
+              let b =
+                if normal_syntax.val then sprintf "%sbegin if " b
+                else sprintf "%sif " b
+              in
+              if_then ctx b e1 e2
+            in
             let (eel, e3) = get_else_if e3 in
             let s2 =
               loop eel where rec loop =
@@ -856,6 +866,7 @@ value expr_expr1 =
                 | [] -> "" ]
             in
             let s3 =
+              let k = if normal_syntax.val then "" else k in
               horiz_vertic
                 (fun () ->
                    sprintf "%selse %s%s" (tab ctx)
@@ -874,40 +885,57 @@ value expr_expr1 =
                        in
                        sprintf "%selse\n%s" (tab ctx) s ])
             in
-            sprintf "%s%s\n%s" s1 s2 s3)
+            let s4 =
+              if normal_syntax.val then sprintf "\n%send%s" (tab ctx) k
+              else ""
+            in
+            sprintf "%s%s\n%s%s" s1 s2 s3 s4)
   | <:expr< fun [ $list:pwel$ ] >> ->
       fun curr next ctx b k ->
         match pwel with
         [ [(p1, None, e1)] when is_irrefut_patt p1 ->
             let (pl, e1) = expr_fun_args e1 in
             let pl = [p1 :: pl] in
+            let b_fun =
+              if normal_syntax.val then sprintf "%sbegin fun " b
+              else sprintf "%sfun " b
+            in
             horiz_vertic
               (fun () ->
-                 sprintf "%s %s"
-                   (hlist patt ctx (sprintf "%sfun " b) pl " ->")
-                   (expr ctx "" e1 k))
+                 let k =
+                   if normal_syntax.val then sprintf " end%s" k else k
+                 in
+                 sprintf "%s%s -> %s%s" b_fun (hlist patt ctx "" pl "")
+                   (expr ctx "" e1 "") k)
               (fun () ->
                  let fun_arrow k =
                    let pl = List.map (fun p -> (p, "")) pl in
-                   plist patt 4 ctx (sprintf "%sfun " b) pl
-                     (sprintf " ->%s" k)
+                   plist patt 4 ctx b_fun pl (sprintf " ->%s" k)
                  in
-                 match sequencify e1 with
-                 [ Some el ->
-                     sequence_box2 ctx
-                       (fun k ->
-                          horiz_vertic (fun _ -> sprintf "\n")
-                            (fun () -> fun_arrow k))
-                       el k
-                 | None ->
-                     let s1 = fun_arrow "" in
-                     let s2 = expr (shi ctx 2) (tab (shi ctx 2)) e1 k in
-                     sprintf "%s\n%s" s1 s2 ])
+                 let s =
+                   let k = if normal_syntax.val then "" else k in
+                   match sequencify e1 with
+                   [ Some el ->
+                       sequence_box2 ctx
+                         (fun k ->
+                            horiz_vertic (fun _ -> sprintf "\n")
+                              (fun () -> fun_arrow k))
+                         el k
+                   | None ->
+                       let s1 = fun_arrow "" in
+                       let s2 = expr (shi ctx 2) (tab (shi ctx 2)) e1 k in
+                       sprintf "%s\n%s" s1 s2 ]
+                 in
+                 if normal_syntax.val then sprintf "%s\n%send%s" s (tab ctx) k
+                 else s)
         | [] -> sprintf "%sfun []%s" b k
         | pwel ->
             if normal_syntax.val then
               let s = match_assoc_list ctx (tab ctx) pwel "" in
-              let s = sprintf "%sbegin function\n%s" b s in
+              let s =
+                if normal_syntax.val then sprintf "%sbegin function\n%s" b s
+                else sprintf "%sfun\n%s" b s
+              in
               sprintf "%s\n%send%s" s (tab ctx) k
             else
               let s = match_assoc_list ctx (tab ctx) pwel k in
@@ -1778,9 +1806,10 @@ value str_item_top =
              sprintf "%smodule type %s = %s%s" b m (module_type ctx "" mt "")
                k)
           (fun () ->
-             sprintf "%smodule type %s =\n%s\n%s" b m
-               (module_type (shi ctx 2) (tab (shi ctx 2)) mt "")
-                  (tab ctx ^ k))
+             let s1 = sprintf "%smodule type %s =" b m in
+             let s2 = module_type (shi ctx 2) (tab (shi ctx 2)) mt "" in
+             let s3 = if k = "" then  "" else sprintf "\n%s%s" (tab ctx) k in
+             sprintf "%s\n%s%s" s1 s2 s3)
   | <:str_item< open $i$ >> ->
       fun curr next ctx b k -> mod_ident ctx (sprintf "%sopen " b) i k
   | <:str_item< type $list:tdl$ >> ->
@@ -1847,9 +1876,10 @@ value sig_item_top =
              sprintf "%smodule type %s = %s%s" b m (module_type ctx "" mt "")
                k)
           (fun () ->
-             sprintf "%smodule type %s =\n%s\n%s" b m
-               (module_type (shi ctx 2) (tab (shi ctx 2)) mt "")
-               (tab ctx ^ k))
+             let s1 = sprintf "%smodule type %s =" b m in
+             let s2 = module_type (shi ctx 2) (tab (shi ctx 2)) mt "" in
+             let s3 = if k = "" then  "" else sprintf "\n%s%s" (tab ctx) k in
+             sprintf "%s\n%s%s" s1 s2 s3)
   | <:sig_item< open $i$ >> ->
       fun curr next ctx b k -> mod_ident ctx (sprintf "%sopen " b) i k
   | <:sig_item< type $list:tdl$ >> ->
@@ -1858,12 +1888,16 @@ value sig_item_top =
           (None, Some (True, k))
   | <:sig_item< value $s$ : $t$ >> ->
       fun curr next ctx b k ->
+        let b =
+          if normal_syntax.val then sprintf "%sval" b
+          else sprintf "%svalue" b
+        in
         horiz_vertic
           (fun () ->
-             sprintf "%svalue %s : %s%s" b (var_escaped ctx "" s "")
+             sprintf "%s %s : %s%s" b (var_escaped ctx "" s "")
                (ctyp ctx "" t "") k)
           (fun () ->
-             let s1 = sprintf "%svalue %s :" b (var_escaped ctx "" s "") in
+             let s1 = sprintf "%s %s :" b (var_escaped ctx "" s "") in
              let s2 = ctyp (shi ctx 2) (tab (shi ctx 2)) t k in
              sprintf "%s\n%s" s1 s2)
   | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->
@@ -2012,15 +2046,19 @@ value module_type_top =
              sprintf "%s\n%s" s1 s2)
   | <:module_type< sig $list:sil$ end >> ->
       fun curr next ctx b k ->
+        let sig_item_sep =
+          if normal_syntax.val then
+            if flag_semi_semi.val then semi_semi_after sig_item
+            else sig_item
+          else semi_after sig_item
+        in
         horiz_vertic
           (fun () ->
              sprintf "%ssig%s%s%send%s" b " "
-               (hlist (semi_after sig_item) ctx "" sil "")
-               " " k)
+               (hlist sig_item_sep ctx "" sil "") " " k)
           (fun () ->
              sprintf "%ssig%s%s%send%s" b "\n"
-               (vlist (semi_after sig_item) (shi ctx 2) (tab (shi ctx 2)) sil
-                  "")
+               (vlist sig_item_sep (shi ctx 2) (tab (shi ctx 2)) sil "")
                ("\n" ^ tab ctx) k)
   | <:module_type< $mt$ with $list:wcl$ >> ->
       fun curr next ctx b k ->
