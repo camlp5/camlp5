@@ -45,6 +45,13 @@ val plist : 'a pr_fun -> int -> ('a * string) list pr_fun;;
        function to print elements, [ctx] is the context, [b] the
        beginning of the line, [el] a list of pairs (element * separator)
        (the last separator is ignored), and [k] the end of the line *)
+val plistb : 'a pr_fun -> int -> ('a * string) list pr_fun;;
+   (** paragraph list with possible cut already after the beginner
+       [plist elem sh ctx b el k] returns the pretty printed string of
+       the list of elements, like with [plist] but the [b] variable
+       correspond to an element already printed. Therefore, if the
+       first element of [el] does not fit in the line, a newline and
+       a tabulation is added after [b]. *)
 val plistl : 'a pr_fun -> 'a pr_fun -> int -> ('a * string) list pr_fun;;
    (** paragraph list with a different function for the last element *)
 

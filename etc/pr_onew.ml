@@ -560,6 +560,15 @@ value type_var ctx b (tv, (p, m)) k =
   sprintf "%s%s'%s%s" b (if p then "+" else if m then "-" else "") tv k
 ;
 
+value type_params ctx b tvl k =
+  match tvl with
+  [ [] -> sprintf "%s%s" b k
+  | [tv] -> type_var ctx b tv (sprintf " %s" k)
+  | _ ->
+      hlistl (comma_after type_var) type_var ctx (sprintf "%s(" b) tvl
+        (sprintf ") %s" k) ]
+;
+
 (* type_decl: particularity for the parameter 'ko' -> see 'value_binding' *)
 value type_decl ctx b ((_, tn), tp, te, cl) ko =
   horiz_vertic
@@ -574,9 +583,7 @@ value type_decl ctx b ((_, tn), tp, te, cl) ko =
        let s1 =
          horiz_vertic
            (fun () ->
-              sprintf "%s%s%s =" b
-                (if tp = [] then "" else
-                 sprintf "%s " (hlist type_var ctx "" tp ""))
+              sprintf "%s%s%s =" b (type_params ctx "" tp "")
                 (var_escaped ctx "" tn ""))
            (fun () -> not_impl "type_decl vertic 1" ctx b tn "")
        in
@@ -1773,7 +1780,10 @@ value str_item_top =
                sprintf "%s(%s : %s)%s" b s (module_type ctx "" mt "") k)
             (fun () ->
                let s1 = sprintf "%s(%s :" b s in
-               let s2 = module_type (shi ctx 1) (tab (shi ctx 1)) mt k in
+               let s2 =
+                 module_type (shi ctx 1) (tab (shi ctx 1)) mt
+                   (sprintf ")%s" k)
+               in
                sprintf "%s\n%s" s1 s2)
         in
         let (me, mto) =
@@ -1810,9 +1820,9 @@ value str_item_top =
                         in
                         sprintf "%s\n%s" s1 s2)
                | None ->
-                   sprintf "%smodule %s%s =" b m
-                     (if mal = [] then ""
-                      else hlist module_arg ctx " " mal "") ]
+                   let mal = List.map (fun ma -> (ma, "")) mal in
+                   plistb module_arg 2 ctx (sprintf "%smodule %s" b m) mal
+                     " =" ]
              in
              let s2 = module_expr (shi ctx 2) (tab (shi ctx 2)) me "" in
              let s3 = if k = "" then "" else sprintf "\n%s%s" (tab ctx) k in

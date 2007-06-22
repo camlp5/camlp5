@@ -43,6 +43,13 @@ value plist : pr_fun 'a -> int -> pr_fun (list ('a * string));
        function to print elements, [ctx] is the context, [b] the
        beginning of the line, [el] a list of pairs (element * separator)
        (the last separator is ignored), and [k] the end of the line *)
+value plistb : pr_fun 'a -> int -> pr_fun (list ('a * string));
+   (** paragraph list with possible cut already after the beginner
+       [plist elem sh ctx b el k] returns the pretty printed string of
+       the list of elements, like with [plist] but the [b] variable
+       correspond to an element already printed. Therefore, if the
+       first element of [el] does not fit in the line, a newline and
+       a tabulation is added after [b]. *)
 value plistl : pr_fun 'a -> pr_fun 'a -> int -> pr_fun (list ('a * string));
    (** paragraph list with a different function for the last element *)
 

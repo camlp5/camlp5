@@ -6,11 +6,6 @@ open Pretty;
 open Pcaml.NewPrinters;
 open Prtools;
 
-type alt 'a 'b =
-  [ Left of 'a
-  | Right of 'b ]
-;
-
 value flag_expand_declare = ref False;
 value flag_horiz_let_in = ref False;
 value flag_sequ_begin_at_eol = ref True;
@@ -1578,15 +1573,9 @@ value str_item_top =
                         in
                         sprintf "%s\n%s" s1 s2)
                | None ->
-                   let mal =
-                     [(Left m, "") :: List.map (fun ma -> (Right ma, "")) mal]
-                   in
-                   let module_arg2 ctx b maa k =
-                     match maa with
-                     [ Left s -> sprintf "%s%s%s" b s k
-                     | Right ma -> module_arg ctx b ma k ]
-                   in
-                   plist module_arg2 2 ctx (sprintf "%smodule " b) mal " =" ]
+                   let mal = List.map (fun ma -> (ma, "")) mal in
+                   plistb module_arg 2 ctx (sprintf "%smodule %s" b m) mal
+                     " =" ]
              in
              let s2 = module_expr (shi ctx 2) (tab (shi ctx 2)) me "" in
              sprintf "%s\n%s\n%s" s1 s2 (tab ctx ^ k))

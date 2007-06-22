@@ -147,6 +147,33 @@ and plistl_kont_same_line elem eleml sh ctx b xl k =
 (* paragraph list *)
 value plist elem sh ctx b xl k = plistl elem elem sh ctx b xl k;
 
+(* paragraph list where the [b] is part of the algorithm, i.e. if the
+   first element does not fit, there is a newline after the [b].*)
+value plistb elem sh ctx b xl k =
+  match xl with
+  [ [] -> sprintf "%s%s" b k
+  | [(x, _)] ->
+      horiz_vertic (fun () -> elem ctx b x k)
+        (fun () ->
+           let s = elem (shi ctx sh) (tab (shi ctx sh)) x k in
+           sprintf "%s\n%s" b s)
+  | [(x, sep) :: xl] ->
+      let s =
+        horiz_vertic (fun () -> Some (elem ctx b x sep)) (fun () -> None)
+      in
+      match s with
+      [ Some b -> plistl_kont_same_line elem elem sh ctx b xl k
+      | None ->
+          let s1 =
+            horiz_vertic (fun () -> elem ctx b x sep)
+              (fun () ->
+                 let s = elem (shi ctx sh) (tab (shi ctx sh)) x sep in
+                 sprintf "%s\n%s" b s)
+          in
+          let s2 = plistl elem elem 0 (shi ctx sh) (tab (shi ctx sh)) xl k in
+          sprintf "%s\n%s" s1 s2 ] ]
+;
+
 (* comments *)
 
 module Buff =
