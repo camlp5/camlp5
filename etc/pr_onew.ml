@@ -1537,6 +1537,9 @@ value patt_apply =
                      (next ctx "" p2 "") k)
                 (fun () -> not_impl "patt_apply vertic" ctx b p1 k)
           | Some (p, pl) ->
+              let patt =
+                if normal_syntax.val then pr_patt.pr_fun "range" else patt
+              in
               horiz_vertic
                 (fun () ->
                    sprintf "%s%s (%s)%s" b (next ctx "" p "")
