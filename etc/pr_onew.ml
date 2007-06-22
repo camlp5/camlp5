@@ -1770,8 +1770,11 @@ value str_item_top =
         let module_arg ctx b (s, mt) k =
           horiz_vertic
             (fun () ->
-               sprintf "%s (%s : %s)%s" b s (module_type ctx "" mt "") k)
-            (fun () -> not_impl "module_arg" ctx b s k)
+               sprintf "%s(%s : %s)%s" b s (module_type ctx "" mt "") k)
+            (fun () ->
+               let s1 = sprintf "%s(%s :" b s in
+               let s2 = module_type (shi ctx 1) (tab (shi ctx 1)) mt k in
+               sprintf "%s\n%s" s1 s2)
         in
         let (me, mto) =
           match me with
@@ -1781,7 +1784,7 @@ value str_item_top =
         horiz_vertic
           (fun () ->
              sprintf "%smodule %s%s%s = %s%s" b m
-               (hlist module_arg ctx "" mal "")
+               (if mal = [] then "" else hlist module_arg ctx " " mal "")
                (match mto with
                 [ Some mt -> sprintf " : %s" (module_type ctx "" mt "")
                 | None -> "" ])
@@ -1793,12 +1796,14 @@ value str_item_top =
                    horiz_vertic
                      (fun () ->
                         sprintf "%smodule %s%s : %s =" b m
-                          (hlist module_arg ctx "" mal "")
+                          (if mal = [] then ""
+                           else hlist module_arg ctx " " mal "")
                           (module_type ctx "" mt ""))
                      (fun () ->
                         let s1 =
                           sprintf "%smodule %s%s :" b m
-                            (hlist module_arg ctx "" mal "")
+                            (if mal = [] then ""
+                             else hlist module_arg ctx " " mal "")
                         in
                         let s2 =
                           module_type (shi ctx 2) (tab (shi ctx 2)) mt " ="
@@ -1806,7 +1811,8 @@ value str_item_top =
                         sprintf "%s\n%s" s1 s2)
                | None ->
                    sprintf "%smodule %s%s =" b m
-                     (hlist module_arg ctx "" mal "") ]
+                     (if mal = [] then ""
+                      else hlist module_arg ctx " " mal "") ]
              in
              let s2 = module_expr (shi ctx 2) (tab (shi ctx 2)) me "" in
              let s3 = if k = "" then "" else sprintf "\n%s%s" (tab ctx) k in
