@@ -358,9 +358,9 @@ module NewPrinters =
     and pr_level 'a = { pr_label : string; pr_rules : mutable pr_rule 'a }
     and pr_rule 'a =
       Extfun.t 'a
-        (pr_fun 'a -> pr_fun 'a -> pr_ctx -> string -> string -> string)
-    and pr_fun 'a = pr_ctx -> string -> 'a -> string -> string
-    and pr_ctx = { ind : int };
+        (pr_fun 'a -> pr_fun 'a -> pr_ind -> string -> string -> string)
+    and pr_fun 'a = pr_ind -> string -> 'a -> string -> string
+    and pr_ind = { ind : int };
     value printer loc_of name = do {
       let pr_fun name pr lab =
         loop False pr.pr_levels where rec loop app =

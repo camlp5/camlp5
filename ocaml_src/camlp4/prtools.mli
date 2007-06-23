@@ -4,14 +4,14 @@
 
 open Pcaml.NewPrinters;;
 
-type ('a, 'b) pr_gfun = pr_ctx -> string -> 'a -> 'b -> string;;
+type ('a, 'b) pr_gfun = pr_ind -> string -> 'a -> 'b -> string;;
 
-val shi : pr_ctx -> int -> pr_ctx;;
-val tab : pr_ctx -> string;;
+val shi : pr_ind -> int -> pr_ind;;
+val tab : pr_ind -> string;;
 
 val hlist : 'a pr_fun -> 'a list pr_fun;;
    (** horizontal list
-       [hlist elem ctx b e k] returns the horizontally pretty printed
+       [hlist elem ind b e k] returns the horizontally pretty printed
        string of a list of elements; elements are separated with spaces.
        The list is displayed in one only line. If this function is called
        in the context of the [horiz] function of the function [horiz_vertic]
@@ -26,7 +26,7 @@ val hlistl : 'a pr_fun -> 'a pr_fun -> 'a list pr_fun;;
 
 val vlist : 'a pr_fun -> 'a list pr_fun;;
    (** vertical list
-       [vlist elem ctx b e k] returns the vertically pretty printed
+       [vlist elem ind b e k] returns the vertically pretty printed
        string of a list of elements; elements are separated with newlines
        and indentations. *)
 val vlist2 :
@@ -37,17 +37,17 @@ val vlistl : 'a pr_fun -> 'a pr_fun -> 'a list pr_fun;;
 
 val plist : 'a pr_fun -> int -> ('a * string) list pr_fun;;
    (** paragraph list
-       [plist elem sh ctx b el k] returns the pretty printed string of
+       [plist elem sh ind b el k] returns the pretty printed string of
        a list of elements with separators. The elements are printed
        horizontally as far as possible. When an element does not fit
        on the line, a newline is added and the element is displayed
        in the next line with an indentation of [sh]. [elem] is the
-       function to print elements, [ctx] is the context, [b] the
+       function to print elements, [ind] is the indentation, [b] the
        beginning of the line, [el] a list of pairs (element * separator)
        (the last separator is ignored), and [k] the end of the line *)
 val plistb : 'a pr_fun -> int -> ('a * string) list pr_fun;;
    (** paragraph list with possible cut already after the beginner
-       [plist elem sh ctx b el k] returns the pretty printed string of
+       [plist elem sh ind b el k] returns the pretty printed string of
        the list of elements, like with [plist] but the [b] variable
        correspond to an element already printed. Therefore, if the
        first element of [el] does not fit in the line, a newline and
@@ -68,8 +68,8 @@ val flatten_sequence : MLast.expr -> MLast.expr list option;;
 val source : string ref;;
    (** The initial source string, which must be set by the pretty printing
        kit. Used by [comm_bef] below. *)
-val comm_bef : pr_ctx -> MLast.loc -> string;;
-   (** [comm_bef ctx loc] get the comment from the source (in the global
+val comm_bef : pr_ind -> MLast.loc -> string;;
+   (** [comm_bef ind loc] get the comment from the source (in the global
        variable [source] just before the given location [loc]. May be
-       reindented using the printing context [ctx]. No comment returns
-       the empty string. *)
+       reindented using [ind]. Returns the empty string if no comment
+       found. *)

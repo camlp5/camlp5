@@ -332,10 +332,10 @@ module NewPrinters =
         mutable pr_levels : 'a pr_level list }
     and 'a pr_level = { pr_label : string; mutable pr_rules : 'a pr_rule }
     and 'a pr_rule =
-      ('a, ('a pr_fun -> 'a pr_fun -> pr_ctx -> string -> string -> string))
+      ('a, ('a pr_fun -> 'a pr_fun -> pr_ind -> string -> string -> string))
        Extfun.t
-    and 'a pr_fun = pr_ctx -> string -> 'a -> string -> string
-    and pr_ctx = { ind : int }
+    and 'a pr_fun = pr_ind -> string -> 'a -> string -> string
+    and pr_ind = { ind : int }
     ;;
     let printer loc_of name =
       let pr_fun name pr lab =
