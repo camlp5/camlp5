@@ -5,7 +5,7 @@
 open Pretty;
 open Pcaml.NewPrinters;
 
-type pr_gfun 'a 'b = pr_ind -> string -> 'a -> 'b -> string;
+type pr_gfun 'a 'b = pr_ind -> pr_bef -> 'a -> 'b -> string;
 
 value shi ctx sh = {ind = ctx.ind + sh};
 value tab ctx = String.make ctx.ind ' ';

@@ -113,9 +113,11 @@ module NewPrinters :
     and pr_level 'a = { pr_label : string; pr_rules : mutable pr_rule 'a }
     and pr_rule 'a =
       Extfun.t 'a
-        (pr_fun 'a -> pr_fun 'a -> pr_ind -> string -> string -> string)
-    and pr_fun 'a = pr_ind -> string -> 'a -> string -> string
-    and pr_ind = { ind : int };
+        (pr_fun 'a -> pr_fun 'a -> pr_ind -> pr_bef -> pr_aft -> string)
+    and pr_fun 'a = pr_ind -> pr_bef -> 'a -> pr_aft -> string
+    and pr_ind = { ind : int }
+    and pr_bef = string
+    and pr_aft = string;
     value printer : 'a -> string -> printer_t 'b;
     value pr_expr : printer_t MLast.expr;
     value pr_patt : printer_t MLast.patt;

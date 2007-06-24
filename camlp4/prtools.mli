@@ -4,7 +4,7 @@
 
 open Pcaml.NewPrinters;
 
-type pr_gfun 'a 'b = pr_ind -> string -> 'a -> 'b -> string;
+type pr_gfun 'a 'b = pr_ind -> pr_bef -> 'a -> 'b -> string;
 
 value shi : pr_ind -> int -> pr_ind;
 value tab : pr_ind -> string;
