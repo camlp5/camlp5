@@ -16,12 +16,14 @@ done
 set - $(head -1 $FILE)
 if test "$2" = "camlp4r" -o "$2" = "camlp4"; then
 	COMM="ocamlrun $DIR/../boot/$2 -nolib -I $DIR/../boot $INCL $DIR/../etc/pr_o.cmo"
+#	COMM="ocamlrun $DIR/../boot/$2 -nolib -I $DIR/../boot $INCL $DIR/../etc/pr_onew.cmo"
         if test "$(basename "$(dirname $OTOP)")" != "ocaml_stuff"; then
             COMM="$OTOP/boot/$COMM"
         fi
 	shift; shift
 	ARGS=$(echo $* | sed -e "s/[()*]//g")
 	$COMM $ARGS $OPTS -ss $FILE
+#	$COMM $ARGS $OPTS -flag M $FILE
 else
 	cat $FILE
 fi

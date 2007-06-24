@@ -8,7 +8,7 @@ open Prtools;
 
 value normal_syntax = ref True;
 
-value flag_expand_declare = ref False;
+value flag_expand_declare = ref True;
 value flag_horiz_let_in = ref False;
 value flag_sequ_begin_at_eol = ref True;
 value flag_semi_semi = ref False;
