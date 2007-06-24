@@ -192,7 +192,7 @@ value patt_as ind b z k =
   | z -> patt ind b z k ]
 ;
 
-(* utilities specific to pr_r *)
+(* utilities specific to pr_o *)
 
 (* Basic displaying of a 'binding' (let, value, expr or patt record field).
    The pretty printing is done correctly, but there are no syntax shortcuts
@@ -538,6 +538,23 @@ value match_assoc_list ind b pwel k =
     vlist2 match_assoc_sh (bar_before match_assoc_sh) ind b pwel ("", k)
 ;
 
+value raise_match_failure ind b loc k =
+  let (fname, line, char, _) =
+    if Pcaml.input_file.val <> "-" then
+      Stdpp.line_of_loc Pcaml.input_file.val loc
+    else
+      ("-", 1, Stdpp.first_pos loc, 0)
+  in
+  let e =
+    <:expr<
+      raise
+        (Match_failure
+           ($str:fname$, $int:string_of_int line$, $int:string_of_int char$))
+    >>
+  in
+  pr_expr.pr_fun "apply" ind b e k
+;
+
 value rec make_expr_list =
   fun
   [ <:expr< [$x$ :: $y$] >> ->
@@ -573,10 +590,8 @@ value type_params ind b tvl k =
 value type_decl ind b ((_, tn), tp, te, cl) ko =
   horiz_vertic
     (fun () ->
-       sprintf "%s%s%s = %s%s%s" b
-         (if tp = [] then "" else sprintf "%s " (hlist type_var ind "" tp ""))
-         (var_escaped ind "" tn "")
-         (ctyp ind "" te "")
+       sprintf "%s%s%s = %s%s%s" b (type_params ind "" tp "")
+         (var_escaped ind "" tn "") (ctyp ind "" te "")
          (if cl = [] then "" else not_impl "type_decl cl" ind "" cl "")
          (match ko with [ Some (_, k) -> k | None -> "" ]))
     (fun () ->
@@ -724,14 +739,23 @@ value ctyp_apply =
                 (fun () ->
                    sprintf "%s%s %s%s" b (curr ind "" t2 "")
                      (next ind "" t "") k)
-                (fun () -> not_impl "ctyp_apply vertic" ind b t k)
+                (fun () ->
+                   let s1 = curr ind b t2 "" in
+                   let s2 = next (shi ind 2) (tab (shi ind 2)) t k in
+                   sprintf "%s\n%s" s1 s2)
           | _ ->
               horiz_vertic
                 (fun () ->
                    sprintf "%s(%s) %s%s" b
                      (hlistl (comma_after ctyp) ctyp ind "" tl "")
                         (curr ind "" t "") k)
-                (fun () -> not_impl "ctyp_apply vertic" ind b t k) ]
+                (fun () ->
+                   let s1 =
+                     hlistl (comma_after ctyp) ctyp ind (sprintf "%s(" b) tl
+                       ")"
+                   in
+                   let s2 = curr (shi ind 2) (tab (shi ind 2)) t k in
+                   sprintf "%s\n%s" s1 s2) ]
         else
           let unfold =
             fun
@@ -900,7 +924,7 @@ value expr_expr1 =
               else ""
             in
             sprintf "%s%s\n%s%s" s1 s2 s3 s4)
-  | <:expr< fun [ $list:pwel$ ] >> ->
+  | <:expr< fun [ $list:pwel$ ] >> as ge ->
       fun curr next ind b k ->
         match pwel with
         [ [(p1, None, e1)] when is_irrefut_patt p1 ->
@@ -938,7 +962,19 @@ value expr_expr1 =
                  in
                  if normal_syntax.val then sprintf "%s\n%send%s" s (tab ind) k
                  else s)
-        | [] -> sprintf "%sfun []%s" b k
+        | [] ->
+            let loc = MLast.loc_of_expr ge in
+            horiz_vertic
+              (fun () ->
+                 sprintf "%sbegin fun _ -> %s end%s" b
+                   (raise_match_failure ind "" loc "") k)
+              (fun () ->
+                 let s1 = sprintf "%sbegin fun _ ->" b in
+                 let s2 =
+                   raise_match_failure (shi ind 2) (tab (shi ind 2)) loc ""
+                 in
+                 let s3 = sprintf "%send%s" (tab ind) k in
+                 sprintf "%s\n%s\n%s" s1 s2 s3)
         | pwel ->
             if normal_syntax.val then
               let s = match_assoc_list ind (tab ind) pwel "" in
@@ -1016,6 +1052,11 @@ value expr_expr1 =
                            (p, wo, e) k
                        in
                        sprintf "%s\n%s" s1 s2 ])
+        | [] ->
+            match e with
+            [ <:expr< match $_$ with [ $list:_$ ] >> ->
+                raise_match_failure ind b (MLast.loc_of_expr e) k
+            | _ -> curr ind b e k ]
         | _ ->
             horiz_vertic
               (fun () ->
@@ -1074,11 +1115,14 @@ value expr_expr1 =
              | None ->
                  let s1 =
                    vlist2 let_binding (and_before let_binding) ind
-                     (sprintf "%slet %s" b (if rf then "rec " else ""))
+                     (sprintf "%sbegin let %s" b (if rf then "rec " else ""))
                      pel (False, True)
                  in
-                 let s2 = comm_expr expr_wh ind (tab ind) e k in
-                 sprintf "%s\n%s" s1 s2 ])
+                 let s2 =
+                   comm_expr expr_wh (shi ind 2) (tab (shi ind 2)) e ""
+                 in
+                 let s3 = sprintf "%send%s" (tab ind) k in
+                 sprintf "%s\n%s\n%s" s1 s2 s3 ])
   | <:expr< let module $s$ = $me$ in $e$ >> ->
       fun curr next ind b k ->
         horiz_vertic
@@ -1740,7 +1784,10 @@ value exception_decl ind b (e, tl, id) k =
 value str_item_top =
   extfun Extfun.empty with
   [ <:str_item< # $s$ $e$ >> ->
-      fun curr next ind b k -> expr ind (sprintf "%s#%s " b s) e k
+      fun curr next ind b k ->
+        if normal_syntax.val then
+          expr ind (sprintf "%s(* #%s " b s) e (sprintf " *)%s" k)
+        else expr ind (sprintf "%s#%s " b s) e k
   | <:str_item< declare $list:sil$ end >> ->
       fun curr next ind b k ->
         if flag_expand_declare.val then
