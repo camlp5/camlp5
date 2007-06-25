@@ -7,66 +7,66 @@ open Pcaml.NewPrinters;;
 
 type ('a, 'b) pr_gfun = pr_ind -> pr_bef -> 'a -> 'b -> string;;
 
-let shi ctx sh = {ind = ctx.ind + sh};;
-let tab ctx = String.make ctx.ind ' ';;
+let shi ind sh = {ind = ind.ind + sh};;
+let tab ind = String.make ind.ind ' ';;
 
 (* horizontal list *)
-let rec hlist elem ctx b xl k =
+let rec hlist elem ind b xl k =
   match xl with
     [] -> sprintf "%s%s" b k
-  | [x] -> elem ctx b x k
-  | x :: xl -> sprintf "%s %s" (elem ctx b x "") (hlist elem ctx "" xl k)
+  | [x] -> elem ind b x k
+  | x :: xl -> sprintf "%s %s" (elem ind b x "") (hlist elem ind "" xl k)
 ;;
 
 (* horizontal list with different function from 2nd element on *)
-let rec hlist2 elem elem2 ctx b xl (k0, k) =
+let rec hlist2 elem elem2 ind b xl (k0, k) =
   match xl with
     [] -> invalid_arg "hlist2"
-  | [x] -> elem ctx b x k
+  | [x] -> elem ind b x k
   | x :: xl ->
-      sprintf "%s %s" (elem ctx b x k0) (hlist2 elem2 elem2 ctx "" xl (k0, k))
+      sprintf "%s %s" (elem ind b x k0) (hlist2 elem2 elem2 ind "" xl (k0, k))
 ;;
 
 (* horizontal list with different function for the last element *)
-let rec hlistl elem eleml ctx b xl k =
+let rec hlistl elem eleml ind b xl k =
   match xl with
     [] -> sprintf "%s%s" b k
-  | [x] -> eleml ctx b x k
+  | [x] -> eleml ind b x k
   | x :: xl ->
-      sprintf "%s %s" (elem ctx b x "") (hlistl elem eleml ctx "" xl k)
+      sprintf "%s %s" (elem ind b x "") (hlistl elem eleml ind "" xl k)
 ;;
 
 (* vertical list *)
-let rec vlist elem ctx b xl k =
+let rec vlist elem ind b xl k =
   match xl with
     [] -> sprintf "%s%s" b k
-  | [x] -> elem ctx b x k
+  | [x] -> elem ind b x k
   | x :: xl ->
-      sprintf "%s\n%s" (elem ctx b x "") (vlist elem ctx (tab ctx) xl k)
+      sprintf "%s\n%s" (elem ind b x "") (vlist elem ind (tab ind) xl k)
 ;;
 
 (* vertical list with different function from 2nd element on *)
-let rec vlist2 elem elem2 ctx b xl (k0, k) =
+let rec vlist2 elem elem2 ind b xl (k0, k) =
   match xl with
     [] -> invalid_arg "vlist2"
-  | [x] -> elem ctx b x k
+  | [x] -> elem ind b x k
   | x :: xl ->
-      sprintf "%s\n%s" (elem ctx b x k0)
-        (vlist2 elem2 elem2 ctx (tab ctx) xl (k0, k))
+      sprintf "%s\n%s" (elem ind b x k0)
+        (vlist2 elem2 elem2 ind (tab ind) xl (k0, k))
 ;;
 
 (* vertical list with different function for the last element *)
-let rec vlistl elem eleml ctx b xl k =
+let rec vlistl elem eleml ind b xl k =
   match xl with
     [] -> sprintf "%s%s" b k
-  | [x] -> eleml ctx b x k
+  | [x] -> eleml ind b x k
   | x :: xl ->
-      sprintf "%s\n%s" (elem ctx b x "")
-        (vlistl elem eleml ctx (tab ctx) xl k)
+      sprintf "%s\n%s" (elem ind b x "")
+        (vlistl elem eleml ind (tab ind) xl k)
 ;;
 
-let rise_string ctx sh b s =
-  let ind = ctx.ind in
+let rise_string ind sh b s =
+  let ind = ind.ind in
   if String.length s > ind + sh && s.[ind + sh] = '\"' then
     match
       try Some (String.index s '\n') with
@@ -89,79 +89,79 @@ let rise_string ctx sh b s =
 (* paragraph list with a different function for the last element;
    the list elements are pairs where second elements are separators
    (the last separator is ignored) *)
-let rec plistl elem eleml sh ctx b xl k =
-  let (s1, s2o) = plistl_two_parts elem eleml sh ctx b xl k in
+let rec plistl elem eleml sh ind b xl k =
+  let (s1, s2o) = plistl_two_parts elem eleml sh ind b xl k in
   match s2o with
     Some s2 -> sprintf "%s\n%s" s1 s2
   | None -> s1
-and plistl_two_parts elem eleml sh ctx b xl k =
+and plistl_two_parts elem eleml sh ind b xl k =
   match xl with
     [] -> assert false
-  | [x, _] -> eleml ctx b x k, None
+  | [x, _] -> eleml ind b x k, None
   | (x, sep) :: xl ->
       let s =
-        horiz_vertic (fun () -> Some (elem ctx b x sep)) (fun () -> None)
+        horiz_vertic (fun () -> Some (elem ind b x sep)) (fun () -> None)
       in
       match s with
-        Some b -> plistl_kont_same_line elem eleml sh ctx b xl k, None
+        Some b -> plistl_kont_same_line elem eleml sh ind b xl k, None
       | None ->
-          let s1 = elem ctx b x sep in
-          let s2 = plistl elem eleml 0 (shi ctx sh) (tab (shi ctx sh)) xl k in
+          let s1 = elem ind b x sep in
+          let s2 = plistl elem eleml 0 (shi ind sh) (tab (shi ind sh)) xl k in
           s1, Some s2
-and plistl_kont_same_line elem eleml sh ctx b xl k =
+and plistl_kont_same_line elem eleml sh ind b xl k =
   match xl with
     [] -> assert false
   | [x, _] ->
-      horiz_vertic (fun () -> eleml ctx (sprintf "%s " b) x k)
+      horiz_vertic (fun () -> eleml ind (sprintf "%s " b) x k)
         (fun () ->
-           let s = eleml (shi ctx sh) (tab (shi ctx sh)) x k in
-           let (b, s) = rise_string ctx sh b s in sprintf "%s\n%s" b s)
+           let s = eleml (shi ind sh) (tab (shi ind sh)) x k in
+           let (b, s) = rise_string ind sh b s in sprintf "%s\n%s" b s)
   | (x, sep) :: xl ->
       let s =
-        horiz_vertic (fun () -> Some (elem ctx (sprintf "%s " b) x sep))
+        horiz_vertic (fun () -> Some (elem ind (sprintf "%s " b) x sep))
           (fun () -> None)
       in
       match s with
-        Some b -> plistl_kont_same_line elem eleml sh ctx b xl k
+        Some b -> plistl_kont_same_line elem eleml sh ind b xl k
       | None ->
           let (s1, s2o) =
-            plistl_two_parts elem eleml 0 (shi ctx sh) (tab (shi ctx sh))
+            plistl_two_parts elem eleml 0 (shi ind sh) (tab (shi ind sh))
               ((x, sep) :: xl) k
           in
           match s2o with
             Some s2 ->
-              let (b, s1) = rise_string ctx sh b s1 in
+              let (b, s1) = rise_string ind sh b s1 in
               sprintf "%s\n%s\n%s" b s1 s2
           | None -> sprintf "%s\n%s" b s1
 ;;
 
 (* paragraph list *)
-let plist elem sh ctx b xl k = plistl elem elem sh ctx b xl k;;
+let plist elem sh ind b xl k = plistl elem elem sh ind b xl k;;
 
 (* paragraph list where the [b] is part of the algorithm, i.e. if the
    first element does not fit, there is a newline after the [b].*)
-let plistb elem sh ctx b xl k =
+let plistb elem sh ind b xl k =
   match xl with
     [] -> sprintf "%s%s" b k
   | [x, _] ->
-      horiz_vertic (fun () -> elem ctx b x k)
+      horiz_vertic (fun () -> elem ind b x k)
         (fun () ->
-           let s = elem (shi ctx sh) (tab (shi ctx sh)) x k in
+           let s = elem (shi ind sh) (tab (shi ind sh)) x k in
            sprintf "%s\n%s" b s)
   | (x, sep) :: xl ->
       let s =
-        horiz_vertic (fun () -> Some (elem ctx b x sep)) (fun () -> None)
+        horiz_vertic (fun () -> Some (elem ind b x sep)) (fun () -> None)
       in
       match s with
-        Some b -> plistl_kont_same_line elem elem sh ctx b xl k
+        Some b -> plistl_kont_same_line elem elem sh ind b xl k
       | None ->
           let s1 =
-            horiz_vertic (fun () -> elem ctx b x sep)
+            horiz_vertic (fun () -> elem ind b x sep)
               (fun () ->
-                 let s = elem (shi ctx sh) (tab (shi ctx sh)) x sep in
+                 let s = elem (shi ind sh) (tab (shi ind sh)) x sep in
                  sprintf "%s\n%s" b s)
           in
-          let s2 = plistl elem elem 0 (shi ctx sh) (tab (shi ctx sh)) xl k in
+          let s2 = plistl elem elem 0 (shi ind sh) (tab (shi ind sh)) xl k in
           sprintf "%s\n%s" s1 s2
 ;;
 
@@ -374,8 +374,8 @@ let adjust_comment_indentation ind s nl_bef ind_bef =
     loop olen 0
 ;;
 
-let comm_bef ctx loc =
-  let ind = ctx.ind in
+let comm_bef ind loc =
+  let ind = ind.ind in
   let bp = Stdpp.first_pos loc in
   let ep = Stdpp.last_pos loc in
   let (s, nl_bef, ind_bef) = rev_read_comment_in_file bp ep in
