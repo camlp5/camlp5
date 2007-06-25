@@ -168,10 +168,26 @@ value rec is_sequence =
 (* In the normal syntax, if an expression is followed by a semicolon,
    it might consider it as a continuation for a sequence. If True,
    the expression must be parenthesised to prevent that. *)
-value dangling_semi =
+value test_dangling_semi =
   loop where rec loop =
     fun
     [ <:expr< let $opt:_$ $list:_$ in $e$ >> -> not (is_sequence e)
+    | <:expr< if $_$ then $_$ else $e$ >> -> loop e
+    | <:expr< fun [ $list:_$ ] >> |
+      <:expr< match $_$ with [ $list:_$ ] >> |
+      <:expr< try $_$ with [ $list:_$ ] >> ->
+        True
+    | _ -> False ]
+;
+
+(* In the normal syntax, if an expression is followed by a vertical bar,
+   it might consider it as a continuation for some matches, tries and
+   functions. Tthe expression must be parenthesised to prevent that. *)
+value test_dangling_bar =
+  loop where rec loop =
+    fun
+    [ <:expr< let $opt:_$ $list:_$ in $e$ >> ->
+        if is_sequence e then False else loop e
     | <:expr< if $_$ then $_$ else $e$ >> -> loop e
     | <:expr< fun [ $list:_$ ] >> |
       <:expr< match $_$ with [ $list:_$ ] >> |
@@ -364,7 +380,7 @@ value record_binding is_last ind b (p, e) k =
   let (pl, e) = if normal_syntax.val then ([], e) else expr_fun_args e in
   let pl = [p :: pl] in
   let expr ind b e k =
-    if not is_last && dangling_semi e then
+    if not is_last && test_dangling_semi e then
       expr (shi ind 1) (sprintf "%s(" b) e (sprintf ")%s" k)
     else expr ind b e k
   in
@@ -500,7 +516,6 @@ value let_binding ind b (p, e) is_last =
 ;
 
 value match_assoc ind b (p, w, e) k =
-  let expr_wh = if flag_where_after_arrow.val then expr_wh else expr in
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s -> %s%s" b (patt_as ind "" p "")
@@ -542,7 +557,12 @@ value match_assoc ind b (p, w, e) k =
                 el k
        | None ->
            let s1 = patt_arrow "" in
-           let s2 = comm_expr expr_wh (shi ind 2) (tab (shi ind 2)) e k in
+           let s2 =
+             if test_dangling_bar e then
+               comm_expr expr (shi ind 3) (sprintf "%s(" (tab (shi ind 2))) e
+                 (sprintf ")%s" k)
+             else comm_expr expr (shi ind 2) (tab (shi ind 2)) e k
+           in
            sprintf "%s\n%s" s1 s2 ])
 ;
 
@@ -551,12 +571,8 @@ value match_assoc_sh ind b pwe k = match_assoc (shi ind 2) b pwe k;
 value match_assoc_list ind b pwel k =
   if pwel = [] then sprintf "%s[]%s" b k
   else if normal_syntax.val then
-    horiz_vertic
-      (fun () ->
-         vlist2 match_assoc_sh (bar_before match_assoc_sh) ind b pwel ("", k))
-      (fun () ->
-         let b = sprintf "%s  " b in
-         vlist2 match_assoc_sh (bar_before match_assoc_sh) ind b pwel ("", k))
+    let b = sprintf "%s  " b in
+    vlist2 match_assoc_sh (bar_before match_assoc_sh) ind b pwel ("", k)
   else
     let b = sprintf "%s[ " b in
     let k = sprintf " ]%s" k in
@@ -989,22 +1005,14 @@ value expr_expr1 =
       fun curr next ind b k ->
         let expr_wh = if flag_where_after_match.val then expr_wh else expr in
         let op =
-          if normal_syntax.val then
-            match e with
-            [ <:expr< try $_$ with [ $list:_$ ] >> -> "begin try"
-            | _ -> "begin match" ]
-          else
-            match e with
-            [ <:expr< try $_$ with [ $list:_$ ] >> -> "try"
-            | _ -> "match" ]
+          match e with
+          [ <:expr< try $_$ with [ $list:_$ ] >> -> "try"
+          | _ -> "match" ]
         in
         match pwel with
         [ [(p, wo, e)] when is_irrefut_patt p ->
             horiz_vertic
               (fun () ->
-                 let k =
-                   if normal_syntax.val then sprintf " end%s" k else k
-                 in
                  sprintf "%s%s %s with %s%s" b op (expr_wh ind "" e1 "")
                    (match_assoc ind "" (p, wo, e) "") k)
               (fun () ->
@@ -1020,12 +1028,8 @@ value expr_expr1 =
                       (fun () -> None)
                  with
                  [ Some s1 ->
-                     if normal_syntax.val then
-                       let s2 = expr (shi ind 2) (tab (shi ind 2)) e "" in
-                       sprintf "%s\n%s\n%send%s" s1 s2 (tab ind) k
-                     else
-                       let s2 = expr (shi ind 2) (tab (shi ind 2)) e k in
-                       sprintf "%s\n%s" s1 s2
+                     let s2 = expr (shi ind 2) (tab (shi ind 2)) e k in
+                     sprintf "%s\n%s" s1 s2
                  | None ->
                      let s1 =
                        match sequencify e1 with
@@ -1038,18 +1042,11 @@ value expr_expr1 =
                            in
                            sprintf "%s%s\n%s" b op s ]
                      in
-                     if normal_syntax.val then
-                       let s2 =
-                         match_assoc ind (sprintf "%swith " (tab ind))
-                           (p, wo, e) ""
-                       in
-                       sprintf "%s\n%s\n%send%s" s1 s2 (tab ind) k
-                     else
-                       let s2 =
-                         match_assoc ind (sprintf "%swith " (tab ind))
-                           (p, wo, e) k
-                       in
-                       sprintf "%s\n%s" s1 s2 ])
+                     let s2 =
+                       match_assoc ind (sprintf "%swith " (tab ind))
+                         (p, wo, e) k
+                     in
+                     sprintf "%s\n%s" s1 s2 ])
         | [] ->
             match e with
             [ <:expr< match $_$ with [ $list:_$ ] >> ->
@@ -1058,9 +1055,6 @@ value expr_expr1 =
         | _ ->
             horiz_vertic
               (fun () ->
-                 let k =
-                   if normal_syntax.val then sprintf " end%s" k else k
-                 in
                  sprintf "%s%s %s with %s%s" b op (expr_wh ind "" e1 "")
                    (match_assoc_list ind "" pwel "") k)
               (fun () ->
@@ -1085,12 +1079,8 @@ value expr_expr1 =
                         in
                         sprintf "%s\n%swith" s (tab ind))
                  in
-                 if normal_syntax.val then
-                   let s2 = match_assoc_list ind (tab ind) pwel "" in
-                   sprintf "%s\n%s\n%send%s" s1 s2 (tab ind) k
-                 else
-                   let s2 = match_assoc_list ind (tab ind) pwel k in
-                   sprintf "%s\n%s" s1 s2) ]
+                 let s2 = match_assoc_list ind (tab ind) pwel k in
+                 sprintf "%s\n%s" s1 s2) ]
   | <:expr< let $opt:rf$ $list:pel$ in $e$ >> as ge ->
       fun curr next ind b k ->
         let expr_wh = if flag_where_after_in.val then expr_wh else expr in
