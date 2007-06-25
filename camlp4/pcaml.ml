@@ -356,9 +356,10 @@ module NewPrinters =
       { pr_fun : mutable string -> pr_fun 'a;
         pr_levels : mutable list (pr_level 'a) }
     and pr_level 'a = { pr_label : string; pr_rules : mutable pr_rule 'a }
-    and pr_rule 'a = Extfun.t 'a (pr_fun 'a -> pr_fun 'a -> pr_line)
+    and pr_rule 'a =
+      Extfun.t 'a
+        (pr_fun 'a -> pr_fun 'a -> pr_ind -> pr_bef -> pr_aft -> string)
     and pr_fun 'a = pr_ind -> pr_bef -> 'a -> pr_aft -> string
-    and pr_line = pr_ind -> pr_bef -> pr_aft -> string
     and pr_ind = { ind : int }
     and pr_bef = string
     and pr_aft = string;
