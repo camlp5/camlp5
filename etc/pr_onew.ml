@@ -158,6 +158,28 @@ value right_operator ind sh unfold next b x k =
         (fun () -> plist next sh ind b xl k) ]
 ;
 
+value rec is_sequence =
+  fun
+  [ <:expr< let $opt:_$ $list:_$ in $e$ >> -> is_sequence e
+  | <:expr< do { $list:_$ } >> -> True
+  | _ -> False ]
+;
+
+(* In the normal syntax, if an expression is followed by a semicolon,
+   it might consider it as a continuation for a sequence. If True,
+   the expression must be parenthesised to prevent that. *)
+value dangling_semi =
+  loop where rec loop =
+    fun
+    [ <:expr< let $opt:_$ $list:_$ in $e$ >> -> not (is_sequence e)
+    | <:expr< if $_$ then $_$ else $e$ >> -> loop e
+    | <:expr< fun [ $list:_$ ] >> |
+      <:expr< match $_$ with [ $list:_$ ] >> |
+      <:expr< try $_$ with [ $list:_$ ] >> ->
+        True
+    | _ -> False ]
+;
+
 (*
  * Extensible printers
  *)
@@ -338,14 +360,17 @@ value sequence_box2 ind bfun el k =
    Cancellation of all these improvements could be done by changing calls
    to this function to a call to "binding expr" above.
 *)
-value record_binding ind b (p, e) k =
+value record_binding is_last ind b (p, e) k =
   let (pl, e) = if normal_syntax.val then ([], e) else expr_fun_args e in
   let pl = [p :: pl] in
-  let expr_wh = if flag_where_after_field_eq.val then expr_wh else expr in
+  let expr ind b e k =
+    if not is_last && dangling_semi e then
+      expr (shi ind 1) (sprintf "%s(" b) e (sprintf ")%s" k)
+    else expr ind b e k
+  in
   horiz_vertic
     (fun () ->
-       sprintf "%s%s = %s%s" b (hlist patt ind "" pl "") (expr_wh ind "" e "")
-         k)
+       sprintf "%s%s = %s%s" b (hlist patt ind "" pl "") (expr ind "" e "") k)
     (fun () ->
        match sequencify e with
        [ Some el ->
@@ -353,7 +378,7 @@ value record_binding ind b (p, e) k =
              el k
        | None ->
            sprintf "%s\n%s" (hlist patt ind b pl " =")
-             (expr_wh (shi ind 2) (tab (shi ind 2)) e k) ])
+             (expr (shi ind 2) (tab (shi ind 2)) e k) ])
 ;
 
 (* Pretty printing improvements (optional):
@@ -844,12 +869,8 @@ value expr_expr1 =
         let expr_wh = if flag_where_after_then.val then expr_wh else expr in
         horiz_vertic
          (fun () ->
-            if normal_syntax.val then
-              sprintf "%sbegin if %s then %s else %s end%s" b
-                (expr ind "" e1 "") (expr ind "" e2 "") (expr ind "" e3 "") k
-            else
-              sprintf "%sif %s then %s else %s%s" b (expr ind "" e1 "")
-                (expr ind "" e2 "") (expr ind "" e3 "") k)
+            sprintf "%sif %s then %s else %s%s" b (expr ind "" e1 "")
+              (expr ind "" e2 "") (expr ind "" e3 "") k)
          (fun () ->
             let if_then ind b_if e1 e2 =
               horiz_vertic
@@ -883,10 +904,7 @@ value expr_expr1 =
                        sprintf "%s\n%s" s1 s2 ])
             in
             let s1 =
-              let b =
-                if normal_syntax.val then sprintf "%sbegin if " b
-                else sprintf "%sif " b
-              in
+              let b = sprintf "%sif " b in
               if_then ind b e1 e2
             in
             let (eel, e3) = get_else_if e3 in
@@ -900,7 +918,6 @@ value expr_expr1 =
                 | [] -> "" ]
             in
             let s3 =
-              let k = if normal_syntax.val then "" else k in
               horiz_vertic
                 (fun () ->
                    sprintf "%selse %s%s" (tab ind)
@@ -919,26 +936,16 @@ value expr_expr1 =
                        in
                        sprintf "%selse\n%s" (tab ind) s ])
             in
-            let s4 =
-              if normal_syntax.val then sprintf "\n%send%s" (tab ind) k
-              else ""
-            in
-            sprintf "%s%s\n%s%s" s1 s2 s3 s4)
+            sprintf "%s%s\n%s" s1 s2 s3)
   | <:expr< fun [ $list:pwel$ ] >> as ge ->
       fun curr next ind b k ->
         match pwel with
         [ [(p1, None, e1)] when is_irrefut_patt p1 ->
             let (pl, e1) = expr_fun_args e1 in
             let pl = [p1 :: pl] in
-            let b_fun =
-              if normal_syntax.val then sprintf "%sbegin fun " b
-              else sprintf "%sfun " b
-            in
+            let b_fun = sprintf "%sfun " b in
             horiz_vertic
               (fun () ->
-                 let k =
-                   if normal_syntax.val then sprintf " end%s" k else k
-                 in
                  sprintf "%s%s -> %s%s" b_fun (hlist patt ind "" pl "")
                    (expr ind "" e1 "") k)
               (fun () ->
@@ -946,43 +953,34 @@ value expr_expr1 =
                    let pl = List.map (fun p -> (p, "")) pl in
                    plist patt 4 ind b_fun pl (sprintf " ->%s" k)
                  in
-                 let s =
-                   let k = if normal_syntax.val then "" else k in
-                   match sequencify e1 with
-                   [ Some el ->
-                       sequence_box2 ind
-                         (fun k ->
-                            horiz_vertic (fun _ -> sprintf "\n")
-                              (fun () -> fun_arrow k))
-                         el k
-                   | None ->
-                       let s1 = fun_arrow "" in
-                       let s2 = expr (shi ind 2) (tab (shi ind 2)) e1 k in
-                       sprintf "%s\n%s" s1 s2 ]
-                 in
-                 if normal_syntax.val then sprintf "%s\n%send%s" s (tab ind) k
-                 else s)
+                 match sequencify e1 with
+                 [ Some el ->
+                     sequence_box2 ind
+                       (fun k ->
+                          horiz_vertic (fun _ -> sprintf "\n")
+                            (fun () -> fun_arrow k))
+                       el k
+                 | None ->
+                     let s1 = fun_arrow "" in
+                     let s2 = expr (shi ind 2) (tab (shi ind 2)) e1 k in
+                     sprintf "%s\n%s" s1 s2 ])
         | [] ->
             let loc = MLast.loc_of_expr ge in
             horiz_vertic
               (fun () ->
-                 sprintf "%sbegin fun _ -> %s end%s" b
+                 sprintf "%sfun _ -> %s%s" b
                    (raise_match_failure ind "" loc "") k)
               (fun () ->
-                 let s1 = sprintf "%sbegin fun _ ->" b in
+                 let s1 = sprintf "%sfun _ ->" b in
                  let s2 =
-                   raise_match_failure (shi ind 2) (tab (shi ind 2)) loc ""
+                   raise_match_failure (shi ind 2) (tab (shi ind 2)) loc k
                  in
-                 let s3 = sprintf "%send%s" (tab ind) k in
-                 sprintf "%s\n%s\n%s" s1 s2 s3)
+                 sprintf "%s\n%s" s1 s2)
         | pwel ->
             if normal_syntax.val then
-              let s = match_assoc_list ind (tab ind) pwel "" in
-              let s =
-                if normal_syntax.val then sprintf "%sbegin function\n%s" b s
-                else sprintf "%sfun\n%s" b s
-              in
-              sprintf "%s\n%send%s" s (tab ind) k
+              let s = match_assoc_list ind (tab ind) pwel k in
+              if normal_syntax.val then sprintf "%sfunction\n%s" b s
+              else sprintf "%sfun\n%s" b s
             else
               let s = match_assoc_list ind (tab ind) pwel k in
               sprintf "%sfun\n%s" b s ]
@@ -1445,12 +1443,13 @@ value expr_simple =
   | <:expr< {$list:lel$} >> ->
       fun curr next ind b k ->
         let lxl = List.map (fun lx -> (lx, ";")) lel in
-        plist (comm_patt_any record_binding) 0 (shi ind 1) (sprintf "%s{" b)
-          lxl (sprintf "}%s" k)
+        plistl (comm_patt_any (record_binding False))
+          (comm_patt_any (record_binding True)) 0
+          (shi ind 1) (sprintf "%s{" b) lxl (sprintf "}%s" k)
   | <:expr< {($e$) with $list:lel$} >> ->
       fun curr next ind b k ->
         let lxl = List.map (fun lx -> (lx, ";")) lel in
-        plist record_binding 0 (shi ind 1)
+        plistl (record_binding False) (record_binding True) 0 (shi ind 1)
           (expr ind (sprintf "%s{(" b) e ") with ") lxl
           (sprintf "}%s" k)
   | <:expr< [| $list:el$ |] >> ->
