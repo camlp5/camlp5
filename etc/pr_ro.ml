@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_ro.ml,v 1.20 2007/06/27 11:30:38 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.21 2007/06/27 17:28:53 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -28,14 +28,30 @@ value class_type pc z = pr_class_type.pr_fun "top" pc z;
 value class_str_item pc z = pr_class_str_item.pr_fun "top" pc z;
 value class_sig_item pc z = pr_class_sig_item.pr_fun "top" pc z;
 
+value rec mod_ident pc sl =
+  match sl with
+  [ [] -> sprintf "%s%s" pc.bef pc.aft
+  | [s] -> sprintf "%s%s%s" pc.bef s pc.aft
+  | [s :: sl] -> mod_ident {(pc) with bef = sprintf "%s%s." pc.bef s} sl ]
+;
+
 value semi_after elem pc x = elem {(pc) with aft = sprintf ";%s" pc.aft} x;
 value amp_before elem pc x = elem {(pc) with bef = sprintf "%s& " pc.bef} x;
 value and_before elem pc x = elem {(pc) with bef = sprintf "%sand " pc.bef} x;
 value bar_before elem pc x = elem {(pc) with bef = sprintf "%s| " pc.bef} x;
 
+value type_var pc (tv, (p, m)) =
+  sprintf "%s%s'%s%s" pc.bef (if p then "+" else if m then "-" else "") tv
+    pc.aft
+;
+
 value class_type_params pc ctp =
   if ctp = [] then sprintf "%s%s" pc.bef pc.aft
-  else not_impl "class_type_params" pc ctp
+  else
+    let ctp = List.map (fun ct -> (ct, ",")) ctp in
+    plist type_var 1
+      {(pc) with bef = sprintf "%s[" pc.bef; aft = sprintf "] %s" pc.aft}
+      ctp
 ;
 
 value class_def_or_type_decl char pc ci =
@@ -117,6 +133,20 @@ value variant_decl pc pv =
        ctyp pc t ]
 ;
 
+value variant_decl_list char pc pvl =
+  horiz_vertic
+    (fun () ->
+       hlist2 variant_decl (bar_before variant_decl)
+         {(pc) with bef = sprintf "%s[ %c " pc.bef char;
+          aft = ("", sprintf " ]%s" pc.aft)}
+         pvl)
+    (fun () ->
+       vlist2 variant_decl (bar_before variant_decl)
+         {(pc) with bef = sprintf "%s[ %c " pc.bef char;
+          aft = ("", sprintf " ]%s" pc.aft)}
+         pvl)
+;
+
 value rec class_longident pc cl =
   match cl with
   [ [] -> sprintf "%s%s" pc.bef pc.aft
@@ -183,7 +213,10 @@ lev.pr_rules :=
   | <:patt< ~ $s$ : $p$ >> ->
       fun curr next pc -> curr {(pc) with bef = sprintf "%s~%s:" pc.bef s} p
   | <:patt< `$uid:s$ >> ->
-      fun curr next pc -> sprintf "%s`%s%s" pc.bef s pc.aft ]
+      fun curr next pc -> sprintf "%s`%s%s" pc.bef s pc.aft
+  | <:patt< # $list:sl$ >> ->
+      fun curr next pc ->
+        mod_ident {(pc) with bef = sprintf "%s#" pc.bef} sl ]
 ;
 
 let lev = find_pr_level "apply" pr_expr.pr_levels in
@@ -243,7 +276,13 @@ lev.pr_rules :=
       fun curr next pc -> sprintf "%s~%s%s" pc.bef s pc.aft
   | <:expr< ~ $s$ : $e$ >> ->
       fun curr next pc ->
-        pr_expr.pr_fun "dot" {(pc) with bef = sprintf "%s~%s:" pc.bef s} e ]
+        pr_expr.pr_fun "dot" {(pc) with bef = sprintf "%s~%s:" pc.bef s} e
+  | <:expr< new $list:_$ >> as z ->
+      fun curr next pc ->
+        expr
+          {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+           aft = sprintf ")%s" pc.aft}
+          z ]
 ;
 
 let lev = find_pr_level "simple" pr_ctyp.pr_levels in
@@ -263,21 +302,13 @@ lev.pr_rules :=
             {(pc) with ind = pc.ind + 2; bef = sprintf "%s< " pc.bef;
              aft = sprintf "%s >%s" (if v then " .." else "") pc.aft}
             ml
-  | <:ctyp< [ = $list:pvl$ ] >> ->
+  | <:ctyp< # $list:id$ >> ->
       fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             hlist2 variant_decl (bar_before variant_decl)
-               {(pc) with bef = sprintf "%s[ = " pc.bef;
-                aft = ("", sprintf " ]%s" pc.aft)}
-               pvl)
-          (fun () ->
-             vlist2 variant_decl (bar_before variant_decl)
-               {(pc) with bef = sprintf "%s[ = " pc.bef;
-                aft = ("", sprintf " ]%s" pc.aft)}
-               pvl)
+        class_longident {(pc) with bef = sprintf "%s#" pc.bef}  id
+  | <:ctyp< [ = $list:pvl$ ] >> ->
+      fun curr next pc -> variant_decl_list '=' pc pvl
   | <:ctyp< [ > $list:pvl$ ] >> ->
-      fun curr next pc -> not_impl "variants 2" pc pvl
+      fun curr next pc -> variant_decl_list '>' pc pvl
   | <:ctyp< [ < $list:pvl$ ] >> ->
       fun curr next pc -> not_impl "variants 3" pc pvl
   | <:ctyp< [ < $list:pvl$ > $list:_$ ] >> ->
@@ -367,7 +398,22 @@ value class_type_top =
 
 value class_expr_top =
   extfun Extfun.empty with
-  [ <:class_expr< let $opt:rf$ $list:pel$ in $ce$ >> ->
+  [ <:class_expr< fun $p$ -> $ce$ >> ->
+      fun curr next pc ->
+        horiz_vertic
+          (fun () ->
+             sprintf "%sfun %s -> %s%s" pc.bef
+               (patt {(pc) with bef = ""; aft = ""} p)
+               (curr {(pc) with bef = ""; aft = ""} ce) pc.aft)
+          (fun () ->
+             let s1 =
+               patt {(pc) with bef = sprintf "%sfun " pc.bef; aft = " ->"} p
+             in
+             let s2 =
+               curr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} ce
+             in
+             sprintf "%s\n%s" s1 s2)
+  | <:class_expr< let $opt:rf$ $list:pel$ in $ce$ >> ->
       fun curr next pc ->
         horiz_vertic
           (fun () ->
@@ -533,6 +579,14 @@ value class_str_item_top =
                expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
              in
              sprintf "%s\n%s" s1 s2)
+  | <:class_str_item< type $t1$ = $t2$ >> ->
+      fun curr next pc ->
+        horiz_vertic
+          (fun () ->
+             sprintf "%stype %s = %s%s" pc.bef
+               (ctyp {(pc) with bef = ""; aft = ""} t1)
+               (ctyp {(pc) with bef = ""; aft = ""} t2) pc.aft)
+          (fun () -> not_impl "class_str_item type vertic" pc t1)
   | <:class_str_item< value $opt:mf$ $s$ = $e$ >> ->
       fun curr next pc ->
         horiz_vertic
