@@ -160,7 +160,8 @@ and str_item =
   | StUse of loc * string * (str_item * loc) list
   | StVal of loc * bool * (patt * expr) list
 and type_decl =
-  (loc * string) * (string * (bool * bool)) list * ctyp * (ctyp * ctyp) list
+  (loc * string) * (string * (bool * bool)) list * bool * ctyp *
+    (ctyp * ctyp) list
 and class_type =
     CtCon of loc * string list * ctyp list
   | CtFun of loc * ctyp * class_type

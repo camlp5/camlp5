@@ -1417,15 +1417,16 @@ Grammar.extend
             (Grammar.Entry.obj
                (type_parameter : 'type_parameter Grammar.Entry.e)));
        Gramext.Stoken ("", "=");
+       Gramext.Sopt (Gramext.Stoken ("", "private"));
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e));
        Gramext.Slist0
          (Gramext.Snterm
             (Grammar.Entry.obj (constrain : 'constrain Grammar.Entry.e)))],
       Gramext.action
-        (fun (cl : 'constrain list) (tk : 'ctyp) _
+        (fun (cl : 'constrain list) (tk : 'ctyp) (pf : string option) _
            (tpl : 'type_parameter list) (n : 'type_patt)
            (loc : Token.location) ->
-           (n, tpl, tk, cl : 'type_declaration))]];
+           (n, tpl, o2b pf, tk, cl : 'type_declaration))]];
     Grammar.Entry.obj (type_patt : 'type_patt Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("LIDENT", "")],

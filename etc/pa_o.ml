@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.20 2007/06/13 21:55:45 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.21 2007/06/27 18:58:38 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -814,11 +814,11 @@ EXTEND
   ;
   (* Type declaration *)
   type_declaration:
-    [ [ tpl = type_parameters; n = type_patt; "="; tk = type_kind;
-        cl = LIST0 constrain ->
-          (n, tpl, tk, cl)
+    [ [ tpl = type_parameters; n = type_patt; "="; pf = OPT "private";
+        tk = type_kind; cl = LIST0 constrain ->
+          (n, tpl, o2b pf, tk, cl)
       | tpl = type_parameters; n = type_patt; cl = LIST0 constrain ->
-          (n, tpl, <:ctyp< '$choose_tvar tpl$ >>, cl) ] ]
+          (n, tpl, False, <:ctyp< '$choose_tvar tpl$ >>, cl) ] ]
   ;
   type_patt:
     [ [ n = LIDENT -> (loc, n) ] ]

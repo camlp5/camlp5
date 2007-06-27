@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.5 2007/05/30 09:54:20 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.6 2007/06/27 18:58:38 deraugla Exp $ *)
 
 open Pcaml.Printer;
 open Format;
@@ -688,7 +688,7 @@ pr_type_decl.pr_levels :=
     pr_box ppf f x = fprintf ppf "@[%t@]" f;
     pr_rules =
       extfun Extfun.empty with
-      [ (b, ((_, tn), tp, te, cl)) ->
+      [ (b, ((_, tn), tp, pf, te, cl)) ->
           fun ppf curr next dg k ->
             fprintf ppf "%t%t@;<1 1>%a"
               (fun ppf ->

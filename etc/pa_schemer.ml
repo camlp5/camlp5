@@ -870,7 +870,7 @@ and type_declaration_list_se =
         | Slid loc n -> (n, loc, [])
         | se -> error se "type declaration" ]
       in
-      [((loc1, Pcaml.rename_id.val n1), tpl, ctyp_se se2, []) ::
+      [((loc1, Pcaml.rename_id.val n1), tpl, False, ctyp_se se2, []) ::
        type_declaration_list_se sel]
   | [] -> []
   | [se :: _] -> error se "type_declaration" ]

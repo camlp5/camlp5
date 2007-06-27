@@ -1,5 +1,5 @@
 ;; camlp4 ./pa_lispr.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-;; $Id: pa_lisp.ml,v 1.6 2006/10/27 10:52:02 deraugla Exp $
+;; $Id: pa_lisp.ml,v 1.7 2007/06/27 18:58:38 deraugla Exp $
 
 (open Pcaml)
 (open Stdpp)
@@ -539,7 +539,7 @@
                   (, n loc (list)))
                  ((se)
                   (error se "type declaration")))))
-     (list (, (, loc1 n1) tpl (ctyp_se se2) (list)) ::
+     (list (, (, loc1 n1) tpl False (ctyp_se se2) (list)) ::
            (type_declaration_list_se sel))))
   ((list) (list))
   ((list se :: _) (error se "type_declaration")))

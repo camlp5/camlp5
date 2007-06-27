@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_sml.ml,v 1.6 2006/12/26 08:54:09 deraugla Exp $ *)
+(* $Id: pa_sml.ml,v 1.7 2007/06/27 18:58:38 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -188,13 +188,13 @@ value extract_label_types loc tn tal cdol =
          [ Some anon_record_type ->
              let new_tn = tn ^ "_" ^ c in
              let loc = MLast.loc_of_ctyp anon_record_type in
-             let aux_def = ((loc, new_tn), [], anon_record_type, []) in
+             let aux_def = ((loc, new_tn), [], False, anon_record_type, []) in
              let tl = [<:ctyp< $lid:new_tn$ >>] in
              ([(loc, c, tl) :: cdl], [aux_def :: aux])
          | None -> ([(loc, c, tl) :: cdl], aux) ])
       cdol ([], [])
   in
-  [((loc, tn), tal, <:ctyp< [ $list:cdl$ ] >>, []) :: aux]
+  [((loc, tn), tal, False, <:ctyp< [ $list:cdl$ ] >>, []) :: aux]
 ;
 
 value function_of_clause_list loc xl =
@@ -638,10 +638,11 @@ EXTEND
   ;
   tb:
     [ [ x1 = tyvars; x2 = idd; "="; x3 = ctyp ->
-          ((loc, uncap x2), x1, x3, [])
+          ((loc, uncap x2), x1, False, x3, [])
       | x1 = tyvars; x2 = idd; "="; x3 = ctyp; "=="; x4 = dbrhs ->
           let x4 = List.map (fun (loc, c, tl, _) -> (loc, c, tl)) x4 in
-          ((loc, uncap x2), x1, <:ctyp< $x3$ == [ $list:x4$ ] >>, []) ] ]
+          ((loc, uncap x2), x1, False, <:ctyp< $x3$ == [ $list:x4$ ] >>,
+           []) ] ]
   ;
   tyvars:
     [ [ "'"; x1 = LIDENT -> [(x1, (False, False))]
@@ -742,9 +743,9 @@ EXTEND
   ;
   tyspec:
     [ [ x1 = tyvars; x2 = idd ->
-          ((loc, uncap x2), x1, <:ctyp< '$choose_tvar x1$ >>, [])
+          ((loc, uncap x2), x1, False, <:ctyp< '$choose_tvar x1$ >>, [])
       | x1 = tyvars; x2 = idd; "="; x3 = ctyp ->
-          ((loc, uncap x2), x1, x3, []) ] ]
+          ((loc, uncap x2), x1, False, x3, []) ] ]
   ;
   valspec:
     [ [ x1 = op_op; x2 = ident; ":"; x3 = ctyp ->

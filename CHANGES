@@ -1,6 +1,7 @@
 Camlp4s Version 4.02:
 ---------------------
 
+* [27 Jun 07] Added private flag in type declarations
 * [21 Jun 07] Added "let..in" in parsers
 * [14 Jun 07] Added html documentation for:
   - the "extfun" statement

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.21 2007/05/31 08:53:27 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.22 2007/06/27 18:58:38 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -634,8 +634,8 @@ EXTEND
     [ [ -> () ] ]
   ;
   sequence:
-    [ [ "let"; rf = SOPT "rec"; l = SLIST1 let_binding SEP "and";
-        [ "in" | ";" ]; el = SELF ->
+    [ [ "let"; rf = SOPT "rec"; l = SLIST1 let_binding SEP "and"; "in";
+        el = SELF ->
           Qast.List
             [Qast.Node "ExLet" [Qast.Loc; o2b rf; l; mksequence Qast.Loc el]]
       | e = expr; ";"; el = SELF -> Qast.Cons e el
@@ -752,9 +752,9 @@ EXTEND
     [ [ i = patt_label_ident; "="; p = ipatt -> Qast.Tuple [i; p] ] ]
   ;
   type_declaration:
-    [ [ n = type_patt; tpl = SLIST0 type_parameter; "="; tk = ctyp;
-        cl = SLIST0 constrain ->
-          Qast.Tuple [n; tpl; tk; cl] ] ]
+    [ [ n = type_patt; tpl = SLIST0 type_parameter; "="; pf = SOPT "private";
+        tk = ctyp; cl = SLIST0 constrain ->
+          Qast.Tuple [n; tpl; o2b pf; tk; cl] ] ]
   ;
   type_patt:
     [ [ n = a_LIDENT -> Qast.Tuple [Qast.Loc; n] ] ]

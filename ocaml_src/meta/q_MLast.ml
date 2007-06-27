@@ -1779,14 +1779,7 @@ Grammar.extend
              (Grammar.Entry.obj (a_list : 'a_list Grammar.Entry.e))],
           Gramext.action
             (fun (a : 'a_list) (loc : Token.location) -> (a : 'a_list))];
-       Gramext.srules
-         [[Gramext.Stoken ("", ";")],
-          Gramext.action
-            (fun (x : string) (loc : Token.location) -> (x : 'e__11));
-          [Gramext.Stoken ("", "in")],
-          Gramext.action
-            (fun (x : string) (loc : Token.location) -> (x : 'e__11))];
-       Gramext.Sself],
+       Gramext.Stoken ("", "in"); Gramext.Sself],
       Gramext.action
         (fun (el : 'sequence) _ (l : 'a_list) (rf : 'a_opt) _
            (loc : Token.location) ->
@@ -2204,6 +2197,20 @@ Grammar.extend
           Gramext.action
             (fun (a : 'a_list) (loc : Token.location) -> (a : 'a_list))];
        Gramext.Stoken ("", "=");
+       Gramext.srules
+         [[Gramext.Sopt
+             (Gramext.srules
+                [[Gramext.Stoken ("", "private")],
+                 Gramext.action
+                   (fun (x : string) (loc : Token.location) ->
+                      (Qast.Str x : 'e__11))])],
+          Gramext.action
+            (fun (a : 'e__11 option) (loc : Token.location) ->
+               (Qast.Option a : 'a_opt));
+          [Gramext.Snterm
+             (Grammar.Entry.obj (a_opt : 'a_opt Grammar.Entry.e))],
+          Gramext.action
+            (fun (a : 'a_opt) (loc : Token.location) -> (a : 'a_opt))];
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e));
        Gramext.srules
          [[Gramext.Slist0
@@ -2218,9 +2225,9 @@ Grammar.extend
           Gramext.action
             (fun (a : 'a_list) (loc : Token.location) -> (a : 'a_list))]],
       Gramext.action
-        (fun (cl : 'a_list) (tk : 'ctyp) _ (tpl : 'a_list) (n : 'type_patt)
-           (loc : Token.location) ->
-           (Qast.Tuple [n; tpl; tk; cl] : 'type_declaration))]];
+        (fun (cl : 'a_list) (tk : 'ctyp) (pf : 'a_opt) _ (tpl : 'a_list)
+           (n : 'type_patt) (loc : Token.location) ->
+           (Qast.Tuple [n; tpl; o2b pf; tk; cl] : 'type_declaration))]];
     Grammar.Entry.obj (type_patt : 'type_patt Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm

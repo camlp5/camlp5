@@ -242,18 +242,18 @@ value mkvariant (loc, c, tl) =
     (c, List.map ctyp tl, mkloc loc)
   END
 ;
-value type_decl tl cl =
+value type_decl tl priv cl =
   fun
   [ TyMan loc t (TyRec _ ltl) ->
-      mktype loc tl cl (Ptype_record (List.map mktrecord ltl) Public)
+      mktype loc tl cl (Ptype_record (List.map mktrecord ltl) priv)
         (Some (ctyp t))
   | TyMan loc t (TySum _ ctl) ->
-      mktype loc tl cl (Ptype_variant (List.map mkvariant ctl) Public)
+      mktype loc tl cl (Ptype_variant (List.map mkvariant ctl) priv)
         (Some (ctyp t))
   | TyRec loc ltl ->
-      mktype loc tl cl (Ptype_record (List.map mktrecord ltl) Public) None
+      mktype loc tl cl (Ptype_record (List.map mktrecord ltl) priv) None
   | TySum loc ctl ->
-      mktype loc tl cl (Ptype_variant (List.map mkvariant ctl) Public) None
+      mktype loc tl cl (Ptype_variant (List.map mkvariant ctl) priv) None
   | t ->
       let m =
         match t with
@@ -689,7 +689,8 @@ and when_expr e =
   | None -> expr e ]
 and mklabexp (lab, e) = (patt_label_long_id lab, expr e)
 and mkideexp (ide, e) = (ide, expr e)
-and mktype_decl ((loc, c), tl, td, cl) =
+and mktype_decl ((loc, c), tl, pf, td, cl) =
+  let priv = if pf then Private else Public in
   let cl =
     List.map
       (fun (t1, t2) ->
@@ -697,7 +698,7 @@ and mktype_decl ((loc, c), tl, td, cl) =
          (ctyp t1, ctyp t2, mkloc loc))
       cl
   in
-  (c, type_decl tl cl td)
+  (c, type_decl tl priv cl td)
 and module_type =
   fun
   [ MtAcc loc _ _ as f -> mkmty loc (Pmty_ident (module_type_long_id f))

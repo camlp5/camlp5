@@ -1,5 +1,5 @@
 ; camlp4 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.6 2006/10/27 10:52:02 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.7 2007/06/27 18:58:38 deraugla Exp $
 
 (open Pcaml)
 (open Stdpp)
@@ -814,7 +814,8 @@
                     (values n loc []))
                    ((se)
                     (error se "type declaration")))))
-       [(values (values loc1 (Pcaml.rename_id.val n1)) tpl (ctyp_se se2) []) .
+       [(values
+          (values loc1 (Pcaml.rename_id.val n1)) tpl False (ctyp_se se2) []) .
         (type_declaration_list_se sel)]))
     ([] [])
     ([se . _] (error se "type_declaration"))))

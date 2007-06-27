@@ -218,10 +218,10 @@ and sig_item floc sh =
         SgTyp
           (floc loc,
            List.map
-             (fun ((loc, x1), x2, x3, x4) ->
-                (floc loc, x1), x2, ctyp floc sh x3,
+             (fun ((loc, x1), x2, x3, x4, x5) ->
+                (floc loc, x1), x2, x3, ctyp floc sh x4,
                 List.map (fun (x1, x2) -> ctyp floc sh x1, ctyp floc sh x2)
-                  x4)
+                  x5)
              x1)
     | SgUse (loc, x1, x2) -> SgUse (loc, x1, x2)
     | SgVal (loc, x1, x2) -> SgVal (floc loc, x1, ctyp floc sh x2)
@@ -270,10 +270,10 @@ and str_item floc sh =
         StTyp
           (floc loc,
            List.map
-             (fun ((loc, x1), x2, x3, x4) ->
-                (floc loc, x1), x2, ctyp floc sh x3,
+             (fun ((loc, x1), x2, x3, x4, x5) ->
+                (floc loc, x1), x2, x3, ctyp floc sh x4,
                 List.map (fun (x1, x2) -> ctyp floc sh x1, ctyp floc sh x2)
-                  x4)
+                  x5)
              x1)
     | StUse (loc, x1, x2) -> StUse (loc, x1, x2)
     | StVal (loc, x1, x2) ->

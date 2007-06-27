@@ -529,7 +529,8 @@ and type_declaration_list_se =
         | Satom loc Alid n -> (n, loc, [])
         | se -> error se "type declaration" ]
       in
-      [((loc1, n1), tpl, ctyp_se se2, []) :: type_declaration_list_se sel]
+      [((loc1, n1), tpl, False, ctyp_se se2, []) ::
+       type_declaration_list_se sel]
   | [] -> []
   | [se :: _] -> error se "type_declaration" ]
 and type_parameter_se =

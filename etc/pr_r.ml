@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_r.ml,v 1.17 2007/05/31 08:53:27 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.18 2007/06/27 18:58:38 deraugla Exp $ *)
 
 open Pcaml.Printer;
 open Spretty;
@@ -444,7 +444,7 @@ value type_list b tdl k =
   HVbox
     [: `HVbox [: :];
        listwbws
-         (fun b ((_, tn), tp, te, cl) k ->
+         (fun b ((_, tn), tp, pf, te, cl) k ->
             let tn = var_escaped tn in
             HVbox
               [: `HVbox [: b; `S LR tn; type_params tp [: `S LR "=" :] :];

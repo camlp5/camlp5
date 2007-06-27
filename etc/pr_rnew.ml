@@ -594,7 +594,7 @@ value type_var pc (tv, (p, m)) =
 
 (* type_decl: particularity for the value of 'pc.aft' ->
    see 'value_binding' *)
-value type_decl pc ((_, tn), tp, te, cl) =
+value type_decl pc ((_, tn), tp, pf, te, cl) =
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s = %s%s%s" pc.bef

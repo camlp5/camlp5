@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.19 2007/06/04 12:11:17 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.20 2007/06/27 18:58:38 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -447,9 +447,9 @@ EXTEND
     [ [ i = patt_label_ident; "="; p = ipatt -> (i, p) ] ]
   ;
   type_declaration:
-    [ [ n = type_patt; tpl = LIST0 type_parameter; "="; tk = ctyp;
-        cl = LIST0 constrain ->
-          (n, tpl, tk, cl) ] ]
+    [ [ n = type_patt; tpl = LIST0 type_parameter; "="; pf = OPT "private";
+        tk = ctyp; cl = LIST0 constrain ->
+          (n, tpl, o2b pf, tk, cl) ] ]
   ;
   type_patt:
     [ [ n = LIDENT -> (loc, n) ] ]
