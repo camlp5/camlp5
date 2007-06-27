@@ -8,7 +8,7 @@ open Pretty;
 open Pcaml.NewPrinters;
 open Prtools;
 
-value not_impl name ind b x k =
+value not_impl name pc x =
   let desc =
     if Obj.tag (Obj.repr x) = Obj.tag (Obj.repr "") then
       sprintf "\"%s\"" (Obj.magic x)
@@ -16,11 +16,12 @@ value not_impl name ind b x k =
       "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
     else "int_val = " ^ string_of_int (Obj.magic x)
   in
-  sprintf "%s\"pr_extend, not impl: %s; %s\"%s" b name (String.escaped desc) k
+  sprintf "%s\"pr_extend, not impl: %s; %s\"%s" pc.bef name
+    (String.escaped desc) pc.aft
 ;
 
-value bar_before elem ind b x k = elem ind (sprintf "%s| " b) x k;
-value semi_after elem ind b x k = elem ind b x (sprintf ";%s" k);
+value bar_before elem pc x = elem {(pc) with bef = sprintf "%s| " pc.bef} x;
+value semi_after elem pc x = elem {(pc) with aft = sprintf ";%s" pc.aft} x;
 
 (* Extracting *)
 
@@ -224,108 +225,141 @@ value unextend_body e =
 
 (* Printing *)
 
-value expr ind b z k = pr_expr.pr_fun "top" ind b z k;
-value patt ind b z k = pr_patt.pr_fun "top" ind b z k;
+value expr pc z = pr_expr.pr_fun "top" pc z;
+value patt pc z = pr_patt.pr_fun "top" pc z;
 
-value string ind b s k = sprintf "%s\"%s\"%s" b s k;
+value string pc s = sprintf "%s\"%s\"%s" pc.bef s pc.aft;
 
-value position ind b pos k =
+value position pc pos =
   match pos with
-  [ None -> sprintf "%s%s" b k
-  | Some Gramext.First -> sprintf "%s FIRST%s" b k
-  | Some Gramext.Last -> sprintf "%s LAST%s" b k
-  | Some (Gramext.Before s) -> sprintf "%s BEFORE%s" b k
+  [ None -> sprintf "%s%s" pc.bef pc.aft
+  | Some Gramext.First -> sprintf "%s FIRST%s" pc.bef pc.aft
+  | Some Gramext.Last -> sprintf "%s LAST%s" pc.bef pc.aft
+  | Some (Gramext.Before s) -> sprintf "%s BEFORE%s" pc.bef pc.aft
   | Some (Gramext.After s) ->
-      sprintf "%s AFTER %s%s" b (string ind "" s "") k
+      sprintf "%s AFTER %s%s" pc.bef (string {(pc) with bef = ""; aft = ""} s)
+        pc.aft
   | Some (Gramext.Level s) ->
-      sprintf "%s LEVEL %s%s" b (string ind "" s "") k ]
+      sprintf "%s LEVEL %s%s" pc.bef (string {(pc) with bef = ""; aft = ""} s)
+        pc.aft ]
 ;
 
-value action expr ind b a k = expr ind b a k;
+value action expr pc a = expr pc a;
 
-value token ind b tok k =
+value token pc tok =
   match tok with
   [ Left (con, prm) ->
-      if con = "" then string ind b prm k
-      else if prm = "" then sprintf "%s%s%s" b con k
-      else sprintf "%s%s %s%s" b con (string ind "" prm "") k
+      if con = "" then string pc prm
+      else if prm = "" then sprintf "%s%s%s" pc.bef con pc.aft
+      else
+        sprintf "%s%s %s%s" pc.bef con
+          (string {(pc) with bef = ""; aft = ""} prm) pc.aft
   | Right <:expr< ($str:con$, $x$) >> ->
-      sprintf "%s%s $%s$%s" b con (expr ind "" x "") k
+      sprintf "%s%s $%s$%s" pc.bef con (expr {(pc) with bef = ""; aft = ""} x)
+        pc.aft
   | Right _ -> assert False ]
 ;
 
-value indval i = {ind = i};
-
-value rec rule ind b (sl, a) k =
+value rec rule pc (sl, a) =
   match a with
-  [ None -> not_impl "rule 1" ind b sl k
+  [ None -> not_impl "rule 1" pc sl
   | Some a ->
       if sl = [] then
-        action expr (shi ind 4)
-          (sprintf "%s->%s " b (comm_bef (indval 1) (MLast.loc_of_expr a))) a
-          k
+        action expr
+          {(pc) with ind = pc.ind + 4;
+           bef =
+             sprintf "%s->%s " pc.bef (comm_bef pc (MLast.loc_of_expr a))}
+          a
       else
         match
           horiz_vertic
             (fun () ->
-               let s = hlistl (semi_after psymbol) psymbol ind "" sl "" in
-               Some (sprintf "%s%s ->" b s))
+               let s =
+                 hlistl (semi_after psymbol) psymbol
+                   {(pc) with bef = ""; aft = ""} sl
+               in
+               Some (sprintf "%s%s ->" pc.bef s))
             (fun () -> None)
         with
         [ Some s1 ->
             horiz_vertic
-              (fun () -> sprintf "%s %s%s" s1 (action expr ind "" a "") k)
               (fun () ->
-                 let s2 = action expr (shi ind 4) (tab (shi ind 4)) a k in
+                 sprintf "%s %s%s" s1
+                   (action expr {(pc) with bef = ""; aft = ""} a) pc.aft)
+              (fun () ->
+                 let s2 =
+                   action expr
+                     {(pc) with ind = pc.ind + 4; bef = tab (pc.ind + 4)} a
+                 in
                  sprintf "%s\n%s" s1 s2)
         | None ->
             let sl = List.map (fun s -> (s, ";")) sl in
-            let s1 = plist psymbol 0 (shi ind 2) b sl " ->" in
-            let s2 = action expr (shi ind 4) (tab (shi ind 4)) a k in
+            let s1 =
+              plist psymbol 0 {(pc) with ind = pc.ind + 2; aft = " ->"} sl
+            in
+            let s2 =
+              action expr
+                {(pc) with ind = pc.ind + 4; bef = tab (pc.ind + 4)} a
+            in
             sprintf "%s\n%s" s1 s2 ] ]
-and psymbol ind b (p, s) k =
+and psymbol pc (p, s) =
   match p with
-  [ None -> symbol ind b s k
+  [ None -> symbol pc s
   | Some p ->
       horiz_vertic
         (fun () ->
-           sprintf "%s%s = %s%s" b (patt ind "" p "") (symbol ind "" s "") k)
+           sprintf "%s%s = %s%s" pc.bef
+             (patt {(pc) with bef = ""; aft = ""} p)
+             (symbol {(pc) with bef = ""; aft = ""} s) pc.aft)
         (fun () ->
-           let s1 = patt ind b p " =" in
-           let s2 = symbol (shi ind 2) (tab (shi ind 2)) s k in
+           let s1 = patt {(pc) with aft = " ="} p in
+           let s2 =
+             symbol {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} s
+           in
            sprintf "%s\n%s" s1 s2) ]
-and symbol ind b sy k =
+and symbol pc sy =
   match sy with
-  [ Snterm e -> expr ind b e k
-  | Snterml e s -> expr ind b e (sprintf " LEVEL \"%s\"%s" s k)
-  | Slist0 sy -> sprintf "%sLIST0 %s" b (simple_symbol ind "" sy k)
+  [ Snterm e -> expr pc e
+  | Snterml e s -> expr {(pc) with aft = sprintf " LEVEL \"%s\"%s" s pc.aft} e
+  | Slist0 sy ->
+      sprintf "%sLIST0 %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
   | Slist0sep sy sep ->
-      sprintf "%sLIST0 %s SEP %s" b (simple_symbol ind "" sy "")
-        (simple_symbol ind "" sep k)
-  | Slist1 sy -> sprintf "%sLIST1 %s" b (simple_symbol ind "" sy k)
+      sprintf "%sLIST0 %s SEP %s" pc.bef
+        (simple_symbol {(pc) with bef = ""; aft = ""} sy)
+        (simple_symbol {(pc) with bef = ""} sep)
+  | Slist1 sy ->
+      sprintf "%sLIST1 %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
   | Slist1sep sy sep ->
-      sprintf "%sLIST1 %s SEP %s" b (simple_symbol ind "" sy "")
-        (simple_symbol ind "" sep k)
-  | Sopt sy -> sprintf "%sOPT %s" b (simple_symbol ind "" sy k)
-  | Stoken tok -> token ind b tok k
-  | sy -> simple_symbol ind b sy k ]
-and simple_symbol ind b sy k =
+      sprintf "%sLIST1 %s SEP %s" pc.bef
+        (simple_symbol {(pc) with bef = ""; aft = ""} sy)
+        (simple_symbol {(pc) with bef = ""} sep)
+  | Sopt sy ->
+      sprintf "%sOPT %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
+  | Stoken tok -> token pc tok
+  | sy -> simple_symbol pc sy ]
+and simple_symbol pc sy =
   match sy with  
-  [ Snterm <:expr< $lid:s$ >> -> sprintf "%s%s%s" b s k
-  | Sself -> sprintf "%sSELF%s" b k
-  | Snext -> sprintf "%sNEXT%s" b k
+  [ Snterm <:expr< $lid:s$ >> -> sprintf "%s%s%s" pc.bef s pc.aft
+  | Sself -> sprintf "%sSELF%s" pc.bef pc.aft
+  | Snext -> sprintf "%sNEXT%s" pc.bef pc.aft
   | Srules rl ->
       horiz_vertic
         (fun () ->
-           hlist2 rule (bar_before rule) ind (sprintf "%s[ " b) rl
-             ("", sprintf " ]%s" k))
+           hlist2 rule (bar_before rule)
+             {(pc) with bef = sprintf "%s[ " pc.bef;
+              aft = ("", sprintf " ]%s" pc.aft)}
+             rl)
         (fun () ->
-           vlist2 rule (bar_before rule) ind (sprintf "%s[ " b) rl
-             ("", sprintf " ]%s" k))
-  | Stoken (Left ("", _) | Left (_, "")) -> symbol ind b sy k
+           vlist2 rule (bar_before rule)
+             {(pc) with bef = sprintf "%s[ " pc.bef;
+              aft = ("", sprintf " ]%s" pc.aft)}
+             rl)
+  | Stoken (Left ("", _) | Left (_, "")) -> symbol pc sy
   | Snterml _ _ | Slist0 _ | Slist0sep _ _ | Slist1 _ | Slist1sep _ _ ->
-      symbol ind (sprintf "%s(" b) sy (sprintf ")%s" k)
-  | sy -> not_impl "simple_symbol" ind b sy k ]
+      symbol
+        {(pc) with bef = sprintf "%s(" pc.bef; aft = sprintf ")%s" pc.aft}
+        sy
+  | sy -> not_impl "simple_symbol" pc sy ]
 ;
 
 value label =
@@ -342,69 +376,86 @@ value assoc =
   | None -> "" ]
 ;
 
-value level ind b (lab, ass, rl) k =
+value level pc (lab, ass, rl) =
   match (lab, ass) with
   [ (None, None) ->
-      if rl = [] then sprintf "%s[ ]%s" b k
+      if rl = [] then sprintf "%s[ ]%s" pc.bef pc.aft
       else
-        vlist2 rule (bar_before rule) (shi ind 2) (sprintf "%s[ " b) rl
-          ("", sprintf " ]%s" k)
+        vlist2 rule (bar_before rule)
+          {(pc) with ind = pc.ind + 2; bef = sprintf "%s[ " pc.bef;
+           aft = ("", sprintf " ]%s" pc.aft)}
+          rl
   | _ ->
       let s1 =
         match (lab, ass) with
-        [ (Some _, None) -> sprintf "%s%s" b (label lab)
-        | (None, Some _) -> sprintf "%s%s" b (assoc ass)
-        | (Some _, Some _) -> sprintf "%s%s %s" b (label lab) (assoc ass)
+        [ (Some _, None) -> sprintf "%s%s" pc.bef (label lab)
+        | (None, Some _) -> sprintf "%s%s" pc.bef (assoc ass)
+        | (Some _, Some _) -> sprintf "%s%s %s" pc.bef (label lab) (assoc ass)
         | _ -> assert False ]
       in
       let s2 =
-        if rl = [] then not_impl "level" ind "" rl k
+        if rl = [] then not_impl "level" {(pc) with bef = ""} rl
         else
-          vlist2 rule (bar_before rule) (shi ind 2)
-            (sprintf "%s[ " (tab (shi ind 2))) rl ("", sprintf " ]%s" k)
+          vlist2 rule (bar_before rule)
+            {(pc) with ind = pc.ind + 2;
+             bef = sprintf "%s[ " (tab (pc.ind + 2));
+             aft = ("", sprintf " ]%s" pc.aft)} rl
       in
       sprintf "%s\n%s" s1 s2 ]
 ;
 
-value entry ind b (e, pos, ll) k =
-  sprintf "%s%s%s:%s\n%s\n%s;%s" (comm_bef ind (MLast.loc_of_expr e)) b
-    (expr ind "" e "") (position ind "" pos "")
-    (vlist2 level (bar_before level) (shi ind 2)
-       (sprintf "%s[ " (tab (shi ind 2))) ll ("", " ]")) (tab ind) k
+value entry pc (e, pos, ll) =
+  sprintf "%s%s%s:%s\n%s\n%s;%s" (comm_bef pc (MLast.loc_of_expr e)) pc.bef
+    (expr {(pc) with bef = ""; aft = ""} e)
+    (position {(pc) with bef = ""; aft = ""} pos)
+    (vlist2 level (bar_before level)
+       {(pc) with ind = pc.ind + 2; bef = sprintf "%s[ " (tab (pc.ind + 2));
+        aft = ("", " ]")}
+        ll)
+    (tab pc.ind) pc.aft
 ;
 
-value extend_body ind b (globals, entries) k =
+value extend_body pc (globals, entries) =
   match globals with
-  [ [] -> vlist entry ind b entries k
+  [ [] -> vlist entry pc entries
   | _ ->
       let globals = List.map (fun g -> (g, "")) globals in
-      let s1 = plist expr 2 ind (sprintf "%sGLOBAL: " b) globals ";" in
-      let s2 = vlist entry ind (tab ind) entries k in
+      let s1 =
+        plist expr 2 {(pc) with bef = sprintf "%sGLOBAL: " pc.bef; aft = ";"}
+          globals
+      in
+      let s2 = vlist entry {(pc) with bef = tab pc.ind} entries in
       sprintf "%s\n%s" s1 s2 ]
 ;
 
-value extend ind b e k =
+value extend pc e =
   match e with
   [ <:expr< Grammar.extend $e$ >> ->
       try
         let ex = unextend_body e in
-        let s = extend_body (shi ind 2) (tab (shi ind 2)) ex "" in
-        sprintf "%sEXTEND\n%s\n%sEND%s" b s (tab ind) k
+        let s =
+          extend_body
+            {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""} ex
+        in
+        sprintf "%sEXTEND\n%s\n%sEND%s" pc.bef s (tab pc.ind) pc.aft
       with
       [ Not_found ->
-          sprintf "%sGrammar.extend\n%s" b
-            (expr (shi ind 2) (sprintf "%s(" (tab (shi ind 2))) e k) ]
-  | e -> expr ind b e k ]
+          sprintf "%sGrammar.extend\n%s" pc.bef
+            (expr
+               {(pc) with ind = pc.ind + 2;
+                bef = sprintf "%s(" (tab (pc.ind + 2))}
+               e) ]
+  | e -> expr pc e ]
 ;
 
 let lev = find_pr_level "apply" pr_expr.pr_levels in
 lev.pr_rules :=
   extfun lev.pr_rules with
   [ <:expr< Grammar.extend $_$ >> as e ->
-      fun curr next ind b k -> next ind b e k ];
+      fun curr next pc -> next pc e ];
 
 let lev = find_pr_level "simple" pr_expr.pr_levels in
 lev.pr_rules :=
   extfun lev.pr_rules with
   [ <:expr< Grammar.extend $_$ >> as e ->
-      fun curr next ind b k -> extend ind b e k ];
+      fun curr next pc -> extend pc e ];

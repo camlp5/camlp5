@@ -27,7 +27,7 @@ type alt 'a 'b =
   | Right of 'b ]
 ;
 
-value not_impl name ind b x k =
+value not_impl name pc x =
   let desc =
     if Obj.tag (Obj.repr x) = Obj.tag (Obj.repr "") then
       sprintf "\"%s\"" (Obj.magic x)
@@ -35,11 +35,12 @@ value not_impl name ind b x k =
       "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
     else "int_val = " ^ string_of_int (Obj.magic x)
   in
-  sprintf "%s\"pr_rp, not impl: %s; %s\"%s" b name (String.escaped desc) k
+  sprintf "%s\"pr_rp, not impl: %s; %s\"%s" pc.bef name (String.escaped desc)
+    pc.aft
 ;
 
-value bar_before elem ind b x k = elem ind (sprintf "%s| " b) x k;
-value semi_after elem ind b x k = elem ind b x (sprintf ";%s" k);
+value bar_before elem pc x = elem {(pc) with bef = sprintf "%s| " pc.bef} x;
+value semi_after elem pc x = elem {(pc) with aft = sprintf ";%s" pc.aft} x;
 
 (* Rebuilding syntax tree *)
 
@@ -230,15 +231,16 @@ value unparser_body e =
 
 (* Printing *)
 
-value expr ind b z k = pr_expr.pr_fun "top" ind b z k;
-value patt ind b z k = pr_patt.pr_fun "top" ind b z k;
+value expr pc z = pr_expr.pr_fun "top" pc z;
+value patt pc z = pr_patt.pr_fun "top" pc z;
 
-value sequence_box ind bfun expr el k =
-  let s1 = bfun " do {" in
+value sequence_box pc expr el =
+  let s1 = pc.bef " do {" in
   let s2 =
-    vlistl (semi_after expr) expr (shi ind 2) (tab (shi ind 2)) el ""
+    vlistl (semi_after expr) expr
+      {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""} el
   in
-  let s3 = sprintf "%s%s%s" (tab ind) "}" k in
+  let s3 = sprintf "%s%s%s" (tab pc.ind) "}" pc.aft in
   sprintf "%s\n%s\n%s" s1 s2 s3
 ;
 
@@ -248,63 +250,85 @@ value ident_option =
   | None -> "" ]
 ;
 
-value stream_patt_comp ind b spc k =
+value stream_patt_comp pc spc =
   match spc with
-  [ SpTrm _ p None -> patt (shi ind 1) (sprintf "%s`" b) p k
+  [ SpTrm _ p None ->
+      patt {(pc) with ind = pc.ind + 1; bef = sprintf "%s`" pc.bef} p
   | SpTrm _ p (Some e) ->
       horiz_vertic
         (fun () ->
-           sprintf "%s`%s when %s%s" b (patt (shi ind 1) "" p "")
-             (expr ind "" e "") k)
+           sprintf "%s`%s when %s%s" pc.bef
+             (patt {(pc) with ind = pc.ind + 1; bef = ""; aft = ""} p)
+             (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
         (fun () ->
-           let s1 = patt ind (sprintf "%s`" b) p "" in
+           let s1 = patt {(pc) with bef = sprintf "%s`" pc.bef; aft = ""} p in
            let s2 =
              horiz_vertic
                (fun () ->
-                  sprintf "%swhen %s%s" (tab (shi ind 1)) (expr ind "" e "")
-                    k)
+                  sprintf "%swhen %s%s" (tab (pc.ind + 1))
+                    (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
                (fun () ->
-                  let s1 = sprintf "%swhen" (tab (shi ind 1)) in
-                  let s2 = expr (shi ind 3) (tab (shi ind 3)) e k in
+                  let s1 = sprintf "%swhen" (tab (pc.ind + 1)) in
+                  let s2 =
+                    expr {(pc) with ind = pc.ind + 3; bef = tab (pc.ind + 3)}
+                      e
+                  in
                   sprintf "%s\n%s" s1 s2)
            in
            sprintf "%s\n%s" s1 s2)
   | SpNtr _ p e ->
       horiz_vertic
         (fun () ->
-           sprintf "%s%s = %s%s" b (patt ind "" p "") (expr ind "" e "") k)
+           sprintf "%s%s = %s%s" pc.bef
+             (patt {(pc) with bef = ""; aft = ""} p)
+             (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
         (fun () ->
-           let s1 = patt ind b p " =" in
-           let s2 = expr (shi ind 2) (tab (shi ind 2)) e k in
+           let s1 = patt {(pc) with aft = " ="} p in
+           let s2 =
+             expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
+           in
            sprintf "%s\n%s" s1 s2)
   | SpLet _ p e ->
       horiz_vertic (fun () -> sprintf "\n")
         (fun () ->
            horiz_vertic
              (fun () ->
-                sprintf "%slet %s = %s in%s" b (patt ind "" p "")
-                  (expr ind "" e "") k)
+                sprintf "%slet %s = %s in%s" pc.bef
+                  (patt {(pc) with bef = ""; aft = ""} p)
+                  (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
              (fun () ->
-                let s1 = patt ind (sprintf "%slet " b) p " =" in
-                let s2 = expr (shi ind 2) (tab (shi ind 2)) e "" in
-                let s3 = sprintf "%sin%s" (tab ind) k in
+                let s1 =
+                  patt {(pc) with bef = sprintf "%slet " pc.bef; aft = " ="} p
+                in
+                let s2 =
+                  expr
+                    {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+                     aft = ""} e
+                in
+                let s3 = sprintf "%sin%s" (tab pc.ind) pc.aft in
                 sprintf "%s\n%s\n%s" s1 s2 s3))
-  | SpStr _ p -> patt ind b p k
-  | _ -> not_impl "stream_patt_comp" ind b spc k ]
+  | SpStr _ p -> patt pc p
+  | _ -> not_impl "stream_patt_comp" pc spc ]
 ;
 
-value stream_patt_comp_err ind b (spc, err) k =
+value stream_patt_comp_err pc (spc, err) =
   match err with
-  [ SpoNoth -> stream_patt_comp ind b spc k
-  | SpoBang -> stream_patt_comp ind b spc (sprintf " !%s" k)
+  [ SpoNoth -> stream_patt_comp pc spc
+  | SpoBang -> stream_patt_comp {(pc) with aft = sprintf " !%s" pc.aft} spc
   | SpoQues e ->
       horiz_vertic
         (fun () ->
-           sprintf "%s%s ? %s%s" b (stream_patt_comp ind "" spc "")
-             (expr ind "" e "") k)
+           sprintf "%s%s ? %s%s" pc.bef
+             (stream_patt_comp {(pc) with bef = ""; aft = ""} spc)
+             (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
         (fun () ->
-           let s1 = stream_patt_comp ind b spc "" in
-           let s2 = expr (shi ind 4) (sprintf "%s? " (tab (shi ind 2))) e k in
+           let s1 = stream_patt_comp {(pc) with aft = ""} spc in
+           let s2 =
+             expr
+               {(pc) with ind = pc.ind + 4;
+                bef = sprintf "%s? " (tab (pc.ind + 2))}
+               e
+           in
            sprintf "%s\n%s" s1 s2) ]
 ;
 
@@ -314,59 +338,70 @@ value spc_kont =
   | _ -> ";" ]
 ;
 
-value stream_patt ind b sp k =
+value stream_patt pc sp =
   horiz_vertic
     (fun () ->
-       sprintf "%s%s%s" b
+       sprintf "%s%s%s" pc.bef
          (hlistl (semi_after stream_patt_comp_err) stream_patt_comp_err
-            ind "" sp "") k)
+            {(pc) with bef = ""; aft = ""} sp) pc.aft)
     (fun () ->
        let sp = List.map (fun spc -> (spc, spc_kont spc)) sp in
-       plist stream_patt_comp_err 0 (shi ind 3) b sp k)
+       plist stream_patt_comp_err 0 {(pc) with ind = pc.ind + 3} sp)
 ;
 
-value parser_case ind b (sp, po, e) k =
+value parser_case pc (sp, po, e) =
   match sp with
   [ [] ->
       horiz_vertic
         (fun () ->
-           sprintf "%s[: :]%s -> %s%s" b (ident_option po) (expr ind "" e "")
-             k)
+           sprintf "%s[: :]%s -> %s%s" pc.bef (ident_option po)
+             (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
         (fun () ->
            match flatten_sequence e with
            [ Some el ->
-               sequence_box ind
-                 (fun k -> sprintf "%s[: :]%s ->%s" b (ident_option po) k)
-                 expr el k
+               sequence_box
+                 {(pc) with
+                  bef k = sprintf "%s[: :]%s ->%s" pc.bef (ident_option po) k}
+                 expr el
            | None ->
-               let s1 = sprintf "%s[: :]%s ->" b (ident_option po) in
-               let s2 = expr (shi ind 2) (tab (shi ind 2)) e k in
+               let s1 = sprintf "%s[: :]%s ->" pc.bef (ident_option po) in
+               let s2 =
+                 expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
+               in
                sprintf "%s\n%s" s1 s2 ])
   | _ ->
       horiz_vertic
         (fun () ->
-           sprintf "%s[: %s :]%s -> %s%s" b (stream_patt ind "" sp "")
-             (ident_option po) (expr ind "" e "") k)
+           sprintf "%s[: %s :]%s -> %s%s" pc.bef
+             (stream_patt {(pc) with bef = ""; aft = ""} sp)
+             (ident_option po) (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
         (fun () ->
            match flatten_sequence e with
            [ Some el ->
-               sequence_box ind
-                 (fun k ->
-                    stream_patt ind (sprintf "%s[: " b) sp
-                      (sprintf " :]%s ->%s" (ident_option po) k))
-                 expr el k
+               sequence_box
+                 {(pc) with
+                  bef k =
+                    stream_patt
+                      {(pc) with bef = sprintf "%s[: " pc.bef;
+                       aft = sprintf " :]%s ->%s" (ident_option po) k}
+                      sp}
+                 expr el
            | None ->
                let s1 =
-                 stream_patt ind (sprintf "%s[: " b) sp
-                   (sprintf " :]%s ->" (ident_option po))
+                 stream_patt
+                   {(pc) with bef = sprintf "%s[: " pc.bef;
+                    aft = sprintf " :]%s ->" (ident_option po)}
+                   sp
                in
-               let s2 = expr (shi ind 2) (tab (shi ind 2)) e k in
+               let s2 =
+                 expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
+               in
                sprintf "%s\n%s" s1 s2 ]) ]
 ;
 
-value parser_case_sh ind b spe k = parser_case (shi ind 2) b spe k;
+value parser_case_sh pc spe = parser_case {(pc) with ind = pc.ind + 2} spe;
 
-value parser_body ind b (po, spel) k =
+value parser_body pc (po, spel) =
   let s1 = ident_option po in
   let s2o =
     match spel with
@@ -374,7 +409,8 @@ value parser_body ind b (po, spel) k =
         horiz_vertic
           (fun () ->
              let s =
-               sprintf "%s%s %s%s" b s1 (parser_case ind "" spe "") k
+               sprintf "%s%s %s%s" pc.bef s1
+                 (parser_case {(pc) with bef = ""; aft = ""} spe) pc.aft
              in
              Some s)
           (fun () -> None)
@@ -384,33 +420,41 @@ value parser_body ind b (po, spel) k =
   [ Some s -> s
   | None ->
       match spel with
-      [ [] -> sprintf "%s []%s" b k
+      [ [] -> sprintf "%s []%s" pc.bef pc.aft
       | [spe] ->
-          let s2 = parser_case (shi ind 2) (tab (shi ind 2)) spe k in
-          sprintf "%s%s\n%s" b s1 s2
+          let s2 =
+            parser_case {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
+              spe
+          in
+          sprintf "%s%s\n%s" pc.bef s1 s2
       | _ ->
           let s2 =
-            vlist2 parser_case_sh (bar_before parser_case_sh) ind
-              (sprintf "%s[ " (tab ind)) spel ("", sprintf " ]%s" k)
+            vlist2 parser_case_sh (bar_before parser_case_sh)
+              {(pc) with bef = sprintf "%s[ " (tab pc.ind);
+               aft = ("", sprintf " ]%s" pc.aft)}
+              spel
           in
-          sprintf "%s%s\n%s" b s1 s2 ] ]
+          sprintf "%s%s\n%s" pc.bef s1 s2 ] ]
 ;
 
-value print_parser ind b e k =
+value print_parser pc e =
   match e with
   [ <:expr< fun (strm__ : Stream.t _) -> $e$ >> ->
       let pa = unparser_body e in
-      parser_body ind (sprintf "%sparser" b) pa k
-  | e -> expr ind b e k ]
+      parser_body {(pc) with bef = sprintf "%sparser" pc.bef} pa
+  | e -> expr pc e ]
 ;
 
-value print_match_with_parser ind b e k =
+value print_match_with_parser pc e =
   match e with
   [ <:expr< let (strm__ : Stream.t _) = $e1$ in $e2$ >> ->
       let pa = unparser_body e2 in
-      let b = sprintf "%smatch %s with parser" b (expr ind "" e1 "") in
-      parser_body ind b pa k
-  | e -> expr ind b e k ]
+      let b =
+        sprintf "%smatch %s with parser" pc.bef
+          (expr {(pc) with bef = ""; aft = ""} e1)
+      in
+      parser_body {(pc) with bef = b} pa
+  | e -> expr pc e ]
 ;
 
 (* Printers extensions *)
@@ -423,12 +467,12 @@ let lev = find_pr_level "top" pr_expr.pr_levels in
 lev.pr_rules :=
   extfun lev.pr_rules with
   [ <:expr< fun (strm__ : Stream.t _) -> $_$ >> as e ->
-      fun curr next ind b k -> print_parser ind b e k
+      fun curr next pc -> print_parser pc e
   | <:expr< let (strm__ : Stream.t _) = $_$ in $_$ >> as e ->
-      fun curr next ind b k -> print_match_with_parser ind b e k ];
+      fun curr next pc -> print_match_with_parser pc e ];
 
 let lev = find_pr_level "dot" pr_expr.pr_levels in
 lev.pr_rules :=
   extfun lev.pr_rules with
   [ <:expr< Stream.sempty >> ->
-      fun curr next ind b k -> sprintf "%s[: :]%s" b k ];
+      fun curr next pc -> sprintf "%s[: :]%s" pc.bef pc.aft ];

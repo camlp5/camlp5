@@ -4,10 +4,9 @@
 
 open Pcaml.NewPrinters;
 
-type pr_gfun 'a 'b = pr_ind -> pr_bef -> 'a -> 'b -> string;
+type pr_gfun 'a 'b = pr_context string 'b -> 'a -> string;
 
-value shi : pr_ind -> int -> pr_ind;
-value tab : pr_ind -> string;
+value tab : int -> string;
 
 value hlist : pr_fun 'a -> pr_fun (list 'a);
    (** horizontal list
@@ -66,8 +65,8 @@ value flatten_sequence : MLast.expr -> option (list MLast.expr);
 value source : ref string;
    (** The initial source string, which must be set by the pretty printing
        kit. Used by [comm_bef] below. *)
-value comm_bef : pr_ind -> MLast.loc -> string;
-   (** [comm_bef ind loc] get the comment from the source (in the global
+value comm_bef : pr_context _ _ -> MLast.loc -> string;
+   (** [comm_bef pc loc] get the comment from the source (in the global
        variable [source] just before the given location [loc]. May be
-       reindented using [ind]. Returns the empty string if no comment
+       reindented using [pc.ind]. Returns the empty string if no comment
        found. *)

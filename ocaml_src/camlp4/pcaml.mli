@@ -110,12 +110,11 @@ module NewPrinters :
         mutable pr_levels : 'a pr_level list }
     and 'a pr_level = { pr_label : string; mutable pr_rules : 'a pr_rule }
     and 'a pr_rule =
-      ('a, ('a pr_fun -> 'a pr_fun -> pr_ind -> pr_bef -> pr_aft -> string))
+      ('a, ('a pr_fun -> 'a pr_fun -> (string, string) pr_context -> string))
        Extfun.t
-    and 'a pr_fun = pr_ind -> pr_bef -> 'a -> pr_aft -> string
-    and pr_ind = { ind : int }
-    and pr_bef = string
-    and pr_aft = string
+    and 'a pr_fun = (string, string) pr_context -> 'a -> string
+    and ('bef, 'aft) pr_context =
+      { ind : int; bef : 'bef; aft : 'aft; dang : string }
     ;;
     val printer : 'a -> string -> 'b printer_t;;
     val pr_expr : MLast.expr printer_t;;

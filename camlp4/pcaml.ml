@@ -358,25 +358,27 @@ module NewPrinters =
     and pr_level 'a = { pr_label : string; pr_rules : mutable pr_rule 'a }
     and pr_rule 'a =
       Extfun.t 'a
-        (pr_fun 'a -> pr_fun 'a -> pr_ind -> pr_bef -> pr_aft -> string)
-    and pr_fun 'a = pr_ind -> pr_bef -> 'a -> pr_aft -> string
-    and pr_ind = { ind : int }
-    and pr_bef = string
-    and pr_aft = string;
+        (pr_fun 'a -> pr_fun 'a -> pr_context string string -> string)
+    and pr_fun 'a = pr_context string string -> 'a  -> string
+    and pr_context 'bef 'aft =
+      { ind : int;
+        bef : 'bef;
+        aft : 'aft;
+        dang : string };
     value printer loc_of name = do {
       let pr_fun name pr lab =
         loop False pr.pr_levels where rec loop app =
           fun
           [ [] ->
-              fun ind b z k ->
+              fun pc z ->
                 failwith
                   (Printf.sprintf "unable to print %s%s" name
                      (if lab = "" then "" else " \"" ^ lab ^ "\""))
           | [lev :: levl] ->
               if app || lev.pr_label = lab then
                 let next = loop True levl in
-                curr where rec curr ind b z k =
-                  Extfun.apply lev.pr_rules z curr next ind b k
+                curr where rec curr pc z =
+                  Extfun.apply lev.pr_rules z curr next pc
               else loop app levl ]
       in
       let pr = {pr_fun = fun []; pr_levels = []} in
