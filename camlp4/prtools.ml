@@ -227,20 +227,26 @@ module Buff =
 value rev_extract_comment strm =
   let rec find_comm len =
     parser
-    [ [: `' '; a = find_comm (Buff.store len ' ') :] -> a
-    | [: `'\t'; a = find_comm (Buff.mstore len (String.make 8 ' ')) :] -> a
-    | [: `'\n'; a = find_comm (Buff.store len '\n') :] -> a
-    | [: `')'; a = find_star_bef_rparen (Buff.store len ')') :] -> a
+    [ [: `' '; a = find_comm (Buff.store len ' ') ! :] -> a
+    | [: `'\t'; a = find_comm (Buff.mstore len (String.make 8 ' ')) ! :] -> a
+    | [: `'\n'; a = find_comm (Buff.store len '\n') ! :] -> a
+    | [: `')'; a = find_star_bef_rparen (Buff.store len ')') ! :] -> a
     | [: :] -> 0 ]
   and find_star_bef_rparen len =
     parser
-    [ [: `'*'; a = insert (Buff.store len '*') :] -> a
+    [ [: `'*'; a = insert (Buff.store len '*') ! :] -> a
     | [: :] -> 0 ]
   and insert len =
     parser
-    [ [: `')'; a = find_star_bef_rparen_in_comm (Buff.store len ')') :] -> a
-    | [: `'*'; a = find_lparen_aft_star (Buff.store len '*') :] -> a
-    | [: `x; a = insert (Buff.store len x) :] -> a
+    [ [: `')'; a = find_star_bef_rparen_in_comm (Buff.store len ')') ! :] -> a
+    | [: `'*'; a = find_lparen_aft_star (Buff.store len '*') ! :] -> a
+    | [: `'"'; a = insert_string (Buff.store len '"') ! :] -> a
+    | [: `x; a = insert (Buff.store len x) ! :] -> a
+    | [: :] -> len ]
+  and insert_string len =
+    parser
+    [ [: `'"'; a = insert (Buff.store len '"') ! :] -> a
+    | [: `x; a = insert_string (Buff.store len x) ! :] -> a
     | [: :] -> len ]
   and find_star_bef_rparen_in_comm len =
     parser
@@ -252,14 +258,14 @@ value rev_extract_comment strm =
     | [: a = insert len :] -> a ]
   and while_space len =
     parser
-    [ [: `' '; a = while_space (Buff.store len ' ') :] -> a
+    [ [: `' '; a = while_space (Buff.store len ' ') ! :] -> a
     | [: `'\t'; a = while_space (Buff.mstore len (String.make 8 ' ')) :] -> a
-    | [: `'\n'; a = while_space (Buff.store len '\n') :] -> a
-    | [: `')'; a = find_star_bef_rparen_again len :] -> a
+    | [: `'\n'; a = while_space (Buff.store len '\n') ! :] -> a
+    | [: `')'; a = find_star_bef_rparen_again len ! :] -> a
     | [: :] -> len ]
   and find_star_bef_rparen_again len =
     parser
-    [ [: `'*'; a = insert (Buff.mstore len ")*") :] -> a
+    [ [: `'*'; a = insert (Buff.mstore len ")*") ! :] -> a
     | [: :] -> len ]
   in
   let len = find_comm 0 strm in

@@ -218,54 +218,33 @@ module Buff =
 let rev_extract_comment strm =
   let rec find_comm len (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
-      Some ' ' ->
-        Stream.junk strm__;
-        begin try find_comm (Buff.store len ' ') strm__ with
-          Stream.Failure -> raise (Stream.Error "")
-        end
+      Some ' ' -> Stream.junk strm__; find_comm (Buff.store len ' ') strm__
     | Some '\t' ->
         Stream.junk strm__;
-        begin try find_comm (Buff.mstore len (String.make 8 ' ')) strm__ with
-          Stream.Failure -> raise (Stream.Error "")
-        end
-    | Some '\n' ->
-        Stream.junk strm__;
-        begin try find_comm (Buff.store len '\n') strm__ with
-          Stream.Failure -> raise (Stream.Error "")
-        end
+        find_comm (Buff.mstore len (String.make 8 ' ')) strm__
+    | Some '\n' -> Stream.junk strm__; find_comm (Buff.store len '\n') strm__
     | Some ')' ->
-        Stream.junk strm__;
-        begin try find_star_bef_rparen (Buff.store len ')') strm__ with
-          Stream.Failure -> raise (Stream.Error "")
-        end
+        Stream.junk strm__; find_star_bef_rparen (Buff.store len ')') strm__
     | _ -> 0
   and find_star_bef_rparen len (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
-      Some '*' ->
-        Stream.junk strm__;
-        begin try insert (Buff.store len '*') strm__ with
-          Stream.Failure -> raise (Stream.Error "")
-        end
+      Some '*' -> Stream.junk strm__; insert (Buff.store len '*') strm__
     | _ -> 0
   and insert len (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
       Some ')' ->
         Stream.junk strm__;
-        begin try
-          find_star_bef_rparen_in_comm (Buff.store len ')') strm__
-        with
-          Stream.Failure -> raise (Stream.Error "")
-        end
+        find_star_bef_rparen_in_comm (Buff.store len ')') strm__
     | Some '*' ->
-        Stream.junk strm__;
-        begin try find_lparen_aft_star (Buff.store len '*') strm__ with
-          Stream.Failure -> raise (Stream.Error "")
-        end
-    | Some x ->
-        Stream.junk strm__;
-        begin try insert (Buff.store len x) strm__ with
-          Stream.Failure -> raise (Stream.Error "")
-        end
+        Stream.junk strm__; find_lparen_aft_star (Buff.store len '*') strm__
+    | Some '\"' ->
+        Stream.junk strm__; insert_string (Buff.store len '\"') strm__
+    | Some x -> Stream.junk strm__; insert (Buff.store len x) strm__
+    | _ -> len
+  and insert_string len (strm__ : _ Stream.t) =
+    match Stream.peek strm__ with
+      Some '\"' -> Stream.junk strm__; insert (Buff.store len '\"') strm__
+    | Some x -> Stream.junk strm__; insert_string (Buff.store len x) strm__
     | _ -> len
   and find_star_bef_rparen_in_comm len (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
@@ -287,11 +266,7 @@ let rev_extract_comment strm =
     | _ -> insert len strm__
   and while_space len (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
-      Some ' ' ->
-        Stream.junk strm__;
-        begin try while_space (Buff.store len ' ') strm__ with
-          Stream.Failure -> raise (Stream.Error "")
-        end
+      Some ' ' -> Stream.junk strm__; while_space (Buff.store len ' ') strm__
     | Some '\t' ->
         Stream.junk strm__;
         begin try
@@ -300,23 +275,12 @@ let rev_extract_comment strm =
           Stream.Failure -> raise (Stream.Error "")
         end
     | Some '\n' ->
-        Stream.junk strm__;
-        begin try while_space (Buff.store len '\n') strm__ with
-          Stream.Failure -> raise (Stream.Error "")
-        end
-    | Some ')' ->
-        Stream.junk strm__;
-        begin try find_star_bef_rparen_again len strm__ with
-          Stream.Failure -> raise (Stream.Error "")
-        end
+        Stream.junk strm__; while_space (Buff.store len '\n') strm__
+    | Some ')' -> Stream.junk strm__; find_star_bef_rparen_again len strm__
     | _ -> len
   and find_star_bef_rparen_again len (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
-      Some '*' ->
-        Stream.junk strm__;
-        begin try insert (Buff.mstore len ")*") strm__ with
-          Stream.Failure -> raise (Stream.Error "")
-        end
+      Some '*' -> Stream.junk strm__; insert (Buff.mstore len ")*") strm__
     | _ -> len
   in
   let len = find_comm 0 strm in
