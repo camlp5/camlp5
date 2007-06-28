@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.23 2007/06/28 04:11:18 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.24 2007/06/28 09:40:36 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -1173,6 +1173,8 @@ EXTEND
       | i = QUESTIONIDENT; ":"; "("; p = patt; ":"; t = ctyp; "=";
         e = expr; ")" ->
           <:patt< ? $i$ : ( $p$ : $t$ = $e$ ) >>
+      | i = QUESTIONIDENT; ":"; "("; p = patt; ")" ->
+          <:patt< ? $i$ : ( $p$ ) >>
       | i = QUESTIONIDENT -> <:patt< ? $i$ >>
       | "?"; "("; i = LIDENT; "="; e = expr; ")" ->
           <:patt< ? ( $lid:i$ = $e$ ) >>

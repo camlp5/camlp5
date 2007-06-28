@@ -1156,7 +1156,7 @@ value expr_top =
                " " pc.aft)
           (fun () ->
              sprintf "%sdo {%s%s%s}%s" pc.bef "\n"
-               (vlistl (semi_after expr) expr
+               (vlistl (semi_after (comm_expr expr)) (comm_expr expr)
                   {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
                    aft = ""}
                   el)

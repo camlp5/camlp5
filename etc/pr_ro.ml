@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_ro.ml,v 1.25 2007/06/28 04:53:06 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.26 2007/06/28 09:40:36 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -295,7 +295,17 @@ lev.pr_rules :=
                pc.aft)
           (fun () -> not_impl "patt ?(p=e) vertic" pc p)
   | <:patt< ? $i$ : ($p$ $opt:eo$) >> ->
-      fun curr next pc -> failwith "label in pr_ro 3"
+      fun curr next pc ->
+        horiz_vertic
+          (fun () ->
+             sprintf "%s?%s:(%s%s)%s" pc.bef i
+               (patt {(pc) with bef = ""; aft = ""} p)
+               (match eo with
+                [ Some e ->
+                    sprintf " = %s" (expr {(pc) with bef = ""; aft = ""} e)
+                | None -> "" ])
+               pc.aft)
+          (fun () -> not_impl "patt ?i:(p=e) vertic" pc i)
   | <:patt< ~ $s$ >> ->
       fun curr next pc -> sprintf "%s~%s%s" pc.bef s pc.aft
   | <:patt< ~ $s$ : $p$ >> ->
@@ -416,9 +426,9 @@ let lev = find_pr_level "simple" pr_ctyp.pr_levels in
 lev.pr_rules :=
   extfun lev.pr_rules with
   [ <:ctyp< ? $i$ : $t$ >> ->
-      fun curr next pc -> ctyp {(pc) with bef = sprintf "%s?%s:" pc.bef i} t
+      fun curr next pc -> curr {(pc) with bef = sprintf "%s?%s:" pc.bef i} t
   | <:ctyp< ~ $i$ : $t$ >> ->
-      fun curr next pc -> ctyp {(pc) with bef = sprintf "%s~%s:" pc.bef i} t
+      fun curr next pc -> curr {(pc) with bef = sprintf "%s~%s:" pc.bef i} t
   | <:ctyp< < $list:ml$ $opt:v$ > >> ->
       fun curr next pc ->
         if ml = [] then
