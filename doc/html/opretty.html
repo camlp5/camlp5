@@ -51,15 +51,15 @@ new ones. The main ones are:</p>
 
 <ul>
 
-<li>"pr_r.ml": pretty print in revised syntax.</li>
+<li>"etc/pr_r.ml": pretty print in revised syntax.</li>
 
-<li>"pr_o.ml": pretty print in normal syntax.</li>
+<li>"etc/pr_o.ml": pretty print in normal syntax.</li>
 
-<li>"pr_rp.ml": rebuilding parsers in their original revised syntax.</li>
+<li>"etc/pr_rp.ml": rebuilding parsers in their original revised syntax.</li>
 
-<li>"pr_op.ml": rebuilding parsers in their original normal syntax.</li>
+<li>"etc/pr_op.ml": rebuilding parsers in their original normal syntax.</li>
 
-<li>"pr_extend.ml": rebuilding EXTEND in its original syntax.</li>
+<li>"etc/pr_extend.ml": rebuilding EXTEND in its original syntax.</li>
 
 </ul>
 
@@ -84,15 +84,15 @@ in the module <tt>Pcaml.Printer</tt>. They are:</p>
 contains the mutable list of the mutable printing "levels". To extend
 a specific level, the function <tt>Pcaml.Printer.find_pr_level</tt>
 allows to find the desired level by its name, and the extension can be
-done using the "<a href="extfun.html">extend</a>" statement.</p>
+done using the "<a href="extfun.html">extfun</a>" statement.</p>
 
 <p>All extensible functions are defined by pattern matching, whose
 type is the syntax tree type to be printed (<tt>MLast.expr</tt> for
 expressions, <tt>MLast.patt</tt> for patterns, and so on). They all
-return a function holding five parameters and returning the pretty
+return a function holding three parameters and returning the pretty
 printed string.</p>
 
-<p>These five parameters are:</p>
+<p>These three parameters are:</p>
 
 <ul>
 
@@ -102,14 +102,22 @@ printed string.</p>
 <li><tt>next</tt> : the function of the next pretty printing level. Same
 usage than <tt>curr</tt> above.</li>
 
-<li><tt>ctx</tt> : the current context, a record including the
-indentation (a number).</li>
+<li><tt>pc</tt> : the printing context, a record containing :
 
-<li><tt>b</tt> : what has to be displayed from the beginning of the
-line before the data.</li>
+  <ul>
 
-<li><tt>k</tt> : what has to be displayed up to the end of the line
-after the data.</li>
+  <li><tt>ind</tt> : the current indentation (a number).</li>
+
+  <li><tt>bef</tt> : what has to be displayed before the data.</li>
+
+  <li><tt>aft</tt> : what has to be displayed after the data.</li>
+
+  <li><tt>dang</tt> : dangling string, information necessary for normal
+  syntax, to know whether parenthesisation is required or not.</li>
+
+  </ul>
+
+</li>
 
 </ul>
 
@@ -122,13 +130,17 @@ parameter of the <tt>horiz_vertic</tt> function), just use
 <tt>sprintf</tt> (of that module) concating:</p>
 
 <ul>
-<li>The <tt>b</tt> value, which is string representing the current
+
+<li>The <tt>pr.bef</tt> value, which is string representing the current
 indendation string, and the possible things which have to be displayed
 before the data.</li>
+
 <li>The pretty printed data where elements are separated by spaces,
 parentheses, commas, depending of how they have to be displayed.</li>
-<li>The <tt>k</tt> value, which is the continuation string up to the
-end of the line.</li>
+
+<li>The <tt>pr.aft</tt> value, which is the continuation string up to
+the end of the line.</li>
+
 </ul>
 
 <p>To display the thing <em>vertically</em>, i.e. in several lines,
@@ -145,7 +157,6 @@ kits:</p>
 <li><tt>pr_rp.cmo</tt> : for rebuilding parsers and stream in their
 initial revised syntax</li>
 <li><tt>pr_o.cmo</tt> : for basic normal syntax</li>
-<li><tt>pr_oo.cmo</tt> : for objects, labels, variants in normal syntax</li>
 <li><tt>pr_op.cmo</tt> : for rebuilding parsers and stream in their
 initial normal syntax</li>
 <li><tt>pr_extend.cmo</tt> : for the <tt>EXTEND</tt> statement</li>
