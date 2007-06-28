@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.22 2007/06/28 04:11:18 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.23 2007/06/28 17:34:28 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -549,11 +549,11 @@ EXTEND
       | "let"; rf = OPT "rec"; lb = LIST1 let_binding SEP "and"; "in";
         ce = SELF ->
           <:class_expr< let $opt:o2b rf$ $list:lb$ in $ce$ >> ]
-    | "apply" NONA
+    | "apply" LEFTA
       [ ce = SELF; e = expr LEVEL "label" ->
           <:class_expr< $ce$ $e$ >> ]
     | "simple"
-      [ ci = class_longident; "["; ctcl = LIST0 ctyp SEP ","; "]" ->
+      [ ci = class_longident; "["; ctcl = LIST1 ctyp SEP ","; "]" ->
           <:class_expr< $list:ci$ [ $list:ctcl$ ] >>
       | ci = class_longident -> <:class_expr< $list:ci$ >>
       | "object"; cspo = OPT class_self_patt; cf = class_structure; "end" ->

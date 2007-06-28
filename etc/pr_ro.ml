@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_ro.ml,v 1.26 2007/06/28 09:40:36 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.27 2007/06/28 17:34:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -159,15 +159,30 @@ value class_decl pc ci =
 
 value variant_decl pc pv =
   match pv with
-  [ <:poly_variant< `$s$ >> ->
-       sprintf "%s`%s%s" pc.bef s pc.aft
-  | <:poly_variant< `$s$ of $opt:ao$ $list:tl$ >> ->
+  [ <:poly_variant< `$c$ >> ->
+       sprintf "%s`%s%s" pc.bef c pc.aft
+  | <:poly_variant< `$c$ of $opt:ao$ $list:tl$ >> ->
        horiz_vertic
          (fun () ->
-            sprintf "%s`%s of %s%s%s" pc.bef s (if ao then "& " else "")
+            sprintf "%s`%s of %s%s%s" pc.bef c (if ao then "& " else "")
               (hlist2 ctyp (amp_before ctyp)
                  {(pc) with bef = ""; aft = ("", "")} tl) pc.aft)
-         (fun () -> not_impl "variant_decl 2 vertic" pc s)
+         (fun () ->
+            let s1 =
+              sprintf "%s`%s of%s" pc.bef c (if ao then " &" else "")
+            in
+            let s2 =
+               horiz_vertic
+                 (fun () ->
+                    sprintf "%s%s%s" (tab (pc.ind + 6))
+                      (hlist2 ctyp (amp_before ctyp)
+                         {(pc) with bef = ""; aft = ("", "")} tl) pc.aft)
+                 (fun () ->
+                    let tl = List.map (fun t -> (t, " &")) tl in
+                    plist ctyp 2
+                      {(pc) with ind = pc.ind + 6; bef = tab (pc.ind + 5)} tl)
+             in
+             sprintf "%s\n%s" s1 s2)
   | <:poly_variant< $t$ >> ->
        ctyp pc t ]
 ;
@@ -180,10 +195,14 @@ value variant_decl_list char pc pvl =
           aft = ("", sprintf " ]%s" pc.aft)}
          pvl)
     (fun () ->
-       vlist2 variant_decl (bar_before variant_decl)
-         {(pc) with bef = sprintf "%s[ %c " pc.bef char;
-          aft = ("", sprintf " ]%s" pc.aft)}
-         pvl)
+       let s1 = sprintf "%s[ %c" pc.bef char in
+       let s2 =
+         vlist2 variant_decl (bar_before variant_decl)
+           {(pc) with bef = tab (pc.ind + 2);
+            aft = ("", sprintf " ]%s" pc.aft)}
+           pvl
+       in
+       sprintf "%s\n%s" s1 s2)
 ;
 
 value rec class_longident pc cl =

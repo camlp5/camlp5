@@ -28,7 +28,6 @@ val gmake : unit -> (string * string) Token.glexer;;
 -      * [("CHAR", s)] is the character constant [s].
 -      * [("QUOTATION", "t:s")] is a quotation [t] holding the string [s].
 -      * [("ANTIQUOT", "t:s")] is an antiquotation [t] holding the string [s].
--      * [("LOCATE", "i:s")] is a location directive at pos [i] holding [s].
 -      * [("EOI", "")] is the end of input.
 
        The associated token patterns in the EXTEND statement hold the

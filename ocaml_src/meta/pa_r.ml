@@ -1731,7 +1731,7 @@ Grammar.extend
       Gramext.action
         (fun (ce : 'class_fun_def) (p : 'ipatt) _ (loc : Token.location) ->
            (MLast.CeFun (loc, p, ce) : 'class_expr))];
-     Some "apply", Some Gramext.NonA,
+     Some "apply", Some Gramext.LeftA,
      [[Gramext.Sself;
        Gramext.Snterml
          (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e), "label")],
@@ -1774,7 +1774,7 @@ Grammar.extend
          (Grammar.Entry.obj
             (class_longident : 'class_longident Grammar.Entry.e));
        Gramext.Stoken ("", "[");
-       Gramext.Slist0sep
+       Gramext.Slist1sep
          (Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e)),
           Gramext.Stoken ("", ","));
        Gramext.Stoken ("", "]")],

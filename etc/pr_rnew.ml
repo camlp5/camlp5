@@ -61,6 +61,51 @@ value rec is_irrefut_patt =
   | _ -> False ]
 ;
 
+value rec get_defined_ident =
+  fun
+  [ <:patt< $_$ . $_$ >> -> []
+  | <:patt< _ >> -> []
+  | <:patt< $lid:x$ >> -> [x]
+  | <:patt< ($p1$ as $p2$) >> -> get_defined_ident p1 @ get_defined_ident p2
+  | <:patt< $int:_$ >> -> []
+  | <:patt< $flo:_$ >> -> []
+  | <:patt< $str:_$ >> -> []
+  | <:patt< $chr:_$ >> -> []
+  | <:patt< [| $list:pl$ |] >> -> List.flatten (List.map get_defined_ident pl)
+  | <:patt< ($list:pl$) >> -> List.flatten (List.map get_defined_ident pl)
+  | <:patt< $uid:_$ >> -> []
+  | <:patt< ` $_$ >> -> []
+  | <:patt< # $list:_$ >> -> []
+  | <:patt< $p1$ $p2$ >> -> get_defined_ident p1 @ get_defined_ident p2
+  | <:patt< { $list:lpl$ } >> ->
+      List.flatten (List.map (fun (lab, p) -> get_defined_ident p) lpl)
+  | <:patt< $p1$ | $p2$ >> -> get_defined_ident p1 @ get_defined_ident p2
+  | <:patt< $p1$ .. $p2$ >> -> get_defined_ident p1 @ get_defined_ident p2
+  | <:patt< ($p$ : $_$) >> -> get_defined_ident p
+  | <:patt< ~ $_$ >> -> []
+  | <:patt< ~ $_$ : $p$ >> -> get_defined_ident p
+  | <:patt< ? $_$ >> -> []
+  | <:patt< ? $_$ : ($p$) >> -> get_defined_ident p
+  | <:patt< ? $_$ : ($p$ = $e$) >> -> get_defined_ident p
+  | <:patt< $anti:p$ >> -> get_defined_ident p
+  | _ -> [] ]
+;
+
+value un_irrefut_patt p =
+  let loc = MLast.loc_of_patt p in
+  match get_defined_ident p with
+  [ [] -> (<:patt< _ >>, <:expr< () >>)
+  | [i] -> (<:patt< $lid:i$ >>, <:expr< $lid:i$ >>)
+  | il ->
+      let (upl, uel) =
+        List.fold_right
+          (fun i (upl, uel) ->
+             ([<:patt< $lid:i$ >> :: upl], [<:expr< $lid:i$ >> :: uel]))
+          il ([], [])
+      in
+      (<:patt< ($list:upl$) >>, <:expr< ($list:uel$) >>) ]
+;            
+
 value not_impl name pc x =
   let desc =
     if Obj.tag (Obj.repr x) = Obj.tag (Obj.repr "") then
@@ -470,6 +515,19 @@ value value_binding pc (p, e) =
    to this function to a call to "binding expr" above.
 *)
 value let_binding pc (p, e) =
+  let (p, e) =
+    if is_irrefut_patt p then (p, e)
+    else
+      let loc = MLast.loc_of_expr e in
+      let (p, e) =
+        loop p e where rec loop p =
+          fun
+          [ <:expr< fun $p1$ -> $e$ >> -> loop <:patt< $p$ $p1$ >> e
+          | e -> (p, e) ]
+      in
+      let (up, ue) = un_irrefut_patt p in
+      (up, <:expr< match $e$ with [ $p$ -> $ue$ ] >>)
+  in
   let (pl, e) = expr_fun_args e in
   let pl = [p :: pl] in
   let expr_wh = if flag_where_after_let_eq.val then expr_wh else expr in
