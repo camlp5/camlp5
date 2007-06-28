@@ -1,5 +1,5 @@
 ; camlp4 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.8 2007/06/28 02:30:24 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.9 2007/06/28 04:11:18 deraugla Exp $
 
 (open Pcaml)
 (open Stdpp)
@@ -358,7 +358,7 @@
      ((Sexpr loc [(Slid _ "type") se1 se2])
       (let* ((tn (mod_ident_se se1))
              (te (ctyp_se se2)))
-         (MLast.WcTyp loc tn [] te)))
+         (MLast.WcTyp loc tn [] False te)))
      (se (error se "with constr"))))
   (sig_item_se
     (lambda_match

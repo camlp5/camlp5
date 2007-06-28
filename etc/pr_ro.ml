@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_ro.ml,v 1.23 2007/06/28 03:04:13 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.24 2007/06/28 04:11:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -170,7 +170,10 @@ value field pc (s, t) =
     (fun () ->
        sprintf "%s%s : %s%s" pc.bef s (ctyp {(pc) with bef = ""; aft = ""} t)
          pc.aft)
-    (fun () -> not_impl "field vertic" pc s)
+    (fun () ->
+       let s1 = sprintf "%s%s :" pc.bef s in
+       let s2 = ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t in
+       sprintf "%s\n%s" s1 s2)
 ;
 
 value field_expr pc (s, e) =
@@ -311,15 +314,34 @@ let lev = find_pr_level "simple" pr_expr.pr_levels in
 lev.pr_rules :=
   extfun lev.pr_rules with
   [ <:expr< ( $e$ : $t$ :> $t2$ ) >> ->
-      fun curr next pc -> not_impl "expr : :>" pc e
+      fun curr next pc ->
+        horiz_vertic
+          (fun () ->
+             sprintf "%s(%s : %s :> %s)%s" pc.bef
+               (expr {(pc) with bef = ""; aft = ""} e)
+               (ctyp {(pc) with bef = ""; aft = ""} t)
+               (ctyp {(pc) with bef = ""; aft = ""} t2) pc.aft)
+          (fun () ->
+             let s1 =
+               expr {(pc) with bef = sprintf "%s(" pc.bef; aft = " :"} e
+             in
+             let s2 =
+               ctyp {(pc) with bef = tab (pc.ind + 1); aft = " :>"} t
+             in
+             let s3 =
+               ctyp
+                 {(pc) with bef = tab (pc.ind + 1);
+                  aft = sprintf ")%s" pc.aft}
+                 t2
+             in
+             sprintf "%s\n%s\n%s" s1 s2 s3)
   | <:expr< ( $e$ :> $t$ ) >> ->
       fun curr next pc ->
         horiz_vertic
           (fun () ->
              sprintf "%s(%s :> %s)%s" pc.bef
                (expr {(pc) with bef = ""; aft = ""} e)
-               (ctyp {(pc) with bef = ""; aft = ""} t)
-               pc.aft)
+               (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
           (fun () ->
              let s1 =
                expr
@@ -574,7 +596,14 @@ value class_expr_simple =
 
 value class_sig_item_top =
   extfun Extfun.empty with
-  [ <:class_sig_item< method $opt:priv$ $s$ : $t$ >> ->
+  [ <:class_sig_item< inherit $ct$ >> ->
+      fun curr next pc ->
+        horiz_vertic
+          (fun () ->
+             sprintf "%sinherit %s%s" pc.bef
+               (class_type {(pc) with bef = ""; aft = ""} ct) pc.aft)
+          (fun () -> not_impl "class_sig_item inherit vertic" pc ct)
+  | <:class_sig_item< method $opt:priv$ $s$ : $t$ >> ->
       fun curr next pc ->
         horiz_vertic
           (fun () ->

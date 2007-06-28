@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.7 2007/06/28 02:30:24 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.8 2007/06/28 04:11:18 deraugla Exp $ *)
 
 open Pcaml.Printer;
 open Format;
@@ -720,7 +720,7 @@ pr_with_constr.pr_levels :=
     pr_box ppf f x = fprintf ppf "@[%t@]" f;
     pr_rules =
       extfun Extfun.empty with
-      [ MLast.WcTyp _ m tp te ->
+      [ <:with_constr< type $m$ $list:tp$ = $te$ >> ->
           fun ppf curr next dg k ->
             fprintf ppf "(type@ %t@;<1 1>%a"
               (fun ppf ->

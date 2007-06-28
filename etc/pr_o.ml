@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_o.ml,v 1.18 2007/06/28 02:30:24 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.19 2007/06/28 04:11:18 deraugla Exp $ *)
 
 open Pcaml.Printer;
 open Spretty;
@@ -514,7 +514,7 @@ and with_constraints b icl _ k =
   HVbox [: `HVbox [: :]; listwbws with_constraint b (S LR "and") icl "" k :]
 and with_constraint b wc _ k =
   match wc with
-  [ MLast.WcTyp _ p al e ->
+  [ <:with_constr< type $p$ $list:al$ = $opt:_$ $e$ >> ->
       let params =
         match al with
         [ [] -> [: :]
@@ -526,7 +526,7 @@ and with_constraint b wc _ k =
               [: `HVbox b; `S LR "type"; params;
                  mod_ident p "" [: `S LR "=" :] :];
            `ctyp e "" k :]
-  | MLast.WcMod _ sl me ->
+  | <:with_constr< module $sl$ = $me$ >> ->
       HVbox
         [: b; `S LR "module"; mod_ident sl "" [: `S LR "=" :];
            `module_expr me "" k :] ]

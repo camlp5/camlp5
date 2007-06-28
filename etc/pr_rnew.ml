@@ -2170,12 +2170,13 @@ value module_expr_simple =
 
 value with_constraint pc wc =
   match wc with
-  [ <:with_constr< type $sl$ $list:tpl$ = $t$ >> ->
+  [ <:with_constr< type $sl$ $list:tpl$ = $opt:pf$ $t$ >> ->
       let b =
         let k = hlist type_var {(pc) with bef = ""; aft = " = "} tpl in
         mod_ident {(pc) with bef = sprintf "%swith type " pc.bef; aft = k} sl
       in
-      ctyp {(pc) with bef = b} t
+      let pf = if pf then "private " else "" in
+      ctyp {(pc) with bef = sprintf "%s%s" b pf} t
   | <:with_constr< module $sl$ = $me$ >> ->
       module_expr
         {(pc) with

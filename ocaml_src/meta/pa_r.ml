@@ -617,11 +617,12 @@ Grammar.extend
             (Grammar.Entry.obj
                (type_parameter : 'type_parameter Grammar.Entry.e)));
        Gramext.Stoken ("", "=");
+       Gramext.Sopt (Gramext.Stoken ("", "private"));
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
-        (fun (t : 'ctyp) _ (tpl : 'type_parameter list) (i : 'mod_ident) _
-           (loc : Token.location) ->
-           (MLast.WcTyp (loc, i, tpl, t) : 'with_constr))]];
+        (fun (t : 'ctyp) (pf : string option) _ (tpl : 'type_parameter list)
+           (i : 'mod_ident) _ (loc : Token.location) ->
+           (MLast.WcTyp (loc, i, tpl, o2b pf, t) : 'with_constr))]];
     Grammar.Entry.obj (expr : 'expr Grammar.Entry.e), None,
     [Some "top", Some Gramext.RightA,
      [[Gramext.Stoken ("", "while"); Gramext.Sself; Gramext.Stoken ("", "do");

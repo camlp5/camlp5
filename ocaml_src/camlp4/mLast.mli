@@ -45,10 +45,12 @@ and poly_variant =
   | PvInh of ctyp
 ;;
 
+type type_var = string * (bool * bool);;
+
 type 'a class_infos =
   { ciLoc : loc;
     ciVir : bool;
-    ciPrm : loc * (string * (bool * bool)) list;
+    ciPrm : loc * type_var list;
     ciNam : string;
     ciExp : 'a }
 ;;
@@ -135,7 +137,7 @@ and sig_item =
   | SgUse of loc * string * (sig_item * loc) list
   | SgVal of loc * string * ctyp
 and with_constr =
-    WcTyp of loc * string list * (string * (bool * bool)) list * ctyp
+    WcTyp of loc * string list * type_var list * bool * ctyp
   | WcMod of loc * string list * module_expr
 and module_expr =
     MeAcc of loc * module_expr * module_expr
@@ -161,7 +163,7 @@ and str_item =
   | StVal of loc * bool * (patt * expr) list
 and type_decl =
   { tdNam : loc * string;
-    tdPrm : (string * (bool * bool)) list;
+    tdPrm : type_var list;
     tdPrv : bool;
     tdDef : ctyp;
     tdCon : (ctyp * ctyp) list }

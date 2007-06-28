@@ -377,7 +377,7 @@ and with_constr_se =
   [ Sexpr loc [Slid _ "type"; se1; se2] ->
       let tn = mod_ident_se se1 in
       let te = ctyp_se se2 in
-      MLast.WcTyp loc tn [] te
+      MLast.WcTyp loc tn [] False te
   | se -> error se "with constr" ]
 and sig_item_se =
   fun

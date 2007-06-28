@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_sml.ml,v 1.8 2007/06/28 02:30:24 deraugla Exp $ *)
+(* $Id: pa_sml.ml,v 1.9 2007/06/28 04:11:18 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -783,7 +783,7 @@ EXTEND
   ;
   whspec:
     [ [ "type"; x1 = tyvars; x2 = sqid; "="; x3 = ctyp ->
-          MLast.WcTyp loc x2 x1 x3
+          MLast.WcTyp loc x2 x1 False x3
       | x1 = sqid; "="; x2 = qid -> MLast.WcMod loc x1 x2 ] ]
   ;
   module_type:

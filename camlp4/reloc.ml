@@ -215,7 +215,7 @@ and sig_item floc sh =
 and with_constr floc sh =
   self where rec self =
     fun
-    [ WcTyp loc x1 x2 x3 -> WcTyp (floc loc) x1 x2 (ctyp floc sh x3)
+    [ WcTyp loc x1 x2 x3 x4 -> WcTyp (floc loc) x1 x2 x3 (ctyp floc sh x4)
     | WcMod loc x1 x2 -> WcMod (floc loc) x1 (module_expr floc sh x2) ]
 and module_expr floc sh =
   self where rec self =

@@ -1,5 +1,5 @@
 (* camlp4r *)
-(* $Id: pr_depend.ml,v 1.10 2007/06/28 02:30:24 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.11 2007/06/28 04:11:18 deraugla Exp $ *)
 
 open MLast;
 
@@ -146,7 +146,7 @@ and module_type =
   | x -> not_impl "module_type" x ]
 and with_constr =
   fun
-  [ WcTyp _ _ _ t -> ctyp t
+  [ WcTyp _ _ _ _ t -> ctyp t
   | x -> not_impl "with_constr" x ]
 and sig_item =
   fun

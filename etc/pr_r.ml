@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_r.ml,v 1.19 2007/06/28 02:30:24 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.20 2007/06/28 04:11:18 deraugla Exp $ *)
 
 open Pcaml.Printer;
 open Spretty;
@@ -504,7 +504,8 @@ and with_constraints b icl k =
   HVbox [: `HVbox [: :]; listwbws with_constraint b (S LR "and") icl k :]
 and with_constraint b wc k =
   match wc with
-  [ <:with_constr< type $p$ $list:al$ = $e$ >> ->
+  [ MLast.WcTyp _ _ _ True _ -> failwith "fuck"
+  | <:with_constr< type $p$ $list:al$ = $e$ >> ->
       let params =
         match al with
         [ [] -> [: :]

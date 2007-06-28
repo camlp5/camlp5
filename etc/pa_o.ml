@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.22 2007/06/28 02:30:24 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.23 2007/06/28 04:11:18 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -509,8 +509,9 @@ EXTEND
   (* "with" constraints (additional type equations over signature
      components) *)
   with_constr:
-    [ [ "type"; tpl = type_parameters; i = mod_ident; "="; t = ctyp ->
-          MLast.WcTyp loc i tpl t
+    [ [ "type"; tpl = type_parameters; i = mod_ident; "="; pf = OPT "private";
+        t = ctyp ->
+          MLast.WcTyp loc i tpl (o2b pf) t
       | "module"; i = mod_ident; "="; me = module_expr ->
           MLast.WcMod loc i me ] ]
   ;

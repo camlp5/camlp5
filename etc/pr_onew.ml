@@ -592,6 +592,15 @@ value type_var pc (tv, (p, m)) =
     pc.aft
 ;
 
+value type_constraint pc (t1, t2) =
+  horiz_vertic
+    (fun () ->
+       sprintf "%sconstraint %s = %s%s" pc.bef
+         (ctyp {(pc) with bef = ""; aft = ""} t1)
+         (ctyp {(pc) with bef = ""; aft = ""} t2) pc.aft)
+    (fun () -> not_impl "type_constraint vertic" pc t1)
+;
+
 (* type_decl: particularity for the value of 'pc.aft' ->
    see 'value_binding' *)
 value type_decl pc td =
@@ -608,7 +617,7 @@ value type_decl pc td =
             sprintf " %s" (hlist type_var {(pc) with bef = ""; aft = ""} tp))
          (ctyp {(pc) with bef = ""; aft = ""} te)
          (if cl = [] then ""
-          else not_impl "type_decl cl" {(pc) with bef = ""; aft = ""} cl)
+          else hlist type_constraint {(pc) with bef = " "; aft = ""} cl)
          (match pc.aft with [ Some (_, k) -> k | None -> "" ]))
     (fun () ->
        let s1 =
@@ -1632,6 +1641,15 @@ value patt_simple =
           {(pc) with ind = pc.ind + 1; bef = sprintf "%s{" pc.bef;
            aft = sprintf "}%s" pc.aft}
           lxl
+  | <:patt< [| $list:pl$ |] >> ->
+      fun curr next pc ->
+        if pl = [] then sprintf "%s[| |]%s" pc.bef pc.aft
+        else
+          let pl = List.map (fun p -> (p, ";")) pl in
+          plist patt 0
+            {(pc) with ind = pc.ind + 3; bef = sprintf "%s[| " pc.bef;
+             aft = (sprintf " |]%s" pc.aft)}
+            pl
   | <:patt< [$_$ :: $_$] >> as z ->
       fun curr next pc ->
         let (xl, y) = make_patt_list z in
@@ -1675,8 +1693,33 @@ value patt_simple =
                  t
              in
              sprintf "%s\n%s" s1 s2)
-  | <:patt< $int:s$ >> ->
-      fun curr next pc -> sprintf "%s%s%s" pc.bef s pc.aft
+  | <:patt< $int:s$ >> | <:patt< $flo:s$ >> ->
+      fun curr next pc ->
+        if String.length s > 0 && s.[0] = '-' then
+          sprintf "%s(%s)%s" pc.bef s pc.aft
+        else
+          sprintf "%s%s%s" pc.bef s pc.aft
+  | <:patt< $int32:s$ >> ->
+      fun curr next pc ->
+        let s = s ^ "l" in
+        if String.length s > 0 && s.[0] = '-' then
+          sprintf "%s(%s)%s" pc.bef s pc.aft
+        else
+          sprintf "%s%s%s" pc.bef s pc.aft
+  | <:patt< $int64:s$ >> ->
+      fun curr next pc ->
+        let s = s ^ "L" in
+        if String.length s > 0 && s.[0] = '-' then
+          sprintf "%s(%s)%s" pc.bef s pc.aft
+        else
+          sprintf "%s%s%s" pc.bef s pc.aft
+  | <:patt< $nativeint:s$ >> ->
+      fun curr next pc ->
+        let s = s ^ "n" in
+        if String.length s > 0 && s.[0] = '-' then
+          sprintf "%s(%s)%s" pc.bef s pc.aft
+        else
+          sprintf "%s%s%s" pc.bef s pc.aft
   | <:patt< $lid:s$ >> ->
       fun curr next pc -> var_escaped pc s
   | <:patt< $uid:s$ >> ->
@@ -2127,12 +2170,13 @@ value module_expr_simple =
 
 value with_constraint pc wc =
   match wc with
-  [ <:with_constr< type $sl$ $list:tpl$ = $t$ >> ->
+  [ <:with_constr< type $sl$ $list:tpl$ = $opt:pf$ $t$ >> ->
       let b =
         let k = hlist type_var {(pc) with bef = ""; aft = " = "} tpl in
         mod_ident {(pc) with bef = sprintf "%swith type " pc.bef; aft = k} sl
       in
-      ctyp {(pc) with bef = b} t
+      let pf = if pf then "private " else "" in
+      ctyp {(pc) with bef = sprintf "%s%s" b pf} t
   | <:with_constr< module $sl$ = $me$ >> ->
       module_expr
         {(pc) with

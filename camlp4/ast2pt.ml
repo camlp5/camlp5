@@ -346,12 +346,13 @@ value rec module_expr_long_id =
 
 value mkwithc =
   fun
-  [ WcTyp loc id tpl ct ->
+  [ WcTyp loc id tpl pf ct ->
       let (params, variance) = List.split tpl in
+      let tk = if pf then Ptype_private else Ptype_abstract in
       (long_id_of_string_list loc id,
        Pwith_type
          {ptype_params = params; ptype_cstrs = [];
-          ptype_kind = Ptype_abstract; ptype_manifest = Some (ctyp ct);
+          ptype_kind = tk; ptype_manifest = Some (ctyp ct);
           ptype_loc = mkloc loc; ptype_variance = variance})
   | WcMod loc id m ->
       (long_id_of_string_list loc id, Pwith_module (module_expr_long_id m)) ]

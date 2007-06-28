@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.21 2007/06/28 02:30:24 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.22 2007/06/28 04:11:18 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -226,8 +226,9 @@ EXTEND
           <:module_type< functor ( $i$ : $t$ ) -> $mt$ >> ] ]
   ;
   with_constr:
-    [ [ "type"; i = mod_ident; tpl = LIST0 type_parameter; "="; t = ctyp ->
-          <:with_constr< type $i$ $list:tpl$ = $t$ >>
+    [ [ "type"; i = mod_ident; tpl = LIST0 type_parameter; "=";
+        pf = OPT "private"; t = ctyp ->
+          <:with_constr< type $i$ $list:tpl$ = $opt:o2b pf$ $t$ >>
       | "module"; i = mod_ident; "="; me = module_expr ->
           <:with_constr< module $i$ = $me$ >> ] ]
   ;

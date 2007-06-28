@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.23 2007/06/28 02:30:24 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.24 2007/06/28 04:11:18 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -364,8 +364,9 @@ EXTEND
           Qast.Node "MtFun" [Qast.Loc; i; t; mt] ] ]
   ;
   with_constr:
-    [ [ "type"; i = mod_ident; tpl = SLIST0 type_parameter; "="; t = ctyp ->
-          Qast.Node "WcTyp" [Qast.Loc; i; tpl; t]
+    [ [ "type"; i = mod_ident; tpl = SLIST0 type_parameter; "=";
+        pf = SOPT "private"; t = ctyp ->
+          Qast.Node "WcTyp" [Qast.Loc; i; tpl; o2b pf; t]
       | "module"; i = mod_ident; "="; me = module_expr ->
           Qast.Node "WcMod" [Qast.Loc; i; me] ] ]
   ;
