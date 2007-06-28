@@ -286,13 +286,16 @@ value rev_extract_comment strm =
 ;
 
 value source = ref "";
+value comm_min_pos = ref 0;
+
+value set_comm_min_pos bp = comm_min_pos.val := bp;
 
 value rev_read_comment_in_file bp ep =
   let strm =
     Stream.from
       (fun i ->
          let j = bp - i - 1 in
-         if j < 0 || j >= String.length source.val then None
+         if j < comm_min_pos.val || j >= String.length source.val then None
          else Some source.val.[j])
   in
   let (s, nl_bef, ind_bef) = rev_extract_comment strm in

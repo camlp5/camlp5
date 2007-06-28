@@ -301,13 +301,16 @@ let rev_extract_comment strm =
 ;;
 
 let source = ref "";;
+let comm_min_pos = ref 0;;
+
+let set_comm_min_pos bp = comm_min_pos := bp;;
 
 let rev_read_comment_in_file bp ep =
   let strm =
     Stream.from
       (fun i ->
          let j = bp - i - 1 in
-         if j < 0 || j >= String.length !source then None
+         if j < !comm_min_pos || j >= String.length !source then None
          else Some !source.[j])
   in
   let (s, nl_bef, ind_bef) = rev_extract_comment strm in

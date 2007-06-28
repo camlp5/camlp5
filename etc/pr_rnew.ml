@@ -2407,6 +2407,7 @@ value apply_printer f ast = do {
          let ep = Stdpp.last_pos loc in
          copy_source Prtools.source.val oc first last_pos bp;
          flush oc;
+         set_comm_min_pos bp;
          output_string oc (f {ind = 0; bef = ""; aft = ";"; dang = ""} si);
          (False, ep)
        })

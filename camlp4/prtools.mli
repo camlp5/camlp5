@@ -70,3 +70,6 @@ value comm_bef : pr_context _ _ -> MLast.loc -> string;
        variable [source] just before the given location [loc]. May be
        reindented using [pc.ind]. Returns the empty string if no comment
        found. *)
+value set_comm_min_pos : int -> unit;
+   (** Set the minimum position of the source where comments can be found,
+       (to prevent possible duplication of comments). *)
