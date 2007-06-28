@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.mli,v 1.4 2006/12/26 08:54:09 deraugla Exp $ *)
+(* $Id: plexer.mli,v 1.5 2007/06/28 12:31:16 deraugla Exp $ *)
 
 (** A lexical analyzer. *)
 
@@ -28,7 +28,6 @@ value gmake : unit -> Token.glexer (string * string);
 -      * [("CHAR", s)] is the character constant [s].
 -      * [("QUOTATION", "t:s")] is a quotation [t] holding the string [s].
 -      * [("ANTIQUOT", "t:s")] is an antiquotation [t] holding the string [s].
--      * [("LOCATE", "i:s")] is a location directive at pos [i] holding [s].
 -      * [("EOI", "")] is the end of input.
 
        The associated token patterns in the EXTEND statement hold the

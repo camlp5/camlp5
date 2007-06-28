@@ -32,7 +32,7 @@ value is_infix = do {
 };
 
 value is_keyword =
-  let keywords = ["value"] in
+  let keywords = ["value"; "where"] in
   fun s -> List.mem s keywords
 ;
 
