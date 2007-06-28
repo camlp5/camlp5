@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_ro.ml,v 1.27 2007/06/28 17:34:28 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.28 2007/06/28 18:28:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -105,7 +105,7 @@ value class_def_or_type_decl char pc ci =
     (fun () ->
        let s1 =
          sprintf "%s%s%s %s%c" pc.bef
-           (if ci.MLast.ciVir then " virtual" else "")
+           (if ci.MLast.ciVir then "virtual " else "")
            ci.MLast.ciNam
            (class_type_params {(pc) with bef = ""; aft = ""}
               (snd ci.MLast.ciPrm))
@@ -682,6 +682,23 @@ value class_expr_simple =
   | z -> fun curr next pc -> not_impl "class_expr" pc z ]
 ;
 
+value method_or_method_virtual pc virt priv s t =
+  horiz_vertic
+    (fun () ->
+       sprintf "%smethod%s%s %s : %s%s" pc.bef virt
+         (if priv then " private" else "") s
+         (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
+    (fun () ->
+       let s1 =
+         sprintf "%smethod%s%s %s:" pc.bef virt
+           (if priv then " private" else "") s
+       in
+       let s2 =
+         ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t
+       in
+       sprintf "%s\n%s" s1 s2)
+;
+
 value class_sig_item_top =
   extfun Extfun.empty with
   [ <:class_sig_item< inherit $ct$ >> ->
@@ -693,12 +710,10 @@ value class_sig_item_top =
           (fun () -> not_impl "class_sig_item inherit vertic" pc ct)
   | <:class_sig_item< method $opt:priv$ $s$ : $t$ >> ->
       fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%smethod%s %s : %s%s" pc.bef
-               (if priv then " private" else "") s
-               (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-          (fun () -> not_impl "method vertic 1" pc s)
+        method_or_method_virtual pc "" priv s t
+  | <:class_sig_item< method virtual $opt:priv$ $s$ : $t$ >> ->
+      fun curr next pc ->
+        method_or_method_virtual pc " virtual" priv s t
   | <:class_sig_item< value $opt:mf$ $s$ : $t$ >> ->
       fun curr next pc ->
         horiz_vertic

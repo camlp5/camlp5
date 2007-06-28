@@ -2112,46 +2112,50 @@ value sig_item_top =
       fun curr next pc -> not_impl "sig_item" pc z ]
 ;
 
+value str_or_sig_functor pc s mt module_expr_or_type met =
+  horiz_vertic
+    (fun () ->
+       sprintf "%sfunctor (%s : %s) -> %s%s" pc.bef s
+         (module_type {(pc) with bef = ""; aft = ""} mt)
+         (module_expr_or_type {(pc) with bef = ""; aft = ""} met) pc.aft)
+    (fun () ->
+       let s1 =
+         horiz_vertic
+           (fun () ->
+              sprintf "%sfunctor (%s : %s) ->" pc.bef s
+                (module_type {(pc) with bef = ""; aft = ""} mt))
+           (fun () ->
+              let s1 = sprintf "%sfunctor" pc.bef in
+              let s2 =
+                horiz_vertic
+                  (fun () ->
+                     sprintf "%s(%s : %s)" (tab (pc.ind + 2)) s
+                       (module_type {(pc) with bef = ""; aft = ""} mt))
+                  (fun () ->
+                     let s1 = sprintf "%s(%s :" (tab (pc.ind + 2)) s in
+                     let s2 =
+                       module_type
+                         {(pc) with ind = pc.ind + 3;
+                          bef = tab (pc.ind + 3); aft = ")"}
+                         mt
+                     in
+                     sprintf "%s\n%s" s1 s2)
+              in
+              let s3 = sprintf "%s->" (tab pc.ind) in
+              sprintf "%s\n%s\n%s" s1 s2 s3)
+       in
+       let s2 =
+         module_expr_or_type
+           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} met
+       in
+       sprintf "%s\n%s" s1 s2)
+;
+
 value module_expr_top =
   extfun Extfun.empty with
   [ <:module_expr< functor ($s$ : $mt$) -> $me$ >> ->
       fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%sfunctor (%s: %s) -> %s%s" pc.bef s
-               (module_type {(pc) with bef = ""; aft = ""} mt)
-               (module_expr {(pc) with bef = ""; aft = ""} me) pc.aft)
-          (fun () ->
-             let s1 =
-               horiz_vertic
-                 (fun () ->
-                    sprintf "%sfunctor (%s : %s) ->" pc.bef s
-                      (module_type {(pc) with bef = ""; aft = ""} mt))
-                 (fun () ->
-                    let s1 = sprintf "%sfunctor" pc.bef in
-                    let s2 =
-                      horiz_vertic
-                        (fun () ->
-                           sprintf "%s(%s : %s)" (tab (pc.ind + 2)) s
-                             (module_type {(pc) with bef = ""; aft = ""} mt))
-                        (fun () ->
-                           let s1 = sprintf "%s(%s :" (tab (pc.ind + 2)) s in
-                           let s2 =
-                             module_type
-                               {(pc) with ind = pc.ind + 3;
-                                bef = tab (pc.ind + 3); aft = ")"}
-                               mt
-                           in
-                           sprintf "%s\n%s" s1 s2)
-                    in
-                    let s3 = sprintf "%s->" (tab pc.ind) in
-                    sprintf "%s\n%s\n%s" s1 s2 s3)
-             in
-             let s2 =
-               module_expr
-                 {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} me
-             in
-             sprintf "%s\n%s" s1 s2)
+        str_or_sig_functor pc s mt module_expr me
   | <:module_expr< struct $list:sil$ end >> ->
       fun curr next pc ->
         horiz_vertic
@@ -2256,24 +2260,7 @@ value module_type_top =
   extfun Extfun.empty with
   [ <:module_type< functor ($s$ : $mt1$) -> $mt2$ >> ->
       fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%sfunctor (%s: %s) -> %s%s" pc.bef s
-               (module_type {(pc) with bef = ""; aft = ""} mt1)
-               (module_type {(pc) with bef = ""; aft = ""} mt2) pc.aft)
-          (fun () ->
-             let s1 =
-               horiz_vertic
-                 (fun () ->
-                    sprintf "%sfunctor (%s: %s) ->" pc.bef s
-                      (module_type {(pc) with bef = ""; aft = ""} mt1))
-                 (fun () -> not_impl "functor vertic" {(pc) with aft = ""} 0)
-             in
-             let s2 =
-               module_type
-                 {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} mt2
-             in
-             sprintf "%s\n%s" s1 s2)
+        str_or_sig_functor pc s mt1 module_type mt2
   | <:module_type< sig $list:sil$ end >> ->
       fun curr next pc ->
         horiz_vertic
