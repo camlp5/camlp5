@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_ro.ml,v 1.24 2007/06/28 04:11:18 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.25 2007/06/28 04:53:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -18,6 +18,45 @@ value not_impl name pc x =
   in
   sprintf "%s\"pr_ro, not impl: %s; %s\"%s" pc.bef name (String.escaped desc)
     pc.aft
+;
+
+value is_infix = do {
+  let infixes = Hashtbl.create 73 in
+  List.iter (fun s -> Hashtbl.add infixes s True)
+    ["!="; "&&"; "*"; "**"; "*."; "+"; "+."; "-"; "-."; "/"; "/."; "<"; "<=";
+     "<>"; "="; "=="; ">"; ">="; "@"; "^"; "asr"; "land"; "lor"; "lsl"; "lsr";
+     "lxor"; "mod"; "or"; "||"; "~-"; "~-."];
+  fun s -> try Hashtbl.find infixes s with [ Not_found -> False ]
+};
+
+value is_keyword =
+  let keywords = ["value"] in
+  fun s -> List.mem s keywords
+;
+
+value has_special_chars s =
+  if String.length s = 0 then False
+  else
+    match s.[0] with
+    [ '0'..'9' | 'A'..'Z' | 'a'..'z' | '_' -> False
+    | _ -> True ]
+;
+
+value var_escaped pc v =
+  let x =
+    if is_infix v || has_special_chars v then "\\" ^ v
+    else if is_keyword v then v ^ "__"
+    else v
+  in
+  sprintf "%s%s%s" pc.bef x pc.aft
+;
+
+value alone_in_line pc =
+  (pc.aft = "" || pc.aft = ";") && pc.bef <> "" &&
+  loop 0 where rec loop i =
+    if i >= String.length pc.bef then True
+    else if pc.bef.[i] = ' ' then loop (i + 1)
+    else False
 ;
 
 value expr pc z = pr_expr.pr_fun "top" pc z;
@@ -449,17 +488,37 @@ lev.pr_rules :=
 
 value class_type_top =
   extfun Extfun.empty with
-  [ <:class_type< object $opt:cst$ $list:csi$ end >> ->
+  [ <:class_type< [ $t$ ] -> $ct$ >> ->
       fun curr next pc ->
         horiz_vertic
           (fun () ->
-             sprintf "%sobject%s %s end%s" pc.bef
-               (match cst with
-                [ Some t ->
-                    sprintf " (%s)" (ctyp {(pc) with bef = ""; aft = ""} t)
-                | None -> "" ])
-               (hlist (semi_after class_sig_item)
-                  {(pc) with bef = ""; aft = ""} csi) pc.aft)
+             sprintf "%s[%s] -> %s%s" pc.bef
+               (ctyp {(pc) with bef = ""; aft = ""} t)
+               (curr {(pc) with bef = ""; aft = ""} ct) pc.aft)
+          (fun () ->
+             let s1 =
+               ctyp {(pc) with bef = sprintf "%s[" pc.bef; aft = "] ->"} t
+             in
+             let s2 =
+               curr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} ct
+             in
+             sprintf "%s\n%s" s1 s2)
+  | <:class_type< object $opt:cst$ $list:csi$ end >> ->
+      fun curr next pc ->
+        horiz_vertic
+          (fun () ->
+             if alone_in_line pc then
+               (* Heuristic : I don't like to print it horizontally
+                  when alone in a line. *)
+               sprintf "\n"
+             else
+               sprintf "%sobject%s %s end%s" pc.bef
+                 (match cst with
+                 [ Some t ->
+                      sprintf " (%s)" (ctyp {(pc) with bef = ""; aft = ""} t)
+                  | None -> "" ])
+                 (hlist (semi_after class_sig_item)
+                    {(pc) with bef = ""; aft = ""} csi) pc.aft)
           (fun () ->
              let s1 =
                match cst with
@@ -611,6 +670,23 @@ value class_sig_item_top =
                (if priv then " private" else "") s
                (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
           (fun () -> not_impl "method vertic 1" pc s)
+  | <:class_sig_item< value $opt:mf$ $s$ : $t$ >> ->
+      fun curr next pc ->
+        horiz_vertic
+          (fun () ->
+             sprintf "%svalue%s %s : %s%s" pc.bef
+               (if mf then " mutable" else "")
+               (var_escaped {(pc) with bef = ""; aft = ""} s)
+               (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
+          (fun () ->
+             let s1 =
+               sprintf "%svalue%s %s :" pc.bef (if mf then " mutable" else "")
+                 (var_escaped {(pc) with bef = ""; aft = ""} s)
+             in
+             let s2 =
+               ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t
+             in
+             sprintf "%s\n%s" s1 s2) 
   | z -> fun curr next pc -> not_impl "class_sig_item" pc z ]
 ;
 

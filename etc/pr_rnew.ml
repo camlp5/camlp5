@@ -702,6 +702,14 @@ value rec get_else_if =
   | e -> ([], e) ]
 ;
 
+value alone_in_line pc =
+  (pc.aft = "" || pc.aft = ";") && pc.bef <> "" &&
+  loop 0 where rec loop i =
+    if i >= String.length pc.bef then True
+    else if pc.bef.[i] = ' ' then loop (i + 1)
+    else False
+;
+
 (* Expressions displayed without spaces separating elements; special
    for expressions as strings or arrays indexes (x.[...] or x.(...)).
    Applied only if only containing +, -, *, /, integers and variables. *)
@@ -1982,6 +1990,9 @@ value sig_item_top =
       fun curr next pc -> exception_decl pc (e, tl, [])
   | <:sig_item< external $n$ : $t$ = $list:sl$ >> ->
       fun curr next pc -> external_decl pc (n, t, sl)
+  | <:sig_item< include $mt$ >> ->
+      fun curr next pc ->
+        module_type {(pc) with bef = sprintf "%sinclude " pc.bef} mt
   | <:sig_item< module $m$ : $mt$ >> ->
       fun curr next pc ->
         horiz_vertic
@@ -2087,13 +2098,9 @@ value module_expr_top =
       fun curr next pc ->
         horiz_vertic
           (fun () ->
-             if loop 0 where rec loop i =
-                  if i >= String.length pc.bef then True
-                  else if pc.bef.[i] = ' ' then loop (i + 1)
-                  else False
-             then
+             if alone_in_line pc then
                (* Heuristic : I don't like to print structs horizontally
-                  when starting a line. *)
+                  when alone in a line. *)
                sprintf "\n"
              else
                sprintf "%sstruct%s%s%send%s" pc.bef " "
@@ -2213,10 +2220,15 @@ value module_type_top =
       fun curr next pc ->
         horiz_vertic
           (fun () ->
-             sprintf "%ssig%s%s%send%s" pc.bef " "
-               (hlist (semi_after sig_item) {(pc) with bef = ""; aft = ""}
-                  sil)
-               " " pc.aft)
+             if alone_in_line pc then
+               (* Heuristic : I don't like to print sigs horizontally
+                  when alone in a line. *)
+               sprintf "\n"
+             else
+               sprintf "%ssig%s%s%send%s" pc.bef " "
+                 (hlist (semi_after sig_item) {(pc) with bef = ""; aft = ""}
+                    sil)
+                 " " pc.aft)
           (fun () ->
              sprintf "%ssig%s%s%send%s" pc.bef "\n"
                (vlist (semi_after sig_item)
