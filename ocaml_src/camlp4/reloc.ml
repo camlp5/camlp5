@@ -214,15 +214,7 @@ and sig_item floc sh =
            List.map (fun (n, mt) -> n, module_type floc sh mt) x2)
     | SgMty (loc, x1, x2) -> SgMty (floc loc, x1, module_type floc sh x2)
     | SgOpn (loc, x1) -> SgOpn (floc loc, x1)
-    | SgTyp (loc, x1) ->
-        SgTyp
-          (floc loc,
-           List.map
-             (fun ((loc, x1), x2, x3, x4, x5) ->
-                (floc loc, x1), x2, x3, ctyp floc sh x4,
-                List.map (fun (x1, x2) -> ctyp floc sh x1, ctyp floc sh x2)
-                  x5)
-             x1)
+    | SgTyp (loc, x1) -> SgTyp (floc loc, List.map (type_decl floc sh) x1)
     | SgUse (loc, x1, x2) -> SgUse (loc, x1, x2)
     | SgVal (loc, x1, x2) -> SgVal (floc loc, x1, ctyp floc sh x2)
   in
@@ -266,15 +258,7 @@ and str_item floc sh =
            List.map (fun (n, me) -> n, module_expr floc sh me) x2)
     | StMty (loc, x1, x2) -> StMty (floc loc, x1, module_type floc sh x2)
     | StOpn (loc, x1) -> StOpn (floc loc, x1)
-    | StTyp (loc, x1) ->
-        StTyp
-          (floc loc,
-           List.map
-             (fun ((loc, x1), x2, x3, x4, x5) ->
-                (floc loc, x1), x2, x3, ctyp floc sh x4,
-                List.map (fun (x1, x2) -> ctyp floc sh x1, ctyp floc sh x2)
-                  x5)
-             x1)
+    | StTyp (loc, x1) -> StTyp (floc loc, List.map (type_decl floc sh) x1)
     | StUse (loc, x1, x2) -> StUse (loc, x1, x2)
     | StVal (loc, x1, x2) ->
         StVal
@@ -282,6 +266,11 @@ and str_item floc sh =
            List.map (fun (x1, x2) -> patt floc sh x1, expr floc sh x2) x2)
   in
   self
+and type_decl floc sh td =
+  {td with tdNam = floc (fst td.tdNam), snd td.tdNam;
+    tdDef = ctyp floc sh td.tdDef;
+    tdCon =
+      List.map (fun (x1, x2) -> ctyp floc sh x1, ctyp floc sh x2) td.tdCon}
 and class_type floc sh =
   let rec self =
     function

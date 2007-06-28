@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_o.ml,v 1.17 2007/06/27 18:58:38 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.18 2007/06/28 02:30:24 deraugla Exp $ *)
 
 open Pcaml.Printer;
 open Spretty;
@@ -438,7 +438,11 @@ value type_list b tdl _ k =
   HVbox
     [: `HVbox [: :];
        listwbws
-         (fun b ((_, tn), tp, pf, te, cl) _ k ->
+         (fun b td _ k ->
+            let ((_, tn), tp, pf, te, cl) =
+             (td.MLast.tdNam, td.MLast.tdPrm, td.MLast.tdPrv, td.MLast.tdDef,
+              td.MLast.tdCon)
+            in
             let tn = var_escaped tn in
             let cstr = list constrain cl "" k in
             match te with

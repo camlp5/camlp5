@@ -1426,7 +1426,9 @@ Grammar.extend
         (fun (cl : 'constrain list) (tk : 'ctyp) (pf : string option) _
            (tpl : 'type_parameter list) (n : 'type_patt)
            (loc : Token.location) ->
-           (n, tpl, o2b pf, tk, cl : 'type_declaration))]];
+           ({MLast.tdNam = n; MLast.tdPrm = tpl; MLast.tdPrv = o2b pf;
+             MLast.tdDef = tk; MLast.tdCon = cl} :
+            'type_declaration))]];
     Grammar.Entry.obj (type_patt : 'type_patt Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("LIDENT", "")],

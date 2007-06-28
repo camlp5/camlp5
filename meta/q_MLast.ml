@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.22 2007/06/27 18:58:38 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.23 2007/06/28 02:30:24 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -754,7 +754,9 @@ EXTEND
   type_declaration:
     [ [ n = type_patt; tpl = SLIST0 type_parameter; "="; pf = SOPT "private";
         tk = ctyp; cl = SLIST0 constrain ->
-          Qast.Tuple [n; tpl; o2b pf; tk; cl] ] ]
+          Qast.Record
+            [("tdNam", n); ("tdPrm", tpl); ("tdPrv", o2b pf); ("tdDef", tk);
+             ("tdCon", cl)] ] ]
   ;
   type_patt:
     [ [ n = a_LIDENT -> Qast.Tuple [Qast.Loc; n] ] ]

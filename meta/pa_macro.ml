@@ -1,5 +1,5 @@
 (* camlp4r *)
-(* $Id: pa_macro.ml,v 1.10 2007/06/09 02:46:05 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.11 2007/06/28 02:30:24 deraugla Exp $ *)
 
 (*
 Added statements:
@@ -78,7 +78,10 @@ value oversion = do {
   v
 };
 
-value defined = ref [("CAMLP4S", None); ("OCAML_" ^ oversion, None)];
+value defined =
+  ref
+    [("CAMLP4S", None); ("CAMLP4S_4_02", None); ("OCAML_" ^ oversion, None)]
+;
 
 value is_defined i = List.mem_assoc i defined.val;
 

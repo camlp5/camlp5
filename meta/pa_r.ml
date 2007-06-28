@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.20 2007/06/27 18:58:38 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.21 2007/06/28 02:30:24 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -449,7 +449,8 @@ EXTEND
   type_declaration:
     [ [ n = type_patt; tpl = LIST0 type_parameter; "="; pf = OPT "private";
         tk = ctyp; cl = LIST0 constrain ->
-          (n, tpl, o2b pf, tk, cl) ] ]
+          {MLast.tdNam = n; MLast.tdPrm = tpl; MLast.tdPrv = o2b pf;
+           MLast.tdDef = tk; MLast.tdCon = cl} ] ]
   ;
   type_patt:
     [ [ n = LIDENT -> (loc, n) ] ]

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_sml.ml,v 1.7 2007/06/27 18:58:38 deraugla Exp $ *)
+(* $Id: pa_sml.ml,v 1.8 2007/06/28 02:30:24 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -188,13 +188,21 @@ value extract_label_types loc tn tal cdol =
          [ Some anon_record_type ->
              let new_tn = tn ^ "_" ^ c in
              let loc = MLast.loc_of_ctyp anon_record_type in
-             let aux_def = ((loc, new_tn), [], False, anon_record_type, []) in
+             let aux_def =
+               {MLast.tdNam = (loc, new_tn); MLast.tdPrm = [];
+                MLast.tdPrv = False; MLast.tdDef = anon_record_type;
+                MLast.tdCon = []}
+             in
              let tl = [<:ctyp< $lid:new_tn$ >>] in
              ([(loc, c, tl) :: cdl], [aux_def :: aux])
          | None -> ([(loc, c, tl) :: cdl], aux) ])
       cdol ([], [])
   in
-  [((loc, tn), tal, False, <:ctyp< [ $list:cdl$ ] >>, []) :: aux]
+  let td1 =
+    {MLast.tdNam = (loc, tn); MLast.tdPrm = tal; MLast.tdPrv = False;
+     MLast.tdDef = <:ctyp< [ $list:cdl$ ] >>; MLast.tdCon = []}
+  in
+  [td1 :: aux]
 ;
 
 value function_of_clause_list loc xl =
@@ -638,11 +646,14 @@ EXTEND
   ;
   tb:
     [ [ x1 = tyvars; x2 = idd; "="; x3 = ctyp ->
-          ((loc, uncap x2), x1, False, x3, [])
+          {MLast.tdNam = (loc, uncap x2); MLast.tdPrm = x1;
+           MLast.tdPrv =  False; MLast.tdDef = x3; MLast.tdCon = []}
       | x1 = tyvars; x2 = idd; "="; x3 = ctyp; "=="; x4 = dbrhs ->
           let x4 = List.map (fun (loc, c, tl, _) -> (loc, c, tl)) x4 in
-          ((loc, uncap x2), x1, False, <:ctyp< $x3$ == [ $list:x4$ ] >>,
-           []) ] ]
+          {MLast.tdNam = (loc, uncap x2); MLast.tdPrm = x1;
+           MLast.tdPrv =  False;
+           MLast.tdDef = <:ctyp< $x3$ == [ $list:x4$ ] >>;
+           MLast.tdCon = []} ] ]
   ;
   tyvars:
     [ [ "'"; x1 = LIDENT -> [(x1, (False, False))]
@@ -743,9 +754,12 @@ EXTEND
   ;
   tyspec:
     [ [ x1 = tyvars; x2 = idd ->
-          ((loc, uncap x2), x1, False, <:ctyp< '$choose_tvar x1$ >>, [])
+          {MLast.tdNam = (loc, uncap x2); MLast.tdPrm = x1;
+           MLast.tdPrv = False; MLast.tdDef = <:ctyp< '$choose_tvar x1$ >>;
+           MLast.tdCon = []}
       | x1 = tyvars; x2 = idd; "="; x3 = ctyp ->
-          ((loc, uncap x2), x1, False, x3, []) ] ]
+          {MLast.tdNam = (loc, uncap x2); MLast.tdPrm = x1;
+           MLast.tdPrv = False; MLast.tdDef = x3; MLast.tdCon = []} ] ]
   ;
   valspec:
     [ [ x1 = op_op; x2 = ident; ":"; x3 = ctyp ->

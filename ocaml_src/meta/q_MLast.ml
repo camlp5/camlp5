@@ -2227,7 +2227,10 @@ Grammar.extend
       Gramext.action
         (fun (cl : 'a_list) (tk : 'ctyp) (pf : 'a_opt) _ (tpl : 'a_list)
            (n : 'type_patt) (loc : Token.location) ->
-           (Qast.Tuple [n; tpl; o2b pf; tk; cl] : 'type_declaration))]];
+           (Qast.Record
+              ["tdNam", n; "tdPrm", tpl; "tdPrv", o2b pf; "tdDef", tk;
+               "tdCon", cl] :
+            'type_declaration))]];
     Grammar.Entry.obj (type_patt : 'type_patt Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm

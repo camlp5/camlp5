@@ -78,7 +78,9 @@ let oversion =
   v
 ;;
 
-let defined = ref ["CAMLP4S", None; "OCAML_" ^ oversion, None];;
+let defined =
+  ref ["CAMLP4S", None; "CAMLP4S_4_02", None; "OCAML_" ^ oversion, None]
+;;
 
 let is_defined i = List.mem_assoc i !defined;;
 

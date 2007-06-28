@@ -692,16 +692,16 @@ and when_expr e =
   | None -> expr e
 and mklabexp (lab, e) = patt_label_long_id lab, expr e
 and mkideexp (ide, e) = ide, expr e
-and mktype_decl ((loc, c), tl, pf, td, cl) =
-  let priv = if pf then Private else Public in
+and mktype_decl td =
+  let priv = if td.tdPrv then Private else Public in
   let cl =
     List.map
       (fun (t1, t2) ->
          let loc = Stdpp.encl_loc (loc_of_ctyp t1) (loc_of_ctyp t2) in
          ctyp t1, ctyp t2, mkloc loc)
-      cl
+      td.tdCon
   in
-  c, type_decl tl priv cl td
+  snd td.tdNam, type_decl td.tdPrm priv cl td.tdDef
 and module_type =
   function
     MtAcc (loc, _, _) as f -> mkmty loc (Pmty_ident (module_type_long_id f))

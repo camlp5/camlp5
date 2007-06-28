@@ -1,5 +1,5 @@
 (* camlp4r *)
-(* $Id: pr_depend.ml,v 1.9 2007/06/27 18:58:38 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.10 2007/06/28 02:30:24 deraugla Exp $ *)
 
 open MLast;
 
@@ -182,7 +182,7 @@ and str_item =
   | StTyp _ tdl -> list type_decl tdl
   | StVal _ _ pel -> list let_binding pel
   | x -> not_impl "str_item" x ]
-and type_decl (_, _, _, t, _) = ctyp t
+and type_decl td = ctyp td.MLast.tdDef
 and class_expr =
   fun
   [ CeApp _ ce e -> do { class_expr ce; expr e }
