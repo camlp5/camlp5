@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_ro.ml,v 1.22 2007/06/27 19:57:59 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.23 2007/06/28 03:04:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -284,6 +284,8 @@ value expr_label =
   extfun Extfun.empty with
   [ <:expr< ? $s$ >> ->
       fun curr next pc -> sprintf "%s?%s%s" pc.bef s pc.aft
+  | <:expr< ? $i$ : $e$ >> ->
+      fun curr next pc -> curr {(pc) with bef = sprintf "%s?%s:" pc.bef i} e
   | <:expr< ~ $s$ >> ->
       fun curr next pc -> sprintf "%s~%s%s" pc.bef s pc.aft
   | <:expr< ~ $s$ : $e$ >> ->
