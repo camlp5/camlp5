@@ -135,7 +135,13 @@ value expr_app pc e1 e2 =
        sprintf "%s %s" s1 s2)
     (fun () ->
        let s1 = expr {(pc) with aft = ""} e1 in
-       let s2 = expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e2 in
+       let s2 =
+         expr
+           {(pc) with
+              ind = pc.ind + 2;
+              bef = tab (pc.ind + 2)}
+           e2
+       in
        sprintf "%s\n%s" s1 s2)
 ;
 </pre>
@@ -148,7 +154,7 @@ is a record with <code>pc.bef</code> kept). Same for the
 field <code>pc.aft</code> transmitted to the printing
 of <code>e2</code>.</p>
 
-<h3>Using module Extfun and syntax</h3>
+<h3>Using module Extfun and its syntax</h3>
 
 <p>This system is combined to the the <a href="extfun.html">extensible
 functions</a> to allow the extensibility of the pretty
@@ -176,7 +182,13 @@ value expr_app =
           (fun () ->
              let s1 = curr {(pc) with aft = ""} e1 in
              let ind = pc.ind + 2 in
-             let s2 = next {(pc) with ind = ind; bef = tab ind} e2 in
+             let s2 =
+               next
+                 {(pc) with
+                    ind = pc.ind + 2;
+                    bef = tab (pc.ind + 2)}
+                 e2
+             in
              sprintf "%s\n%s" s1 s2)
   | e ->
       fun curr next pc -> next pc e ]
