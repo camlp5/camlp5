@@ -175,17 +175,19 @@ value expr_app =
              sprintf "%s %s" s1 s2)
           (fun () ->
              let s1 = curr {(pc) with aft = ""} e1 in
-             let s2 = next {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e2 in
+             let ind = pc.ind + 2 in
+             let s2 = next {(pc) with ind = ind; bef = tab ind} e2 in
              sprintf "%s\n%s" s1 s2)
   | e ->
       fun curr next pc -> next pc e ]
 ;
 </pre>
 
-<p>The functions apply to the syntax tree (here <code>&lt;:expr&lt;
-$e1$ $e2$ &gt;&gt;). To be extensible, the syntax tree must be the
-first parameter (it is not possible to apply extensions inside a
-closure). The other parameters, in particular the printing context
+<p>The extensible functions have a syntax tree
+(here <code>&lt;:expr&lt; $e1$ $e2$ &gt;&gt;</code>) as parameter. To
+be extensible, the syntax tree must be the first parameter (it is not
+possible to apply extensions inside a closure). The other parameters,
+in particular the printing context
 <code>pc</code> are given in the semantic action.</p>
 
 <p>The parameter <code>curr</code> and <code>next</code> are provided
