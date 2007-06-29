@@ -24,7 +24,7 @@
       border-left: silver solid 3px; margin-bottom: 1.5em; margin-left: 2cm;
       padding-left: 1em; padding-right: 0.5em; line-height: 1.2
     }
-    tt { font-weight: bold }
+    tt { }
     .value { background: #0f0 }
   --></style>
 </head>
@@ -64,6 +64,45 @@ new ones. The main ones are:</p>
 </ul>
 
 <p>We present here how this system work inside these files.</p>
+
+<h2>Principles</h2>
+
+<p>The module <a href="pretty.html">Pretty</a> does not take care of
+indentations nor line breaks : it is just able to tell whether a line
+is too long or not, or if it contains newlines. Therefore, all
+functions in ocaml pretty printing contain a "printing context"
+(variable <tt>pc</tt>), a record holding :</p>
+
+<ul>
+
+<li>The current indendation : ind</li>
+
+<li>What has to be printed before, in the same line : bef</li>
+
+<li>What has to be printed after, in the same line : aft</li>
+
+</ul>
+
+<p>The functions accumulate pieces of lines, controlled
+by <tt>Pretty.horiz_vertic</tt> which decides whether it worths
+printing on one only line or if the output has to be broken into
+several lines. Here, an example of printing the ocaml application
+of <tt>f</tt> to <tt>x</tt>:<p>
+
+<pre>
+value pr_app pc f x =
+  horiz_vertic
+    (fun () ->
+       let s1 = expr {(pc) with aft = ""} f in
+       let s2 = expr {(pc) with bef = ""} x in
+       sprintf "%s %s" s1 s2)
+    (fun () ->
+       let s1 = expr {(pc) with aft = ""} f in
+       let s2 = expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} x in
+       sprintf "%s\n%s" s1 s2)
+;
+</pre>
+
 
 <h2>Description</h2>
 
