@@ -105,7 +105,7 @@ value print_interf : ref (list (MLast.sig_item * MLast.loc) -> unit);
 value print_implem : ref (list (MLast.str_item * MLast.loc) -> unit);
    (** Some printers, set by [pr_dump.cmo], [pr_o.cmo] and [pr_r.cmo]. *)
 
-module NewPrinters :
+module Printers :
   sig
     type printer_t 'a =
       { pr_fun : mutable string -> pr_fun 'a;
@@ -138,7 +138,7 @@ module NewPrinters :
   end
 ;
 
-module Printer :
+module OldPrinters :
   sig
     open Spretty;
     type printer_t 'a =

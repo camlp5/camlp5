@@ -2,7 +2,7 @@
 (* $Id$ *)
 (* Copyright (c) INRIA 2007 *)
 
-open Pcaml.NewPrinters;
+open Pcaml.Printers;
 
 type pr_gfun 'a 'b = pr_context string 'b -> 'a -> string;
 

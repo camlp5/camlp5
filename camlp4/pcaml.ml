@@ -350,7 +350,7 @@ value add_option name spec descr =
 
 (* Printers *)
 
-module NewPrinters =
+module Printers =
   struct
     type printer_t 'a =
       { pr_fun : mutable string -> pr_fun 'a;
@@ -410,7 +410,7 @@ module NewPrinters =
   end
 ;
 
-module Printer =
+module OldPrinters =
   struct
     open Spretty;
     type printer_t 'a =

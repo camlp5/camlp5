@@ -43,6 +43,11 @@ rules. We present here how it works in the Camlp4 sources.</p>
 output) and <a href="extfun.html">Extfun</a>, another original
 system of extensible functions.
 
+<p>This documentation is destinated to programmers who want to
+understand how the pretty printing of ocaml programs work in camlp4,
+want to adapt, modify or debug it, or want to add their own pretty
+printing extensions.</p>
+
 <h2>Introduction</h2>
 
 <p>The files doing the pretty prints are located in Camlp4 sources
@@ -97,24 +102,24 @@ printing)</li>
 
 </ul>
 
-<p>Both function catenate the strings by using the
+<p>Both functions catenate the strings by using the
 function <code>sprintf</code> of the library
 module <code>Pretty</code> which controls whether the printed data
-hold in the line or not. They generally call, recursively, other
+holds in the line or not. They generally call, recursively, other
 pretty printing functions with the same behaviour.</p>
 
-<p>Example (fictive) of printing an ocaml application. Let us suppose
-we have an application expression <code>e1 e2</code> to pretty print
-where <code>e1</code> and <code>e2</code> are sub-expressions. If both
-expressions and their application holds on one only line, we want to
-see:</p>
+<p>Let us see an example (fictive) of printing an ocaml
+application. Let us suppose we have an application expression
+"<code>e1 e2</code>" to pretty print where <code>e1</code>
+and <code>e2</code> are sub-expressions. If both expressions and their
+application holds on one only line, we want to see:</p>
 
 <pre>
 e1 e2
 </pre>
 
-<p>On the other hand, if they does not hold on one only line, we want
-to see <code>e2</code> in another line with, say, an indendation of 2
+<p>On the other hand, if they do not hold on one only line, we want to
+see <code>e2</code> in another line with, say, an indendation of 2
 spaces:</p>
 
 <pre>
@@ -145,6 +150,25 @@ value expr_app pc e1 e2 =
        sprintf "%s\n%s" s1 s2)
 ;
 </pre>
+
+<p>The first function is the <i>horizontal</i> printing. It ends with a
+<code>sprintf</code> separating the printing of <code>e1</code>
+and <code>e2</code> by a space. The possible "before part"
+(<code>pc.bef</code>) and "after part" (<code>pc.aft</code>) are
+transmitted in the calls of the sub-functions.</p>
+
+<p>The second function is the <i>vertical</i> printing. It ends with a
+<code>sprintf</code> separating the printing of <code>e1</code>
+and <code>e2</code> by a newline. The second line starts with an
+indendation, using the "before part" (<code>pc.bef</code>) of the
+second call to <code>expr</code>.</p>
+
+<p>The pretty printing library
+function <code>Pretty.horiz_vertic</code> calls the first
+(<i>horizontal</i>) function, and if it fails (either
+because <code>s1</code> or <code>s2</code> are too long or hold
+newlines, or because the final string produced by <code>sprintf</code>
+is too long), calls the second (<i>vertical</i>) function.</p>
 
 <p>Notice that the parameter <code>pc</code> contains a
 field <code>pc.bef</code> (what has to be printed before in the same
@@ -181,7 +205,6 @@ value expr_app =
              sprintf "%s %s" s1 s2)
           (fun () ->
              let s1 = curr {(pc) with aft = ""} e1 in
-             let ind = pc.ind + 2 in
              let s2 =
                next
                  {(pc) with
@@ -210,6 +233,55 @@ sub-expression is printed at the same (current) level and the second
 one is printed at the next level. We also see a call
 to <code>next</code> in the last (2nd) case of the function to treat
 the other cases in the next level.</p>
+
+<h3>By level</h3>
+
+<p>For each level of pretty printing, there is such a function. The
+example showed the pretty printing of expression at the level "apply".
+There are other functions for levels "top", "add", "mul", "simple",
+and so on. The global pretty printing variable for expressions is a
+record, named "<code>pr_expr</code>" (in the
+module <code>Pcaml.Printers</code>), where the levels are defined by a
+list, something like this:</p>
+
+<pre>
+pr_expr.pr_levels :=
+  [{pr_label = "top"; pr_rules = expr_top};
+   {pr_label = "add"; pr_rules = expr_add};
+   {pr_label = "mul"; pr_rules = expr_mul};
+   {pr_label = "apply"; pr_rules = expr_app};
+   {pr_label = "simple"; pr_rules = expr_simple}]
+;
+</pre>
+
+<p>where we find, in particular, our function <code>expr_app</code>
+defined above.</p>
+
+<p>The call to a specific level is done by the
+function <code>pr_expr.pr_fun</code> with the level name. It returns the
+function taking the "printing context" (<code>pc</code>) and the expression
+as parameters, and returning the pretty printed string. For example, the
+call to the top level of expressions has been defined as:</p>
+
+<pre>
+value expr pc e = pr_expr.pr_fun "top" pc e;
+</pre>
+
+<p>Same thing for the other pretty printed functions for patterns,
+structures, signatures, and so on.</p>
+
+<p>To extend some level, in another file, the
+function <code>find_pr_level</code> can be used to get the level to
+be extended, e.g.</p>
+
+<pre>
+let expr_app = find_pr_level "app" pr_expr.pr_levels in
+expr_app.pr_rules :=
+  extfun expr_app.pr_rules with
+  [ <:expr< .... >> -> ...
+  | <:expr< .... >> -> ... 
+  | ... ];
+</pre>
 
 <h2>Description</h2>
 
