@@ -1,11 +1,11 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_ro.ml,v 1.28 2007/06/28 18:28:35 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.29 2007/06/29 12:52:10 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
 
 open Pretty;
-open Pcaml.NewPrinters;
+open Pcaml.Printers;
 open Prtools;
 
 value not_impl name pc x =

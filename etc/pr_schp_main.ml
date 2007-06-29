@@ -2,7 +2,7 @@
 (* $Id$ *)
 
 open Format;
-open Pcaml.Printer;
+open Pcaml.OldPrinters;
 open Parserify;
 
 value nok = Pr_scheme.nok;

@@ -3,7 +3,7 @@
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;;
-open Pcaml.NewPrinters;;
+open Pcaml.Printers;;
 
 type ('a, 'b) pr_gfun = (string, 'b) pr_context -> 'a -> string;;
 

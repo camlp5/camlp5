@@ -5,7 +5,7 @@
 (* heuristic to rebuild the EXTEND statement from the AST *)
 
 open Pretty;
-open Pcaml.NewPrinters;
+open Pcaml.Printers;
 open Prtools;
 
 value not_impl name pc x =

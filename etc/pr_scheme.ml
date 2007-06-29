@@ -1,7 +1,7 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.8 2007/06/28 04:11:18 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.9 2007/06/29 12:52:10 deraugla Exp $ *)
 
-open Pcaml.Printer;
+open Pcaml.OldPrinters;
 open Format;
 
 type printer_t 'a =
@@ -745,7 +745,7 @@ value output_string_eval ppf s =
       | (c, _) -> do { pp_print_char ppf c; loop (i + 1) } ]
 ;
 
-value sep = Pcaml.Printer.inter_phrases;
+value sep = Pcaml.OldPrinters.inter_phrases;
 
 value input_source ic len =
   let buff = Buffer.create 20 in

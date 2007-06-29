@@ -10,9 +10,9 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_extend.ml,v 1.7 2007/05/30 09:54:20 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.8 2007/06/29 12:52:10 deraugla Exp $ *)
 
-open Pcaml.Printer;
+open Pcaml.OldPrinters;
 open Spretty;
 
 value no_slist = ref False;

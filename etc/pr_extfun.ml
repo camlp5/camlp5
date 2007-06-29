@@ -1,7 +1,7 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_extfun.ml,v 1.4 2007/05/30 09:54:20 deraugla Exp $ *)
+(* $Id: pr_extfun.ml,v 1.5 2007/06/29 12:52:10 deraugla Exp $ *)
 
-open Pcaml.Printer;
+open Pcaml.OldPrinters;
 open Spretty;
 
 value loc = Stdpp.dummy_loc;

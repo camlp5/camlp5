@@ -3,7 +3,7 @@
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
-open Pcaml.NewPrinters;
+open Pcaml.Printers;
 open Prtools;
 
 value flag_expand_declare = ref False;
