@@ -67,47 +67,140 @@ new ones. The main ones are:</p>
 
 <h2>Principles</h2>
 
-<p>The module <a href="pretty.html">Pretty</a> does not take care of
-indentations nor line breaks : it is just able to tell whether a line
-is too long or not, or if it contains newlines. Therefore, all
-functions in ocaml pretty printing contain a "printing context"
-(variable <tt>pc</tt>), a record holding :</p>
+<h3>Using module Pretty</h3>
+
+<p>All functions in ocaml pretty printing take a parameter named "the
+printing context" (variable <code>pc</code>). It is a record holding :</p>
 
 <ul>
 
-<li>The current indendation : ind</li>
+<li>The current indendation : <code>pc.ind</code></li>
 
-<li>What has to be printed before, in the same line : bef</li>
+<li>What has to be printed before, in the same line : <code>pc.bef</code></li>
 
-<li>What has to be printed after, in the same line : aft</li>
+<li>What has to be printed after, in the same line : <code>pc.aft</code></li>
 
 </ul>
 
-<p>The functions accumulate pieces of lines, controlled
-by <tt>Pretty.horiz_vertic</tt> which decides whether it worths
-printing on one only line or if the output has to be broken into
-several lines. Here, an example of printing the ocaml application
-of <tt>f</tt> to <tt>x</tt>:<p>
+<p>A typical pretty printing function calls the
+function <code>horiz_vertic</code> of the library
+module <a href="pretty.html">Pretty</a>. This function takes two
+functions as paramter:</p>
+
+<ul>
+
+<li>The way to print the data in one only line (<i>horizontal</i>
+printing)</li>
+
+<li>The way to print the data in two or more lines (<i>vertical</i>
+printing)</li>
+
+</ul>
+
+<p>Both function catenate the strings by using the
+function <code>sprintf</code> of the library
+module <code>Pretty</code> which controls whether the printed data
+hold in the line or not. They generally call, recursively, other
+pretty printing functions with the same behaviour.</p>
+
+<p>Example (fictive) of printing an ocaml application. Let us suppose
+we have an application expression <code>e1 e2</code> to pretty print
+where <code>e1</code> and <code>e2</code> are sub-expressions. If both
+expressions and their application holds on one only line, we want to
+see:</p>
 
 <pre>
-value expr_app pc f x =
+e1 e2
+</pre>
+
+<p>On the other hand, if they does not hold on one only line, we want
+to see <code>e2</code> in another line with, say, an indendation of 2
+spaces:</p>
+
+<pre>
+e1
+  e2
+</pre>
+
+<p>Here is a possible implementation. The function has been
+named <code>expr_app</code> and can call the function <code>expr</code> to
+print the sub-expressions <code>e1</code> and <code>e2</code>:</p>
+
+<pre>
+value expr_app pc e1 e2 =
   horiz_vertic
     (fun () ->
-       let s1 = expr {(pc) with aft = ""} f in
-       let s2 = expr {(pc) with bef = ""} x in
+       let s1 = expr {(pc) with aft = ""} e1 in
+       let s2 = expr {(pc) with bef = ""} e2 in
        sprintf "%s %s" s1 s2)
     (fun () ->
-       let s1 = expr {(pc) with aft = ""} f in
-       let s2 = expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} x in
+       let s1 = expr {(pc) with aft = ""} e1 in
+       let s2 = expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e2 in
        sprintf "%s\n%s" s1 s2)
 ;
 </pre>
 
+<p>Notice that the parameter <code>pc</code> contains a
+field <code>pc.bef</code> (what has to be printed before in the same
+line), which in both cases is transmitted to the printing
+of <code>e1</code> (since the syntax <code>{(pc) with aft = ""}</code>
+is a record with <code>pc.bef</code> kept). Same for the
+field <code>pc.aft</code> transmitted to the printing
+of <code>e2</code>.</p>
+
+<h3>Using module Extfun and syntax</h3>
+
+<p>This system is combined to the the <a href="extfun.html">extensible
+functions</a> to allow the extensibility of the pretty
+printing. Pretty printers of camlp4 can then be used as "kits" to be
+added or not, according to the things to be pretty printed in some or
+other ways. In particular, the pretty printing kit
+"<code>pr_r.cmo</code>" alone does not rebuild parsers in their
+original syntax. When adding "<code>pr_rp.cmo</code>", the parsers are
+rebuilt: the code of "<code>pr_rp.ml</code>" is just an extension of
+some parts of the pretty printing extensible functions of
+"<code>pr_r.ml</code>".</p>
+
+<p>The code above actually looks like:</p>
+
+<pre>
+value expr_app =
+  extfun Extfun.empty with
+  [ <:expr< $e1$ $e2$ >> ->
+      fun curr next pc ->
+        horiz_vertic
+          (fun () ->
+             let s1 = curr {(pc) with aft = ""} e1 in
+             let s2 = next {(pc) with bef = ""} e2 in
+             sprintf "%s %s" s1 s2)
+          (fun () ->
+             let s1 = curr {(pc) with aft = ""} e1 in
+             let s2 = next {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e2 in
+             sprintf "%s\n%s" s1 s2)
+  | e ->
+      fun curr next pc -> next pc e ]
+;
+</pre>
+
+<p>The functions apply to the syntax tree (here <code>&lt;:expr&lt;
+$e1$ $e2$ &gt;&gt;). To be extensible, the syntax tree must be the
+first parameter (it is not possible to apply extensions inside a
+closure). The other parameters, in particular the printing context
+<code>pc</code> are given in the semantic action.</p>
+
+<p>The parameter <code>curr</code> and <code>next</code> are provided
+by the pretty printing system for ocaml programs. They correspond to
+the pretty printing of, respectively, the current level and the next
+level. Since the application in ocaml is left associative, the first
+sub-expression is printed at the same (current) level and the second
+one is printed at the next level. We also see a call
+to <code>next</code> in the last (2nd) case of the function to treat
+the other cases in the next level.</p>
 
 <h2>Description</h2>
 
 <p>The pretty printing operators of the OCaml syntax trees are defined
-in the module <tt>Pcaml.Printer</tt>. They are:</p>
+in the module <code>Pcaml.Printer</code>. They are:</p>
 
 <ul>
 <li>pr_expr : expressions</li>
@@ -119,15 +212,15 @@ in the module <tt>Pcaml.Printer</tt>. They are:</p>
 <li>pr_module_type : module types</li>
 </ul>
 
-<p>All are of a specific type, <tt>Pcaml.Printer.printer_t</tt> which
+<p>All are of a specific type, <code>Pcaml.Printer.printer_t</code> which
 contains the mutable list of the mutable printing "levels". To extend
-a specific level, the function <tt>Pcaml.Printer.find_pr_level</tt>
+a specific level, the function <code>Pcaml.Printer.find_pr_level</code>
 allows to find the desired level by its name, and the extension can be
 done using the "<a href="extfun.html">extfun</a>" statement.</p>
 
 <p>All extensible functions are defined by pattern matching, whose
-type is the syntax tree type to be printed (<tt>MLast.expr</tt> for
-expressions, <tt>MLast.patt</tt> for patterns, and so on). They all
+type is the syntax tree type to be printed (<code>MLast.expr</code> for
+expressions, <code>MLast.patt</code> for patterns, and so on). They all
 return a function holding three parameters and returning the pretty
 printed string.</p>
 
@@ -135,23 +228,23 @@ printed string.</p>
 
 <ul>
 
-<li><tt>curr</tt> : the current function. It can be called directly
-(without having to use <tt>Extfun.apply</tt>).</li>
+<li><code>curr</code> : the current function. It can be called directly
+(without having to use <code>Extfun.apply</code>).</li>
 
-<li><tt>next</tt> : the function of the next pretty printing level. Same
-usage than <tt>curr</tt> above.</li>
+<li><code>next</code> : the function of the next pretty printing level. Same
+usage than <code>curr</code> above.</li>
 
-<li><tt>pc</tt> : the printing context, a record containing :
+<li><code>pc</code> : the printing context, a record containing :
 
   <ul>
 
-  <li><tt>ind</tt> : the current indentation (a number).</li>
+  <li><code>ind</code> : the current indentation (a number).</li>
 
-  <li><tt>bef</tt> : what has to be displayed before the data.</li>
+  <li><code>bef</code> : what has to be displayed before the data.</li>
 
-  <li><tt>aft</tt> : what has to be displayed after the data.</li>
+  <li><code>aft</code> : what has to be displayed after the data.</li>
 
-  <li><tt>dang</tt> : dangling string, information necessary for normal
+  <li><code>dang</code> : dangling string, information necessary for normal
   syntax, to know whether parenthesisation is required or not.</li>
 
   </ul>
@@ -161,29 +254,29 @@ usage than <tt>curr</tt> above.</li>
 </ul>
 
 <p>Generally, the code of the pretty printing is a call to the
-formatting function <tt>horiz_vertic</tt> of the module <a
+formatting function <code>horiz_vertic</code> of the module <a
 href="pretty.html">Pretty</a>.</p>
 
 <p>To display the thing <em>horizontally</em> (first function
-parameter of the <tt>horiz_vertic</tt> function), just use
-<tt>sprintf</tt> (of that module) concating:</p>
+parameter of the <code>horiz_vertic</code> function), just use
+<code>sprintf</code> (of that module) concating:</p>
 
 <ul>
 
-<li>The <tt>pr.bef</tt> value, which is string representing the current
+<li>The <code>pr.bef</code> value, which is string representing the current
 indendation string, and the possible things which have to be displayed
 before the data.</li>
 
 <li>The pretty printed data where elements are separated by spaces,
 parentheses, commas, depending of how they have to be displayed.</li>
 
-<li>The <tt>pr.aft</tt> value, which is the continuation string up to
+<li>The <code>pr.aft</code> value, which is the continuation string up to
 the end of the line.</li>
 
 </ul>
 
 <p>To display the thing <em>vertically</em>, i.e. in several lines,
-(second function parameter of the <tt>horiz_vertic</tt> function),
+(second function parameter of the <code>horiz_vertic</code> function),
 you have to determine which are the cutting points, create and
 concate the lines separating them with newlines characters.</p>
 
@@ -191,25 +284,25 @@ concate the lines separating them with newlines characters.</p>
 kits:</p>
 
 <ul>
-<li><tt>pr_r.cmo</tt> : for basic revised syntax</li>
-<li><tt>pr_ro.cmo</tt> : for objects, labels, variants in revised syntax</li>
-<li><tt>pr_rp.cmo</tt> : for rebuilding parsers and stream in their
+<li><code>pr_r.cmo</code> : for basic revised syntax</li>
+<li><code>pr_ro.cmo</code> : for objects, labels, variants in revised syntax</li>
+<li><code>pr_rp.cmo</code> : for rebuilding parsers and stream in their
 initial revised syntax</li>
-<li><tt>pr_o.cmo</tt> : for basic normal syntax</li>
-<li><tt>pr_op.cmo</tt> : for rebuilding parsers and stream in their
+<li><code>pr_o.cmo</code> : for basic normal syntax</li>
+<li><code>pr_op.cmo</code> : for rebuilding parsers and stream in their
 initial normal syntax</li>
-<li><tt>pr_extend.cmo</tt> : for the <tt>EXTEND</tt> statement</li>
+<li><code>pr_extend.cmo</code> : for the <code>EXTEND</code> statement</li>
 </ul>
 
 <p>For example, to pretty print a source file from normal to revised
-syntax with rebuilding the parsers and the <tt>EXTEND</tt> statements,
+syntax with rebuilding the parsers and the <code>EXTEND</code> statements,
 the command is:</p>
 
 <pre>
 camlp4o pr_r.cmo pr_rp.cmo pr_extend.cmo foo.ml
 </pre>
 
-<p>Details can be found in the <tt>camlp4</tt> manual page.</p>
+<p>Details can be found in the <code>camlp4</code> manual page.</p>
 
 <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
 
