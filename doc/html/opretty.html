@@ -90,7 +90,7 @@ several lines. Here, an example of printing the ocaml application
 of <tt>f</tt> to <tt>x</tt>:<p>
 
 <pre>
-value pr_app pc f x =
+value expr_app pc f x =
   horiz_vertic
     (fun () ->
        let s1 = expr {(pc) with aft = ""} f in
