@@ -28,7 +28,10 @@ value vlist : pr_fun 'a -> pr_fun (list 'a);
        string of a list of elements; elements are separated with newlines
        and indentations. *)
 value vlist2 : pr_gfun 'a 'b -> pr_gfun 'a 'b -> pr_gfun (list 'a) ('b * 'b);
-   (** vertical list with different function from 2nd element on *)
+   (** vertical list with different function from 2nd element on.
+       In [vlist2 elem elem2 pc el], [pc.aft] is a couple where the first
+       element is given as [pc.aft] to all elements except the last one,
+       and the second element is given as [pc.aft] for the last one. *)
 value vlistl : pr_fun 'a -> pr_fun 'a -> pr_fun (list 'a);
    (** vertical list with different function for the last element *)
 

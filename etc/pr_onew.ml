@@ -565,6 +565,11 @@ value let_binding pc (p, e) =
 
 value match_assoc pc (p, w, e) =
   let expr_wh = if flag_where_after_arrow.val then expr_wh else expr in
+  let (pc_aft, pc_dang) =
+    match pc.aft with
+    [ None -> ("", "|")
+    | Some aft -> (aft, "") ]
+  in
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s -> %s%s" pc.bef
@@ -573,7 +578,8 @@ value match_assoc pc (p, w, e) =
           [ Some e ->
               sprintf " when %s" (expr {(pc) with bef = ""; aft = ""} e)
           | None -> "" ])
-         (comm_expr expr {(pc) with bef = ""; aft = ""} e) pc.aft)
+         (comm_expr expr {(pc) with bef = ""; aft = ""; dang = pc_dang} e)
+            pc_aft)
     (fun () ->
        let patt_arrow k =
          match w with
@@ -609,13 +615,16 @@ value match_assoc pc (p, w, e) =
            sequence_box2
              {(pc) with
               bef k =
-                horiz_vertic (fun _ -> sprintf "\n") (fun () -> patt_arrow k)}
+                horiz_vertic (fun _ -> sprintf "\n") (fun () -> patt_arrow k);
+              aft = pc_aft}
              el
        | None ->
            let s1 = patt_arrow "" in
            let s2 =
              comm_expr expr_wh
-               {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
+               {ind = pc.ind + 2; bef = tab (pc.ind + 2);
+                aft = pc_aft; dang = pc_dang}
+               e
            in
            sprintf "%s\n%s" s1 s2 ])
 ;
@@ -627,7 +636,7 @@ value match_assoc_list pc pwel =
   else
     vlist2 match_assoc_sh (bar_before match_assoc_sh)
       {(pc) with bef = sprintf "%s  " pc.bef;
-       aft = ("", pc.aft)}
+       aft = (None, Some pc.aft)}
       pwel
 ;
 
@@ -950,16 +959,16 @@ value expr_expr1 =
         horiz_vertic
          (fun () ->
             sprintf "%sif %s then %s else %s%s" pc.bef
-              (curr {(pc) with bef = ""; aft = ""} e1)
-              (curr {(pc) with bef = ""; aft = ""} e2)
+              (curr {(pc) with bef = ""; aft = ""; dang = ""} e1)
+              (curr {(pc) with bef = ""; aft = ""; dang = ""} e2)
               (curr {(pc) with bef = ""; aft = ""} e3) pc.aft)
          (fun () ->
             let if_then ind b_if e1 e2 =
               horiz_vertic
                 (fun () ->
                    sprintf "%s%s then %s" b_if
-                     (curr {(pc) with bef = ""; aft = ""} e1)
-                     (curr {(pc) with bef = ""; aft = ""} e2))
+                     (curr {(pc) with bef = ""; aft = ""; dang = ""} e1)
+                     (curr {(pc) with bef = ""; aft = ""; dang = ""} e2))
                 (fun () ->
                    let horiz_if_then k =
                      sprintf "%s%s then%s" b_if
@@ -967,7 +976,8 @@ value expr_expr1 =
                    in
                    let vertic_if_then k =
                      let s1 =
-                       curr {(pc) with ind = ind + 3; bef = b_if; aft = ""} e1
+                       curr {ind = ind + 3; bef = b_if; aft = ""; dang = ""}
+                         e1
                      in
                      let s2 = sprintf "%sthen%s" (tab ind) k in
                      sprintf "%s\n%s" s1 s2
@@ -979,7 +989,7 @@ value expr_expr1 =
                           bef k =
                             horiz_vertic (fun () -> horiz_if_then k)
                               (fun () -> vertic_if_then k);
-                          aft = ""}
+                          aft = ""; dang = ""}
                          el
                    | None ->
                        let s1 =
@@ -988,8 +998,8 @@ value expr_expr1 =
                        in
                        let s2 =
                          comm_expr expr_wh
-                           {(pc) with ind = pc.ind + 2;
-                            bef = tab (pc.ind + 2); aft = ""}
+                           {ind = pc.ind + 2; bef = tab (pc.ind + 2);
+                            aft = ""; dang = ""}
                            e2
                        in
                        sprintf "%s\n%s" s1 s2 ])
@@ -1085,7 +1095,8 @@ value expr_expr1 =
               (fun () ->
                  sprintf "%s%s %s with %s%s" pc.bef op
                    (expr_wh {(pc) with bef = ""; aft = ""} e1)
-                   (match_assoc {(pc) with bef = ""; aft = ""} (p, wo, e))
+                   (match_assoc {(pc) with bef = ""; aft = Some ""}
+                      (p, wo, e))
                    pc.aft)
               (fun () ->
                  match
@@ -1127,7 +1138,8 @@ value expr_expr1 =
                      in
                      let s2 =
                        match_assoc
-                         {(pc) with bef = sprintf "%swith " (tab pc.ind)}
+                         {(pc) with bef = sprintf "%swith " (tab pc.ind);
+                          aft = Some ""}
                          (p, wo, e)
                      in
                      sprintf "%s\n%s" s1 s2 ])
@@ -1139,6 +1151,9 @@ value expr_expr1 =
                    (match_assoc_list {(pc) with bef = ""; aft = ""} pwel)
                    pc.aft)
               (fun () ->
+                 let op =
+                   if pc.dang = "|" then sprintf "begin %s" op else op
+                 in
                  let s1 =
                    horiz_vertic
                      (fun () ->
@@ -1167,9 +1182,17 @@ value expr_expr1 =
                         sprintf "%s\n%swith" s (tab pc.ind))
                  in
                  let s2 =
-                   match_assoc_list {(pc) with bef = tab pc.ind} pwel
+                   match_assoc_list
+                     {(pc) with bef = tab pc.ind;
+                      aft = if pc.dang = "|" then "" else pc.aft}
+                     pwel
                  in
-                 sprintf "%s\n%s" s1 s2) ]
+                 let s3 =
+                   if pc.dang = "|" then
+                     sprintf "\n%send%s" (tab pc.ind) pc.aft
+                   else ""
+                 in
+                 sprintf "%s\n%s%s" s1 s2 s3) ]
   | <:expr< let $opt:rf$ $list:pel$ in $e$ >> as ge ->
       fun curr next pc ->
         let expr_wh = if flag_where_after_in.val then expr_wh else curr in

@@ -30,7 +30,10 @@ val vlist : 'a pr_fun -> 'a list pr_fun;;
        and indentations. *)
 val vlist2 :
   ('a, 'b) pr_gfun -> ('a, 'b) pr_gfun -> ('a list, ('b * 'b)) pr_gfun;;
-   (** vertical list with different function from 2nd element on *)
+   (** vertical list with different function from 2nd element on.
+       In [vlist2 elem elem2 pc el], [pc.aft] is a couple where the first
+       element is given as [pc.aft] to all elements except the last one,
+       and the second element is given as [pc.aft] for the last one. *)
 val vlistl : 'a pr_fun -> 'a pr_fun -> 'a list pr_fun;;
    (** vertical list with different function for the last element *)
 
