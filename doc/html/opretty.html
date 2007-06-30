@@ -24,7 +24,8 @@
       border-left: silver solid 3px; margin-bottom: 1.5em; margin-left: 2cm;
       padding-left: 1em; padding-right: 0.5em; line-height: 1.2
     }
-    tt { }
+    .dangling { color: red; background: lightgray }
+    .parenthesis { color: blue }
     .value { background: #0f0 }
   --></style>
 </head>
@@ -84,6 +85,9 @@ printing context" (variable <code>pc</code>). It is a record holding :</p>
 <li>What has to be printed before, in the same line : <code>pc.bef</code></li>
 
 <li>What has to be printed after, in the same line : <code>pc.aft</code></li>
+
+<li>The dangling token, useful in normal syntax to know whether
+parentheses are necessary : <code>pc.dang</code></li>
 
 </ul>
 
@@ -233,6 +237,65 @@ sub-expression is printed at the same (current) level and the second
 one is printed at the next level. We also see a call
 to <code>next</code> in the last (2nd) case of the function to treat
 the other cases in the next level.</p>
+
+<h3>Dangling else, bar and semicolon</h3>
+
+<p>In normal syntax, there are cases where it is necessary to enclose
+expressions between parentheses (or
+between <span class="parenthesis">begin</span>
+and <span class="parenthesis">end</span>, which is equivalent in that
+syntax). Three tokens may cause problems: the "<code>else</code>", the
+vertical bar "<code>|</code>" and the semicolon "<code>;</code>". Here
+are examples where the presence of these tokens constraints the
+previous expression to be parenthesized. In these three examples,
+removing
+the <span class="parenthesis">begin</span>..<span class="parenthesis">end</span>
+enclosers would change the meaning of the expression because the
+dangling token would be included in that expression:</p>
+
+<p>Dangling else:</p>
+
+<pre>
+if a then <span class="parenthesis">begin</span> if b then c <span class="parenthesis">end</span> <span class="dangling">else</span> d
+</pre>
+
+<p>Dangling bar:</p>
+
+<pre>
+function
+  A ->
+    <span class="parenthesis">begin</span> match a with
+      B -> c
+    | D -> e
+    <span class="parenthesis">end</span>
+<span class="dangling">|</span> F -> g
+</pre>
+
+<p>Dangling semicolon:</p>
+
+<pre>
+if a then b
+else <span class="parenthesis">begin</span>
+  let c = d in
+  e
+<span class="parenthesis">end</span><span class="dangling">;</span>
+f
+</pre>
+
+<p>The information is transmitted by the
+value <code>pc.dang</code>. In the first example above, while
+displaying the "<code>then</code>" part of the outer
+"<code>if</code>", the sub-expression is called with the
+value <code>pc.dang</code> set to
+<code>"else"</code> to inform the last sub-sub-expression that it is
+going to be followed by that token. When a "<code>if</code>"
+expression has to be displayed without "<code>else</code>" part,
+and that its "<code>pc.dang</code>" is "else", it has to be enclosed
+with spaces.</p>
+
+<p>This problem does not exist in revised syntax. While pretty
+printing in revised syntax, the parameter <code>pc.dang</code> is not
+necessary and remains the empty string.</p>
 
 <h3>By level</h3>
 
