@@ -1724,9 +1724,9 @@ value patt_simple =
       fun curr next pc ->
         let (xl, y) = make_patt_list z in
         let xl = List.map (fun x -> (x, ";")) xl in
-        let patt2 pc x =
-          match y with
-          [ Some y ->
+        match y with
+        [ Some  y ->
+            let patt2 pc x =
               horiz_vertic
                 (fun () ->
                    sprintf "%s%s :: %s]%s" pc.bef
@@ -1741,10 +1741,14 @@ value patt_simple =
                        y
                    in
                    sprintf "%s\n%s" s1 s2)
-          | None -> patt {(pc) with aft = sprintf "]%s" pc.aft} x ]
-        in
-        plistl patt patt2 0
-          {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef} xl
+            in
+            plistl patt patt2 0
+              {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef} xl
+        | None ->
+            plist patt 0
+              {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef;
+               aft = sprintf "]%s" pc.aft}
+              xl ]
   | <:patt< ($p$ : $t$) >> ->
       fun curr next pc ->
         horiz_vertic

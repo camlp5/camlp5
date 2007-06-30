@@ -1370,6 +1370,19 @@ value expr_concat =
         right_operator pc 0 unfold next z ]
 ;
 
+value expr_cons =
+  extfun Extfun.empty with
+  [ <:expr< [$_$ :: $_$] >> as z ->
+      fun curr next pc ->
+        let (xl, y) = make_expr_list z in
+        match y with
+        [ Some y ->
+            let xl = List.map (fun x -> (x, " ::")) (xl @ [y]) in
+            plist expr 0 {(pc) with ind = pc.ind + 1} xl
+        | None -> next pc z ]
+  | z -> fun curr next pc -> next pc z ]
+;
+
 value expr_add =
   let ops = ["+"; "+."; "-"; "-."] in
   extfun Extfun.empty with
@@ -1532,28 +1545,15 @@ value expr_simple =
   | <:expr< [$_$ :: $_$] >> as z ->
       fun curr next pc ->
         let (xl, y) = make_expr_list z in
-        let xl = List.map (fun x -> (x, ";")) xl in
         match y with
         [ Some y ->
-            let expr2 pc x =
-              horiz_vertic
-                (fun () ->
-                   sprintf "%s%s :: %s]%s" pc.bef
-                     (expr {(pc) with bef = ""; aft = ""} x)
-                     (expr {(pc) with bef = ""; aft = ""} y) pc.aft)
-                (fun () ->
-                   let s1 = expr {(pc) with aft = " ::"} x in
-                   let s2 =
-                     expr
-                       {(pc) with bef = tab pc.ind;
-                        aft = sprintf "]%s" pc.aft}
-                       y
-                   in
-                   sprintf "%s\n%s" s1 s2)
-            in
-            plistl expr expr2 0
-              {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef} xl
+            let xl = List.map (fun x -> (x, " ::")) (xl @ [y]) in
+            plist expr 0
+              {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+               aft = sprintf ")%s" pc.aft}
+              xl
         | None ->
+            let xl = List.map (fun x -> (x, ";")) xl in
             plist expr 0
               {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef;
                aft = sprintf "]%s" pc.aft}
@@ -1676,6 +1676,19 @@ value patt_range =
   | z -> fun curr next pc -> next pc z ]
 ;
 
+value patt_cons =
+  extfun Extfun.empty with
+  [ <:patt< [$_$ :: $_$] >> as z ->
+      fun curr next pc ->
+        let (xl, y) = make_patt_list z in
+        match y with
+        [ Some y ->
+            let xl = List.map (fun x -> (x, " ::")) (xl @ [y]) in
+            plist patt 0 {(pc) with ind = pc.ind + 1} xl
+        | None -> next pc z ]
+  | z -> fun curr next pc -> next pc z ]
+;
+
 value patt_apply =
   extfun Extfun.empty with
   [ <:patt< $_$ $_$ >> as z ->
@@ -1747,28 +1760,19 @@ value patt_simple =
   | <:patt< [$_$ :: $_$] >> as z ->
       fun curr next pc ->
         let (xl, y) = make_patt_list z in
-        let xl = List.map (fun x -> (x, ";")) xl in
-        let patt2 pc x =
-          match y with
-          [ Some y ->
-              horiz_vertic
-                (fun () ->
-                   sprintf "%s%s :: %s]%s" pc.bef
-                     (patt {(pc) with bef = ""; aft = ""} x)
-                     (patt {(pc) with bef = ""; aft = ""} y) pc.aft)
-                (fun () ->
-                   let s1 = patt {(pc) with aft = " ::"} x in
-                   let s2 =
-                     patt
-                       {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                        aft = sprintf "]%s" pc.aft}
-                       y
-                   in
-                   sprintf "%s\n%s" s1 s2)
-          | None -> patt {(pc) with aft = sprintf "]%s" pc.aft} x ]
-        in
-        plistl patt patt2 0
-          {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef} xl
+        match y with
+        [ Some  y ->
+            let xl = List.map (fun x -> (x, " ::")) (xl @ [y]) in
+            plist patt 0
+              {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+               aft = sprintf ")%s" pc.aft}
+              xl
+        | None ->
+            let xl = List.map (fun x -> (x, ";")) xl in
+            plist patt 0
+              {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef;
+               aft = sprintf "]%s" pc.aft}
+              xl ]
   | <:patt< ($p$ : $t$) >> ->
       fun curr next pc ->
         horiz_vertic
@@ -2348,6 +2352,7 @@ pr_expr.pr_levels :=
    {pr_label = "amp"; pr_rules = expr_and};
    {pr_label = "less"; pr_rules = expr_less};
    {pr_label = "concat"; pr_rules = expr_concat};
+   {pr_label = "cons"; pr_rules = expr_cons};
    {pr_label = "add"; pr_rules = expr_add};
    {pr_label = "mul"; pr_rules = expr_mul};
    {pr_label = "pow"; pr_rules = expr_pow};
@@ -2360,6 +2365,7 @@ pr_expr.pr_levels :=
 pr_patt.pr_levels :=
   [{pr_label = "top"; pr_rules = patt_top};
    {pr_label = "range"; pr_rules = patt_range};
+   {pr_label = "cons"; pr_rules = patt_cons};
    {pr_label = "apply"; pr_rules = patt_apply};
    {pr_label = "dot"; pr_rules = patt_dot};
    {pr_label = "simple"; pr_rules = patt_simple}]
