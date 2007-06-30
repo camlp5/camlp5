@@ -1524,9 +1524,9 @@ value expr_simple =
       fun curr next pc ->
         let (xl, y) = make_expr_list z in
         let xl = List.map (fun x -> (x, ";")) xl in
-        let expr2 pc x =
-          match y with
-          [ Some y ->
+        match y with
+        [ Some y ->
+            let expr2 pc x =
               horiz_vertic
                 (fun () ->
                    sprintf "%s%s :: %s]%s" pc.bef
@@ -1541,10 +1541,14 @@ value expr_simple =
                        y
                    in
                    sprintf "%s\n%s" s1 s2)
-          | None -> expr {(pc) with aft = (sprintf "]%s" pc.aft)} x ]
-        in
-        plistl expr expr2 0
-          {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef} xl
+            in
+            plistl expr expr2 0
+              {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef} xl
+        | None ->
+            plist expr 0
+              {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef;
+               aft = sprintf "]%s" pc.aft}
+              xl ]
   | <:expr< ($e$ : $t$) >> ->
       fun curr next pc ->
         horiz_vertic
