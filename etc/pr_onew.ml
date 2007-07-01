@@ -274,6 +274,15 @@ pr_expr_fun_args.val :=
   | z -> ([], z) ]
 ;
 
+value expr_semi pc e =
+  let (pc_aft, pc_dang) =
+    match pc.aft with
+    [ None -> (";", ";")
+    | Some aft -> (aft, pc.dang) ]
+  in
+  comm_expr expr {(pc) with aft = pc_aft; dang = pc_dang} e
+;
+
 value sequencify e =
   if not flag_sequ_begin_at_eol.val then None else flatten_sequence e
 ;
@@ -294,9 +303,9 @@ value sequencify e =
 value sequence_box pc expr el =
   let s1 = pc.bef " begin" in
   let s2 =
-    vlistl (semi_after (comm_expr expr))
-      (comm_expr expr)
-      {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""}
+    vlist2 expr_semi expr_semi
+      {ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = (None, Some "");
+       dang = ""}
       el
   in
   let s3 = sprintf "%s%s%s" (tab pc.ind) "end" pc.aft in
@@ -531,8 +540,8 @@ value let_binding pc (p, e) =
              let s1 = hlist patt {(pc) with aft = " ="} pl in
              let s2 =
                comm_expr expr_wh
-                 {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                  aft = ""}
+                 {ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = "";
+                  dang = ""}
                  e
               in
              sprintf "%s\n%s" s1 s2 ]
@@ -954,7 +963,8 @@ value expr_top =
                   {(pc) with bef = ""; aft = ""} el)
                pc.aft)
           (fun () ->
-             vlistl (semi_after (comm_expr expr)) (comm_expr expr) pc el)
+             vlist2 expr_semi expr_semi {(pc) with aft = (None, Some pc.aft)}
+               el)
   | z -> fun curr next pc -> next pc z ] 
 ;
 
@@ -1158,8 +1168,11 @@ value expr_expr1 =
                    (match_assoc_list {(pc) with bef = ""; aft = ""} pwel)
                    pc.aft)
               (fun () ->
-                 let op =
-                   if pc.dang = "|" then sprintf "begin %s" op else op
+                 let (op, pc_aft, op_end) =
+                   if List.mem pc.dang ["|"; ";"] then
+                     (sprintf "begin %s" op, "",
+                      sprintf "\n%send%s" (tab pc.ind) pc.aft)
+                   else (op, pc.aft, "")
                  in
                  let s1 =
                    horiz_vertic
@@ -1189,16 +1202,10 @@ value expr_expr1 =
                         sprintf "%s\n%swith" s (tab pc.ind))
                  in
                  let s2 =
-                   match_assoc_list
-                     {(pc) with bef = tab pc.ind;
-                      aft = if pc.dang = "|" then "" else pc.aft}
+                   match_assoc_list {(pc) with bef = tab pc.ind; aft = pc_aft}
                      pwel
                  in
-                 let s3 =
-                   if pc.dang = "|" then
-                     sprintf "\n%send%s" (tab pc.ind) pc.aft
-                   else ""
-                 in
+                 let s3 = op_end in
                  sprintf "%s\n%s%s" s1 s2 s3) ]
   | <:expr< let $opt:rf$ $list:pel$ in $e$ >> as ge ->
       fun curr next pc ->
