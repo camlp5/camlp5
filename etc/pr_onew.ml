@@ -823,12 +823,43 @@ value ctyp_apply =
   extfun Extfun.empty with
   [ <:ctyp< $_$ $_$ >> as z ->
       fun curr next pc ->
-        let unfold =
-          fun
-          [ <:ctyp< $x$ $y$ >> -> Some (x, "", y)
-          | _ -> None ]
+        let (t, tl) =
+          loop [] z where rec loop args =
+            fun
+            [ <:ctyp< $x$ $y$ >> -> loop [y :: args] x
+            | t -> (t, args) ]
         in
-        left_operator pc 2 unfold next z
+        match tl with
+        [ [t2] ->
+            horiz_vertic
+              (fun () ->
+                 sprintf "%s%s %s%s" pc.bef
+                   (curr {(pc) with bef = ""; aft = ""} t2)
+                   (next {(pc) with bef = ""; aft = ""} t) pc.aft)
+              (fun () ->
+                 let s1 = curr {(pc) with aft = ""} t2 in
+                 let s2 =
+                   next {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
+                     t
+                 in
+                 sprintf "%s\n%s" s1 s2)
+        | _ ->
+            horiz_vertic
+              (fun () ->
+                 sprintf "%s(%s) %s%s" pc.bef
+                   (hlistl (comma_after ctyp) ctyp
+                      {(pc) with bef = ""; aft = ""} tl)
+                   (curr {(pc) with bef = ""; aft = ""} t) pc.aft)
+              (fun () ->
+                 let s1 =
+                   hlistl (comma_after ctyp) ctyp
+                     {(pc) with bef = sprintf "%s(" pc.bef; aft = ")"} tl
+                 in
+                 let s2 =
+                   curr
+                     {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t
+                 in
+                 sprintf "%s\n%s" s1 s2) ]
   | z -> fun curr next pc -> next pc z ]
 ;
 
@@ -2110,9 +2141,10 @@ value str_item_top =
         mod_ident {(pc) with bef = sprintf "%sopen " pc.bef} i
   | <:str_item< type $list:tdl$ >> ->
       fun curr next pc ->
+        let nl = pc.aft = ";;" in
         vlist2 type_decl (and_before type_decl)
           {(pc) with bef = sprintf "%stype " pc.bef;
-           aft = (None, Some (True, pc.aft))}
+           aft = (None, Some (nl, pc.aft))}
           tdl
   | <:str_item< value $opt:rf$ $list:pel$ >> ->
       fun curr next pc ->
