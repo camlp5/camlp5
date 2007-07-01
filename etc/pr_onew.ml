@@ -1800,7 +1800,7 @@ value patt_simple =
   | <:patt< ($list:pl$) >> ->
       fun curr next pc ->
         let pl = List.map (fun p -> (p, ",")) pl in
-        plist patt 1
+        plist (pr_patt.pr_fun "range") 1
           {(pc) with bef = sprintf "%s(" pc.bef; aft = sprintf ")%s" pc.aft}
           pl
   | <:patt< {$list:lpl$} >> ->
