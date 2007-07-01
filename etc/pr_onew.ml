@@ -8,7 +8,7 @@ open Prtools;
 
 value flag_expand_declare = ref False;
 value flag_horiz_let_in = ref False;
-value flag_sequ_begin_at_eol = ref False;
+value flag_sequ_begin_at_eol = ref True;
 value flag_semi_semi = ref False;
 
 value flag_where_after_in = ref False;
@@ -147,6 +147,7 @@ value rec mod_ident pc sl =
   | [s :: sl] -> mod_ident {(pc) with bef = sprintf "%s%s." pc.bef s} sl ]
 ;
 
+value comma_after elem pc x = elem {(pc) with aft = sprintf ",%s" pc.aft} x;
 value semi_after elem pc x = elem {(pc) with aft = sprintf ";%s" pc.aft} x;
 value star_after elem pc x = elem {(pc) with aft = sprintf " *%s" pc.aft} x;
 value op_after elem pc (x, op) =
@@ -290,13 +291,15 @@ value sequencify e =
           }
  *)
 value sequence_box pc expr el =
-  let s1 = pc.bef "" in
+  let s1 = pc.bef " begin" in
   let s2 =
     vlistl (semi_after (comm_expr expr))
-      (comm_expr expr) {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
+      (comm_expr expr)
+      {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""}
       el
   in
-  sprintf "%s\n%s" s1 s2
+  let s3 = sprintf "%s%s%s" (tab pc.ind) "end" pc.aft in
+  sprintf "%s\n%s\n%s" s1 s2 s3
 ;
 
 (* Pretty printing improvement (optional):
@@ -450,65 +453,38 @@ value value_binding pc (p, e) =
          (expr_wh {(pc) with bef = ""; aft = ""} e)
          (match pc.aft with [ Some (_, k) -> k | None -> "" ]))
     (fun () ->
-       match sequencify e with
-       [ Some el ->
-           sequence_box2
-             {(pc) with
-              bef k =
-                horiz_vertic
-                  (fun () ->
-                     sprintf "%s%s%s =%s" pc.bef
-                       (hlist patt {(pc) with bef = ""; aft = ""} pl)
-                       (match tyo with
-                        [ Some t ->
-                            sprintf " : %s"
-                              (ctyp {(pc) with bef = ""; aft = ""} t)
-                        | None -> "" ])
-                       k)
-                  (fun () ->
-                     sprintf "%s%s%s =%s" pc.bef
-                       (hlist patt {(pc) with bef = ""; aft = ""} pl)
-                       (match tyo with
-                        [ Some t ->
-                            sprintf " : %s"
-                              (ctyp {(pc) with bef = ""; aft = ""} t)
-                        | None -> "" ])
-                       k);
-              aft = match pc.aft with [ Some (_, k) -> k | None -> "" ]}
-             el
-       | None ->
-           let s1 =
-             horiz_vertic
-               (fun () ->
-                  sprintf "%s%s%s =" pc.bef
-                    (hlist patt {(pc) with bef = ""; aft = ""} pl)
-                    (match tyo with
-                     [ Some t ->
-                         sprintf " : %s"
-                           (ctyp {(pc) with bef = ""; aft = ""} t)
-                     | None -> "" ]))
-               (fun () ->
-                  let patt_tycon tyo pc p =
-                    match tyo with
-                    [ Some t ->
-                        patt {(pc) with aft = ctyp {(pc) with bef = " : "} t}
-                          p
-                    | None -> patt pc p ]
-                  in
-                  let pl = List.map (fun p -> (p, "")) pl in
-                  plistl patt (patt_tycon tyo) 4 {(pc) with aft = " ="} pl)
-           in
-           let s2 =
-             comm_expr expr_wh
-               {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                aft = match pc.aft with [ Some (False, k) -> k | _ -> "" ]} e
-           in
-           let s3 =
-             match pc.aft with
-             [ Some (True, k) -> sprintf "\n%s%s" (tab pc.ind) k
-             | _ -> "" ]
-           in
-           sprintf "%s\n%s%s" s1 s2 s3 ])
+       let s1 =
+         horiz_vertic
+           (fun () ->
+              sprintf "%s%s%s =" pc.bef
+                (hlist patt {(pc) with bef = ""; aft = ""} pl)
+                (match tyo with
+                 [ Some t ->
+                     sprintf " : %s"
+                       (ctyp {(pc) with bef = ""; aft = ""} t)
+                 | None -> "" ]))
+           (fun () ->
+              let patt_tycon tyo pc p =
+                match tyo with
+                [ Some t ->
+                    patt {(pc) with aft = ctyp {(pc) with bef = " : "} t}
+                      p
+                | None -> patt pc p ]
+              in
+              let pl = List.map (fun p -> (p, "")) pl in
+              plistl patt (patt_tycon tyo) 4 {(pc) with aft = " ="} pl)
+       in
+       let s2 =
+         comm_expr expr_wh
+           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+            aft = match pc.aft with [ Some (False, k) -> k | _ -> "" ]} e
+       in
+       let s3 =
+         match pc.aft with
+         [ Some (True, k) -> sprintf "\n%s%s" (tab pc.ind) k
+         | _ -> "" ]
+       in
+       sprintf "%s\n%s%s" s1 s2 s3)
 ;
 
 (* Pretty printing improvements (optional):
@@ -1716,13 +1692,47 @@ value patt_apply =
   extfun Extfun.empty with
   [ <:patt< $_$ $_$ >> as z ->
       fun curr next pc ->
-        let unfold =
-          fun
-          [ <:patt< [ $_$ :: $_$ ] >> -> None
-          | <:patt< $x$ $y$ >> -> Some (x, "", y)
-          | p -> None ]
+        let p_pl_opt =
+          loop [] z where rec loop pl =
+            fun
+            [ <:patt< $x$ $y$ >> -> loop [y :: pl] x
+            | <:patt< $uid:"::"$ >> -> None
+            | p -> Some (p, pl) ]
         in
-        left_operator pc 2 unfold next z
+        match p_pl_opt with
+        [ None -> next pc z
+        | Some (p1, [p2]) ->
+            horiz_vertic
+              (fun () ->
+                 sprintf "%s%s %s%s" pc.bef
+                   (curr {(pc) with bef = ""; aft = ""} p1)
+                   (next {(pc) with bef = ""; aft = ""} p2) pc.aft)
+              (fun () ->
+                 let s1 = curr {(pc) with aft = ""} p1 in
+                 let s2 =
+                   next
+                     {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} p2
+                 in
+                 sprintf "%s\n%s" s1 s2)
+        | Some (p, pl) ->
+            let patt = pr_patt.pr_fun "range" in
+            horiz_vertic
+              (fun () ->
+                 sprintf "%s%s (%s)%s" pc.bef
+                   (next {(pc) with bef = ""; aft = ""} p)
+                   (hlistl (comma_after patt) patt
+                      {(pc) with bef = ""; aft = ""} pl) pc.aft)
+              (fun () ->
+                 let al = List.map (fun a -> (a, ",")) pl in
+                 let s1 = next {(pc) with aft = ""} p in
+                 let s2 =
+                   plist patt 0
+                     {(pc) with ind = pc.ind + 3;
+                      bef = sprintf "%s(" (tab (pc.ind + 2));
+                      aft = sprintf ")%s" pc.aft}
+                     al
+                 in
+                 sprintf "%s\n%s" s1 s2) ]
   | z -> fun curr next pc -> next pc z ]
 ;
 
