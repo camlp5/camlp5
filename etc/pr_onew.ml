@@ -156,6 +156,7 @@ value op_after elem pc (x, op) =
 
 value and_before elem pc x = elem {(pc) with bef = sprintf "%sand " pc.bef} x;
 value bar_before elem pc x = elem {(pc) with bef = sprintf "%s| " pc.bef} x;
+value star_before elem pc x = elem {(pc) with bef = sprintf "%s* " pc.bef} x;
 
 value operator pc left right sh op x y =
   let op = if op = "" then "" else " " ^ op in
@@ -721,7 +722,7 @@ value cons_decl pc (_, c, tl) =
     horiz_vertic
       (fun () ->
          sprintf "%s%s of %s%s" pc.bef c
-           (hlist2 ctyp (and_before ctyp)
+           (hlist2 ctyp (star_before ctyp)
               {(pc) with bef = ""; aft = ("", "")} tl) pc.aft)
       (fun () ->
          let s1 = sprintf "%s%s of" pc.bef c in
@@ -729,10 +730,10 @@ value cons_decl pc (_, c, tl) =
            horiz_vertic
              (fun () ->
                 sprintf "%s%s%s" (tab (pc.ind + 4))
-                  (hlist2 ctyp (and_before ctyp)
+                  (hlist2 ctyp (star_before ctyp)
                      {(pc) with bef = ""; aft = ("", "")} tl) pc.aft)
              (fun () ->
-                let tl = List.map (fun t -> (t, " and")) tl in
+                let tl = List.map (fun t -> (t, " *")) tl in
                 plist ctyp 2
                   {(pc) with ind = pc.ind + 4; bef = tab (pc.ind + 4)} tl)
          in
@@ -866,8 +867,7 @@ value ctyp_simple =
                  vdl)
           (fun () ->
              vlist2 cons_decl (bar_before cons_decl)
-               {(pc) with bef = sprintf "%s[ " pc.bef;
-                aft = ("", sprintf " ]%s" pc.aft)}
+               {(pc) with bef = sprintf "%s  " pc.bef; aft = ("", pc.aft)}
                vdl)
   | <:ctyp< ($list:tl$) >> ->
       fun curr next pc ->
