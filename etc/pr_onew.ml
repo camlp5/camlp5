@@ -6,7 +6,7 @@ open Pretty;
 open Pcaml.Printers;
 open Prtools;
 
-value flag_expand_declare = ref False;
+value flag_expand_declare = ref True;
 value flag_horiz_let_in = ref False;
 value flag_sequ_begin_at_eol = ref True;
 value flag_semi_semi = ref False;
@@ -1467,12 +1467,41 @@ value expr_apply =
         in
         if inf then next pc z
         else
-          let unfold =
-            fun
-            [ <:expr< $x$ $y$ >> -> Some (x, "", y)
-            | e -> None ]
+          let cons_args_opt =
+            loop [] z where rec loop args =
+              fun
+              [ <:expr< $x$ $y$ >> -> loop [y :: args] x
+              | <:expr< $uid:_$ >> as e -> Some (e, args)
+              | <:expr< $_$ . $uid:_$ >> as e -> Some (e, args)
+              | _ -> None ]
           in
-          left_operator pc 2 unfold next z
+          match cons_args_opt with
+          [ Some (e, ([_; _ :: _] as al)) ->
+              let expr1 = pr_expr.pr_fun "expr1" in
+              horiz_vertic
+                (fun () ->
+                   sprintf "%s%s (%s)%s" pc.bef
+                     (next {(pc) with bef = ""; aft = ""} e)
+                     (hlistl (comma_after expr1) expr1
+                        {(pc) with bef = ""; aft = ""} al) pc.aft)
+                (fun () ->
+                   let al = List.map (fun a -> (a, ",")) al in
+                   let s1 = next {(pc) with aft = ""} e in
+                   let s2 =
+                     plist expr1 0
+                       {(pc) with ind = pc.ind + 3;
+                        bef = sprintf "%s(" (tab (pc.ind + 2));
+                        aft = sprintf ")%s" pc.aft}
+                       al
+                   in
+                   sprintf "%s\n%s" s1 s2)
+          | _ ->
+              let unfold =
+                fun
+                [ <:expr< $x$ $y$ >> -> Some (x, "", y)
+                | e -> None ]
+              in
+              left_operator pc 2 unfold next z ]
   | z ->
       fun curr next pc -> next pc z ]
 ;
