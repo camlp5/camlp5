@@ -1140,17 +1140,21 @@ value expr_expr1 =
           | _ -> "match" ]
         in
         match pwel with
-        [ [(p, wo, e)] when is_irrefut_patt p ->
+        [ [(p, wo, e)] ->
             horiz_vertic
               (fun () ->
-                 sprintf "%s%s %s with %s%s" pc.bef op
+                 let (op_begin, op_end) =
+                   if List.mem pc.dang ["|"; ";"] then (sprintf "(%s" op, ")")
+                   else (op, "")
+                 in
+                 sprintf "%s%s %s with %s%s%s" pc.bef op_begin
                    (expr_wh {(pc) with bef = ""; aft = ""} e1)
                    (match_assoc {(pc) with bef = ""; aft = Some ""}
                       (p, wo, e))
-                   pc.aft)
+                   op_end pc.aft)
               (fun () ->
                  let (op_begin, pc_aft, op_end) =
-                   if pc.dang = "|" then
+                   if List.mem pc.dang ["|"; ";"] then
                      (sprintf "begin %s" op, "",
                       sprintf "\n%send%s" (tab pc.ind) pc.aft)
                    else (op, pc.aft, "")
@@ -1174,7 +1178,8 @@ value expr_expr1 =
                          {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
                          e
                      in
-                     sprintf "%s\n%s" s1 s2
+                     let s3 = op_end in
+                     sprintf "%s\n%s%s" s1 s2 s3
                  | None ->
                      let s1 =
                        let s =
@@ -2056,7 +2061,10 @@ value str_item_top =
   extfun Extfun.empty with
   [ <:str_item< # $s$ $e$ >> ->
       fun curr next pc ->
-        expr {(pc) with bef = sprintf "%s#%s " pc.bef s} e
+        expr
+          {(pc) with bef = sprintf "%s(* #%s " pc.bef s;
+           aft = sprintf " *)%s" pc.aft}
+        e
   | <:str_item< declare $list:sil$ end >> ->
       fun curr next pc ->
         if flag_expand_declare.val then
