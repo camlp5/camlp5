@@ -115,7 +115,7 @@ value not_impl name pc x =
       "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
     else "int_val = " ^ string_of_int (Obj.magic x)
   in
-  sprintf "%s\"pr_r, not impl: %s; %s\"%s" pc.bef name (String.escaped desc)
+  sprintf "%s\"pr_o, not impl: %s; %s\"%s" pc.bef name (String.escaped desc)
     pc.aft
 ;
 
@@ -596,23 +596,14 @@ value match_assoc pc (p, w, e) =
                   sprintf "%s\n%s" s1 s2)
          | None -> patt_as {(pc) with aft = sprintf " ->%s" k} p ]
        in
-       match sequencify e with
-       [ Some el ->
-           sequence_box2
-             {(pc) with
-              bef k =
-                horiz_vertic (fun _ -> sprintf "\n") (fun () -> patt_arrow k);
-              aft = pc_aft}
-             el
-       | None ->
-           let s1 = patt_arrow "" in
-           let s2 =
-             comm_expr expr_wh
-               {ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                aft = pc_aft; dang = pc_dang}
-               e
-           in
-           sprintf "%s\n%s" s1 s2 ])
+       let s1 = patt_arrow "" in
+       let s2 =
+         comm_expr expr_wh
+           {ind = pc.ind + 2; bef = tab (pc.ind + 2);
+            aft = pc_aft; dang = pc_dang}
+           e
+       in
+       sprintf "%s\n%s" s1 s2)
 ;
 
 value match_assoc_sh pc pwe = match_assoc {(pc) with ind = pc.ind + 2} pwe;
@@ -902,9 +893,7 @@ value ctyp_simple =
              if has_cons_with_params vdl then sprintf "\n"
              else
                hlist2 cons_decl (bar_before cons_decl)
-                 {(pc) with bef = sprintf "%s[ " pc.bef;
-                  aft = ("", sprintf " ]%s" pc.aft)}
-                 vdl)
+                 {(pc) with aft = ("", pc.aft)} vdl)
           (fun () ->
              vlist2 cons_decl (bar_before cons_decl)
                {(pc) with bef = sprintf "%s  " pc.bef; aft = ("", pc.aft)}
@@ -2741,7 +2730,7 @@ value not_impl name pc x =
       "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
     else "int_val = " ^ string_of_int (Obj.magic x)
   in
-  sprintf "%s\"pr_ro, not impl: %s; %s\"%s" pc.bef name (String.escaped desc)
+  sprintf "%s\"pr_o, not impl: %s; %s\"%s" pc.bef name (String.escaped desc)
     pc.aft
 ;
 
