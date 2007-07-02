@@ -552,7 +552,7 @@ value match_assoc pc (p, w, e) =
   let (pc_aft, pc_dang) =
     match pc.aft with
     [ None -> ("", "|")
-    | Some aft -> (aft, "") ]
+    | Some aft -> (aft, pc.dang) ]
   in
   horiz_vertic
     (fun () ->
@@ -972,7 +972,7 @@ value expr_top =
                   {(pc) with bef = ""; aft = ""} el)
                pc.aft)
           (fun () ->
-             vlist2 expr_semi expr_semi {(pc) with aft = (None, Some pc.aft)}
+              vlist2 expr_semi expr_semi {(pc) with aft = (None, Some pc.aft)}
                el)
   | z -> fun curr next pc -> next pc z ] 
 ;
@@ -1143,11 +1143,17 @@ value expr_expr1 =
                       (p, wo, e))
                    pc.aft)
               (fun () ->
+                 let (op_begin, pc_aft, op_end) =
+                   if pc.dang = "|" then
+                     (sprintf "begin %s" op, "",
+                      sprintf "\n%send%s" (tab pc.ind) pc.aft)
+                   else (op, pc.aft, "")
+                 in
                  match
                    horiz_vertic
                      (fun () ->
                         Some
-                          (sprintf "%s%s %s with %s%s ->" pc.bef op
+                          (sprintf "%s%s %s with %s%s ->" pc.bef op_begin
                              (expr_wh {(pc) with bef = ""; aft = ""} e1)
                              (patt {(pc) with bef = ""; aft = ""} p)
                              (match wo with
@@ -1165,28 +1171,22 @@ value expr_expr1 =
                      sprintf "%s\n%s" s1 s2
                  | None ->
                      let s1 =
-                       match sequencify e1 with
-                       [ Some el ->
-                           sequence_box2
-                             {(pc) with bef k = sprintf "%s%s%s" pc.bef op k;
-                              aft = ""}
-                             el
-                       | None ->
-                           let s =
-                             expr_wh
-                               {(pc) with ind = pc.ind + 2;
-                                bef = tab (pc.ind + 2); aft = ""}
-                               e1
-                           in
-                           sprintf "%s%s\n%s" pc.bef op s ]
+                       let s =
+                         expr_wh
+                           {(pc) with ind = pc.ind + 2;
+                            bef = tab (pc.ind + 2); aft = ""}
+                           e1
+                       in
+                       sprintf "%s%s\n%s" pc.bef op_begin s
                      in
                      let s2 =
                        match_assoc
                          {(pc) with bef = sprintf "%swith " (tab pc.ind);
-                          aft = Some ""}
+                          aft = Some pc_aft}
                          (p, wo, e)
                      in
-                     sprintf "%s\n%s" s1 s2 ])
+                     let s3 = op_end in
+                     sprintf "%s\n%s%s" s1 s2 s3 ])
         | _ ->
             horiz_vertic
               (fun () ->
@@ -2149,7 +2149,11 @@ value str_item_top =
                   aft = ""}
                  me
              in
-             sprintf "%s\n%s\n%s" s1 s2 (tab pc.ind ^ pc.aft))
+             let s3 =
+               if pc.aft = "" then ""
+               else sprintf "\n%s%s" (tab pc.ind) pc.aft
+             in
+             sprintf "%s\n%s%s" s1 s2 s3)
   | <:str_item< module type $m$ = $mt$ >> ->
       fun curr next pc ->
         horiz_vertic
