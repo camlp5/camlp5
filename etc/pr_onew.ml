@@ -401,25 +401,21 @@ value sequence_box2 pc el =
    Cancellation of all these improvements could be done by changing calls
    to this function to a call to "binding expr" above.
 *)
-value record_binding pc (p, e) =
+value record_binding is_last pc (p, e) =
   let (pl, e) = ([p], e) in
   let expr_wh = if flag_where_after_field_eq.val then expr_wh else expr in
+  let pc_dang = if is_last then "" else ";" in
   horiz_vertic
     (fun () ->
        sprintf "%s%s = %s%s" pc.bef
          (hlist patt {(pc) with bef = ""; aft = ""} pl)
-         (expr_wh {(pc) with bef = ""; aft = ""} e) pc.aft)
+         (expr_wh {(pc) with bef = ""; aft = ""; dang = pc_dang} e) pc.aft)
     (fun () ->
-       match sequencify e with
-       [ Some el ->
-           sequence_box2
-             {(pc) with
-              bef k = hlist patt {(pc) with aft = sprintf " =%s" k} pl}
-             el
-       | None ->
-           sprintf "%s\n%s" (hlist patt {(pc) with aft = " ="} pl)
-             (expr_wh {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
-                e) ])
+       sprintf "%s\n%s" (hlist patt {(pc) with aft = " ="} pl)
+         (expr_wh
+            {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+             dang = pc_dang}
+            e))
 ;
 
 (* Pretty printing improvements (optional):
@@ -1079,40 +1075,45 @@ value expr_expr1 =
             let pl = [p1 :: pl] in
             horiz_vertic
               (fun () ->
-                 sprintf "%sfun %s -> %s%s" pc.bef
+                 let (op_begin, op_end) =
+                   if List.mem pc.dang ["|"; ";"] then ("(", ")")
+                   else ("", "")
+                 in
+                 sprintf "%s%sfun %s -> %s%s%s" pc.bef op_begin
                    (hlist patt {(pc) with bef = ""; aft = ""} pl)
-                   (curr {(pc) with bef = ""; aft = ""} e1) pc.aft)
+                   (curr {(pc) with bef = ""; aft = ""} e1) op_end pc.aft)
               (fun () ->
+                 let (op_begin, pc_aft, op_end) =
+                   if List.mem pc.dang ["|"; ";"] then
+                     ("begin ", "", sprintf "\n%send%s" (tab pc.ind) pc.aft)
+                   else ("", pc.aft, "")
+                 in
                  let fun_arrow k =
                    let pl = List.map (fun p -> (p, "")) pl in
                    plist patt 4
-                     {(pc) with bef = sprintf "%sfun " pc.bef;
+                     {(pc) with bef = sprintf "%s%sfun " pc.bef op_begin;
                       aft = sprintf " ->%s" k}
                      pl
                  in
-                 match sequencify e1 with
-                 [ Some el ->
-                     sequence_box2
-                       {(pc) with
-                        bef k =
-                          horiz_vertic (fun _ -> sprintf "\n")
-                            (fun () -> fun_arrow k)}
-                       el
-                 | None ->
-                     let s1 = fun_arrow "" in
-                     let s2 =
-                       curr
-                         {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
-                         e1
-                     in
-                     sprintf "%s\n%s" s1 s2 ])
+                 let s1 = fun_arrow "" in
+                 let s2 =
+                   curr
+                     {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+                      aft = pc_aft}
+                     e1
+                 in
+                 sprintf "%s\n%s%s" s1 s2 op_end)
         | [] ->
             let loc = MLast.loc_of_expr ge in
             horiz_vertic
               (fun () ->
-                 sprintf "%sfun _ -> %s%s" pc.bef
+                 let (op_begin, op_end) =
+                   if List.mem pc.dang ["|"; ";"] then ("(", ")")
+                   else ("", "")
+                 in
+                 sprintf "%s%sfun _ -> %s%s%s" pc.bef op_begin
                    (raise_match_failure {(pc) with bef = ""; aft = ""} loc)
-                   pc.aft)
+                   op_end pc.aft)
               (fun () ->
                  let s1 = sprintf "%sfun _ ->" pc.bef in
                  let s2 =
@@ -1608,14 +1609,15 @@ value expr_simple =
   | <:expr< {$list:lel$} >> ->
       fun curr next pc ->
         let lxl = List.map (fun lx -> (lx, ";")) lel in
-        plist (comm_patt_any record_binding) 0
+        plistl (comm_patt_any (record_binding False))
+          (comm_patt_any (record_binding True)) 0
           {(pc) with ind = pc.ind + 1; bef = sprintf "%s{" pc.bef;
            aft = (sprintf "}%s" pc.aft)}
           lxl
   | <:expr< {($e$) with $list:lel$} >> ->
       fun curr next pc ->
         let lxl = List.map (fun lx -> (lx, ";")) lel in
-        plist record_binding 0
+        plistl (record_binding False) (record_binding True) 0
           {(pc) with ind = pc.ind + 1;
            bef =
              expr {(pc) with bef = sprintf "%s{(" pc.bef; aft = ") with "} e;
@@ -1734,8 +1736,8 @@ value expr_simple =
       fun curr next pc ->
         let expr_wh = if flag_where_after_lparen.val then expr_wh else expr in
         expr_wh
-          {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-           aft = sprintf ")%s" pc.aft}
+          {ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+           aft = sprintf ")%s" pc.aft; dang = ""}
           z
   | z ->
       fun curr next pc -> not_impl "expr" pc z ]
