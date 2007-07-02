@@ -149,6 +149,9 @@ value rec mod_ident pc sl =
 
 value comma_after elem pc x = elem {(pc) with aft = sprintf ",%s" pc.aft} x;
 value semi_after elem pc x = elem {(pc) with aft = sprintf ";%s" pc.aft} x;
+value semi_semi_after elem pc x =
+  elem {(pc) with aft = sprintf ";%s" pc.aft} x
+;
 value star_after elem pc x = elem {(pc) with aft = sprintf " *%s" pc.aft} x;
 value op_after elem pc (x, op) =
   elem {(pc) with aft = sprintf "%s%s" op pc.aft} x
@@ -729,10 +732,10 @@ value type_decl pc td =
 value label_decl pc (_, l, m, t) =
   horiz_vertic
     (fun () ->
-       sprintf "%s%s : %s%s%s" pc.bef l (if m then "mutable " else "")
+       sprintf "%s%s%s : %s%s" pc.bef (if m then "mutable " else "") l
          (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
     (fun () ->
-       let s1 = sprintf "%s%s :%s" pc.bef l (if m then " mutable" else "") in
+       let s1 = sprintf "%s%s%s :" pc.bef (if m then " mutable" else "") l in
        let s2 = ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t in
        sprintf "%s\n%s" s1 s2)
 ;
@@ -2314,6 +2317,9 @@ value module_expr_top =
         str_or_sig_functor pc s mt module_expr me
   | <:module_expr< struct $list:sil$ end >> ->
       fun curr next pc ->
+        let str_item_sep =
+          if flag_semi_semi.val then semi_semi_after str_item else str_item
+        in
         horiz_vertic
           (fun () ->
              if alone_in_line pc then
@@ -2322,12 +2328,11 @@ value module_expr_top =
                sprintf "\n"
              else
                sprintf "%sstruct%s%s%send%s" pc.bef " "
-                 (hlist (semi_after str_item) {(pc) with bef = ""; aft = ""}
-                    sil)
+                 (hlist str_item_sep {(pc) with bef = ""; aft = ""} sil)
                  " " pc.aft)
           (fun () ->
              sprintf "%sstruct%s%s%send%s" pc.bef "\n"
-               (vlist (semi_after str_item)
+               (vlist str_item_sep
                   {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
                    aft = ""}
                   sil)
