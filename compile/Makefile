@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.8 2007/06/08 02:25:23 deraugla Exp $
+# $Id: Makefile,v 1.9 2007/07/02 16:07:12 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -23,23 +23,23 @@ camlp4$D.fast.opt: pa_$D_fast.cmx
 	rm -f camlp4$D.fast.opt
 	cd ../camlp4; $(MAKE) optp4 CAMLP4OPT=../compile/camlp4$D.fast.opt CAMLP4M="../compile/pa_$D_fast.cmx ../meta/pr_dump.cmx"
 
-pa_$D_fast.ml: comp_head.ml $D_fast.ml comp_trail.ml
-	cat $(SRC) | sed -e "s/Plexer.gmake ()/P.lexer/" -e "/EXTEND/,/END/d" -e "/Grammar.Entry.of_parser/d" -e "/Grammar.Entry.gcreate/d" -e "/Grammar.Entry.create/d" | cat comp_head.ml - $D_fast.ml comp_trail.ml > pa_$D_fast.ml
+pa_$D_fast.ml: comp_head.ml.tpl $D_fast.ml.tmp comp_trail.ml.tpl
+	cat $(SRC) | sed -e "s/Plexer.gmake ()/P.lexer/" -e "/EXTEND/,/END/d" -e "/Grammar.Entry.of_parser/d" -e "/Grammar.Entry.gcreate/d" -e "/Grammar.Entry.create/d" | cat comp_head.ml.tpl - $D_fast.ml.tmp comp_trail.ml.tpl > pa_$D_fast.ml
 
-$D_fast.ml: compile.cmo $(SRC)
-	OTOP=$(OTOP) EXE=$(EXE) ./compile.sh $(COMP_OPT) $(SRC) > $D_fast.ml
+$D_fast.ml.tmp: compile.cmo $(SRC)
+	OTOP=$(OTOP) EXE=$(EXE) ./compile.sh $(COMP_OPT) $(SRC) > $D_fast.ml.tmp
 
 install:
 	if test -f camlp4o.fast.opt; then cp camlp4o.fast.opt "$(BINDIR)/camlp4o.opt"; fi
 
 clean::
 	rm -f *.cm* *.pp[io] *.o *.bak .*.bak *.out *.opt
-	rm -f *.fast tmp.* pa_*_fast.ml *_fast.ml
+	rm -f *.fast tmp.* pa_*_fast.ml *_fast.ml.tmp
 
 depend:
 	cp .depend .depend.bak
 	> .depend
-	@export LC_ALL=C; for i in compile.ml; do \
+	@export LC_ALL=C; for i in *.ml; do \
 	  ../tools/depend.sh $(INCLUDES) $$i | \
 	  sed -e 's| $(OTOP)| $$(OTOP)|g' >> .depend; \
 	done

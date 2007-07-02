@@ -1,7 +1,7 @@
 *.cm[oix]
 *.fast
 *.fast.opt
-o_fast.ml
+o_fast.ml.tmp
+r_fast.ml.tmp
 pa_o_fast.ml
-r_fast.ml
 pa_r_fast.ml
