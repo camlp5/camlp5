@@ -1196,9 +1196,9 @@ value expr_expr1 =
                  in
                  let s3 = op_end in
                  sprintf "%s\n%s%s" s1 s2 s3) ]
-  | <:expr< let $opt:rf$ $list:pel$ in $e$ >> as ge ->
+  | <:expr< let $opt:rf$ $list:pel$ in $e$ >> ->
       fun curr next pc ->
-        let expr_wh = if flag_where_after_in.val then expr_wh else curr in
+        let expr_wh = if flag_where_after_in.val then expr_wh else expr in
         horiz_vertic
           (fun () ->
              if not flag_horiz_let_in.val then sprintf "\n"
@@ -1208,21 +1208,16 @@ value expr_expr1 =
                     {(pc) with bef = ""; aft = (False, True)} pel)
                  (curr {(pc) with bef = ""; aft = ""} e) pc.aft)
           (fun () ->
-             match flatten_sequence ge with
-             [ Some el ->
-                 let loc = MLast.loc_of_expr ge in
-                 curr pc <:expr< do { $list:el$ } >>
-             | None ->
-                 let s1 =
-                   vlist2 let_binding (and_before let_binding)
-                     {(pc) with
-                      bef =
-                        sprintf "%slet %s" pc.bef (if rf then "rec " else "");
-                      aft = (False, True)}
-                     pel
-                 in
-                 let s2 = comm_expr expr_wh {(pc) with bef = tab pc.ind} e in
-                 sprintf "%s\n%s" s1 s2 ])
+             let s1 =
+               vlist2 let_binding (and_before let_binding)
+                 {(pc) with
+                  bef =
+                    sprintf "%slet %s" pc.bef (if rf then "rec " else "");
+                  aft = (False, True)}
+                 pel
+             in
+             let s2 = comm_expr expr_wh {(pc) with bef = tab pc.ind} e in
+             sprintf "%s\n%s" s1 s2)
   | <:expr< let module $s$ = $me$ in $e$ >> ->
       fun curr next pc ->
         horiz_vertic
