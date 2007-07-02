@@ -1493,8 +1493,9 @@ value expr_simple =
   [ <:expr< ($list:el$) >> ->
       fun curr next pc ->
         let el = List.map (fun e -> (e, ",")) el in
-        plist expr 1
-          {(pc) with bef = sprintf "%s(" pc.bef; aft = (sprintf ")%s" pc.aft)}
+        plist expr 0
+          {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+           aft = (sprintf ")%s" pc.aft)}
           el
   | <:expr< {$list:lel$} >> ->
       fun curr next pc ->
