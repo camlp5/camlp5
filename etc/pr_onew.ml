@@ -1397,7 +1397,7 @@ value expr_tuple =
   [ <:expr< ($list:el$) >> ->
       fun curr next pc ->
         let el = List.map (fun e -> (e, ",")) el in
-        plist next 0 {(pc) with bef = sprintf "%s" pc.bef} el
+        plist next 0 pc el
   | z -> fun curr next pc -> next pc z ]
 ;
 
@@ -1468,7 +1468,7 @@ value expr_cons =
         match y with
         [ Some y ->
             let xl = List.map (fun x -> (x, " ::")) (xl @ [y]) in
-            plist expr 0 {(pc) with ind = pc.ind + 1} xl
+            plist next 0 pc xl
         | None -> next pc z ]
   | z -> fun curr next pc -> next pc z ]
 ;
