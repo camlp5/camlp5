@@ -1392,6 +1392,15 @@ value expr_expr1 =
       fun curr next pc -> next pc z ]
 ;
 
+value expr_tuple =
+  extfun Extfun.empty with
+  [ <:expr< ($list:el$) >> ->
+      fun curr next pc ->
+        let el = List.map (fun e -> (e, ",")) el in
+        plist next 0 {(pc) with bef = sprintf "%s" pc.bef} el
+  | z -> fun curr next pc -> next pc z ]
+;
+
 value expr_assign =
   extfun Extfun.empty with
   [ <:expr< $x$.val := $y$ >> ->
@@ -1622,13 +1631,7 @@ value expr_dot =
 
 value expr_simple =
   extfun Extfun.empty with
-  [ <:expr< ($list:el$) >> ->
-      fun curr next pc ->
-        let el = List.map (fun e -> (e, ",")) el in
-        plist expr 1
-          {(pc) with bef = sprintf "%s(" pc.bef; aft = (sprintf ")%s" pc.aft)}
-          el
-  | <:expr< {$list:lel$} >> ->
+  [ <:expr< {$list:lel$} >> ->
       fun curr next pc ->
         let lxl = List.map (fun lx -> (lx, ";")) lel in
         plistl (comm_patt_any (record_binding False))
@@ -1748,7 +1751,7 @@ value expr_simple =
              in
              sprintf "%sbegin\n%s\n%send%s" pc.bef s (tab pc.ind) pc.aft)
   | <:expr< $_$ $_$ >> | <:expr< assert $_$ >> | <:expr< lazy $_$ >> |
-    <:expr< $_$ := $_$ >> |
+    <:expr< ($list:_$) >> | <:expr< $_$ := $_$ >> |
     <:expr< fun [ $list:_$ ] >> | <:expr< if $_$ then $_$ else $_$ >> |
     <:expr< for $_$ = $_$ $to:_$ $_$ do { $list:_$ } >> |
     <:expr< while $_$ do { $list:_$ } >> |
@@ -2506,7 +2509,8 @@ value module_type_simple =
 pr_expr.pr_levels :=
   [{pr_label = "top"; pr_rules = expr_top};
    {pr_label = "expr1"; pr_rules = expr_expr1};
-   {pr_label = "ass"; pr_rules = expr_assign};
+   {pr_label = "tuple"; pr_rules = expr_tuple};
+   {pr_label = "assign"; pr_rules = expr_assign};
    {pr_label = "bar"; pr_rules = expr_or};
    {pr_label = "amp"; pr_rules = expr_and};
    {pr_label = "less"; pr_rules = expr_less};
@@ -3661,7 +3665,8 @@ value ctyp_poly =
 pr_expr.pr_levels :=
   [find_pr_level "top" pr_expr.pr_levels;
    find_pr_level "expr1" pr_expr.pr_levels;
-   find_pr_level "ass" pr_expr.pr_levels;
+   find_pr_level "tuple" pr_expr.pr_levels;
+   find_pr_level "assign" pr_expr.pr_levels;
    find_pr_level "bar" pr_expr.pr_levels;
    find_pr_level "amp" pr_expr.pr_levels;
    find_pr_level "less" pr_expr.pr_levels;
