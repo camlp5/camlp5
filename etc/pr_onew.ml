@@ -286,6 +286,10 @@ value expr_semi pc e =
   comm_expr expr {(pc) with aft = pc_aft; dang = pc_dang} e
 ;
 
+value expr1_semi pc e =
+  comm_expr expr {(pc) with aft = ";"; dang = ";"} e
+;
+
 value sequencify e =
   if not flag_sequ_begin_at_eol.val then None else flatten_sequence e
 ;
@@ -978,7 +982,7 @@ value expr_top =
                   {(pc) with bef = ""; aft = ""} el)
                pc.aft)
           (fun () ->
-              vlist2 expr_semi expr_semi {(pc) with aft = (None, Some pc.aft)}
+             vlist2 expr_semi expr_semi {(pc) with aft = (None, Some pc.aft)}
                el)
   | z -> fun curr next pc -> next pc z ] 
 ;
@@ -1744,7 +1748,7 @@ value expr_simple =
                pc.aft)
           (fun () ->
              let s =
-               vlistl (semi_after expr1) expr1
+               vlistl expr1_semi expr1
                  {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
                   aft = ""}
                 el
