@@ -739,10 +739,11 @@ value label_decl pc (_, l, m, t) =
 value cons_decl pc (_, c, tl) =
   if tl = [] then cons_escaped pc c
   else
+    let ctyp_apply = pr_ctyp.pr_fun "apply" in
     horiz_vertic
       (fun () ->
          sprintf "%s%s of %s%s" pc.bef c
-           (hlist2 ctyp (star_before ctyp)
+           (hlist2 ctyp_apply (star_before ctyp_apply)
               {(pc) with bef = ""; aft = ("", "")} tl) pc.aft)
       (fun () ->
          let s1 = sprintf "%s%s of" pc.bef c in
@@ -750,11 +751,11 @@ value cons_decl pc (_, c, tl) =
            horiz_vertic
              (fun () ->
                 sprintf "%s%s%s" (tab (pc.ind + 4))
-                  (hlist2 ctyp (star_before ctyp)
+                  (hlist2 ctyp_apply (star_before ctyp_apply)
                      {(pc) with bef = ""; aft = ("", "")} tl) pc.aft)
              (fun () ->
                 let tl = List.map (fun t -> (t, " *")) tl in
-                plist ctyp 2
+                plist ctyp_apply 2
                   {(pc) with ind = pc.ind + 4; bef = tab (pc.ind + 4)} tl)
          in
          sprintf "%s\n%s" s1 s2)
@@ -839,6 +840,24 @@ value ctyp_arrow =
   | z -> fun curr next pc -> next pc z ]
 ;
 
+value ctyp_star =
+  extfun Extfun.empty with
+  [ <:ctyp< ($list:tl$) >> ->
+      fun curr next pc ->
+        horiz_vertic
+          (fun () ->
+             sprintf "%s(%s)%s" pc.bef
+               (hlistl (star_after next) next {(pc) with bef = ""; aft = ""}
+                  tl)
+               pc.aft)
+          (fun () ->
+             let tl = List.map (fun t -> (t, " *")) tl in
+             plist next 1
+               {(pc) with bef = sprintf "%s(" pc.bef;
+                aft = sprintf ")%s" pc.aft} tl)
+  | z -> fun curr next pc -> next pc z ]
+;
+
 value ctyp_apply =
   extfun Extfun.empty with
   [ <:ctyp< $_$ $_$ >> as z ->
@@ -918,19 +937,6 @@ value ctyp_simple =
              vlist2 cons_decl (bar_before cons_decl)
                {(pc) with bef = sprintf "%s  " pc.bef; aft = ("", pc.aft)}
                vdl)
-  | <:ctyp< ($list:tl$) >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s(%s)%s" pc.bef
-               (hlistl (star_after ctyp) ctyp {(pc) with bef = ""; aft = ""}
-                  tl)
-               pc.aft)
-          (fun () ->
-             let tl = List.map (fun t -> (t, " *")) tl in
-             plist ctyp 1
-               {(pc) with bef = sprintf "%s(" pc.bef;
-                aft = sprintf ")%s" pc.aft} tl)
   | <:ctyp< $lid:t$ >> ->
       fun curr next pc -> var_escaped pc t
   | <:ctyp< $uid:t$ >> ->
@@ -946,7 +952,7 @@ value ctyp_simple =
     <:ctyp< [ < $list:_$ ] >> | <:ctyp< [ < $list:_$ > $list:_$ ] >> ->
       fun curr next pc ->
         failwith "variants not pretty printed (in type); add pr_ro.cmo"
-  | <:ctyp< $_$ $_$ >> | <:ctyp< $_$ -> $_$ >> as z ->
+  | <:ctyp< $_$ $_$ >> | <:ctyp< $_$ -> $_$ >> | <:ctyp< ($list:_$) >> as z ->
       fun curr next pc ->
         ctyp
           {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
@@ -1246,16 +1252,27 @@ value expr_expr1 =
                     {(pc) with bef = ""; aft = (False, True)} pel)
                  (curr {(pc) with bef = ""; aft = ""} e) pc.aft)
           (fun () ->
+             let (begin_op, ind, pc_aft, end_op) =
+               if pc.dang = ";" then
+                 ("begin ", pc.ind + 2, "",
+                  sprintf "\n%send%s" (tab pc.ind) pc.aft)
+               else ("", pc.ind, pc.aft, "")
+             in
              let s1 =
                vlist2 let_binding (and_before let_binding)
                  {(pc) with
                   bef =
-                    sprintf "%slet %s" pc.bef (if rf then "rec " else "");
+                    sprintf "%s%slet %s" pc.bef begin_op
+                      (if rf then "rec " else "");
                   aft = (False, True)}
                  pel
              in
-             let s2 = comm_expr expr_wh {(pc) with bef = tab pc.ind} e in
-             sprintf "%s\n%s" s1 s2)
+             let s2 =
+               comm_expr expr_wh
+                 {(pc) with ind = ind; bef = tab ind; aft = pc_aft} e
+             in
+             let s3 = end_op in
+             sprintf "%s\n%s%s" s1 s2 s3)
   | <:expr< let module $s$ = $me$ in $e$ >> ->
       fun curr next pc ->
         horiz_vertic
@@ -2508,6 +2525,7 @@ pr_patt.pr_levels :=
 pr_ctyp.pr_levels :=
   [{pr_label = "top"; pr_rules = ctyp_top};
    {pr_label = "arrow"; pr_rules = ctyp_arrow};
+   {pr_label = "star"; pr_rules = ctyp_star};
    {pr_label = "apply"; pr_rules = ctyp_apply};
    {pr_label = "dot"; pr_rules = ctyp_dot};
    {pr_label = "simple"; pr_rules = ctyp_simple}]
@@ -3656,6 +3674,7 @@ pr_ctyp.pr_levels :=
    {pr_label = "as"; pr_rules = ctyp_as};
    {pr_label = "poly"; pr_rules = ctyp_poly};
    find_pr_level "arrow" pr_ctyp.pr_levels;
+   find_pr_level "star" pr_ctyp.pr_levels;
    find_pr_level "apply" pr_ctyp.pr_levels;
    find_pr_level "dot" pr_ctyp.pr_levels;
    find_pr_level "simple" pr_ctyp.pr_levels]
