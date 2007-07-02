@@ -399,8 +399,7 @@ value sequence_box2 pc el =
    to this function to a call to "binding expr" above.
 *)
 value record_binding pc (p, e) =
-  let (pl, e) = expr_fun_args e in
-  let pl = [p :: pl] in
+  let (pl, e) = ([p], e) in
   let expr_wh = if flag_where_after_field_eq.val then expr_wh else expr in
   horiz_vertic
     (fun () ->
@@ -617,6 +616,23 @@ value match_assoc_list pc pwel =
       pwel
 ;
 
+value raise_match_failure pc loc =
+  let (fname, line, char, _) =
+    if Pcaml.input_file.val <> "-" then
+      Stdpp.line_of_loc Pcaml.input_file.val loc
+    else
+      ("-", 1, Stdpp.first_pos loc, 0)
+  in
+  let e =
+    <:expr<
+      raise
+        (Match_failure
+           ($str:fname$, $int:string_of_int line$, $int:string_of_int char$))
+    >>
+  in
+  pr_expr.pr_fun "apply" pc e
+;
+
 value rec make_expr_list =
   fun
   [ <:expr< [$x$ :: $y$] >> ->
@@ -649,6 +665,16 @@ value type_constraint pc (t1, t2) =
     (fun () -> not_impl "type_constraint vertic" pc t1)
 ;
 
+value type_params pc tvl =
+  match tvl with
+  [ [] -> sprintf "%s%s" pc.bef pc.aft
+  | [tv] -> type_var {(pc) with aft = sprintf " %s" pc.aft} tv
+  | _ ->
+      hlistl (comma_after type_var) type_var
+        {(pc) with bef = sprintf "%s(" pc.bef; aft = sprintf ") %s" pc.aft}
+        tvl ]
+;
+
 (* type_decl: particularity for the value of 'pc.aft' ->
    see 'value_binding' *)
 value type_decl pc td =
@@ -659,30 +685,25 @@ value type_decl pc td =
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s = %s%s%s" pc.bef
+         (type_params {(pc) with bef = ""; aft = ""} tp)
          (var_escaped {(pc) with bef = ""; aft = ""} tn)
-         (if tp = [] then ""
-          else
-            sprintf " %s" (hlist type_var {(pc) with bef = ""; aft = ""} tp))
          (ctyp {(pc) with bef = ""; aft = ""} te)
          (if cl = [] then ""
-          else hlist type_constraint {(pc) with bef = " "; aft = ""} cl)
+          else not_impl "type_decl cl" {(pc) with bef = ""; aft = ""} cl)
          (match pc.aft with [ Some (_, k) -> k | None -> "" ]))
     (fun () ->
        let s1 =
          horiz_vertic
            (fun () ->
               sprintf "%s%s%s =" pc.bef
-                (var_escaped {(pc) with bef = ""; aft = ""} tn)
-                (if tp = [] then ""
-                 else
-                   sprintf " %s"
-                     (hlist type_var {(pc) with bef = ""; aft = ""} tp)))
+                (type_params {(pc) with bef = ""; aft = ""} tp)
+                (var_escaped {(pc) with bef = ""; aft = ""} tn))
            (fun () -> not_impl "type_decl vertic 1" {(pc) with aft = ""} tn)
        in
        let s2 =
          if cl = [] then
            ctyp
-             {(pc) with ind = pc.ind + 2; bef = (tab (pc.ind + 2));
+             {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
               aft = match pc.aft with [ Some (False, k) -> k | _ -> "" ]}
              te
          else
@@ -1047,7 +1068,7 @@ value expr_expr1 =
                        sprintf "%selse\n%s" (tab pc.ind) s ])
             in
             sprintf "%s%s\n%s" s1 s2 s3)
-  | <:expr< fun [ $list:pwel$ ] >> ->
+  | <:expr< fun [ $list:pwel$ ] >> as ge ->
       fun curr next pc ->
         match pwel with
         [ [(p1, None, e1)] when is_irrefut_patt p1 ->
@@ -1082,7 +1103,20 @@ value expr_expr1 =
                          e1
                      in
                      sprintf "%s\n%s" s1 s2 ])
-        | [] -> sprintf "%sfun []%s" pc.bef pc.aft
+        | [] ->
+            let loc = MLast.loc_of_expr ge in
+            horiz_vertic
+              (fun () ->
+                 sprintf "%sfun _ -> %s%s" pc.bef
+                   (raise_match_failure {(pc) with bef = ""; aft = ""} loc)
+                   pc.aft)
+              (fun () ->
+                 let s1 = sprintf "%sfun _ ->" pc.bef in
+                 let s2 =
+                   raise_match_failure
+                     {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} loc
+                 in
+                 sprintf "%s\n%s" s1 s2)
         | pwel ->
             let s = match_assoc_list {(pc) with bef = tab pc.ind} pwel in
             sprintf "%sfunction\n%s" pc.bef s ]
@@ -1290,7 +1324,7 @@ value expr_expr1 =
         in
         horiz_vertic
           (fun () ->
-             sprintf "%sfor %s = %s %s %s do { %s }%s" pc.bef v
+             sprintf "%sfor %s = %s %s %s do %s done%s" pc.bef v
                (curr {(pc) with bef = ""; aft = ""} e1)
                (if d then "to" else "downto")
                (curr {(pc) with bef = ""; aft = ""} e2)
@@ -1300,7 +1334,7 @@ value expr_expr1 =
              let s1 =
                horiz_vertic
                  (fun () ->
-                    sprintf "%sfor %s = %s %s %s do {" pc.bef v
+                    sprintf "%sfor %s = %s %s %s do" pc.bef v
                       (curr {(pc) with bef = ""; aft = ""} e1)
                       (if d then "to" else "downto")
                       (curr {(pc) with bef = ""; aft = ""} e2))
@@ -1317,7 +1351,7 @@ value expr_expr1 =
                          aft = ""}
                         e2
                     in
-                    let s3 = sprintf "%sdo {" (tab pc.ind) in
+                    let s3 = sprintf "%sdo" (tab pc.ind) in
                     sprintf "%s\n%s\n%s" s1 s2 s3)
              in
              let s2 =
@@ -1326,7 +1360,7 @@ value expr_expr1 =
                   aft = ""}
                  el
              in
-             let s3 = sprintf "%s}%s" (tab pc.ind) pc.aft in
+             let s3 = sprintf "%sdone%s" (tab pc.ind) pc.aft in
              sprintf "%s\n%s\n%s" s1 s2 s3)
   | z ->
       fun curr next pc -> next pc z ]
@@ -1965,7 +1999,7 @@ value exception_decl pc (e, tl, id) =
          (if tl = [] then ""
           else
             sprintf " of %s"
-              (hlist2 ctyp (and_before ctyp)
+              (hlist2 ctyp (star_before ctyp)
                  {(pc) with bef = ""; aft = ("", "")} tl))
          (if id = [] then ""
           else sprintf " = %s" (mod_ident {(pc) with bef = ""; aft = ""} id))
@@ -1977,7 +2011,7 @@ value exception_decl pc (e, tl, id) =
        let s2 =
          if tl = [] then ""
          else
-           let tl = List.map (fun t -> (t, " and")) tl in
+           let tl = List.map (fun t -> (t, " *")) tl in
            sprintf "\n%s"
              (plist ctyp 2
                 {(pc) with bef = tab (pc.ind + 2);
