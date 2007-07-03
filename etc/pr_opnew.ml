@@ -314,11 +314,11 @@ value stream_patt_comp pc spc =
 value stream_patt_comp_err pc (spc, err) =
   match err with
   [ SpoNoth -> stream_patt_comp pc spc
-  | SpoBang -> stream_patt_comp {(pc) with aft = sprintf " !%s" pc.aft} spc
+  | SpoBang -> stream_patt_comp {(pc) with aft = sprintf " ?!%s" pc.aft} spc
   | SpoQues e ->
       horiz_vertic
         (fun () ->
-           sprintf "%s%s ? %s%s" pc.bef
+           sprintf "%s%s ?? %s%s" pc.bef
              (stream_patt_comp {(pc) with bef = ""; aft = ""} spc)
              (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
         (fun () ->
@@ -326,7 +326,7 @@ value stream_patt_comp_err pc (spc, err) =
            let s2 =
              expr
                {(pc) with ind = pc.ind + 4;
-                bef = sprintf "%s? " (tab (pc.ind + 2))}
+                bef = sprintf "%s?? " (tab (pc.ind + 2))}
                e
            in
            sprintf "%s\n%s" s1 s2) ]

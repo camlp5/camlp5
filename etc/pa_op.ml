@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_op.ml,v 1.7 2007/06/16 14:17:43 deraugla Exp $ *)
+(* $Id: pa_op.ml,v 1.8 2007/07/03 10:17:47 deraugla Exp $ *)
 
 open Exparser;
 open Pcaml;
@@ -32,29 +32,32 @@ EXTEND
   ;
   stream_patt:
     [ [ spc = stream_patt_comp -> [(spc, SpoNoth)]
-      | spc = stream_patt_comp; ";" -> [(spc, SpoNoth)]
-      | spc = stream_patt_comp; ";"; sp = stream_patt_comp_err_list ->
+      | spc = stream_patt_comp; ";"; sp = stream_patt_kont ->
           [(spc, SpoNoth) :: sp]
-      | (* empty *) -> [] ] ]
+      | spc = stream_patt_let; sp = stream_patt -> [spc :: sp]
+      | -> [] ] ]
   ;
-  stream_patt_comp_err_list:
+  stream_patt_kont:
     [ [ spc = stream_patt_comp_err -> [spc]
-      | spc = stream_patt_comp_err; ";" -> [spc]
-      | spc = stream_patt_comp_err; ";"; sp = SELF -> [spc :: sp] ] ]
-  ;
-  stream_patt_comp:
-    [ [ "'"; p = patt; eo = OPT [ "when"; e = expr LEVEL "expr1" -> e ] ->
-          SpTrm loc p eo
-      | p = patt; "="; e = expr LEVEL "expr1" -> SpNtr loc p e
-      | p = patt -> SpStr loc p ] ]
+      | spc = stream_patt_comp_err; ";"; sp = stream_patt_kont -> [spc :: sp]
+      | spc = stream_patt_let; sp = stream_patt_kont -> [spc :: sp] ] ]
   ;
   stream_patt_comp_err:
-    [ [ spc = stream_patt_comp; "??"; e = expr LEVEL "expr1" ->
-          (spc, SpoQues e)
-      | spc = stream_patt_comp; "?!" ->
-          (spc, SpoBang)
-      | spc = stream_patt_comp ->
-          (spc, SpoNoth) ] ]
+    [ [ spc = stream_patt_comp; "??"; e = expr -> (spc, SpoQues e)
+      | spc = stream_patt_comp; "?!" -> (spc, SpoBang)
+      | spc = stream_patt_comp -> (spc, SpoNoth) ] ]
+  ;
+  stream_patt_comp:
+    [ [ "'"; p = patt; eo = OPT [ "when"; e = expr -> e ] -> SpTrm loc p eo
+      | "?="; pll = LIST1 lookahead SEP "|" -> SpLhd loc pll
+      | p = patt; "="; e = expr -> SpNtr loc p e
+      | p = patt -> SpStr loc p ] ]
+  ;
+  stream_patt_let:
+    [ [ "let"; p = ipatt; "="; e = expr; "in" -> (SpLet loc p e, SpoNoth) ] ]
+  ;
+  lookahead:
+    [ [ "["; pl = LIST1 patt SEP ";"; "]" -> pl ] ]
   ;
   ipatt:
     [ [ i = LIDENT -> <:patt< $lid:i$ >>
