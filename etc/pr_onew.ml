@@ -3061,6 +3061,10 @@ value patt_tcon pc p =
 value typevar pc tv = sprintf "%s'%s%s" pc.bef tv pc.aft;
 
 value class_object pc (csp, csl) =
+  let class_str_item_sep =
+    if flag_semi_semi.val then semi_semi_after class_str_item
+    else class_str_item
+  in
   horiz_vertic
     (fun () ->
        sprintf "%sobject%s %s end%s" pc.bef
@@ -3069,7 +3073,7 @@ value class_object pc (csp, csl) =
               patt {(pc) with bef = " "; aft = ""} p
           | Some p -> patt {(pc) with bef = " ("; aft = ")"} p
           | None -> "" ])
-         (hlist (semi_after class_str_item)
+         (hlist class_str_item_sep
             {(pc) with bef = ""; aft = ""} csl) pc.aft)
     (fun () ->
        let s1 =
@@ -3089,7 +3093,7 @@ value class_object pc (csp, csl) =
                     p) ]
        in
        let s2 =
-         vlist (semi_after class_str_item)
+         vlist class_str_item_sep
            {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
             aft = ""}
            csl
@@ -3633,12 +3637,12 @@ value class_str_item_top =
       fun curr next pc ->
         horiz_vertic
           (fun () ->
-             sprintf "%svalue%s %s = %s%s" pc.bef
+             sprintf "%sval%s %s = %s%s" pc.bef
                (if mf then " mutable" else "") s
                (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
           (fun () ->
              let s1 =
-               sprintf "%svalue%s %s =" pc.bef (if mf then " mutable" else "")
+               sprintf "%sval%s %s =" pc.bef (if mf then " mutable" else "")
                  s
              in
              let s2 =
