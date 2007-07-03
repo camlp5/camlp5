@@ -687,48 +687,56 @@ value type_decl pc td =
     (td.MLast.tdNam, td.MLast.tdPrm, td.MLast.tdPrv, td.MLast.tdDef,
      td.MLast.tdCon)
   in
-  horiz_vertic
-    (fun () ->
-       sprintf "%s%s%s = %s%s%s" pc.bef
-         (type_params {(pc) with bef = ""; aft = ""} tp)
-         (var_escaped {(pc) with bef = ""; aft = ""} tn)
-         (ctyp {(pc) with bef = ""; aft = ""} te)
-         (if cl = [] then ""
-          else not_impl "type_decl cl" {(pc) with bef = ""; aft = ""} cl)
-         (match pc.aft with [ Some (_, k) -> k | None -> "" ]))
-    (fun () ->
-       let s1 =
-         horiz_vertic
-           (fun () ->
-              sprintf "%s%s%s =" pc.bef
-                (type_params {(pc) with bef = ""; aft = ""} tp)
-                (var_escaped {(pc) with bef = ""; aft = ""} tn))
-           (fun () -> not_impl "type_decl vertic 1" {(pc) with aft = ""} tn)
-       in
-       let s2 =
-         if cl = [] then
-           ctyp
-             {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-              aft = match pc.aft with [ Some (False, k) -> k | _ -> "" ]}
-             te
-         else
-           horiz_vertic
-             (fun () ->
-                sprintf "%s%s%s%s" (tab (pc.ind + 2))
-                  (ctyp {(pc) with bef = ""; aft = ""} te)
-                  (not_impl "type_decl cl 2" {(pc) with bef = ""; aft = ""}
-                     cl)
-                  "")
-             (fun () ->
-                not_impl "type_decl vertic 2" {(pc) with bef = ""; aft = ""}
-                  tn)
-       in
-       let s3 =
-         match pc.aft with
-         [ Some (True, k) -> sprintf "\n%s%s" (tab pc.ind) k
-         | _ -> "" ]
-       in
-       sprintf "%s\n%s%s" s1 s2 s3)
+  match te with
+  [ <:ctyp< '$s$ >> when not (List.mem_assoc s tp) ->
+      sprintf "%s%s%s%s" pc.bef
+        (type_params {(pc) with bef = ""; aft = ""} tp)
+        (var_escaped {(pc) with bef = ""; aft = ""} tn)
+        (match pc.aft with [ Some (_, k) -> k | None -> "" ])
+  | _ ->
+      horiz_vertic
+        (fun () ->
+           sprintf "%s%s%s = %s%s%s" pc.bef
+             (type_params {(pc) with bef = ""; aft = ""} tp)
+             (var_escaped {(pc) with bef = ""; aft = ""} tn)
+             (ctyp {(pc) with bef = ""; aft = ""} te)
+             (if cl = [] then ""
+              else not_impl "type_decl cl" {(pc) with bef = ""; aft = ""} cl)
+             (match pc.aft with [ Some (_, k) -> k | None -> "" ]))
+        (fun () ->
+           let s1 =
+             horiz_vertic
+               (fun () ->
+                  sprintf "%s%s%s =" pc.bef
+                    (type_params {(pc) with bef = ""; aft = ""} tp)
+                    (var_escaped {(pc) with bef = ""; aft = ""} tn))
+               (fun () ->
+                  not_impl "type_decl vertic 1" {(pc) with aft = ""} tn)
+           in
+           let s2 =
+             if cl = [] then
+               ctyp
+                 {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+                  aft = match pc.aft with [ Some (False, k) -> k | _ -> "" ]}
+                 te
+             else
+               horiz_vertic
+                 (fun () ->
+                    sprintf "%s%s%s%s" (tab (pc.ind + 2))
+                      (ctyp {(pc) with bef = ""; aft = ""} te)
+                      (not_impl "type_decl cl 2"
+                         {(pc) with bef = ""; aft = ""} cl)
+                      "")
+                 (fun () ->
+                    not_impl "type_decl vertic 2"
+                      {(pc) with bef = ""; aft = ""} tn)
+           in
+           let s3 =
+             match pc.aft with
+             [ Some (True, k) -> sprintf "\n%s%s" (tab pc.ind) k
+             | _ -> "" ]
+           in
+           sprintf "%s\n%s%s" s1 s2 s3) ]
 ;
 
 value label_decl pc (_, l, m, t) =
