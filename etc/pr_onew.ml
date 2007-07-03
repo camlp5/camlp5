@@ -45,6 +45,14 @@ value has_special_chars s =
     | _ -> True ]
 ;
 
+value ocaml_char =
+  fun
+  [ "'" -> "\\'"
+  | "\"" -> "\\\""
+  | "\\" -> "\\\\"
+  | c -> c ]
+;
+
 value rec is_irrefut_patt =
   fun
   [ <:patt< $lid:_$ >> -> True
@@ -1753,7 +1761,7 @@ value expr_simple =
   | <:expr< $str:s$ >> ->
       fun curr next pc -> sprintf "%s\"%s\"%s" pc.bef s pc.aft
   | <:expr< $chr:s$ >> ->
-      fun curr next pc -> sprintf "%s'%s'%s" pc.bef s pc.aft
+      fun curr next pc -> sprintf "%s'%s'%s" pc.bef (ocaml_char s) pc.aft
   | <:expr< ? $_$ >> | <:expr< ~ $_$ >> | <:expr< ~ $_$ : $_$ >> ->
       fun curr next pc ->
         failwith "labels not pretty printed (in expr); add pr_ro.cmo"
@@ -1994,7 +2002,7 @@ value patt_simple =
   | <:patt< $uid:s$ >> ->
       fun curr next pc -> cons_escaped pc s
   | <:patt< $chr:s$ >> ->
-      fun curr next pc -> sprintf "%s'%s'%s" pc.bef s pc.aft
+      fun curr next pc -> sprintf "%s'%s'%s" pc.bef (ocaml_char s) pc.aft
   | <:patt< $str:s$ >> ->
       fun curr next pc -> sprintf "%s\"%s\"%s" pc.bef s pc.aft
   | <:patt< _ >> ->
