@@ -1765,8 +1765,8 @@ value expr_simple =
                 el
              in
              sprintf "%sbegin\n%s\n%send%s" pc.bef s (tab pc.ind) pc.aft)
-  | <:expr< $_$ $_$ >> | <:expr< assert $_$ >> | <:expr< lazy $_$ >> |
-    <:expr< ($list:_$) >> | <:expr< $_$ := $_$ >> |
+  | <:expr< $_$ $_$ >> | <:expr< $_$ . $_$ >> | <:expr< assert $_$ >> |
+    <:expr< lazy $_$ >> | <:expr< ($list:_$) >> | <:expr< $_$ := $_$ >> |
     <:expr< fun [ $list:_$ ] >> | <:expr< if $_$ then $_$ else $_$ >> |
     <:expr< for $_$ = $_$ $to:_$ $_$ do { $list:_$ } >> |
     <:expr< while $_$ do { $list:_$ } >> |
