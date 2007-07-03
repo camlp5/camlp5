@@ -2067,12 +2067,15 @@ value sig_item_top =
              sprintf "%smodule %s : %s%s" pc.bef m
                (module_type {(pc) with bef = ""; aft = ""} mt) pc.aft)
           (fun () ->
-             sprintf "%smodule %s :\n%s\n%s" pc.bef m
-               (module_type
-                  {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                   aft = ""}
-                  mt)
-                  (tab pc.ind ^ pc.aft))
+             let s1 =  sprintf "%smodule %s :" pc.bef m in
+             let s2 =
+               module_type
+                 {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+                  aft = ""}
+                 mt
+             in
+             let s3 = sprintf "%s%s" (tab pc.ind) pc.aft in
+             sprintf "%s\n%s\n%s" s1 s2 s3)
   | <:sig_item< module type $m$ = $mt$ >> ->
       fun curr next pc ->
         horiz_vertic

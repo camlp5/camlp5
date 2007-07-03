@@ -2221,7 +2221,7 @@ value str_item_top =
         mod_ident {(pc) with bef = sprintf "%sopen " pc.bef} i
   | <:str_item< type $list:tdl$ >> ->
       fun curr next pc ->
-        let nl = pc.aft = ";;" in
+        let nl = pc.aft <> "" in
         vlist2 type_decl (and_before type_decl)
           {(pc) with bef = sprintf "%stype " pc.bef;
            aft = (None, Some (nl, pc.aft))}
@@ -2235,7 +2235,7 @@ value str_item_top =
                   {(pc) with bef = ""; aft = (None, Some (False, pc.aft))}
                   pel))
           (fun () ->
-             let nl = pc.aft = ";;" in
+             let nl = pc.aft <> "" in
              vlist2 value_binding (and_before value_binding)
                {(pc) with
                 bef = sprintf "%slet %s" pc.bef (if rf then "rec " else "");
@@ -2269,12 +2269,18 @@ value sig_item_top =
              sprintf "%smodule %s : %s%s" pc.bef m
                (module_type {(pc) with bef = ""; aft = ""} mt) pc.aft)
           (fun () ->
-             sprintf "%smodule %s :\n%s\n%s" pc.bef m
-               (module_type
-                  {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                   aft = ""}
-                  mt)
-                  (tab pc.ind ^ pc.aft))
+             let s1 =  sprintf "%smodule %s :" pc.bef m in
+             let s2 =
+               module_type
+                 {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+                  aft = ""}
+                 mt
+             in
+             let s3 =
+               if pc.aft = "" then ""
+               else sprintf "\n%s%s" (tab pc.ind) pc.aft
+             in
+             sprintf "%s\n%s%s" s1 s2 s3)
   | <:sig_item< module type $m$ = $mt$ >> ->
       fun curr next pc ->
         horiz_vertic
@@ -2289,16 +2295,20 @@ value sig_item_top =
                   aft = ""}
                  mt
              in
-             let s3 = sprintf "%s%s" (tab pc.ind) pc.aft in
-             sprintf "%s\n%s\n%s" s1 s2 s3)
+             let s3 =
+               if pc.aft = "" then ""
+               else sprintf "\n%s%s" (tab pc.ind) pc.aft
+             in
+             sprintf "%s\n%s%s" s1 s2 s3)
   | <:sig_item< open $i$ >> ->
       fun curr next pc ->
         mod_ident {(pc) with bef = (sprintf "%sopen " pc.bef)} i
   | <:sig_item< type $list:tdl$ >> ->
       fun curr next pc ->
+        let nl = pc.aft <> "" in
         vlist2 type_decl (and_before type_decl)
           {(pc) with bef = sprintf "%stype " pc.bef;
-           aft = (None, Some (True, pc.aft))}
+           aft = (None, Some (nl, pc.aft))}
           tdl
   | <:sig_item< value $s$ : $t$ >> ->
       fun curr next pc ->
