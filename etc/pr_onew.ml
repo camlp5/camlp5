@@ -2802,6 +2802,8 @@ Pcaml.add_option "-l" (Arg.Int (fun x -> Pretty.line_length.val := x))
 Pcaml.add_option "-sep" (Arg.String (fun x -> sep.val := Some x))
   "<string> Use this string between phrases instead of reading source.";
 
+Pcaml.add_option "-ss" (Arg.Set flag_semi_semi) "Print double semicolons.";
+
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
 (* $Id$ *)
 (* Copyright (c) INRIA 2007 *)
