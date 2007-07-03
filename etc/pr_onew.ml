@@ -2198,8 +2198,11 @@ value str_item_top =
                   aft = ""}
                  mt
              in
-             let s3 = sprintf "%s%s" (tab pc.ind) pc.aft in
-             sprintf "%s\n%s\n%s" s1 s2 s3)
+             let s3 =
+               if pc.aft = "" then ""
+               else sprintf "\n%s%s" (tab pc.ind) pc.aft
+             in
+             sprintf "%s\n%s%s" s1 s2 s3)
   | <:str_item< open $i$ >> ->
       fun curr next pc ->
         mod_ident {(pc) with bef = sprintf "%sopen " pc.bef} i
@@ -2288,12 +2291,12 @@ value sig_item_top =
       fun curr next pc ->
         horiz_vertic
           (fun () ->
-             sprintf "%svalue %s : %s%s" pc.bef
+             sprintf "%sval %s : %s%s" pc.bef
                (var_escaped {(pc) with bef = ""; aft = ""} s)
                (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
           (fun () ->
              let s1 =
-               sprintf "%svalue %s :" pc.bef
+               sprintf "%sval %s :" pc.bef
                  (var_escaped {(pc) with bef = ""; aft = ""} s)
              in
              let s2 =
@@ -2460,6 +2463,9 @@ value module_type_top =
         str_or_sig_functor pc s mt1 module_type mt2
   | <:module_type< sig $list:sil$ end >> ->
       fun curr next pc ->
+        let sig_item_sep =
+          if flag_semi_semi.val then semi_semi_after sig_item else sig_item
+        in
         horiz_vertic
           (fun () ->
              if alone_in_line pc then
@@ -2468,12 +2474,11 @@ value module_type_top =
                sprintf "\n"
              else
                sprintf "%ssig%s%s%send%s" pc.bef " "
-                 (hlist (semi_after sig_item) {(pc) with bef = ""; aft = ""}
-                    sil)
+                 (hlist sig_item_sep {(pc) with bef = ""; aft = ""} sil)
                  " " pc.aft)
           (fun () ->
              sprintf "%ssig%s%s%send%s" pc.bef "\n"
-               (vlist (semi_after sig_item)
+               (vlist sig_item_sep
                   {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
                    aft = ""}
                   sil)
