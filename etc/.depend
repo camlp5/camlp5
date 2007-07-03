@@ -45,6 +45,8 @@ pr_op_main.cmo: ../camlp4/spretty.cmi ../camlp4/pcaml.cmi parserify.cmi \
     ../camlp4/mLast.cmi 
 pr_op_main.cmx: ../camlp4/spretty.cmx ../camlp4/pcaml.cmx parserify.cmx \
     ../camlp4/mLast.cmi 
+pr_opnew.cmo: ../camlp4/prtools.cmi ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
+pr_opnew.cmx: ../camlp4/prtools.cmx ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
 pr_r.cmo: ../camlp4/spretty.cmi ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
 pr_r.cmx: ../camlp4/spretty.cmx ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
 pr_rnew.cmo: ../camlp4/prtools.cmi ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
