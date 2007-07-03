@@ -148,7 +148,9 @@ value rec mod_ident pc sl =
 ;
 
 value comma_after elem pc x = elem {(pc) with aft = sprintf ",%s" pc.aft} x;
-value semi_after elem pc x = elem {(pc) with aft = sprintf ";%s" pc.aft} x;
+value semi_after elem pc x =
+  elem {(pc) with aft = sprintf ";%s" pc.aft; dang = ";"} x
+;
 value semi_semi_after elem pc x =
   elem {(pc) with aft = sprintf ";%s" pc.aft} x
 ;
@@ -284,10 +286,6 @@ value expr_semi pc e =
     | Some aft -> (aft, pc.dang) ]
   in
   comm_expr expr {(pc) with aft = pc_aft; dang = pc_dang} e
-;
-
-value expr1_semi pc e =
-  comm_expr expr {(pc) with aft = ";"; dang = ";"} e
 ;
 
 value sequencify e =
@@ -827,7 +825,7 @@ value expr_short pc x =
 value ctyp_top =
   extfun Extfun.empty with
   [ <:ctyp< $x$ == $y$ >> ->
-      fun curr next pc -> operator pc next next 2 "==" x y
+      fun curr next pc -> operator pc next next 2 "=" x y
   | z -> fun curr next pc -> next pc z ]
 ;
 
@@ -1572,18 +1570,18 @@ value expr_apply =
           in
           match cons_args_opt with
           [ Some (e, ([_; _ :: _] as al)) ->
-              let expr1 = pr_expr.pr_fun "expr1" in
+              let expr_or = pr_expr.pr_fun "bar" in
               horiz_vertic
                 (fun () ->
                    sprintf "%s%s (%s)%s" pc.bef
                      (next {(pc) with bef = ""; aft = ""} e)
-                     (hlistl (comma_after expr1) expr1
+                     (hlistl (comma_after expr_or) expr_or
                         {(pc) with bef = ""; aft = ""} al) pc.aft)
                 (fun () ->
                    let al = List.map (fun a -> (a, ",")) al in
                    let s1 = next {(pc) with aft = ""} e in
                    let s2 =
-                     plist expr1 0
+                     plist expr_or 0
                        {(pc) with ind = pc.ind + 3;
                         bef = sprintf "%s(" (tab (pc.ind + 2));
                         aft = sprintf ")%s" pc.aft}
@@ -1748,7 +1746,7 @@ value expr_simple =
                pc.aft)
           (fun () ->
              let s =
-               vlistl expr1_semi expr1
+               vlistl (semi_after expr1) expr1
                  {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
                   aft = ""}
                 el
