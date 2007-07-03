@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.20 2007/06/07 00:41:10 deraugla Exp $
+# $Id: Makefile,v 1.21 2007/07/03 10:25:18 deraugla Exp $
 
 include config/Makefile
 
@@ -7,6 +7,7 @@ FDIRS=odyl camlp4 meta lib
 OPTDIRS=ocaml_stuff lib odyl camlp4 meta compile
 SHELL=/bin/sh
 COLD_FILES=ocaml_src/camlp4/argl.ml ocaml_src/camlp4/ast2pt.ml ocaml_src/camlp4/ast2pt.mli ocaml_src/camlp4/mLast.mli ocaml_src/camlp4/pcaml.ml ocaml_src/camlp4/pcaml.mli ocaml_src/camlp4/quotation.ml ocaml_src/camlp4/quotation.mli ocaml_src/camlp4/reloc.ml ocaml_src/camlp4/reloc.mli ocaml_src/camlp4/spretty.ml ocaml_src/camlp4/spretty.mli ocaml_src/lib/extfun.ml ocaml_src/lib/extfun.mli ocaml_src/lib/fstream.ml ocaml_src/lib/fstream.mli ocaml_src/lib/gramext.ml ocaml_src/lib/gramext.mli ocaml_src/lib/grammar.ml ocaml_src/lib/grammar.mli ocaml_src/lib/plexer.ml ocaml_src/lib/plexer.mli ocaml_src/lib/stdpp.ml ocaml_src/lib/stdpp.mli ocaml_src/lib/token.ml ocaml_src/lib/token.mli ocaml_src/meta/pa_extend.ml ocaml_src/meta/pa_extend_m.ml ocaml_src/meta/pa_macro.ml ocaml_src/meta/pa_r.ml ocaml_src/meta/pa_rp.ml ocaml_src/meta/pr_dump.ml ocaml_src/meta/q_MLast.ml ocaml_src/odyl/odyl_main.ml ocaml_src/odyl/odyl_main.mli ocaml_src/odyl/odyl.ml
+PR_O=pr_o.cmo
 
 all: out
 
@@ -148,7 +149,7 @@ bootstrap_sources:
 	$(MAKE) new_sources untouch_sources promote_sources clean_sources
 
 new_sources:
-	cd etc; make pr_o.cmo
+	cd etc; make $(PR_O)
 	mkdir ocaml_src.new
 	@-for i in $(FDIRS); do \
 	  (mkdir ocaml_src.new/$$i; cd ocaml_src.new/$$i; \
@@ -171,7 +172,7 @@ new_sources:
 	       fi; \
 	       echo ============================================; \
 	       echo ocaml_src.new/$$i/$$k; \
-	       OTOP=$(OTOP) ../tools/conv.sh $$opt $$j | \
+	       OTOP=$(OTOP) ../tools/conv.sh $(PR_O) $$opt $$j | \
 	       sed 's/$$Id.*\$$/$(TXTGEN)/' > \
 	       ../ocaml_src.new/$$i/$$k; \
 	     fi; \
@@ -179,7 +180,7 @@ new_sources:
 	done
 
 compare_sources:
-	cd etc; make pr_o.cmo
+	cd etc; make $(PR_O)
 	@-for i in $(FDIRS); do \
 	  (cd ocaml_src/$$i; \
 	   echo ============================================; \
@@ -201,7 +202,7 @@ compare_sources:
 	       fi; \
 	       echo ============================================; \
 	       echo ocaml_src/$$i/$$k; \
-	       OTOP=$(OTOP) ../tools/conv.sh $$opt $$j | \
+	       OTOP=$(OTOP) ../tools/conv.sh $(PR_O) $$opt $$j | \
 	       sed 's/$$Id.*\$$/$(TXTGEN)/' | \
 	       diff ../ocaml_src/$$i/$$k -; \
 	     fi; \
@@ -209,26 +210,26 @@ compare_sources:
 	done
 
 bootstrap_all_ast2pt:
-	cd etc; make pr_o.cmo
+	cd etc; make $(PR_O)
 	@cd camlp4; \
 	for i in ../ocaml_src/camlp4/ast2pt.ml_*; do \
 	  echo ============================================; \
 	  echo $$i; \
 	  j=$$(echo $$(basename $$i) | \
 	       sed -e 's/ast2pt.ml/OCAML/' -e 's/\./_/g'); \
-	  OTOP=$(OTOP) ../tools/conv.sh -D$$j ast2pt.ml | \
+	  OTOP=$(OTOP) ../tools/conv.sh $(PR_O) -D$$j ast2pt.ml | \
 	  sed -e 's/\$$Id.*\$$/$(TXTGEN)/' > $$i -; \
 	done
 
 compare_all_ast2pt:
-	cd etc; make pr_o.cmo
+	cd etc; make $(PR_O)
 	@cd camlp4; \
 	for i in ../ocaml_src/camlp4/ast2pt.ml_*; do \
 	  echo ============================================; \
 	  echo $$i; \
 	  j=$$(echo $$(basename $$i) | \
 	       sed -e 's/ast2pt.ml/OCAML/' -e 's/\./_/g'); \
-	  OTOP=$(OTOP) ../tools/conv.sh -D$$j ast2pt.ml | \
+	  OTOP=$(OTOP) ../tools/conv.sh $(PR_O) -D$$j ast2pt.ml | \
 	  sed -e 's/\$$Id.*\$$/$(TXTGEN)/' | diff $$i -; \
 	done
 
@@ -269,7 +270,7 @@ clean_sources:
 	rm -rf ocaml_src/SAVED/SAVED
 
 printer:
-	cd etc; make pr_o.cmo
+	cd etc; make $(PR_O)
 
 # Utility
 
