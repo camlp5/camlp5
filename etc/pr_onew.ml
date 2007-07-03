@@ -1209,6 +1209,7 @@ value expr_expr1 =
                      in
                      let s3 = op_end in
                      sprintf "%s\n%s%s" s1 s2 s3 ])
+        | [] -> raise_match_failure pc (MLast.loc_of_expr e)
         | _ ->
             horiz_vertic
               (fun () ->
@@ -1319,7 +1320,7 @@ value expr_expr1 =
       fun curr next pc ->
         horiz_vertic
           (fun () ->
-             sprintf "%swhile %s do { %s }%s" pc.bef
+             sprintf "%swhile %s do %s done%s" pc.bef
                (curr {(pc) with bef = ""; aft = ""} e1)
                (hlistl (semi_after expr) curr {(pc) with bef = ""; aft = ""}
                   el)
@@ -1328,7 +1329,7 @@ value expr_expr1 =
              let s1 =
                horiz_vertic
                  (fun () ->
-                    sprintf "%swhile %s do {" pc.bef
+                    sprintf "%swhile %s do" pc.bef
                       (curr {(pc) with bef = ""; aft = ""} e1))
                  (fun () ->
                     let s1 = sprintf "%swhile" pc.bef in
@@ -1338,7 +1339,7 @@ value expr_expr1 =
                          bef = tab (pc.ind + 2); aft = ""}
                         e1
                     in
-                    let s3 = sprintf "%sdo {" (tab pc.ind) in
+                    let s3 = sprintf "%sdo" (tab pc.ind) in
                     sprintf "%s\n%s\n%s" s1 s2 s3)
              in
              let s2 =
@@ -1347,7 +1348,7 @@ value expr_expr1 =
                   aft = ""}
                  el
              in
-             let s3 = sprintf "%s}%s" (tab pc.ind) pc.aft in
+             let s3 = sprintf "%sdone%s" (tab pc.ind) pc.aft in
              sprintf "%s\n%s\n%s" s1 s2 s3)
   | <:expr< for $v$ = $e1$ $to:d$ $e2$ do { $list:el$ } >> ->
       fun curr next pc ->
