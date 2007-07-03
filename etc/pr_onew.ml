@@ -1130,8 +1130,17 @@ value expr_expr1 =
                  in
                  sprintf "%s\n%s" s1 s2)
         | pwel ->
-            let s = match_assoc_list {(pc) with bef = tab pc.ind} pwel in
-            sprintf "%sfunction\n%s" pc.bef s ]
+            let (op_begin, pc_aft, pc_dang, op_end) =
+              if List.mem pc.dang ["|"; ";"] then
+                ("begin ", "", "", sprintf "\n%send%s" (tab pc.ind) pc.aft)
+              else ("", pc.aft, pc.dang, "")
+            in
+            let s =
+              match_assoc_list
+                {(pc) with bef = tab pc.ind; aft = pc_aft; dang = pc_dang}
+                pwel
+            in
+            sprintf "%s%sfunction\n%s%s" pc.bef op_begin s op_end ]
   | <:expr< try $e1$ with [ $list:pwel$ ] >> |
     <:expr< match $e1$ with [ $list:pwel$ ] >> as e ->
       fun curr next pc ->
