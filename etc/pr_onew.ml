@@ -420,6 +420,12 @@ value record_binding is_last pc (p, e) =
             e))
 ;
 
+value expr_with_comm_except_if_sequence pc e =
+  match e with
+  [ <:expr< do { $list:_$ } >> -> expr pc e
+  | _ -> comm_expr expr pc e ]
+;
+
 (* Pretty printing improvements (optional):
    - prints "value x = e" instead of "value = fun x -> e"
    - if vertical and "e" is a sequence, put the "do {" at after the "="
@@ -452,7 +458,6 @@ value value_binding pc (p, e) =
     | _ -> (e, None) ]
   in
   let pl = [p :: pl] in
-  let expr_wh = if flag_where_after_value_eq.val then expr_wh else expr in
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s = %s%s" pc.bef
@@ -460,7 +465,7 @@ value value_binding pc (p, e) =
          (match tyo with
           [ Some t -> sprintf " : %s" (ctyp {(pc) with bef = ""; aft = ""} t)
           | None -> "" ])
-         (expr_wh {(pc) with bef = ""; aft = ""} e)
+         (expr {(pc) with bef = ""; aft = ""} e)
          (match pc.aft with [ Some (_, k) -> k | None -> "" ]))
     (fun () ->
        let s1 =
@@ -485,7 +490,7 @@ value value_binding pc (p, e) =
               plistl patt (patt_tycon tyo) 4 {(pc) with aft = " ="} pl)
        in
        let s2 =
-         comm_expr expr_wh
+         expr_with_comm_except_if_sequence
            {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
             aft = match pc.aft with [ Some (False, k) -> k | _ -> "" ]} e
        in
@@ -550,7 +555,6 @@ value let_binding pc (p, e) =
 ;
 
 value match_assoc pc (p, w, e) =
-  let expr_wh = if flag_where_after_arrow.val then expr_wh else expr in
   let (pc_aft, pc_dang) =
     match pc.aft with
     [ None -> ("", "|")
@@ -598,7 +602,7 @@ value match_assoc pc (p, w, e) =
        in
        let s1 = patt_arrow "" in
        let s2 =
-         comm_expr expr_wh
+         expr_with_comm_except_if_sequence
            {ind = pc.ind + 2; bef = tab (pc.ind + 2);
             aft = pc_aft; dang = pc_dang}
            e
@@ -1259,7 +1263,6 @@ value expr_expr1 =
                  sprintf "%s\n%s%s" s1 s2 s3) ]
   | <:expr< let $opt:rf$ $list:pel$ in $e$ >> ->
       fun curr next pc ->
-        let expr_wh = if flag_where_after_in.val then expr_wh else expr in
         horiz_vertic
           (fun () ->
              if not flag_horiz_let_in.val then sprintf "\n"
@@ -1285,7 +1288,7 @@ value expr_expr1 =
                  pel
              in
              let s2 =
-               comm_expr expr_wh
+               expr_with_comm_except_if_sequence
                  {(pc) with ind = ind; bef = tab ind; aft = pc_aft} e
              in
              let s3 = end_op in
