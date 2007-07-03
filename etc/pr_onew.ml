@@ -57,6 +57,7 @@ value rec is_irrefut_patt =
   | <:patt< ($list:pl$) >> -> List.for_all is_irrefut_patt pl
   | <:patt< ? $_$ >> -> True
   | <:patt< ? ($_$ = $_$) >> -> True
+  | <:patt< ? $_$ : ($_$ = $_$) >> -> True
   | <:patt< ~ $_$ >> -> True
   | <:patt< ~ $_$ : $_$ >> -> True
   | _ -> False ]
