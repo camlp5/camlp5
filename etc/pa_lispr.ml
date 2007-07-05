@@ -20,8 +20,7 @@ module Buff =
       else ();
       buff.val.[len] := x;
       succ len
-    }
-    ;
+    };
     value get len = String.sub buff.val 0 len;
   end
 ;
@@ -155,13 +154,7 @@ type sexpr =
   [ Sexpr of MLast.loc and list sexpr
   | Satom of MLast.loc and atom and string
   | Squot of MLast.loc and string and string ]
-and atom =
-  [ Alid
-  | Auid
-  | Aint
-  | Achar
-  | Astring ]
-;
+and atom = [ Alid | Auid | Aint | Achar | Astring ];
 
 value error_loc loc err =
   Stdpp.raise_with_loc loc (Stream.Error (err ^ " expected"))
@@ -334,7 +327,7 @@ and expr_se =
       let t = ctyp_se se2 in
       <:expr< ( $e$ : $t$ ) >>
   | Sexpr loc [Satom _ Alid "list" :: sel] ->
-      let rec loop =
+      loop sel where rec loop =
         fun
         [ [] -> <:expr< [] >>
         | [se1; Satom _ Alid "::"; se2] ->
@@ -345,8 +338,6 @@ and expr_se =
             let e = expr_se se in
             let el = loop sel in
             <:expr< [$e$ :: $el$] >> ]
-      in
-      loop sel
   | Sexpr loc [se :: sel] ->
       List.fold_left
         (fun e se ->
@@ -377,7 +368,7 @@ and label_expr_se loc =
 and expr_ident_se loc s =
   if s.[0] = '<' then <:expr< $lid:s$ >>
   else
-    let rec loop ibeg i =
+    loop 0 0 where rec loop ibeg i =
       if i = String.length s then
         if i > ibeg then expr_id loc (String.sub s ibeg (i - ibeg))
         else
@@ -392,8 +383,6 @@ and expr_ident_se loc s =
           raise_with_loc (sub_loc loc (i - 1) 1)
             (Stream.Error "expr expected")
       else loop ibeg (i + 1)
-    in
-    loop 0 0
 and parser_cases_se loc =
   fun
   [ [] -> <:expr< raise Stream.Failure >>
@@ -470,7 +459,7 @@ and patt_se =
       let p2 = patt_se se2 in
       <:patt< ($p1$ as $p2$) >>
   | Sexpr loc [Satom _ Alid "list" :: sel] ->
-      let rec loop =
+      loop sel where rec loop =
         fun
         [ [] -> <:patt< [] >>
         | [se1; Satom _ Alid "::"; se2] ->
@@ -481,8 +470,6 @@ and patt_se =
             let p = patt_se se in
             let pl = loop sel in
             <:patt< [$p$ :: $pl$] >> ]
-      in
-      loop sel
   | Sexpr loc [se :: sel] ->
       List.fold_left
         (fun p se ->

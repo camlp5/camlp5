@@ -20,8 +20,7 @@ module Buff =
       else ();
       buff.val.[len] := x;
       succ len
-    }
-    ;
+    };
     value get len = String.sub buff.val 0 len;
   end
 ;
@@ -292,11 +291,11 @@ type sexpr =
 ;
 
 value loc_of_sexpr =
-  fun [
-    Sacc loc _ _ | Schar loc _ | Sexpr loc _ | Sint loc _ | Sfloat loc _ |
+  fun
+  [ Sacc loc _ _ | Schar loc _ | Sexpr loc _ | Sint loc _ | Sfloat loc _ |
     Slid loc _ | Slist loc _ | Sqid loc _ | Squot loc _ _ | Srec loc _ |
     Sstring loc _ | Stid loc _ | Suid loc _ ->
-    loc ]
+      loc ]
 ;
 value error_loc loc err =
   Stdpp.raise_with_loc loc (Stream.Error (err ^ " expected"))
@@ -469,26 +468,22 @@ and expr_se =
   | Sexpr loc [] -> <:expr< () >>
   | Sexpr loc [Slid _ s; e1 :: ([_ :: _] as sel)]
     when List.mem s assoc_left_parsed_op_list ->
-      let rec loop e1 =
+      loop (expr_se e1) (List.map expr_se sel) where rec loop e1 =
         fun
         [ [] -> e1
         | [e2 :: el] -> loop (op_apply loc e1 e2 s) el ]
-      in
-      loop (expr_se e1) (List.map expr_se sel)
   | Sexpr loc [Slid _ s :: ([_; _ :: _] as sel)]
     when List.mem s assoc_right_parsed_op_list ->
-      let rec loop =
+      loop (List.map expr_se sel) where rec loop =
         fun
         [ [] -> assert False
         | [e1] -> e1
         | [e1 :: el] ->
             let e2 = loop el in
             op_apply loc e1 e2 s ]
-      in
-      loop (List.map expr_se sel)
   | Sexpr loc [Slid _ s :: ([_; _ :: _] as sel)]
     when List.mem s and_by_couple_op_list ->
-      let rec loop =
+      loop (List.map expr_se sel) where rec loop =
         fun
         [ [] | [_] -> assert False
         | [e1; e2] -> <:expr< $lid:s$ $e1$ $e2$ >>
@@ -496,8 +491,6 @@ and expr_se =
             let a1 = op_apply loc e1 e2 s in
             let a2 = loop el in
             <:expr< $a1$ && $a2$ >> ]
-      in
-      loop (List.map expr_se sel)
   | Sexpr loc [Stid _ s; se] ->
       let e = expr_se se in
       <:expr< ~ $s$ : $e$ >>
@@ -514,7 +507,7 @@ and expr_se =
       let e2 = expr_se se2 in
       <:expr< if $e$ then $e1$ else $e2$ >>
   | Sexpr loc [Slid _ "cond" :: sel] ->
-      let rec loop =
+      loop sel where rec loop =
         fun
         [ [Sexpr loc [Slid _ "else" :: sel]] -> begin_se loc sel
         | [Sexpr loc [se1 :: sel1] :: sel] ->
@@ -524,8 +517,6 @@ and expr_se =
             <:expr< if $e1$ then $e2$ else $e3$ >>
         | [] -> <:expr< () >>
         | [se :: _] -> error se "cond clause" ]
-      in
-      loop sel
   | Sexpr loc [Slid _ "while"; se :: sel] ->
       let e = expr_se se in
       let el = List.map expr_se sel in
@@ -660,7 +651,7 @@ and expr_se =
            <:expr< $e$ $e1$ >>)
         (expr_se se) sel
   | Slist loc sel ->
-      let rec loop =
+      loop sel where rec loop =
         fun
         [ [] -> <:expr< [] >>
         | [se1; Slid _ "."; se2] ->
@@ -671,8 +662,6 @@ and expr_se =
             let e = expr_se se in
             let el = loop sel in
             <:expr< [$e$ :: $el$] >> ]
-      in
-      loop sel
   | Squot loc typ txt -> Pcaml.handle_expr_quotation loc (typ, txt) ]
 and begin_se loc =
   fun
@@ -822,7 +811,7 @@ and patt_se =
         (patt_se se) sel
   | Sexpr loc [] -> <:patt< () >>
   | Slist loc sel ->
-      let rec loop =
+      loop sel where rec loop =
         fun
         [ [] -> <:patt< [] >>
         | [se1; Slid _ "."; se2] ->
@@ -833,8 +822,6 @@ and patt_se =
             let p = patt_se se in
             let pl = loop sel in
             <:patt< [$p$ :: $pl$] >> ]
-      in
-      loop sel
   | Squot loc typ txt -> Pcaml.handle_patt_quotation loc (typ, txt) ]
 and ipatt_se se =
   match ipatt_opt_se se with
@@ -891,7 +878,7 @@ and ctyp_se =
       let ldl = List.map label_declaration_se sel in
       <:ctyp< { $list:ldl$ } >>
   | Sexpr loc [Slid _ "->" :: ([_; _ :: _] as sel)] ->
-      let rec loop =
+      loop sel where rec loop =
         fun
         [ [] -> assert False
         | [se] -> ctyp_se se
@@ -900,8 +887,6 @@ and ctyp_se =
             let loc = Stdpp.encl_loc (loc_of_sexpr se) loc in
             let t2 = loop sel in
             <:ctyp< $t1$ -> $t2$ >> ]
-      in
-      loop sel
   | Sexpr loc [Slid _ "*" :: sel] ->
       let tl = List.map ctyp_se sel in
       <:ctyp< ($list:tl$) >>
