@@ -200,7 +200,7 @@ and lexer0 kwt =
 and rparen =
   parser
   [ [: `'.' :] -> ")."
-  | [: ___ :] -> ")" ]
+  | [: :] -> ")" ]
 and after_space kwt =
   parser
   [ [: `'.' :] ep -> (("", "."), (ep - 1, ep))

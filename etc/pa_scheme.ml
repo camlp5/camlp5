@@ -1,5 +1,5 @@
 ; camlp4 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.9 2007/06/28 04:11:18 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.10 2007/07/05 14:35:52 deraugla Exp $
 
 (open Pcaml)
 (open Stdpp)
@@ -189,7 +189,7 @@
   (rparen
    (parser
     (((` '.')) ").")
-    ((_) ")")))
+    (() ")")))
   ((after_space kwt)
     (parser
      (((` '.')) ep (values (values "" ".") (values (- ep 1) ep)))
