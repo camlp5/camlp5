@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
+ "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html>
+<head>
+  <!-- $Id$ -->
+  <!-- Copyright (c) 2007 INRIA -->
+  <title>Abstract tree in concrete syntax</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <link rel="shortcut icon" href="c4logo.png" />
+  <link rel="stylesheet" type="text/css" href="styles/base.css" />
+</head>
+<body>
+
+<h1>Abstract tree in concrete syntax</h1>
+
+<p>In Camlp4, one often uses syntax trees. For example, in grammars of
+the language (semantic actions), in pretty printing (as patterns), in
+optimizing syntax code (typically streams parsers). Syntax trees are
+mainly defined by sum types, one for each kind of tree:
+"<code>expr</code>" for expressions, "<code>patt</code>" for patterns,
+"<code>ctyp</code>" for types, "<code>str_item</code>" for structure
+items, and so on. Each node corresponds to a possible value of this
+type.</p>
+
+<p>This syntax tree is defined in the module "<code>MLast</code>"
+provided by Camlp4.</p>
+
+<p>For example, the syntax tree of the statement "<code>if</code>" can
+be written:</p>
+
+<pre>
+MLast.ExIfe loc e1 e2 e3
+</pre>
+
+<p>Where "<code>loc</code>" is the location in the source, and
+"<code>e1</code>", "<code>e2</code>" and "<code>e3</code>" are
+respectively the expression after the "<code>if</code>", the one after
+the "<code>then</code>" and the one after the "<code>else</code>".</p>
+
+<p>In all programs, it is possible to manipulate syntax trees like
+that.</p>
+
+<p>However, the quotations systems of Camlp4 provides a quotation kit
+named "<code>q_MLast.cmo</code>". When loaded, it is possible to
+represent the syntax trees in concrete syntax. The example above can
+be written:</p>
+
+<pre>
+&lt;:expr&lt; if $e1$ then $e2$ else $e3$ >>
+</pre>
+
+<p>The interest of this representation is when one must manipulate
+complicated syntax trees. An example taken from the Camlp4 sources
+is this quotation (found in a pattern):</p>
+
+<pre>
+&lt;:expr&lt;
+  match try Some $f$ with [ Stream.Failure -> None ] with
+  [ Some $p$ -> $e$
+  | _ -> raise (Stream.Error $e2$) ]
+>>
+</pre>
+
+<p>In abstract syntax, it should have been written:</p>
+
+<pre>
+MLast.ExMat _
+  (MLast.ExTry _ (MLast.ExApp _ (MLast.ExUid _ "Some") f)
+     [(MLast.PaAcc _ (MLast.PaUid _ "Stream") (MLast.PaUid _ "Failure"),
+       None, MLast.ExUid _ "None")])
+  [(MLast.PaApp _ (MLast.PaUid _ "Some") p, None, e);
+   (MLast.PaAny _, None,
+    MLast.ExApp _ (MLast.ExLid _ "raise")
+      (MLast.ExApp _
+         (MLast.ExAcc _ (MLast.ExUid _ "Stream") (MLast.ExUid _ "Error"))
+         e2))]
+</pre>
+
+<p>Which is less readable, even if the the names of the nodes were
+more clear.</p>
+
+<p>Instead of thinking of "a syntax tree", the programmer has to think
+of "a piece of program".</p>
+
+<p>
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+</p>
+
+<hr style="margin:0" /><div style="font-size: 80%"><em>Copyright 2007
+Daniel de Rauglaudre (INRIA)</em></div>
+
+<p>
+     <a href="http://validator.w3.org/check?uri=referer"><img
+        src="http://www.w3.org/Icons/valid-xhtml11" style="border:0"
+        alt="Valid XHTML 1.1" height="31" width="88" /></a>
+</p>
+
+</body>
+</html>
