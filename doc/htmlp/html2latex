@@ -1,0 +1,37 @@
+#!/bin/sh
+# $Id: html2latex,v 1.1 2007/07/13 23:07:34 deraugla Exp $
+
+echo "\
+\\\\documentclass{book}
+\\\\addtolength{\\\\oddsidemargin}{-.875in}
+\\\\addtolength{\\\\evensidemargin}{-.875in}
+\\\\addtolength{\\\\textwidth}{1.75in}
+\\\\addtolength{\\\\topmargin}{-.875in}
+\\\\addtolength{\\\\textheight}{1.75in}
+\\\\begin{document}"
+
+while [ "$1" != "" ]; do
+  sed -e '0,/<div id="content">/d' \
+    -e 's/<h1[^>]*>/\\chapter{/' -e 's|</h1>|}|' \
+    -e 's/<h2>/\\section{/' -e 's|</h2>|}|' \
+    -e 's/<p>//' -e 's|</p>||' \
+    -e 's/<ul>/\\begin{itemize}/' -e 's|</ul>|\\end{itemize}|' \
+    -e 's/<ol>/\\begin{enumerate}/' -e 's|</ol>|\\end{enumerate}|' \
+    -e 's/<li>/\\item /' -e 's|</li>||' \
+    -e 's/<pre>/\\begin{verbatim}/' -e 's|</pre>|\\end{verbatim}|' \
+    -e 's|<code>\([^<]*\)</code>|\\verb/\1/|g' \
+    -e 's|<tt>\([^<]*\)</tt>|\\verb/\1/|g' \
+    -e 's/<a href=[^>]*>//g' -e 's|</a>||g' \
+    -e 's/<span [^>]*>//g' -e 's|</span>||g' \
+    -e 's/&lt;/</g' -e 's/&gt;/>/g' \
+    -e 's/_/\\_/g' \
+    -e 's/#/\\#/g' \
+    -e '/\\begin{verbatim}/,/\\end{verbatim}/s/\\_/_/g' \
+    -e '/\\begin{verbatim}/,/\\end{verbatim}/s/\\#/#/g' \
+    -e '/\\begin{verbatim}/,/\\end{verbatim}/s/^/    /g' \
+    -e '/<div class="trailer">/,$d' $1
+  shift
+done
+  
+echo "
+\\\\end{document}"
