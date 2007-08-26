@@ -1,0 +1,34 @@
+#!/bin/sh
+# $Id: html2texi,v 1.1 2007/08/26 21:11:26 deraugla Exp $
+
+FILES1="index.html ptools.html"
+FILES2="parsers.html lexers.html fparsers.html grammars.html"
+FILES3="printers.html pretty.html"
+FILES4="locations.html ml_ast.html pcaml.html syntext.html opretty.html quot.html revsynt.html scheme.html macros.html pragma.html extfun.html"
+FILES5="conclusion.html"
+FILES6="commands.html library.html sources.html"
+FILES="$FILES1 1 $FILES2 2 $FILES3 3 $FILES4 4 $FILES5 5 $FILES6"
+VERSION="$(grep "value version =" ../../main/pcaml.ml | sed -e 's/^[^"]*"\([^"]*\).*$/\1/')"
+
+/bin/echo '\input texinfo   @c -*-texinfo-*-
+@c %**start of header
+@setfilename camlp5.info'
+/bin/echo "@settitle Camlp5 manual $VERSION"
+/bin/echo '@c %**end of header
+
+@titlepage
+@title Camlp5 manual
+@author Daniel de Rauglaudre
+@end titlepage
+
+@node Top
+@top Camlp5: a preprocessor pretty printer for OCaml
+
+@menu
+* Introduction::
+* Parsing Tools::
+* Printing Tools::
+* Language extensions::
+* Conclusion::
+* Appendix::
+@end menu'
