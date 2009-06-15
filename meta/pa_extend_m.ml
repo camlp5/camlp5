@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend_m.ml,v 1.17 2007/09/06 20:21:40 deraugla Exp $ *)
+(* $Id: pa_extend_m.ml,v 1.18 2007/09/07 13:24:52 deraugla Exp $ *)
 
 open Pa_extend;
 
@@ -22,7 +22,7 @@ EXTEND
           sslist loc min sep s
       | UIDENT "SOPT"; s = SELF -> ssopt loc s
       | UIDENT "SFLAG"; s = SELF -> ssflag loc s
-      | UIDENT "SFLAG2"; s = SELF ->
+      | UIDENT "V"; UIDENT "SFLAG"; s = SELF ->
           if Pcaml.strict_mode.val then ssflag2 loc s else ssflag loc s ] ]
   ;
 END;

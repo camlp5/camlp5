@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: compile.ml,v 1.21 2007/09/06 04:26:18 deraugla Exp $ *)
+(* $Id: compile.ml,v 1.22 2007/09/07 13:24:52 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -541,8 +541,8 @@ and scan_symbol list =
   | Slist1sep s sep -> scan_symbol (scan_symbol list s) sep
   | Sopt s -> scan_symbol list s
   | Sflag s -> scan_symbol list s
-  | Sflag2 s -> scan_symbol list s
   | Stree t -> scan_tree list t
+  | Svala s -> scan_symbol list s
   | Smeta _ _ _ | Sself | Snext | Stoken _ -> list ]
 and scan_level list lev =
   let list = scan_tree list lev.lsuffix in

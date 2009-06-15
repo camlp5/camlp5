@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: gramext.mli,v 1.13 2007/09/06 04:26:18 deraugla Exp $ *)
+(* $Id: gramext.mli,v 1.14 2007/09/07 13:24:52 deraugla Exp $ *)
 
 type grammar 'te =
   { gtokens : Hashtbl.t Plexing.pattern (ref int);
@@ -43,11 +43,11 @@ and g_symbol 'te =
   | Slist1sep of g_symbol 'te and g_symbol 'te
   | Sopt of g_symbol 'te
   | Sflag of g_symbol 'te
-  | Sflag2 of g_symbol 'te
   | Sself
   | Snext
   | Stoken of Plexing.pattern
-  | Stree of g_tree 'te ]
+  | Stree of g_tree 'te
+  | Svala of g_symbol 'te ]
 and g_action = Obj.t
 and g_tree 'te =
   [ Node of g_node 'te

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.43 2007/09/07 11:30:46 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.44 2007/09/07 13:24:52 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -309,7 +309,7 @@ EXTEND
       | "open"; i = mod_ident -> Qast.Node "StOpn" [Qast.Loc; i]
       | "type"; tdl = SLIST1 type_declaration SEP "and" ->
           Qast.Node "StTyp" [Qast.Loc; tdl]
-      | "value"; r = SFLAG2 "rec"; l = SLIST1 let_binding SEP "and" ->
+      | "value"; r = V SFLAG "rec"; l = SLIST1 let_binding SEP "and" ->
           Qast.Node "StVal" [Qast.Loc; r; l]
       | e = expr -> Qast.Node "StExp" [Qast.Loc; e] ] ]
   ;

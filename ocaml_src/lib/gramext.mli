@@ -43,11 +43,11 @@ and 'te g_symbol =
   | Slist1sep of 'te g_symbol * 'te g_symbol
   | Sopt of 'te g_symbol
   | Sflag of 'te g_symbol
-  | Sflag2 of 'te g_symbol
   | Sself
   | Snext
   | Stoken of Plexing.pattern
   | Stree of 'te g_tree
+  | Svala of 'te g_symbol
 and g_action = Obj.t
 and 'te g_tree =
     Node of 'te g_node

@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extend.ml,v 1.30 2007/09/06 20:21:40 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.31 2007/09/07 13:24:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -37,11 +37,11 @@ type symbol =
   | Slist1sep of symbol and symbol
   | Sopt of symbol
   | Sflag of symbol
-  | Sflag2 of symbol
   | Sself
   | Snext
   | Stoken of alt Plexing.pattern MLast.expr
-  | Srules of list (list (option MLast.patt * symbol) * option MLast.expr) ]
+  | Srules of list (list (option MLast.patt * symbol) * option MLast.expr)
+  | Svala of symbol ]
 and alt 'a 'b =
   [ Left of 'a
   | Right of 'b ]
@@ -164,11 +164,11 @@ and unsymbol =
       Slist1sep (unsymbol e1) (unsymbol e2)
   | <:expr< Gramext.Sopt $e$ >> -> Sopt (unsymbol e)
   | <:expr< Gramext.Sflag $e$ >> -> Sflag (unsymbol e)
-  | <:expr< Gramext.Sflag2 $e$ >> -> Sflag2 (unsymbol e)
   | <:expr< Gramext.Sself >> -> Sself
   | <:expr< Gramext.Snext >> -> Snext
   | <:expr< Gramext.Stoken $e$ >> -> Stoken (untoken e)
   | <:expr< Gramext.srules $e$ >> -> Srules (unrule_list [] e)
+  | <:expr< Gramext.Svala $e$ >> -> Svala (unsymbol e)
   | _ -> raise Not_found ]
 ;
 
@@ -365,13 +365,12 @@ and symbol pc sy =
       sprintf "%sOPT %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
   | Sflag sy ->
       sprintf "%sFLAG %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
-  | Sflag2 sy ->
-      sprintf "%sFLAG2 %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
   | Srules rl ->
       match check_slist rl with
       [ Some s -> s_symbol pc s
       | None -> simple_symbol pc sy ]
   | Stoken tok -> token pc tok
+  | Svala sy -> symbol {(pc) with bef = "V " ^ pc.bef} sy
   | sy -> simple_symbol pc sy ]
 and simple_symbol pc sy =
   match sy with  
@@ -436,7 +435,7 @@ and s_symbol pc =
         | s -> s ]
       in
       sprintf "%sSFLAG %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
-  | Sflag2 s ->
+  | Svala (Sflag s) ->
       let sy =
         match s with
         [ Srules
@@ -445,7 +444,7 @@ and s_symbol pc =
             Stoken (Left ("", str))
         | s -> s ]
       in
-      sprintf "%sSFLAG2 %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
+      sprintf "%sV SFLAG %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
   | _ -> assert False ]
 and check_slist rl =
   if no_slist.val then None
@@ -465,7 +464,7 @@ and check_slist rl =
     | [([(Some <:patt< a >>, Snterm <:expr< a_flag2 >>)], Some <:expr< a >>);
        ([(Some <:patt< a >>, Sflag s)],
           Some <:expr< Qast.Node "Qast.Vala" [Qast.Bool a] >>)] ->
-        Some (Sflag2 s)
+        Some (Svala (Sflag s))
     | _ -> None ]
 ;
 

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.39 2007/09/06 20:21:40 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.40 2007/09/07 13:24:52 deraugla Exp $ *)
 
 value split_ext = ref False;
 
@@ -37,10 +37,10 @@ type text 'e =
   | TXnterm of loc and name 'e and option string
   | TXopt of loc and text 'e
   | TXflag of loc and text 'e
-  | TXflag2 of loc and text 'e
   | TXrules of loc and list (list (text 'e) * 'e)
   | TXself of loc
-  | TXtok of loc and string and 'e ]
+  | TXtok of loc and string and 'e
+  | TXvala of loc and text 'e ]
 ;
 
 type entry 'e 'p =
@@ -428,11 +428,11 @@ value rec make_expr gmod tvar =
                     ($n.expr$ : $uid:gmod$.Entry.e '$lid:n.tvar$)) >> ]
   | TXopt loc t -> <:expr< Gramext.Sopt $make_expr gmod "" t$ >>
   | TXflag loc t -> <:expr< Gramext.Sflag $make_expr gmod "" t$ >>
-  | TXflag2 loc t -> <:expr< Gramext.Sflag2 $make_expr gmod "" t$ >>
   | TXrules loc rl ->
       <:expr< Gramext.srules $make_expr_rules loc gmod rl ""$ >>
   | TXself loc -> <:expr< Gramext.Sself >>
-  | TXtok loc s e -> <:expr< Gramext.Stoken ($str:s$, $e$) >> ]
+  | TXtok loc s e -> <:expr< Gramext.Stoken ($str:s$, $e$) >>
+  | TXvala loc t -> <:expr< Gramext.Svala $make_expr gmod "" t$ >> ]
 and make_expr_rules loc gmod rl tvar =
   List.fold_left
     (fun txt (sl, ac) ->
@@ -910,7 +910,7 @@ EXTEND
             let styp = STlid loc "bool" in
             let text = TXflag loc s.text in
             {used = s.used; text = text; styp = styp}
-      | UIDENT "FLAG2"; s = SELF ->
+      | UIDENT "V"; UIDENT "FLAG"; s = SELF ->
           if quotify.val then ssflag2 loc s
           else if not Pcaml.strict_mode.val then
             let styp = STlid loc "bool" in
@@ -918,7 +918,7 @@ EXTEND
             {used = s.used; text = text; styp = styp}
           else
             let styp = STvala loc (STlid loc "bool") in
-            let text = TXflag2 loc s.text in
+            let text = TXvala loc (TXflag loc s.text) in
             {used = s.used; text = text; styp = styp} ]
     | [ UIDENT "SELF" ->
           {used = []; text = TXself loc; styp = STself loc "SELF"}

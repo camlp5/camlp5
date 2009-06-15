@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.39 2007/09/07 06:05:07 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.40 2007/09/07 13:24:52 deraugla Exp $ *)
 
 open Gramext;
 open Format;
@@ -36,9 +36,9 @@ value rec print_symbol ppf =
       fprintf ppf "LIST1 %a SEP %a" print_symbol1 s print_symbol1 t
   | Sopt s -> fprintf ppf "OPT %a" print_symbol1 s
   | Sflag s -> fprintf ppf "FLAG %a" print_symbol1 s
-  | Sflag2 s -> fprintf ppf "FLAG2 %a" print_symbol1 s
   | Stoken (con, prm) when con <> "" && prm <> "" ->
       fprintf ppf "%s@ %a" con print_str prm
+  | Svala s -> fprintf ppf "V %a" print_symbol s
   | Snterml e l ->
       fprintf ppf "%s%s@ LEVEL@ %a" e.ename (if e.elocal then "*" else "")
         print_str l
@@ -65,7 +65,7 @@ and print_symbol1 ppf =
   | Stoken (con, "") -> pp_print_string ppf con
   | Stree t -> print_level ppf pp_print_space (flatten_tree t)
   | Smeta _ _ _ | Snterml _ _ | Slist0 _ | Slist0sep _ _ | Slist1 _ |
-    Slist1sep _ _ | Sopt _ | Sflag _ | Sflag2 _ | Stoken _ as s ->
+    Slist1sep _ _ | Sopt _ | Sflag _ | Stoken _ | Svala _ as s ->
       fprintf ppf "(%a)" print_symbol s ]
 and print_rule ppf symbols = do {
   fprintf ppf "@[<hov 0>";
@@ -146,9 +146,10 @@ value iter_entry f e =
     fun
     [ Smeta _ sl _ -> List.iter do_symbol sl
     | Snterm e | Snterml e _ -> do_entry e
-    | Slist0 s | Slist1 s | Sopt s | Sflag s | Sflag2 s -> do_symbol s
+    | Slist0 s | Slist1 s | Sopt s | Sflag s -> do_symbol s
     | Slist0sep s1 s2 | Slist1sep s1 s2 -> do { do_symbol s1; do_symbol s2 }
     | Stree t -> do_tree t
+    | Svala s -> do_symbol s
     | Sself | Snext | Stoken _ -> () ]
   in
   do_entry e
@@ -180,11 +181,12 @@ value fold_entry f e init =
     fun
     [ Smeta _ sl _ -> List.fold_left do_symbol accu sl
     | Snterm e | Snterml e _ -> do_entry accu e
-    | Slist0 s | Slist1 s | Sopt s | Sflag s | Sflag2 s -> do_symbol accu s
+    | Slist0 s | Slist1 s | Sopt s | Sflag s -> do_symbol accu s
     | Slist0sep s1 s2 | Slist1sep s1 s2 ->
         let accu = do_symbol accu s1 in
         do_symbol accu s2
     | Stree t -> do_tree accu t
+    | Svala s -> do_symbol accu s
     | Sself | Snext | Stoken _ -> accu ]
   in
   do_entry init e
@@ -226,8 +228,9 @@ value rec name_of_symbol_failed entry =
   | Slist0sep s _ -> name_of_symbol_failed entry s
   | Slist1 s -> name_of_symbol_failed entry s
   | Slist1sep s _ -> name_of_symbol_failed entry s
-  | Sopt s | Sflag s | Sflag2 s -> name_of_symbol_failed entry s
+  | Sopt s | Sflag s -> name_of_symbol_failed entry s
   | Stree t -> name_of_tree_failed entry t
+  | Svala s -> name_of_symbol_failed entry s
   | Smeta _ [s :: _] _ -> name_of_symbol_failed entry s
   | s -> name_of_symbol entry s ]
 and name_of_tree_failed entry =
@@ -614,19 +617,25 @@ and parser_of_symbol entry nlevn =
       parser
       [ [: _ = ps :] -> Obj.repr True
       | [: :] -> Obj.repr False ]
-  | Sflag2 s ->
-      let ps = parser_of_symbol entry nlevn s in
-      let pa = parser_of_token entry ("FLAG2", "") in
-      parser
-      [ [: a = pa :] -> Obj.repr (Ploc.VaAnt (Obj.magic a : string))
-      | [: _ = ps :] -> Obj.repr (Ploc.VaVal True)
-      | [: :] -> Obj.repr (Ploc.VaVal False) ]
   | Stree t ->
       let pt = parser_of_tree entry 1 0 t in
       parser bp
         [: a = pt :] ep ->
           let loc = loc_of_token_interval bp ep in
           app a loc
+  | Svala s ->
+      let pa =
+        let t =
+          match s with
+          [ Sflag _ -> "V FLAG"
+          | _ -> failwith "Grammar: not impl Svala" ]
+        in
+        parser_of_token entry (t, "")
+      in
+      let ps = parser_of_symbol entry nlevn s in
+      parser
+      [ [: a = pa :] -> Obj.repr (Ploc.VaAnt (Obj.magic a : string))
+      | [: a = ps :] -> Obj.repr (Ploc.VaVal a) ]
   | Snterm e -> parser [: a = e.estart 0 :] -> a
   | Snterml e l -> parser [: a = e.estart (level_number e l) :] -> a
   | Sself -> parser [: a = entry.estart 0 :] -> a
@@ -904,8 +913,8 @@ value find_entry e s =
     | Slist1sep s _ -> find_symbol s
     | Sopt s -> find_symbol s
     | Sflag s -> find_symbol s
-    | Sflag2 s -> find_symbol s
     | Stree t -> find_tree t
+    | Svala s -> find_symbol s
     | Sself | Snext | Stoken _ -> None ]
   and find_symbol_list =
     fun

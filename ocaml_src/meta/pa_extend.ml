@@ -37,10 +37,10 @@ type 'e text =
   | TXnterm of loc * 'e name * string option
   | TXopt of loc * 'e text
   | TXflag of loc * 'e text
-  | TXflag2 of loc * 'e text
   | TXrules of loc * ('e text list * 'e) list
   | TXself of loc
   | TXtok of loc * string * 'e
+  | TXvala of loc * 'e text
 ;;
 
 type ('e, 'p) entry =
@@ -1005,12 +1005,6 @@ let rec make_expr gmod tvar =
          MLast.ExAcc
            (loc, MLast.ExUid (loc, "Gramext"), MLast.ExUid (loc, "Sflag")),
          make_expr gmod "" t)
-  | TXflag2 (loc, t) ->
-      MLast.ExApp
-        (loc,
-         MLast.ExAcc
-           (loc, MLast.ExUid (loc, "Gramext"), MLast.ExUid (loc, "Sflag2")),
-         make_expr gmod "" t)
   | TXrules (loc, rl) ->
       MLast.ExApp
         (loc,
@@ -1026,6 +1020,12 @@ let rec make_expr gmod tvar =
          MLast.ExAcc
            (loc, MLast.ExUid (loc, "Gramext"), MLast.ExUid (loc, "Stoken")),
          MLast.ExTup (loc, [MLast.ExStr (loc, s); e]))
+  | TXvala (loc, t) ->
+      MLast.ExApp
+        (loc,
+         MLast.ExAcc
+           (loc, MLast.ExUid (loc, "Gramext"), MLast.ExUid (loc, "Svala")),
+         make_expr gmod "" t)
 and make_expr_rules loc gmod rl tvar =
   List.fold_left
     (fun txt (sl, ac) ->
@@ -1903,9 +1903,10 @@ Grammar.extend
             'psymbol))]];
     Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e), None,
     [Some "top", Some Gramext.NonA,
-     [[Gramext.Stoken ("UIDENT", "FLAG2"); Gramext.Sself],
+     [[Gramext.Stoken ("UIDENT", "V"); Gramext.Stoken ("UIDENT", "FLAG");
+       Gramext.Sself],
       Gramext.action
-        (fun (s : 'symbol) _ (loc : Ploc.t) ->
+        (fun (s : 'symbol) _ _ (loc : Ploc.t) ->
            (if !quotify then ssflag2 loc s
             else if not !(Pcaml.strict_mode) then
               let styp = STlid (loc, "bool") in
@@ -1913,7 +1914,7 @@ Grammar.extend
               {used = s.used; text = text; styp = styp}
             else
               let styp = STvala (loc, STlid (loc, "bool")) in
-              let text = TXflag2 (loc, s.text) in
+              let text = TXvala (loc, TXflag (loc, s.text)) in
               {used = s.used; text = text; styp = styp} :
             'symbol));
       [Gramext.Stoken ("UIDENT", "FLAG"); Gramext.Sself],
