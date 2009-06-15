@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.12 2007/08/02 22:21:31 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.13 2007/08/03 03:50:39 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -247,6 +247,9 @@ module Meta =
                 [ Some (loc, r) -> <:patt< $anti:r$ >>
                 | None -> assert False ]
             | _ -> assert False ]
+        | ExApp _ e1 e2 -> <:patt< MLast.ExApp _ $loop e1$ $loop e2$ >>
+        | ExIfe _ e1 e2 e3 ->
+            <:patt< MLast.ExIfe _ $loop e1$ $loop e2$ $loop e3$ >>
         | ExInt _ s k -> <:patt< MLast.ExInt _ $p_string s$ $str:k$ >>
         | ExFlo _ s -> <:patt< MLast.ExFlo _ $p_string s$ >>
         | ExLet _ rf lpe e ->
@@ -255,6 +258,8 @@ module Meta =
               p_list (fun (p, e) -> <:patt< ($p_patt p$, $loop e$) >>) lpe
             in
             <:patt< MLast.ExLet _ $rf$ $lpe$ $loop e$ >>
+        | ExLid _ s -> <:patt< MLast.ExLid _ $p_string s$ >>
+        | ExUid _ s -> <:patt< MLast.ExUid _ $p_string s$ >>
         | x -> not_impl "p_expr" x ]
     ;
     value e_sig_item =
