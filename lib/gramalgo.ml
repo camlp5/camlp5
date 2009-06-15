@@ -48,6 +48,8 @@ type gram_symb =
 
 type action =
   [ ActShift of int
+  | ActReduce of int
+  | ActAcc
   | ActErr ]
 ;
 
@@ -347,8 +349,8 @@ value sprint_symb =
   | GS_nterm s -> s ]
 ;
 
-value eprint_rule (n, sl) = do {
-  Printf.eprintf "%s ->" n;
+value eprint_rule (i, n, sl) = do {
+  Printf.eprintf "%d : %s ->" i n;
   if sl = [] then Printf.eprintf " ε"
   else List.iter (fun s -> Printf.eprintf " %s" (sprint_symb s)) sl;
   Printf.eprintf "\n";
@@ -356,15 +358,16 @@ value eprint_rule (n, sl) = do {
 
 value check_closed rl = do {
   let ht = Hashtbl.create 1 in
-  List.iter (fun (e, rh) -> Hashtbl.replace ht e e) rl;
+  List.iter (fun (_, e, rh) -> Hashtbl.replace ht e e) rl;
   List.iter
-    (fun (e, rh) ->
+    (fun (i, e, rh) ->
        List.iter
          (fun
           [ GS_term _ -> ()
           | GS_nterm s ->
               if Hashtbl.mem ht s then ()
-              else Printf.eprintf "Missing non-terminal \"%s\"\n" s ])
+              else
+                Printf.eprintf "Rule %d: missing non-terminal \"%s\"\n" i s ])
          rh)
     rl;
   flush stderr;
@@ -382,7 +385,7 @@ value close_item_set rl items =
   let processed = ref [] in
   let rclos =
     List.fold_left
-      (fun clos ((added, lh, dot, rh) as item) ->
+      (fun clos ((m, added, lh, dot, rh) as item) ->
          match get_symbol_after_dot dot rh with
          [ Some (GS_nterm n) -> do {
              processed.val := [lh :: processed.val];
@@ -393,15 +396,16 @@ value close_item_set rl items =
                    if List.mem n processed.val then loop clos to_process
                    else do {
                      processed.val := [n :: processed.val];
-                     let rl = List.filter (fun (lh, rh) -> n = lh) rl in
+                     let rl = List.filter (fun (_, lh, rh) -> n = lh) rl in
                      let clos =
                        List.fold_left
-                         (fun clos (lh, rh) -> [(True, lh, 0, rh) :: clos])
+                         (fun clos (m, lh, rh) ->
+                            [(m, True, lh, 0, rh) :: clos])
                          clos rl
                      in
                      let to_process =
                        List.fold_left
-                         (fun to_process (lh, rh) ->
+                         (fun to_process (_, lh, rh) ->
                             match rh with
                             [ [] -> to_process
                             | [s :: sl] ->
@@ -421,7 +425,7 @@ value close_item_set rl items =
   List.rev rclos
 ;
 
-value eprint_item (added, lh, dot, rh) = do {
+value eprint_item (m, added, lh, dot, rh) = do {
   if added then Printf.eprintf "+ " else Printf.eprintf "  ";
   Printf.eprintf "%s ->" lh;
   loop dot rh where rec loop dot rh =
@@ -444,13 +448,14 @@ value make_item_sets rl item_set_ht =
   where rec loop ini_item_set_cnt item_set_cnt shift_assoc item_set_ini =
   do {
     let item_set =
-      List.map (fun (_, lh, dot, rh) -> (False, lh, dot, rh)) item_set_ini
+      List.map (fun (m, _, lh, dot, rh) -> (m, False, lh, dot, rh))
+        item_set_ini
     in
     let sl =
       let (rtl, rntl) =
         (* terminals and non-terminals just after the dot *)
         List.fold_left
-          (fun (rtl, rntl) (added, lh, dot, rh) ->
+          (fun (rtl, rntl) (m, added, lh, dot, rh) ->
               match get_symbol_after_dot dot rh with
               [ Some s ->
                   match s with
@@ -480,7 +485,7 @@ value make_item_sets rl item_set_ht =
            (* select items where there is a dot before s *)
            let item_set =
              List.find_all
-               (fun (added, lh, dot, rh) ->
+               (fun (m, added, lh, dot, rh) ->
                   match get_symbol_after_dot dot rh with
                   [ Some s1 -> s = s1
                   | None -> False ])
@@ -489,7 +494,7 @@ value make_item_sets rl item_set_ht =
            (* move the dot after s *)
            let item_set =
              List.map
-               (fun (added, lh, dot, rh) -> (added, lh, dot + 1, rh))
+               (fun (m, added, lh, dot, rh) -> (m, added, lh, dot + 1, rh))
                item_set
            in
            (* complete by closure *)
@@ -534,7 +539,7 @@ value compute_nb_symbols item_set_ht term_table nterm_table =
   Hashtbl.fold
     (fun item_set _ cnts ->
        List.fold_left
-         (fun (terms_cnt, nterms_cnt) (_, lh, _, rh) ->
+         (fun (terms_cnt, nterms_cnt) (_, _, lh, _, rh) ->
             let nterms_cnt =
               if Hashtbl.mem nterm_table lh then nterms_cnt
               else do {
@@ -568,7 +573,7 @@ value compute_nb_symbols item_set_ht term_table nterm_table =
     item_set_ht (0, 0)
 ;
 
-DEFINE TEST;
+(*DEFINE TEST;*)
 
 value lr0 entry lev = do {
   Printf.eprintf "LR(0) %s %d\n" entry.ename lev;
@@ -576,9 +581,17 @@ value lr0 entry lev = do {
   let (rl, item_set_0) =
     IFNDEF TEST THEN
       let rl = flatten_gram entry lev in
+      let rl =
+        let (rrl, _) =
+          List.fold_left
+            (fun (rrl, i) (lh, rh) -> ([(i, lh, rh) :: rrl], i + 1))
+            ([], 1) rl
+        in
+        List.rev rrl
+      in
       let item_set_0 =
         let item =
-          (False, "start-symb", 0, [GS_nterm (name_of_entry entry lev)])
+          (0, False, "S", 0, [GS_nterm (name_of_entry entry lev)])
         in
         close_item_set rl [item]
       in
@@ -591,8 +604,16 @@ value lr0 entry lev = do {
          ("B", [GS_term "0"]);
          ("B", [GS_term "1"])]
       in
+      let rl =
+        let (rrl, _) =
+          List.fold_left
+            (fun (rrl, i) (lh, rh) -> ([(i, lh, rh) :: rrl], i + 1))
+            ([], 1) rl
+        in
+        List.rev rrl
+      in
       let item_set_0 =
-        let item = (False, "S", 0, [GS_nterm "E"]) in
+        let item = (0, False, "S", 0, [GS_nterm "E"]) in
         close_item_set rl [item]
       in
       (rl, item_set_0)
@@ -660,9 +681,13 @@ value lr0 entry lev = do {
   };
   flush stderr;
   (* make action table *)
+  (* size = number of terminals plus one for the 'end of input' *)
   let action_table =
-    Array.init (item_set_cnt + 1) (fun _ -> Array.create nb_terms ActErr)
+    Array.init (item_set_cnt + 1)
+      (fun _ -> Array.create (nb_terms + 1) ActErr)
   in
+  (* the columns for the terminals are copied to the action table as shift
+     actions *)
   List.iter
     (fun (item_set_cnt, symb_cnt_assoc) ->
        let line = action_table.(item_set_cnt) in
@@ -675,13 +700,57 @@ value lr0 entry lev = do {
             | GS_nterm s -> () ])
          symb_cnt_assoc)
     shift_assoc;
+  (* an extra column for '$' (end of input) is added to the action table
+     that contains acc for every item set that contains S → w • *)
+  Hashtbl.iter
+    (fun item_set n ->
+       List.iter
+         (fun (_, _, lh, dot, rh) ->
+            if lh = "S" && dot = List.length rh then
+              action_table.(n).(nb_terms) := ActAcc
+            else ())
+         item_set)
+    item_set_ht;
+  (* if an item set i contains an item of the form A → w • and A → w is
+     rule m with m > 0 then the row for state i in the action table is
+     completely filled with the reduce action rm. *)
+  Hashtbl.iter
+    (fun item_set i ->
+       List.iter
+         (fun (m, _, _, dot, rh) ->
+            if m > 0 then
+              if dot = List.length rh then
+                let line = action_table.(i) in
+                match line.(0) with
+                [ ActReduce m1 -> do {
+                    Printf.eprintf
+                      "State %d: conflict reduce/reduce rules %d and %d\n"
+                      i m1 m;
+                    flush stderr;
+                  }
+                | _ ->
+                    for j = 0 to Array.length line - 1 do {
+                      match line.(j) with
+                      [ ActShift n -> do {
+                          Printf.eprintf "State %d: conflict shift/reduce" i;
+                          Printf.eprintf " shift %d rule %d\n" n m;
+                          flush stderr;
+                        }
+                      | _ -> line.(j) := ActReduce m ];
+                    } ]
+              else ()
+            else ())
+         item_set)
+    item_set_ht;
   Printf.eprintf "\n\naction table\n\n";
-  for i = 0 to Array.length goto_table - 1 do {
+  for i = 0 to Array.length action_table - 1 do {
     Printf.eprintf "state %d :" i;
     let line = action_table.(i) in
     for j = 0 to Array.length line - 1 do {
       match line.(j) with
       [ ActShift n -> Printf.eprintf " %4s" (Printf.sprintf "s%d" n)
+      | ActReduce n -> Printf.eprintf " %4s" (Printf.sprintf "r%d" n)
+      | ActAcc -> Printf.eprintf "   acc"
       | ActErr -> Printf.eprintf "    -" ];
     };
     Printf.eprintf "\n";
