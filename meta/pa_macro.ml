@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.16 2007/08/19 04:35:51 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.17 2007/08/30 18:18:30 deraugla Exp $ *)
 
 (*
 Added statements:
@@ -216,7 +216,7 @@ value undef x =
 EXTEND
   GLOBAL: expr patt str_item sig_item;
   str_item: FIRST
-    [ [ x = macro_def ->
+    [ [ x = str_macro_def ->
           match x with
           [ SdStr [si] -> si
           | SdStr sil -> <:str_item< declare $list:sil$ end >>
@@ -224,7 +224,16 @@ EXTEND
           | SdUnd x -> do { undef x; <:str_item< declare end >> }
           | SdNop -> <:str_item< declare end >> ] ] ]
   ;
-  macro_def:
+  sig_item: FIRST
+    [ [ x = sig_macro_def ->
+          match x with
+          [ SdStr [si] -> si
+          | SdStr sil -> <:sig_item< declare $list:sil$ end >>
+          | SdDef x eo -> do { define eo x; <:sig_item< declare end >> }
+          | SdUnd x -> do { undef x; <:sig_item< declare end >> }
+          | SdNop -> <:sig_item< declare end >> ] ] ]
+  ;
+  str_macro_def:
     [ [ "DEFINE"; i = uident; def = opt_macro_value -> SdDef i def
       | "UNDEF"; i = uident -> SdUnd i
       | "IFDEF"; e = dexpr; "THEN"; d = str_item_or_macro; "END" ->
@@ -238,9 +247,27 @@ EXTEND
         d2 = str_item_or_macro; "END" ->
           if e then d2 else d1 ] ]
   ;
+  sig_macro_def:
+    [ [ "DEFINE"; i = uident -> SdDef i None
+      | "UNDEF"; i = uident -> SdUnd i
+      | "IFDEF"; e = dexpr; "THEN"; d = sig_item_or_macro; "END" ->
+          if e then d else SdNop
+      | "IFDEF"; e = dexpr; "THEN"; d1 = sig_item_or_macro; "ELSE";
+        d2 = sig_item_or_macro; "END" ->
+          if e then d1 else d2
+      | "IFNDEF"; e = dexpr; "THEN"; d = sig_item_or_macro; "END" ->
+          if e then SdNop else d
+      | "IFNDEF"; e = dexpr; "THEN"; d1 = sig_item_or_macro; "ELSE";
+        d2 = sig_item_or_macro; "END" ->
+          if e then d2 else d1 ] ]
+  ;
   str_item_or_macro:
-    [ [ d = macro_def -> d
+    [ [ d = str_macro_def -> d
       | si = LIST1 str_item -> SdStr si ] ]
+  ;
+  sig_item_or_macro:
+    [ [ d = sig_macro_def -> d
+      | si = LIST1 sig_item -> SdStr si ] ]
   ;
   opt_macro_value:
     [ [ "("; pl = LIST1 LIDENT SEP ","; ")"; "="; e = expr -> Some (pl, e)

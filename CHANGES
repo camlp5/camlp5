@@ -1,7 +1,8 @@
 Camlp5 Version 4.08:
 ---------------------
 
-* [no date] Updated documentation.
+* [] Updated documentation.
+* [30 Aug 07] Added IFDEF macros for signatures (.mli files).
 * [26 Aug 07] Added left factorization for consecutive rules of parsers
   (and lexers).
 * [21 Aug 07] Added equality functions over syntax trees in module Pcaml.

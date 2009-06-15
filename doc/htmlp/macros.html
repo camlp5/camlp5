@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: macros.html,v 1.6 2007/08/28 02:20:19 deraugla Exp $ -->
+  <!-- $Id: macros.html,v 1.7 2007/08/30 18:18:30 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>macros</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -36,36 +36,46 @@
   following grammar rules:</p>
 
 <pre>
-    str-item ::= macro-def
-        expr ::= macro-expr
-        patt ::= macro-patt
-   macro-def ::= "DEFINE" uident
-               | "DEFINE" uident "=" expr
-               | "DEFINE" uident "(" params ")" "=" expr
-               | "UNDEF" uident
-               | "IFDEF" dexpr "THEN" si-or-mac "END"
-               | "IFDEF" dexpr "THEN" si-or-mac "ELSE" si-or-mac "END"
-               | "IFNDEF" dexpr "THEN" si-or-mac "END"
-               | "IFNDEF" dexpr "THEN" si-or-mac "ELSE" si-or-mac "END"
-  macro-expr ::= "IFDEF" dexpr "THEN" expr "ELSE" expr "END"
-               | "IFNDEF" dexpr "THEN" expr "ELSE" expr "END"
-               | "__FILE__"
-               | "__LOCATION__"
-  macro-patt ::= "IFDEF" dexpr "THEN" patt "ELSE" patt "END"
-               | "IFNDEF" dexpr "THEN" patt "ELSE" patt "END"
-   si-or-mac ::= macro-def
-               | str_item
-      params ::= ident "," params
-               | ident
-       dexpr ::= dexpr "OR" dexpr
-               | dexpr "AND" dexpr
-               | "NOT" dexpr
-               | uident
-               | "(" dexpr ")"
-      uident ::= 'A'-'Z' ident
-       ident ::= ident-char*
-  ident-char ::= ('a'-'a' | 'A'-'Z' | '0'-'9' | '_' | ''' | utf8-byte)
-   utf8-byte ::= '\128'-'\255'
+       str-item ::= str-macro-def
+       sig-item ::= sig-macro-def
+           expr ::= macro-expr
+           patt ::= macro-patt
+  str_macro-def ::= "DEFINE" uident
+                  | "DEFINE" uident "=" expr
+                  | "DEFINE" uident "(" params ")" "=" expr
+                  | "UNDEF" uident
+                  | "IFDEF" dexpr "THEN" st-or-mac "END"
+                  | "IFDEF" dexpr "THEN" st-or-mac "ELSE" st-or-mac "END"
+                  | "IFNDEF" dexpr "THEN" st-or-mac "END"
+                  | "IFNDEF" dexpr "THEN" st-or-mac "ELSE" st-or-mac "END"
+  sig_macro-def ::= "DEFINE" uident
+                  | "DEFINE" uident "(" params ")" "=" expr
+                  | "UNDEF" uident
+                  | "IFDEF" dexpr "THEN" sg-or-mac "END"
+                  | "IFDEF" dexpr "THEN" sg-or-mac "ELSE" sg-or-mac "END"
+                  | "IFNDEF" dexpr "THEN" sg-or-mac "END"
+                  | "IFNDEF" dexpr "THEN" sg-or-mac "ELSE" sg-or-mac "END"
+     macro-expr ::= "IFDEF" dexpr "THEN" expr "ELSE" expr "END"
+                  | "IFNDEF" dexpr "THEN" expr "ELSE" expr "END"
+                  | "__FILE__"
+                  | "__LOCATION__"
+     macro-patt ::= "IFDEF" dexpr "THEN" patt "ELSE" patt "END"
+                  | "IFNDEF" dexpr "THEN" patt "ELSE" patt "END"
+     st-or-mac ::= str_macro-def
+                  | str-item
+     sg-or-mac ::= sig-macro-def
+                  | sig-item
+         params ::= ident "," params
+                  | ident
+          dexpr ::= dexpr "OR" dexpr
+                  | dexpr "AND" dexpr
+                  | "NOT" dexpr
+                  | uident
+                  | "(" dexpr ")"
+         uident ::= 'A'-'Z' ident
+          ident ::= ident-char*
+     ident-char ::= ('a'-'a' | 'A'-'Z' | '0'-'9' | '_' | ''' | utf8-byte)
+      utf8-byte ::= '\128'-'\255'
 </pre>
 
 <p>When a macro has been defined, as name e.g. "NAME", the expressions
