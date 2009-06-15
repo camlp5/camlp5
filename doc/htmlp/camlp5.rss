@@ -6,6 +6,14 @@
     <lastBuildDate>Mon Sep 17 15:10:47 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
     <item>
+      <title>mkcamlp5</title>
+      <description>
+        Added paragraph about new commands mkcamlp5 and mkcamlp5.opt.
+      </description>
+      <pubDate>Tue Nov 20 04:30:54 CET 2007</pubDate>
+      <link>../commands.html</link>
+    </item>
+    <item>
       <title>Lexers 2</title>
       <description>
         Updated the chapter about lexers, the lexing buffer being now
