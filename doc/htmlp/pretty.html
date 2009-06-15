@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: pretty.html,v 1.14 2007/08/21 13:35:17 deraugla Exp $ -->
+  <!-- $Id: pretty.html,v 1.15 2007/10/14 04:12:44 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Pretty print</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -19,11 +19,12 @@
 
 <h1 class="top">Pretty print</h1>
 
-<p>A pretty print system is provided in the library module Pretty. It allows
-  to pretty print data or programs. The Pretty module contains:</p>
+<p>A pretty print system is provided in the library module Pretty. It
+  allows one to pretty print data or programs. The Pretty module
+  contains:</p>
 
 <ul>
-  <li>The function "horiz_vertic" to specify how data has to be printed.</li>
+  <li>The function "horiz_vertic" to specify how data must be printed.</li>
   <li>The function "sprintf" to format strings.</li>
   <li>The variable "line_length" which is a reference specifying the
     maximum lines lengths.</li>
@@ -37,7 +38,7 @@
 <h3>horiz_vertic</h3>
 
 <p>The function "horiz_vertic" takes two functions as parameters. When
-  called, it calls its first function. If that function fails with
+  invoked, it calls its first function. If that function fails with
   some internal error that the function "<code>sprintf</code>" below
   may raise, the second function is called.</p>
 
@@ -71,9 +72,8 @@
   difference is that if it is called in the context of the first
   function (the "horizontal" function) of the function "horiz_vertic"
   (above), all strings built by "sprintf" are checked for newlines or
-  length greater than the maximum line length. If it is the case, the
-  "sprintf" function fails, and the horizontal function fails
-  also.</p>
+  length greater than the maximum line length. If either occurs, the
+  "sprintf" function fails and the horizontal function fails.</p>
 
 <p>If "sprintf" is not in the context of the horizontal function, it
   behaves like the usual "sprintf" function.</p>
@@ -140,10 +140,10 @@
 <p>Just start with a call to "horiz_vertic".</p>
 
 <p>As its first function, use "sprintf" just to concat the strings
-  without putting any newlines or indentations, just using e.g. spaces
+  without putting any newlines or indentations, e.g. just using spaces
   to separate pieces of data.</p>
 
-<p>As its second function, wonder how you want your data to be cut.
+<p>As its second function, consider how you want your data to be cut.
   At the cutting point or points, add newlines. Notice that you
   probably need to give the current indentation string as parameter of
   the called functions because they need to be taken into account in
@@ -182,8 +182,8 @@
 
 <h3>How to cancel a horizontal print</h3>
 
-<p>If you want to prevent a pretty printing function to be called in
-  an horizontal context, constraining the pretty print to be on
+<p>If you want to prevent a pretty printing function from being called
+  in a horizontal context, constraining the pretty print to be on
   several lines in the calling function, just do:</p>
 
 <pre>
@@ -199,28 +199,27 @@
 
 <h3>Kernel</h3>
 
-<p>The module "Pretty" is supposed to be a basic, a "kernel" module to
-  pretty print data. It supposes that the user takes care himself of
-  the indentation. Programs using "Pretty" are not as short as the
-  ones using "Format" of the OCaml library, but are more
-  flexible. Later, it is planed to find a way to extend "Pretty" with
-  functions allowing to use a short syntax similar to the "@"
-  convention of the function "printf" of "Format", and taking care of
-  the indentation for the user, resulting on shorter programs.</p>
+<p>The module "Pretty" is intended to be basic, a "kernel" module to
+  pretty print data. It presumes that the user takes care of the
+  indentation. Programs using "Pretty" are not as short as the ones
+  using "Format" of the OCaml library, but are more flexible. Later,
+  it is planed to find a way to extend "Pretty" with functions
+  allowing to use a short syntax similar to the "@" convention of the
+  function "printf" of "Format", and taking care of the indentation
+  for the user, resulting on shorter programs.</p>
 
 <h3>Strings vs Channels</h3>
 
-<p>In "Pretty", the pretty print is done only on strings, not on
-  files. To pretty print on files, just built the strings and print
-  them afterwards with the usual output functions. Notice that OCaml
-  allocates and frees strings very fast, and if pretty printed values
+<p>In "Pretty", the pretty printing is done only on strings, not on
+  files. To pretty print files, just build the strings and print them
+  afterwards with the usual output functions. Notice that OCaml
+  allocates and frees strings quickly, and if pretty printed values
   are not huge, which is generally the case, it is not a real problem,
-  memory sizes these days being much more than enough for this
-  job.</p>
+  memory sizes these days being more than enough for this job.</p>
 
 <h3>Strings or other types</h3>
 
-<p>The "horiz_vertic" function can return values of other types than
+<p>The "horiz_vertic" function can return values of types other than
   "string". For example, if you are interested only in the result of
   horizontal context and not on the vertical one, it is perfectly
   correct to write:</p>
@@ -233,7 +232,7 @@
 
 <h3>Why raising exceptions ?</h3>
 
-<p>One could ask why this pretty print system has to raise internal
+<p>One could ask why this pretty print system raises internal
   exceptions. Why not simply write the pretty printing program like
   this:</p>
 
@@ -245,11 +244,11 @@
     places</li>
 </ol>
 
-<p>This method works but is generally very slow (exponential in
-  time). Because while printing horizontally, many unuseful strings
-  are built. If, for example, the final printed data holds on 50
-  lines, tenth of lines may be build and build again unusefully before
-  the overflowing is tested.</p>
+<p>This method works but is generally very slow (exponential in time)
+  because while printing horizontally, many useless strings are
+  built. If, for example, the final printed data holds on 50 lines,
+  tens of lines may be built uselessly again and again before the
+  overflowing is corrected.</p>
 
 <div class="trailer">
 </div>
