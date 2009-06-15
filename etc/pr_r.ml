@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.33 2007/07/04 17:43:09 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.34 2007/07/04 17:50:14 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -522,7 +522,7 @@ value let_binding pc (p, e) =
           [ Some t -> sprintf " : %s" (ctyp {(pc) with bef = ""; aft = ""} t)
           | None -> "" ])
          (expr_wh {(pc) with bef = ""; aft = ""} e)
-         (if pc.aft = "in" then " in" else ""))
+         (if pc.aft = "" then "" else sprintf " %s" pc.aft))
     (fun () ->
        let patt_eq k =
          horiz_vertic
@@ -545,20 +545,21 @@ value let_binding pc (p, e) =
               plistl patt (patt_tycon tyo) 4
                 {(pc) with aft = sprintf " =%s" k} pl)
        in
-       let s =
-         match sequencify e with
-         [ Some el -> sequence_box2 {(pc) with bef = patt_eq; aft = ""} el
-         | None ->
-             let s1 = patt_eq "" in
-             let s2 =
-               comm_expr expr_wh
-                 {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                  aft = ""}
-                 e
-              in
-             sprintf "%s\n%s" s1 s2 ]
-       in
-       if pc.aft = "in" then sprintf "%s\n%sin" s (tab pc.ind) else s)
+       match sequencify e with
+       [ Some el ->
+           let s = sequence_box2 {(pc) with bef = patt_eq; aft = ""} el in
+           if pc.aft = "in" then sprintf "%s\n%sin" s (tab pc.ind) else s
+       | None ->
+           let s1 = patt_eq "" in
+           let s2 =
+             comm_expr expr_wh
+               {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""}
+               e
+           in
+           let s3 =
+             if pc.aft = "" then "" else sprintf "\n%s%s" (tab pc.ind) pc.aft
+           in
+           sprintf "%s\n%s%s" s1 s2 s3 ])
 ;
 
 value match_assoc pc (p, w, e) =
