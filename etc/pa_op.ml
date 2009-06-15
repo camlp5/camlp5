@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_op.ml,v 1.10 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: pa_op.ml,v 1.11 2007/07/16 15:35:46 deraugla Exp $ *)
 
 open Exparser;
 open Pcaml;
@@ -32,6 +32,7 @@ EXTEND
   ;
   stream_patt:
     [ [ spc = stream_patt_comp -> [(spc, SpoNoth)]
+      | spc = stream_patt_comp; ";" -> [(spc, SpoNoth)]
       | spc = stream_patt_comp; ";"; sp = stream_patt_kont ->
           [(spc, SpoNoth) :: sp]
       | spc = stream_patt_let; sp = stream_patt -> [spc :: sp]
@@ -39,6 +40,7 @@ EXTEND
   ;
   stream_patt_kont:
     [ [ spc = stream_patt_comp_err -> [spc]
+      | spc = stream_patt_comp_err; ";" -> [spc]
       | spc = stream_patt_comp_err; ";"; sp = stream_patt_kont -> [spc :: sp]
       | spc = stream_patt_let; sp = stream_patt_kont -> [spc :: sp] ] ]
   ;

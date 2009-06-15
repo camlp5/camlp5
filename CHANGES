@@ -1,6 +1,8 @@
 Camlp5 Version 4.05:
 ---------------------
 
+* [16 Jul 07] Fixed bug in normal syntax: optional semicolon was no more
+  accepted at end of stream patterns.
 * [16 Jul 07] Fixed syntax problems with "~id:" and "~id :" (with a space).
 
 Camlp5 Version 4.04:
