@@ -7,9 +7,9 @@ open Pcaml;
 open Prtools;
 
 do {
-(*
   Eprinter.clear pr_expr;
   Eprinter.clear pr_patt;
+(*
   Eprinter.clear pr_ctyp;
 *)
   Eprinter.clear pr_str_item;
@@ -49,9 +49,9 @@ value rec mod_ident pc sl =
  * Extensible printers
  *)
 
-(*
 value expr = Eprinter.apply pr_expr;
 value patt = Eprinter.apply pr_patt;
+(*
 value ctyp = Eprinter.apply pr_ctyp;
 *)
 value str_item = Eprinter.apply pr_str_item;
@@ -63,6 +63,314 @@ value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
 *)
 
 EXTEND_PRINTER
+  pr_expr:
+    [ "top"
+      [ (* <:expr< fun [] >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(lambda%t" (ks ")" k)
+      | <:expr< fun $lid:s$ -> $e$ >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(lambda@ %s@;<1 1>%a" s expr (e, ks ")" k)
+      | <:expr< fun [ $list:pwel$ ] >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(@[<hv>lambda_match@ %a@]" (list match_assoc)
+              (pwel, ks ")" k)
+      | <:expr< match $e$ with [ $list:pwel$ ] >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(@[<hv>@[<b 2>match@ %a@]@ %a@]" expr (e, nok)
+              (list match_assoc) (pwel, ks ")" k)
+      | <:expr< try $e$ with [ $list:pwel$ ] >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(@[<hv>@[<b 2>try@ %a@]@ %a@]" expr (e, nok)
+              (list match_assoc) (pwel, ks ")" k)
+      | <:expr< let $p1$ = $e1$ in $e2$ >> ->
+          fun ppf curr next dg k ->
+            let (pel, e) =
+              loop [(p1, e1)] e2 where rec loop pel =
+                fun
+                [ <:expr< let $p1$ = $e1$ in $e2$ >> ->
+                    loop [(p1, e1) :: pel] e2
+                | e -> (List.rev pel, e) ]
+            in
+            let b =
+              match pel with
+              [ [_] -> "let"
+              | _ -> "let*" ]
+            in
+            fprintf ppf "(@[@[%s (@[<v>%a@]@]@;<1 2>%a@]" b
+              (listwb "" let_binding) (pel, ks ")" nok)
+                 sequence (e, ks ")" k)
+      | <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
+          fun ppf curr next dg k ->
+            let b = if rf then "letrec" else "let" in
+            fprintf ppf "(@[<hv>%s@ (@[<hv>%a@]@ %a@]" b
+              (listwb "" let_binding) (pel, ks ")" nok) expr (e, ks ")" k)
+      | <:expr< if $e1$ then $e2$ else () >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(if @[%a@;<1 0>%a@]" expr (e1, nok)
+              expr (e2, ks ")" k)
+      | <:expr< if $e1$ then $e2$ else $e3$ >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(if @[%a@ %a@ %a@]" expr (e1, nok)
+              expr (e2, nok) expr (e3, ks ")" k)
+      | <:expr< do { $list:el$ } >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(begin@;<1 1>@[<hv>%a@]" (list expr) (el, ks ")" k)
+      | <:expr< for $lid:i$ = $e1$ to $e2$ do { $list:el$ } >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(@[for %s@ %a@ %a %a@]" i expr (e1, nok)
+              expr (e2, nok) (list expr) (el, ks ")" k)
+      | <:expr< ($e$ : $t$) >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(:@ %a@ %a" expr (e, nok) ctyp (t, ks ")" k)
+      | <:expr< ($list:el$) >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(values @[%a@]" (list expr) (el, ks ")" k)
+      | <:expr< { $list:fel$ } >> ->
+          fun ppf curr next dg k ->
+            let record_binding ppf ((p, e), k) =
+              fprintf ppf "(@[%a@ %a@]" patt (p, nok) expr (e, ks ")" k)
+            in
+            fprintf ppf "{@[<hv>%a@]" (list record_binding) (fel, ks "}" k)
+      | <:expr< { ($e$) with $list:fel$ } >> ->
+          fun ppf curr next dg k ->
+            let record_binding ppf ((p, e), k) =
+              fprintf ppf "(@[%a@ %a@]" patt (p, nok) expr (e, ks ")" k)
+            in
+            fprintf ppf "{@[@[with@ %a@]@ @[%a@]@]" expr (e, nok)
+              (list record_binding) (fel, ks "}" k)
+      | <:expr< $e1$ := $e2$ >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(:=@;<1 1>%a@;<1 1>%a" expr (e1, nok)
+              expr (e2, ks ")" k)
+      | <:expr< [$_$ :: $_$] >> as e ->
+          fun ppf curr next dg k ->
+            let (el, c) =
+              make_list e where rec make_list e =
+                match e with
+                [ <:expr< [$e$ :: $y$] >> ->
+                    let (el, c) = make_list y in
+                    ([e :: el], c)
+                | <:expr< [] >> -> ([], None)
+                | x -> ([], Some e) ]
+            in
+            match c with
+            [ None ->
+                fprintf ppf "[%a" (list expr) (el, ks "]" k)
+            | Some x ->
+                fprintf ppf "[%a@ %a" (list expr) (el, ks " ." nok)
+                  expr (x, ks "]" k) ]
+      | <:expr< lazy ($x$) >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(@[lazy@ %a@]" expr (x, ks ")" k)
+      | <:expr< $lid:s$ $e1$ $e2$ >>
+        when List.mem s assoc_right_parsed_op_list ->
+          fun ppf curr next dg k ->
+            let el =
+              loop [e1] e2 where rec loop el =
+                fun
+                [ <:expr< $lid:s1$ $e1$ $e2$ >> when s1 = s ->
+                    loop [e1 :: el] e2
+                | e -> List.rev [e :: el] ]
+            in
+            fprintf ppf "(@[%s %a@]" s (list expr) (el, ks ")" k)
+      | <:expr< $e1$ $e2$ >> ->
+          fun ppf curr next dg k ->
+            let (f, el) =
+              loop [e2] e1 where rec loop el =
+                fun
+                [ <:expr< $e1$ $e2$ >> -> loop [e2 :: el] e1
+                | e1 -> (e1, el) ]
+            in
+            fprintf ppf "(@[%a@ %a@]" expr (f, nok) (list expr) (el, ks ")" k)
+      | <:expr< ~$s$: ($e$) >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(~%s@ %a" s expr (e, ks ")" k)
+      | <:expr< $e1$ .[ $e2$ ] >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "%a.[%a" expr (e1, nok) expr (e2, ks "]" k)
+      | <:expr< $e1$ .( $e2$ ) >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "%a.(%a" expr (e1, nok) expr (e2, ks ")" k)
+      | <:expr< $e1$ . $e2$ >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "%a.%a" expr (e1, nok) expr (e2, k)
+      | <:expr< $int:s$ >> ->
+          fun ppf curr next dg k -> fprintf ppf "%s%t" (int_repr s) k
+      | <:expr< $lid:s$ >> | <:expr< $uid:s$ >> ->
+          fun ppf curr next dg k -> fprintf ppf "%s%t" s k
+      | <:expr< ` $s$ >> ->
+          fun ppf curr next dg k -> fprintf ppf "`%s%t" s k
+      | <:expr< $str:s$ >> ->
+          fun ppf curr next dg k -> fprintf ppf "\"%s\"%t" s k
+      | <:expr< $chr:s$ >> ->
+          fun ppf curr next dg k -> fprintf ppf "'%s'%t" s k
+      | *) x ->
+          not_impl "expr" pc x ] ]
+  ;
+  pr_patt:
+    [ "top"
+      [ (* <:patt< $p1$ | $p2$ >> ->
+          fun ppf curr next dg k ->
+            let (f, pl) =
+              loop [p2] p1 where rec loop pl =
+                fun
+                [ <:patt< $p1$ | $p2$ >> -> loop [p2 :: pl] p1
+                | p1 -> (p1, pl) ]
+            in
+            fprintf ppf "(@[or@ %a@ %a@]" patt (f, nok) (list patt)
+              (pl, ks ")" k)
+      | <:patt< ($p1$ as $p2$) >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(@[as@ %a@ %a@]" patt (p1, nok) patt (p2, ks ")" k)
+      | <:patt< $p1$ .. $p2$ >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(@[range@ %a@ %a@]" patt (p1, nok) patt
+              (p2, ks ")" k)
+      | <:patt< [$_$ :: $_$] >> as p ->
+          fun ppf curr next dg k ->
+            let (pl, c) =
+              make_list p where rec make_list p =
+                match p with
+                [ <:patt< [$p$ :: $y$] >> ->
+                    let (pl, c) = make_list y in
+                    ([p :: pl], c)
+                | <:patt< [] >> -> ([], None)
+                | x -> ([], Some p) ]
+            in
+            match c with
+            [ None ->
+                fprintf ppf "[%a" (list patt) (pl, ks "]" k)
+            | Some x ->
+                fprintf ppf "[%a@ %a" (list patt) (pl, ks " ." nok)
+                  patt (x, ks "]" k) ]
+      | <:patt< $p1$ $p2$ >> ->
+          fun ppf curr next dg k ->
+            let pl =
+              loop [p2] p1 where rec loop pl =
+                fun
+                [ <:patt< $p1$ $p2$ >> -> loop [p2 :: pl] p1
+                | p1 -> [p1 :: pl] ]
+            in
+            fprintf ppf "(@[%a@]" (list patt) (pl, ks ")" k)
+      | <:patt< ($p$ : $t$) >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(:@ %a@ %a" patt (p, nok) ctyp (t, ks ")" k)
+      | <:patt< ($list:pl$) >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(values @[%a@]" (list patt) (pl, ks ")" k)
+      | <:patt< { $list:fpl$ } >> ->
+          fun ppf curr next dg k ->
+            let record_binding ppf ((p1, p2), k) =
+              fprintf ppf "(@[%a@ %a@]" patt (p1, nok) patt (p2, ks ")" k)
+            in
+            fprintf ppf "(@[<hv>{}@ %a@]" (list record_binding)
+              (fpl, ks ")" k)
+      | <:patt< ?$x$ >> ->
+          fun ppf curr next dg k -> fprintf ppf "?%s%t" x k
+      |  <:patt< ? ($lid:x$ = $e$) >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(?%s@ %a" x expr (e, ks ")" k)
+      | <:patt< $p1$ . $p2$ >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "%a.%a" patt (p1, nok) patt (p2, k)
+      | *) <:patt< $lid:s$ >> | <:patt< $uid:s$ >> ->
+          sprintf "%s%s%s" pc.bef s pc.aft
+(*
+      | <:patt< $str:s$ >> ->
+          fun ppf curr next dg k -> fprintf ppf "\"%s\"%t" s k
+      | <:patt< $chr:s$ >> ->
+          fun ppf curr next dg k -> fprintf ppf "'%s'%t" s k
+      | <:patt< $int:s$ >> ->
+          fun ppf curr next dg k -> fprintf ppf "%s%t" (int_repr s) k
+      | <:patt< $flo:s$ >> ->
+          fun ppf curr next dg k -> fprintf ppf "%s%t" s k
+      | <:patt< _ >> ->
+          fun ppf curr next dg k -> fprintf ppf "_%t" k
+*)
+      | x ->
+          not_impl "patt" pc x ] ]
+  ;
+  pr_str_item:
+    [ "top"
+      [ <:str_item< open $i$ >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s(open %s)%s" pc.bef
+                 (mod_ident {(pc) with bef = ""; aft = ""} i) pc.aft)
+            (fun () ->
+               not_impl "str_item open vertic" pc i)
+(*
+      | <:str_item< type $list:tdl$ >> ->
+          fun ppf curr next dg k ->
+            match tdl with
+            [ [td] -> fprintf ppf "(%a" type_decl (("type", td), ks ")" k)
+            | tdl ->
+                fprintf ppf "(@[<hv>type@ %a@]" (listwb "" type_decl)
+                  (tdl, ks ")" k) ]
+      | <:str_item< exception $uid:c$ of $list:tl$ >> ->
+          fun ppf curr next dg k ->
+            match tl with
+            [ [] -> fprintf ppf "(@[exception@ %s%t@]" c (ks ")" k)
+            | tl ->
+                fprintf ppf "(@[@[exception@ %s@]@ %a@]" c
+                  (list ctyp) (tl, ks ")" k) ]
+*)
+      | <:str_item< value $flag:rf$ $list:pel$ >> ->
+          let b = if rf then "definerec" else "define" in
+          horiz_vertic
+            (fun () ->
+               match pel with
+               [ [(p, e)] ->
+                    sprintf "%s(%s %s %s)%s" pc.bef b
+                      (patt {(pc) with bef = ""; aft = ""} p)
+                      (expr {(pc) with bef = ""; aft = ""} e) pc.aft
+               | _ -> not_impl "str_item value horiz" pc 0 ])
+            (fun () ->
+               match pel with
+               [ [(p, e)] ->
+                   let s1 =
+                     patt
+                       {(pc) with bef = sprintf "%s(%s " pc.bef b; aft = ""} p
+                   in
+                   let s2 =
+                     expr
+                       {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+                        aft = sprintf ")%s" pc.aft}
+                       e
+                   in
+                   sprintf "%s\n%s" s1 s2
+               | _ -> not_impl "str_item value vertic" pc 0 ])
+(*
+      | <:str_item< module $uid:s$ = $me$ >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(%a" module_binding (("module", s, me), ks ")" k)
+      | <:str_item< module type $uid:s$ = $mt$ >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(@[@[moduletype@ %s@]@ %a@]" s
+              module_type (mt, ks ")" k)
+      | <:str_item< external $lid:i$ : $t$ = $list:pd$ >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(@[external@ %s@ %a@ %a@]" i ctyp (t, nok)
+              (list string) (pd, ks ")" k)
+      | <:str_item< $exp:e$ >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "%a" expr (e, k)
+      | <:str_item< # $lid:s$ $opt:x$ >> ->
+          fun ppf curr next dg k ->
+            match x with
+            [ Some e -> fprintf ppf "; # (%s %a" s expr (e, ks ")" k)
+            | None -> fprintf ppf "; # (%s%t" s (ks ")" k) ]
+      | <:str_item< declare $list:s$ end >> ->
+          fun ppf curr next dg k ->
+            if s = [] then fprintf ppf "; ..."
+            else fprintf ppf "%a" (list str_item) (s, k)
+      | MLast.StUse _ _ _ ->
+          fun ppf curr next dg k -> ()
+*)
+      | x ->
+          not_impl "str_item" pc x ] ]
+  ;
   pr_sig_item:
     [ "top"
       [ (* <:sig_item< type $list:tdl$ >> ->
@@ -101,68 +409,6 @@ EXTEND_PRINTER
           fun ppf curr next dg k -> ()
       | *) x ->
           not_impl "sig_item" pc x ] ]
-  ;
-  pr_str_item:
-    [ "top"
-      [ <:str_item< open $i$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s(open %s)%s" pc.bef
-                 (mod_ident {(pc) with bef = ""; aft = ""} i) pc.aft)
-            (fun () ->
-               not_impl "str_item open vertic" pc i)
-(*
-      | <:str_item< type $list:tdl$ >> ->
-          fun ppf curr next dg k ->
-            match tdl with
-            [ [td] -> fprintf ppf "(%a" type_decl (("type", td), ks ")" k)
-            | tdl ->
-                fprintf ppf "(@[<hv>type@ %a@]" (listwb "" type_decl)
-                  (tdl, ks ")" k) ]
-      | <:str_item< exception $uid:c$ of $list:tl$ >> ->
-          fun ppf curr next dg k ->
-            match tl with
-            [ [] -> fprintf ppf "(@[exception@ %s%t@]" c (ks ")" k)
-            | tl ->
-                fprintf ppf "(@[@[exception@ %s@]@ %a@]" c
-                  (list ctyp) (tl, ks ")" k) ]
-      | <:str_item< value $flag:rf$ $list:pel$ >> ->
-          fun ppf curr next dg k ->
-            let b = if rf then "definerec" else "define" in
-            match pel with
-            [ [(p, e)] ->
-                fprintf ppf "%a" let_binding ((b, (p, e)), k)
-            | pel ->
-                fprintf ppf "(@[<hv 1>%s*@ %a@]" b (listwb "" let_binding)
-                  (pel, ks ")" k) ]
-      | <:str_item< module $uid:s$ = $me$ >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "(%a" module_binding (("module", s, me), ks ")" k)
-      | <:str_item< module type $uid:s$ = $mt$ >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "(@[@[moduletype@ %s@]@ %a@]" s
-              module_type (mt, ks ")" k)
-      | <:str_item< external $lid:i$ : $t$ = $list:pd$ >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "(@[external@ %s@ %a@ %a@]" i ctyp (t, nok)
-              (list string) (pd, ks ")" k)
-      | <:str_item< $exp:e$ >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "%a" expr (e, k)
-      | <:str_item< # $lid:s$ $opt:x$ >> ->
-          fun ppf curr next dg k ->
-            match x with
-            [ Some e -> fprintf ppf "; # (%s %a" s expr (e, ks ")" k)
-            | None -> fprintf ppf "; # (%s%t" s (ks ")" k) ]
-      | <:str_item< declare $list:s$ end >> ->
-          fun ppf curr next dg k ->
-            if s = [] then fprintf ppf "; ..."
-            else fprintf ppf "%a" (list str_item) (s, k)
-      | MLast.StUse _ _ _ ->
-          fun ppf curr next dg k -> ()
-*)
-      | x ->
-          not_impl "str_item" pc x ] ]
   ;
 END;
 
