@@ -169,11 +169,11 @@ value gram_symb_list cnt to_treat self_middle self_end =
     | [] -> ([], anon_rules) ]
 ;
 
-value new_anon_rules cnt mar ename sy =
+value new_anon_rules cnt to_treat mar ename sy =
   let self () = GS_nterm ename in
   match sy with
   [ Slist0 s ->
-      let (sl1, ar) = gram_symb_list cnt (ref []) self self [s; Sself] in
+      let (sl1, ar) = gram_symb_list cnt to_treat self self [s; Sself] in
       let sl2 = [] in
       ([(ename, sl1); (ename, sl2)], ar @ mar)
   | Slist0sep s sy ->
@@ -181,27 +181,27 @@ value new_anon_rules cnt mar ename sy =
       let sl1 = [GS_nterm ename2] in
       let sl2 = [] in
       let self () = GS_nterm ename2 in
-      let (sl3, ar3) = gram_symb_list cnt (ref []) self self [s; sy; Sself] in
-      let (sl4, ar4) = gram_symb_list cnt (ref []) self self [s] in
+      let (sl3, ar3) = gram_symb_list cnt to_treat self self [s; sy; Sself] in
+      let (sl4, ar4) = gram_symb_list cnt to_treat self self [s] in
       ([(ename, sl1); (ename, sl2); (ename2, sl3); (ename2, sl4)],
        ar3 @ ar4 @ mar)
   | Slist1 s ->
-      let (sl1, ar1) = gram_symb_list cnt (ref []) self self [s; Sself] in
-      let (sl2, ar2) = gram_symb_list cnt (ref []) self self [s] in
+      let (sl1, ar1) = gram_symb_list cnt to_treat self self [s; Sself] in
+      let (sl2, ar2) = gram_symb_list cnt to_treat self self [s] in
       ([(ename, sl1); (ename, sl2)], ar1 @ ar2 @ mar)
   | Slist1sep s sy ->
-      let (sl1, ar1) = gram_symb_list cnt (ref []) self self [s; sy; Sself] in
-      let (sl2, ar2) = gram_symb_list cnt (ref []) self self [s] in
+      let (sl1, ar1) = gram_symb_list cnt to_treat self self [s; sy; Sself] in
+      let (sl2, ar2) = gram_symb_list cnt to_treat self self [s] in
       ([(ename, sl1); (ename, sl2)], ar1 @ ar2 @ mar)
   | Sopt sy ->
-      let (sl, ar) = gram_symb_list cnt (ref []) self self [sy] in
+      let (sl, ar) = gram_symb_list cnt to_treat self self [sy] in
       ([(ename, sl); (ename, [])], ar @ mar)
   | Sflag sy ->
-      let (sl, ar) = gram_symb_list cnt (ref []) self self [sy] in
+      let (sl, ar) = gram_symb_list cnt to_treat self self [sy] in
       ([(ename, sl); (ename, [])], ar @ mar)
   | Stree t ->
       let f r accu =
-        let (sl, ar) = gram_symb_list cnt (ref []) self self r in
+        let (sl, ar) = gram_symb_list cnt to_treat self self r in
         [(ename, sl) :: accu]
       in
       (fold_rules_of_tree f [] t, mar)
@@ -211,12 +211,7 @@ value new_anon_rules cnt mar ename sy =
 
 value flatten_gram entry levn =
   let cnt = ref 0 in
-  let treat_level rules to_treat entry levn elev =
-    let lev =
-      try List.nth elev levn with
-      [ Failure _ ->
-          {assoc = NonA; lname = None; lsuffix = DeadEnd; lprefix = DeadEnd} ]
-    in
+  let treat_level2 rules to_treat entry levn elev lev =
     let to_treat_r = ref to_treat in
     let anon_rules_r = ref [] in
     let self_middle () = do {
@@ -280,6 +275,23 @@ value flatten_gram entry levn =
     in
     (rules, to_treat_r.val, anon_rules_r.val)
   in
+  let treat_level rules to_treat entry levn elev =
+    match try Some (List.nth elev levn) with [ Failure _ -> None ] with
+    [ Some lev ->
+        treat_level2 rules to_treat entry levn elev lev
+    | None ->
+        let rules =
+          if levn > 0 then
+            (* in initial grammar (grammar.ml), the level after the
+               last level is not an error but the last level itself *)
+            let ename = name_of_entry entry levn in
+            let r = (ename, [GS_nterm (name_of_entry entry (levn - 1))]) in
+            Fifo.add r rules
+          else
+            rules
+        in
+        (rules, to_treat, []) ]
+  in
   let treat_entry rules to_treat entry levn =
     match entry.edesc with
     [ Dlevels [] -> (rules, to_treat, [])
@@ -296,6 +308,7 @@ value flatten_gram entry levn =
           let (rules, to_treat, anon_rules) =
             treat_entry rules to_treat entry levn
           in
+          let to_treat_r = ref to_treat in
           let rules =
             loop rules anon_rules where rec loop rules =
               fun
@@ -305,7 +318,8 @@ value flatten_gram entry levn =
                     List.fold_left
                       (fun (rules, more_anon_rules) (ename, sy) ->
                          let (new_rules, more_anon_rules) =
-                           new_anon_rules cnt more_anon_rules ename sy
+                           new_anon_rules cnt to_treat_r more_anon_rules ename
+                             sy
                          in
                          let rules =
                            List.fold_left (fun f r -> Fifo.add r f) rules
@@ -316,7 +330,7 @@ value flatten_gram entry levn =
                   in
                   loop rules more_anon_rules ]
           in
-          loop rules treated to_treat
+          loop rules treated to_treat_r.val
     | [] -> Fifo.to_list rules ]
 ;
 
