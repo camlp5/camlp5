@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: lexers.html,v 1.21 2007/10/25 02:49:47 deraugla Exp $ -->
+  <!-- $Id: lexers.html,v 1.22 2007/10/26 19:27:48 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>lexers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -19,10 +19,10 @@
 
 <h1 class="top">Stream lexers</h1>
 
-<p>The file "<tt>pa_lexer.cmo</tt>" is a Camlp5 syntax extension kit for
-  parsers of streams of the type 'char'. This syntax is shorter and
-  more readable than its equivalent version written
-  with <a href="parsers.html">classical stream parsers</a>. But, like
+<p>The file "<tt>pa_lexer.cmo</tt>" is a Camlp5 syntax extension kit
+  for parsers of streams of the type 'char'. This syntax is shorter
+  and more readable than its equivalent version written
+  with <a href="parsers.html">classical stream parsers</a>. Like
   classical parsers, they use recursive descendant parsing. They are
   also pure syntax sugar, and each lexer written with this syntax can
   be written using normal parsers syntax.</p>
@@ -38,9 +38,9 @@
 
 <p>Classical parsers in OCaml apply to streams of any type of
   values. For the specific type "char", it has been possible to
-  shorten encoding in several ways, in particular by using strings to
-  group several characters together, and by hidding the management of
-  a "lexing buffer", a data structure recording the matched
+  shorten the encoding in several ways, in particular by using strings
+  to group several characters together, and by hidding the management
+  of a "lexing buffer", a data structure recording the matched
   characters.</p>
 
 <p>Let us take an example. The following function parses a left
@@ -67,8 +67,8 @@
 
 <h2>Syntax</h2>
 
-<p>When loading the syntax extension <tt>pa_lexer.cmo</tt>, the
-  OCaml syntax is extended as follows:</p>
+<p>When loading the syntax extension <tt>pa_lexer.cmo</tt>, the OCaml
+  syntax is extended as follows:</p>
 
 <pre>
           expression ::= lexer
@@ -120,11 +120,11 @@
                | "$" "pos"
 </pre>
 
-<p>Remark: the identifiers "add", "buf", "empty" and "pos" do not
-  become keywords (they are not reserved words) but just
-  identifiers. On the contrary, the identifier "<tt>lexer</tt>", which
-  introduces the syntax, is a new keyword and cannot be used as
-  variable identifier any more.</p>
+<p>Remark: the identifiers "add", "buf", "empty" and "pos" are not
+  keywords (they are not reserved words) but just identifiers. On the
+  contrary, the identifier "<tt>lexer</tt>", which introduces the
+  syntax, is a new keyword and cannot be used as variable identifier
+  any more.</p>
 
 <h2>Semantics</h2>
 
@@ -146,9 +146,9 @@
   returns. If there is no semantic action (since it it optional), this
   type is automatically "<tt>B.t</tt>".</p>
 
-<p>"<tt>B</tt>" is a module which must be defined by the user. It
-  must contain the lexing buffer type "<tt>t</tt>" and the
-  variables and functions:</p>
+<p>"<tt>B</tt>" is a module which must be defined by the user. It must
+  contain the lexing buffer type "<tt>t</tt>" and the variables and
+  functions:</p>
 
 <ul>
   <li><tt>empty</tt>: the empty lexing buffer</li>
@@ -221,11 +221,11 @@
 
 <p>In the cases matching characters (namely underscore, character,
   characters range and string), the symbol can be optionally followed
-  by the character "slash" specifying that the found character(s) must
-  not be added into the lexing buffer. By default, they are. Useful,
-  for example, when writing a lexer parsing strings, when the initial
-  double quote and final double quote should be part of the string
-  itself.</p>
+  by the "no record" character "slash" specifying that the found
+  character(s) are not added into the lexing buffer. By default, they
+  are. This feature is useful, for example, writing a lexer which
+  parses strings, when the initial double quote and final double quote
+  should not be part of the string itself.</p>
 
 <p>Moreover, a symbol can be followed by an optional error indicator,
   which can be:</p>
@@ -329,7 +329,7 @@
 <p>By default, the result of a "lexer" is the current lexing buffer,
   which is of type "<tt>B.t</tt>". But it is possible to return
   other values, by adding "<tt>-&gt;</tt>" at end of rules
-  followed by the expression you want to return, like in usual pattern
+  followed by the expression you want to return, as in usual pattern
   matching in OCaml.</p>
 
 <p>An interesting result, for example, could be the string
