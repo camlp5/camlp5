@@ -54,5 +54,19 @@ let extend_printer pr pos levs =
         loop pr.pr_levels
       in
       pr.pr_levels <- levels
+  | Some (After lab) ->
+      let levels =
+        let rec loop =
+          function
+            pr_lev :: pr_levs ->
+              if lab = pr_lev.pr_label then
+                let pr_levs = List.fold_right add_lev levs pr_levs in
+                pr_lev :: pr_levs
+              else pr_lev :: loop pr_levs
+          | [] -> failwith ("level " ^ lab ^ " not found")
+        in
+        loop pr.pr_levels
+      in
+      pr.pr_levels <- levels
   | Some _ -> failwith "not impl EXTEND_PRINTER entry with at level parameter"
 ;;

@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.73 2007/08/15 20:13:05 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.74 2007/08/15 21:38:15 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -2693,21 +2693,6 @@ lev.pr_rules :=
         class_object pc (csp, csl) ]
 ;
 
-value expr_label =
-  extfun Extfun.empty with
-  [ <:expr< ? $s$ >> ->
-      fun curr next pc -> sprintf "%s?%s%s" pc.bef s pc.aft
-  | <:expr< ? $i$ : $e$ >> ->
-      fun curr next pc -> curr {(pc) with bef = sprintf "%s?%s:" pc.bef i} e
-  | <:expr< ~ $s$ >> ->
-      fun curr next pc -> sprintf "%s~%s%s" pc.bef s pc.aft
-  | <:expr< ~ $s$ : $e$ >> ->
-      fun curr next pc ->
-        pr_expr.pr_fun "dot" {(pc) with bef = sprintf "%s~%s:" pc.bef s} e
-  | z ->
-      fun curr next pc -> next pc z ]
-;
-
 let lev = find_pr_level "dot" pr_expr.pr_levels in
 lev.pr_rules :=
   extfun lev.pr_rules with
@@ -3228,25 +3213,19 @@ value ctyp_label =
       fun curr next pc -> next pc z ]
 ;
 
-pr_expr.pr_levels :=
-  [find_pr_level "top" pr_expr.pr_levels;
-   find_pr_level "expr1" pr_expr.pr_levels;
-   find_pr_level "tuple" pr_expr.pr_levels;
-   find_pr_level "assign" pr_expr.pr_levels;
-   find_pr_level "bar" pr_expr.pr_levels;
-   find_pr_level "amp" pr_expr.pr_levels;
-   find_pr_level "less" pr_expr.pr_levels;
-   find_pr_level "concat" pr_expr.pr_levels;
-   find_pr_level "cons" pr_expr.pr_levels;
-   find_pr_level "add" pr_expr.pr_levels;
-   find_pr_level "mul" pr_expr.pr_levels;
-   find_pr_level "pow" pr_expr.pr_levels;
-   find_pr_level "unary" pr_expr.pr_levels;
-   find_pr_level "apply" pr_expr.pr_levels;
-   {pr_label = "label"; pr_rules = expr_label};
-   find_pr_level "dot" pr_expr.pr_levels;
-   find_pr_level "simple" pr_expr.pr_levels]
-;
+EXTEND_PRINTER
+  pr_expr: AFTER "apply"
+    [ "label"
+      [ <:expr< ? $s$ >> -> sprintf "%s?%s%s" pc.bef s pc.aft
+      | <:expr< ? $i$ : $e$ >> ->
+          curr {(pc) with bef = sprintf "%s?%s:" pc.bef i} e
+      | <:expr< ~ $s$ >> ->
+          sprintf "%s~%s%s" pc.bef s pc.aft
+      | <:expr< ~ $s$ : $e$ >> ->
+          pr_expr.pr_fun "dot" {(pc) with bef = sprintf "%s~%s:" pc.bef s}
+            e ] ]
+  ;
+END;
 
 pr_ctyp.pr_levels :=
   [find_pr_level "top" pr_ctyp.pr_levels;

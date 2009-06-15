@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: eprinter.ml,v 1.2 2007/08/15 17:40:16 deraugla Exp $ *)
+(* $Id: eprinter.ml,v 1.3 2007/08/15 21:38:15 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 type t 'a =
@@ -51,11 +51,21 @@ value extend_printer pr pos levs =
                     let lev =
                       {(pr_lev) with pr_rules = extf pr_lev.pr_rules}
                     in
-                    let levs =
-                      List.fold_right add_lev levs pr_levs
-                    in
+                    let levs = List.fold_right add_lev levs pr_levs in
                     [lev :: levs]
                 | [] -> [pr_lev :: pr_levs] ]
+              else [pr_lev :: loop pr_levs]
+          | [] -> failwith ("level " ^ lab ^ " not found") ]
+      in
+      pr.pr_levels := levels
+  | Some (After lab) ->
+      let levels =
+        loop pr.pr_levels where rec loop =
+          fun
+          [ [pr_lev :: pr_levs] ->
+              if lab = pr_lev.pr_label then
+                let pr_levs = List.fold_right add_lev levs pr_levs in
+                [pr_lev :: pr_levs]
               else [pr_lev :: loop pr_levs]
           | [] -> failwith ("level " ^ lab ^ " not found") ]
       in
