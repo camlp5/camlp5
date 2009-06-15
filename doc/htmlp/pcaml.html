@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: pcaml.html,v 1.11 2007/08/22 09:23:33 deraugla Exp $ -->
+  <!-- $Id: pcaml.html,v 1.12 2007/08/28 03:22:04 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Pcaml</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -41,14 +41,23 @@
   than the Camlp5 extended grammars. By default, they use the grammars
   entries [implem] and [interf] defined below.</p>
 
-<dl>
-  <dt><tt>value parse_interf : ref (Stream.t char -> (list
-      (MLast.sig_item * MLast.loc) * bool));</tt></dt>
-  <dd>Function called when parsing an interface (".mli") file</dd>
-  <dt><tt>value parse_implem : ref (Stream.t char -> (list
-t      (MLast.str_item * MLast.loc) * bool));</tt></dt>
-  <dd>Function called when parsing an implementation (".ml") file</dd>
-</dl>
+<pre style="border:0; margin-left: 1cm">
+value parse_interf :
+  ref (Stream.t char -> (list (MLast.sig_item * MLast.loc) * bool));
+</pre>
+
+<dl><dd>
+    Function called when parsing an interface (".mli") file
+</dd></dl>
+
+<pre style="border:0; margin-left: 1cm">
+value parse_implem :
+  ref (Stream.t char -> (list (MLast.str_item * MLast.loc) * bool));
+</pre>
+
+<dl><dd>
+    Function called when parsing an implementation (".ml") file
+</dd></dl>
 
 <h3>Grammar</h3>
 
@@ -144,14 +153,23 @@ t      (MLast.str_item * MLast.loc) * bool));</tt></dt>
   functions are references, to allow using other technologies than the
   Camlp5 extended printers.</p>
 
-<dl>
-  <dt><tt>value print_interf : ref (list (MLast.sig_item * MLast.loc)
-      -> unit);</tt></dt>
-  <dd>Function called when printing an interface (".mli") file</dd>
-  <dt><tt>value print_implem : ref (list (MLast.str_item * MLast.loc)
-      -> unit);</tt></dt>
-  <dd>Function called when printing an implementation (".ml") file</dd>
-</dl>
+<pre style="border:0; margin-left: 1cm">
+value print_interf :
+  ref (list (MLast.sig_item * MLast.loc) -> unit);
+</pre>
+
+<dl><dd>
+    Function called when printing an interface (".mli") file
+</dd></dl>
+
+<pre style="border:0; margin-left: 1cm">
+value print_implem :
+  ref (list (MLast.str_item * MLast.loc) -> unit);
+</pre>
+
+<dl><dd>
+  Function called when printing an implementation (".ml") file
+</dd></dl>
 
 <p>By default, these functions fail. The printer kit
   "<tt>pr_dump.cmo</tt>" (loaded by most Camlp5 commands) set them to
@@ -253,27 +271,19 @@ t      (MLast.str_item * MLast.loc) * bool));</tt></dt>
 
 <p>These equalities skip the locations.</p>
 
-<dl>
-  <dt><tt>value eq_expr : MLast.expr -> MLast.expr -> bool;</tt></dt>
-  <dt><tt>value eq_patt : MLast.patt -> MLast.patt -> bool;</tt></dt>
-  <dt><tt>value eq_ctyp : MLast.ctyp -> MLast.ctyp -> bool;</tt></dt>
-  <dt><tt>value eq_str_item : MLast.str_item -> MLast.str_item ->
-      bool;</tt></dt>
-  <dt><tt>value eq_sig_item : MLast.sig_item -> MLast.sig_item ->
-      bool;</tt></dt>
-  <dt><tt>value eq_module_expr : MLast.module_expr ->
-      MLast.module_expr -> bool;</tt></dt>
-  <dt><tt>value eq_module_type : MLast.module_type ->
-      MLast.module_type -> bool;</tt></dt>
-  <dt><tt>value eq_class_sig_item : MLast.class_sig_item ->
-      MLast.class_sig_item -> bool;</tt></dt>
-  <dt><tt>value eq_class_str_item : MLast.class_str_item ->
-      MLast.class_str_item -> bool;</tt></dt>
-  <dt><tt>value eq_class_type : MLast.class_type -> MLast.class_type
-      -> bool;</tt></dt>
-  <dt><tt>value eq_class_expr : MLast.class_expr -> MLast.class_expr
-      -> bool;</tt></dt>
-</dl>
+<pre style="border:0; margin-left: 1cm">
+value eq_expr : MLast.expr -> MLast.expr -> bool;
+value eq_patt : MLast.patt -> MLast.patt -> bool;
+value eq_ctyp : MLast.ctyp -> MLast.ctyp -> bool;
+value eq_str_item : MLast.str_item -> MLast.str_item -> bool;
+value eq_sig_item : MLast.sig_item -> MLast.sig_item -> bool;
+value eq_module_expr : MLast.module_expr -> MLast.module_expr -> bool;
+value eq_module_type : MLast.module_type -> MLast.module_type -> bool;
+value eq_class_sig_item : MLast.class_sig_item -> MLast.class_sig_item -> bool;
+value eq_class_str_item : MLast.class_str_item -> MLast.class_str_item -> bool;
+value eq_class_type : MLast.class_type -> MLast.class_type -> bool;
+value eq_class_expr : MLast.class_expr -> MLast.class_expr -> bool;
+</pre>
 
 <h2>Generalities</h2>
 

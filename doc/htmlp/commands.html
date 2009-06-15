@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: commands.html,v 1.1 2007/08/26 20:46:41 deraugla Exp $ -->
+  <!-- $Id: commands.html,v 1.2 2007/08/28 03:22:04 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Commands and Kits</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -19,7 +19,109 @@
 
 <h1 class="top">Commands and Kits</h1>
 
-<p>... to be written ...</p>
+<p>The main command of Camlp5 is "<tt>camlp5</tt>". All other commands
+  derive from that one: they are the command "<tt>camlp5</tt>" with
+  some implicitely applied parameters.</p>
+
+<p>All commands have an option "<tt>-help</tt>" which display all
+  possible command parameters and options. Notice that some parameters
+  (the parsing and pretting kits) may add new options. For example,
+  the command:</p>
+
+<pre>
+  camlp5 pr_r.cmo -help
+</pre>
+
+<p>prints more lines than just:</p>
+
+<pre>
+  camlp5 -help
+</pre>
+
+<div id="tableofcontents">
+</div>
+
+<h2>Kits</h2>
+
+<h3>Parsing kits</h3>
+
+<p>... to be completed ...</p>
+
+<h4>main parsing kits</h4>
+
+<dl>
+  <dt><tt>pa_r.cmo</tt></dt>
+  <dt><tt>pa_rp.cmo</tt></dt>
+  <dt><tt>pa_o.cmo</tt></dt>
+  <dt><tt>pa_op.cmo</tt></dt>
+  <dt><tt>pa_oop.cmo</tt></dt>
+  <dt><tt>pa_lex.cmo</tt></dt>
+</dl>
+
+<h4>parsing extension</h4>
+
+<dl>
+  <dt><tt>pa_extend.cmo</tt></dt>
+  <dt><tt>pa_extend_m.cmo</tt></dt>
+  <dt><tt>pa_extfold.cmo</tt></dt>
+</dl>
+
+<h4>printing extension</h4>
+
+<dl>
+  <dt><tt>pa_extprint.cmo</tt></dt>
+</dl>
+
+<h4>extensible functions</h4>
+
+<dl>
+  <dt><tt>pa_extfun.cmo</tt></dt>
+</dl>
+
+<h4>functional parsers</h4>
+
+<dl>
+  <dt><tt>pa_fstream.cmo</tt></dt>
+</dl>
+
+<h4>other languages</h4>
+
+<dl>
+  <dt><tt>pa_lisp.cmo</tt></dt>
+  <dt><tt>pa_scheme.cmo</tt></dt>
+  <dt><tt>pa_sml.cmo</tt></dt>
+</dl>
+
+<h4>other parsing kits</h4>
+
+<dl>
+  <dt><tt>pa_lefteval.cmo</tt></dt>
+  <dt><tt>pa_macro.cmo</tt></dt>
+  <dt><tt>pa_pragma.cmo</tt></dt>
+</dl>
+
+<h3>Printing kits</h3>
+
+<p>... to be structured and completed ...</p>
+
+<dl>
+  <dt><tt>pr_depend.cmo</tt></dt>
+  <dt><tt>pr_dump.cmo</tt></dt>
+  <dt><tt>pr_extend.cmo</tt></dt>
+  <dt><tt>pr_extfun.cmo</tt></dt>
+  <dt><tt>pr_null.cmo</tt></dt>
+  <dt><tt>pr_o.cmo</tt></dt>
+  <dt><tt>pr_op.cmo</tt></dt>
+  <dt><tt>pr_r.cmo</tt></dt>
+  <dt><tt>pr_ro.cmo</tt></dt>
+  <dt><tt>pr_rp.cmo</tt></dt>
+  <dt><tt>pr_scheme.cmo</tt></dt>
+  <dt><tt>pr_schemep.cmo</tt></dt>
+</dl>
+
+<h2>Commands</h2>
+
+<p>... to be continued ...</p>
 
 <div class="trailer">
 </div>

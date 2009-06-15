@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: quot.html,v 1.15 2007/08/22 09:23:33 deraugla Exp $ -->
+  <!-- $Id: quot.html,v 1.16 2007/08/28 03:22:04 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>quotations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -313,7 +313,8 @@ type expander =
 </pre>
 
 <dl><dd>
-    It is the type for quotatation expander kinds:
+    It is the type for quotation expander kinds:
+
     <ul>
       <li>"<tt>Quotation.ExStr exp</tt>" corresponds to an expander
         "<tt>exp</tt>" returning a string which is parsed by the
@@ -567,8 +568,12 @@ type expander =
     ;
   END;
 
-  value expand_expr s = Grammar.Entry.parse expr_term_eos (Stream.of_string s);
-  value expand_patt s = Grammar.Entry.parse patt_term_eos (Stream.of_string s);
+  value expand_expr s =
+    Grammar.Entry.parse expr_term_eos (Stream.of_string s)
+  ;
+  value expand_patt s =
+    Grammar.Entry.parse patt_term_eos (Stream.of_string s)
+  ;
 
   Quotation.add "term" (Quotation.ExAst (expand_expr, expand_patt));
   Quotation.default.val := "term";
@@ -597,7 +602,8 @@ type expander =
      | App of term and term
      |   Var of string ]
     ;
-  type term = [ Lam of string and term | App of term and term | Var of string ]
+  type term =
+    [ Lam of string and term | App of term and term | Var of string ]
   # value comb_s = &lt;&lt; \x.\y.\z.(x y)(x z) >>;
   value comb_s : term =
     Lam "x"
@@ -612,7 +618,8 @@ type expander =
   value delta : term = Lam "x" (App (Var "x") (Var "x"))
   # value omega = &lt;&lt; ^delta ^delta >>;
   value omega : term =
-    App (Lam "x" (App (Var "x") (Var "x"))) (Lam "x" (App (Var "x") (Var "x")))
+    App (Lam "x" (App (Var "x") (Var "x")))
+      (Lam "x" (App (Var "x") (Var "x")))
 </pre>
 
 <div class="trailer">

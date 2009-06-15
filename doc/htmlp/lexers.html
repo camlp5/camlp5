@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: lexers.html,v 1.15 2007/08/27 12:27:07 deraugla Exp $ -->
+  <!-- $Id: lexers.html,v 1.16 2007/08/28 03:22:04 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>lexers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -39,11 +39,10 @@
   a "lexing buffer", a data structure recording the matched
   characters.</p>
 
-<p>In order to motivate our work, here is a small example. Let us look
-  at the following parser. It parses an identifier, composed of
-  letters, digits, underscores, quotes and utf-8 characters, and
-  record the result in a buffer. In classical parsers syntax, this
-  could be written like this:</p>
+<p>Let us take an example. The following function parses an
+  identifier, composed of letters, digits, underscores, quotes and
+  utf-8 bytes, and record the result in a buffer. In classical parsers
+  syntax, this could be written like this:</p>
 
 <pre>
   value rec ident buf =
