@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.73 2007/09/13 03:25:28 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.74 2007/09/13 04:04:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -886,7 +886,7 @@ EXTEND
     | LEFTA
       [ t1 = SELF; "as"; t2 = SELF -> Qast.Node "TyAli" [Qast.Loc; t1; t2] ]
     | LEFTA
-      [ "!"; pl = SLIST1 typevar; "."; t = SELF ->
+      [ "!"; pl = SV LIST1 typevar; "."; t = SELF ->
           Qast.Node "TyPol" [Qast.Loc; pl; t] ]
     | "arrow" RIGHTA
       [ t1 = SELF; "->"; t2 = SELF -> Qast.Node "TyArr" [Qast.Loc; t1; t2] ]
@@ -904,9 +904,9 @@ EXTEND
       | "("; t = SELF; ")" -> t
       | "("; tl = SV LIST1 ctyp SEP "*"; ")" ->
           Qast.Node "TyTup" [Qast.Loc; tl]
-      | "["; cdl = SLIST0 constructor_declaration SEP "|"; "]" ->
+      | "["; cdl = SV LIST0 constructor_declaration SEP "|"; "]" ->
           Qast.Node "TySum" [Qast.Loc; cdl]
-      | "{"; ldl = SLIST1 label_declaration SEP ";"; "}" ->
+      | "{"; ldl = SV LIST1 label_declaration SEP ";"; "}" ->
           Qast.Node "TyRec" [Qast.Loc; ldl] ] ]
   ;
   constructor_declaration:
@@ -1103,12 +1103,11 @@ EXTEND
   field:
     [ [ lab = a_LIDENT; ":"; t = ctyp -> Qast.Tuple [lab; t] ] ]
   ;
+  typevar2:
+    [ [ "'"; i = ident2 -> i ] ]
+  ;
   typevar:
     [ [ "'"; i = ident -> i ] ]
-  ;
-  typevar2:
-    [ [ "'"; i = a_LIDENT2 -> i
-      | "'"; i = a_UIDENT2 -> i ] ]
   ;
   clty_longident:
     [ [ m = a_UIDENT; "."; l = SELF -> Qast.Cons m l

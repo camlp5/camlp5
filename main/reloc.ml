@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: reloc.ml,v 1.23 2007/09/13 03:25:28 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.24 2007/09/13 04:04:32 deraugla Exp $ *)
 
 open MLast;
 
@@ -49,12 +49,15 @@ value rec ctyp floc sh =
     | TyQuo loc x1 -> TyQuo (floc loc) x1
     | TyRec loc x1 ->
         TyRec (floc loc)
-          (List.map (fun (loc, x1, x2, x3) -> (floc loc, x1, x2, self x3)) x1)
+          (vala_map
+             (List.map (fun (loc, x1, x2, x3) -> (floc loc, x1, x2, self x3)))
+             x1)
     | TySum loc x1 ->
         TySum (floc loc)
-          (List.map
-             (fun (loc, x1, x2) ->
-                (floc loc, x1, vala_map (List.map self) x2))
+          (vala_map
+             (List.map
+                (fun (loc, x1, x2) ->
+                   (floc loc, x1, vala_map (List.map self) x2)))
              x1)
     | TyTup loc x1 -> TyTup (floc loc) (vala_map (List.map self) x1)
     | TyUid loc x1 -> TyUid (floc loc) x1

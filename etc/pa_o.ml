@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.48 2007/09/12 19:28:52 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.49 2007/09/13 04:04:32 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -782,7 +782,7 @@ EXTEND
       | t = ctyp; "="; "{"; ldl = label_declarations; "}" ->
           <:ctyp< $t$ == { $list:ldl$ } >>
       | t = ctyp; "="; OPT "|"; cdl = LIST1 constructor_declaration SEP "|" ->
-          <:ctyp< $t$ == [ $alist:cdl$ ] >>
+          <:ctyp< $t$ == [ $list:cdl$ ] >>
       | "{"; ldl = label_declarations; "}" -> <:ctyp< { $list:ldl$ } >> ] ]
   ;
   type_parameters:

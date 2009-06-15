@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: mLast.mli,v 1.35 2007/09/13 03:25:28 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.36 2007/09/13 04:04:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Module [MLast]: abstract syntax tree.
@@ -29,10 +29,10 @@ type ctyp =
   | TyMan of loc and ctyp and ctyp
   | TyObj of loc and list (string * ctyp) and bool
   | TyOlb of loc and string and ctyp
-  | TyPol of loc and list string and ctyp
+  | TyPol of loc and V (list string) and ctyp
   | TyQuo of loc and V string
-  | TyRec of loc and list (loc * string * bool * ctyp)
-  | TySum of loc and list (loc * V string * V (list ctyp))
+  | TyRec of loc and V (list (loc * string * bool * ctyp))
+  | TySum of loc and V (list (loc * V string * V (list ctyp)))
   | TyTup of loc and V (list ctyp)
   | TyUid of loc and V string
   | TyVrn of loc and list poly_variant and option (option (list string))

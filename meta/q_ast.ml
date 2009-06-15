@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.62 2007/09/13 03:25:28 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.63 2007/09/13 04:04:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -181,12 +181,15 @@ module Meta =
       loop t where rec loop t =
         match t with
         [ TyAcc _ t1 t2 -> <:expr< MLast.TyAcc $ln$ $loop t1$ $loop t2$ >>
+        | TyAli _ t1 t2 -> <:expr< MLast.TyAli $ln$ $loop t1$ $loop t2$ >> 
         | TyArr _ t1 t2 -> <:expr< MLast.TyArr $ln$ $loop t1$ $loop t2$ >>
         | TyAny _ -> <:expr< MLast.TyAny $ln$ >>
         | TyApp _ t1 t2 -> <:expr< MLast.TyApp $ln$ $loop t1$ $loop t2$ >> 
         | TyLid _ s -> <:expr< MLast.TyLid $ln$ $e_vala e_string s$ >>
+        | TyMan _ t1 t2 -> <:expr< MLast.TyMan $ln$ $loop t1$ $loop t2$ >> 
+        | TyPol _ lv t ->
+            <:expr< MLast.TyPol $ln$ $e_vala (e_list e_string) lv$ $loop t$ >>
         | TyQuo _ s -> <:expr< MLast.TyQuo $ln$ $e_vala e_string s$ >>
-(*
         | TyRec _ lld ->
             let lld =
               e_vala
@@ -196,7 +199,16 @@ module Meta =
                 lld
             in
             <:expr< MLast.TyRec $ln$ $lld$ >>
-*)
+        | TySum _ lcd ->
+            let lcd =
+              e_vala
+                (e_list
+                   (fun (loc, lab, lt) ->
+                      let lt = e_vala (e_list loop) lt in
+                      <:expr< ($ln$, $e_vala e_string lab$, $lt$) >>))
+                lcd
+            in
+            <:expr< MLast.TySum $ln$ $lcd$ >>
         | TyTup _ tl -> <:expr< MLast.TyTup $ln$ $e_vala (e_list loop) tl$ >>
         | TyUid _ s -> <:expr< MLast.TyUid $ln$ $e_vala e_string s$ >>
         | IFDEF STRICT THEN

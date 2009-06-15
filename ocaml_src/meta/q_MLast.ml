@@ -2477,13 +2477,14 @@ Grammar.extend
                 (Grammar.Entry.obj (typevar : 'typevar Grammar.Entry.e)))],
           Gramext.action
             (fun (a : 'typevar list) (loc : Ploc.t) ->
-               (Qast.List a : 'a_list));
+               (Qast.Vala (Qast.List a) : 'a_list2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_list : 'a_list Grammar.Entry.e))],
-          Gramext.action (fun (a : 'a_list) (loc : Ploc.t) -> (a : 'a_list))];
+             (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
+          Gramext.action
+            (fun (a : 'a_list2) (loc : Ploc.t) -> (a : 'a_list2))];
        Gramext.Stoken ("", "."); Gramext.Sself],
       Gramext.action
-        (fun (t : 'ctyp) _ (pl : 'a_list) _ (loc : Ploc.t) ->
+        (fun (t : 'ctyp) _ (pl : 'a_list2) _ (loc : Ploc.t) ->
            (Qast.Node ("TyPol", [Qast.Loc; pl; t]) : 'ctyp))];
      Some "arrow", Some Gramext.RightA,
      [[Gramext.Sself; Gramext.Stoken ("", "->"); Gramext.Sself],
@@ -2510,13 +2511,14 @@ Grammar.extend
               Gramext.Stoken ("", ";"))],
           Gramext.action
             (fun (a : 'label_declaration list) (loc : Ploc.t) ->
-               (Qast.List a : 'a_list));
+               (Qast.Vala (Qast.List a) : 'a_list2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_list : 'a_list Grammar.Entry.e))],
-          Gramext.action (fun (a : 'a_list) (loc : Ploc.t) -> (a : 'a_list))];
+             (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
+          Gramext.action
+            (fun (a : 'a_list2) (loc : Ploc.t) -> (a : 'a_list2))];
        Gramext.Stoken ("", "}")],
       Gramext.action
-        (fun _ (ldl : 'a_list) _ (loc : Ploc.t) ->
+        (fun _ (ldl : 'a_list2) _ (loc : Ploc.t) ->
            (Qast.Node ("TyRec", [Qast.Loc; ldl]) : 'ctyp));
       [Gramext.Stoken ("", "[");
        Gramext.srules
@@ -2528,13 +2530,14 @@ Grammar.extend
               Gramext.Stoken ("", "|"))],
           Gramext.action
             (fun (a : 'constructor_declaration list) (loc : Ploc.t) ->
-               (Qast.List a : 'a_list));
+               (Qast.Vala (Qast.List a) : 'a_list2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_list : 'a_list Grammar.Entry.e))],
-          Gramext.action (fun (a : 'a_list) (loc : Ploc.t) -> (a : 'a_list))];
+             (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
+          Gramext.action
+            (fun (a : 'a_list2) (loc : Ploc.t) -> (a : 'a_list2))];
        Gramext.Stoken ("", "]")],
       Gramext.action
-        (fun _ (cdl : 'a_list) _ (loc : Ploc.t) ->
+        (fun _ (cdl : 'a_list2) _ (loc : Ploc.t) ->
            (Qast.Node ("TySum", [Qast.Loc; cdl]) : 'ctyp));
       [Gramext.Stoken ("", "(");
        Gramext.srules
@@ -3460,23 +3463,17 @@ Grammar.extend
       Gramext.action
         (fun (t : 'ctyp) _ (lab : 'a_LIDENT) (loc : Ploc.t) ->
            (Qast.Tuple [lab; t] : 'field))]];
+    Grammar.Entry.obj (typevar2 : 'typevar2 Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Stoken ("", "'");
+       Gramext.Snterm (Grammar.Entry.obj (ident2 : 'ident2 Grammar.Entry.e))],
+      Gramext.action
+        (fun (i : 'ident2) _ (loc : Ploc.t) -> (i : 'typevar2))]];
     Grammar.Entry.obj (typevar : 'typevar Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "'");
        Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
       Gramext.action (fun (i : 'ident) _ (loc : Ploc.t) -> (i : 'typevar))]];
-    Grammar.Entry.obj (typevar2 : 'typevar2 Grammar.Entry.e), None,
-    [None, None,
-     [[Gramext.Stoken ("", "'");
-       Gramext.Snterm
-         (Grammar.Entry.obj (a_UIDENT2 : 'a_UIDENT2 Grammar.Entry.e))],
-      Gramext.action
-        (fun (i : 'a_UIDENT2) _ (loc : Ploc.t) -> (i : 'typevar2));
-      [Gramext.Stoken ("", "'");
-       Gramext.Snterm
-         (Grammar.Entry.obj (a_LIDENT2 : 'a_LIDENT2 Grammar.Entry.e))],
-      Gramext.action
-        (fun (i : 'a_LIDENT2) _ (loc : Ploc.t) -> (i : 'typevar2))]];
     Grammar.Entry.obj (clty_longident : 'clty_longident Grammar.Entry.e),
     None,
     [None, None,

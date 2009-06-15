@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.58 2007/09/13 03:25:28 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.59 2007/09/13 04:04:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -386,12 +386,12 @@ value rec make_ctyp styp tvar =
   match styp with
   [ STlid loc s -> <:ctyp< $lid:s$ >>
   | STapp loc t1 t2 -> <:ctyp< $make_ctyp t1 tvar$ $make_ctyp t2 tvar$ >>
-  | STquo loc s -> <:ctyp< '$lid:s$ >>
+  | STquo loc s -> <:ctyp< '$s$ >>
   | STself loc x ->
       if tvar = "" then
         Ploc.raise loc
           (Stream.Error ("'" ^ x ^ "' illegal in anonymous entry level"))
-      else <:ctyp< '$lid:tvar$ >>
+      else <:ctyp< '$tvar$ >>
   | STtyp t -> t
   | STvala loc t -> <:ctyp< Ploc.vala $make_ctyp t tvar$ >> ]
 ;
@@ -424,7 +424,7 @@ value rec make_expr gmod tvar =
           <:expr<
              Gramext.Snterml
                ($uid:gmod$.Entry.obj
-                  ($n.expr$ : $uid:gmod$.Entry.e '$lid:n.tvar$))
+                  ($n.expr$ : $uid:gmod$.Entry.e '$n.tvar$))
                $str:lab$ >>
       | None ->
           if n.tvar = tvar then <:expr< Gramext.Sself >>
@@ -432,7 +432,7 @@ value rec make_expr gmod tvar =
             <:expr<
                Gramext.Snterm
                  ($uid:gmod$.Entry.obj
-                    ($n.expr$ : $uid:gmod$.Entry.e '$lid:n.tvar$)) >> ]
+                    ($n.expr$ : $uid:gmod$.Entry.e '$n.tvar$)) >> ]
   | TXopt loc t -> <:expr< Gramext.Sopt $make_expr gmod "" t$ >>
   | TXflag loc t -> <:expr< Gramext.Sflag $make_expr gmod "" t$ >>
   | TXrules loc rl ->
@@ -461,7 +461,7 @@ value text_of_action loc psl rtvar act tvar =
     [ Some act -> if quotify.val then quotify_action psl act else act
     | None -> <:expr< () >> ]
   in
-  let e = <:expr< fun [ ($locid$ : Ploc.t) -> ($act$ : '$lid:rtvar$) ] >> in
+  let e = <:expr< fun [ ($locid$ : Ploc.t) -> ($act$ : '$rtvar$) ] >> in
   let txt =
     List.fold_left
       (fun txt ps ->
@@ -663,7 +663,7 @@ value text_of_entry loc gmod e =
   let ent =
     let x = e.name in
     let loc = e.name.loc in
-    <:expr< ($x.expr$ : $uid:gmod$.Entry.e '$lid:x.tvar$) >>
+    <:expr< ($x.expr$ : $uid:gmod$.Entry.e '$x.tvar$) >>
   in
   let pos =
     match e.pos with
@@ -713,7 +713,7 @@ value let_in_of_extend loc gmod functor_version gl el args =
       let globals =
         List.map
           (fun {expr = e; tvar = x; loc = loc} ->
-             (<:patt< _ >>, <:expr< ($e$ : $uid:gmod$.Entry.e '$lid:x$) >>))
+             (<:patt< _ >>, <:expr< ($e$ : $uid:gmod$.Entry.e '$x$) >>))
           nl
       in
       let locals =
@@ -726,7 +726,7 @@ value let_in_of_extend loc gmod functor_version gl el args =
              in
              (<:patt< $lid:i$ >>,
               <:expr<
-                (grammar_entry_create $str:i$ : $uid:gmod$.Entry.e '$lid:x$)
+                (grammar_entry_create $str:i$ : $uid:gmod$.Entry.e '$x$)
               >>))
           ll
       in

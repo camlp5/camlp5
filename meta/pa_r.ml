@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.75 2007/09/13 03:25:28 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.76 2007/09/13 04:04:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -463,8 +463,8 @@ EXTEND
     | LEFTA
       [ t1 = SELF; "as"; t2 = SELF -> <:ctyp< $t1$ as $t2$ >> ]
     | LEFTA
-      [ "!"; pl = LIST1 typevar; "."; t = ctyp ->
-          <:ctyp< ! $list:pl$ . $t$ >> ]
+      [ "!"; pl = V LIST1 typevar; "."; t = ctyp ->
+          <:ctyp< ! $alist:pl$ . $t$ >> ]
     | "arrow" RIGHTA
       [ t1 = SELF; "->"; t2 = SELF -> <:ctyp< $t1$ -> $t2$ >> ]
     | "apply" LEFTA
@@ -480,10 +480,10 @@ EXTEND
           <:ctyp< ( $list:[t::tl]$ ) >>
       | "("; t = SELF; ")" -> <:ctyp< $t$ >>
       | "("; tl = V LIST1 ctyp SEP "*"; ")" -> <:ctyp< ( $alist:tl$ ) >>
-      | "["; cdl = LIST0 constructor_declaration SEP "|"; "]" ->
+      | "["; cdl = V LIST0 constructor_declaration SEP "|"; "]" ->
           <:ctyp< [ $alist:cdl$ ] >>
-      | "{"; ldl = LIST1 label_declaration SEP ";"; "}" ->
-          <:ctyp< { $list:ldl$ } >> ] ]
+      | "{"; ldl = V LIST1 label_declaration SEP ";"; "}" ->
+          <:ctyp< { $alist:ldl$ } >> ] ]
   ;
   constructor_declaration:
     [ [ ci = V UIDENT; "of"; cal = V LIST1 ctyp SEP "and" -> (loc, ci, cal)
@@ -671,12 +671,11 @@ EXTEND
   field:
     [ [ lab = LIDENT; ":"; t = ctyp -> (lab, t) ] ]
   ;
+  typevar2:
+    [ [ "'"; i = ident2 -> i ] ]
+  ;
   typevar:
     [ [ "'"; i = ident -> i ] ]
-  ;
-  typevar2:
-    [ [ "'"; i = V LIDENT -> i
-      | "'"; i = V UIDENT -> i ] ]
   ;
   clty_longident:
     [ [ m = UIDENT; "."; l = SELF -> [m :: l]

@@ -1666,7 +1666,7 @@ pr_ctyp.pr_levels :=
       | <:ctyp< < $list:ml$ $opt:v$ > >> ->
           fun curr next dg k ->
             [: `S LR "<"; meth_list (ml, v) "" [: `S LR ">"; k :] :]
-      | MLast.TyPol _ pl t ->
+      | <:ctyp< ! $list:pl$ . $t$ >> ->
           fun curr next dg k ->
             if pl = [] then [: `ctyp t "" k :]
             else [: list typevar pl "" [: `S LR "." :]; `ctyp t "" k :]

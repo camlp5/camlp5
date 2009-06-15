@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.35 2007/09/13 03:25:28 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.36 2007/09/13 04:04:32 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -91,8 +91,10 @@ value mkcty loc d = {pcty_desc = d; pcty_loc = mkloc loc};
 value mkpcl loc d = {pcl_desc = d; pcl_loc = mkloc loc};
 value mkpolytype t =
   match t with
-  [ TyPol _ _ _ -> t
-  | _ -> TyPol (MLast.loc_of_ctyp t) [] t ]
+  [ <:ctyp< ! $list:_$ . $_$ >> -> t
+  | _ ->
+      let loc = MLast.loc_of_ctyp t in
+      <:ctyp< ! $list:[]$ . $t$ >> ]
 ;
 
 value lident s = Lident s;
@@ -201,7 +203,7 @@ value rec ctyp =
   | TyLid loc s -> mktyp loc (Ptyp_constr (lident (uv s)) [])
   | TyMan loc _ _ -> error loc "type manifest not allowed here"
   | TyOlb loc lab _ -> error loc "labeled type not allowed here"
-  | TyPol loc pl t -> mktyp loc (Ptyp_poly pl (ctyp t))
+  | TyPol loc pl t -> mktyp loc (Ptyp_poly (uv pl) (ctyp t))
   | TyQuo loc s -> mktyp loc (Ptyp_var (uv s))
   | TyRec loc _ -> error loc "record type not allowed here"
   | TySum loc _ -> error loc "sum type not allowed here"
@@ -248,13 +250,6 @@ value mktrecord (loc, n, m, t) =
 ;
 value mkvariant (loc, c, tl) =
   IFDEF OCAML_3_08 THEN
-    (conv_con c, List.map ctyp tl)
-  ELSE
-    (conv_con c, List.map ctyp tl, mkloc loc)
-  END
-;
-value mkvariant2 (loc, c, tl) =
-  IFDEF OCAML_3_08 THEN
     (conv_con (uv c), List.map ctyp (uv tl))
   ELSE
     (conv_con (uv c), List.map ctyp (uv tl), mkloc loc)
@@ -263,17 +258,18 @@ value mkvariant2 (loc, c, tl) =
 
 value type_decl tl priv cl =
   fun
-  [ TyMan loc t (TyRec _ ltl) ->
+  [ TyMan loc t <:ctyp< { $list:ltl$ } >> ->
       mktype loc tl cl (Ptype_record (List.map mktrecord ltl) priv)
         (Some (ctyp t))
-  | TyMan loc t (TySum _ ctl) ->
-      mktype loc tl cl (Ptype_variant (List.map mkvariant2 ctl) priv)
+  | TyMan loc t <:ctyp< [ $list:ctl$ ] >> ->
+      mktype loc tl cl (Ptype_variant (List.map mkvariant ctl) priv)
         (Some (ctyp t))
   | TyRec loc ltl ->
-      mktype loc tl cl (Ptype_record (List.map mktrecord ltl) priv)
+      mktype loc tl cl (Ptype_record (List.map mktrecord (uv ltl)) priv)
         None
   | TySum loc ctl ->
-      mktype loc tl cl (Ptype_variant (List.map mkvariant2 ctl) priv) None
+      mktype loc tl cl (Ptype_variant (List.map mkvariant (uv ctl)) priv)
+        None
   | t ->
       let m =
         match t with

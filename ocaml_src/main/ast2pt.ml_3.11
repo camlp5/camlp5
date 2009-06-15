@@ -89,8 +89,8 @@ let mkcty loc d = {pcty_desc = d; pcty_loc = mkloc loc};;
 let mkpcl loc d = {pcl_desc = d; pcl_loc = mkloc loc};;
 let mkpolytype t =
   match t with
-    TyPol (_, _, _) -> t
-  | _ -> TyPol (MLast.loc_of_ctyp t, [], t)
+    MLast.TyPol (_, _, _) -> t
+  | _ -> let loc = MLast.loc_of_ctyp t in MLast.TyPol (loc, [], t)
 ;;
 
 let lident s = Lident s;;
@@ -196,7 +196,7 @@ let rec ctyp =
   | TyLid (loc, s) -> mktyp loc (Ptyp_constr (lident (uv s), []))
   | TyMan (loc, _, _) -> error loc "type manifest not allowed here"
   | TyOlb (loc, lab, _) -> error loc "labeled type not allowed here"
-  | TyPol (loc, pl, t) -> mktyp loc (Ptyp_poly (pl, ctyp t))
+  | TyPol (loc, pl, t) -> mktyp loc (Ptyp_poly (uv pl, ctyp t))
   | TyQuo (loc, s) -> mktyp loc (Ptyp_var (uv s))
   | TyRec (loc, _) -> error loc "record type not allowed here"
   | TySum (loc, _) -> error loc "sum type not allowed here"
@@ -234,23 +234,23 @@ let mkprivate m = if m then Private else Public;;
 let mktrecord (loc, n, m, t) =
   n, mkmutable m, ctyp (mkpolytype t), mkloc loc
 ;;
-let mkvariant (loc, c, tl) = conv_con c, List.map ctyp tl, mkloc loc;;
-let mkvariant2 (loc, c, tl) =
+let mkvariant (loc, c, tl) =
   conv_con (uv c), List.map ctyp (uv tl), mkloc loc
 ;;
 
 let type_decl tl priv cl =
   function
-    TyMan (loc, t, TyRec (_, ltl)) ->
+    TyMan (loc, t, MLast.TyRec (_, ltl)) ->
       mktype loc tl cl (Ptype_record (List.map mktrecord ltl, priv))
         (Some (ctyp t))
-  | TyMan (loc, t, TySum (_, ctl)) ->
-      mktype loc tl cl (Ptype_variant (List.map mkvariant2 ctl, priv))
+  | TyMan (loc, t, MLast.TySum (_, ctl)) ->
+      mktype loc tl cl (Ptype_variant (List.map mkvariant ctl, priv))
         (Some (ctyp t))
   | TyRec (loc, ltl) ->
-      mktype loc tl cl (Ptype_record (List.map mktrecord ltl, priv)) None
+      mktype loc tl cl (Ptype_record (List.map mktrecord (uv ltl), priv)) None
   | TySum (loc, ctl) ->
-      mktype loc tl cl (Ptype_variant (List.map mkvariant2 ctl, priv)) None
+      mktype loc tl cl (Ptype_variant (List.map mkvariant (uv ctl), priv))
+        None
   | t ->
       let m =
         match t with

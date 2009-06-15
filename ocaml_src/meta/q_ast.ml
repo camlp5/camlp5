@@ -183,6 +183,19 @@ module Meta =
                      ln),
                   loop t1),
                loop t2)
+        | TyAli (_, t1, t2) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "TyAli")),
+                     ln),
+                  loop t1),
+               loop t2)
         | TyArr (_, t1, t2) ->
             MLast.ExApp
               (loc,
@@ -226,6 +239,32 @@ module Meta =
                      MLast.ExUid (loc, "TyLid")),
                   ln),
                e_vala e_string s)
+        | TyMan (_, t1, t2) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "TyMan")),
+                     ln),
+                  loop t1),
+               loop t2)
+        | TyPol (_, lv, t) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "TyPol")),
+                     ln),
+                  e_vala (e_list e_string) lv),
+               loop t)
         | TyQuo (_, s) ->
             MLast.ExApp
               (loc,
@@ -236,6 +275,43 @@ module Meta =
                      MLast.ExUid (loc, "TyQuo")),
                   ln),
                e_vala e_string s)
+        | TyRec (_, lld) ->
+            let lld =
+              e_vala
+                (e_list
+                   (fun (loc, lab, mf, t) ->
+                      MLast.ExTup
+                        (loc,
+                         [ln; MLast.ExStr (loc, lab); e_bool mf; loop t])))
+                lld
+            in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "TyRec")),
+                  ln),
+               lld)
+        | TySum (_, lcd) ->
+            let lcd =
+              e_vala
+                (e_list
+                   (fun (loc, lab, lt) ->
+                      let lt = e_vala (e_list loop) lt in
+                      MLast.ExTup (loc, [ln; e_vala e_string lab; lt])))
+                lcd
+            in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "TySum")),
+                  ln),
+               lcd)
         | TyTup (_, tl) ->
             MLast.ExApp
               (loc,
