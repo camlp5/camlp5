@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: parsers.html,v 1.23 2007/10/10 03:01:10 deraugla Exp $ -->
+  <!-- $Id: parsers.html,v 1.24 2007/10/10 16:40:01 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -680,15 +680,14 @@
 
 <h3>Purely functional parsers</h3>
 
-<p>This system of parsers is not purely functional in the sense that
-  the stream structure is imperative: while parsing, the stream
+<p>This system of parsers is imperative: while parsing, the stream
   advances and the already parsed terminals disappear from the stream
   structure. This is useful because it is not necessary to return the
   remaining stream together with the normal result. This is the reason
-  there is this <code>"Stream.Error"</code> exception: when it is
-  raised, it means that some terminals have been consummed from the
-  stream, which are definitively lost, and therefore that it is no
-  more possible parser cases to try.</p>
+  there is this "<tt>Stream.Error</tt>" exception: when it is raised,
+  it means that some terminals have been consummed from the stream,
+  which are definitively lost, and therefore that are no more possible
+  parser cases to try.</p>
 
 <p>An alternative is to use <a href="fparsers.html">purely functional
   parsers</a> which use a new stream type, lazy but not
