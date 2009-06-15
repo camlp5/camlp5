@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.150 2007/12/24 19:02:37 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.151 2007/12/24 19:23:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1106,18 +1106,7 @@ EXTEND_PRINTER
   ;
   pr_patt:
     [ "top"
-      [ <:patt< ($x$ as $y$) >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s%s as %s%s" pc.bef
-                 (patt {(pc) with bef = ""; aft = ""} x)
-                 (patt {(pc) with bef = ""; aft = ""} y) pc.aft)
-            (fun () ->
-               let s1 = patt {(pc) with aft = ""} x in
-               let s2 =
-                 patt {(pc) with bef = sprintf "%sas " (tab (pc.ind + 1))} y
-               in
-               sprintf "%s\n%s" s1 s2) ]
+      [ <:patt< ($x$ as $y$) >> -> pprintf pc "%p@[ as %p@]" patt x patt y ]
     | "or"
       [ <:patt< $_$ | $_$ >> as z ->
           let unfold =
