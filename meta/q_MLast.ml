@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.108 2007/09/24 15:26:37 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.109 2007/09/24 16:06:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -152,7 +152,6 @@ value poly_variant = Grammar.Entry.create gram "poly_variant";
 value a_list = Grammar.Entry.create gram "a_list";
 value a_list2 = Grammar.Entry.create gram "a_list2";
 value a_opt = Grammar.Entry.create gram "a_opt";
-value a_opt2 = Grammar.Entry.create gram "a_opt2";
 value a_flag = Grammar.Entry.create gram "a_flag";
 value a_UIDENT = Grammar.Entry.create gram "a_UIDENT";
 value a_UIDENT2 = Grammar.Entry.create gram "a_UIDENT2";
@@ -1278,10 +1277,6 @@ EXTEND
   ;
   a_opt:
     [ [ a = ANTIQUOT "opt" -> Qast.VaAnt "opt" loc a ] ]
-  ;
-  a_opt2:
-    [ [ a = ANTIQUOT "opt" -> Qast.VaVal (Qast.VaAnt "opt" loc a)
-      | a = ANTIQUOT "_opt" -> Qast.VaAnt "_opt" loc a ] ]
   ;
   a_flag:
     [ [ a = ANTIQUOT "flag" -> Qast.VaAnt "flag" loc a
