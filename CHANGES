@@ -1,10 +1,8 @@
 Camlp5 Version 5.03:
 --------------------
 
-* [29 Oct 07] Replaced the exception [Grammar.SkipItem] (designed
-  to make IFDEF in constructor declarations and pattern matching
-  cases work) by the function [Grammar.skip_item]. This was necessary
-  because it did not work with functional parsing.
+* [29 Oct 07] Added [Pcaml.inter_phrases], a way to set, by program,
+  the value of the "-sep" option of the printers kits.
 * [28 Oct 07] Fixed bug in pa_fstream.cmo (functional parsers): the
   keyword after "match with" was "parser" instead of "fparser" and
   its code was wrong.

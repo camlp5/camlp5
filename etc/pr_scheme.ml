@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.48 2007/10/15 13:30:46 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.49 2007/10/29 11:58:49 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1339,7 +1339,7 @@ END;
 
 (* main part *)
 
-value sep = ref None;
+value sep = Pcaml.inter_phrases;
 
 value output_string_eval oc s =
   loop 0 where rec loop i =

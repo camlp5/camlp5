@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo *)
-(* $Id: pcaml.ml,v 1.43 2007/10/29 02:49:04 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.44 2007/10/29 11:58:49 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value version = "5.03-exp";
@@ -361,6 +361,8 @@ value pr_class_type = Eprinter.make "class_type";
 value pr_expr_fun_args = ref Extfun.empty;
 
 value flag_equilibrate_cases = ref False;
+
+value inter_phrases = ref None;
 
 (* Directives *)
 

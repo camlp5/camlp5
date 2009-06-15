@@ -97,6 +97,10 @@ val pr_class_expr : MLast.class_expr Eprinter.t;;
 val pr_expr_fun_args :
   (MLast.expr, MLast.patt list * MLast.expr) Extfun.t ref;;
 
+val inter_phrases : string option ref;;
+   (** String displayed between two consecutive phrases. If [None], the
+       string is taken in the sources between these phrases. Default = None *)
+
 (** {6 Directives} *)
 
 type directive_fun = MLast.expr option -> unit;;

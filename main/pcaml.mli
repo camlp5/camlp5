@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: pcaml.mli,v 1.25 2007/10/11 10:47:26 deraugla Exp $ *)
+(* $Id: pcaml.mli,v 1.26 2007/10/29 11:58:49 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (** Language grammar, entries and printers.
@@ -96,6 +96,10 @@ value pr_class_expr : Eprinter.t MLast.class_expr;
 
 value pr_expr_fun_args :
   ref (Extfun.t MLast.expr (list MLast.patt * MLast.expr));
+
+value inter_phrases : ref (option string);
+   (** String displayed between two consecutive phrases. If [None], the
+       string is taken in the sources between these phrases. Default = None *)
 
 (** {6 Directives} *)
 

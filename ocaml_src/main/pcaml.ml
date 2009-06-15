@@ -338,6 +338,8 @@ let pr_expr_fun_args = ref Extfun.empty;;
 
 let flag_equilibrate_cases = ref false;;
 
+let inter_phrases = ref None;;
+
 (* Directives *)
 
 type directive_fun = MLast.expr option -> unit;;
