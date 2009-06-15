@@ -502,8 +502,8 @@ value make_item_sets rules_of_nterm term_n nterm_n item_set_ht =
                ELSE () END;
                let (term_assoc, nterm_assoc) =
                  match s with
-                 [ GS_term _ -> ([(s, n) :: term_assoc], nterm_assoc)
-                 | GS_nterm _ -> (term_assoc, [(s, n) :: nterm_assoc]) ]
+                 [ GS_term s -> ([(s, n) :: term_assoc], nterm_assoc)
+                 | GS_nterm s -> (term_assoc, [(s, n) :: nterm_assoc]) ]
                in
                (item_set_cnt, term_assoc, nterm_assoc, term_shift,
                 nterm_shift)
@@ -522,8 +522,8 @@ value make_item_sets rules_of_nterm term_n nterm_n item_set_ht =
                let (term_assoc, nterm_assoc) =
                  let n = item_set_cnt in
                  match s with
-                 [ GS_term _ -> ([(s, n) :: term_assoc], nterm_assoc)
-                 | GS_nterm _ -> (term_assoc, [(s, n) :: nterm_assoc]) ]
+                 [ GS_term s -> ([(s, n) :: term_assoc], nterm_assoc)
+                 | GS_nterm s -> (term_assoc, [(s, n) :: nterm_assoc]) ]
                in
                let (item_set_cnt, term_shift, nterm_shift) =
                  loop item_set_cnt item_set_cnt term_shift nterm_shift
@@ -836,14 +836,10 @@ value basic_lr0 entry lev = do {
     for i = 0 to item_set_cnt do {
       Printf.eprintf "  state %d:" i;
       let symb_shift = term_shift_tab.(i) in
-      List.iter
-        (fun (s, i) ->
-           Printf.eprintf " %s->%d" (sprint_symb term_n nterm_n s) i)
+      List.iter (fun (s, i) -> Printf.eprintf " %s->%d" (term_n s) i)
         (List.rev symb_shift);
       let symb_shift = nterm_shift_tab.(i) in
-      List.iter
-        (fun (s, i) ->
-           Printf.eprintf " %s->%d" (sprint_symb term_n nterm_n s) i)
+      List.iter (fun (s, i) -> Printf.eprintf " %s->%d" (nterm_n s) i)
         (List.rev symb_shift);
       Printf.eprintf "\n";
     };
@@ -916,12 +912,7 @@ value lr0 entry lev = do {
   Array.iteri
     (fun i symb_cnt_assoc ->
        let line = goto_table.(i) in
-       List.iter
-         (fun (s, n) ->
-            match s with
-            [ GS_term s -> ()
-            | GS_nterm i -> line.(i) := n ])
-         symb_cnt_assoc)
+       List.iter (fun (s, n) -> line.(s) := n) symb_cnt_assoc)
     blr.nterm_shift_tab;
   IFDEF VERBOSE THEN do {
     Printf.eprintf "\ngoto table\n\n";
@@ -950,12 +941,7 @@ value lr0 entry lev = do {
   Array.iteri
     (fun i symb_cnt_assoc ->
        let line = action_table.(i) in
-       List.iter
-         (fun (s, n) ->
-            match s with
-            [ GS_term i -> line.(i) := ActShift n
-            | GS_nterm s -> () ])
-         symb_cnt_assoc)
+       List.iter (fun (s, n) -> line.(s) := ActShift n) symb_cnt_assoc)
     blr.term_shift_tab;
   (* for every item set that contains S → w •, an 'acc' is added in the
      column of the '$' terminal (end of input) *)
