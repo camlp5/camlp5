@@ -4,6 +4,8 @@ Internal, very small, undocumented, or invisible changes
 Camlp5 Version 4.07:
 ---------------------
 
+* [28 Jul 2007]: Re-added option "-no_slist" of pr_extend.cmo which had
+  disappeared after rewritting the pretty printing system.
 * [28 Jul 2007]: Fixed name of symbol in case of use of FOLD0, FOLD0SEP, etc.
   and changed "simple_expr" in these syntax into 'expr LEVEL "simple"'.
 

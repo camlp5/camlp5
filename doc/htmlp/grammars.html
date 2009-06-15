@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: grammars.html,v 1.63 2007/07/28 00:03:55 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.64 2007/07/28 06:39:26 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -556,7 +556,6 @@ instead of "<tt>loc</tt>".</p>
   is done by replacing the list iterators by these specific
   iterators. This operation is done through the shell script
   "mk_q_MLast.sh" in the "meta" directory of the camlp5 sources.</p>
-
 
 <h2>Grammar machinery</h2>
 
@@ -1292,6 +1291,54 @@ module type S =
 
 <p>See the syntax of the EXTEND statement for the meaning of the syntax
   entries not defined above.</p>
+
+<h2>An example</h2>
+
+<p>Here is a small calculator of expressions. They are given as
+  parameters of the command.</p>
+
+<p>File "calc.ml":</p>
+
+<pre>
+  #load "pa_extend.cmo";
+
+  value g = Grammar.gcreate (Plexer.gmake ());
+  value e = Grammar.Entry.create g "expression";
+
+  EXTEND
+    e:
+      [ [ x = e; "+"; y = e -> x + y
+        | x = e; "-"; y = e -> x - y ]
+      | [ x = e; "*"; y = e -> x * y
+        | x = e; "/"; y = e -> x / y ]
+      | [ x = INT -> int_of_string x
+        | "("; x = e; ")" -> x ] ]
+    ;
+  END;
+
+  open Printf;
+
+  for i = 1 to Array.length Sys.argv - 1 do {
+    let r = Grammar.Entry.parse e (Stream.of_string Sys.argv.(i)) in
+    printf "%s = %d\n" Sys.argv.(i) r;
+    flush stdout;
+  };
+</pre>
+
+<p>The link needs the library "gramlib.cma" provided with camlp5:</p>
+
+<pre>
+  ocamlc -pp camlp5r -I +camlp5 gramlib.cma test/calc.ml -o calc
+</pre>
+
+<p>Examples:</p>
+
+<pre>
+  $ ./calc '239*4649'
+  239*4649 = 1111111
+  $ ./calc '(47+2)/3'
+  (47+2)/3 = 16
+</pre>
 
 <div class="trailer">
 </div>

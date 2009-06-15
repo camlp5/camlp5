@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_extend.ml,v 1.14 2007/07/18 14:14:00 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.15 2007/07/28 06:39:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -531,3 +531,6 @@ lev.pr_rules :=
   extfun lev.pr_rules with
   [ <:expr< Grammar.extend $_$ >> as e ->
       fun curr next pc -> extend pc e ];
+
+Pcaml.add_option "-no_slist" (Arg.Set no_slist)
+  "Don't reconstruct SLIST and SOPT";
