@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: revsynt.html,v 1.20 2007/07/21 00:35:21 deraugla Exp $ -->
+  <!-- $Id: revsynt.html,v 1.21 2007/07/21 02:05:16 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>revised syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -54,8 +54,8 @@
 <h2>Modules, Structure and Signature items</h2>
 
 <ul>
-  <li>Structure and signature items, objects items always end with a
-    single semicolon which is required.</li>
+  <li>Structure and signature items always end with a single semicolon
+    which is required.</li>
 
   <li>In structures, the declaration of a value is introduced by the
     keyword "value", instead of "let":
@@ -197,7 +197,7 @@
   </li>
 </ul>
 
-<h3>Tuples and lists</h3>
+<h3>Tuples and Lists</h3>
 
 <ul>
   <li>Parentheses are required in tuples:
@@ -370,7 +370,7 @@
   </li>
 </ul>
 
-<h3>Mutables and assignment</h3>
+<h3>Mutables and Assignment</h3>
 
 <ul>
   <li>The statement "<tt>&lt;-</tt>" is written "<tt>:=</tt>":
@@ -494,7 +494,7 @@
   </li>
 </ul>
 
-<h2>Types and constructors</h2>
+<h2>Types and Constructors</h2>
 
 <ul>
   <li>The type constructors are before their type parameters, which
@@ -675,7 +675,7 @@
   </li>
 </ul>
 
-<h2>Streams and parsers</h2>
+<h2>Streams and Parsers</h2>
 
 <ul>
   <li>The streams and the stream patterns are bracketed with "<tt>[:</tt>"
@@ -733,13 +733,113 @@
    </li>
 </ul>
 
-<p>...<em>to be completed</em>...</p>
-
 <h2>Classes and Objects</h2>
 
-<p>...<em>to be completed</em>...</p>
+<ul>
+  <li>Object items end with a single semicolon which is required.</li>
 
-<p>...<em>to be continued</em>...</p>
+  <li>Class type parameters follow the class identifier:
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>class ['a, 'b] point = ...</tt></td>
+        <td><tt>class point ['a, 'b] = ...</tt></td>
+      </tr>
+      <tr>
+        <td><tt>class c = [int] color;;</tt></td>
+        <td><tt>class c = color [int];</tt></td>
+      </tr>
+    </table>
+  </li>
+
+  <li>In the type of class with parameters, the type of the parameters
+    are between brackets. Example in signature:
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>class c : int -> point;;</tt></td>
+        <td><tt>class c : [int] -> point;</tt></td>
+      </tr>
+    </table>
+  </li>
+
+  <li>The keywords "virtual" and "private" must be in this order:
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>method virtual private m :</tt></td>
+        <td><tt>method virtual private m :</tt></td>
+      </tr>
+      <tr>
+        <td><tt>&nbsp;&nbsp;...</tt></td>
+        <td><tt>&nbsp;&nbsp;...</tt></td>
+      </tr>
+      <tr>
+        <td><tt>method private virtual m :</tt></td>
+        <td><tt>method virtual private m :</tt></td>
+      </tr>
+      <tr>
+        <td><tt>&nbsp;&nbsp;...</tt></td>
+        <td><tt>&nbsp;&nbsp;...</tt></td>
+      </tr>
+    </table>
+  </li>
+
+  <li>Object variables are introduced with "value" instead of "val":
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>object val x = 3 end</tt></td>
+        <td><tt>object value x = 3; end</tt></td>
+      </tr>
+    </table>
+  </li>
+
+  <li>Type constraints in objects are introduced with "type" instead of
+    "constraint":
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>object constraint 'a = int end</tt></td>
+        <td><tt>object type 'a = int; end</tt></td>
+      </tr>
+    </table>
+  </li>
+</ul>
+
+<h2>Labels and Variants</h2>
+
+<ul>
+  <li>Labels in types must start with "<tt>~</tt>":
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>val x : num:int -> bool;;</tt></td>
+        <td><tt>value x : ~num:int -> bool;</tt></td>
+      </tr>
+    </table>
+  </li>
+</ul>
+
+<p>...<em>to be completed</em>...</p>
 
 <div class="trailer">
 </div>
