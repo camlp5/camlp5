@@ -55,25 +55,74 @@ type action =
   | ActErr ]
 ;
 
+value good_ident_name n =
+  loop 0 where rec loop i =
+    if i = String.length n then True
+    else
+      match n.[i] with
+      [ 'a'..'z' | 'A'..'Z' | '0'..'9' -> loop (i + 1)
+      | _ -> False ]
+;
+
 value name_of_entry entry levn =
   let lev_name =
     match entry.edesc with
     [ Dlevels levs ->
        match try Some (List.nth levs levn) with [ Failure _ -> None ] with
        [ Some {lname = Some n} ->
-           let good_ident_name =
-             loop 0 where rec loop i =
-               if i = String.length n then True
-               else
-                 match n.[i] with
-                 [ 'a'..'z' | 'A'..'Z' | '0'..'9' -> loop (i + 1)
-                 | _ -> False ]
-           in
-           if good_ident_name then n else string_of_int levn
+           if good_ident_name n then n else string_of_int levn
        | Some {lname = None} | None -> string_of_int levn ]
     | Dparser _ -> string_of_int levn ]
   in
   entry.ename ^ "-" ^ lev_name
+;
+
+value name_of_token =
+  fun
+  [ ("", prm) -> "\"" ^ prm ^ "\""
+  | (con, "") -> con
+  | (con, prm) -> "(" ^ con ^ " \"" ^ prm ^ "\")" ]
+;
+
+value possible_name =
+  fun
+  [ Snterm e -> Some e.ename
+  | Snterml e lev ->
+      if good_ident_name lev then Some (e.ename ^ "-" ^ lev) else None
+  | Stoken p ->
+     let s = name_of_token p in
+     if good_ident_name s then Some s else None
+  | _ -> None ]
+;
+
+value name_of_meta =
+  fun
+  [ Slist0 s ->
+      match possible_name s with
+      [ Some s -> "list0-" ^ s
+      | _ -> "list0" ]
+  | Slist0sep s sep ->
+      match (possible_name s, possible_name sep) with
+      [ (Some s1, Some s2) -> "list0-" ^ s1 ^ "-sep-" ^ s2
+      | _ -> "list0sep" ]
+  | Slist1 s ->
+      match possible_name s with
+      [ Some s -> "list1-" ^ s
+      | _ -> "list1" ]
+  | Slist1sep s sep ->
+      match (possible_name s, possible_name sep) with
+      [ (Some s1, Some s2) -> "list1-" ^ s1 ^ "-sep-" ^ s2
+      | _ -> "list1sep" ]
+  | Sopt s ->
+      match possible_name s with
+      [ Some s -> "opt-" ^ s
+      | None -> "opt" ]
+  | Sflag s ->
+      match possible_name s with
+      [ Some s -> "flag-" ^ s
+      | None -> "flag" ]
+  | _ ->
+      failwith "name_of_meta" ]
 ;
 
 value fold_rules_of_tree f init tree =
@@ -96,14 +145,14 @@ value fold_rules_of_level f lev init =
   fold_rules_of_tree f accu lev.lprefix
 ;
 
-value make_anon_rules anon_rules pref cnt s =
+value make_anon_rules anon_rules suff cnt s =
   loop anon_rules.val where rec loop =
     fun
     [ [(n, s1) :: rest] ->
         if Gramext.eq_symbol s s1 then n else loop rest
     | [] -> do {
         incr cnt;
-        let n = "x-" ^ pref ^ "-" ^ string_of_int cnt.val in
+        let n = "x" ^ string_of_int cnt.val ^ "-" ^ suff in
         anon_rules.val := [(n, s) :: anon_rules.val];
         n
       } ]
@@ -143,37 +192,12 @@ value gram_symb_list cnt to_treat anon_rules self_middle self_end =
               to_treat.val := [(e, levn) :: to_treat.val];
               GS_nterm (name_of_entry e levn)
             }
-          | Slist0 _ -> do {
-              let n = make_anon_rules anon_rules "list0" cnt s in
+          | Slist0 _ | Slist0sep _ _ | Slist1 _ | Slist1sep _ _ |
+            Sopt _ | Sflag _ ->
+              let n = make_anon_rules anon_rules (name_of_meta s) cnt s in
               GS_nterm n
-            }
-          | Slist0sep _ _ -> do {
-              let n = make_anon_rules anon_rules "list0sep" cnt s in
-              GS_nterm n
-            }
-          | Slist1 _ -> do {
-              let n = make_anon_rules anon_rules "list1" cnt s in
-              GS_nterm n
-            }
-          | Slist1sep _ _ -> do {
-              let n = make_anon_rules anon_rules "list1sep" cnt s in
-              GS_nterm n
-            }
-          | Sopt _ -> do {
-              let n = make_anon_rules anon_rules "opt" cnt s in
-              GS_nterm n
-            }
-          | Sflag _ -> do {
-              let n = make_anon_rules anon_rules "flag" cnt s in
-              GS_nterm n
-            }
           | Stoken p ->
-              let n =
-                match p with
-                [ ("", prm) -> "\"" ^ prm ^ "\""
-                | (con, "") -> con
-                | (con, prm) -> "(" ^ con ^ " \"" ^ prm ^ "\")" ]
-              in
+              let n = name_of_token p in
               GS_term n
           | Sself ->
               self_middle ()
@@ -698,7 +722,8 @@ type lr0 =
 (*DEFINE TEST1;*)
 (*DEFINE TEST2;*)
 (*DEFINE TEST3;*)
-IFDEF TEST1 OR TEST2 OR TEST3 THEN
+DEFINE TEST4;
+IFDEF TEST1 OR TEST2 OR TEST3 OR TEST4 THEN
   DEFINE TEST
 END;
 
@@ -718,13 +743,17 @@ value basic_lr0 entry lev = do {
              ("E", [GS_nterm "B"; GS_term "2"]);
              ("A", [GS_term "1"]);
              ("B", [GS_term "1"])]
-          ELSE
+          ELSE IFDEF TEST3 THEN
             [("E", [GS_nterm "E"; GS_term "*"; GS_nterm "B"]);
              ("E", [GS_nterm "E"; GS_term "+"; GS_nterm "B"]);
              ("E", [GS_nterm "B"]);
              ("B", [GS_term "0"]);
              ("B", [GS_term "1"])]
-          END END
+          ELSE
+            [("E", [GS_term "1"; GS_term "."; GS_nterm "E"]);
+             ("E", [GS_term "1"]);
+             ("E", [GS_term "2"])]
+          END END END
         in
         (rl, "E")
       END
