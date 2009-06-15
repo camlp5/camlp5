@@ -10,10 +10,10 @@ OCAMLCFLAGS=-warn-error A $(INCLUDES)
 LINKFLAGS=$(INCLUDES)
 CAMLP4_OBJS=$(TOP)/boot/stdpp.cmo $(TOP)/boot/token.cmo $(TOP)/boot/plexer.cmo $(TOP)/boot/gramext.cmo $(TOP)/boot/grammar.cmo $(TOP)/boot/extfold.cmo $(TOP)/boot/extfun.cmo $(TOP)/boot/fstream.cmo $(TOP)/boot/pretty.cmo $(OTOP)/utils/pconfig.cmo quotation.cmo ast2pt.cmo exparser.cmo spretty.cmo reloc.cmo pcaml.cmo prtools.cmo argl.cmo main.cmo
 CAMLP4_XOBJS=../lib/stdpp.cmx ../lib/token.cmx ../lib/plexer.cmx ../lib/gramext.cmx ../lib/grammar.cmx ../lib/extfold.cmx ../lib/extfun.cmx ../lib/fstream.cmx ../lib/pretty.cmx $(OTOP)/utils/pconfig.cmx quotation.cmx ast2pt.cmx exparser.cmx spretty.cmx reloc.cmx pcaml.cmx prtools.cmx argl.cmx main.cmx
-OBJS=../odyl/odyl.cma camlp4.cma
+OBJS=../odyl/odyl.cma $(NAME).cma
 CAMLP4M=
 
-CAMLP4=camlp4$(EXE)
+CAMLP4=$(NAME)$(EXE)
 CAMLP4OPT=phony
 
 all: $(CAMLP4)
@@ -26,11 +26,11 @@ $(CAMLP4): $(OBJS) ../odyl/odyl.cmo
 $(CAMLP4OPT): $(OBJS:.cma=.cmxa) ../odyl/odyl.cmx
 	$(OCAMLOPT) $(OBJS:.cma=.cmxa) $(CAMLP4M) ../odyl/odyl.cmx -linkall -o $(CAMLP4OPT)
 
-camlp4.cma: $(CAMLP4_OBJS)
-	$(OCAMLC) $(LINKFLAGS) $(CAMLP4_OBJS) -a -o camlp4.cma
+$(NAME).cma: $(CAMLP4_OBJS)
+	$(OCAMLC) $(LINKFLAGS) $(CAMLP4_OBJS) -a -o $(NAME).cma
 
-camlp4.cmxa: $(CAMLP4_XOBJS)
-	$(OCAMLOPT) $(LINKFLAGS) $(CAMLP4_XOBJS) -a -o camlp4.cmxa
+$(NAME).cmxa: $(CAMLP4_XOBJS)
+	$(OCAMLOPT) $(LINKFLAGS) $(CAMLP4_XOBJS) -a -o $(NAME).cmxa
 
 clean::
 	rm -f *.cm* *.pp[io] *.o *.bak .*.bak *.out *.opt
@@ -54,10 +54,10 @@ compare:
 
 install:
 	-$(MKDIR) "$(BINDIR)"
-	-$(MKDIR) "$(LIBDIR)/camlp4"
+	-$(MKDIR) "$(LIBDIR)/$(NAME)"
 	cp $(CAMLP4) "$(BINDIR)/."
-	cp mLast.mli quotation.mli ast2pt.mli pcaml.mli spretty.mli prtools.mli "$(LIBDIR)/camlp4/."
-	cp mLast.cmi quotation.cmi ast2pt.cmi pcaml.cmi spretty.cmi prtools.cmi "$(LIBDIR)/camlp4/."
-	cp camlp4.cma "$(LIBDIR)/camlp4/."
+	cp mLast.mli quotation.mli ast2pt.mli pcaml.mli spretty.mli prtools.mli "$(LIBDIR)/$(NAME)/."
+	cp mLast.cmi quotation.cmi ast2pt.cmi pcaml.cmi spretty.cmi prtools.cmi "$(LIBDIR)/$(NAME)/."
+	cp $(NAME).cma "$(LIBDIR)/$(NAME)/."
 
 include .depend

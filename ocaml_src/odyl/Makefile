@@ -32,7 +32,7 @@ odyl_main.cmx: odyl_main.ml
 odyl_config.ml:
 	echo "let standard_library =" > odyl_config.ml
 	echo "  try Sys.getenv \"CAMLP4LIB\" with" >> odyl_config.ml
-	echo "    Not_found -> \"$(LIBDIR)/camlp4\"" | \
+	echo "    Not_found -> \"$(LIBDIR)/$(NAME)\"" | \
 	sed -e 's|\\|/|g' >> odyl_config.ml
 
 clean::
@@ -52,7 +52,7 @@ promote:
 compare:
 
 install:
-	-$(MKDIR) "$(LIBDIR)/camlp4" "$(BINDIR)"
-	cp odyl.cmo odyl.cma "$(LIBDIR)/camlp4/."
+	-$(MKDIR) "$(LIBDIR)/$(NAME)" "$(BINDIR)"
+	cp odyl.cmo odyl.cma "$(LIBDIR)/$(NAME)/."
 
 include .depend

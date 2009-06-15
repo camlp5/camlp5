@@ -38,17 +38,17 @@ compare:
 	done
 
 install:
-	-$(MKDIR) "$(LIBDIR)/camlp4"
-	cp $(TARGET) *.mli "$(LIBDIR)/camlp4/."
-	cp *.cmi "$(LIBDIR)/camlp4/."
+	-$(MKDIR) "$(LIBDIR)/$(NAME)"
+	cp $(TARGET) *.mli "$(LIBDIR)/$(NAME)/."
+	cp *.cmi "$(LIBDIR)/$(NAME)/."
 	if test -f $(TARGET:.cma=.cmxa); then $(MAKE) installopt LIBDIR="$(LIBDIR)"; fi
 
 installopt:
-	cp $(TARGET:.cma=.cmxa) *.cmx "$(LIBDIR)/camlp4/."
+	cp $(TARGET:.cma=.cmxa) *.cmx "$(LIBDIR)/$(NAME)/."
 	if test -f $(TARGET:.cma=.lib); then \
-	  cp $(TARGET:.cma=.lib) "$(LIBDIR)/camlp4/."; \
+	  cp $(TARGET:.cma=.lib) "$(LIBDIR)/$(NAME)/."; \
 	else \
-	  tar cf - $(TARGET:.cma=.a) | (cd "$(LIBDIR)/camlp4/."; tar xf -); \
+	  tar cf - $(TARGET:.cma=.a) | (cd "$(LIBDIR)/$(NAME)/."; tar xf -); \
 	fi
 
 include .depend

@@ -19,8 +19,8 @@ cat $FILES | sed -e 's/Pcaml.parse_i.*$//' > tmp.ml
 echo "Compile.entries.val := [$ENTRIES];" >> tmp.ml
 > tmp.mli
 ocamlc -I $OTOP/boot -c tmp.mli
-ocamlrun$EXE ../meta/camlp4r$EXE -I ../meta pa_extend.cmo q_MLast.cmo -meta_action tmp.ml -o tmp.ppo
+ocamlrun$EXE ../meta/${NAME}r$EXE -I ../meta pa_extend.cmo q_MLast.cmo -meta_action tmp.ml -o tmp.ppo
 ocamlc -I $OTOP/boot -I ../lib -I ../camlp4 -c -impl tmp.ppo
 rm tmp.ppo
-ocamlrun$EXE ../camlp4/camlp4$EXE ./compile.cmo ./tmp.cmo ../etc/pr_r.cmo ../etc/pr_rp.cmo $ARGS -sep "\n\n" -impl - < /dev/null
+ocamlrun$EXE ../camlp4/${NAME}$EXE ./compile.cmo ./tmp.cmo ../etc/pr_r.cmo ../etc/pr_rp.cmo $ARGS -sep "\n\n" -impl - < /dev/null
 rm tmp.*

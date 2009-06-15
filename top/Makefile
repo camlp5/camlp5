@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.9 2007/06/08 02:25:23 deraugla Exp $
+# $Id: Makefile,v 1.10 2007/07/10 14:09:06 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -14,24 +14,24 @@ SOBJS=$(CAMLP4_OBJS) ../etc/pa_scheme.cmo $(CTOP)
 OOOBJS=$(CAMLP4_OBJS) ../etc/pa_o.cmo ../etc/pa_oop.cmo $(CTOP)
 OBJS=$(OTOP)/utils/pconfig.cmo ../camlp4/quotation.cmo ../camlp4/reloc.cmo ../camlp4/ast2pt.cmo ../camlp4/spretty.cmo ../camlp4/pcaml.cmo camlp4_top.cmo
 
-TARGET=camlp4o.cma camlp4r.cma camlp4sch.cma camlp4_top.cma
+TARGET=$(NAME)o.cma $(NAME)r.cma $(NAME)sch.cma $(NAME)_top.cma
 
 all: $(TARGET)
 
-camlp4oo.cma: $(OOOBJS)
-	$(OCAMLC) $(OOOBJS) -linkall -a -o camlp4oo.cma
+$(NAME)oo.cma: $(OOOBJS)
+	$(OCAMLC) $(OOOBJS) -linkall -a -o $(NAME)oo.cma
 
-camlp4o.cma: $(OOBJS)
-	$(OCAMLC) $(OOBJS) -linkall -a -o camlp4o.cma
+$(NAME)o.cma: $(OOBJS)
+	$(OCAMLC) $(OOBJS) -linkall -a -o $(NAME)o.cma
 
-camlp4r.cma: $(ROBJS)
-	$(OCAMLC) $(ROBJS) -linkall -a -o camlp4r.cma
+$(NAME)r.cma: $(ROBJS)
+	$(OCAMLC) $(ROBJS) -linkall -a -o $(NAME)r.cma
 
-camlp4sch.cma: $(SOBJS)
-	$(OCAMLC) $(SOBJS) -linkall -a -o camlp4sch.cma
+$(NAME)sch.cma: $(SOBJS)
+	$(OCAMLC) $(SOBJS) -linkall -a -o $(NAME)sch.cma
 
-camlp4_top.cma: $(OBJS)
-	$(OCAMLC) $(OBJS) -a -o camlp4_top.cma
+$(NAME)_top.cma: $(OBJS)
+	$(OCAMLC) $(OBJS) -a -o $(NAME)_top.cma
 
 clean::
 	rm -f *.cm[ioa] *.pp[io] *.o *.bak .*.bak $(TARGET)
@@ -47,7 +47,7 @@ depend:
 get_promote:
 
 install:
-	-$(MKDIR) "$(LIBDIR)/camlp4"
-	cp $(TARGET) "$(LIBDIR)/camlp4/."
+	-$(MKDIR) "$(LIBDIR)/$(NAME)"
+	cp $(TARGET) "$(LIBDIR)/$(NAME)/."
 
 include .depend

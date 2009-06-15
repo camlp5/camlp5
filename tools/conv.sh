@@ -18,7 +18,8 @@ done
 
 set - $(head -1 $FILE)
 if test "$2" = "camlp4r" -o "$2" = "camlp4"; then
-	COMM="ocamlrun $DIR/../boot/$2 -nolib -I $DIR/../boot $INCL $DIR/../etc/$PR_O"
+	WHAT="$(echo $2 | sed -e "s/camlp4/$NAME/")"
+	COMM="ocamlrun $DIR/../boot/$WHAT -nolib -I $DIR/../boot $INCL $DIR/../etc/$PR_O"
         if test "$(basename "$(dirname $OTOP)")" != "ocaml_stuff"; then
             COMM="$OTOP/boot/$COMM"
         fi

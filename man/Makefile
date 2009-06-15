@@ -1,8 +1,8 @@
-# $Id: Makefile,v 1.1 2006/09/29 04:45:49 deraugla Exp $
+# $Id: Makefile,v 1.2 2007/07/10 14:09:06 deraugla Exp $
 
 include ../config/Makefile
 
-TARGET=camlp4.1
+TARGET=$(NAME).1
 
 all: $(TARGET)
 
@@ -16,12 +16,12 @@ get_promote:
 install:
 	-$(MKDIR) "$(MANDIR)/man1"
 	-cp $(TARGET) "$(MANDIR)/man1/."
-	-cd "$(MANDIR)/man1"; rm -f camlp4o.1; ln -s $(TARGET) camlp4o.1
-	-cd "$(MANDIR)/man1"; rm -f camlp4r.1; ln -s $(TARGET) camlp4r.1
-	-cd "$(MANDIR)/man1"; rm -f mkcamlp4.1; ln -s $(TARGET) mkcamlp4.1
+	-cd "$(MANDIR)/man1"; rm -f $(NAME)o.1; ln -s $(TARGET) $(NAME)o.1
+	-cd "$(MANDIR)/man1"; rm -f $(NAME)r.1; ln -s $(TARGET) $(NAME)r.1
+	-cd "$(MANDIR)/man1"; rm -f mk$(NAME).1; ln -s $(TARGET) mk$(NAME).1
 	-cd "$(MANDIR)/man1"; rm -f ocpp.1; ln -s $(TARGET) ocpp.1
-	-cd "$(MANDIR)/man1"; rm -f camlp4o.opt.1; ln -s $(TARGET) camlp4o.opt.1
-	-cd "$(MANDIR)/man1"; rm -f camlp4r.opt.1; ln -s $(TARGET) camlp4r.opt.1
+	-cd "$(MANDIR)/man1"; rm -f $(NAME)o.opt.1; ln -s $(TARGET) $(NAME)o.opt.1
+	-cd "$(MANDIR)/man1"; rm -f $(NAME)r.opt.1; ln -s $(TARGET) $(NAME)r.opt.1
 
-camlp4.1: camlp4.1.tpl
-	sed -e "s'LIBDIR'$(LIBDIR)'g" camlp4.1.tpl > camlp4.1
+$(NAME).1: camlp4.1.tpl
+	sed -e "s'LIBDIR'$(LIBDIR)'g" camlp4.1.tpl > $(NAME).1

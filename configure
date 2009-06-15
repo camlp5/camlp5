@@ -1,10 +1,11 @@
 #!/bin/bash
-# $Id: configure,v 1.14 2006/12/12 14:19:56 deraugla Exp $
+# $Id: configure,v 1.15 2007/07/10 14:09:06 deraugla Exp $
 
 prefix=''
 bindir=''
 libdir=''
 mandir=''
+name=camlp4
 
 # a local which command for sh
 which () {
@@ -24,6 +25,8 @@ done
 while : ; do
   case "$1" in
     "") break;;
+    -name|--name)
+        name=$2; shift;;
     -prefix|--prefix)
         prefix=$2; shift;;
     -bindir|--bindir)
@@ -130,6 +133,7 @@ else
 fi
 
 (
+echo NAME=$name
 echo EXE=$EXE
 echo OPT=$OPT
 echo OVERSION=$OVERSION

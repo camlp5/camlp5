@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.9 2007/07/02 16:07:12 deraugla Exp $
+# $Id: Makefile,v 1.10 2007/07/10 14:09:06 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -12,25 +12,25 @@ COMP_OPT=-e "Grammar.Entry.obj Pcaml.interf" -e "Grammar.Entry.obj Pcaml.implem"
 
 all: out
 
-out: camlp4$D.fast
-opt: camlp4$D.fast.opt
+out: $(NAME)$D.fast
+opt: $(NAME)$D.fast.opt
 
-camlp4$D.fast: pa_$D_fast.cmo
-	rm -f camlp4$D.fast
-	cd ../camlp4; $(MAKE) CAMLP4=../compile/camlp4$D.fast CAMLP4M="../compile/pa_$D_fast.cmo ../meta/pr_dump.cmo"
+$(NAME)$D.fast: pa_$D_fast.cmo
+	rm -f $(NAME)$D.fast
+	cd ../camlp4; $(MAKE) CAMLP4=../compile/$(NAME)$D.fast CAMLP4M="../compile/pa_$D_fast.cmo ../meta/pr_dump.cmo"
 
-camlp4$D.fast.opt: pa_$D_fast.cmx
-	rm -f camlp4$D.fast.opt
-	cd ../camlp4; $(MAKE) optp4 CAMLP4OPT=../compile/camlp4$D.fast.opt CAMLP4M="../compile/pa_$D_fast.cmx ../meta/pr_dump.cmx"
+$(NAME)$D.fast.opt: pa_$D_fast.cmx
+	rm -f $(NAME)$D.fast.opt
+	cd ../camlp4; $(MAKE) optp4 CAMLP4OPT=../compile/$(NAME)$D.fast.opt CAMLP4M="../compile/pa_$D_fast.cmx ../meta/pr_dump.cmx"
 
 pa_$D_fast.ml: comp_head.ml.tpl $D_fast.ml.tmp comp_trail.ml.tpl
 	cat $(SRC) | sed -e "s/Plexer.gmake ()/P.lexer/" -e "/EXTEND/,/END/d" -e "/Grammar.Entry.of_parser/d" -e "/Grammar.Entry.gcreate/d" -e "/Grammar.Entry.create/d" | cat comp_head.ml.tpl - $D_fast.ml.tmp comp_trail.ml.tpl > pa_$D_fast.ml
 
 $D_fast.ml.tmp: compile.cmo $(SRC)
-	OTOP=$(OTOP) EXE=$(EXE) ./compile.sh $(COMP_OPT) $(SRC) > $D_fast.ml.tmp
+	OTOP=$(OTOP) NAME=$(NAME) EXE=$(EXE) ./compile.sh $(COMP_OPT) $(SRC) > $D_fast.ml.tmp
 
 install:
-	if test -f camlp4o.fast.opt; then cp camlp4o.fast.opt "$(BINDIR)/camlp4o.opt"; fi
+	if test -f $(NAME)o.fast.opt; then cp $(NAME)o.fast.opt "$(BINDIR)/$(NAME)o.opt"; fi
 
 clean::
 	rm -f *.cm* *.pp[io] *.o *.bak .*.bak *.out *.opt

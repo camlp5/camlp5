@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.27 2007/07/08 19:17:59 deraugla Exp $
+# $Id: Makefile,v 1.28 2007/07/10 14:09:06 deraugla Exp $
 
 include config/Makefile
 
@@ -12,7 +12,7 @@ DIFF_OPT=
 
 all: out
 
-out: boot/camlp4$(EXE)
+out: boot/$(NAME)$(EXE)
 	cd ocaml_stuff; $(MAKE)
 	set -e; for i in $(DIRS); do cd $$i; $(MAKE) all; cd ..; done
 
@@ -25,7 +25,7 @@ opt.opt:
 ocaml_src/camlp4/ast2pt.ml:
 	@echo "Please run 'configure' first"; exit 2
 
-boot/camlp4$(EXE): $(COLD_FILES)
+boot/$(NAME)$(EXE): $(COLD_FILES)
 	cd ocaml_stuff; $(MAKE)
 	$(MAKE) clean_cold library_cold compile_cold
 	$(MAKE) promote_cold
@@ -40,18 +40,18 @@ depend:
 	for i in $(DIRS) compile; do (cd $$i; $(MAKE) depend); done
 
 install:
-	@test ! -d "$(LIBDIR)/camlp4/Camlp4Parsers" || \
+	@test ! -d "$(LIBDIR)/$(NAME)/Camlp4Parsers" || \
 	 (/bin/rm -rf "$(LIBDIR)/ocamlp4"; \
-	  mv "$(LIBDIR)/camlp4" "$(LIBDIR)/ocamlp4")
-	for i in $(DIRS) compile; do (cd $$i; $(MAKE) install BINDIR="$(BINDIR)" LIBDIR="$(LIBDIR)" MANDIR="$(MANDIR)"); done
+	  mv "$(LIBDIR)/$(NAME)" "$(LIBDIR)/o$(NAME)")
+	for i in $(DIRS) compile; do (cd $$i; $(MAKE) install); done
 
 uninstall:
-	rm -rf "$(LIBDIR)/camlp4"
-	cd "$(BINDIR)"; rm -f *camlp4* odyl ocpp
+	rm -rf "$(LIBDIR)/$(NAME)"
+	cd "$(BINDIR)"; rm -f *$(NAME)* odyl ocpp
 
 clean::
 	$(MAKE) clean_hot clean_cold
-	rm -f boot/*.cm[oi] boot/camlp4*
+	rm -f boot/*.cm[oi] boot/$(NAME)*
 	rm -rf boot/SAVED
 
 scratch: clean
@@ -94,7 +94,7 @@ cleanboot:
 
 coreboot: backup promote clean_hot core compare
 
-core: boot/camlp4$(EXE)
+core: boot/$(NAME)$(EXE)
 	cd ocaml_stuff; $(MAKE) all
 	set -e; for i in $(FDIRS); do cd $$i; $(MAKE) all; cd ..; done
 
@@ -176,7 +176,7 @@ new_sources:
 	       fi; \
 	       echo ============================================; \
 	       echo ocaml_src.new/$$i/$$k; \
-	       OTOP=$(OTOP) ../tools/conv.sh $(PR_O) $$opt $$j | \
+	       OTOP=$(OTOP) NAME=$(NAME) ../tools/conv.sh $(PR_O) $$opt $$j | \
 	       sed 's/$$Id.*\$$/$(TXTGEN)/' > \
 	       ../ocaml_src.new/$$i/$$k; \
 	     fi; \
@@ -206,7 +206,7 @@ compare_sources:
 	       fi; \
 	       echo ============================================; \
 	       echo ocaml_src/$$i/$$k; \
-	       OTOP=$(OTOP) ../tools/conv.sh $(PR_O) $$opt $$j | \
+	       OTOP=$(OTOP) NAME=$(NAME) ../tools/conv.sh $(PR_O) $$opt $$j | \
 	       sed 's/$$Id.*\$$/$(TXTGEN)/' | \
 	       diff $(DIFF_OPT) ../ocaml_src/$$i/$$k -; \
 	     fi; \
@@ -223,7 +223,7 @@ bootstrap_all_ast2pt:
 	       sed -e 's/ast2pt.ml/OCAML/' -e 's/\./_/g'); \
 	  k=$$(echo OCAML_$(OVERSION) | \
 	       sed -e 's/ast2pt.ml/OCAML/' -e 's/\./_/g'); \
-	  OTOP=$(OTOP) ../tools/conv.sh $(PR_O) -U$$k -D$$j ast2pt.ml | \
+	  OTOP=$(OTOP) NAME=$(NAME) ../tools/conv.sh $(PR_O) -U$$k -D$$j ast2pt.ml | \
 	  sed -e 's/\$$Id.*\$$/$(TXTGEN)/' > $$i -; \
 	done
 
@@ -237,7 +237,7 @@ compare_all_ast2pt:
 	       sed -e 's/ast2pt.ml/OCAML/' -e 's/\./_/g'); \
 	  k=$$(echo OCAML_$(OVERSION) | \
 	       sed -e 's/ast2pt.ml/OCAML/' -e 's/\./_/g'); \
-	  OTOP=$(OTOP) ../tools/conv.sh $(PR_O) -U$$k -D$$j ast2pt.ml | \
+	  OTOP=$(OTOP) NAME=$(NAME) ../tools/conv.sh $(PR_O) -U$$k -D$$j ast2pt.ml | \
 	  sed -e 's/\$$Id.*\$$/$(TXTGEN)/' | diff $$i -; \
 	done
 
