@@ -1,5 +1,5 @@
 (* camlp5r pa_fstream.cmo *)
-(* $Id: grammar.ml,v 1.72 2007/12/27 19:50:50 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.73 2008/02/01 15:57:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Gramext;
@@ -902,9 +902,10 @@ value btop_tree entry son strm =
       None ]
 ;
 
-value brecover bparser_of_tree entry nlevn alevn bp a s son =
+value brecover bparser_of_tree entry next_levn assoc_levn bp a s son =
   bparser
-  [ [: t = btop_tree entry son; a = bparser_of_tree entry nlevn alevn t :] ->
+  [ [: t = btop_tree entry son;
+       a = bparser_of_tree entry next_levn assoc_levn t :] ->
       a
 (*
   | [: :] -> raise (Stream.Error (tree_failed entry a s son))
@@ -912,46 +913,48 @@ value brecover bparser_of_tree entry nlevn alevn bp a s son =
   ]
 ;
 
-value rec bparser_of_tree entry nlevn alevn =
+value rec bparser_of_tree entry next_levn assoc_levn =
   fun
   [ DeadEnd -> bparser []
   | LocAct act _ -> bparser [: :] -> act
   | Node {node = Sself; son = LocAct act _; brother = DeadEnd} ->
-      bparser [: a = entry.bstart alevn :] -> app act a
+      bparser [: a = entry.bstart assoc_levn :] -> app act a
   | Node {node = Sself; son = LocAct act _; brother = bro} ->
-      let p2 = bparser_of_tree entry nlevn alevn bro in
+      let p2 = bparser_of_tree entry next_levn assoc_levn bro in
       bparser
-      [ [: a = entry.bstart alevn :] -> app act a
+      [ [: a = entry.bstart assoc_levn :] -> app act a
       | [: a = p2 :] -> a ]
   | Node {node = s; son = son; brother = DeadEnd} ->
-      let ps = bparser_of_symbol entry nlevn s in
-      let p1 = bparser_of_tree entry nlevn alevn son in
-      let p1 = bparser_cont p1 entry nlevn alevn s son in
+      let ps = bparser_of_symbol entry next_levn s in
+      let p1 = bparser_of_tree entry next_levn assoc_levn son in
+      let p1 = bparser_cont p1 entry next_levn assoc_levn s son in
       bparser bp [: a = ps; act = p1 bp a :] -> app act a
   | Node {node = s; son = son; brother = bro} ->
-      let ps = bparser_of_symbol entry nlevn s in
-      let p1 = bparser_of_tree entry nlevn alevn son in
-      let p1 = bparser_cont p1 entry nlevn alevn s son in
-      let p2 = bparser_of_tree entry nlevn alevn bro in
+      let ps = bparser_of_symbol entry next_levn s in
+      let p1 = bparser_of_tree entry next_levn assoc_levn son in
+      let p1 = bparser_cont p1 entry next_levn assoc_levn s son in
+      let p2 = bparser_of_tree entry next_levn assoc_levn bro in
       bparser bp
       [ [: a = ps; act = p1 bp a :] -> app act a
       | [: a = p2 :] -> a ] ]
-and bparser_cont p1 entry nlevn alevn s son bp a =
+and bparser_cont p1 entry next_levn assoc_levn s son bp a =
   bparser
   [ [: a = p1 :] -> a
-  | [: a = brecover bparser_of_tree entry nlevn alevn bp a s son :] -> a ]
-and bparser_of_symbol entry nlevn =
+  | [: a =
+         brecover bparser_of_tree entry next_levn assoc_levn bp a s son :] ->
+        a ]
+and bparser_of_symbol entry next_levn =
   fun
-  [ Sfacto s -> bparser_of_symbol entry nlevn s
+  [ Sfacto s -> bparser_of_symbol entry next_levn s
   | Smeta _ symbl act ->
       let act = Obj.magic act entry symbl in
       Obj.magic
         (List.fold_left
            (fun act symb ->
-              Obj.magic act (bparser_of_symbol entry nlevn symb))
+              Obj.magic act (bparser_of_symbol entry next_levn symb))
            act symbl)
   | Slist0 s ->
-      let ps = bcall_and_push (bparser_of_symbol entry nlevn s) in
+      let ps = bcall_and_push (bparser_of_symbol entry next_levn s) in
       let rec loop al =
         bparser
         [ [: al = ps al; a = loop al :] -> a
@@ -959,8 +962,8 @@ and bparser_of_symbol entry nlevn =
       in
       bparser [: a = loop [] :] -> Obj.repr (List.rev a)
   | Slist0sep symb sep ->
-      let ps = bcall_and_push (bparser_of_symbol entry nlevn symb) in
-      let pt = bparser_of_symbol entry nlevn sep in
+      let ps = bcall_and_push (bparser_of_symbol entry next_levn symb) in
+      let pt = bparser_of_symbol entry next_levn sep in
       let rec kont al =
         bparser
         [ [: v = pt; al = ps al; a = kont al :] -> a
@@ -970,7 +973,7 @@ and bparser_of_symbol entry nlevn =
       [ [: al = ps []; a = kont al :] -> Obj.repr (List.rev a)
       | [: :] -> Obj.repr [] ]
   | Slist1 s ->
-      let ps = bcall_and_push (bparser_of_symbol entry nlevn s) in
+      let ps = bcall_and_push (bparser_of_symbol entry next_levn s) in
       let rec loop al =
         bparser
         [ [: al = ps al; a = loop al :] -> a
@@ -978,8 +981,8 @@ and bparser_of_symbol entry nlevn =
       in
       bparser [: al = ps []; a = loop al :] -> Obj.repr (List.rev a)
   | Slist1sep symb sep ->
-      let ps = bcall_and_push (bparser_of_symbol entry nlevn symb) in
-      let pt = bparser_of_symbol entry nlevn sep in
+      let ps = bcall_and_push (bparser_of_symbol entry next_levn symb) in
+      let pt = bparser_of_symbol entry next_levn sep in
       let rec kont al =
         bparser
         [ [: v = pt;
@@ -993,12 +996,12 @@ and bparser_of_symbol entry nlevn =
       in
       bparser [: al = ps []; a = kont al :] -> Obj.repr (List.rev a)
   | Sopt s ->
-      let ps = bparser_of_symbol entry nlevn s in
+      let ps = bparser_of_symbol entry next_levn s in
       bparser
       [ [: a = ps :] -> Obj.repr (Some a)
       | [: :] -> Obj.repr None ]
   | Sflag s ->
-      let ps = bparser_of_symbol entry nlevn s in
+      let ps = bparser_of_symbol entry next_levn s in
       bparser
       [ [: _ = ps :] -> Obj.repr True
       | [: :] -> Obj.repr False ]
@@ -1035,14 +1038,14 @@ and bparser_of_symbol entry nlevn =
                   | [: a = pal :] -> a ]
               | [] -> bparser [] ] ]
       in
-      let ps = bparser_of_symbol entry nlevn s in
+      let ps = bparser_of_symbol entry next_levn s in
       bparser
       [ [: a = pa :] -> Obj.repr (Ploc.VaAnt (Obj.magic a : string))
       | [: a = ps :] -> Obj.repr (Ploc.VaVal a) ]
   | Snterm e -> bparser [: a = e.bstart 0 :] -> a
   | Snterml e l -> bparser [: a = e.bstart (level_number e l) :] -> a
   | Sself -> bparser [: a = entry.bstart 0 :] -> a
-  | Snext -> bparser [: a = entry.bstart nlevn :] -> a
+  | Snext -> bparser [: a = entry.bstart next_levn :] -> a
   | Stoken tok -> bparser_of_token entry tok ]
 and bparser_of_token entry tok =
   let f = entry.egram.glexer.Plexing.tok_match tok in
