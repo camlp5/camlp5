@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.24 2007/07/16 13:32:11 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.25 2007/07/16 16:45:21 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -167,7 +167,7 @@ constructors or module names). The other strings
 <p>The EXTEND statement starts with the "<tt>EXTEND</tt>" keyword and ends
 with the "<tt>END</tt>" keyword.</p>
 
-<h3>Global indicator</h3>
+<h3>GLOBAL indicator</h3>
 
 <p>After the first keyword, it is possible to see the identifier
 "<tt>GLOBAL</tt>" followed by a colon, a list of entries names and a
@@ -373,6 +373,31 @@ symbols. They are:</p>
     nothing".</li>
 </ul>
 
+<h4>Semantic action</h4>
+
+<p>The semantic action, i.e. the expression following the right arrow
+in rules, contain in its environment:</p>
+
+<ul>
+  <li>the variables bound by the patterns of the symbols found in the
+    rules,</li>
+  <li>the specific variable "<tt>loc</tt>" which contain the location
+    of the whole rule in the source.</li>
+</ul>
+
+<p>The location is an abstract type defined in the module
+"<tt>Stdpp</tt>" of camlp5.</p>
+
+<p>It is possible to change the name of this variable by using the option
+"<tt>-loc</tt>" of camlp5. For example, compiling a file like this:</p>
+
+<pre>
+camlp5r -loc foobar file.ml
+</pre>
+
+<p>the variable name, for the location will be "<tt>foobar</tt>"
+instead of "<tt>loc</tt>".</p>
+
 <h2>Machinery</h2>
 
 <p>Each entry level contains internally two trees:</p>
@@ -508,9 +533,26 @@ function which matches the token, <em>not</em> a function matching the
 token pattern and the token together and returning a string for each
 case.</p>
 
+<p>This "match" function will be used at creation of the lexer
+interface. See further. For the moment, keep it somewhere.</p>
+
+<h3>The lexer itself</h3>
+
+<p>The lexer must be of type:</p>
+
+<pre>
+Stream.t char -> (Stream.t t * location_function)
+</pre>
+
+<p>where "<tt>t</tt>" is your token type and the location function is
+a function taking the token number (starting from zero) as parameter
+and returing its location in the source. It is important if you want
+to get the good locations in the semantic actions of the grammar
+rules.</p>
+
 <p>... to be completed ...</p>
 
-<h3>Grammar.gcreate</h3>
+<h3>...</h3>
 
 <p>The function "<tt>Grammar.gcreate</tt>" takes a g-lexer as
 parameter. A g-lexer is a value of type "<tt>Token.glexer t</tt>"
@@ -522,7 +564,7 @@ a token pattern is matched against this token type.</p>
 <p>A suitable value for a g-lexer is the result of "<tt>Plexer.gmake
 ()</tt>" which is the lexer used for the ocaml language in camlp5.</p>
 
-<h3>g-lexer type</h3>
+<h3>...</h3>
 
 <p>The type "<tt>Token.glexer</tt>" is a record type containing six
 fields:</p>
