@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.77 2007/10/29 15:03:57 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.78 2007/10/29 15:07:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -279,8 +279,14 @@ value test_typevar_list_dot =
      test 1)
 ;
 
-value e_phony = Grammar.Entry.of_parser gram "e_phony" (parser []);
-value p_phony = Grammar.Entry.of_parser gram "p_phony" (parser []);
+value e_phony =
+  Grammar.Entry.of_parser gram "e_phony"
+    (parser [])
+;
+value p_phony =
+  Grammar.Entry.of_parser gram "p_phony"
+    (parser [])
+;
 
 value constr_arity = ref [("Some", 1); ("Match_Failure", 1)];
 

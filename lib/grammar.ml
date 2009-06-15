@@ -1,5 +1,5 @@
 (* camlp5r pa_fstream.cmo *)
-(* $Id: grammar.ml,v 1.63 2007/10/29 12:29:21 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.64 2007/10/29 15:03:57 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Gramext;
@@ -1376,8 +1376,8 @@ module Entry =
        estart _ = (Obj.magic p : Stream.t te -> Obj.t);
        econtinue _ _ _ = parser [];
        fstart _ fstrm = do {
-         let fts = ref fstrm in
          let ts =
+           let fts = ref fstrm in
            Stream.from
              (fun _ ->
                 match Fstream.next fts.val with
@@ -1386,7 +1386,15 @@ module Entry =
          in
          try
            let r = (Obj.magic p ts : Obj.t) in
-           Some (r, fts.val)
+           let fstrm =
+             loop fstrm (Stream.count ts) where rec loop fstrm i =
+               if i = 0 then fstrm
+               else
+                 match Fstream.next fstrm with
+                 [ Some (_, fstrm) -> loop fstrm (i - 1)
+                 | None -> failwith "internal error in Entry.of_parser" ]
+           in
+           Some (r, fstrm)
          with
          [ Stream.Failure -> None ]
        };

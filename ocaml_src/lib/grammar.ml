@@ -1517,16 +1517,28 @@ module Entry =
        econtinue = (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);
        fstart =
          (fun _ fstrm ->
-            let fts = ref fstrm in
             let ts =
+              let fts = ref fstrm in
               Stream.from
                 (fun _ ->
                    match Fstream.next !fts with
                      Some (v, fstrm) -> fts := fstrm; Some v
                    | None -> None)
             in
-            try let r : Obj.t = Obj.magic p ts in Some (r, !fts) with
-              Stream.Failure -> None);
+            try
+              let r : Obj.t = Obj.magic p ts in
+              let fstrm =
+                let rec loop fstrm i =
+                  if i = 0 then fstrm
+                  else
+                    match Fstream.next fstrm with
+                      Some (_, fstrm) -> loop fstrm (i - 1)
+                    | None -> failwith "internal error in Entry.of_parser"
+                in
+                loop fstrm (Stream.count ts)
+              in
+              Some (r, fstrm)
+            with Stream.Failure -> None);
        fcontinue = (fun _ _ _ (strm__ : _ Fstream.t) -> None);
        edesc = Dparser (Obj.magic p : te Stream.t -> Obj.t)}
     ;;
