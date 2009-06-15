@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.43 2007/09/14 03:16:58 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.44 2007/09/14 12:44:26 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -913,7 +913,7 @@ and class_sig_item c l =
        l]
   | CgVal loc s b t ->
       IFDEF OCAML_3_10 OR OCAML_3_10_0 OR OCAML_3_11 THEN
-        [Pctf_val (uv s, mkmutable b, Concrete, ctyp t, mkloc loc) :: l]
+        [Pctf_val (uv s, mkmutable (uv b), Concrete, ctyp t, mkloc loc) :: l]
       ELSE
         [Pctf_val (uv s, mkmutable (uv b), Some (ctyp t), mkloc loc) :: l]
       END

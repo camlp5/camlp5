@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.94 2007/09/03 09:49:06 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.95 2007/09/14 12:44:26 deraugla Exp $ *)
 
 value no_quotations = ref False;
 value error_on_unknown_keywords = ref False;
@@ -205,15 +205,15 @@ value rec antiquot_rest ctx bp =
 
 value rec antiquot ctx bp =
   lexer
-  [ "$"/ -> ("ANTIQUOT", ":" ^ $buf)
+  [ "$"/ -> ":" ^ $buf
   | "a..zA..Z0..9_" (antiquot ctx bp)!
-  | ":" (antiquot_rest ctx bp)! -> ("ANTIQUOT", $buf)
-  | "\\"/ (any ctx) (antiquot_rest ctx bp)! -> ("ANTIQUOT", ":" ^ $buf)
-  | (any ctx) (antiquot_rest ctx bp)! -> ("ANTIQUOT", ":" ^ $buf)
+  | ":" (antiquot_rest ctx bp)! -> $buf
+  | "\\"/ (any ctx) (antiquot_rest ctx bp)! -> ":" ^ $buf
+  | (any ctx) (antiquot_rest ctx bp)! -> ":" ^ $buf
   | -> err ctx (bp, $pos) "antiquotation not terminated" ]
 ;
 
-value antiloc bp ep s = ("ANTIQUOT_LOC", Printf.sprintf "%d,%d:%s" bp ep s);
+value antiloc bp ep s = Printf.sprintf "%d,%d:%s" bp ep s;
 
 value rec antiquot_loc ctx bp =
   lexer
@@ -227,12 +227,60 @@ value rec antiquot_loc ctx bp =
 
 value dollar ctx bp buf strm =
   if ctx.dollar_for_antiquotation then
-    antiquot ctx bp buf strm
+    ("ANTIQUOT", antiquot ctx bp buf strm)
   else if force_antiquot_loc.val then
-    antiquot_loc ctx bp buf strm
+    ("ANTIQUOT_LOC", antiquot_loc ctx bp buf strm)
   else
     match strm with lexer
     [ [ -> $add "$" ] ident2! -> ("", $buf) ]
+;
+
+value question ctx bp buf strm =
+  if ctx.dollar_for_antiquotation then
+    match strm with parser
+    [ [: `'$'; s = antiquot ctx bp $empty; `':' :] ->
+        ("QUESTIONANTIQUOTCOLON", s)
+    | [: `'$'; s = antiquot ctx bp $empty :] ->
+        ("QUESTIONANTIQUOT", s)
+    | [: :] ->
+        match strm with lexer
+        [ ident2! -> keyword_or_error ctx (bp, $pos) $buf ] ]
+  else if force_antiquot_loc.val then
+    match strm with parser
+    [ [: `'$'; s = antiquot_loc ctx bp $empty; `':' :] ->
+        ("QUESTIONANTIQUOTCOLON_LOC", s)
+    | [: `'$'; s = antiquot_loc ctx bp $empty :] ->
+        ("QUESTIONANTIQUOT_LOC", s)
+    | [: :] ->
+        match strm with lexer
+        [ ident2! -> keyword_or_error ctx (bp, $pos) $buf ] ]
+  else
+    match strm with lexer
+    [ ident2! -> keyword_or_error ctx (bp, $pos) $buf ]
+;
+
+value tilde ctx bp buf strm =
+  if ctx.dollar_for_antiquotation then
+    match strm with parser
+    [ [: `'$'; s = antiquot ctx bp $empty; `':' :] ->
+        ("TILDEANTIQUOTCOLON", s)
+    | [: `'$'; s = antiquot ctx bp $empty :] ->
+        ("TILDEANTIQUOT", s)
+    | [: :] ->
+        match strm with lexer
+        [ ident2! -> keyword_or_error ctx (bp, $pos) $buf ] ]
+  else if force_antiquot_loc.val then
+    match strm with parser
+    [ [: `'$'; s = antiquot_loc ctx bp $empty; `':' :] ->
+        ("TILDEANTIQUOTCOLON_LOC", s)
+    | [: `'$'; s = antiquot_loc ctx bp $empty :] ->
+        ("TILDEANTIQUOT_LOC", s)
+    | [: :] ->
+        match strm with lexer
+        [ ident2! -> keyword_or_error ctx (bp, $pos) $buf ] ]
+  else
+    match strm with lexer
+    [ ident2! -> keyword_or_error ctx (bp, $pos) $buf ]
 ;
 
 value tildeident =
@@ -289,9 +337,9 @@ value next_token_after_spaces ctx bp =
   | "$"/ (dollar ctx bp)!
   | "!=@^&+-*/%" ident2! -> keyword_or_error ctx (bp, $pos) $buf
   | "~"/ "a..z" ident! tildeident!
-  | "~" ident2! -> keyword_or_error ctx (bp, $pos) $buf
+  | "~" (tilde ctx bp)
   | "?"/ "a..z" ident! questionident!
-  | "?" ident2! -> keyword_or_error ctx (bp, $pos) $buf
+  | "?" (question ctx bp)!
   | "<"/ (less ctx bp)!
   | ":" "]:=>" -> keyword_or_error ctx (bp, $pos) $buf
   | ":" -> keyword_or_error ctx (bp, $pos) $buf
@@ -490,6 +538,10 @@ value using_token kwd_table ident_table (p_con, p_prm) =
     "CHAR" | "STRING" | "QUOTATION" |
     "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
       ()
+  | "QUESTIONANTIQUOTCOLON" | "QUESTIONANTIQUOT"
+  | "QUESTIONANTIQUOTCOLON_LOC" | "QUESTIONANTIQUOT_LOC" -> ()
+  | "TILDEANTIQUOTCOLON" | "TILDEANTIQUOT"
+  | "TILDEANTIQUOTCOLON_LOC" | "TILDEANTIQUOT_LOC" -> ()
   | _ ->
       raise
         (Plexing.Error
@@ -546,6 +598,26 @@ value tok_match =
   [ ("ANTIQUOT", p_prm) ->
       fun
       [ ("ANTIQUOT", prm) when eq_before_colon p_prm prm -> after_colon prm
+      | _ -> raise Stream.Failure ]
+  | ("QUESTIONANTIQUOT", p_prm) ->
+      fun
+      [ ("QUESTIONANTIQUOT", prm) when eq_before_colon p_prm prm ->
+          after_colon prm
+      | _ -> raise Stream.Failure ]
+  | ("QUESTIONANTIQUOTCOLON", p_prm) ->
+      fun
+      [ ("QUESTIONANTIQUOTCOLON", prm) when eq_before_colon p_prm prm ->
+          after_colon prm
+      | _ -> raise Stream.Failure ]
+  | ("TILDEANTIQUOT", p_prm) ->
+      fun
+      [ ("TILDEANTIQUOT", prm) when eq_before_colon p_prm prm ->
+          after_colon prm
+      | _ -> raise Stream.Failure ]
+  | ("TILDEANTIQUOTCOLON", p_prm) ->
+      fun
+      [ ("TILDEANTIQUOTCOLON", prm) when eq_before_colon p_prm prm ->
+          after_colon prm
       | _ -> raise Stream.Failure ]
   | tok -> Plexing.default_match tok ]
 ;

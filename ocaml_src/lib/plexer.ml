@@ -390,28 +390,26 @@ let rec antiquot_rest ctx bp buf (strm__ : _ Stream.t) =
 
 let rec antiquot ctx bp buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
-    Some '$' -> Stream.junk strm__; "ANTIQUOT", ":" ^ B.get buf
+    Some '$' -> Stream.junk strm__; ":" ^ B.get buf
   | Some ('a'..'z' | 'A'..'Z' | '0'..'9' | '_' as c) ->
       Stream.junk strm__; antiquot ctx bp (B.add c buf) strm__
   | Some ':' ->
       Stream.junk strm__;
-      let buf = antiquot_rest ctx bp (B.add ':' buf) strm__ in
-      "ANTIQUOT", B.get buf
+      let buf = antiquot_rest ctx bp (B.add ':' buf) strm__ in B.get buf
   | Some '\\' ->
       Stream.junk strm__;
       let buf =
         try any ctx buf strm__ with Stream.Failure -> raise (Stream.Error "")
       in
-      let buf = antiquot_rest ctx bp buf strm__ in "ANTIQUOT", ":" ^ B.get buf
+      let buf = antiquot_rest ctx bp buf strm__ in ":" ^ B.get buf
   | _ ->
       match try Some (any ctx buf strm__) with Stream.Failure -> None with
         Some buf ->
-          let buf = antiquot_rest ctx bp buf strm__ in
-          "ANTIQUOT", ":" ^ B.get buf
+          let buf = antiquot_rest ctx bp buf strm__ in ":" ^ B.get buf
       | _ -> err ctx (bp, Stream.count strm__) "antiquotation not terminated"
 ;;
 
-let antiloc bp ep s = "ANTIQUOT_LOC", Printf.sprintf "%d,%d:%s" bp ep s;;
+let antiloc bp ep s = Printf.sprintf "%d,%d:%s" bp ep s;;
 
 let rec antiquot_loc ctx bp buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
@@ -439,11 +437,94 @@ let rec antiquot_loc ctx bp buf (strm__ : _ Stream.t) =
 ;;
 
 let dollar ctx bp buf strm =
-  if ctx.dollar_for_antiquotation then antiquot ctx bp buf strm
-  else if !force_antiquot_loc then antiquot_loc ctx bp buf strm
+  if ctx.dollar_for_antiquotation then "ANTIQUOT", antiquot ctx bp buf strm
+  else if !force_antiquot_loc then
+    "ANTIQUOT_LOC", antiquot_loc ctx bp buf strm
   else
     let (strm__ : _ Stream.t) = strm in
     let buf = B.add '$' buf in let buf = ident2 buf strm__ in "", B.get buf
+;;
+
+let question ctx bp buf strm =
+  if ctx.dollar_for_antiquotation then
+    let (strm__ : _ Stream.t) = strm in
+    match Stream.peek strm__ with
+      Some '$' ->
+        Stream.junk strm__;
+        let s =
+          try antiquot ctx bp B.empty strm__ with
+            Stream.Failure -> raise (Stream.Error "")
+        in
+        begin match Stream.peek strm__ with
+          Some ':' -> Stream.junk strm__; "QUESTIONANTIQUOTCOLON", s
+        | _ -> "QUESTIONANTIQUOT", s
+        end
+    | _ ->
+        let (strm__ : _ Stream.t) = strm in
+        let buf = ident2 buf strm__ in
+        keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
+  else if !force_antiquot_loc then
+    let (strm__ : _ Stream.t) = strm in
+    match Stream.peek strm__ with
+      Some '$' ->
+        Stream.junk strm__;
+        let s =
+          try antiquot_loc ctx bp B.empty strm__ with
+            Stream.Failure -> raise (Stream.Error "")
+        in
+        begin match Stream.peek strm__ with
+          Some ':' -> Stream.junk strm__; "QUESTIONANTIQUOTCOLON_LOC", s
+        | _ -> "QUESTIONANTIQUOT_LOC", s
+        end
+    | _ ->
+        let (strm__ : _ Stream.t) = strm in
+        let buf = ident2 buf strm__ in
+        keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
+  else
+    let (strm__ : _ Stream.t) = strm in
+    let buf = ident2 buf strm__ in
+    keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
+;;
+
+let tilde ctx bp buf strm =
+  if ctx.dollar_for_antiquotation then
+    let (strm__ : _ Stream.t) = strm in
+    match Stream.peek strm__ with
+      Some '$' ->
+        Stream.junk strm__;
+        let s =
+          try antiquot ctx bp B.empty strm__ with
+            Stream.Failure -> raise (Stream.Error "")
+        in
+        begin match Stream.peek strm__ with
+          Some ':' -> Stream.junk strm__; "TILDEANTIQUOTCOLON", s
+        | _ -> "TILDEANTIQUOT", s
+        end
+    | _ ->
+        let (strm__ : _ Stream.t) = strm in
+        let buf = ident2 buf strm__ in
+        keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
+  else if !force_antiquot_loc then
+    let (strm__ : _ Stream.t) = strm in
+    match Stream.peek strm__ with
+      Some '$' ->
+        Stream.junk strm__;
+        let s =
+          try antiquot_loc ctx bp B.empty strm__ with
+            Stream.Failure -> raise (Stream.Error "")
+        in
+        begin match Stream.peek strm__ with
+          Some ':' -> Stream.junk strm__; "TILDEANTIQUOTCOLON_LOC", s
+        | _ -> "TILDEANTIQUOT_LOC", s
+        end
+    | _ ->
+        let (strm__ : _ Stream.t) = strm in
+        let buf = ident2 buf strm__ in
+        keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
+  else
+    let (strm__ : _ Stream.t) = strm in
+    let buf = ident2 buf strm__ in
+    keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
 ;;
 
 let tildeident buf (strm__ : _ Stream.t) =
@@ -523,13 +604,13 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
       keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
   | Some '~' ->
       Stream.junk strm__;
-      begin match Stream.peek strm__ with
-        Some ('a'..'z' as c) ->
-          Stream.junk strm__;
-          let buf = ident (B.add c buf) strm__ in tildeident buf strm__
-      | _ ->
-          let buf = ident2 (B.add '~' buf) strm__ in
-          keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
+      begin try
+        match Stream.peek strm__ with
+          Some ('a'..'z' as c) ->
+            Stream.junk strm__;
+            let buf = ident (B.add c buf) strm__ in tildeident buf strm__
+        | _ -> tilde ctx bp (B.add '~' buf) strm__
+      with Stream.Failure -> raise (Stream.Error "")
       end
   | Some '?' ->
       Stream.junk strm__;
@@ -537,9 +618,7 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
         Some ('a'..'z' as c) ->
           Stream.junk strm__;
           let buf = ident (B.add c buf) strm__ in questionident buf strm__
-      | _ ->
-          let buf = ident2 (B.add '?' buf) strm__ in
-          keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
+      | _ -> question ctx bp (B.add '?' buf) strm__
       end
   | Some '<' -> Stream.junk strm__; less ctx bp buf strm__
   | Some ':' ->
@@ -835,6 +914,12 @@ let using_token kwd_table ident_table (p_con, p_prm) =
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
     "CHAR" | "STRING" | "QUOTATION" | "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
       ()
+  | "QUESTIONANTIQUOTCOLON" | "QUESTIONANTIQUOT" |
+    "QUESTIONANTIQUOTCOLON_LOC" | "QUESTIONANTIQUOT_LOC" ->
+      ()
+  | "TILDEANTIQUOTCOLON" | "TILDEANTIQUOT" | "TILDEANTIQUOTCOLON_LOC" |
+    "TILDEANTIQUOT_LOC" ->
+      ()
   | _ ->
       raise
         (Plexing.Error
@@ -892,6 +977,26 @@ let tok_match =
       (function
          "ANTIQUOT", prm when eq_before_colon p_prm prm -> after_colon prm
        | _ -> raise Stream.Failure)
+  | "QUESTIONANTIQUOT", p_prm ->
+      (function
+         "QUESTIONANTIQUOT", prm when eq_before_colon p_prm prm ->
+           after_colon prm
+       | _ -> raise Stream.Failure)
+  | "QUESTIONANTIQUOTCOLON", p_prm ->
+      (function
+         "QUESTIONANTIQUOTCOLON", prm when eq_before_colon p_prm prm ->
+           after_colon prm
+       | _ -> raise Stream.Failure)
+  | "TILDEANTIQUOT", p_prm ->
+      (function
+         "TILDEANTIQUOT", prm when eq_before_colon p_prm prm ->
+           after_colon prm
+       | _ -> raise Stream.Failure)
+  | "TILDEANTIQUOTCOLON", p_prm ->
+      (function
+         "TILDEANTIQUOTCOLON", prm when eq_before_colon p_prm prm ->
+           after_colon prm
+       | _ -> raise Stream.Failure)
   | tok -> Plexing.default_match tok
 ;;
 
@@ -901,11 +1006,11 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-         (fun _ -> raise (Match_failure ("plexer.ml", 558, 25)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 558, 45)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 558, 68)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 559, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 559, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 630, 25)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 630, 45)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 630, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 631, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 631, 37)));
        tok_comm = None}
   in
   let glex =
