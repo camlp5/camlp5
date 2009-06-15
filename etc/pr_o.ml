@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.95 2007/09/18 15:40:03 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.96 2007/09/18 18:20:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -92,8 +92,8 @@ value rec get_defined_ident =
   | <:patt< ~$_$ >> -> []
   | <:patt< ~$_$: $p$ >> -> get_defined_ident p
   | <:patt< ?$_$ >> -> []
-  | <:patt< ? $_$ : ($p$) >> -> get_defined_ident p
-  | <:patt< ? $_$ : ($p$ = $e$) >> -> get_defined_ident p
+  | <:patt< ?$_$: ($p$) >> -> get_defined_ident p
+  | <:patt< ?$_$: ($p$ = $e$) >> -> get_defined_ident p
   | <:patt< $anti:p$ >> -> get_defined_ident p
   | _ -> [] ]
 ;
@@ -744,7 +744,7 @@ value str_module pc m me =
   let (mal, me) =
     loop me where rec loop =
       fun
-      [ <:module_expr< functor ($s$ : $mt$) -> $me$ >> ->
+      [ <:module_expr< functor ($uid:s$ : $mt$) -> $me$ >> ->
           let (mal, me) = loop me in
           ([(s, mt) :: mal], me)
       | me -> ([], me) ]
@@ -823,7 +823,7 @@ value sig_module_or_module_type typ defc pc m mt =
   let (mal, mt) =
     loop mt where rec loop =
       fun
-      [ <:module_type< functor ($s$ : $mt1$) -> $mt2$ >> ->
+      [ <:module_type< functor ($uid:s$ : $mt1$) -> $mt2$ >> ->
           let (mal, mt) = loop mt2 in
           ([(s, mt1) :: mal], mt)
       | mt -> ([], mt) ]
@@ -915,7 +915,7 @@ value str_or_sig_functor pc s mt module_expr_or_type met =
 
 value with_constraint pc wc =
   match wc with
-  [ <:with_constr< type $sl$ $list:tpl$ = $opt:pf$ $t$ >> ->
+  [ <:with_constr< type $sl$ $list:tpl$ = $flag:pf$ $t$ >> ->
       let b =
         let k = hlist type_var {(pc) with bef = ""; aft = " = "} tpl in
         mod_ident {(pc) with bef = sprintf "%swith type " pc.bef; aft = k} sl
@@ -1237,7 +1237,7 @@ EXTEND_PRINTER
                    in
                    let s3 = op_end in
                    sprintf "%s\n%s%s" s1 s2 s3) ]
-      | <:expr< let $opt:rf$ $list:pel$ in $e$ >> ->
+      | <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
           horiz_vertic
             (fun () ->
                if not flag_horiz_let_in.val then sprintf "\n"
@@ -1274,7 +1274,7 @@ EXTEND_PRINTER
                in
                let s3 = end_op in
                sprintf "%s\n%s%s" s1 s2 s3)
-      | <:expr< let module $s$ = $me$ in $e$ >> ->
+      | <:expr< let module $uid:s$ = $me$ in $e$ >> ->
           horiz_vertic
             (fun () ->
                sprintf "%slet module %s = %s in %s%s" pc.bef s
@@ -1332,7 +1332,7 @@ EXTEND_PRINTER
                in
                let s3 = sprintf "%sdone%s" (tab pc.ind) pc.aft in
                sprintf "%s\n%s\n%s" s1 s2 s3)
-      | <:expr< for $v$ = $e1$ $to:d$ $e2$ do { $list:el$ } >> ->
+      | <:expr< for $lid:v$ = $e1$ $to:d$ $e2$ do { $list:el$ } >> ->
           horiz_vertic
             (fun () ->
                sprintf "%sfor %s = %s %s %s do %s done%s" pc.bef v
@@ -1631,11 +1631,11 @@ EXTEND_PRINTER
             sprintf "%s%s%s" pc.bef s pc.aft
       | <:expr< $lid:s$ >> -> var_escaped pc s
       | <:expr< $uid:s$ >> -> cons_escaped pc s
-      | <:expr< `$uid:s$ >> ->
+      | <:expr< `$s$ >> ->
           failwith "variants not pretty printed (in expr); add pr_ro.cmo"
       | <:expr< $str:s$ >> -> sprintf "%s\"%s\"%s" pc.bef s pc.aft
       | <:expr< $chr:s$ >> -> sprintf "%s'%s'%s" pc.bef (ocaml_char s) pc.aft
-      | <:expr< ? $_$ >> | <:expr< ~ $_$ >> | <:expr< ~ $_$ : $_$ >> ->
+      | <:expr< ?$_$ >> | <:expr< ~$_$ >> | <:expr< ~$_$: $_$ >> ->
           failwith "labels not pretty printed (in expr); add pr_ro.cmo"
       | <:expr< do { $list:el$ } >> ->
           horiz_vertic
@@ -1655,9 +1655,9 @@ EXTEND_PRINTER
       | <:expr< $_$ $_$ >> | <:expr< $_$ . $_$ >> | <:expr< assert $_$ >> |
         <:expr< lazy $_$ >> | <:expr< ($list:_$) >> | <:expr< $_$ := $_$ >> |
         <:expr< fun [ $list:_$ ] >> | <:expr< if $_$ then $_$ else $_$ >> |
-        <:expr< for $_$ = $_$ $to:_$ $_$ do { $list:_$ } >> |
+        <:expr< for $lid:_$ = $_$ $to:_$ $_$ do { $list:_$ } >> |
         <:expr< while $_$ do { $list:_$ } >> |
-        <:expr< let $opt:_$ $list:_$ in $_$ >> |
+        <:expr< let $flag:_$ $list:_$ in $_$ >> |
         <:expr< match $_$ with [ $list:_$ ] >> |
         <:expr< try $_$ with [ $list:_$ ] >> as z ->
           expr
@@ -1823,11 +1823,11 @@ EXTEND_PRINTER
       | <:patt< $chr:s$ >> -> sprintf "%s'%s'%s" pc.bef (ocaml_char s) pc.aft
       | <:patt< $str:s$ >> -> sprintf "%s\"%s\"%s" pc.bef s pc.aft
       | <:patt< _ >> -> sprintf "%s_%s" pc.bef pc.aft
-      | <:patt< ? $_$ >> | <:patt< ? ($_$ $opt:_$) >> |
-        <:patt< ? $_$ : ($_$ $opt:_$) >> | <:patt< ~ $_$ >> |
-        <:patt< ~ $_$ : $_$ >> ->
+      | <:patt< ?$_$ >> | <:patt< ? ($_$ $opt:_$) >> |
+        <:patt< ?$_$: ($_$ $opt:_$) >> | <:patt< ~$_$ >> |
+        <:patt< ~$_$: $_$ >> ->
           failwith "labels not pretty printed (in patt); add pr_ro.cmo"
-      | <:patt< `$uid:s$ >> ->
+      | <:patt< `$s$ >> ->
           failwith "polymorphic variants not pretty printed; add pr_ro.cmo"
       | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >> |
         <:patt< ($list:_$) >> | <:patt< ($_$ as $_$) >> as z ->
@@ -1929,7 +1929,7 @@ EXTEND_PRINTER
           var_escaped {(pc) with bef = sprintf "%s'" pc.bef} s
       | <:ctyp< _ >> ->
           sprintf "%s_%s" pc.bef pc.aft
-      | <:ctyp< ? $_$ : $_$ >> | <:ctyp< ~ $_$ : $_$ >> ->
+      | <:ctyp< ?$_$: $_$ >> | <:ctyp< ~$_$: $_$ >> ->
           failwith "labels not pretty printed (in type); add pr_ro.cmo"
       | <:ctyp< [ = $list:_$ ] >> | <:ctyp< [ > $list:_$ ] >> |
         <:ctyp< [ < $list:_$ ] >> | <:ctyp< [ < $list:_$ > $list:_$ ] >> ->
@@ -1943,7 +1943,7 @@ EXTEND_PRINTER
   ;
   pr_str_item:
     [ "top"
-      [ <:str_item< # $s$ $e$ >> ->
+      [ <:str_item< # $lid:s$ $e$ >> ->
           expr
             {(pc) with bef = sprintf "%s(* #%s " pc.bef s;
              aft = sprintf "%s *)" pc.aft}
@@ -1956,15 +1956,15 @@ EXTEND_PRINTER
               else str_item
             in
             vlistl str_item_sep str_item pc sil
-      | <:str_item< exception $e$ of $list:tl$ = $id$ >> ->
+      | <:str_item< exception $uid:e$ of $list:tl$ = $id$ >> ->
           exception_decl pc (e, tl, id)
-      | <:str_item< external $n$ : $t$ = $list:sl$ >> ->
+      | <:str_item< external $lid:n$ : $t$ = $list:sl$ >> ->
           external_decl pc (n, t, sl)
       | <:str_item< include $me$ >> ->
           module_expr {(pc) with bef = sprintf "%sinclude " pc.bef} me
-      | <:str_item< module $m$ = $me$ >> ->
+      | <:str_item< module $uid:m$ = $me$ >> ->
           str_module pc m me
-      | <:str_item< module type $m$ = $mt$ >> ->
+      | <:str_item< module type $uid:m$ = $mt$ >> ->
           sig_module_or_module_type " type" '=' pc m mt
       | <:str_item< open $i$ >> ->
           mod_ident {(pc) with bef = sprintf "%sopen " pc.bef} i
@@ -2000,9 +2000,9 @@ EXTEND_PRINTER
   ;
   pr_sig_item:
     [ "top"
-      [ <:sig_item< exception $e$ of $list:tl$ >> ->
+      [ <:sig_item< exception $uid:e$ of $list:tl$ >> ->
           exception_decl pc (e, tl, [])
-      | <:sig_item< external $n$ : $t$ = $list:sl$ >> ->
+      | <:sig_item< external $lid:n$ : $t$ = $list:sl$ >> ->
           external_decl pc (n, t, sl)
       | <:sig_item< include $mt$ >> ->
           module_type {(pc) with bef = sprintf "%sinclude " pc.bef} mt
@@ -2014,16 +2014,16 @@ EXTEND_PRINTER
               else sig_item
             in
             vlistl sig_item_sep sig_item pc sil
-      | <:sig_item< module $m$ : $mt$ >> ->
+      | <:sig_item< module $uid:m$ : $mt$ >> ->
           sig_module_or_module_type "" ':' pc m mt
-      | <:sig_item< module type $m$ = $mt$ >> ->
+      | <:sig_item< module type $uid:m$ = $mt$ >> ->
           sig_module_or_module_type " type" '=' pc m mt
       | <:sig_item< open $i$ >> ->
           mod_ident {(pc) with bef = sprintf "%sopen " pc.bef} i
       | <:sig_item< type $list:tdl$ >> ->
           vlist2 type_decl (and_before type_decl)
             {(pc) with bef = sprintf "%stype " pc.bef} tdl
-      | <:sig_item< value $s$ : $t$ >> ->
+      | <:sig_item< value $lid:s$ : $t$ >> ->
           horiz_vertic
             (fun () ->
                sprintf "%sval %s : %s%s" pc.bef
@@ -2043,7 +2043,7 @@ EXTEND_PRINTER
   ;
   pr_module_expr:
     [ "top"
-      [ <:module_expr< functor ($s$ : $mt$) -> $me$ >> ->
+      [ <:module_expr< functor ($uid:s$ : $mt$) -> $me$ >> ->
           str_or_sig_functor pc s mt module_expr me
       | <:module_expr< struct $list:sil$ end >> ->
           let str_item_sep =
@@ -2125,7 +2125,7 @@ EXTEND_PRINTER
   ;
   pr_module_type:
     [ "top"
-      [ <:module_type< functor ($s$ : $mt1$) -> $mt2$ >> ->
+      [ <:module_type< functor ($uid:s$ : $mt1$) -> $mt2$ >> ->
           str_or_sig_functor pc s mt1 module_type mt2
       | <:module_type< sig $list:sil$ end >> ->
           let sig_item_sep =

@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.56 2007/09/18 15:40:03 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.57 2007/09/18 18:20:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -431,20 +431,20 @@ EXTEND
           <:sig_item< external $lid:i$ : $t$ = $list:pd$ >>
       | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
         pd = LIST1 STRING ->
-          <:sig_item< external $i$ : $t$ = $list:pd$ >>
+          <:sig_item< external $lid:i$ : $t$ = $list:pd$ >>
       | "include"; mt = module_type -> <:sig_item< include $mt$ >>
-      | "module"; rf = OPT "rec"; l = LIST1 mod_decl_binding SEP "and" ->
-          <:sig_item< module $opt:o2b rf$ $list:l$ >>
+      | "module"; rf = FLAG "rec"; l = LIST1 mod_decl_binding SEP "and" ->
+          <:sig_item< module $flag:rf$ $list:l$ >>
       | "module"; "type"; i = UIDENT; "="; mt = module_type ->
-          <:sig_item< module type $i$ = $mt$ >>
+          <:sig_item< module type $uid:i$ = $mt$ >>
       | "module"; "type"; i = UIDENT ->
-          <:sig_item< module type $i$ = 'abstract >>
+          <:sig_item< module type $uid:i$ = 'abstract >>
       | "open"; i = mod_ident -> <:sig_item< open $i$ >>
       | "type"; tdl = LIST1 type_declaration SEP "and" ->
           <:sig_item< type $list:tdl$ >>
-      | "val"; i = LIDENT; ":"; t = ctyp -> <:sig_item< value $i$ : $t$ >>
+      | "val"; i = LIDENT; ":"; t = ctyp -> <:sig_item< value $lid:i$ : $t$ >>
       | "val"; "("; i = operator_rparen; ":"; t = ctyp ->
-          <:sig_item< value $i$ : $t$ >> ] ]
+          <:sig_item< value $lid:i$ : $t$ >> ] ]
   ;
   mod_decl_binding:
     [ [ i = V UIDENT; mt = module_declaration -> (i, mt) ] ]
@@ -453,14 +453,14 @@ EXTEND
     [ RIGHTA
       [ ":"; mt = module_type -> <:module_type< $mt$ >>
       | "("; i = UIDENT; ":"; t = module_type; ")"; mt = SELF ->
-          <:module_type< functor ( $i$ : $t$ ) -> $mt$ >> ] ]
+          <:module_type< functor ( $uid:i$ : $t$ ) -> $mt$ >> ] ]
   ;
   (* "with" constraints (additional type equations over signature
      components) *)
   with_constr:
-    [ [ "type"; tpl = type_parameters; i = mod_ident; "="; pf = OPT "private";
-        t = ctyp ->
-          <:with_constr< type $i$ $list:tpl$ = $opt:o2b pf$ $t$ >>
+    [ [ "type"; tpl = type_parameters; i = mod_ident; "=";
+        pf = FLAG "private"; t = ctyp ->
+          <:with_constr< type $i$ $list:tpl$ = $flag:pf$ $t$ >>
       | "module"; i = mod_ident; "="; me = module_expr ->
           <:with_constr< module $i$ = $me$ >> ] ]
   ;
@@ -471,12 +471,12 @@ EXTEND
           <:expr< do { $list:[e1 :: get_seq e2]$ } >>
       | e1 = SELF; ";" -> e1 ]
     | "expr1"
-      [ "let"; o = OPT "rec"; l = LIST1 let_binding SEP "and"; "in";
+      [ "let"; o = FLAG "rec"; l = LIST1 let_binding SEP "and"; "in";
         x = expr LEVEL "top" ->
-          <:expr< let $opt:o2b o$ $list:l$ in $x$ >>
+          <:expr< let $flag:o$ $list:l$ in $x$ >>
       | "let"; "module"; m = UIDENT; mb = mod_fun_binding; "in";
         e = expr LEVEL "top" ->
-          <:expr< let module $m$ = $mb$ in $e$ >>
+          <:expr< let module $uid:m$ = $mb$ in $e$ >>
       | "function"; OPT "|"; l = LIST1 match_case SEP "|" ->
           <:expr< fun [ $list:l$ ] >>
       | "fun"; p = patt LEVEL "simple"; e = fun_def ->
@@ -492,7 +492,7 @@ EXTEND
           <:expr< if $e1$ then $e2$ else () >>
       | "for"; i = LIDENT; "="; e1 = SELF; df = direction_flag; e2 = SELF;
         "do"; e = SELF; "done" ->
-          <:expr< for $i$ = $e1$ $to:df$ $e2$ do { $list:get_seq e$ } >>
+          <:expr< for $lid:i$ = $e1$ $to:df$ $e2$ do { $list:get_seq e$ } >>
       | "while"; e1 = SELF; "do"; e2 = SELF; "done" ->
           <:expr< while $e1$ do { $list:get_seq e2$ } >> ]
     | [ e = SELF; ","; el = LIST1 NEXT SEP "," ->
@@ -898,9 +898,9 @@ EXTEND
   class_expr:
     [ "top"
       [ "fun"; cfd = class_fun_def -> cfd
-      | "let"; rf = OPT "rec"; lb = LIST1 let_binding SEP "and"; "in";
+      | "let"; rf = FLAG "rec"; lb = LIST1 let_binding SEP "and"; "in";
         ce = SELF ->
-          <:class_expr< let $opt:o2b rf$ $list:lb$ in $ce$ >> ]
+          <:class_expr< let $flag:rf$ $list:lb$ in $ce$ >> ]
     | "apply" LEFTA
       [ ce = SELF; e = expr LEVEL "label" ->
           <:class_expr< $ce$ $e$ >> ]
@@ -927,22 +927,22 @@ EXTEND
   class_str_item:
     [ [ "inherit"; ce = class_expr; pb = OPT [ "as"; i = LIDENT -> i ] ->
           <:class_str_item< inherit $ce$ $opt:pb$ >>
-      | "val"; mf = OPT "mutable"; lab = label; e = cvalue_binding ->
-          <:class_str_item< value $opt:o2b mf$ $lab$ = $e$ >>
+      | "val"; mf = FLAG "mutable"; lab = label; e = cvalue_binding ->
+          <:class_str_item< value $flag:mf$ $lid:lab$ = $e$ >>
       | "method"; "private"; "virtual"; l = label; ":"; t = poly_type ->
-          <:class_str_item< method virtual private $l$ : $t$ >>
+          <:class_str_item< method virtual private $lid:l$ : $t$ >>
       | "method"; "virtual"; "private"; l = label; ":"; t = poly_type ->
-          <:class_str_item< method virtual private $l$ : $t$ >>
+          <:class_str_item< method virtual private $lid:l$ : $t$ >>
       | "method"; "virtual"; l = label; ":"; t = poly_type ->
-          <:class_str_item< method virtual $l$ : $t$ >>
+          <:class_str_item< method virtual $lid:l$ : $t$ >>
       | "method"; "private"; l = label; ":"; t = poly_type; "="; e = expr ->
-          <:class_str_item< method private $l$ : $t$ = $e$ >>
+          <:class_str_item< method private $lid:l$ : $t$ = $e$ >>
       | "method"; "private"; l = label; sb = fun_binding ->
-          <:class_str_item< method private $l$ = $sb$ >>
+          <:class_str_item< method private $lid:l$ = $sb$ >>
       | "method"; l = label; ":"; t = poly_type; "="; e = expr ->
-          <:class_str_item< method $l$ : $t$ = $e$ >>
+          <:class_str_item< method $lid:l$ : $t$ = $e$ >>
       | "method"; l = label; sb = fun_binding ->
-          <:class_str_item< method $l$ = $sb$ >>
+          <:class_str_item< method $lid:l$ = $sb$ >>
       | "constraint"; t1 = ctyp; "="; t2 = ctyp ->
           <:class_str_item< type $t1$ = $t2$ >>
       | "initializer"; se = expr -> <:class_str_item< initializer $se$ >> ] ]
@@ -977,18 +977,18 @@ EXTEND
   ;
   class_sig_item:
     [ [ "inherit"; cs = class_signature -> <:class_sig_item< inherit $cs$ >>
-      | "val"; mf = OPT "mutable"; l = label; ":"; t = ctyp ->
-          <:class_sig_item< value $opt:o2b mf$ $l$ : $t$ >>
+      | "val"; mf = FLAG "mutable"; l = label; ":"; t = ctyp ->
+          <:class_sig_item< value $flag:mf$ $lid:l$ : $t$ >>
       | "method"; "private"; "virtual"; l = label; ":"; t = poly_type ->
-          <:class_sig_item< method virtual private $l$ : $t$ >>
+          <:class_sig_item< method virtual private $lid:l$ : $t$ >>
       | "method"; "virtual"; "private"; l = label; ":"; t = poly_type ->
-          <:class_sig_item< method virtual private $l$ : $t$ >>
+          <:class_sig_item< method virtual private $lid:l$ : $t$ >>
       | "method"; "virtual"; l = label; ":"; t = poly_type ->
-          <:class_sig_item< method virtual $l$ : $t$ >>
+          <:class_sig_item< method virtual $lid:l$ : $t$ >>
       | "method"; "private"; l = label; ":"; t = poly_type ->
-          <:class_sig_item< method private $l$ : $t$ >>
+          <:class_sig_item< method private $lid:l$ : $t$ >>
       | "method"; l = label; ":"; t = poly_type ->
-          <:class_sig_item< method $l$ : $t$ >>
+          <:class_sig_item< method $lid:l$ : $t$ >>
       | "constraint"; t1 = ctyp; "="; t2 = ctyp ->
           <:class_sig_item< type $t1$ = $t2$ >> ] ]
   ;
@@ -1012,7 +1012,7 @@ EXTEND
           <:expr< object $opt:cspo$ $list:cf$ end >> ] ]
   ;
   expr: LEVEL "."
-    [ [ e = SELF; "#"; lab = label -> <:expr< $e$ # $lab$ >> ] ]
+    [ [ e = SELF; "#"; lab = label -> <:expr< $e$ # $lid:lab$ >> ] ]
   ;
   expr: LEVEL "simple"
     [ [ "("; e = SELF; ":"; t = ctyp; ":>"; t2 = ctyp; ")" ->

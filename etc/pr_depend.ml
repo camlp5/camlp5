@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.39 2007/09/18 15:40:03 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.40 2007/09/18 18:20:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open MLast;
@@ -197,7 +197,7 @@ and with_constr =
 and sig_item =
   fun
   [ <:sig_item< declare $list:sil$ end >> -> list sig_item sil
-  | <:sig_item< exception $_$ of $list:tl$ >> -> list ctyp tl
+  | <:sig_item< exception $uid:_$ of $list:tl$ >> -> list ctyp tl
   | SgExt _ _ t _ -> ctyp t
   | <:sig_item< module $flag:_$ $list:ntl$ >> ->
       list (fun (_, mt) -> module_type mt) ntl
@@ -210,7 +210,7 @@ and module_expr =
   fun
   [ <:module_expr< $_$ . $uid:m$ >> -> addmodule m
   | <:module_expr< $me1$ $me2$ >> -> do { module_expr me1; module_expr me2 }
-  | <:module_expr< functor ($_$ : $mt$) -> $me$ >> -> do {
+  | <:module_expr< functor ($uid:_$ : $mt$) -> $me$ >> -> do {
       module_type mt;
       module_expr me
     }
@@ -224,12 +224,12 @@ and str_item =
       list (fun ci -> class_expr ci.ciExp) cil
   | <:str_item< declare $list:sil$ end >> -> list str_item sil
   | StDir _ _ _ -> ()
-  | <:str_item< exception $_$ of $list:tl$ >> -> list ctyp tl
+  | <:str_item< exception $uid:_$ of $list:tl$ >> -> list ctyp tl
   | <:str_item< $exp:e$ >> -> expr e
-  | <:str_item< external $_$ : $t$ = $list:_$ >> -> ctyp t
+  | <:str_item< external $lid:_$ : $t$ = $list:_$ >> -> ctyp t
   | <:str_item< module $flag:_$ $list:nel$ >> ->
       list (fun (_, me) -> module_expr me) nel
-  | <:str_item< module type $_$ = $mt$ >> -> module_type mt
+  | <:str_item< module type $uid:_$ = $mt$ >> -> module_type mt
   | <:str_item< open $[s :: _]$ >> -> addmodule s
   | <:str_item< type $list:tdl$ >> -> list type_decl tdl
   | <:str_item< value $flag:_$ $list:pel$ >> -> list let_binding pel
@@ -256,8 +256,8 @@ and class_str_item =
   fun
   [ CrInh _ ce _ -> class_expr ce
   | CrIni _ e -> expr e
-  | <:class_str_item< method $flag:_$ $_$ = $e$ >> -> expr e
-  | <:class_str_item< method $flag:_$ $_$ : $t$ = $e$ >> -> do {
+  | <:class_str_item< method $flag:_$ $lid:_$ = $e$ >> -> expr e
+  | <:class_str_item< method $flag:_$ $lid:_$ : $t$ = $e$ >> -> do {
       expr e;
       ctyp t
     }

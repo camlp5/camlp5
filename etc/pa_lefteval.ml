@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: pa_lefteval.ml,v 1.11 2007/09/18 15:40:03 deraugla Exp $ *)
+(* $Id: pa_lefteval.ml,v 1.12 2007/09/18 18:20:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value not_impl name x =
@@ -167,9 +167,9 @@ value rec expr x =
   | <:expr< while $e$ do { $list:el$ } >> ->
       <:expr< while $expr e$ do { $list:List.map expr el$ } >>
   | <:expr< for $lid:i$ = $e1$ $to:t$ $e2$ do { $list:el$ } >> ->
-      <:expr< for $i$ = $e1$ $to:t$ $e2$ do { $list:List.map expr el$ } >>
+      <:expr< for $lid:i$ = $e1$ $to:t$ $e2$ do { $list:List.map expr el$ } >>
   | <:expr< do { $list:el$ } >> -> <:expr< do { $list:List.map expr el$ } >>
-  | <:expr< $e$ # $s$ >> -> <:expr< $expr e$ # $s$ >>
+  | <:expr< $e$ # $lid:s$ >> -> <:expr< $expr e$ # $lid:s$ >>
   | <:expr< ($e$ : $t$) >> -> <:expr< ($expr e$ : $t$) >>
   | <:expr< $e1$ || $e2$ >> -> <:expr< $expr e1$ || $expr e2$ >>
   | <:expr< $e1$ && $e2$ >> -> <:expr< $expr e1$ && $expr e2$ >>
@@ -188,8 +188,8 @@ and match_assoc (p, eo, e) = (p, map_vala (map_option expr) eo, expr e)
 and module_expr x =
   let loc = MLast.loc_of_module_expr x in
   match x with
-  [ <:module_expr< functor ($s$ : $mt$) -> $me$ >> ->
-      <:module_expr< functor ($s$ : $mt$) -> $module_expr me$ >>
+  [ <:module_expr< functor ($uid:s$ : $mt$) -> $me$ >> ->
+      <:module_expr< functor ($uid:s$ : $mt$) -> $module_expr me$ >>
   | <:module_expr< ($me$ : $mt$) >> ->
       <:module_expr< ($module_expr me$ : $mt$) >>
   | <:module_expr< struct $list:sil$ end >> ->
@@ -198,18 +198,19 @@ and module_expr x =
 and str_item x =
   let loc = MLast.loc_of_str_item x in
   match x with
-  [ <:str_item< module $s$ = $me$ >> ->
-      <:str_item< module $s$ = $module_expr me$ >>
-  | <:str_item< value $opt:rf$ $list:pel$ >> ->
-      <:str_item< value $opt:rf$ $list:List.map let_binding pel$ >>
+  [ <:str_item< module $uid:s$ = $me$ >> ->
+      <:str_item< module $uid:s$ = $module_expr me$ >>
+  | <:str_item< value $flag:rf$ $list:pel$ >> ->
+      <:str_item< value $flag:rf$ $list:List.map let_binding pel$ >>
   | <:str_item< declare $list:sil$ end >> ->
       <:str_item< declare $list:List.map str_item sil$ end >>
   | <:str_item< class $list:ce$ >> ->
       <:str_item< class $list:List.map (class_infos class_expr) ce$ >>
   | <:str_item< $exp:e$ >> -> <:str_item< $exp:expr e$ >>
   | <:str_item< open $_$ >> | <:str_item< type $list:_$ >> |
-    <:str_item< exception $_$ of $list:_$ = $_$ >> |
-    <:str_item< module type $_$ = $_$ >> | <:str_item< # $_$ $opt:_$ >> ->
+    <:str_item< exception $uid:_$ of $list:_$ = $_$ >> |
+    <:str_item< module type $uid:_$ = $_$ >> |
+    <:str_item< # $lid:_$ $opt:_$ >> ->
       x
   | x -> not_impl "str_item" x ]
 and class_expr x =
@@ -221,10 +222,10 @@ and class_expr x =
 and class_str_item x =
   let loc = MLast.loc_of_class_str_item x in
   match x with
-  [ <:class_str_item< value $opt:mf$ $s$ = $e$ >> ->
-      <:class_str_item< value $opt:mf$ $s$ = $expr e$ >>
-  | <:class_str_item< method $s$ = $e$ >> ->
-      <:class_str_item< method $s$ = $expr e$ >>
+  [ <:class_str_item< value $flag:mf$ $lid:s$ = $e$ >> ->
+      <:class_str_item< value $flag:mf$ $lid:s$ = $expr e$ >>
+  | <:class_str_item< method $lid:s$ = $e$ >> ->
+      <:class_str_item< method $lid:s$ = $expr e$ >>
   | x -> not_impl "class_str_item" x ]
 ;
 

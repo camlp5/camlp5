@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.45 2007/09/18 15:40:03 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.46 2007/09/18 18:20:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -366,11 +366,11 @@ EXTEND_PRINTER
                   | None -> "" ])
                  pc.aft)
             (fun () -> not_impl "patt ?i:(p=e) vertic" pc i)
-      | <:patt< ~ $s$ >> ->
+      | <:patt< ~$s$ >> ->
           sprintf "%s~%s%s" pc.bef s pc.aft
-      | <:patt< ~ $s$ : $p$ >> ->
+      | <:patt< ~$s$: $p$ >> ->
           curr {(pc) with bef = sprintf "%s~%s:" pc.bef s} p
-      | <:patt< `$uid:s$ >> ->
+      | <:patt< `$s$ >> ->
           sprintf "%s`%s%s" pc.bef s pc.aft
       | <:patt< # $list:sl$ >> ->
           mod_ident {(pc) with bef = sprintf "%s#" pc.bef} sl ] ]
@@ -385,18 +385,18 @@ EXTEND_PRINTER
       | <:expr< object $opt:csp$ $list:csl$ end >> ->
           class_object pc (csp, csl) ]
     | "label"
-      [ <:expr< ? $s$ >> ->
+      [ <:expr< ?$s$ >> ->
           sprintf "%s?%s%s" pc.bef s pc.aft
-      | <:expr< ? $i$ : $e$ >> ->
+      | <:expr< ?$i$: $e$ >> ->
           curr {(pc) with bef = sprintf "%s?%s:" pc.bef i} e
-      | <:expr< ~ $s$ >> ->
+      | <:expr< ~$s$ >> ->
           sprintf "%s~%s%s" pc.bef s pc.aft
-      | <:expr< ~ $s$ : $e$ >> ->
+      | <:expr< ~$s$: $e$ >> ->
           Eprinter.apply_level pr_expr "dot"
             {(pc) with bef = sprintf "%s~%s:" pc.bef s} e ] ]
   ;
   pr_expr: LEVEL "dot"
-    [ [ <:expr< $e$ # $s$ >> ->
+    [ [ <:expr< $e$ # $lid:s$ >> ->
           horiz_vertic
             (fun () ->
                sprintf "%s%s#%s%s" pc.bef
@@ -453,7 +453,7 @@ EXTEND_PRINTER
               {(pc) with bef = sprintf "%s{< " pc.bef;
                aft = sprintf " >}%s" pc.aft}
               fel
-      | <:expr< `$uid:s$ >> ->
+      | <:expr< `$s$ >> ->
           sprintf "%s`%s%s" pc.bef s pc.aft
       | <:expr< new $list:_$ >> | <:expr< object $list:_$ end >> as z ->
           expr
@@ -462,9 +462,9 @@ EXTEND_PRINTER
             z ] ]
   ;
   pr_ctyp: LEVEL "simple"
-    [ [ <:ctyp< ? $i$ : $t$ >> ->
+    [ [ <:ctyp< ?$i$: $t$ >> ->
           curr {(pc) with bef = sprintf "%s?%s:" pc.bef i} t
-      | <:ctyp< ~ $i$ : $t$ >> ->
+      | <:ctyp< ~$i$: $t$ >> ->
           curr {(pc) with bef = sprintf "%s~%s:" pc.bef i} t
       | <:ctyp< < $list:ml$ $opt:v$ > >> ->
           if ml = [] then

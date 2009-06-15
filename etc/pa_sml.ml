@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_sml.ml,v 1.22 2007/09/18 15:40:03 deraugla Exp $ *)
+(* $Id: pa_sml.ml,v 1.23 2007/09/18 18:20:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -747,13 +747,13 @@ EXTEND
                    sdl mt)
               x2 x3
           in
-          <:sig_item< module $x1$ : $x2$ >> ] ]
+          <:sig_item< module $uid:x1$ : $x2$ >> ] ]
   ;
   sharing_def:
     [ [ "sharing"; x3 = LIST1 sharespec SEP "and" -> x3 ] ]
   ;
   fctspec:
-    [ [ x1 = ident; x2 = fsig -> <:sig_item< module $x1$ : $x2$ >> ] ]
+    [ [ x1 = ident; x2 = fsig -> <:sig_item< module $uid:x1$ : $x2$ >> ] ]
   ;
   tyspec:
     [ [ x1 = tyvars; x2 = idd ->
@@ -768,12 +768,12 @@ EXTEND
   ;
   valspec:
     [ [ x1 = op_op; x2 = ident; ":"; x3 = ctyp ->
-          <:sig_item< value $x2$ : $x3$ >> ] ]
+          <:sig_item< value $lid:x2$ : $x3$ >> ] ]
   ;
   exnspec:
-    [ [ x1 = ident -> <:sig_item< exception $x1$ >>
+    [ [ x1 = ident -> <:sig_item< exception $uid:x1$ >>
       | x1 = ident; "of"; x2 = ctyp ->
-          <:sig_item< exception $x1$ of $x2$ >> ] ]
+          <:sig_item< exception $uid:x1$ of $x2$ >> ] ]
   ;
   sharespec:
     [ [ "type"; x1 = patheqn -> Left x1
@@ -805,7 +805,7 @@ EXTEND
   ;
   sigb:
     [ [ x1 = ident; "="; x2 = module_type ->
-          <:str_item< module type $x1$ = $x2$ >> ] ]
+          <:str_item< module type $uid:x1$ = $x2$ >> ] ]
   ;
   fsig:
     [ [ ":"; x1 = ident -> not_impl loc "fsig 1"
@@ -863,7 +863,7 @@ EXTEND
           let dl =
             List.map
               (fun (s, tl, eqn) ->
-                 <:str_item< exception $s$ of $list:tl$ = $eqn$ >>)
+                 <:str_item< exception $uid:s$ of $list:tl$ = $eqn$ >>)
               x1
           in
           str_declare loc dl
@@ -921,10 +921,11 @@ EXTEND
             [ Some x2 -> <:module_expr< ($x3$ : $x2$) >>
             | None -> x3 ]
           in
-          <:str_item< module $x1$ = $x3$ >> ] ]
+          <:str_item< module $uid:x1$ = $x3$ >> ] ]
   ;
   fparam:
-    [ [ x1 = idd; ":"; x2 = module_type -> [<:sig_item< module $x1$ : $x2$ >>]
+    [ [ x1 = idd; ":"; x2 = module_type ->
+          [<:sig_item< module $uid:x1$ : $x2$ >>]
       | x1 = spec_s -> x1 ] ]
   ;
   fparamList:
@@ -962,7 +963,7 @@ EXTEND
               in
               <:module_expr< functor (AAA : $mt$) -> $x4$ >>
           in
-          <:str_item< module $x1$ = $x4$ >>
+          <:str_item< module $uid:x1$ = $x4$ >>
       | x1 = ident; x2 = fsigconstraint_op; "="; x3 = fct_exp ->
           not_impl loc "fctb 2" ] ]
   ;

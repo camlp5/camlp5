@@ -396,11 +396,11 @@ and sig_item_se =
   | Sexpr loc [Slid _ "module"; Suid _ s; se] ->
       let s = Pcaml.rename_id.val s in
       let mb = module_type_se se in
-      <:sig_item< module $s$ : $mb$ >>
+      <:sig_item< module $uid:s$ : $mb$ >>
   | Sexpr loc [Slid _ "moduletype"; Suid _ s; se] ->
       let s = Pcaml.rename_id.val s in
       let mt = module_type_se se in
-      <:sig_item< module type $s$ = $mt$ >>
+      <:sig_item< module type $uid:s$ = $mt$ >>
   | se -> error se "sig item" ]
 and str_item_se se =
   match se with
@@ -413,7 +413,7 @@ and str_item_se se =
   | Sexpr loc [Slid _ "exception"; Suid _ c :: sel] ->
       let c = Pcaml.rename_id.val c in
       let tl = List.map ctyp_se sel in
-      <:str_item< exception $c$ of $list:tl$ >>
+      <:str_item< exception $uid:c$ of $list:tl$ >>
   | Sexpr loc [Slid _ ("define" | "definerec" as r); se :: sel] ->
       let r = r = "definerec" in
       let (p, e) = fun_binding_se se (begin_se loc sel) in
@@ -426,15 +426,15 @@ and str_item_se se =
       let i = Pcaml.rename_id.val i in
       let pd = List.map string_se sel in
       let t = ctyp_se se in
-      <:str_item< external $i$ : $t$ = $list:pd$ >>
+      <:str_item< external $lid:i$ : $t$ = $list:pd$ >>
   | Sexpr loc [Slid _ "module"; Suid _ i; se] ->
       let i = Pcaml.rename_id.val i in
       let mb = module_binding_se se in
-      <:str_item< module $i$ = $mb$ >>
+      <:str_item< module $uid:i$ = $mb$ >>
   | Sexpr loc [Slid _ "moduletype"; Suid _ s; se] ->
       let s = Pcaml.rename_id.val s in
       let mt = module_type_se se in
-      <:str_item< module type $s$ = $mt$ >>
+      <:str_item< module type $uid:s$ = $mt$ >>
   | _ ->
       let loc = loc_of_sexpr se in
       let e = expr_se se in
@@ -460,8 +460,8 @@ and expr_se =
   | Sfloat loc s -> <:expr< $flo:s$ >>
   | Schar loc s -> <:expr< $chr:s$ >>
   | Sstring loc s -> <:expr< $str:s$ >>
-  | Stid loc s -> <:expr< ~ $(Pcaml.rename_id.val s)$ >>
-  | Sqid loc s -> <:expr< ? $(Pcaml.rename_id.val s)$ >>
+  | Stid loc s -> <:expr< ~$(Pcaml.rename_id.val s)$ >>
+  | Sqid loc s -> <:expr< ?$(Pcaml.rename_id.val s)$ >>
   | Sexpr loc [] -> <:expr< () >>
   | Sexpr loc [Slid _ s; e1 :: ([_ :: _] as sel)]
     when List.mem s assoc_left_parsed_op_list ->
@@ -490,7 +490,7 @@ and expr_se =
             <:expr< $a1$ && $a2$ >> ]
   | Sexpr loc [Stid _ s; se] ->
       let e = expr_se se in
-      <:expr< ~ $s$ : $e$ >>
+      <:expr< ~$s$: $e$ >>
   | Sexpr loc [Slid _ "-"; se] ->
       let e = expr_se se in
       <:expr< - $e$ >>
@@ -523,7 +523,7 @@ and expr_se =
       let e1 = expr_se se1 in
       let e2 = expr_se se2 in
       let el = List.map expr_se sel in
-      <:expr< for $i$ = $e1$ to $e2$ do { $list:el$ } >>
+      <:expr< for $lid:i$ = $e1$ to $e2$ do { $list:el$ } >>
   | Sexpr loc [Slid loc1 "lambda"] -> <:expr< fun [] >>
   | Sexpr loc [Slid loc1 "lambda"; sep :: sel] ->
       let e = begin_se loc1 sel in
@@ -544,7 +544,7 @@ and expr_se =
           let r = r = "letrec" in
           let lbs = List.map let_binding_se sel1 in
           let e = begin_se loc sel2 in
-          <:expr< let $opt:r$ $list:lbs$ in $e$ >>
+          <:expr< let $flag:r$ $list:lbs$ in $e$ >>
       | [Slid _ n; Sexpr _ sl :: sel] ->
           let n = Pcaml.rename_id.val n in
           let (pl, el) =
@@ -826,8 +826,8 @@ and ipatt_opt_se =
   fun
   [ Slid loc "_" -> Left <:patt< _ >>
   | Slid loc s -> Left <:patt< $lid:(Pcaml.rename_id.val s)$ >>
-  | Stid loc s -> Left <:patt< ~ $(Pcaml.rename_id.val s)$ >>
-  | Sqid loc s -> Left <:patt< ? $(Pcaml.rename_id.val s)$ >>
+  | Stid loc s -> Left <:patt< ~$(Pcaml.rename_id.val s)$ >>
+  | Sqid loc s -> Left <:patt< ?$(Pcaml.rename_id.val s)$ >>
   | Sexpr loc [Sqid _ s; se] ->
       let s = Pcaml.rename_id.val s in
       let e = expr_se se in
@@ -974,7 +974,7 @@ EXTEND
   implem:
     [ [ "#"; se = sexpr ->
           let (n, dp) = directive_se se in
-          ([(<:str_item< # $n$ $opt:dp$ >>, loc)], True)
+          ([(<:str_item< # $lid:n$ $opt:dp$ >>, loc)], True)
       | si = str_item; x = SELF ->
           let (sil, stopped) = x in
           let loc = MLast.loc_of_str_item si in
@@ -984,7 +984,7 @@ EXTEND
   interf:
     [ [ "#"; se = sexpr ->
           let (n, dp) = directive_se se in
-          ([(<:sig_item< # $n$ $opt:dp$ >>, loc)], True)
+          ([(<:sig_item< # $lid:n$ $opt:dp$ >>, loc)], True)
       | si = sig_item; x = SELF ->
           let (sil, stopped) = x in
           let loc = MLast.loc_of_sig_item si in
@@ -994,14 +994,14 @@ EXTEND
   top_phrase:
     [ [ "#"; se = sexpr ->
           let (n, dp) = directive_se se in
-          Some <:str_item< # $n$ $opt:dp$ >>
+          Some <:str_item< # $lid:n$ $opt:dp$ >>
       | se = sexpr -> Some (str_item_se se)
       | EOI -> None ] ]
   ;
   use_file:
     [ [ "#"; se = sexpr ->
           let (n, dp) = directive_se se in
-          ([<:str_item< # $n$ $opt:dp$ >>], True)
+          ([<:str_item< # $lid:n$ $opt:dp$ >>], True)
       | si = str_item; x = SELF ->
           let (sil, stopped) = x in
           ([si :: sil], stopped)

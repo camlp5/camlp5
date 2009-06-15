@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.20 2007/09/18 15:40:03 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.21 2007/09/18 18:20:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml.OldPrinters;
@@ -290,7 +290,7 @@ pr_expr.pr_levels :=
             fprintf ppf "(@[@[%s (@[<v>%a@]@]@;<1 2>%a@]" b
               (listwb "" let_binding) (pel, ks ")" nok)
                  sequence (e, ks ")" k)
-      | <:expr< let $opt:rf$ $list:pel$ in $e$ >> ->
+      | <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
           fun ppf curr next dg k ->
             let b = if rf then "letrec" else "let" in
             fprintf ppf "(@[<hv>%s@ (@[<hv>%a@]@ %a@]" b
@@ -306,7 +306,7 @@ pr_expr.pr_levels :=
       | <:expr< do { $list:el$ } >> ->
           fun ppf curr next dg k ->
             fprintf ppf "(begin@;<1 1>@[<hv>%a@]" (list expr) (el, ks ")" k)
-      | <:expr< for $i$ = $e1$ to $e2$ do { $list:el$ } >> ->
+      | <:expr< for $lid:i$ = $e1$ to $e2$ do { $list:el$ } >> ->
           fun ppf curr next dg k ->
             fprintf ppf "(@[for %s@ %a@ %a %a@]" i expr (e1, nok)
               expr (e2, nok) (list expr) (el, ks ")" k)
@@ -373,7 +373,7 @@ pr_expr.pr_levels :=
                 | e1 -> (e1, el) ]
             in
             fprintf ppf "(@[%a@ %a@]" expr (f, nok) (list expr) (el, ks ")" k)
-      | <:expr< ~ $s$ : ($e$) >> ->
+      | <:expr< ~$s$: ($e$) >> ->
           fun ppf curr next dg k ->
             fprintf ppf "(~%s@ %a" s expr (e, ks ")" k)
       | <:expr< $e1$ .[ $e2$ ] >> ->
@@ -471,7 +471,7 @@ pr_module_expr.pr_levels :=
     pr_box ppf f x = fprintf ppf "@[%t@]" f;
     pr_rules =
       extfun Extfun.empty with
-      [ <:module_expr< functor ($i$ : $mt$) -> $me$ >> ->
+      [ <:module_expr< functor ($uid:i$ : $mt$) -> $me$ >> ->
           fun ppf curr next dg k ->
             fprintf ppf "(@[@[@[functor@ %s@]@ %a@]@ %a@]"
               i module_type (mt, nok) module_expr (me, ks ")" k)
@@ -493,7 +493,7 @@ pr_module_type.pr_levels :=
     pr_box ppf f x = fprintf ppf "@[%t@]" f;
     pr_rules =
       extfun Extfun.empty with
-      [ <:module_type< functor ($i$ : $mt1$) -> $mt2$ >> ->
+      [ <:module_type< functor ($uid:i$ : $mt1$) -> $mt2$ >> ->
           fun ppf curr next dg k ->
             fprintf ppf "(@[@[@[functor@ %s@]@ %a@]@ %a@]"
               i module_type (mt1, nok) module_type (mt2, ks ")" k)
@@ -570,7 +570,7 @@ pr_patt.pr_levels :=
             in
             fprintf ppf "(@[<hv>{}@ %a@]" (list record_binding)
               (fpl, ks ")" k)
-      | <:patt< ? $x$ >> ->
+      | <:patt< ?$x$ >> ->
           fun ppf curr next dg k -> fprintf ppf "?%s%t" x k
       | <:patt< ? ($lid:x$ = $e$) >> ->
           fun ppf curr next dg k ->
@@ -605,25 +605,25 @@ pr_sig_item.pr_levels :=
             | tdl ->
                 fprintf ppf "(@[<hv>type@ %a@]" (listwb "" type_decl)
                   (tdl, ks ")" k) ]
-      | <:sig_item< exception $c$ of $list:tl$ >> ->
+      | <:sig_item< exception $uid:c$ of $list:tl$ >> ->
           fun ppf curr next dg k ->
             match tl with
             [ [] -> fprintf ppf "(@[exception@ %s%t@]" c (ks ")" k)
             | tl ->
                 fprintf ppf "(@[@[exception@ %s@]@ %a@]" c
                   (list ctyp) (tl, ks ")" k) ]
-      | <:sig_item< value $i$ : $t$ >> ->
+      | <:sig_item< value $lid:i$ : $t$ >> ->
           fun ppf curr next dg k ->
             fprintf ppf "(@[@[value %s@]@ %a@]" i ctyp (t, ks ")" k)
-      | <:sig_item< external $i$ : $t$ = $list:pd$ >> ->
+      | <:sig_item< external $lid:i$ : $t$ = $list:pd$ >> ->
           fun ppf curr next dg k ->
             fprintf ppf "(@[@[external@ %s@]@ %a@ %a@]" i ctyp (t, nok)
               (list string) (pd, ks ")" k)
-      | <:sig_item< module $s$ : $mt$ >> ->
+      | <:sig_item< module $uid:s$ : $mt$ >> ->
           fun ppf curr next dg k ->
             fprintf ppf "(@[@[module@ %s@]@ %a@]" s
               module_type (mt, ks ")" k)
-      | <:sig_item< module type $s$ = $mt$ >> ->
+      | <:sig_item< module type $uid:s$ = $mt$ >> ->
           fun ppf curr next dg k ->
             fprintf ppf "(@[@[moduletype@ %s@]@ %a@]" s
               module_type (mt, ks ")" k)
@@ -651,7 +651,7 @@ pr_str_item.pr_levels :=
             | tdl ->
                 fprintf ppf "(@[<hv>type@ %a@]" (listwb "" type_decl)
                   (tdl, ks ")" k) ]
-      | <:str_item< exception $c$ of $list:tl$ >> ->
+      | <:str_item< exception $uid:c$ of $list:tl$ >> ->
           fun ppf curr next dg k ->
             match tl with
             [ [] -> fprintf ppf "(@[exception@ %s%t@]" c (ks ")" k)
@@ -667,21 +667,21 @@ pr_str_item.pr_levels :=
             | pel ->
                 fprintf ppf "(@[<hv 1>%s*@ %a@]" b (listwb "" let_binding)
                   (pel, ks ")" k) ]
-      | <:str_item< module $s$ = $me$ >> ->
+      | <:str_item< module $uid:s$ = $me$ >> ->
           fun ppf curr next dg k ->
             fprintf ppf "(%a" module_binding (("module", s, me), ks ")" k)
-      | <:str_item< module type $s$ = $mt$ >> ->
+      | <:str_item< module type $uid:s$ = $mt$ >> ->
           fun ppf curr next dg k ->
             fprintf ppf "(@[@[moduletype@ %s@]@ %a@]" s
               module_type (mt, ks ")" k)
-      | <:str_item< external $i$ : $t$ = $list:pd$ >> ->
+      | <:str_item< external $lid:i$ : $t$ = $list:pd$ >> ->
           fun ppf curr next dg k ->
             fprintf ppf "(@[external@ %s@ %a@ %a@]" i ctyp (t, nok)
               (list string) (pd, ks ")" k)
       | <:str_item< $exp:e$ >> ->
           fun ppf curr next dg k ->
             fprintf ppf "%a" expr (e, k)
-      | <:str_item< # $s$ $opt:x$ >> ->
+      | <:str_item< # $lid:s$ $opt:x$ >> ->
           fun ppf curr next dg k ->
             match x with
             [ Some e -> fprintf ppf "; # (%s %a" s expr (e, ks ")" k)
