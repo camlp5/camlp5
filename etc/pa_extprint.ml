@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_extprint.ml,v 1.14 2007/12/16 21:46:19 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.15 2007/12/16 22:43:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -647,13 +647,14 @@ value rec meta_tree_for_trace loc (s, tl) =
 
 value get_format_args fmt al = ([], al);
 
-value make_pc loc pc bef bef_al aft aft_al =
+value make_pc loc empty_bef empty_aft pc bef bef_al aft aft_al =
   let lbl =
     if bef = "" then []
     else
       let e =
-        let bef = "%s" ^ bef in
-        let e = <:expr< Pretty.sprintf $str:bef$ $pc$.bef >> in
+        let bef = if empty_bef then bef else "%s" ^ bef in
+        let e = <:expr< Pretty.sprintf $str:bef$ >> in
+        let e = if empty_bef then e else <:expr< $e$ $pc$.bef >> in
         List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e bef_al
       in
       [(<:patt< bef >>, e)]
@@ -662,12 +663,12 @@ value make_pc loc pc bef bef_al aft aft_al =
     if aft = "" then lbl
     else
       let e =
-        let aft = aft ^ "%s" in
+        let aft = if empty_aft then aft else aft ^ "%s" in
         let e = <:expr< Pretty.sprintf $str:aft$ >> in
         let e =
           List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e aft_al
         in
-        <:expr< $e$ $pc$.aft >>
+        if empty_aft then e else <:expr< $e$ $pc$.aft >>
       in
       [(<:patt< aft >>, e) :: lbl]
   in
@@ -694,7 +695,7 @@ value expr_of_pformat loc empty_bef empty_aft pc al =
         | _ -> Ploc.raise loc (Stream.Error "Not enough parameters") ]
       in
       let (aft_al, al) = get_assoc_args loc fmt2 al in
-      let pc = make_pc loc pc fmt1 bef_al fmt2 aft_al in
+      let pc = make_pc loc empty_bef empty_aft pc fmt1 bef_al fmt2 aft_al in
       let e = <:expr< $f$ $pc$ $a$ >> in
       (e, al)
   | _ -> (<:expr< ccc >>, al) ]
