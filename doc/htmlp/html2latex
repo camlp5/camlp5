@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2latex,v 1.38 2007/07/25 02:02:07 deraugla Exp $
+# $Id: html2latex,v 1.39 2007/07/25 04:32:36 deraugla Exp $
 
 FILES="index.html ptools.html syntext.html revsynt.html quot.html parsers.html fparsers.html lexers.html grammars.html pretty.html opretty.html ml_ast.html pragma.html extfun.html"
 
@@ -87,6 +87,7 @@ for i in $FILES; do
     -e 's/_/\\_/g' \
     -e 's/#/\\#/g' \
     -e 's/\$/\\$/g' \
+    -e 's/\^/\\^/g' \
     -e 's/\\backslash/$\\backslash$/g' \
     -e '/\\begin{verbatim}/,/\\end{verbatim}/s/\\_/_/g' \
     -e '/\\begin{verbatim}/,/\\end{verbatim}/s/\\#/#/g' \
@@ -94,6 +95,7 @@ for i in $FILES; do
     -e '/\\begin{verbatim}/,/\\end{verbatim}/s/\\\$/$/g' \
     -e '/\\begin{verbatim}/,/\\end{verbatim}/s/\\{/{/g' \
     -e '/\\begin{verbatim}/,/\\end{verbatim}/s/\\}/}/g' \
+    -e '/\\begin{verbatim}/,/\\end{verbatim}/s/\\^/^/g' \
     -e '/<div class="trailer">/,$d' \
     -e 's/<div[^>]*>/\\noindent /' -e 's|</div>||'
 done

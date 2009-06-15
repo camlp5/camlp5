@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: quot.html,v 1.4 2007/07/25 02:22:27 deraugla Exp $ -->
+  <!-- $Id: quot.html,v 1.5 2007/07/25 04:32:36 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>quotations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -153,10 +153,6 @@
 <p>If several files set the variable "<tt>Quotation.default</tt>", the
   default quotation applies to the last loaded one.</p>
 
-<h2>An example</h2>
-
-<p>... to be continued ...</p>
-
 <h2>Antiquotations</h2>
 
 <p>A quotation obeys its own rules of lexing and parsing. Its result is
@@ -306,6 +302,234 @@
   <li>the other nodes inherit, as location, the location of the full
     quotation.</li>
 </ul>
+
+<h2>A full example: lambda terms</h2>
+
+<p>This example allows to represent lambda terms by a concrete syntax
+  and to be able to combine them using antiquotations.</p>
+
+<p>A lambda term is defined like this:</p>
+
+<pre>
+  type term =
+    [ Lam of string and term
+    | App of term and term
+    | Var of string ]
+  ;
+</pre>
+
+<p>Examples:</p>
+
+<pre>
+  value fst = Lam "x" (Lam "y" (Var "x"));
+  value snd = Lam "x" (Lam "y" (Var "y"));
+  value delta = Lam "x" (App (Var "x") (Var "x"));
+  value omega = App delta delta;
+  value comb_s =
+    Lam "x"
+      (Lamb "y"
+         (Lamb "z"
+            (App (App (Var "x") (Var "y")) (App (Var "x") (Var "z")))));
+</pre>
+
+<p>Since combinations of lambda term may be complicated, The idea is to
+  represent them by quotations in concrete syntax. We want to be able to
+  write the examples above like this:</p>
+
+<pre>
+  value fst = &lt;&lt; \x.\y.x >>;
+  value snd = &lt;&lt; \x.\y.y >>;
+  value delta = &lt;&lt; \x.x x >>
+  value omega = &lt;&lt; ^delta ^delta >>;
+  value comb_s = &lt;&lt; \x.\y.\z.(x y)(x z) >>;
+</pre>
+
+<p>which is a classic representation of lambda terms.</p>
+
+<p>Notice, in the definition of "<tt>omega</tt>", the usage of the
+  caret ("<tt>^</tt>") sign to specify antiquotations. Notice also the
+  simplicity of the representation of the expression defining
+  "<tt>comb_s</tt>".</p>
+
+<p>Here is the code of the quotation expander, term.ml. The expander
+  uses the <a href="grammars.html">extensible grammars</a>. It has its
+  own lexer (using the <a href="lexers.html">stream lexers</a>)
+  because the lexer of ocaml programs ("<tt>Plexer.gmake ()</tt>"),
+  cannot recognize the backslashes alone.</p>
+
+<pre>
+  #load "q_MLast.cmo";
+  #load "pa_lex.cmo";
+  #load "pa_extend.cmo";
+
+  (* lexer *)
+
+  value rev_implode l =
+    let s = String.create (List.length l) in
+    loop (String.length s - 1) l where rec loop i =
+      fun
+      [ [c :: l] -> do { String.unsafe_set s i c; loop (i - 1) l }
+      | [] -> s ]
+  ;
+
+  module B =
+    struct
+      value empty = [];
+      value add x l = [x :: l];
+      value get = rev_implode;
+    end
+  ;
+
+  value rec ident =
+    lexer
+    [ "a..zA..Z0..9-_'\128..\255" ident! | ]
+  ;
+
+  value empty _ = parser [: _ = Stream.empty :] -> [];
+
+  value rec next_tok =
+    lexer
+    [ "\\" -> ("BSLASH", "")
+    | "^" -> ("CARET", "")
+    | "a..z" ident! -> ("IDENT", $buf)
+    | "(" -> ("", "(")
+    | ")" -> ("", ")")
+    | "." -> ("", ".")
+    | empty -> let _ = $buf in ("EOS", "")
+    | -> raise (Stream.Error "lexing error: bad character") ]
+  ;
+
+  value rec skip_spaces = lexer [ " \n\r"/ skip_spaces! | ];
+
+  value record_loc loct i (bp, ep) = do {
+    if i >= Array.length loct.val then do {
+      let newt =
+        Array.init (2 * Array.length loct.val + 1)
+          (fun i ->
+             if i &lt; Array.length loct.val then loct.val.(i)
+             else Stdpp.dummy_loc)
+      in
+      loct.val := newt;
+    }
+    else ();
+    loct.val.(i) := Stdpp.make_loc (bp, ep)
+  };
+
+  value lex_func cs =
+    let loct = ref [| |] in
+    let ts =
+      Stream.from
+        (fun i -> do {
+           ignore (skip_spaces $empty cs : list char);
+           let bp = Stream.count cs in
+           let r = next_tok $empty cs in
+           let ep = Stream.count cs in
+           record_loc loct i (bp, ep);
+           Some r
+         })
+    in
+    (ts, fun i -> loct.val.(i))
+  ;
+
+  value lam_lex =
+    {Token.tok_func = lex_func;
+     Token.tok_using _ = (); Token.tok_removing _ = ();
+     Token.tok_match = Token.default_match;
+     Token.tok_text = Token.lexer_text;
+     Token.tok_comm = None}
+  ;
+
+  (* parser *)
+
+  value g = Grammar.gcreate lam_lex;
+  value expr_term_eos = Grammar.Entry.create g "term";
+  value patt_term_eos = Grammar.Entry.create g "term";
+
+  EXTEND
+    GLOBAL: expr_term_eos patt_term_eos;
+    expr_term_eos:
+      [ [ x = expr_term; EOS -> x ] ]
+    ;
+    expr_term:
+      [ [ BSLASH; i = IDENT; "."; t = SELF -> &lt;:expr&lt; Lam $str:i$ $t$ >> ]
+      | [ x = SELF; y = SELF -> &lt;:expr&lt; App $x$ $y$ >> ]
+      | [ i = IDENT -> &lt;:expr&lt; Var $str:i$ >>
+        | CARET; r = expr_antiquot -> r
+        | "("; t = SELF; ")" -> t ] ]
+    ;
+    expr_antiquot:
+      [ [ i = IDENT ->
+           let r =
+             let loc = Stdpp.make_loc (0, String.length i) in
+             &lt;:expr&lt; $lid:i$ >>
+           in
+           &lt;:expr&lt; $anti:r$ >> ] ]
+    ;
+    patt_term_eos:
+      [ [ x = patt_term; EOS -> x ] ]
+    ;
+    patt_term:
+      [ [ BSLASH; i = IDENT; "."; t = SELF -> &lt;:patt&lt; Lam $str:i$ $t$ >> ]
+      | [ x = SELF; y = SELF -> &lt;:patt&lt; App $x$ $y$ >> ]
+      | [ i = IDENT -> &lt;:patt&lt; Var $str:i$ >>
+        | CARET; r = patt_antiquot -> r
+        | "("; t = SELF; ")" -> t ] ]
+    ;
+    patt_antiquot:
+      [ [ i = IDENT ->
+           let r =
+             let loc = Stdpp.make_loc (0, String.length i) in
+             &lt;:patt&lt; $lid:i$ >>
+           in
+           &lt;:patt&lt; $anti:r$ >> ] ]
+    ;
+  END;
+
+  value expand_expr s = Grammar.Entry.parse expr_term_eos (Stream.of_string s);
+  value expand_patt s = Grammar.Entry.parse patt_term_eos (Stream.of_string s);
+
+  Quotation.add "term" (Quotation.ExAst (expand_expr, expand_patt));
+  Quotation.default.val := "term";
+</pre>
+
+<p>Compilation:</p>
+
+<pre>
+  ocamlc -pp camlp5r -I +camlp5 -c term.ml 
+</pre>
+
+<p>Example, in the toplevel, including a semantic error, correctly
+  underlined, thanks to the antiquotation nodes:</p>
+
+<pre>
+  $ ocaml -I +camlp5 camlp5r.cma
+          Objective Caml version ...
+
+          Camlp5 Parsing version ...
+
+  # #load "term.cmo";
+  # type term =
+     [ Lam of string and term
+     | App of term and term
+     |   Var of string ]
+    ;
+  type term = [ Lam of string and term | App of term and term | Var of string ]
+  # value comb_s = &lt;&lt; \x.\y.\z.(x y)(x z) >>;
+  value comb_s : term =
+    Lam "x"
+     (Lam "y"
+       (Lam "z" (App (App (Var "x") (Var "y")) (App (Var "x") (Var "z")))))
+  # value omega = &lt;&lt; ^delta ^delta >>;
+  Characters 18-23:
+    value omega = &lt;&lt; ^delta ^delta >>;
+                      ^^^^^
+  Unbound value delta
+  # value delta = &lt;&lt; \x.x x >>;
+  value delta : term = Lam "x" (App (Var "x") (Var "x"))
+  # value omega = &lt;&lt; ^delta ^delta >>;
+  value omega : term =
+    App (Lam "x" (App (Var "x") (Var "x"))) (Lam "x" (App (Var "x") (Var "x")))
+</pre>
 
 <div class="trailer">
 </div>
