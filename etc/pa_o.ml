@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.62 2007/09/21 20:23:52 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.63 2007/09/21 20:43:33 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -313,8 +313,10 @@ value get_seq =
 value vala_map f e =
   match (e, "") with
   [ (<:vala< e >>, "") -> <:vala< f e >>
-  | (<:vala< $e$ >>, "") -> <:vala< $e$ >>
-  | _ -> assert False ]
+  | _ ->
+      match (e, "") with
+      [ (<:vala< $e$ >>, "") -> <:vala< $e$ >>
+      | _ -> assert False ] ]
 ;
 
 value uv c =

@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.98 2007/09/21 19:11:06 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.99 2007/09/21 20:43:33 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -1591,7 +1591,7 @@ do {
                 Grammar.Entry.parse Pcaml.patt_eoi (Stream.of_string a)
               in
               <:patt< Ploc.VaAnt $anti:a$ >>
-            else <:patt< failwith "antiquot" >> ] ]
+            else <:patt< _ >> ] ]
     ;
   END;
   let patt s =

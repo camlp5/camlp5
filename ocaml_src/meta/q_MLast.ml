@@ -4861,10 +4861,7 @@ Grammar.extend
                   (loc, MLast.PaUid (loc, "Ploc"),
                    MLast.PaUid (loc, "VaAnt")),
                 MLast.PaAnt (loc, a))
-           else
-             MLast.PaApp
-               (loc, MLast.PaLid (loc, "failwith"),
-                MLast.PaStr (loc, "antiquot")) :
+           else MLast.PaAny loc :
            'patt_eoi));
      [Gramext.Snterm (Grammar.Entry.obj (Pcaml.patt : 'patt Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
