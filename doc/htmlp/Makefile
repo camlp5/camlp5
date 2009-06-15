@@ -1,7 +1,7 @@
-# $Id: Makefile,v 1.34 2007/09/27 13:53:42 deraugla Exp $
+# $Id: Makefile,v 1.35 2007/10/14 03:41:11 deraugla Exp $
 
 H=../html
-OBJS=$H/index.html $H/about.html $H/ast_strict.html $H/ast_transi.html $H/commands.html $H/conclusion.html $H/extfun.html $H/fparsers.html $H/grammars.html $H/lexers.html $H/library.html $H/locations.html $H/macros.html $H/ml_ast.html $H/opretty.html $H/parsers.html $H/pcaml.html $H/pragma.html $H/pretty.html $H/printers.html $H/ptools.html $H/q_ast.html $H/quot.html $H/revsynt.html $H/scheme.html $H/sources.html $H/strict.html $H/syntext.html
+OBJS=$H/index.html $H/about.html $H/ast_strict.html $H/ast_transi.html $H/commands.html $H/conclusion.html $H/extfun.html $H/fparsers.html $H/grammars.html $H/lexers.html $H/lexers2.html $H/library.html $H/locations.html $H/macros.html $H/ml_ast.html $H/opretty.html $H/parsers.html $H/pcaml.html $H/pragma.html $H/pretty.html $H/printers.html $H/ptools.html $H/q_ast.html $H/quot.html $H/revsynt.html $H/scheme.html $H/sources.html $H/strict.html $H/syntext.html
 RSS=$H/rss/camlp5.rss
 INDEX=index.html
 

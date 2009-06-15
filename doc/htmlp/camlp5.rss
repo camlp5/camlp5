@@ -6,6 +6,16 @@
     <lastBuildDate>Mon Sep 17 15:10:47 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
     <item>
+      <title>Lexers</title>
+      <description>
+        Changed the chapter about lexers, their syntax being changed.
+        The old version is kept for compatibility but there is no more
+        link to its documentation page.
+      </description>
+      <pubDate>Thu Oct 11 12:56:15 CEST 2007</pubDate>
+      <link>../lexers2.html</link>
+    </item>
+    <item>
       <title>Future work</title>
       <description>
         Deleted section about the rewritting of the pretty print in

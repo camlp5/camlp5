@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: quot.html,v 1.21 2007/10/09 17:20:29 deraugla Exp $ -->
+  <!-- $Id: quot.html,v 1.22 2007/10/14 03:41:11 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>quotations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -576,7 +576,7 @@ type expander =
 
 <p>Here is the code of the quotation expander, term.ml. The expander
   uses the <a href="grammars.html">extensible grammars</a>. It has its
-  own lexer (using the <a href="lexers.html">stream lexers</a>)
+  own lexer (using the <a href="lexers2.html">stream lexers</a>)
   because the lexer of OCaml programs ("<tt>Plexer.gmake ()</tt>"),
   cannot recognize the backslashes alone.</p>
 
@@ -585,7 +585,7 @@ type expander =
 <pre>
   (* lexer *)
 
-  #load "pa_lex.cmo";
+  #load "pa_lexer.cmo";
 
   value rev_implode l =
     let s = String.create (List.length l) in
@@ -605,7 +605,9 @@ type expander =
 
   value rec ident =
     lexer
-    [ "a..zA..Z0..9-_'\128..\255" ident! | ]
+    [ [ 'a'-'z' | 'A'-'Z' | '0'-'9' | '-' | '_' | '\128'-'\255' ]
+      ident!
+    | ]
   ;
 
   value empty _ = parser [: _ = Stream.empty :] -> [];
@@ -614,7 +616,7 @@ type expander =
     lexer
     [ "\\" -> ("BSLASH", "")
     | "^" -> ("CARET", "")
-    | "a..z" ident! -> ("IDENT", $buf)
+    | 'a'-'z' ident! -> ("IDENT", $buf)
     | "(" -> ("", "(")
     | ")" -> ("", ")")
     | "." -> ("", ".")

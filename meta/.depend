@@ -2,8 +2,6 @@ pa_extend.cmo: ../main/mLast.cmi ../main/pcaml.cmi
 pa_extend.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
 pa_extend_m.cmo: ../main/mLast.cmi pa_extend.cmo 
 pa_extend_m.cmx: ../main/mLast.cmi pa_extend.cmx 
-pa_lex.cmo: ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi 
-pa_lex.cmx: ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx 
 pa_lexer.cmo: ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi 
 pa_lexer.cmx: ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx 
 pa_macro.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/reloc.cmi \
