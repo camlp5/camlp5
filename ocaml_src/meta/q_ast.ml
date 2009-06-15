@@ -278,7 +278,16 @@ module Meta =
       | PaChr (_, s) -> e_node "PaChr" [e_vala e_string s]
       | PaInt (_, s, k) -> e_node "PaInt" [e_vala e_string s; e_string k]
       | PaFlo (_, s) -> e_node "PaFlo" [e_vala e_string s]
+      | PaLab (_, s, p) ->
+          e_node "PaLab" [e_vala e_string s; e_option e_patt p]
       | PaLid (_, s) -> e_node "PaLid" [e_vala e_string s]
+      | PaOlb (_, s, opeo) ->
+          e_node "PaOlb"
+            [e_vala e_string s;
+             e_option
+               (fun (p, oe) ->
+                  MLast.ExTup (loc, [e_patt p; e_vala (e_option e_expr) oe]))
+               opeo]
       | PaOrp (_, p1, p2) -> e_node "PaOrp" [e_patt p1; e_patt p2]
       | PaRec (_, lpe) ->
           let lpe =
@@ -291,10 +300,11 @@ module Meta =
       | PaStr (_, s) -> e_node "PaStr" [e_vala e_string s]
       | PaTup (_, pl) -> e_node "PaTup" [e_vala (e_list e_patt) pl]
       | PaTyc (_, p, t) -> e_node "PaTyc" [e_patt p; e_ctyp t]
+      | PaTyp (_, ls) -> e_node "PaTyp" [e_vala (e_list e_string) ls]
       | PaUid (_, s) -> e_node "PaUid" [e_vala e_string s]
+      | PaVrn (_, s) -> e_node "PaVrn" [e_vala e_string s]
       | x -> not_impl "e_patt" x
-    ;;
-    let rec p_patt =
+    and p_patt =
       function
         PaAcc (_, p1, p2) -> p_node "PaAcc" [p_patt p1; p_patt p2]
       | PaAli (_, p1, p2) -> p_node "PaAli" [p_patt p1; p_patt p2]
@@ -302,8 +312,7 @@ module Meta =
       | PaLid (_, s) -> p_node "PaLid" [p_vala p_string s]
       | PaTup (_, pl) -> p_node "PaTup" [p_vala (p_list p_patt) pl]
       | x -> not_impl "p_patt" x
-    ;;
-    let rec e_expr =
+    and e_expr =
       function
         ExAcc (_, e1, e2) -> e_node "ExAcc" [e_expr e1; e_expr e2]
       | ExApp (_, e1, e2) -> e_node "ExApp" [e_expr e1; e_expr e2]

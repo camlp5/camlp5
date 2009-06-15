@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.83 2007/09/14 03:16:58 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.84 2007/09/14 14:57:38 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -702,34 +702,28 @@ EXTEND
   (* Labels *)
   ctyp: AFTER "arrow"
     [ NONA
-      [ i = tildeidentcolon; t = SELF -> <:ctyp< ~ $a:i$ : $t$ >>
-      | i = questionidentcolon; t = SELF -> <:ctyp< ? $a:i$ : $t$ >> ] ]
+      [ i = tildeidentcolon; t = SELF -> <:ctyp< ~$a:i$: $t$ >>
+      | i = questionidentcolon; t = SELF -> <:ctyp< ?$a:i$: $t$ >> ] ]
   ;
   tildeident:
     [ [ i = TILDEIDENT -> <:vala< i >>
-      | "~"; s = ANTIQUOT_LOC -> <:vala< $s$ >>
-      | "~"; s = ANTIQUOT_LOC "a" -> <:vala< $s$ >> ] ]
+      | a = TILDEANTIQUOT_LOC -> <:vala< $a$ >>
+      | a = TILDEANTIQUOT_LOC "a" -> <:vala< $a$ >> ] ]
   ;
   tildeidentcolon:
     [ [ i = TILDEIDENTCOLON -> <:vala< i >>
-      | "~"; s = ANTIQUOT_LOC; ":" -> <:vala< $s$ >>
-      | "~"; s = ANTIQUOT_LOC "a"; ":" -> <:vala< $s$ >> ] ]
+      | a = TILDEANTIQUOTCOLON_LOC -> <:vala< $a$ >>
+      | a = TILDEANTIQUOTCOLON_LOC "a" -> <:vala< $a$ >> ] ]
   ;
   questionident:
     [ [ i = QUESTIONIDENT -> <:vala< i >>
-(*
-      | "?"; s = ANTIQUOT_LOC -> <:vala< $s$ >>
-      | "?"; s = ANTIQUOT_LOC "a" -> <:vala< $s$ >>
-*)
-      ] ]
+      | a = QUESTIONANTIQUOT_LOC -> <:vala< $a$ >>
+      | a = QUESTIONANTIQUOT_LOC "a" -> <:vala< $a$ >> ] ]
   ;
   questionidentcolon:
     [ [ i = QUESTIONIDENTCOLON -> <:vala< i >>
-(*
-      | "?"; s = ANTIQUOT_LOC; ":" -> <:vala< $s$ >>
-      | "?"; s = ANTIQUOT_LOC "a"; ":" -> <:vala< $s$ >>
-*)
-      ] ]
+      | a = QUESTIONANTIQUOTCOLON_LOC -> <:vala< $a$ >>
+      | a = QUESTIONANTIQUOTCOLON_LOC "a" -> <:vala< $a$ >> ] ]
   ;
   ctyp: LEVEL "simple"
     [ [ "["; "="; rfl = poly_variant_list; "]" ->
@@ -756,12 +750,12 @@ EXTEND
   patt: LEVEL "simple"
     [ [ "`"; s = ident2 -> <:patt< ` $a:s$ >>
       | "#"; sl = mod_ident2 -> <:patt< # $a:sl$ >>
-      | i = tildeidentcolon; p = SELF -> <:patt< ~ $a:i$ : $p$ >>
-      | i = tildeident -> <:patt< ~ $a:i$ >>
+      | i = tildeidentcolon; p = SELF -> <:patt< ~$a:i$: $p$ >>
+      | i = tildeident -> <:patt< ~$a:i$ >>
       | i = questionidentcolon; "("; p = patt_tcon; eo = V OPT eq_expr; ")" ->
-          <:patt< ? $a:i$ : ($p$ $aopt:eo$) >>
+          <:patt< ?$a:i$: ($p$ $aopt:eo$) >>
       | i = questionident ->
-          <:patt< ? $a:i$ >>
+          <:patt< ?$a:i$ >>
       | "?"; "("; p = patt_tcon; eo = V OPT eq_expr; ")" ->
           <:patt< ? ($p$ $aopt:eo$) >> ] ]
   ;
@@ -770,13 +764,13 @@ EXTEND
       | p = patt -> p ] ]
   ;
   ipatt:
-    [ [ i = tildeidentcolon; p = SELF -> <:patt< ~ $a:i$ : $p$ >>
-      | i = tildeident -> <:patt< ~ $a:i$ >>
+    [ [ i = tildeidentcolon; p = SELF -> <:patt< ~$a:i$: $p$ >>
+      | i = tildeident -> <:patt< ~$a:i$ >>
       | i = questionidentcolon; "("; p = ipatt_tcon;
         eo = V OPT eq_expr; ")" ->
-          <:patt< ? $a:i$ : ($p$ $aopt:eo$) >>
+          <:patt< ?$a:i$: ($p$ $aopt:eo$) >>
       | i = questionident ->
-          <:patt< ? $a:i$ >>
+          <:patt< ?$a:i$ >>
       | "?"; "("; p = ipatt_tcon; eo = V OPT eq_expr; ")" ->
           <:patt< ? ($p$ $aopt:eo$) >> ] ]
   ;
@@ -789,7 +783,7 @@ EXTEND
   ;
   expr: AFTER "apply"
     [ "label" NONA
-      [ i = TILDEIDENTCOLON; e = SELF -> <:expr< ~ $i$ : $e$ >>
+      [ i = TILDEIDENTCOLON; e = SELF -> <:expr< ~$i$: $e$ >>
       | i = TILDEIDENT -> <:expr< ~ $i$ >>
       | i = QUESTIONIDENTCOLON; e = SELF -> <:expr< ? $i$ : $e$ >>
       | i = QUESTIONIDENT -> <:expr< ? $i$ >> ] ]

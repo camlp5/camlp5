@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.81 2007/09/14 03:16:58 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.82 2007/09/14 14:57:38 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -1149,18 +1149,22 @@ EXTEND
   ;
   tildeident:
     [ [ i = a_TILDEIDENT -> Qast.VaVal i
+      | a = TILDEANTIQUOT "a" -> antiquot "a" loc a
       | "~"; a = ANTIQUOT "a" -> antiquot "a" loc a ] ]
   ;
   tildeidentcolon:
     [ [ i = a_TILDEIDENTCOLON -> Qast.VaVal i
+      | a = TILDEANTIQUOTCOLON "a" -> antiquot "a" loc a
       | "~"; a = ANTIQUOT "a"; ":" -> antiquot "a" loc a ] ]
   ;
   questionident:
     [ [ i = a_QUESTIONIDENT -> Qast.VaVal i
+      | a = QUESTIONANTIQUOT "a" -> antiquot "a" loc a
       | "?"; a = ANTIQUOT "a" -> antiquot "a" loc a ] ]
   ;
   questionidentcolon:
     [ [ i = a_QUESTIONIDENTCOLON -> Qast.VaVal i
+      | a = QUESTIONANTIQUOTCOLON "a" -> antiquot "a" loc a
       | "?"; a = ANTIQUOT "a"; ":" -> antiquot "a" loc a ] ]
   ;
   ctyp: LEVEL "simple"
@@ -1489,18 +1493,22 @@ EXTEND
   ;
   a_TILDEIDENT:
     [ [ "~"; a = ANTIQUOT -> antiquot "" loc a
+      | a = TILDEANTIQUOT -> antiquot "" loc a
       | s = TILDEIDENT -> Qast.Str s ] ]
   ;
   a_TILDEIDENTCOLON:
     [ [ "~"; a = ANTIQUOT; ":" -> antiquot "" loc a
+      | a = TILDEANTIQUOTCOLON -> antiquot "" loc a
       | s = TILDEIDENTCOLON -> Qast.Str s ] ]
   ;
   a_QUESTIONIDENT:
     [ [ "?"; a = ANTIQUOT -> antiquot "" loc a
+      | a = QUESTIONANTIQUOT -> antiquot "" loc a
       | s = QUESTIONIDENT -> Qast.Str s ] ]
   ;
   a_QUESTIONIDENTCOLON:
     [ [ "?"; a = ANTIQUOT; ":" -> antiquot "" loc a
+      | a = QUESTIONANTIQUOTCOLON -> antiquot "" loc a
       | s = QUESTIONIDENTCOLON -> Qast.Str s ] ]
   ;
 END;
