@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: library.html,v 1.10 2007/08/20 10:48:26 deraugla Exp $ -->
+  <!-- $Id: library.html,v 1.11 2007/08/20 12:02:23 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Library</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -430,11 +430,13 @@ value make_stream_and_location :
 
 <h2>Gramext module</h2>
 
-<p>This module shows in clear the implementations of grammars and
-  entries types, the normal access being through the
-  "<tt>Grammar</tt>" module where these types are abstract. It can be
-  useful for programmers interested in scanning the contents of
-  grammars and entries, for example to make analyses on them.</p>
+<p>This module is not supposed to be used by the casual user.</p>
+
+<p>It shows in clear the implementations of grammars and entries
+ types, the normal access being through the "<tt>Grammar</tt>" module
+ where these types are abstract. It can be useful for programmers
+ interested in scanning the contents of grammars and entries, for
+ example to make analyses on them.</p>
 
 <h3>Grammar type</h3>
 
@@ -486,16 +488,60 @@ type g_entry 'te =
     able to type camlp5 grammars.
 </dd></dl>
 
+<dl><dd>
+    Meaning of the fields:
+    <ul>
+      <li><tt>egram</tt> : the associated grammar</li>
+      <li><tt>ename</tt> : the entry name</li>
+      <li><tt>elocal</tt> : True if the entry is local (local entries
+        are written with a star character "*" by Grammar.Entry.print)
+      <li><tt>estart</tt> and <tt>econtinue</tt> are parsers of the
+        entry used in
+        the <a href="grammars.html#a:Grammar-machinery">grammar
+        machinery</a></li>
+      <li><tt>edesc</tt> : the entry description (see below)</li>
+    </ul>
+</dd></dl>
+
 <pre style="border:0; margin-left: 1cm">
 and g_desc 'te =
   [ Dlevels of list (g_level 'te)
   | Dparser of Stream.t 'te -> Obj.t ]
+</pre>
+
+<dl><dd>
+    The entry description.
+    <ul>
+      <li>The constructor "<tt>Dlevels</tt>" is for entries built by
+        "<tt>Grammar.Entry.create</tt>" and extendable by the EXTEND
+        statement.</li>
+      <li>The constructor "<tt>Dparser</tt>" is for entries built by
+        "<tt>Grammar.Entry.of_parser</tt>".</li>
+    </ul>
+</dd></dl>
+
+<pre style="border:0; margin-left: 1cm">
 and g_level 'te =
   { assoc : g_assoc;
     lname : option string;
     lsuffix : g_tree 'te;
     lprefix : g_tree 'te }
 and g_assoc = [ NonA | RightA | LeftA ]
+</pre>
+
+<dl><dd>
+    Description of an entry level.
+    <ul>
+      <li><tt>assoc</tt> : the level associativity</li>
+      <li><tt>lname</tt> : the level name, if any</li>
+      <li><tt>lsuffix</tt> : the tree composed of the rules starting with
+        "<tt>SELF</tt>"</li>
+      <li><tt>lprefix</tt> : the tree composed of the rules not
+        starting with "<tt>SELF</tt>"</li>
+    </ul>
+</dd></dl>
+
+<pre style="border:0; margin-left: 1cm">
 and g_symbol 'te =
   [ Smeta of string and list (g_symbol 'te) and Obj.t
   | Snterm of g_entry 'te
@@ -510,7 +556,52 @@ and g_symbol 'te =
   | Snext
   | Stoken of Token.pattern
   | Stree of g_tree 'te ]
+</pre>
+
+<dl><dd>
+    Description of a rule symbol.
+    <ul>
+      <li>The constructor "<tt>Smeta</tt>" is used by the extensions <a
+        href="grammars.html#a:Extensions-FOLD0-and-FOLD1">FOLD0 and
+        FOLD1</a></li>
+      <li>The constructor "<tt>Snterm</tt>" is the representation of a
+        non-terminal (a call to another entry)</li>
+      <li>The constructor "<tt>Snterml</tt>" is the representation of a
+        non-terminal at some given level</li>
+      <li>The constructor "<tt>Slist0</tt>" is the representation of
+        the symbol LIST0</li>
+      <li>The constructor "<tt>Slist0sep</tt>" is the representation
+        of the symbol LIST0 followed by SEP</li>
+      <li>The constructor "<tt>Slist1</tt>" is the representation of
+        the symbol LIST1</li>
+      <li>The constructor "<tt>Slist1sep</tt>" is the representation
+        of the symbol LIST1 followed by SEP</li>
+      <li>The constructor "<tt>Sopt</tt>" is the representation
+        of the symbol OPT</li>
+      <li>The constructor "<tt>Sflag</tt>" is the representation
+        of the symbol FLAG</li>
+      <li>The constructor "<tt>Sself</tt>" is the representation
+        of the symbol SELF</li>
+      <li>The constructor "<tt>Snext</tt>" is the representation
+        of the symbol NEXT</li>
+      <li>The constructor "<tt>Stoken</tt>" is the representation
+        of a token pattern</li>
+      <li>The constructor "<tt>Stree</tt>" is the representation
+        of a anonymous rule list (between brackets).</li>
+    </ul>
+</dd></dl>
+
+<pre style="border:0; margin-left: 1cm">
 and g_action = Obj.t
+</pre>
+
+<dl><dd>
+    The semantic action, represented by a type "<tt>Obj.t</tt>" because
+    of the specific typing of the EXTEND statement (the semantic action
+    being able to be any function type, depending on the rule).
+</dd></dl>
+
+<pre style="border:0; margin-left: 1cm">
 and g_tree 'te =
   [ Node of g_node 'te
   | LocAct of g_action and list g_action
@@ -519,6 +610,25 @@ and g_node 'te =
   { node : g_symbol 'te; son : g_tree 'te; brother : g_tree 'te }
 ;
 </pre>
+
+<dl><dd>
+    The type of tree (and tree nodes) representing a list of
+    factorized rules in an entry level.
+    <ul>
+      <li>The constructor "<tt>Node</tt>" is a representation of a
+        symbol (field "<tt>node</tt>"), the rest of the rule tree
+        (field "<tt>son</tt>"), and the following node, if this node
+        fails (field "<tt>brother</tt>")</li>
+      <li>The constructor "<tt>LocAct</tt>" is the representation of a
+        action, which is a function having all pattern variables of
+        the rule as parameters and returning the rule semantic action.
+        The list of actions in the constructor correspond to possible
+        previous actions when it happens that rules are masked by
+        other rules.</li>
+      <li>The constructor "<tt>DeadEnd</tt>" is a representation of a
+        nodes where the tree fails or is in syntax error.</li>
+    </ul>
+</dd></dl>
 
 <p>... the following lines have to be structured ...</p>
 
