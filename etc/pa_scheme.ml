@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.84 2007/10/14 11:30:00 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.85 2007/10/14 12:21:41 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -1216,6 +1216,12 @@
      (error se "class_sig_item"))))
   (class_str_item_se
    (lambda_match
+    ((Sexpr loc [(Slid _ "inherit") se (Slid _ s)])
+     (let ((ce (class_expr_se se)))
+      <:class_str_item< inherit $ce$ $opt:(Some s)$ >>))
+    ((Sexpr loc [(Slid _ "inherit") se])
+     (let ((ce (class_expr_se se)))
+      <:class_str_item< inherit $ce$ >>))
     ((Sexpr loc [(Slid _ "initializer") se])
      (let ((e (expr_se se))) <:class_str_item< initializer $e$ >>))
     ((Sexpr loc [(Slid _ "method") (Slid _ n) se])
@@ -1250,6 +1256,16 @@
     ((Sexpr loc [(Slid _ "object") se . sel])
      (let* ((p (Some (patt_se se))) (csl (List.map class_str_item_se sel)))
       <:class_expr< object $opt:p$ $list:csl$ end >>))
+    ((Sexpr loc [se . sel])
+     (letrec
+      (((loop ce)
+        (lambda_match
+         ([se . sel]
+          (let ((e (expr_se se))) (loop <:class_expr< $ce$ $e$ >> sel)))
+         ([] ce))))
+      (loop (class_expr_se se) sel)))
+    ((as (Sacc loc _ _) se)
+     (let ((sl (longident_se se))) <:class_expr< $list:sl$ >>))
     (se (error se "class_expr_se")))))
 
 (define directive_se

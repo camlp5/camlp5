@@ -1280,7 +1280,13 @@ and class_sig_item_se =
   | se -> error se "class_sig_item" ]
 and class_str_item_se =
   fun
-  [ Sexpr loc [Slid _ "initializer"; se] ->
+  [ Sexpr loc [Slid _ "inherit"; se; Slid _ s] ->
+      let ce = class_expr_se se in
+      <:class_str_item< inherit $ce$ $opt:(Some s)$ >>
+  | Sexpr loc [Slid _ "inherit"; se] ->
+      let ce = class_expr_se se in
+      <:class_str_item< inherit $ce$ >>
+  | Sexpr loc [Slid _ "initializer"; se] ->
       let e = expr_se se in
       <:class_str_item< initializer $e$ >>
   | Sexpr loc [Slid _ "method"; Slid _ n; se] ->
@@ -1318,6 +1324,16 @@ and class_expr_se =
       let p = Some (patt_se se) in
       let csl = List.map class_str_item_se sel in
       <:class_expr< object $opt:p$ $list:csl$ end >>
+  | Sexpr loc [se :: sel] ->
+      loop (class_expr_se se) sel where rec loop ce =
+        fun
+        [ [se :: sel] ->
+            let e = expr_se se in
+            loop <:class_expr< $ce$ $e$ >> sel
+        | [] -> ce ]
+  | Sacc loc _ _ as se ->
+      let sl = longident_se se in
+      <:class_expr< $list:sl$ >>
   | se -> error se "class_expr_se" ]
 ;
 

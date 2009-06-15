@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.40 2007/10/14 10:59:12 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.41 2007/10/14 12:21:41 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1326,7 +1326,18 @@ EXTEND_PRINTER
           not_impl "class_sig_item" pc x ] ]
   ;
   pr_class_str_item:
-    [ [ <:class_str_item< initializer $e$ >> ->
+    [ [ <:class_str_item< inherit $ce$ $opt:so$ >> ->
+          let list =
+            match so with
+            [ Some s -> [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "")]
+            | None -> [] ]
+          in
+          plistbf 0
+            {(pc) with ind = pc.ind + 1;
+             bef = sprintf "%s(inherit" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc -> class_expr pc ce, "") :: list]
+      | <:class_str_item< initializer $e$ >> ->
           plistb expr 0
             {(pc) with ind = pc.ind + 1;
              bef = sprintf "%s(initializer" pc.bef;
@@ -1408,7 +1419,7 @@ EXTEND_PRINTER
           plistbf 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(fun" pc.bef;
              aft = sprintf ")%s" pc.aft}
-            [(fun pc -> patt pc p, ""); (fun pc -> class_expr pc ce, "")]
+            [(fun pc -> patt pc p, ""); (fun pc -> curr pc ce, "")]
       | <:class_expr< object $opt:csp$ $list:csl$ end >> ->
           horiz_vertic
             (fun () ->
@@ -1435,6 +1446,22 @@ EXTEND_PRINTER
                    csl
                in
                sprintf "%s\n%s" s1 s2)
+      | <:class_expr< $ce$ $e$ >> ->
+          let (ce, el) =
+            loop [e] ce where rec loop el =
+              fun
+              [ <:class_expr< $ce$ $e$ >> -> loop [e :: el] ce
+              | ce -> (ce, el) ]
+          in
+          plistf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc -> curr pc ce, "") ::
+             List.map (fun e -> (fun pc -> expr pc e, "")) el]
+      | <:class_expr< $list:sl$ >> ->
+          longident pc sl
+      | <:class_expr< $list:sl$ [ $list:ctcl$ ] >> ->
+          not_impl  "CeCon 2" pc sl
       | x ->
           not_impl "class_expr" pc x ] ]
   ;
