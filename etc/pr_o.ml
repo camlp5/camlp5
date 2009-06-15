@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.123 2007/12/21 13:45:41 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.124 2007/12/21 14:02:15 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -604,9 +604,7 @@ value str_module pref pc (m, me) =
   in
   let module_arg pc (s, mt) =
     horiz_vertic
-      (fun () ->
-         sprintf "%s(%s : %s)%s" pc.bef s
-           (module_type {(pc) with bef = ""; aft = ""} mt) pc.aft)
+      (fun () -> pprintf pc "(%s : %p)" s module_type mt)
       (fun () ->
          let s1 = sprintf "%s(%s :" pc.bef s in
          let s2 =
