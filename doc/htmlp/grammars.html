@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.52 2007/07/18 19:51:29 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.53 2007/07/18 19:54:52 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -587,11 +587,9 @@ instead of "<tt>loc</tt>".</p>
 
        Examples:
        <ul>
-         <li>If the associated lexer uses ("", xxx) to represent a keyword
-           (what is represented by then simple string xxx in an
-           <tt>EXTEND</tt> statement rule), the call
-           <tt>Grammar.token g ""</tt> returns the keywords list.</li>
-         <li>The call /<tt>Grammar.token g "IDENT"</tt>/ returns the list of
+         <li>The call /<tt>Grammar.tokens g ""</tt>/ returns the keywords
+           list.</li>
+         <li>The call /<tt>Grammar.tokens g "IDENT"</tt>/ returns the list of
            all usages of the pattern "IDENT" in the <tt>EXTEND</tt>
            statements.</li>
        </ul>

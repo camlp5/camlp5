@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.mli,v 1.9 2007/07/18 19:11:15 deraugla Exp $ *)
+(* $Id: grammar.mli,v 1.10 2007/07/18 19:54:52 deraugla Exp $ *)
 
 (** Extensible grammars.
 
@@ -30,11 +30,8 @@ value tokens : g -> string -> list (string * int);
        The integer is the number of times this pattern value is used.
 
        Examples:
--      If the associated lexer uses ("", xxx) to represent a keyword
-       (what is represented by then simple string xxx in an [EXTEND]
-       statement rule), the call [Grammar.token g ""] returns the keywords
-       list.
--      The call [Grammar.token g "IDENT"] returns the list of all usages
+-      The call [Grammar.tokens g ""] returns the keywords list.
+-      The call [Grammar.tokens g "IDENT"] returns the list of all usages
        of the pattern "IDENT" in the [EXTEND] statements. *)
 value glexer : g -> Token.glexer token;
    (** Return the lexer used by the grammar *)
