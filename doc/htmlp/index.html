@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: index.html,v 1.16 2007/08/18 18:39:31 deraugla Exp $ -->
+  <!-- $Id: index.html,v 1.17 2007/08/22 02:08:41 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Camlp5</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -24,26 +24,29 @@
 <p>As a preprocessor, it allows to:</p>
 
 <ul>
-
-  <li>add syntax extensions,</li>
-  <li>redefine the whole syntax of the language.</li>
-
+  <li>extend the syntax,</li>
+  <li>and even redefine the whole syntax of the language.</li>
 </ul>
 
 <p>As a pretty printer, it allows to:</p>
 
 <ul>
-
   <li>display programs in an elegant way,</li>
   <li>convert from a syntax to another,</li>
   <li>check the results of syntax extensions.</li>
-
 </ul>
 
-<p>Camlp5 also provides some parsing and pretty printing tools.</p>
+<p>Camlp5 also provides some parsing and pretty printing tools:</p>
+
+<ul>
+  <li>extensible grammars</li>
+  <li>extensible printers</li>
+  <li>stream parsers and lexedrs</li>
+  <li>pretty print module</li>
+</ul>
 
 <p>It works as a shell command and can also be used in the ocaml
-toplevel.</p>
+  toplevel.</p>
 
 <div id="tableofcontents">
 </div>
@@ -84,23 +87,23 @@ loading one of the files "<tt>camlp5o.cma</tt>" or
 <h2>Parsing and Printing kits</h2>
 
 <p>Parsing and printing extensions are ocaml object files, i.e. files
-  with the extension "<tt>.cmo</tt>" or "<tt>.cma</tt>. They are the
+  with the extension "<tt>.cmo</tt>" or "<tt>.cma</tt>". They are the
   result of the compilation of ocaml source files containing what is
-  necessary to do the parsing or printing extensions. These object
-  files are named <em>parsing</em> or <em>printing kits</em>.</p>
+  necessary to do the parsing or printing. These object files are
+  named parsing and printing <em>kits</em>.</p>
 
 <p>These files cannot be linked to produce executables because they
   generally call functions and use variables defined only in camlp5
   core, typically belonging to the module "<tt>Pcaml</tt>". The kits
-  are destinated to be loaded by the camlp5 commands, either by their
-  command arguments or by the source files using them through the
-  directive "<tt>#load</tt>".</p>
+  are destinated to be loaded by the camlp5 commands, either through
+  their command arguments or through directives in the source
+  files.</p>
 
 <p>It is therefore important to compile the <em>kits</em> with the
   option "<tt>-c</tt>" of the ocaml compiler (i.e. just compilation,
-  do not produce executable) and with the option "<tt>-I +camlp5</tt>"
+  not producing an executable) and with the option "<tt>-I +camlp5</tt>"
   to inform the compiler to find module interfaces in installed camlp5
-  library.</p>  
+  library.</p>
 
 <p>In the ocaml toplevel, it is possible to use a kit by simply
   loading it with the directive "<tt>#load</tt>".</p>
@@ -111,7 +114,6 @@ loading one of the files "<tt>camlp5o.cma</tt>" or
   use a syntax extension:</p>
 
 <ul>
-
   <li>Either by giving this object file as parameter to the camlp5
     command. For example:
 
@@ -127,7 +129,7 @@ loading one of the files "<tt>camlp5o.cma</tt>" or
   #load "./myext.cmo";;
 </pre>
 
-    and compile it simply like this:
+and then compile it simply like this:
 
 <pre>
   ocamlc -pp camlp5o foo.ml
@@ -138,25 +140,24 @@ loading one of the files "<tt>camlp5o.cma</tt>" or
 </ul>
 
 <p>Several syntax extensions can be used for a single file. The way to
-create one's own syntax extensions is explained further.</p>
+  create one's own syntax extensions is explained in the present
+  documentation.</p>
 
 <h2>Pretty printing</h2>
 
-<p>Like for syntax extensions, the pretty printing are defined or
-  extended through camlp5 printing kits. The main pretty printing kits
-  provided by camlp5 are:</p>
+<p>Like for syntax extensions, the pretty printing is defined or
+  extended through camlp5 printing kits. Some pretty printing kits are
+  provided by camlp5, the main ones being:</p>
 
 <ul>
-
-<li><tt>pr_o.cmo</tt>: to pretty print in normal syntax,</li>
-<li><tt>pr_r.cmo</tt>: to pretty print in revised syntax.</li>
-
+  <li><tt>pr_o.cmo</tt>: to pretty print in normal syntax,</li>
+  <li><tt>pr_r.cmo</tt>: to pretty print in revised syntax.</li>
 </ul>
 
 <p>Examples: if we have a file, <tt>foo.ml</tt>, written in normal
-syntax and and another one, <tt>bar.ml</tt>, written in revised
-syntax, here are the commands to pretty print them in their own
-syntax:</p>
+  syntax and and another one, <tt>bar.ml</tt>, written in revised
+  syntax, here are the commands to pretty print them in their own
+  syntax:</p>
 
 <pre>
   camlp5o pr_o.cmo foo.ml
@@ -171,7 +172,7 @@ syntax:</p>
 </pre>
 
 <p>The way to create one's own pretty printing extensions is
-explained further.</p>
+  explained in this document.</p>
 
 <h2>Note: the revised syntax</h2>
 
@@ -180,10 +181,10 @@ explained further.</p>
   syntax.  A chapter will explain the differences between the normal
   and the revised syntax.</p>
 
-<p>All examples of this documentation are written in revised syntax.
-  Even if you don't know it, it is not difficult to understand. The
-  same examples can be written in normal syntax. In case of problems,
-  refer to the chapter describing it.</p>
+<p>All examples of this documentation are written in that revised
+  syntax. Even if you don't know it, it is not difficult to
+  understand. The same examples can be written in normal syntax. In
+  case of problems, refer to the chapter describing it.</p>
 
 <div class="trailer">
 </div>
