@@ -1622,7 +1622,10 @@ module GMake (L : GLexerType) =
            edesc = Dlevels []}
         ;;
         external obj : 'a e -> te Gramext.g_entry = "%identity";;
-        let parse (e : 'a e) p : 'a = Obj.magic (parse_parsable e p : Obj.t);;
+        let parse (e : 'a e) p : 'a =
+          if !functional_parse then Obj.magic (fparse_parsable e p : Obj.t)
+          else Obj.magic (parse_parsable e p : Obj.t)
+        ;;
         let parse_token (e : 'a e) ts : 'a =
           Obj.magic (e.estart 0 ts : Obj.t)
         ;;

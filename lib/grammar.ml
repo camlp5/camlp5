@@ -1,5 +1,5 @@
 (* camlp5r pa_fstream.cmo *)
-(* $Id: grammar.ml,v 1.61 2007/10/29 03:33:27 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.62 2007/10/29 09:02:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Gramext;
@@ -1489,7 +1489,8 @@ module GMake (L : GLexerType) =
         ;
         external obj : e 'a -> Gramext.g_entry te = "%identity";
         value parse (e : e 'a) p : 'a =
-          Obj.magic (parse_parsable e p : Obj.t)
+          if functional_parse.val then Obj.magic (fparse_parsable e p : Obj.t)
+          else Obj.magic (parse_parsable e p : Obj.t)
         ;
         value parse_token (e : e 'a) ts : 'a =
           Obj.magic (e.estart 0 ts : Obj.t)
