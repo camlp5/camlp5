@@ -1,5 +1,6 @@
 (* camlp5r q_MLast.cmo pa_extend.cmo *)
-(* $Id: pa_extfun.ml,v 1.6 2007/08/01 18:57:15 deraugla Exp $ *)
+(* $Id: pa_extfun.ml,v 1.7 2007/08/15 10:57:10 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
 

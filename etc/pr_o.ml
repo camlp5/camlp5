@@ -1,5 +1,5 @@
-(* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.67 2007/08/02 22:21:31 deraugla Exp $ *)
+(* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
+(* $Id: pr_o.ml,v 1.68 2007/08/15 10:54:38 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -634,146 +634,6 @@ value expr_short pc x =
 ;
 
 (* definitions of printers by decreasing level *)
-
-value ctyp_top =
-  extfun Extfun.empty with
-  [ <:ctyp< $x$ == $y$ >> ->
-      fun curr next pc -> operator pc next next 2 "=" x y
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value ctyp_arrow =
-  extfun Extfun.empty with
-  [ <:ctyp< $_$ -> $_$ >> as z ->
-      fun curr next pc ->
-        let unfold =
-          fun
-          [ <:ctyp< $x$ -> $y$ >> -> Some (x, " ->", y)
-          | _ -> None ]
-        in
-        right_operator pc 2 unfold next z
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value ctyp_star =
-  extfun Extfun.empty with
-  [ <:ctyp< ($list:tl$) >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s%s%s" pc.bef
-               (hlistl (star_after next) next {(pc) with bef = ""; aft = ""}
-                  tl)
-               pc.aft)
-          (fun () ->
-             let tl = List.map (fun t -> (t, " *")) tl in
-             plist next 2 pc tl)
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value ctyp_apply =
-  extfun Extfun.empty with
-  [ <:ctyp< $_$ $_$ >> as z ->
-      fun curr next pc ->
-        let (t, tl) =
-          loop [] z where rec loop args =
-            fun
-            [ <:ctyp< $x$ $y$ >> -> loop [y :: args] x
-            | t -> (t, args) ]
-        in
-        match tl with
-        [ [t2] ->
-            horiz_vertic
-              (fun () ->
-                 sprintf "%s%s %s%s" pc.bef
-                   (curr {(pc) with bef = ""; aft = ""} t2)
-                   (next {(pc) with bef = ""; aft = ""} t) pc.aft)
-              (fun () ->
-                 let s1 = curr {(pc) with aft = ""} t2 in
-                 let s2 =
-                   next {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
-                     t
-                 in
-                 sprintf "%s\n%s" s1 s2)
-        | _ ->
-            horiz_vertic
-              (fun () ->
-                 sprintf "%s(%s) %s%s" pc.bef
-                   (hlistl (comma_after ctyp) ctyp
-                      {(pc) with bef = ""; aft = ""} tl)
-                   (curr {(pc) with bef = ""; aft = ""} t) pc.aft)
-              (fun () ->
-                 let s1 =
-                   hlistl (comma_after ctyp) ctyp
-                     {(pc) with bef = sprintf "%s(" pc.bef; aft = ")"} tl
-                 in
-                 let s2 =
-                   curr
-                     {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t
-                 in
-                 sprintf "%s\n%s" s1 s2) ]
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value ctyp_dot =
-  extfun Extfun.empty with
-  [ <:ctyp< $x$ . $y$ >> ->
-      fun curr next pc ->
-        curr {(pc) with bef = curr {(pc) with aft = "."} x} y
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value ctyp_simple =
-  extfun Extfun.empty with
-  [ <:ctyp< { $list:ltl$ } >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             hlistl (semi_after label_decl) label_decl
-               {(pc) with bef = sprintf "%s{ " pc.bef;
-                aft = sprintf " }%s" pc.aft}
-               ltl)
-          (fun () ->
-             vlistl (semi_after label_decl) label_decl
-               {(pc) with ind = pc.ind + 2; bef = sprintf "%s{ " pc.bef;
-                aft = sprintf " }%s" pc.aft}
-               ltl)
-  | <:ctyp< [ $list:vdl$ ] >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             if has_cons_with_params vdl then sprintf "\n"
-             else
-               hlist2 cons_decl (bar_before cons_decl)
-                 {(pc) with aft = ("", pc.aft)} vdl)
-          (fun () ->
-             vlist2 cons_decl (bar_before cons_decl)
-               {(pc) with bef = sprintf "%s  " pc.bef; aft = ("", pc.aft)}
-               vdl)
-  | <:ctyp< $lid:t$ >> ->
-      fun curr next pc -> var_escaped pc t
-  | <:ctyp< $uid:t$ >> ->
-      fun curr next pc -> sprintf "%s%s%s" pc.bef t pc.aft
-  | <:ctyp< ' $s$ >> ->
-      fun curr next pc -> var_escaped {(pc) with bef = sprintf "%s'" pc.bef} s
-  | <:ctyp< _ >> ->
-      fun curr next pc -> sprintf "%s_%s" pc.bef pc.aft
-  | <:ctyp< ? $_$ : $_$ >> | <:ctyp< ~ $_$ : $_$ >> ->
-      fun curr next pc ->
-        failwith "labels not pretty printed (in type); add pr_ro.cmo"
-  | <:ctyp< [ = $list:_$ ] >> | <:ctyp< [ > $list:_$ ] >> |
-    <:ctyp< [ < $list:_$ ] >> | <:ctyp< [ < $list:_$ > $list:_$ ] >> ->
-      fun curr next pc ->
-        failwith "variants not pretty printed (in type); add pr_ro.cmo"
-  | <:ctyp< $_$ $_$ >> | <:ctyp< $_$ -> $_$ >> | <:ctyp< ($list:_$) >> as z ->
-      fun curr next pc ->
-        ctyp
-          {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-           aft = sprintf ")%s" pc.aft}
-          z
-  | z ->
-      fun curr next pc -> not_impl "ctyp" pc z ]
-;
 
 value flatten_sequ e =
   let rec get_sequence =
@@ -2426,14 +2286,139 @@ pr_patt.pr_levels :=
    {pr_label = "simple"; pr_rules = patt_simple}]
 ;
 
-pr_ctyp.pr_levels :=
-  [{pr_label = "top"; pr_rules = ctyp_top};
-   {pr_label = "arrow"; pr_rules = ctyp_arrow};
-   {pr_label = "star"; pr_rules = ctyp_star};
-   {pr_label = "apply"; pr_rules = ctyp_apply};
-   {pr_label = "dot"; pr_rules = ctyp_dot};
-   {pr_label = "simple"; pr_rules = ctyp_simple}]
+value extend_printer lpplr =
+  List.iter
+    (fun (pr, pos, levs) ->
+       let _ =
+         if pos = None then ()
+         else failwith "not impl EXTEND_PRINTER entry with at level parameter"
+       in
+       let levels =
+         List.fold_right
+           (fun (lab, extf) levs ->
+              let lab =
+                match lab with
+                [ Some lab -> lab
+                | None -> "" ]
+              in
+              let lev = {pr_label = lab; pr_rules = extf Extfun.empty} in 
+              [lev :: levs])
+           levs pr.pr_levels
+       in
+       pr.pr_levels := levels)
+    lpplr
 ;
+
+EXTEND_PRINTER
+  pr_ctyp:
+    [ "top"
+      [ <:ctyp< $x$ == $y$ >> -> operator pc next next 2 "=" x y ]
+    | "arrow"
+      [ <:ctyp< $_$ -> $_$ >> as z ->
+          let unfold =
+            fun
+            [ <:ctyp< $x$ -> $y$ >> -> Some (x, " ->", y)
+            | _ -> None ]
+          in
+          right_operator pc 2 unfold next z ]
+    | "star"
+      [ <:ctyp< ($list:tl$) >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s%s%s" pc.bef
+                 (hlistl (star_after next) next {(pc) with bef = ""; aft = ""}
+                    tl)
+                 pc.aft)
+            (fun () ->
+               let tl = List.map (fun t -> (t, " *")) tl in
+               plist next 2 pc tl) ]
+    | "apply"
+      [ <:ctyp< $_$ $_$ >> as z ->
+          let (t, tl) =
+            loop [] z where rec loop args =
+              fun
+              [ <:ctyp< $x$ $y$ >> -> loop [y :: args] x
+              | t -> (t, args) ]
+          in
+          match tl with
+          [ [t2] ->
+              horiz_vertic
+                (fun () ->
+                   sprintf "%s%s %s%s" pc.bef
+                     (curr {(pc) with bef = ""; aft = ""} t2)
+                     (next {(pc) with bef = ""; aft = ""} t) pc.aft)
+                (fun () ->
+                   let s1 = curr {(pc) with aft = ""} t2 in
+                   let s2 =
+                     next {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
+                       t
+                   in
+                   sprintf "%s\n%s" s1 s2)
+          | _ ->
+              horiz_vertic
+                (fun () ->
+                   sprintf "%s(%s) %s%s" pc.bef
+                     (hlistl (comma_after ctyp) ctyp
+                        {(pc) with bef = ""; aft = ""} tl)
+                     (curr {(pc) with bef = ""; aft = ""} t) pc.aft)
+                (fun () ->
+                   let s1 =
+                     hlistl (comma_after ctyp) ctyp
+                       {(pc) with bef = sprintf "%s(" pc.bef; aft = ")"} tl
+                   in
+                   let s2 =
+                     curr
+                       {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t
+                   in
+                   sprintf "%s\n%s" s1 s2) ] ]
+    | "dot"
+      [ <:ctyp< $x$ . $y$ >> ->
+            curr {(pc) with bef = curr {(pc) with aft = "."} x} y ]
+    | "simple"
+      [ <:ctyp< { $list:ltl$ } >> ->
+          horiz_vertic
+            (fun () ->
+               hlistl (semi_after label_decl) label_decl
+                 {(pc) with bef = sprintf "%s{ " pc.bef;
+                  aft = sprintf " }%s" pc.aft}
+                 ltl)
+            (fun () ->
+               vlistl (semi_after label_decl) label_decl
+                 {(pc) with ind = pc.ind + 2; bef = sprintf "%s{ " pc.bef;
+                  aft = sprintf " }%s" pc.aft}
+                 ltl)
+      | <:ctyp< [ $list:vdl$ ] >> ->
+          horiz_vertic
+            (fun () ->
+               if has_cons_with_params vdl then sprintf "\n"
+               else
+                 hlist2 cons_decl (bar_before cons_decl)
+                   {(pc) with aft = ("", pc.aft)} vdl)
+            (fun () ->
+               vlist2 cons_decl (bar_before cons_decl)
+                 {(pc) with bef = sprintf "%s  " pc.bef; aft = ("", pc.aft)}
+                 vdl)
+      | <:ctyp< $lid:t$ >> ->
+          var_escaped pc t
+      | <:ctyp< $uid:t$ >> ->
+          sprintf "%s%s%s" pc.bef t pc.aft
+      | <:ctyp< ' $s$ >> ->
+          var_escaped {(pc) with bef = sprintf "%s'" pc.bef} s
+      | <:ctyp< _ >> ->
+          sprintf "%s_%s" pc.bef pc.aft
+      | <:ctyp< ? $_$ : $_$ >> | <:ctyp< ~ $_$ : $_$ >> ->
+          failwith "labels not pretty printed (in type); add pr_ro.cmo"
+      | <:ctyp< [ = $list:_$ ] >> | <:ctyp< [ > $list:_$ ] >> |
+        <:ctyp< [ < $list:_$ ] >> | <:ctyp< [ < $list:_$ > $list:_$ ] >> ->
+          failwith "variants not pretty printed (in type); add pr_ro.cmo"
+      | <:ctyp< $_$ $_$ >> | <:ctyp< $_$ -> $_$ >> | <:ctyp< ($list:_$) >>
+        as z ->
+          ctyp
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            z ] ]
+  ;
+END;
 
 pr_str_item.pr_levels := [{pr_label = "top"; pr_rules = str_item_top}];
 pr_sig_item.pr_levels := [{pr_label = "top"; pr_rules = sig_item_top}];
