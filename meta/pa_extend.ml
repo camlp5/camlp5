@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.35 2007/09/06 04:26:18 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.36 2007/09/06 04:33:20 deraugla Exp $ *)
 
 value split_ext = ref False;
 
@@ -386,7 +386,7 @@ value rec make_ctyp styp tvar =
           (Stream.Error ("'" ^ x ^ "' illegal in anonymous entry level"))
       else <:ctyp< '$lid:tvar$ >>
   | STtyp t -> t
-  | STvala loc t -> <:ctyp< MLast.vala $make_ctyp t tvar$ >> ]
+  | STvala loc t -> <:ctyp< Ploc.vala $make_ctyp t tvar$ >> ]
 ;
 
 value rec make_expr gmod tvar =

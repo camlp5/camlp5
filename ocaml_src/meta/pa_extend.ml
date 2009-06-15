@@ -857,7 +857,7 @@ let rec make_ctyp styp tvar =
       MLast.TyApp
         (loc,
          MLast.TyAcc
-           (loc, MLast.TyUid (loc, "MLast"), MLast.TyLid (loc, "vala")),
+           (loc, MLast.TyUid (loc, "Ploc"), MLast.TyLid (loc, "vala")),
          make_ctyp t tvar)
 ;;
 
