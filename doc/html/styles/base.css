@@ -1,4 +1,4 @@
-/* $Id: base.css,v 1.32 2007/08/17 16:21:55 deraugla Exp $ */
+/* $Id: base.css,v 1.33 2007/08/18 02:04:30 deraugla Exp $ */
 
 body { margin: 0 0 1px 0; background-color: rgb(189,225,255) }
 body { border: 0 }
@@ -7,7 +7,9 @@ body { border: 0 }
 #menu { border-top: 1px solid; border-left: 1px solid }
 #menu ul { padding: 0 }
 #menu li { margin-left: 1cm }
-#menu h1 { font-weight: normal }
+#menu h1 { font-weight: normal; margin-bottom: 0 }
+#menu .subtitle { text-align: center; margin-top: 0; font-size: 80% }
+#menu .subtitle { text-transform: lowercase }
 
 #tableofcontents
   { border: 1px solid; display: table; padding-right: 5mm; margin: auto }
