@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2texi,v 1.5 2007/08/27 03:46:15 deraugla Exp $
+# $Id: html2texi,v 1.6 2007/08/27 04:26:41 deraugla Exp $
 
 FILES1="index.html ptools.html"
 FILES2="parsers.html lexers.html fparsers.html grammars.html"
@@ -81,22 +81,27 @@ for i in $FILES; do
 @$chapter $N"
     cat $i |
     sed \
-      -e 's|</p>|\n</p>|' |
+      -e 's|</p>|\n</p>|' \
+      -e 's|</li>|\n</li>|' |
     sed \
+      -e 's|@|@@|g' \
+      -e 's|{|@{|g' -e 's|}|@}|g' \
       -e '/<div id="tableofcontents">/,/<\/div>/d' \
       -e '/<div class="trailer">/,$d' \
       -e '1,/<h1/d' \
-      -e 's|{| |g' -e 's|}| |g' \
-      -e 's|@| |g' \
+      -e 's|<h2>|@section |' -e 's|</h2>||' \
+      -e 's|<h3>|@subsection |' -e 's|</h3>||' \
       -e '/<p>/,/<\/p>/s/^ *//' \
-      -e '/<pre /,/<\/pre>/s/^/  /' \
+      -e '/<li>/,/<\/li>/s/^ *//' \
+      -e '/<pre>/,/<\/pre>/s/^  //' \
       -e 's|^ *<p>|@noindent |' -e 's|</p>||' \
       -e 's|^ *<ul>|@itemize|' -e 's|</ul>|@end itemize|' \
       -e 's|^ *<ol>|@enumerate|' -e 's|</ol>|@end enumerate|' \
       -e 's|^ *<li>|@item |' -e 's|</li>||' \
-      -e 's|<h2>|@section |' -e 's|</h2>||' \
       -e 's|<em>|@emph{|g' -e 's|</em>|}|g' \
       -e 's|<tt>|@code{|g' -e 's|</tt>|}|g' \
+      -e 's|<code>|@code{|g' -e 's|</code>|}|g' \
+      -e 's|<span [^>]*>|@emph{|g' -e 's|</span>|}|g' \
       -e 's|<a [^>]*>||g' -e 's|</a>||g' \
       -e 's|<pre.*>|@example|' -e 's|</pre>|@end example|'
   fi

@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: lexers.html,v 1.13 2007/08/27 03:26:42 deraugla Exp $ -->
+  <!-- $Id: lexers.html,v 1.14 2007/08/27 04:26:41 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>lexers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -211,16 +211,16 @@ itself.</p>
 if the stream is empty.</li>
 
 <li>A string which represent a matching of any character in the
-string. Notice that it is a <span style="font:underline">choice</span>
-between all the characters, <span style="font:underline">not</span>
-the sequence of these characters. To indicate a sequence, you have to
-use several symbols, the ones behind the others. Character ranges can
-be inserted using the characters "<code>..</code>". For example, to
-specify a match of any letter or digit, you can write
-"<code>A..Za..z0..9</code>". Conversely, the beginning of a comment in
-the OCaml language has to be written: <code>"(" "*"</code>,
-not <code>"(*"</code> which would mean "the character left parenthesis
-or the character star".</li>
+  string. Notice that it is a <span class="u">choice</span> between
+  all the characters, <span class="u">not</span> the sequence of these
+  characters. To indicate a sequence, you have to use several symbols,
+  the ones behind the others. Character ranges can be inserted using
+  the characters "<code>..</code>". For example, to specify a match of
+  any letter or digit, you can write
+  "<code>A..Za..z0..9</code>". Conversely, the beginning of a comment
+  in the OCaml language has to be written: <code>"(" "*"</code>,
+  not <code>"(*"</code> which would mean "the character left
+  parenthesis or the character star".</li>
 
 <li>An expression corresponding to a call to another lexer, which
 takes the buffer as first parameter and has to return another lexing
@@ -301,16 +301,16 @@ impossible. To understand how it is useful, a first remark must
 be done, about the usual behaviour of Camlp5 stream parsers.</p>
 
 <p>Stream parsers (including these lexers) use a limited parsing
-algorithm, in a way that when the first symbol of a rule is matched,
-all the following symbols of the same rule must apply, otherwise it is
-a syntax error. There is no backtrack. In most of the cases, left
-factorization of rules resolve conflicting problems. For example, in
-parsers of tokens (which is not our case here, since we parse only
-characters), when one writes a parser to recognize both the typicall
-grammar rules "if..then..else" and the shorter "if..then..", the
-solution is to write a rule starting with "if..then.." followed with a
-call to a parser recognizing "else.." <span style="font:underline">or</span>
-nothing.</p>
+  algorithm, in a way that when the first symbol of a rule is matched,
+  all the following symbols of the same rule must apply, otherwise it
+  is a syntax error. There is no backtrack. In most of the cases, left
+  factorization of rules resolve conflicting problems. For example, in
+  parsers of tokens (which is not our case here, since we parse only
+  characters), when one writes a parser to recognize both the typicall
+  grammar rules "if..then..else" and the shorter "if..then..", the
+  solution is to write a rule starting with "if..then.." followed with
+  a call to a parser recognizing "else.." <span class="u">or</span>
+  nothing.</p>
 
 <p>Sometimes, however, this left factorization is not possible. A
 lookahead of the stream to check the presence of some elements (these
