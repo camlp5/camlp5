@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_fstream.ml,v 1.8 2007/11/28 15:11:40 deraugla Exp $ *)
+(* $Id: pa_fstream.ml,v 1.9 2007/11/29 11:58:12 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -126,7 +126,7 @@ value patt_expr_of_patt p =
   match p with
   [ <:patt< $lid:x$ >> -> (p, <:expr< $lid:x$ >>)
   | <:patt< $uid:_$ $lid:x$ >> -> (<:patt< $lid:x$ >>, <:expr< $lid:x$ >>)
-  | _ -> (<:patt< () >>, <:expr< () >>) ]
+  | _ -> (<:patt< _ >>, <:expr< () >>) ]
 ;
 
 value mstream_pattern_component m =
@@ -134,7 +134,12 @@ value mstream_pattern_component m =
   [ SpTrm loc p wo ->
       let (p, e) = patt_expr_of_patt p in
       let e =
-        <:expr< $uid:m$.b_term (fun [ $p$ -> Some $e$ | _ -> None ]) >>
+        match p with
+        [ <:patt< _ >> ->
+            (* prevent compiler warning *)
+            <:expr< $uid:m$.b_term (fun _ -> Some $e$) >>
+        | _ ->
+            <:expr< $uid:m$.b_term (fun [ $p$ -> Some $e$ | _ -> None ]) >> ]
       in
       (p, e)
   | SpNtr loc p e ->

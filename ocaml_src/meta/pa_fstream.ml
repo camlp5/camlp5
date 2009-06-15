@@ -225,7 +225,7 @@ let patt_expr_of_patt p =
     MLast.PaLid (_, x) -> p, MLast.ExLid (loc, x)
   | MLast.PaApp (_, MLast.PaUid (_, _), MLast.PaLid (_, x)) ->
       MLast.PaLid (loc, x), MLast.ExLid (loc, x)
-  | _ -> MLast.PaUid (loc, "()"), MLast.ExUid (loc, "()")
+  | _ -> MLast.PaAny loc, MLast.ExUid (loc, "()")
 ;;
 
 let mstream_pattern_component m =
@@ -233,14 +233,26 @@ let mstream_pattern_component m =
     SpTrm (loc, p, wo) ->
       let (p, e) = patt_expr_of_patt p in
       let e =
-        MLast.ExApp
-          (loc,
-           MLast.ExAcc
-             (loc, MLast.ExUid (loc, m), MLast.ExLid (loc, "b_term")),
-           MLast.ExFun
-             (loc,
-              [p, None, MLast.ExApp (loc, MLast.ExUid (loc, "Some"), e);
-               MLast.PaAny loc, None, MLast.ExUid (loc, "None")]))
+        match p with
+          MLast.PaAny _ ->
+            (* prevent compiler warning *)
+            MLast.ExApp
+              (loc,
+               MLast.ExAcc
+                 (loc, MLast.ExUid (loc, m), MLast.ExLid (loc, "b_term")),
+               MLast.ExFun
+                 (loc,
+                  [MLast.PaAny loc, None,
+                   MLast.ExApp (loc, MLast.ExUid (loc, "Some"), e)]))
+        | _ ->
+            MLast.ExApp
+              (loc,
+               MLast.ExAcc
+                 (loc, MLast.ExUid (loc, m), MLast.ExLid (loc, "b_term")),
+               MLast.ExFun
+                 (loc,
+                  [p, None, MLast.ExApp (loc, MLast.ExUid (loc, "Some"), e);
+                   MLast.PaAny loc, None, MLast.ExUid (loc, "None")]))
       in
       p, e
   | SpNtr (loc, p, e) -> p, e
