@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.108 2007/11/28 00:40:40 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.109 2007/12/19 13:36:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -100,16 +100,20 @@ value rec get_defined_ident =
   | _ -> [] ]
 ;
 
+(**)
+value test = ref False;
+Pcaml.add_option "-test" (Arg.Set test) " test";
+(**)
+
 value not_impl name pc x =
   let desc =
     if Obj.tag (Obj.repr x) = Obj.tag (Obj.repr "") then
-      sprintf "\"%s\"" (Obj.magic x)
+      "\"" ^ Obj.magic x ^ "\""
     else if Obj.is_block (Obj.repr x) then
       "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
     else "int_val = " ^ string_of_int (Obj.magic x)
   in
-  sprintf "%s\"pr_o, not impl: %s; %s\"%s" pc.bef name (String.escaped desc)
-    pc.aft
+  pprintf pc "\"pr_o, not impl: %s; %s\"" name (String.escaped desc)
 ;
 
 value var_escaped pc v =
@@ -118,7 +122,7 @@ value var_escaped pc v =
     else if is_infix v || has_special_chars v then "(" ^ v ^ ")"
     else v
   in
-  sprintf "%s%s%s" pc.bef x pc.aft
+  pprintf pc "%s" x
 ;
 
 value cons_escaped pc v =
@@ -130,24 +134,23 @@ value cons_escaped pc v =
     | " False" -> "False"
     | _ -> v ]
   in
-  sprintf "%s%s%s" pc.bef x pc.aft
+  pprintf pc "%s" x
 ;
 
 value rec mod_ident pc sl =
   match sl with
-  [ [] -> sprintf "%s%s" pc.bef pc.aft
+  [ [] -> pprintf pc ""
   | [s] -> var_escaped pc s
-  | [s :: sl] -> mod_ident {(pc) with bef = sprintf "%s%s." pc.bef s} sl ]
+  | [s :: sl] -> pprintf pc "%s.%p" s mod_ident sl ]
 ;
 
-value comma_after elem pc x = elem {(pc) with aft = sprintf ",%s" pc.aft} x;
+value comma_after elem pc x = pprintf pc "%p," elem x;
 value semi_after elem pc x =
-  elem {(pc) with aft = sprintf ";%s" pc.aft; dang = ";"} x
+  let pc = {(pc) with dang = ";"} in
+  pprintf pc "%p;" elem x
 ;
-value semi_semi_after elem pc x =
-  elem {(pc) with aft = sprintf ";;%s" pc.aft} x
-;
-value star_after elem pc x = elem {(pc) with aft = sprintf " *%s" pc.aft} x;
+value semi_semi_after elem pc x = pprintf pc "%p;;" elem x;
+value star_after elem pc x = pprintf pc "%p *" elem x;
 value op_after elem pc (x, op) =
   elem {(pc) with aft = sprintf "%s%s" op pc.aft} x
 ;
