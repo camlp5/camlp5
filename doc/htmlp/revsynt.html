@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: revsynt.html,v 1.7 2007/07/19 13:39:17 deraugla Exp $ -->
+  <!-- $Id: revsynt.html,v 1.8 2007/07/19 17:24:32 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>revised syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -142,6 +142,32 @@
       </tr>
     </table>
   </li>
+
+  <li>The lists are always enclosed with brackets. A list is a left
+    bracket, followed by a list of elements separated with semicolons,
+    optionally followed by colon-colon and an element, and ended by a
+    right bracket. Warning: the colon-colon is not an infix but is
+    just part of the syntactic construction.
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>x :: y</tt></td>
+        <td><tt>[x :: y]</tt></td>
+      </tr>
+      <tr>
+        <td><tt>[x; y; z]</tt></td>
+        <td><tt>[x; y; z]</tt></td>
+      </tr>
+      <tr>
+        <td><tt>x :: y :: z :: t</tt></td>
+        <td><tt>[x; y; z :: t]</tt></td>
+      </tr>
+    </table>
+  </li>
+
 </ul>
 
 <p>...<em>to be continued</em>...</p>
