@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.59 2007/09/10 01:17:54 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.60 2007/09/10 02:22:06 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -430,15 +430,16 @@ EXTEND
           mklistpat loc last pl
       | "[|"; pl = LIST0 patt SEP ";"; "|]" -> <:patt< [| $list:pl$ |] >>
       | "{"; lpl = LIST1 label_patt SEP ";"; "}" -> <:patt< { $list:lpl$ } >>
-      | "("; ")" -> <:patt< () >>
-      | "("; p = SELF; ")" -> <:patt< $p$ >>
-      | "("; p = SELF; ":"; t = ctyp; ")" -> <:patt< ($p$ : $t$) >>
-      | "("; p = SELF; "as"; p2 = SELF; ")" -> <:patt< ($p$ as $p2$) >>
-      | "("; p = SELF; ","; pl = LIST1 patt SEP ","; ")" ->
-          <:patt< ($list:[p::pl]$) >>
-      | "("; pl = V LIST1 patt SEP ","; ")" ->
-          <:patt< ($alist:pl$) >>
+      | "("; p = paren_patt; ")" -> p
       | "_" -> <:patt< _ >> ] ]
+  ;
+  paren_patt:
+    [ [ p = patt; ":"; t = ctyp -> <:patt< ($p$ : $t$) >>
+      | p = patt; "as"; p2 = patt -> <:patt< ($p$ as $p2$) >>
+      | p = patt; ","; pl = LIST1 patt SEP "," -> <:patt< ($list:[p::pl]$) >>
+      | p = patt -> <:patt< $p$ >>
+      | pl = V LIST1 patt SEP "," -> <:patt< ($alist:pl$) >>
+      | -> <:patt< () >> ] ]
   ;
   cons_patt_opt:
     [ [ "::"; p = patt -> Some p
