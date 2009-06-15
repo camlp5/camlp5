@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.mli,v 1.12 2007/07/19 03:48:24 deraugla Exp $ *)
+(* $Id: grammar.mli,v 1.13 2007/07/31 14:29:41 deraugla Exp $ *)
 
 (** Extensible grammars.
 
@@ -180,6 +180,8 @@ value fold_entry :
       where [e1 .. eN] are [e] and transitively all entries called by [e].
       The order in which the entries are passed to [f] is the order they
       appear in each entry. Each entry is passed only once. *)
+
+value reinit_entry_functions : Gramext.g_entry 'te -> unit;
 
 (*** For system use *)
 

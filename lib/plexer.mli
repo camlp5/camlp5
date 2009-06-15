@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.mli,v 1.6 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: plexer.mli,v 1.7 2007/07/31 14:29:41 deraugla Exp $ *)
 
 (** A lexical analyzer. *)
 
@@ -63,3 +63,5 @@ value no_quotations : ref bool;
    (** When True, all lexers built by [Plexer.make ()] do not lex the
        quotation syntax any more. Default is False (quotations are
        lexed). *)
+
+value force_dollar_for_antiquotation : ref bool;

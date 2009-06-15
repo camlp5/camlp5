@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.mli,v 1.15 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: token.mli,v 1.16 2007/07/31 14:29:41 deraugla Exp $ *)
 
 (** Lexers for Camlp5 grammars.
 
@@ -50,7 +50,7 @@ type glexer 'te =
   { tok_func : lexer_func 'te;
     tok_using : pattern -> unit;
     tok_removing : pattern -> unit;
-    tok_match : pattern -> 'te -> string;
+    tok_match : mutable pattern -> 'te -> string;
     tok_text : pattern -> string;
     tok_comm : mutable option (list location) }
 ;

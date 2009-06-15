@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.81 2007/07/31 04:55:54 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.82 2007/07/31 14:29:41 deraugla Exp $ *)
 
 open Token;
 
@@ -19,6 +19,8 @@ value error_on_unknown_keywords = ref False;
 
 value dollar_for_antiquotation = ref True;
 value specific_space_dot = ref False;
+
+value force_dollar_for_antiquotation = ref False;
 
 (* The string buffering machinery *)
 
@@ -211,7 +213,8 @@ and antiquot_rest ctx bp =
 ;
 
 value dollar ctx bp buf strm =
-  if ctx.dollar_for_antiquotation then antiquot ctx bp buf strm
+  if force_dollar_for_antiquotation.val || ctx.dollar_for_antiquotation then
+    antiquot ctx bp buf strm
   else
     match strm with lexer
     [ [ -> $add "$" ] ident2! -> ("", $buf) ]

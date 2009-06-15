@@ -177,6 +177,8 @@ val fold_entry :
       The order in which the entries are passed to [f] is the order they
       appear in each entry. Each entry is passed only once. *)
 
+val reinit_entry_functions : 'te Gramext.g_entry -> unit;;
+
 (*** For system use *)
 
 val loc_of_token_interval : int -> int -> Token.location;;

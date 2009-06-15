@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.23 2007/07/27 22:32:27 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.24 2007/07/31 14:29:41 deraugla Exp $ *)
 
 open Stdpp;
 open Gramext;
@@ -714,22 +714,32 @@ value start_parser_of_entry entry =
 
 (* Extend syntax *)
 
+value init_entry_functions entry elev = do {
+  entry.estart :=
+    fun lev strm -> do {
+      let f = start_parser_of_entry entry in
+      entry.estart := f;
+      f lev strm
+    };
+  entry.econtinue :=
+    fun lev bp a strm -> do {
+      let f = continue_parser_of_entry entry in
+      entry.econtinue := f;
+      f lev bp a strm
+    }
+};
+
+value reinit_entry_functions entry =
+  match entry.edesc with
+  [ Dlevels elev -> init_entry_functions entry elev
+  | _ -> () ]
+;
+
 value extend_entry entry position rules =
   try do {
     let elev = Gramext.levels_of_rules entry position rules in
     entry.edesc := Dlevels elev;
-    entry.estart :=
-      fun lev strm -> do {
-        let f = start_parser_of_entry entry in
-        entry.estart := f;
-        f lev strm
-      };
-    entry.econtinue :=
-      fun lev bp a strm -> do {
-        let f = continue_parser_of_entry entry in
-        entry.econtinue := f;
-        f lev bp a strm
-      }
+    init_entry_functions entry elev;
   }
   with
   [ Token.Error s -> do {

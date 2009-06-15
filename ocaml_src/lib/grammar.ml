@@ -765,18 +765,26 @@ let start_parser_of_entry entry =
 
 (* Extend syntax *)
 
+let init_entry_functions entry elev =
+  entry.estart <-
+    (fun lev strm ->
+       let f = start_parser_of_entry entry in entry.estart <- f; f lev strm);
+  entry.econtinue <-
+    fun lev bp a strm ->
+      let f = continue_parser_of_entry entry in
+      entry.econtinue <- f; f lev bp a strm
+;;
+
+let reinit_entry_functions entry =
+  match entry.edesc with
+    Dlevels elev -> init_entry_functions entry elev
+  | _ -> ()
+;;
+
 let extend_entry entry position rules =
   try
     let elev = Gramext.levels_of_rules entry position rules in
-    entry.edesc <- Dlevels elev;
-    entry.estart <-
-      (fun lev strm ->
-         let f = start_parser_of_entry entry in
-         entry.estart <- f; f lev strm);
-    entry.econtinue <-
-      fun lev bp a strm ->
-        let f = continue_parser_of_entry entry in
-        entry.econtinue <- f; f lev bp a strm
+    entry.edesc <- Dlevels elev; init_entry_functions entry elev
   with Token.Error s ->
     Printf.eprintf "Lexer initialization error:\n- %s\n" s;
     flush stderr;

@@ -63,3 +63,5 @@ val no_quotations : bool ref;;
    (** When True, all lexers built by [Plexer.make ()] do not lex the
        quotation syntax any more. Default is False (quotations are
        lexed). *)
+
+val force_dollar_for_antiquotation : bool ref;;

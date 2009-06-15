@@ -50,7 +50,7 @@ type 'te glexer =
   { tok_func : 'te lexer_func;
     tok_using : pattern -> unit;
     tok_removing : pattern -> unit;
-    tok_match : pattern -> 'te -> string;
+    mutable tok_match : pattern -> 'te -> string;
     tok_text : pattern -> string;
     mutable tok_comm : location list option }
 ;;
