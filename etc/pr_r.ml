@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.97 2007/11/29 11:04:35 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.98 2007/11/29 11:18:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -450,25 +450,15 @@ value value_or_let_binding flag_where sequ pc (p, e) =
          (if pc.aft = "in" then " in" else pc.aft))
     (fun () ->
        let patt_eq k =
-         horiz_vertic
-           (fun () ->
-              sprintf "%s%s%s =%s" pc.bef
-                (hlist patt {(pc) with bef = ""; aft = ""} pl)
-                (match tyo with
-                 [ Some t ->
-                     sprintf " : %s" (ctyp {(pc) with bef = ""; aft = ""} t)
-                 | None -> "" ])
-                k)
-           (fun () ->
-              let patt_tycon tyo pc p =
-                match tyo with
-                [ Some t ->
-                    patt {(pc) with aft = ctyp {(pc) with bef = " : "} t} p
-                | None -> patt pc p ]
-              in
-              let pl = List.map (fun p -> (p, "")) pl in
-              plistl patt (patt_tycon tyo) 4
-                {(pc) with aft = sprintf " =%s" k} pl)
+         let patt_tycon tyo pc p =
+           match tyo with
+           [ Some t ->
+               patt {(pc) with aft = ctyp {(pc) with bef = " : "} t} p
+           | None -> patt pc p ]
+         in
+         let pl = List.map (fun p -> (p, "")) pl in
+         plistl patt (patt_tycon tyo) 4
+           {(pc) with aft = sprintf " =%s" k} pl
        in
        match sequencify e with
        [ Some el -> sequ pc patt_eq el
