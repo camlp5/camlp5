@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: q_ast.ml,v 1.96 2007/09/22 22:22:24 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.97 2007/09/22 22:53:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* AST quotations with works by running the language parser (and its possible
@@ -753,7 +753,7 @@ lex.Plexing.tok_match :=
           [ ("ANTIQUOT_LOC", prm) ->
               if prm <> "" && prm.[0] = '?' then
                 if prm.[String.length prm - 1] = ':' then
-                  let prm = String.sub prm 1 (String.length prm - 2) in  
+                  let prm = String.sub prm 1 (String.length prm - 2) in
                   let kind = check_anti_loc2 prm in
                   if kind = p_prm || kind = anti_anti p_prm then prm
                   else raise Stream.Failure
@@ -856,6 +856,31 @@ lex.Plexing.tok_match :=
       [ ("ANTIQUOT_LOC", prm) ->
           let kind = check_anti_loc2 prm in
           if kind = "opt" || kind = anti_anti "opt" then prm
+          else raise Stream.Failure
+      | _ -> raise Stream.Failure ]
+  | ("V QUESTIONIDENT", "") ->
+      fun
+      [ ("ANTIQUOT_LOC", prm) ->
+          if prm <> "" && prm.[0] = '?' then
+            if prm.[String.length prm - 1] = ':' then
+              raise Stream.Failure
+            else
+              let prm = String.sub prm 1 (String.length prm - 1) in
+              let kind = check_anti_loc2 prm in
+              if kind = "" || kind = anti_anti "" then prm
+              else raise Stream.Failure
+          else raise Stream.Failure
+      | _ -> raise Stream.Failure ]
+  | ("V QUESTIONIDENTCOLON", "") ->
+      fun
+      [ ("ANTIQUOT_LOC", prm) ->
+          if prm <> "" && prm.[0] = '?' then
+            if prm.[String.length prm - 1] = ':' then
+              let prm = String.sub prm 1 (String.length prm - 2) in
+              let kind = check_anti_loc2 prm in
+              if kind = "" || kind = anti_anti "" then prm
+              else raise Stream.Failure
+            else raise Stream.Failure
           else raise Stream.Failure
       | _ -> raise Stream.Failure ]
   | ("V STRING", "") ->

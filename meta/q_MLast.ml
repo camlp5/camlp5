@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.101 2007/09/22 22:22:24 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.102 2007/09/22 22:53:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -176,7 +176,11 @@ value a_CHAR2 = Grammar.Entry.create gram "a_CHAR2";
 value a_TILDEIDENT = Grammar.Entry.create gram "a_TILDEIDENT";
 value a_TILDEIDENTCOLON = Grammar.Entry.create gram "a_TILDEIDENTCOLON";
 value a_QUESTIONIDENT = Grammar.Entry.create gram "a_QUESTIONIDENT";
+value a_QUESTIONIDENT2 = Grammar.Entry.create gram "a_QUESTIONIDENT2";
 value a_QUESTIONIDENTCOLON = Grammar.Entry.create gram "a_QUESTIONIDENTCOLON";
+value a_QUESTIONIDENTCOLON2 =
+  Grammar.Entry.create gram "a_QUESTIONIDENTCOLON2"
+;
 
 value mksequence2 _ =
   fun
@@ -1108,14 +1112,10 @@ EXTEND
       | a = TILDEANTIQUOTCOLON "_" -> Qast.VaAnt "_" loc a ] ]
   ;
   questionident:
-    [ [ i = a_QUESTIONIDENT -> Qast.VaVal i
-      | a = ANTIQUOT "?" -> Qast.VaVal (Qast.VaAnt "?" loc a)
-      | a = ANTIQUOT "?_" -> Qast.VaAnt "?_" loc a ] ]
+    [ [ i = a_QUESTIONIDENT2 -> i ] ]
   ;
   questionidentcolon:
-    [ [ i = a_QUESTIONIDENTCOLON -> Qast.VaVal i
-      | a = ANTIQUOT "?:" -> Qast.VaVal (Qast.VaAnt "?:" loc a)
-      | a = ANTIQUOT "?_:" -> Qast.VaAnt "?_:" loc a ] ]
+    [ [ i = a_QUESTIONIDENTCOLON2 -> i ] ]
   ;
   ctyp: LEVEL "simple"
     [ [ "["; "="; rfl = poly_variant_list; "]" ->
@@ -1441,8 +1441,20 @@ EXTEND
     [ [ s = QUESTIONIDENT -> Qast.Str s
       | "?"; a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
   ;
+  a_QUESTIONIDENT2:
+    [ [ a = ANTIQUOT "?" -> Qast.VaVal (Qast.VaAnt "?" loc a)
+      | a = ANTIQUOT "?_" -> Qast.VaAnt "?_" loc a
+      | s = QUESTIONIDENT -> Qast.VaVal (Qast.Str s)
+      | "?"; a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
+  ;
   a_QUESTIONIDENTCOLON:
     [ [ s = QUESTIONIDENTCOLON -> Qast.Str s
+      | "?"; a = ANTIQUOT; ":" -> Qast.VaAnt "" loc a ] ]
+  ;
+  a_QUESTIONIDENTCOLON2:
+    [ [ a = ANTIQUOT "?:" -> Qast.VaVal (Qast.VaAnt "?" loc a)
+      | a = ANTIQUOT "?_:" -> Qast.VaAnt "?_" loc a
+      | s = QUESTIONIDENTCOLON -> Qast.VaVal (Qast.Str s)
       | "?"; a = ANTIQUOT; ":" -> Qast.VaAnt "" loc a ] ]
   ;
 END;

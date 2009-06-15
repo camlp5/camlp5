@@ -2175,30 +2175,14 @@ Grammar.extend
         (fun (i : string) (loc : Ploc.t) -> (i : 'tildeidentcolon))]];
     Grammar.Entry.obj (questionident : 'questionident Grammar.Entry.e), None,
     [None, None,
-     [[Gramext.Stoken ("ANTIQUOT_LOC", "?_")],
-      Gramext.action
-        (fun (a : string) (loc : Ploc.t) ->
-           (failwith "antiquot" : 'questionident));
-      [Gramext.Stoken ("ANTIQUOT_LOC", "?")],
-      Gramext.action
-        (fun (a : string) (loc : Ploc.t) ->
-           (failwith "antiquot" : 'questionident));
-      [Gramext.Stoken ("QUESTIONIDENT", "")],
+     [[Gramext.Stoken ("QUESTIONIDENT", "")],
       Gramext.action
         (fun (i : string) (loc : Ploc.t) -> (i : 'questionident))]];
     Grammar.Entry.obj
       (questionidentcolon : 'questionidentcolon Grammar.Entry.e),
     None,
     [None, None,
-     [[Gramext.Stoken ("ANTIQUOT_LOC", "?_:")],
-      Gramext.action
-        (fun (a : string) (loc : Ploc.t) ->
-           (failwith "antiquot" : 'questionidentcolon));
-      [Gramext.Stoken ("ANTIQUOT_LOC", "?:")],
-      Gramext.action
-        (fun (a : string) (loc : Ploc.t) ->
-           (failwith "antiquot" : 'questionidentcolon));
-      [Gramext.Stoken ("QUESTIONIDENTCOLON", "")],
+     [[Gramext.Stoken ("QUESTIONIDENTCOLON", "")],
       Gramext.action
         (fun (i : string) (loc : Ploc.t) -> (i : 'questionidentcolon))]];
     Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e),

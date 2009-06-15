@@ -1,11 +1,11 @@
 #!/bin/bash
-# $Id: configure,v 1.19 2007/09/18 19:03:13 deraugla Exp $
+# $Id: configure,v 1.20 2007/09/22 22:53:59 deraugla Exp $
 
 prefix=''
 bindir=''
 libdir=''
 mandir=''
-mode=
+mode=T
 name=camlp5
 
 if [ -f myconfig ]; then

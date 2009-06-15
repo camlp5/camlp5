@@ -860,6 +860,30 @@ lex.Plexing.tok_match <-
            if kind = "opt" || kind = anti_anti "opt" then prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
+  | "V QUESTIONIDENT", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           if prm <> "" && prm.[0] = '?' then
+             if prm.[String.length prm - 1] = ':' then raise Stream.Failure
+             else
+               let prm = String.sub prm 1 (String.length prm - 1) in
+               let kind = check_anti_loc2 prm in
+               if kind = "" || kind = anti_anti "" then prm
+               else raise Stream.Failure
+           else raise Stream.Failure
+       | _ -> raise Stream.Failure)
+  | "V QUESTIONIDENTCOLON", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           if prm <> "" && prm.[0] = '?' then
+             if prm.[String.length prm - 1] = ':' then
+               let prm = String.sub prm 1 (String.length prm - 2) in
+               let kind = check_anti_loc2 prm in
+               if kind = "" || kind = anti_anti "" then prm
+               else raise Stream.Failure
+             else raise Stream.Failure
+           else raise Stream.Failure
+       | _ -> raise Stream.Failure)
   | "V STRING", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
