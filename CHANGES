@@ -5,7 +5,8 @@ Camlp5 Version 5.01:
   'match' and in 'if' statements, i.e if one case does not fit on the line,
   all cases must be cut.
 * [01 Oct 07] Added module "Diff" in the library (general comparison of
-  two arrays: useful, e.g. to compare two strings).
+  two arrays). Implemented with the same algorithm as the Unix 'diff'
+  command.
 * [01 Oct 07] Fixed bug in pa_o.cmo (normal syntax) introduced in version
   5.00. The example: "function Atom atext as cur :: tl' -> 0" did not
   parse, printing the error "incorrect alias pattern".

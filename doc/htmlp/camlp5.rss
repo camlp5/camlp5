@@ -6,6 +6,18 @@
     <lastBuildDate>Mon Sep 17 15:10:47 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
     <item>
+      <title>Module Diff and Equilibrated pretty print</title>
+      <description>
+        Added module Diff in Camlp5 library to compare two arrays (using
+        the algorithm of the Unix 'diff' command). Added flag 'E' in
+        pretty print kit in revised syntax (pr_o.cmo) to allow display
+        equilibrate cases (all cases in 'match' statement are cut if one
+        is cut, and same equilibration in 'if' statement).
+      </description>
+      <pubDate>Mon Oct  1 21:47:55 CEST 2007</pubDate>
+      <link>../library.html</link>
+    </item>
+    <item>
       <title>SLIST0...</title>
       <description>
         Deleted section about internal extensions SLIST0, SLIST1, SOPT

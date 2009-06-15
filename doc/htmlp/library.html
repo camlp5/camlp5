@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: library.html,v 1.29 2007/09/22 05:20:28 deraugla Exp $ -->
+  <!-- $Id: library.html,v 1.30 2007/10/01 19:49:50 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Library</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -955,6 +955,36 @@ module type S =
     default = "<tt>False</tt>".
   </dd>
 </dl>
+
+<h2>Diff module</h2>
+
+<p>Differences between two arrays. Used in Camlp5 sources, but can
+  be used for other applications, independantly from Camlp5 stuff.</p>
+
+<pre style="border:0; margin-left: 1cm">
+value f : array 'a -> array 'a -> (array bool * array bool);</tt></dt>
+</pre>
+
+<dl><dd>
+    <tt>Diff.f a1 a2</tt> returns a couple of two arrays of
+    booleans <tt>(d1, d2)</tt>.
+    <ul>
+      <li><tt>d1</tt> has the same size as <tt>a1</tt>.</li>
+      <li><tt>d2</tt> has the same size as <tt>a2</tt>.</li>
+      <li><tt>d1.(i)</tt> is <tt>True</tt> if <tt>a1.(i)</tt> has no
+        corresponding value in <tt>a2</tt>.</li>
+      <li><tt>d2.(i)</tt> is <tt>True</tt> if <tt>a2.(i)</tt> has no
+        corresponding value in <tt>a1</tt>.</li>
+      <li><tt>d1</tt> and <tt>d2</tt> have the same number of values equal to
+        <tt>False</tt>.</li>
+    </ul>
+
+    <p>Can be used, e.g., to write the <tt>diff</tt> program
+      (comparison of two files), the input arrays being the array of
+      lines of each file.</p>
+    <p>Can be used also to compare two strings (they must have been
+      exploded into arrays of chars), or two DNA strings, and so on.</p>
+</dd></dl>
 
 <h2>Extfold module</h2>
 
