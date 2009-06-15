@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: q_ast.ml,v 1.94 2007/09/21 20:43:33 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.95 2007/09/22 20:40:15 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* AST quotations with works by running the language parser (and its possible
@@ -759,6 +759,27 @@ lex.Plexing.tok_match :=
           if kind = p_prm || kind = anti_anti p_prm then prm
           else raise Stream.Failure
       | _ -> raise Stream.Failure ]
+  | ("V CHAR", "") ->
+      fun
+      [ ("ANTIQUOT_LOC", prm) ->
+          let kind = check_anti_loc2 prm in
+          if kind = "chr" || kind = anti_anti "chr" then prm
+          else raise Stream.Failure
+      | _ -> raise Stream.Failure ]
+  | ("V FLAG", "") ->
+      fun
+      [ ("ANTIQUOT_LOC", prm) ->
+          let kind = check_anti_loc2 prm in
+          if kind = "flag" || kind = anti_anti "flag" then prm
+          else raise Stream.Failure
+      | _ -> raise Stream.Failure ]
+  | ("V FLOAT", "") ->
+      fun
+      [ ("ANTIQUOT_LOC", prm) ->
+          let kind = check_anti_loc2 prm in
+          if kind = "flo" || kind = anti_anti "flo" then prm
+          else raise Stream.Failure
+      | _ -> raise Stream.Failure ]
   | ("V INT", "") ->
       fun
       [ ("ANTIQUOT_LOC", prm) ->
@@ -787,39 +808,11 @@ lex.Plexing.tok_match :=
           if kind = "nativeint" || kind = anti_anti "nativeint" then prm
           else raise Stream.Failure
       | _ -> raise Stream.Failure ]
-  | ("V FLOAT", "") ->
-      fun
-      [ ("ANTIQUOT_LOC", prm) ->
-          let kind = check_anti_loc2 prm in
-          if kind = "flo" || kind = anti_anti "flo" then prm
-          else raise Stream.Failure
-      | _ -> raise Stream.Failure ]
   | ("V LIDENT", "") ->
       fun
       [ ("ANTIQUOT_LOC", prm) ->
           let kind = check_anti_loc2 prm in
           if kind = "lid" || kind = anti_anti "lid" then prm
-          else raise Stream.Failure
-      | _ -> raise Stream.Failure ]
-  | ("V UIDENT", "") ->
-      fun
-      [ ("ANTIQUOT_LOC", prm) ->
-          let kind = check_anti_loc2 prm in
-          if kind = "uid" || kind = anti_anti "uid" then prm
-          else raise Stream.Failure
-      | _ -> raise Stream.Failure ]
-  | ("V STRING", "") ->
-      fun
-      [ ("ANTIQUOT_LOC", prm) ->
-          let kind = check_anti_loc2 prm in
-          if kind = "str" || kind = anti_anti "str" then prm
-          else raise Stream.Failure
-      | _ -> raise Stream.Failure ]
-  | ("V CHAR", "") ->
-      fun
-      [ ("ANTIQUOT_LOC", prm) ->
-          let kind = check_anti_loc2 prm in
-          if kind = "chr" || kind = anti_anti "chr" then prm
           else raise Stream.Failure
       | _ -> raise Stream.Failure ]
   | ("V LIST", "") ->
@@ -836,11 +829,18 @@ lex.Plexing.tok_match :=
           if kind = "opt" || kind = anti_anti "opt" then prm
           else raise Stream.Failure
       | _ -> raise Stream.Failure ]
-  | ("V FLAG", "") ->
+  | ("V STRING", "") ->
       fun
       [ ("ANTIQUOT_LOC", prm) ->
           let kind = check_anti_loc2 prm in
-          if kind = "flag" || kind = anti_anti "flag" then prm
+          if kind = "str" || kind = anti_anti "str" then prm
+          else raise Stream.Failure
+      | _ -> raise Stream.Failure ]
+  | ("V UIDENT", "") ->
+      fun
+      [ ("ANTIQUOT_LOC", prm) ->
+          let kind = check_anti_loc2 prm in
+          if kind = "uid" || kind = anti_anti "uid" then prm
           else raise Stream.Failure
       | _ -> raise Stream.Failure ]
   | tok -> tok_match tok ]

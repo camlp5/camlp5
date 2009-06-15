@@ -1318,7 +1318,8 @@ let mk_psymbol p s t =
   {pattern = Some p; symbol = symb}
 ;;
 
-let sstoken_aux loc name s =
+let sstoken loc s =
+  let name = s in
   let text =
     try
       let name = List.assoc name assoc_anti in
@@ -1330,8 +1331,6 @@ let sstoken_aux loc name s =
   in
   {used = []; text = text; styp = STlid (loc, "string")}
 ;;
-
-let sstoken loc s = sstoken_aux loc s s;;
 
 let sstoken_prm loc name prm =
   let name = try List.assoc name assoc_anti with Not_found -> name in

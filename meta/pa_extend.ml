@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.81 2007/09/22 05:20:28 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.82 2007/09/22 20:40:15 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -616,7 +616,8 @@ value mk_psymbol p s t =
   {pattern = Some p; symbol = symb}
 ;
 
-value sstoken_aux loc name s =
+value sstoken loc s =
+  let name = s in
   let text =
     try
       let name = List.assoc name assoc_anti in
@@ -628,10 +629,6 @@ value sstoken_aux loc name s =
         TXnterm loc n None ]
   in
   {used = []; text = text; styp = STlid loc "string"}
-;
-
-value sstoken loc s =
-  sstoken_aux loc s s
 ;
 
 value sstoken_prm loc name prm =
