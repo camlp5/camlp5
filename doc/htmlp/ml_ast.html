@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: ml_ast.html,v 1.11 2007/07/23 10:56:43 deraugla Exp $ -->
+  <!-- $Id: ml_ast.html,v 1.12 2007/07/23 13:52:34 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Abstract tree in concrete syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -104,24 +104,27 @@
   their explicit names. Otherwise, you can read the following
   sections.</p>
 
-<h3>expr</h3>
-
-<p>Variable name give information to its type:</p>
+<p>Variables names give information to their types:</p>
 
 <ul>
   <li><tt>e</tt>, <tt>e1</tt>, <tt>e2</tt>, <tt>e3</tt>: expr</li>
+  <li><tt>p</tt>, <tt>p1</tt>, <tt>p2</tt>, <tt>p3</tt>: patt</li>
   <li><tt>t</tt>, <tt>t1</tt>, <tt>t2</tt>, <tt>e3</tt>: ctyp</li>
   <li><tt>s</tt>: string</li>
   <li><tt>b</tt>: bool</li>
   <li><tt>me</tt>: module_expr</li>
   <li><tt>le</tt>: list expr</li>
+  <li><tt>lp</tt>: list patt</li>
   <li><tt>ls</tt>: list string</li>
   <li><tt>lse</tt>: list (string * expr)</li>
   <li><tt>lpe</tt>: list (patt * expr)</li>
+  <li><tt>lpp</tt>: list (patt * patt)</li>
   <li><tt>lpoee</tt>: list (patt * option expr * expr)</li>
   <li><tt>op</tt>: option patt</li>
   <li><tt>lcsi</tt>: list class_str_item</li>
 </ul>
+
+<h3>expr</h3>
 
 <table border="1">
   <tr>
@@ -345,6 +348,140 @@
     <td>while</td>
   </tr>
 </table>
+
+<h3>patt</h3>
+
+<table border="1">
+  <tr>
+    <th>Node</th>
+    <th><tt>&lt;:patt&lt; ... >></tt></th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><tt>PaAcc loc p1 p2</tt></td>
+    <td><tt>$p1$ . $p2$</tt></td>
+    <td>dot</td>
+  </tr>
+  <tr>
+    <td><tt>PaAli loc p1 p2</tt></td>
+    <td><tt>($p1$ as $p2$)</tt></td>
+    <td>alias</td>
+  </tr>
+  <tr>
+    <td><tt>PaAnt loc p</tt></td>
+    <td>...internal use...</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>PaAny loc</tt></td>
+    <td><tt>_</tt></td>
+    <td>wildcard</td>
+  </tr>
+  <tr>
+    <td><tt>PaApp loc p1 p2</tt></td>
+    <td><tt>$p1$ $p2$</tt></td>
+    <td>application</td>
+  </tr>
+  <tr>
+    <td><tt>PaArr loc lp</tt></td>
+    <td><tt>[| $list:lp$ |]</tt></td>
+    <td>array</td>
+  </tr>
+  <tr>
+    <td><tt>PaChr loc s</tt></td>
+    <td><tt>$chr:s$</tt></td>
+    <td>character</td>
+  </tr>
+  <tr>
+    <td><tt>PaInt loc s1 s2</tt></td>
+    <td><tt>$int:s$</tt></td>
+    <td>integer</td>
+  </tr>
+  <tr>
+    <td><tt>PaFlo loc s</tt></td>
+    <td><tt>$flo:s$</tt></td>
+    <td>float</td>
+  </tr>
+  <tr>
+    <td><tt>PaLab loc s None</tt></td>
+    <td><tt>~ $s$</tt></td>
+    <td>label</td>
+  </tr>
+  <tr>
+    <td><tt>PaLab loc s (Some p)</tt></td>
+    <td><tt>~ $s$ : $p$</tt></td>
+    <td>label</td>
+  </tr>
+  <tr>
+    <td><tt>PaLid loc s</tt></td>
+    <td><tt>$lid:s$</tt></td>
+    <td>lowercase identifier</td>
+  </tr>
+  <tr>
+    <td><tt>PaOlb loc s None</tt></td>
+    <td><tt>? $s$</tt></td>
+    <td>option label</td>
+  </tr>
+  <tr>
+    <td><tt>PaOlb loc s (Some (p, None))</tt></td>
+    <td><tt>? $s$ : ($p$)</tt></td>
+    <td>option label</td>
+  </tr>
+  <tr>
+    <td><tt>PaOlb loc s (Some (p, Some e))</tt></td>
+    <td><tt>? $s$ : ($p$ = $e$)</tt></td>
+    <td>option label</td>
+  </tr>
+  <tr>
+    <td><tt>PaOrp loc p1 p2</tt></td>
+    <td><tt>$p1$ | $p2$</tt></td>
+    <td>or</td>
+  </tr>
+  <tr>
+    <td><tt>PaRng loc p1 p2</tt></td>
+    <td><tt>$p1$ .. $p2$</tt></td>
+    <td>range</td>
+  </tr>
+  <tr>
+    <td><tt>PaRec loc lpp None</tt></td>
+    <td><tt>{ $list:lpp$ }</tt></td>
+    <td>record</td>
+  </tr>
+  <tr>
+    <td><tt>PaStr loc s</tt></td>
+    <td><tt>$str:s$</tt></td>
+    <td>string</td>
+  </tr>
+  <tr>
+    <td><tt>PaTup loc lp</tt></td>
+    <td><tt>($list:lp$)</tt></td>
+    <td>t-uple</td>
+  </tr>
+  <tr>
+    <td><tt>PaTyc loc p t</tt></td>
+    <td><tt>($p$ : $t$)</tt></td>
+    <td>type constraint</td>
+  </tr>
+  <tr>
+    <td><tt>PaTyp loc ls</tt></td>
+    <td><tt># $list:ls$</tt></td>
+    <td>pattern type</td>
+  </tr>
+  <tr>
+    <td><tt>PaUid loc s</tt></td>
+    <td><tt>$uid:s$</tt></td>
+    <td>uppercase identifier</td>
+  </tr>
+  <tr>
+    <td><tt>PaVrn loc s</tt></td>
+    <td><tt>` $s$</tt></td>
+    <td>variant</td>
+  </tr>
+</table>
+
+<h3>ctyp</h3>
+
+<p>...to be completed...</p>
 
 <div class="trailer">
 </div>
