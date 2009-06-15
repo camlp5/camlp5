@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.72 2007/09/12 17:30:53 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.73 2007/09/12 19:28:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -27,6 +27,7 @@ do {
   Grammar.Unsafe.clear_entry type_declaration;
   Grammar.Unsafe.clear_entry constructor_declaration;
   Grammar.Unsafe.clear_entry match_case;
+  Grammar.Unsafe.clear_entry with_constr;
   Grammar.Unsafe.clear_entry class_type;
   Grammar.Unsafe.clear_entry class_expr;
   Grammar.Unsafe.clear_entry class_sig_item;
@@ -108,7 +109,6 @@ value mklistpat loc last =
 value append_elem el e = el @ [e];
 
 value ipatt = Grammar.Entry.create gram "ipatt";
-value with_constr = Grammar.Entry.create gram "with_constr";
 value poly_variant = Grammar.Entry.create gram "poly_variant";
 
 EXTEND
@@ -167,16 +167,16 @@ EXTEND
   module_type:
     [ [ "functor"; "("; i = V UIDENT; ":"; t = SELF; ")"; "->"; mt = SELF ->
           <:module_type< functor ( $auid:i$ : $t$ ) -> $mt$ >> ]
-    | [ mt = SELF; "with"; wcl = LIST1 with_constr SEP "and" ->
-          <:module_type< $mt$ with $list:wcl$ >> ]
-    | [ "sig"; sg = LIST0 [ s = sig_item; ";" -> s ]; "end" ->
-          <:module_type< sig $list:sg$ end >> ]
+    | [ mt = SELF; "with"; wcl = V LIST1 with_constr SEP "and" ->
+          <:module_type< $mt$ with $alist:wcl$ >> ]
+    | [ "sig"; sg = V LIST0 [ s = sig_item; ";" -> s ]; "end" ->
+          <:module_type< sig $alist:sg$ end >> ]
     | [ m1 = SELF; m2 = SELF -> <:module_type< $m1$ $m2$ >> ]
     | [ m1 = SELF; "."; m2 = SELF -> <:module_type< $m1$ . $m2$ >> ]
     | "simple"
-      [ i = UIDENT -> <:module_type< $uid:i$ >>
-      | i = LIDENT -> <:module_type< $lid:i$ >>
-      | "'"; i = ident -> <:module_type< ' $i$ >>
+      [ i = V UIDENT -> <:module_type< $auid:i$ >>
+      | i = V LIDENT -> <:module_type< $alid:i$ >>
+      | "'"; i = ident2 -> <:module_type< ' $a:i$ >>
       | "("; mt = SELF; ")" -> <:module_type< $mt$ >> ] ]
   ;
   sig_item:
@@ -185,18 +185,18 @@ EXTEND
           <:sig_item< declare $alist:st$ end >>
       | "exception"; (_, c, tl) = constructor_declaration ->
           <:sig_item< exception $auid:c$ of $alist:tl$ >>
-      | "external"; i = LIDENT; ":"; t = ctyp; "="; pd = LIST1 STRING ->
-          <:sig_item< external $i$ : $t$ = $list:pd$ >>
+      | "external"; i = V LIDENT; ":"; t = ctyp; "="; pd = V LIST1 STRING ->
+          <:sig_item< external $alid:i$ : $t$ = $alist:pd$ >>
       | "include"; mt = module_type -> <:sig_item< include $mt$ >>
-      | "module"; rf = FLAG "rec"; l = LIST1 mod_decl_binding SEP "and" ->
-          <:sig_item< module $flag:rf$ $list:l$ >>
-      | "module"; "type"; i = UIDENT; "="; mt = module_type ->
-          <:sig_item< module type $i$ = $mt$ >>
-      | "open"; i = mod_ident -> <:sig_item< open $i$ >>
-      | "type"; tdl = LIST1 type_declaration SEP "and" ->
-          <:sig_item< type $list:tdl$ >>
-      | "value"; i = LIDENT; ":"; t = ctyp ->
-          <:sig_item< value $i$ : $t$ >> ] ]
+      | "module"; rf = V FLAG "rec"; l = V LIST1 mod_decl_binding SEP "and" ->
+          <:sig_item< module $aflag:rf$ $alist:l$ >>
+      | "module"; "type"; i = V UIDENT; "="; mt = module_type ->
+          <:sig_item< module type $auid:i$ = $mt$ >>
+      | "open"; i = mod_ident2 -> <:sig_item< open $a:i$ >>
+      | "type"; tdl = V LIST1 type_declaration SEP "and" ->
+          <:sig_item< type $alist:tdl$ >>
+      | "value"; i = V LIDENT; ":"; t = ctyp ->
+          <:sig_item< value $alid:i$ : $t$ >> ] ]
   ;
   mod_decl_binding:
     [ [ i = UIDENT; mt = module_declaration -> (i, mt) ] ]
@@ -492,6 +492,11 @@ EXTEND
   label_declaration:
     [ [ i = LIDENT; ":"; mf = FLAG "mutable"; t = ctyp ->
           (loc, i, mf, t) ] ]
+  ;
+  ident2:
+    [ [ i = ident -> <:vala< i >>
+      | s = ANTIQUOT_LOC -> <:vala< $s$ >>
+      | s = ANTIQUOT_LOC "a" -> <:vala< $s$ >> ] ]
   ;
   ident:
     [ [ i = LIDENT -> i

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: mLast.mli,v 1.32 2007/09/12 17:30:53 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.33 2007/09/12 19:28:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Module [MLast]: abstract syntax tree.
@@ -123,11 +123,11 @@ and module_type =
   [ MtAcc of loc and module_type and module_type
   | MtApp of loc and module_type and module_type
   | MtFun of loc and V string and module_type and module_type
-  | MtLid of loc and string
-  | MtQuo of loc and string
-  | MtSig of loc and list sig_item
-  | MtUid of loc and string
-  | MtWit of loc and module_type and list with_constr
+  | MtLid of loc and V string
+  | MtQuo of loc and V string
+  | MtSig of loc and V (list sig_item)
+  | MtUid of loc and V string
+  | MtWit of loc and module_type and V (list with_constr)
   | IFDEF STRICT THEN
       MtXtr of loc and string and option (V module_type)
     END ]
@@ -137,14 +137,14 @@ and sig_item =
   | SgDcl of loc and V (list sig_item)
   | SgDir of loc and string and option expr
   | SgExc of loc and V string and V (list ctyp)
-  | SgExt of loc and string and ctyp and list string
+  | SgExt of loc and V string and ctyp and V (list string)
   | SgInc of loc and module_type
-  | SgMod of loc and bool and list (string * module_type)
-  | SgMty of loc and string and module_type
-  | SgOpn of loc and list string
-  | SgTyp of loc and list type_decl
+  | SgMod of loc and V bool and V (list (string * module_type))
+  | SgMty of loc and V string and module_type
+  | SgOpn of loc and V (list string)
+  | SgTyp of loc and V (list type_decl)
   | SgUse of loc and string and list (sig_item * loc)
-  | SgVal of loc and string and ctyp ]
+  | SgVal of loc and V string and ctyp ]
 and with_constr =
   [ WcTyp of loc and list string and list type_var and bool and ctyp
   | WcMod of loc and list string and module_expr ]

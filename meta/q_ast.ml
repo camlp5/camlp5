@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.59 2007/09/12 17:30:53 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.60 2007/09/12 19:28:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -352,31 +352,64 @@ module Meta =
           END
         | x -> not_impl "p_expr" x ]
     ;
-    value e_sig_item si =
+    value rec e_sig_item si =
       let ln = ln () in
       loop si where rec loop =
         fun
         [ SgDcl _ lsi ->
             <:expr< MLast.SgDcl $ln$ $e_vala (e_list loop) lsi$ >>
-(*
-        | SgVal _ s t -> <:expr< MLast.SgVal $ln ()$ $e_string s$ $e_ctyp t$ >>
-*)
+        | SgExc _ s lt ->
+            let s = e_vala e_string s in
+            let lt = e_vala (e_list e_ctyp) lt in
+            <:expr< MLast.SgExc $ln$ $s$ $lt$ >>
+        | SgExt _ s t ls ->
+            let ls = e_vala (e_list e_string) ls in
+            <:expr< MLast.SgExt $ln$ $e_vala e_string s$ $e_ctyp t$ $ls$ >>
+        | SgInc _ mt -> <:expr< MLast.SgInc $ln$ $e_module_type mt$ >>
+        | SgMod _ rf lsmt ->
+            let lsmt =
+              e_vala
+                (e_list
+                   (fun (s, mt) ->
+                      <:expr< ($e_string s$, $e_module_type mt$) >>))
+                lsmt
+            in
+            <:expr< MLast.SgMod $ln$ $e_vala e_bool rf$ $lsmt$ >>
+        | SgMty _ s mt ->
+            <:expr< MLast.SgMty $ln$ $e_vala e_string s$ $e_module_type mt$ >>
+        | SgOpn _ sl ->
+            <:expr< MLast.SgOpn $ln$ $e_vala (e_list e_string) sl$ >>
+        | SgTyp _ ltd ->
+            <:expr< MLast.SgTyp $ln$ $e_vala (e_list e_type_decl) ltd$ >>
+        | SgVal _ s t ->
+            <:expr< MLast.SgVal $ln$ $e_vala e_string s$ $e_ctyp t$ >>
         | x -> not_impl "e_sig_item" x ]
-    ;
-    value e_module_type mt =
+    and e_with_constr =
+      fun
+      [ x -> not_impl "e_with_constr" x ]
+    and p_with_constr =
+      fun
+      [ x -> not_impl "p_with_constr" x ]
+    and e_module_type mt =
       let ln = ln () in
       loop mt where rec loop =
         fun
-        [ MtFun _ s mt1 mt2 ->
+        [ MtAcc _ mt1 mt2 -> <:expr< MLast.MtAcc $ln$ $loop mt1$ $loop mt2$ >>
+        | MtApp _ mt1 mt2 -> <:expr< MLast.MtApp $ln$ $loop mt1$ $loop mt2$ >>
+        | MtFun _ s mt1 mt2 ->
             let s = e_vala e_string s in
             <:expr< MLast.MtFun $ln$ $s$ $loop mt1$ $loop mt2$ >>
-(*
-        | MtUid _ s -> <:expr< MLast.MtUid $ln$ $e_string s$ >>
-*)
+        | MtLid _ s -> <:expr< MLast.MtLid $ln$ $e_vala e_string s$ >>
+        | MtQuo _ s -> <:expr< MLast.MtQuo $ln$ $e_vala e_string s$ >>
+        | MtSig _ sil ->
+            <:expr< MLast.MtSig $ln$ $e_vala (e_list e_sig_item) sil$ >>
+        | MtUid _ s -> <:expr< MLast.MtUid $ln$ $e_vala e_string s$ >>
+        | MtWit _ mt lwc ->
+            let lwc = e_vala (e_list e_with_constr) lwc in
+            <:expr< MLast.MtWit $ln$ $loop mt$ $lwc$ >>
         | IFDEF STRICT THEN
             MtXtr loc s _ -> e_xtr loc s
-          END
-        | x -> not_impl "e_module_type" x ]
+          END ]
     ;
     value p_module_type =
       fun
@@ -463,6 +496,7 @@ value str_item_eoi = Grammar.Entry.create Pcaml.gram "str_item";
 value sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";
 value module_expr_eoi = Grammar.Entry.create Pcaml.gram "module_expr";
 value module_type_eoi = Grammar.Entry.create Pcaml.gram "module_type";
+value with_constr_eoi = Grammar.Entry.create Pcaml.gram "with_constr";
 
 EXTEND
   expr_eoi: [ [ x = Pcaml.expr; EOI -> x ] ];
@@ -472,6 +506,7 @@ EXTEND
   str_item_eoi: [ [ x = Pcaml.str_item; EOI -> x ] ];
   module_expr_eoi: [ [ x = Pcaml.module_expr; EOI -> x ] ];
   module_type_eoi: [ [ x = Pcaml.module_type; EOI -> x ] ];
+  with_constr_eoi: [ [ x = Pcaml.with_constr; EOI -> x ] ];
 END;
 
 IFDEF STRICT THEN
@@ -645,7 +680,9 @@ List.iter
    ("module_expr",
     apply_entry module_expr_eoi Meta.e_module_expr Meta.p_module_expr);
    ("module_type",
-    apply_entry module_type_eoi Meta.e_module_type Meta.p_module_type)]
+    apply_entry module_type_eoi Meta.e_module_type Meta.p_module_type);
+   ("with_constr",
+    apply_entry with_constr_eoi Meta.e_with_constr Meta.p_with_constr)]
 ;
 
 let expr s =

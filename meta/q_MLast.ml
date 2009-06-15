@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.70 2007/09/12 17:30:53 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.71 2007/09/12 19:28:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -373,16 +373,16 @@ EXTEND
   module_type:
     [ [ "functor"; "("; i = a_UIDENT2; ":"; t = SELF; ")"; "->"; mt = SELF ->
           Qast.Node "MtFun" [Qast.Loc; i; t; mt] ]
-    | [ mt = SELF; "with"; wcl = SLIST1 with_constr SEP "and" ->
+    | [ mt = SELF; "with"; wcl = SV LIST1 with_constr SEP "and" ->
           Qast.Node "MtWit" [Qast.Loc; mt; wcl] ]
-    | [ "sig"; sg = SLIST0 [ s = sig_item; ";" -> s ]; "end" ->
+    | [ "sig"; sg = SV LIST0 [ s = sig_item; ";" -> s ]; "end" ->
           Qast.Node "MtSig" [Qast.Loc; sg] ]
     | [ m1 = SELF; m2 = SELF -> Qast.Node "MtApp" [Qast.Loc; m1; m2] ]
     | [ m1 = SELF; "."; m2 = SELF -> Qast.Node "MtAcc" [Qast.Loc; m1; m2] ]
     | "simple"
-      [ i = a_UIDENT -> Qast.Node "MtUid" [Qast.Loc; i]
-      | i = a_LIDENT -> Qast.Node "MtLid" [Qast.Loc; i]
-      | "'"; i = ident -> Qast.Node "MtQuo" [Qast.Loc; i]
+      [ i = a_UIDENT2 -> Qast.Node "MtUid" [Qast.Loc; i]
+      | i = a_LIDENT2 -> Qast.Node "MtLid" [Qast.Loc; i]
+      | "'"; i = ident2 -> Qast.Node "MtQuo" [Qast.Loc; i]
       | "("; mt = SELF; ")" -> mt ] ]
   ;
   sig_item:
@@ -396,17 +396,19 @@ EXTEND
             | _ -> match () with [] ]
           in
           Qast.Node "SgExc" [Qast.Loc; c; tl]
-      | "external"; i = a_LIDENT; ":"; t = ctyp; "="; pd = SLIST1 a_STRING ->
+      | "external"; i = a_LIDENT2; ":"; t = ctyp; "=";
+        pd = SV LIST1 a_STRING ->
           Qast.Node "SgExt" [Qast.Loc; i; t; pd]
       | "include"; mt = module_type -> Qast.Node "SgInc" [Qast.Loc; mt]
-      | "module"; rf = SFLAG "rec"; l = SLIST1 mod_decl_binding SEP "and" ->
+      | "module"; rf = SV FLAG "rec";
+        l = SV LIST1 mod_decl_binding SEP "and" ->
           Qast.Node "SgMod" [Qast.Loc; rf; l]
-      | "module"; "type"; i = a_UIDENT; "="; mt = module_type ->
+      | "module"; "type"; i = a_UIDENT2; "="; mt = module_type ->
           Qast.Node "SgMty" [Qast.Loc; i; mt]
-      | "open"; i = mod_ident -> Qast.Node "SgOpn" [Qast.Loc; i]
-      | "type"; tdl = SLIST1 type_declaration SEP "and" ->
+      | "open"; i = mod_ident2 -> Qast.Node "SgOpn" [Qast.Loc; i]
+      | "type"; tdl = SV LIST1 type_declaration SEP "and" ->
           Qast.Node "SgTyp" [Qast.Loc; tdl]
-      | "value"; i = a_LIDENT; ":"; t = ctyp ->
+      | "value"; i = a_LIDENT2; ":"; t = ctyp ->
           Qast.Node "SgVal" [Qast.Loc; i; t] ] ]
   ;
   mod_decl_binding:
@@ -909,6 +911,11 @@ EXTEND
   label_declaration:
     [ [ i = a_LIDENT; ":"; mf = SFLAG "mutable"; t = ctyp ->
           Qast.Tuple [Qast.Loc; i; mf; t] ] ]
+  ;
+  ident2:
+    [ [ i = ident -> Qast.VaVal i
+      | s = ANTIQUOT -> Qast.VaVal (antiquot "" loc s)
+      | s = ANTIQUOT "a" -> antiquot "a" loc s ] ]
   ;
   ident:
     [ [ i = a_LIDENT -> i

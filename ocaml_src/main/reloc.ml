@@ -212,10 +212,12 @@ and module_type floc sh =
     | MtFun (loc, x1, x2, x3) -> MtFun (floc loc, x1, self x2, self x3)
     | MtLid (loc, x1) -> MtLid (floc loc, x1)
     | MtQuo (loc, x1) -> MtQuo (floc loc, x1)
-    | MtSig (loc, x1) -> MtSig (floc loc, List.map (sig_item floc sh) x1)
+    | MtSig (loc, x1) ->
+        MtSig (floc loc, vala_map (List.map (sig_item floc sh)) x1)
     | MtUid (loc, x1) -> MtUid (floc loc, x1)
     | MtWit (loc, x1, x2) ->
-        MtWit (floc loc, self x1, List.map (with_constr floc sh) x2)
+        MtWit
+          (floc loc, self x1, vala_map (List.map (with_constr floc sh)) x2)
   in
   self
 and sig_item floc sh =
@@ -234,10 +236,11 @@ and sig_item floc sh =
     | SgMod (loc, x1, x2) ->
         SgMod
           (floc loc, x1,
-           List.map (fun (n, mt) -> n, module_type floc sh mt) x2)
+           vala_map (List.map (fun (n, mt) -> n, module_type floc sh mt)) x2)
     | SgMty (loc, x1, x2) -> SgMty (floc loc, x1, module_type floc sh x2)
     | SgOpn (loc, x1) -> SgOpn (floc loc, x1)
-    | SgTyp (loc, x1) -> SgTyp (floc loc, List.map (type_decl floc sh) x1)
+    | SgTyp (loc, x1) ->
+        SgTyp (floc loc, vala_map (List.map (type_decl floc sh)) x1)
     | SgUse (loc, x1, x2) -> SgUse (loc, x1, x2)
     | SgVal (loc, x1, x2) -> SgVal (floc loc, x1, ctyp floc sh x2)
   in

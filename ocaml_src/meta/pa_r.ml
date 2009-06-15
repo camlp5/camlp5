@@ -26,6 +26,7 @@ Grammar.Unsafe.clear_entry let_binding;
 Grammar.Unsafe.clear_entry type_declaration;
 Grammar.Unsafe.clear_entry constructor_declaration;
 Grammar.Unsafe.clear_entry match_case;
+Grammar.Unsafe.clear_entry with_constr;
 Grammar.Unsafe.clear_entry class_type;
 Grammar.Unsafe.clear_entry class_expr;
 Grammar.Unsafe.clear_entry class_sig_item;
@@ -107,7 +108,6 @@ let mklistpat loc last =
 let append_elem el e = el @ [e];;
 
 let ipatt = Grammar.Entry.create gram "ipatt";;
-let with_constr = Grammar.Entry.create gram "with_constr";;
 let poly_variant = Grammar.Entry.create gram "poly_variant";;
 
 Grammar.extend
@@ -178,6 +178,7 @@ Grammar.extend
      grammar_entry_create "type_parameter"
    and label_declaration : 'label_declaration Grammar.Entry.e =
      grammar_entry_create "label_declaration"
+   and ident2 : 'ident2 Grammar.Entry.e = grammar_entry_create "ident2"
    and ident : 'ident Grammar.Entry.e = grammar_entry_create "ident"
    and mod_ident2 : 'mod_ident2 Grammar.Entry.e =
      grammar_entry_create "mod_ident2"
@@ -448,9 +449,9 @@ Grammar.extend
       Gramext.action
         (fun _ (mt : 'module_type) _ (loc : Ploc.t) -> (mt : 'module_type));
       [Gramext.Stoken ("", "'");
-       Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
+       Gramext.Snterm (Grammar.Entry.obj (ident2 : 'ident2 Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'ident) _ (loc : Ploc.t) ->
+        (fun (i : 'ident2) _ (loc : Ploc.t) ->
            (MLast.MtQuo (loc, i) : 'module_type));
       [Gramext.Stoken ("LIDENT", "")],
       Gramext.action
@@ -479,9 +480,9 @@ Grammar.extend
            (MLast.SgTyp (loc, tdl) : 'sig_item));
       [Gramext.Stoken ("", "open");
        Gramext.Snterm
-         (Grammar.Entry.obj (mod_ident : 'mod_ident Grammar.Entry.e))],
+         (Grammar.Entry.obj (mod_ident2 : 'mod_ident2 Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'mod_ident) _ (loc : Ploc.t) ->
+        (fun (i : 'mod_ident2) _ (loc : Ploc.t) ->
            (MLast.SgOpn (loc, i) : 'sig_item));
       [Gramext.Stoken ("", "module"); Gramext.Stoken ("", "type");
        Gramext.Stoken ("UIDENT", ""); Gramext.Stoken ("", "=");
@@ -1541,6 +1542,16 @@ Grammar.extend
       Gramext.action
         (fun (t : 'ctyp) (mf : bool) _ (i : string) (loc : Ploc.t) ->
            (loc, i, mf, t : 'label_declaration))]];
+    Grammar.Entry.obj (ident2 : 'ident2 Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Stoken ("ANTIQUOT_LOC", "a")],
+      Gramext.action
+        (fun (s : string) (loc : Ploc.t) -> (failwith "antiquot" : 'ident2));
+      [Gramext.Stoken ("ANTIQUOT_LOC", "")],
+      Gramext.action
+        (fun (s : string) (loc : Ploc.t) -> (failwith "antiquot" : 'ident2));
+      [Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
+      Gramext.action (fun (i : 'ident) (loc : Ploc.t) -> (i : 'ident2))]];
     Grammar.Entry.obj (ident : 'ident Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("UIDENT", "")],

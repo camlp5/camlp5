@@ -943,7 +943,7 @@ module Meta =
       in
       loop e
     ;;
-    let e_sig_item si =
+    let rec e_sig_item si =
       let ln = ln () in
       let rec loop =
         function
@@ -957,15 +957,150 @@ module Meta =
                      MLast.ExUid (loc, "SgDcl")),
                   ln),
                e_vala (e_list loop) lsi)
+        | SgExc (_, s, lt) ->
+            let s = e_vala e_string s in
+            let lt = e_vala (e_list e_ctyp) lt in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "SgExc")),
+                     ln),
+                  s),
+               lt)
+        | SgExt (_, s, t, ls) ->
+            let ls = e_vala (e_list e_string) ls in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExApp
+                       (loc,
+                        MLast.ExAcc
+                          (loc, MLast.ExUid (loc, "MLast"),
+                           MLast.ExUid (loc, "SgExt")),
+                        ln),
+                     e_vala e_string s),
+                  e_ctyp t),
+               ls)
+        | SgInc (_, mt) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "SgInc")),
+                  ln),
+               e_module_type mt)
+        | SgMod (_, rf, lsmt) ->
+            let lsmt =
+              e_vala
+                (e_list
+                   (fun (s, mt) ->
+                      MLast.ExTup (loc, [e_string s; e_module_type mt])))
+                lsmt
+            in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "SgMod")),
+                     ln),
+                  e_vala e_bool rf),
+               lsmt)
+        | SgMty (_, s, mt) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "SgMty")),
+                     ln),
+                  e_vala e_string s),
+               e_module_type mt)
+        | SgOpn (_, sl) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "SgOpn")),
+                  ln),
+               e_vala (e_list e_string) sl)
+        | SgTyp (_, ltd) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "SgTyp")),
+                  ln),
+               e_vala (e_list e_type_decl) ltd)
+        | SgVal (_, s, t) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "SgVal")),
+                     ln),
+                  e_vala e_string s),
+               e_ctyp t)
         | x -> not_impl "e_sig_item" x
       in
       loop si
-    ;;
-    let e_module_type mt =
+    and e_with_constr x = not_impl "e_with_constr" x
+    and p_with_constr x = not_impl "p_with_constr" x
+    and e_module_type mt =
       let ln = ln () in
       let rec loop =
         function
-          MtFun (_, s, mt1, mt2) ->
+          MtAcc (_, mt1, mt2) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "MtAcc")),
+                     ln),
+                  loop mt1),
+               loop mt2)
+        | MtApp (_, mt1, mt2) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "MtApp")),
+                     ln),
+                  loop mt1),
+               loop mt2)
+        | MtFun (_, s, mt1, mt2) ->
             let s = e_vala e_string s in
             MLast.ExApp
               (loc,
@@ -982,7 +1117,60 @@ module Meta =
                      s),
                   loop mt1),
                loop mt2)
-        | x -> not_impl "e_module_type" x
+        | MtLid (_, s) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "MtLid")),
+                  ln),
+               e_vala e_string s)
+        | MtQuo (_, s) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "MtQuo")),
+                  ln),
+               e_vala e_string s)
+        | MtSig (_, sil) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "MtSig")),
+                  ln),
+               e_vala (e_list e_sig_item) sil)
+        | MtUid (_, s) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "MtUid")),
+                  ln),
+               e_vala e_string s)
+        | MtWit (_, mt, lwc) ->
+            let lwc = e_vala (e_list e_with_constr) lwc in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "MtWit")),
+                     ln),
+                  loop mt),
+               lwc)
       in
       loop mt
     ;;
@@ -1228,6 +1416,7 @@ let str_item_eoi = Grammar.Entry.create Pcaml.gram "str_item";;
 let sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";;
 let module_expr_eoi = Grammar.Entry.create Pcaml.gram "module_expr";;
 let module_type_eoi = Grammar.Entry.create Pcaml.gram "module_type";;
+let with_constr_eoi = Grammar.Entry.create Pcaml.gram "with_constr";;
 
 Grammar.extend
   [Grammar.Entry.obj (expr_eoi : 'expr_eoi Grammar.Entry.e), None,
@@ -1286,7 +1475,17 @@ Grammar.extend
       Gramext.Stoken ("EOI", "")],
      Gramext.action
        (fun _ (x : 'Pcaml__module_type) (loc : Ploc.t) ->
-          (x : 'module_type_eoi))]]];;
+          (x : 'module_type_eoi))]];
+   Grammar.Entry.obj (with_constr_eoi : 'with_constr_eoi Grammar.Entry.e),
+   None,
+   [None, None,
+    [[Gramext.Snterm
+        (Grammar.Entry.obj
+           (Pcaml.with_constr : 'Pcaml__with_constr Grammar.Entry.e));
+      Gramext.Stoken ("EOI", "")],
+     Gramext.action
+       (fun _ (x : 'Pcaml__with_constr) (loc : Ploc.t) ->
+          (x : 'with_constr_eoi))]]];;
 
 (* *)
 
@@ -1418,7 +1617,9 @@ List.iter (fun (q, f) -> Quotation.add q f)
    "module_expr",
    apply_entry module_expr_eoi Meta.e_module_expr Meta.p_module_expr;
    "module_type",
-   apply_entry module_type_eoi Meta.e_module_type Meta.p_module_type];;
+   apply_entry module_type_eoi Meta.e_module_type Meta.p_module_type;
+   "with_constr",
+   apply_entry with_constr_eoi Meta.e_with_constr Meta.p_with_constr];;
 
 let expr s =
   let e =

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pcaml.ml,v 1.26 2007/09/08 09:18:14 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.27 2007/09/12 19:28:52 deraugla Exp $ *)
 
 value version = "4.09-exp";
 value syntax_name = ref "";
@@ -39,6 +39,7 @@ value type_declaration = Grammar.Entry.create gram "type_declaration";
 value match_case = Grammar.Entry.create gram "match_case";
 value constructor_declaration =
   Grammar.Entry.create gram "constructor_declaration";
+value with_constr = Grammar.Entry.create gram "with_constr";
 
 value class_sig_item = Grammar.Entry.create gram "class_sig_item";
 value class_str_item = Grammar.Entry.create gram "class_str_item";

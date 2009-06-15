@@ -1,6 +1,7 @@
 Camlp5 Version 4.09:
 ---------------------
 
+* [12 Sep 07] Added 'Pcaml.with_constr' among predefined entries.
 * [09 Sep 07] In macros (pa_macro.cmo):
   - changed parameters syntax: now in curried form instead of parentheses,
   - added ability to define macro type expressions in signatures, e.g.:

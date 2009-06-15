@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.26 2007/09/12 16:02:06 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.27 2007/09/12 19:28:52 deraugla Exp $ *)
 
 open MLast;
 
@@ -155,11 +155,17 @@ and label_expr (p, e) = do { patt p; expr e }
 and match_case (p, w, e) = do { patt p; option expr w; expr e }
 and module_type =
   fun
-  [ MtAcc _ (MtUid _ m) _ -> addmodule m
-  | MtFun _ _ mt1 mt2 -> do { module_type mt1; module_type mt2 }
-  | MtSig _ sil -> list sig_item sil
-  | MtUid _ _ -> ()
-  | MtWit _ mt wc -> do { module_type mt; list with_constr wc }
+  [ <:module_type< $uid:m$ . $_$ >> -> addmodule m
+  | <:module_type< functor ($_$ : $mt1$) -> $mt2$ >> -> do {
+      module_type mt1;
+      module_type mt2
+    }
+  | <:module_type< sig $list:sil$ end >> -> list sig_item sil
+  | <:module_type< $uid:_$ >> -> ()
+  | <:module_type< $mt$ with $list:wc$ >> -> do {
+      module_type mt;
+      list with_constr wc
+    }
   | x -> not_impl "module_type" x ]
 and with_constr =
   fun
@@ -170,10 +176,11 @@ and sig_item =
   [ <:sig_item< declare $list:sil$ end >> -> list sig_item sil
   | <:sig_item< exception $_$ of $list:tl$ >> -> list ctyp tl
   | SgExt _ _ t _ -> ctyp t
-  | SgMod _ _ ntl -> list (fun (_, mt) -> module_type mt) ntl
+  | <:sig_item< module $flag:_$ $list:ntl$ >> ->
+      list (fun (_, mt) -> module_type mt) ntl
   | SgMty _ _ mt -> module_type mt
-  | SgOpn _ [s :: _] -> addmodule s
-  | SgTyp _ tdl -> list type_decl tdl
+  | <:sig_item< open $[s :: _]$ >> -> addmodule s
+  | <:sig_item< type $list:tdl$ >> -> list type_decl tdl
   | SgVal _ _ t -> ctyp t
   | x -> not_impl "sig_item" x ]
 and module_expr =

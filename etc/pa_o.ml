@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.47 2007/09/10 22:46:41 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.48 2007/09/12 19:28:52 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -37,6 +37,7 @@ do {
   Grammar.Unsafe.clear_entry type_declaration;
   Grammar.Unsafe.clear_entry constructor_declaration;
   Grammar.Unsafe.clear_entry match_case;
+  Grammar.Unsafe.clear_entry with_constr;
   Grammar.Unsafe.clear_entry class_type;
   Grammar.Unsafe.clear_entry class_expr;
   Grammar.Unsafe.clear_entry class_sig_item;
@@ -343,7 +344,7 @@ value choose_tvar tpl =
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr class_type
     class_expr class_sig_item class_str_item let_binding type_declaration
-    constructor_declaration match_case;
+    constructor_declaration match_case with_constr;
   module_expr:
     [ [ "functor"; "("; i = UIDENT; ":"; t = module_type; ")"; "->";
         me = SELF ->

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.32 2007/09/12 17:30:53 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.33 2007/09/12 19:28:52 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -350,11 +350,11 @@ value rec type_id loc t =
 
 value rec module_type_long_id =
   fun
-  [ MtAcc _ m (MtUid _ s) -> ldot (module_type_long_id m) s
-  | MtAcc _ m (MtLid _ s) -> ldot (module_type_long_id m) s
+  [ <:module_type< $m$ . $uid:s$ >> -> ldot (module_type_long_id m) s
+  | <:module_type< $m$ . $lid:s$ >> -> ldot (module_type_long_id m) s
   | MtApp _ m1 m2 -> Lapply (module_type_long_id m1) (module_type_long_id m2)
-  | MtLid _ s -> lident s
-  | MtUid _ s -> lident s
+  | <:module_type< $lid:s$ >> -> lident s
+  | <:module_type< $uid:s$ >> -> lident s
   | t -> error (loc_of_module_type t) "bad module type long ident" ]
 ;
 
@@ -759,13 +759,13 @@ and module_type =
   | MtApp loc _ _ as f -> mkmty loc (Pmty_ident (module_type_long_id f))
   | MtFun loc n nt mt ->
       mkmty loc (Pmty_functor (uv n) (module_type nt) (module_type mt))
-  | MtLid loc s -> mkmty loc (Pmty_ident (lident s))
+  | MtLid loc s -> mkmty loc (Pmty_ident (lident (uv s)))
   | MtQuo loc _ -> error loc "abstract module type not allowed here"
   | MtSig loc sl ->
-      mkmty loc (Pmty_signature (List.fold_right sig_item sl []))
-  | MtUid loc s -> mkmty loc (Pmty_ident (lident s))
+      mkmty loc (Pmty_signature (List.fold_right sig_item (uv sl) []))
+  | MtUid loc s -> mkmty loc (Pmty_ident (lident (uv s)))
   | MtWit loc mt wcl ->
-      mkmty loc (Pmty_with (module_type mt) (List.map mkwithc wcl))
+      mkmty loc (Pmty_with (module_type mt) (List.map mkwithc (uv wcl)))
   | IFDEF STRICT THEN
       MtXtr loc _ _ -> error loc "bad ast"
     END ]
@@ -780,15 +780,16 @@ and sig_item s l =
   | SgDir loc _ _ -> l
   | SgExc loc n tl ->
       [mksig loc (Psig_exception (uv n) (List.map ctyp (uv tl))) :: l]
-  | SgExt loc n t p -> [mksig loc (Psig_value n (mkvalue_desc t p)) :: l]
+  | SgExt loc n t p ->
+      [mksig loc (Psig_value (uv n) (mkvalue_desc t (uv p))) :: l]
   | SgInc loc mt -> [mksig loc (Psig_include (module_type mt)) :: l]
   | SgMod loc rf ntl ->
-      if not rf then
+      if not (uv rf) then
         List.fold_right
           (fun (n, mt) l -> [mksig loc (Psig_module n (module_type mt)) :: l])
-          ntl l
+          (uv ntl) l
       else
-        let ntl = List.map (fun (n, mt) -> (n, module_type mt)) ntl in
+        let ntl = List.map (fun (n, mt) -> (n, module_type mt)) (uv ntl) in
         [mksig loc (Psig_recmodule ntl) :: l]
   | SgMty loc n mt ->
       let si =
@@ -796,14 +797,16 @@ and sig_item s l =
         [ MtQuo _ _ -> Pmodtype_abstract
         | _ -> Pmodtype_manifest (module_type mt) ]
       in
-      [mksig loc (Psig_modtype n si) :: l]
+      [mksig loc (Psig_modtype (uv n) si) :: l]
   | SgOpn loc id ->
-      [mksig loc (Psig_open (long_id_of_string_list loc id)) :: l]
-  | SgTyp loc tdl -> [mksig loc (Psig_type (List.map mktype_decl tdl)) :: l]
+      [mksig loc (Psig_open (long_id_of_string_list loc (uv id))) :: l]
+  | SgTyp loc tdl ->
+      [mksig loc (Psig_type (List.map mktype_decl (uv tdl))) :: l]
   | SgUse loc fn sl ->
       call_with glob_fname fn
         (fun () -> List.fold_right (fun (si, _) -> sig_item si) sl l)
-  | SgVal loc n t -> [mksig loc (Psig_value n (mkvalue_desc t [])) :: l] ]
+  | SgVal loc n t ->
+      [mksig loc (Psig_value (uv n) (mkvalue_desc t [])) :: l] ]
 and module_expr =
   fun
   [ MeAcc loc _ _ as f -> mkmod loc (Pmod_ident (module_expr_long_id f))

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: pcaml.mli,v 1.16 2007/09/10 22:46:41 deraugla Exp $ *)
+(* $Id: pcaml.mli,v 1.17 2007/09/12 19:28:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 IFNDEF STRICT THEN
@@ -53,6 +53,7 @@ value match_case :
   Grammar.Entry.e (MLast.patt * option MLast.expr * MLast.expr);
 value constructor_declaration :
   Grammar.Entry.e (MLast.loc * V string * V (list MLast.ctyp));
+value with_constr : Grammar.Entry.e MLast.with_constr;
 value class_sig_item : Grammar.Entry.e MLast.class_sig_item;
 value class_str_item : Grammar.Entry.e MLast.class_str_item;
 value class_expr : Grammar.Entry.e MLast.class_expr;
