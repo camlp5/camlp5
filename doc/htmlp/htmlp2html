@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: htmlp2html,v 1.13 2007/08/29 04:16:48 deraugla Exp $
+# $Id: htmlp2html,v 1.14 2007/08/29 04:26:06 deraugla Exp $
 
 FILE=$1
 VERSION="$(grep "value version =" ../../main/pcaml.ml | sed -e 's/^[^"]*"\([^"]*\).*$/\1/')"
@@ -40,6 +40,7 @@ sed -e '/<h2>/s|<h2>\(.*\)</h2>|<h2 id="a:\1">\1</h2>|' |
 sed -e '/<h3>/s|<h3>\(.*\)</h3>|<h3 id="b:\1">\1</h3>|' |
 sed -e '{:b s/\(href="#[^ "]*\)[ ,?]/\1-/; tb}' |
 sed -e '{:b s/\(id="[^ "]*\)[ ,?]/\1-/; tb}' |
-sed -e "s|<version/>|$VERSION|"
+sed -e "s|<version/>|$VERSION|" |
+sed -e '/<licence\/>/r ../../LICENSE' -e '/<licence\/>/d'
 
 rm toc.tmp
