@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.68 2007/08/15 10:54:38 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.69 2007/08/15 15:44:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -2286,29 +2286,6 @@ pr_patt.pr_levels :=
    {pr_label = "simple"; pr_rules = patt_simple}]
 ;
 
-value extend_printer lpplr =
-  List.iter
-    (fun (pr, pos, levs) ->
-       let _ =
-         if pos = None then ()
-         else failwith "not impl EXTEND_PRINTER entry with at level parameter"
-       in
-       let levels =
-         List.fold_right
-           (fun (lab, extf) levs ->
-              let lab =
-                match lab with
-                [ Some lab -> lab
-                | None -> "" ]
-              in
-              let lev = {pr_label = lab; pr_rules = extf Extfun.empty} in 
-              [lev :: levs])
-           levs pr.pr_levels
-       in
-       pr.pr_levels := levels)
-    lpplr
-;
-
 EXTEND_PRINTER
   pr_ctyp:
     [ "top"
@@ -3077,37 +3054,34 @@ lev.pr_rules :=
           z ]
 ;
 
-let lev = find_pr_level "simple" pr_ctyp.pr_levels in
-lev.pr_rules :=
-  extfun lev.pr_rules with
-  [ <:ctyp< < $list:ml$ $opt:v$ > >> ->
-      fun curr next pc ->
-        if ml = [] then
-          sprintf "%s<%s >%s" pc.bef (if v then " .." else "") pc.aft
-        else
-          let ml = List.map (fun e -> (e, ";")) ml in
-          plist field 0
-            {(pc) with ind = pc.ind + 2; bef = sprintf "%s< " pc.bef;
-             aft = sprintf "%s >%s" (if v then "; .." else "") pc.aft}
-            ml
-  | <:ctyp< # $list:id$ >> ->
-      fun curr next pc ->
-        class_longident {(pc) with bef = sprintf "%s#" pc.bef}  id
-  | <:ctyp< [ = $list:pvl$ ] >> ->
-      fun curr next pc -> variant_decl_list "" pc pvl
-  | <:ctyp< [ > $list:pvl$ ] >> ->
-      fun curr next pc -> variant_decl_list ">" pc pvl
-  | <:ctyp< [ < $list:pvl$ ] >> ->
-      fun curr next pc -> variant_decl_list "<" pc pvl
-  | <:ctyp< [ < $list:pvl$ > $list:_$ ] >> ->
-      fun curr next pc -> not_impl "variants 4" pc pvl
-  | <:ctyp< $_$ as $_$ >> as z ->
-      fun curr next pc ->
-        ctyp
-          {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-           aft = sprintf ")%s" pc.aft}
-          z ]
-;
+EXTEND_PRINTER
+  pr_ctyp: LEVEL "simple"
+    [ [ <:ctyp< < $list:ml$ $opt:v$ > >> ->
+          if ml = [] then
+            sprintf "%s<%s >%s" pc.bef (if v then " .." else "") pc.aft
+          else
+            let ml = List.map (fun e -> (e, ";")) ml in
+            plist field 0
+              {(pc) with ind = pc.ind + 2; bef = sprintf "%s< " pc.bef;
+               aft = sprintf "%s >%s" (if v then "; .." else "") pc.aft}
+              ml
+      | <:ctyp< # $list:id$ >> ->
+          class_longident {(pc) with bef = sprintf "%s#" pc.bef}  id
+      | <:ctyp< [ = $list:pvl$ ] >> ->
+          variant_decl_list "" pc pvl
+      | <:ctyp< [ > $list:pvl$ ] >> ->
+          variant_decl_list ">" pc pvl
+      | <:ctyp< [ < $list:pvl$ ] >> ->
+          variant_decl_list "<" pc pvl
+      | <:ctyp< [ < $list:pvl$ > $list:_$ ] >> ->
+          not_impl "variants 4" pc pvl
+      | <:ctyp< $_$ as $_$ >> as z ->
+          ctyp
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            z ] ]
+  ;
+END;
 
 let lev = find_pr_level "top" pr_sig_item.pr_levels in
 lev.pr_rules :=

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.24 2007/08/15 10:54:38 deraugla Exp $
+# $Id: Makefile,v 1.25 2007/08/15 15:44:25 deraugla Exp $
 
 include ../config/Makefile
 
@@ -84,7 +84,7 @@ install:
 pa_lisp.cmo: pa_lispr.cmo
 pa_scheme.cmo: pa_schemer.cmo
 pr_extend.cmo: pa_extfun.cmo
-pr_o.cmo: pa_extfun.cmo
+pr_o.cmo: pa_extfun.cmo pa_extprint.cmo
 pr_op.cmo: pa_extfun.cmo
 pr_r.cmo: pa_extfun.cmo
 pr_rp.cmo: pa_extfun.cmo

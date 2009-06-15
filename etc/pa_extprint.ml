@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_extprint.ml,v 1.2 2007/08/15 10:57:10 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.3 2007/08/15 15:44:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 #load "pa_extend.cmo";
@@ -129,7 +129,7 @@ value text_of_extprint loc el =
          <:expr< [($e.name$, $pos$, $levs$) :: $el$] >>)
     el <:expr< [] >>
   in
-  <:expr< extend_printer $e$ >>
+  <:expr< Eprinter.extend_printer $e$ >>
 ;
 
 EXTEND
@@ -163,11 +163,11 @@ EXTEND
       | p1 = patt; "as"; p2 = patt -> <:patt< ($p1$ as $p2$) >> ] ]
   ;
   position:
-    [ [ UIDENT "FIRST" -> <:expr< Gramext.First >>
-      | UIDENT "LAST" -> <:expr< Gramext.Last >>
-      | UIDENT "BEFORE"; n = STRING -> <:expr< Gramext.Before $str:n$ >>
-      | UIDENT "AFTER"; n = STRING -> <:expr< Gramext.After $str:n$ >>
-      | UIDENT "LEVEL"; n = STRING -> <:expr< Gramext.Level $str:n$ >> ] ]
+    [ [ UIDENT "FIRST" -> <:expr< Eprinter.First >>
+      | UIDENT "LAST" -> <:expr< Eprinter.Last >>
+      | UIDENT "BEFORE"; n = STRING -> <:expr< Eprinter.Before $str:n$ >>
+      | UIDENT "AFTER"; n = STRING -> <:expr< Eprinter.After $str:n$ >>
+      | UIDENT "LEVEL"; n = STRING -> <:expr< Eprinter.Level $str:n$ >> ] ]
   ;
   name:
     [ [ e = qualid -> e ] ]

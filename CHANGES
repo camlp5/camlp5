@@ -2,7 +2,7 @@ Camlp5 Version 4.07:
 ---------------------
 
 * [15 Aug 07] Added pa_extprint.cmo, a new syntax for extensible pretty
-  printers (cf file pa_o.ml as example).
+  printers (cf file pa_o.ml as example). Added library module Eprinter.
 * [02 Aug 07] Fixed bug: option -o did not work for pr_r.cmo and pr_o.cmo
   (was always stdout).
 * [01 Aug 07] In EXTEND statement, added symbol FLAG: like OPT but return

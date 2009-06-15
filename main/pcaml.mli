@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pcaml.mli,v 1.3 2007/07/30 12:57:32 deraugla Exp $ *)
+(* $Id: pcaml.mli,v 1.4 2007/08/15 15:44:25 deraugla Exp $ *)
 
 (** Language grammar, entries and printers.
 
@@ -87,15 +87,16 @@ value print_implem : ref (list (MLast.str_item * MLast.loc) -> unit);
 
 module Printers :
   sig
-    type printer_t 'a =
+    type printer_t 'a = Eprinter.t 'a ==
       { pr_fun : mutable string -> pr_fun 'a;
         pr_levels : mutable list (pr_level 'a) }
-    and pr_level 'a = { pr_label : string; pr_rules : mutable pr_rule 'a }
+    and pr_level 'a = Eprinter.pr_level 'a ==
+      { pr_label : string; pr_rules : mutable pr_rule 'a }
     and pr_rule 'a =
       Extfun.t 'a
         (pr_fun 'a -> pr_fun 'a -> pr_context string string -> string)
     and pr_fun 'a = pr_context string string -> 'a -> string
-    and pr_context 'bef 'aft =
+    and pr_context 'bef 'aft = Eprinter.pr_context 'bef 'aft ==
       { ind : int;
         bef : 'bef;
         aft : 'aft;

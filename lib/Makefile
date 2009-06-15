@@ -1,11 +1,11 @@
-# $Id: Makefile,v 1.9 2007/07/11 09:46:18 deraugla Exp $
+# $Id: Makefile,v 1.10 2007/08/15 15:44:25 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
 
 INCLUDES=
 OCAMLCFLAGS=-warn-error A $(INCLUDES)
-OBJS=stdpp.cmo token.cmo plexer.cmo gramext.cmo grammar.cmo extfold.cmo extfun.cmo fstream.cmo pretty.cmo
+OBJS=stdpp.cmo token.cmo plexer.cmo gramext.cmo grammar.cmo extfold.cmo extfun.cmo eprinter.cmo fstream.cmo pretty.cmo
 SHELL=/bin/sh
 TARGET=gramlib.cma
 
