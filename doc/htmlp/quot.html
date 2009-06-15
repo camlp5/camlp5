@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: quot.html,v 1.3 2007/07/24 20:54:29 deraugla Exp $ -->
+  <!-- $Id: quot.html,v 1.4 2007/07/25 02:22:27 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>quotations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -49,7 +49,7 @@
 <p>Examples:</p>
 
 <pre>
-  &lt;&lt; [x](x y) >>
+  &lt;&lt; \x.x x >>
   &lt;:foo&lt; hello, world >>
   &lt;:bar&lt; @#$%;* >>
 </pre>
@@ -89,11 +89,13 @@
 
 <h2>Defining a quotation</h2>
 
+<h3>By syntax tree</h3>
+
 <p>To define a quotation, it is necessary to program the quotation
   expanders and to, finally, end the source code with a call to:</p>
 
 <pre>
-  Quotation.add name (Quotation.ExAst (f_expr, f_patt))
+  Quotation.add name (Quotation.ExAst (f_expr, f_patt));
 </pre>
 
 <p>where "<tt>name</tt>" is the name of the quotation, and
@@ -105,6 +107,8 @@
   (ending with ".cmo"), which can be used as syntax
   extension <em>kit</em> of camlp5.</p>
 
+<h3>By string</h3>
+
 <p>There is, actually, another way to program the expander: an alone
   function which returns, not a syntax tree, but just a string which is
   parsed, afterwards, by the system. This function takes a boolean as
@@ -114,7 +118,7 @@
 <p>If using that way, the source file must end with:</p>
 
 <pre>
-  Quotation.add name (Quotation.ExStr f)
+  Quotation.add name (Quotation.ExStr f);
 </pre>
 
 <p>where "<tt>f</tt>" is that quotation expander. The advantage of
@@ -122,6 +126,32 @@
   The drawback is that there is no way to specify different source
   locations for different parts of the quotation (what may be
   important in semantic error messages).</p>
+
+<h3>Default quotation</h3>
+
+<p>It is possible to use some quotation without its name. Use for that
+  the variable "<tt>Quotation.default_quotation</tt>". For example,
+  ending a file by:</p>
+
+<pre>
+  Quotation.add "foo" (Quotation.ExAst (f_expr, f_patt));
+  Quotation.default.val := "foo";
+</pre>
+
+<p>allows to use the quotation "foo" without its name, i.e.:</p>
+
+<pre>
+  &lt;&lt; ... >>
+</pre>
+
+<p>instead of:</p>
+
+<pre>
+  &lt;:foo&lt; ... >>
+</pre>
+
+<p>If several files set the variable "<tt>Quotation.default</tt>", the
+  default quotation applies to the last loaded one.</p>
 
 <h2>An example</h2>
 
