@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.25 2007/07/16 16:45:21 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.26 2007/07/16 17:22:14 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -545,10 +545,56 @@ Stream.t char -> (Stream.t t * location_function)
 </pre>
 
 <p>where "<tt>t</tt>" is your token type and the location function is
-a function taking the token number (starting from zero) as parameter
-and returing its location in the source. It is important if you want
-to get the good locations in the semantic actions of the grammar
-rules.</p>
+  a function taking the token number (starting from zero) as parameter
+  and returing its location in the source. It is important if you want
+  to get the good locations in the semantic actions of the grammar
+  rules.</p>
+
+<p>Notice that, despite the lexer takes a character stream as
+  parameter, you are not obliged to use the stream parsers technology
+  to write your lexer. What is important is that it does the job.</p>
+
+<h3>Using and removing tokens</h3>
+
+<p>Two extra functions, of type "<tt>Token.pattern -> unit</tt>" have
+  to be written. If you don't want to busy about them, functions doing
+  nothing, and just returning the unit value "<tt>()</tt>" are
+  acceptable in a first time. If you choose this option, you can
+  skip the rest of this section.</p>
+
+<p>But there is then a little risk: if the EXTEND statement contain
+  rules with mispelled token symbols, the system will not detect them,
+  and the grammar will not work.</p>
+
+<p>Here are the justification of these functions.</p>
+
+<p>While running the EXTEND statement, the system scans all rules, and
+  has to check whether the tokens respect the lexer rules.</p>
+
+<p>Indeed, a token is just an identifier starting with an uppercase
+  character. Except for the specific identifiers (like SELF,
+  LIST0...), any uppercase identifier is accepted in the EXTEND syntax
+  and the system has no way to check, statically, whether the used
+  symbol corresponds to a real token or not, in particular in case of
+  mispelling.</p>
+
+<p>Morevover, the keywords (whose syntax is just a string in the
+  EXTEND statement) may be accepted or not by your lexer. It is also
+  possible that your lexer accepts to add new keywords, as long as
+  they are found in the rules of the EXTEND statements.</p>
+
+<p>Both questions are resolved by a call of a "using" function that
+  you have to write. This function takes a token pattern as parameter
+  and must answer:</p>
+
+<ul>
+  <li>either nothing (the unit value "<tt>()</tt>") to say: this token
+    is ok, and, in case of keyword, may decide to add, as side effect,
+    this keyword in its tables,</li>
+  <li>or raise the exception "<tt>Token.Error</tt>" with an error
+    message to make the EXTEND statement fail.</li>
+</ul>
+
 
 <p>... to be completed ...</p>
 
