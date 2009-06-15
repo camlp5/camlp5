@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.40 2007/07/17 13:38:05 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.41 2007/07/17 18:30:07 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -463,112 +463,48 @@ instead of "<tt>loc</tt>".</p>
 
 <h2>Interface with the lexer</h2>
 
-<p>To create a grammar, the function "<tt>Grammar.gcreate</tt>" must be
-called, with a lexer as parameter.</p>
+<p>To create a grammar, the function "<tt>Grammar.gcreate</tt>" must
+  be called, with a lexer as parameter.</p>
 
 <p>A simple solution, as possible lexer, is the predefined lexer built
-by "<tt>Plexer.gmake ()</tt>", lexer used for the ocaml grammar of
-camlp5. In this case, you can just put it as parameter of
-"<tt>Grammar.gcreate</tt>" and it is not necessary to read this
-section.</p>
+  by "<tt>Plexer.gmake ()</tt>", lexer used for the ocaml grammar of
+  camlp5. In this case, you can just put it as parameter of
+  "<tt>Grammar.gcreate</tt>" and it is not necessary to read this
+  section.</p>
 
-<p>Otherwise, it is necessary to create a value of type
-"<tt>Token.glexer t</tt>", where "<tt>t</tt>" is the token type, to
-give as parameter to "<tt>Grammar.create</tt>".
+<p>The section first introduces the notion of "token patterns" which
+  are the way the tokens and keywords symbols in the EXTEND statement
+  are represented. Then follow the description of the type of the
+  parameter of "<tt>Grammar.gcreate</tt>".
 
-<h3>The <em>glexer</em> type</h3>
+<h3>Token patterns</h3>
 
-<p>This type is defined like this:</p>
-
-<pre>
-  type glexer 't =
-    { tok_func : lexer_func 't;
-      tok_match : pattern -> 't -> string;
-      tok_using : pattern -> unit;
-      tok_removing : pattern -> unit;
-      tok_text : pattern -> string;
-      tok_comm : mutable option (list location) }
-  ;
-</pre>
-
-<h3>Fields of the glexer type</h3>
-
-<p>The types used in this type are defined as long as the explanations
-  of the next sections.</p>
-
-<h4>The token type</h4>
-
-<p>The token type, which is the type parameter of the
-  "<tt>glexer</tt>" type, can any user type.</p>
-
-<p>Values of the token type will be returned by the lexer, and the way
-  the values of this type will be matched against the rules symbols will
-  be defined in the "match" function.</p>
-
-<h4>The lexer</h4>
-
-<p>The lexer is the field "<tt>tok_func</tt>" defined above. Its type
-  is defined like this:</p>
-
-<pre>
-  type lexer_func 't = Stream.t char -> (Stream.t 't * location_function);
-</pre>
-
-<p>The location function is a function taking the token count
-  (starting from zero) as parameter and returning its location in the
-  source. It is important if you want to get the good locations in the
-  semantic actions of the grammar rules.</p>
-
-<p>Notice that, despite the lexer takes a character stream as
-  parameter, you are not obliged to use the stream parsers technology
-  to write your lexer. What is important is that it does the job.</p>
-
-<h4>Token patterns</h4>
-
-<p>Before going further, it is important to understand the notion
-  of <em>token patterns</em>. A token pattern is a value of the type
-  defined like this:</p>
+<p>A token pattern is a value of the type defined like this:</p>
 
 <pre>
   type pattern = (string * string);
 </pre>
 
-<p>This type represents values of the token symbols and keywords in
+<p>This type represents values of the token and keywords symbols in
   the grammar rules.</p>
 
-<p>As one can see, it is a couple of strings:</p>
+<p>For a token symbol in the grammar rules, the first string is the
+  token constructor name (starting with an uppercase character), the
+  second string indicates whether the match is "any" (the empty
+  string) or some specific value of the token (an non-empty
+  string).</p>
 
-<ul>
-  <li>The first string is the <em>constructor name</em>, an identifier
-    starting with an uppercase character:
-    <ul>
-      <li>for a token symbol, it is its name,</li>
-      <li>for a keyword, it is the empty string.</li>
-    </ul>
-  </li>
+<p>For a keyword symbol, the first string is empty and the second
+  string is the keyword itself.</p>
 
-  <li>The second string is the <em>parameter</em>:
-    <ul>
-      <li>for a token symbol:
-        <ul>
-          <li>if the string is empty, it indicates any value (like the
-            pattern "<tt>_</tt>" in the ocaml language)</li>
-          <li>if the string is not empty, it indicates a match of this
-            constructor with that value.</li>
-        </ul>
-      <li>for a keyword, it is the keyword itself.</li>
-    </ul>
-  </li>
-</ul>
-
-<p>For example, in the following grammar rule:</p>
+<p>For example, given this grammar rule:</p>
 
 <pre>
   "for"; i = LIDENT; "="; e1 = SELF; "to"; e2 = SELF
 </pre>
 
 <p>the different symbols and keywords are represented by the following
-token patterns:</p>
+  couples of strings:</p>
 
 <ul>
   <li>the keyword "for" is represented by <tt>("", "for")</tt>,</li>
@@ -578,71 +514,109 @@ token patterns:</p>
 </ul>
 
 <p>The symbol <tt>UIDENT "Foo"</tt> in a rule would be represented
-by the token pattern:</p>
+  by the token pattern:</p>
 
 <pre>
   ("UIDENT", "Foo")
 </pre>
 
 <p>Notice that the symbol "<tt>SELF</tt>" is a specific symbol of the
-EXTEND syntax: it does not correspond to a token pattern and is
-represented differently. A token constructor name must not belong to
-the specific symbols: SELF, NEXT, LIST0, LIST1 and OPT.</p>
+  EXTEND syntax: it does not correspond to a token pattern and is
+  represented differently. A token constructor name must not belong to
+  the specific symbols: SELF, NEXT, LIST0, LIST1 and OPT.</p>
 
-<h4>The <em>match</em> function</h4>
+<h3>The glexer record</h3>
 
-<p>The "match" function, the field "<tt>tok_match</tt>", indicates how
-  a token is matched against a token symbol of a grammar rule, i.e. a
-  token pattern.</p>
+<p>The type of the parameter of the function "<tt>Grammar.gcreate</tt>"
+  is "<tt>glexer</tt>", defined in the module "<tt>Token</tt>". It is
+  a record type with the following fields:</p>
 
-<p>If you choose the token type identical to token pattern type, i.e.
-  "<tt>(string * string)</tt>", a simple and direct solution is to use
-  the function "<tt>default_match</tt>" defined in the module
-  "<tt>Token</tt>" which does the job. In this case, you can ignore
-  the rest of this section.</p>
+<h4><tt>tok_func</tt></h4>
 
-<p>Otherwise, if you want to use your own specific token type (or if
-  you don't have the choice), you have to write your specific match
-  function.</p>
+<p>It is the lexer itself. Its type is:</p>
+
+<pre>
+  Stream.t char -> (Stream.t (string * string) * location_function);
+</pre>
+
+<p>The lexer takes a character stream as parameter and must answer a
+  couple of: a token stream, the tokens being represented by a couple
+  of strings, and a location function.</p>
+
+<p>The location function is a function taking, as parameter, a integer
+  corresponding to a token number in the stream (starting from zero),
+  and returning the location of this token in the source. It is
+  important to get the good locations in the semantic actions of the
+  grammar rules.</p>
+
+<p>Notice that, despite the lexer takes a character stream as
+  parameter, it is not mandatory to use the stream parsers technology
+  to write the lexer. What is important is that it does the job.</p>
+
+<h4><tt>tok_using</tt></h4>
+
+<p>It is a function of type:</p>
+
+<pre>
+  pattern -> unit
+</pre>
+
+<p>The parameter of this function is the representation of a token
+  symbol or a keyword symbol in grammar rules. See the section about
+  token patterns.</p>
+
+<p>This function is called for each token symbol and each keyword
+  encountered in the grammar rules of the EXTEND statement. Its goal
+  is to allow the lexer to check that the tokens and keywords do
+  respect the lexer rules. It checks that the tokens exist and are not
+  mispelled. It can be also used to enter the keywords in the lexer
+  keyword tables.</p>
+
+<p>Setting it as the function that does nothing is possible, but the
+  check of correctness of tokens is not done.</p>
+
+<p>In case or error, the function must raise the exception
+  "<tt>Token.Error</tt>" with an error message as parameter.</p>
+
+<h4><tt>tok_removing</tt></h4>
+
+<p>It is a function of type:</p>
+
+<pre>
+  pattern -> unit
+</pre>
+
+<p>It is called by the DELETE_RULE statement for each token symbol and
+  each keyword that an occurence of them is no more used. This can be
+  interesting for keywords, if the lexer record the number of
+  occurences of the keywords: when the number of occurences falls to
+  zero, the keyword can be removed from the lexer tables.</p>
+
+<h4><tt>tok_match</tt></h4>
+
+<p>It is a function of type:</p>
+
+<pre>
+  pattern -> ((string * string) -> unit)
+</pre>
+
+<p>The function tells how a token of the input stream is matched
+  against a token pattern. Both are represented by a couple of
+  strings.</p>
 
 <p>This function takes a token pattern as parameter and return a
   function matching a token, returning the matched string or raising
   the exception "<tt>Stream.Failure</tt>" if the token does not
   match.</p>
 
-<p>Example. If the token type is defined like this:</p>
-
-<pre>
-  type mytoken = [ Ident of string | Int of int | Comma | Equal | Keyw of string ];
-</pre>
-
-<p>a possible implementation of the "match" function could be that:</p>
-
-<pre>
-  value mymatch =
-    fun
-    [ ("IDENT", "") -> fun [ Ident s -> s | _ -> raise Stream.Failure ]
-    | ("INT", "") -> fun [ Int i -> string_of_int i | _ -> raise Stream.Failure ]
-    | ("", ",") -> fun [ Comma -> "" | _ -> raise Stream.Failure ]
-    | ("", "=") -> fun [ Equal -> "" | _ -> raise Stream.Failure ]
-    | ("", s) ->
-        fun
-        [ Keyw k -> if k = s then "" else raise Stream.Failure
-        | _ -> raise Stream.Failure ]
-    | _ -> raise (Token.Error "bad token in match function") ]
-  ;
-</pre>
-
 <p>Notice that, for efficiency, it is necessary to write this function
-  like above, as a match of token patterns returning, for each case, the
-  function which matches the token, <em>not</em> a function matching the
-  token pattern and the token together and returning a string for each
+  as a match of token patterns returning, for each case, the function
+  which matches the token, <em>not</em> a function matching the token
+  pattern and the token together and returning a string for each
   case.</p>
 
-<p>Another example is the "default_match" function proposed above for
-  users who don't want to busy about that and choosed the token type
-  identical to the token pattern type. The code of this function is
-  something like:</p>
+<p>An acceptable function is provided in the module "Token" and is
+  named "default_match". Its code looks like this:</p>
 
 <pre>
   value default_match =
@@ -655,70 +629,7 @@ the specific symbols: SELF, NEXT, LIST0, LIST1 and OPT.</p>
   ;
 </pre>
 
-<h4>The <em>using</em> function</h4>
-
-<p>The field "<tt>tok_using</tt>" in the glexer record type correspond
-  to the <em>using</em> function.</p>
-
-<p>If you don't want to busy about it, is is acceptable, as a first
-  version, to write a function doing nothing, just returning the unit
-  value "<tt>()</tt>". If you choose this option, you can skip the
-  rest of this section.</p>
-
-<p>The aim of this function is to check the validity of the token
-  symbols used in the grammar rules. Indeed, the token symbols can be
-  any identifier starting with an uppercase character (except the
-  specific ones: SELF, NEXT, LIST0, LIST1 and OPT). There is no way to
-  statically check that the token symbols correspond to real
-  tokens.</p>
-
-<p>Another aim of this function is to warn the lexer about the used
-  keywords. Depending on how the lexer is implemented, it may refuse
-  the keyword or, on the contrary, decide to accept all of them and
-  record them in its tables.</p>
-
-<p>Without this function, if the EXTEND statement contain rules with
-  mispelled token symbols, the system will not detect them, and the
-  grammar may not work.</p>
-
-<p>For example, if the following rule:</p>
-
-<pre>
-  "external"; i = LIDENT; ":"; t = ctyp; "="; sl = LIST1 STRING
-</pre>
-
-<p>is written, by error, like this:</p>
-
-<pre>
-  "external"; i = LODENT; ":"; t = ctyp; "="; sl = LIST1 STRANG
-</pre>
-
-<p>there will be no check that LIDENT has been mispelled as LODENT,
-  nor that STRING have been mispelled as STRANG. In this case, the
-  rule will never work.</p>
-
-<p>The "using" function is called by the EXTEND statement while
-  scanning all rules, for each token symbol and each keyword it
-  encounters. The function must answer:</p>
-
-<ul>
-  <li>if the token symbol or keyword is ok, the unit value "<tt>()</tt>",</li>
-  <li>otherwise, a raise of the exception "<tt>Token.Error</tt>" with
-    an error message.</li>
-</ul>
-
-<p>This problem of risk of mispelling tokens could also be checked by
-  the "match" function (see the section about this function).</p>
-
-<h4>The <em>removing</em> function</h4>
-
-<p>The field "tok_removing" in the glexer record type correspond to
-  the removing function.</p>
-
-<p>The "removing" function is called in case of the DELETE_RULE
-  statement, for all token patterns found in the rule. It allows, for
-  example, to possibly remove keywords (if a count of keywords usage
-  is maintained by the lexer).</p>
+<p>...</p>
 
 <h4>The <em>text</em> function</h4>
 
