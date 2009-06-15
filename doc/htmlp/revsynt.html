@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: revsynt.html,v 1.8 2007/07/19 17:24:32 deraugla Exp $ -->
+  <!-- $Id: revsynt.html,v 1.9 2007/07/20 00:33:13 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>revised syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -167,7 +167,105 @@
       </tr>
     </table>
   </li>
+</ul>
 
+<h3>Irrefutable patterns</h3>
+
+<p>An <em>irrefutable pattern</em> is a pattern where it is
+  syntactilly visible that it never fails. They are used in some
+  syntactic constructions. It is either:</p>
+
+<ul>
+  <li>A variable,</li>
+  <li>The wildcard ``_'',</li>
+  <li>The constructor ``()'',</li>
+  <li>A tuple with irrefutable patterns,</li>
+  <li>A record with irrefutable patterns,</li>
+  <li>A type constraint with an irrefutable pattern.</li>
+</ul>
+
+<p>Notice that this definition is only syntactic: a constructor
+  belonging to a type having only one constructor is not considered as
+  an irrefutable pattern (except "()").</p>
+  
+<h3>Constructions with matching</h3>
+
+<ul>
+  <li>The keyword "function" no longer exists. Only "fun" is used.</li>
+
+  <li>The pattern matchings, in constructions with "fun", "match" and
+    "try" are closed with brackets: an open bracket "[" before the
+    first case, and a close bracket "]" after the last case:
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>match e with</tt></td>
+        <td><tt>match e with</tt></td>
+      </tr>
+      <tr>
+        <td><tt>&nbsp;&nbsp;p1 -> e1</tt></td>
+        <td><tt>[ p1 -> e1</tt></td>
+      </tr>
+      <tr>
+        <td><tt>| p2 -> e2</tt></td>
+        <td><tt>| p2 -> e2 ]</tt></td>
+      </tr>
+    </table>
+    But if there is only one case and if the pattern is irrefutable,
+      the brackets are not mandatory. These examples work identically
+      in OCaml and in revised syntax:
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>fun x -> x</tt></td>
+        <td><tt>fun x -> x</tt></td>
+      </tr>
+      <tr>
+        <td><tt>fun {foo=(y, _)} -> y</tt></td>
+        <td><tt>fun {foo=(y, _)} -> y</tt></td>
+      </tr>
+    </table>
+  </li>
+
+  <li>It is possible to write the empty function, raising the
+    exception "Match_failure" whichever parameter is applied, the
+    empty "match", raising "Match_failure" after having evaluated its
+    expression, and the empty "try", equivalent to its expression
+    without try:
+<pre>
+  fun []
+  match e with []
+  try e with []
+</pre>
+  </li>
+
+  <li>The patterns after "let" and "value" must be irrefutable. The
+    following OCaml expression:
+<pre>
+  let f (x::y) = ...
+</pre>
+    must be written:
+<pre>
+  let f = fun [ [x::y] -> ...
+</pre>
+  </li>
+
+  <li>It is possible to use a construction "where", equivalent to "let",
+    but usable only when where is only one binding. The expression:
+<pre>
+  e1 where p = e
+</pre>
+    is equivalent to:
+<pre>
+  let p = e in e1
+</pre>
+  </li>
 </ul>
 
 <p>...<em>to be continued</em>...</p>
