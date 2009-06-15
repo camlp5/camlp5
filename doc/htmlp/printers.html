@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: printers.html,v 1.13 2007/08/28 02:20:19 deraugla Exp $ -->
+  <!-- $Id: printers.html,v 1.14 2007/10/14 00:35:24 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible printers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -22,10 +22,10 @@
 <p>This chapter describes the syntax and semantics of the extensible
   printers of Camlp5.</p>
 
-<p>Symmetric to the <a href="grammars.html">extensible grammars</a>,
-  the extensible printers allow to define and extend printers of data
-  or programs. A specific statement "<tt>EXTEND_PRINTER</tt>" allow
-  to define these extensions.</p>
+<p>Similar to the <a href="grammars.html">extensible grammars</a>, the
+  extensible printers allow to define and extend printers of data or
+  programs. A specific statement "<tt>EXTEND_PRINTER</tt>" allow to
+  define these extensions.</p>
 
 <div id="tableofcontents">
 </div>
@@ -34,14 +34,14 @@
 
 <p>A printer is a value of type "<tt>Eprinter.t a</tt>" where
   "<tt>a</tt>" is the type of the item to be printed. When applied, a
-  printer return a string, representing the printed item.</p>
+  printer returns a string, representing the printed item.</p>
 
-<p>To create a printer, one has to use the function
+<p>To create a printer, one must use the function
   "<tt>Eprinter.make</tt>" with, as parameter, the name of the
   printer, (used in error messages). A printer is created empty,
   i.e. it fails if it is applied.</p>
 
-<p>Like grammar entries, printers may have several levels. When the
+<p>As with grammar entries, printers may have several levels. When the
   function "<tt>Eprinter.apply</tt>" is applied to a printer, the
   first level is called.  The function "<tt>Eprinter.apply_level</tt>"
   allows to call a printer at some specific level possibly different
@@ -52,11 +52,11 @@
 <p>In semantic actions of printers, functions are provided to
   recursively call the current level and the next level. Moreover,
   a <em>printing context</em> variable is also given, giving the
-  current indentation, what has to be printed before in the same line
-  and what has to be printed after in the same line (it is not
+  current indentation, what should be printed before in the same line
+  and what should be printed after in the same line (it is not
   mandatory to use them).</p>
 
-<p>The extension of printers can ben done with the
+<p>The extension of printers can be done with the
   "<tt>EXTEND_PRINTER</tt>" statement added by the <em>parsing
   kit</em> "<tt>pa_extprint.cmo</tt>".</p>
 
@@ -104,8 +104,8 @@
 
 <h4>Optional position</h4>
 
-<p>After the colon, it is possible to specify a where to insert the
-defined levels:</p>
+<p>After the colon, it is possible to specify where to insert the
+  defined levels:</p>
 
 <ul>
   <li>The identifier "<tt>FIRST</tt>" (resp. "<tt>LAST</tt>")
@@ -116,13 +116,13 @@ defined levels:</p>
     followed by a level label (a string) indicates that the levels
     must be inserted before (resp. after) that level, if it exists. If
     it does not exist, the extend statement fails at run time.</li>
-  <li>The identifier "<tt>LEVEL</tt>" followed by a level label
-    indicates that the first level defined in the extend statement
-    must be inserted at the given level, extending and modifying
-    it. The other levels defined in the statement are inserted after
-    this level, and before the possible levels following this
-    level. If there is no level with this label, the extend statement
-    fails at run time.</li>
+  <li>The identifier "<tt>LEVEL</tt>" followed by a label indicates
+    that the first level defined in the extend statement must be
+    inserted at the given level, extending and modifying it. The other
+    levels defined in the statement are inserted after this level, and
+    before the possible levels following this level. If there is no
+    level with this label, the extend statement fails at run
+    time.</li>
   <li>By default, if the entry has no level, the levels defined in the
     statement are inserted in the entry. Otherwise the first defined
     level is inserted at the first level of the entry, extending or
@@ -144,7 +144,7 @@ defined levels:</p>
 <h4>Rules</h4>
 
 <p>A level is a list of <em>rules</em> separated by vertical bars, the
-  whole list beiing between brackets.</p>
+  whole list being between brackets.</p>
 
 <p>A rule is an usual pattern association (in a function or in the
   "match" statement), i.e. a pattern, an arrow and an expression. The
@@ -159,14 +159,15 @@ defined levels:</p>
 <h3>Semantic action</h3>
 
 <p>The semantic action, i.e. the expression following the right arrow
-  in rules, contain in its environment the variables bound by the
+  in rules, contains in its environment the variables bound by the
   pattern and three more variables:</p>
 
 <ul>
-  <li>The variable "<tt>curr</tt>" which is a function which can be called
-    to recursively call the printer to the current level,</li>
-  <li>The variable "<tt>next</tt>" which is a function which can be called
-    to call the printer to the next level,</li>
+  <li>The variable "<tt>curr</tt>" which is a function which can be
+    called to recursively invoke the printer at the current
+    level,</li>
+  <li>The variable "<tt>next</tt>" which is a function which can be
+    called to invoke the printer at the next level,</li>
   <li>The variable "<tt>pc</tt>" which contains the printing context
     (see further), of type "<tt>pr_context</tt>".</li>
 </ul>
@@ -203,8 +204,8 @@ defined levels:</p>
 
 <ul>
   <li>"<tt>ind</tt>" : the current indendation</li>
-  <li>"<tt>bef</tt>" : what has to be printed before, in the same line</li>
-  <li>"<tt>aft</tt>" : what has to be printed after, in the same line</li>
+  <li>"<tt>bef</tt>" : what should be printed before, in the same line</li>
+  <li>"<tt>aft</tt>" : what should be printed after, in the same line</li>
   <li>"<tt>dang</tt>" : the dangling token to know whether parentheses
     are necessary</li>
 </ul>
@@ -215,7 +216,7 @@ defined levels:</p>
 <h2>The Eprinter module</h2>
 
 <p>See its <a href="library.html#a:Eprinter-module">section</a> in the
-  chapter "Librabry".</p>
+  chapter "Library".</p>
 
 <h2>Examples</h2>
 
@@ -227,8 +228,8 @@ defined levels:</p>
   this type to a string.</p>
 
 <p>In the printer, there is no use of the "<tt>pc</tt>" parameter and
-  no use of the "<tt>Pretty</tt>" module. The strings are printed in
-  one only line.</p>
+  no use of the "<tt>Pretty</tt>" module. The strings are printed on
+  a single line.</p>
 
 <p>Here is the source (file "<tt>foo.ml</tt>"):</p>
 
@@ -279,13 +280,13 @@ defined levels:</p>
   else print_endline (print (parse Sys.argv.(1)));
 </pre>
 
-<p>Remark the use of "curr" and "next" while printing
-  operators. Because of left associativity, the first operand uses
-  "curr" and the second operand uses "next". For right associativity
-  operators, they should be inverted. For no associativity, both
-  should use "next".</p>
+<p>Remark on the use of "curr" and "next" while printing operators:
+  due to left associativity, the first operand uses "curr" and the
+  second operand uses "next". For right associativity operators, they
+  should be inverted. For no associativity, both should use
+  "next".</p>
 
-<p>The last line of the file allows to use it either in OCaml toplevel
+<p>The last line of the file allows use in either the OCaml toplevel
   or as standalone program, taking the string to be printed as
   parameter. It can be compiled this way:</p>
 
