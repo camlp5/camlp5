@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.10 2007/07/31 04:55:54 deraugla Exp $
+# $Id: Makefile,v 1.11 2007/08/07 17:05:16 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -43,10 +43,12 @@ compare:
 	done
 
 bootstrap_q_MLast:
+	cd ../etc; $(MAKE) pr_r.cmo pr_extend.cmo
 	NAME=$(NAME) ./mk_q_MLast.sh > tmp
 	mv tmp q_MLast.ml
 
 compare_q_MLast:
+	cd ../etc; $(MAKE) pr_r.cmo pr_extend.cmo
 	NAME=$(NAME) ./mk_q_MLast.sh | diff -c q_MLast.ml -
 
 install:
