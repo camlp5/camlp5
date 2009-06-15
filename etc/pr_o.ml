@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.170 2007/12/27 01:24:19 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.171 2007/12/27 01:30:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1225,22 +1225,8 @@ EXTEND_PRINTER
       [ <:ctyp< $x$ . $y$ >> -> pprintf pc "%p.%p" curr x curr y ]
     | "simple"
       [ <:ctyp< { $list:ltl$ } >> ->
-          if test.val then
-          horiz_vertic
-            (fun () ->
-               pprintf pc "@[<2>{ %p }@]"
-                 (hlistl (semi_after label_decl) label_decl) ltl)
-            (fun () ->
-               pprintf pc "@[<2>{ %p }@]"
-                 (vlistl (semi_after label_decl) label_decl) ltl)
-          else
-          horiz_vertic
-            (fun () ->
-               pprintf pc "{ %p }" (hlistl (semi_after label_decl) label_decl)
-                 ltl)
-            (fun () ->
-               pprintf pc "@[<2>{ %p }@]"
-                 (vlistl (semi_after label_decl) label_decl) ltl)
+          pprintf pc "@[<a>@[<2>{ %p }@]@]"
+            (hvlistl (semi_after label_decl) label_decl) ltl
       | <:ctyp< [ $list:vdl$ ] >> ->
           horiz_vertic
             (fun () ->
