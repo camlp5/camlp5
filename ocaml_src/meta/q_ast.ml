@@ -315,6 +315,7 @@ module Meta =
     and e_expr =
       function
         ExAcc (_, e1, e2) -> e_node "ExAcc" [e_expr e1; e_expr e2]
+      | ExAnt (_, _) as e -> e
       | ExApp (_, e1, e2) -> e_node "ExApp" [e_expr e1; e_expr e2]
       | ExAre (_, e1, e2) -> e_node "ExAre" [e_expr e1; e_expr e2]
       | ExArr (_, el) -> e_node "ExArr" [e_vala (e_list e_expr) el]
@@ -409,7 +410,6 @@ module Meta =
       | ExVrn (_, s) -> e_node "ExVrn" [e_vala e_string s]
       | ExWhi (_, e, el) ->
           e_node "ExWhi" [e_expr e; e_vala (e_list e_expr) el]
-      | x -> not_impl "e_expr" x
     and p_expr =
       function
         ExAcc (_, e1, e2) -> p_node "ExAcc" [p_expr e1; p_expr e2]

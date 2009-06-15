@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.74 2007/09/14 17:09:19 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.75 2007/09/14 20:26:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -315,6 +315,7 @@ module Meta =
     and e_expr =
       fun
       [ ExAcc _ e1 e2 -> e_node "ExAcc" [e_expr e1; e_expr e2]
+      | ExAnt _ _ as e -> e
       | ExApp _ e1 e2 -> e_node "ExApp" [e_expr e1; e_expr e2]
       | ExAre _ e1 e2 -> e_node "ExAre" [e_expr e1; e_expr e2]
       | ExArr _ el -> e_node "ExArr" [e_vala (e_list e_expr) el]
@@ -404,8 +405,7 @@ module Meta =
       | ExWhi _ e el -> e_node "ExWhi" [e_expr e; e_vala (e_list e_expr) el]
       | IFDEF STRICT THEN
           ExXtr loc s _ -> e_xtr loc s
-        END
-      | x -> not_impl "e_expr" x ]
+        END ]
     and p_expr =
       fun
       [ ExAcc _ e1 e2 -> p_node "ExAcc" [p_expr e1; p_expr e2]
@@ -696,7 +696,15 @@ IFDEF STRICT THEN
       [ [ s = ANTIQUOT_LOC -> MLast.TyXtr loc s None ] ]
     ;
     Pcaml.str_item: LAST
-      [ [ s = ANTIQUOT_LOC "exp" -> MLast.StExp loc <:expr< $lid:s$ >> ] ]
+      [ [ s = ANTIQUOT_LOC "exp" ->
+            let e =
+              match get_anti_loc s with
+              [ Some (loc, _, str) ->
+                  let (loc, r) = eval_anti Pcaml.expr_eoi loc "exp" str in
+                  <:expr< $anti:r$ >>
+              | None -> assert False ]
+            in
+            MLast.StExp loc e ] ]
     ;
     Pcaml.module_expr: LAST
       [ [ s = ANTIQUOT_LOC -> MLast.MeXtr loc s None ] ]
