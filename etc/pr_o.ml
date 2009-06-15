@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.120 2007/12/21 11:45:30 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.121 2007/12/21 12:07:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -522,19 +522,13 @@ value expr_short pc x =
   let rec expr1 pc z =
     match z with
     [ <:expr< $lid:op$ $x$ $y$ >> ->
-        if op = "+" || op = "-" then
-          sprintf "%s%s%s%s%s" pc.bef
-            (expr1 {(pc) with bef = ""; aft = ""} x) op
-            (expr2 {(pc) with bef = ""; aft = ""} y) pc.aft
+        if op = "+" || op = "-" then pprintf pc "%p%s%p" expr1 x op expr2 y
         else expr2 pc z
     | _ -> expr2 pc z ]
   and expr2 pc z =
     match z with
     [ <:expr< $lid:op$ $x$ $y$ >> ->
-        if op = "*" || op = "/" then
-          sprintf "%s%s%s%s%s" pc.bef
-            (expr2 {(pc) with bef = ""; aft = ""} x) op
-            (expr3 {(pc) with bef = ""; aft = ""} y) pc.aft
+        if op = "*" || op = "/" then pprintf pc "%p%s%p" expr2 x op expr3 y
         else expr3 pc z
     | _ -> expr3 pc z ]
   and expr3 pc z =
@@ -542,11 +536,9 @@ value expr_short pc x =
     [ <:expr< $lid:v$ >> ->
         if is_infix v || has_special_chars v then raise Exit
         else var_escaped pc v
-    | <:expr< $int:s$ >> -> sprintf "%s%s%s" pc.bef s pc.aft
+    | <:expr< $int:s$ >> -> pprintf pc "%s" s
     | <:expr< $lid:op$ $_$ $_$ >> ->
-        if List.mem op ["+"; "-"; "*"; "/"] then
-          sprintf "%s(%s)%s" pc.bef (expr1 {(pc) with bef = ""; aft = ""} z)
-            pc.aft
+        if List.mem op ["+"; "-"; "*"; "/"] then pprintf pc "(%p)" expr1 z
         else raise Exit
     | _ -> raise Exit ]
   in
@@ -1411,11 +1403,7 @@ EXTEND_PRINTER
       | <:expr< $int:i$ >> -> sprintf "%s%s%s" pc.bef i pc.aft ]
     | "apply"
       [ <:expr< assert $e$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%sassert %s%s" pc.bef
-                 (next {(pc) with bef = ""; aft = ""} e) pc.aft)
-            (fun () -> not_impl "assert vertical" pc e)
+          pprintf pc "assert@;%p" next e
       | <:expr< lazy $e$ >> ->
           horiz_vertic
             (fun () ->
@@ -2556,27 +2544,15 @@ EXTEND_PRINTER
   pr_patt: LEVEL "simple"
     [ [ <:patt< ?$s$ >> -> sprintf "%s?%s%s" pc.bef s pc.aft
       | <:patt< ? ($p$ $opt:eo$) >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s?(%s%s)%s" pc.bef
-                 (patt_tcon {(pc) with bef = ""; aft = ""} p)
-                 (match eo with
-                  [ Some e ->
-                      sprintf " = %s" (expr {(pc) with bef = ""; aft = ""} e)
-                  | None -> "" ])
-                 pc.aft)
-            (fun () -> not_impl "patt ?(p=e) vertic" pc p)
+          match eo with
+          [ Some e -> pprintf pc "?(%p =@;%p)" patt_tcon p expr e
+          | None -> pprintf pc "?(%p)" patt_tcon p ]
       | <:patt< ?$i$: ($p$ $opt:eo$) >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s?%s:(%s%s)%s" pc.bef i
-                 (patt {(pc) with bef = ""; aft = ""} p)
-                 (match eo with
-                  [ Some e ->
-                      sprintf " = %s" (expr {(pc) with bef = ""; aft = ""} e)
-                  | None -> "" ])
-                 pc.aft)
-            (fun () -> not_impl "patt ?i:(p=e) vertic" pc i)
+          match eo with
+          [ Some e ->
+              pprintf pc "?%s:@;<0 1>@[<1>(%p =@ %p)@]" i patt p expr e
+          | None ->
+              pprintf pc "?%s:@;<0 1>(%p)" i patt p ]
       | <:patt< ~$s$ >> ->
           sprintf "%s~%s%s" pc.bef s pc.aft
       | <:patt< ~$s$: $p$ >> ->
@@ -2588,21 +2564,12 @@ EXTEND_PRINTER
   ;
   pr_expr: LEVEL "apply"
     [ [ <:expr< new $list:cl$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%snew %s%s" pc.bef
-                 (class_longident {(pc) with bef = ""; aft = ""} cl) pc.aft)
-            (fun () -> not_impl "new vertic" pc cl)
+          pprintf pc "new@;%p" class_longident cl
       | <:expr< object $opt:csp$ $list:csl$ end >> ->
           class_object pc (csp, csl) ] ]
   ;
   pr_expr: LEVEL "dot"
-    [ [ <:expr< $e$ # $lid:s$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s%s#%s%s" pc.bef
-                 (curr {(pc) with bef = ""; aft = ""} e) s pc.aft)
-            (fun () -> not_impl "# vertic" pc e) ] ]
+    [ [ <:expr< $e$ # $lid:s$ >> -> pprintf pc "%p#@;<0 0>%s" curr e s ] ]
   ;
   pr_expr: LEVEL "simple"
     [ [ <:expr< ( $e$ : $t$ :> $t2$ ) >> ->
@@ -2828,14 +2795,8 @@ EXTEND_PRINTER
                sprintf "%s\n%s" s1 s2) ]
     | "apply"
       [ <:class_expr< $ce$ $e$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s%s %s%s" pc.bef
-                 (curr {(pc) with bef = ""; aft = ""} ce)
-                 (Eprinter.apply_level pr_expr "label"
-                    {(pc) with bef = ""; aft = ""} e)
-                 pc.aft)
-            (fun () -> not_impl "class_expr_apply" pc ce) ]
+          pprintf pc "%p@;%p" curr ce (Eprinter.apply_level pr_expr "label")
+            e ]
     | "simple"
       [ <:class_expr< $list:cl$ >> -> class_longident pc cl
       | <:class_expr< $list:cl$ [ $list:ctcl$ ] >> ->
