@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.50 2007/07/06 04:27:55 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.51 2007/07/06 10:53:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1609,6 +1609,24 @@ value expr_simple =
 
 value patt_top =
   extfun Extfun.empty with
+  [ <:patt< ($x$ as $y$) >> ->
+      fun curr next pc ->
+        horiz_vertic
+          (fun () ->
+             sprintf "%s%s as %s%s" pc.bef
+               (patt {(pc) with bef = ""; aft = ""} x)
+               (patt {(pc) with bef = ""; aft = ""} y) pc.aft)
+          (fun () ->
+             let s1 = patt {(pc) with aft = ""} x in
+             let s2 =
+               patt {(pc) with bef = sprintf "%sas " (tab (pc.ind + 1))} y
+             in
+             sprintf "%s\n%s" s1 s2)
+  | z -> fun curr next pc -> next pc z ]
+;
+
+value patt_or =
+  extfun Extfun.empty with
   [ <:patt< $_$ | $_$ >> as z ->
       fun curr next pc ->
         let unfold =
@@ -1709,29 +1727,7 @@ value patt_dot =
 
 value patt_simple =
   extfun Extfun.empty with
-  [ <:patt< ($x$ as $y$) >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s(%s as %s)%s" pc.bef
-               (patt {(pc) with bef = ""; aft = ""} x)
-               (patt {(pc) with bef = ""; aft = ""} y) pc.aft)
-          (fun () ->
-             let s1 =
-               patt
-                 {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-                  aft = ""}
-                 x
-             in
-             let s2 =
-               patt
-                 {(pc) with ind = pc.ind + 1;
-                  bef = sprintf "%sas " (tab (pc.ind + 1));
-                  aft = sprintf ")%s" pc.aft}
-                 y
-             in
-             sprintf "%s\n%s" s1 s2)
-  | <:patt< {$list:lpl$} >> ->
+  [ <:patt< {$list:lpl$} >> ->
       fun curr next pc ->
         let lxl = List.map (fun lx -> (lx, ";")) lpl in
         plist (binding patt) 0
@@ -1827,7 +1823,7 @@ value patt_simple =
       fun curr next pc ->
         failwith "polymorphic variants not pretty printed; add pr_ro.cmo"
   | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >> |
-    <:patt< ($list:_$) >> as z ->
+    <:patt< ($list:_$) >> | <:patt< ($_$ as $_$) >> as z ->
       fun curr next pc ->
         patt
           {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
@@ -2365,6 +2361,7 @@ pr_expr.pr_levels :=
 
 pr_patt.pr_levels :=
   [{pr_label = "top"; pr_rules = patt_top};
+   {pr_label = "or"; pr_rules = patt_or};
    {pr_label = "tuple"; pr_rules = patt_tuple};
    {pr_label = "range"; pr_rules = patt_range};
    {pr_label = "cons"; pr_rules = patt_cons};

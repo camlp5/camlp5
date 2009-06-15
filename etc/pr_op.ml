@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_op.ml,v 1.5 2007/07/06 09:52:15 deraugla Exp $ *)
+(* $Id: pr_op.ml,v 1.6 2007/07/06 10:53:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Heuristic to rebuild parsers and streams from the AST *)
@@ -276,16 +276,6 @@ value stream pc e =
 
 (* Parsers *)
 
-value sequence_box pc expr el =
-  let s1 = pc.bef " do {" in
-  let s2 =
-    vlistl (semi_after expr) expr
-      {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""} el
-  in
-  let s3 = sprintf "%s%s%s" (tab pc.ind) "}" pc.aft in
-  sprintf "%s\n%s\n%s" s1 s2 s3
-;
-
 value ident_option =
   fun
   [ Some s -> sprintf " %s" s
@@ -397,48 +387,36 @@ value parser_case pc (sp, po, e) =
       horiz_vertic
         (fun () ->
            sprintf "%s[< >]%s -> %s%s" pc.bef (ident_option po)
-             (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
+             (expr {(pc) with bef = ""; aft = ""; dang = "|"} e) pc.aft)
         (fun () ->
-           match flatten_sequence e with
-           [ Some el ->
-               sequence_box
-                 {(pc) with
-                  bef k = sprintf "%s[< >]%s ->%s" pc.bef (ident_option po) k}
-                 expr el
-           | None ->
-               let s1 = sprintf "%s[< >]%s ->" pc.bef (ident_option po) in
-               let s2 =
-                 expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
-               in
-               sprintf "%s\n%s" s1 s2 ])
+           let s1 = sprintf "%s[< >]%s ->" pc.bef (ident_option po) in
+           let s2 =
+             expr
+               {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+                dang = "|"}
+               e
+           in
+           sprintf "%s\n%s" s1 s2)
   | _ ->
       horiz_vertic
         (fun () ->
            sprintf "%s[< %s >]%s -> %s%s" pc.bef
-             (stream_patt {(pc) with bef = ""; aft = ""} sp)
-             (ident_option po) (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
+             (stream_patt {(pc) with bef = ""; aft = ""} sp) (ident_option po)
+             (expr {(pc) with bef = ""; aft = ""; dang = "|"} e) pc.aft)
         (fun () ->
-           match flatten_sequence e with
-           [ Some el ->
-               sequence_box
-                 {(pc) with
-                  bef k =
-                    stream_patt
-                      {(pc) with bef = sprintf "%s[< " pc.bef;
-                       aft = sprintf " >]%s ->%s" (ident_option po) k}
-                      sp}
-                 expr el
-           | None ->
-               let s1 =
-                 stream_patt
-                   {(pc) with bef = sprintf "%s[< " pc.bef;
-                    aft = sprintf " >]%s ->" (ident_option po)}
-                   sp
-               in
-               let s2 =
-                 expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
-               in
-               sprintf "%s\n%s" s1 s2 ]) ]
+           let s1 =
+             stream_patt
+               {(pc) with bef = sprintf "%s[< " pc.bef;
+                aft = sprintf " >]%s ->" (ident_option po)}
+               sp
+           in
+           let s2 =
+             expr
+               {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+                dang = "|"}
+               e
+           in
+           sprintf "%s\n%s" s1 s2) ]
 ;
 
 value parser_case_sh pc spe = parser_case {(pc) with ind = pc.ind + 2} spe;
