@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.26 2007/09/02 19:30:29 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.27 2007/09/02 19:53:33 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -49,6 +49,7 @@ value str_item_eoi = Grammar.Entry.create Pcaml.gram "str_item";
 value sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";
 value module_expr_eoi = Grammar.Entry.create Pcaml.gram "module_expr";
 
+(* upper bound of tags of all syntax tree nodes *)
 value anti_tag = 100;
 
 value make_anti loc t s = do {
@@ -139,9 +140,7 @@ module Meta =
             [ PaAcc _ p1 p2 -> <:expr< MLast.PaAcc $ln$ $loop p1$ $loop p2$ >>
             | PaAli _ p1 p2 -> <:expr< MLast.PaAli $ln$ $loop p1$ $loop p2$ >>
             | PaAny _ -> <:expr< MLast.PaAny $ln$ >>
-(*
             | PaApp _ p1 p2 -> <:expr< MLast.PaApp $ln$ $loop p1$ $loop p2$ >>
-*)
             | PaChr _ s -> <:expr< MLast.PaChr $ln$ $str:s$ >>
 (*
             | PaInt _ s k -> <:expr< MLast.PaInt $ln$ $e_string s$ $str:k$ >>
@@ -253,25 +252,15 @@ module Meta =
               <:patt< $anti:r$ >>
             in
             match typ with
-            [ "lid" -> <:patt< MLast.ExLid _ $r$ >>
+            [ "" -> r
+            | "lid" -> <:patt< MLast.ExLid _ $r$ >>
+            | "uid" -> <:patt< MLast.ExUid _ $r$ >>
             | x -> not_impl ("p_expr anti " ^ x) 0 ]
         | None ->
             match e with
-            [ (* ExAcc _ e1 e2 -> <:patt< MLast.ExAcc _ $loop e1$ $loop e2$ >>
-            | ExAnt _ e ->
-                match e with
-                [ ExLid _ s ->
-                    match eval_antiquot patt_eoi s with
-                    [ Some (loc, r) ->
-                        let r = <:patt< MLast.ExAnt _ $r$ >> in
-                        <:patt< $anti:r$ >>
-                    | None -> assert False ]
-                | ExStr _ s ->
-                    match eval_antiquot patt_eoi s with
-                    [ Some (loc, r) -> <:patt< $anti:r$ >>
-                    | None -> assert False ]
-                | _ -> assert False ]
+            [ ExAcc _ e1 e2 -> <:patt< MLast.ExAcc _ $loop e1$ $loop e2$ >>
             | ExApp _ e1 e2 -> <:patt< MLast.ExApp _ $loop e1$ $loop e2$ >>
+(*
             | ExIfe _ e1 e2 e3 ->
                 <:patt< MLast.ExIfe _ $loop e1$ $loop e2$ $loop e3$ >>
             | ExInt _ s k -> <:patt< MLast.ExInt _ $p_string s$ $str:k$ >>
@@ -283,8 +272,9 @@ module Meta =
                 in
                 <:patt< MLast.ExLet _ $rf$ $lpe$ $loop e$ >>
             | ExLid _ s -> <:patt< MLast.ExLid _ $p_string s$ >>
-            | ExUid _ s -> <:patt< MLast.ExUid _ $p_string s$ >>
-            | *) x -> not_impl "p_expr" x ] ]
+*)
+            | ExUid _ s -> <:patt< MLast.ExUid _ $str:s$ >>
+            | x -> not_impl "p_expr" x ] ]
     ;
     value e_sig_item =
       fun
