@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.148 2007/12/24 17:46:36 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.149 2007/12/24 18:07:36 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1066,26 +1066,7 @@ EXTEND_PRINTER
               let xl = List.map (fun x -> (x, ";")) xl in
               pprintf pc "@[<1>[%p]@]" (plist expr1 0) xl ]
       | <:expr< ($e$ : $t$) >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s(%s : %s)%s" pc.bef
-                 (expr {(pc) with bef = ""; aft = ""} e)
-                 (ctyp {(pc) with bef = ""; aft = ""} t)
-                 pc.aft)
-            (fun () ->
-               let s1 =
-                 expr
-                   {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-                    aft = " :"}
-                   e
-               in
-               let s2 =
-                 ctyp
-                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
-                    aft = sprintf ")%s" pc.aft}
-                   t
-               in
-               sprintf "%s\n%s" s1 s2)
+          pprintf pc "@[<1>(%p :@ %p)@]" expr e ctyp t
       | <:expr< $int:s$ >> | <:expr< $flo:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then
             sprintf "%s(%s)%s" pc.bef s pc.aft
