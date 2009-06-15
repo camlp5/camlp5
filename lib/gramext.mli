@@ -1,8 +1,8 @@
 (* camlp5r *)
-(* $Id: gramext.mli,v 1.19 2007/10/28 18:51:46 deraugla Exp $ *)
+(* $Id: gramext.mli,v 1.20 2007/10/28 19:58:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
-type parser_t 'a 'b = Stream.t 'a -> 'b;
+type parser_t 'a = Stream.t 'a -> Obj.t;
 
 type grammar 'te =
   { gtokens : Hashtbl.t Plexing.pattern (ref int);
@@ -13,12 +13,12 @@ type g_entry 'te =
   { egram : grammar 'te;
     ename : string;
     elocal : bool;
-    estart : mutable int -> parser_t 'te Obj.t;
-    econtinue : mutable int -> int -> Obj.t -> parser_t 'te Obj.t;
+    estart : mutable int -> parser_t 'te;
+    econtinue : mutable int -> int -> Obj.t -> parser_t 'te;
     edesc : mutable g_desc 'te }
 and g_desc 'te =
   [ Dlevels of list (g_level 'te)
-  | Dparser of parser_t 'te Obj.t ]
+  | Dparser of parser_t 'te ]
 and g_level 'te =
   { assoc : g_assoc;
     lname : option string;
