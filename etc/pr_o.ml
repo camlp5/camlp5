@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.36 2007/07/04 19:42:12 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.37 2007/07/04 19:51:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -7,7 +7,6 @@ open Pcaml.Printers;
 open Prtools;
 
 value flag_horiz_let_in = ref False;
-value flag_sequ_begin_at_eol = ref True;
 value flag_semi_semi = ref False;
 
 (* general functions *)
@@ -288,10 +287,6 @@ value expr_semi pc e =
     | Some aft -> (aft, pc.dang) ]
   in
   comm_expr expr {(pc) with aft = pc_aft; dang = pc_dang} e
-;
-
-value sequencify e =
-  if not flag_sequ_begin_at_eol.val then None else flatten_sequence e
 ;
 
 value expr_with_comm_except_if_sequence pc e =
@@ -2510,12 +2505,10 @@ value set_flags s =
       [ 'A' | 'a' -> do {
           let v = is_uppercase s.[i] in
           flag_horiz_let_in.val := v;
-          flag_sequ_begin_at_eol.val := v;
           flag_semi_semi.val := v;
         }
       | 'L' | 'l' -> flag_horiz_let_in.val := is_uppercase s.[i]
       | 'M' | 'm' -> flag_semi_semi.val := is_uppercase s.[i]
-      | 'S' | 's' -> flag_sequ_begin_at_eol.val := is_uppercase s.[i]
       | c -> failwith ("bad flag " ^ String.make 1 c) ];
       loop (i + 1)
     }
@@ -2525,10 +2518,9 @@ value default_flag () =
   let flag_on b t f = if b then t else "" in 
   let flag_off b t f = if b then "" else f in
   let on_off flag =
-    sprintf "%s%s%s"
+    sprintf "%s%s"
       (flag flag_horiz_let_in.val "L" "l")
       (flag flag_semi_semi.val "M" "m")
-      (flag flag_sequ_begin_at_eol.val "S" "s")
   in
   let on = on_off flag_on in
   let off = on_off flag_off in
@@ -2541,7 +2533,6 @@ Pcaml.add_option "-flag" (Arg.String set_flags)
        A/a enable/disable all flags
        L/l enable/disable allowing printing 'let..in' horizontally
        M/m enable/disable printing double semicolons
-       S/s enable/disable printing sequences beginners at end of lines
        default setting is \"" ^ default_flag () ^ "\".");
 
 Pcaml.add_option "-l" (Arg.Int (fun x -> Pretty.line_length.val := x))
@@ -2555,7 +2546,7 @@ Pcaml.add_option "-ss" (Arg.Set flag_semi_semi)
   "Print double semicolons (equivalent to -flag M).";
 
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.36 2007/07/04 19:42:12 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.37 2007/07/04 19:51:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
