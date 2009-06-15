@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.49 2007/07/06 04:23:36 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.50 2007/07/06 04:27:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1938,8 +1938,7 @@ value str_module pc m me =
           else hlist module_arg {(pc) with bef = " "; aft = ""} mal)
          (match mto with
           [ Some mt ->
-              sprintf " : %s"
-                (module_type {(pc) with bef = ""; aft = ""} mt)
+              sprintf " : %s" (module_type {(pc) with bef = ""; aft = ""} mt)
           | None -> "" ])
          (module_expr {(pc) with bef = ""; aft = ""} me) pc.aft)
     (fun () ->
@@ -1951,8 +1950,7 @@ value str_module pc m me =
                   sprintf "%smodule %s%s : %s =" pc.bef m
                     (if mal = [] then ""
                      else
-                       hlist module_arg
-                         {(pc) with bef = " "; aft = ""} mal)
+                       hlist module_arg {(pc) with bef = " "; aft = ""} mal)
                     (module_type {(pc) with bef = ""; aft = ""} mt))
                (fun () ->
                   let s1 =
@@ -1970,19 +1968,15 @@ value str_module pc m me =
          | None ->
              let mal = List.map (fun ma -> (ma, "")) mal in
              plistb module_arg 2
-               {(pc) with bef = sprintf "%smodule %s" pc.bef m;
-                aft = " ="}
+               {(pc) with bef = sprintf "%smodule %s" pc.bef m; aft = " ="}
                mal ]
        in
        let s2 =
          module_expr
-           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-            aft = ""}
-           me
+           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""} me
        in
        let s3 =
-         if pc.aft = "" then ""
-         else sprintf "\n%s%s" (tab pc.ind) pc.aft
+         if pc.aft = "" then "" else sprintf "\n%s%s" (tab pc.ind) pc.aft
        in
        sprintf "%s\n%s%s" s1 s2 s3)
 ;
@@ -2027,13 +2021,10 @@ value sig_module_or_module_type typ defc pc m mt =
        in
        let s2 =
          module_type
-           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-            aft = ""}
-           mt
+           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""} mt
        in
        let s3 =
-         if pc.aft = "" then ""
-         else sprintf "\n%s%s" (tab pc.ind) pc.aft
+         if pc.aft = "" then "" else sprintf "\n%s%s" (tab pc.ind) pc.aft
        in
        sprintf "%s\n%s%s" s1 s2 s3)
 ;
