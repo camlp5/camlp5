@@ -5,6 +5,7 @@
 open Printf;;
 
 type 'a parser_t = 'a Stream.t -> Obj.t;;
+type 'a fparser_t = 'a Fstream.t -> (Obj.t * 'a Fstream.t) option;;
 
 type 'te grammar =
   { gtokens : (Plexing.pattern, int ref) Hashtbl.t;
@@ -17,6 +18,8 @@ type 'te g_entry =
     elocal : bool;
     mutable estart : int -> 'te parser_t;
     mutable econtinue : int -> int -> Obj.t -> 'te parser_t;
+    mutable fstart : int -> 'te fparser_t;
+    mutable fcontinue : int -> int -> Obj.t -> 'te fparser_t;
     mutable edesc : 'te g_desc }
 and 'te g_desc =
     Dlevels of 'te g_level list

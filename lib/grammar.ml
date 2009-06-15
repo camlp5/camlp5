@@ -1,5 +1,5 @@
-(* camlp5r *)
-(* $Id: grammar.ml,v 1.58 2007/10/25 04:13:07 deraugla Exp $ *)
+(* camlp5r pa_fstream.cmo *)
+(* $Id: grammar.ml,v 1.59 2007/10/28 20:45:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Gramext;
@@ -793,9 +793,256 @@ value start_parser_of_entry entry =
   | Dparser p -> fun levn strm -> p strm ]
 ;
 
-value trace_algo = ref False;
+(* version for functional parsers *)
+
+value rec ftop_symb entry =
+  fun
+  [ Sself | Snext -> Some (Snterm entry)
+  | Snterml e _ -> Some (Snterm e)
+  | Slist1sep s sep ->
+      match ftop_symb entry s with
+      [ Some s -> Some (Slist1sep s sep)
+      | None -> None ]
+  | _ -> None ]
+;
+
+value fcall_and_push ps al strm =
+  try
+    match ps strm with
+    [ Some (a, strm) -> Some ([a :: al], strm)
+    | None -> None ]
+  with
+  [ SkipItem -> Some (al, strm) ]
+;
+
+value rec fparser_of_tree entry nlevn alevn =
+  fun
+  [ DeadEnd -> fparser []
+  | LocAct act _ -> fparser [: :] -> act
+  | Node {node = Sself; son = LocAct act _; brother = DeadEnd} ->
+      fparser [: a = entry.fstart alevn :] -> app act a
+  | Node {node = Sself; son = LocAct act _; brother = bro} ->
+      let p2 = fparser_of_tree entry nlevn alevn bro in
+      fparser
+      [ [: a = entry.fstart alevn :] -> app act a
+      | [: a = p2 :] -> a ]
+  | Node {node = s; son = son; brother = DeadEnd} ->
+      let ps = fparser_of_symbol entry nlevn s in
+      let p1 = fparser_of_tree entry nlevn alevn son in
+      fparser [: a = ps; act = p1 :] -> app act a
+  | Node {node = s; son = son; brother = bro} ->
+      let ps = fparser_of_symbol entry nlevn s in
+      let p1 = fparser_of_tree entry nlevn alevn son in
+      let p2 = fparser_of_tree entry nlevn alevn bro in
+      fparser
+      [ [: a = ps; act = p1 :] -> app act a
+      | [: a = p2 :] -> a ] ]
+and fparser_of_symbol entry nlevn =
+  fun
+  [ Sfacto s -> fparser_of_symbol entry nlevn s
+  | Smeta _ symbl act ->
+      let act = Obj.magic act entry symbl in
+      Obj.magic
+        (List.fold_left
+           (fun act symb ->
+              Obj.magic act (fparser_of_symbol entry nlevn symb))
+           act symbl)
+  | Slist0 s ->
+      let ps = fcall_and_push (fparser_of_symbol entry nlevn s) in
+      let rec loop al =
+        fparser
+        [ [: al = ps al; a = loop al :] -> a
+        | [: :] -> al ]
+      in
+      fparser [: a = loop [] :] -> Obj.repr (List.rev a)
+  | Slist0sep symb sep ->
+      let ps = fcall_and_push (fparser_of_symbol entry nlevn symb) in
+      let pt = fparser_of_symbol entry nlevn sep in
+      let rec kont al =
+        fparser
+        [ [: v = pt; al = ps al; a = kont al :] -> a
+        | [: :] -> al ]
+      in
+      fparser
+      [ [: al = ps []; a = kont al :] -> Obj.repr (List.rev a)
+      | [: :] -> Obj.repr [] ]
+  | Slist1 s ->
+      let ps = fcall_and_push (fparser_of_symbol entry nlevn s) in
+      let rec loop al =
+        fparser
+        [ [: al = ps al; a = loop al :] -> a
+        | [: :] -> al ]
+      in
+      fparser [: al = ps []; a = loop al :] -> Obj.repr (List.rev a)
+  | Slist1sep symb sep ->
+      let ps = fcall_and_push (fparser_of_symbol entry nlevn symb) in
+      let pt = fparser_of_symbol entry nlevn sep in
+      let rec kont al =
+        fparser
+        [ [: v = pt;
+             al =
+               fparser
+               [ [: a = ps al :] -> a
+               | [: a = fparse_top_symb entry symb :] -> [a :: al] ];
+             a = kont al :] ->
+            a
+        | [: :] -> al ]
+      in
+      fparser [: al = ps []; a = kont al :] -> Obj.repr (List.rev a)
+  | Sopt s ->
+      let ps = fparser_of_symbol entry nlevn s in
+      fparser
+      [ [: a = ps :] -> Obj.repr (Some a)
+      | [: :] -> Obj.repr None ]
+  | Sflag s ->
+      let ps = fparser_of_symbol entry nlevn s in
+      fparser
+      [ [: _ = ps :] -> Obj.repr True
+      | [: :] -> Obj.repr False ]
+  | Stree t ->
+      let pt = fparser_of_tree entry 1 0 t in
+      fparser bp
+        [: a = pt :] ep ->
+          let loc = loc_of_token_interval bp ep in
+          app a loc
+  | Svala al s ->
+      let pa =
+        match al with
+        [ [] ->
+            let t =
+              match s with
+              [ Sflag _ -> Some "V FLAG"
+              | Sopt _ -> Some "V OPT"
+              | Slist0 _ | Slist0sep _ _ -> Some "V LIST"
+              | Slist1 _ | Slist1sep _ _ -> Some "V LIST"
+              | Stoken (con, "") -> Some ("V " ^ con)
+              | _ -> None ]
+            in
+            match t with
+            [ Some t -> fparser_of_token entry (t, "")
+            | None -> fparser [] ]
+        | al ->
+            loop al where rec loop =
+              fun
+              [ [a :: al] ->
+                  let pa = fparser_of_token entry ("V", a) in
+                  let pal = loop al in
+                  fparser
+                  [ [: a = pa :] -> a
+                  | [: a = pal :] -> a ]
+              | [] -> fparser [] ] ]
+      in
+      let ps = fparser_of_symbol entry nlevn s in
+      fparser
+      [ [: a = pa :] -> Obj.repr (Ploc.VaAnt (Obj.magic a : string))
+      | [: a = ps :] -> Obj.repr (Ploc.VaVal a) ]
+  | Snterm e -> fparser [: a = e.fstart 0 :] -> a
+  | Snterml e l -> fparser [: a = e.fstart (level_number e l) :] -> a
+  | Sself -> fparser [: a = entry.fstart 0 :] -> a
+  | Snext -> fparser [: a = entry.fstart nlevn :] -> a
+  | Stoken tok -> fparser_of_token entry tok ]
+and fparser_of_token entry tok =
+  let f = entry.egram.glexer.Plexing.tok_match tok in
+  fun strm ->
+    match Fstream.next strm with
+    [ Some (tok, strm) ->
+        try
+          let r = f tok in
+          Some (Obj.repr r, strm)
+        with
+        [ Stream.Failure -> None ]
+    | None -> None ]
+and fparse_top_symb entry symb =
+  match ftop_symb entry symb with
+  [ Some sy -> fparser_of_symbol entry 0 sy
+  | None -> fparser [] ]
+;
+
+value fcount strm = Some (Fstream.count strm, strm);
+
+value rec fstart_parser_of_levels entry clevn =
+  fun
+  [ [] -> fun levn -> fparser []
+  | [lev :: levs] ->
+      let p1 = fstart_parser_of_levels entry (succ clevn) levs in
+      match lev.lprefix with
+      [ DeadEnd -> p1
+      | tree ->
+          let alevn =
+            match lev.assoc with
+            [ LeftA | NonA -> succ clevn
+            | RightA -> clevn ]
+          in
+          let p2 = fparser_of_tree entry (succ clevn) alevn tree in
+          match levs with
+          [ [] ->
+              fun levn strm ->
+                match strm with fparser bp
+                  [: act = p2; ep = fcount;
+                     a =
+                       entry.fcontinue levn bp
+                         (app act (loc_of_token_interval bp ep)) :] ->
+                    a
+          | _ ->
+              fun levn strm ->
+                if levn > clevn then p1 levn strm
+                else
+                  match strm with fparser bp
+                  [ [: act = p2; ep = fcount;
+                       a =
+                         entry.fcontinue levn bp
+                           (app act (loc_of_token_interval bp ep)) :] ->
+                      a
+                  | [: a = p1 levn :] -> a ] ] ] ]
+;
+
+value rec fcontinue_parser_of_levels entry clevn =
+  fun
+  [ [] -> fun levn bp a -> fparser []
+  | [lev :: levs] ->
+      let p1 = fcontinue_parser_of_levels entry (succ clevn) levs in
+      match lev.lsuffix with
+      [ DeadEnd -> p1
+      | tree ->
+          let alevn =
+            match lev.assoc with
+            [ LeftA | NonA -> succ clevn
+            | RightA -> clevn ]
+          in
+          let p2 = fparser_of_tree entry (succ clevn) alevn tree in
+          fun levn bp a strm ->
+            if levn > clevn then p1 levn bp a strm
+            else
+              match strm with fparser
+              [ [: a = p1 levn bp a :] -> a
+              | [: act = p2; ep = fcount;
+                   a =
+                     entry.fcontinue levn bp
+                       (app act a (loc_of_token_interval bp ep)) :] ->
+                  a ] ] ]
+;
+
+value fstart_parser_of_entry entry =
+  match entry.edesc with
+  [ Dlevels [] -> fun _ -> fparser []
+  | Dlevels elev -> fstart_parser_of_levels entry 0 elev
+  | Dparser p -> fun levn strm -> failwith "Dparser for Fstream" ]
+;
+
+value fcontinue_parser_of_entry entry =
+  match entry.edesc with
+  [ Dlevels elev ->
+      let p = fcontinue_parser_of_levels entry 0 elev in
+      fun levn bp a ->
+        fparser
+        [ [: a = p levn bp a :] -> a
+        | [: :] -> a ]
+  | Dparser p -> fun levn bp a -> fparser [] ]
+;
 
 (* Extend syntax *)
+
+value trace_algo = ref False;
 
 value init_entry_functions entry = do {
   entry.estart :=
@@ -811,6 +1058,18 @@ value init_entry_functions entry = do {
     fun lev bp a strm -> do {
       let f = continue_parser_of_entry entry in
       entry.econtinue := f;
+      f lev bp a strm
+    };
+  entry.fstart :=
+    fun lev strm -> do {
+      let f = fstart_parser_of_entry entry in
+      entry.fstart := f;
+      f lev strm
+    };
+  entry.fcontinue :=
+    fun lev bp a strm -> do {
+      let f = fcontinue_parser_of_entry entry in
+      entry.fcontinue := f;
       f lev bp a strm
     }
 };
@@ -870,6 +1129,18 @@ value delete_rule entry sl =
         fun lev bp a strm -> do {
           let f = continue_parser_of_entry entry in
           entry.econtinue := f;
+          f lev bp a strm
+        };
+      entry.fstart :=
+        fun lev strm -> do {
+          let f = fstart_parser_of_entry entry in
+          entry.fstart := f;
+          f lev strm
+        };
+      entry.fcontinue :=
+        fun lev bp a strm -> do {
+          let f = fcontinue_parser_of_entry entry in
+          entry.fcontinue := f;
           f lev bp a strm
         }
     }
@@ -1012,7 +1283,8 @@ module Entry =
     type e 'a = g_entry te;
     value create g n =
       {egram = g; ename = n; elocal = False; estart = empty_entry n;
-       econtinue _ _ _ = parser []; edesc = Dlevels []}
+       econtinue _ _ _ = parser []; fstart _ = fparser [];
+       fcontinue _ _ _ = fparser []; edesc = Dlevels []}
     ;
     value parse_parsable (entry : e 'a) p : 'a =
       Obj.magic (parse_parsable entry p : Obj.t)
@@ -1030,6 +1302,8 @@ module Entry =
       {egram = g; ename = n; elocal = False;
        estart _ = (Obj.magic p : Stream.t te -> Obj.t);
        econtinue _ _ _ = parser [];
+       fstart _ = fparser [];
+       fcontinue _ _ _ = fparser [];
        edesc = Dparser (Obj.magic p : Stream.t te -> Obj.t)}
     ;
     external obj : e 'a -> Gramext.g_entry te = "%identity";
@@ -1042,7 +1316,8 @@ value of_entry e = e.egram;
 
 value create_local_entry g n =
   {egram = g; ename = n; elocal = True; estart = empty_entry n;
-   econtinue _ _ _ = parser []; edesc = Dlevels []}
+   econtinue _ _ _ = parser []; fstart _ = fparser [];
+   fcontinue _ _ _ = fparser []; edesc = Dlevels []}
 ;
 
 (* Unsafe *)
@@ -1050,6 +1325,8 @@ value create_local_entry g n =
 value clear_entry e = do {
   e.estart := fun _ -> parser [];
   e.econtinue := fun _ _ _ -> parser [];
+  e.fstart := fun _ -> fparser [];
+  e.fcontinue := fun _ _ _ -> fparser [];
   match e.edesc with
   [ Dlevels _ -> e.edesc := Dlevels []
   | Dparser _ -> () ]
@@ -1127,7 +1404,8 @@ module GMake (L : GLexerType) =
         type e 'a = g_entry te;
         value create n =
           {egram = gram; ename = n; elocal = False; estart = empty_entry n;
-           econtinue _ _ _ = parser []; edesc = Dlevels []}
+           econtinue _ _ _ = parser []; fstart _ = fparser [];
+           fcontinue _ _ _ = fparser []; edesc = Dlevels []}
         ;
         external obj : e 'a -> Gramext.g_entry te = "%identity";
         value parse (e : e 'a) p : 'a =
@@ -1141,6 +1419,8 @@ module GMake (L : GLexerType) =
           {egram = gram; ename = n; elocal = False;
            estart _ = (Obj.magic p : Stream.t te -> Obj.t);
            econtinue _ _ _ = parser [];
+           fstart _ = fparser [];
+           fcontinue _ _ _ = fparser [];
            edesc = Dparser (Obj.magic p : Stream.t te -> Obj.t)}
         ;
         value print e = printf "%a@." print_entry (obj e);

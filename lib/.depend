@@ -8,21 +8,17 @@ extfold.cmx: extfold.cmi gramext.cmx grammar.cmx
 extfold.cmi: gramext.cmi 
 extfun.cmo: extfun.cmi 
 extfun.cmx: extfun.cmi 
-framext.cmo: framext.cmi fstream.cmi plexing.cmi 
-framext.cmx: framext.cmi fstream.cmx plexing.cmx 
-framext.cmi: plexing.cmi fstream.cmi 
-frammar.cmo: framext.cmi frammar.cmi fstream.cmi 
-frammar.cmx: framext.cmx frammar.cmi fstream.cmx 
-frammar.cmi: ploc.cmi plexing.cmi fstream.cmi framext.cmi 
 fstream.cmo: fstream.cmi 
 fstream.cmx: fstream.cmi 
 gramalgo.cmo: gramext.cmi 
 gramalgo.cmx: gramext.cmx 
-gramext.cmo: gramext.cmi plexing.cmi 
-gramext.cmx: gramext.cmi plexing.cmx 
-gramext.cmi: plexing.cmi 
-grammar.cmo: gramalgo.cmo gramext.cmi grammar.cmi plexing.cmi ploc.cmi 
-grammar.cmx: gramalgo.cmx gramext.cmx grammar.cmi plexing.cmx ploc.cmx 
+gramext.cmo: fstream.cmi gramext.cmi plexing.cmi 
+gramext.cmx: fstream.cmx gramext.cmi plexing.cmx 
+gramext.cmi: plexing.cmi fstream.cmi 
+grammar.cmo: fstream.cmi gramalgo.cmo gramext.cmi grammar.cmi plexing.cmi \
+    ploc.cmi 
+grammar.cmx: fstream.cmx gramalgo.cmx gramext.cmx grammar.cmi plexing.cmx \
+    ploc.cmx 
 grammar.cmi: ploc.cmi plexing.cmi gramext.cmi 
 plexer.cmo: plexer.cmi plexing.cmi ploc.cmi 
 plexer.cmx: plexer.cmi plexing.cmx ploc.cmx 
