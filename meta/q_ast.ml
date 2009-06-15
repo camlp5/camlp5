@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: q_ast.ml,v 1.92 2007/09/21 19:11:06 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.93 2007/09/21 20:23:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* AST quotations with works by running the language parser (and its possible
@@ -487,6 +487,9 @@ module Meta_make (C : MetaSig) =
   end
 ;
 
+value anti_anti n = "_" ^ n;
+value is_anti_anti n = String.length n > 0 && n.[0] = '_';
+
 module Meta_E =
   Meta_make
     (struct
@@ -521,7 +524,7 @@ module Meta_E =
                match get_anti_loc s with
                [ Some (loc, typ, str) ->
                    let (loc, r) = eval_anti Pcaml.expr_eoi loc typ str in
-                   if typ <> "" && typ.[0] = 'a' then <:expr< $anti:r$ >>
+                   if is_anti_anti typ then <:expr< $anti:r$ >>
                    else <:expr< Ploc.VaVal $anti:r$ >>
                | None -> assert False ]
            | Ploc.VaVal v -> <:expr< Ploc.VaVal $elem v$ >> ]
@@ -591,7 +594,7 @@ module Meta_P =
                match get_anti_loc s with
                [ Some (loc, typ, str) ->
                    let (loc, r) = eval_anti Pcaml.patt_eoi loc typ str in
-                   if typ <> "" && typ.[0] = 'a' then <:patt< $anti:r$ >>
+                   if is_anti_anti typ then <:patt< $anti:r$ >>
                    else <:patt< Ploc.VaVal $anti:r$ >>
                | None -> assert False ]
            | Ploc.VaVal v -> <:patt< Ploc.VaVal $elem v$ >> ]
@@ -737,8 +740,6 @@ value check_anti_loc2 s =
   with
   [ Not_found | Failure _ -> raise Stream.Failure ]
 ;
-
-value anti_anti n = "_" ^ n;
 
 let lex = Grammar.glexer Pcaml.gram in
 let tok_match = lex.Plexing.tok_match in

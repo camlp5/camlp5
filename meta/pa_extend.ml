@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.79 2007/09/21 19:11:06 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.80 2007/09/21 20:23:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -1263,7 +1263,13 @@ EXTEND
       | UIDENT "FLAG"; s = SELF ->
           ASflag loc s ]
     | "vala"
-      [ UIDENT "V"; x = UIDENT; al = LIST0 STRING ->
+      [ UIDENT "V"; UIDENT "SELF"; al = LIST0 STRING ->
+          let s = ASself loc in
+          ASvala loc s al
+      | UIDENT "V"; UIDENT "NEXT"; al = LIST0 STRING ->
+          let s = ASnext loc in
+          ASvala loc s al
+      | UIDENT "V"; x = UIDENT; al = LIST0 STRING ->
           let s = AStok loc x None in
           ASvala loc s al
       | UIDENT "V"; s = NEXT; al = LIST0 STRING ->

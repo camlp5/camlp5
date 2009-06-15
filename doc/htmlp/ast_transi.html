@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_transi.html,v 1.2 2007/09/18 14:17:28 deraugla Exp $ -->
+  <!-- $Id: ast_transi.html,v 1.3 2007/09/21 20:23:52 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -337,7 +337,7 @@
   </tr>
   <tr>
     <td><tt>ExLet loc b lpe e</tt></td>
-    <td align="center"><tt>let $opt:b$ $list:lpe$ in $e$</tt></td>
+    <td align="center"><tt>let $flag:b$ $list:lpe$ in $e$</tt></td>
     <td>let binding</td>
   </tr>
   <tr>
@@ -687,7 +687,7 @@
   </tr>
   <tr>
     <td><tt>TyObj loc lst b</tt></td>
-    <td align="center"><tt>&lt; $list:lst$ $opt:b$ ></tt></td>
+    <td align="center"><tt>&lt; $list:lst$ $flag:b$ ></tt></td>
     <td>object (general)</td>
   </tr>
   <tr>
@@ -817,7 +817,7 @@
   </tr>
   <tr>
     <td><tt>StMod loc b lsme</tt></td>
-    <td align="center"><tt>module $opt:b$ $list:lsme$</tt></td>
+    <td align="center"><tt>module $flag:b$ $list:lsme$</tt></td>
     <td>module</td>
   </tr>
   <tr>
@@ -842,7 +842,7 @@
   </tr>
   <tr>
     <td><tt>StVal loc b lpe</tt></td>
-    <td align="center"><tt>value $opt:b$ $list:lpe$</tt></td>
+    <td align="center"><tt>value $flag:b$ $list:lpe$</tt></td>
     <td>value</td>
   </tr>
 </table>
@@ -917,7 +917,7 @@
   </tr>
   <tr>
     <td><tt>SgMod loc b lsmt</tt></td>
-    <td align="center"><tt>module $opt:b$ $list:lsmt$</tt></td>
+    <td align="center"><tt>module $flag:b$ $list:lsmt$</tt></td>
     <td>module</td>
   </tr>
   <tr>
@@ -1068,7 +1068,7 @@
   </tr>
   <tr>
     <td><tt>CeLet loc b lpe ce</tt></td>
-    <td align="center"><tt>let $opt:b$ $list:lpe$ in $ce$</tt></td>
+    <td align="center"><tt>let $flag:b$ $list:lpe$ in $ce$</tt></td>
     <td>let binding</td>
   </tr>
   <tr>
@@ -1178,7 +1178,7 @@
   </tr>
   <tr>
     <td><tt>CrMth loc s b e ot</tt></td>
-    <td align="center"><tt>method $opt:b$ $s$ $opt:ot$ = $e$</tt></td>
+    <td align="center"><tt>method $flag:b$ $s$ $opt:ot$ = $e$</tt></td>
     <td>method (general)</td>
   </tr>
   <tr>
@@ -1193,7 +1193,7 @@
   </tr>
   <tr>
     <td><tt>CrVal loc s b e</tt></td>
-    <td align="center"><tt>value $opt:b$ $s$ = $e$</tt></td>
+    <td align="center"><tt>value $flag:b$ $s$ = $e$</tt></td>
     <td>value (general)</td>
   </tr>
   <tr>
@@ -1208,7 +1208,7 @@
   </tr>
   <tr>
     <td><tt>CrVir loc s b t</tt></td>
-    <td align="center"><tt>method virtual $opt:b$ $s$ : $t$</tt></td>
+    <td align="center"><tt>method virtual $flag:b$ $s$ : $t$</tt></td>
     <td>virtual method (general)</td>
   </tr>
 </table>
@@ -1248,7 +1248,7 @@
   </tr>
   <tr>
     <td><tt>CgMth loc s b t</tt></td>
-    <td align="center"><tt>method $opt:b$ $s$ : $t$</tt></td>
+    <td align="center"><tt>method $flag:b$ $s$ : $t$</tt></td>
     <td>method (general)</td>
   </tr>
   <tr>
@@ -1263,7 +1263,7 @@
   </tr>
   <tr>
     <td><tt>CgVal loc s b t</tt></td>
-    <td align="center"><tt>value $opt:b$ $s$ : $t$</tt></td>
+    <td align="center"><tt>value $flag:b$ $s$ : $t$</tt></td>
     <td>value (general)</td>
   </tr>
   <tr>
@@ -1278,7 +1278,7 @@
   </tr>
   <tr>
     <td><tt>CgVir loc s b t</tt></td>
-    <td align="center"><tt>method virtual $opt:b$ $s$ : $t$</tt></td>
+    <td align="center"><tt>method virtual $flag:b$ $s$ : $t$</tt></td>
     <td>method virtual (general)</td>
   </tr>
 </table>
@@ -1307,7 +1307,7 @@
   </tr>
   <tr>
     <td><tt>WcTyp loc s ltv b t</tt></td>
-    <td align="center"><tt>type $s$ $list:ltv$ = $opt:b$ $t$</tt></td>
+    <td align="center"><tt>type $s$ $list:ltv$ = $flag:b$ $t$</tt></td>
     <td>with type (general)</td>
   </tr>
   <tr>
@@ -1339,7 +1339,7 @@
   </tr>
   <tr>
     <td><tt>PvTag s b lt</tt></td>
-    <td align="center"><tt>` $i$ of $opt:b$ $list:lt$</tt></td>
+    <td align="center"><tt>` $i$ of $flag:b$ $list:lt$</tt></td>
     <td>constructor (general)</td>
   </tr>
   <tr>

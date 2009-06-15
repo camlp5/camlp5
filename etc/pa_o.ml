@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.61 2007/09/21 19:11:06 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.62 2007/09/21 20:23:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -310,6 +310,13 @@ value get_seq =
   | e -> [e] ]
 ;
 
+value vala_map f e =
+  match (e, "") with
+  [ (<:vala< e >>, "") -> <:vala< f e >>
+  | (<:vala< $e$ >>, "") -> <:vala< $e$ >>
+  | _ -> assert False ]
+;
+
 value uv c =
   match (c, "") with
   [ (<:vala< c >>, "") -> c
@@ -380,8 +387,8 @@ EXTEND
           match l with
           [ [(<:patt< _ >>, e)] -> <:str_item< $exp:e$ >>
           | _ -> <:str_item< value $flag:r$ $list:l$ >> ]
-      | "let"; "module"; m = UIDENT; mb = mod_fun_binding; "in"; e = expr ->
-          <:str_item< let module $uid:m$ = $mb$ in $e$ >>
+      | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in"; e = expr ->
+          <:str_item< let module $_uid:m$ = $mb$ in $e$ >>
       | e = expr -> <:str_item< $exp:e$ >> ] ]
   ;
   rebind_exn:
@@ -468,11 +475,11 @@ EXTEND
       [ "let"; o = FLAG "rec"; l = LIST1 let_binding SEP "and"; "in";
         x = expr LEVEL "top" ->
           <:expr< let $flag:o$ $list:l$ in $x$ >>
-      | "let"; "module"; m = UIDENT; mb = mod_fun_binding; "in";
+      | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in";
         e = expr LEVEL "top" ->
-          <:expr< let module $uid:m$ = $mb$ in $e$ >>
-      | "function"; OPT "|"; l = LIST1 match_case SEP "|" ->
-          <:expr< fun [ $list:l$ ] >>
+          <:expr< let module $_uid:m$ = $mb$ in $e$ >>
+      | "function"; OPT "|"; l = V (LIST1 match_case SEP "|") ->
+          <:expr< fun [ $_list:l$ ] >>
       | "fun"; p = patt LEVEL "simple"; e = fun_def ->
           <:expr< fun [$p$ -> $e$] >>
       | "match"; e = SELF; "with"; OPT "|"; l = LIST1 match_case SEP "|" ->
@@ -484,9 +491,10 @@ EXTEND
           <:expr< if $e1$ then $e2$ else $e3$ >>
       | "if"; e1 = SELF; "then"; e2 = expr LEVEL "expr1" ->
           <:expr< if $e1$ then $e2$ else () >>
-      | "for"; i = LIDENT; "="; e1 = SELF; df = direction_flag; e2 = SELF;
-        "do"; e = SELF; "done" ->
-          <:expr< for $lid:i$ = $e1$ $to:df$ $e2$ do { $list:get_seq e$ } >>
+      | "for"; i = V LIDENT; "="; e1 = SELF; df = V direction_flag "to";
+        e2 = SELF; "do"; e = V SELF "list"; "done" ->
+          let el = vala_map get_seq e in
+          <:expr< for $_lid:i$ = $e1$ $_to:df$ $e2$ do { $_list:el$ } >>
       | "while"; e1 = SELF; "do"; e2 = SELF; "done" ->
           <:expr< while $e1$ do { $list:get_seq e2$ } >> ]
     | [ e = SELF; ","; el = LIST1 NEXT SEP "," ->
@@ -569,12 +577,12 @@ EXTEND
       | "~-."; e = SELF -> <:expr< ~-. $e$ >>
       | f = prefixop; e = SELF -> <:expr< $lid:f$ $e$ >> ]
     | "simple" LEFTA
-      [ s = INT -> <:expr< $int:s$ >>
-      | s = INT_l -> <:expr< $int32:s$ >>
-      | s = INT_L -> <:expr< $int64:s$ >>
-      | s = INT_n -> <:expr< $nativeint:s$ >>
+      [ s = V INT -> <:expr< $_int:s$ >>
+      | s = V INT_l -> <:expr< $_int32:s$ >>
+      | s = V INT_L -> <:expr< $_int64:s$ >>
+      | s = V INT_n -> <:expr< $_nativeint:s$ >>
       | s = V FLOAT -> <:expr< $_flo:s$ >>
-      | s = STRING -> <:expr< $str:s$ >>
+      | s = V STRING -> <:expr< $_str:s$ >>
       | c = V CHAR -> <:expr< $_chr:c$ >>
       | UIDENT "True" -> <:expr< $uid:" True"$ >>
       | UIDENT "False" -> <:expr< $uid:" False"$ >>
@@ -645,7 +653,7 @@ EXTEND
   ;
   expr_ident:
     [ RIGHTA
-      [ i = LIDENT -> <:expr< $lid:i$ >>
+      [ i = V LIDENT -> <:expr< $_lid:i$ >>
       | i = UIDENT -> <:expr< $uid:i$ >>
       | i = UIDENT; "."; j = SELF ->
           let rec loop m =
@@ -1088,10 +1096,30 @@ EXTEND
   ;
   expr: AFTER "apply"
     [ "label"
-      [ i = TILDEIDENTCOLON; e = SELF -> <:expr< ~$i$: $e$ >>
-      | i = TILDEIDENT -> <:expr< ~$i$ >>
-      | i = QUESTIONIDENTCOLON; e = SELF -> <:expr< ?$i$: $e$ >>
-      | i = QUESTIONIDENT -> <:expr< ?$i$ >> ] ]
+      [ i = tildeidentcolon; e = SELF -> <:expr< ~$_:i$: $e$ >>
+      | i = tildeident -> <:expr< ~$_:i$ >>
+      | i = questionidentcolon; e = SELF -> <:expr< ?$_:i$: $e$ >>
+      | i = questionident -> <:expr< ?$_:i$ >> ] ]
+  ;
+  tildeident:
+    [ [ i = TILDEIDENT -> <:vala< i >>
+      | a = TILDEANTIQUOT_LOC -> <:vala< $a$ >>
+      | a = TILDEANTIQUOT_LOC "_" -> <:vala< $a$ >> ] ]
+  ;
+  tildeidentcolon:
+    [ [ i = TILDEIDENTCOLON -> <:vala< i >>
+      | a = TILDEANTIQUOTCOLON_LOC -> <:vala< $a$ >>
+      | a = TILDEANTIQUOTCOLON_LOC "_" -> <:vala< $a$ >> ] ]
+  ;
+  questionident:
+    [ [ i = QUESTIONIDENT -> <:vala< i >>
+      | a = QUESTIONANTIQUOT_LOC -> <:vala< $a$ >>
+      | a = QUESTIONANTIQUOT_LOC "_" -> <:vala< $a$ >> ] ]
+  ;
+  questionidentcolon:
+    [ [ i = QUESTIONIDENTCOLON -> <:vala< i >>
+      | a = QUESTIONANTIQUOTCOLON_LOC -> <:vala< $a$ >>
+      | a = QUESTIONANTIQUOTCOLON_LOC "_" -> <:vala< $a$ >> ] ]
   ;
   expr: LEVEL "simple"
     [ [ "`"; s = ident -> <:expr< ` $s$ >> ] ]

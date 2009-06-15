@@ -2449,7 +2449,17 @@ Grammar.extend
        Gramext.Slist0 (Gramext.Stoken ("STRING", ""))],
       Gramext.action
         (fun (al : string list) (x : string) _ (loc : Ploc.t) ->
-           (let s = AStok (loc, x, None) in ASvala (loc, s, al) : 'symbol))];
+           (let s = AStok (loc, x, None) in ASvala (loc, s, al) : 'symbol));
+      [Gramext.Stoken ("UIDENT", "V"); Gramext.Stoken ("UIDENT", "NEXT");
+       Gramext.Slist0 (Gramext.Stoken ("STRING", ""))],
+      Gramext.action
+        (fun (al : string list) _ _ (loc : Ploc.t) ->
+           (let s = ASnext loc in ASvala (loc, s, al) : 'symbol));
+      [Gramext.Stoken ("UIDENT", "V"); Gramext.Stoken ("UIDENT", "SELF");
+       Gramext.Slist0 (Gramext.Stoken ("STRING", ""))],
+      Gramext.action
+        (fun (al : string list) _ _ (loc : Ploc.t) ->
+           (let s = ASself loc in ASvala (loc, s, al) : 'symbol))];
      Some "simple", None,
      [[Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ")")],
       Gramext.action

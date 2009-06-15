@@ -434,6 +434,9 @@ module Meta_make (C : MetaSig) =
   end
 ;;
 
+let anti_anti n = "_" ^ n;;
+let is_anti_anti n = String.length n > 0 && n.[0] = '_';;
+
 module Meta_E =
   Meta_make
     (struct
@@ -741,8 +744,6 @@ let check_anti_loc2 s =
     String.sub s (i + 1) len
   with Not_found | Failure _ -> raise Stream.Failure
 ;;
-
-let anti_anti n = "_" ^ n;;
 
 let lex = Grammar.glexer Pcaml.gram in
 let tok_match = lex.Plexing.tok_match in
