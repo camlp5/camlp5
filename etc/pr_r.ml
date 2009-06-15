@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.92 2007/11/28 18:47:04 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.93 2007/11/28 20:01:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1763,12 +1763,8 @@ EXTEND_PRINTER
       [ <:ctyp< $x$ == $y$ >> -> operator pc next next 2 "==" x y ]
     | "as"
       [ <:ctyp< $t1$ as $t2$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s%s as %s%s" pc.bef
-                 (curr {(pc) with bef = ""; aft = ""} t1)
-                 (next {(pc) with bef = ""; aft = ""} t2) pc.aft)
-            (fun () -> not_impl "ctyp as vertic" pc t1) ]
+          break 1 0 pc (fun pc -> curr pc t1)
+            (fun pc -> next {(pc) with bef = sprintf "%sas " pc.bef} t2) ]
     | "poly"
       [ <:ctyp< ! $list:pl$ . $t$ >> ->
           horiz_vertic
