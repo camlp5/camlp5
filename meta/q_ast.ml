@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.54 2007/09/11 19:14:13 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.55 2007/09/12 00:18:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -83,31 +83,6 @@ value get_anti_loc s =
   [ Not_found | Failure _ -> None ]
 ;
 
-(*
-(* upper bound of tags of all syntax tree nodes *)
-value anti_tag = 100;
-
-value make_anti loc t s = do {
-  let r = Obj.new_block anti_tag 3 in
-  Obj.set_field r 0 (Obj.repr (loc : Ploc.t));
-  Obj.set_field r 1 (Obj.repr (t : string));
-  Obj.set_field r 2 (Obj.repr (s : string));
-  Obj.magic r
-};
-
-value get_anti v =
-  if Obj.tag (Obj.repr v) = anti_tag && Obj.size (Obj.repr v) = 3 then
-    let loc : Ploc.t = Obj.magic (Obj.field (Obj.repr v) 0) in
-    let t : string = Obj.magic (Obj.field (Obj.repr v) 1) in
-    let s : string = Obj.magic (Obj.field (Obj.repr v) 2) in
-    Some (loc, t, s)
-  else None
-;
-*)
-
-value make_anti loc t s = failwith "not impl: make_anti";
-value get_anti v = None;
-
 module Meta =
   struct
     open MLast;
@@ -165,37 +140,14 @@ module Meta =
       | Some e -> <:expr< Some $elem e$ >> ]
     ;
     value p_option elem oe =
-      match get_anti oe with
-      [ Some (loc, typ, str) ->
-          let (loc, r) = eval_anti Pcaml.patt_eoi loc typ str in
-          <:patt< $anti:r$ >>
-      | None ->
-          match oe with
-          [ None -> <:patt< None >>
-          | Some e -> <:patt< Some $elem e$ >> ] ]
+      match oe with
+      [ None -> <:patt< None >>
+      | Some e -> <:patt< Some $elem e$ >> ]
     ;
-    value e_bool b =
-      match get_anti b with
-      [ Some (loc, typ, str) ->
-          let (loc, r) = eval_anti Pcaml.expr_eoi loc typ str in
-          <:expr< $anti:r$ >>
-      | None -> if b then <:expr< True >> else <:expr< False >> ]
-    ;
-    value p_bool b =
-      match get_anti b with
-      [ Some (loc, typ, str) ->
-          let (loc, r) = eval_anti Pcaml.patt_eoi loc typ str in
-          <:patt< $anti:r$ >>
-      | None -> if b then <:patt< True >> else <:patt< False >> ]
-    ;
+    value e_bool b = if b then <:expr< True >> else <:expr< False >>;
+    value p_bool b = if b then <:patt< True >> else <:patt< False >>;
     value e_string s = <:expr< $str:s$ >>;
-    value p_string s =
-      match get_anti s with
-      [ Some (loc, typ, str) ->
-          let (loc, r) = eval_anti Pcaml.patt_eoi loc typ str in
-          <:patt< $anti:r$ >>
-      | None -> <:patt< $str:s$ >> ]
-    ;
+    value p_string s = <:patt< $str:s$ >>;
     value e_ctyp t = 
       let ln = ln () in
       loop t where rec loop t =
@@ -562,22 +514,6 @@ IFDEF STRICT THEN
   END
 END;
 
-(*
-let mod_ident = Grammar.Entry.find Pcaml.str_item "mod_ident" in
-EXTEND
-  mod_ident: FIRST
-    [ [ s = ANTIQUOT_LOC "" -> Obj.repr s ] ]
-  ;
-END;
-
-value check_anti s kind =
-  if String.length s > String.length kind then
-    if String.sub s 0 (String.length kind + 1) = kind ^ ":" then s
-    else raise Stream.Failure
-  else raise Stream.Failure
-;
-*)
-
 value check_anti_loc s kind =
   try
     let i = String.index s ':' in
@@ -619,17 +555,6 @@ value check_anti_loc2 s =
   with
   [ Not_found | Failure _ -> raise Stream.Failure ]
 ;
-
-value check_and_make_anti prm typ =
-  let (loc, str) = check_anti_loc prm typ in
-  make_anti loc typ str
-;
-
-(* Need adding in grammar.ml in Slist* cases:
-      let pa = parser_of_token entry ("LIST", "") in
-   and
-      [: a = pa :] -> a
-   in their parsers. Same for OPT and FLAG. *)
 
 let lex = Grammar.glexer Pcaml.gram in
 let tok_match = lex.Plexing.tok_match in
@@ -687,14 +612,6 @@ lex.Plexing.tok_match :=
           else if kind = "chr" then "b" ^ prm
           else raise Stream.Failure
       | _ -> raise Stream.Failure ]
-(*
-  | ("V SELF", "") ->
-      fun
-      [ ("ANTIQUOT_LOC", prm) ->
-          let kind = check_anti_loc2 prm in
-          if kind = "" then prm else raise Stream.Failure
-      | _ -> raise Stream.Failure ]
-*)
   | ("V LIST", "") ->
       fun
       [ ("ANTIQUOT_LOC", prm) ->
