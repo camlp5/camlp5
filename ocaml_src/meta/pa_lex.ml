@@ -69,6 +69,7 @@ let mk_lexer loc rl = cparser loc None (conv_rules loc rl);;
 
 let mk_lexer_match loc e rl = cparser_match loc e None (conv_rules loc rl);;
 
+(* group together consecutive rules just containing one character *)
 let isolate_char_patt_list =
   let rec loop pl =
     function

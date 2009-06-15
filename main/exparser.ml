@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: exparser.ml,v 1.5 2007/08/02 10:57:44 deraugla Exp $ *)
+(* $Id: exparser.ml,v 1.6 2007/08/26 20:05:38 deraugla Exp $ *)
 
 type spat_comp =
   [ SpTrm of MLast.loc and MLast.patt and option MLast.expr
@@ -269,7 +269,100 @@ value rec parser_cases loc =
         | [] -> <:expr< raise Stream.Failure >> ] ]
 ;
 
+(* optim: left factorization of consecutive rules *)
+
+type tree_node 'a 'b =
+  [ Node of 'a and list (tree_node 'a 'b)
+  | Leaf of 'b ]
+;
+
+value rec map_tree_node f_node f_leaf =
+  fun
+  [ Node x tl -> f_node x (List.map (map_tree_node f_node f_leaf) tl)
+  | Leaf b -> f_leaf b ]
+;
+
+value rec insert_in_tree eq (l, a) tl =
+  match tl with
+  [ [Node n tl1 :: tl2] ->
+      match l with
+      [ [x :: l] ->
+          if eq x n then
+            [Node n (insert_in_tree eq (l, a) tl1) :: tl2]
+          else
+            [List.fold_right (fun x n -> Node x [n]) [x :: l] (Leaf a) :: tl]
+      | [] ->
+          loop tl where rec loop =
+            fun
+            [ [Node n tl1 :: tl] -> [Node n tl1 :: loop tl]
+            | tl -> [Leaf a :: tl] ] ]
+  | _ -> [List.fold_right (fun x n -> Node x [n]) l (Leaf a) :: tl] ]
+;
+
+value tree_of_list eq ll = List.fold_right (insert_in_tree eq) ll [];
+
+value rec list_of_tree mk_node mk_leaf tl =
+  List.map (map_tree_node mk_node mk_leaf) tl
+;
+
+value eq_spat_comp spc1 spc2 =
+  match (spc1, spc2) with
+  [ (SpTrm _ p1 None, SpTrm _ p2 None) -> Reloc.eq_patt p1 p2
+  | (SpNtr _ p1 e1, SpNtr _ p2 e2) ->
+      Reloc.eq_patt p1 p2 && Reloc.eq_expr e1 e2
+  | _ -> False ]
+;
+
+value eq_spo spco1 spco2 =
+  match (spco1, spco2) with
+  [ (SpoQues e1, SpoQues e2) -> Reloc.eq_expr e1 e2
+  | _ -> spco1 = spco2 ]
+;
+
+value eq_spat_comp_opt (spc1, spco1) (spc2, spco2) =
+  eq_spat_comp spc1 spc2 && eq_spo spco1 spco2
+;
+
+value mk_empty b = ([], b);
+
+value mk_rule x =
+  fun
+  [ [] -> failwith "mk_rule"
+  | [(rl, a)] -> ([x :: rl], a)
+  | ll ->
+      let loc = Stdpp.dummy_loc in
+      let e =
+        let rl = List.map (fun (rl, (eo, a)) -> (rl, eo, a)) ll in
+        let e = parser_cases loc rl in
+        let p = <:patt< ($lid:strm_n$ : Stream.t) >> in
+        <:expr< fun $p$ -> $e$ >>
+      in
+      let spo =
+        if List.exists
+             (fun (rl, _) ->
+                match rl with
+                [ [] -> True
+                | [(_, SpoBang) :: _] -> True
+                | _ -> False ])
+             ll
+        then
+          SpoBang
+        else SpoNoth
+      in
+      ([x; (SpNtr loc <:patt< a >> e, spo)], (None, <:expr< a >>)) ]
+;
+
+value left_factorize rl =
+  let rl = List.map (fun (rl, eo, a) -> (rl, (eo, a))) rl in
+  let t = tree_of_list eq_spat_comp_opt rl in
+  let rl = list_of_tree mk_rule mk_empty t in
+  List.map (fun (rl, (eo, a)) -> (rl, eo, a)) rl
+;
+
+(* Converting into AST *)
+
 value cparser loc bpo pc =
+  let pc = left_factorize pc in
   let e = parser_cases loc pc in
   let e =
     match bpo with
@@ -281,6 +374,7 @@ value cparser loc bpo pc =
 ;
 
 value cparser_match loc me bpo pc =
+  let pc = left_factorize pc in
   let pc = parser_cases loc pc in
   let e =
     match bpo with

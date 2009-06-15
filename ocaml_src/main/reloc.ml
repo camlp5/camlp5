@@ -339,3 +339,47 @@ and class_str_item floc sh =
   in
   self
 ;;
+
+(* Equality over syntax trees *)
+
+let eq_expr x y =
+  expr (fun _ -> Stdpp.dummy_loc) 0 x = expr (fun _ -> Stdpp.dummy_loc) 0 y
+;;
+let eq_patt x y =
+  patt (fun _ -> Stdpp.dummy_loc) 0 x = patt (fun _ -> Stdpp.dummy_loc) 0 y
+;;
+let eq_ctyp x y =
+  ctyp (fun _ -> Stdpp.dummy_loc) 0 x = ctyp (fun _ -> Stdpp.dummy_loc) 0 y
+;;
+let eq_str_item x y =
+  str_item (fun _ -> Stdpp.dummy_loc) 0 x =
+    str_item (fun _ -> Stdpp.dummy_loc) 0 y
+;;
+let eq_sig_item x y =
+  sig_item (fun _ -> Stdpp.dummy_loc) 0 x =
+    sig_item (fun _ -> Stdpp.dummy_loc) 0 y
+;;
+let eq_module_expr x y =
+  module_expr (fun _ -> Stdpp.dummy_loc) 0 x =
+    module_expr (fun _ -> Stdpp.dummy_loc) 0 y
+;;
+let eq_module_type x y =
+  module_type (fun _ -> Stdpp.dummy_loc) 0 x =
+    module_type (fun _ -> Stdpp.dummy_loc) 0 y
+;;
+let eq_class_sig_item x y =
+  class_sig_item (fun _ -> Stdpp.dummy_loc) 0 x =
+    class_sig_item (fun _ -> Stdpp.dummy_loc) 0 y
+;;
+let eq_class_str_item x y =
+  class_str_item (fun _ -> Stdpp.dummy_loc) 0 x =
+    class_str_item (fun _ -> Stdpp.dummy_loc) 0 y
+;;
+let eq_class_type x y =
+  class_type (fun _ -> Stdpp.dummy_loc) 0 x =
+    class_type (fun _ -> Stdpp.dummy_loc) 0 y
+;;
+let eq_class_expr x y =
+  class_expr (fun _ -> Stdpp.dummy_loc) 0 x =
+    class_expr (fun _ -> Stdpp.dummy_loc) 0 y
+;;

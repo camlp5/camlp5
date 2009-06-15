@@ -409,7 +409,108 @@ let rec parser_cases loc =
                   MLast.ExUid (loc, "Failure")))
 ;;
 
+(* optim: left factorization of consecutive rules *)
+
+type ('a, 'b) tree_node =
+    Node of 'a * ('a, 'b) tree_node list
+  | Leaf of 'b
+;;
+
+let rec map_tree_node f_node f_leaf =
+  function
+    Node (x, tl) -> f_node x (List.map (map_tree_node f_node f_leaf) tl)
+  | Leaf b -> f_leaf b
+;;
+
+let rec insert_in_tree eq (l, a) tl =
+  match tl with
+    Node (n, tl1) :: tl2 ->
+      begin match l with
+        x :: l ->
+          if eq x n then Node (n, insert_in_tree eq (l, a) tl1) :: tl2
+          else
+            List.fold_right (fun x n -> Node (x, [n])) (x :: l) (Leaf a) :: tl
+      | [] ->
+          let rec loop =
+            function
+              Node (n, tl1) :: tl -> Node (n, tl1) :: loop tl
+            | tl -> Leaf a :: tl
+          in
+          loop tl
+      end
+  | _ -> List.fold_right (fun x n -> Node (x, [n])) l (Leaf a) :: tl
+;;
+
+let tree_of_list eq ll = List.fold_right (insert_in_tree eq) ll [];;
+
+let rec list_of_tree mk_node mk_leaf tl =
+  List.map (map_tree_node mk_node mk_leaf) tl
+;;
+
+let eq_spat_comp spc1 spc2 =
+  match spc1, spc2 with
+    SpTrm (_, p1, None), SpTrm (_, p2, None) -> Reloc.eq_patt p1 p2
+  | SpNtr (_, p1, e1), SpNtr (_, p2, e2) ->
+      Reloc.eq_patt p1 p2 && Reloc.eq_expr e1 e2
+  | _ -> false
+;;
+
+let eq_spo spco1 spco2 =
+  match spco1, spco2 with
+    SpoQues e1, SpoQues e2 -> Reloc.eq_expr e1 e2
+  | _ -> spco1 = spco2
+;;
+
+let eq_spat_comp_opt (spc1, spco1) (spc2, spco2) =
+  eq_spat_comp spc1 spc2 && eq_spo spco1 spco2
+;;
+
+let mk_empty b = [], b;;
+
+let mk_rule x =
+  function
+    [] -> failwith "mk_rule"
+  | [rl, a] -> x :: rl, a
+  | ll ->
+      let loc = Stdpp.dummy_loc in
+      let e =
+        let rl = List.map (fun (rl, (eo, a)) -> rl, eo, a) ll in
+        let e = parser_cases loc rl in
+        let p =
+          MLast.PaTyc
+            (loc, MLast.PaLid (loc, strm_n),
+             MLast.TyAcc
+               (loc, MLast.TyUid (loc, "Stream"), MLast.TyLid (loc, "t")))
+        in
+        MLast.ExFun (loc, [p, None, e])
+      in
+      let spo =
+        if List.exists
+             (fun (rl, _) ->
+                match rl with
+                  [] -> true
+                | (_, SpoBang) :: _ -> true
+                | _ -> false)
+             ll
+        then
+          SpoBang
+        else SpoNoth
+      in
+      [x; SpNtr (loc, MLast.PaLid (loc, "a"), e), spo],
+      (None, MLast.ExLid (loc, "a"))
+;;
+
+let left_factorize rl =
+  let rl = List.map (fun (rl, eo, a) -> rl, (eo, a)) rl in
+  let t = tree_of_list eq_spat_comp_opt rl in
+  let rl = list_of_tree mk_rule mk_empty t in
+  List.map (fun (rl, (eo, a)) -> rl, eo, a) rl
+;;
+
+(* Converting into AST *)
+
 let cparser loc bpo pc =
+  let pc = left_factorize pc in
   let e = parser_cases loc pc in
   let e =
     match bpo with
@@ -439,6 +540,7 @@ let cparser loc bpo pc =
 ;;
 
 let cparser_match loc me bpo pc =
+  let pc = left_factorize pc in
   let pc = parser_cases loc pc in
   let e =
     match bpo with

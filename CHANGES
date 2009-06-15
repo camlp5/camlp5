@@ -2,6 +2,8 @@ Camlp5 Version 4.08:
 ---------------------
 
 * [no date] Updated documentation.
+* [26 Aug 07] Added left factorization for consecutive rules of parsers
+  (and lexers).
 * [21 Aug 07] Added equality functions over syntax trees in module Pcaml.
 * [21 Aug 07] Improved compiled version (camlp5o.opt) to add the fact
   that the grammar is LL(n) for rules starting with n terminals.

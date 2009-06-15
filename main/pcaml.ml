@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pcaml.ml,v 1.17 2007/08/21 17:50:22 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.18 2007/08/26 20:05:38 deraugla Exp $ *)
 
 value version = "4.08-exp";
 value syntax_name = ref "";
@@ -452,47 +452,14 @@ value find_directive d = List.assoc d directives.val;
 
 (* Equality over syntax trees *)
 
-value eq_expr x y =
-  Reloc.expr (fun _ -> Stdpp.dummy_loc) 0 x =
-  Reloc.expr (fun _ -> Stdpp.dummy_loc) 0 y
-;
-value eq_patt x y =
-  Reloc.patt (fun _ -> Stdpp.dummy_loc) 0 x =
-  Reloc.patt (fun _ -> Stdpp.dummy_loc) 0 y
-;
-value eq_ctyp x y =
-  Reloc.ctyp (fun _ -> Stdpp.dummy_loc) 0 x =
-  Reloc.ctyp (fun _ -> Stdpp.dummy_loc) 0 y
-;
-value eq_str_item x y =
-  Reloc.str_item (fun _ -> Stdpp.dummy_loc) 0 x =
-  Reloc.str_item (fun _ -> Stdpp.dummy_loc) 0 y
-;
-value eq_sig_item x y =
-  Reloc.sig_item (fun _ -> Stdpp.dummy_loc) 0 x =
-  Reloc.sig_item (fun _ -> Stdpp.dummy_loc) 0 y
-;
-value eq_module_expr x y =
-  Reloc.module_expr (fun _ -> Stdpp.dummy_loc) 0 x =
-  Reloc.module_expr (fun _ -> Stdpp.dummy_loc) 0 y
-;
-value eq_module_type x y =
-  Reloc.module_type (fun _ -> Stdpp.dummy_loc) 0 x =
-  Reloc.module_type (fun _ -> Stdpp.dummy_loc) 0 y
-;
-value eq_class_sig_item x y =
-  Reloc.class_sig_item (fun _ -> Stdpp.dummy_loc) 0 x =
-  Reloc.class_sig_item (fun _ -> Stdpp.dummy_loc) 0 y
-;
-value eq_class_str_item x y =
-  Reloc.class_str_item (fun _ -> Stdpp.dummy_loc) 0 x =
-  Reloc.class_str_item (fun _ -> Stdpp.dummy_loc) 0 y
-;
-value eq_class_type x y =
-  Reloc.class_type (fun _ -> Stdpp.dummy_loc) 0 x =
-  Reloc.class_type (fun _ -> Stdpp.dummy_loc) 0 y
-;
-value eq_class_expr x y =
-  Reloc.class_expr (fun _ -> Stdpp.dummy_loc) 0 x =
-  Reloc.class_expr (fun _ -> Stdpp.dummy_loc) 0 y
-;
+value eq_expr = Reloc.eq_expr;
+value eq_patt = Reloc.eq_patt;
+value eq_ctyp = Reloc.eq_ctyp;
+value eq_str_item = Reloc.eq_str_item;
+value eq_sig_item = Reloc.eq_sig_item;
+value eq_module_expr = Reloc.eq_module_expr;
+value eq_module_type = Reloc.eq_module_type;
+value eq_class_sig_item = Reloc.eq_class_sig_item;
+value eq_class_str_item = Reloc.eq_class_str_item;
+value eq_class_type = Reloc.eq_class_type;
+value eq_class_expr = Reloc.eq_class_expr;

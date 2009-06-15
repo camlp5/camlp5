@@ -11,10 +11,9 @@ ast2pt.cmx: $(OTOP)/parsing/asttypes.cmi \
     $(OTOP)/parsing/parsetree.cmi \
     $(OTOP)/utils/pconfig.cmx ast2pt.cmi mLast.cmi 
 ast2pt.cmi: $(OTOP)/parsing/parsetree.cmi mLast.cmi \
-    $(OTOP)/parsing/longident.cmi \
     $(OTOP)/parsing/location.cmi 
-exparser.cmo: exparser.cmi mLast.cmi 
-exparser.cmx: exparser.cmi mLast.cmi 
+exparser.cmo: exparser.cmi mLast.cmi reloc.cmi 
+exparser.cmx: exparser.cmi mLast.cmi reloc.cmx 
 exparser.cmi: mLast.cmi 
 main.cmo: $(OTOP)/utils/pconfig.cmi ../odyl/odyl_main.cmi \
     argl.cmi ast2pt.cmi mLast.cmi pcaml.cmi 

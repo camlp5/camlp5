@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: reloc.ml,v 1.5 2007/08/14 11:19:09 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.6 2007/08/26 20:05:38 deraugla Exp $ *)
 
 open MLast;
 
@@ -301,4 +301,51 @@ and class_str_item floc sh =
           (option_map (ctyp floc sh) x4)
     | CrVal loc x1 x2 x3 -> CrVal (floc loc) x1 x2 (expr floc sh x3)
     | CrVir loc x1 x2 x3 -> CrVir (floc loc) x1 x2 (ctyp floc sh x3) ]
+;
+
+(* Equality over syntax trees *)
+
+value eq_expr x y =
+  expr (fun _ -> Stdpp.dummy_loc) 0 x =
+  expr (fun _ -> Stdpp.dummy_loc) 0 y
+;
+value eq_patt x y =
+  patt (fun _ -> Stdpp.dummy_loc) 0 x =
+  patt (fun _ -> Stdpp.dummy_loc) 0 y
+;
+value eq_ctyp x y =
+  ctyp (fun _ -> Stdpp.dummy_loc) 0 x =
+  ctyp (fun _ -> Stdpp.dummy_loc) 0 y
+;
+value eq_str_item x y =
+  str_item (fun _ -> Stdpp.dummy_loc) 0 x =
+  str_item (fun _ -> Stdpp.dummy_loc) 0 y
+;
+value eq_sig_item x y =
+  sig_item (fun _ -> Stdpp.dummy_loc) 0 x =
+  sig_item (fun _ -> Stdpp.dummy_loc) 0 y
+;
+value eq_module_expr x y =
+  module_expr (fun _ -> Stdpp.dummy_loc) 0 x =
+  module_expr (fun _ -> Stdpp.dummy_loc) 0 y
+;
+value eq_module_type x y =
+  module_type (fun _ -> Stdpp.dummy_loc) 0 x =
+  module_type (fun _ -> Stdpp.dummy_loc) 0 y
+;
+value eq_class_sig_item x y =
+  class_sig_item (fun _ -> Stdpp.dummy_loc) 0 x =
+  class_sig_item (fun _ -> Stdpp.dummy_loc) 0 y
+;
+value eq_class_str_item x y =
+  class_str_item (fun _ -> Stdpp.dummy_loc) 0 x =
+  class_str_item (fun _ -> Stdpp.dummy_loc) 0 y
+;
+value eq_class_type x y =
+  class_type (fun _ -> Stdpp.dummy_loc) 0 x =
+  class_type (fun _ -> Stdpp.dummy_loc) 0 y
+;
+value eq_class_expr x y =
+  class_expr (fun _ -> Stdpp.dummy_loc) 0 x =
+  class_expr (fun _ -> Stdpp.dummy_loc) 0 y
 ;
