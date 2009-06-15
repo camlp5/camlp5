@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.33 2007/10/04 19:17:30 deraugla Exp $
+# $Id: Makefile,v 1.34 2007/10/08 01:56:43 deraugla Exp $
 
 include ../config/Makefile
 
@@ -40,13 +40,13 @@ mk$(NAME).sh: mkcamlp5.sh.tpl
 	sed -e "s!LIBDIR!$(LIBDIR)!g" -e "s/camlp5/$(NAME)/g" mkcamlp5.sh.tpl > mk$(NAME).sh
 
 bootstrap_scheme:
-	@$(MAKE) bootstrap_l L=scheme | grep -v directory
+	@$(MAKE) --no-print-directory bootstrap_l L=scheme
 compare_scheme:
-	@$(MAKE) compare_l L=scheme | grep -v directory
+	@$(MAKE) --no-print-directory compare_l L=scheme
 bootstrap_lisp:
-	@$(MAKE) bootstrap_l L=lisp | grep -v directory
+	@$(MAKE) --no-print-directory bootstrap_l L=lisp
 compare_lisp:
-	@$(MAKE) compare_l L=lisp | grep -v directory
+	@$(MAKE) --no-print-directory compare_l L=lisp
 
 bootstrap_l:
 	ocamlrun$(EXE) ../boot/$(NAME) ./pa_$Lr.cmo -I ../boot pa_extend.cmo ./pr_r.cmo ./pr_extend.cmo ./pr_rp.cmo ./q_phony.cmo pa_$L.ml > tmp

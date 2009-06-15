@@ -126,19 +126,19 @@
 <:patt< $_uid:s$ >>
 (MLast.PaVrn loc (Ploc.VaVal s))
 (MLast.PaVrn loc s)
-; <:ctyp< $t1$ . $t2$ >>
-; <:ctyp< $t1$ as $t2$ >>
-; <:ctyp< _ >>
-; <:ctyp< $t1$ $t2$ >>
-; <:ctyp< $t1$ -> $t2$ >>
-; <:ctyp< # $list:ls$ >>
-; <:ctyp< # $_list:ls$ >>
-; <:ctyp< ~$s$: $t$ >>
-; <:ctyp< ~$_:s$: $t$ >>
-; <:ctyp< $lid:s$ >>
-; <:ctyp< $_lid:s$ >>
-; <:ctyp< $t1$ == $t2$ >>
-; <:ctyp< < $list:lst$ > >>
+<:ctyp< $t1$. $t2$ >>
+<:ctyp< (as $t1$ $t2$) >>
+<:ctyp< _ >>
+<:ctyp< ($t1$ $t2$) >>
+<:ctyp< (-> $t1$ $t2$) >>
+(MLast.TyCls loc (Ploc.VaVal ls))
+(MLast.TyCls loc ls)
+<:ctyp< (~$s$ $t$) >>
+<:ctyp< (~$_:s$ $t$) >>
+<:ctyp< $lid:s$ >>
+<:ctyp< $_lid:s$ >>
+<:ctyp< (== $t1$ $t2$) >>
+<:ctyp< < $list:lst$ > >>
 ; <:ctyp< < $_list:lst$ > >>
 ; <:ctyp< < $list:lst$ .. > >>
 ; <:ctyp< < $_list:lst$ .. > >>

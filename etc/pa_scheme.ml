@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.53 2007/10/08 00:55:25 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.54 2007/10/08 01:56:43 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -1050,10 +1050,16 @@
                       (t2 (loop sel)))
                    <:ctyp< $t1$ -> $t2$ >>)))))
         (loop sel)))
+    ((Sexpr loc [(Slid _ "as") se1 se2])
+     (let* ((t1 (ctyp_se se1))
+            (t2 (ctyp_se se2)))
+       <:ctyp< ($t1$ as $t2$) >>))
     ((Sexpr loc [(Slid _ "*") . sel])
      (let ((tl (List.map ctyp_se sel))) <:ctyp< ($list:tl$) >>))
     ((Sexpr loc [(Slid _ "==") se1 se2])
      (let* ((t1 (ctyp_se se1)) (t2 (ctyp_se se2))) <:ctyp< $t1$ == $t2$ >>))
+    ((Sexpr loc [(Stid _ s) se])
+     (let ((t (ctyp_se se))) <:ctyp< ~$_:s$: $t$ >>))
     ((Sexpr loc [(Slid _ "objectvar")]) <:ctyp< < .. > >>)
     ((Sexpr loc [se . sel])
      (List.fold_left
@@ -1067,6 +1073,7 @@
          (let ((s (String.sub s 1 (- (String.length s) 1))))
            <:ctyp< '$s$ >>)
          <:ctyp< $lid:(rename_id s)$ >>))
+    ((Slidv loc s) <:ctyp< $_lid:s$ >>)
     ((Suid loc s) <:ctyp< $uid:(rename_id s)$ >>)
     ((Santi loc "" s) <:ctyp< $xtr:s$ >>)
     (se (error se "ctyp"))))
@@ -1124,7 +1131,7 @@
 
 EXTEND
   GLOBAL : implem interf top_phrase use_file str_item sig_item expr
-    patt sexpr /
+    patt ctyp sexpr /
   implem :
     [ [ "#" / se = sexpr ->
           (let (((values n dp) (directive_se se)))
@@ -1173,6 +1180,9 @@ EXTEND
   /
   patt :
     [ [ se = sexpr -> (patt_se se) ] ]
+  /
+  ctyp :
+    [ [ se = sexpr -> (ctyp_se se) ] ]
   /
   sexpr :
     [ [ se1 = sexpr / DOT / se2 = sexpr -> (Sacc loc se1 se2) ]

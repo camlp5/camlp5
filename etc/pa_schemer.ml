@@ -1116,6 +1116,10 @@ and ctyp_se =
             let loc = Ploc.encl (loc_of_sexpr se) loc in
             let t2 = loop sel in
             <:ctyp< $t1$ -> $t2$ >> ]
+  | Sexpr loc [Slid _ "as"; se1; se2] ->
+      let t1 = ctyp_se se1 in
+      let t2 = ctyp_se se2 in
+      <:ctyp< ($t1$ as $t2$) >>
   | Sexpr loc [Slid _ "*" :: sel] ->
       let tl = List.map ctyp_se sel in
       <:ctyp< ($list:tl$) >>
@@ -1123,6 +1127,9 @@ and ctyp_se =
       let t1 = ctyp_se se1 in
       let t2 = ctyp_se se2 in
       <:ctyp< $t1$ == $t2$ >>
+  | Sexpr loc [Stid _ s; se] ->
+      let t = ctyp_se se in
+      <:ctyp< ~$_:s$: $t$ >>
   | Sexpr loc [Slid _ "objectvar"] -> <:ctyp< < .. > >>
   | Sexpr loc [se :: sel] ->
       List.fold_left
@@ -1140,6 +1147,7 @@ and ctyp_se =
         let s = String.sub s 1 (String.length s - 1) in
         <:ctyp< '$s$ >>
       else <:ctyp< $lid:(rename_id s)$ >>
+  | Slidv loc s -> <:ctyp< $_lid:s$ >>
   | Suid loc s -> <:ctyp< $uid:(rename_id s)$ >>
   | Santi loc "" s -> <:ctyp< $xtr:s$ >>
   | se -> error se "ctyp" ]
@@ -1197,7 +1205,8 @@ Pcaml.parse_implem.val := Grammar.Entry.parse implem;
 value sexpr = Grammar.Entry.create gram "sexpr";
 
 EXTEND
-  GLOBAL: implem interf top_phrase use_file str_item sig_item expr patt sexpr;
+  GLOBAL: implem interf top_phrase use_file str_item sig_item expr patt ctyp
+    sexpr;
   implem:
     [ [ "#"; se = sexpr ->
           let (n, dp) = directive_se se in
@@ -1247,6 +1256,9 @@ EXTEND
   ;
   patt:
     [ [ se = sexpr -> patt_se se ] ]
+  ;
+  ctyp:
+    [ [ se = sexpr -> ctyp_se se ] ]
   ;
   sexpr:
     [ [ se1 = SELF; DOT; se2 = SELF -> Sacc loc se1 se2 ]
