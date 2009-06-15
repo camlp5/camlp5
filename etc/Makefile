@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.20 2007/07/10 14:40:10 deraugla Exp $
+# $Id: Makefile,v 1.21 2007/07/10 14:40:11 deraugla Exp $
 
 include ../config/Makefile
 
@@ -78,8 +78,8 @@ install:
 	cp lib.sml "$(LIBDIR)/$(NAME)/."
 	cp $(NAME)o$(EXE) $(NAME)sch$(EXE) "$(BINDIR)/."
 	if test -f $(COPT); then cp $(COPT) "$(BINDIR)/."; fi
-	cp mk$(NAME).sh "$(BINDIR)/mk$(NAME)"
-	chmod a+x "$(BINDIR)/mk$(NAME)"
+#	cp mk$(NAME).sh "$(BINDIR)/mk$(NAME)"
+#	chmod a+x "$(BINDIR)/mk$(NAME)"
 
 pa_lisp.cmo: pa_lispr.cmo
 pa_scheme.cmo: pa_schemer.cmo

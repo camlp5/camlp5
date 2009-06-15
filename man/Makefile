@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.3 2007/07/10 14:40:10 deraugla Exp $
+# $Id: Makefile,v 1.4 2007/07/10 14:40:11 deraugla Exp $
 
 include ../config/Makefile
 
@@ -18,7 +18,6 @@ install:
 	-cp $(TARGET) "$(MANDIR)/man1/."
 	-cd "$(MANDIR)/man1"; rm -f $(NAME)o.1; ln -s $(TARGET) $(NAME)o.1
 	-cd "$(MANDIR)/man1"; rm -f $(NAME)r.1; ln -s $(TARGET) $(NAME)r.1
-	-cd "$(MANDIR)/man1"; rm -f mk$(NAME).1; ln -s $(TARGET) mk$(NAME).1
 	-cd "$(MANDIR)/man1"; rm -f ocpp.1; ln -s $(TARGET) ocpp.1
 	-cd "$(MANDIR)/man1"; rm -f $(NAME)o.opt.1; ln -s $(TARGET) $(NAME)o.opt.1
 	-cd "$(MANDIR)/man1"; rm -f $(NAME)r.opt.1; ln -s $(TARGET) $(NAME)r.opt.1

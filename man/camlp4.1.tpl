@@ -2,8 +2,6 @@
 .SH NAME
 camlp4 - Pre-Precessor-Pretty-Printer for OCaml
 .br
-mkcamlp4 - Create custom camlp4
-.br
 ocpp - Universal preprocessor
 
 .SH SYNOPSIS
@@ -41,8 +39,6 @@ other-options
 .br
 .B camlp4sch.cma
 .br
-.B mkcamlp4
-.br
 .B ocpp
 [
 load-options
@@ -78,10 +74,6 @@ with some files already loaded (see further).
 and
 .B camlp4sch.cma
 are files to be loaded in ocaml toplevel to use the camlp4 machinery
-.LP
-.B mkcamlp4
-creates camlp4 executables with almost the same options than ocamlmktop.
-See further.
 .LP
 .B ocpp
 is an universal preprocessor, treating any kind of source file,
@@ -272,19 +264,6 @@ can be loaded in the toplevel to start camlp4 with revised syntax.
 The file
 .B camlp4sch.cma
 can be loaded in the toplevel to start camlp4 with Scheme syntax.
-
-.SH "MKCAMLP4"
-
-.B mkcamlp4
-creates camlp4 executables with almost the same options than ocamlmktop.
-The only difference is that the interfaces to be visible must be explicitly
-added in the command line as ".cmi" files. For example, how to add the
-the OCaml module "str":
-.nf
-.ta 1c 2c
-	mkcamlp4 -custom str.cmi str.cma -cclib -lstr \\
-		-o camlp4str
-.fi
 
 .SH "FILES"
 Library directory of camlp4 in the present installation:
