@@ -175,22 +175,24 @@ value quote =
 value rec antiquot_rest bp len =
   parser
   [ [: `'$' :] -> len
-  | [: `x; len = antiquot_rest bp len :] -> len
+  | [: `x; len = antiquot_rest bp (Buff.store len x) :] -> len
   | [: :] ep ->
       Ploc.raise (Ploc.make_unlined (bp, ep))
         (Failure "antiquotation not terminated") ]
 ;
 
-value antiloc s = "0,0:" ^ s;
+value antiloc = Printf.sprintf "%d,%d:%s";
 
 value rec antiquot_loc bp len =
   parser
-  [ [: `'$' :] -> antiloc (":" ^ Buff.get len)
+  [ [: `'$' :] ep -> antiloc bp ep (":" ^ Buff.get len)
   | [: `('a'..'z' | 'A'..'Z' | '0'..'9' | '_' as c);
        r = antiquot_loc bp (Buff.store len c) :] ->
       r
-  | [: `':'; len = antiquot_rest bp len :] -> antiloc (Buff.get len)
-  | [: `x; len = antiquot_rest bp len :] -> antiloc (":" ^ Buff.get len)
+  | [: `':'; len = antiquot_rest bp (Buff.store len ':') :] ep ->
+      antiloc bp ep (Buff.get len)
+  | [: `c; len = antiquot_rest bp (Buff.store len c) :] ep ->
+      antiloc bp ep (":" ^ Buff.get len)
   | [: :] ep ->
       Ploc.raise (Ploc.make_unlined (bp, ep))
         (Failure "antiquotation not terminated") ]
@@ -314,10 +316,11 @@ value lexer_gmake () =
 
 type sexpr =
   [ Sacc of MLast.loc and sexpr and sexpr
-  | Sarr of MLast.loc and list sexpr
+  | Santi of MLast.loc and string
+  | Sarr of MLast.loc and MLast.v (list sexpr)
   | Schar of MLast.loc and string
   | Sexpr of MLast.loc and list sexpr
-  | Sint of MLast.loc and string
+  | Sint of MLast.loc and MLast.v string
   | Sint_l of MLast.loc and string
   | Sint_L of MLast.loc and string
   | Sint_n of MLast.loc and string
@@ -334,10 +337,10 @@ type sexpr =
 
 value loc_of_sexpr =
   fun
-  [ Sacc loc _ _ | Sarr loc _ | Schar loc _ | Sexpr loc _ | Sint loc _ |
-    Sint_l loc _ | Sint_L loc _ | Sint_n loc _ | Sfloat loc _ | Slid loc _ |
-    Slist loc _ | Sqid loc _ | Squot loc _ _ | Srec loc _ | Sstring loc _ |
-    Stid loc _ | Suid loc _ ->
+  [ Sacc loc _ _ | Santi loc _ | Sarr loc _ | Schar loc _ | Sexpr loc _ |
+    Sint loc _ | Sint_l loc _ | Sint_L loc _ | Sint_n loc _ | Sfloat loc _ |
+    Slid loc _ | Slist loc _ | Sqid loc _ | Squot loc _ _ | Srec loc _ |
+    Sstring loc _ | Stid loc _ | Suid loc _ ->
       loc ]
 ;
 value error_loc loc err = Ploc.raise loc (Stream.Error (err ^ " expected"));
@@ -531,7 +534,7 @@ and expr_se =
           <:expr< $e1$ . $e2$ >> ]
   | Slid loc s -> lident_expr loc s
   | Suid loc s -> <:expr< $uid:(rename_id s)$ >>
-  | Sint loc s -> <:expr< $int:s$ >>
+  | Sint loc s -> <:expr< $_int:s$ >>
   | Sint_l loc s -> <:expr< $int32:s$ >>
   | Sint_L loc s -> <:expr< $int64:s$ >>
   | Sint_n loc s -> <:expr< $nativeint:s$ >>
@@ -714,8 +717,8 @@ and expr_se =
       let e2 = expr_se se2 in
       <:expr< $e1$ := $e2$ >>
   | Sarr loc sel ->
-      let el = List.map expr_se sel in
-      <:expr< [| $list:el$ |] >>
+      let el = Pcaml.vala_map (List.map expr_se) sel in
+      <:expr< [| $_list:el$ |] >>
   | Sexpr loc [Slid _ "values" :: sel] ->
       let el = List.map expr_se sel in
       <:expr< ( $list:el$ ) >>
@@ -757,7 +760,8 @@ and expr_se =
             let e = expr_se se in
             let el = loop sel in
             <:expr< [$e$ :: $el$] >> ]
-  | Squot loc typ txt -> Pcaml.handle_expr_quotation loc (typ, txt) ]
+  | Squot loc typ txt -> Pcaml.handle_expr_quotation loc (typ, txt)
+  | Santi loc s -> failwith "not impl Santi" ]
 and begin_se loc =
   fun
   [ [] -> <:expr< () >>
@@ -874,7 +878,7 @@ and patt_se =
   | Slid loc "_" -> <:patt< _ >>
   | Slid loc s -> <:patt< $lid:(rename_id s)$ >>
   | Suid loc s -> <:patt< $uid:(rename_id s)$ >>
-  | Sint loc s -> <:patt< $int:s$ >>
+  | Sint loc s -> <:patt< $_int:s$ >>
   | Sint_l loc s -> <:patt< $int32:s$ >>
   | Sint_L loc s -> <:patt< $int64:s$ >>
   | Sint_n loc s -> <:patt< $nativeint:s$ >>
@@ -901,8 +905,8 @@ and patt_se =
       let p2 = patt_se se2 in
       <:patt< $p1$ .. $p2$ >>
   | Sarr loc sel ->
-      let pl = List.map patt_se sel in
-      <:patt< [| $list:pl$ |] >>
+      let pl = Pcaml.vala_map (List.map patt_se) sel in
+      <:patt< [| $_list:pl$ |] >>
   | Sexpr loc [Slid _ "values" :: sel] ->
       let pl = List.map patt_se sel in
       <:patt< ( $list:pl$ ) >>
@@ -929,7 +933,8 @@ and patt_se =
             let p = patt_se se in
             let pl = loop sel in
             <:patt< [$p$ :: $pl$] >> ]
-  | Squot loc typ txt -> Pcaml.handle_patt_quotation loc (typ, txt) ]
+  | Squot loc typ txt -> Pcaml.handle_patt_quotation loc (typ, txt)
+  | Santi loc s -> failwith "not impl Santi" ]
 and ipatt_se se =
   match ipatt_opt_se se with
   [ Left p -> p
@@ -1164,13 +1169,13 @@ EXTEND
     | [ "("; sl = LIST0 sexpr; ")" -> Sexpr loc sl
       | "["; sl = LIST0 sexpr; "]" -> Slist loc sl
       | "{"; sl = LIST0 sexpr; "}" -> Srec loc sl
-      | "#("; sl = LIST0 sexpr; ")" -> Sarr loc sl
+      | "#("; sl = V (LIST0 sexpr); ")" -> Sarr loc sl
       | a = pa_extend_keyword -> Slid loc a
       | s = LIDENT -> Slid loc s
       | s = UIDENT -> Suid loc s
       | s = TILDEIDENT -> Stid loc s
       | s = QUESTIONIDENT -> Sqid loc s
-      | s = INT -> Sint loc s
+      | s = V INT -> Sint loc s
       | s = INT_l -> Sint_l loc s
       | s = INT_L -> Sint_L loc s
       | s = INT_n -> Sint_n loc s
@@ -1183,6 +1188,7 @@ EXTEND
           let typ = String.sub s 0 i in
           let txt = String.sub s (i + 1) (String.length s - i - 1) in
           Squot loc typ txt
+      | s = ANTIQUOT_LOC -> Santi loc s
       | NL; s = SELF -> s
       | NL -> raise Stream.Failure ] ]
   ;

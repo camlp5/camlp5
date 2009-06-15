@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.45 2007/10/07 02:28:12 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.46 2007/10/07 08:23:21 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -155,21 +155,23 @@
 (definerec (antiquot_rest bp len)
  (parser
   (((` '$')) len)
-  (((` x) (len (antiquot_rest bp len))) len)
+  (((` x) (len (antiquot_rest bp (Buff.store len x)))) len)
   (() ep
    (Ploc.raise (Ploc.make_unlined (values bp ep))
     (Failure "antiquotation not terminated")))))
 
-(define (antiloc s) (^ "0,0:" s))
+(define antiloc (Printf.sprintf "%d,%d:%s"))
 
 (definerec (antiquot_loc bp len)
  (parser
-  (((` '$')) (antiloc (^ ":" (Buff.get len))))
+  (((` '$')) ep (antiloc bp ep (^ ":" (Buff.get len))))
   (((` (as (or (range 'a' 'z') (range 'A' 'Z') (range '0' '9') '_') c))
     (r (antiquot_loc bp (Buff.store len c))))
    r)
-  (((` ':') (len (antiquot_rest bp len))) (antiloc (Buff.get len)))
-  (((` x) (len (antiquot_rest bp len))) (antiloc (^ ":" (Buff.get len))))
+  (((` ':') (len (antiquot_rest bp (Buff.store len ':')))) ep
+   (antiloc bp ep (Buff.get len)))
+  (((` c) (len (antiquot_rest bp (Buff.store len c)))) ep
+   (antiloc bp ep (^ ":" (Buff.get len))))
   (() ep
    (Ploc.raise (Ploc.make_unlined (values bp ep))
     (Failure "antiquotation not terminated")))))
@@ -297,10 +299,11 @@
 (type sexpr
  (sum
   (Sacc MLast.loc sexpr sexpr)
-  (Sarr MLast.loc (list sexpr))
+  (Santi MLast.loc string)
+  (Sarr MLast.loc (MLast.v (list sexpr)))
   (Schar MLast.loc string)
   (Sexpr MLast.loc (list sexpr))
-  (Sint MLast.loc string)
+  (Sint MLast.loc (MLast.v string))
   (Sint_l MLast.loc string)
   (Sint_L MLast.loc string)
   (Sint_n MLast.loc string)
@@ -316,10 +319,10 @@
 
 (define loc_of_sexpr
   (lambda_match
-   ((or (Sacc loc _ _) (Sarr loc _) (Schar loc _) (Sexpr loc _) (Sint loc _)
-     (Sint_l loc _) (Sint_L loc _) (Sint_n loc _) (Sfloat loc _) (Slid loc _)
-     (Slist loc _) (Sqid loc _) (Squot loc _ _) (Srec loc _) (Sstring loc _)
-     (Stid loc _) (Suid loc _))
+   ((or (Sacc loc _ _) (Santi loc _) (Sarr loc _) (Schar loc _) (Sexpr loc _)
+     (Sint loc _) (Sint_l loc _) (Sint_L loc _) (Sint_n loc _) (Sfloat loc _)
+     (Slid loc _) (Slist loc _) (Sqid loc _) (Squot loc _ _) (Srec loc _)
+     (Sstring loc _) (Stid loc _) (Suid loc _))
     loc)))
 (define (error_loc loc err)
   (Ploc.raise loc (Stream.Error (^ err " expected"))))
@@ -501,7 +504,7 @@
          (_ (let ((e2 (expr_se se2))) <:expr< $e1$ . $e2$ >>)))))
     ((Slid loc s) (lident_expr loc s))
     ((Suid loc s) <:expr< $uid:(rename_id s)$ >>)
-    ((Sint loc s) <:expr< $int:s$ >>)
+    ((Sint loc s) <:expr< $_int:s$ >>)
     ((Sint_l loc s) <:expr< $int32:s$ >>)
     ((Sint_L loc s) <:expr< $int64:s$ >>)
     ((Sint_n loc s) <:expr< $nativeint:s$ >>)
@@ -681,7 +684,8 @@
             (e2 (expr_se se2)))
         <:expr< $e1$ := $e2$ >>))
     ((Sarr loc sel)
-     (let ((el (List.map expr_se sel))) <:expr< [| $list:el$ |] >>))
+     (let ((el (Pcaml.vala_map (List.map expr_se) sel)))
+      <:expr< [| $_list:el$ |] >>))
     ((Sexpr loc [(Slid _ "values") . sel])
      (let ((el (List.map expr_se sel))) <:expr< ( $list:el$ ) >>))
     ((Srec loc [(Slid _ "with") se . sel])
@@ -716,7 +720,12 @@
                     <:expr< [$e$ :: $el$] >>)))))
           (loop sel)))
     ((Squot loc typ txt)
-     (Pcaml.handle_expr_quotation loc (values typ txt)))))
+     (Pcaml.handle_expr_quotation loc (values typ txt)))
+    ((Santi loc s)
+;     (MLast.ExXtr loc s None)
+     (failwith "not impl Santi")
+;
+)))
   ((begin_se loc)
    (lambda_match
     ([] <:expr< () >>)
@@ -828,7 +837,7 @@
     ((Slid loc "_") <:patt< _ >>)
     ((Slid loc s) <:patt< $lid:(rename_id s)$ >>)
     ((Suid loc s) <:patt< $uid:(rename_id s)$ >>)
-    ((Sint loc s) <:patt< $int:s$ >>)
+    ((Sint loc s) <:patt< $_int:s$ >>)
     ((Sint_l loc s) <:patt< $int32:s$ >>)
     ((Sint_L loc s) <:patt< $int64:s$ >>)
     ((Sint_n loc s) <:patt< $nativeint:s$ >>)
@@ -849,7 +858,8 @@
     ((Sexpr loc [(Slid _ "range") se1 se2])
      (let* ((p1 (patt_se se1)) (p2 (patt_se se2))) <:patt< $p1$ .. $p2$ >>))
     ((Sarr loc sel)
-     (let ((pl (List.map patt_se sel))) <:patt< [| $list:pl$ |] >>))
+     (let ((pl (Pcaml.vala_map (List.map patt_se) sel)))
+      <:patt< [| $_list:pl$ |] >>))
     ((Sexpr loc [(Slid _ "values") . sel])
      (let ((pl (List.map patt_se sel))) <:patt< ( $list:pl$ ) >>))
     ((Sexpr loc [(Slid _ "as") se1 se2])
@@ -875,7 +885,11 @@
                     <:patt< [$p$ :: $pl$] >>)))))
           (loop sel)))
     ((Squot loc typ txt)
-     (Pcaml.handle_patt_quotation loc (values typ txt)))))
+     (Pcaml.handle_patt_quotation loc (values typ txt)))
+    ((Santi loc s)
+;      (MLast.PaXtr loc s None)
+      (failwith "not impl Santi")
+)))
   ((ipatt_se se)
    (match (ipatt_opt_se se)
           ((Left p) p)
@@ -1104,13 +1118,13 @@ EXTEND
     | [ "(" / sl = LIST0 sexpr / ")" -> (Sexpr loc sl)
       | "[" / sl = LIST0 sexpr / "]" -> (Slist loc sl)
       | "{" / sl = LIST0 sexpr / "}" -> (Srec loc sl)
-      | "#(" / sl = LIST0 sexpr / ")" -> (Sarr loc sl)
+      | "#(" / sl = V (LIST0 sexpr) / ")" -> (Sarr loc sl)
       | a = pa_extend_keyword -> (Slid loc a)
       | s = LIDENT -> (Slid loc s)
       | s = UIDENT -> (Suid loc s)
       | s = TILDEIDENT -> (Stid loc s)
       | s = QUESTIONIDENT -> (Sqid loc s)
-      | s = INT -> (Sint loc s)
+      | s = V INT -> (Sint loc s)
       | s = INT_l -> (Sint_l loc s)
       | s = INT_L -> (Sint_L loc s)
       | s = INT_n -> (Sint_n loc s)
@@ -1123,6 +1137,7 @@ EXTEND
                  (typ (String.sub s 0 i))
                  (txt (String.sub s (+ i 1) (- (- (String.length s) i) 1))))
             (Squot loc typ txt))
+      | s = ANTIQUOT_LOC -> (Santi loc s)
       | NL / s = sexpr -> s
       | NL -> (raise Stream.Failure) ] ]
   /

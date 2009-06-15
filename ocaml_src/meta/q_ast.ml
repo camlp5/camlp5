@@ -483,7 +483,7 @@ module Meta_E =
        let record lfe = MLast.ExRec (loc, lfe, None);;
        let xtr loc s =
          match get_anti_loc s with
-           Some (loc, typ, str) ->
+           Some (_, typ, str) ->
              begin match typ with
                "" ->
                  let (loc, r) = eval_anti Pcaml.expr_eoi loc "" str in
@@ -494,7 +494,7 @@ module Meta_E =
        ;;
        let xtr_or_anti loc f s =
          match get_anti_loc s with
-           Some (loc, typ, str) ->
+           Some (_, typ, str) ->
              begin match typ with
                "" | "exp" ->
                  let (loc, r) = eval_anti Pcaml.expr_eoi loc typ str in
@@ -555,7 +555,7 @@ module Meta_P =
        let record lfp = MLast.PaRec (loc, lfp);;
        let xtr loc s =
          match get_anti_loc s with
-           Some (loc, typ, str) ->
+           Some (_, typ, str) ->
              begin match typ with
                "" ->
                  let (loc, r) = eval_anti Pcaml.patt_eoi loc "" str in
@@ -566,7 +566,7 @@ module Meta_P =
        ;;
        let xtr_or_anti loc f s =
          match get_anti_loc s with
-           Some (loc, typ, str) ->
+           Some (_, typ, str) ->
              begin match typ with
                "" | "exp" ->
                  let (loc, r) = eval_anti Pcaml.patt_eoi loc "exp" str in
