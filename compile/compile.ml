@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: compile.ml,v 1.26 2007/09/22 05:20:28 deraugla Exp $ *)
+(* $Id: compile.ml,v 1.27 2007/11/09 16:59:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Gramext;
@@ -21,6 +21,7 @@ value rec name_of_symbol entry =
   | Snterml e l -> "[" ^ e.ename ^ " level " ^ l ^ "]"
   | Sself | Snext -> "[" ^ entry.ename ^ "]"
   | Stoken tok -> entry.egram.glexer.Plexing.tok_text tok
+  | Svala _ s -> name_of_symbol entry s
   | _ -> "???" ]
 ;
 
@@ -160,7 +161,9 @@ value phony_entry = Grammar.Entry.obj Pcaml.implem;
 value rec get_token_list entry tokl last_tok tree =
   match tree with
   [ Node {node = Stoken tok; son = son; brother = DeadEnd} ->
-      get_token_list entry [last_tok :: tokl] tok son
+      get_token_list entry [last_tok :: tokl] (tok, None) son
+  | Node {node = Svala ls (Stoken tok); son = son; brother = DeadEnd} ->
+      get_token_list entry [last_tok :: tokl] (tok, Some ls) son
   | _ ->
       if tokl = [] then None
       else Some (List.rev [last_tok :: tokl], last_tok, tree) ]
@@ -209,28 +212,51 @@ value rec parse_tree entry nlevn alevn (tree, fst_symb) act_kont kont =
       let p1 = act_kont False act in
       parse_symbol entry nlevn s p1 p2 (act, 0)
   | Node {node = s; son = son; brother = bro} ->
-      let p2 = parse_tree entry nlevn alevn (bro, fst_symb) act_kont kont in
       let tokl =
         match s with
-        [ Stoken tok -> get_token_list entry [] tok son
+        [ Stoken tok -> get_token_list entry [] (tok, None) son
+        | Svala ls (Stoken tok) -> get_token_list entry [] (tok, Some ls) son
         | _ -> None ]
       in
+      let p2 = parse_tree entry nlevn alevn (bro, fst_symb) act_kont kont in
       match tokl with
       [ Some (([_; _ :: _] as tokl), last_tok, son) ->
           let len = List.length tokl in
           let (act, n) = find_act son in
           let (p, _) =
             List.fold_right
-              (fun tok (pl, n) ->
+              (fun (tok, vala) (pl, n) ->
                  let patt = nth_patt_of_act (act, n) in
                  let p = patt_of_token patt tok in
                  (<:patt< [$p$ :: $pl$] >>, n + 1))
               tokl (<:patt< [] >>, n)
           in
           let p1 = parse_kont entry nlevn alevn act_kont s son in
+          let p1 =
+            if not Pcaml.strict_mode.val then p1
+            else
+              let (e, _) =
+                List.fold_right
+                  (fun (tok, vala) (e, n) ->
+                     let e =
+                       let p = nth_patt_of_act (act, n) in
+                       match p with
+                       [ <:patt< $lid:x$ >> ->
+                           let x = <:expr< $lid:x$ >> in
+                           match vala with
+                           [ Some al ->
+                               <:expr< let $p$ = Ploc.VaVal $x$ in $e$ >>
+                           | None -> e ]
+                       | _ -> e ]
+                     in
+                     (e, n + 1))
+                  tokl (p1, n)
+              in
+              e
+          in
           let el =
             List.fold_left
-              (fun el tok -> [<:expr< Stream.junk strm__ >> :: el])
+              (fun el _ -> [<:expr< Stream.junk strm__ >> :: el])
               [p1] tokl
           in
           <:expr<

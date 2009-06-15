@@ -1,6 +1,9 @@
 Camlp5 Version 5.03:
 --------------------
 
+* [09 Nov 07] Fixed bug in camlp5o.opt in strict mode: did not parse
+  correctly, in particular type expression (the version "camlp5o" without
+  ".opt" however worked).
 * [29 Oct 07] Added [Pcaml.inter_phrases], a way to set, by program,
   the value of the "-sep" option of the printers kits.
 * [28 Oct 07] Fixed bug in pa_fstream.cmo (functional parsers): the
