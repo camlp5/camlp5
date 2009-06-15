@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.69 2007/08/15 15:44:25 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.70 2007/08/15 18:04:20 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1492,231 +1492,6 @@ value expr_simple =
       fun curr next pc -> not_impl "expr" pc z ]
 ;
 
-value patt_top =
-  extfun Extfun.empty with
-  [ <:patt< ($x$ as $y$) >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s%s as %s%s" pc.bef
-               (patt {(pc) with bef = ""; aft = ""} x)
-               (patt {(pc) with bef = ""; aft = ""} y) pc.aft)
-          (fun () ->
-             let s1 = patt {(pc) with aft = ""} x in
-             let s2 =
-               patt {(pc) with bef = sprintf "%sas " (tab (pc.ind + 1))} y
-             in
-             sprintf "%s\n%s" s1 s2)
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value patt_or =
-  extfun Extfun.empty with
-  [ <:patt< $_$ | $_$ >> as z ->
-      fun curr next pc ->
-        let unfold =
-          fun
-          [ <:patt< $x$ | $y$ >> -> Some (x, " |", y)
-          | _ -> None ]
-        in
-        left_operator pc 0 unfold next z
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value patt_tuple =
-  extfun Extfun.empty with
-  [ <:patt< ($list:pl$) >> ->
-      fun curr next pc ->
-        let pl = List.map (fun p -> (p, ",")) pl in
-        plist next 0 pc pl
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value patt_range =
-  extfun Extfun.empty with
-  [ <:patt< $x$ .. $y$ >> ->
-      fun curr next pc ->
-        sprintf "%s..%s" (next {(pc) with aft = ""} x)
-          (next {(pc) with bef = ""} y)
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value patt_cons =
-  extfun Extfun.empty with
-  [ <:patt< [$_$ :: $_$] >> as z ->
-      fun curr next pc ->
-        let (xl, y) = make_patt_list z in
-        match y with
-        [ Some y ->
-            let xl = List.map (fun x -> (x, " ::")) (xl @ [y]) in
-            plist next 0 {(pc) with ind = pc.ind + 1} xl
-        | None -> next pc z ]
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value patt_apply =
-  extfun Extfun.empty with
-  [ <:patt< $_$ $_$ >> as z ->
-      fun curr next pc ->
-        let p_pl_opt =
-          loop [] z where rec loop pl =
-            fun
-            [ <:patt< $x$ $y$ >> -> loop [y :: pl] x
-            | <:patt< $uid:"::"$ >> -> None
-            | p -> Some (p, pl) ]
-        in
-        match p_pl_opt with
-        [ None -> next pc z
-        | Some (p1, [p2]) ->
-            horiz_vertic
-              (fun () ->
-                 sprintf "%s%s %s%s" pc.bef
-                   (curr {(pc) with bef = ""; aft = ""} p1)
-                   (next {(pc) with bef = ""; aft = ""} p2) pc.aft)
-              (fun () ->
-                 let s1 = curr {(pc) with aft = ""} p1 in
-                 let s2 =
-                   next
-                     {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} p2
-                 in
-                 sprintf "%s\n%s" s1 s2)
-        | Some (p, pl) ->
-            let patt = pr_patt.pr_fun "range" in
-            horiz_vertic
-              (fun () ->
-                 sprintf "%s%s (%s)%s" pc.bef
-                   (next {(pc) with bef = ""; aft = ""} p)
-                   (hlistl (comma_after patt) patt
-                      {(pc) with bef = ""; aft = ""} pl) pc.aft)
-              (fun () ->
-                 let al = List.map (fun a -> (a, ",")) pl in
-                 let s1 = next {(pc) with aft = ""} p in
-                 let s2 =
-                   plist patt 0
-                     {(pc) with ind = pc.ind + 3;
-                      bef = sprintf "%s(" (tab (pc.ind + 2));
-                      aft = sprintf ")%s" pc.aft}
-                     al
-                 in
-                 sprintf "%s\n%s" s1 s2) ]
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value patt_dot =
-  extfun Extfun.empty with
-  [ <:patt< $x$ . $y$ >> ->
-      fun curr next pc ->
-        curr {(pc) with bef = curr {(pc) with aft = "."} x} y
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value patt_simple =
-  extfun Extfun.empty with
-  [ <:patt< {$list:lpl$} >> ->
-      fun curr next pc ->
-        let lxl = List.map (fun lx -> (lx, ";")) lpl in
-        plist (binding patt) 0
-          {(pc) with ind = pc.ind + 1; bef = sprintf "%s{" pc.bef;
-           aft = sprintf "}%s" pc.aft}
-          lxl
-  | <:patt< [| $list:pl$ |] >> ->
-      fun curr next pc ->
-        if pl = [] then sprintf "%s[| |]%s" pc.bef pc.aft
-        else
-          let pl = List.map (fun p -> (p, ";")) pl in
-          plist patt 0
-            {(pc) with ind = pc.ind + 3; bef = sprintf "%s[| " pc.bef;
-             aft = (sprintf " |]%s" pc.aft)}
-            pl
-  | <:patt< [$_$ :: $_$] >> as z ->
-      fun curr next pc ->
-        let (xl, y) = make_patt_list z in
-        match y with
-        [ Some  y ->
-            patt
-              {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-               aft = sprintf ")%s" pc.aft}
-              z
-        | None ->
-            let xl = List.map (fun x -> (x, ";")) xl in
-            plist patt 0
-              {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef;
-               aft = sprintf "]%s" pc.aft}
-              xl ]
-  | <:patt< ($p$ : $t$) >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s(%s : %s)%s" pc.bef
-               (patt {(pc) with bef = ""; aft = ""} p)
-               (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-          (fun () ->
-             let s1 =
-               patt {(pc) with bef = sprintf "%s(" pc.bef; aft = " :"} p
-             in
-             let s2 =
-               ctyp
-                 {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
-                  aft = (sprintf ")%s" pc.aft)}
-                 t
-             in
-             sprintf "%s\n%s" s1 s2)
-  | <:patt< $int:s$ >> | <:patt< $flo:s$ >> ->
-      fun curr next pc ->
-        if String.length s > 0 && s.[0] = '-' then
-          sprintf "%s(%s)%s" pc.bef s pc.aft
-        else
-          sprintf "%s%s%s" pc.bef s pc.aft
-  | <:patt< $int32:s$ >> ->
-      fun curr next pc ->
-        let s = s ^ "l" in
-        if String.length s > 0 && s.[0] = '-' then
-          sprintf "%s(%s)%s" pc.bef s pc.aft
-        else
-          sprintf "%s%s%s" pc.bef s pc.aft
-  | <:patt< $int64:s$ >> ->
-      fun curr next pc ->
-        let s = s ^ "L" in
-        if String.length s > 0 && s.[0] = '-' then
-          sprintf "%s(%s)%s" pc.bef s pc.aft
-        else
-          sprintf "%s%s%s" pc.bef s pc.aft
-  | <:patt< $nativeint:s$ >> ->
-      fun curr next pc ->
-        let s = s ^ "n" in
-        if String.length s > 0 && s.[0] = '-' then
-          sprintf "%s(%s)%s" pc.bef s pc.aft
-        else
-          sprintf "%s%s%s" pc.bef s pc.aft
-  | <:patt< $lid:s$ >> ->
-      fun curr next pc -> var_escaped pc s
-  | <:patt< $uid:s$ >> ->
-      fun curr next pc -> cons_escaped pc s
-  | <:patt< $chr:s$ >> ->
-      fun curr next pc -> sprintf "%s'%s'%s" pc.bef (ocaml_char s) pc.aft
-  | <:patt< $str:s$ >> ->
-      fun curr next pc -> sprintf "%s\"%s\"%s" pc.bef s pc.aft
-  | <:patt< _ >> ->
-      fun curr next pc -> sprintf "%s_%s" pc.bef pc.aft
-  | <:patt< ? $_$ >> | <:patt< ? ($_$ $opt:_$) >> |
-    <:patt< ? $_$ : ($_$ $opt:_$) >> | <:patt< ~ $_$ >> |
-    <:patt< ~ $_$ : $_$ >> ->
-      fun curr next pc ->
-        failwith "labels not pretty printed (in patt); add pr_ro.cmo"
-  | <:patt< `$uid:s$ >> ->
-      fun curr next pc ->
-        failwith "polymorphic variants not pretty printed; add pr_ro.cmo"
-  | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >> |
-    <:patt< ($list:_$) >> | <:patt< ($_$ as $_$) >> as z ->
-      fun curr next pc ->
-        patt
-          {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-           aft = sprintf ")%s" pc.aft}
-          z
-  | z ->
-      fun curr next pc -> not_impl "patt" pc z ]
-;
-
 value string pc s = sprintf "%s\"%s\"%s" pc.bef s pc.aft;
 
 value external_decl pc (n, t, sl) =
@@ -2275,18 +2050,178 @@ pr_expr.pr_levels :=
    {pr_label = "simple"; pr_rules = expr_simple}]
 ;
 
-pr_patt.pr_levels :=
-  [{pr_label = "top"; pr_rules = patt_top};
-   {pr_label = "or"; pr_rules = patt_or};
-   {pr_label = "tuple"; pr_rules = patt_tuple};
-   {pr_label = "range"; pr_rules = patt_range};
-   {pr_label = "cons"; pr_rules = patt_cons};
-   {pr_label = "apply"; pr_rules = patt_apply};
-   {pr_label = "dot"; pr_rules = patt_dot};
-   {pr_label = "simple"; pr_rules = patt_simple}]
-;
-
 EXTEND_PRINTER
+  pr_patt:
+    [ "top"
+      [ <:patt< ($x$ as $y$) >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s%s as %s%s" pc.bef
+                 (patt {(pc) with bef = ""; aft = ""} x)
+                 (patt {(pc) with bef = ""; aft = ""} y) pc.aft)
+            (fun () ->
+               let s1 = patt {(pc) with aft = ""} x in
+               let s2 =
+                 patt {(pc) with bef = sprintf "%sas " (tab (pc.ind + 1))} y
+               in
+               sprintf "%s\n%s" s1 s2) ]
+    | "or"
+      [ <:patt< $_$ | $_$ >> as z ->
+          let unfold =
+            fun
+            [ <:patt< $x$ | $y$ >> -> Some (x, " |", y)
+            | _ -> None ]
+          in
+          left_operator pc 0 unfold next z ]
+    | "tuple"
+      [ <:patt< ($list:pl$) >> ->
+          let pl = List.map (fun p -> (p, ",")) pl in
+          plist next 0 pc pl ]
+    | "range"
+      [ <:patt< $x$ .. $y$ >> ->
+          sprintf "%s..%s" (next {(pc) with aft = ""} x)
+            (next {(pc) with bef = ""} y) ]
+    | "cons"
+      [ <:patt< [$_$ :: $_$] >> as z ->
+          let (xl, y) = make_patt_list z in
+          match y with
+          [ Some y ->
+              let xl = List.map (fun x -> (x, " ::")) (xl @ [y]) in
+              plist next 0 {(pc) with ind = pc.ind + 1} xl
+          | None -> next pc z ] ]
+    | "apply"
+      [ <:patt< $_$ $_$ >> as z ->
+          let p_pl_opt =
+            loop [] z where rec loop pl =
+              fun
+              [ <:patt< $x$ $y$ >> -> loop [y :: pl] x
+              | <:patt< $uid:"::"$ >> -> None
+              | p -> Some (p, pl) ]
+          in
+          match p_pl_opt with
+          [ None -> next pc z
+          | Some (p1, [p2]) ->
+              horiz_vertic
+                (fun () ->
+                   sprintf "%s%s %s%s" pc.bef
+                     (curr {(pc) with bef = ""; aft = ""} p1)
+                     (next {(pc) with bef = ""; aft = ""} p2) pc.aft)
+                (fun () ->
+                   let s1 = curr {(pc) with aft = ""} p1 in
+                   let s2 =
+                     next
+                       {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} p2
+                   in
+                   sprintf "%s\n%s" s1 s2)
+          | Some (p, pl) ->
+              let patt = pr_patt.pr_fun "range" in
+              horiz_vertic
+                (fun () ->
+                   sprintf "%s%s (%s)%s" pc.bef
+                     (next {(pc) with bef = ""; aft = ""} p)
+                     (hlistl (comma_after patt) patt
+                        {(pc) with bef = ""; aft = ""} pl) pc.aft)
+                (fun () ->
+                   let al = List.map (fun a -> (a, ",")) pl in
+                   let s1 = next {(pc) with aft = ""} p in
+                   let s2 =
+                     plist patt 0
+                       {(pc) with ind = pc.ind + 3;
+                        bef = sprintf "%s(" (tab (pc.ind + 2));
+                        aft = sprintf ")%s" pc.aft}
+                       al
+                   in
+                   sprintf "%s\n%s" s1 s2) ] ]
+    | "dot"
+      [ <:patt< $x$ . $y$ >> ->
+          curr {(pc) with bef = curr {(pc) with aft = "."} x} y ]
+    | "simple"
+      [ <:patt< {$list:lpl$} >> ->
+          let lxl = List.map (fun lx -> (lx, ";")) lpl in
+          plist (binding patt) 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s{" pc.bef;
+             aft = sprintf "}%s" pc.aft}
+            lxl
+      | <:patt< [| $list:pl$ |] >> ->
+          if pl = [] then sprintf "%s[| |]%s" pc.bef pc.aft
+          else
+            let pl = List.map (fun p -> (p, ";")) pl in
+            plist patt 0
+              {(pc) with ind = pc.ind + 3; bef = sprintf "%s[| " pc.bef;
+               aft = (sprintf " |]%s" pc.aft)}
+              pl
+      | <:patt< [$_$ :: $_$] >> as z ->
+          let (xl, y) = make_patt_list z in
+          match y with
+          [ Some  y ->
+              patt
+                {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+                 aft = sprintf ")%s" pc.aft}
+                z
+          | None ->
+              let xl = List.map (fun x -> (x, ";")) xl in
+              plist patt 0
+                {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef;
+                 aft = sprintf "]%s" pc.aft}
+                xl ]
+      | <:patt< ($p$ : $t$) >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s(%s : %s)%s" pc.bef
+                 (patt {(pc) with bef = ""; aft = ""} p)
+                 (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
+            (fun () ->
+               let s1 =
+                 patt {(pc) with bef = sprintf "%s(" pc.bef; aft = " :"} p
+               in
+               let s2 =
+                 ctyp
+                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+                    aft = (sprintf ")%s" pc.aft)}
+                   t
+               in
+               sprintf "%s\n%s" s1 s2)
+      | <:patt< $int:s$ >> | <:patt< $flo:s$ >> ->
+          if String.length s > 0 && s.[0] = '-' then
+            sprintf "%s(%s)%s" pc.bef s pc.aft
+          else
+            sprintf "%s%s%s" pc.bef s pc.aft
+      | <:patt< $int32:s$ >> ->
+          let s = s ^ "l" in
+          if String.length s > 0 && s.[0] = '-' then
+            sprintf "%s(%s)%s" pc.bef s pc.aft
+          else
+            sprintf "%s%s%s" pc.bef s pc.aft
+      | <:patt< $int64:s$ >> ->
+          let s = s ^ "L" in
+          if String.length s > 0 && s.[0] = '-' then
+            sprintf "%s(%s)%s" pc.bef s pc.aft
+          else
+            sprintf "%s%s%s" pc.bef s pc.aft
+      | <:patt< $nativeint:s$ >> ->
+          let s = s ^ "n" in
+          if String.length s > 0 && s.[0] = '-' then
+            sprintf "%s(%s)%s" pc.bef s pc.aft
+          else
+            sprintf "%s%s%s" pc.bef s pc.aft
+      | <:patt< $lid:s$ >> -> var_escaped pc s
+      | <:patt< $uid:s$ >> -> cons_escaped pc s
+      | <:patt< $chr:s$ >> -> sprintf "%s'%s'%s" pc.bef (ocaml_char s) pc.aft
+      | <:patt< $str:s$ >> -> sprintf "%s\"%s\"%s" pc.bef s pc.aft
+      | <:patt< _ >> -> sprintf "%s_%s" pc.bef pc.aft
+      | <:patt< ? $_$ >> | <:patt< ? ($_$ $opt:_$) >> |
+        <:patt< ? $_$ : ($_$ $opt:_$) >> | <:patt< ~ $_$ >> |
+        <:patt< ~ $_$ : $_$ >> ->
+          failwith "labels not pretty printed (in patt); add pr_ro.cmo"
+      | <:patt< `$uid:s$ >> ->
+          failwith "polymorphic variants not pretty printed; add pr_ro.cmo"
+      | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >> |
+        <:patt< ($list:_$) >> | <:patt< ($_$ as $_$) >> as z ->
+          patt
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            z ] ]
+  ;
   pr_ctyp:
     [ "top"
       [ <:ctyp< $x$ == $y$ >> -> operator pc next next 2 "=" x y ]
