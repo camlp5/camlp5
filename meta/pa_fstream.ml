@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_fstream.ml,v 1.4 2007/11/23 02:23:53 deraugla Exp $ *)
+(* $Id: pa_fstream.ml,v 1.5 2007/11/23 03:55:32 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -129,44 +129,34 @@ value patt_expr_of_patt p =
   | _ -> (<:patt< () >>, <:expr< () >>) ]
 ;
 
-value bstream_pattern_component =
+value bstream_pattern_component skont =
   fun
   [ SpTrm loc p wo ->
       let (p1, e1) = patt_expr_of_patt p in
-      (p1, <:expr< Fstream.b_term (fun [ $p$ -> Some $e1$ | _ -> None ]) >>)
+      let e =
+        <:expr< Fstream.b_term (fun [ $p$ -> Some $e1$ | _ -> None ]) >>
+      in
+      <:expr< Fstream.b_seq $e$ (fun $p1$ -> $skont$) >>
   | SpNtr loc p e ->
-      (p, e)
+      <:expr< Fstream.b_seq $e$ (fun $p$ -> $skont$) >>
   | SpStr loc p ->
       Ploc.raise loc (Stream.Error "not impl: stream_pattern_component") ]
 ;
 
 value rec bstream_pattern loc (spcl, epo, e) =
-  let rpel = List.rev_map bstream_pattern_component spcl in
-  let p =
-    match rpel with
-    [ [(p, _) :: rpel] ->
-        List.fold_left (fun p (p1, _) -> <:patt< ($p1$, $p$) >>) p rpel
-    | [] ->
-        <:patt< () >> ]
-  in
-  let e1 =
-    match rpel with
-    [ [(_, e) :: rpel] ->
-        List.fold_left (fun e (_, e1) -> <:expr< Fstream.b_seq $e1$ $e$ >>) e
-          rpel
-    | [] ->
-        <:expr< Fstream.b_nop >> ]
-  in
-  match epo with
-  [ Some p1 -> <:expr< Fstream.b_act_ep $e1$ (fun $p$ $p1$ -> $e$) >>
-  | None ->
-      match (p, e) with
-      [ (<:patt< $lid:s1$ >>, <:expr< $lid:s2$ >>) when s1 = s2 ->
-          (* optimization *)
-          e1
-      | _ ->
-          (* normal case *)
-          <:expr< Fstream.b_act $e1$ (fun $p$ -> $e$) >> ] ]
+  match spcl with
+  [ [] ->
+      let e =
+        let ek = <:expr< Fstream.b_nok >> in
+        let e = <:expr< Some ($e$, $lid:strm_n$, $ek$) >> in
+        match epo with
+        [ Some p -> <:expr< let $p$ = Fstream.count $lid:strm_n$ in $e$ >>
+        | None -> e ]
+      in
+      <:expr< fun $lid:strm_n$ -> $e$ >>
+  | [spc :: spcl] ->
+      let skont = bstream_pattern loc (spcl, epo, e) in
+      bstream_pattern_component skont spc ]
 ;
 
 value bparser_cases loc spel =

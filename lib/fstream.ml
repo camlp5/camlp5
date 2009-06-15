@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: fstream.ml,v 1.8 2007/11/22 20:21:08 deraugla Exp $ *)
+(* $Id: fstream.ml,v 1.9 2007/11/23 03:55:32 deraugla Exp $ *)
 (* Copyright 2007 INRIA *)
 
 type t 'a = { count : int; data : Lazy.t (data 'a) }
@@ -90,28 +90,14 @@ value bparse_all p strm =
     | None -> [] ]
 ;
 
-value b_act p f strm =
-  loop (fun () -> p strm) () where rec loop p () =
-    match p () with
-    [ Some (x, strm, K kont) -> Some (f x, strm, K (loop kont))
-    | None -> None ]
-;
-
-value b_act_ep p f strm =
-  loop (fun () -> p strm) () where rec loop p () =
-    match p () with
-    [ Some (x, strm, K kont) -> Some (f x (count strm), strm, K (loop kont))
-    | None -> None ]
-;
-
 value b_seq a b strm =
   let rec app_a kont1 () =
     match kont1 () with
-    [ Some (x, strm, K kont1) -> app_b x (fun () -> b strm) kont1 ()
+    [ Some (x, strm, K kont1) -> app_b (fun () -> b x strm) kont1 ()
     | None -> None ]
-  and app_b x kont2 kont1 () =
+  and app_b kont2 kont1 () =
     match kont2 () with
-    [ Some (y, strm, K kont2) -> Some ((x, y), strm, K (app_b x kont2 kont1))
+    [ Some (y, strm, K kont2) -> Some (y, strm, K (app_b kont2 kont1))
     | None -> app_a kont1 () ]
   in
   app_a (fun () -> a strm) ()
@@ -133,4 +119,4 @@ value b_term f strm =
   | None -> None ]
 ;
 
-value b_nop strm = Some ((), strm, K (fun _ -> None));
+value b_nok = K (fun _ -> None);

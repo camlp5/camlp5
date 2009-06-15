@@ -228,78 +228,72 @@ let patt_expr_of_patt p =
   | _ -> MLast.PaUid (loc, "()"), MLast.ExUid (loc, "()")
 ;;
 
-let bstream_pattern_component =
+let bstream_pattern_component skont =
   function
     SpTrm (loc, p, wo) ->
       let (p1, e1) = patt_expr_of_patt p in
-      p1,
-      MLast.ExApp
-        (loc,
-         MLast.ExAcc
-           (loc, MLast.ExUid (loc, "Fstream"), MLast.ExLid (loc, "b_term")),
-         MLast.ExFun
-           (loc,
-            [p, None, MLast.ExApp (loc, MLast.ExUid (loc, "Some"), e1);
-             MLast.PaAny loc, None, MLast.ExUid (loc, "None")]))
-  | SpNtr (loc, p, e) -> p, e
-  | SpStr (loc, p) ->
-      Ploc.raise loc (Stream.Error "not impl: stream_pattern_component")
-;;
-
-let rec bstream_pattern loc (spcl, epo, e) =
-  let rpel = List.rev_map bstream_pattern_component spcl in
-  let p =
-    match rpel with
-      (p, _) :: rpel ->
-        List.fold_left (fun p (p1, _) -> MLast.PaTup (loc, [p1; p])) p rpel
-    | [] -> MLast.PaUid (loc, "()")
-  in
-  let e1 =
-    match rpel with
-      (_, e) :: rpel ->
-        List.fold_left
-          (fun e (_, e1) ->
-             MLast.ExApp
-               (loc,
-                MLast.ExApp
-                  (loc,
-                   MLast.ExAcc
-                     (loc, MLast.ExUid (loc, "Fstream"),
-                      MLast.ExLid (loc, "b_seq")),
-                   e1),
-                e))
-          e rpel
-    | [] ->
-        MLast.ExAcc
-          (loc, MLast.ExUid (loc, "Fstream"), MLast.ExLid (loc, "b_nop"))
-  in
-  match epo with
-    Some p1 ->
+      let e =
+        MLast.ExApp
+          (loc,
+           MLast.ExAcc
+             (loc, MLast.ExUid (loc, "Fstream"), MLast.ExLid (loc, "b_term")),
+           MLast.ExFun
+             (loc,
+              [p, None, MLast.ExApp (loc, MLast.ExUid (loc, "Some"), e1);
+               MLast.PaAny loc, None, MLast.ExUid (loc, "None")]))
+      in
       MLast.ExApp
         (loc,
          MLast.ExApp
            (loc,
             MLast.ExAcc
-              (loc, MLast.ExUid (loc, "Fstream"),
-               MLast.ExLid (loc, "b_act_ep")),
-            e1),
-         MLast.ExFun (loc, [p, None, MLast.ExFun (loc, [p1, None, e])]))
-  | None ->
-      match p, e with
-        MLast.PaLid (_, s1), MLast.ExLid (_, s2) when s1 = s2 ->
-          (* optimization *)
-          e1
-      | _ ->
-          (* normal case *)
+              (loc, MLast.ExUid (loc, "Fstream"), MLast.ExLid (loc, "b_seq")),
+            e),
+         MLast.ExFun (loc, [p1, None, skont]))
+  | SpNtr (loc, p, e) ->
+      MLast.ExApp
+        (loc,
+         MLast.ExApp
+           (loc,
+            MLast.ExAcc
+              (loc, MLast.ExUid (loc, "Fstream"), MLast.ExLid (loc, "b_seq")),
+            e),
+         MLast.ExFun (loc, [p, None, skont]))
+  | SpStr (loc, p) ->
+      Ploc.raise loc (Stream.Error "not impl: stream_pattern_component")
+;;
+
+let rec bstream_pattern loc (spcl, epo, e) =
+  match spcl with
+    [] ->
+      let e =
+        let ek =
+          MLast.ExAcc
+            (loc, MLast.ExUid (loc, "Fstream"), MLast.ExLid (loc, "b_nok"))
+        in
+        let e =
           MLast.ExApp
-            (loc,
-             MLast.ExApp
-               (loc,
-                MLast.ExAcc
-                  (loc, MLast.ExUid (loc, "Fstream"),
-                   MLast.ExLid (loc, "b_act")),
-                e1),
-             MLast.ExFun (loc, [p, None, e]))
+            (loc, MLast.ExUid (loc, "Some"),
+             MLast.ExTup (loc, [e; MLast.ExLid (loc, strm_n); ek]))
+        in
+        match epo with
+          Some p ->
+            MLast.ExLet
+              (loc, false,
+               [p,
+                MLast.ExApp
+                  (loc,
+                   MLast.ExAcc
+                     (loc, MLast.ExUid (loc, "Fstream"),
+                      MLast.ExLid (loc, "count")),
+                   MLast.ExLid (loc, strm_n))],
+               e)
+        | None -> e
+      in
+      MLast.ExFun (loc, [MLast.PaLid (loc, strm_n), None, e])
+  | spc :: spcl ->
+      let skont = bstream_pattern loc (spcl, epo, e) in
+      bstream_pattern_component skont spc
 ;;
 
 let bparser_cases loc spel =

@@ -101,32 +101,14 @@ let bparse_all p strm =
   loop (fun () -> p strm)
 ;;
 
-let b_act p f strm =
-  let rec loop p () =
-    match p () with
-      Some (x, strm, K kont) -> Some (f x, strm, K (loop kont))
-    | None -> None
-  in
-  loop (fun () -> p strm) ()
-;;
-
-let b_act_ep p f strm =
-  let rec loop p () =
-    match p () with
-      Some (x, strm, K kont) -> Some (f x (count strm), strm, K (loop kont))
-    | None -> None
-  in
-  loop (fun () -> p strm) ()
-;;
-
 let b_seq a b strm =
   let rec app_a kont1 () =
     match kont1 () with
-      Some (x, strm, K kont1) -> app_b x (fun () -> b strm) kont1 ()
+      Some (x, strm, K kont1) -> app_b (fun () -> b x strm) kont1 ()
     | None -> None
-  and app_b x kont2 kont1 () =
+  and app_b kont2 kont1 () =
     match kont2 () with
-      Some (y, strm, K kont2) -> Some ((x, y), strm, K (app_b x kont2 kont1))
+      Some (y, strm, K kont2) -> Some (y, strm, K (app_b kont2 kont1))
     | None -> app_a kont1 ()
   in
   app_a (fun () -> a strm) ()
@@ -151,4 +133,4 @@ let b_term f strm =
   | None -> None
 ;;
 
-let b_nop strm = Some ((), strm, K (fun _ -> None));;
+let b_nok = K (fun _ -> None);;
