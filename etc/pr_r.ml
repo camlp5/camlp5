@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.38 2007/07/04 18:44:37 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.39 2007/07/04 18:47:51 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -415,7 +415,7 @@ value record_binding pc (p, e) =
    Cancellation of all these improvements could be done by changing calls
    to this function to a call to "binding expr" above.
 *)
-value value_or_let_binding hspace sequ expr_wh pc (p, e) =
+value value_or_let_binding sequ expr_wh pc (p, e) =
   let (p, e) =
     if is_irrefut_patt p then (p, e)
     else
@@ -444,7 +444,7 @@ value value_or_let_binding hspace sequ expr_wh pc (p, e) =
           [ Some t -> sprintf " : %s" (ctyp {(pc) with bef = ""; aft = ""} t)
           | None -> "" ])
          (expr_wh {(pc) with bef = ""; aft = ""} e)
-         (if pc.aft = "" then "" else sprintf "%s%s" hspace pc.aft))
+         (if pc.aft = "in" then " in" else ""))
     (fun () ->
        let patt_eq k =
          horiz_vertic
@@ -483,20 +483,18 @@ value value_or_let_binding hspace sequ expr_wh pc (p, e) =
 ;
 
 value value_binding pc pe =
-  let hspace = "" in
   let sequ pc el = sequence_box2 pc el in
   let expr_wh = if flag_where_after_value_eq.val then expr_wh else expr in
-  value_or_let_binding hspace sequ expr_wh pc pe
+  value_or_let_binding sequ expr_wh pc pe
 ;
 
 value let_binding pc pe =
-  let hspace = " " in
   let sequ pc el =
     let s = sequence_box2 {(pc) with aft = ""} el in
     if pc.aft = "" then s else sprintf "%s\n%s%s" s (tab pc.ind) pc.aft
   in
   let expr_wh = if flag_where_after_let_eq.val then expr_wh else expr in
-  value_or_let_binding hspace sequ expr_wh pc pe
+  value_or_let_binding sequ expr_wh pc pe
 ;
 
 value match_assoc pc (p, w, e) =
