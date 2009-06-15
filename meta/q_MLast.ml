@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.37 2007/08/14 11:19:09 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.38 2007/09/01 19:42:28 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -30,7 +30,7 @@ module Qast =
       | Loc
       | Antiquot of MLast.loc and string ]
     ;
-    value loc = Stdpp.dummy_loc;
+    value loc = Ploc.dummy;
     value expr_node m n =
       if m = "" then <:expr< $uid:n$ >> else <:expr< $uid:m$ . $uid:n$ >>
     ;
@@ -57,21 +57,21 @@ module Qast =
           List.fold_left (fun e a -> <:expr< $e$ $to_expr m a$ >>)
             <:expr< $lid:f$ >> al
       | Record lal -> <:expr< {$list:List.map (to_expr_label m) lal$} >>
-      | Loc -> <:expr< $lid:Stdpp.loc_name.val$ >>
+      | Loc -> <:expr< $lid:Ploc.name.val$ >>
       | Antiquot loc s ->
           let e =
             try Grammar.Entry.parse Pcaml.expr_eoi (Stream.of_string s) with
-            [ Stdpp.Exc_located loc1 exc ->
-                let shift = Stdpp.first_pos loc in
+            [ Ploc.Exc loc1 exc ->
+                let shift = Ploc.first_pos loc in
                 let loc =
-                  Stdpp.make_lined_loc
-                    (Stdpp.line_nb loc + Stdpp.line_nb loc1 - 1)
-                    (if Stdpp.line_nb loc1 = 1 then Stdpp.bol_pos loc
-                     else shift + Stdpp.bol_pos loc1)
-                    (shift + Stdpp.first_pos loc1,
-                     shift + Stdpp.last_pos loc1)
+                  Ploc.make
+                    (Ploc.line_nb loc + Ploc.line_nb loc1 - 1)
+                    (if Ploc.line_nb loc1 = 1 then Ploc.bol_pos loc
+                     else shift + Ploc.bol_pos loc1)
+                    (shift + Ploc.first_pos loc1,
+                     shift + Ploc.last_pos loc1)
                 in
-                raise (Stdpp.Exc_located loc exc) ]
+                raise (Ploc.Exc loc exc) ]
           in
           <:expr< $anti:e$ >> ]
     and to_expr_label m (l, a) = (<:patt< MLast.$lid:l$ >>, to_expr m a);
@@ -97,9 +97,9 @@ module Qast =
       | Antiquot loc s ->
           let p =
             try Grammar.Entry.parse Pcaml.patt_eoi (Stream.of_string s) with
-            [ Stdpp.Exc_located loc1 exc ->
-                let shift = Stdpp.first_pos loc in
-                raise (Stdpp.Exc_located (Stdpp.shift_loc shift loc1) exc) ]
+            [ Ploc.Exc loc1 exc ->
+                let shift = Ploc.first_pos loc in
+                raise (Ploc.Exc (Ploc.shift shift loc1) exc) ]
           in
           <:patt< $anti:p$ >> ]
     and to_patt_label m (l, a) = (<:patt< MLast.$lid:l$ >>, to_patt m a);
@@ -113,8 +113,8 @@ value antiquot k loc x =
   in
   let shift_ep = String.length "$" in
   let loc =
-    Stdpp.make_lined_loc (Stdpp.line_nb loc) (Stdpp.bol_pos loc)
-      (Stdpp.first_pos loc + shift_bp, Stdpp.last_pos loc - shift_ep)
+    Ploc.make (Ploc.line_nb loc) (Ploc.bol_pos loc)
+      (Ploc.first_pos loc + shift_bp, Ploc.last_pos loc - shift_ep)
   in
   Qast.Antiquot loc x
 ;
@@ -763,7 +763,7 @@ EXTEND
     [ [ "constraint"; t1 = ctyp; "="; t2 = ctyp -> Qast.Tuple [t1; t2] ] ]
   ;
   type_parameter:
-    [ [ "'"; i = ident ->
+    [ [ i = typevar ->
           Qast.Tuple [i; Qast.Tuple [Qast.Bool False; Qast.Bool False]]
       | "+"; "'"; i = ident ->
           Qast.Tuple [i; Qast.Tuple [Qast.Bool True; Qast.Bool False]]
@@ -785,7 +785,7 @@ EXTEND
     | LEFTA
       [ t1 = SELF; "."; t2 = SELF -> Qast.Node "TyAcc" [Qast.Loc; t1; t2] ]
     | "simple"
-      [ "'"; i = ident -> Qast.Node "TyQuo" [Qast.Loc; i]
+      [ i = typevar -> Qast.Node "TyQuo" [Qast.Loc; i]
       | "_" -> Qast.Node "TyAny" [Qast.Loc]
       | i = a_LIDENT -> Qast.Node "TyLid" [Qast.Loc; i]
       | i = a_UIDENT -> Qast.Node "TyUid" [Qast.Loc; i]

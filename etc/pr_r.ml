@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.63 2007/08/29 02:22:34 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.64 2007/09/01 19:42:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -2230,8 +2230,8 @@ value apply_printer f ast = do {
     let (first, last_pos) =
       List.fold_left
         (fun (first, last_pos) (si, loc) -> do {
-           let bp = Stdpp.first_pos loc in
-           let ep = Stdpp.last_pos loc in
+           let bp = Ploc.first_pos loc in
+           let ep = Ploc.last_pos loc in
            copy_source Prtools.source.val oc first last_pos bp;
            flush oc;
            set_comm_min_pos bp;

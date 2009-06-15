@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: exparser.ml,v 1.7 2007/08/26 20:15:24 deraugla Exp $ *)
+(* $Id: exparser.ml,v 1.8 2007/09/01 19:42:28 deraugla Exp $ *)
 
 type spat_comp =
   [ SpTrm of MLast.loc and MLast.patt and option MLast.expr
@@ -178,7 +178,7 @@ value stream_pattern_component skont ckont =
       in
       let len = List.length pl in
       if List.exists (fun pl -> List.length pl <> len) pll then
-        Stdpp.raise_with_loc loc
+        Ploc.raise loc
           (Stream.Error "lookahead patterns must be of the same lengths")
       else
         let p =
@@ -330,7 +330,7 @@ value mk_rule x =
   [ [] -> failwith "mk_rule"
   | [(rl, a)] -> ([x :: rl], a)
   | ll ->
-      let loc = Stdpp.dummy_loc in
+      let loc = Ploc.dummy in
       let e =
         let rl = List.map (fun (rl, (eo, a)) -> (rl, eo, a)) ll in
         let e = parser_cases loc rl in

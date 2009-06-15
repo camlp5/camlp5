@@ -10,14 +10,13 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: camlp5_top.ml,v 1.1 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: camlp5_top.ml,v 1.2 2007/09/01 19:42:28 deraugla Exp $ *)
 
 open Parsetree;
 open Lexing;
-open Stdpp;
 
 value highlight_locations lb loc1 loc2 =
-  let loc1 = (Stdpp.first_pos loc1, Stdpp.last_pos loc1) in
+  let loc1 = (Ploc.first_pos loc1, Ploc.last_pos loc1) in
   try do {
     let pos0 = -lb.lex_abs_pos in
     if pos0 < 0 then raise Exit else ();
@@ -83,12 +82,12 @@ value wrap f shfn lb =
          })
   in
   try f cs with
-  [ Exc_located _ (Sys.Break as x) -> raise x
+  [ Ploc.Exc _ (Sys.Break as x) -> raise x
   | End_of_file as x -> raise x
   | x -> do {
       let x =
         match x with
-        [ Exc_located loc x -> do { print_location lb loc; x }
+        [ Ploc.Exc loc x -> do { print_location lb loc; x }
         | x -> x ]
       in
       match x with

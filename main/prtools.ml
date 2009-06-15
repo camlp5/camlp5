@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: prtools.ml,v 1.6 2007/08/16 16:01:19 deraugla Exp $ *)
+(* $Id: prtools.ml,v 1.7 2007/09/01 19:42:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -362,8 +362,8 @@ value adjust_comment_indentation ind s nl_bef ind_bef =
 
 value comm_bef ind loc =
   let ind = ind.ind in
-  let bp = Stdpp.first_pos loc in
-  let ep = Stdpp.last_pos loc in
+  let bp = Ploc.first_pos loc in
+  let ep = Ploc.last_pos loc in
   let (s, nl_bef, ind_bef) = rev_read_comment_in_file bp ep in
   adjust_comment_indentation ind s nl_bef ind_bef
 ;
@@ -385,7 +385,7 @@ value flatten_sequence e =
               let loc =
                 let loc1 = MLast.loc_of_expr se in
                 let loc2 = MLast.loc_of_expr e in
-                Stdpp.encl_loc loc1 loc2
+                Ploc.encl loc1 loc2
               in
               <:expr< let $flag:rf$ $list:pel$ in $e$ >>
             in

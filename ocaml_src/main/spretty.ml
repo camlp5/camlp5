@@ -22,7 +22,7 @@ type pretty =
   | Vbox of pretty Stream.t
   | BEbox of pretty Stream.t
   | BEVbox of pretty Stream.t
-  | LocInfo of Stdpp.location * pretty
+  | LocInfo of Ploc.t * pretty
 ;;
 type prettyL =
     SL of int * glue * string
@@ -35,7 +35,7 @@ type prettyL =
   | BV of prettyL list
   | LI of (string * int * int) * prettyL
 ;;
-type getcomm = Stdpp.location -> int -> int -> string * int * int * int;;
+type getcomm = Ploc.t -> int -> int -> string * int * int * int;;
 
 let quiet = ref true;;
 let maxl = ref 20;;
@@ -439,12 +439,12 @@ let rec conv =
   | BEVbox x -> BV (conv_stream x)
   | LocInfo (loc, x) ->
       let (comm, nl_bef, tab_bef, cnt) =
-        let len = Stdpp.first_pos loc - !last_ep in
+        let len = Ploc.first_pos loc - !last_ep in
         if len > 0 then !getcomm loc !last_ep len else "", 0, 0, 0
       in
       last_ep := !last_ep + cnt;
       let v = conv x in
-      last_ep := max (Stdpp.last_pos loc) !last_ep;
+      last_ep := max (Ploc.last_pos loc) !last_ep;
       LI ((comm, nl_bef, tab_bef), v)
 and conv_stream (strm__ : _ Stream.t) =
   match Stream.peek strm__ with

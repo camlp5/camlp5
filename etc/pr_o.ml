@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.84 2007/08/29 02:22:34 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.85 2007/09/01 19:42:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -419,9 +419,9 @@ value match_assoc_list pc pwel =
 value raise_match_failure pc loc =
   let (fname, line, char, _) =
     if Pcaml.input_file.val <> "-" then
-      Stdpp.line_of_loc Pcaml.input_file.val loc
+      Ploc.from_file Pcaml.input_file.val loc
     else
-      ("-", 1, Stdpp.first_pos loc, 0)
+      ("-", 1, Ploc.first_pos loc, 0)
   in
   let e =
     <:expr<
@@ -2249,8 +2249,8 @@ value apply_printer f ast = do {
     let (first, last_pos) =
       List.fold_left
         (fun (first, last_pos) (si, loc) -> do {
-           let bp = Stdpp.first_pos loc in
-           let ep = Stdpp.last_pos loc in
+           let bp = Ploc.first_pos loc in
+           let ep = Ploc.last_pos loc in
            copy_source Prtools.source.val oc first last_pos bp;
            flush oc;
            set_comm_min_pos bp;

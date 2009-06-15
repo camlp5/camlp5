@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.50 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.51 2007/09/01 19:42:28 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -16,13 +16,12 @@ value string_of_obj_tag x =
 
 value not_impl loc name x =
   let desc = string_of_obj_tag x in
-  Stdpp.raise_with_loc loc
-    (Failure ("pa_pragma: not impl " ^ name ^ " " ^ desc))
+  Ploc.raise loc (Failure ("pa_pragma: not impl " ^ name ^ " " ^ desc))
 ;
 
 module Type =
   struct
-    type loc = Stdpp.location;
+    type loc = Ploc.t;
     type t =
       [ TyAcc of loc and t and t
       | TyAny of loc
@@ -46,7 +45,7 @@ and bind_v 'e = { by_let : bool; valu : mutable expr_v 'e }
 and env 'e = list (string * bind_v 'e);
 
 value ty_var =
-  let loc = Stdpp.dummy_loc in
+  let loc = Ploc.dummy in
   fun () -> <:ctyp< '$ref None$ >>
 ;
 
@@ -143,20 +142,20 @@ value bad_type loc expected_t found_t =
     else
       Printf.sprintf "\n  type expected: %s\n     type found: %s\n" s1 s2
   in
-  Stdpp.raise_with_loc loc (Stream.Error s)
+  Ploc.raise loc (Stream.Error s)
 ;
 
 value unbound_var loc s =
-  Stdpp.raise_with_loc loc
+  Ploc.raise loc
     (Failure (sprintf "Variable not implemented in pa_pragma: %s" s))
 ;
 
 value unbound_cons loc s =
-  Stdpp.raise_with_loc loc
+  Ploc.raise loc
     (Failure (sprintf "Constructor not implemented in pa_pragma: %s" s))
 ;
 
-value error loc s = Stdpp.raise_with_loc loc (Failure s);
+value error loc s = Ploc.raise loc (Failure s);
 
 value inst_vars = ref [];
 value rec inst loc t =
@@ -887,6 +886,11 @@ value val_tab = do {
         {ctyp = <:ctyp< Grammar.Entry.e MLast.patt >>;
          expr = Obj.repr Pcaml.patt;
          patt = no_patt loc});
+     ("Ploc.raise",
+      fun loc ->
+        {ctyp = <:ctyp< Ploc.t -> exn -> _ >>;
+         expr = Obj.repr Ploc.raise;
+         patt = no_patt loc});
      ("prerr_endline",
       fun loc ->
         {ctyp = <:ctyp< string -> unit >>;
@@ -938,11 +942,6 @@ value val_tab = do {
       fun loc ->
         {ctyp = <:ctyp< out_channel >>;
          expr = Obj.repr stderr;
-         patt = no_patt loc});
-     ("Stdpp.raise_with_loc",
-      fun loc ->
-        {ctyp = <:ctyp< MLast.loc -> exn -> _ >>;
-         expr = Obj.repr Stdpp.raise_with_loc;
          patt = no_patt loc});
      ("str_item",
       fun loc ->
@@ -1097,8 +1096,8 @@ and eval_match loc env e pel =
   | None ->
       raise
         (Match_failure
-           (Pcaml.input_file.val, Stdpp.line_nb loc,
-            Stdpp.first_pos loc - Stdpp.bol_pos loc)) ]
+           (Pcaml.input_file.val, Ploc.line_nb loc,
+            Ploc.first_pos loc - Ploc.bol_pos loc)) ]
 
 and eval_try loc env e pel =
   try eval_expr env e with exn ->
@@ -1179,8 +1178,8 @@ and eval_fun loc env pel =
     | None ->
         raise
           (Match_failure
-             (Pcaml.input_file.val, Stdpp.line_nb loc,
-              Stdpp.first_pos loc - Stdpp.bol_pos loc)) ]
+             (Pcaml.input_file.val, Ploc.line_nb loc,
+              Ploc.first_pos loc - Ploc.bol_pos loc)) ]
   in
   {ctyp = t; expr = Obj.repr e; patt = no_patt loc}
 

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pcaml.ml,v 1.20 2007/08/30 21:18:14 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.21 2007/09/01 19:42:28 deraugla Exp $ *)
 
 value version = "4.09-exp";
 value syntax_name = ref "";
@@ -56,7 +56,7 @@ value input_file = ref "";
 value output_file = ref None;
 
 value warning_default_function loc txt = do {
-  let (bp, ep) = (Stdpp.first_pos loc, Stdpp.last_pos loc) in
+  let (bp, ep) = (Ploc.first_pos loc, Ploc.last_pos loc) in
   Printf.eprintf "<W> loc %d %d: %s\n" bp ep txt;
   flush stderr
 };
@@ -83,47 +83,47 @@ value quotation_dump_file = ref (None : option string);
 type err_ctx =
   [ Finding
   | Expanding
-  | ParsingResult of Stdpp.location and string ]
+  | ParsingResult of Ploc.t and string ]
 ;
 exception Qerror of string and err_ctx and exn;
 
 value expand_quotation gloc expander shift name str =
   let new_warning =
     let warn = warning.val in
-    let shift = Stdpp.first_pos gloc + shift in
-    fun loc txt -> warn (Stdpp.shift_loc shift loc) txt
+    let shift = Ploc.first_pos gloc + shift in
+    fun loc txt -> warn (Ploc.shift shift loc) txt
   in
   apply_with_var warning new_warning
     (fun () ->
        try expander str with
-       [ Stdpp.Exc_located loc exc ->
+       [ Ploc.Exc loc exc ->
            let exc1 = Qerror name Expanding exc in
-           let shift = Stdpp.first_pos gloc + shift in
+           let shift = Ploc.first_pos gloc + shift in
            let loc =
-             Stdpp.make_lined_loc (Stdpp.line_nb gloc + Stdpp.line_nb loc - 1)
-               (if Stdpp.line_nb loc = 1 then Stdpp.bol_pos gloc
-                else shift + Stdpp.bol_pos loc)
-               (shift + Stdpp.first_pos loc, shift + Stdpp.last_pos loc)
+             Ploc.make (Ploc.line_nb gloc + Ploc.line_nb loc - 1)
+               (if Ploc.line_nb loc = 1 then Ploc.bol_pos gloc
+                else shift + Ploc.bol_pos loc)
+               (shift + Ploc.first_pos loc, shift + Ploc.last_pos loc)
            in
-           raise (Stdpp.Exc_located loc exc1)
+           raise (Ploc.Exc loc exc1)
        | exc ->
            let exc1 = Qerror name Expanding exc in
-           Stdpp.raise_with_loc gloc exc1 ])
+           Ploc.raise gloc exc1 ])
 ;
 
 value parse_quotation_result entry loc shift name str =
   let cs = Stream.of_string str in
   try Grammar.Entry.parse entry cs with
-  [ Stdpp.Exc_located iloc (Qerror _ Expanding exc) ->
+  [ Ploc.Exc iloc (Qerror _ Expanding exc) ->
       let ctx = ParsingResult iloc str in
       let exc1 = Qerror name ctx exc in
-      Stdpp.raise_with_loc loc exc1
-  | Stdpp.Exc_located _ (Qerror _ _ _ as exc) ->
-      Stdpp.raise_with_loc loc exc
-  | Stdpp.Exc_located iloc exc ->
+      Ploc.raise loc exc1
+  | Ploc.Exc _ (Qerror _ _ _ as exc) ->
+      Ploc.raise loc exc
+  | Ploc.Exc iloc exc ->
       let ctx = ParsingResult iloc str in
       let exc1 = Qerror name ctx exc in
-      Stdpp.raise_with_loc loc exc1 ]
+      Ploc.raise loc exc1 ]
 ;
 
 value handle_quotation loc proj in_expr entry reloc (name, str) =
@@ -135,7 +135,7 @@ value handle_quotation loc proj in_expr entry reloc (name, str) =
   let expander =
     try Quotation.find name with exc ->
       let exc1 = Qerror name Finding exc in
-      raise (Stdpp.Exc_located (Stdpp.sub_loc loc 0 shift) exc1)
+      raise (Ploc.Exc (Ploc.sub loc 0 shift) exc1)
   in
   let ast =
     match expander with
@@ -173,7 +173,7 @@ value patt_reloc = Reloc.patt;
 value rename_id = ref (fun x -> x);
 
 value find_line loc str =
-  let (bp, ep) = (Stdpp.first_pos loc, Stdpp.last_pos loc) in
+  let (bp, ep) = (Ploc.first_pos loc, Ploc.last_pos loc) in
   find 0 1 0 where rec find i line col =
     if i == String.length str then (line, 0, col)
     else if i == bp then (line, col, col + ep - bp)

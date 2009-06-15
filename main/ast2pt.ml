@@ -10,9 +10,8 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.9 2007/08/14 11:19:09 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.10 2007/09/01 19:42:28 deraugla Exp $ *)
 
-open Stdpp;
 open MLast;
 open Parsetree;
 open Longident;
@@ -53,25 +52,25 @@ value get_tag x =
   if Obj.is_block (Obj.repr x) then Obj.tag (Obj.repr x) else Obj.magic x
 ;
 
-value error loc str = Stdpp.raise_with_loc loc (Failure str);
+value error loc str = Ploc.raise loc (Failure str);
 
 value char_of_char_token loc s =
   try Token.eval_char s with
-  [ Failure _ as exn -> Stdpp.raise_with_loc loc exn ]
+  [ Failure _ as exn -> Ploc.raise loc exn ]
 ;
 
 value string_of_string_token loc s =
   try Token.eval_string loc s with
-  [ Failure _ as exn -> Stdpp.raise_with_loc loc exn ]
+  [ Failure _ as exn -> Ploc.raise loc exn ]
 ;
 
 value glob_fname = ref "";
 
 value mkloc loc =
-  let lnum = Stdpp.line_nb loc in
-  let bolp = Stdpp.bol_pos loc in
-  let bp = Stdpp.first_pos loc in
-  let ep = Stdpp.last_pos loc in
+  let lnum = Ploc.line_nb loc in
+  let bolp = Ploc.bol_pos loc in
+  let bp = Ploc.first_pos loc in
+  let ep = Ploc.last_pos loc in
   let loc_at n =
     {Lexing.pos_fname = if lnum = -1 then "" else glob_fname.val;
      Lexing.pos_lnum = lnum; Lexing.pos_bol = bolp; Lexing.pos_cnum = n}
@@ -488,8 +487,7 @@ value rec sep_expr_acc l =
   | ExUid loc s as e ->
       match l with
       [ [] -> [(loc, [], e)]
-      | [(loc2, sl, e) :: l] ->
-          [(Stdpp.encl_loc loc loc2, [s :: sl], e) :: l] ]
+      | [(loc2, sl, e) :: l] -> [(Ploc.encl loc loc2, [s :: sl], e) :: l] ]
   | e -> [(loc_of_expr e, [], e) :: l] ]
 ;
 
@@ -557,7 +555,7 @@ value rec expr =
           (fun (loc1, e1) (loc2, ml, e2) ->
              match e2 with
              [ ExLid _ s ->
-                 let loc = Stdpp.encl_loc loc1 loc2 in
+                 let loc = Ploc.encl loc1 loc2 in
                  (loc, mkexp loc (Pexp_field e1 (mkli (conv_lab s) ml)))
              | _ -> error (loc_of_expr e2) "lowercase identifier expected" ])
           (loc, e) l
@@ -681,7 +679,7 @@ value rec expr =
         [ [] -> expr (ExUid loc "()")
         | [e] -> expr e
         | [e :: el] ->
-            let loc = Stdpp.encl_loc (loc_of_expr e) loc in
+            let loc = Ploc.encl (loc_of_expr e) loc in
             mkexp loc (Pexp_sequence (expr e) (loop el)) ]
   | ExSnd loc e s -> mkexp loc (Pexp_send (expr e) s)
   | ExSte loc e1 e2 ->
@@ -718,7 +716,7 @@ and mktype_decl td =
   let cl =
     List.map
       (fun (t1, t2) ->
-         let loc = Stdpp.encl_loc (loc_of_ctyp t1) (loc_of_ctyp t2) in
+         let loc = Ploc.encl (loc_of_ctyp t1) (loc_of_ctyp t2) in
          (ctyp t1, ctyp t2, mkloc loc))
       td.tdCon
   in
@@ -933,7 +931,7 @@ value directive loc =
           fun
           [ ExLid _ i | ExUid _ i -> [i]
           | ExAcc _ e (ExLid _ i) | ExAcc _ e (ExUid _ i) -> loop e @ [i]
-          | e -> Stdpp.raise_with_loc (loc_of_expr e) (Failure "bad ast") ]
+          | e -> Ploc.raise (loc_of_expr e) (Failure "bad ast") ]
       in
       Pdir_ident (long_id_of_string_list loc sl) ]
 ;

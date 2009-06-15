@@ -4,7 +4,7 @@
 open Pcaml.OldPrinters;
 open Spretty;
 
-value loc = Stdpp.dummy_loc;
+value loc = Ploc.dummy;
 
 value expr e dg k = pr_expr.pr_fun "top" e dg k;
 value patt e dg k = pr_patt.pr_fun "top" e dg k;

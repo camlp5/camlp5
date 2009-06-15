@@ -19,7 +19,7 @@
    these values in concrete syntax (see the Camlp5 documentation).
    See also the file q_MLast.ml in Camlp5 sources. *)
 
-type loc = Stdpp.location;;
+type loc = Ploc.t;;
 
 type ctyp =
     TyAcc of loc * ctyp * ctyp

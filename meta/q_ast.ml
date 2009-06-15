@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.23 2007/08/13 23:40:02 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.24 2007/09/01 19:42:28 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -42,7 +42,7 @@ value eval_antiquot entry s =
     let loc =
       let shift_bp = String.length "$" + sh in
       let shift_ep = String.length "$" in
-      Stdpp.make_loc (bp + shift_bp, ep - shift_ep)
+      Ploc.make_unlined (bp + shift_bp, ep - shift_ep)
     in
     Some (loc, r)
   with
@@ -71,8 +71,8 @@ value module_expr_eoi = Grammar.Entry.create Pcaml.gram "module_expr";
 module Meta =
   struct
     open MLast;
-    value loc = Stdpp.dummy_loc;
-    value ln () = <:expr< $lid:Stdpp.loc_name.val$ >>;
+    value loc = Ploc.dummy;
+    value ln () = <:expr< $lid:Ploc.name.val$ >>;
     value e_vala f =
       fun
       [ VaAnt s ->

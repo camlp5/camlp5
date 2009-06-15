@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: main.ml,v 1.3 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: main.ml,v 1.4 2007/09/01 19:42:28 deraugla Exp $ *)
 
 open Printf;
 
@@ -13,11 +13,11 @@ value loc_fmt =
 
 value print_location loc =
   if Pcaml.input_file.val <> "-" then
-    let (fname, line, bp, ep) = Stdpp.line_of_loc Pcaml.input_file.val loc in
+    let (fname, line, bp, ep) = Ploc.from_file Pcaml.input_file.val loc in
     eprintf loc_fmt fname line bp ep
   else
-    let bp = Stdpp.first_pos loc in
-    let ep = Stdpp.last_pos loc in
+    let bp = Ploc.first_pos loc in
+    let ep = Ploc.last_pos loc in
     eprintf "At location %d-%d\n" bp ep
 ;
 
@@ -43,7 +43,7 @@ value report_error_and_exit exc = do {
   Format.open_vbox 0;
   let exc =
     match exc with
-    [ Stdpp.Exc_located loc exc -> do { print_location loc; exc }
+    [ Ploc.Exc loc exc -> do { print_location loc; exc }
     | _ -> exc ]
   in
   report_error exc;
@@ -88,8 +88,7 @@ value rec parse_file pa getdir useast = do {
                       f eo
                     with
                     [ Not_found ->
-                        Stdpp.raise_with_loc loc
-                          (Stream.Error "bad directive") ];
+                        Ploc.raise loc (Stream.Error "bad directive") ];
                     pl
                   } ]
             | None -> pl ]
@@ -166,8 +165,8 @@ value initial_spec_list =
     "Generate unsafe accesses to array and strings.");
    ("-verbose", Arg.Set Grammar.error_verbose,
     "More verbose in parsing errors.");
-   ("-loc", Arg.String (fun x -> Stdpp.loc_name.val := x),
-    "<name>   Name of the location variable (default: " ^ Stdpp.loc_name.val ^
+   ("-loc", Arg.String (fun x -> Ploc.name.val := x),
+    "<name>   Name of the location variable (default: " ^ Ploc.name.val ^
     ")");
    ("-QD", Arg.String (fun x -> Pcaml.quotation_dump_file.val := Some x),
     "<file> Dump quotation expander result in case of syntax error.");

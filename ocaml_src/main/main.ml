@@ -12,11 +12,11 @@ let loc_fmt =
 
 let print_location loc =
   if !(Pcaml.input_file) <> "-" then
-    let (fname, line, bp, ep) = Stdpp.line_of_loc !(Pcaml.input_file) loc in
+    let (fname, line, bp, ep) = Ploc.from_file !(Pcaml.input_file) loc in
     eprintf loc_fmt fname line bp ep
   else
-    let bp = Stdpp.first_pos loc in
-    let ep = Stdpp.last_pos loc in eprintf "At location %d-%d\n" bp ep
+    let bp = Ploc.first_pos loc in
+    let ep = Ploc.last_pos loc in eprintf "At location %d-%d\n" bp ep
 ;;
 
 let print_warning loc s =
@@ -38,7 +38,7 @@ let report_error_and_exit exc =
   Format.open_vbox 0;
   let exc =
     match exc with
-      Stdpp.Exc_located (loc, exc) -> print_location loc; exc
+      Ploc.Exc (loc, exc) -> print_location loc; exc
     | _ -> exc
   in
   report_error exc; Format.close_box (); Format.print_newline (); exit 2
@@ -77,8 +77,7 @@ let rec parse_file pa getdir useast =
                 | loc, x, eo ->
                     begin try let f = Pcaml.find_directive x in f eo with
                       Not_found ->
-                        Stdpp.raise_with_loc loc
-                          (Stream.Error "bad directive")
+                        Ploc.raise loc (Stream.Error "bad directive")
                     end;
                     pl
                 end
@@ -147,9 +146,8 @@ let initial_spec_list =
    "Generate unsafe accesses to array and strings.";
    "-verbose", Arg.Set Grammar.error_verbose,
    "More verbose in parsing errors.";
-   "-loc", Arg.String (fun x -> Stdpp.loc_name := x),
-   "<name>   Name of the location variable (default: " ^ !(Stdpp.loc_name) ^
-   ")";
+   "-loc", Arg.String (fun x -> Ploc.name := x),
+   "<name>   Name of the location variable (default: " ^ !(Ploc.name) ^ ")";
    "-QD", Arg.String (fun x -> Pcaml.quotation_dump_file := Some x),
    "<file> Dump quotation expander result in case of syntax error.";
    "-o", Arg.String (fun x -> Pcaml.output_file := Some x),

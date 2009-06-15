@@ -10,13 +10,13 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.ml,v 1.17 2007/07/31 14:29:41 deraugla Exp $ *)
+(* $Id: token.ml,v 1.18 2007/09/01 19:42:28 deraugla Exp $ *)
 
 type pattern = (string * string);
 
 exception Error of string;
 
-type location = Stdpp.location;
+type location = Ploc.t;
 type location_function = int -> location;
 type lexer_func 'te = Stream.t char -> (Stream.t 'te * location_function);
 
@@ -29,8 +29,8 @@ type glexer 'te =
     tok_comm : mutable option (list location) }
 ;
 
-value make_loc = Stdpp.make_loc;
-value dummy_loc = Stdpp.dummy_loc;
+value make_loc = Ploc.make_unlined;
+value dummy_loc = Ploc.dummy;
 
 value lexer_text (con, prm) =
   if con = "" then "'" ^ prm ^ "'"

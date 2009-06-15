@@ -1,98 +1,43 @@
 (* camlp5r *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
+(* $Id: stdpp.mli,v 1.18 2007/09/01 19:42:28 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
-(* $Id: stdpp.mli,v 1.17 2007/08/19 14:39:44 deraugla Exp $ *)
+(** Module deprecated since version 4.09. Use now module Ploc.
+    Compatibility assumed. *)
 
-(** Locations *)
-
-type location = 'abstract;
-
-(* located exceptions *)
+type location = Ploc.t;
 
 exception Exc_located of location and exn;
-   (** [Exc_located loc e] is an encapsulation of the exception [e] with
-       the input location [loc]. To be used to specify a location
-       for an error. This exception must not be raised by [raise] but
-       rather by [raise_with_loc] (see below), to prevent the risk of
-       several encapsulations of [Exc_located]. *)
+   (** Use now [Ploc.Exc] *)
 value raise_with_loc : location -> exn -> 'a;
-   (** [raise_with_loc loc e], if [e] is already the exception [Exc_located],
-       re-raise it (ignoring the new location [loc]), else raise the
-       exception [Exc_located loc e]. *)
-
-(* making locations *)
+   (** Use now [Ploc.raise] *)
 
 value make_lined_loc : int -> int -> (int * int) -> location;
-   (** [make_lined_loc line_nb bol_pos (bp, ep)] creates a location starting
-       at line number [line_nb], where the position of the beginning of the
-       line is [bol_pos] and between the positions [bp] (included) and [ep]
-       excluded. The positions are in number of characters since the begin
-       of the stream. *)
+   (** Use now [Ploc.make] *)
 value make_loc : (int * int) -> location;
-   (** [make_loc] is like [make_lined_loc] except that the line number
-       is not provided (to be used e.g. when the line number is unknown). *)
-
+   (** Use now [Ploc.make_unlined] *)
 value dummy_loc : location;
-   (** [dummy_loc] is a dummy location, used in situations when location
-       has no meaning. *)
-
-(* getting location info *)
+   (** Use now [Ploc.dummy] *)
 
 value first_pos : location -> int;
-   (** [first_pos loc] returns the position of the begin of the location in
-       number of characters since the beginning of the stream. *)
+   (** Use now [Ploc.first_pos] *)
 value last_pos : location -> int;
-   (** [first_pos loc] returns the position of the first character not
-       of the location in number of characters since the beginning of
-       the stream. *)
+   (** Use now [Ploc.last_pos] *)
 value line_nb : location -> int;
-   (** [line_nb loc] returns the line number of the location or [-1] if
-       the location does not contain a line number (i.e. built the old
-       way with [make_loc] above. *)
+   (** Use now [Ploc.last_pos] *)
 value bol_pos : location -> int;
-   (** [line_nb loc] returns the position of the beginning of the line
-       of the location in number of characters since the beginning of
-       the stream, or [0] if the location does not contain a line number
-       (i.e. built the old with with [make_loc] above. *)
-
-(* combining locations *)
+   (** Use now [Ploc.bol_pos] *)
 
 value encl_loc : location -> location -> location;
-   (** [encl_loc loc1 loc2] returns the location starting at the smallest
-       start and ending at the greatest end of the locations [loc1] and
-       [loc2]. In other words, it is the location enclosing [loc1] and
-       [loc2]. *)
+   (** Use now [Ploc.encl] *)
 value shift_loc : int -> location -> location;
-   (** [shift_loc sh loc] returns the location [loc] shifted with [sh]
-       characters. The line number is not recomputed. *)
+   (** Use now [Ploc.shift] *)
 value sub_loc : location -> int -> int -> location;
-   (** [sub_loc loc sh len] is the location [loc] shifted with [sh] characters
-       and with length [len]. The previous ending position of the location
-       is lost. *)
+   (** Use now [Ploc.sub] *)
 value after_loc : location -> int -> int -> location;
-   (** [after_loc loc sh len] is the location just after loc (starting at
-       the end position of [loc]) shifted with [sh] characters and of length
-       [len]. *)
-
-(* miscellaneous *)
+   (** Use now [Ploc.after] *)
 
 value loc_name : ref string;
-   (** [loc_name.val] is the name of the location variable used in grammars
-       and in the predefined quotations for OCaml syntax trees. Default:
-       ["loc"]. *)
-
+   (** Use now [Ploc.name] *)
 value line_of_loc : string -> location -> (string * int * int * int);
-   (** [line_of_loc fname loc] reads the file [fname] up to the
-       location [loc] and returns the real input file, the line number
-       and the characters location in the line; the real input file
-       can be different from [fname] because of possibility of line
-       directives typically generated by /lib/cpp. *)
+   (** Use now [Ploc.from_file] *)

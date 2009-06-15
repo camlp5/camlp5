@@ -10,9 +10,8 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_sml.ml,v 1.12 2007/08/24 02:51:54 deraugla Exp $ *)
+(* $Id: pa_sml.ml,v 1.13 2007/09/01 19:42:28 deraugla Exp $ *)
 
-open Stdpp;
 open Pcaml;
 
 value ocaml_records = ref False;
@@ -41,8 +40,7 @@ Pcaml.parse_interf.val := Grammar.Entry.parse interf;
 Pcaml.parse_implem.val := Grammar.Entry.parse implem;
 
 value not_impl loc s =
-  Stdpp.raise_with_loc loc
-    (Stream.Error ("not implemented feature [" ^ s ^ "]"))
+  Ploc.raise loc (Stream.Error ("not implemented feature [" ^ s ^ "]"))
 ;
 
 type altern 'a 'b = [ Left of 'a | Right of 'b ];
@@ -78,7 +76,7 @@ value mklistexp loc last =
         | None -> <:expr< [] >> ]
     | [e1 :: el] ->
         let loc =
-          if top then loc else Stdpp.encl_loc (MLast.loc_of_expr e1) loc
+          if top then loc else Ploc.encl (MLast.loc_of_expr e1) loc
         in
         <:expr< [$e1$ :: $loop False el$] >> ]
 ;
@@ -92,7 +90,7 @@ value mklistpat loc last =
         | None -> <:patt< [] >> ]
     | [p1 :: pl] ->
         let loc =
-          if top then loc else Stdpp.encl_loc (MLast.loc_of_patt p1) loc
+          if top then loc else Ploc.encl (MLast.loc_of_patt p1) loc
         in
         <:patt< [$p1$ :: $loop False pl$] >> ]
 ;
@@ -101,7 +99,7 @@ value expr_of_patt p =
   let loc = MLast.loc_of_patt p in
   match p with
   [ <:patt< $lid:x$ >> -> <:expr< $lid:x$ >>
-  | _ -> Stdpp.raise_with_loc loc (Stream.Error "identifier expected") ]
+  | _ -> Ploc.raise loc (Stream.Error "identifier expected") ]
 ;
 
 value apply_bind loc e bl =
@@ -212,10 +210,9 @@ value function_of_clause_list loc xl =
          let (fname, fname_loc, nbpat) =
            if fname = "" then (x1, loc, List.length x2)
            else if x1 <> fname then
-             Stdpp.raise_with_loc loc
-               (Stream.Error ("'" ^ fname ^ "' expected"))
+             Ploc.raise loc (Stream.Error ("'" ^ fname ^ "' expected"))
            else if List.length x2 <> nbpat then
-             Stdpp.raise_with_loc loc
+             Ploc.raise loc
                (Stream.Error "bad number of patterns in that clause")
            else (fname, fname_loc, nbpat)
          in
@@ -548,8 +545,7 @@ EXTEND
                let loc =
                  match pel with
                  [ [(p, _) :: _] ->
-                     Stdpp.encl_loc (MLast.loc_of_patt p)
-                       (MLast.loc_of_expr x2)
+                     Ploc.encl (MLast.loc_of_patt p) (MLast.loc_of_expr x2)
                  | _ -> loc ]
                in
                match pel with
@@ -935,9 +931,7 @@ EXTEND
             else
               match x4 with
               [ <:module_expr< struct $list:list$ end >> ->
-                  let si =
-                    let loc = Stdpp.dummy_loc in <:str_item< open AAA >>
-                  in
+                  let si = let loc = Ploc.dummy in <:str_item< open AAA >> in
                   <:module_expr< struct $list:[si :: list]$ end >>
               | _ -> not_impl loc "fctb 1" ]
           in
@@ -951,7 +945,7 @@ EXTEND
             else
               let mt =
                 let loc =
-                  Stdpp.encl_loc
+                  Ploc.encl
                     (MLast.loc_of_sig_item (List.hd list))
                     (MLast.loc_of_sig_item (List.hd (List.rev list)))
                 in

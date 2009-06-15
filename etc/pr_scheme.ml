@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.11 2007/08/16 16:01:19 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.12 2007/09/01 19:42:28 deraugla Exp $ *)
 
 open Pcaml.OldPrinters;
 open Format;
@@ -799,7 +799,7 @@ value apply_printer printer ast =
       let (first, last_pos) =
         List.fold_left
           (fun (first, last_pos) (si, loc) ->
-             let (bp, ep) = (Stdpp.first_pos loc, Stdpp.last_pos loc) in
+             let (bp, ep) = (Ploc.first_pos loc, Ploc.last_pos loc) in
              do {
                fprintf ppf "@[%a@]@?" copy_source (ic, first, last_pos, bp);
                fprintf ppf "@[%a@]@?" printer (si, nok);

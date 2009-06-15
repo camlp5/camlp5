@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_phony.ml,v 1.14 2007/08/16 11:29:18 deraugla Exp $ *)
+(* $Id: q_phony.ml,v 1.15 2007/09/01 19:42:28 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "pa_extprint.cmo";
@@ -27,14 +27,14 @@ Quotation.add ""
           if t.val = "" then "<<" ^ s ^ ">>"
           else "<:" ^ t.val ^ "<" ^ s ^ ">>"
         in
-        let loc = Stdpp.dummy_loc in
+        let loc = Ploc.dummy in
         <:expr< $uid:t$ >>,
       fun s ->
         let t =
           if t.val = "" then "<<" ^ s ^ ">>"
           else "<:" ^ t.val ^ "<" ^ s ^ ">>"
         in
-        let loc = Stdpp.dummy_loc in
+        let loc = Ploc.dummy in
         <:patt< $uid:t$ >>))
 ;
 

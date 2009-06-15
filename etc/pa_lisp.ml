@@ -1,8 +1,7 @@
 ;; camlp5 ./pa_lispr.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-;; $Id: pa_lisp.ml,v 1.11 2007/08/16 16:01:19 deraugla Exp $
+;; $Id: pa_lisp.ml,v 1.12 2007/09/01 19:42:28 deraugla Exp $
 
 (open Pcaml)
-(open Stdpp)
 
 (type (choice 'a 'b) (sum (Left 'a) (Right 'b)))
 
@@ -147,7 +146,7 @@
                (lexer2
                 (lambda (kwt (, s _ _))
                   (let (((, t loc) (lexer kwt s)))
-                    (, t (Stdpp.make_loc loc))))))
+                    (, t (Ploc.make_unlined loc))))))
            ({}
             (Token.tok_func (Token.lexer_func_of_parser (lexer2 kwt)))
             (Token.tok_using (lexer_using kwt))
@@ -166,7 +165,7 @@
 
 (value error_loc
        (lambda (loc err)
-         (Stdpp.raise_with_loc loc (Stream.Error (^ err " expected")))))
+         (Ploc.raise loc (Stream.Error (^ err " expected")))))
 (value error
        (lambda (se err)
          (let ((loc (match se
@@ -386,7 +385,7 @@
              (if (= i (String.length s))
                  (if (> i ibeg)
                      (expr_id loc (String.sub s ibeg (- i ibeg)))
-                   (raise_with_loc (sub_loc loc (- i 1) 1)
+                   (Ploc.raise (Ploc.sub loc (- i 1) 1)
                                    (Stream.Error "expr expected")))
                (if (= ([] s i) '.')
                    (if (> i ibeg)
@@ -395,7 +394,7 @@
                                    (String.sub s ibeg (- i ibeg))))
                               (e2 (loop (+ i 1) (+ i 1))))
                          <:expr< $e1$ . $e2$ >>)
-                     (raise_with_loc (sub_loc loc (- i 1) 1)
+                     (Ploc.raise (Ploc.sub loc (- i 1) 1)
                                      (Stream.Error "expr expected")))
                  (loop ibeg (+ i 1)))))))
          (loop 0 0))))
@@ -501,7 +500,7 @@
          (if (= i (String.length s))
              (if (> i ibeg)
                  (patt_id loc (String.sub s ibeg (- i ibeg)))
-               (raise_with_loc (sub_loc loc (- i 1) 1)
+               (Ploc.raise (Ploc.sub loc (- i 1) 1)
                                (Stream.Error "patt expected")))
            (if (= ([] s i) '.')
                (if (> i ibeg)
@@ -510,7 +509,7 @@
                                (String.sub s ibeg (- i ibeg))))
                           (p2 (loop (+ i 1) (+ i 1))))
                      <:patt< $p1$ . $p2$ >>)
-                 (raise_with_loc (sub_loc loc (- i 1) 1)
+                 (Ploc.raise (Ploc.sub loc (- i 1) 1)
                                  (Stream.Error "patt expected")))
              (loop ibeg (+ i 1)))))))
      (loop 0 0)))
@@ -572,7 +571,7 @@
               (if (= i (String.length s))
                   (if (> i ibeg)
                       (ctyp_id loc (String.sub s ibeg (- i ibeg)))
-                    (raise_with_loc (sub_loc loc (- i 1) 1)
+                    (Ploc.raise (Ploc.sub loc (- i 1) 1)
                                     (Stream.Error "ctyp expected")))
                 (if (= ([] s i) '.')
                     (if (> i ibeg)
@@ -580,7 +579,7 @@
                                     loc (String.sub s ibeg (- i ibeg))))
                                (t2 (loop (+ i 1) (+ i 1))))
                           <:ctyp< $t1$ . $t2$ >>)
-                      (raise_with_loc (sub_loc loc (- i 1) 1)
+                      (Ploc.raise (Ploc.sub loc (- i 1) 1)
                                       (Stream.Error "ctyp expected")))
                   (loop ibeg (+ i 1)))))))
      (loop 0 0)))

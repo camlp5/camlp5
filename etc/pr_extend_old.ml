@@ -100,7 +100,7 @@ value unassoc =
 value rec unaction =
   fun
   [ <:expr< fun ($lid:locp$ : Token.location) -> ($a$ : $_$) >>
-    when locp = Stdpp.loc_name.val ->
+    when locp = Ploc.name.val ->
       let ao =
         match a with
         [ <:expr< () >> -> None
@@ -111,7 +111,7 @@ value rec unaction =
       let (pl, a) = unaction e in ([p :: pl], a)
   | <:expr< fun _ -> $e$ >> ->
       let (pl, a) = unaction e in
-      (let loc = Stdpp.dummy_loc in [<:patt< _ >> :: pl], a)
+      (let loc = Ploc.dummy in [<:patt< _ >> :: pl], a)
   | _ -> raise Not_found ]
 ;
 
@@ -174,7 +174,7 @@ and unrule =
   [ <:expr< ($e1$, Gramext.action $e2$) >> ->
       let (pl, a) =
         match unaction e2 with
-        [ ([], None) -> let loc = Stdpp.dummy_loc in ([], Some <:expr< () >>)
+        [ ([], None) -> let loc = Ploc.dummy in ([], Some <:expr< () >>)
         | x -> x ]
       in
       let sl = unpsymbol_list (List.rev pl) e1 in

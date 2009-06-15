@@ -244,7 +244,7 @@ let stream_pattern_component skont ckont =
       in
       let len = List.length pl in
       if List.exists (fun pl -> List.length pl <> len) pll then
-        Stdpp.raise_with_loc loc
+        Ploc.raise loc
           (Stream.Error "lookahead patterns must be of the same lengths")
       else
         let p =
@@ -472,7 +472,7 @@ let mk_rule x =
     [] -> failwith "mk_rule"
   | [rl, a] -> x :: rl, a
   | ll ->
-      let loc = Stdpp.dummy_loc in
+      let loc = Ploc.dummy in
       let e =
         let rl = List.map (fun (rl, (eo, a)) -> rl, eo, a) ll in
         let e = parser_cases loc rl in

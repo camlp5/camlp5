@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: elexer.ml,v 1.1 2007/08/24 03:28:04 deraugla Exp $ *)
+(* $Id: elexer.ml,v 1.2 2007/09/01 19:42:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* lexer written with extensible grammars; experimental *)
@@ -238,7 +238,7 @@ value loct_create () = (ref (Array.create 1024 None), ref False);
 value loct_func (loct, ov) i =
   match
     if i < 0 || i >= Array.length loct.val then
-      if ov.val then Some Stdpp.dummy_loc else None
+      if ov.val then Some Ploc.dummy else None
     else Array.unsafe_get loct.val i
   with
   [ Some loc -> loc

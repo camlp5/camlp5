@@ -3,7 +3,7 @@
 
 (* heuristic to rebuild the parsers with their initial syntax *)
 
-value loc = Stdpp.dummy_loc;
+value loc = Ploc.dummy;
 
 type spc =
   [ SPCterm of (MLast.patt * option MLast.expr)

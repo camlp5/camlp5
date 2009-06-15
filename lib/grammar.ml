@@ -10,9 +10,8 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.32 2007/08/14 11:19:09 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.33 2007/09/01 19:42:28 deraugla Exp $ *)
 
-open Stdpp;
 open Gramext;
 open Format;
 
@@ -194,12 +193,12 @@ value floc = ref (fun _ -> failwith "internal error when computing location");
 
 value loc_of_token_interval bp ep =
   if bp == ep then
-    if bp == 0 then Stdpp.dummy_loc
-    else Stdpp.after_loc (floc.val (bp - 1)) 0 1
+    if bp == 0 then Ploc.dummy
+    else Ploc.after (floc.val (bp - 1)) 0 1
   else
     let loc1 = floc.val bp in
     let loc2 = floc.val (pred ep) in
-    Stdpp.encl_loc loc1 loc2
+    Ploc.encl loc1 loc2
 ;
 
 value rec name_of_symbol entry =
@@ -846,9 +845,9 @@ value parse_parsable entry p = do {
       let cnt = Stream.count ts in
       let loc = fun_loc cnt in
       if token_count.val - 1 <= cnt then loc
-      else Stdpp.encl_loc loc (fun_loc (token_count.val - 1))
+      else Ploc.encl loc (fun_loc (token_count.val - 1))
     with _ ->
-      Stdpp.make_loc (Stream.count cs, Stream.count cs + 1)
+      Ploc.make_unlined (Stream.count cs, Stream.count cs + 1)
   in
   floc.val := fun_loc;
   token_count.val := 0;
@@ -861,18 +860,17 @@ value parse_parsable entry p = do {
   [ Stream.Failure -> do {
       let loc = get_loc () in
       restore ();
-      Stdpp.raise_with_loc loc
-        (Stream.Error ("illegal begin of " ^ entry.ename))
+      Ploc.raise loc (Stream.Error ("illegal begin of " ^ entry.ename))
     }
   | Stream.Error _ as exc -> do {
       let loc = get_loc () in
       restore ();
-      Stdpp.raise_with_loc loc exc
+      Ploc.raise loc exc
     }
   | exc -> do {
       let loc = (Stream.count cs, Stream.count cs + 1) in
       restore ();
-      raise_with_loc (make_loc loc) exc
+      Ploc.raise (Ploc.make_unlined loc) exc
     } ]
 };
 

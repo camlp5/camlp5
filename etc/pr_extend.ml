@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extend.ml,v 1.26 2007/08/16 16:01:19 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.27 2007/09/01 19:42:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -92,8 +92,9 @@ value unassoc =
 
 value rec unaction =
   fun
-  [ <:expr< fun ($lid:locp$ : Token.location) -> ($a$ : $_$) >>
-    when locp = Stdpp.loc_name.val ->
+  [ <:expr< fun ($lid:locp$ : Ploc.t) -> ($a$ : $_$) >>
+  | <:expr< fun ($lid:locp$ : Token.location) -> ($a$ : $_$) >>
+    when locp = Ploc.name.val ->
       let ao =
         match a with
         [ <:expr< () >> -> None
@@ -105,7 +106,7 @@ value rec unaction =
       ([p :: pl], a)
   | <:expr< fun _ -> $e$ >> ->
       let (pl, a) = unaction e in
-      (let loc = Stdpp.dummy_loc in [<:patt< _ >> :: pl], a)
+      (let loc = Ploc.dummy in [<:patt< _ >> :: pl], a)
   | _ -> raise Not_found ]
 ;
 
@@ -126,7 +127,7 @@ and unrule =
   [ <:expr< ($e1$, Gramext.action $e2$) >> ->
       let (pl, a) =
         match unaction e2 with
-        [ ([], None) -> let loc = Stdpp.dummy_loc in ([], Some <:expr< () >>)
+        [ ([], None) -> let loc = Ploc.dummy in ([], Some <:expr< () >>)
         | x -> x ]
       in
       let sl = unpsymbol_list (List.rev pl) e1 in

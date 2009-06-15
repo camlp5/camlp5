@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: reloc.ml,v 1.6 2007/08/26 20:05:38 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.7 2007/09/01 19:42:28 deraugla Exp $ *)
 
 open MLast;
 
@@ -70,15 +70,15 @@ value anti_loc qloc sh loc loc1 =
               |.........|------------|          loc
                         |..|------|             loc1
   *)
-  let sh1 = Stdpp.first_pos qloc + sh in
-  let sh2 = sh1 + Stdpp.first_pos loc in
-  Stdpp.make_lined_loc
-    (Stdpp.line_nb qloc + Stdpp.line_nb loc + Stdpp.line_nb loc1 - 2)
-    (if Stdpp.line_nb loc1 = 1 then
-       if Stdpp.line_nb loc = 1 then Stdpp.bol_pos qloc
-       else sh1 + Stdpp.bol_pos loc
-     else sh2 + Stdpp.bol_pos loc1)
-    (sh2 + Stdpp.first_pos loc1, sh2 + Stdpp.last_pos loc1)
+  let sh1 = Ploc.first_pos qloc + sh in
+  let sh2 = sh1 + Ploc.first_pos loc in
+  Ploc.make
+    (Ploc.line_nb qloc + Ploc.line_nb loc + Ploc.line_nb loc1 - 2)
+    (if Ploc.line_nb loc1 = 1 then
+       if Ploc.line_nb loc = 1 then Ploc.bol_pos qloc
+       else sh1 + Ploc.bol_pos loc
+     else sh2 + Ploc.bol_pos loc1)
+    (sh2 + Ploc.first_pos loc1, sh2 + Ploc.last_pos loc1)
 ;
 
 value rec patt floc sh =
@@ -306,46 +306,46 @@ and class_str_item floc sh =
 (* Equality over syntax trees *)
 
 value eq_expr x y =
-  expr (fun _ -> Stdpp.dummy_loc) 0 x =
-  expr (fun _ -> Stdpp.dummy_loc) 0 y
+  expr (fun _ -> Ploc.dummy) 0 x =
+  expr (fun _ -> Ploc.dummy) 0 y
 ;
 value eq_patt x y =
-  patt (fun _ -> Stdpp.dummy_loc) 0 x =
-  patt (fun _ -> Stdpp.dummy_loc) 0 y
+  patt (fun _ -> Ploc.dummy) 0 x =
+  patt (fun _ -> Ploc.dummy) 0 y
 ;
 value eq_ctyp x y =
-  ctyp (fun _ -> Stdpp.dummy_loc) 0 x =
-  ctyp (fun _ -> Stdpp.dummy_loc) 0 y
+  ctyp (fun _ -> Ploc.dummy) 0 x =
+  ctyp (fun _ -> Ploc.dummy) 0 y
 ;
 value eq_str_item x y =
-  str_item (fun _ -> Stdpp.dummy_loc) 0 x =
-  str_item (fun _ -> Stdpp.dummy_loc) 0 y
+  str_item (fun _ -> Ploc.dummy) 0 x =
+  str_item (fun _ -> Ploc.dummy) 0 y
 ;
 value eq_sig_item x y =
-  sig_item (fun _ -> Stdpp.dummy_loc) 0 x =
-  sig_item (fun _ -> Stdpp.dummy_loc) 0 y
+  sig_item (fun _ -> Ploc.dummy) 0 x =
+  sig_item (fun _ -> Ploc.dummy) 0 y
 ;
 value eq_module_expr x y =
-  module_expr (fun _ -> Stdpp.dummy_loc) 0 x =
-  module_expr (fun _ -> Stdpp.dummy_loc) 0 y
+  module_expr (fun _ -> Ploc.dummy) 0 x =
+  module_expr (fun _ -> Ploc.dummy) 0 y
 ;
 value eq_module_type x y =
-  module_type (fun _ -> Stdpp.dummy_loc) 0 x =
-  module_type (fun _ -> Stdpp.dummy_loc) 0 y
+  module_type (fun _ -> Ploc.dummy) 0 x =
+  module_type (fun _ -> Ploc.dummy) 0 y
 ;
 value eq_class_sig_item x y =
-  class_sig_item (fun _ -> Stdpp.dummy_loc) 0 x =
-  class_sig_item (fun _ -> Stdpp.dummy_loc) 0 y
+  class_sig_item (fun _ -> Ploc.dummy) 0 x =
+  class_sig_item (fun _ -> Ploc.dummy) 0 y
 ;
 value eq_class_str_item x y =
-  class_str_item (fun _ -> Stdpp.dummy_loc) 0 x =
-  class_str_item (fun _ -> Stdpp.dummy_loc) 0 y
+  class_str_item (fun _ -> Ploc.dummy) 0 x =
+  class_str_item (fun _ -> Ploc.dummy) 0 y
 ;
 value eq_class_type x y =
-  class_type (fun _ -> Stdpp.dummy_loc) 0 x =
-  class_type (fun _ -> Stdpp.dummy_loc) 0 y
+  class_type (fun _ -> Ploc.dummy) 0 x =
+  class_type (fun _ -> Ploc.dummy) 0 y
 ;
 value eq_class_expr x y =
-  class_expr (fun _ -> Stdpp.dummy_loc) 0 x =
-  class_expr (fun _ -> Stdpp.dummy_loc) 0 y
+  class_expr (fun _ -> Ploc.dummy) 0 x =
+  class_expr (fun _ -> Ploc.dummy) 0 y
 ;

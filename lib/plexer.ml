@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.90 2007/08/30 01:41:18 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.91 2007/09/01 19:42:28 deraugla Exp $ *)
 
 open Token;
 
@@ -54,11 +54,11 @@ type context =
     find_kwd : string -> string;
     line_cnt : int -> char -> unit;
     set_line_nb : unit -> unit;
-    make_lined_loc : (int * int) -> string -> Stdpp.location }
+    make_lined_loc : (int * int) -> string -> Ploc.t }
 ;
 
 value err ctx loc msg =
-  Stdpp.raise_with_loc (ctx.make_lined_loc loc "") (Token.Error msg)
+  Ploc.raise (ctx.make_lined_loc loc "") (Token.Error msg)
 ;
 
 value keyword_or_error ctx loc s =
@@ -360,8 +360,8 @@ value next_token_fun ctx glexr (cstrm, s_line_nb, s_bol_pos) =
     let (r, loc) = next_token ctx B.empty cstrm in
     match glexr.val.tok_comm with
     [ Some list ->
-        if Stdpp.first_pos loc > comm_bp then
-          let comm_loc = Stdpp.make_loc (comm_bp, Stdpp.last_pos loc) in
+        if Ploc.first_pos loc > comm_bp then
+          let comm_loc = Ploc.make_unlined (comm_bp, Ploc.last_pos loc) in
           glexr.val.tok_comm := Some [comm_loc :: list]
         else ()
     | None -> () ];
@@ -392,7 +392,7 @@ value func kwd_table glexr =
        bol_pos.val := Token.bol_pos.val.val;
      };
      make_lined_loc loc comm =
-       Stdpp.make_lined_loc line_nb.val bol_pos.val loc}
+       Ploc.make line_nb.val bol_pos.val loc}
   in
   Token.lexer_func_of_parser (next_token_fun ctx glexr)
 ;

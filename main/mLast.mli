@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: mLast.mli,v 1.8 2007/08/14 11:19:09 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.9 2007/09/01 19:42:28 deraugla Exp $ *)
 
 (* Module [MLast]: abstract syntax tree.
 
@@ -19,7 +19,7 @@
    these values in concrete syntax (see the Camlp5 documentation).
    See also the file q_MLast.ml in Camlp5 sources. *)
 
-type loc = Stdpp.location;
+type loc = Ploc.t;
 
 type ctyp =
   [ TyAcc of loc and ctyp and ctyp

@@ -16,7 +16,7 @@ type pattern = string * string;;
 
 exception Error of string;;
 
-type location = Stdpp.location;;
+type location = Ploc.t;;
 type location_function = int -> location;;
 type 'te lexer_func = char Stream.t -> 'te Stream.t * location_function;;
 
@@ -29,8 +29,8 @@ type 'te glexer =
     mutable tok_comm : location list option }
 ;;
 
-let make_loc = Stdpp.make_loc;;
-let dummy_loc = Stdpp.dummy_loc;;
+let make_loc = Ploc.make_unlined;;
+let dummy_loc = Ploc.dummy;;
 
 let lexer_text (con, prm) =
   if con = "" then "'" ^ prm ^ "'"

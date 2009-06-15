@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_rp.ml,v 1.8 2007/08/20 09:16:18 deraugla Exp $ *)
+(* $Id: pr_rp.ml,v 1.9 2007/09/01 19:42:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Heuristic to rebuild parsers and streams from the AST *)
@@ -44,7 +44,7 @@ value semi_after elem pc x = elem {(pc) with aft = sprintf ";%s" pc.aft} x;
 
 (* Rebuilding syntax tree *)
 
-value loc = Stdpp.dummy_loc;
+value loc = Ploc.dummy;
 
 value rec handle_failure e =
   match e with

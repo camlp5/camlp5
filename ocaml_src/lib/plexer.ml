@@ -56,11 +56,11 @@ type context =
     find_kwd : string -> string;
     line_cnt : int -> char -> unit;
     set_line_nb : unit -> unit;
-    make_lined_loc : int * int -> string -> Stdpp.location }
+    make_lined_loc : int * int -> string -> Ploc.t }
 ;;
 
 let err ctx loc msg =
-  Stdpp.raise_with_loc (ctx.make_lined_loc loc "") (Token.Error msg)
+  Ploc.raise (ctx.make_lined_loc loc "") (Token.Error msg)
 ;;
 
 let keyword_or_error ctx loc s =
@@ -652,8 +652,8 @@ let next_token_fun ctx glexr (cstrm, s_line_nb, s_bol_pos) =
     let (r, loc) = next_token ctx B.empty cstrm in
     begin match !glexr.tok_comm with
       Some list ->
-        if Stdpp.first_pos loc > comm_bp then
-          let comm_loc = Stdpp.make_loc (comm_bp, Stdpp.last_pos loc) in
+        if Ploc.first_pos loc > comm_bp then
+          let comm_loc = Ploc.make_unlined (comm_bp, Ploc.last_pos loc) in
           !glexr.tok_comm <- Some (comm_loc :: list)
     | None -> ()
     end;
@@ -678,8 +678,7 @@ let func kwd_table glexr =
      set_line_nb =
        (fun () ->
           line_nb := !(!(Token.line_nb)); bol_pos := !(!(Token.bol_pos)));
-     make_lined_loc =
-       fun loc comm -> Stdpp.make_lined_loc !line_nb !bol_pos loc}
+     make_lined_loc = fun loc comm -> Ploc.make !line_nb !bol_pos loc}
   in
   Token.lexer_func_of_parser (next_token_fun ctx glexr)
 ;;

@@ -10,9 +10,8 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.38 2007/08/21 10:55:31 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.39 2007/09/01 19:42:28 deraugla Exp $ *)
 
-open Stdpp;
 open Pcaml;
 
 Pcaml.syntax_name.val := "OCaml";
@@ -74,7 +73,7 @@ value mklistexp loc last =
         | None -> <:expr< [] >> ]
     | [e1 :: el] ->
         let loc =
-          if top then loc else Stdpp.encl_loc (MLast.loc_of_expr e1) loc
+          if top then loc else Ploc.encl (MLast.loc_of_expr e1) loc
         in
         <:expr< [$e1$ :: $loop False el$] >> ]
 ;
@@ -88,7 +87,7 @@ value mklistpat loc last =
         | None -> <:patt< [] >> ]
     | [p1 :: pl] ->
         let loc =
-          if top then loc else Stdpp.encl_loc (MLast.loc_of_patt p1) loc
+          if top then loc else Ploc.encl (MLast.loc_of_patt p1) loc
         in
         <:patt< [$p1$ :: $loop False pl$] >> ]
 ;

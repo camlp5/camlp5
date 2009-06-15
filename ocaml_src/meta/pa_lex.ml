@@ -247,12 +247,12 @@ Grammar.extend
        Gramext.Stoken ("", "with"); Gramext.Stoken ("", "lexer");
        Gramext.Snterm (Grammar.Entry.obj (rules : 'rules Grammar.Entry.e))],
       Gramext.action
-        (fun (rl : 'rules) _ _ (e : 'expr) _ (loc : Stdpp.location) ->
+        (fun (rl : 'rules) _ _ (e : 'expr) _ (loc : Ploc.t) ->
            (mk_lexer_match loc e rl : 'expr));
       [Gramext.Stoken ("", "lexer");
        Gramext.Snterm (Grammar.Entry.obj (rules : 'rules Grammar.Entry.e))],
       Gramext.action
-        (fun (rl : 'rules) _ (loc : Stdpp.location) ->
+        (fun (rl : 'rules) _ (loc : Ploc.t) ->
            (let rl =
               match isolate_char_patt loc rl with
                 Some p, rl ->
@@ -269,7 +269,7 @@ Grammar.extend
     [None, None,
      [[Gramext.Stoken ("", "$"); Gramext.Stoken ("LIDENT", "pos")],
       Gramext.action
-        (fun _ _ (loc : Stdpp.location) ->
+        (fun _ _ (loc : Ploc.t) ->
            (MLast.ExApp
               (loc,
                MLast.ExAcc
@@ -278,21 +278,21 @@ Grammar.extend
                MLast.ExLid (loc, strm_n)) :
             'expr));
       [Gramext.Stoken ("", "$"); Gramext.Stoken ("LIDENT", "empty")],
-      Gramext.action (fun _ _ (loc : Stdpp.location) -> (empty loc : 'expr));
+      Gramext.action (fun _ _ (loc : Ploc.t) -> (empty loc : 'expr));
       [Gramext.Stoken ("", "$"); Gramext.Stoken ("LIDENT", "buf")],
       Gramext.action
-        (fun _ _ (loc : Stdpp.location) ->
+        (fun _ _ (loc : Ploc.t) ->
            (get_buf loc (accum_chars loc !gcl) : 'expr));
       [Gramext.Stoken ("", "$"); Gramext.Stoken ("LIDENT", "add");
        Gramext.Snterm
          (Grammar.Entry.obj (simple_expr : 'simple_expr Grammar.Entry.e))],
       Gramext.action
-        (fun (e : 'simple_expr) _ _ (loc : Stdpp.location) ->
+        (fun (e : 'simple_expr) _ _ (loc : Ploc.t) ->
            (add_char loc e (accum_chars loc !gcl) : 'expr));
       [Gramext.Stoken ("", "$"); Gramext.Stoken ("LIDENT", "add");
        Gramext.Stoken ("STRING", "")],
       Gramext.action
-        (fun (s : string) _ _ (loc : Stdpp.location) ->
+        (fun (s : string) _ _ (loc : Ploc.t) ->
            (let rec loop v i =
               if i = String.length s then v
               else
@@ -309,38 +309,37 @@ Grammar.extend
           Gramext.Stoken ("", "|"));
        Gramext.Stoken ("", "]")],
       Gramext.action
-        (fun _ (rl : 'rule list) _ (loc : Stdpp.location) -> (rl : 'rules))]];
+        (fun _ (rl : 'rule list) _ (loc : Ploc.t) -> (rl : 'rules))]];
     Grammar.Entry.obj (rule : 'rule Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm
          (Grammar.Entry.obj (symb_list : 'symb_list Grammar.Entry.e));
        Gramext.Snterm (Grammar.Entry.obj (act : 'act Grammar.Entry.e))],
       Gramext.action
-        (fun (a : 'act) (sl, cl : 'symb_list) (loc : Stdpp.location) ->
+        (fun (a : 'act) (sl, cl : 'symb_list) (loc : Ploc.t) ->
            (sl, cl, a : 'rule))]];
     Grammar.Entry.obj (symb_list : 'symb_list Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm (Grammar.Entry.obj (symbs : 'symbs Grammar.Entry.e))],
       Gramext.action
-        (fun (sl, cl : 'symbs) (loc : Stdpp.location) ->
+        (fun (sl, cl : 'symbs) (loc : Ploc.t) ->
            (gcl := cl; sl, cl : 'symb_list))]];
     Grammar.Entry.obj (symbs : 'symbs Grammar.Entry.e), None,
     [None, None,
-     [[], Gramext.action (fun (loc : Stdpp.location) -> ([], [] : 'symbs));
+     [[], Gramext.action (fun (loc : Ploc.t) -> ([], [] : 'symbs));
       [Gramext.Sself;
        Gramext.Snterm (Grammar.Entry.obj (symb : 'symb Grammar.Entry.e));
        Gramext.Snterm
          (Grammar.Entry.obj (err_kont : 'err_kont Grammar.Entry.e))],
       Gramext.action
         (fun (kont : 'err_kont) (f : 'symb) (sl, cl : 'symbs)
-             (loc : Stdpp.location) ->
+             (loc : Ploc.t) ->
            (f sl cl kont : 'symbs))]];
     Grammar.Entry.obj (symb : 'symb Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm (Grammar.Entry.obj (rules : 'rules Grammar.Entry.e))],
       Gramext.action
-        (fun (rl : 'rules) (loc : Stdpp.location) ->
-           (make_rules loc rl : 'symb));
+        (fun (rl : 'rules) (loc : Ploc.t) -> (make_rules loc rl : 'symb));
       [Gramext.Stoken ("", "?="); Gramext.Stoken ("", "[");
        Gramext.Slist1sep
          (Gramext.Snterm
@@ -348,22 +347,22 @@ Grammar.extend
           Gramext.Stoken ("", "|"));
        Gramext.Stoken ("", "]")],
       Gramext.action
-        (fun _ (pll : 'lookahead list) _ _ (loc : Stdpp.location) ->
+        (fun _ (pll : 'lookahead list) _ _ (loc : Ploc.t) ->
            (make_lookahd loc pll : 'symb));
       [Gramext.Snterm
          (Grammar.Entry.obj (simple_expr : 'simple_expr Grammar.Entry.e))],
       Gramext.action
-        (fun (f : 'simple_expr) (loc : Stdpp.location) ->
+        (fun (f : 'simple_expr) (loc : Ploc.t) ->
            (make_sub_lexer loc f : 'symb));
       [Gramext.Stoken ("STRING", "");
        Gramext.Snterm (Grammar.Entry.obj (no_rec : 'no_rec Grammar.Entry.e))],
       Gramext.action
-        (fun (norec : 'no_rec) (s : string) (loc : Stdpp.location) ->
+        (fun (norec : 'no_rec) (s : string) (loc : Ploc.t) ->
            (make_or_chars loc s norec : 'symb));
       [Gramext.Stoken ("", "_");
        Gramext.Snterm (Grammar.Entry.obj (no_rec : 'no_rec Grammar.Entry.e))],
       Gramext.action
-        (fun (norec : 'no_rec) _ (loc : Stdpp.location) ->
+        (fun (norec : 'no_rec) _ (loc : Ploc.t) ->
            (make_any loc norec : 'symb))]];
     Grammar.Entry.obj (simple_expr : 'simple_expr Grammar.Entry.e), None,
     [None, None,
@@ -371,20 +370,20 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e));
        Gramext.Stoken ("", ")")],
       Gramext.action
-        (fun _ (e : 'expr) _ (loc : Stdpp.location) -> (e : 'simple_expr));
+        (fun _ (e : 'expr) _ (loc : Ploc.t) -> (e : 'simple_expr));
       [Gramext.Stoken ("CHAR", "")],
       Gramext.action
-        (fun (c : string) (loc : Stdpp.location) ->
+        (fun (c : string) (loc : Ploc.t) ->
            (MLast.ExChr (loc, c) : 'simple_expr));
       [Gramext.Stoken ("LIDENT", "")],
       Gramext.action
-        (fun (i : string) (loc : Stdpp.location) ->
+        (fun (i : string) (loc : Ploc.t) ->
            (MLast.ExLid (loc, i) : 'simple_expr))]];
     Grammar.Entry.obj (lookahead : 'lookahead Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("STRING", "")],
       Gramext.action
-        (fun (s : string) (loc : Stdpp.location) ->
+        (fun (s : string) (loc : Ploc.t) ->
            (List.rev
               (fold_string_chars (fun c pl -> MLast.PaChr (loc, c) :: pl) s
                  []) :
@@ -394,44 +393,41 @@ Grammar.extend
             (Grammar.Entry.obj
                (lookahead_char : 'lookahead_char Grammar.Entry.e)))],
       Gramext.action
-        (fun (pl : 'lookahead_char list) (loc : Stdpp.location) ->
+        (fun (pl : 'lookahead_char list) (loc : Ploc.t) ->
            (pl : 'lookahead))]];
     Grammar.Entry.obj (lookahead_char : 'lookahead_char Grammar.Entry.e),
     None,
     [None, None,
      [[Gramext.Stoken ("", "_")],
       Gramext.action
-        (fun _ (loc : Stdpp.location) -> (MLast.PaAny loc : 'lookahead_char));
+        (fun _ (loc : Ploc.t) -> (MLast.PaAny loc : 'lookahead_char));
       [Gramext.Stoken ("CHAR", "")],
       Gramext.action
-        (fun (c : string) (loc : Stdpp.location) ->
+        (fun (c : string) (loc : Ploc.t) ->
            (MLast.PaChr (loc, c) : 'lookahead_char))]];
     Grammar.Entry.obj (no_rec : 'no_rec Grammar.Entry.e), None,
     [None, None,
-     [[], Gramext.action (fun (loc : Stdpp.location) -> (false : 'no_rec));
+     [[], Gramext.action (fun (loc : Ploc.t) -> (false : 'no_rec));
       [Gramext.Stoken ("", "/")],
-      Gramext.action (fun _ (loc : Stdpp.location) -> (true : 'no_rec))]];
+      Gramext.action (fun _ (loc : Ploc.t) -> (true : 'no_rec))]];
     Grammar.Entry.obj (err_kont : 'err_kont Grammar.Entry.e), None,
     [None, None,
-     [[],
-      Gramext.action (fun (loc : Stdpp.location) -> (SpoNoth : 'err_kont));
+     [[], Gramext.action (fun (loc : Ploc.t) -> (SpoNoth : 'err_kont));
       [Gramext.Stoken ("", "?");
        Gramext.Snterm
          (Grammar.Entry.obj (simple_expr : 'simple_expr Grammar.Entry.e))],
       Gramext.action
-        (fun (e : 'simple_expr) _ (loc : Stdpp.location) ->
-           (SpoQues e : 'err_kont));
+        (fun (e : 'simple_expr) _ (loc : Ploc.t) -> (SpoQues e : 'err_kont));
       [Gramext.Stoken ("", "?"); Gramext.Stoken ("STRING", "")],
       Gramext.action
-        (fun (s : string) _ (loc : Stdpp.location) ->
+        (fun (s : string) _ (loc : Ploc.t) ->
            (SpoQues (MLast.ExStr (loc, s)) : 'err_kont));
       [Gramext.Stoken ("", "!")],
-      Gramext.action
-        (fun _ (loc : Stdpp.location) -> (SpoBang : 'err_kont))]];
+      Gramext.action (fun _ (loc : Ploc.t) -> (SpoBang : 'err_kont))]];
     Grammar.Entry.obj (act : 'act Grammar.Entry.e), None,
     [None, None,
-     [[], Gramext.action (fun (loc : Stdpp.location) -> (None : 'act));
+     [[], Gramext.action (fun (loc : Ploc.t) -> (None : 'act));
       [Gramext.Stoken ("", "->");
        Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
       Gramext.action
-        (fun (e : 'expr) _ (loc : Stdpp.location) -> (Some e : 'act))]]]);;
+        (fun (e : 'expr) _ (loc : Ploc.t) -> (Some e : 'act))]]]);;

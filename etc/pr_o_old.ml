@@ -14,7 +14,6 @@
 
 open Pcaml.OldPrinters;
 open Spretty;
-open Stdpp;
 
 value no_ss = ref True;
 
@@ -143,7 +142,7 @@ value conv_lab =
 
 (* default global loc *)
 
-value loc = Stdpp.dummy_loc;
+value loc = Ploc.dummy;
 
 value id_var s =
   if has_special_chars s || is_infix s then
@@ -209,7 +208,7 @@ value rec labels loc b vl _ k =
   [ [] -> [: b; k :]
   | [v] ->
       [: `label True b v "" k;
-         `LocInfo (Stdpp.after_loc loc 0 1) (HVbox [: :]) :]
+         `LocInfo (Ploc.after loc 0 1) (HVbox [: :]) :]
   | [v :: l] -> [: `label False b v "" [: :]; labels loc [: :] l "" k :] ]
 and label is_last b (loc, f, m, t) _ k =
   let m = flag "mutable" m in
@@ -229,7 +228,7 @@ value rec variants loc b vl dg k =
   [ [] -> [: b; k :]
   | [v] ->
       [: `variant b v "" k;
-         `LocInfo (Stdpp.after_loc loc 0 1) (HVbox [: :]) :]
+         `LocInfo (Ploc.after loc 0 1) (HVbox [: :]) :]
   | [v :: l] ->
       [: `variant b v "" [: :]; variants loc [: `S LR "|" :] l "" k :] ]
 and variant b (loc, c, tl) _ k =
@@ -345,9 +344,9 @@ pr_expr_fun_args.val :=
 value raise_match_failure loc k =
   let (fname, line, char, _) =
     if Pcaml.input_file.val <> "-" then
-      Stdpp.line_of_loc Pcaml.input_file.val loc
+      Ploc.from_file Pcaml.input_file.val loc
     else
-      ("-", 1, Stdpp.first_pos loc, 0)
+      ("-", 1, Ploc.first_pos loc, 0)
   in
   HOVbox
     [: `S LR "raise"; `S LO "("; `S LR "Match_failure"; `S LO "(";
@@ -362,7 +361,7 @@ value rec bind_list b pel _ k =
   | pel ->
       Vbox [: `HVbox [: :]; listwbws let_binding b (S LR "and") pel "" k :] ]
 and let_binding b (p, e) _ k =
-  let loc = Stdpp.encl_loc (MLast.loc_of_patt p) (MLast.loc_of_expr e) in
+  let loc = Ploc.encl (MLast.loc_of_patt p) (MLast.loc_of_expr e) in
   LocInfo loc (BEbox (let_binding0 b p e k))
 and let_binding0 b p e k =
   let (pl, e) =
@@ -593,7 +592,7 @@ and class_signature cs k =
         [: `S LO "["; listws ctyp (S RO ",") tl "" [: `S RO "]" :];
            `clty_longident id "" k :]
   | MLast.CtSig _ cst csf ->
-      let loc = Stdpp.after_loc (MLast.loc_of_class_type cs) 0 1 in
+      let loc = Ploc.after (MLast.loc_of_class_type cs) 0 1 in
       class_self_type [: `S LR "object" :] cst
         [: `HVbox
               [: `HVbox [: :]; list class_sig_item csf "" [: :];
@@ -650,7 +649,7 @@ pr_module_type.pr_levels :=
       extfun Extfun.empty with
       [ <:module_type< sig $list:s$ end >> as mt ->
           fun curr next dg k ->
-            let loc = Stdpp.after_loc (MLast.loc_of_module_type mt) 0 1 in
+            let loc = Ploc.after (MLast.loc_of_module_type mt) 0 1 in
             [: `BEbox
                   [: `S LR "sig";
                      `HVbox
@@ -684,7 +683,7 @@ pr_module_expr.pr_levels :=
       extfun Extfun.empty with
       [ <:module_expr< struct $list:s$ end >> as me ->
           fun curr next dg k ->
-            let loc = Stdpp.after_loc (MLast.loc_of_module_expr me) 0 1 in
+            let loc = Ploc.after (MLast.loc_of_module_expr me) 0 1 in
             [: `HVbox [: :];
                `HVbox
                   [: `S LR "struct"; list str_item s "" [: :];
@@ -1779,7 +1778,7 @@ pr_class_expr.pr_levels :=
             [: `S LO "["; listws ctyp (S RO ",") ctcl "" [: `S RO "]" :];
                `class_longident ci "" k :]
       | MLast.CeStr _ csp cf as ce ->
-          let loc = Stdpp.after_loc (MLast.loc_of_class_expr ce) 0 1 in
+          let loc = Ploc.after (MLast.loc_of_class_expr ce) 0 1 in
           fun curr next dg k ->
             [: `BEbox
                   [: `HVbox [: `S LR "object"; `class_self_patt_opt csp :];
@@ -1960,14 +1959,14 @@ value apply_printer printer ast =
       let (first, last_pos) =
         List.fold_left
           (fun (first, last_pos) (si, loc) ->
-             let bp = Stdpp.first_pos loc in
+             let bp = Ploc.first_pos loc in
              do {
                copy_source ic oc first last_pos bp;
                flush oc;
                print_pretty pr_ch pr_str pr_nl "" "" maxl.val getcom bp
                  (printer si "" [: :]);
                flush oc;
-               (False, Stdpp.last_pos loc)
+               (False, Ploc.last_pos loc)
              })
           (True, 0) ast
       in

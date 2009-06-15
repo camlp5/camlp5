@@ -39,9 +39,9 @@ type pretty =
   | Vbox of pretty Stream.t
   | BEbox of pretty Stream.t
   | BEVbox of pretty Stream.t
-  | LocInfo of Stdpp.location * pretty
+  | LocInfo of Ploc.t * pretty
 ;;
-type getcomm = Stdpp.location -> int -> int -> string * int * int * int;;
+type getcomm = Ploc.t -> int -> int -> string * int * int * int;;
 
 val print_pretty :
   (char -> unit) -> (string -> unit) -> (unit -> unit) -> string -> string ->

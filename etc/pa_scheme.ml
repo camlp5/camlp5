@@ -1,8 +1,7 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.12 2007/08/01 18:57:15 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.13 2007/09/01 19:42:28 deraugla Exp $
 
 (open Pcaml)
-(open Stdpp)
 
 (type (choice 'a 'b) (sum (Left 'a) (Right 'b)))
 
@@ -99,8 +98,8 @@
   (parser
    (((d kind) s) (values "INT" (digits_under kind (Buff.store len d) s)))
    (() ep
-    (raise_with_loc (make_loc (values bp ep))
-                    (Failure "ill-formed integer constant")))))
+    (Ploc.raise (Ploc.make_unlined (values bp ep))
+                (Failure "ill-formed integer constant")))))
 
 (define (base_number kwt bp len)
   (parser
@@ -119,7 +118,7 @@
    (((` ''')) (values "CHAR" (String.make 1 x)))
    ((s) ep
     (if (List.mem x no_ident)
-        (Stdpp.raise_with_loc (Stdpp.make_loc (values (- ep 2) (- ep 1)))
+        (Ploc.raise (Ploc.make_unlined (values (- ep 2) (- ep 1)))
          (Stream.Error "bad quote"))
         (let* ((len (Buff.store (Buff.store 0 ''') x))
                ((values s dot) (ident len s)))
@@ -156,8 +155,8 @@
   (no_dot
     (parser
      (((` '.')) ep
-      (Stdpp.raise_with_loc (Stdpp.make_loc (values (- ep 1) ep))
-                            (Stream.Error "bad dot")))
+      (Ploc.raise (Ploc.make_unlined (values (- ep 1) ep))
+                  (Stream.Error "bad dot")))
      (() ())))
   ((lexer0 kwt)
     (parser bp
@@ -253,7 +252,7 @@
         (lexer2
          (lambda (kwt (values s _ _))
            (let (((values t loc) (lexer kwt s)))
-             (values t (Stdpp.make_loc loc))))))
+             (values t (Ploc.make_unlined loc))))))
      {(Token.tok_func (Token.lexer_func_of_parser (lexer2 kwt)))
       (Token.tok_using (lexer_using kwt))
       (Token.tok_removing (lambda))
@@ -286,7 +285,7 @@
      (Srec loc _) (Sstring loc _) (Stid loc _) (Suid loc _))
     loc)))
 (define (error_loc loc err)
-  (Stdpp.raise_with_loc loc (Stream.Error (^ err " expected"))))
+  (Ploc.raise loc (Stream.Error (^ err " expected"))))
 (define (error se err) (error_loc (loc_of_sexpr se) err))
 
 (define strm_n "strm__")
@@ -640,7 +639,7 @@
     ([se] (expr_se se))
     ((sel)
       (let* ((el (List.map expr_se sel))
-             (loc (Stdpp.encl_loc (loc_of_sexpr (List.hd sel)) loc)))
+             (loc (Ploc.encl (loc_of_sexpr (List.hd sel)) loc)))
          <:expr< do { $list:el$ } >>))))
   (let_binding_se
    (lambda_match
@@ -659,8 +658,8 @@
                    (List.fold_right
                     (lambda (se e)
                       (let* ((loc
-                              (Stdpp.encl_loc (loc_of_sexpr se)
-                                              (MLast.loc_of_expr e)))
+                              (Ploc.encl (loc_of_sexpr se)
+                                         (MLast.loc_of_expr e)))
                              (p (ipatt_se se)))
                         <:expr< fun $p$ -> $e$ >>))
                     sel e))
@@ -842,7 +841,7 @@
              ([se] (ctyp_se se))
              ([se . sel] 
                (let* ((t1 (ctyp_se se))
-                      (loc (Stdpp.encl_loc (loc_of_sexpr se) loc))
+                      (loc (Ploc.encl (loc_of_sexpr se) loc))
                       (t2 (loop sel)))
                    <:ctyp< $t1$ -> $t2$ >>)))))
         (loop sel)))

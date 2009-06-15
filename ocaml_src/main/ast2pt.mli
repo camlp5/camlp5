@@ -13,7 +13,7 @@ val implem : string -> MLast.str_item list -> Parsetree.structure;;
 val phrase : MLast.str_item -> Parsetree.toplevel_phrase;;
    (** [phrase sil] return the OCaml equivalent AST of a toplevel phrase. *)
 
-val mkloc : Stdpp.location -> Location.t;;
+val mkloc : Ploc.t -> Location.t;;
    (** Convert a Camlp5 location into a OCaml location. *)
 
 val fast : bool ref;;

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.17 2007/08/30 18:18:30 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.18 2007/09/01 19:42:28 deraugla Exp $ *)
 
 (*
 Added statements:
@@ -98,7 +98,7 @@ value print_defined () = do {
   if Sys.interactive.val then () else exit 0
 };
 
-value loc = Stdpp.dummy_loc;
+value loc = Ploc.dummy;
 
 value subst mloc env =
   loop where rec loop =
@@ -134,13 +134,13 @@ value substp mloc env =
         let ppl = List.map (fun (p, e) -> (p, loop e)) pel in
         <:patt< { $list:ppl$ } >>
     | x ->
-        Stdpp.raise_with_loc mloc
+        Ploc.raise mloc
           (Failure
              "this macro cannot be used in a pattern (see its definition)") ]
 ;
 
 value incorrect_number loc l1 l2 =
-  Stdpp.raise_with_loc loc
+  Ploc.raise loc
     (Failure
        (Printf.sprintf "expected %d parameters; found %d" (List.length l2)
           (List.length l1)))
@@ -283,8 +283,8 @@ EXTEND
   expr: LEVEL "simple"
     [ [ LIDENT "__FILE__" -> <:expr< $str:Pcaml.input_file.val$ >>
       | LIDENT "__LOCATION__" ->
-          let bp = string_of_int (Stdpp.first_pos loc) in
-          let ep = string_of_int (Stdpp.last_pos loc) in
+          let bp = string_of_int (Ploc.first_pos loc) in
+          let ep = string_of_int (Ploc.last_pos loc) in
           <:expr< ($int:bp$, $int:ep$) >> ] ]
   ;
   patt:

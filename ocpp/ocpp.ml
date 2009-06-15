@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ocpp.ml,v 1.6 2007/07/12 01:37:33 deraugla Exp $ *)
+(* $Id: ocpp.ml,v 1.7 2007/09/01 19:42:28 deraugla Exp $ *)
 
 value buff = ref (String.create 80);
 value store len x =
@@ -47,21 +47,19 @@ and inside_locate cs =
 ;
 
 value quot name pos str =
-  let loc = Stdpp.make_loc (pos, pos + String.length str) in
+  let loc = Ploc.make_unlined (pos, pos + String.length str) in
   let exp =
     try
       match Quotation.find name with
       [ Quotation.ExStr f -> f
       | _ -> raise Not_found ]
     with
-    [ Not_found -> Stdpp.raise_with_loc loc Not_found ]
+    [ Not_found -> Ploc.raise loc Not_found ]
   in
   let new_str =
     try exp True str with
-    [ Stdpp.Exc_located _ exc ->
-        Stdpp.raise_with_loc loc exc
-    | exc ->
-        Stdpp.raise_with_loc loc exc ]
+    [ Ploc.Exc _ exc -> Ploc.raise loc exc
+    | exc -> Ploc.raise loc exc ]
   in
   let cs = Stream.of_string new_str in copy_strip_locate cs
 ;
@@ -111,7 +109,7 @@ value loc_fmt =
 ;
 
 value print_location loc file =
-  let (file, line, c1, c2) = Stdpp.line_of_loc file loc in
+  let (file, line, c1, c2) = Ploc.from_file file loc in
   do { Printf.eprintf loc_fmt file line c1 c2; flush stderr; }
 ;
 
@@ -129,7 +127,7 @@ value main () =
       flush stdout;
       let exc =
         match exc with
-        [ Stdpp.Exc_located loc exc -> do { print_location loc file.val; exc }
+        [ Ploc.Exc loc exc -> do { print_location loc file.val; exc }
         | exc -> exc ]
       in
       raise exc

@@ -10,16 +10,14 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.31 2007/08/20 09:16:18 deraugla Exp $ *)
-
-open Stdpp;
+(* $Id: pa_extend.ml,v 1.32 2007/09/01 19:42:28 deraugla Exp $ *)
 
 value split_ext = ref False;
 
 Pcaml.add_option "-split_ext" (Arg.Set split_ext)
   "Split EXTEND by functions to turn around a PowerPC problem.";
 
-type loc = Stdpp.location;
+type loc = Ploc.t;
 
 type name 'e = { expr : 'e; tvar : string; loc : loc };
 
@@ -159,7 +157,7 @@ module MetaAction =
       in
       failwith ("pa_extend.ml: " ^ f ^ ", not impl: " ^ desc)
     ;
-    value loc = Stdpp.dummy_loc;
+    value loc = Ploc.dummy;
     value rec mlist mf =
       fun
       [ [] -> <:expr< [] >>
@@ -175,7 +173,7 @@ module MetaAction =
       [ False -> <:expr< False >>
       | True -> <:expr< True >> ]
     ;
-    value mloc = <:expr< Stdpp.dummy_loc >>;
+    value mloc = <:expr< Ploc.dummy >>;
     value rec mexpr =
       fun
       [ MLast.ExAcc loc e1 e2 ->
@@ -249,7 +247,7 @@ value mklistexp loc =
     [ [] -> <:expr< [] >>
     | [e1 :: el] ->
         let loc =
-          if top then loc else Stdpp.encl_loc (MLast.loc_of_expr e1) loc
+          if top then loc else Ploc.encl (MLast.loc_of_expr e1) loc
         in
         <:expr< [$e1$ :: $loop False el$] >> ]
 ;
@@ -260,7 +258,7 @@ value mklistpat loc =
     [ [] -> <:patt< [] >>
     | [p1 :: pl] ->
         let loc =
-          if top then loc else Stdpp.encl_loc (MLast.loc_of_patt p1) loc
+          if top then loc else Ploc.encl (MLast.loc_of_patt p1) loc
         in
         <:patt< [$p1$ :: $loop False pl$] >> ]
 ;
@@ -320,8 +318,7 @@ value rec quot_expr e =
         <:expr< Qast.Record $mklistexp loc lel$>>
       with
       [ Not_found -> e ]
-  | <:expr< $lid:s$ >> ->
-      if s = Stdpp.loc_name.val then <:expr< Qast.Loc >> else e
+  | <:expr< $lid:s$ >> -> if s = Ploc.name.val then <:expr< Qast.Loc >> else e
   | <:expr< MLast.$uid:s$ >> -> <:expr< Qast.Node $str:s$ [] >>
   | <:expr< $uid:m$.$uid:s$ >> -> <:expr< Qast.Node $str:m ^ "." ^ s$ [] >>
   | <:expr< $uid:s$ >> -> <:expr< Qast.Node $str:s$ [] >>
@@ -352,7 +349,7 @@ value quotify_action psl act =
     (fun e ps ->
        match ps.pattern with
        [ Some <:patt< ($list:pl$) >> ->
-           let loc = Stdpp.dummy_loc in
+           let loc = Ploc.dummy in
            let pname = pname_of_ptuple pl in
            let (pl1, el1) =
              let (l, _) =
@@ -382,7 +379,7 @@ value rec make_ctyp styp tvar =
   | STquo loc s -> <:ctyp< '$s$ >>
   | STself loc x ->
       if tvar = "" then
-        Stdpp.raise_with_loc loc
+        Ploc.raise loc
           (Stream.Error ("'" ^ x ^ "' illegal in anonymous entry level"))
       else <:ctyp< '$tvar$ >>
   | STtyp t -> t ]
@@ -446,15 +443,13 @@ and make_expr_rules loc gmod rl tvar =
 ;
 
 value text_of_action loc psl rtvar act tvar =
-  let locid = <:patt< $lid:Stdpp.loc_name.val$ >> in
+  let locid = <:patt< $lid:Ploc.name.val$ >> in
   let act =
     match act with
     [ Some act -> if quotify.val then quotify_action psl act else act
     | None -> <:expr< () >> ]
   in
-  let e =
-    <:expr< fun [ ($locid$ : Stdpp.location) -> ($act$ : '$rtvar$) ] >>
-  in
+  let e = <:expr< fun [ ($locid$ : Ploc.t) -> ($act$ : '$rtvar$) ] >> in
   let txt =
     List.fold_left
       (fun txt ps ->

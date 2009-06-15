@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_extprint.ml,v 1.8 2007/08/21 17:50:22 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.9 2007/09/01 19:42:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 #load "pa_extend.cmo";
@@ -43,7 +43,7 @@ value rec mexpr p =
   | <:patt< $lid:_$ >> -> <:expr< Extfun.Evar () >>
   | <:patt< _ >> -> <:expr< Extfun.Evar () >>
   | <:patt< $p1$ | $p2$ >> ->
-      Stdpp.raise_with_loc loc (Failure "or patterns not allowed in extfun")
+      Ploc.raise loc (Failure "or patterns not allowed in extfun")
   | p -> not_impl "mexpr" p ]
 and mexpr_list loc =
   fun

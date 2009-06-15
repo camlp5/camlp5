@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pcaml.mli,v 1.12 2007/08/21 17:50:22 deraugla Exp $ *)
+(* $Id: pcaml.mli,v 1.13 2007/09/01 19:42:28 deraugla Exp $ *)
 
 (** Language grammar, entries and printers.
 
@@ -161,7 +161,7 @@ value eq_class_expr : MLast.class_expr -> MLast.class_expr -> bool;
 
 (* for system use *)
 
-value warning : ref (Stdpp.location -> string -> unit);
+value warning : ref (Ploc.t -> string -> unit);
 value expr_eoi : Grammar.Entry.e MLast.expr;
 value patt_eoi : Grammar.Entry.e MLast.patt;
 value arg_spec_list : unit -> list (string * Arg.spec * string);

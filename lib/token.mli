@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.mli,v 1.20 2007/08/20 09:55:20 deraugla Exp $ *)
+(* $Id: token.mli,v 1.21 2007/09/01 19:42:28 deraugla Exp $ *)
 
 (** Lexing for Camlp5 grammars.
 
@@ -40,7 +40,7 @@ type glexer 'te =
     tok_removing : pattern -> unit;
     tok_match : mutable pattern -> 'te -> string;
     tok_text : pattern -> string;
-    tok_comm : mutable option (list Stdpp.location) }
+    tok_comm : mutable option (list Ploc.t) }
    (** The type for lexers compatible with camlp5 grammars. The parameter
        type ['te] is the type of the tokens.
 -      The field [tok_func] is the main lexer function. See [lexer_func]
@@ -76,7 +76,7 @@ and lexer_func 'te = Stream.t char -> (Stream.t 'te * location_function)
       lexed. The result is a pair of a token stream and a location
       function (see below) for this tokens stream. *)
 
-and location_function = int -> Stdpp.location;
+and location_function = int -> Ploc.t;
   (**>The type of a function giving the location of a token in the
       source from the token number in the stream (starting from zero). *)
 
@@ -105,8 +105,7 @@ value default_match : pattern -> (string * string) -> string;
    as well. *)
 
 value lexer_func_of_parser :
-  ((Stream.t char * ref int * ref int) -> ('te * Stdpp.location)) ->
-     lexer_func 'te;
+  ((Stream.t char * ref int * ref int) -> ('te * Ploc.t)) -> lexer_func 'te;
    (** A lexer function from a lexer written as a char stream parser
        returning the next token and its location. The two references
        with the char stream contain the current line number and the
@@ -117,13 +116,13 @@ value lexer_func_of_ocamllex : (Lexing.lexbuf -> 'te) -> lexer_func 'te;
 (** {6 Function to build a stream and a location function} *)
 
 value make_stream_and_location :
-  (unit -> ('te * Stdpp.location)) -> (Stream.t 'te * location_function);
+  (unit -> ('te * Ploc.t)) -> (Stream.t 'te * location_function);
    (** General function *)
 
 (** {6 Useful functions and values} *)
 
 value eval_char : string -> char;
-value eval_string : Stdpp.location -> string -> string;
+value eval_string : Ploc.t -> string -> string;
    (** Convert a char or a string token, where the backslashes had not
        been interpreted into a real char or string; raise [Failure] if
        bad backslash sequence found; [Token.eval_char (Char.escaped c)]
@@ -144,6 +143,6 @@ value bol_pos : ref (ref int);
 
 (* deprecated since version 4.08 *)
 
-type location = Stdpp.location;
+type location = Ploc.t;
 value make_loc : (int * int) -> location;
 value dummy_loc : location;

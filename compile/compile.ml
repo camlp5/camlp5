@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: compile.ml,v 1.18 2007/08/21 13:04:05 deraugla Exp $ *)
+(* $Id: compile.ml,v 1.19 2007/09/01 19:42:28 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -8,7 +8,7 @@ open Gramext;
 value strict_parsing = ref False;
 value keywords = ref [];
 
-value loc = Stdpp.dummy_loc;
+value loc = Ploc.dummy;
 
 (* Watch the segmentation faults here! the compiled file must have been
    loaded in camlp5 with the option pa_extend.cmo -meta_action. *)
@@ -103,7 +103,7 @@ value nth_patt_of_act (e, n) =
   let patt_list =
     loop e where rec loop =
       fun
-      [ <:expr< fun (loc : Stdpp.location) -> $_$ >> -> []
+      [ <:expr< fun (loc : Ploc.t) -> $_$ >> -> []
       | <:expr< fun ($p$ : $_$) -> $e$ >> -> [p :: loop e]
       | <:expr< fun $p$ -> $e$ >> -> [p :: loop e]
       | _ -> failwith "nth_patt_of_act" ]
@@ -113,14 +113,14 @@ value nth_patt_of_act (e, n) =
 
 value rec last_patt_of_act =
   fun
-  [ <:expr< fun ($p$ : $_$) (loc : Stdpp.location) -> $_$ >> -> p
+  [ <:expr< fun ($p$ : $_$) (loc : Ploc.t) -> $_$ >> -> p
   | <:expr< fun $_$ -> $e$ >> -> last_patt_of_act e
   | _ -> failwith "last_patt_of_act" ]
 ;
 
 value rec final_action =
   fun
-  [ <:expr< fun (loc : Stdpp.location) -> ($e$ : $_$) >> -> e
+  [ <:expr< fun (loc : Ploc.t) -> ($e$ : $_$) >> -> e
   | <:expr< fun $_$ -> $e$ >> -> final_action e
   | _ -> failwith "final_action" ]
 ;
@@ -599,7 +599,7 @@ value compile () =
         $expr_list list$
     >>
   in
-  let loc = Stdpp.dummy_loc in
+  let loc = Ploc.dummy in
   ([(si1, loc); (si2, loc)], False)
 ;
 

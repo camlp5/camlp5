@@ -40,9 +40,9 @@ type 'te glexer =
     tok_removing : pattern -> unit;
     mutable tok_match : pattern -> 'te -> string;
     tok_text : pattern -> string;
-    mutable tok_comm : Stdpp.location list option }
+    mutable tok_comm : Ploc.t list option }
 and 'te lexer_func = char Stream.t -> 'te Stream.t * location_function
-and location_function = int -> Stdpp.location;;
+and location_function = int -> Ploc.t;;
   (**>The type of a function giving the location of a token in the
       source from the token number in the stream (starting from zero). *)
 
@@ -71,8 +71,7 @@ val default_match : pattern -> string * string -> string;;
    as well. *)
 
 val lexer_func_of_parser :
-  (char Stream.t * int ref * int ref -> 'te * Stdpp.location) ->
-    'te lexer_func;;
+  (char Stream.t * int ref * int ref -> 'te * Ploc.t) -> 'te lexer_func;;
    (** A lexer function from a lexer written as a char stream parser
        returning the next token and its location. The two references
        with the char stream contain the current line number and the
@@ -83,13 +82,13 @@ val lexer_func_of_ocamllex : (Lexing.lexbuf -> 'te) -> 'te lexer_func;;
 (** {6 Function to build a stream and a location function} *)
 
 val make_stream_and_location :
-  (unit -> 'te * Stdpp.location) -> 'te Stream.t * location_function;;
+  (unit -> 'te * Ploc.t) -> 'te Stream.t * location_function;;
    (** General function *)
 
 (** {6 Useful functions and values} *)
 
 val eval_char : string -> char;;
-val eval_string : Stdpp.location -> string -> string;;
+val eval_string : Ploc.t -> string -> string;;
    (** Convert a char or a string token, where the backslashes had not
        been interpreted into a real char or string; raise [Failure] if
        bad backslash sequence found; [Token.eval_char (Char.escaped c)]
@@ -110,6 +109,6 @@ val bol_pos : int ref ref;;
 
 (* deprecated since version 4.08 *)
 
-type location = Stdpp.location;;
+type location = Ploc.t;;
 val make_loc : int * int -> location;;
 val dummy_loc : location;;
