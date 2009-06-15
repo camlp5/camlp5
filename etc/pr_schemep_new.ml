@@ -280,16 +280,6 @@ value stream pc e =
 
 (* Parsers *)
 
-value sequence_box pc bef expr el =
-  let s1 = bef " do {" in
-  let s2 =
-    vlistl (semi_after expr) expr
-      {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""} el
-  in
-  let s3 = sprintf "%s%s%s" (tab pc.ind) "}" pc.aft in
-  sprintf "%s\n%s\n%s" s1 s2 s3
-;
-
 value ident_option =
   fun
   [ Some s -> sprintf " %s" s
@@ -325,13 +315,16 @@ value stream_patt_comp pc spc =
   | SpNtr _ p e ->
       horiz_vertic
         (fun () ->
-           sprintf "%s%s = %s%s" pc.bef
+           sprintf "%s(%s %s)%s" pc.bef
              (patt {(pc) with bef = ""; aft = ""} p)
              (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
         (fun () ->
-           let s1 = patt {(pc) with aft = " ="} p in
+           let s1 = patt {(pc) with bef = sprintf "%s(" pc.bef; aft = ""} p in
            let s2 =
-             expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
+             expr
+               {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+                aft = sprintf ")%s" pc.aft}
+               e
            in
            sprintf "%s\n%s" s1 s2)
   | SpLet _ p e ->
@@ -388,8 +381,8 @@ value stream_patt pc sp =
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s" pc.bef
-         (hlistl (semi_after stream_patt_comp_err) stream_patt_comp_err
-            {(pc) with bef = ""; aft = ""} sp) pc.aft)
+         (hlist stream_patt_comp_err {(pc) with bef = ""; aft = ""} sp)
+         pc.aft)
     (fun () ->
        let sp = List.map (fun spc -> (spc, spc_kont spc)) sp in
        plist stream_patt_comp_err 0 {(pc) with ind = pc.ind + 3} sp)
@@ -402,60 +395,37 @@ value parser_case force_vertic pc (sp, po, e) =
         (fun () ->
            if force_vertic then sprintf "\n"
            else
-             sprintf "%s[: :]%s -> %s%s" pc.bef (ident_option po)
+             sprintf "%s(()%s %s)%s" pc.bef (ident_option po)
                (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
         (fun () ->
-           match flatten_sequence e with
-           [ Some el ->
-               sequence_box pc
-                 (fun k ->
-                    sprintf "%s[: :]%s ->%s" pc.bef (ident_option po) k)
-                 expr el
-           | None ->
-               let s1 = sprintf "%s[: :]%s ->" pc.bef (ident_option po) in
-               let s2 =
-                 expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
-               in
-               sprintf "%s\n%s" s1 s2 ])
+           let s1 = sprintf "%s()%s" pc.bef (ident_option po) in
+           let s2 =
+             expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
+           in
+           sprintf "%s\n%s" s1 s2)
   | _ ->
       horiz_vertic
         (fun () ->
            if force_vertic then sprintf "\n"
            else
-             sprintf "%s[: %s :]%s -> %s%s" pc.bef
+             sprintf "%s((%s)%s %s)%s" pc.bef
                (stream_patt {(pc) with bef = ""; aft = ""} sp)
                (ident_option po) (expr {(pc) with bef = ""; aft = ""} e)
                pc.aft)
         (fun () ->
-           match flatten_sequence e with
-           [ Some el ->
-               sequence_box pc
-                 (fun k ->
-                    stream_patt
-                      {(pc) with bef = sprintf "%s[: " pc.bef;
-                       aft = sprintf " :]%s ->%s" (ident_option po) k}
-                      sp)
-                 expr el
-           | None ->
-               let s1 =
-                 stream_patt
-                   {(pc) with bef = sprintf "%s[: " pc.bef;
-                    aft = sprintf " :]%s ->" (ident_option po)}
-                   sp
-               in
-               let s2 =
-                 expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
-               in
-               sprintf "%s\n%s" s1 s2 ]) ]
+           let s1 =
+             stream_patt
+               {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+                aft = sprintf ")%s" (ident_option po)}
+               sp
+           in
+           let s2 =
+             expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
+           in
+           sprintf "%s\n%s" s1 s2) ]
 ;
 
-value parser_case_sh force_vertic pc spe =
-  parser_case force_vertic {(pc) with ind = pc.ind + 2} spe
-;
-
-(*
 value flag_equilibrate_cases = Pcaml.flag_equilibrate_cases;
-*)
 
 value parser_body pc (po, spel) =
   let s1 = ident_option po in
@@ -476,12 +446,9 @@ value parser_body pc (po, spel) =
   [ Some s -> s
   | None ->
       match spel with
-      [ [] -> sprintf "%s []%s" pc.bef pc.aft
+      [ [] -> sprintf "%s%s" pc.bef pc.aft
       | [spe] ->
-          let s2 =
-            parser_case False
-              {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} spe
-          in
+          let s2 = parser_case False {(pc) with bef = tab pc.ind} spe in
           sprintf "%s%s\n%s" pc.bef s1 s2
       | _ ->
           let force_vertic =
@@ -491,9 +458,7 @@ value parser_body pc (po, spel) =
                   (fun spe ->
                      horiz_vertic
                        (fun () ->
-                          let _ : string =
-                            bar_before (parser_case_sh False) pc spe
-                          in
+                          let _ : string = parser_case False pc spe in
                           False)
                        (fun () -> True))
                   spel
@@ -502,10 +467,7 @@ value parser_body pc (po, spel) =
             else False
           in
           let s2 =
-            vlist2 (parser_case_sh force_vertic)
-              (bar_before (parser_case_sh force_vertic))
-              {(pc) with bef = sprintf "%s[ " (tab pc.ind);
-               aft = sprintf " ]%s" pc.aft}
+            vlist (parser_case force_vertic) {(pc) with bef = tab pc.ind}
               spel
           in
           sprintf "%s%s\n%s" pc.bef s1 s2 ] ]
