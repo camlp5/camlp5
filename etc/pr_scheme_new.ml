@@ -177,14 +177,20 @@ value value_binding b pc (p, e) =
          (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
     (fun () ->
        let s1 =
-         let pc = {(pc) with bef = sprintf "%s(%s" pc.bef b; aft = ""} in
+         let pc =
+           {(pc) with ind = pc.ind + 1; bef = sprintf "%s(%s" pc.bef b;
+            aft = ""}
+         in
          match pl with
          [ [] -> patt pc p
          | _ ->
-             hlist patt
-               {(pc) with bef = sprintf "%s(" pc.bef;
-                aft = sprintf ")%s" pc.aft}
-               [p :: pl] ]
+             plistbf 0 pc
+               [(fun pc ->
+                   plist patt 0
+                     {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+                      aft = sprintf ")%s" pc.aft}
+                     (List.map (fun p -> (p, "")) [p :: pl]),
+                 "")] ]
        in
        let s2 =
          expr
@@ -681,6 +687,7 @@ EXTEND_PRINTER
           let s =
             match s with
             [ "~-" -> "-"
+            | "~-." -> "-."
             | s -> rename_id s ]
           in
           sprintf "%s%s%s" pc.bef s pc.aft
@@ -787,13 +794,20 @@ EXTEND_PRINTER
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s{" pc.bef;
              aft = sprintf "}%s" pc.aft}
             fpl
-(*
       | <:patt< ?$x$ >> ->
-          fun ppf curr next dg k -> fprintf ppf "?%s%t" x k
-      |  <:patt< ? ($lid:x$ = $e$) >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "(?%s@ %a" x expr (e, ks ")" k)
-*)
+          not_impl "?x" pc x
+      | <:patt< ? ($lid:x$ = $e$) >> ->
+          plistf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc -> sprintf "%s?%s%s" pc.bef x pc.aft, "");
+             (fun pc -> expr pc e, "")]
+      | <:patt< ~$s$: $p$ >> ->
+          plistf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc -> sprintf "%s~%s%s" pc.bef s pc.aft, "");
+             (fun pc -> patt pc p, "")]
       | <:patt< $p1$ . $p2$ >> ->
            sprintf "%s.%s"
              (curr {(pc) with aft = ""} p1)
@@ -824,6 +838,11 @@ EXTEND_PRINTER
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(open" pc.bef;
              aft = sprintf ")%s" pc.aft}
             [(i, "")]
+      | <:str_item< include $me$ >> ->
+          plistb module_expr 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(include" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(me, "")]
       | <:str_item< type $list:tdl$ >> ->
           type_decl_list pc tdl
       | <:str_item< exception $uid:c$ of $list:tl$ >> ->

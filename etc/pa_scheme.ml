@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.37 2007/10/06 03:15:40 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.38 2007/10/06 04:26:25 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -136,7 +136,7 @@
 
 (define quote
   (parser
-   (((` '\\') (len (char (Buff.store 0 '\\'))))
+   (((` '\\') (` c) (len (char (Buff.store (Buff.store 0 '\\') c))))
     (values "CHAR" (Buff.get len)))
    (((` x) s) (char_or_quote_id x s))))
 
@@ -490,6 +490,8 @@
      (let ((e (expr_se se))) <:expr< ~$s$: $e$ >>))
     ((Sexpr loc [(Slid _ "-") se])
      (let ((e (expr_se se))) <:expr< - $e$ >>))
+    ((Sexpr loc [(Slid _ "-.") se])
+     (let ((e (expr_se se))) <:expr< -. $e$ >>))
     ((Sexpr loc [(Slid _ "if") se se1])
      (let* ((e (expr_se se))
             (e1 (expr_se se1)))
@@ -771,7 +773,7 @@
     ((Sfloat loc s) <:patt< $flo:s$ >>)
     ((Schar loc s) <:patt< $chr:s$ >>)
     ((Sstring loc s) <:patt< $str:s$ >>)
-    ((Stid loc _) (error_loc loc "patt"))
+    ((Stid loc s) (error_loc loc "patt"))
     ((Sqid loc _) (error_loc loc "patt"))
     ((Srec loc sel)
      (let ((lpl (List.map (label_patt_se loc) sel)))
@@ -826,6 +828,10 @@
      (let* ((s (rename_id s))
             (e (expr_se se)))
         (Left <:patt< ? ( $lid:s$ = $e$ ) >>)))
+    ((Sexpr loc [(Stid _ s) se])
+     (let* ((s (rename_id s))
+            (p (patt_se se)))
+        (Left <:patt< ~$s$:$p$ >>)))
     ((Sexpr loc [(Slid _ ":") se1 se2])
      (let* ((p (ipatt_se se1)) (t (ctyp_se se2)))
         (Left <:patt< ($p$ : $t$) >>)))
