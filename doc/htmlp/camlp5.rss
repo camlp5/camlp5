@@ -6,6 +6,15 @@
     <lastBuildDate>Mon Sep 17 15:10:47 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
     <item>
+      <title>Syntax tree - 1</title>
+      <description>
+        Added section about the syntax tree in "strict" mode, actually
+        almost a copy of the section in "transitional" mode.
+      </description>
+      <pubDate>Tue Sep 18 06:34:42 CEST 2007</pubDate>
+      <link>../ml_ast.html</link>
+    </item>
+    <item>
       <title>Future work</title>
       <description>
         Changed intro sentence. Deleted section "extensible syntax
