@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: parsers.html,v 1.10 2007/07/16 11:57:00 deraugla Exp $ -->
+  <!-- $Id: parsers.html,v 1.11 2007/07/16 23:38:11 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -67,37 +67,37 @@ can rebuild the parsers in their initial syntax and display it.</p>
 included in the command "camlp5r"), is the following:</p>
 
 <pre>
-          expression ::= parser
-                       | match-with-parser
-              parser ::= "parser" pos-opt "[" parser-cases "]"
-                       | "parser" pos-opt parser-case
-   match-with-parser ::= "match" expression with "parser" pos-opt "[" parser-cases "]"
-                       | "match" expression with "parser" pos-opt parser-case
-        parser-cases ::= parser-cases parser-case
-                       | &lt;nothing&gt;
-         parser-case ::= "[:" stream-pattern ":]" pos-opt "->" expression
-      stream-pattern ::= stream-patt-comp
-                       | stream-patt-comp ";" stream-patt-cont
-                       | "let" LIDENT "=" expression "in" stream-pattern
-                       | &lt;nothing&gt;
-    stream-patt-cont ::= stream-patt-comp-err
-                       | stream-patt-comp-err ";" stream-patt-cont
-                       | "let" LIDENT "=" expression "in" stream-patt-cont
-stream-patt-comp-err ::= stream-patt-comp
-                       | stream-patt-comp "?" expression
-                       | stream-patt-comp "!"
-    stream-patt-comp ::= "`" pattern
-                       | "`" pattern "when" expression
-                       | "?=" lookaheads
-                       | pattern "=" expression
-                       | pattern
-          lookaheads ::= lookaheads "|" lookahead
-                       | lookahead
-           lookahead ::= "[" patterns "]"
-            patterns ::= patterns pattern
-                       | pattern
-             pos-opt ::= pattern
-                       | &lt;nothing&gt;
+            expression ::= parser
+                         | match-with-parser
+                parser ::= "parser" pos-opt "[" parser-cases "]"
+                         | "parser" pos-opt parser-case
+     match-with-parser ::= "match" expression with "parser" pos-opt "[" parser-cases "]"
+                         | "match" expression with "parser" pos-opt parser-case
+          parser-cases ::= parser-cases parser-case
+                         | &lt;nothing&gt;
+           parser-case ::= "[:" stream-pattern ":]" pos-opt "->" expression
+        stream-pattern ::= stream-patt-comp
+                         | stream-patt-comp ";" stream-patt-cont
+                         | "let" LIDENT "=" expression "in" stream-pattern
+                         | &lt;nothing&gt;
+      stream-patt-cont ::= stream-patt-comp-err
+                         | stream-patt-comp-err ";" stream-patt-cont
+                         | "let" LIDENT "=" expression "in" stream-patt-cont
+  stream-patt-comp-err ::= stream-patt-comp
+                         | stream-patt-comp "?" expression
+                         | stream-patt-comp "!"
+      stream-patt-comp ::= "`" pattern
+                         | "`" pattern "when" expression
+                         | "?=" lookaheads
+                         | pattern "=" expression
+                         | pattern
+            lookaheads ::= lookaheads "|" lookahead
+                         | lookahead
+             lookahead ::= "[" patterns "]"
+              patterns ::= patterns pattern
+                         | pattern
+               pos-opt ::= pattern
+                         | &lt;nothing&gt;
 </pre>
 
 <h2>Streams</h2>
@@ -181,9 +181,9 @@ statement "if..then..else" and a rule for the shorter "if..then". If
 written that way:</p>
 
 <pre>
-parser
-[ [: `If; e1 = expr; `Then; e2 = expr; `Else; e3 = expr :] -> f e1 e2 e3
-| [: `If; e1 = expr; `Then; e2 = expr :] -> g e1 e2 ]
+  parser
+  [ [: `If; e1 = expr; `Then; e2 = expr; `Else; e3 = expr :] -> f e1 e2 e3
+  | [: `If; e1 = expr; `Then; e2 = expr :] -> g e1 e2 ]
 </pre>
 
 <p>the second pattern case cannot work.</p>
@@ -198,9 +198,9 @@ the parser case, the parser fails with "<code>Stream.Error</code>".</p>
 <p>Reversing the parser cases like this does not help:</p>
 
 <pre>
-parser
-[ [: `If; e1 = expr; `Then; e2 = expr :] -> g e1 e2
-| [: `If; e1 = expr; `Then; e2 = expr; `Else; e3 = expr :] -> f e1 e2 e3 ]
+  parser
+  [ [: `If; e1 = expr; `Then; e2 = expr :] -> g e1 e2
+  | [: `If; e1 = expr; `Then; e2 = expr; `Else; e3 = expr :] -> f e1 e2 e3 ]
 </pre>
 
 <p>In this case, whatever the input, containing the "if..then"
@@ -215,12 +215,12 @@ factorization of the parsing cases, namely programming it like
 this:</p>
 
 <pre>
-parser
-  [: `If; e1 = expr; `Then; e2 = expr;
-     a =
-       parser
-       [ [: `Else; e3 = expr :] -> f e1 e2 e3
-       | [: :] -> g e1 e2 ] :] -> a
+  parser
+    [: `If; e1 = expr; `Then; e2 = expr;
+       a =
+         parser
+         [ [: `Else; e3 = expr :] -> f e1 e2 e3
+         | [: :] -> g e1 e2 ] :] -> a
 </pre>
 
 <h3>Match with parser</h3>
@@ -230,25 +230,25 @@ against a parser. It is, for "parser", the equivalent of "match
 expression with" for "fun". The same way we could say:</p>
 
 <pre>
-match expression with ...
+  match expression with ...
 </pre>
 
 <p>could be considered as an equivalent to:</p>
 
 <pre>
-(fun ...) expression
+  (fun ...) expression
 </pre>
 
 <p>we could consider that:</p>
 
 <pre>
-match expression with ...
+  match expression with ...
 </pre>
 
 <p>is an equivalent to:</p>
 
 <pre>
-(parser ...) expression
+  (parser ...) expression
 </pre>
 
 <h3>Error messages</h3>
@@ -263,14 +263,14 @@ message is "that stream pattern component expected". Example with
 the parser of "if..then..else.." above:</p>
 
 <pre>
-parser
-  [: `If; e1 = expr ? "expression expected after 'if'";
-     `Then ? "'then' expected";
-     e2 = expr ? "expression expected after 'then'";
-     a =
-       parser
-       [ [: `Else; e3 = expr ? "expression expected" :] -> f e1 e2 e3
-       | [: :] -> g e1 e2 ] :] -> a
+  parser
+    [: `If; e1 = expr ? "expression expected after 'if'";
+       `Then ? "'then' expected";
+       e2 = expr ? "expression expected after 'then'";
+       a =
+         parser
+         [ [: `Else; e3 = expr ? "expression expected" :] -> f e1 e2 e3
+         | [: :] -> g e1 e2 ] :] -> a
 </pre>
 
 <p>Notice that the expression after the question mark is evaluated
@@ -391,13 +391,13 @@ using the pretty printing kit "pr_r.cmo").</p>
 "<code>c</code>"):</p>
 
 <pre>
-parser
-  [: a = b;
-     let c = d a in
-     e =
-       parser
-       [ [: f = g :] -> h c
-       | [: :] -> c ] :] -> e
+  parser
+    [: a = b;
+       let c = d a in
+       e =
+         parser
+         [ [: f = g :] -> h c
+         | [: :] -> c ] :] -> e
 </pre>
 
 <h3>Lookahead</h3>
@@ -411,8 +411,8 @@ there is a problem, in recursing descendent parsing, for the cases
 where to treat and differentiate the following inputs:</p>
 
 <pre>
-(-x+1)
-(-)
+  (-x+1)
+  (-)
 </pre>
 
 <p>The first case is treated in a rule, telling: "a left parenthesis,
@@ -421,12 +421,12 @@ is "a left parenthesis, an operator, a right parenthesis". If programming
 it like this (left factorizing the first parenthesis):</p>
 
 <pre>
-parser
-  [: `Lparen;
-     e =
-       parser
-       [ [: e = expr; `Rparen :] -> e
-       | [: `Minus; `Rparen :] -> minus_op ] :] -> e
+  parser
+    [: `Lparen;
+       e =
+         parser
+         [ [: e = expr; `Rparen :] -> e
+         | [: `Minus; `Rparen :] -> minus_op ] :] -> e
 </pre>
 
 <p>this does not work if the input is "<code>(-)</code>" because the
@@ -437,12 +437,12 @@ error, while encountering the right parenthesis.</p>
 <p>Conversely, writing it this way:</p>
 
 <pre>
-parser
-  [: `Lparen;
-     e =
-       parser
-       [ [: `Minus; `Rparen :] -> minus_op
-       | [: e = expr; `Rparen :] -> e ] :] -> e
+  parser
+    [: `Lparen;
+       e =
+         parser
+         [ [: `Minus; `Rparen :] -> minus_op
+         | [: e = expr; `Rparen :] -> e ] :] -> e
 </pre>
 
 <p>does not help, because if the input is "<code>(-x+1)</code>" the
@@ -456,12 +456,12 @@ in this case. The solution is to test whether the character after the
 minus sign is a right parenthesis:</p>
 
 <pre>
-parser
-  [: `Lparen;
-     e =
-       parser
-       [ [: ?= [ _ Rparen ]; `Minus; `Rparen :] -> minus_op
-       | [: e = expr; `Rparen :] -> e ] :] -> e
+  parser
+    [: `Lparen;
+       e =
+         parser
+         [ [: ?= [ _ Rparen ]; `Minus; `Rparen :] -> minus_op
+         | [: e = expr; `Rparen :] -> e ] :] -> e
 </pre>
 
 <p>It is possible to put several lists of patterns separated by a
@@ -481,13 +481,13 @@ into the exception "<code>Stream.Error</code>".</p>
 <p>The code:</p>
 
 <pre>
-parser [: a = b; c = d ! :] -> e
+  parser [: a = b; c = d ! :] -> e
 </pre>
 
 <p>is equivalent to:</p>
 
 <pre>
-parser [: a = b; s :] -> let c = d s in e
+  parser [: a = b; s :] -> let c = d s in e
 </pre>
 
 <p>One interest of the first syntax is that it shows to readers that
@@ -500,7 +500,7 @@ this allow possible tail recursion done by the OCaml compiler, in the
 following case:</p>
 
 <pre>
-parser [: a = b; c = d ! :] -> c
+  parser [: a = b; c = d ! :] -> c
 </pre>
 
 <p>since it is equivalent (with the fact that "<code>c</code>" is at
@@ -508,15 +508,15 @@ the same time the pattern of the last case and the expression of the
 parser case semantic action:</p>
 
 <pre>
-parser [: a = b; s :] -> d s
+  parser [: a = b; s :] -> d s
 </pre>
 
 <p>The call to "<code>d s</code>" can be a tail recursive call. Without
 the use of the "exclamation mark" in the rule, the equivalent code is:</p>
 
 <pre>
-parser [: a = b; s :] ->
-  try d s with [ Stream.Failure -> raise (Stream.Error "")
+  parser [: a = b; s :] ->
+    try d s with [ Stream.Failure -> raise (Stream.Error "")
 </pre>
 
 <p>which is not tail recursive (because the "try..with" construction
@@ -532,20 +532,20 @@ of its elements. At the beginning the count is zero. When an element is
 removed, the count is incremented. The example:</p>
 
 <pre>
-parser [: a = b :] ep -> c
+  parser [: a = b :] ep -> c
 </pre>
 
 <p>is equivalent to:</p>
 
 <pre>
-parser [: a = b; s :] -> let ep = Stream.count s in c
+  parser [: a = b; s :] -> let ep = Stream.count s in c
 </pre>
 
 <p>There is not direct syntax equivalent to the optional pattern at
 beginning of the stream pattern:</p>
 
 <pre>
-parser bp [: a = b :] -> c
+  parser bp [: a = b :] -> c
 </pre>
 
 <p>These optional patterns allow to dispose of the stream count at the
@@ -573,19 +573,19 @@ example, if you try to write a parser like this (to compute arithmetic
 expressions):</p>
 
 <pre>
-value rec expr =
-  parser
-  [ [: e1 = expr; `'+'; e2 = expr :] -> e1 + e2
-  | [: `('0'..'9' as c) :] -> Char.code c - Char.code '0' ]
+  value rec expr =
+    parser
+    [ [: e1 = expr; `'+'; e2 = expr :] -> e1 + e2
+    | [: `('0'..'9' as c) :] -> Char.code c - Char.code '0' ]
 </pre>
 
 <p>this would endless loop, exactly like if you wrote a code starting
 like:</p>
 
 <pre>
-value rec expr e =
-  let e1 = expr e in
-  ...
+  value rec expr e =
+    let e1 = expr e in
+    ...
 </pre>
 
 <p>A solution to that is to treat the associavity "by hand", by reading
@@ -598,41 +598,41 @@ takes a parser as parameter and returning a parser using it. For example,
 left and right associativity parsing combinators:</p>
 
 <pre>
-value rec left_assoc op elem =
-  let rec op_elem x =
-    parser
-    [ [: t = op; y = elem; r = op_elem (t x y) :] -> r
-    | [: :] -> x ]
-  in
-  parser [: x = elem; r = op_elem x :] -> r
-;
+  value rec left_assoc op elem =
+    let rec op_elem x =
+      parser
+      [ [: t = op; y = elem; r = op_elem (t x y) :] -> r
+      | [: :] -> x ]
+    in
+    parser [: x = elem; r = op_elem x :] -> r
+  ;
 
-value rec right_assoc op elem =
-  let rec op_elem x =
-    parser
-    [ [: t = op; y = elem; r = op_elem y :] -> t x r
-    | [: :] -> x ]
-  in
-  parser [: x = elem; r = op_elem x :] -> r
-;
+  value rec right_assoc op elem =
+    let rec op_elem x =
+      parser
+      [ [: t = op; y = elem; r = op_elem y :] -> t x r
+      | [: :] -> x ]
+    in
+    parser [: x = elem; r = op_elem x :] -> r
+  ;
 </pre>
 
 <p>which can be used, e.g. like this:</p>
 
 <pre>
-value expr =
-  List.fold_right (fun op elem -> op elem)
-    [left_assoc (parser [: `'+' :] -> fun x y -> x +. y);
-     left_assoc (parser [: `'*' :] -> fun x y -> x *. y);
-     right_assoc (parser [: `'^' :] -> fun x y -> x ** y)]
-    (parser [: `('0'..'9' as c) :] -> float (Char.code c - Char.code '0'))
-;
+  value expr =
+    List.fold_right (fun op elem -> op elem)
+      [left_assoc (parser [: `'+' :] -> fun x y -> x +. y);
+       left_assoc (parser [: `'*' :] -> fun x y -> x *. y);
+       right_assoc (parser [: `'^' :] -> fun x y -> x ** y)]
+      (parser [: `('0'..'9' as c) :] -> float (Char.code c - Char.code '0'))
+  ;
 </pre>
 
 <p>and tested, e.g. in the toplevel, like that:</p>
 
 <pre>
-expr (Stream.of_string "2^3^2");
+  expr (Stream.of_string "2^3^2");
 </pre>
 
 <p>The same way, it is possible to parser non-context free grammars, by

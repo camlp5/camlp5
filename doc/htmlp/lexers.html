@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: lexers.html,v 1.5 2007/07/16 08:39:08 deraugla Exp $ -->
+  <!-- $Id: lexers.html,v 1.6 2007/07/16 23:38:11 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>lexers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -45,17 +45,18 @@ result in a buffer. In classical parsers syntax, this could be written
 like this:</p>
 
 <pre>
-value rec ident buf =
-  parser
-  [ [: `('A'..'Z' | 'a'..'z' | '0'..'9' | '_' | ''' | '\128'..'\255'
-       as c); buf = ident (B.add c buf) ! :] -&gt; buf
-  | [: :] -&gt; buf ];
+  value rec ident buf =
+    parser
+    [ [: `('A'..'Z' | 'a'..'z' | '0'..'9' | '_' | ''' | '\128'..'\255'
+         as c); buf = ident (B.add c buf) ! :] -&gt; buf
+    | [: :] -&gt; buf ]
+  ;
 </pre>
 
 <p> With the new syntax, it is possible to write it as:</p>
 
 <pre>
-value rec ident = lexer [ "A..Za..z0..9_'\128..\255" ident! | ];
+  value rec ident = lexer [ "A..Za..z0..9_'\128..\255" ident! | ];
 </pre>
 
 <p>The two codes are strictly equivalent, but the lexer version is easier
@@ -67,35 +68,35 @@ to write and understand, and is much shorter.</p>
 OCaml syntax is extended as follows:</p>
 
 <pre>
-        expression ::= lexer
-             lexer ::= "lexer" "[" rules "]"
-             rules ::= rules rule
-                     | &lt;nothing&gt;
-              rule ::= symbols [ "-&gt;" action ]
-           symbols ::= symbols symbol err
-                     | &lt;nothing&gt;
-            symbol ::= "_" no-record-opt
-                     | STRING no-record-opt
-                     | simple-expression
-                     | "?=" "[" lookaheads "]"
-                     | "[" rules "]"
-     no-record-opt ::= "/"
-                     | &lt;nothing&gt;
- simple-expression ::= LIDENT
-                     | CHAR
-                     | "(" &lt;expression&gt; ")"
-        lookaheads ::= lookaheads "|" lookahead-sequence
-                     | lookahead-sequence
-lookahead-sequence ::= lookahead-symbols
-                     | STRING
- lookahead-symbols ::= lookahead-symbols lookahead-symbol
-                     | lookahead-symbol
-  lookahead-symbol ::= CHAR
-                     | "_"
-               err ::= "?" simple-expression
-                     | "!"
-                     | &lt;nothing&gt;
-            action ::= expression
+          expression ::= lexer
+               lexer ::= "lexer" "[" rules "]"
+               rules ::= rules rule
+                       | &lt;nothing&gt;
+                rule ::= symbols [ "-&gt;" action ]
+             symbols ::= symbols symbol err
+                       | &lt;nothing&gt;
+              symbol ::= "_" no-record-opt
+                       | STRING no-record-opt
+                       | simple-expression
+                       | "?=" "[" lookaheads "]"
+                       | "[" rules "]"
+       no-record-opt ::= "/"
+                       | &lt;nothing&gt;
+   simple-expression ::= LIDENT
+                       | CHAR
+                       | "(" &lt;expression&gt; ")"
+          lookaheads ::= lookaheads "|" lookahead-sequence
+                       | lookahead-sequence
+  lookahead-sequence ::= lookahead-symbols
+                       | STRING
+   lookahead-symbols ::= lookahead-symbols lookahead-symbol
+                       | lookahead-symbol
+    lookahead-symbol ::= CHAR
+                       | "_"
+                 err ::= "?" simple-expression
+                       | "!"
+                       | &lt;nothing&gt;
+              action ::= expression
 </pre>
 
 <p>The identifiers "<code>STRING</code>", "<code>CHAR</code>" and
@@ -109,10 +110,10 @@ actions of the "<code>lexer</code>" statement above, but not only. It
 is:</p>
 
 <pre>
-expression ::= "$" "add" STRING
-             | "$" "buf"
-             | "$" "empty"
-             | "$" "pos"
+  expression ::= "$" "add" STRING
+               | "$" "buf"
+               | "$" "empty"
+               | "$" "pos"
 </pre>
 
 <p>Remark: the identifiers "add", "buf", "empty" and "pos" do not
@@ -134,7 +135,7 @@ them.</p>
 <p>Our lexers are of the type:</p>
 
 <pre>
-B.t -&gt; Stream.t char -&gt; u
+  B.t -&gt; Stream.t char -&gt; u
 </pre>
 
 <p>where "<code>u</code>" is a type which depends on what the lexer
@@ -164,24 +165,24 @@ buffer type ("<code>B.t</code>"), recording the characters at top of
 the list (therefore creating a list in reverse order) could be:</p>
 
 <pre>
-(* tool function, converting a reversed list of char into a string *)
-value rev_implode cl =
-  let s = String.create (List.length cl) in
-  loop (String.length s - 1) cl where rec loop i =
-    fun
-    [ [c :: cl] -&gt; do { s.[i] := c; loop (i - 1) cl }
-    | [] -&gt; s ]
- ;
+  (* tool function, converting a reversed list of char into a string *)
+  value rev_implode cl =
+    let s = String.create (List.length cl) in
+    loop (String.length s - 1) cl where rec loop i =
+      fun
+      [ [c :: cl] -&gt; do { s.[i] := c; loop (i - 1) cl }
+      | [] -&gt; s ]
+   ;
 
- (* the lexing buffer module *)
- module B =
-   struct
-     type t = list char;
-     value empty = [];
-     value add c l = [c :: l];
-     value get = rev_implode;
-   end
-;
+   (* the lexing buffer module *)
+   module B =
+     struct
+       type t = list char;
+       value empty = [];
+       value add c l = [c :: l];
+       value get = rev_implode;
+     end
+  ;
 </pre>
 
 <p>A lexer is a function with two parameters: the first one is the
@@ -337,8 +338,8 @@ characters).</p>
 <p>Examples of lookaheads:</p>
 
 <pre>
-?= [ _ ''' | '\\' _ ]
-?= [ "&lt;&lt;" | "&lt;:" ]
+  ?= [ _ ''' | '\\' _ ]
+  ?= [ "&lt;&lt;" | "&lt;:" ]
 </pre>
 
 <p>The first line above matches a stream whose second character is a
@@ -390,13 +391,13 @@ file, before the usages of this "lexer" syntax.</li>
 lexers, by typing in a command line:</p>
 
 <pre>
-camlp5r pa_lex.cmo pr_r.cmo bar.ml
+  camlp5r pa_lex.cmo pr_r.cmo bar.ml
 </pre>
 
 <p>To see the equivalent code with stream parsers, use:</p>
 
 <pre>
-camlp5r pa_lex.cmo pr_r.cmo pr_rp.cmo bar.ml
+  camlp5r pa_lex.cmo pr_r.cmo pr_rp.cmo bar.ml
 </pre>
 
 <div class="trailer">

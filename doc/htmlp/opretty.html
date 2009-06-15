@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: opretty.html,v 1.5 2007/07/16 08:39:08 deraugla Exp $ -->
+  <!-- $Id: opretty.html,v 1.6 2007/07/16 23:38:11 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Pretty Printing ocaml programs</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -107,7 +107,7 @@ and <code>e2</code> are sub-expressions. If both expressions and their
 application holds on one only line, we want to see:</p>
 
 <pre>
-e1 e2
+  e1 e2
 </pre>
 
 <p>On the other hand, if they do not hold on one only line, we want to
@@ -115,8 +115,8 @@ see <code>e2</code> in another line with, say, an indendation of 2
 spaces:</p>
 
 <pre>
-e1
-  e2
+  e1
+    e2
 </pre>
 
 <p>Here is a possible implementation. The function has been
@@ -124,23 +124,23 @@ named <code>expr_app</code> and can call the function <code>expr</code> to
 print the sub-expressions <code>e1</code> and <code>e2</code>:</p>
 
 <pre>
-value expr_app pc e1 e2 =
-  horiz_vertic
-    (fun () ->
-       let s1 = expr {(pc) with aft = ""} e1 in
-       let s2 = expr {(pc) with bef = ""} e2 in
-       sprintf "%s %s" s1 s2)
-    (fun () ->
-       let s1 = expr {(pc) with aft = ""} e1 in
-       let s2 =
-         expr
-           {(pc) with
-              ind = pc.ind + 2;
-              bef = tab (pc.ind + 2)}
-           e2
-       in
-       sprintf "%s\n%s" s1 s2)
-;
+  value expr_app pc e1 e2 =
+    horiz_vertic
+      (fun () ->
+         let s1 = expr {(pc) with aft = ""} e1 in
+         let s2 = expr {(pc) with bef = ""} e2 in
+         sprintf "%s %s" s1 s2)
+      (fun () ->
+         let s1 = expr {(pc) with aft = ""} e1 in
+         let s2 =
+           expr
+             {(pc) with
+                ind = pc.ind + 2;
+                bef = tab (pc.ind + 2)}
+             e2
+         in
+         sprintf "%s\n%s" s1 s2)
+  ;
 </pre>
 
 <p>The first function is the <i>horizontal</i> printing. It ends with a
@@ -186,28 +186,28 @@ some parts of the pretty printing extensible functions of
 <p>The code above actually looks like:</p>
 
 <pre>
-value expr_app =
-  extfun Extfun.empty with
-  [ &lt;:expr&lt; $e1$ $e2$ &gt;&gt; ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             let s1 = curr {(pc) with aft = ""} e1 in
-             let s2 = next {(pc) with bef = ""} e2 in
-             sprintf "%s %s" s1 s2)
-          (fun () ->
-             let s1 = curr {(pc) with aft = ""} e1 in
-             let s2 =
-               next
-                 {(pc) with
-                    ind = pc.ind + 2;
-                    bef = tab (pc.ind + 2)}
-                 e2
-             in
-             sprintf "%s\n%s" s1 s2)
-  | e ->
-      fun curr next pc -> next pc e ]
-;
+  value expr_app =
+    extfun Extfun.empty with
+    [ &lt;:expr&lt; $e1$ $e2$ &gt;&gt; ->
+        fun curr next pc ->
+          horiz_vertic
+            (fun () ->
+               let s1 = curr {(pc) with aft = ""} e1 in
+               let s2 = next {(pc) with bef = ""} e2 in
+               sprintf "%s %s" s1 s2)
+            (fun () ->
+               let s1 = curr {(pc) with aft = ""} e1 in
+               let s2 =
+                 next
+                   {(pc) with
+                      ind = pc.ind + 2;
+                      bef = tab (pc.ind + 2)}
+                   e2
+               in
+               sprintf "%s\n%s" s1 s2)
+    | e ->
+        fun curr next pc -> next pc e ]
+  ;
 </pre>
 
 <p>The extensible functions have a syntax tree
@@ -244,30 +244,30 @@ dangling token would be included in that expression:</p>
 <p>Dangling else:</p>
 
 <pre>
-if a then <span class="parenthesis">begin</span> if b then c <span class="parenthesis">end</span> <span class="dangling">else</span> d
+  if a then <span class="parenthesis">begin</span> if b then c <span class="parenthesis">end</span> <span class="dangling">else</span> d
 </pre>
 
 <p>Dangling bar:</p>
 
 <pre>
-function
-  A ->
-    <span class="parenthesis">begin</span> match a with
-      B -> c
-    | D -> e
-    <span class="parenthesis">end</span>
-<span class="dangling">|</span> F -> g
+  function
+    A ->
+      <span class="parenthesis">begin</span> match a with
+        B -> c
+      | D -> e
+      <span class="parenthesis">end</span>
+  <span class="dangling">|</span> F -> g
 </pre>
 
 <p>Dangling semicolon:</p>
 
 <pre>
-if a then b
-else <span class="parenthesis">begin</span>
-  let c = d in
-  e
-<span class="parenthesis">end</span><span class="dangling">;</span>
-f
+  if a then b
+  else <span class="parenthesis">begin</span>
+    let c = d in
+    e
+  <span class="parenthesis">end</span><span class="dangling">;</span>
+  f
 </pre>
 
 <p>The information is transmitted by the
@@ -296,13 +296,13 @@ module <code>Pcaml.Printers</code>), where the levels are defined by a
 list, something like this:</p>
 
 <pre>
-pr_expr.pr_levels :=
-  [{pr_label = "top"; pr_rules = expr_top};
-   {pr_label = "add"; pr_rules = expr_add};
-   {pr_label = "mul"; pr_rules = expr_mul};
-   {pr_label = "apply"; pr_rules = expr_app};
-   {pr_label = "simple"; pr_rules = expr_simple}]
-;
+  pr_expr.pr_levels :=
+    [{pr_label = "top"; pr_rules = expr_top};
+     {pr_label = "add"; pr_rules = expr_add};
+     {pr_label = "mul"; pr_rules = expr_mul};
+     {pr_label = "apply"; pr_rules = expr_app};
+     {pr_label = "simple"; pr_rules = expr_simple}]
+  ;
 </pre>
 
 <p>where we find, in particular, our function <code>expr_app</code>
@@ -315,7 +315,7 @@ as parameters, and returning the pretty printed string. For example, the
 call to the top level of expressions has been defined as:</p>
 
 <pre>
-value expr pc e = pr_expr.pr_fun "top" pc e;
+  value expr pc e = pr_expr.pr_fun "top" pc e;
 </pre>
 
 <p>Same thing for the other pretty printed functions for patterns,
@@ -326,12 +326,12 @@ function <code>find_pr_level</code> can be used to get the level to
 be extended, e.g.</p>
 
 <pre>
-let expr_app = find_pr_level "app" pr_expr.pr_levels in
-expr_app.pr_rules :=
-  extfun expr_app.pr_rules with
-  [ &lt;:expr&lt; .... &gt;&gt; -> ...
-  | &lt;:expr&lt; .... &gt;&gt; -> ... 
-  | ... ];
+  let expr_app = find_pr_level "app" pr_expr.pr_levels in
+  expr_app.pr_rules :=
+    extfun expr_app.pr_rules with
+    [ &lt;:expr&lt; .... &gt;&gt; -> ...
+    | &lt;:expr&lt; .... &gt;&gt; -> ... 
+    | ... ];
 </pre>
 
 <div class="trailer">

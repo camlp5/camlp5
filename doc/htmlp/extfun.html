@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: extfun.html,v 1.6 2007/07/16 08:39:08 deraugla Exp $ -->
+  <!-- $Id: extfun.html,v 1.7 2007/07/16 23:38:11 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Extensible functions</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -39,11 +39,11 @@ the <a href="pretty.html">pretty printing</a> system of Camlp5.</p>
 "pa_extfun.cmo" is the following:</p>
 
 <pre>
-          expression ::= extensible-function
- extensible-function ::= "extfun" expression "with" "[" match-cases "]"
-         match-cases ::= match-case "|" match-cases
-          match-case ::= pattern "->" expression
-                       | pattern "when" expression "->" expression
+           expression ::= extensible-function
+  extensible-function ::= "extfun" expression "with" "[" match-cases "]"
+          match-cases ::= match-case "|" match-cases
+           match-case ::= pattern "->" expression
+                        | pattern "when" expression "->" expression
 </pre>
 
 <p>It is actually the same syntax than the one of "match" and "try"

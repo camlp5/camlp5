@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: index.html,v 1.8 2007/07/16 08:39:08 deraugla Exp $ -->
+  <!-- $Id: index.html,v 1.9 2007/07/16 23:38:11 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Camlp5</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -62,8 +62,8 @@ toplevel.</p>
 option <tt>-pp</tt> of the ocaml compiler. Examples:</p>
 
 <pre>
-ocamlc -pp camlp5o foo.ml
-ocamlc -pp camlp5r bar.ml
+  ocamlc -pp camlp5o foo.ml
+  ocamlc -pp camlp5r bar.ml
 </pre>
 
 <p>This way, the parsing is done by camlp5. In case of syntax errors,
@@ -76,8 +76,8 @@ loading one of the files "<tt>camlp5o.cma</tt>" or
 "<tt>camlp5r.cma</tt>".  The common usage is:</p>
 
 <pre>
-ocaml -I +camlp5 camlp5o.cma
-ocaml -I +camlp5 camlp5r.cma
+  ocaml -I +camlp5 camlp5o.cma
+  ocaml -I +camlp5 camlp5r.cma
 </pre>
 
 <a id="ExtSynt"></a>
@@ -96,7 +96,7 @@ extensions. These object files are named <em>parsing kits</em>.</p>
     command. For example:
 
 <pre>
-ocamlc -pp "camlp5o ./myext.cmo" foo.ml
+  ocamlc -pp "camlp5o ./myext.cmo" foo.ml
 </pre>
 
   </li>
@@ -104,13 +104,13 @@ ocamlc -pp "camlp5o ./myext.cmo" foo.ml
   <li>Or by adding the directive "<tt>#load</tt>" in the source file:
 
 <pre>
-#load "./myext.cmo";;
+  #load "./myext.cmo";;
 </pre>
 
     <p>and compile it simply like this:</p>
 
 <pre>
-ocamlc -pp camlp5o foo.ml
+  ocamlc -pp camlp5o foo.ml
 </pre>
 
   </li>
@@ -139,15 +139,15 @@ syntax, here are the commands to pretty print them in their own
 syntax:</p>
 
 <pre>
-camlp5o pr_o.cmo foo.ml
-camlp5r pr_r.cmo bar.ml
+  camlp5o pr_o.cmo foo.ml
+  camlp5r pr_r.cmo bar.ml
 </pre>
 
 <p>And how to convert them into the other syntax:</p>
 
 <pre>
-camlp5o pr_r.cmo foo.ml
-camlp5r pr_o.cmo foo.ml
+  camlp5o pr_r.cmo foo.ml
+  camlp5r pr_o.cmo foo.ml
 </pre>
 
 <p>The way to create one's own pretty printing extensions is

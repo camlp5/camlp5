@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: pretty.html,v 1.8 2007/07/16 19:35:43 deraugla Exp $ -->
+  <!-- $Id: pretty.html,v 1.9 2007/07/16 23:38:11 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Pretty</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -44,7 +44,7 @@ raise, the second function is called.</p>
 <p>The type of "horiz_vertic" is:</p>
 
 <pre>
-(unit -> 'a) -> (unit -> 'a) -> 'a
+  (unit -> 'a) -> (unit -> 'a) -> 'a
 </pre>
 
 <h4>the horizontal function</h4>
@@ -89,24 +89,24 @@ changed by the user before using "horiz_vertic".</p>
 short, you want to see:</p>
 
 <pre>
-&lt;li&gt;something&lt;/li&gt;
+  &lt;li&gt;something&lt;/li&gt;
 </pre>
 
 <p>If the "something" has several lines, you want to see that:</p>
 
 <pre>
-&lt;li&gt;
-  something
-&lt;/li&gt;
+  &lt;li&gt;
+    something
+  &lt;/li&gt;
 </pre>
 
 <p>A possible implementation is:</p>
 
 <pre>
-open Pretty;
-horiz_vertic
-  (fun () -> sprintf "&lt;li&gt;something&lt;/li&gt;")
-  (fun () -> sprintf "&lt;li&gt;\n  something\n&lt;/li&gt;");
+  open Pretty;
+  horiz_vertic
+    (fun () -> sprintf "&lt;li&gt;something&lt;/li&gt;")
+    (fun () -> sprintf "&lt;li&gt;\n  something\n&lt;/li&gt;");
 </pre>
 
 <p>Notice that the "<code>sprintf</code>" above is the one of the
@@ -118,9 +118,9 @@ result of other pretty printing functions, and the program should
 rather look like:</p>
 
 <pre>
-horiz_vertic
-  (fun () -> sprintf "&lt;li&gt;%s&lt;/li&gt;" (print something))
-  (fun () -> sprintf "&lt;li&gt;\n  %s\n&lt;/li&gt;" (print something))
+  horiz_vertic
+    (fun () -> sprintf "&lt;li&gt;%s&lt;/li&gt;" (print something))
+    (fun () -> sprintf "&lt;li&gt;\n  %s\n&lt;/li&gt;" (print something))
 </pre>
 
 <p>Parts of this "something" can be printed horizontally and other
@@ -151,9 +151,9 @@ functions because they need to be taken into account in the called
 but give it as parameter of your "print" function:</p>
 
 <pre>
-horiz_vertic
-  (fun () -> sprintf "&lt;li&gt;%s&lt;/li&gt;" (print "" something))
-  (fun () -> sprintf "&lt;li&gt;\n%s\n&lt;/li&gt;" (print "  " something))
+  horiz_vertic
+    (fun () -> sprintf "&lt;li&gt;%s&lt;/li&gt;" (print "" something))
+    (fun () -> sprintf "&lt;li&gt;\n%s\n&lt;/li&gt;" (print "  " something))
 </pre>
 
 <p>Now, the "print" function could look like, supposing you print
@@ -161,10 +161,10 @@ other things with "other" of the current indentation and "things" with
 a new shifted one:</p>
 
 <pre>
-value print ind something =
-  horiz_vertic
-    (fun () -> sprintf "%sother things..." ind)
-    (fun () -> sprintf "%sother\n%s  things..." ind ind);
+  value print ind something =
+    horiz_vertic
+      (fun () -> sprintf "%sother things..." ind)
+      (fun () -> sprintf "%sother\n%s  things..." ind ind);
 </pre>
 
 <p>Supposing than "other" and "things" are the result of two other
@@ -172,10 +172,10 @@ functions "print_other" and "print_things", your program could look
 like:</p>
 
 <pre>
-value print ind (x, y) =
-  horiz_vertic
-    (fun () -> sprintf "%s%s %s" ind (print_other 0 x) (print_things 0 y))
-    (fun () -> sprintf "%s\n%s" (print_other ind x) (print_things (ind ^ "  ") y));
+  value print ind (x, y) =
+    horiz_vertic
+      (fun () -> sprintf "%s%s %s" ind (print_other 0 x) (print_things 0 y))
+      (fun () -> sprintf "%s\n%s" (print_other ind x) (print_things (ind ^ "  ") y));
 </pre>
 
 <h3>How to cancel a horizontal print</h3>
@@ -185,9 +185,9 @@ an horizontal context, constraining the pretty print to be on several
 lines in the calling function, just do:</p>
 
 <pre>
-horiz_vertic
-  (fun () -> sprintf "\n")
-  (fun () -> ... (* your normal pretty print *))
+  horiz_vertic
+    (fun () -> sprintf "\n")
+    (fun () -> ... (* your normal pretty print *))
 </pre>
 
 <p>In this case, the horizontal print always fails, due to the newline
@@ -224,9 +224,9 @@ horizontal context and not on the vertical one, it is perfectly correct
 to write:</p>
 
 <pre>
-horiz_vertic
-  (fun () -> Some (sprintf "I hold on a single line")
-  (fun () -> None)
+  horiz_vertic
+    (fun () -> Some (sprintf "I hold on a single line")
+    (fun () -> None)
 </pre>
 
 <h3>Why raising exceptions ?</h3>

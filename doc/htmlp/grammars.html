@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.30 2007/07/16 20:28:47 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.31 2007/07/16 23:38:11 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -43,7 +43,7 @@ a <em>grammar</em>, a value of type "<tt>Grammar.g</tt>", using
 the function "<tt>Grammar.gcreate</tt>":</p>
 
 <pre>
-value g = Grammar.gcreate lexer;
+  value g = Grammar.gcreate lexer;
 </pre>
 
 <p>where "<tt>lexer</tt>" is a lexer previously defined. See the
@@ -52,7 +52,7 @@ possible to use a lexer of the module "<tt>Plexer</tt>" provided by
 camlp5:</p>
 
 <pre>
-value g = Grammar.gcreate (Plexer.gmake ());
+  value g = Grammar.gcreate (Plexer.gmake ());
 </pre>
 
 <p>Each grammar entry is associated with a grammar. Only grammar
@@ -62,7 +62,7 @@ takes the grammar as first parameter and a name as second parameter. This
 name is used in case of syntax errors. For example:</p>
 
 <pre>
-value exp = Grammar.Entry.create g "expression";
+  value exp = Grammar.Entry.create g "expression";
 </pre>
 
 <p>To apply a grammar entry, the function
@@ -70,14 +70,14 @@ value exp = Grammar.Entry.create g "expression";
 grammar entry, the second one a stream of characters:</p>
 
 <pre>
-Grammar.Entry.parse exp (Stream.of_string "hello");
+  Grammar.Entry.parse exp (Stream.of_string "hello");
 </pre>
 
 <p>But if you experiment this, since the entry was just created
 without any rules, you receive an error message:</p>
 
 <pre>
-Stream.Error "entry [expression] is empty"
+  Stream.Error "entry [expression] is empty"
 </pre>
 
 <p>To add grammar rules to the grammar entry, it is necessary
@@ -91,65 +91,65 @@ ocaml language when the syntax extension kit "<tt>pa_extend.cmo</tt>"
 is loaded. Its syntax is:</p>
 
 <pre>
-          expression ::= extend
-              extend ::= "EXTEND" extend-body "END"
-         extend-body ::= global-opt entries
-          global-opt ::= "GLOBAL" ":" entry-names ";"
-                       | &lt;nothing&gt;
-         entry-names ::= entry-name entry-names
-                       | entry-name
-               entry ::= entry-name ":" position-opt "[" levels "]"
-        position-opt ::= "FIRST"
-                       | "LAST"
-                       | "BEFORE" label
-                       | "AFTER" label
-                       | "LEVEL" label
-                       | &lt;nothing&gt;
-              levels ::= level "|" levels
-                       | level
-               level ::= label-opt assoc-opt "[" rules "]"
-           label-opt ::= label
-                       | &lt;nothing&gt;
-           assoc-opt ::= "LEFTA"
-                       | "RIGHTA"
-                       | "NONA"
-                       | &lt;nothing&gt;
-               rules ::= rule "|" rules
-                       | rule
-                rule ::= psymbols-opt "->" expression
-                       | psymbols-opt
-        psymbols-opt ::= psymbols
-                       | &lt;nothing&gt;
-            psymbols ::= psymbol ";" psymbols
-                       | psymbol
-             psymbol ::= symbol
-                       | pattern "=" symbol
-              symbol ::= keyword
-                       | token
-                       | token string
-                       | entry-name
-                       | entry-name "LEVEL" label
-                       | "SELF"
-                       | "NEXT"
-                       | "LIST0" symbol
-                       | "LIST0" symbol "SEP" symbol
-                       | "LIST1" symbol
-                       | "LIST1" symbol "SEP" symbol
-                       | "OPT" symbol
-                       | "[" rules "]"
-                       | "(" symbol ")"
-             keyword ::= string
-               token ::= uident
-               label ::= string
-          entry-name ::= qualid
-              qualid ::= qualid "." qualid
-                       | uident
-                       | lident
-              uident ::= 'A'-'Z' ident
-              lident ::= ('a'-'z' | '_' | utf8-char) ident
-               ident ::= ident-char*
-          ident-char ::= ('a'-'a' | 'A'-'Z' | '0'-'9' | '_' | ''' | utf8-char)
-           utf8-char ::= '\128'-'\255'
+    expression ::= extend
+        extend ::= "EXTEND" extend-body "END"
+   extend-body ::= global-opt entries
+    global-opt ::= "GLOBAL" ":" entry-names ";"
+                 | &lt;nothing&gt;
+   entry-names ::= entry-name entry-names
+                 | entry-name
+         entry ::= entry-name ":" position-opt "[" levels "]"
+  position-opt ::= "FIRST"
+                 | "LAST"
+                 | "BEFORE" label
+                 | "AFTER" label
+                 | "LEVEL" label
+                 | &lt;nothing&gt;
+        levels ::= level "|" levels
+                 | level
+         level ::= label-opt assoc-opt "[" rules "]"
+     label-opt ::= label
+                 | &lt;nothing&gt;
+     assoc-opt ::= "LEFTA"
+                 | "RIGHTA"
+                 | "NONA"
+                 | &lt;nothing&gt;
+         rules ::= rule "|" rules
+                 | rule
+          rule ::= psymbols-opt "->" expression
+                 | psymbols-opt
+  psymbols-opt ::= psymbols
+                 | &lt;nothing&gt;
+      psymbols ::= psymbol ";" psymbols
+                 | psymbol
+       psymbol ::= symbol
+                 | pattern "=" symbol
+        symbol ::= keyword
+                 | token
+                 | token string
+                 | entry-name
+                 | entry-name "LEVEL" label
+                 | "SELF"
+                 | "NEXT"
+                 | "LIST0" symbol
+                 | "LIST0" symbol "SEP" symbol
+                 | "LIST1" symbol
+                 | "LIST1" symbol "SEP" symbol
+                 | "OPT" symbol
+                 | "[" rules "]"
+                 | "(" symbol ")"
+       keyword ::= string
+         token ::= uident
+         label ::= string
+    entry-name ::= qualid
+        qualid ::= qualid "." qualid
+                 | uident
+                 | lident
+        uident ::= 'A'-'Z' ident
+        lident ::= ('a'-'z' | '_' | utf8-char) ident
+         ident ::= ident-char*
+    ident-char ::= ('a'-'a' | 'A'-'Z' | '0'-'9' | '_' | ''' | utf8-char)
+     utf8-char ::= '\128'-'\255'
 </pre>
 
 <p>Other statements, "<tt>GEXTEND</tt>", "<tt>DELETE_RULE</tt>",
@@ -190,13 +190,13 @@ inside.</p>
 <p>Example:</p>
 
 <pre>
-value exp = Grammar.Entry.create g "exp";
-EXTEND
-  GLOBAL: exp;
-  exp: [ [ x = foo; y = bar ] ];
-  foo: [ [ "foo" ] ];
-  bar: [ [ "bar" ] ];
-END;
+  value exp = Grammar.Entry.create g "exp";
+  EXTEND
+    GLOBAL: exp;
+    exp: [ [ x = foo; y = bar ] ];
+    foo: [ [ "foo" ] ];
+    bar: [ [ "bar" ] ];
+  END;
 </pre>
 
 <p>The entry "exp" is an existing variable (defined by value exp =
@@ -330,20 +330,20 @@ internally inserted in a tree, allowing the left factorization of the
 rule. For example, if two rules have as list of symbols:</p>
 
 <pre>
-"if"; e1 = expr; "then"; e2 = expr
-"if"; e1 = expr; "then"; e2 = expr; "else"; e3 = expr
+  "if"; e1 = expr; "then"; e2 = expr
+  "if"; e1 = expr; "then"; e2 = expr; "else"; e3 = expr
 </pre>
 
 <p>the rules are inserted in a tree and the result look like:<p>
 
 <pre>
-"if"
-   expr
-     "then"
-       expr
-         "else"
-           expr
-         &lt;nothing&gt;
+  "if"
+     expr
+       "then"
+         expr
+           "else"
+             expr
+           &lt;nothing&gt;
 </pre>
 
 <p>This tree is built as long as rules are inserted. When used, by
@@ -392,7 +392,7 @@ in rules, contain in its environment:</p>
 "<tt>-loc</tt>" of camlp5. For example, compiling a file like this:</p>
 
 <pre>
-camlp5r -loc foobar file.ml
+  camlp5r -loc foobar file.ml
 </pre>
 
 <p>the variable name, for the location will be "<tt>foobar</tt>"
@@ -442,7 +442,7 @@ represented by values of type "<tt>pattern</tt>" defined in the module
 "<tt>Token</tt>" like this:</p>
 
 <pre>
-type pattern = (string * string);
+  type pattern = (string * string);
 </pre>
 
 <p>where the two strings represent:</p>
@@ -459,7 +459,7 @@ parameter corresponds to a match to any value of the symbol.</p>
 <p>For example, in the rule containing:</p>
 
 <pre>
-"for"; i = LIDENT; "="; e1 = SELF; "to"; e2 = SELF
+  "for"; i = LIDENT; "="; e1 = SELF; "to"; e2 = SELF
 </pre>
 
 <p>the token patterns are:</p>
@@ -483,7 +483,7 @@ parameter corresponds to a match to any value of the symbol.</p>
 by the token pattern:</p>
 
 <pre>
-("UIDENT", "Foo")
+  ("UIDENT", "Foo")
 </pre>
 
 <p>On the other hand, the symbol "<tt>SELF</tt>" is a specific symbol
@@ -516,19 +516,19 @@ a token, returning the matched string or raising the exception
 <p>Example:</p>
 
 <pre>
-type mytoken = [ Ident of string | Int of int | Comma | Equal | Keyw of string ];
+  type mytoken = [ Ident of string | Int of int | Comma | Equal | Keyw of string ];
 
-value mymatch =
-  fun
-  [ ("IDENT", "") -> fun [ Ident s -> s | _ -> raise Stream.Failure ]
-  | ("INT", "") -> fun [ Int i -> string_of_int i | _ -> raise Stream.Failure ]
-  | ("", ",") -> fun [ Comma -> "" | _ -> raise Stream.Failure ]
-  | ("", "=") -> fun [ Equal -> "" | _ -> raise Stream.Failure ]
-  | ("", s) ->
-      fun
-      [ Keyw k -> if k = s then "" else raise Stream.Failure
-      | _ -> raise Stream.Failure ] ]
-;
+  value mymatch =
+    fun
+    [ ("IDENT", "") -> fun [ Ident s -> s | _ -> raise Stream.Failure ]
+    | ("INT", "") -> fun [ Int i -> string_of_int i | _ -> raise Stream.Failure ]
+    | ("", ",") -> fun [ Comma -> "" | _ -> raise Stream.Failure ]
+    | ("", "=") -> fun [ Equal -> "" | _ -> raise Stream.Failure ]
+    | ("", s) ->
+        fun
+        [ Keyw k -> if k = s then "" else raise Stream.Failure
+        | _ -> raise Stream.Failure ] ]
+  ;
 </pre>
 
 <p>Notice that, for efficiency, it is necessary to write this function
@@ -545,7 +545,7 @@ interface. See further. For the moment, keep it somewhere.</p>
 <p>The lexer must be of type:</p>
 
 <pre>
-Stream.t char -> (Stream.t t * location_function)
+  Stream.t char -> (Stream.t t * location_function)
 </pre>
 
 <p>where "<tt>t</tt>" is your token type and the location function is
@@ -577,13 +577,13 @@ Stream.t char -> (Stream.t t * location_function)
 sources):</p>
 
 <pre>
-"external"; i = LIDENT; ":"; t = ctyp; "="; sl = LIST1 STRING
+  "external"; i = LIDENT; ":"; t = ctyp; "="; sl = LIST1 STRING
 </pre>
 
 <p>is written, by error, like this:</p>
 
 <pre>
-"external"; i = LODENT; ":"; t = ctyp; "="; sl = LIST1 STRANG
+  "external"; i = LODENT; ":"; t = ctyp; "="; sl = LIST1 STRANG
 </pre>
 
 <p>and if the "using" function does nothing, there is no check that
@@ -682,11 +682,11 @@ functions and values that can be used in the first time:</p>
 glexer value like this:</p>
 
 <pre>
-{Token.tok_func = lexer;
- Token.tok_using _ = (); Token.tok_removing _ = ();
- Token.tok_match = Token.default_match;
- Token.tok_text = Token.lexer_text;
- Token.tok_comm = None}
+  {Token.tok_func = lexer;
+   Token.tok_using _ = (); Token.tok_removing _ = ();
+   Token.tok_match = Token.default_match;
+   Token.tok_text = Token.lexer_text;
+   Token.tok_comm = None}
 </pre>
 
 <p>... to be completed ...</p>
