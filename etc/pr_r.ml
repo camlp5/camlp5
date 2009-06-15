@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.109 2007/12/05 03:47:59 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.110 2007/12/05 09:56:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1510,8 +1510,7 @@ EXTEND_PRINTER
                  aft = sprintf "]%s" pc.aft}
                 xl ]
       | <:expr< ($e$ : $t$) >> ->
-          let pc = {(pc) with ind = pc.ind + 1} in
-          pprintf pc "(%p :@ %p)" expr e ctyp t
+          pprintf pc "@[<1>(%p :@ %p)@]" expr e ctyp t
       | <:expr< $int:s$ >> | <:expr< $flo:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%s)" s
           else pprintf pc "%s" s
@@ -1605,11 +1604,7 @@ EXTEND_PRINTER
           let xl = List.map (fun x -> (x, ";")) xl in
           match y with
           [ Some  y ->
-              let patt2 pc x =
-                sprint_break 1 0 pc
-                  (fun pc -> patt {(pc) with aft = " ::"} x)
-                  (fun pc -> patt {(pc) with aft = sprintf "]%s" pc.aft} y)
-              in
+              let patt2 pc x = pprintf pc "%p ::@ %p]" patt x patt y in
               plistl patt patt2 0
                 {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef} xl
           | None ->
@@ -1618,11 +1613,7 @@ EXTEND_PRINTER
                  aft = sprintf "]%s" pc.aft}
                 xl ]
       | <:patt< ($p$ : $t$) >> ->
-          sprint_break 1 0 {(pc) with ind = pc.ind + 1}
-            (fun pc ->
-               patt {(pc) with bef = sprintf "%s(" pc.bef; aft = " :"} p)
-            (fun pc ->
-               ctyp {(pc) with aft = sprintf ")%s" pc.aft} t)
+          pprintf pc "@[<1>(%p :@ %p)@]" patt p ctyp t
       | <:patt< $int:s$ >> | <:patt< $flo:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then
             sprintf "%s(%s)%s" pc.bef s pc.aft

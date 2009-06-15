@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_pprintf.ml,v 1.8 2007/12/05 02:33:57 deraugla Exp $ *)
+(* $Id: pa_pprintf.ml,v 1.9 2007/12/05 09:56:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* pprintf statement *)
@@ -63,6 +63,120 @@ value expand_item loc pc fmt al =
             ([pc], al) ]
   in
   (pcl, al)
+;
+
+type pp = [ PPbreak of int and int | PPspace ];
+
+value rec parse_int_loop n =
+  fparser
+  [ [: `('0'..'9' as c);
+       n = parse_int_loop (10 * n + Char.code c - Char.code '0') :] -> n
+  | [: :] -> n ]
+;
+
+value parse_int =
+  fparser
+    [: `('0'..'9' as c);
+       n = parse_int_loop (Char.code c - Char.code '0') :] ->
+      n
+;
+
+value parse_pp_param =
+  fparser [: `'<'; nsp = parse_int; `' '; off = parse_int; `'>' :] ->
+    (nsp, off)
+;
+
+value parse_paren_param =
+  fparser [: `'<'; off = parse_int; `'>' :] -> off
+;
+
+value next_item loc pc fmt al i_beg =
+  loop al i_beg where rec loop al i =
+    if i + 1 < String.length fmt then
+      if fmt.[i] = '@' then
+        match fmt.[i+1] with
+        [ ';' | ' ' | '[' | ']' ->
+            let pcl_al_opt =
+              if i = i_beg then None
+              else
+                let fmt1 = String.sub fmt i_beg (i - i_beg) in
+                Some (expand_item loc pc fmt1 al)
+            in
+            (pcl_al_opt, i + 1)
+        | _ ->
+            loop al (i + 1) ]
+      else loop al (i + 1)
+    else
+      let pcl_al_opt =
+        if i = i_beg then None
+        else
+          let fmt1 = String.sub fmt i_beg (String.length fmt - i_beg) in
+          Some (expand_item loc pc fmt1 al)
+      in
+      (pcl_al_opt, String.length fmt)
+
+;
+
+type tree 'a 'b =
+  [ Node of tree 'a 'b and 'a and tree 'a 'b
+  | Leaf of 'b
+  | Offset of int and tree 'a 'b ]
+;
+
+value rec read_tree loc pc fmt al i =
+  let (tree, al, i) = read_simple_tree loc pc fmt al i in
+  kont tree al i where rec kont tree al i =
+    if i = String.length fmt then (tree, al, i)
+    else
+      match fmt.[i] with
+      [ ';' ->
+          let (pp, i) =
+            let (nspaces, offset, i) =
+              let s =
+                String.sub fmt (i + 1) (String.length fmt - i - 1)
+              in
+              match parse_pp_param (Fstream.of_string s) with
+              [ Some ((nspaces, noffset), strm) ->
+                  (nspaces, noffset, i + 1 + Fstream.count strm)
+              | None -> (1, 2, i + 1) ]
+            in
+            (PPbreak nspaces offset, i)
+          in
+          let (tree2, al, i) = read_simple_tree loc pc fmt al i in
+          let tree = Node tree pp tree2 in
+          kont tree al i
+      | ' ' ->
+          let (tree2, al, i) = read_simple_tree loc pc fmt al (i + 1) in
+          let tree = Node tree PPspace tree2 in
+          kont tree al i
+      | ']' ->
+          (tree, al, i + 1)
+      | c -> failwith ("not impl '" ^ String.make 1 c ^ "'") ]
+
+and read_simple_tree loc pc fmt al i =
+  if i + 1 < String.length fmt && fmt.[i] = '@' && fmt.[i+1] = '[' then
+    let (offset, i) =
+      let s = String.sub fmt (i + 2) (String.length fmt - i - 2) in
+      match parse_paren_param (Fstream.of_string s) with
+      [ Some (offset, strm) -> (offset, i + 2 + Fstream.count strm)
+      | None -> (0, i + 2) ]
+    in
+    let (tree, al, i) = read_tree loc pc fmt al i in
+    let tree = if offset > 0 then Offset offset tree else tree in
+    if i + 1 < String.length fmt && fmt.[i] = '@' && fmt.[i+1] = ']' then
+      (tree, al, i + 2)
+    else if i = String.length fmt then
+      (tree, al, i)
+    else
+       assert False
+  else
+    let (pcl_al_opt, i) = next_item loc pc fmt al i in
+    let (pcl, al) =
+      match pcl_al_opt with
+      [ Some (pcl, al) -> (Leaf pcl, al)
+      | None -> (Leaf [], al) ]
+    in
+    (pcl, al, i)
 ;
 
 value make_call loc (bef_is_empty, aft_is_empty) pc pcl =
@@ -142,107 +256,6 @@ value make_call loc (bef_is_empty, aft_is_empty) pc pcl =
         <:expr< sprintf $str:fmt$ >> el ]
 ;
 
-type pp = [ PPbreak of int and int | PPspace ];
-
-value rec parse_int_loop n =
-  fparser
-  [ [: `('0'..'9' as c);
-       n = parse_int_loop (10 * n + Char.code c - Char.code '0') :] -> n
-  | [: :] -> n ]
-;
-
-value parse_int =
-  fparser
-    [: `('0'..'9' as c);
-       n = parse_int_loop (Char.code c - Char.code '0') :] ->
-      n
-;
-
-value parse_pp_param =
-  fparser [: `'<'; nsp = parse_int; `' '; off = parse_int :] -> (nsp, off)
-;
-
-value next_item loc pc fmt al i_beg =
-  loop al i_beg where rec loop al i =
-    if i + 1 < String.length fmt then
-      if fmt.[i] = '@' then
-        match fmt.[i+1] with
-        [ ';' | ' ' | '[' | ']' ->
-            let pcl_al_opt =
-              if i = i_beg then None
-              else
-                let fmt1 = String.sub fmt i_beg (i - i_beg) in
-                Some (expand_item loc pc fmt1 al)
-            in
-            (pcl_al_opt, i + 1)
-        | _ ->
-            loop al (i + 1) ]
-      else loop al (i + 1)
-    else
-      let pcl_al_opt =
-        if i = i_beg then None
-        else
-          let fmt1 = String.sub fmt i_beg (String.length fmt - i_beg) in
-          Some (expand_item loc pc fmt1 al)
-      in
-      (pcl_al_opt, String.length fmt)
-
-;
-
-type tree 'a 'b =
-  [ Node of tree 'a 'b and 'a and tree 'a 'b
-  | Leaf of 'b ]
-;
-
-value rec read_tree loc pc fmt al i =
-  let (tree, al, i) = read_simple_tree loc pc fmt al i in
-  kont tree al i where rec kont tree al i =
-    if i = String.length fmt then (tree, al, i)
-    else
-      match fmt.[i] with
-      [ ';' ->
-          let (pp, i) =
-            let (nspaces, offset, i) =
-              let s =
-                String.sub fmt (i + 1) (String.length fmt - i - 1)
-              in
-              match parse_pp_param (Fstream.of_string s) with
-              [ Some ((nspaces, noffset), strm) ->
-                  (nspaces, noffset, i + 1 + Fstream.count strm + 1)
-              | None -> (1, 2, i + 1) ]
-            in
-            (PPbreak nspaces offset, i)
-          in
-          let (tree2, al, i) = read_simple_tree loc pc fmt al i in
-          let tree = Node tree pp tree2 in
-          kont tree al i
-      | ' ' ->
-          let (tree2, al, i) = read_simple_tree loc pc fmt al (i + 1) in
-          let tree = Node tree PPspace tree2 in
-          kont tree al i
-      | ']' ->
-          (tree, al, i + 1)
-      | c -> failwith ("not impl '" ^ String.make 1 c ^ "'") ]
-
-and read_simple_tree loc pc fmt al i =
-  if i + 1 < String.length fmt && fmt.[i] = '@' && fmt.[i+1] = '[' then
-    let (tree, al, i) = read_tree loc pc fmt al (i + 2) in
-    if i + 1 < String.length fmt && fmt.[i] = '@' && fmt.[i+1] = ']' then
-      (tree, al, i + 2)
-    else if i = String.length fmt then
-      (tree, al, i)
-    else
-       assert False
-  else
-    let (pcl_al_opt, i) = next_item loc pc fmt al i in
-    let (pcl, al) =
-      match pcl_al_opt with
-      [ Some (pcl, al) -> (Leaf pcl, al)
-      | None -> (Leaf [], al) ]
-    in
-    (pcl, al, i)
-;
-
 value expand_pprintf loc pc fmt al =
   let (tree, al, _) = read_tree loc pc fmt al 0 in
   match al with
@@ -251,8 +264,8 @@ value expand_pprintf loc pc fmt al =
       let loc = Ploc.encl (MLast.loc_of_expr a) (MLast.loc_of_expr last_a) in
       Ploc.raise loc (Stream.Error "too many parameters")
   | [] ->
-      loop pc (False, False) tree
-      where rec loop pc (bef_is_empty, aft_is_empty) =
+      loop pc 0 (False, False) tree
+      where rec loop pc offset (bef_is_empty, aft_is_empty) =
         fun
         [ Leaf pcl -> make_call loc (bef_is_empty, aft_is_empty) pc pcl
         | Node tree1 pp tree2 ->
@@ -261,12 +274,20 @@ value expand_pprintf loc pc fmt al =
               [ PPbreak sp off -> (string_of_int sp, string_of_int off)
               | PPspace -> ("1", "0") ]
             in
-            let e1 = loop <:expr< pc >> (bef_is_empty, True) tree1 in
-            let e2 = loop <:expr< pc >> (True, aft_is_empty) tree2 in
+            let e1 = loop <:expr< pc >> 0 (bef_is_empty, True) tree1 in
+            let e2 = loop <:expr< pc >> 0 (True, aft_is_empty) tree2 in
+            let pc =
+              if offset > 0 then
+                let soff = string_of_int offset in
+                <:expr< {($pc$) with ind = $pc$.ind + $int:soff$} >>
+              else pc
+            in
             <:expr<
               sprint_break $int:s$ $int:o$ $pc$ (fun pc -> $e1$)
                 (fun pc -> $e2$)
-            >> ] ]
+            >>
+        | Offset offset t ->
+            loop pc offset (bef_is_empty, aft_is_empty) t ] ]
 ;
 
 EXTEND
