@@ -2421,21 +2421,21 @@ Grammar.extend
     None,
     [None, None,
      [[Gramext.Stoken ("", "-"); Gramext.Stoken ("", "'");
-       Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
+       Gramext.Snterm (Grammar.Entry.obj (ident2 : 'ident2 Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'ident) _ _ (loc : Ploc.t) ->
+        (fun (i : 'ident2) _ _ (loc : Ploc.t) ->
            (Qast.Tuple [i; Qast.Tuple [Qast.Bool false; Qast.Bool true]] :
             'type_parameter));
       [Gramext.Stoken ("", "+"); Gramext.Stoken ("", "'");
-       Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
+       Gramext.Snterm (Grammar.Entry.obj (ident2 : 'ident2 Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'ident) _ _ (loc : Ploc.t) ->
+        (fun (i : 'ident2) _ _ (loc : Ploc.t) ->
            (Qast.Tuple [i; Qast.Tuple [Qast.Bool true; Qast.Bool false]] :
             'type_parameter));
       [Gramext.Snterm
-         (Grammar.Entry.obj (typevar : 'typevar Grammar.Entry.e))],
+         (Grammar.Entry.obj (typevar2 : 'typevar2 Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'typevar) (loc : Ploc.t) ->
+        (fun (i : 'typevar2) (loc : Ploc.t) ->
            (Qast.Tuple [i; Qast.Tuple [Qast.Bool false; Qast.Bool false]] :
             'type_parameter))]];
     Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e), None,

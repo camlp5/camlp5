@@ -358,7 +358,7 @@ and match_case loc =
   fun
   [ Sexpr _ [se1; se2] -> (patt_se se1, <:vala< None >>, expr_se se2)
   | Sexpr _ [se1; sew; se2] ->
-      (patt_se se1, <:vala< Some (expr_se sew) >>, expr_se se2)
+      (patt_se se1, <:vala< (Some (expr_se sew)) >>, expr_se se2)
   | se -> error se "match_case" ]
 and label_expr_se loc =
   fun
@@ -521,7 +521,8 @@ and type_declaration_list_se =
 and type_parameter_se =
   fun
   [ Satom _ Alid s when String.length s >= 2 && s.[0] = ''' ->
-      (String.sub s 1 (String.length s - 1), (False, False))
+      let s = String.sub s 1 (String.length s - 1) in
+      (<:vala< s >>, (False, False))
   | se -> error se "type_parameter" ]
 and ctyp_se =
   fun

@@ -1,5 +1,5 @@
-(* camlp5r q_MLast.cmo pa_extend.cmo *)
-(* $Id: comp_head.ml.tpl,v 1.5 2007/09/15 19:35:16 deraugla Exp $ *)
+(* camlp5r pa_macro.cmo q_MLast.cmo pa_extend.cmo *)
+(* $Id: comp_head.ml.tpl,v 1.6 2007/09/17 23:32:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 module P =

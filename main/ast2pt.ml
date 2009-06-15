@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: ast2pt.ml,v 1.48 2007/09/17 10:22:31 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.49 2007/09/17 23:32:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open MLast;
@@ -226,7 +226,7 @@ and meth_list loc fl v =
 
 value mktype loc tl cl tk tm =
   let (params, variance) = List.split tl in
-  {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
+  {ptype_params = List.map uv params; ptype_cstrs = cl; ptype_kind = tk;
    ptype_manifest = tm; ptype_loc = mkloc loc; ptype_variance = variance}
 ;
 value mkmutable m = if m then Mutable else Immutable;
@@ -264,7 +264,8 @@ value type_decl tl priv cl =
       let m =
         match t with
         [ <:ctyp< '$s$ >> ->
-            if List.mem_assoc s tl then Some (ctyp t) else None
+            if List.exists (fun (t, _) -> s = uv t) tl then Some (ctyp t)
+            else None
         | _ -> Some (ctyp t) ]
       in
       mktype (loc_of_ctyp t) tl cl Ptype_abstract m ]
@@ -361,9 +362,9 @@ value mkwithc =
       in
       (long_id_of_string_list loc (uv id),
        Pwith_type
-         {ptype_params = params; ptype_cstrs = []; ptype_kind = tk;
-          ptype_manifest = Some (ctyp ct); ptype_loc = mkloc loc;
-          ptype_variance = variance})
+         {ptype_params = List.map uv params; ptype_cstrs = [];
+          ptype_kind = tk; ptype_manifest = Some (ctyp ct);
+          ptype_loc = mkloc loc; ptype_variance = variance})
   | WcMod loc id m ->
       (long_id_of_string_list loc (uv id),
        Pwith_module (module_expr_long_id m)) ]
@@ -516,9 +517,9 @@ value expr_label_long_id e =
 value class_info class_expr ci =
   let (params, variance) = List.split (snd ci.ciPrm) in
   {pci_virt = if ci.ciVir then Virtual else Concrete;
-   pci_params = (params, mkloc (fst ci.ciPrm)); pci_name = ci.ciNam;
-   pci_expr = class_expr ci.ciExp; pci_loc = mkloc ci.ciLoc;
-   pci_variance = variance}
+   pci_params = (List.map uv params, mkloc (fst ci.ciPrm));
+   pci_name = ci.ciNam; pci_expr = class_expr ci.ciExp;
+   pci_loc = mkloc ci.ciLoc; pci_variance = variance}
 ;
 
 value bigarray_get loc e el =

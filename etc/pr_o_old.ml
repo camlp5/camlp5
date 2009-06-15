@@ -413,6 +413,23 @@ value field_expr (lab, e) dg k =
   HVbox [: `label lab; `S LR "="; `expr e dg k :]
 ;
 
+value mem_tvar s tpl =
+  List.exists
+    (fun (t, _) ->
+       match t with
+       [ <:vala< t >> -> s = t
+       | IFDEF STRICT THEN
+           _ -> failwith "Pa_o_old.mem_tvar"
+         END ])
+    tpl
+;
+
+value type_var =
+  fun
+  [ <:vala< tv >> -> tv
+  | IFDEF STRICT THEN _ -> failwith "Pr_r.type_var" END ]
+;
+
 value type_params sl _ k =
   match sl with
   [ [] -> k
@@ -423,10 +440,11 @@ value type_params sl _ k =
         | (False, True) -> [: `S LO "-" :]
         | _ -> [: :] ]
       in
-      [: b; `S LO "'"; `S LR s; k :]
+      [: b; `S LO "'"; `S LR (type_var s); k :]
   | sl ->
       [: `S LO "(";
-         listws (fun (s, _) _ k -> HVbox [: `S LO "'"; `S LR s; k :])
+         listws
+           (fun (s, _) _ k -> HVbox [: `S LO "'"; `S LR (type_var s); k :])
            (S RO ",") sl "" [: `S RO ")"; k :] :] ]
 ;
 
@@ -446,7 +464,7 @@ value type_list b tdl _ k =
             let tn = var_escaped tn in
             let cstr = list constrain cl "" k in
             match te with
-            [ <:ctyp< '$s$ >> when not (List.mem_assoc s tp) ->
+            [ <:ctyp< '$s$ >> when not (mem_tvar s tp) ->
                 HVbox [: b; type_params tp "" [: :]; `S LR tn; cstr :]
             | <:ctyp< [ $list:[]$ ] >> ->
                 HVbox [: b; type_params tp "" [: :]; `S LR tn; cstr :]
@@ -518,7 +536,7 @@ and with_constraint b wc _ k =
       let params =
         match al with
         [ [] -> [: :]
-        | [s] -> [: `S LO "'"; `S LR (fst s) :]
+        | [s] -> [: `S LO "'"; `S LR (type_var (fst s)) :]
         | sl -> [: `S LO "("; type_params sl "" [: `S RO ")" :] :] ]
       in
       HVbox
@@ -575,7 +593,8 @@ and class_type_parameters (loc, tpl) =
   | tpl ->
       [: `S LO "[";
          listws type_parameter (S RO ",") tpl "" [: `S RO "]" :] :] ]
-and type_parameter tp dg k = HVbox [: `S LO "'"; `S LR (fst tp); k :]
+and type_parameter tp dg k =
+  HVbox [: `S LO "'"; `S LR (type_var (fst tp)); k :]
 and class_self_patt_opt csp =
   match csp with
   [ Some p -> HVbox [: `S LO "("; `patt p "" [: `S RO ")" :] :]

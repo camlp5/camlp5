@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.40 2007/09/14 03:16:58 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.41 2007/09/17 23:32:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -81,7 +81,10 @@ value and_before elem pc x = elem {(pc) with bef = sprintf "%sand " pc.bef} x;
 value bar_before elem pc x = elem {(pc) with bef = sprintf "%s| " pc.bef} x;
 
 value type_var pc (tv, (p, m)) =
-  sprintf "%s%s'%s%s" pc.bef (if p then "+" else if m then "-" else "") tv
+  sprintf "%s%s'%s%s" pc.bef (if p then "+" else if m then "-" else "")
+    (match tv with
+     [ <:vala< tv >> -> tv
+     | IFDEF STRICT THEN _ -> failwith "Pr_ro.type_var" END ])
     pc.aft
 ;
 

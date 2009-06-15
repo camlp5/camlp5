@@ -424,6 +424,12 @@ value ifbox b1 b2 b3 e k =
   | None -> HVbox [: `BEbox [: b1; b2; b3 :]; `expr e k :] ]
 ;
 
+value type_var =
+  fun
+  [ <:vala< tv >> -> tv
+  | IFDEF STRICT THEN _ -> failwith "Pr_r_old.type_var" END ]
+;
+
 value rec type_params sl k =
   list
     (fun (s, vari) k ->
@@ -433,7 +439,7 @@ value rec type_params sl k =
          | (False, True) -> [: `S LO "-" :]
          | _ -> [: :] ]
        in
-       HVbox [: b; `S LO "'"; `S LR s; k :])
+       HVbox [: b; `S LO "'"; `S LR (type_var s); k :])
     sl k
 ;
 
@@ -510,7 +516,7 @@ and with_constraint b wc k =
       let params =
         match al with
         [ [] -> [: :]
-        | [s] -> [: `S LO "'"; `S LR (fst s) :]
+        | [s] -> [: `S LO "'"; `S LR (type_var (fst s)) :]
         | sl -> [: `S LO "("; type_params sl [: `S RO ")" :] :] ]
       in
       HVbox
@@ -564,7 +570,7 @@ and class_type_parameters (loc, tpl) =
   [ [] -> [: :]
   | tpl ->
       [: `S LO "["; listws type_parameter (S RO ",") tpl [: `S RO "]" :] :] ]
-and type_parameter tp k = HVbox [: `S LO "'"; `S LR (fst tp); k :]
+and type_parameter tp k = HVbox [: `S LO "'"; `S LR (type_var (fst tp)); k :]
 and simple_expr e k =
   match e with
   [ <:expr< $lid:_$ >> -> expr e k

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.90 2007/09/16 05:19:01 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.91 2007/09/17 23:32:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -452,7 +452,10 @@ value rec make_patt_list =
 ;
 
 value type_var pc (tv, (p, m)) =
-  sprintf "%s%s'%s%s" pc.bef (if p then "+" else if m then "-" else "") tv
+  sprintf "%s%s'%s%s" pc.bef (if p then "+" else if m then "-" else "")
+    (match tv with
+     [ <:vala< tv >> -> tv
+     | IFDEF STRICT THEN _ -> failwith "Pr_r.type_var" END ])
     pc.aft
 ;
 
@@ -484,13 +487,24 @@ value type_constraint pc (t1, t2) =
     (fun () -> not_impl "type_constraint vertic" pc t1)
 ;
 
+value mem_tvar s tpl =
+  List.exists
+    (fun (t, _) ->
+       match t with
+       [ <:vala< t >> -> s = t
+       | IFDEF STRICT THEN
+           _ -> failwith "Pa_o.mem_tvar"
+         END ])
+    tpl
+;
+
 value type_decl pc td =
   let ((_, tn), tp, pf, te, cl) =
     (td.MLast.tdNam, td.MLast.tdPrm, td.MLast.tdPrv, td.MLast.tdDef,
      td.MLast.tdCon)
   in
   match te with
-  [ <:ctyp< '$s$ >> when not (List.mem_assoc s tp) ->
+  [ <:ctyp< '$s$ >> when not (mem_tvar s tp) ->
       sprintf "%s%s%s%s" pc.bef
         (type_params {(pc) with bef = ""; aft = ""} tp)
         (var_escaped {(pc) with bef = ""; aft = ""} tn)

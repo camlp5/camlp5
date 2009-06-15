@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.90 2007/09/17 10:22:31 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.91 2007/09/17 23:32:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -848,11 +848,11 @@ EXTEND
     [ [ "constraint"; t1 = ctyp; "="; t2 = ctyp -> Qast.Tuple [t1; t2] ] ]
   ;
   type_parameter:
-    [ [ i = typevar ->
+    [ [ i = typevar2 ->
           Qast.Tuple [i; Qast.Tuple [Qast.Bool False; Qast.Bool False]]
-      | "+"; "'"; i = ident ->
+      | "+"; "'"; i = ident2 ->
           Qast.Tuple [i; Qast.Tuple [Qast.Bool True; Qast.Bool False]]
-      | "-"; "'"; i = ident ->
+      | "-"; "'"; i = ident2 ->
           Qast.Tuple [i; Qast.Tuple [Qast.Bool False; Qast.Bool True]] ] ]
   ;
   ctyp:

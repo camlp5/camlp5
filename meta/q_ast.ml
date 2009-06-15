@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: q_ast.ml,v 1.82 2007/09/17 10:39:53 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.83 2007/09/17 23:32:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* AST quotations with works by running the language parser (and its possible
@@ -149,13 +149,12 @@ module Meta_make (C : MetaSig) =
       | PvInh t ->
           C.node_no_loc "PvInh" [ctyp t] ]
     ;
+    value type_var (s, (plus, minus)) =
+      C.tuple [C.vala C.string s; C.tuple [C.bool plus; C.bool minus]]
+    ;
     value e_class_infos a =
       fun
       [ x -> not_impl "e_class_infos" x ]
-    ;
-    value e_type_var =
-      fun
-      [ x -> not_impl "e_type_var" x ]
     ;
     value rec patt =
       fun
@@ -192,8 +191,7 @@ module Meta_make (C : MetaSig) =
       | PaUid _ s -> C.node "PaUid" [C.vala C.string s]
       | PaVrn _ s -> C.node "PaVrn" [C.vala C.string s]
       | IFDEF STRICT THEN
-          PaXtr loc s _ ->
-            C.xtr_or_anti loc (fun r -> C.node "PaAnt" [r]) s
+          PaXtr loc s _ -> C.xtr_or_anti loc (fun r -> C.node "PaAnt" [r]) s
         END
       | x -> not_impl "patt" x ]
     and expr =
@@ -287,8 +285,7 @@ module Meta_make (C : MetaSig) =
       | ExVrn _ s -> C.node "ExVrn" [C.vala C.string s]
       | ExWhi _ e el -> C.node "ExWhi" [expr e; C.vala (C.list expr) el]
       | IFDEF STRICT THEN
-          ExXtr loc s _ ->
-            C.xtr_or_anti loc (fun r -> C.node "ExAnt" [r]) s
+          ExXtr loc s _ -> C.xtr_or_anti loc (fun r -> C.node "ExAnt" [r]) s
         END ]
     and module_type =
       fun
@@ -344,7 +341,7 @@ module Meta_make (C : MetaSig) =
       fun
       [ WcTyp _ li ltp pf t ->
           let li = C.vala (C.list C.string) li in
-          let ltp = C.vala (C.list e_type_var) ltp in
+          let ltp = C.vala (C.list type_var) ltp in
           let pf = C.vala C.bool pf in
           let t = ctyp t in
           C.node "WcTyp" [li; ltp; pf; t]

@@ -695,7 +695,7 @@ and fun_binding_se se e =
 and match_case loc =
   fun
   [ Sexpr loc [Sexpr _ [Slid _ "when"; se; sew] :: sel] ->
-      (patt_se se, <:vala< Some (expr_se sew) >>, begin_se loc sel)
+      (patt_se se, <:vala< (Some (expr_se sew)) >>, begin_se loc sel)
   | Sexpr loc [se :: sel] -> (patt_se se, <:vala< None >>, begin_se loc sel)
   | se -> error se "match_case" ]
 and label_expr_se loc =
@@ -862,7 +862,8 @@ and type_declaration_list_se =
 and type_parameter_se =
   fun
   [ Slid _ s when String.length s >= 2 && s.[0] = ''' ->
-      (String.sub s 1 (String.length s - 1), (False, False))
+      let s = String.sub s 1 (String.length s - 1) in
+      (<:vala< s >>, (False, False))
   | se -> error se "type_parameter" ]
 and ctyp_se =
   fun

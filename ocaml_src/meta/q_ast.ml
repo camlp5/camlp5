@@ -138,8 +138,10 @@ module Meta_make (C : MetaSig) =
           let lt = C.vala (C.list ctyp) lt in C.node_no_loc "PvTag" [s; a; lt]
       | PvInh t -> C.node_no_loc "PvInh" [ctyp t]
     ;;
+    let type_var (s, (plus, minus)) =
+      C.tuple [C.vala C.string s; C.tuple [C.bool plus; C.bool minus]]
+    ;;
     let e_class_infos a x = not_impl "e_class_infos" x;;
-    let e_type_var x = not_impl "e_type_var" x;;
     let rec patt =
       function
         PaAcc (_, p1, p2) -> C.node "PaAcc" [patt p1; patt p2]
@@ -302,7 +304,7 @@ module Meta_make (C : MetaSig) =
       function
         WcTyp (_, li, ltp, pf, t) ->
           let li = C.vala (C.list C.string) li in
-          let ltp = C.vala (C.list e_type_var) ltp in
+          let ltp = C.vala (C.list type_var) ltp in
           let pf = C.vala C.bool pf in
           let t = ctyp t in C.node "WcTyp" [li; ltp; pf; t]
       | WcMod (_, li, me) ->

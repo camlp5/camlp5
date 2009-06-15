@@ -1,5 +1,5 @@
-(* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_sml.ml,v 1.19 2007/09/16 05:19:01 deraugla Exp $ *)
+(* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
+(* $Id: pa_sml.ml,v 1.20 2007/09/17 23:32:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -41,16 +41,27 @@ value get_seq =
   | e -> [e] ]
 ;
 
+value mem_tvar s tpl =
+  List.exists
+    (fun (t, _) ->
+       match t with
+       [ <:vala< t >> -> s = t
+       | IFDEF STRICT THEN
+           _ -> failwith "Pa_o.mem_tvar"
+         END ])
+    tpl
+;
+
 value choose_tvar tpl =
   let rec find_alpha v =
     let s = String.make 1 v in
-    if List.mem_assoc s tpl then
+    if mem_tvar s tpl then
       if v = 'z' then None else find_alpha (Char.chr (Char.code v + 1))
     else Some (String.make 1 v)
   in
   let rec make_n n =
     let v = "a" ^ string_of_int n in
-    if List.mem_assoc v tpl then make_n (succ n) else v
+    if mem_tvar v tpl then make_n (succ n) else v
   in
   match find_alpha 'a' with
   [ Some x -> x
@@ -375,8 +386,9 @@ EXTEND
   tyvarseq: [ [ -> not_impl loc "tyvarseq" ] ];
 
   tyvar_pc:
-    [ [ "'"; x1 = LIDENT -> [(x1, (False, False))]
-      | "'"; x1 = LIDENT; ","; l = tyvar_pc -> [(x1, (False, False)) :: l] ] ]
+    [ [ "'"; x1 = V LIDENT -> [(x1, (False, False))]
+      | "'"; x1 = V LIDENT; ","; l = tyvar_pc ->
+          [(x1, (False, False)) :: l] ] ]
   ;
   id:
     [ [ x1 = idd -> x1
@@ -647,7 +659,7 @@ EXTEND
            MLast.tdCon = []} ] ]
   ;
   tyvars:
-    [ [ "'"; x1 = LIDENT -> [(x1, (False, False))]
+    [ [ "'"; x1 = V LIDENT -> [(x1, (False, False))]
       | "("; x1 = tyvar_pc; ")" -> x1
       | -> [] ] ]
   ;

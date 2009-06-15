@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.91 2007/09/16 05:19:01 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.92 2007/09/17 23:32:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -452,9 +452,9 @@ EXTEND
     [ [ "constraint"; t1 = ctyp; "="; t2 = ctyp -> (t1, t2) ] ]
   ;
   type_parameter:
-    [ [ i = typevar -> (i, (False, False))
-      | "+"; "'"; i = ident -> (i, (True, False))
-      | "-"; "'"; i = ident -> (i, (False, True)) ] ]
+    [ [ i = typevar2 -> (i, (False, False))
+      | "+"; "'"; i = ident2 -> (i, (True, False))
+      | "-"; "'"; i = ident2 -> (i, (False, True)) ] ]
   ;
   ctyp:
     [ LEFTA

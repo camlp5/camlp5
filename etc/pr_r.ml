@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.68 2007/09/16 05:19:01 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.69 2007/09/17 23:32:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -593,7 +593,10 @@ value rec make_patt_list =
 ;
 
 value type_var pc (tv, (p, m)) =
-  sprintf "%s%s'%s%s" pc.bef (if p then "+" else if m then "-" else "") tv
+  sprintf "%s%s'%s%s" pc.bef (if p then "+" else if m then "-" else "")
+    (match tv with
+     [ <:vala< tv >> -> tv
+     | IFDEF STRICT THEN _ -> failwith "Pr_r.type_var" END ])
     pc.aft
 ;
 

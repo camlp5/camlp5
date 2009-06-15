@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: mLast.mli,v 1.46 2007/09/16 05:19:01 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.47 2007/09/17 23:32:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Module [MLast]: abstract syntax tree.
@@ -47,7 +47,7 @@ and poly_variant =
   | PvInh of ctyp ]
 ;
 
-type type_var = (string * (bool * bool));
+type type_var = (V string * (bool * bool));
 
 type class_infos 'a =
   { ciLoc : loc;
