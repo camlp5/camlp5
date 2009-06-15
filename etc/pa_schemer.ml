@@ -517,19 +517,19 @@ and sig_item_se =
       let rf = rf = "modulerec*"
       and lmb = anti_list_map sig_module_se sel in
       <:sig_item< module $flag:rf$ $_list:lmb$ >>
-  | Sexpr loc [Slid _ "moduletype"; Suid _ s; se] ->
-      let s = rename_id s in
-      let mt = module_type_se se in
-      <:sig_item< module type $uid:s$ = $mt$ >>
+  | Sexpr loc [Slid _ "moduletype"; se1; se2] ->
+      let s = anti_uid_or_error se1 in
+      let mt = module_type_se se2 in
+      <:sig_item< module type $_uid:s$ = $mt$ >>
   | Sexpr loc [Slid _ "open"; se] ->
-      let s = mod_ident_se se in
-      <:sig_item< open $s$ >>
+      let s = anti_mod_ident se in
+      <:sig_item< open $_:s$ >>
   | Sexpr loc [Slid _ "type" :: sel] ->
       let tdl = type_declaration_list_se sel in
       <:sig_item< type $list:tdl$ >>
   | Sexpr loc [Slid _ "type*" :: sel] ->
-      let tdl = List.map type_declaration_se sel in
-      <:sig_item< type $list:tdl$ >>
+      let tdl = anti_list_map type_declaration_se sel in
+      <:sig_item< type $_list:tdl$ >>
   | Sexpr loc [Slid _ "value"; Slid _ s; se] ->
       let s = rename_id s in
       let t = ctyp_se se in

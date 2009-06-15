@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.64 2007/10/09 09:20:38 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.65 2007/10/09 09:37:10 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -486,18 +486,19 @@
        ((rf (= rf "modulerec*"))
         (lmb (anti_list_map sig_module_se sel)))
         <:sig_item< module $flag:rf$ $_list:lmb$ >>))
-     ((Sexpr loc [(Slid _ "moduletype") (Suid _ s) se])
-      (let* ((s (rename_id s))
-             (mt (module_type_se se)))
-         <:sig_item< module type $uid:s$ = $mt$ >>))
+     ((Sexpr loc [(Slid _ "moduletype") se1 se2])
+      (let*
+       ((s (anti_uid_or_error se1))
+        (mt (module_type_se se2)))
+       <:sig_item< module type $_uid:s$ = $mt$ >>))
      ((Sexpr loc [(Slid _ "open") se])
-      (let ((s (mod_ident_se se))) <:sig_item< open $s$ >>))
+      (let ((s (anti_mod_ident se))) <:sig_item< open $_:s$ >>))
      ((Sexpr loc [(Slid _ "type") . sel])
       (let ((tdl (type_declaration_list_se sel)))
-         <:sig_item< type $list:tdl$ >>))
+       <:sig_item< type $list:tdl$ >>))
      ((Sexpr loc [(Slid _ "type*") . sel])
-      (let ((tdl (List.map type_declaration_se sel)))
-         <:sig_item< type $list:tdl$ >>))
+      (let ((tdl (anti_list_map type_declaration_se sel)))
+       <:sig_item< type $_list:tdl$ >>))
      ((Sexpr loc [(Slid _ "value") (Slid _ s) se])
       (let* ((s (rename_id s))
              (t (ctyp_se se)))

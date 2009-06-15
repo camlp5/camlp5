@@ -231,12 +231,12 @@
 <:sig_item< (modulerec* $_list:lsmt$) >>
 (MLast.SgMod loc (Ploc.VaVal b) (Ploc.VaVal lsmt))
 (MLast.SgMod loc b lsmt)
-; <:sig_item< module type $s$ = $mt$ >>
-; <:sig_item< module type $_:s$ = $mt$ >>
-; <:sig_item< open $list:ls$ >>
-; <:sig_item< open $_list:ls$ >>
-; <:sig_item< type $list:ltd$ >>
-; <:sig_item< type $_list:ltd$ >>
+<:sig_item< (moduletype $s$ $mt$) >>
+<:sig_item< (moduletype $_:s$ $mt$) >>
+<:sig_item< (open $list:ls$) >>
+<:sig_item< (open $_list:ls$) >>
+<:sig_item< (type* $list:ltd$) >>
+<:sig_item< (type* $_list:ltd$) >>
 ; <:sig_item< value $s$ : $t$ >>
 ; <:sig_item< value $_:s$ : $t$ >>
 ; <:module_expr< $me1$ . $me2$ >>
