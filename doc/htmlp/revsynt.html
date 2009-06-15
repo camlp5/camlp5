@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: revsynt.html,v 1.12 2007/07/20 12:17:35 deraugla Exp $ -->
+  <!-- $Id: revsynt.html,v 1.13 2007/07/20 12:37:23 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>revised syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -19,8 +19,23 @@
 <h1 class="top">The revised syntax</h1>
 
 <p>The revised syntax is an alternative syntax of ocaml. It is close
-  to the normal syntax, we present here only the differences between
+  to the normal syntax. We present here only the differences between
   the two syntaxes.</p>
+
+<p>Notice that there is a simple way to know how the normal syntax is
+  written in revised syntax: write the code in a file "foo.ml" in
+  normal syntax and type, in a shell:</p>
+
+<pre>
+  camlp5o pr_r.cmo pr_rp.cmo foo.ml
+</pre>
+
+<p>And, conversely, how a file "bar.ml" written in revised syntax is
+  displayed in normal syntax:</p>
+
+<pre>
+  camlp5r pr_o.cmo pr_op.cmo bar.ml
+</pre>
 
 <div id="tableofcontents">
 </div>
@@ -278,7 +293,7 @@
         <th align="left" class="half">Revised</th>
       </tr>
       <tr>
-        <td><tt>x.f <- y</tt></td>
+        <td><tt>x.f &lt;- y</tt></td>
         <td><tt>x.f := y</tt></td>
       </tr>
     </table>
@@ -426,8 +441,8 @@
         <th align="left" class="half">Revised</th>
       </tr>
       <tr>
-        <td><tt>true && false</tt></td>
-        <td><tt>True && False</tt></td>
+        <td><tt>true &amp;&amp; false</tt></td>
+        <td><tt>True &amp;&amp; False</tt></td>
       </tr>
     </table>
   </li>
@@ -468,6 +483,12 @@
     </table>
     </li>
 </ul>
+
+<h2>Objects</h2>
+
+<p>...<em>to be continued</em>...</p>
+
+<h2>Streams and parsers</h2>
 
 <p>...<em>to be continued</em>...</p>
 
