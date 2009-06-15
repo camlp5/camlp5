@@ -1029,53 +1029,34 @@ value make_action_table blr algo = do {
                               (List.sort compare_terms follow_m);
                             Printf.eprintf "\n";
                             flush stderr;
-(*
-let prev_symb =
-  loop [] 0 where rec loop prev_symb j =
-    if j = Array.length blr.term_shift_tab then prev_symb
-    else
-      let prev_symb =
-        List.fold_left
-          (fun prev_symb (t, k) ->
-             if k = i then [(j, t) :: prev_symb] else prev_symb)
-           prev_symb blr.term_shift_tab.(j)
-      in
-      loop prev_symb (j + 1)
-in
-List.iter
-  (fun (j, t) -> do {
-     Printf.eprintf "  path1";
-     Printf.eprintf " %s" (term_n t);
-     Printf.eprintf "\n";
-   })
-  prev_symb;
-flush stderr;
-
-let paths = List.map (fun i_t -> [i_t]) prev_symb in
-*)
 
 let paths =
   loop 0 [(i, [])]  where rec loop nb paths =
-    if nb = 3 then paths
+    if nb = 4 then paths
     else
       let paths =
         List.fold_left
           (fun paths (i, path) ->
-             let prev_symb =
-               loop [] 0 where rec loop prev_symb j =
-                 if j = Array.length blr.term_shift_tab then prev_symb
-                 else
-                   let prev_symb =
-                     List.fold_left
-                       (fun prev_symb (t, k) ->
-                          if k = i then [(j, t) :: prev_symb] else prev_symb)
-                        prev_symb blr.term_shift_tab.(j)
-                   in
-                   loop prev_symb (j + 1)
-             in
-             List.rev_append
-               (List.rev_map (fun (j, t) -> (j, [(j, t) :: path])) prev_symb)
-               paths)
+             if i = 0 then [(i, path) :: paths]
+             else
+               let prev_symb =
+                 loop [] 0 where rec loop prev_symb j =
+                   if j = Array.length blr.term_shift_tab then prev_symb
+                   else
+                     let prev_symb =
+                       List.fold_left
+                         (fun prev_syzmb (t, k) ->
+                            if k = i then [(j, t) :: prev_symb] else prev_symb)
+                          prev_symb blr.term_shift_tab.(j)
+                     in
+                     loop prev_symb (j + 1)
+               in
+               if prev_symb = [] && path <> [] then [(i, path) :: paths]
+               else
+                 List.rev_append
+                   (List.rev_map (fun (j, t) -> (j, [(j, t) :: path]))
+                      prev_symb)
+                   paths)
           [] paths
       in
       loop (nb + 1) paths
@@ -1083,7 +1064,7 @@ in
 List.iter
   (fun (_, path) -> do {
      Printf.eprintf "  path";
-     List.iter (fun (i, t) -> Printf.eprintf " %s" (term_n t)) path;
+     List.iter (fun (i, t) -> Printf.eprintf " (%d)%s" i (term_n t)) path;
      Printf.eprintf "\n";
    })
   paths;
