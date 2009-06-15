@@ -150,10 +150,10 @@ value gram_symb_list cnt to_treat self_middle self_end =
               (GS_term n, anon_rules)
           | Sself ->
               (self_middle (), anon_rules)
-          | Stree t -> do {
+          | Stree _ -> do {
               incr cnt;
               let n = "x-rules-" ^ string_of_int cnt.val in
-              let anon_rules = [(n, Stree t) :: anon_rules] in
+              let anon_rules = [(n, s) :: anon_rules] in
               (GS_nterm n, anon_rules)
             }
           | Svala ls s -> do {
@@ -200,11 +200,12 @@ value new_anon_rules cnt to_treat mar ename sy =
       let (sl, ar) = gram_symb_list cnt to_treat self self [sy] in
       ([(ename, sl); (ename, [])], ar @ mar)
   | Stree t ->
-      let f r accu =
+      let f r (rl, mar) =
         let (sl, ar) = gram_symb_list cnt to_treat self self r in
-        [(ename, sl) :: accu]
+        ([(ename, sl) :: rl], ar @ mar)
       in
-      (fold_rules_of_tree f [] t, mar)
+      let (rl, ar) = fold_rules_of_tree f ([], mar) t in
+      (rl, mar)
   | _ ->
       ([], mar) ]
 ;
