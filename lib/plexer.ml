@@ -1,5 +1,5 @@
 (* camlp5r pa_lexer.cmo *)
-(* $Id: plexer.ml,v 1.101 2007/10/27 03:31:59 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.102 2007/11/26 09:20:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value no_quotations = ref False;
@@ -374,7 +374,7 @@ value next_token_after_spaces ctx bp =
 value rec next_token ctx buf =
   parser bp
   [ [: `('\n' | '\r' as c); s :] ep -> do {
-      incr Plexing.line_nb.val;
+      if c = '\n' then incr Plexing.line_nb.val else ();
       Plexing.bol_pos.val.val := ep;
       ctx.set_line_nb ();
       ctx.after_space := True;

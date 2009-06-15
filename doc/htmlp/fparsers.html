@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: fparsers.html,v 1.13 2007/10/11 02:03:16 deraugla Exp $ -->
+  <!-- $Id: fparsers.html,v 1.14 2007/11/26 09:20:52 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>functional parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -23,12 +23,14 @@
   of <a href="parsers.html">stream parsers</a> where the used stream
   type is a lazy non-destructive type. These streams are lazy values,
   as in classical stream parsers, but the values are not removed as
-  long as the parsing advances. To make them work, the parsers of
-  purely functional streams return, not the simple values, but a value
-  of type option : "<code>Node</code>" meaning "mo match" (the
-  equivalent of the exception "<code>Parse.Failure</code>" of normal
-  streams) and "<code>Some (r, s)</code>" meaning "the result is r and
-  the remaining stream is s".</p>
+  long as the parsing advances.</p>
+
+<p>To make them work, the parsers of purely functional streams return,
+  not the simple values, but a value of type option :
+  "<code>None</code>" meaning "no match" (the equivalent of the
+  exception "<code>Parse.Failure</code>" of normal streams) and
+  "<code>Some (r, s)</code>" meaning "the result is r and the
+  remaining stream is s".</p>
 
 <div id="tableofcontents">
 </div>

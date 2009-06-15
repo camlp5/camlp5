@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: grammar.mli,v 1.27 2007/11/23 13:33:39 deraugla Exp $ *)
+(* $Id: grammar.mli,v 1.28 2007/11/26 09:20:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (** Extensible grammars.
@@ -84,21 +84,33 @@ module Unsafe :
 (** {6 Parsing algorithm} *)
 
 type parse_algorithm = Gramext.parse_algorithm ==
-  [ Imperative | Backtracking | DefaultAlgorithm ]
+  [ Predictive | Backtracking | DefaultAlgorithm ]
 ;
    (** Type of algorithm used in grammar entries.
-         [Imperative]: use imperative streams
+         [Predictive]: use imperative streams with predictive parsing
          [Backtracking]: use functional streams with full backtracking
          [DefaultAlgorithm]: found in the variable [backtrack_parse] below.
        The default, when a grammar is created, is [DefaultAlgorithm]. *)
 
 value set_algorithm : g -> parse_algorithm -> unit;
-   (** Set the default algorithm for all entries of the grammar. *)
+   (** Set the parsing algorithm for all entries of a given grammar. *)
 
 value backtrack_parse : ref bool;
-   (** Internally parse with functional parsers with full backtrack;
-       if the environment variable CAMLP5_BPARSE is set to [t], the default
-       is [True]; otherwise, the default is [False]. *)
+   (** If [True], the default parsing uses full backtracking. If [False],
+       it uses parsing with normal streams. If the environment variable
+       CAMLP5PARAM contains "b", the default is [True]; otherwise, the
+       default is [False]. *)
+
+value backtrack_stalling_limit : ref int;
+   (** Limitation of backtracking to prevent stalling in case of syntax
+       error. In backtracking algorithm, when there is a syntax error,
+       the parsing continues trying to find another solution. It some
+       grammars, it can be very long before checking all possibilities.
+       This number limits the number of tokens tests after a backtrack.
+       (The number of tokens tests is reset to zero when the token
+       stream overtakes the last reached token.) The default is 10000.
+       If set to 0, there is no limit. Can be set by the environment
+       variable CAMLP5PARAM by "l=value". *)
 
 (** {6 Functorial interface} *)
 

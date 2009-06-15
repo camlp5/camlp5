@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: grammars.html,v 1.84 2007/10/13 23:53:29 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.85 2007/11/26 09:20:52 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -713,16 +713,55 @@ instead of "<tt>loc</tt>".</p>
   parentheses of the level "simple" correspond to a call to the first
   level, namely "minus" in this grammar.</p>
 
+<h3>Parsing algorithm</h3>
+
+<p>By default, the kind of grammar is predictive parsing grammar,
+  i.e. recursive descent parsing without backtrack. But with some
+  nuances, due to the improvements (error recovery and token starting
+  rules) indicated in the next sections.</p>
+
+<p>However, it is possible to change the parsing algorithm, by calling
+  the function "<tt>Grammar.set_algorithm</tt>". The possible values
+  are:</p>
+
+<dl>
+  <dt><tt>Grammar.Predictive</tt></dt>
+  <dd>internally using <a href="parsers.html">normal parsers</a>, with
+    a predictive (recursive descent without backtracking)
+    algorithm.</dd>
+  <dt><tt>Grammar.Backtracking</tt></dt>
+  <dd>internally using <a href="bparsers.html">backtracking
+    parsers</a>, with a full backtracking algorithm,</dd>
+  <dt><tt>Grammar.DefaultAlgorithm</tt></dt>
+  <dd>the parsing algorithm is determined by the environment variable
+    "CAMLP5PARAM". If this environment variable exists and contains
+    "b", the parsing algorithm is "backtracking". Otherwise it is
+    "predictive".</dd>
+</dl>
+
 <h3>Errors and recovery</h3>
 
-<p>As with stream parsers, two exceptions may happen: "Stream.Failure"
-  or "Stream.Error". "Stream.Failure" indicates that the parsing just
+<p>In extensible grammars, the exceptions are encapsulated with the
+  exception "Ploc.Exc" giving the location of the error together with
+  the exception itself.</p>
+
+<p>If the parsing algorithm is "<tt>Grammar.Predictive</tt>", the
+  system internally uses <a href="parsers.html">stream
+  parsers</a>. Two exceptions may happen: "Stream.Failure" or
+  "Stream.Error". "Stream.Failure" indicates that the parsing just
   could not start. "Stream.Error" indicates that the parsing started
   but failed further.</p>
 
-<p>In stream parsers, when the first symbol of a rule has been
+<p>With this algorithm, when the first symbol of a rule has been
   accepted, all the symbols of the same rule must be accepted,
   otherwise the exception "Stream.Error" is raised.</p>
+
+<p>If the parsing algorithm is "<tt>Grammar.Backtracking</tt>", the
+  system internally uses <a href="bparsers.html">backtracking
+  parsers</a>. If no solution is found, the exception
+  "<tt>Stream.Error</tt>" is raised and the location of the error is
+  the location of the last unfrozen token, i.e. where the stream
+  advanced the farthest.</p>
 
 <p>In extensible grammars, unlike stream parsers, before the
   "Stream.Error" exception, the system attempts to recover the error
@@ -730,23 +769,12 @@ instead of "<tt>loc</tt>".</p>
   call to another entry, the system calls the "continue" function of
   that entry, which may resolve the problem.</p>
 
-<p>In extensible grammars, the exceptions are encapsulated with the
-  exception "Ploc.Exc" giving the location of the error together with
-  the exception itself.</p>
-
 <h3>Tokens starting rules</h3>
 
 <p>Another improvement (other than error recovery) is that when a rule
   starts with several tokens and/or keywords, all these tokens and
   keywords are tested in one time, and the possible "Stream.Error" may
   happen, only from the symbol following them on, if any.</p>
-
-<h3>Kind of grammar</h3>
-
-<p>The kind of grammar is predictive parsing grammar, i.e. recursive
-  descent parsing without backtrack. But with some nuances, due to the
-  improvements (error recovery and token starting rules) indicated in
-  the previous sections.</p>
 
 <h2>The Grammar module</h2>
 

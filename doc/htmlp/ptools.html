@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ptools.html,v 1.17 2007/10/25 02:49:47 deraugla Exp $ -->
+  <!-- $Id: ptools.html,v 1.18 2007/11/26 09:20:52 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>parsing and printing tools</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -61,7 +61,7 @@
 <p>The stream parsers is a system of recursive descendant
   parsing. Streams are actually lazy lists. At each step, the head of
   the list is compared against a <em>stream pattern</em>. There are
-  two kinds of streams parsers:</p>
+  three kinds of streams parsers:</p>
 
 <ul>
   <li>The imperative <a href="parsers.html">streams parsers</a>, where
@@ -78,13 +78,24 @@
         the error.</li>
     </ul>
   </li>
-  <li>The purely <a href="fparsers.html">functional stream parsers</a>
+  <li>The <a href="fparsers.html">functional stream parsers</a>
     where the elements are not removed from the stream during the
     parsing. These parsers return a value of type "option", i.e
     either:
     <ul>
       <li>"Some" a value and the remaining stream, in case of
         success,</li>
+      <li>"None", in case of failure.</li>
+    </ul>
+  </li>
+  <li>The <a href="bparsers.html">backtracking stream parsers</a>
+    which are like the functional stream parsers but with a backtracking
+    algorithm, testing all possibilities. These parsers also return a
+    value of type "option" different from the functional stream parsers,
+    i.e either:
+    <ul>
+      <li>"Some" a value, the remaining stream and a continuation, in
+        case of success,</li>
       <li>"None", in case of failure.</li>
     </ul>
   </li>
@@ -97,17 +108,20 @@
     the location of the error is clear, it is at the current position
     of the stream, and the system provides a specific error message
     (typically, that some "element" was "expected"). On the other
-    hand, in the functional version, the position is not clear since
-    it returns nothing and the initial stream is unaffected. The only
-    solution to know where the error happened is to analyze that
-    stream to see how many elements have be unfrozen. No clear error
-    message is available, just "syntax error" (but this could be
-    improved).</li>
+    hand, in the functional and backtracking version, the position is
+    not clear since it returns nothing and the initial stream is
+    unaffected. The only solution to know where the error happened is
+    to analyze that stream to see how many elements have be
+    unfrozen. No clear error message is available, just "syntax error"
+    (but this could be improved in a future version).</li>
   <li><span class="u">Power</span>: in the imperative version, when a
     rule raises the exception "<tt>Stream.Error</tt>", the parsing
     cannot continue.  In the functional version, the parsing can
     continue by analyzing the next rule with the initial unaffected
-    stream: this is <em>limited backtrack</em>.</li>
+    stream: this is <em>limited backtrack</em>. In the backtracking
+    version, more powerful, the parsing continues by analyzing the
+    next case of the previous symbol of the rule; moreover it is
+    possible to get the list of all possible solutions.</li>
   <li><span class="u">Neatness</span>: functional streams are neater,
     just like functional programming is neater than imperative
     programming.</li>

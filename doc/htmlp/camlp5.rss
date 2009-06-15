@@ -6,6 +6,25 @@
     <lastBuildDate>Mon Sep 17 15:10:47 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
     <item>
+      <title>Fstream and Grammar library modules</title>
+      <description>
+        In Fstream module, added section about backtracking parsers.
+        Grammar module, added section about parsing algorithm. They
+        are new features of Camlp5 5.04.
+      </description>
+      <pubDate>Sun Nov 25 08:23:25 CET 2007</pubDate>
+      <link>../library.html</link>
+    </item>
+    <item>
+      <title>Backtracking parsers</title>
+      <description>
+        Added chapter about backtracking parsers, a new feature of
+        Camlp5 5.04.
+      </description>
+      <pubDate>Sun Nov 25 03:47:32 CET 2007</pubDate>
+      <link>../bparsers.html</link>
+    </item>
+    <item>
       <title>mkcamlp5</title>
       <description>
         Added paragraph about new commands mkcamlp5 and mkcamlp5.opt.

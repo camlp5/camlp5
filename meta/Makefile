@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.25 2007/11/22 20:40:30 deraugla Exp $
+# $Id: Makefile,v 1.26 2007/11/26 09:20:52 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -24,7 +24,7 @@ $(NAME)r.opt: $(CAMLP5RMX)
 	cd ../main; $(MAKE) optp5 OTOP=$(OTOP) CAMLP5OPT=../meta/$(NAME)r.opt CAMLP5M="-I ../meta $(CAMLP5RMX)"
 
 clean::
-	rm -f *.cm* *.pp[io] *.o *.bak .*.bak $(COUT) $(COPT)
+	rm -f *.cm* *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak $(COUT) $(COPT)
 
 depend:
 	cp .depend .depend.bak
@@ -59,7 +59,7 @@ install:
 	if test -f q_MLast.cmx; then cp $(COPT) "$(DESTDIR)$(BINDIR)/."; fi
 	if test -f pa_r.cmx; then \
 	  cp $(OBJS:.cmo=.cmx) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
-	  cp $(OBJS:.cmo=.o) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	  cp $(OBJS:.cmo=$(EXT_OBJ)) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
 	fi
 
 include .depend

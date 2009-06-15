@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.12 2007/11/19 18:08:48 deraugla Exp $
+# $Id: Makefile,v 1.13 2007/11/26 09:20:52 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -36,7 +36,7 @@ odyl_config.ml:
 	sed -e 's|\\|/|g' >> odyl_config.ml
 
 clean::
-	rm -f *.cm* *.pp[io] *.o *.bak .*.bak *.out *.opt *.a
+	rm -f *.cm* *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak *.out *.opt
 	rm -f odyl_config.ml odyl$(EXE)
 
 depend:
@@ -56,7 +56,7 @@ install:
 	cp odyl.cmo odyl.cma "$(DESTDIR)$(LIBDIR)/$(NAME)/."
 	if test -f odyl.cmxa; then \
 	  cp odyl.cmxa odyl.cmx "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
-	  cp odyl.a odyl.o "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	  cp odyl$(EXT_LIB) odyl$(EXT_OBJ) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
 	fi
 
 include .depend

@@ -301,6 +301,31 @@ OCaml module "str":
 .fi
 .LP
 
+.SH "ENVIRONMENT VARIABLE"
+
+The following environment variable is also consulted:
+
+.TP
+.B CAMLP5PARAM
+Set the grammars parsing algorithm parameters.
+This variable must be a sequence of parameter specifications.
+A parameter specification is a letter optionally followed by an =
+and a value. There are four possible parameters:
+
+.TP
+.BR b \ (backtrack)
+Set the backtrack algorithm as default.
+.TP
+.BR t \ (trace)
+Trace symbols (terminals and non-terminals) while parsing with backtracking.
+.TP
+.BR y \ (trace-stalling)
+In backtracking, trace the advance in the input stream (number of unfrozen
+tokens) and the possible stalling (number of tokens tests).
+.TP
+.BR l \ (maximum-stalling)
+Set the maximum stalling value.
+
 .SH "FILES"
 Library directory of camlp5 in the present installation:
 .br

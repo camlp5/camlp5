@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: parsers.html,v 1.26 2007/10/25 02:49:47 deraugla Exp $ -->
+  <!-- $Id: parsers.html,v 1.27 2007/11/26 09:20:52 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -689,7 +689,7 @@
   which are definitively lost, and therefore that are no more possible
   parser cases to try.</p>
 
-<p>An alternative is to use <a href="fparsers.html">purely functional
+<p>An alternative is to use <a href="fparsers.html">functional
   parsers</a> which use a new stream type, lazy but not
   destructive. Their advantage is that they use a limited backtrack:
   the case of "if..then..else.." and the shorter "if..then.." work
@@ -704,6 +704,12 @@
   drawback of backtracking parsers. See the solutions found to this
   problem in the chapter about <a href="fparsers.html">purely
   functional parsers</a>.</p>
+
+<p>A second alternative is to use the
+  <a href="bparsers.html">backtracking parsers</a>. They use the same
+  stream type as the functional parsers, but they test more cases than
+  them. They have the same advantages and drawbacks than the functional
+  parsers.</p>
 
 <div class="trailer">
 </div>

@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: configure,v 1.23 2007/09/30 21:41:52 deraugla Exp $
+# $Id: configure,v 1.24 2007/11/26 09:20:52 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -140,12 +140,22 @@ x=$(ocamlc -where)
 y=$(echo $x | sed -e 's|\\\\|/|g')
 x="$(echo 'Sys.os_type;;' | ocaml | egrep 'Win32|Cygwin')"
 if test "$x" = ""; then win=false; else win=true; fi
+x="$(echo 'Sys.os_type;;' | ocaml | grep 'Win32')"
+if test "$x" = ""; then win32=false; else win32=true; fi
 OLIBDIR="$y"
 
 if test "$win" = "true"; then
     EXE=.exe
 else
     EXE=
+fi
+
+if test "$win32" = "true"; then
+    EXT_OBJ=.obj
+    EXT_LIB=.lib
+else
+    EXT_OBJ=.o
+    EXT_LIB=.a
 fi
 
 if test "$bindir" != ""; then
@@ -181,6 +191,8 @@ echo NAME=$name
 echo MODE=$mode
 echo EXE=$EXE
 echo OPT=$OPT
+echo EXT_OBJ=$EXT_OBJ
+echo EXT_LIB=$EXT_LIB
 echo OVERSION=$OVERSION
 echo "OTOP=\$(TOP)/ocaml_stuff/$OVERSION"
 if ocamlc -w y 2>/dev/null; then

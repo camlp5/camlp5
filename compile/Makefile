@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.15 2007/11/17 21:52:29 deraugla Exp $
+# $Id: Makefile,v 1.16 2007/11/26 09:20:52 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -38,7 +38,7 @@ install:
 	fi
 
 clean::
-	rm -f *.cm* *.pp[io] *.o *.bak .*.bak *.out *.opt
+	rm -f *.cm* *.pp[io] *.[oa] *.lib *.obj *.bak .*.bak *.out *.opt
 	rm -f *.fast tmp.* pa_*_fast.ml *_fast.ml.tmp
 
 depend:

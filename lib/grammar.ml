@@ -1,5 +1,5 @@
 (* camlp5r pa_fstream.cmo *)
-(* $Id: grammar.ml,v 1.67 2007/11/23 18:57:42 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.68 2007/11/26 09:20:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Gramext;
@@ -825,24 +825,6 @@ value start_parser_of_entry entry =
 
 (* version for backtracking parsers *)
 
-value btop_tree entry son strm =
-  match son with
-  [ Node {node = s; brother = bro; son = son} ->
-      let r =
-        Node {node = top_symb entry s; brother = bro; son = son}
-      in
-      Some (r, strm, Fstream.b_nok)
-  | LocAct _ _ | DeadEnd ->
-      None ]
-;
-
-value brecover bparser_of_tree entry nlevn alevn bp a s son =
-  bparser
-  [ [: t = btop_tree entry son; a = bparser_of_tree entry nlevn alevn t :] ->
-      a
-  | [: :] -> raise (Stream.Error (tree_failed entry a s son)) ]
-;
-
 value rec btop_symb entry =
   fun
   [ Sself | Snext -> Some (Snterm entry)
@@ -853,6 +835,68 @@ value rec btop_symb entry =
       | None -> None ]
   | _ -> None ]
 ;
+
+value btop_tree entry son strm =
+  match son with
+  [ Node {node = s; brother = bro; son = son} ->
+      match btop_symb entry s with
+      [ Some sy ->
+          let r = Node {node = sy; brother = bro; son = son} in
+          Some (r, strm, Fstream.b_nok)
+      | None ->
+          None ]
+  | LocAct _ _ | DeadEnd ->
+      None ]
+;
+
+value brecover bparser_of_tree entry nlevn alevn bp a s son =
+  bparser
+  [ [: t = btop_tree entry son; a = bparser_of_tree entry nlevn alevn t :] ->
+      a
+(*
+  | [: :] -> raise (Stream.Error (tree_failed entry a s son))
+*)
+  ]
+;
+
+value backtrack_stalling_limit = ref 10000;
+value backtrack_parse = ref False;
+value backtrack_trace = ref False;
+value backtrack_trace_try = ref False;
+
+let s = try Sys.getenv "CAMLP5PARAM" with [ Not_found -> "" ] in
+loop 0 where rec loop i =
+  if i = String.length s then ()
+  else if s.[i] = 'b' then do {
+    backtrack_parse.val := True;
+    loop (i + 1)
+  }
+  else if s.[i] = 'l' && i + 1 < String.length s && s.[i+1] = '=' then do {
+    let (n, i) =
+      loop 0 (i + 2) where rec loop n i =
+        if i = String.length s then (n, i)
+        else if s.[i] >= '0' && s.[i] <= '9' then
+          loop (10 * n + Char.code s.[i] - Char.code '0') (i + 1)
+        else (n, i)
+    in
+    backtrack_stalling_limit.val := n;
+    loop i
+  }
+  else if s.[i] = 't' then do {
+    backtrack_trace.val := True;
+    loop (i + 1)
+  }
+  else if s.[i] = 'y' then do {
+    backtrack_trace_try.val := True;
+    loop (i + 1)
+  }
+  else
+    loop (i + 1)
+;
+
+value tind = ref "";
+value max_fcount = ref 0;
+value nb_ftry = ref 0;
 
 value rec bparser_of_tree entry nlevn alevn =
   fun
@@ -873,9 +917,10 @@ value rec bparser_of_tree entry nlevn alevn =
   | Node {node = s; son = son; brother = bro} ->
       let ps = bparser_of_symbol entry nlevn s in
       let p1 = bparser_of_tree entry nlevn alevn son in
+      let p1 = bparser_cont p1 entry nlevn alevn s son in
       let p2 = bparser_of_tree entry nlevn alevn bro in
-      bparser
-      [ [: a = ps; act = p1 :] -> app act a
+      bparser bp
+      [ [: a = ps; act = p1 bp a :] -> app act a
       | [: a = p2 :] -> a ] ]
 and bparser_cont p1 entry nlevn alevn s son bp a =
   bparser
@@ -988,14 +1033,74 @@ and bparser_of_symbol entry nlevn =
 and bparser_of_token entry tok =
   let f = entry.egram.glexer.Plexing.tok_match tok in
   fun strm ->
+    let _ =
+      if backtrack_trace.val then do {
+        Printf.eprintf "%stesting (\"%s\", \"%s\") ..." tind.val (fst tok)
+          (snd tok);
+        flush stderr;
+      }
+      else ()
+    in
+    let _ =
+      if backtrack_stalling_limit.val > 0 || backtrack_trace_try.val then
+        if Fstream.count strm > max_fcount.val then do {
+          max_fcount.val := Fstream.count strm;
+          nb_ftry.val := 0
+        }
+        else do {
+          incr nb_ftry;
+          if backtrack_trace_try.val then do {
+            Printf.eprintf "\rtokens read: %d; tokens tests: %d "
+              max_fcount.val nb_ftry.val;
+            flush stderr;
+          }
+          else ();
+          if backtrack_stalling_limit.val > 0 &&
+             nb_ftry.val >= backtrack_stalling_limit.val
+          then do {
+            if backtrack_trace_try.val then do {
+              Printf.eprintf "\n";
+              flush stderr;
+            }
+            else ();
+            raise Stream.Failure
+          }
+          else ()
+        }
+      else ()
+    in
     match Fstream.next strm with
     [ Some (tok, strm) ->
         try
           let r = f tok in
+          let _ =
+            if backtrack_trace.val then do {
+              Printf.eprintf " yes!!!\n";
+              flush stderr;
+            }
+            else ()
+          in
           Some (Obj.repr r, strm, Fstream.b_nok)
         with
-        [ Stream.Failure -> None ]
-    | None -> None ]
+        [ Stream.Failure ->
+            let _ =
+              if backtrack_trace.val then do {
+                Printf.eprintf " found (\"%s\", \"%s\")\n"
+                  (fst (Obj.magic tok)) (snd (Obj.magic tok));
+                flush stderr;
+              }
+              else ()
+            in
+            None ]
+    | None ->
+        let _ =
+          if backtrack_trace.val then do {
+            Printf.eprintf " eos\n";
+            flush stderr;
+          }
+          else ()
+        in
+        None ]
 and bparse_top_symb entry symb =
   match btop_symb entry symb with
   [ Some sy -> bparser_of_symbol entry 0 sy
@@ -1102,12 +1207,63 @@ value init_entry_functions entry = do {
   entry.bstart :=
     fun lev strm -> do {
       let f = bstart_parser_of_entry entry in
+      let f =
+        if backtrack_trace.val then
+          fun lev strm -> do {
+            let t = tind.val in
+            Printf.eprintf "%s>> start %s lev %d\n" tind.val entry.ename lev;
+            flush stderr;
+            tind.val := tind.val ^ " ";
+            try do {
+              let r = f lev strm in
+              tind.val := t;
+              Printf.eprintf "%s<< start %s lev %d\n" tind.val entry.ename
+                lev;
+              flush stderr;
+              r
+            }
+            with e -> do {
+              tind.val := t;
+              Printf.eprintf "%sexception \"%s\"\n" tind.val
+                (Printexc.to_string e);
+              flush stderr;
+              raise e
+            }
+          }
+        else f
+      in
       entry.bstart := f;
       f lev strm
     };
   entry.bcontinue :=
     fun lev bp a strm -> do {
       let f = bcontinue_parser_of_entry entry in
+      let f =
+        if backtrack_trace.val then
+          fun lev bp a strm -> do {
+            let t = tind.val in
+            Printf.eprintf "%s>> continue %s lev %d bp %d\n" tind.val
+              entry.ename lev bp;
+            flush stderr;
+            tind.val := tind.val ^ " ";
+            try do {
+              let r = f lev bp a strm in
+              tind.val := t;
+              Printf.eprintf "%s<< continue %s lev %d %d\n" tind.val
+                entry.ename lev bp;
+              flush stderr;
+              r
+            }
+            with e -> do {
+              tind.val := t;
+              Printf.eprintf "%sexception \"%s\"\n" tind.val
+                (Printexc.to_string e);
+              flush stderr;
+              raise e
+            }
+          }
+        else f
+      in
       entry.bcontinue := f;
       f lev bp a strm
     }
@@ -1187,7 +1343,7 @@ value delete_rule entry sl =
 ;
 
 type parse_algorithm = Gramext.parse_algorithm ==
-  [ Imperative | Backtracking | DefaultAlgorithm ]
+  [ Predictive | Backtracking | DefaultAlgorithm ]
 ;
 
 value warning_verbose = Gramext.warning_verbose;
@@ -1257,6 +1413,8 @@ value parse_parsable entry p = do {
   in
   floc.val := fun_loc;
   token_count.val := 0;
+  max_fcount.val := 0;
+  nb_ftry.val := 0;
   try do {
     let r = efun ts in
     restore ();
@@ -1373,10 +1531,6 @@ value find_entry e s =
   | Dparser _ -> raise Not_found ]
 ;
 
-value backtrack_parse =
-  ref (try Sys.getenv "CAMLP5_BPARSE" = "t" with [ Not_found -> False ])
-;
-
 module Entry =
   struct
     type te = token;
@@ -1392,7 +1546,7 @@ module Entry =
           if backtrack_parse.val then
             Obj.magic (bparse_parsable entry p : Obj.t)
           else Obj.magic (parse_parsable entry p : Obj.t)
-      | Imperative ->
+      | Predictive ->
           Obj.magic (parse_parsable entry p : Obj.t)
       | Backtracking ->
           Obj.magic (bparse_parsable entry p : Obj.t) ]
@@ -1553,7 +1707,7 @@ module GMake (L : GLexerType) =
               if backtrack_parse.val then
                 Obj.magic (bparse_parsable e p : Obj.t)
               else Obj.magic (parse_parsable e p : Obj.t)
-          | Imperative ->
+          | Predictive ->
               Obj.magic (parse_parsable e p : Obj.t)
           | Backtracking ->
               Obj.magic (bparse_parsable e p : Obj.t) ]

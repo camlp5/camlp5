@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: library.html,v 1.33 2007/10/20 02:17:21 deraugla Exp $ -->
+  <!-- $Id: library.html,v 1.34 2007/11/26 09:20:52 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Library</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -859,6 +859,59 @@ value iter_entry :
   </dd>
 </dl>
 
+<h3>parsing algorithm</h3>
+
+<pre style="border:0; margin-left: 1cm">
+type parse_algorithm = Gramext.parse_algorithm ==
+  [ Imperative | Backtracking | DefaultAlgorithm ]
+;
+</pre>
+
+<dl><dd>
+    Type of algorithm used in grammar entries.
+    <ul>
+      <li><tt>Imperative</tt>: use imperative streams</li>
+      <li><tt>Backtracking</tt>: use functional streams with full
+        backtracking</li>
+      <li><tt>DefaultAlgorithm</tt>: found in the variable
+        "<tt>backtrack_parse</tt>" below.</li>
+    </ul>
+    The default, when a grammar is created,
+    is <tt>DefaultAlgorithm</tt>.
+</dd></dl>
+
+<dl>
+  <dt><tt>value set_algorithm : g -> parse_algorithm -> unit;</tt></dt>
+  <dd>
+    Set the parsing algorithm for all entries of a given grammar.
+  </dd>
+</dl>
+
+<dl>
+  <dt><tt>value backtrack_parse : ref bool;</tt></dt>
+  <dd>
+    If <tt>True</tt>, the default parsing uses full backtracking. If
+    <tt>False</tt>, it uses parsing with normal streams. If the
+    environment variable CAMLP5PARAM contains "b", the default is
+    <tt>True</tt>; otherwise, the default is <tt>False</tt>.
+  </dd>
+</dl>
+
+<dl>
+  <dt><tt>value backtrack_stalling_limit : ref int;</tt></dt>
+  <dd>
+    Limitation of backtracking to prevent stalling in case of syntax
+    error. In backtracking algorithm, when there is a syntax error,
+    the parsing continues trying to find another solution. It some
+    grammars, it can be very long before checking all possibilities.
+    This number limits the number of tokens tests after a backtrack.
+    (The number of tokens tests is reset to zero when the token stream
+    overtakes the last reached token.) The default is 10000. If set
+    to 0, there is no limit. Can be set by the environment variable
+    CAMLP5PARAM by "l=value".
+  </dd>
+</dl>
+
 <h3>functorial interface</h3>
 
 <p>Alternative for grammar use. Grammars are not Ocaml values:
@@ -887,6 +940,7 @@ module type S =
     value parsable : Stream.t char -> parsable;
     value tokens : string -> list (string * int);
     value glexer : Plexing.lexer te;
+    value set_algorithm : parse_algorithm -> unit;
     module Entry :
       sig
         type e 'a = 'y;
@@ -1082,26 +1136,39 @@ value f : array 'a -> array 'a -> (array bool * array bool);</tt></dt>
 
 <h2>Fstream module</h2>
 
-<p>This module implements functional streams.</p>
+<p>This module implement functional streams and parsers together with
+  backtracking parsers.</p>
 
 <p>To be used with syntax "<tt>pa_fstream.cmo</tt>". The syntax is:</p>
 
 <ul>
   <li>stream: "<tt>fstream [: ... :]</tt>"</li>
-  <li>parser: "<tt>parser [ [: ... :] -> ... | ... ]</tt>"</li>
+  <li>functional parser: "<tt>fparser [ [: ... :] -> ... | ... ]</tt>"</li>
+  <li>backtracking parser: "<tt>bparser [ [: ... :] -> ... | ... ]</tt>"</li>
 </ul>
 
 <p>Functional parsers are of type:</p>
 
 <pre>
-  Fstream.t 'a -> option ('a * Fstream.t 'a)
+  Fstream.t 'a -> option ('b * Fstream.t 'a)
 </pre>
 
-<p>They use limited backtrack, i.e if a rule fails, the next rule is
-  tested with the initial stream; limited because in the case of a
-  rule with two consecutive symbols "<tt>a</tt>" and "<tt>b</tt>", if
-  "<tt>b</tt>" fails, the rule fails: there is no try with the next
-  rule of "<tt>a</tt>".</p>
+<p>Backtracking parsers are of type:</p>
+
+<pre>
+  Fstream.t 'a -> option ('b * Fstream.t 'a * Fstream.kont 'a 'b)
+</pre>
+
+<p>Functional parsers use limited backtrack, i.e if a rule fails, the
+  next rule is tested with the initial stream; limited because in the
+  case of a rule with two consecutive symbols "<tt>a</tt>" and
+  "<tt>b</tt>", if "<tt>b</tt>" fails, the rule fails: there is no try
+  with the next rule of "<tt>a</tt>".</p>
+
+<p> Backtracking parsers have full backtrack. If a rule fails, the
+  next case of the previous rule is tested.</p>
+
+<h3>Functional streams</h3>
 
 <dl>
   <dt><tt>type t 'a = 'x;</tt></dt>
@@ -1150,6 +1217,38 @@ value f : array 'a -> array 'a -> (array bool * array bool);</tt></dt>
   <dd>Return the number of unfrozen elements in the beginning of the
     stream; useful to determine the position of a parsing error (longest
     path).</dd>
+</dl>
+
+<h3>Backtracking parsers</h3>
+
+<dl>
+  <dt><tt>type kont 'a 'b = [ K of unit -> option ('b * t 'a * kont 'a 'b) ];</tt></dt>
+  <dd>
+    The type of continuation of a backtracking parser.
+  </dd>
+</dl>
+
+<dl>
+  <dt><tt>type bp 'a 'b = t 'a -> option ('b * t 'a * kont 'a 'b);</tt></dt>
+  <dd>
+    The type of a backtracking parser.
+  </dd>
+</dl>
+
+<dl>
+  <dt><tt>value bcontinue : kont 'a 'b -> option ('b * t 'a * kont 'a 'b);</tt></dt>
+  <dd>
+    "<tt>bcontinue k</tt>" return the next solution of a backtracking
+    parser.
+  </dd>
+</dl>
+
+<dl>
+  <dt><tt>value bparse_all : bp 'a 'b -> t 'a -> list 'b;</tt></dt>
+  <dd>
+    "<tt>bparse_all p strm</tt>" return the list of all solutions of a
+    backtracking parser applied to a functional stream.
+  </dd>
 </dl>
 
 <h2>Pretty module</h2>

@@ -1,6 +1,10 @@
 Camlp5 Version 5.04:
 --------------------
 
+* [24 Nov 07] Fixed bug in install under MSVC Windows: object and library
+  files were not installed (using wrong extensions).
+* [24 Nov 07] Fixed bug under Windows: line numbers in error messages were
+  wrong (twice the normal value).
 * [22 Nov 07] Added backtracking parsers. Functions defined in the module
   Fstream (already containing functional streams and parsers). Syntax
   added in pa_fstream.cmo (already containing syntax for functinal streams

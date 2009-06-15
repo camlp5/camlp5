@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.21 2007/10/29 08:51:00 deraugla Exp $
+# $Id: Makefile,v 1.22 2007/11/26 09:20:52 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -34,7 +34,7 @@ $(NAME)_top.cma: $(OBJS)
 	$(OCAMLC) $(OBJS) -a -o $(NAME)_top.cma
 
 clean::
-	rm -f *.cm[ioa] *.pp[io] *.o *.bak .*.bak $(TARGET)
+	rm -f *.cm[ioa] *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak $(TARGET)
 
 depend:
 	cp .depend .depend.bak

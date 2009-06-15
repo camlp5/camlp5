@@ -1,22 +1,34 @@
 (* camlp5r *)
-(* $Id: fstream.mli,v 1.9 2007/11/23 03:55:32 deraugla Exp $ *)
+(* $Id: fstream.mli,v 1.10 2007/11/26 09:20:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Module [Fstream]: functional streams *)
 
-(* This module implement functional streams.
-   To be used with syntax [pa_fstream.cmo]. The syntax is:
+(* This module implement functional streams and parsers together with
+   backtracking parsers. To be used with syntax [pa_fstream.cmo]. The
+   syntax is:
+   For functional streams:
 -     stream: [fstream [: ... :]]
+   For functional parsers:
 -     parser: [fparser [ [: ... :] -> ... | ... ]]
+   For backtracking parsers:
+-     parser: [bparser [ [: ... :] -> ... | ... ]]
 
    Functional parsers are of type:
-     [Fstream.t 'a -> option ('a * Fstream.t 'a)]
+     [Fstream.t 'a -> option ('b * Fstream.t 'a)]
+   Backtracking parsers are of type:
+     [Fstream.t 'a -> option ('b * Fstream.t 'a * Fstream.kont 'a 'b)]
 
-   They have limited backtrack, i.e if a rule fails, the next rule is tested
-   with the initial stream; limited because when in case of a rule with two
-   consecutive symbols [a] and [b], if [b] fails, the rule fails: there is
-   no try with the next rule of [a].
+   Functional parsers have limited backtrack, i.e if a rule fails, the
+   next rule is tested with the initial stream; limited because when
+   in case of a rule with two consecutive symbols [a] and [b], if [b]
+   fails, the rule fails: there is no try with the next rule of [a].
+
+   Backtracking parsers have full backtrack. If a rule fails, the next
+   case of the previous rule is tested.
 *)
+
+(** Functional streams *)
 
 type t 'a = 'x;
     (* The type of 'a functional streams *)
@@ -53,7 +65,7 @@ value count_unfrozen : t 'a -> int;
        stream; useful to determine the position of a parsing error (longuest
        path). *)
 
-(* Backtracking parsers *)
+(** Backtracking parsers *)
 
 type kont 'a 'b = [ K of unit -> option ('b * t 'a * kont 'a 'b) ];
     (* The type of continuation of a backtracking parser. *)

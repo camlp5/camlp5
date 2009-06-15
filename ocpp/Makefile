@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.7 2007/11/20 02:55:15 deraugla Exp $
+# $Id: Makefile,v 1.8 2007/11/26 09:20:52 deraugla Exp $
 
 include ../config/Makefile
 
@@ -15,7 +15,8 @@ ocpp$(EXE): $(OBJS)
 	$(OCAMLC) $(LINKFLAGS) ../boot/ploc.cmo ../boot/stdpp.cmo ../main/quotation.cmo ../odyl/odyl.cma $(OBJS) ../odyl/odyl.cmo -linkall -o ocpp$(EXE)
 
 clean::
-	rm -f *.cm[ioa] *.pp[io] *.o *.out *.bak .*.bak ocpp$(EXE)
+	rm -f *.cm[ioa] *.pp[io] *.[ao] *.obj *.lib *.out *.bak .*.bak
+	rm -f ocpp$(EXE)
 
 install:
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(NAME)" "$(DESTDIR)$(BINDIR)"
