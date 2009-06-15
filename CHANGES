@@ -4,7 +4,8 @@ Camlp5 Version 4.06:
 * [21 Jul 07] Fixed bug in normal syntax and printing of normal syntax:
   "poly type" was accepted with revised syntax, i.e. with "!" at beginning
   and displayed like it. Fixed also the printing of abstract module type
-  which was not implemented.
+  which was not implemented. Added printing syntax of fun binding fof class
+  parameters.
 * [20 Jul 07] Added revised syntax for bigarrays (same than normal syntax)
   and pretty print them in their initial syntax.
 * [18 Jul 07] In Grammar.Entry.print, local entries are displayed with

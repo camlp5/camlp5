@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.31 2007/07/21 00:35:21 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.32 2007/07/21 11:21:29 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -485,9 +485,9 @@ EXTEND
   with_constr:
     [ [ "type"; tpl = type_parameters; i = mod_ident; "="; pf = OPT "private";
         t = ctyp ->
-          MLast.WcTyp loc i tpl (o2b pf) t
+          <:with_constr< type $i$ $list:tpl$ = $opt:o2b pf$ $t$ >>
       | "module"; i = mod_ident; "="; me = module_expr ->
-          MLast.WcMod loc i me ] ]
+          <:with_constr< module $i$ = $me$ >> ] ]
   ;
   (* Core expressions *)
   expr:

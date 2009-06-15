@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.64 2007/07/21 00:35:21 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.65 2007/07/21 11:21:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -2779,26 +2779,39 @@ value class_type_decl_list pc cd =
 ;
 
 value class_decl pc ci =
+  let (pl, ce) =
+    loop ci.MLast.ciExp where rec loop =
+      fun
+      [ <:class_expr< fun $p$ -> $ce$ >> as gce ->
+          if is_irrefut_patt p then
+            let (pl, ce) = loop ce in
+            ([p :: pl], ce)
+          else ([], gce)
+      | ce -> ([], ce) ]
+  in
   horiz_vertic
     (fun () ->
-       sprintf "%s%s%s%s = %s%s" pc.bef
+       sprintf "%s%s%s%s%s = %s%s" pc.bef
          (if ci.MLast.ciVir then "virtual " else "")
          (class_type_params {(pc) with bef = ""; aft = ""}
             (snd ci.MLast.ciPrm))
          ci.MLast.ciNam
-         (class_expr {(pc) with bef = ""; aft = ""} ci.MLast.ciExp) pc.aft)
+         (if pl = [] then "" else
+          hlist patt {(pc) with bef = " "; aft = ""} pl)
+         (class_expr {(pc) with bef = ""; aft = ""} ce) pc.aft)
     (fun () ->
        let s1 =
-         sprintf "%s%s%s%s =" pc.bef
+         sprintf "%s%s%s%s%s =" pc.bef
            (if ci.MLast.ciVir then "virtual " else "")
            (class_type_params {(pc) with bef = ""; aft = ""}
               (snd ci.MLast.ciPrm))
            ci.MLast.ciNam
+           (if pl = [] then ""
+            else hlist patt {(pc) with bef = " "; aft = ""} pl)
        in
        let s2 =
          class_expr
-           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
-           ci.MLast.ciExp
+           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} ce
        in
        sprintf "%s\n%s" s1 s2)
 ;
