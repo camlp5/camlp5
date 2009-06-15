@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_extprint.ml,v 1.12 2007/12/13 13:33:25 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.13 2007/12/15 02:03:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -368,7 +368,7 @@ value make_call loc aft_is_empty pc pcl =
                         <:expr< $str:bef$ >>
                       else
                         let bef = if add_pc_bef then "%s" ^ bef else bef in
-                        let e = <:expr< sprintf $str:bef$ >> in
+                        let e = <:expr< Pretty.sprintf $str:bef$ >> in
                         let e =
                           if add_pc_bef then <:expr< $e$ $pc$.bef >> else e
                         in
@@ -389,7 +389,7 @@ value make_call loc aft_is_empty pc pcl =
                         | _ -> assert False ]
                       else
                         let aft = if add_pc_aft then aft ^ "%s" else aft in
-                        let e = <:expr< sprintf $str:aft$ >> in
+                        let e = <:expr< Pretty.sprintf $str:aft$ >> in
                         let e =
                           List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e
                             aft_al
@@ -408,7 +408,7 @@ value make_call loc aft_is_empty pc pcl =
                 else
                   let fmt = if add_pc_bef then "%s" ^ bef else bef in
                   let fmt = if add_pc_aft then fmt ^ "%s" else fmt in
-                  let e = <:expr< sprintf $str:fmt$ >> in
+                  let e = <:expr< Pretty.sprintf $str:fmt$ >> in
                   let e =
                     if add_pc_bef then <:expr< $e$ $pc$.bef >> else e
                   in
@@ -425,14 +425,14 @@ value make_call loc aft_is_empty pc pcl =
   [ [] ->
       let fmt = "%s" in
       let fmt = if not aft_is_empty then fmt ^ "%s" else fmt in
-      let e = <:expr< sprintf $str:fmt$ >> in
+      let e = <:expr< Pretty.sprintf $str:fmt$ >> in
       let e = <:expr< $e$ $pc$.bef >> in
       if not aft_is_empty then <:expr< $e$ $pc$.aft >> else e
   | [e] -> e
   | _ ->
       let fmt = String.concat "" (List.map (fun _ -> "%s") el) in
       List.fold_left (fun f e -> <:expr< $f$ $e$ >>)
-        <:expr< sprintf $str:fmt$ >> el ]
+        <:expr< Pretty.sprintf $str:fmt$ >> el ]
 ;
 
 value let_offset_in_e loc pc offset e =

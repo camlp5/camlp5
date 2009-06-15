@@ -1,10 +1,9 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.75 2007/12/14 15:57:43 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.76 2007/12/15 02:03:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
 
-open Pretty;
 open Pcaml;
 open Prtools;
 
@@ -102,7 +101,7 @@ value class_def = class_def_or_type_decl ':';
 value class_type_decl = class_def_or_type_decl '=';
 
 value class_type_decl_list pc cd =
-  horiz_vertic
+  Pretty.horiz_vertic
     (fun () ->
        pprintf pc "class type %p"
          (hlist2 class_type_decl (and_before class_type_decl)) cd)
@@ -155,7 +154,7 @@ value variant_decl pc pv =
 value variant_decl_list char pc pvl =
   if pvl = [] then pprintf pc "[ %c ]" char
   else
-    horiz_vertic
+    Pretty.horiz_vertic
       (fun () ->
          pprintf pc "[ %c %p ]" char
            (hlist2 variant_decl (bar_before variant_decl)) pvl)
@@ -182,7 +181,7 @@ value patt_tcon pc p =
 ;
 
 value class_object pc (csp, csl) =
-  horiz_vertic
+  Pretty.horiz_vertic
     (fun () ->
        pprintf pc "object%p %p end"
          (fun pc ->
@@ -294,7 +293,7 @@ EXTEND_PRINTER
   ;
   pr_sig_item: LEVEL "top"
     [ [ <:sig_item< class $list:cd$ >> ->
-          horiz_vertic
+          Pretty.horiz_vertic
             (fun () ->
                pprintf pc "class %p" (hlist2 class_def (and_before class_def))
                  cd)
@@ -306,7 +305,7 @@ EXTEND_PRINTER
   ;
   pr_str_item: LEVEL "top"
     [ [ <:str_item< class $list:cd$ >> ->
-          horiz_vertic
+          Pretty.horiz_vertic
             (fun () ->
                pprintf pc "class %p"
                  (hlist2 class_decl (and_before class_decl)) cd)
@@ -354,12 +353,12 @@ EXTEND_PRINTER
       [ <:class_type< [ $t$ ] -> $ct$ >> ->
           pprintf pc "[%p] ->@;%p" ctyp t curr ct
       | <:class_type< object $opt:cst$ $list:csi$ end >> ->
-          horiz_vertic
+          Pretty.horiz_vertic
             (fun () ->
                if alone_in_line pc then
                  (* Heuristic : I don't like to print it horizontally
                     when alone in a line. *)
-                 sprintf "\n"
+                 Pretty.sprintf "\n"
                else
                  pprintf pc "object%p %p end"
                    (fun pc ->
