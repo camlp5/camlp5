@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.2 2007/07/31 14:29:41 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.3 2007/07/31 16:40:31 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -45,20 +45,20 @@ module Meta =
     open MLast;
     value loc = Stdpp.dummy_loc;
     value ln () = <:expr< $lid:Stdpp.loc_name.val$ >>;
-    value rec expr_of_list elem =
+    value rec e_list elem =
       fun
       [ [] -> <:expr< [] >>
-      | [e :: el] -> <:expr< [$elem e$ :: $expr_of_list elem el$] >> ]
+      | [e :: el] -> <:expr< [$elem e$ :: $e_list elem el$] >> ]
     ;
-    value expr_of_option elem =
+    value e_option elem =
       fun
       [ None -> <:expr< None >>
       | Some e -> <:expr< Some $elem e$ >> ]
     ;
-    value expr_of_bool b =
+    value e_bool b =
       if b then <:expr< True >> else <:expr< False >>
     ;
-    value expr_of_type t = 
+    value e_type t = 
       let ln = ln () in
       loop t where rec loop =
         fun 
@@ -67,23 +67,32 @@ module Meta =
         | TyApp _ t1 t2 -> <:expr< MLast.TyApp $ln$ $loop t1$ $loop t2$ >> 
         | TyLid _ s -> <:expr< MLast.TyLid $ln$ $str:s$ >>
         | TyUid _ s -> <:expr< MLast.TyUid $ln$ $str:s$ >>
-        | x -> not_impl "expr_of_type" x ]
+        | x -> not_impl "e_type" x ]
     ;
-    value patt_of_type =
+    value p_type =
       fun
       [ TyLid _ s -> <:patt< MLast.TyLid _ $str:s$ >>
-      | x -> not_impl "patt_of_type" x ]
+      | x -> not_impl "p_type" x ]
     ;
-    value expr_of_patt p =
+    value e_patt p =
       let ln = ln () in
       loop p where rec loop =
         fun
-        [ PaLid _ s -> <:expr< MLast.PaLid $ln$ $str:s$ >>
+        [ PaLid loc s ->
+            let a = after_colon s in
+            if a = "" then <:expr< MLast.PaLid $ln$ $str:s$ >>
+            else
+              let r =
+                let loc = Stdpp.make_loc (0, String.length a) in
+                <:expr< MLast.PaLid $ln$ $lid:a$ >>
+              in
+              let loc = antiquot_loc "lid" loc in
+              <:expr< $anti:r$ >>
         | PaTyc _ p t ->
-            <:expr< MLast.PaTyc $ln$ $loop p$ $expr_of_type t$ >>
-        | x -> not_impl "expr_of_patt" x ]
+            <:expr< MLast.PaTyc $ln$ $loop p$ $e_type t$ >>
+        | x -> not_impl "e_patt" x ]
     ;
-    value expr_of_expr e =
+    value e_expr e =
       let ln = ln () in
       loop e where rec loop =
         fun
@@ -93,30 +102,30 @@ module Meta =
         | ExArr _ [ExAnt _ <:expr< ("list", $e$) >>] ->
             <:expr< MLast.ExArr $ln$ $e$ >>
         | ExArr _ el ->
-            <:expr< MLast.ExArr $ln$ $expr_of_list loop el$ >>
+            <:expr< MLast.ExArr $ln$ $e_list loop el$ >>
         | ExIfe _ e1 e2 e3 ->
             <:expr< MLast.ExIfe $ln$ $loop e1$ $loop e2$ $loop e3$ >>
         | ExInt _ s k ->
             <:expr< MLast.ExInt $ln$ $str:s$ $str:k$ >>
         | ExFun _ pwel ->
             let pwel =
-              expr_of_list
+              e_list
                 (fun (p, eo, e) ->
                    <:expr<
-                     ($expr_of_patt p$, $expr_of_option loop eo$, $loop e$)
+                     ($e_patt p$, $e_option loop eo$, $loop e$)
                    >>)
                 pwel
             in
             <:expr< MLast.ExFun $ln$ $pwel$ >>
         | ExLet _ rf [(<:patt< _ >>, ExAnt _ <:expr< ("list", $e1$) >>)] e ->
-            let rf = expr_of_bool rf in
+            let rf = e_bool rf in
             let pel = e1 in
             <:expr< MLast.ExLet $ln$ $rf$ $pel$ $loop e$ >>
         | ExLet _ rf pel e ->
-            let rf = expr_of_bool rf in
+            let rf = e_bool rf in
             let pel =
-              expr_of_list
-                (fun (p, e) -> <:expr< ($expr_of_patt p$, $loop e$) >>) pel
+              e_list
+                (fun (p, e) -> <:expr< ($e_patt p$, $loop e$) >>) pel
             in
             <:expr< MLast.ExLet $ln$ $rf$ $pel$ $loop e$ >>
         | ExLid loc s ->
@@ -139,37 +148,39 @@ module Meta =
               in
               let loc = antiquot_loc "str" loc in
               <:expr< $anti:r$ >>
+        | ExTup _ el ->
+            <:expr< MLast.ExTup $ln$ $e_list loop el$ >>
         | ExUid _ s ->
             <:expr< MLast.ExUid $ln$ $str:s$ >>
-        | x -> not_impl "expr_of_expr" x ]
+        | x -> not_impl "e_expr" x ]
     ;
-    value patt_of_patt =
+    value p_patt =
       fun
-      [ x -> not_impl "patt_of_patt" x ]
+      [ x -> not_impl "p_patt" x ]
     ;
-    value patt_of_expr =
+    value p_expr =
       fun
-      [ x -> not_impl "patt_of_expr" x ]
+      [ x -> not_impl "p_expr" x ]
     ;
-    value expr_of_sig_item =
-      fun
-      [ SgVal _ s t ->
-          if String.length s > 0 && s.[0] = ':' then
-            let s = String.sub s 1 (String.length s - 1) in
-            <:expr< MLast.SgVal $ln ()$ $lid:s$ $expr_of_type t$ >>
-          else
-            <:expr< MLast.SgVal $ln ()$ $str:s$ $expr_of_type t$ >>
-      | x -> not_impl "expr_of_sig_item" x ]
-    ;
-    value patt_of_sig_item =
+    value e_sig_item =
       fun
       [ SgVal _ s t ->
-          if String.length s > 0 && s.[0] = ':' then
-            let s = String.sub s 1 (String.length s - 1) in
-            <:patt< MLast.SgVal _ $lid:s$ $patt_of_type t$ >>
-          else
-            <:patt< MLast.SgVal _ $str:s$ $patt_of_type t$ >>
-      | x -> not_impl "patt_of_sig_item" x ]
+          let s =
+            let a = after_colon s in
+            if a = "" then <:expr< $str:s$ >> else <:expr< $lid:a$ >>
+          in
+          <:expr< MLast.SgVal $ln ()$ $s$ $e_type t$ >>
+      | x -> not_impl "e_sig_item" x ]
+    ;
+    value p_sig_item =
+      fun
+      [ SgVal _ s t ->
+          let s =
+            let a = after_colon s in
+            if a = "" then <:patt< $str:s$ >> else <:patt< $lid:a$ >>
+          in
+          <:patt< MLast.SgVal _ $s$ $p_type t$ >>
+      | x -> not_impl "p_sig_item" x ]
     ;
   end
 ;
@@ -194,10 +205,9 @@ lex.Token.tok_match :=
   | tok -> Token.default_match tok ]
 ;
 
+(* reinit the entry functions to take the new tok_match into account *)
 Grammar.iter_entry Grammar.reinit_entry_functions
   (Grammar.Entry.obj Pcaml.expr);
-
-Plexer.force_dollar_for_antiquotation.val := True;
 
 value expr_eoi = Grammar.Entry.create Pcaml.gram "expr";
 value patt_eoi = Grammar.Entry.create Pcaml.gram "patt";
@@ -208,28 +218,30 @@ EXTEND
   sig_item_eoi: [ [ x = Pcaml.sig_item; EOI -> x ] ];
 END;
 
-value apply_expr_entry =
-  let f s = Grammar.Entry.parse expr_eoi (Stream.of_string s) in
-  let expr s = Meta.expr_of_expr (f s) in
-  let patt s = Meta.patt_of_expr (f s) in
+value call_with r v f a =
+  let saved = r.val in
+  try do {
+    r.val := v;
+    let b = f a in
+    r.val := saved;
+    b
+  }
+  with e -> do { r.val := saved; raise e }
+;
+
+value apply_entry e me mp =
+  let f s =
+    call_with Plexer.force_dollar_for_antiquotation True
+      (fun () -> Grammar.Entry.parse e (Stream.of_string s)) ()
+  in
+  let expr s = me (f s) in
+  let patt s = mp (f s) in
   Quotation.ExAst (expr, patt)
 ;
 
-value apply_patt_entry =
-  let f s = Grammar.Entry.parse patt_eoi (Stream.of_string s) in
-  let expr s = Meta.expr_of_patt (f s) in
-  let patt s = Meta.patt_of_patt (f s) in
-  Quotation.ExAst (expr, patt)
+List.iter
+  (fun (q, f) -> Quotation.add q f)
+  [("expr", apply_entry expr_eoi Meta.e_expr Meta.p_expr);
+   ("patt", apply_entry patt_eoi Meta.e_patt Meta.p_patt);
+   ("sig_item", apply_entry sig_item_eoi Meta.e_sig_item Meta.p_sig_item)]
 ;
-
-value apply_sig_item_entry =
-  let f s = Grammar.Entry.parse sig_item_eoi (Stream.of_string s) in
-  let expr s = Meta.expr_of_sig_item (f s) in
-  let patt s = Meta.patt_of_sig_item (f s) in
-  Quotation.ExAst (expr, patt)
-;
-
-Quotation.add "expr" apply_expr_entry;
-Quotation.add "patt" apply_patt_entry;
-
-Quotation.add "sig_item" apply_sig_item_entry;
