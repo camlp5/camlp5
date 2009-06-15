@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.93 2007/11/28 20:01:25 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.94 2007/11/29 01:28:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1767,20 +1767,11 @@ EXTEND_PRINTER
             (fun pc -> next {(pc) with bef = sprintf "%sas " pc.bef} t2) ]
     | "poly"
       [ <:ctyp< ! $list:pl$ . $t$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s! %s . %s%s" pc.bef
-                 (hlist typevar {(pc) with bef = ""; aft = ""} pl)
-                 (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-            (fun () ->
-               let s1 =
-                 sprintf "%s! %s ." pc.bef
-                   (hlist typevar {(pc) with bef = ""; aft = ""} pl)
-               in
-               let s2 =
-                 ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t
-               in
-               sprintf "%s\n%s" s1 s2) ]
+          break 1 2 pc
+            (fun pc ->
+               hlist typevar
+                 {(pc) with bef = sprintf "%s! " pc.bef; aft = " ."} pl)
+            (fun pc -> ctyp pc t) ]
     | "arrow"
       [ <:ctyp< $_$ -> $_$ >> as z ->
           let unfold =
@@ -1828,17 +1819,10 @@ EXTEND_PRINTER
                   aft = sprintf " ]%s" pc.aft}
                  vdl)
       | <:ctyp< ($list:tl$) >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s(%s)%s" pc.bef
-                 (hlistl (star_after ctyp) ctyp {(pc) with bef = ""; aft = ""}
-                    tl)
-                 pc.aft)
-            (fun () ->
-               let tl = List.map (fun t -> (t, " *")) tl in
-               plist ctyp 1
-                 {(pc) with bef = sprintf "%s(" pc.bef;
-                  aft = sprintf ")%s" pc.aft} tl)
+          let tl = List.map (fun t -> (t, " *")) tl in
+          plist ctyp 1
+            {(pc) with bef = sprintf "%s(" pc.bef; aft = sprintf ")%s" pc.aft}
+            tl
       | <:ctyp< $lid:t$ >> ->
           var_escaped pc t
       | <:ctyp< $uid:t$ >> ->
@@ -1956,20 +1940,11 @@ EXTEND_PRINTER
           vlist2 type_decl (and_before type_decl)
             {(pc) with bef = sprintf "%stype " pc.bef} tdl
       | <:sig_item< value $lid:s$ : $t$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%svalue %s : %s%s" pc.bef
-                 (var_escaped {(pc) with bef = ""; aft = ""} s)
-                 (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-            (fun () ->
-               let s1 =
-                 sprintf "%svalue %s :" pc.bef
-                   (var_escaped {(pc) with bef = ""; aft = ""} s)
-               in
-               let s2 =
-                 ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t
-               in
-               sprintf "%s\n%s" s1 s2)
+          break 1 2 pc
+            (fun pc ->
+               var_escaped
+                 {(pc) with bef = sprintf "%svalue " pc.bef; aft = " :"} s)
+            (fun pc -> ctyp pc t)
       | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->
           failwith "classes and objects not pretty printed; add pr_ro.cmo" ] ]
   ;
@@ -2011,25 +1986,11 @@ EXTEND_PRINTER
       [ <:module_expr< $uid:s$ >> ->
           sprintf "%s%s%s" pc.bef s pc.aft
       | <:module_expr< ($me$ : $mt$) >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s(%s : %s)%s" pc.bef
-                 (module_expr {(pc) with bef = ""; aft = ""} me)
-                 (module_type {(pc) with bef = ""; aft = ""} mt) pc.aft)
-            (fun () ->
-               let s1 =
-                 module_expr
-                   {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-                    aft = " :"}
-                   me
-               in
-               let s2 =
-                 module_type
-                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
-                    aft = sprintf ")%s" pc.aft}
-                   mt
-               in
-               sprintf "%s\n%s" s1 s2)
+          break 1 0 {(pc) with ind = pc.ind + 1}
+            (fun pc ->
+               module_expr {(pc) with bef = sprintf "%s(" pc.bef; aft = " :"}
+                 me)
+            (fun pc -> module_type {(pc) with aft = sprintf ")%s" pc.aft} mt)
       | <:module_expr< struct $list:_$ end >> as z ->
           module_expr
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
