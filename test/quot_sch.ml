@@ -237,31 +237,31 @@
 <:sig_item< (open $_list:ls$) >>
 <:sig_item< (type* $list:ltd$) >>
 <:sig_item< (type* $_list:ltd$) >>
-; <:sig_item< value $s$ : $t$ >>
-; <:sig_item< value $_:s$ : $t$ >>
-; <:module_expr< $me1$ . $me2$ >>
-; <:module_expr< $me1$ $me2$ >>
-; <:module_expr< functor ($s$ : $mt$) -> $me$ >>
-; <:module_expr< functor ($_:s$ : $mt$) -> $me$ >>
-; <:module_expr< struct $list:lstri$ end >>
-; <:module_expr< struct $_list:lstri$ end >>
-; <:module_expr< ($me$ : $mt$) >>
-; <:module_expr< $uid:s$ >>
-; <:module_expr< $_uid:s$ >>
-; <:module_type< $mt1$ . $mt2$ >>
-; <:module_type< $mt1$ $mt2$ >>
-; <:module_type< functor ($s$ : $mt1$) -> $mt2$ >>
-; <:module_type< functor ($_:s$ : $mt1$) -> $mt2$ >>
-; <:module_type< $lid:s$ >>
-; <:module_type< $_lid:s$ >>
-; <:module_type< ' $s$ >>
-; <:module_type< ' $_:s$ >>
-; <:module_type< sig $list:lsigi$ end >>
-; <:module_type< sig $_list:lsigi$ end >>
-; <:module_type< $uid:s$ >>
-; <:module_type< $_uid:s$ >>
-; <:module_type< $mt$ with $list:lwc$ >>
-; <:module_type< $mt$ with $_list:lwc$ >>
+<:sig_item< (value $s$ $t$) >>
+<:sig_item< (value $_:s$ $t$) >>
+<:module_expr< $me1$. $me2$ >>
+<:module_expr< ($me1$ $me2$) >>
+<:module_expr< (functor $s$ $mt$ $me$) >>
+<:module_expr< (functor $_:s$ $mt$ $me$) >>
+<:module_expr< (struct $list:lstri$) >>
+<:module_expr< (struct $_list:lstri$) >>
+<:module_expr< (: $me$ $mt$) >>
+<:module_expr< $uid:s$ >>
+<:module_expr< $_uid:s$ >>
+<:module_type< $mt1$.$mt2$ >>
+<:module_type< ($mt1$ $mt2$) >>
+<:module_type< (functor $s$ $mt1$ $mt2$) >>
+<:module_type< (functor $_:s$ $mt1$ $mt2$) >>
+<:module_type< $lid:s$ >>
+<:module_type< $_lid:s$ >>
+(MLast.MtQuo loc (Ploc.VaVal s))
+(MLast.MtQuo loc s)
+<:module_type< (sig $list:lsigi$) >>
+<:module_type< (sig $_list:lsigi$) >>
+<:module_type< $uid:s$ >>
+<:module_type< $_uid:s$ >>
+<:module_type< (with $mt$ $list:lwc$) >>
+<:module_type< (with $mt$ $_list:lwc$) >>
 ; <:class_expr< $ce$ $e$ >>
 ; <:class_expr< $list:ls$ [ $list:lt$ ] >>
 ; <:class_expr< $_list:ls$ [ $_list:lt$ ] >>

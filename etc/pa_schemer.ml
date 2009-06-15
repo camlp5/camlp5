@@ -406,7 +406,7 @@ value rec anti_list_map f =
   | sel -> <:vala< (List.map f sel) >> ]
 ;
 
-value anti_mod_ident =
+value anti_mod_ident_se =
   fun
   [ Santi _ ("list" | "_list") s -> <:vala< $s$ >>
   | se -> <:vala< (mod_ident_se se) >> ]
@@ -444,14 +444,14 @@ value anti_uid_or_error =
 
 value rec module_expr_se =
   fun
-  [ Sexpr loc [Slid _ "functor"; Suid _ s; se1; se2] ->
-      let s = rename_id s in
-      let mt = module_type_se se1 in
-      let me = module_expr_se se2 in
-      <:module_expr< functor ($uid:s$ : $mt$) -> $me$ >>
+  [ Sexpr loc [Slid _ "functor"; se1; se2; se3] ->
+      let s = anti_uid_or_error se1 in
+      let mt = module_type_se se2 in
+      let me = module_expr_se se3 in
+      <:module_expr< functor ($_uid:s$ : $mt$) -> $me$ >>
   | Sexpr loc [Slid _ "struct" :: sl] ->
-      let mel = List.map str_item_se sl in
-      <:module_expr< struct $list:mel$ end >>
+      let mel = anti_list_map str_item_se sl in
+      <:module_expr< struct $_list:mel$ end >>
   | Sexpr loc [se1; se2] ->
       let me1 = module_expr_se se1 in
       let me2 = module_expr_se se2 in
@@ -465,35 +465,43 @@ value rec module_expr_se =
       let me2 = module_expr_se se2 in
       <:module_expr< $me1$ . $me2$ >>
   | Suid loc s -> <:module_expr< $uid:(rename_id s)$ >>
+  | Suidv loc s -> <:module_expr< $_uid:s$ >>
   | Santi loc "" s -> <:module_expr< $xtr:s$ >>
   | se -> error se "module expr" ]
 and module_type_se =
   fun
-  [ Sexpr loc [Slid _ "functor"; Suid _ s; se1; se2] ->
-      let s = rename_id s in
-      let mt1 = module_type_se se1 in
-      let mt2 = module_type_se se2 in
-      <:module_type< functor ($uid:s$ : $mt1$) -> $mt2$ >>
+  [ Sexpr loc [Slid _ "functor"; se1; se2; se3] ->
+      let s = anti_uid_or_error se1 in
+      let mt1 = module_type_se se2 in
+      let mt2 = module_type_se se3 in
+      <:module_type< functor ($_uid:s$ : $mt1$) -> $mt2$ >>
   | Sexpr loc [Slid _ "sig" :: sel] ->
-      let sil = List.map sig_item_se sel in
-      <:module_type< sig $list:sil$ end >>
+      let sil = anti_list_map sig_item_se sel in
+      <:module_type< sig $_list:sil$ end >>
   | Sexpr loc [Slid _ "with"; se :: sel] ->
       let mt = module_type_se se in
-      let wcl = List.map with_constr_se sel in
-      <:module_type< $mt$ with $list:wcl$ >>
+      let wcl = anti_list_map with_constr_se sel in
+      <:module_type< $mt$ with $_list:wcl$ >>
+  | Sexpr loc [se1; se2] ->
+      let mt1 = module_type_se se1 in
+      let mt2 = module_type_se se2 in
+      <:module_type< $mt1$ $mt2$ >>
   | Sacc loc se1 se2 ->
       let mt1 = module_type_se se1 in
       let mt2 = module_type_se se2 in
       <:module_type< $mt1$ . $mt2$ >>
+  | Slid loc s -> <:module_type< $lid:(rename_id s)$ >>
+  | Slidv loc s -> <:module_type< $_lid:s$ >>
   | Suid loc s -> <:module_type< $uid:(rename_id s)$ >>
+  | Suidv loc s -> <:module_type< $_uid:s$ >>
   | Santi loc "" s -> <:module_type< $xtr:s$ >>
   | se -> error se "module type" ]
 and with_constr_se =
   fun
   [ Sexpr loc [Slid _ "type"; se1; se2] ->
-      let tn = mod_ident_se se1 in
+      let tn = anti_mod_ident_se se1 in
       let te = ctyp_se se2 in
-      <:with_constr< type $tn$ = $te$ >>
+      <:with_constr< type $_:tn$ = $te$ >>
   | se -> error se "with constr" ]
 and sig_item_se =
   fun
@@ -522,7 +530,7 @@ and sig_item_se =
       let mt = module_type_se se2 in
       <:sig_item< module type $_uid:s$ = $mt$ >>
   | Sexpr loc [Slid _ "open"; se] ->
-      let s = anti_mod_ident se in
+      let s = anti_mod_ident_se se in
       <:sig_item< open $_:s$ >>
   | Sexpr loc [Slid _ "type" :: sel] ->
       let tdl = type_declaration_list_se sel in
@@ -530,10 +538,10 @@ and sig_item_se =
   | Sexpr loc [Slid _ "type*" :: sel] ->
       let tdl = anti_list_map type_declaration_se sel in
       <:sig_item< type $_list:tdl$ >>
-  | Sexpr loc [Slid _ "value"; Slid _ s; se] ->
-      let s = rename_id s in
-      let t = ctyp_se se in
-      <:sig_item< value $lid:s$ : $t$ >>
+  | Sexpr loc [Slid _ "value"; se1; se2] ->
+      let s = anti_lid_or_error se1 in
+      let t = ctyp_se se2 in
+      <:sig_item< value $_lid:s$ : $t$ >>
   | Sexpr loc [Slid _ "#"; se1] ->
       let s = anti_lid_or_error se1 in
       <:sig_item< # $_lid:s$ >>
@@ -558,7 +566,7 @@ and str_item_se se =
       <:str_item< exception $_:c$ of $_list:tl$ >>
   | Sexpr loc [Slid _ "exceptionrebind"; se1; se2] ->
       let c = anti_uid_or_error se1 in
-      let id = anti_mod_ident se2 in
+      let id = anti_mod_ident_se se2 in
       <:str_item< exception $_uid:c$ = $_:id$ >>
   | Sexpr loc [Slid _ "external"; se1; se2 :: sel] ->
       let i = anti_lid_or_error se1 in
@@ -580,7 +588,7 @@ and str_item_se se =
       let mt = module_type_se se2 in
       <:str_item< module type $_uid:s$ = $mt$ >>
   | Sexpr loc [Slid _ "open"; se] ->
-      let s = anti_mod_ident se in
+      let s = anti_mod_ident_se se in
       <:str_item< open $_:s$ >>
   | Sexpr loc [Slid _ "type" :: sel] ->
       let tdl = type_declaration_list_se sel in
