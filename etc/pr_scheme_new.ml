@@ -13,8 +13,8 @@ do {
   Eprinter.clear pr_str_item;
   Eprinter.clear pr_sig_item;
   Eprinter.clear pr_module_expr;
-(*
   Eprinter.clear pr_module_type;
+(*
   Eprinter.clear pr_class_sig_item;
   Eprinter.clear pr_class_str_item;
   Eprinter.clear pr_class_expr;
@@ -53,10 +53,32 @@ value ctyp = Eprinter.apply pr_ctyp;
 value str_item = Eprinter.apply pr_str_item;
 value sig_item = Eprinter.apply pr_sig_item;
 value module_expr = Eprinter.apply pr_module_expr;
-(*
 value module_type = Eprinter.apply pr_module_type;
+(*
 value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
 *)
+
+value type_param pc (s, vari) =
+  sprintf "%s'%s%s" pc.bef (Pcaml.unvala s) pc.aft
+;
+
+value type_decl pc td =
+  plistbf 0
+    {(pc) with ind = pc.ind + 1; bef = sprintf "%s(type" pc.bef;
+     aft = sprintf ")%s" pc.aft}
+    [(fun pc ->
+        let n = Pcaml.unvala (snd td.MLast.tdNam) in
+        match Pcaml.unvala td.MLast.tdPrm with
+        [ [] -> sprintf "%s%s%s" pc.bef n pc.aft
+        | tp ->
+            let tp = List.map (fun t -> (t, "")) tp in
+            plistb type_param 0
+              {(pc) with ind = pc.ind + 1; bef = sprintf "%s(%s" pc.bef n;
+               aft = sprintf ")%s" pc.aft}
+              tp ],
+      "");
+     (fun pc -> ctyp pc td.MLast.tdDef, "")]
+;
 
 value let_binding pc (p1, e1) =
   plistf 0
@@ -107,10 +129,6 @@ value label_decl pc (_, l, m, t) =
        sprintf "%s(%s%s %s)%s" pc.bef l (if m then " mutable" else "")
          (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
     (fun () -> not_impl "label_decl vertic" pc 0)
-;
-
-value type_param pc (s, vari) =
-  sprintf "%s'%s%s" pc.bef (Pcaml.unvala s) pc.aft
 ;
 
 value string pc s = sprintf "%s\"%s\"%s" pc.bef s pc.aft;
@@ -206,12 +224,13 @@ EXTEND_PRINTER
                  pc.aft)
             (fun () ->
                let s1 =
+                 let pc = {(pc) with bef = sprintf "%s(" pc.bef} in
                  horiz_vertic
                    (fun () ->
-                      sprintf "%s(%s %s" pc.bef op
+                      sprintf "%s%s %s" pc.bef op
                         (curr {(pc) with bef = ""; aft = ""} e))
                    (fun () ->
-                      let s1 = sprintf "%s(%s" pc.bef op in
+                      let s1 = sprintf "%s%s" pc.bef op in
                       let s2 =
                         curr
                           {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
@@ -261,7 +280,7 @@ EXTEND_PRINTER
                let s2 =
                  curr
                    {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
-                    aft = ""}
+                    aft = sprintf ")%s" pc.aft}
                    e2
                in
                sprintf "%s\n%s" s1 s2)
@@ -326,12 +345,10 @@ EXTEND_PRINTER
             el
       | <:expr< { $list:fel$ } >> ->
           let record_binding pc (p, e) =
-            horiz_vertic
-              (fun () ->
-                 sprintf "%s(%s %s)%s" pc.bef
-                   (patt {(pc) with bef = ""; aft = ""} p)
-                   (curr {(pc) with bef = ""; aft = ""} e) pc.aft)
-              (fun () -> not_impl "expr record_binding vertic" pc 0)
+            plistf 0
+              {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+               aft = sprintf ")%s" pc.aft}
+              [(fun pc -> patt pc p, ""); (fun pc -> curr pc e, "")]
           in
           let fel = List.map (fun fe -> (fe, "")) fel in
           plist record_binding 0
@@ -363,12 +380,13 @@ EXTEND_PRINTER
               | x -> ([], Some e) ]
           in
           let pc =
-            {(pc) with bef = sprintf "%s[" pc.bef; aft = sprintf "]%s" pc.aft}
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef;
+             aft = sprintf "]%s" pc.aft}
           in
           match c with
           [ None ->
               let el = List.map (fun e -> (e, "")) el in
-              plist curr 1 pc el
+              plist curr 0 pc el
           | Some x ->
               let dot_expr pc e =
                 curr {(pc) with bef = sprintf "%s. " pc.bef} e
@@ -458,24 +476,32 @@ EXTEND_PRINTER
           fun ppf curr next dg k ->
             fprintf ppf "(@[range@ %a@ %a@]" patt (p1, nok) patt
               (p2, ks ")" k)
-      | <:patt< [$_$ :: $_$] >> as p ->
-          fun ppf curr next dg k ->
-            let (pl, c) =
-              make_list p where rec make_list p =
-                match p with
-                [ <:patt< [$p$ :: $y$] >> ->
-                    let (pl, c) = make_list y in
-                    ([p :: pl], c)
-                | <:patt< [] >> -> ([], None)
-                | x -> ([], Some p) ]
-            in
-            match c with
-            [ None ->
-                fprintf ppf "[%a" (list patt) (pl, ks "]" k)
-            | Some x ->
-                fprintf ppf "[%a@ %a" (list patt) (pl, ks " ." nok)
-                  patt (x, ks "]" k) ]
 *)
+      | <:patt< [$_$ :: $_$] >> as p ->
+          let (pl, c) =
+            make_list p where rec make_list p =
+              match p with
+              [ <:patt< [$p$ :: $y$] >> ->
+                  let (pl, c) = make_list y in
+                  ([p :: pl], c)
+              | <:patt< [] >> -> ([], None)
+              | x -> ([], Some p) ]
+          in
+          let pc =
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef;
+             aft = sprintf "]%s" pc.aft}
+          in
+          match c with
+          [ None ->
+              let pl = List.map (fun p -> (p, "")) pl in
+              plist curr 0 pc pl
+          | Some x ->
+              let dot_patt pc p =
+                curr {(pc) with bef = sprintf "%s. " pc.bef} p
+              in
+              horiz_vertic
+                (fun () -> hlistl curr dot_patt pc (pl @ [x]))
+                (fun () -> not_impl "patt list 2 vertic" pc 0) ]
       | <:patt< $p1$ $p2$ >> ->
           let pl =
             loop [p2] p1 where rec loop pl =
@@ -554,23 +580,7 @@ EXTEND_PRINTER
                not_impl "str_item open vertic" pc i)
       | <:str_item< type $list:tdl$ >> ->
           match tdl with
-          [ [td] ->
-              plistbf 0
-                {(pc) with ind = pc.ind + 1; bef = sprintf "%s(type" pc.bef;
-                 aft = sprintf ")%s" pc.aft}
-                [(fun pc ->
-                    let n = Pcaml.unvala (snd td.MLast.tdNam) in
-                    match Pcaml.unvala td.MLast.tdPrm with
-                    [ [] -> sprintf "%s%s%s" pc.bef n pc.aft
-                    | tp ->
-                        let tp = List.map (fun t -> (t, "")) tp in
-                        plistb type_param 0
-                          {(pc) with ind = pc.ind + 1;
-                           bef = sprintf "%s(%s" pc.bef n;
-                           aft = sprintf ")%s" pc.aft}
-                          tp ],
-                  "");
-                 (fun pc -> ctyp pc td.MLast.tdDef, "")]
+          [ [td] -> type_decl pc td
           | tdl -> not_impl "str_item type" pc 0 ]
       | <:str_item< exception $uid:c$ of $list:tl$ >> ->
           plistbf 0
@@ -617,12 +627,12 @@ EXTEND_PRINTER
              aft = sprintf ")%s" pc.aft}
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> module_expr pc me, "")]
-(*
       | <:str_item< module type $uid:s$ = $mt$ >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "(@[@[moduletype@ %s@]@ %a@]" s
-              module_type (mt, ks ")" k)
-*)
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(moduletype" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
+             (fun pc -> module_type pc mt, "")]
       | <:str_item< external $lid:i$ : $t$ = $list:pd$ >> ->
           plistbf 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(external" pc.bef;
@@ -651,12 +661,11 @@ EXTEND_PRINTER
   ;
   pr_sig_item:
     [ "top"
-      [ (* <:sig_item< type $list:tdl$ >> ->
+      [ <:sig_item< type $list:tdl$ >> ->
           match tdl with
-          [ [td] -> sprintf "(%s" (type_decl (("type", td), ks ")" k))
-          | tdl ->
-              fprintf ppf "(@[<hv>type@ %a@]" (listwb "" type_decl)
-                (tdl, ks ")" k) ]
+          [ [td] -> type_decl pc td
+          | tdl -> not_impl "str_item type" pc 0 ]
+(*
       | <:sig_item< exception $uid:c$ of $list:tl$ >> ->
           fun ppf curr next dg k ->
             match tl with
@@ -664,17 +673,27 @@ EXTEND_PRINTER
             | tl ->
                 fprintf ppf "(@[@[exception@ %s@]@ %a@]" c
                   (list ctyp) (tl, ks ")" k) ]
+*)
       | <:sig_item< value $lid:i$ : $t$ >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "(@[@[value %s@]@ %a@]" i ctyp (t, ks ")" k)
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(value" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc -> sprintf "%s%s%s" pc.bef i pc.aft, "");
+             (fun pc -> ctyp pc t, "")]
       | <:sig_item< external $lid:i$ : $t$ = $list:pd$ >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "(@[@[external@ %s@]@ %a@ %a@]" i ctyp (t, nok)
-              (list string) (pd, ks ")" k)
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(external" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc -> sprintf "%s%s%s" pc.bef i pc.aft, "");
+             (fun pc -> ctyp pc t, "") ::
+             List.map (fun s -> (fun pc -> string pc s, "")) pd]
       | <:sig_item< module $uid:s$ : $mt$ >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "(@[@[module@ %s@]@ %a@]" s
-              module_type (mt, ks ")" k)
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(module" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
+             (fun pc -> module_type pc mt, "")]
+(*
       | <:sig_item< module type $uid:s$ = $mt$ >> ->
           fun ppf curr next dg k ->
             fprintf ppf "(@[@[moduletype@ %s@]@ %a@]" s
@@ -685,16 +704,20 @@ EXTEND_PRINTER
             else fprintf ppf "%a" (list sig_item) (s, k)
       | MLast.SgUse _ _ _ ->
           fun ppf curr next dg k -> ()
-      | *) x ->
+*)
+      | x ->
           not_impl "sig_item" pc x ] ]
   ;
   pr_module_expr:
     [ "top"
-      [ (* <:module_expr< functor ($uid:i$ : $mt$) -> $me$ >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "(@[@[@[functor@ %s@]@ %a@]@ %a@]"
-              i module_type (mt, nok) module_expr (me, ks ")" k)
-      | *) <:module_expr< struct $list:sil$ end >> ->
+      [ <:module_expr< functor ($uid:i$ : $mt$) -> $me$ >> ->
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(functor" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc -> sprintf "%s%s%s" pc.bef i pc.aft, "");
+             (fun pc -> module_type pc mt, "");
+             (fun pc -> module_expr pc me, "")]
+      | <:module_expr< struct $list:sil$ end >> ->
           horiz_vertic
             (fun () ->
                sprintf "%s(struct %s)%s" pc.bef
@@ -703,7 +726,8 @@ EXTEND_PRINTER
                let s1 = sprintf "%s(struct" pc.bef in
                let s2 =
                  vlist str_item
-                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1)}
+                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+                    aft = sprintf ")%s" pc.aft}
                    sil
                in
                sprintf "%s\n%s" s1 s2)
@@ -717,6 +741,37 @@ EXTEND_PRINTER
 *)
       | x ->
           not_impl "module_expr" pc x ] ]
+  ;
+  pr_module_type:
+    [ "top"
+      [ (* <:module_type< functor ($uid:i$ : $mt1$) -> $mt2$ >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(@[@[@[functor@ %s@]@ %a@]@ %a@]"
+              i module_type (mt1, nok) module_type (mt2, ks ")" k)
+      | *) <:module_type< sig $list:sil$ end >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s(sig %s)%s" pc.bef
+                 (hlist sig_item {(pc) with bef = ""; aft = ""} sil) pc.aft)
+            (fun () ->
+               let s1 = sprintf "%s(sig" pc.bef in
+               let s2 =
+                 vlist sig_item
+                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+                    aft = sprintf ")%s" pc.aft}
+                   sil
+               in
+               sprintf "%s\n%s" s1 s2)
+(*
+      | <:module_type< $mt$ with $list:wcl$ >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(@[with@;<1 2>@[%a@ (%a@]@]" module_type (mt, nok)
+              (list with_constr) (wcl, ks "))" k)
+*)
+      | <:module_type< $uid:s$ >> ->
+          sprintf "%s%s%s" pc.bef s pc.aft
+      | x ->
+          not_impl "module_type" pc x ] ]
   ;
 END;
 
