@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: reloc.ml,v 1.27 2007/09/13 13:21:24 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.28 2007/09/13 15:45:30 deraugla Exp $ *)
 
 open MLast;
 
@@ -322,11 +322,12 @@ and type_decl floc sh td =
 and class_type floc sh =
   self where rec self =
     fun
-    [ CtCon loc x1 x2 -> CtCon (floc loc) x1 (List.map (ctyp floc sh) x2)
+    [ CtCon loc x1 x2 ->
+        CtCon (floc loc) x1 (vala_map (List.map (ctyp floc sh)) x2)
     | CtFun loc x1 x2 -> CtFun (floc loc) (ctyp floc sh x1) (self x2)
     | CtSig loc x1 x2 ->
-        CtSig (floc loc) (option_map (ctyp floc sh) x1)
-          (List.map (class_sig_item floc sh) x2)
+        CtSig (floc loc) (vala_map (option_map (ctyp floc sh)) x1)
+          (vala_map (List.map (class_sig_item floc sh)) x2)
     | IFDEF STRICT THEN
         CtXtr loc x1 x2 -> CtXtr (floc loc) x1 (option_map (vala_map self) x2)
       END ]
@@ -334,7 +335,8 @@ and class_sig_item floc sh =
   self where rec self =
     fun
     [ CgCtr loc x1 x2 -> CgCtr (floc loc) (ctyp floc sh x1) (ctyp floc sh x2)
-    | CgDcl loc x1 -> CgDcl (floc loc) (List.map (class_sig_item floc sh) x1)
+    | CgDcl loc x1 ->
+        CgDcl (floc loc) (vala_map (List.map (class_sig_item floc sh)) x1)
     | CgInh loc x1 -> CgInh (floc loc) (class_type floc sh x1)
     | CgMth loc x1 x2 x3 -> CgMth (floc loc) x1 x2 (ctyp floc sh x3)
     | CgVal loc x1 x2 x3 -> CgVal (floc loc) x1 x2 (ctyp floc sh x3)

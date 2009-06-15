@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.77 2007/09/13 13:21:24 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.78 2007/09/13 15:45:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -1048,25 +1048,27 @@ EXTEND
   class_type:
     [ [ "["; t = ctyp; "]"; "->"; ct = SELF ->
           Qast.Node "CtFun" [Qast.Loc; t; ct]
-      | id = clty_longident; "["; tl = SLIST1 ctyp SEP ","; "]" ->
+      | id = clty_longident2; "["; tl = SV LIST1 ctyp SEP ","; "]" ->
           Qast.Node "CtCon" [Qast.Loc; id; tl]
-      | id = clty_longident -> Qast.Node "CtCon" [Qast.Loc; id; Qast.List []]
-      | "object"; cst = SOPT class_self_type;
-        csf = SLIST0 [ csf = class_sig_item; ";" -> csf ]; "end" ->
+      | id = clty_longident2 ->
+          Qast.Node "CtCon" [Qast.Loc; id; Qast.VaVal (Qast.List [])]
+      | "object"; cst = SV OPT class_self_type;
+        csf = SV LIST0 [ csf = class_sig_item; ";" -> csf ]; "end" ->
           Qast.Node "CtSig" [Qast.Loc; cst; csf] ] ]
   ;
   class_self_type:
     [ [ "("; t = ctyp; ")" -> t ] ]
   ;
   class_sig_item:
-    [ [ "declare"; st = SLIST0 [ s = class_sig_item; ";" -> s ]; "end" ->
+    [ [ "declare"; st = SV LIST0 [ s = class_sig_item; ";" -> s ]; "end" ->
           Qast.Node "CgDcl" [Qast.Loc; st]
       | "inherit"; cs = class_type -> Qast.Node "CgInh" [Qast.Loc; cs]
-      | "value"; mf = SFLAG "mutable"; l = label; ":"; t = ctyp ->
+      | "value"; mf = SV FLAG "mutable"; l = label2; ":"; t = ctyp ->
           Qast.Node "CgVal" [Qast.Loc; l; mf; t]
-      | "method"; "virtual"; pf = SFLAG "private"; l = label; ":"; t = ctyp ->
+      | "method"; "virtual"; pf = SV FLAG "private"; l = label2; ":";
+        t = ctyp ->
           Qast.Node "CgVir" [Qast.Loc; l; pf; t]
-      | "method"; pf = SFLAG "private"; l = label; ":"; t = ctyp ->
+      | "method"; pf = SV FLAG "private"; l = label2; ":"; t = ctyp ->
           Qast.Node "CgMth" [Qast.Loc; l; pf; t]
       | "type"; t1 = ctyp; "="; t2 = ctyp ->
           Qast.Node "CgCtr" [Qast.Loc; t1; t2] ] ]
@@ -1118,6 +1120,11 @@ EXTEND
   ;
   typevar:
     [ [ "'"; i = ident -> i ] ]
+  ;
+  clty_longident2:
+    [ [ v = clty_longident -> Qast.VaVal v
+      | s = ANTIQUOT "list" -> Qast.VaVal (antiquot "list" loc s)
+      | s = ANTIQUOT "alist" -> antiquot "alist" loc s ] ]
   ;
   clty_longident:
     [ [ m = a_UIDENT; "."; l = SELF -> Qast.Cons m l

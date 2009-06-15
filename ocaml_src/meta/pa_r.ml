@@ -216,6 +216,8 @@ Grammar.extend
    and field : 'field Grammar.Entry.e = grammar_entry_create "field"
    and typevar2 : 'typevar2 Grammar.Entry.e = grammar_entry_create "typevar2"
    and typevar : 'typevar Grammar.Entry.e = grammar_entry_create "typevar"
+   and clty_longident2 : 'clty_longident2 Grammar.Entry.e =
+     grammar_entry_create "clty_longident2"
    and clty_longident : 'clty_longident Grammar.Entry.e =
      grammar_entry_create "clty_longident"
    and class_longident2 : 'class_longident2 Grammar.Entry.e =
@@ -1955,20 +1957,20 @@ Grammar.extend
            (MLast.CtSig (loc, cst, csf) : 'class_type));
       [Gramext.Snterm
          (Grammar.Entry.obj
-            (clty_longident : 'clty_longident Grammar.Entry.e))],
+            (clty_longident2 : 'clty_longident2 Grammar.Entry.e))],
       Gramext.action
-        (fun (id : 'clty_longident) (loc : Ploc.t) ->
+        (fun (id : 'clty_longident2) (loc : Ploc.t) ->
            (MLast.CtCon (loc, id, []) : 'class_type));
       [Gramext.Snterm
          (Grammar.Entry.obj
-            (clty_longident : 'clty_longident Grammar.Entry.e));
+            (clty_longident2 : 'clty_longident2 Grammar.Entry.e));
        Gramext.Stoken ("", "[");
        Gramext.Slist1sep
          (Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e)),
           Gramext.Stoken ("", ","));
        Gramext.Stoken ("", "]")],
       Gramext.action
-        (fun _ (tl : 'ctyp list) _ (id : 'clty_longident) (loc : Ploc.t) ->
+        (fun _ (tl : 'ctyp list) _ (id : 'clty_longident2) (loc : Ploc.t) ->
            (MLast.CtCon (loc, id, tl) : 'class_type));
       [Gramext.Stoken ("", "[");
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e));
@@ -1996,27 +1998,27 @@ Grammar.extend
            (MLast.CgCtr (loc, t1, t2) : 'class_sig_item));
       [Gramext.Stoken ("", "method");
        Gramext.Sflag (Gramext.Stoken ("", "private"));
-       Gramext.Snterm (Grammar.Entry.obj (label : 'label Grammar.Entry.e));
+       Gramext.Snterm (Grammar.Entry.obj (label2 : 'label2 Grammar.Entry.e));
        Gramext.Stoken ("", ":");
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
-        (fun (t : 'ctyp) _ (l : 'label) (pf : bool) _ (loc : Ploc.t) ->
+        (fun (t : 'ctyp) _ (l : 'label2) (pf : bool) _ (loc : Ploc.t) ->
            (MLast.CgMth (loc, l, pf, t) : 'class_sig_item));
       [Gramext.Stoken ("", "method"); Gramext.Stoken ("", "virtual");
        Gramext.Sflag (Gramext.Stoken ("", "private"));
-       Gramext.Snterm (Grammar.Entry.obj (label : 'label Grammar.Entry.e));
+       Gramext.Snterm (Grammar.Entry.obj (label2 : 'label2 Grammar.Entry.e));
        Gramext.Stoken ("", ":");
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
-        (fun (t : 'ctyp) _ (l : 'label) (pf : bool) _ _ (loc : Ploc.t) ->
+        (fun (t : 'ctyp) _ (l : 'label2) (pf : bool) _ _ (loc : Ploc.t) ->
            (MLast.CgVir (loc, l, pf, t) : 'class_sig_item));
       [Gramext.Stoken ("", "value");
        Gramext.Sflag (Gramext.Stoken ("", "mutable"));
-       Gramext.Snterm (Grammar.Entry.obj (label : 'label Grammar.Entry.e));
+       Gramext.Snterm (Grammar.Entry.obj (label2 : 'label2 Grammar.Entry.e));
        Gramext.Stoken ("", ":");
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
-        (fun (t : 'ctyp) _ (l : 'label) (mf : bool) _ (loc : Ploc.t) ->
+        (fun (t : 'ctyp) _ (l : 'label2) (mf : bool) _ (loc : Ploc.t) ->
            (MLast.CgVal (loc, l, mf, t) : 'class_sig_item));
       [Gramext.Stoken ("", "inherit");
        Gramext.Snterm
@@ -2174,6 +2176,23 @@ Grammar.extend
      [[Gramext.Stoken ("", "'");
        Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
       Gramext.action (fun (i : 'ident) _ (loc : Ploc.t) -> (i : 'typevar))]];
+    Grammar.Entry.obj (clty_longident2 : 'clty_longident2 Grammar.Entry.e),
+    None,
+    [None, None,
+     [[Gramext.Stoken ("ANTIQUOT_LOC", "alist")],
+      Gramext.action
+        (fun (s : string) (loc : Ploc.t) ->
+           (failwith "antiquot" : 'clty_longident2));
+      [Gramext.Stoken ("ANTIQUOT_LOC", "list")],
+      Gramext.action
+        (fun (s : string) (loc : Ploc.t) ->
+           (failwith "antiquot" : 'clty_longident2));
+      [Gramext.Snterm
+         (Grammar.Entry.obj
+            (clty_longident : 'clty_longident Grammar.Entry.e))],
+      Gramext.action
+        (fun (v : 'clty_longident) (loc : Ploc.t) ->
+           (v : 'clty_longident2))]];
     Grammar.Entry.obj (clty_longident : 'clty_longident Grammar.Entry.e),
     None,
     [None, None,

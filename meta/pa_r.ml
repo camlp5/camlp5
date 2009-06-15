@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.79 2007/09/13 13:21:24 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.80 2007/09/13 15:45:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -615,27 +615,27 @@ EXTEND
   class_type:
     [ [ "["; t = ctyp; "]"; "->"; ct = SELF ->
           <:class_type< [ $t$ ] -> $ct$ >>
-      | id = clty_longident; "["; tl = LIST1 ctyp SEP ","; "]" ->
-          <:class_type< $list:id$ [ $list:tl$ ] >>
-      | id = clty_longident -> <:class_type< $list:id$ >>
-      | "object"; cst = OPT class_self_type;
-        csf = LIST0 [ csf = class_sig_item; ";" -> csf ]; "end" ->
-          <:class_type< object $opt:cst$ $list:csf$ end >> ] ]
+      | id = clty_longident2; "["; tl = V LIST1 ctyp SEP ","; "]" ->
+          <:class_type< $alist:id$ [ $alist:tl$ ] >>
+      | id = clty_longident2 -> <:class_type< $alist:id$ >>
+      | "object"; cst = V OPT class_self_type;
+        csf = V LIST0 [ csf = class_sig_item; ";" -> csf ]; "end" ->
+          <:class_type< object $aopt:cst$ $alist:csf$ end >> ] ]
   ;
   class_self_type:
     [ [ "("; t = ctyp; ")" -> t ] ]
   ;
   class_sig_item:
-    [ [ "declare"; st = LIST0 [ s = class_sig_item; ";" -> s ]; "end" ->
-          <:class_sig_item< declare $list:st$ end >>
+    [ [ "declare"; st = V LIST0 [ s = class_sig_item; ";" -> s ]; "end" ->
+          <:class_sig_item< declare $alist:st$ end >>
       | "inherit"; cs = class_type -> <:class_sig_item< inherit $cs$ >>
-      | "value"; mf = FLAG "mutable"; l = label; ":"; t = ctyp ->
-          <:class_sig_item< value $flag:mf$ $l$ : $t$ >>
-      | "method"; "virtual"; pf = FLAG "private"; l = label; ":";
+      | "value"; mf = V FLAG "mutable"; l = label2; ":"; t = ctyp ->
+          <:class_sig_item< value $aflag:mf$ $alid:l$ : $t$ >>
+      | "method"; "virtual"; pf = V FLAG "private"; l = label2; ":";
         t = ctyp ->
-          <:class_sig_item< method virtual $flag:pf$ $l$ : $t$ >>
-      | "method"; pf = FLAG "private"; l = label; ":"; t = ctyp ->
-          <:class_sig_item< method $flag:pf$ $l$ : $t$ >>
+          <:class_sig_item< method virtual $aflag:pf$ $alid:l$ : $t$ >>
+      | "method"; pf = V FLAG "private"; l = label2; ":"; t = ctyp ->
+          <:class_sig_item< method $aflag:pf$ $alid:l$ : $t$ >>
       | "type"; t1 = ctyp; "="; t2 = ctyp ->
           <:class_sig_item< type $t1$ = $t2$ >> ] ]
   ;
@@ -683,6 +683,11 @@ EXTEND
   ;
   typevar:
     [ [ "'"; i = ident -> i ] ]
+  ;
+  clty_longident2:
+    [ [ v = clty_longident -> <:vala< v >>
+      | s = ANTIQUOT_LOC "list" -> <:vala< $s$ >>
+      | s = ANTIQUOT_LOC "alist" -> <:vala< $s$ >> ] ]
   ;
   clty_longident:
     [ [ m = UIDENT; "."; l = SELF -> [m :: l]

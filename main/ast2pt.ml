@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.39 2007/09/13 13:21:24 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.40 2007/09/13 15:45:30 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -881,7 +881,8 @@ and class_type =
   fun
   [ CtCon loc id tl ->
       mkcty loc
-        (Pcty_constr (long_id_of_string_list loc id) (List.map ctyp tl))
+        (Pcty_constr (long_id_of_string_list loc (uv id))
+           (List.map ctyp (uv tl)))
   | CtFun loc (TyLab _ lab t) ct ->
       mkcty loc (Pcty_fun lab (ctyp t) (class_type ct))
   | CtFun loc (TyOlb loc1 lab t) ct ->
@@ -893,11 +894,11 @@ and class_type =
   | CtFun loc t ct -> mkcty loc (Pcty_fun "" (ctyp t) (class_type ct))
   | CtSig loc t_o ctfl ->
       let t =
-        match t_o with
+        match uv t_o with
         [ Some t -> t
         | None -> TyAny loc ]
       in
-      let cil = List.fold_right class_sig_item ctfl [] in
+      let cil = List.fold_right class_sig_item (uv ctfl) [] in
       mkcty loc (Pcty_signature (ctyp t, cil))
   | IFDEF STRICT THEN
       CtXtr loc _ _ -> error loc "bad ast"
@@ -905,18 +906,20 @@ and class_type =
 and class_sig_item c l =
   match c with
   [ CgCtr loc t1 t2 -> [Pctf_cstr (ctyp t1, ctyp t2, mkloc loc) :: l]
-  | CgDcl loc cl -> List.fold_right class_sig_item cl l
+  | CgDcl loc cl -> List.fold_right class_sig_item (uv cl) l
   | CgInh loc ct -> [Pctf_inher (class_type ct) :: l]
   | CgMth loc s pf t ->
-      [Pctf_meth (s, mkprivate pf, ctyp (mkpolytype t), mkloc loc) :: l]
+      [Pctf_meth (uv s, mkprivate (uv pf), ctyp (mkpolytype t), mkloc loc) ::
+       l]
   | CgVal loc s b t ->
       IFDEF OCAML_3_10 OR OCAML_3_10_0 OR OCAML_3_11 THEN
-        [Pctf_val (s, mkmutable b, Concrete, ctyp t, mkloc loc) :: l]
+        [Pctf_val (uv s, mkmutable b, Concrete, ctyp t, mkloc loc) :: l]
       ELSE
-        [Pctf_val (s, mkmutable b, Some (ctyp t), mkloc loc) :: l]
+        [Pctf_val (uv s, mkmutable (uv b), Some (ctyp t), mkloc loc) :: l]
       END
   | CgVir loc s b t ->
-      [Pctf_virt (s, mkprivate b, ctyp (mkpolytype t), mkloc loc) :: l] ]
+      [Pctf_virt (uv s, mkprivate (uv b), ctyp (mkpolytype t), mkloc loc) ::
+       l] ]
 and class_expr =
   fun
   [ CeApp loc _ _ as c ->

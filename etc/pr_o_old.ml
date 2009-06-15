@@ -597,12 +597,12 @@ and fun_binding b fb k =
   | e -> HVbox [: `HVbox [: b; `S LR "=" :]; `expr e "" k :] ]
 and class_signature cs k =
   match cs with
-  [ MLast.CtCon _ id [] -> clty_longident id "" k
-  | MLast.CtCon _ id tl ->
+  [ <:class_type< $list:id$ >> -> clty_longident id "" k
+  | <:class_type< $list:id$ [ $list:tl$ ] >> ->
       HVbox
         [: `S LO "["; listws ctyp (S RO ",") tl "" [: `S RO "]" :];
            `clty_longident id "" k :]
-  | MLast.CtSig _ cst csf ->
+  | <:class_type< object $opt:cst$ $list:csf$ end >> ->
       let loc = Ploc.after (MLast.loc_of_class_type cs) 0 1 in
       class_self_type [: `S LR "object" :] cst
         [: `HVbox
@@ -1724,7 +1724,7 @@ pr_class_sig_item.pr_levels :=
           fun curr next dg k ->
             [: `S LR "constraint"; `ctyp t1 "" [: `S LR "=" :];
                `ctyp t2 "" k :]
-      | MLast.CgDcl _ s ->
+      | <:class_sig_item< declare $list:s$ end >> ->
           fun curr next dg k ->
             [: `HVbox [: :]; list class_sig_item s "" [: :] :]
       | MLast.CgInh _ ce ->

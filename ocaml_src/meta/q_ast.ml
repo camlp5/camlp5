@@ -184,366 +184,352 @@ module Meta =
             MLast.PaAny loc))
         pl
     ;;
-    let e_ctyp =
-      let rec loop =
-        function
-          TyAcc (_, t1, t2) -> e_node "TyAcc" [loop t1; loop t2]
-        | TyAli (_, t1, t2) -> e_node "TyAli" [loop t1; loop t2]
-        | TyArr (_, t1, t2) -> e_node "TyArr" [loop t1; loop t2]
-        | TyAny _ -> e_node "TyAny" []
-        | TyApp (_, t1, t2) -> e_node "TyApp" [loop t1; loop t2]
-        | TyLid (_, s) -> e_node "TyLid" [e_vala e_string s]
-        | TyMan (_, t1, t2) -> e_node "TyMan" [loop t1; loop t2]
-        | TyPol (_, lv, t) ->
-            e_node "TyPol" [e_vala (e_list e_string) lv; loop t]
-        | TyQuo (_, s) -> e_node "TyQuo" [e_vala e_string s]
-        | TyRec (_, lld) ->
-            let lld =
-              e_vala
-                (e_list
-                   (fun (loc, lab, mf, t) ->
-                      MLast.ExTup
-                        (loc,
-                         [ln (); MLast.ExStr (loc, lab); e_bool mf; loop t])))
-                lld
-            in
-            e_node "TyRec" [lld]
-        | TySum (_, lcd) ->
-            let lcd =
-              e_vala
-                (e_list
-                   (fun (loc, lab, lt) ->
-                      let lt = e_vala (e_list loop) lt in
-                      MLast.ExTup (loc, [ln (); e_vala e_string lab; lt])))
-                lcd
-            in
-            e_node "TySum" [lcd]
-        | TyTup (_, tl) -> e_node "TyTup" [e_vala (e_list loop) tl]
-        | TyUid (_, s) -> e_node "TyUid" [e_vala e_string s]
-        | x -> not_impl "e_ctyp" x
-      in
-      loop
+    let rec e_ctyp =
+      function
+        TyAcc (_, t1, t2) -> e_node "TyAcc" [e_ctyp t1; e_ctyp t2]
+      | TyAli (_, t1, t2) -> e_node "TyAli" [e_ctyp t1; e_ctyp t2]
+      | TyArr (_, t1, t2) -> e_node "TyArr" [e_ctyp t1; e_ctyp t2]
+      | TyAny _ -> e_node "TyAny" []
+      | TyApp (_, t1, t2) -> e_node "TyApp" [e_ctyp t1; e_ctyp t2]
+      | TyLid (_, s) -> e_node "TyLid" [e_vala e_string s]
+      | TyMan (_, t1, t2) -> e_node "TyMan" [e_ctyp t1; e_ctyp t2]
+      | TyPol (_, lv, t) ->
+          e_node "TyPol" [e_vala (e_list e_string) lv; e_ctyp t]
+      | TyQuo (_, s) -> e_node "TyQuo" [e_vala e_string s]
+      | TyRec (_, lld) ->
+          let lld =
+            e_vala
+              (e_list
+                 (fun (loc, lab, mf, t) ->
+                    MLast.ExTup
+                      (loc,
+                       [ln (); MLast.ExStr (loc, lab); e_bool mf; e_ctyp t])))
+              lld
+          in
+          e_node "TyRec" [lld]
+      | TySum (_, lcd) ->
+          let lcd =
+            e_vala
+              (e_list
+                 (fun (loc, lab, lt) ->
+                    let lt = e_vala (e_list e_ctyp) lt in
+                    MLast.ExTup (loc, [ln (); e_vala e_string lab; lt])))
+              lcd
+          in
+          e_node "TySum" [lcd]
+      | TyTup (_, tl) -> e_node "TyTup" [e_vala (e_list e_ctyp) tl]
+      | TyUid (_, s) -> e_node "TyUid" [e_vala e_string s]
+      | x -> not_impl "e_ctyp" x
     ;;
-    let p_ctyp =
-      let rec loop =
-        function
-          TyArr (_, t1, t2) -> p_node "TyArr" [loop t1; loop t2]
-        | TyApp (_, t1, t2) -> p_node "TyApp" [loop t1; loop t2]
-        | TyLid (_, s) -> p_node "TyLid" [p_vala p_string s]
-        | TyTup (_, tl) -> p_node "TyTup" [p_vala (p_list loop) tl]
-        | TyUid (_, s) -> p_node "TyUid" [p_vala p_string s]
-        | x -> not_impl "p_ctyp" x
-      in
-      loop
+    let rec p_ctyp =
+      function
+        TyArr (_, t1, t2) -> p_node "TyArr" [p_ctyp t1; p_ctyp t2]
+      | TyApp (_, t1, t2) -> p_node "TyApp" [p_ctyp t1; p_ctyp t2]
+      | TyLid (_, s) -> p_node "TyLid" [p_vala p_string s]
+      | TyTup (_, tl) -> p_node "TyTup" [p_vala (p_list p_ctyp) tl]
+      | TyUid (_, s) -> p_node "TyUid" [p_vala p_string s]
+      | x -> not_impl "p_ctyp" x
     ;;
     let e_class_infos a x = not_impl "e_class_infos" x;;
     let e_type_var x = not_impl "e_type_var" x;;
-    let e_patt =
-      let rec loop =
-        function
-          PaAcc (_, p1, p2) -> e_node "PaAcc" [loop p1; loop p2]
-        | PaAli (_, p1, p2) -> e_node "PaAli" [loop p1; loop p2]
-        | PaAny _ -> e_node "PaAny" []
-        | PaApp (_, p1, p2) -> e_node "PaApp" [loop p1; loop p2]
-        | PaArr (_, pl) -> e_node "PaArr" [e_vala (e_list loop) pl]
-        | PaChr (_, s) -> e_node "PaChr" [e_vala e_string s]
-        | PaInt (_, s, k) -> e_node "PaInt" [e_vala e_string s; e_string k]
-        | PaFlo (_, s) -> e_node "PaFlo" [e_vala e_string s]
-        | PaLid (_, s) -> e_node "PaLid" [e_vala e_string s]
-        | PaOrp (_, p1, p2) -> e_node "PaOrp" [loop p1; loop p2]
-        | PaRec (_, lpe) ->
-            let lpe =
-              e_vala
-                (e_list (fun (p, e) -> MLast.ExTup (loc, [loop p; loop e])))
-                lpe
-            in
-            e_node "PaRec" [lpe]
-        | PaRng (_, p1, p2) -> e_node "PaRng" [loop p1; loop p2]
-        | PaStr (_, s) -> e_node "PaStr" [e_vala e_string s]
-        | PaTup (_, pl) -> e_node "PaTup" [e_vala (e_list loop) pl]
-        | PaTyc (_, p, t) -> e_node "PaTyc" [loop p; e_ctyp t]
-        | PaUid (_, s) -> e_node "PaUid" [e_vala e_string s]
-        | x -> not_impl "e_patt" x
-      in
-      loop
+    let rec e_patt =
+      function
+        PaAcc (_, p1, p2) -> e_node "PaAcc" [e_patt p1; e_patt p2]
+      | PaAli (_, p1, p2) -> e_node "PaAli" [e_patt p1; e_patt p2]
+      | PaAny _ -> e_node "PaAny" []
+      | PaApp (_, p1, p2) -> e_node "PaApp" [e_patt p1; e_patt p2]
+      | PaArr (_, pl) -> e_node "PaArr" [e_vala (e_list e_patt) pl]
+      | PaChr (_, s) -> e_node "PaChr" [e_vala e_string s]
+      | PaInt (_, s, k) -> e_node "PaInt" [e_vala e_string s; e_string k]
+      | PaFlo (_, s) -> e_node "PaFlo" [e_vala e_string s]
+      | PaLid (_, s) -> e_node "PaLid" [e_vala e_string s]
+      | PaOrp (_, p1, p2) -> e_node "PaOrp" [e_patt p1; e_patt p2]
+      | PaRec (_, lpe) ->
+          let lpe =
+            e_vala
+              (e_list (fun (p, e) -> MLast.ExTup (loc, [e_patt p; e_patt e])))
+              lpe
+          in
+          e_node "PaRec" [lpe]
+      | PaRng (_, p1, p2) -> e_node "PaRng" [e_patt p1; e_patt p2]
+      | PaStr (_, s) -> e_node "PaStr" [e_vala e_string s]
+      | PaTup (_, pl) -> e_node "PaTup" [e_vala (e_list e_patt) pl]
+      | PaTyc (_, p, t) -> e_node "PaTyc" [e_patt p; e_ctyp t]
+      | PaUid (_, s) -> e_node "PaUid" [e_vala e_string s]
+      | x -> not_impl "e_patt" x
     ;;
-    let p_patt =
-      let rec loop =
-        function
-          PaAcc (_, p1, p2) -> p_node "PaAcc" [loop p1; loop p2]
-        | PaAli (_, p1, p2) -> p_node "PaAli" [loop p1; loop p2]
-        | PaChr (_, s) -> p_node "PaChr" [p_vala p_string s]
-        | PaLid (_, s) -> p_node "PaLid" [p_vala p_string s]
-        | PaTup (_, pl) -> p_node "PaTup" [p_vala (p_list loop) pl]
-        | x -> not_impl "p_patt" x
-      in
-      loop
+    let rec p_patt =
+      function
+        PaAcc (_, p1, p2) -> p_node "PaAcc" [p_patt p1; p_patt p2]
+      | PaAli (_, p1, p2) -> p_node "PaAli" [p_patt p1; p_patt p2]
+      | PaChr (_, s) -> p_node "PaChr" [p_vala p_string s]
+      | PaLid (_, s) -> p_node "PaLid" [p_vala p_string s]
+      | PaTup (_, pl) -> p_node "PaTup" [p_vala (p_list p_patt) pl]
+      | x -> not_impl "p_patt" x
     ;;
-    let rec e_expr x =
-      let rec loop =
-        function
-          ExAcc (_, e1, e2) -> e_node "ExAcc" [loop e1; loop e2]
-        | ExApp (_, e1, e2) -> e_node "ExApp" [loop e1; loop e2]
-        | ExAre (_, e1, e2) -> e_node "ExAre" [loop e1; loop e2]
-        | ExArr (_, el) -> e_node "ExArr" [e_vala (e_list loop) el]
-        | ExAss (_, e1, e2) -> e_node "ExAss" [loop e1; loop e2]
-        | ExAsr (_, e) -> e_node "ExAsr" [loop e]
-        | ExBae (_, e, el) -> e_node "ExBae" [loop e; e_vala (e_list loop) el]
-        | ExChr (_, s) -> e_node "ExChr" [e_vala e_string s]
-        | ExIfe (_, e1, e2, e3) -> e_node "ExIfe" [loop e1; loop e2; loop e3]
-        | ExInt (_, s, k) -> e_node "ExInt" [e_vala e_string s; e_string k]
-        | ExFlo (_, s) -> e_node "ExFlo" [e_vala e_string s]
-        | ExFor (_, i, e1, e2, df, el) ->
-            let i = e_vala e_string i in
-            let df = e_vala e_bool df in
-            let el = e_vala (e_list loop) el in
-            e_node "ExFor" [i; loop e1; loop e2; df; el]
-        | ExFun (_, pwel) ->
-            let pwel =
-              e_vala
-                (e_list
-                   (fun (p, oe, e) ->
-                      MLast.ExTup
-                        (loc, [e_patt p; e_option loop oe; loop e])))
-                pwel
-            in
-            e_node "ExFun" [pwel]
-        | ExLaz (_, e) -> e_node "ExLaz" [loop e]
-        | ExLet (_, rf, lpe, e) ->
-            let rf = e_vala e_bool rf in
-            let lpe =
-              e_vala
-                (e_list (fun (p, e) -> MLast.ExTup (loc, [e_patt p; loop e])))
-                lpe
-            in
-            e_node "ExLet" [rf; lpe; loop e]
-        | ExLid (_, s) -> e_node "ExLid" [e_vala e_string s]
-        | ExLmd (_, i, me, e) ->
-            let i = e_vala e_string i in
-            let me = e_module_expr me in e_node "ExLmd" [i; me; loop e]
-        | ExMat (_, e, pwel) ->
-            let pwel =
-              e_vala
-                (e_list
-                   (fun (p, oe, e) ->
-                      MLast.ExTup
-                        (loc, [e_patt p; e_option loop oe; loop e])))
-                pwel
-            in
-            e_node "ExMat" [loop e; pwel]
-        | ExRec (_, lpe, oe) ->
-            let lpe =
-              e_vala
-                (e_list (fun (p, e) -> MLast.ExTup (loc, [e_patt p; loop e])))
-                lpe
-            in
-            let oe = e_option loop oe in e_node "ExRec" [lpe; oe]
-        | ExSeq (_, el) -> e_node "ExSeq" [e_vala (e_list loop) el]
-        | ExSte (_, e1, e2) -> e_node "ExSte" [loop e1; loop e2]
-        | ExStr (_, s) -> e_node "ExStr" [e_vala e_string s]
-        | ExTry (_, e, pwel) ->
-            let pwel =
-              e_vala
-                (e_list
-                   (fun (p, oe, e) ->
-                      MLast.ExTup
-                        (loc, [e_patt p; e_option loop oe; loop e])))
-                pwel
-            in
-            e_node "ExTry" [loop e; pwel]
-        | ExTup (_, el) -> e_node "ExTup" [e_vala (e_list loop) el]
-        | ExTyc (_, e, t) -> e_node "ExTyc" [loop e; e_ctyp t]
-        | ExUid (_, s) -> e_node "ExUid" [e_vala e_string s]
-        | ExWhi (_, e, el) -> e_node "ExWhi" [loop e; e_vala (e_list loop) el]
-        | x -> not_impl "e_expr" x
-      in
-      loop x
+    let rec e_expr =
+      function
+        ExAcc (_, e1, e2) -> e_node "ExAcc" [e_expr e1; e_expr e2]
+      | ExApp (_, e1, e2) -> e_node "ExApp" [e_expr e1; e_expr e2]
+      | ExAre (_, e1, e2) -> e_node "ExAre" [e_expr e1; e_expr e2]
+      | ExArr (_, el) -> e_node "ExArr" [e_vala (e_list e_expr) el]
+      | ExAss (_, e1, e2) -> e_node "ExAss" [e_expr e1; e_expr e2]
+      | ExAsr (_, e) -> e_node "ExAsr" [e_expr e]
+      | ExBae (_, e, el) ->
+          e_node "ExBae" [e_expr e; e_vala (e_list e_expr) el]
+      | ExChr (_, s) -> e_node "ExChr" [e_vala e_string s]
+      | ExCoe (_, e, ot, t) ->
+          e_node "ExCoe" [e_expr e; e_option e_ctyp ot; e_ctyp t]
+      | ExIfe (_, e1, e2, e3) ->
+          e_node "ExIfe" [e_expr e1; e_expr e2; e_expr e3]
+      | ExInt (_, s, k) -> e_node "ExInt" [e_vala e_string s; e_string k]
+      | ExFlo (_, s) -> e_node "ExFlo" [e_vala e_string s]
+      | ExFor (_, i, e1, e2, df, el) ->
+          let i = e_vala e_string i in
+          let df = e_vala e_bool df in
+          let el = e_vala (e_list e_expr) el in
+          e_node "ExFor" [i; e_expr e1; e_expr e2; df; el]
+      | ExFun (_, pwel) ->
+          let pwel =
+            e_vala
+              (e_list
+                 (fun (p, oe, e) ->
+                    MLast.ExTup
+                      (loc, [e_patt p; e_option e_expr oe; e_expr e])))
+              pwel
+          in
+          e_node "ExFun" [pwel]
+      | ExLaz (_, e) -> e_node "ExLaz" [e_expr e]
+      | ExLet (_, rf, lpe, e) ->
+          let rf = e_vala e_bool rf in
+          let lpe =
+            e_vala
+              (e_list (fun (p, e) -> MLast.ExTup (loc, [e_patt p; e_expr e])))
+              lpe
+          in
+          e_node "ExLet" [rf; lpe; e_expr e]
+      | ExLid (_, s) -> e_node "ExLid" [e_vala e_string s]
+      | ExLmd (_, i, me, e) ->
+          let i = e_vala e_string i in
+          let me = e_module_expr me in e_node "ExLmd" [i; me; e_expr e]
+      | ExMat (_, e, pwel) ->
+          let pwel =
+            e_vala
+              (e_list
+                 (fun (p, oe, e) ->
+                    let oe = e_option e_expr oe in
+                    MLast.ExTup (loc, [e_patt p; oe; e_expr e])))
+              pwel
+          in
+          e_node "ExMat" [e_expr e; pwel]
+      | ExRec (_, lpe, oe) ->
+          let lpe =
+            e_vala
+              (e_list (fun (p, e) -> MLast.ExTup (loc, [e_patt p; e_expr e])))
+              lpe
+          in
+          let oe = e_option e_expr oe in e_node "ExRec" [lpe; oe]
+      | ExSeq (_, el) -> e_node "ExSeq" [e_vala (e_list e_expr) el]
+      | ExSte (_, e1, e2) -> e_node "ExSte" [e_expr e1; e_expr e2]
+      | ExStr (_, s) -> e_node "ExStr" [e_vala e_string s]
+      | ExTry (_, e, pwel) ->
+          let pwel =
+            e_vala
+              (e_list
+                 (fun (p, oe, e) ->
+                    MLast.ExTup
+                      (loc, [e_patt p; e_option e_expr oe; e_expr e])))
+              pwel
+          in
+          e_node "ExTry" [e_expr e; pwel]
+      | ExTup (_, el) -> e_node "ExTup" [e_vala (e_list e_expr) el]
+      | ExTyc (_, e, t) -> e_node "ExTyc" [e_expr e; e_ctyp t]
+      | ExUid (_, s) -> e_node "ExUid" [e_vala e_string s]
+      | ExWhi (_, e, el) ->
+          e_node "ExWhi" [e_expr e; e_vala (e_list e_expr) el]
+      | x -> not_impl "e_expr" x
     and p_expr =
-      let rec loop =
-        function
-          ExAcc (_, e1, e2) -> p_node "ExAcc" [loop e1; loop e2]
-        | ExApp (_, e1, e2) -> p_node "ExApp" [loop e1; loop e2]
-        | ExIfe (_, e1, e2, e3) -> p_node "ExIfe" [loop e1; loop e2; loop e3]
-        | ExInt (_, s, k) -> p_node "ExInt" [p_vala p_string s; p_string k]
-        | ExFlo (_, s) -> p_node "ExFlo" [p_vala p_string s]
-        | ExLet (_, rf, lpe, e) ->
-            let rf = p_vala p_bool rf in
-            let lpe =
-              p_vala
-                (p_list (fun (p, e) -> MLast.PaTup (loc, [p_patt p; loop e])))
-                lpe
-            in
-            p_node "ExLet" [rf; lpe; loop e]
-        | ExRec (_, lpe, oe) ->
-            let lpe =
-              p_vala
-                (p_list (fun (p, e) -> MLast.PaTup (loc, [p_patt p; loop e])))
-                lpe
-            in
-            let oe = p_option loop oe in p_node "ExRec" [lpe; oe]
-        | ExLid (_, s) -> p_node "ExLid" [p_vala p_string s]
-        | ExStr (_, s) -> p_node "ExStr" [p_vala p_string s]
-        | ExTup (_, el) -> p_node "ExTup" [p_vala (p_list loop) el]
-        | ExUid (_, s) -> p_node "ExUid" [p_vala p_string s]
-        | x -> not_impl "p_expr" x
-      in
-      loop
-    and e_module_type x =
-      let rec loop =
-        function
-          MtAcc (_, mt1, mt2) -> e_node "MtAcc" [loop mt1; loop mt2]
-        | MtApp (_, mt1, mt2) -> e_node "MtApp" [loop mt1; loop mt2]
-        | MtFun (_, s, mt1, mt2) ->
-            e_node "MtFun" [e_vala e_string s; loop mt1; loop mt2]
-        | MtLid (_, s) -> e_node "MtLid" [e_vala e_string s]
-        | MtQuo (_, s) -> e_node "MtQuo" [e_vala e_string s]
-        | MtSig (_, sil) -> e_node "MtSig" [e_vala (e_list e_sig_item) sil]
-        | MtUid (_, s) -> e_node "MtUid" [e_vala e_string s]
-        | MtWit (_, mt, lwc) ->
-            e_node "MtWit" [loop mt; e_vala (e_list e_with_constr) lwc]
-      in
-      loop x
+      function
+        ExAcc (_, e1, e2) -> p_node "ExAcc" [p_expr e1; p_expr e2]
+      | ExApp (_, e1, e2) -> p_node "ExApp" [p_expr e1; p_expr e2]
+      | ExIfe (_, e1, e2, e3) ->
+          p_node "ExIfe" [p_expr e1; p_expr e2; p_expr e3]
+      | ExInt (_, s, k) -> p_node "ExInt" [p_vala p_string s; p_string k]
+      | ExFlo (_, s) -> p_node "ExFlo" [p_vala p_string s]
+      | ExLet (_, rf, lpe, e) ->
+          let rf = p_vala p_bool rf in
+          let lpe =
+            p_vala
+              (p_list (fun (p, e) -> MLast.PaTup (loc, [p_patt p; p_expr e])))
+              lpe
+          in
+          p_node "ExLet" [rf; lpe; p_expr e]
+      | ExRec (_, lpe, oe) ->
+          let lpe =
+            p_vala
+              (p_list (fun (p, e) -> MLast.PaTup (loc, [p_patt p; p_expr e])))
+              lpe
+          in
+          let oe = p_option p_expr oe in p_node "ExRec" [lpe; oe]
+      | ExLid (_, s) -> p_node "ExLid" [p_vala p_string s]
+      | ExStr (_, s) -> p_node "ExStr" [p_vala p_string s]
+      | ExTup (_, el) -> p_node "ExTup" [p_vala (p_list p_expr) el]
+      | ExUid (_, s) -> p_node "ExUid" [p_vala p_string s]
+      | x -> not_impl "p_expr" x
+    and e_module_type =
+      function
+        MtAcc (_, mt1, mt2) ->
+          e_node "MtAcc" [e_module_type mt1; e_module_type mt2]
+      | MtApp (_, mt1, mt2) ->
+          e_node "MtApp" [e_module_type mt1; e_module_type mt2]
+      | MtFun (_, s, mt1, mt2) ->
+          e_node "MtFun"
+            [e_vala e_string s; e_module_type mt1; e_module_type mt2]
+      | MtLid (_, s) -> e_node "MtLid" [e_vala e_string s]
+      | MtQuo (_, s) -> e_node "MtQuo" [e_vala e_string s]
+      | MtSig (_, sil) -> e_node "MtSig" [e_vala (e_list e_sig_item) sil]
+      | MtUid (_, s) -> e_node "MtUid" [e_vala e_string s]
+      | MtWit (_, mt, lwc) ->
+          e_node "MtWit" [e_module_type mt; e_vala (e_list e_with_constr) lwc]
     and p_module_type x = not_impl "p_module_type" x
-    and e_sig_item x =
-      let rec loop =
-        function
-          SgCls (_, cd) ->
-            e_node "SgCls" [e_vala (e_list (e_class_infos e_class_type)) cd]
-        | SgClt (_, ctd) ->
-            e_node "SgClt" [e_vala (e_list (e_class_infos e_class_type)) ctd]
-        | SgDcl (_, lsi) -> e_node "SgDcl" [e_vala (e_list loop) lsi]
-        | SgExc (_, s, lt) ->
-            let s = e_vala e_string s in
-            let lt = e_vala (e_list e_ctyp) lt in e_node "SgExc" [s; lt]
-        | SgExt (_, s, t, ls) ->
-            let ls = e_vala (e_list e_string) ls in
-            e_node "SgExt" [e_vala e_string s; e_ctyp t; ls]
-        | SgInc (_, mt) -> e_node "SgInc" [e_module_type mt]
-        | SgMod (_, rf, lsmt) ->
-            let lsmt =
-              e_vala
-                (e_list
-                   (fun (s, mt) ->
-                      MLast.ExTup (loc, [e_string s; e_module_type mt])))
-                lsmt
-            in
-            e_node "SgMod" [e_vala e_bool rf; lsmt]
-        | SgMty (_, s, mt) ->
-            e_node "SgMty" [e_vala e_string s; e_module_type mt]
-        | SgOpn (_, sl) -> e_node "SgOpn" [e_vala (e_list e_string) sl]
-        | SgTyp (_, ltd) -> e_node "SgTyp" [e_vala (e_list e_type_decl) ltd]
-        | SgVal (_, s, t) -> e_node "SgVal" [e_vala e_string s; e_ctyp t]
-        | x -> not_impl "e_sig_item" x
-      in
-      loop x
+    and e_sig_item =
+      function
+        SgCls (_, cd) ->
+          e_node "SgCls" [e_vala (e_list (e_class_infos e_class_type)) cd]
+      | SgClt (_, ctd) ->
+          e_node "SgClt" [e_vala (e_list (e_class_infos e_class_type)) ctd]
+      | SgDcl (_, lsi) -> e_node "SgDcl" [e_vala (e_list e_sig_item) lsi]
+      | SgExc (_, s, lt) ->
+          let s = e_vala e_string s in
+          let lt = e_vala (e_list e_ctyp) lt in e_node "SgExc" [s; lt]
+      | SgExt (_, s, t, ls) ->
+          let ls = e_vala (e_list e_string) ls in
+          e_node "SgExt" [e_vala e_string s; e_ctyp t; ls]
+      | SgInc (_, mt) -> e_node "SgInc" [e_module_type mt]
+      | SgMod (_, rf, lsmt) ->
+          let lsmt =
+            e_vala
+              (e_list
+                 (fun (s, mt) ->
+                    MLast.ExTup (loc, [e_string s; e_module_type mt])))
+              lsmt
+          in
+          e_node "SgMod" [e_vala e_bool rf; lsmt]
+      | SgMty (_, s, mt) ->
+          e_node "SgMty" [e_vala e_string s; e_module_type mt]
+      | SgOpn (_, sl) -> e_node "SgOpn" [e_vala (e_list e_string) sl]
+      | SgTyp (_, ltd) -> e_node "SgTyp" [e_vala (e_list e_type_decl) ltd]
+      | SgVal (_, s, t) -> e_node "SgVal" [e_vala e_string s; e_ctyp t]
+      | x -> not_impl "e_sig_item" x
     and p_sig_item x = not_impl "p_sig_item" x
-    and e_with_constr x =
-      let rec loop =
-        function
-          WcTyp (_, li, ltp, pf, t) ->
-            let li = e_vala (e_list e_string) li in
-            let ltp = e_vala (e_list e_type_var) ltp in
-            let pf = e_vala e_bool pf in
-            let t = e_ctyp t in e_node "WcTyp" [li; ltp; pf; t]
-        | WcMod (_, li, me) ->
-            let li = e_vala (e_list e_string) li in
-            let me = e_module_expr me in e_node "WcMod" [li; me]
-      in
-      loop x
+    and e_with_constr =
+      function
+        WcTyp (_, li, ltp, pf, t) ->
+          let li = e_vala (e_list e_string) li in
+          let ltp = e_vala (e_list e_type_var) ltp in
+          let pf = e_vala e_bool pf in
+          let t = e_ctyp t in e_node "WcTyp" [li; ltp; pf; t]
+      | WcMod (_, li, me) ->
+          let li = e_vala (e_list e_string) li in
+          let me = e_module_expr me in e_node "WcMod" [li; me]
     and p_with_constr x = not_impl "p_with_constr" x
-    and e_module_expr x =
-      let rec loop =
-        function
-          MeAcc (_, me1, me2) -> e_node "MeAcc" [loop me1; loop me2]
-        | MeApp (_, me1, me2) -> e_node "MeApp" [loop me1; loop me2]
-        | MeFun (_, s, mt, me) ->
-            e_node "MeFun" [e_vala e_string s; e_module_type mt; loop me]
-        | MeStr (_, lsi) -> e_node "MeStr" [e_vala (e_list e_str_item) lsi]
-        | MeTyc (_, me, mt) -> e_node "MeTyc" [loop me; e_module_type mt]
-        | MeUid (_, s) -> e_node "MeUid" [e_vala e_string s]
-      in
-      loop x
+    and e_module_expr =
+      function
+        MeAcc (_, me1, me2) ->
+          e_node "MeAcc" [e_module_expr me1; e_module_expr me2]
+      | MeApp (_, me1, me2) ->
+          e_node "MeApp" [e_module_expr me1; e_module_expr me2]
+      | MeFun (_, s, mt, me) ->
+          e_node "MeFun"
+            [e_vala e_string s; e_module_type mt; e_module_expr me]
+      | MeStr (_, lsi) -> e_node "MeStr" [e_vala (e_list e_str_item) lsi]
+      | MeTyc (_, me, mt) ->
+          e_node "MeTyc" [e_module_expr me; e_module_type mt]
+      | MeUid (_, s) -> e_node "MeUid" [e_vala e_string s]
     and p_module_expr x = not_impl "p_module_expr" x
-    and e_str_item x =
-      let rec loop =
-        function
-          StCls (_, cd) ->
-            e_node "StCls" [e_vala (e_list (e_class_infos e_class_expr)) cd]
-        | StClt (_, ctd) ->
-            e_node "StClt" [e_vala (e_list (e_class_infos e_class_type)) ctd]
-        | StDcl (_, lsi) -> e_node "StDcl" [e_vala (e_list loop) lsi]
-        | StExc (_, s, lt, ls) ->
-            let s = e_vala e_string s in
-            let lt = e_vala (e_list e_ctyp) lt in
-            let ls = e_vala (e_list e_string) ls in e_node "StExc" [s; lt; ls]
-        | StExp (_, e) -> e_node "StExp" [e_expr e]
-        | StExt (_, s, t, ls) ->
-            let ls = e_vala (e_list e_string) ls in
-            e_node "StExt" [e_vala e_string s; e_ctyp t; ls]
-        | StInc (_, me) -> e_node "StInc" [e_module_expr me]
-        | StMod (_, rf, lsme) ->
-            let lsme =
-              e_vala
-                (e_list
-                   (fun (s, me) ->
-                      MLast.ExTup (loc, [e_string s; e_module_expr me])))
-                lsme
-            in
-            e_node "StMod" [e_vala e_bool rf; lsme]
-        | StMty (_, s, mt) ->
-            e_node "StMty" [e_vala e_string s; e_module_type mt]
-        | StOpn (_, sl) -> e_node "StOpn" [e_vala (e_list e_string) sl]
-        | StTyp (_, ltd) -> e_node "StTyp" [e_vala (e_list e_type_decl) ltd]
-        | StVal (_, rf, lpe) ->
-            let lpe =
-              e_vala
-                (e_list
-                   (fun (p, e) -> MLast.ExTup (loc, [e_patt p; e_expr e])))
-                lpe
-            in
-            e_node "StVal" [e_vala e_bool rf; lpe]
-        | x -> not_impl "e_str_item" x
-      in
-      loop x
+    and e_str_item =
+      function
+        StCls (_, cd) ->
+          e_node "StCls" [e_vala (e_list (e_class_infos e_class_expr)) cd]
+      | StClt (_, ctd) ->
+          e_node "StClt" [e_vala (e_list (e_class_infos e_class_type)) ctd]
+      | StDcl (_, lsi) -> e_node "StDcl" [e_vala (e_list e_str_item) lsi]
+      | StExc (_, s, lt, ls) ->
+          let s = e_vala e_string s in
+          let lt = e_vala (e_list e_ctyp) lt in
+          let ls = e_vala (e_list e_string) ls in e_node "StExc" [s; lt; ls]
+      | StExp (_, e) -> e_node "StExp" [e_expr e]
+      | StExt (_, s, t, ls) ->
+          let ls = e_vala (e_list e_string) ls in
+          e_node "StExt" [e_vala e_string s; e_ctyp t; ls]
+      | StInc (_, me) -> e_node "StInc" [e_module_expr me]
+      | StMod (_, rf, lsme) ->
+          let lsme =
+            e_vala
+              (e_list
+                 (fun (s, me) ->
+                    MLast.ExTup (loc, [e_string s; e_module_expr me])))
+              lsme
+          in
+          e_node "StMod" [e_vala e_bool rf; lsme]
+      | StMty (_, s, mt) ->
+          e_node "StMty" [e_vala e_string s; e_module_type mt]
+      | StOpn (_, sl) -> e_node "StOpn" [e_vala (e_list e_string) sl]
+      | StTyp (_, ltd) -> e_node "StTyp" [e_vala (e_list e_type_decl) ltd]
+      | StVal (_, rf, lpe) ->
+          let lpe =
+            e_vala
+              (e_list (fun (p, e) -> MLast.ExTup (loc, [e_patt p; e_expr e])))
+              lpe
+          in
+          e_node "StVal" [e_vala e_bool rf; lpe]
+      | x -> not_impl "e_str_item" x
     and p_str_item x = not_impl "p_str_item" x
     and e_type_decl x = not_impl "e_type_decl" x
-    and e_class_type x = not_impl "e_class_type" x
+    and e_class_type =
+      function
+        CtCon (_, ls, lt) ->
+          e_node "CtCon"
+            [e_vala (e_list e_string) ls; e_vala (e_list e_ctyp) lt]
+      | CtFun (_, t, ct) -> e_node "CtFun" [e_ctyp t; e_class_type ct]
+      | CtSig (_, ot, lcsi) ->
+          e_node "CtSig"
+            [e_vala (e_option e_ctyp) ot;
+             e_vala (e_list e_class_sig_item) lcsi]
     and p_class_type x = not_impl "p_class_type" x
-    and e_class_expr x =
-      let rec loop =
-        function
-          CeApp (_, ce, e) -> e_node "CeApp" [loop ce; e_expr e]
-        | CeCon (_, c, l) ->
-            let c = e_vala (e_list e_string) c in
-            e_node "CeCon" [c; e_vala (e_list e_ctyp) l]
-        | CeFun (_, p, ce) -> e_node "CeFun" [e_patt p; loop ce]
-        | CeLet (_, rf, lb, ce) -> e_node "CeLet" [e_vala e_bool rf; loop ce]
-        | CeStr (_, ocsp, lcsi) ->
-            let ocsp = e_vala (e_option e_patt) ocsp in
-            let lcsi = e_vala (e_list e_class_str_item) lcsi in
-            e_node "CeStr" [ocsp; lcsi]
-        | CeTyc (_, ce, ct) -> e_node "CeTyc" [loop ce; e_class_type ct]
-      in
-      loop x
+    and e_class_sig_item x = not_impl "e_class_sig_item" x
+    and p_class_sig_item x = not_impl "p_class_sig_item" x
+    and e_class_expr =
+      function
+        CeApp (_, ce, e) -> e_node "CeApp" [e_class_expr ce; e_expr e]
+      | CeCon (_, c, l) ->
+          let c = e_vala (e_list e_string) c in
+          e_node "CeCon" [c; e_vala (e_list e_ctyp) l]
+      | CeFun (_, p, ce) -> e_node "CeFun" [e_patt p; e_class_expr ce]
+      | CeLet (_, rf, lb, ce) ->
+          e_node "CeLet" [e_vala e_bool rf; e_class_expr ce]
+      | CeStr (_, ocsp, lcsi) ->
+          let ocsp = e_vala (e_option e_patt) ocsp in
+          let lcsi = e_vala (e_list e_class_str_item) lcsi in
+          e_node "CeStr" [ocsp; lcsi]
+      | CeTyc (_, ce, ct) -> e_node "CeTyc" [e_class_expr ce; e_class_type ct]
     and p_class_expr x = not_impl "p_class_expr" x
-    and e_class_str_item x =
-      let rec loop =
-        function
-          CrCtr (_, t1, t2) -> e_node "CrCtr" [e_ctyp t1; e_ctyp t2]
-        | CrDcl (_, lcsi) -> e_node "CrDcl" [e_vala (e_list loop) lcsi]
-        | CrInh (_, ce, os) ->
-            e_node "CrInh" [e_class_expr ce; e_vala (e_option e_string) os]
-        | CrIni (_, e) -> e_node "CrIni" [e_expr e]
-        | CrMth (_, s, pf, e, ot) ->
-            e_node "CrMth"
-              [e_vala e_string s; e_vala e_bool pf; e_expr e;
-               e_vala (e_option e_ctyp) ot]
-        | CrVal (_, s, rf, e) ->
-            e_node "CrVal" [e_vala e_string s; e_vala e_bool rf; e_expr e]
-        | CrVir (_, s, pf, t) ->
-            e_node "CrVir" [e_vala e_string s; e_vala e_bool pf; e_ctyp t]
-      in
-      loop x
+    and e_class_str_item =
+      function
+        CrCtr (_, t1, t2) -> e_node "CrCtr" [e_ctyp t1; e_ctyp t2]
+      | CrDcl (_, lcsi) ->
+          e_node "CrDcl" [e_vala (e_list e_class_str_item) lcsi]
+      | CrInh (_, ce, os) ->
+          e_node "CrInh" [e_class_expr ce; e_vala (e_option e_string) os]
+      | CrIni (_, e) -> e_node "CrIni" [e_expr e]
+      | CrMth (_, s, pf, e, ot) ->
+          e_node "CrMth"
+            [e_vala e_string s; e_vala e_bool pf; e_expr e;
+             e_vala (e_option e_ctyp) ot]
+      | CrVal (_, s, rf, e) ->
+          e_node "CrVal" [e_vala e_string s; e_vala e_bool rf; e_expr e]
+      | CrVir (_, s, pf, t) ->
+          e_node "CrVir" [e_vala e_string s; e_vala e_bool pf; e_ctyp t]
     and p_class_str_item x = not_impl "p_class_str_item" x;;
   end
 ;;
@@ -559,6 +545,7 @@ let with_constr_eoi = Grammar.Entry.create Pcaml.gram "with_constr";;
 let class_expr_eoi = Grammar.Entry.create Pcaml.gram "class_expr";;
 let class_type_eoi = Grammar.Entry.create Pcaml.gram "class_type";;
 let class_str_item_eoi = Grammar.Entry.create Pcaml.gram "class_str_item";;
+let class_sig_item_eoi = Grammar.Entry.create Pcaml.gram "class_sig_item";;
 
 Grammar.extend
   [Grammar.Entry.obj (expr_eoi : 'expr_eoi Grammar.Entry.e), None,
@@ -656,7 +643,18 @@ Grammar.extend
       Gramext.Stoken ("EOI", "")],
      Gramext.action
        (fun _ (x : 'Pcaml__class_str_item) (loc : Ploc.t) ->
-          (x : 'class_str_item_eoi))]]];;
+          (x : 'class_str_item_eoi))]];
+   Grammar.Entry.obj
+     (class_sig_item_eoi : 'class_sig_item_eoi Grammar.Entry.e),
+   None,
+   [None, None,
+    [[Gramext.Snterm
+        (Grammar.Entry.obj
+           (Pcaml.class_sig_item : 'Pcaml__class_sig_item Grammar.Entry.e));
+      Gramext.Stoken ("EOI", "")],
+     Gramext.action
+       (fun _ (x : 'Pcaml__class_sig_item) (loc : Ploc.t) ->
+          (x : 'class_sig_item_eoi))]]];;
 
 (* *)
 
@@ -823,8 +821,10 @@ List.iter (fun (q, f) -> Quotation.add q f)
    "class_type",
    apply_entry class_type_eoi Meta.e_class_type Meta.p_class_type;
    "class_str_item",
-   apply_entry class_str_item_eoi Meta.e_class_str_item
-     Meta.p_class_str_item];;
+   apply_entry class_str_item_eoi Meta.e_class_str_item Meta.p_class_str_item;
+   "class_sig_item",
+   apply_entry class_sig_item_eoi Meta.e_class_sig_item
+     Meta.p_class_sig_item];;
 
 let expr s =
   let e =

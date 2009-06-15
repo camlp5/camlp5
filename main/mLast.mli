@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: mLast.mli,v 1.39 2007/09/13 13:21:24 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.40 2007/09/13 15:45:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Module [MLast]: abstract syntax tree.
@@ -180,19 +180,19 @@ and type_decl =
     tdDef : ctyp;
     tdCon : list (ctyp * ctyp) }
 and class_type =
-  [ CtCon of loc and list string and list ctyp
+  [ CtCon of loc and V (list string) and V (list ctyp)
   | CtFun of loc and ctyp and class_type
-  | CtSig of loc and option ctyp and list class_sig_item
+  | CtSig of loc and V (option ctyp) and V (list class_sig_item)
   | IFDEF STRICT THEN
       CtXtr of loc and string and option (V class_type)
     END ]
 and class_sig_item =
   [ CgCtr of loc and ctyp and ctyp
-  | CgDcl of loc and list class_sig_item
+  | CgDcl of loc and V (list class_sig_item)
   | CgInh of loc and class_type
-  | CgMth of loc and string and bool and ctyp
-  | CgVal of loc and string and bool and ctyp
-  | CgVir of loc and string and bool and ctyp ]
+  | CgMth of loc and V string and V bool and ctyp
+  | CgVal of loc and V string and V bool and ctyp
+  | CgVir of loc and V string and V bool and ctyp ]
 and class_expr =
   [ CeApp of loc and class_expr and expr
   | CeCon of loc and V (list string) and V (list ctyp)
