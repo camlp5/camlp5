@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.57 2007/09/12 16:02:06 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.58 2007/09/12 16:18:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -386,9 +386,7 @@ module Meta =
             let lt = e_vala (e_list e_ctyp) lt in
             let ls = e_vala (e_list e_string) ls in
             <:expr< MLast.StExc $ln$ $s$ $lt$ $ls$ >>
-(*
         | StExp _ e -> <:expr< MLast.StExp $ln$ $e_expr e$ >>
-*)
         | StExt _ s t ls ->
             let ls = e_vala (e_list e_string) ls in
             <:expr< MLast.StExt $ln$ $e_vala e_string s$ $e_ctyp t$ $ls$ >>
@@ -484,13 +482,9 @@ IFDEF STRICT THEN
     Pcaml.ctyp: LAST
       [ [ s = ANTIQUOT_LOC -> MLast.TyXtr loc s None ] ]
     ;
-(*
     Pcaml.str_item: LAST
-      [ [ s = ANTIQUOT_LOC "exp" ->
-            let e = MLast.ExAnt loc (MLast.ExLid loc s) in
-            MLast.StExp loc e ] ]
+      [ [ s = ANTIQUOT_LOC "exp" -> MLast.StExp loc <:expr< $lid:s$ >> ] ]
     ;
-*)
     Pcaml.module_expr: LAST
       [ [ s = ANTIQUOT_LOC -> MLast.MeXtr loc s None ] ]
     ;

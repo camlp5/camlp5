@@ -1000,6 +1000,16 @@ module Meta =
                      s),
                   lt),
                ls)
+        | StExp (_, e) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "StExp")),
+                  ln),
+               e_expr e)
         | StExt (_, s, t, ls) ->
             let ls = e_vala (e_list e_string) ls in
             MLast.ExApp
