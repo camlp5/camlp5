@@ -56,8 +56,8 @@ install:
 	-$(MKDIR) "$(BINDIR)"
 	-$(MKDIR) "$(LIBDIR)/$(NAME)"
 	cp $(CAMLP5) "$(BINDIR)/."
-	cp mLast.mli quotation.mli ast2pt.mli pcaml.mli spretty.mli prtools.mli "$(LIBDIR)/$(NAME)/."
-	cp mLast.cmi quotation.cmi ast2pt.cmi pcaml.cmi spretty.cmi prtools.cmi "$(LIBDIR)/$(NAME)/."
+	cp mLast.mli quotation.mli ast2pt.mli pcaml.mli prtools.mli "$(LIBDIR)/$(NAME)/."
+	cp mLast.cmi quotation.cmi ast2pt.cmi pcaml.cmi prtools.cmi "$(LIBDIR)/$(NAME)/."
 	cp $(NAME).cma "$(LIBDIR)/$(NAME)/."
 
 include .depend

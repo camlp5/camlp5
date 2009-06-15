@@ -1,3 +1,4 @@
+*.a
 *.cm[oiax]
 *.cmxa
 *.lib
