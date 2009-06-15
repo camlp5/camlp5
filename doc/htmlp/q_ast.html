@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: q_ast.html,v 1.2 2007/09/26 13:18:39 deraugla Exp $ -->
+  <!-- $Id: q_ast.html,v 1.3 2007/09/26 16:50:41 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>q_ast.cmo</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -29,11 +29,13 @@
   tree is meta-ified (except the antiquotations) to represent the
   syntax tree of the syntax tree.</p>
 
+<h2>Antiquotations</h2>
+
 <p>The OCaml langage parser used, and its possible extensions, must
   have been built to allow the places of the antiquotations. The
   symbols enclosed by the meta-symbol "<tt>V</tt>" (see the chapter
-  about <a href="grammars.html">extensible grammars</a>), define
-  where antiquotations can take place.</p>
+  about <a href="grammars.html">extensible grammars</a>, section
+  "symbols"), define where antiquotations can take place.</p>
 
 <p>But there is no need to specify antiquotations for the main types
   defined in the AST tree module ("<tt>MLast</tt>"): "<tt>expr</tt>",
@@ -67,6 +69,11 @@
   <li>The expression after the "in" is also antiquotable, because it
     belongs to the main types defined in the module "<tt>MLast</tt>".</li>
 </ul>
+
+<p>In that example, the variable "<tt>r</tt>" is of type "<tt>Ploc.vala
+  bool</tt>", the variable "<tt>r</tt>" of type "<tt>Ploc.vala (list
+  (patt * expr))</tt>" and the variable "<tt>x</tt>" of type
+  "<tt>MLast.expr</tt>".</p>
 
 <p>... to be completed ...</p>
 
