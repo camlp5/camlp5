@@ -1297,10 +1297,12 @@ EXTEND
       | "{"; sl = LIST0 sexpr; "}" -> Srec loc sl
       | "#("; sl = V (LIST0 sexpr); ")" -> Sarr loc sl
       | a = pa_extend_keyword -> Slid loc a
-      | s = LIDENT -> Slid loc s
-      | s = V LIDENT -> Slidv loc s
-      | s = UIDENT -> Suid loc s
-      | s = V UIDENT -> Suidv loc s
+      | s = V LIDENT ->
+          Pcaml.vala_mapa (fun s -> Slid loc s)
+            (fun s -> Slidv loc <:vala< $s$ >>) s
+      | s = V UIDENT ->
+          Pcaml.vala_mapa (fun s -> Suid loc s)
+            (fun s -> Suidv loc <:vala< $s$ >>) s
       | s = V TILDEIDENT -> Stid loc s
       | s = V QUESTIONIDENT -> Sqid loc s
       | s = V INT -> Sint loc s

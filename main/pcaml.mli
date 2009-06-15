@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: pcaml.mli,v 1.23 2007/10/02 02:57:06 deraugla Exp $ *)
+(* $Id: pcaml.mli,v 1.24 2007/10/08 09:45:38 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (** Language grammar, entries and printers.
@@ -167,6 +167,7 @@ END;
 
 value unvala : V 'a -> 'a;
 value vala_map : ('a -> 'b) -> V 'a -> V 'b;
+value vala_mapa : ('a -> 'b) -> (string -> 'b) -> V 'a -> 'b;
 
 (**/**)
 

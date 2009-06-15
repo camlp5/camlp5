@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.56 2007/10/08 09:08:10 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.57 2007/10/08 09:45:38 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -1217,10 +1217,12 @@ EXTEND
       | "{" / sl = LIST0 sexpr / "}" -> (Srec loc sl)
       | "#(" / sl = V (LIST0 sexpr) / ")" -> (Sarr loc sl)
       | a = pa_extend_keyword -> (Slid loc a)
-      | s = LIDENT -> (Slid loc s)
-      | s = V LIDENT -> (Slidv loc s)
-      | s = UIDENT -> (Suid loc s)
-      | s = V UIDENT -> (Suidv loc s)
+      | s = V LIDENT ->
+         (Pcaml.vala_mapa (lambda s (Slid loc s))
+          (lambda s (Slidv loc <:vala< $s$ >>)) s)
+      | s = V UIDENT ->
+         (Pcaml.vala_mapa (lambda s (Suid loc s))
+          (lambda s (Suidv loc <:vala< $s$ >>)) s)
       | s = V TILDEIDENT -> (Stid loc s)
       | s = V QUESTIONIDENT -> (Sqid loc s)
       | s = V INT -> (Sint loc s)

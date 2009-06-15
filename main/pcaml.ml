@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo *)
-(* $Id: pcaml.ml,v 1.37 2007/10/06 17:42:13 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.38 2007/10/08 09:45:38 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value version = "5.02-exp";
@@ -477,6 +477,14 @@ value vala_map f x =
     match x with
     [ Ploc.VaVal x -> Ploc.VaVal (f x)
     | Ploc.VaAnt a -> Ploc.VaAnt a ]
+  END
+;
+value vala_mapa f g x =
+  IFNDEF STRICT THEN f x
+  ELSE
+    match x with
+    [ Ploc.VaVal x -> f x
+    | Ploc.VaAnt y -> g y ]
   END
 ;
 

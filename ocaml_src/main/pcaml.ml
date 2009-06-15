@@ -476,6 +476,7 @@ let strict_mode = ref false;;
 
 let unvala x = x;;
 let vala_map f x = f x;;
+let vala_mapa f g x = f x;;
 
 add_option "-mode"
   (Arg.String
