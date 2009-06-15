@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.155 2007/12/25 10:24:16 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.156 2007/12/25 13:22:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1220,38 +1220,28 @@ EXTEND_PRINTER
           match tl with
           [ [t2] -> pprintf pc "%p@;%p" curr t2 next t
           | _ ->
-              horiz_vertic
-                (fun () ->
-                   sprintf "%s(%s) %s%s" pc.bef
-                     (hlistl (comma_after ctyp) ctyp
-                        {(pc) with bef = ""; aft = ""} tl)
-                     (curr {(pc) with bef = ""; aft = ""} t) pc.aft)
-                (fun () ->
-                   let s1 =
-                     hlistl (comma_after ctyp) ctyp
-                       {(pc) with bef = sprintf "%s(" pc.bef; aft = ")"} tl
-                   in
-                   let s2 =
-                     curr
-                       {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t
-                   in
-                   sprintf "%s\n%s" s1 s2) ] ]
+              pprintf pc "(%p)@;%p" (hlistl (comma_after ctyp) ctyp)
+                tl curr t ] ]
     | "dot"
-      [ <:ctyp< $x$ . $y$ >> ->
-            curr {(pc) with bef = curr {(pc) with aft = "."} x} y ]
+      [ <:ctyp< $x$ . $y$ >> -> pprintf pc "%p.%p" curr x curr y ]
     | "simple"
       [ <:ctyp< { $list:ltl$ } >> ->
+          if test.val then
           horiz_vertic
             (fun () ->
-               hlistl (semi_after label_decl) label_decl
-                 {(pc) with bef = sprintf "%s{ " pc.bef;
-                  aft = sprintf " }%s" pc.aft}
+               pprintf pc "@[<2>{ %p }@]"
+                 (hlistl (semi_after label_decl) label_decl) ltl)
+            (fun () ->
+               pprintf pc "@[<2>{ %p }@]"
+                 (vlistl (semi_after label_decl) label_decl) ltl)
+          else
+          horiz_vertic
+            (fun () ->
+               pprintf pc "{ %p }" (hlistl (semi_after label_decl) label_decl)
                  ltl)
             (fun () ->
-               vlistl (semi_after label_decl) label_decl
-                 {(pc) with ind = pc.ind + 2; bef = sprintf "%s{ " pc.bef;
-                  aft = sprintf " }%s" pc.aft}
-                 ltl)
+               pprintf pc "@[<2>{ %p }@]"
+                 (vlistl (semi_after label_decl) label_decl) ltl)
       | <:ctyp< [ $list:vdl$ ] >> ->
           horiz_vertic
             (fun () ->
