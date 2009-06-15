@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.103 2007/10/29 11:58:49 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.104 2007/11/14 10:15:20 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -2374,7 +2374,7 @@ value apply_printer f ast = do {
   let oc =
     match Pcaml.output_file.val with
     [ Some f -> open_out_bin f
-    | None -> stdout ]
+    | None -> do { set_binary_mode_out stdout True; stdout } ]
   in
   let cleanup () =
     match Pcaml.output_file.val with

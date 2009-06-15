@@ -1,6 +1,9 @@
 Camlp5 Version 5.03:
 --------------------
 
+* [14 Nov 07] Fixed bug under Windows for the printers (pr_o.cmo, pr_r.cmo
+  and pr_scheme.cmo): extra return character '\r' was added at end of
+  lines.  
 * [09 Nov 07] Fixed bug in camlp5o.opt in strict mode: did not parse
   correctly, in particular type expression (the version "camlp5o" without
   ".opt" however worked).
