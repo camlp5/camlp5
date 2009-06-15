@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_pprintf.ml,v 1.12 2007/12/06 01:10:49 deraugla Exp $ *)
+(* $Id: pa_pprintf.ml,v 1.13 2007/12/06 02:23:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* pprintf statement *)
@@ -69,7 +69,7 @@ value expand_item loc pc fmt al =
   (pcl, al)
 ;
 
-type pp = [ PPbreak of int and int | PPspace ];
+type pp = [ PPbreak of int and int | PPspace | PPnoedge ];
 
 value rec parse_int_loop n =
   fparser
@@ -99,7 +99,7 @@ value next_item loc pc fmt al i_beg =
     if i + 1 < String.length fmt then
       if fmt.[i] = '@' then
         match fmt.[i+1] with
-        [ ';' | ' ' | '[' | ']' ->
+        [ ';' | ' ' | '[' | ']' | '-' ->
             let pcl_al_opt =
               if i = i_beg then None
               else
@@ -162,6 +162,10 @@ value rec read_tree loc pc fmt al i =
           let (tree2, al, i) = read_simple_tree loc pc fmt al (i + 2) in
           let tree = Node tree PPspace tree2 in
           kont tree al i
+      | '-' ->
+          let (tree2, al, i) = read_simple_tree loc pc fmt al (i + 2) in
+          let tree = Node tree PPnoedge tree2 in
+          kont tree al i
       | ']' ->
           (tree, al, i + 2)
       | '[' ->
@@ -203,6 +207,7 @@ value make_call loc (bef_is_empty, aft_is_empty) pc offset pcl =
       [ [(bef, bef_al, aft, aft_al, f_f_a_opt) :: pcl] ->
           let is_last = pcl = [] in
           let add_pc_aft = not aft_is_empty && is_last in
+          let add_pc_bef = not bef_is_empty && is_first in
           let e =
             match f_f_a_opt with
             [ Some (f, f_a) ->
@@ -220,14 +225,16 @@ value make_call loc (bef_is_empty, aft_is_empty) pc offset pcl =
                   if is_first && bef = "" then lbl
                   else              
                     let e =
-                      if not is_first && bef_al = [] then <:expr< $str:bef$ >>
+                      if not add_pc_bef && bef_al = [] then
+                        <:expr< $str:bef$ >>
                       else
-                        let bef = if is_first then "%s" ^ bef else bef in
+                        let bef = if add_pc_bef then "%s" ^ bef else bef in
                         let e = <:expr< sprintf $str:bef$ >> in
                         let e =
-                          if is_first then <:expr< $e$ $pc$.bef >> else e
+                          if add_pc_bef then <:expr< $e$ $pc$.bef >> else e
                         in
-                        List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e bef_al
+                        List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e
+                          bef_al
                     in
                     [(<:patt< bef >>, e) :: lbl]
                 in
@@ -235,7 +242,8 @@ value make_call loc (bef_is_empty, aft_is_empty) pc offset pcl =
                   if is_last && aft = "" then lbl
                   else
                     let e =
-                      if not add_pc_aft && aft_al = [] then <:expr< $str:aft$ >>
+                      if not add_pc_aft && aft_al = [] then
+                        <:expr< $str:aft$ >>
                       else if not add_pc_aft && aft = "%s" then
                         match aft_al with
                         [ [a] -> a
@@ -259,11 +267,11 @@ value make_call loc (bef_is_empty, aft_is_empty) pc offset pcl =
             | None ->
                 if not is_first && bef_al = [] then <:expr< $str:bef$ >>
                 else
-                  let fmt = if is_first then "%s" ^ bef else bef in
+                  let fmt = if add_pc_bef then "%s" ^ bef else bef in
                   let fmt = if add_pc_aft then fmt ^ "%s" else fmt in
                   let e = <:expr< sprintf $str:fmt$ >> in
                   let e =
-                    if is_first then <:expr< $e$ $pc$.bef >> else e
+                    if add_pc_bef then <:expr< $e$ $pc$.bef >> else e
                   in
                   let e =
                     List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e bef_al
@@ -277,7 +285,7 @@ value make_call loc (bef_is_empty, aft_is_empty) pc offset pcl =
   match el with
   [ [] ->
       let fmt = if not bef_is_empty then "%s" else "" in
-      let fmt = if not aft_is_empty then fmt ^ "%s" else "" in
+      let fmt = if not aft_is_empty then fmt ^ "%s" else fmt in
       let e = <:expr< sprintf $str:fmt$ >> in
       let e = if not bef_is_empty then <:expr< $e$ $pc$.bef >> else e in
       if not aft_is_empty then <:expr< $e$ $pc$.aft >> else e
@@ -300,11 +308,17 @@ value expand_pprintf loc pc fmt al =
       where rec loop pc offset (bef_is_empty, aft_is_empty) =
         fun
         [ Leaf pcl -> make_call loc (bef_is_empty, aft_is_empty) pc offset pcl
+        | Node (Leaf []) PPnoedge t2 -> loop pc offset (True, aft_is_empty) t2
+        | Node t1 PPnoedge (Leaf []) -> loop pc offset (bef_is_empty, True) t1
+        | Node tree1 PPnoedge tree2 ->
+            loop pc offset (bef_is_empty, aft_is_empty)
+              (concat_tree tree1 tree2)
         | Node tree1 pp tree2 ->
             let (s, o) =
               match pp with
               [ PPbreak sp off -> (string_of_int sp, string_of_int off)
-              | PPspace -> ("1", "0") ]
+              | PPspace -> ("1", "0")
+              | PPnoedge -> assert False ]
             in
             let e1 = loop <:expr< pc >> 0 (bef_is_empty, True) tree1 in
             let e2 = loop <:expr< pc >> 0 (True, aft_is_empty) tree2 in

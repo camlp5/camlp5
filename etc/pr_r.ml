@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.119 2007/12/06 01:10:49 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.120 2007/12/06 02:23:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -304,7 +304,7 @@ value sequence_box pc bef expr el =
       (comm_expr expr)
       {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""} el
   in
-  let s3 = sprintf "%s%s%s" (tab pc.ind) "}" pc.aft in
+  let s3 = pprintf pc "@-%s}" (tab pc.ind) in
   sprintf "%s\n%s\n%s" s1 s2 s3
 ;
 
@@ -718,9 +718,9 @@ value expr_short pc x =
 
 (* definitions of printers *)
 
-value typevar pc tv = sprintf "%s'%s%s" pc.bef tv pc.aft;
+value typevar pc tv = pprintf pc "'%s" tv;
 
-value string pc s = sprintf "%s\"%s\"%s" pc.bef s pc.aft;
+value string pc s = pprintf pc "\"%s\"" s;
 
 value external_decl pc (n, t, sl) =
   pprintf pc "external %p :@;%p = %s" var_escaped n ctyp t
@@ -730,15 +730,14 @@ value external_decl pc (n, t, sl) =
 value exception_decl pc (e, tl, id) =
   horiz_vertic
     (fun () ->
-       sprintf "%sexception %s%s%s%s" pc.bef e
+       pprintf pc "exception %s%s%s" e
          (if tl = [] then ""
           else
             sprintf " of %s"
               (hlist2 ctyp (and_before ctyp)
                  {(pc) with bef = ""; aft = ""} tl))
          (if id = [] then ""
-          else sprintf " = %s" (mod_ident {(pc) with bef = ""; aft = ""} id))
-         pc.aft)
+          else sprintf " = %s" (mod_ident {(pc) with bef = ""; aft = ""} id)))
     (fun () ->
        let s1 =
          sprintf "%sexception %s%s" pc.bef e (if tl = [] then "" else " of")
