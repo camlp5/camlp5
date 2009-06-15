@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: htmlp2html,v 1.1 2007/07/16 01:39:50 deraugla Exp $
+# $Id: htmlp2html,v 1.2 2007/07/16 01:44:31 deraugla Exp $
 
 FILE=$1
 
@@ -26,3 +26,5 @@ sed \
   -e '/<div class="trailer">/,/^<\/div>/d' |
 sed -e '/aaa/r trailer.html' -e '/aaa/d' |
 sed -e '/<h2>/s|<h2>\(.*\)</h2>|<a id="\1"></a><h2>\1</h2>|'
+
+rm toc.tmp

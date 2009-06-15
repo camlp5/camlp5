@@ -1,4 +1,4 @@
-/* $Id: base.css,v 1.14 2007/07/16 01:39:50 deraugla Exp $ */
+/* $Id: base.css,v 1.15 2007/07/16 01:49:11 deraugla Exp $ */
 
 body { margin: 0 0 1px 0; background-color: rgb(189,225,255) }
 
@@ -56,5 +56,6 @@ pre {
   body { background-color: white; border: 0 }
   #menu { display: none }
   #content { margin: 0; border: 0 }
+  #tableofcontents { display: none }
   .trailer img { display: none }
 }
