@@ -437,14 +437,6 @@ Grammar.extend
      grammar_entry_create "field_expr"
    and field : 'field Grammar.Entry.e = grammar_entry_create "field"
    and typevar : 'typevar Grammar.Entry.e = grammar_entry_create "typevar"
-   and tildeident : 'tildeident Grammar.Entry.e =
-     grammar_entry_create "tildeident"
-   and tildeidentcolon : 'tildeidentcolon Grammar.Entry.e =
-     grammar_entry_create "tildeidentcolon"
-   and questionident : 'questionident Grammar.Entry.e =
-     grammar_entry_create "questionident"
-   and questionidentcolon : 'questionidentcolon Grammar.Entry.e =
-     grammar_entry_create "questionidentcolon"
    and poly_variant_list : 'poly_variant_list Grammar.Entry.e =
      grammar_entry_create "poly_variant_list"
    and name_tag : 'name_tag Grammar.Entry.e = grammar_entry_create "name_tag"
@@ -3915,53 +3907,18 @@ Grammar.extend
     [None, Some Gramext.NonA,
      [[Gramext.Snterm
          (Grammar.Entry.obj
-            (questionidentcolon : 'questionidentcolon Grammar.Entry.e));
+            (a_QUESTIONIDENTCOLON2 : 'a_QUESTIONIDENTCOLON2 Grammar.Entry.e));
        Gramext.Sself],
       Gramext.action
-        (fun (t : 'ctyp) (i : 'questionidentcolon) (loc : Ploc.t) ->
+        (fun (t : 'ctyp) (i : 'a_QUESTIONIDENTCOLON2) (loc : Ploc.t) ->
            (Qast.Node ("TyOlb", [Qast.Loc; i; t]) : 'ctyp));
       [Gramext.Snterm
          (Grammar.Entry.obj
-            (tildeidentcolon : 'tildeidentcolon Grammar.Entry.e));
+            (a_TILDEIDENTCOLON2 : 'a_TILDEIDENTCOLON2 Grammar.Entry.e));
        Gramext.Sself],
       Gramext.action
-        (fun (t : 'ctyp) (i : 'tildeidentcolon) (loc : Ploc.t) ->
+        (fun (t : 'ctyp) (i : 'a_TILDEIDENTCOLON2) (loc : Ploc.t) ->
            (Qast.Node ("TyLab", [Qast.Loc; i; t]) : 'ctyp))]];
-    Grammar.Entry.obj (tildeident : 'tildeident Grammar.Entry.e), None,
-    [None, None,
-     [[Gramext.Snterm
-         (Grammar.Entry.obj
-            (a_TILDEIDENT2 : 'a_TILDEIDENT2 Grammar.Entry.e))],
-      Gramext.action
-        (fun (i : 'a_TILDEIDENT2) (loc : Ploc.t) -> (i : 'tildeident))]];
-    Grammar.Entry.obj (tildeidentcolon : 'tildeidentcolon Grammar.Entry.e),
-    None,
-    [None, None,
-     [[Gramext.Snterm
-         (Grammar.Entry.obj
-            (a_TILDEIDENTCOLON2 : 'a_TILDEIDENTCOLON2 Grammar.Entry.e))],
-      Gramext.action
-        (fun (i : 'a_TILDEIDENTCOLON2) (loc : Ploc.t) ->
-           (i : 'tildeidentcolon))]];
-    Grammar.Entry.obj (questionident : 'questionident Grammar.Entry.e), None,
-    [None, None,
-     [[Gramext.Snterm
-         (Grammar.Entry.obj
-            (a_QUESTIONIDENT2 : 'a_QUESTIONIDENT2 Grammar.Entry.e))],
-      Gramext.action
-        (fun (i : 'a_QUESTIONIDENT2) (loc : Ploc.t) ->
-           (i : 'questionident))]];
-    Grammar.Entry.obj
-      (questionidentcolon : 'questionidentcolon Grammar.Entry.e),
-    None,
-    [None, None,
-     [[Gramext.Snterm
-         (Grammar.Entry.obj
-            (a_QUESTIONIDENTCOLON2 :
-             'a_QUESTIONIDENTCOLON2 Grammar.Entry.e))],
-      Gramext.action
-        (fun (i : 'a_QUESTIONIDENTCOLON2) (loc : Ploc.t) ->
-           (i : 'questionidentcolon))]];
     Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e),
     Some (Gramext.Level "simple"),
     [None, None,
@@ -4139,13 +4096,13 @@ Grammar.extend
             'patt));
       [Gramext.Snterm
          (Grammar.Entry.obj
-            (questionident : 'questionident Grammar.Entry.e))],
+            (a_QUESTIONIDENT2 : 'a_QUESTIONIDENT2 Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'questionident) (loc : Ploc.t) ->
+        (fun (i : 'a_QUESTIONIDENT2) (loc : Ploc.t) ->
            (Qast.Node ("PaOlb", [Qast.Loc; i; Qast.Option None]) : 'patt));
       [Gramext.Snterm
          (Grammar.Entry.obj
-            (questionidentcolon : 'questionidentcolon Grammar.Entry.e));
+            (a_QUESTIONIDENTCOLON2 : 'a_QUESTIONIDENTCOLON2 Grammar.Entry.e));
        Gramext.Stoken ("", "(");
        Gramext.Snterm
          (Grammar.Entry.obj (patt_tcon : 'patt_tcon Grammar.Entry.e));
@@ -4161,23 +4118,24 @@ Grammar.extend
           Gramext.action (fun (a : 'a_opt2) (loc : Ploc.t) -> (a : 'a_opt2))];
        Gramext.Stoken ("", ")")],
       Gramext.action
-        (fun _ (eo : Qast.t) (p : 'patt_tcon) _ (i : 'questionidentcolon)
+        (fun _ (eo : Qast.t) (p : 'patt_tcon) _ (i : 'a_QUESTIONIDENTCOLON2)
              (loc : Ploc.t) ->
            (Qast.Node
               ("PaOlb",
                [Qast.Loc; i; Qast.Option (Some (Qast.Tuple [p; eo]))]) :
             'patt));
       [Gramext.Snterm
-         (Grammar.Entry.obj (tildeident : 'tildeident Grammar.Entry.e))],
+         (Grammar.Entry.obj
+            (a_TILDEIDENT2 : 'a_TILDEIDENT2 Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'tildeident) (loc : Ploc.t) ->
+        (fun (i : 'a_TILDEIDENT2) (loc : Ploc.t) ->
            (Qast.Node ("PaLab", [Qast.Loc; i; Qast.Option None]) : 'patt));
       [Gramext.Snterm
          (Grammar.Entry.obj
-            (tildeidentcolon : 'tildeidentcolon Grammar.Entry.e));
+            (a_TILDEIDENTCOLON2 : 'a_TILDEIDENTCOLON2 Grammar.Entry.e));
        Gramext.Sself],
       Gramext.action
-        (fun (p : 'patt) (i : 'tildeidentcolon) (loc : Ploc.t) ->
+        (fun (p : 'patt) (i : 'a_TILDEIDENTCOLON2) (loc : Ploc.t) ->
            (Qast.Node ("PaLab", [Qast.Loc; i; Qast.Option (Some p)]) :
             'patt));
       [Gramext.Stoken ("", "#");
@@ -4260,13 +4218,13 @@ Grammar.extend
             'ipatt));
       [Gramext.Snterm
          (Grammar.Entry.obj
-            (questionident : 'questionident Grammar.Entry.e))],
+            (a_QUESTIONIDENT2 : 'a_QUESTIONIDENT2 Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'questionident) (loc : Ploc.t) ->
+        (fun (i : 'a_QUESTIONIDENT2) (loc : Ploc.t) ->
            (Qast.Node ("PaOlb", [Qast.Loc; i; Qast.Option None]) : 'ipatt));
       [Gramext.Snterm
          (Grammar.Entry.obj
-            (questionidentcolon : 'questionidentcolon Grammar.Entry.e));
+            (a_QUESTIONIDENTCOLON2 : 'a_QUESTIONIDENTCOLON2 Grammar.Entry.e));
        Gramext.Stoken ("", "(");
        Gramext.Snterm
          (Grammar.Entry.obj (ipatt_tcon : 'ipatt_tcon Grammar.Entry.e));
@@ -4282,23 +4240,24 @@ Grammar.extend
           Gramext.action (fun (a : 'a_opt2) (loc : Ploc.t) -> (a : 'a_opt2))];
        Gramext.Stoken ("", ")")],
       Gramext.action
-        (fun _ (eo : Qast.t) (p : 'ipatt_tcon) _ (i : 'questionidentcolon)
+        (fun _ (eo : Qast.t) (p : 'ipatt_tcon) _ (i : 'a_QUESTIONIDENTCOLON2)
              (loc : Ploc.t) ->
            (Qast.Node
               ("PaOlb",
                [Qast.Loc; i; Qast.Option (Some (Qast.Tuple [p; eo]))]) :
             'ipatt));
       [Gramext.Snterm
-         (Grammar.Entry.obj (tildeident : 'tildeident Grammar.Entry.e))],
+         (Grammar.Entry.obj
+            (a_TILDEIDENT2 : 'a_TILDEIDENT2 Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'tildeident) (loc : Ploc.t) ->
+        (fun (i : 'a_TILDEIDENT2) (loc : Ploc.t) ->
            (Qast.Node ("PaLab", [Qast.Loc; i; Qast.Option None]) : 'ipatt));
       [Gramext.Snterm
          (Grammar.Entry.obj
-            (tildeidentcolon : 'tildeidentcolon Grammar.Entry.e));
+            (a_TILDEIDENTCOLON2 : 'a_TILDEIDENTCOLON2 Grammar.Entry.e));
        Gramext.Sself],
       Gramext.action
-        (fun (p : 'ipatt) (i : 'tildeidentcolon) (loc : Ploc.t) ->
+        (fun (p : 'ipatt) (i : 'a_TILDEIDENTCOLON2) (loc : Ploc.t) ->
            (Qast.Node ("PaLab", [Qast.Loc; i; Qast.Option (Some p)]) :
             'ipatt))]];
     Grammar.Entry.obj (ipatt_tcon : 'ipatt_tcon Grammar.Entry.e), None,
@@ -4321,29 +4280,30 @@ Grammar.extend
     [Some "label", Some Gramext.NonA,
      [[Gramext.Snterm
          (Grammar.Entry.obj
-            (questionident : 'questionident Grammar.Entry.e))],
+            (a_QUESTIONIDENT2 : 'a_QUESTIONIDENT2 Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'questionident) (loc : Ploc.t) ->
+        (fun (i : 'a_QUESTIONIDENT2) (loc : Ploc.t) ->
            (Qast.Node ("ExOlb", [Qast.Loc; i; Qast.Option None]) : 'expr));
       [Gramext.Snterm
          (Grammar.Entry.obj
-            (questionidentcolon : 'questionidentcolon Grammar.Entry.e));
+            (a_QUESTIONIDENTCOLON2 : 'a_QUESTIONIDENTCOLON2 Grammar.Entry.e));
        Gramext.Sself],
       Gramext.action
-        (fun (e : 'expr) (i : 'questionidentcolon) (loc : Ploc.t) ->
+        (fun (e : 'expr) (i : 'a_QUESTIONIDENTCOLON2) (loc : Ploc.t) ->
            (Qast.Node ("ExOlb", [Qast.Loc; i; Qast.Option (Some e)]) :
             'expr));
       [Gramext.Snterm
-         (Grammar.Entry.obj (tildeident : 'tildeident Grammar.Entry.e))],
+         (Grammar.Entry.obj
+            (a_TILDEIDENT2 : 'a_TILDEIDENT2 Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'tildeident) (loc : Ploc.t) ->
+        (fun (i : 'a_TILDEIDENT2) (loc : Ploc.t) ->
            (Qast.Node ("ExLab", [Qast.Loc; i; Qast.Option None]) : 'expr));
       [Gramext.Snterm
          (Grammar.Entry.obj
-            (tildeidentcolon : 'tildeidentcolon Grammar.Entry.e));
+            (a_TILDEIDENTCOLON2 : 'a_TILDEIDENTCOLON2 Grammar.Entry.e));
        Gramext.Sself],
       Gramext.action
-        (fun (e : 'expr) (i : 'tildeidentcolon) (loc : Ploc.t) ->
+        (fun (e : 'expr) (i : 'a_TILDEIDENTCOLON2) (loc : Ploc.t) ->
            (Qast.Node ("ExLab", [Qast.Loc; i; Qast.Option (Some e)]) :
             'expr))]];
     Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),

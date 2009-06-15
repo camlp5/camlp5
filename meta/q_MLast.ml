@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.104 2007/09/23 00:10:13 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.105 2007/09/23 07:27:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -1099,21 +1099,9 @@ EXTEND
   (* Labels *)
   ctyp: AFTER "arrow"
     [ NONA
-      [ i = tildeidentcolon; t = SELF -> Qast.Node "TyLab" [Qast.Loc; i; t]
-      | i = questionidentcolon; t = SELF ->
+      [ i = a_TILDEIDENTCOLON2; t = SELF -> Qast.Node "TyLab" [Qast.Loc; i; t]
+      | i = a_QUESTIONIDENTCOLON2; t = SELF ->
           Qast.Node "TyOlb" [Qast.Loc; i; t] ] ]
-  ;
-  tildeident:
-    [ [ i = a_TILDEIDENT2 -> i ] ]
-  ;
-  tildeidentcolon:
-    [ [ i = a_TILDEIDENTCOLON2 -> i ] ]
-  ;
-  questionident:
-    [ [ i = a_QUESTIONIDENT2 -> i ] ]
-  ;
-  questionidentcolon:
-    [ [ i = a_QUESTIONIDENTCOLON2 -> i ] ]
   ;
   ctyp: LEVEL "simple"
     [ [ "["; "="; rfl = poly_variant_list; "]" ->
@@ -1149,14 +1137,15 @@ EXTEND
   patt: LEVEL "simple"
     [ [ "`"; s = SV ident "" -> Qast.Node "PaVrn" [Qast.Loc; s]
       | "#"; sl = SV mod_ident "list" "" -> Qast.Node "PaTyp" [Qast.Loc; sl]
-      | i = tildeidentcolon; p = SELF ->
+      | i = a_TILDEIDENTCOLON2; p = SELF ->
           Qast.Node "PaLab" [Qast.Loc; i; Qast.Option (Some p)]
-      | i = tildeident -> Qast.Node "PaLab" [Qast.Loc; i; Qast.Option None]
-      | i = questionidentcolon; "("; p = patt_tcon; eo = SV (OPT eq_expr);
+      | i = a_TILDEIDENT2 -> Qast.Node "PaLab" [Qast.Loc; i; Qast.Option None]
+      | i = a_QUESTIONIDENTCOLON2; "("; p = patt_tcon; eo = SV (OPT eq_expr);
         ")" ->
           Qast.Node "PaOlb"
             [Qast.Loc; i; Qast.Option (Some (Qast.Tuple [p; eo]))]
-      | i = questionident -> Qast.Node "PaOlb" [Qast.Loc; i; Qast.Option None]
+      | i = a_QUESTIONIDENT2 ->
+          Qast.Node "PaOlb" [Qast.Loc; i; Qast.Option None]
       | "?"; "("; p = patt_tcon; eo = SV (OPT eq_expr); ")" ->
           Qast.Node "PaOlb"
             [Qast.Loc; Qast.VaVal (Qast.Str "");
@@ -1167,14 +1156,15 @@ EXTEND
       | p = patt -> p ] ]
   ;
   ipatt:
-    [ [ i = tildeidentcolon; p = SELF ->
+    [ [ i = a_TILDEIDENTCOLON2; p = SELF ->
           Qast.Node "PaLab" [Qast.Loc; i; Qast.Option (Some p)]
-      | i = tildeident -> Qast.Node "PaLab" [Qast.Loc; i; Qast.Option None]
-      | i = questionidentcolon; "("; p = ipatt_tcon; eo = SV (OPT eq_expr);
+      | i = a_TILDEIDENT2 -> Qast.Node "PaLab" [Qast.Loc; i; Qast.Option None]
+      | i = a_QUESTIONIDENTCOLON2; "("; p = ipatt_tcon; eo = SV (OPT eq_expr);
         ")" ->
           Qast.Node "PaOlb"
             [Qast.Loc; i; Qast.Option (Some (Qast.Tuple [p; eo]))]
-      | i = questionident -> Qast.Node "PaOlb" [Qast.Loc; i; Qast.Option None]
+      | i = a_QUESTIONIDENT2 ->
+          Qast.Node "PaOlb" [Qast.Loc; i; Qast.Option None]
       | "?"; "("; p = ipatt_tcon; eo = SV (OPT eq_expr); ")" ->
           Qast.Node "PaOlb"
             [Qast.Loc; Qast.VaVal (Qast.Str "");
@@ -1189,12 +1179,12 @@ EXTEND
   ;
   expr: AFTER "apply"
     [ "label" NONA
-      [ i = tildeidentcolon; e = SELF ->
+      [ i = a_TILDEIDENTCOLON2; e = SELF ->
           Qast.Node "ExLab" [Qast.Loc; i; Qast.Option (Some e)]
-      | i = tildeident -> Qast.Node "ExLab" [Qast.Loc; i; Qast.Option None]
-      | i = questionidentcolon; e = SELF ->
+      | i = a_TILDEIDENT2 -> Qast.Node "ExLab" [Qast.Loc; i; Qast.Option None]
+      | i = a_QUESTIONIDENTCOLON2; e = SELF ->
           Qast.Node "ExOlb" [Qast.Loc; i; Qast.Option (Some e)]
-      | i = questionident ->
+      | i = a_QUESTIONIDENT2 ->
           Qast.Node "ExOlb" [Qast.Loc; i; Qast.Option None] ] ]
   ;
   expr: LEVEL "simple"

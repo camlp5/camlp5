@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.105 2007/09/23 00:10:13 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.106 2007/09/23 07:27:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -681,20 +681,8 @@ EXTEND
   (* Labels *)
   ctyp: AFTER "arrow"
     [ NONA
-      [ i = tildeidentcolon; t = SELF -> <:ctyp< ~$_:i$: $t$ >>
-      | i = questionidentcolon; t = SELF -> <:ctyp< ?$_:i$: $t$ >> ] ]
-  ;
-  tildeident:
-    [ [ i = V TILDEIDENT -> i ] ]
-  ;
-  tildeidentcolon:
-    [ [ i = V TILDEIDENTCOLON -> i ] ]
-  ;
-  questionident:
-    [ [ i = V QUESTIONIDENT -> i ] ]
-  ;
-  questionidentcolon:
-    [ [ i = V QUESTIONIDENTCOLON -> i ] ]
+      [ i = V TILDEIDENTCOLON; t = SELF -> <:ctyp< ~$_:i$: $t$ >>
+      | i = V QUESTIONIDENTCOLON; t = SELF -> <:ctyp< ?$_:i$: $t$ >> ] ]
   ;
   ctyp: LEVEL "simple"
     [ [ "["; "="; rfl = poly_variant_list; "]" ->
@@ -723,12 +711,12 @@ EXTEND
   patt: LEVEL "simple"
     [ [ "`"; s = V ident "" -> <:patt< ` $_:s$ >>
       | "#"; sl = V mod_ident "list" "" -> <:patt< # $_:sl$ >>
-      | i = tildeidentcolon; p = SELF -> <:patt< ~$_:i$: $p$ >>
-      | i = tildeident -> <:patt< ~$_:i$ >>
-      | i = questionidentcolon; "("; p = patt_tcon; eo = V (OPT eq_expr);
+      | i = V TILDEIDENTCOLON; p = SELF -> <:patt< ~$_:i$: $p$ >>
+      | i = V TILDEIDENT -> <:patt< ~$_:i$ >>
+      | i = V QUESTIONIDENTCOLON; "("; p = patt_tcon; eo = V (OPT eq_expr);
         ")" ->
           <:patt< ?$_:i$: ($p$ $_opt:eo$) >>
-      | i = questionident ->
+      | i = V QUESTIONIDENT ->
           <:patt< ?$_:i$ >>
       | "?"; "("; p = patt_tcon; eo = V (OPT eq_expr); ")" ->
           <:patt< ? ($p$ $_opt:eo$) >> ] ]
@@ -738,12 +726,12 @@ EXTEND
       | p = patt -> p ] ]
   ;
   ipatt:
-    [ [ i = tildeidentcolon; p = SELF -> <:patt< ~$_:i$: $p$ >>
-      | i = tildeident -> <:patt< ~$_:i$ >>
-      | i = questionidentcolon; "("; p = ipatt_tcon;
+    [ [ i = V TILDEIDENTCOLON; p = SELF -> <:patt< ~$_:i$: $p$ >>
+      | i = V TILDEIDENT -> <:patt< ~$_:i$ >>
+      | i = V QUESTIONIDENTCOLON; "("; p = ipatt_tcon;
         eo = V (OPT eq_expr); ")" ->
           <:patt< ?$_:i$: ($p$ $_opt:eo$) >>
-      | i = questionident ->
+      | i = V QUESTIONIDENT ->
           <:patt< ?$_:i$ >>
       | "?"; "("; p = ipatt_tcon; eo = V (OPT eq_expr); ")" ->
           <:patt< ? ($p$ $_opt:eo$) >> ] ]
@@ -757,10 +745,10 @@ EXTEND
   ;
   expr: AFTER "apply"
     [ "label" NONA
-      [ i = tildeidentcolon; e = SELF -> <:expr< ~$_:i$: $e$ >>
-      | i = tildeident -> <:expr< ~$_:i$ >>
-      | i = questionidentcolon; e = SELF -> <:expr< ?$_:i$: $e$ >>
-      | i = questionident -> <:expr< ?$_:i$ >> ] ]
+      [ i = V TILDEIDENTCOLON; e = SELF -> <:expr< ~$_:i$: $e$ >>
+      | i = V TILDEIDENT -> <:expr< ~$_:i$ >>
+      | i = V QUESTIONIDENTCOLON; e = SELF -> <:expr< ?$_:i$: $e$ >>
+      | i = V QUESTIONIDENT -> <:expr< ?$_:i$ >> ] ]
   ;
   expr: LEVEL "simple"
     [ [ "`"; s = V ident "" -> <:expr< ` $_:s$ >> ] ]
