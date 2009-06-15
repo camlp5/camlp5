@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.31 2007/10/12 15:31:11 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.32 2007/10/12 15:42:15 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1179,12 +1179,19 @@ EXTEND_PRINTER
   ;
   pr_class_sig_item:
     [ [ <:class_sig_item< method $flag:pf$ $s$ : $t$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s(method%s %s %s)%s" pc.bef
-                 (if pf then " private" else "") s
-                 (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-            (fun () -> not_impl "class_sig_item method vertic" pc 0)
+          let list =
+            let list =
+              [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
+               (fun pc -> ctyp pc t, "")]
+            in
+            if pf then
+              [(fun pc -> sprintf "%sprivate%s" pc.bef pc.aft, "") :: list]
+            else list
+          in
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(method" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            list
       | <:class_sig_item< value $flag:mf$ $s$ : $t$ >> ->
           horiz_vertic
             (fun () ->
