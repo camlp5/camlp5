@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: grammar.ml,v 1.53 2007/09/27 16:49:17 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.54 2007/10/01 10:24:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Gramext;
@@ -641,7 +641,7 @@ and parser_of_symbol entry nlevn =
                [ [: a = ps al :] -> a
                | [: a = parse_top_symb entry symb :] -> [a :: al]
                | [: :] ->
-                   raise (Stream.Error (symb_failed entry v sep symb)) ];
+                   raise (Stream.Error (symb_failed entry v sep symb)) ] !;
              a = kont al ! :] ->
             a
         | [: :] -> al ]
@@ -820,7 +820,7 @@ value extend_entry entry position rules =
   try do {
     let elev = Gramext.levels_of_rules entry position rules in
     entry.edesc := Dlevels elev;
-    init_entry_functions entry;
+    init_entry_functions entry
   }
   with
   [ Plexing.Error s -> do {

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.76 2007/09/27 16:49:17 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.77 2007/10/01 10:24:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -9,6 +9,7 @@ open Prtools;
 value flag_expand_declare = ref False;
 value flag_horiz_let_in = ref False;
 value flag_sequ_begin_at_eol = ref True;
+value flag_equilibrate_cases = ref False;
 
 value flag_where_after_in = ref True;
 value flag_where_after_let_eq = ref True;
@@ -508,17 +509,19 @@ value let_binding pc pe =
   value_or_let_binding flag_where_after_let_eq sequ pc pe
 ;
 
-value match_assoc pc (p, w, e) =
+value match_assoc force_vertic pc (p, w, e) =
   let expr_wh = if flag_where_after_arrow.val then expr_wh else expr in
   horiz_vertic
     (fun () ->
-       sprintf "%s%s%s -> %s%s" pc.bef
-         (patt_as {(pc) with bef = ""; aft = ""} p)
-         (match w with
-          [ <:vala< Some e >> ->
-              sprintf " when %s" (expr {(pc) with bef = ""; aft = ""} e)
-          | _ -> "" ])
-         (comm_expr expr {(pc) with bef = ""; aft = ""} e) pc.aft)
+       if force_vertic then sprintf "\n"
+       else
+         sprintf "%s%s%s -> %s%s" pc.bef
+           (patt_as {(pc) with bef = ""; aft = ""} p)
+           (match w with
+            [ <:vala< Some e >> ->
+                sprintf " when %s" (expr {(pc) with bef = ""; aft = ""} e)
+            | _ -> "" ])
+           (comm_expr expr {(pc) with bef = ""; aft = ""} e) pc.aft)
     (fun () ->
        let patt_arrow k =
          match w with
@@ -563,13 +566,32 @@ value match_assoc pc (p, w, e) =
            sprintf "%s\n%s" s1 s2 ])
 ;
 
-value match_assoc_sh pc pwe = match_assoc {(pc) with ind = pc.ind + 2} pwe
+value match_assoc_sh force_vertic pc pwe =
+  match_assoc force_vertic {(pc) with ind = pc.ind + 2} pwe
 ;
 
 value match_assoc_list pc pwel =
   if pwel = [] then sprintf "%s[]%s" pc.bef pc.aft
   else
-    vlist2 match_assoc_sh (bar_before match_assoc_sh)
+    let force_vertic =
+      if flag_equilibrate_cases.val then
+        let has_vertic =
+          List.exists
+            (fun pwe ->
+               horiz_vertic
+                 (fun () ->
+                    let _ : string =
+                      bar_before (match_assoc_sh False) pc pwe
+                    in
+                    False)
+                 (fun () -> True))
+            pwel
+        in
+        has_vertic
+      else False
+    in
+    vlist2 (match_assoc_sh force_vertic)
+      (bar_before (match_assoc_sh force_vertic))
       {(pc) with bef = sprintf "%s[ " pc.bef; aft = sprintf " ]%s" pc.aft}
       pwel
 ;
@@ -1175,7 +1197,8 @@ EXTEND_PRINTER
                 (fun () ->
                    sprintf "%s%s %s with %s%s" pc.bef op
                      (expr_wh {(pc) with bef = ""; aft = ""} e1)
-                     (match_assoc {(pc) with bef = ""; aft = ""} (p, wo, e))
+                     (match_assoc False {(pc) with bef = ""; aft = ""}
+                        (p, wo, e))
                      pc.aft)
                 (fun () ->
                    match
@@ -1215,7 +1238,7 @@ EXTEND_PRINTER
                              sprintf "%s%s\n%s" pc.bef op s ]
                        in
                        let s2 =
-                         match_assoc
+                         match_assoc False
                            {(pc) with bef = sprintf "%swith " (tab pc.ind)}
                            (p, wo, e)
                        in
@@ -2293,6 +2316,7 @@ value set_flags s =
           flag_sequ_begin_at_eol.val := v;
         }
       | 'D' | 'd' -> flag_expand_declare.val := is_uppercase s.[i]
+      | 'E' | 'e' -> flag_equilibrate_cases.val := is_uppercase s.[i]
       | 'L' | 'l' -> flag_horiz_let_in.val := is_uppercase s.[i]
       | 'S' | 's' -> flag_sequ_begin_at_eol.val := is_uppercase s.[i]
       | c -> failwith ("bad flag " ^ String.make 1 c) ];
@@ -2304,8 +2328,9 @@ value default_flag () =
   let flag_on b t f = if b then t else "" in
   let flag_off b t f = if b then "" else f in
   let on_off flag =
-    sprintf "%s%s%s"
+    sprintf "%s%s%s%s"
       (flag flag_expand_declare.val "D" "d")
+      (flag flag_equilibrate_cases.val "E" "e")
       (flag flag_horiz_let_in.val "L" "l")
       (flag flag_sequ_begin_at_eol.val "S" "s")
   in
@@ -2370,6 +2395,7 @@ Pcaml.add_option "-flag" (Arg.String set_flags)
   ("<str> Change pretty printing behaviour according to <str>:
        A/a enable/disable all flags
        D/d enable/disable allowing expanding 'declare'
+       E/e enable/disable equilibrate match cases
        L/l enable/disable allowing printing 'let..in' horizontally
        S/s enable/disable printing sequences beginners at end of lines
        default setting is \"" ^ default_flag () ^ "\".");
