@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: opretty.html,v 1.15 2007/08/17 16:43:42 deraugla Exp $ -->
+  <!-- $Id: opretty.html,v 1.16 2007/08/18 00:51:54 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Pretty Printing ocaml programs</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -20,20 +20,20 @@
 <h1 class="top">Printing programs</h1>
 
 <p>Camlp5 provides extensions kits to pretty print programs in revised
-syntax and normal syntax. Some other extensions kits also allow to
-rebuild the parsers, or the EXTEND statements in their initial
-syntax. The pretty print system is itself extensible, by adding new
-rules. We present here how it works in the Camlp5 sources.</p>
+  syntax and normal syntax. Some other extensions kits also allow to
+  rebuild the parsers, or the EXTEND statements in their initial
+  syntax. The pretty print system is itself extensible, by adding new
+  rules. We present here how it works in the Camlp5 sources.</p>
 
 <p>The pretty print system of Camlp5 uses the library modules
-<a href="pretty.html">Pretty</a>, an original system to format
-output) and <a href="extfun.html">Extfun</a>, another original
-system of extensible functions.</p>
+  <a href="pretty.html">Pretty</a>, an original system to format
+  output) and <a href="extfun.html">Extfun</a>, another original
+  system of extensible functions.</p>
 
-<p>This documentation is destinated to programmers who want to
-understand how the pretty printing of ocaml programs work in camlp5,
-want to adapt, modify or debug it, or want to add their own pretty
-printing extensions.</p>
+<p>This chapter is destinated to programmers who want to understand
+  how the pretty printing of ocaml programs work in camlp5, want to
+  adapt, modify or debug it, or want to add their own pretty printing
+  extensions.</p>
 
 <div id="tableofcontents">
 </div>
