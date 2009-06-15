@@ -1,5 +1,5 @@
 (* camlp5r pa_lexer.cmo *)
-(* $Id: plexer.ml,v 1.102 2007/11/26 09:20:52 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.103 2007/11/26 18:23:11 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value no_quotations = ref False;
@@ -455,7 +455,7 @@ value func kwd_table glexr =
      line_cnt bp1 c =
        match c with
        [ '\n' | '\r' -> do {
-           incr Plexing.line_nb.val;
+           if c = '\n' then incr Plexing.line_nb.val else ();
            Plexing.bol_pos.val.val := bp1 + 1;
          }
        | c -> () ];

@@ -891,7 +891,8 @@ let func kwd_table glexr =
        (fun bp1 c ->
           match c with
             '\n' | '\r' ->
-              incr !(Plexing.line_nb); !(Plexing.bol_pos) := bp1 + 1
+              if c = '\n' then incr !(Plexing.line_nb);
+              !(Plexing.bol_pos) := bp1 + 1
           | c -> ());
      set_line_nb =
        (fun () ->
