@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2latex,v 1.35 2007/07/23 13:52:34 deraugla Exp $
+# $Id: html2latex,v 1.36 2007/07/23 14:52:55 deraugla Exp $
 
 FILES="index.html ptools.html syntext.html revsynt.html quot.html parsers.html fparsers.html lexers.html grammars.html pretty.html opretty.html ml_ast.html pragma.html extfun.html"
 
@@ -54,15 +54,15 @@ for i in $FILES; do
     -e 's/^ *<h4>/\\subsubsection{/' -e 's|</h4>|}|' \
     -e 's| *<table width[^>]*>\(.*\)</table>|\\begin{center}\n\\begin{tabular}\1\\hline\n\\end{tabular}\n\\end{center}|' \
     -e 's| *<table[^>]*>\(.*\)</table>|\\begin{center}\n\\begin{longtable}\1\\hline\n\\end{longtable}\n\\end{center}|' \
-    -e 's/<tr>\(<th[^>]*>.*<th[^>]*>.*<th[^>]*>\)/{|l|l|l|}\ntr\1/' \
+    -e 's/<tr>\(<th[^>]*>.*<th[^>]*>.*<th[^>]*>\)/{|l|c|l|}\ntr\1/' \
     -e 's/<tr>\(<th[^>]*>.*<th[^>]*>\)/{|l|l|}\ntr\1/' \
     -e 's/tr<th/\\hline\n<th/' \
     -e 's|</th><th|} \& <th|g' \
     -e 's/<th[^>]*class="half"[^>]*>/\\makebox[5.5cm][l]{/g' \
     -e 's/<th[^>]*>/\\makebox[3cm][l]{/g' \
     -e 's|</th></tr>|} \\\\\n\\hline\n|g' \
-    -e 's|<tr><td>|{|g' \
-    -e 's|</td><td>|} \& {|g' \
+    -e 's|<tr><td[^>]*>|{|g' \
+    -e 's|</td><td[^>]*>|} \& {|g' \
     -e 's|</td></tr>|} \\\\\n|g' \
     -e 's|<br/>||g' \
     -e 's/^ *<ul>/\\begin{itemize}/' -e 's|^ *</ul>|\\end{itemize}|' \

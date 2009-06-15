@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: ml_ast.html,v 1.12 2007/07/23 13:52:34 deraugla Exp $ -->
+  <!-- $Id: ml_ast.html,v 1.13 2007/07/23 14:52:55 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Abstract tree in concrete syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -134,217 +134,217 @@
   </tr>
   <tr>
     <td><tt>ExAcc loc e1 e2</tt></td>
-    <td><tt>$e1$ . $e2$</tt></td>
+    <td align="center"><tt>$e1$ . $e2$</tt></td>
     <td>dot</td>
   </tr>
   <tr>
     <td><tt>ExAnt loc e</tt></td>
-    <td>...internal use...</td>
+    <td align="center">...internal use...</td>
     <td></td>
   </tr>
   <tr>
     <td><tt>ExApp loc e1 e2</tt></td>
-    <td><tt>$e1$ $e2$</tt></td>
+    <td align="center"><tt>$e1$ $e2$</tt></td>
     <td>application</td>
   </tr>
   <tr>
     <td><tt>ExAre loc e1 e2</tt></td>
-    <td><tt>$e1$ .( $e2$ )</tt></td>
+    <td align="center"><tt>$e1$ .( $e2$ )</tt></td>
     <td>array access</td>
   </tr>
   <tr>
     <td><tt>ExArr loc le</tt></td>
-    <td><tt>[| $list:le$ |]</tt></td>
+    <td align="center"><tt>[| $list:le$ |]</tt></td>
     <td>array</td>
   </tr>
   <tr>
     <td><tt>ExAsr loc e</tt></td>
-    <td><tt>assert $e$</tt></td>
+    <td align="center"><tt>assert $e$</tt></td>
     <td>assert</td>
   </tr>
   <tr>
     <td><tt>ExAss loc e1 e2</tt></td>
-    <td><tt>$e1$ := $e2$</tt></td>
+    <td align="center"><tt>$e1$ := $e2$</tt></td>
     <td>assignment</td>
   </tr>
   <tr>
     <td><tt>ExBae loc e le</tt></td>
-    <td><tt>$e$ .{ $le$ }</tt></td>
+    <td align="center"><tt>$e$ .{ $le$ }</tt></td>
     <td>big array access</td>
   </tr>
   <tr>
     <td><tt>ExChr loc s</tt></td>
-    <td><tt>$chr:s$</tt></td>
+    <td align="center"><tt>$chr:s$</tt></td>
     <td>character constant</td>
   </tr>
   <tr>
     <td><tt>ExCoe loc e (Some t1) t2</tt></td>
-    <td><tt>($e1$ : $t1$ :> $t2$)</tt></td>
+    <td align="center"><tt>($e1$ : $t1$ :> $t2$)</tt></td>
     <td>coercion</td>
   </tr>
   <tr>
     <td><tt>ExCoe loc e None t2</tt></td>
-    <td><tt>($e1$ :> $t2$)</tt></td>
+    <td align="center"><tt>($e1$ :> $t2$)</tt></td>
     <td>coercion</td>
   </tr>
   <tr>
     <td><tt>ExFlo loc s</tt></td>
-    <td><tt>$flo:s$</tt></td>
+    <td align="center"><tt>$flo:s$</tt></td>
     <td>float constant</td>
   </tr>
   <tr>
     <td><tt>ExFor loc s e1 e2 b le</tt></td>
-    <td><tt>for $s$ = $e1$ $to:b$ $e2$ do { $list:le$ }</tt></td>
+    <td align="center"><tt>for $s$ = $e1$ $to:b$ $e2$ do { $list:le$ }</tt></td>
     <td>for</td>
   </tr>
   <tr>
     <td><tt>ExFun loc lopee</tt></td>
-    <td><tt>fun [ $list:lpoee$ ]</tt></td>
+    <td align="center"><tt>fun [ $list:lpoee$ ]</tt></td>
     <td>function</td>
   </tr>
   <tr>
     <td><tt>ExIfe loc e1 e2 e3</tt></td>
-    <td><tt>if $e1$ then $e2$ else $e3$</tt></td>
+    <td align="center"><tt>if $e1$ then $e2$ else $e3$</tt></td>
     <td>if</td>
   </tr>
   <tr>
     <td><tt>ExInt loc s ""</tt></td>
-    <td><tt>$int:s$</tt></td>
+    <td align="center"><tt>$int:s$</tt></td>
     <td>integer constant</td>
   </tr>
   <tr>
     <td><tt>ExInt loc s "l"</tt></td>
-    <td><tt>$int32:s$</tt></td>
+    <td align="center"><tt>$int32:s$</tt></td>
     <td>integer 32 bits</td>
   </tr>
   <tr>
     <td><tt>ExInt loc s "L"</tt></td>
-    <td><tt>$int64:s$</tt></td>
+    <td align="center"><tt>$int64:s$</tt></td>
     <td>integer 64 bits</td>
   </tr>
   <tr>
     <td><tt>ExInt loc s "n"</tt></td>
-    <td><tt>$nativeint:s$</tt></td>
+    <td align="center"><tt>$nativeint:s$</tt></td>
     <td>native integer</td>
   </tr>
   <tr>
     <td><tt>ExLab loc s None</tt></td>
-    <td><tt>~ $s$</tt></td>
+    <td align="center"><tt>~ $s$</tt></td>
     <td>label</td>
   </tr>
   <tr>
     <td><tt>ExLab loc s (Some e)</tt></td>
-    <td><tt>~ $s$ : $e$</tt></td>
+    <td align="center"><tt>~ $s$ : $e$</tt></td>
     <td>label</td>
   </tr>
   <tr>
     <td><tt>ExLaz loc e</tt></td>
-    <td><tt>lazy $e$</tt></td>
+    <td align="center"><tt>lazy $e$</tt></td>
     <td>lazy</td>
   </tr>
   <tr>
     <td><tt>ExLet loc b lpe e</tt></td>
-    <td><tt>let $opt:b$ $list:lpe$ in $e$</tt></td>
+    <td align="center"><tt>let $opt:b$ $list:lpe$ in $e$</tt></td>
     <td>let binding</td>
   </tr>
   <tr>
     <td><tt>ExLid loc s</tt></td>
-    <td><tt>$lid:s$</tt></td>
+    <td align="center"><tt>$lid:s$</tt></td>
     <td>lowercase identifier</td>
   </tr>
   <tr>
     <td><tt>ExLmd loc s me e</tt></td>
-    <td><tt>let module $s$ = $me$ in $e$</tt></td>
+    <td align="center"><tt>let module $s$ = $me$ in $e$</tt></td>
     <td>let module</td>
   </tr>
   <tr>
     <td><tt>ExMat loc e lpoee</tt></td>
-    <td><tt>match $e$ with [ $list:lpoee$ ]</tt></td>
+    <td align="center"><tt>match $e$ with [ $list:lpoee$ ]</tt></td>
     <td>match</td>
   </tr>
   <tr>
     <td><tt>ExNew loc ls</tt></td>
-    <td><tt>new $list:ls$</tt></td>
+    <td align="center"><tt>new $list:ls$</tt></td>
     <td>new</td>
   </tr>
   <tr>
     <td><tt>ExObj loc op lcsi</tt></td>
-    <td><tt>object ($opt:op$) $list:lcsi$ end</tt></td>
+    <td align="center"><tt>object ($opt:op$) $list:lcsi$ end</tt></td>
     <td>object expression</td>
   </tr>
   <tr>
     <td><tt>ExOlb loc s None</tt></td>
-    <td><tt>? $s$</tt></td>
+    <td align="center"><tt>? $s$</tt></td>
     <td>option label</td>
   </tr>
   <tr>
     <td><tt>ExOlb loc s (Some e)</tt></td>
-    <td><tt>? $s$ : $e$</tt></td>
+    <td align="center"><tt>? $s$ : $e$</tt></td>
     <td>option label</td>
   </tr>
   <tr>
     <td><tt>ExOvr loc lse</tt></td>
-    <td><tt>{&lt; $lse$ >}</tt></td>
+    <td align="center"><tt>{&lt; $lse$ >}</tt></td>
     <td>override</td>
   </tr>
   <tr>
     <td><tt>ExRec loc lpe None</tt></td>
-    <td><tt>{ $list:lpe$ }</tt></td>
+    <td align="center"><tt>{ $list:lpe$ }</tt></td>
     <td>record</td>
   </tr>
   <tr>
     <td><tt>ExRec loc lpe (Some e)</tt></td>
-    <td><tt>{ ($e$) with { $list:lpe$ }</tt></td>
+    <td align="center"><tt>{ ($e$) with { $list:lpe$ }</tt></td>
     <td>record</td>
   </tr>
   <tr>
     <td><tt>ExSeq loc le</tt></td>
-    <td><tt>do { $list:le$ }</tt></td>
+    <td align="center"><tt>do { $list:le$ }</tt></td>
     <td>sequence</td>
   </tr>
   <tr>
     <td><tt>ExSnd loc e s</tt></td>
-    <td><tt>$e$ # $s$</tt></td>
+    <td align="center"><tt>$e$ # $s$</tt></td>
     <td>method call</td>
   </tr>
   <tr>
     <td><tt>ExSte loc e1 e2</tt></td>
-    <td><tt>$e1$ .[ $e2$ ]</tt></td>
+    <td align="center"><tt>$e1$ .[ $e2$ ]</tt></td>
     <td>string element</td>
   </tr>
   <tr>
     <td><tt>ExStr loc s</tt></td>
-    <td><tt>$str:s$</tt></td>
+    <td align="center"><tt>$str:s$</tt></td>
     <td>string</td>
   </tr>
   <tr>
     <td><tt>ExTry loc e lpoee</tt></td>
-    <td><tt>try $e$ with [ $list:lpoee$ ]</tt></td>
+    <td align="center"><tt>try $e$ with [ $list:lpoee$ ]</tt></td>
     <td>try</td>
   </tr>
   <tr>
     <td><tt>ExTup loc le</tt></td>
-    <td><tt>($list:le$)</tt></td>
+    <td align="center"><tt>($list:le$)</tt></td>
     <td>t-uple</td>
   </tr>
   <tr>
     <td><tt>ExTyc loc e t</tt></td>
-    <td><tt>($e$ : $t$)</tt></td>
+    <td align="center"><tt>($e$ : $t$)</tt></td>
     <td>type constraint</td>
   </tr>
   <tr>
     <td><tt>ExUid loc s</tt></td>
-    <td><tt>$uid:s$</tt></td>
+    <td align="center"><tt>$uid:s$</tt></td>
     <td>uppercase identifier</td>
   </tr>
   <tr>
     <td><tt>ExVrn loc s</tt></td>
-    <td><tt>` $s$</tt></td>
+    <td align="center"><tt>` $s$</tt></td>
     <td>variant</td>
   </tr>
   <tr>
     <td><tt>ExWhi loc e le</tt></td>
-    <td><tt>while $e$ do { $list:le$ }</tt></td>
+    <td align="center"><tt>while $e$ do { $list:le$ }</tt></td>
     <td>while</td>
   </tr>
 </table>
@@ -359,122 +359,122 @@
   </tr>
   <tr>
     <td><tt>PaAcc loc p1 p2</tt></td>
-    <td><tt>$p1$ . $p2$</tt></td>
+    <td align="center"><tt>$p1$ . $p2$</tt></td>
     <td>dot</td>
   </tr>
   <tr>
     <td><tt>PaAli loc p1 p2</tt></td>
-    <td><tt>($p1$ as $p2$)</tt></td>
+    <td align="center"><tt>($p1$ as $p2$)</tt></td>
     <td>alias</td>
   </tr>
   <tr>
     <td><tt>PaAnt loc p</tt></td>
-    <td>...internal use...</td>
+    <td align="center">...internal use...</td>
     <td></td>
   </tr>
   <tr>
     <td><tt>PaAny loc</tt></td>
-    <td><tt>_</tt></td>
+    <td align="center"><tt>_</tt></td>
     <td>wildcard</td>
   </tr>
   <tr>
     <td><tt>PaApp loc p1 p2</tt></td>
-    <td><tt>$p1$ $p2$</tt></td>
+    <td align="center"><tt>$p1$ $p2$</tt></td>
     <td>application</td>
   </tr>
   <tr>
     <td><tt>PaArr loc lp</tt></td>
-    <td><tt>[| $list:lp$ |]</tt></td>
+    <td align="center"><tt>[| $list:lp$ |]</tt></td>
     <td>array</td>
   </tr>
   <tr>
     <td><tt>PaChr loc s</tt></td>
-    <td><tt>$chr:s$</tt></td>
+    <td align="center"><tt>$chr:s$</tt></td>
     <td>character</td>
   </tr>
   <tr>
     <td><tt>PaInt loc s1 s2</tt></td>
-    <td><tt>$int:s$</tt></td>
+    <td align="center"><tt>$int:s$</tt></td>
     <td>integer</td>
   </tr>
   <tr>
     <td><tt>PaFlo loc s</tt></td>
-    <td><tt>$flo:s$</tt></td>
+    <td align="center"><tt>$flo:s$</tt></td>
     <td>float</td>
   </tr>
   <tr>
     <td><tt>PaLab loc s None</tt></td>
-    <td><tt>~ $s$</tt></td>
+    <td align="center"><tt>~ $s$</tt></td>
     <td>label</td>
   </tr>
   <tr>
     <td><tt>PaLab loc s (Some p)</tt></td>
-    <td><tt>~ $s$ : $p$</tt></td>
+    <td align="center"><tt>~ $s$ : $p$</tt></td>
     <td>label</td>
   </tr>
   <tr>
     <td><tt>PaLid loc s</tt></td>
-    <td><tt>$lid:s$</tt></td>
+    <td align="center"><tt>$lid:s$</tt></td>
     <td>lowercase identifier</td>
   </tr>
   <tr>
     <td><tt>PaOlb loc s None</tt></td>
-    <td><tt>? $s$</tt></td>
+    <td align="center"><tt>? $s$</tt></td>
     <td>option label</td>
   </tr>
   <tr>
     <td><tt>PaOlb loc s (Some (p, None))</tt></td>
-    <td><tt>? $s$ : ($p$)</tt></td>
+    <td align="center"><tt>? $s$ : ($p$)</tt></td>
     <td>option label</td>
   </tr>
   <tr>
     <td><tt>PaOlb loc s (Some (p, Some e))</tt></td>
-    <td><tt>? $s$ : ($p$ = $e$)</tt></td>
+    <td align="center"><tt>? $s$ : ($p$ = $e$)</tt></td>
     <td>option label</td>
   </tr>
   <tr>
     <td><tt>PaOrp loc p1 p2</tt></td>
-    <td><tt>$p1$ | $p2$</tt></td>
+    <td align="center"><tt>$p1$ | $p2$</tt></td>
     <td>or</td>
   </tr>
   <tr>
     <td><tt>PaRng loc p1 p2</tt></td>
-    <td><tt>$p1$ .. $p2$</tt></td>
+    <td align="center"><tt>$p1$ .. $p2$</tt></td>
     <td>range</td>
   </tr>
   <tr>
     <td><tt>PaRec loc lpp None</tt></td>
-    <td><tt>{ $list:lpp$ }</tt></td>
+    <td align="center"><tt>{ $list:lpp$ }</tt></td>
     <td>record</td>
   </tr>
   <tr>
     <td><tt>PaStr loc s</tt></td>
-    <td><tt>$str:s$</tt></td>
+    <td align="center"><tt>$str:s$</tt></td>
     <td>string</td>
   </tr>
   <tr>
     <td><tt>PaTup loc lp</tt></td>
-    <td><tt>($list:lp$)</tt></td>
+    <td align="center"><tt>($list:lp$)</tt></td>
     <td>t-uple</td>
   </tr>
   <tr>
     <td><tt>PaTyc loc p t</tt></td>
-    <td><tt>($p$ : $t$)</tt></td>
+    <td align="center"><tt>($p$ : $t$)</tt></td>
     <td>type constraint</td>
   </tr>
   <tr>
     <td><tt>PaTyp loc ls</tt></td>
-    <td><tt># $list:ls$</tt></td>
+    <td align="center"><tt># $list:ls$</tt></td>
     <td>pattern type</td>
   </tr>
   <tr>
     <td><tt>PaUid loc s</tt></td>
-    <td><tt>$uid:s$</tt></td>
+    <td align="center"><tt>$uid:s$</tt></td>
     <td>uppercase identifier</td>
   </tr>
   <tr>
     <td><tt>PaVrn loc s</tt></td>
-    <td><tt>` $s$</tt></td>
+    <td align="center"><tt>` $s$</tt></td>
     <td>variant</td>
   </tr>
 </table>
