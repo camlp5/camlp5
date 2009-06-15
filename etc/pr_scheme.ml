@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.23 2007/09/26 07:10:43 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.24 2007/10/04 07:00:47 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml.OldPrinters;
@@ -699,8 +699,8 @@ pr_type_decl.pr_levels :=
             let ((_, tn), tp, pf, te, cl) =
               (td.MLast.tdNam, td.MLast.tdPrm, td.MLast.tdPrv, td.MLast.tdDef,
                td.MLast.tdCon)
-          in
-          fprintf ppf "%t%t@;<1 1>%a"
+            in
+            fprintf ppf "%t%t@;<1 1>%a"
               (fun ppf ->
                  if b <> "" then fprintf ppf "%s@ " b
                  else ())
