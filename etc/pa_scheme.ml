@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.32 2007/10/05 14:59:56 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.33 2007/10/05 18:54:11 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -334,7 +334,7 @@
      ((Sexpr loc [(Slid _ "sig") . sel])
       (let ((sil (List.map sig_item_se sel)))
          <:module_type< sig $list:sil$ end >>))
-     ((Sexpr loc [(Slid _ "with") se (Sexpr _ sel)])
+     ((Sexpr loc [(Slid _ "with") se . sel])
       (let* ((mt (module_type_se se))
              (wcl (List.map with_constr_se sel)))
          <:module_type< $mt$ with $list:wcl$ >>))
@@ -351,6 +351,9 @@
     (lambda_match
      ((Sexpr loc [(Slid _ "type") . sel])
       (let ((tdl (type_declaration_list_se sel)))
+         <:sig_item< type $list:tdl$ >>))
+     ((Sexpr loc [(Slid _ "type*") . sel])
+      (let ((tdl (List.map type_declaration_se sel)))
          <:sig_item< type $list:tdl$ >>))
      ((Sexpr loc [(Slid _ "exception") (Suid _ c) . sel])
       (let* ((c (Pcaml.rename_id.val c))
@@ -507,6 +510,12 @@
              (e2 (expr_se se2))
              (el (List.map expr_se sel)))
          <:expr< for $lid:i$ = $e1$ to $e2$ do { $list:el$ } >>))
+     ((Sexpr loc [(Slid _ "fordown") (Slid _ i) se1 se2 . sel])
+      (let* ((i (Pcaml.rename_id.val i))
+             (e1 (expr_se se1))
+             (e2 (expr_se se2))
+             (el (List.map expr_se sel)))
+         <:expr< for $lid:i$ = $e1$ downto $e2$ do { $list:el$ } >>))
      ((Sexpr loc [(Slid loc1 "lambda")]) <:expr< fun [] >>)
      ((Sexpr loc [(Slid loc1 "lambda") sep . sel])
       (let ((e (begin_se loc1 sel)))

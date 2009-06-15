@@ -1,16 +1,6 @@
 (* camlp5r *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: grammar.mli,v 1.21 2007/09/08 09:18:14 deraugla Exp $ *)
+(* $Id: grammar.mli,v 1.22 2007/10/05 18:54:11 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 (** Extensible grammars.
 
