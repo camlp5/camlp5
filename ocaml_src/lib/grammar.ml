@@ -186,10 +186,8 @@ let fold_entry f e init =
   do_entry init e
 ;;
 
-type token = string * string;;
-type g = token Gramext.grammar;;
-
 let floc = ref (fun _ -> failwith "internal error when computing location");;
+
 let loc_of_token_interval bp ep =
   if bp == ep then
     if bp == 0 then Stdpp.dummy_loc else Stdpp.after_loc (!floc (bp - 1)) 0 1
@@ -762,53 +760,6 @@ let start_parser_of_entry entry =
   | Dparser p -> fun levn strm -> p strm
 ;;
 
-type 'a gen_parsable =
-  { pa_chr_strm : char Stream.t;
-    pa_tok_strm : 'a Stream.t;
-    pa_loc_func : Token.location_function }
-;;
-
-let parse_parsable entry p =
-  let efun = entry.estart 0 in
-  let ts = p.pa_tok_strm in
-  let cs = p.pa_chr_strm in
-  let fun_loc = p.pa_loc_func in
-  let restore =
-    let old_floc = !floc in
-    let old_tc = !token_count in
-    fun () -> floc := old_floc; token_count := old_tc
-  in
-  let get_loc () =
-    try
-      let cnt = Stream.count ts in
-      let loc = fun_loc cnt in
-      if !token_count - 1 <= cnt then loc
-      else Stdpp.encl_loc loc (fun_loc (!token_count - 1))
-    with _ -> Stdpp.make_loc (Stream.count cs, Stream.count cs + 1)
-  in
-  floc := fun_loc;
-  token_count := 0;
-  try let r = efun ts in restore (); r with
-    Stream.Failure ->
-      let loc = get_loc () in
-      restore ();
-      Stdpp.raise_with_loc loc
-        (Stream.Error ("illegal begin of " ^ entry.ename))
-  | Stream.Error _ as exc ->
-      let loc = get_loc () in restore (); Stdpp.raise_with_loc loc exc
-  | exc ->
-      let loc = Stream.count cs, Stream.count cs + 1 in
-      restore (); raise_with_loc (make_loc loc) exc
-;;
-
-let parsable_of_char_stream lex cs =
-  let (ts, lf) = lex.Token.tok_func cs in
-  {pa_chr_strm = cs; pa_tok_strm = ts; pa_loc_func = lf}
-;;
-
-let create_toktab () = Hashtbl.create 301;;
-let gcreate glexer = {gtokens = create_toktab (); glexer = glexer};;
-
 (* Extend syntax *)
 
 let extend_entry entry position rules =
@@ -865,23 +816,68 @@ let delete_rule entry sl =
   | Dparser _ -> ()
 ;;
 
-(* Unsafe *)
+let warning_verbose = Gramext.warning_verbose;;
 
-let clear_entry e =
-  e.estart <- (fun _ (strm__ : _ Stream.t) -> raise Stream.Failure);
-  e.econtinue <- (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);
-  match e.edesc with
-    Dlevels _ -> e.edesc <- Dlevels []
-  | Dparser _ -> ()
+(* Normal interface *)
+
+type token = string * string;;
+type g = token Gramext.grammar;;
+
+let create_toktab () = Hashtbl.create 301;;
+let gcreate glexer = {gtokens = create_toktab (); glexer = glexer};;
+
+let tokens g con =
+  let list = ref [] in
+  Hashtbl.iter
+    (fun (p_con, p_prm) c -> if p_con = con then list := (p_prm, !c) :: !list)
+    g.gtokens;
+  !list
 ;;
 
-let gram_reinit g glexer = Hashtbl.clear g.gtokens; g.glexer <- glexer;;
+let glexer g = g.glexer;;
 
-module Unsafe =
-  struct
-    let gram_reinit = gram_reinit;;
-    let clear_entry = clear_entry;;
-  end
+type 'te gen_parsable =
+  { pa_chr_strm : char Stream.t;
+    pa_tok_strm : 'te Stream.t;
+    pa_loc_func : Token.location_function }
+;;
+
+let parsable_of_char_stream lex cs =
+  let (ts, lf) = lex.Token.tok_func cs in
+  {pa_chr_strm = cs; pa_tok_strm = ts; pa_loc_func = lf}
+;;
+
+let parse_parsable entry p =
+  let efun = entry.estart 0 in
+  let ts = p.pa_tok_strm in
+  let cs = p.pa_chr_strm in
+  let fun_loc = p.pa_loc_func in
+  let restore =
+    let old_floc = !floc in
+    let old_tc = !token_count in
+    fun () -> floc := old_floc; token_count := old_tc
+  in
+  let get_loc () =
+    try
+      let cnt = Stream.count ts in
+      let loc = fun_loc cnt in
+      if !token_count - 1 <= cnt then loc
+      else Stdpp.encl_loc loc (fun_loc (!token_count - 1))
+    with _ -> Stdpp.make_loc (Stream.count cs, Stream.count cs + 1)
+  in
+  floc := fun_loc;
+  token_count := 0;
+  try let r = efun ts in restore (); r with
+    Stream.Failure ->
+      let loc = get_loc () in
+      restore ();
+      Stdpp.raise_with_loc loc
+        (Stream.Error ("illegal begin of " ^ entry.ename))
+  | Stream.Error _ as exc ->
+      let loc = get_loc () in restore (); Stdpp.raise_with_loc loc exc
+  | exc ->
+      let loc = Stream.count cs, Stream.count cs + 1 in
+      restore (); raise_with_loc (make_loc loc) exc
 ;;
 
 let find_entry e s =
@@ -938,8 +934,6 @@ let find_entry e s =
   | Dparser _ -> raise Not_found
 ;;
 
-let of_entry e = e.egram;;
-
 module Entry =
   struct
     type te = token;;
@@ -966,17 +960,26 @@ module Entry =
   end
 ;;
 
-let tokens g con =
-  let list = ref [] in
-  Hashtbl.iter
-    (fun (p_con, p_prm) c -> if p_con = con then list := (p_prm, !c) :: !list)
-    g.gtokens;
-  !list
+let of_entry e = e.egram;;
+
+(* Unsafe *)
+
+let clear_entry e =
+  e.estart <- (fun _ (strm__ : _ Stream.t) -> raise Stream.Failure);
+  e.econtinue <- (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);
+  match e.edesc with
+    Dlevels _ -> e.edesc <- Dlevels []
+  | Dparser _ -> ()
 ;;
 
-let glexer g = g.glexer;;
+let gram_reinit g glexer = Hashtbl.clear g.gtokens; g.glexer <- glexer;;
 
-let warning_verbose = Gramext.warning_verbose;;
+module Unsafe =
+  struct
+    let gram_reinit = gram_reinit;;
+    let clear_entry = clear_entry;;
+  end
+;;
 
 (* Functorial interface *)
 
@@ -1050,7 +1053,7 @@ module GMake (L : GLexerType) =
     module Unsafe =
       struct
         let gram_reinit = gram_reinit gram;;
-        let clear_entry = Unsafe.clear_entry;;
+        let clear_entry = clear_entry;;
       end
     ;;
     let extend = extend_entry;;

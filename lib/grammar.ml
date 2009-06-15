@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.18 2007/07/17 13:38:05 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.19 2007/07/17 14:50:05 deraugla Exp $ *)
 
 open Stdpp;
 open Gramext;
@@ -187,10 +187,8 @@ value fold_entry f e init =
   do_entry init e
 ;
 
-type token = (string * string);
-type g = Gramext.grammar token;
-
 value floc = ref (fun _ -> failwith "internal error when computing location");
+
 value loc_of_token_interval bp ep =
   if bp == ep then
     if bp == 0 then Stdpp.dummy_loc
@@ -711,65 +709,6 @@ value start_parser_of_entry entry =
   | Dparser p -> fun levn strm -> p strm ]
 ;
 
-type gen_parsable 'a =
-  { pa_chr_strm : Stream.t char;
-    pa_tok_strm : Stream.t 'a;
-    pa_loc_func : Token.location_function }
-;
-
-value parse_parsable entry p = do {
-  let efun = entry.estart 0 in
-  let ts = p.pa_tok_strm in
-  let cs = p.pa_chr_strm in
-  let fun_loc = p.pa_loc_func in
-  let restore =
-    let old_floc = floc.val in
-    let old_tc = token_count.val in
-    fun () -> do { floc.val := old_floc; token_count.val := old_tc }
-  in
-  let get_loc () =
-    try
-      let cnt = Stream.count ts in
-      let loc = fun_loc cnt in
-      if token_count.val - 1 <= cnt then loc
-      else Stdpp.encl_loc loc (fun_loc (token_count.val - 1))
-    with _ ->
-      Stdpp.make_loc (Stream.count cs, Stream.count cs + 1)
-  in
-  floc.val := fun_loc;
-  token_count.val := 0;
-  try do {
-    let r = efun ts in
-    restore ();
-    r
-  }
-  with
-  [ Stream.Failure -> do {
-      let loc = get_loc () in
-      restore ();
-      Stdpp.raise_with_loc loc
-        (Stream.Error ("illegal begin of " ^ entry.ename))
-    }
-  | Stream.Error _ as exc -> do {
-      let loc = get_loc () in
-      restore ();
-      Stdpp.raise_with_loc loc exc
-    }
-  | exc -> do {
-      let loc = (Stream.count cs, Stream.count cs + 1) in
-      restore ();
-      raise_with_loc (make_loc loc) exc
-    } ]
-};
-
-value parsable_of_char_stream lex cs =
-  let (ts, lf) = lex.Token.tok_func cs in
-  {pa_chr_strm = cs; pa_tok_strm = ts; pa_loc_func = lf}
-;
-
-value create_toktab () = Hashtbl.create 301;
-value gcreate glexer = {gtokens = create_toktab (); glexer = glexer};
-
 (* Extend syntax *)
 
 value extend_entry entry position rules =
@@ -838,27 +777,82 @@ value delete_rule entry sl =
   | Dparser _ -> () ]
 ;
 
-(* Unsafe *)
+value warning_verbose = Gramext.warning_verbose;
 
-value clear_entry e = do {
-  e.estart := fun _ -> parser [];
-  e.econtinue := fun _ _ _ -> parser [];
-  match e.edesc with
-  [ Dlevels _ -> e.edesc := Dlevels []
-  | Dparser _ -> () ]
+(* Normal interface *)
+
+type token = (string * string);
+type g = Gramext.grammar token;
+
+value create_toktab () = Hashtbl.create 301;
+value gcreate glexer = {gtokens = create_toktab (); glexer = glexer};
+
+value tokens g con = do {
+  let list = ref [] in
+  Hashtbl.iter
+    (fun (p_con, p_prm) c ->
+       if p_con = con then list.val := [(p_prm, c.val) :: list.val] else ())
+    g.gtokens;
+  list.val
 };
 
-value gram_reinit g glexer = do {
-  Hashtbl.clear g.gtokens;
-  g.glexer := glexer
-};
+value glexer g = g.glexer;
 
-module Unsafe =
-  struct
-    value gram_reinit = gram_reinit;
-    value clear_entry = clear_entry;
-  end
+type gen_parsable 'te =
+  { pa_chr_strm : Stream.t char;
+    pa_tok_strm : Stream.t 'te;
+    pa_loc_func : Token.location_function }
 ;
+
+value parsable_of_char_stream lex cs =
+  let (ts, lf) = lex.Token.tok_func cs in
+  {pa_chr_strm = cs; pa_tok_strm = ts; pa_loc_func = lf}
+;
+
+value parse_parsable entry p = do {
+  let efun = entry.estart 0 in
+  let ts = p.pa_tok_strm in
+  let cs = p.pa_chr_strm in
+  let fun_loc = p.pa_loc_func in
+  let restore =
+    let old_floc = floc.val in
+    let old_tc = token_count.val in
+    fun () -> do { floc.val := old_floc; token_count.val := old_tc }
+  in
+  let get_loc () =
+    try
+      let cnt = Stream.count ts in
+      let loc = fun_loc cnt in
+      if token_count.val - 1 <= cnt then loc
+      else Stdpp.encl_loc loc (fun_loc (token_count.val - 1))
+    with _ ->
+      Stdpp.make_loc (Stream.count cs, Stream.count cs + 1)
+  in
+  floc.val := fun_loc;
+  token_count.val := 0;
+  try do {
+    let r = efun ts in
+    restore ();
+    r
+  }
+  with
+  [ Stream.Failure -> do {
+      let loc = get_loc () in
+      restore ();
+      Stdpp.raise_with_loc loc
+        (Stream.Error ("illegal begin of " ^ entry.ename))
+    }
+  | Stream.Error _ as exc -> do {
+      let loc = get_loc () in
+      restore ();
+      Stdpp.raise_with_loc loc exc
+    }
+  | exc -> do {
+      let loc = (Stream.count cs, Stream.count cs + 1) in
+      restore ();
+      raise_with_loc (make_loc loc) exc
+    } ]
+};
 
 value find_entry e s =
   let rec find_levels =
@@ -909,8 +903,6 @@ value find_entry e s =
   | Dparser _ -> raise Not_found ]
 ;
 
-value of_entry e = e.egram;
-
 module Entry =
   struct
     type te = token;
@@ -935,18 +927,29 @@ module Entry =
   end
 ;
 
-value tokens g con = do {
-  let list = ref [] in
-  Hashtbl.iter
-    (fun (p_con, p_prm) c ->
-       if p_con = con then list.val := [(p_prm, c.val) :: list.val] else ())
-    g.gtokens;
-  list.val
+value of_entry e = e.egram;
+
+(* Unsafe *)
+
+value clear_entry e = do {
+  e.estart := fun _ -> parser [];
+  e.econtinue := fun _ _ _ -> parser [];
+  match e.edesc with
+  [ Dlevels _ -> e.edesc := Dlevels []
+  | Dparser _ -> () ]
 };
 
-value glexer g = g.glexer;
+value gram_reinit g glexer = do {
+  Hashtbl.clear g.gtokens;
+  g.glexer := glexer
+};
 
-value warning_verbose = Gramext.warning_verbose;
+module Unsafe =
+  struct
+    value gram_reinit = gram_reinit;
+    value clear_entry = clear_entry;
+  end
+;
 
 (* Functorial interface *)
 
@@ -1016,7 +1019,7 @@ module GMake (L : GLexerType) =
     module Unsafe =
       struct
         value gram_reinit = gram_reinit gram;
-        value clear_entry = Unsafe.clear_entry;
+        value clear_entry = clear_entry;
       end
     ;
     value extend = extend_entry;
