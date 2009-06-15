@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.125 2007/12/06 23:52:58 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.126 2007/12/07 10:26:47 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -387,7 +387,7 @@ and expr_wh pc e =
   | None -> expr pc e ]
 ;
 
-value sequence_box2 pc bef el =
+value sequence_box2 bef pc el =
   let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
   sequence_box pc bef expr_wh el
 ;
@@ -407,7 +407,7 @@ value record_binding pc (p, e) =
       horiz_vertic
         (fun () -> pprintf pc "%p =@;%p" (hlist patt) pl expr_wh e)
         (fun () ->
-           sequence_box2 pc (fun pc -> pprintf pc "%p =" (hlist patt) pl) el)
+           sequence_box2 (fun pc -> pprintf pc "%p =" (hlist patt) pl) pc el)
   | None ->
       pprintf pc "%p =@;%p" (hlist patt) pl expr_wh e ]
 ;
@@ -482,13 +482,13 @@ value value_or_let_binding flag_where sequ pc (p, e) =
 ;
 
 value value_binding pc pe =
-  let sequ pc bef el = sequence_box2 pc bef el in
+  let sequ pc bef el = sequence_box2 bef pc el in
   value_or_let_binding flag_where_after_value_eq sequ pc pe
 ;
 
 value let_binding pc pe =
   let sequ pc bef el =
-    let s = sequence_box2 {(pc) with aft = ""} bef el in
+    let s = sequence_box2 bef {(pc) with aft = ""} el in
     if pc.aft = "" then s else sprintf "%s\n%s%s" s (tab pc.ind) pc.aft
   in
   value_or_let_binding flag_where_after_let_eq sequ pc pe
@@ -517,11 +517,11 @@ value match_assoc force_vertic pc (p, w, e) =
        in
        match sequencify e with
        [ Some el ->
-           sequence_box2 pc
+           sequence_box2
              (fun pc ->
                 horiz_vertic (fun _ -> sprintf "\n")
                   (fun () -> patt_arrow pc))
-             el
+             pc el
        | None ->
            let s1 = patt_arrow {(pc) with aft = ""} in
            let s2 =
@@ -929,11 +929,11 @@ EXTEND_PRINTER
                       in
                       match sequencify e2 with
                       [ Some el ->
-                          sequence_box2 {(pc) with aft = ""}
+                          sequence_box2
                             (fun pc ->
                                horiz_vertic (fun () -> horiz_if_then pc)
                                  (fun () -> vertic_if_then pc))
-                            el
+                            {(pc) with aft = ""} el
                       | None ->
                           let pc = {(pc) with aft = ""} in
                           let s1 =
@@ -1020,12 +1020,12 @@ EXTEND_PRINTER
                    (fun () ->
                       match sequencify e3 with
                       [ Some el ->
-                          sequence_box2 pc
+                          sequence_box2
                             (fun pc ->
                                horiz_vertic (fun () -> sprintf "\n")
                                  (fun () ->
                                     sprintf "%selse%s" (tab pc.ind) pc.aft))
-                            el
+                            pc el
                       | None ->
                           let s =
                             comm_expr expr_wh
@@ -1047,9 +1047,9 @@ EXTEND_PRINTER
                    let pl = List.map (fun p -> (p, "")) pl in
                    match sequencify e1 with
                    [ Some el ->
-                       sequence_box2 pc
+                       sequence_box2
                          (fun pc -> pprintf pc "fun %p ->" (plist patt 4) pl)
-                         el
+                         pc el
                    | None ->
                        pprintf pc "fun %p ->@;%p" (plist patt 4) pl curr e1 ])
           | [] -> sprintf "%sfun []%s" pc.bef pc.aft
@@ -1070,93 +1070,61 @@ EXTEND_PRINTER
           [ [(p, wo, e)] when is_irrefut_patt p ->
               horiz_vertic
                 (fun () ->
-                   sprintf "%s%s %s with %s%s" pc.bef op
-                     (expr_wh {(pc) with bef = ""; aft = ""} e1)
-                     (match_assoc False {(pc) with bef = ""; aft = ""}
-                        (p, wo, e))
-                     pc.aft)
+                   pprintf pc "%s %p with %p" op expr_wh e1
+                     (match_assoc False) (p, wo, e))
                 (fun () ->
                    match
                      horiz_vertic
                        (fun () ->
+                          let pc = {(pc) with aft = ""} in
                           Some
-                            (sprintf "%s%s %s with %s%s ->" pc.bef op
-                               (expr_wh {(pc) with bef = ""; aft = ""} e1)
-                               (patt {(pc) with bef = ""; aft = ""} p)
+                            (pprintf pc "%s %p with %p%s ->" op
+                               expr_wh e1 patt p
                                (match wo with
                                 [ <:vala< Some e >> ->
-                                    curr {(pc) with bef = " when"; aft = ""} e
+                                    curr {(pc) with bef = " when"} e
                                 | _ -> "" ])))
                         (fun () -> None)
                    with
                    [ Some s1 ->
-                       let s2 =
-                         curr
-                           {(pc) with ind = pc.ind + 2;
-                            bef = tab (pc.ind + 2)}
-                           e
-                       in
-                       sprintf "%s\n%s" s1 s2
+                       let pc = {(pc) with bef = ""} in
+                       pprintf pc "%s@;%p" s1 curr e
                    | None ->
-                       let s1 =
-                         match sequencify e1 with
-                         [ Some el ->
-                             sequence_box2 {(pc) with aft = ""}
-                               (fun pc -> sprintf "%s%s%s" pc.bef op pc.aft)
-                               el
-                         | None ->
-                             let s =
-                               expr_wh
-                                 {(pc) with ind = pc.ind + 2;
-                                  bef = tab (pc.ind + 2); aft = ""}
-                                 e1
-                             in
-                             sprintf "%s%s\n%s" pc.bef op s ]
-                       in
-                       let s2 =
-                         match_assoc False
-                           {(pc) with bef = sprintf "%swith " (tab pc.ind)}
-                           (p, wo, e)
-                       in
-                       sprintf "%s\n%s" s1 s2 ])
+                       match sequencify e1 with
+                       [ Some el ->
+                           pprintf pc "%p@ with %p"
+                             (sequence_box2 (fun pc -> pprintf pc "%s" op)) el
+                             (match_assoc False) (p, wo, e)
+                       | None ->
+                           pprintf pc "@[<a>%s@;%p@ with %p@]" op expr_wh e1
+                             (match_assoc False) (p, wo, e) ] ])
           | _ ->
               horiz_vertic
                 (fun () ->
-                   sprintf "%s%s %s with %s%s" pc.bef op
-                     (expr_wh {(pc) with bef = ""; aft = ""} e1)
-                     (match_assoc_list {(pc) with bef = ""; aft = ""} pwel)
-                     pc.aft)
+                   pprintf pc "%s %p with %p" op expr_wh e1 match_assoc_list
+                     pwel)
                 (fun () ->
-                   let s1 =
-                     horiz_vertic
-                       (fun () ->
-                          sprintf "%s%s %s with" pc.bef op
-                            (expr_wh {(pc) with bef = ""; aft = ""} e1))
-                       (fun () ->
-                          let s =
-                            match sequencify e1 with
-                            [ Some el ->
-                                sequence_box2 {(pc) with aft = ""}
-                                  (fun pc ->
-                                     horiz_vertic (fun _ -> sprintf "\n")
-                                       (fun () ->
-                                          sprintf "%s%s%s" pc.bef op pc.aft))
-                                  el
-                            | None ->
-                                let s =
-                                  expr_wh
-                                    {(pc) with ind = pc.ind + 2;
-                                     bef = tab (pc.ind + 2); aft = ""}
-                                    e1
-                                in
-                                sprintf "%s%s\n%s" pc.bef op s ]
-                          in
-                          sprintf "%s\n%swith" s (tab pc.ind))
-                   in
-                   let s2 =
-                     match_assoc_list {(pc) with bef = tab pc.ind} pwel
-                   in
-                   sprintf "%s\n%s" s1 s2) ]
+                   match sequencify e1 with
+                   [ Some el ->
+                       let s1 =
+                         let pc = {(pc) with aft = ""} in
+                         horiz_vertic
+                           (fun () -> pprintf pc "%s %p with" op expr_wh e1)
+                           (fun () ->
+                              pprintf pc "%p@ with"
+                                (sequence_box2
+                                   (fun pc ->
+                                      horiz_vertic (fun _ -> sprintf "\n")
+                                        (fun () -> pprintf pc "%s" op)))
+                                el)
+                       in
+                       let s2 =
+                         match_assoc_list {(pc) with bef = tab pc.ind} pwel
+                       in
+                       sprintf "%s\n%s" s1 s2
+                   | None ->
+                       pprintf pc "@[<a>%s@;%p@ with@]@ %p" op expr_wh e1
+                         match_assoc_list pwel ]) ]
       | <:expr< let $flag:rf$ $list:pel$ in $e$ >> as ge ->
           let expr_wh = if flag_where_after_in.val then expr_wh else curr in
           horiz_vertic
