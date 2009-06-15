@@ -939,7 +939,15 @@ Grammar.extend
         (fun (e : 'expr) _ (loc : Ploc.t) ->
            (MLast.ExApp (loc, MLast.ExLid (loc, "~-"), e) : 'expr))];
      Some "simple", None,
-     [[Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ")")],
+     [[Gramext.Stoken ("", "(");
+       Gramext.Slist1sep
+         (Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e)),
+          Gramext.Stoken ("", ","));
+       Gramext.Stoken ("", ")")],
+      Gramext.action
+        (fun _ (el : 'expr list) _ (loc : Ploc.t) ->
+           (MLast.ExTup (loc, el) : 'expr));
+      [Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ")")],
       Gramext.action (fun _ (e : 'expr) _ (loc : Ploc.t) -> (e : 'expr));
       [Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ",");
        Gramext.Slist1sep

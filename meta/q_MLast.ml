@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.49 2007/09/09 01:18:03 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.50 2007/09/09 07:39:45 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -83,7 +83,9 @@ module Qast =
           let e = to_expr m a in
           match e with
           [ <:expr< $anti:_$ >> -> e
-          | _ -> <:expr< Ploc.VaVal $e$ >> ] ]
+          | _ ->
+              if Pcaml.strict_mode.val then <:expr< Ploc.VaVal $e$ >>
+              else e ] ]
     and to_expr_label m (l, a) = (<:patt< MLast.$lid:l$ >>, to_expr m a);
     value rec to_patt m =
       fun
@@ -119,7 +121,9 @@ module Qast =
           let p = to_patt m a in
           match p with
           [ <:patt< $anti:_$ >> -> p
-          | _ -> <:patt< Ploc.VaVal $p$ >> ] ]
+          | _ ->
+              if Pcaml.strict_mode.val then <:patt< Ploc.VaVal $p$ >>
+              else p ] ]
     and to_patt_label m (l, a) = (<:patt< MLast.$lid:l$ >>, to_patt m a);
   end
 ;
@@ -690,7 +694,9 @@ EXTEND
           Qast.Node "ExTyc" [Qast.Loc; e; t]
       | "("; e = SELF; ","; el = SLIST1 expr SEP ","; ")" ->
           Qast.Node "ExTup" [Qast.Loc; Qast.VaVal (Qast.Cons e el)]
-      | "("; e = SELF; ")" -> e ] ]
+      | "("; e = SELF; ")" -> e
+      | "("; el = SV LIST1 expr SEP ","; ")" ->
+          Qast.Node "ExTup" [Qast.Loc; el] ] ]
   ;
   cons_expr_opt:
     [ [ "::"; e = expr -> Qast.Option (Some e)
@@ -1284,7 +1290,7 @@ EXTEND
   ;
   (* compatibility; deprecated since version 4.07 *)
   a_flag2:
-    [ [ a = ANTIQUOT "opt" -> antiquot "opt" loc a ] ]
+    [ [ a = ANTIQUOT "opt" -> Qast.VaVal (antiquot "opt" loc a) ] ]
   ;
   a_UIDENT:
     [ [ a = ANTIQUOT "uid" -> antiquot "uid" loc a

@@ -1208,13 +1208,11 @@ let sslist loc min sep s =
 
 let sslist2 loc min sep s =
   let vala loc x =
-    if !(Pcaml.strict_mode) then
-      MLast.ExApp
-        (loc,
-         MLast.ExAcc
-           (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Vala")),
-         x)
-    else x
+    MLast.ExApp
+      (loc,
+       MLast.ExAcc
+         (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Vala")),
+       x)
   in
   sslist_aux loc "a_list2" vala min sep s
 ;;
@@ -1307,13 +1305,11 @@ let ssflag loc s = let vala loc x = x in ssflag_aux loc "a_flag" vala s;;
 
 let ssflag2 loc s =
   let vala loc x =
-    if !(Pcaml.strict_mode) then
-      MLast.ExApp
-        (loc,
-         MLast.ExAcc
-           (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Vala")),
-         x)
-    else x
+    MLast.ExApp
+      (loc,
+       MLast.ExAcc
+         (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Vala")),
+       x)
   in
   ssflag_aux loc "a_flag2" vala s
 ;;

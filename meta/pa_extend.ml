@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.45 2007/09/09 01:18:03 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.46 2007/09/09 07:39:45 deraugla Exp $ *)
 
 value split_ext = ref False;
 
@@ -585,10 +585,7 @@ value sslist loc min sep s =
 ;
 
 value sslist2 loc min sep s =
-  let vala loc x =
-    if Pcaml.strict_mode.val then <:expr< Qast.Vala $x$ >>
-    else x
-  in
+  let vala loc x = <:expr< Qast.Vala $x$ >> in
   sslist_aux loc "a_list2" vala min sep s
 ;
 
@@ -663,9 +660,7 @@ value ssflag loc s =
 ;
 
 value ssflag2 loc s =
-  let vala loc x =
-    if Pcaml.strict_mode.val then <:expr< Qast.Vala $x$ >> else x
-  in
+  let vala loc x = <:expr< Qast.Vala $x$ >> in
   ssflag_aux loc "a_flag2" vala s
 ;
 
