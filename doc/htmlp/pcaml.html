@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: pcaml.html,v 1.2 2007/07/30 02:28:24 deraugla Exp $ -->
+  <!-- $Id: pcaml.html,v 1.3 2007/07/30 12:57:32 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Pcaml</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -19,18 +19,257 @@
 
 <h1 class="top">The Pcaml module</h1>
 
-<p>Language grammar, entries and printers.</p>
+<p>All about language parsing entries, language printing functions,
+  quotation management at parsing time, extensible directives, extensible
+  options, and generalities about camlp5.</p>
 
-<p>This module holds variables to be set and used by language syntax
-   extensions and for pretty printing. Some of them are used by the
-   quotation management.</p>
+<div id="tableofcontents">
+</div>
+
+<h2>Language parsing</h2>
+
+<h3>Main parsing functions</h3>
+
+<p>The two functions below are called when parsing an interface (.mli
+  file) or an implementation (.ml file) to build the syntax tree; the
+  returned list contains the phrases (signature items or structure
+  items) and their locations; the boolean tells that the parser has
+  encountered a directive; in this case, since the directive may
+  change the syntax, the parsing stops, the directive is evaluated,
+  and this function is called again.<br/>  These functions are
+  references, because they can be changed to use another technology
+  than the Camlp5 extended grammars. By default, they use the grammars
+  entries [implem] and [interf] defined above.</p>
+
+<dl>
+  <dt><tt>value parse_interf : ref (Stream.t char -> (list
+      (MLast.sig_item * MLast.loc) * bool));</tt></dt>
+  <dd>Function called when parsing an interface (".mli") file</dd>
+  <dt><tt>value parse_implem : ref (Stream.t char -> (list
+      (MLast.str_item * MLast.loc) * bool));</tt></dt>
+  <dd>Function called when parsing an implementation (".ml") file</dd>
+</dl>
+
+<h3>Grammar</h3>
+
+<dl>
+  <dt><tt>value gram : Grammar.g;</tt></dt>
+  <dd>Grammar variable of the language.</dd>
+</dl>
+
+<h3>Entries</h3>
+
+<p>Grammar entries which return <a href="ml_ast.html">syntax
+  trees</a>. These are set by the parsing kit of the current syntax,
+  through the statement <a href="grammars.html">EXTEND</a>. They
+  are usable by other possible user syntax extensions.</p>
+
+<dl>
+  <dt><tt>value expr : Grammar.Entry.e MLast.expr;</tt></dt>
+  <dd>Expressions.</dd>
+  <dt><tt>value patt : Grammar.Entry.e MLast.patt;</tt></dt>
+  <dd>Patterns.</dd>
+  <dt><tt>value ctyp : Grammar.Entry.e MLast.ctyp;</tt></dt>
+  <dd>Types.</dd>
+</dl>
+
+<dl>
+  <dt><tt>value sig_item : Grammar.Entry.e MLast.sig_item;</tt></dt>
+  <dd>Signature items, i.e. items between "<tt>sig</tt>" and
+    "<tt>end</tt>", or inside an interface (".mli") file.</dd>
+  <dt><tt>value str_item : Grammar.Entry.e MLast.str_item;</tt></dt>
+  <dd>Structure items, i.e. items between "<tt>struct</tt>" and
+    "<tt>end</tt>", or inside an implementation (".ml") file.</dd>
+</dl>
+
+<dl>
+  <dt><tt>value module_type : Grammar.Entry.e MLast.module_type;</tt></dt>
+  <dd>Module types, e.g. signatures, functors, identifiers.</dd>
+  <dt><tt>value module_expr : Grammar.Entry.e MLast.module_expr;</tt></dt>
+  <dd>Module expressions, e.g. structures, functors, identifiers.</dd>
+</dl>
+
+<dl>
+  <dt><tt>value let_binding : Grammar.Entry.e (MLast.patt *
+      MLast.expr);</tt></dt>
+  <dd>Specific entry for the "let binding", i.e. the association
+    "let pattern = expression".</dd>
+  <dt><tt>value type_declaration : Grammar.Entry.e
+      MLast.type_decl;</tt></dt>
+  <dd>Specific entry for the "type declaration", i.e. the association
+    "type name = type-expression"</dd>
+</dl>
+
+<dl>
+  <dt><tt>value class_sig_item : Grammar.Entry.e
+      MLast.class_sig_item;</tt></dt>
+  <dd>Class signature items, i.e. items of class objects types.</dd>
+  <dt><tt>value class_str_item : Grammar.Entry.e
+      MLast.class_str_item;</tt></dt>
+  <dd>Class structure items, i.e. items of class objects.</dd>
+  <dt><tt>value class_expr : Grammar.Entry.e MLast.class_expr;</tt></dt>
+  <dd>Class expressions, e.g. objects, class functions, identifiers.</dd>
+  <dt><tt>value class_type : Grammar.Entry.e MLast.class_type;</tt></dt>
+  <dd>Class types, e.g. object types, class types functions,
+    identifiers. </dd>
+</dl>
+
+<dl>
+  <dt><tt>value interf : Grammar.Entry.e (list (MLast.sig_item * MLast.loc) * bool);</tt></dt>
+  <dd>Interface, i.e. files with extension ".mli". The location is the
+    one of the top of the tree. The boolean says whether the parsing
+    stopped because of the presence of a directive (which potentially
+    could change the syntax).</dd>
+  <dt><tt>value implem : Grammar.Entry.e (list (MLast.str_item * MLast.loc) * bool);</tt></dt>
+  <dd>Implementation, i.e. files with extension ".ml". Same remark
+    about the location and the boolean.</dd>
+  <dt><tt>value top_phrase : Grammar.Entry.e (option
+      MLast.str_item);</tt></dt>
+  <dd>Phrases of the ocaml interactive toplevel. Return "None" in case
+    of end of file.</dd>
+  <dt><tt>value use_file : Grammar.Entry.e (list MLast.str_item *
+      bool);</tt></dt>
+  <dd>Phrases in files included by the directive "<tt>#use</tt>". The
+    boolean indicates whether the parsing stopped because of a directive
+    (like for "<tt>interf</tt>" below).</dd>
+</dl>
+
+<h2>Language printing</h2>
+
+<h3>Main printing functions</h3>
+
+<p>The two function below are called when printing an interface (.mli
+  file) of an implementation (.ml file) from the syntax tree; the list
+  is the result of the corresponding parsing function.</p>
+
+<dl>
+  <dt><tt>value print_interf : ref (list (MLast.sig_item * MLast.loc)
+      -> unit);</tt></dt>
+  <dd>Function called when printing an interface (".mli") file</dd>
+  <dt><tt>value print_implem : ref (list (MLast.str_item * MLast.loc)
+      -> unit);</tt></dt>
+  <dd>Function called when printing an implementation (".ml") file</dd>
+</dl>
+
+<h3>Printer type</h3>
+
+<p>Defined in the sub-module "<tt>Printers</tt>" of the
+  "<tt>Pcaml</tt>" module.</p>
+
+<p>... to be completed ...</p>
+
+<pre>
+  type printer_t 'a =
+    { pr_fun : mutable string -> pr_fun 'a;
+      pr_levels : mutable list (pr_level 'a) }
+  and pr_level 'a = { pr_label : string; pr_rules : mutable pr_rule 'a }
+  and pr_rule 'a =
+    Extfun.t 'a
+      (pr_fun 'a -> pr_fun 'a -> pr_context string string -> string)
+  and pr_fun 'a = pr_context string string -> 'a -> string
+  and pr_context 'bef 'aft =
+    { ind : int;
+      bef : 'bef;
+      aft : 'aft;
+      dang : string };
+  value printer : 'a -> string -> printer_t 'b;
+</pre>
+
+<h3>Printers functions</h3>
+
+<p>Defined in the sub-module "<tt>Printers</tt>" of the
+  "<tt>Pcaml</tt>" module.</p>
+
+<p>... to be completed ...</p>
+
+<pre>
+  value pr_expr : printer_t MLast.expr;
+  value pr_patt : printer_t MLast.patt;
+  value pr_ctyp : printer_t MLast.ctyp;
+  value pr_str_item : printer_t MLast.str_item;
+  value pr_sig_item : printer_t MLast.sig_item;
+  value pr_module_expr : printer_t MLast.module_expr;
+  value pr_module_type : printer_t MLast.module_type;
+  value pr_class_sig_item : printer_t MLast.class_sig_item;
+  value pr_class_str_item : printer_t MLast.class_str_item;
+  value pr_class_type : printer_t MLast.class_type;
+  value pr_class_expr : printer_t MLast.class_expr;
+  value find_pr_level : string -> list (pr_level 'a) -> pr_level 'a;
+  value pr_expr_fun_args :
+    ref (Extfun.t MLast.expr (list MLast.patt * MLast.expr));
+</pre>
+
+<h2>Quotation management</h2>
+
+<dl>
+  <dt><tt>value handle_expr_quotation : MLast.loc -> (string * string)
+      -> MLast.expr;</tt></dt>
+  <dd>Called in the semantic actions of the rules parsing a quotation
+    in position of expression.</dd>
+  <dt><tt>value handle_patt_quotation : MLast.loc -> (string * string)
+      -> MLast.patt;</tt></dt>
+  <dd>Called in the semantic actions of the rules parsing a quotation
+    in position of pattern.</dd>
+</dl>
+
+<dl>
+  <dt><tt>value quotation_dump_file : ref (option string);</tt></dt>
+  <dd>"<tt>Pcaml.quotation_dump_file</tt>" optionally tells the
+    compiler to dump the result of an expander (of kind "generating a
+    string") if this result is syntactically incorrect. If
+    "<tt>None</tt>" (default), this result is not dumped. If "<tt>Some
+      fname</tt>", the result is dumped in the file "<tt>fname</tt>".
+    The same effect can be done with the option "<tt>-QD</tt>" of
+    camlp5 commands.</dd>
+</dl>
+
+<h2>Extensible directives and options</h2>
+
+<dl>
+  <dt><tt>type directive_fun = option MLast.expr -> unit;</tt></dt>
+  <dd>The type of functions called to treat a directive with its
+    syntactic parameter. Directives act by side effect.</dd>
+  <dt><tt>value add_directive : string -> directive_fun -> unit;</tt></dt>
+  <dd>Add a new directive.</dd>
+  <dt><tt>value find_directive : string -> directive_fun;</tt></dt>
+  <dd>Find the function associated with a directive. Raises
+    "<tt>Not_found</tt>" if the directive does not exists.</dd>
+</dl>
+
+<dl>
+  <dt><tt>value add_option : string -> Arg.spec -> string -> unit;</tt></dt>
+  <dd>Add an option to the command line of the camlp5 command.</dd>
+</dl>
+
+<h2>Generalities</h2>
+
+<dl>
+  <dt><tt>value version : string;</tt></dt>
+  <dd>The current version of Camlp5.</dd>
+</dl>
 
 <dl>
   <dt><tt>value syntax_name : ref string;</tt></dt>
   <dd>The name of the current syntax. Set by the loaded syntax kit.</dd>
 </dl>
 
-<p>... to be continued ... </p>
+<dl>
+  <dt><tt>value input_file : ref string;</tt></dt>
+  <dd>The file currently being parsed.</dd>
+</dl>
+
+<dl>
+  <dt><tt>value output_file : ref (option string);</tt></dt>
+  <dd>The output file, stdout if None (default).</dd>
+</dl>
+
+<dl>
+  <dt><tt>value no_constructors_arity : ref bool;</tt></dt>
+  <dd>True if the current syntax does not generate constructor arity,
+    which is the case of the normal syntax, and not of the revised
+    one. This has an impact when converting camlp5 syntax tree into
+    ocaml compiler syntax tree.</dd>
+</dl>
 
 <div class="trailer">
 </div>

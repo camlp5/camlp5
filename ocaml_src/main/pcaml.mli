@@ -63,11 +63,10 @@ val input_file : string ref;;
    (** The file currently being parsed. *)
 val output_file : string option ref;;
    (** The output file, stdout if None (default) *)
-val report_error : exn -> unit;;
-   (** Prints an error message, using the module [Format]. *)
 val quotation_dump_file : string option ref;;
    (** [quotation_dump_file] optionally tells the compiler to dump the
-       result of an expander if this result is syntactically incorrect.
+       result of an expander (of kind "generating a string") if this
+       result is syntactically incorrect.
        If [None] (default), this result is not dumped. If [Some fname], the
        result is dumped in the file [fname]. *)
 val version : string;;
@@ -77,25 +76,8 @@ val add_option : string -> Arg.spec -> string -> unit;;
 val no_constructors_arity : bool ref;;
    (** [True]: dont generate constructor arity. *)
 
-val sync : (char Stream.t -> unit) ref;;
-
 val handle_expr_quotation : MLast.loc -> string * string -> MLast.expr;;
 val handle_patt_quotation : MLast.loc -> string * string -> MLast.patt;;
-
-val expr_reloc : (MLast.loc -> MLast.loc) -> int -> MLast.expr -> MLast.expr;;
-val patt_reloc : (MLast.loc -> MLast.loc) -> int -> MLast.patt -> MLast.patt;;
-
-(** To possibly rename identifiers; parsers may call this function
-    when generating their identifiers; default = identity *)
-val rename_id : (string -> string) ref;;
-
-(** Allow user to catch exceptions in quotations *)
-type err_ctx =
-    Finding
-  | Expanding
-  | ParsingResult of Stdpp.location * string
-;;
-exception Qerror of string * err_ctx * exn;;
 
 (** {6 Printers} *)
 
@@ -183,3 +165,8 @@ val warning : (Token.location -> string -> unit) ref;;
 val expr_eoi : MLast.expr Grammar.Entry.e;;
 val patt_eoi : MLast.patt Grammar.Entry.e;;
 val arg_spec_list : unit -> (string * Arg.spec * string) list;;
+val report_error : exn -> unit;;
+val sync : (char Stream.t -> unit) ref;;
+val patt_reloc : (MLast.loc -> MLast.loc) -> int -> MLast.patt -> MLast.patt;;
+val expr_reloc : (MLast.loc -> MLast.loc) -> int -> MLast.expr -> MLast.expr;;
+val rename_id : (string -> string) ref;;

@@ -148,15 +148,14 @@ let define eo x =
           [[Gramext.Stoken ("UIDENT", x)],
            Gramext.action
              (fun _ (loc : Token.location) ->
-                (Pcaml.expr_reloc (fun _ -> loc) 0 e : 'expr))]];
+                (Reloc.expr (fun _ -> loc) 0 e : 'expr))]];
          Grammar.Entry.obj (patt : 'patt Grammar.Entry.e),
          Some (Gramext.Level "simple"),
          [None, None,
           [[Gramext.Stoken ("UIDENT", x)],
            Gramext.action
              (fun _ (loc : Token.location) ->
-                (let p = substp loc [] e in
-                 Pcaml.patt_reloc (fun _ -> loc) 0 p :
+                (let p = substp loc [] e in Reloc.patt (fun _ -> loc) 0 p :
                  'patt))]]]
   | Some (sl, e) ->
       Grammar.extend
@@ -173,8 +172,7 @@ let define eo x =
                  in
                  if List.length el = List.length sl then
                    let env = List.combine sl el in
-                   let e = subst loc env e in
-                   Pcaml.expr_reloc (fun _ -> loc) 0 e
+                   let e = subst loc env e in Reloc.expr (fun _ -> loc) 0 e
                  else incorrect_number loc el sl :
                  'expr))]];
          Grammar.Entry.obj (patt : 'patt Grammar.Entry.e),
@@ -190,8 +188,7 @@ let define eo x =
                  in
                  if List.length pl = List.length sl then
                    let env = List.combine sl pl in
-                   let p = substp loc env e in
-                   Pcaml.patt_reloc (fun _ -> loc) 0 p
+                   let p = substp loc env e in Reloc.patt (fun _ -> loc) 0 p
                  else incorrect_number loc pl sl :
                  'patt))]]]
   | None -> ()

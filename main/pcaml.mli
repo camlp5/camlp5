@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pcaml.mli,v 1.2 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: pcaml.mli,v 1.3 2007/07/30 12:57:32 deraugla Exp $ *)
 
 (** Language grammar, entries and printers.
 
@@ -63,11 +63,10 @@ value input_file : ref string;
    (** The file currently being parsed. *)
 value output_file : ref (option string);
    (** The output file, stdout if None (default) *)
-value report_error : exn -> unit;
-   (** Prints an error message, using the module [Format]. *)
 value quotation_dump_file : ref (option string);
    (** [quotation_dump_file] optionally tells the compiler to dump the
-       result of an expander if this result is syntactically incorrect.
+       result of an expander (of kind "generating a string") if this
+       result is syntactically incorrect.
        If [None] (default), this result is not dumped. If [Some fname], the
        result is dumped in the file [fname]. *)
 value version : string;
@@ -77,27 +76,8 @@ value add_option : string -> Arg.spec -> string -> unit;
 value no_constructors_arity : ref bool;
    (** [True]: dont generate constructor arity. *)
 
-value sync : ref (Stream.t char -> unit);
-
 value handle_expr_quotation : MLast.loc -> (string * string) -> MLast.expr;
 value handle_patt_quotation : MLast.loc -> (string * string) -> MLast.patt;
-
-value expr_reloc :
-  (MLast.loc -> MLast.loc) -> int -> MLast.expr -> MLast.expr;
-value patt_reloc :
-  (MLast.loc -> MLast.loc) -> int -> MLast.patt -> MLast.patt;
-
-(** To possibly rename identifiers; parsers may call this function
-    when generating their identifiers; default = identity *)
-value rename_id : ref (string -> string);
-
-(** Allow user to catch exceptions in quotations *)
-type err_ctx =
-  [ Finding
-  | Expanding
-  | ParsingResult of Stdpp.location and string ]
-;
-exception Qerror of string and err_ctx and exn;
 
 (** {6 Printers} *)
 
@@ -187,3 +167,10 @@ value warning : ref (Token.location -> string -> unit);
 value expr_eoi : Grammar.Entry.e MLast.expr;
 value patt_eoi : Grammar.Entry.e MLast.patt;
 value arg_spec_list : unit -> list (string * Arg.spec * string);
+value report_error : exn -> unit;
+value sync : ref (Stream.t char -> unit);
+value patt_reloc :
+  (MLast.loc -> MLast.loc) -> int -> MLast.patt -> MLast.patt;
+value expr_reloc :
+  (MLast.loc -> MLast.loc) -> int -> MLast.expr -> MLast.expr;
+value rename_id : ref (string -> string);

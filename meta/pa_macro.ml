@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.13 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.14 2007/07/30 12:57:32 deraugla Exp $ *)
 
 (*
 Added statements:
@@ -138,12 +138,12 @@ value define eo x = do {
   [ Some ([], e) ->
       EXTEND
         expr: LEVEL "simple"
-          [ [ UIDENT $x$ -> Pcaml.expr_reloc (fun _ -> loc) 0 e ] ]
+          [ [ UIDENT $x$ -> Reloc.expr (fun _ -> loc) 0 e ] ]
         ;
         patt: LEVEL "simple"
           [ [ UIDENT $x$ ->
                 let p = substp loc [] e in
-                Pcaml.patt_reloc (fun _ -> loc) 0 p ] ]
+                Reloc.patt (fun _ -> loc) 0 p ] ]
         ;
       END
   | Some (sl, e) ->
@@ -158,7 +158,7 @@ value define eo x = do {
                 if List.length el = List.length sl then
                   let env = List.combine sl el in
                   let e = subst loc env e in
-                  Pcaml.expr_reloc (fun _ -> loc) 0 e
+                  Reloc.expr (fun _ -> loc) 0 e
                 else
                   incorrect_number loc el sl ] ]
         ;
@@ -172,7 +172,7 @@ value define eo x = do {
                 if List.length pl = List.length sl then
                   let env = List.combine sl pl in
                   let p = substp loc env e in
-                  Pcaml.patt_reloc (fun _ -> loc) 0 p
+                  Reloc.patt (fun _ -> loc) 0 p
                 else
                   incorrect_number loc pl sl ] ]
         ;
