@@ -224,7 +224,8 @@ Printing files:
 Quotation expanders:
 .nf
 .ta 1c
-	q_MLast.cmo: syntax tree nodes
+	q_MLast.cmo: syntax tree nodes (in revised syntax)
+	q_ast.cmo: syntax tree nodes in user full syntax
 	q_phony.cmo: keeping quotations for pretty printing
 .fi
 .LP

@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: camlp5_comm.sh,v 1.8 2007/09/07 11:49:03 deraugla Exp $
+# $Id: camlp5_comm.sh,v 1.9 2007/09/16 05:48:11 deraugla Exp $
 
 ARGS1="-mode $MODE"
 FILE=
@@ -24,6 +24,7 @@ if test "$2" = "camlp5r" -o "$2" = "camlp5"; then
         fi
 	shift; shift
 	ARGS2=$(echo $* | sed -e "s/[()*]//g")
+#	ARGS2=$(echo $ARGS2 | sed -e "s/q_MLast.cmo/q_ast.cmo/")
 #	ARGS1="$ARGS1 -verbose"
 	if test "$QUIET" = "no"; then echo $COMM $ARGS2 $ARGS1 $FILE; fi
 	$COMM $ARGS2 $ARGS1 $FILE

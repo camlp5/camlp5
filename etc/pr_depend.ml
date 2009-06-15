@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.35 2007/09/16 05:19:01 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.36 2007/09/16 05:48:11 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open MLast;
@@ -32,7 +32,9 @@ value option f =
 value vala f =
   fun
   [ <:vala< x >> -> f x
-  | _ -> () ]
+  | IFDEF STRICT THEN
+      _ -> ()
+    END ]
 ;
 
 value longident =
