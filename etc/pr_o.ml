@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.164 2007/12/26 10:20:13 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.165 2007/12/26 12:37:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1700,22 +1700,12 @@ value variant_decl_list char pc pvl =
 
 value rec class_longident pc cl =
   match cl with
-  [ [] -> sprintf "%s%s" pc.bef pc.aft
-  | [c] -> sprintf "%s%s%s" pc.bef c pc.aft
-  | [c :: cl] ->
-      sprintf "%s%s.%s" pc.bef c (class_longident {(pc) with bef = ""} cl) ]
+  [ [] -> pprintf pc ""
+  | [c] -> pprintf pc "%s" c
+  | [c :: cl] -> pprintf pc "%s.%p" c class_longident cl ]
 ;
 
-value field pc (s, t) =
-  horiz_vertic
-    (fun () ->
-       sprintf "%s%s : %s%s" pc.bef s (ctyp {(pc) with bef = ""; aft = ""} t)
-         pc.aft)
-    (fun () ->
-       let s1 = sprintf "%s%s :" pc.bef s in
-       let s2 = ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t in
-       sprintf "%s\n%s" s1 s2)
-;
+value field pc (s, t) = pprintf pc "%s :@;%p" s ctyp t;
 
 value field_expr pc (s, e) = pprintf pc "%s =@;%p" s expr e;
 
@@ -2088,13 +2078,8 @@ EXTEND_PRINTER
                  match cst with
                  [ None -> sprintf "%sobject" pc.bef
                  | Some t ->
-                     horiz_vertic
-                       (fun () ->
-                          sprintf "%sobject (%s)" pc.bef
-                            (ctyp {(pc) with bef = ""; aft = ""} t))
-                       (fun () ->
-                          not_impl "class_type vertic 1" {(pc) with aft = ""}
-                            t) ]
+                     let pc = {(pc) with aft = ""} in
+                     pprintf pc "object@;(%p)" ctyp t ]
                in
                let s2 =
                  vlist class_sig_item_sep
