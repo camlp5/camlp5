@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.115 2007/12/21 03:10:35 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.116 2007/12/21 04:04:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -409,12 +409,9 @@ value type_constraint pc (t1, t2) =
 
 value type_params pc tvl =
   match tvl with
-  [ [] -> sprintf "%s%s" pc.bef pc.aft
-  | [tv] -> type_var {(pc) with aft = sprintf " %s" pc.aft} tv
-  | _ ->
-      hlistl (comma_after type_var) type_var
-        {(pc) with bef = sprintf "%s(" pc.bef; aft = sprintf ") %s" pc.aft}
-        tvl ]
+  [ [] -> pprintf pc ""
+  | [tv] -> pprintf pc "%p " type_var tv
+  | _ -> pprintf pc "(%p) " (hlistl (comma_after type_var) type_var) tvl ]
 ;
 
 value mem_tvar s tpl = List.exists (fun (t, _) -> Pcaml.unvala t = s) tpl;
@@ -426,30 +423,22 @@ value type_decl pc td =
   in
   match te with
   [ <:ctyp< '$s$ >> when not (mem_tvar s (Pcaml.unvala tp)) ->
-      sprintf "%s%s%s%s" pc.bef
-        (type_params {(pc) with bef = ""; aft = ""} (Pcaml.unvala tp))
-        (var_escaped {(pc) with bef = ""; aft = ""} (Pcaml.unvala tn))
-        pc.aft
-  | _ ->
+      pprintf pc "%p%p" type_params  (Pcaml.unvala tp)
+        var_escaped (Pcaml.unvala tn)
+ | _ ->
       horiz_vertic
         (fun () ->
-           sprintf "%s%s%s = %s%s%s" pc.bef
-             (type_params {(pc) with bef = ""; aft = ""} (Pcaml.unvala tp))
-             (var_escaped {(pc) with bef = ""; aft = ""} (Pcaml.unvala tn))
-             (ctyp {(pc) with bef = ""; aft = ""} te)
-             (hlist type_constraint {(pc) with bef = ""; aft = ""}
-                (Pcaml.unvala cl))
-             pc.aft)
+           pprintf pc "%p%p = %p%p" type_params (Pcaml.unvala tp)
+             var_escaped (Pcaml.unvala tn) ctyp te
+             (hlist type_constraint) (Pcaml.unvala cl))
         (fun () ->
            let s1 =
              horiz_vertic
                (fun () ->
-                  sprintf "%s%s%s =" pc.bef
-                    (type_params {(pc) with bef = ""; aft = ""}
-                       (Pcaml.unvala tp))
-                    (var_escaped {(pc) with bef = ""; aft = ""}
-                       (Pcaml.unvala tn)))
-               (fun () ->
+                  let pc = {(pc) with aft = ""} in
+                  pprintf pc "%p%p =" type_params (Pcaml.unvala tp)
+                    var_escaped (Pcaml.unvala tn))
+              (fun () ->
                   not_impl "type_decl vertic 1" {(pc) with aft = ""} tn)
            in
            let s2 =
