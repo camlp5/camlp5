@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: revsynt.html,v 1.9 2007/07/20 00:33:13 deraugla Exp $ -->
+  <!-- $Id: revsynt.html,v 1.10 2007/07/20 01:43:21 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>revised syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -265,6 +265,38 @@
 <pre>
   let p = e in e1
 </pre>
+  </li>
+</ul>
+
+<h3>Mutables and assignment</h3>
+
+<ul>
+  <li>The statement "<tt>&lt;-</tt>" is written "<tt>:=</tt>":
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>x.f <- y</tt></td>
+        <td><tt>x.f := y</tt></td>
+      </tr>
+    </table>
+  </li>
+
+  <li>The "ref" type is declared as a record type with one field named
+    "val", instead of "contents". The operator "!" does not exist any
+    more, and references are assigned like the other mutables:
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>x := !x + y</tt></td>
+        <td><tt>x.val := x.val + y</tt></td>
+      </tr>
+    </table>
   </li>
 </ul>
 
