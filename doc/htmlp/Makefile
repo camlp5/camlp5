@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.37 2007/11/26 09:20:52 deraugla Exp $
+# $Id: Makefile,v 1.38 2007/11/26 15:58:46 deraugla Exp $
 
 H=../html
 OBJS=$H/index.html $H/about.html $H/ast_strict.html $H/ast_transi.html $H/bparsers.html $H/commands.html $H/conclusion.html $H/extfun.html $H/fparsers.html $H/grammars.html $H/lexers.html $H/library.html $H/locations.html $H/macros.html $H/ml_ast.html $H/opretty.html $H/parsers.html $H/pcaml.html $H/pragma.html $H/pretty.html $H/printers.html $H/ptools.html $H/q_ast.html $H/quot.html $H/revsynt.html $H/scheme.html $H/sources.html $H/strict.html $H/syntext.html
@@ -18,6 +18,7 @@ camlp5.info: html2texi $(OBJS)
 	makeinfo --force camlp5.texi
 
 camlp5.dvi: camlp5.tex
+	latex camlp5.tex
 	latex camlp5.tex
 	latex camlp5.tex
 
