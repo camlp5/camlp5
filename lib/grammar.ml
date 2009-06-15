@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.41 2007/09/07 18:18:38 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.42 2007/09/08 03:07:55 deraugla Exp $ *)
 
 open Gramext;
 open Format;
@@ -472,6 +472,9 @@ value peek_nth n strm = do {
   loop list n
 };
 
+exception Skip;
+value call_push ps al strm = try [ps strm :: al] with [ Skip -> al ];
+
 value rec parser_of_tree entry nlevn alevn =
   fun
   [ DeadEnd -> parser []
@@ -562,51 +565,51 @@ and parser_of_symbol entry nlevn =
            (fun act symb -> Obj.magic act (parser_of_symbol entry nlevn symb))
            act symbl)
   | Slist0 s ->
-      let ps = parser_of_symbol entry nlevn s in
+      let ps = call_push (parser_of_symbol entry nlevn s) in
       let rec loop al =
         parser
-        [ [: a = ps; a = loop [a :: al] ! :] -> a
+        [ [: al = ps al; a = loop al ! :] -> a
         | [: :] -> al ]
       in
       parser [: a = loop [] :] -> Obj.repr (List.rev a)
   | Slist0sep symb sep ->
-      let ps = parser_of_symbol entry nlevn symb in
+      let ps = call_push (parser_of_symbol entry nlevn symb) in
       let pt = parser_of_symbol entry nlevn sep in
       let rec kont al =
         parser
-        [ [: v = pt; a = ps ? symb_failed entry v sep symb;
-             a = kont [a :: al] ! :] ->
+        [ [: v = pt; al = ps al ? symb_failed entry v sep symb;
+             a = kont al ! :] ->
             a
         | [: :] -> al ]
       in
       parser
-      [ [: a = ps; a = kont [a] ! :] -> Obj.repr (List.rev a)
+      [ [: al = ps []; a = kont al ! :] -> Obj.repr (List.rev a)
       | [: :] -> Obj.repr [] ]
   | Slist1 s ->
-      let ps = parser_of_symbol entry nlevn s in
+      let ps = call_push (parser_of_symbol entry nlevn s) in
       let rec loop al =
         parser
-        [ [: a = ps; a = loop [a :: al] ! :] -> a
+        [ [: al = ps al; a = loop al ! :] -> a
         | [: :] -> al ]
       in
-      parser [: a = ps; a = loop [a] ! :] -> Obj.repr (List.rev a)
+      parser [: al = ps []; a = loop al ! :] -> Obj.repr (List.rev a)
   | Slist1sep symb sep ->
-      let ps = parser_of_symbol entry nlevn symb in
+      let ps = call_push (parser_of_symbol entry nlevn symb) in
       let pt = parser_of_symbol entry nlevn sep in
       let rec kont al =
         parser
         [ [: v = pt;
-             a =
+             al =
                parser
-               [ [: a = ps :] -> a
-               | [: a = parse_top_symb entry symb :] -> a
+               [ [: a = ps al :] -> a
+               | [: a = parse_top_symb entry symb :] -> [a :: al]
                | [: :] ->
                    raise (Stream.Error (symb_failed entry v sep symb)) ];
-             a = kont [a :: al] ! :] ->
+             a = kont al ! :] ->
             a
         | [: :] -> al ]
       in
-      parser [: a = ps; a = kont [a] ! :] -> Obj.repr (List.rev a)
+      parser [: al = ps []; a = kont al ! :] -> Obj.repr (List.rev a)
   | Sopt s ->
       let ps = parser_of_symbol entry nlevn s in
       parser

@@ -5,13 +5,8 @@
 (* Experimental AST quotations while running the normal parser and
    its possible extensions and meta-ifying the nodes.
      Antiquotations over tokens work only in "strict" mode.
-     Antiquotations over values of syntax tree types are a hack (creation
-   of extra values not belonging to their types) and there is a risk of
-   memory fault if the semantic actions of the parser use these values in
-   their supposed normal range. Example with antiquotation in
-         <:expr< parser [: x = $y$ :] -> z >>
-     The good solution should be to extend the syntax tree for these
-   nodes. *)
+     Antiquotations over values of syntax tree types not yet
+   implemented. Needs extension of syntax trees definitions. *)
 
 (* #load "pa_extend.cmo";; *)
 (* #load "q_MLast.cmo";; *)

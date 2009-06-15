@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.23 2007/09/07 04:43:58 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.24 2007/09/08 03:07:55 deraugla Exp $ *)
 
 (*
 Added statements:
@@ -40,6 +40,13 @@ Added statements:
 
      IFDEF <dexpr> THEN <type> ELSE <type> END
      IFNDEF <dexpr> THEN <type> ELSE <type> END
+
+  In constructors declarations and in match cases:
+
+     IFDEF <dexpr> THEN <item> ELSE <item> END
+     IFNDEF <dexpr> THEN <item> ELSE <item> END
+     IFDEF <dexpr> THEN <item> END
+     IFNDEF <dexpr> THEN <item> END
 
   A <dexpr> is either:
 
@@ -279,8 +286,12 @@ value undef x =
   [ Not_found -> () ]
 ;
 
+let constructor_declaration =
+  Grammar.Entry.find Pcaml.ctyp "constructor_declaration"
+in
+let match_case = Grammar.Entry.find Pcaml.expr "match_case" in
 EXTEND
-  GLOBAL: expr patt str_item sig_item;
+  GLOBAL: expr patt str_item sig_item constructor_declaration match_case;
   str_item: FIRST
     [ [ x = str_macro_def ->
           match x with
@@ -363,6 +374,26 @@ EXTEND
           if e then p1 else p2
       | "IFNDEF"; e = dexpr; "THEN"; p1 = SELF; "ELSE"; p2 = SELF; "END" ->
           if e then p2 else p1 ] ]
+  ;
+  constructor_declaration: FIRST
+    [ [ "IFDEF"; e = dexpr; "THEN"; x = SELF; "END" ->
+          if e then x else raise Grammar.Skip
+      | "IFDEF"; e = dexpr; "THEN"; x = SELF; "ELSE"; y = SELF; "END" ->
+          if e then x else y
+      | "IFNDEF"; e = dexpr; "THEN"; x = SELF; "END" ->
+          if e then raise Grammar.Skip else x
+      | "IFNDEF"; e = dexpr; "THEN"; x = SELF; "ELSE"; y = SELF; "END" ->
+          if e then y else x ] ]
+  ;
+  match_case: FIRST
+    [ [ "IFDEF"; e = dexpr; "THEN"; x = SELF; "END" ->
+          if e then x else raise Grammar.Skip
+      | "IFDEF"; e = dexpr; "THEN"; x = SELF; "ELSE"; y = SELF; "END" ->
+          if e then x else y
+      | "IFNDEF"; e = dexpr; "THEN"; x = SELF; "END" ->
+          if e then raise Grammar.Skip else x
+      | "IFNDEF"; e = dexpr; "THEN"; x = SELF; "ELSE"; y = SELF; "END" ->
+          if e then y else x ] ]
   ;
   dexpr:
     [ [ x = SELF; "OR"; y = SELF -> x || y ]
