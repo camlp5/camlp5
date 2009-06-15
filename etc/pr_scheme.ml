@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.37 2007/10/13 13:07:12 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.38 2007/10/13 13:45:46 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1042,7 +1042,8 @@ EXTEND_PRINTER
           plistf 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
              aft = sprintf ")%s" pc.aft}
-            [(fun pc -> sprintf "%s?%s%s" pc.bef x pc.aft, "");
+            [(fun pc -> sprintf "%s?%s" pc.bef pc.aft, "");
+             (fun pc -> sprintf "%s%s%s" pc.bef x pc.aft, "");
              (fun pc -> expr pc e, "")]
       | <:patt< ~$s$ >> ->
           sprintf "%s~%s%s" pc.bef s pc.aft

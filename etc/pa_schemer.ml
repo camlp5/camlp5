@@ -1097,8 +1097,12 @@ and ipatt_opt_se =
   | Stid loc s -> Left <:patt< ~$_:s$ >>
   | Sqid loc s -> Left <:patt< ?$_:s$ >>
   | Sexpr loc [Sqid _ s; se] ->
-      let e = expr_se se in
-      Left <:patt< ? ( $_lid:s$ = $e$ ) >>
+      let p = patt_se se in
+      Left <:patt< ?$_:s$: ($p$) >>
+  | Sexpr loc [Slid _ "?"; se1; se2] ->
+      let p = patt_se se1
+      and e = expr_se se2 in
+      Left <:patt< ? ($p$ = $e$) >>
   | Sexpr loc [Stid _ s; se] ->
       let p = patt_se se in
       Left <:patt< ~$_:s$:$p$ >>

@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.80 2007/10/13 13:07:12 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.81 2007/10/13 13:45:46 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -1039,7 +1039,10 @@
     ((Stid loc s) (Left <:patt< ~$_:s$ >>))
     ((Sqid loc s) (Left <:patt< ?$_:s$ >>))
     ((Sexpr loc [(Sqid _ s) se])
-     (let ((e (expr_se se))) (Left <:patt< ? ( $_lid:s$ = $e$ ) >>)))
+     (let ((p (patt_se se))) (Left <:patt< ?$_:s$: ($p$) >>)))
+    ((Sexpr loc [(Slid _ "?") se1 se2])
+     (let ((p (patt_se se1)) (e (expr_se se2)))
+      (Left <:patt< ? ($p$ = $e$) >>)))
     ((Sexpr loc [(Stid _ s) se])
      (let ((p (patt_se se))) (Left <:patt< ~$_:s$:$p$ >>)))
     ((Sexpr loc [(Slid _ ":") se1 se2])
