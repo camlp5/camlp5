@@ -10,13 +10,11 @@ extfun.cmo: extfun.cmi
 extfun.cmx: extfun.cmi 
 fstream.cmo: fstream.cmi 
 fstream.cmx: fstream.cmi 
-gramalgo.cmo: gramext.cmi 
-gramalgo.cmx: gramext.cmx 
 gramext.cmo: gramext.cmi plexing.cmi 
 gramext.cmx: gramext.cmi plexing.cmx 
 gramext.cmi: plexing.cmi 
-grammar.cmo: gramalgo.cmo gramext.cmi grammar.cmi plexing.cmi ploc.cmi 
-grammar.cmx: gramalgo.cmx gramext.cmx grammar.cmi plexing.cmx ploc.cmx 
+grammar.cmo: gramext.cmi grammar.cmi plexing.cmi ploc.cmi 
+grammar.cmx: gramext.cmx grammar.cmi plexing.cmx ploc.cmx 
 grammar.cmi: ploc.cmi plexing.cmi gramext.cmi 
 plexer.cmo: plexer.cmi plexing.cmi ploc.cmi 
 plexer.cmx: plexer.cmi plexing.cmx ploc.cmx 

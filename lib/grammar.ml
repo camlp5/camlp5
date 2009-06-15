@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: grammar.ml,v 1.56 2007/10/21 19:33:39 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.57 2007/10/25 02:32:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Gramext;
@@ -793,16 +793,11 @@ value start_parser_of_entry entry =
   | Dparser p -> fun levn strm -> p strm ]
 ;
 
-value trace_algo = ref False;
-
 (* Extend syntax *)
 
 value init_entry_functions entry = do {
   entry.estart :=
     fun lev strm -> do {
-      if Gramalgo.trace.val && trace_algo.val then Gramalgo.f entry lev
-      else ();
-      trace_algo.val := False;
       let f = start_parser_of_entry entry in
       entry.estart := f;
       f lev strm
@@ -1018,7 +1013,6 @@ module Entry =
       Obj.magic (parse_parsable entry p : Obj.t)
     ;
     value parse (entry : e 'a) cs : 'a =
-      let _ = trace_algo.val := True in
       let parsable = parsable entry.egram cs in
       parse_parsable entry parsable
     ;

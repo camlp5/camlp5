@@ -1,5 +1,5 @@
-Camlp5 Version 5.01:
----------------------
+Camlp5 Version 5.02:
+--------------------
 
 * [14 Oct 07] Changed 'pa_lex.cmo' into 'pa_lexer.cmo' with a different
   syntax (actually 'pa_lex.cmo' will be still distributed for compatibility,
@@ -11,6 +11,10 @@ Camlp5 Version 5.01:
   caused syntax errors when using the normal "match..with" statement.
 * [11 Oct 07] Rewritten parsers and printers in Scheme syntax. Deleted
   old module Spretty.
+
+Camlp5 Version 5.01:
+--------------------
+
 * [06 Oct 07] Fixed bug in grammars: there was a parsing confusion with
   entries with qualified names with same final identifier, resulting
   bad results. Example: (qualified names "Prim.ident" and "Constr.ident"
@@ -34,7 +38,7 @@ Camlp5 Version 5.01:
   parse, printing the error "incorrect alias pattern".
 
 Camlp5 Version 5.00:
----------------------
+--------------------
 
 * In Camlp5 compiled distributions, there are now two modes. If one wants
   to compile Camlp5, the 'configure' script can select the mode:
@@ -83,7 +87,7 @@ Camlp5 Version 5.00:
   in fake root directories. Usage: make install DESTDIR=fake-root-dir
 
 Camlp5 Version 4.08:
----------------------
+--------------------
 
 * [] Updated documentation.
 * [30 Aug 07] Added IFDEF macros for signatures (.mli files).
@@ -101,7 +105,7 @@ Camlp5 Version 4.08:
   interfaces of Pcaml for the printers.
 
 Camlp5 Version 4.07:
----------------------
+--------------------
 
 * [02 Aug 07] Fixed bug: option -o did not work for pr_r.cmo and pr_o.cmo
   (was always stdout).
@@ -113,7 +117,7 @@ Camlp5 Version 4.07:
   like that, *not* transformed into let x = match .. with C x -> x.
 
 Camlp5 Version 4.06:
----------------------
+--------------------
 
 * [25 Jul 07] Fixed bug: in normal syntax, the declaration of a constructor
   named "True" or "False" did not work.
@@ -132,14 +136,14 @@ Camlp5 Version 4.06:
   and 'Entry.parse_parsable' like for the functorial interface.
 
 Camlp5 Version 4.05:
----------------------
+--------------------
 
 * [16 Jul 07] Fixed bug in normal syntax: optional semicolon was no more
   accepted at end of stream patterns.
 * [16 Jul 07] Fixed syntax problems with "~id:" and "~id :" (with a space).
 
 Camlp5 Version 4.04:
----------------------
+--------------------
 
 * [11 Jul 07] Renamed application as "camlp5".
 * [11 Jul 07] Fixed compilation problems with ocaml version 3.08.1.
