@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: parsers.html,v 1.16 2007/08/23 07:32:46 deraugla Exp $ -->
+  <!-- $Id: parsers.html,v 1.17 2007/08/27 12:02:39 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -293,92 +293,67 @@ this:</p>
   cases are:</p>
 
 <ul>
-
-<li>A direct test of one or several stream elements
-  (called <b>terminal</b> symbol), in three ways:
-
-  <ol>
-
-  <li>The character "backquote" followed by a pattern, meaning: if the
-    stream starts with an element which is matched by this pattern,
-    the stream pattern component matches, and the stream element is
-    removed from the stream.</li>
-
-  <li>The character "backquote" followed by a pattern, the keyword
-    "when" and an expression of type "<code>bool</code>", meaning: if
-    the stream starts with an element which is matched by this pattern
-    and if the evaluation of the expression is "<code>True</code>",
-    the stream pattern component matches, and the first element of the
-    stream is removed.</li>
-
-  <li>The character "question mark" followed by the character "equal"
-    (new feature 2007) and a lookahead expression (see further),
-    meaning: if the lookahead applies, the stream pattern component
-    matches. The lookahead may unfreeze one or several elements on the
-    stream, but does not remove them.</li>
-
-  </ol>
-
-</li>
-
-<li>A pattern followed by the "equal" sign and an expression of type
-  "<code>Stream.t x -> y</code>" for some types "<code>x</code>" and
-  "<code>y</code>". This expression is called a <b>non terminal</b>
-  symbol. It means: call the expression (which is a parser) with the
-  current stream. If this sub-parser:
-
-  <ol>
-
-  <li>Returns an element, the pattern is bound to this result and the
-    next stream pattern component is tested.</li>
-
-  <li>Raises the exception "<code>Stream.Failure</code>", there are two
-    cases:
-
-    <ul>
-
-    <li>if the stream pattern component is the first one of the stream
-      case, the current parser also fails with the exception
-      "<code>Stream.Failure</code>".</li>
-
-    <li>if the stream pattern component is not the first one of the
-      stream case, the current parser fails with the exception
-      "<code>Stream.Error</code>".</li>
-    
-    </ul>
-
-  In this second case:
-
-    <ul>
-
-    <li>If the stream pattern component is followed by a "question
-      mark" and an expression (which must be of type
-      "<code>string</code>"), the expression is evaluated and given as
-      parameter of the exception "<tt>Stream.Error</tt>".</li>
-
-    <li>If the expression is followed by an "exclamation mark" (new
-      feature 2007), the test and conversion from
-      "<code>Stream.Failure</code>" to "<code>Stream.Error</code>" is
-      not done, and the parser just raises
-      "<code>Stream.Failure</code>" again. This is an optimization
-      which must be assumed by the programmer, in general when he
-      knows that the sub-parser called never raises
-      "<code>Stream.Failure</code>" (for example if the called parser
-      ends with a parser case containing an empty stream pattern). See
-      "no error optionization" below.</li>
-
-    <li>Otherwise the exception parameter is the empty string.</li>
-
-    </ul>
-
+  <li>A direct test of one or several stream elements
+    (called <b>terminal</b> symbol), in three ways:
+    <ol>
+      <li>The character "backquote" followed by a pattern, meaning: if
+        the stream starts with an element which is matched by this
+        pattern, the stream pattern component matches, and the stream
+        element is removed from the stream.</li>
+      <li>The character "backquote" followed by a pattern, the keyword
+        "when" and an expression of type "<code>bool</code>", meaning:
+        if the stream starts with an element which is matched by this
+        pattern and if the evaluation of the expression is
+        "<code>True</code>", the stream pattern component matches, and
+        the first element of the stream is removed.</li>
+      <li>The character "question mark" followed by the character
+        "equal" (new feature 2007) and a lookahead expression (see
+        further), meaning: if the lookahead applies, the stream
+        pattern component matches. The lookahead may unfreeze one or
+        several elements on the stream, but does not remove them.</li>
+    </ol>
   </li>
-
-  </ol>
-
-</li>
-
-<li>A pattern, which is bound to the current stream.</li>
-
+  <li>A pattern followed by the "equal" sign and an expression of type
+    "<code>Stream.t x -> y</code>" for some types "<code>x</code>" and
+    "<code>y</code>". This expression is called a <b>non terminal</b>
+    symbol. It means: call the expression (which is a parser) with the
+    current stream. If this sub-parser:
+    <ol>
+      <li>Returns an element, the pattern is bound to this result and
+        the next stream pattern component is tested.</li>
+      <li>Raises the exception "<code>Stream.Failure</code>", there
+        are two cases:
+        <ul>
+          <li>if the stream pattern component is the first one of the
+            stream case, the current parser also fails with the
+            exception "<code>Stream.Failure</code>".</li>
+          <li>if the stream pattern component is not the first one of
+            the stream case, the current parser fails with the
+            exception "<code>Stream.Error</code>".</li>
+        </ul>
+        In this second case:
+        <ul>
+          <li>If the stream pattern component is followed by a
+            "question mark" and an expression (which must be of type
+            "<code>string</code>"), the expression is evaluated and
+            given as parameter of the exception
+            "<tt>Stream.Error</tt>".</li>
+          <li>If the expression is followed by an "exclamation mark"
+            (new feature 2007), the test and conversion from
+            "<code>Stream.Failure</code>" to
+            "<code>Stream.Error</code>" is not done, and the parser
+            just raises "<code>Stream.Failure</code>" again. This is
+            an optimization which must be assumed by the programmer,
+            in general when he knows that the sub-parser called never
+            raises "<code>Stream.Failure</code>" (for example if the
+            called parser ends with a parser case containing an empty
+            stream pattern). See "no error optionization" below.</li>
+          <li>Otherwise the exception parameter is the empty string.</li>
+        </ul>
+      </li>
+    </ol>
+  </li>
+  <li>A pattern, which is bound to the current stream.</li>
 </ul>
 
 <p>Notice that patterns are bound immediately and can be used in the
