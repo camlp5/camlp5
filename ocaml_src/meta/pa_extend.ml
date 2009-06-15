@@ -1152,6 +1152,7 @@ let expr_of_delete_rule loc gmod n sl =
 let rec ident_of_expr =
   function
     MLast.ExLid (_, s) -> s
+  | MLast.ExApp (_, MLast.ExLid (_, s), _) -> s
   | MLast.ExUid (_, s) -> s
   | MLast.ExAcc (_, e1, e2) -> ident_of_expr e1 ^ "__" ^ ident_of_expr e2
   | _ -> failwith "internal error in pa_extend"
@@ -1180,6 +1181,13 @@ let sstoken loc s = sstoken_aux loc s s;;
 let sstoken2 loc s =
   let name = if !(Pcaml.strict_mode) then s ^ "2" else s in
   sstoken_aux loc name s
+;;
+
+let sstoken_prm loc name prm =
+  let a_name = "a_" ^ name in
+  let n = mk_name loc (MLast.ExApp (loc, MLast.ExLid (loc, a_name), prm)) in
+  let text = TXnterm (loc, n, None) in
+  {used = []; text = text; styp = STlid (loc, "string")}
 ;;
 
 let mk_psymbol p s t =
@@ -2154,8 +2162,10 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (string : 'string Grammar.Entry.e))],
       Gramext.action
         (fun (e : 'string) (x : string) (loc : Ploc.t) ->
-           (let text = TXtok (loc, x, e) in
-            {used = []; text = text; styp = STlid (loc, "string")} :
+           (if !quotify then sstoken_prm loc x e
+            else
+              let text = TXtok (loc, x, e) in
+              {used = []; text = text; styp = STlid (loc, "string")} :
             'symbol));
       [Gramext.Stoken ("UIDENT", "")],
       Gramext.action

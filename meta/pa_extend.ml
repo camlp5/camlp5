@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.61 2007/09/14 22:48:11 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.62 2007/09/14 23:39:14 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -515,6 +515,7 @@ value expr_of_delete_rule loc gmod n sl =
 value rec ident_of_expr =
   fun
   [ <:expr< $lid:s$ >> -> s
+  | <:expr< $lid:s$ $_$ >> -> s
   | <:expr< $uid:s$ >> -> s
   | <:expr< $e1$ . $e2$ >> -> ident_of_expr e1 ^ "__" ^ ident_of_expr e2
   | _ -> failwith "internal error in pa_extend" ]
@@ -545,6 +546,13 @@ value sstoken loc s =
 value sstoken2 loc s =
   let name = if Pcaml.strict_mode.val then s ^ "2" else s in
   sstoken_aux loc name s
+;
+
+value sstoken_prm loc name prm =
+  let a_name = "a_" ^ name in
+  let n = mk_name loc <:expr< $lid:a_name$ $prm$ >> in
+  let text = TXnterm loc n None in
+  {used = []; text = text; styp = STlid loc "string"}
 ;
 
 value mk_psymbol p s t =
@@ -1017,8 +1025,10 @@ EXTEND
             let text = TXtok loc x <:expr< "" >> in
             {used = []; text = text; styp = STlid loc "string"}
       | x = UIDENT; e = string ->
-          let text = TXtok loc x e in
-          {used = []; text = text; styp = STlid loc "string"}
+          if quotify.val then sstoken_prm loc x e
+          else
+            let text = TXtok loc x e in
+            {used = []; text = text; styp = STlid loc "string"}
       | e = string ->
           let text = TXtok loc "" e in
           {used = []; text = text; styp = STlid loc "string"}
