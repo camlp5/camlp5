@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_rp.ml,v 1.17 2007/12/15 02:03:44 deraugla Exp $ *)
+(* $Id: pr_rp.ml,v 1.18 2007/12/15 03:09:14 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Parserify;
@@ -119,37 +119,23 @@ value parser_case force_vertic pc (sp, po, e) =
         (fun () ->
            if force_vertic then sprintf "\n"
            else
-             sprintf "%s[: %s :]%s -> %s%s" pc.bef
-               (stream_patt {(pc) with bef = ""; aft = ""} sp)
-               (ident_option {(pc) with bef = ""; aft = ""} po)
-               (expr {(pc) with bef = ""; aft = ""} e)
-               pc.aft)
+             pprintf pc "[: %p :]%p -> %p" stream_patt sp ident_option po
+               expr e)
         (fun () ->
            match flatten_sequence e with
            [ Some el ->
                sequence_box
                  (fun pc () ->
-                    stream_patt
-                      {(pc) with bef = sprintf "%s[: " pc.bef;
-                       aft =
-                         sprintf " :]%s ->%s"
-                           (ident_option {(pc) with bef = ""; aft = ""} po)
-                           pc.aft}
-                      sp)
+                    pprintf pc "[: %p :]%p ->" stream_patt sp ident_option po)
                  expr pc el
            | None ->
-               let s1 =
-                 stream_patt
-                   {(pc) with bef = sprintf "%s[: " pc.bef;
-                    aft =
-                      sprintf " :]%s ->"
-                        (ident_option {(pc) with bef = ""; aft = ""} po)}
-                   sp
-               in
-               let s2 =
-                 expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
-               in
-               sprintf "%s\n%s" s1 s2 ]) ]
+               if Pr_r.test.val then
+               pprintf pc "[: %p :]%p ->@;%p" stream_patt sp
+                 ident_option po expr e
+               else
+               pprintf pc "[: %p :]%s ->@;%p" stream_patt sp
+                 (ident_option {(pc) with bef = ""; aft = ""} po)
+                 expr e ]) ]
 ;
 
 value parser_case_sh force_vertic pc spe =
