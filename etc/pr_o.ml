@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.29 2007/07/04 08:53:13 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.30 2007/07/04 09:03:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -238,20 +238,11 @@ value patt_as pc z =
   | z -> patt pc z ]
 ;
 
-(* utilities specific to pr_r *)
+(* utilities specific to pr_o *)
 
 (* Basic displaying of a 'binding' (let, value, expr or patt record field).
    The pretty printing is done correctly, but there are no syntax shortcuts
-   (e.g. "let f = fun x -> y" is *not* shortened as "let f x = y"), nor
-   pretty printing shortcuts (e.g.
-       let f =
-         do {
-           ...
-         }
-   is not shortened as
-       let f = do {
-         ...
-       }
+   (e.g. "let f = fun x -> y" is *not* shortened as "let f x = y")
 
    Some functions follow (some of them with '_binding' in their name) which
    use syntax or pretty printing shortcuts.
@@ -303,53 +294,6 @@ value sequencify e =
   if not flag_sequ_begin_at_eol.val then None else flatten_sequence e
 ;
 
-(* Pretty printing improvement (optional):
-   - print the sequence beginner at end of previous lines,
-     therefore printing the sequence with one tabulation less
-   - example:
-          value f x =
-            do {
-              ...
-            }
-     is printed :
-          value f x = do {
-            ...
-          }
- *)
-value sequence_box pc expr el =
-  let s1 = pc.bef " begin" in
-  let s2 =
-    vlist2 expr_semi expr_semi
-      {ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = (None, Some "");
-       dang = ""}
-      el
-  in
-  let s3 = sprintf "%s%s%s" (tab pc.ind) "end" pc.aft in
-  sprintf "%s\n%s\n%s" s1 s2 s3
-;
-
-(* Pretty printing improvement (optional):
-   - test a "let" binding can be displayed as "where"
- *)
-value can_be_displayed_as_where e =
-  match e with
-  [ <:expr< let rec $p$ = $body$ in $e$ >> ->
-      let e1 =
-        loop e where rec loop =
-          fun
-          [ <:expr< $e$ $_$ >> -> loop e
-          | e -> e ]
-      in
-      match (p, e1, body) with
-      [ (<:patt< $lid:f$ >>, <:expr< $lid:g$ >>,
-         <:expr< fun [ $list:_$ ] >>) ->
-          if f = g then Some (p, e, body) else None
-      | _ -> None ]
-  | _ -> None ]
-;
-
-value sequence_box2 pc el = sequence_box pc expr el;
-
 value expr_with_comm_except_if_sequence pc e =
   match e with
   [ <:expr< do { $list:_$ } >> -> expr pc e
@@ -358,11 +302,8 @@ value expr_with_comm_except_if_sequence pc e =
 
 (* Pretty printing improvements (optional):
    - prints "value x = e" instead of "value = fun x -> e"
-   - if vertical and "e" is a sequence, put the "do {" at after the "="
    - the continuation after the expression is optionally on next line if
      it not a sequence (see 'particularity for the parameter 'ko' below)
-   - the expression after '=' is displayed with the 'where' statement if
-     possible (expr_wh)
    - if "e" is a type constraint, put the constraint after the params. E.g.
         value f x y = (e : t)
      is displayed:
@@ -388,10 +329,11 @@ value value_binding pc (p, e) =
     | _ -> (e, None) ]
   in
   let pl = [p :: pl] in
+  let simple_patt = pr_patt.pr_fun "simple" in
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s = %s%s" pc.bef
-         (hlist patt {(pc) with bef = ""; aft = ""} pl)
+         (hlist simple_patt {(pc) with bef = ""; aft = ""} pl)
          (match tyo with
           [ Some t -> sprintf " : %s" (ctyp {(pc) with bef = ""; aft = ""} t)
           | None -> "" ])
@@ -402,7 +344,7 @@ value value_binding pc (p, e) =
          horiz_vertic
            (fun () ->
               sprintf "%s%s%s =" pc.bef
-                (hlist patt {(pc) with bef = ""; aft = ""} pl)
+                (hlist simple_patt {(pc) with bef = ""; aft = ""} pl)
                 (match tyo with
                  [ Some t ->
                      sprintf " : %s"
@@ -412,12 +354,13 @@ value value_binding pc (p, e) =
               let patt_tycon tyo pc p =
                 match tyo with
                 [ Some t ->
-                    patt {(pc) with aft = ctyp {(pc) with bef = " : "} t}
+                    simple_patt
+                      {(pc) with aft = ctyp {(pc) with bef = " : "} t}
                       p
                 | None -> patt pc p ]
               in
               let pl = List.map (fun p -> (p, "")) pl in
-              plistl patt (patt_tycon tyo) 4 {(pc) with aft = " ="} pl)
+              plistl simple_patt (patt_tycon tyo) 4 {(pc) with aft = " ="} pl)
        in
        let s2 =
          expr_with_comm_except_if_sequence
@@ -435,7 +378,6 @@ value value_binding pc (p, e) =
 (* Pretty printing improvements (optional):
    - prints "let f x = e" instead of "let f = fun x -> e"
    - prints a newline before the "in" if last element not horizontal
-   - the expression after '=' is displayed as 'where' if possible (expr_wh)
    Cancellation of all these improvements could be done by changing calls
    to this function to a call to "binding expr" above.
 *)
@@ -455,30 +397,23 @@ value let_binding pc (p, e) =
   in
   let (pl, e) = expr_fun_args e in
   let pl = [p :: pl] in
+  let simple_patt = pr_patt.pr_fun "simple" in
   horiz_vertic
     (fun () ->
        sprintf "%s%s = %s%s" pc.bef
-         (hlist patt {(pc) with bef = ""; aft = ""} pl)
+         (hlist simple_patt {(pc) with bef = ""; aft = ""} pl)
          (expr {(pc) with bef = ""; aft = ""} e)
          (if pc.aft then " in" else ""))
     (fun () ->
        let s =
-         match sequencify e with
-         [ Some el ->
-             sequence_box2
-               {(pc) with
-                bef k = hlist patt {(pc) with aft = sprintf " =%s" k} pl;
-                aft = ""}
-               el
-         | None ->
-             let s1 = hlist patt {(pc) with aft = " ="} pl in
-             let s2 =
-               comm_expr expr
-                 {ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = "";
-                  dang = ""}
-                 e
-              in
-             sprintf "%s\n%s" s1 s2 ]
+         let s1 = hlist simple_patt {(pc) with aft = " ="} pl in
+         let s2 =
+           comm_expr expr
+             {ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = "";
+              dang = ""}
+             e
+          in
+         sprintf "%s\n%s" s1 s2
        in
        if pc.aft then sprintf "%s\n%sin" s (tab pc.ind) else s)
 ;
@@ -2674,7 +2609,7 @@ Pcaml.add_option "-ss" (Arg.Set flag_semi_semi)
   "Print double semicolons (equivalent to -flag M).";
 
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.29 2007/07/04 08:53:13 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.30 2007/07/04 09:03:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)

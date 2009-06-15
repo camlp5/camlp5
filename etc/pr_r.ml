@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.25 2007/07/04 02:45:29 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.26 2007/07/04 09:03:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -407,7 +407,7 @@ value record_binding pc (p, e) =
    - prints "value x = e" instead of "value = fun x -> e"
    - if vertical and "e" is a sequence, put the "do {" at after the "="
    - the continuation after the expression is optionally on next line if
-     it not a sequence (see 'particularity for the parameter 'ko' below)
+     it not a sequence (see 'particularity for the parameter 'pc.aft' below)
    - the expression after '=' is displayed with the 'where' statement if
      possible (expr_wh)
    - if "e" is a type constraint, put the constraint after the params. E.g.
