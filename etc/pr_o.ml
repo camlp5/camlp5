@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.145 2007/12/24 13:49:57 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.146 2007/12/24 16:45:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1042,20 +1042,17 @@ EXTEND_PRINTER
     | "simple"
       [ <:expr< {$list:lel$} >> ->
           let lxl = List.map (fun lx -> (lx, ";")) lel in
-          plistl (comm_patt_any (record_binding False))
-            (comm_patt_any (record_binding True)) 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s{" pc.bef;
-             aft = (sprintf "}%s" pc.aft)}
+          pprintf pc "@[<1>{%p}@]"
+            (plistl (comm_patt_any (record_binding False))
+               (comm_patt_any (record_binding True)) 0)
             lxl
       | <:expr< {($e$) with $list:lel$} >> ->
           let lxl = List.map (fun lx -> (lx, ";")) lel in
           let dot_expr = Eprinter.apply_level pr_expr "dot" in
-          plistl (record_binding False) (record_binding True) 0
-            {(pc) with ind = pc.ind + 1;
-             bef =
-               dot_expr
-                 {(pc) with bef = sprintf "%s{" pc.bef; aft = " with "} e;
-             aft = (sprintf "}%s" pc.aft)} lxl
+          pprintf pc "@[<1>@[{%p with @]%p}@]" dot_expr e
+            (plistl (comm_patt_any (record_binding False))
+               (comm_patt_any (record_binding True)) 0)
+            lxl
       | <:expr< [| $list:el$ |] >> ->
           if el = [] then sprintf "%s[| |]%s" pc.bef pc.aft
           else
