@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.32 2007/07/04 16:57:49 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.33 2007/07/04 17:43:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -418,6 +418,7 @@ value record_binding pc (p, e) =
    to this function to a call to "binding expr" above.
 *)
 value value_binding pc (p, e) =
+  let expr_wh = if flag_where_after_value_eq.val then expr_wh else expr in
   let (p, e) =
     if is_irrefut_patt p then (p, e)
     else
@@ -438,7 +439,6 @@ value value_binding pc (p, e) =
     [ <:expr< ($e$ : $t$) >>  -> (e, Some t)
     | _ -> (e, None) ]
   in
-  let expr_wh = if flag_where_after_value_eq.val then expr_wh else expr in
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s = %s%s" pc.bef
@@ -493,6 +493,7 @@ value value_binding pc (p, e) =
    to this function to a call to "binding expr" above.
 *)
 value let_binding pc (p, e) =
+  let expr_wh = if flag_where_after_let_eq.val then expr_wh else expr in
   let (p, e) =
     if is_irrefut_patt p then (p, e)
     else
@@ -513,7 +514,6 @@ value let_binding pc (p, e) =
     [ <:expr< ($e$ : $t$) >>  -> (e, Some t)
     | _ -> (e, None) ]
   in
-  let expr_wh = if flag_where_after_let_eq.val then expr_wh else expr in
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s = %s%s" pc.bef
