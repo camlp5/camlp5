@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo *)
-(* $Id: main.ml,v 1.1 2007/07/11 09:46:18 deraugla Exp $ *)
+(* $Id: main.ml,v 1.2 2007/07/11 10:31:06 deraugla Exp $ *)
 
 open Printf;
 
@@ -147,7 +147,7 @@ value file_kind_of_name name =
 ;
 
 value print_version () = do {
-  eprintf "Camlp4s version %s (ocaml %s)\n" Pcaml.version
+  eprintf "Camlp5 version %s (ocaml %s)\n" Pcaml.version
     Pconfig.ocaml_version;
   flush stderr;
   exit 0
@@ -173,7 +173,7 @@ value initial_spec_list =
     "<file> Dump quotation expander result in case of syntax error.");
    ("-o", Arg.String (fun x -> Pcaml.output_file.val := Some x),
     "<file> Output on <file> instead of standard output.");
-   ("-v", Arg.Unit print_version, "Print Camlp4s version and exit.")]
+   ("-v", Arg.Unit print_version, "Print Camlp5 version and exit.")]
 ;
 
 value anon_fun x = do {

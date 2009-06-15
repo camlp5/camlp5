@@ -79,7 +79,7 @@ let oversion =
 ;;
 
 let defined =
-  ref ["CAMLP4S", None; "CAMLP4S_4_02", None; "OCAML_" ^ oversion, None]
+  ref ["CAMLP5", None; "CAMLP5_4_02", None; "OCAML_" ^ oversion, None]
 ;;
 
 let is_defined i = List.mem_assoc i !defined;;

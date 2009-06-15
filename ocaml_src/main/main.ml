@@ -132,7 +132,7 @@ let file_kind_of_name name =
 ;;
 
 let print_version () =
-  eprintf "Camlp4s version %s (ocaml %s)\n" Pcaml.version
+  eprintf "Camlp5 version %s (ocaml %s)\n" Pcaml.version
     Pconfig.ocaml_version;
   flush stderr;
   exit 0
@@ -154,7 +154,7 @@ let initial_spec_list =
    "<file> Dump quotation expander result in case of syntax error.";
    "-o", Arg.String (fun x -> Pcaml.output_file := Some x),
    "<file> Output on <file> instead of standard output.";
-   "-v", Arg.Unit print_version, "Print Camlp4s version and exit."]
+   "-v", Arg.Unit print_version, "Print Camlp5 version and exit."]
 ;;
 
 let anon_fun x = Pcaml.input_file := x; file_kind := file_kind_of_name x;;

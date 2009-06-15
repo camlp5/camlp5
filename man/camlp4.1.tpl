@@ -1,43 +1,43 @@
 .TH CAMLP4 1  "" "INRIA"
 .SH NAME
-camlp4 - Pre-Precessor-Pretty-Printer for OCaml
+camlp5 - Pre-Precessor-Pretty-Printer for OCaml
 .br
 ocpp - Universal preprocessor
 
 .SH SYNOPSIS
-.B camlp4
+.B camlp5
 [
 load-options
 ] [--] [
 other-options
 ]
 .br
-.B camlp4o
+.B camlp5o
 [
 load-options
 ] [--] [
 other-options
 ]
 .br
-.B camlp4r
+.B camlp5r
 [
 load-options
 ] [--] [
 other-options
 ]
 .br
-.B camlp4sch
+.B camlp5sch
 [
 load-options
 ] [--] [
 other-options
 ]
 .br
-.B camlp4o.cma
+.B camlp5o.cma
 .br
-.B camlp4r.cma
+.B camlp5r.cma
 .br
-.B camlp4sch.cma
+.B camlp5sch.cma
 .br
 .B ocpp
 [
@@ -46,45 +46,45 @@ load-options
 file
 .LP
 .br
-.B camlp4o.opt
+.B camlp5o.opt
 [--] [
 other-options
 ]
 .br
-.B camlp4r.opt
+.B camlp5r.opt
 [--] [
 other-options
 ]
 
 .SH DESCRIPTION
-.B camlp4
+.B camlp5
 is a Pre-Processor-Pretty-Printer for OCaml, parsing a source
 file and printing some result on standard output.
 .LP
-.B camlp4o,
-.B camlp4r
+.B camlp5o,
+.B camlp5r
 and
-.B camlp4sch
+.B camlp5sch
 are versions of
-.B camlp4
+.B camlp5
 with some files already loaded (see further).
 .LP
-.B camlp4o.cma,
-.B camlp4r.cma
+.B camlp5o.cma,
+.B camlp5r.cma
 and
-.B camlp4sch.cma
-are files to be loaded in ocaml toplevel to use the camlp4 machinery
+.B camlp5sch.cma
+are files to be loaded in ocaml toplevel to use the camlp5 machinery
 .LP
 .B ocpp
 is an universal preprocessor, treating any kind of source file,
 generating the same text with the possible quotations expanded.
 .LP
-.B camlp4o.opt
+.B camlp5o.opt
 and
-.B camlp4r.opt
-are versions of camlp4o and camlp4r compiled by the native-code compiler
+.B camlp5r.opt
+are versions of camlp5o and camlp5r compiled by the native-code compiler
 ocamlopt. They are faster but not extensible. And they are not available
-in all installations of camlp4.
+in all installations of camlp5.
 
 .SH LOAD OPTIONS
 
@@ -102,17 +102,17 @@ may end the load options.
 Add
 .I directory
 in the search path for files loaded. Unless the option \-nolib is used,
-the camlp4 library directory is appended to the path. Warning: there is
+the camlp5 library directory is appended to the path. Warning: there is
 no automatic search in the current directory: add "\-I ." for this.
 .TP
 .B \-where
-Print camlp4 library directory name and exit.
+Print camlp5 library directory name and exit.
 .TP
 .B \-nolib
-No automatic search for objects files in camlp4 library directory.
+No automatic search for objects files in camlp5 library directory.
 .TP
 .BI object-file
-The file is loaded in camlp4 core.
+The file is loaded in camlp5 core.
 
 .SH OTHER OPTIONS
 
@@ -184,7 +184,7 @@ Added by pa_macro.cmo: define the ident.
 Added by pa_macro.cmo: undefine the ident.
 
 .SH "PROVIDED FILES"
-These files are installed in the directory LIBDIR/camlp4.
+These files are installed in the directory LIBDIR/camlp5.
 
 .LP
 Parsing files:
@@ -229,46 +229,46 @@ Quotation expanders:
 .fi
 .LP
 The command
-.B camlp4o
+.B camlp5o
 is a shortcut for:
 .nf
 .ta 1c
-	camlp4 pa_o.cmo pa_op.cmo pr_dump.cmo
+	camlp5 pa_o.cmo pa_op.cmo pr_dump.cmo
 .fi
 .LP
 The command
-.B camlp4r
+.B camlp5r
 is a shortcut for:
 .nf
 .ta 1c
-	camlp4 pa_r.cmo pa_rp.cmo pr_dump.cmo
+	camlp5 pa_r.cmo pa_rp.cmo pr_dump.cmo
 .fi
 .LP
 The command
-.B camlp4sch
+.B camlp5sch
 is a shortcut for:
 .nf
 .ta 1c
-	camlp4 pa_scheme.cmo pr_dump.cmo
+	camlp5 pa_scheme.cmo pr_dump.cmo
 .fi
 .LP
 .LP
 The file
-.B camlp4o.cma
-can be loaded in the toplevel to start camlp4 with OCaml syntax.
+.B camlp5o.cma
+can be loaded in the toplevel to start camlp5 with OCaml syntax.
 .LP
 The file
-.B camlp4r.cma
-can be loaded in the toplevel to start camlp4 with revised syntax.
+.B camlp5r.cma
+can be loaded in the toplevel to start camlp5 with revised syntax.
 .LP
 The file
-.B camlp4sch.cma
-can be loaded in the toplevel to start camlp4 with Scheme syntax.
+.B camlp5sch.cma
+can be loaded in the toplevel to start camlp5 with Scheme syntax.
 
 .SH "FILES"
-Library directory of camlp4 in the present installation:
+Library directory of camlp5 in the present installation:
 .br
-LIBDIR/camlp4
+LIBDIR/camlp5
 
 .SH "SEE ALSO"
 ocamlc(1), ocaml(1).

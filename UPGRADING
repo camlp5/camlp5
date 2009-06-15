@@ -17,11 +17,11 @@ Version 4.0
   using the function 'Stdpp.encl_loc'. See the other functions.
 
     With this version of camlp5, when loading 'pa_macro.cmo', you get the
-  identifier 'CAMLP4S' defined. If you want to make your sources compatible
+  identifier 'CAMLP5' defined. If you want to make your sources compatible
   with several versions of camlp5, you can add, in <expressions>, <patterns>,
   or toplevel definition (<structure items>), things like :
 
-      IFDEF CAMLP4S THEN
+      IFDEF CAMLP5 THEN
         <source compatible with this version of camlp5>
       ELSE
         <source compatible with other versions of camlp5>

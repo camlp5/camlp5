@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.4 2007/07/10 14:40:11 deraugla Exp $
+# $Id: Makefile,v 1.5 2007/07/11 10:31:06 deraugla Exp $
 
 include ../config/Makefile
 
@@ -23,4 +23,4 @@ install:
 	-cd "$(MANDIR)/man1"; rm -f $(NAME)r.opt.1; ln -s $(TARGET) $(NAME)r.opt.1
 
 $(NAME).1: camlp4.1.tpl
-	sed -e "s'LIBDIR'$(LIBDIR)'g" -e "s/camlp4/$(NAME)/g" camlp4.1.tpl > $(NAME).1
+	sed -e "s'LIBDIR'$(LIBDIR)'g" -e "s/camlp5/$(NAME)/g" camlp4.1.tpl > $(NAME).1
