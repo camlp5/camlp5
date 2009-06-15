@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.15 2007/09/01 21:20:34 deraugla Exp $
+# $Id: Makefile,v 1.16 2007/10/11 10:47:26 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -6,13 +6,13 @@ include ../config/Makefile
 INCLUDES=-I ../main -I ../boot -I $(OTOP)/utils -I $(OTOP)/parsing -I $(OTOP)/typing -I $(OTOP)/toplevel
 OCAMLCFLAGS=-warn-error A $(INCLUDES)
 
-CAMLP5_OBJS=$(OTOP)/utils/pconfig.cmo ../boot/ploc.cmo ../boot/plexing.cmo ../boot/plexer.cmo ../boot/gramext.cmo ../boot/grammar.cmo ../boot/extfold.cmo ../boot/extfun.cmo ../boot/eprinter.cmo ../boot/fstream.cmo ../boot/pretty.cmo ../main/quotation.cmo ../main/ast2pt.cmo ../main/reloc.cmo ../main/exparser.cmo ../main/spretty.cmo ../main/pcaml.cmo ../main/prtools.cmo ../boot/stdpp.cmo ../boot/token.cmo
+CAMLP5_OBJS=$(OTOP)/utils/pconfig.cmo ../boot/ploc.cmo ../boot/plexing.cmo ../boot/plexer.cmo ../boot/gramext.cmo ../boot/grammar.cmo ../boot/extfold.cmo ../boot/extfun.cmo ../boot/eprinter.cmo ../boot/fstream.cmo ../boot/pretty.cmo ../main/quotation.cmo ../main/ast2pt.cmo ../main/reloc.cmo ../main/exparser.cmo ../main/pcaml.cmo ../main/prtools.cmo ../boot/stdpp.cmo ../boot/token.cmo
 CTOP=camlp5_top.cmo
 ROBJS=$(CAMLP5_OBJS) ../meta/pa_r.cmo ../meta/pa_rp.cmo rprint.cmo $(CTOP)
 OOBJS=$(CAMLP5_OBJS) ../etc/pa_o.cmo ../etc/pa_op.cmo $(CTOP)
 SOBJS=$(CAMLP5_OBJS) ../etc/pa_scheme.cmo $(CTOP)
 OOOBJS=$(CAMLP5_OBJS) ../etc/pa_o.cmo ../etc/pa_oop.cmo $(CTOP)
-OBJS=$(OTOP)/utils/pconfig.cmo ../main/quotation.cmo ../main/reloc.cmo ../main/ast2pt.cmo ../main/spretty.cmo ../main/pcaml.cmo camlp5_top.cmo
+OBJS=$(OTOP)/utils/pconfig.cmo ../main/quotation.cmo ../main/reloc.cmo ../main/ast2pt.cmo ../main/pcaml.cmo camlp5_top.cmo
 
 TARGET=$(NAME)o.cma $(NAME)r.cma $(NAME)sch.cma $(NAME)_top.cma
 

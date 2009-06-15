@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo *)
-(* $Id: pcaml.ml,v 1.38 2007/10/08 09:45:38 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.39 2007/10/11 10:47:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value version = "5.02-exp";
@@ -359,84 +359,6 @@ value pr_class_type = Eprinter.make "class_type";
 value pr_expr_fun_args = ref Extfun.empty;
 
 value flag_equilibrate_cases = ref False;
-
-module OldPrinters =
-  struct
-    open Spretty;
-    type printer_t 'a =
-      { pr_fun : mutable string -> 'a -> string -> kont -> pretty;
-        pr_levels : mutable list (pr_level 'a) }
-    and pr_level 'a =
-      { pr_label : string;
-        pr_box : 'a -> Stream.t pretty -> pretty;
-        pr_rules : mutable pr_rule 'a }
-    and pr_rule 'a =
-      Extfun.t 'a (curr 'a -> next 'a -> string -> kont -> Stream.t pretty)
-    and curr 'a = 'a -> string -> kont -> Stream.t pretty
-    and next 'a = 'a -> string -> kont -> pretty
-    and kont = Stream.t pretty;
-    value pr_str_item = {pr_fun = fun []; pr_levels = []};
-    value pr_sig_item = {pr_fun = fun []; pr_levels = []};
-    value pr_module_type = {pr_fun = fun []; pr_levels = []};
-    value pr_module_expr = {pr_fun = fun []; pr_levels = []};
-    value pr_expr = {pr_fun = fun []; pr_levels = []};
-    value pr_patt = {pr_fun = fun []; pr_levels = []};
-    value pr_ctyp = {pr_fun = fun []; pr_levels = []};
-    value pr_class_sig_item = {pr_fun = fun []; pr_levels = []};
-    value pr_class_str_item = {pr_fun = fun []; pr_levels = []};
-    value pr_class_type = {pr_fun = fun []; pr_levels = []};
-    value pr_class_expr = {pr_fun = fun []; pr_levels = []};
-    value pr_expr_fun_args = ref Extfun.empty;
-    value pr_fun name pr lab =
-      loop False pr.pr_levels where rec loop app =
-        fun
-        [ [] -> fun x dg k -> failwith ("unable to print " ^ name)
-        | [lev :: levl] ->
-            if app || lev.pr_label = lab then
-              let next = loop True levl in
-              let rec curr x dg k =
-                Extfun.apply lev.pr_rules x curr next dg k
-              in
-              fun x dg k -> lev.pr_box x (curr x dg k)
-            else loop app levl ]
-    ;
-    pr_str_item.pr_fun := pr_fun "str_item" pr_str_item;
-    pr_sig_item.pr_fun := pr_fun "sig_item" pr_sig_item;
-    pr_module_type.pr_fun := pr_fun "module_type" pr_module_type;
-    pr_module_expr.pr_fun := pr_fun "module_expr" pr_module_expr;
-    pr_expr.pr_fun := pr_fun "expr" pr_expr;
-    pr_patt.pr_fun := pr_fun "patt" pr_patt;
-    pr_ctyp.pr_fun := pr_fun "ctyp" pr_ctyp;
-    pr_class_sig_item.pr_fun := pr_fun "class_sig_item" pr_class_sig_item;
-    pr_class_str_item.pr_fun := pr_fun "class_str_item" pr_class_str_item;
-    pr_class_type.pr_fun := pr_fun "class_type" pr_class_type;
-    pr_class_expr.pr_fun := pr_fun "class_expr" pr_class_expr;
-    value rec find_pr_level lab =
-      fun
-      [ [] -> failwith ("level " ^ lab ^ " not found")
-      | [lev :: levl] ->
-          if lev.pr_label = lab then lev else find_pr_level lab levl ]
-    ;
-    value top_printer pr x = do {
-      Format.force_newline ();
-      Spretty.print_pretty Format.print_char Format.print_string
-        Format.print_newline "<< " "   " 78 (fun _ _ _ -> ("", 0, 0, 0)) 0
-        (pr.pr_fun "top" x "" [: :]);
-      Format.print_string " >>"
-    };
-    value buff = Buffer.create 73;
-    value buffer_char = Buffer.add_char buff;
-    value buffer_string = Buffer.add_string buff;
-    value buffer_newline () = Buffer.add_char buff '\n';
-    value string_of pr x = do {
-      Buffer.clear buff;
-      Spretty.print_pretty buffer_char buffer_string buffer_newline "" "" 78
-        (fun _ _ _ -> ("", 0, 0, 0)) 0 (pr.pr_fun "top" x "" [: :]);
-      Buffer.contents buff
-    };
-    value inter_phrases = ref None;
-  end
-;
 
 (* Directives *)
 
