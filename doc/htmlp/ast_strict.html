@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_strict.html,v 1.7 2007/09/21 20:23:52 deraugla Exp $ -->
+  <!-- $Id: ast_strict.html,v 1.8 2007/09/22 06:18:34 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>AST - strict</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -429,14 +429,14 @@
 <dl class="nodelist">
   <dt>- coercion with type constraint</dt>
   <dd>
-    <tt style="color:blue">&lt;:expr&lt; ($e1$ : $t1$ :> $t2$) >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; ($e$ : $t1$ :> $t2$) >></tt><br/>
     <tt style="color:red">ExCoe loc e (Some t1) t2</tt>
   </dd>
 </dl>
 <dl class="nodelist">
   <dt>- coercion without type constraint</dt>
   <dd>
-    <tt style="color:blue">&lt;:expr&lt; ($e1$ :> $t2$) >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; ($e$ :> $t2$) >></tt><br/>
     <tt style="color:red">ExCoe loc e None t2</tt>
   </dd>
 </dl>
@@ -464,7 +464,7 @@
   <dt>- function</dt>
   <dd>
     <tt style="color:blue">&lt;:expr&lt; fun [ $list:lpwe$ ] >></tt><br/>
-    <tt style="color:red">ExFun loc (Ploc.vala lpwe)</tt><br/>
+    <tt style="color:red">ExFun loc (Ploc.VaVal lpwe)</tt><br/>
     <br/>
     <tt style="color:blue">&lt;:expr&lt; fun [ $_list:lpwe$ ] >></tt><br/>
     <tt style="color:red">ExFun loc lpwe</tt>
@@ -564,7 +564,7 @@
   <dt>- let module</dt>
   <dd>
     <tt style="color:blue">&lt;:expr&lt; let module $uid:s$ = $me$ in $e$ >></tt><br/>
-    <tt style="color:red">ExLmd loc s (Ploc.VaVal me) e</tt><br/>
+    <tt style="color:red">ExLmd loc (Ploc.VaVal s) me e</tt><br/>
     <br/>
     <tt style="color:blue">&lt;:expr&lt; let module $_uid:s$ = $me$ in $e$ >></tt><br/>
     <tt style="color:red">ExLmd loc s me e</tt>
@@ -593,10 +593,10 @@
 <dl class="nodelist">
   <dt>- object expression</dt>
   <dd>
-    <tt style="color:blue">&lt;:expr&lt; object ($opt:op$) $list:lcstri$ end >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; object $opt:op$ $list:lcstri$ end >></tt><br/>
     <tt style="color:red">ExObj loc (Ploc.VaVal op) (Ploc.VaVal lcstri)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; object ($_opt:op$) $_list:lcstri$ end >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; object $_opt:op$ $_list:lcstri$ end >></tt><br/>
     <tt style="color:red">ExObj loc op lcstri</tt>
   </dd>
 </dl>
@@ -1339,7 +1339,7 @@
   </tr>
   <tr>
     <td><tt>CeStr loc po lcstri</tt></td>
-    <td align="center"><tt>object ($opt:op$) $list:lcstri$ end</tt></td>
+    <td align="center"><tt>object $opt:op$ $list:lcstri$ end</tt></td>
     <td>object</td>
   </tr>
   <tr>

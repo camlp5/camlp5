@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.63 2007/09/21 20:43:33 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.64 2007/09/22 06:18:34 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -259,6 +259,7 @@ value test_label_eq =
        match stream_peek_nth lev strm with
        [ Some (("UIDENT", _) | ("LIDENT", _) | ("", ".")) ->
            test (lev + 1) strm
+       | Some ("ANTIQUOT_LOC", _) -> ()
        | Some ("", "=") -> ()
        | _ -> raise Stream.Failure ])
 ;
@@ -381,14 +382,14 @@ EXTEND
       | "open"; i = mod_ident -> <:str_item< open $i$ >>
       | "type"; tdl = LIST1 type_declaration SEP "and" ->
           <:str_item< type $list:tdl$ >>
-      | "let"; r = FLAG "rec"; l = LIST1 let_binding SEP "and"; "in";
+      | "let"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = expr ->
-          let e = <:expr< let $flag:r$ $list:l$ in $x$ >> in
+          let e = <:expr< let $_flag:r$ $_list:l$ in $x$ >> in
           <:str_item< $exp:e$ >>
-      | "let"; r = FLAG "rec"; l = LIST1 let_binding SEP "and" ->
-          match l with
+      | "let"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and") ->
+          match uv l with
           [ [(<:patt< _ >>, e)] -> <:str_item< $exp:e$ >>
-          | _ -> <:str_item< value $flag:r$ $list:l$ >> ]
+          | _ -> <:str_item< value $_flag:r$ $_list:l$ >> ]
       | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in"; e = expr ->
           <:str_item< let module $_uid:m$ = $mb$ in $e$ >>
       | e = expr -> <:str_item< $exp:e$ >> ] ]
@@ -474,9 +475,9 @@ EXTEND
           <:expr< do { $list:[e1 :: get_seq e2]$ } >>
       | e1 = SELF; ";" -> e1 ]
     | "expr1"
-      [ "let"; o = FLAG "rec"; l = LIST1 let_binding SEP "and"; "in";
+      [ "let"; o = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = expr LEVEL "top" ->
-          <:expr< let $flag:o$ $list:l$ in $x$ >>
+          <:expr< let $_flag:o$ $_list:l$ in $x$ >>
       | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in";
         e = expr LEVEL "top" ->
           <:expr< let module $_uid:m$ = $mb$ in $e$ >>
@@ -484,10 +485,11 @@ EXTEND
           <:expr< fun [ $_list:l$ ] >>
       | "fun"; p = patt LEVEL "simple"; e = fun_def ->
           <:expr< fun [$p$ -> $e$] >>
-      | "match"; e = SELF; "with"; OPT "|"; l = LIST1 match_case SEP "|" ->
-          <:expr< match $e$ with [ $list:l$ ] >>
-      | "try"; e = SELF; "with"; OPT "|"; l = LIST1 match_case SEP "|" ->
-          <:expr< try $e$ with [ $list:l$ ] >>
+      | "match"; e = SELF; "with"; OPT "|";
+        l = V (LIST1 match_case SEP "|") ->
+          <:expr< match $e$ with [ $_list:l$ ] >>
+      | "try"; e = SELF; "with"; OPT "|"; l = V (LIST1 match_case SEP "|") ->
+          <:expr< try $e$ with [ $_list:l$ ] >>
       | "if"; e1 = SELF; "then"; e2 = expr LEVEL "expr1"; "else";
         e3 = expr LEVEL "expr1" ->
           <:expr< if $e1$ then $e2$ else $e3$ >>
@@ -497,8 +499,9 @@ EXTEND
         e2 = SELF; "do"; e = V SELF "list"; "done" ->
           let el = vala_map get_seq e in
           <:expr< for $_lid:i$ = $e1$ $_to:df$ $e2$ do { $_list:el$ } >>
-      | "while"; e1 = SELF; "do"; e2 = SELF; "done" ->
-          <:expr< while $e1$ do { $list:get_seq e2$ } >> ]
+      | "while"; e1 = SELF; "do"; e2 = V SELF "list"; "done" ->
+          let el = vala_map get_seq e2 in
+          <:expr< while $e1$ do { $_list:el$ } >> ]
     | [ e = SELF; ","; el = LIST1 NEXT SEP "," ->
           <:expr< ( $list:[e :: el]$ ) >> ]
     | ":=" NONA
@@ -596,10 +599,10 @@ EXTEND
       | "[|"; "|]" -> <:expr< [| |] >>
       | "[|"; el = V expr1_semi_list "list"; "|]" ->
           <:expr< [| $_list:el$ |] >>
-      | "{"; test_label_eq; lel = lbl_expr_list; "}" ->
-          <:expr< { $list:lel$ } >>
-      | "{"; e = expr LEVEL "."; "with"; lel = lbl_expr_list; "}" ->
-          <:expr< { ($e$) with $list:lel$ } >>
+      | "{"; test_label_eq; lel = V lbl_expr_list "list"; "}" ->
+          <:expr< { $_list:lel$ } >>
+      | "{"; e = expr LEVEL "."; "with"; lel = V lbl_expr_list "list"; "}" ->
+          <:expr< { ($e$) with $_list:lel$ } >>
       | "("; ")" -> <:expr< () >>
       | "("; op = operator_rparen -> <:expr< $lid:op$ >>
       | "("; e = SELF; ":"; t = ctyp; ")" -> <:expr< ($e$ : $t$) >>
@@ -656,16 +659,16 @@ EXTEND
   expr_ident:
     [ RIGHTA
       [ i = V LIDENT -> <:expr< $_lid:i$ >>
-      | i = UIDENT -> <:expr< $uid:i$ >>
-      | i = UIDENT; "."; j = SELF ->
+      | i = V UIDENT -> <:expr< $_uid:i$ >>
+      | i = V UIDENT; "."; j = SELF ->
           let rec loop m =
             fun
             [ <:expr< $x$ . $y$ >> -> loop <:expr< $m$ . $x$ >> y
             | e -> <:expr< $m$ . $e$ >> ]
           in
-          loop <:expr< $uid:i$ >> j
-      | i = UIDENT; "."; "("; j = operator_rparen ->
-          <:expr< $uid:i$ . $lid:j$ >> ] ]
+          loop <:expr< $_uid:i$ >> j
+      | i = V UIDENT; "."; "("; j = operator_rparen ->
+          <:expr< $_uid:i$ . $lid:j$ >> ] ]
   ;
   (* Patterns *)
   patt:
@@ -725,7 +728,7 @@ EXTEND
       | "["; pl = patt_semi_list; "]" -> <:patt< $mklistpat loc None pl$ >>
       | "[|"; "|]" -> <:patt< [| |] >>
       | "[|"; pl = patt_semi_list; "|]" -> <:patt< [| $list:pl$ |] >>
-      | "{"; lpl = lbl_patt_list; "}" -> <:patt< { $list:lpl$ } >>
+      | "{"; lpl = V lbl_patt_list "list"; "}" -> <:patt< { $_list:lpl$ } >>
       | "("; ")" -> <:patt< () >>
       | "("; op = operator_rparen -> <:patt< $lid:op$ >>
       | "("; p = SELF; ":"; t = ctyp; ")" -> <:patt< ($p$ : $t$) >>
@@ -783,12 +786,14 @@ EXTEND
     [ [ test_constr_decl; OPT "|";
         cdl = LIST1 constructor_declaration SEP "|" ->
           <:ctyp< [ $list:cdl$ ] >>
-      | t = ctyp -> <:ctyp< $t$ >>
-      | t = ctyp; "="; "{"; ldl = label_declarations; "}" ->
-          <:ctyp< $t$ == { $list:ldl$ } >>
+      | t = ctyp ->
+          <:ctyp< $t$ >>
+      | t = ctyp; "="; "{"; ldl = V label_declarations "list"; "}" ->
+          <:ctyp< $t$ == { $_list:ldl$ } >>
       | t = ctyp; "="; OPT "|"; cdl = LIST1 constructor_declaration SEP "|" ->
           <:ctyp< $t$ == [ $list:cdl$ ] >>
-      | "{"; ldl = label_declarations; "}" -> <:ctyp< { $list:ldl$ } >> ] ]
+      | "{"; ldl = V label_declarations "list"; "}" ->
+          <:ctyp< { $_list:ldl$ } >> ] ]
   ;
   type_parameters:
     [ [ -> (* empty *) []
@@ -903,9 +908,9 @@ EXTEND
   class_expr:
     [ "top"
       [ "fun"; cfd = class_fun_def -> cfd
-      | "let"; rf = FLAG "rec"; lb = LIST1 let_binding SEP "and"; "in";
-        ce = SELF ->
-          <:class_expr< let $flag:rf$ $list:lb$ in $ce$ >> ]
+      | "let"; rf = V (FLAG "rec"); lb = V (LIST1 let_binding SEP "and");
+        "in"; ce = SELF ->
+          <:class_expr< let $_flag:rf$ $_list:lb$ in $ce$ >> ]
     | "apply" LEFTA
       [ ce = SELF; e = expr LEVEL "label" ->
           <:class_expr< $ce$ $e$ >> ]
@@ -916,8 +921,9 @@ EXTEND
       | "["; ct = ctyp; "]"; ci = class_longident ->
           <:class_expr< $list:ci$ [ $ct$ ] >>
       | ci = class_longident -> <:class_expr< $list:ci$ >>
-      | "object"; cspo = OPT class_self_patt; cf = class_structure; "end" ->
-          <:class_expr< object $opt:cspo$ $list:cf$ end >>
+      | "object"; cspo = V (OPT class_self_patt);
+        cf = V class_structure "list"; "end" ->
+          <:class_expr< object $_opt:cspo$ $_list:cf$ end >>
       | "("; ce = SELF; ":"; ct = class_type; ")" ->
           <:class_expr< ($ce$ : $ct$) >>
       | "("; ce = SELF; ")" -> ce ] ]
@@ -973,9 +979,9 @@ EXTEND
     [ [ "["; tl = LIST1 ctyp SEP ","; "]"; id = clty_longident ->
           <:class_type< $list:id$ [ $list:tl$ ] >>
       | id = clty_longident -> <:class_type< $list:id$ >>
-      | "object"; cst = OPT class_self_type; csf = LIST0 class_sig_item;
-        "end" ->
-          <:class_type< object $opt:cst$ $list:csf$ end >> ] ]
+      | "object"; cst = V (OPT class_self_type);
+        csf = V (LIST0 class_sig_item); "end" ->
+          <:class_type< object $_opt:cst$ $_list:csf$ end >> ] ]
   ;
   class_self_type:
     [ [ "("; t = ctyp; ")" -> t ] ]
@@ -1012,19 +1018,21 @@ EXTEND
   (* Expressions *)
   expr: LEVEL "simple"
     [ LEFTA
-      [ "new"; i = class_longident -> <:expr< new $list:i$ >>
-      | "object"; cspo = OPT class_self_patt; cf = class_structure; "end" ->
-          <:expr< object $opt:cspo$ $list:cf$ end >> ] ]
+      [ "new"; i = V class_longident "list" -> <:expr< new $_list:i$ >>
+      | "object"; cspo = V (OPT class_self_patt);
+        cf = V class_structure "list"; "end" ->
+          <:expr< object $_opt:cspo$ $_list:cf$ end >> ] ]
   ;
   expr: LEVEL "."
-    [ [ e = SELF; "#"; lab = label -> <:expr< $e$ # $lid:lab$ >> ] ]
+    [ [ e = SELF; "#"; lab = V label "lid" -> <:expr< $e$ # $_lid:lab$ >> ] ]
   ;
   expr: LEVEL "simple"
     [ [ "("; e = SELF; ":"; t = ctyp; ":>"; t2 = ctyp; ")" ->
           <:expr< ($e$ : $t$ :> $t2$) >>
       | "("; e = SELF; ":>"; t = ctyp; ")" -> <:expr< ($e$ :> $t$) >>
       | "{<"; ">}" -> <:expr< {< >} >>
-      | "{<"; fel = field_expr_list; ">}" -> <:expr< {< $list:fel$ >} >> ] ]
+      | "{<"; fel = V field_expr_list "list"; ">}" ->
+          <:expr< {< $_list:fel$ >} >> ] ]
   ;
   field_expr_list:
     [ [ l = label; "="; e = expr LEVEL "expr1"; ";"; fel = SELF ->
@@ -1085,9 +1093,9 @@ EXTEND
           <:ctyp< [ < $list:rfl$ > $list:ntl$ ] >> ] ]
   ;
   poly_variant:
-    [ [ "`"; i = ident -> <:poly_variant< ` $i$ >>
-      | "`"; i = ident; "of"; ao = FLAG "&"; l = LIST1 ctyp SEP "&" ->
-          <:poly_variant< `$i$ of $flag:ao$ $list:l$ >>
+    [ [ "`"; i = V ident "" -> <:poly_variant< ` $_:i$ >>
+      | "`"; i = V ident ""; "of"; ao = FLAG "&"; l = LIST1 ctyp SEP "&" ->
+          <:poly_variant< `$_:i$ of $flag:ao$ $list:l$ >>
       | t = ctyp -> MLast.PvInh t ] ]
   ;
   name_tag:
@@ -1124,7 +1132,7 @@ EXTEND
       | a = QUESTIONANTIQUOTCOLON_LOC "_" -> <:vala< $a$ >> ] ]
   ;
   expr: LEVEL "simple"
-    [ [ "`"; s = ident -> <:expr< ` $s$ >> ] ]
+    [ [ "`"; s = V ident "" -> <:expr< ` $_:s$ >> ] ]
   ;
   fun_def:
     [ [ p = labeled_patt; e = SELF -> <:expr< fun $p$ -> $e$ >> ] ]

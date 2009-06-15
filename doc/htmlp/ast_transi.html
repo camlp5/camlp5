@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_transi.html,v 1.3 2007/09/21 20:23:52 deraugla Exp $ -->
+  <!-- $Id: ast_transi.html,v 1.4 2007/09/22 06:18:34 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -272,12 +272,12 @@
   </tr>
   <tr>
     <td><tt>ExCoe loc e (Some t1) t2</tt></td>
-    <td align="center"><tt>($e1$ : $t1$ :> $t2$)</tt></td>
+    <td align="center"><tt>($e$ : $t1$ :> $t2$)</tt></td>
     <td>coercion</td>
   </tr>
   <tr>
     <td><tt>ExCoe loc e None t2</tt></td>
-    <td align="center"><tt>($e1$ :> $t2$)</tt></td>
+    <td align="center"><tt>($e$ :> $t2$)</tt></td>
     <td>coercion</td>
   </tr>
   <tr>
@@ -362,7 +362,7 @@
   </tr>
   <tr>
     <td><tt>ExObj loc op lcstri</tt></td>
-    <td align="center"><tt>object ($opt:op$) $list:lcstri$ end</tt></td>
+    <td align="center"><tt>object $opt:op$ $list:lcstri$ end</tt></td>
     <td>object expression</td>
   </tr>
   <tr>
@@ -1073,7 +1073,7 @@
   </tr>
   <tr>
     <td><tt>CeStr loc po lcstri</tt></td>
-    <td align="center"><tt>object ($opt:op$) $list:lcstri$ end</tt></td>
+    <td align="center"><tt>object $opt:op$ $list:lcstri$ end</tt></td>
     <td>object</td>
   </tr>
   <tr>
