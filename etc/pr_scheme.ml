@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.46 2007/10/15 03:21:55 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.47 2007/10/15 03:26:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -102,6 +102,16 @@ value has_cons_with_params vdl =
 value paren pc b =
   {(pc) with ind = pc.ind + 1; bef = sprintf "%s(%s" pc.bef b;
    aft = sprintf ")%s" pc.aft}
+;
+
+value bracket pc b =
+  {(pc) with ind = pc.ind + 1; bef = sprintf "%s[%s" pc.bef b;
+   aft = sprintf "]%s" pc.aft}
+;
+
+value brace pc b =
+  {(pc) with ind = pc.ind + 1; bef = sprintf "%s{%s" pc.bef b;
+   aft = sprintf "}%s" pc.aft}
 ;
 
 value type_param pc (s, (pl, mi)) =
@@ -479,10 +489,7 @@ EXTEND_PRINTER
                   List.map (fun cd pc -> constr_decl pc cd) cdl])
       | <:ctyp< { $list:cdl$ } >> ->
           let cdl = List.map (fun cd -> (cd, "")) cdl in
-          plist label_decl 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s{" pc.bef;
-             aft = sprintf "}%s" pc.aft}
-            cdl
+          plist label_decl 0 (brace pc "") cdl
       | <:ctyp< [ = $list:vl$ ] >> ->
           horiz_vertic
             (fun () ->
@@ -706,18 +713,14 @@ EXTEND_PRINTER
             plistf 0 (paren pc "")
               [(fun pc -> patt pc p, ""); (fun pc -> curr pc e, "")]
           in
-          plist record_binding 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s{" pc.bef;
-             aft = sprintf "}%s" pc.aft}
+          plist record_binding 0 (brace pc "")
             (List.map (fun fe -> (fe, "")) fel)
       | <:expr< { ($e$) with $list:fel$ } >> ->
           let record_binding pc (p, e) =
             plistf 0 (paren pc "")
               [(fun pc -> patt pc p, ""); (fun pc -> curr pc e, "")]
           in
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s{with" pc.bef;
-             aft = sprintf "}%s" pc.aft}
+          plistbf 0 (brace pc "with")
             [(fun pc -> curr pc e, "") ::
              List.map (fun fe -> (fun pc -> record_binding pc fe, "")) fel]
       | <:expr< $e1$ := $e2$ >> ->
@@ -735,10 +738,7 @@ EXTEND_PRINTER
               | <:expr< [] >> -> ([], None)
               | x -> ([], Some e) ]
           in
-          let pc =
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef;
-             aft = sprintf "]%s" pc.aft}
-          in
+          let pc = bracket pc "" in
           match c with
           [ None ->
               let el = List.map (fun e -> (e, "")) el in
@@ -881,10 +881,7 @@ EXTEND_PRINTER
               | <:patt< [] >> -> ([], None)
               | x -> ([], Some p) ]
           in
-          let pc =
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef;
-             aft = sprintf "]%s" pc.aft}
-          in
+          let pc = bracket pc "" in
           match c with
           [ None ->
               let pl = List.map (fun p -> (p, "")) pl in
@@ -928,9 +925,7 @@ EXTEND_PRINTER
             plistf 0 (paren pc "")
               [(fun pc -> curr pc p1, ""); (fun pc -> curr pc p2, "")]
           in
-          plist record_binding 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s{" pc.bef;
-             aft = sprintf "}%s" pc.aft}
+          plist record_binding 0 (brace pc "")
             (List.map (fun fp -> (fp, "")) fpl)
       | <:patt< ?$s$ >> ->
           plistbf 0 (paren pc "?")
