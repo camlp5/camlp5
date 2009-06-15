@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.70 2007/09/19 20:19:39 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.71 2007/09/19 20:36:57 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -685,6 +685,16 @@ value ssflag loc s =
   ss_aux loc "a_flag" r s.used
 ;
 
+value ssvala loc al s =
+  if quotify.val then ss2_of_ss s
+  else
+    let (text, styp) =
+      if not Pcaml.strict_mode.val then (s.text, s.styp)
+      else (TXvala loc al s.text, STvala loc s.styp)
+    in
+    {used = s.used; text = text; styp = styp}
+;
+
 value text_of_entry loc gmod e =
   let ent =
     let x = e.name in
@@ -948,28 +958,16 @@ EXTEND
             let styp = STlid loc "bool" in
             {used = s.used; text = text; styp = styp} ]
     | "vala"
-      [ UIDENT "V"; x = UIDENT ->
+      [ UIDENT "V"; x = UIDENT; al = LIST0 STRING ->
           let s =
             if quotify.val then sstoken loc x
             else
               let text = TXtok loc x <:expr< "" >> in
               {used = []; text = text; styp = STlid loc "string"}
           in
-          if quotify.val then ss2_of_ss s
-          else
-            let (text, styp) =
-              if not Pcaml.strict_mode.val then (s.text, s.styp)
-              else (TXvala loc [] s.text, STvala loc s.styp)
-            in
-            {used = []; text = text; styp = styp}
+          ssvala loc al s
       | UIDENT "V"; s = NEXT; al = LIST0 STRING ->
-          if quotify.val then ss2_of_ss s
-          else
-            let (text,  styp) =
-              if not Pcaml.strict_mode.val then (s.text, s.styp)
-              else (TXvala loc al s.text, STvala loc s.styp)
-            in
-            {used = s.used; text = text; styp = styp} ]
+          ssvala loc al s ]
     | "simple"
       [ UIDENT "SELF" ->
           {used = []; text = TXself loc; styp = STself loc "SELF"}

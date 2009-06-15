@@ -1361,6 +1361,16 @@ let ssflag loc s =
   ss_aux loc "a_flag" r s.used
 ;;
 
+let ssvala loc al s =
+  if !quotify then ss2_of_ss s
+  else
+    let (text, styp) =
+      if not !(Pcaml.strict_mode) then s.text, s.styp
+      else TXvala (loc, al, s.text), STvala (loc, s.styp)
+    in
+    {used = s.used; text = text; styp = styp}
+;;
+
 let text_of_entry loc gmod e =
   let ent =
     let x = e.name in
@@ -2031,30 +2041,18 @@ Grammar.extend
        Gramext.Slist0 (Gramext.Stoken ("STRING", ""))],
       Gramext.action
         (fun (al : string list) (s : 'symbol) _ (loc : Ploc.t) ->
-           (if !quotify then ss2_of_ss s
-            else
-              let (text, styp) =
-                if not !(Pcaml.strict_mode) then s.text, s.styp
-                else TXvala (loc, al, s.text), STvala (loc, s.styp)
-              in
-              {used = s.used; text = text; styp = styp} :
-            'symbol));
-      [Gramext.Stoken ("UIDENT", "V"); Gramext.Stoken ("UIDENT", "")],
+           (ssvala loc al s : 'symbol));
+      [Gramext.Stoken ("UIDENT", "V"); Gramext.Stoken ("UIDENT", "");
+       Gramext.Slist0 (Gramext.Stoken ("STRING", ""))],
       Gramext.action
-        (fun (x : string) _ (loc : Ploc.t) ->
+        (fun (al : string list) (x : string) _ (loc : Ploc.t) ->
            (let s =
               if !quotify then sstoken loc x
               else
                 let text = TXtok (loc, x, MLast.ExStr (loc, "")) in
                 {used = []; text = text; styp = STlid (loc, "string")}
             in
-            if !quotify then ss2_of_ss s
-            else
-              let (text, styp) =
-                if not !(Pcaml.strict_mode) then s.text, s.styp
-                else TXvala (loc, [], s.text), STvala (loc, s.styp)
-              in
-              {used = []; text = text; styp = styp} :
+            ssvala loc al s :
             'symbol))];
      Some "simple", None,
      [[Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ")")],
