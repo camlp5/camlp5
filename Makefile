@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.38 2007/11/20 02:55:15 deraugla Exp $
+# $Id: Makefile,v 1.39 2007/11/20 09:04:06 deraugla Exp $
 
 include config/Makefile
 
@@ -24,7 +24,7 @@ opt:
 	set -e; for i in $(OPTDIRS); do cd $$i; $(MAKE) opt; cd ..; done
 
 opt.opt:
-	set -e; for i in $(OPTOPTDIRS); do cd $$i; $(MAKE) opt; cd ..; done
+	cd compile; $(MAKE) opt
 
 ocaml_src/main/ast2pt.ml:
 	@echo "Please run 'configure' first"; exit 2

@@ -2,7 +2,8 @@ Camlp5 Version 5.03:
 --------------------
 
 * [20 Nov 07] Added commands mkcamlp5 and mkcamlp5.opt to build camlp5
-  executables with predefined loaded modules.
+  executables with predefined loaded modules. Added installation of ocpp
+  with name ocpp5, instead of just ocpp.
 * [19 Nov 07] Added more installed cmx and cmxa files to allow building
   native code linking of all combinations of Camlp5.
 * [14 Nov 07] Fixed bug in pr_o.cmo: failed with printing "{a.(i) with ...}".
