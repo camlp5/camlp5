@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.160 2007/12/25 18:24:44 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.161 2007/12/25 19:07:11 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1400,16 +1400,9 @@ EXTEND_PRINTER
                     when alone in a line. *)
                  sprintf "\n"
                else
-                 sprintf "%ssig%s%s%send%s" pc.bef " "
-                   (hlist sig_item_sep {(pc) with bef = ""; aft = ""} sil)
-                   " " pc.aft)
+                 pprintf pc "sig %p end" (hlist sig_item_sep) sil)
             (fun () ->
-               sprintf "%ssig%s%s%send%s" pc.bef "\n"
-                 (vlist sig_item_sep
-                    {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                     aft = ""}
-                    sil)
-                 ("\n" ^ tab pc.ind) pc.aft)
+               pprintf pc "sig@;%p@ end" (vlist sig_item_sep) sil)
       | <:module_type< $mt$ with $list:wcl$ >> ->
           horiz_vertic
             (fun () ->
