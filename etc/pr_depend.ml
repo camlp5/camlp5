@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.31 2007/09/13 13:21:24 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.32 2007/09/13 17:54:32 deraugla Exp $ *)
 
 open MLast;
 
@@ -128,7 +128,7 @@ and expr =
       expr e;
       list match_case pwel
     }
-  | ExNew _ li -> longident li
+  | <:expr< new $list:li$ >> -> longident li
   | ExOlb _ _ eo -> option expr eo
   | <:expr< {$list:lel$} >> -> list label_expr lel
   | <:expr< {($w$) with $list:lel$} >> -> do {

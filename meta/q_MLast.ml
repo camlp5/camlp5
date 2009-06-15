@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.78 2007/09/13 15:45:30 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.79 2007/09/13 17:54:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -990,18 +990,15 @@ EXTEND
           Qast.Node "CeCon" [Qast.Loc; ci; ctcl]
       | ci = class_longident2 ->
           Qast.Node "CeCon" [Qast.Loc; ci; Qast.VaVal (Qast.List [])]
-      | "object"; cspo = SV OPT class_self_patt; cf = class_structure2;
+      | "object"; cspo = SV OPT class_self_patt; cf = class_structure;
         "end" ->
           Qast.Node "CeStr" [Qast.Loc; cspo; cf]
       | "("; ce = SELF; ":"; ct = class_type; ")" ->
           Qast.Node "CeTyc" [Qast.Loc; ce; ct]
       | "("; ce = SELF; ")" -> ce ] ]
   ;
-  class_structure2:
-    [ [ cf = SV LIST0 [ cf = class_str_item; ";" -> cf ] -> cf ] ]
-  ;
   class_structure:
-    [ [ cf = SLIST0 [ cf = class_str_item; ";" -> cf ] -> cf ] ]
+    [ [ cf = SV LIST0 [ cf = class_str_item; ";" -> cf ] -> cf ] ]
   ;
   class_self_patt:
     [ [ "("; p = patt; ")" -> p
@@ -1089,8 +1086,9 @@ EXTEND
   ;
   expr: LEVEL "apply"
     [ LEFTA
-      [ "new"; i = class_longident -> Qast.Node "ExNew" [Qast.Loc; i]
-      | "object"; cspo = SOPT class_self_patt; cf = class_structure; "end" ->
+      [ "new"; i = class_longident2 -> Qast.Node "ExNew" [Qast.Loc; i]
+      | "object"; cspo = SV OPT class_self_patt; cf = class_structure;
+        "end" ->
           Qast.Node "ExObj" [Qast.Loc; cspo; cf] ] ]
   ;
   expr: LEVEL "."

@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.80 2007/09/13 15:45:30 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.81 2007/09/13 17:54:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -560,17 +560,14 @@ EXTEND
       [ ci = class_longident2; "["; ctcl = V LIST1 ctyp SEP ","; "]" ->
           <:class_expr< $alist:ci$ [ $alist:ctcl$ ] >>
       | ci = class_longident2 -> <:class_expr< $alist:ci$ >>
-      | "object"; cspo = V OPT class_self_patt; cf = class_structure2; "end" ->
+      | "object"; cspo = V OPT class_self_patt; cf = class_structure; "end" ->
           <:class_expr< object $aopt:cspo$ $alist:cf$ end >>
       | "("; ce = SELF; ":"; ct = class_type; ")" ->
           <:class_expr< ($ce$ : $ct$) >>
       | "("; ce = SELF; ")" -> ce ] ]
   ;
-  class_structure2:
-    [ [ cf = V LIST0 [ cf = class_str_item; ";" -> cf ] -> cf ] ]
-  ;
   class_structure:
-    [ [ cf = LIST0 [ cf = class_str_item; ";" -> cf ] -> cf ] ]
+    [ [ cf = V LIST0 [ cf = class_str_item; ";" -> cf ] -> cf ] ]
   ;
   class_self_patt:
     [ [ "("; p = patt; ")" -> p
@@ -653,9 +650,9 @@ EXTEND
   ;
   expr: LEVEL "apply"
     [ LEFTA
-      [ "new"; i = class_longident -> <:expr< new $list:i$ >>
-      | "object"; cspo = OPT class_self_patt; cf = class_structure; "end" ->
-          <:expr< object $opt:cspo$ $list:cf$ end >> ] ]
+      [ "new"; i = class_longident2 -> <:expr< new $alist:i$ >>
+      | "object"; cspo = V OPT class_self_patt; cf = class_structure; "end" ->
+          <:expr< object $aopt:cspo$ $alist:cf$ end >> ] ]
   ;
   expr: LEVEL "."
     [ [ e = SELF; "#"; lab = label -> <:expr< $e$ # $lab$ >> ] ]

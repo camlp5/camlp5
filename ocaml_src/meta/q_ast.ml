@@ -322,6 +322,11 @@ module Meta =
               pwel
           in
           e_node "ExMat" [e_expr e; pwel]
+      | ExNew (_, ls) -> e_node "ExNew" [e_vala (e_list e_string) ls]
+      | ExObj (_, op, lcsi) ->
+          e_node "ExObj"
+            [e_vala (e_option e_patt) op;
+             e_vala (e_list e_class_str_item) lcsi]
       | ExRec (_, lpe, oe) ->
           let lpe =
             e_vala
@@ -497,7 +502,18 @@ module Meta =
             [e_vala (e_option e_ctyp) ot;
              e_vala (e_list e_class_sig_item) lcsi]
     and p_class_type x = not_impl "p_class_type" x
-    and e_class_sig_item x = not_impl "e_class_sig_item" x
+    and e_class_sig_item =
+      function
+        CgCtr (_, t1, t2) -> e_node "CgCtr" [e_ctyp t1; e_ctyp t2]
+      | CgDcl (_, lcsi) ->
+          e_node "CgDcl" [e_vala (e_list e_class_sig_item) lcsi]
+      | CgInh (_, ct) -> e_node "CgInh" [e_class_type ct]
+      | CgMth (_, s, mf, t) ->
+          e_node "CgMth" [e_vala e_string s; e_vala e_bool mf; e_ctyp t]
+      | CgVal (_, s, mf, t) ->
+          e_node "CgVal" [e_vala e_string s; e_vala e_bool mf; e_ctyp t]
+      | CgVir (_, s, mf, t) ->
+          e_node "CgVir" [e_vala e_string s; e_vala e_bool mf; e_ctyp t]
     and p_class_sig_item x = not_impl "p_class_sig_item" x
     and e_class_expr =
       function

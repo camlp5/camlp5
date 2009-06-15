@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.40 2007/09/13 15:45:30 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.41 2007/09/13 17:54:32 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -683,14 +683,14 @@ value rec expr =
       mkexp loc (Pexp_letmodule (uv i) (module_expr me) (expr e))
   | ExMat loc e pel ->
       mkexp loc (Pexp_match (expr e) (List.map mkpwe (uv pel)))
-  | ExNew loc id -> mkexp loc (Pexp_new (long_id_of_string_list loc id))
+  | ExNew loc id -> mkexp loc (Pexp_new (long_id_of_string_list loc (uv id)))
   | ExObj loc po cfl ->
       let p =
-        match po with
+        match uv po with
         [ Some p -> p
         | None -> PaAny loc ]
       in
-      let cil = List.fold_right class_str_item cfl [] in
+      let cil = List.fold_right class_str_item (uv cfl) [] in
       mkexp loc (Pexp_object (patt p, cil))
   | ExOlb loc _ _ -> error loc "labeled expression not allowed here"
   | ExOvr loc iel -> mkexp loc (Pexp_override (List.map mkideexp iel))

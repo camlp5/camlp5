@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: mLast.mli,v 1.40 2007/09/13 15:45:30 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.41 2007/09/13 17:54:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Module [MLast]: abstract syntax tree.
@@ -101,8 +101,8 @@ and expr =
   | ExLid of loc and V string
   | ExLmd of loc and V string and module_expr and expr
   | ExMat of loc and expr and V (list (patt * option expr * expr))
-  | ExNew of loc and list string
-  | ExObj of loc and option patt and list class_str_item
+  | ExNew of loc and V (list string)
+  | ExObj of loc and V (option patt) and V (list class_str_item)
   | ExOlb of loc and string and option expr
   | ExOvr of loc and list (string * expr)
   | ExRec of loc and V (list (patt * expr)) and option expr
