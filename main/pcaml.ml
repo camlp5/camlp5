@@ -10,9 +10,9 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pcaml.ml,v 1.4 2007/07/12 01:58:27 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.5 2007/07/16 15:43:18 deraugla Exp $ *)
 
-value version = "4.05-exp";
+value version = "4.05";
 value syntax_name = ref "";
 
 value gram =
