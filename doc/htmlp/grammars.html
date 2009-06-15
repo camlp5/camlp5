@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.38 2007/07/17 09:13:36 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.39 2007/07/17 10:12:31 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -423,7 +423,7 @@ in rules, contain in its environment:</p>
 <p>the variable name, for the location will be "<tt>foobar</tt>"
 instead of "<tt>loc</tt>".</p>
 
-<h2>Syntax of the DELETE_RULE statement</h2>
+<h2>The DELETE_RULE statement</h2>
 
 <p>The "<tt>DELETE_RULE</tt>" statement is also added in the
   expressions of the ocaml language when the syntax extension kit
@@ -432,12 +432,17 @@ instead of "<tt>loc</tt>".</p>
 <pre>
         expression ::= delete-rule
        delete-rule ::= "DELETE_RULE" delete-rule-body "END"
-  delete-rule-body ::= ...
+  delete-rule-body ::= entry-name ":" symbols
+           symbols ::= symbol symbols
+                     | &lt;nothing&gt;
 </pre>
 
-<p>... to be completed...</p>
+<p>See the syntax of the EXTEND statement for the meaning of the syntax
+  entries not defined above.</p>
 
-<h2>Semantics of the DELETE_RULE statement</h2>
+<p>The entry is scanned for a rule matching the giving symbol
+  list. When found, the rule is removed. If no rule is found, the
+  exception "<tt>Not_found</tt>" is raised.</p>
 
 <h2>Machinery</h2>
 
@@ -762,6 +767,23 @@ the specific symbols: SELF, NEXT, LIST0, LIST1 and OPT.</p>
   behaviour of the grammar.</p>
 
 <h2>Functorial interface</h2>
+
+<p>The normal interface for grammars described in the previous sections
+  has two drawbacks:</p>
+
+<ul>
+  <li>First, there is no static control that, when an entry calls
+    another entry, this other entry is compatible, i.e. comes from the
+    same grammar. This check is only done at run time.</p>
+  <li>Second, the entries are called with a character stream as
+    parameter. Internally, this character stream is transformed into a
+    token stream. It is therefore not always possible to call an entry
+    several times, because a token may have been unfrozen but not
+    consumed in the stream, causing it to be lost in the second
+    call. Actually, it may work or not depending on the grammar.</li>
+</ul>
+
+<p>To illustrate this second problem, let us take an example.</p>
 
 <p>... to be completed ...</p>
 
