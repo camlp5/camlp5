@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.41 2007/09/26 07:10:43 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.42 2007/10/01 19:27:57 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open MLast;
@@ -218,7 +218,7 @@ and str_item =
       list (fun ci -> class_expr ci.ciExp) cil
   | <:str_item< declare $list:sil$ end >> -> list str_item sil
   | StDir _ _ _ -> ()
-  | <:str_item< exception $uid:_$ of $list:tl$ >> -> list ctyp tl
+  | <:str_item< exception $uid:_$ of $list:tl$ = $list:_$ >> -> list ctyp tl
   | <:str_item< $exp:e$ >> -> expr e
   | <:str_item< external $lid:_$ : $t$ = $list:_$ >> -> ctyp t
   | <:str_item< module $flag:_$ $list:nel$ >> ->

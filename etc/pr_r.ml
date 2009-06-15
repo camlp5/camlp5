@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.77 2007/10/01 10:24:45 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.78 2007/10/01 19:27:57 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -746,6 +746,40 @@ value alone_in_line pc =
     else False
 ;
 
+value equality_threshold = 0.51;
+value are_close f x1 x2 =
+  let (s1, s2) = do {
+    (* the two strings; this code tries to prevents computing possible
+       too long lines (which might slow down the program) *)
+    let v = Pretty.line_length.val in
+    Pretty.line_length.val := 2 * v;
+    let s1 = horiz_vertic (fun _ -> Some (f x1)) (fun () -> None) in
+    let s2 = horiz_vertic (fun _ -> Some (f x2)) (fun () -> None) in
+    Pretty.line_length.val := v;
+    (s1, s2)
+  }
+  in
+  match (s1, s2) with
+  [ (Some s1, Some s2) ->
+      (* one string at least could hold in the line; comparing them; if
+         they are "close" to each other, return True, meaning that they
+         should be displayed *both* in one line or *both* in several lines *)
+      let (d1, d2) =
+        let a1 = Array.init (String.length s1) (String.get s1) in
+        let a2 = Array.init (String.length s2) (String.get s2) in
+        Diff.f a1 a2
+      in
+      let eq =
+        loop 0 0 where rec loop i eq =
+          if i = Array.length d1 then eq
+          else loop (i + 1) (if d1.(i) then eq else eq + 1)
+      in
+      let r1 = float eq /. float (Array.length d1) in
+      let r2 = float eq /. float (Array.length d2) in
+      r1 >= equality_threshold && r2 >= equality_threshold
+  | _ -> False ]
+;
+
 (* Expressions displayed without spaces separating elements; special
    for expressions as strings or arrays indexes (x.[...] or x.(...)).
    Applied only if only containing +, -, *, /, integers and variables. *)
@@ -1054,12 +1088,14 @@ EXTEND_PRINTER
                  (curr {(pc) with bef = ""; aft = ""} e2)
                  (curr {(pc) with bef = ""; aft = ""} e3) pc.aft)
             (fun () ->
-               let if_then pc else_b e1 e2 =
+               let if_then force_vertic pc else_b e1 e2 =
                  horiz_vertic
                    (fun () ->
-                      sprintf "%s%sif %s then %s%s" pc.bef else_b
-                        (curr {(pc) with bef = ""; aft = ""} e1)
-                        (curr {(pc) with bef = ""; aft = ""} e2) pc.aft)
+                      if force_vertic then sprintf "\n"
+                      else
+                        sprintf "%s%sif %s then %s%s" pc.bef else_b
+                          (curr {(pc) with bef = ""; aft = ""} e1)
+                          (curr {(pc) with bef = ""; aft = ""} e2) pc.aft)
                    (fun () ->
                       let horiz_if_then k =
                         sprintf "%s%sif %s then%s" pc.bef else_b
@@ -1106,14 +1142,63 @@ EXTEND_PRINTER
                           in
                           sprintf "%s\n%s" s1 s2 ])
                in
-               let s1 = if_then {(pc) with aft = ""} "" e1 e2 in
-               let (eel, e3) = get_else_if e3 in
+               let (force_vertic, eel, e3) =
+                 if flag_equilibrate_cases.val then
+                   let (eel, e3) =
+                     let then_and_else_are_close =
+                       are_close (curr {(pc) with bef = ""; aft = ""}) e2 e3
+                     in
+                     (* if "then" and "else" cases are close, don't break
+                        the "else" part into its possible "else if" in
+                        order to display "then" and "else" symmetrically *)
+                     if then_and_else_are_close then ([], e3)
+                     else get_else_if e3
+                   in
+                   (* if a case does not fit on line, all cases must be cut *)
+                   let has_vertic =
+                     horiz_vertic
+                       (fun () ->
+                          let _ : string =
+                            if_then False {(pc) with aft = ""} "" e1 e2
+                          in
+                          False)
+                       (fun () -> True) ||
+                     List.exists
+                       (fun (e1, e2) ->
+                          horiz_vertic
+                            (fun () ->
+                               let _ : string =
+                                 if_then False
+                                   {(pc) with bef = tab pc.ind; aft = ""}
+                                   "else " e1 e2
+                               in
+                               False)
+                            (fun () -> True))
+                       eel ||
+                     horiz_vertic
+                       (fun () ->
+                          let _ : string =
+                            sprintf "%selse %s%s" (tab pc.ind)
+                              (comm_expr curr {(pc) with bef = ""; aft = ""}
+                                 e3)
+                              pc.aft
+                          in
+                          False)
+                       (fun () -> True)
+                   in
+                   (has_vertic, eel, e3)
+                 else
+                   let (eel, e3) = get_else_if e3 in
+                   (False, eel, e3)
+               in
+               let s1 = if_then force_vertic {(pc) with aft = ""} "" e1 e2 in
                let s2 =
                  loop eel where rec loop =
                    fun
                    [ [(e1, e2) :: eel] ->
                        sprintf "\n%s%s"
-                         (if_then {(pc) with bef = tab pc.ind; aft = ""}
+                         (if_then force_vertic
+                            {(pc) with bef = tab pc.ind; aft = ""}
                             "else " e1 e2)
                          (loop eel)
                    | [] -> "" ]
@@ -1121,9 +1206,11 @@ EXTEND_PRINTER
                let s3 =
                  horiz_vertic
                    (fun () ->
-                      sprintf "%selse %s%s" (tab pc.ind)
-                        (comm_expr curr {(pc) with bef = ""; aft = ""} e3)
-                           pc.aft)
+                      if force_vertic then sprintf "\n"
+                      else
+                        sprintf "%selse %s%s" (tab pc.ind)
+                          (comm_expr curr {(pc) with bef = ""; aft = ""} e3)
+                             pc.aft)
                    (fun () ->
                       match sequencify e3 with
                       [ Some el ->
@@ -2395,7 +2482,7 @@ Pcaml.add_option "-flag" (Arg.String set_flags)
   ("<str> Change pretty printing behaviour according to <str>:
        A/a enable/disable all flags
        D/d enable/disable allowing expanding 'declare'
-       E/e enable/disable equilibrate match cases
+       E/e enable/disable equilibrate cases
        L/l enable/disable allowing printing 'let..in' horizontally
        S/s enable/disable printing sequences beginners at end of lines
        default setting is \"" ^ default_flag () ^ "\".");
