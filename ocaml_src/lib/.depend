@@ -8,6 +8,12 @@ extfold.cmx: extfold.cmi gramext.cmx grammar.cmx
 extfold.cmi: gramext.cmi 
 extfun.cmo: extfun.cmi 
 extfun.cmx: extfun.cmi 
+framext.cmo: framext.cmi fstream.cmi plexing.cmi 
+framext.cmx: framext.cmi fstream.cmx plexing.cmx 
+framext.cmi: plexing.cmi fstream.cmi 
+frammar.cmo: framext.cmi frammar.cmi fstream.cmi 
+frammar.cmx: framext.cmx frammar.cmi fstream.cmx 
+frammar.cmi: ploc.cmi plexing.cmi fstream.cmi framext.cmi 
 fstream.cmo: fstream.cmi 
 fstream.cmx: fstream.cmi 
 gramalgo.cmo: gramext.cmi 
