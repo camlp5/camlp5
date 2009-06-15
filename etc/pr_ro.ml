@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.64 2007/12/13 09:52:48 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.65 2007/12/13 11:57:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -238,26 +238,24 @@ EXTEND_PRINTER
           class_object pc (csp, csl) ]
     | "label"
       [ <:expr< ?$s$ >> ->
-          sprintf "%s?%s%s" pc.bef s pc.aft
+          pprintf pc "?%s" s
       | <:expr< ?$i$: $e$ >> ->
-          curr {(pc) with bef = sprintf "%s?%s:" pc.bef i} e
+          pprintf pc "?%s:%p" i curr e
       | <:expr< ~$s$ >> ->
-          sprintf "%s~%s%s" pc.bef s pc.aft
+          pprintf pc "~%s" s
       | <:expr< ~$s$: $e$ >> ->
-          Eprinter.apply_level pr_expr "dot"
-            {(pc) with bef = sprintf "%s~%s:" pc.bef s} e ] ]
+          pprintf pc "~%s:%p" s (Eprinter.apply_level pr_expr "dot") e ] ]
   ;
   pr_expr: LEVEL "dot"
     [ [ <:expr< $e$ # $lid:s$ >> -> pprintf pc "%p#@;<0 0>%s" curr e s ] ]
   ;
   pr_expr: LEVEL "simple"
     [ [ <:expr< ( $e$ : $t$ :> $t2$ ) >> ->
+          if Pr_r.test.val then
+          pprintf pc "@[<a>@[<1>(%p :@ %p :>@ %p)@]@]" expr e ctyp t ctyp t2
+          else
           horiz_vertic
-            (fun () ->
-               sprintf "%s(%s : %s :> %s)%s" pc.bef
-                 (expr {(pc) with bef = ""; aft = ""} e)
-                 (ctyp {(pc) with bef = ""; aft = ""} t)
-                 (ctyp {(pc) with bef = ""; aft = ""} t2) pc.aft)
+            (fun () -> pprintf pc "(%p : %p :> %p)" expr e ctyp t ctyp t2)
             (fun () ->
                let s1 =
                  expr {(pc) with bef = sprintf "%s(" pc.bef; aft = " :"} e
