@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_extprint.ml,v 1.16 2007/12/17 05:18:20 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.17 2007/12/17 06:21:08 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -704,7 +704,27 @@ value expr_of_pformat loc empty_bef empty_aft pc al =
 value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc t al =
   match t with
   [ (Pf sl, []) -> expr_of_pformat loc empty_bef empty_aft pc al sl
-  | (Pf sl1, [(Tbreak br, Pf sl2) :: t]) -> (<:expr< ddd >>, al)
+  | (Pf sl1, [(Tbreak br, Pf sl2) :: t]) ->
+      let e1 =
+        let pc1 = <:expr< pc >> in
+        let (e1, al) = expr_of_pformat loc empty_bef True pc1 al sl1 in
+        let (e2, al) =
+          expr_of_pformat loc True (t <> [] || empty_aft) pc1 al sl2
+        in
+        let (soff, ssp) =
+          let (off, sp) =
+            match br with
+            [ PPbreak off sp -> (off, sp)
+            | PPspace -> (0, 1) ]
+          in
+          (string_of_int off, string_of_int sp)
+        in
+        <:expr<
+          Eprinter.sprint_break $int:soff$ $int:ssp$ $pc$
+            (fun pc -> $e1$) (fun pc -> $e2$)
+        >>
+      in
+      (<:expr< ddd $str:fmt$ $e1$ "..." >>, al)
   | (Pf [""], [(Tsub (PPoffset off) t, Pf [""])]) ->
       let pc =
         let soff = string_of_int off in
