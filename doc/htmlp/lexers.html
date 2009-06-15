@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: lexers.html,v 1.14 2007/08/27 04:26:41 deraugla Exp $ -->
+  <!-- $Id: lexers.html,v 1.15 2007/08/27 12:27:07 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>lexers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -206,32 +206,26 @@ itself.</p>
 <p>The different kinds or symbols in a rule are:</p>
 
 <ul>
-
-<li>The token "underscore", which represents any character. Fails only
-if the stream is empty.</li>
-
-<li>A string which represent a matching of any character in the
-  string. Notice that it is a <span class="u">choice</span> between
-  all the characters, <span class="u">not</span> the sequence of these
-  characters. To indicate a sequence, you have to use several symbols,
-  the ones behind the others. Character ranges can be inserted using
-  the characters "<code>..</code>". For example, to specify a match of
-  any letter or digit, you can write
-  "<code>A..Za..z0..9</code>". Conversely, the beginning of a comment
-  in the OCaml language has to be written: <code>"(" "*"</code>,
-  not <code>"(*"</code> which would mean "the character left
-  parenthesis or the character star".</li>
-
-<li>An expression corresponding to a call to another lexer, which
-takes the buffer as first parameter and has to return another lexing
-buffer with all characters found in the stream catened to the lexing
-buffer.</li>
-
-<li>The sequence "<code>?=</code>" introducing lookahead characters.
-See the section <a href="#lookahead">3.3</a>.</li>
-
-<li>A rule, recursively, between brackets, inlining a lexer.</li>
-
+  <li>The token "underscore", which represents any character. Fails
+    only if the stream is empty.</li>
+  <li>A string which represent a matching of any character in the
+    string. Notice that it is a <span class="u">choice</span> between
+    all the characters, <span class="u">not</span> the sequence of
+    these characters. To indicate a sequence, you have to use several
+    symbols, the ones behind the others. Character ranges can be
+    inserted using the characters "<code>..</code>". For example, to
+    specify a match of any letter or digit, you can write
+    "<code>A..Za..z0..9</code>". Conversely, the beginning of a
+    comment in the OCaml language has to be written: <code>"("
+    "*"</code>, not <code>"(*"</code> which would mean "the character
+    left parenthesis or the character star".</li>
+  <li>An expression corresponding to a call to another lexer, which
+    takes the buffer as first parameter and has to return another
+    lexing buffer with all characters found in the stream catened to
+    the lexing buffer.</li>
+  <li>The sequence "<code>?=</code>" introducing lookahead
+    characters.</li>
+  <li>A rule, recursively, between brackets, inlining a lexer.</li>
 </ul>
 
 <p>In the first two cases (namely, underscore and string), the symbol
@@ -356,9 +350,8 @@ by the expression you want to return, like in usual pattern matching
 in OCaml.</p>
 
 <p>An interesting result, for example, could be the string
-corresponding to the characters of the lexing buffer. This can be
-obtained by returning the value "<code>$buf</code>" (see
-section <a href="#specific">3.2</a>)</p>
+  corresponding to the characters of the lexing buffer. This can be
+  obtained by returning the value "<code>$buf</code>".</p>
 
 <h3>A complete example</h3>
 

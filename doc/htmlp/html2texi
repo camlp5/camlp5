@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2texi,v 1.7 2007/08/27 12:02:39 deraugla Exp $
+# $Id: html2texi,v 1.8 2007/08/27 12:24:28 deraugla Exp $
 
 FILES1="index.html ptools.html"
 FILES2="parsers.html lexers.html fparsers.html grammars.html"
@@ -28,6 +28,27 @@ VERSION="$(grep "value version =" ../../main/pcaml.ml | sed -e 's/^[^"]*"\([^"]*
 
 /bin/echo '
 @menu'
+
+(
+  /bin/echo 'sed \'
+  for i in $FILES; do
+    if [ "$i" = "1" ]; then
+      :
+    elif [ "$i" = "2" ]; then
+      :
+    elif [ "$i" = "3" ]; then
+      :
+    elif [ "$i" = "4" ]; then
+      :
+    elif [ "$i" = "5" ]; then
+      :
+    else
+      N=$(grep '<h1' $i | sed -e 's|<h1[^>]*>||' -e 's|</h1>||')
+      /bin/echo "  -e 's/@pxref{$i}/@pxref{$N}/' \\"
+    fi
+  done
+  /bin/echo
+) > tmp
 
 for i in $FILES; do
   if [ "$i" = "1" ]; then
@@ -105,11 +126,12 @@ for i in $FILES; do
       -e 's|<tt>|@code{|g' -e 's|</tt>|}|g' \
       -e 's|<code>|@code{|g' -e 's|</code>|}|g' \
       -e 's|<span [^>]*>|@emph{|g' -e 's|</span>|}|g' \
-      -e 's|<a [^>]*>||g' -e 's|</a>||g' \
+      -e 's|<a href=\"\([^.]*.html\)[^>]*>|(@pxref{\1}) |g' -e 's|</a>||g' \
       -e 's|<pre.*>|@example|' -e 's|</pre>|@end example|' \
       -e 's/&lt;/</g' -e 's/&gt;/>/g'
   fi
-done
+done |
+sh ./tmp
 
 /bin/echo '
 @bye'
