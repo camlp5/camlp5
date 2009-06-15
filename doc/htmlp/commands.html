@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: commands.html,v 1.4 2007/08/28 12:11:04 deraugla Exp $ -->
+  <!-- $Id: commands.html,v 1.5 2007/08/28 14:52:24 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Commands and Kits</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -134,8 +134,21 @@
 
 <dl>
   <dt><tt>pa_lefteval.cmo</tt></dt>
+  <dd>Add guarantee of left evaluation in functions calls.</dd>
   <dt><tt>pa_macro.cmo</tt></dt>
+  <dd>Add macros. Options added:
+
+    <dl>
+      <dt><tt>-D &lt;string&gt;</tt></dt>
+      <dd>define for IFDEF statement</dd>
+      <dt><tt>-U &lt;string&gt;</tt></dt>
+      <dd>undefine for IFDEF statement</dd>
+      <dt><tt>-defined</tt></dt>
+      <dd>print the defined macros and exit</dd>
+    </dl>
+  </dd>
   <dt><tt>pa_pragma.cmo</tt></dt>
+  <dd>Add pragma directive: evaluations at parse time</dd>
 </dl>
 
 <h3>Printing kits</h3>

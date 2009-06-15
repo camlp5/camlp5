@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_lefteval.ml,v 1.5 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: pa_lefteval.ml,v 1.6 2007/08/28 14:52:24 deraugla Exp $ *)
 
 value not_impl name x =
   let desc =
@@ -18,7 +18,7 @@ value not_impl name x =
       "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
     else "int_val = " ^ string_of_int (Obj.magic x)
   in
-  failwith ("pa_lefteval: not impl: " ^ name ^ "; " ^ desc ^ ">")
+  failwith ("<pa_lefteval: not impl: " ^ name ^ "; " ^ desc ^ ">")
 ;
 
 value rec expr_fa al =
@@ -168,6 +168,8 @@ value rec expr x =
       <:expr< if $expr e1$ then $expr e2$ else $expr e3$ >>
   | <:expr< while $e$ do { $list:el$ } >> ->
       <:expr< while $expr e$ do { $list:List.map expr el$ } >>
+  | <:expr< for $i$ = $e1$ $to:t$ $e2$ do { $list:el$ } >> ->
+      <:expr< for $i$ = $e1$ $to:t$ $e2$ do { $list:List.map expr el$ } >>
   | <:expr< do { $list:el$ } >> -> <:expr< do { $list:List.map expr el$ } >>
   | <:expr< $e$ # $s$ >> -> <:expr< $expr e$ # $s$ >>
   | <:expr< ($e$ : $t$) >> -> <:expr< ($expr e$ : $t$) >>
@@ -177,6 +179,7 @@ value rec expr x =
   | <:expr< ($list:el$) >> -> left_eval_tuple loc expr el
   | <:expr< { $list:lel$ } >> -> left_eval_record loc expr lel
   | <:expr< $e1$ := $e2$ >> -> left_eval_assign loc expr e1 e2
+  | <:expr< $e1$.[$e2$] >> -> <:expr< $expr e1$.[$expr e2$] >>
   | <:expr< $_$ . $_$ >> | <:expr< $uid:_$ >> | <:expr< $lid:_$ >> |
     <:expr< $str:_$ >> | <:expr< $chr:_$ >> | <:expr< $int:_$ >> |
     <:expr< $flo:_$ >> | <:expr< new $list:_$ >> ->
