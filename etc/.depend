@@ -33,8 +33,8 @@ pr_extend_old.cmo: ../camlp4/spretty.cmi ../camlp4/pcaml.cmi \
     ../camlp4/mLast.cmi 
 pr_extend_old.cmx: ../camlp4/spretty.cmx ../camlp4/pcaml.cmx \
     ../camlp4/mLast.cmi 
-pr_extfun.cmo: ../camlp4/spretty.cmi ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
-pr_extfun.cmx: ../camlp4/spretty.cmx ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
+pr_extfun.cmo: ../camlp4/prtools.cmi ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
+pr_extfun.cmx: ../camlp4/prtools.cmx ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
 pr_extfun_old.cmo: ../camlp4/spretty.cmi ../camlp4/pcaml.cmi \
     ../camlp4/mLast.cmi 
 pr_extfun_old.cmx: ../camlp4/spretty.cmx ../camlp4/pcaml.cmx \

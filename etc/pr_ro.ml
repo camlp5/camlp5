@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_ro.ml,v 1.30 2007/07/06 15:31:45 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.31 2007/07/07 20:00:08 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -434,7 +434,7 @@ lev.pr_rules :=
             {(pc) with bef = sprintf "%s{< " pc.bef;
              aft = sprintf " >}%s" pc.aft}
             fel
-  | <:expr< new $list:_$ >> as z ->
+  | <:expr< new $list:_$ >> | <:expr< object $list:_$ end >> as z ->
       fun curr next pc ->
         expr
           {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
@@ -764,7 +764,11 @@ value class_str_item_top =
         sig_method_or_method_virtual pc " virtual" priv s t
   | <:class_str_item< method $opt:priv$ $s$ $opt:topt$ = $e$ >> ->
       fun curr next pc ->
-        let (pl, e) = expr_fun_args e in
+        let (pl, e) =
+          match topt with
+          [ Some _ -> ([], e)
+          | None -> expr_fun_args e ]
+        in
         let args =
           if pl = [] then ""
           else hlist patt {(pc) with bef = " "; aft = ""} pl

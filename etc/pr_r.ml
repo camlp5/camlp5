@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.45 2007/07/06 12:12:48 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.46 2007/07/07 20:00:08 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -553,7 +553,8 @@ value match_assoc pc (p, w, e) =
            sprintf "%s\n%s" s1 s2 ])
 ;
 
-value match_assoc_sh pc pwe = match_assoc {(pc) with ind = pc.ind + 2} pwe;
+value match_assoc_sh pc pwe = match_assoc {(pc) with ind = pc.ind + 2} pwe
+;
 
 value match_assoc_list pc pwel =
   if pwel = [] then sprintf "%s[]%s" pc.bef pc.aft
@@ -590,7 +591,7 @@ value type_var pc (tv, (p, m)) =
 value type_constraint pc (t1, t2) =
   horiz_vertic
     (fun () ->
-       sprintf "%sconstraint %s = %s%s" pc.bef
+       sprintf "%s constraint %s = %s%s" pc.bef
          (ctyp {(pc) with bef = ""; aft = ""} t1)
          (ctyp {(pc) with bef = ""; aft = ""} t2) pc.aft)
     (fun () -> not_impl "type_constraint vertic" pc t1)
@@ -609,8 +610,7 @@ value type_decl pc td =
           else
             sprintf " %s" (hlist type_var {(pc) with bef = ""; aft = ""} tp))
          (ctyp {(pc) with bef = ""; aft = ""} te)
-         (if cl = [] then ""
-          else hlist type_constraint {(pc) with bef = " "; aft = ""} cl)
+         (hlist type_constraint {(pc) with bef = ""; aft = ""} cl)
          pc.aft)
     (fun () ->
        let s1 =
@@ -925,7 +925,8 @@ value expr_top =
                 fun
                 [ [(e1, e2) :: eel] ->
                     sprintf "\n%s%s"
-                      (if_then {(pc) with aft = ""} "else " e1 e2)
+                      (if_then {(pc) with bef = tab pc.ind; aft = ""} "else "
+                         e1 e2)
                       (loop eel)
                 | [] -> "" ]
             in
@@ -1421,7 +1422,7 @@ value expr_dot =
              sprintf "%s\n%s" s1 s2)
   | <:expr< $x$ .( $y$ ) >> ->
       fun curr next pc ->
-        expr
+        expr_short
           {(pc) with bef = curr {(pc) with aft = ".("} x;
            aft = sprintf ")%s" pc.aft}
           y

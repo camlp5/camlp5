@@ -2206,10 +2206,9 @@ Grammar.extend
       Gramext.action
         (fun (t : 'ctyp) _ (i : string) (loc : Token.location) ->
            (MLast.TyOlb (loc, i, t) : 'ctyp));
-      [Gramext.Stoken ("TILDEIDENT", ""); Gramext.Stoken ("", ":");
-       Gramext.Sself],
+      [Gramext.Stoken ("TILDEIDENTCOLON", ""); Gramext.Sself],
       Gramext.action
-        (fun (t : 'ctyp) _ (i : string) (loc : Token.location) ->
+        (fun (t : 'ctyp) (i : string) (loc : Token.location) ->
            (MLast.TyLab (loc, i, t) : 'ctyp))]];
     Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e),
     Some (Gramext.Level "simple"),
@@ -2324,10 +2323,9 @@ Grammar.extend
       Gramext.action
         (fun (i : string) (loc : Token.location) ->
            (MLast.PaLab (loc, i, None) : 'patt));
-      [Gramext.Stoken ("TILDEIDENT", ""); Gramext.Stoken ("", ":");
-       Gramext.Sself],
+      [Gramext.Stoken ("TILDEIDENTCOLON", ""); Gramext.Sself],
       Gramext.action
-        (fun (p : 'patt) _ (i : string) (loc : Token.location) ->
+        (fun (p : 'patt) (i : string) (loc : Token.location) ->
            (MLast.PaLab (loc, i, Some p) : 'patt));
       [Gramext.Stoken ("", "#");
        Gramext.Snterm
@@ -2384,10 +2382,9 @@ Grammar.extend
       Gramext.action
         (fun (i : string) (loc : Token.location) ->
            (MLast.PaLab (loc, i, None) : 'ipatt));
-      [Gramext.Stoken ("TILDEIDENT", ""); Gramext.Stoken ("", ":");
-       Gramext.Sself],
+      [Gramext.Stoken ("TILDEIDENTCOLON", ""); Gramext.Sself],
       Gramext.action
-        (fun (p : 'ipatt) _ (i : string) (loc : Token.location) ->
+        (fun (p : 'ipatt) (i : string) (loc : Token.location) ->
            (MLast.PaLab (loc, i, Some p) : 'ipatt))]];
     Grammar.Entry.obj (ipatt_tcon : 'ipatt_tcon Grammar.Entry.e), None,
     [None, None,
@@ -2422,10 +2419,9 @@ Grammar.extend
       Gramext.action
         (fun (i : string) (loc : Token.location) ->
            (MLast.ExLab (loc, i, None) : 'expr));
-      [Gramext.Stoken ("TILDEIDENT", ""); Gramext.Stoken ("", ":");
-       Gramext.Sself],
+      [Gramext.Stoken ("TILDEIDENTCOLON", ""); Gramext.Sself],
       Gramext.action
-        (fun (e : 'expr) _ (i : string) (loc : Token.location) ->
+        (fun (e : 'expr) (i : string) (loc : Token.location) ->
            (MLast.ExLab (loc, i, Some e) : 'expr))]];
     Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
     Some (Gramext.Level "simple"),

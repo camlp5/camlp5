@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.25 2007/07/05 13:13:27 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.26 2007/07/07 20:00:08 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -151,6 +151,7 @@ value a_FLOAT = Grammar.Entry.create gram "a_FLOAT";
 value a_STRING = Grammar.Entry.create gram "a_STRING";
 value a_CHAR = Grammar.Entry.create gram "a_CHAR";
 value a_TILDEIDENT = Grammar.Entry.create gram "a_TILDEIDENT";
+value a_TILDEIDENTCOLON = Grammar.Entry.create gram "a_TILDEIDENTCOLON";
 value a_QUESTIONIDENT = Grammar.Entry.create gram "a_QUESTIONIDENT";
 
 value o2b =
@@ -997,7 +998,7 @@ EXTEND
   (* Labels *)
   ctyp: AFTER "arrow"
     [ NONA
-      [ i = a_TILDEIDENT; ":"; t = SELF -> Qast.Node "TyLab" [Qast.Loc; i; t]
+      [ i = a_TILDEIDENTCOLON; t = SELF -> Qast.Node "TyLab" [Qast.Loc; i; t]
       | i = a_QUESTIONIDENT; ":"; t = SELF ->
           Qast.Node "TyOlb" [Qast.Loc; i; t] ] ]
   ;
@@ -1030,7 +1031,7 @@ EXTEND
   patt: LEVEL "simple"
     [ [ "`"; s = ident -> Qast.Node "PaVrn" [Qast.Loc; s]
       | "#"; sl = mod_ident -> Qast.Node "PaTyp" [Qast.Loc; sl]
-      | i = a_TILDEIDENT; ":"; p = SELF ->
+      | i = a_TILDEIDENTCOLON; p = SELF ->
           Qast.Node "PaLab" [Qast.Loc; i; Qast.Option (Some p)]
       | i = a_TILDEIDENT -> Qast.Node "PaLab" [Qast.Loc; i; Qast.Option None]
       | i = a_QUESTIONIDENT; ":"; "("; p = patt_tcon; eo = SOPT eq_expr;
@@ -1049,7 +1050,7 @@ EXTEND
       | p = patt -> p ] ]
   ;
   ipatt:
-    [ [ i = a_TILDEIDENT; ":"; p = SELF ->
+    [ [ i = a_TILDEIDENTCOLON; p = SELF ->
           Qast.Node "PaLab" [Qast.Loc; i; Qast.Option (Some p)]
       | i = a_TILDEIDENT -> Qast.Node "PaLab" [Qast.Loc; i; Qast.Option None]
       | i = a_QUESTIONIDENT; ":"; "("; p = ipatt_tcon; eo = SOPT eq_expr;
@@ -1072,7 +1073,7 @@ EXTEND
   ;
   expr: AFTER "apply"
     [ "label" NONA
-      [ i = a_TILDEIDENT; ":"; e = SELF ->
+      [ i = a_TILDEIDENTCOLON; e = SELF ->
           Qast.Node "ExLab" [Qast.Loc; i; Qast.Option (Some e)]
       | i = a_TILDEIDENT -> Qast.Node "ExLab" [Qast.Loc; i; Qast.Option None]
       | i = a_QUESTIONIDENT; ":"; e = SELF ->
@@ -1248,6 +1249,10 @@ EXTEND
   a_TILDEIDENT:
     [ [ "~"; a = ANTIQUOT -> antiquot "" loc a
       | s = TILDEIDENT -> Qast.Str s ] ]
+  ;
+  a_TILDEIDENTCOLON:
+    [ [ "~"; a = ANTIQUOT; ":" -> antiquot "" loc a
+      | s = TILDEIDENTCOLON -> Qast.Str s ] ]
   ;
   a_QUESTIONIDENT:
     [ [ "?"; a = ANTIQUOT -> antiquot "" loc a

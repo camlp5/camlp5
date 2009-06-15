@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.26 2007/07/06 12:12:48 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.27 2007/07/07 20:00:08 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -1144,7 +1144,7 @@ EXTEND
   ;
   expr: AFTER "apply"
     [ "label"
-      [ i = TILDEIDENT; ":"; e = SELF -> <:expr< ~ $i$ : $e$ >>
+      [ i = TILDEIDENTCOLON; e = SELF -> <:expr< ~ $i$ : $e$ >>
       | i = TILDEIDENT -> <:expr< ~ $i$ >>
       | i = QUESTIONIDENT; ":"; e = SELF -> <:expr< ? $i$ : $e$ >>
       | i = QUESTIONIDENT -> <:expr< ? $i$ >> ] ]
@@ -1163,7 +1163,7 @@ EXTEND
       | "#"; t = mod_ident -> <:patt< # $list:t$ >> ] ]
   ;
   labeled_patt:
-    [ [ i = TILDEIDENT; ":"; p = patt LEVEL "simple" ->
+    [ [ i = TILDEIDENTCOLON; p = patt LEVEL "simple" ->
            <:patt< ~ $i$ : $p$ >>
       | i = TILDEIDENT ->
            <:patt< ~ $i$ >>
@@ -1200,6 +1200,12 @@ EXTEND
   ;
   class_fun_binding:
     [ [ p = labeled_patt; cfb = SELF -> <:class_expr< fun $p$ -> $cfb$ >> ] ]
+  ;
+  class_fun_def:
+    [ [ p = labeled_patt; "->"; ce = class_expr ->
+          <:class_expr< fun $p$ -> $ce$ >>
+      | p = labeled_patt; cfd = SELF ->
+          <:class_expr< fun $p$ -> $cfd$ >> ] ]
   ;
 END;
 

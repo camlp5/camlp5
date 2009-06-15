@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.54 2007/07/06 15:31:45 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.55 2007/07/07 20:00:08 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -118,7 +118,8 @@ value not_impl name pc x =
 
 value var_escaped pc v =
   let x =
-    if is_infix v || has_special_chars v then "\\" ^ v
+    if v.[0] = '*' || v.[String.length v - 1] = '*' then "( " ^ v ^ " )"
+    else if is_infix v || has_special_chars v then "(" ^ v ^ ")"
     else if is_keyword v then v ^ "__"
     else v
   in
@@ -496,6 +497,15 @@ value type_params pc tvl =
         tvl ]
 ;
 
+value type_constraint pc (t1, t2) =
+  horiz_vertic
+    (fun () ->
+       sprintf "%s constraint %s = %s%s" pc.bef
+         (ctyp {(pc) with bef = ""; aft = ""} t1)
+         (ctyp {(pc) with bef = ""; aft = ""} t2) pc.aft)
+    (fun () -> not_impl "type_constraint vertic" pc t1)
+;
+
 value type_decl pc td =
   let ((_, tn), tp, pf, te, cl) =
     (td.MLast.tdNam, td.MLast.tdPrm, td.MLast.tdPrv, td.MLast.tdDef,
@@ -514,8 +524,7 @@ value type_decl pc td =
              (type_params {(pc) with bef = ""; aft = ""} tp)
              (var_escaped {(pc) with bef = ""; aft = ""} tn)
              (ctyp {(pc) with bef = ""; aft = ""} te)
-             (if cl = [] then ""
-              else not_impl "type_decl cl" {(pc) with bef = ""; aft = ""} cl)
+             (hlist type_constraint {(pc) with bef = ""; aft = ""} cl)
              pc.aft)
         (fun () ->
            let s1 =
@@ -1124,16 +1133,16 @@ value expr_expr1 =
           (fun () ->
              if not flag_horiz_let_in.val then sprintf "\n"
              else
-               let (begin_op, pc_aft, pc_dang, end_op) =
-                 if pc.dang = ";" then ("(", "", "", ")")
-                 else ("", pc.aft, pc.dang, "")
+               let (begin_op, pc_dang, end_op) =
+                 if pc.dang = ";" then ("(", "", ")")
+                 else ("", pc.dang, "")
                in
                sprintf "%s%slet %s%s %s%s%s" pc.bef begin_op
                  (if rf then "rec " else "")
                  (hlist2 let_binding (and_before let_binding)
                     {(pc) with bef = ""; aft = ("", "in")} pel)
                  (expr {(pc) with bef = ""; aft = ""; dang = pc_dang} e)
-                 end_op pc_aft)
+                 end_op pc.aft)
           (fun () ->
              let (begin_op, ind, pc_aft, pc_dang, end_op) =
                if pc.dang = ";" then
@@ -2769,17 +2778,19 @@ value variant_decl pc pv =
 ;
 
 value variant_decl_list char pc pvl =
-  horiz_vertic
-    (fun () ->
-       hlist2 variant_decl (bar_before variant_decl)
-         {(pc) with bef = sprintf "%s[ %s" pc.bef char;
-          aft = ("", sprintf " ]%s" pc.aft)}
-         pvl)
-    (fun () ->
-       vlist2 variant_decl (bar_before variant_decl)
-         {(pc) with bef = sprintf "%s[ %s" (tab (pc.ind + 2)) char;
-          aft = ("", sprintf " ]%s" pc.aft)}
-         pvl)
+  if pvl = [] then sprintf "%s[%s ]%s" pc.bef char pc.aft
+  else
+    horiz_vertic
+      (fun () ->
+         hlist2 variant_decl (bar_before variant_decl)
+           {(pc) with bef = sprintf "%s[%s " pc.bef char;
+            aft = ("", sprintf " ]%s" pc.aft)}
+           pvl)
+      (fun () ->
+         vlist2 variant_decl (bar_before variant_decl)
+           {(pc) with bef = sprintf "%s[%s " (tab (pc.ind + 2)) char;
+            aft = ("", sprintf " ]%s" pc.aft)}
+           pvl)
 ;
 
 value rec class_longident pc cl =
@@ -3014,7 +3025,7 @@ lev.pr_rules :=
             {(pc) with bef = sprintf "%s{< " pc.bef;
              aft = sprintf " >}%s" pc.aft}
             fel
-  | <:expr< new $list:_$ >> as z ->
+  | <:expr< new $list:_$ >> | <:expr< object $list:_$ end >> as z ->
       fun curr next pc ->
         expr
           {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
@@ -3037,7 +3048,7 @@ lev.pr_rules :=
           let ml = List.map (fun e -> (e, ";")) ml in
           plist field 0
             {(pc) with ind = pc.ind + 2; bef = sprintf "%s< " pc.bef;
-             aft = sprintf "%s >%s" (if v then " .." else "") pc.aft}
+             aft = sprintf "%s >%s" (if v then "; .." else "") pc.aft}
             ml
   | <:ctyp< # $list:id$ >> ->
       fun curr next pc ->
@@ -3045,9 +3056,9 @@ lev.pr_rules :=
   | <:ctyp< [ = $list:pvl$ ] >> ->
       fun curr next pc -> variant_decl_list "" pc pvl
   | <:ctyp< [ > $list:pvl$ ] >> ->
-      fun curr next pc -> variant_decl_list "> " pc pvl
+      fun curr next pc -> variant_decl_list ">" pc pvl
   | <:ctyp< [ < $list:pvl$ ] >> ->
-      fun curr next pc -> variant_decl_list "< " pc pvl
+      fun curr next pc -> variant_decl_list "<" pc pvl
   | <:ctyp< [ < $list:pvl$ > $list:_$ ] >> ->
       fun curr next pc -> not_impl "variants 4" pc pvl
   | <:ctyp< $_$ as $_$ >> as z ->
@@ -3159,9 +3170,9 @@ value class_type_top =
         let ctcl = List.map (fun ct -> (ct, ",")) ctcl in
         horiz_vertic
           (fun  () ->
-             sprintf "%s%s [%s]%s" pc.bef
-               (class_longident {(pc) with bef = ""; aft = ""} cl)
+             sprintf "%s[%s] %s%s" pc.bef
                (plist ctyp 0 {(pc) with bef = ""; aft = ""} ctcl)
+               (class_longident {(pc) with bef = ""; aft = ""} cl)
                pc.aft)
           (fun  () -> not_impl "class_type c [t, t] vertic" pc cl)
   | z -> fun curr next pc -> not_impl "class_type" pc z ]
@@ -3233,9 +3244,9 @@ value class_expr_simple =
         let ctcl = List.map (fun ct -> (ct, ",")) ctcl in
         horiz_vertic
           (fun  () ->
-             sprintf "%s%s [%s]%s" pc.bef
-               (class_longident {(pc) with bef = ""; aft = ""} cl)
+             sprintf "%s[%s] %s%s" pc.bef
                (plist ctyp 0 {(pc) with bef = ""; aft = ""} ctcl)
+               (class_longident {(pc) with bef = ""; aft = ""} cl)
                pc.aft)
           (fun  () -> not_impl "class_expr c [t, t] vertic" pc cl)
   | <:class_expr< object $opt:csp$ $list:csl$ end >> ->
@@ -3343,10 +3354,14 @@ value class_str_item_top =
              sprintf "%s\n%s" s1 s2)
   | <:class_str_item< method virtual $opt:priv$ $s$ : $t$ >> ->
       fun curr next pc ->
-        sig_method_or_method_virtual pc "virtual " priv s t
+        sig_method_or_method_virtual pc " virtual" priv s t
   | <:class_str_item< method $opt:priv$ $s$ $opt:topt$ = $e$ >> ->
       fun curr next pc ->
-        let (pl, e) = expr_fun_args e in
+        let (pl, e) =
+          match topt with
+          [ Some _ -> ([], e)
+          | None -> expr_fun_args e ]
+        in
         let simple_patt = pr_patt.pr_fun "simple" in
         let args =
           if pl = [] then ""

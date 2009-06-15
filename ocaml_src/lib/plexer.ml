@@ -430,6 +430,12 @@ let dollar ctx bp buf strm =
     let buf = B.add '$' buf in let buf = ident2 buf strm__ in "", B.get buf
 ;;
 
+let tildeident buf (strm__ : _ Stream.t) =
+  match Stream.peek strm__ with
+    Some ':' -> Stream.junk strm__; "TILDEIDENTCOLON", B.get buf
+  | _ -> "TILDEIDENT", B.get buf
+;;
+
 let rec linedir n s =
   match stream_peek_nth n s with
     Some (' ' | '\t') -> linedir (n + 1) s
@@ -504,7 +510,7 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
       begin match Stream.peek strm__ with
         Some ('a'..'z' as c) ->
           Stream.junk strm__;
-          let buf = ident (B.add c buf) strm__ in "TILDEIDENT", B.get buf
+          let buf = ident (B.add c buf) strm__ in tildeident buf strm__
       | _ ->
           let buf = B.add '~' buf in
           let buf = ident2 buf strm__ in
@@ -810,8 +816,9 @@ let using_token kwd_table ident_table (p_con, p_prm) =
               error_ident_and_keyword p_con p_prm
             else Hashtbl.add ident_table p_prm p_con
         end
-  | "TILDEIDENT" | "QUESTIONIDENT" | "INT" | "INT_l" | "INT_L" | "INT_n" |
-    "FLOAT" | "CHAR" | "STRING" | "QUOTATION" | "ANTIQUOT" | "EOI" ->
+  | "TILDEIDENT" | "TILDEIDENTCOLON" | "QUESTIONIDENT" | "INT" | "INT_l" |
+    "INT_L" | "INT_n" | "FLOAT" | "CHAR" | "STRING" | "QUOTATION" |
+    "ANTIQUOT" | "EOI" ->
       ()
   | _ ->
       raise
@@ -880,11 +887,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 515, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 515, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 515, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 516, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 516, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 521, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 521, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 521, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 522, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 522, 37)));
        tok_comm = None}
   in
   let glex =

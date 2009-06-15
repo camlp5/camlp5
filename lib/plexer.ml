@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.76 2007/05/07 08:38:53 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.77 2007/07/07 20:00:08 deraugla Exp $ *)
 
 open Token;
 
@@ -211,6 +211,12 @@ value dollar ctx bp buf strm =
     [ [ -> $add "$" ] ident2! -> ("", $buf) ]
 ;
 
+value tildeident =
+  lexer
+  [ ":"/ -> ("TILDEIDENTCOLON", $buf)
+  | -> ("TILDEIDENT", $buf) ]
+;
+
 value rec linedir n s =
   match stream_peek_nth n s with
   [ Some (' ' | '\t') -> linedir (n + 1) s
@@ -255,7 +261,7 @@ value next_token_after_spaces ctx bp =
   | "$"/ (dollar ctx bp)!
   | "!=@^&+-*/%" ident2! -> keyword_or_error ctx (bp, $pos) $buf
   | "~"/
-    [ "a..z" ident! -> ("TILDEIDENT", $buf)
+    [ "a..z" ident! tildeident!
     | [ -> $add "~" ] ident2! -> keyword_or_error ctx (bp, $pos) $buf ]!
   | "?"/
     [ "a..z" ident! -> ("QUESTIONIDENT", $buf)
@@ -443,9 +449,9 @@ value using_token kwd_table ident_table (p_con, p_prm) =
             if Hashtbl.mem kwd_table p_prm then
               error_ident_and_keyword p_con p_prm
             else Hashtbl.add ident_table p_prm p_con ]
-  | "TILDEIDENT" | "QUESTIONIDENT" | "INT" | "INT_l" | "INT_L" | "INT_n" |
-    "FLOAT" | "CHAR" | "STRING" |
-    "QUOTATION" | "ANTIQUOT" | "EOI" ->
+  | "TILDEIDENT" | "TILDEIDENTCOLON" | "QUESTIONIDENT" | "INT" | "INT_l" |
+    "INT_L" | "INT_n" | "FLOAT" | "CHAR" | "STRING" | "QUOTATION" |
+    "ANTIQUOT" | "EOI" ->
       ()
   | _ ->
       raise
