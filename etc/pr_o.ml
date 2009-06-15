@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.140 2007/12/24 04:29:39 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.141 2007/12/24 09:22:51 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -918,45 +918,14 @@ EXTEND_PRINTER
       | <:expr< for $lid:v$ = $e1$ $to:d$ $e2$ do { $list:el$ } >> ->
           horiz_vertic
             (fun () ->
-               sprintf "%sfor %s = %s %s %s do %s done%s" pc.bef v
-                 (curr {(pc) with bef = ""; aft = ""} e1)
-                 (if d then "to" else "downto")
-                 (curr {(pc) with bef = ""; aft = ""} e2)
-                 (hlistl (semi_after curr) curr
-                    {(pc) with bef = ""; aft = ""; dang = ""} el)
-                 pc.aft)
+               pprintf pc "for %s = %p %s %p do %p done" v curr e1
+                 (if d then "to" else "downto") curr e2
+                 (hlistl (semi_after curr) curr) el)
             (fun () ->
-               let s1 =
-                 horiz_vertic
-                   (fun () ->
-                      sprintf "%sfor %s = %s %s %s do" pc.bef v
-                        (curr {(pc) with bef = ""; aft = ""} e1)
-                        (if d then "to" else "downto")
-                        (curr {(pc) with bef = ""; aft = ""} e2))
-                   (fun () ->
-                      let s1 =
-                        curr
-                          {(pc) with bef = sprintf "%sfor %s = " pc.bef v;
-                           aft = if d then " to" else " downto"}
-                          e1
-                      in
-                      let s2 =
-                        curr
-                          {(pc) with ind = pc.ind + 4; bef = tab (pc.ind + 4);
-                           aft = ""}
-                          e2
-                      in
-                      let s3 = sprintf "%sdo" (tab pc.ind) in
-                      sprintf "%s\n%s\n%s" s1 s2 s3)
-               in
-               let s2 =
-                 vlistl (semi_after curr) curr
-                   {ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = "";
-                    dang = ""}
-                   el
-               in
-               let s3 = sprintf "%sdone%s" (tab pc.ind) pc.aft in
-               sprintf "%s\n%s\n%s" s1 s2 s3) ]
+               pprintf pc
+                 "@[<a>@[<a>for %s = %p %s@;<1 4>%p@ do@]@;%q@ done@]" v
+                 curr e1 (if d then "to" else "downto") curr e2
+                 (vlistl (semi_after curr) curr) el "") ]
     | "tuple"
       [ <:expr< ($list:el$) >> ->
           let el = List.map (fun e -> (e, ",")) el in
