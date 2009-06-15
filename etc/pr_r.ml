@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.86 2007/11/28 00:40:40 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.87 2007/11/28 01:59:56 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -656,14 +656,9 @@ value type_decl pc td =
 ;
 
 value label_decl pc (_, l, m, t) =
-  horiz_vertic
-    (fun () ->
-       sprintf "%s%s : %s%s%s" pc.bef l (if m then "mutable " else "")
-         (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-    (fun () ->
-       let s1 = sprintf "%s%s :%s" pc.bef l (if m then " mutable" else "") in
-       let s2 = ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t in
-       sprintf "%s\n%s" s1 s2)
+  break 2 pc
+    (fun pc -> sprintf "%s%s :%s" pc.bef l (if m then " mutable" else ""))
+    (fun pc -> ctyp pc t)
 ;
 
 value cons_decl pc (_, c, tl) =
@@ -671,29 +666,12 @@ value cons_decl pc (_, c, tl) =
   let tl = Pcaml.unvala tl in
   if tl = [] then cons_escaped pc c
   else
-    horiz_vertic
-      (fun () ->
-         sprintf "%s%s of %s%s" pc.bef
-           (cons_escaped {(pc) with bef = ""; aft = ""} c)
-           (hlist2 ctyp (and_before ctyp)
-              {(pc) with bef = ""; aft = ""} tl) pc.aft)
-      (fun () ->
-         let s1 =
-           sprintf "%s%s of" pc.bef
-             (cons_escaped {(pc) with bef = ""; aft = ""} c)
-         in
-         let s2 =
-           horiz_vertic
-             (fun () ->
-                sprintf "%s%s%s" (tab (pc.ind + 4))
-                  (hlist2 ctyp (and_before ctyp)
-                     {(pc) with bef = ""; aft = ""} tl) pc.aft)
-             (fun () ->
-                let tl = List.map (fun t -> (t, " and")) tl in
-                plist ctyp 2
-                  {(pc) with ind = pc.ind + 4; bef = tab (pc.ind + 4)} tl)
-         in
-         sprintf "%s\n%s" s1 s2)
+    break 4 pc
+      (fun pc -> cons_escaped {(pc) with aft = sprintf " of%s" pc.aft} c)
+      (fun pc ->
+         let tl = List.map (fun t -> (t, " and")) tl in
+         plist ctyp 2 pc tl)
+    else
 ;
 
 value has_cons_with_params vdl =
