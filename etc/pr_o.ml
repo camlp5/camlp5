@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.60 2007/07/08 20:26:44 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.61 2007/07/10 01:04:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -263,10 +263,10 @@ value record_binding is_last pc (p, e) =
   horiz_vertic
     (fun () ->
        sprintf "%s%s = %s%s" pc.bef (patt {(pc) with bef = ""; aft = ""} p)
-         (expr {(pc) with bef = ""; aft = ""; dang = pc_dang} e) pc.aft)
+         (expr1 {(pc) with bef = ""; aft = ""; dang = pc_dang} e) pc.aft)
     (fun () ->
        sprintf "%s\n%s" (patt {(pc) with aft = " ="} p)
-         (expr
+         (expr1
             {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
              dang = pc_dang}
             e))
