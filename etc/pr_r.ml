@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.34 2007/07/04 17:50:14 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.35 2007/07/04 17:53:47 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -548,7 +548,7 @@ value let_binding pc (p, e) =
        match sequencify e with
        [ Some el ->
            let s = sequence_box2 {(pc) with bef = patt_eq; aft = ""} el in
-           if pc.aft = "in" then sprintf "%s\n%sin" s (tab pc.ind) else s
+           if pc.aft = "" then s else sprintf "%s\n%s%s" s (tab pc.ind) pc.aft
        | None ->
            let s1 = patt_eq "" in
            let s2 =
