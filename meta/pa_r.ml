@@ -1,16 +1,6 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: pa_r.ml,v 1.60 2007/09/10 02:22:06 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.61 2007/09/10 03:39:10 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
 
@@ -127,7 +117,13 @@ value mkexprident loc i j =
     [ <:expr< $x$ . $y$ >> -> loop <:expr< $m$ . $x$ >> y
     | e -> <:expr< $m$ . $e$ >> ]
   in
-  loop <:expr< $auid:i$ >> j
+  IFNDEF STRICT THEN
+    loop <:expr< $auid:i$ >> j
+  ELSE
+    match j with
+    [ Ploc.VaVal j -> loop <:expr< $auid:i$ >> j
+    | Ploc.VaAnt _ -> <:expr< $auid:i$ . $MLast.ExXtr loc "" (Some j)$ >> ]
+  END
 ;
 
 value append_elem el e = el @ [e];
@@ -392,12 +388,7 @@ EXTEND
     [ RIGHTA
       [ i = V LIDENT -> <:expr< $alid:i$ >>
       | i = V UIDENT -> <:expr< $auid:i$ >>
-      | i = V UIDENT; "."; j = SELF -> mkexprident loc i j ] ]
-(*
-      | i = V UIDENT; "."; j = V SELF ->
-          let j = MLast.ExXtr loc "" (Some j) in
-          <:expr< $auid:i$.$j$ >> ] ]
-*)
+      | i = V UIDENT; "."; j = V SELF -> mkexprident loc i j ] ]
   ;
   fun_def:
     [ RIGHTA
@@ -457,16 +448,18 @@ EXTEND
   ;
   ipatt:
     [ [ "{"; lpl = LIST1 label_ipatt SEP ";"; "}" -> <:patt< { $list:lpl$ } >>
-      | "("; ")" -> <:patt< () >>
-      | "("; p = SELF; ")" -> <:patt< $p$ >>
-      | "("; p = SELF; ":"; t = ctyp; ")" -> <:patt< ($p$ : $t$) >>
-      | "("; p = SELF; "as"; p2 = SELF; ")" -> <:patt< ($p$ as $p2$) >>
-      | "("; p = SELF; ","; pl = LIST1 ipatt SEP ","; ")" ->
-          <:patt< ($list:[p::pl]$) >>
-      | "("; pl = V LIST1 patt SEP ","; ")" ->
-          <:patt< ( $alist:pl$) >>
+      | "("; p = paren_ipatt; ")" -> p
       | s = V LIDENT -> <:patt< $alid:s$ >>
       | "_" -> <:patt< _ >> ] ]
+  ;
+  paren_ipatt:
+    [ [ p = ipatt; ":"; t = ctyp -> <:patt< ($p$ : $t$) >>
+      | p = ipatt; "as"; p2 = ipatt -> <:patt< ($p$ as $p2$) >>
+      | p = ipatt; ","; pl = LIST1 ipatt SEP "," ->
+          <:patt< ($list:[p::pl]$) >>
+      | p = ipatt -> <:patt< $p$ >>
+      | pl = V LIST1 ipatt SEP "," -> <:patt< ( $alist:pl$) >>
+      | -> <:patt< () >> ] ]
   ;
   label_ipatt:
     [ [ i = patt_label_ident; "="; p = ipatt -> (i, p) ] ]

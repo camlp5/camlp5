@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.59 2007/09/10 02:22:06 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.60 2007/09/10 03:39:10 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -836,18 +836,18 @@ EXTEND
   ipatt:
     [ [ "{"; lpl = SLIST1 label_ipatt SEP ";"; "}" ->
           Qast.Node "PaRec" [Qast.Loc; lpl]
-      | "("; ")" -> Qast.Node "PaUid" [Qast.Loc; Qast.Str "()"]
-      | "("; p = SELF; ")" -> p
-      | "("; p = SELF; ":"; t = ctyp; ")" ->
-          Qast.Node "PaTyc" [Qast.Loc; p; t]
-      | "("; p = SELF; "as"; p2 = SELF; ")" ->
-          Qast.Node "PaAli" [Qast.Loc; p; p2]
-      | "("; p = SELF; ","; pl = SLIST1 ipatt SEP ","; ")" ->
-          Qast.Node "PaTup" [Qast.Loc; Qast.VaVal (Qast.Cons p pl)]
-      | "("; pl = SV LIST1 patt SEP ","; ")" ->
-          Qast.Node "PaTup" [Qast.Loc; pl]
+      | "("; p = paren_ipatt; ")" -> p
       | s = a_LIDENT2 -> Qast.Node "PaLid" [Qast.Loc; s]
       | "_" -> Qast.Node "PaAny" [Qast.Loc] ] ]
+  ;
+  paren_ipatt:
+    [ [ p = ipatt; ":"; t = ctyp -> Qast.Node "PaTyc" [Qast.Loc; p; t]
+      | p = ipatt; "as"; p2 = ipatt -> Qast.Node "PaAli" [Qast.Loc; p; p2]
+      | p = ipatt; ","; pl = SLIST1 ipatt SEP "," ->
+          Qast.Node "PaTup" [Qast.Loc; Qast.VaVal (Qast.Cons p pl)]
+      | p = ipatt -> p
+      | pl = SV LIST1 ipatt SEP "," -> Qast.Node "PaTup" [Qast.Loc; pl]
+      | -> Qast.Node "PaUid" [Qast.Loc; Qast.Str "()"] ] ]
   ;
   label_ipatt:
     [ [ i = patt_label_ident; "="; p = ipatt -> Qast.Tuple [i; p] ] ]
