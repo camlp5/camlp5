@@ -2,7 +2,11 @@
 .SH NAME
 camlp5 - Pre-Precessor-Pretty-Printer for OCaml
 .br
-ocpp - Universal preprocessor
+mkcamlp5 - Create custom camlp5
+.br
+mkcamlp5.opt - Create custom camlp5 (native code)
+.br
+ocpp5 - Universal preprocessor
 
 .SH SYNOPSIS
 .B camlp5
@@ -39,7 +43,11 @@ other-options
 .br
 .B camlp5sch.cma
 .br
-.B ocpp
+.B mkcamlp5
+.br
+.B mkcamlp5.opt
+.br
+.B ocpp5
 [
 load-options
 ]
@@ -75,7 +83,13 @@ and
 .B camlp5sch.cma
 are files to be loaded in ocaml toplevel to use the camlp5 machinery
 .LP
-.B ocpp
+.B mkcamlp5
+and
+.B mkcamlp5.opt
+creates camlp5 executables with almost the same options than
+ocamlmktop. See further.
+.LP
+.B ocpp5
 is an universal preprocessor, treating any kind of source file,
 generating the same text with the possible quotations expanded.
 .LP
@@ -268,13 +282,32 @@ The file
 .B camlp5sch.cma
 can be loaded in the toplevel to start camlp5 with Scheme syntax.
 
+.SH "MKCAMLP5"
+
+.B mkcamlp5
+and
+.B mkcamlp5.opt
+creates camlp5 executables with almost the same options than
+ocamlmktop. The version
+.B mkcamlp5.opt
+can create native code executables, faster but not extensible.
+.LP
+For mkcamlp5, the interfaces to be visible must be explicitly added in
+the command line as ".cmi" files. For example, how to add the the
+OCaml module "str":
+.nf
+.ta 1c
+	mkcamlp5 -custom str.cmi str.cma -cclib -lstr -o camlp5str
+.fi
+.LP
+
 .SH "FILES"
 Library directory of camlp5 in the present installation:
 .br
 LIBDIR/camlp5
 
 .SH "SEE ALSO"
-ocamlc(1), ocaml(1).
+ocamlc(1), ocaml(1), ocamlmktop(1).
 
 .SH AUTHOR
 Daniel de Rauglaudre, INRIA Rocquencourt.

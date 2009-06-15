@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.6 2007/09/01 19:42:28 deraugla Exp $
+# $Id: Makefile,v 1.7 2007/11/20 02:55:15 deraugla Exp $
 
 include ../config/Makefile
 
@@ -20,6 +20,6 @@ clean::
 install:
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(NAME)" "$(DESTDIR)$(BINDIR)"
 	cp $(OBJS) "$(DESTDIR)$(LIBDIR)/$(NAME)/."
-	cp ocpp$(EXE) "$(DESTDIR)$(BINDIR)/."
+	cp ocpp$(EXE) "$(DESTDIR)$(BINDIR)/ocpp5$(EXE)"
 
 depend:

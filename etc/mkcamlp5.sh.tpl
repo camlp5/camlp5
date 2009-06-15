@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: mkcamlp5.sh.tpl,v 1.1 2007/07/11 12:01:39 deraugla Exp $
+# $Id: mkcamlp5.sh.tpl,v 1.2 2007/11/20 02:55:15 deraugla Exp $
 
 OLIB=`ocamlc -where`
 LIB=LIBDIR/camlp5
@@ -10,6 +10,7 @@ INCL="-I ."
 while test "" != "$1"; do
     case $1 in
     -I) INCL="$INCL -I $2"; shift;;
+    -*) OPTS="$OPTS $1";;
     *)
 	j=`basename $1 .cmi`
 	if test "$j.cmi" = "$1"; then

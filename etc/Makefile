@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.43 2007/11/19 18:08:48 deraugla Exp $
+# $Id: Makefile,v 1.44 2007/11/20 02:55:15 deraugla Exp $
 
 include ../config/Makefile
 
@@ -13,7 +13,7 @@ COUT=$(OBJS) $(NAME)o$(EXE) $(NAME)sch$(EXE)
 COPT=$(OBJS:.cmo=.cmx) $(NAME)o.opt
 
 all: $(COUT) mk$(NAME).sh
-opt: $(COPT)
+opt: $(COPT) mk$(NAME).opt.sh
 
 pr_rp.cmo: parserify.cmo pr_rp_main.cmo
 	$(OCAMLC) parserify.cmo pr_rp_main.cmo -a -o $@
@@ -48,6 +48,9 @@ $(NAME)o.opt: $(CAMLP5OMX)
 mk$(NAME).sh: mkcamlp5.sh.tpl
 	sed -e "s!LIBDIR!$(LIBDIR)!g" -e "s/camlp5/$(NAME)/g" mkcamlp5.sh.tpl > mk$(NAME).sh
 
+mk$(NAME).opt.sh: mkcamlp5.opt.sh.tpl
+	sed -e "s!LIBDIR!$(LIBDIR)!g" -e "s/camlp5/$(NAME)/g" mkcamlp5.opt.sh.tpl > mk$(NAME).opt.sh
+
 bootstrap_scheme:
 	@$(MAKE) --no-print-directory bootstrap_l L=scheme
 compare_scheme:
@@ -68,7 +71,7 @@ compare_l:
 
 clean::
 	rm -f *.cm* *.pp[io] *.o *.bak .*.bak *.out *.opt
-	rm -f mk$(NAME).sh $(NAME)o$(EXE) $(NAME)sch$(EXE)
+	rm -f mk$(NAME).sh mk$(NAME).opt.sh $(NAME)o$(EXE) $(NAME)sch$(EXE)
 
 depend:
 	cp .depend .depend.bak
@@ -86,10 +89,14 @@ install:
 	cp $(OBJS) "$(DESTDIR)$(LIBDIR)/$(NAME)/."
 	cp lib.sml "$(DESTDIR)$(LIBDIR)/$(NAME)/."
 	cp $(NAME)o$(EXE) $(NAME)sch$(EXE) "$(DESTDIR)$(BINDIR)/."
+	cp mk$(NAME).sh "$(DESTDIR)$(BINDIR)/mk$(NAME)"
+	chmod a+x "$(DESTDIR)$(BINDIR)/mk$(NAME)"
 	if test -f $(COPT); then cp $(COPT) "$(DESTDIR)$(BINDIR)/."; fi
 	if test -f pa_o.cmx; then \
 	  cp $(OBJS:.cmo=.cmx) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
 	  cp $(OBJS:.cmo=.o) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	  cp mk$(NAME).opt.sh "$(DESTDIR)$(BINDIR)/mk$(NAME).opt"; \
+	  chmod a+x "$(DESTDIR)$(BINDIR)/mk$(NAME).opt"; \
 	fi
 
 pa_lisp.cmo: pa_lispr.cmo
