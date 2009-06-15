@@ -1,19 +1,15 @@
 #!/bin/sh
-# $Id: html2latex,v 1.12 2007/07/16 07:38:41 deraugla Exp $
+# $Id: html2latex,v 1.13 2007/07/16 08:02:23 deraugla Exp $
 
 FILES="index.html ptools.html parsers.html fparsers.html lexers.html grammars.html pretty.html opretty.html ml_ast.html pragma.html extfun.html"
 
-echo '\documentclass{report}
-\addtolength{\oddsidemargin}{-2.2cm}
-\addtolength{\evensidemargin}{-2.2cm}
-\addtolength{\textwidth}{4.4cm}
-\addtolength{\topmargin}{-2.2cm}
-\addtolength{\textheight}{4.4cm}
+echo '\documentclass[twoside]{report}
+\usepackage{fullpage}
 \begin{document}
 
 \def\cslversion{4.04}
 
-\thispagestyle{empty}
+\pagestyle{empty}
 \begin{center}
 ~\vfill
 \Huge           Camlp5 - Reference Manual \\
@@ -26,14 +22,16 @@ echo '\documentclass{report}
 
 This document was generated from the html documentation pages by an
 internal shell script.
-\end{center} \setcounter{page}{1} \cleardoublepage
-
-\tableofcontents
-\cleardoublepage'
+\end{center}
+\cleardoublepage
+\setcounter{page}{1}
+\pagestyle{plain}
+\tableofcontents'
 
 for i in $FILES; do
   echo "======" 1>&2
   echo "$i" 1>&2
+  echo '\cleardoublepage'
   cat $i |
   sed \
     -e '{:b; /<\/p>$/N; s|<\/p>\n *|<\/p>|g; tb}' \
