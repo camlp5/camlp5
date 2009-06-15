@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.40 2007/09/08 15:36:54 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.41 2007/09/09 01:18:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -247,7 +247,7 @@ module Meta =
 (*
         | PaFlo _ s -> <:expr< MLast.PaFlo $ln$ $e_string s$ >>
 *)
-        | PaLid _ s -> <:expr< MLast.PaLid $ln$ $e_string s$ >>
+        | PaLid _ s -> <:expr< MLast.PaLid $ln$ $e_vala e_string s$ >>
         | PaOrp _ p1 p2 -> <:expr< MLast.PaOrp $ln$ $loop p1$ $loop p2$ >>
         | PaRng _ p1 p2 -> <:expr< MLast.PaRng $ln$ $loop p1$ $loop p2$ >>
         | PaStr _ s -> <:expr< MLast.PaStr $ln$ $e_string s$ >>
@@ -269,24 +269,26 @@ module Meta =
         | x -> not_impl "e_patt" x ]
     ;
     value p_patt =
-      loop where rec loop p =
-        match get_anti p with
-        [ Some (loc, typ, str) ->
-            let r =
-              let (loc, r) = eval_anti patt_eoi loc typ str in
-              <:patt< $anti:r$ >>
-            in
-            match typ with
-            [ "" -> r
-            | x -> not_impl ("p_patt anti " ^ x) 0 ]
-        | None ->
-            match p with
-            [ PaAcc _ p1 p2 -> <:patt< MLast.PaAcc _ $loop p1$ $loop p2$ >>
-            | PaAli _ p1 p2 -> <:patt< MLast.PaAli _ $loop p1$ $loop p2$ >>
-            | PaChr _ s -> <:patt< MLast.PaChr _ $p_string s$ >>
-            | PaLid _ s -> <:patt< MLast.PaLid _ $p_string s$ >>
-            | PaTup _ pl -> <:patt< MLast.PaTup _ $p_list loop pl$ >>
-            | x -> not_impl "p_patt" x ] ]
+      loop where rec loop =
+        fun
+        [ PaAcc _ p1 p2 -> <:patt< MLast.PaAcc _ $loop p1$ $loop p2$ >>
+        | PaAli _ p1 p2 -> <:patt< MLast.PaAli _ $loop p1$ $loop p2$ >>
+        | PaChr _ s -> <:patt< MLast.PaChr _ $p_string s$ >>
+        | PaLid _ s -> <:patt< MLast.PaLid _ $p_vala p_string s$ >>
+        | PaTup _ pl -> <:patt< MLast.PaTup _ $p_list loop pl$ >>
+        | IFDEF STRICT THEN
+            PaXtr loc s _ ->
+              let asit = s.[0] = 'a' in
+              let s = String.sub s 1 (String.length s - 1) in
+              if asit then
+                let (loc, r) = eval_anti patt_eoi loc "" s in
+                <:patt< $anti:r$ >>
+              else
+                let (loc, r) = eval_anti patt_eoi loc "anti" s in
+                let r = <:patt< $anti:r$ >> in
+                <:patt< MLast.PaAnt loc $r$ >>
+          END
+        | x -> not_impl "p_patt" x ]
     ;
     value e_expr e =
       let ln = ln () in
@@ -341,7 +343,7 @@ module Meta =
             <:expr< MLast.ExSeq $ln$ $e_list loop el$ >>
 *)
         | ExStr _ s -> <:expr< MLast.ExStr $ln$ $e_vala e_string s$ >>
-        | ExTup _ el -> <:expr< MLast.ExTup $ln$ $e_list loop el$ >>
+        | ExTup _ el -> <:expr< MLast.ExTup $ln$ $e_vala (e_list loop) el$ >>
         | ExTyc _ e t -> <:expr< MLast.ExTyc $ln$ $loop e$ $e_ctyp t$ >>
         | ExUid _ s -> <:expr< MLast.ExUid $ln$ $e_vala e_string s$ >>
         | IFDEF STRICT THEN
@@ -384,7 +386,7 @@ module Meta =
             <:patt< MLast.ExRec _ $lpe$ $oe$ >>
         | ExLid _ s -> <:patt< MLast.ExLid _ $p_vala p_string s$ >>
         | ExStr _ s -> <:patt< MLast.ExStr _ $p_vala p_string s$ >>
-        | ExTup _ el -> <:patt< MLast.ExTup _ $p_list loop el$ >>
+        | ExTup _ el -> <:patt< MLast.ExTup _ $p_vala (p_list loop) el$ >>
         | ExUid _ s -> <:patt< MLast.ExUid _ $p_vala p_string s$ >>
         | IFDEF STRICT THEN
             ExXtr loc s _ ->

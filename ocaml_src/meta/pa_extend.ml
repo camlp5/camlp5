@@ -372,7 +372,7 @@ module MetaAction =
                   (loc, MLast.ExUid (loc, "MLast"),
                    MLast.ExUid (loc, "ExTup")),
                 mloc),
-             mlist mexpr el)
+             mvala (mlist mexpr) el)
       | MLast.ExTyc (loc, e, t) ->
           MLast.ExApp
             (loc,
@@ -453,7 +453,7 @@ module MetaAction =
                   (loc, MLast.ExUid (loc, "MLast"),
                    MLast.ExUid (loc, "PaLid")),
                 mloc),
-             MLast.ExStr (loc, s))
+             mvala mstring s)
       | MLast.PaOrp (loc, p1, p2) ->
           MLast.ExApp
             (loc,
@@ -791,8 +791,8 @@ let rec quot_expr e =
          MLast.ExAcc
            (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Str")),
          MLast.ExStr (loc, s))
-  | MLast.ExTup (_, e :: el) ->
-      let el = List.map quot_expr (e :: el) in
+  | MLast.ExTup (_, el) ->
+      let el = List.map quot_expr el in
       MLast.ExApp
         (loc,
          MLast.ExAcc
@@ -845,7 +845,7 @@ let quotify_action psl act =
                         (loc, MLast.PaUid (loc, "Qast"),
                          MLast.PaUid (loc, "Tuple")),
                       mklistpat loc pl1),
-                   None, MLast.ExTup (loc, List.hd el1 :: List.tl el1);
+                   None, MLast.ExTup (loc, el1);
                    MLast.PaAny loc, None,
                    MLast.ExMat (loc, MLast.ExUid (loc, "()"), [])])],
               e)

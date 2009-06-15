@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.48 2007/09/08 15:36:54 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.49 2007/09/09 01:18:03 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -392,7 +392,7 @@ EXTEND
     | LEFTA
       [ p1 = SELF; "."; p2 = SELF -> <:patt< $p1$ . $p2$ >> ]
     | "simple"
-      [ s = LIDENT -> <:patt< $lid:s$ >>
+      [ s = V LIDENT -> <:patt< $alid:s$ >>
       | s = UIDENT -> <:patt< $uid:s$ >>
       | s = INT -> <:patt< $int:s$ >>
       | s = INT_l -> <:patt< $int32:s$ >>
@@ -428,7 +428,7 @@ EXTEND
       [ p1 = SELF; "."; p2 = SELF -> <:patt< $p1$ . $p2$ >> ]
     | "simple" RIGHTA
       [ i = UIDENT -> <:patt< $uid:i$ >>
-      | i = LIDENT -> <:patt< $lid:i$ >> ] ]
+      | i = V LIDENT -> <:patt< $alid:i$ >> ] ]
   ;
   ipatt:
     [ [ "{"; lpl = LIST1 label_ipatt SEP ";"; "}" -> <:patt< { $list:lpl$ } >>
@@ -438,7 +438,7 @@ EXTEND
       | "("; p = SELF; "as"; p2 = SELF; ")" -> <:patt< ($p$ as $p2$) >>
       | "("; p = SELF; ","; pl = LIST1 ipatt SEP ","; ")" ->
           <:patt< ( $list:[p::pl]$) >>
-      | s = LIDENT -> <:patt< $lid:s$ >>
+      | s = V LIDENT -> <:patt< $alid:s$ >>
       | "_" -> <:patt< _ >> ] ]
   ;
   label_ipatt:

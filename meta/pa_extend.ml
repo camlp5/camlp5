@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.44 2007/09/08 15:36:54 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.45 2007/09/09 01:18:03 deraugla Exp $ *)
 
 value split_ext = ref False;
 
@@ -215,7 +215,8 @@ module MetaAction =
           <:expr< MLast.ExStr $mloc$ $mvala mstring_escaped s$ >>
       | MLast.ExTry loc e pwel ->
           <:expr< MLast.ExTry $mloc$ $mexpr e$ $mlist mpwe pwel$ >>
-      | MLast.ExTup loc el -> <:expr< MLast.ExTup $mloc$ $mlist mexpr el$ >>
+      | MLast.ExTup loc el ->
+          <:expr< MLast.ExTup $mloc$ $mvala (mlist mexpr) el$ >>
       | MLast.ExTyc loc e t ->
           <:expr< MLast.ExTyc $mloc$ $mexpr e$ $mctyp t$ >>
       | MLast.ExUid loc s -> <:expr< MLast.ExUid $mloc$ $mvala mstring s$ >>
@@ -228,7 +229,7 @@ module MetaAction =
       | MLast.PaApp loc p1 p2 ->
           <:expr< MLast.PaApp $mloc$ $mpatt p1$ $mpatt p2$ >>
       | MLast.PaInt loc s c -> <:expr< MLast.PaInt $mloc$ $str:s$ $str:c$ >>
-      | MLast.PaLid loc s -> <:expr< MLast.PaLid $mloc$ $str:s$ >>
+      | MLast.PaLid loc s -> <:expr< MLast.PaLid $mloc$ $mvala mstring s$ >>
       | MLast.PaOrp loc p1 p2 ->
           <:expr< MLast.PaOrp $mloc$ $mpatt p1$ $mpatt p2$ >>
       | MLast.PaStr loc s ->
@@ -337,8 +338,8 @@ value rec quot_expr e =
   | <:expr< $uid:m$.$uid:s$ >> -> <:expr< Qast.Node $str:m ^ "." ^ s$ [] >>
   | <:expr< $uid:s$ >> -> <:expr< Qast.Node $str:s$ [] >>
   | <:expr< $str:s$ >> -> <:expr< Qast.Str $str:s$ >>
-  | <:expr< ($e$, $list:el$) >> ->
-      let el = List.map quot_expr [e :: el] in
+  | <:expr< ($list:el$) >> ->
+      let el = List.map quot_expr el in
       <:expr< Qast.Tuple $mklistexp loc el$ >>
   | <:expr< let $flag:r$ $list:pel$ in $e$ >> ->
       let pel = List.map (fun (p, e) -> (p, quot_expr e)) pel in
@@ -379,8 +380,7 @@ value quotify_action psl act =
            <:expr<
               let ($p$, $list:pl$) =
                 match $lid:pname$ with
-                [ Qast.Tuple $mklistpat loc pl1$ ->
-                    ($List.hd el1$, $list:List.tl el1$)
+                [ Qast.Tuple $mklistpat loc pl1$ -> ($list:el1$)
                 | _ -> match () with [] ]
               in $e$ >>
        | _ -> e ])

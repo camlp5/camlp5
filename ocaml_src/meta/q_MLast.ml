@@ -1643,7 +1643,8 @@ Grammar.extend
        Gramext.Stoken ("", ")")],
       Gramext.action
         (fun _ (el : 'a_list) _ (e : 'expr) _ (loc : Ploc.t) ->
-           (Qast.Node ("ExTup", [Qast.Loc; Qast.Cons (e, el)]) : 'expr));
+           (Qast.Node ("ExTup", [Qast.Loc; Qast.VaVal (Qast.Cons (e, el))]) :
+            'expr));
       [Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ":");
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e));
        Gramext.Stoken ("", ")")],
@@ -2086,9 +2087,9 @@ Grammar.extend
         (fun (s : 'a_UIDENT) (loc : Ploc.t) ->
            (Qast.Node ("PaUid", [Qast.Loc; s]) : 'patt));
       [Gramext.Snterm
-         (Grammar.Entry.obj (a_LIDENT : 'a_LIDENT Grammar.Entry.e))],
+         (Grammar.Entry.obj (a_LIDENT2 : 'a_LIDENT2 Grammar.Entry.e))],
       Gramext.action
-        (fun (s : 'a_LIDENT) (loc : Ploc.t) ->
+        (fun (s : 'a_LIDENT2) (loc : Ploc.t) ->
            (Qast.Node ("PaLid", [Qast.Loc; s]) : 'patt))]];
     Grammar.Entry.obj (cons_patt_opt : 'cons_patt_opt Grammar.Entry.e), None,
     [None, None,
@@ -2120,9 +2121,9 @@ Grammar.extend
            (Qast.Node ("PaAcc", [Qast.Loc; p1; p2]) : 'patt_label_ident))];
      Some "simple", Some Gramext.RightA,
      [[Gramext.Snterm
-         (Grammar.Entry.obj (a_LIDENT : 'a_LIDENT Grammar.Entry.e))],
+         (Grammar.Entry.obj (a_LIDENT2 : 'a_LIDENT2 Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'a_LIDENT) (loc : Ploc.t) ->
+        (fun (i : 'a_LIDENT2) (loc : Ploc.t) ->
            (Qast.Node ("PaLid", [Qast.Loc; i]) : 'patt_label_ident));
       [Gramext.Snterm
          (Grammar.Entry.obj (a_UIDENT : 'a_UIDENT Grammar.Entry.e))],
@@ -2135,9 +2136,9 @@ Grammar.extend
       Gramext.action
         (fun _ (loc : Ploc.t) -> (Qast.Node ("PaAny", [Qast.Loc]) : 'ipatt));
       [Gramext.Snterm
-         (Grammar.Entry.obj (a_LIDENT : 'a_LIDENT Grammar.Entry.e))],
+         (Grammar.Entry.obj (a_LIDENT2 : 'a_LIDENT2 Grammar.Entry.e))],
       Gramext.action
-        (fun (s : 'a_LIDENT) (loc : Ploc.t) ->
+        (fun (s : 'a_LIDENT2) (loc : Ploc.t) ->
            (Qast.Node ("PaLid", [Qast.Loc; s]) : 'ipatt));
       [Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ",");
        Gramext.srules
@@ -3755,10 +3756,10 @@ Grammar.extend
    Some (Gramext.Level "simple"),
    [None, None,
     [[Gramext.Stoken ("", "(");
-      Gramext.Snterm (Grammar.Entry.obj (a_list : 'a_list Grammar.Entry.e));
+      Gramext.Snterm (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e));
       Gramext.Stoken ("", ")")],
      Gramext.action
-       (fun _ (el : 'a_list) _ (loc : Ploc.t) ->
+       (fun _ (el : 'a_list2) _ (loc : Ploc.t) ->
           (Qast.Node ("ExTup", [Qast.Loc; el]) : 'expr));
      [Gramext.Stoken ("ANTIQUOT", "anti")],
      Gramext.action

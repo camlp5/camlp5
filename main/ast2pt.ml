@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.18 2007/09/08 15:36:54 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.19 2007/09/09 01:18:03 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -289,20 +289,20 @@ value expr_of_lab loc lab =
 value patt_of_lab loc lab =
   fun
   [ Some p -> p
-  | None -> PaLid loc lab ]
+  | None -> <:patt< $lid:lab$ >> ]
 ;
 
 value paolab loc lab peoo =
   let lab =
     match (lab, peoo) with
-    [ ("", Some (PaLid _ i | PaTyc _ (PaLid _ i) _, _)) -> i
+    [ ("", Some (<:patt< $lid:i$ >> | <:patt< ($lid:i$ : $_$) >>, _)) -> i
     | ("", _) -> error loc "bad ast"
     | _ -> lab ]
   in
   let (p, eo) =
     match peoo with
     [ Some peo -> peo
-    | None -> (PaLid loc lab, None) ]
+    | None -> (<:patt< $lid:lab$ >>, None) ]
   in
   (lab, p, eo)
 ;
@@ -393,10 +393,10 @@ value rec patt_long_id il =
 
 value rec patt_label_long_id =
   fun
-  [ PaAcc _ m (PaLid _ s) -> ldot (patt_label_long_id m) (conv_lab s)
-  | PaAcc _ m (PaUid _ s) -> ldot (patt_label_long_id m) s
-  | PaUid _ s -> lident s
-  | PaLid _ s -> lident (conv_lab s)
+  [ <:patt< $m$.$lid:s$ >> -> ldot (patt_label_long_id m) (conv_lab s)
+  | <:patt< $m$.$uid:s$ >> -> ldot (patt_label_long_id m) s
+  | <:patt< $uid:s$ >> -> lident s
+  | <:patt< $lid:s$ >> -> lident (conv_lab s)
   | p -> error (loc_of_patt p) "bad label" ]
 ;
 
@@ -417,8 +417,8 @@ value rec patt =
   | PaAli loc p1 p2 ->
       let (p, i) =
         match (p1, p2) with
-        [ (p, PaLid _ s) -> (p, s)
-        | (PaLid _ s, p) -> (p, s)
+        [ (p, <:patt< $lid:s$ >>) -> (p, s)
+        | (<:patt< $lid:s$ >>, p) -> (p, s)
         | _ -> error loc "incorrect alias pattern" ]
       in
       mkpat loc (Ppat_alias (patt p) i)
@@ -456,7 +456,7 @@ value rec patt =
   | PaInt loc _ _ -> error loc "special int not impl in patt"
   | PaFlo loc s -> mkpat loc (Ppat_constant (Const_float s))
   | PaLab loc _ _ -> error loc "labeled pattern not allowed here"
-  | PaLid loc s -> mkpat loc (Ppat_var s)
+  | PaLid loc s -> mkpat loc (Ppat_var (uv s))
   | PaOlb loc _ _ -> error loc "labeled pattern not allowed here"
   | PaOrp loc p1 p2 -> mkpat loc (Ppat_or (patt p1) (patt p2))
   | PaRng loc p1 p2 ->
@@ -704,7 +704,7 @@ value rec expr =
       mkexp loc
         (Pexp_constant (Const_string (string_of_string_token loc (uv s))))
   | ExTry loc e pel -> mkexp loc (Pexp_try (expr e) (List.map mkpwe pel))
-  | ExTup loc el -> mkexp loc (Pexp_tuple (List.map expr el))
+  | ExTup loc el -> mkexp loc (Pexp_tuple (List.map expr (uv el)))
   | ExTyc loc e t -> mkexp loc (Pexp_constraint (expr e) (Some (ctyp t)) None)
   | ExUid loc s ->
       let ca = not no_constructors_arity.val in

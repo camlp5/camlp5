@@ -190,7 +190,7 @@ and expr floc sh =
              (fun (x1, x2, x3) ->
                 patt floc sh x1, option_map self x2, self x3)
              x2)
-    | ExTup (loc, x1) -> ExTup (floc loc, List.map self x1)
+    | ExTup (loc, x1) -> ExTup (floc loc, vala_map (List.map self) x1)
     | ExTyc (loc, x1, x2) -> ExTyc (floc loc, self x1, ctyp floc sh x2)
     | ExUid (loc, x1) -> ExUid (floc loc, x1)
     | ExVrn (loc, x1) -> ExVrn (floc loc, x1)

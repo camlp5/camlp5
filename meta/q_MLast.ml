@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.48 2007/09/08 15:36:54 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.49 2007/09/09 01:18:03 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -689,7 +689,7 @@ EXTEND
       | "("; e = SELF; ":"; t = ctyp; ")" ->
           Qast.Node "ExTyc" [Qast.Loc; e; t]
       | "("; e = SELF; ","; el = SLIST1 expr SEP ","; ")" ->
-          Qast.Node "ExTup" [Qast.Loc; Qast.Cons e el]
+          Qast.Node "ExTup" [Qast.Loc; Qast.VaVal (Qast.Cons e el)]
       | "("; e = SELF; ")" -> e ] ]
   ;
   cons_expr_opt:
@@ -756,7 +756,7 @@ EXTEND
     | LEFTA
       [ p1 = SELF; "."; p2 = SELF -> Qast.Node "PaAcc" [Qast.Loc; p1; p2] ]
     | "simple"
-      [ s = a_LIDENT -> Qast.Node "PaLid" [Qast.Loc; s]
+      [ s = a_LIDENT2 -> Qast.Node "PaLid" [Qast.Loc; s]
       | s = a_UIDENT -> Qast.Node "PaUid" [Qast.Loc; s]
       | s = a_INT -> Qast.Node "PaInt" [Qast.Loc; s; Qast.Str ""]
       | s = a_INT_l -> Qast.Node "PaInt" [Qast.Loc; s; Qast.Str "l"]
@@ -797,7 +797,7 @@ EXTEND
       [ p1 = SELF; "."; p2 = SELF -> Qast.Node "PaAcc" [Qast.Loc; p1; p2] ]
     | "simple" RIGHTA
       [ i = a_UIDENT -> Qast.Node "PaUid" [Qast.Loc; i]
-      | i = a_LIDENT -> Qast.Node "PaLid" [Qast.Loc; i] ] ]
+      | i = a_LIDENT2 -> Qast.Node "PaLid" [Qast.Loc; i] ] ]
   ;
   ipatt:
     [ [ "{"; lpl = SLIST1 label_ipatt SEP ";"; "}" ->
@@ -810,7 +810,7 @@ EXTEND
           Qast.Node "PaAli" [Qast.Loc; p; p2]
       | "("; p = SELF; ","; pl = SLIST1 ipatt SEP ","; ")" ->
           Qast.Node "PaTup" [Qast.Loc; Qast.Cons p pl]
-      | s = a_LIDENT -> Qast.Node "PaLid" [Qast.Loc; s]
+      | s = a_LIDENT2 -> Qast.Node "PaLid" [Qast.Loc; s]
       | "_" -> Qast.Node "PaAny" [Qast.Loc] ] ]
   ;
   label_ipatt:
@@ -1216,7 +1216,7 @@ EXTEND
       | a = ANTIQUOT -> antiquot "" loc a
       | a = ANTIQUOT "anti" ->
           Qast.Node "ExAnt" [Qast.Loc; antiquot "anti" loc a]
-      | "("; el = a_list; ")" -> Qast.Node "ExTup" [Qast.Loc; el] ] ]
+      | "("; el = a_list2; ")" -> Qast.Node "ExTup" [Qast.Loc; el] ] ]
   ;
   patt: LEVEL "simple"
     [ [ a = ANTIQUOT "pat" -> antiquot "pat" loc a
