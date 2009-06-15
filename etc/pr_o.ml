@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.117 2007/12/21 04:09:33 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.118 2007/12/21 09:40:20 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -425,51 +425,25 @@ value type_decl pc td =
   [ <:ctyp< '$s$ >> when not (mem_tvar s (Pcaml.unvala tp)) ->
       pprintf pc "%p%p" type_params  (Pcaml.unvala tp)
         var_escaped (Pcaml.unvala tn)
- | _ ->
-      horiz_vertic
-        (fun () ->
-           pprintf pc "%p%p = %p%p" type_params (Pcaml.unvala tp)
-             var_escaped (Pcaml.unvala tn) ctyp te
-             (hlist type_constraint) (Pcaml.unvala cl))
-        (fun () ->
-           let s1 =
-             let pc = {(pc) with aft = ""} in
-             pprintf pc "%p%p =" type_params (Pcaml.unvala tp)
-               var_escaped (Pcaml.unvala tn)
-           in
-           let s2 =
-             if Pcaml.unvala cl = [] then
-               ctyp
-                 {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                  aft = ""}
-                 te
-             else
-               horiz_vertic
-                 (fun () ->
-                    sprintf "%s%s%s%s" (tab (pc.ind + 2))
-                      (ctyp {(pc) with bef = ""; aft = ""} te)
-                      (not_impl "type_decl cl 2"
-                         {(pc) with bef = ""; aft = ""} cl)
-                      "")
-                 (fun () ->
-                    not_impl "type_decl vertic 2"
-                      {(pc) with bef = ""; aft = ""} tn)
-           in
-           let s3 =
-             if pc.aft = "" then "" else sprintf "\n%s%s" (tab pc.ind) pc.aft
-           in
-           sprintf "%s\n%s%s" s1 s2 s3) ]
+  | _ ->
+      if pc.aft = "" then
+        pprintf pc "%p%p =@;%p%p" type_params (Pcaml.unvala tp)
+          var_escaped (Pcaml.unvala tn) ctyp te
+          (hlist type_constraint) (Pcaml.unvala cl)
+      else
+        horiz_vertic
+          (fun () ->
+             pprintf pc "%p%p = %p%p" type_params (Pcaml.unvala tp)
+               var_escaped (Pcaml.unvala tn) ctyp te
+               (hlist type_constraint) (Pcaml.unvala cl))
+          (fun () ->
+             pprintf pc "@[<a>%p%p =@;%p%p@ @]" type_params (Pcaml.unvala tp)
+               var_escaped (Pcaml.unvala tn) ctyp te
+               (hlist type_constraint) (Pcaml.unvala cl)) ]
 ;
 
 value label_decl pc (_, l, m, t) =
-  horiz_vertic
-    (fun () ->
-       sprintf "%s%s%s : %s%s" pc.bef (if m then "mutable " else "") l
-         (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-    (fun () ->
-       let s1 = sprintf "%s%s%s :" pc.bef (if m then "mutable " else "") l in
-       let s2 = ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t in
-       sprintf "%s\n%s" s1 s2)
+  pprintf pc "%s%s :@;%p" (if m then "mutable " else "") l ctyp t
 ;
 
 value cons_decl pc (_, c, tl) =
@@ -2509,7 +2483,7 @@ value variant_decl_list char pc pvl =
            pvl)
       (fun () ->
          vlist2 variant_decl (bar_before variant_decl)
-           {(pc) with bef = sprintf "%s[%s " (tab (pc.ind + 2)) char;
+           {(pc) with bef = sprintf "%s[%s " (tab pc.ind) char;
             aft = sprintf " ]%s" pc.aft}
            pvl)
 ;
