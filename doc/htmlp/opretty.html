@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: opretty.html,v 1.12 2007/08/17 08:45:51 deraugla Exp $ -->
+  <!-- $Id: opretty.html,v 1.13 2007/08/17 12:18:04 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Pretty Printing ocaml programs</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -175,61 +175,47 @@ is a record with <code>pc.bef</code> kept). Same for the
 field <code>pc.aft</code> transmitted to the printing
 of <code>e2</code>.</p>
 
-<h3>Using module Extfun and its syntax</h3>
+<h3>Using EXTEND_PRINTER statement</h3>
 
-<p>This system is combined to the the <a href="extfun.html">extensible
-functions</a> to allow the extensibility of the pretty
-printing. Pretty printers of camlp5 can then be used as "kits" to be
-added or not, according to the things to be pretty printed in some or
-other ways. In particular, the pretty printing kit
-"<code>pr_r.cmo</code>" alone does not rebuild parsers in their
-original syntax. When adding "<code>pr_rp.cmo</code>", the parsers are
-rebuilt: the code of "<code>pr_rp.ml</code>" is just an extension of
-some parts of the pretty printing extensible functions of
-"<code>pr_r.ml</code>".</p>
+<p>This system is combined to the <a href="printers.html">extensible
+  printers</a> to allow the extensibility of the pretty printing.</p>
 
 <p>The code above actually looks like:</p>
 
 <pre>
-  value expr_app =
-    extfun Extfun.empty with
-    [ &lt;:expr&lt; $e1$ $e2$ &gt;&gt; ->
-        fun curr next pc ->
-          horiz_vertic
-            (fun () ->
-               let s1 = curr {(pc) with aft = ""} e1 in
-               let s2 = next {(pc) with bef = ""} e2 in
-               sprintf "%s %s" s1 s2)
-            (fun () ->
-               let s1 = curr {(pc) with aft = ""} e1 in
-               let s2 =
-                 next
-                   {(pc) with
-                      ind = pc.ind + 2;
-                      bef = tab (pc.ind + 2)}
-                   e2
-               in
-               sprintf "%s\n%s" s1 s2)
-    | e ->
-        fun curr next pc -> next pc e ]
-  ;
+  EXTEND_PRINTER
+    pr_expr:
+      [ [ &lt;:expr&lt; $e1$ $e2$ &gt;&gt; ->
+            horiz_vertic
+              (fun () ->
+                 let s1 = curr {(pc) with aft = ""} e1 in
+                 let s2 = next {(pc) with bef = ""} e2 in
+                 sprintf "%s %s" s1 s2)
+              (fun () ->
+                 let s1 = curr {(pc) with aft = ""} e1 in
+                 let s2 =
+                   next
+                     {(pc) with
+                        ind = pc.ind + 2;
+                        bef = tab (pc.ind + 2)}
+                     e2
+                 in
+                 sprintf "%s\n%s" s1 s2) ] ]
+    ;
+  END;
 </pre>
 
-<p>The extensible functions have a syntax tree
-(here <code>&lt;:expr&lt; $e1$ $e2$ &gt;&gt;</code>) as parameter. To
-be extensible, the syntax tree must be the first parameter (it is not
-possible to apply extensions inside a closure). The other parameters,
-in particular the printing context
-<code>pc</code> are given in the semantic action.</p>
+<p>The variable "<tt>pc</tt>" is implicit in the semantic actions of
+  the syntax "<tt>EXTEND_PRINTER</tt>", as well as two other
+  variables: "<tt>curr</tt>" and "<tt>next</tt>".</p>
 
-<p>The parameter <code>curr</code> and <code>next</code> are provided
-by the pretty printing system for ocaml programs. They correspond to
-the pretty printing of, respectively, the current level and the next
-level. Since the application in ocaml is left associative, the first
-sub-expression is printed at the same (current) level and the second
-one is printed at the next level. We also see a call
-to <code>next</code> in the last (2nd) case of the function to treat
-the other cases in the next level.</p>
+<p>These parameters, "<tt>curr</tt>" and "<tt>next</tt>", correspond
+  to the pretty printing of, respectively, the current level and the
+  next level. Since the application in ocaml is left associative, the
+  first sub-expression is printed at the same (current) level and the
+  second one is printed at the next level. We also see a call
+  to <code>next</code> in the last (2nd) case of the function to treat
+  the other cases in the next level.</p>
 
 <h3>Dangling else, bar, semicolon</h3>
 
@@ -292,58 +278,32 @@ necessary and remains the empty string.</p>
 
 <h3>By level</h3>
 
-<p>For each level of pretty printing, there is such a function. The
-example showed the pretty printing of expression at the level "apply".
-There are other functions for levels "top", "add", "mul", "simple",
-and so on. The global pretty printing variable for expressions is a
-record, named "<code>pr_expr</code>" (in the
-module <code>Pcaml.Printers</code>), where the levels are defined by a
-list, something like this:</p>
+<p>As explained in the chapter about
+  the <a href="printers.html">extensible printers</a> (with the
+  EXTEND_PRINTER statement), printers contain levels. The global
+  printer variable of expressions is named "<tt>pr_expr</tt>" and
+  contain all definitions for pretty printing expressions, organized
+  by levels, just like the parsing of expressions. The definition of
+  "<tt>pr_expr</tt>" actually looks like this:</p>
 
 <pre>
-  pr_expr.pr_levels :=
-    [{pr_label = "top"; pr_rules = expr_top};
-     {pr_label = "add"; pr_rules = expr_add};
-     {pr_label = "mul"; pr_rules = expr_mul};
-     {pr_label = "apply"; pr_rules = expr_app};
-     {pr_label = "simple"; pr_rules = expr_simple}]
-  ;
-</pre>
-
-<p>where we find, in particular, our function <code>expr_app</code>
-defined above.</p>
-
-<p>The call to a specific level is done by the
-function <code>pr_expr.pr_fun</code> with the level name. It returns the
-function taking the "printing context" (<code>pc</code>) and the expression
-as parameters, and returning the pretty printed string. For example, the
-call to the top level of expressions has been defined as:</p>
-
-<pre>
-  value expr pc e = pr_expr.pr_fun "top" pc e;
-</pre>
-
-<p>Same thing for the other pretty printed functions for patterns,
-structures, signatures, and so on.</p>
-
-<p>To extend some level, in another file, the
-function <code>find_pr_level</code> can be used to get the level to
-be extended, e.g.</p>
-
-<pre>
-  let expr_app = find_pr_level "app" pr_expr.pr_levels in
-  expr_app.pr_rules :=
-    extfun expr_app.pr_rules with
-    [ &lt;:expr&lt; .... &gt;&gt; -> ...
-    | &lt;:expr&lt; .... &gt;&gt; -> ... 
-    | ... ];
+  EXTEND_PRINTER
+    pr_expr:
+      [ "top"
+        [ (* code for level "top" *) ]
+      | "add"
+        [ (* code for level "add" *) ]
+      | "mul"
+        [ (* code for level "mul" *) ]
+      | "apply"
+        [ (* code for level "apply" *) ]
+      | "simple"
+        [ (* code for level "add" *) ] ]
+    ;
+  END;
 </pre>
 
 <h2>Details</h2>
-
-<h3>The Pcaml.Printers module</h3>
-
-<p>... to be written ...</p>
 
 <h3>The Prtools module</h3>
 
