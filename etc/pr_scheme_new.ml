@@ -1,4 +1,4 @@
-(* camlp5r q_MLast.cmo ./pa_extprint.cmo *)
+(* camlp5r q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
 (* $Id$ *)
 (* Copyright (c) INRIA 2007 *)
 
@@ -54,9 +54,34 @@ value str_item = Eprinter.apply pr_str_item;
 value sig_item = Eprinter.apply pr_sig_item;
 value module_expr = Eprinter.apply pr_module_expr;
 value module_type = Eprinter.apply pr_module_type;
-(*
 value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
-*)
+
+value rec is_irrefut_patt =
+  fun
+  [ <:patt< $lid:_$ >> -> True
+  | <:patt< () >> -> True
+  | <:patt< _ >> -> True
+  | <:patt< ($x$ as $y$) >> -> is_irrefut_patt x && is_irrefut_patt y
+  | <:patt< { $list:fpl$ } >> ->
+      List.for_all (fun (_, p) -> is_irrefut_patt p) fpl
+  | <:patt< ($p$ : $_$) >> -> is_irrefut_patt p
+  | <:patt< ($list:pl$) >> -> List.for_all is_irrefut_patt pl
+  | <:patt< ?$_$: ($_$ = $_$) >> -> True
+  | <:patt< ?$_$: ($_$) >> -> True
+  | <:patt< ?$_$ >> -> True
+  | <:patt< ~$_$ >> -> True
+  | <:patt< ~$_$: $_$ >> -> True
+  | _ -> False ]
+;
+
+pr_expr_fun_args.val :=
+  extfun Extfun.empty with
+  [ <:expr< fun [$p$ -> $e$] >> as ge ->
+      if is_irrefut_patt p then
+        let (pl, e) = expr_fun_args e in
+        ([p :: pl], e)
+      else ([], ge)
+  | ge -> ([], ge) ];
 
 value has_cons_with_params vdl =
   List.exists
@@ -128,13 +153,27 @@ value type_decl_list pc =
 ;
 
 value value_binding b pc (p, e) =
+  let (pl, e) = expr_fun_args e in
   horiz_vertic
     (fun () ->
-       sprintf "%s(%s%s %s)%s" pc.bef b
-         (patt {(pc) with bef = ""; aft = ""} p)
+       let s =
+         match pl with
+         [ [] -> patt {(pc) with bef = ""; aft = ""} p
+         | _ -> hlist patt {(pc) with bef = "("; aft = ")"} [p :: pl] ]
+       in
+       sprintf "%s(%s%s %s)%s" pc.bef b s
          (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
     (fun () ->
-       let s1 = patt {(pc) with bef = sprintf "%s(%s" pc.bef b; aft = ""} p in
+       let s1 =
+         let pc = {(pc) with bef = sprintf "%s(%s" pc.bef b; aft = ""} in
+         match pl with
+         [ [] -> patt pc p
+         | _ ->
+             hlist patt
+               {(pc) with bef = sprintf "%s(" pc.bef;
+                aft = sprintf ")%s" pc.aft}
+               [p :: pl] ]
+       in
        let s2 =
          expr
            {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
@@ -165,11 +204,21 @@ value value_binding_list pc (rf, pel) =
            sprintf "%s\n%s" s1 s2) ]
 ;
 
-value let_binding pc (p1, e1) =
+value let_binding pc (p, e) =
+  let (pl, e) = expr_fun_args e in
   plistf 0
     {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
      aft = sprintf ")%s" pc.aft}
-    [(fun pc -> patt pc p1, ""); (fun pc -> expr pc e1, "")]
+    [(fun pc ->
+        match pl with
+        [ [] -> patt pc p
+        | _ ->
+            hlist patt
+              {(pc) with bef = sprintf "%s(" pc.bef;
+               aft = sprintf ")%s" pc.aft}
+              [p :: pl] ],
+      "");
+     (fun pc -> expr pc e, "")]
 ;
 
 value let_binding_list pc (b, pel, e) =
