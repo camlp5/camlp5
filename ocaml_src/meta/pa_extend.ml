@@ -1376,29 +1376,6 @@ let ss_aux loc a_name r2 used2 =
   let styp = STquo (loc, a_name) in {used = used; text = text; styp = styp}
 ;;
 
-let sslist loc min sep s =
-  let r =
-    let prod =
-      [mk_psymbol (MLast.PaLid (loc, "a")) (slist loc min sep s)
-         (STapp (loc, STlid (loc, "list"), s.styp))]
-    in
-    let act =
-      MLast.ExApp
-        (loc,
-         MLast.ExAcc
-           (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "List")),
-         MLast.ExLid (loc, "a"))
-    in
-    {prod = prod; action = Some act}
-  in
-  let used =
-    match sep with
-      Some symb -> symb.used @ s.used
-    | None -> s.used
-  in
-  ss_aux loc "a_list" r used
-;;
-
 let ssopt loc s =
   let r =
     let s =
@@ -1635,16 +1612,14 @@ let rec symbol_of_a =
   | ASlist (loc, min, s, sep) ->
       let s = symbol_of_a s in
       let sep = option_map symbol_of_a sep in
-      if !quotify then sslist loc min sep s
-      else
-        let used =
-          match sep with
-            Some symb -> symb.used @ s.used
-          | None -> s.used
-        in
-        let text = slist loc min sep s in
-        let styp = STapp (loc, STlid (loc, "list"), s.styp) in
-        {used = used; text = text; styp = styp}
+      let used =
+        match sep with
+          Some symb -> symb.used @ s.used
+        | None -> s.used
+      in
+      let text = slist loc min sep s in
+      let styp = STapp (loc, STlid (loc, "list"), s.styp) in
+      {used = used; text = text; styp = styp}
   | ASnext loc -> {used = []; text = TXnext loc; styp = STself (loc, "NEXT")}
   | ASnterm (loc, (i, n), lev) ->
       let name = mk_name2 (i, n) in
@@ -1660,9 +1635,6 @@ let rec symbol_of_a =
   | ASquot (loc, s) ->
       begin match s with
         ASflag (loc, s) -> let s = symbol_of_a s in ssflag loc s
-      | ASlist (loc, min, s, sep) ->
-          let s = symbol_of_a s in
-          let sep = option_map symbol_of_a sep in sslist loc min sep s
       | ASopt (loc, s) -> ssopt loc (symbol_of_a s)
       | AStok (loc, s, p) ->
           begin match p with

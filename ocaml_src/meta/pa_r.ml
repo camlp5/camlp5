@@ -107,7 +107,9 @@ let mklistpat loc last =
   loop true
 ;;
 
-let append_elem el e = el @ [e];;
+let mktupexp loc e el = MLast.ExTup (loc, e :: el);;
+let mktuppat loc p pl = MLast.PaTup (loc, p :: pl);;
+let mktuptyp loc t tl = MLast.TyTup (loc, t :: tl);;
 
 Grammar.extend
   (let _ = (sig_item : 'sig_item Grammar.Entry.e)
@@ -956,7 +958,7 @@ Grammar.extend
        Gramext.Stoken ("", ")")],
       Gramext.action
         (fun _ (el : 'expr list) _ (e : 'expr) _ (loc : Ploc.t) ->
-           (MLast.ExTup (loc, e :: el) : 'expr));
+           (mktupexp loc e el : 'expr));
       [Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ":");
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e));
        Gramext.Stoken ("", ")")],
@@ -1258,7 +1260,7 @@ Grammar.extend
           Gramext.Stoken ("", ","))],
       Gramext.action
         (fun (pl : 'patt list) _ (p : 'patt) (loc : Ploc.t) ->
-           (MLast.PaTup (loc, p :: pl) : 'paren_patt));
+           (mktuppat loc p pl : 'paren_patt));
       [Gramext.Snterm (Grammar.Entry.obj (patt : 'patt Grammar.Entry.e));
        Gramext.Stoken ("", "as");
        Gramext.Snterm (Grammar.Entry.obj (patt : 'patt Grammar.Entry.e))],
@@ -1347,7 +1349,7 @@ Grammar.extend
           Gramext.Stoken ("", ","))],
       Gramext.action
         (fun (pl : 'ipatt list) _ (p : 'ipatt) (loc : Ploc.t) ->
-           (MLast.PaTup (loc, p :: pl) : 'paren_ipatt));
+           (mktuppat loc p pl : 'paren_ipatt));
       [Gramext.Snterm (Grammar.Entry.obj (ipatt : 'ipatt Grammar.Entry.e));
        Gramext.Stoken ("", "as");
        Gramext.Snterm (Grammar.Entry.obj (ipatt : 'ipatt Grammar.Entry.e))],
@@ -1497,7 +1499,7 @@ Grammar.extend
        Gramext.Stoken ("", ")")],
       Gramext.action
         (fun _ (tl : 'ctyp list) _ (t : 'ctyp) _ (loc : Ploc.t) ->
-           (MLast.TyTup (loc, t :: tl) : 'ctyp));
+           (mktuptyp loc t tl : 'ctyp));
       [Gramext.Stoken ("UIDENT", "")],
       Gramext.action
         (fun (i : string) (loc : Ploc.t) -> (MLast.TyUid (loc, i) : 'ctyp));

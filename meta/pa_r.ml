@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.113 2007/09/30 21:41:52 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.114 2007/10/01 05:18:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -108,7 +108,9 @@ value mklistpat loc last =
         <:patt< [$p1$ :: $loop False pl$] >> ]
 ;
 
-value append_elem el e = el @ [e];
+value mktupexp loc e el = <:expr< ($list:[e::el]$) >>;
+value mktuppat loc p pl = <:patt< ($list:[p::pl]$) >>;
+value mktuptyp loc t tl = <:ctyp< ( $list:[t::tl]$ ) >>;
 
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr class_type
@@ -325,8 +327,7 @@ EXTEND
           <:expr< { ($e$) with $_list:lel$ } >>
       | "("; ")" -> <:expr< () >>
       | "("; e = SELF; ":"; t = ctyp; ")" -> <:expr< ($e$ : $t$) >>
-      | "("; e = SELF; ","; el = LIST1 expr SEP ","; ")" ->
-          <:expr< ($list:[e::el]$) >>
+      | "("; e = SELF; ","; el = LIST1 expr SEP ","; ")" -> mktupexp loc e el
       | "("; e = SELF; ")" -> <:expr< $e$ >>
       | "("; el = V (LIST1 expr SEP ","); ")" -> <:expr< ($_list:el$) >> ] ]
   ;
@@ -406,7 +407,7 @@ EXTEND
   paren_patt:
     [ [ p = patt; ":"; t = ctyp -> <:patt< ($p$ : $t$) >>
       | p = patt; "as"; p2 = patt -> <:patt< ($p$ as $p2$) >>
-      | p = patt; ","; pl = LIST1 patt SEP "," -> <:patt< ($list:[p::pl]$) >>
+      | p = patt; ","; pl = LIST1 patt SEP "," -> mktuppat loc p pl
       | p = patt -> <:patt< $p$ >>
       | pl = V (LIST1 patt SEP ",") -> <:patt< ($_list:pl$) >>
       | -> <:patt< () >> ] ]
@@ -435,8 +436,7 @@ EXTEND
   paren_ipatt:
     [ [ p = ipatt; ":"; t = ctyp -> <:patt< ($p$ : $t$) >>
       | p = ipatt; "as"; p2 = ipatt -> <:patt< ($p$ as $p2$) >>
-      | p = ipatt; ","; pl = LIST1 ipatt SEP "," ->
-          <:patt< ($list:[p::pl]$) >>
+      | p = ipatt; ","; pl = LIST1 ipatt SEP "," -> mktuppat loc p pl
       | p = ipatt -> <:patt< $p$ >>
       | pl = V (LIST1 ipatt SEP ",") -> <:patt< ( $_list:pl$) >>
       | -> <:patt< () >> ] ]
@@ -482,8 +482,7 @@ EXTEND
       | "_" -> <:ctyp< _ >>
       | i = V LIDENT -> <:ctyp< $_lid:i$ >>
       | i = V UIDENT -> <:ctyp< $_uid:i$ >>
-      | "("; t = SELF; "*"; tl = LIST1 ctyp SEP "*"; ")" ->
-          <:ctyp< ( $list:[t::tl]$ ) >>
+      | "("; t = SELF; "*"; tl = LIST1 ctyp SEP "*"; ")" -> mktuptyp loc t tl
       | "("; t = SELF; ")" -> <:ctyp< $t$ >>
       | "("; tl = V (LIST1 ctyp SEP "*"); ")" -> <:ctyp< ( $_list:tl$ ) >>
       | "["; cdl = V (LIST0 constructor_declaration SEP "|"); "]" ->
