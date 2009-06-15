@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.32 2007/07/17 00:06:48 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.33 2007/07/17 00:11:12 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -322,7 +322,27 @@ kind of grammars recognized):</p>
   <li>the parsing may continue with the next rule.</li>
 </ul>
 
-<h4>Rules insertion</h4>
+<h4>Meta symbols</h4>
+
+<p>Extra symbols exist, allowing to manipulate lists or optional
+symbols. They are:</p>
+
+<ul>
+  <li>LIST0 followed by a symbol: this is a list of this symbol,
+    possibly empty,</li>
+  <li>LIST0 followed by a symbol, SEP and another symbol: this is a
+    list, possibly empty, of the first symbol separated by the second
+    one,</li>
+  <li>LIST1 followed by a symbol: this is a list of this symbol,
+    with at least one element,</li>
+  <li>LIST0 followed by a symbol, SEP and another symbol: this is a
+    list, with at least one element, of the first symbol separated by
+    the second one,</li>
+  <li>OPT followed by a symbol: equivalent to "this symbol or
+    nothing".</li>
+</ul>
+
+<h3>Rules insertion</h3>
 
 <p>Remember that "<tt>EXTEND</tt>" is a statement, not a declaration:
 the rules are added in the entries at run time. Each rule is
@@ -340,7 +360,7 @@ sources):</p>
   "method"; l = label; sb = fun_binding
 </pre>
 
-<p>the rules are inserted in a tree and the result look like:</p>
+<p>the rules are inserted in a tree and the result looks like:</p>
 
 <pre>
   "method"
@@ -378,27 +398,7 @@ root, descending on it as long as the parsing advances.</p>
 
 <p>There is a different tree by entry level.</p>
 
-<h4>Meta symbols</h4>
-
-<p>Extra symbols exist, allowing to manipulate lists or optional
-symbols. They are:</p>
-
-<ul>
-  <li>LIST0 followed by a symbol: this is a list of this symbol,
-    possibly empty,</li>
-  <li>LIST0 followed by a symbol, SEP and another symbol: this is a
-    list, possibly empty, of the first symbol separated by the second
-    one,</li>
-  <li>LIST1 followed by a symbol: this is a list of this symbol,
-    with at least one element,</li>
-  <li>LIST0 followed by a symbol, SEP and another symbol: this is a
-    list, with at least one element, of the first symbol separated by
-    the second one,</li>
-  <li>OPT followed by a symbol: equivalent to "this symbol or
-    nothing".</li>
-</ul>
-
-<h4>Semantic action</h4>
+<h3>Semantic action</h3>
 
 <p>The semantic action, i.e. the expression following the right arrow
 in rules, contain in its environment:</p>
