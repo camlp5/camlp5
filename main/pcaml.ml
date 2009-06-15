@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo *)
-(* $Id: pcaml.ml,v 1.34 2007/09/27 17:51:52 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.35 2007/10/02 02:57:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value version = "5.01-exp";
@@ -357,6 +357,8 @@ value pr_class_str_item = Eprinter.make "class_str_item";
 value pr_class_expr = Eprinter.make "class_expr";
 value pr_class_type = Eprinter.make "class_type";
 value pr_expr_fun_args = ref Extfun.empty;
+
+value flag_equilibrate_cases = ref False;
 
 module OldPrinters =
   struct

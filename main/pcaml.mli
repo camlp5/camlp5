@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: pcaml.mli,v 1.22 2007/09/26 07:10:43 deraugla Exp $ *)
+(* $Id: pcaml.mli,v 1.23 2007/10/02 02:57:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (** Language grammar, entries and printers.
@@ -183,3 +183,4 @@ value patt_reloc :
 value expr_reloc :
   (MLast.loc -> MLast.loc) -> int -> MLast.expr -> MLast.expr;
 value rename_id : ref (string -> string);
+value flag_equilibrate_cases : ref bool;

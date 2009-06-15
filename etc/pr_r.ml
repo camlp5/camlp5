@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.78 2007/10/01 19:27:57 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.79 2007/10/02 02:57:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -9,7 +9,7 @@ open Prtools;
 value flag_expand_declare = ref False;
 value flag_horiz_let_in = ref False;
 value flag_sequ_begin_at_eol = ref True;
-value flag_equilibrate_cases = ref False;
+value flag_equilibrate_cases = Pcaml.flag_equilibrate_cases;
 
 value flag_where_after_in = ref True;
 value flag_where_after_let_eq = ref True;

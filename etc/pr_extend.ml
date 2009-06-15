@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extend.ml,v 1.50 2007/09/30 21:41:52 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.51 2007/10/02 02:57:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -240,6 +240,8 @@ value unextend_body e =
 
 (* Printing *)
 
+value flag_equilibrate_cases = Pcaml.flag_equilibrate_cases;
+
 value expr = Eprinter.apply pr_expr;
 value patt = Eprinter.apply pr_patt;
 
@@ -308,7 +310,7 @@ value anti_of_tok =
   | s -> [] ]
 ;
 
-value rec rule pc (sl, a) =
+value rec rule force_vertic pc (sl, a) =
   match a with
   [ None -> not_impl "rule 1" pc sl
   | Some a ->
@@ -333,9 +335,12 @@ value rec rule pc (sl, a) =
         [ Some s1 ->
             horiz_vertic
               (fun () ->
-                 sprintf "%s %s%s" s1
-                   (action expr {(pc) with bef = ""; aft = ""; dang = "|"} a)
-                   pc.aft)
+                 if force_vertic then sprintf "\n"
+                 else
+                   sprintf "%s %s%s" s1
+                     (action expr {(pc) with bef = ""; aft = ""; dang = "|"}
+                        a)
+                     pc.aft)
               (fun () ->
                  let s2 =
                    action expr
@@ -428,12 +433,12 @@ and simple_symbol pc sy =
       | None ->
           horiz_vertic
             (fun () ->
-               hlist2 rule (bar_before rule)
+               hlist2 (rule False) (bar_before (rule False))
                  {(pc) with bef = sprintf "%s[ " pc.bef;
                   aft = sprintf " ]%s" pc.aft}
                  rl)
             (fun () ->
-               vlist2 rule (bar_before rule)
+               vlist2 (rule False) (bar_before (rule False))
                  {(pc) with bef = sprintf "%s[ " pc.bef;
                   aft = sprintf " ]%s" pc.aft}
                  rl) ]
@@ -552,12 +557,12 @@ value assoc =
   | None -> "" ]
 ;
 
-value level pc (lab, ass, rl) =
+value level force_vertic pc (lab, ass, rl) =
   match (lab, ass) with
   [ (None, None) ->
       if rl = [] then sprintf "%s[ ]%s" pc.bef pc.aft
       else
-        vlist2 rule (bar_before rule)
+        vlist2 (rule force_vertic) (bar_before (rule force_vertic))
           {(pc) with ind = pc.ind + 2; bef = sprintf "%s[ " pc.bef;
            aft = sprintf " ]%s" pc.aft}
           rl
@@ -572,7 +577,7 @@ value level pc (lab, ass, rl) =
       let s2 =
         if rl = [] then not_impl "level" {(pc) with bef = ""} rl
         else
-          vlist2 rule (bar_before rule)
+          vlist2 (rule force_vertic) (bar_before (rule force_vertic))
             {(pc) with ind = pc.ind + 2;
              bef = sprintf "%s[ " (tab (pc.ind + 2));
              aft = sprintf " ]%s" pc.aft} rl
@@ -581,10 +586,29 @@ value level pc (lab, ass, rl) =
 ;
 
 value entry pc (e, pos, ll) =
+  let force_vertic =
+    if flag_equilibrate_cases.val then
+      let has_vertic =
+        let f = bar_before (bar_before (rule False)) pc in
+        List.exists
+          (fun (_, _, rl) ->
+             List.exists
+               (fun r ->
+                  horiz_vertic
+                    (fun () ->
+                       let _ : string = f r in
+                       False)
+                    (fun () -> True))
+               rl)
+          ll
+      in
+      has_vertic
+    else False
+  in
   sprintf "%s%s%s:%s\n%s\n%s;%s" (comm_bef pc (MLast.loc_of_expr e)) pc.bef
     (expr {(pc) with bef = ""; aft = ""} e)
     (position {(pc) with bef = ""; aft = ""} pos)
-    (vlist2 level (bar_before level)
+    (vlist2 (level force_vertic) (bar_before (level force_vertic))
        {(pc) with ind = pc.ind + 2; bef = sprintf "%s[ " (tab (pc.ind + 2));
         aft = " ]"}
         ll)

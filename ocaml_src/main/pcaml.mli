@@ -175,3 +175,4 @@ val sync : (char Stream.t -> unit) ref;;
 val patt_reloc : (MLast.loc -> MLast.loc) -> int -> MLast.patt -> MLast.patt;;
 val expr_reloc : (MLast.loc -> MLast.loc) -> int -> MLast.expr -> MLast.expr;;
 val rename_id : (string -> string) ref;;
+val flag_equilibrate_cases : bool ref;;
