@@ -9,9 +9,7 @@ open Prtools;
 do {
   Eprinter.clear pr_expr;
   Eprinter.clear pr_patt;
-(*
   Eprinter.clear pr_ctyp;
-*)
   Eprinter.clear pr_str_item;
   Eprinter.clear pr_sig_item;
 (*
@@ -51,9 +49,7 @@ value rec mod_ident pc sl =
 
 value expr = Eprinter.apply pr_expr;
 value patt = Eprinter.apply pr_patt;
-(*
 value ctyp = Eprinter.apply pr_ctyp;
-*)
 value str_item = Eprinter.apply pr_str_item;
 value sig_item = Eprinter.apply pr_sig_item;
 (*
@@ -117,7 +113,10 @@ value match_assoc pc (p, we, e) =
        let s1 =
          let pc = {(pc) with bef = sprintf "%s(" pc.bef; aft = ""} in
          match we with
-         [ <:vala< Some e >> -> not_impl "match_assoc 1" pc 0
+         [ <:vala< Some e >> ->
+             sprintf "%s(when %s %s)%s" pc.bef
+               (expr {(pc) with bef = ""; aft = ""} e)
+               (patt {(pc) with bef = ""; aft = ""} p) pc.aft
          | _ -> patt pc p ]
        in
        let s2 = expr {(pc) with bef = ""; aft = sprintf ")%s" pc.aft} e in
@@ -140,7 +139,15 @@ value match_assoc pc (p, we, e) =
                       (fun () ->
                          sprintf "%s(when %s" pc.bef
                            (patt {(pc) with bef = ""} p))
-                      (fun () -> not_impl "match_assoc 2" pc 0)
+                      (fun () ->
+                         let s1 = sprintf "%s(when" pc.bef in
+                         let s2 =
+                           patt
+                             {(pc) with ind = pc.ind + 1;
+                              bef = tab (pc.ind + 1); aft = ""}
+                             p
+                         in
+                         sprintf "%s\n%s" s1 s2)
                   in
                   let s2 =
                     expr
@@ -162,6 +169,48 @@ value match_assoc pc (p, we, e) =
 ;
 
 EXTEND_PRINTER
+  pr_ctyp:
+    [ "top"
+      [ (* <:ctyp< [ $list:cdl$ ] >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(@[<hv>sum@ %a@]" (list constr_decl) (cdl, ks ")" k)
+      | <:ctyp< { $list:cdl$ } >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "{@[<hv>%a@]" (list label_decl) (cdl, ks "}" k)
+      | <:ctyp< ( $list:tl$ ) >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(@[* @[<hv>%a@]@]" (list ctyp) (tl, ks ")" k)
+      | <:ctyp< $t1$ -> $t2$ >> ->
+          fun ppf curr next dg k ->
+            let tl =
+              loop t2 where rec loop =
+                fun
+                [ <:ctyp< $t1$ -> $t2$ >> -> [t1 :: loop t2]
+                | t -> [t] ]
+            in
+            fprintf ppf "(@[-> @[<hv>%a@]@]" (list ctyp)
+              ([t1 :: tl], ks ")" k)
+      | <:ctyp< $t1$ $t2$ >> ->
+          fun ppf curr next dg k ->
+            let (t, tl) =
+              loop [t2] t1 where rec loop tl =
+                fun
+                [ <:ctyp< $t1$ $t2$ >> -> loop [t2 :: tl] t1
+                | t1 -> (t1, tl) ]
+            in
+            fprintf ppf "(@[%a@ %a@]" ctyp (t, nok) (list ctyp) (tl, ks ")" k)
+      | <:ctyp< $t1$ . $t2$ >> ->
+          fun ppf curr next dg k ->
+            fprintf ppf "%a.%a" ctyp (t1, nok) ctyp (t2, k)
+      | <:ctyp< $lid:s$ >> | <:ctyp< $uid:s$ >> ->
+          fun ppf curr next dg k -> fprintf ppf "%s%t" s k
+      | <:ctyp< ' $s$ >> ->
+          fun ppf curr next dg k -> fprintf ppf "'%s%t" s k
+      | <:ctyp< _ >> ->
+          fun ppf curr next dg k -> fprintf ppf "_%t" k
+      | *) x ->
+          not_impl "ctyp" pc x ] ]
+  ;
   pr_expr:
     [ "top"
       [ (* <:expr< fun [] >> ->
@@ -295,18 +344,49 @@ EXTEND_PRINTER
           fun ppf curr next dg k ->
             fprintf ppf "(@[for %s@ %a@ %a %a@]" i expr (e1, nok)
               expr (e2, nok) (list expr) (el, ks ")" k)
+*)
       | <:expr< ($e$ : $t$) >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "(:@ %a@ %a" expr (e, nok) ctyp (t, ks ")" k)
+          horiz_vertic
+            (fun () ->
+               sprintf "%s(: %s %s)%s" pc.bef
+                 (curr {(pc) with bef = ""; aft = ""} e)
+                 (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
+            (fun () ->
+               let s1 =
+                 horiz_vertic
+                   (fun () ->
+                      sprintf "%s(: %s" pc.bef
+                        (curr {(pc) with bef = ""; aft = ""} e))
+                   (fun () -> not_impl "type constraint" pc 0)
+               in
+               let s2 =
+                 ctyp
+                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+                    aft = sprintf ")%s" pc.aft}
+                   t
+               in
+               sprintf "%s\n%s" s1 s2)
       | <:expr< ($list:el$) >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "(values @[%a@]" (list expr) (el, ks ")" k)
+          let el = List.map (fun e -> (e, "")) el in
+          plistb curr 1
+            {(pc) with bef = sprintf "%s(values" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            el
       | <:expr< { $list:fel$ } >> ->
-          fun ppf curr next dg k ->
-            let record_binding ppf ((p, e), k) =
-              fprintf ppf "(@[%a@ %a@]" patt (p, nok) expr (e, ks ")" k)
-            in
-            fprintf ppf "{@[<hv>%a@]" (list record_binding) (fel, ks "}" k)
+          let record_binding pc (p, e) =
+            horiz_vertic
+              (fun () ->
+                 sprintf "%s(%s %s)%s" pc.bef
+                   (patt {(pc) with bef = ""; aft = ""} p)
+                   (curr {(pc) with bef = ""; aft = ""} e) pc.aft)
+              (fun () -> not_impl "expr record_binding vertic" pc 0)
+          in
+          let fel = List.map (fun fe -> (fe, "")) fel in
+          plistb record_binding 1
+            {(pc) with bef = sprintf "%s({}" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            fel
+(*
       | <:expr< { ($e$) with $list:fel$ } >> ->
           fun ppf curr next dg k ->
             let record_binding ppf ((p, e), k) =
@@ -314,11 +394,12 @@ EXTEND_PRINTER
             in
             fprintf ppf "{@[@[with@ %a@]@ @[%a@]@]" expr (e, nok)
               (list record_binding) (fel, ks "}" k)
-      | <:expr< $e1$ := $e2$ >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "(:=@;<1 1>%a@;<1 1>%a" expr (e1, nok)
-              expr (e2, ks ")" k)
 *)
+      | <:expr< $e1$ := $e2$ >> ->
+          plistb curr 1
+            {(pc) with bef = sprintf "%s(:=" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(e1, ""); (e2, "")]
       | <:expr< [$_$ :: $_$] >> as e ->
           let (el, c) =
             make_list e where rec make_list e =
@@ -488,7 +569,7 @@ EXTEND_PRINTER
 *)
       | <:patt< ($list:pl$) >> ->
           let pl = List.map (fun p -> (p, "")) pl in
-          plistb patt 1
+          plistb curr 1
             {(pc) with bef = sprintf "%s(values" pc.bef;
              aft = sprintf ")%s" pc.aft}
             pl
