@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.72 2007/12/14 08:03:52 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.73 2007/12/14 08:18:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -405,16 +405,7 @@ EXTEND_PRINTER
                | None -> pprintf pc "" ])
             pb
       | <:class_str_item< initializer $e$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%sinitializer %s%s" pc.bef
-                 (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
-            (fun () ->
-               let s1 = sprintf "%sinitializer" pc.bef in
-               let s2 =
-                 expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
-               in
-               sprintf "%s\n%s" s1 s2)
+          pprintf pc "initializer@;%p" expr e
       | <:class_str_item< method virtual $flag:priv$ $lid:s$ : $t$ >> ->
           sig_method_or_method_virtual pc " virtual" priv s t
       | <:class_str_item< method $flag:priv$ $lid:s$ $opt:topt$ = $e$ >> ->
