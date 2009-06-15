@@ -1,5 +1,5 @@
-(* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_extfun.ml,v 1.9 2007/07/11 12:01:39 deraugla Exp $ *)
+(* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
+(* $Id: pr_extfun.ml,v 1.10 2007/08/16 09:50:12 deraugla Exp $ *)
 
 (* heuristic to rebuild the extfun statement from the AST *)
 
@@ -19,8 +19,8 @@ value not_impl name pc x =
     (String.escaped desc) pc.aft
 ;
 
-value expr pc z = pr_expr.pr_fun "top" pc z;
-value patt pc z = pr_patt.pr_fun "top" pc z;
+value expr = Eprinter.apply pr_expr;
+value patt = Eprinter.apply pr_patt;
 
 value rec un_extfun rpel =
   fun
@@ -136,11 +136,9 @@ value match_assoc_list pc pwel =
 
 (* copied from pr_r.cmo ; end *)
 
-let lev = find_pr_level "top" pr_expr.pr_levels in
-lev.pr_rules :=
-  extfun lev.pr_rules with
-  [ <:expr< Extfun.extend $e$ $list$ >> as ge ->
-      fun curr next pc ->
+EXTEND_PRINTER
+  pr_expr: LEVEL "top"
+    [ [ <:expr< Extfun.extend $e$ $list$ >> as ge ->
         try
           let pwel = un_extfun [] list in
           let s1 =
@@ -150,5 +148,6 @@ lev.pr_rules :=
           let s2 = match_assoc_list {(pc) with bef = tab pc.ind} pwel in
           sprintf "%s\n%s" s1 s2
         with
-        [ Not_found -> next pc ge ] ];
-
+        [ Not_found -> next pc ge ] ] ]
+  ;
+END;

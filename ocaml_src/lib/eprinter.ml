@@ -92,7 +92,7 @@ let pr_fun name pr lab =
 let make name =
   let pr =
     {pr_name = name;
-     pr_fun = (fun _ -> raise (Match_failure ("eprinter.ml", 96, 37)));
+     pr_fun = (fun _ -> raise (Match_failure ("eprinter.ml", 91, 37)));
      pr_levels = []}
   in
   pr.pr_fun <- pr_fun name pr; pr

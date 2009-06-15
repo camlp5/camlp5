@@ -10,9 +10,10 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_phony.ml,v 1.12 2007/07/31 04:55:54 deraugla Exp $ *)
+(* $Id: q_phony.ml,v 1.13 2007/08/16 09:50:12 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
+#load "pa_extprint.cmo";
 #load "q_MLast.cmo";
 
 open Pcaml;
@@ -75,7 +76,7 @@ open Pretty;
 open Pcaml.Printers;
 open Prtools;
 
-value expr pc e = pr_expr.pr_fun "top" pc e;
+value expr = Eprinter.apply pr_expr;
 
 value rec dexpr pc =
   fun
@@ -143,27 +144,13 @@ value macro_def pc =
            sprintf "%s\n%s\n%s\n%s\n%s" s1 s2 s3 s4 s5)
   | _ -> assert False ]
 ;
-               
-(*
-if Printer.has_level pr_expr "apply" then
+
+try
   EXTEND_PRINTER
     pr_expr: LEVEL "apply"
       [ [ <:expr< IFDEF $_$ $_$ >> as z -> macro_def pc z
         | <:expr< IFDEF $_$ $_$ $_$ >> as z -> macro_def pc z ] ]
     ;
   END
-else ();
-*)
-
-match
-  try Some (find_pr_level "apply" pr_expr.pr_levels) with
-  [ Failure _ -> None ]
 with
-[ Some lev ->
-    lev.pr_rules :=
-      extfun lev.pr_rules with
-      [ <:expr< IFDEF $_$ $_$ >> as z ->
-          fun curr next pc -> macro_def pc z
-      | <:expr< IFDEF $_$ $_$ $_$ >> as z ->
-          fun curr next pc -> macro_def pc z ]
-| None -> () ];
+[ Failure _ -> () ];

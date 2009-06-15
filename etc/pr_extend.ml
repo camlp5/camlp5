@@ -1,5 +1,5 @@
-(* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_extend.ml,v 1.22 2007/08/14 11:19:09 deraugla Exp $ *)
+(* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
+(* $Id: pr_extend.ml,v 1.23 2007/08/16 09:50:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -227,8 +227,8 @@ value unextend_body e =
 
 (* Printing *)
 
-value expr pc z = pr_expr.pr_fun "top" pc z;
-value patt pc z = pr_patt.pr_fun "top" pc z;
+value expr = Eprinter.apply pr_expr;
+value patt = Eprinter.apply pr_patt;
 
 value string pc s = sprintf "%s\"%s\"%s" pc.bef s pc.aft;
 
@@ -537,17 +537,14 @@ value extend pc e =
   | e -> expr pc e ]
 ;
 
-let lev = find_pr_level "apply" pr_expr.pr_levels in
-lev.pr_rules :=
-  extfun lev.pr_rules with
-  [ <:expr< Grammar.extend $_$ >> as e ->
-      fun curr next pc -> next pc e ];
-
-let lev = find_pr_level "simple" pr_expr.pr_levels in
-lev.pr_rules :=
-  extfun lev.pr_rules with
-  [ <:expr< Grammar.extend $_$ >> as e ->
-      fun curr next pc -> extend pc e ];
+EXTEND_PRINTER
+  pr_expr: LEVEL "apply"
+    [ [ <:expr< Grammar.extend $_$ >> as e -> next pc e ] ]
+  ;
+  pr_expr: LEVEL "simple"
+    [ [ <:expr< Grammar.extend $_$ >> as e -> extend pc e ] ]
+  ;
+END;
 
 Pcaml.add_option "-no_slist" (Arg.Set no_slist)
   "Don't reconstruct SLIST, SOPT, SFLAG";

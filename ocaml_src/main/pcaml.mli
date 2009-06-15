@@ -87,11 +87,7 @@ val print_implem : ((MLast.str_item * MLast.loc) list -> unit) ref;;
 
 module Printers :
   sig
-    type 'a printer_t =
-      'a Eprinter.t =
-        { pr_name : string;
-          mutable pr_fun : string -> 'a pr_fun;
-          mutable pr_levels : 'a pr_level list }
+    type 'a printer_t = 'a Eprinter.t
     and 'a pr_level =
       'a Eprinter.pr_level =
         { pr_label : string; mutable pr_rules : 'a pr_rule }

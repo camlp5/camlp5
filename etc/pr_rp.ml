@@ -1,5 +1,5 @@
-(* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_rp.ml,v 1.4 2007/07/11 12:01:39 deraugla Exp $ *)
+(* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
+(* $Id: pr_rp.ml,v 1.5 2007/08/16 09:50:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Heuristic to rebuild parsers and streams from the AST *)
@@ -241,8 +241,8 @@ value unparser_body e =
 
 (** Printing **)
 
-value expr pc z = pr_expr.pr_fun "top" pc z;
-value patt pc z = pr_patt.pr_fun "top" pc z;
+value expr = Eprinter.apply pr_expr;
+value patt = Eprinter.apply pr_patt;
 
 (* Streams *)
 
@@ -505,36 +505,32 @@ pr_expr_fun_args.val :=
   extfun pr_expr_fun_args.val with
   [ <:expr< fun (strm__ : $_$) -> $_$ >> as e -> ([], e) ];
 
-let lev = find_pr_level "top" pr_expr.pr_levels in
-lev.pr_rules :=
-  extfun lev.pr_rules with
-  [ <:expr< fun (strm__ : Stream.t _) -> $_$ >> as e ->
-      fun curr next pc -> print_parser pc e
-  | <:expr< let (strm__ : Stream.t _) = $_$ in $_$ >> as e ->
-      fun curr next pc -> print_match_with_parser pc e ];
-
-let lev = find_pr_level "apply" pr_expr.pr_levels in
-lev.pr_rules :=
-  extfun lev.pr_rules with
-  [ <:expr< Stream.iapp $_$ $_$ >> | <:expr< Stream.icons $_$ $_$ >> |
-    <:expr< Stream.ising $_$ >> | <:expr< Stream.lapp (fun _ -> $_$) $_$ >> |
-    <:expr< Stream.lcons (fun _ -> $_$) $_$ >> |
-    <:expr< Stream.lsing (fun _ -> $_$) >> | <:expr< Stream.sempty >> |
-    <:expr< Stream.slazy $_$ >> as e ->
-      fun curr next pc -> stream pc e ];
-
-let lev = find_pr_level "dot" pr_expr.pr_levels in
-lev.pr_rules :=
-  extfun lev.pr_rules with
-  [ <:expr< Stream.sempty >> ->
-      fun curr next pc -> sprintf "%s[: :]%s" pc.bef pc.aft ];
-
-let lev = find_pr_level "simple" pr_expr.pr_levels in
-lev.pr_rules :=
-  extfun lev.pr_rules with
-  [ <:expr< Stream.iapp $_$ $_$ >> | <:expr< Stream.icons $_$ $_$ >> |
-    <:expr< Stream.ising $_$ >> | <:expr< Stream.lapp (fun _ -> $_$) $_$ >> |
-    <:expr< Stream.lcons (fun _ -> $_$) $_$ >> |
-    <:expr< Stream.lsing (fun _ -> $_$) >> | <:expr< Stream.sempty >> |
-    <:expr< Stream.slazy $_$ >> as e ->
-      fun curr next pc -> stream pc e ];
+EXTEND_PRINTER
+  pr_expr: LEVEL "top"
+    [ [ <:expr< fun (strm__ : Stream.t _) -> $_$ >> as e ->
+          print_parser pc e
+      | <:expr< let (strm__ : Stream.t _) = $_$ in $_$ >> as e ->
+          print_match_with_parser pc e ] ]
+  ;
+  pr_expr: LEVEL "apply"
+    [ [ <:expr< Stream.iapp $_$ $_$ >> | <:expr< Stream.icons $_$ $_$ >> |
+        <:expr< Stream.ising $_$ >> |
+        <:expr< Stream.lapp (fun _ -> $_$) $_$ >> |
+        <:expr< Stream.lcons (fun _ -> $_$) $_$ >> |
+        <:expr< Stream.lsing (fun _ -> $_$) >> | <:expr< Stream.sempty >> |
+        <:expr< Stream.slazy $_$ >> as e ->
+          stream pc e ] ]
+  ;
+  pr_expr: LEVEL "dot"
+    [ [ <:expr< Stream.sempty >> -> sprintf "%s[: :]%s" pc.bef pc.aft ] ]
+  ;
+  pr_expr: LEVEL "simple"
+    [ [ <:expr< Stream.iapp $_$ $_$ >> | <:expr< Stream.icons $_$ $_$ >> |
+        <:expr< Stream.ising $_$ >> |
+        <:expr< Stream.lapp (fun _ -> $_$) $_$ >> |
+        <:expr< Stream.lcons (fun _ -> $_$) $_$ >> |
+        <:expr< Stream.lsing (fun _ -> $_$) >> | <:expr< Stream.sempty >> |
+        <:expr< Stream.slazy $_$ >> as e ->
+          stream pc e ] ]
+  ;
+END;
