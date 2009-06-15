@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.mli,v 1.20 2007/09/08 03:07:55 deraugla Exp $ *)
+(* $Id: grammar.mli,v 1.21 2007/09/08 09:18:14 deraugla Exp $ *)
 
 (** Extensible grammars.
 
@@ -154,8 +154,8 @@ module GMake (L : GLexerType) : S with type te = L.te;
 
 (** {6 Miscellaneous} *)
 
-exception Skip;
-   (** Can be raised in semantic actions to skip an element list.
+exception SkipItem;
+   (** Can be raised in semantic actions to skip an item in a list.
        To be used in entries called by the meta-symbols LIST0 and
        LIST1. Allow conditional parsing. *)
 

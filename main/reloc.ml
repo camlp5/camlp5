@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: reloc.ml,v 1.9 2007/09/08 03:59:36 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.10 2007/09/08 09:18:14 deraugla Exp $ *)
 
 open MLast;
 
@@ -117,7 +117,10 @@ value rec patt floc sh =
     | PaTyc loc x1 x2 -> PaTyc (floc loc) (self x1) (ctyp floc sh x2)
     | PaTyp loc x1 -> PaTyp (floc loc) x1
     | PaUid loc x1 -> PaUid (floc loc) x1
-    | PaVrn loc x1 -> PaVrn (floc loc) x1 ]
+    | PaVrn loc x1 -> PaVrn (floc loc) x1
+    | IFDEF STRICT THEN
+        PaXtr loc x1 x2 -> PaXtr (floc loc) x1 (option_map self x2)
+      END ]
 and expr floc sh =
   self where rec self =
     fun

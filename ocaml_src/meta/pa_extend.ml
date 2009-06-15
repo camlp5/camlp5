@@ -394,7 +394,7 @@ module MetaAction =
                   (loc, MLast.ExUid (loc, "MLast"),
                    MLast.ExUid (loc, "ExUid")),
                 mloc),
-             MLast.ExStr (loc, s))
+             mvala mstring s)
       | x -> not_impl "mexpr" x
     and mpatt =
       function

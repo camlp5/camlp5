@@ -481,8 +481,8 @@ let peek_nth n strm =
   loop list n
 ;;
 
-exception Skip;;
-let call_push ps al strm = try ps strm :: al with Skip -> al;;
+exception SkipItem;;
+let call_and_push ps al strm = try ps strm :: al with SkipItem -> al;;
 
 let rec parser_of_tree entry nlevn alevn =
   function
@@ -601,7 +601,7 @@ and parser_of_symbol entry nlevn =
            (fun act symb -> Obj.magic act (parser_of_symbol entry nlevn symb))
            act symbl)
   | Slist0 s ->
-      let ps = call_push (parser_of_symbol entry nlevn s) in
+      let ps = call_and_push (parser_of_symbol entry nlevn s) in
       let rec loop al (strm__ : _ Stream.t) =
         match try Some (ps al strm__) with Stream.Failure -> None with
           Some al -> loop al strm__
@@ -610,7 +610,7 @@ and parser_of_symbol entry nlevn =
       (fun (strm__ : _ Stream.t) ->
          let a = loop [] strm__ in Obj.repr (List.rev a))
   | Slist0sep (symb, sep) ->
-      let ps = call_push (parser_of_symbol entry nlevn symb) in
+      let ps = call_and_push (parser_of_symbol entry nlevn symb) in
       let pt = parser_of_symbol entry nlevn sep in
       let rec kont al (strm__ : _ Stream.t) =
         match try Some (pt strm__) with Stream.Failure -> None with
@@ -628,7 +628,7 @@ and parser_of_symbol entry nlevn =
            Some al -> let a = kont al strm__ in Obj.repr (List.rev a)
          | _ -> Obj.repr [])
   | Slist1 s ->
-      let ps = call_push (parser_of_symbol entry nlevn s) in
+      let ps = call_and_push (parser_of_symbol entry nlevn s) in
       let rec loop al (strm__ : _ Stream.t) =
         match try Some (ps al strm__) with Stream.Failure -> None with
           Some al -> loop al strm__
@@ -638,7 +638,7 @@ and parser_of_symbol entry nlevn =
          let al = ps [] strm__ in
          let a = loop al strm__ in Obj.repr (List.rev a))
   | Slist1sep (symb, sep) ->
-      let ps = call_push (parser_of_symbol entry nlevn symb) in
+      let ps = call_and_push (parser_of_symbol entry nlevn symb) in
       let pt = parser_of_symbol entry nlevn sep in
       let rec kont al (strm__ : _ Stream.t) =
         match try Some (pt strm__) with Stream.Failure -> None with

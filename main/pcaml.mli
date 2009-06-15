@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pcaml.mli,v 1.14 2007/09/06 20:21:40 deraugla Exp $ *)
+(* $Id: pcaml.mli,v 1.15 2007/09/08 09:18:14 deraugla Exp $ *)
 
 (** Language grammar, entries and printers.
 
@@ -53,6 +53,10 @@ value patt : Grammar.Entry.e MLast.patt;
 value ctyp : Grammar.Entry.e MLast.ctyp;
 value let_binding : Grammar.Entry.e (MLast.patt * MLast.expr);
 value type_declaration : Grammar.Entry.e MLast.type_decl;
+value match_case :
+  Grammar.Entry.e (MLast.patt * option MLast.expr * MLast.expr);
+value constructor_declaration :
+  Grammar.Entry.e (MLast.loc * string * list MLast.ctyp);
 value class_sig_item : Grammar.Entry.e MLast.class_sig_item;
 value class_str_item : Grammar.Entry.e MLast.class_str_item;
 value class_expr : Grammar.Entry.e MLast.class_expr;

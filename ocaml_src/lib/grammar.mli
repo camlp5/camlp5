@@ -149,8 +149,8 @@ module GMake (L : GLexerType) : S with type te = L.te;;
 
 (** {6 Miscellaneous} *)
 
-exception Skip;;
-   (** Can be raised in semantic actions to skip an element list.
+exception SkipItem;;
+   (** Can be raised in semantic actions to skip an item in a list.
        To be used in entries called by the meta-symbols LIST0 and
        LIST1. Allow conditional parsing. *)
 

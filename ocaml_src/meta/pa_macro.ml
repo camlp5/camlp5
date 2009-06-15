@@ -299,10 +299,6 @@ let undef x =
   with Not_found -> ()
 ;;
 
-let constructor_declaration =
-  Grammar.Entry.find Pcaml.ctyp "constructor_declaration"
-in
-let match_case = Grammar.Entry.find Pcaml.expr "match_case" in
 Grammar.extend
   (let _ = (expr : 'expr Grammar.Entry.e)
    and _ = (patt : 'patt Grammar.Entry.e)
@@ -624,7 +620,8 @@ Grammar.extend
       Gramext.action
         (fun _ (x : 'constructor_declaration) _ (e : 'dexpr) _
              (loc : Ploc.t) ->
-           (if e then raise Grammar.Skip else x : 'constructor_declaration));
+           (if e then raise Grammar.SkipItem else x :
+            'constructor_declaration));
       [Gramext.Stoken ("", "IFDEF");
        Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
        Gramext.Stoken ("", "THEN"); Gramext.Sself;
@@ -641,7 +638,7 @@ Grammar.extend
       Gramext.action
         (fun _ (x : 'constructor_declaration) _ (e : 'dexpr) _
              (loc : Ploc.t) ->
-           (if e then x else raise Grammar.Skip :
+           (if e then x else raise Grammar.SkipItem :
             'constructor_declaration))]];
     Grammar.Entry.obj (match_case : 'match_case Grammar.Entry.e),
     Some Gramext.First,
@@ -661,7 +658,7 @@ Grammar.extend
        Gramext.Stoken ("", "END")],
       Gramext.action
         (fun _ (x : 'match_case) _ (e : 'dexpr) _ (loc : Ploc.t) ->
-           (if e then raise Grammar.Skip else x : 'match_case));
+           (if e then raise Grammar.SkipItem else x : 'match_case));
       [Gramext.Stoken ("", "IFDEF");
        Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
        Gramext.Stoken ("", "THEN"); Gramext.Sself;
@@ -677,7 +674,7 @@ Grammar.extend
        Gramext.Stoken ("", "END")],
       Gramext.action
         (fun _ (x : 'match_case) _ (e : 'dexpr) _ (loc : Ploc.t) ->
-           (if e then x else raise Grammar.Skip : 'match_case))]];
+           (if e then x else raise Grammar.SkipItem : 'match_case))]];
     Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Sself; Gramext.Stoken ("", "OR"); Gramext.Sself],

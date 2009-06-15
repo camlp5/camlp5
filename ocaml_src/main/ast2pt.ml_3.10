@@ -288,7 +288,7 @@ let paolab loc lab peoo =
 let rec same_type_expr ct ce =
   match ct, ce with
     TyLid (_, s1), MLast.ExLid (_, s2) -> s1 = s2
-  | TyUid (_, s1), ExUid (_, s2) -> s1 = s2
+  | TyUid (_, s1), MLast.ExUid (_, s2) -> s1 = s2
   | TyAcc (_, t1, t2), ExAcc (_, e1, e2) ->
       same_type_expr t1 e1 && same_type_expr t2 e2
   | _ -> false
@@ -297,11 +297,12 @@ let rec same_type_expr ct ce =
 let rec common_id loc t e =
   match t, e with
     TyLid (_, s1), MLast.ExLid (_, s2) when s1 = s2 -> lident s1
-  | TyUid (_, s1), ExUid (_, s2) when s1 = s2 -> lident s1
+  | TyUid (_, s1), MLast.ExUid (_, s2) when s1 = s2 -> lident s1
   | TyAcc (_, t1, TyLid (_, s1)), MLast.ExAcc (_, e1, MLast.ExLid (_, s2))
     when s1 = s2 ->
       ldot (common_id loc t1 e1) s1
-  | TyAcc (_, t1, TyUid (_, s1)), ExAcc (_, e1, ExUid (_, s2)) when s1 = s2 ->
+  | TyAcc (_, t1, TyUid (_, s1)), MLast.ExAcc (_, e1, MLast.ExUid (_, s2))
+    when s1 = s2 ->
       ldot (common_id loc t1 e1) s1
   | _ -> error loc "this expression should repeat the class id inherited"
 ;;
@@ -474,8 +475,9 @@ let rec class_expr_fa al =
 
 let rec sep_expr_acc l =
   function
-    ExAcc (_, e1, e2) -> sep_expr_acc (sep_expr_acc l e2) e1
-  | ExUid (loc, s) as e ->
+    MLast.ExAcc (_, e1, e2) -> sep_expr_acc (sep_expr_acc l e2) e1
+  | MLast.ExUid (_, s) as e ->
+      let loc = MLast.loc_of_expr e in
       begin match l with
         [] -> [loc, [], e]
       | (loc2, sl, e) :: l -> (Ploc.encl loc loc2, s :: sl, e) :: l
@@ -654,7 +656,7 @@ let rec expr =
   | ExAcc (loc, _, _) as e ->
       let (e, l) =
         match sep_expr_acc [] e with
-          (loc, ml, ExUid (_, s)) :: l ->
+          (loc, ml, MLast.ExUid (_, s)) :: l ->
             let ca = not !no_constructors_arity in
             mkexp loc (Pexp_construct (mkli s ml, None, ca)), l
         | (loc, ml, MLast.ExLid (_, s)) :: l ->
@@ -732,7 +734,7 @@ let rec expr =
                 ["", expr e1; "", expr e2; "", expr v]))
       | _ -> error loc "bad left part of assignment"
       end
-  | ExAsr (loc, ExUid (_, "False")) -> mkexp loc Pexp_assertfalse
+  | ExAsr (loc, MLast.ExUid (_, "False")) -> mkexp loc Pexp_assertfalse
   | ExAsr (loc, e) -> mkexp loc (Pexp_assert (expr e))
   | ExBae (loc, e, el) -> expr (bigarray_get loc e el)
   | ExChr (loc, s) ->
@@ -796,7 +798,7 @@ let rec expr =
   | ExSeq (loc, el) ->
       let rec loop =
         function
-          [] -> expr (ExUid (loc, "()"))
+          [] -> expr (MLast.ExUid (loc, "()"))
         | [e] -> expr e
         | e :: el ->
             let loc = Ploc.encl (loc_of_expr e) loc in
@@ -818,7 +820,7 @@ let rec expr =
       mkexp loc (Pexp_constraint (expr e, Some (ctyp t), None))
   | ExUid (loc, s) ->
       let ca = not !no_constructors_arity in
-      mkexp loc (Pexp_construct (lident (conv_con s), None, ca))
+      mkexp loc (Pexp_construct (lident (conv_con (uv s)), None, ca))
   | ExVrn (loc, s) -> mkexp loc (Pexp_variant (s, None))
   | ExWhi (loc, e1, el) ->
       let e2 = ExSeq (loc, el) in mkexp loc (Pexp_while (expr e1, expr e2))
@@ -1035,14 +1037,15 @@ let directive loc =
     None -> Pdir_none
   | Some (MLast.ExStr (_, s)) -> Pdir_string s
   | Some (ExInt (_, i, "")) -> Pdir_int (int_of_string i)
-  | Some (ExUid (_, "True")) -> Pdir_bool true
-  | Some (ExUid (_, "False")) -> Pdir_bool false
+  | Some (MLast.ExUid (_, "True")) -> Pdir_bool true
+  | Some (MLast.ExUid (_, "False")) -> Pdir_bool false
   | Some e ->
       let sl =
         let rec loop =
           function
-            MLast.ExLid (_, i) | ExUid (_, i) -> [i]
-          | ExAcc (_, e, MLast.ExLid (_, i)) | ExAcc (_, e, ExUid (_, i)) ->
+            MLast.ExLid (_, i) | MLast.ExUid (_, i) -> [i]
+          | MLast.ExAcc (_, e, MLast.ExLid (_, i)) |
+            MLast.ExAcc (_, e, MLast.ExUid (_, i)) ->
               loop e @ [i]
           | e -> Ploc.raise (loc_of_expr e) (Failure "bad ast")
         in

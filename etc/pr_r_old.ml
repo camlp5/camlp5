@@ -255,7 +255,6 @@ value rec get_defined_ident =
   | <:patt< $lid:x$ >> -> [x]
   | <:patt< ($p1$ as $p2$) >> -> get_defined_ident p1 @ get_defined_ident p2
   | <:patt< $int:_$ >> -> []
-  | MLast.PaInt _ _ _ -> failwith "not impl Pr_r.PaInt"
   | <:patt< $flo:_$ >> -> []
   | <:patt< $str:_$ >> -> []
   | <:patt< $chr:_$ >> -> []
@@ -275,7 +274,8 @@ value rec get_defined_ident =
   | <:patt< ? $_$ >> -> []
   | <:patt< ? $_$ : ($p$) >> -> get_defined_ident p
   | <:patt< ? $_$ : ($p$ = $e$) >> -> get_defined_ident p
-  | <:patt< $anti:p$ >> -> get_defined_ident p ]
+  | <:patt< $anti:p$ >> -> get_defined_ident p
+  | _ -> [] ]
 ;
 
 value un_irrefut_patt p =

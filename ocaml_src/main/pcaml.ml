@@ -37,6 +37,10 @@ let patt = Grammar.Entry.create gram "patt";;
 let ctyp = Grammar.Entry.create gram "type";;
 let let_binding = Grammar.Entry.create gram "let_binding";;
 let type_declaration = Grammar.Entry.create gram "type_declaration";;
+let match_case = Grammar.Entry.create gram "match_case";;
+let constructor_declaration =
+  Grammar.Entry.create gram "constructor_declaration"
+;;
 
 let class_sig_item = Grammar.Entry.create gram "class_sig_item";;
 let class_str_item = Grammar.Entry.create gram "class_str_item";;
@@ -357,47 +361,47 @@ module OldPrinters =
     and 'a next = 'a -> string -> kont -> pretty
     and kont = pretty Stream.t;;
     let pr_str_item =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 390, 34)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 393, 34)));
        pr_levels = []}
     ;;
     let pr_sig_item =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 391, 34)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 394, 34)));
        pr_levels = []}
     ;;
     let pr_module_type =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 392, 37)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 395, 37)));
        pr_levels = []}
     ;;
     let pr_module_expr =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 393, 37)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 396, 37)));
        pr_levels = []}
     ;;
     let pr_expr =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 394, 30)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 397, 30)));
        pr_levels = []}
     ;;
     let pr_patt =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 395, 30)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 398, 30)));
        pr_levels = []}
     ;;
     let pr_ctyp =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 396, 30)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 399, 30)));
        pr_levels = []}
     ;;
     let pr_class_sig_item =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 397, 40)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 400, 40)));
        pr_levels = []}
     ;;
     let pr_class_str_item =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 398, 40)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 401, 40)));
        pr_levels = []}
     ;;
     let pr_class_type =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 399, 36)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 402, 36)));
        pr_levels = []}
     ;;
     let pr_class_expr =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 400, 36)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 403, 36)));
        pr_levels = []}
     ;;
     let pr_expr_fun_args = ref Extfun.empty;;

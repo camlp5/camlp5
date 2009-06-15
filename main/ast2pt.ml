@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.16 2007/09/08 04:54:38 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.17 2007/09/08 09:18:14 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -310,7 +310,7 @@ value paolab loc lab peoo =
 value rec same_type_expr ct ce =
   match (ct, ce) with
   [ (TyLid _ s1, <:expr< $lid:s2$ >>) -> s1 = s2
-  | (TyUid _ s1, ExUid _ s2) -> s1 = s2
+  | (TyUid _ s1, <:expr< $uid:s2$ >>) -> s1 = s2
   | (TyAcc _ t1 t2, ExAcc _ e1 e2) ->
       same_type_expr t1 e1 && same_type_expr t2 e2
   | _ -> False ]
@@ -319,10 +319,10 @@ value rec same_type_expr ct ce =
 value rec common_id loc t e =
   match (t, e) with
   [ (TyLid _ s1, <:expr< $lid:s2$ >>) when s1 = s2 -> lident s1
-  | (TyUid _ s1, ExUid _ s2) when s1 = s2 -> lident s1
+  | (TyUid _ s1, <:expr< $uid:s2$ >>) when s1 = s2 -> lident s1
   | (TyAcc _ t1 (TyLid _ s1), <:expr< $e1$.$lid:s2$ >>) when s1 = s2 ->
       ldot (common_id loc t1 e1) s1
-  | (TyAcc _ t1 (TyUid _ s1), ExAcc _ e1 (ExUid _ s2)) when s1 = s2 ->
+  | (TyAcc _ t1 (TyUid _ s1), <:expr< $e1$.$uid:s2$ >>) when s1 = s2 ->
       ldot (common_id loc t1 e1) s1
   | _ -> error loc "this expression should repeat the class id inherited" ]
 ;
@@ -475,7 +475,10 @@ value rec patt =
   | PaUid loc s ->
       let ca = not no_constructors_arity.val in
       mkpat loc (Ppat_construct (lident (conv_con s)) None ca)
-  | PaVrn loc s -> mkpat loc (Ppat_variant s None) ]
+  | PaVrn loc s -> mkpat loc (Ppat_variant s None)
+  | IFDEF STRICT THEN
+      PaXtr loc _ _ -> error loc "bad ast"
+    END ]
 and mklabpat (lab, p) = (patt_label_long_id lab, patt p);
 
 value rec expr_fa al =
@@ -492,8 +495,9 @@ value rec class_expr_fa al =
 
 value rec sep_expr_acc l =
   fun
-  [ ExAcc _ e1 e2 -> sep_expr_acc (sep_expr_acc l e2) e1
-  | ExUid loc s as e ->
+  [ <:expr< $e1$.$e2$ >> -> sep_expr_acc (sep_expr_acc l e2) e1
+  | <:expr< $uid:s$ >> as e ->
+      let loc = MLast.loc_of_expr e in
       match l with
       [ [] -> [(loc, [], e)]
       | [(loc2, sl, e) :: l] -> [(Ploc.encl loc loc2, [s :: sl], e) :: l] ]
@@ -551,7 +555,7 @@ value rec expr =
   | ExAcc loc _ _ as e ->
       let (e, l) =
         match sep_expr_acc [] e with
-        [ [(loc, ml, ExUid _ s) :: l] ->
+        [ [(loc, ml, <:expr< $uid:s$ >>) :: l] ->
             let ca = not no_constructors_arity.val in
             (mkexp loc (Pexp_construct (mkli s ml) None ca), l)
         | [(loc, ml, <:expr< $lid:s$ >>) :: l] ->
@@ -624,7 +628,7 @@ value rec expr =
                (mkexp loc (Pexp_ident (array_function "String" "set")))
                [("", expr e1); ("", expr e2); ("", expr v)])
       | _ -> error loc "bad left part of assignment" ]
-  | ExAsr loc (ExUid _ "False") -> mkexp loc Pexp_assertfalse
+  | ExAsr loc <:expr< False >> -> mkexp loc Pexp_assertfalse
   | ExAsr loc e -> mkexp loc (Pexp_assert (expr e))
   | ExBae loc e el -> expr (bigarray_get loc e el)
   | ExChr loc s ->
@@ -685,7 +689,7 @@ value rec expr =
   | ExSeq loc el ->
       loop el where rec loop =
         fun
-        [ [] -> expr (ExUid loc "()")
+        [ [] -> expr <:expr< () >>
         | [e] -> expr e
         | [e :: el] ->
             let loc = Ploc.encl (loc_of_expr e) loc in
@@ -703,7 +707,7 @@ value rec expr =
   | ExTyc loc e t -> mkexp loc (Pexp_constraint (expr e) (Some (ctyp t)) None)
   | ExUid loc s ->
       let ca = not no_constructors_arity.val in
-      mkexp loc (Pexp_construct (lident (conv_con s)) None ca)
+      mkexp loc (Pexp_construct (lident (conv_con (uv s))) None ca)
   | ExVrn loc s -> mkexp loc (Pexp_variant s None)
   | ExWhi loc e1 el ->
       let e2 = ExSeq loc el in
@@ -936,14 +940,14 @@ value directive loc =
   [ None -> Pdir_none
   | Some <:expr< $str:s$ >> -> Pdir_string s
   | Some (ExInt _ i "") -> Pdir_int (int_of_string i)
-  | Some (ExUid _ "True") -> Pdir_bool True
-  | Some (ExUid _ "False") -> Pdir_bool False
+  | Some <:expr< True >> -> Pdir_bool True
+  | Some <:expr< False >> -> Pdir_bool False
   | Some e ->
       let sl =
         loop e where rec loop =
           fun
-          [ <:expr< $lid:i$ >> | ExUid _ i -> [i]
-          | ExAcc _ e <:expr< $lid:i$ >> | ExAcc _ e (ExUid _ i) ->
+          [ <:expr< $lid:i$ >> | <:expr< $uid:i$ >> -> [i]
+          | <:expr< $e$.$lid:i$ >> | <:expr< $e$.$uid:i$ >> ->
               loop e @ [i]
           | e -> Ploc.raise (loc_of_expr e) (Failure "bad ast") ]
       in

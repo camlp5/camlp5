@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.46 2007/09/08 04:54:38 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.47 2007/09/08 09:18:14 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -35,6 +35,8 @@ do {
   Grammar.Unsafe.clear_entry ctyp;
   Grammar.Unsafe.clear_entry let_binding;
   Grammar.Unsafe.clear_entry type_declaration;
+  Grammar.Unsafe.clear_entry constructor_declaration;
+  Grammar.Unsafe.clear_entry match_case;
   Grammar.Unsafe.clear_entry class_type;
   Grammar.Unsafe.clear_entry class_expr;
   Grammar.Unsafe.clear_entry class_sig_item;
@@ -113,7 +115,7 @@ value mkexprident loc i j =
     [ <:expr< $x$ . $y$ >> -> loop <:expr< $m$ . $x$ >> y
     | e -> <:expr< $m$ . $e$ >> ]
   in
-  loop <:expr< $uid:i$ >> j
+  loop <:expr< $auid:i$ >> j
 ;
 
 value append_elem el e = el @ [e];
@@ -125,7 +127,7 @@ value poly_variant = Grammar.Entry.create gram "poly_variant";
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr class_type
     class_expr class_sig_item class_str_item let_binding type_declaration
-    ipatt with_constr poly_variant;
+    constructor_declaration match_case ipatt with_constr poly_variant;
   module_expr:
     [ [ "functor"; "("; i = UIDENT; ":"; t = module_type; ")"; "->";
         me = SELF ->
@@ -371,8 +373,8 @@ EXTEND
   expr_ident:
     [ RIGHTA
       [ i = V LIDENT -> <:expr< $alid:i$ >>
-      | i = UIDENT -> <:expr< $uid:i$ >>
-      | i = UIDENT; "."; j = SELF -> mkexprident loc i j ] ]
+      | i = V UIDENT -> <:expr< $auid:i$ >>
+      | i = V UIDENT; "."; j = SELF -> mkexprident loc i j ] ]
   ;
   fun_def:
     [ RIGHTA

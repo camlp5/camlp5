@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.42 2007/09/08 03:07:55 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.43 2007/09/08 09:18:14 deraugla Exp $ *)
 
 open Gramext;
 open Format;
@@ -472,8 +472,8 @@ value peek_nth n strm = do {
   loop list n
 };
 
-exception Skip;
-value call_push ps al strm = try [ps strm :: al] with [ Skip -> al ];
+exception SkipItem;
+value call_and_push ps al strm = try [ps strm :: al] with [ SkipItem -> al ];
 
 value rec parser_of_tree entry nlevn alevn =
   fun
@@ -565,7 +565,7 @@ and parser_of_symbol entry nlevn =
            (fun act symb -> Obj.magic act (parser_of_symbol entry nlevn symb))
            act symbl)
   | Slist0 s ->
-      let ps = call_push (parser_of_symbol entry nlevn s) in
+      let ps = call_and_push (parser_of_symbol entry nlevn s) in
       let rec loop al =
         parser
         [ [: al = ps al; a = loop al ! :] -> a
@@ -573,7 +573,7 @@ and parser_of_symbol entry nlevn =
       in
       parser [: a = loop [] :] -> Obj.repr (List.rev a)
   | Slist0sep symb sep ->
-      let ps = call_push (parser_of_symbol entry nlevn symb) in
+      let ps = call_and_push (parser_of_symbol entry nlevn symb) in
       let pt = parser_of_symbol entry nlevn sep in
       let rec kont al =
         parser
@@ -586,7 +586,7 @@ and parser_of_symbol entry nlevn =
       [ [: al = ps []; a = kont al ! :] -> Obj.repr (List.rev a)
       | [: :] -> Obj.repr [] ]
   | Slist1 s ->
-      let ps = call_push (parser_of_symbol entry nlevn s) in
+      let ps = call_and_push (parser_of_symbol entry nlevn s) in
       let rec loop al =
         parser
         [ [: al = ps al; a = loop al ! :] -> a
@@ -594,7 +594,7 @@ and parser_of_symbol entry nlevn =
       in
       parser [: al = ps []; a = loop al ! :] -> Obj.repr (List.rev a)
   | Slist1sep symb sep ->
-      let ps = call_push (parser_of_symbol entry nlevn symb) in
+      let ps = call_and_push (parser_of_symbol entry nlevn symb) in
       let pt = parser_of_symbol entry nlevn sep in
       let rec kont al =
         parser

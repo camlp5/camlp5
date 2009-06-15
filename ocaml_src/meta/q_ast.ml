@@ -248,178 +248,157 @@ module Meta =
     let p_ctyp x = not_impl "p_ctyp" x;;
     let e_patt p =
       let ln = ln () in
-      let rec loop p =
-        match get_anti p with
-          Some (loc, typ, str) ->
-            let r =
-              let (loc, r) = eval_anti expr_eoi loc typ str in
-              MLast.ExAnt (loc, r)
-            in
-            begin match typ with
-              "" -> r
-            | "anti" ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExAcc
-                        (loc, MLast.ExUid (loc, "MLast"),
-                         MLast.ExUid (loc, "PaAnt")),
-                      ln),
-                   r)
-            | x -> not_impl ("e_patt anti " ^ x) 0
-            end
-        | None ->
-            match p with
-              PaAcc (_, p1, p2) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExApp
-                        (loc,
-                         MLast.ExAcc
-                           (loc, MLast.ExUid (loc, "MLast"),
-                            MLast.ExUid (loc, "PaAcc")),
-                         ln),
-                      loop p1),
-                   loop p2)
-            | PaAli (_, p1, p2) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExApp
-                        (loc,
-                         MLast.ExAcc
-                           (loc, MLast.ExUid (loc, "MLast"),
-                            MLast.ExUid (loc, "PaAli")),
-                         ln),
-                      loop p1),
-                   loop p2)
-            | PaAny _ ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExAcc
-                     (loc, MLast.ExUid (loc, "MLast"),
-                      MLast.ExUid (loc, "PaAny")),
-                   ln)
-            | PaApp (_, p1, p2) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExApp
-                        (loc,
-                         MLast.ExAcc
-                           (loc, MLast.ExUid (loc, "MLast"),
-                            MLast.ExUid (loc, "PaApp")),
-                         ln),
-                      loop p1),
-                   loop p2)
-            | PaChr (_, s) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExAcc
-                        (loc, MLast.ExUid (loc, "MLast"),
-                         MLast.ExUid (loc, "PaChr")),
-                      ln),
-                   e_string s)
-            | PaInt (_, s, k) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExApp
-                        (loc,
-                         MLast.ExAcc
-                           (loc, MLast.ExUid (loc, "MLast"),
-                            MLast.ExUid (loc, "PaInt")),
-                         ln),
-                      e_string s),
-                   MLast.ExStr (loc, k))
-            | PaLid (_, s) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExAcc
-                        (loc, MLast.ExUid (loc, "MLast"),
-                         MLast.ExUid (loc, "PaLid")),
-                      ln),
-                   e_string s)
-            | PaOrp (_, p1, p2) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExApp
-                        (loc,
-                         MLast.ExAcc
-                           (loc, MLast.ExUid (loc, "MLast"),
-                            MLast.ExUid (loc, "PaOrp")),
-                         ln),
-                      loop p1),
-                   loop p2)
-            | PaRng (_, p1, p2) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExApp
-                        (loc,
-                         MLast.ExAcc
-                           (loc, MLast.ExUid (loc, "MLast"),
-                            MLast.ExUid (loc, "PaRng")),
-                         ln),
-                      loop p1),
-                   loop p2)
-            | PaStr (_, s) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExAcc
-                        (loc, MLast.ExUid (loc, "MLast"),
-                         MLast.ExUid (loc, "PaStr")),
-                      ln),
-                   e_string s)
-            | PaTup (_, pl) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExAcc
-                        (loc, MLast.ExUid (loc, "MLast"),
-                         MLast.ExUid (loc, "PaTup")),
-                      ln),
-                   e_list loop pl)
-            | PaTyc (_, p, t) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExApp
-                        (loc,
-                         MLast.ExAcc
-                           (loc, MLast.ExUid (loc, "MLast"),
-                            MLast.ExUid (loc, "PaTyc")),
-                         ln),
-                      loop p),
-                   e_ctyp t)
-            | PaUid (_, s) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExAcc
-                        (loc, MLast.ExUid (loc, "MLast"),
-                         MLast.ExUid (loc, "PaUid")),
-                      ln),
-                   e_string s)
-            | x -> not_impl "e_patt" x
+      let rec loop =
+        function
+          PaAcc (_, p1, p2) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "PaAcc")),
+                     ln),
+                  loop p1),
+               loop p2)
+        | PaAli (_, p1, p2) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "PaAli")),
+                     ln),
+                  loop p1),
+               loop p2)
+        | PaAny _ ->
+            MLast.ExApp
+              (loc,
+               MLast.ExAcc
+                 (loc, MLast.ExUid (loc, "MLast"),
+                  MLast.ExUid (loc, "PaAny")),
+               ln)
+        | PaApp (_, p1, p2) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "PaApp")),
+                     ln),
+                  loop p1),
+               loop p2)
+        | PaChr (_, s) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "PaChr")),
+                  ln),
+               e_string s)
+        | PaInt (_, s, k) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "PaInt")),
+                     ln),
+                  e_string s),
+               MLast.ExStr (loc, k))
+        | PaLid (_, s) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "PaLid")),
+                  ln),
+               e_string s)
+        | PaOrp (_, p1, p2) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "PaOrp")),
+                     ln),
+                  loop p1),
+               loop p2)
+        | PaRng (_, p1, p2) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "PaRng")),
+                     ln),
+                  loop p1),
+               loop p2)
+        | PaStr (_, s) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "PaStr")),
+                  ln),
+               e_string s)
+        | PaTup (_, pl) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "PaTup")),
+                  ln),
+               e_list loop pl)
+        | PaTyc (_, p, t) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "PaTyc")),
+                     ln),
+                  loop p),
+               e_ctyp t)
+        | PaUid (_, s) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "PaUid")),
+                  ln),
+               e_string s)
+        | x -> not_impl "e_patt" x
       in
       loop p
     ;;
@@ -497,7 +476,7 @@ module Meta =
       in
       loop
     ;;
-    let rec e_expr e =
+    let e_expr e =
       let ln = ln () in
       let rec loop =
         function
@@ -657,131 +636,118 @@ module Meta =
                     (loc, MLast.ExUid (loc, "MLast"),
                      MLast.ExUid (loc, "ExUid")),
                   ln),
-               e_string s)
+               e_vala e_string s)
         | x -> not_impl "e_expr" x
       in
       loop e
     ;;
     let p_expr e =
-      let rec loop e =
-        match get_anti e with
-          Some (loc, typ, str) ->
-            let r =
-              let (loc, r) = eval_anti patt_eoi loc typ str in
-              MLast.PaAnt (loc, r)
+      let rec loop =
+        function
+          ExAcc (_, e1, e2) ->
+            MLast.PaApp
+              (loc,
+               MLast.PaApp
+                 (loc,
+                  MLast.PaApp
+                    (loc,
+                     MLast.PaAcc
+                       (loc, MLast.PaUid (loc, "MLast"),
+                        MLast.PaUid (loc, "ExAcc")),
+                     MLast.PaAny loc),
+                  loop e1),
+               loop e2)
+        | ExApp (_, e1, e2) ->
+            MLast.PaApp
+              (loc,
+               MLast.PaApp
+                 (loc,
+                  MLast.PaApp
+                    (loc,
+                     MLast.PaAcc
+                       (loc, MLast.PaUid (loc, "MLast"),
+                        MLast.PaUid (loc, "ExApp")),
+                     MLast.PaAny loc),
+                  loop e1),
+               loop e2)
+        | ExLet (_, rf, lpe, e) ->
+            let rf = p_bool rf in
+            let lpe =
+              p_list (fun (p, e) -> MLast.PaTup (loc, [p_patt p; loop e])) lpe
             in
-            begin match typ with
-              "" -> r
-            | x -> not_impl ("p_expr anti " ^ x) 0
-            end
-        | None ->
-            match e with
-              ExAcc (_, e1, e2) ->
-                MLast.PaApp
-                  (loc,
-                   MLast.PaApp
-                     (loc,
-                      MLast.PaApp
-                        (loc,
-                         MLast.PaAcc
-                           (loc, MLast.PaUid (loc, "MLast"),
-                            MLast.PaUid (loc, "ExAcc")),
-                         MLast.PaAny loc),
-                      loop e1),
-                   loop e2)
-            | ExApp (_, e1, e2) ->
-                MLast.PaApp
-                  (loc,
-                   MLast.PaApp
-                     (loc,
-                      MLast.PaApp
-                        (loc,
-                         MLast.PaAcc
-                           (loc, MLast.PaUid (loc, "MLast"),
-                            MLast.PaUid (loc, "ExApp")),
-                         MLast.PaAny loc),
-                      loop e1),
-                   loop e2)
-            | ExLet (_, rf, lpe, e) ->
-                let rf = p_bool rf in
-                let lpe =
-                  p_list (fun (p, e) -> MLast.PaTup (loc, [p_patt p; loop e]))
-                    lpe
-                in
-                MLast.PaApp
-                  (loc,
-                   MLast.PaApp
-                     (loc,
-                      MLast.PaApp
-                        (loc,
-                         MLast.PaApp
-                           (loc,
-                            MLast.PaAcc
-                              (loc, MLast.PaUid (loc, "MLast"),
-                               MLast.PaUid (loc, "ExLet")),
-                            MLast.PaAny loc),
-                         rf),
-                      lpe),
-                   loop e)
-            | ExRec (_, lpe, oe) ->
-                let lpe =
-                  p_list (fun (p, e) -> MLast.PaTup (loc, [p_patt p; loop e]))
-                    lpe
-                in
-                let oe = p_option loop oe in
-                MLast.PaApp
-                  (loc,
-                   MLast.PaApp
-                     (loc,
-                      MLast.PaApp
-                        (loc,
-                         MLast.PaAcc
-                           (loc, MLast.PaUid (loc, "MLast"),
-                            MLast.PaUid (loc, "ExRec")),
-                         MLast.PaAny loc),
-                      lpe),
-                   oe)
-            | ExLid (_, s) ->
-                MLast.PaApp
-                  (loc,
-                   MLast.PaApp
-                     (loc,
-                      MLast.PaAcc
-                        (loc, MLast.PaUid (loc, "MLast"),
-                         MLast.PaUid (loc, "ExLid")),
-                      MLast.PaAny loc),
-                   p_vala p_string s)
-            | ExStr (_, s) ->
-                MLast.PaApp
-                  (loc,
-                   MLast.PaApp
-                     (loc,
-                      MLast.PaAcc
-                        (loc, MLast.PaUid (loc, "MLast"),
-                         MLast.PaUid (loc, "ExStr")),
-                      MLast.PaAny loc),
-                   p_vala p_string s)
-            | ExTup (_, el) ->
-                MLast.PaApp
-                  (loc,
-                   MLast.PaApp
-                     (loc,
-                      MLast.PaAcc
-                        (loc, MLast.PaUid (loc, "MLast"),
-                         MLast.PaUid (loc, "ExTup")),
-                      MLast.PaAny loc),
-                   p_list loop el)
-            | ExUid (_, s) ->
-                MLast.PaApp
-                  (loc,
-                   MLast.PaApp
-                     (loc,
-                      MLast.PaAcc
-                        (loc, MLast.PaUid (loc, "MLast"),
-                         MLast.PaUid (loc, "ExUid")),
-                      MLast.PaAny loc),
-                   p_string s)
-            | x -> not_impl "p_expr" x
+            MLast.PaApp
+              (loc,
+               MLast.PaApp
+                 (loc,
+                  MLast.PaApp
+                    (loc,
+                     MLast.PaApp
+                       (loc,
+                        MLast.PaAcc
+                          (loc, MLast.PaUid (loc, "MLast"),
+                           MLast.PaUid (loc, "ExLet")),
+                        MLast.PaAny loc),
+                     rf),
+                  lpe),
+               loop e)
+        | ExRec (_, lpe, oe) ->
+            let lpe =
+              p_list (fun (p, e) -> MLast.PaTup (loc, [p_patt p; loop e])) lpe
+            in
+            let oe = p_option loop oe in
+            MLast.PaApp
+              (loc,
+               MLast.PaApp
+                 (loc,
+                  MLast.PaApp
+                    (loc,
+                     MLast.PaAcc
+                       (loc, MLast.PaUid (loc, "MLast"),
+                        MLast.PaUid (loc, "ExRec")),
+                     MLast.PaAny loc),
+                  lpe),
+               oe)
+        | ExLid (_, s) ->
+            MLast.PaApp
+              (loc,
+               MLast.PaApp
+                 (loc,
+                  MLast.PaAcc
+                    (loc, MLast.PaUid (loc, "MLast"),
+                     MLast.PaUid (loc, "ExLid")),
+                  MLast.PaAny loc),
+               p_vala p_string s)
+        | ExStr (_, s) ->
+            MLast.PaApp
+              (loc,
+               MLast.PaApp
+                 (loc,
+                  MLast.PaAcc
+                    (loc, MLast.PaUid (loc, "MLast"),
+                     MLast.PaUid (loc, "ExStr")),
+                  MLast.PaAny loc),
+               p_vala p_string s)
+        | ExTup (_, el) ->
+            MLast.PaApp
+              (loc,
+               MLast.PaApp
+                 (loc,
+                  MLast.PaAcc
+                    (loc, MLast.PaUid (loc, "MLast"),
+                     MLast.PaUid (loc, "ExTup")),
+                  MLast.PaAny loc),
+               p_list loop el)
+        | ExUid (_, s) ->
+            MLast.PaApp
+              (loc,
+               MLast.PaApp
+                 (loc,
+                  MLast.PaAcc
+                    (loc, MLast.PaUid (loc, "MLast"),
+                     MLast.PaUid (loc, "ExUid")),
+                  MLast.PaAny loc),
+               p_vala p_string s)
+        | x -> not_impl "p_expr" x
       in
       loop e
     ;;
@@ -956,6 +922,14 @@ lex.Plexing.tok_match <-
            let kind = check_anti_loc2 prm in
            if kind = "alid" then "a" ^ prm
            else if kind = "lid" then "b" ^ prm
+           else raise Stream.Failure
+       | _ -> raise Stream.Failure)
+  | "V UIDENT", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           let kind = check_anti_loc2 prm in
+           if kind = "auid" then "a" ^ prm
+           else if kind = "uid" then "b" ^ prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V STRING", "" ->

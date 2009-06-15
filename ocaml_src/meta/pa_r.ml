@@ -34,6 +34,8 @@ Grammar.Unsafe.clear_entry patt;
 Grammar.Unsafe.clear_entry ctyp;
 Grammar.Unsafe.clear_entry let_binding;
 Grammar.Unsafe.clear_entry type_declaration;
+Grammar.Unsafe.clear_entry constructor_declaration;
+Grammar.Unsafe.clear_entry match_case;
 Grammar.Unsafe.clear_entry class_type;
 Grammar.Unsafe.clear_entry class_expr;
 Grammar.Unsafe.clear_entry class_sig_item;
@@ -135,6 +137,9 @@ Grammar.extend
    and _ = (class_str_item : 'class_str_item Grammar.Entry.e)
    and _ = (let_binding : 'let_binding Grammar.Entry.e)
    and _ = (type_declaration : 'type_declaration Grammar.Entry.e)
+   and _ =
+     (constructor_declaration : 'constructor_declaration Grammar.Entry.e)
+   and _ = (match_case : 'match_case Grammar.Entry.e)
    and _ = (ipatt : 'ipatt Grammar.Entry.e)
    and _ = (with_constr : 'with_constr Grammar.Entry.e)
    and _ = (poly_variant : 'poly_variant Grammar.Entry.e) in
@@ -157,8 +162,6 @@ Grammar.extend
    and sequence : 'sequence Grammar.Entry.e = grammar_entry_create "sequence"
    and fun_binding : 'fun_binding Grammar.Entry.e =
      grammar_entry_create "fun_binding"
-   and match_case : 'match_case Grammar.Entry.e =
-     grammar_entry_create "match_case"
    and as_patt_opt : 'as_patt_opt Grammar.Entry.e =
      grammar_entry_create "as_patt_opt"
    and when_expr : 'when_expr Grammar.Entry.e =
@@ -182,8 +185,6 @@ Grammar.extend
      grammar_entry_create "constrain"
    and type_parameter : 'type_parameter Grammar.Entry.e =
      grammar_entry_create "type_parameter"
-   and constructor_declaration : 'constructor_declaration Grammar.Entry.e =
-     grammar_entry_create "constructor_declaration"
    and label_declaration : 'label_declaration Grammar.Entry.e =
      grammar_entry_create "label_declaration"
    and ident : 'ident Grammar.Entry.e = grammar_entry_create "ident"

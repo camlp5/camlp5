@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.38 2007/09/08 04:54:38 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.39 2007/09/08 09:18:14 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -236,36 +236,37 @@ module Meta =
 *)
     value e_patt p =
       let ln = ln () in
-      loop p where rec loop p =
-        match get_anti p with
-        [ Some (loc, typ, str) ->
-            let r =
-              let (loc, r) = eval_anti expr_eoi loc typ str in
-              <:expr< $anti:r$ >>
-            in
-            match typ with
-            [ ""  -> r
-            | "anti" -> <:expr< MLast.PaAnt $ln$ $r$ >>
-            | x -> not_impl ("e_patt anti " ^ x) 0 ]
-        | None ->
-            match p with
-            [ PaAcc _ p1 p2 -> <:expr< MLast.PaAcc $ln$ $loop p1$ $loop p2$ >>
-            | PaAli _ p1 p2 -> <:expr< MLast.PaAli $ln$ $loop p1$ $loop p2$ >>
-            | PaAny _ -> <:expr< MLast.PaAny $ln$ >>
-            | PaApp _ p1 p2 -> <:expr< MLast.PaApp $ln$ $loop p1$ $loop p2$ >>
-            | PaChr _ s -> <:expr< MLast.PaChr $ln$ $e_string s$ >>
-            | PaInt _ s k -> <:expr< MLast.PaInt $ln$ $e_string s$ $str:k$ >>
+      loop p where rec loop =
+        fun
+        [ PaAcc _ p1 p2 -> <:expr< MLast.PaAcc $ln$ $loop p1$ $loop p2$ >>
+        | PaAli _ p1 p2 -> <:expr< MLast.PaAli $ln$ $loop p1$ $loop p2$ >>
+        | PaAny _ -> <:expr< MLast.PaAny $ln$ >>
+        | PaApp _ p1 p2 -> <:expr< MLast.PaApp $ln$ $loop p1$ $loop p2$ >>
+        | PaChr _ s -> <:expr< MLast.PaChr $ln$ $e_string s$ >>
+        | PaInt _ s k -> <:expr< MLast.PaInt $ln$ $e_string s$ $str:k$ >>
 (*
-            | PaFlo _ s -> <:expr< MLast.PaFlo $ln$ $e_string s$ >>
+        | PaFlo _ s -> <:expr< MLast.PaFlo $ln$ $e_string s$ >>
 *)
-            | PaLid _ s -> <:expr< MLast.PaLid $ln$ $e_string s$ >>
-            | PaOrp _ p1 p2 -> <:expr< MLast.PaOrp $ln$ $loop p1$ $loop p2$ >>
-            | PaRng _ p1 p2 -> <:expr< MLast.PaRng $ln$ $loop p1$ $loop p2$ >>
-            | PaStr _ s -> <:expr< MLast.PaStr $ln$ $e_string s$ >>
-            | PaTup _ pl -> <:expr< MLast.PaTup $ln$ $e_list loop pl$ >>
-            | PaTyc _ p t -> <:expr< MLast.PaTyc $ln$ $loop p$ $e_ctyp t$ >>
-            | PaUid _ s -> <:expr< MLast.PaUid $ln$ $e_string s$ >>
-            | x -> not_impl "e_patt" x ] ]
+        | PaLid _ s -> <:expr< MLast.PaLid $ln$ $e_string s$ >>
+        | PaOrp _ p1 p2 -> <:expr< MLast.PaOrp $ln$ $loop p1$ $loop p2$ >>
+        | PaRng _ p1 p2 -> <:expr< MLast.PaRng $ln$ $loop p1$ $loop p2$ >>
+        | PaStr _ s -> <:expr< MLast.PaStr $ln$ $e_string s$ >>
+        | PaTup _ pl -> <:expr< MLast.PaTup $ln$ $e_list loop pl$ >>
+        | PaTyc _ p t -> <:expr< MLast.PaTyc $ln$ $loop p$ $e_ctyp t$ >>
+        | PaUid _ s -> <:expr< MLast.PaUid $ln$ $e_string s$ >>
+        | IFDEF STRICT THEN
+            PaXtr loc s _ ->
+              let asit = s.[0] = 'a' in
+              let s = String.sub s 1 (String.length s - 1) in
+              if asit then
+                let (loc, r) = eval_anti expr_eoi loc "" s in
+                <:expr< $anti:r$ >>
+              else
+                let (loc, r) = eval_anti expr_eoi loc "anti" s in
+                let r = <:expr< $anti:r$ >> in
+                <:expr< MLast.ExAnt loc $r$ >>
+          END
+        | x -> not_impl "e_patt" x ]
     ;
     value p_patt =
       loop where rec loop p =
@@ -287,7 +288,7 @@ module Meta =
             | PaTup _ pl -> <:patt< MLast.PaTup _ $p_list loop pl$ >>
             | x -> not_impl "p_patt" x ] ]
     ;
-    value rec e_expr e =
+    value e_expr e =
       let ln = ln () in
       loop e where rec loop =
         fun
@@ -335,7 +336,7 @@ module Meta =
         | ExStr _ s -> <:expr< MLast.ExStr $ln$ $e_vala e_string s$ >>
         | ExTup _ el -> <:expr< MLast.ExTup $ln$ $e_list loop el$ >>
         | ExTyc _ e t -> <:expr< MLast.ExTyc $ln$ $loop e$ $e_ctyp t$ >>
-        | ExUid _ s -> <:expr< MLast.ExUid $ln$ $e_string s$ >>
+        | ExUid _ s -> <:expr< MLast.ExUid $ln$ $e_vala e_string s$ >>
         | IFDEF STRICT THEN
             ExXtr loc s _ ->
               let asit = s.[0] = 'a' in
@@ -351,43 +352,45 @@ module Meta =
         | x -> not_impl "e_expr" x ]
     ;
     value p_expr e =
-      loop e where rec loop e =
-        match get_anti e with
-        [ Some (loc, typ, str) ->
-            let r =
-              let (loc, r) = eval_anti patt_eoi loc typ str in
-              <:patt< $anti:r$ >>
-            in
-            match typ with
-            [ "" -> r
-            | x -> not_impl ("p_expr anti " ^ x) 0 ]
-        | None ->
-            match e with
-            [ ExAcc _ e1 e2 -> <:patt< MLast.ExAcc _ $loop e1$ $loop e2$ >>
-            | ExApp _ e1 e2 -> <:patt< MLast.ExApp _ $loop e1$ $loop e2$ >>
+      loop e where rec loop =
+        fun
+        [ ExAcc _ e1 e2 -> <:patt< MLast.ExAcc _ $loop e1$ $loop e2$ >>
+        | ExApp _ e1 e2 -> <:patt< MLast.ExApp _ $loop e1$ $loop e2$ >>
 (*
-            | ExIfe _ e1 e2 e3 ->
-                <:patt< MLast.ExIfe _ $loop e1$ $loop e2$ $loop e3$ >>
-            | ExInt _ s k -> <:patt< MLast.ExInt _ $p_string s$ $str:k$ >>
-            | ExFlo _ s -> <:patt< MLast.ExFlo _ $p_string s$ >>
+        | ExIfe _ e1 e2 e3 ->
+            <:patt< MLast.ExIfe _ $loop e1$ $loop e2$ $loop e3$ >>
+        | ExInt _ s k -> <:patt< MLast.ExInt _ $p_string s$ $str:k$ >>
+        | ExFlo _ s -> <:patt< MLast.ExFlo _ $p_string s$ >>
 *)
-            | ExLet _ rf lpe e ->
-                let rf = p_bool rf in
-                let lpe =
-                  p_list (fun (p, e) -> <:patt< ($p_patt p$, $loop e$) >>) lpe
-                in
-                <:patt< MLast.ExLet _ $rf$ $lpe$ $loop e$ >>
-            | ExRec _ lpe oe ->
-                let lpe =
-                  p_list (fun (p, e) -> <:patt< ($p_patt p$, $loop e$) >>) lpe
-                in
-                let oe = p_option loop oe in
-                <:patt< MLast.ExRec _ $lpe$ $oe$ >>
-            | ExLid _ s -> <:patt< MLast.ExLid _ $p_vala p_string s$ >>
-            | ExStr _ s -> <:patt< MLast.ExStr _ $p_vala p_string s$ >>
-            | ExTup _ el -> <:patt< MLast.ExTup _ $p_list loop el$ >>
-            | ExUid _ s -> <:patt< MLast.ExUid _ $p_string s$ >>
-            | x -> not_impl "p_expr" x ] ]
+        | ExLet _ rf lpe e ->
+            let rf = p_bool rf in
+            let lpe =
+              p_list (fun (p, e) -> <:patt< ($p_patt p$, $loop e$) >>) lpe
+            in
+            <:patt< MLast.ExLet _ $rf$ $lpe$ $loop e$ >>
+        | ExRec _ lpe oe ->
+            let lpe =
+              p_list (fun (p, e) -> <:patt< ($p_patt p$, $loop e$) >>) lpe
+            in
+            let oe = p_option loop oe in
+            <:patt< MLast.ExRec _ $lpe$ $oe$ >>
+        | ExLid _ s -> <:patt< MLast.ExLid _ $p_vala p_string s$ >>
+        | ExStr _ s -> <:patt< MLast.ExStr _ $p_vala p_string s$ >>
+        | ExTup _ el -> <:patt< MLast.ExTup _ $p_list loop el$ >>
+        | ExUid _ s -> <:patt< MLast.ExUid _ $p_vala p_string s$ >>
+        | IFDEF STRICT THEN
+            ExXtr loc s _ ->
+              let asit = s.[0] = 'a' in
+              let s = String.sub s 1 (String.length s - 1) in
+              if asit then
+                let (loc, r) = eval_anti patt_eoi loc "" s in
+                <:patt< $anti:r$ >>
+              else
+                let (loc, r) = eval_anti patt_eoi loc "anti" s in
+                let r = <:patt< $anti:r$ >> in
+                <:patt< MLast.ExAnt loc $r$ >>
+          END
+        | x -> not_impl "p_expr" x ]
     ;
     value e_sig_item =
       fun
@@ -490,8 +493,8 @@ IFDEF STRICT THEN
         | s = ANTIQUOT_LOC "anti" -> MLast.ExXtr loc ("b" ^ s) None ] ]
     ;
     Pcaml.patt: LAST
-      [ [ s = ANTIQUOT_LOC -> make_anti loc "" s
-        | s = ANTIQUOT_LOC "anti" -> make_anti loc "anti" s ] ]
+      [ [ s = ANTIQUOT_LOC "" -> MLast.PaXtr loc ("a" ^ s) None
+        | s = ANTIQUOT_LOC "anti" -> MLast.PaXtr loc ("b" ^ s) None ] ]
     ;
     ipatt: LAST
       [ [ s = ANTIQUOT_LOC -> make_anti loc "" s
@@ -613,13 +616,14 @@ lex.Plexing.tok_match :=
           else if kind = "lid" then "b" ^ prm
           else raise Stream.Failure
       | _ -> raise Stream.Failure ]
-(*
-  | ("UIDENT", "") ->
+  | ("V UIDENT", "") ->
       fun
-      [ ("UIDENT", prm) -> prm
-      | ("ANTIQUOT_LOC", prm) -> check_and_make_anti prm "uid"
+      [ ("ANTIQUOT_LOC", prm) ->
+          let kind = check_anti_loc2 prm in
+          if kind = "auid" then "a" ^ prm
+          else if kind = "uid" then "b" ^ prm
+          else raise Stream.Failure
       | _ -> raise Stream.Failure ]
-*)
   | ("V STRING", "") ->
       fun
       [ ("ANTIQUOT_LOC", prm) ->

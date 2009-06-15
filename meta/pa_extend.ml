@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.42 2007/09/08 04:54:38 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.43 2007/09/08 09:18:14 deraugla Exp $ *)
 
 value split_ext = ref False;
 
@@ -217,7 +217,7 @@ module MetaAction =
       | MLast.ExTup loc el -> <:expr< MLast.ExTup $mloc$ $mlist mexpr el$ >>
       | MLast.ExTyc loc e t ->
           <:expr< MLast.ExTyc $mloc$ $mexpr e$ $mctyp t$ >>
-      | MLast.ExUid loc s -> <:expr< MLast.ExUid $mloc$ $str:s$ >>
+      | MLast.ExUid loc s -> <:expr< MLast.ExUid $mloc$ $mvala mstring s$ >>
       | x -> not_impl "mexpr" x ]
     and mpatt =
       fun

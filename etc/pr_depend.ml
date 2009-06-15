@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.14 2007/08/07 19:31:18 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.15 2007/09/08 09:18:14 deraugla Exp $ *)
 
 open MLast;
 
@@ -131,7 +131,7 @@ and expr =
   | x -> not_impl "expr" x ]
 and expr_module =
   fun
-  [ ExUid _ m -> addmodule m
+  [ <:expr< $uid:m$ >> -> addmodule m
   | e -> expr e ]
 and let_binding (p, e) = do { patt p; expr e }
 and label_expr (p, e) = do { patt p; expr e }

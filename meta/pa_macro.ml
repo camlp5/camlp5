@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.24 2007/09/08 03:07:55 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.25 2007/09/08 09:18:14 deraugla Exp $ *)
 
 (*
 Added statements:
@@ -286,10 +286,6 @@ value undef x =
   [ Not_found -> () ]
 ;
 
-let constructor_declaration =
-  Grammar.Entry.find Pcaml.ctyp "constructor_declaration"
-in
-let match_case = Grammar.Entry.find Pcaml.expr "match_case" in
 EXTEND
   GLOBAL: expr patt str_item sig_item constructor_declaration match_case;
   str_item: FIRST
@@ -377,21 +373,21 @@ EXTEND
   ;
   constructor_declaration: FIRST
     [ [ "IFDEF"; e = dexpr; "THEN"; x = SELF; "END" ->
-          if e then x else raise Grammar.Skip
+          if e then x else raise Grammar.SkipItem
       | "IFDEF"; e = dexpr; "THEN"; x = SELF; "ELSE"; y = SELF; "END" ->
           if e then x else y
       | "IFNDEF"; e = dexpr; "THEN"; x = SELF; "END" ->
-          if e then raise Grammar.Skip else x
+          if e then raise Grammar.SkipItem else x
       | "IFNDEF"; e = dexpr; "THEN"; x = SELF; "ELSE"; y = SELF; "END" ->
           if e then y else x ] ]
   ;
   match_case: FIRST
     [ [ "IFDEF"; e = dexpr; "THEN"; x = SELF; "END" ->
-          if e then x else raise Grammar.Skip
+          if e then x else raise Grammar.SkipItem
       | "IFDEF"; e = dexpr; "THEN"; x = SELF; "ELSE"; y = SELF; "END" ->
           if e then x else y
       | "IFNDEF"; e = dexpr; "THEN"; x = SELF; "END" ->
-          if e then raise Grammar.Skip else x
+          if e then raise Grammar.SkipItem else x
       | "IFNDEF"; e = dexpr; "THEN"; x = SELF; "ELSE"; y = SELF; "END" ->
           if e then y else x ] ]
   ;

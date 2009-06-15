@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.46 2007/09/08 04:54:38 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.47 2007/09/08 09:18:14 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -154,6 +154,10 @@ value class_str_item = Grammar.Entry.create gram "class structure item";
 value ipatt = Grammar.Entry.create gram "ipatt";
 value let_binding = Grammar.Entry.create gram "let_binding";
 value type_declaration = Grammar.Entry.create gram "type_declaration";
+value match_case = Grammar.Entry.create gram "match_case";
+value constructor_declaration =
+  Grammar.Entry.create gram "constructor_declaration";
+
 value with_constr = Grammar.Entry.create gram "with_constr";
 value poly_variant = Grammar.Entry.create gram "poly_variant";
 
@@ -162,6 +166,7 @@ value a_opt = Grammar.Entry.create gram "a_opt";
 value a_flag = Grammar.Entry.create gram "a_flag";
 value a_flag2 = Grammar.Entry.create gram "a_flag2";
 value a_UIDENT = Grammar.Entry.create gram "a_UIDENT";
+value a_UIDENT2 = Grammar.Entry.create gram "a_UIDENT2";
 value a_LIDENT = Grammar.Entry.create gram "a_LIDENT";
 value a_LIDENT2 = Grammar.Entry.create gram "a_LIDENT2";
 value a_INT = Grammar.Entry.create gram "a_INT";
@@ -236,13 +241,15 @@ value mklistexp _ last =
     [ Qast.List [] ->
         match last with
         [ Qast.Option (Some e) -> e
-        | Qast.Option None -> Qast.Node "ExUid" [Qast.Loc; Qast.Str "[]"]
+        | Qast.Option None ->
+            Qast.Node "ExUid" [Qast.Loc; Qast.VaVal (Qast.Str "[]")]
         | a -> a ]
     | Qast.List [e1 :: el] ->
         Qast.Node "ExApp"
           [Qast.Loc;
            Qast.Node "ExApp"
-             [Qast.Loc; Qast.Node "ExUid" [Qast.Loc; Qast.Str "::"]; e1];
+             [Qast.Loc;
+              Qast.Node "ExUid" [Qast.Loc; Qast.VaVal (Qast.Str "::")]; e1];
            loop False (Qast.List el)]
     | a -> a ]
 ;
@@ -277,7 +284,7 @@ value append_elem el e = Qast.Apply "@" [el; Qast.List [e]];
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr class_type
     class_expr class_sig_item class_str_item let_binding type_declaration
-    ipatt with_constr poly_variant;
+    constructor_declaration match_case ipatt with_constr poly_variant;
   module_expr:
     [ [ "functor"; "("; i = a_UIDENT; ":"; t = module_type; ")"; "->";
         me = SELF ->
@@ -667,7 +674,7 @@ EXTEND
       | s = a_STRING2 -> Qast.Node "ExStr" [Qast.Loc; s]
       | s = a_CHAR -> Qast.Node "ExChr" [Qast.Loc; s]
       | i = expr_ident -> i
-      | "["; "]" -> Qast.Node "ExUid" [Qast.Loc; Qast.Str "[]"]
+      | "["; "]" -> Qast.Node "ExUid" [Qast.Loc; Qast.VaVal (Qast.Str "[]")]
       | "["; el = SLIST1 expr SEP ";"; last = cons_expr_opt; "]" ->
           mklistexp Qast.Loc last el
       | "[|"; el = SLIST0 expr SEP ";"; "|]" ->
@@ -677,7 +684,7 @@ EXTEND
       | "{"; "("; e = SELF; ")"; "with"; lel = SLIST1 label_expr SEP ";";
         "}" ->
           Qast.Node "ExRec" [Qast.Loc; lel; Qast.Option (Some e)]
-      | "("; ")" -> Qast.Node "ExUid" [Qast.Loc; Qast.Str "()"]
+      | "("; ")" -> Qast.Node "ExUid" [Qast.Loc; Qast.VaVal (Qast.Str "()")]
       | "("; e = SELF; ":"; t = ctyp; ")" ->
           Qast.Node "ExTyc" [Qast.Loc; e; t]
       | "("; e = SELF; ","; el = SLIST1 expr SEP ","; ")" ->
@@ -728,8 +735,8 @@ EXTEND
   expr_ident:
     [ RIGHTA
       [ i = a_LIDENT2 -> Qast.Node "ExLid" [Qast.Loc; i]
-      | i = a_UIDENT -> Qast.Node "ExUid" [Qast.Loc; i]
-      | i = a_UIDENT; "."; j = SELF -> mkexprident Qast.Loc i j ] ]
+      | i = a_UIDENT2 -> Qast.Node "ExUid" [Qast.Loc; i]
+      | i = a_UIDENT2; "."; j = SELF -> mkexprident Qast.Loc i j ] ]
   ;
   fun_def:
     [ RIGHTA
@@ -1277,6 +1284,12 @@ EXTEND
     [ [ a = ANTIQUOT "uid" -> antiquot "uid" loc a
       | a = ANTIQUOT -> antiquot "" loc a
       | i = UIDENT -> Qast.Str i ] ]
+  ;
+  a_UIDENT2:
+    [ [ a = ANTIQUOT "uid" -> Qast.VaVal (antiquot "uid" loc a)
+      | a = ANTIQUOT "auid" -> antiquot "" loc a
+      | a = ANTIQUOT -> antiquot "" loc a
+      | i = UIDENT -> Qast.VaVal (Qast.Str i) ] ]
   ;
   a_LIDENT:
     [ [ a = ANTIQUOT "lid" -> antiquot "lid" loc a
