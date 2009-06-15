@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.36 2007/10/13 09:11:39 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.37 2007/10/13 13:07:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -15,10 +15,8 @@ do {
   Eprinter.clear pr_module_expr;
   Eprinter.clear pr_module_type;
   Eprinter.clear pr_class_sig_item;
-(*
   Eprinter.clear pr_class_str_item;
   Eprinter.clear pr_class_expr;
-*)
   Eprinter.clear pr_class_type;
 };
 
@@ -40,18 +38,11 @@ value to_be_renamed = ["cond"; "sum"];
 
 value rename_id s = if List.mem s to_be_renamed then s ^ "#" else s;
 
-value rec mod_ident pc sl =
+value rec longident pc sl =
   match sl with
   [ [] -> sprintf "%s%s" pc.bef pc.aft
   | [s] -> sprintf "%s%s%s" pc.bef s pc.aft
-  | [s :: sl] -> mod_ident {(pc) with bef = sprintf "%s%s." pc.bef s} sl ]
-;
-
-value rec cons_ident pc sl =
-  match sl with
-  [ [] -> sprintf "%s%s" pc.bef pc.aft
-  | [s] -> sprintf "%s%s%s" pc.bef s pc.aft
-  | [s :: sl] -> cons_ident {(pc) with bef = sprintf "%s%s." pc.bef s} sl ]
+  | [s :: sl] -> longident {(pc) with bef = sprintf "%s%s." pc.bef s} sl ]
 ;
 
 (*
@@ -65,7 +56,9 @@ value str_item = Eprinter.apply pr_str_item;
 value sig_item = Eprinter.apply pr_sig_item;
 value module_expr = Eprinter.apply pr_module_expr;
 value module_type = Eprinter.apply pr_module_type;
+value class_str_item = Eprinter.apply pr_class_str_item;
 value class_sig_item = Eprinter.apply pr_class_sig_item;
+value class_expr = Eprinter.apply pr_class_expr;
 value class_type = Eprinter.apply pr_class_type;
 
 value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
@@ -365,7 +358,7 @@ value with_constraint pc =
   [ <:with_constr< type $sl$ $list:tvl$ = $flag:pf$ $t$ >> ->
       horiz_vertic
         (fun () ->
-           let n = mod_ident {(pc) with bef = ""; aft = ""} sl in
+           let n = longident {(pc) with bef = ""; aft = ""} sl in
            sprintf "%s(type%s %s %s)%s" pc.bef (if pf then "private" else "")
              (match tvl with
               [ [] -> n
@@ -432,6 +425,68 @@ value class_descr_list pc =
            let s1 = sprintf "%s(class*" pc.bef in
            let s2 =
              vlist (class_descr "")
+               {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+                aft = sprintf ")%s" pc.aft}
+               cdl
+           in
+           sprintf "%s\n%s" s1 s2) ]
+;
+
+value class_decl b pc cd =
+  let n = Pcaml.unvala cd.MLast.ciNam in
+  horiz_vertic
+    (fun () ->
+       sprintf "%s(%s%s%s %s)%s" pc.bef (if b = "" then "" else b ^ " ")
+         (if Pcaml.unvala cd.MLast.ciVir then "virtual " else "")
+         (match Pcaml.unvala (snd cd.MLast.ciPrm) with
+          [ [] -> n
+          | tvl ->
+              sprintf "(%s %s)" n
+                (hlist type_param {(pc) with bef = ""; aft = ""} tvl) ])
+         (class_expr {(pc) with bef = ""; aft = ""} cd.MLast.ciExp) pc.aft)
+    (fun () ->
+       let list =
+         let list =
+           [(fun pc ->
+               match Pcaml.unvala (snd cd.MLast.ciPrm) with
+               [ [] -> sprintf "%s%s%s" pc.bef n pc.aft
+               | tvl ->
+                   plistb type_param 0
+                     {(pc) with ind = pc.ind + 1;
+                      bef = sprintf "%s(%s" pc.bef n;
+                      aft = sprintf ")%s" pc.aft}
+                     (List.map (fun tv -> (tv, "")) tvl) ],
+             "");
+            (fun pc -> class_expr pc cd.MLast.ciExp, "")]
+         in
+         let list =
+           if Pcaml.unvala cd.MLast.ciVir then
+             [(fun pc -> sprintf "%svirtual%s" pc.bef pc.aft, "") ::
+              list]
+           else list
+         in
+         if b = "" then list
+         else [(fun pc -> sprintf "%s%s%s" pc.bef b pc.aft, "") :: list]
+       in
+       plistf 0
+         {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+          aft = sprintf ")%s" pc.aft}
+         list)
+;
+
+value class_decl_list pc =
+  fun
+  [ [cd] -> class_decl "class" pc cd
+  | cdl ->
+      horiz_vertic
+        (fun () ->
+           sprintf "%s(class* %s)%s" pc.bef
+             (hlist (class_decl "") {(pc) with bef = ""; aft = ""} cdl)
+             pc.aft)
+        (fun () ->
+           let s1 = sprintf "%s(class*" pc.bef in
+           let s2 =
+             vlist (class_decl "")
                {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
                 aft = sprintf ")%s" pc.aft}
                cdl
@@ -788,6 +843,12 @@ EXTEND_PRINTER
              aft = sprintf ")%s" pc.aft}
             [(fun pc -> sprintf "%slazy%s" pc.bef pc.aft, "");
              (fun pc -> curr pc x, "")]
+      | <:expr< new $list:x$ >> ->
+          plistf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc -> sprintf "%snew%s" pc.bef pc.aft, "");
+             (fun pc -> longident pc x, "")]
 (*
       | <:expr< $lid:s$ $e1$ $e2$ >>
         when List.mem s assoc_right_parsed_op_list ->
@@ -971,6 +1032,12 @@ EXTEND_PRINTER
             (List.map (fun fp -> (fp, "")) fpl)
       | <:patt< ?$s$ >> ->
           sprintf "%s?%s%s" pc.bef s pc.aft
+      | <:patt< ?$s$: ($p$) >> ->
+          plistf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc -> sprintf "%s?%s%s" pc.bef s pc.aft, "");
+             (fun pc -> curr pc p, "")]
       | <:patt< ? ($lid:x$ = $e$) >> ->
           plistf 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
@@ -1018,8 +1085,10 @@ EXTEND_PRINTER
   ;
   pr_str_item:
     [ "top"
-      [ <:str_item< open $i$ >> ->
-          plistb mod_ident 0
+      [ <:str_item< class $list:cdl$ >> ->
+          class_decl_list pc cdl
+      | <:str_item< open $i$ >> ->
+          plistb longident 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(open" pc.bef;
              aft = sprintf ")%s" pc.aft}
             [(i, "")]
@@ -1038,7 +1107,7 @@ EXTEND_PRINTER
              bef = sprintf "%s(exceptionrebind" pc.bef;
              aft = sprintf ")%s" pc.aft}
             [(fun pc -> sprintf "%s%s%s" pc.bef c pc.aft, "");
-             (fun pc -> cons_ident pc id, "")]
+             (fun pc -> longident pc id, "")]
       | <:str_item< value $flag:rf$ $list:pel$ >> ->
           value_binding_list pc (rf, pel)
       | <:str_item< module $uid:s$ = $me$ >> ->
@@ -1099,7 +1168,7 @@ EXTEND_PRINTER
       | <:sig_item< module type $uid:s$ = $mt$ >> ->
           module_type_decl pc (s, mt)
       | <:sig_item< open $i$ >> ->
-          plistb mod_ident 0
+          plistb longident 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(open" pc.bef;
              aft = sprintf ")%s" pc.aft}
             [(i, "")]
@@ -1227,6 +1296,44 @@ EXTEND_PRINTER
       | x ->
           not_impl "class_sig_item" pc x ] ]
   ;
+  pr_class_str_item:
+    [ [ <:class_str_item< initializer $e$ >> ->
+          plistb expr 0
+            {(pc) with ind = pc.ind + 1;
+             bef = sprintf "%s(initializer" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(e, "")]
+      | <:class_str_item< method $flag:pf$ $s$ = $e$ >> ->
+          let list =
+            let list =
+              [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
+               (fun pc -> expr pc e, "")]
+            in
+            if pf then
+              [(fun pc -> sprintf "%sprivate%s" pc.bef pc.aft, "") :: list]
+            else list
+          in
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(method" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            list
+      | <:class_str_item< value $flag:mf$ $s$ = $e$ >> ->
+          let list =
+            let list =
+              [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
+               (fun pc -> expr pc e, "")]
+            in
+            if mf then
+              [(fun pc -> sprintf "%smutable%s" pc.bef pc.aft, "") :: list]
+            else list
+          in
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(value" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            list
+      | x ->
+          not_impl "class_str_item" pc x ] ]
+  ;
   pr_class_type:
     [ [ <:class_type< [ $t$ ] -> $ct$ >> ->
           let (rtl, ct) =
@@ -1266,6 +1373,41 @@ EXTEND_PRINTER
                sprintf "%s\n%s" s1 s2)
       | x ->
           not_impl "class_type" pc x ] ]
+  ;
+  pr_class_expr:
+    [ [ <:class_expr< fun $p$ -> $ce$ >> ->
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(fun" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc -> patt pc p, ""); (fun pc -> class_expr pc ce, "")]
+      | <:class_expr< object $opt:csp$ $list:csl$ end >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s(object%s %s)%s" pc.bef
+                 (match csp with
+                  [ Some t -> not_impl "class_expr object self horiz " pc 0
+                  | None -> "" ])
+                 (hlist class_str_item {(pc) with bef = ""; aft = ""} csl)
+                    pc.aft)
+            (fun () ->
+               let s1 =
+                 let s = sprintf "%s(object" pc.bef in
+                 match csp with
+                 [ Some p ->
+                     plistb patt 0
+                       {(pc) with ind = pc.ind + 1; bef = s; aft = ""}
+                       [(p, "")]
+                 | None -> s ]
+               in
+               let s2 =
+                 vlist class_str_item
+                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+                    aft = sprintf ")%s" pc.aft}
+                   csl
+               in
+               sprintf "%s\n%s" s1 s2)
+      | x ->
+          not_impl "class_expr" pc x ] ]
   ;
 END;
 

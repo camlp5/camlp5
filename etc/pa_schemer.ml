@@ -583,7 +583,10 @@ and sig_item_se =
   | se -> error se "sig item" ]
 and str_item_se se =
   match se with
-  [ Sexpr loc [Slid _ ("define" | "definerec" as r); se :: sel] ->
+  [ Sexpr loc [Slid _ "class"; Slid _ s; se] ->
+      let ce = class_expr_se se in
+      <:str_item< class $s$ = $ce$ >>
+  | Sexpr loc [Slid _ ("define" | "definerec" as r); se :: sel] ->
       let r = r = "definerec" in
       let (p, e) = fun_binding_se se (begin_se loc sel) in
       <:str_item< value $flag:r$ $p$ = $e$ >>
@@ -1266,6 +1269,21 @@ and class_sig_item_se =
       let t = ctyp_se se in
       <:class_sig_item< value mutable $n$ : $t$ >>
   | se -> error se "class_sig_item" ]
+and class_str_item_se =
+  fun
+  [ Sexpr loc [Slid _ "initializer"; se] ->
+      let e = expr_se se in
+      <:class_str_item< initializer $e$ >>
+  | Sexpr loc [Slid _ "method"; Slid _ n; se] ->
+      let e = expr_se se in
+      <:class_str_item< method $n$ = $e$ >>
+  | Sexpr loc [Slid _ "value"; Slid _ "mutable"; Slid _ n; se] ->
+      let e = expr_se se in
+      <:class_str_item< value mutable $n$ = $e$ >>
+  | Sexpr loc [Slid _ "value"; Slid _ n; se] ->
+      let e = expr_se se in
+      <:class_str_item< value $n$ = $e$ >>
+  | se -> error se "class_str_item" ]
 and class_type_se =
   fun
   [ Sexpr loc [Slid _ "->"; se :: sel] ->
@@ -1281,6 +1299,17 @@ and class_type_se =
       let csl = List.map class_sig_item_se sel in
       <:class_type< object $list:csl$ end >>
   | se -> error se "class_type_se" ]
+and class_expr_se =
+  fun
+  [ Sexpr loc [Slid _ "fun"; se1; se2] ->
+      let p = patt_se se1 in
+      let ce = class_expr_se se2 in
+      <:class_expr< fun $p$ -> $ce$ >>
+  | Sexpr loc [Slid _ "object"; se :: sel] ->
+      let p = Some (patt_se se) in
+      let csl = List.map class_str_item_se sel in
+      <:class_expr< object $opt:p$ $list:csl$ end >>
+  | se -> error se "class_expr_se" ]
 ;
 
 value directive_se =

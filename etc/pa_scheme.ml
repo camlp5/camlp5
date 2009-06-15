@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.79 2007/10/13 09:11:39 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.80 2007/10/13 13:07:12 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -551,6 +551,8 @@
      (se (error se "sig item"))))
   ((str_item_se se)
     (match se
+     ((Sexpr loc [(Slid _ "class") (Slid _ s) se])
+      (let ((ce (class_expr_se se))) <:str_item< class $s$ = $ce$ >>))
      ((Sexpr loc [(Slid _ (as (or "define" "definerec") r)) se . sel])
       (let* ((r (= r "definerec"))
              ((values p e) (fun_binding_se se (begin_se loc sel))))
@@ -1202,6 +1204,18 @@
      (let ((t (ctyp_se se))) <:class_sig_item< value mutable $n$ : $t$ >>))
     (se
      (error se "class_sig_item"))))
+  (class_str_item_se
+   (lambda_match
+    ((Sexpr loc [(Slid _ "initializer") se])
+     (let ((e (expr_se se))) <:class_str_item< initializer $e$ >>))
+    ((Sexpr loc [(Slid _ "method") (Slid _ n) se])
+     (let ((e (expr_se se))) <:class_str_item< method $n$ = $e$ >>))
+    ((Sexpr loc [(Slid _ "value") (Slid _ "mutable") (Slid _ n) se])
+     (let ((e (expr_se se))) <:class_str_item< value mutable $n$ = $e$ >>))
+    ((Sexpr loc [(Slid _ "value") (Slid _ n) se])
+     (let ((e (expr_se se))) <:class_str_item< value $n$ = $e$ >>))
+    (se
+     (error se "class_str_item"))))
   (class_type_se
    (lambda_match
     ((Sexpr loc [(Slid _ "->") se . sel])
@@ -1217,7 +1231,16 @@
     ((Sexpr loc [(Slid _ "object") . sel])
      (let ((csl (List.map class_sig_item_se sel)))
       <:class_type< object $list:csl$ end >>))
-    (se (error se "class_type_se")))))
+    (se (error se "class_type_se"))))
+  (class_expr_se
+   (lambda_match
+    ((Sexpr loc [(Slid _ "fun") se1 se2])
+     (let* ((p (patt_se se1)) (ce (class_expr_se se2)))
+     <:class_expr< fun $p$ -> $ce$ >>))
+    ((Sexpr loc [(Slid _ "object") se . sel])
+     (let* ((p (Some (patt_se se))) (csl (List.map class_str_item_se sel)))
+      <:class_expr< object $opt:p$ $list:csl$ end >>))
+    (se (error se "class_expr_se")))))
 
 (define directive_se
   (lambda_match
