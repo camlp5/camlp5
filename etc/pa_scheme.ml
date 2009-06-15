@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.55 2007/10/08 02:20:31 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.56 2007/10/08 09:08:10 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -1033,11 +1033,19 @@
   (ctyp_se
    (lambda_match
     ((Sexpr loc [(Slid _ "sum") . sel])
-     (let ((cdl (List.map constructor_declaration_se sel)))
-       <:ctyp< [ $list:cdl$ ] >>))
+     (let
+      ((cdl
+        (match sel
+         ([(Santi _ (or "list" "_list") s)] <:vala< $s$ >>)
+         (_ <:vala< (List.map constructor_declaration_se sel) >>))))
+       <:ctyp< [ $_list:cdl$ ] >>))
     ((Srec loc sel)
-     (let ((ldl (List.map label_declaration_se sel)))
-       <:ctyp< { $list:ldl$ } >>))
+     (let
+      ((ldl
+        (match sel
+         ([(Santi _ (or "list" "_list") s)] <:vala< $s$ >>)
+         (_ <:vala< (List.map label_declaration_se sel) >>))))
+       <:ctyp< { $_list:ldl$ } >>))
     ((Sexpr loc [(Slid _ "->") . (as [_ _ . _] sel)])
      (letrec
         ((loop
@@ -1058,6 +1066,8 @@
      (let ((tl (List.map ctyp_se sel))) <:ctyp< ($list:tl$) >>))
     ((Sexpr loc [(Slid _ "==") se1 se2])
      (let* ((t1 (ctyp_se se1)) (t2 (ctyp_se se2))) <:ctyp< $t1$ == $t2$ >>))
+    ((Sexpr loc [(Sqid _ s) se])
+     (let ((t (ctyp_se se))) <:ctyp< ?$_:s$: $t$ >>))
     ((Sexpr loc [(Stid _ s) se])
      (let ((t (ctyp_se se))) <:ctyp< ~$_:s$: $t$ >>))
     ((Sexpr loc [(Slid _ "object") . sel])

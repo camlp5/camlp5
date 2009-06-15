@@ -144,16 +144,16 @@
 <:ctyp< (objectvar $_list:lst$) >>
 (MLast.TyObj loc (Ploc.VaVal lst) (Ploc.VaVal b))
 (MLast.TyObj loc lst b)
-; <:ctyp< ?$s$: $t$ >>
-; <:ctyp< ?$_:s$: $t$ >>
-; <:ctyp< ! $list:ls$ . $t$ >>
-; <:ctyp< ! $_list:ls$ . $t$ >>
-; <:ctyp< ' $s$ >>
-; <:ctyp< ' $_:s$ >>
-; <:ctyp< { $list:llsbt$ } >>
-; <:ctyp< { $_list:llsbt$ } >>
-; <:ctyp< [ $list:llslt$ ] >>
-; <:ctyp< [ $_list:llslt$ ] >>
+<:ctyp< (?$s$ $t$) >>
+<:ctyp< (?$_:s$ $t$) >>
+(MLast.TyPol loc (Ploc.VaVal ls) t)
+(MLast.TyPol loc ls t)
+(MLast.TyQuo loc (Ploc.VaVal s))
+(MLast.TyQuo loc s)
+<:ctyp< { $list:llsbt$ } >>
+<:ctyp< { $_list:llsbt$ } >>
+<:ctyp< (sum $list:llslt$) >>
+<:ctyp< (sum $_list:llslt$) >>
 ; <:ctyp< ( $list:lt$ ) >>
 ; <:ctyp< ( $_list:lt$ ) >>
 ; <:ctyp< $uid:s$ >>

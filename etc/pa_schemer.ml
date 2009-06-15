@@ -1101,11 +1101,19 @@ and type_param_se se =
 and ctyp_se =
   fun
   [ Sexpr loc [Slid _ "sum" :: sel] ->
-      let cdl = List.map constructor_declaration_se sel in
-      <:ctyp< [ $list:cdl$ ] >>
+      let cdl =
+        match sel with
+        [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
+        | _ -> <:vala< (List.map constructor_declaration_se sel) >> ]
+      in
+      <:ctyp< [ $_list:cdl$ ] >>
   | Srec loc sel ->
-      let ldl = List.map label_declaration_se sel in
-      <:ctyp< { $list:ldl$ } >>
+      let ldl =
+        match sel with
+        [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
+        | _ -> <:vala< (List.map label_declaration_se sel) >> ]
+      in
+      <:ctyp< { $_list:ldl$ } >>
   | Sexpr loc [Slid _ "->" :: ([_; _ :: _] as sel)] ->
       loop sel where rec loop =
         fun
@@ -1127,6 +1135,9 @@ and ctyp_se =
       let t1 = ctyp_se se1 in
       let t2 = ctyp_se se2 in
       <:ctyp< $t1$ == $t2$ >>
+  | Sexpr loc [Sqid _ s; se] ->
+      let t = ctyp_se se in
+      <:ctyp< ?$_:s$: $t$ >>
   | Sexpr loc [Stid _ s; se] ->
       let t = ctyp_se se in
       <:ctyp< ~$_:s$: $t$ >>
