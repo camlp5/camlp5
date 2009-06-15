@@ -45,6 +45,31 @@ let eval_anti entry loc typ str =
   loc, r
 ;;
 
+let get_anti_loc s =
+  try
+    let i = String.index s ':' in
+    let (j, len) =
+      let rec loop j =
+        if j = String.length s then i, 0
+        else
+          match s.[j] with
+            ':' -> j, j - i - 1
+          | 'a'..'z' | 'A'..'Z' | '0'..'9' | '_' -> loop (j + 1)
+          | _ -> i, 0
+      in
+      loop (i + 1)
+    in
+    let kind = String.sub s (i + 1) len in
+    let loc =
+      let k = String.index s ',' in
+      let bp = int_of_string (String.sub s 0 k) in
+      let ep = int_of_string (String.sub s (k + 1) (i - k - 1)) in
+      Ploc.make_unlined (bp, ep)
+    in
+    Some (loc, kind, String.sub s (j + 1) (String.length s - j - 1))
+  with Not_found | Failure _ -> None
+;;
+
 let expr_eoi = Grammar.Entry.create Pcaml.gram "expr";;
 let patt_eoi = Grammar.Entry.create Pcaml.gram "patt";;
 let ctyp_eoi = Grammar.Entry.create Pcaml.gram "type";;
@@ -83,6 +108,7 @@ module Meta =
     let loc = Ploc.dummy;;
     let ln () = MLast.ExLid (loc, !(Ploc.name));;
     let e_vala elem e = elem e;;
+    let p_vala elem p = elem p;;
     let e_list elem el =
       let rec loop el =
         match el with
@@ -136,13 +162,7 @@ module Meta =
       | None ->
           if b then MLast.PaUid (loc, "True") else MLast.PaUid (loc, "False")
     ;;
-    let e_string s =
-      match get_anti s with
-        Some (loc, typ, str) ->
-          let (loc, r) = eval_anti expr_eoi loc typ str in
-          MLast.ExAnt (loc, r)
-      | None -> MLast.ExStr (loc, s)
-    ;;
+    let e_string s = MLast.ExStr (loc, s);;
     let p_string s =
       match get_anti s with
         Some (loc, typ, str) ->
@@ -605,7 +625,7 @@ module Meta =
                         (loc, MLast.ExUid (loc, "MLast"),
                          MLast.ExUid (loc, "ExLid")),
                       ln),
-                   e_string s)
+                   e_vala e_string s)
             | ExMat (_, e, pwel) ->
                 let pwel =
                   e_list
@@ -761,7 +781,7 @@ module Meta =
                         (loc, MLast.PaUid (loc, "MLast"),
                          MLast.PaUid (loc, "ExLid")),
                       MLast.PaAny loc),
-                   p_string s)
+                   p_vala p_string s)
             | ExStr (_, s) ->
                 MLast.PaApp
                   (loc,
@@ -961,8 +981,7 @@ let check_anti_loc s kind =
   with Not_found | Failure _ -> raise Stream.Failure
 ;;
 
-
-let check_anti_loc2 s kind =
+let check_anti_loc2 s =
   try
     let i = String.index s ':' in
     let (j, len) =
@@ -976,7 +995,7 @@ let check_anti_loc2 s kind =
       in
       loop (i + 1)
     in
-    if String.sub s (i + 1) len = kind then s else raise Stream.Failure
+    String.sub s (i + 1) len
   with Not_found | Failure _ -> raise Stream.Failure
 ;;
 
@@ -998,9 +1017,21 @@ lex.Plexing.tok_match <-
       (function
          "ANTIQUOT_LOC", prm -> snd (check_anti_loc prm p_prm)
        | _ -> raise Stream.Failure)
-  | "FLAG2", "" ->
+  | "V LIDENT", "" ->
       (function
-         "ANTIQUOT_LOC", prm -> check_anti_loc2 prm "aflag"
+         "ANTIQUOT_LOC", prm ->
+           let kind = check_anti_loc2 prm in
+           if kind = "alid" then "a" ^ prm
+           else if kind = "lid" then "b" ^ prm
+           else raise Stream.Failure
+       | _ -> raise Stream.Failure)
+  | "V FLAG", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           let kind = check_anti_loc2 prm in
+           if kind = "aflag" then "a" ^ prm
+           else if kind = "flag" then "b" ^ prm
+           else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | tok -> tok_match tok;;
 

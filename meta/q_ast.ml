@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.34 2007/09/07 06:05:07 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.35 2007/09/07 19:16:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -53,6 +53,30 @@ value eval_anti entry loc typ str =
   (loc, r)
 ;
 
+value get_anti_loc s =
+  try
+    let i = String.index s ':' in
+    let (j, len) =
+      loop (i + 1) where rec loop j =
+        if j = String.length s then (i, 0)
+        else
+          match s.[j] with
+          [ ':' -> (j, j - i - 1)
+          | 'a'..'z' | 'A'..'Z' | '0'..'9' | '_' -> loop (j + 1)
+          | _ -> (i, 0) ]
+    in
+    let kind = String.sub s (i + 1) len in
+    let loc =
+      let k = String.index s ',' in
+      let bp = int_of_string (String.sub s 0 k) in
+      let ep = int_of_string (String.sub s (k + 1) (i - k - 1)) in
+      Ploc.make_unlined (bp, ep)
+    in
+    Some (loc, kind, String.sub s (j + 1) (String.length s - j - 1))
+  with
+  [ Not_found | Failure _ -> None ]
+;
+
 value expr_eoi = Grammar.Entry.create Pcaml.gram "expr";
 value patt_eoi = Grammar.Entry.create Pcaml.gram "patt";
 value ctyp_eoi = Grammar.Entry.create Pcaml.gram "type";
@@ -95,8 +119,33 @@ module Meta =
         fun e -> elem e
       ELSE
         fun
-        [ Ploc.VaAnt s -> failwith ("not impl VaAnt " ^ s)
-        | Ploc.VaVal v -> elem v ]
+        [ Ploc.VaAnt s ->
+            let asit = s.[0] = 'a' in
+            let s = String.sub s 1 (String.length s - 1) in
+            match get_anti_loc s with
+            [ Some (loc, typ, str) ->
+                let (loc, r) = eval_anti expr_eoi loc typ str in
+                if asit then <:expr< $anti:r$ >>
+                else <:expr< Ploc.VaVal $anti:r$ >>
+            | None -> assert False ]
+        | Ploc.VaVal v -> <:expr< Ploc.VaVal $elem v$ >> ]
+      END
+    ;
+    value p_vala elem =
+      IFNDEF STRICT THEN
+        fun p -> elem p
+      ELSE
+        fun
+        [ Ploc.VaAnt s ->
+            let asit = s.[0] = 'a' in
+            let s = String.sub s 1 (String.length s - 1) in
+            match get_anti_loc s with
+            [ Some (loc, typ, str) ->
+                let (loc, r) = eval_anti patt_eoi loc typ str in
+                if asit then <:patt< $anti:r$ >>
+                else <:patt< Ploc.VaVal $anti:r$ >>
+            | None -> assert False ]
+        | Ploc.VaVal v -> <:patt< Ploc.VaVal $elem v$ >> ]
       END
     ;
     value e_list elem el =
@@ -140,13 +189,7 @@ module Meta =
           <:patt< $anti:r$ >>
       | None -> if b then <:patt< True >> else <:patt< False >> ]
     ;
-    value e_string s =
-      match get_anti s with
-      [ Some (loc, typ, str) ->
-          let (loc, r) = eval_anti expr_eoi loc typ str in
-          <:expr< $anti:r$ >>
-      | None -> <:expr< $str:s$ >> ]
-    ;
+    value e_string s = <:expr< $str:s$ >>;
     value p_string s =
       match get_anti s with
       [ Some (loc, typ, str) ->
@@ -295,7 +338,7 @@ module Meta =
                   e_list (fun (p, e) -> <:expr< ($e_patt p$, $loop e$) >>) lpe
                 in
                 <:expr< MLast.ExLet $ln$ $rf$ $lpe$ $loop e$ >>
-            | ExLid _ s -> <:expr< MLast.ExLid $ln$ $e_string s$ >>
+            | ExLid _ s -> <:expr< MLast.ExLid $ln$ $e_vala e_string s$ >>
             | ExMat _ e pwel ->
                 let pwel =
                   e_list
@@ -347,7 +390,7 @@ module Meta =
                 in
                 let oe = p_option loop oe in
                 <:patt< MLast.ExRec _ $lpe$ $oe$ >>
-            | ExLid _ s -> <:patt< MLast.ExLid _ $p_string s$ >>
+            | ExLid _ s -> <:patt< MLast.ExLid _ $p_vala p_string s$ >>
             | ExStr _ s -> <:patt< MLast.ExStr _ $p_string s$ >>
             | ExTup _ el -> <:patt< MLast.ExTup _ $p_list loop el$ >>
             | ExUid _ s -> <:patt< MLast.ExUid _ $p_string s$ >>
@@ -516,8 +559,7 @@ value check_anti_loc s kind =
   [ Not_found | Failure _ -> raise Stream.Failure ]
 ;
 
-
-value check_anti_loc2 s kind =
+value check_anti_loc2 s =
   try
     let i = String.index s ':' in
     let (j, len) =
@@ -529,8 +571,7 @@ value check_anti_loc2 s kind =
           | 'a'..'z' | 'A'..'Z' | '0'..'9' | '_' -> loop (j + 1)
           | _ -> (i, 0) ]
     in
-    if String.sub s (i + 1) len = kind then s
-    else raise Stream.Failure
+    String.sub s (i + 1) len
   with
   [ Not_found | Failure _ -> raise Stream.Failure ]
 ;
@@ -565,11 +606,16 @@ lex.Plexing.tok_match :=
       [ ("FLOAT", prm) -> prm
       | ("ANTIQUOT_LOC", prm) -> check_and_make_anti prm "flo"
       | _ -> raise Stream.Failure ]
-  | ("LIDENT", "") ->
+*)
+  | ("V LIDENT", "") ->
       fun
-      [ ("LIDENT", prm) -> prm
-      | ("ANTIQUOT_LOC", prm) -> check_and_make_anti prm "lid"
+      [ ("ANTIQUOT_LOC", prm) ->
+          let kind = check_anti_loc2 prm in
+          if kind = "alid" then "a" ^ prm
+          else if kind = "lid" then "b" ^ prm
+          else raise Stream.Failure
       | _ -> raise Stream.Failure ]
+(*
   | ("UIDENT", "") ->
       fun
       [ ("UIDENT", prm) -> prm
@@ -594,9 +640,13 @@ lex.Plexing.tok_match :=
       [ ("ANTIQUOT_LOC", prm) -> check_and_make_anti prm "opt"
       | _ -> raise Stream.Failure ]
 *)
-  | ("FLAG2", "") ->
+  | ("V FLAG", "") ->
       fun
-      [ ("ANTIQUOT_LOC", prm) -> check_anti_loc2 prm "aflag"
+      [ ("ANTIQUOT_LOC", prm) ->
+          let kind = check_anti_loc2 prm in
+          if kind = "aflag" then "a" ^ prm
+          else if kind = "flag" then "b" ^ prm
+          else raise Stream.Failure
       | _ -> raise Stream.Failure ]
   | tok -> tok_match tok ]
 ;
