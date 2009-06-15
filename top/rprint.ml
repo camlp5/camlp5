@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: rprint.ml,v 1.16 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: rprint.ml,v 1.17 2007/07/31 04:55:54 deraugla Exp $ *)
 
 open Format;
 open Outcometree;
@@ -49,7 +49,7 @@ value print_out_value ppf tree =
   let rec print_tree ppf =
     fun
     [ Oval_constr name ([_ :: _] as params) ->
-        fprintf ppf "@[<1>%a@ %a@]" print_ident name
+        fprintf ppf "@[<2>%a@ %a@]" print_ident name
           (print_tree_list print_simple_tree "") params
     | Oval_variant name (Some param) ->
         fprintf ppf "@[<2>`%s@ %a@]" name print_simple_tree param
@@ -77,7 +77,7 @@ value print_out_value ppf tree =
     | Oval_record fel ->
         fprintf ppf "@[<1>{%a}@]" (cautious (print_fields True)) fel
     | Oval_tuple tree_list ->
-        fprintf ppf "@[(%a)@]" (print_tree_list print_tree ",") tree_list
+        fprintf ppf "@[<1>(%a)@]" (print_tree_list print_tree ",") tree_list
     | Oval_ellipsis -> raise Ellipsis
     | Oval_printer f -> f ppf
     | tree -> fprintf ppf "@[<1>(%a)@]" (cautious print_tree) tree ]

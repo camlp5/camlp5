@@ -707,6 +707,7 @@ and check buf (strm__ : _ Stream.t) =
        '.'
         as c) ->
       Stream.junk strm__; check_ident2 (B.add c buf) strm__
+  | Some '$' -> Stream.junk strm__; check_ident2 (B.add '$' buf) strm__
   | Some '<' ->
       Stream.junk strm__;
       let buf = B.add '<' buf in
@@ -882,11 +883,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 534, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 534, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 534, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 535, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 535, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 535, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 535, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 535, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 536, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 536, 37)));
        tok_comm = None}
   in
   let glex =

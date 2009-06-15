@@ -18,3 +18,5 @@ pr_dump.cmx: ../main/ast2pt.cmx ../main/pcaml.cmx \
     $(OTOP)/utils/pconfig.cmx 
 q_MLast.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/quotation.cmi 
 q_MLast.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/quotation.cmx 
+q_ast.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/quotation.cmi 
+q_ast.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/quotation.cmx 

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.80 2007/07/16 15:18:32 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.81 2007/07/31 04:55:54 deraugla Exp $ *)
 
 open Token;
 
@@ -400,6 +400,7 @@ and check =
   lexer
   [ "A..Za..z\128..\255" check_ident!
   | "!?~=@^&+-*/%." check_ident2!
+  | "$" check_ident2!
   | "<" [ ?= [ ":" | "<" ] | check_ident2 ]!
   | ":" [ "]:=>" | ]
   | ">|" [ "]}" | check_ident2 ]!

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_phony.ml,v 1.11 2007/07/18 14:14:00 deraugla Exp $ *)
+(* $Id: q_phony.ml,v 1.12 2007/07/31 04:55:54 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -144,6 +144,16 @@ value macro_def pc =
   | _ -> assert False ]
 ;
                
+(*
+if Printer.has_level pr_expr "apply" then
+  EXTEND_PRINTER
+    pr_expr: LEVEL "apply"
+      [ [ <:expr< IFDEF $_$ $_$ >> as z -> macro_def pc z
+        | <:expr< IFDEF $_$ $_$ $_$ >> as z -> macro_def pc z ] ]
+    ;
+  END
+else ();
+*)
 
 match
   try Some (find_pr_level "apply" pr_expr.pr_levels) with
