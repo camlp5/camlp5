@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: grammars.html,v 1.76 2007/09/01 20:12:37 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.77 2007/09/02 04:13:51 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -753,11 +753,12 @@ instead of "<tt>loc</tt>".</p>
   represented differently. A token constructor name must not belong to
   the specific symbols: SELF, NEXT, LIST0, LIST1, OPT and FLAG.</p>
 
-<h3>The glexer record</h3>
+<h3>The lexer record</h3>
 
-<p>The type of the parameter of the function "<tt>Grammar.gcreate</tt>"
-  is "<tt>glexer</tt>", defined in the module "<tt>Token</tt>". It is
-  a record type with the following fields:</p>
+<p>The type of the parameter of the function
+  "<tt>Grammar.gcreate</tt>" is "<tt>lexer</tt>", defined in the
+  module "<tt>Plexing</tt>". It is a record type with the following
+  fields:</p>
 
 <h4><tt>tok_func</tt></h4>
 
@@ -804,7 +805,7 @@ instead of "<tt>loc</tt>".</p>
   check of correctness of tokens is not done.</p>
 
 <p>In case or error, the function must raise the exception
-  "<tt>Token.Error</tt>" with an error message as parameter.</p>
+  "<tt>Plexing.Error</tt>" with an error message as parameter.</p>
 
 <h4><tt>tok_removing</tt></h4>
 
@@ -843,8 +844,8 @@ instead of "<tt>loc</tt>".</p>
   pattern and the token together and returning a string for each
   case.</p>
 
-<p>An acceptable function is provided in the module "Token" and is
-  named "default_match". Its code looks like this:</p>
+<p>An acceptable function is provided in the module "<tt>Plexing</tt>"
+  and is named "default_match". Its code looks like this:</p>
 
 <pre>
   value default_match =
@@ -869,7 +870,7 @@ instead of "<tt>loc</tt>".</p>
   and return the string giving its name.</p>
 
 <p>It is possible to use the predefined function "<tt>lexer_text</tt>"
-  of the Token module. This function just returns the name of the
+  of the Plexing module. This function just returns the name of the
   token pattern constructor and its parameter if any.</p>
 
 <p>For example, with this default function, the token symbol IDENT
@@ -898,11 +899,11 @@ instead of "<tt>loc</tt>".</p>
   "<tt>Grammar.gcreate</tt>":</p>
 
 <pre>
-  {Token.tok_func = lexer;
-   Token.tok_using _ = (); Token.tok_removing _ = ();
-   Token.tok_match = Token.default_match;
-   Token.tok_text = Token.lexer_text;
-   Token.tok_comm = None}
+  {Plexing.tok_func = lexer;
+   Plexing.tok_using _ = (); Plexing.tok_removing _ = ();
+   Plexing.tok_match = Plexing.default_match;
+   Plexing.tok_text = Plexing.lexer_text;
+   Plexing.tok_comm = None}
 </pre>
 
 <h2>Functorial interface</h2>
@@ -928,14 +929,14 @@ instead of "<tt>loc</tt>".</p>
 <p>The syntax extension must be done with the statement GEXTEND, instead
   of EXTEND, and deletion by GDELETE_RULE instead of DELETE_RULE.</p>
 
-<h3>The glexer type</h3>
+<h3>The lexer type</h3>
 
 <p>In the section about the interface with the lexer, we presented the
-  glexer type as a record without type parameter. Actually, this type
-  is defined as:</p>
+  "<tt>Plexing.lexer</tt>" type as a record without type
+  parameter. Actually, this type is defined as:</p>
 
 <pre>
-  type glexer 'te =
+  type lexer 'te =
     { tok_func : lexer_func 'te;
       tok_using : pattern -> unit;
       tok_removing : pattern -> unit;
@@ -977,7 +978,7 @@ instead of "<tt>loc</tt>".</p>
         fun
         [ Keyw k -> if k = s then "" else raise Stream.Failure
         | _ -> raise Stream.Failure ]
-    | _ -> raise (Token.Error "bad token in match function") ]
+    | _ -> raise (Plexing.Error "bad token in match function") ]
   ;
 </pre>
 
@@ -989,12 +990,12 @@ instead of "<tt>loc</tt>".</p>
   module type GLexerType =
     sig
       type te = 'x;
-      value lexer : Token.glexer te;
+      value lexer : Plexing.lexer te;
     end;
 </pre>
 
 <p>The token type must be specified (type "<tt>te</tt>") and the lexer
-  also, with the interface for lexers, of the glexer type defined
+  also, with the interface for lexers, of the lexer type defined
   above, the record fields being described in the section "interface
   with the lexer", but with a general token type.</p>
 

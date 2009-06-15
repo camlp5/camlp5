@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: quot.html,v 1.18 2007/09/01 20:12:37 deraugla Exp $ -->
+  <!-- $Id: quot.html,v 1.19 2007/09/02 04:13:51 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>quotations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -507,11 +507,11 @@ type expander =
   ;
 
   value lam_lex =
-    {Token.tok_func = lex_func;
-     Token.tok_using _ = (); Token.tok_removing _ = ();
-     Token.tok_match = Token.default_match;
-     Token.tok_text = Token.lexer_text;
-     Token.tok_comm = None}
+    {Plexing.tok_func = lex_func;
+     Plexing.tok_using _ = (); Plexing.tok_removing _ = ();
+     Plexing.tok_match = Plexing.default_match;
+     Plexing.tok_text = Plexing.lexer_text;
+     Plexing.tok_comm = None}
   ;
 </pre>
 
