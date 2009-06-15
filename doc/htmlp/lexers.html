@@ -1,0 +1,378 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
+ "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <!-- $Id: lexers.html,v 1.21 2007/10/25 02:49:47 deraugla Exp $ -->
+  <!-- Copyright (c) 2007 INRIA -->
+  <title>lexers</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <link rel="stylesheet" type="text/css" href="styles/base.css"
+        title="Normal" />
+</head>
+<body>
+
+<div id="menu">
+</div>
+
+<div id="content">
+
+<h1 class="top">Stream lexers</h1>
+
+<p>The file "<tt>pa_lexer.cmo</tt>" is a Camlp5 syntax extension kit for
+  parsers of streams of the type 'char'. This syntax is shorter and
+  more readable than its equivalent version written
+  with <a href="parsers.html">classical stream parsers</a>. But, like
+  classical parsers, they use recursive descendant parsing. They are
+  also pure syntax sugar, and each lexer written with this syntax can
+  be written using normal parsers syntax.</p>
+
+<div id="tableofcontents">
+</div>
+
+<p>(An old version, named "<tt>pa_lex.cmo</tt>" was provided before
+  with a different syntax. It is no longer distributed, its proposed
+  syntax being confusing.)</p>
+
+<h2>Introduction</h2>
+
+<p>Classical parsers in OCaml apply to streams of any type of
+  values. For the specific type "char", it has been possible to
+  shorten encoding in several ways, in particular by using strings to
+  group several characters together, and by hidding the management of
+  a "lexing buffer", a data structure recording the matched
+  characters.</p>
+
+<p>Let us take an example. The following function parses a left
+  bracket followed by a less, a colon or nothing, and record the
+  result in a buffer. In classical parsers syntax, this could be
+  written like this:</p>
+
+<pre>
+  fun buf ->
+    parser
+    [ [: `'['; `'&lt;' :] -> B.add '&lt;' (B.add '[' buf)
+    | [: `'['; `':' :] -> B.add ':' (B.add '[' buf)
+    | [: `'[' :] -> B.add '[' buf ]
+</pre>
+
+<p>With the new syntax, it is possible to write it as:</p>
+
+<pre>
+  lexer [ "[&lt;" | "[:" | "[" ]
+</pre>
+
+<p>The two codes are strictly equivalent, but the lexer version is
+  easier to write and understand, and is much shorter.</p>
+
+<h2>Syntax</h2>
+
+<p>When loading the syntax extension <tt>pa_lexer.cmo</tt>, the
+  OCaml syntax is extended as follows:</p>
+
+<pre>
+          expression ::= lexer
+               lexer ::= "lexer" "[" rules "]"
+               rules ::= rules rule
+                       | &lt;nothing&gt;
+                rule ::= symbols [ "-&gt;" action ]
+             symbols ::= symbols symbol err
+                       | &lt;nothing&gt;
+              symbol ::= "_" no-record-opt
+                       | CHAR no-record-opt
+                       | CHAR "-" CHAR no-record-opt
+                       | STRING no-record-opt
+                       | simple-expression
+                       | "?=" "[" lookaheads "]"
+                       | "[" rules "]"
+       no-record-opt ::= "/"
+                       | &lt;nothing&gt;
+   simple-expression ::= LIDENT
+                       | "(" &lt;expression&gt; ")"
+          lookaheads ::= lookaheads "|" lookahead-sequence
+                       | lookahead-sequence
+  lookahead-sequence ::= lookahead-symbols
+                       | STRING
+   lookahead-symbols ::= lookahead-symbols lookahead-symbol
+                       | lookahead-symbol
+    lookahead-symbol ::= CHAR
+                       | "_"
+                 err ::= "?" simple-expression
+                       | "!"
+                       | &lt;nothing&gt;
+              action ::= expression
+</pre>
+
+<p>The identifiers "<tt>STRING</tt>", "<tt>CHAR</tt>" and
+  "<tt>LIDENT</tt>" above represent the OCaml tokens corresponding to
+  string, character and lowercase identifier (identifier starting with
+  a lowercase character).</p>
+
+<p>Moreover, together with that syntax extension, another extension is
+  added the entry <tt>expression</tt>, typically for the semantics
+  actions of the "<tt>lexer</tt>" statement above, but not only. It
+  is:</p>
+
+<pre>
+  expression ::= "$" "add" STRING
+               | "$" "buf"
+               | "$" "empty"
+               | "$" "pos"
+</pre>
+
+<p>Remark: the identifiers "add", "buf", "empty" and "pos" do not
+  become keywords (they are not reserved words) but just
+  identifiers. On the contrary, the identifier "<tt>lexer</tt>", which
+  introduces the syntax, is a new keyword and cannot be used as
+  variable identifier any more.</p>
+
+<h2>Semantics</h2>
+
+<p>A lexer defined in the syntax above is a shortcut version of a
+  parser applied to the specific case of streams of characters. It
+  could be written with a normal parser. The proposed syntax is much
+  shorter, easier to use and to understand, and silently takes care of
+  the lexing buffer for the programmer. The lexing buffers are data
+  structures, which are passed as parameters to called lexers and
+  returned by them.</p>
+
+<p>Our lexers are of the type:</p>
+
+<pre>
+  B.t -&gt; Stream.t char -&gt; u
+</pre>
+
+<p>where "<tt>u</tt>" is a type which depends on what the lexer
+  returns. If there is no semantic action (since it it optional), this
+  type is automatically "<tt>B.t</tt>".</p>
+
+<p>"<tt>B</tt>" is a module which must be defined by the user. It
+  must contain the lexing buffer type "<tt>t</tt>" and the
+  variables and functions:</p>
+
+<ul>
+  <li><tt>empty</tt>: the empty lexing buffer</li>
+  <li><tt>add</tt>: the way to add a character to a lexing buffer</li>
+  <li><tt>get</tt>: the way to get a string from the lexing buffer</li>
+</ul>
+
+<p>A possible implementation, using "<tt>list char</tt>" as lexing
+  buffer type ("<tt>B.t</tt>"), recording the characters at top of the
+  list (therefore creating a list in reverse order) could be:</p>
+
+<pre>
+  (* tool function, converting a reversed list of char into a string *)
+  value rev_implode cl =
+    let s = String.create (List.length cl) in
+    loop (String.length s - 1) cl where rec loop i =
+      fun
+      [ [c :: cl] -&gt; do { s.[i] := c; loop (i - 1) cl }
+      | [] -&gt; s ]
+   ;
+
+   (* the lexing buffer module *)
+   module B =
+     struct
+       type t = list char;
+       value empty = [];
+       value add c l = [c :: l];
+       value get = rev_implode;
+     end
+  ;
+</pre>
+
+<p>A lexer is a function with two parameters: the first one is the
+  lexing buffer itself, and the second one the stream. When called, it
+  tries to match the stream against its first rule. If it fails, it
+  tries its second rule, and so on, up to its last rule. If the last
+  rule fails, the lexer fails by raising the exception
+  "<tt>Stream.Failure</tt>". All of this is
+  the <a href="parsers.html">usual behaviour of stream
+  parsers</a>.</p>
+
+<p>In a rule, when a character is matched, it is inserted into the
+  lexing buffer, except if the "no record" feature is used (see
+  further).</p>
+
+<p>Rules which have no semantic action return the lexing buffer
+  itself.</p>
+
+<h3>Symbols</h3>
+
+<p>The different kinds or symbols in a rule are:</p>
+
+<ul>
+  <li>The token "underscore", which represents any character. Fails
+    only if the stream is empty.</li>
+  <li>A character which represents a matching of this character.</li>
+  <li>A character followed by the minus sign and by another character
+    which represent all characters in the range between the two
+    characters in question.</li>
+  <li>A string with represents a matching of all its characters, one
+    after the other.</li>
+  <li>An expression corresponding to a call to another lexer, which
+    takes the buffer as first parameter and returns another lexing
+    buffer with all characters found in the stream added to the
+    initial lexing buffer.</li>
+  <li>The sequence "<tt>?=</tt>" introducing lookahead
+    characters.</li>
+  <li>A rule, recursively, between brackets, inlining a lexer.</li>
+</ul>
+
+<p>In the cases matching characters (namely underscore, character,
+  characters range and string), the symbol can be optionally followed
+  by the character "slash" specifying that the found character(s) must
+  not be added into the lexing buffer. By default, they are. Useful,
+  for example, when writing a lexer parsing strings, when the initial
+  double quote and final double quote should be part of the string
+  itself.</p>
+
+<p>Moreover, a symbol can be followed by an optional error indicator,
+  which can be:</p>
+
+<ul>
+  <li>The character <tt>?</tt> (question mark) followed by a
+    string expression, telling that, if there is a syntax error at
+    this point (i.e. the symbol is not matched although the beginning
+    of the rule was), the exception <tt>Stream.Error</tt> is
+    raised with that string as parameter. Without this indicator, it
+    is raised with the empty string. This is the same behaviour than
+    with classical <a href="parsers.html">stream parsers</a>.</li>
+  <li>The character <tt>!</tt> (exclamation mark), which is just
+    an indicator to let the syntax expander optimize the code. If the
+    programmer is sure that the symbol never fails (i.e. never
+    raises <tt>Stream.Failure</tt>), in particular if this symbol
+    recognizes the empty rule, he can add this exclamation mark. If it
+    is used correctly (the compiler cannot check it), the behaviour is
+    identical as without the <tt>!</tt>, except that the code is
+    shorter and faster, and can sometimes be tail recursive. If the
+    indication is not correct, the behaviour of the lexer is
+    undefined. This feature exists also in classical stream parsers
+    (it is a new feature added in 2007).</li>
+</ul>
+
+<h3>Specific expressions</h3>
+
+<p>When loading this syntax extension, the
+  entry <tt>&lt;expression&gt;</tt>, at level labelled "simple" of the
+  OCaml language is extended with the following rules:</p>
+
+<ul>
+  <li><tt>$add</tt> followed by a string, specifing that the
+    programmer wants to add all characters of the string in the lexing
+    buffer. It returns the new lexing buffer. It corresponds to an
+    iteration of calls to <tt>B.add</tt> with all characters of
+    the string with the current lexing buffer as initial
+    parameter.</li>
+  <li><tt>$buf</tt> which returns the lexing buffer converted into
+    string.</li>
+  <li><tt>$empty</tt> which returns an empty lexing buffer.</li>
+  <li><tt>$pos</tt> which returns the current position of the
+    stream in number of characters (starting at zero).</li>
+</ul>
+
+<h3>Lookahead</h3>
+
+<p>Lookahead is useful in some cases, when factorization of rules is
+  impossible. To understand how it is useful, a first remark must be
+  done, about the usual behaviour of Camlp5 stream parsers.</p>
+
+<p>Stream parsers (including these lexers) use a limited parsing
+  algorithm, in a way that when the first symbol of a rule is matched,
+  all the following symbols of the same rule must apply, otherwise it
+  is a syntax error. There is no backtrack. In most of the cases, left
+  factorization of rules resolve conflicting problems. For example, in
+  parsers of tokens (which is not our case here, since we parse only
+  characters), when one writes a parser to recognize both typical
+  grammar rules "if..then..else" and the shorter "if..then..", the
+  system transforms them into a single rule starting with "if..then.."
+  followed by a call to a parser recognizing
+  "else.." <span class="u">or</span> nothing.</p>
+
+<p>Sometimes, however, this left factorization is not possible. A
+  lookahead of the stream to check the presence of some elements
+  (these elements being characters, if we are using this "lexer"
+  syntax) might be necessary to decide if is a good idea to start the
+  rule. This lookahead feature may unfreeze several characters from
+  the input stream but without removing them.</p>
+
+<p>Syntactically, a lookahead starts with <tt>?=</tt> and is
+  followed by one or several lookahead sequences separated by the
+  vertical bar <tt>|</tt>, the whole list being enclosed by
+  braces.</p>
+
+<p>If there are several lookaheads, they must all be of the same size
+  (contain the same number of characters).</p>
+
+<p>If the lookahead sequence is just a string, it corresponds to all
+  characters of this string in the order (which is different for
+  strings outside lookahead sequences, representing a choice of all
+  characters).</p>
+
+<p>Examples of lookaheads:</p>
+
+<pre>
+  ?= [ _ ''' | '\\' _ ]
+  ?= [ "&lt;&lt;" | "&lt;:" ]
+</pre>
+
+<p>The first line above matches a stream whose second character is a
+  quote or a stream whose first character is a backslash (real example
+  in the lexer of OCaml, in the library of Camlp5, named
+  "plexer.ml"). The second line matches a stream starting with the two
+  characters <tt>&lt;</tt> and <tt>&lt;</tt> or starting with
+  the two characters <tt>&lt;</tt> and <tt>:</tt> (this is
+  another example in the same file).</p>
+
+<h3>Semantic actions of rules</h3>
+
+<p>By default, the result of a "lexer" is the current lexing buffer,
+  which is of type "<tt>B.t</tt>". But it is possible to return
+  other values, by adding "<tt>-&gt;</tt>" at end of rules
+  followed by the expression you want to return, like in usual pattern
+  matching in OCaml.</p>
+
+<p>An interesting result, for example, could be the string
+  corresponding to the characters of the lexing buffer. This can be
+  obtained by returning the value "<tt>$buf</tt>".</p>
+
+<h3>A complete example</h3>
+
+<p>A complete example can be seen in the sources of Camlp5, file
+"lib/plexer.ml". This is the lexer of OCaml, either "normal" or
+"revised" syntax.</p>
+
+<h3>Compiling</h3>
+
+<p>To compile a file containing lexers, just
+  load <tt>pa_lexer.cmo</tt> using one of the following methods:</p>
+
+<ul>
+  <li>Either by adding <tt>pa_lexer.cmo</tt> among the Camlp5
+    options. See the Camlp5 manual page or documentation.</li>
+  <li>Or by adding <tt>#load "pa_lexer.cmo";</tt> anywhere in the
+    file, before the usages of this "lexer" syntax.</li>
+</ul>
+
+<h3>How to display the generated code</h3>
+
+<p>You can see the generated code, for a file "bar.ml" containing
+  lexers, by typing in a command line:</p>
+
+<pre>
+  camlp5r pa_lexer.cmo pr_r.cmo bar.ml
+</pre>
+
+<p>To see the equivalent code with stream parsers, use:</p>
+
+<pre>
+  camlp5r pa_lexer.cmo pr_r.cmo pr_rp.cmo bar.ml
+</pre>
+
+<div class="trailer">
+</div>
+
+</div>
+
+</body>
+</html>
