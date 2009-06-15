@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.86 2007/09/15 13:30:55 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.87 2007/09/15 16:58:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -1595,14 +1595,29 @@ do {
     call_with Plexer.force_antiquot_loc True
       (Grammar.Entry.parse expr_eoi) (Stream.of_string s)
   in
+  let patt_eoi = Grammar.Entry.create Pcaml.gram "patt_eoi" in
+  EXTEND
+    patt_eoi:
+      [ [ p = Pcaml.patt; EOI ->
+            let loc = Ploc.make_unlined (0, 0) in
+            if Pcaml.strict_mode.val then <:patt< Ploc.VaVal $anti:p$ >>
+            else <:patt< $anti:p$ >>
+        | a = ANTIQUOT_LOC; EOI ->
+            let loc = Ploc.make_unlined (0, 0) in
+            if Pcaml.strict_mode.val then
+              let a =
+                let i = String.index a ':' in
+                let i = String.index_from a (i + 1) ':' in
+                let a = String.sub a (i + 1) (String.length a - i - 1) in
+                Grammar.Entry.parse Pcaml.patt_eoi (Stream.of_string a)
+              in
+              <:patt< Ploc.VaAnt $anti:a$ >>
+            else <:patt< failwith "antiquot" >> ] ]
+    ;
+  END;
   let patt s =
-    let p =
-      call_with Plexer.force_antiquot_loc True
-        (Grammar.Entry.parse Pcaml.patt_eoi) (Stream.of_string s)
-    in
-    let loc = Ploc.make_unlined (0, 0) in
-    if Pcaml.strict_mode.val then <:patt< Ploc.VaVal $anti:p$ >>
-    else <:patt< $anti:p$ >>
+    call_with Plexer.force_antiquot_loc True
+      (Grammar.Entry.parse patt_eoi) (Stream.of_string s)
   in
   Quotation.add "vala" (Quotation.ExAst (expr, patt));
 };

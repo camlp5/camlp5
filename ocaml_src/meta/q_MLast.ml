@@ -4838,18 +4838,49 @@ let expr s =
   call_with Plexer.force_antiquot_loc true (Grammar.Entry.parse expr_eoi)
     (Stream.of_string s)
 in
+let patt_eoi = Grammar.Entry.create Pcaml.gram "patt_eoi" in
+Grammar.extend
+  [Grammar.Entry.obj (patt_eoi : 'patt_eoi Grammar.Entry.e), None,
+   [None, None,
+    [[Gramext.Stoken ("ANTIQUOT_LOC", ""); Gramext.Stoken ("EOI", "")],
+     Gramext.action
+       (fun _ (a : string) (loc : Ploc.t) ->
+          (let loc = Ploc.make_unlined (0, 0) in
+           if !(Pcaml.strict_mode) then
+             let a =
+               let i = String.index a ':' in
+               let i = String.index_from a (i + 1) ':' in
+               let a = String.sub a (i + 1) (String.length a - i - 1) in
+               Grammar.Entry.parse Pcaml.patt_eoi (Stream.of_string a)
+             in
+             MLast.PaApp
+               (loc,
+                MLast.PaAcc
+                  (loc, MLast.PaUid (loc, "Ploc"),
+                   MLast.PaUid (loc, "VaAnt")),
+                MLast.PaAnt (loc, a))
+           else
+             MLast.PaApp
+               (loc, MLast.PaLid (loc, "failwith"),
+                MLast.PaStr (loc, "antiquot")) :
+           'patt_eoi));
+     [Gramext.Snterm
+        (Grammar.Entry.obj (Pcaml.patt : 'Pcaml__patt Grammar.Entry.e));
+      Gramext.Stoken ("EOI", "")],
+     Gramext.action
+       (fun _ (p : 'Pcaml__patt) (loc : Ploc.t) ->
+          (let loc = Ploc.make_unlined (0, 0) in
+           if !(Pcaml.strict_mode) then
+             MLast.PaApp
+               (loc,
+                MLast.PaAcc
+                  (loc, MLast.PaUid (loc, "Ploc"),
+                   MLast.PaUid (loc, "VaVal")),
+                MLast.PaAnt (loc, p))
+           else MLast.PaAnt (loc, p) :
+           'patt_eoi))]]];
 let patt s =
-  let p =
-    call_with Plexer.force_antiquot_loc true
-      (Grammar.Entry.parse Pcaml.patt_eoi) (Stream.of_string s)
-  in
-  let loc = Ploc.make_unlined (0, 0) in
-  if !(Pcaml.strict_mode) then
-    MLast.PaApp
-      (loc,
-       MLast.PaAcc
-         (loc, MLast.PaUid (loc, "Ploc"), MLast.PaUid (loc, "VaVal")),
-       MLast.PaAnt (loc, p))
-  else MLast.PaAnt (loc, p)
+  call_with Plexer.force_antiquot_loc true (Grammar.Entry.parse patt_eoi)
+    (Stream.of_string s)
 in
 Quotation.add "vala" (Quotation.ExAst (expr, patt));;
