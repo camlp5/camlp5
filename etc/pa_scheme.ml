@@ -1,8 +1,9 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.68 2007/10/10 01:29:01 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.69 2007/10/10 19:34:37 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
+(open Exparser)
 
 (type (choice 'a 'b) (sum (Left 'a) (Right 'b)))
 
@@ -770,29 +771,22 @@
               (_ <:vala< (List.map (match_case loc) sel) >>))))
         <:expr< match $e$ with [ $_list:pel$ ] >>))
     ((Sexpr loc [(Slid _ "parser") . sel])
-     (let ((e
-             (match sel
-              ([(as (Slid _ _) se) . sel]
-               (let* ((p (patt_se se))
-                      (pc (parser_cases_se loc sel)))
-                  <:expr< let $p$ = Stream.count $lid:strm_n$ in $pc$ >>))
-              (_ (parser_cases_se loc sel)))))
-        <:expr< fun ($lid:strm_n$ : Stream.t _) -> $e$ >>))
+     (let*
+      (((values po sel)
+        (match sel
+         ([(as (Slid _ _) se) . sel] (values (Some (patt_se se)) sel))
+         (sel (values None sel))))
+       (pcl (List.map parser_case_se sel)))
+      (Exparser.cparser loc po pcl)))
     ((Sexpr loc [(Slid _ "match_with_parser") se . sel])
-     (let* ((me (expr_se se))
-            ((values bpo sel)
-              (match sel
-               ([(as (Slid _ _) se) . sel] (values (Some (patt_se se)) sel))
-               (_ (values None sel))))
-            (pc (parser_cases_se loc sel))
-            (e
-              (match bpo
-               ((Some bp)
-                <:expr< let $bp$ = Stream.count $lid:strm_n$ in $pc$ >>)
-               (None pc))))
-        (match me
-         ((when <:expr< $lid:x$ >> (= x strm_n)) e)
-         (_ <:expr< let ($lid:strm_n$ : Stream.t _) = $me$ in $e$ >>))))
+     (let*
+      ((e (expr_se se))
+       ((values po sel)
+        (match sel
+         ([(as (Slid _ _) se) . sel] (values (Some (patt_se se)) sel))
+         (sel (values None sel))))
+       (pcl (List.map parser_case_se sel)))
+      (Exparser.cparser_match loc e po pcl)))
     ((Sexpr loc [(Slid _ "try") se . sel])
      (let* ((e (expr_se se))
             (pel
@@ -902,55 +896,40 @@
    (lambda_match
     ((Sexpr _ [se1 se2]) (values (ipatt_se se1) (ipatt_se se2)))
     (se (error se "label_ipatt"))))
-  ((parser_cases_se loc)
+  (parser_case_se
    (lambda_match
-    ([] <:expr< raise Stream.Failure >>)
-    ([(Sexpr loc [(Sexpr _ spsel) . act]) . sel]
-      (let* ((ekont (lambda _ (parser_cases_se loc sel)))
-             (act (match act
-                         ([se] (expr_se se))
-                         ([sep se]
-                               (let* ((p (patt_se sep))
-                                      (e (expr_se se)))
-                        <:expr< let $p$ = Stream.count $lid:strm_n$ in $e$ >>))
-                         (_ (error_loc loc "parser_case")))))
-        (stream_pattern_se loc act ekont spsel)))
-    ([se . _]
-         (error se "parser_case"))))
-  ((stream_pattern_se loc act ekont)
+    ((Sexpr _ [(Sexpr _ sel) se1 se2])
+     (let*
+      ((sp (stream_patt_se sel))
+       (po (Some (ipatt_se se1)))
+       (e (expr_se se2)))
+      (values sp po e)))
+    ((Sexpr _ [(Sexpr _ sel) se])
+     (let*
+      ((sp (stream_patt_se sel))
+       (e (expr_se se)))
+      (values sp None e)))
+    (se (error se "parser_case"))))
+  (stream_patt_se
    (lambda_match
-    ([] act)
     ([se . sel]
-         (let* ((ckont (lambda err <:expr< raise (Stream.Error $err$) >>))
-                (skont (stream_pattern_se loc act ckont sel)))
-           (stream_pattern_component skont ekont <:expr< "" >> se)))))
-  ((stream_pattern_component skont ekont err)
+     (let* ((spc (stream_patt_comp_se se)) (sp (stream_patt_kont_se sel)))
+      [(values spc SpoNoth) . sp]))
+    ([] [])))
+  (stream_patt_kont_se
    (lambda_match
-    ((Sexpr loc [(Slid _ "`") se . wol])
-     (let* ((wo (match wol
-                       ([se] (Some (expr_se se)))
-                       ([] None)
-                       (_ (error_loc loc "stream_pattern_component"))))
-            (e (peek_fun loc))
-            (p (patt_se se))
-            (j (junk_fun loc))
-            (k (ekont err)))
-       <:expr< match $e$ $lid:strm_n$ with
-               [ Some $p$ $opt:wo$ -> do { $j$ $lid:strm_n$ ; $skont$ }
-               | _ -> $k$ ] >>))
-    ((Sexpr loc [se1 se2])
-     (let* ((p (patt_se se1))
-            (e (let ((e (expr_se se2)))
-       <:expr< try Some ($e$ $lid:strm_n$) with [ Stream.Failure -> None ] >>))
-            (k (ekont err)))
-       <:expr< match $e$ with [ Some $p$ -> $skont$ | _ -> $k$ ] >>))
-    ((Sexpr loc [(Slid _ "?") se1 se2])
-     (stream_pattern_component skont ekont (expr_se se2) se1))
-    ((Slid loc s)
-     (let ((s (rename_id s)))
-        <:expr< let $lid:s$ = $lid:strm_n$ in $skont$ >>))
-    (se
-     (error se "stream_pattern_component"))))
+    ([se ! . sel]
+     (let* ((spc (stream_patt_comp_se se)) (sp (stream_patt_kont_se sel)))
+      [(values spc SpoBang) . sp]))
+    ([se . sel]
+     (let* ((spc (stream_patt_comp_se se)) (sp (stream_patt_kont_se sel)))
+      [(values spc SpoNoth) . sp]))
+    ([] [])))
+  (stream_patt_comp_se
+   (lambda_match
+    ((Sexpr loc [(Slid _ "`") se]) (SpTrm loc (patt_se se) <:vala< None >>))
+    ((Sexpr loc [se1 se2]) (SpNtr loc (patt_se se1) (expr_se se2)))
+    (se (error se "not_impl stream_patt_comp_se"))))
   (patt_se
    (lambda_match
     ((Sacc loc se1 se2)

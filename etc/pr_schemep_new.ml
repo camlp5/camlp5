@@ -415,27 +415,29 @@ value parser_case force_vertic pc (sp, po, e) =
         (fun () ->
            let s1 =
              stream_patt
-               {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+               {(pc) with ind = pc.ind + 1; bef = sprintf "%s((" pc.bef;
                 aft = sprintf ")%s" (ident_option po)}
                sp
            in
            let s2 =
-             expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
+             expr
+               {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+                aft = sprintf ")%s" pc.aft}
+               e
            in
            sprintf "%s\n%s" s1 s2) ]
 ;
 
 value flag_equilibrate_cases = Pcaml.flag_equilibrate_cases;
 
-value parser_body pc (po, spel) =
-  let s1 = ident_option po in
+value parser_body pc spel =
   let s2o =
     match spel with
     [ [spe] ->
         horiz_vertic
           (fun () ->
              let s =
-               sprintf "%s%s %s%s" pc.bef s1
+               sprintf "%s%s%s" pc.bef
                  (parser_case False {(pc) with bef = ""; aft = ""} spe) pc.aft
              in
              Some s)
@@ -447,9 +449,7 @@ value parser_body pc (po, spel) =
   | None ->
       match spel with
       [ [] -> sprintf "%s%s" pc.bef pc.aft
-      | [spe] ->
-          let s2 = parser_case False {(pc) with bef = tab pc.ind} spe in
-          sprintf "%s%s\n%s" pc.bef s1 s2
+      | [spe] -> parser_case False pc spe
       | _ ->
           let force_vertic =
             if flag_equilibrate_cases.val then
@@ -466,34 +466,46 @@ value parser_body pc (po, spel) =
               has_vertic
             else False
           in
-          let s2 =
-            vlist (parser_case force_vertic) {(pc) with bef = tab pc.ind}
-              spel
-          in
-          sprintf "%s%s\n%s" pc.bef s1 s2 ] ]
+          vlist (parser_case force_vertic) pc spel ] ]
 ;
 
 value print_parser pc e =
   match e with
   [ <:expr< fun (strm__ : Stream.t _) -> $e$ >> ->
-      let pa = unparser_body e in
-      parser_body
+      let (po, spel) = unparser_body e in
+      let pc =
         {(pc) with ind = pc.ind + 1;
-         bef = sprintf "%s(parser" pc.bef; aft = sprintf ")%s" pc.aft}
-        pa
+         bef = sprintf "%s(parser" pc.bef;
+         aft = sprintf ")%s" pc.aft}
+      in
+      match spel with
+      [ [] -> sprintf "%s%s" pc.bef pc.aft
+      | _ ->
+          match po with
+          [ Some s ->
+              plistbf 0 pc
+                [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
+                 (fun pc -> parser_body pc spel, "")]
+          | None ->
+              plistbf 0 pc [(fun pc -> parser_body pc spel, "")] ] ]
   | e -> expr pc e ]
 ;
 
 value print_match_with_parser pc e =
   match e with
   [ <:expr< let (strm__ : Stream.t _) = $e1$ in $e2$ >> ->
-      let pa = unparser_body e2 in
+      let (po, spel) = unparser_body e2 in
+      let fl =
+        let fl = [(fun pc -> parser_body pc spel, "")] in
+        match po with
+        [ Some s -> [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "") :: fl]
+        | None -> fl ]
+      in
       plistbf 0
         {(pc) with ind = pc.ind + 1;
          bef = sprintf "%s(match_with_parser" pc.bef;
          aft = sprintf ")%s" pc.aft}
-        [(fun pc -> expr pc e1, "");
-         (fun pc -> parser_body pc pa, "")]
+        [(fun pc -> expr pc e1, "") :: fl]
   | e -> expr pc e ]
 ;
 
