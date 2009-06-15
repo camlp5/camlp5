@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extend.ml,v 1.51 2007/10/02 02:57:06 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.52 2007/10/07 10:07:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -416,8 +416,9 @@ and symbol pc sy =
       | None -> simple_symbol pc sy ]
   | Stoken tok -> token pc tok
   | Svala sl _ sy ->
-      sprintf "%sV %s%s%s" pc.bef (symbol {(pc) with bef = ""; aft = ""} sy)
-        (string_list sl) pc.aft
+      sprintf "%sV %s%s%s" pc.bef
+        (simple_symbol {(pc) with bef = ""; aft = ""} sy) (string_list sl)
+        pc.aft
   | sy -> simple_symbol pc sy ]
 and simple_symbol pc sy =
   match sy with
