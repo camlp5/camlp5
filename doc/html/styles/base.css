@@ -1,4 +1,4 @@
-/* $Id: base.css,v 1.28 2007/07/29 00:48:19 deraugla Exp $ */
+/* $Id: base.css,v 1.29 2007/07/29 02:17:18 deraugla Exp $ */
 
 body { margin: 0 0 1px 0; background-color: rgb(189,225,255) }
 body { border: 0 }
@@ -14,13 +14,20 @@ body { border: 0 }
 #tableofcontents ul { margin-left: 2mm }
 #tableofcontents li ul { margin-left: 0 }
 
-#content { margin-left: 20%; padding: 0 5mm; background-color: white }
+#content { margin-left: 20.1%; padding: 0 5mm; background-color: white }
 #content { border: 1px solid }
 #content ul { margin-left: 1cm }
 #content ul ul { margin-left: 2mm }
 #content dl ul { margin-left: 2mm }
 #content p { text-align: justify }
 #content li { text-align: justify }
+
+#menu:target { position: relative; float: left }
+#menu:target { background-color: rgb(189,225,255) }
+
+#menumove { float: right; margin: 1mm; font-size: 80% }
+#menumove a { text-decoration: none }
+#menumove a:hover { text-decoration: underline overline }
 
 body { counter-reset: h2cnt }
 
@@ -67,6 +74,7 @@ dl { margin-left: 1cm }
 @media print {
   body { background-color: white; border: 0 }
   #menu { display: none }
+  #menumove { display: none }
   #content { margin: 0; border: 0 }
   #tableofcontents { display: none }
   .trailer img { display: none }
