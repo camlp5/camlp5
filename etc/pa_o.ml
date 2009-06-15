@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.57 2007/09/18 18:20:50 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.58 2007/09/18 18:47:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -38,12 +38,6 @@ do {
 Pcaml.parse_interf.val := Grammar.Entry.parse interf;
 Pcaml.parse_implem.val := Grammar.Entry.parse implem;
 
-value o2b =
-  fun
-  [ Some _ -> True
-  | None -> False ]
-;
-      
 value neg_string n =
   let len = String.length n in
   if len > 0 && n.[0] = '-' then String.sub n 1 (len - 1) else "-" ^ n
@@ -1030,7 +1024,7 @@ EXTEND
   (* Core types *)
   ctyp: LEVEL "simple"
     [ [ "#"; id = class_longident -> <:ctyp< # $list:id$ >>
-      | "<"; (ml, v) = meth_list; ">" -> <:ctyp< < $list:ml$ $opt:v$ > >>
+      | "<"; (ml, v) = meth_list; ">" -> <:ctyp< < $list:ml$ $flag:v$ > >>
       | "<"; ">" -> <:ctyp< < > >> ] ]
   ;
   meth_list:
@@ -1063,9 +1057,9 @@ EXTEND
   (* Labels *)
   ctyp: AFTER "arrow"
     [ NONA
-      [ i = LIDENT; ":"; t = SELF -> <:ctyp< ~ $i$ : $t$ >>
-      | i = QUESTIONIDENTCOLON; t = SELF -> <:ctyp< ? $i$ : $t$ >>
-      | i = QUESTIONIDENT; ":"; t = SELF -> <:ctyp< ? $i$ : $t$ >> ] ]
+      [ i = LIDENT; ":"; t = SELF -> <:ctyp< ~$i$: $t$ >>
+      | i = QUESTIONIDENTCOLON; t = SELF -> <:ctyp< ?$i$: $t$ >>
+      | i = QUESTIONIDENT; ":"; t = SELF -> <:ctyp< ?$i$: $t$ >> ] ]
   ;
   ctyp: LEVEL "simple"
     [ [ "["; OPT "|"; rfl = LIST1 poly_variant SEP "|"; "]" ->
@@ -1081,8 +1075,8 @@ EXTEND
   ;
   poly_variant:
     [ [ "`"; i = ident -> <:poly_variant< ` $i$ >>
-      | "`"; i = ident; "of"; ao = OPT "&"; l = LIST1 ctyp SEP "&" ->
-          <:poly_variant< `$i$ of $opt:o2b ao$ $list:l$ >>
+      | "`"; i = ident; "of"; ao = FLAG "&"; l = LIST1 ctyp SEP "&" ->
+          <:poly_variant< `$i$ of $flag:ao$ $list:l$ >>
       | t = ctyp -> MLast.PvInh t ] ]
   ;
   name_tag:
@@ -1093,10 +1087,10 @@ EXTEND
   ;
   expr: AFTER "apply"
     [ "label"
-      [ i = TILDEIDENTCOLON; e = SELF -> <:expr< ~ $i$ : $e$ >>
-      | i = TILDEIDENT -> <:expr< ~ $i$ >>
-      | i = QUESTIONIDENTCOLON; e = SELF -> <:expr< ? $i$ : $e$ >>
-      | i = QUESTIONIDENT -> <:expr< ? $i$ >> ] ]
+      [ i = TILDEIDENTCOLON; e = SELF -> <:expr< ~$i$: $e$ >>
+      | i = TILDEIDENT -> <:expr< ~$i$ >>
+      | i = QUESTIONIDENTCOLON; e = SELF -> <:expr< ?$i$: $e$ >>
+      | i = QUESTIONIDENT -> <:expr< ?$i$ >> ] ]
   ;
   expr: LEVEL "simple"
     [ [ "`"; s = ident -> <:expr< ` $s$ >> ] ]
@@ -1113,41 +1107,41 @@ EXTEND
   ;
   labeled_patt:
     [ [ i = TILDEIDENTCOLON; p = patt LEVEL "simple" ->
-           <:patt< ~ $i$ : $p$ >>
+           <:patt< ~$i$: $p$ >>
       | i = TILDEIDENT ->
-           <:patt< ~ $i$ >>
+           <:patt< ~$i$ >>
       | "~"; "("; i = LIDENT; ")" ->
-           <:patt< ~ $i$ >>
+           <:patt< ~$i$ >>
       | "~"; "("; i = LIDENT; ":"; t = ctyp; ")" ->
-           <:patt< ~ $i$ : ($lid:i$ : $t$) >>
+           <:patt< ~$i$: ($lid:i$ : $t$) >>
       | i = QUESTIONIDENTCOLON; j = LIDENT ->
-           <:patt< ? $i$ : ($lid:j$) >>
+           <:patt< ?$i$: ($lid:j$) >>
       | i = QUESTIONIDENTCOLON; "("; p = patt; "="; e = expr; ")" ->
-          <:patt< ? $i$ : ( $p$ = $e$ ) >>
+          <:patt< ?$i$: ( $p$ = $e$ ) >>
       | i = QUESTIONIDENTCOLON; "("; p = patt; ":"; t = ctyp; ")" ->
-          <:patt< ? $i$ : ( $p$ : $t$ ) >>
+          <:patt< ?$i$: ( $p$ : $t$ ) >>
       | i = QUESTIONIDENTCOLON; "("; p = patt; ":"; t = ctyp; "=";
         e = expr; ")" ->
-          <:patt< ? $i$ : ( $p$ : $t$ = $e$ ) >>
+          <:patt< ?$i$: ( $p$ : $t$ = $e$ ) >>
       | i = QUESTIONIDENTCOLON; "("; p = patt; ")" ->
-          <:patt< ? $i$ : ( $p$ ) >>
-      | i = QUESTIONIDENT -> <:patt< ? $i$ >>
+          <:patt< ?$i$: ( $p$ ) >>
+      | i = QUESTIONIDENT -> <:patt< ?$i$ >>
       | "?"; "("; i = LIDENT; "="; e = expr; ")" ->
           <:patt< ? ( $lid:i$ = $e$ ) >>
       | "?"; "("; i = LIDENT; ":"; t = ctyp; "="; e = expr; ")" ->
           <:patt< ? ( $lid:i$ : $t$ = $e$ ) >>
       | "?"; "("; i = LIDENT; ")" ->
-          <:patt< ? $i$ >>
+          <:patt< ?$i$ >>
       | "?"; "("; i = LIDENT; ":"; t = ctyp; ")" ->
           <:patt< ? ( $lid:i$ : $t$ ) >> ] ]
   ;
   class_type:
     [ [ i = LIDENT; ":"; t = ctyp LEVEL "apply"; "->"; ct = SELF ->
-          <:class_type< [ ~ $i$ : $t$ ] -> $ct$ >>
+          <:class_type< [ ~$i$: $t$ ] -> $ct$ >>
       | i = QUESTIONIDENTCOLON; t = ctyp LEVEL "apply"; "->"; ct = SELF ->
-          <:class_type< [ ? $i$ : $t$ ] -> $ct$ >>
+          <:class_type< [ ?$i$: $t$ ] -> $ct$ >>
       | i = QUESTIONIDENT; ":"; t = ctyp LEVEL "apply"; "->"; ct = SELF ->
-          <:class_type< [ ? $i$ : $t$ ] -> $ct$ >> ] ]
+          <:class_type< [ ?$i$: $t$ ] -> $ct$ >> ] ]
   ;
   class_fun_binding:
     [ [ p = labeled_patt; cfb = SELF -> <:class_expr< fun $p$ -> $cfb$ >> ] ]
@@ -1167,7 +1161,7 @@ EXTEND
   interf:
     [ [ si = sig_item_semi; (sil, stopped) = SELF -> ([si :: sil], stopped)
       | "#"; n = LIDENT; dp = OPT expr; ";;" ->
-          ([(<:sig_item< # $n$ $opt:dp$ >>, loc)], True)
+          ([(<:sig_item< # $lid:n$ $opt:dp$ >>, loc)], True)
       | EOI -> ([], False) ] ]
   ;
   sig_item_semi:
@@ -1176,7 +1170,7 @@ EXTEND
   implem:
     [ [ si = str_item_semi; (sil, stopped) = SELF -> ([si :: sil], stopped)
       | "#"; n = LIDENT; dp = OPT expr; ";;" ->
-          ([(<:str_item< # $n$ $opt:dp$ >>, loc)], True)
+          ([(<:str_item< # $lid:n$ $opt:dp$ >>, loc)], True)
       | EOI -> ([], False) ] ]
   ;
   str_item_semi:
@@ -1190,12 +1184,13 @@ EXTEND
     [ [ si = str_item; OPT ";;"; (sil, stopped) = SELF ->
           ([si :: sil], stopped)
       | "#"; n = LIDENT; dp = OPT expr; ";;" ->
-          ([<:str_item< # $n$ $opt:dp$ >>], True)
+          ([<:str_item< # $lid:n$ $opt:dp$ >>], True)
       | EOI -> ([], False) ] ]
   ;
   phrase:
     [ [ sti = str_item -> sti
-      | "#"; n = LIDENT; dp = OPT expr -> <:str_item< # $n$ $opt:dp$ >> ] ]
+      | "#"; n = LIDENT; dp = OPT expr ->
+          <:str_item< # $lid:n$ $opt:dp$ >> ] ]
   ;
 END;
 

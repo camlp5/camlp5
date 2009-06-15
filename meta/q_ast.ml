@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: q_ast.ml,v 1.87 2007/09/18 15:40:03 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.88 2007/09/18 18:47:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* AST quotations with works by running the language parser (and its possible
@@ -658,7 +658,6 @@ EXTEND
 END;
 
 IFDEF STRICT THEN
-  let ipatt = Grammar.Entry.find Pcaml.expr "ipatt" in
   EXTEND
     Pcaml.expr: LAST
       [ [ s = ANTIQUOT_LOC "" -> MLast.ExXtr loc s None
@@ -668,8 +667,8 @@ IFDEF STRICT THEN
       [ [ s = ANTIQUOT_LOC "" -> MLast.PaXtr loc s None
         | s = ANTIQUOT_LOC "anti" -> MLast.PaXtr loc s None ] ]
     ;
-    ipatt: LAST
-      [ [ s = ANTIQUOT_LOC "" -> Obj.repr (MLast.PaXtr loc s None) ] ]
+    Pcaml.ipatt: LAST
+      [ [ s = ANTIQUOT_LOC "" -> MLast.PaXtr loc s None ] ]
     ;
     Pcaml.ctyp: LAST
       [ [ s = ANTIQUOT_LOC -> MLast.TyXtr loc s None ] ]

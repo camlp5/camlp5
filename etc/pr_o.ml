@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.96 2007/09/18 18:20:50 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.97 2007/09/18 18:47:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -2453,7 +2453,7 @@ value variant_decl pc pv =
   match pv with
   [ <:poly_variant< `$c$ >> ->
        sprintf "%s`%s%s" pc.bef c pc.aft
-  | <:poly_variant< `$c$ of $opt:ao$ $list:tl$ >> ->
+  | <:poly_variant< `$c$ of $flag:ao$ $list:tl$ >> ->
        horiz_vertic
          (fun () ->
             sprintf "%s`%s of %s%s%s" pc.bef c (if ao then "& " else "")
@@ -2585,7 +2585,7 @@ value class_object pc (csp, csl) =
 
 EXTEND_PRINTER
   pr_patt: LEVEL "simple"
-    [ [ <:patt< ? $s$ >> -> sprintf "%s?%s%s" pc.bef s pc.aft
+    [ [ <:patt< ?$s$ >> -> sprintf "%s?%s%s" pc.bef s pc.aft
       | <:patt< ? ($p$ $opt:eo$) >> ->
           horiz_vertic
             (fun () ->
@@ -2597,7 +2597,7 @@ EXTEND_PRINTER
                   | None -> "" ])
                  pc.aft)
             (fun () -> not_impl "patt ?(p=e) vertic" pc p)
-      | <:patt< ? $i$ : ($p$ $opt:eo$) >> ->
+      | <:patt< ?$i$: ($p$ $opt:eo$) >> ->
           horiz_vertic
             (fun () ->
                sprintf "%s?%s:(%s%s)%s" pc.bef i
@@ -2608,11 +2608,11 @@ EXTEND_PRINTER
                   | None -> "" ])
                  pc.aft)
             (fun () -> not_impl "patt ?i:(p=e) vertic" pc i)
-      | <:patt< ~ $s$ >> ->
+      | <:patt< ~$s$ >> ->
           sprintf "%s~%s%s" pc.bef s pc.aft
-      | <:patt< ~ $s$ : $p$ >> ->
+      | <:patt< ~$s$: $p$ >> ->
           curr {(pc) with bef = sprintf "%s~%s:" pc.bef s} p
-      | <:patt< `$uid:s$ >> ->
+      | <:patt< `$s$ >> ->
           sprintf "%s`%s%s" pc.bef s pc.aft
       | <:patt< # $list:sl$ >> ->
           mod_ident {(pc) with bef = sprintf "%s#" pc.bef} sl ] ]
@@ -2628,7 +2628,7 @@ EXTEND_PRINTER
           class_object pc (csp, csl) ] ]
   ;
   pr_expr: LEVEL "dot"
-    [ [ <:expr< $e$ # $s$ >> ->
+    [ [ <:expr< $e$ # $lid:s$ >> ->
           horiz_vertic
             (fun () ->
                sprintf "%s%s#%s%s" pc.bef
@@ -2685,7 +2685,7 @@ EXTEND_PRINTER
               {(pc) with bef = sprintf "%s{< " pc.bef;
                aft = sprintf " >}%s" pc.aft}
               fel
-      | <:expr< `$uid:s$ >> ->
+      | <:expr< `$s$ >> ->
           sprintf "%s`%s%s" pc.bef s pc.aft
       | <:expr< new $list:_$ >> | <:expr< object $list:_$ end >> as z ->
           expr
@@ -2694,7 +2694,7 @@ EXTEND_PRINTER
             z ] ]
   ;
   pr_ctyp: LEVEL "simple"
-    [ [ <:ctyp< < $list:ml$ $opt:v$ > >> ->
+    [ [ <:ctyp< < $list:ml$ $flag:v$ > >> ->
           if ml = [] then
             sprintf "%s<%s >%s" pc.bef (if v then " .." else "") pc.aft
           else
@@ -2789,12 +2789,12 @@ value poly_type pc =
 EXTEND_PRINTER
   pr_expr: AFTER "apply"
     [ "label"
-      [ <:expr< ? $s$ >> -> sprintf "%s?%s%s" pc.bef s pc.aft
-      | <:expr< ? $i$ : $e$ >> ->
+      [ <:expr< ?$s$ >> -> sprintf "%s?%s%s" pc.bef s pc.aft
+      | <:expr< ?$i$: $e$ >> ->
           curr {(pc) with bef = sprintf "%s?%s:" pc.bef i} e
-      | <:expr< ~ $s$ >> ->
+      | <:expr< ~$s$ >> ->
           sprintf "%s~%s%s" pc.bef s pc.aft
-      | <:expr< ~ $s$ : $e$ >> ->
+      | <:expr< ~$s$: $e$ >> ->
           Eprinter.apply_level pr_expr "dot"
             {(pc) with bef = sprintf "%s~%s:" pc.bef s} e ] ]
   ;
@@ -2812,9 +2812,9 @@ EXTEND_PRINTER
   ;
   pr_ctyp: AFTER "arrow"
     [ "label"
-      [ <:ctyp< ? $i$ : $t$ >> ->
+      [ <:ctyp< ?$i$: $t$ >> ->
           curr {(pc) with bef = sprintf "%s?%s:" pc.bef i} t
-      | <:ctyp< ~ $i$ : $t$ >> ->
+      | <:ctyp< ~$i$: $t$ >> ->
           curr {(pc) with bef = sprintf "%s%s:" pc.bef i} t ] ]
   ;
   pr_class_expr:
@@ -2833,7 +2833,7 @@ EXTEND_PRINTER
                  curr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} ce
                in
                sprintf "%s\n%s" s1 s2)
-      | <:class_expr< let $opt:rf$ $list:pel$ in $ce$ >> ->
+      | <:class_expr< let $flag:rf$ $list:pel$ in $ce$ >> ->
           horiz_vertic
             (fun () ->
                let s1 =
@@ -2976,11 +2976,11 @@ EXTEND_PRINTER
                sprintf "%sinherit %s%s" pc.bef
                  (class_type {(pc) with bef = ""; aft = ""} ct) pc.aft)
             (fun () -> not_impl "class_sig_item inherit vertic" pc ct)
-      | <:class_sig_item< method $opt:priv$ $s$ : $t$ >> ->
+      | <:class_sig_item< method $flag:priv$ $lid:s$ : $t$ >> ->
           sig_method_or_method_virtual pc "" priv s t
-      | <:class_sig_item< method virtual $opt:priv$ $s$ : $t$ >> ->
+      | <:class_sig_item< method virtual $flag:priv$ $lid:s$ : $t$ >> ->
           sig_method_or_method_virtual pc " virtual" priv s t
-      | <:class_sig_item< value $opt:mf$ $s$ : $t$ >> ->
+      | <:class_sig_item< value $flag:mf$ $lid:s$ : $t$ >> ->
           horiz_vertic
             (fun () ->
                sprintf "%sval%s %s : %s%s" pc.bef
@@ -3019,9 +3019,9 @@ EXTEND_PRINTER
                  expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
                in
                sprintf "%s\n%s" s1 s2)
-      | <:class_str_item< method virtual $opt:priv$ $s$ : $t$ >> ->
+      | <:class_str_item< method virtual $flag:priv$ $lid:s$ : $t$ >> ->
           sig_method_or_method_virtual pc " virtual" priv s t
-      | <:class_str_item< method $opt:priv$ $s$ $opt:topt$ = $e$ >> ->
+      | <:class_str_item< method $flag:priv$ $lid:s$ $opt:topt$ = $e$ >> ->
           let (pl, e) =
             match topt with
             [ Some _ -> ([], e)
@@ -3078,7 +3078,7 @@ EXTEND_PRINTER
                  (ctyp {(pc) with bef = ""; aft = ""} t1)
                  (ctyp {(pc) with bef = ""; aft = ""} t2) pc.aft)
             (fun () -> not_impl "class_str_item type vertic" pc t1)
-      | <:class_str_item< value $opt:mf$ $s$ = $e$ >> ->
+      | <:class_str_item< value $flag:mf$ $lid:s$ = $e$ >> ->
           horiz_vertic
             (fun () ->
                sprintf "%sval%s %s = %s%s" pc.bef

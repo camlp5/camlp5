@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.46 2007/09/18 18:20:50 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.47 2007/09/18 18:47:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -466,7 +466,7 @@ EXTEND_PRINTER
           curr {(pc) with bef = sprintf "%s?%s:" pc.bef i} t
       | <:ctyp< ~$i$: $t$ >> ->
           curr {(pc) with bef = sprintf "%s~%s:" pc.bef i} t
-      | <:ctyp< < $list:ml$ $opt:v$ > >> ->
+      | <:ctyp< < $list:ml$ $flag:v$ > >> ->
           if ml = [] then
             sprintf "%s<%s >%s" pc.bef (if v then " .." else "") pc.aft
           else
@@ -536,7 +536,7 @@ EXTEND_PRINTER
                  curr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} ce
                in
                sprintf "%s\n%s" s1 s2)
-      | <:class_expr< let $opt:rf$ $list:pel$ in $ce$ >> ->
+      | <:class_expr< let $flag:rf$ $list:pel$ in $ce$ >> ->
           horiz_vertic
             (fun () ->
                let s1 =
@@ -678,11 +678,11 @@ EXTEND_PRINTER
                sprintf "%sinherit %s%s" pc.bef
                  (class_type {(pc) with bef = ""; aft = ""} ct) pc.aft)
             (fun () -> not_impl "class_sig_item inherit vertic" pc ct)
-      | <:class_sig_item< method $opt:priv$ $s$ : $t$ >> ->
+      | <:class_sig_item< method $flag:priv$ $lid:s$ : $t$ >> ->
           sig_method_or_method_virtual pc "" priv s t
-      | <:class_sig_item< method virtual $opt:priv$ $s$ : $t$ >> ->
+      | <:class_sig_item< method virtual $flag:priv$ $lid:s$ : $t$ >> ->
           sig_method_or_method_virtual pc " virtual" priv s t
-      | <:class_sig_item< value $opt:mf$ $s$ : $t$ >> ->
+      | <:class_sig_item< value $flag:mf$ $lid:s$ : $t$ >> ->
           horiz_vertic
             (fun () ->
                sprintf "%svalue%s %s : %s%s" pc.bef
@@ -722,9 +722,9 @@ EXTEND_PRINTER
                  expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
                in
                sprintf "%s\n%s" s1 s2)
-      | <:class_str_item< method virtual $opt:priv$ $s$ : $t$ >> ->
+      | <:class_str_item< method virtual $flag:priv$ $lid:s$ : $t$ >> ->
           sig_method_or_method_virtual pc " virtual" priv s t
-      | <:class_str_item< method $opt:priv$ $s$ $opt:topt$ = $e$ >> ->
+      | <:class_str_item< method $flag:priv$ $lid:s$ $opt:topt$ = $e$ >> ->
           let (pl, e) =
             match topt with
             [ Some _ -> ([], e)
@@ -779,7 +779,7 @@ EXTEND_PRINTER
                  (ctyp {(pc) with bef = ""; aft = ""} t1)
                  (ctyp {(pc) with bef = ""; aft = ""} t2) pc.aft)
             (fun () -> not_impl "class_str_item type vertic" pc t1)
-      | <:class_str_item< value $opt:mf$ $s$ = $e$ >> ->
+      | <:class_str_item< value $flag:mf$ $lid:s$ = $e$ >> ->
           horiz_vertic
             (fun () ->
                sprintf "%svalue%s %s = %s%s" pc.bef
