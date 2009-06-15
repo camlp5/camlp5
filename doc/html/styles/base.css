@@ -1,4 +1,4 @@
-/* $Id: base.css,v 1.31 2007/08/05 16:27:59 deraugla Exp $ */
+/* $Id: base.css,v 1.32 2007/08/17 16:21:55 deraugla Exp $ */
 
 body { margin: 0 0 1px 0; background-color: rgb(189,225,255) }
 body { border: 0 }
@@ -40,6 +40,8 @@ h2 { counter-reset: h3cnt }
 h3:target { background-color: #cde }
 div:target { background-color: #cde }
 
+a.toplink { position: fixed; top: 0; right: 1mm; text-decoration: none }
+
 h3:before {
   content: counter(h2cnt) "." counter(h3cnt) " - ";
   counter-increment: h3cnt
@@ -78,5 +80,6 @@ dl { margin-left: 1cm }
   #menumove { display: none }
   #content { margin: 0; border: 0 }
   #tableofcontents { display: none }
+  .toplink { display: none }
   .trailer img { display: none }
 }

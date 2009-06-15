@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: htmlp2html,v 1.9 2007/07/20 05:18:58 deraugla Exp $
+# $Id: htmlp2html,v 1.10 2007/08/17 16:21:55 deraugla Exp $
 
 FILE=$1
 
@@ -32,6 +32,7 @@ sed -e '/aaa/r toc.tmp' -e '/aaa/d' |
 sed \
   -e '/<div class="trailer">/i\aaa' \
   -e '/<div class="trailer">/,/^<\/div>/d' |
+sed -e "/aaa/i\<a class=\"toplink\" href=\"$FILE\">↑</a>" |
 sed -e '/aaa/r trailer.html' -e '/aaa/d' |
 sed -e '/<h2>/s|<h2>\(.*\)</h2>|<h2 id="a:\1">\1</h2>|' |
 sed -e '/<h3>/s|<h3>\(.*\)</h3>|<h3 id="b:\1">\1</h3>|' |
