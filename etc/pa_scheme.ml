@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.54 2007/10/08 01:56:43 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.55 2007/10/08 02:20:31 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -1060,7 +1060,10 @@
      (let* ((t1 (ctyp_se se1)) (t2 (ctyp_se se2))) <:ctyp< $t1$ == $t2$ >>))
     ((Sexpr loc [(Stid _ s) se])
      (let ((t (ctyp_se se))) <:ctyp< ~$_:s$: $t$ >>))
-    ((Sexpr loc [(Slid _ "objectvar")]) <:ctyp< < .. > >>)
+    ((Sexpr loc [(Slid _ "object") . sel])
+     (let ((fl (object_field_list_se sel))) <:ctyp< < $_list:fl$ > >>))
+    ((Sexpr loc [(Slid _ "objectvar") . sel])
+     (let ((fl (object_field_list_se sel))) <:ctyp< < $_list:fl$ .. > >>))
     ((Sexpr loc [se . sel])
      (List.fold_left
       (lambda (t se) (let ((t2 (ctyp_se se))) <:ctyp< $t$ $t2$ >>))
@@ -1077,6 +1080,19 @@
     ((Suid loc s) <:ctyp< $uid:(rename_id s)$ >>)
     ((Santi loc "" s) <:ctyp< $xtr:s$ >>)
     (se (error se "ctyp"))))
+  (object_field_list_se
+   (lambda_match
+    ([(Santi _ (or "list" "_list") s)] <:vala< $s$ >>)
+    (sel
+     (let
+      ((fl
+        (List.map
+         (lambda_match
+          ((Sexpr loc [(Slid _ s) se])
+           (let ((t (ctyp_se se))) (values s t)))
+          (se (error_loc (loc_of_sexpr se) "object field")))
+         sel)))
+      <:vala< fl >>))))
   (constructor_declaration_se
    (lambda_match
     ((Sexpr loc [(Suid _ ci) . sel])

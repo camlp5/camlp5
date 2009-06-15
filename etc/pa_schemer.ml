@@ -1130,7 +1130,12 @@ and ctyp_se =
   | Sexpr loc [Stid _ s; se] ->
       let t = ctyp_se se in
       <:ctyp< ~$_:s$: $t$ >>
-  | Sexpr loc [Slid _ "objectvar"] -> <:ctyp< < .. > >>
+  | Sexpr loc [Slid _ "object" :: sel] ->
+      let fl = object_field_list_se sel in
+      <:ctyp< < $_list:fl$ > >>
+  | Sexpr loc [Slid _ "objectvar" :: sel] ->
+      let fl = object_field_list_se sel in
+      <:ctyp< < $_list:fl$ .. > >>
   | Sexpr loc [se :: sel] ->
       List.fold_left
         (fun t se ->
@@ -1151,6 +1156,20 @@ and ctyp_se =
   | Suid loc s -> <:ctyp< $uid:(rename_id s)$ >>
   | Santi loc "" s -> <:ctyp< $xtr:s$ >>
   | se -> error se "ctyp" ]
+and object_field_list_se =
+  fun
+  [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
+  | sel ->
+      let fl =
+        List.map
+          (fun
+           [ Sexpr loc [Slid _ s; se] ->
+               let t = ctyp_se se in
+               (s, t)
+           | se -> error_loc (loc_of_sexpr se) "object field" ])
+          sel
+      in
+      <:vala< fl >> ]
 and constructor_declaration_se =
   fun
   [ Sexpr loc [Suid _ ci :: sel] ->

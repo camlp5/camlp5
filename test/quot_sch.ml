@@ -138,12 +138,12 @@
 <:ctyp< $lid:s$ >>
 <:ctyp< $_lid:s$ >>
 <:ctyp< (== $t1$ $t2$) >>
-<:ctyp< < $list:lst$ > >>
-; <:ctyp< < $_list:lst$ > >>
-; <:ctyp< < $list:lst$ .. > >>
-; <:ctyp< < $_list:lst$ .. > >>
-; <:ctyp< < $list:lst$ $flag:b$ > >>
-; <:ctyp< < $_list:lst$ $_flag:b$ > >>
+<:ctyp< (object $list:lst$) >>
+<:ctyp< (object $_list:lst$) >>
+<:ctyp< (objectvar $list:lst$) >>
+<:ctyp< (objectvar $_list:lst$) >>
+(MLast.TyObj loc (Ploc.VaVal lst) (Ploc.VaVal b))
+(MLast.TyObj loc lst b)
 ; <:ctyp< ?$s$: $t$ >>
 ; <:ctyp< ?$_:s$: $t$ >>
 ; <:ctyp< ! $list:ls$ . $t$ >>
