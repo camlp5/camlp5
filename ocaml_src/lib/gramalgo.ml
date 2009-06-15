@@ -399,12 +399,133 @@ let eprint_item (added, lh, dot, rh) =
   Printf.eprintf "\n"
 ;;
 
+let make_item_sets rl item_set_ht =
+  let rec loop ini_item_set_cnt item_set_cnt shift_assoc item_set_ini =
+    let item_set =
+      List.map (fun (_, lh, dot, rh) -> false, lh, dot, rh) item_set_ini
+    in
+    let sl =
+      let (rtl, rntl) =
+        (* terminals and non-terminals just after the dot *)
+        List.fold_left
+          (fun (rtl, rntl) (added, lh, dot, rh) ->
+             match get_symbol_after_dot dot rh with
+               Some s ->
+                 begin match s with
+                   GS_term _ ->
+                     (if List.mem s rtl then rtl else s :: rtl), rntl
+                 | GS_nterm _ ->
+                     rtl, (if List.mem s rntl then rntl else s :: rntl)
+                 end
+             | None -> rtl, rntl)
+          ([], []) item_set
+      in
+      List.rev_append rtl (List.rev rntl)
+    in
+    if sl <> [] then
+      begin
+        Printf.eprintf "\nfrom item_set %d, symbols after dot:"
+          ini_item_set_cnt;
+        List.iter (fun s -> Printf.eprintf " %s" (sprint_symb s)) sl;
+        Printf.eprintf "\n";
+        flush stderr
+      end;
+    let (item_set_cnt, symb_cnt_assoc, shift_assoc) =
+      List.fold_left
+        (fun (item_set_cnt, symb_cnt_assoc, shift_assoc) s ->
+           let item_set =
+             List.find_all
+               (fun (added, lh, dot, rh) ->
+                  match get_symbol_after_dot dot rh with
+                    Some s1 -> s = s1
+                  | None -> false)
+               item_set
+           in
+           (* move the dot after s *)
+           let item_set =
+             List.map (fun (added, lh, dot, rh) -> added, lh, dot + 1, rh)
+               item_set
+           in
+           (* complete by closure *)
+           let item_set = close_item_set rl item_set in
+           Printf.eprintf "\n";
+           match
+             try Some (Hashtbl.find item_set_ht item_set) with
+               Not_found -> None
+           with
+             Some n ->
+               Printf.eprintf "Item set (after %d and %s) = Item set %d\n"
+                 ini_item_set_cnt (sprint_symb s) n;
+               flush stderr;
+               let symb_cnt_assoc = (s, n) :: symb_cnt_assoc in
+               item_set_cnt, symb_cnt_assoc, shift_assoc
+           | None ->
+               Printf.eprintf "Item set %d (after %d and %s)\n\n"
+                 (item_set_cnt + 1) ini_item_set_cnt (sprint_symb s);
+               List.iter eprint_item item_set;
+               flush stderr;
+               let item_set_cnt = item_set_cnt + 1 in
+               Hashtbl.add item_set_ht item_set item_set_cnt;
+               let symb_cnt_assoc = (s, item_set_cnt) :: symb_cnt_assoc in
+               let (item_set_cnt, shift_assoc) =
+                 loop item_set_cnt item_set_cnt shift_assoc item_set
+               in
+               item_set_cnt, symb_cnt_assoc, shift_assoc)
+        (item_set_cnt, [], shift_assoc) sl
+    in
+    let shift_assoc = (ini_item_set_cnt, symb_cnt_assoc) :: shift_assoc in
+    item_set_cnt, shift_assoc
+  in
+  loop
+;;
+
+let compute_nb_symbols item_set_ht term_table nterm_table =
+  Hashtbl.fold
+    (fun item_set _ cnts ->
+       List.fold_left
+         (fun (terms_cnt, nterms_cnt) (_, lh, _, rh) ->
+            let nterms_cnt =
+              if Hashtbl.mem nterm_table lh then nterms_cnt
+              else
+                begin
+                  Hashtbl.add nterm_table lh nterms_cnt;
+                  nterms_cnt + 1
+                end
+            in
+            List.fold_left
+              (fun (terms_cnt, nterms_cnt) ->
+                 function
+                   GS_term s ->
+                     let terms_cnt =
+                       if Hashtbl.mem term_table s then terms_cnt
+                       else
+                         begin
+                           Hashtbl.add term_table s terms_cnt;
+                           terms_cnt + 1
+                         end
+                     in
+                     terms_cnt, nterms_cnt
+                 | GS_nterm s ->
+                     let nterms_cnt =
+                       if Hashtbl.mem nterm_table s then nterms_cnt
+                       else
+                         begin
+                           Hashtbl.add nterm_table s nterms_cnt;
+                           nterms_cnt + 1
+                         end
+                     in
+                     terms_cnt, nterms_cnt)
+              (terms_cnt, nterms_cnt) rh)
+         cnts item_set)
+    item_set_ht (0, 0)
+;;
+
 let lr0 entry lev =
   Printf.eprintf "LR(0) %s %d\n" entry.ename lev;
   flush stderr;
   (**)
   let rl = flatten_gram entry lev in
-  let item_set =
+  let item_set_0 =
     let item = false, "start-symb", 0, [GS_nterm (name_of_entry entry lev)] in
     close_item_set rl [item]
   in
@@ -416,7 +537,7 @@ let lr0 entry lev =
        ("B", [GS_term "0"]);
        ("B", [GS_term "1"])]
     in
-    let item_set =
+    let item_set_0 =
       let item = (False, "S", 0, [GS_nterm "E"]) in
       close_item_set rl [item]
     in
@@ -429,84 +550,54 @@ let lr0 entry lev =
   flush stderr;
   Printf.eprintf "\n";
   Printf.eprintf "Item set 0\n\n";
-  List.iter eprint_item item_set;
+  List.iter eprint_item item_set_0;
   flush stderr;
   let item_set_ht = Hashtbl.create 1 in
-  let item_set_cnt =
-    let rec loop ini_item_set_cnt item_set_cnt item_set =
-      let item_set =
-        List.map (fun (_, lh, dot, rh) -> false, lh, dot, rh) item_set
-      in
-      let sl =
-        let (rtl, rntl) =
-          (* terminals and non-terminals just after the dot *)
-          List.fold_left
-            (fun (rtl, rntl) (added, lh, dot, rh) ->
-               match get_symbol_after_dot dot rh with
-                 Some s ->
-                   begin match s with
-                     GS_term _ ->
-                       (if List.mem s rtl then rtl else s :: rtl), rntl
-                   | GS_nterm _ ->
-                       rtl, (if List.mem s rntl then rntl else s :: rntl)
-                   end
-               | None -> rtl, rntl)
-            ([], []) item_set
-        in
-        List.rev_append rtl (List.rev rntl)
-      in
-      if sl <> [] then
-        begin
-          Printf.eprintf "\nfrom item_set %d, symbols after dot:"
-            ini_item_set_cnt;
-          List.iter (fun s -> Printf.eprintf " %s" (sprint_symb s)) sl;
-          Printf.eprintf "\n";
-          flush stderr
-        end;
-      let rec loop_1 item_set_cnt =
-        function
-          s :: sl ->
-            (* select items where there is a dot before s *)
-            let item_set =
-              List.find_all
-                (fun (added, lh, dot, rh) ->
-                   match get_symbol_after_dot dot rh with
-                     Some s1 -> s = s1
-                   | None -> false)
-                item_set
-            in
-            (* move the dot after s *)
-            let item_set =
-              List.map (fun (added, lh, dot, rh) -> added, lh, dot + 1, rh)
-                item_set
-            in
-            (* complete by closure *)
-            let item_set = close_item_set rl item_set in
-            Printf.eprintf "\n";
-            let item_set_cnt =
-              match
-                try Some (Hashtbl.find item_set_ht item_set) with
-                  Not_found -> None
-              with
-                Some n ->
-                  Printf.eprintf "Item set (after %d and %s) = Item set %d\n"
-                    ini_item_set_cnt (sprint_symb s) n;
-                  flush stderr;
-                  item_set_cnt
-              | None ->
-                  Printf.eprintf "Item set %d (after %d and %s)\n\n"
-                    (item_set_cnt + 1) ini_item_set_cnt (sprint_symb s);
-                  List.iter eprint_item item_set;
-                  flush stderr;
-                  Hashtbl.add item_set_ht item_set (item_set_cnt + 1);
-                  loop (item_set_cnt + 1) (item_set_cnt + 1) item_set
-            in
-            loop_1 item_set_cnt sl
-        | [] -> item_set_cnt
-      in
-      loop_1 item_set_cnt sl
-    in
-    loop 0 0 item_set
+  let (item_set_cnt, shift_assoc) =
+    make_item_sets rl item_set_ht 0 0 [] item_set_0
   in
-  Printf.eprintf "\ntotal number of item sets %d\n" item_set_cnt; flush stderr
+  Printf.eprintf "\ntotal number of item sets %d\n" (item_set_cnt + 1);
+  flush stderr;
+  Printf.eprintf "\nshift:\n";
+  List.iter
+    (fun (i, symb_cnt_assoc) ->
+       Printf.eprintf "state %d:" i;
+       List.iter (fun (s, i) -> Printf.eprintf " %s->%d" (sprint_symb s) i)
+         (List.rev symb_cnt_assoc);
+       Printf.eprintf "\n")
+    (List.sort compare shift_assoc);
+  flush stderr;
+  let term_table = Hashtbl.create 1 in
+  let nterm_table = Hashtbl.create 1 in
+  let (nb_terms, nb_nterms) =
+    compute_nb_symbols item_set_ht term_table nterm_table
+  in
+  Printf.eprintf "nb of terms %d\n" nb_terms;
+  Printf.eprintf "nb of non-terms %d\n" nb_nterms;
+  flush stderr;
+  let goto_table =
+    Array.init (item_set_cnt + 1) (fun _ -> Array.create nb_nterms (-1))
+  in
+  List.iter
+    (fun (item_set_cnt, symb_cnt_assoc) ->
+       let line = goto_table.(item_set_cnt) in
+       List.iter
+         (fun (s, n) ->
+            match s with
+              GS_term s -> ()
+            | GS_nterm s ->
+                let i = Hashtbl.find nterm_table s in line.(i) <- n)
+         symb_cnt_assoc)
+    shift_assoc;
+  Printf.eprintf "\n\ngoto table\n\n";
+  for i = 0 to Array.length goto_table - 1 do
+    Printf.eprintf "state %d :" i;
+    let line = goto_table.(i) in
+    for j = 0 to Array.length line - 1 do
+      if line.(j) = -1 then Printf.eprintf " -"
+      else Printf.eprintf " %d" line.(j)
+    done;
+    Printf.eprintf "\n"
+  done;
+  flush stderr
 ;;
