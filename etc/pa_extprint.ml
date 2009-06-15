@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_extprint.ml,v 1.35 2007/12/18 18:23:53 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.36 2007/12/18 18:33:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -785,8 +785,8 @@ value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc al t =
                 | PPspace -> (1, 0) ]
               in
               let (e, al) = 
-                expr_of_tree_aux loc fmt empty_bef empty_aft <:expr< pc >> al
-                  t
+                expr_of_tree_aux loc fmt empty_bef (empty_aft || tl <> [])
+                  <:expr< pc >> al t
               in
               let (el, al) = loop al tl in
               ([(off, sp, e) :: el], al)

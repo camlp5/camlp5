@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.78 2007/12/17 13:09:17 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.79 2007/12/18 18:33:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -250,7 +250,7 @@ EXTEND_PRINTER
   ;
   pr_expr: LEVEL "simple"
     [ [ <:expr< ( $e$ : $t$ :> $t2$ ) >> ->
-          pprintf pc "@[<a>@[<1>(%p :@ %p :>@ %p)@]@]" expr e ctyp t ctyp t2
+          pprintf pc "@[<1>@[<a>(%p :@ %p :>@ %p)@]@]" expr e ctyp t ctyp t2
       | <:expr< ( $e$ :> $t$ ) >> ->
           pprintf pc "@[<1>(%p :>@ %p)@]" expr e ctyp t
       | <:expr< {< $list:fel$ >} >> ->
