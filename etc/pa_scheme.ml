@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.66 2007/10/09 13:40:56 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.67 2007/10/09 19:09:19 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -383,7 +383,7 @@
 
 (define anti_mod_ident_se
  (lambda_match
-  ((Santi _ (or "list" "_list") s) <:vala< $s$ >>)
+  ((Santi _ (or "list" "_list" "" "_") s) <:vala< $s$ >>)
   (se <:vala< (mod_ident_se se) >>)))
 
 (define anti_lid
@@ -470,9 +470,18 @@
     (lambda_match
      ((Sexpr loc [(Slid _ "type") se1 se2])
       (let*
-       ((tn (anti_mod_ident_se se1))
+       (((values tn tp)
+         (match se1
+          ((Santi _ (or "list" "_list") s)
+           (values <:vala< $s$ >> <:vala< [] >>))
+          ((Sexpr _ [se . sel])
+           (let*
+            ((tn (anti_mod_ident_se se))
+             (tp (anti_list_map type_param_se sel)))
+            (values tn tp)))
+          (se (values <:vala< (mod_ident_se se) >> <:vala< [] >>))))
         (te (ctyp_se se2)))
-       <:with_constr< type $_:tn$ = $te$ >>))
+       <:with_constr< type $_:tn$ $_list:tp$ = $te$ >>))
      (se (error se "with constr"))))
   (sig_item_se
     (lambda_match
@@ -1176,13 +1185,14 @@
  (Grammar.Unsafe.clear_entry implem)
  (Grammar.Unsafe.clear_entry top_phrase)
  (Grammar.Unsafe.clear_entry use_file)
- (Grammar.Unsafe.clear_entry module_type)
- (Grammar.Unsafe.clear_entry module_expr)
- (Grammar.Unsafe.clear_entry sig_item)
- (Grammar.Unsafe.clear_entry str_item)
  (Grammar.Unsafe.clear_entry expr)
  (Grammar.Unsafe.clear_entry patt)
  (Grammar.Unsafe.clear_entry ctyp)
+ (Grammar.Unsafe.clear_entry str_item)
+ (Grammar.Unsafe.clear_entry sig_item)
+ (Grammar.Unsafe.clear_entry module_expr)
+ (Grammar.Unsafe.clear_entry module_type)
+ (Grammar.Unsafe.clear_entry with_constr)
  (Grammar.Unsafe.clear_entry let_binding)
  (Grammar.Unsafe.clear_entry type_declaration)
  (Grammar.Unsafe.clear_entry class_type)
@@ -1196,8 +1206,8 @@
 (define sexpr (Grammar.Entry.create gram "sexpr"))
 
 EXTEND
-  GLOBAL : implem interf top_phrase use_file str_item sig_item
-    module_expr module_type expr patt ctyp sexpr /
+  GLOBAL : implem interf top_phrase use_file expr patt ctyp str_item sig_item
+    module_expr module_type with_constr sexpr /
   implem :
     [ [ "#" / se = sexpr ->
           (let (((values n dp) (directive_se se)))
@@ -1233,6 +1243,16 @@ EXTEND
           (let (((values sil stopped) x)) (values [si . sil] stopped))
       | EOI -> (values [] False) ] ]
   /
+  expr :
+    [ "top"
+      [ se = sexpr -> (expr_se se) ] ]
+  /
+  patt :
+    [ [ se = sexpr -> (patt_se se) ] ]
+  /
+  ctyp :
+    [ [ se = sexpr -> (ctyp_se se) ] ]
+  /
   str_item :
     [ [ se = sexpr -> (str_item_se se)
       | e = expr -> <:str_item< $exp:e$ >> ] ]
@@ -1246,15 +1266,8 @@ EXTEND
   module_type :
     [ [ se = sexpr -> (module_type_se se) ] ]
   /
-  expr :
-    [ "top"
-      [ se = sexpr -> (expr_se se) ] ]
-  /
-  patt :
-    [ [ se = sexpr -> (patt_se se) ] ]
-  /
-  ctyp :
-    [ [ se = sexpr -> (ctyp_se se) ] ]
+  with_constr :
+    [ [ se = sexpr -> (with_constr_se se) ] ]
   /
   sexpr :
     [ [ se1 = sexpr / DOT / se2 = sexpr -> (Sacc loc se1 se2) ]

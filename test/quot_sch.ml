@@ -262,6 +262,14 @@
 <:module_type< $_uid:s$ >>
 <:module_type< (with $mt$ $list:lwc$) >>
 <:module_type< (with $mt$ $_list:lwc$) >>
+<:with_constr< (type ($s$ $list:ltv$) $t$) >>
+<:with_constr< (type ($_:s$ $_list:ltv$) $t$) >>
+; <:with_constr< (typeprivate ($s$ $list:ltv$) $t$) >>
+; <:with_constr< type $_:s$ $_list:ltv$ = private $t$ >>
+; <:with_constr< type $s$ $list:ltv$ = $flag:b$ $t$ >>
+; <:with_constr< type $_:s$ $_list:ltv$ = $_flag:b$ $t$ >>
+; <:with_constr< module $list:ls$ = $me$ >>
+; <:with_constr< module $_list:ls$ = $me$ >>
 ; <:class_expr< $ce$ $e$ >>
 ; <:class_expr< $list:ls$ [ $list:lt$ ] >>
 ; <:class_expr< $_list:ls$ [ $_list:lt$ ] >>
@@ -330,14 +338,6 @@
 ; <:class_sig_item< method virtual private $_:s$ : $t$ >>
 ; <:class_sig_item< method virtual $flag:b$ $s$ : $t$ >>
 ; <:class_sig_item< method virtual $_flag:b$ $_:s$ : $t$ >>
-; <:with_constr< type $s$ $list:ltv$ = $t$ >>
-; <:with_constr< type $_:s$ $_list:ltv$ = $t$ >>
-; <:with_constr< type $s$ $list:ltv$ = private $t$ >>
-; <:with_constr< type $_:s$ $_list:ltv$ = private $t$ >>
-; <:with_constr< type $s$ $list:ltv$ = $flag:b$ $t$ >>
-; <:with_constr< type $_:s$ $_list:ltv$ = $_flag:b$ $t$ >>
-; <:with_constr< module $list:ls$ = $me$ >>
-; <:with_constr< module $_list:ls$ = $me$ >>
 ; <:poly_variant< ` $s$ >>
 ; <:poly_variant< ` $_:s$ >>
 ; <:poly_variant< ` $s$ of $list:lt$ >>

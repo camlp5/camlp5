@@ -408,7 +408,7 @@ value rec anti_list_map f =
 
 value anti_mod_ident_se =
   fun
-  [ Santi _ ("list" | "_list") s -> <:vala< $s$ >>
+  [ Santi _ ("list" | "_list" | "" | "_") s -> <:vala< $s$ >>
   | se -> <:vala< (mod_ident_se se) >> ]
 ;
 
@@ -499,9 +499,17 @@ and module_type_se =
 and with_constr_se =
   fun
   [ Sexpr loc [Slid _ "type"; se1; se2] ->
-      let tn = anti_mod_ident_se se1 in
+      let (tn, tp) =
+        match se1 with
+        [ Santi _ ("list" | "_list") s -> (<:vala< $s$ >>, <:vala< [] >>)
+        | Sexpr _ [se :: sel] ->
+            let tn = anti_mod_ident_se se in
+            let tp = anti_list_map type_param_se sel in
+            (tn, tp)
+        | se -> (<:vala< (mod_ident_se se) >>, <:vala< [] >>) ]
+      in
       let te = ctyp_se se2 in
-      <:with_constr< type $_:tn$ = $te$ >>
+      <:with_constr< type $_:tn$ $_list:tp$ = $te$ >>
   | se -> error se "with constr" ]
 and sig_item_se =
   fun
@@ -1245,13 +1253,14 @@ do {
   Grammar.Unsafe.clear_entry implem;
   Grammar.Unsafe.clear_entry top_phrase;
   Grammar.Unsafe.clear_entry use_file;
-  Grammar.Unsafe.clear_entry module_type;
-  Grammar.Unsafe.clear_entry module_expr;
-  Grammar.Unsafe.clear_entry sig_item;
-  Grammar.Unsafe.clear_entry str_item;
   Grammar.Unsafe.clear_entry expr;
   Grammar.Unsafe.clear_entry patt;
   Grammar.Unsafe.clear_entry ctyp;
+  Grammar.Unsafe.clear_entry str_item;
+  Grammar.Unsafe.clear_entry sig_item;
+  Grammar.Unsafe.clear_entry module_expr;
+  Grammar.Unsafe.clear_entry module_type;
+  Grammar.Unsafe.clear_entry with_constr;
   Grammar.Unsafe.clear_entry let_binding;
   Grammar.Unsafe.clear_entry type_declaration;
   Grammar.Unsafe.clear_entry class_type;
@@ -1266,8 +1275,8 @@ Pcaml.parse_implem.val := Grammar.Entry.parse implem;
 value sexpr = Grammar.Entry.create gram "sexpr";
 
 EXTEND
-  GLOBAL: implem interf top_phrase use_file str_item sig_item module_expr
-    module_type expr patt ctyp sexpr;
+  GLOBAL: implem interf top_phrase use_file expr patt ctyp str_item sig_item
+    module_expr module_type with_constr sexpr;
   implem:
     [ [ "#"; se = sexpr ->
           let (n, dp) = directive_se se in
@@ -1304,6 +1313,16 @@ EXTEND
           ([si :: sil], stopped)
       | EOI -> ([], False) ] ]
   ;
+  expr:
+    [ "top"
+      [ se = sexpr -> expr_se se ] ]
+  ;
+  patt:
+    [ [ se = sexpr -> patt_se se ] ]
+  ;
+  ctyp:
+    [ [ se = sexpr -> ctyp_se se ] ]
+  ;
   str_item:
     [ [ se = sexpr -> str_item_se se
       | e = expr -> <:str_item< $exp:e$ >> ] ]
@@ -1317,15 +1336,8 @@ EXTEND
   module_type:
     [ [ se = sexpr -> module_type_se se ] ]
   ;
-  expr:
-    [ "top"
-      [ se = sexpr -> expr_se se ] ]
-  ;
-  patt:
-    [ [ se = sexpr -> patt_se se ] ]
-  ;
-  ctyp:
-    [ [ se = sexpr -> ctyp_se se ] ]
+  with_constr:
+    [ [ se = sexpr -> with_constr_se se ] ]
   ;
   sexpr:
     [ [ se1 = SELF; DOT; se2 = SELF -> Sacc loc se1 se2 ]
