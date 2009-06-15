@@ -1,25 +1,14 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.28 2007/07/04 02:52:57 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.29 2007/07/04 08:53:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
 open Pcaml.Printers;
 open Prtools;
 
-value flag_expand_declare = ref True;
 value flag_horiz_let_in = ref False;
 value flag_sequ_begin_at_eol = ref True;
 value flag_semi_semi = ref False;
-
-value flag_where_after_in = ref False;
-value flag_where_after_let_eq = ref False;
-value flag_where_after_match = ref False;
-value flag_where_after_lparen = ref False;
-value flag_where_after_field_eq = ref False;
-value flag_where_in_sequences = ref False;
-value flag_where_after_then = ref False;
-value flag_where_after_value_eq = ref False;
-value flag_where_after_arrow = ref False;
 
 (* general functions *)
 
@@ -277,6 +266,20 @@ value binding elem pc (p, e) =
          (elem {(pc) with ind = pc.ind + 2; bef = (tab (pc.ind + 2))} e))
 ;
 
+value record_binding is_last pc (p, e) =
+  let pc_dang = if is_last then "" else ";" in
+  horiz_vertic
+    (fun () ->
+       sprintf "%s%s = %s%s" pc.bef (patt {(pc) with bef = ""; aft = ""} p)
+         (expr {(pc) with bef = ""; aft = ""; dang = pc_dang} e) pc.aft)
+    (fun () ->
+       sprintf "%s\n%s" (patt {(pc) with aft = " ="} p)
+         (expr
+            {(pc) with ind = pc.ind + 2; bef = (tab (pc.ind + 2));
+             dang = pc_dang}
+            e))
+;
+
 pr_expr_fun_args.val :=
   extfun Extfun.empty with
   [ <:expr< fun $p$ -> $e$ >> as z ->
@@ -345,88 +348,7 @@ value can_be_displayed_as_where e =
   | _ -> None ]
 ;
 
-(* Pretty printing improvement (optional):
-   - display a "let" binding with the "where" construct
-*)
-value rec where_binding pc (p, e, body) =
-  let (pl, body) = expr_fun_args body in
-  let pl = [p :: pl] in
-  horiz_vertic
-    (fun () ->
-       sprintf "%s%s where rec %s = %s%s" pc.bef
-         (expr {(pc) with bef = ""; aft = ""} e)
-         (hlist patt {(pc) with bef = ""; aft = ""} pl)
-         (expr {(pc) with bef = ""; aft = ""} body) pc.aft)
-    (fun () ->
-       let horiz_where k =
-         sprintf "%s%s where rec %s =%s" pc.bef
-           (expr {(pc) with bef = ""; aft = ""} e)
-           (hlist patt {(pc) with bef = ""; aft = ""} pl) k
-       in
-       let vertic_where k =
-         let s1 = expr {(pc) with aft = ""} e in
-         let s2 =
-           hlist patt
-             {(pc) with bef = (sprintf "%swhere rec " (tab pc.ind));
-              aft = (sprintf " =%s" k)} pl
-         in
-         sprintf "%s\n%s" s1 s2
-       in
-       match sequencify body with
-       [ Some el ->
-           let expr_wh =
-             if flag_where_in_sequences.val then expr_wh else expr
-           in
-           sequence_box
-             {(pc) with
-              bef k =
-                horiz_vertic (fun () -> horiz_where k)
-                  (fun () -> vertic_where k)}
-             expr_wh el
-       | None ->
-           let s1 =
-             horiz_vertic (fun () -> horiz_where "")
-               (fun () -> vertic_where "")
-           in
-           let s2 =
-             comm_expr expr
-               {(pc) with ind = pc.ind + 2; bef = (tab (pc.ind + 2))} body
-           in
-           sprintf "%s\n%s" s1 s2 ])
-
-and expr_wh pc e =
-  match can_be_displayed_as_where e with
-  [ Some (p, e, body) -> where_binding pc (p, e, body)
-  | None -> expr pc e ]
-;
-
-value sequence_box2 pc el =
-  let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
-  sequence_box pc expr_wh el
-;
-
-(* Pretty printing improvements (optional):
-   - prints "field x = e" instead of "field = fun x -> e" in a record
-   - if vertical and "e" is a sequence, put the "do {" at after the "="
-   Cancellation of all these improvements could be done by changing calls
-   to this function to a call to "binding expr" above.
-*)
-value record_binding is_last pc (p, e) =
-  let (pl, e) = ([p], e) in
-  let expr_wh = if flag_where_after_field_eq.val then expr_wh else expr in
-  let pc_dang = if is_last then "" else ";" in
-  horiz_vertic
-    (fun () ->
-       sprintf "%s%s = %s%s" pc.bef
-         (hlist patt {(pc) with bef = ""; aft = ""} pl)
-         (expr_wh {(pc) with bef = ""; aft = ""; dang = pc_dang} e) pc.aft)
-    (fun () ->
-       sprintf "%s\n%s" (hlist patt {(pc) with aft = " ="} pl)
-         (expr_wh
-            {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-             dang = pc_dang}
-            e))
-;
+value sequence_box2 pc el = sequence_box pc expr el;
 
 value expr_with_comm_except_if_sequence pc e =
   match e with
@@ -533,12 +455,11 @@ value let_binding pc (p, e) =
   in
   let (pl, e) = expr_fun_args e in
   let pl = [p :: pl] in
-  let expr_wh = if flag_where_after_let_eq.val then expr_wh else expr in
   horiz_vertic
     (fun () ->
        sprintf "%s%s = %s%s" pc.bef
          (hlist patt {(pc) with bef = ""; aft = ""} pl)
-         (expr_wh {(pc) with bef = ""; aft = ""} e)
+         (expr {(pc) with bef = ""; aft = ""} e)
          (if pc.aft then " in" else ""))
     (fun () ->
        let s =
@@ -552,7 +473,7 @@ value let_binding pc (p, e) =
          | None ->
              let s1 = hlist patt {(pc) with aft = " ="} pl in
              let s2 =
-               comm_expr expr_wh
+               comm_expr expr
                  {ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = "";
                   dang = ""}
                  e
@@ -1002,7 +923,6 @@ value expr_expr1 =
   extfun Extfun.empty with
   [ <:expr< if $e1$ then $e2$ else $e3$ >> as ge ->
       fun curr next pc ->
-        let expr_wh = if flag_where_after_then.val then expr_wh else expr1 in
         horiz_vertic
          (fun () ->
             match e3 with
@@ -1057,7 +977,7 @@ value expr_expr1 =
                        (fun () -> vertic_if_then "")
                    in
                    let s2 =
-                     comm_expr expr_wh
+                     comm_expr expr1
                        {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
                        e2
                    in
@@ -1104,7 +1024,7 @@ value expr_expr1 =
                                   pc.aft)
                           (fun () ->
                              let s =
-                               comm_expr expr_wh
+                               comm_expr expr1
                                  {(pc) with ind = pc.ind + 2;
                                   bef = tab (pc.ind + 2)}
                                  e3
@@ -1120,6 +1040,7 @@ value expr_expr1 =
         [ [(p1, None, e1)] when is_irrefut_patt p1 ->
             let (pl, e1) = expr_fun_args e1 in
             let pl = [p1 :: pl] in
+            let simple_patt = pr_patt.pr_fun "simple" in
             horiz_vertic
               (fun () ->
                  let (op_begin, op_end) =
@@ -1127,7 +1048,7 @@ value expr_expr1 =
                    else ("", "")
                  in
                  sprintf "%s%sfun %s -> %s%s%s" pc.bef op_begin
-                   (hlist patt {(pc) with bef = ""; aft = ""} pl)
+                   (hlist simple_patt {(pc) with bef = ""; aft = ""} pl)
                    (curr {(pc) with bef = ""; aft = ""} e1) op_end pc.aft)
               (fun () ->
                  let (op_begin, pc_aft, op_end) =
@@ -1137,7 +1058,7 @@ value expr_expr1 =
                  in
                  let fun_arrow k =
                    let pl = List.map (fun p -> (p, "")) pl in
-                   plist patt 4
+                   plist simple_patt 4
                      {(pc) with bef = sprintf "%s%sfun " pc.bef op_begin;
                       aft = sprintf " ->%s" k}
                      pl
@@ -1183,7 +1104,6 @@ value expr_expr1 =
   | <:expr< try $e1$ with [ $list:pwel$ ] >> |
     <:expr< match $e1$ with [ $list:pwel$ ] >> as e ->
       fun curr next pc ->
-        let expr_wh = if flag_where_after_match.val then expr_wh else expr in
         let op =
           match e with
           [ <:expr< try $_$ with [ $list:_$ ] >> -> "try"
@@ -1198,7 +1118,7 @@ value expr_expr1 =
                    else (op, "")
                  in
                  sprintf "%s%s %s with %s%s%s" pc.bef op_begin
-                   (expr_wh {(pc) with bef = ""; aft = ""} e1)
+                   (expr {(pc) with bef = ""; aft = ""} e1)
                    (match_assoc {(pc) with bef = ""; aft = Some ""}
                       (p, wo, e))
                    op_end pc.aft)
@@ -1214,7 +1134,7 @@ value expr_expr1 =
                      (fun () ->
                         Some
                           (sprintf "%s%s %s with" pc.bef op_begin
-                             (expr_wh {(pc) with bef = ""; aft = ""} e1)))
+                             (expr {(pc) with bef = ""; aft = ""} e1)))
                      (fun () -> None)
                  with
                  [ Some s1 ->
@@ -1229,7 +1149,7 @@ value expr_expr1 =
                  | None ->
                      let s1 =
                        let s =
-                         expr_wh
+                         expr
                            {(pc) with ind = pc.ind + 2;
                             bef = tab (pc.ind + 2); aft = ""}
                            e1
@@ -1249,7 +1169,7 @@ value expr_expr1 =
             horiz_vertic
               (fun () ->
                  sprintf "%s%s %s with %s%s" pc.bef op
-                   (expr_wh {(pc) with bef = ""; aft = ""} e1)
+                   (expr {(pc) with bef = ""; aft = ""} e1)
                    (match_assoc_list {(pc) with bef = ""; aft = ""} pwel)
                    pc.aft)
               (fun () ->
@@ -1263,11 +1183,11 @@ value expr_expr1 =
                    horiz_vertic
                      (fun () ->
                         sprintf "%s%s %s with" pc.bef op
-                          (expr_wh {(pc) with bef = ""; aft = ""} e1))
+                          (expr {(pc) with bef = ""; aft = ""} e1))
                      (fun () ->
                         let s =
                           let s =
-                            expr_wh
+                            expr
                               {(pc) with ind = pc.ind + 2;
                                bef = tab (pc.ind + 2); aft = ""}
                               e1
@@ -1787,8 +1707,7 @@ value expr_simple =
     <:expr< match $_$ with [ $list:_$ ] >> |
     <:expr< try $_$ with [ $list:_$ ] >> as z ->
       fun curr next pc ->
-        let expr_wh = if flag_where_after_lparen.val then expr_wh else expr in
-        expr_wh
+        expr
           {ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
            aft = sprintf ")%s" pc.aft; dang = ""}
           z
@@ -1806,6 +1725,15 @@ value patt_top =
           | _ -> None ]
         in
         left_operator pc 0 unfold next z
+  | z -> fun curr next pc -> next pc z ]
+;
+
+value patt_tuple =
+  extfun Extfun.empty with
+  [ <:patt< ($list:pl$) >> ->
+      fun curr next pc ->
+        let pl = List.map (fun p -> (p, ",")) pl in
+        plist next 0 pc pl
   | z -> fun curr next pc -> next pc z ]
 ;
 
@@ -1911,12 +1839,6 @@ value patt_simple =
                  y
              in
              sprintf "%s\n%s" s1 s2)
-  | <:patt< ($list:pl$) >> ->
-      fun curr next pc ->
-        let pl = List.map (fun p -> (p, ",")) pl in
-        plist (pr_patt.pr_fun "range") 1
-          {(pc) with bef = sprintf "%s(" pc.bef; aft = sprintf ")%s" pc.aft}
-          pl
   | <:patt< {$list:lpl$} >> ->
       fun curr next pc ->
         let lxl = List.map (fun lx -> (lx, ";")) lpl in
@@ -2012,8 +1934,8 @@ value patt_simple =
   | <:patt< `$uid:s$ >> ->
       fun curr next pc ->
         failwith "polymorphic variants not pretty printed; add pr_ro.cmo"
-  | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >>
-    as z ->
+  | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >> |
+    <:patt< ($list:_$) >> as z ->
       fun curr next pc ->
         patt
           {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
@@ -2098,29 +2020,13 @@ value str_item_top =
         e
   | <:str_item< declare $list:sil$ end >> ->
       fun curr next pc ->
-        if flag_expand_declare.val then
-          if sil = [] then sprintf "%s(* *)" pc.bef
-          else
-            horiz_vertic
-              (fun () ->
-                 hlist (semi_after str_item) {(pc) with bef = ""; aft = ""}
-                   sil)
-              (fun () -> not_impl "expand declare vertic" pc sil)
-        else if sil = [] then sprintf "%sdeclare end%s" pc.bef pc.aft
+        if sil = [] then sprintf "%s(* *)" pc.bef
         else
           horiz_vertic
             (fun () ->
-               sprintf "%sdeclare%s%s%send%s" pc.bef " "
-                 (hlist (semi_after str_item) {(pc) with bef = ""; aft = ""}
-                    sil)
-                 " " pc.aft)
-            (fun () ->
-               sprintf "%sdeclare%s%s%send%s" pc.bef "\n"
-                 (vlist (semi_after str_item)
-                    {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                     aft = ""}
-                    sil)
-                 ("\n" ^ tab pc.ind) pc.aft)
+               hlist (semi_after str_item) {(pc) with bef = ""; aft = ""}
+                 sil)
+            (fun () -> not_impl "expand declare vertic" pc sil)
   | <:str_item< exception $e$ of $list:tl$ = $id$ >> ->
       fun curr next pc -> exception_decl pc (e, tl, id)
   | <:str_item< external $n$ : $t$ = $list:sl$ >> ->
@@ -2573,6 +2479,7 @@ pr_expr.pr_levels :=
 
 pr_patt.pr_levels :=
   [{pr_label = "top"; pr_rules = patt_top};
+   {pr_label = "tuple"; pr_rules = patt_tuple};
    {pr_label = "range"; pr_rules = patt_range};
    {pr_label = "cons"; pr_rules = patt_cons};
    {pr_label = "apply"; pr_rules = patt_apply};
@@ -2721,12 +2628,12 @@ value set_flags s =
       match s.[i] with
       [ 'A' | 'a' -> do {
           let v = is_uppercase s.[i] in
-          flag_expand_declare.val := v;
           flag_horiz_let_in.val := v;
           flag_sequ_begin_at_eol.val := v;
+          flag_semi_semi.val := v;
         }
-      | 'D' | 'd' -> flag_expand_declare.val := is_uppercase s.[i]
       | 'L' | 'l' -> flag_horiz_let_in.val := is_uppercase s.[i]
+      | 'M' | 'm' -> flag_semi_semi.val := is_uppercase s.[i]
       | 'S' | 's' -> flag_sequ_begin_at_eol.val := is_uppercase s.[i]
       | c -> failwith ("bad flag " ^ String.make 1 c) ];
       loop (i + 1)
@@ -2738,60 +2645,9 @@ value default_flag () =
   let flag_off b t f = if b then "" else f in
   let on_off flag =
     sprintf "%s%s%s"
-      (flag flag_expand_declare.val "D" "d")
       (flag flag_horiz_let_in.val "L" "l")
+      (flag flag_semi_semi.val "M" "m")
       (flag flag_sequ_begin_at_eol.val "S" "s")
-  in
-  let on = on_off flag_on in
-  let off = on_off flag_off in
-  if String.length on < String.length off then sprintf "a%s" on
-  else sprintf "A%s" off
-;
-
-value set_wflags s =
-  loop 0 where rec loop i =
-    if i = String.length s then ()
-    else do {
-      match s.[i] with
-      [ 'A' | 'a' -> do {
-          let v = is_uppercase s.[i] in
-          flag_where_after_in.val := v;
-          flag_where_after_let_eq.val := v;
-          flag_where_after_match.val := v;
-          flag_where_after_field_eq.val := v;
-          flag_where_in_sequences.val := v;
-          flag_where_after_then.val := v;
-          flag_where_after_value_eq.val := v;
-          flag_where_after_arrow.val := v;
-        }
-      | 'I' | 'i' -> flag_where_after_in.val := is_uppercase s.[i]
-      | 'L' | 'l' -> flag_where_after_let_eq.val := is_uppercase s.[i]
-      | 'M' | 'm' -> flag_where_after_match.val := is_uppercase s.[i]
-      | 'P' | 'p' -> flag_where_after_lparen.val := is_uppercase s.[i]
-      | 'R' | 'r' -> flag_where_after_field_eq.val := is_uppercase s.[i]
-      | 'S' | 's' -> flag_where_in_sequences.val := is_uppercase s.[i]
-      | 'T' | 't' -> flag_where_after_then.val := is_uppercase s.[i]
-      | 'V' | 'v' -> flag_where_after_value_eq.val := is_uppercase s.[i]
-      | 'W' | 'w' -> flag_where_after_arrow.val := is_uppercase s.[i]
-      | c -> failwith ("bad wflag " ^ String.make 1 c) ];
-      loop (i + 1)
-    }
-;
-
-value default_wflag () =
-  let flag_on b t f = if b then t else "" in 
-  let flag_off b t f = if b then "" else f in
-  let on_off flag =
-    sprintf "%s%s%s%s%s%s%s%s%s"
-      (flag flag_where_after_in.val "I" "i")
-      (flag flag_where_after_let_eq.val "L" "l")
-      (flag flag_where_after_match.val "M" "m")
-      (flag flag_where_after_lparen.val "P" "p")
-      (flag flag_where_after_field_eq.val "R" "r")
-      (flag flag_where_in_sequences.val "S" "s")
-      (flag flag_where_after_then.val "T" "t")
-      (flag flag_where_after_value_eq.val "V" "v")
-      (flag flag_where_after_arrow.val "W" "w")
   in
   let on = on_off flag_on in
   let off = on_off flag_off in
@@ -2802,24 +2658,10 @@ value default_wflag () =
 Pcaml.add_option "-flag" (Arg.String set_flags)
   ("<str> Change pretty printing behaviour according to <flags>:
        A/a enable/disable all flags
-       D/d enable/disable allowing expanding 'declare'
        L/l enable/disable allowing printing 'let..in' horizontally
+       M/m enable/disable printing double semicolons
        S/s enable/disable printing sequences beginners at end of lines
        default setting is \"" ^ default_flag () ^ "\".");
-
-Pcaml.add_option "-wflag" (Arg.String set_wflags)
-  ("<str> Change displaying 'where' statements instead of 'let':
-       A/a enable/disable all flags
-       I/i enable/disable 'where' after 'in'
-       L/l enable/disable 'where' after 'let..='
-       M/m enable/disable 'where' after 'match' and 'try'
-       P/p enable/disable 'where' after left parenthesis
-       R/r enable/disable 'where' after 'record_field..='
-       S/s enable/disable 'where' in sequences
-       T/t enable/disable 'where' after 'then' or 'else'
-       V/v enable/disable 'where' after 'value..='
-       W/w enable/disable 'where' after '->'
-       default setting is \"" ^ default_wflag () ^ "\".");
 
 Pcaml.add_option "-l" (Arg.Int (fun x -> Pretty.line_length.val := x))
   ("<length> Maximum line length for pretty printing (default " ^
@@ -2828,10 +2670,11 @@ Pcaml.add_option "-l" (Arg.Int (fun x -> Pretty.line_length.val := x))
 Pcaml.add_option "-sep" (Arg.String (fun x -> sep.val := Some x))
   "<string> Use this string between phrases instead of reading source.";
 
-Pcaml.add_option "-ss" (Arg.Set flag_semi_semi) "Print double semicolons.";
+Pcaml.add_option "-ss" (Arg.Set flag_semi_semi)
+  "Print double semicolons (equivalent to -flag M).";
 
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.28 2007/07/04 02:52:57 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.29 2007/07/04 08:53:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
