@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: compile.ml,v 1.16 2007/08/20 09:16:18 deraugla Exp $ *)
+(* $Id: compile.ml,v 1.17 2007/08/21 10:55:31 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -158,6 +158,32 @@ value gen_let_loc loc e =
 
 value phony_entry = Grammar.Entry.obj Pcaml.implem;
 
+value rec get_token_list entry tokl last_tok tree =
+  match tree with
+  [ Node {node = Stoken tok; son = son; brother = DeadEnd} ->
+      get_token_list entry [last_tok :: tokl] tok son
+  | _ ->
+      if tokl = [] then None
+      else Some (List.rev [last_tok :: tokl], last_tok, tree) ]
+;
+
+value patt_of_token patt tok =
+  let _ =
+    if fst tok = "" && not (List.mem (snd tok) keywords.val) then
+      keywords.val := [snd tok :: keywords.val]
+    else ()
+  in
+  let p_con = String.escaped (fst tok) in
+  let p_prm = String.escaped (snd tok) in
+  if snd tok = "" then
+    if fst tok = "ANY" then <:patt< (_, $patt$) >>
+    else <:patt< ($str:p_con$, $patt$) >>
+  else
+    match patt with
+    [ <:patt< _ >> -> <:patt< ($str:p_con$, $str:p_prm$) >>
+    | _ -> <:patt< ($str:p_con$, ($str:p_prm$ as $patt$)) >> ]
+;
+
 value rec parse_tree entry nlevn alevn (tree, fst_symb) act_kont kont =
   match tree with
   [ DeadEnd -> kont
@@ -185,22 +211,51 @@ value rec parse_tree entry nlevn alevn (tree, fst_symb) act_kont kont =
       parse_symbol entry nlevn s p1 p2 (act, 0)
   | Node {node = s; son = son; brother = bro} ->
       let p2 = parse_tree entry nlevn alevn (bro, fst_symb) act_kont kont in
-      let p1 =
-        let err =
-          let txt = tree_failed entry s son in
-          <:expr< raise (Stream.Error $txt$) >>
-        in
-        match son with
-        [ Node {brother = DeadEnd} ->
-            parse_tree entry nlevn alevn (son, False) act_kont err
-        | _ ->
-            let p1 =
-              parse_tree entry nlevn alevn (son, True) act_kont
-                <:expr< raise Stream.Failure >>
-            in
-            <:expr< try $p1$ with [ Stream.Failure -> $err$ ] >> ]
+      let tokl =
+        match s with
+        [ Stoken tok -> get_token_list entry [] tok son
+        | _ -> None ]
       in
-      parse_symbol entry nlevn s p1 p2 (find_act son) ]
+      match tokl with
+      [ Some (([_; _ :: _] as tokl), last_tok, son) ->
+          let len = List.length tokl in
+          let (act, n) = find_act son in
+          let (p, _) =
+            List.fold_right
+              (fun tok (pl, n) ->
+                 let patt = nth_patt_of_act (act, n) in
+                 let p = patt_of_token patt tok in
+                 (<:patt< [$p$ :: $pl$] >>, n + 1))
+              tokl (<:patt< [] >>, n)
+          in
+          let p1 = parse_kont entry nlevn alevn act_kont s son in
+          let el =
+            List.fold_left
+              (fun el tok -> [<:expr< Stream.junk strm__ >> :: el])
+              [p1] tokl
+          in
+          <:expr<
+            match Stream.npeek $int:string_of_int len$ strm__ with
+            [ $p$ -> do { $list:el $ }
+            | _ -> $p2$ ]
+          >>
+      | _ ->
+          let p1 = parse_kont entry nlevn alevn act_kont s son in
+          parse_symbol entry nlevn s p1 p2 (find_act son) ] ]
+and parse_kont entry nlevn alevn act_kont s son =
+  let err =
+    let txt = tree_failed entry s son in
+    <:expr< raise (Stream.Error $txt$) >>
+  in
+  match son with
+  [ Node {brother = DeadEnd} ->
+      parse_tree entry nlevn alevn (son, False) act_kont err
+  | _ ->
+      let p1 =
+        parse_tree entry nlevn alevn (son, True) act_kont
+          <:expr< raise Stream.Failure >>
+      in
+      <:expr< try $p1$ with [ Stream.Failure -> $err$ ] >> ]
 and parse_symbol entry nlevn s rkont fkont ending_act =
   match s with
   [ Slist0 s ->
@@ -252,23 +307,8 @@ and parse_symbol entry nlevn s rkont fkont ending_act =
       let n = entry.ename ^ "_" ^ string_of_int nlevn in
       parse_standard_symbol <:expr< $lid:n$ >> rkont fkont ending_act
   | Stoken tok ->
-      let _ =
-        if fst tok = "" && not (List.mem (snd tok) keywords.val) then
-          keywords.val := [snd tok :: keywords.val]
-        else ()
-      in
-      let p =
-        let patt = nth_patt_of_act ending_act in
-        let p_con = String.escaped (fst tok) in
-        let p_prm = String.escaped (snd tok) in
-        if snd tok = "" then
-          if fst tok = "ANY" then <:patt< (_, $patt$) >>
-          else <:patt< ($str:p_con$, $patt$) >>
-        else
-          match patt with
-          [ <:patt< _ >> -> <:patt< ($str:p_con$, $str:p_prm$) >>
-          | _ -> <:patt< ($str:p_con$, ($str:p_prm$ as $patt$)) >> ]
-      in
+      let patt = nth_patt_of_act ending_act in
+      let p = patt_of_token patt tok in
       <:expr<
         match Stream.peek strm__ with
         [ Some $p$ -> do { Stream.junk strm__; $rkont$ }

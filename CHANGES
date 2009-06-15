@@ -2,7 +2,9 @@ Camlp5 Version 4.08:
 ---------------------
 
 * [no date] Updated documentation.
-* [20 Agu 07] Updated library interface comments.
+* [21 Aug 07] Improved compiled version (camlp5o.opt) to add the fact
+  that the grammar is LL(n) for rules starting with n terminals.
+* [20 Aug 07] Updated library interface comments.
 * [19 Aug 07] Added option -define with 'pa_macro.cmo' which prints the
   predefined macros and exit.
 * [16 Aug 07] Added pa_extprint.cmo, a new syntax for extensible pretty

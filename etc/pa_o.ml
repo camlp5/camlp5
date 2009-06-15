@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.37 2007/08/20 10:48:26 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.38 2007/08/21 10:55:31 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -114,23 +114,6 @@ value operator_rparen =
            Stream.junk strm;
            Stream.junk strm;
            s
-         }
-       | _ -> raise Stream.Failure ])
-;
-
-(*
-  Not necessary, since the grammar system is LL(n) for rules starting
-  with n terminals, but necessary even so, because it is used in native
-  code version in directory ../compile:
-*)
-value lident_colon =
-  Grammar.Entry.of_parser gram "lident_colon"
-    (fun strm ->
-       match Stream.npeek 2 strm with
-       [ [("LIDENT", i); ("", ":")] -> do {
-           Stream.junk strm;
-           Stream.junk strm;
-           i
          }
        | _ -> raise Stream.Failure ])
 ;
@@ -1072,7 +1055,7 @@ EXTEND
   (* Labels *)
   ctyp: AFTER "arrow"
     [ NONA
-      [ i = lident_colon; t = SELF -> <:ctyp< ~ $i$ : $t$ >>
+      [ i = LIDENT; ":"; t = SELF -> <:ctyp< ~ $i$ : $t$ >>
       | i = QUESTIONIDENTCOLON; t = SELF -> <:ctyp< ? $i$ : $t$ >> ] ]
   ;
   ctyp: LEVEL "simple"
@@ -1150,7 +1133,7 @@ EXTEND
           <:patt< ? ( $lid:i$ : $t$ ) >> ] ]
   ;
   class_type:
-    [ [ i = lident_colon; t = ctyp LEVEL "ctyp1"; "->"; ct = SELF ->
+    [ [ i = LIDENT; ":"; t = ctyp LEVEL "ctyp1"; "->"; ct = SELF ->
           <:class_type< [ ~ $i$ : $t$ ] -> $ct$ >>
       | i = QUESTIONIDENTCOLON; t = ctyp LEVEL "ctyp1"; "->"; ct = SELF ->
           <:class_type< [ ? $i$ : $t$ ] -> $ct$ >> ] ]
