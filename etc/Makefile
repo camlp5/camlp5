@@ -1,10 +1,10 @@
-# $Id: Makefile,v 1.14 2007/07/03 12:10:19 deraugla Exp $
+# $Id: Makefile,v 1.15 2007/07/03 13:36:01 deraugla Exp $
 
 include ../config/Makefile
 
 INCLUDES=-I ../camlp4 -I ../boot
 OCAMLCFLAGS=-warn-error A $(INCLUDES)
-OBJS=q_phony.cmo pa_o.cmo pa_op.cmo pa_oop.cmo pa_sml.cmo pa_lisp.cmo pa_scheme.cmo pa_extfold.cmo pa_extfun.cmo pa_fstream.cmo pa_lefteval.cmo pa_pragma.cmo pr_r_old.cmo pr_rnew.cmo pr_rp_old.cmo pr_ro.cmo pr_rpnew.cmo pr_o_old.cmo pr_onew.cmo pr_op_old.cmo pr_opnew.cmo pr_scheme.cmo pr_schemep.cmo pr_extend_old.cmo pr_extendnew.cmo pr_extfun.cmo pr_null.cmo pr_depend.cmo
+OBJS=q_phony.cmo pa_o.cmo pa_op.cmo pa_oop.cmo pa_sml.cmo pa_lisp.cmo pa_scheme.cmo pa_extfold.cmo pa_extfun.cmo pa_fstream.cmo pa_lefteval.cmo pa_pragma.cmo pr_r_old.cmo pr_r.cmo pr_rp_old.cmo pr_ro.cmo pr_rp.cmo pr_o_old.cmo pr_o.cmo pr_op_old.cmo pr_op.cmo pr_scheme.cmo pr_schemep.cmo pr_extend_old.cmo pr_extend.cmo pr_extfun.cmo pr_null.cmo pr_depend.cmo
 INTF=pa_o.cmi
 CAMLP4OM=pa_o.cmo pa_op.cmo ../meta/pr_dump.cmo
 CAMLP4SCHM=pa_scheme.cmo ../meta/pr_dump.cmo
