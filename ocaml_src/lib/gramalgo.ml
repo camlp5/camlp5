@@ -337,39 +337,43 @@ let get_symbol_after_dot =
   loop
 ;;
 
-let item_closure rl (lh, dot, rh as item) =
-  match get_symbol_after_dot dot rh with
-    Some (GS_nterm n) ->
-      let processed = ref [lh] in
-      let rec loop clos =
-        function
-          n :: to_process ->
-            if List.mem n !processed then loop clos to_process
-            else
-              begin
-                processed := n :: !processed;
-                let rl = List.filter (fun (lh, rh) -> n = lh) rl in
-                let clos =
-                  List.fold_left (fun clos (lh, rh) -> (lh, dot, rh) :: clos)
-                    clos rl
-                in
-                let to_process =
-                  List.fold_left
-                    (fun to_process (lh, rh) ->
-                       match rh with
-                         [] -> to_process
-                       | s :: sl ->
-                           match s with
-                             GS_nterm n -> n :: to_process
-                           | GS_term _ -> to_process)
-                    to_process rl
-                in
-                loop clos to_process
-              end
-        | [] -> List.rev clos
-      in
-      loop [item] [n]
-  | Some (GS_term _) | None -> [item]
+let item_set_closure rl items =
+  let processed = ref [] in
+  List.fold_left
+    (fun clos (lh, dot, rh as item) ->
+       match get_symbol_after_dot dot rh with
+         Some (GS_nterm n) ->
+           processed := lh :: !processed;
+           let rec loop clos =
+             function
+               n :: to_process ->
+                 if List.mem n !processed then loop clos to_process
+                 else
+                   begin
+                     processed := n :: !processed;
+                     let rl = List.filter (fun (lh, rh) -> n = lh) rl in
+                     let clos =
+                       List.fold_left
+                         (fun clos (lh, rh) -> (lh, dot, rh) :: clos) clos rl
+                     in
+                     let to_process =
+                       List.fold_left
+                         (fun to_process (lh, rh) ->
+                            match rh with
+                              [] -> to_process
+                            | s :: sl ->
+                                match s with
+                                  GS_nterm n -> n :: to_process
+                                | GS_term _ -> to_process)
+                         to_process rl
+                     in
+                     loop clos to_process
+                   end
+             | [] -> List.rev clos
+           in
+           loop (item :: clos) [n]
+       | Some (GS_term _) | None -> item :: clos)
+    [] items
 ;;
 
 let eprint_item (lh, dot, rh) =
@@ -403,7 +407,93 @@ let lr0 entry lev =
   Printf.eprintf "Item set 0\n\n";
   let item_set_0 =
     let item = "start-symb", 0, [GS_nterm (name_of_entry entry lev)] in
-    item_closure rl item
+    item_set_closure rl [item]
   in
-  List.iter eprint_item item_set_0; flush stderr
+  List.iter eprint_item item_set_0;
+  flush stderr;
+  let item_set_and_rest =
+    let item_set =
+      List.filter (fun (lh, dot, rh) -> dot < List.length rh) item_set_0
+    in
+    let s =
+      let rec loop =
+        function
+          (lh, dot, rh) :: rest ->
+            begin match get_symbol_after_dot dot rh with
+              Some s -> Some s
+            | None -> loop rest
+            end
+        | [] -> None
+      in
+      loop item_set
+    in
+    match s with
+      Some s ->
+        let (item_set, rest) =
+          List.partition
+            (fun (lh, dot, rh) ->
+               match get_symbol_after_dot dot rh with
+                 Some s1 -> s = s1
+               | None -> false)
+            item_set_0
+        in
+        let item_set =
+          List.map (fun (lh, dot, rh) -> lh, dot + 1, rh) item_set
+        in
+        let item_set = item_set_closure rl item_set in
+        Some (s, item_set, rest)
+    | None -> None
+  in
+  begin match item_set_and_rest with
+    Some (s, item_set, rest) ->
+      Printf.eprintf "\n";
+      Printf.eprintf "state 1 = after symbol \"%s\"\n\n" (sprint_symb s);
+      Printf.eprintf "Item set 1\n\n";
+      List.iter eprint_item item_set;
+      flush stderr
+  | None -> ()
+  end;
+  let item_set_and_rest =
+    match item_set_and_rest with
+      Some (s, item_set, rest) ->
+        let item_set = rest in
+        let s =
+          let rec loop =
+            function
+              (lh, dot, rh) :: rest ->
+                begin match get_symbol_after_dot dot rh with
+                  Some s -> Some s
+                | None -> loop rest
+                end
+            | [] -> None
+          in
+          loop item_set
+        in
+        begin match s with
+          Some s ->
+            let (item_set, rest) =
+              List.partition
+                (fun (lh, dot, rh) ->
+                   match get_symbol_after_dot dot rh with
+                     Some s1 -> s = s1
+                   | None -> false)
+                item_set_0
+            in
+            let item_set =
+              List.map (fun (lh, dot, rh) -> lh, dot + 1, rh) item_set
+            in
+            let item_set = item_set_closure rl item_set in
+            Some (s, item_set, rest)
+        | None -> None
+        end
+    | None -> None
+  in
+  match item_set_and_rest with
+    Some (s, item_set, rest) ->
+      Printf.eprintf "\n";
+      Printf.eprintf "state 2 = after symbol \"%s\"\n\n" (sprint_symb s);
+      Printf.eprintf "Item set 2\n\n";
+      List.iter eprint_item item_set;
+      flush stderr
+  | None -> ()
 ;;
