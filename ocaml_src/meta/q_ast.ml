@@ -1032,7 +1032,7 @@ module Meta =
                        (loc,
                         MLast.ExAcc
                           (loc, MLast.ExUid (loc, "MLast"),
-                           MLast.ExUid (loc, "Mefun")),
+                           MLast.ExUid (loc, "MeFun")),
                         ln),
                      e_string s),
                   mt),
@@ -1156,7 +1156,7 @@ Grammar.extend
        (fun _ (el : 'Pcaml__expr list) _ _ (loc : Token.location) ->
           (MLast.ExSeq (loc, el) : 'Pcaml__expr))]];
    Grammar.Entry.obj (Pcaml.expr : 'Pcaml__expr Grammar.Entry.e),
-   Some (Gramext.Level "simple"),
+   Some Gramext.Last,
    [None, None,
     [[Gramext.Stoken ("ANTIQUOT_LOC", "")],
      Gramext.action
@@ -1167,7 +1167,7 @@ Grammar.extend
        (fun (s : string) (loc : Token.location) ->
           (MLast.ExAnt (loc, MLast.ExLid (loc, s)) : 'Pcaml__expr))]];
    Grammar.Entry.obj (Pcaml.patt : 'Pcaml__patt Grammar.Entry.e),
-   Some (Gramext.Level "simple"),
+   Some Gramext.Last,
    [None, None,
     [[Gramext.Stoken ("ANTIQUOT_LOC", "")],
      Gramext.action
@@ -1178,14 +1178,14 @@ Grammar.extend
        (fun (s : string) (loc : Token.location) ->
           (MLast.PaAnt (loc, MLast.PaLid (loc, s)) : 'Pcaml__patt))]];
    Grammar.Entry.obj (Pcaml.ctyp : 'Pcaml__ctyp Grammar.Entry.e),
-   Some (Gramext.Level "simple"),
+   Some Gramext.Last,
    [None, None,
     [[Gramext.Stoken ("ANTIQUOT_LOC", "")],
      Gramext.action
        (fun (s : string) (loc : Token.location) ->
           (MLast.TyUid (loc, s) : 'Pcaml__ctyp))]];
    Grammar.Entry.obj (Pcaml.str_item : 'Pcaml__str_item Grammar.Entry.e),
-   None,
+   Some Gramext.Last,
    [None, None,
     [[Gramext.Stoken ("ANTIQUOT_LOC", "exp")],
      Gramext.action
@@ -1195,7 +1195,7 @@ Grammar.extend
            'Pcaml__str_item))]];
    Grammar.Entry.obj
      (Pcaml.module_expr : 'Pcaml__module_expr Grammar.Entry.e),
-   Some (Gramext.Level "simple"),
+   Some Gramext.Last,
    [None, None,
     [[Gramext.Stoken ("ANTIQUOT_LOC", "")],
      Gramext.action
@@ -1203,7 +1203,7 @@ Grammar.extend
           (MLast.MeUid (loc, s) : 'Pcaml__module_expr))]];
    Grammar.Entry.obj
      (Pcaml.module_type : 'Pcaml__module_type Grammar.Entry.e),
-   Some (Gramext.Level "simple"),
+   Some Gramext.Last,
    [None, None,
     [[Gramext.Stoken ("ANTIQUOT_LOC", "")],
      Gramext.action
