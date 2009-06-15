@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.16 2007/10/29 08:51:00 deraugla Exp $
+# $Id: Makefile,v 1.17 2007/11/19 18:08:48 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -9,7 +9,7 @@ INCLUDES=-I ../odyl -I $(TOP)/boot -I $(OTOP)/utils -I $(OTOP)/parsing
 OCAMLCFLAGS=-warn-error A $(INCLUDES)
 LINKFLAGS=$(INCLUDES)
 CAMLP5_OBJS=$(TOP)/boot/ploc.cmo $(TOP)/boot/plexing.cmo $(TOP)/boot/plexer.cmo $(TOP)/boot/fstream.cmo $(TOP)/boot/gramext.cmo $(TOP)/boot/grammar.cmo $(TOP)/boot/diff.cmo $(TOP)/boot/extfold.cmo $(TOP)/boot/extfun.cmo $(TOP)/boot/eprinter.cmo $(TOP)/boot/pretty.cmo $(OTOP)/utils/pconfig.cmo quotation.cmo ast2pt.cmo reloc.cmo pcaml.cmo exparser.cmo prtools.cmo argl.cmo $(TOP)/boot/stdpp.cmo $(TOP)/boot/token.cmo main.cmo
-CAMLP5_XOBJS=../lib/ploc.cmx ../lib/plexing.cmx ../lib/plexer.cmx ../lib/fstream.cmx ../lib/gramext.cmx ../lib/grammar.cmx ../lib/extfold.cmx ../lib/extfun.cmx ../lib/eprinter.cmx ../lib/pretty.cmx $(OTOP)/utils/pconfig.cmx quotation.cmx ast2pt.cmx reloc.cmx pcaml.cmx exparser.cmx prtools.cmx argl.cmx ../lib/stdpp.cmx ../lib/token.cmx main.cmx
+CAMLP5_XOBJS=../lib/ploc.cmx ../lib/plexing.cmx ../lib/plexer.cmx ../lib/fstream.cmx ../lib/gramext.cmx ../lib/grammar.cmx ../lib/diff.cmx ../lib/extfold.cmx ../lib/extfun.cmx ../lib/eprinter.cmx ../lib/pretty.cmx $(OTOP)/utils/pconfig.cmx quotation.cmx ast2pt.cmx reloc.cmx pcaml.cmx exparser.cmx prtools.cmx argl.cmx ../lib/stdpp.cmx ../lib/token.cmx main.cmx
 OBJS=../odyl/odyl.cma $(NAME).cma
 CAMLP5M=
 
@@ -59,5 +59,9 @@ install:
 	cp mLast.mli quotation.mli ast2pt.mli pcaml.mli prtools.mli "$(DESTDIR)$(LIBDIR)/$(NAME)/."
 	cp mLast.cmi quotation.cmi ast2pt.cmi pcaml.cmi prtools.cmi "$(DESTDIR)$(LIBDIR)/$(NAME)/."
 	cp $(NAME).cma "$(DESTDIR)$(LIBDIR)/$(NAME)/."
+	if test -f $(NAME).cmxa; then \
+	  cp $(NAME).cmxa "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	  cp $(NAME).a "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	fi
 
 include .depend

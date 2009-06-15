@@ -1,10 +1,11 @@
-# $Id: Makefile,v 1.36 2007/11/17 21:52:29 deraugla Exp $
+# $Id: Makefile,v 1.37 2007/11/19 18:08:48 deraugla Exp $
 
 include config/Makefile
 
 DIRS=odyl main meta etc top ocpp lib man
 FDIRS=odyl main meta lib
-OPTDIRS=ocaml_stuff lib odyl main meta compile
+OPTDIRS=ocaml_stuff lib odyl main meta
+OPTOPTDIRS=compile
 SHELL=/bin/sh
 COLD_FILES=ocaml_src/main/argl.ml ocaml_src/main/ast2pt.ml ocaml_src/main/ast2pt.mli ocaml_src/main/mLast.mli ocaml_src/main/pcaml.ml ocaml_src/main/pcaml.mli ocaml_src/main/quotation.ml ocaml_src/main/quotation.mli ocaml_src/main/reloc.ml ocaml_src/main/reloc.mli ocaml_src/lib/extfun.ml ocaml_src/lib/extfun.mli ocaml_src/lib/fstream.ml ocaml_src/lib/fstream.mli ocaml_src/lib/gramext.ml ocaml_src/lib/gramext.mli ocaml_src/lib/grammar.ml ocaml_src/lib/grammar.mli ocaml_src/lib/plexer.ml ocaml_src/lib/plexer.mli ocaml_src/lib/stdpp.ml ocaml_src/lib/stdpp.mli ocaml_src/lib/token.ml ocaml_src/lib/token.mli ocaml_src/meta/pa_extend.ml ocaml_src/meta/pa_extend_m.ml ocaml_src/meta/pa_macro.ml ocaml_src/meta/pa_r.ml ocaml_src/meta/pa_rp.ml ocaml_src/meta/pr_dump.ml ocaml_src/meta/q_MLast.ml ocaml_src/odyl/odyl_main.ml ocaml_src/odyl/odyl_main.mli ocaml_src/odyl/odyl.ml
 PR_O=pr_o.cmo
@@ -20,11 +21,10 @@ out: boot/$(NAME)$(EXE)
 	set -e; for i in $(DIRS); do cd $$i; $(MAKE) all; cd ..; done
 
 opt:
-	cd lib; $(MAKE) opt
+	set -e; for i in $(OPTDIRS); do cd $$i; $(MAKE) opt; cd ..; done
 
 opt.opt:
-	set -e; for i in $(OPTDIRS); do cd $$i; $(MAKE) opt; cd ..; done
-	cd etc; $(MAKE) opt
+	set -e; for i in $(OPTOPTDIRS); do cd $$i; $(MAKE) opt; cd ..; done
 
 ocaml_src/main/ast2pt.ml:
 	@echo "Please run 'configure' first"; exit 2

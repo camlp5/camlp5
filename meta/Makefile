@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.23 2007/11/17 21:52:29 deraugla Exp $
+# $Id: Makefile,v 1.24 2007/11/19 18:08:48 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -10,7 +10,7 @@ CAMLP5RM=pa_r.cmo pa_rp.cmo pr_dump.cmo
 CAMLP5RMX=pa_r.cmx pa_rp.cmx pr_dump.cmx
 SHELL=/bin/sh
 COUT=$(OBJS) $(NAME)r$(EXE)
-COPT=$(NAME)r.opt
+COPT=$(OBJS:.cmo=.cmx) $(NAME)r.opt
 
 all: $(COUT)
 opt: $(COPT)
@@ -58,7 +58,8 @@ install:
 	cp $(NAME)r$(EXE) "$(DESTDIR)$(BINDIR)/."
 	if test -f $(COPT); then cp $(COPT) "$(DESTDIR)$(BINDIR)/."; fi
 	if test -f pa_r.cmx; then \
-	  cp pa_r.cmx pa_rp.cmx "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	  cp $(OBJS:.cmo=.cmx) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	  cp $(OBJS:.cmo=.o) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
 	fi
 
 include .depend

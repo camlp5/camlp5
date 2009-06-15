@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.42 2007/11/17 21:52:29 deraugla Exp $
+# $Id: Makefile,v 1.43 2007/11/19 18:08:48 deraugla Exp $
 
 include ../config/Makefile
 
@@ -10,7 +10,7 @@ CAMLP5SCHM=pa_scheme.cmo ../meta/pr_dump.cmo
 CAMLP5OMX=pa_o.cmx pa_op.cmx ../meta/pr_dump.cmx
 SHELL=/bin/sh
 COUT=$(OBJS) $(NAME)o$(EXE) $(NAME)sch$(EXE)
-COPT=$(NAME)o.opt
+COPT=$(OBJS:.cmo=.cmx) $(NAME)o.opt
 
 all: $(COUT) mk$(NAME).sh
 opt: $(COPT)
@@ -23,6 +23,15 @@ pr_op.cmo: parserify.cmo pr_op_main.cmo
 
 pr_schemep.cmo: parserify.cmo pr_schp_main.cmo
 	$(OCAMLC) parserify.cmo pr_schp_main.cmo -a -o $@
+
+pr_rp.cmx: parserify.cmx pr_rp_main.cmx
+	$(OCAMLOPT) parserify.cmx pr_rp_main.cmx -a -o $@
+
+pr_op.cmx: parserify.cmx pr_op_main.cmx
+	$(OCAMLOPT) parserify.cmx pr_op_main.cmx -a -o $@
+
+pr_schemep.cmx: parserify.cmx pr_schp_main.cmx
+	$(OCAMLOPT) parserify.cmx pr_schp_main.cmx -a -o $@
 
 $(NAME)o$(EXE): ../main/$(NAME)$(EXE) $(CAMLP5OM)
 	rm -f $(NAME)o$(EXE)
@@ -79,7 +88,8 @@ install:
 	cp $(NAME)o$(EXE) $(NAME)sch$(EXE) "$(DESTDIR)$(BINDIR)/."
 	if test -f $(COPT); then cp $(COPT) "$(DESTDIR)$(BINDIR)/."; fi
 	if test -f pa_o.cmx; then \
-	  cp pa_o.cmx pa_op.cmx "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	  cp $(OBJS:.cmo=.cmx) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	  cp $(OBJS:.cmo=.o) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
 	fi
 
 pa_lisp.cmo: pa_lispr.cmo

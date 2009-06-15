@@ -1,6 +1,8 @@
 Camlp5 Version 5.03:
 --------------------
 
+* [19 Nov 07] Added more installed cmx and cmxa files to allow building
+  native code linking of all combinations of Camlp5.
 * [14 Nov 07] Fixed bug in pr_o.cmo: failed with printing "{a.(i) with ...}".
 * [14 Nov 07] Fixed bug under Windows for the printers (pr_o.cmo, pr_r.cmo
   and pr_scheme.cmo): extra return character '\r' was added at end of
