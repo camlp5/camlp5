@@ -5,7 +5,7 @@
   <!-- $Id$ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Pretty</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <link rel="shortcut icon" href="c4logo.png" />
   <link rel="stylesheet" type="text/css" href="styles/base.css" />
@@ -36,7 +36,7 @@ raise, the second function is called.</p>
 
 <p>The type of "horiz_vertic" is:</p>
 
-<pre>(unit -> 'a) -> (unit -> 'a) -> 'a</tt></pre>
+<pre>(unit -> 'a) -> (unit -> 'a) -> 'a</pre>
 
 <h4>the horizontal function</h4>
 
@@ -52,7 +52,7 @@ module).</p>
 <p>In case of failure of the "horizontal function", the second function
 of "horiz_vertic", the "vertical" function, is called. In the context of
 that function, the "sprintf" function behaves like the normal "sprintf"
-function of the OCaml library module "Printf".<p>
+function of the OCaml library module "Printf".</p>
 
 <h3><span class="value">sprintf</span></h3>
 
@@ -81,7 +81,7 @@ short, you want to see:</p>
 
 <pre>&lt;li&gt;something&lt;/li&gt;</pre>
 
-<p>If the "something" has several lines, you want to see that:
+<p>If the "something" has several lines, you want to see that:</p>
 
 <pre>
 &lt;li&gt;
@@ -94,8 +94,8 @@ short, you want to see:</p>
 <pre>
 open Pretty;
 horiz_vertic
-  (fun () -> sprintf "&lt;li&gt;something&lt/&gt;")
-  (fun () -> sprintf "&lt;li&gt;\n  something\n&lt/li&gt;");
+  (fun () -> sprintf "&lt;li&gt;something&lt;/&gt;")
+  (fun () -> sprintf "&lt;li&gt;\n  something\n&lt;/li&gt;");
 </pre>
 
 <p>Notice that the "<code>sprintf</code>" above is the one of the
@@ -108,8 +108,8 @@ rather look like:</p>
 
 <pre>
 horiz_vertic
-  (fun () -> sprintf "&lt;li&gt;%s&lt/&gt;" (print something))
-  (fun () -> sprintf "&lt;li&gt;\n  %s\n&lt/li&gt;" (print something))
+  (fun () -> sprintf "&lt;li&gt;%s&lt;/&gt;" (print something))
+  (fun () -> sprintf "&lt;li&gt;\n  %s\n&lt;/li&gt;" (print something))
 </pre>
 
 <p>Parts of this "something" can be printed horizontally and other
@@ -141,8 +141,8 @@ but give it as parameter of your "print" function:</p>
 
 <pre>
 horiz_vertic
-  (fun () -> sprintf "&lt;li&gt;%s&lt/&gt;" (print "" something))
-  (fun () -> sprintf "&lt;li&gt;\n%s\n&lt/li&gt;" (print "  " something))
+  (fun () -> sprintf "&lt;li&gt;%s&lt;/&gt;" (print "" something))
+  (fun () -> sprintf "&lt;li&gt;\n%s\n&lt;/li&gt;" (print "  " something))
 </pre>
 
 <p>Now, the "print" function could look like, supposing you print
@@ -217,7 +217,6 @@ horiz_vertic
   (fun () -> Some (sprintf "I hold on a single line")
   (fun () -> None)
 </pre>
-</li>
 
 <h3>Why raising exceptions ?</h3>
 
@@ -237,12 +236,18 @@ built. If, for example, the final printed data holds on 50 lines,
 tenth of lines may be build and build again unusefully before the
 overflowing is tested.</p>
 
-</ul>
-
+<p>
 <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+</p>
 
 <hr style="margin:0" /><div style="font-size: 80%"><em>Copyright 2007
-Daniel de Rauglaudre (INRIA)</em>
+Daniel de Rauglaudre (INRIA)</em></div>
+
+<p>
+     <a href="http://validator.w3.org/check?uri=referer"><img
+        src="http://www.w3.org/Icons/valid-xhtml11" style="border:0"
+        alt="Valid XHTML 1.1" height="31" width="88" /></a>
+</p>
 
 </body>
 </html>

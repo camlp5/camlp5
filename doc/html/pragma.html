@@ -5,7 +5,7 @@
   <!-- $Id$ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>pragma</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <link rel="shortcut icon" href="c4logo.png" />
   <link rel="stylesheet" type="text/css" href="styles/base.css" />
@@ -30,10 +30,10 @@ using it just after:</p>
     GLOBAL: expr;
     expr: LEVEL "top"
       [ [ "repeat"; e1 = sequence; "until"; e2 = SELF ->
-            <:expr< do { $e1$; while not $e2$ do { $e1$ } } >> ] ]
+            &lt;:expr&lt; do { $e1$; while not $e2$ do { $e1$ } } &gt;&gt; ] ]
     ;
     sequence:
-      [ [ el = LIST1 expr_semi -> <:expr< do { $list:el$ } >>  ] ]
+      [ [ el = LIST1 expr_semi -> &lt;:expr&lt; do { $list:el$ } &gt;&gt;  ] ]
     ;
     expr_semi:
       [ [ e = expr; ";" -> e ] ]
@@ -54,10 +54,18 @@ ocamlc -pp "camlp4r q_MLast.cmo pa_extend.cmo pa_pragma.cmo" -I +camlp4 foo.ml
 <p>Notice that it is still experimental and probably incomplete, for the
 moment.</p>
 
+<p>
 <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+</p>
 
 <hr style="margin:0" /><div style="font-size: 80%"><em>Copyright 2007
-Daniel de Rauglaudre (INRIA)</em>
+Daniel de Rauglaudre (INRIA)</em></div>
+
+<p>
+     <a href="http://validator.w3.org/check?uri=referer"><img
+        src="http://www.w3.org/Icons/valid-xhtml11" style="border:0"
+        alt="Valid XHTML 1.1" height="31" width="88" /></a>
+</p>
 
 </body>
 </html>

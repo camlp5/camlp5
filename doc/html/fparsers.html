@@ -5,7 +5,7 @@
   <!-- $Id$ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>purely functional parsers of streams</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <link rel="shortcut icon" href="c4logo.png" />
   <link rel="stylesheet" type="text/css" href="styles/base.css" />
@@ -74,7 +74,7 @@ function "<code>f</code>". To create a new stream element, the
 function "<code>f</code>" is called with the current stream count,
 starting with zero. The user function "<code>f</code>" must return
 either "<code>Some &lt;value&gt;</code>" for a value or
-"<code>None</code>" to specify the end of the stream.
+"<code>None</code>" to specify the end of the stream.</p>
 
 <h3>Fstream.of_list</h3>
 
@@ -123,7 +123,7 @@ system tries all parsers cases before returning "<code>None</code>",
 and that the initial stream is not affected, it is not possible to
 directly find where the error happened. This is a problem for parsing
 using backtracking (here, it is limited backtracking, but the problem
-is the same).<p>
+is the same).</p>
 
 <p>The solution is to use the function
 "<code>Fstream.count_unfrozen</code>" applied to the initial
@@ -142,10 +142,18 @@ same stream to call another parser, and hope to get the right position
 of the error, if another error happens, since it may test less terminals
 than the first parser. Use a fresh stream in this case, if possible.</p>
 
+<p>
 <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+</p>
 
 <hr style="margin:0" /><div style="font-size: 80%"><em>Copyright 2007
-Daniel de Rauglaudre (INRIA)</em>
+Daniel de Rauglaudre (INRIA)</em></div>
+
+<p>
+     <a href="http://validator.w3.org/check?uri=referer"><img
+        src="http://www.w3.org/Icons/valid-xhtml11" style="border:0"
+        alt="Valid XHTML 1.1" height="31" width="88" /></a>
+</p>
 
 </body>
 </html>

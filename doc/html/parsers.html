@@ -5,9 +5,10 @@
   <!-- $Id$ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>parsers</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <link rel="shortcut icon" href="c4logo.png" />
+  <link rel="stylesheet" type="text/css" href="styles/base.css" />
 </head>
 <body>
 
@@ -17,7 +18,7 @@
 streams of Camlp4. Streams are kinds of lazy lists. The parsers of
 these streams use recursive descendent method, which is the most
 natural one in functional languages. In particular, parsers are normal
-functions.
+functions.</p>
 
 <p>Notice that the parsers have existed in OCaml since many years (the
 beginning of the 90ies), but some new features have been added in 2007
@@ -44,15 +45,14 @@ happen.</p>
 method named "recursive descendent" : they look at the first element,
 they decide what to do in function of its value, and continue the
 parsing with the remaining elements. Parsers can call other parsers,
-and can be recursive, like normal functions.<p>
+and can be recursive, like normal functions.</p>
 
 <p>Actually, parsers are just pure syntactic sugar. When writing a
 parser in the syntax of the parser, Camlp4 transforms them into normal
 call to functions, use of patterns matchings and try..with statements.
 The pretty printer of Camlp4, by default, display this expanded
 result, without syntax of parsers. A pretty printing kit, when added,
-can rebuild the parsers in their initial syntax and display it.<p>
-
+can rebuild the parsers in their initial syntax and display it.</p>
 
 <h2>Syntax</h2>
 
@@ -107,7 +107,7 @@ function "<code>f</code>". To create a new stream element, the
 function "<code>f</code>" is called with the current stream count,
 starting with zero. The user function "<code>f</code>" must return
 either "<code>Some &lt;value&gt;</code>" for a value or
-"<code>None</code>" to specify the end of the stream.
+"<code>None</code>" to specify the end of the stream.</p>
 
 <h3>Stream.of_list</h3>
 
@@ -141,9 +141,9 @@ exception "<code>Stream.Error</code>" which has a parameter of type
 string : by default, this string is the empty string, but if the
 stream pattern component which does not match is followed by a
 question mark and an expression, this expression is evaluated and
-given as parameter to "<code>Stream.Error</code>".<p>
+given as parameter to "<code>Stream.Error</code>".</p>
 
-<p>In short, a parser can return with three ways:<p>
+<p>In short, a parser can return with three ways:</p>
 
 <ul>
 
@@ -205,7 +205,7 @@ never apply.</p>
 
 <p>The solution, with this parsing technology, is to do a left
 factorization of the parsing cases, namely programming it like
-this:<p>
+this:</p>
 
 <pre>
 parser
@@ -304,7 +304,7 @@ can be used with a "let..in" construction. The three cases are:</p>
   (new feature 2007) and a lookahead expression (see further), meaning:
   if the lookahead applies, the stream pattern component matches. The
   lookahead may unfreeze one or several elements on the stream, but
-  does not remove them.</p>
+  does not remove them.</li>
 
   </ol>
 
@@ -414,7 +414,7 @@ where to treat and differentiate the following inputs:</p>
 <p>The first case is treated in a rule, telling: "a left parenthesis,
 followed by an expression, and a right parenthesis". The second one
 is "a left parenthesis, an operator, a right parenthesis". If programming
-it like this (left factorizing the first parenthesis):<p>
+it like this (left factorizing the first parenthesis):</p>
 
 <pre>
 parser
@@ -429,9 +429,9 @@ parser
 <p>this does not work if the input is "<code>(-)</code>" because the
 rule "<code>e = expr</code>" accepts the minus sign as expression
 starting, removing it from the input stream and fails as parsing
-error, while encountering the right parenthesis.<p>
+error, while encountering the right parenthesis.</p>
 
-<p>Conversely, writing it this way:<p>
+<p>Conversely, writing it this way:</p>
 
 <pre>
 parser
@@ -446,7 +446,7 @@ parser
 <p>does not help, because if the input is "<code>(-x+1)</code>" the
 rule above starting with "<code>`Minus</code>" is accepted and the
 exception "<code>Stream.Error</code>" is raised while encountering the
-variable "<code>x</code>" since a right parenthesis is expected.<p>
+variable "<code>x</code>" since a right parenthesis is expected.</p>
 
 <p>In general, these cases are resolved by a left factorization of the
 parser cases (see the section "Semantics" above), but it is not possible
@@ -475,7 +475,7 @@ to end a stream pattern component of kind "non-terminal" ("pattern"
 "equal" "expression") by the character "exclamation mark". Like said
 above, this inhibits the transformation of the exception
 "<code>Stream.Failure</code>", possibly raised by the called parser,
-into the exception "<code>Stream.Error</code>".<p>
+into the exception "<code>Stream.Error</code>".</p>
 
 <p>The code:</p>
 
@@ -579,7 +579,7 @@ value rec expr =
 </pre>
 
 <p>this would endless loop, exactly like if you wrote a code starting
-like:<p>
+like:</p>
 
 <pre>
 value rec expr e =
@@ -658,7 +658,7 @@ This level is generally called "parsing".</li>
 </ul>
 
 <p>The "parser" construction described here can be used for both, thanks
-to the polymorphism of OCaml:<p>
+to the polymorphism of OCaml:</p>
 
 <ul>
 
@@ -711,10 +711,18 @@ drawback of backtracking parsers. See the solutions found to this
 problem in the <a href="fparsers.html">page about purely functional
 parsers</a>.</p>
 
+<p>
 <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+</p>
 
 <hr style="margin:0" /><div style="font-size: 80%"><em>Copyright 2007
-Daniel de Rauglaudre (INRIA)</em>
+Daniel de Rauglaudre (INRIA)</em></div>
+
+<p>
+     <a href="http://validator.w3.org/check?uri=referer"><img
+        src="http://www.w3.org/Icons/valid-xhtml11" style="border:0"
+        alt="Valid XHTML 1.1" height="31" width="88" /></a>
+</p>
 
 </body>
 </html>

@@ -5,7 +5,7 @@
   <!-- $Id$ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>lexers</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <link rel="shortcut icon" href="c4logo.png" />
   <link rel="stylesheet" type="text/css" href="styles/base.css" />
@@ -192,7 +192,7 @@ further).</p>
 <p>Rules which have no semantic action return the lexing buffer
 itself.</p>
 
-<h3>Symbols</H3>
+<h3>Symbols</h3>
 
 <p>The different kinds or symbols in a rule are:</p>
 
@@ -202,11 +202,12 @@ itself.</p>
 if the stream is empty.</li>
 
 <li>A string which represent a matching of any character in the
-string. Notice that it is a <u>choice</u> between all the characters,
-<u>not</u> the sequence of these characters. To indicate a sequence,
-you have to use several symbols, the ones behind the others. Character
-ranges can be inserted using the characters "<code>..</code>". For
-example, to specify a match of any letter or digit, you can write
+string. Notice that it is a <span style="font:underline">choice</span>
+between all the characters, <span style="font:underline">not</span>
+the sequence of these characters. To indicate a sequence, you have to
+use several symbols, the ones behind the others. Character ranges can
+be inserted using the characters "<code>..</code>". For example, to
+specify a match of any letter or digit, you can write
 "<code>A..Za..z0..9</code>". Conversely, the beginning of a comment in
 the OCaml language has to be written: <code>"(" "*"</code>,
 not <code>"(*"</code> which would mean "the character left parenthesis
@@ -258,7 +259,7 @@ a new feature added in 2007).</li>
 
 </ul>
 
-<p><a name="specific"></a></p>
+<p><a id="specific"></a></p>
 
 <h3>Specific expressions</h3>
 
@@ -286,7 +287,7 @@ the stream in number of characters (starting at zero).</li>
 
 </ul>
 
-<p><a name="lookahead"></a></p>
+<p><a id="lookahead"></a></p>
 
 <h3>Lookahead</h3>
 
@@ -303,7 +304,8 @@ parsers of tokens (which is not our case here, since we parse only
 characters), when one writes a parser to recognize both the typicall
 grammar rules "if..then..else" and the shorter "if..then..", the
 solution is to write a rule starting with "if..then.." followed with a
-call to a parser recognizing "else.." <u>or</u> nothing.</p>
+call to a parser recognizing "else.." <span style="font:underline">or</span>
+nothing.</p>
 
 <p>Sometimes, however, this left factorization is not possible. A
 lookahead of the stream to check the presence of some elements (these
@@ -340,7 +342,7 @@ characters <code>&lt;</code> and <code>&lt;</code> or starting with
 the two characters <code>&lt;</code> and <code>:</code> (this is
 another example in the same file).</p>
 
-<h3>Semantic actions of rules</H3>
+<h3>Semantic actions of rules</h3>
 
 <p>By default, the result of a "lexer" is the current lexing buffer,
 which is of type "<code>B.t</code>". But it is possible to return
@@ -351,7 +353,7 @@ in OCaml.</p>
 <p>An interesting result, for example, could be the string
 corresponding to the characters of the lexing buffer. This can be
 obtained by returning the value "<code>$buf</code>" (see
-section <a href="#specific">3.2</A>)</p>
+section <a href="#specific">3.2</a>)</p>
 
 <h3>A complete example</h3>
 
@@ -390,10 +392,18 @@ camlp4r pa_lex.cmo pr_r.cmo bar.ml
 camlp4r pa_lex.cmo pr_r.cmo pr_rp.cmo bar.ml
 </pre>
 
+<p>
 <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+</p>
 
 <hr style="margin:0" /><div style="font-size: 80%"><em>Copyright 2007
-Daniel de Rauglaudre (INRIA)</em>
+Daniel de Rauglaudre (INRIA)</em></div>
+
+<p>
+     <a href="http://validator.w3.org/check?uri=referer"><img
+        src="http://www.w3.org/Icons/valid-xhtml11" style="border:0"
+        alt="Valid XHTML 1.1" height="31" width="88" /></a>
+</p>
 
 </body>
 </html>

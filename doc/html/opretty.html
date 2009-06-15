@@ -5,7 +5,7 @@
   <!-- $Id$ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Pretty Printing OCaml Programs</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf8" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <link rel="shortcut icon" href="c4logo.png" />
   <link rel="stylesheet" type="text/css" href="styles/base.css" />
@@ -23,7 +23,7 @@ rules. We present here how it works in the Camlp4 sources.</p>
 <p>The pretty print system of Camlp4 uses the library modules
 <a href="pretty.html">Pretty</a>, an original system to format
 output) and <a href="extfun.html">Extfun</a>, another original
-system of extensible functions.
+system of extensible functions.</p>
 
 <p>This documentation is destinated to programmers who want to
 understand how the pretty printing of ocaml programs work in camlp4,
@@ -181,7 +181,7 @@ some parts of the pretty printing extensible functions of
 <pre>
 value expr_app =
   extfun Extfun.empty with
-  [ <:expr< $e1$ $e2$ >> ->
+  [ &lt;:expr&lt; $e1$ $e2$ &gt;&gt; ->
       fun curr next pc ->
         horiz_vertic
           (fun () ->
@@ -322,15 +322,23 @@ be extended, e.g.</p>
 let expr_app = find_pr_level "app" pr_expr.pr_levels in
 expr_app.pr_rules :=
   extfun expr_app.pr_rules with
-  [ <:expr< .... >> -> ...
-  | <:expr< .... >> -> ... 
+  [ &lt;:expr&lt; .... &gt;&gt; -> ...
+  | &lt;:expr&lt; .... &gt;&gt; -> ... 
   | ... ];
 </pre>
 
+<p>
 <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+</p>
 
 <hr style="margin:0" /><div style="font-size: 80%"><em>Copyright 2007
-Daniel de Rauglaudre (INRIA)</em>
+Daniel de Rauglaudre (INRIA)</em></div>
+
+<p>
+     <a href="http://validator.w3.org/check?uri=referer"><img
+        src="http://www.w3.org/Icons/valid-xhtml11" style="border:0"
+        alt="Valid XHTML 1.1" height="31" width="88" /></a>
+</p>
 
 </body>
 </html>
