@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.102 2007/09/22 22:53:59 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.103 2007/09/22 23:14:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -976,13 +976,13 @@ EXTEND
           Qast.Node "CrDcl" [Qast.Loc; st]
       | "inherit"; ce = class_expr; pb = SV (OPT as_lident) ->
           Qast.Node "CrInh" [Qast.Loc; ce; pb]
-      | "value"; mf = SV (FLAG "mutable"); lab = SV label "lid";
+      | "value"; mf = SV (FLAG "mutable"); lab = SV label "lid" "";
         e = cvalue_binding ->
           Qast.Node "CrVal" [Qast.Loc; lab; mf; e]
-      | "method"; "virtual"; pf = SV (FLAG "private"); l = SV label "lid";
+      | "method"; "virtual"; pf = SV (FLAG "private"); l = SV label "lid" "";
         ":"; t = ctyp ->
           Qast.Node "CrVir" [Qast.Loc; l; pf; t]
-      | "method"; pf = SV (FLAG "private"); l = SV label "lid";
+      | "method"; pf = SV (FLAG "private"); l = SV label "lid" "";
         topt = SV (OPT polyt); e = fun_binding ->
           Qast.Node "CrMth" [Qast.Loc; l; pf; e; topt]
       | "type"; t1 = ctyp; "="; t2 = ctyp ->
@@ -1025,13 +1025,13 @@ EXTEND
     [ [ "declare"; st = SV (LIST0 [ s = class_sig_item; ";" -> s ]); "end" ->
           Qast.Node "CgDcl" [Qast.Loc; st]
       | "inherit"; cs = class_type -> Qast.Node "CgInh" [Qast.Loc; cs]
-      | "value"; mf = SV (FLAG "mutable"); l = SV label "lid"; ":";
+      | "value"; mf = SV (FLAG "mutable"); l = SV label "lid" ""; ":";
         t = ctyp ->
           Qast.Node "CgVal" [Qast.Loc; l; mf; t]
-      | "method"; "virtual"; pf = SV (FLAG "private"); l = SV label "lid";
+      | "method"; "virtual"; pf = SV (FLAG "private"); l = SV label "lid" "";
         ":"; t = ctyp ->
           Qast.Node "CgVir" [Qast.Loc; l; pf; t]
-      | "method"; pf = SV (FLAG "private"); l = SV label "lid"; ":";
+      | "method"; pf = SV (FLAG "private"); l = SV label "lid" ""; ":";
         t = ctyp ->
           Qast.Node "CgMth" [Qast.Loc; l; pf; t]
       | "type"; t1 = ctyp; "="; t2 = ctyp ->
@@ -1060,7 +1060,7 @@ EXTEND
           Qast.Node "ExObj" [Qast.Loc; cspo; cf] ] ]
   ;
   expr: LEVEL "."
-    [ [ e = SELF; "#"; lab = SV label "lid" ->
+    [ [ e = SELF; "#"; lab = SV label "lid" "" ->
           Qast.Node "ExSnd" [Qast.Loc; e; lab] ] ]
   ;
   expr: LEVEL "simple"
@@ -1332,7 +1332,6 @@ EXTEND
   ;
   a_UIDENT:
     [ [ a = ANTIQUOT "uid" -> Qast.VaAnt "uid" loc a
-      | a = ANTIQUOT -> Qast.VaAnt "" loc a
       | i = UIDENT -> Qast.Str i ] ]
   ;
   a_UIDENT2:
@@ -1343,7 +1342,6 @@ EXTEND
   ;
   a_LIDENT:
     [ [ a = ANTIQUOT "lid" -> Qast.VaAnt "lid" loc a
-      | a = ANTIQUOT -> Qast.VaAnt "" loc a
       | i = LIDENT -> Qast.Str i ] ]
   ;
   a_LIDENT2:
@@ -1354,79 +1352,65 @@ EXTEND
   ;
   a_INT:
     [ [ a = ANTIQUOT "int" -> Qast.VaAnt "int" loc a
-      | a = ANTIQUOT -> Qast.VaAnt "" loc a
       | s = INT -> Qast.Str s ] ]
   ;
   a_INT2:
     [ [ a = ANTIQUOT "int" -> Qast.VaVal (Qast.VaAnt "int" loc a)
       | a = ANTIQUOT "_int" -> Qast.VaAnt "_int" loc a
-      | a = ANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a)
       | s = INT -> Qast.VaVal (Qast.Str s) ] ]
   ;
   a_INT_l:
     [ [ a = ANTIQUOT "int32" -> Qast.VaAnt "int32" loc a
-      | a = ANTIQUOT -> Qast.VaAnt "" loc a
       | s = INT_l -> Qast.Str s ] ]
   ;
   a_INT_l2:
     [ [ a = ANTIQUOT "int32" -> Qast.VaVal (Qast.VaAnt "int32" loc a)
       | a = ANTIQUOT "_int32" -> Qast.VaAnt "_int32" loc a
-      | a = ANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a)
       | s = INT_l -> Qast.VaVal (Qast.Str s) ] ]
   ;
   a_INT_L:
     [ [ a = ANTIQUOT "int64" -> Qast.VaAnt "int64" loc a
-      | a = ANTIQUOT -> Qast.VaAnt "" loc a
       | s = INT_L -> Qast.Str s ] ]
   ;
   a_INT_L2:
     [ [ a = ANTIQUOT "int64" -> Qast.VaVal (Qast.VaAnt "int64" loc a)
       | a = ANTIQUOT "_int64" -> Qast.VaAnt "_int64" loc a
-      | a = ANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a)
       | s = INT_L -> Qast.VaVal (Qast.Str s) ] ]
   ;
   a_INT_n:
     [ [ a = ANTIQUOT "nativeint" -> Qast.VaAnt "nativeint" loc a
-      | a = ANTIQUOT -> Qast.VaAnt "" loc a
       | s = INT_n -> Qast.Str s ] ]
   ;
   a_INT_n2:
     [ [ a = ANTIQUOT "nativeint" -> Qast.VaVal (Qast.VaAnt "nativeint" loc a)
       | a = ANTIQUOT "_nativeint" -> Qast.VaAnt "_nativeint" loc a
-      | a = ANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a)
       | s = INT_n -> Qast.VaVal (Qast.Str s) ] ]
   ;
   a_FLOAT:
     [ [ a = ANTIQUOT "flo" -> Qast.VaAnt "flo" loc a
-      | a = ANTIQUOT -> Qast.VaAnt "" loc a
       | s = FLOAT -> Qast.Str s ] ]
   ;
   a_FLOAT2:
     [ [ a = ANTIQUOT "flo" -> Qast.VaVal (Qast.VaAnt "flo" loc a)
       | a = ANTIQUOT "_flo" -> Qast.VaAnt "_flo" loc a
-      | a = ANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a)
       | s = FLOAT -> Qast.VaVal (Qast.Str s) ] ]
   ;
   a_STRING:
     [ [ a = ANTIQUOT "str" -> Qast.VaAnt "str" loc a
-      | a = ANTIQUOT -> Qast.VaAnt "" loc a
       | s = STRING -> Qast.Str s ] ]
   ;
   a_STRING2:
     [ [ a = ANTIQUOT "str" -> Qast.VaVal (Qast.VaAnt "str" loc a)
       | a = ANTIQUOT "_str" -> Qast.VaAnt "_str" loc a
-      | a = ANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a)
       | s = STRING -> Qast.VaVal (Qast.Str s) ] ]
   ;
   a_CHAR:
     [ [ a = ANTIQUOT "chr" -> Qast.VaAnt "chr" loc a
-      | a = ANTIQUOT -> Qast.VaAnt "" loc a
       | s = CHAR -> Qast.Str s ] ]
   ;
   a_CHAR2:
     [ [ a = ANTIQUOT "chr" -> Qast.VaVal (Qast.VaAnt "chr" loc a)
       | a = ANTIQUOT "_chr" -> Qast.VaAnt "_chr" loc a
-      | a = ANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a)
       | s = CHAR -> Qast.VaVal (Qast.Str s) ] ]
   ;
   a_TILDEIDENT:

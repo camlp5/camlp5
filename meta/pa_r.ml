@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.102 2007/09/22 22:53:59 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.103 2007/09/22 23:14:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -568,13 +568,13 @@ EXTEND
           <:class_str_item< declare $_list:st$ end >>
       | "inherit"; ce = class_expr; pb = V (OPT as_lident) ->
           <:class_str_item< inherit $ce$ $_opt:pb$ >>
-      | "value"; mf = V (FLAG "mutable"); lab = V label "lid";
+      | "value"; mf = V (FLAG "mutable"); lab = V label "lid" "";
         e = cvalue_binding ->
           <:class_str_item< value $_flag:mf$ $_lid:lab$ = $e$ >>
-      | "method"; "virtual"; pf = V (FLAG "private"); l = V label "lid";
+      | "method"; "virtual"; pf = V (FLAG "private"); l = V label "lid" "";
         ":"; t = ctyp ->
           <:class_str_item< method virtual $_flag:pf$ $_lid:l$ : $t$ >>
-      | "method"; pf = V (FLAG "private"); l = V label "lid";
+      | "method"; pf = V (FLAG "private"); l = V label "lid" "";
         topt = V (OPT polyt); e = fun_binding ->
           <:class_str_item< method $_flag:pf$ $_lid:l$ $_opt:topt$ = $e$ >>
       | "type"; t1 = ctyp; "="; t2 = ctyp ->
@@ -614,12 +614,14 @@ EXTEND
     [ [ "declare"; st = V (LIST0 [ s = class_sig_item; ";" -> s ]); "end" ->
           <:class_sig_item< declare $_list:st$ end >>
       | "inherit"; cs = class_type -> <:class_sig_item< inherit $cs$ >>
-      | "value"; mf = V (FLAG "mutable"); l = V label "lid"; ":"; t = ctyp ->
-          <:class_sig_item< value $_flag:mf$ $_lid:l$ : $t$ >>
-      | "method"; "virtual"; pf = V (FLAG "private"); l = V label "lid"; ":";
+      | "value"; mf = V (FLAG "mutable"); l = V label "lid" ""; ":";
         t = ctyp ->
+          <:class_sig_item< value $_flag:mf$ $_lid:l$ : $t$ >>
+      | "method"; "virtual"; pf = V (FLAG "private"); l = V label "lid" "";
+        ":"; t = ctyp ->
           <:class_sig_item< method virtual $_flag:pf$ $_lid:l$ : $t$ >>
-      | "method"; pf = V (FLAG "private"); l = V label "lid"; ":"; t = ctyp ->
+      | "method"; pf = V (FLAG "private"); l = V label "lid" ""; ":";
+        t = ctyp ->
           <:class_sig_item< method $_flag:pf$ $_lid:l$ : $t$ >>
       | "type"; t1 = ctyp; "="; t2 = ctyp ->
           <:class_sig_item< type $t1$ = $t2$ >> ] ]
@@ -644,7 +646,8 @@ EXTEND
           <:expr< object $_opt:cspo$ $_list:cf$ end >> ] ]
   ;
   expr: LEVEL "."
-    [ [ e = SELF; "#"; lab = V label "lid" -> <:expr< $e$ # $_lid:lab$ >> ] ]
+    [ [ e = SELF; "#"; lab = V label "lid" "" ->
+          <:expr< $e$ # $_lid:lab$ >> ] ]
   ;
   expr: LEVEL "simple"
     [ [ "("; e = SELF; ":"; t = ctyp; ":>"; t2 = ctyp; ")" ->
