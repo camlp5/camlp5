@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: lexers.html,v 1.11 2007/08/22 09:17:59 deraugla Exp $ -->
+  <!-- $Id: lexers.html,v 1.12 2007/08/23 14:47:19 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>lexers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -19,13 +19,13 @@
 
 <h1 class="top">Stream lexers</h1>
 
-<p>The file pa_lex.cmo is a Camlp5 syntax extension kit for parsers
-for streams of the type 'char'. This syntax is shorter in length and
-more readable than its equivalent version written
-with <a href="parsers.html">classical stream parsers</a>.  Like
-classical parsers, they use recursive descendant parsing. They are
-also pure syntax sugar, and each lexer written with this syntax can be
-written using normal parsers syntax.</p>
+<p>The file "<tt>pa_lex.cmo</tt>" is a Camlp5 syntax extension kit for
+  parsers of streams of the type 'char'. This syntax is shorter and
+  more readable than its equivalent version written
+  with <a href="parsers.html">classical stream parsers</a>. But, like
+  classical parsers, they use recursive descendant parsing. They are
+  also pure syntax sugar, and each lexer written with this syntax can
+  be written using normal parsers syntax.</p>
 
 <div id="tableofcontents">
 </div>
@@ -33,17 +33,17 @@ written using normal parsers syntax.</p>
 <h2>Introduction</h2>
 
 <p>Classical parsers in OCaml apply to streams of any type of
-values. But, for the specific type "char", it has been possible to
-shorten codes in several ways, in particular by using strings to group
-several characters together, and by hidding the management of a
-"lexing buffer", a data structure recording the matched
-characters.</p>
+  values. For the specific type "char", it has been possible to
+  shorten encoding in several ways, in particular by using strings to
+  group several characters together, and by hidding the management of
+  a "lexing buffer", a data structure recording the matched
+  characters.</p>
 
 <p>In order to motivate our work, here is a small example. Let us look
-at the following parser. It parses an identifier, composed of letters,
-digits, underscores, quotes and utf-8 characters, and record the
-result in a buffer. In classical parsers syntax, this could be written
-like this:</p>
+  at the following parser. It parses an identifier, composed of
+  letters, digits, underscores, quotes and utf-8 characters, and
+  record the result in a buffer. In classical parsers syntax, this
+  could be written like this:</p>
 
 <pre>
   value rec ident buf =
@@ -60,13 +60,13 @@ like this:</p>
   value rec ident = lexer [ "A..Za..z0..9_'\128..\255" ident! | ];
 </pre>
 
-<p>The two codes are strictly equivalent, but the lexer version is easier
-to write and understand, and is much shorter.</p>
+<p>The two codes are strictly equivalent, but the lexer version is
+  easier to write and understand, and is much shorter.</p>
 
 <h2>Syntax</h2>
 
 <p>When loading the syntax extension <code>pa_lex.cmo</code>, the
-OCaml syntax is extended as follows:</p>
+  OCaml syntax is extended as follows:</p>
 
 <pre>
           expression ::= lexer
@@ -101,14 +101,14 @@ OCaml syntax is extended as follows:</p>
 </pre>
 
 <p>The identifiers "<code>STRING</code>", "<code>CHAR</code>" and
-"<code>LIDENT</code>" above represent the OCaml tokens corresponding
-to string, character and lowercase identifier (identifier starting
-with a lowercase character).</p>
+  "<code>LIDENT</code>" above represent the OCaml tokens corresponding
+  to string, character and lowercase identifier (identifier starting
+  with a lowercase character).</p>
 
 <p>Moreover, together with that syntax extension, another extension is
-added the entry <code>expression</code>, typically for the semantics
-actions of the "<code>lexer</code>" statement above, but not only. It
-is:</p>
+  added the entry <code>expression</code>, typically for the semantics
+  actions of the "<code>lexer</code>" statement above, but not only. It
+  is:</p>
 
 <pre>
   expression ::= "$" "add" STRING
@@ -118,10 +118,10 @@ is:</p>
 </pre>
 
 <p>Remark: the identifiers "add", "buf", "empty" and "pos" do not
-become keywords (they are not reserved words) but just identifiers. On
-the contrary, the identifier <code>lexer</code>, which introduces the
-syntax, is a new keyword and cannot be used as variable identifier any
-more.</p>
+  become keywords (they are not reserved words) but just
+  identifiers. On the contrary, the identifier "<tt>lexer</tt>", which
+  introduces the syntax, is a new keyword and cannot be used as
+  variable identifier any more.</p>
 
 <h2>Semantics</h2>
 
