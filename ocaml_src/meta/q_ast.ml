@@ -630,6 +630,35 @@ module Meta =
                 end
             | _ -> assert false
             end
+        | ExApp (_, e1, e2) ->
+            MLast.PaApp
+              (loc,
+               MLast.PaApp
+                 (loc,
+                  MLast.PaApp
+                    (loc,
+                     MLast.PaAcc
+                       (loc, MLast.PaUid (loc, "MLast"),
+                        MLast.PaUid (loc, "ExApp")),
+                     MLast.PaAny loc),
+                  loop e1),
+               loop e2)
+        | ExIfe (_, e1, e2, e3) ->
+            MLast.PaApp
+              (loc,
+               MLast.PaApp
+                 (loc,
+                  MLast.PaApp
+                    (loc,
+                     MLast.PaApp
+                       (loc,
+                        MLast.PaAcc
+                          (loc, MLast.PaUid (loc, "MLast"),
+                           MLast.PaUid (loc, "ExIfe")),
+                        MLast.PaAny loc),
+                     loop e1),
+                  loop e2),
+               loop e3)
         | ExInt (_, s, k) ->
             MLast.PaApp
               (loc,
@@ -673,6 +702,26 @@ module Meta =
                      rf),
                   lpe),
                loop e)
+        | ExLid (_, s) ->
+            MLast.PaApp
+              (loc,
+               MLast.PaApp
+                 (loc,
+                  MLast.PaAcc
+                    (loc, MLast.PaUid (loc, "MLast"),
+                     MLast.PaUid (loc, "ExLid")),
+                  MLast.PaAny loc),
+               p_string s)
+        | ExUid (_, s) ->
+            MLast.PaApp
+              (loc,
+               MLast.PaApp
+                 (loc,
+                  MLast.PaAcc
+                    (loc, MLast.PaUid (loc, "MLast"),
+                     MLast.PaUid (loc, "ExUid")),
+                  MLast.PaAny loc),
+               p_string s)
         | x -> not_impl "p_expr" x
       in
       loop e
@@ -1126,13 +1175,9 @@ lex.Token.tok_match <-
       (function
          "ANTIQUOT_LOC", prm -> check_anti_loc prm ""
        | _ -> raise Stream.Failure)
-  | "ANTIQUOT_LOC", "anti" ->
+  | "ANTIQUOT_LOC", p_prm ->
       (function
-         "ANTIQUOT_LOC", prm -> check_anti_loc prm "anti"
-       | _ -> raise Stream.Failure)
-  | "ANTIQUOT_LOC", "exp" ->
-      (function
-         "ANTIQUOT_LOC", prm -> check_anti_loc prm "exp"
+         "ANTIQUOT_LOC", prm -> check_anti_loc prm p_prm
        | _ -> raise Stream.Failure)
   | "INT", "" ->
       (function

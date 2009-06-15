@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.21 2007/08/02 10:57:44 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.22 2007/08/03 05:28:52 deraugla Exp $ *)
 
 open Stdpp;
 
@@ -604,18 +604,6 @@ value ssflag loc s =
       {prod = prod; action = Some act}
     in
     let r2 =
-      let s =
-        match s.text with
-        [ TXtok loc "" <:expr< $str:_$ >> ->
-            let rl =
-              [{prod = [{pattern = Some <:patt< x >>; symbol = s}];
-                action = Some <:expr< Qast.Str x >>}]
-            in
-            let t = new_type_var () in
-            {used = []; text = TXrules loc (srules loc t rl "");
-             styp = STquo loc t}
-        | _ -> s ]
-      in
       let prod =
         [mk_psymbol <:patt< a >> (TXflag loc s.text) (STlid loc "bool")]
       in
