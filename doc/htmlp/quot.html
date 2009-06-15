@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: quot.html,v 1.25 2007/10/27 03:31:59 deraugla Exp $ -->
+  <!-- $Id: quot.html,v 1.26 2007/12/16 17:20:58 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>quotations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -439,6 +439,58 @@
   in
   let loc = Ploc.make_unlined (sh, sh + len) in
   &lt;:expr&lt; $anti:e$ >>
+</pre>
+
+<h2>Located errors</h2>
+
+<p>If the quotation expander raises an exception, by default, the
+  whole quotation is underlined:</p>
+
+<pre>
+  $ cat foo.ml
+  #load "q_MLast.cmo";
+  let expr s = raise (Failure "hello") in
+  Quotation.add "a" (Quotation.ExAst (expr, fun []));
+
+  $ ocaml -I +camlp5 camlp5r.cma
+          Objective Caml version ...
+
+          Camlp5 Parsing version ...
+
+  # #use "foo.ml";
+  - : unit = ()
+  # <:a< good morning >>;
+  Toplevel input:
+  # <:a< good morning >>;
+    ^^^^^^^^^^^^^^^^^^^^
+  While expanding quotation "a":
+  Failure: hello
+</pre>
+
+<p>To specify a location of the exception, use the function
+  "<tt>Ploc.raise</tt>" instead of "<tt>raise</tt>". In this
+  example, let us suppose that we want only the characters
+  5 to 7 are underlined. This can be done like this:</p>
+
+<pre>
+  $ cat foo.ml
+  #load "q_MLast.cmo";
+  let expr s = Ploc.raise (Ploc.make 1 0 (5, 7)) (Failure "hello") in
+  Quotation.add "a" (Quotation.ExAst (expr, fun []));
+
+  $ ledit ocaml -I +camlp5 camlp5r.cma
+          Objective Caml version ...
+
+          Camlp5 Parsing version ...
+
+  # #use "foo.ml";
+  - : unit = ()
+  # <:a< good morning >>;
+  Toplevel input:
+  # <:a< good morning >>;
+             ^^
+  While expanding quotation "a":
+  Failure: hello
 </pre>
 
 <h2>The Quotation module</h2>

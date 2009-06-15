@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: locations.html,v 1.7 2007/10/14 08:06:01 deraugla Exp $ -->
+  <!-- $Id: locations.html,v 1.8 2007/12/16 17:20:58 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Locations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -101,7 +101,7 @@
   "<tt>Ploc.raise</tt>". The raised exception is "<tt>Ploc.Exc</tt>"
   with two parameters: the location and the exception itself.</p>
 
-<p>Notice that "<tt>raise_with_loc</tt>" just reraises the exception
+<p>Notice that "<tt>Ploc.raise</tt>" just reraises the exception
   if it is already the exception "<tt>Ploc.Exc</tt>", ignoring then
   the new given location.</p>
 

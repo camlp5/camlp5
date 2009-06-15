@@ -6,6 +6,15 @@
     <lastBuildDate>Mon Sep 17 15:10:47 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
     <item>
+      <title>Located exceptions</title>
+      <description>
+        Explained in a new section "Located errors" how put locations
+        to exceptions raised in quotations expanders.
+      </description>
+      <pubDate>Sun Dec 16 18:18:08 CET 2007</pubDate>
+      <link>../quot.html</link>
+    </item>
+    <item>
       <title>Backtracking example</title>
       <description>
         Added an example of backtracking.
