@@ -1,4 +1,4 @@
-/* $Id: base.css,v 1.21 2007/07/19 01:27:36 deraugla Exp $ */
+/* $Id: base.css,v 1.22 2007/07/19 11:03:00 deraugla Exp $ */
 
 body { margin: 0 0 1px 0; background-color: rgb(189,225,255) }
 body { border: 0 }
@@ -46,6 +46,9 @@ pre {
 }
 
 dl { margin-left: 1cm }
+
+.half { width: 50% }
+.centered { margin: auto }
 
 .top { margin-top: 0; padding-top: 5mm }
 .bottom { margin-bottom: 0 }

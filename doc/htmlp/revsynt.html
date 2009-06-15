@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: revsynt.html,v 1.1 2007/07/17 01:35:36 deraugla Exp $ -->
+  <!-- $Id: revsynt.html,v 1.2 2007/07/19 11:03:00 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>revised syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -17,6 +17,50 @@
 <div id="content">
 
 <h1 class="top">The revised syntax</h1>
+
+<p>The revised syntax is an alternative syntax of ocaml. It is close to
+  the normal syntax, we present here only what is different between the
+  two syntaxes.</p>
+
+<h2>General</h2>
+
+<ul>
+  <li>Structure and signature items, objects items always end with a
+    single semicolon.</li>
+
+  <li>In structures, the declaration of a value is introduced by the
+    keyword "value", instead of "let":
+
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>let x = 23;;</tt></td>
+        <td><tt>value x = 23;</tt></td>
+      </tr>
+      <tr>
+        <td><tt>let x = 23 in x + 7;;</tt></td>
+        <td><tt>let x = 23 in x + 7;</tt></td>
+      </tr>
+    </table>
+  </li>
+
+  <li>In signatures, the declaration of a value is also introduced by
+    the keyword "value", instead of "val":
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>val x : int;;</tt></td>
+        <td><tt>value x : int;</tt></td>
+      </tr>
+    </table>
+  </li>
+</ul>
 
 <p>...<em>to be written</em>...</p>
 

@@ -1,10 +1,21 @@
 #!/bin/sh
-# $Id: html2latex,v 1.24 2007/07/19 08:24:09 deraugla Exp $
+# $Id: html2latex,v 1.25 2007/07/19 11:03:00 deraugla Exp $
 
 FILES="index.html ptools.html revsynt.html parsers.html fparsers.html lexers.html grammars.html pretty.html opretty.html ml_ast.html pragma.html extfun.html"
 
 /bin/echo '\documentclass[twoside]{report}
 \usepackage{fullpage}
+
+\def\tableau#1#2#3{%
+\begin{center}
+\begin{tabular}{#1}
+\hline
+\makebox[5cm][l]{#2} & \makebox[5cm][l]{#3} \\
+\hline
+}
+\def\endtableau{\hline\end{tabular}\end{center}}
+\def\entree#1#2{{\verb~#1~} & {\verb~#2~} \\}
+
 \begin{document}
 
 \def\cslversion{4.04}
@@ -35,7 +46,9 @@ for i in $FILES; do
   sed \
     -e '{:b; /<\/p>$/N; s|<\/p>\n *|<\/p>|g; tb}' \
     -e 's|</p><p>|\n\n\\\n\n\\noindent |g' \
-    -e '{s/^ *<p>/\\noindent /; s|</p>|\n\n|}' |
+    -e '{s/^ *<p>/\\noindent /; s|</p>|\n\n|}' \
+    -e '{/<tr>/N; s/^ *<tr>\n *<th/<th/}' \
+    -e '{/<\/tr>/N; s|^ *</tr>\n||}' |
   sed \
     -e '0,/<div id="content">/d' \
     -e '/<div id="tableofcontents">/,/<\/div>/d' \
@@ -43,6 +56,11 @@ for i in $FILES; do
     -e 's/^ *<h2>/\\section{/' -e 's|</h2>|}|' \
     -e 's/^ *<h3>/\\subsection{/' -e 's|</h3>|}|' \
     -e 's/^ *<h4>/\\subsubsection{/' -e 's|</h4>|}|' \
+    -e 's/^ *<table width="75%" class="centered">/\\begin{tableau}{|l|l|}/' \
+    -e 's|^ *</table>|\\end{tableau}|' \
+    -e 's/^ *<th align="left" class="half">/  {/' -e 's|</th>|}|' \
+    -e 's|^ *<tr>|  \\entree|' -e 's|^ *</tr>||' \
+    -e 's| *<td>|    {|' -e 's|</td>|}|' \
     -e 's|<br/>||g' \
     -e 's/^ *<ul>/\\begin{itemize}/' -e 's|^ *</ul>|\\end{itemize}|' \
     -e 's/^ *<ol>/\\begin{enumerate}/' -e 's|^ *</ol>|\\end{enumerate}|' \
