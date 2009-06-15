@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.168 2007/12/26 19:40:08 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.169 2007/12/26 19:55:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1791,16 +1791,13 @@ EXTEND_PRINTER
   ;
   pr_ctyp: LEVEL "simple"
     [ [ <:ctyp< < $list:ml$ $flag:v$ > >> ->
-          if ml = [] then
-            sprintf "%s<%s >%s" pc.bef (if v then " .." else "") pc.aft
+          if ml = [] then pprintf pc "<%s >" (if v then " .." else "")
           else
             let ml = List.map (fun e -> (e, ";")) ml in
-            plist field 0
-              {(pc) with ind = pc.ind + 2; bef = sprintf "%s< " pc.bef;
-               aft = sprintf "%s >%s" (if v then "; .." else "") pc.aft}
-              ml
+            pprintf pc "< %p%s >" (plist field 0) ml
+              (if v then "; .." else "")
       | <:ctyp< # $list:id$ >> ->
-          class_longident {(pc) with bef = sprintf "%s#" pc.bef}  id
+          pprintf pc "#%p" class_longident id
       | <:ctyp< [ = $list:pvl$ ] >> ->
           variant_decl_list "" pc pvl
       | <:ctyp< [ > $list:pvl$ ] >> ->
@@ -1810,10 +1807,7 @@ EXTEND_PRINTER
       | <:ctyp< [ < $list:pvl$ > $list:_$ ] >> ->
           not_impl "variants 4" pc pvl
       | <:ctyp< $_$ as $_$ >> as z ->
-          ctyp
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            z ] ]
+          pprintf pc "@[<1>(%p)@]" ctyp z ] ]
   ;
   pr_sig_item: LEVEL "top"
     [ [ <:sig_item< class $list:cd$ >> ->
