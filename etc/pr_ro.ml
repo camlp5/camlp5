@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_ro.ml,v 1.31 2007/07/07 20:00:08 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.32 2007/07/08 13:46:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -434,6 +434,8 @@ lev.pr_rules :=
             {(pc) with bef = sprintf "%s{< " pc.bef;
              aft = sprintf " >}%s" pc.aft}
             fel
+  | <:expr< `$uid:s$ >> ->
+      fun curr next pc -> sprintf "%s`%s%s" pc.bef s pc.aft
   | <:expr< new $list:_$ >> | <:expr< object $list:_$ end >> as z ->
       fun curr next pc ->
         expr

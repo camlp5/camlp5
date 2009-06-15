@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.57 2007/07/08 05:05:31 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.58 2007/07/08 13:46:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -320,7 +320,11 @@ value let_binding pc (p, e) =
       let (up, ue) = un_irrefut_patt p in
       (up, <:expr< match $e$ with [ $p$ -> $ue$ ] >>)
   in
-  let (pl, e) = expr_fun_args e in
+  let (pl, e) =
+    match p with
+    [ <:patt< ($_$ : $_$) >> -> ([], e)
+    | _ -> expr_fun_args e ]
+  in
   let pl = [p :: pl] in
   let (e, tyo) =
     match (p, e) with
@@ -1522,10 +1526,12 @@ value expr_simple =
   | <:expr< {($e$) with $list:lel$} >> ->
       fun curr next pc ->
         let lxl = List.map (fun lx -> (lx, ";")) lel in
+        let simple_expr = pr_expr.pr_fun "simple" in
         plistl (record_binding False) (record_binding True) 0
           {(pc) with ind = pc.ind + 1;
            bef =
-             expr {(pc) with bef = sprintf "%s{" pc.bef; aft = " with "} e;
+             simple_expr
+               {(pc) with bef = sprintf "%s{" pc.bef; aft = " with "} e;
            aft = (sprintf "}%s" pc.aft)} lxl
   | <:expr< [| $list:el$ |] >> ->
       fun curr next pc ->
@@ -1605,7 +1611,8 @@ value expr_simple =
   | <:expr< $uid:s$ >> ->
       fun curr next pc -> cons_escaped pc s
   | <:expr< `$uid:s$ >> ->
-      fun curr next pc -> sprintf "%s%s%s" pc.bef s pc.aft
+      fun curr next pc ->
+        failwith "variants not pretty printed (in expr); add pr_ro.cmo"
   | <:expr< $str:s$ >> ->
       fun curr next pc -> sprintf "%s\"%s\"%s" pc.bef s pc.aft
   | <:expr< $chr:s$ >> ->
@@ -1787,11 +1794,10 @@ value patt_simple =
         let (xl, y) = make_patt_list z in
         match y with
         [ Some  y ->
-            let xl = List.map (fun x -> (x, " ::")) (xl @ [y]) in
-            plist patt 0
+            patt
               {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
                aft = sprintf ")%s" pc.aft}
-              xl
+              z
         | None ->
             let xl = List.map (fun x -> (x, ";")) xl in
             plist patt 0
@@ -2249,14 +2255,32 @@ value module_expr_top =
 
 value module_expr_apply =
   extfun Extfun.empty with
-  [ <:module_expr< $x$ $y$ >> as z ->
+  [ <:module_expr< $x$ $y$ >> ->
       fun curr next pc ->
-        let unfold =
-          fun
-          [ <:module_expr< $x$ $y$ >> -> Some (x, "", y)
-          | e -> None ]
+        let mod_exp2 pc (is_first, me) =
+          match me with
+          [ <:module_expr< $uid:_$ >> | <:module_expr< $_$ . $_$ >>
+            when not is_first ->
+              next
+                {(pc) with bef = sprintf "%s(" pc.bef;
+                 aft = sprintf ")%s" pc.aft}
+                me
+          | _ -> next pc me ]
         in
-        left_operator pc 2 unfold next z
+        let (me, mel) =
+          loop [(False, y)] x where rec loop mel =
+            fun
+            [ <:module_expr< $x$ $y$ >> -> loop [(False, y) :: mel] x
+            | me -> ((True, me), mel) ]
+        in
+        horiz_vertic
+          (fun () ->
+             sprintf "%s%s%s" pc.bef
+               (hlist mod_exp2 {(pc) with bef = ""; aft = ""} [me :: mel])
+               pc.aft)
+          (fun () ->
+             let mel = List.map (fun me -> (me, "")) [me :: mel] in
+             plist mod_exp2 2 pc mel)
   | z ->
       fun curr next pc -> next pc z ]
 ;
@@ -3025,6 +3049,8 @@ lev.pr_rules :=
             {(pc) with bef = sprintf "%s{< " pc.bef;
              aft = sprintf " >}%s" pc.aft}
             fel
+  | <:expr< `$uid:s$ >> ->
+      fun curr next pc -> sprintf "%s`%s%s" pc.bef s pc.aft
   | <:expr< new $list:_$ >> | <:expr< object $list:_$ end >> as z ->
       fun curr next pc ->
         expr
@@ -3328,6 +3354,26 @@ value class_sig_item_top =
   | z -> fun curr next pc -> not_impl "class_sig_item" pc z ]
 ;
 
+value poly_type bang pc =
+  fun
+  [ <:ctyp< ! $list:tpl$ . $t$ >> ->
+      horiz_vertic
+        (fun () ->
+           sprintf "%s%s%s . %s%s" pc.bef bang
+             (hlist typevar {(pc) with bef = ""; aft = ""} tpl)
+             (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
+        (fun () ->
+           let s1 =
+             sprintf "%s%s%s ." pc.bef bang
+               (hlist typevar {(pc) with bef = ""; aft = ""} tpl)
+           in
+           let s2 =
+             ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t
+           in
+           sprintf "%s\n%s" s1 s2)
+  | t -> ctyp pc t ]
+;
+
 value class_str_item_top =
   extfun Extfun.empty with
   [ <:class_str_item< inherit $ce$ $opt:pb$ >> ->
@@ -3373,7 +3419,8 @@ value class_str_item_top =
                (if priv then " private" else "") s args
                (match topt with
                 [ Some t ->
-                    sprintf " : %s" (ctyp {(pc) with bef = ""; aft = ""} t)
+                    sprintf " : %s"
+                      (poly_type "" {(pc) with bef = ""; aft = ""} t)
                 | None -> "" ])
                (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
           (fun () ->
@@ -3387,14 +3434,14 @@ value class_str_item_top =
                      (fun () ->
                         sprintf "%smethod%s %s%s : %s =" pc.bef
                           (if priv then " private" else "") s args
-                          (ctyp {(pc) with bef = ""; aft = ""} t))
+                          (poly_type "" {(pc) with bef = ""; aft = ""} t))
                      (fun () ->
                         let s1 =
                           sprintf "%smethod%s %s%s :" pc.bef
                             (if priv then " private" else "") s args
                         in
                         let s2 =
-                          ctyp
+                          poly_type ""
                             {(pc) with ind = pc.ind + 4;
                              bef = tab (pc.ind + 4); aft = " ="}
                             t
@@ -3447,22 +3494,8 @@ value ctyp_as =
 
 value ctyp_poly =
   extfun Extfun.empty with
-  [ <:ctyp< ! $list:pl$ . $t$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s! %s . %s%s" pc.bef
-               (hlist typevar {(pc) with bef = ""; aft = ""} pl)
-               (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-          (fun () ->
-             let s1 =
-               sprintf "%s! %s ." pc.bef
-                 (hlist typevar {(pc) with bef = ""; aft = ""} pl)
-             in
-             let s2 =
-               ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t
-             in
-             sprintf "%s\n%s" s1 s2)
+  [ <:ctyp< ! $list:_$ . $_$ >> as z ->
+      fun curr next pc -> poly_type "! " pc z
   | z -> fun curr next pc -> next pc z ]
 ;
 

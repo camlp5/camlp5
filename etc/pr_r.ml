@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.47 2007/07/08 03:12:03 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.48 2007/07/08 13:46:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1552,7 +1552,8 @@ value expr_simple =
   | <:expr< $uid:s$ >> ->
       fun curr next pc -> cons_escaped pc s
   | <:expr< `$uid:s$ >> ->
-      fun curr next pc -> sprintf "%s%s%s" pc.bef s pc.aft
+      fun curr next pc ->
+        failwith "variants not pretty printed (in expr); add pr_ro.cmo"
   | <:expr< $str:s$ >> ->
       fun curr next pc -> sprintf "%s\"%s\"%s" pc.bef s pc.aft
   | <:expr< $chr:s$ >> ->
@@ -1760,7 +1761,7 @@ value patt_simple =
         failwith "labels not pretty printed (in patt); add pr_ro.cmo"
   | <:patt< `$uid:s$ >> ->
       fun curr next pc ->
-        failwith "polymorphic variants not pretty printed; add pr_ro.cmo"
+        failwith "variants not pretty printed (in patt); add pr_ro.cmo"
   | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >>
     as z ->
       fun curr next pc ->
