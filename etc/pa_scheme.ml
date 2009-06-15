@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.17 2007/09/11 19:14:13 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.18 2007/09/12 19:58:05 deraugla Exp $
 
 (open Pcaml)
 
@@ -357,7 +357,7 @@
      ((Sexpr loc [(Slid _ "type") se1 se2])
       (let* ((tn (mod_ident_se se1))
              (te (ctyp_se se2)))
-         (MLast.WcTyp loc tn [] False te)))
+         <:with_constr< type $tn$ = $te$ >>))
      (se (error se "with constr"))))
   (sig_item_se
     (lambda_match

@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.73 2007/09/12 19:28:52 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.74 2007/09/12 19:58:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -208,11 +208,11 @@ EXTEND
           <:module_type< functor ( $auid:i$ : $t$ ) -> $mt$ >> ] ]
   ;
   with_constr:
-    [ [ "type"; i = mod_ident; tpl = LIST0 type_parameter; "=";
-        pf = FLAG "private"; t = ctyp ->
-          <:with_constr< type $i$ $list:tpl$ = $flag:pf$ $t$ >>
-      | "module"; i = mod_ident; "="; me = module_expr ->
-          <:with_constr< module $i$ = $me$ >> ] ]
+    [ [ "type"; i = mod_ident2; tpl = V LIST0 type_parameter; "=";
+        pf = V FLAG "private"; t = ctyp ->
+          <:with_constr< type $a:i$ $alist:tpl$ = $aflag:pf$ $t$ >>
+      | "module"; i = mod_ident2; "="; me = module_expr ->
+          <:with_constr< module $a:i$ = $me$ >> ] ]
   ;
   expr:
     [ "top" RIGHTA

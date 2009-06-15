@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.33 2007/09/12 19:28:52 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.34 2007/09/12 19:58:05 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -368,18 +368,19 @@ value rec module_expr_long_id =
 value mkwithc =
   fun
   [ WcTyp loc id tpl pf ct ->
-      let (params, variance) = List.split tpl in
+      let (params, variance) = List.split (uv tpl) in
       let tk =
         IFDEF OCAML_3_08 THEN Ptype_abstract
-        ELSE if pf then Ptype_private else Ptype_abstract END
+        ELSE if uv pf then Ptype_private else Ptype_abstract END
       in
-      (long_id_of_string_list loc id,
+      (long_id_of_string_list loc (uv id),
        Pwith_type
          {ptype_params = params; ptype_cstrs = []; ptype_kind = tk;
           ptype_manifest = Some (ctyp ct); ptype_loc = mkloc loc;
           ptype_variance = variance})
   | WcMod loc id m ->
-      (long_id_of_string_list loc id, Pwith_module (module_expr_long_id m)) ]
+      (long_id_of_string_list loc (uv id),
+       Pwith_module (module_expr_long_id m)) ]
 ;
 
 value rec patt_fa al =

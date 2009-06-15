@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.71 2007/09/12 19:28:52 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.72 2007/09/12 19:58:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -421,10 +421,10 @@ EXTEND
           Qast.Node "MtFun" [Qast.Loc; i; t; mt] ] ]
   ;
   with_constr:
-    [ [ "type"; i = mod_ident; tpl = SLIST0 type_parameter; "=";
-        pf = SFLAG "private"; t = ctyp ->
+    [ [ "type"; i = mod_ident2; tpl = SV LIST0 type_parameter; "=";
+        pf = SV FLAG "private"; t = ctyp ->
           Qast.Node "WcTyp" [Qast.Loc; i; tpl; pf; t]
-      | "module"; i = mod_ident; "="; me = module_expr ->
+      | "module"; i = mod_ident2; "="; me = module_expr ->
           Qast.Node "WcMod" [Qast.Loc; i; me] ] ]
   ;
   expr:

@@ -349,15 +349,15 @@ let rec module_expr_long_id =
 let mkwithc =
   function
     WcTyp (loc, id, tpl, pf, ct) ->
-      let (params, variance) = List.split tpl in
+      let (params, variance) = List.split (uv tpl) in
       let tk = Ptype_abstract in
-      long_id_of_string_list loc id,
+      long_id_of_string_list loc (uv id),
       Pwith_type
         {ptype_params = params; ptype_cstrs = []; ptype_kind = tk;
          ptype_manifest = Some (ctyp ct); ptype_loc = mkloc loc;
          ptype_variance = variance}
   | WcMod (loc, id, m) ->
-      long_id_of_string_list loc id, Pwith_module (module_expr_long_id m)
+      long_id_of_string_list loc (uv id), Pwith_module (module_expr_long_id m)
 ;;
 
 let rec patt_fa al =

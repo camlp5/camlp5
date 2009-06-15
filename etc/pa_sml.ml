@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_sml.ml,v 1.15 2007/09/10 22:46:41 deraugla Exp $ *)
+(* $Id: pa_sml.ml,v 1.16 2007/09/12 19:58:05 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -783,8 +783,9 @@ EXTEND
   ;
   whspec:
     [ [ "type"; x1 = tyvars; x2 = sqid; "="; x3 = ctyp ->
-          MLast.WcTyp loc x2 x1 False x3
-      | x1 = sqid; "="; x2 = qid -> MLast.WcMod loc x1 x2 ] ]
+          <:with_constr< type $x2$ $list:x1$ = $x3$ >>
+      | x1 = sqid; "="; x2 = qid ->
+          <:with_constr< module $x1$ = $x2$ >> ] ]
   ;
   module_type:
     [ [ x1 = ident -> <:module_type< $uid:x1$ >>

@@ -1,5 +1,5 @@
-(* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.66 2007/09/10 22:46:41 deraugla Exp $ *)
+(* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
+(* $Id: pr_r.ml,v 1.67 2007/09/12 19:58:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1012,7 +1012,10 @@ value with_constraint pc wc =
            mod_ident
              {(pc) with bef = sprintf "%swith module " pc.bef; aft = " = "}
              sl}
-        me ]
+        me
+  | IFDEF STRICT THEN
+      x -> not_impl "with_constraint" pc x
+    END ]
 ;
 
 EXTEND_PRINTER

@@ -569,16 +569,16 @@ Grammar.extend
     [None, None,
      [[Gramext.Stoken ("", "module");
        Gramext.Snterm
-         (Grammar.Entry.obj (mod_ident : 'mod_ident Grammar.Entry.e));
+         (Grammar.Entry.obj (mod_ident2 : 'mod_ident2 Grammar.Entry.e));
        Gramext.Stoken ("", "=");
        Gramext.Snterm
          (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e))],
       Gramext.action
-        (fun (me : 'module_expr) _ (i : 'mod_ident) _ (loc : Ploc.t) ->
+        (fun (me : 'module_expr) _ (i : 'mod_ident2) _ (loc : Ploc.t) ->
            (MLast.WcMod (loc, i, me) : 'with_constr));
       [Gramext.Stoken ("", "type");
        Gramext.Snterm
-         (Grammar.Entry.obj (mod_ident : 'mod_ident Grammar.Entry.e));
+         (Grammar.Entry.obj (mod_ident2 : 'mod_ident2 Grammar.Entry.e));
        Gramext.Slist0
          (Gramext.Snterm
             (Grammar.Entry.obj
@@ -588,7 +588,7 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
         (fun (t : 'ctyp) (pf : bool) _ (tpl : 'type_parameter list)
-             (i : 'mod_ident) _ (loc : Ploc.t) ->
+             (i : 'mod_ident2) _ (loc : Ploc.t) ->
            (MLast.WcTyp (loc, i, tpl, pf, t) : 'with_constr))]];
     Grammar.Entry.obj (expr : 'expr Grammar.Entry.e), None,
     [Some "top", Some Gramext.RightA,

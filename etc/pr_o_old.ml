@@ -1,4 +1,4 @@
-(* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
+(* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp5                                  *)
@@ -536,7 +536,10 @@ and with_constraint b wc _ k =
   | <:with_constr< module $sl$ = $me$ >> ->
       HVbox
         [: b; `S LR "module"; mod_ident sl "" [: `S LR "=" :];
-           `module_expr me "" k :] ]
+           `module_expr me "" k :]
+  | IFDEF STRICT THEN
+      x -> not_impl "with_constraint" x
+    END ]
 ;
 
 value rec module_binding b me k =

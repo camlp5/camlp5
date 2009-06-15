@@ -1,4 +1,4 @@
-(* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
+(* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp5                                  *)
@@ -512,7 +512,7 @@ and with_constraints b icl k =
   HVbox [: `HVbox [: :]; listwbws with_constraint b (S LR "and") icl k :]
 and with_constraint b wc k =
   match wc with
-  [ MLast.WcTyp _ _ _ True _ -> failwith "fuck"
+  [ <:with_constr< type $_$ $list:_$ = private $_$ >> -> failwith "fuck"
   | <:with_constr< type $p$ $list:al$ = $e$ >> ->
       let params =
         match al with
@@ -528,7 +528,10 @@ and with_constraint b wc k =
   | <:with_constr< module $sl$ = $me$ >> ->
       HVbox
         [: b; `S LR "module"; mod_ident sl [: `S LR "=" :];
-           `module_expr me k :] ]
+           `module_expr me k :]
+  | IFDEF STRICT THEN
+      x -> not_impl "with_constraint" x
+    END ]
 and module_binding b me k =
   match me with
   [ <:module_expr< functor ($s$ : $mt$) -> $mb$ >> ->

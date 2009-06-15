@@ -1005,16 +1005,16 @@ Grammar.extend
     [None, None,
      [[Gramext.Stoken ("", "module");
        Gramext.Snterm
-         (Grammar.Entry.obj (mod_ident : 'mod_ident Grammar.Entry.e));
+         (Grammar.Entry.obj (mod_ident2 : 'mod_ident2 Grammar.Entry.e));
        Gramext.Stoken ("", "=");
        Gramext.Snterm
          (Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e))],
       Gramext.action
-        (fun (me : 'module_expr) _ (i : 'mod_ident) _ (loc : Ploc.t) ->
+        (fun (me : 'module_expr) _ (i : 'mod_ident2) _ (loc : Ploc.t) ->
            (Qast.Node ("WcMod", [Qast.Loc; i; me]) : 'with_constr));
       [Gramext.Stoken ("", "type");
        Gramext.Snterm
-         (Grammar.Entry.obj (mod_ident : 'mod_ident Grammar.Entry.e));
+         (Grammar.Entry.obj (mod_ident2 : 'mod_ident2 Grammar.Entry.e));
        Gramext.srules
          [[Gramext.Slist0
              (Gramext.Snterm
@@ -1022,22 +1022,25 @@ Grammar.extend
                    (type_parameter : 'type_parameter Grammar.Entry.e)))],
           Gramext.action
             (fun (a : 'type_parameter list) (loc : Ploc.t) ->
-               (Qast.List a : 'a_list));
+               (Qast.Vala (Qast.List a) : 'a_list2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_list : 'a_list Grammar.Entry.e))],
-          Gramext.action (fun (a : 'a_list) (loc : Ploc.t) -> (a : 'a_list))];
+             (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
+          Gramext.action
+            (fun (a : 'a_list2) (loc : Ploc.t) -> (a : 'a_list2))];
        Gramext.Stoken ("", "=");
        Gramext.srules
          [[Gramext.Sflag (Gramext.Stoken ("", "private"))],
           Gramext.action
-            (fun (a : bool) (loc : Ploc.t) -> (Qast.Bool a : 'a_flag));
+            (fun (a : bool) (loc : Ploc.t) ->
+               (Qast.Vala (Qast.Bool a) : 'a_flag2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_flag : 'a_flag Grammar.Entry.e))],
-          Gramext.action (fun (a : 'a_flag) (loc : Ploc.t) -> (a : 'a_flag))];
+             (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
+          Gramext.action
+            (fun (a : 'a_flag2) (loc : Ploc.t) -> (a : 'a_flag2))];
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
-        (fun (t : 'ctyp) (pf : 'a_flag) _ (tpl : 'a_list) (i : 'mod_ident) _
-             (loc : Ploc.t) ->
+        (fun (t : 'ctyp) (pf : 'a_flag2) _ (tpl : 'a_list2) (i : 'mod_ident2)
+             _ (loc : Ploc.t) ->
            (Qast.Node ("WcTyp", [Qast.Loc; i; tpl; pf; t]) : 'with_constr))]];
     Grammar.Entry.obj (expr : 'expr Grammar.Entry.e), None,
     [Some "top", Some Gramext.RightA,
