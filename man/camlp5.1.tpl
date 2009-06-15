@@ -332,6 +332,8 @@ Library directory of camlp5 in the present installation:
 LIBDIR/camlp5
 
 .SH "SEE ALSO"
+Camlp5 - Reference Manual
+.br
 ocamlc(1), ocaml(1), ocamlmktop(1).
 
 .SH AUTHOR
