@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: lexers.html,v 1.19 2007/10/14 03:41:11 deraugla Exp $ -->
+  <!-- $Id: lexers.html,v 1.21 2007/10/25 02:49:47 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>lexers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -19,7 +19,7 @@
 
 <h1 class="top">Stream lexers</h1>
 
-<p>The file "<tt>pa_lex.cmo</tt>" is a Camlp5 syntax extension kit for
+<p>The file "<tt>pa_lexer.cmo</tt>" is a Camlp5 syntax extension kit for
   parsers of streams of the type 'char'. This syntax is shorter and
   more readable than its equivalent version written
   with <a href="parsers.html">classical stream parsers</a>. But, like
@@ -30,6 +30,10 @@
 <div id="tableofcontents">
 </div>
 
+<p>(An old version, named "<tt>pa_lex.cmo</tt>" was provided before
+  with a different syntax. It is no longer distributed, its proposed
+  syntax being confusing.)</p>
+
 <h2>Introduction</h2>
 
 <p>Classical parsers in OCaml apply to streams of any type of
@@ -39,24 +43,23 @@
   a "lexing buffer", a data structure recording the matched
   characters.</p>
 
-<p>Let us take an example. The following function parses an
-  identifier, composed of letters, digits, underscores, quotes and
-  utf-8 bytes, and record the result in a buffer. In classical parsers
-  syntax, this could be written like this:</p>
+<p>Let us take an example. The following function parses a left
+  bracket followed by a less, a colon or nothing, and record the
+  result in a buffer. In classical parsers syntax, this could be
+  written like this:</p>
 
 <pre>
-  value rec ident buf =
+  fun buf ->
     parser
-    [ [: `('A'..'Z' | 'a'..'z' | '0'..'9' | '_' | ''' | '\128'..'\255'
-         as c); buf = ident (B.add c buf) ! :] -&gt; buf
-    | [: :] -&gt; buf ]
-  ;
+    [ [: `'['; `'&lt;' :] -> B.add '&lt;' (B.add '[' buf)
+    | [: `'['; `':' :] -> B.add ':' (B.add '[' buf)
+    | [: `'[' :] -> B.add '[' buf ]
 </pre>
 
-<p> With the new syntax, it is possible to write it as:</p>
+<p>With the new syntax, it is possible to write it as:</p>
 
 <pre>
-  value rec ident = lexer [ "A..Za..z0..9_'\128..\255" ident! | ];
+  lexer [ "[&lt;" | "[:" | "[" ]
 </pre>
 
 <p>The two codes are strictly equivalent, but the lexer version is
@@ -64,7 +67,7 @@
 
 <h2>Syntax</h2>
 
-<p>When loading the syntax extension <code>pa_lex.cmo</code>, the
+<p>When loading the syntax extension <tt>pa_lexer.cmo</tt>, the
   OCaml syntax is extended as follows:</p>
 
 <pre>
@@ -76,6 +79,8 @@
              symbols ::= symbols symbol err
                        | &lt;nothing&gt;
               symbol ::= "_" no-record-opt
+                       | CHAR no-record-opt
+                       | CHAR "-" CHAR no-record-opt
                        | STRING no-record-opt
                        | simple-expression
                        | "?=" "[" lookaheads "]"
@@ -98,14 +103,14 @@
               action ::= expression
 </pre>
 
-<p>The identifiers "<code>STRING</code>", "<code>CHAR</code>" and
-  "<code>LIDENT</code>" above represent the OCaml tokens corresponding
-  to string, character and lowercase identifier (identifier starting
-  with a lowercase character).</p>
+<p>The identifiers "<tt>STRING</tt>", "<tt>CHAR</tt>" and
+  "<tt>LIDENT</tt>" above represent the OCaml tokens corresponding to
+  string, character and lowercase identifier (identifier starting with
+  a lowercase character).</p>
 
 <p>Moreover, together with that syntax extension, another extension is
-  added the entry <code>expression</code>, typically for the semantics
-  actions of the "<code>lexer</code>" statement above, but not only. It
+  added the entry <tt>expression</tt>, typically for the semantics
+  actions of the "<tt>lexer</tt>" statement above, but not only. It
   is:</p>
 
 <pre>
@@ -124,12 +129,12 @@
 <h2>Semantics</h2>
 
 <p>A lexer defined in the syntax above is a shortcut version of a
-parser applied to the specific case of streams of characters. It could
-be written with a normal parser. The proposed syntax is much shorter,
-easier to use and to understand, and silently takes care of the lexing
-buffer for the programmer. The lexing buffers are data structures,
-which are passed as parameters to called lexers and returned by
-them.</p>
+  parser applied to the specific case of streams of characters. It
+  could be written with a normal parser. The proposed syntax is much
+  shorter, easier to use and to understand, and silently takes care of
+  the lexing buffer for the programmer. The lexing buffers are data
+  structures, which are passed as parameters to called lexers and
+  returned by them.</p>
 
 <p>Our lexers are of the type:</p>
 
@@ -137,23 +142,23 @@ them.</p>
   B.t -&gt; Stream.t char -&gt; u
 </pre>
 
-<p>where "<code>u</code>" is a type which depends on what the lexer
+<p>where "<tt>u</tt>" is a type which depends on what the lexer
   returns. If there is no semantic action (since it it optional), this
-  type is automatically "<code>B.t</code>".</p>
+  type is automatically "<tt>B.t</tt>".</p>
 
-<p>"<code>B</code>" is a module which must be defined by the user. It
-  must contain the lexing buffer type "<code>t</code>" and the
+<p>"<tt>B</tt>" is a module which must be defined by the user. It
+  must contain the lexing buffer type "<tt>t</tt>" and the
   variables and functions:</p>
 
 <ul>
-  <li><code>empty</code>: the empty lexing buffer</li>
-  <li><code>add</code>: the way to add a character to a lexing buffer</li>
-  <li><code>get</code>: the way to get a string from the lexing buffer</li>
+  <li><tt>empty</tt>: the empty lexing buffer</li>
+  <li><tt>add</tt>: the way to add a character to a lexing buffer</li>
+  <li><tt>get</tt>: the way to get a string from the lexing buffer</li>
 </ul>
 
-<p>A possible implementation, using "<code>list char</code>" as lexing
-buffer type ("<code>B.t</code>"), recording the characters at top of
-the list (therefore creating a list in reverse order) could be:</p>
+<p>A possible implementation, using "<tt>list char</tt>" as lexing
+  buffer type ("<tt>B.t</tt>"), recording the characters at top of the
+  list (therefore creating a list in reverse order) could be:</p>
 
 <pre>
   (* tool function, converting a reversed list of char into a string *)
@@ -177,19 +182,20 @@ the list (therefore creating a list in reverse order) could be:</p>
 </pre>
 
 <p>A lexer is a function with two parameters: the first one is the
-lexing buffer itself, and the second one the stream. When called, it
-tries to match the stream against its first rule. If it fails, it
-tries its second rule, and so on, up to its last rule. If the last
-rule fails, the lexer fails by raising the exception
-"<code>Stream.Failure</code>". All of this is
-the <a href="parsers.html">usual behaviour of stream parsers</a>.</p>
+  lexing buffer itself, and the second one the stream. When called, it
+  tries to match the stream against its first rule. If it fails, it
+  tries its second rule, and so on, up to its last rule. If the last
+  rule fails, the lexer fails by raising the exception
+  "<tt>Stream.Failure</tt>". All of this is
+  the <a href="parsers.html">usual behaviour of stream
+  parsers</a>.</p>
 
 <p>In a rule, when a character is matched, it is inserted into the
-lexing buffer, except if the "no record" feature is used (see
-further).</p>
+  lexing buffer, except if the "no record" feature is used (see
+  further).</p>
 
 <p>Rules which have no semantic action return the lexing buffer
-itself.</p>
+  itself.</p>
 
 <h3>Symbols</h3>
 
@@ -198,51 +204,47 @@ itself.</p>
 <ul>
   <li>The token "underscore", which represents any character. Fails
     only if the stream is empty.</li>
-  <li>A string which represent a matching of any character in the
-    string. Notice that it is a <span class="u">choice</span> between
-    all the characters, <span class="u">not</span> the sequence of
-    these characters. To indicate a sequence, you have to use several
-    symbols, the ones behind the others. Character ranges can be
-    inserted using the characters "<code>..</code>". For example, to
-    specify a match of any letter or digit, you can write
-    "<code>A..Za..z0..9</code>". Conversely, the beginning of a
-    comment in the OCaml language has to be written: <code>"("
-    "*"</code>, not <code>"(*"</code> which would mean "the character
-    left parenthesis or the character star".</li>
+  <li>A character which represents a matching of this character.</li>
+  <li>A character followed by the minus sign and by another character
+    which represent all characters in the range between the two
+    characters in question.</li>
+  <li>A string with represents a matching of all its characters, one
+    after the other.</li>
   <li>An expression corresponding to a call to another lexer, which
     takes the buffer as first parameter and returns another lexing
     buffer with all characters found in the stream added to the
     initial lexing buffer.</li>
-  <li>The sequence "<code>?=</code>" introducing lookahead
+  <li>The sequence "<tt>?=</tt>" introducing lookahead
     characters.</li>
   <li>A rule, recursively, between brackets, inlining a lexer.</li>
 </ul>
 
-<p>In the first two cases (namely, underscore and string), the symbol
-  can be optionally followed by the character "slash" specifying that
-  the found symbol must not be added into the lexing buffer. By
-  default, it is. Useful, for example, when writing a lexer parsing
-  strings, when the initial double quote and final double quote should
-  be part of the string itself.</p>
+<p>In the cases matching characters (namely underscore, character,
+  characters range and string), the symbol can be optionally followed
+  by the character "slash" specifying that the found character(s) must
+  not be added into the lexing buffer. By default, they are. Useful,
+  for example, when writing a lexer parsing strings, when the initial
+  double quote and final double quote should be part of the string
+  itself.</p>
 
 <p>Moreover, a symbol can be followed by an optional error indicator,
-which can be:</p>
+  which can be:</p>
 
 <ul>
-  <li>The character <code>?</code> (question mark) followed by a
+  <li>The character <tt>?</tt> (question mark) followed by a
     string expression, telling that, if there is a syntax error at
     this point (i.e. the symbol is not matched although the beginning
-    of the rule was), the exception <code>Stream.Error</code> is
+    of the rule was), the exception <tt>Stream.Error</tt> is
     raised with that string as parameter. Without this indicator, it
     is raised with the empty string. This is the same behaviour than
     with classical <a href="parsers.html">stream parsers</a>.</li>
-  <li>The character <code>!</code> (exclamation mark), which is just
+  <li>The character <tt>!</tt> (exclamation mark), which is just
     an indicator to let the syntax expander optimize the code. If the
     programmer is sure that the symbol never fails (i.e. never
-    raises <code>Stream.Failure</code>), in particular if this symbol
+    raises <tt>Stream.Failure</tt>), in particular if this symbol
     recognizes the empty rule, he can add this exclamation mark. If it
     is used correctly (the compiler cannot check it), the behaviour is
-    identical as without the <code>!</code>, except that the code is
+    identical as without the <tt>!</tt>, except that the code is
     shorter and faster, and can sometimes be tail recursive. If the
     indication is not correct, the behaviour of the lexer is
     undefined. This feature exists also in classical stream parsers
@@ -252,21 +254,20 @@ which can be:</p>
 <h3>Specific expressions</h3>
 
 <p>When loading this syntax extension, the
-entry <code>&lt;expression&gt;</code>, at level labelled "simple" of
-the OCaml language is extended with the following
-rules:</p>
+  entry <tt>&lt;expression&gt;</tt>, at level labelled "simple" of the
+  OCaml language is extended with the following rules:</p>
 
 <ul>
-  <li><code>$add</code> followed by a string, specifing that the
+  <li><tt>$add</tt> followed by a string, specifing that the
     programmer wants to add all characters of the string in the lexing
     buffer. It returns the new lexing buffer. It corresponds to an
-    iteration of calls to <code>B.add</code> with all characters of
+    iteration of calls to <tt>B.add</tt> with all characters of
     the string with the current lexing buffer as initial
     parameter.</li>
-  <li><code>$buf</code> which returns the lexing buffer converted into
+  <li><tt>$buf</tt> which returns the lexing buffer converted into
     string.</li>
-  <li><code>$empty</code> which returns an empty lexing buffer.</li>
-  <li><code>$pos</code> which returns the current position of the
+  <li><tt>$empty</tt> which returns an empty lexing buffer.</li>
+  <li><tt>$pos</tt> which returns the current position of the
     stream in number of characters (starting at zero).</li>
 </ul>
 
@@ -295,9 +296,9 @@ rules:</p>
   rule. This lookahead feature may unfreeze several characters from
   the input stream but without removing them.</p>
 
-<p>Syntactically, a lookahead starts with <code>?=</code> and is
+<p>Syntactically, a lookahead starts with <tt>?=</tt> and is
   followed by one or several lookahead sequences separated by the
-  vertical bar <code>|</code>, the whole list being enclosed by
+  vertical bar <tt>|</tt>, the whole list being enclosed by
   braces.</p>
 
 <p>If there are several lookaheads, they must all be of the same size
@@ -319,21 +320,21 @@ rules:</p>
   quote or a stream whose first character is a backslash (real example
   in the lexer of OCaml, in the library of Camlp5, named
   "plexer.ml"). The second line matches a stream starting with the two
-  characters <code>&lt;</code> and <code>&lt;</code> or starting with
-  the two characters <code>&lt;</code> and <code>:</code> (this is
+  characters <tt>&lt;</tt> and <tt>&lt;</tt> or starting with
+  the two characters <tt>&lt;</tt> and <tt>:</tt> (this is
   another example in the same file).</p>
 
 <h3>Semantic actions of rules</h3>
 
 <p>By default, the result of a "lexer" is the current lexing buffer,
-  which is of type "<code>B.t</code>". But it is possible to return
-  other values, by adding "<code>-&gt;</code>" at end of rules
+  which is of type "<tt>B.t</tt>". But it is possible to return
+  other values, by adding "<tt>-&gt;</tt>" at end of rules
   followed by the expression you want to return, like in usual pattern
   matching in OCaml.</p>
 
 <p>An interesting result, for example, could be the string
   corresponding to the characters of the lexing buffer. This can be
-  obtained by returning the value "<code>$buf</code>".</p>
+  obtained by returning the value "<tt>$buf</tt>".</p>
 
 <h3>A complete example</h3>
 
@@ -344,12 +345,12 @@ rules:</p>
 <h3>Compiling</h3>
 
 <p>To compile a file containing lexers, just
-  load <code>pa_lex.cmo</code> using one of the following methods:</p>
+  load <tt>pa_lexer.cmo</tt> using one of the following methods:</p>
 
 <ul>
-  <li>Either by adding <code>pa_lex.cmo</code> among the Camlp5
+  <li>Either by adding <tt>pa_lexer.cmo</tt> among the Camlp5
     options. See the Camlp5 manual page or documentation.</li>
-  <li>Or by adding <code>#load "pa_lex.cmo";</code> anywhere in the
+  <li>Or by adding <tt>#load "pa_lexer.cmo";</tt> anywhere in the
     file, before the usages of this "lexer" syntax.</li>
 </ul>
 
@@ -359,13 +360,13 @@ rules:</p>
   lexers, by typing in a command line:</p>
 
 <pre>
-  camlp5r pa_lex.cmo pr_r.cmo bar.ml
+  camlp5r pa_lexer.cmo pr_r.cmo bar.ml
 </pre>
 
 <p>To see the equivalent code with stream parsers, use:</p>
 
 <pre>
-  camlp5r pa_lex.cmo pr_r.cmo pr_rp.cmo bar.ml
+  camlp5r pa_lexer.cmo pr_r.cmo pr_rp.cmo bar.ml
 </pre>
 
 <div class="trailer">

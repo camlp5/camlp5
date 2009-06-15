@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.77 2007/10/29 15:03:57 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.76 2007/10/01 08:22:47 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -278,9 +278,6 @@ value test_typevar_list_dot =
      in
      test 1)
 ;
-
-value e_phony = Grammar.Entry.of_parser gram "e_phony" (parser []);
-value p_phony = Grammar.Entry.of_parser gram "p_phony" (parser []);
 
 value constr_arity = ref [("Some", 1); ("Match_Failure", 1)];
 
@@ -621,6 +618,9 @@ EXTEND
           in
           Pcaml.handle_expr_quotation loc x ] ]
   ;
+  e_phony:
+    [ [ -> raise Stream.Failure ] ]
+  ;
   let_binding:
     [ [ p = val_ident; e = fun_binding -> (p, e)
       | p = patt; "="; e = expr -> (p, e) ] ]
@@ -748,6 +748,9 @@ EXTEND
             [ Not_found -> ("", x) ]
           in
           Pcaml.handle_patt_quotation loc x ] ]
+  ;
+  p_phony:
+    [ [ -> raise Stream.Failure ] ]
   ;
   patt_semi_list:
     [ [ p = patt; ";"; pl = SELF -> [p :: pl]
