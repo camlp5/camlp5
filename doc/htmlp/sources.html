@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: sources.html,v 1.7 2007/08/28 17:49:37 deraugla Exp $ -->
+  <!-- $Id: sources.html,v 1.8 2007/09/10 01:17:54 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Camlp5 sources</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -200,6 +200,37 @@
 <p>sometimes two bootstraps ('make coreboot' twice) are necessary,
   in particular if you change things in the directory 'lib'. It is
   even possible that three bootstraps are necessary.</p>
+
+<p>If things goes wrong, it is possible to return to the previous
+  version by typing:</p>
+
+<pre>
+  make restore clean_hot
+</pre>
+
+<p>then you can change what is necessary and continue by typing:</p>
+
+<pre>
+  make core
+</pre>
+
+<p>and test the bootstrap again:</p>
+
+<pre>
+  make coreboot
+</pre>
+
+<p>After several bootstraps (by 'make coreboot' or 'make bootstrap'),
+  many versions are pushed in the directory 'boot' (you can type 'find
+  boot -type d -print' to see that). If your system correctly
+  bootstraps, you can clean that by typing:</p>
+
+<pre>
+  make cleanboot
+</pre>
+      
+<p>which keeps only two versions. (The command 'make clean' also
+  removes these stack of versions.)</p>
 
 <h2>Before committing your changes</h2>
 

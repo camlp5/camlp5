@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.57 2007/09/09 19:34:16 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.58 2007/09/10 01:17:54 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -202,6 +202,12 @@ value a_TILDEIDENT = Grammar.Entry.create gram "a_TILDEIDENT";
 value a_TILDEIDENTCOLON = Grammar.Entry.create gram "a_TILDEIDENTCOLON";
 value a_QUESTIONIDENT = Grammar.Entry.create gram "a_QUESTIONIDENT";
 value a_QUESTIONIDENTCOLON = Grammar.Entry.create gram "a_QUESTIONIDENTCOLON";
+
+value mksequence2 _ =
+  fun
+  [ Qast.VaVal (Qast.List [e]) -> e
+  | el -> Qast.Node "ExSeq" [Qast.Loc; el] ]
+;
 
 value mksequence _ =
   fun
@@ -440,18 +446,11 @@ EXTEND
             [Qast.Loc; e; Qast.List [Qast.Tuple [p1; Qast.Option None; e1]]]
       | "if"; e1 = SELF; "then"; e2 = SELF; "else"; e3 = SELF ->
           Qast.Node "ExIfe" [Qast.Loc; e1; e2; e3]
-      | "do"; "{"; seq = sequence; "}" -> mksequence Qast.Loc seq
-      | "do"; "{"; seq = SV LIST1 expr SEP ";"; "}" ->
-          Qast.Node "ExSeq" [Qast.Loc; seq]
+      | "do"; "{"; seq = sequence2; "}" -> mksequence2 Qast.Loc seq
       | "for"; i = a_LIDENT; "="; e1 = SELF; df = direction_flag; e2 = SELF;
-        "do"; "{"; seq = sequence; "}" ->
-          Qast.Node "ExFor" [Qast.Loc; i; e1; e2; df; Qast.VaVal seq]
-      | "for"; i = a_LIDENT; "="; e1 = SELF; df = direction_flag; e2 = SELF;
-        "do"; "{"; seq = SV LIST1 expr SEP ";"; "}" ->
+        "do"; "{"; seq = sequence2; "}" ->
           Qast.Node "ExFor" [Qast.Loc; i; e1; e2; df; seq]
-      | "while"; e = SELF; "do"; "{"; seq = sequence; "}" ->
-          Qast.Node "ExWhi" [Qast.Loc; e; Qast.VaVal seq]
-      | "while"; e = SELF; "do"; "{"; seq = SV LIST1 expr SEP ";"; "}" ->
+      | "while"; e = SELF; "do"; "{"; seq = sequence2; "}" ->
           Qast.Node "ExWhi" [Qast.Loc; e; seq] ]
     | "where"
       [ e = SELF; "where"; rf = SV FLAG "rec"; lb = let_binding ->
@@ -727,6 +726,10 @@ EXTEND
   ;
   dummy:
     [ [ -> () ] ]
+  ;
+  sequence2:
+    [ [ seq = sequence -> Qast.VaVal seq
+      | seq = SV LIST1 expr SEP ";" -> seq ] ]
   ;
   sequence:
     [ [ "let"; rf = SV FLAG "rec"; l = SV LIST1 let_binding SEP "and"; "in";

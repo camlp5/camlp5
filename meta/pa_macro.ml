@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.27 2007/09/09 11:26:09 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.28 2007/09/10 01:17:54 deraugla Exp $ *)
 
 (*
 Added statements:
@@ -154,7 +154,8 @@ value subst mloc env =
 value substp mloc env =
   loop where rec loop =
     fun
-    [ <:expr< $e1$ $e2$ >> -> <:patt< $loop e1$ $loop e2$ >>
+    [ <:expr< $e1$ . $e2$ >> -> <:patt< $loop e1$ . $loop e2$ >>
+    | <:expr< $e1$ $e2$ >> -> <:patt< $loop e1$ $loop e2$ >>
     | <:expr< $lid:x$ >> ->
         try <:patt< $anti:List.assoc x env$ >> with
         [ Not_found -> <:patt< $lid:x$ >> ]

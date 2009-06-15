@@ -115,6 +115,22 @@ TESTING CHANGES
       in particular if you change things in the directory 'lib'. It is
       even possible that three bootstraps are necessary.
 
+        If things goes wrong, it is possible to return to the previous
+      version by typing:
+         make restore clean_hot
+      then you can change what is necessary and continue by typing:
+         make core
+      and test the bootstrap again:
+         make coreboot
+
+        After several bootstraps (by 'make coreboot' or 'make bootstrap'),
+      many versions are pushed in the directory 'boot' (you can type
+      'find boot -type d -print' to see that). If your system correctly
+      bootstraps, you can clean that by typing:
+         make cleanboot
+      which keeps only two versions. (The command 'make clean' also removes
+      these stack of versions.)
+
 BEFORE COMMITTING YOUR CHANGES
 
    Make sure that the cold start with pure ocaml sources work. For that, do:

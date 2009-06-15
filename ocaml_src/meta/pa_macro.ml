@@ -153,7 +153,8 @@ let subst mloc env =
 let substp mloc env =
   let rec loop =
     function
-      MLast.ExApp (_, e1, e2) -> MLast.PaApp (loc, loop e1, loop e2)
+      MLast.ExAcc (_, e1, e2) -> MLast.PaAcc (loc, loop e1, loop e2)
+    | MLast.ExApp (_, e1, e2) -> MLast.PaApp (loc, loop e1, loop e2)
     | MLast.ExLid (_, x) ->
         begin try MLast.PaAnt (loc, List.assoc x env) with
           Not_found -> MLast.PaLid (loc, x)

@@ -1,4 +1,4 @@
-(* camlp5r pa_extend.cmo q_MLast.cmo *)
+(* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp5                                  *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.58 2007/09/09 19:34:16 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.59 2007/09/10 01:17:54 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -45,6 +45,18 @@ do {
 
 Pcaml.parse_interf.val := Grammar.Entry.parse interf;
 Pcaml.parse_implem.val := Grammar.Entry.parse implem;
+
+IFNDEF STRICT THEN
+  DEFINE V x = x
+ELSE
+  DEFINE V x = Ploc.VaVal x
+END;
+
+value mksequence2 loc =
+  fun
+  [ V [e] -> e
+  | seq -> <:expr< do { $alist:seq$ } >> ]
+;
 
 value mksequence loc =
   fun
@@ -247,18 +259,11 @@ EXTEND
           <:expr< try $e$ with $p1$ -> $e1$ >>
       | "if"; e1 = SELF; "then"; e2 = SELF; "else"; e3 = SELF ->
           <:expr< if $e1$ then $e2$ else $e3$ >>
-      | "do"; "{"; seq = sequence; "}" -> mksequence loc seq
-      | "do"; "{"; seq = V LIST1 expr SEP ";"; "}" ->
-          <:expr< do { $alist:seq$ } >>
+      | "do"; "{"; seq = sequence2; "}" -> mksequence2 loc seq
       | "for"; i = LIDENT; "="; e1 = SELF; df = direction_flag; e2 = SELF;
-        "do"; "{"; seq = sequence; "}" ->
-          <:expr< for $i$ = $e1$ $to:df$ $e2$ do { $list:seq$ } >>
-      | "for"; i = LIDENT; "="; e1 = SELF; df = direction_flag; e2 = SELF;
-        "do"; "{"; seq = V LIST1 expr SEP ";"; "}" ->
+        "do"; "{"; seq = sequence2; "}" ->
           <:expr< for $i$ = $e1$ $to:df$ $e2$ do { $alist:seq$ } >>
-      | "while"; e = SELF; "do"; "{"; seq = sequence; "}" ->
-          <:expr< while $e$ do { $list:seq$ } >>
-      | "while"; e = SELF; "do"; "{"; seq = V LIST1 expr SEP ";"; "}" ->
+      | "while"; e = SELF; "do"; "{"; seq = sequence2; "}" ->
           <:expr< while $e$ do { $alist:seq$ } >> ]
     | "where"
       [ e = SELF; "where"; rf = V FLAG "rec"; lb = let_binding ->
@@ -347,6 +352,10 @@ EXTEND
   ;
   dummy:
     [ [ -> () ] ]
+  ;
+  sequence2:
+    [ [ seq = sequence -> V seq
+      | seq = V LIST1 expr SEP ";" -> seq ] ]
   ;
   sequence:
     [ [ "let"; rf = V FLAG "rec"; l = V LIST1 let_binding SEP "and"; "in";
