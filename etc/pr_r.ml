@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.79 2007/10/02 02:57:06 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.80 2007/10/02 10:01:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -2399,6 +2399,7 @@ value set_flags s =
       [ 'A' | 'a' -> do {
           let v = is_uppercase s.[i] in
           flag_expand_declare.val := v;
+          flag_equilibrate_cases.val := v;
           flag_horiz_let_in.val := v;
           flag_sequ_begin_at_eol.val := v;
         }

@@ -1,11 +1,12 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.100 2007/09/27 16:49:17 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.101 2007/10/02 10:01:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
 open Pcaml;
 open Prtools;
 
+value flag_equilibrate_cases = Pcaml.flag_equilibrate_cases;
 value flag_horiz_let_in = ref True;
 value flag_semi_semi = ref False;
 
@@ -353,20 +354,22 @@ value let_binding pc (p, e) =
        sprintf "%s\n%s%s" s1 s2 s3)
 ;
 
-value match_assoc pc ((p, w, e), is_last) =
+value match_assoc force_vertic pc ((p, w, e), is_last) =
   let (pc_aft, pc_dang) =
     if not is_last then ("", "|") else (pc.aft, pc.dang)
   in
   horiz_vertic
     (fun () ->
-       sprintf "%s%s%s -> %s%s" pc.bef
-         (patt_as {(pc) with bef = ""; aft = ""} p)
-         (match w with
-          [ <:vala< Some e >> ->
-              sprintf " when %s" (expr {(pc) with bef = ""; aft = ""} e)
-          | _ -> "" ])
-         (comm_expr expr {(pc) with bef = ""; aft = ""; dang = pc_dang} e)
-         pc_aft)
+       if force_vertic then sprintf "\n"
+       else
+         sprintf "%s%s%s -> %s%s" pc.bef
+           (patt_as {(pc) with bef = ""; aft = ""} p)
+           (match w with
+            [ <:vala< Some e >> ->
+                sprintf " when %s" (expr {(pc) with bef = ""; aft = ""} e)
+            | _ -> "" ])
+           (comm_expr expr {(pc) with bef = ""; aft = ""; dang = pc_dang} e)
+           pc_aft)
     (fun () ->
        let patt_arrow k =
          match w with
@@ -407,12 +410,32 @@ value match_assoc pc ((p, w, e), is_last) =
        sprintf "%s\n%s" s1 s2)
 ;
 
-value match_assoc_sh pc pwe = match_assoc {(pc) with ind = pc.ind + 2} pwe;
+value match_assoc_sh force_vertic pc pwe =
+  match_assoc force_vertic {(pc) with ind = pc.ind + 2} pwe
+;
 
 value match_assoc_list pc pwel =
   if pwel = [] then sprintf "%s[]%s" pc.bef pc.aft
   else
-    vlist3 match_assoc_sh (bar_before match_assoc_sh)
+    let force_vertic =
+      if flag_equilibrate_cases.val then
+        let has_vertic =
+          List.exists
+            (fun pwe ->
+               horiz_vertic
+                 (fun () ->
+                    let _ : string =
+                      bar_before (match_assoc_sh False) pc (pwe, False)
+                    in
+                    False)
+                 (fun () -> True))
+            pwel
+        in
+        has_vertic
+      else False
+    in
+    vlist3 (match_assoc_sh force_vertic)
+      (bar_before (match_assoc_sh force_vertic))
       {(pc) with bef = sprintf "%s  " pc.bef} pwel
 ;
 
@@ -608,6 +631,40 @@ value alone_in_line pc =
     if i >= String.length pc.bef then True
     else if pc.bef.[i] = ' ' then loop (i + 1)
     else False
+;
+
+value equality_threshold = 0.51;
+value are_close f x1 x2 =
+  let (s1, s2) = do {
+    (* the two strings; this code tries to prevents computing possible
+       too long lines (which might slow down the program) *)
+    let v = Pretty.line_length.val in
+    Pretty.line_length.val := 2 * v;
+    let s1 = horiz_vertic (fun _ -> Some (f x1)) (fun () -> None) in
+    let s2 = horiz_vertic (fun _ -> Some (f x2)) (fun () -> None) in
+    Pretty.line_length.val := v;
+    (s1, s2)
+  }
+  in
+  match (s1, s2) with
+  [ (Some s1, Some s2) ->
+      (* one string at least could hold in the line; comparing them; if
+         they are "close" to each other, return True, meaning that they
+         should be displayed *both* in one line or *both* in several lines *)
+      let (d1, d2) =
+        let a1 = Array.init (String.length s1) (String.get s1) in
+        let a2 = Array.init (String.length s2) (String.get s2) in
+        Diff.f a1 a2
+      in
+      let eq =
+        loop 0 0 where rec loop i eq =
+          if i = Array.length d1 then eq
+          else loop (i + 1) (if d1.(i) then eq else eq + 1)
+      in
+      let r1 = float eq /. float (Array.length d1) in
+      let r2 = float eq /. float (Array.length d2) in
+      r1 >= equality_threshold && r2 >= equality_threshold
+  | _ -> False ]
 ;
 
 (* Expressions displayed without spaces separating elements; special
@@ -967,13 +1024,14 @@ EXTEND_PRINTER
                      (curr {(pc) with bef = ""; aft = ""; dang = "else"} e2)
                      (curr {(pc) with bef = ""; aft = ""} e3) pc.aft ])
             (fun () ->
-               let (eel, e3) = get_else_if e3 in
-               let if_then pc else_b e1 e2 =
+               let if_then force_vertic pc else_b e1 e2 =
                  horiz_vertic
                    (fun () ->
-                      sprintf "%s%sif %s then %s%s" pc.bef else_b
-                        (curr {(pc) with bef = ""; aft = ""; dang = ""} e1)
-                        (curr {(pc) with bef = ""; aft = ""} e2) pc.aft)
+                      if force_vertic then sprintf "\n"
+                      else
+                        sprintf "%s%sif %s then %s%s" pc.bef else_b
+                          (curr {(pc) with bef = ""; aft = ""; dang = ""} e1)
+                          (curr {(pc) with bef = ""; aft = ""} e2) pc.aft)
                    (fun () ->
                       let horiz_if_then k =
                         sprintf "%s%sif %s then%s" pc.bef else_b
@@ -1011,6 +1069,55 @@ EXTEND_PRINTER
                       in
                       sprintf "%s\n%s" s1 s2)
                in
+               let (force_vertic, eel, e3) =
+                 if flag_equilibrate_cases.val then
+                   let (eel, e3) =
+                     let then_and_else_are_close =
+                       are_close (curr {(pc) with bef = ""; aft = ""}) e2 e3
+                     in
+                     (* if "then" and "else" cases are close, don't break
+                        the "else" part into its possible "else if" in
+                        order to display "then" and "else" symmetrically *)
+                     if then_and_else_are_close then ([], e3)
+                     else get_else_if e3
+                   in
+                   (* if a case does not fit on line, all cases must be cut *)
+                   let has_vertic =
+                     horiz_vertic
+                       (fun () ->
+                          let _ : string =
+                            if_then False {(pc) with aft = ""} "" e1 e2
+                          in
+                          False)
+                       (fun () -> True) ||
+                     List.exists
+                       (fun (e1, e2) ->
+                          horiz_vertic
+                            (fun () ->
+                               let _ : string =
+                                 if_then False
+                                   {(pc) with bef = tab pc.ind; aft = ""}
+                                   "else " e1 e2
+                               in
+                               False)
+                            (fun () -> True))
+                       eel ||
+                     horiz_vertic
+                       (fun () ->
+                          let _ : string =
+                            sprintf "%selse %s%s" (tab pc.ind)
+                              (comm_expr curr {(pc) with bef = ""; aft = ""}
+                                 e3)
+                              pc.aft
+                          in
+                          False)
+                       (fun () -> True)
+                   in
+                   (has_vertic, eel, e3)
+                 else
+                   let (eel, e3) = get_else_if e3 in
+                   (False, eel, e3)
+               in
                match e3 with
                [ <:expr< () >> when pc.dang = "else" -> next pc ge
                | _ ->
@@ -1020,7 +1127,8 @@ EXTEND_PRINTER
                        [ ([], <:expr< () >>) -> (pc.dang, pc.aft)
                        | _ -> ("else", "") ]
                      in
-                     if_then {(pc) with aft = pc_aft; dang = pc_dang} "" e1 e2
+                     if_then force_vertic
+                       {(pc) with aft = pc_aft; dang = pc_dang} "" e1 e2
                    in
                    let s2 =
                      loop eel where rec loop =
@@ -1032,7 +1140,7 @@ EXTEND_PRINTER
                              | _ -> ("else", "") ]
                            in
                            sprintf "\n%s%s"
-                             (if_then
+                             (if_then force_vertic
                                 {(pc) with bef = tab pc.ind; aft = pc_aft;
                                  dang = pc_dang}
                                 "else " e1 e2)
@@ -1148,7 +1256,7 @@ EXTEND_PRINTER
                    in
                    sprintf "%s%s %s with %s%s%s" pc.bef op_begin
                      (expr {(pc) with bef = ""; aft = ""; dang = ""} e1)
-                     (match_assoc {(pc) with bef = ""; aft = ""}
+                     (match_assoc False {(pc) with bef = ""; aft = ""}
                         ((p, wo, e), True))
                      op_end pc.aft)
                 (fun () ->
@@ -1169,7 +1277,7 @@ EXTEND_PRINTER
                    with
                    [ Some s1 ->
                        let s2 =
-                         match_assoc
+                         match_assoc False
                            {(pc) with ind = pc.ind + 2;
                             bef = tab (pc.ind + 2); aft = pc_aft}
                            ((p, wo, e), True)
@@ -1187,7 +1295,7 @@ EXTEND_PRINTER
                          sprintf "%s%s\n%s" pc.bef op_begin s
                        in
                        let s2 =
-                         match_assoc
+                         match_assoc False
                            {(pc) with bef = sprintf "%swith " (tab pc.ind);
                             aft = pc_aft}
                            ((p, wo, e), True)
@@ -2305,9 +2413,11 @@ value set_flags s =
       match s.[i] with
       [ 'A' | 'a' -> do {
           let v = is_uppercase s.[i] in
+          flag_equilibrate_cases.val := v;
           flag_horiz_let_in.val := v;
           flag_semi_semi.val := v;
         }
+      | 'E' | 'e' -> flag_equilibrate_cases.val := is_uppercase s.[i]
       | 'L' | 'l' -> flag_horiz_let_in.val := is_uppercase s.[i]
       | 'M' | 'm' -> flag_semi_semi.val := is_uppercase s.[i]
       | c -> failwith ("bad flag " ^ String.make 1 c) ];
@@ -2319,7 +2429,8 @@ value default_flag () =
   let flag_on b t f = if b then t else "" in
   let flag_off b t f = if b then "" else f in
   let on_off flag =
-    sprintf "%s%s"
+    sprintf "%s%s%s"
+      (flag flag_equilibrate_cases.val "E" "e")
       (flag flag_horiz_let_in.val "L" "l")
       (flag flag_semi_semi.val "M" "m")
   in
@@ -2332,6 +2443,7 @@ value default_flag () =
 Pcaml.add_option "-flag" (Arg.String set_flags)
   ("<str> Change pretty printing behaviour according to <str>:
        A/a enable/disable all flags
+       E/e enable/disable equilibrate cases
        L/l enable/disable allowing printing 'let..in' horizontally
        M/m enable/disable printing double semicolons
        default setting is \"" ^ default_flag () ^ "\".");

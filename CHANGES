@@ -1,9 +1,9 @@
 Camlp5 Version 5.01:
 ---------------------
 
-* [01 Oct 07] Added flag E in pr_r.cmo to ask to equilibrate cases in
-  'match', 'if', 'parse', 'EXTEND' statements, i.e if one case does not
-  fit on the line, all cases must be cut.
+* [01 Oct 07] Added flag E in pr_r.cmo and pr_o.cmo to ask to equilibrate
+  cases in 'match', 'if', 'parse', 'EXTEND' statements, i.e if one case does
+  not fit on the line, all cases must be cut.
 * [01 Oct 07] Added module "Diff" in the library (general comparison of
   two arrays). Implemented with the same algorithm as the Unix 'diff'
   command.
