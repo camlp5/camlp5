@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_extprint.ml,v 1.13 2007/12/15 02:03:44 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.14 2007/12/16 21:46:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -507,6 +507,232 @@ value expand_pprintf loc pc fmt al =
             <:expr<
               Eprinter.sprint_break_all $fn$ $pc$ (fun pc -> $e$) $fl$
             >> ] ]
+;
+
+(** Types and Functions for [pprintf] statement; version 2 *)
+
+type break = [ PPbreak of int and int | PPspace ];
+type paren_param = [ PPoffset of int | PPall of bool | PPnone ];
+
+type pformat = [ Pf of list string ];
+
+type tree2 =
+  [ Tbreak of break
+  | Tsub of paren_param and (pformat * list (tree2 * pformat)) ]
+;
+
+value implode l =
+  let s = String.create (List.length l) in
+  loop 0 l where rec loop i =
+    fun
+    [ [c :: l] -> do { String.set s i c; loop (i + 1) l }
+    | [] -> s ]
+;
+
+value rec parse_int_loop n =
+  fparser
+  [ [: `('0'..'9' as c);
+       n = parse_int_loop (10 * n + Char.code c - Char.code '0') :] -> n
+  | [: :] -> n ]
+;
+
+value parse_int =
+  fparser
+    [: `('0'..'9' as c);
+       n = parse_int_loop (Char.code c - Char.code '0') :] ->
+      n
+;
+
+value rec parse_pformat =
+  fparser
+  [ [: `'%'; `'p'; (cl, sl) = parse_pformat :] -> ([], [implode cl :: sl])
+  | [: `c; (cl, sl) = parse_pformat :] -> ([c :: cl], sl)
+  | [: :] -> ([], []) ]
+;
+
+value pformat_of_char_list cl =
+  match parse_pformat (Fstream.of_list cl) with
+  [ Some ((cl, sl), _) -> Pf [implode cl :: sl]
+  | None -> assert False ]
+;
+
+value parse_break =
+  fparser
+  [ [: `'@'; `';'; `'<'; sp = parse_int; `' '; off = parse_int; `'>' :] ->
+      PPbreak sp off
+  | [: `'@'; `';' :] ->
+      PPbreak 1 2
+  | [: `'@'; `' ' :] ->
+      PPspace ]
+;
+
+value parse_paren_param =
+  fparser
+  [ [: `'<'; off = parse_int; `'>' :] -> PPoffset off
+  | [: `'<'; `('a' | 'b' as c); `'>' :] -> PPall (c = 'b')
+  | [: :] -> PPnone ]
+;
+
+value rec parse_paren_format =
+  fparser
+  [ [: b = parse_break; (cl, tl) = parse_paren_format :] ->
+      ([], [(Tbreak b, pformat_of_char_list cl) :: tl])
+  | [: `'@'; `'['; pp = parse_paren_param; (cl, tl) = parse_paren_format;
+       (cl2, tl2) = parse_paren_format :] ->
+      let pf1 = pformat_of_char_list cl in
+      let pf2 = pformat_of_char_list cl2 in
+      ([], [(Tsub pp (pf1, tl), pf2) :: tl2])
+  | [: `'@'; `']' :] ->
+      ([], [])
+  | [: `c; (cl, tl) = parse_paren_format :] ->
+      ([c :: cl], tl)
+  | [: :] ->
+      ([], []) ]
+;
+
+value rec parse_format_aux =
+  fparser
+  [ [: b = parse_break; (cl, tl) = parse_format_aux :] ->
+      ([], [(Tbreak b, pformat_of_char_list cl) :: tl])
+  | [: `'@'; `'['; pp = parse_paren_param; (cl, tl) = parse_paren_format;
+       (cl2, tl2) = parse_format_aux :] ->
+      let pf1 = pformat_of_char_list cl in
+      let pf2 = pformat_of_char_list cl2 in
+      ([], [(Tsub pp (pf1, tl), pf2) :: tl2])
+  | [: `c; (cl, tl) = parse_format_aux :] ->
+      ([c :: cl], tl)
+  | [: :] ->
+      ([], []) ]
+;
+
+value parse_format =
+  fparser
+  [ [: (cl, t) = parse_format_aux :] -> (pformat_of_char_list cl, t) ]
+;
+
+value expr_of_string_list loc sl =
+  List.fold_right (fun s e -> <:expr< [$str:s$ :: $e$] >>) sl <:expr< [] >>
+;
+
+value rec meta_tree_for_trace loc (s, tl) =
+  let tl =
+    List.fold_right
+      (fun t e ->
+         let t =
+           match t with
+           [ (Tbreak br, Pf sl) ->
+               let br =
+                 match br with
+                 [ PPbreak sp off ->
+                     let ssp = string_of_int sp in
+                     let soff = string_of_int off in
+                     <:expr< PPbreak $int:ssp$ $int:soff$ >>
+                 | PPspace -> <:expr< PPspace >> ]
+               in
+               let sl = expr_of_string_list loc sl in
+               <:expr< (Tbreak $br$, Pf $sl$) >>
+           | (Tsub pp s_tl, Pf sl) ->
+               let s_tl = meta_tree_for_trace loc s_tl in
+               <:expr< Tsub $s_tl$ >> ]
+         in
+         <:expr< [$t$ :: $e$] >>)
+      tl <:expr< [] >>
+  in
+  let s =
+    match s with
+    [ Pf sl -> expr_of_string_list loc sl ]
+  in
+  <:expr< ($s$, $tl$) >>
+;
+
+value get_format_args fmt al = ([], al);
+
+value make_pc loc pc bef bef_al aft aft_al =
+  let lbl =
+    if bef = "" then []
+    else
+      let e =
+        let bef = "%s" ^ bef in
+        let e = <:expr< Pretty.sprintf $str:bef$ $pc$.bef >> in
+        List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e bef_al
+      in
+      [(<:patt< bef >>, e)]
+  in
+  let lbl =
+    if aft = "" then lbl
+    else
+      let e =
+        let aft = aft ^ "%s" in
+        let e = <:expr< Pretty.sprintf $str:aft$ >> in
+        let e =
+          List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e aft_al
+        in
+        <:expr< $e$ $pc$.aft >>
+      in
+      [(<:patt< aft >>, e) :: lbl]
+  in
+  if lbl = [] then pc
+  else <:expr< {($pc$) with $list:List.rev lbl$} >>
+;
+
+value expr_of_pformat loc empty_bef empty_aft pc al =
+  fun
+  [ [fmt] ->
+      let (al, al_rest) = get_assoc_args loc fmt al in
+      let fmt = if empty_bef then fmt else "%s" ^ fmt in
+      let fmt = if empty_aft then fmt else fmt ^ "%s" in
+      let e = <:expr< Pretty.sprintf $str:fmt$ >> in
+      let e = if empty_bef then e else <:expr< $e$ $pc$.bef >> in
+      let e = List.fold_left (fun f a -> <:expr< $f$ $a$ >>) e al in
+      let e = if empty_aft then e else <:expr< $e$ $pc$.aft >> in
+      (e, al_rest)
+  | [fmt1; fmt2] ->
+      let (bef_al, al) = get_assoc_args loc fmt1 al in
+      let (f, a, al) =
+        match al with
+        [ [f; a :: al] -> (f, a, al)
+        | _ -> Ploc.raise loc (Stream.Error "Not enough parameters") ]
+      in
+      let (aft_al, al) = get_assoc_args loc fmt2 al in
+      let pc = make_pc loc pc fmt1 bef_al fmt2 aft_al in
+      let e = <:expr< $f$ $pc$ $a$ >> in
+      (e, al)
+  | _ -> (<:expr< ccc >>, al) ]
+;
+
+value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc t al =
+  match t with
+  [ (Pf sl, []) -> expr_of_pformat loc empty_bef empty_aft pc al sl
+  | (Pf sl1, [(Tbreak br, Pf sl2) :: t]) -> (<:expr< ddd >>, al)
+  | (Pf sl1, [(Tsub pp t1, Pf sl2) :: t]) ->
+      let (e1, al) = expr_of_pformat loc empty_bef True pc al sl1 in
+      let (e, al) = expr_of_tree_aux loc fmt True True pc t1 al in
+      let (e2, al) =
+        expr_of_pformat loc True (t <> [] || empty_aft) pc al sl2
+      in
+      (<:expr< eee $str:fmt$ $e1$ $e$ $e2$ >>, al) ]
+;
+
+value expr_of_tree loc fmt pc t al =
+  let (e, al) = expr_of_tree_aux loc fmt False False pc t al in
+  e
+;
+
+value expand_pprintf_2 loc pc fmt al =
+  match parse_format (Fstream.of_string fmt) with
+  [ Some (t, _) -> expr_of_tree loc fmt pc t al
+  | None -> assert False ]
+;
+
+(** Types and Functions for [pprintf] statement; version choice *)
+
+value pprintf_expander_2 = ref False;
+Pcaml.add_option "-v2" (Arg.Set pprintf_expander_2)
+  " pprintf expander 2 (debugging)";
+
+value expand_pprintf loc pc fmt al =
+  if pprintf_expander_2.val then expand_pprintf_2 loc pc fmt al
+  else expand_pprintf loc pc fmt al
 ;
 
 (** Syntax extensions *)
