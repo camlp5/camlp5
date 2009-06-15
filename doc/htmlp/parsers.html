@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: parsers.html,v 1.15 2007/08/22 23:44:43 deraugla Exp $ -->
+  <!-- $Id: parsers.html,v 1.16 2007/08/23 07:32:46 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -539,10 +539,10 @@ this:</p>
 
 <h3>Position</h3>
 
-<p>The optional "pattern" before and after a stream pattern is bound to
-the current stream count. Indeed, streams contains internally the count
-of its elements. At the beginning the count is zero. When an element is
-removed, the count is incremented. The example:</p>
+<p>The optional "pattern" before and after a stream pattern is bound
+  to the current stream count. Indeed, streams internally contain the
+  count of its elements. At the beginning the count is zero. When an
+  element is removed, the count is incremented. The example:</p>
 
 <pre>
   parser [: a = b :] ep -> c
@@ -555,35 +555,34 @@ removed, the count is incremented. The example:</p>
 </pre>
 
 <p>There is not direct syntax equivalent to the optional pattern at
-beginning of the stream pattern:</p>
+  beginning of the stream pattern:</p>
 
 <pre>
   parser bp [: a = b :] -> c
 </pre>
 
 <p>These optional patterns allow to dispose of the stream count at the
-beginning and at the end of the parser case, allowing to compute
-locations of the rule in the source. In particular, if the stream is a
-stream of characters, these counts are the source location in numberr
-of characters.</p>
+  beginning and at the end of the parser case, allowing to compute
+  locations of the rule in the source. In particular, if the stream is
+  a stream of characters, these counts are the source location in
+  number of characters.</p>
 
 <h3>Semantic action</h3>
 
 <p>In a parser case, after the stream pattern, there is an "arrow" and
-an expression, called the "semantic action". If the parser case is
-matched the parser returns with the expression evaluated, in a context
-of the possibly patterns bound in the stream pattern (position,
-backquote patterns, pattern equal expression, pattern).</p>
+  an expression, called the "semantic action". If the parser case is
+  matched the parser returns with the evaluated expression whose
+  environment contains all values bound in the stream pattern.</p>
 
 <h2>Remarks</h2>
 
 <h3>Simplicity vs Associativity</h3>
 
 <p>This parsing technology has the advantage to be simple to use and
-to understand. But is supposes to sometimes left factorize the rules.
-Moreover, it does not treat the associativity of operators. For
-example, if you try to write a parser like this (to compute arithmetic
-expressions):</p>
+  to understand. But is supposes to sometimes left factorize the
+  rules.  Moreover, it does not treat the associativity of
+  operators. For example, if you try to write a parser like this (to
+  compute arithmetic expressions):</p>
 
 <pre>
   value rec expr =
@@ -601,14 +600,15 @@ like:</p>
     ...
 </pre>
 
-<p>A solution to that is to treat the associavity "by hand", by reading
-a sub-expression, then looping with a parser case parsing the operator
-and another sub-expression, and so on.</p>
+<p>A solution to that is to treat the associavity "by hand", by
+  reading a sub-expression, then looping with a parser case parsing
+  the operator and another sub-expression, and so on.</p>
 
-<p>Another solution is to previously write parsing "combinators". Indeed,
-parsers being normal functions, it is possible to make a function which
-takes a parser as parameter and returning a parser using it. For example,
-left and right associativity parsing combinators:</p>
+<p>Another solution is to previously write parsing
+  "combinators". Indeed, parsers being normal functions, it is
+  possible to make a function which takes a parser as parameter and
+  returning a parser using it. For example, left and right
+  associativity parsing combinators:</p>
 
 <pre>
   value rec left_assoc op elem =
@@ -645,15 +645,15 @@ left and right associativity parsing combinators:</p>
 <p>and tested, e.g. in the toplevel, like that:</p>
 
 <pre>
-  expr (Stream.of_string "2^3^2");
+  expr (Stream.of_string "2^3^2+1");
 </pre>
 
-<p>The same way, it is possible to parser non-context free grammars, by
-programming parsers returning other parsers.</p>
+<p>The same way, it is possible to parser non-context free grammars,
+  by programming parsers returning other parsers.</p>
 
 <p>A third solution, to resolve the problem of associativity, is to
-use the grammars of Camlp5, which have the other advantage that they
-are extensible.</p>
+  use the grammars of Camlp5, which have the other advantage that they
+  are extensible.</p>
 
 <h3>Lexing vs Parsing</h3>
 
@@ -662,68 +662,68 @@ are extensible.</p>
 <ul>
 
 <li>The level where the input, considered as a stream of characters,
-is read to make a stream of tokens (for example "words", if it is a
-human language, or punctuation). This level is generally called
-"lexing".</li>
+  is read to make a stream of tokens (for example "words", if it is a
+  human language, or punctuation). This level is generally called
+  "lexing".</li>
 
-<li>The level where on read a stream of token to parse grammar rules.
-This level is generally called "parsing".</li>
+<li>The level where the input is a stream of tokens where grammar
+  rules are parsed. This level is generally called "parsing".</li>
 
 </ul>
 
-<p>The "parser" construction described here can be used for both, thanks
-to the polymorphism of OCaml:</p>
+<p>The "parser" construction described here can be used for both,
+  thanks to the polymorphism of OCaml:</p>
 
 <ul>
 
 <li>The lexing level is a "parser" of streams of characters returning
-tokens.</li>
+  tokens.</li>
 
-<li>The parsing level is a "parser" of streams of tokens returning syntax
-trees.</li>
+<li>The parsing level is a "parser" of streams of tokens returning
+  syntax trees.</li>
 
 </ul>
 
 <p>By comparison, the programs "lex" and "yacc" use two different
-technologies. With "parser"s, it is possible to use the same one for
-both.</p>
+  technologies. With "parser"s, it is possible to use the same one for
+  both.</p>
 
 <h3>Lexer syntax vs Parser syntax</h3>
 
 <p>For "lexers", i.e. for the specific case of parsers when the input
-is a stream of characters, it is possible to use a shorter syntax. See
-the page on <a href="lexers.html">lexers</a>. They are another syntax
-for this case, adapted for the specific type "<code>char</code>" and
-much shorter and simple to use. But they still are internally parsers
-of streams with the same semantics.</p>
+  is a stream of characters, it is possible to use a shorter
+  syntax. See the chapter on <a href="lexers.html">lexers</a>. They
+  have another syntax, shorter and adapted for the specific type
+  "<code>char</code>". But they still are internally parsers of
+  streams with the same semantics.</p>
 
 <h3>Purely functional parsers</h3>
 
 <p>This system of parsers are not purely functional in the sense that
-the stream structure is lazy and imperative: while parsing, the stream
-advances and the terminals already parsed disappear from the stream
-structure. This is useful because it is not necessary to return the
-remaining stream together with the normal result. And it is the reason
-why there is this <code>"Stream.Error"</code> exception: when it
-happens, it means that some terminals have been consummed from the
-stream, definitively lost, and that therefore it is no more possible
-to try other parser cases.</p>
+  the stream structure is imperative: while parsing, the stream
+  advances and the already parsed terminals disappear from the stream
+  structure. This is useful because it is not necessary to return the
+  remaining stream together with the normal result. And it is the
+  reason why there is this <code>"Stream.Error"</code> exception: when
+  it happens, it means that some terminals have been consummed from
+  the stream, definitively lost, and that therefore it is no more
+  possible to try other parser cases.</p>
 
 <p>An alternative of that is using <a href="fparsers.html">purely
-functional parsers</a> using a new stream type, lazy but not
-destructive. Their advantage is that they use a limited backtrack: the
-case of "if..then..else.." and the shorter "if..then.." work without
-having to left factorize the parser cases, and there is no need to
-lookahead. They have no equivalent to the exception
-"<code>Stream.Error</code>": when all cases are tested, and have
-failed, the parsers return the value "<code>None</code>". Their
-drawback is that, when a parsing error happens, it is not easily
-possible to know the location of the error in the input, since the
-initial stream has not been modified: the system would indicate a
-failure at the first character of the first line: this is a general
-drawback of backtracking parsers. See the solutions found to this
-problem in the <a href="fparsers.html">page about purely functional
-parsers</a>.</p>
+  functional parsers</a> using a new stream type, lazy but not
+  destructive. Their advantage is that they use a limited backtrack:
+  the case of "if..then..else.." and the shorter "if..then.." work
+  without having to left factorize the parser cases, and there is no
+  need to lookahead. They have no equivalent to the exception
+  "<code>Stream.Error</code>": when all cases are tested, and have
+  failed, the parsers return the value "<code>None</code>". Their
+  drawback is that, when a parsing error happens, it is not easily
+  possible to know the location of the error in the input, since the
+  initial stream has not been modified: the system would indicate a
+  failure at the first character of the first line: this is a general
+  drawback of backtracking parsers. See the solutions found to this
+  problem in the chapter about <a href="fparsers.html">purely
+  functional parsers</a>.</p>
 
 <div class="trailer">
 </div>
