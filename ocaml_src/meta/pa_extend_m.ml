@@ -18,7 +18,12 @@ Grammar.extend
   [Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e),
    Some (Gramext.Level "top"),
    [None, Some Gramext.NonA,
-    [[Gramext.Stoken ("UIDENT", "V"); Gramext.Stoken ("UIDENT", "SFLAG");
+    [[Gramext.Stoken ("UIDENT", "SV"); Gramext.Stoken ("UIDENT", "")],
+     Gramext.action
+       (fun (s : string) _ (loc : Ploc.t) ->
+          (if !(Pcaml.strict_mode) then sstoken2 loc s else sstoken loc s :
+           'symbol));
+     [Gramext.Stoken ("UIDENT", "SV"); Gramext.Stoken ("UIDENT", "FLAG");
       Gramext.Sself],
      Gramext.action
        (fun (s : 'symbol) _ _ (loc : Ploc.t) ->

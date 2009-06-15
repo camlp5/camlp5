@@ -85,11 +85,13 @@ module Qast =
           in
           MLast.ExAnt (loc, e)
       | VaVal a ->
-          MLast.ExApp
-            (loc,
-             MLast.ExAcc
-               (loc, MLast.ExUid (loc, "Ploc"), MLast.ExUid (loc, "VaVal")),
-             to_expr m a)
+          if !(Pcaml.strict_mode) then
+            MLast.ExApp
+              (loc,
+               MLast.ExAcc
+                 (loc, MLast.ExUid (loc, "Ploc"), MLast.ExUid (loc, "VaVal")),
+               to_expr m a)
+          else to_expr m a
       | Vala a ->
           let e = to_expr m a in
           match e with
@@ -141,11 +143,13 @@ module Qast =
           in
           MLast.PaAnt (loc, p)
       | VaVal a ->
-          MLast.PaApp
-            (loc,
-             MLast.PaAcc
-               (loc, MLast.PaUid (loc, "Ploc"), MLast.PaUid (loc, "VaVal")),
-             to_patt m a)
+          if !(Pcaml.strict_mode) then
+            MLast.PaApp
+              (loc,
+               MLast.PaAcc
+                 (loc, MLast.PaUid (loc, "Ploc"), MLast.PaUid (loc, "VaVal")),
+               to_patt m a)
+          else to_patt m a
       | Vala a ->
           let p = to_patt m a in
           match p with
@@ -203,6 +207,7 @@ let a_flag = Grammar.Entry.create gram "a_flag";;
 let a_flag2 = Grammar.Entry.create gram "a_flag2";;
 let a_UIDENT = Grammar.Entry.create gram "a_UIDENT";;
 let a_LIDENT = Grammar.Entry.create gram "a_LIDENT";;
+let a_LIDENT2 = Grammar.Entry.create gram "a_LIDENT2";;
 let a_INT = Grammar.Entry.create gram "a_INT";;
 let a_INT_l = Grammar.Entry.create gram "a_INT_l";;
 let a_INT_L = Grammar.Entry.create gram "a_INT_L";;
@@ -247,11 +252,12 @@ let mkumin _ f arg =
       let n = neg_string n in Qast.Node ("ExFlo", [Qast.Loc; Qast.Str n])
   | _ ->
       match f with
-        Qast.Str f ->
+        Qast.VaVal (Qast.Str f) | Qast.Str f ->
           let f = "~" ^ f in
           Qast.Node
             ("ExApp",
-             [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str f]); arg])
+             [Qast.Loc;
+              Qast.Node ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str f)]); arg])
       | _ -> assert false
 ;;
 
@@ -620,7 +626,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 299, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 303, 19))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -870,7 +876,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 354, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 358, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -1149,7 +1155,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "||"]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "||")]);
                     e1]);
                 e2]) :
             'expr))];
@@ -1162,7 +1170,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "&&"]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "&&")]);
                     e1]);
                 e2]) :
             'expr))];
@@ -1175,7 +1185,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "!="]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "!=")]);
                     e1]);
                 e2]) :
             'expr));
@@ -1187,7 +1199,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "=="]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "==")]);
                     e1]);
                 e2]) :
             'expr));
@@ -1199,7 +1213,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "<>"]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "<>")]);
                     e1]);
                 e2]) :
             'expr));
@@ -1211,7 +1227,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "="]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "=")]);
                     e1]);
                 e2]) :
             'expr));
@@ -1223,7 +1241,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str ">="]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str ">=")]);
                     e1]);
                 e2]) :
             'expr));
@@ -1235,7 +1255,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "<="]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "<=")]);
                     e1]);
                 e2]) :
             'expr));
@@ -1247,7 +1269,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str ">"]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str ">")]);
                     e1]);
                 e2]) :
             'expr));
@@ -1259,7 +1283,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "<"]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "<")]);
                     e1]);
                 e2]) :
             'expr))];
@@ -1272,7 +1298,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "@"]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "@")]);
                     e1]);
                 e2]) :
             'expr));
@@ -1284,7 +1312,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "^"]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "^")]);
                     e1]);
                 e2]) :
             'expr))];
@@ -1297,7 +1327,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "-."]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "-.")]);
                     e1]);
                 e2]) :
             'expr));
@@ -1309,7 +1341,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "+."]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "+.")]);
                     e1]);
                 e2]) :
             'expr));
@@ -1321,7 +1355,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "-"]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "-")]);
                     e1]);
                 e2]) :
             'expr));
@@ -1333,7 +1369,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "+"]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "+")]);
                     e1]);
                 e2]) :
             'expr))];
@@ -1346,7 +1384,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "mod"]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "mod")]);
                     e1]);
                 e2]) :
             'expr));
@@ -1359,7 +1399,9 @@ Grammar.extend
                 Qast.Node
                   ("ExApp",
                    [Qast.Loc;
-                    Qast.Node ("ExLid", [Qast.Loc; Qast.Str "lxor"]); e1]);
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "lxor")]);
+                    e1]);
                 e2]) :
             'expr));
       [Gramext.Sself; Gramext.Stoken ("", "lor"); Gramext.Sself],
@@ -1370,7 +1412,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "lor"]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "lor")]);
                     e1]);
                 e2]) :
             'expr));
@@ -1383,7 +1427,9 @@ Grammar.extend
                 Qast.Node
                   ("ExApp",
                    [Qast.Loc;
-                    Qast.Node ("ExLid", [Qast.Loc; Qast.Str "land"]); e1]);
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "land")]);
+                    e1]);
                 e2]) :
             'expr));
       [Gramext.Sself; Gramext.Stoken ("", "/."); Gramext.Sself],
@@ -1394,7 +1440,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "/."]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "/.")]);
                     e1]);
                 e2]) :
             'expr));
@@ -1406,7 +1454,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "*."]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "*.")]);
                     e1]);
                 e2]) :
             'expr));
@@ -1418,7 +1468,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "/"]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "/")]);
                     e1]);
                 e2]) :
             'expr));
@@ -1430,7 +1482,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "*"]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "*")]);
                     e1]);
                 e2]) :
             'expr))];
@@ -1443,7 +1497,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "lsr"]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "lsr")]);
                     e1]);
                 e2]) :
             'expr));
@@ -1455,7 +1511,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "lsl"]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "lsl")]);
                     e1]);
                 e2]) :
             'expr));
@@ -1467,7 +1525,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "asr"]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "asr")]);
                     e1]);
                 e2]) :
             'expr));
@@ -1479,7 +1539,9 @@ Grammar.extend
                [Qast.Loc;
                 Qast.Node
                   ("ExApp",
-                   [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "**"]);
+                   [Qast.Loc;
+                    Qast.Node
+                      ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "**")]);
                     e1]);
                 e2]) :
             'expr))];
@@ -1541,7 +1603,8 @@ Grammar.extend
         (fun (e : 'expr) _ (loc : Ploc.t) ->
            (Qast.Node
               ("ExApp",
-               [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "~-."]);
+               [Qast.Loc;
+                Qast.Node ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "~-.")]);
                 e]) :
             'expr));
       [Gramext.Stoken ("", "~-"); Gramext.Sself],
@@ -1549,7 +1612,8 @@ Grammar.extend
         (fun (e : 'expr) _ (loc : Ploc.t) ->
            (Qast.Node
               ("ExApp",
-               [Qast.Loc; Qast.Node ("ExLid", [Qast.Loc; Qast.Str "~-"]);
+               [Qast.Loc;
+                Qast.Node ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str "~-")]);
                 e]) :
             'expr))];
      Some "simple", None,
@@ -1831,9 +1895,9 @@ Grammar.extend
         (fun (i : 'a_UIDENT) (loc : Ploc.t) ->
            (Qast.Node ("ExUid", [Qast.Loc; i]) : 'expr_ident));
       [Gramext.Snterm
-         (Grammar.Entry.obj (a_LIDENT : 'a_LIDENT Grammar.Entry.e))],
+         (Grammar.Entry.obj (a_LIDENT2 : 'a_LIDENT2 Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'a_LIDENT) (loc : Ploc.t) ->
+        (fun (i : 'a_LIDENT2) (loc : Ploc.t) ->
            (Qast.Node ("ExLid", [Qast.Loc; i]) : 'expr_ident))]];
     Grammar.Entry.obj (fun_def : 'fun_def Grammar.Entry.e), None,
     [None, Some Gramext.RightA,
@@ -3816,9 +3880,7 @@ Grammar.extend
      [Gramext.Stoken ("ANTIQUOT", "flag")],
      Gramext.action
        (fun (a : string) (loc : Ploc.t) ->
-          (if !(Pcaml.strict_mode) then Qast.VaVal (antiquot "flag" loc a)
-           else antiquot "flag" loc a :
-           'a_flag2))]];
+          (Qast.VaVal (antiquot "flag" loc a) : 'a_flag2))]];
    Grammar.Entry.obj (a_opt : 'a_opt Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Stoken ("ANTIQUOT", "when")],
@@ -3861,6 +3923,22 @@ Grammar.extend
      Gramext.action
        (fun (a : string) (loc : Ploc.t) ->
           (antiquot "lid" loc a : 'a_LIDENT))]];
+   Grammar.Entry.obj (a_LIDENT2 : 'a_LIDENT2 Grammar.Entry.e), None,
+   [None, None,
+    [[Gramext.Stoken ("LIDENT", "")],
+     Gramext.action
+       (fun (i : string) (loc : Ploc.t) ->
+          (Qast.VaVal (Qast.Str i) : 'a_LIDENT2));
+     [Gramext.Stoken ("ANTIQUOT", "")],
+     Gramext.action
+       (fun (a : string) (loc : Ploc.t) -> (antiquot "" loc a : 'a_LIDENT2));
+     [Gramext.Stoken ("ANTIQUOT", "alid")],
+     Gramext.action
+       (fun (a : string) (loc : Ploc.t) -> (antiquot "" loc a : 'a_LIDENT2));
+     [Gramext.Stoken ("ANTIQUOT", "lid")],
+     Gramext.action
+       (fun (a : string) (loc : Ploc.t) ->
+          (Qast.VaVal (antiquot "lid" loc a) : 'a_LIDENT2))]];
    Grammar.Entry.obj (a_INT : 'a_INT Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Stoken ("INT", "")],

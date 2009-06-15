@@ -1,4 +1,4 @@
-(* camlp5r pa_extend.cmo q_MLast.cmo *)
+(* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp5                                  *)
@@ -170,6 +170,7 @@ module MetaAction =
         false -> MLast.ExUid (loc, "False")
       | true -> MLast.ExUid (loc, "True")
     ;;
+    let mvala s = MLast.ExStr (loc, s);;
     let mloc =
       MLast.ExAcc (loc, MLast.ExUid (loc, "Ploc"), MLast.ExLid (loc, "dummy"))
     ;;
@@ -286,7 +287,7 @@ module MetaAction =
                   (loc, MLast.ExUid (loc, "MLast"),
                    MLast.ExUid (loc, "ExLid")),
                 mloc),
-             MLast.ExStr (loc, s))
+             mvala s)
       | MLast.ExMat (loc, e, pwel) ->
           MLast.ExApp
             (loc,
@@ -640,6 +641,14 @@ let rec quot_expr e =
          MLast.ExAcc
            (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Bool")),
          MLast.ExUid (loc, "True"))
+  | MLast.ExApp
+      (_, MLast.ExAcc (_, MLast.ExUid (_, "Ploc"), MLast.ExUid (_, "VaVal")),
+       e) ->
+      MLast.ExApp
+        (loc,
+         MLast.ExAcc
+           (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "VaVal")),
+         quot_expr e)
   | MLast.ExUid (_, "()") -> e
   | MLast.ExApp
       (_, MLast.ExAcc (_, MLast.ExUid (_, "Qast"), MLast.ExUid (_, "Bool")),
@@ -1135,7 +1144,15 @@ let slist loc min sep symb =
 ;;
 
 let sstoken loc s =
-  let n = mk_name loc (MLast.ExLid (loc, "a_" ^ s)) in TXnterm (loc, n, None)
+  let n = mk_name loc (MLast.ExLid (loc, "a_" ^ s)) in
+  let text = TXnterm (loc, n, None) in
+  {used = []; text = text; styp = STlid (loc, "string")}
+;;
+
+let sstoken2 loc s =
+  let n = mk_name loc (MLast.ExLid (loc, "a_" ^ s ^ "2")) in
+  let text = TXnterm (loc, n, None) in
+  {used = []; text = text; styp = STlid (loc, "string")}
 ;;
 
 let mk_psymbol p s t =
@@ -1903,7 +1920,22 @@ Grammar.extend
             'psymbol))]];
     Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e), None,
     [Some "top", Some Gramext.NonA,
-     [[Gramext.Stoken ("UIDENT", "V"); Gramext.Stoken ("UIDENT", "FLAG");
+     [[Gramext.Stoken ("UIDENT", "V"); Gramext.Stoken ("UIDENT", "")],
+      Gramext.action
+        (fun (x : string) _ (loc : Ploc.t) ->
+           (if !quotify then sstoken2 loc x
+            else if not !(Pcaml.strict_mode) then
+              let styp = STlid (loc, "string") in
+              let text = TXtok (loc, x, MLast.ExStr (loc, "")) in
+              {used = []; text = text; styp = styp}
+            else
+              let styp = STvala (loc, STlid (loc, "string")) in
+              let text =
+                TXvala (loc, TXtok (loc, x, MLast.ExStr (loc, "")))
+              in
+              {used = []; text = text; styp = styp} :
+            'symbol));
+      [Gramext.Stoken ("UIDENT", "V"); Gramext.Stoken ("UIDENT", "FLAG");
        Gramext.Sself],
       Gramext.action
         (fun (s : 'symbol) _ _ (loc : Ploc.t) ->
@@ -2026,11 +2058,10 @@ Grammar.extend
       [Gramext.Stoken ("UIDENT", "")],
       Gramext.action
         (fun (x : string) (loc : Ploc.t) ->
-           (let text =
-              if !quotify then sstoken loc x
-              else TXtok (loc, x, MLast.ExStr (loc, ""))
-            in
-            {used = []; text = text; styp = STlid (loc, "string")} :
+           (if !quotify then sstoken loc x
+            else
+              let text = TXtok (loc, x, MLast.ExStr (loc, "")) in
+              {used = []; text = text; styp = STlid (loc, "string")} :
             'symbol));
       [Gramext.Stoken ("", "[");
        Gramext.Slist0sep

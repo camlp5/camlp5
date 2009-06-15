@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.44 2007/09/07 13:24:52 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.45 2007/09/07 18:18:38 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -370,7 +370,7 @@ EXTEND
   ;
   expr_ident:
     [ RIGHTA
-      [ i = LIDENT -> <:expr< $lid:i$ >>
+      [ i = V LIDENT -> <:expr< $alid:i$ >>
       | i = UIDENT -> <:expr< $uid:i$ >>
       | i = UIDENT; "."; j = SELF -> mkexprident loc i j ] ]
   ;

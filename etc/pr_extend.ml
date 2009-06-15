@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extend.ml,v 1.31 2007/09/07 13:24:52 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.32 2007/09/07 18:18:38 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -370,7 +370,7 @@ and symbol pc sy =
       [ Some s -> s_symbol pc s
       | None -> simple_symbol pc sy ]
   | Stoken tok -> token pc tok
-  | Svala sy -> symbol {(pc) with bef = "V " ^ pc.bef} sy
+  | Svala sy -> symbol {(pc) with bef = "SV " ^ pc.bef} sy
   | sy -> simple_symbol pc sy ]
 and simple_symbol pc sy =
   match sy with  
@@ -444,7 +444,7 @@ and s_symbol pc =
             Stoken (Left ("", str))
         | s -> s ]
       in
-      sprintf "%sV SFLAG %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
+      sprintf "%sSV FLAG %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
   | _ -> assert False ]
 and check_slist rl =
   if no_slist.val then None

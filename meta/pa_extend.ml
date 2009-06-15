@@ -1,4 +1,4 @@
-(* camlp5r pa_extend.cmo q_MLast.cmo *)
+(* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp5                                  *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.40 2007/09/07 13:24:52 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.41 2007/09/07 18:18:38 deraugla Exp $ *)
 
 value split_ext = ref False;
 
@@ -175,6 +175,15 @@ module MetaAction =
       [ False -> <:expr< False >>
       | True -> <:expr< True >> ]
     ;
+    value mvala s =
+      IFNDEF STRICT THEN
+        <:expr< $str:s$ >>
+      ELSE
+        match s with
+        [ Ploc.VaVal s -> <:expr< Ploc.VaVal $str:s$ >>
+        | _ -> assert False ]
+      END
+    ;
     value mloc = <:expr< Ploc.dummy >>;
     value rec mexpr =
       fun
@@ -192,7 +201,7 @@ module MetaAction =
       | MLast.ExLet loc rf pel e ->
           let rf = mbool rf in
           <:expr< MLast.ExLet $mloc$ $rf$ $mlist mpe pel$ $mexpr e$ >>
-      | MLast.ExLid loc s -> <:expr< MLast.ExLid $mloc$ $str:s$ >>
+      | MLast.ExLid loc s -> <:expr< MLast.ExLid $mloc$ $mvala s$ >>
       | MLast.ExMat loc e pwel ->
           <:expr< MLast.ExMat $mloc$ $mexpr e$ $mlist mpwe pwel$ >>
       | MLast.ExRec loc pel eo ->
@@ -278,6 +287,7 @@ value rec quot_expr e =
   | <:expr< Some $e$ >> -> <:expr< Qast.Option (Some $quot_expr e$) >>
   | <:expr< False >> -> <:expr< Qast.Bool False >>
   | <:expr< True >> -> <:expr< Qast.Bool True >>
+  | <:expr< Ploc.VaVal $e$ >> -> <:expr< Qast.VaVal $quot_expr e$ >>
   | <:expr< () >> -> e
   | <:expr< Qast.Bool $_$ >> -> e
   | <:expr< Qast.List $_$ >> -> e
@@ -517,7 +527,14 @@ value slist loc min sep symb =
 
 value sstoken loc s =
   let n = mk_name loc <:expr< $lid:"a_" ^ s$ >> in
-  TXnterm loc n None
+  let text = TXnterm loc n None in
+  {used = []; text = text; styp = STlid loc "string"}
+;
+
+value sstoken2 loc s =
+  let n = mk_name loc <:expr< $lid:"a_" ^ s ^ "2"$ >> in
+  let text = TXnterm loc n None in
+  {used = []; text = text; styp = STlid loc "string"}
 ;
 
 value mk_psymbol p s t =
@@ -919,7 +936,17 @@ EXTEND
           else
             let styp = STvala loc (STlid loc "bool") in
             let text = TXvala loc (TXflag loc s.text) in
-            {used = s.used; text = text; styp = styp} ]
+            {used = s.used; text = text; styp = styp}
+      | UIDENT "V"; x = UIDENT ->
+          if quotify.val then sstoken2 loc x
+          else if not Pcaml.strict_mode.val then
+            let styp = STlid loc "string" in
+            let text = TXtok loc x <:expr< "" >> in
+            {used = []; text = text; styp = styp}
+          else
+            let styp = STvala loc (STlid loc "string") in
+            let text = TXvala loc (TXtok loc x <:expr< "" >>) in
+            {used = []; text = text; styp = styp} ]
     | [ UIDENT "SELF" ->
           {used = []; text = TXself loc; styp = STself loc "SELF"}
       | UIDENT "NEXT" ->
@@ -930,10 +957,10 @@ EXTEND
           {used = used_of_rule_list rl;
            text = TXrules loc (srules loc t rl ""); styp = STquo loc t}
       | x = UIDENT ->
-          let text =
-            if quotify.val then sstoken loc x else TXtok loc x <:expr< "" >>
-          in
-          {used = []; text = text; styp = STlid loc "string"}
+          if quotify.val then sstoken loc x
+          else
+            let text = TXtok loc x <:expr< "" >> in
+            {used = []; text = text; styp = STlid loc "string"}
       | x = UIDENT; e = string ->
           let text = TXtok loc x e in
           {used = []; text = text; styp = STlid loc "string"}

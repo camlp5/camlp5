@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.44 2007/09/07 13:24:52 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.45 2007/09/07 18:18:38 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -77,7 +77,8 @@ module Qast =
           in
           <:expr< $anti:e$ >>
       | VaVal a ->
-          <:expr< Ploc.VaVal $to_expr m a$ >>
+          if Pcaml.strict_mode.val then <:expr< Ploc.VaVal $to_expr m a$ >>
+          else to_expr m a
       | Vala a ->
           let e = to_expr m a in
           match e with
@@ -112,7 +113,8 @@ module Qast =
           in
           <:patt< $anti:p$ >>
       | VaVal a ->
-          <:patt< Ploc.VaVal $to_patt m a$ >>
+          if Pcaml.strict_mode.val then <:patt< Ploc.VaVal $to_patt m a$ >>
+          else to_patt m a
       | Vala a ->
           let p = to_patt m a in
           match p with
@@ -161,6 +163,7 @@ value a_flag = Grammar.Entry.create gram "a_flag";
 value a_flag2 = Grammar.Entry.create gram "a_flag2";
 value a_UIDENT = Grammar.Entry.create gram "a_UIDENT";
 value a_LIDENT = Grammar.Entry.create gram "a_LIDENT";
+value a_LIDENT2 = Grammar.Entry.create gram "a_LIDENT2";
 value a_INT = Grammar.Entry.create gram "a_INT";
 value a_INT_l = Grammar.Entry.create gram "a_INT_l";
 value a_INT_L = Grammar.Entry.create gram "a_INT_L";
@@ -206,10 +209,11 @@ value mkumin _ f arg =
       Qast.Node "ExFlo" [Qast.Loc; Qast.Str n]
   | _ ->
       match f with
-      [ Qast.Str f ->
+      [ Qast.VaVal (Qast.Str f) | Qast.Str f ->
           let f = "~" ^ f in
           Qast.Node "ExApp"
-            [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str f]; arg]
+            [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str f)];
+             arg]
       | _ -> assert False ] ]
 ;
 
@@ -309,7 +313,7 @@ EXTEND
       | "open"; i = mod_ident -> Qast.Node "StOpn" [Qast.Loc; i]
       | "type"; tdl = SLIST1 type_declaration SEP "and" ->
           Qast.Node "StTyp" [Qast.Loc; tdl]
-      | "value"; r = V SFLAG "rec"; l = SLIST1 let_binding SEP "and" ->
+      | "value"; r = SV FLAG "rec"; l = SLIST1 let_binding SEP "and" ->
           Qast.Node "StVal" [Qast.Loc; r; l]
       | e = expr -> Qast.Node "StExp" [Qast.Loc; e] ] ]
   ;
@@ -424,175 +428,210 @@ EXTEND
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "||"]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "||")]; e1];
              e2] ]
     | "&&" RIGHTA
       [ e1 = SELF; "&&"; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "&&"]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "&&")]; e1];
              e2] ]
     | "<" LEFTA
       [ e1 = SELF; "<"; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "<"]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "<")]; e1];
              e2]
       | e1 = SELF; ">"; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str ">"]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str ">")]; e1];
              e2]
       | e1 = SELF; "<="; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "<="]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "<=")]; e1];
              e2]
       | e1 = SELF; ">="; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str ">="]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str ">=")]; e1];
              e2]
       | e1 = SELF; "="; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "="]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "=")]; e1];
              e2]
       | e1 = SELF; "<>"; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "<>"]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "<>")]; e1];
              e2]
       | e1 = SELF; "=="; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "=="]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "==")]; e1];
              e2]
       | e1 = SELF; "!="; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "!="]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "!=")]; e1];
              e2] ]
     | "^" RIGHTA
       [ e1 = SELF; "^"; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "^"]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "^")]; e1];
              e2]
       | e1 = SELF; "@"; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "@"]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "@")]; e1];
              e2] ]
     | "+" LEFTA
       [ e1 = SELF; "+"; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "+"]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "+")]; e1];
              e2]
       | e1 = SELF; "-"; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "-"]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "-")]; e1];
              e2]
       | e1 = SELF; "+."; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "+."]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "+.")]; e1];
              e2]
       | e1 = SELF; "-."; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "-."]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "-.")]; e1];
              e2] ]
     | "*" LEFTA
       [ e1 = SELF; "*"; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "*"]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "*")]; e1];
              e2]
       | e1 = SELF; "/"; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "/"]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "/")]; e1];
              e2]
       | e1 = SELF; "*."; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "*."]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "*.")]; e1];
              e2]
       | e1 = SELF; "/."; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "/."]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "/.")]; e1];
              e2]
       | e1 = SELF; "land"; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "land"]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "land")];
+                e1];
              e2]
       | e1 = SELF; "lor"; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "lor"]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "lor")];
+                e1];
              e2]
       | e1 = SELF; "lxor"; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "lxor"]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "lxor")];
+                e1];
              e2]
       | e1 = SELF; "mod"; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "mod"]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "mod")];
+                e1];
              e2] ]
     | "**" RIGHTA
       [ e1 = SELF; "**"; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "**"]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "**")]; e1];
              e2]
       | e1 = SELF; "asr"; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "asr"]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "asr")];
+                e1];
              e2]
       | e1 = SELF; "lsl"; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "lsl"]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "lsl")];
+                e1];
              e2]
       | e1 = SELF; "lsr"; e2 = SELF ->
           Qast.Node "ExApp"
             [Qast.Loc;
              Qast.Node "ExApp"
-               [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "lsr"]; e1];
+               [Qast.Loc;
+                Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "lsr")];
+                e1];
              e2] ]
     | "unary minus" NONA
       [ "-"; e = SELF -> mkumin Qast.Loc (Qast.Str "-") e
@@ -612,10 +651,12 @@ EXTEND
     | "~-" NONA
       [ "~-"; e = SELF ->
           Qast.Node "ExApp"
-            [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "~-"]; e]
+            [Qast.Loc;
+             Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "~-")]; e]
       | "~-."; e = SELF ->
           Qast.Node "ExApp"
-            [Qast.Loc; Qast.Node "ExLid" [Qast.Loc; Qast.Str "~-."]; e] ]
+            [Qast.Loc;
+             Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "~-.")]; e] ]
     | "simple"
       [ s = a_INT -> Qast.Node "ExInt" [Qast.Loc; s; Qast.Str ""]
       | s = a_INT_l -> Qast.Node "ExInt" [Qast.Loc; s; Qast.Str "l"]
@@ -685,7 +726,7 @@ EXTEND
   ;
   expr_ident:
     [ RIGHTA
-      [ i = a_LIDENT -> Qast.Node "ExLid" [Qast.Loc; i]
+      [ i = a_LIDENT2 -> Qast.Node "ExLid" [Qast.Loc; i]
       | i = a_UIDENT -> Qast.Node "ExUid" [Qast.Loc; i]
       | i = a_UIDENT; "."; j = SELF -> mkexprident Qast.Loc i j ] ]
   ;
@@ -1216,9 +1257,7 @@ EXTEND
       | a = ANTIQUOT "aflag" -> antiquot "aflag" loc a ] ]
   ;
   a_flag2:
-    [ [ a = ANTIQUOT "flag" ->
-          if Pcaml.strict_mode.val then Qast.VaVal (antiquot "flag" loc a)
-          else antiquot "flag" loc a 
+    [ [ a = ANTIQUOT "flag" -> Qast.VaVal (antiquot "flag" loc a)
       | a = ANTIQUOT "aflag" -> antiquot "aflag" loc a ] ]
   ;
   (* compatibility; deprecated since version 4.07 *)
@@ -1242,6 +1281,12 @@ EXTEND
     [ [ a = ANTIQUOT "lid" -> antiquot "lid" loc a
       | a = ANTIQUOT -> antiquot "" loc a
       | i = LIDENT -> Qast.Str i ] ]
+  ;
+  a_LIDENT2:
+    [ [ a = ANTIQUOT "lid" -> Qast.VaVal (antiquot "lid" loc a)
+      | a = ANTIQUOT "alid" -> antiquot "" loc a
+      | a = ANTIQUOT -> antiquot "" loc a
+      | i = LIDENT -> Qast.VaVal (Qast.Str i) ] ]
   ;
   a_INT:
     [ [ a = ANTIQUOT "int" -> antiquot "int" loc a

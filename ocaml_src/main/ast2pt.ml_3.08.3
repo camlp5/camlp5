@@ -113,7 +113,7 @@ let array_function str name =
   ldot (lident str) (if !fast then "unsafe_" ^ name else name)
 ;;
 
-let unvala x = x;;
+let uv x = x;;
 
 let mkrf =
   function
@@ -259,7 +259,7 @@ let option f =
 let expr_of_lab loc lab =
   function
     Some e -> e
-  | None -> ExLid (loc, lab)
+  | None -> MLast.ExLid (loc, lab)
 ;;
 
 let patt_of_lab loc lab =
@@ -285,7 +285,7 @@ let paolab loc lab peoo =
 
 let rec same_type_expr ct ce =
   match ct, ce with
-    TyLid (_, s1), ExLid (_, s2) -> s1 = s2
+    TyLid (_, s1), MLast.ExLid (_, s2) -> s1 = s2
   | TyUid (_, s1), ExUid (_, s2) -> s1 = s2
   | TyAcc (_, t1, t2), ExAcc (_, e1, e2) ->
       same_type_expr t1 e1 && same_type_expr t2 e2
@@ -294,9 +294,10 @@ let rec same_type_expr ct ce =
 
 let rec common_id loc t e =
   match t, e with
-    TyLid (_, s1), ExLid (_, s2) when s1 = s2 -> lident s1
+    TyLid (_, s1), MLast.ExLid (_, s2) when s1 = s2 -> lident s1
   | TyUid (_, s1), ExUid (_, s2) when s1 = s2 -> lident s1
-  | TyAcc (_, t1, TyLid (_, s1)), ExAcc (_, e1, ExLid (_, s2)) when s1 = s2 ->
+  | TyAcc (_, t1, TyLid (_, s1)), MLast.ExAcc (_, e1, MLast.ExLid (_, s2))
+    when s1 = s2 ->
       ldot (common_id loc t1 e1) s1
   | TyAcc (_, t1, TyUid (_, s1)), ExAcc (_, e1, ExUid (_, s2)) when s1 = s2 ->
       ldot (common_id loc t1 e1) s1
@@ -645,7 +646,7 @@ let bigarray_set loc e el v =
 
 let rec expr =
   function
-    ExAcc (loc, x, ExLid (_, "val")) ->
+    ExAcc (loc, x, MLast.ExLid (_, "val")) ->
       mkexp loc
         (Pexp_apply (mkexp loc (Pexp_ident (Lident "!")), ["", expr x]))
   | ExAcc (loc, _, _) as e ->
@@ -654,7 +655,7 @@ let rec expr =
           (loc, ml, ExUid (_, s)) :: l ->
             let ca = not !no_constructors_arity in
             mkexp loc (Pexp_construct (mkli s ml, None, ca)), l
-        | (loc, ml, ExLid (_, s)) :: l ->
+        | (loc, ml, MLast.ExLid (_, s)) :: l ->
             mkexp loc (Pexp_ident (mkli s ml)), l
         | (_, [], e) :: l -> expr e, l
         | _ -> error loc "bad ast"
@@ -663,7 +664,7 @@ let rec expr =
         List.fold_left
           (fun (loc1, e1) (loc2, ml, e2) ->
              match e2 with
-               ExLid (_, s) ->
+               MLast.ExLid (_, s) ->
                  let loc = Ploc.encl loc1 loc2 in
                  loc, mkexp loc (Pexp_field (e1, mkli (conv_lab s) ml))
              | _ -> error (loc_of_expr e2) "lowercase identifier expected")
@@ -705,7 +706,7 @@ let rec expr =
   | ExArr (loc, el) -> mkexp loc (Pexp_array (List.map expr el))
   | ExAss (loc, e, v) ->
       begin match e with
-        ExAcc (loc, x, ExLid (_, "val")) ->
+        ExAcc (loc, x, MLast.ExLid (_, "val")) ->
           mkexp loc
             (Pexp_apply
                (mkexp loc (Pexp_ident (Lident ":=")),
@@ -721,7 +722,7 @@ let rec expr =
                (mkexp loc (Pexp_ident (array_function "Array" "set")),
                 ["", expr e1; "", expr e2; "", expr v]))
       | ExBae (loc, e, el) -> expr (bigarray_set loc e el v)
-      | ExLid (_, lab) -> mkexp loc (Pexp_setinstvar (lab, expr v))
+      | MLast.ExLid (_, lab) -> mkexp loc (Pexp_setinstvar (lab, expr v))
       | ExSte (_, e1, e2) ->
           mkexp loc
             (Pexp_apply
@@ -766,7 +767,7 @@ let rec expr =
   | ExLaz (loc, e) -> mkexp loc (Pexp_lazy (expr e))
   | ExLet (loc, rf, pel, e) ->
       mkexp loc (Pexp_let (mkrf rf, List.map mkpe pel, expr e))
-  | ExLid (loc, s) -> mkexp loc (Pexp_ident (lident s))
+  | ExLid (loc, s) -> mkexp loc (Pexp_ident (lident (uv s)))
   | ExLmd (loc, i, me, e) ->
       mkexp loc (Pexp_letmodule (i, module_expr me, expr e))
   | ExMat (loc, e, pel) -> mkexp loc (Pexp_match (expr e, List.map mkpwe pel))
@@ -948,7 +949,7 @@ and str_item s l =
       call_with glob_fname fn
         (fun () -> List.fold_right (fun (si, _) -> str_item si) sl l)
   | StVal (loc, rf, pel) ->
-      mkstr loc (Pstr_value (mkrf (unvala rf), List.map mkpe pel)) :: l
+      mkstr loc (Pstr_value (mkrf (uv rf), List.map mkpe pel)) :: l
 and class_type =
   function
     CtCon (loc, id, tl) ->
@@ -1037,8 +1038,8 @@ let directive loc =
       let sl =
         let rec loop =
           function
-            ExLid (_, i) | ExUid (_, i) -> [i]
-          | ExAcc (_, e, ExLid (_, i)) | ExAcc (_, e, ExUid (_, i)) ->
+            MLast.ExLid (_, i) | ExUid (_, i) -> [i]
+          | ExAcc (_, e, MLast.ExLid (_, i)) | ExAcc (_, e, ExUid (_, i)) ->
               loop e @ [i]
           | e -> Ploc.raise (loc_of_expr e) (Failure "bad ast")
         in

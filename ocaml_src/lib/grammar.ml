@@ -677,6 +677,7 @@ and parser_of_symbol entry nlevn =
         let t =
           match s with
             Sflag _ -> "V FLAG"
+          | Stoken (con, "") -> "V " ^ con
           | _ -> failwith "Grammar: not impl Svala"
         in
         parser_of_token entry (t, "")

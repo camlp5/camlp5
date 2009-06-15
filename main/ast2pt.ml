@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.13 2007/09/07 06:05:07 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.14 2007/09/07 18:18:38 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -117,9 +117,9 @@ value array_function str name =
 ;
 
 IFNDEF STRICT THEN
-  value unvala x = x
+  value uv x = x
 ELSE
-  value unvala =
+  value uv =
     fun
     [ Ploc.VaAnt _ -> invalid_arg "unvala"
     | Ploc.VaVal v -> v ]
@@ -283,7 +283,7 @@ value option f =
 value expr_of_lab loc lab =
   fun
   [ Some e -> e
-  | None -> ExLid loc lab ]
+  | None -> <:expr< $lid:lab$ >> ]
 ;
 
 value patt_of_lab loc lab =
@@ -309,7 +309,7 @@ value paolab loc lab peoo =
 
 value rec same_type_expr ct ce =
   match (ct, ce) with
-  [ (TyLid _ s1, ExLid _ s2) -> s1 = s2
+  [ (TyLid _ s1, <:expr< $lid:s2$ >>) -> s1 = s2
   | (TyUid _ s1, ExUid _ s2) -> s1 = s2
   | (TyAcc _ t1 t2, ExAcc _ e1 e2) ->
       same_type_expr t1 e1 && same_type_expr t2 e2
@@ -318,9 +318,9 @@ value rec same_type_expr ct ce =
 
 value rec common_id loc t e =
   match (t, e) with
-  [ (TyLid _ s1, ExLid _ s2) when s1 = s2 -> lident s1
+  [ (TyLid _ s1, <:expr< $lid:s2$ >>) when s1 = s2 -> lident s1
   | (TyUid _ s1, ExUid _ s2) when s1 = s2 -> lident s1
-  | (TyAcc _ t1 (TyLid _ s1), ExAcc _ e1 (ExLid _ s2)) when s1 = s2 ->
+  | (TyAcc _ t1 (TyLid _ s1), <:expr< $e1$.$lid:s2$ >>) when s1 = s2 ->
       ldot (common_id loc t1 e1) s1
   | (TyAcc _ t1 (TyUid _ s1), ExAcc _ e1 (ExUid _ s2)) when s1 = s2 ->
       ldot (common_id loc t1 e1) s1
@@ -545,7 +545,7 @@ value bigarray_set loc e el v =
 
 value rec expr =
   fun
-  [ ExAcc loc x (ExLid _ "val") ->
+  [ ExAcc loc x <:expr< val >> ->
       mkexp loc
         (Pexp_apply (mkexp loc (Pexp_ident (Lident "!"))) [("", expr x)])
   | ExAcc loc _ _ as e ->
@@ -554,7 +554,7 @@ value rec expr =
         [ [(loc, ml, ExUid _ s) :: l] ->
             let ca = not no_constructors_arity.val in
             (mkexp loc (Pexp_construct (mkli s ml) None ca), l)
-        | [(loc, ml, ExLid _ s) :: l] ->
+        | [(loc, ml, <:expr< $lid:s$ >>) :: l] ->
             (mkexp loc (Pexp_ident (mkli s ml)), l)
         | [(_, [], e) :: l] -> (expr e, l)
         | _ -> error loc "bad ast" ]
@@ -563,7 +563,7 @@ value rec expr =
         List.fold_left
           (fun (loc1, e1) (loc2, ml, e2) ->
              match e2 with
-             [ ExLid _ s ->
+             [ <:expr< $lid:s$ >> ->
                  let loc = Ploc.encl loc1 loc2 in
                  (loc, mkexp loc (Pexp_field e1 (mkli (conv_lab s) ml)))
              | _ -> error (loc_of_expr e2) "lowercase identifier expected" ])
@@ -603,7 +603,7 @@ value rec expr =
   | ExArr loc el -> mkexp loc (Pexp_array (List.map expr el))
   | ExAss loc e v ->
       match e with
-      [ ExAcc loc x (ExLid _ "val") ->
+      [ ExAcc loc x <:expr< val >> ->
           mkexp loc
             (Pexp_apply (mkexp loc (Pexp_ident (Lident ":=")))
                [("", expr x); ("", expr v)])
@@ -617,7 +617,7 @@ value rec expr =
                (mkexp loc (Pexp_ident (array_function "Array" "set")))
                [("", expr e1); ("", expr e2); ("", expr v)])
       | ExBae loc e el -> expr (bigarray_set loc e el v)
-      | ExLid _ lab -> mkexp loc (Pexp_setinstvar lab (expr v))
+      | <:expr< $lid:lab$ >> -> mkexp loc (Pexp_setinstvar lab (expr v))
       | ExSte _ e1 e2 ->
           mkexp loc
             (Pexp_apply
@@ -659,7 +659,7 @@ value rec expr =
   | ExLaz loc e -> mkexp loc (Pexp_lazy (expr e))
   | ExLet loc rf pel e ->
       mkexp loc (Pexp_let (mkrf rf) (List.map mkpe pel) (expr e))
-  | ExLid loc s -> mkexp loc (Pexp_ident (lident s))
+  | ExLid loc s -> mkexp loc (Pexp_ident (lident (uv s)))
   | ExLmd loc i me e -> mkexp loc (Pexp_letmodule i (module_expr me) (expr e))
   | ExMat loc e pel -> mkexp loc (Pexp_match (expr e) (List.map mkpwe pel))
   | ExNew loc id -> mkexp loc (Pexp_new (long_id_of_string_list loc id))
@@ -837,7 +837,7 @@ and str_item s l =
       call_with glob_fname fn
         (fun () -> List.fold_right (fun (si, _) -> str_item si) sl l)
   | StVal loc rf pel ->
-      [mkstr loc (Pstr_value (mkrf (unvala rf)) (List.map mkpe pel)) :: l] ]
+      [mkstr loc (Pstr_value (mkrf (uv rf)) (List.map mkpe pel)) :: l] ]
 and class_type =
   fun
   [ CtCon loc id tl ->
@@ -938,8 +938,9 @@ value directive loc =
       let sl =
         loop e where rec loop =
           fun
-          [ ExLid _ i | ExUid _ i -> [i]
-          | ExAcc _ e (ExLid _ i) | ExAcc _ e (ExUid _ i) -> loop e @ [i]
+          [ <:expr< $lid:i$ >> | ExUid _ i -> [i]
+          | ExAcc _ e <:expr< $lid:i$ >> | ExAcc _ e (ExUid _ i) ->
+              loop e @ [i]
           | e -> Ploc.raise (loc_of_expr e) (Failure "bad ast") ]
       in
       Pdir_ident (long_id_of_string_list loc sl) ]
