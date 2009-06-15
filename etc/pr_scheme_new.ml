@@ -97,7 +97,9 @@ EXTEND_PRINTER
             fprintf ppf "(lambda%t" (ks ")" k)
       | *) <:expr< fun $lid:s$ -> $e$ >> ->
           horiz_vertic
-            (fun () -> not_impl "fun1 horiz" pc 0)
+            (fun () ->
+               sprintf "%s(lambda %s %s)%s" pc.bef s
+                 (curr {(pc) with bef = ""; aft = ""} e) pc.aft)
             (fun () -> not_impl "fun1 vertic" pc 0)
       | <:expr< fun [ $list:pwel$ ] >> ->
           horiz_vertic (fun () -> sprintf "\n")
@@ -190,13 +192,20 @@ EXTEND_PRINTER
               | <:expr< [] >> -> ([], None)
               | x -> ([], Some e) ]
           in
+          let pc =
+            {(pc) with bef = sprintf "%s[" pc.bef; aft = sprintf "]%s" pc.aft}
+          in
           match c with
           [ None ->
               let el = List.map (fun e -> (e, "")) el in
-              plist expr 1
-                {(pc) with bef = sprintf "%s[" pc.bef; aft = sprintf "]%s"
-                pc.aft} el
-          | Some x -> not_impl "expr list 2" pc 0 ]
+              plist curr 1 pc el
+          | Some x ->
+              let dot_expr pc e =
+                curr {(pc) with bef = sprintf "%s. " pc.bef} e
+              in
+              horiz_vertic
+                (fun () -> hlistl curr dot_expr pc (el @ [x]))
+                (fun () -> not_impl "expr list 2 vertic" pc 0) ]
 (*
       | <:expr< lazy ($x$) >> ->
           fun ppf curr next dg k ->
@@ -221,7 +230,7 @@ EXTEND_PRINTER
               | e1 -> [e1 :: el] ]
           in
           let el = List.map (fun e -> (e, "")) el in
-          plist expr 1
+          plist curr 1
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
              aft = sprintf ")%s" pc.aft}
             el
@@ -235,9 +244,15 @@ EXTEND_PRINTER
       | <:expr< $e1$ .( $e2$ ) >> ->
           fun ppf curr next dg k ->
             fprintf ppf "%a.(%a" expr (e1, nok) expr (e2, ks ")" k)
+*)
       | <:expr< $e1$ . $e2$ >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "%a.%a" expr (e1, nok) expr (e2, k)
+          horiz_vertic
+            (fun () ->
+               sprintf "%s%s.%s%s" pc.bef
+                 (curr {(pc) with bef = ""; aft = ""} e1)
+                 (curr {(pc) with bef = ""; aft = ""} e2) pc.aft)
+            (fun () -> not_impl "expr dot vertic" pc 0)
+(*
       | <:expr< $int:s$ >> ->
           fun ppf curr next dg k -> fprintf ppf "%s%t" (int_repr s) k
 *)
@@ -298,7 +313,7 @@ EXTEND_PRINTER
               | p1 -> [p1 :: pl] ]
           in
           let pl = List.map (fun p -> (p, "")) pl in
-          plist patt 1
+          plist curr 1
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
              aft = sprintf ")%s" pc.aft}
             pl
@@ -315,8 +330,8 @@ EXTEND_PRINTER
             horiz_vertic
               (fun () ->
                  sprintf "%s(%s %s)%s" pc.bef
-                   (patt {(pc) with bef = ""; aft = ""} p1)
-                   (patt {(pc) with bef = ""; aft = ""} p2) pc.aft)
+                   (curr {(pc) with bef = ""; aft = ""} p1)
+                   (curr {(pc) with bef = ""; aft = ""} p2) pc.aft)
               (fun () -> not_impl "record_binding vertic" pc 0)
           in
           let fpl = List.map (fun fp -> (fp, "")) fpl in
