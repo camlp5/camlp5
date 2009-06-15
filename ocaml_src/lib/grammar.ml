@@ -876,6 +876,28 @@ let start_parser_of_entry entry =
 
 (* version for backtracking parsers *)
 
+let btop_tree entry son strm =
+  match son with
+    Node {node = s; brother = bro; son = son} ->
+      let r = Node {node = top_symb entry s; brother = bro; son = son} in
+      Some (r, strm, Fstream.b_nok)
+  | LocAct (_, _) | DeadEnd -> None
+;;
+
+let brecover bparser_of_tree entry nlevn alevn bp a s son
+    (strm__ : _ Fstream.t) =
+  Fstream.b_or
+    (Fstream.b_seq (btop_tree entry son)
+       (fun t ->
+          Fstream.b_seq (bparser_of_tree entry nlevn alevn t)
+            (fun a strm__ -> Some (a, strm__, Fstream.b_nok))))
+    (fun strm__ ->
+       Some
+         (raise (Stream.Error (tree_failed entry a s son)), strm__,
+          Fstream.b_nok))
+    strm__
+;;
+
 let rec btop_symb entry =
   function
     Sself | Snext -> Some (Snterm entry)
@@ -910,10 +932,12 @@ let rec bparser_of_tree entry nlevn alevn =
   | Node {node = s; son = son; brother = DeadEnd} ->
       let ps = bparser_of_symbol entry nlevn s in
       let p1 = bparser_of_tree entry nlevn alevn son in
+      let p1 = bparser_cont p1 entry nlevn alevn s son in
       (fun (strm__ : _ Fstream.t) ->
+         let bp = Fstream.count strm__ in
          Fstream.b_seq ps
            (fun a ->
-              Fstream.b_seq p1
+              Fstream.b_seq (p1 bp a)
                 (fun act strm__ -> Some (app act a, strm__, Fstream.b_nok)))
            strm__)
   | Node {node = s; son = son; brother = bro} ->
@@ -929,6 +953,12 @@ let rec bparser_of_tree entry nlevn alevn =
                      Some (app act a, strm__, Fstream.b_nok))))
           (Fstream.b_seq p2 (fun a strm__ -> Some (a, strm__, Fstream.b_nok)))
           strm__
+and bparser_cont p1 entry nlevn alevn s son bp a (strm__ : _ Fstream.t) =
+  Fstream.b_or
+    (Fstream.b_seq p1 (fun a strm__ -> Some (a, strm__, Fstream.b_nok)))
+    (Fstream.b_seq (brecover bparser_of_tree entry nlevn alevn bp a s son)
+       (fun a strm__ -> Some (a, strm__, Fstream.b_nok)))
+    strm__
 and bparser_of_symbol entry nlevn =
   function
     Sfacto s -> bparser_of_symbol entry nlevn s

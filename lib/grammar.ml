@@ -1,5 +1,5 @@
 (* camlp5r pa_fstream.cmo *)
-(* $Id: grammar.ml,v 1.66 2007/11/23 13:33:39 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.67 2007/11/23 18:57:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Gramext;
@@ -825,6 +825,24 @@ value start_parser_of_entry entry =
 
 (* version for backtracking parsers *)
 
+value btop_tree entry son strm =
+  match son with
+  [ Node {node = s; brother = bro; son = son} ->
+      let r =
+        Node {node = top_symb entry s; brother = bro; son = son}
+      in
+      Some (r, strm, Fstream.b_nok)
+  | LocAct _ _ | DeadEnd ->
+      None ]
+;
+
+value brecover bparser_of_tree entry nlevn alevn bp a s son =
+  bparser
+  [ [: t = btop_tree entry son; a = bparser_of_tree entry nlevn alevn t :] ->
+      a
+  | [: :] -> raise (Stream.Error (tree_failed entry a s son)) ]
+;
+
 value rec btop_symb entry =
   fun
   [ Sself | Snext -> Some (Snterm entry)
@@ -850,7 +868,8 @@ value rec bparser_of_tree entry nlevn alevn =
   | Node {node = s; son = son; brother = DeadEnd} ->
       let ps = bparser_of_symbol entry nlevn s in
       let p1 = bparser_of_tree entry nlevn alevn son in
-      bparser [: a = ps; act = p1 :] -> app act a
+      let p1 = bparser_cont p1 entry nlevn alevn s son in
+      bparser bp [: a = ps; act = p1 bp a :] -> app act a
   | Node {node = s; son = son; brother = bro} ->
       let ps = bparser_of_symbol entry nlevn s in
       let p1 = bparser_of_tree entry nlevn alevn son in
@@ -858,6 +877,10 @@ value rec bparser_of_tree entry nlevn alevn =
       bparser
       [ [: a = ps; act = p1 :] -> app act a
       | [: a = p2 :] -> a ] ]
+and bparser_cont p1 entry nlevn alevn s son bp a =
+  bparser
+  [ [: a = p1 :] -> a
+  | [: a = brecover bparser_of_tree entry nlevn alevn bp a s son :] -> a ]
 and bparser_of_symbol entry nlevn =
   fun
   [ Sfacto s -> bparser_of_symbol entry nlevn s
