@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_extprint.ml,v 1.7 2007/08/18 16:54:05 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.8 2007/08/21 17:50:22 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 #load "pa_extend.cmo";
@@ -166,7 +166,8 @@ EXTEND
       | "["; rules = LIST1 rule SEP "|"; "]" -> rules ] ]
   ;
   rule:
-    [ [ p = patt_as; "->"; e = expr -> (p, None, e) ] ]
+    [ [ p = patt_as; wo = OPT [ "when"; e = expr -> e ]; "->"; e = expr ->
+          (p, wo, e) ] ]
   ;
   patt_as:
     [ [ p = patt -> p

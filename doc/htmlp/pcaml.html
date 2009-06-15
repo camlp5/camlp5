@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: pcaml.html,v 1.7 2007/08/18 11:23:19 deraugla Exp $ -->
+  <!-- $Id: pcaml.html,v 1.8 2007/08/21 17:50:22 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Pcaml</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -247,6 +247,32 @@ t      (MLast.str_item * MLast.loc) * bool));</tt></dt>
 <dl>
   <dt><tt>value add_option : string -> Arg.spec -> string -> unit;</tt></dt>
   <dd>Add an option to the command line of the camlp5 command.</dd>
+</dl>
+
+<h2>Equalities over syntax trees</h2>
+
+<p>These equalities skip the locations.</p>
+
+<dl>
+  <dt><tt>value eq_expr : MLast.expr -> MLast.expr -> bool;</tt></dt>
+  <dt><tt>value eq_patt : MLast.patt -> MLast.patt -> bool;</tt></dt>
+  <dt><tt>value eq_ctyp : MLast.ctyp -> MLast.ctyp -> bool;</tt></dt>
+  <dt><tt>value eq_str_item : MLast.str_item -> MLast.str_item ->
+      bool;</tt></dt>
+  <dt><tt>value eq_sig_item : MLast.sig_item -> MLast.sig_item ->
+      bool;</tt></dt>
+  <dt><tt>value eq_module_expr : MLast.module_expr ->
+      MLast.module_expr -> bool;</tt></dt>
+  <dt><tt>value eq_module_type : MLast.module_type ->
+      MLast.module_type -> bool;</tt></dt>
+  <dt><tt>value eq_class_sig_item : MLast.class_sig_item ->
+      MLast.class_sig_item -> bool;</tt></dt>
+  <dt><tt>value eq_class_str_item : MLast.class_str_item ->
+      MLast.class_str_item -> bool;</tt></dt>
+  <dt><tt>value eq_class_type : MLast.class_type -> MLast.class_type
+      -> bool;</tt></dt>
+  <dt><tt>value eq_class_expr : MLast.class_expr -> MLast.class_expr
+      -> bool;</tt></dt>
 </dl>
 
 <h2>Generalities</h2>

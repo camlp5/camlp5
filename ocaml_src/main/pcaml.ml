@@ -457,3 +457,50 @@ type directive_fun = MLast.expr option -> unit;;
 let directives = ref [];;
 let add_directive d f = directives := (d, f) :: !directives;;
 let find_directive d = List.assoc d !directives;;
+
+(* Equality over syntax trees *)
+
+let eq_expr x y =
+  Reloc.expr (fun _ -> Stdpp.dummy_loc) 0 x =
+    Reloc.expr (fun _ -> Stdpp.dummy_loc) 0 y
+;;
+let eq_patt x y =
+  Reloc.patt (fun _ -> Stdpp.dummy_loc) 0 x =
+    Reloc.patt (fun _ -> Stdpp.dummy_loc) 0 y
+;;
+let eq_ctyp x y =
+  Reloc.ctyp (fun _ -> Stdpp.dummy_loc) 0 x =
+    Reloc.ctyp (fun _ -> Stdpp.dummy_loc) 0 y
+;;
+let eq_str_item x y =
+  Reloc.str_item (fun _ -> Stdpp.dummy_loc) 0 x =
+    Reloc.str_item (fun _ -> Stdpp.dummy_loc) 0 y
+;;
+let eq_sig_item x y =
+  Reloc.sig_item (fun _ -> Stdpp.dummy_loc) 0 x =
+    Reloc.sig_item (fun _ -> Stdpp.dummy_loc) 0 y
+;;
+let eq_module_expr x y =
+  Reloc.module_expr (fun _ -> Stdpp.dummy_loc) 0 x =
+    Reloc.module_expr (fun _ -> Stdpp.dummy_loc) 0 y
+;;
+let eq_module_type x y =
+  Reloc.module_type (fun _ -> Stdpp.dummy_loc) 0 x =
+    Reloc.module_type (fun _ -> Stdpp.dummy_loc) 0 y
+;;
+let eq_class_sig_item x y =
+  Reloc.class_sig_item (fun _ -> Stdpp.dummy_loc) 0 x =
+    Reloc.class_sig_item (fun _ -> Stdpp.dummy_loc) 0 y
+;;
+let eq_class_str_item x y =
+  Reloc.class_str_item (fun _ -> Stdpp.dummy_loc) 0 x =
+    Reloc.class_str_item (fun _ -> Stdpp.dummy_loc) 0 y
+;;
+let eq_class_type x y =
+  Reloc.class_type (fun _ -> Stdpp.dummy_loc) 0 x =
+    Reloc.class_type (fun _ -> Stdpp.dummy_loc) 0 y
+;;
+let eq_class_expr x y =
+  Reloc.class_expr (fun _ -> Stdpp.dummy_loc) 0 x =
+    Reloc.class_expr (fun _ -> Stdpp.dummy_loc) 0 y
+;;

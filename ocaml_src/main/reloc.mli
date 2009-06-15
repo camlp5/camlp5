@@ -14,3 +14,23 @@
 
 val patt : (MLast.loc -> MLast.loc) -> int -> MLast.patt -> MLast.patt;;
 val expr : (MLast.loc -> MLast.loc) -> int -> MLast.expr -> MLast.expr;;
+
+val ctyp : (MLast.loc -> MLast.loc) -> int -> MLast.ctyp -> MLast.ctyp;;
+val sig_item :
+  (MLast.loc -> MLast.loc) -> int -> MLast.sig_item -> MLast.sig_item;;
+val str_item :
+  (MLast.loc -> MLast.loc) -> int -> MLast.str_item -> MLast.str_item;;
+val module_expr :
+  (MLast.loc -> MLast.loc) -> int -> MLast.module_expr -> MLast.module_expr;;
+val module_type :
+  (MLast.loc -> MLast.loc) -> int -> MLast.module_type -> MLast.module_type;;
+val class_sig_item :
+  (MLast.loc -> MLast.loc) -> int -> MLast.class_sig_item ->
+    MLast.class_sig_item;;
+val class_str_item :
+  (MLast.loc -> MLast.loc) -> int -> MLast.class_str_item ->
+    MLast.class_str_item;;
+val class_expr :
+  (MLast.loc -> MLast.loc) -> int -> MLast.class_expr -> MLast.class_expr;;
+val class_type :
+  (MLast.loc -> MLast.loc) -> int -> MLast.class_type -> MLast.class_type;;

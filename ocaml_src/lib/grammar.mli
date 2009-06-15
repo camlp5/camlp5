@@ -67,7 +67,7 @@ module Entry :
 -      [Entry.print e] displays the entry [e] using [Format].
 -      [Entry.find e s] finds the entry named [s] in [e]'s rules.
 -      [Entry.obj e] converts an entry into a [Gramext.g_entry] allowing
--      to see what it holds ([Gramext] is visible, but not documented). *)
+-      to see what it holds. *)
 
 val of_entry : 'a Entry.e -> g;;
    (** Return the grammar associated with an entry. *)
