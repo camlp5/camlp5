@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: strict.html,v 1.2 2007/09/16 09:38:06 deraugla Exp $ -->
+  <!-- $Id: strict.html,v 1.3 2007/09/17 04:32:01 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Camlp5</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -19,15 +19,35 @@
 
 <h1 class="top">Transitional and Strict modes</h1>
 
-<p>Since version 4.09, Camlp5 can be installed in two
-  modes: <em>transitional</em> mode and <em>strict</em> mode.</p>
+<p>Since version 4.09, Camlp5 has been able to be installed in two
+  modes: the <em>transitional</em> mode and the <em>strict</em>
+  mode. When Camlp5 is installed, it works with one only of these
+  modes (the two modes contain indeed different definitions of some
+  interfaces and are incompatible the one to the other). The user has
+  to choose in which mode he wants to use Camlp5.</p>
 
-<p>This notion has been introduced to ensure backward compatibility
-  and allow the use of a new quotation kit "<tt>q_ast.cmo</tt>",
-  defining Camlp5 syntax tree quotations in user syntax (with all its
-  possible extensions).</p>
+<p>This notion has been introduced to ensure backward compatibility of
+  the Camlp5 syntax tree, together with the usage of a new quotation
+  kit "<tt>q_ast.cmo</tt>", which allows to use Camlp5 syntax tree
+  quotations in user syntax (with all its possible extensions).</p>
 
-<p>Here are the differences with the two modes:</p>
+<dl style="font-size:80%; font-style:oblique">
+  <dt>A short example of these syntax tree quotations:</dt>
+  <dd>
+    <p>If the syntax of the <a href="grammars.html">extensible
+        grammars</a> has been added, it is possible to write things
+      like:</p>
+<pre>
+  &lt;:expr&lt; EXTEND a: [ [ c = d -> $e$ ] ]; END >>;
+</pre>
+    <p>representing the syntax tree of this statement: this is not
+      possible with the classical quotation kit "<tt>q_MLast.cmo</tt>"
+      because all quotations must be there only in revised syntax
+      and without syntax extensions.</p>
+  </dd>
+</dl>
+
+<p>Here are the differences between the two modes:</p>
 
 <dl>
   <dt>Transitional</dt>

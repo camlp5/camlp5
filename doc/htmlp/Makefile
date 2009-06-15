@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.29 2007/09/17 03:43:04 deraugla Exp $
+# $Id: Makefile,v 1.30 2007/09/17 04:32:01 deraugla Exp $
 
 H=../html
 OBJS=$H/index.html $H/about.html $H/commands.html $H/conclusion.html $H/extfun.html $H/fparsers.html $H/grammars.html $H/lexers.html $H/library.html $H/locations.html $H/macros.html $H/ml_ast.html $H/opretty.html $H/parsers.html $H/pcaml.html $H/pragma.html $H/pretty.html $H/printers.html $H/ptools.html $H/quot.html $H/revsynt.html $H/scheme.html $H/sources.html $H/strict.html $H/syntext.html
@@ -37,5 +37,6 @@ clean:
 
 ../html/rss/%.rss: %.rss
 	@mkdir -p ../html/rss
+	@rm -f $@
 	cp $< $@
 	@chmod 444 $@

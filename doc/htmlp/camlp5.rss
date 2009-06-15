@@ -6,6 +6,16 @@
     <lastBuildDate>Mon Sep 17 05:18:59 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
     <item>
+      <title>Transitional and Strict - 1</title>
+      <description>
+        Added more explanations about the two modes, and a short
+        example of what the syntax tree quotation "q_ast.cmo" allows
+        to do.
+      </description>
+      <pubDate>Mon Sep 17 06:29:44 CEST 2007</pubDate>
+      <link>../strict.html</link>
+    </item>
+    <item>
       <title>Transitional and Strict</title>
       <description>
         Added chapter about "strict" and "transitional", allowing to
