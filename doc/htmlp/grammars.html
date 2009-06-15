@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.44 2007/07/18 01:59:46 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.45 2007/07/18 02:54:35 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -476,6 +476,7 @@ instead of "<tt>loc</tt>".</p>
 <p>The "continue" function first tries the "continue" function of the
   next level. If it fails, or if it is the last level, it tries its
   associated tree, then calls itself again, giving the result as
+  parameter. If its associated tree fails, it returns its extra
   parameter.</p>
 
 <p>... to be completed ...</p>
