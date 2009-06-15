@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.149 2007/12/24 18:07:36 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.150 2007/12/24 19:02:37 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1068,51 +1068,30 @@ EXTEND_PRINTER
       | <:expr< ($e$ : $t$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" expr e ctyp t
       | <:expr< $int:s$ >> | <:expr< $flo:s$ >> ->
-          if String.length s > 0 && s.[0] = '-' then
-            sprintf "%s(%s)%s" pc.bef s pc.aft
-          else
-            sprintf "%s%s%s" pc.bef s pc.aft
+          if String.length s > 0 && s.[0] = '-' then pprintf pc "(%s)" s
+          else pprintf pc "%s" s
       | <:expr< $int32:s$ >> ->
-          let s = s ^ "l" in
-          if String.length s > 0 && s.[0] = '-' then
-            sprintf "%s(%s)%s" pc.bef s pc.aft
-          else
-            sprintf "%s%s%s" pc.bef s pc.aft
+          if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sl)" s
+          else pprintf pc "%sl" s
       | <:expr< $int64:s$ >> ->
-          let s = s ^ "L" in
-          if String.length s > 0 && s.[0] = '-' then
-            sprintf "%s(%s)%s" pc.bef s pc.aft
-          else
-            sprintf "%s%s%s" pc.bef s pc.aft
+          if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sL)" s
+          else pprintf pc "%sL" s
       | <:expr< $nativeint:s$ >> ->
-          let s = s ^ "n" in
-          if String.length s > 0 && s.[0] = '-' then
-            sprintf "%s(%s)%s" pc.bef s pc.aft
-          else
-            sprintf "%s%s%s" pc.bef s pc.aft
+          if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sn)" s
+          else pprintf pc "%s" s
       | <:expr< $lid:s$ >> -> var_escaped pc s
       | <:expr< $uid:s$ >> -> cons_escaped pc s
       | <:expr< `$s$ >> ->
           failwith "variants not pretty printed (in expr); add pr_ro.cmo"
-      | <:expr< $str:s$ >> -> sprintf "%s\"%s\"%s" pc.bef s pc.aft
-      | <:expr< $chr:s$ >> -> sprintf "%s'%s'%s" pc.bef (ocaml_char s) pc.aft
+      | <:expr< $str:s$ >> ->
+          pprintf pc "\"%s\"" s
+      | <:expr< $chr:s$ >> ->
+          pprintf pc "'%s'" (ocaml_char s)
       | <:expr< ?$_$ >> | <:expr< ~$_$ >> | <:expr< ~$_$: $_$ >> ->
           failwith "labels not pretty printed (in expr); add pr_ro.cmo"
       | <:expr< do { $list:el$ } >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%sbegin %s end%s" pc.bef
-                 (hlistl (semi_after (comm_expr expr1)) (comm_expr expr1)
-                    {(pc) with bef = ""; aft = ""} el)
-                 pc.aft)
-            (fun () ->
-               let s =
-                 vlistl (semi_after (comm_expr expr1)) (comm_expr expr1)
-                   {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                    aft = ""}
-                  el
-               in
-               sprintf "%sbegin\n%s\n%send%s" pc.bef s (tab pc.ind) pc.aft)
+          pprintf pc "@[<a>begin@;%p@ end@]"
+            (hvlistl (semi_after (comm_expr expr1)) (comm_expr expr1)) el
       | <:expr< $_$ $_$ >> | <:expr< $_$ . $_$ >> | <:expr< $_$ .( $_$ ) >> |
         <:expr< $_$ .[ $_$ ] >> | <:expr< $_$ .{ $_$ } >> |
         <:expr< assert $_$ >> | <:expr< lazy $_$ >> | <:expr< ($list:_$) >> |
@@ -1123,10 +1102,7 @@ EXTEND_PRINTER
         <:expr< let $flag:_$ $list:_$ in $_$ >> |
         <:expr< match $_$ with [ $list:_$ ] >> |
         <:expr< try $_$ with [ $list:_$ ] >> as z ->
-          expr
-            {ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-             aft = sprintf ")%s" pc.aft; dang = ""}
-            z ] ]
+          pprintf pc "@[<1>(%q)@]" expr z "" ] ]
   ;
   pr_patt:
     [ "top"
