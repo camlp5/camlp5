@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_rp.ml,v 1.21 2007/12/19 11:41:52 deraugla Exp $ *)
+(* $Id: pr_rp.ml,v 1.22 2007/12/19 11:48:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Parserify;
@@ -141,46 +141,31 @@ value parser_case_sh force_vertic pc spe =
 value flag_equilibrate_cases = Pcaml.flag_equilibrate_cases;
 
 value parser_body pc (po, spel) =
-  let s =
-    match spel with
-    [ [spe] ->
-        horiz_vertic
-          (fun () ->
-             let s =
-               pprintf pc "%p %p" ident_option po (parser_case False) spe
-             in
-             Some s)
-          (fun () -> None)
-    | _ -> None ]
-  in
-  match s with
-  [ Some s -> s
-  | None ->
-      match spel with
-      [ [] -> pprintf pc "%p []" ident_option po
-      | [spe] -> pprintf pc "%p@;%p" ident_option po (parser_case False) spe
-      | _ ->
-          let force_vertic =
-            if flag_equilibrate_cases.val then
-              let has_vertic =
-                List.exists
-                  (fun spe ->
-                     horiz_vertic
-                       (fun () ->
-                          let _ : string =
-                            bar_before (parser_case_sh False) pc spe
-                          in
-                          False)
-                       (fun () -> True))
-                  spel
-              in
-              has_vertic
-            else False
+  match spel with
+  [ [] -> pprintf pc "%p []" ident_option po
+  | [spe] -> pprintf pc "%p@;%p" ident_option po (parser_case False) spe
+  | _ ->
+      let force_vertic =
+        if flag_equilibrate_cases.val then
+          let has_vertic =
+            List.exists
+              (fun spe ->
+                 horiz_vertic
+                   (fun () ->
+                      let _ : string =
+                        bar_before (parser_case_sh False) pc spe
+                      in
+                      False)
+                   (fun () -> True))
+              spel
           in
-          pprintf pc "%p@ [ %p ]" ident_option po
-            (vlist2 (parser_case_sh force_vertic)
-               (bar_before (parser_case_sh force_vertic)))
-            spel ] ]
+          has_vertic
+        else False
+      in
+      pprintf pc "%p@ [ %p ]" ident_option po
+        (vlist2 (parser_case_sh force_vertic)
+           (bar_before (parser_case_sh force_vertic)))
+        spel ]
 ;
 
 value print_parser pc e =
