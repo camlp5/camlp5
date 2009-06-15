@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.70 2007/12/14 02:56:05 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.71 2007/12/14 03:35:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -392,22 +392,8 @@ EXTEND_PRINTER
       | <:class_sig_item< method virtual $flag:priv$ $lid:s$ : $t$ >> ->
           sig_method_or_method_virtual pc " virtual" priv s t
       | <:class_sig_item< value $flag:mf$ $lid:s$ : $t$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%svalue%s %s : %s%s" pc.bef
-                 (if mf then " mutable" else "")
-                 (var_escaped {(pc) with bef = ""; aft = ""} s)
-                 (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-            (fun () ->
-               let s1 =
-                 sprintf "%svalue%s %s :" pc.bef
-                   (if mf then " mutable" else "")
-                   (var_escaped {(pc) with bef = ""; aft = ""} s)
-               in
-               let s2 =
-                 ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t
-               in
-               sprintf "%s\n%s" s1 s2) ] ]
+          pprintf pc "value%s %p :@;%p" (if mf then " mutable" else "")
+            var_escaped s ctyp t ] ]
   ;
   pr_class_str_item:
     [ "top"
