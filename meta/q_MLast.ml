@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.42 2007/09/06 20:21:40 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.43 2007/09/07 11:30:46 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -797,7 +797,7 @@ EXTEND
           Qast.Node "TyPol" [Qast.Loc; pl; t] ]
     | "arrow" RIGHTA
       [ t1 = SELF; "->"; t2 = SELF -> Qast.Node "TyArr" [Qast.Loc; t1; t2] ]
-    | LEFTA
+    | "apply" LEFTA
       [ t1 = SELF; t2 = SELF -> Qast.Node "TyApp" [Qast.Loc; t1; t2] ]
     | LEFTA
       [ t1 = SELF; "."; t2 = SELF -> Qast.Node "TyAcc" [Qast.Loc; t1; t2] ]

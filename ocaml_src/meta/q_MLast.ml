@@ -2233,7 +2233,7 @@ Grammar.extend
       Gramext.action
         (fun (t2 : 'ctyp) _ (t1 : 'ctyp) (loc : Ploc.t) ->
            (Qast.Node ("TyArr", [Qast.Loc; t1; t2]) : 'ctyp))];
-     None, Some Gramext.LeftA,
+     Some "apply", Some Gramext.LeftA,
      [[Gramext.Sself; Gramext.Sself],
       Gramext.action
         (fun (t2 : 'ctyp) (t1 : 'ctyp) (loc : Ploc.t) ->

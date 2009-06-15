@@ -1,8 +1,9 @@
 #!/bin/sh
-# $Id: mk_q_MLast.sh,v 1.4 2007/08/07 15:11:49 deraugla Exp $
+# $Id: mk_q_MLast.sh,v 1.5 2007/09/07 11:30:46 deraugla Exp $
 
 IFILE=pa_r.ml
 OFILE=q_MLast.ml
+if [ "$NAME" = "" ]; then NAME=camlp5; fi
 (
 sed -e '/^EXTEND$/,$d' $OFILE
 echo EXTEND
