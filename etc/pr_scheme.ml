@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.51 2007/12/27 10:30:24 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.52 2007/12/27 13:12:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -25,13 +25,12 @@ do {
 value not_impl name pc x =
   let desc =
     if Obj.tag (Obj.repr x) = Obj.tag (Obj.repr "") then
-      sprintf "\"%s\"" (Obj.magic x)
+      "\"" ^ Obj.magic x ^ "\""
     else if Obj.is_block (Obj.repr x) then
       "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
     else "int_val = " ^ string_of_int (Obj.magic x)
   in
-  sprintf "%s\"pr_scheme, not impl: %s; %s\"%s" pc.bef name
-    (String.escaped desc) pc.aft
+  pprintf pc "\"pr_scheme, not impl: %s; %s\"" name (String.escaped desc)
 ;
 
 value to_be_renamed = ["cond"; "sum"];
@@ -40,9 +39,9 @@ value rename_id s = if List.mem s to_be_renamed then s ^ "#" else s;
 
 value rec longident pc sl =
   match sl with
-  [ [] -> sprintf "%s%s" pc.bef pc.aft
-  | [s] -> sprintf "%s%s%s" pc.bef s pc.aft
-  | [s :: sl] -> longident {(pc) with bef = sprintf "%s%s." pc.bef s} sl ]
+  [ [] -> pprintf pc ""
+  | [s] -> pprintf pc "%s" s
+  | [s :: sl] -> pprintf pc "%s.%p" s longident sl ]
 ;
 
 (*

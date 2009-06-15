@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.175 2007/12/27 10:43:29 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.176 2007/12/27 13:09:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -250,10 +250,10 @@ pr_expr_fun_args.val :=
 ;
 
 value expr_semi pc (e, is_last) =
-  let (pc_aft, pc_dang) =
-    if not is_last then (";", ";") else (pc.aft, pc.dang)
-  in
-  comm_expr expr {(pc) with aft = pc_aft; dang = pc_dang} e
+  if not is_last then
+    pprintf pc "%q;" (comm_expr expr) e ";"
+  else
+    pprintf pc "%p" (comm_expr expr) e
 ;
 
 value expr_with_comm_except_if_sequence pc e =
