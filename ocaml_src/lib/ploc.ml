@@ -42,7 +42,7 @@ let from_file fname loc =
               if c = '\n' then loop fname (lin + 1)
               else not_a_line_dir (col + 1) s
             else let col = col - (cnt - bp) in fname, lin, col, col + ep - bp
-        | _ -> raise Stream.Failure
+        | _ -> fname, lin, col, col + 1
       in
       let rec a_line_dir str n col (strm__ : _ Stream.t) =
         match Stream.peek strm__ with

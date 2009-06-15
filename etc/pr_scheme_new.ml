@@ -58,6 +58,15 @@ value module_type = Eprinter.apply pr_module_type;
 value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
 *)
 
+value has_cons_with_params vdl =
+  List.exists
+    (fun (_, _, tl) ->
+       match tl with
+       [ <:vala< [] >> -> False
+       | _ -> True ])
+    vdl
+;
+
 value type_param pc (s, vari) =
   sprintf "%s'%s%s" pc.bef (Pcaml.unvala s) pc.aft
 ;
@@ -66,6 +75,22 @@ value type_decl pc td =
   plistbf 0
     {(pc) with ind = pc.ind + 1; bef = sprintf "%s(type" pc.bef;
      aft = sprintf ")%s" pc.aft}
+    [(fun pc ->
+        let n = Pcaml.unvala (snd td.MLast.tdNam) in
+        match Pcaml.unvala td.MLast.tdPrm with
+        [ [] -> sprintf "%s%s%s" pc.bef n pc.aft
+        | tp ->
+            let tp = List.map (fun t -> (t, "")) tp in
+            plistb type_param 0
+              {(pc) with ind = pc.ind + 1; bef = sprintf "%s(%s" pc.bef n;
+               aft = sprintf ")%s" pc.aft}
+              tp ],
+      "");
+     (fun pc -> ctyp pc td.MLast.tdDef, "")]
+;
+
+value type_decl2 pc td =
+  plistf 0 pc
     [(fun pc ->
         let n = Pcaml.unvala (snd td.MLast.tdNam) in
         match Pcaml.unvala td.MLast.tdPrm with
@@ -123,6 +148,19 @@ value match_assoc pc (p, we, e) =
     list
 ;
 
+value constr_decl pc (_, c, tl) =
+  let c = Pcaml.unvala c in
+  let tl = Pcaml.unvala tl in
+  horiz_vertic
+    (fun () ->
+       match tl with
+       [ [] -> sprintf "%s%s%s" pc.bef c pc.aft
+       | _ ->
+           sprintf "%s(%s %s)%s" pc.bef c
+             (hlist ctyp {(pc) with bef = ""; aft = ""} tl) pc.aft ])
+    (fun () -> not_impl "constr_decl vertic" pc 0)
+;
+
 value label_decl pc (_, l, m, t) =
   horiz_vertic
     (fun () ->
@@ -136,10 +174,24 @@ value string pc s = sprintf "%s\"%s\"%s" pc.bef s pc.aft;
 EXTEND_PRINTER
   pr_ctyp:
     [ "top"
-      [ (* <:ctyp< [ $list:cdl$ ] >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "(@[<hv>sum@ %a@]" (list constr_decl) (cdl, ks ")" k)
-      | *) <:ctyp< { $list:cdl$ } >> ->
+      [ <:ctyp< [ $list:cdl$ ] >> ->
+          horiz_vertic
+            (fun () ->
+               if has_cons_with_params cdl then sprintf "\n"
+               else
+                 sprintf "%s(sum %s)%s" pc.bef
+                   (hlist constr_decl {(pc) with bef = ""; aft = ""} cdl)
+                   pc.aft)
+            (fun () ->
+               let s1 = sprintf "%s(sum" pc.bef in
+               let s2 =
+                 vlist constr_decl
+                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+                    aft = sprintf ")%s" pc.aft}
+                   cdl
+               in
+               sprintf "%s\n%s" s1 s2)
+      | <:ctyp< { $list:cdl$ } >> ->
           let cdl = List.map (fun cd -> (cd, "")) cdl in
           plist label_decl 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s{" pc.bef;
@@ -594,7 +646,15 @@ EXTEND_PRINTER
       | <:str_item< type $list:tdl$ >> ->
           match tdl with
           [ [td] -> type_decl pc td
-          | tdl -> not_impl "str_item type" pc 0 ]
+          | tdl ->
+              let s1 = sprintf "%s(type" pc.bef in
+              let s2 =
+                vlist type_decl2
+                  {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+                   aft = sprintf ")%s" pc.aft}
+                  tdl
+              in
+              sprintf "%s\n%s" s1 s2 ]
       | <:str_item< exception $uid:c$ of $list:tl$ >> ->
           plistbf 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(exception" pc.bef;

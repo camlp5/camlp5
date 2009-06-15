@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ploc.ml,v 1.4 2007/09/25 03:16:23 deraugla Exp $ *)
+(* $Id: ploc.ml,v 1.5 2007/10/04 19:17:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 type t =
@@ -41,13 +41,15 @@ value from_file fname loc =
     let rec loop fname lin =
       let rec not_a_line_dir col =
         parser cnt
-          [: `c; s :] ->
+        [ [: `c; s :] ->
             if cnt < bp then
               if c = '\n' then loop fname (lin + 1)
               else not_a_line_dir (col + 1) s
             else
               let col = col - (cnt - bp) in
               (fname, lin, col, col + ep - bp)
+        | [: :] ->
+            (fname, lin, col, col + 1) ]
       in
       let rec a_line_dir str n col =
         parser
