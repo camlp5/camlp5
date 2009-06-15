@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.27 2007/09/10 17:19:30 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.28 2007/09/10 18:19:31 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -355,8 +355,8 @@ value rec module_type_long_id =
 
 value rec module_expr_long_id =
   fun
-  [ MeAcc _ m (MeUid _ s) -> ldot (module_expr_long_id m) s
-  | MeUid _ s -> lident s
+  [ <:module_expr< $m$ . $uid:s$ >> -> ldot (module_expr_long_id m) s
+  | <:module_expr< $uid:s$ >> -> lident s
   | t -> error (loc_of_module_expr t) "bad module expr long ident" ]
 ;
 
@@ -760,7 +760,10 @@ and module_type =
       mkmty loc (Pmty_signature (List.fold_right sig_item sl []))
   | MtUid loc s -> mkmty loc (Pmty_ident (lident s))
   | MtWit loc mt wcl ->
-      mkmty loc (Pmty_with (module_type mt) (List.map mkwithc wcl)) ]
+      mkmty loc (Pmty_with (module_type mt) (List.map mkwithc wcl))
+  | IFDEF STRICT THEN
+      MtXtr loc _ _ -> error loc "bad ast"
+    END ]
 and sig_item s l =
   match s with
   [ SgCls loc cd ->
@@ -801,12 +804,15 @@ and module_expr =
   | MeApp loc me1 me2 ->
       mkmod loc (Pmod_apply (module_expr me1) (module_expr me2))
   | MeFun loc n mt me ->
-      mkmod loc (Pmod_functor n (module_type mt) (module_expr me))
+      mkmod loc (Pmod_functor (uv n) (module_type mt) (module_expr me))
   | MeStr loc sl ->
-      mkmod loc (Pmod_structure (List.fold_right str_item sl []))
+      mkmod loc (Pmod_structure (List.fold_right str_item (uv sl) []))
   | MeTyc loc me mt ->
       mkmod loc (Pmod_constraint (module_expr me) (module_type mt))
-  | MeUid loc s -> mkmod loc (Pmod_ident (lident s)) ]
+  | MeUid loc s -> mkmod loc (Pmod_ident (lident (uv s)))
+  | IFDEF STRICT THEN
+      MeXtr loc _ _ -> error loc "bad ast"
+    END ]
 and str_item s l =
   match s with
   [ StCls loc cd ->

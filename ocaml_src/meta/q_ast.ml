@@ -960,6 +960,12 @@ module Meta =
       in
       loop si
     ;;
+    let e_module_type mt =
+      (*
+            let ln = ln () in
+      *)
+      let rec loop x = not_impl "e_module_type" x in loop mt
+    ;;
     let rec e_str_item si =
       let ln = ln () in
       let rec loop =
@@ -996,10 +1002,88 @@ module Meta =
       loop si
     and p_str_item x = not_impl "p_str_item" x
     and e_module_expr me =
-      (*
-            let ln = ln () in
-      *)
-      let rec loop x = not_impl "e_module_expr" x in loop me
+      let ln = ln () in
+      let rec loop =
+        function
+          MeAcc (_, me1, me2) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "MeAcc")),
+                     ln),
+                  loop me1),
+               loop me2)
+        | MeApp (_, me1, me2) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "MeApp")),
+                     ln),
+                  loop me1),
+               loop me2)
+        | MeFun (_, s, mt, me) ->
+            let mt = e_module_type mt in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExApp
+                       (loc,
+                        MLast.ExAcc
+                          (loc, MLast.ExUid (loc, "MLast"),
+                           MLast.ExUid (loc, "MeFun")),
+                        ln),
+                     e_vala e_string s),
+                  mt),
+               loop me)
+        | MeStr (_, lsi) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "MeStr")),
+                  ln),
+               e_vala (e_list e_str_item) lsi)
+        | MeTyc (_, me, mt) ->
+            let mt = e_module_type mt in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "MeTyc")),
+                     ln),
+                  loop me),
+               mt)
+        | MeUid (_, s) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "MeUid")),
+                  ln),
+               e_vala e_string s)
+      in
+      loop me
     and p_module_expr x = not_impl "p_module_expr" x;;
     let p_sig_item x = not_impl "p_sig_item" x;;
   end

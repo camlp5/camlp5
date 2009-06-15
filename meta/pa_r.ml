@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.64 2007/09/10 17:19:30 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.65 2007/09/10 18:19:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -122,15 +122,15 @@ EXTEND
     class_expr class_sig_item class_str_item let_binding type_declaration
     constructor_declaration match_case ipatt with_constr poly_variant;
   module_expr:
-    [ [ "functor"; "("; i = UIDENT; ":"; t = module_type; ")"; "->";
+    [ [ "functor"; "("; i = V UIDENT; ":"; t = module_type; ")"; "->";
         me = SELF ->
-          <:module_expr< functor ( $uid:i$ : $t$ ) -> $me$ >>
-      | "struct"; st = LIST0 [ s = str_item; ";" -> s ]; "end" ->
-          <:module_expr< struct $list:st$ end >> ]
+          <:module_expr< functor ( $auid:i$ : $t$ ) -> $me$ >>
+      | "struct"; st = V LIST0 [ s = str_item; ";" -> s ]; "end" ->
+          <:module_expr< struct $alist:st$ end >> ]
     | [ me1 = SELF; me2 = SELF -> <:module_expr< $me1$ $me2$ >> ]
     | [ me1 = SELF; "."; me2 = SELF -> <:module_expr< $me1$ . $me2$ >> ]
     | "simple"
-      [ i = UIDENT -> <:module_expr< $uid:i$ >>
+      [ i = V UIDENT -> <:module_expr< $auid:i$ >>
       | "("; me = SELF; ":"; mt = module_type; ")" ->
           <:module_expr< ( $me$ : $mt$ ) >>
       | "("; me = SELF; ")" -> <:module_expr< $me$ >> ] ]
@@ -164,8 +164,8 @@ EXTEND
   ;
   mod_fun_binding:
     [ RIGHTA
-      [ "("; m = UIDENT; ":"; mt = module_type; ")"; mb = SELF ->
-          <:module_expr< functor ( $m$ : $mt$ ) -> $mb$ >>
+      [ "("; m = V UIDENT; ":"; mt = module_type; ")"; mb = SELF ->
+          <:module_expr< functor ( $auid:m$ : $mt$ ) -> $mb$ >>
       | ":"; mt = module_type; "="; me = module_expr ->
           <:module_expr< ( $me$ : $mt$ ) >>
       | "="; me = module_expr -> <:module_expr< $me$ >> ] ]

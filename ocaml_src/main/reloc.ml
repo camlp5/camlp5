@@ -254,7 +254,8 @@ and module_expr floc sh =
     | MeApp (loc, x1, x2) -> MeApp (floc loc, self x1, self x2)
     | MeFun (loc, x1, x2, x3) ->
         MeFun (floc loc, x1, module_type floc sh x2, self x3)
-    | MeStr (loc, x1) -> MeStr (floc loc, List.map (str_item floc sh) x1)
+    | MeStr (loc, x1) ->
+        MeStr (floc loc, vala_map (List.map (str_item floc sh)) x1)
     | MeTyc (loc, x1, x2) -> MeTyc (floc loc, self x1, module_type floc sh x2)
     | MeUid (loc, x1) -> MeUid (floc loc, x1)
   in

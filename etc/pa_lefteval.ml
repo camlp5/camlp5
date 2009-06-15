@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_lefteval.ml,v 1.6 2007/08/28 14:52:24 deraugla Exp $ *)
+(* $Id: pa_lefteval.ml,v 1.7 2007/09/10 18:19:31 deraugla Exp $ *)
 
 value not_impl name x =
   let desc =
@@ -196,9 +196,7 @@ and module_expr x =
       <:module_expr< ($module_expr me$ : $mt$) >>
   | <:module_expr< struct $list:sil$ end >> ->
       <:module_expr< struct $list:List.map str_item sil$ end >>
-  | <:module_expr< $_$ . $_$ >> | <:module_expr< $_$ $_$ >> |
-    <:module_expr< $uid:_$ >> ->
-      x ]
+  | _ -> x ]
 and str_item x =
   let loc = MLast.loc_of_str_item x in
   match x with

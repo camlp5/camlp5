@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: reloc.ml,v 1.18 2007/09/10 17:19:30 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.19 2007/09/10 18:19:31 deraugla Exp $ *)
 
 open MLast;
 
@@ -224,7 +224,10 @@ and module_type floc sh =
     | MtSig loc x1 -> MtSig (floc loc) (List.map (sig_item floc sh) x1)
     | MtUid loc x1 -> MtUid (floc loc) x1
     | MtWit loc x1 x2 ->
-        MtWit (floc loc) (self x1) (List.map (with_constr floc sh) x2) ]
+        MtWit (floc loc) (self x1) (List.map (with_constr floc sh) x2)
+    | IFDEF STRICT THEN
+        MtXtr loc x1 x2 -> MtXtr (floc loc) x1 (option_map (vala_map self) x2)
+      END ]
 and sig_item floc sh =
   self where rec self =
     fun
@@ -257,9 +260,13 @@ and module_expr floc sh =
     | MeApp loc x1 x2 -> MeApp (floc loc) (self x1) (self x2)
     | MeFun loc x1 x2 x3 ->
         MeFun (floc loc) x1 (module_type floc sh x2) (self x3)
-    | MeStr loc x1 -> MeStr (floc loc) (List.map (str_item floc sh) x1)
+    | MeStr loc x1 ->
+        MeStr (floc loc) (vala_map (List.map (str_item floc sh)) x1)
     | MeTyc loc x1 x2 -> MeTyc (floc loc) (self x1) (module_type floc sh x2)
-    | MeUid loc x1 -> MeUid (floc loc) x1 ]
+    | MeUid loc x1 -> MeUid (floc loc) x1
+    | IFDEF STRICT THEN
+        MeXtr loc x1 x2 -> MeXtr (floc loc) x1 (option_map (vala_map self) x2)
+      END ]
 and str_item floc sh =
   self where rec self =
     fun

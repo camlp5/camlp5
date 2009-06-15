@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.51 2007/09/10 17:19:30 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.52 2007/09/10 18:19:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -425,15 +425,20 @@ module Meta =
 *)
         | x -> not_impl "e_sig_item" x ]
     ;
-(*
     value e_module_type mt =
+(*
       let ln = ln () in
+*)
       loop mt where rec loop =
         fun
-        [ MtUid _ s -> <:expr< MLast.MtUid $ln$ $e_string s$ >>
+        [ (*MtUid _ s -> <:expr< MLast.MtUid $ln$ $e_string s$ >>
+        | *)IFDEF STRICT THEN
+            MtXtr loc s _ ->
+              let (loc, r) = eval_anti Pcaml.expr_eoi loc "" s in
+              <:expr< $anti:r$ >>
+          END
         | x -> not_impl "e_module_type" x ]
     ;
-*)
     value rec e_str_item si =
       let ln = ln () in
       loop si where rec loop =
@@ -477,24 +482,27 @@ module Meta =
       fun
       [ x -> not_impl "p_str_item" x ]
     and e_module_expr me =
-(*
       let ln = ln () in
-*)
       loop me where rec loop =
         fun
-        [ (* MeAcc _ me1 me2 ->
+        [ MeAcc _ me1 me2 ->
             <:expr< MLast.MeAcc $ln$ $loop me1$ $loop me2$ >>
         | MeApp _ me1 me2 ->
             <:expr< MLast.MeApp $ln$ $loop me1$ $loop me2$ >>
         | MeFun _ s mt me ->
             let mt = e_module_type mt in
-            <:expr< MLast.MeFun $ln$ $e_string s$ $mt$ $loop me$ >>
-        | MeStr _ lsi -> <:expr< MLast.MeStr $ln$ $e_list e_str_item lsi$ >>
+            <:expr< MLast.MeFun $ln$ $e_vala e_string s$ $mt$ $loop me$ >>
+        | MeStr _ lsi ->
+            <:expr< MLast.MeStr $ln$ $e_vala (e_list e_str_item) lsi$ >>
         | MeTyc _ me mt ->
             let mt = e_module_type mt in
             <:expr< MLast.MeTyc $ln$ $loop me$ $mt$ >>
-        | MeUid _ s -> <:expr< MLast.MeUid $ln$ $e_string s$ >>
-        | *) x -> not_impl "e_module_expr" x ]
+        | MeUid _ s -> <:expr< MLast.MeUid $ln$ $e_vala e_string s$ >>
+        | IFDEF STRICT THEN
+            MeXtr loc s _ ->
+              let (loc, r) = eval_anti Pcaml.expr_eoi loc "" s in
+              <:expr< $anti:r$ >>
+          END ]
     and p_module_expr =
       fun
       [ x -> not_impl "p_module_expr" x ]
@@ -540,19 +548,19 @@ IFDEF STRICT THEN
     Pcaml.ctyp: LAST
       [ [ s = ANTIQUOT_LOC -> MLast.TyXtr loc s None ] ]
     ;
-  (*
+(*
     Pcaml.str_item: LAST
       [ [ s = ANTIQUOT_LOC "exp" ->
             let e = MLast.ExAnt loc (MLast.ExLid loc s) in
             MLast.StExp loc e ] ]
     ;
+*)
     Pcaml.module_expr: LAST
-      [ [ s = ANTIQUOT_LOC -> MLast.MeUid loc s ] ]
+      [ [ s = ANTIQUOT_LOC -> MLast.MeXtr loc s None ] ]
     ;
     Pcaml.module_type: LAST
-      [ [ s = ANTIQUOT_LOC -> MLast.MtUid loc s ] ]
+      [ [ s = ANTIQUOT_LOC -> MLast.MtXtr loc s None ] ]
     ;
-  *)
   END
 END;
 

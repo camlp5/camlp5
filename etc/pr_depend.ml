@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.23 2007/09/10 17:19:30 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.24 2007/09/10 18:19:31 deraugla Exp $ *)
 
 open MLast;
 
@@ -172,12 +172,15 @@ and sig_item =
   | x -> not_impl "sig_item" x ]
 and module_expr =
   fun
-  [ MeAcc _ (MeUid _ m) _ -> addmodule m
-  | MeApp _ me1 me2 -> do { module_expr me1; module_expr me2 }
-  | MeFun _ _ mt me -> do { module_type mt; module_expr me }
-  | MeStr _ sil -> list str_item sil
-  | MeTyc _ me mt -> do { module_expr me; module_type mt }
-  | MeUid _ _ -> ()
+  [ <:module_expr< $_$ . $uid:m$ >> -> addmodule m
+  | <:module_expr< $me1$ $me2$ >> -> do { module_expr me1; module_expr me2 }
+  | <:module_expr< functor ($_$ : $mt$) -> $me$ >> -> do {
+      module_type mt;
+      module_expr me
+    }
+  | <:module_expr< struct $list:sil$ end >> -> list str_item sil
+  | <:module_expr< ($me$ : $mt$) >> -> do { module_expr me; module_type mt }
+  | <:module_expr< $uid:_$ >> -> ()
   | x -> not_impl "module_expr" x ]
 and str_item =
   fun

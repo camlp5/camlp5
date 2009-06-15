@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: mLast.mli,v 1.27 2007/09/10 17:19:30 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.28 2007/09/10 18:19:31 deraugla Exp $ *)
 
 (* Module [MLast]: abstract syntax tree.
 
@@ -137,7 +137,10 @@ and module_type =
   | MtQuo of loc and string
   | MtSig of loc and list sig_item
   | MtUid of loc and string
-  | MtWit of loc and module_type and list with_constr ]
+  | MtWit of loc and module_type and list with_constr
+  | IFDEF STRICT THEN
+      MtXtr of loc and string and option (V module_type)
+    END ]
 and sig_item =
   [ SgCls of loc and list (class_infos class_type)
   | SgClt of loc and list (class_infos class_type)
@@ -158,10 +161,13 @@ and with_constr =
 and module_expr =
   [ MeAcc of loc and module_expr and module_expr
   | MeApp of loc and module_expr and module_expr
-  | MeFun of loc and string and module_type and module_expr
-  | MeStr of loc and list str_item
+  | MeFun of loc and V string and module_type and module_expr
+  | MeStr of loc and V (list str_item)
   | MeTyc of loc and module_expr and module_type
-  | MeUid of loc and string ]
+  | MeUid of loc and V string
+  | IFDEF STRICT THEN
+      MeXtr of loc and string and option (V module_expr)
+    END ]
 and str_item =
   [ StCls of loc and list (class_infos class_expr)
   | StClt of loc and list (class_infos class_type)
