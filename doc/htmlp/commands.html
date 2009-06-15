@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: commands.html,v 1.2 2007/08/28 03:22:04 deraugla Exp $ -->
+  <!-- $Id: commands.html,v 1.3 2007/08/28 12:06:32 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Commands and Kits</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -38,6 +38,11 @@
   camlp5 -help
 </pre>
 
+<p>The first parameters ("load options") allow to specify parsing and
+  printing kits (".cmo" and ".cma" files) which are loaded inside the
+  "<tt>camlp5</tt>" core before any action. Other options may
+  follow.</p>
+
 <div id="tableofcontents">
 </div>
 
@@ -45,51 +50,82 @@
 
 <h3>Parsing kits</h3>
 
-<p>... to be completed ...</p>
-
-<h4>main parsing kits</h4>
+<h4>language parsing kits</h4>
 
 <dl>
   <dt><tt>pa_r.cmo</tt></dt>
+  <dd>Revised syntax (without parsers).</dd>
   <dt><tt>pa_rp.cmo</tt></dt>
+  <dd>Add revised syntax parsers.</dd>
   <dt><tt>pa_o.cmo</tt></dt>
+  <dd>Normal syntax (without parsers). Option added:
+    <dl>
+      <dt><tt>-no_quot</tt></dt>
+      <dd>don't parse quotations, allowing to use,
+        e.g. "<tt>&lt;:&gt;</tt>" as token.</dd>
+    </dl>
+  </dd>
   <dt><tt>pa_op.cmo</tt></dt>
+  <dd>Add normal syntax parsers.</dd>
   <dt><tt>pa_oop.cmo</tt></dt>
+  <dd>Add normal syntax parsers without code optimization.</dd>
   <dt><tt>pa_lex.cmo</tt></dt>
+  <dd>Add stream lexers.</dd>
 </dl>
 
 <h4>parsing extension</h4>
 
 <dl>
   <dt><tt>pa_extend.cmo</tt></dt>
+  <dd>Add the EXTEND statement. Options added:
+    <dl>
+      <dt><tt>-split_ext</tt></dt>
+      <dd>split EXTEND by functions to turn around a PowerPC problem.</dd>
+      <dt><tt>-quotify</tt></dt>
+      <dd>generate code for quotations (internally used to synchronize
+        q_MLast and pa_r)</dd>
+      <dt><tt>-meta_action</tt></dt>
+      <dd>undocumented (internally used for compiled version)</dd>
+    </dl>
+  </dd>
   <dt><tt>pa_extend_m.cmo</tt></dt>
+  <dd>Add the specific symbols SLIST0, SLIST1, SOPT and SFLAG to the
+    EXTEND statement.</dd>
   <dt><tt>pa_extfold.cmo</tt></dt>
+  <dd>Add the specific symbols FOLD0 and FOLD1 to the EXTEND
+    statement.</dd>
 </dl>
 
 <h4>printing extension</h4>
 
 <dl>
   <dt><tt>pa_extprint.cmo</tt></dt>
+  <dd>Add the EXTEND_PRINTER statement.</dd>
 </dl>
 
 <h4>extensible functions</h4>
 
 <dl>
   <dt><tt>pa_extfun.cmo</tt></dt>
+  <dd>Add the extensible function ("extfun" statement).</dd>
 </dl>
 
 <h4>functional parsers</h4>
 
 <dl>
   <dt><tt>pa_fstream.cmo</tt></dt>
+  <dd>Add the functional parsers ("fparser" statement).</dd>
 </dl>
 
 <h4>other languages</h4>
 
 <dl>
   <dt><tt>pa_lisp.cmo</tt></dt>
+  <dd>Lisp syntax.</dd>
   <dt><tt>pa_scheme.cmo</tt></dt>
+  <dd>Scheme syntax.</dd>
   <dt><tt>pa_sml.cmo</tt></dt>
+  <dd>SML syntax.</dd>
 </dl>
 
 <h4>other parsing kits</h4>
@@ -117,6 +153,13 @@
   <dt><tt>pr_rp.cmo</tt></dt>
   <dt><tt>pr_scheme.cmo</tt></dt>
   <dt><tt>pr_schemep.cmo</tt></dt>
+</dl>
+
+<h3>Quotations expanders</h3>
+
+<dl>
+  <dt><tt>q_MLast.cmo</tt></dt>
+  <dt><tt>q_phony.cmo</tt></dt>
 </dl>
 
 <h2>Commands</h2>

@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: grammars.html,v 1.73 2007/08/28 02:20:19 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.74 2007/08/28 12:06:32 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -139,6 +139,7 @@ to <em>extend</em> it, using a specific syntactic statement:
                  | "LIST1" symbol
                  | "LIST1" symbol "SEP" symbol
                  | "OPT" symbol
+                 | "FLAG" symbol
                  | "[" rules "]"
                  | "(" symbol ")"
        keyword ::= string
@@ -343,7 +344,9 @@ symbols. They are:</p>
     list, with at least one element, of the first symbol separated by
     the second one,</li>
   <li>OPT followed by a symbol: equivalent to "this symbol or
-    nothing".</li>
+    nothing" returning a value of type "<tt>option<tt>".</li>
+  <li>FLAG followed by a symbol: equivalent to "this symbol or
+    nothing", returning a boolean.</li>
 </ul>
 
 <h3>Rules insertion</h3>
@@ -530,12 +533,13 @@ instead of "<tt>loc</tt>".</p>
 - : int = 12
 </pre>
 
-<h2>Extensions SLIST0, SLIST1 and SOPT</h2>
+<h2>Extensions SLIST0, SLIST1, SOPT and SFLAG</h2>
 
-<p>The specific iterators "<tt>SLIST0</tt>", "<tt>SLIST1</tt>",
-  "<tt>SLIST0SEP</tt>", "<tt>SLIST1SEP</tt>" and "<tt>SOPT</tt>" are
-  used in the file "q_MLast.ml". They allow to generate rules for
-  antiquotations of kind "list" and "opt".</p>
+<p>The parsing kit "<tt>pa_extend_m.cmo</tt>" adds the specific
+  iterators "<tt>SLIST0</tt>", "<tt>SLIST1</tt>", "<tt>SOPT</tt>" and
+  "<tt>SFLAG</tt>".  They are used in the file "q_MLast.ml". They
+  allow to generate rules for antiquotations of kind "list" and
+  "opt".</p>
 
 <p>They are not supposed to be used by the programmer.</p>
 
@@ -747,7 +751,7 @@ instead of "<tt>loc</tt>".</p>
 <p>Notice that the symbol "<tt>SELF</tt>" is a specific symbol of the
   EXTEND syntax: it does not correspond to a token pattern and is
   represented differently. A token constructor name must not belong to
-  the specific symbols: SELF, NEXT, LIST0, LIST1 and OPT.</p>
+  the specific symbols: SELF, NEXT, LIST0, LIST1, OPT and FLAG.</p>
 
 <h3>The glexer record</h3>
 
