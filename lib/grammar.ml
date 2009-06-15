@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.20 2007/07/17 23:31:20 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.21 2007/07/18 00:45:13 deraugla Exp $ *)
 
 open Stdpp;
 open Gramext;
@@ -913,18 +913,21 @@ module Entry =
       {egram = g; ename = n; estart = empty_entry n;
        econtinue _ _ _ = parser []; edesc = Dlevels []}
     ;
-    value parse_parsable (entry : e 'a) p =
-      (Obj.magic (parse_parsable entry p) : 'e)
+    value parse_parsable (entry : e 'a) p : 'a =
+      Obj.magic (parse_parsable entry p : Obj.t)
     ;
     value parse (entry : e 'a) cs : 'a =
       let parsable = parsable entry.egram cs in
       parse_parsable entry parsable
     ;
-    value parse_token (entry : e 'a) ts : 'a = Obj.magic (entry.estart 0 ts);
+    value parse_token (entry : e 'a) ts : 'a =
+      Obj.magic (entry.estart 0 ts : Obj.t)
+    ;
     value name e = e.ename;
     value of_parser g n (p : Stream.t te -> 'a) : e 'a =
-      {egram = g; ename = n; estart _ = Obj.magic p;
-       econtinue _ _ _ = parser []; edesc = Dparser (Obj.magic p)}
+      {egram = g; ename = n; estart _ = (Obj.magic p : Stream.t te -> Obj.t);
+       econtinue _ _ _ = parser [];
+       edesc = Dparser (Obj.magic p : Stream.t te -> Obj.t)}
     ;
     external obj : e 'a -> Gramext.g_entry te = "%identity";
     value print e = printf "%a@." print_entry (obj e);
@@ -1014,12 +1017,18 @@ module GMake (L : GLexerType) =
            econtinue _ _ _ = parser []; edesc = Dlevels []}
         ;
         external obj : e 'a -> Gramext.g_entry te = "%identity";
-        value parse (e : e 'a) p : 'a = Obj.magic (parse_parsable e p);
-        value parse_token (e : e 'a) ts : 'a = Obj.magic (e.estart 0 ts);
+        value parse (e : e 'a) p : 'a =
+          Obj.magic (parse_parsable e p : Obj.t)
+        ;
+        value parse_token (e : e 'a) ts : 'a =
+          Obj.magic (e.estart 0 ts : Obj.t)
+        ;
         value name e = e.ename;
         value of_parser n (p : Stream.t te -> 'a) : e 'a =
-          {egram = gram; ename = n; estart _ = Obj.magic p;
-           econtinue _ _ _ = parser []; edesc = Dparser (Obj.magic p)}
+          {egram = gram; ename = n;
+           estart _ = (Obj.magic p : Stream.t te -> Obj.t);
+           econtinue _ _ _ = parser [];
+           edesc = Dparser (Obj.magic p : Stream.t te -> Obj.t)}
         ;
         value print e = printf "%a@." print_entry (obj e);
       end

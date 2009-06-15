@@ -945,18 +945,21 @@ module Entry =
        econtinue = (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);
        edesc = Dlevels []}
     ;;
-    let parse_parsable (entry : 'a e) p : 'e =
-      Obj.magic (parse_parsable entry p)
+    let parse_parsable (entry : 'a e) p : 'a =
+      Obj.magic (parse_parsable entry p : Obj.t)
     ;;
     let parse (entry : 'a e) cs : 'a =
       let parsable = parsable entry.egram cs in parse_parsable entry parsable
     ;;
-    let parse_token (entry : 'a e) ts : 'a = Obj.magic (entry.estart 0 ts);;
+    let parse_token (entry : 'a e) ts : 'a =
+      Obj.magic (entry.estart 0 ts : Obj.t)
+    ;;
     let name e = e.ename;;
     let of_parser g n (p : te Stream.t -> 'a) : 'a e =
-      {egram = g; ename = n; estart = (fun _ -> Obj.magic p);
+      {egram = g; ename = n;
+       estart = (fun _ -> (Obj.magic p : te Stream.t -> Obj.t));
        econtinue = (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);
-       edesc = Dparser (Obj.magic p)}
+       edesc = Dparser (Obj.magic p : te Stream.t -> Obj.t)}
     ;;
     external obj : 'a e -> te Gramext.g_entry = "%identity";;
     let print e = printf "%a@." print_entry (obj e);;
@@ -1045,14 +1048,17 @@ module GMake (L : GLexerType) =
            edesc = Dlevels []}
         ;;
         external obj : 'a e -> te Gramext.g_entry = "%identity";;
-        let parse (e : 'a e) p : 'a = Obj.magic (parse_parsable e p);;
-        let parse_token (e : 'a e) ts : 'a = Obj.magic (e.estart 0 ts);;
+        let parse (e : 'a e) p : 'a = Obj.magic (parse_parsable e p : Obj.t);;
+        let parse_token (e : 'a e) ts : 'a =
+          Obj.magic (e.estart 0 ts : Obj.t)
+        ;;
         let name e = e.ename;;
         let of_parser n (p : te Stream.t -> 'a) : 'a e =
-          {egram = gram; ename = n; estart = (fun _ -> Obj.magic p);
+          {egram = gram; ename = n;
+           estart = (fun _ -> (Obj.magic p : te Stream.t -> Obj.t));
            econtinue =
              (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);
-           edesc = Dparser (Obj.magic p)}
+           edesc = Dparser (Obj.magic p : te Stream.t -> Obj.t)}
         ;;
         let print e = printf "%a@." print_entry (obj e);;
       end
