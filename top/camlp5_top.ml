@@ -1,4 +1,4 @@
-(* camlp5r q_MLast.cmo pa_macro.cmo *)
+(* camlp5r pa_macro.cmo q_MLast.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp5                                  *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: camlp5_top.ml,v 1.2 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: camlp5_top.ml,v 1.3 2007/09/06 12:00:46 deraugla Exp $ *)
 
 open Parsetree;
 open Lexing;

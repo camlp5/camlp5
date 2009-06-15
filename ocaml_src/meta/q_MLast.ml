@@ -1,4 +1,4 @@
-(* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo pa_macro.cmo *)
+(* camlp5r pa_macro.cmo pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp5                                  *)

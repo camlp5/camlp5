@@ -1,6 +1,7 @@
 #!/bin/bash
-# $Id: camlp5_comm.sh,v 1.1 2007/07/11 12:01:39 deraugla Exp $
+# $Id: camlp5_comm.sh,v 1.2 2007/09/06 12:00:46 deraugla Exp $
 
+DEFINE=-DNO_STRICT
 ARGS1=
 FILE=
 QUIET=no
@@ -24,6 +25,12 @@ if test "$2" = "camlp5r" -o "$2" = "camlp5"; then
         fi
 	shift; shift
 	ARGS2=$(echo $* | sed -e "s/[()*]//g")
+        for i in ${ARGS2[@]}; do
+          if [ "$i" = "pa_macro.cmo" ]; then
+            ARGS1="$ARGS1 $DEFINE"
+            break;
+          fi
+        done
 #	ARGS1="$ARGS1 -verbose"
 	if test "$QUIET" = "no"; then echo $COMM $ARGS2 $ARGS1 $FILE; fi
 	$COMM $ARGS2 $ARGS1 $FILE

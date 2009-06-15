@@ -1,4 +1,4 @@
-(* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo pa_macro.cmo *)
+(* camlp5r pa_macro.cmo pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp5                                  *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.40 2007/09/06 04:26:18 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.41 2007/09/06 12:00:46 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 

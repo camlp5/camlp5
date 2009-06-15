@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.19 2007/09/06 04:26:18 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.20 2007/09/06 12:00:46 deraugla Exp $ *)
 
 (*
 Added statements:
@@ -313,5 +313,3 @@ Pcaml.add_option "-U" (Arg.String undef)
 
 Pcaml.add_option "-defined" (Arg.Unit print_defined)
   " Print the defined macros and exit.";
-
-define None "NO_STRICT";
