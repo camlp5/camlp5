@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: syntext.html,v 1.3 2007/07/21 20:27:23 deraugla Exp $ -->
+  <!-- $Id: syntext.html,v 1.4 2007/07/21 20:48:58 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>syntax extensions</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -33,6 +33,11 @@
   ".cma") which is loaded inside camlp5. The source of this file uses
   calls to the specific statement EXTEND applied to entries defined in
   the camlp5 module "<tt>Pcaml</tt>".</p>
+
+<div id="tableofcontents">
+</div>
+
+<h2>Entries</h2>
 
 <p>The grammar of ocaml contains several entries, corresponding to the
   major notions of the language, which are modifiable this way, and
@@ -77,8 +82,46 @@
   <li><tt>let_binding</tt>: the bindings "expression = pattern" found in
     the "let" statement.</li>
   <li><tt>type_declaration</tt>: the bindings "name = type" found in
-    the "type" statement.</li>
+    the "type" statement.</li>.
 </ul>
+
+<h2>Syntax tree quotations</h2>
+
+<p>A grammar rule is a list of rule symbols followed by the semantic
+  action, i.e. the result of the rule. This result is a syntax tree,
+  corresponding to the type of the extended entry. The description of
+  the types of the syntax tree are in the camlp5 module
+  "<tt>MLast</tt>".</p>
+
+<p>However, there is a simpler way to make values of these syntax tree
+  types: the system <a href="quot.html">quotations</a>. With this system,
+  it is possible to represent syntax tree in concrete syntax, between
+  specific parentheses.</p>
+
+<p>For example, the syntax node of the "if" statement, supposing you
+  know the meaning of the constructors of the "<tt>MLast</tt>" module
+  would be:</p>
+
+<pre>
+  MLast.ExIfe loc e1 e2 e3
+</pre>
+
+<p>where loc is the source location, and e1, e2, e3 are the expressions
+  constituting the if statement. With quotations, we could write it like
+  this:</p>
+
+<pre>
+  &lt:expr&lt; if $e1$ then $e2$ else $e3$ >>
+</pre>
+
+<p>With quotations, it is possible to build pieces of program as
+  complex as desired. See the chapter
+  about <a href="ml_ast.html">syntax trees</a>.</p>
+
+<pre>
+</pre>
+
+<h2>An example</h2>
 
 <p>... work in progress ...</p>
 
