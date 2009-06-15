@@ -187,8 +187,12 @@ let number buf (strm__ : _ Stream.t) =
     Some '.' ->
       Stream.junk strm__;
       let buf = decimal_digits_under (B.add '.' buf) strm__ in
-      let buf = try exponent_part buf strm__ with Stream.Failure -> buf in
-      "FLOAT", B.get buf
+      begin match
+        (try Some (exponent_part buf strm__) with Stream.Failure -> None)
+      with
+        Some buf -> "FLOAT", B.get buf
+      | _ -> "FLOAT", B.get buf
+      end
   | _ ->
       match
         try Some (exponent_part buf strm__) with Stream.Failure -> None
@@ -208,9 +212,10 @@ let char ctx bp buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some '\\' ->
       Stream.junk strm__;
-      let buf = B.add '\\' buf in
       begin match Stream.peek strm__ with
-        Some c -> Stream.junk strm__; char_aux ctx bp (B.add c buf) strm__
+        Some c ->
+          Stream.junk strm__;
+          char_aux ctx bp (B.add c (B.add '\\' buf)) strm__
       | _ -> err ctx (bp, Stream.count strm__) "char not terminated"
       end
   | _ ->
@@ -256,29 +261,33 @@ let comment ctx bp =
     match Stream.peek strm__ with
       Some '*' ->
         Stream.junk strm__;
-        let buf = B.add '*' buf in
         begin match Stream.peek strm__ with
-          Some ')' -> Stream.junk strm__; B.add ')' buf
-        | _ -> comment buf strm__
+          Some ')' -> Stream.junk strm__; B.add ')' (B.add '*' buf)
+        | _ -> comment (B.add '*' buf) strm__
         end
     | Some '(' ->
         Stream.junk strm__;
-        let buf = B.add '(' buf in
-        let buf =
-          match Stream.peek strm__ with
-            Some '*' -> Stream.junk strm__; comment (B.add '*' buf) strm__
-          | _ -> buf
-        in
-        comment buf strm__
+        begin match Stream.peek strm__ with
+          Some '*' ->
+            Stream.junk strm__;
+            let buf = comment (B.add '*' (B.add '(' buf)) strm__ in
+            comment buf strm__
+        | _ -> comment (B.add '(' buf) strm__
+        end
     | Some '\"' ->
         Stream.junk strm__;
         let buf = string ctx bp (B.add '\"' buf) strm__ in
         let buf = B.add '\"' buf in comment buf strm__
     | Some '\'' ->
         Stream.junk strm__;
-        let buf = B.add '\'' buf in
-        let buf = try char ctx bp buf strm__ with Stream.Failure -> buf in
-        comment buf strm__
+        begin match
+          begin try Some (char ctx bp (B.add '\'' buf) strm__) with
+            Stream.Failure -> None
+          end
+        with
+          Some buf -> comment buf strm__
+        | _ -> comment (B.add '\'' buf) strm__
+        end
     | _ ->
         match try Some (any ctx buf strm__) with Stream.Failure -> None with
           Some buf -> comment buf strm__
@@ -293,38 +302,35 @@ let rec quotation ctx bp buf (strm__ : _ Stream.t) =
       Stream.junk strm__;
       begin match Stream.peek strm__ with
         Some '>' -> Stream.junk strm__; buf
-      | _ -> let buf = B.add '>' buf in quotation ctx bp buf strm__
+      | _ -> quotation ctx bp (B.add '>' buf) strm__
       end
   | Some '<' ->
       Stream.junk strm__;
-      let buf = B.add '<' buf in
-      let buf =
-        match Stream.peek strm__ with
-          Some '<' ->
-            Stream.junk strm__;
-            let buf = quotation ctx bp (B.add '<' buf) strm__ in
-            B.add '>' (B.add '>' buf)
-        | Some ':' ->
-            Stream.junk strm__;
-            let buf = ident (B.add ':' buf) strm__ in
-            begin match Stream.peek strm__ with
-              Some '<' ->
-                Stream.junk strm__;
-                let buf = quotation ctx bp (B.add '<' buf) strm__ in
-                B.add '>' (B.add '>' buf)
-            | _ -> buf
-            end
-        | _ -> buf
-      in
-      quotation ctx bp buf strm__
+      begin match Stream.peek strm__ with
+        Some '<' ->
+          Stream.junk strm__;
+          let buf = quotation ctx bp (B.add '<' (B.add '<' buf)) strm__ in
+          let buf = B.add '>' (B.add '>' buf) in quotation ctx bp buf strm__
+      | Some ':' ->
+          Stream.junk strm__;
+          let buf = ident (B.add ':' (B.add '<' buf)) strm__ in
+          begin match Stream.peek strm__ with
+            Some '<' ->
+              Stream.junk strm__;
+              let buf = quotation ctx bp (B.add '<' buf) strm__ in
+              let buf = B.add '>' (B.add '>' buf) in
+              quotation ctx bp buf strm__
+          | _ -> quotation ctx bp buf strm__
+          end
+      | _ -> quotation ctx bp (B.add '<' buf) strm__
+      end
   | Some '\\' ->
       Stream.junk strm__;
-      let buf =
-        match Stream.peek strm__ with
-          Some ('>' | '<' | '\\' as c) -> Stream.junk strm__; B.add c buf
-        | _ -> B.add '\\' buf
-      in
-      quotation ctx bp buf strm__
+      begin match Stream.peek strm__ with
+        Some ('>' | '<' | '\\' as c) ->
+          Stream.junk strm__; quotation ctx bp (B.add c buf) strm__
+      | _ -> quotation ctx bp (B.add '\\' buf) strm__
+      end
   | _ ->
       match try Some (any ctx buf strm__) with Stream.Failure -> None with
         Some buf -> quotation ctx bp buf strm__
@@ -462,15 +468,14 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
   | Some ('1'..'9' as c) -> Stream.junk strm__; number (B.add c buf) strm__
   | Some '0' ->
       Stream.junk strm__;
-      let buf = B.add '0' buf in
       begin match Stream.peek strm__ with
         Some ('o' | 'O' as c) ->
-          Stream.junk strm__; digits octal (B.add c buf) strm__
+          Stream.junk strm__; digits octal (B.add c (B.add '0' buf)) strm__
       | Some ('x' | 'X' as c) ->
-          Stream.junk strm__; digits hexa (B.add c buf) strm__
+          Stream.junk strm__; digits hexa (B.add c (B.add '0' buf)) strm__
       | Some ('b' | 'B' as c) ->
-          Stream.junk strm__; digits binary (B.add c buf) strm__
-      | _ -> number buf strm__
+          Stream.junk strm__; digits binary (B.add c (B.add '0' buf)) strm__
+      | _ -> number (B.add '0' buf) strm__
       end
   | Some '\'' ->
       Stream.junk strm__;
@@ -495,8 +500,7 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
           Stream.junk strm__;
           let buf = ident (B.add c buf) strm__ in tildeident buf strm__
       | _ ->
-          let buf = B.add '~' buf in
-          let buf = ident2 buf strm__ in
+          let buf = ident2 (B.add '~' buf) strm__ in
           keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
       end
   | Some '?' ->
@@ -506,64 +510,67 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
           Stream.junk strm__;
           let buf = ident (B.add c buf) strm__ in questionident buf strm__
       | _ ->
-          let buf = B.add '?' buf in
-          let buf = ident2 buf strm__ in
+          let buf = ident2 (B.add '?' buf) strm__ in
           keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
       end
   | Some '<' -> Stream.junk strm__; less ctx bp buf strm__
   | Some ':' ->
       Stream.junk strm__;
-      let buf = B.add ':' buf in
-      let buf =
-        match Stream.peek strm__ with
-          Some (']' | ':' | '=' | '>' as c) -> Stream.junk strm__; B.add c buf
-        | _ -> buf
-      in
-      keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
+      begin match Stream.peek strm__ with
+        Some (']' | ':' | '=' | '>' as c) ->
+          Stream.junk strm__;
+          keyword_or_error ctx (bp, Stream.count strm__)
+            (B.get (B.add c (B.add ':' buf)))
+      | _ ->
+          keyword_or_error ctx (bp, Stream.count strm__)
+            (B.get (B.add ':' buf))
+      end
   | Some ('>' | '|' as c) ->
       Stream.junk strm__;
-      let buf = B.add c buf in
-      let buf =
-        match Stream.peek strm__ with
-          Some (']' | '}' as c) -> Stream.junk strm__; B.add c buf
-        | _ -> ident2 buf strm__
-      in
-      keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
+      begin match Stream.peek strm__ with
+        Some (']' | '}' as c1) ->
+          Stream.junk strm__;
+          keyword_or_error ctx (bp, Stream.count strm__)
+            (B.get (B.add c1 (B.add c buf)))
+      | _ ->
+          let buf = ident2 (B.add c buf) strm__ in
+          keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
+      end
   | Some ('[' | '{' as c) ->
       Stream.junk strm__;
-      let buf = B.add c buf in
-      let buf =
-        match Stream.npeek 2 strm__ with
-          ['<'; '<'] | ['<'; ':'] -> buf
-        | _ ->
-            match Stream.peek strm__ with
-              Some ('|' | '<' | ':' as c) -> Stream.junk strm__; B.add c buf
-            | _ -> buf
-      in
-      keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
+      begin match Stream.npeek 2 strm__ with
+        ['<'; '<'] | ['<'; ':'] ->
+          keyword_or_error ctx (bp, Stream.count strm__) (B.get (B.add c buf))
+      | _ ->
+          match Stream.peek strm__ with
+            Some ('|' | '<' | ':' as c1) ->
+              Stream.junk strm__;
+              keyword_or_error ctx (bp, Stream.count strm__)
+                (B.get (B.add c1 (B.add c buf)))
+          | _ ->
+              keyword_or_error ctx (bp, Stream.count strm__)
+                (B.get (B.add c buf))
+      end
   | Some '.' ->
       Stream.junk strm__;
-      let buf = B.add '.' buf in
-      let buf =
-        match Stream.peek strm__ with
-          Some '.' -> Stream.junk strm__; B.add '.' buf
-        | _ -> buf
-      in
-      let id =
-        if B.get buf = ".." then ".."
-        else if ctx.specific_space_dot && ctx.after_space then " ."
-        else "."
-      in
-      keyword_or_error ctx (bp, Stream.count strm__) id
+      begin match Stream.peek strm__ with
+        Some '.' ->
+          Stream.junk strm__;
+          keyword_or_error ctx (bp, Stream.count strm__) ".."
+      | _ ->
+          let id =
+            if ctx.specific_space_dot && ctx.after_space then " ." else "."
+          in
+          keyword_or_error ctx (bp, Stream.count strm__) id
+      end
   | Some ';' ->
       Stream.junk strm__;
-      let buf = B.add ';' buf in
-      let buf =
-        match Stream.peek strm__ with
-          Some ';' -> Stream.junk strm__; B.add ';' buf
-        | _ -> buf
-      in
-      keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
+      begin match Stream.peek strm__ with
+        Some ';' ->
+          Stream.junk strm__;
+          keyword_or_error ctx (bp, Stream.count strm__) ";;"
+      | _ -> keyword_or_error ctx (bp, Stream.count strm__) ";"
+      end
   | Some '\\' ->
       Stream.junk strm__; let buf = ident3 buf strm__ in "LIDENT", B.get buf
   | _ ->
@@ -695,41 +702,38 @@ and check buf (strm__ : _ Stream.t) =
   | Some '$' -> Stream.junk strm__; check_ident2 (B.add '$' buf) strm__
   | Some '<' ->
       Stream.junk strm__;
-      let buf = B.add '<' buf in
       begin match Stream.npeek 1 strm__ with
-        [':'] | ['<'] -> buf
-      | _ -> check_ident2 buf strm__
+        [':'] | ['<'] -> B.add '<' buf
+      | _ -> check_ident2 (B.add '<' buf) strm__
       end
   | Some ':' ->
       Stream.junk strm__;
-      let buf = B.add ':' buf in
       begin match Stream.peek strm__ with
-        Some (']' | ':' | '=' | '>' as c) -> Stream.junk strm__; B.add c buf
-      | _ -> buf
+        Some (']' | ':' | '=' | '>' as c) ->
+          Stream.junk strm__; B.add c (B.add ':' buf)
+      | _ -> B.add ':' buf
       end
   | Some ('>' | '|' as c) ->
       Stream.junk strm__;
-      let buf = B.add c buf in
       begin match Stream.peek strm__ with
-        Some (']' | '}' as c) -> Stream.junk strm__; B.add c buf
-      | _ -> check_ident2 buf strm__
+        Some (']' | '}' as c1) -> Stream.junk strm__; B.add c1 (B.add c buf)
+      | _ -> check_ident2 (B.add c buf) strm__
       end
   | Some ('[' | '{' as c) ->
       Stream.junk strm__;
-      let buf = B.add c buf in
       begin match Stream.npeek 2 strm__ with
-        ['<'; '<'] | ['<'; ':'] -> buf
+        ['<'; '<'] | ['<'; ':'] -> B.add c buf
       | _ ->
           match Stream.peek strm__ with
-            Some ('|' | '<' | ':' as c) -> Stream.junk strm__; B.add c buf
-          | _ -> buf
+            Some ('|' | '<' | ':' as c1) ->
+              Stream.junk strm__; B.add c1 (B.add c buf)
+          | _ -> B.add c buf
       end
   | Some ';' ->
       Stream.junk strm__;
-      let buf = B.add ';' buf in
       begin match Stream.peek strm__ with
-        Some ';' -> Stream.junk strm__; B.add ';' buf
-      | _ -> buf
+        Some ';' -> Stream.junk strm__; B.add ';' (B.add ';' buf)
+      | _ -> B.add ';' buf
       end
   | Some c -> Stream.junk strm__; B.add c buf
   | _ -> raise Stream.Failure
@@ -868,11 +872,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 534, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 534, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 534, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 535, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 535, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 544, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 544, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 544, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 545, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 545, 37)));
        tok_comm = None}
   in
   let glex =
