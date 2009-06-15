@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.158 2007/12/25 16:06:05 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.159 2007/12/25 16:44:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1355,16 +1355,9 @@ EXTEND_PRINTER
                     when alone in a line. *)
                  sprintf "\n"
                else
-                 sprintf "%sstruct%s%s%send%s" pc.bef " "
-                   (hlist str_item_sep {(pc) with bef = ""; aft = ""} sil)
-                   " " pc.aft)
+                 pprintf pc "struct %p end" (hlist str_item_sep) sil)
             (fun () ->
-               sprintf "%sstruct%s%s%send%s" pc.bef "\n"
-                 (vlist str_item_sep
-                    {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                     aft = ""}
-                    sil)
-                 ("\n" ^ tab pc.ind) pc.aft) ]
+               pprintf pc "@[<b>struct@;%p@ end@]" (vlist str_item_sep) sil) ]
     | "apply"
       [ <:module_expr< $x$ $y$ >> ->
           let mod_exp2 pc (is_first, me) =
