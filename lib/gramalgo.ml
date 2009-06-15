@@ -510,12 +510,12 @@ value lr0 entry lev = do {
         [ [s :: sl] -> do {
             (* select items where there is a dot before s *)
             let item_set =
-               List.find_all
-                 (fun (added, lh, dot, rh) ->
-                    match get_symbol_after_dot dot rh with
-                    [ Some s1 -> s = s1
-                    | None -> False ])
-                 item_set
+              List.find_all
+                (fun (added, lh, dot, rh) ->
+                   match get_symbol_after_dot dot rh with
+                   [ Some s1 -> s = s1
+                   | None -> False ])
+                item_set
             in
             (* move the dot after s *)
             let item_set =
@@ -554,4 +554,53 @@ value lr0 entry lev = do {
   in
   Printf.eprintf "\ntotal number of item sets %d\n" item_set_cnt;
   flush stderr;
+  let term_table = Hashtbl.create 1 in
+  let nterm_table = Hashtbl.create 1 in
+  let (nb_terms, nb_nterms) =
+    Hashtbl.fold
+      (fun item_set _ cnts ->
+         List.fold_left
+           (fun (terms_cnt, nterms_cnt) (_, lh, _, rh) ->
+              let nterms_cnt =
+                if Hashtbl.mem nterm_table lh then nterms_cnt
+                else do {
+                  Hashtbl.add nterm_table lh nterms_cnt;
+                  nterms_cnt + 1
+                }
+              in
+              List.fold_left
+                (fun (terms_cnt, nterms_cnt) ->
+                   fun
+                   [ GS_term s ->
+                       let terms_cnt =
+                         if Hashtbl.mem term_table s then terms_cnt
+                         else do {
+                           Hashtbl.add term_table s terms_cnt;
+                           terms_cnt + 1
+                         }
+                       in
+                       (terms_cnt, nterms_cnt)
+                   | GS_nterm s ->
+                       let nterms_cnt =
+                         if Hashtbl.mem nterm_table s then nterms_cnt
+                         else do {
+                           Hashtbl.add nterm_table s nterms_cnt;
+                           nterms_cnt + 1
+                         }
+                       in
+                       (terms_cnt, nterms_cnt) ])
+                (terms_cnt, nterms_cnt) rh)
+           cnts item_set)
+      item_set_ht (0, 0)
+  in
+  Printf.eprintf "nb of terms %d\n" nb_terms;
+  Printf.eprintf "nb of non-terms %d\n" nb_nterms;
+  flush stderr;
+(*
+  let goto_table =
+    Array.init item_set_cnt (fun _ -> Array.create nb_nterms "")
+  in
+  Hashtbl.iter
+    (fun (_, lh, _, rh) i ->
+*)
 };
