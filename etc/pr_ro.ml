@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.61 2007/12/13 01:06:04 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.62 2007/12/13 01:53:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -184,39 +184,21 @@ value patt_tcon pc p =
 value class_object pc (csp, csl) =
   horiz_vertic
     (fun () ->
-       sprintf "%sobject%s %s end%s" pc.bef
-         (match csp with
-          [ Some (<:patt< ($_$ : $_$) >> as p) ->
-              patt {(pc) with bef = " "; aft = ""} p
-          | Some p -> patt {(pc) with bef = " ("; aft = ")"} p
-          | None -> "" ])
-         (hlist (semi_after class_str_item)
-            {(pc) with bef = ""; aft = ""} csl) pc.aft)
+       pprintf pc "object%p %p end"
+         (fun pc ->
+            fun
+            [ Some (<:patt< ($_$ : $_$) >> as p) -> pprintf pc " %p" patt p
+            | Some p -> pprintf pc " (%p)" patt p
+            | None -> pprintf pc "" ])
+         csp (hlist (semi_after class_str_item)) csl)
     (fun () ->
-       let s1 =
-         match csp with
-         [ None -> sprintf "%sobject" pc.bef
-         | Some p ->
-             horiz_vertic
-               (fun () ->
-                  sprintf "%sobject %s" pc.bef
-                    (match p with
-                     [ <:patt< ($_$ : $_$) >> ->
-                         patt {(pc) with bef = ""; aft = ""} p
-                     | p ->
-                         patt {(pc) with bef = "("; aft = ")"} p ]))
-               (fun () ->
-                  not_impl "class_type vertic 1" {(pc) with aft = ""}
-                    p) ]
-       in
-       let s2 =
-         vlist (semi_after class_str_item)
-           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-            aft = ""}
-           csl
-       in
-       let s3 = sprintf "%send%s" (tab pc.ind) pc.aft in
-       sprintf "%s\n%s\n%s" s1 s2 s3)
+       pprintf pc "@[<a>object%p@;%p@ end@]"
+         (fun pc ->
+            fun
+            [ Some (<:patt< ($_$ : $_$) >> as p) -> pprintf pc " %p" patt p
+            | Some p -> pprintf pc " (%p)" patt p
+            | None -> pprintf pc "" ])
+         csp (vlist (semi_after class_str_item)) csl)
 ;
 
 value sig_method_or_method_virtual pc virt priv s t =
