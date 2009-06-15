@@ -1,9 +1,10 @@
-/* $Id: base.css,v 1.2 2007/07/10 11:50:04 deraugla Exp $ */
+/* $Id: base.css,v 1.3 2007/07/10 12:36:35 deraugla Exp $ */
 
 body { margin: 0; background-color: rgb(228,214,189) }
 
 #menu { width: 20%; position: fixed; top: 0; left: 0; float: left }
 #menu ul { padding: 0 }
+#menu h1 { font-weight: normal }
 
 #content { margin-left: 20%; padding: 0 5mm; background-color: white }
 
@@ -37,7 +38,6 @@ pre {
 
 tt { font-weight: bold }
 
-.title { text-align: center; font-size: 200% }
 .top { margin-top: 0 }
 .bottom { margin-bottom: 0 }
 .trailer { margin-top: 3cm }
