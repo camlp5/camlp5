@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.75 2007/09/21 01:50:39 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.76 2007/09/21 11:34:46 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -35,13 +35,13 @@ and a_symbol 'e 'p =
   | ASkeyw of loc and a_string 'e
   | ASlist of loc and bool and a_symbol 'e 'p and option (a_symbol 'e 'p)
   | ASnext of loc
+  | ASnterm of loc and (string * 'e) and option string
   | ASopt of loc and a_symbol 'e 'p
   | ASfold of loc and string and string and 'e and 'e and a_symbol 'e 'p
       and option (a_symbol 'e 'p)
   | ASquot of loc and a_symbol 'e 'p
   | ASrules of loc and a_rules 'e 'p
   | ASself of loc
-  | ASterm of loc and (string * 'e) and option string
   | AStok of loc and string and option (a_string 'e)
   | ASvala of loc and a_symbol 'e 'p and list string
   | ASvala2 of loc and a_symbol 'e 'p and list string ]
@@ -612,75 +612,6 @@ value mk_psymbol p s t =
   {pattern = Some p; symbol = symb}
 ;
 
-value ss2_of_ss loc al s =
-  let text =
-    match s.text with
-    [ TXrules loc t
-        [{prod =
-            [{pattern = p1;
-              symbol =
-                ({text =
-                    TXnterm loc1
-                      ({expr = <:expr< $lid:nm1$ >>} as n1) None}
-                 as s1)}];
-          action = act1};
-         {prod = prod2; action = Some act2}]
-      ->
-        let r1 =
-          let t1 =
-            let n1 = {(n1) with expr = <:expr< $lid:nm1 ^ "2"$ >>} in
-            TXnterm loc1 n1 None
-          in
-          {prod = [{pattern = p1; symbol = {(s1) with text = t1}}];
-           action = act1}
-        in
-        let r2 =
-          let act2 = <:expr< Qast.VaVal $act2$ >> in
-          {prod = prod2; action = Some act2}
-        in
-        TXrules loc t [r1; r2]
-    | TXnterm loc ({expr = <:expr< $lid:name$ >>} as n) None
-      when String.length name > 2 && name.[0] = 'a' && name.[1] = '_' ->
-        let name = if Pcaml.strict_mode.val then name ^ "2" else name in
-        TXnterm loc {(n) with expr = <:expr< $lid:name$ >>} None
-    | x ->
-        let rl =
-          List.fold_right
-            (fun a rl ->
-               let r1 =
-                 let ps =
-                   let text = TXtok loc "ANTIQUOT" <:expr< $str:a$ >> in
-                   let styp = STtyp <:ctyp< Qast.t >> in
-                   let s = {used = []; text = text; styp = styp} in
-                   {pattern = Some <:patt< a >>; symbol = s}
-                 in
-                 let act = <:expr< Qast.VaVal (Qast.VaAnt $str:a$ loc a) >> in
-                 {prod = [ps]; action = Some act}
-               in
-               let r2 =
-                 let a = "a" ^ a in
-                 let ps =
-                   let text = TXtok loc "ANTIQUOT" <:expr< $str:a$ >> in
-                   let styp = STtyp <:ctyp< Qast.t >> in
-                   let s = {used = []; text = text; styp = styp} in
-                   {pattern = Some <:patt< a >>; symbol = s}
-                 in
-                 let act = <:expr< Qast.VaAnt $str:a$ loc a >> in
-                 {prod = [ps]; action = Some act}
-               in
-               [r1; r2 :: rl])
-            al []
-        in
-        let r2 =
-          let ps = {pattern = Some <:patt< a >>; symbol = s} in
-          let act = <:expr< Qast.VaVal a >> in
-          {prod = [ps]; action = Some act}
-        in
-        TXrules loc "" (rl @ [r2]) ]
-  in
-  {used = s.used; text = text; styp = s.styp}
-;
-
 value sstoken_aux loc name s =
   let text =
     try
@@ -703,6 +634,18 @@ value sstoken_prm loc name prm =
   let name = try List.assoc name assoc_anti with [ Not_found -> name ] in
   let text = TXtok loc name prm in
   {used = []; text = text; styp = STlid loc "string"}
+;
+
+value sstoken2 loc ls s p =
+  match p with
+  [ Some e -> Ploc.raise loc (Failure "not impl sstoken2")
+  | None ->
+      let name = "a_" ^ s ^ "2" in
+      let text =
+        let n = {expr = <:expr< $lid:name$ >>; tvar = name; loc = loc} in
+        TXnterm loc n None
+      in
+      {used = [name]; text = text; styp = STquo loc name} ]
 ;
 
 value ss_aux loc a_name r2 used2 =
@@ -740,6 +683,41 @@ value sslist loc min sep s =
   ss_aux loc "a_list" r used
 ;
 
+value sslist2 loc ls min sep s =
+  let s =
+    let used =
+      match sep with
+      [ Some symb -> symb.used @ s.used
+      | None -> s.used ]
+    in
+    let text = slist loc min sep s in
+    let styp = STapp loc (STlid loc "list") s.styp in
+    {used = used; text = text; styp = styp}
+  in
+  let text =
+    let r1 =
+      let s =
+        let text =
+          let expr = <:expr< a_list2 >> in
+          let name = {expr = expr; tvar = "a_list2"; loc = loc} in
+          TXnterm loc name None
+        in
+        {used = ["a_list2"]; text = text; styp = STquo loc "a_list2"}
+      in
+      let r = {pattern = Some <:patt< a >>; symbol = s} in
+      let act = <:expr< a >> in
+      {prod = [r]; action = Some act}
+    in
+    let r2 =
+      let r = {pattern = Some <:patt< a >>; symbol = s} in
+      let act = <:expr< Qast.VaVal (Qast.List a) >> in
+      {prod = [r]; action = Some act}
+    in
+    TXrules loc "a_list2" [r1; r2]
+  in
+  {used = s.used; text = text; styp = STtyp <:ctyp< Qast.t >>}
+;
+
 value ssopt loc s =
   let r =
     let s =
@@ -763,6 +741,36 @@ value ssopt loc s =
   ss_aux loc "a_opt" r s.used
 ;
 
+value ssopt2 loc ls s =
+  let text =
+    let r1 =
+      let s =
+        let text =
+          let expr = <:expr< a_opt2 >> in
+          let name = {expr = expr; tvar = "a_opt2"; loc = loc} in
+          TXnterm loc name None
+        in
+        {used = ["a_opt2"]; text = text; styp = STquo loc "a_opt2"}
+      in
+      let r = {pattern = Some <:patt< a >>; symbol = s} in
+      let act = <:expr< a >> in
+      {prod = [r]; action = Some act}
+    in
+    let r2 =
+      let s =
+        let text = TXopt loc s.text in
+        let styp = STapp loc (STlid loc "option") s.styp in
+        {used = s.used; text = text; styp = styp}
+      in
+      let r = {pattern = Some <:patt< a >>; symbol = s} in
+      let act = <:expr< Qast.VaVal (Qast.Option a) >> in
+      {prod = [r]; action = Some act}
+    in
+    TXrules loc "a_opt2" [r1; r2]
+  in
+  {used = s.used; text = text; styp = STtyp <:ctyp< Qast.t >>}
+;
+
 value ssflag loc s =
   let r =
     let prod =
@@ -774,6 +782,81 @@ value ssflag loc s =
     {prod = prod; action = Some act}
   in
   ss_aux loc "a_flag" r s.used
+;
+
+value ssflag2 loc ls s =
+  let text =
+    let r1 =
+      let s =
+        let text =
+          let expr = <:expr< a_flag2 >> in
+          let name = {expr = expr; tvar = "a_flag2"; loc = loc} in
+          TXnterm loc name None
+        in
+        {used = ["a_flag2"]; text = text; styp = STquo loc "a_flag2"}
+      in
+      let r = {pattern = Some <:patt< a >>; symbol = s} in
+      let act = <:expr< a >> in
+      {prod = [r]; action = Some act}
+    in
+    let r2 =
+      let s =
+        let text = TXflag loc s.text in
+        let styp = STlid loc "bool" in
+        {used = s.used; text = text; styp = styp}
+      in
+      let r = {pattern = Some <:patt< a >>; symbol = s} in
+      let act = <:expr< Qast.VaVal (Qast.Bool a) >> in
+      {prod = [r]; action = Some act}
+    in
+    TXrules loc "a_flag2" [r1; r2]
+  in
+  {used = s.used; text = text; styp = STtyp <:ctyp< Qast.t >>}
+;
+
+value ssnterm2 loc ls (i, n) lev =
+  let s =
+    let name = mk_name2 (i, n) in
+    let text = TXnterm loc name lev in
+    let styp = STquo loc i in
+    {used = [i]; text = text; styp = styp}
+  in
+  let text =
+    let rl =
+      List.fold_right
+        (fun a rl ->
+           let r1 =
+             let ps =
+               let text = TXtok loc "ANTIQUOT" <:expr< $str:a$ >> in
+               let styp = STtyp <:ctyp< Qast.t >> in
+               let s = {used = []; text = text; styp = styp} in
+               {pattern = Some <:patt< a >>; symbol = s}
+             in
+             let act = <:expr< Qast.VaVal (Qast.VaAnt $str:a$ loc a) >> in
+             {prod = [ps]; action = Some act}
+           in
+           let r2 =
+             let a = "a" ^ a in
+             let ps =
+               let text = TXtok loc "ANTIQUOT" <:expr< $str:a$ >> in
+               let styp = STtyp <:ctyp< Qast.t >> in
+               let s = {used = []; text = text; styp = styp} in
+               {pattern = Some <:patt< a >>; symbol = s}
+             in
+             let act = <:expr< Qast.VaAnt $str:a$ loc a >> in
+             {prod = [ps]; action = Some act}
+           in
+           [r1; r2 :: rl])
+        ls []
+    in
+    let r2 =
+      let ps = {pattern = Some <:patt< a >>; symbol = s} in
+      let act = <:expr< Qast.VaVal a >> in
+      {prod = [ps]; action = Some act}
+    in
+    TXrules loc "" (rl @ [r2])
+  in
+  {used = s.used; text = text; styp = s.styp}
 ;
 
 value string_of_a =
@@ -813,6 +896,11 @@ value rec symbol_of_a =
         let styp = STapp loc (STlid loc "list") s.styp in
         {used = used; text = text; styp = styp}
   | ASnext loc -> {used = []; text = TXnext loc; styp = STself loc "NEXT"}
+  | ASnterm loc (i, n) lev ->
+      let name = mk_name2 (i, n) in
+      let text = TXnterm loc name lev in
+      let styp = STquo loc i in
+      {used = [i]; text = text; styp = styp}
   | ASopt loc s ->
       let s = symbol_of_a s in
       if quotify.val then ssopt loc s
@@ -842,11 +930,6 @@ value rec symbol_of_a =
        styp = STquo loc t}
   | ASself loc ->
       {used = []; text = TXself loc; styp = STself loc "SELF"}
-  | ASterm loc (i, n) lev ->
-      let name = mk_name2 (i, n) in
-      let text = TXnterm loc name lev in
-      let styp = STquo loc i in
-      {used = [i]; text = text; styp = styp}
   | AStok loc s p ->
       if quotify.val then
         match p with
@@ -862,8 +945,24 @@ value rec symbol_of_a =
         {used = []; text = text; styp = STlid loc "string"}
   | ASvala loc s ls ->
       if quotify.val then
-        let s = symbol_of_a s in
-        ss2_of_ss loc ls s
+        match s with
+        [ ASflag loc s ->
+            let s = symbol_of_a s in
+            ssflag2 loc ls s
+        | ASlist loc min s sep ->
+            let s = symbol_of_a s in
+            let sep = option_map symbol_of_a sep in
+            sslist2 loc ls min sep s
+        | ASnterm loc (i, n) lev ->
+            ssnterm2 loc ls (i, n) lev
+        | ASopt loc s ->
+            let s = symbol_of_a s in
+            ssopt2 loc ls s
+        | AStok loc s p ->
+            let p = option_map string_of_a p in
+            sstoken2 loc ls s p
+        | _ ->
+            Ploc.raise loc (Failure "not impl ASvala") ]
       else
         let s = symbol_of_a s in
         let (text, styp) =
@@ -875,14 +974,14 @@ value rec symbol_of_a =
       match s with
       [ ASflag loc s ->
           let s = symbol_of_a s in
-          ss2_of_ss loc [] (ssflag loc s)
+          ssflag2 loc ls s
       | ASlist loc min s sep ->
           let s = symbol_of_a s in
           let sep = option_map symbol_of_a sep in
-          ss2_of_ss loc [] (sslist loc min sep s)
+          sslist2 loc ls min sep s
       | ASopt loc s ->
           let s = symbol_of_a s in
-          ss2_of_ss loc [] (ssopt loc s)
+          ssopt2 loc ls s
       | _ -> Ploc.raise loc (Failure "not impl ASvala2") ] ]
 and psymbol_of_a ap =
   {pattern = ap.ap_patt; symbol = symbol_of_a ap.ap_symb}
@@ -1138,7 +1237,7 @@ EXTEND
           {ap_loc = loc; ap_patt = Some <:patt< $lid:p$ >>; ap_symb = s}
       | i = LIDENT; lev = OPT [ UIDENT "LEVEL"; s = STRING -> s ] ->
           let n = <:expr< $lid:i$ >> in
-          {ap_loc = loc; ap_patt = None; ap_symb = ASterm loc (i, n) lev}
+          {ap_loc = loc; ap_patt = None; ap_symb = ASnterm loc (i, n) lev}
       | p = pattern; "="; s = symbol ->
           {ap_loc = loc; ap_patt = Some p; ap_symb = s}
       | s = symbol ->
@@ -1178,9 +1277,9 @@ EXTEND
       | i = UIDENT; "."; e = qualid;
         lev = OPT [ UIDENT "LEVEL"; s = STRING -> s ] ->
           let v = <:expr< $uid:i$.$snd e$ >> in
-          ASterm loc (fst e, v) lev
+          ASnterm loc (fst e, v) lev
       | n = name; lev = OPT [ UIDENT "LEVEL"; s = STRING -> s ] ->
-          ASterm loc n lev
+          ASnterm loc n lev
       | "("; s_t = SELF; ")" -> s_t ] ]
   ;
   pattern:
