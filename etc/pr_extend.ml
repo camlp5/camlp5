@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extend.ml,v 1.41 2007/09/20 03:26:28 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.42 2007/09/21 12:17:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -396,7 +396,8 @@ and simple_symbol pc sy =
                   aft = sprintf " ]%s" pc.aft}
                  rl) ]
   | Stoken (Left ("", _) | Left (_, "")) -> symbol pc sy
-  | Snterml _ _ | Slist0 _ | Slist0sep _ _ | Slist1 _ | Slist1sep _ _ ->
+  | Snterml _ _ | Slist0 _ | Slist0sep _ _ | Slist1 _ | Slist1sep _ _ |
+    Sflag _ | Sopt _ ->
       symbol
         {(pc) with bef = sprintf "%s(" pc.bef; aft = sprintf ")%s" pc.aft}
         sy
@@ -427,24 +428,9 @@ and s_symbol pc =
       sprintf "%sSOPT %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
   | Sflag sy ->
       sprintf "%sSFLAG %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
-  | Svala (Sflag sy) ->
-      sprintf "%sSV FLAG %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
-  | Svala (Sopt sy) ->
-      sprintf "%sSV OPT %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
-  | Svala (Slist0 sy) ->
-      sprintf "%sSV LIST0 %s" pc.bef
-        (simple_symbol {(pc) with bef = ""; aft = ""} sy)
-  | Svala (Slist0sep sy sep) ->
-      sprintf "%sSV LIST0 %s SEP %s" pc.bef
-        (simple_symbol {(pc) with bef = ""; aft = ""} sy)
-        (simple_symbol {(pc) with bef = ""} sep)
-  | Svala (Slist1 sy) ->
-      sprintf "%sSV LIST1 %s" pc.bef
-        (simple_symbol {(pc) with bef = ""; aft = ""} sy)
-  | Svala (Slist1sep sy sep) ->
-      sprintf "%sSV LIST1 %s SEP %s" pc.bef
-        (simple_symbol {(pc) with bef = ""; aft = ""} sy)
-        (simple_symbol {(pc) with bef = ""} sep)
+  | Svala s ->
+      sprintf "%sSV %s%s" pc.bef
+        (simple_symbol {(pc) with bef = ""; aft= ""} s) pc.aft
   | _ -> assert False ]
 and check_slist rl =
   if no_slist.val then None

@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo *)
-(* $Id: pa_extend_m.ml,v 1.26 2007/09/21 01:01:47 deraugla Exp $ *)
+(* $Id: pa_extend_m.ml,v 1.27 2007/09/21 12:17:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pa_extend;
@@ -16,9 +16,14 @@ EXTEND
       | UIDENT "SOPT"; s = SELF ->
           ASquot loc (ASopt loc s)
       | UIDENT "SFLAG"; s = SELF ->
-          ASquot loc (ASflag loc s)
-
-      | UIDENT "SV"; UIDENT "LIST0"; s = SELF;
+          ASquot loc (ASflag loc s) ] ]
+  ;
+  symbol: LEVEL "vala"
+    [ [ UIDENT "SV"; s = NEXT ->
+          ASvala2 loc s [] ] ]
+  ;
+(*
+    [ [ UIDENT "SV"; UIDENT "LIST0"; s = SELF;
         sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
           ASvala2 loc (ASlist loc False s sep) []
       | UIDENT "SV"; UIDENT "LIST1"; s = SELF;
@@ -31,4 +36,5 @@ EXTEND
       | UIDENT "SV"; s = UIDENT ->
           ASvala2 loc (AStok loc s None) [] ] ]
   ;
+*)
 END;
