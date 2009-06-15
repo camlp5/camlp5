@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.47 2007/07/06 02:49:43 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.48 2007/07/06 02:58:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -2560,10 +2560,6 @@ Pcaml.add_option "-sep" (Arg.String (fun x -> sep.val := Some x))
 
 Pcaml.add_option "-ss" (Arg.Set flag_semi_semi)
   "Print double semicolons (equivalent to -flag M).";
-
-(* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.47 2007/07/06 02:49:43 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
 
