@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.25 2007/10/04 15:04:07 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.26 2007/10/05 00:47:42 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -397,6 +397,9 @@
       (let ((s (mod_ident_se se))) <:str_item< open $s$ >>))
      ((Sexpr loc [(Slid _ "type") . sel])
       (let ((tdl (type_declaration_list_se sel)))
+         <:str_item< type $list:tdl$ >>))
+     ((Sexpr loc [(Slid _ "type*") . sel])
+      (let ((tdl (List.map type_declaration_se sel)))
          <:str_item< type $list:tdl$ >>))
      ((Sexpr loc [(Slid _ "exception") (Suid _ c) . sel])
       (let* ((c (Pcaml.rename_id.val c))
@@ -807,6 +810,21 @@
     ((Sexpr loc []) (Left <:patt< () >>))
     ((Sexpr loc [se . sel]) (Right (values se sel)))
     (se (error se "ipatt"))))
+  (type_declaration_se
+   (lambda_match
+    ((Sexpr loc [se1 se2])
+     (let (((values n1 loc1 tpl)
+            (match se1
+                   ((Sexpr _ [(Slid loc n) . sel])
+                    (values n loc (List.map type_parameter_se sel)))
+                   ((Slid loc n)
+                    (values n loc []))
+                   ((se)
+                    (error se "type declaration")))))
+       {(MLast.tdNam (values loc1 <:vala< n1 >>))
+        (MLast.tdPrm <:vala< tpl >>) (MLast.tdPrv <:vala< False >>)
+        (MLast.tdDef (ctyp_se se2)) (MLast.tdCon <:vala< [] >>)}))
+    (se (error se "type_declaration"))))
   (type_declaration_list_se
    (lambda_match
     ([se1 se2 . sel]

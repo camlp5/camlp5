@@ -71,38 +71,91 @@ value type_param pc (s, vari) =
   sprintf "%s'%s%s" pc.bef (Pcaml.unvala s) pc.aft
 ;
 
-value type_decl pc td =
-  plistbf 0
-    {(pc) with ind = pc.ind + 1; bef = sprintf "%s(type" pc.bef;
-     aft = sprintf ")%s" pc.aft}
-    [(fun pc ->
-        let n = Pcaml.unvala (snd td.MLast.tdNam) in
-        match Pcaml.unvala td.MLast.tdPrm with
-        [ [] -> sprintf "%s%s%s" pc.bef n pc.aft
-        | tp ->
-            let tp = List.map (fun t -> (t, "")) tp in
-            plistb type_param 0
-              {(pc) with ind = pc.ind + 1; bef = sprintf "%s(%s" pc.bef n;
-               aft = sprintf ")%s" pc.aft}
-              tp ],
-      "");
-     (fun pc -> ctyp pc td.MLast.tdDef, "")]
+value type_decl b pc td =
+  let n = Pcaml.unvala (snd td.MLast.tdNam) in
+  horiz_vertic
+    (fun () ->
+       sprintf "%s(%s%s %s)%s" pc.bef b
+         (match Pcaml.unvala td.MLast.tdPrm with
+          [ [] -> n
+          | tp ->
+              sprintf "(%s %s)" n
+                (hlist type_param {(pc) with bef = ""; aft = ""} tp) ])
+         (ctyp {(pc) with bef = ""; aft = ""} td.MLast.tdDef) pc.aft)
+    (fun () ->
+       let s1 =
+         sprintf "%s(%s%s" pc.bef b
+           (match Pcaml.unvala td.MLast.tdPrm with
+            [ [] -> n
+            | tp ->
+                sprintf "(%s %s)" n
+                  (hlist type_param {(pc) with bef = ""; aft = ""} tp) ])
+       in
+       let s2 =
+         ctyp
+           {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+            aft = sprintf ")%s" pc.aft}
+           td.MLast.tdDef
+       in
+       sprintf "%s\n%s" s1 s2)
 ;
 
-value type_decl2 pc td =
-  plistf 0 pc
-    [(fun pc ->
-        let n = Pcaml.unvala (snd td.MLast.tdNam) in
-        match Pcaml.unvala td.MLast.tdPrm with
-        [ [] -> sprintf "%s%s%s" pc.bef n pc.aft
-        | tp ->
-            let tp = List.map (fun t -> (t, "")) tp in
-            plistb type_param 0
-              {(pc) with ind = pc.ind + 1; bef = sprintf "%s(%s" pc.bef n;
-               aft = sprintf ")%s" pc.aft}
-              tp ],
-      "");
-     (fun pc -> ctyp pc td.MLast.tdDef, "")]
+value type_decl_list pc =
+  fun
+  [ [td] -> type_decl "type " pc td
+  | tdl ->
+      horiz_vertic
+        (fun () ->
+           sprintf "%s(type* %s)%s" pc.bef
+             (hlist (type_decl "") {(pc) with bef = ""; aft = ""} tdl)
+             pc.aft)
+        (fun () ->
+           let s1 = sprintf "%s(type*" pc.bef in
+           let s2 =
+             vlist (type_decl "")
+               {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+                aft = sprintf ")%s" pc.aft}
+               tdl
+           in
+           sprintf "%s\n%s" s1 s2) ]
+;
+
+value value_binding b pc (p, e) =
+  horiz_vertic
+    (fun () ->
+       sprintf "%s(%s%s %s)%s" pc.bef b
+         (patt {(pc) with bef = ""; aft = ""} p)
+         (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
+    (fun () ->
+       let s1 = patt {(pc) with bef = sprintf "%s(%s" pc.bef b; aft = ""} p in
+       let s2 =
+         expr
+           {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+            aft = sprintf ")%s" pc.aft}
+           e
+       in
+       sprintf "%s\n%s" s1 s2)
+;
+
+value value_binding_list pc (rf, pel) =
+  let b = if rf then "definerec" else "define" in
+  match pel with
+  [ [(p, e)] -> value_binding (b ^ " ") pc (p, e)
+  | _ ->
+      horiz_vertic
+        (fun () ->
+           sprintf "%s(%s* %s)%s" pc.bef b
+             (hlist (value_binding "") {(pc) with bef = ""; aft = ""} pel)
+             pc.aft)
+        (fun () ->
+           let s1 = sprintf "%s(%s*" pc.bef b in
+           let s2 =
+             vlist (value_binding "")
+               {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+                aft = sprintf ")%s" pc.aft}
+               pel
+           in
+           sprintf "%s\n%s" s1 s2) ]
 ;
 
 value let_binding pc (p1, e1) =
@@ -644,17 +697,7 @@ EXTEND_PRINTER
             (fun () ->
                not_impl "str_item open vertic" pc i)
       | <:str_item< type $list:tdl$ >> ->
-          match tdl with
-          [ [td] -> type_decl pc td
-          | tdl ->
-              let s1 = sprintf "%s(type" pc.bef in
-              let s2 =
-                vlist type_decl2
-                  {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
-                   aft = sprintf ")%s" pc.aft}
-                  tdl
-              in
-              sprintf "%s\n%s" s1 s2 ]
+          type_decl_list pc tdl
       | <:str_item< exception $uid:c$ of $list:tl$ >> ->
           plistbf 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(exception" pc.bef;
@@ -662,38 +705,7 @@ EXTEND_PRINTER
             [(fun pc -> sprintf "%s%s%s" pc.bef c pc.aft, "") ::
              List.map (fun t -> (fun pc -> ctyp pc t, "")) tl]
       | <:str_item< value $flag:rf$ $list:pel$ >> ->
-          let let_binding b pc (p, e) =
-            horiz_vertic
-              (fun () ->
-                 sprintf "%s(%s%s %s)%s" pc.bef b
-                   (patt {(pc) with bef = ""; aft = ""} p)
-                   (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
-              (fun () ->
-                 let s1 =
-                   patt {(pc) with bef = sprintf "%s(%s" pc.bef b; aft = ""}
-                     p
-                 in
-                 let s2 =
-                   expr
-                     {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                      aft = sprintf ")%s" pc.aft}
-                     e
-                 in
-                 sprintf "%s\n%s" s1 s2)
-          in
-          let b = if rf then "definerec" else "define" in
-          match pel with
-          [ [(p, e)] -> let_binding (b ^ " ") pc (p, e)
-          | _ ->
-              let s1 = sprintf "%s(%s*" pc.bef b in
-              let s2 =
-                let pc =
-                  {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                   aft = sprintf ")%s" pc.aft}
-                in
-                vlist (let_binding "") pc pel
-              in
-              sprintf "%s\n%s" s1 s2 ]
+          value_binding_list pc (rf, pel)
       | <:str_item< module $uid:s$ = $me$ >> ->
           plistbf 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(module" pc.bef;
@@ -735,9 +747,7 @@ EXTEND_PRINTER
   pr_sig_item:
     [ "top"
       [ <:sig_item< type $list:tdl$ >> ->
-          match tdl with
-          [ [td] -> type_decl pc td
-          | tdl -> not_impl "str_item type" pc 0 ]
+          type_decl_list pc tdl
 (*
       | <:sig_item< exception $uid:c$ of $list:tl$ >> ->
           fun ppf curr next dg k ->

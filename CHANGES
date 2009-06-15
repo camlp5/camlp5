@@ -1,6 +1,8 @@
 Camlp5 Version 5.01:
 ---------------------
 
+* [05 Oct 07] In Scheme syntax (pa_scheme.cmo), added "type*" symmetric
+  to "define*".
 * [04 Oct 07] Added flag C in pr_r.cmo and pr_o.cmo to add comments inside
   phrases (default = True).
 * [01 Oct 07] Added flag E in pr_r.cmo and pr_o.cmo to ask to equilibrate

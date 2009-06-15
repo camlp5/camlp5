@@ -414,6 +414,9 @@ and str_item_se se =
   | Sexpr loc [Slid _ "type" :: sel] ->
       let tdl = type_declaration_list_se sel in
       <:str_item< type $list:tdl$ >>
+  | Sexpr loc [Slid _ "type*" :: sel] ->
+      let tdl = List.map type_declaration_se sel in
+      <:str_item< type $list:tdl$ >>
   | Sexpr loc [Slid _ "exception"; Suid _ c :: sel] ->
       let c = Pcaml.rename_id.val c in
       let tl = List.map ctyp_se sel in
@@ -846,6 +849,20 @@ and ipatt_opt_se =
   | Sexpr loc [] -> Left <:patt< () >>
   | Sexpr loc [se :: sel] -> Right (se, sel)
   | se -> error se "ipatt" ]
+and type_declaration_se =
+  fun
+  [ Sexpr loc [se1; se2] ->
+      let (n1, loc1, tpl) =
+        match se1 with
+        [ Sexpr _ [Slid loc n :: sel] ->
+            (n, loc, List.map type_parameter_se sel)
+        | Slid loc n -> (n, loc, [])
+        | se -> error se "type declaration" ]
+      in
+      {MLast.tdNam = (loc1, <:vala< n1 >>); MLast.tdPrm = <:vala< tpl >>;
+       MLast.tdPrv = <:vala< False >>; MLast.tdDef = ctyp_se se2;
+       MLast.tdCon = <:vala< [] >>}
+  | se -> error se "type_declaration" ]
 and type_declaration_list_se =
   fun
   [ [se1; se2 :: sel] ->
