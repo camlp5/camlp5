@@ -369,6 +369,8 @@ Grammar.extend
      grammar_entry_create "cons_patt_opt"
    and label_patt : 'label_patt Grammar.Entry.e =
      grammar_entry_create "label_patt"
+   and patt_label_ident : 'patt_label_ident Grammar.Entry.e =
+     grammar_entry_create "patt_label_ident"
    and paren_ipatt : 'paren_ipatt Grammar.Entry.e =
      grammar_entry_create "paren_ipatt"
    and label_ipatt : 'label_ipatt Grammar.Entry.e =
@@ -426,9 +428,6 @@ Grammar.extend
    and eq_expr : 'eq_expr Grammar.Entry.e = grammar_entry_create "eq_expr"
    and direction_flag : 'direction_flag Grammar.Entry.e =
      grammar_entry_create "direction_flag"
-   and patt_label_ident : 'patt_label_ident Grammar.Entry.e =
-     (* Antiquotations for local entries *)
-     grammar_entry_create "patt_label_ident"
    and a_ti : 'a_ti Grammar.Entry.e = grammar_entry_create "a_ti"
    and a_tic : 'a_tic Grammar.Entry.e = grammar_entry_create "a_tic"
    and a_qi : 'a_qi Grammar.Entry.e = grammar_entry_create "a_qi"
@@ -5906,13 +5905,6 @@ Grammar.extend
       [Gramext.Stoken ("", "to")],
       Gramext.action
         (fun _ (loc : Ploc.t) -> (Qast.Bool true : 'direction_flag))]];
-    Grammar.Entry.obj (patt_label_ident : 'patt_label_ident Grammar.Entry.e),
-    Some (Gramext.Level "simple"),
-    [None, None,
-     [[Gramext.Stoken ("ANTIQUOT", "")],
-      Gramext.action
-        (fun (a : string) (loc : Ploc.t) ->
-           (Qast.VaAnt ("", loc, a) : 'patt_label_ident))]];
     Grammar.Entry.obj (a_ti : 'a_ti Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "~"); Gramext.Stoken ("ANTIQUOT", "")],
