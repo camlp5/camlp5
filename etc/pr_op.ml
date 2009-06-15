@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_op.ml,v 1.17 2007/11/23 18:24:16 deraugla Exp $ *)
+(* $Id: pr_op.ml,v 1.18 2007/12/14 20:27:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Parserify;
@@ -15,8 +15,8 @@ value not_impl name pc x =
       "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
     else "int_val = " ^ string_of_int (Obj.magic x)
   in
-  sprintf "%s\"pr_op_main, not impl: %s; %s\"%s" pc.bef name
-    (String.escaped desc) pc.aft
+  sprintf "%s\"pr_op, not impl: %s; %s\"%s" pc.bef name (String.escaped desc)
+    pc.aft
 ;
 
 value expr = Eprinter.apply pr_expr;
