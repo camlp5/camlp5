@@ -664,21 +664,28 @@ value lr0 entry lev = do {
         (rl, name_of_entry entry lev)
       ELSE
         let rl =
-(**)
+(*
           [("E", [GS_term "1"; GS_nterm "E"]);
            ("E", [GS_term "1"])]
+*)
 (*
+          [("E", [GS_nterm "A"; GS_term "1"]);
+           ("E", [GS_nterm "B"; GS_term "2"]);
+           ("A", [GS_term "1"]);
+           ("B", [GS_term "1"])]
+*)
+(**)
           [("E", [GS_nterm "E"; GS_term "*"; GS_nterm "B"]);
            ("E", [GS_nterm "E"; GS_term "+"; GS_nterm "B"]);
            ("E", [GS_nterm "B"]);
            ("B", [GS_term "0"]);
            ("B", [GS_term "1"])]
-*)
+(**)
         in
         (rl, "E")
       END
     in
-    let rl = [("S", [GS_nterm entry_name]) :: rl] in
+    let rl = [("S", [GS_nterm entry_name; GS_term "$"]) :: rl] in
     let term_ht = Hashtbl.create 1 in
     let nterm_ht = Hashtbl.create 1 in
     let (rrl, term_cnt, nterm_cnt) =
@@ -782,9 +789,10 @@ value lr0 entry lev = do {
 
   let nterm_derive_eps_tab = make_derive_eps_tab rules nb_nterms in
   Printf.eprintf "\nDerive ε\n\n";
+  Printf.eprintf " ";
   Array.iteri
     (fun i derive_eps ->
-       if derive_eps then Printf.eprintf "  %s" (nterm_n i) else ())
+       if derive_eps then Printf.eprintf " %s" (nterm_n i) else ())
     nterm_derive_eps_tab;
   flush stderr;
 
@@ -845,10 +853,9 @@ value lr0 entry lev = do {
     };
   flush stderr;
   (* make action table *)
-  (* size = number of terminals plus one for the 'end of input' *)
+  (* column size = number of terminals *)
   let action_table =
-    Array.init (item_set_cnt + 1)
-      (fun _ -> Array.create (nb_terms + 1) ActErr)
+    Array.init (item_set_cnt + 1) (fun _ -> Array.create nb_terms ActErr)
   in
   (* the columns for the terminals are copied to the action table as shift
      actions *)
@@ -862,14 +869,15 @@ value lr0 entry lev = do {
             | GS_nterm s -> () ])
          symb_cnt_assoc)
     shift_assoc;
-  (* an extra column for '$' (end of input) is added to the action table
-     that contains acc for every item set that contains S → w • *)
+  (* for every item set that contains S → w •, an 'acc' is added in the
+     column of the '$' terminal (end of input) *)
+  let eoi_pos = 0 in
   Hashtbl.iter
     (fun item_set n ->
        List.iter
          (fun (_, _, lh, dot, rh) ->
             if nterm_n lh = "S" && dot = List.length rh then
-              action_table.(n).(nb_terms) := ActAcc
+              action_table.(n).(eoi_pos) := ActAcc
             else ())
          item_set)
     item_set_ht;
@@ -892,9 +900,9 @@ value lr0 entry lev = do {
                       "State %d: conflict reduce/reduce rules %d and %d\n"
                       i m1 m;
                     Printf.eprintf "  reduce with rule ";
-                    eprint_rule term_n nterm_n m rules.(m); 
-                    Printf.eprintf "  reduce with rule ";
                     eprint_rule term_n nterm_n m1 rules.(m1); 
+                    Printf.eprintf "  reduce with rule ";
+                    eprint_rule term_n nterm_n m rules.(m); 
                     flush stderr;
                   }
                 | _ ->
