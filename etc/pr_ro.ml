@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.62 2007/12/13 01:53:45 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.63 2007/12/13 02:49:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -202,20 +202,8 @@ value class_object pc (csp, csl) =
 ;
 
 value sig_method_or_method_virtual pc virt priv s t =
-  horiz_vertic
-    (fun () ->
-       sprintf "%smethod%s%s %s : %s%s" pc.bef virt
-         (if priv then " private" else "") s
-         (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-    (fun () ->
-       let s1 =
-         sprintf "%smethod%s%s %s :" pc.bef virt
-           (if priv then " private" else "") s
-       in
-       let s2 =
-         ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t
-       in
-       sprintf "%s\n%s" s1 s2)
+  pprintf pc "method%s%s %s :@;%p" virt (if priv then " private" else "") s
+    ctyp t
 ;
 
 (* *)
@@ -223,18 +211,11 @@ value sig_method_or_method_virtual pc virt priv s t =
 EXTEND_PRINTER
   pr_patt: LEVEL "simple"
     [ [ <:patt< ?$s$ >> ->
-          sprintf "%s?%s%s" pc.bef s pc.aft
+          pprintf pc "?%s" s
       | <:patt< ? ($p$ $opt:eo$) >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s?(%s%s)%s" pc.bef
-                 (patt_tcon {(pc) with bef = ""; aft = ""} p)
-                 (match eo with
-                  [ Some e ->
-                      sprintf " = %s" (expr {(pc) with bef = ""; aft = ""} e)
-                  | None -> "" ])
-                 pc.aft)
-            (fun () -> not_impl "patt ?(p=e) vertic" pc p)
+          match eo with
+          [ Some e -> pprintf pc "?(%p =@;%p)" patt_tcon p expr e
+          | None -> pprintf pc "?(%p)" patt_tcon p ]
       | <:patt< ?$i$: ($p$ $opt:eo$) >> ->
           horiz_vertic
             (fun () ->
