@@ -1,12 +1,16 @@
 #!/bin/bash
-# $Id: configure,v 1.18 2007/09/07 11:49:03 deraugla Exp $
+# $Id: configure,v 1.19 2007/09/18 19:03:13 deraugla Exp $
 
 prefix=''
 bindir=''
 libdir=''
 mandir=''
-mode=T
+mode=
 name=camlp5
+
+if [ -f myconfig ]; then
+  . ./myconfig
+fi
 
 # a local which command for sh
 which () {
@@ -44,6 +48,19 @@ while : ; do
   esac
   shift
 done
+
+if [ "$mode" = "T" -o "$mode" = "S" ]; then
+  :
+else
+  echo 1>&2
+  echo "Launch \"configure\" with the mode you want:" 1>&2
+  echo "   --transitional" 1>&2
+  echo "   --strict" 1>&2
+  echo 1>&2
+  exit 2
+fi
+
+echo "mode=$mode" > myconfig
 
 # Sanity checks
 
