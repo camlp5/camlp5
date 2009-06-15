@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ocpp.ml,v 1.5 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: ocpp.ml,v 1.6 2007/07/12 01:37:33 deraugla Exp $ *)
 
 value buff = ref (String.create 80);
 value store len x =
@@ -47,23 +47,21 @@ and inside_locate cs =
 ;
 
 value quot name pos str =
+  let loc = Stdpp.make_loc (pos, pos + String.length str) in
   let exp =
     try
       match Quotation.find name with
       [ Quotation.ExStr f -> f
       | _ -> raise Not_found ]
     with
-    [ Not_found ->
-        Stdpp.raise_with_loc (Stdpp.make_loc (pos, pos + String.length str))
-          Not_found ]
+    [ Not_found -> Stdpp.raise_with_loc loc Not_found ]
   in
   let new_str =
     try exp True str with
-    [ Stdpp.Exc_located loc exc ->
-        Stdpp.raise_with_loc (Stdpp.shift_loc pos loc) exc
+    [ Stdpp.Exc_located _ exc ->
+        Stdpp.raise_with_loc loc exc
     | exc ->
-        Stdpp.raise_with_loc (Stdpp.make_loc (pos, pos + String.length str))
-          exc ]
+        Stdpp.raise_with_loc loc exc ]
   in
   let cs = Stream.of_string new_str in copy_strip_locate cs
 ;

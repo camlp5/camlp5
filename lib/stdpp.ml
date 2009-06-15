@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: stdpp.ml,v 1.14 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: stdpp.ml,v 1.15 2007/07/12 01:37:33 deraugla Exp $ *)
 
 (* Two implementations of "locations" are available; both work. The
    following one is more recent. They are represented as "record",
@@ -45,29 +45,6 @@ value sub_loc loc sh len =
 value after_loc loc sh len =
   {(loc) with bp = loc.ep + sh; ep = loc.ep + sh + len}
 ;
-
-value line_of_loc fname loc =
-  (fname, loc.line_nb, loc.bp - loc.bol_pos, loc.ep - loc.bol_pos)
-;
-
-(* Old implementation of type "location" as a couple of source positions.
-   Still working if needed. Locations of characters in lines are a little
-   bit different (shifted by one: the first column is 0). *)
-
-(*
-type location = (int * int);
-
-value dummy_loc = (0, 0);
-value make_loc x = x;
-value first_pos = fst;
-value last_pos = snd;
-value make_lined_loc line_nb bol_pos x = x;
-value line_nb _ = -1;
-value bol_pos _ = -1;
-value encl_loc (bp1, ep1) (bp2, ep2) = (min bp1 bp2, max ep1 ep2);
-value shift_loc sh (bp, ep) = (sh + bp, sh + ep);
-value sub_loc (bp, _) sh len = (bp + sh, bp + sh + len);
-value after_loc (_, ep) sh len = (ep + sh, ep + sh + len);
 
 value line_of_loc fname loc =
   let (bp, ep) = (first_pos loc, last_pos loc) in
@@ -125,6 +102,25 @@ value line_of_loc fname loc =
   with
   [ Sys_error _ -> (fname, 1, bp, ep) ]
 ;
+
+(* Old implementation of type "location" as a couple of source positions.
+   Still working if needed. Locations of characters in lines are a little
+   bit different (shifted by one: the first column is 0). *)
+
+(*
+type location = (int * int);
+
+value dummy_loc = (0, 0);
+value make_loc x = x;
+value first_pos = fst;
+value last_pos = snd;
+value make_lined_loc line_nb bol_pos x = x;
+value line_nb _ = -1;
+value bol_pos _ = -1;
+value encl_loc (bp1, ep1) (bp2, ep2) = (min bp1 bp2, max ep1 ep2);
+value shift_loc sh (bp, ep) = (sh + bp, sh + ep);
+value sub_loc (bp, _) sh len = (bp + sh, bp + sh + len);
+value after_loc (_, ep) sh len = (ep + sh, ep + sh + len);
 *)
 
 exception Exc_located of location and exn;
