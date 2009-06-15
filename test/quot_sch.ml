@@ -154,26 +154,26 @@
 <:ctyp< { $_list:llsbt$ } >>
 <:ctyp< (sum $list:llslt$) >>
 <:ctyp< (sum $_list:llslt$) >>
-; <:ctyp< ( $list:lt$ ) >>
-; <:ctyp< ( $_list:lt$ ) >>
-; <:ctyp< $uid:s$ >>
-; <:ctyp< $_uid:s$ >>
-; <:ctyp< [ = $list:lpv$ ] >>
-; <:ctyp< [ = $_list:lpv$ ] >>
-; <:ctyp< [ > $list:lpv$ ] >>
-; <:ctyp< [ > $_list:lpv$ ] >>
-; <:ctyp< [ < $list:lpv$ ] >>
-; <:ctyp< [ < $_list:lpv$ ] >>
-; <:ctyp< [ < $list:lpv$ > $list:ls$ ] >>
-; <:ctyp< [ < $_list:lpv$ > $_list:ls$ ] >>
-; <:str_item< class $list:lcd$ >>
-; <:str_item< class $_list:lcd$ >>
-; <:str_item< class type $list:lctd$ >>
-; <:str_item< class type $_list:lctd$ >>
-; <:str_item< declare $list:lstri$ end >>
-; <:str_item< declare $_list:lstri$ end >>
-; <:str_item< # $s$ >>
-; <:str_item< # $_:s$ >>
+<:ctyp< (* $list:lt$) >>
+<:ctyp< (* $_list:lt$) >>
+<:ctyp< $uid:s$ >>
+<:ctyp< $_uid:s$ >>
+(MLast.TyVrn loc (Ploc.VaVal lpv) None)
+(MLast.TyVrn loc lpv None)
+(MLast.TyVrn loc (Ploc.VaVal lpv) (Some None))
+(MLast.TyVrn loc lpv (Some None))
+(MLast.TyVrn loc (Ploc.VaVal lpv) (Some (Some (Ploc.VaVal []))))
+(MLast.TyVrn loc lpv (Some (Some (Ploc.VaVal []))))
+(MLast.TyVrn loc (Ploc.VaVal lpv) (Some (Some (Ploc.VaVal ls))))
+(MLast.TyVrn loc lpv (Some (Some ls)))
+(MLast.StCls loc (Ploc.VaVal lcd))
+(MLast.StCls loc lcd)
+(MLast.StClt loc (Ploc.VaVal lctd))
+(MLast.StClt loc lctd)
+(MLast.StDcl loc (Ploc.VaVal lstri))
+(MLast.StDcl loc lstri)
+<:str_item< (# $lid:s$) >>
+<:str_item< (# $_lid:s$) >>
 ; <:str_item< # $s$ $e$ >>
 ; <:str_item< # $_:s$ $e$ >>
 ; <:str_item< # $s$ $opt:oe$ >>

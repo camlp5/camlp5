@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.57 2007/10/08 09:45:38 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.58 2007/10/08 11:01:09 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -500,6 +500,14 @@
       (let* ((s (rename_id s))
              (mt (module_type_se se)))
          <:str_item< module type $uid:s$ = $mt$ >>))
+     ((Sexpr loc [(Slid _ "#") se1])
+      (match se1
+       ((Slid _ s) (let ((s (rename_id s))) <:str_item< # $lid:s$ >>))
+       ((Slidv _ s) <:str_item< # $_lid:s$ >>)
+       (_
+        (let* ((loc (loc_of_sexpr se))
+               (e (expr_se se)))
+           <:str_item< $exp:e$ >>))))
      ((Sexpr loc [(Slid _ "#") (Slid _ s) se])
       (let* ((s (rename_id s))
              (e (expr_se se)))
@@ -1063,7 +1071,11 @@
             (t2 (ctyp_se se2)))
        <:ctyp< ($t1$ as $t2$) >>))
     ((Sexpr loc [(Slid _ "*") . sel])
-     (let ((tl (List.map ctyp_se sel))) <:ctyp< ($list:tl$) >>))
+     (let ((tl
+            (match sel
+             ([(Santi _ (or "list" "_list") s)] <:vala< $s$ >>)
+             (_ <:vala< (List.map ctyp_se sel) >>))))
+        <:ctyp< ($_list:tl$) >>))
     ((Sexpr loc [(Slid _ "==") se1 se2])
      (let* ((t1 (ctyp_se se1)) (t2 (ctyp_se se2))) <:ctyp< $t1$ == $t2$ >>))
     ((Sexpr loc [(Sqid _ s) se])
@@ -1088,6 +1100,7 @@
          <:ctyp< $lid:(rename_id s)$ >>))
     ((Slidv loc s) <:ctyp< $_lid:s$ >>)
     ((Suid loc s) <:ctyp< $uid:(rename_id s)$ >>)
+    ((Suidv loc s) <:ctyp< $_uid:s$ >>)
     ((Santi loc "" s) <:ctyp< $xtr:s$ >>)
     (se (error se "ctyp"))))
   (object_field_list_se

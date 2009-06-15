@@ -525,6 +525,16 @@ and str_item_se se =
       let s = rename_id s in
       let mt = module_type_se se in
       <:str_item< module type $uid:s$ = $mt$ >>
+  | Sexpr loc [Slid _ "#"; se1] ->
+      match se1 with
+      [ Slid _ s ->
+          let s = rename_id s in
+          <:str_item< # $lid:s$ >>
+      | Slidv _ s -> <:str_item< # $_lid:s$ >>
+      | _ ->
+          let loc = loc_of_sexpr se in
+          let e = expr_se se in
+          <:str_item< $exp:e$ >> ]
   | Sexpr loc [Slid _ "#"; Slid _ s; se] ->
       let s = rename_id s in
       let e = expr_se se in
@@ -1129,8 +1139,12 @@ and ctyp_se =
       let t2 = ctyp_se se2 in
       <:ctyp< ($t1$ as $t2$) >>
   | Sexpr loc [Slid _ "*" :: sel] ->
-      let tl = List.map ctyp_se sel in
-      <:ctyp< ($list:tl$) >>
+      let tl =
+        match sel with
+        [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
+        | _ -> <:vala< (List.map ctyp_se sel) >> ]
+      in
+      <:ctyp< ($_list:tl$) >>
   | Sexpr loc [Slid _ "=="; se1; se2] ->
       let t1 = ctyp_se se1 in
       let t2 = ctyp_se se2 in
@@ -1165,6 +1179,7 @@ and ctyp_se =
       else <:ctyp< $lid:(rename_id s)$ >>
   | Slidv loc s -> <:ctyp< $_lid:s$ >>
   | Suid loc s -> <:ctyp< $uid:(rename_id s)$ >>
+  | Suidv loc s -> <:ctyp< $_uid:s$ >>
   | Santi loc "" s -> <:ctyp< $xtr:s$ >>
   | se -> error se "ctyp" ]
 and object_field_list_se =
