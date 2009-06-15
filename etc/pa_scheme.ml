@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.44 2007/10/07 01:31:00 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.45 2007/10/07 02:28:12 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -152,6 +152,28 @@
     (values "CHAR" (Buff.get len)))
    (((` x) s) (char_or_quote_id x s))))
 
+(definerec (antiquot_rest bp len)
+ (parser
+  (((` '$')) len)
+  (((` x) (len (antiquot_rest bp len))) len)
+  (() ep
+   (Ploc.raise (Ploc.make_unlined (values bp ep))
+    (Failure "antiquotation not terminated")))))
+
+(define (antiloc s) (^ "0,0:" s))
+
+(definerec (antiquot_loc bp len)
+ (parser
+  (((` '$')) (antiloc (^ ":" (Buff.get len))))
+  (((` (as (or (range 'a' 'z') (range 'A' 'Z') (range '0' '9') '_') c))
+    (r (antiquot_loc bp (Buff.store len c))))
+   r)
+  (((` ':') (len (antiquot_rest bp len))) (antiloc (Buff.get len)))
+  (((` x) (len (antiquot_rest bp len))) (antiloc (^ ":" (Buff.get len))))
+  (() ep
+   (Ploc.raise (Ploc.make_unlined (values bp ep))
+    (Failure "antiquotation not terminated")))))
+
 (definerec*
   ((lexer kwt)
     (parser bp
@@ -183,6 +205,7 @@
        (len (operator len)))
       ep
       (values (identifier kwt (Buff.get len)) (values bp ep)))
+     (((` '$') (tok (dollar bp kwt))) ep (values tok (values bp ep)))
      (((` x) (len (ident (Buff.store 0 x)))) ep
       (values (identifier kwt (Buff.get len)) (values bp ep)))
      (() (values (values "EOI" "") (values bp (+ bp 1))))))
@@ -190,6 +213,11 @@
     (parser
      (((` '.')) ep (values (values "SPACEDOT" "") (values (- ep 1) ep)))
      (((x (lexer kwt))) x)))
+  ((dollar bp kwt strm)
+   (if Plexer.force_antiquot_loc.val
+    (values "ANTIQUOT_LOC" (antiquot_loc bp 0 strm))
+    (match_with_parser strm
+     (((len (ident (Buff.store 0 '$')))) (identifier kwt (Buff.get len))))))
   (tilde
     (parser
      (((` (as (range 'a' 'z') c)) (len (ident (Buff.store 0 c))))

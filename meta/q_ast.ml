@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: q_ast.ml,v 1.100 2007/09/24 08:34:40 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.101 2007/10/07 02:28:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* AST quotations with works by running the language parser (and its possible
@@ -536,7 +536,7 @@ module Meta_E =
        value record lfe = <:expr< {$list:lfe$} >>;
        value xtr loc s =
          match get_anti_loc s with
-         [ Some (loc, typ, str) ->
+         [ Some (_, typ, str) ->
              match typ with
              [ "" ->
                  let (loc, r) = eval_anti Pcaml.expr_eoi loc "" str in
@@ -546,7 +546,7 @@ module Meta_E =
        ;
        value xtr_or_anti loc f s =
          match get_anti_loc s with
-         [ Some (loc, typ, str) ->
+         [ Some (_, typ, str) ->
              match typ with
              [ "" | "exp" ->
                  let (loc, r) = eval_anti Pcaml.expr_eoi loc typ str in
@@ -606,7 +606,7 @@ module Meta_P =
        value record lfp = <:patt< {$list:lfp$} >>;
        value xtr loc s =
          match get_anti_loc s with
-         [ Some (loc, typ, str) ->
+         [ Some (_, typ, str) ->
              match typ with
              [ "" ->
                  let (loc, r) = eval_anti Pcaml.patt_eoi loc "" str in
@@ -616,7 +616,7 @@ module Meta_P =
        ;
        value xtr_or_anti loc f s =
          match get_anti_loc s with
-         [ Some (loc, typ, str) ->
+         [ Some (_, typ, str) ->
              match typ with
              [ "" | "exp" ->
                  let (loc, r) = eval_anti Pcaml.patt_eoi loc "exp" str in

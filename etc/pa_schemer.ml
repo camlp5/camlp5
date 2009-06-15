@@ -172,6 +172,30 @@ value quote =
   | [: `x; s :] -> char_or_quote_id x s ]
 ;
 
+value rec antiquot_rest bp len =
+  parser
+  [ [: `'$' :] -> len
+  | [: `x; len = antiquot_rest bp len :] -> len
+  | [: :] ep ->
+      Ploc.raise (Ploc.make_unlined (bp, ep))
+        (Failure "antiquotation not terminated") ]
+;
+
+value antiloc s = "0,0:" ^ s;
+
+value rec antiquot_loc bp len =
+  parser
+  [ [: `'$' :] -> antiloc (":" ^ Buff.get len)
+  | [: `('a'..'z' | 'A'..'Z' | '0'..'9' | '_' as c);
+       r = antiquot_loc bp (Buff.store len c) :] ->
+      r
+  | [: `':'; len = antiquot_rest bp len :] -> antiloc (Buff.get len)
+  | [: `x; len = antiquot_rest bp len :] -> antiloc (":" ^ Buff.get len)
+  | [: :] ep ->
+      Ploc.raise (Ploc.make_unlined (bp, ep))
+        (Failure "antiquotation not terminated") ]
+;
+
 value rec lexer kwt =
   parser bp
   [ [: `'\t' | '\r'; s :] -> lexer kwt s
@@ -198,6 +222,7 @@ value rec lexer kwt =
   | [: `('+' | '*' | '/' as c); len = ident (Buff.store 0 c);
        len = operator len :] ep ->
       (identifier kwt (Buff.get len), (bp, ep))
+  | [: `'$'; tok = dollar bp kwt :] ep -> (tok, (bp, ep))
   | [: `x; len = ident (Buff.store 0 x) :] ep ->
       (identifier kwt (Buff.get len), (bp, ep))
   | [: :] -> (("EOI", ""), (bp, bp + 1)) ]
@@ -205,6 +230,12 @@ and after_space kwt =
   parser
   [ [: `'.' :] ep -> (("SPACEDOT", ""), (ep - 1, ep))
   | [: x = lexer kwt :] -> x ]
+and dollar bp kwt strm =
+  if Plexer.force_antiquot_loc.val then
+    ("ANTIQUOT_LOC", antiquot_loc bp 0 strm)
+  else
+    match strm with parser
+      [: len = ident (Buff.store 0 '$') :] -> identifier kwt (Buff.get len)
 and tilde =
   parser
   [ [: `('a'..'z' as c); len = ident (Buff.store 0 c) :] ->
