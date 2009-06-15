@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_op.ml,v 1.13 2007/09/16 05:19:01 deraugla Exp $ *)
+(* $Id: pr_op.ml,v 1.14 2007/09/18 15:22:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Heuristic to rebuild parsers and streams from the AST *)
@@ -75,7 +75,7 @@ value rec contains_strm__ =
   fun
   [ <:expr< $e1$ $e2$ >> -> contains_strm__ e1 || contains_strm__ e2
   | <:expr< strm__ >> -> True
-  | <:expr< let $opt:_$ $list:pel$ in $e$ >> -> contains_strm__ e
+  | <:expr< let $flag:_$ $list:pel$ in $e$ >> -> contains_strm__ e
   | <:expr< try $e$ with [ $list:pel$ ] >> -> contains_strm__ e
   | <:expr< match $e$ with [ $list:pel$ ] >> -> contains_strm__ e
   | _ -> False ]

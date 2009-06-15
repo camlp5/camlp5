@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.43 2007/09/18 03:08:04 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.44 2007/09/18 15:22:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -143,7 +143,7 @@ value rec is_irrefut_patt =
   fun
   [ <:patt< $lid:_$ >> -> True
   | <:patt< ($p$ : $_$) >> -> is_irrefut_patt p
-  | <:patt< ~ $_$ >> -> True
+  | <:patt< ~$_$ >> -> True
   | _ -> False ]
 ;
 

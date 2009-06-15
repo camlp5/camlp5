@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.93 2007/09/18 03:08:04 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.94 2007/09/18 15:22:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -60,11 +60,11 @@ value rec is_irrefut_patt =
       List.for_all (fun (_, p) -> is_irrefut_patt p) fpl
   | <:patt< ($p$ : $_$) >> -> is_irrefut_patt p
   | <:patt< ($list:pl$) >> -> List.for_all is_irrefut_patt pl
-  | <:patt< ? $_$ : ($_$ = $_$) >> -> True
-  | <:patt< ? $_$ : ($_$) >> -> True
-  | <:patt< ? $_$ >> -> True
-  | <:patt< ~ $_$ >> -> True
-  | <:patt< ~ $_$ : $_$ >> -> True
+  | <:patt< ?$_$: ($_$ = $_$) >> -> True
+  | <:patt< ?$_$: ($_$) >> -> True
+  | <:patt< ?$_$ >> -> True
+  | <:patt< ~$_$ >> -> True
+  | <:patt< ~$_$: $_$ >> -> True
   | _ -> False ]
 ;
 

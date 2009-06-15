@@ -203,7 +203,7 @@ and str_item_se se =
       <:str_item< $exp:e$ >>
   | Sexpr loc [Satom _ Alid "module"; Satom _ Auid i; se] ->
       let mb = module_binding_se se in
-      <:str_item< module $i$ = $mb$ >>
+      <:str_item< module $uid:i$ = $mb$ >>
   | Sexpr loc [Satom _ Alid "open"; Satom _ Auid s] ->
       let s = [s] in
       <:str_item< open $s$ >>

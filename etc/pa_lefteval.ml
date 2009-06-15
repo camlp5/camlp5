@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: pa_lefteval.ml,v 1.9 2007/09/16 05:19:01 deraugla Exp $ *)
+(* $Id: pa_lefteval.ml,v 1.10 2007/09/18 15:22:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value not_impl name x =
@@ -158,7 +158,7 @@ value rec expr x =
       <:expr< match $expr e$ with [ $list:List.map match_assoc pwel$ ] >>
   | <:expr< try $e$ with [ $list:pwel$ ] >> ->
       <:expr< try $expr e$ with [ $list:List.map match_assoc pwel$ ] >>
-  | <:expr< let $opt:rf$ $list:pel$ in $e$ >> ->
+  | <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
       <:expr< let $opt:rf$ $list:List.map let_binding pel$ in $expr e$ >>
   | <:expr< let module $s$ = $me$ in $e$ >> ->
       <:expr< let module $s$ = $module_expr me$ in $expr e$ >>

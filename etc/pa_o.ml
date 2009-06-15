@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.54 2007/09/18 03:08:04 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.55 2007/09/18 15:22:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -347,7 +347,7 @@ EXTEND
   module_expr:
     [ [ "functor"; "("; i = UIDENT; ":"; t = module_type; ")"; "->";
         me = SELF ->
-          <:module_expr< functor ( $i$ : $t$ ) -> $me$ >>
+          <:module_expr< functor ( $uid:i$ : $t$ ) -> $me$ >>
       | "struct"; st = LIST0 [ s = str_item; OPT ";;" -> s ]; "end" ->
           <:module_expr< struct $list:st$ end >> ]
     | [ me1 = SELF; me2 = SELF -> <:module_expr< $me1$ $me2$ >> ]
@@ -366,13 +366,13 @@ EXTEND
       [ "exception"; (_, c, tl) = constructor_declaration; b = rebind_exn ->
           <:str_item< exception $auid:c$ of $alist:tl$ = $b$ >>
       | "external"; i = LIDENT; ":"; t = ctyp; "="; pd = LIST1 STRING ->
-          <:str_item< external $i$ : $t$ = $list:pd$ >>
+          <:str_item< external $lid:i$ : $t$ = $list:pd$ >>
       | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
         pd = LIST1 STRING ->
-          <:str_item< external $i$ : $t$ = $list:pd$ >>
+          <:str_item< external $lid:i$ : $t$ = $list:pd$ >>
       | "include"; me = module_expr -> <:str_item< include $me$ >>
-      | "module"; r = OPT "rec"; l = LIST1 mod_binding SEP "and" ->
-          <:str_item< module $opt:o2b r$ $list:l$ >>
+      | "module"; r = FLAG "rec"; l = LIST1 mod_binding SEP "and" ->
+          <:str_item< module $flag:r$ $list:l$ >>
       | "module"; "type"; i = UIDENT; "="; mt = module_type ->
           <:str_item< module type $i$ = $mt$ >>
       | "open"; i = mod_ident -> <:str_item< open $i$ >>

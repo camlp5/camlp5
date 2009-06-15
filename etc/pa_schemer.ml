@@ -342,7 +342,7 @@ value rec module_expr_se =
       let s = Pcaml.rename_id.val s in
       let mt = module_type_se se1 in
       let me = module_expr_se se2 in
-      <:module_expr< functor ($s$ : $mt$) -> $me$ >>
+      <:module_expr< functor ($uid:s$ : $mt$) -> $me$ >>
   | Sexpr loc [Slid _ "struct" :: sl] ->
       let mel = List.map str_item_se sl in
       <:module_expr< struct $list:mel$ end >>
