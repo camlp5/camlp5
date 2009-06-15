@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: revsynt.html,v 1.4 2007/07/19 11:39:24 deraugla Exp $ -->
+  <!-- $Id: revsynt.html,v 1.5 2007/07/19 13:27:11 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>revised syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -82,6 +82,30 @@
       <tr>
         <td><tt>e1; e2; e3; e4&nbsp;&nbsp;</tt></td>
         <td><tt>do { e1; e2; e3; e4 }</tt></td>
+      </tr>
+    </table>
+  </li>
+
+  <li>The "do" after the "while" loop and the "for" loop are followed
+    by a "{" and the loop end with "}"; it is possible to put a
+    semicolon after the last expression:
+
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>while e1 do</tt></td>
+        <td><tt>while e1 do {</tt></td>
+      </tr>
+      <tr>
+        <td><tt>&nbsp;&nbsp;e1; e2; e3</tt></td>
+        <td><tt>&nbsp;&nbsp;e1; e2; e3</tt></td>
+      </tr>
+      <tr>
+        <td><tt>done</tt></td>
+        <td><tt>}</tt></td>
       </tr>
     </table>
   </li>

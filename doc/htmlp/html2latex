@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2latex,v 1.26 2007/07/19 11:39:24 deraugla Exp $
+# $Id: html2latex,v 1.27 2007/07/19 13:27:11 deraugla Exp $
 
 FILES="index.html ptools.html revsynt.html parsers.html fparsers.html lexers.html grammars.html pretty.html opretty.html ml_ast.html pragma.html extfun.html"
 
@@ -50,6 +50,7 @@ for i in $FILES; do
     -e '{/<tr>/N; s/^ *<tr>\n *<th/<th/}' \
     -e '{/<\/tr>/N; s|^ *</tr>\n||}' |
   sed \
+    -e 's/{/\\{/g' -e 's/}/\\}/g' \
     -e '0,/<div id="content">/d' \
     -e '/<div id="tableofcontents">/,/<\/div>/d' \
     -e 's/^ *<h1[^>]*>/\\chapter{/' -e 's|</h1>|}|' \
