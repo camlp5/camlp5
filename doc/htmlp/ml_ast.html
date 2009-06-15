@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ml_ast.html,v 1.29 2007/09/01 20:12:37 deraugla Exp $ -->
+  <!-- $Id: ml_ast.html,v 1.30 2007/09/07 06:25:45 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Abstract tree in concrete syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -437,8 +437,12 @@
 </table>
 
 <div id="expr_1" style="margin: 5mm 0 0 1cm">(1)
-  Node used to specify an antiquotation area. See the chapter about
-    <a href="quot.html">quotations</a>.
+  <p>Node used in quotation expanders to specify that all locations of
+    the sub-tree is correcty located in the quotation. In quotations,
+    the locations of all generated nodes are by default the location
+    of the entire quotation, except for these nodes which are named
+    "antiquotations". See the chapter
+    about <a href="quot.html">quotations</a>.</p>
 </div>
 
 <div id="expr_2" style="margin: 5mm 0 0 1cm">(2)
@@ -603,8 +607,8 @@
 </table>
 
 <div id="patt_1" style="margin: 5mm 0 0 1cm">(1)
-  Node used to specify an antiquotation area. See the chapter about
-  <a href="quot.html">quotations</a>.
+  Node used to specify an antiquotation area, like for the
+  equivalent node in expressions. See above.
 </div>
 
 <h3>ctyp</h3>
