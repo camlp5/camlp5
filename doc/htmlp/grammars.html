@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.19 2007/07/16 09:34:50 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.20 2007/07/16 09:40:23 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -425,6 +425,17 @@ functions and values that can be used in the first time:</p>
     tok_using and tok_removing in a first time,</li>
   <li>the field tok_comm can be set to None.</li>
 </ul>
+
+<p>Example: if you have a lexer function named 'lexer', you can make the
+glexer value like this:</p>
+
+<pre>
+{Token.tok_func = lexer;
+ Token.tok_using _ = (); Token.tok_removing _ = ();
+ Token.tok_match = Token.default_match;
+ Token.tok_text = Token.lexer_text;
+ Token.tok_comm = None}
+</pre>
 
 <p>... to be completed ...</p>
 
