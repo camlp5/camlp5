@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.87 2007/09/24 16:06:25 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.88 2007/09/24 18:45:56 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -682,41 +682,6 @@ value sslist loc min sep s =
   ss_aux loc "a_list" r used
 ;
 
-value sslist2 loc ls min sep s =
-  let s =
-    let used =
-      match sep with
-      [ Some symb -> symb.used @ s.used
-      | None -> s.used ]
-    in
-    let text = slist loc min sep s in
-    let styp = STapp loc (STlid loc "list") s.styp in
-    {used = used; text = text; styp = styp}
-  in
-  let text =
-    let r1 =
-      let s =
-        let text =
-          let expr = <:expr< a_list2 >> in
-          let name = {expr = expr; tvar = "a_list2"; loc = loc} in
-          TXnterm loc name None
-        in
-        {used = ["a_list2"]; text = text; styp = STquo loc "a_list2"}
-      in
-      let r = {pattern = Some <:patt< a >>; symbol = s} in
-      let act = <:expr< a >> in
-      {prod = [r]; action = Some act}
-    in
-    let r2 =
-      let r = {pattern = Some <:patt< a >>; symbol = s} in
-      let act = <:expr< Qast.VaVal (Qast.List a) >> in
-      {prod = [r]; action = Some act}
-    in
-    TXrules loc "a_list2" [r1; r2]
-  in
-  {used = s.used; text = text; styp = STtyp <:ctyp< Qast.t >>}
-;
-
 value ssopt loc s =
   let r =
     let s =
@@ -753,7 +718,21 @@ value ssflag loc s =
   ss_aux loc "a_flag" r s.used
 ;
 
-value ss2 loc ls qast_f s =
+value ss2 loc ls s =
+  let qast_f a =
+    match s.styp with
+    [ STlid loc "bool" -> <:expr< Qast.Bool $a$ >>
+    | STapp loc (STlid _ "list") t ->
+        let a =
+          match t with
+          [ STlid _ "string" -> <:expr< List.map (fun a -> Qast.Str a) $a$ >>
+          | _ -> a ]
+        in
+        <:expr< Qast.List $a$ >>
+    | STapp loc (STlid _ "option") t -> <:expr< Qast.Option $a$ >>
+    | STquo _ _ -> a
+    | t -> MetaAction.not_impl "ss2" s.styp ]
+  in
   let t = new_type_var () in
   let text =
     let rl =
@@ -881,18 +860,20 @@ value rec symbol_of_a =
       if quotify.val then
         match s with
         [ ASflag _ _ ->
+            (* compatibility; deprecated since version 4.07 *)
+            let ls = if ls = [] then ["flag"; "opt"] else ls in
+            (* *)
             let s = Ploc.call_with quotify False symbol_of_a s in
-            ss2 loc ls (fun a -> <:expr< Qast.Bool $a$ >>) s
-        | ASlist loc min s sep ->
-            let s = symbol_of_a s in
-            let sep = option_map symbol_of_a sep in
-            sslist2 loc ls min sep s
+            ss2 loc ls s
+        | ASlist _ _ _ _ ->
+            let s = Ploc.call_with quotify False symbol_of_a s in
+            ss2 loc ls s
         | ASnterm _ _ _ ->
             let s = symbol_of_a s in
-            ss2 loc ls (fun a -> a) s
+            ss2 loc ls s
         | ASopt _ _ ->
             let s = Ploc.call_with quotify False symbol_of_a s in
-            ss2 loc ls (fun a -> <:expr< Qast.Option $a$ >>) s
+            ss2 loc ls s
         | AStok loc s p ->
             let p = option_map string_of_a p in
             sstoken2 loc ls s p
@@ -908,20 +889,20 @@ value rec symbol_of_a =
   | ASvala2 loc s ls ->
       match s with
       [ ASflag _ _ ->
-          let s = Ploc.call_with quotify False symbol_of_a s in
           let ls = if ls = [] then ["flag"] else ls in
-          ss2 loc ls (fun a -> <:expr< Qast.Bool $a$ >>) s
-      | ASlist loc min s sep ->
           let s = symbol_of_a s in
-          let sep = option_map symbol_of_a sep in
-          sslist2 loc ls min sep s
+          ss2 loc ls s
+      | ASlist _ _ _ _ ->
+          let ls = if ls = [] then ["list"] else ls in
+          let s = symbol_of_a s in
+          ss2 loc ls s
       | ASnterm _ _ _ ->
           let s = symbol_of_a s in
-          ss2 loc ls (fun a -> a) s
+          ss2 loc ls s
       | ASopt _ _ ->
-          let s = Ploc.call_with quotify False symbol_of_a s in
           let ls = if ls = [] then ["opt"] else ls in
-          ss2 loc ls (fun a -> <:expr< Qast.Option $a$ >>) s
+          let s = symbol_of_a s in
+          ss2 loc ls s
       | AStok loc s p ->
           let p = option_map string_of_a p in
           sstoken2 loc ls s p

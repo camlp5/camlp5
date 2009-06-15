@@ -1388,53 +1388,6 @@ let sslist loc min sep s =
   ss_aux loc "a_list" r used
 ;;
 
-let sslist2 loc ls min sep s =
-  let s =
-    let used =
-      match sep with
-        Some symb -> symb.used @ s.used
-      | None -> s.used
-    in
-    let text = slist loc min sep s in
-    let styp = STapp (loc, STlid (loc, "list"), s.styp) in
-    {used = used; text = text; styp = styp}
-  in
-  let text =
-    let r1 =
-      let s =
-        let text =
-          let expr = MLast.ExLid (loc, "a_list2") in
-          let name = {expr = expr; tvar = "a_list2"; loc = loc} in
-          TXnterm (loc, name, None)
-        in
-        {used = ["a_list2"]; text = text; styp = STquo (loc, "a_list2")}
-      in
-      let r = {pattern = Some (MLast.PaLid (loc, "a")); symbol = s} in
-      let act = MLast.ExLid (loc, "a") in {prod = [r]; action = Some act}
-    in
-    let r2 =
-      let r = {pattern = Some (MLast.PaLid (loc, "a")); symbol = s} in
-      let act =
-        MLast.ExApp
-          (loc,
-           MLast.ExAcc
-             (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "VaVal")),
-           MLast.ExApp
-             (loc,
-              MLast.ExAcc
-                (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "List")),
-              MLast.ExLid (loc, "a")))
-      in
-      {prod = [r]; action = Some act}
-    in
-    TXrules (loc, "a_list2", [r1; r2])
-  in
-  {used = s.used; text = text;
-   styp =
-     STtyp
-       (MLast.TyAcc (loc, MLast.TyUid (loc, "Qast"), MLast.TyLid (loc, "t")))}
-;;
-
 let ssopt loc s =
   let r =
     let s =
@@ -1490,7 +1443,52 @@ let ssflag loc s =
   ss_aux loc "a_flag" r s.used
 ;;
 
-let ss2 loc ls qast_f s =
+let ss2 loc ls s =
+  let qast_f a =
+    match s.styp with
+      STlid (loc, "bool") ->
+        MLast.ExApp
+          (loc,
+           MLast.ExAcc
+             (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Bool")),
+           a)
+    | STapp (loc, STlid (_, "list"), t) ->
+        let a =
+          match t with
+            STlid (_, "string") ->
+              MLast.ExApp
+                (loc,
+                 MLast.ExApp
+                   (loc,
+                    MLast.ExAcc
+                      (loc, MLast.ExUid (loc, "List"),
+                       MLast.ExLid (loc, "map")),
+                    MLast.ExFun
+                      (loc,
+                       [MLast.PaLid (loc, "a"), None,
+                        MLast.ExApp
+                          (loc,
+                           MLast.ExAcc
+                             (loc, MLast.ExUid (loc, "Qast"),
+                              MLast.ExUid (loc, "Str")),
+                           MLast.ExLid (loc, "a"))])),
+                 a)
+          | _ -> a
+        in
+        MLast.ExApp
+          (loc,
+           MLast.ExAcc
+             (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "List")),
+           a)
+    | STapp (loc, STlid (_, "option"), t) ->
+        MLast.ExApp
+          (loc,
+           MLast.ExAcc
+             (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Option")),
+           a)
+    | STquo (_, _) -> a
+    | t -> MetaAction.not_impl "ss2" s.styp
+  in
   let t = new_type_var () in
   let text =
     let rl =
@@ -1653,32 +1651,15 @@ let rec symbol_of_a =
       if !quotify then
         match s with
           ASflag (_, _) ->
-            let s = Ploc.call_with quotify false symbol_of_a s in
-            ss2 loc ls
-              (fun a ->
-                 MLast.ExApp
-                   (loc,
-                    MLast.ExAcc
-                      (loc, MLast.ExUid (loc, "Qast"),
-                       MLast.ExUid (loc, "Bool")),
-                    a))
-              s
-        | ASlist (loc, min, s, sep) ->
-            let s = symbol_of_a s in
-            let sep = option_map symbol_of_a sep in sslist2 loc ls min sep s
-        | ASnterm (_, _, _) ->
-            let s = symbol_of_a s in ss2 loc ls (fun a -> a) s
+            (* compatibility; deprecated since version 4.07 *)
+            let ls = if ls = [] then ["flag"; "opt"] else ls in
+            (* *)
+            let s = Ploc.call_with quotify false symbol_of_a s in ss2 loc ls s
+        | ASlist (_, _, _, _) ->
+            let s = Ploc.call_with quotify false symbol_of_a s in ss2 loc ls s
+        | ASnterm (_, _, _) -> let s = symbol_of_a s in ss2 loc ls s
         | ASopt (_, _) ->
-            let s = Ploc.call_with quotify false symbol_of_a s in
-            ss2 loc ls
-              (fun a ->
-                 MLast.ExApp
-                   (loc,
-                    MLast.ExAcc
-                      (loc, MLast.ExUid (loc, "Qast"),
-                       MLast.ExUid (loc, "Option")),
-                    a))
-              s
+            let s = Ploc.call_with quotify false symbol_of_a s in ss2 loc ls s
         | AStok (loc, s, p) ->
             let p = option_map string_of_a p in sstoken2 loc ls s p
         | _ -> Ploc.raise loc (Failure "not impl ASvala")
@@ -1692,34 +1673,15 @@ let rec symbol_of_a =
   | ASvala2 (loc, s, ls) ->
       match s with
         ASflag (_, _) ->
-          let s = Ploc.call_with quotify false symbol_of_a s in
           let ls = if ls = [] then ["flag"] else ls in
-          ss2 loc ls
-            (fun a ->
-               MLast.ExApp
-                 (loc,
-                  MLast.ExAcc
-                    (loc, MLast.ExUid (loc, "Qast"),
-                     MLast.ExUid (loc, "Bool")),
-                  a))
-            s
-      | ASlist (loc, min, s, sep) ->
-          let s = symbol_of_a s in
-          let sep = option_map symbol_of_a sep in sslist2 loc ls min sep s
-      | ASnterm (_, _, _) ->
-          let s = symbol_of_a s in ss2 loc ls (fun a -> a) s
+          let s = symbol_of_a s in ss2 loc ls s
+      | ASlist (_, _, _, _) ->
+          let ls = if ls = [] then ["list"] else ls in
+          let s = symbol_of_a s in ss2 loc ls s
+      | ASnterm (_, _, _) -> let s = symbol_of_a s in ss2 loc ls s
       | ASopt (_, _) ->
-          let s = Ploc.call_with quotify false symbol_of_a s in
           let ls = if ls = [] then ["opt"] else ls in
-          ss2 loc ls
-            (fun a ->
-               MLast.ExApp
-                 (loc,
-                  MLast.ExAcc
-                    (loc, MLast.ExUid (loc, "Qast"),
-                     MLast.ExUid (loc, "Option")),
-                  a))
-            s
+          let s = symbol_of_a s in ss2 loc ls s
       | AStok (loc, s, p) ->
           let p = option_map string_of_a p in sstoken2 loc ls s p
       | _ -> Ploc.raise loc (Failure "not impl ASvala2")
