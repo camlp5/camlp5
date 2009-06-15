@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_extprint.ml,v 1.40 2007/12/19 11:41:52 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.41 2007/12/20 13:29:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -143,8 +143,6 @@ value text_of_extprint loc el =
 
 (** Types and Functions for [pprintf] statement *)
 
-type not_empty_list 'a = { hd : 'a; tl : list 'a };
-
 type break = [ PPbreak of int and int | PPspace ];
 type paren_param = [ PPoffset of int | PPall of bool | PPnone ];
 
@@ -153,7 +151,7 @@ type tree =
   | Tlist of tree and tree and list tree
   | Tnode of break and tree and tree
   | Tparen of paren_param and tree
-  | Tstring of not_empty_list string ]
+  | Tstring of string and list string ]
 ;
 
 value implode l =
@@ -187,7 +185,7 @@ value rec parse_pformat =
 
 value pformat_of_char_list cl =
   match parse_pformat (Fstream.of_list cl) with
-  [ Some ((cl, sl), _) -> {hd = implode cl; tl = sl}
+  [ Some ((cl, sl), _) -> Tstring (implode cl) sl
   | None -> assert False ]
 ;
 
@@ -262,7 +260,7 @@ and parse_atom =
        _ = end_paren :] ->
       Tparen pp t
   | [: cl = parse_string :] ->
-      Tstring (pformat_of_char_list cl) ]
+      pformat_of_char_list cl ]
 and end_paren =
   fparser
   [ [: `'@'; `']' :] -> ()
@@ -339,28 +337,28 @@ value get_assoc_args loc str al =
     else (List.rev rev_str_al, al)
 ;
 
-value expr_of_pformat loc fmt is_empty_bef is_empty_aft pc al =
+value expr_of_pformat loc fmt is_empty_bef is_empty_aft pc al fmt1 =
   fun
-  [ {hd = fmt; tl = []} ->
-      let (bef_al, al) = get_assoc_args loc fmt al in
+  [ [] ->
+      let (bef_al, al) = get_assoc_args loc fmt1 al in
       let e =
         if is_empty_bef && is_empty_aft then
           match bef_al with
-          [ [] -> <:expr< $str:fmt$ >>
-          | [a] when fmt = "%s" -> a
+          [ [] -> <:expr< $str:fmt1$ >>
+          | [a] when fmt1 = "%s" -> a
           | _ ->
-              let e = <:expr< Pretty.sprintf $str:fmt$ >> in
+              let e = <:expr< Pretty.sprintf $str:fmt1$ >> in
               List.fold_left (fun f a -> <:expr< $f$ $a$ >>) e bef_al ]
         else
-          let fmt = if is_empty_bef then fmt else "%s" ^ fmt in
-          let fmt = if is_empty_aft then fmt else fmt ^ "%s" in
-          let e = <:expr< Pretty.sprintf $str:fmt$ >> in
+          let fmt1 = if is_empty_bef then fmt1 else "%s" ^ fmt1 in
+          let fmt1 = if is_empty_aft then fmt1 else fmt1 ^ "%s" in
+          let e = <:expr< Pretty.sprintf $str:fmt1$ >> in
           let e = if is_empty_bef then e else <:expr< $e$ $pc$.bef >> in
           let e = List.fold_left (fun f a -> <:expr< $f$ $a$ >>) e bef_al in
           if is_empty_aft then e else <:expr< $e$ $pc$.aft >>
       in
       (e, al)
-  | {hd = fmt1; tl = [fmt2 :: fmtl]} ->
+  | [fmt2 :: fmtl] ->
       let (e, al) =
         let (bef_al, al) = get_assoc_args loc fmt1 al in
         let (f, a, al) =
@@ -481,8 +479,8 @@ value rec expr_of_tree_aux loc fmt is_empty_bef is_empty_aft pc al t =
       (e, al)
   | Tparen PPnone t ->
       expr_of_tree_aux loc fmt is_empty_bef is_empty_aft pc al t
-  | Tstring sl ->
-      expr_of_pformat loc fmt is_empty_bef is_empty_aft pc al sl ]
+  | Tstring s sl ->
+      expr_of_pformat loc fmt is_empty_bef is_empty_aft pc al s sl ]
 ;
 
 value expr_of_tree loc fmt pc al t =
