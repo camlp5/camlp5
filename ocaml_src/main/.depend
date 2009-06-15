@@ -23,9 +23,9 @@ main.cmx: $(OTOP)/utils/pconfig.cmx ../odyl/odyl_main.cmx \
 pcaml.cmo: ast2pt.cmi mLast.cmi pcaml.cmi quotation.cmi reloc.cmi spretty.cmi 
 pcaml.cmx: ast2pt.cmx mLast.cmi pcaml.cmi quotation.cmx reloc.cmx spretty.cmx 
 pcaml.cmi: spretty.cmi mLast.cmi 
-prtools.cmo: mLast.cmi pcaml.cmi prtools.cmi 
-prtools.cmx: mLast.cmi pcaml.cmx prtools.cmi 
-prtools.cmi: pcaml.cmi mLast.cmi 
+prtools.cmo: mLast.cmi prtools.cmi 
+prtools.cmx: mLast.cmi prtools.cmi 
+prtools.cmi: mLast.cmi 
 quotation.cmo: mLast.cmi quotation.cmi 
 quotation.cmx: mLast.cmi quotation.cmi 
 quotation.cmi: mLast.cmi 

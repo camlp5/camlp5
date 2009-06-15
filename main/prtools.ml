@@ -1,11 +1,17 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: prtools.ml,v 1.3 2007/08/02 10:57:44 deraugla Exp $ *)
+(* $Id: prtools.ml,v 1.4 2007/08/16 11:14:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
-open Pcaml.Printers;
 
-type pr_gfun 'a 'b = pr_context string 'b -> 'a -> string;
+type gen_context 'bef 'aft =
+  Eprinter.gen_context 'bef 'aft ==
+    { ind : int; bef : 'bef; aft : 'aft; dang : string }
+;
+type pr_context = gen_context string string;
+
+type pr_gfun 'a 'b = gen_context string 'b -> 'a -> string;
+type pr_fun 'a = pr_context -> 'a -> string;
 
 value tab ind = String.make ind ' ';
 

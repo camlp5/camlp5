@@ -1,5 +1,6 @@
-eprinter.cmo: extfun.cmi 
-eprinter.cmx: extfun.cmx 
+eprinter.cmo: eprinter.cmi extfun.cmi 
+eprinter.cmx: eprinter.cmi extfun.cmx 
+eprinter.cmi: extfun.cmi 
 extfold.cmo: extfold.cmi gramext.cmi grammar.cmi 
 extfold.cmx: extfold.cmi gramext.cmx grammar.cmx 
 extfold.cmi: gramext.cmi 

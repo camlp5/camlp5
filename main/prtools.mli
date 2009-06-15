@@ -1,10 +1,15 @@
 (* camlp5r *)
-(* $Id: prtools.mli,v 1.2 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: prtools.mli,v 1.3 2007/08/16 11:14:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
-open Pcaml.Printers;
+type gen_context 'bef 'aft =
+  Eprinter.gen_context 'bef 'aft ==
+    { ind : int; bef : 'bef; aft : 'aft; dang : string }
+;
+type pr_context = gen_context string string;
 
-type pr_gfun 'a 'b = pr_context string 'b -> 'a -> string;
+type pr_gfun 'a 'b = gen_context string 'b -> 'a -> string;
+type pr_fun 'a = pr_context -> 'a -> string;
 
 value tab : int -> string;
 
@@ -67,7 +72,7 @@ value flatten_sequence : MLast.expr -> option (list MLast.expr);
 value source : ref string;
    (** The initial source string, which must be set by the pretty printing
        kit. Used by [comm_bef] below. *)
-value comm_bef : pr_context _ _ -> MLast.loc -> string;
+value comm_bef : gen_context _ _ -> MLast.loc -> string;
    (** [comm_bef pc loc] get the comment from the source (in the global
        variable [source] just before the given location [loc]. May be
        reindented using [pc.ind]. Returns the empty string if no comment

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pcaml.mli,v 1.8 2007/08/16 09:50:12 deraugla Exp $ *)
+(* $Id: pcaml.mli,v 1.9 2007/08/16 11:14:04 deraugla Exp $ *)
 
 (** Language grammar, entries and printers.
 
@@ -87,30 +87,17 @@ value print_implem : ref (list (MLast.str_item * MLast.loc) -> unit);
 
 module Printers :
   sig
-    type printer_t 'a = Eprinter.t 'a
-    and pr_level 'a =
-      Eprinter.pr_level 'a ==
-        { pr_label : string; pr_rules : mutable pr_rule 'a }
-    and pr_rule 'a =
-      Extfun.t 'a
-        (pr_fun 'a -> pr_fun 'a -> pr_context string string -> string)
-    and pr_fun 'a = pr_context string string -> 'a -> string
-    and pr_context 'bef 'aft =
-      Eprinter.pr_context 'bef 'aft ==
-        { ind : int; bef : 'bef; aft : 'aft; dang : string }
-    ;
-    value pr_expr : printer_t MLast.expr;
-    value pr_patt : printer_t MLast.patt;
-    value pr_ctyp : printer_t MLast.ctyp;
-    value pr_str_item : printer_t MLast.str_item;
-    value pr_sig_item : printer_t MLast.sig_item;
-    value pr_module_expr : printer_t MLast.module_expr;
-    value pr_module_type : printer_t MLast.module_type;
-    value pr_class_sig_item : printer_t MLast.class_sig_item;
-    value pr_class_str_item : printer_t MLast.class_str_item;
-    value pr_class_type : printer_t MLast.class_type;
-    value pr_class_expr : printer_t MLast.class_expr;
-    value find_pr_level : string -> list (pr_level 'a) -> pr_level 'a;
+    value pr_expr : Eprinter.t MLast.expr;
+    value pr_patt : Eprinter.t MLast.patt;
+    value pr_ctyp : Eprinter.t MLast.ctyp;
+    value pr_str_item : Eprinter.t MLast.str_item;
+    value pr_sig_item : Eprinter.t MLast.sig_item;
+    value pr_module_expr : Eprinter.t MLast.module_expr;
+    value pr_module_type : Eprinter.t MLast.module_type;
+    value pr_class_sig_item : Eprinter.t MLast.class_sig_item;
+    value pr_class_str_item : Eprinter.t MLast.class_str_item;
+    value pr_class_type : Eprinter.t MLast.class_type;
+    value pr_class_expr : Eprinter.t MLast.class_expr;
     value pr_expr_fun_args :
       ref (Extfun.t MLast.expr (list MLast.patt * MLast.expr));
   end

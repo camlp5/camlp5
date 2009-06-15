@@ -3,9 +3,15 @@
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;;
-open Pcaml.Printers;;
 
-type ('a, 'b) pr_gfun = (string, 'b) pr_context -> 'a -> string;;
+type ('bef, 'aft) gen_context =
+  ('bef, 'aft) Eprinter.gen_context =
+    { ind : int; bef : 'bef; aft : 'aft; dang : string }
+;;
+type pr_context = (string, string) gen_context;;
+
+type ('a, 'b) pr_gfun = (string, 'b) gen_context -> 'a -> string;;
+type 'a pr_fun = pr_context -> 'a -> string;;
 
 let tab ind = String.make ind ' ';;
 

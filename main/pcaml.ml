@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pcaml.ml,v 1.14 2007/08/16 04:35:36 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.15 2007/08/16 11:14:04 deraugla Exp $ *)
 
 value version = "4.08-exp";
 value syntax_name = ref "";
@@ -350,21 +350,6 @@ value add_option name spec descr =
 
 module Printers =
   struct
-    type printer_t 'a = Eprinter.t 'a ==
-      { pr_name : string;
-        pr_fun : mutable string -> pr_fun 'a;
-        pr_levels : mutable list (pr_level 'a) }
-    and pr_level 'a = Eprinter.pr_level 'a ==
-      { pr_label : string; pr_rules : mutable pr_rule 'a }
-    and pr_rule 'a =
-      Extfun.t 'a
-        (pr_fun 'a -> pr_fun 'a -> pr_context string string -> string)
-    and pr_fun 'a = pr_context string string -> 'a -> string
-    and pr_context 'bef 'aft = Eprinter.pr_context 'bef 'aft ==
-      { ind : int;
-        bef : 'bef;
-        aft : 'aft;
-        dang : string };
     value pr_expr = Eprinter.make "expr";
     value pr_patt = Eprinter.make "patt";
     value pr_ctyp = Eprinter.make "type";
@@ -376,12 +361,6 @@ module Printers =
     value pr_class_str_item = Eprinter.make "class_str_item";
     value pr_class_expr = Eprinter.make "class_expr";
     value pr_class_type = Eprinter.make "class_type";
-    value rec find_pr_level lab =
-      fun
-      [ [] -> failwith ("level " ^ lab ^ " not found")
-      | [lev :: levl] ->
-          if lev.pr_label = lab then lev else find_pr_level lab levl ]
-    ;
     value pr_expr_fun_args = ref Extfun.empty;
   end
 ;
