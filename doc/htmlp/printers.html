@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: printers.html,v 1.14 2007/10/14 00:35:24 deraugla Exp $ -->
+  <!-- $Id: printers.html,v 1.15 2007/12/12 11:18:55 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible printers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -26,6 +26,12 @@
   extensible printers allow to define and extend printers of data or
   programs. A specific statement "<tt>EXTEND_PRINTER</tt>" allow to
   define these extensions.</p>
+
+<p>This chapter also describes "pprintf", a new statement looking like
+  the "printf" function of the OCaml library, and applying to values
+  of a specific type, "printing context", defined here. This statement
+  can be used with the extensible printers, or independantly from
+  them.</p>
 
 <div id="tableofcontents">
 </div>
@@ -212,6 +218,125 @@
 
 <p>Notice that the printing context variable is just a convenience for
   the programmer of the printer, he is not obliged to use it.</p>
+
+<h2>Syntax of the pprintf statement</h2>
+
+<p>Notice that, in opposition to "printf", "fprintf", "sprintf", and
+  all its variants, which are functions, this "pprintf" is a
+  <em>statement</em>, not a function: "pprintf" is a keyword and the
+  expander analyzes its string format parameter to generate specific
+  statements. In particular, it cannot be used alone and has no type
+  by itself.</p>
+
+<pre>
+        expression ::= pprintf-statement
+ pprintf-statement ::= "pprintf" qualid format expressions
+            qualid ::= qualid "." qualid
+                     | uident
+                     | lident
+            format ::= string
+       expressions ::= expression expressions
+                     | &lt;nothing&gt;
+</pre>
+
+<h2>Semantics of pprintf</h2>
+
+<p>The "pprintf" statement takes as first parameter, a value of type
+  "pr_context" defined above. Its second parameter is an extended
+  format kind. It can take other parameters, depending on the format,
+  just like "printf".</p>
+
+<h3>Extended format</h3>
+
+<p>The extended format used by "pprintf" may contain any strings and
+  conversion specifications allowed by the "printf" function (see
+  module "Printf" of the OCaml library"), plus:</p>
+
+<ul>
+  <li>the conversion specification: "<tt>%p</tt>",</li>
+  <li>the pretty printing annotations introduced by, "<tt>@</tt>"
+    and followed by:
+    <ul>
+      <li>the character ";" (semicolon), optionally followed by
+        "&lt;", two numbers and "&gt;",</li>
+      <li>the character " " (space),</li>
+      <li>the character "[", optionally followed by the character "&lt;"
+        and either:
+        <ul>
+          <li>the character "a"</li>
+          <li>the character "b"</li>
+          <li>a number</li>
+        </ul>
+        and the character "&gt;", then followed by format string, and
+        ended with "@]"</li>
+    </ul>
+  </li>
+</ul>
+
+<p>The format string is applied like in the "printf" function. Specific
+  actions are done for the extended features. The result is a string like
+  for the "sprintf" function. The "string before" and "string after" defined
+  by the fields "bef" and "aft" of the printing context are taken into
+  account and it is not necessary to add them in the format.</p>
+
+<p>Example:</p>
+
+<pre>
+  pprintf pc "hello, world"
+</pre>
+
+<p>generates:</p>
+
+<pre>
+  Pretty.sprintf "%shello, world%s" pc.bef pc.aft;
+</pre>
+
+<p>An empty format:</p>
+
+<pre>
+  pprintf pc "";
+</pre>
+
+<p>just prints the "before" and "after" strings:</p>
+
+<pre>
+  Pretty.sprintf "%s%s" pc.bef pc.aft;
+</pre>
+
+<h3>The conversion specification "p"</h3>
+
+<p>The "%p" conversion specification works like the "%a" of the printf
+  statement. It takes two arguments and applies the first one to the
+  printing context and to the second argument. The first argument must
+  therefore have type "<tt>pr_context -> 'a -> unit</tt>" and the
+  second one "'a".</p>
+
+<p>Notice that this function can be called twice: one to test whether
+  the resulting string holds in the line, and another one to possibly
+  recall this function to print it in several lines. In the two cases,
+  the printing context given as parameter is different.</p>
+
+<p>It uses the functions defined in the
+  "<a href="pretty.html">Pretty</a>" module.
+
+<p>Example: the following statement:</p>
+
+<pre>
+  pprintf pc "hello, %p, world" f x
+</pre>
+
+<p>is equivalent to:</p>
+
+<pre>
+  f {(pc) with
+     bef = Pretty.sprintf "%shello, " pc.bef;
+     aft = Pretty.sprintf ", world%s" pc.aft}
+    x
+</pre>
+
+<h3>The pretty printing annotations</h3>
+
+<p>...to be written...</p>
 
 <h2>The Eprinter module</h2>
 

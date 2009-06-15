@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2latex,v 1.67 2007/11/26 14:15:40 deraugla Exp $
+# $Id: html2latex,v 1.68 2007/12/12 11:18:55 deraugla Exp $
 
 FILES1="index.html strict.html ptools.html"
 FILES2="parsers.html lexers.html fparsers.html bparsers.html grammars.html"
@@ -64,6 +64,7 @@ for i in $FILES; do
     cat $i |
     sed \
       -e 's/\\/\\backslash/g' \
+      -e 's/%/\\%/g' \
       -e 's|<p [^>]*>|<p>|g' |
     sed \
       -e '{:b; /<\/p>$/N; s|<\/p>\n *|<\/p>|g; tb}' \
