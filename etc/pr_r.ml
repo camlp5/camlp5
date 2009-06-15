@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.131 2007/12/08 08:59:50 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.132 2007/12/08 12:15:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1258,16 +1258,12 @@ EXTEND_PRINTER
           in
           right_operator pc 0 unfold next z ]
     | "unary"
-      [ <:expr< ~- $x$ >> -> curr {(pc) with bef = sprintf "%s-" pc.bef} x
-      | <:expr< ~-. $x$ >> -> curr {(pc) with bef = sprintf "%s-." pc.bef} x
-      | <:expr< $int:i$ >> -> sprintf "%s%s%s" pc.bef i pc.aft ]
+      [ <:expr< ~- $x$ >> -> pprintf pc "-%p" curr x
+      | <:expr< ~-. $x$ >> -> pprintf pc "-.%p" curr x
+      | <:expr< $int:i$ >> -> pprintf pc "%s" i ]
     | "apply"
       [ <:expr< assert $e$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%sassert %s%s" pc.bef
-                 (next {(pc) with bef = ""; aft = ""} e) pc.aft)
-            (fun () -> not_impl "assert vertical" pc e)
+          pprintf pc "assert@;%p" next e
       | <:expr< lazy $e$ >> ->
           pprintf pc "lazy@;%p" next e
       | <:expr< $_$ $_$ >> as z ->
@@ -1294,39 +1290,24 @@ EXTEND_PRINTER
           pprintf pc "%p.[%p]" curr x expr_short y
       | <:expr< $e$ .{ $list:el$ } >> ->
           let el = List.map (fun e -> (e, ",")) el in
-          plist expr_short 0
-            {(pc) with bef = curr {(pc) with aft = ".{"} e;
-             aft = (sprintf "}%s" pc.aft)}
-            el ]
+          pprintf pc "%p.{%p}" curr e (plist expr_short 0) el ]
     | "simple"
       [ <:expr< ($list:el$) >> ->
           let el = List.map (fun e -> (e, ",")) el in
-          plist expr 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-             aft = (sprintf ")%s" pc.aft)}
-            el
+          pprintf pc "@[<1>(%p)@]" (plist expr 0) el
       | <:expr< {$list:lel$} >> ->
           let lxl = List.map (fun lx -> (lx, ";")) lel in
-          plist (comm_patt_any record_binding) 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s{" pc.bef;
-             aft = (sprintf "}%s" pc.aft)}
+          pprintf pc "@[<1>{%p}@]" (plist (comm_patt_any record_binding) 0)
             lxl
       | <:expr< {($e$) with $list:lel$} >> ->
           let lxl = List.map (fun lx -> (lx, ";")) lel in
-          plist record_binding 0
-            {(pc) with ind = pc.ind + 1;
-             bef =
-               expr {(pc) with bef = sprintf "%s{(" pc.bef; aft = ") with "}
-                 e;
-             aft = (sprintf "}%s" pc.aft)} lxl
+          pprintf pc "@[<1>{(%p) with@ %p}@]" expr e (plist record_binding 0)
+            lxl
       | <:expr< [| $list:el$ |] >> ->
-          if el = [] then sprintf "%s[| |]%s" pc.bef pc.aft
+          if el = [] then pprintf pc "[| |]"
           else
             let el = List.map (fun e -> (e, ";")) el in
-            plist expr 0
-              {(pc) with ind = pc.ind + 3; bef = sprintf "%s[| " pc.bef;
-               aft = (sprintf " |]%s" pc.aft)}
-              el
+            pprintf pc "@[<3>[| %p |]@]" (plist expr 0) el
       | <:expr< [$_$ :: $_$] >> as z ->
           let (xl, y) = make_expr_list z in
           let xl = List.map (fun x -> (x, ";")) xl in
