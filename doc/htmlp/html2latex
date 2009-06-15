@@ -1,15 +1,15 @@
 #!/bin/sh
-# $Id: html2latex,v 1.4 2007/07/14 00:41:26 deraugla Exp $
+# $Id: html2latex,v 1.5 2007/07/14 00:54:45 deraugla Exp $
 
 FILES="index.html ptools.html parsers.html fparsers.html lexers.html grammars.html pretty.html opretty.html ml_ast.html pragma.html extfun.html"
 
 echo "\
-\\\\documentclass{book}
-\\\\addtolength{\\\\oddsidemargin}{-.875in}
-\\\\addtolength{\\\\evensidemargin}{-.875in}
-\\\\addtolength{\\\\textwidth}{1.75in}
-\\\\addtolength{\\\\topmargin}{-.875in}
-\\\\addtolength{\\\\textheight}{1.75in}
+\\\\documentclass{report}
+\\\\addtolength{\\\\oddsidemargin}{-2.2cm}
+\\\\addtolength{\\\\evensidemargin}{-2.2cm}
+\\\\addtolength{\\\\textwidth}{4.4cm}
+\\\\addtolength{\\\\topmargin}{-2.2cm}
+\\\\addtolength{\\\\textheight}{4.4cm}
 \\\\begin{document}
 
 \\\\def\\\\cslversion{4.04}
@@ -25,9 +25,11 @@ echo "\
 \\\\normalsize     Copyright \\\\copyright\\\\ 2007 Institut National de
                 Recherche en Informatique et Automatique
 \\\\end{center}
+\\\\setcounter{page}{1}
 \\\\cleardoublepage
 
-\\\\tableofcontents"
+\\\\tableofcontents
+\\\\cleardoublepage"
 
 for i in $FILES; do
   echo "======" 1>&2
