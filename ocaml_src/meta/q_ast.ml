@@ -598,94 +598,109 @@ let class_sig_item_eoi = Grammar.Entry.create Pcaml.gram "class_sig_item";;
 Grammar.extend
   [Grammar.Entry.obj (expr_eoi : 'expr_eoi Grammar.Entry.e), None,
    [None, None,
-    [[Gramext.Snterm (Grammar.Entry.obj (Pcaml.expr : 'expr Grammar.Entry.e));
+    [[Gramext.Snterm
+        (Grammar.Entry.obj (Pcaml.expr : 'Pcaml__expr Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
-     Gramext.action (fun _ (x : 'expr) (loc : Ploc.t) -> (x : 'expr_eoi))]];
+     Gramext.action
+       (fun _ (x : 'Pcaml__expr) (loc : Ploc.t) -> (x : 'expr_eoi))]];
    Grammar.Entry.obj (patt_eoi : 'patt_eoi Grammar.Entry.e), None,
    [None, None,
-    [[Gramext.Snterm (Grammar.Entry.obj (Pcaml.patt : 'patt Grammar.Entry.e));
+    [[Gramext.Snterm
+        (Grammar.Entry.obj (Pcaml.patt : 'Pcaml__patt Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
-     Gramext.action (fun _ (x : 'patt) (loc : Ploc.t) -> (x : 'patt_eoi))]];
+     Gramext.action
+       (fun _ (x : 'Pcaml__patt) (loc : Ploc.t) -> (x : 'patt_eoi))]];
    Grammar.Entry.obj (ctyp_eoi : 'ctyp_eoi Grammar.Entry.e), None,
    [None, None,
-    [[Gramext.Snterm (Grammar.Entry.obj (Pcaml.ctyp : 'ctyp Grammar.Entry.e));
+    [[Gramext.Snterm
+        (Grammar.Entry.obj (Pcaml.ctyp : 'Pcaml__ctyp Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
-     Gramext.action (fun _ (x : 'ctyp) (loc : Ploc.t) -> (x : 'ctyp_eoi))]];
+     Gramext.action
+       (fun _ (x : 'Pcaml__ctyp) (loc : Ploc.t) -> (x : 'ctyp_eoi))]];
    Grammar.Entry.obj (sig_item_eoi : 'sig_item_eoi Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Snterm
-        (Grammar.Entry.obj (Pcaml.sig_item : 'sig_item Grammar.Entry.e));
+        (Grammar.Entry.obj
+           (Pcaml.sig_item : 'Pcaml__sig_item Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (x : 'sig_item) (loc : Ploc.t) -> (x : 'sig_item_eoi))]];
+       (fun _ (x : 'Pcaml__sig_item) (loc : Ploc.t) -> (x : 'sig_item_eoi))]];
    Grammar.Entry.obj (str_item_eoi : 'str_item_eoi Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Snterm
-        (Grammar.Entry.obj (Pcaml.str_item : 'str_item Grammar.Entry.e));
+        (Grammar.Entry.obj
+           (Pcaml.str_item : 'Pcaml__str_item Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (x : 'str_item) (loc : Ploc.t) -> (x : 'str_item_eoi))]];
+       (fun _ (x : 'Pcaml__str_item) (loc : Ploc.t) -> (x : 'str_item_eoi))]];
    Grammar.Entry.obj (module_expr_eoi : 'module_expr_eoi Grammar.Entry.e),
    None,
    [None, None,
     [[Gramext.Snterm
         (Grammar.Entry.obj
-           (Pcaml.module_expr : 'module_expr Grammar.Entry.e));
+           (Pcaml.module_expr : 'Pcaml__module_expr Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (x : 'module_expr) (loc : Ploc.t) -> (x : 'module_expr_eoi))]];
+       (fun _ (x : 'Pcaml__module_expr) (loc : Ploc.t) ->
+          (x : 'module_expr_eoi))]];
    Grammar.Entry.obj (module_type_eoi : 'module_type_eoi Grammar.Entry.e),
    None,
    [None, None,
     [[Gramext.Snterm
         (Grammar.Entry.obj
-           (Pcaml.module_type : 'module_type Grammar.Entry.e));
+           (Pcaml.module_type : 'Pcaml__module_type Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (x : 'module_type) (loc : Ploc.t) -> (x : 'module_type_eoi))]];
+       (fun _ (x : 'Pcaml__module_type) (loc : Ploc.t) ->
+          (x : 'module_type_eoi))]];
    Grammar.Entry.obj (with_constr_eoi : 'with_constr_eoi Grammar.Entry.e),
    None,
    [None, None,
     [[Gramext.Snterm
         (Grammar.Entry.obj
-           (Pcaml.with_constr : 'with_constr Grammar.Entry.e));
+           (Pcaml.with_constr : 'Pcaml__with_constr Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (x : 'with_constr) (loc : Ploc.t) -> (x : 'with_constr_eoi))]];
+       (fun _ (x : 'Pcaml__with_constr) (loc : Ploc.t) ->
+          (x : 'with_constr_eoi))]];
    Grammar.Entry.obj (poly_variant_eoi : 'poly_variant_eoi Grammar.Entry.e),
    None,
    [None, None,
     [[Gramext.Snterm
         (Grammar.Entry.obj
-           (Pcaml.poly_variant : 'poly_variant Grammar.Entry.e));
+           (Pcaml.poly_variant : 'Pcaml__poly_variant Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (x : 'poly_variant) (loc : Ploc.t) ->
+       (fun _ (x : 'Pcaml__poly_variant) (loc : Ploc.t) ->
           (x : 'poly_variant_eoi))]];
    Grammar.Entry.obj (class_expr_eoi : 'class_expr_eoi Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Snterm
-        (Grammar.Entry.obj (Pcaml.class_expr : 'class_expr Grammar.Entry.e));
+        (Grammar.Entry.obj
+           (Pcaml.class_expr : 'Pcaml__class_expr Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (x : 'class_expr) (loc : Ploc.t) -> (x : 'class_expr_eoi))]];
+       (fun _ (x : 'Pcaml__class_expr) (loc : Ploc.t) ->
+          (x : 'class_expr_eoi))]];
    Grammar.Entry.obj (class_type_eoi : 'class_type_eoi Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Snterm
-        (Grammar.Entry.obj (Pcaml.class_type : 'class_type Grammar.Entry.e));
+        (Grammar.Entry.obj
+           (Pcaml.class_type : 'Pcaml__class_type Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (x : 'class_type) (loc : Ploc.t) -> (x : 'class_type_eoi))]];
+       (fun _ (x : 'Pcaml__class_type) (loc : Ploc.t) ->
+          (x : 'class_type_eoi))]];
    Grammar.Entry.obj
      (class_str_item_eoi : 'class_str_item_eoi Grammar.Entry.e),
    None,
    [None, None,
     [[Gramext.Snterm
         (Grammar.Entry.obj
-           (Pcaml.class_str_item : 'class_str_item Grammar.Entry.e));
+           (Pcaml.class_str_item : 'Pcaml__class_str_item Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (x : 'class_str_item) (loc : Ploc.t) ->
+       (fun _ (x : 'Pcaml__class_str_item) (loc : Ploc.t) ->
           (x : 'class_str_item_eoi))]];
    Grammar.Entry.obj
      (class_sig_item_eoi : 'class_sig_item_eoi Grammar.Entry.e),
@@ -693,10 +708,10 @@ Grammar.extend
    [None, None,
     [[Gramext.Snterm
         (Grammar.Entry.obj
-           (Pcaml.class_sig_item : 'class_sig_item Grammar.Entry.e));
+           (Pcaml.class_sig_item : 'Pcaml__class_sig_item Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (x : 'class_sig_item) (loc : Ploc.t) ->
+       (fun _ (x : 'Pcaml__class_sig_item) (loc : Ploc.t) ->
           (x : 'class_sig_item_eoi))]]];;
 
 (* *)
@@ -969,10 +984,11 @@ let expr_eoi = Grammar.Entry.create Pcaml.gram "expr_eoi" in
 Grammar.extend
   [Grammar.Entry.obj (expr_eoi : 'expr_eoi Grammar.Entry.e), None,
    [None, None,
-    [[Gramext.Snterm (Grammar.Entry.obj (Pcaml.expr : 'expr Grammar.Entry.e));
+    [[Gramext.Snterm
+        (Grammar.Entry.obj (Pcaml.expr : 'Pcaml__expr Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (e : 'expr) (loc : Ploc.t) ->
+       (fun _ (e : 'Pcaml__expr) (loc : Ploc.t) ->
           (let loc = Ploc.make_unlined (0, 0) in
            if !(Pcaml.strict_mode) then
              MLast.ExApp
@@ -1013,10 +1029,11 @@ let patt_eoi = Grammar.Entry.create Pcaml.gram "patt_eoi" in
 Grammar.extend
   [Grammar.Entry.obj (patt_eoi : 'patt_eoi Grammar.Entry.e), None,
    [None, None,
-    [[Gramext.Snterm (Grammar.Entry.obj (Pcaml.patt : 'patt Grammar.Entry.e));
+    [[Gramext.Snterm
+        (Grammar.Entry.obj (Pcaml.patt : 'Pcaml__patt Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (e : 'patt) (loc : Ploc.t) ->
+       (fun _ (e : 'Pcaml__patt) (loc : Ploc.t) ->
           (let loc = Ploc.make_unlined (0, 0) in
            if !(Pcaml.strict_mode) then
              MLast.PaApp

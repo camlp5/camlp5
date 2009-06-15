@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.97 2007/10/06 14:13:58 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.98 2007/10/06 14:24:10 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -1130,7 +1130,7 @@ EXTEND
       | i = UIDENT; "."; e = qualid;
         lev = OPT [ UIDENT "LEVEL"; s = STRING -> s ] ->
           let v = <:expr< $uid:i$.$snd e$ >> in
-          ASnterm loc (fst e, v) lev
+          ASnterm loc (i ^ "__" ^ fst e, v) lev
       | n = name; lev = OPT [ UIDENT "LEVEL"; s = STRING -> s ] ->
           ASnterm loc n lev
       | "("; s_t = SELF; ")" -> s_t ] ]

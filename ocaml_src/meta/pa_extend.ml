@@ -2327,7 +2327,7 @@ Grammar.extend
         (fun (lev : 'e__6 option) (e : 'qualid) _ (i : string)
              (loc : Ploc.t) ->
            (let v = MLast.ExAcc (loc, MLast.ExUid (loc, i), snd e) in
-            ASnterm (loc, (fst e, v), lev) :
+            ASnterm (loc, (i ^ "__" ^ fst e, v), lev) :
             'symbol));
       [Gramext.Snterm (Grammar.Entry.obj (string : 'string Grammar.Entry.e))],
       Gramext.action
