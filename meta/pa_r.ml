@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.93 2007/09/18 02:33:32 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.94 2007/09/18 03:08:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -528,7 +528,7 @@ EXTEND
           <:sig_item< class type $alist:ctd$ >> ] ]
   ;
   class_declaration:
-    [ [ vf = FLAG "virtual"; i = LIDENT; ctp = class_type_parameters;
+    [ [ vf = V FLAG "virtual"; i = V LIDENT; ctp = class_type_parameters;
         cfb = class_fun_binding ->
           {MLast.ciLoc = loc; MLast.ciVir = vf; MLast.ciPrm = ctp;
            MLast.ciNam = i; MLast.ciExp = cfb} ] ]
@@ -540,8 +540,8 @@ EXTEND
       | p = ipatt; cfb = SELF -> <:class_expr< fun $p$ -> $cfb$ >> ] ]
   ;
   class_type_parameters:
-    [ [ -> (loc, [])
-      | "["; tpl = LIST1 type_parameter SEP ","; "]" -> (loc, tpl) ] ]
+    [ [ -> (loc, <:vala< [] >>)
+      | "["; tpl = V LIST1 type_parameter SEP ","; "]" -> (loc, tpl) ] ]
   ;
   class_fun_def:
     [ [ p = ipatt; ce = SELF -> <:class_expr< fun $p$ -> $ce$ >>
@@ -638,13 +638,13 @@ EXTEND
           <:class_sig_item< type $t1$ = $t2$ >> ] ]
   ;
   class_description:
-    [ [ vf = FLAG "virtual"; n = LIDENT; ctp = class_type_parameters; ":";
+    [ [ vf = V FLAG "virtual"; n = V LIDENT; ctp = class_type_parameters; ":";
         ct = class_type ->
           {MLast.ciLoc = loc; MLast.ciVir = vf; MLast.ciPrm = ctp;
            MLast.ciNam = n; MLast.ciExp = ct} ] ]
   ;
   class_type_declaration:
-    [ [ vf = FLAG "virtual"; n = LIDENT; ctp = class_type_parameters; "=";
+    [ [ vf = V FLAG "virtual"; n = V LIDENT; ctp = class_type_parameters; "=";
         cs = class_type ->
           {MLast.ciLoc = loc; MLast.ciVir = vf; MLast.ciPrm = ctp;
            MLast.ciNam = n; MLast.ciExp = cs} ] ]

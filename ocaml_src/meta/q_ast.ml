@@ -6,15 +6,6 @@
    extensions) and meta-ifying the nodes. Works completely only in "strict"
    mode. In "transitional" mode, not all antiquotations are available. *)
 
-let not_impl f x =
-  let desc =
-    if Obj.is_block (Obj.repr x) then
-      "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
-    else "int_val = " ^ string_of_int (Obj.magic x)
-  in
-  failwith ("q_ast.ml: " ^ f ^ ", not impl: " ^ desc)
-;;
-
 let eval_anti entry loc typ str =
   let loc =
     let sh =
@@ -141,7 +132,19 @@ module Meta_make (C : MetaSig) =
     let type_var (s, (plus, minus)) =
       C.tuple [C.vala C.string s; C.tuple [C.bool plus; C.bool minus]]
     ;;
-    let e_class_infos a x = not_impl "e_class_infos" x;;
+    let record_label lab =
+      let loc = Ploc.dummy in
+      MLast.PaAcc (loc, MLast.PaUid (loc, "MLast"), MLast.PaLid (loc, lab))
+    ;;
+    let class_infos f ci =
+      C.record
+        [record_label "ciLoc", C.loc_v ();
+         record_label "ciVir", C.vala C.bool ci.ciVir;
+         record_label "ciPrm",
+         C.tuple [C.loc_v (); C.vala (C.list type_var) (snd ci.ciPrm)];
+         record_label "ciNam", C.vala C.string ci.ciNam;
+         record_label "ciExp", f ci.ciExp]
+    ;;
     let rec patt =
       function
         PaAcc (_, p1, p2) -> C.node "PaAcc" [patt p1; patt p2]
@@ -275,9 +278,9 @@ module Meta_make (C : MetaSig) =
     and sig_item =
       function
         SgCls (_, cd) ->
-          C.node "SgCls" [C.vala (C.list (e_class_infos class_type)) cd]
+          C.node "SgCls" [C.vala (C.list (class_infos class_type)) cd]
       | SgClt (_, ctd) ->
-          C.node "SgClt" [C.vala (C.list (e_class_infos class_type)) ctd]
+          C.node "SgClt" [C.vala (C.list (class_infos class_type)) ctd]
       | SgDcl (_, lsi) -> C.node "SgDcl" [C.vala (C.list sig_item) lsi]
       | SgDir (_, n, dp) ->
           C.node "SgDir" [C.vala C.string n; C.vala (C.option expr) dp]
@@ -327,9 +330,9 @@ module Meta_make (C : MetaSig) =
     and str_item =
       function
         StCls (_, cd) ->
-          C.node "StCls" [C.vala (C.list (e_class_infos class_expr)) cd]
+          C.node "StCls" [C.vala (C.list (class_infos class_expr)) cd]
       | StClt (_, ctd) ->
-          C.node "StClt" [C.vala (C.list (e_class_infos class_type)) ctd]
+          C.node "StClt" [C.vala (C.list (class_infos class_type)) ctd]
       | StDcl (_, lsi) -> C.node "StDcl" [C.vala (C.list str_item) lsi]
       | StDir (_, n, dp) ->
           C.node "StDir" [C.vala C.string n; C.vala (C.option expr) dp]
@@ -371,9 +374,6 @@ module Meta_make (C : MetaSig) =
          record_label "tdCon",
          C.vala (C.list (fun (t1, t2) -> C.tuple [ctyp t1; ctyp t2]))
            td.tdCon]
-    and record_label lab =
-      let loc = Ploc.dummy in
-      MLast.PaAcc (loc, MLast.PaUid (loc, "MLast"), MLast.PaLid (loc, lab))
     and class_type =
       function
         CtCon (_, ls, lt) ->

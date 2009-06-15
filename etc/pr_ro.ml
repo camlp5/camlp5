@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.42 2007/09/18 02:33:32 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.43 2007/09/18 03:08:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -104,18 +104,18 @@ value class_def_or_type_decl char pc ci =
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s%s %c %s%s" pc.bef
-         (if ci.MLast.ciVir then " virtual" else "") ci.MLast.ciNam
+         (if uv ci.MLast.ciVir then " virtual" else "") (uv ci.MLast.ciNam)
          (class_type_params {(pc) with bef = ""; aft = ""}
-            (snd ci.MLast.ciPrm))
+            (uv (snd ci.MLast.ciPrm)))
          char
          (class_type {(pc) with bef = ""; aft = ""} ci.MLast.ciExp) pc.aft)
     (fun () ->
        let s1 =
          sprintf "%s%s%s%s %c" pc.bef
-           (if ci.MLast.ciVir then "virtual " else "")
-           ci.MLast.ciNam
+           (if uv ci.MLast.ciVir then "virtual " else "")
+           (uv ci.MLast.ciNam)
            (class_type_params {(pc) with bef = ""; aft = ""}
-              (snd ci.MLast.ciPrm))
+              (uv (snd ci.MLast.ciPrm)))
            char
        in
        let s2 =
@@ -161,19 +161,19 @@ value class_decl pc ci =
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s%s%s = %s%s" pc.bef
-         (if ci.MLast.ciVir then "virtual " else "") ci.MLast.ciNam
+         (if uv ci.MLast.ciVir then "virtual " else "") (uv ci.MLast.ciNam)
          (class_type_params {(pc) with bef = ""; aft = ""}
-            (snd ci.MLast.ciPrm))
+            (uv (snd ci.MLast.ciPrm)))
          (if pl = [] then "" else
           hlist patt {(pc) with bef = " "; aft = ""} pl)
          (class_expr {(pc) with bef = ""; aft = ""} ce) pc.aft)
     (fun () ->
        let s1 =
          sprintf "%s%s%s%s%s =" pc.bef
-           (if ci.MLast.ciVir then "virtual " else "")
-           ci.MLast.ciNam
+           (if uv ci.MLast.ciVir then "virtual " else "")
+           (uv ci.MLast.ciNam)
            (class_type_params {(pc) with bef = ""; aft = ""}
-              (snd ci.MLast.ciPrm))
+              (uv (snd ci.MLast.ciPrm)))
            (if pl = [] then ""
             else hlist patt {(pc) with bef = " "; aft = ""} pl)
        in

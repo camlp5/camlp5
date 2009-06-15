@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.53 2007/09/18 02:33:32 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.54 2007/09/18 03:08:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -873,9 +873,9 @@ EXTEND
   ;
   (* Class expressions *)
   class_declaration:
-    [ [ vf = OPT "virtual"; ctp = class_type_parameters; i = LIDENT;
+    [ [ vf = V FLAG "virtual"; ctp = class_type_parameters; i = V LIDENT;
         cfb = class_fun_binding ->
-          {MLast.ciLoc = loc; MLast.ciVir = o2b vf; MLast.ciPrm = ctp;
+          {MLast.ciLoc = loc; MLast.ciVir = vf; MLast.ciPrm = ctp;
            MLast.ciNam = i; MLast.ciExp = cfb} ] ]
   ;
   class_fun_binding:
@@ -886,8 +886,8 @@ EXTEND
           <:class_expr< fun $p$ -> $cfb$ >> ] ]
   ;
   class_type_parameters:
-    [ [ -> (loc, [])
-      | "["; tpl = LIST1 type_parameter SEP ","; "]" -> (loc, tpl) ] ]
+    [ [ -> (loc, <:vala< [] >>)
+      | "["; tpl = V LIST1 type_parameter SEP ","; "]" -> (loc, tpl) ] ]
   ;
   class_fun_def:
     [ [ p = patt LEVEL "simple"; "->"; ce = class_expr ->
@@ -993,15 +993,15 @@ EXTEND
           <:class_sig_item< type $t1$ = $t2$ >> ] ]
   ;
   class_description:
-    [ [ vf = OPT "virtual"; ctp = class_type_parameters; n = LIDENT; ":";
-        ct = class_type ->
-          {MLast.ciLoc = loc; MLast.ciVir = o2b vf; MLast.ciPrm = ctp;
+    [ [ vf = V FLAG "virtual"; ctp = class_type_parameters; n = V LIDENT;
+        ":"; ct = class_type ->
+          {MLast.ciLoc = loc; MLast.ciVir = vf; MLast.ciPrm = ctp;
            MLast.ciNam = n; MLast.ciExp = ct} ] ]
   ;
   class_type_declaration:
-    [ [ vf = OPT "virtual"; ctp = class_type_parameters; n = LIDENT; "=";
-        cs = class_signature ->
-          {MLast.ciLoc = loc; MLast.ciVir = o2b vf; MLast.ciPrm = ctp;
+    [ [ vf = V FLAG "virtual"; ctp = class_type_parameters; n = V LIDENT;
+        "="; cs = class_signature ->
+          {MLast.ciLoc = loc; MLast.ciVir = vf; MLast.ciPrm = ctp;
            MLast.ciNam = n; MLast.ciExp = cs} ] ]
   ;
   (* Expressions *)

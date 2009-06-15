@@ -1,19 +1,10 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: q_ast.ml,v 1.85 2007/09/18 02:33:32 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.86 2007/09/18 03:08:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* AST quotations with works by running the language parser (and its possible
    extensions) and meta-ifying the nodes. Works completely only in "strict"
    mode. In "transitional" mode, not all antiquotations are available. *)
-
-value not_impl f x =
-  let desc =
-    if Obj.is_block (Obj.repr x) then
-      "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
-    else "int_val = " ^ string_of_int (Obj.magic x)
-  in
-  failwith ("q_ast.ml: " ^ f ^ ", not impl: " ^ desc)
-;
 
 value eval_anti entry loc typ str =
   let loc =
@@ -152,9 +143,18 @@ module Meta_make (C : MetaSig) =
     value type_var (s, (plus, minus)) =
       C.tuple [C.vala C.string s; C.tuple [C.bool plus; C.bool minus]]
     ;
-    value e_class_infos a =
-      fun
-      [ x -> not_impl "e_class_infos" x ]
+    value record_label lab =
+      let loc = Ploc.dummy in
+      <:patt< MLast.$lid:lab$ >>
+    ;
+    value class_infos f ci =
+      C.record
+        [(record_label "ciLoc", C.loc_v ());
+         (record_label "ciVir", C.vala C.bool ci.ciVir);
+         (record_label "ciPrm",
+          C.tuple [C.loc_v (); C.vala (C.list type_var) (snd ci.ciPrm)]);
+         (record_label "ciNam", C.vala C.string ci.ciNam);
+         (record_label "ciExp", f ci.ciExp)]
     ;
     value rec patt =
       fun
@@ -309,9 +309,9 @@ module Meta_make (C : MetaSig) =
     and sig_item =
       fun
       [ SgCls _ cd ->
-          C.node "SgCls" [C.vala (C.list (e_class_infos class_type)) cd]
+          C.node "SgCls" [C.vala (C.list (class_infos class_type)) cd]
       | SgClt _ ctd ->
-          C.node "SgClt" [C.vala (C.list (e_class_infos class_type)) ctd]
+          C.node "SgClt" [C.vala (C.list (class_infos class_type)) ctd]
       | SgDcl _ lsi ->
           C.node "SgDcl" [C.vala (C.list sig_item) lsi]
       | SgDir _ n dp ->
@@ -370,9 +370,9 @@ module Meta_make (C : MetaSig) =
     and str_item =
       fun
       [ StCls _ cd ->
-          C.node "StCls" [C.vala (C.list (e_class_infos class_expr)) cd]
+          C.node "StCls" [C.vala (C.list (class_infos class_expr)) cd]
       | StClt _ ctd ->
-          C.node "StClt" [C.vala (C.list (e_class_infos class_type)) ctd]
+          C.node "StClt" [C.vala (C.list (class_infos class_type)) ctd]
       | StDcl _ lsi ->
           C.node "StDcl" [C.vala (C.list str_item) lsi]
       | StDir _ n dp ->
@@ -422,9 +422,6 @@ module Meta_make (C : MetaSig) =
          (record_label "tdCon",
           C.vala (C.list (fun (t1, t2) -> C.tuple [ctyp t1; ctyp t2]))
             td.tdCon)]
-    and record_label lab =
-      let loc = Ploc.dummy in
-      <:patt< MLast.$lid:lab$ >>
     and class_type =
       fun
       [ CtCon _ ls lt ->

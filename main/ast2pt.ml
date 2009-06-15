@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: ast2pt.ml,v 1.51 2007/09/18 02:33:32 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.52 2007/09/18 03:08:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open MLast;
@@ -506,19 +506,11 @@ value rec sep_expr_acc l =
   | e -> [(loc_of_expr e, [], e) :: l] ]
 ;
 
-(*
-value expr_label_long_id e =
-  match sep_expr_acc [] e with
-  [ [(_, ml, ExLid _ s)] -> mkli (conv_lab s) ml
-  | _ -> error (loc_of_expr e) "invalid label" ]
-;
-*)
-
 value class_info class_expr ci =
-  let (params, variance) = List.split (snd ci.ciPrm) in
-  {pci_virt = if ci.ciVir then Virtual else Concrete;
+  let (params, variance) = List.split (uv (snd ci.ciPrm)) in
+  {pci_virt = if uv ci.ciVir then Virtual else Concrete;
    pci_params = (List.map uv params, mkloc (fst ci.ciPrm));
-   pci_name = ci.ciNam; pci_expr = class_expr ci.ciExp;
+   pci_name = uv ci.ciNam; pci_expr = class_expr ci.ciExp;
    pci_loc = mkloc ci.ciLoc; pci_variance = variance}
 ;
 

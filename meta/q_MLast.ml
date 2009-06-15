@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.92 2007/09/18 02:33:32 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.93 2007/09/18 03:08:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -930,7 +930,7 @@ EXTEND
           Qast.Node "SgClt" [Qast.Loc; ctd] ] ]
   ;
   class_declaration:
-    [ [ vf = SFLAG "virtual"; i = a_LIDENT; ctp = class_type_parameters;
+    [ [ vf = SV FLAG "virtual"; i = a_LIDENT2; ctp = class_type_parameters;
         cfb = class_fun_binding ->
           Qast.Record
             [("ciLoc", Qast.Loc); ("ciVir", vf); ("ciPrm", ctp); ("ciNam", i);
@@ -943,8 +943,8 @@ EXTEND
       | p = ipatt; cfb = SELF -> Qast.Node "CeFun" [Qast.Loc; p; cfb] ] ]
   ;
   class_type_parameters:
-    [ [ -> Qast.Tuple [Qast.Loc; Qast.List []]
-      | "["; tpl = SLIST1 type_parameter SEP ","; "]" ->
+    [ [ -> Qast.Tuple [Qast.Loc; Qast.VaVal (Qast.List [])]
+      | "["; tpl = SV LIST1 type_parameter SEP ","; "]" ->
           Qast.Tuple [Qast.Loc; tpl] ] ]
   ;
   class_fun_def:
@@ -1047,15 +1047,15 @@ EXTEND
           Qast.Node "CgCtr" [Qast.Loc; t1; t2] ] ]
   ;
   class_description:
-    [ [ vf = SFLAG "virtual"; n = a_LIDENT; ctp = class_type_parameters; ":";
-        ct = class_type ->
+    [ [ vf = SV FLAG "virtual"; n = a_LIDENT2; ctp = class_type_parameters;
+        ":"; ct = class_type ->
           Qast.Record
             [("ciLoc", Qast.Loc); ("ciVir", vf); ("ciPrm", ctp); ("ciNam", n);
              ("ciExp", ct)] ] ]
   ;
   class_type_declaration:
-    [ [ vf = SFLAG "virtual"; n = a_LIDENT; ctp = class_type_parameters; "=";
-        cs = class_type ->
+    [ [ vf = SV FLAG "virtual"; n = a_LIDENT2; ctp = class_type_parameters;
+        "="; cs = class_type ->
           Qast.Record
             [("ciLoc", Qast.Loc); ("ciVir", vf); ("ciPrm", ctp); ("ciNam", n);
              ("ciExp", cs)] ] ]
