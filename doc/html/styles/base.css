@@ -1,0 +1,55 @@
+/* $Id: base.css,v 1.9 2007/07/12 09:14:56 deraugla Exp $ */
+
+body { margin: 0; background-color: rgb(189,225,255) }
+
+#menu { width: 20%; position: fixed; top: 0; left: 0; float: left }
+#menu ul { padding: 0 }
+#menu h1 { font-weight: normal }
+
+#content { margin-left: 20%; padding: 0 5mm; background-color: white }
+
+body { border: 1px solid }
+#content { border-left: 1px solid }
+
+body { counter-reset: h2cnt }
+
+h1 { text-align: center }
+
+h2:before { content: counter(h2cnt) " - "; counter-increment: h2cnt }
+h2 { border: 1px solid; text-align: center; background: rgb(189,225,255) }
+h2 { counter-reset: h3cnt }
+
+h3:before {
+  content: counter(h2cnt) "." counter(h3cnt) " - ";
+  counter-increment: h3cnt
+}
+h3 { counter-reset: h4cnt }
+
+h4:before {
+  content: counter(h2cnt) "." counter(h3cnt) "." counter(h4cnt) " - ";
+  counter-increment: h4cnt
+}
+
+p { text-align: justify; margin: 1em 1cm }
+
+li { margin-left: 1cm }
+
+pre {
+  border-left: silver solid 3px; margin-bottom: 1.5em; margin-left: 1.5cm;
+  padding-left: 1em; padding-right: 0.5em; line-height: 1.2
+}
+
+.top { margin-top: 0; padding-top: 5mm }
+.bottom { margin-bottom: 0 }
+.trailer { margin-top: 3cm }
+
+.value { background: #0f0 }
+.dangling { color: red; background: lightgray }
+.parenthesis { color: blue }
+
+@media print {
+  body { background-color: white; border: 0 }
+  #menu { display: none }
+  #content { margin: 0; border: 0 }
+  .trailer img { display: none }
+}

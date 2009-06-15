@@ -1,13 +1,20 @@
-# $Id: Makefile,v 1.1 2007/07/12 09:11:39 deraugla Exp $
+# $Id: Makefile,v 1.2 2007/07/12 09:14:56 deraugla Exp $
 
-OBJS=index.html extfun.html lexers.html opretty.html pragma.html fparsers.html ml_ast.html  parsers.html pretty.html
+# $Id: Makefile,v 1.2 2007/07/12 09:14:56 deraugla Exp $
+
+OBJS=../html/index.html ../html/extfun.html ../html/lexers.html ../html/opretty.html ../html/pragma.html ../html/fparsers.html ../html/ml_ast.html ../html/parsers.html ../html/pretty.html
 INDEX=index.html
 
 all: $(OBJS)
 
-$(OBJS): menu.html
-	@(sed -e '/<div id="menu">/,$$d' $@; \
+clean:
+	rm -f $(OBJS)
+
+../html/%.html: %.html menu.html
+	@rm -f $@
+	@(sed -e '/<div id="menu">/,$$d' $<; \
 	 sed 's/index.html/$(INDEX)/' menu.html; \
-	 sed -e '1,/<\/div>/d' $@) > tmp
+	 sed -e '1,/<\/div>/d' $<) > tmp
 	@mv tmp $@
-	@echo $@ done
+	@chmod -w $@
+	echo $@ done
