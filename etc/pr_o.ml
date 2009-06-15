@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.105 2007/11/14 18:19:23 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.106 2007/11/14 18:21:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1666,11 +1666,11 @@ EXTEND_PRINTER
             lxl
       | <:expr< {($e$) with $list:lel$} >> ->
           let lxl = List.map (fun lx -> (lx, ";")) lel in
-          let simple_expr = Eprinter.apply_level pr_expr "dot" in
+          let dot_expr = Eprinter.apply_level pr_expr "dot" in
           plistl (record_binding False) (record_binding True) 0
             {(pc) with ind = pc.ind + 1;
              bef =
-               simple_expr
+               dot_expr
                  {(pc) with bef = sprintf "%s{" pc.bef; aft = " with "} e;
              aft = (sprintf "}%s" pc.aft)} lxl
       | <:expr< [| $list:el$ |] >> ->
