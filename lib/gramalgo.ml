@@ -570,51 +570,42 @@ value compute_nb_symbols item_set_ht term_table nterm_table =
     item_set_ht (0, 0)
 ;
 
-(*DEFINE TEST;*)
+DEFINE TEST;
 
 value lr0 entry lev = do {
   Printf.eprintf "LR(0) %s %d\n" entry.ename lev;
   flush stderr;
-  let (rl, item_set_0) =
+  let (rl, entry_name) =
     IFNDEF TEST THEN
       let rl = flatten_gram entry lev in
-      let rl =
-        let (rrl, _) =
-          List.fold_left
-            (fun (rrl, i) (lh, rh) -> ([(i, lh, rh) :: rrl], i + 1))
-            ([], 1) rl
-        in
-        List.rev rrl
-      in
-      let item_set_0 =
-        let item =
-          (0, False, "S", 0, [GS_nterm (name_of_entry entry lev)])
-        in
-        close_item_set rl [item]
-      in
-      (rl, item_set_0)
+      (rl, name_of_entry entry lev)
     ELSE
       let rl =
+(**)
+        [("E", [GS_term "1"; GS_nterm "E"]);
+         ("E", [GS_term "1"])]
+(*
         [("E", [GS_nterm "E"; GS_term "*"; GS_nterm "B"]);
          ("E", [GS_nterm "E"; GS_term "+"; GS_nterm "B"]);
          ("E", [GS_nterm "B"]);
          ("B", [GS_term "0"]);
          ("B", [GS_term "1"])]
+*)
       in
-      let rl =
-        let (rrl, _) =
-          List.fold_left
-            (fun (rrl, i) (lh, rh) -> ([(i, lh, rh) :: rrl], i + 1))
-            ([], 1) rl
-        in
-        List.rev rrl
-      in
-      let item_set_0 =
-        let item = (0, False, "S", 0, [GS_nterm "E"]) in
-        close_item_set rl [item]
-      in
-      (rl, item_set_0)
+      (rl, "E")
     END
+  in
+  let rl =
+    let (rrl, _) =
+      List.fold_left
+        (fun (rrl, i) (lh, rh) -> ([(i, lh, rh) :: rrl], i + 1))
+        ([], 1) rl
+    in
+    List.rev rrl
+  in
+  let item_set_0 =
+    let item = (0, False, "S", 0, [GS_nterm entry_name]) in
+    close_item_set rl [item]
   in
   Printf.eprintf "%d rules\n\n" (List.length rl);
   flush stderr;
@@ -754,3 +745,15 @@ value lr0 entry lev = do {
   };
   flush stderr;
 };
+
+value slr entry lev = do {
+  Printf.eprintf "SLR %s %d\n" entry.ename lev;
+  flush stderr;
+};
+
+value f entry lev =
+  match Sys.getenv "GRAMTEST" with
+  [ "LR0" -> lr0 entry lev
+  | "SLR" -> slr entry lev
+  | _ -> () ]
+;

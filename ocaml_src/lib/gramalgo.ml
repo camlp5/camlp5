@@ -529,25 +529,24 @@ let compute_nb_symbols item_set_ht term_table nterm_table =
     item_set_ht (0, 0)
 ;;
 
-(*DEFINE TEST;*)
+(* *)
 
 let lr0 entry lev =
   Printf.eprintf "LR(0) %s %d\n" entry.ename lev;
   flush stderr;
-  let (rl, item_set_0) =
-    let rl = flatten_gram entry lev in
-    let rl =
-      let (rrl, _) =
-        List.fold_left (fun (rrl, i) (lh, rh) -> (i, lh, rh) :: rrl, i + 1)
-          ([], 1) rl
-      in
-      List.rev rrl
+  let (rl, entry_name) =
+    let rl = ["E", [GS_term "1"; GS_nterm "E"]; "E", [GS_term "1"]] in rl, "E"
+  in
+  let rl =
+    let (rrl, _) =
+      List.fold_left (fun (rrl, i) (lh, rh) -> (i, lh, rh) :: rrl, i + 1)
+        ([], 1) rl
     in
-    let item_set_0 =
-      let item = 0, false, "S", 0, [GS_nterm (name_of_entry entry lev)] in
-      close_item_set rl [item]
-    in
-    rl, item_set_0
+    List.rev rrl
+  in
+  let item_set_0 =
+    let item = 0, false, "S", 0, [GS_nterm entry_name] in
+    close_item_set rl [item]
   in
   Printf.eprintf "%d rules\n\n" (List.length rl);
   flush stderr;
@@ -678,4 +677,15 @@ let lr0 entry lev =
     Printf.eprintf "\n"
   done;
   flush stderr
+;;
+
+let slr entry lev =
+  Printf.eprintf "SLR %s %d\n" entry.ename lev; flush stderr
+;;
+
+let f entry lev =
+  match Sys.getenv "GRAMTEST" with
+    "LR0" -> lr0 entry lev
+  | "SLR" -> slr entry lev
+  | _ -> ()
 ;;
