@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_op.ml,v 1.2 2007/07/05 03:39:55 deraugla Exp $ *)
+(* $Id: pr_op.ml,v 1.3 2007/07/05 14:29:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Heuristic to rebuild parsers and streams from the AST *)
@@ -94,6 +94,11 @@ value rec unstream_pattern_kont =
         try $f$ with [ Stream.Failure -> raise (Stream.Error $e2$) ]
       in
       $e$
+    >> |
+    <:expr<
+      match try Some $f$ with [ Stream.Failure -> None ] with
+      [ Some $p$ -> $e$
+      | _ -> raise (Stream.Error $e2$) ]
     >> ->
       let f =
         match f with
@@ -163,9 +168,14 @@ value rec unparser_cases_list =
       in
       let spe2 = ([], None, <:expr< raise $e2$ >>) in
       [spe1; spe2]
+  | <:expr< let $lid:p$ = Stream.count strm__ in $e$ >> ->
+      [([], Some p, e)]
   | <:expr< let $p$ = $f$ strm__ in $e$ >> ->
       let (sp, epo, e) = unstream_pattern_kont e in
       [([(SpNtr loc p f, SpoNoth) :: sp], epo, e)]
+  | <:expr< let $p$ = strm__ in $e$ >> ->
+      let (sp, epo, e) = unstream_pattern_kont e in
+      [([(SpStr loc p, SpoNoth) :: sp], epo, e)]
   | <:expr< match Stream.peek strm__ with [ $list:pel$ ] >> as ge ->
       loop [] pel where rec loop rev_spel =
         fun
