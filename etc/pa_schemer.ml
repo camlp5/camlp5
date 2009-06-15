@@ -1321,7 +1321,11 @@ and class_expr_se =
       let ce = class_expr_se se2 in
       <:class_expr< fun $p$ -> $ce$ >>
   | Sexpr loc [Slid _ "object"; se :: sel] ->
-      let p = Some (patt_se se) in
+      let p =
+        match se with
+        [ Sexpr _ [] -> None
+        | se -> Some (patt_se se) ]
+      in
       let csl = List.map class_str_item_se sel in
       <:class_expr< object $opt:p$ $list:csl$ end >>
   | Sexpr loc [se :: sel] ->
@@ -1331,10 +1335,10 @@ and class_expr_se =
             let e = expr_se se in
             loop <:class_expr< $ce$ $e$ >> sel
         | [] -> ce ]
-  | Sacc loc _ _ as se ->
+  | se ->
       let sl = longident_se se in
-      <:class_expr< $list:sl$ >>
-  | se -> error se "class_expr_se" ]
+      let loc = loc_of_sexpr se in
+      <:class_expr< $list:sl$ >> ]
 ;
 
 value directive_se =

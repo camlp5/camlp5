@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.41 2007/10/14 12:21:41 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.42 2007/10/14 16:42:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1426,7 +1426,7 @@ EXTEND_PRINTER
                sprintf "%s(object%s %s)%s" pc.bef
                  (match csp with
                   [ Some t -> not_impl "class_expr object self horiz " pc 0
-                  | None -> "" ])
+                  | None -> " ()" ])
                  (hlist class_str_item {(pc) with bef = ""; aft = ""} csl)
                     pc.aft)
             (fun () ->
@@ -1437,7 +1437,7 @@ EXTEND_PRINTER
                      plistb patt 0
                        {(pc) with ind = pc.ind + 1; bef = s; aft = ""}
                        [(p, "")]
-                 | None -> s ]
+                 | None -> sprintf "%s ()" s ]
                in
                let s2 =
                  vlist class_str_item
@@ -1461,7 +1461,7 @@ EXTEND_PRINTER
       | <:class_expr< $list:sl$ >> ->
           longident pc sl
       | <:class_expr< $list:sl$ [ $list:ctcl$ ] >> ->
-          not_impl  "CeCon 2" pc sl
+          not_impl  "CeCon" pc sl
       | x ->
           not_impl "class_expr" pc x ] ]
   ;

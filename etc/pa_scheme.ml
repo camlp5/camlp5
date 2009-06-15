@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.85 2007/10/14 12:21:41 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.86 2007/10/14 16:42:52 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -1254,7 +1254,9 @@
      (let* ((p (patt_se se1)) (ce (class_expr_se se2)))
      <:class_expr< fun $p$ -> $ce$ >>))
     ((Sexpr loc [(Slid _ "object") se . sel])
-     (let* ((p (Some (patt_se se))) (csl (List.map class_str_item_se sel)))
+     (let*
+      ((p (match se ((Sexpr _ []) None) (se (Some (patt_se se)))))
+       (csl (List.map class_str_item_se sel)))
       <:class_expr< object $opt:p$ $list:csl$ end >>))
     ((Sexpr loc [se . sel])
      (letrec
@@ -1264,9 +1266,9 @@
           (let ((e (expr_se se))) (loop <:class_expr< $ce$ $e$ >> sel)))
          ([] ce))))
       (loop (class_expr_se se) sel)))
-    ((as (Sacc loc _ _) se)
-     (let ((sl (longident_se se))) <:class_expr< $list:sl$ >>))
-    (se (error se "class_expr_se")))))
+    (se
+     (let* ((sl (longident_se se)) (loc (loc_of_sexpr se)))
+      <:class_expr< $list:sl$ >>)))))
 
 (define directive_se
   (lambda_match
