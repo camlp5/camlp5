@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.21 2007/08/08 07:47:26 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.22 2007/08/13 23:21:22 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -361,7 +361,7 @@ module Meta =
             <:expr< MLast.MeApp $ln$ $loop me1$ $loop me2$ >>
         | MeFun _ s mt me ->
             let mt = e_module_type mt in
-            <:expr< MLast.Mefun $ln$ $e_string s$ $mt$ $loop me$ >>
+            <:expr< MLast.MeFun $ln$ $e_string s$ $mt$ $loop me$ >>
         | MeStr _ lsi -> <:expr< MLast.MeStr $ln$ $e_list e_str_item lsi$ >>
         | MeTyc _ me mt ->
             let mt = e_module_type mt in
