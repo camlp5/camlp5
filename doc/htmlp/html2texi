@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2texi,v 1.13 2007/08/28 17:49:37 deraugla Exp $
+# $Id: html2texi,v 1.14 2007/08/28 19:04:52 deraugla Exp $
 
 FILES1="index.html ptools.html"
 FILES2="parsers.html lexers.html fparsers.html grammars.html"
@@ -104,7 +104,8 @@ for i in $FILES; do
 @$chapter $N"
     cat $i |
     sed \
-      -e 's|^\(.*\)<ul>|\n\1<ul>|' |
+      -e 's|^\(.*\)<ul>|\n\1<ul>|' \
+      -e 's|^\(.*\)<dl>|\n\1<dl>|' |
     sed \
       -e '{:b; /^$/N; s/^\n$//; tb}' |
     sed \

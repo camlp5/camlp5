@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: commands.html,v 1.5 2007/08/28 14:52:24 deraugla Exp $ -->
+  <!-- $Id: commands.html,v 1.6 2007/08/28 19:04:52 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Commands and Kits</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -59,7 +59,6 @@
   <dd>Add revised syntax parsers.</dd>
   <dt><tt>pa_o.cmo</tt></dt>
   <dd>Normal syntax (without parsers). Option added:
-
     <dl>
       <dt><tt>-no_quot</tt></dt>
       <dd>don't parse quotations, allowing to use,
@@ -79,7 +78,6 @@
 <dl>
   <dt><tt>pa_extend.cmo</tt></dt>
   <dd>Add the EXTEND statement. Options added:
-
     <dl>
       <dt><tt>-split_ext</tt></dt>
       <dd>split EXTEND by functions to turn around a PowerPC problem.</dd>
@@ -137,7 +135,6 @@
   <dd>Add guarantee of left evaluation in functions calls.</dd>
   <dt><tt>pa_macro.cmo</tt></dt>
   <dd>Add macros. Options added:
-
     <dl>
       <dt><tt>-D &lt;string&gt;</tt></dt>
       <dd>define for IFDEF statement</dd>
@@ -153,21 +150,52 @@
 
 <h3>Printing kits</h3>
 
-<p>... to be structured and completed ...</p>
+<p>... to be completed ...</p>
+
+<h4>language printing kits</h4>
 
 <dl>
-  <dt><tt>pr_depend.cmo</tt></dt>
-  <dt><tt>pr_dump.cmo</tt></dt>
-  <dt><tt>pr_extend.cmo</tt></dt>
-  <dt><tt>pr_extfun.cmo</tt></dt>
-  <dt><tt>pr_null.cmo</tt></dt>
-  <dt><tt>pr_o.cmo</tt></dt>
-  <dt><tt>pr_op.cmo</tt></dt>
   <dt><tt>pr_r.cmo</tt></dt>
   <dt><tt>pr_ro.cmo</tt></dt>
   <dt><tt>pr_rp.cmo</tt></dt>
+  <dt><tt>pr_o.cmo</tt></dt>
+  <dt><tt>pr_op.cmo</tt></dt>
+</dl>
+
+<h4>extensible functions</h4>
+
+<dl>
+  <dt><tt>pr_extfun.cmo</tt></dt>
+</dl>
+
+<h4>other languages</h4>
+
+<dl>
   <dt><tt>pr_scheme.cmo</tt></dt>
   <dt><tt>pr_schemep.cmo</tt></dt>
+</dl>
+
+<h4>other printing kits</h4>
+
+<dl>
+  <dt><tt>pr_depend.cmo</tt></dt>
+  <dd>Print dependencies. Option added:
+    <dl>
+      <dt><tt>-I dir</tt></dt>
+      <dd>Add "dir" to the list of search directories.</dd>
+    </dl>
+  </dd>
+  <dt><tt>pr_dump.cmo</tt></dt>
+  <dd>Dump the syntax tree in binary (for the OCaml compiler)</dd>
+  <dt><tt>pr_extend.cmo</tt></dt>
+  <dd>Add the rebuilding of EXTEND statements. Option added:
+    <dl>
+      <dt><tt>-no_slist</tt></dt>
+      <dd>Don't reconstruct SLIST, SOPT, SFLAG</dd>
+    </dl>
+  </dd>
+  <dt><tt>pr_null.cmo</tt></dt>
+  <dd>No output.</dd>
 </dl>
 
 <h3>Quotations expanders</h3>
