@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.53 2007/10/14 19:34:52 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.54 2007/11/26 19:28:56 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -717,7 +717,17 @@ EXTEND_PRINTER
                  (match pb with
                   [ Some s -> sprintf " as %s" s
                   | None -> "" ]) pc.aft)
-            (fun () -> not_impl "inherit vertic" pc ce)
+            (fun () ->
+               let s =
+                 class_expr
+                   {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+                    aft =
+                      match pb with
+                      [ Some s -> sprintf " as %s%s" s pc.aft
+                      | None -> pc.aft ]}
+                   ce
+               in
+               sprintf "%sinherit\n%s" pc.bef s)
       | <:class_str_item< initializer $e$ >> ->
           horiz_vertic
             (fun () ->
