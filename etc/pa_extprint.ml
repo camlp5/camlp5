@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_extprint.ml,v 1.3 2007/08/15 15:44:25 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.4 2007/08/15 17:40:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 #load "pa_extend.cmo";
@@ -95,9 +95,9 @@ value conv loc (p, wo, e) =
 ;
 
 value text_of_extprint loc el =
-  let e =
-    List.fold_right
-      (fun e el ->
+  let el =
+    List.map
+      (fun e ->  
          let pos =
            match e.pos with
            [ Some e -> <:expr< Some $e$ >>
@@ -113,7 +113,15 @@ value text_of_extprint loc el =
                 in
                 let rules = split_or lev.rules in
                 let rules =
-                  rules @ [(<:patt< z >>, None, <:expr< next pc z >>)]
+                  match List.rev rules with
+                  [ [(p, wo, _) :: _] ->
+                      if wo = None && catch_any p then rules
+                      else
+                        let r = (<:patt< z >>, None, <:expr< next pc z >>) in
+                        List.rev [r :: rules]
+                  | [] ->
+                      let r = (<:patt< z >>, None, <:expr< next pc z >>) in
+                      [r] ]
                 in
                 let rules =
                   List.fold_right
@@ -126,10 +134,12 @@ value text_of_extprint loc el =
                 <:expr< [($lab$, $rules$) :: $levs$] >>)
              e.levels <:expr< [] >>
          in
-         <:expr< [($e.name$, $pos$, $levs$) :: $el$] >>)
-    el <:expr< [] >>
+         <:expr< Eprinter.extend_printer $e.name$ $pos$ $levs$ >>)
+      el
   in
-  <:expr< Eprinter.extend_printer $e$ >>
+  match el with
+  [ [e] -> e
+  | _ -> <:expr< do { $list:el$ } >> ]
 ;
 
 EXTEND

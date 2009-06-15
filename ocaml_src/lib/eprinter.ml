@@ -31,34 +31,28 @@ let add_lev (lab, extf) levs =
   let lev = {pr_label = lab; pr_rules = extf Extfun.empty} in lev :: levs
 ;;
 
-let extend_printer lpplr =
-  List.iter
-    (fun (pr, pos, levs) ->
-       match pos with
-         None ->
-           let levels = List.fold_right add_lev levs pr.pr_levels in
-           pr.pr_levels <- levels
-       | Some (Level lab) ->
-           let levels =
-             let rec loop =
-               function
-                 pr_lev :: pr_levs ->
-                   if lab = pr_lev.pr_label then
-                     match levs with
-                       (_, extf) :: levs ->
-                         let lev =
-                           {pr_lev with pr_rules = extf pr_lev.pr_rules}
-                         in
-                         let levs = List.fold_right add_lev levs pr_levs in
-                         lev :: levs
-                     | [] -> pr_lev :: pr_levs
-                   else pr_lev :: loop pr_levs
-               | [] -> failwith ("level " ^ lab ^ " not found")
-             in
-             loop pr.pr_levels
-           in
-           pr.pr_levels <- levels
-       | Some _ ->
-           failwith "not impl EXTEND_PRINTER entry with at level parameter")
-    lpplr
+let extend_printer pr pos levs =
+  match pos with
+    None ->
+      let levels = List.fold_right add_lev levs pr.pr_levels in
+      pr.pr_levels <- levels
+  | Some (Level lab) ->
+      let levels =
+        let rec loop =
+          function
+            pr_lev :: pr_levs ->
+              if lab = pr_lev.pr_label then
+                match levs with
+                  (_, extf) :: levs ->
+                    let lev = {pr_lev with pr_rules = extf pr_lev.pr_rules} in
+                    let levs = List.fold_right add_lev levs pr_levs in
+                    lev :: levs
+                | [] -> pr_lev :: pr_levs
+              else pr_lev :: loop pr_levs
+          | [] -> failwith ("level " ^ lab ^ " not found")
+        in
+        loop pr.pr_levels
+      in
+      pr.pr_levels <- levels
+  | Some _ -> failwith "not impl EXTEND_PRINTER entry with at level parameter"
 ;;
