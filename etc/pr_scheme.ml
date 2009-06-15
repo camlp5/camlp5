@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.44 2007/10/14 18:36:17 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.45 2007/10/15 02:45:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -434,6 +434,7 @@ value class_descr_list pc =
 
 value class_decl b pc cd =
   let n = Pcaml.unvala cd.MLast.ciNam in
+  let ce = cd.MLast.ciExp in
   horiz_vertic
     (fun () ->
        sprintf "%s(%s%s%s %s)%s" pc.bef (if b = "" then "" else b ^ " ")
@@ -443,7 +444,7 @@ value class_decl b pc cd =
           | tvl ->
               sprintf "(%s %s)" n
                 (hlist type_param {(pc) with bef = ""; aft = ""} tvl) ])
-         (class_expr {(pc) with bef = ""; aft = ""} cd.MLast.ciExp) pc.aft)
+         (class_expr {(pc) with bef = ""; aft = ""} ce) pc.aft)
     (fun () ->
        let list =
          let list =
@@ -457,7 +458,7 @@ value class_decl b pc cd =
                       aft = sprintf ")%s" pc.aft}
                      (List.map (fun tv -> (tv, "")) tvl) ],
              "");
-            (fun pc -> class_expr pc cd.MLast.ciExp, "")]
+            (fun pc -> class_expr pc ce, "")]
          in
          let list =
            if Pcaml.unvala cd.MLast.ciVir then
@@ -1344,9 +1345,20 @@ EXTEND_PRINTER
              aft = sprintf ")%s" pc.aft}
             [(e, "")]
       | <:class_str_item< method $flag:pf$ $s$ = $e$ >> ->
+          let (pl, e) = expr_fun_args e in
           let list =
             let list =
-              [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
+              [(fun pc ->
+                  match pl with
+                  [ [] -> sprintf "%s%s%s" pc.bef s pc.aft
+                  | pl ->
+                      plistf 0
+                        {(pc) with ind = pc.ind + 1;
+                         bef = sprintf "%s(" pc.bef;
+                         aft = sprintf ")%s" pc.aft}
+                        [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "") ::
+                         List.map (fun p -> (fun pc -> patt pc p, "")) pl] ],
+                "");
                (fun pc -> expr pc e, "")]
             in
             if pf then
@@ -1449,10 +1461,30 @@ EXTEND_PRINTER
              aft = sprintf ")%s" pc.aft}
             list
       | <:class_expr< fun $p$ -> $ce$ >> ->
+          let (pl, ce) =
+            loop ce where rec loop =
+              fun
+              [ <:class_expr< fun $p$ -> $ce$ >> as gce ->
+                  if is_irrefut_patt p then
+                    let (pl, ce) = loop ce in
+                    ([p :: pl], ce)
+                  else ([], gce)
+              | ce -> ([], ce) ]
+          in
           plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(fun" pc.bef;
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(lambda" pc.bef;
              aft = sprintf ")%s" pc.aft}
-            [(fun pc -> patt pc p, ""); (fun pc -> curr pc ce, "")]
+            [(fun pc ->
+                match pl with
+                [ [] -> patt pc p
+                | pl ->
+                    plistf 0
+                      {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+                       aft = sprintf ")%s" pc.aft}
+                      (List.map (fun p -> (fun pc -> patt pc p, ""))
+                         [p :: pl]) ],
+              "");
+             (fun pc -> curr pc ce, "")]
       | <:class_expr< object $opt:csp$ $list:csl$ end >> ->
           horiz_vertic
             (fun () ->

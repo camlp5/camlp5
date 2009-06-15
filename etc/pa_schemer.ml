@@ -1296,12 +1296,31 @@ and class_str_item_se =
   | Sexpr loc [Slid _ "method"; Slid _ "virtual"; Slid _ n; se] ->
       let t = ctyp_se se in
       <:class_str_item< method virtual $n$ : $t$ >>
-  | Sexpr loc [Slid _ "method"; Slid _ n; se] ->
-      let e = expr_se se in
-      <:class_str_item< method $n$ = $e$ >>
   | Sexpr loc [Slid _ "method"; Slid _ "private"; Slid _ n; se] ->
       let e = expr_se se in
       <:class_str_item< method private $n$ = $e$ >>
+  | Sexpr loc
+      [Slid _ "method"; Slid _ "private"; Sexpr _ [Slid _ n :: sel]; se] ->
+      let e =
+        List.fold_right
+          (fun se e ->
+             let p = patt_se se in
+             <:expr< fun $p$ -> $e$ >>)
+          sel (expr_se se)
+      in
+      <:class_str_item< method private $n$ = $e$ >>
+  | Sexpr loc [Slid _ "method"; Slid _ n; se] ->
+      let e = expr_se se in
+      <:class_str_item< method $n$ = $e$ >>
+  | Sexpr loc [Slid _ "method"; Sexpr _ [Slid _ n :: sel]; se] ->
+      let e =
+        List.fold_right
+          (fun se e ->
+             let p = patt_se se in
+             <:expr< fun $p$ -> $e$ >>)
+          sel (expr_se se)
+      in
+      <:class_str_item< method $n$ = $e$ >>
   | Sexpr loc [Slid _ "value"; Slid _ "mutable"; Slid _ n; se] ->
       let e = expr_se se in
       <:class_str_item< value mutable $n$ = $e$ >>
@@ -1330,10 +1349,16 @@ and class_expr_se =
       let lbl = anti_list_map let_binding_se sel in
       let ce = class_expr_se se in
       <:class_expr< let $_list:lbl$ in $ce$ >>
-  | Sexpr loc [Slid _ "fun"; se1; se2] ->
-      let p = patt_se se1 in
+  | Sexpr loc [Slid _ "lambda"; se1; se2] ->
       let ce = class_expr_se se2 in
-      <:class_expr< fun $p$ -> $ce$ >>
+      match ipatt_opt_se se1 with
+      [ Left p -> <:class_expr< fun $p$ -> $ce$ >>
+      | Right (se, sel) ->
+          List.fold_right
+            (fun se ce ->
+               let p = ipatt_se se in
+               <:class_expr< fun $p$ -> $ce$ >>)
+            [se :: sel] ce ]
   | Sexpr loc [Slid _ "object"; se :: sel] ->
       let p =
         match se with
