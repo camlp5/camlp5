@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.52 2007/07/06 12:12:48 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.53 2007/07/06 12:24:07 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -3102,13 +3102,11 @@ value class_type_top =
       fun curr next pc ->
         horiz_vertic
           (fun () ->
-             sprintf "%s[%s] -> %s%s" pc.bef
+             sprintf "%s%s -> %s%s" pc.bef
                (ctyp {(pc) with bef = ""; aft = ""} t)
                (curr {(pc) with bef = ""; aft = ""} ct) pc.aft)
           (fun () ->
-             let s1 =
-               ctyp {(pc) with bef = sprintf "%s[" pc.bef; aft = "] ->"} t
-             in
+             let s1 = ctyp {(pc) with aft = " ->"} t in
              let s2 =
                curr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} ct
              in
@@ -3303,13 +3301,13 @@ value class_sig_item_top =
       fun curr next pc ->
         horiz_vertic
           (fun () ->
-             sprintf "%svalue%s %s : %s%s" pc.bef
+             sprintf "%sval%s %s : %s%s" pc.bef
                (if mf then " mutable" else "")
                (var_escaped {(pc) with bef = ""; aft = ""} s)
                (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
           (fun () ->
              let s1 =
-               sprintf "%svalue%s %s :" pc.bef (if mf then " mutable" else "")
+               sprintf "%sval%s %s :" pc.bef (if mf then " mutable" else "")
                  (var_escaped {(pc) with bef = ""; aft = ""} s)
              in
              let s2 =
