@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: grammar.mli,v 1.25 2007/10/29 12:29:21 deraugla Exp $ *)
+(* $Id: grammar.mli,v 1.26 2007/11/14 06:38:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (** Extensible grammars.
@@ -81,25 +81,6 @@ module Unsafe :
 -      itself is not reinitialized.
 -      [Unsafe.clear_entry e] removes all rules of the entry [e]. *)
 
-(** {6 Parsing algorithm} *)
-
-type parse_algorithm = Gramext.parse_algorithm ==
-  [ ImperativeStreams | FunctionalStreams | DefaultAlgorithm ]
-;
-   (** Type of algorithm used in grammar entries.
-         [ImperativeStreams]: use imperative streams
-         [FunctionalStreams]: use functional streams (limited backtrack)
-         [DefaultAlgorithm]: found in the variable [functional_parse] below.
-       The default, when a grammar is created, is [DefaultAlgorithm]. *)
-
-value set_algorithm : g -> parse_algorithm -> unit;
-   (** Set the default algorithm for all entries of the grammar. *)
-
-value functional_parse : ref bool;
-   (** Internally parse with functional parsers, with limited backtrack;
-       if the environment variable CAMLP5_FPARSE is set to [t], the default
-       is [True]; otherwise, the default is [False]. *)
-
 (** {6 Functorial interface} *)
 
    (** Alternative for grammars use. Grammars are no more Ocaml values:
@@ -123,7 +104,6 @@ module type S =
     value parsable : Stream.t char -> parsable;
     value tokens : string -> list (string * int);
     value glexer : Plexing.lexer te;
-    value set_algorithm : parse_algorithm -> unit;
     module Entry :
       sig
         type e 'a = 'y;

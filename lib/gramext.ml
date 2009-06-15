@@ -1,20 +1,14 @@
 (* camlp5r *)
-(* $Id: gramext.ml,v 1.25 2007/10/29 12:29:21 deraugla Exp $ *)
+(* $Id: gramext.ml,v 1.26 2007/11/14 06:38:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Printf;
 
 type parser_t 'a = Stream.t 'a -> Obj.t;
-type fparser_t 'a = Fstream.t 'a -> option (Obj.t * Fstream.t 'a);
-
-type parse_algorithm =
-  [ ImperativeStreams | FunctionalStreams | DefaultAlgorithm ]
-;
 
 type grammar 'te =
   { gtokens : Hashtbl.t Plexing.pattern (ref int);
-    glexer : mutable Plexing.lexer 'te;
-    galgo : mutable parse_algorithm }
+    glexer : mutable Plexing.lexer 'te }
 ;
 
 type g_entry 'te =
@@ -23,8 +17,6 @@ type g_entry 'te =
     elocal : bool;
     estart : mutable int -> parser_t 'te;
     econtinue : mutable int -> int -> Obj.t -> parser_t 'te;
-    fstart : mutable int -> fparser_t 'te;
-    fcontinue : mutable int -> int -> Obj.t -> fparser_t 'te;
     edesc : mutable g_desc 'te }
 and g_desc 'te =
   [ Dlevels of list (g_level 'te)

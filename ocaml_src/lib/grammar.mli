@@ -81,26 +81,6 @@ module Unsafe :
 -      itself is not reinitialized.
 -      [Unsafe.clear_entry e] removes all rules of the entry [e]. *)
 
-(** {6 Parsing algorithm} *)
-
-type parse_algorithm =
-  Gramext.parse_algorithm =
-    ImperativeStreams | FunctionalStreams | DefaultAlgorithm
-;;
-   (** Type of algorithm used in grammar entries.
-         [ImperativeStreams]: use imperative streams
-         [FunctionalStreams]: use functional streams (limited backtrack)
-         [DefaultAlgorithm]: found in the variable [functional_parse] below.
-       The default, when a grammar is created, is [DefaultAlgorithm]. *)
-
-val set_algorithm : g -> parse_algorithm -> unit;;
-   (** Set the default algorithm for all entries of the grammar. *)
-
-val functional_parse : bool ref;;
-   (** Internally parse with functional parsers, with limited backtrack;
-       if the environment variable CAMLP5_FPARSE is set to [t], the default
-       is [True]; otherwise, the default is [False]. *)
-
 (** {6 Functorial interface} *)
 
    (** Alternative for grammars use. Grammars are no more Ocaml values:
@@ -119,7 +99,6 @@ module type S =
     val parsable : char Stream.t -> parsable;;
     val tokens : string -> (string * int) list;;
     val glexer : te Plexing.lexer;;
-    val set_algorithm : parse_algorithm -> unit;;
     module Entry :
       sig
         type 'a e;;
