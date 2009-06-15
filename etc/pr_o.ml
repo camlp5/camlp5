@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.139 2007/12/24 03:41:43 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.140 2007/12/24 04:29:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -910,36 +910,11 @@ EXTEND_PRINTER
       | <:expr< while $e1$ do { $list:el$ } >> ->
           horiz_vertic
             (fun () ->
-               sprintf "%swhile %s do %s done%s" pc.bef
-                 (curr {(pc) with bef = ""; aft = ""} e1)
-                 (hlistl (semi_after expr) curr {(pc) with bef = ""; aft = ""}
-                    el)
-                 pc.aft)
+               pprintf pc "while %p do %p done" curr e1
+                 (hlistl (semi_after expr) curr) el)
             (fun () ->
-               let s1 =
-                 horiz_vertic
-                   (fun () ->
-                      sprintf "%swhile %s do" pc.bef
-                        (curr {(pc) with bef = ""; aft = ""} e1))
-                   (fun () ->
-                      let s1 = sprintf "%swhile" pc.bef in
-                      let s2 =
-                        curr
-                          {(pc) with ind = pc.ind + 2;
-                           bef = tab (pc.ind + 2); aft = ""}
-                          e1
-                      in
-                      let s3 = sprintf "%sdo" (tab pc.ind) in
-                      sprintf "%s\n%s\n%s" s1 s2 s3)
-               in
-               let s2 =
-                 vlistl (semi_after expr) curr
-                   {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                    aft = ""}
-                   el
-               in
-               let s3 = sprintf "%sdone%s" (tab pc.ind) pc.aft in
-               sprintf "%s\n%s\n%s" s1 s2 s3)
+               pprintf pc "@[<a>@[<a>while@;%p@ do@]@;%p@ done@]" curr e1
+                 (vlistl (semi_after expr) curr) el)
       | <:expr< for $lid:v$ = $e1$ $to:d$ $e2$ do { $list:el$ } >> ->
           horiz_vertic
             (fun () ->
