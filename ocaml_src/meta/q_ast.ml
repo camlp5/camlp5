@@ -13,37 +13,32 @@ let not_impl f x =
   failwith ("q_ast_r.ml: " ^ f ^ ", not impl: " ^ desc)
 ;;
 
-let antiquot_loc k loc =
-  let shift_bp =
-    if k = "" then String.length "$"
-    else String.length "$" + String.length k + String.length ":"
-  in
-  let shift_ep = String.length "$" in
-  Stdpp.make_lined_loc (Stdpp.line_nb loc) (Stdpp.bol_pos loc)
-    (Stdpp.first_pos loc + shift_bp, Stdpp.last_pos loc - shift_ep)
-;;
-
-let after_colon e =
-  try
-    let i = String.index e ':' in
-    String.sub e (i + 1) (String.length e - i - 1)
-  with Not_found -> ""
-;;
-
-let eq_before_colon p e =
-  let rec loop i =
-    if i == String.length e then
-      failwith "Internal error in Plexer: incorrect ANTIQUOT"
-    else if i == String.length p then e.[i] == ':'
-    else if p.[i] == e.[i] then loop (i + 1)
-    else false
-  in
-  loop 0
-;;
-
 let call_with r v f a =
   let saved = !r in
   try r := v; let b = f a in r := saved; b with e -> r := saved; raise e
+;;
+
+let eval_antiquot kind e s =
+  try
+    let i = String.index s ',' in
+    let j = String.index_from s (i + 1) ':' in
+    let bp = int_of_string (String.sub s 0 i) in
+    let ep = int_of_string (String.sub s (i + 1) (j - i - 1)) in
+    let s = String.sub s (j + 1) (String.length s - j - 1) in
+    let r =
+      call_with Plexer.dollar_for_antiquot_loc false (Grammar.Entry.parse e)
+        (Stream.of_string s)
+    in
+    let loc =
+      let shift_bp =
+        if kind = "" then String.length "$"
+        else String.length "$" + String.length kind + String.length ":"
+      in
+      let shift_ep = String.length "$" in
+      Stdpp.make_loc (bp + shift_bp, ep - shift_ep)
+    in
+    Some (loc, r)
+  with Not_found -> None
 ;;
 
 let expr_eoi = Grammar.Entry.create Pcaml.gram "expr";;
@@ -174,32 +169,21 @@ module Meta =
       let ln = ln () in
       let rec loop =
         function
-          PaLid (loc, s) ->
-            let a = after_colon s in
-            if a = "" then
-              MLast.ExApp
-                (loc,
-                 MLast.ExApp
-                   (loc,
-                    MLast.ExAcc
-                      (loc, MLast.ExUid (loc, "MLast"),
-                       MLast.ExUid (loc, "PaLid")),
-                    ln),
-                 MLast.ExStr (loc, s))
-            else
-              let r =
-                let loc = Stdpp.make_loc (0, String.length a) in
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExAcc
-                        (loc, MLast.ExUid (loc, "MLast"),
-                         MLast.ExUid (loc, "PaLid")),
-                      ln),
-                   MLast.ExLid (loc, a))
-              in
-              let loc = antiquot_loc "lid" loc in MLast.ExAnt (loc, r)
+          PaLid (_, s) ->
+            let s =
+              match eval_antiquot "lid" expr_eoi s with
+                Some (loc, r) -> MLast.ExAnt (loc, r)
+              | None -> MLast.ExStr (loc, s)
+            in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "PaLid")),
+                  ln),
+               s)
         | PaTyc (_, p, t) ->
             MLast.ExApp
               (loc,
@@ -356,58 +340,36 @@ module Meta =
                      rf),
                   pel),
                loop e)
-        | ExLid (loc, s) ->
-            let a = after_colon s in
-            if a = "" then
-              MLast.ExApp
-                (loc,
-                 MLast.ExApp
-                   (loc,
-                    MLast.ExAcc
-                      (loc, MLast.ExUid (loc, "MLast"),
-                       MLast.ExUid (loc, "ExLid")),
-                    ln),
-                 MLast.ExStr (loc, s))
-            else
-              let r =
-                let loc = Stdpp.make_loc (0, String.length a) in
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExAcc
-                        (loc, MLast.ExUid (loc, "MLast"),
-                         MLast.ExUid (loc, "ExLid")),
-                      ln),
-                   MLast.ExLid (loc, a))
-              in
-              let loc = antiquot_loc "lid" loc in MLast.ExAnt (loc, r)
-        | ExStr (loc, s) ->
-            let a = after_colon s in
-            if a = "" then
-              MLast.ExApp
-                (loc,
-                 MLast.ExApp
-                   (loc,
-                    MLast.ExAcc
-                      (loc, MLast.ExUid (loc, "MLast"),
-                       MLast.ExUid (loc, "ExStr")),
-                    ln),
-                 MLast.ExStr (loc, s))
-            else
-              let r =
-                let loc = Stdpp.make_loc (0, String.length a) in
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExAcc
-                        (loc, MLast.ExUid (loc, "MLast"),
-                         MLast.ExUid (loc, "ExStr")),
-                      ln),
-                   MLast.ExLid (loc, a))
-              in
-              let loc = antiquot_loc "str" loc in MLast.ExAnt (loc, r)
+        | ExLid (_, s) ->
+            let s =
+              match eval_antiquot "lid" expr_eoi s with
+                Some (loc, r) -> MLast.ExAnt (loc, r)
+              | None -> MLast.ExStr (loc, s)
+            in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "ExLid")),
+                  ln),
+               s)
+        | ExStr (_, s) ->
+            let s =
+              match eval_antiquot "str" expr_eoi s with
+                Some (loc, r) -> MLast.ExAnt (loc, r)
+              | None -> MLast.ExStr (loc, s)
+            in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "ExStr")),
+                  ln),
+               s)
         | ExTup (_, el) ->
             MLast.ExApp
               (loc,
@@ -438,19 +400,9 @@ module Meta =
       function
         SgVal (_, s, t) ->
           let s =
-            try
-              let i = String.index s ',' in
-              let j = String.index_from s (i + 1) ':' in
-              let bp = int_of_string (String.sub s 0 i) in
-              let ep = int_of_string (String.sub s (i + 1) (j - i - 1)) in
-              let s = String.sub s (j + 1) (String.length s - j - 1) in
-              let r =
-                call_with Plexer.dollar_for_antiquot_loc false
-                  (Grammar.Entry.parse expr_eoi) (Stream.of_string s)
-              in
-              let loc = antiquot_loc "lid" (Stdpp.make_loc (bp, ep)) in
-              MLast.ExAnt (loc, r)
-            with Not_found | Failure _ -> MLast.ExStr (loc, s)
+            match eval_antiquot "lid" expr_eoi s with
+              Some (loc, r) -> MLast.ExAnt (loc, r)
+            | None -> MLast.ExStr (loc, s)
           in
           MLast.ExApp
             (loc,
@@ -470,8 +422,9 @@ module Meta =
       function
         SgVal (_, s, t) ->
           let s =
-            let a = after_colon s in
-            if a = "" then MLast.PaStr (loc, s) else MLast.PaLid (loc, a)
+            match eval_antiquot "lid" patt_eoi s with
+              Some (loc, r) -> MLast.PaAnt (loc, r)
+            | None -> MLast.PaStr (loc, s)
           in
           MLast.PaApp
             (loc,
@@ -494,10 +447,28 @@ let check_anti_loc s kind =
   try
     let i = String.index s ':' in
     let j = String.index_from s (i + 1) ':' in
-    if String.sub s (i + 1) (j - i - 1) = "lid" then
+    if String.sub s (i + 1) (j - i - 1) = kind then
       String.sub s 0 i ^ String.sub s j (String.length s - j)
     else raise Stream.Failure
   with Not_found -> raise Stream.Failure
+;;
+
+let eq_before_colon p e =
+  let rec loop i =
+    if i == String.length e then
+      failwith "Internal error in Plexer: incorrect ANTIQUOT"
+    else if i == String.length p then e.[i] == ':'
+    else if p.[i] == e.[i] then loop (i + 1)
+    else false
+  in
+  loop 0
+;;
+
+let after_colon e =
+  try
+    let i = String.index e ':' in
+    String.sub e (i + 1) (String.length e - i - 1)
+  with Not_found -> ""
 ;;
 
 let lex = Grammar.glexer Pcaml.gram in

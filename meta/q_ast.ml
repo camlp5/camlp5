@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.4 2007/07/31 23:48:22 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.5 2007/08/01 05:37:37 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -13,33 +13,6 @@ value not_impl f x =
   failwith ("q_ast_r.ml: " ^ f ^ ", not impl: " ^ desc)
 ;
 
-value antiquot_loc k loc =
-  let shift_bp =
-    if k = "" then String.length "$"
-    else String.length "$" + String.length k + String.length ":"
-  in
-  let shift_ep = String.length "$" in
-  Stdpp.make_lined_loc (Stdpp.line_nb loc) (Stdpp.bol_pos loc)
-    (Stdpp.first_pos loc + shift_bp, Stdpp.last_pos loc - shift_ep)
-;
-
-value after_colon e =
-  try
-    let i = String.index e ':' in
-    String.sub e (i + 1) (String.length e - i - 1)
-  with
-  [ Not_found -> "" ]
-;
-
-value eq_before_colon p e =
-  loop 0 where rec loop i =
-    if i == String.length e then
-      failwith "Internal error in Plexer: incorrect ANTIQUOT"
-    else if i == String.length p then e.[i] == ':'
-    else if p.[i] == e.[i] then loop (i + 1)
-    else False
-;
-
 value call_with r v f a =
   let saved = r.val in
   try do {
@@ -49,6 +22,30 @@ value call_with r v f a =
     b
   }
   with e -> do { r.val := saved; raise e }
+;
+
+value eval_antiquot kind e s =
+  try
+    let i = String.index s ',' in
+    let j = String.index_from s (i + 1) ':' in
+    let bp = int_of_string (String.sub s 0 i) in
+    let ep = int_of_string (String.sub s (i + 1) (j - i - 1)) in
+    let s = String.sub s (j + 1) (String.length s - j - 1) in
+    let r =
+      call_with Plexer.dollar_for_antiquot_loc False
+        (Grammar.Entry.parse e) (Stream.of_string s)
+    in
+    let loc =
+      let shift_bp =
+        if kind = "" then String.length "$"
+        else String.length "$" + String.length kind + String.length ":"
+      in
+      let shift_ep = String.length "$" in
+      Stdpp.make_loc (bp + shift_bp, ep - shift_ep)
+    in
+    Some (loc, r)
+  with
+  [ Not_found -> None ]
 ;
 
 value expr_eoi = Grammar.Entry.create Pcaml.gram "expr";
@@ -98,16 +95,13 @@ module Meta =
       let ln = ln () in
       loop p where rec loop =
         fun
-        [ PaLid loc s ->
-            let a = after_colon s in
-            if a = "" then <:expr< MLast.PaLid $ln$ $str:s$ >>
-            else
-              let r =
-                let loc = Stdpp.make_loc (0, String.length a) in
-                <:expr< MLast.PaLid $ln$ $lid:a$ >>
-              in
-              let loc = antiquot_loc "lid" loc in
-              <:expr< $anti:r$ >>
+        [ PaLid _ s ->
+            let s =
+              match eval_antiquot "lid" expr_eoi s with
+              [ Some (loc, r) -> <:expr< $anti:r$ >>
+              | None -> <:expr< $str:s$ >> ]
+            in
+            <:expr< MLast.PaLid $ln$ $s$ >>
         | PaTyc _ p t ->
             <:expr< MLast.PaTyc $ln$ $loop p$ $e_type t$ >>
         | x -> not_impl "e_patt" x ]
@@ -148,26 +142,20 @@ module Meta =
                 (fun (p, e) -> <:expr< ($e_patt p$, $loop e$) >>) pel
             in
             <:expr< MLast.ExLet $ln$ $rf$ $pel$ $loop e$ >>
-        | ExLid loc s ->
-            let a = after_colon s in
-            if a = "" then <:expr< MLast.ExLid $ln$ $str:s$ >>
-            else
-              let r =
-                let loc = Stdpp.make_loc (0, String.length a) in
-                <:expr< MLast.ExLid $ln$ $lid:a$ >>
-              in
-              let loc = antiquot_loc "lid" loc in
-              <:expr< $anti:r$ >>
-        | ExStr loc s ->
-            let a = after_colon s in
-            if a = "" then <:expr< MLast.ExStr $ln$ $str:s$ >>
-            else
-              let r =
-                let loc = Stdpp.make_loc (0, String.length a) in
-                <:expr< MLast.ExStr $ln$ $lid:a$ >>
-              in
-              let loc = antiquot_loc "str" loc in
-              <:expr< $anti:r$ >>
+        | ExLid _ s ->
+            let s =
+              match eval_antiquot "lid" expr_eoi s with
+              [ Some (loc, r) -> <:expr< $anti:r$ >>
+              | None -> <:expr< $str:s$ >> ]
+            in
+            <:expr< MLast.ExLid $ln$ $s$ >>
+        | ExStr _ s ->
+            let s =
+              match eval_antiquot "str" expr_eoi s with
+              [ Some (loc, r) -> <:expr< $anti:r$ >>
+              | None -> <:expr< $str:s$ >> ]
+            in
+            <:expr< MLast.ExStr $ln$ $s$ >>
         | ExTup _ el ->
             <:expr< MLast.ExTup $ln$ $e_list loop el$ >>
         | ExUid _ s ->
@@ -186,20 +174,9 @@ module Meta =
       fun
       [ SgVal _ s t ->
           let s =
-            try
-              let i = String.index s ',' in
-              let j = String.index_from s (i + 1) ':' in
-              let bp = int_of_string (String.sub s 0 i) in
-              let ep = int_of_string (String.sub s (i + 1) (j - i - 1)) in
-              let s = String.sub s (j + 1) (String.length s - j - 1) in
-              let r =
-                call_with Plexer.dollar_for_antiquot_loc False
-                  (Grammar.Entry.parse expr_eoi) (Stream.of_string s)
-              in
-              let loc = antiquot_loc "lid" (Stdpp.make_loc (bp, ep)) in
-              <:expr< $anti:r$ >>
-            with
-            [ Not_found | Failure _ -> <:expr< $str:s$ >> ]
+            match eval_antiquot "lid" expr_eoi s with
+            [ Some (loc, r) -> <:expr< $anti:r$ >>
+            | None -> <:expr< $str:s$ >> ]
           in
           <:expr< MLast.SgVal $ln ()$ $s$ $e_type t$ >>
       | x -> not_impl "e_sig_item" x ]
@@ -208,8 +185,9 @@ module Meta =
       fun
       [ SgVal _ s t ->
           let s =
-            let a = after_colon s in
-            if a = "" then <:patt< $str:s$ >> else <:patt< $lid:a$ >>
+            match eval_antiquot "lid" patt_eoi s with
+            [ Some (loc, r) -> <:patt< $anti:r$ >>
+            | None -> <:patt< $str:s$ >> ]
           in
           <:patt< MLast.SgVal _ $s$ $p_type t$ >>
       | x -> not_impl "p_sig_item" x ]
@@ -221,11 +199,28 @@ value check_anti_loc s kind =
   try
     let i = String.index s ':' in
     let j = String.index_from s (i + 1) ':' in
-    if String.sub s (i + 1) (j - i - 1) = "lid" then
+    if String.sub s (i + 1) (j - i - 1) = kind then
       String.sub s 0 i ^ String.sub s j (String.length s - j)
     else raise Stream.Failure
   with
   [ Not_found -> raise Stream.Failure ]
+;
+
+value eq_before_colon p e =
+  loop 0 where rec loop i =
+    if i == String.length e then
+      failwith "Internal error in Plexer: incorrect ANTIQUOT"
+    else if i == String.length p then e.[i] == ':'
+    else if p.[i] == e.[i] then loop (i + 1)
+    else False
+;
+
+value after_colon e =
+  try
+    let i = String.index e ':' in
+    String.sub e (i + 1) (String.length e - i - 1)
+  with
+  [ Not_found -> "" ]
 ;
 
 let lex = Grammar.glexer Pcaml.gram in
