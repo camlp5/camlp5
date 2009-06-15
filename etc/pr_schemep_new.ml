@@ -22,10 +22,12 @@ type spat_comp_opt =
   | SpoQues of MLast.expr ]
 ;
 
+(*
 type alt 'a 'b =
   [ Left of 'a
   | Right of 'b ]
 ;
+*)
 
 value not_impl name pc x =
   let desc =
@@ -246,6 +248,7 @@ value patt = Eprinter.apply pr_patt;
 
 (* Streams *)
 
+(*
 value stream pc e =
   let rec get =
     fun
@@ -273,6 +276,7 @@ value stream pc e =
        aft = sprintf " :]%s" pc.aft}
       el
 ;
+*)
 
 (* Parsers *)
 
@@ -449,7 +453,9 @@ value parser_case_sh force_vertic pc spe =
   parser_case force_vertic {(pc) with ind = pc.ind + 2} spe
 ;
 
+(*
 value flag_equilibrate_cases = Pcaml.flag_equilibrate_cases;
+*)
 
 value parser_body pc (po, spel) =
   let s1 = ident_option po in
@@ -509,7 +515,10 @@ value print_parser pc e =
   match e with
   [ <:expr< fun (strm__ : Stream.t _) -> $e$ >> ->
       let pa = unparser_body e in
-      parser_body {(pc) with bef = sprintf "%sparser" pc.bef} pa
+      parser_body
+        {(pc) with ind = pc.ind + 1;
+         bef = sprintf "%s(parser" pc.bef; aft = sprintf ")%s" pc.aft}
+        pa
   | e -> expr pc e ]
 ;
 
@@ -517,19 +526,22 @@ value print_match_with_parser pc e =
   match e with
   [ <:expr< let (strm__ : Stream.t _) = $e1$ in $e2$ >> ->
       let pa = unparser_body e2 in
-      let b =
-        sprintf "%smatch %s with parser" pc.bef
-          (expr {(pc) with bef = ""; aft = ""} e1)
-      in
-      parser_body {(pc) with bef = b} pa
+      plistbf 0
+        {(pc) with ind = pc.ind + 1;
+         bef = sprintf "%s(match_with_parser" pc.bef;
+         aft = sprintf ")%s" pc.aft}
+        [(fun pc -> expr pc e1, "");
+         (fun pc -> parser_body pc pa, "")]
   | e -> expr pc e ]
 ;
 
 (* Printers extensions *)
 
+(*
 pr_expr_fun_args.val :=
   extfun pr_expr_fun_args.val with
   [ <:expr< fun (strm__ : $_$) -> $_$ >> as e -> ([], e) ];
+*)
 
 EXTEND_PRINTER
   pr_expr: LEVEL "top"
