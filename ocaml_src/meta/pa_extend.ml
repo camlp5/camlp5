@@ -1262,7 +1262,7 @@ let sslist2 loc min sep s =
     MLast.ExApp
       (loc,
        MLast.ExAcc
-         (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Vala")),
+         (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "VaVal")),
        x)
   in
   sslist_aux loc "a_list2" vala min sep s
@@ -1327,7 +1327,7 @@ let ssopt2 loc s =
     MLast.ExApp
       (loc,
        MLast.ExAcc
-         (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Vala")),
+         (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "VaVal")),
        x)
   in
   ssopt_aux loc "a_opt2" vala s
@@ -1373,7 +1373,7 @@ let ssflag2 loc s =
     MLast.ExApp
       (loc,
        MLast.ExAcc
-         (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Vala")),
+         (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "VaVal")),
        x)
   in
   ssflag_aux loc "a_flag2" vala s

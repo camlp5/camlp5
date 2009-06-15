@@ -47,7 +47,6 @@ module Qast =
       | Loc
       | VaAnt of string * MLast.loc * string
       | VaVal of t
-      | Vala of t
     ;;
     let loc = Ploc.dummy;;
     let expr_node m n =
@@ -113,19 +112,6 @@ module Qast =
                       MLast.ExUid (loc, "VaVal")),
                    e)
           else e
-      | Vala a ->
-          let e = to_expr m a in
-          match e with
-            MLast.ExAnt (_, _) -> e
-          | _ ->
-              if !(Pcaml.strict_mode) then
-                MLast.ExApp
-                  (loc,
-                   MLast.ExAcc
-                     (loc, MLast.ExUid (loc, "Ploc"),
-                      MLast.ExUid (loc, "VaVal")),
-                   e)
-              else e
     and to_expr_label m (l, a) =
       MLast.PaAcc (loc, MLast.PaUid (loc, "MLast"), MLast.PaLid (loc, l)),
       to_expr m a
@@ -183,19 +169,6 @@ module Qast =
                       MLast.PaUid (loc, "VaVal")),
                    p)
           else p
-      | Vala a ->
-          let p = to_patt m a in
-          match p with
-            MLast.PaAnt (_, _) -> p
-          | _ ->
-              if !(Pcaml.strict_mode) then
-                MLast.PaApp
-                  (loc,
-                   MLast.PaAcc
-                     (loc, MLast.PaUid (loc, "Ploc"),
-                      MLast.PaUid (loc, "VaVal")),
-                   p)
-              else p
     and to_patt_label m (l, a) =
       MLast.PaAcc (loc, MLast.PaUid (loc, "MLast"), MLast.PaLid (loc, l)),
       to_patt m a
@@ -266,7 +239,7 @@ let mksequence2 _ =
 let mksequence _ =
   function
     Qast.List [e] -> e
-  | el -> Qast.Node ("ExSeq", [Qast.Loc; Qast.Vala el])
+  | el -> Qast.Node ("ExSeq", [Qast.Loc; Qast.VaVal el])
 ;;
 
 let mkmatchcase _ p aso w e =
@@ -519,7 +492,7 @@ Grammar.extend
                    (fun _ (s : 'str_item) (loc : Ploc.t) -> (s : 'e__1))])],
           Gramext.action
             (fun (a : 'e__1 list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -576,7 +549,7 @@ Grammar.extend
          [[Gramext.Sflag (Gramext.Stoken ("", "rec"))],
           Gramext.action
             (fun (a : bool) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.Bool a) : 'a_flag2));
+               (Qast.VaVal (Qast.Bool a) : 'a_flag2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
@@ -589,7 +562,7 @@ Grammar.extend
               Gramext.Stoken ("", "and"))],
           Gramext.action
             (fun (a : 'let_binding list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -606,7 +579,7 @@ Grammar.extend
               Gramext.Stoken ("", "and"))],
           Gramext.action
             (fun (a : 'type_declaration list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -634,7 +607,7 @@ Grammar.extend
          [[Gramext.Sflag (Gramext.Stoken ("", "rec"))],
           Gramext.action
             (fun (a : bool) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.Bool a) : 'a_flag2));
+               (Qast.VaVal (Qast.Bool a) : 'a_flag2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
@@ -647,7 +620,7 @@ Grammar.extend
               Gramext.Stoken ("", "and"))],
           Gramext.action
             (fun (a : 'mod_binding list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -673,7 +646,7 @@ Grammar.extend
                 (Grammar.Entry.obj (a_STRING : 'a_STRING Grammar.Entry.e)))],
           Gramext.action
             (fun (a : 'a_STRING list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -695,7 +668,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 334, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 319, 19))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -711,7 +684,7 @@ Grammar.extend
                    (fun _ (s : 'str_item) (loc : Ploc.t) -> (s : 'e__2))])],
           Gramext.action
             (fun (a : 'e__2 list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -789,7 +762,7 @@ Grammar.extend
               Gramext.Stoken ("", "and"))],
           Gramext.action
             (fun (a : 'with_constr list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -810,7 +783,7 @@ Grammar.extend
                    (fun _ (s : 'sig_item) (loc : Ploc.t) -> (s : 'e__3))])],
           Gramext.action
             (fun (a : 'e__3 list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -867,7 +840,7 @@ Grammar.extend
               Gramext.Stoken ("", "and"))],
           Gramext.action
             (fun (a : 'type_declaration list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -895,7 +868,7 @@ Grammar.extend
          [[Gramext.Sflag (Gramext.Stoken ("", "rec"))],
           Gramext.action
             (fun (a : bool) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.Bool a) : 'a_flag2));
+               (Qast.VaVal (Qast.Bool a) : 'a_flag2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
@@ -908,7 +881,7 @@ Grammar.extend
               Gramext.Stoken ("", "and"))],
           Gramext.action
             (fun (a : 'mod_decl_binding list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -934,7 +907,7 @@ Grammar.extend
                 (Grammar.Entry.obj (a_STRING : 'a_STRING Grammar.Entry.e)))],
           Gramext.action
             (fun (a : 'a_STRING list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -953,7 +926,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 390, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 375, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -969,7 +942,7 @@ Grammar.extend
                    (fun _ (s : 'sig_item) (loc : Ploc.t) -> (s : 'e__4))])],
           Gramext.action
             (fun (a : 'e__4 list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -1031,7 +1004,7 @@ Grammar.extend
                    (type_parameter : 'type_parameter Grammar.Entry.e)))],
           Gramext.action
             (fun (a : 'type_parameter list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -1041,7 +1014,7 @@ Grammar.extend
          [[Gramext.Sflag (Gramext.Stoken ("", "private"))],
           Gramext.action
             (fun (a : bool) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.Bool a) : 'a_flag2));
+               (Qast.VaVal (Qast.Bool a) : 'a_flag2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
@@ -1109,7 +1082,7 @@ Grammar.extend
               Gramext.Stoken ("", "|"))],
           Gramext.action
             (fun (a : 'match_case list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -1140,7 +1113,7 @@ Grammar.extend
               Gramext.Stoken ("", "|"))],
           Gramext.action
             (fun (a : 'match_case list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -1170,7 +1143,7 @@ Grammar.extend
               Gramext.Stoken ("", "|"))],
           Gramext.action
             (fun (a : 'match_case list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -1195,7 +1168,7 @@ Grammar.extend
          [[Gramext.Sflag (Gramext.Stoken ("", "rec"))],
           Gramext.action
             (fun (a : bool) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.Bool a) : 'a_flag2));
+               (Qast.VaVal (Qast.Bool a) : 'a_flag2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
@@ -1208,7 +1181,7 @@ Grammar.extend
               Gramext.Stoken ("", "and"))],
           Gramext.action
             (fun (a : 'let_binding list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -1223,7 +1196,7 @@ Grammar.extend
          [[Gramext.Sflag (Gramext.Stoken ("", "rec"))],
           Gramext.action
             (fun (a : bool) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.Bool a) : 'a_flag2));
+               (Qast.VaVal (Qast.Bool a) : 'a_flag2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
@@ -1676,7 +1649,7 @@ Grammar.extend
               Gramext.Stoken ("", ","))],
           Gramext.action
             (fun (a : 'expr list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -1723,7 +1696,7 @@ Grammar.extend
               Gramext.Stoken ("", ","))],
           Gramext.action
             (fun (a : 'expr list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -1771,7 +1744,7 @@ Grammar.extend
               Gramext.Stoken ("", ";"))],
           Gramext.action
             (fun (a : 'label_expr list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -1790,7 +1763,7 @@ Grammar.extend
               Gramext.Stoken ("", ";"))],
           Gramext.action
             (fun (a : 'label_expr list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -1807,7 +1780,7 @@ Grammar.extend
               Gramext.Stoken ("", ";"))],
           Gramext.action
             (fun (a : 'expr list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -1903,7 +1876,7 @@ Grammar.extend
               Gramext.Stoken ("", ";"))],
           Gramext.action
             (fun (a : 'expr list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -1934,7 +1907,7 @@ Grammar.extend
          [[Gramext.Sflag (Gramext.Stoken ("", "rec"))],
           Gramext.action
             (fun (a : bool) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.Bool a) : 'a_flag2));
+               (Qast.VaVal (Qast.Bool a) : 'a_flag2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
@@ -1947,7 +1920,7 @@ Grammar.extend
               Gramext.Stoken ("", "and"))],
           Gramext.action
             (fun (a : 'let_binding list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -2092,7 +2065,7 @@ Grammar.extend
               Gramext.Stoken ("", ";"))],
           Gramext.action
             (fun (a : 'label_patt list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -2109,7 +2082,7 @@ Grammar.extend
               Gramext.Stoken ("", ";"))],
           Gramext.action
             (fun (a : 'patt list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -2209,7 +2182,7 @@ Grammar.extend
               Gramext.Stoken ("", ","))],
           Gramext.action
             (fun (a : 'patt list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -2312,7 +2285,7 @@ Grammar.extend
               Gramext.Stoken ("", ";"))],
           Gramext.action
             (fun (a : 'label_ipatt list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -2335,7 +2308,7 @@ Grammar.extend
               Gramext.Stoken ("", ","))],
           Gramext.action
             (fun (a : 'ipatt list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -2484,7 +2457,7 @@ Grammar.extend
                 (Grammar.Entry.obj (typevar : 'typevar Grammar.Entry.e)))],
           Gramext.action
             (fun (a : 'typevar list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -2518,7 +2491,7 @@ Grammar.extend
               Gramext.Stoken ("", ";"))],
           Gramext.action
             (fun (a : 'label_declaration list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -2537,7 +2510,7 @@ Grammar.extend
               Gramext.Stoken ("", "|"))],
           Gramext.action
             (fun (a : 'constructor_declaration list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -2554,7 +2527,7 @@ Grammar.extend
               Gramext.Stoken ("", "*"))],
           Gramext.action
             (fun (a : 'ctyp list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -2619,7 +2592,7 @@ Grammar.extend
               Gramext.Stoken ("", "and"))],
           Gramext.action
             (fun (a : 'ctyp list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -2718,7 +2691,7 @@ Grammar.extend
               Gramext.Stoken ("", "and"))],
           Gramext.action
             (fun (a : 'class_type_declaration list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -2735,7 +2708,7 @@ Grammar.extend
               Gramext.Stoken ("", "and"))],
           Gramext.action
             (fun (a : 'class_declaration list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -2755,7 +2728,7 @@ Grammar.extend
               Gramext.Stoken ("", "and"))],
           Gramext.action
             (fun (a : 'class_type_declaration list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -2772,7 +2745,7 @@ Grammar.extend
               Gramext.Stoken ("", "and"))],
           Gramext.action
             (fun (a : 'class_description list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -2874,7 +2847,7 @@ Grammar.extend
          [[Gramext.Sflag (Gramext.Stoken ("", "rec"))],
           Gramext.action
             (fun (a : bool) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.Bool a) : 'a_flag2));
+               (Qast.VaVal (Qast.Bool a) : 'a_flag2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
@@ -2887,7 +2860,7 @@ Grammar.extend
               Gramext.Stoken ("", "and"))],
           Gramext.action
             (fun (a : 'let_binding list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -2931,7 +2904,7 @@ Grammar.extend
                    (class_self_patt : 'class_self_patt Grammar.Entry.e)))],
           Gramext.action
             (fun (a : 'class_self_patt option) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.Option a) : 'a_opt2));
+               (Qast.VaVal (Qast.Option a) : 'a_opt2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_opt2 : 'a_opt2 Grammar.Entry.e))],
           Gramext.action (fun (a : 'a_opt2) (loc : Ploc.t) -> (a : 'a_opt2))];
@@ -2960,7 +2933,7 @@ Grammar.extend
               Gramext.Stoken ("", ","))],
           Gramext.action
             (fun (a : 'ctyp list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -2984,7 +2957,7 @@ Grammar.extend
                       (cf : 'e__5))])],
           Gramext.action
             (fun (a : 'e__5 list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -3027,7 +3000,7 @@ Grammar.extend
          [[Gramext.Sflag (Gramext.Stoken ("", "private"))],
           Gramext.action
             (fun (a : bool) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.Bool a) : 'a_flag2));
+               (Qast.VaVal (Qast.Bool a) : 'a_flag2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
@@ -3039,7 +3012,7 @@ Grammar.extend
                 (Grammar.Entry.obj (polyt : 'polyt Grammar.Entry.e)))],
           Gramext.action
             (fun (a : 'polyt option) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.Option a) : 'a_opt2));
+               (Qast.VaVal (Qast.Option a) : 'a_opt2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_opt2 : 'a_opt2 Grammar.Entry.e))],
           Gramext.action (fun (a : 'a_opt2) (loc : Ploc.t) -> (a : 'a_opt2))];
@@ -3055,7 +3028,7 @@ Grammar.extend
          [[Gramext.Sflag (Gramext.Stoken ("", "private"))],
           Gramext.action
             (fun (a : bool) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.Bool a) : 'a_flag2));
+               (Qast.VaVal (Qast.Bool a) : 'a_flag2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
@@ -3071,7 +3044,7 @@ Grammar.extend
          [[Gramext.Sflag (Gramext.Stoken ("", "mutable"))],
           Gramext.action
             (fun (a : bool) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.Bool a) : 'a_flag2));
+               (Qast.VaVal (Qast.Bool a) : 'a_flag2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
@@ -3094,7 +3067,7 @@ Grammar.extend
                    (as_lident : 'as_lident Grammar.Entry.e)))],
           Gramext.action
             (fun (a : 'as_lident option) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.Option a) : 'a_opt2));
+               (Qast.VaVal (Qast.Option a) : 'a_opt2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_opt2 : 'a_opt2 Grammar.Entry.e))],
           Gramext.action
@@ -3115,7 +3088,7 @@ Grammar.extend
                       (s : 'e__6))])],
           Gramext.action
             (fun (a : 'e__6 list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -3188,7 +3161,7 @@ Grammar.extend
                    (class_self_type : 'class_self_type Grammar.Entry.e)))],
           Gramext.action
             (fun (a : 'class_self_type option) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.Option a) : 'a_opt2));
+               (Qast.VaVal (Qast.Option a) : 'a_opt2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_opt2 : 'a_opt2 Grammar.Entry.e))],
           Gramext.action (fun (a : 'a_opt2) (loc : Ploc.t) -> (a : 'a_opt2))];
@@ -3204,7 +3177,7 @@ Grammar.extend
                       (csf : 'e__7))])],
           Gramext.action
             (fun (a : 'e__7 list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -3231,7 +3204,7 @@ Grammar.extend
               Gramext.Stoken ("", ","))],
           Gramext.action
             (fun (a : 'ctyp list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -3269,7 +3242,7 @@ Grammar.extend
          [[Gramext.Sflag (Gramext.Stoken ("", "private"))],
           Gramext.action
             (fun (a : bool) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.Bool a) : 'a_flag2));
+               (Qast.VaVal (Qast.Bool a) : 'a_flag2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
@@ -3285,7 +3258,7 @@ Grammar.extend
          [[Gramext.Sflag (Gramext.Stoken ("", "private"))],
           Gramext.action
             (fun (a : bool) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.Bool a) : 'a_flag2));
+               (Qast.VaVal (Qast.Bool a) : 'a_flag2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
@@ -3301,7 +3274,7 @@ Grammar.extend
          [[Gramext.Sflag (Gramext.Stoken ("", "mutable"))],
           Gramext.action
             (fun (a : bool) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.Bool a) : 'a_flag2));
+               (Qast.VaVal (Qast.Bool a) : 'a_flag2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
@@ -3331,7 +3304,7 @@ Grammar.extend
                       (s : 'e__8))])],
           Gramext.action
             (fun (a : 'e__8 list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -3403,7 +3376,7 @@ Grammar.extend
                    (class_self_patt : 'class_self_patt Grammar.Entry.e)))],
           Gramext.action
             (fun (a : 'class_self_patt option) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.Option a) : 'a_opt2));
+               (Qast.VaVal (Qast.Option a) : 'a_opt2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_opt2 : 'a_opt2 Grammar.Entry.e))],
           Gramext.action (fun (a : 'a_opt2) (loc : Ploc.t) -> (a : 'a_opt2))];
@@ -3441,7 +3414,7 @@ Grammar.extend
               Gramext.Stoken ("", ";"))],
           Gramext.action
             (fun (a : 'field_expr list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -3484,7 +3457,7 @@ Grammar.extend
               Gramext.Stoken ("", ";"))],
           Gramext.action
             (fun (a : 'field list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -3493,7 +3466,7 @@ Grammar.extend
          [[Gramext.Sflag (Gramext.Stoken ("", ".."))],
           Gramext.action
             (fun (a : bool) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.Bool a) : 'a_flag2));
+               (Qast.VaVal (Qast.Bool a) : 'a_flag2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
@@ -3688,7 +3661,7 @@ Grammar.extend
                 (Grammar.Entry.obj (name_tag : 'name_tag Grammar.Entry.e)))],
           Gramext.action
             (fun (a : 'name_tag list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -3746,7 +3719,7 @@ Grammar.extend
               Gramext.Stoken ("", "|"))],
           Gramext.action
             (fun (a : 'poly_variant list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -3766,7 +3739,7 @@ Grammar.extend
          [[Gramext.Sflag (Gramext.Stoken ("", "&"))],
           Gramext.action
             (fun (a : bool) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.Bool a) : 'a_flag2));
+               (Qast.VaVal (Qast.Bool a) : 'a_flag2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
@@ -3778,7 +3751,7 @@ Grammar.extend
               Gramext.Stoken ("", "&"))],
           Gramext.action
             (fun (a : 'ctyp list) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.List a) : 'a_list2));
+               (Qast.VaVal (Qast.List a) : 'a_list2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
@@ -3812,7 +3785,7 @@ Grammar.extend
                 (Grammar.Entry.obj (eq_expr : 'eq_expr Grammar.Entry.e)))],
           Gramext.action
             (fun (a : 'eq_expr option) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.Option a) : 'a_opt2));
+               (Qast.VaVal (Qast.Option a) : 'a_opt2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_opt2 : 'a_opt2 Grammar.Entry.e))],
           Gramext.action (fun (a : 'a_opt2) (loc : Ploc.t) -> (a : 'a_opt2))];
@@ -3842,7 +3815,7 @@ Grammar.extend
                 (Grammar.Entry.obj (eq_expr : 'eq_expr Grammar.Entry.e)))],
           Gramext.action
             (fun (a : 'eq_expr option) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.Option a) : 'a_opt2));
+               (Qast.VaVal (Qast.Option a) : 'a_opt2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_opt2 : 'a_opt2 Grammar.Entry.e))],
           Gramext.action (fun (a : 'a_opt2) (loc : Ploc.t) -> (a : 'a_opt2))];
@@ -3899,7 +3872,7 @@ Grammar.extend
                 (Grammar.Entry.obj (eq_expr : 'eq_expr Grammar.Entry.e)))],
           Gramext.action
             (fun (a : 'eq_expr option) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.Option a) : 'a_opt2));
+               (Qast.VaVal (Qast.Option a) : 'a_opt2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_opt2 : 'a_opt2 Grammar.Entry.e))],
           Gramext.action (fun (a : 'a_opt2) (loc : Ploc.t) -> (a : 'a_opt2))];
@@ -3929,7 +3902,7 @@ Grammar.extend
                 (Grammar.Entry.obj (eq_expr : 'eq_expr Grammar.Entry.e)))],
           Gramext.action
             (fun (a : 'eq_expr option) (loc : Ploc.t) ->
-               (Qast.Vala (Qast.Option a) : 'a_opt2));
+               (Qast.VaVal (Qast.Option a) : 'a_opt2));
           [Gramext.Snterm
              (Grammar.Entry.obj (a_opt2 : 'a_opt2 Grammar.Entry.e))],
           Gramext.action (fun (a : 'a_opt2) (loc : Ploc.t) -> (a : 'a_opt2))];

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.64 2007/09/15 13:30:55 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.65 2007/09/16 04:22:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -612,7 +612,7 @@ value sslist loc min sep s =
 ;
 
 value sslist2 loc min sep s =
-  let vala loc x = <:expr< Qast.Vala $x$ >> in
+  let vala loc x = <:expr< Qast.VaVal $x$ >> in
   sslist_aux loc "a_list2" vala min sep s
 ;
 
@@ -660,7 +660,7 @@ value ssopt loc s =
 ;
 
 value ssopt2 loc s =
-  let vala loc x = <:expr< Qast.Vala $x$ >> in
+  let vala loc x = <:expr< Qast.VaVal $x$ >> in
   ssopt_aux loc "a_opt2" vala s
 ;
 
@@ -697,7 +697,7 @@ value ssflag loc s =
 ;
 
 value ssflag2 loc s =
-  let vala loc x = <:expr< Qast.Vala $x$ >> in
+  let vala loc x = <:expr< Qast.VaVal $x$ >> in
   ssflag_aux loc "a_flag2" vala s
 ;
 

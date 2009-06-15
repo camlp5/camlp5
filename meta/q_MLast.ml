@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.87 2007/09/15 16:58:50 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.88 2007/09/16 04:22:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -54,8 +54,7 @@ module Qast =
       | Record of list (string * t)
       | Loc
       | VaAnt of string and MLast.loc and string
-      | VaVal of t
-      | Vala of t ]
+      | VaVal of t ]
     ;
     value loc = Ploc.dummy;
     value expr_node m n =
@@ -98,14 +97,7 @@ module Qast =
                 let loc = MLast.loc_of_expr e in
                 <:expr< $anti:ee$ >>
             | _ -> <:expr< Ploc.VaVal $e$ >> ]
-          else e
-      | Vala a ->
-          let e = to_expr m a in
-          match e with
-          [ <:expr< $anti:_$ >> -> e
-          | _ ->
-              if Pcaml.strict_mode.val then <:expr< Ploc.VaVal $e$ >>
-              else e ] ]
+          else e ]
     and to_expr_label m (l, a) = (<:patt< MLast.$lid:l$ >>, to_expr m a);
     value rec to_patt m =
       fun
@@ -139,14 +131,7 @@ module Qast =
                 let loc = MLast.loc_of_patt p in
                 <:patt< $anti:pp$ >>
             | _ -> <:patt< Ploc.VaVal $p$ >> ]
-          else p
-      | Vala a ->
-          let p = to_patt m a in
-          match p with
-          [ <:patt< $anti:_$ >> -> p
-          | _ ->
-              if Pcaml.strict_mode.val then <:patt< Ploc.VaVal $p$ >>
-              else p ] ]
+          else p ]
     and to_patt_label m (l, a) = (<:patt< MLast.$lid:l$ >>, to_patt m a);
   end
 ;
@@ -213,7 +198,7 @@ value mksequence2 _ =
 value mksequence _ =
   fun
   [ Qast.List [e] -> e
-  | el -> Qast.Node "ExSeq" [Qast.Loc; Qast.Vala el] ]
+  | el -> Qast.Node "ExSeq" [Qast.Loc; Qast.VaVal el] ]
 ;
 
 value mkmatchcase _ p aso w e =
