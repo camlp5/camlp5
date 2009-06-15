@@ -1,5 +1,5 @@
-(* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.145 2007/12/11 14:22:51 deraugla Exp $ *)
+(* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
+(* $Id: pr_r.ml,v 1.146 2007/12/11 18:21:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -127,49 +127,6 @@ value un_irrefut_patt p =
 value test = ref False;
 Pcaml.add_option "-test" (Arg.Set test) " test";
 *)
-
-value sprint_break nspaces offset pc f g =
-  horiz_vertic
-    (fun () ->
-       let sp = String.make nspaces ' ' in
-       sprintf "%s%s%s" (f {(pc) with aft = ""}) sp (g {(pc) with bef = ""}))
-    (fun () ->
-       let s1 = f {(pc) with aft = ""} in
-       let s2 =
-         g {(pc) with ind = pc.ind + offset; bef = tab (pc.ind + offset)}
-       in
-       sprintf "%s\n%s" s1 s2)
-;
-
-value sprint_break_all force_newlines pc f fl =
-  horiz_vertic
-    (fun () ->
-       if force_newlines then sprintf "\n"
-       else
-         loop (f (if fl = [] then pc else {(pc) with aft = ""})) fl
-         where rec loop s =
-           fun
-           [ [(sp, off, f) :: fl] ->
-               let s =
-                 sprintf "%s%s%s" s (String.make sp ' ')
-                   (f {(pc) with bef = "";
-                       aft = if fl = [] then pc.aft else ""})
-               in
-               loop s fl
-           | [] -> s ])
-    (fun () ->
-       loop (f (if fl = [] then pc else {(pc) with aft = ""})) fl
-       where rec loop s =
-         fun
-         [ [(sp, off, f) :: fl] ->
-             let s =
-               sprintf "%s\n%s" s
-                 (f {(pc) with ind = pc.ind + off; bef = tab (pc.ind + off);
-                     aft = if fl = [] then pc.aft else ""})
-             in
-             loop s fl
-         | [] -> s ])
-;
 
 value not_impl name pc x =
   let desc =
