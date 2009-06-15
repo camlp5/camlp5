@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.69 2007/12/13 20:05:44 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.70 2007/12/14 02:56:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -352,19 +352,7 @@ EXTEND_PRINTER
   pr_class_type:
     [ "top"
       [ <:class_type< [ $t$ ] -> $ct$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s[%s] -> %s%s" pc.bef
-                 (ctyp {(pc) with bef = ""; aft = ""} t)
-                 (curr {(pc) with bef = ""; aft = ""} ct) pc.aft)
-            (fun () ->
-               let s1 =
-                 ctyp {(pc) with bef = sprintf "%s[" pc.bef; aft = "] ->"} t
-               in
-               let s2 =
-                 curr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} ct
-               in
-               sprintf "%s\n%s" s1 s2)
+          pprintf pc "[%p] ->@;%p" ctyp t curr ct
       | <:class_type< object $opt:cst$ $list:csi$ end >> ->
           horiz_vertic
             (fun () ->
@@ -373,30 +361,21 @@ EXTEND_PRINTER
                     when alone in a line. *)
                  sprintf "\n"
                else
-                 sprintf "%sobject%s %s end%s" pc.bef
-                   (match cst with
-                   [ Some t ->
-                        sprintf " (%s)"
-                          (ctyp {(pc) with bef = ""; aft = ""} t)
-                    | None -> "" ])
-                   (hlist (semi_after class_sig_item)
-                      {(pc) with bef = ""; aft = ""} csi) pc.aft)
+                 pprintf pc "object%p %p end"
+                   (fun pc ->
+                      fun
+                      [ Some t -> pprintf pc " (%p)" ctyp t
+                      | None -> pprintf pc "" ])
+                   cst
+                   (hlist (semi_after class_sig_item)) csi)
             (fun () ->
-               let s1 =
-                 match cst with
-                 [ None -> sprintf "%sobject" pc.bef
-                 | Some t ->
-                     let pc = {(pc) with aft = ""} in
-                     pprintf pc "object@;(%p)" ctyp t ]
-               in
-               let s2 =
-                 vlist (semi_after class_sig_item)
-                   {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                    aft = ""}
-                   csi
-               in
-               let s3 = sprintf "%send%s" (tab pc.ind) pc.aft in
-               sprintf "%s\n%s\n%s" s1 s2 s3)
+               pprintf pc "@[<b>%p@;%p@ end@]"
+                 (fun pc ->
+                    fun
+                    [ Some t -> pprintf pc "object@;(%p)" ctyp t
+                    | None -> pprintf pc "object" ])
+                 cst
+                 (vlist (semi_after class_sig_item)) csi)
       | <:class_type< $list:cl$ >> ->
           class_longident pc cl
       | <:class_type< $list:cl$ [ $list:ctcl$ ] >> ->
