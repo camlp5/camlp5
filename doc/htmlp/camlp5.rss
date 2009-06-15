@@ -6,6 +6,15 @@
     <lastBuildDate>Mon Sep 17 15:10:47 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
     <item>
+      <title>Locations in quotations and antiquotations</title>
+      <description>
+        Added detailed explanations about the problem of locations in
+        quotations and antiquotations.
+      </description>
+      <pubDate>Tue Oct  9 19:10:10 CEST 2007</pubDate>
+      <link>../quot.html#a:Locations-in-quotations-and-antiquotations</link>
+    </item>
+    <item>
       <title>Module Diff and Equilibrated pretty print</title>
       <description>
         Added module Diff in Camlp5 library to compare two arrays (using

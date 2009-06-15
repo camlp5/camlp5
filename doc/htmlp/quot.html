@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: quot.html,v 1.20 2007/09/18 14:17:28 deraugla Exp $ -->
+  <!-- $Id: quot.html,v 1.21 2007/10/09 17:20:29 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>quotations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -302,6 +302,144 @@
   <li>the other nodes inherit, as location, the location of the full
     quotation.</li>
 </ul>
+
+<h2>Locations in quotations and antiquotations</h2>
+
+<p>This section explains in details the problem of locations in
+  quotations and antiquotations. It is designed for programmers of
+  quotation expanders.</p>
+
+<p>Locations are the difficult point in quotations and antiquotations.
+  If they are not set correctly, error messages may highlight wrong parts
+  of the source.</p>
+
+<p>The locations are controlled:</p>
+
+<ul>
+  <li>for syntax errors: by the exception "<tt>Ploc.Exc</tt>", raised
+    by the function "<tt>Ploc.raise</tt>",</li>
+  <li>for typing errors, by the syntax tree nodes
+    "<tt>&lt;:expr&lt;&nbsp;$anti:...$&nbsp;>></tt>" and
+    "<tt>&lt;:meta&lt;&nbsp;$anti:...$&nbsp;>></tt>".</li>
+</ul>
+
+<p>If the quotation expander never uses them, all syntax and typing errors
+  highlight the whole quotation.</p>
+
+<p>Remark that in <a href="grammars.html">extensible grammars</a>,
+  syntax errors are automatically enclosed by the exception
+  "<tt>Ploc.Exc</tt>". Therefore, if the quotation is parsed by an
+  extensible grammar entry, this exception can be raised.</p>
+
+<p>In the syntax tree nodes
+  "<tt>&lt;:expr&lt;&nbsp;$anti:...$&nbsp;>></tt>" and
+  "<tt>&lt;:meta&lt;&nbsp;$anti:...$&nbsp;>></tt>", the location is
+  indicated by the implicit variable named "<tt>loc</tt>". Their usage
+  is therefore something like:</p>
+
+<pre>
+  let loc = ...computation of the location... in
+  &lt;:expr&lt; $anti:...$ >>
+</pre>
+
+<h3>In the quotation</h3>
+
+<p>All locations must be computed <em>relatively to the quotation
+  string</em>. The quotation string is the string between
+  "<tt>&lt;&lt;</tt>" or "<tt>&lt;:name&lt;</tt>" and "<tt>>></tt>"
+  (excluded), the first character of this string being at location
+  zero.</p>
+
+<p>The quotation system automatically shifts all locations with the
+  location of the quotation: the programmer of the quotation expander
+  does not therefore need to care about where the quotation appears
+  in the source.</p>
+
+<h3>In antiquotations</h3>
+
+<p>In antiquotations, it is important to control how the antiquotation
+  string is parsed. For example, if the function parsing the antiquotation
+  string raises "<tt>Ploc.Exc</tt>", the location of this exception must
+  be shifted with the location of the antiquotation in the quotation.</p>
+
+<p>For example, let us suppose that the source contains:</p>
+
+<pre>
+  &lt;&lt; abc^ijk^(xyz) >>
+</pre>
+
+<p>where the antiquotation is specified between the caret ("<tt>^</tt>")
+  characters. The antiquotation string is "<tt>ijk</tt>". It can be built
+  in the quotation expander by:</p>
+
+<pre>
+  &lt;:expr&lt; ijk >>
+</pre>
+
+<p>If used just like this, without the "<tt>&lt;:expr&lt; $anti:x$ >></tt>",
+  in case of typing error (for example if the variable "<tt>ijk</tt>" is
+  unbound), the OCaml error message will be:</p>
+
+<pre>
+  &lt;&lt; abc^ijk^(xyz) >>
+  ^^^^^^^^^^^^^^^^^^^
+  Unbound value ijk
+</pre>
+
+<p>To put a location to "<tt>ijk</tt>", since its location in the quotation
+  is "<tt>(5, 8)</tt>" (the "<tt>i</tt>" being the 5th characater of the
+  quotation string, starting at zero), the quotation expander can build
+  it like this:</p>
+
+<pre>
+  let e = &lt;:expr&lt; ijk >> in
+  let loc = Ploc.make_unlined (5, 8) in
+  &lt;:expr&lt; $anti:e$ >>
+</pre>
+
+<p>In this case, the possible typing error message will be:</p>
+
+<pre>
+  &lt;&lt; abc^ijk^(xyz) >>
+         ^^^
+  Unbound value ijk
+</pre>
+
+<p>This case is simple, since the antiquotation is just an identifier,
+  and there is no parser computing it.</p>
+
+<p>If the antiquotation has to be parsed, for example if it is a
+  complicated expression, there are two points to care about:</p>
+
+<p>First, the syntax error messages. If the parser of the
+  antiquotation raises "<tt>Ploc.Exc</tt>", its location is relative
+  to the antiquotation.  It must therefore be shifted to correspond to
+  a location in the quotation.  If "<tt>f</tt>" is the parsing
+  function and "<tt>sh</tt>" the shift of the <em>antiquotation</em>
+  in the <em>quotation</em> (whose value is "<tt>5</tt>" in the
+  example), the code must be something like:</p>
+
+<pre>
+  try f () with
+  [ Ploc.Exc loc exc -> Ploc.raise (Ploc.shift sh loc) exc ]
+</pre>
+
+<p>Second, the typing error messages. Here, the above code with
+  "<tt>&lt;:expr&lt;&nbsp;$anti:e$&nbsp;>></tt>" can apply to the
+  resulting tree.</p>
+
+<p>The complete code, taking the possible syntax error messages and
+  the possible typing error messages into account, can be (where
+  "<tt>len</tt>" is the antiquotation length):</p>
+
+<pre>
+  let e =
+    try f () with
+    [ Ploc.Exc loc exc -> Ploc.raise (Ploc.shift sh loc) exc ]
+  in
+  let loc = Ploc.make_unlined (sh, sh + len) in
+  &lt;:expr&lt; $anti:e$ >>
+</pre>
 
 <h2>The Quotation module</h2>
 
