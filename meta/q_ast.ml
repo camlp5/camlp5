@@ -1,11 +1,10 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.27 2007/09/02 19:53:33 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.28 2007/09/02 20:59:49 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
 
 value not_impl f x =
-let _ = do { Printf.eprintf "not_impl\n"; flush stderr; } in
   let desc =
     if Obj.is_block (Obj.repr x) then
       "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
@@ -131,8 +130,11 @@ module Meta =
             in
             match typ with
             [ ""  -> r
+            | "anti" -> <:expr< MLast.PaAnt $ln$ $r$ >>
             | "chr" -> <:expr< MLast.PaChr $ln$ $r$ >>
+            | "int" -> <:expr< MLast.PaInt $ln$ $r$ "" >>
             | "lid" -> <:expr< MLast.PaLid $ln$ $r$ >>
+            | "str" -> <:expr< MLast.PaStr $ln$ $r$ >>
             | "uid" -> <:expr< MLast.PaUid $ln$ $r$ >>
             | x -> not_impl ("e_patt anti " ^ x) 0 ]
         | None ->
@@ -149,8 +151,8 @@ module Meta =
             | PaLid _ s -> <:expr< MLast.PaLid $ln$ $str:s$ >>
             | PaOrp _ p1 p2 -> <:expr< MLast.PaOrp $ln$ $loop p1$ $loop p2$ >>
             | PaRng _ p1 p2 -> <:expr< MLast.PaRng $ln$ $loop p1$ $loop p2$ >>
+            | PaStr _ s -> <:expr< MLast.PaStr $ln$ $str:s$ >>
 (*
-            | PaStr _ s -> <:expr< MLast.PaStr $ln$ $e_string s$ >>
             | PaTyc _ p t -> <:expr< MLast.PaTyc $ln$ $loop p$ $e_ctyp t$ >>
 *)
             | PaUid _ s -> <:expr< MLast.PaUid $ln$ $str:s$ >>
@@ -381,8 +383,11 @@ EXTEND
   ;
   Pcaml.patt: LAST
     [ [ s = ANTIQUOT "" -> make_anti loc "" s
+      | s = ANTIQUOT "anti" -> make_anti loc "anti" s
       | s = ANTIQUOT "chr" -> make_anti loc "chr" s
+      | s = ANTIQUOT "int" -> make_anti loc "int" s
       | s = ANTIQUOT "lid" -> make_anti loc "lid" s
+      | s = ANTIQUOT "str" -> make_anti loc "str" s
       | s = ANTIQUOT "uid" -> make_anti loc "uid" s ] ]
   ;
   ipatt: LAST
@@ -442,6 +447,7 @@ value check_anti s kind =
 ;
 
 let lex = Grammar.glexer Pcaml.gram in
+let tok_match = lex.Plexing.tok_match in
 lex.Plexing.tok_match :=
   fun
   [ (*("ANTIQUOT_LOC", "") ->
@@ -485,14 +491,12 @@ lex.Plexing.tok_match :=
       fun
       [ ("ANTIQUOT_LOC", prm) -> check_anti_loc prm "a_opt"
       | _ -> raise Stream.Failure ]
-  | *) ("FLAG", prm) ->
-let _ = do { Printf.eprintf "yop %s\n" prm; flush stderr; } in
+  | ("FLAG", "") ->
       fun
-      [ ("ANTIQUOT", prm) ->
-let _ = do { Printf.eprintf "yep %s\n" prm; flush stderr; } in
-          check_anti prm "flag"
+      [ ("ANTIQUOT_loc", prm) -> check_anti_loc prm "flag"
       | _ -> raise Stream.Failure ]
-  | tok -> Plexing.default_match tok ]
+*)
+  | tok -> tok_match tok ]
 ;
 
 (* reinit the entry functions to take the new tok_match into account *)

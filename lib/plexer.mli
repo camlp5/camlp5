@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.mli,v 1.13 2007/09/02 19:30:29 deraugla Exp $ *)
+(* $Id: plexer.mli,v 1.14 2007/09/02 20:59:49 deraugla Exp $ *)
 
 (** This module contains the lexer used for ocaml syntax (revised and
     normal). *)
@@ -81,6 +81,6 @@ value no_quotations : ref bool;
    (** When True, all lexers built by [Plexer.gmake ()] do not lex the
        quotation syntax. Default is False (quotations are lexed). *)
 
-(**/**)
+(*** For system use *)
 
 value force_antiquot : ref bool;
