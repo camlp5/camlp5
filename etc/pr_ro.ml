@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.63 2007/12/13 02:49:30 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.64 2007/12/13 09:52:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -217,32 +217,23 @@ EXTEND_PRINTER
           [ Some e -> pprintf pc "?(%p =@;%p)" patt_tcon p expr e
           | None -> pprintf pc "?(%p)" patt_tcon p ]
       | <:patt< ?$i$: ($p$ $opt:eo$) >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s?%s:(%s%s)%s" pc.bef i
-                 (patt {(pc) with bef = ""; aft = ""} p)
-                 (match eo with
-                  [ Some e ->
-                      sprintf " = %s" (expr {(pc) with bef = ""; aft = ""} e)
-                  | None -> "" ])
-                 pc.aft)
-            (fun () -> not_impl "patt ?i:(p=e) vertic" pc i)
+          match eo with
+          [ Some e ->
+              pprintf pc "?%s:@;<0 1>@[<1>(%p =@ %p)@]" i patt p expr e
+          | None ->
+              pprintf pc "?%s:@;<0 1>(%p)" i patt p ]
       | <:patt< ~$s$ >> ->
-          sprintf "%s~%s%s" pc.bef s pc.aft
+          pprintf pc "~%s" s
       | <:patt< ~$s$: $p$ >> ->
-          curr {(pc) with bef = sprintf "%s~%s:" pc.bef s} p
+          pprintf pc "~%s:%p" s curr p
       | <:patt< `$s$ >> ->
-          sprintf "%s`%s%s" pc.bef s pc.aft
+          pprintf pc "`%s" s
       | <:patt< # $list:sl$ >> ->
-          mod_ident {(pc) with bef = sprintf "%s#" pc.bef} sl ] ]
+          pprintf pc "#%p" mod_ident sl ] ]
   ;
   pr_expr: LEVEL "apply"
     [ [ <:expr< new $list:cl$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%snew %s%s" pc.bef
-                 (class_longident {(pc) with bef = ""; aft = ""} cl) pc.aft)
-            (fun () -> not_impl "new vertic" pc cl)
+          pprintf pc "new@;%p" class_longident cl
       | <:expr< object $opt:csp$ $list:csl$ end >> ->
           class_object pc (csp, csl) ]
     | "label"
@@ -257,12 +248,7 @@ EXTEND_PRINTER
             {(pc) with bef = sprintf "%s~%s:" pc.bef s} e ] ]
   ;
   pr_expr: LEVEL "dot"
-    [ [ <:expr< $e$ # $lid:s$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s%s#%s%s" pc.bef
-                 (curr {(pc) with bef = ""; aft = ""} e) s pc.aft)
-            (fun () -> not_impl "# vertic" pc e) ] ]
+    [ [ <:expr< $e$ # $lid:s$ >> -> pprintf pc "%p#@;<0 0>%s" curr e s ] ]
   ;
   pr_expr: LEVEL "simple"
     [ [ <:expr< ( $e$ : $t$ :> $t2$ ) >> ->
@@ -447,13 +433,7 @@ EXTEND_PRINTER
           class_longident pc cl
       | <:class_expr< $list:cl$ [ $list:ctcl$ ] >> ->
           let ctcl = List.map (fun ct -> (ct, ",")) ctcl in
-          horiz_vertic
-            (fun  () ->
-               sprintf "%s%s [%s]%s" pc.bef
-                 (class_longident {(pc) with bef = ""; aft = ""} cl)
-                 (plist ctyp 0 {(pc) with bef = ""; aft = ""} ctcl)
-                 pc.aft)
-            (fun  () -> not_impl "class_expr c [t, t] vertic" pc cl)
+          pprintf pc "%p@;@[<1>[%p]@]" class_longident cl (plist ctyp 0) ctcl
       | <:class_expr< object $opt:csp$ $list:csl$ end >> ->
           class_object pc (csp, csl)
       | <:class_expr< ($ce$ : $ct$) >> ->
@@ -514,13 +494,8 @@ EXTEND_PRINTER
                  match cst with
                  [ None -> sprintf "%sobject" pc.bef
                  | Some t ->
-                     horiz_vertic
-                       (fun () ->
-                          sprintf "%sobject (%s)" pc.bef
-                            (ctyp {(pc) with bef = ""; aft = ""} t))
-                       (fun () ->
-                          not_impl "class_type vertic 1" {(pc) with aft = ""}
-                            t) ]
+                     let pc = {(pc) with aft = ""} in
+                     pprintf pc "object@;(%p)" ctyp t ]
                in
                let s2 =
                  vlist (semi_after class_sig_item)
@@ -534,22 +509,13 @@ EXTEND_PRINTER
           class_longident pc cl
       | <:class_type< $list:cl$ [ $list:ctcl$ ] >> ->
           let ctcl = List.map (fun ct -> (ct, ",")) ctcl in
-          horiz_vertic
-            (fun  () ->
-               sprintf "%s%s [%s]%s" pc.bef
-                 (class_longident {(pc) with bef = ""; aft = ""} cl)
-                 (plist ctyp 0 {(pc) with bef = ""; aft = ""} ctcl)
-                 pc.aft)
-            (fun  () -> not_impl "class_type c [t, t] vertic" pc cl) ] ]
+          pprintf pc "%p@;@[<1>[%p]@]" class_longident cl
+            (plist ctyp 0) ctcl ] ]
   ;
   pr_class_sig_item:
     [ "top"
       [ <:class_sig_item< inherit $ct$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%sinherit %s%s" pc.bef
-                 (class_type {(pc) with bef = ""; aft = ""} ct) pc.aft)
-            (fun () -> not_impl "class_sig_item inherit vertic" pc ct)
+          pprintf pc "inherit@;%p" class_type ct
       | <:class_sig_item< method $flag:priv$ $lid:s$ : $t$ >> ->
           sig_method_or_method_virtual pc "" priv s t
       | <:class_sig_item< method virtual $flag:priv$ $lid:s$ : $t$ >> ->
@@ -670,12 +636,7 @@ EXTEND_PRINTER
                in
                sprintf "%s\n%s" s1 s2)
       | <:class_str_item< type $t1$ = $t2$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%stype %s = %s%s" pc.bef
-                 (ctyp {(pc) with bef = ""; aft = ""} t1)
-                 (ctyp {(pc) with bef = ""; aft = ""} t2) pc.aft)
-            (fun () -> not_impl "class_str_item type vertic" pc t1)
+          pprintf pc "type %p =@;%p" ctyp t1 ctyp t2
       | <:class_str_item< value $flag:mf$ $lid:s$ = $e$ >> ->
           horiz_vertic
             (fun () ->

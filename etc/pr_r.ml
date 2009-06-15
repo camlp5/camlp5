@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.147 2007/12/11 19:40:46 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.148 2007/12/13 09:52:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -526,18 +526,12 @@ value type_decl pc td =
          pprintf pc "%p%s%p =@;%p%p" var_escaped (Pcaml.unvala tn)
            (if Pcaml.unvala tp = [] then "" else " ")
            (hlist type_var) (Pcaml.unvala tp) ctyp te
-           (fun pc cl ->
-              if Pcaml.unvala cl = [] then ""
-              else not_impl "type_decl cl 1" pc cl)
-           cl
+           (hlist type_constraint) (Pcaml.unvala cl)
        else
          pprintf pc "@[<a>%p%s%p =@;%p%p@ @]" var_escaped (Pcaml.unvala tn)
            (if Pcaml.unvala tp = [] then "" else " ")
            (hlist type_var) (Pcaml.unvala tp) ctyp te
-           (fun pc cl ->
-              if Pcaml.unvala cl = [] then ""
-              else not_impl "type_decl cl 2" pc cl)
-           cl)
+           (hlist type_constraint) (Pcaml.unvala cl))
 ;
 
 value label_decl pc (_, l, m, t) =
