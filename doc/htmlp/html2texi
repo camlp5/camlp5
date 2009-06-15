@@ -1,12 +1,12 @@
 #!/bin/sh
-# $Id: html2texi,v 1.15 2007/08/29 02:22:34 deraugla Exp $
+# $Id: html2texi,v 1.16 2007/08/29 04:16:48 deraugla Exp $
 
 FILES1="index.html ptools.html"
 FILES2="parsers.html lexers.html fparsers.html grammars.html"
 FILES3="printers.html pretty.html"
 FILES4="locations.html ml_ast.html pcaml.html syntext.html opretty.html quot.html revsynt.html scheme.html macros.html pragma.html extfun.html"
 FILES5="conclusion.html"
-FILES6="commands.html library.html sources.html"
+FILES6="commands.html library.html sources.html about.html"
 FILES="$FILES1 1 $FILES2 2 $FILES3 3 $FILES4 4 $FILES5 5 $FILES6"
 VERSION="$(grep "value version =" ../../main/pcaml.ml | sed -e 's/^[^"]*"\([^"]*\).*$/\1/')"
 
@@ -157,7 +157,8 @@ for i in $FILES; do
       -e 's|</th></tr>|\n@item\n|g' \
       -e 's|<tr><td>|@item |g' -e 's|</td><td[^>]*>| @tab |g' \
       -e 's|</td></tr>|\n|g' \
-      -e 's/&lt;/</g' -e 's/&gt;/>/g' -e 's/&nbsp;/ /g' -e 's/&amp;/\&/g'
+      -e 's/&lt;/</g' -e 's/&gt;/>/g' -e 's/&nbsp;/ /g' -e 's/&amp;/\&/g' \
+      -e "s|<version/>|$VERSION|"
   fi
 done |
 sh ./tmp
