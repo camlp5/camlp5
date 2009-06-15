@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: quot.html,v 1.9 2007/07/28 11:50:04 deraugla Exp $ -->
+  <!-- $Id: quot.html,v 1.10 2007/07/29 00:48:19 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>quotations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -303,9 +303,64 @@
     quotation.</li>
 </ul>
 
-<h2>The Quotation module *</h2>
+<h2>The Quotation module</h2>
 
-<p>...to be written...</p>
+<pre style="border:0; margin-left: 1cm">
+type expander =
+  [ ExStr of bool -> string -> string
+  | ExAst of (string -> MLast.expr * string -> MLast.patt) ]
+;
+</pre>
+
+<dl><dd>
+    It is the type for quotatation expander kinds:
+    <ul>
+      <li>"<tt>Quotation.ExStr exp</tt>" corresponds to an expander
+        "<tt>exp</tt>" returning a string which is parsed by the
+        system to create a syntax tree. Its boolean parameter tells
+        whether the quotation is in position of an expression (True)
+        or in position of a pattern (False). Quotations expanders
+        created this way may work for some particular ocaml syntax,
+        and not for another one (e.g. may work when used with revised
+        syntax and not when used with normal syntax, and
+        conversely).</li>
+      <li>"<tt>Quotation.ExAst (expr_exp, patt_exp)</tt>" corresponds
+        to expanders returning syntax trees, therefore not necessiting
+        to be parsed afterwards.  The function "<tt>expr_exp</tt>" is
+        called when the quotation is in position of an expression, and
+        "<tt>patt_exp</tt>" when the quotation is in position of a
+        pattern. Quotation expanders created this way are independent
+        from the enclosing syntax.</li>
+    </ul>
+</dd></dl>
+
+<dl>
+  <dt>value add : string -> expander -> unit;</dt>
+  <dd>"<tt>Quotation.add name exp</tt>" adds the quotation "<tt>name</tt>"
+    associated with the expander "<tt>exp</tt>".</dd>
+</dl>
+
+<dl>
+  <dt>value find : string -> expander;</dt>
+  <dd>"<tt>Quotation.find name</tt>" returns the quotation expander of
+    the given name.</dd>
+</dl>
+
+<dl>
+  <dt>value default : ref string;</dt>
+  <dd>The name of the default quotation : it is possible to use this
+    quotation between "<tt>&lt;&lt;</tt>" and "<tt>&gt;&gt;</tt>"
+    without having to specify its name.</dd>
+</dl>
+
+<dl>
+  <dt>value translate : ref (string -> string);</dt>
+  <dd>Function translating quotation names; default = identity.</dd>
+</dl>
+
+<h2>Predefined quotations</h2>
+
+<p>... to be written ...</p>
 
 <h2>A full example: lambda terms</h2>
 
