@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.56 2007/09/12 14:12:30 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.57 2007/09/12 16:02:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -217,12 +217,10 @@ module Meta =
           END
         | x -> not_impl "p_ctyp" x ]
     ;
-(*
     value e_type_decl =
       fun
       [ x -> not_impl "e_type_decl" x ]
     ;
-*)
     value e_patt p =
       let ln = ln () in
       loop p where rec loop =
@@ -390,27 +388,31 @@ module Meta =
             <:expr< MLast.StExc $ln$ $s$ $lt$ $ls$ >>
 (*
         | StExp _ e -> <:expr< MLast.StExp $ln$ $e_expr e$ >>
+*)
         | StExt _ s t ls ->
-            let ls = e_list e_string ls in
-            <:expr< MLast.StExt $ln$ $e_string s$ $e_ctyp t$ $ls$ >>
+            let ls = e_vala (e_list e_string) ls in
+            <:expr< MLast.StExt $ln$ $e_vala e_string s$ $e_ctyp t$ $ls$ >>
         | StInc _ me -> <:expr< MLast.StInc $ln$ $e_module_expr me$ >>
         | StMod _ rf lsme ->
             let lsme =
-              e_list
-                (fun (s, me) -> <:expr< ($e_string s$, $e_module_expr me$) >>)
+              e_vala
+                (e_list
+                   (fun (s, me) ->
+                      <:expr< ($e_string s$, $e_module_expr me$) >>))
                 lsme
             in
             <:expr< MLast.StMod $ln$ $e_vala e_bool rf$ $lsme$ >>
         | StMty _ s mt ->
-            <:expr< MLast.StMty $ln$ $e_string s$ $e_module_type mt$ >>
+            <:expr< MLast.StMty $ln$ $e_vala e_string s$ $e_module_type mt$ >>
         | StOpn _ sl ->
-            <:expr< MLast.StOpn $ln$ $e_list e_string sl$ >>
+            <:expr< MLast.StOpn $ln$ $e_vala (e_list e_string) sl$ >>
         | StTyp _ ltd ->
-            <:expr< MLast.StTyp $ln$ $e_list e_type_decl ltd$ >>
-*)
+            <:expr< MLast.StTyp $ln$ $e_vala (e_list e_type_decl) ltd$ >>
         | StVal _ rf lpe ->
             let lpe =
-              e_list (fun (p, e) -> <:expr< ($e_patt p$, $e_expr e$) >>) lpe
+              e_vala
+                (e_list (fun (p, e) -> <:expr< ($e_patt p$, $e_expr e$) >>))
+                lpe
             in
             <:expr< MLast.StVal $ln$ $e_vala e_bool rf$ $lpe$ >>
         | x -> not_impl "e_str_item" x ]

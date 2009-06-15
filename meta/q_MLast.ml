@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.68 2007/09/11 19:14:13 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.69 2007/09/12 16:02:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -340,28 +340,24 @@ EXTEND
             | _ -> match () with [] ]
           in
           Qast.Node "StExc" [Qast.Loc; c; tl; b]
-      | "external"; i = a_LIDENT; ":"; t = ctyp; "="; pd = SLIST1 a_STRING ->
+      | "external"; i = a_LIDENT2; ":"; t = ctyp; "=";
+        pd = SV LIST1 a_STRING ->
           Qast.Node "StExt" [Qast.Loc; i; t; pd]
       | "include"; me = module_expr -> Qast.Node "StInc" [Qast.Loc; me]
-      | "module"; r = SFLAG "rec"; l = SLIST1 mod_binding SEP "and" ->
+      | "module"; r = SV FLAG "rec"; l = SV LIST1 mod_binding SEP "and" ->
           Qast.Node "StMod" [Qast.Loc; r; l]
-      | "module"; "type"; i = a_UIDENT; "="; mt = module_type ->
+      | "module"; "type"; i = a_UIDENT2; "="; mt = module_type ->
           Qast.Node "StMty" [Qast.Loc; i; mt]
-      | "open"; i = mod_ident -> Qast.Node "StOpn" [Qast.Loc; i]
-      | "type"; tdl = SLIST1 type_declaration SEP "and" ->
+      | "open"; i = mod_ident2 -> Qast.Node "StOpn" [Qast.Loc; i]
+      | "type"; tdl = SV LIST1 type_declaration SEP "and" ->
           Qast.Node "StTyp" [Qast.Loc; tdl]
-      | "value"; r = SV FLAG "rec"; l = SLIST1 let_binding SEP "and" ->
+      | "value"; r = SV FLAG "rec"; l = SV LIST1 let_binding SEP "and" ->
           Qast.Node "StVal" [Qast.Loc; r; l]
       | e = expr -> Qast.Node "StExp" [Qast.Loc; e] ] ]
   ;
   rebind_exn:
-    [ [ "="; sl = mod_ident -> Qast.VaVal sl
-      | "="; a = a_mod_ident -> a
+    [ [ "="; a = mod_ident2 -> a
       | -> Qast.VaVal (Qast.List []) ] ]
-  ;
-  a_mod_ident:
-    [ [ s = ANTIQUOT -> Qast.VaVal (antiquot "" loc s)
-      | s = ANTIQUOT "a" -> antiquot "a" loc s ] ]
   ;
   mod_binding:
     [ [ i = a_UIDENT; me = mod_fun_binding -> Qast.Tuple [i; me] ] ]
@@ -917,6 +913,11 @@ EXTEND
   ident:
     [ [ i = a_LIDENT -> i
       | i = a_UIDENT -> i ] ]
+  ;
+  mod_ident2:
+    [ [ sl = mod_ident -> Qast.VaVal sl
+      | s = ANTIQUOT -> Qast.VaVal (antiquot "" loc s)
+      | s = ANTIQUOT "a" -> antiquot "a" loc s ] ]
   ;
   mod_ident:
     [ RIGHTA

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: reloc.ml,v 1.20 2007/09/10 22:46:41 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.21 2007/09/12 16:02:06 deraugla Exp $ *)
 
 open MLast;
 
@@ -286,14 +286,18 @@ and str_item floc sh =
     | StInc loc x1 -> StInc (floc loc) (module_expr floc sh x1)
     | StMod loc x1 x2 ->
         StMod (floc loc) x1
-          (List.map (fun (n, me) -> (n, module_expr floc sh me)) x2)
+          (vala_map (List.map (fun (n, me) -> (n, module_expr floc sh me)))
+             x2)
     | StMty loc x1 x2 -> StMty (floc loc) x1 (module_type floc sh x2)
     | StOpn loc x1 -> StOpn (floc loc) x1
-    | StTyp loc x1 -> StTyp (floc loc) (List.map (type_decl floc sh) x1)
+    | StTyp loc x1 ->
+        StTyp (floc loc) (vala_map (List.map (type_decl floc sh)) x1)
     | StUse loc x1 x2 -> StUse loc x1 x2
     | StVal loc x1 x2 ->
         StVal (floc loc) x1
-          (List.map (fun (x1, x2) -> (patt floc sh x1, expr floc sh x2)) x2) ]
+          (vala_map
+             (List.map (fun (x1, x2) -> (patt floc sh x1, expr floc sh x2)))
+                x2) ]
 and type_decl floc sh td =
   {(td) with
    tdNam = (floc (fst td.tdNam), snd td.tdNam);

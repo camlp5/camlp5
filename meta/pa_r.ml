@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.70 2007/09/12 14:12:30 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.71 2007/09/12 16:02:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -135,28 +135,23 @@ EXTEND
           <:str_item< declare $alist:st$ end >>
       | "exception"; (_, c, tl) = constructor_declaration; b = rebind_exn ->
           <:str_item< exception $auid:c$ of $alist:tl$ = $a:b$ >>
-      | "external"; i = LIDENT; ":"; t = ctyp; "="; pd = LIST1 STRING ->
-          <:str_item< external $lid:i$ : $t$ = $list:pd$ >>
+      | "external"; i = V LIDENT; ":"; t = ctyp; "="; pd = V LIST1 STRING ->
+          <:str_item< external $alid:i$ : $t$ = $alist:pd$ >>
       | "include"; me = module_expr -> <:str_item< include $me$ >>
-      | "module"; r = FLAG "rec"; l = LIST1 mod_binding SEP "and" ->
-          <:str_item< module $flag:r$ $list:l$ >>
-      | "module"; "type"; i = UIDENT; "="; mt = module_type ->
-          <:str_item< module type $uid:i$ = $mt$ >>
-      | "open"; i = mod_ident -> <:str_item< open $i$ >>
-      | "type"; tdl = LIST1 type_declaration SEP "and" ->
-          <:str_item< type $list:tdl$ >>
-      | "value"; r = V FLAG "rec"; l = LIST1 let_binding SEP "and" ->
-          <:str_item< value $aflag:r$ $list:l$ >>
+      | "module"; r = V FLAG "rec"; l = V LIST1 mod_binding SEP "and" ->
+          <:str_item< module $aflag:r$ $alist:l$ >>
+      | "module"; "type"; i = V UIDENT; "="; mt = module_type ->
+          <:str_item< module type $auid:i$ = $mt$ >>
+      | "open"; i = mod_ident2 -> <:str_item< open $a:i$ >>
+      | "type"; tdl = V LIST1 type_declaration SEP "and" ->
+          <:str_item< type $alist:tdl$ >>
+      | "value"; r = V FLAG "rec"; l = V LIST1 let_binding SEP "and" ->
+          <:str_item< value $aflag:r$ $alist:l$ >>
       | e = expr -> <:str_item< $exp:e$ >> ] ]
   ;
   rebind_exn:
-    [ [ "="; sl = mod_ident -> <:vala< sl >>
-      | "="; a = a_mod_ident -> a
+    [ [ "="; a = mod_ident2 -> a
       | -> <:vala< [] >> ] ]
-  ;
-  a_mod_ident:
-    [ [ s = ANTIQUOT_LOC -> <:vala< $s$ >>
-      | s = ANTIQUOT_LOC "a" -> <:vala< $s$ >> ] ]
   ;
   mod_binding:
     [ [ i = UIDENT; me = mod_fun_binding -> (i, me) ] ]
@@ -501,6 +496,11 @@ EXTEND
   ident:
     [ [ i = LIDENT -> i
       | i = UIDENT -> i ] ]
+  ;
+  mod_ident2:
+    [ [ sl = mod_ident -> <:vala< sl >>
+      | s = ANTIQUOT_LOC -> <:vala< $s$ >>
+      | s = ANTIQUOT_LOC "a" -> <:vala< $s$ >> ] ]
   ;
   mod_ident:
     [ RIGHTA

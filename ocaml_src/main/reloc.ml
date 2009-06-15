@@ -280,15 +280,17 @@ and str_item floc sh =
     | StMod (loc, x1, x2) ->
         StMod
           (floc loc, x1,
-           List.map (fun (n, me) -> n, module_expr floc sh me) x2)
+           vala_map (List.map (fun (n, me) -> n, module_expr floc sh me)) x2)
     | StMty (loc, x1, x2) -> StMty (floc loc, x1, module_type floc sh x2)
     | StOpn (loc, x1) -> StOpn (floc loc, x1)
-    | StTyp (loc, x1) -> StTyp (floc loc, List.map (type_decl floc sh) x1)
+    | StTyp (loc, x1) ->
+        StTyp (floc loc, vala_map (List.map (type_decl floc sh)) x1)
     | StUse (loc, x1, x2) -> StUse (loc, x1, x2)
     | StVal (loc, x1, x2) ->
         StVal
           (floc loc, x1,
-           List.map (fun (x1, x2) -> patt floc sh x1, expr floc sh x2) x2)
+           vala_map
+             (List.map (fun (x1, x2) -> patt floc sh x1, expr floc sh x2)) x2)
   in
   self
 and type_decl floc sh td =

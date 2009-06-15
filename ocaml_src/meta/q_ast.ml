@@ -323,6 +323,7 @@ module Meta =
       in
       loop
     ;;
+    let e_type_decl x = not_impl "e_type_decl" x;;
     let e_patt p =
       let ln = ln () in
       let rec loop =
@@ -999,9 +1000,91 @@ module Meta =
                      s),
                   lt),
                ls)
+        | StExt (_, s, t, ls) ->
+            let ls = e_vala (e_list e_string) ls in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExApp
+                       (loc,
+                        MLast.ExAcc
+                          (loc, MLast.ExUid (loc, "MLast"),
+                           MLast.ExUid (loc, "StExt")),
+                        ln),
+                     e_vala e_string s),
+                  e_ctyp t),
+               ls)
+        | StInc (_, me) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "StInc")),
+                  ln),
+               e_module_expr me)
+        | StMod (_, rf, lsme) ->
+            let lsme =
+              e_vala
+                (e_list
+                   (fun (s, me) ->
+                      MLast.ExTup (loc, [e_string s; e_module_expr me])))
+                lsme
+            in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "StMod")),
+                     ln),
+                  e_vala e_bool rf),
+               lsme)
+        | StMty (_, s, mt) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "StMty")),
+                     ln),
+                  e_vala e_string s),
+               e_module_type mt)
+        | StOpn (_, sl) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "StOpn")),
+                  ln),
+               e_vala (e_list e_string) sl)
+        | StTyp (_, ltd) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "StTyp")),
+                  ln),
+               e_vala (e_list e_type_decl) ltd)
         | StVal (_, rf, lpe) ->
             let lpe =
-              e_list (fun (p, e) -> MLast.ExTup (loc, [e_patt p; e_expr e]))
+              e_vala
+                (e_list
+                   (fun (p, e) -> MLast.ExTup (loc, [e_patt p; e_expr e])))
                 lpe
             in
             MLast.ExApp

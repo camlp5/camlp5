@@ -401,8 +401,6 @@ Grammar.extend
    in
    let rebind_exn : 'rebind_exn Grammar.Entry.e =
      grammar_entry_create "rebind_exn"
-   and a_mod_ident : 'a_mod_ident Grammar.Entry.e =
-     grammar_entry_create "a_mod_ident"
    and mod_binding : 'mod_binding Grammar.Entry.e =
      grammar_entry_create "mod_binding"
    and mod_fun_binding : 'mod_fun_binding Grammar.Entry.e =
@@ -445,6 +443,8 @@ Grammar.extend
    and label_declaration : 'label_declaration Grammar.Entry.e =
      grammar_entry_create "label_declaration"
    and ident : 'ident Grammar.Entry.e = grammar_entry_create "ident"
+   and mod_ident2 : 'mod_ident2 Grammar.Entry.e =
+     grammar_entry_create "mod_ident2"
    and class_declaration : 'class_declaration Grammar.Entry.e =
      grammar_entry_create "class_declaration"
    and class_fun_binding : 'class_fun_binding Grammar.Entry.e =
@@ -579,13 +579,13 @@ Grammar.extend
               Gramext.Stoken ("", "and"))],
           Gramext.action
             (fun (a : 'let_binding list) (loc : Ploc.t) ->
-               (Qast.List a : 'a_list));
+               (Qast.Vala (Qast.List a) : 'a_list2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_list : 'a_list Grammar.Entry.e))],
+             (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
-            (fun (a : 'a_list) (loc : Ploc.t) -> (a : 'a_list))]],
+            (fun (a : 'a_list2) (loc : Ploc.t) -> (a : 'a_list2))]],
       Gramext.action
-        (fun (l : 'a_list) (r : 'a_flag2) _ (loc : Ploc.t) ->
+        (fun (l : 'a_list2) (r : 'a_flag2) _ (loc : Ploc.t) ->
            (Qast.Node ("StVal", [Qast.Loc; r; l]) : 'str_item));
       [Gramext.Stoken ("", "type");
        Gramext.srules
@@ -596,37 +596,39 @@ Grammar.extend
               Gramext.Stoken ("", "and"))],
           Gramext.action
             (fun (a : 'type_declaration list) (loc : Ploc.t) ->
-               (Qast.List a : 'a_list));
+               (Qast.Vala (Qast.List a) : 'a_list2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_list : 'a_list Grammar.Entry.e))],
+             (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
-            (fun (a : 'a_list) (loc : Ploc.t) -> (a : 'a_list))]],
+            (fun (a : 'a_list2) (loc : Ploc.t) -> (a : 'a_list2))]],
       Gramext.action
-        (fun (tdl : 'a_list) _ (loc : Ploc.t) ->
+        (fun (tdl : 'a_list2) _ (loc : Ploc.t) ->
            (Qast.Node ("StTyp", [Qast.Loc; tdl]) : 'str_item));
       [Gramext.Stoken ("", "open");
        Gramext.Snterm
-         (Grammar.Entry.obj (mod_ident : 'mod_ident Grammar.Entry.e))],
+         (Grammar.Entry.obj (mod_ident2 : 'mod_ident2 Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'mod_ident) _ (loc : Ploc.t) ->
+        (fun (i : 'mod_ident2) _ (loc : Ploc.t) ->
            (Qast.Node ("StOpn", [Qast.Loc; i]) : 'str_item));
       [Gramext.Stoken ("", "module"); Gramext.Stoken ("", "type");
        Gramext.Snterm
-         (Grammar.Entry.obj (a_UIDENT : 'a_UIDENT Grammar.Entry.e));
+         (Grammar.Entry.obj (a_UIDENT2 : 'a_UIDENT2 Grammar.Entry.e));
        Gramext.Stoken ("", "=");
        Gramext.Snterm
          (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e))],
       Gramext.action
-        (fun (mt : 'module_type) _ (i : 'a_UIDENT) _ _ (loc : Ploc.t) ->
+        (fun (mt : 'module_type) _ (i : 'a_UIDENT2) _ _ (loc : Ploc.t) ->
            (Qast.Node ("StMty", [Qast.Loc; i; mt]) : 'str_item));
       [Gramext.Stoken ("", "module");
        Gramext.srules
          [[Gramext.Sflag (Gramext.Stoken ("", "rec"))],
           Gramext.action
-            (fun (a : bool) (loc : Ploc.t) -> (Qast.Bool a : 'a_flag));
+            (fun (a : bool) (loc : Ploc.t) ->
+               (Qast.Vala (Qast.Bool a) : 'a_flag2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_flag : 'a_flag Grammar.Entry.e))],
-          Gramext.action (fun (a : 'a_flag) (loc : Ploc.t) -> (a : 'a_flag))];
+             (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
+          Gramext.action
+            (fun (a : 'a_flag2) (loc : Ploc.t) -> (a : 'a_flag2))];
        Gramext.srules
          [[Gramext.Slist1sep
              (Gramext.Snterm
@@ -635,13 +637,13 @@ Grammar.extend
               Gramext.Stoken ("", "and"))],
           Gramext.action
             (fun (a : 'mod_binding list) (loc : Ploc.t) ->
-               (Qast.List a : 'a_list));
+               (Qast.Vala (Qast.List a) : 'a_list2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_list : 'a_list Grammar.Entry.e))],
+             (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
-            (fun (a : 'a_list) (loc : Ploc.t) -> (a : 'a_list))]],
+            (fun (a : 'a_list2) (loc : Ploc.t) -> (a : 'a_list2))]],
       Gramext.action
-        (fun (l : 'a_list) (r : 'a_flag) _ (loc : Ploc.t) ->
+        (fun (l : 'a_list2) (r : 'a_flag2) _ (loc : Ploc.t) ->
            (Qast.Node ("StMod", [Qast.Loc; r; l]) : 'str_item));
       [Gramext.Stoken ("", "include");
        Gramext.Snterm
@@ -651,7 +653,7 @@ Grammar.extend
            (Qast.Node ("StInc", [Qast.Loc; me]) : 'str_item));
       [Gramext.Stoken ("", "external");
        Gramext.Snterm
-         (Grammar.Entry.obj (a_LIDENT : 'a_LIDENT Grammar.Entry.e));
+         (Grammar.Entry.obj (a_LIDENT2 : 'a_LIDENT2 Grammar.Entry.e));
        Gramext.Stoken ("", ":");
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e));
        Gramext.Stoken ("", "=");
@@ -661,13 +663,13 @@ Grammar.extend
                 (Grammar.Entry.obj (a_STRING : 'a_STRING Grammar.Entry.e)))],
           Gramext.action
             (fun (a : 'a_STRING list) (loc : Ploc.t) ->
-               (Qast.List a : 'a_list));
+               (Qast.Vala (Qast.List a) : 'a_list2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_list : 'a_list Grammar.Entry.e))],
+             (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
           Gramext.action
-            (fun (a : 'a_list) (loc : Ploc.t) -> (a : 'a_list))]],
+            (fun (a : 'a_list2) (loc : Ploc.t) -> (a : 'a_list2))]],
       Gramext.action
-        (fun (pd : 'a_list) _ (t : 'ctyp) _ (i : 'a_LIDENT) _
+        (fun (pd : 'a_list2) _ (t : 'ctyp) _ (i : 'a_LIDENT2) _
              (loc : Ploc.t) ->
            (Qast.Node ("StExt", [Qast.Loc; i; t; pd]) : 'str_item));
       [Gramext.Stoken ("", "exception");
@@ -715,25 +717,9 @@ Grammar.extend
         (fun (loc : Ploc.t) -> (Qast.VaVal (Qast.List []) : 'rebind_exn));
       [Gramext.Stoken ("", "=");
        Gramext.Snterm
-         (Grammar.Entry.obj (a_mod_ident : 'a_mod_ident Grammar.Entry.e))],
+         (Grammar.Entry.obj (mod_ident2 : 'mod_ident2 Grammar.Entry.e))],
       Gramext.action
-        (fun (a : 'a_mod_ident) _ (loc : Ploc.t) -> (a : 'rebind_exn));
-      [Gramext.Stoken ("", "=");
-       Gramext.Snterm
-         (Grammar.Entry.obj (mod_ident : 'mod_ident Grammar.Entry.e))],
-      Gramext.action
-        (fun (sl : 'mod_ident) _ (loc : Ploc.t) ->
-           (Qast.VaVal sl : 'rebind_exn))]];
-    Grammar.Entry.obj (a_mod_ident : 'a_mod_ident Grammar.Entry.e), None,
-    [None, None,
-     [[Gramext.Stoken ("ANTIQUOT", "a")],
-      Gramext.action
-        (fun (s : string) (loc : Ploc.t) ->
-           (antiquot "a" loc s : 'a_mod_ident));
-      [Gramext.Stoken ("ANTIQUOT", "")],
-      Gramext.action
-        (fun (s : string) (loc : Ploc.t) ->
-           (Qast.VaVal (antiquot "" loc s) : 'a_mod_ident))]];
+        (fun (a : 'mod_ident2) _ (loc : Ploc.t) -> (a : 'rebind_exn))]];
     Grammar.Entry.obj (mod_binding : 'mod_binding Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm
@@ -953,7 +939,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 400, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 396, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -2630,6 +2616,21 @@ Grammar.extend
       [Gramext.Snterm
          (Grammar.Entry.obj (a_LIDENT : 'a_LIDENT Grammar.Entry.e))],
       Gramext.action (fun (i : 'a_LIDENT) (loc : Ploc.t) -> (i : 'ident))]];
+    Grammar.Entry.obj (mod_ident2 : 'mod_ident2 Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Stoken ("ANTIQUOT", "a")],
+      Gramext.action
+        (fun (s : string) (loc : Ploc.t) ->
+           (antiquot "a" loc s : 'mod_ident2));
+      [Gramext.Stoken ("ANTIQUOT", "")],
+      Gramext.action
+        (fun (s : string) (loc : Ploc.t) ->
+           (Qast.VaVal (antiquot "" loc s) : 'mod_ident2));
+      [Gramext.Snterm
+         (Grammar.Entry.obj (mod_ident : 'mod_ident Grammar.Entry.e))],
+      Gramext.action
+        (fun (sl : 'mod_ident) (loc : Ploc.t) ->
+           (Qast.VaVal sl : 'mod_ident2))]];
     Grammar.Entry.obj (mod_ident : 'mod_ident Grammar.Entry.e), None,
     [None, Some Gramext.RightA,
      [[Gramext.Snterm

@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.25 2007/09/10 22:46:41 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.26 2007/09/12 16:02:06 deraugla Exp $ *)
 
 open MLast;
 
@@ -195,12 +195,13 @@ and str_item =
   | StDir _ _ _ -> ()
   | <:str_item< exception $_$ of $list:tl$ >> -> list ctyp tl
   | <:str_item< $exp:e$ >> -> expr e
-  | StExt _ _ t _ -> ctyp t
-  | StMod _ _ nel -> list (fun (_, me) -> module_expr me) nel
-  | StMty _ _ mt -> module_type mt
-  | StOpn _ [s :: _] -> addmodule s
-  | StTyp _ tdl -> list type_decl tdl
-  | StVal _ _ pel -> list let_binding pel
+  | <:str_item< external $_$ : $t$ = $list:_$ >> -> ctyp t
+  | <:str_item< module $flag:_$ $list:nel$ >> ->
+      list (fun (_, me) -> module_expr me) nel
+  | <:str_item< module type $_$ = $mt$ >> -> module_type mt
+  | <:str_item< open $[s :: _]$ >> -> addmodule s
+  | <:str_item< type $list:tdl$ >> -> list type_decl tdl
+  | <:str_item< value $flag:_$ $list:pel$ >> -> list let_binding pel
   | x -> not_impl "str_item" x ]
 and type_decl td = ctyp td.MLast.tdDef
 and class_expr =
