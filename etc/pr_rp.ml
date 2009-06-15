@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_rp.ml,v 1.15 2007/12/14 20:27:26 deraugla Exp $ *)
+(* $Id: pr_rp.ml,v 1.16 2007/12/15 01:00:37 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Parserify;
@@ -66,40 +66,15 @@ value ident_option =
 
 value stream_patt_comp pc spc =
   match spc with
-  [ SpTrm _ p <:vala< None >> -> pprintf pc "@[<1>`%p@]" patt p
+  [ SpTrm _ p <:vala< None >> ->
+      pprintf pc "@[<1>`%p@]" patt p
   | SpTrm _ p <:vala< Some e >> ->
       pprintf pc "`%p@;<1 1>@[when@;%p@]" patt p expr e
   | SpNtr _ p e ->
-      horiz_vertic
-        (fun () ->
-           sprintf "%s%s = %s%s" pc.bef
-             (patt {(pc) with bef = ""; aft = ""} p)
-             (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
-        (fun () ->
-           let s1 = patt {(pc) with aft = " ="} p in
-           let s2 =
-             expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
-           in
-           sprintf "%s\n%s" s1 s2)
+      pprintf pc "%p =@;%p" patt p expr e
   | SpLet _ p e ->
       horiz_vertic (fun () -> sprintf "\n")
-        (fun () ->
-           horiz_vertic
-             (fun () ->
-                sprintf "%slet %s = %s in%s" pc.bef
-                  (patt {(pc) with bef = ""; aft = ""} p)
-                  (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
-             (fun () ->
-                let s1 =
-                  patt {(pc) with bef = sprintf "%slet " pc.bef; aft = " ="} p
-                in
-                let s2 =
-                  expr
-                    {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                     aft = ""} e
-                in
-                let s3 = sprintf "%sin%s" (tab pc.ind) pc.aft in
-                sprintf "%s\n%s\n%s" s1 s2 s3))
+        (fun () -> pprintf pc "@[<a>let %p =@;%p@ in@]" patt p expr e)
   | SpStr _ p -> patt pc p
   | _ -> not_impl "stream_patt_comp" pc spc ]
 ;
