@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ptools.html,v 1.14 2007/08/28 17:49:37 deraugla Exp $ -->
+  <!-- $Id: ptools.html,v 1.15 2007/10/10 01:44:20 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>parsing and printing tools</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -95,11 +95,11 @@
 <ul>
   <li><span class="u">Syntax errors</span>: in the imperative version,
     the location of the error is clear, it is at the current position
-    of the stream, and the system allows to provide a specific error
-    message (typically, that some "element" was "expected"). On the
-    other hand, in the functional version, the position is not clear
-    since it returns nothing and the initial stream is unaffected. The
-    only solution to know where the error happened is to analyze that
+    of the stream, and the system provides a specific error message
+    (typically, that some "element" was "expected"). On the other
+    hand, in the functional version, the position is not clear since
+    it returns nothing and the initial stream is unaffected. The only
+    solution to know where the error happened is to analyze that
     stream to see how many elements have be unfrozen. No clear error
     message is available, just "syntax error" (but this could be
     improved).</li>
@@ -107,8 +107,7 @@
     rule raises the exception "<tt>Stream.Error</tt>", the parsing
     cannot continue.  In the functional version, the parsing can
     continue by analyzing the next rule with the initial unaffected
-    stream: this is a
-    <em>limited backtrack</em>.</li>
+    stream: this is <em>limited backtrack</em>.</li>
   <li><span class="u">Neatness</span>: functional streams are neater,
     just like functional programming is neater than imperative
     programming.</li>
@@ -117,7 +116,7 @@
 <p>The imperative parsers implement what is called "predictive
   parsing", i.e. recursive descendant parsing without backtrack.</p>
 
-<p>In the imperative version, there exists also
+<p>In the imperative version, there also exist
   <a href="lexers.html">lexers</a>, a shorter syntax when the stream
   elements are of the specific type '<tt>char</tt>'.</p>
 
@@ -127,14 +126,13 @@
   entries are abstract values internally containing mutable stream
   parsers. When a grammar entry is created, its internal parser is
   empty, i.e. it always fails when used. A specific syntactic
-  construction, with the keyword "<tt>EXTEND</tt>" allows to extend
-  grammar entries with new grammar rules.</p>
+  construction, with the keyword "<tt>EXTEND</tt>" allows one to
+  extend grammar entries with new grammar rules.</p>
 
 <p>In opposition to stream parsers, grammar entries manage
   associativity, left factorization, and levels. Moreover, these
-  grammars allows to define optional calls, lists and lists with
-  separators. However, they are not functions and cannot have
-  parameters.</p>
+  grammars allow optional calls, lists and lists with separators. They
+  are not however functions and hence cannot have parameters.</p>
 
 <p>Since the internal system is stream parsers, extensible grammars
   use recursive descendant parsing.</p>
@@ -144,19 +142,20 @@
 
 <h2>Pretty module</h2>
 
-<p>The "<tt>Pretty</tt>" module is an original tool allowing to
-  control the displaying of lines. The user has to specify two functions
+<p>The "<tt>Pretty</tt>" module is an original tool allowing control
+  over the displaying of lines. The user must specify two functions
   where:</p>
 
 <ul>
-  <li>the data is printed in one only line</li>
-  <li>the data is printed in several lines</li>
+  <li>the data is printed on a single line</li>
+  <li>the data is printed on several lines</li>
 </ul>
 
-<p>The system first tries the first function. At any time, it the line
-  overflows, i.e. if its size is greater than some "line length"
-  specified in the module interface, or if it contains newlines, the
-  function is aborted and control is given to the second function.</p>
+<p>The system first tries to print on a single line. At any time, if
+  the line overflows, i.e. if its size is greater than some "line
+  length" specified in the module interface, or if it contains
+  newlines, the function is aborted and control is given to the second
+  function, to print on several lines.</p>
 
 <p>This is a basic, but powerful, system. It supposes that the programmer
   takes care of the current indentation, and the beginning and the end of
