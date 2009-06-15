@@ -13,7 +13,7 @@
 <body>
 
 <div id="menu">
-  <h1>- Camlp4 -</h1>
+  <h1>- Camlp5 -</h1>
   <ul>
     <li>Parsing
       <ul>
@@ -42,7 +42,7 @@
 
 <h1 class="top">Abstract tree in concrete syntax</h1>
 
-<p>In Camlp4, one often uses syntax trees. For example, in grammars of
+<p>In Camlp5, one often uses syntax trees. For example, in grammars of
 the language (semantic actions), in pretty printing (as patterns), in
 optimizing syntax code (typically streams parsers). Syntax trees are
 mainly defined by sum types, one for each kind of tree:
@@ -52,7 +52,7 @@ items, and so on. Each node corresponds to a possible value of this
 type.</p>
 
 <p>This syntax tree is defined in the module "<code>MLast</code>"
-provided by Camlp4.</p>
+provided by Camlp5.</p>
 
 <p>For example, the syntax tree of the statement "<code>if</code>" can
 be written:</p>
@@ -69,7 +69,7 @@ the "<code>then</code>" and the one after the "<code>else</code>".</p>
 <p>In all programs, it is possible to manipulate syntax trees like
 that.</p>
 
-<p>However, the quotations systems of Camlp4 provides a quotation kit
+<p>However, the quotations systems of Camlp5 provides a quotation kit
 named "<code>q_MLast.cmo</code>". When loaded, it is possible to
 represent the syntax trees in concrete syntax. The example above can
 be written:</p>
@@ -79,7 +79,7 @@ be written:</p>
 </pre>
 
 <p>The interest of this representation is when one must manipulate
-complicated syntax trees. An example taken from the Camlp4 sources
+complicated syntax trees. An example taken from the Camlp5 sources
 is this quotation (found in a pattern):</p>
 
 <pre>

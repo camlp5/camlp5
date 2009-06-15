@@ -13,7 +13,7 @@
 <body>
 
 <div id="menu">
-  <h1>- Camlp4 -</h1>
+  <h1>- Camlp5 -</h1>
   <ul>
     <li>Parsing
       <ul>
@@ -43,14 +43,14 @@
 <h1 class="top">Parsers of streams</h1>
 
 <p>We describe here the syntax and the semantics of the parsers of
-streams of Camlp4. Streams are kinds of lazy lists. The parsers of
+streams of Camlp5. Streams are kinds of lazy lists. The parsers of
 these streams use recursive descendent method, which is the most
 natural one in functional languages. In particular, parsers are normal
 functions.</p>
 
 <p>Notice that the parsers have existed in OCaml since many years (the
 beginning of the 90ies), but some new features have been added in 2007
-(lookahead, "no error" optimization, and let..in statement) in Camlp4
+(lookahead, "no error" optimization, and let..in statement) in Camlp5
 distribution. This page describes them also.</p>
 
 <h2>Introduction</h2>
@@ -62,7 +62,7 @@ elements. They differ from the lists that they are lazy (the elements
 are evaluated as long as the parser need them for its actions), and
 imperative (parsers deletes their first elements when they take their
 parsing decisions) : notice that pure functional parsers exist in
-Camlp4, where the corresponding streams are lazy and functional, the
+Camlp5, where the corresponding streams are lazy and functional, the
 analyzed elements remaining in the initial stream and the semantic
 action returning the resulting stream together with the normal
 result, which allow natural limited backtrack but have the drawback
@@ -76,16 +76,16 @@ parsing with the remaining elements. Parsers can call other parsers,
 and can be recursive, like normal functions.</p>
 
 <p>Actually, parsers are just pure syntactic sugar. When writing a
-parser in the syntax of the parser, Camlp4 transforms them into normal
+parser in the syntax of the parser, Camlp5 transforms them into normal
 call to functions, use of patterns matchings and try..with statements.
-The pretty printer of Camlp4, by default, display this expanded
+The pretty printer of Camlp5, by default, display this expanded
 result, without syntax of parsers. A pretty printing kit, when added,
 can rebuild the parsers in their initial syntax and display it.</p>
 
 <h2>Syntax</h2>
 
 <p>The syntax of the parsers, when loading "pa_rp.cmo" (or already
-included in the command "camlp4r"), is the following:</p>
+included in the command "camlp5r"), is the following:</p>
 
 <pre>
           expression ::= parser
@@ -406,7 +406,7 @@ real stream pattern component, in the fact that is is not tested
 against the exception "<code>Stream.Failure</code>" it may raise. It
 can be useful for an intermediate computation. In particular, it is
 used internally by the <a href="lexers.html">lexers</a> (this can be
-seen by printing a code using these lexers into parsers by Camlp4
+seen by printing a code using these lexers into parsers by Camlp5
 using the pretty printing kit "pr_r.cmo").</p>
 
 <p>Example of use, when an expression have to be used several times
@@ -666,7 +666,7 @@ expr (Stream.of_string "2^3^2");
 programming parsers returning other parsers.</p>
 
 <p>A third solution, to resolve the problem of associativity, is to
-use the grammars of Camlp4, which have the other advantage that they
+use the grammars of Camlp5, which have the other advantage that they
 are extensible.</p>
 
 <h3>Lexing vs Parsing</h3>

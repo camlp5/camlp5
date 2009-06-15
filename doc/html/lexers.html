@@ -13,7 +13,7 @@
 <body>
 
 <div id="menu">
-  <h1>- Camlp4 -</h1>
+  <h1>- Camlp5 -</h1>
   <ul>
     <li>Parsing
       <ul>
@@ -42,7 +42,7 @@
 
 <h1 class="top">Lexers of streams - pa_lex.cmo</h1>
 
-<p>The file pa_lex.cmo is a Camlp4 syntax extension for parsers for
+<p>The file pa_lex.cmo is a Camlp5 syntax extension for parsers for
 streams of the type 'char'. This syntax is shorter in length and more
 readable than its equivalent version written
 with <a href="parsers.html">classical stream parsers</a>.  Like
@@ -321,7 +321,7 @@ the stream in number of characters (starting at zero).</li>
 
 <p>Lookahead is useful in some cases, when factorization of rules is
 impossible. To understand how it is useful, a first remark must
-be done, about the usual behaviour of Camlp4 stream parsers.</p>
+be done, about the usual behaviour of Camlp5 stream parsers.</p>
 
 <p>Stream parsers (including these lexers) use a limited parsing
 algorithm, in a way that when the first symbol of a rule is matched,
@@ -364,7 +364,7 @@ characters).</p>
 
 <p>The first line above matches a stream whose second character is a
 quote or a stream whose first character is a backslash (real example
-in the lexer of OCaml, in the library of Camlp4, named
+in the lexer of OCaml, in the library of Camlp5, named
 "plexer.ml"). The second line matches a stream starting with the two
 characters <code>&lt;</code> and <code>&lt;</code> or starting with
 the two characters <code>&lt;</code> and <code>:</code> (this is
@@ -385,7 +385,7 @@ section <a href="#specific">3.2</a>)</p>
 
 <h3>A complete example</h3>
 
-<p>A complete example can be seen in the sources of Camlp4, file
+<p>A complete example can be seen in the sources of Camlp5, file
 "lib/plexer.ml". This is the lexer of OCaml, either "normal" or
 "revised" syntax.</p>
 
@@ -396,8 +396,8 @@ load <code>pa_lex.cmo</code> using one of the following methods:</p>
 
 <ul>
 
-<li>Either by adding <code>pa_lex.cmo</code> among the camlp4
-options. See the camlp4 manual page or documentation.
+<li>Either by adding <code>pa_lex.cmo</code> among the camlp5
+options. See the camlp5 manual page or documentation.
 </li>
 
 <li>Or by adding <code>#load "pa_lex.cmo";</code> anywhere in the
@@ -411,13 +411,13 @@ file, before the usages of this "lexer" syntax.</li>
 lexers, by typing in a command line:</p>
 
 <pre>
-camlp4r pa_lex.cmo pr_r.cmo bar.ml
+camlp5r pa_lex.cmo pr_r.cmo bar.ml
 </pre>
 
 <p>To see the equivalent code with stream parsers, use:</p>
 
 <pre>
-camlp4r pa_lex.cmo pr_r.cmo pr_rp.cmo bar.ml
+camlp5r pa_lex.cmo pr_r.cmo pr_rp.cmo bar.ml
 </pre>
 
 <div class="trailer">

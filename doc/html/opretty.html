@@ -13,7 +13,7 @@
 <body>
 
 <div id="menu">
-  <h1>- Camlp4 -</h1>
+  <h1>- Camlp5 -</h1>
   <ul>
     <li>Parsing
       <ul>
@@ -40,27 +40,27 @@
 
 <div id="content">
 
-<h1 class="top">Camlp4 - Pretty Printing OCaml Programs</h1>
+<h1 class="top">Camlp5 - Pretty Printing OCaml Programs</h1>
 
-<p>Camlp4 provides extensions kits to pretty print programs in revised
+<p>Camlp5 provides extensions kits to pretty print programs in revised
 syntax and normal syntax. Some other extensions kits also allow to
 rebuild the parsers, or the EXTEND statements in their initial
 syntax. The pretty print system is itself extensible, by adding new
-rules. We present here how it works in the Camlp4 sources.</p>
+rules. We present here how it works in the Camlp5 sources.</p>
 
-<p>The pretty print system of Camlp4 uses the library modules
+<p>The pretty print system of Camlp5 uses the library modules
 <a href="pretty.html">Pretty</a>, an original system to format
 output) and <a href="extfun.html">Extfun</a>, another original
 system of extensible functions.</p>
 
 <p>This documentation is destinated to programmers who want to
-understand how the pretty printing of ocaml programs work in camlp4,
+understand how the pretty printing of ocaml programs work in camlp5,
 want to adapt, modify or debug it, or want to add their own pretty
 printing extensions.</p>
 
 <h2>Introduction</h2>
 
-<p>The files doing the pretty prints are located in Camlp4 sources
+<p>The files doing the pretty prints are located in Camlp5 sources
 in the directory "etc". Look at them if you are interested on creating
 new ones. The main ones are:</p>
 
@@ -195,7 +195,7 @@ of <code>e2</code>.</p>
 
 <p>This system is combined to the the <a href="extfun.html">extensible
 functions</a> to allow the extensibility of the pretty
-printing. Pretty printers of camlp4 can then be used as "kits" to be
+printing. Pretty printers of camlp5 can then be used as "kits" to be
 added or not, according to the things to be pretty printed in some or
 other ways. In particular, the pretty printing kit
 "<code>pr_r.cmo</code>" alone does not rebuild parsers in their
