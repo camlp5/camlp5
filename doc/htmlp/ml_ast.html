@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: ml_ast.html,v 1.20 2007/07/24 02:04:34 deraugla Exp $ -->
+  <!-- $Id: ml_ast.html,v 1.21 2007/07/24 12:59:57 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Abstract tree in concrete syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -321,7 +321,7 @@
   </tr>
   <tr>
     <td><tt>ExRec loc lpe (Some e)</tt></td>
-    <td align="center"><tt>{ ($e$) with { $list:lpe$ }</tt></td>
+    <td align="center"><tt>{ ($e$) with $list:lpe$ }</tt></td>
     <td>record</td>
   </tr>
   <tr>
@@ -601,6 +601,11 @@
     <td>object</td>
   </tr>
   <tr>
+    <td><tt>TyObj loc lst b</tt></td>
+    <td align="center"><tt>&lt; $list:lst$ $opt:b$ ></tt></td>
+    <td>object (general)</td>
+  </tr>
+  <tr>
     <td><tt>TyOlb loc s t</tt></td>
     <td align="center"><tt>? $s$ : $t$</tt></td>
     <td>option label</td>
@@ -696,6 +701,11 @@
     <td>directive</td>
   </tr>
   <tr>
+    <td><tt>StDir loc s oe</tt></td>
+    <td align="center"><tt># $s$ $opt:oe$</tt></td>
+    <td>directive (general)</td>
+  </tr>
+  <tr>
     <td><tt>StExc loc s lt []</tt></td>
     <td align="center"><tt>exception $s$ of $list:lt$</tt></td>
     <td>exception</td>
@@ -787,6 +797,16 @@
     <td><tt>SgDir loc s (Some e)</tt></td>
     <td align="center"><tt># $s$ $e$</tt></td>
     <td>directive</td>
+  </tr>
+  <tr>
+    <td><tt>SgDir loc s oe</tt></td>
+    <td align="center"><tt># $s$ $opt:oe$</tt></td>
+    <td>directive (general)</td>
+  </tr>
+  <tr>
+    <td><tt>SgExc loc s []</tt></td>
+    <td align="center"><tt>exception $s$</tt></td>
+    <td>exception</td>
   </tr>
   <tr>
     <td><tt>SgExc loc s lt</tt></td>
@@ -986,15 +1006,23 @@
     <td>arrow</td>
   </tr>
   <tr>
-    <td><tt>CtSig loc pt ot lcsigi_item</tt></td>
-    <td align="center"><tt>object ($opt:ot$) $list:lcsigi$ end</tt></td>
+    <td><tt>CtSig loc pt None lcsigi_item</tt></td>
+    <td align="center"><tt>object $list:lcsigi$ end</tt></td>
     <td>object</td>
+  </tr>
+  <tr>
+    <td><tt>CtSig loc pt (Some t) lcsigi_item</tt></td>
+    <td align="center"><tt>object ($t$) $list:lcsigi$ end</tt></td>
+    <td>object</td>
+  </tr>
+  <tr>
+    <td><tt>CtSig loc pt ot lcsigi_item</tt></td>
+    <td align="center"><tt>object $opt:ot$ $list:lcsigi$ end</tt></td>
+    <td>object (general)</td>
   </tr>
 </table>
 
 <h4>class_str_item</h4>
-
-<p>...to be completed...</p>
 
 <table border="1">
   <tr>
@@ -1003,45 +1031,93 @@
     <th>Comment</th>
   </tr>
   <tr>
-    <td><tt>CrCtr of loc and ctyp and ctyp</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td><tt>CrCtr loc t1 t2</tt></td>
+    <td align="center"><tt>type $t1$ = $t2$</tt></td>
+    <td>type constraint</td>
   </tr>
   <tr>
-    <td><tt>CrDcl of loc and list class_str_item</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td><tt>CrDcl loc lcstri</tt></td>
+    <td align="center"><tt>declare $list:lcstri$ end </tt></td>
+    <td>declaration list</td>
   </tr>
   <tr>
-    <td><tt>CrInh of loc and class_expr and option string</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td><tt>CrInh loc ce None</tt></td>
+    <td align="center"><tt>inherit $ce$</tt></td>
+    <td>inheritance</td>
   </tr>
   <tr>
-    <td><tt>CrIni of loc and expr</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td><tt>CrInh loc ce (Some s)</tt></td>
+    <td align="center"><tt>inherit $ce$ as $s$</tt></td>
+    <td>inheritance</td>
   </tr>
   <tr>
-    <td><tt>CrMth of loc and string and bool and expr and option ctyp</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td><tt>CrInh loc ce os</tt></td>
+    <td align="center"><tt>inherit $ce$ $opt:s$</tt></td>
+    <td>inheritance (general)</td>
   </tr>
   <tr>
-    <td><tt>CrVal of loc and string and bool and expr</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td><tt>CrIni loc e</tt></td>
+    <td align="center"><tt>initializer $e$</tt></td>
+    <td>initialization</td>
   </tr>
   <tr>
-    <td><tt>CrVir of loc and string and bool and ctyp</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td><tt>CrMth loc s False e None</tt></td>
+    <td align="center"><tt>method $s$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc s False e (Some t)</tt></td>
+    <td align="center"><tt>method $s$ : $t$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc s True e None</tt></td>
+    <td align="center"><tt>method private $s$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc s True e (Some t)</tt></td>
+    <td align="center"><tt>method private $s$ : $t$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc s b e ot</tt></td>
+    <td align="center"><tt>method $opt:b$ $s$ $opt:ot$ = $e$</tt></td>
+    <td>method (general)</td>
+  </tr>
+  <tr>
+    <td><tt>CrVal loc s False e</tt></td>
+    <td align="center"><tt>value $s$ = $e$</tt></td>
+    <td>value</td>
+  </tr>
+  <tr>
+    <td><tt>CrVal loc s True e</tt></td>
+    <td align="center"><tt>value mutable $s$ = $e$</tt></td>
+    <td>value</td>
+  </tr>
+  <tr>
+    <td><tt>CrVal loc s b e</tt></td>
+    <td align="center"><tt>value $opt:b$ $s$ = $e$</tt></td>
+    <td>value (general)</td>
+  </tr>
+  <tr>
+    <td><tt>CrVir loc s False t</tt></td>
+    <td align="center"><tt>method virtual $s$ : $t$</tt></td>
+    <td>virtual method</td>
+  </tr>
+  <tr>
+    <td><tt>CrVir loc s True t</tt></td>
+    <td align="center"><tt>method virtual private $s$ : $t$</tt></td>
+    <td>virtual method</td>
+  </tr>
+  <tr>
+    <td><tt>CrVir loc s b t</tt></td>
+    <td align="center"><tt>method virtual $opt:b$ $s$ : $t$</tt></td>
+    <td>virtual method (general)</td>
   </tr>
 </table>
 
 <h4>class_sig_item</h4>
-
-<p>...to be completed...</p>
 
 <table border="1">
   <tr>
@@ -1050,34 +1126,64 @@
     <th>Comment</th>
   </tr>
   <tr>
-    <td><tt>CgCtr of loc and ctyp and ctyp</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td><tt>CgCtr loc t1 t2</tt></td>
+    <td align="center"><tt>type $t1$ = $t2$</tt></td>
+    <td>type constraint</td>
   </tr>
   <tr>
-    <td><tt>CgDcl of loc and list class_sig_item</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td><tt>CgDcl loc lcsigi</tt></td>
+    <td align="center"><tt>declare $list:lcsigi$ end</tt></td>
+    <td>declare</td>
   </tr>
   <tr>
-    <td><tt>CgInh of loc and class_type</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td><tt>CgInh loc ct</tt></td>
+    <td align="center"><tt>inherit $ct$</tt></td>
+    <td>inheritance </td>
   </tr>
   <tr>
-    <td><tt>CgMth of loc and string and bool and ctyp</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td><tt>CgMth loc s False t</tt></td>
+    <td align="center"><tt>method $s$ : $t$</tt></td>
+    <td>method</td>
   </tr>
   <tr>
-    <td><tt>CgVal of loc and string and bool and ctyp</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td><tt>CgMth loc s True t</tt></td>
+    <td align="center"><tt>method private $s$ : $t$</tt></td>
+    <td>method</td>
   </tr>
   <tr>
-    <td><tt>CgVir of loc and string and bool and ctyp</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td><tt>CgMth loc s b t</tt></td>
+    <td align="center"><tt>method $opt:b$ $s$ : $t$</tt></td>
+    <td>method (general)</td>
+  </tr>
+  <tr>
+    <td><tt>CgVal loc s False t</tt></td>
+    <td align="center"><tt>value $s$ : $t$</tt></td>
+    <td>value</td>
+  </tr>
+  <tr>
+    <td><tt>CgVal loc s True t</tt></td>
+    <td align="center"><tt>value mutable $s$ : $t$</tt></td>
+    <td>value</td>
+  </tr>
+  <tr>
+    <td><tt>CgVal loc s b t</tt></td>
+    <td align="center"><tt>value $opt:b$ $s$ : $t$</tt></td>
+    <td>value (general)</td>
+  </tr>
+  <tr>
+    <td><tt>CgVir loc s False t</tt></td>
+    <td align="center"><tt>method virtual $s$ : $t$</tt></td>
+    <td>method virtual</td>
+  </tr>
+  <tr>
+    <td><tt>CgVir loc s True t</tt></td>
+    <td align="center"><tt>method virtual private $s$ : $t$</tt></td>
+    <td>method virtual</td>
+  </tr>
+  <tr>
+    <td><tt>CgVir loc s b t</tt></td>
+    <td align="center"><tt>method virtual $opt:b$ $s$ : $t$</tt></td>
+    <td>method virtual (general)</td>
   </tr>
 </table>
 
@@ -1085,7 +1191,7 @@
 
 <h4>with_constr</h4>
 
-<p>...to be completed...</p>
+<p>"With" possibly following a module type.</p>
 
 <table border="1">
   <tr>
@@ -1094,20 +1200,30 @@
     <th>Comment</th>
   </tr>
   <tr>
-    <td><tt>WcTyp of loc and list string and list type_var and bool and ctyp</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td><tt>WcTyp loc s ltv False t</tt></td>
+    <td align="center"><tt>type $s$ $list:ltv$ = $t$</tt></td>
+    <td>with type</td>
   </tr>
   <tr>
-    <td><tt>WcMod of loc and list string and module_expr</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td><tt>WcTyp loc s ltv True t</tt></td>
+    <td align="center"><tt>type $s$ $list:ltv$ = private $t$</tt></td>
+    <td>with type</td>
+  </tr>
+  <tr>
+    <td><tt>WcTyp loc s ltv b t</tt></td>
+    <td align="center"><tt>type $s$ $list:ltv$ = $opt:b$ $t$</tt></td>
+    <td>with type (general)</td>
+  </tr>
+  <tr>
+    <td><tt>WcMod loc ls me</tt></td>
+    <td align="center"><tt>module $list:ls$ = $me$</tt></td>
+    <td>with module</td>
   </tr>
 </table>
 
 <h4>poly_variant</h4>
 
-<p>...to be completed...</p>
+<p>Polymorphic variants.</p>
 
 <table border="1">
   <tr>
@@ -1116,14 +1232,24 @@
     <th>Comment</th>
   </tr>
   <tr>
-    <td><tt>PvTag of string and bool and list ctyp</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td><tt>PvTag s False []</tt></td>
+    <td align="center"><tt>` $i$</tt></td>
+    <td>constructor</td>
   </tr>
   <tr>
-    <td><tt>PvInh of ctyp</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td><tt>PvTag s True lt</tt></td>
+    <td align="center"><tt>` $i$ of &amp; $list:lt$</tt></td>
+    <td>constructor</td>
+  </tr>
+  <tr>
+    <td><tt>PvTag s b lt</tt></td>
+    <td align="center"><tt>` $i$ of $opt:b$ $list:lt$</tt></td>
+    <td>constructor (general)</td>
+  </tr>
+  <tr>
+    <td><tt>PvInh t</tt></td>
+    <td align="center"><tt>$t$</tt></td>
+    <td>type</td>
   </tr>
 </table>
 
