@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_strict.html,v 1.15 2007/09/25 13:15:35 deraugla Exp $ -->
+  <!-- $Id: ast_strict.html,v 1.16 2007/09/26 12:06:38 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>AST - strict</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -2107,8 +2107,92 @@
   </dd>
 </dl>
 
-<p>... to be added: <tt>type_decl</tt>, <tt>type_var</tt>
-  and <tt>class_infos</tt>)...</p>
+<h2>Nodes without quotations</h2>
+
+<p>Some types defined in the AST tree module "<tt>MLast</tt>" don't
+  have any associated quotation. They are:</p>
+
+<ul>
+  <li><tt>type_var</tt></li>
+  <li><tt>type_decl</tt></li>
+  <li><tt>class_infos</tt></li>
+</ul>
+
+<h3>type_var</h3>
+
+<p>The type "<tt>type_var</tt>" is defined as:</p>
+
+<pre>
+  type type_var = (Ploc.vala string * (bool * bool));
+</pre>
+
+<p>The first boolean is "<tt>True</tt>" if the type variable is
+  prefixed by "<tt>+</tt>" ("plus" sign). The second boolean is
+  "<tt>True</tt>" if the type variable is prefixed by "<tt>-</tt>"
+  ("minus" sign).</p>
+
+<h3>type_decl</h3>
+
+<p>The type "<tt>type_decl</tt>" is a record type corresponding to
+  a type declaration. Its definition is:</p>
+
+<pre>
+  type type_decl =
+    { tdNam : (loc * Ploc.vaval string);
+      tdPrm : Ploc.vala (list type_var);
+      tdPrv : Ploc.vala bool;
+      tdDef : ctyp;
+      tdCon : Ploc.vala (list (ctyp * ctyp)) }
+  ;
+</pre>
+
+<p>The field "<tt>tdNam</tt>" is the type identifier (together with its
+  location in the source).</p>
+
+<p>The field "<tt>tdPrm</tt>" is the list of its possible parameters.</p>
+
+<p>The field "<tt>tdPrv</tt>" tells if the type is private or not.</p>
+
+<p>The field "<tt>tdDef</tt>" is the definition of the type.</p>
+
+<p>The field "<tt>tdCon</tt>" is the possible list of type constraints.</p>
+
+<h3>class_infos</h3>
+
+<p>The type "<tt>class_infos</tt>" is a record type parametrized with
+  a type variable. It is common to:</p>
+
+<ul>
+  <li>the "class declaration" ("<tt>class ...</tt>" as structure item),
+    the type variable being "<tt>class_expr</tt>",</li>
+  <li>the "class description" ("<tt>class ...</tt>" as signature item),
+    the type variable being "<tt>class_type</tt>",</li>
+  <li>the "class type declaration" ("<tt>class type ...</tt>), the type
+    variable being "<tt>class_type</tt>".</li>
+</ul>
+
+<p>It is defined as:</p>
+
+<pre>
+  type class_infos 'a =
+    { ciLoc : loc;
+      ciVir : Ploc.vala bool;
+      ciPrm : (loc * Ploc.vala (list type_var));
+      ciNam : Ploc.vala string;
+      ciExp : 'a }
+  ;
+</pre>
+
+<p>The field "<tt>ciLoc</tt>" is the location of the whole definition.</p>
+
+<p>The field "<tt>ciVir</tt>" tells whether the type is virtual or not.</p>
+
+<p>The field "<tt>ciPrm</tt>" is the list of its possible parameters.</p>
+
+<p>The field "<tt>ciNam</tt>" is the class identifier.</p>
+
+<p>The field "<tt>ciExp</tt>" is the class definition, depending of its
+  kind.</p>
 
 <div class="trailer">
 </div>

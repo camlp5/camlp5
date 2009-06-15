@@ -6,6 +6,15 @@
     <lastBuildDate>Mon Sep 17 15:10:47 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
     <item>
+      <title>Syntax tree - strict mode - nodes without quotations</title>
+      <description>
+        Added a section about types of nodes without quotations:
+        type_var, type_decl and class_infos.
+      </description>
+      <pubDate>Wed Sep 26 14:05:15 CEST 2007</pubDate>
+      <link>../ast_strict.html</link>
+    </item>
+    <item>
       <title>Syntax tree - strict mode - 2</title>
       <description>
         Updated doc of 'patt', 'ctyp', 'str_item' and 'sig_item'.
