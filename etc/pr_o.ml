@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.116 2007/12/21 04:04:12 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.117 2007/12/21 04:09:33 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -433,13 +433,9 @@ value type_decl pc td =
              (hlist type_constraint) (Pcaml.unvala cl))
         (fun () ->
            let s1 =
-             horiz_vertic
-               (fun () ->
-                  let pc = {(pc) with aft = ""} in
-                  pprintf pc "%p%p =" type_params (Pcaml.unvala tp)
-                    var_escaped (Pcaml.unvala tn))
-              (fun () ->
-                  not_impl "type_decl vertic 1" {(pc) with aft = ""} tn)
+             let pc = {(pc) with aft = ""} in
+             pprintf pc "%p%p =" type_params (Pcaml.unvala tp)
+               var_escaped (Pcaml.unvala tn)
            in
            let s2 =
              if Pcaml.unvala cl = [] then
