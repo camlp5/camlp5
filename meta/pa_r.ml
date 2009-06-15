@@ -1,5 +1,5 @@
-(* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.65 2007/09/10 18:19:31 deraugla Exp $ *)
+(* camlp5r pa_extend.cmo q_MLast.cmo *)
+(* $Id: pa_r.ml,v 1.66 2007/09/10 20:43:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -36,15 +36,9 @@ do {
 Pcaml.parse_interf.val := Grammar.Entry.parse interf;
 Pcaml.parse_implem.val := Grammar.Entry.parse implem;
 
-IFNDEF STRICT THEN
-  DEFINE V x = x
-ELSE
-  DEFINE V x = Ploc.VaVal x
-END;
-
 value mksequence2 loc =
   fun
-  [ V [e] -> e
+  [ <:vala< [e] >> -> e
   | seq -> <:expr< do { $alist:seq$ } >> ]
 ;
 
@@ -336,7 +330,7 @@ EXTEND
     [ [ -> () ] ]
   ;
   sequence2:
-    [ [ seq = sequence -> V seq
+    [ [ seq = sequence -> <:vala< seq >>
       | seq = V LIST1 expr SEP ";" -> seq ] ]
   ;
   sequence:

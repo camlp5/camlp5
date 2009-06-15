@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.64 2007/09/10 18:19:31 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.65 2007/09/10 20:43:09 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -1509,3 +1509,17 @@ do {
      ("with_constr", apply_entry with_constr_eoi);
      ("poly_variant", apply_entry poly_variant_eoi)];
 };
+
+let expr s =
+  let e = Grammar.Entry.parse Pcaml.expr_eoi (Stream.of_string s) in
+  let loc = Ploc.make_unlined (0, 0) in
+  if Pcaml.strict_mode.val then <:expr< Ploc.VaVal $anti:e$ >>
+  else <:expr< $anti:e$ >>
+in
+let patt s =
+  let p = Grammar.Entry.parse Pcaml.patt_eoi (Stream.of_string s) in
+  let loc = Ploc.make_unlined (0, 0) in
+  if Pcaml.strict_mode.val then <:patt< Ploc.VaVal $anti:p$ >>
+  else <:patt< $anti:p$ >>
+in
+Quotation.add "vala" (Quotation.ExAst (expr, patt));
