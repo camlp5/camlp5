@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.135 2007/12/23 16:03:44 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.136 2007/12/23 17:37:10 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -874,44 +874,12 @@ EXTEND_PRINTER
                            (match_assoc False) ((p, wo, e), True) ])
           | [] -> raise_match_failure pc (MLast.loc_of_expr e)
           | _ ->
-              horiz_vertic
-                (fun () ->
-                   sprintf "%s%s %s with %s%s" pc.bef op
-                     (expr {(pc) with bef = ""; aft = ""} e1)
-                     (match_assoc_list {(pc) with bef = ""; aft = ""} pwel)
-                     pc.aft)
-                (fun () ->
-                   let (op_begin, pc_aft, pc_dang, op_end) =
-                     if List.mem pc.dang ["|"; ";"] then
-                       (sprintf "begin %s" op, "", "",
-                        sprintf "\n%send%s" (tab pc.ind) pc.aft)
-                     else (op, pc.aft, pc.dang, "")
-                   in
-                   let s1 =
-                     horiz_vertic
-                       (fun () ->
-                          sprintf "%s%s %s with" pc.bef op_begin
-                            (expr {(pc) with bef = ""; aft = ""} e1))
-                       (fun () ->
-                          let s =
-                            let s =
-                              expr
-                                {(pc) with ind = pc.ind + 2;
-                                 bef = tab (pc.ind + 2); aft = ""}
-                                e1
-                            in
-                            sprintf "%s%s\n%s" pc.bef op_begin s
-                          in
-                          sprintf "%s\n%swith" s (tab pc.ind))
-                   in
-                   let s2 =
-                     match_assoc_list
-                       {(pc) with bef = tab pc.ind; aft = pc_aft;
-                        dang = pc_dang}
-                       pwel
-                   in
-                   let s3 = op_end in
-                   sprintf "%s\n%s%s" s1 s2 s3) ]
+              if List.mem pc.dang ["|"; ";"] then
+                pprintf pc "@[<a>begin %s@;%p@ with@]@ %q@ end" op expr e1
+                  match_assoc_list pwel ""
+              else
+                pprintf pc "@[<a>%s@;%p@ with@]@ %p" op expr e1
+                  match_assoc_list pwel ]
       | <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
           horiz_vertic
             (fun () ->
