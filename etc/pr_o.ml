@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.153 2007/12/25 07:21:17 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.154 2007/12/25 08:17:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1161,39 +1161,15 @@ EXTEND_PRINTER
       | <:patt< [$_$ :: $_$] >> as z ->
           let (xl, y) = make_patt_list z in
           match y with
-          [ Some  y ->
-              patt
-                {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-                 aft = sprintf ")%s" pc.aft}
-                z
+          [ Some y -> pprintf pc "@[<1>(%p)@]" patt z
           | None ->
               let xl = List.map (fun x -> (x, ";")) xl in
-              plist patt 0
-                {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef;
-                 aft = sprintf "]%s" pc.aft}
-                xl ]
+              pprintf pc "@[<1>[%p]@]" (plist patt 0) xl ]
       | <:patt< ($p$ : $t$) >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s(%s : %s)%s" pc.bef
-                 (patt {(pc) with bef = ""; aft = ""} p)
-                 (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-            (fun () ->
-               let s1 =
-                 patt {(pc) with bef = sprintf "%s(" pc.bef; aft = " :"} p
-               in
-               let s2 =
-                 ctyp
-                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
-                    aft = (sprintf ")%s" pc.aft)}
-                   t
-               in
-               sprintf "%s\n%s" s1 s2)
+          pprintf pc "(%p :@;<1 1>%p)"  patt p ctyp t
       | <:patt< $int:s$ >> | <:patt< $flo:s$ >> ->
-          if String.length s > 0 && s.[0] = '-' then
-            sprintf "%s(%s)%s" pc.bef s pc.aft
-          else
-            sprintf "%s%s%s" pc.bef s pc.aft
+          if String.length s > 0 && s.[0] = '-' then pprintf pc "(%s)" s
+          else pprintf pc "%s" s
       | <:patt< $int32:s$ >> ->
           let s = s ^ "l" in
           if String.length s > 0 && s.[0] = '-' then
