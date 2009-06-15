@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: prtools.ml,v 1.9 2007/10/04 06:06:29 deraugla Exp $ *)
+(* $Id: prtools.ml,v 1.10 2007/10/04 09:36:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -114,10 +114,12 @@ value rise_string ind sh b s =
    the list elements are pairs where second elements are separators
    (the last separator is ignored) *)
 value rec plistl elem eleml sh pc xl =
-  let (s1, s2o) = plistl_two_parts elem eleml sh pc xl in
-  match s2o with
-  [ Some s2 -> sprintf "%s\n%s" s1 s2
-  | None -> s1 ]
+  if xl = [] then sprintf "%s%s" pc.bef pc.aft
+  else
+    let (s1, s2o) = plistl_two_parts elem eleml sh pc xl in
+    match s2o with
+    [ Some s2 -> sprintf "%s\n%s" s1 s2
+    | None -> s1 ]
 and plistl_two_parts elem eleml sh pc xl =
   match xl with
   [ [] -> assert False
@@ -222,10 +224,12 @@ value plistb elem sh pc xl =
 (* paragraph list like [plistl] except that the list is a list of
    functions returning a string *)
 value rec plistf sh pc xl =
-  let (s1, s2o) = plistf_two_parts sh pc xl in
-  match s2o with
-  [ Some s2 -> sprintf "%s\n%s" s1 s2
-  | None -> s1 ]
+  if xl = [] then sprintf "%s%s" pc.bef pc.aft
+  else
+    let (s1, s2o) = plistf_two_parts sh pc xl in
+    match s2o with
+    [ Some s2 -> sprintf "%s\n%s" s1 s2
+    | None -> s1 ]
 and plistf_two_parts sh pc xl =
   match xl with
   [ [] -> assert False

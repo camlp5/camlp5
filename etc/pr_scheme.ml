@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.24 2007/10/04 07:00:47 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.25 2007/10/04 09:36:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml.OldPrinters;
@@ -562,8 +562,7 @@ pr_patt.pr_levels :=
             let record_binding ppf ((p1, p2), k) =
               fprintf ppf "(@[%a@ %a@]" patt (p1, nok) patt (p2, ks ")" k)
             in
-            fprintf ppf "(@[<hv>{}@ %a@]" (list record_binding)
-              (fpl, ks ")" k)
+            fprintf ppf "{@[<hv>%a@]" (list record_binding) (fpl, ks "}" k)
       | <:patt< ?$x$ >> ->
           fun ppf curr next dg k -> fprintf ppf "?%s%t" x k
       | <:patt< ? ($lid:x$ = $e$) >> ->
