@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.49 2007/09/09 09:06:35 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.50 2007/09/09 09:16:38 deraugla Exp $ *)
 
 value split_ext = ref False;
 
@@ -936,33 +936,32 @@ EXTEND
               [ Some symb -> symb.used @ s.used
               | None -> s.used ]
             in
-            if not Pcaml.strict_mode.val then
-              let styp = STapp loc (STlid loc "list") s.styp in
-              let text = slist loc True sep s in
-              {used = used; text = text; styp = styp}
-            else
-              let styp = STvala loc (STapp loc (STlid loc "list") s.styp) in
-              let text = TXvala loc (slist loc True sep s) in
-              {used = used; text = text; styp = styp}
+            let styp = STapp loc (STlid loc "list") s.styp in
+            let text = slist loc True sep s in
+            let (styp, text) =
+              if not Pcaml.strict_mode.val then (styp, text)
+              else (STvala loc styp, TXvala loc text)
+            in
+            {used = used; text = text; styp = styp}
       | UIDENT "V"; UIDENT "FLAG"; s = SELF ->
           if quotify.val then ssflag2 loc s
-          else if not Pcaml.strict_mode.val then
+          else
             let styp = STlid loc "bool" in
             let text = TXflag loc s.text in
-            {used = s.used; text = text; styp = styp}
-          else
-            let styp = STvala loc (STlid loc "bool") in
-            let text = TXvala loc (TXflag loc s.text) in
+            let (styp, text) =
+              if not Pcaml.strict_mode.val then (styp, text)
+              else (STvala loc styp, TXvala loc text)
+            in
             {used = s.used; text = text; styp = styp}
       | UIDENT "V"; x = UIDENT ->
           if quotify.val then sstoken2 loc x
-          else if not Pcaml.strict_mode.val then
+          else
             let styp = STlid loc "string" in
             let text = TXtok loc x <:expr< "" >> in
-            {used = []; text = text; styp = styp}
-          else
-            let styp = STvala loc (STlid loc "string") in
-            let text = TXvala loc (TXtok loc x <:expr< "" >>) in
+            let (styp, text) =
+              if not Pcaml.strict_mode.val then (styp, text)
+              else (STvala loc styp, TXvala loc text)
+            in
             {used = []; text = text; styp = styp} ]
     | [ UIDENT "SELF" ->
           {used = []; text = TXself loc; styp = STself loc "SELF"}
