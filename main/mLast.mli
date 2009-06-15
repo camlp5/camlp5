@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: mLast.mli,v 1.17 2007/09/09 01:18:03 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.18 2007/09/09 02:23:26 deraugla Exp $ *)
 
 (* Module [MLast]: abstract syntax tree.
 
@@ -22,9 +22,9 @@
 type loc = Ploc.t;
 
 IFNDEF STRICT THEN
-  DEFINE V(t) = t
+  DEFINE V t = t
 ELSE
-  DEFINE V(t) = Ploc.vala t
+  DEFINE V t = Ploc.vala t
 END;
 
 type ctyp =

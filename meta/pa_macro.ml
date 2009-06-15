@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.25 2007/09/08 09:18:14 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.26 2007/09/09 02:23:26 deraugla Exp $ *)
 
 (*
 Added statements:
@@ -8,7 +8,7 @@ Added statements:
 
      DEFINE <uident>
      DEFINE <uident> = <expression>
-     DEFINE <uident> (<parameters>) = <expression>
+     DEFINE <uident> <parameters> = <expression>
      IFDEF <dexpr> THEN <structure_items> END
      IFDEF <dexpr> THEN <structure_items> ELSE <structure_items> END
      IFNDEF <dexpr> THEN <structure_items> END
@@ -18,7 +18,7 @@ Added statements:
 
      DEFINE <uident>
      DEFINE <uident> = <type>
-     DEFINE <uident> (<parameters>) = <type>
+     DEFINE <uident> <parameters> = <type>
      IFDEF <dexpr> THEN <signature_items> END
      IFDEF <dexpr> THEN <signature_items> ELSE <signature_items> END
      IFNDEF <dexpr> THEN <signature_items> END
@@ -343,12 +343,12 @@ EXTEND
       | si = LIST1 sig_item -> SdStr si ] ]
   ;
   opt_macro_expr:
-    [ [ "("; pl = LIST1 LIDENT SEP ","; ")"; "="; e = expr -> MvExpr pl e
+    [ [ pl = LIST1 LIDENT; "="; e = expr -> MvExpr pl e
       | "="; e = expr -> MvExpr [] e
       | -> MvNone ] ]
   ;
   opt_macro_type:
-    [ [ "("; pl = LIST1 LIDENT SEP ","; ")"; "="; t = ctyp -> MvType pl t
+    [ [ pl = LIST1 LIDENT; "="; t = ctyp -> MvType pl t
       | "="; t = ctyp -> MvType [] t
       | -> MvNone ] ]
   ;
