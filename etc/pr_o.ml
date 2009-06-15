@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.171 2007/12/27 01:30:02 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.172 2007/12/27 01:52:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1859,19 +1859,7 @@ EXTEND_PRINTER
   pr_class_expr:
     [ "top"
       [ <:class_expr< fun $p$ -> $ce$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%sfun %s -> %s%s" pc.bef
-                 (patt {(pc) with bef = ""; aft = ""} p)
-                 (curr {(pc) with bef = ""; aft = ""} ce) pc.aft)
-            (fun () ->
-               let s1 =
-                 patt {(pc) with bef = sprintf "%sfun " pc.bef; aft = " ->"} p
-               in
-               let s2 =
-                 curr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} ce
-               in
-               sprintf "%s\n%s" s1 s2)
+          pprintf pc "fun %p ->@;%p" patt p curr ce
       | <:class_expr< let $flag:rf$ $list:pel$ in $ce$ >> ->
           horiz_vertic
             (fun () ->
