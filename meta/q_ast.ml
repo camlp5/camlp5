@@ -1,5 +1,6 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.31 2007/09/03 13:50:19 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.32 2007/09/03 20:23:43 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -74,17 +75,61 @@ module Meta =
     value loc = Ploc.dummy;
     value ln () = <:expr< $lid:Ploc.name.val$ >>;
     value e_list elem el =
-      loop el where rec loop =
-        fun
-        [ [] -> <:expr< [] >>
-        | [e :: el] -> <:expr< [$elem e$ :: $loop el$] >> ]
+      loop el where rec loop el =
+        match get_anti el with
+        [ Some (loc, typ, str) ->
+            let (loc, r) = eval_anti expr_eoi loc typ str in
+            <:expr< $anti:r$ >>
+        | None ->
+            match el with
+            [ [] -> <:expr< [] >>
+            | [e :: el] -> <:expr< [$elem e$ :: $loop el$] >> ] ]
     ;
-    value e_option elem =
-       fun
-       [ None -> <:expr< None >>
-       | Some e -> <:expr< Some $elem e$ >> ]
+    value p_list elem el =
+      loop el where rec loop el =
+        match get_anti el with
+        [ Some (loc, typ, str) ->
+            let (loc, r) = eval_anti patt_eoi loc typ str in
+            <:patt< $anti:r$ >>
+        | None ->
+            match el with
+            [ [] -> <:patt< [] >>
+            | [e :: el] -> <:patt< [$elem e$ :: $loop el$] >> ] ]
     ;
-    value e_bool b = if b then <:expr< True >> else <:expr< False >>;
+    value e_option elem oe =
+      match get_anti oe with
+      [ Some (loc, typ, str) ->
+          let (loc, r) = eval_anti expr_eoi loc typ str in
+          <:expr< $anti:r$ >>
+      | None ->
+          match oe with
+          [ None -> <:expr< None >>
+          | Some e -> <:expr< Some $elem e$ >> ] ]
+    ;
+    value p_option elem oe =
+      match get_anti oe with
+      [ Some (loc, typ, str) ->
+          let (loc, r) = eval_anti patt_eoi loc typ str in
+          <:patt< $anti:r$ >>
+      | None ->
+          match oe with
+          [ None -> <:patt< None >>
+          | Some e -> <:patt< Some $elem e$ >> ] ]
+    ;
+    value e_bool b =
+      match get_anti b with
+      [ Some (loc, typ, str) ->
+          let (loc, r) = eval_anti expr_eoi loc typ str in
+          <:expr< $anti:r$ >>
+      | None -> if b then <:expr< True >> else <:expr< False >> ]
+    ;
+    value p_bool b =
+      match get_anti b with
+      [ Some (loc, typ, str) ->
+          let (loc, r) = eval_anti patt_eoi loc typ str in
+          <:patt< $anti:r$ >>
+      | None -> if b then <:patt< True >> else <:patt< False >> ]
+    ;
     value e_string s =
       match get_anti s with
       [ Some (loc, typ, str) ->
@@ -100,27 +145,39 @@ module Meta =
       | None -> <:patt< $str:s$ >> ]
     ;
     value e_ctyp t = 
-(*
       let ln = ln () in
-*)
-      loop t where rec loop =
-        fun 
-        [ (* TyAcc _ t1 t2 -> <:expr< MLast.TyAcc $ln$ $loop t1$ $loop t2$ >> 
-        | TyAny _ -> <:expr< MLast.TyAny $ln$ >>
-        | TyApp _ t1 t2 -> <:expr< MLast.TyApp $ln$ $loop t1$ $loop t2$ >> 
-        | TyLid _ s -> <:expr< MLast.TyLid $ln$ $e_string s$ >>
-        | TyQuo _ s -> <:expr< MLast.TyQuo $ln$ $e_string s$ >>
-        | TyRec _ lld ->
-            let lld =
-              e_vala
-                (e_list
-                   (fun (loc, lab, mf, t) ->
-                      <:expr< ($ln$, $str:lab$, $e_bool mf$, $loop t$) >>))
-                lld
+      loop t where rec loop t =
+        match get_anti t with
+        [ Some (loc, typ, str) ->
+            let r =
+              let (loc, r) = eval_anti expr_eoi loc typ str in
+              <:expr< $anti:r$ >>
             in
-            <:expr< MLast.TyRec $ln$ $lld$ >>
-        | TyUid _ s -> <:expr< MLast.TyUid $ln$ $e_string s$ >>
-        | *) x -> not_impl "e_ctyp" x ]
+            match typ with
+            [ ""  -> r
+            | x -> not_impl ("e_ctyp anti " ^ x) 0 ]
+        | None ->
+            match t with
+            [ TyAcc _ t1 t2 -> <:expr< MLast.TyAcc $ln$ $loop t1$ $loop t2$ >>
+(*
+            | TyAny _ -> <:expr< MLast.TyAny $ln$ >>
+*)
+            | TyApp _ t1 t2 -> <:expr< MLast.TyApp $ln$ $loop t1$ $loop t2$ >> 
+            | TyLid _ s -> <:expr< MLast.TyLid $ln$ $e_string s$ >>
+            | TyQuo _ s -> <:expr< MLast.TyQuo $ln$ $e_string s$ >>
+(*
+            | TyRec _ lld ->
+                let lld =
+                  e_vala
+                    (e_list
+                       (fun (loc, lab, mf, t) ->
+                          <:expr< ($ln$, $str:lab$, $e_bool mf$, $loop t$) >>))
+                    lld
+                in
+                <:expr< MLast.TyRec $ln$ $lld$ >>
+*)
+            | TyUid _ s -> <:expr< MLast.TyUid $ln$ $e_string s$ >>
+            | x -> not_impl "e_ctyp" x ] ]
     ;
     value p_ctyp =
       fun
@@ -153,17 +210,16 @@ module Meta =
             | PaAny _ -> <:expr< MLast.PaAny $ln$ >>
             | PaApp _ p1 p2 -> <:expr< MLast.PaApp $ln$ $loop p1$ $loop p2$ >>
             | PaChr _ s -> <:expr< MLast.PaChr $ln$ $e_string s$ >>
-(*
             | PaInt _ s k -> <:expr< MLast.PaInt $ln$ $e_string s$ $str:k$ >>
+(*
             | PaFlo _ s -> <:expr< MLast.PaFlo $ln$ $e_string s$ >>
 *)
             | PaLid _ s -> <:expr< MLast.PaLid $ln$ $e_string s$ >>
             | PaOrp _ p1 p2 -> <:expr< MLast.PaOrp $ln$ $loop p1$ $loop p2$ >>
             | PaRng _ p1 p2 -> <:expr< MLast.PaRng $ln$ $loop p1$ $loop p2$ >>
             | PaStr _ s -> <:expr< MLast.PaStr $ln$ $e_string s$ >>
-(*
+            | PaTup _ pl -> <:expr< MLast.PaTup $ln$ $e_list loop pl$ >>
             | PaTyc _ p t -> <:expr< MLast.PaTyc $ln$ $loop p$ $e_ctyp t$ >>
-*)
             | PaUid _ s -> <:expr< MLast.PaUid $ln$ $e_string s$ >>
             | x -> not_impl "e_patt" x ] ]
     ;
@@ -180,9 +236,11 @@ module Meta =
             | x -> not_impl ("p_patt anti " ^ x) 0 ]
         | None ->
             match p with
-            [ PaAli _ p1 p2 -> <:patt< MLast.PaAli _ $loop p1$ $loop p2$ >>
+            [ PaAcc _ p1 p2 -> <:patt< MLast.PaAcc _ $loop p1$ $loop p2$ >>
+            | PaAli _ p1 p2 -> <:patt< MLast.PaAli _ $loop p1$ $loop p2$ >>
             | PaChr _ s -> <:patt< MLast.PaChr _ $p_string s$ >>
             | PaLid _ s -> <:patt< MLast.PaLid _ $p_string s$ >>
+            | PaTup _ pl -> <:patt< MLast.PaTup _ $p_list loop pl$ >>
             | x -> not_impl "p_patt" x ] ]
     ;
     value rec e_expr e =
@@ -218,8 +276,8 @@ module Meta =
             | ExFun _ pwel ->
                 let pwel =
                   e_list
-                    (fun (p, eo, e) ->
-                       <:expr< ($e_patt p$, $e_option loop eo$, $loop e$) >>)
+                    (fun (p, oe, e) ->
+                       <:expr< ($e_patt p$, $e_option loop oe$, $loop e$) >>)
                     pwel
                 in
                 <:expr< MLast.ExFun $ln$ $pwel$ >>
@@ -230,25 +288,21 @@ module Meta =
                 in
                 <:expr< MLast.ExLet $ln$ $rf$ $lpe$ $loop e$ >>
             | ExLid _ s -> <:expr< MLast.ExLid $ln$ $e_string s$ >>
-(*
             | ExMat _ e pwel ->
                 let pwel =
                   e_list
-                    (fun (p, eo, e) ->
-                       <:expr< ($e_patt p$, $e_option loop eo$, $loop e$) >>)
+                    (fun (p, oe, e) ->
+                       <:expr< ($e_patt p$, $e_option loop oe$, $loop e$) >>)
                     pwel
                 in
                 <:expr< MLast.ExMat $ln$ $loop e$ $pwel$ >>
+(*
             | ExSeq _ el ->
                 <:expr< MLast.ExSeq $ln$ $e_list loop el$ >>
 *)
             | ExStr _ s -> <:expr< MLast.ExStr $ln$ $e_string s$ >>
-            | ExTup _ [e :: el] ->
-                let el = <:expr< [$loop e$ :: $e_list loop el$] >> in
-                <:expr< MLast.ExTup $ln$ $el$ >>
-(*
+            | ExTup _ el -> <:expr< MLast.ExTup $ln$ $e_list loop el$ >>
             | ExTyc _ e t -> <:expr< MLast.ExTyc $ln$ $loop e$ $e_ctyp t$ >>
-*)
             | ExUid _ s -> <:expr< MLast.ExUid $ln$ $e_string s$ >>
             | x -> not_impl "e_expr" x ] ]
     ;
@@ -262,8 +316,6 @@ module Meta =
             in
             match typ with
             [ "" -> r
-            | "lid" -> <:patt< MLast.ExLid _ $r$ >>
-            | "uid" -> <:patt< MLast.ExUid _ $r$ >>
             | x -> not_impl ("p_expr anti " ^ x) 0 ]
         | None ->
             match e with
@@ -274,14 +326,22 @@ module Meta =
                 <:patt< MLast.ExIfe _ $loop e1$ $loop e2$ $loop e3$ >>
             | ExInt _ s k -> <:patt< MLast.ExInt _ $p_string s$ $str:k$ >>
             | ExFlo _ s -> <:patt< MLast.ExFlo _ $p_string s$ >>
+*)
             | ExLet _ rf lpe e ->
-                let rf = p_vala p_bool rf in
+                let rf = p_bool rf in
                 let lpe =
-                  p_list_p (fun (p, e) -> <:patt< ($p_patt p$, $loop e$) >>) lpe
+                  p_list (fun (p, e) -> <:patt< ($p_patt p$, $loop e$) >>) lpe
                 in
                 <:patt< MLast.ExLet _ $rf$ $lpe$ $loop e$ >>
-*)
+            | ExRec _ lpe oe ->
+                let lpe =
+                  p_list (fun (p, e) -> <:patt< ($p_patt p$, $loop e$) >>) lpe
+                in
+                let oe = p_option loop oe in
+                <:patt< MLast.ExRec _ $lpe$ $oe$ >>
             | ExLid _ s -> <:patt< MLast.ExLid _ $p_string s$ >>
+            | ExStr _ s -> <:patt< MLast.ExStr _ $p_string s$ >>
+            | ExTup _ el -> <:patt< MLast.ExTup _ $p_list loop el$ >>
             | ExUid _ s -> <:patt< MLast.ExUid _ $p_string s$ >>
             | x -> not_impl "p_expr" x ] ]
     ;
@@ -371,6 +431,7 @@ module Meta =
   end
 ;
 
+let ipatt = Grammar.Entry.find Pcaml.expr "ipatt" in
 EXTEND
   expr_eoi: [ [ x = Pcaml.expr; EOI -> x ] ];
   patt_eoi: [ [ x = Pcaml.patt; EOI -> x ] ];
@@ -386,10 +447,14 @@ EXTEND
     [ [ s = ANTIQUOT_LOC -> make_anti loc "" s
       | s = ANTIQUOT_LOC "anti" -> make_anti loc "anti" s ] ]
   ;
-(*
-  Pcaml.ctyp: LAST
-    [ [ s = ANTIQUOT_LOC -> MLast.TyUid loc s ] ]
+  ipatt: LAST
+    [ [ s = ANTIQUOT_LOC -> make_anti loc "" s
+      | s = ANTIQUOT_LOC "anti" -> make_anti loc "anti" s ] ]
   ;
+  Pcaml.ctyp: LAST
+    [ [ s = ANTIQUOT_LOC -> make_anti loc "" s ] ]
+  ;
+(*
   Pcaml.str_item: LAST
     [ [ s = ANTIQUOT_LOC "exp" ->
           let e = MLast.ExAnt loc (MLast.ExLid loc s) in
@@ -445,6 +510,11 @@ value check_anti_loc s kind =
   [ Not_found | Failure _ -> raise Stream.Failure ]
 ;
 
+value check_and_make_anti prm typ =
+  let (loc, str) = check_anti_loc prm typ in
+  make_anti loc typ str
+;
+
 let lex = Grammar.glexer Pcaml.gram in
 let tok_match = lex.Plexing.tok_match in
 lex.Plexing.tok_match :=
@@ -456,59 +526,45 @@ lex.Plexing.tok_match :=
   | ("INT", "") ->
       fun
       [ ("INT", prm) -> prm
-      | ("ANTIQUOT_LOC", prm) ->
-          let (loc, str) = check_anti_loc prm "int" in
-          make_anti loc "int" str
+      | ("ANTIQUOT_LOC", prm) -> check_and_make_anti prm "int"
       | _ -> raise Stream.Failure ]
   | ("FLOAT", "") ->
       fun
       [ ("FLOAT", prm) -> prm
-      | ("ANTIQUOT_LOC", prm) ->
-          let (loc, str) = check_anti_loc prm "flo" in
-          make_anti loc "flo" str
+      | ("ANTIQUOT_LOC", prm) -> check_and_make_anti prm "flo"
       | _ -> raise Stream.Failure ]
   | ("LIDENT", "") ->
       fun
       [ ("LIDENT", prm) -> prm
-      | ("ANTIQUOT_LOC", prm) ->
-          let (loc, str) = check_anti_loc prm "lid" in
-          make_anti loc "lid" str
+      | ("ANTIQUOT_LOC", prm) -> check_and_make_anti prm "lid"
       | _ -> raise Stream.Failure ]
   | ("UIDENT", "") ->
       fun
       [ ("UIDENT", prm) -> prm
-      | ("ANTIQUOT_LOC", prm) ->
-          let (loc, str) = check_anti_loc prm "uid" in
-          make_anti loc "uid" str
+      | ("ANTIQUOT_LOC", prm) -> check_and_make_anti prm "uid"
       | _ -> raise Stream.Failure ]
   | ("STRING", "") ->
       fun
       [ ("STRING", prm) -> prm
-      | ("ANTIQUOT_LOC", prm) ->
-          let (loc, str) = check_anti_loc prm "str" in
-          make_anti loc "str" str
+      | ("ANTIQUOT_LOC", prm) -> check_and_make_anti prm "str"
       | _ -> raise Stream.Failure ]
   | ("CHAR", "") ->
       fun
       [ ("CHAR", prm) -> prm
-      | ("ANTIQUOT_LOC", prm) ->
-          let (loc, str) = check_anti_loc prm "chr" in
-          make_anti loc "chr" str
+      | ("ANTIQUOT_LOC", prm) -> check_and_make_anti prm "chr"
       | _ -> raise Stream.Failure ]
-(*
   | ("LIST", "") ->
       fun
-      [ ("ANTIQUOT_LOC", prm) -> check_anti_loc prm "a_list"
+      [ ("ANTIQUOT_LOC", prm) -> check_and_make_anti prm "list"
       | _ -> raise Stream.Failure ]
   | ("OPT", "") ->
       fun
-      [ ("ANTIQUOT_LOC", prm) -> check_anti_loc prm "a_opt"
+      [ ("ANTIQUOT_LOC", prm) -> check_and_make_anti prm "opt"
       | _ -> raise Stream.Failure ]
   | ("FLAG", "") ->
       fun
-      [ ("ANTIQUOT_loc", prm) -> check_anti_loc prm "flag"
+      [ ("ANTIQUOT_LOC", prm) -> check_and_make_anti prm "flag"
       | _ -> raise Stream.Failure ]
-*)
   | tok -> tok_match tok ]
 ;
 

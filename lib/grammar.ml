@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.34 2007/09/01 21:20:34 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.35 2007/09/03 20:23:43 deraugla Exp $ *)
 
 open Gramext;
 open Format;
@@ -559,15 +559,19 @@ and parser_of_symbol entry nlevn =
            act symbl)
   | Slist0 s ->
       let ps = parser_of_symbol entry nlevn s in
+      let pa = parser_of_token entry ("LIST", "") in
       let rec loop al =
         parser
         [ [: a = ps; a = loop [a :: al] ! :] -> a
         | [: :] -> al ]
       in
-      parser [: a = loop [] :] -> Obj.repr (List.rev a)
+      parser
+      [ [: a = pa :] -> a
+      | [: a = loop [] :] -> Obj.repr (List.rev a) ]
   | Slist0sep symb sep ->
       let ps = parser_of_symbol entry nlevn symb in
       let pt = parser_of_symbol entry nlevn sep in
+      let pa = parser_of_token entry ("LIST", "") in
       let rec kont al =
         parser
         [ [: v = pt; a = ps ? symb_failed entry v sep symb;
@@ -576,19 +580,24 @@ and parser_of_symbol entry nlevn =
         | [: :] -> al ]
       in
       parser
-      [ [: a = ps; a = kont [a] ! :] -> Obj.repr (List.rev a)
+      [ [: a = pa :] -> a
+      | [: a = ps; a = kont [a] ! :] -> Obj.repr (List.rev a)
       | [: :] -> Obj.repr [] ]
   | Slist1 s ->
       let ps = parser_of_symbol entry nlevn s in
+      let pa = parser_of_token entry ("LIST", "") in
       let rec loop al =
         parser
         [ [: a = ps; a = loop [a :: al] ! :] -> a
         | [: :] -> al ]
       in
-      parser [: a = ps; a = loop [a] ! :] -> Obj.repr (List.rev a)
+      parser
+      [ [: a = pa :] -> a
+      | [: a = ps; a = loop [a] ! :] -> Obj.repr (List.rev a) ]
   | Slist1sep symb sep ->
       let ps = parser_of_symbol entry nlevn symb in
       let pt = parser_of_symbol entry nlevn sep in
+      let pa = parser_of_token entry ("LIST", "") in
       let rec kont al =
         parser
         [ [: v = pt;
@@ -602,16 +611,22 @@ and parser_of_symbol entry nlevn =
             a
         | [: :] -> al ]
       in
-      parser [: a = ps; a = kont [a] ! :] -> Obj.repr (List.rev a)
+      parser
+      [ [: a = pa :] -> a
+      | [: a = ps; a = kont [a] ! :] -> Obj.repr (List.rev a) ]
   | Sopt s ->
       let ps = parser_of_symbol entry nlevn s in
+      let pa = parser_of_token entry ("OPT", "") in
       parser
-      [ [: a = ps :] -> Obj.repr (Some a)
+      [ [: a = pa :] -> a
+      | [: a = ps :] -> Obj.repr (Some a)
       | [: :] -> Obj.repr None ]
   | Sflag s ->
       let ps = parser_of_symbol entry nlevn s in
+      let pa = parser_of_token entry ("FLAG", "") in
       parser
-      [ [: _ = ps :] -> Obj.repr True
+      [ [: a = pa :] -> a
+      | [: _ = ps :] -> Obj.repr True
       | [: :] -> Obj.repr False ]
   | Stree t ->
       let pt = parser_of_tree entry 1 0 t in

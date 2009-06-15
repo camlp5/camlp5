@@ -595,16 +595,19 @@ and parser_of_symbol entry nlevn =
            act symbl)
   | Slist0 s ->
       let ps = parser_of_symbol entry nlevn s in
+      let pa = parser_of_token entry ("LIST", "") in
       let rec loop al (strm__ : _ Stream.t) =
         match try Some (ps strm__) with Stream.Failure -> None with
           Some a -> loop (a :: al) strm__
         | _ -> al
       in
       (fun (strm__ : _ Stream.t) ->
-         let a = loop [] strm__ in Obj.repr (List.rev a))
+         try pa strm__ with
+           Stream.Failure -> let a = loop [] strm__ in Obj.repr (List.rev a))
   | Slist0sep (symb, sep) ->
       let ps = parser_of_symbol entry nlevn symb in
       let pt = parser_of_symbol entry nlevn sep in
+      let pa = parser_of_token entry ("LIST", "") in
       let rec kont al (strm__ : _ Stream.t) =
         match try Some (pt strm__) with Stream.Failure -> None with
           Some v ->
@@ -617,22 +620,28 @@ and parser_of_symbol entry nlevn =
         | _ -> al
       in
       (fun (strm__ : _ Stream.t) ->
-         match try Some (ps strm__) with Stream.Failure -> None with
-           Some a -> let a = kont [a] strm__ in Obj.repr (List.rev a)
-         | _ -> Obj.repr [])
+         try pa strm__ with
+           Stream.Failure ->
+             match try Some (ps strm__) with Stream.Failure -> None with
+               Some a -> let a = kont [a] strm__ in Obj.repr (List.rev a)
+             | _ -> Obj.repr [])
   | Slist1 s ->
       let ps = parser_of_symbol entry nlevn s in
+      let pa = parser_of_token entry ("LIST", "") in
       let rec loop al (strm__ : _ Stream.t) =
         match try Some (ps strm__) with Stream.Failure -> None with
           Some a -> loop (a :: al) strm__
         | _ -> al
       in
       (fun (strm__ : _ Stream.t) ->
-         let a = ps strm__ in
-         let a = loop [a] strm__ in Obj.repr (List.rev a))
+         try pa strm__ with
+           Stream.Failure ->
+             let a = ps strm__ in
+             let a = loop [a] strm__ in Obj.repr (List.rev a))
   | Slist1sep (symb, sep) ->
       let ps = parser_of_symbol entry nlevn symb in
       let pt = parser_of_symbol entry nlevn sep in
+      let pa = parser_of_token entry ("LIST", "") in
       let rec kont al (strm__ : _ Stream.t) =
         match try Some (pt strm__) with Stream.Failure -> None with
           Some v ->
@@ -647,20 +656,28 @@ and parser_of_symbol entry nlevn =
         | _ -> al
       in
       (fun (strm__ : _ Stream.t) ->
-         let a = ps strm__ in
-         let a = kont [a] strm__ in Obj.repr (List.rev a))
+         try pa strm__ with
+           Stream.Failure ->
+             let a = ps strm__ in
+             let a = kont [a] strm__ in Obj.repr (List.rev a))
   | Sopt s ->
       let ps = parser_of_symbol entry nlevn s in
+      let pa = parser_of_token entry ("OPT", "") in
       (fun (strm__ : _ Stream.t) ->
-         match try Some (ps strm__) with Stream.Failure -> None with
-           Some a -> Obj.repr (Some a)
-         | _ -> Obj.repr None)
+         try pa strm__ with
+           Stream.Failure ->
+             match try Some (ps strm__) with Stream.Failure -> None with
+               Some a -> Obj.repr (Some a)
+             | _ -> Obj.repr None)
   | Sflag s ->
       let ps = parser_of_symbol entry nlevn s in
+      let pa = parser_of_token entry ("FLAG", "") in
       (fun (strm__ : _ Stream.t) ->
-         match try Some (ps strm__) with Stream.Failure -> None with
-           Some _ -> Obj.repr true
-         | _ -> Obj.repr false)
+         try pa strm__ with
+           Stream.Failure ->
+             match try Some (ps strm__) with Stream.Failure -> None with
+               Some _ -> Obj.repr true
+             | _ -> Obj.repr false)
   | Stree t ->
       let pt = parser_of_tree entry 1 0 t in
       (fun (strm__ : _ Stream.t) ->

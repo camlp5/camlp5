@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.32 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.33 2007/09/03 20:23:43 deraugla Exp $ *)
 
 value split_ext = ref False;
 
@@ -323,8 +323,8 @@ value rec quot_expr e =
   | <:expr< $uid:m$.$uid:s$ >> -> <:expr< Qast.Node $str:m ^ "." ^ s$ [] >>
   | <:expr< $uid:s$ >> -> <:expr< Qast.Node $str:s$ [] >>
   | <:expr< $str:s$ >> -> <:expr< Qast.Str $str:s$ >>
-  | <:expr< ($list:el$) >> ->
-      let el = List.map quot_expr el in
+  | <:expr< ($e$, $list:el$) >> ->
+      let el = List.map quot_expr [e :: el] in
       <:expr< Qast.Tuple $mklistexp loc el$ >>
   | <:expr< let $flag:r$ $list:pel$ in $e$ >> ->
       let pel = List.map (fun (p, e) -> (p, quot_expr e)) pel in
@@ -348,7 +348,8 @@ value quotify_action psl act =
   List.fold_left
     (fun e ps ->
        match ps.pattern with
-       [ Some <:patt< ($list:pl$) >> ->
+       [ Some <:patt< ($p$, $list:pl$) >> ->
+           let pl = [p :: pl] in
            let loc = Ploc.dummy in
            let pname = pname_of_ptuple pl in
            let (pl1, el1) =
@@ -363,9 +364,11 @@ value quotify_action psl act =
               List.map (fun s -> <:expr< $lid:s$ >>) l)
            in
            <:expr<
-              let ($list:pl$) =
+              let ($p$, $list:pl$) =
+                let pl = [p :: pl] in
                 match $lid:pname$ with
-                [ Qast.Tuple $mklistpat loc pl1$ -> ($list:el1$)
+                [ Qast.Tuple $mklistpat loc pl1$ ->
+                    ($List.hd el1$, $list:List.tl el1$)
                 | _ -> match () with [] ]
               in $e$ >>
        | _ -> e ])
@@ -376,12 +379,12 @@ value rec make_ctyp styp tvar =
   match styp with
   [ STlid loc s -> <:ctyp< $lid:s$ >>
   | STapp loc t1 t2 -> <:ctyp< $make_ctyp t1 tvar$ $make_ctyp t2 tvar$ >>
-  | STquo loc s -> <:ctyp< '$s$ >>
+  | STquo loc s -> <:ctyp< '$lid:s$ >>
   | STself loc x ->
       if tvar = "" then
         Ploc.raise loc
           (Stream.Error ("'" ^ x ^ "' illegal in anonymous entry level"))
-      else <:ctyp< '$tvar$ >>
+      else <:ctyp< '$lid:tvar$ >>
   | STtyp t -> t ]
 ;
 
@@ -413,7 +416,7 @@ value rec make_expr gmod tvar =
           <:expr<
              Gramext.Snterml
                ($uid:gmod$.Entry.obj
-                  ($n.expr$ : $uid:gmod$.Entry.e '$n.tvar$))
+                  ($n.expr$ : $uid:gmod$.Entry.e '$lid:n.tvar$))
                $str:lab$ >>
       | None ->
           if n.tvar = tvar then <:expr< Gramext.Sself >>
@@ -421,7 +424,7 @@ value rec make_expr gmod tvar =
             <:expr<
                Gramext.Snterm
                  ($uid:gmod$.Entry.obj
-                    ($n.expr$ : $uid:gmod$.Entry.e '$n.tvar$)) >> ]
+                    ($n.expr$ : $uid:gmod$.Entry.e '$lid:n.tvar$)) >> ]
   | TXopt loc t -> <:expr< Gramext.Sopt $make_expr gmod "" t$ >>
   | TXflag loc t -> <:expr< Gramext.Sflag $make_expr gmod "" t$ >>
   | TXrules loc rl ->
@@ -449,7 +452,7 @@ value text_of_action loc psl rtvar act tvar =
     [ Some act -> if quotify.val then quotify_action psl act else act
     | None -> <:expr< () >> ]
   in
-  let e = <:expr< fun [ ($locid$ : Ploc.t) -> ($act$ : '$rtvar$) ] >> in
+  let e = <:expr< fun [ ($locid$ : Ploc.t) -> ($act$ : '$lid:rtvar$) ] >> in
   let txt =
     List.fold_left
       (fun txt ps ->
@@ -459,8 +462,8 @@ value text_of_action loc psl rtvar act tvar =
              let t = make_ctyp ps.symbol.styp tvar in
              let p =
                match p with
-               [ <:patt< ($list:pl$) >> when quotify.val ->
-                   <:patt< $lid:pname_of_ptuple pl$ >>
+               [ <:patt< ($p$, $list:pl$) >> when quotify.val ->
+                   <:patt< $lid:pname_of_ptuple [p :: pl]$ >>
                | _ -> p ]
              in
              <:expr< fun ($p$ : $t$) -> $txt$ >> ])
@@ -618,7 +621,7 @@ value text_of_entry loc gmod e =
   let ent =
     let x = e.name in
     let loc = e.name.loc in
-    <:expr< ($x.expr$ : $uid:gmod$.Entry.e '$x.tvar$) >>
+    <:expr< ($x.expr$ : $uid:gmod$.Entry.e '$lid:x.tvar$) >>
   in
   let pos =
     match e.pos with
@@ -668,7 +671,7 @@ value let_in_of_extend loc gmod functor_version gl el args =
       let globals =
         List.map
           (fun {expr = e; tvar = x; loc = loc} ->
-             (<:patt< _ >>, <:expr< ($e$ : $uid:gmod$.Entry.e '$x$) >>))
+             (<:patt< _ >>, <:expr< ($e$ : $uid:gmod$.Entry.e '$lid:x$) >>))
           nl
       in
       let locals =
@@ -681,7 +684,8 @@ value let_in_of_extend loc gmod functor_version gl el args =
              in
              (<:patt< $lid:i$ >>,
               <:expr<
-                (grammar_entry_create $str:i$ : $uid:gmod$.Entry.e '$x$) >>))
+                (grammar_entry_create $str:i$ : $uid:gmod$.Entry.e '$lid:x$)
+              >>))
           ll
       in
       let e =

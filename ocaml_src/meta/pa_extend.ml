@@ -777,8 +777,8 @@ let rec quot_expr e =
          MLast.ExAcc
            (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Str")),
          MLast.ExStr (loc, s))
-  | MLast.ExTup (_, el) ->
-      let el = List.map quot_expr el in
+  | MLast.ExTup (_, e :: el) ->
+      let el = List.map quot_expr (e :: el) in
       MLast.ExApp
         (loc,
          MLast.ExAcc
@@ -806,7 +806,8 @@ let quotify_action psl act =
   List.fold_left
     (fun e ps ->
        match ps.pattern with
-         Some (MLast.PaTup (_, pl)) ->
+         Some (MLast.PaTup (_, p :: pl)) ->
+           let pl = p :: pl in
            let loc = Ploc.dummy in
            let pname = pname_of_ptuple pl in
            let (pl1, el1) =
@@ -822,18 +823,27 @@ let quotify_action psl act =
            in
            MLast.ExLet
              (loc, false,
-              [MLast.PaTup (loc, pl),
-               MLast.ExMat
-                 (loc, MLast.ExLid (loc, pname),
-                  [MLast.PaApp
+              [MLast.PaTup (loc, p :: pl),
+               MLast.ExLet
+                 (loc, false,
+                  [MLast.PaLid (loc, "pl"),
+                   MLast.ExApp
                      (loc,
-                      MLast.PaAcc
-                        (loc, MLast.PaUid (loc, "Qast"),
-                         MLast.PaUid (loc, "Tuple")),
-                      mklistpat loc pl1),
-                   None, MLast.ExTup (loc, el1);
-                   MLast.PaAny loc, None,
-                   MLast.ExMat (loc, MLast.ExUid (loc, "()"), [])])],
+                      MLast.ExApp
+                        (loc, MLast.ExUid (loc, "::"),
+                         MLast.ExLid (loc, "p")),
+                      MLast.ExLid (loc, "pl"))],
+                  MLast.ExMat
+                    (loc, MLast.ExLid (loc, pname),
+                     [MLast.PaApp
+                        (loc,
+                         MLast.PaAcc
+                           (loc, MLast.PaUid (loc, "Qast"),
+                            MLast.PaUid (loc, "Tuple")),
+                         mklistpat loc pl1),
+                      None, MLast.ExTup (loc, List.hd el1 :: List.tl el1);
+                      MLast.PaAny loc, None,
+                      MLast.ExMat (loc, MLast.ExUid (loc, "()"), [])]))],
               e)
        | _ -> e)
     e psl
@@ -1056,8 +1066,8 @@ let text_of_action loc psl rtvar act tvar =
              let t = make_ctyp ps.symbol.styp tvar in
              let p =
                match p with
-                 MLast.PaTup (_, pl) when !quotify ->
-                   MLast.PaLid (loc, pname_of_ptuple pl)
+                 MLast.PaTup (_, p :: pl) when !quotify ->
+                   MLast.PaLid (loc, pname_of_ptuple (p :: pl))
                | _ -> p
              in
              MLast.ExFun (loc, [MLast.PaTyc (loc, p, t), None, txt]))
