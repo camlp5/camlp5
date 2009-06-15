@@ -221,7 +221,9 @@ let a_STRING2 = Grammar.Entry.create gram "a_STRING2";;
 let a_CHAR = Grammar.Entry.create gram "a_CHAR";;
 let a_CHAR2 = Grammar.Entry.create gram "a_CHAR2";;
 let a_TILDEIDENT = Grammar.Entry.create gram "a_TILDEIDENT";;
+let a_TILDEIDENT2 = Grammar.Entry.create gram "a_TILDEIDENT2";;
 let a_TILDEIDENTCOLON = Grammar.Entry.create gram "a_TILDEIDENTCOLON";;
+let a_TILDEIDENTCOLON2 = Grammar.Entry.create gram "a_TILDEIDENTCOLON2";;
 let a_QUESTIONIDENT = Grammar.Entry.create gram "a_QUESTIONIDENT";;
 let a_QUESTIONIDENT2 = Grammar.Entry.create gram "a_QUESTIONIDENT2";;
 let a_QUESTIONIDENTCOLON = Grammar.Entry.create gram "a_QUESTIONIDENTCOLON";;
@@ -674,7 +676,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 312, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 314, 19))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -987,7 +989,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 368, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 370, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -3927,36 +3929,20 @@ Grammar.extend
            (Qast.Node ("TyLab", [Qast.Loc; i; t]) : 'ctyp))]];
     Grammar.Entry.obj (tildeident : 'tildeident Grammar.Entry.e), None,
     [None, None,
-     [[Gramext.Stoken ("TILDEANTIQUOT", "_")],
+     [[Gramext.Snterm
+         (Grammar.Entry.obj
+            (a_TILDEIDENT2 : 'a_TILDEIDENT2 Grammar.Entry.e))],
       Gramext.action
-        (fun (a : string) (loc : Ploc.t) ->
-           (Qast.VaAnt ("_", loc, a) : 'tildeident));
-      [Gramext.Stoken ("TILDEANTIQUOT", "")],
-      Gramext.action
-        (fun (a : string) (loc : Ploc.t) ->
-           (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'tildeident));
-      [Gramext.Snterm
-         (Grammar.Entry.obj (a_TILDEIDENT : 'a_TILDEIDENT Grammar.Entry.e))],
-      Gramext.action
-        (fun (i : 'a_TILDEIDENT) (loc : Ploc.t) ->
-           (Qast.VaVal i : 'tildeident))]];
+        (fun (i : 'a_TILDEIDENT2) (loc : Ploc.t) -> (i : 'tildeident))]];
     Grammar.Entry.obj (tildeidentcolon : 'tildeidentcolon Grammar.Entry.e),
     None,
     [None, None,
-     [[Gramext.Stoken ("TILDEANTIQUOTCOLON", "_")],
-      Gramext.action
-        (fun (a : string) (loc : Ploc.t) ->
-           (Qast.VaAnt ("_", loc, a) : 'tildeidentcolon));
-      [Gramext.Stoken ("TILDEANTIQUOTCOLON", "")],
-      Gramext.action
-        (fun (a : string) (loc : Ploc.t) ->
-           (Qast.VaVal (Qast.VaAnt ("", loc, a)) : 'tildeidentcolon));
-      [Gramext.Snterm
+     [[Gramext.Snterm
          (Grammar.Entry.obj
-            (a_TILDEIDENTCOLON : 'a_TILDEIDENTCOLON Grammar.Entry.e))],
+            (a_TILDEIDENTCOLON2 : 'a_TILDEIDENTCOLON2 Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'a_TILDEIDENTCOLON) (loc : Ploc.t) ->
-           (Qast.VaVal i : 'tildeidentcolon))]];
+        (fun (i : 'a_TILDEIDENTCOLON2) (loc : Ploc.t) ->
+           (i : 'tildeidentcolon))]];
     Grammar.Entry.obj (questionident : 'questionident Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm
@@ -4895,6 +4881,24 @@ Grammar.extend
      [Gramext.Stoken ("TILDEIDENT", "")],
      Gramext.action
        (fun (s : string) (loc : Ploc.t) -> (Qast.Str s : 'a_TILDEIDENT))]];
+   Grammar.Entry.obj (a_TILDEIDENT2 : 'a_TILDEIDENT2 Grammar.Entry.e), None,
+   [None, None,
+    [[Gramext.Stoken ("", "~"); Gramext.Stoken ("ANTIQUOT", "")],
+     Gramext.action
+       (fun (a : string) _ (loc : Ploc.t) ->
+          (Qast.VaAnt ("", loc, a) : 'a_TILDEIDENT2));
+     [Gramext.Stoken ("TILDEIDENT", "")],
+     Gramext.action
+       (fun (s : string) (loc : Ploc.t) ->
+          (Qast.VaVal (Qast.Str s) : 'a_TILDEIDENT2));
+     [Gramext.Stoken ("ANTIQUOT", "~_")],
+     Gramext.action
+       (fun (a : string) (loc : Ploc.t) ->
+          (Qast.VaAnt ("~_", loc, a) : 'a_TILDEIDENT2));
+     [Gramext.Stoken ("ANTIQUOT", "~")],
+     Gramext.action
+       (fun (a : string) (loc : Ploc.t) ->
+          (Qast.VaVal (Qast.VaAnt ("~", loc, a)) : 'a_TILDEIDENT2))]];
    Grammar.Entry.obj (a_TILDEIDENTCOLON : 'a_TILDEIDENTCOLON Grammar.Entry.e),
    None,
    [None, None,
@@ -4907,6 +4911,27 @@ Grammar.extend
      Gramext.action
        (fun (s : string) (loc : Ploc.t) ->
           (Qast.Str s : 'a_TILDEIDENTCOLON))]];
+   Grammar.Entry.obj
+     (a_TILDEIDENTCOLON2 : 'a_TILDEIDENTCOLON2 Grammar.Entry.e),
+   None,
+   [None, None,
+    [[Gramext.Stoken ("", "~"); Gramext.Stoken ("ANTIQUOT", "");
+      Gramext.Stoken ("", ":")],
+     Gramext.action
+       (fun _ (a : string) _ (loc : Ploc.t) ->
+          (Qast.VaAnt ("", loc, a) : 'a_TILDEIDENTCOLON2));
+     [Gramext.Stoken ("TILDEIDENTCOLON", "")],
+     Gramext.action
+       (fun (s : string) (loc : Ploc.t) ->
+          (Qast.VaVal (Qast.Str s) : 'a_TILDEIDENTCOLON2));
+     [Gramext.Stoken ("ANTIQUOT", "~_:")],
+     Gramext.action
+       (fun (a : string) (loc : Ploc.t) ->
+          (Qast.VaAnt ("~_", loc, a) : 'a_TILDEIDENTCOLON2));
+     [Gramext.Stoken ("ANTIQUOT", "~:")],
+     Gramext.action
+       (fun (a : string) (loc : Ploc.t) ->
+          (Qast.VaVal (Qast.VaAnt ("~", loc, a)) : 'a_TILDEIDENTCOLON2))]];
    Grammar.Entry.obj (a_QUESTIONIDENT : 'a_QUESTIONIDENT Grammar.Entry.e),
    None,
    [None, None,

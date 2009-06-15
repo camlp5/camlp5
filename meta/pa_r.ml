@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.104 2007/09/22 23:31:12 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.105 2007/09/23 00:10:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -685,14 +685,10 @@ EXTEND
       | i = questionidentcolon; t = SELF -> <:ctyp< ?$_:i$: $t$ >> ] ]
   ;
   tildeident:
-    [ [ i = TILDEIDENT -> <:vala< i >>
-      | a = TILDEANTIQUOT_LOC -> <:vala< $a$ >>
-      | a = TILDEANTIQUOT_LOC "_" -> <:vala< $a$ >> ] ]
+    [ [ i = V TILDEIDENT -> i ] ]
   ;
   tildeidentcolon:
-    [ [ i = TILDEIDENTCOLON -> <:vala< i >>
-      | a = TILDEANTIQUOTCOLON_LOC -> <:vala< $a$ >>
-      | a = TILDEANTIQUOTCOLON_LOC "_" -> <:vala< $a$ >> ] ]
+    [ [ i = V TILDEIDENTCOLON -> i ] ]
   ;
   questionident:
     [ [ i = V QUESTIONIDENT -> i ] ]

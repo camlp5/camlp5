@@ -505,8 +505,8 @@ let tilde ctx bp buf strm =
             Stream.Failure -> raise (Stream.Error "")
         in
         begin match Stream.peek strm__ with
-          Some ':' -> Stream.junk strm__; "TILDEANTIQUOTCOLON", s
-        | _ -> "TILDEANTIQUOT", s
+          Some ':' -> Stream.junk strm__; "ANTIQUOT", "~" ^ s ^ ":"
+        | _ -> "ANTIQUOT", "~" ^ s
         end
     | _ ->
         let (strm__ : _ Stream.t) = strm in
@@ -522,8 +522,8 @@ let tilde ctx bp buf strm =
             Stream.Failure -> raise (Stream.Error "")
         in
         begin match Stream.peek strm__ with
-          Some ':' -> Stream.junk strm__; "TILDEANTIQUOTCOLON_LOC", s
-        | _ -> "TILDEANTIQUOT_LOC", s
+          Some ':' -> Stream.junk strm__; "ANTIQUOT_LOC", "~" ^ s ^ ":"
+        | _ -> "ANTIQUOT_LOC", "~" ^ s
         end
     | _ ->
         let (strm__ : _ Stream.t) = strm in
@@ -922,9 +922,6 @@ let using_token kwd_table ident_table (p_con, p_prm) =
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
     "CHAR" | "STRING" | "QUOTATION" | "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
       ()
-  | "TILDEANTIQUOTCOLON" | "TILDEANTIQUOT" | "TILDEANTIQUOTCOLON_LOC" |
-    "TILDEANTIQUOT_LOC" ->
-      ()
   | _ ->
       raise
         (Plexing.Error
@@ -986,7 +983,7 @@ let after_colon_except_last e =
 let tok_match =
   function
     "ANTIQUOT", p_prm ->
-      if p_prm <> "" && p_prm.[0] = '?' then
+      if p_prm <> "" && (p_prm.[0] = '~' || p_prm.[0] = '?') then
         if p_prm.[String.length p_prm - 1] = ':' then
           let p_prm = String.sub p_prm 0 (String.length p_prm - 1) in
           function
@@ -1008,16 +1005,6 @@ let tok_match =
         (function
            "ANTIQUOT", prm when eq_before_colon p_prm prm -> after_colon prm
          | _ -> raise Stream.Failure)
-  | "TILDEANTIQUOT", p_prm ->
-      (function
-         "TILDEANTIQUOT", prm when eq_before_colon p_prm prm ->
-           after_colon prm
-       | _ -> raise Stream.Failure)
-  | "TILDEANTIQUOTCOLON", p_prm ->
-      (function
-         "TILDEANTIQUOTCOLON", prm when eq_before_colon p_prm prm ->
-           after_colon prm
-       | _ -> raise Stream.Failure)
   | tok -> Plexing.default_match tok
 ;;
 
@@ -1027,11 +1014,11 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-         (fun _ -> raise (Match_failure ("plexer.ml", 653, 25)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 653, 45)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 653, 68)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 654, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 654, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 641, 25)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 641, 45)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 641, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 642, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 642, 37)));
        tok_comm = None}
   in
   let glex =

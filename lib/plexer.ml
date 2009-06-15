@@ -1,5 +1,5 @@
 (* camlp5r pa_lex.cmo *)
-(* $Id: plexer.ml,v 1.97 2007/09/22 22:22:24 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.98 2007/09/23 00:10:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value no_quotations = ref False;
@@ -271,18 +271,18 @@ value tilde ctx bp buf strm =
   if ctx.dollar_for_antiquotation then
     match strm with parser
     [ [: `'$'; s = antiquot ctx bp $empty; `':' :] ->
-        ("TILDEANTIQUOTCOLON", s)
+        ("ANTIQUOT", "~" ^ s ^ ":")
     | [: `'$'; s = antiquot ctx bp $empty :] ->
-        ("TILDEANTIQUOT", s)
+        ("ANTIQUOT", "~" ^ s)
     | [: :] ->
         match strm with lexer
         [ ident2! -> keyword_or_error ctx (bp, $pos) $buf ] ]
   else if force_antiquot_loc.val then
     match strm with parser
     [ [: `'$'; s = antiquot_loc ctx bp $empty; `':' :] ->
-        ("TILDEANTIQUOTCOLON_LOC", s)
+        ("ANTIQUOT_LOC", "~" ^ s ^ ":")
     | [: `'$'; s = antiquot_loc ctx bp $empty :] ->
-        ("TILDEANTIQUOT_LOC", s)
+        ("ANTIQUOT_LOC", "~" ^ s)
     | [: :] ->
         match strm with lexer
         [ ident2! -> keyword_or_error ctx (bp, $pos) $buf ] ]
@@ -546,8 +546,6 @@ value using_token kwd_table ident_table (p_con, p_prm) =
     "CHAR" | "STRING" | "QUOTATION" |
     "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
       ()
-  | "TILDEANTIQUOTCOLON" | "TILDEANTIQUOT"
-  | "TILDEANTIQUOTCOLON_LOC" | "TILDEANTIQUOT_LOC" -> ()
   | _ ->
       raise
         (Plexing.Error
@@ -610,7 +608,7 @@ value after_colon_except_last e =
 value tok_match =
   fun
   [ ("ANTIQUOT", p_prm) ->
-      if p_prm <> "" && p_prm.[0] = '?' then
+      if p_prm <> "" && (p_prm.[0] = '~' || p_prm.[0] = '?') then
         if p_prm.[String.length p_prm - 1] = ':' then
           let p_prm = String.sub p_prm 0 (String.length p_prm - 1) in
           fun
@@ -632,16 +630,6 @@ value tok_match =
         fun
         [ ("ANTIQUOT", prm) when eq_before_colon p_prm prm -> after_colon prm
         | _ -> raise Stream.Failure ]
-  | ("TILDEANTIQUOT", p_prm) ->
-      fun
-      [ ("TILDEANTIQUOT", prm) when eq_before_colon p_prm prm ->
-          after_colon prm
-      | _ -> raise Stream.Failure ]
-  | ("TILDEANTIQUOTCOLON", p_prm) ->
-      fun
-      [ ("TILDEANTIQUOTCOLON", prm) when eq_before_colon p_prm prm ->
-          after_colon prm
-      | _ -> raise Stream.Failure ]
   | tok -> Plexing.default_match tok ]
 ;
 

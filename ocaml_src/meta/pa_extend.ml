@@ -654,10 +654,7 @@ let rec expr_fa al =
   | f -> f, al
 ;;
 
-let assoc_anti =
-  ["ANTIQUOT_LOC", "ANTIQUOT"; "TILDEANTIQUOT_LOC", "TILDEANTIQUOT";
-   "TILDEANTIQUOTCOLON_LOC", "TILDEANTIQUOTCOLON"]
-;;
+let assoc_anti = ["ANTIQUOT_LOC", "ANTIQUOT"];;
 
 let anti_str psl =
   match psl with
@@ -668,7 +665,8 @@ let anti_str psl =
 
 let anti_anti n = "_" ^ n;;
 let is_anti_anti n =
-  n <> "" && n.[0] = '_' || String.length n > 1 && n.[0] = '?' && n.[1] = '_'
+  n <> "" && n.[0] = '_' ||
+  String.length n > 1 && (n.[0] = '~' || n.[0] = '?') && n.[1] = '_'
 ;;
 
 let quot_expr psl e =

@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.103 2007/09/22 23:14:40 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.104 2007/09/23 00:10:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -174,7 +174,9 @@ value a_STRING2 = Grammar.Entry.create gram "a_STRING2";
 value a_CHAR = Grammar.Entry.create gram "a_CHAR";
 value a_CHAR2 = Grammar.Entry.create gram "a_CHAR2";
 value a_TILDEIDENT = Grammar.Entry.create gram "a_TILDEIDENT";
+value a_TILDEIDENT2 = Grammar.Entry.create gram "a_TILDEIDENT2";
 value a_TILDEIDENTCOLON = Grammar.Entry.create gram "a_TILDEIDENTCOLON";
+value a_TILDEIDENTCOLON2 = Grammar.Entry.create gram "a_TILDEIDENTCOLON2";
 value a_QUESTIONIDENT = Grammar.Entry.create gram "a_QUESTIONIDENT";
 value a_QUESTIONIDENT2 = Grammar.Entry.create gram "a_QUESTIONIDENT2";
 value a_QUESTIONIDENTCOLON = Grammar.Entry.create gram "a_QUESTIONIDENTCOLON";
@@ -1102,14 +1104,10 @@ EXTEND
           Qast.Node "TyOlb" [Qast.Loc; i; t] ] ]
   ;
   tildeident:
-    [ [ i = a_TILDEIDENT -> Qast.VaVal i
-      | a = TILDEANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a)
-      | a = TILDEANTIQUOT "_" -> Qast.VaAnt "_" loc a ] ]
+    [ [ i = a_TILDEIDENT2 -> i ] ]
   ;
   tildeidentcolon:
-    [ [ i = a_TILDEIDENTCOLON -> Qast.VaVal i
-      | a = TILDEANTIQUOTCOLON -> Qast.VaVal (Qast.VaAnt "" loc a)
-      | a = TILDEANTIQUOTCOLON "_" -> Qast.VaAnt "_" loc a ] ]
+    [ [ i = a_TILDEIDENTCOLON2 -> i ] ]
   ;
   questionident:
     [ [ i = a_QUESTIONIDENT2 -> i ] ]
@@ -1417,8 +1415,20 @@ EXTEND
     [ [ s = TILDEIDENT -> Qast.Str s
       | "~"; a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
   ;
+  a_TILDEIDENT2:
+    [ [ a = ANTIQUOT "~" -> Qast.VaVal (Qast.VaAnt "~" loc a)
+      | a = ANTIQUOT "~_" -> Qast.VaAnt "~_" loc a
+      | s = TILDEIDENT -> Qast.VaVal (Qast.Str s)
+      | "~"; a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
+  ;
   a_TILDEIDENTCOLON:
     [ [ s = TILDEIDENTCOLON -> Qast.Str s
+      | "~"; a = ANTIQUOT; ":" -> Qast.VaAnt "" loc a ] ]
+  ;
+  a_TILDEIDENTCOLON2:
+    [ [ a = ANTIQUOT "~:" -> Qast.VaVal (Qast.VaAnt "~" loc a)
+      | a = ANTIQUOT "~_:" -> Qast.VaAnt "~_" loc a
+      | s = TILDEIDENTCOLON -> Qast.VaVal (Qast.Str s)
       | "~"; a = ANTIQUOT; ":" -> Qast.VaAnt "" loc a ] ]
   ;
   a_QUESTIONIDENT:
