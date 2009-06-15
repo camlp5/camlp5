@@ -1,4 +1,4 @@
-/* $Id: base.css,v 1.10 2007/07/12 17:49:59 deraugla Exp $ */
+/* $Id: base.css,v 1.11 2007/07/13 07:51:29 deraugla Exp $ */
 
 body { margin: 0 0 1px 0; background-color: rgb(189,225,255) }
 
@@ -47,6 +47,7 @@ pre {
 .value { background: #0f0 }
 .dangling { color: red; background: lightgray }
 .parenthesis { color: blue }
+.u { text-decoration: underline }
 
 @media print {
   body { background-color: white; border: 0 }
