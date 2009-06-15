@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: grammar.mli,v 1.22 2007/10/05 18:54:11 deraugla Exp $ *)
+(* $Id: grammar.mli,v 1.23 2007/10/29 02:49:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (** Extensible grammars.
@@ -158,6 +158,10 @@ value warning_verbose : ref bool;
 
 value strict_parsing : ref bool;
    (** Flag to apply strict parsing, without trying to recover errors;
+       default = [False] *)
+
+value functional_parse : ref bool;
+   (** Parse with functional parsers, with limited backtrack;
        default = [False] *)
 
 value print_entry : Format.formatter -> Gramext.g_entry 'te -> unit;

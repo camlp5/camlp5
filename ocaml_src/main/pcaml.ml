@@ -262,7 +262,9 @@ let print_exn =
   | Match_failure (file, line, char) ->
       Format.print_string "Pattern matching failed";
       print_file_failed file line char
-  | Stream.Error str -> print_format ("Parse error: " ^ str)
+  | Stream.Error str ->
+      if str = "" then Format.print_string "Parse error"
+      else print_format ("Parse error: " ^ str)
   | Stream.Failure -> Format.print_string "Parse failure"
   | Plexing.Error str ->
       Format.print_string "Lexing error: "; Format.print_string str

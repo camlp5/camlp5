@@ -1223,13 +1223,9 @@ let fcontinue_parser_of_entry entry =
 
 (* Extend syntax *)
 
-let trace_algo = ref false;;
-
 let init_entry_functions entry =
   entry.estart <-
     (fun lev strm ->
-       if !(Gramalgo.trace) && !trace_algo then Gramalgo.f entry lev;
-       trace_algo := false;
        let f = start_parser_of_entry entry in entry.estart <- f; f lev strm);
   entry.econtinue <-
     (fun lev bp a strm ->
@@ -1327,6 +1323,7 @@ let glexer g = g.glexer;;
 type 'te gen_parsable =
   { pa_chr_strm : char Stream.t;
     pa_tok_strm : 'te Stream.t;
+    mutable pa_tok_fstrm : 'te Fstream.t;
     pa_loc_func : Plexing.location_function }
 ;;
 
@@ -1334,7 +1331,14 @@ type parsable = token gen_parsable;;
 
 let parsable g cs =
   let (ts, lf) = g.glexer.Plexing.tok_func cs in
-  {pa_chr_strm = cs; pa_tok_strm = ts; pa_loc_func = lf}
+  let fts =
+    Fstream.from
+      (fun _ ->
+         match Stream.peek ts with
+           None -> None
+         | x -> Stream.junk ts; x)
+  in
+  {pa_chr_strm = cs; pa_tok_strm = ts; pa_tok_fstrm = fts; pa_loc_func = lf}
 ;;
 
 let parse_parsable entry p =
@@ -1353,7 +1357,7 @@ let parse_parsable entry p =
       let loc = fun_loc cnt in
       if !token_count - 1 <= cnt then loc
       else Ploc.encl loc (fun_loc (!token_count - 1))
-    with _ -> Ploc.make_unlined (Stream.count cs, Stream.count cs + 1)
+    with Failure _ -> Ploc.make_unlined (Stream.count cs, Stream.count cs + 1)
   in
   floc := fun_loc;
   token_count := 0;
@@ -1364,6 +1368,40 @@ let parse_parsable entry p =
       Ploc.raise loc (Stream.Error ("illegal begin of " ^ entry.ename))
   | Stream.Error _ as exc ->
       let loc = get_loc () in restore (); Ploc.raise loc exc
+  | exc ->
+      let loc = Stream.count cs, Stream.count cs + 1 in
+      restore (); Ploc.raise (Ploc.make_unlined loc) exc
+;;
+
+let fparse_parsable entry p =
+  let efun = entry.fstart 0 in
+  let fts = p.pa_tok_fstrm in
+  let cs = p.pa_chr_strm in
+  let fun_loc = p.pa_loc_func in
+  let restore =
+    let old_floc = !floc in
+    let old_tc = !token_count in
+    fun () -> floc := old_floc; token_count := old_tc
+  in
+  let get_loc () =
+    try
+      let cnt = Fstream.count_unfrozen fts - 1 in
+      let loc = fun_loc cnt in
+      if !token_count - 1 <= cnt then loc
+      else Ploc.encl loc (fun_loc (!token_count - 1))
+    with Failure _ -> Ploc.make_unlined (Stream.count cs, Stream.count cs + 1)
+  in
+  floc := fun_loc;
+  token_count := 0;
+  try
+    let r = efun fts in
+    restore ();
+    match r with
+      Some (r, strm) -> p.pa_tok_fstrm <- strm; r
+    | None -> raise Stream.Failure
+  with
+    Stream.Failure ->
+      let loc = get_loc () in restore (); Ploc.raise loc (Stream.Error "")
   | exc ->
       let loc = Stream.count cs, Stream.count cs + 1 in
       restore (); Ploc.raise (Ploc.make_unlined loc) exc
@@ -1426,6 +1464,10 @@ let find_entry e s =
   | Dparser _ -> raise Not_found
 ;;
 
+let functional_parse =
+  ref (try Sys.getenv "FPARSE" = "t" with Not_found -> false)
+;;
+
 module Entry =
   struct
     type te = token;;
@@ -1438,10 +1480,10 @@ module Entry =
        edesc = Dlevels []}
     ;;
     let parse_parsable (entry : 'a e) p : 'a =
-      Obj.magic (parse_parsable entry p : Obj.t)
+      if !functional_parse then Obj.magic (fparse_parsable entry p : Obj.t)
+      else Obj.magic (parse_parsable entry p : Obj.t)
     ;;
     let parse (entry : 'a e) cs : 'a =
-      let _ = trace_algo := true in
       let parsable = parsable entry.egram cs in parse_parsable entry parsable
     ;;
     let parse_token (entry : 'a e) ts : 'a =
@@ -1452,7 +1494,18 @@ module Entry =
       {egram = g; ename = n; elocal = false;
        estart = (fun _ -> (Obj.magic p : te Stream.t -> Obj.t));
        econtinue = (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);
-       fstart = (fun _ (strm__ : _ Fstream.t) -> None);
+       fstart =
+         (fun _ fstrm ->
+            let fts = ref fstrm in
+            let ts =
+              Stream.from
+                (fun _ ->
+                   match Fstream.next !fts with
+                     Some (v, fstrm) -> fts := fstrm; Some v
+                   | None -> None)
+            in
+            try let r : Obj.t = Obj.magic p ts in Some (r, !fts) with
+              Stream.Failure -> None);
        fcontinue = (fun _ _ _ (strm__ : _ Fstream.t) -> None);
        edesc = Dparser (Obj.magic p : te Stream.t -> Obj.t)}
     ;;
@@ -1538,7 +1591,15 @@ module GMake (L : GLexerType) =
     let gram = gcreate L.lexer;;
     let parsable cs =
       let (ts, lf) = L.lexer.Plexing.tok_func cs in
-      {pa_chr_strm = cs; pa_tok_strm = ts; pa_loc_func = lf}
+      let fts =
+        Fstream.from
+          (fun _ ->
+             match Stream.peek ts with
+               None -> None
+             | x -> Stream.junk ts; x)
+      in
+      {pa_chr_strm = cs; pa_tok_strm = ts; pa_tok_fstrm = fts;
+       pa_loc_func = lf}
     ;;
     let tokens = tokens gram;;
     let glexer = glexer gram;;

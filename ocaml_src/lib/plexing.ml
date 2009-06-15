@@ -28,7 +28,7 @@ let lexer_text (con, prm) =
   else con ^ " '" ^ prm ^ "'"
 ;;
 
-let locerr () = invalid_arg "Lexer: location function";;
+let locerr () = failwith "Lexer: location function";;
 let loct_create () = ref (Array.create 1024 None), ref false;;
 let loct_func (loct, ov) i =
   match
@@ -37,7 +37,7 @@ let loct_func (loct, ov) i =
     else Array.unsafe_get !loct i
   with
     Some loc -> loc
-  | _ -> locerr ()
+  | None -> locerr ()
 ;;
 let loct_add (loct, ov) i loc =
   if i >= Array.length !loct then

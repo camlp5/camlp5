@@ -155,6 +155,10 @@ val strict_parsing : bool ref;;
    (** Flag to apply strict parsing, without trying to recover errors;
        default = [False] *)
 
+val functional_parse : bool ref;;
+   (** Parse with functional parsers, with limited backtrack;
+       default = [False] *)
+
 val print_entry : Format.formatter -> 'te Gramext.g_entry -> unit;;
    (** General printer for all kinds of entries (obj entries) *)
 

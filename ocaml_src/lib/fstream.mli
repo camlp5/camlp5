@@ -7,7 +7,7 @@
 (* This module implement functional streams.
    To be used with syntax [pa_fstream.cmo]. The syntax is:
 -     stream: [fstream [: ... :]]
--     parser: [parser [ [: ... :] -> ... | ... ]]
+-     parser: [fparser [ [: ... :] -> ... | ... ]]
 
    Functional parsers are of type:
      [Fstream.t 'a -> option ('a * Fstream.t 'a)]

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: fstream.mli,v 1.4 2007/08/21 03:26:48 deraugla Exp $ *)
+(* $Id: fstream.mli,v 1.5 2007/10/29 02:49:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Module [Fstream]: functional streams *)
@@ -7,7 +7,7 @@
 (* This module implement functional streams.
    To be used with syntax [pa_fstream.cmo]. The syntax is:
 -     stream: [fstream [: ... :]]
--     parser: [parser [ [: ... :] -> ... | ... ]]
+-     parser: [fparser [ [: ... :] -> ... | ... ]]
 
    Functional parsers are of type:
      [Fstream.t 'a -> option ('a * Fstream.t 'a)]

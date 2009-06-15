@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo *)
-(* $Id: pcaml.ml,v 1.42 2007/10/25 03:28:09 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.43 2007/10/29 02:49:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value version = "5.03-exp";
@@ -273,7 +273,9 @@ value print_exn =
       Format.print_string "Pattern matching failed";
       print_file_failed file line char
     }
-  | Stream.Error str -> print_format ("Parse error: " ^ str)
+  | Stream.Error str ->
+      if str = "" then Format.print_string "Parse error"
+      else print_format ("Parse error: " ^ str)
   | Stream.Failure -> Format.print_string "Parse failure"
   | Plexing.Error str -> do {
       Format.print_string "Lexing error: ";

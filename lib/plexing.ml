@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: plexing.ml,v 1.3 2007/10/27 03:31:59 deraugla Exp $ *)
+(* $Id: plexing.ml,v 1.4 2007/10/29 02:49:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 type pattern = (string * string);
@@ -28,7 +28,7 @@ value lexer_text (con, prm) =
   else con ^ " '" ^ prm ^ "'"
 ;
 
-value locerr () = invalid_arg "Lexer: location function";
+value locerr () = failwith "Lexer: location function";
 value loct_create () = (ref (Array.create 1024 None), ref False);
 value loct_func (loct, ov) i =
   match
@@ -37,7 +37,7 @@ value loct_func (loct, ov) i =
     else Array.unsafe_get loct.val i
   with
   [ Some loc -> loc
-  | _ -> locerr () ]
+  | None -> locerr () ]
 ;
 value loct_add (loct, ov) i loc =
   if i >= Array.length loct.val then

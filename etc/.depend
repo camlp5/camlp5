@@ -4,8 +4,6 @@ pa_extfun.cmo: ../main/mLast.cmi ../main/pcaml.cmi
 pa_extfun.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
 pa_extprint.cmo: ../main/mLast.cmi ../main/pcaml.cmi 
 pa_extprint.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
-pa_fstream.cmo: ../main/mLast.cmi ../main/pcaml.cmi 
-pa_fstream.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
 pa_lefteval.cmo: ../main/mLast.cmi ../main/pcaml.cmi 
 pa_lefteval.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
 pa_lex.cmo: ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi 
