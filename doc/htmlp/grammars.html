@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.41 2007/07/17 18:30:07 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.42 2007/07/17 23:12:30 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -629,12 +629,13 @@ instead of "<tt>loc</tt>".</p>
   ;
 </pre>
 
-<p>...</p>
+<h4><tt>tok_text</tt></h4>
 
-<h4>The <em>text</em> function</h4>
+<p>It is a function of type:</p>
 
-<p>The field "tok_text" in the glexer record type correspond to
-  the text function.</p>
+<pre>
+  pattern -> string
+</pre>
 
 <p>Destinated to error messages, it takes a token pattern as parameter
   and return the string giving its name.</p>
@@ -645,26 +646,28 @@ instead of "<tt>loc</tt>".</p>
 
 <p>For example, with this default function, the token symbol IDENT
   would be written as IDENT in error message (e.g. "IDENT expected").
-  The "text" function may decide to print it, e.g., as "identifier".</p>
+  The "text" function may decide to print it differently, e.g., as
+  "identifier".</p>
 
-<h4>The <em>comment</em> field</h4>
+<h4><tt>tok_comm</tt></h4>
 
-<p>The last field of the glexer record type is "tok_comm". It asks the
-  lexer (the lexer function must do it) to record the locations of the
-  comments in the program. Setting this field to "None" indicates that
-  the lexer must not record them. Setting it to "Some []" indicated that
-  the lexer must put the comments location list in the field, which is
-  mutable.</p>
+<p>It is a mutable field of type:</p>
 
-<h3>Summarization</h3>
+<pre>
+  option (list location)
+</pre>
 
-<p>If you took the time to read the description of all fields in the
-  previous section, and wrote all these functions, it is possible to
-  create the lexer interface, by building a value of glexer type.</p>
+<p>It asks the lexer (the lexer function should do it) to record the
+  locations of the comments in the program. Setting this field to
+  "None" indicates that the lexer must not record them. Setting it to
+  "Some []" indicated that the lexer must put the comments location
+  list in the field, which is mutable.</p>
 
-<p>If you prefer go faster to a direct solution, it is possible to
-  only program the lexer, and give default values to the other
-  fields:</p>
+<h3>Minimalist version</h3>
+
+<p>If a lexer have been written, named "<tt>lexer</tt>", here is the
+  minimalist version of the value suitable as parameter to
+  "<tt>Grammar.gcreate</tt>":</p>
 
 <pre>
   {Token.tok_func = lexer;
@@ -673,10 +676,6 @@ instead of "<tt>loc</tt>".</p>
    Token.tok_text = Token.lexer_text;
    Token.tok_comm = None}
 </pre>
-
-<p>But once the system works, it is important to look at the usage of
-  all these fields, in particular "<tt>tok_using</tt>" for a good
-  behaviour of the grammar.</p>
 
 <h2>Functorial interface</h2>
 
