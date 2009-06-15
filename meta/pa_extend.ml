@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.85 2007/09/24 08:34:40 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.86 2007/09/24 15:26:37 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -783,37 +783,7 @@ value ssflag loc s =
   ss_aux loc "a_flag" r s.used
 ;
 
-value ssflag2 loc ls s =
-  let text =
-    let r1 =
-      let s =
-        let text =
-          let expr = <:expr< a_flag2 >> in
-          let name = {expr = expr; tvar = "a_flag2"; loc = loc} in
-          TXnterm loc name None
-        in
-        {used = ["a_flag2"]; text = text; styp = STquo loc "a_flag2"}
-      in
-      let r = {pattern = Some <:patt< a >>; symbol = s} in
-      let act = <:expr< a >> in
-      {prod = [r]; action = Some act}
-    in
-    let r2 =
-      let s =
-        let text = TXflag loc s.text in
-        let styp = STlid loc "bool" in
-        {used = s.used; text = text; styp = styp}
-      in
-      let r = {pattern = Some <:patt< a >>; symbol = s} in
-      let act = <:expr< Qast.VaVal (Qast.Bool a) >> in
-      {prod = [r]; action = Some act}
-    in
-    TXrules loc "a_flag2" [r1; r2]
-  in
-  {used = s.used; text = text; styp = STtyp <:ctyp< Qast.t >>}
-;
-
-value ss2 loc ls s =
+value ss2 loc ls qast_f s =
   let t = new_type_var () in
   let text =
     let rl =
@@ -845,7 +815,7 @@ value ss2 loc ls s =
     in
     let r2 =
       let ps = {pattern = Some <:patt< a >>; symbol = s} in
-      let act = <:expr< Qast.VaVal a >> in
+      let act = <:expr< Qast.VaVal $qast_f <:expr< a >>$>> in
       {prod = [ps]; action = Some act}
     in
     TXfacto loc (TXrules loc t (rl @ [r2]))
@@ -940,16 +910,16 @@ value rec symbol_of_a =
   | ASvala loc s ls ->
       if quotify.val then
         match s with
-        [ ASflag loc s ->
-            let s = symbol_of_a s in
-            ssflag2 loc ls s
+        [ ASflag _ _ ->
+            let s = Ploc.call_with quotify False symbol_of_a s in
+            ss2 loc ls (fun a -> <:expr< Qast.Bool $a$ >>) s
         | ASlist loc min s sep ->
             let s = symbol_of_a s in
             let sep = option_map symbol_of_a sep in
             sslist2 loc ls min sep s
         | ASnterm _ _ _ ->
             let s = symbol_of_a s in
-            ss2 loc ls s
+            ss2 loc ls (fun a -> a) s
         | ASopt loc s ->
             let s = symbol_of_a s in
             ssopt2 loc ls s
@@ -967,16 +937,17 @@ value rec symbol_of_a =
         {used = s.used; text = text; styp = styp}
   | ASvala2 loc s ls ->
       match s with
-      [ ASflag loc s ->
-          let s = symbol_of_a s in
-          ssflag2 loc ls s
+      [ ASflag _ _ ->
+          let s = Ploc.call_with quotify False symbol_of_a s in
+          let ls = if ls = [] then ["flag"] else ls in
+          ss2 loc ls (fun a -> <:expr< Qast.Bool $a$ >>) s
       | ASlist loc min s sep ->
           let s = symbol_of_a s in
           let sep = option_map symbol_of_a sep in
           sslist2 loc ls min sep s
       | ASnterm _ _ _ ->
           let s = symbol_of_a s in
-          ss2 loc ls s
+          ss2 loc ls (fun a -> a) s
       | ASopt loc s ->
           let s = symbol_of_a s in
           ssopt2 loc ls s

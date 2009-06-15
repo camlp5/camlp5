@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: grammar.ml,v 1.51 2007/09/22 05:20:28 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.52 2007/09/24 15:26:37 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Gramext;
@@ -218,7 +218,8 @@ value rec get_token_list entry tokl last_tok tree =
 
 value rec name_of_symbol_failed entry =
   fun
-  [ Slist0 s -> name_of_symbol_failed entry s
+  [ Sfacto s -> name_of_symbol_failed entry s
+  | Slist0 s -> name_of_symbol_failed entry s
   | Slist0sep s _ -> name_of_symbol_failed entry s
   | Slist1 s -> name_of_symbol_failed entry s
   | Slist1sep s _ -> name_of_symbol_failed entry s

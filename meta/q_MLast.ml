@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.107 2007/09/24 12:18:30 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.108 2007/09/24 15:26:37 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -154,7 +154,6 @@ value a_list2 = Grammar.Entry.create gram "a_list2";
 value a_opt = Grammar.Entry.create gram "a_opt";
 value a_opt2 = Grammar.Entry.create gram "a_opt2";
 value a_flag = Grammar.Entry.create gram "a_flag";
-value a_flag2 = Grammar.Entry.create gram "a_flag2";
 value a_UIDENT = Grammar.Entry.create gram "a_UIDENT";
 value a_UIDENT2 = Grammar.Entry.create gram "a_UIDENT2";
 value a_LIDENT = Grammar.Entry.create gram "a_LIDENT";
@@ -407,8 +406,8 @@ EXTEND
   ;
   expr:
     [ "top" RIGHTA
-      [ "let"; r = SV (FLAG "rec"); l = SV (LIST1 let_binding SEP "and");
-        "in"; x = SELF ->
+      [ "let"; r = SV (FLAG "rec") "flag" "opt";
+        l = SV (LIST1 let_binding SEP "and"); "in"; x = SELF ->
           Qast.Node "ExLet" [Qast.Loc; r; l; x]
       | "let"; "module"; m = a_UIDENT2; mb = mod_fun_binding; "in";
         e = SELF ->
@@ -1288,10 +1287,6 @@ EXTEND
     [ [ a = ANTIQUOT "flag" -> Qast.VaAnt "flag" loc a
       | a = ANTIQUOT "_flag" -> Qast.VaAnt "_flag" loc a ] ]
   ;
-  a_flag2:
-    [ [ a = ANTIQUOT "flag" -> Qast.VaVal (Qast.VaAnt "flag" loc a)
-      | a = ANTIQUOT "_flag" -> Qast.VaAnt "_flag" loc a ] ]
-  ;
   (* compatibility; deprecated since version 4.07 *)
   a_opt:
     [ [ a = ANTIQUOT "when" -> Qast.VaAnt "when" loc a ] ]
@@ -1299,10 +1294,6 @@ EXTEND
   (* compatibility; deprecated since version 4.07 *)
   a_flag:
     [ [ a = ANTIQUOT "opt" -> Qast.VaAnt "opt" loc a ] ]
-  ;
-  (* compatibility; deprecated since version 4.07 *)
-  a_flag2:
-    [ [ a = ANTIQUOT "opt" -> Qast.VaVal (Qast.VaAnt "opt" loc a) ] ]
   ;
   a_UIDENT:
     [ [ a = ANTIQUOT "uid" -> Qast.VaAnt "uid" loc a

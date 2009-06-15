@@ -214,7 +214,8 @@ let rec get_token_list entry tokl last_tok tree =
 
 let rec name_of_symbol_failed entry =
   function
-    Slist0 s -> name_of_symbol_failed entry s
+    Sfacto s -> name_of_symbol_failed entry s
+  | Slist0 s -> name_of_symbol_failed entry s
   | Slist0sep (s, _) -> name_of_symbol_failed entry s
   | Slist1 s -> name_of_symbol_failed entry s
   | Slist1sep (s, _) -> name_of_symbol_failed entry s
