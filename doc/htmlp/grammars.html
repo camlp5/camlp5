@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.31 2007/07/16 23:38:11 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.32 2007/07/17 00:06:48 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -327,23 +327,48 @@ kind of grammars recognized):</p>
 <p>Remember that "<tt>EXTEND</tt>" is a statement, not a declaration:
 the rules are added in the entries at run time. Each rule is
 internally inserted in a tree, allowing the left factorization of the
-rule. For example, if two rules have as list of symbols:</p>
+rule. For example, with this list of rules (borrowed from the camlp5
+sources):</p>
 
 <pre>
-  "if"; e1 = expr; "then"; e2 = expr
-  "if"; e1 = expr; "then"; e2 = expr; "else"; e3 = expr
+  "method"; "private"; "virtual"; l = label; ":"; t = poly_type
+  "method"; "virtual"; "private"; l = label; ":"; t = poly_type
+  "method"; "virtual"; l = label; ":"; t = poly_type
+  "method"; "private"; l = label; ":"; t = poly_type; "="; e = expr
+  "method"; "private"; l = label; sb = fun_binding
+  "method"; l = label; ":"; t = poly_type; "="; e = expr
+  "method"; l = label; sb = fun_binding
 </pre>
 
-<p>the rules are inserted in a tree and the result look like:<p>
+<p>the rules are inserted in a tree and the result look like:</p>
 
 <pre>
-  "if"
-     expr
-       "then"
-         expr
-           "else"
-             expr
-           &lt;nothing&gt;
+  "method"
+     |-- "private"
+     |       |-- "virtual"
+     |       |       |-- label
+     |       |             |-- ":"
+     |       |                  |-- poly_type
+     |       |-- label
+     |             |-- ":"
+     |             |    |-- poly_type
+     |             |            |-- ":="
+     |             |            |    |-- expr
+     |             |-- fun_binding
+     |-- "virtual"
+     |       |-- "private"
+     |       |       |-- label
+     |       |             |-- ":"
+     |       |                  |-- poly_type
+     |       |-- label
+     |             |-- ":"
+     |                  |-- poly_type
+     |-- label
+           |-- ":"
+           |    |-- poly_type
+           |            |-- "="
+           |                 |-- expr
+           |-- fun_binding
 </pre>
 
 <p>This tree is built as long as rules are inserted. When used, by
