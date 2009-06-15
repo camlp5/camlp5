@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.95 2007/11/29 02:24:00 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.96 2007/11/29 03:12:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -340,15 +340,20 @@ value can_be_displayed_as_where e =
 value rec where_binding pc (p, e, body) =
   let (pl, body) = expr_fun_args body in
   let pl = [p :: pl] in
-  horiz_vertic
-    (fun () ->
-       sprintf "%s%s where rec %s = %s%s" pc.bef
-         (expr {(pc) with bef = ""; aft = ""} e)
-         (hlist patt {(pc) with bef = ""; aft = ""} pl)
-         (expr {(pc) with bef = ""; aft = ""} body) pc.aft)
-    (fun () ->
-       match sequencify body with
-       [ Some el ->
+  let normal () =
+    break 1 2 pc
+      (fun pc ->
+         break 1 0 pc (fun pc -> expr pc e)
+           (fun pc ->
+              hlist patt
+                {(pc) with bef = sprintf "%swhere rec " pc.bef; aft = " ="}
+                pl))
+      (fun pc -> comm_expr expr pc body)
+  in
+  match sequencify body with
+  [ Some el ->
+      horiz_vertic normal
+        (fun () ->
            let expr_wh =
              if flag_where_in_sequences.val then expr_wh else expr
            in
@@ -360,21 +365,8 @@ value rec where_binding pc (p, e, body) =
                        {(pc) with bef = sprintf "%swhere rec " pc.bef;
                        aft = sprintf " =%s" k}
                        pl))
-             expr_wh el
-       | None ->
-           let s1 =
-             break 1 0 pc (fun pc -> expr pc e)
-               (fun pc ->
-                  hlist patt
-                    {(pc) with bef = sprintf "%swhere rec " pc.bef;
-                     aft = " ="}
-                    pl)
-           in
-           let s2 =
-             comm_expr expr
-               {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} body
-           in
-           sprintf "%s\n%s" s1 s2 ])
+             expr_wh el)
+  | None -> normal () ]
 
 and expr_wh pc e =
   match can_be_displayed_as_where e with
