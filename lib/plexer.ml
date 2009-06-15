@@ -1,5 +1,5 @@
 (* camlp5r pa_lexer.cmo *)
-(* $Id: plexer.ml,v 1.103 2007/11/26 18:23:11 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.104 2007/11/27 14:40:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value no_quotations = ref False;
@@ -106,16 +106,11 @@ value number =
   | decimal_digits_under end_integer! ]
 ;
 
-value rec char_aux ctx bp =
-  lexer
-  [ "'"/
-  | _ (char_aux ctx bp)!
-  | -> err ctx (bp, $pos) "char not terminated" ]
-;
+value char_aux = lexer [ "'"/ | _ [ "'"/ | _ [ "'"/ | ] ] ];
 
 value char ctx bp =
   lexer
-  [ "\\" _ (char_aux ctx bp)!
+  [ "\\" _ char_aux!
   | "\\" -> err ctx (bp, $pos) "char not terminated"
   | ?= [ _ '''] _! "'"/ ]
 ;

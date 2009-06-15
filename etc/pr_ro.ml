@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.54 2007/11/26 19:28:56 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.55 2007/11/27 14:40:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -214,20 +214,22 @@ value variant_decl pc pv =
 ;
 
 value variant_decl_list char pc pvl =
-  horiz_vertic
-    (fun () ->
-       hlist2 variant_decl (bar_before variant_decl)
-         {(pc) with bef = sprintf "%s[ %c " pc.bef char;
-          aft = sprintf " ]%s" pc.aft}
-         pvl)
-    (fun () ->
-       let s1 = sprintf "%s[ %c" pc.bef char in
-       let s2 =
-         vlist2 variant_decl (bar_before variant_decl)
-           {(pc) with bef = tab (pc.ind + 2); aft = sprintf " ]%s" pc.aft}
-           pvl
-       in
-       sprintf "%s\n%s" s1 s2)
+  if pvl = [] then sprintf "%s[ %c ]%s" pc.bef char pc.aft
+  else
+    horiz_vertic
+      (fun () ->
+         hlist2 variant_decl (bar_before variant_decl)
+           {(pc) with bef = sprintf "%s[ %c " pc.bef char;
+            aft = sprintf " ]%s" pc.aft}
+           pvl)
+      (fun () ->
+         let s1 = sprintf "%s[ %c" pc.bef char in
+         let s2 =
+           vlist2 variant_decl (bar_before variant_decl)
+             {(pc) with bef = tab (pc.ind + 2); aft = sprintf " ]%s" pc.aft}
+             pvl
+         in
+         sprintf "%s\n%s" s1 s2)
 ;
 
 value rec class_longident pc cl =

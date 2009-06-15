@@ -1,6 +1,9 @@
 Camlp5 Version 5.05:
 --------------------
 
+* [27 Nov 07] Fixed bug in parsing comments: comments containing '\' where
+  incorrectly parsed.
+
 Camlp5 Version 5.04:
 --------------------
 

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.84 2007/11/14 10:15:20 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.85 2007/11/27 14:40:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -135,6 +135,23 @@ value not_impl name pc x =
     pc.aft
 ;
 
+(*
+value use_break = ref False;
+Pcaml.add_option "-use_break" (Arg.Set use_break) " test with break";
+*)
+
+value break offset pc f g =
+  horiz_vertic
+    (fun () ->
+       sprintf "%s %s" (f {(pc) with aft = ""}) (g {(pc) with bef = ""}))
+    (fun () ->
+       let s1 = f {(pc) with aft = ""} in
+       let s2 =
+         g {(pc) with ind = pc.ind + offset; bef = tab (pc.ind + offset)}
+       in
+       sprintf "%s\n%s" s1 s2)
+;
+
 value var_escaped pc v =
   let x =
     if is_infix v || has_special_chars v then "\\" ^ v
@@ -172,16 +189,7 @@ value bar_before elem pc x = elem {(pc) with bef = sprintf "%s| " pc.bef} x;
 
 value operator pc left right sh op x y =
   let op = if op = "" then "" else " " ^ op in
-  horiz_vertic
-    (fun () ->
-       sprintf "%s%s%s %s%s" pc.bef (left {(pc) with bef = ""; aft = ""} x)
-         op (right {(pc) with bef = ""; aft = ""} y) pc.aft)
-    (fun () ->
-       let s1 = left {(pc) with aft = op} x in
-       let s2 =
-         right {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} y
-       in
-       sprintf "%s\n%s" s1 s2)
+  break 2 pc (fun pc -> left {(pc) with aft = op} x) (fun pc -> right pc y)
 ;
 
 value left_operator pc sh unfold next x =
@@ -193,9 +201,7 @@ value left_operator pc sh unfold next x =
   in
   match xl with
   [ [(x, _)] -> next pc x
-  | _ ->
-      horiz_vertic (fun () -> hlist (op_after next) pc xl)
-        (fun () -> plist next sh pc xl) ]
+  | _ -> plist next sh pc xl ]
 ;
 
 value right_operator pc sh unfold next x =
@@ -207,9 +213,7 @@ value right_operator pc sh unfold next x =
   in
   match xl with
   [ [(x, _)] -> next pc x
-  | _ ->
-      horiz_vertic (fun () -> hlist (op_after next) pc xl)
-        (fun () -> plist next sh pc xl) ]
+  | _ -> plist next sh pc xl ]
 ;
 
 (*
@@ -269,13 +273,7 @@ value patt_as pc z =
    use syntax or pretty printing shortcuts.
 *)
 value binding elem pc (p, e) =
-  horiz_vertic
-    (fun () ->
-       sprintf "%s%s = %s%s" pc.bef (patt {(pc) with bef = ""; aft = ""} p)
-         (elem {(pc) with bef = ""; aft = ""} e) pc.aft)
-    (fun () ->
-       sprintf "%s\n%s" (patt {(pc) with aft = " ="} p)
-         (elem {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e))
+  break 2 pc (fun pc -> patt {(pc) with aft = " ="} p) (fun pc -> elem pc e)
 ;
 
 pr_expr_fun_args.val :=
@@ -349,20 +347,6 @@ value rec where_binding pc (p, e, body) =
          (hlist patt {(pc) with bef = ""; aft = ""} pl)
          (expr {(pc) with bef = ""; aft = ""} body) pc.aft)
     (fun () ->
-       let horiz_where k =
-         sprintf "%s%s where rec %s =%s" pc.bef
-           (expr {(pc) with bef = ""; aft = ""} e)
-           (hlist patt {(pc) with bef = ""; aft = ""} pl) k
-       in
-       let vertic_where k =
-         let s1 = expr {(pc) with aft = ""} e in
-         let s2 =
-           hlist patt
-             {(pc) with bef = sprintf "%swhere rec " (tab pc.ind);
-              aft = (sprintf " =%s" k)} pl
-         in
-         sprintf "%s\n%s" s1 s2
-       in
        match sequencify body with
        [ Some el ->
            let expr_wh =
@@ -370,13 +354,21 @@ value rec where_binding pc (p, e, body) =
            in
            sequence_box pc
              (fun k ->
-                horiz_vertic (fun () -> horiz_where k)
-                  (fun () -> vertic_where k))
+                break 0 pc (fun pc -> expr pc e)
+                  (fun pc ->
+                     hlist patt
+                       {(pc) with bef = sprintf "%swhere rec " pc.bef;
+                       aft = sprintf " =%s" k}
+                       pl))
              expr_wh el
        | None ->
            let s1 =
-             horiz_vertic (fun () -> horiz_where "")
-               (fun () -> vertic_where "")
+             break 0 pc (fun pc -> expr pc e)
+               (fun pc ->
+                  hlist patt
+                    {(pc) with bef = sprintf "%swhere rec " pc.bef;
+                     aft = " ="}
+                    pl)
            in
            let s2 =
              comm_expr expr
@@ -531,29 +523,10 @@ value match_assoc force_vertic pc (p, w, e) =
        let patt_arrow k =
          match w with
          [ <:vala< Some e >> ->
-             horiz_vertic
-               (fun () ->
-                  sprintf "%s%s when %s ->%s" pc.bef
-                    (patt_as {(pc) with bef = ""; aft = ""} p)
-                    (expr {(pc) with bef = ""; aft = ""} e) k)
-               (fun () ->
-                  let s1 = patt_as {(pc) with aft = ""} p in
-                  let s2 =
-                    horiz_vertic
-                      (fun () ->
-                         sprintf "%swhen %s ->%s" (tab pc.ind)
-                           (expr {(pc) with bef = ""; aft = ""} e) k)
-                      (fun () ->
-                         let s1 = sprintf "%swhen" (tab pc.ind) in
-                         let s2 =
-                           expr
-                             {(pc) with ind = pc.ind + 2;
-                              bef = tab (pc.ind + 2); aft = sprintf " ->%s" k}
-                             e
-                         in
-                         sprintf "%s\n%s" s1 s2)
-                  in
-                  sprintf "%s\n%s" s1 s2)
+             break 0 pc (fun pc -> patt_as pc p)
+               (fun pc ->
+                  break 2 pc (fun pc -> sprintf "%swhen" pc.bef)
+                    (fun pc -> expr {(pc) with aft = sprintf " ->%s" k} e))
          | _ -> patt_as {(pc) with aft = sprintf " ->%s" k} p ]
        in
        match sequencify e with
@@ -625,12 +598,10 @@ value type_var pc (tv, (p, m)) =
 ;
 
 value type_constraint pc (t1, t2) =
-  horiz_vertic
-    (fun () ->
-       sprintf "%s constraint %s = %s%s" pc.bef
-         (ctyp {(pc) with bef = ""; aft = ""} t1)
-         (ctyp {(pc) with bef = ""; aft = ""} t2) pc.aft)
-    (fun () -> not_impl "type_constraint vertic" pc t1)
+  break 2 pc
+    (fun pc ->
+       ctyp {(pc) with bef = sprintf "%s constraint " pc.bef; aft = " ="} t1)
+    (fun pc -> ctyp pc t2)
 ;
 
 value type_decl pc td =
@@ -1768,7 +1739,8 @@ EXTEND_PRINTER
           sprintf "%s\"%s\"%s" pc.bef s pc.aft
       | <:expr< $chr:s$ >> ->
           sprintf "%s'%s'%s" pc.bef s pc.aft
-      | <:expr< ?$_$ >> | <:expr< ~$_$ >> | <:expr< ~$_$: $_$ >> ->
+      | <:expr< ?$_$ >> | <:expr< ?$_$: $_$ >> |
+        <:expr< ~$_$ >> | <:expr< ~$_$: $_$ >> ->
           failwith "labels not pretty printed (in expr); add pr_ro.cmo"
       | <:expr< $_$ $_$ >> | <:expr< assert $_$ >> | <:expr< lazy $_$ >> |
         <:expr< $_$ := $_$ >> |
