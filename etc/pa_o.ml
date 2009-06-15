@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.33 2007/07/30 02:25:48 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.34 2007/07/30 02:35:10 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -131,7 +131,7 @@ value lident_colon =
 ;
 
 value check_not_part_of_patt =
-  Grammar.Entry.of_parser gram "val_ident"
+  Grammar.Entry.of_parser gram "check_not_part_of_patt"
     (fun strm ->
        let tok =
          match Stream.npeek 4 strm with
