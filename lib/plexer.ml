@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.82 2007/07/31 14:29:41 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.83 2007/07/31 23:48:22 deraugla Exp $ *)
 
 open Token;
 
@@ -20,7 +20,7 @@ value error_on_unknown_keywords = ref False;
 value dollar_for_antiquotation = ref True;
 value specific_space_dot = ref False;
 
-value force_dollar_for_antiquotation = ref False;
+value dollar_for_antiquot_loc = ref False;
 
 (* The string buffering machinery *)
 
@@ -196,6 +196,14 @@ value less ctx bp buf strm =
     | [ -> $add "<" ] ident2! -> keyword_or_error ctx (bp, $pos) $buf ]
 ;
 
+value rec antiquot_rest ctx bp =
+  lexer
+  [ "$"/
+  | "\\"/ (any ctx) (antiquot_rest ctx bp)!
+  | (any ctx) (antiquot_rest ctx bp)!
+  | -> err ctx (bp, $pos) "antiquotation not terminated" ]
+;
+
 value rec antiquot ctx bp =
   lexer
   [ "$"/ -> ("ANTIQUOT", ":" ^ $buf)
@@ -204,17 +212,28 @@ value rec antiquot ctx bp =
   | "\\"/ (any ctx) (antiquot_rest ctx bp)! -> ("ANTIQUOT", ":" ^ $buf)
   | (any ctx) (antiquot_rest ctx bp)! -> ("ANTIQUOT", ":" ^ $buf)
   | -> err ctx (bp, $pos) "antiquotation not terminated" ]
-and antiquot_rest ctx bp =
+;
+
+value antiloc bp ep buf =
+  let prm = Printf.sprintf "%d,%d:%s" bp ep buf in
+  ("ANTIQUOT_LOC", prm)
+;
+
+value rec antiquot_loc ctx bp =
   lexer
-  [ "$"/
-  | "\\"/ (any ctx) (antiquot_rest ctx bp)!
-  | (any ctx) (antiquot_rest ctx bp)!
+  [ "$"/ -> antiloc bp $pos $buf
+  | "a..zA..Z0..9" (antiquot_loc ctx bp)!
+  | ":" (antiquot_rest ctx bp)! -> antiloc bp $pos $buf
+  | "\\"/ (any ctx) (antiquot_rest ctx bp)! -> antiloc bp $pos $buf
+  | (any ctx) (antiquot_rest ctx bp)! -> antiloc bp $pos $buf
   | -> err ctx (bp, $pos) "antiquotation not terminated" ]
 ;
 
 value dollar ctx bp buf strm =
-  if force_dollar_for_antiquotation.val || ctx.dollar_for_antiquotation then
+  if ctx.dollar_for_antiquotation then
     antiquot ctx bp buf strm
+  else if dollar_for_antiquot_loc.val then
+    antiquot_loc ctx bp buf strm
   else
     match strm with lexer
     [ [ -> $add "$" ] ident2! -> ("", $buf) ]

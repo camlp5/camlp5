@@ -20,7 +20,7 @@ let error_on_unknown_keywords = ref false;;
 let dollar_for_antiquotation = ref true;;
 let specific_space_dot = ref false;;
 
-let force_dollar_for_antiquotation = ref false;;
+let dollar_for_antiquot_loc = ref false;;
 
 (* The string buffering machinery *)
 
@@ -386,6 +386,21 @@ let less ctx bp buf strm =
         keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
 ;;
 
+let rec antiquot_rest ctx bp buf (strm__ : _ Stream.t) =
+  match Stream.peek strm__ with
+    Some '$' -> Stream.junk strm__; buf
+  | Some '\\' ->
+      Stream.junk strm__;
+      let buf =
+        try any ctx buf strm__ with Stream.Failure -> raise (Stream.Error "")
+      in
+      antiquot_rest ctx bp buf strm__
+  | _ ->
+      match try Some (any ctx buf strm__) with Stream.Failure -> None with
+        Some buf -> antiquot_rest ctx bp buf strm__
+      | _ -> err ctx (bp, Stream.count strm__) "antiquotation not terminated"
+;;
+
 let rec antiquot ctx bp buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some '$' -> Stream.junk strm__; "ANTIQUOT", ":" ^ B.get buf
@@ -407,24 +422,40 @@ let rec antiquot ctx bp buf (strm__ : _ Stream.t) =
           let buf = antiquot_rest ctx bp buf strm__ in
           "ANTIQUOT", ":" ^ B.get buf
       | _ -> err ctx (bp, Stream.count strm__) "antiquotation not terminated"
-and antiquot_rest ctx bp buf (strm__ : _ Stream.t) =
+;;
+
+let antiloc bp ep buf =
+  let prm = Printf.sprintf "%d,%d:%s" bp ep buf in "ANTIQUOT_LOC", prm
+;;
+
+let rec antiquot_loc ctx bp buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
-    Some '$' -> Stream.junk strm__; buf
+    Some '$' ->
+      Stream.junk strm__; antiloc bp (Stream.count strm__) (B.get buf)
+  | Some ('a'..'z' | 'A'..'Z' | '0'..'9' as c) ->
+      Stream.junk strm__; antiquot_loc ctx bp (B.add c buf) strm__
+  | Some ':' ->
+      Stream.junk strm__;
+      let buf = antiquot_rest ctx bp (B.add ':' buf) strm__ in
+      antiloc bp (Stream.count strm__) (B.get buf)
   | Some '\\' ->
       Stream.junk strm__;
       let buf =
         try any ctx buf strm__ with Stream.Failure -> raise (Stream.Error "")
       in
-      antiquot_rest ctx bp buf strm__
+      let buf = antiquot_rest ctx bp buf strm__ in
+      antiloc bp (Stream.count strm__) (B.get buf)
   | _ ->
       match try Some (any ctx buf strm__) with Stream.Failure -> None with
-        Some buf -> antiquot_rest ctx bp buf strm__
+        Some buf ->
+          let buf = antiquot_rest ctx bp buf strm__ in
+          antiloc bp (Stream.count strm__) (B.get buf)
       | _ -> err ctx (bp, Stream.count strm__) "antiquotation not terminated"
 ;;
 
 let dollar ctx bp buf strm =
-  if !force_dollar_for_antiquotation || ctx.dollar_for_antiquotation then
-    antiquot ctx bp buf strm
+  if ctx.dollar_for_antiquotation then antiquot ctx bp buf strm
+  else if !dollar_for_antiquot_loc then antiquot_loc ctx bp buf strm
   else
     let (strm__ : _ Stream.t) = strm in
     let buf = B.add '$' buf in let buf = ident2 buf strm__ in "", B.get buf
@@ -886,11 +917,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 538, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 538, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 538, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 539, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 539, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 557, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 557, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 557, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 558, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 558, 37)));
        tok_comm = None}
   in
   let glex =

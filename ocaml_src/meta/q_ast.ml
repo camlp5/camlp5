@@ -41,28 +41,61 @@ let eq_before_colon p e =
   loop 0
 ;;
 
+let call_with r v f a =
+  let saved = !r in
+  try r := v; let b = f a in r := saved; b with e -> r := saved; raise e
+;;
+
+let expr_eoi = Grammar.Entry.create Pcaml.gram "expr";;
+let patt_eoi = Grammar.Entry.create Pcaml.gram "patt";;
+let sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";;
+Grammar.extend
+  [Grammar.Entry.obj (expr_eoi : 'expr_eoi Grammar.Entry.e), None,
+   [None, None,
+    [[Gramext.Snterm
+        (Grammar.Entry.obj (Pcaml.expr : 'Pcaml__expr Grammar.Entry.e));
+      Gramext.Stoken ("EOI", "")],
+     Gramext.action
+       (fun _ (x : 'Pcaml__expr) (loc : Token.location) -> (x : 'expr_eoi))]];
+   Grammar.Entry.obj (patt_eoi : 'patt_eoi Grammar.Entry.e), None,
+   [None, None,
+    [[Gramext.Snterm
+        (Grammar.Entry.obj (Pcaml.patt : 'Pcaml__patt Grammar.Entry.e));
+      Gramext.Stoken ("EOI", "")],
+     Gramext.action
+       (fun _ (x : 'Pcaml__patt) (loc : Token.location) -> (x : 'patt_eoi))]];
+   Grammar.Entry.obj (sig_item_eoi : 'sig_item_eoi Grammar.Entry.e), None,
+   [None, None,
+    [[Gramext.Snterm
+        (Grammar.Entry.obj
+           (Pcaml.sig_item : 'Pcaml__sig_item Grammar.Entry.e));
+      Gramext.Stoken ("EOI", "")],
+     Gramext.action
+       (fun _ (x : 'Pcaml__sig_item) (loc : Token.location) ->
+          (x : 'sig_item_eoi))]]];;
+
 module Meta =
   struct
     open MLast;;
     let loc = Stdpp.dummy_loc;;
     let ln () = MLast.ExLid (loc, !(Stdpp.loc_name));;
-    let rec expr_of_list elem =
+    let rec e_list elem =
       function
         [] -> MLast.ExUid (loc, "[]")
       | e :: el ->
           MLast.ExApp
             (loc, MLast.ExApp (loc, MLast.ExUid (loc, "::"), elem e),
-             expr_of_list elem el)
+             e_list elem el)
     ;;
-    let expr_of_option elem =
+    let e_option elem =
       function
         None -> MLast.ExUid (loc, "None")
       | Some e -> MLast.ExApp (loc, MLast.ExUid (loc, "Some"), elem e)
     ;;
-    let expr_of_bool b =
+    let e_bool b =
       if b then MLast.ExUid (loc, "True") else MLast.ExUid (loc, "False")
     ;;
-    let expr_of_type t =
+    let e_type t =
       let ln = ln () in
       let rec loop =
         function
@@ -119,11 +152,11 @@ module Meta =
                      MLast.ExUid (loc, "TyUid")),
                   ln),
                MLast.ExStr (loc, s))
-        | x -> not_impl "expr_of_type" x
+        | x -> not_impl "e_type" x
       in
       loop t
     ;;
-    let patt_of_type =
+    let p_type =
       function
         TyLid (_, s) ->
           MLast.PaApp
@@ -135,22 +168,38 @@ module Meta =
                    MLast.PaUid (loc, "TyLid")),
                 MLast.PaAny loc),
              MLast.PaStr (loc, s))
-      | x -> not_impl "patt_of_type" x
+      | x -> not_impl "p_type" x
     ;;
-    let expr_of_patt p =
+    let e_patt p =
       let ln = ln () in
       let rec loop =
         function
-          PaLid (_, s) ->
-            MLast.ExApp
-              (loc,
-               MLast.ExApp
-                 (loc,
-                  MLast.ExAcc
-                    (loc, MLast.ExUid (loc, "MLast"),
-                     MLast.ExUid (loc, "PaLid")),
-                  ln),
-               MLast.ExStr (loc, s))
+          PaLid (loc, s) ->
+            let a = after_colon s in
+            if a = "" then
+              MLast.ExApp
+                (loc,
+                 MLast.ExApp
+                   (loc,
+                    MLast.ExAcc
+                      (loc, MLast.ExUid (loc, "MLast"),
+                       MLast.ExUid (loc, "PaLid")),
+                    ln),
+                 MLast.ExStr (loc, s))
+            else
+              let r =
+                let loc = Stdpp.make_loc (0, String.length a) in
+                MLast.ExApp
+                  (loc,
+                   MLast.ExApp
+                     (loc,
+                      MLast.ExAcc
+                        (loc, MLast.ExUid (loc, "MLast"),
+                         MLast.ExUid (loc, "PaLid")),
+                      ln),
+                   MLast.ExLid (loc, a))
+              in
+              let loc = antiquot_loc "lid" loc in MLast.ExAnt (loc, r)
         | PaTyc (_, p, t) ->
             MLast.ExApp
               (loc,
@@ -163,12 +212,12 @@ module Meta =
                         MLast.ExUid (loc, "PaTyc")),
                      ln),
                   loop p),
-               expr_of_type t)
-        | x -> not_impl "expr_of_patt" x
+               e_type t)
+        | x -> not_impl "e_patt" x
       in
       loop p
     ;;
-    let expr_of_expr e =
+    let e_expr e =
       let ln = ln () in
       let rec loop =
         function
@@ -219,7 +268,7 @@ module Meta =
                     (loc, MLast.ExUid (loc, "MLast"),
                      MLast.ExUid (loc, "ExArr")),
                   ln),
-               expr_of_list loop el)
+               e_list loop el)
         | ExIfe (_, e1, e2, e3) ->
             MLast.ExApp
               (loc,
@@ -251,10 +300,9 @@ module Meta =
                MLast.ExStr (loc, k))
         | ExFun (_, pwel) ->
             let pwel =
-              expr_of_list
+              e_list
                 (fun (p, eo, e) ->
-                   MLast.ExTup
-                     (loc, [expr_of_patt p; expr_of_option loop eo; loop e]))
+                   MLast.ExTup (loc, [e_patt p; e_option loop eo; loop e]))
                 pwel
             in
             MLast.ExApp
@@ -271,7 +319,7 @@ module Meta =
              [MLast.PaAny _,
               ExAnt (_, MLast.ExTup (_, [MLast.ExStr (_, "list"); e1]))],
              e) ->
-            let rf = expr_of_bool rf in
+            let rf = e_bool rf in
             let pel = e1 in
             MLast.ExApp
               (loc,
@@ -289,11 +337,9 @@ module Meta =
                   pel),
                loop e)
         | ExLet (_, rf, pel, e) ->
-            let rf = expr_of_bool rf in
+            let rf = e_bool rf in
             let pel =
-              expr_of_list
-                (fun (p, e) -> MLast.ExTup (loc, [expr_of_patt p; loop e]))
-                pel
+              e_list (fun (p, e) -> MLast.ExTup (loc, [e_patt p; loop e])) pel
             in
             MLast.ExApp
               (loc,
@@ -362,6 +408,16 @@ module Meta =
                    MLast.ExLid (loc, a))
               in
               let loc = antiquot_loc "str" loc in MLast.ExAnt (loc, r)
+        | ExTup (_, el) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "ExTup")),
+                  ln),
+               e_list loop el)
         | ExUid (_, s) ->
             MLast.ExApp
               (loc,
@@ -372,77 +428,76 @@ module Meta =
                      MLast.ExUid (loc, "ExUid")),
                   ln),
                MLast.ExStr (loc, s))
-        | x -> not_impl "expr_of_expr" x
+        | x -> not_impl "e_expr" x
       in
       loop e
     ;;
-    let patt_of_patt x = not_impl "patt_of_patt" x;;
-    let patt_of_expr x = not_impl "patt_of_expr" x;;
-    let expr_of_sig_item =
+    let p_patt x = not_impl "p_patt" x;;
+    let p_expr x = not_impl "p_expr" x;;
+    let e_sig_item =
       function
         SgVal (_, s, t) ->
-          if String.length s > 0 && s.[0] = ':' then
-            let s = String.sub s 1 (String.length s - 1) in
-            MLast.ExApp
-              (loc,
-               MLast.ExApp
-                 (loc,
-                  MLast.ExApp
-                    (loc,
-                     MLast.ExAcc
-                       (loc, MLast.ExUid (loc, "MLast"),
-                        MLast.ExUid (loc, "SgVal")),
-                     ln ()),
-                  MLast.ExLid (loc, s)),
-               expr_of_type t)
-          else
-            MLast.ExApp
-              (loc,
-               MLast.ExApp
-                 (loc,
-                  MLast.ExApp
-                    (loc,
-                     MLast.ExAcc
-                       (loc, MLast.ExUid (loc, "MLast"),
-                        MLast.ExUid (loc, "SgVal")),
-                     ln ()),
-                  MLast.ExStr (loc, s)),
-               expr_of_type t)
-      | x -> not_impl "expr_of_sig_item" x
+          let s =
+            try
+              let i = String.index s ',' in
+              let j = String.index_from s (i + 1) ':' in
+              let bp = int_of_string (String.sub s 0 i) in
+              let ep = int_of_string (String.sub s (i + 1) (j - i - 1)) in
+              let s = String.sub s (j + 1) (String.length s - j - 1) in
+              let r =
+                call_with Plexer.dollar_for_antiquot_loc false
+                  (Grammar.Entry.parse expr_eoi) (Stream.of_string s)
+              in
+              let loc = antiquot_loc "lid" (Stdpp.make_loc (bp, ep)) in
+              MLast.ExAnt (loc, r)
+            with Not_found | Failure _ -> MLast.ExStr (loc, s)
+          in
+          MLast.ExApp
+            (loc,
+             MLast.ExApp
+               (loc,
+                MLast.ExApp
+                  (loc,
+                   MLast.ExAcc
+                     (loc, MLast.ExUid (loc, "MLast"),
+                      MLast.ExUid (loc, "SgVal")),
+                   ln ()),
+                s),
+             e_type t)
+      | x -> not_impl "e_sig_item" x
     ;;
-    let patt_of_sig_item =
+    let p_sig_item =
       function
         SgVal (_, s, t) ->
-          if String.length s > 0 && s.[0] = ':' then
-            let s = String.sub s 1 (String.length s - 1) in
-            MLast.PaApp
-              (loc,
-               MLast.PaApp
-                 (loc,
-                  MLast.PaApp
-                    (loc,
-                     MLast.PaAcc
-                       (loc, MLast.PaUid (loc, "MLast"),
-                        MLast.PaUid (loc, "SgVal")),
-                     MLast.PaAny loc),
-                  MLast.PaLid (loc, s)),
-               patt_of_type t)
-          else
-            MLast.PaApp
-              (loc,
-               MLast.PaApp
-                 (loc,
-                  MLast.PaApp
-                    (loc,
-                     MLast.PaAcc
-                       (loc, MLast.PaUid (loc, "MLast"),
-                        MLast.PaUid (loc, "SgVal")),
-                     MLast.PaAny loc),
-                  MLast.PaStr (loc, s)),
-               patt_of_type t)
-      | x -> not_impl "patt_of_sig_item" x
+          let s =
+            let a = after_colon s in
+            if a = "" then MLast.PaStr (loc, s) else MLast.PaLid (loc, a)
+          in
+          MLast.PaApp
+            (loc,
+             MLast.PaApp
+               (loc,
+                MLast.PaApp
+                  (loc,
+                   MLast.PaAcc
+                     (loc, MLast.PaUid (loc, "MLast"),
+                      MLast.PaUid (loc, "SgVal")),
+                   MLast.PaAny loc),
+                s),
+             p_type t)
+      | x -> not_impl "p_sig_item" x
     ;;
   end
+;;
+
+let check_anti_loc s kind =
+  try
+    let i = String.index s ':' in
+    let j = String.index_from s (i + 1) ':' in
+    if String.sub s (i + 1) (j - i - 1) = "lid" then
+      String.sub s 0 i ^ String.sub s j (String.length s - j)
+    else raise Stream.Failure
+  with Not_found -> raise Stream.Failure
 ;;
 
 let lex = Grammar.glexer Pcaml.gram in
@@ -455,67 +510,29 @@ lex.Token.tok_match <-
   | "LIDENT", "" ->
       (function
          "LIDENT", prm -> prm
-       | "ANTIQUOT", prm when eq_before_colon "lid" prm -> prm
+       | "ANTIQUOT_LOC", prm -> check_anti_loc prm "lid"
        | _ -> raise Stream.Failure)
   | "STRING", "" ->
       (function
          "STRING", prm -> prm
-       | "ANTIQUOT", prm when eq_before_colon "str" prm -> prm
+       | "ANTIQUOT_LOC", prm -> check_anti_loc prm "str"
        | _ -> raise Stream.Failure)
   | tok -> Token.default_match tok;;
 
+(* reinit the entry functions to take the new tok_match into account *)
 Grammar.iter_entry Grammar.reinit_entry_functions
   (Grammar.Entry.obj Pcaml.expr);;
 
-Plexer.force_dollar_for_antiquotation := true;;
-
-let expr_eoi = Grammar.Entry.create Pcaml.gram "expr";;
-let patt_eoi = Grammar.Entry.create Pcaml.gram "patt";;
-let sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";;
-Grammar.extend
-  [Grammar.Entry.obj (expr_eoi : 'expr_eoi Grammar.Entry.e), None,
-   [None, None,
-    [[Gramext.Snterm
-        (Grammar.Entry.obj (Pcaml.expr : 'Pcaml__expr Grammar.Entry.e));
-      Gramext.Stoken ("EOI", "")],
-     Gramext.action
-       (fun _ (x : 'Pcaml__expr) (loc : Token.location) -> (x : 'expr_eoi))]];
-   Grammar.Entry.obj (patt_eoi : 'patt_eoi Grammar.Entry.e), None,
-   [None, None,
-    [[Gramext.Snterm
-        (Grammar.Entry.obj (Pcaml.patt : 'Pcaml__patt Grammar.Entry.e));
-      Gramext.Stoken ("EOI", "")],
-     Gramext.action
-       (fun _ (x : 'Pcaml__patt) (loc : Token.location) -> (x : 'patt_eoi))]];
-   Grammar.Entry.obj (sig_item_eoi : 'sig_item_eoi Grammar.Entry.e), None,
-   [None, None,
-    [[Gramext.Snterm
-        (Grammar.Entry.obj
-           (Pcaml.sig_item : 'Pcaml__sig_item Grammar.Entry.e));
-      Gramext.Stoken ("EOI", "")],
-     Gramext.action
-       (fun _ (x : 'Pcaml__sig_item) (loc : Token.location) ->
-          (x : 'sig_item_eoi))]]];;
-
-let apply_expr_entry =
-  let f s = Grammar.Entry.parse expr_eoi (Stream.of_string s) in
-  let expr s = Meta.expr_of_expr (f s) in
-  let patt s = Meta.patt_of_expr (f s) in Quotation.ExAst (expr, patt)
+let apply_entry e me mp =
+  let f s =
+    call_with Plexer.dollar_for_antiquot_loc true (Grammar.Entry.parse e)
+      (Stream.of_string s)
+  in
+  let expr s = me (f s) in
+  let patt s = mp (f s) in Quotation.ExAst (expr, patt)
 ;;
 
-let apply_patt_entry =
-  let f s = Grammar.Entry.parse patt_eoi (Stream.of_string s) in
-  let expr s = Meta.expr_of_patt (f s) in
-  let patt s = Meta.patt_of_patt (f s) in Quotation.ExAst (expr, patt)
-;;
-
-let apply_sig_item_entry =
-  let f s = Grammar.Entry.parse sig_item_eoi (Stream.of_string s) in
-  let expr s = Meta.expr_of_sig_item (f s) in
-  let patt s = Meta.patt_of_sig_item (f s) in Quotation.ExAst (expr, patt)
-;;
-
-Quotation.add "expr" apply_expr_entry;;
-Quotation.add "patt" apply_patt_entry;;
-
-Quotation.add "sig_item" apply_sig_item_entry;;
+List.iter (fun (q, f) -> Quotation.add q f)
+  ["expr", apply_entry expr_eoi Meta.e_expr Meta.p_expr;
+   "patt", apply_entry patt_eoi Meta.e_patt Meta.p_patt;
+   "sig_item", apply_entry sig_item_eoi Meta.e_sig_item Meta.p_sig_item];;

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.3 2007/07/31 16:40:31 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.4 2007/07/31 23:48:22 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -39,6 +39,26 @@ value eq_before_colon p e =
     else if p.[i] == e.[i] then loop (i + 1)
     else False
 ;
+
+value call_with r v f a =
+  let saved = r.val in
+  try do {
+    r.val := v;
+    let b = f a in
+    r.val := saved;
+    b
+  }
+  with e -> do { r.val := saved; raise e }
+;
+
+value expr_eoi = Grammar.Entry.create Pcaml.gram "expr";
+value patt_eoi = Grammar.Entry.create Pcaml.gram "patt";
+value sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";
+EXTEND
+  expr_eoi: [ [ x = Pcaml.expr; EOI -> x ] ];
+  patt_eoi: [ [ x = Pcaml.patt; EOI -> x ] ];
+  sig_item_eoi: [ [ x = Pcaml.sig_item; EOI -> x ] ];
+END;
 
 module Meta =
   struct
@@ -166,8 +186,20 @@ module Meta =
       fun
       [ SgVal _ s t ->
           let s =
-            let a = after_colon s in
-            if a = "" then <:expr< $str:s$ >> else <:expr< $lid:a$ >>
+            try
+              let i = String.index s ',' in
+              let j = String.index_from s (i + 1) ':' in
+              let bp = int_of_string (String.sub s 0 i) in
+              let ep = int_of_string (String.sub s (i + 1) (j - i - 1)) in
+              let s = String.sub s (j + 1) (String.length s - j - 1) in
+              let r =
+                call_with Plexer.dollar_for_antiquot_loc False
+                  (Grammar.Entry.parse expr_eoi) (Stream.of_string s)
+              in
+              let loc = antiquot_loc "lid" (Stdpp.make_loc (bp, ep)) in
+              <:expr< $anti:r$ >>
+            with
+            [ Not_found | Failure _ -> <:expr< $str:s$ >> ]
           in
           <:expr< MLast.SgVal $ln ()$ $s$ $e_type t$ >>
       | x -> not_impl "e_sig_item" x ]
@@ -185,6 +217,17 @@ module Meta =
   end
 ;
 
+value check_anti_loc s kind =
+  try
+    let i = String.index s ':' in
+    let j = String.index_from s (i + 1) ':' in
+    if String.sub s (i + 1) (j - i - 1) = "lid" then
+      String.sub s 0 i ^ String.sub s j (String.length s - j)
+    else raise Stream.Failure
+  with
+  [ Not_found -> raise Stream.Failure ]
+;
+
 let lex = Grammar.glexer Pcaml.gram in
 lex.Token.tok_match :=
   fun
@@ -195,12 +238,12 @@ lex.Token.tok_match :=
   | ("LIDENT", "") ->
       fun
       [ ("LIDENT", prm) -> prm
-      | ("ANTIQUOT", prm) when eq_before_colon "lid" prm -> prm
+      | ("ANTIQUOT_LOC", prm) -> check_anti_loc prm "lid"
       | _ -> raise Stream.Failure ]
   | ("STRING", "") ->
       fun
       [ ("STRING", prm) -> prm
-      | ("ANTIQUOT", prm) when eq_before_colon "str" prm -> prm
+      | ("ANTIQUOT_LOC", prm) -> check_anti_loc prm "str"
       | _ -> raise Stream.Failure ]
   | tok -> Token.default_match tok ]
 ;
@@ -209,30 +252,10 @@ lex.Token.tok_match :=
 Grammar.iter_entry Grammar.reinit_entry_functions
   (Grammar.Entry.obj Pcaml.expr);
 
-value expr_eoi = Grammar.Entry.create Pcaml.gram "expr";
-value patt_eoi = Grammar.Entry.create Pcaml.gram "patt";
-value sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";
-EXTEND
-  expr_eoi: [ [ x = Pcaml.expr; EOI -> x ] ];
-  patt_eoi: [ [ x = Pcaml.patt; EOI -> x ] ];
-  sig_item_eoi: [ [ x = Pcaml.sig_item; EOI -> x ] ];
-END;
-
-value call_with r v f a =
-  let saved = r.val in
-  try do {
-    r.val := v;
-    let b = f a in
-    r.val := saved;
-    b
-  }
-  with e -> do { r.val := saved; raise e }
-;
-
 value apply_entry e me mp =
   let f s =
-    call_with Plexer.force_dollar_for_antiquotation True
-      (fun () -> Grammar.Entry.parse e (Stream.of_string s)) ()
+    call_with Plexer.dollar_for_antiquot_loc True
+      (Grammar.Entry.parse e) (Stream.of_string s)
   in
   let expr s = me (f s) in
   let patt s = mp (f s) in

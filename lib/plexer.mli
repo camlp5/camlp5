@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.mli,v 1.7 2007/07/31 14:29:41 deraugla Exp $ *)
+(* $Id: plexer.mli,v 1.8 2007/07/31 23:48:22 deraugla Exp $ *)
 
 (** A lexical analyzer. *)
 
@@ -64,4 +64,4 @@ value no_quotations : ref bool;
        quotation syntax any more. Default is False (quotations are
        lexed). *)
 
-value force_dollar_for_antiquotation : ref bool;
+value dollar_for_antiquot_loc : ref bool;

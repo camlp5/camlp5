@@ -64,4 +64,4 @@ val no_quotations : bool ref;;
        quotation syntax any more. Default is False (quotations are
        lexed). *)
 
-val force_dollar_for_antiquotation : bool ref;;
+val dollar_for_antiquot_loc : bool ref;;
