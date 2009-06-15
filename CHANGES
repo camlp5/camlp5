@@ -4,9 +4,9 @@ Camlp5 Version 4.07:
 * [02 Aug 07] Fixed bug: option -o did not work for pr_r.cmo and pr_o.cmo
   (was always stdout).
 * [01 Aug 07] In EXTEND statement, added symbol FLAG: like OPT but return
-  a boolean value.
-* [30 Jul 07] Fixed bug in normal syntax: let C x = C 1 was not accepted
-  (bug rather difficult to resolve).
+  a boolean value. The antiquotation kind "flag" must be used in this case,
+  but the "opt" still works by compatibility.
+* [30 Jul 07] Fixed bug in normal syntax: let C x = C 1 was not accepted.
 * [30 Jul 07] Changed pretty printing *normal* syntax: let C x = .. printed
   like that, *not* transformed into let x = match .. with C x -> x.
 
