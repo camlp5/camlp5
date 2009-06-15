@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_pprintf.ml,v 1.17 2007/12/06 20:51:55 deraugla Exp $ *)
+(* $Id: pa_pprintf.ml,v 1.18 2007/12/08 08:59:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* pprintf statement *)
@@ -352,8 +352,6 @@ value expand_pprintf loc pc fmt al =
                     in
                     (e1, oel1 @ [(o, e2) :: oel2])
                 | Offset _ t ->
-                    loop_1 aft_is_empty t
-                | BreakAll t ->
                     loop_1 aft_is_empty t
                 | t ->
                     (loop pc offset aft_is_empty t, []) ]

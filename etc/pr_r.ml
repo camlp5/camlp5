@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.130 2007/12/08 01:12:23 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.131 2007/12/08 08:59:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1185,44 +1185,13 @@ EXTEND_PRINTER
           in
           horiz_vertic
             (fun () ->
-               sprintf "%sfor %s = %s %s %s do { %s }%s" pc.bef v
-                 (curr {(pc) with bef = ""; aft = ""} e1)
-                 (if d then "to" else "downto")
-                 (curr {(pc) with bef = ""; aft = ""} e2)
-                 (hlistl (semi_after curr) curr {(pc) with bef = ""; aft = ""}
-                    el) pc.aft)
+               pprintf pc "for %s = %p %s %p do { %p }" v curr e1
+                 (if d then "to" else "downto") curr e2
+                 (hlistl (semi_after curr) curr) el)
             (fun () ->
-               let s1 =
-                 horiz_vertic
-                   (fun () ->
-                      sprintf "%sfor %s = %s %s %s do {" pc.bef v
-                        (curr {(pc) with bef = ""; aft = ""} e1)
-                        (if d then "to" else "downto")
-                        (curr {(pc) with bef = ""; aft = ""} e2))
-                   (fun () ->
-                      let s1 =
-                        curr
-                          {(pc) with bef = sprintf "%sfor %s = " pc.bef v;
-                           aft = if d then " to" else " downto"}
-                          e1
-                      in
-                      let s2 =
-                        curr
-                          {(pc) with ind = pc.ind + 4; bef = tab (pc.ind + 4);
-                           aft = ""}
-                          e2
-                      in
-                      let s3 = sprintf "%sdo {" (tab pc.ind) in
-                      sprintf "%s\n%s\n%s" s1 s2 s3)
-               in
-               let s2 =
-                 vlist (semi_after curr)
-                   {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                    aft = ""}
-                   el
-               in
-               let s3 = sprintf "%s}%s" (tab pc.ind) pc.aft in
-               sprintf "%s\n%s\n%s" s1 s2 s3) ]
+               pprintf pc "@[<a>@[<a>for %s = %p %s@;<1 4>%p@ do {@]@;%p@ }@]"
+                 v curr e1 (if d then "to" else "downto") curr e2
+                 (vlist (semi_after curr)) el) ]
     | "assign"
       [ <:expr< $x$ := $y$ >> -> operator pc next expr 2 ":=" x y ]
     | "or"
