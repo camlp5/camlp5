@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: prtools.ml,v 1.8 2007/10/03 02:29:06 deraugla Exp $ *)
+(* $Id: prtools.ml,v 1.9 2007/10/04 06:06:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -215,6 +215,103 @@ value plistb elem sh pc xl =
           let s2 =
             plistl elem elem 0
               {(pc) with ind = pc.ind + sh; bef = tab (pc.ind + sh)} xl
+          in
+          sprintf "%s\n%s" s1 s2 ] ]
+;
+
+(* paragraph list like [plistl] except that the list is a list of
+   functions returning a string *)
+value rec plistf sh pc xl =
+  let (s1, s2o) = plistf_two_parts sh pc xl in
+  match s2o with
+  [ Some s2 -> sprintf "%s\n%s" s1 s2
+  | None -> s1 ]
+and plistf_two_parts sh pc xl =
+  match xl with
+  [ [] -> assert False
+  | [(x, _)] -> (x pc, None)
+  | [(x, sep) :: xl] ->
+      let s =
+        horiz_vertic
+          (fun () -> Some (x {(pc) with aft = sep; dang = sep}))
+          (fun () -> None)
+      in
+      match s with
+      [ Some b -> (plistf_kont_same_line sh {(pc) with bef = b} xl, None)
+      | None ->
+          let s1 = x {(pc) with aft = sep; dang = sep} in
+          let s2 =
+            plistf 0 {(pc) with ind = pc.ind + sh; bef = tab (pc.ind + sh)} xl
+          in
+          (s1, Some s2) ] ]
+and plistf_kont_same_line sh pc xl =
+  match xl with
+  [ [] -> assert False
+  | [(x, _)] ->
+      horiz_vertic (fun () -> x {(pc) with bef = sprintf "%s " pc.bef})
+        (fun () ->
+           let s = x {(pc) with ind = pc.ind + sh; bef = tab (pc.ind + sh)} in
+           let (b, s) = rise_string pc.ind sh pc.bef s in
+           sprintf "%s\n%s" b s)
+  | [(x, sep) :: xl] ->
+      let s =
+        horiz_vertic
+          (fun () ->
+             Some
+               (x
+                  {(pc) with bef = sprintf "%s " pc.bef; aft = sep;
+                   dang = sep}))
+          (fun () -> None)
+      in
+      match s with
+      [ Some b -> plistf_kont_same_line sh {(pc) with bef = b} xl
+      | None ->
+          let (s1, s2o) =
+            plistf_two_parts 0
+              {(pc) with ind = pc.ind + sh; bef = tab (pc.ind + sh)}
+              [(x, sep) :: xl]
+          in
+          match s2o with
+          [ Some s2 ->
+              let (b, s1) = rise_string pc.ind sh pc.bef s1 in
+              sprintf "%s\n%s\n%s" b s1 s2
+          | None -> sprintf "%s\n%s" pc.bef s1 ] ] ]
+;
+
+(* paragraph list like [plistb] but where the list is a list of functions
+   returning the string. *)
+value rec plistbf sh pc xl =
+  match xl with
+  [ [] -> sprintf "%s%s" pc.bef pc.aft
+  | [(x, _)] ->
+      horiz_vertic (fun () -> x {(pc) with bef = sprintf "%s " pc.bef})
+        (fun () ->
+           let s =
+             x {(pc) with ind = pc.ind + sh; bef = tab (pc.ind + sh)}
+           in
+           sprintf "%s\n%s" pc.bef s)
+  | [(x, sep) :: xl] ->
+      let s =
+        horiz_vertic
+          (fun () ->
+             Some
+               (x {(pc) with bef = sprintf "%s " pc.bef; aft = sep;
+                dang = sep}))
+          (fun () -> None)
+      in
+      match s with
+      [ Some b -> plistf_kont_same_line sh {(pc) with bef = b} xl
+      | None ->
+          let s1 =
+            let s =
+              x
+                {ind = pc.ind + sh; bef = tab (pc.ind + sh); aft = sep;
+                 dang = sep}
+            in
+            sprintf "%s\n%s" pc.bef s
+          in
+          let s2 =
+            plistf 0 {(pc) with ind = pc.ind + sh; bef = tab (pc.ind + sh)} xl
           in
           sprintf "%s\n%s" s1 s2 ] ]
 ;

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: prtools.mli,v 1.6 2007/08/18 01:42:47 deraugla Exp $ *)
+(* $Id: prtools.mli,v 1.7 2007/10/04 06:06:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 type pr_context =
@@ -70,6 +70,13 @@ value plistb : pr_fun 'a -> int -> pr_fun (list ('a * string));
        in the line, a newline and a tabulation is added after [pc.bef]. *)
 value plistl : pr_fun 'a -> pr_fun 'a -> int -> pr_fun (list ('a * string));
    (** paragraph list with a different function for the last element *)
+
+value plistf : int -> pr_fun (list (pr_context -> string * string));
+   (** [plistf sh pc fl] acts like [plist] except that the list is a
+       list of functions returning the pretty printed string. *)
+value plistbf : int -> pr_fun (list (pr_context -> string * string));
+   (** [plistbf sh pc fl] acts like [plistb] except that the list is a
+       list of functions returning the pretty printed string. *)
 
 (* miscellaneous *)
 

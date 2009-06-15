@@ -71,6 +71,13 @@ val plistb : 'a pr_fun -> int -> ('a * string) list pr_fun;;
 val plistl : 'a pr_fun -> 'a pr_fun -> int -> ('a * string) list pr_fun;;
    (** paragraph list with a different function for the last element *)
 
+val plistf : int -> ((pr_context -> string) * string) list pr_fun;;
+   (** [plistf sh pc fl] acts like [plist] except that the list is a
+       list of functions returning the pretty printed string. *)
+val plistbf : int -> ((pr_context -> string) * string) list pr_fun;;
+   (** [plistbf sh pc fl] acts like [plistb] except that the list is a
+       list of functions returning the pretty printed string. *)
+
 (* miscellaneous *)
 
 val tab : int -> string;;
