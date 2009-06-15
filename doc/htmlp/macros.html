@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: macros.html,v 1.7 2007/08/30 18:18:30 deraugla Exp $ -->
+  <!-- $Id: macros.html,v 1.8 2007/08/30 18:41:22 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>macros</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -49,7 +49,6 @@
                   | "IFNDEF" dexpr "THEN" st-or-mac "END"
                   | "IFNDEF" dexpr "THEN" st-or-mac "ELSE" st-or-mac "END"
   sig_macro-def ::= "DEFINE" uident
-                  | "DEFINE" uident "(" params ")" "=" expr
                   | "UNDEF" uident
                   | "IFDEF" dexpr "THEN" sg-or-mac "END"
                   | "IFDEF" dexpr "THEN" sg-or-mac "ELSE" sg-or-mac "END"
@@ -145,11 +144,12 @@
 
 <p>The statement "<tt>UNDEF</tt>" removes a macro definition.</p>
 
-<p>When associated with a value, the "<tt>DEFINE</tt>" macro act like
-  a variable (or like function call if it has parameters), except that
-  the parameters are evaluated at parse time and can also be used also
-  in pattern positions. Notice that this is a way to define constants
-  by name in patterns. For example:</p>
+<p>When associated with a value (only in structure items, not in
+  signature items), the "<tt>DEFINE</tt>" macro acts like a variable
+  (or like function call if it has parameters), except that the
+  parameters are evaluated at parse time and can also be used also in
+  pattern positions. Notice that this is a way to define constants by
+  name in patterns. For example:</p>
 
 <pre>
   DEFINE WW1 = 1914;
