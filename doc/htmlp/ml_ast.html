@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: ml_ast.html,v 1.14 2007/07/23 15:11:46 deraugla Exp $ -->
+  <!-- $Id: ml_ast.html,v 1.15 2007/07/23 15:23:14 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Abstract tree in concrete syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -147,6 +147,8 @@
 </ul>
 
 <h3>expr</h3>
+
+<p>Expressions of the language.</p>
 
 <table border="1">
   <tr>
@@ -371,7 +373,36 @@
   </tr>
 </table>
 
+<p>The variable "lpoee" found in the "match" and "try" statements
+  correspond to a list of "<tt>(patt * option expr * expr)</tt>" where
+  the "<tt>option expr</tt>" is the "when" optionally following the
+  pattern:</p>
+
+<pre>
+  p -> e
+</pre>
+
+<p>is represented by:</p>
+
+<pre>
+  (p, None, e)
+</pre>
+
+<p>and</p>
+
+<pre>
+  p when e1 -> e
+</pre>
+
+<p>is represented by:</p>
+
+<pre>
+  (p, Some e1, e)
+</pre>
+
 <h3>patt</h3>
+
+<p>Patterns of the language.</p>
 
 <table border="1">
   <tr>
@@ -487,7 +518,7 @@
   <tr>
     <td><tt>PaTyp loc ls</tt></td>
     <td align="center"><tt># $list:ls$</tt></td>
-    <td>pattern type</td>
+    <td>type pattern</td>
   </tr>
   <tr>
     <td><tt>PaUid loc s</tt></td>
@@ -502,6 +533,8 @@
 </table>
 
 <h3>ctyp</h3>
+
+<p>Type expressions of the language.</p>
 
 <p>...to be completed...</p>
 
