@@ -807,15 +807,14 @@ let quotify_action psl act =
     (fun e ps ->
        match ps.pattern with
          Some (MLast.PaTup (_, p :: pl)) ->
-           let pl = p :: pl in
            let loc = Ploc.dummy in
-           let pname = pname_of_ptuple pl in
+           let pname = pname_of_ptuple (p :: pl) in
            let (pl1, el1) =
              let (l, _) =
                List.fold_left
                  (fun (l, cnt) _ ->
                     (symgen ^ string_of_int cnt) :: l, cnt + 1)
-                 ([], 1) pl
+                 ([], 1) (p :: pl)
              in
              let l = List.rev l in
              List.map (fun s -> MLast.PaLid (loc, s)) l,
@@ -824,26 +823,17 @@ let quotify_action psl act =
            MLast.ExLet
              (loc, false,
               [MLast.PaTup (loc, p :: pl),
-               MLast.ExLet
-                 (loc, false,
-                  [MLast.PaLid (loc, "pl"),
-                   MLast.ExApp
+               MLast.ExMat
+                 (loc, MLast.ExLid (loc, pname),
+                  [MLast.PaApp
                      (loc,
-                      MLast.ExApp
-                        (loc, MLast.ExUid (loc, "::"),
-                         MLast.ExLid (loc, "p")),
-                      MLast.ExLid (loc, "pl"))],
-                  MLast.ExMat
-                    (loc, MLast.ExLid (loc, pname),
-                     [MLast.PaApp
-                        (loc,
-                         MLast.PaAcc
-                           (loc, MLast.PaUid (loc, "Qast"),
-                            MLast.PaUid (loc, "Tuple")),
-                         mklistpat loc pl1),
-                      None, MLast.ExTup (loc, List.hd el1 :: List.tl el1);
-                      MLast.PaAny loc, None,
-                      MLast.ExMat (loc, MLast.ExUid (loc, "()"), [])]))],
+                      MLast.PaAcc
+                        (loc, MLast.PaUid (loc, "Qast"),
+                         MLast.PaUid (loc, "Tuple")),
+                      mklistpat loc pl1),
+                   None, MLast.ExTup (loc, List.hd el1 :: List.tl el1);
+                   MLast.PaAny loc, None,
+                   MLast.ExMat (loc, MLast.ExUid (loc, "()"), [])])],
               e)
        | _ -> e)
     e psl
