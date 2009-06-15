@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.91 2007/10/15 02:48:32 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.92 2007/10/15 13:30:46 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -1048,6 +1048,12 @@
    ((Sexpr loc [(Slid _ "variants") . sel])
     (let ((cdl (anti_list_map variant_declaration_se sel)))
      <:ctyp< [ = $_list:cdl$ ] >>))
+   ((Sexpr loc [(Slid _ "variantsless") . sel])
+    (let ((cdl (anti_list_map variant_declaration_se sel)))
+     <:ctyp< [ < $_list:cdl$ ] >>))
+   ((Sexpr loc [(Slid _ "variantsgreater") . sel])
+    (let ((cdl (anti_list_map variant_declaration_se sel)))
+     <:ctyp< [ > $_list:cdl$ ] >>))
    ((Srec loc sel)
     (let ((ldl (anti_list_map label_declaration_se sel)))
      <:ctyp< { $_list:ldl$ } >>))
@@ -1118,7 +1124,7 @@
         (sel (values False sel))))
       (tl (List.map ctyp_se sel)))
      <:poly_variant< ` $s$ of $flag:a$ $list:tl$ >>))
-   (se (error se "variant_declaration"))))
+   (se (let ((t (ctyp_se se))) <:poly_variant< $t$ >>))))
  (label_declaration_se
   (lambda_match
    ((Sexpr loc [(Slid _ lab) (Slid _ "mutable") se])

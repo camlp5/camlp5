@@ -1183,6 +1183,12 @@ and ctyp_se =
   | Sexpr loc [Slid _ "variants" :: sel] ->
       let cdl = anti_list_map variant_declaration_se sel in
       <:ctyp< [ = $_list:cdl$ ] >>
+  | Sexpr loc [Slid _ "variantsless" :: sel] ->
+      let cdl = anti_list_map variant_declaration_se sel in
+      <:ctyp< [ < $_list:cdl$ ] >>
+  | Sexpr loc [Slid _ "variantsgreater" :: sel] ->
+      let cdl = anti_list_map variant_declaration_se sel in
+      <:ctyp< [ > $_list:cdl$ ] >>
   | Srec loc sel ->
       let ldl = anti_list_map label_declaration_se sel in
       <:ctyp< { $_list:ldl$ } >>
@@ -1266,7 +1272,9 @@ and variant_declaration_se =
       in
       let tl = List.map ctyp_se sel in
       <:poly_variant< ` $s$ of $flag:a$ $list:tl$ >>
-  | se -> error se "variant_declaration" ]
+  | se ->
+      let t = ctyp_se se in
+      <:poly_variant< $t$ >> ]
 and label_declaration_se =
   fun
   [ Sexpr loc [Slid _ lab; Slid _ "mutable"; se] ->

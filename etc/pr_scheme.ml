@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.47 2007/10/15 03:26:50 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.48 2007/10/15 13:30:46 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -304,7 +304,7 @@ value poly_variant_decl pc =
       in
       plistbf 0 (paren pc "`") list
   | <:poly_variant< $t$ >> ->
-      not_impl "poly_variant_decl type" pc 0
+      ctyp pc t
   | IFDEF STRICT THEN
       _ -> not_impl "poly_variant_decl" pc 0
     END ]
@@ -500,6 +500,12 @@ EXTEND_PRINTER
                vlistf (paren pc "")
                  [fun pc -> sprintf "%svariants%s" pc.bef pc.aft ::
                   List.map (fun cd pc -> poly_variant_decl pc cd) vl])
+      | <:ctyp< [ < $list:vl$ ] >> ->
+          plistbf 0 (paren pc "variantsless")
+            (List.map (fun v -> (fun pc -> poly_variant_decl pc v, "")) vl)
+      | <:ctyp< [ > $list:vl$ ] >> ->
+          plistbf 0 (paren pc "variantsgreater")
+            (List.map (fun v -> (fun pc -> poly_variant_decl pc v, "")) vl)
       | <:ctyp< ( $list:tl$ ) >> ->
           let tl = List.map (fun t -> (t, "")) tl in
           plistb curr 0 (paren pc "*") tl
