@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.72 2007/09/25 10:08:04 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.73 2007/09/25 13:15:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -473,11 +473,11 @@ EXTEND
   (* "with" constraints (additional type equations over signature
      components) *)
   with_constr:
-    [ [ "type"; tpl = type_parameters; i = mod_ident; "=";
-        pf = FLAG "private"; t = ctyp ->
-          <:with_constr< type $i$ $list:tpl$ = $flag:pf$ $t$ >>
-      | "module"; i = mod_ident; "="; me = module_expr ->
-          <:with_constr< module $i$ = $me$ >> ] ]
+    [ [ "type"; tpl = V type_parameters "list"; i = V mod_ident ""; "=";
+        pf = V (FLAG "private"); t = ctyp ->
+          <:with_constr< type $_:i$ $_list:tpl$ = $_flag:pf$ $t$ >>
+      | "module"; i = V mod_ident ""; "="; me = module_expr ->
+          <:with_constr< module $_:i$ = $me$ >> ] ]
   ;
   (* Core expressions *)
   expr:
@@ -953,24 +953,28 @@ EXTEND
       | "("; p = patt; ":"; t = ctyp; ")" -> <:patt< ($p$ : $t$) >> ] ]
   ;
   class_str_item:
-    [ [ "inherit"; ce = class_expr; pb = OPT [ "as"; i = LIDENT -> i ] ->
-          <:class_str_item< inherit $ce$ $opt:pb$ >>
-      | "val"; mf = FLAG "mutable"; lab = label; e = cvalue_binding ->
-          <:class_str_item< value $flag:mf$ $lid:lab$ = $e$ >>
-      | "method"; "private"; "virtual"; l = label; ":"; t = poly_type ->
-          <:class_str_item< method virtual private $lid:l$ : $t$ >>
-      | "method"; "virtual"; "private"; l = label; ":"; t = poly_type ->
-          <:class_str_item< method virtual private $lid:l$ : $t$ >>
-      | "method"; "virtual"; l = label; ":"; t = poly_type ->
-          <:class_str_item< method virtual $lid:l$ : $t$ >>
-      | "method"; "private"; l = label; ":"; t = poly_type; "="; e = expr ->
-          <:class_str_item< method private $lid:l$ : $t$ = $e$ >>
-      | "method"; "private"; l = label; sb = fun_binding ->
-          <:class_str_item< method private $lid:l$ = $sb$ >>
-      | "method"; l = label; ":"; t = poly_type; "="; e = expr ->
-          <:class_str_item< method $lid:l$ : $t$ = $e$ >>
-      | "method"; l = label; sb = fun_binding ->
-          <:class_str_item< method $lid:l$ = $sb$ >>
+    [ [ "inherit"; ce = class_expr; pb = V (OPT [ "as"; i = LIDENT -> i ]) ->
+          <:class_str_item< inherit $ce$ $_opt:pb$ >>
+      | "val"; mf = V (FLAG "mutable"); lab = V label "lid" "";
+        e = cvalue_binding ->
+          <:class_str_item< value $_flag:mf$ $_lid:lab$ = $e$ >>
+      | "method"; "private"; "virtual"; l = V label "lid" ""; ":";
+        t = poly_type ->
+          <:class_str_item< method virtual private $_lid:l$ : $t$ >>
+      | "method"; "virtual"; "private"; l = V label "lid" ""; ":";
+        t = poly_type ->
+          <:class_str_item< method virtual private $_lid:l$ : $t$ >>
+      | "method"; "virtual"; l = V label "lid" ""; ":"; t = poly_type ->
+          <:class_str_item< method virtual $_lid:l$ : $t$ >>
+      | "method"; "private"; l = V label "lid" ""; ":"; t = poly_type; "=";
+        e = expr ->
+          <:class_str_item< method private $_lid:l$ : $t$ = $e$ >>
+      | "method"; "private"; l = V label "lid" ""; sb = fun_binding ->
+          <:class_str_item< method private $_lid:l$ = $sb$ >>
+      | "method"; l = V label "lid" ""; ":"; t = poly_type; "="; e = expr ->
+          <:class_str_item< method $_lid:l$ : $t$ = $e$ >>
+      | "method"; l = V label "lid" ""; sb = fun_binding ->
+          <:class_str_item< method $_lid:l$ = $sb$ >>
       | "constraint"; t1 = ctyp; "="; t2 = ctyp ->
           <:class_str_item< type $t1$ = $t2$ >>
       | "initializer"; se = expr -> <:class_str_item< initializer $se$ >> ] ]
@@ -1004,19 +1008,22 @@ EXTEND
     [ [ "("; t = ctyp; ")" -> t ] ]
   ;
   class_sig_item:
-    [ [ "inherit"; cs = class_signature -> <:class_sig_item< inherit $cs$ >>
-      | "val"; mf = FLAG "mutable"; l = label; ":"; t = ctyp ->
-          <:class_sig_item< value $flag:mf$ $lid:l$ : $t$ >>
-      | "method"; "private"; "virtual"; l = label; ":"; t = poly_type ->
-          <:class_sig_item< method virtual private $lid:l$ : $t$ >>
-      | "method"; "virtual"; "private"; l = label; ":"; t = poly_type ->
-          <:class_sig_item< method virtual private $lid:l$ : $t$ >>
-      | "method"; "virtual"; l = label; ":"; t = poly_type ->
-          <:class_sig_item< method virtual $lid:l$ : $t$ >>
-      | "method"; "private"; l = label; ":"; t = poly_type ->
-          <:class_sig_item< method private $lid:l$ : $t$ >>
-      | "method"; l = label; ":"; t = poly_type ->
-          <:class_sig_item< method $lid:l$ : $t$ >>
+    [ [ "inherit"; cs = class_signature ->
+          <:class_sig_item< inherit $cs$ >>
+      | "val"; mf = V (FLAG "mutable"); l = V label "lid" ""; ":"; t = ctyp ->
+          <:class_sig_item< value $_flag:mf$ $_lid:l$ : $t$ >>
+      | "method"; "private"; "virtual"; l = V label "lid" ""; ":";
+        t = poly_type ->
+          <:class_sig_item< method virtual private $_lid:l$ : $t$ >>
+      | "method"; "virtual"; "private"; l = V label "lid" ""; ":";
+        t = poly_type ->
+          <:class_sig_item< method virtual private $_lid:l$ : $t$ >>
+      | "method"; "virtual"; l = V label "lid" ""; ":"; t = poly_type ->
+          <:class_sig_item< method virtual $_lid:l$ : $t$ >>
+      | "method"; "private"; l = V label "lid" ""; ":"; t = poly_type ->
+          <:class_sig_item< method private $_lid:l$ : $t$ >>
+      | "method"; l = V label "lid" ""; ":"; t = poly_type ->
+          <:class_sig_item< method $_lid:l$ : $t$ >>
       | "constraint"; t1 = ctyp; "="; t2 = ctyp ->
           <:class_sig_item< type $t1$ = $t2$ >> ] ]
   ;
@@ -1113,8 +1120,9 @@ EXTEND
   ;
   poly_variant:
     [ [ "`"; i = V ident "" -> <:poly_variant< ` $_:i$ >>
-      | "`"; i = V ident ""; "of"; ao = FLAG "&"; l = LIST1 ctyp SEP "&" ->
-          <:poly_variant< `$_:i$ of $flag:ao$ $list:l$ >>
+      | "`"; i = V ident ""; "of"; ao = V (FLAG "&");
+        l = V (LIST1 ctyp SEP "&") ->
+          <:poly_variant< `$_:i$ of $_flag:ao$ $_list:l$ >>
       | t = ctyp -> MLast.PvInh t ] ]
   ;
   name_tag:
