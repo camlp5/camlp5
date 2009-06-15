@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: grammars.html,v 1.82 2007/10/01 09:39:10 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.83 2007/10/13 17:26:45 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -163,7 +163,7 @@ to <em>extend</em> it, using a specific syntactic statement:
   "<tt>GDELETE_RULE</tt>" are also defined by the same syntax extension
   kit. See further.</p>
 
-<p>In the description above, ony "<tt>EXTEND</tt>" and "<tt>END</tt>"
+<p>In the description above, only "<tt>EXTEND</tt>" and "<tt>END</tt>"
   are new keywords (reserved words which cannot be used in variables,
   constructors or module names). The other strings
   (e.g. "<tt>GLOBAL</tt>", "<tt>LEVEL</tt>", "<tt>LIST0</tt>",
@@ -496,7 +496,7 @@ sources):</p>
 <h3>Semantic action</h3>
 
 <p>The semantic action, i.e. the expression following the right arrow
-  in rules, contain in its environment:</p>
+  in rules, contains in its environment:</p>
 
 <ul>
   <li>the variables bound by the patterns of the symbols found in the
@@ -671,9 +671,9 @@ instead of "<tt>loc</tt>".</p>
   level is right associative, or of the next level otherwise.</p>
 
 <p>There is no behaviour difference between left and non associative,
-  because, in case of syntax error, the system attempts, anyway, to
-  recover the error by applying the "continue" function of the
-  previous symbol (if this symbol is a call to an entry).</p>
+  because, in case of syntax error, the system attempts to recover the
+  error by applying the "continue" function of the previous symbol (if
+  this symbol is a call to an entry).</p>
 
 <p>When a SELF or the current entry name is encountered in the middle
   of the rule (i.e. if it is not the last symbol), there is a call to
@@ -707,16 +707,16 @@ instead of "<tt>loc</tt>".</p>
 
 <h3>Errors and recovery</h3>
 
-<p>Like for stream parsers, two exceptions may happen:
-  "Stream.Failure" or "Stream.Error". The first one indicates that the
-  parsing just could not start. The second one indicates that the
-  parsing started but failed further.</p>
+<p>As with stream parsers, two exceptions may happen: "Stream.Failure"
+  or "Stream.Error". "Stream.Failure" indicates that the parsing just
+  could not start. "Stream.Error" indicates that the parsing started
+  but failed further.</p>
 
 <p>In stream parsers, when the first symbol of a rule has been
   accepted, all the symbols of the same rule must be accepted,
   otherwise the exception "Stream.Error" is raised.</p>
 
-<p>Here, in extensible grammars, unlike stream parsers, before the
+<p>In extensible grammars, unlike stream parsers, before the
   "Stream.Error" exception, the system attempts to recover the error
   by the following trick: if the previous symbol of the rule was a
   call to another entry, the system calls the "continue" function of
@@ -728,11 +728,10 @@ instead of "<tt>loc</tt>".</p>
 
 <h3>Tokens starting rules</h3>
 
-<p>Another improvement (than the error recovery) is the fact that,
-  when a rule starts with several tokens and/or keywords, all these
-  tokens and keywords are tested in one time, and the possible
-  "Stream.Error" may happen, only from the symbol following them on,
-  if any.</p>
+<p>Another improvement (other than error recovery) is that when a rule
+  starts with several tokens and/or keywords, all these tokens and
+  keywords are tested in one time, and the possible "Stream.Error" may
+  happen, only from the symbol following them on, if any.</p>
 
 <h3>Kind of grammar</h3>
 
@@ -825,23 +824,23 @@ instead of "<tt>loc</tt>".</p>
   Stream.t char -> (Stream.t (string * string) * location_function);
 </pre>
 
-<p>The lexer takes a character stream as parameter and must answer a
-  couple of: a token stream, the tokens being represented by a couple
-  of strings, and a location function.</p>
+<p>The lexer takes a character stream as parameter and return a couple
+  of containing: a token stream (the tokens being represented by a
+  couple of strings), and a location function.</p>
 
 <p>The location function is a function taking, as parameter, a integer
   corresponding to a token number in the stream (starting from zero),
-  and returning the location of this token in the source. It is
-  important to get the good locations in the semantic actions of the
+  and returning the location of this token in the source. This is
+  important to get good locations in the semantic actions of the
   grammar rules.</p>
 
-<p>Notice that, despite the lexer takes a character stream as
+<p>Notice that, despite the lexer taking a character stream as
   parameter, it is not mandatory to use the stream parsers technology
   to write the lexer. What is important is that it does the job.</p>
 
 <h4><tt>tok_using</tt></h4>
 
-<p>It is a function of type:</p>
+<p>Is a function of type:</p>
 
 <pre>
   pattern -> unit
@@ -866,21 +865,21 @@ instead of "<tt>loc</tt>".</p>
 
 <h4><tt>tok_removing</tt></h4>
 
-<p>It is a function of type:</p>
+<p>Is a function of type:</p>
 
 <pre>
   pattern -> unit
 </pre>
 
 <p>It is possibly called by the DELETE_RULE statement for tokens and
-  keywords no more used in the grammar. The grammar system maintains a
-  number of usages of all tokens and keywords and call this function
-  only when this number reaches zero. This can be interesting for
-  keywords: the lexer can remove them from its tables.</p>
+  keywords no longer used in the grammar. The grammar system maintains
+  a number of usages of all tokens and keywords and calls this
+  function only when this number reaches zero. This can be interesting
+  for keywords: the lexer can remove them from its tables.</p>
 
 <h4><tt>tok_match</tt></h4>
 
-<p>It is a function of type:</p>
+<p>Is a function of type:</p>
 
 <pre>
   pattern -> ((string * string) -> unit)
@@ -917,14 +916,14 @@ instead of "<tt>loc</tt>".</p>
 
 <h4><tt>tok_text</tt></h4>
 
-<p>It is a function of type:</p>
+<p>Is a function of type:</p>
 
 <pre>
   pattern -> string
 </pre>
 
-<p>Destinated to error messages, it takes a token pattern as parameter
-  and return the string giving its name.</p>
+<p>Designed for error messages, it takes a token pattern as parameter
+  and returns the string giving its name.</p>
 
 <p>It is possible to use the predefined function "<tt>lexer_text</tt>"
   of the Plexing module. This function just returns the name of the
@@ -937,7 +936,7 @@ instead of "<tt>loc</tt>".</p>
 
 <h4><tt>tok_comm</tt></h4>
 
-<p>It is a mutable field of type:</p>
+<p>Is a mutable field of type:</p>
 
 <pre>
   option (list location)
@@ -1058,9 +1057,9 @@ instead of "<tt>loc</tt>".</p>
 
 <h3>The resulting grammar module</h3>
 
-<p>Once a module of type "<tt>GLexerType</tt>" has been built (previous
-  section, it is possible to create a grammar module by applying the
-  functor "<tt>Grammar.GMake</tt>". For example:</p>
+<p>Once a module of type "<tt>GLexerType</tt>" has been built
+  (previous section), it is possible to create a grammar module by
+  applying the functor "<tt>Grammar.GMake</tt>". For example:</p>
 
 <pre>
   module MyGram = Grammar.GMake MyLexer;
@@ -1088,9 +1087,9 @@ instead of "<tt>loc</tt>".</p>
 
 <p>The "<tt>GEXTEND</tt>" and "<tt>GDELETE_RULE</tt>" statements are
   also added in the expressions of the OCaml language when the syntax
-  extension kit "<tt>pa_extend.cmo</tt>" is loaded. They have to be
-  used for grammars defined with the functorial interface. Their
-  syntax are:</p>
+  extension kit "<tt>pa_extend.cmo</tt>" is loaded. They must be used
+  for grammars defined with the functorial interface. Their syntax
+  is:</p>
 
 <pre>
            expression ::= gextend
