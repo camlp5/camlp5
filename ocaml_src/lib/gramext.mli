@@ -3,10 +3,14 @@
 (* Copyright (c) INRIA 2007 *)
 
 type 'a parser_t = 'a Stream.t -> Obj.t;;
+type 'a bparser_t = ('a, Obj.t) Fstream.bp;;
+
+type parse_algorithm = Imperative | Backtracking | DefaultAlgorithm;;
 
 type 'te grammar =
   { gtokens : (Plexing.pattern, int ref) Hashtbl.t;
-    mutable glexer : 'te Plexing.lexer }
+    mutable glexer : 'te Plexing.lexer;
+    mutable galgo : parse_algorithm }
 ;;
 
 type 'te g_entry =
@@ -15,6 +19,8 @@ type 'te g_entry =
     elocal : bool;
     mutable estart : int -> 'te parser_t;
     mutable econtinue : int -> int -> Obj.t -> 'te parser_t;
+    mutable bstart : int -> 'te bparser_t;
+    mutable bcontinue : int -> int -> Obj.t -> 'te bparser_t;
     mutable edesc : 'te g_desc }
 and 'te g_desc =
     Dlevels of 'te g_level list

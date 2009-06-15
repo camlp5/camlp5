@@ -10,9 +10,9 @@ extfun.cmo: extfun.cmi
 extfun.cmx: extfun.cmi 
 fstream.cmo: fstream.cmi 
 fstream.cmx: fstream.cmi 
-gramext.cmo: gramext.cmi plexing.cmi 
-gramext.cmx: gramext.cmi plexing.cmx 
-gramext.cmi: plexing.cmi 
+gramext.cmo: fstream.cmi gramext.cmi plexing.cmi 
+gramext.cmx: fstream.cmx gramext.cmi plexing.cmx 
+gramext.cmi: plexing.cmi fstream.cmi 
 grammar.cmo: fstream.cmi gramext.cmi grammar.cmi plexing.cmi ploc.cmi 
 grammar.cmx: fstream.cmx gramext.cmx grammar.cmi plexing.cmx ploc.cmx 
 grammar.cmi: ploc.cmi plexing.cmi gramext.cmi 
