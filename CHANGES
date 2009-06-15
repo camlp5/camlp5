@@ -1,3 +1,6 @@
+Camlp5 Version 4.09:
+---------------------
+
 Camlp5 Version 4.08:
 ---------------------
 
@@ -14,7 +17,7 @@ Camlp5 Version 4.08:
 * [16 Aug 07] Added pa_extprint.cmo, a new syntax for extensible pretty
   printers adding a statement EXTEND_PRINTER (cf files pr_r.cmo and pr_o.ml
   as examples). Added library module Eprinter. Changes (simplifications) in
-  intefaces of Pcaml for the printers.
+  interfaces of Pcaml for the printers.
 
 Camlp5 Version 4.07:
 ---------------------
