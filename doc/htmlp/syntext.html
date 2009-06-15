@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: syntext.html,v 1.4 2007/07/21 20:48:58 deraugla Exp $ -->
+  <!-- $Id: syntext.html,v 1.5 2007/07/22 04:28:41 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>syntax extensions</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -82,15 +82,15 @@
   <li><tt>let_binding</tt>: the bindings "expression = pattern" found in
     the "let" statement.</li>
   <li><tt>type_declaration</tt>: the bindings "name = type" found in
-    the "type" statement.</li>.
+    the "type" statement.</li>
 </ul>
 
 <h2>Syntax tree quotations</h2>
 
 <p>A grammar rule is a list of rule symbols followed by the semantic
   action, i.e. the result of the rule. This result is a syntax tree,
-  corresponding to the type of the extended entry. The description of
-  the types of the syntax tree are in the camlp5 module
+  whose type is the type of the extended entry. The description of the
+  types of the syntax tree are in the camlp5 module
   "<tt>MLast</tt>".</p>
 
 <p>However, there is a simpler way to make values of these syntax tree
@@ -117,9 +117,6 @@
 <p>With quotations, it is possible to build pieces of program as
   complex as desired. See the chapter
   about <a href="ml_ast.html">syntax trees</a>.</p>
-
-<pre>
-</pre>
 
 <h2>An example</h2>
 
