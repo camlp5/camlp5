@@ -1229,7 +1229,7 @@ let check_anti_loc s kind =
         else
           match s.[j] with
             ':' -> j, j - i - 1
-          | 'a'..'z' | 'A'..'Z' | '0'..'9' -> loop (j + 1)
+          | 'a'..'z' | 'A'..'Z' | '0'..'9' | '_' -> loop (j + 1)
           | _ -> i, 0
       in
       loop (i + 1)
@@ -1255,39 +1255,39 @@ lex.Token.tok_match <-
   | "INT", "" ->
       (function
          "INT", prm -> prm
-       | "ANTIQUOT_LOC", prm -> check_anti_loc prm "int"
+       | "ANTIQUOT_LOC", prm -> check_anti_loc prm "a_int"
        | _ -> raise Stream.Failure)
   | "FLOAT", "" ->
       (function
          "FLOAT", prm -> prm
-       | "ANTIQUOT_LOC", prm -> check_anti_loc prm "flo"
+       | "ANTIQUOT_LOC", prm -> check_anti_loc prm "a_flo"
        | _ -> raise Stream.Failure)
   | "LIDENT", "" ->
       (function
          "LIDENT", prm -> prm
-       | "ANTIQUOT_LOC", prm -> check_anti_loc prm "lid"
+       | "ANTIQUOT_LOC", prm -> check_anti_loc prm "a_lid"
        | _ -> raise Stream.Failure)
   | "UIDENT", "" ->
       (function
          "UIDENT", prm -> prm
-       | "ANTIQUOT_LOC", prm -> check_anti_loc prm "uid"
+       | "ANTIQUOT_LOC", prm -> check_anti_loc prm "a_uid"
        | _ -> raise Stream.Failure)
   | "STRING", "" ->
       (function
          "STRING", prm -> prm
-       | "ANTIQUOT_LOC", prm -> check_anti_loc prm "str"
+       | "ANTIQUOT_LOC", prm -> check_anti_loc prm "a_str"
        | _ -> raise Stream.Failure)
   | "LIST", "" ->
       (function
-         "ANTIQUOT_LOC", prm -> check_anti_loc prm "list"
+         "ANTIQUOT_LOC", prm -> check_anti_loc prm "a_list"
        | _ -> raise Stream.Failure)
   | "OPT", "" ->
       (function
-         "ANTIQUOT_LOC", prm -> check_anti_loc prm "opt"
+         "ANTIQUOT_LOC", prm -> check_anti_loc prm "a_opt"
        | _ -> raise Stream.Failure)
   | "FLAG", "" ->
       (function
-         "ANTIQUOT_LOC", prm -> check_anti_loc prm "flag"
+         "ANTIQUOT_LOC", prm -> check_anti_loc prm "a_flag"
        | _ -> raise Stream.Failure)
   | tok -> Token.default_match tok;;
 

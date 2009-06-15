@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.86 2007/08/08 07:01:49 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.87 2007/08/08 07:47:26 deraugla Exp $ *)
 
 open Token;
 
@@ -214,19 +214,11 @@ value rec antiquot ctx bp =
   | -> err ctx (bp, $pos) "antiquotation not terminated" ]
 ;
 
-value antiloc bp ep buf =
-  let prm = Printf.sprintf "%d,%d:%s" bp ep buf in
-  ("ANTIQUOT_LOC", prm)
-;
-
 value rec antiquot_loc ctx bp =
   lexer
-  [ "$"/ -> antiloc bp $pos $buf
-  | "a..zA..Z0..9_" (antiquot_loc ctx bp)!
-  | ":" (antiquot_rest ctx bp)! -> antiloc bp $pos $buf
-  | "\\"/ (any ctx) (antiquot_rest ctx bp)! -> antiloc bp $pos $buf
-  | (any ctx) (antiquot_rest ctx bp)! -> antiloc bp $pos $buf
-  | -> err ctx (bp, $pos) "antiquotation not terminated" ]
+  [ (antiquot_rest ctx bp) ->
+      let prm = Printf.sprintf "%d,%d:%s" bp $pos $buf in
+      ("ANTIQUOT_LOC", prm) ]
 ;
 
 value dollar ctx bp buf strm =

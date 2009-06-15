@@ -73,6 +73,24 @@ val loc_name : string ref;;
 
 val dummy_loc : location;;
 
+type 'a value_or_anti =
+    VaAnt of string
+  | VaVal of 'a
+;;
+   (* For internal use: this is a type for enclosing values which may be
+      "antiquoted": in the syntax tree (see module [MLast]), some constructors
+      contain such kind of types, allowing to have a syntax tree also usable
+      in syntax tree quotations exanders.
+        E.g. for the "rec" flac in the "let" binding:
+      - <:str_item< let x = y in z >>: the "rec" flag is [VaVal False]
+      - <:str_item< let rec x = y in z >>: it is [VaVal True]
+      - <:str_item< let $a_flag:rf$ x = y in z >>: it is [VaAnt "rf"].
+        The same syntax tree can therefore be used for normal parsing
+      (outside quotations) and quotation parsing (inside quotations). This
+      way, the same parser can be used for both, allowing the possible
+      parsers extensions, or specific syntaxes, to be used in quotations
+      (see quotation expander "q_ast". *)
+
 (* for compatibility with other versions using locations *)
 
 val line_of_loc : string -> location -> string * int * int * int;;
@@ -86,10 +104,3 @@ val make_loc : int * int -> location;;
        (included) and ep (excluded), each of them being the number of
        characters since the beginning of the stream. The location created
        does not contain the line number. *)
-
-(*** For system use *)
-
-type 'a value_or_anti =
-    VaAnt of string
-  | VaVal of 'a
-;;

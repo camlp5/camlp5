@@ -424,33 +424,10 @@ let rec antiquot ctx bp buf (strm__ : _ Stream.t) =
       | _ -> err ctx (bp, Stream.count strm__) "antiquotation not terminated"
 ;;
 
-let antiloc bp ep buf =
-  let prm = Printf.sprintf "%d,%d:%s" bp ep buf in "ANTIQUOT_LOC", prm
-;;
-
 let rec antiquot_loc ctx bp buf (strm__ : _ Stream.t) =
-  match Stream.peek strm__ with
-    Some '$' ->
-      Stream.junk strm__; antiloc bp (Stream.count strm__) (B.get buf)
-  | Some ('a'..'z' | 'A'..'Z' | '0'..'9' | '_' as c) ->
-      Stream.junk strm__; antiquot_loc ctx bp (B.add c buf) strm__
-  | Some ':' ->
-      Stream.junk strm__;
-      let buf = antiquot_rest ctx bp (B.add ':' buf) strm__ in
-      antiloc bp (Stream.count strm__) (B.get buf)
-  | Some '\\' ->
-      Stream.junk strm__;
-      let buf =
-        try any ctx buf strm__ with Stream.Failure -> raise (Stream.Error "")
-      in
-      let buf = antiquot_rest ctx bp buf strm__ in
-      antiloc bp (Stream.count strm__) (B.get buf)
-  | _ ->
-      match try Some (any ctx buf strm__) with Stream.Failure -> None with
-        Some buf ->
-          let buf = antiquot_rest ctx bp buf strm__ in
-          antiloc bp (Stream.count strm__) (B.get buf)
-      | _ -> err ctx (bp, Stream.count strm__) "antiquotation not terminated"
+  let buf = antiquot_rest ctx bp buf strm__ in
+  let prm = Printf.sprintf "%d,%d:%s" bp (Stream.count strm__) (B.get buf) in
+  "ANTIQUOT_LOC", prm
 ;;
 
 let dollar ctx bp buf strm =
@@ -917,11 +894,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 557, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 557, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 557, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 558, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 558, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 549, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 549, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 549, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 550, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 550, 37)));
        tok_comm = None}
   in
   let glex =

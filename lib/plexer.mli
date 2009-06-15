@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.mli,v 1.8 2007/07/31 23:48:22 deraugla Exp $ *)
+(* $Id: plexer.mli,v 1.9 2007/08/08 07:47:26 deraugla Exp $ *)
 
 (** A lexical analyzer. *)
 
@@ -65,3 +65,14 @@ value no_quotations : ref bool;
        lexed). *)
 
 value dollar_for_antiquot_loc : ref bool;
+   (** Dynamically change the behaviour of the lexer created by
+       [Plexer.make ()]: if True, the antiquotations generate tokens
+       with constructors "ANTIQUOT_LOC" and whose the string parameters
+       contain:
+-      the location (two integers separated by a comma), from the
+       beginning of the parsing input (generally a quotation)
+-      a colon
+-      the antiquotation text.
+       E.g. in <:foo<blabla $foo:bar$>>, the antiquotation "$foo:bar$"
+       generates the token: ("ANTIQUOT_LOC", "8,15:foo:bar").
+       If False (default), antiquotations are lexing errors. *)
