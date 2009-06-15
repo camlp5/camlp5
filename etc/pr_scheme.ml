@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.45 2007/10/15 02:45:06 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.46 2007/10/15 03:21:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -99,6 +99,11 @@ value has_cons_with_params vdl =
     vdl
 ;
 
+value paren pc b =
+  {(pc) with ind = pc.ind + 1; bef = sprintf "%s(%s" pc.bef b;
+   aft = sprintf ")%s" pc.aft}
+;
+
 value type_param pc (s, (pl, mi)) =
   sprintf "%s%s'%s%s" pc.bef
     (if pl then "+" else if mi then "-" else "") (Pcaml.unvala s) pc.aft
@@ -154,9 +159,7 @@ value type_decl_list pc =
 ;
 
 value exception_decl pc (c, tl) =
-  plistbf 0
-    {(pc) with ind = pc.ind + 1; bef = sprintf "%s(exception" pc.bef;
-     aft = sprintf ")%s" pc.aft}
+  plistbf 0 (paren pc "exception")
     [(fun pc -> sprintf "%s%s%s" pc.bef c pc.aft, "") ::
      List.map (fun t -> (fun pc -> ctyp pc t, "")) tl]
 ;
@@ -189,9 +192,7 @@ value value_binding b pc (p, e) =
              in
              (if b = "" then plistf else plistbf) 0 pc
                [(fun pc ->
-                   plist patt 0
-                     {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-                      aft = sprintf ")%s" pc.aft}
+                   plist patt 0 (paren pc "")
                      (List.map (fun p -> (p, "")) [p :: pl]),
                  "")] ]
        in
@@ -227,9 +228,7 @@ value value_binding_list pc (rf, pel) =
 
 value let_binding pc (p, e) =
   let (pl, e) = expr_fun_args e in
-  plistf 0
-    {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-     aft = sprintf ")%s" pc.aft}
+  plistf 0 (paren pc "")
     [(fun pc ->
         match pl with
         [ [] -> patt pc p
@@ -243,17 +242,11 @@ value let_binding pc (p, e) =
 ;
 
 value let_binding_list pc (b, pel, e) =
-  plistbf 0
-    {(pc) with ind = pc.ind + 1; bef = sprintf "%s(%s" pc.bef b;
-     aft = sprintf ")%s" pc.aft}
+  plistbf 0 (paren pc b)
     [(fun pc ->
-        let pc =
-          {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-           aft = sprintf ")%s" pc.aft}
-        in
         horiz_vertic
-          (fun () -> hlist let_binding pc pel)
-          (fun () -> vlist let_binding pc pel),
+          (fun () -> hlist let_binding (paren pc "") pel)
+          (fun () -> vlist let_binding (paren pc "") pel),
       "");
      (fun pc -> expr pc e, "")]
 ;
@@ -264,18 +257,13 @@ value match_assoc pc (p, we, e) =
     match we with
     [ <:vala< Some e >> ->
         [(fun pc ->
-            plistbf 0
-              {(pc) with ind = pc.ind + 1; bef = sprintf "%s(when" pc.bef;
-               aft = sprintf ")%s" pc.aft}
+            plistbf 0 (paren pc "when")
               [(fun pc -> patt pc p, ""); (fun pc -> expr pc e, "")],
           "") ::
          list]
     | _ -> [(fun pc -> patt pc p, "") :: list] ]
   in
-  plistf 0
-    {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-     aft = sprintf ")%s" pc.aft}
-    list
+  plistf 0 (paren pc "") list
 ;
 
 value constr_decl pc (_, c, tl) =
@@ -284,9 +272,7 @@ value constr_decl pc (_, c, tl) =
   match tl with
   [ [] -> sprintf "%s(%s)%s" pc.bef c pc.aft
   | _ ->
-      plistf 0
-        {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-         aft = sprintf ")%s" pc.aft}
+      plistf 0 (paren pc "")
         [(fun pc -> sprintf "%s%s%s" pc.bef c pc.aft, "") ::
          List.map (fun t -> (fun pc -> ctyp pc t, "")) tl] ]
 ;
@@ -306,10 +292,7 @@ value poly_variant_decl pc =
         in
         [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "") :: list]
       in
-      plistbf 0
-        {(pc) with ind = pc.ind + 1; bef = sprintf "%s(`" pc.bef;
-         aft = sprintf ")%s" pc.aft}
-        list
+      plistbf 0 (paren pc "`") list
   | <:poly_variant< $t$ >> ->
       not_impl "poly_variant_decl type" pc 0
   | IFDEF STRICT THEN
@@ -319,18 +302,14 @@ value poly_variant_decl pc =
 
 value label_decl pc (_, l, m, t) =
   let list = [(fun pc -> ctyp pc t, "")] in
-  plistf 0
-    {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-     aft = sprintf ")%s" pc.aft}
+  plistf 0 (paren pc "")
     [(fun pc -> sprintf "%s%s%s" pc.bef l pc.aft, "") ::
      if m then [(fun pc -> sprintf "%smutable%s" pc.bef pc.aft, "") :: list]
      else list]
 ;
 
 value module_type_decl pc (s, mt) =
-  plistbf 0
-    {(pc) with ind = pc.ind + 1; bef = sprintf "%s(moduletype" pc.bef;
-     aft = sprintf ")%s" pc.aft}
+  plistbf 0 (paren pc "moduletype")
     [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
      (fun pc -> module_type pc mt, "")]
 ;
@@ -389,10 +368,7 @@ value class_descr b pc cd =
                match Pcaml.unvala (snd cd.MLast.ciPrm) with
                [ [] -> sprintf "%s%s%s" pc.bef n pc.aft
                | tvl ->
-                   plistb type_param 0
-                     {(pc) with ind = pc.ind + 1;
-                      bef = sprintf "%s(%s" pc.bef n;
-                      aft = sprintf ")%s" pc.aft}
+                   plistb type_param 0 (paren pc n)
                      (List.map (fun tv -> (tv, "")) tvl) ],
              "");
             (fun pc -> class_type pc cd.MLast.ciExp, "")]
@@ -406,10 +382,7 @@ value class_descr b pc cd =
          if b = "" then list
          else [(fun pc -> sprintf "%s%s%s" pc.bef b pc.aft, "") :: list]
        in
-       plistf 0
-         {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-          aft = sprintf ")%s" pc.aft}
-         list)
+       plistf 0 (paren pc "") list)
 ;
 
 value class_descr_list pc =
@@ -452,10 +425,7 @@ value class_decl b pc cd =
                match Pcaml.unvala (snd cd.MLast.ciPrm) with
                [ [] -> sprintf "%s%s%s" pc.bef n pc.aft
                | tvl ->
-                   plistb type_param 0
-                     {(pc) with ind = pc.ind + 1;
-                      bef = sprintf "%s(%s" pc.bef n;
-                      aft = sprintf ")%s" pc.aft}
+                   plistb type_param 0 (paren pc n)
                      (List.map (fun tv -> (tv, "")) tvl) ],
              "");
             (fun pc -> class_expr pc ce, "")]
@@ -469,10 +439,7 @@ value class_decl b pc cd =
          if b = "" then list
          else [(fun pc -> sprintf "%s%s%s" pc.bef b pc.aft, "") :: list]
        in
-       plistf 0
-         {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-          aft = sprintf ")%s" pc.aft}
-         list)
+       plistf 0 (paren pc "") list)
 ;
 
 value class_decl_list pc =
@@ -507,9 +474,7 @@ EXTEND_PRINTER
                    (hlist constr_decl {(pc) with bef = ""; aft = ""} cdl)
                    pc.aft)
             (fun () ->
-               vlistf
-                 {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-                  aft = sprintf ")%s" pc.aft}
+               vlistf (paren pc "")
                  [fun pc -> sprintf "%ssum%s" pc.bef pc.aft ::
                   List.map (fun cd pc -> constr_decl pc cd) cdl])
       | <:ctyp< { $list:cdl$ } >> ->
@@ -525,17 +490,12 @@ EXTEND_PRINTER
                  (hlist poly_variant_decl {(pc) with bef = ""; aft = ""} vl)
                  pc.aft)
             (fun () ->
-               vlistf
-                 {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-                  aft = sprintf ")%s" pc.aft}
+               vlistf (paren pc "")
                  [fun pc -> sprintf "%svariants%s" pc.bef pc.aft ::
                   List.map (fun cd pc -> poly_variant_decl pc cd) vl])
       | <:ctyp< ( $list:tl$ ) >> ->
           let tl = List.map (fun t -> (t, "")) tl in
-          plistb curr 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(*" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            tl
+          plistb curr 0 (paren pc "*") tl
       | <:ctyp< $t1$ -> $t2$ >> ->
           let tl =
             loop t2 where rec loop =
@@ -543,10 +503,7 @@ EXTEND_PRINTER
               [ <:ctyp< $t1$ -> $t2$ >> -> [(t1, "") :: loop t2]
               | t -> [(t, "")] ]
           in
-          plistb ctyp 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(->" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            [(t1, "") :: tl]
+          plistb ctyp 0 (paren pc "->") [(t1, "") :: tl]
       | <:ctyp< $t1$ $t2$ >> ->
           let tl =
             loop [t2] t1 where rec loop tl =
@@ -555,20 +512,11 @@ EXTEND_PRINTER
               | t1 -> [t1 :: tl] ]
           in
           let tl = List.map (fun p -> (p, "")) tl in
-          plist curr 1
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            tl
+          plist curr 1 (paren pc "") tl
       | <:ctyp< $t1$ == $t2$ >> ->
-          plistb curr 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(==" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            [(t1, ""); (t2, "")]
+          plistb curr 0 (paren pc "==") [(t1, ""); (t2, "")]
       | <:ctyp< $t1$ as $t2$ >> ->
-          plistb curr 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(as" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            [(t1, ""); (t2, "")]
+          plistb curr 0 (paren pc "as") [(t1, ""); (t2, "")]
       | <:ctyp< $t1$ . $t2$ >> ->
           sprintf "%s.%s"
             (curr {(pc) with aft = ""} t1)
@@ -578,15 +526,11 @@ EXTEND_PRINTER
           if fl = [] then sprintf "%s(%s)%s" pc.bef b pc.aft
           else not_impl "ty obj" pc 0
       | <:ctyp< ?$s$: $t$ >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(?" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc "?")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> curr pc t, "")]
       | <:ctyp< ~$s$: $t$ >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(~" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc "~")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> curr pc t, "")]
       | <:ctyp< $lid:s$ >> ->
@@ -607,14 +551,10 @@ EXTEND_PRINTER
       | <:expr< fun $p$ -> $e$ >> when is_irrefut_patt p ->
           let (pl, e) = expr_fun_args e in
           if pl = [] then
-            plistbf 0
-              {(pc) with ind = pc.ind + 1; bef = sprintf "%s(lambda" pc.bef;
-               aft = sprintf ")%s" pc.aft}
+            plistbf 0 (paren pc "lambda")
               [(fun pc -> patt pc p, ""); (fun pc -> curr pc e, "")]
           else
-            plistbf 0
-              {(pc) with ind = pc.ind + 1; bef = sprintf "%s(lambda" pc.bef;
-               aft = sprintf ")%s" pc.aft}
+            plistbf 0 (paren pc "lambda")
               [(fun pc ->
                   plist patt 0
                     {(pc) with bef = sprintf "%s(" pc.bef;
@@ -688,17 +628,12 @@ EXTEND_PRINTER
           let b = if rf then "letrec" else "let" in
           let_binding_list pc (b, pel, e)
       | <:expr< let module $s$ = $me$ in $e$  >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(letmodule" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc "letmodule")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> module_expr pc me, "");
              (fun pc -> curr pc e, "")]
       | <:expr< if $e1$ then $e2$ else () >> ->
-          plistb curr 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(if" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            [(e1, ""); (e2, "")]
+          plistb curr 0 (paren pc "if") [(e1, ""); (e2, "")]
       | <:expr< if $e1$ then $e2$ else $e3$ >> ->
           horiz_vertic
             (fun () ->
@@ -749,22 +684,16 @@ EXTEND_PRINTER
                sprintf "%s\n%s" s1 s2)
       | <:expr< for $lid:i$ = $e1$ $to:tf$ $e2$ do { $list:el$ } >> ->
           let b = if tf then "for" else "fordown" in
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(%s" pc.bef b;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc b)
             [(fun pc -> sprintf "%s%s%s" pc.bef i pc.aft, "");
              (fun pc -> curr pc e1, ""); (fun pc -> curr pc e2, "");
              (fun pc -> plist curr 0 pc (List.map (fun e -> (e, "")) el), "")]
       | <:expr< while $e$ do { $list:el$ } >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(while" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc "while")
             [(fun pc -> curr pc e, "");
              (fun pc -> plist curr 0 pc (List.map (fun e -> (e, "")) el), "")]
       | <:expr< ($e$ : $t$) >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(:" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc ":")
             [(fun pc -> curr pc e, ""); (fun pc -> ctyp pc t, "")]
       | <:expr< ($list:el$) >> ->
           let el = List.map (fun e -> (e, "")) el in
@@ -774,9 +703,7 @@ EXTEND_PRINTER
             el
       | <:expr< { $list:fel$ } >> ->
           let record_binding pc (p, e) =
-            plistf 0
-              {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-               aft = sprintf ")%s" pc.aft}
+            plistf 0 (paren pc "")
               [(fun pc -> patt pc p, ""); (fun pc -> curr pc e, "")]
           in
           plist record_binding 0
@@ -785,9 +712,7 @@ EXTEND_PRINTER
             (List.map (fun fe -> (fe, "")) fel)
       | <:expr< { ($e$) with $list:fel$ } >> ->
           let record_binding pc (p, e) =
-            plistf 0
-              {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-               aft = sprintf ")%s" pc.aft}
+            plistf 0 (paren pc "")
               [(fun pc -> patt pc p, ""); (fun pc -> curr pc e, "")]
           in
           plistbf 0
@@ -835,21 +760,15 @@ EXTEND_PRINTER
              aft = sprintf ")%s" pc.aft}
             (List.map (fun e -> (e, "")) el)
       | <:expr< assert $x$ >> ->
-          plistf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistf 0 (paren pc "")
             [(fun pc -> sprintf "%sassert%s" pc.bef pc.aft, "");
              (fun pc -> curr pc x, "")]
       | <:expr< lazy $x$ >> ->
-          plistf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistf 0 (paren pc "")
             [(fun pc -> sprintf "%slazy%s" pc.bef pc.aft, "");
              (fun pc -> curr pc x, "")]
       | <:expr< new $list:x$ >> ->
-          plistf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistf 0 (paren pc "")
             [(fun pc -> sprintf "%snew%s" pc.bef pc.aft, "");
              (fun pc -> longident pc x, "")]
 (*
@@ -873,37 +792,24 @@ EXTEND_PRINTER
               | e1 -> [e1 :: el] ]
           in
           let el = List.map (fun e -> (e, "")) el in
-          plist curr 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            el
+          plist curr 0 (paren pc "") el
       | <:expr< $e$ # $s$ >> ->
-          plistf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistf 0 (paren pc "")
             [(fun pc -> sprintf "%ssend%s" pc.bef pc.aft, "");
              (fun pc -> curr pc e, "");
              (fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "")]
       | <:expr< ?$s$ >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(?" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc "?")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "")]
       | <:expr< ?$s$: $e$ >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(?" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc "?")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> curr pc e, "")]
       | <:expr< ~$s$ >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(~" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc "~")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "")]
       | <:expr< ~$s$: $e$ >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(~" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc "~")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> curr pc e, "")]
       | <:expr< $e1$ .[ $e2$ ] >> ->
@@ -962,15 +868,9 @@ EXTEND_PRINTER
              aft = sprintf ")%s" pc.aft}
             pl
       | <:patt< ($p1$ as $p2$) >> ->
-          plistb curr 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(as" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            [(p1, ""); (p2, "")]
+          plistb curr 0 (paren pc "as") [(p1, ""); (p2, "")]
       | <:patt< $p1$ .. $p2$ >> ->
-          plistb curr 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(range" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            [(p1, ""); (p2, "")]
+          plistb curr 0 (paren pc "range") [(p1, ""); (p2, "")]
       | <:patt< [$_$ :: $_$] >> as p ->
           let (pl, c) =
             make_list p where rec make_list p =
@@ -1013,14 +913,9 @@ EXTEND_PRINTER
               | p1 -> [p1 :: pl] ]
           in
           let pl = List.map (fun p -> (p, "")) pl in
-          plist curr 1
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            pl
+          plist curr 1 (paren pc "") pl
       | <:patt< ($p$ : $t$) >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(:" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc ":")
             [(fun pc -> curr pc p, ""); (fun pc -> ctyp pc t, "")]
       | <:patt< ($list:pl$) >> ->
           let pl = List.map (fun p -> (p, "")) pl in
@@ -1030,9 +925,7 @@ EXTEND_PRINTER
             pl
       | <:patt< { $list:fpl$ } >> ->
           let record_binding pc (p1, p2) =
-            plistf 0
-              {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-               aft = sprintf ")%s" pc.aft}
+            plistf 0 (paren pc "")
               [(fun pc -> curr pc p1, ""); (fun pc -> curr pc p2, "")]
           in
           plist record_binding 0
@@ -1040,46 +933,26 @@ EXTEND_PRINTER
              aft = sprintf "}%s" pc.aft}
             (List.map (fun fp -> (fp, "")) fpl)
       | <:patt< ?$s$ >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(?" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc "?")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "")]
       | <:patt< ?$s$: ($p$) >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(?" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            [(fun pc ->
-                plistbf 0
-                  {(pc) with ind = pc.ind + 1; bef = sprintf "%s(%s" pc.bef s;
-                   aft = sprintf ")%s" pc.aft}
-                  [(fun pc -> curr pc p, "")],
+          plistbf 0 (paren pc "?")
+            [(fun pc -> plistbf 0 (paren pc s) [(fun pc -> curr pc p, "")],
               "")]
       | <:patt< ? ($lid:s$ = $e$) >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(?" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc "?")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> expr pc e, "")]
       | <:patt< ?$s$: ($p$ = $e$) >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(?" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            [(fun pc ->
-               plistbf 0
-                 {(pc) with ind = pc.ind + 1; bef = sprintf "%s(%s" pc.bef s;
-                  aft = sprintf ")%s" pc.aft}
-                 [(fun pc -> curr pc p, "")],
+          plistbf 0 (paren pc "?")
+            [(fun pc -> plistbf 0 (paren pc s) [(fun pc -> curr pc p, "")],
               "");
              (fun pc -> expr pc e, "")]
       | <:patt< ~$s$ >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(~" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc "~")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "")]
       | <:patt< ~$s$: $p$ >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(~" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc "~")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> curr pc p, "")]
       | <:patt< $p1$ . $p2$ >> ->
@@ -1118,49 +991,34 @@ EXTEND_PRINTER
       [ <:str_item< class $list:cdl$ >> ->
           class_decl_list pc cdl
       | <:str_item< open $i$ >> ->
-          plistb longident 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(open" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            [(i, "")]
+          plistb longident 0 (paren pc "open") [(i, "")]
       | <:str_item< include $me$ >> ->
-          plistb module_expr 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(include" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            [(me, "")]
+          plistb module_expr 0 (paren pc "include") [(me, "")]
       | <:str_item< type $list:tdl$ >> ->
           type_decl_list pc tdl
       | <:str_item< exception $uid:c$ of $list:tl$ >> ->
           exception_decl pc (c, tl)
       | <:str_item< exception $uid:c$ of $list:_$ = $id$ >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1;
-             bef = sprintf "%s(exceptionrebind" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc "exceptionrebind")
             [(fun pc -> sprintf "%s%s%s" pc.bef c pc.aft, "");
              (fun pc -> longident pc id, "")]
       | <:str_item< value $flag:rf$ $list:pel$ >> ->
           value_binding_list pc (rf, pel)
       | <:str_item< module $uid:s$ = $me$ >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(module" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc "module")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> module_expr pc me, "")]
       | <:str_item< module type $uid:s$ = $mt$ >> ->
           module_type_decl pc (s, mt)
       | <:str_item< external $lid:i$ : $t$ = $list:pd$ >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(external" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc "external")
             [(fun pc -> sprintf "%s%s%s" pc.bef i pc.aft, "");
              (fun pc -> ctyp pc t, "") ::
              List.map (fun s -> (fun pc -> string pc s, "")) pd]
       | <:str_item< $exp:e$ >> ->
           expr pc e
       | <:str_item< # $lid:s$ $opt:x$ >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(#" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc "#")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "") ::
              match x with
              [ Some e -> [(fun pc -> expr pc e, "")]
@@ -1183,33 +1041,24 @@ EXTEND_PRINTER
           if sil = [] then sprintf "%s%s" pc.bef pc.aft
           else vlist sig_item pc sil
       | <:sig_item< external $lid:i$ : $t$ = $list:pd$ >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(external" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc "external")
             [(fun pc -> sprintf "%s%s%s" pc.bef i pc.aft, "");
              (fun pc -> ctyp pc t, "") ::
              List.map (fun s -> (fun pc -> string pc s, "")) pd]
       | <:sig_item< module $uid:s$ : $mt$ >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(module" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc "module")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> module_type pc mt, "")]
       | <:sig_item< module type $uid:s$ = $mt$ >> ->
           module_type_decl pc (s, mt)
       | <:sig_item< open $i$ >> ->
-          plistb longident 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(open" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            [(i, "")]
+          plistb longident 0 (paren pc "open") [(i, "")]
       | <:sig_item< type $list:tdl$ >> ->
           type_decl_list pc tdl
       | <:sig_item< exception $uid:c$ of $list:tl$ >> ->
           exception_decl pc (c, tl)
       | <:sig_item< value $lid:i$ : $t$ >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(value" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc "value")
             [(fun pc -> sprintf "%s%s%s" pc.bef i pc.aft, "");
              (fun pc -> ctyp pc t, "")]
 (*
@@ -1222,9 +1071,7 @@ EXTEND_PRINTER
   pr_module_expr:
     [ "top"
       [ <:module_expr< functor ($uid:i$ : $mt$) -> $me$ >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(functor" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc "functor")
             [(fun pc -> sprintf "%s%s%s" pc.bef i pc.aft, "");
              (fun pc -> module_type pc mt, "");
              (fun pc -> module_expr pc me, "")]
@@ -1243,14 +1090,9 @@ EXTEND_PRINTER
                in
                sprintf "%s\n%s" s1 s2)
       | <:module_expr< $me1$ $me2$ >> ->
-          plist curr 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            [(me1, ""); (me2, "")]
+          plist curr 0 (paren pc "") [(me1, ""); (me2, "")]
       | <:module_expr< ($me$ : $mt$) >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(:" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc ":")
             [(fun pc -> curr pc me, ""); (fun pc -> module_type pc mt, "")]
       | <:module_expr< $me1$ . $me2$ >> ->
            sprintf "%s.%s"
@@ -1264,9 +1106,7 @@ EXTEND_PRINTER
   pr_module_type:
     [ "top"
       [ <:module_type< functor ($uid:i$ : $mt1$) -> $mt2$ >> ->
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(functor" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc "functor")
             [(fun pc -> sprintf "%s%s%s" pc.bef i pc.aft, "");
              (fun pc -> curr pc mt1, "");
              (fun pc -> curr pc mt2, "")]
@@ -1312,10 +1152,7 @@ EXTEND_PRINTER
               [(fun pc -> sprintf "%sprivate%s" pc.bef pc.aft, "") :: list]
             else list
           in
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(method" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            list
+          plistbf 0 (paren pc "method") list
       | <:class_sig_item< value $flag:mf$ $s$ : $t$ >> ->
           horiz_vertic
             (fun () ->
@@ -1333,17 +1170,10 @@ EXTEND_PRINTER
             [ Some s -> [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "")]
             | None -> [] ]
           in
-          plistbf 0
-            {(pc) with ind = pc.ind + 1;
-             bef = sprintf "%s(inherit" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc "inherit")
             [(fun pc -> class_expr pc ce, "") :: list]
       | <:class_str_item< initializer $e$ >> ->
-          plistb expr 0
-            {(pc) with ind = pc.ind + 1;
-             bef = sprintf "%s(initializer" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            [(e, "")]
+          plistb expr 0 (paren pc "initializer") [(e, "")]
       | <:class_str_item< method $flag:pf$ $s$ = $e$ >> ->
           let (pl, e) = expr_fun_args e in
           let list =
@@ -1352,10 +1182,7 @@ EXTEND_PRINTER
                   match pl with
                   [ [] -> sprintf "%s%s%s" pc.bef s pc.aft
                   | pl ->
-                      plistf 0
-                        {(pc) with ind = pc.ind + 1;
-                         bef = sprintf "%s(" pc.bef;
-                         aft = sprintf ")%s" pc.aft}
+                      plistf 0 (paren pc "")
                         [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "") ::
                          List.map (fun p -> (fun pc -> patt pc p, "")) pl] ],
                 "");
@@ -1365,10 +1192,7 @@ EXTEND_PRINTER
               [(fun pc -> sprintf "%sprivate%s" pc.bef pc.aft, "") :: list]
             else list
           in
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(method" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            list
+          plistbf 0 (paren pc "method") list
       | <:class_str_item< method virtual $flag:pf$ $s$ : $t$ >> ->
           let list =
             let list =
@@ -1382,10 +1206,7 @@ EXTEND_PRINTER
             in
             [(fun pc -> sprintf "%svirtual%s" pc.bef pc.aft, "") :: list]
           in
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(method" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            list
+          plistbf 0 (paren pc "method") list
       | <:class_str_item< value $flag:mf$ $s$ = $e$ >> ->
           let list =
             let list =
@@ -1396,10 +1217,7 @@ EXTEND_PRINTER
               [(fun pc -> sprintf "%smutable%s" pc.bef pc.aft, "") :: list]
             else list
           in
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(value" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            list
+          plistbf 0 (paren pc "value") list
       | x ->
           not_impl "class_str_item" pc x ] ]
   ;
@@ -1411,9 +1229,7 @@ EXTEND_PRINTER
               [ <:class_type< [ $t$ ] -> $ct$ >> -> loop [t :: rtl] ct
               | ct -> (rtl, ct) ]
           in
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(->" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc "->")
             (List.rev
                [(fun pc -> class_type pc ct, "") ::
                 List.map (fun t -> (fun pc -> ctyp pc t, "")) rtl])
@@ -1447,19 +1263,13 @@ EXTEND_PRINTER
     [ [ <:class_expr< let $flag:rf$ $list:lbl$ in $ce$ >> ->
           let list =
             [(fun pc ->
-                plistf 0
-                  {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-                   aft = sprintf ")%s" pc.aft}
+                plistf 0 (paren pc "")
                   (List.map (fun lb -> (fun pc -> let_binding pc lb, ""))
                      lbl),
               "");
              (fun pc -> curr pc ce, "")]
           in
-          plistbf 0
-            {(pc) with ind = pc.ind + 1;
-             bef = sprintf "%s(let%s" pc.bef (if rf then "rec" else "");
-             aft = sprintf ")%s" pc.aft}
-            list
+          plistbf 0 (paren pc (if rf then "letrec" else "let")) list
       | <:class_expr< fun $p$ -> $ce$ >> ->
           let (pl, ce) =
             loop ce where rec loop =
@@ -1471,16 +1281,12 @@ EXTEND_PRINTER
                   else ([], gce)
               | ce -> ([], ce) ]
           in
-          plistbf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(lambda" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistbf 0 (paren pc "lambda")
             [(fun pc ->
                 match pl with
                 [ [] -> patt pc p
                 | pl ->
-                    plistf 0
-                      {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-                       aft = sprintf ")%s" pc.aft}
+                    plistf 0 (paren pc "")
                       (List.map (fun p -> (fun pc -> patt pc p, ""))
                          [p :: pl]) ],
               "");
@@ -1518,9 +1324,7 @@ EXTEND_PRINTER
               [ <:class_expr< $ce$ $e$ >> -> loop [e :: el] ce
               | ce -> (ce, el) ]
           in
-          plistf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-             aft = sprintf ")%s" pc.aft}
+          plistf 0 (paren pc "")
             [(fun pc -> curr pc ce, "") ::
              List.map (fun e -> (fun pc -> expr pc e, "")) el]
       | <:class_expr< $list:sl$ >> ->
