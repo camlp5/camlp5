@@ -1,4 +1,4 @@
-(* camlp5r *)
+(* camlp5r pa_macro.cmo *)
 (* $Id$ *)
 (* Copyright (c) INRIA 2007 *)
 
@@ -44,6 +44,11 @@ module Fifo =
 type gram_symb =
   [ GS_term of string
   | GS_nterm of string ]
+;
+
+type action =
+  [ ActShift of int
+  | ActErr ]
 ;
 
 value name_of_entry entry lev =
@@ -435,7 +440,8 @@ value eprint_item (added, lh, dot, rh) = do {
 };
 
 value make_item_sets rl item_set_ht =
-  loop where rec loop ini_item_set_cnt item_set_cnt shift_assoc item_set_ini =
+  loop 0 0 []
+  where rec loop ini_item_set_cnt item_set_cnt shift_assoc item_set_ini =
   do {
     let item_set =
       List.map (fun (_, lh, dot, rh) -> (False, lh, dot, rh)) item_set_ini
@@ -562,30 +568,36 @@ value compute_nb_symbols item_set_ht term_table nterm_table =
     item_set_ht (0, 0)
 ;
 
+DEFINE TEST;
+
 value lr0 entry lev = do {
   Printf.eprintf "LR(0) %s %d\n" entry.ename lev;
   flush stderr;
-(**)
-  let rl = flatten_gram entry lev in
-  let item_set_0 =
-    let item =
-      (False, "start-symb", 0, [GS_nterm (name_of_entry entry lev)])
-    in
-    close_item_set rl [item]
+  let (rl, item_set_0) =
+    IFNDEF TEST THEN
+      let rl = flatten_gram entry lev in
+      let item_set_0 =
+        let item =
+          (False, "start-symb", 0, [GS_nterm (name_of_entry entry lev)])
+        in
+        close_item_set rl [item]
+      in
+      (rl, item_set_0)
+    ELSE
+      let rl =
+        [("E", [GS_nterm "E"; GS_term "*"; GS_nterm "B"]);
+         ("E", [GS_nterm "E"; GS_term "+"; GS_nterm "B"]);
+         ("E", [GS_nterm "B"]);
+         ("B", [GS_term "0"]);
+         ("B", [GS_term "1"])]
+      in
+      let item_set_0 =
+        let item = (False, "S", 0, [GS_nterm "E"]) in
+        close_item_set rl [item]
+      in
+      (rl, item_set_0)
+    END
   in
-(*
-  let rl =
-    [("E", [GS_nterm "E"; GS_term "*"; GS_nterm "B"]);
-     ("E", [GS_nterm "E"; GS_term "+"; GS_nterm "B"]);
-     ("E", [GS_nterm "B"]);
-     ("B", [GS_term "0"]);
-     ("B", [GS_term "1"])]
-  in
-  let item_set_0 =
-    let item = (False, "S", 0, [GS_nterm "E"]) in
-    close_item_set rl [item]
-  in
-*)
   Printf.eprintf "%d rules\n\n" (List.length rl);
   flush stderr;
   check_closed rl;
@@ -599,9 +611,7 @@ value lr0 entry lev = do {
   flush stderr;
 
   let item_set_ht = Hashtbl.create 1 in
-  let (item_set_cnt, shift_assoc) =
-    make_item_sets rl item_set_ht 0 0 [] item_set_0
-  in
+  let (item_set_cnt, shift_assoc) = make_item_sets rl item_set_ht item_set_0 in
   Printf.eprintf "\ntotal number of item sets %d\n" (item_set_cnt + 1);
   flush stderr;
   Printf.eprintf "\nshift:\n";
@@ -622,6 +632,7 @@ value lr0 entry lev = do {
   Printf.eprintf "nb of terms %d\n" nb_terms;
   Printf.eprintf "nb of non-terms %d\n" nb_nterms;
   flush stderr;
+  (* make goto table *)
   let goto_table =
     Array.init (item_set_cnt + 1) (fun _ -> Array.create nb_nterms (-1))
   in
@@ -644,6 +655,34 @@ value lr0 entry lev = do {
     for j = 0 to Array.length line - 1 do {
       if line.(j) = -1 then Printf.eprintf " -"
       else Printf.eprintf " %d" line.(j);
+    };
+    Printf.eprintf "\n";
+  };
+  flush stderr;
+  (* make action table *)
+  let action_table =
+    Array.init (item_set_cnt + 1) (fun _ -> Array.create nb_terms ActErr)
+  in
+  List.iter
+    (fun (item_set_cnt, symb_cnt_assoc) ->
+       let line = action_table.(item_set_cnt) in
+       List.iter
+         (fun (s, n) ->
+            match s with
+            [ GS_term s ->
+                let i = Hashtbl.find term_table s in
+                line.(i) := ActShift n
+            | GS_nterm s -> () ])
+         symb_cnt_assoc)
+    shift_assoc;
+  Printf.eprintf "\n\naction table\n\n";
+  for i = 0 to Array.length goto_table - 1 do {
+    Printf.eprintf "state %d :" i;
+    let line = action_table.(i) in
+    for j = 0 to Array.length line - 1 do {
+      match line.(j) with
+      [ ActShift n -> Printf.eprintf " %4s" (Printf.sprintf "s%d" n)
+      | ActErr -> Printf.eprintf "    -" ];
     };
     Printf.eprintf "\n";
   };
