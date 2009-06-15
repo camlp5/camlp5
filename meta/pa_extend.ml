@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.96 2007/10/01 06:03:45 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.97 2007/10/06 14:13:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -1151,7 +1151,7 @@ EXTEND
   ;
   qualid:
     [ [ e1 = SELF; "."; e2 = SELF ->
-          (fst e2, <:expr< $snd e1$ . $snd e2$ >>) ]
+          (fst e1 ^ "__" ^ fst e2, <:expr< $snd e1$ . $snd e2$ >>) ]
     | [ i = UIDENT ->
           (i, <:expr< $uid:i$ >>)
       | i = LIDENT ->

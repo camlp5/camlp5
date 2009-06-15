@@ -1,6 +1,14 @@
 Camlp5 Version 5.01:
 ---------------------
 
+* [06 Oct 07] Fixed bug in grammars: there was a parsing confusion with
+  entries with qualified names with same final identifier, resulting
+  bad results. Example: (qualified names "Prim.ident" and "Constr.ident"
+  have the same final identifier "ident").
+    EXTEND
+      Prim.ident: [ [ ... ] ];
+      Constr.ident: [ [ ... ] ];
+    END;
 * [05 Oct 07] In Scheme syntax (pa_scheme.cmo), added "type*" (symmetric
   to "define*") and "exceptionrebind".
 * [04 Oct 07] Added flag C in pr_r.cmo and pr_o.cmo to add comments inside

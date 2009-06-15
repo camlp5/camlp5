@@ -2394,7 +2394,8 @@ Grammar.extend
      [[Gramext.Sself; Gramext.Stoken ("", "."); Gramext.Sself],
       Gramext.action
         (fun (e2 : 'qualid) _ (e1 : 'qualid) (loc : Ploc.t) ->
-           (fst e2, MLast.ExAcc (loc, snd e1, snd e2) : 'qualid))];
+           (fst e1 ^ "__" ^ fst e2, MLast.ExAcc (loc, snd e1, snd e2) :
+            'qualid))];
      None, None,
      [[Gramext.Stoken ("LIDENT", "")],
       Gramext.action
