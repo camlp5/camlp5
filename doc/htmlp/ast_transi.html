@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_transi.html,v 1.4 2007/09/22 06:18:34 deraugla Exp $ -->
+  <!-- $Id: ast_transi.html,v 1.5 2007/10/16 04:05:50 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -47,12 +47,11 @@
   respectively the expression after the "<tt>if</tt>", the one after
   the "<tt>then</tt>" and the one after the "<tt>else</tt>".</p>
 
-<p>If a program needs to manipulate syntax trees, it can use the
-  nodes defined in the module "<tt>MLast</tt>". It supposes to
-  know how the concrete syntax is transformed in to this abstract
-  syntax.<p>
+<p>If a program needs to manipulate syntax trees, it can use the nodes
+  defined in the module "<tt>MLast</tt>". The programmer must know how
+  the concrete syntax is transformed into this abstract syntax.</p>
 
-<p>However, a simpler solution is to use one of the quotation kit
+<p>A simpler solution is to use one of the quotation kit
   "<tt>q_MLast.cmo</tt>". It
   proposes <a href="quot.html">quotations</a> which represent the
   abstract syntax (the nodes of the module "<tt>MLast</tt>") into
@@ -94,8 +93,8 @@
 <p>Which is less readable and much more complicated to build and
   update.</p>
 
-<p>Instead of thinking of "a syntax tree", the programmer has to think
-  of "a piece of program".</p>
+<p>Instead of thinking of "a syntax tree", the programmer can think of
+  "a piece of program".</p>
 
 <h2>Location</h2>
 
@@ -125,7 +124,7 @@
   commands.</p>
 
 <p>Consequently, if there is no variable "<tt>loc</tt>" defined in the
-  context of the quotation, or if it is not of the good type, a
+  context of the quotation, or if it is not of the correct type, a
   semantic error occur in the OCaml compiler ("Unbound value
   loc").</p>
 
@@ -133,7 +132,6 @@
   the variable "<tt>loc</tt>" is bound, in all semantic actions, to
   the location of the rule.</p>
 
-<p>If the created node has no location, the 
 <p>Note that in the <a href="grammars.html">extensible grammars</a>,
   the variable "<tt>loc</tt>" is bound, in all semantic actions, to
   the location of the rule.</p>
@@ -167,7 +165,7 @@
   about <a href="quot.html">quotations</a>.</p>
 
 <p>If a quotation is in the context of an expression, the
-  antiquotation must be an expression. It could be any expression,
+  antiquotation must be an expression. It can be any expression,
   including function calls. Examples:</p>
 
 <pre>
