@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.22 2007/07/03 13:36:01 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.23 2007/07/03 18:47:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1140,7 +1140,7 @@ value expr_expr1 =
   | <:expr< try $e1$ with [ $list:pwel$ ] >> |
     <:expr< match $e1$ with [ $list:pwel$ ] >> as e ->
       fun curr next pc ->
-        let expr_wh = if flag_where_after_match.val then expr_wh else curr in
+        let expr_wh = if flag_where_after_match.val then expr_wh else expr in
         let op =
           match e with
           [ <:expr< try $_$ with [ $list:_$ ] >> -> "try"
@@ -2789,7 +2789,7 @@ Pcaml.add_option "-sep" (Arg.String (fun x -> sep.val := Some x))
 Pcaml.add_option "-ss" (Arg.Set flag_semi_semi) "Print double semicolons.";
 
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.22 2007/07/03 13:36:01 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.23 2007/07/03 18:47:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
