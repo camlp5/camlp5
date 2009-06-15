@@ -183,6 +183,19 @@ module Meta =
                      ln),
                   loop t1),
                loop t2)
+        | TyArr (_, t1, t2) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "TyArr")),
+                     ln),
+                  loop t1),
+               loop t2)
         | TyAny _ ->
             MLast.ExApp
               (loc,
@@ -223,6 +236,16 @@ module Meta =
                      MLast.ExUid (loc, "TyQuo")),
                   ln),
                e_vala e_string s)
+        | TyTup (_, tl) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "TyTup")),
+                  ln),
+               e_vala (e_list loop) tl)
         | TyUid (_, s) ->
             MLast.ExApp
               (loc,
@@ -237,7 +260,69 @@ module Meta =
       in
       loop t
     ;;
-    let p_ctyp x = not_impl "p_ctyp" x;;
+    let p_ctyp =
+      let rec loop =
+        function
+          TyArr (_, t1, t2) ->
+            MLast.PaApp
+              (loc,
+               MLast.PaApp
+                 (loc,
+                  MLast.PaApp
+                    (loc,
+                     MLast.PaAcc
+                       (loc, MLast.PaUid (loc, "MLast"),
+                        MLast.PaUid (loc, "TyArr")),
+                     MLast.PaAny loc),
+                  loop t1),
+               loop t2)
+        | TyApp (_, t1, t2) ->
+            MLast.PaApp
+              (loc,
+               MLast.PaApp
+                 (loc,
+                  MLast.PaApp
+                    (loc,
+                     MLast.PaAcc
+                       (loc, MLast.PaUid (loc, "MLast"),
+                        MLast.PaUid (loc, "TyApp")),
+                     MLast.PaAny loc),
+                  loop t1),
+               loop t2)
+        | TyLid (_, s) ->
+            MLast.PaApp
+              (loc,
+               MLast.PaApp
+                 (loc,
+                  MLast.PaAcc
+                    (loc, MLast.PaUid (loc, "MLast"),
+                     MLast.PaUid (loc, "TyLid")),
+                  MLast.PaAny loc),
+               p_vala p_string s)
+        | TyTup (_, tl) ->
+            MLast.PaApp
+              (loc,
+               MLast.PaApp
+                 (loc,
+                  MLast.PaAcc
+                    (loc, MLast.PaUid (loc, "MLast"),
+                     MLast.PaUid (loc, "TyTup")),
+                  MLast.PaAny loc),
+               p_vala (p_list loop) tl)
+        | TyUid (_, s) ->
+            MLast.PaApp
+              (loc,
+               MLast.PaApp
+                 (loc,
+                  MLast.PaAcc
+                    (loc, MLast.PaUid (loc, "MLast"),
+                     MLast.PaUid (loc, "TyUid")),
+                  MLast.PaAny loc),
+               p_vala p_string s)
+        | x -> not_impl "p_ctyp" x
+      in
+      loop
+    ;;
     let e_patt p =
       let ln = ln () in
       let rec loop =
@@ -309,8 +394,18 @@ module Meta =
                        (loc, MLast.ExUid (loc, "MLast"),
                         MLast.ExUid (loc, "PaInt")),
                      ln),
-                  e_string s),
+                  e_vala e_string s),
                MLast.ExStr (loc, k))
+        | PaFlo (_, s) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "PaFlo")),
+                  ln),
+               e_vala e_string s)
         | PaLid (_, s) ->
             MLast.ExApp
               (loc,
@@ -334,6 +429,21 @@ module Meta =
                      ln),
                   loop p1),
                loop p2)
+        | PaRec (_, lpe) ->
+            let lpe =
+              e_vala
+                (e_list (fun (p, e) -> MLast.ExTup (loc, [loop p; loop e])))
+                lpe
+            in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "PaRec")),
+                  ln),
+               lpe)
         | PaRng (_, p1, p2) ->
             MLast.ExApp
               (loc,
@@ -524,8 +634,18 @@ module Meta =
                        (loc, MLast.ExUid (loc, "MLast"),
                         MLast.ExUid (loc, "ExInt")),
                      ln),
-                  e_string s),
+                  e_vala e_string s),
                MLast.ExStr (loc, k))
+        | ExFlo (_, s) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "ExFlo")),
+                  ln),
+               e_vala e_string s)
         | ExFun (_, pwel) ->
             let pwel =
               e_list
@@ -714,6 +834,29 @@ module Meta =
                      loop e1),
                   loop e2),
                loop e3)
+        | ExInt (_, s, k) ->
+            MLast.PaApp
+              (loc,
+               MLast.PaApp
+                 (loc,
+                  MLast.PaApp
+                    (loc,
+                     MLast.PaAcc
+                       (loc, MLast.PaUid (loc, "MLast"),
+                        MLast.PaUid (loc, "ExInt")),
+                     MLast.PaAny loc),
+                  p_vala p_string s),
+               MLast.PaStr (loc, k))
+        | ExFlo (_, s) ->
+            MLast.PaApp
+              (loc,
+               MLast.PaApp
+                 (loc,
+                  MLast.PaAcc
+                    (loc, MLast.PaUid (loc, "MLast"),
+                     MLast.PaUid (loc, "ExFlo")),
+                  MLast.PaAny loc),
+               p_vala p_string s)
         | ExLet (_, rf, lpe, e) ->
             let rf = p_vala p_bool rf in
             let lpe =
@@ -799,12 +942,39 @@ module Meta =
       in
       loop e
     ;;
-    let e_sig_item x = not_impl "e_sig_item" x;;
+    let e_sig_item si =
+      let ln = ln () in
+      let rec loop =
+        function
+          SgDcl (_, lsi) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "SgDcl")),
+                  ln),
+               e_vala (e_list loop) lsi)
+        | x -> not_impl "e_sig_item" x
+      in
+      loop si
+    ;;
     let rec e_str_item si =
       let ln = ln () in
       let rec loop =
         function
-          StVal (_, rf, lpe) ->
+          StDcl (_, lsi) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "StDcl")),
+                  ln),
+               e_vala (e_list loop) lsi)
+        | StVal (_, rf, lpe) ->
             let lpe =
               e_list (fun (p, e) -> MLast.ExTup (loc, [e_patt p; e_expr e]))
                 lpe
@@ -970,6 +1140,22 @@ lex.Plexing.tok_match <-
     "ANTIQUOT_LOC", p_prm ->
       (function
          "ANTIQUOT_LOC", prm -> snd (check_anti_loc prm p_prm)
+       | _ -> raise Stream.Failure)
+  | "V INT", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           let kind = check_anti_loc2 prm in
+           if kind = "aint" then "a" ^ prm
+           else if kind = "int" then "b" ^ prm
+           else raise Stream.Failure
+       | _ -> raise Stream.Failure)
+  | "V FLOAT", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           let kind = check_anti_loc2 prm in
+           if kind = "aflo" then "a" ^ prm
+           else if kind = "flo" then "b" ^ prm
+           else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V LIDENT", "" ->
       (function

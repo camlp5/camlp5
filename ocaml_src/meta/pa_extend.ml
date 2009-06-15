@@ -241,7 +241,7 @@ module MetaAction =
                      (loc, MLast.ExUid (loc, "MLast"),
                       MLast.ExUid (loc, "ExInt")),
                    mloc),
-                MLast.ExStr (loc, s)),
+                mvala mstring s),
              MLast.ExStr (loc, c))
       | MLast.ExFlo (loc, s) ->
           MLast.ExApp
@@ -252,7 +252,7 @@ module MetaAction =
                   (loc, MLast.ExUid (loc, "MLast"),
                    MLast.ExUid (loc, "ExFlo")),
                 mloc),
-             MLast.ExStr (loc, s))
+             mvala mstring s)
       | MLast.ExLet (loc, rf, pel, e) ->
           let rf = mvala mbool rf in
           MLast.ExApp
@@ -432,7 +432,7 @@ module MetaAction =
                      (loc, MLast.ExUid (loc, "MLast"),
                       MLast.ExUid (loc, "PaInt")),
                    mloc),
-                MLast.ExStr (loc, s)),
+                mvala mstring s),
              MLast.ExStr (loc, c))
       | MLast.PaLid (loc, s) ->
           MLast.ExApp
@@ -558,7 +558,7 @@ module MetaAction =
                   (loc, MLast.ExUid (loc, "MLast"),
                    MLast.ExUid (loc, "TyTup")),
                 mloc),
-             mlist mctyp tl)
+             mvala (mlist mctyp) tl)
       | MLast.TyUid (loc, s) ->
           MLast.ExApp
             (loc,
@@ -1944,9 +1944,9 @@ Grammar.extend
               Gramext.Snterm
                 (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
              Gramext.action
-               (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__6))])],
+               (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__7))])],
       Gramext.action
-        (fun (sep : 'e__6 option) (s : 'symbol) _ _ (loc : Ploc.t) ->
+        (fun (sep : 'e__7 option) (s : 'symbol) _ _ (loc : Ploc.t) ->
            (if !quotify then sslist2 loc true sep s
             else
               let used =
@@ -1955,6 +1955,32 @@ Grammar.extend
                 | None -> s.used
               in
               let text = slist loc true sep s in
+              let styp = STapp (loc, STlid (loc, "list"), s.styp) in
+              let (text, styp) =
+                if not !(Pcaml.strict_mode) then text, styp
+                else TXvala (loc, text), STvala (loc, styp)
+              in
+              {used = used; text = text; styp = styp} :
+            'symbol));
+      [Gramext.Stoken ("UIDENT", "V"); Gramext.Stoken ("UIDENT", "LIST0");
+       Gramext.Sself;
+       Gramext.Sopt
+         (Gramext.srules
+            [[Gramext.Stoken ("UIDENT", "SEP");
+              Gramext.Snterm
+                (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
+             Gramext.action
+               (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__6))])],
+      Gramext.action
+        (fun (sep : 'e__6 option) (s : 'symbol) _ _ (loc : Ploc.t) ->
+           (if !quotify then sslist2 loc false sep s
+            else
+              let used =
+                match sep with
+                  Some symb -> symb.used @ s.used
+                | None -> s.used
+              in
+              let text = slist loc false sep s in
               let styp = STapp (loc, STlid (loc, "list"), s.styp) in
               let (text, styp) =
                 if not !(Pcaml.strict_mode) then text, styp
@@ -2032,9 +2058,9 @@ Grammar.extend
             [[Gramext.Stoken ("UIDENT", "LEVEL");
               Gramext.Stoken ("STRING", "")],
              Gramext.action
-               (fun (s : string) _ (loc : Ploc.t) -> (s : 'e__8))])],
+               (fun (s : string) _ (loc : Ploc.t) -> (s : 'e__9))])],
       Gramext.action
-        (fun (lev : 'e__8 option) (n : 'name) (loc : Ploc.t) ->
+        (fun (lev : 'e__9 option) (n : 'name) (loc : Ploc.t) ->
            ({used = [n.tvar]; text = TXnterm (loc, n, lev);
              styp = STquo (loc, n.tvar)} :
             'symbol));
@@ -2045,9 +2071,9 @@ Grammar.extend
             [[Gramext.Stoken ("UIDENT", "LEVEL");
               Gramext.Stoken ("STRING", "")],
              Gramext.action
-               (fun (s : string) _ (loc : Ploc.t) -> (s : 'e__7))])],
+               (fun (s : string) _ (loc : Ploc.t) -> (s : 'e__8))])],
       Gramext.action
-        (fun (lev : 'e__7 option) (e : 'qualid) _ (i : string)
+        (fun (lev : 'e__8 option) (e : 'qualid) _ (i : string)
              (loc : Ploc.t) ->
            (let n =
               mk_name loc (MLast.ExAcc (loc, MLast.ExUid (loc, i), e))

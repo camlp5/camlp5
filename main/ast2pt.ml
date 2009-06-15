@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.26 2007/09/10 13:39:52 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.27 2007/09/10 17:19:30 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -208,7 +208,7 @@ value rec ctyp =
   | TyQuo loc s -> mktyp loc (Ptyp_var (uv s))
   | TyRec loc _ -> error loc "record type not allowed here"
   | TySum loc _ -> error loc "sum type not allowed here"
-  | TyTup loc tl -> mktyp loc (Ptyp_tuple (List.map ctyp tl))
+  | TyTup loc tl -> mktyp loc (Ptyp_tuple (List.map ctyp (uv tl)))
   | TyUid loc s -> mktyp loc (Ptyp_constr (lident (uv s)) [])
   | TyVrn loc catl ool ->
       let catl =
@@ -459,9 +459,10 @@ value rec patt =
   | PaArr loc pl -> mkpat loc (Ppat_array (List.map patt pl))
   | PaChr loc s ->
       mkpat loc (Ppat_constant (Const_char (char_of_char_token loc (uv s))))
-  | PaInt loc s "" -> mkpat loc (Ppat_constant (Const_int (int_of_string s)))
+  | PaInt loc s "" ->
+      mkpat loc (Ppat_constant (Const_int (int_of_string (uv s))))
   | PaInt loc _ _ -> error loc "special int not impl in patt"
-  | PaFlo loc s -> mkpat loc (Ppat_constant (Const_float s))
+  | PaFlo loc s -> mkpat loc (Ppat_constant (Const_float (uv s)))
   | PaLab loc _ _ -> error loc "labeled pattern not allowed here"
   | PaLid loc s -> mkpat loc (Ppat_var (uv s))
   | PaOlb loc _ _ -> error loc "labeled pattern not allowed here"
@@ -473,7 +474,7 @@ value rec patt =
           let c2 = char_of_char_token loc2 (uv c2) in
           mkrangepat loc c1 c2
       | _ -> error loc "range pattern allowed only for characters" ]
-  | PaRec loc lpl -> mkpat loc (Ppat_record (List.map mklabpat lpl))
+  | PaRec loc lpl -> mkpat loc (Ppat_record (List.map mklabpat (uv lpl)))
   | PaStr loc s ->
       mkpat loc (Ppat_constant (Const_string (string_of_string_token loc s)))
   | PaTup loc pl -> mkpat loc (Ppat_tuple (List.map patt (uv pl)))
@@ -642,7 +643,7 @@ value rec expr =
       mkexp loc (Pexp_constant (Const_char (char_of_char_token loc (uv s))))
   | ExCoe loc e t1 t2 ->
       mkexp loc (Pexp_constraint (expr e) (option ctyp t1) (Some (ctyp t2)))
-  | ExFlo loc s -> mkexp loc (Pexp_constant (Const_float s))
+  | ExFlo loc s -> mkexp loc (Pexp_constant (Const_float (uv s)))
   | ExFor loc i e1 e2 df el ->
       let e3 = <:expr< do { $list:uv el$ } >> in
       let df = if df then Upto else Downto in
@@ -658,13 +659,14 @@ value rec expr =
   | ExFun loc pel -> mkexp loc (Pexp_function "" None (List.map mkpwe pel))
   | ExIfe loc e1 e2 e3 ->
       mkexp loc (Pexp_ifthenelse (expr e1) (expr e2) (Some (expr e3)))
-  | ExInt loc s "" -> mkexp loc (Pexp_constant (Const_int (int_of_string s)))
+  | ExInt loc s "" ->
+      mkexp loc (Pexp_constant (Const_int (int_of_string (uv s))))
   | ExInt loc s "l" ->
-      mkexp loc (Pexp_constant (Const_int32 (Int32.of_string s)))
+      mkexp loc (Pexp_constant (Const_int32 (Int32.of_string (uv s))))
   | ExInt loc s "L" ->
-      mkexp loc (Pexp_constant (Const_int64 (Int64.of_string s)))
+      mkexp loc (Pexp_constant (Const_int64 (Int64.of_string (uv s))))
   | ExInt loc s "n" ->
-      mkexp loc (Pexp_constant (Const_nativeint (Nativeint.of_string s)))
+      mkexp loc (Pexp_constant (Const_nativeint (Nativeint.of_string (uv s))))
   | ExInt loc _ _ -> error loc "special int not implemented"
   | ExLab loc _ _ -> error loc "labeled expression not allowed here"
   | ExLaz loc e -> mkexp loc (Pexp_lazy (expr e))
@@ -766,7 +768,7 @@ and sig_item s l =
   | SgClt loc ctd ->
       [mksig loc (Psig_class_type (List.map (class_info class_type) ctd)) ::
        l]
-  | SgDcl loc sl -> List.fold_right sig_item sl l
+  | SgDcl loc sl -> List.fold_right sig_item (uv sl) l
   | SgDir loc _ _ -> l
   | SgExc loc n tl -> [mksig loc (Psig_exception n (List.map ctyp tl)) :: l]
   | SgExt loc n t p -> [mksig loc (Psig_value n (mkvalue_desc t p)) :: l]
@@ -812,7 +814,7 @@ and str_item s l =
   | StClt loc ctd ->
       [mkstr loc (Pstr_class_type (List.map (class_info class_type) ctd)) ::
        l]
-  | StDcl loc sl -> List.fold_right str_item sl l
+  | StDcl loc sl -> List.fold_right str_item (uv sl) l
   | StDir loc _ _ -> l
   | StExc loc n tl sl ->
       let si =
@@ -950,7 +952,7 @@ value directive loc =
   fun
   [ None -> Pdir_none
   | Some <:expr< $str:s$ >> -> Pdir_string s
-  | Some (ExInt _ i "") -> Pdir_int (int_of_string i)
+  | Some <:expr< $int:i$ >> -> Pdir_int (int_of_string i)
   | Some <:expr< True >> -> Pdir_bool True
   | Some <:expr< False >> -> Pdir_bool False
   | Some e ->

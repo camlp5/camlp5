@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: reloc.ml,v 1.17 2007/09/09 19:34:16 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.18 2007/09/10 17:19:30 deraugla Exp $ *)
 
 open MLast;
 
@@ -54,7 +54,7 @@ value rec ctyp floc sh =
         TySum (floc loc)
           (List.map (fun (loc, x1, x2) -> (floc loc, x1, List.map self x2))
              x1)
-    | TyTup loc x1 -> TyTup (floc loc) (List.map self x1)
+    | TyTup loc x1 -> TyTup (floc loc) (vala_map (List.map self) x1)
     | TyUid loc x1 -> TyUid (floc loc) x1
     | TyVrn loc x1 x2 ->
         TyVrn (floc loc) (List.map (poly_variant floc sh) x1) x2
@@ -124,7 +124,8 @@ value rec patt floc sh =
     | PaOrp loc x1 x2 -> PaOrp (floc loc) (self x1) (self x2)
     | PaRng loc x1 x2 -> PaRng (floc loc) (self x1) (self x2)
     | PaRec loc x1 ->
-        PaRec (floc loc) (List.map (fun (x1, x2) -> (self x1, self x2)) x1)
+        PaRec (floc loc)
+          (vala_map (List.map (fun (x1, x2) -> (self x1, self x2))) x1)
     | PaStr loc x1 -> PaStr (floc loc) x1
     | PaTup loc x1 -> PaTup (floc loc) (vala_map (List.map self) x1)
     | PaTyc loc x1 x2 -> PaTyc (floc loc) (self x1) (ctyp floc sh x2)
@@ -231,7 +232,7 @@ and sig_item floc sh =
         SgCls (floc loc) (List.map (class_infos class_type floc sh) x1)
     | SgClt loc x1 ->
         SgClt (floc loc) (List.map (class_infos class_type floc sh) x1)
-    | SgDcl loc x1 -> SgDcl (floc loc) (List.map self x1)
+    | SgDcl loc x1 -> SgDcl (floc loc) (vala_map (List.map self) x1)
     | SgDir loc x1 x2 -> SgDir (floc loc) x1 x2
     | SgExc loc x1 x2 -> SgExc (floc loc) x1 (List.map (ctyp floc sh) x2)
     | SgExt loc x1 x2 x3 -> SgExt (floc loc) x1 (ctyp floc sh x2) x3
@@ -266,7 +267,7 @@ and str_item floc sh =
         StCls (floc loc) (List.map (class_infos class_expr floc sh) x1)
     | StClt loc x1 ->
         StClt (floc loc) (List.map (class_infos class_type floc sh) x1)
-    | StDcl loc x1 -> StDcl (floc loc) (List.map self x1)
+    | StDcl loc x1 -> StDcl (floc loc) (vala_map (List.map self) x1)
     | StDir loc x1 x2 -> StDir (floc loc) x1 x2
     | StExc loc x1 x2 x3 ->
         StExc (floc loc) x1 (List.map (ctyp floc sh) x2) x3

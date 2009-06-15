@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.54 2007/09/09 11:49:42 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.55 2007/09/10 17:19:30 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -35,7 +35,7 @@ module Type =
       | TyArr of loc and t and t
       | TyLid of loc and V string
       | TyQuo of loc and V (ref (option t))
-      | TyTup of loc and list t
+      | TyTup of loc and V (list t)
       | TyUid of loc and V string ]
     ;
   end

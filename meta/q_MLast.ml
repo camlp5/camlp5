@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.62 2007/09/10 13:39:52 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.63 2007/09/10 17:19:30 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -191,10 +191,15 @@ value a_UIDENT2 = Grammar.Entry.create gram "a_UIDENT2";
 value a_LIDENT = Grammar.Entry.create gram "a_LIDENT";
 value a_LIDENT2 = Grammar.Entry.create gram "a_LIDENT2";
 value a_INT = Grammar.Entry.create gram "a_INT";
+value a_INT2 = Grammar.Entry.create gram "a_INT2";
 value a_INT_l = Grammar.Entry.create gram "a_INT_l";
+value a_INT_l2 = Grammar.Entry.create gram "a_INT_l2";
 value a_INT_L = Grammar.Entry.create gram "a_INT_L";
+value a_INT_L2 = Grammar.Entry.create gram "a_INT_L2";
 value a_INT_n = Grammar.Entry.create gram "a_INT_n";
+value a_INT_n2 = Grammar.Entry.create gram "a_INT_n2";
 value a_FLOAT = Grammar.Entry.create gram "a_FLOAT";
+value a_FLOAT2 = Grammar.Entry.create gram "a_FLOAT2";
 value a_STRING = Grammar.Entry.create gram "a_STRING";
 value a_STRING2 = Grammar.Entry.create gram "a_STRING2";
 value a_CHAR = Grammar.Entry.create gram "a_CHAR";
@@ -234,13 +239,14 @@ value neg_string n =
 
 value mkumin _ f arg =
   match arg with
-  [ Qast.Node "ExInt" [Qast.Loc; Qast.Str n; Qast.Str c]
+  [ Qast.Node "ExInt" [Qast.Loc; Qast.VaVal (Qast.Str n); Qast.Str c]
     when int_of_string n > 0 ->
       let n = neg_string n in
-      Qast.Node "ExInt" [Qast.Loc; Qast.Str n; Qast.Str c]
-  | Qast.Node "ExFlo" [Qast.Loc; Qast.Str n] when float_of_string n > 0.0 ->
+      Qast.Node "ExInt" [Qast.Loc; Qast.VaVal (Qast.Str n); Qast.Str c]
+  | Qast.Node "ExFlo" [Qast.Loc; Qast.VaVal (Qast.Str n)]
+    when float_of_string n > 0.0 ->
       let n = neg_string n in
-      Qast.Node "ExFlo" [Qast.Loc; Qast.Str n]
+      Qast.Node "ExFlo" [Qast.Loc; Qast.VaVal (Qast.Str n)]
   | _ ->
       match f with
       [ Qast.VaVal (Qast.Str f) | Qast.Str f ->
@@ -258,8 +264,8 @@ value mkuminpat _ f is_int s =
     | s -> failwith "bad unary minus" ]
   in
   match is_int with
-  [ Qast.Bool True -> Qast.Node "PaInt" [Qast.Loc; s; Qast.Str ""]
-  | Qast.Bool False -> Qast.Node "PaFlo" [Qast.Loc; s]
+  [ Qast.Bool True -> Qast.Node "PaInt" [Qast.Loc; Qast.VaVal s; Qast.Str ""]
+  | Qast.Bool False -> Qast.Node "PaFlo" [Qast.Loc; Qast.VaVal s]
   | _ -> assert False ]
 ;
 
@@ -324,7 +330,7 @@ EXTEND
   ;
   str_item:
     [ "top"
-      [ "declare"; st = SLIST0 [ s = str_item; ";" -> s ]; "end" ->
+      [ "declare"; st = SV LIST0 [ s = str_item; ";" -> s ]; "end" ->
           Qast.Node "StDcl" [Qast.Loc; st]
       | "exception"; ctl = constructor_declaration; b = rebind_exn ->
           let (_, c, tl) =
@@ -379,7 +385,7 @@ EXTEND
   ;
   sig_item:
     [ "top"
-      [ "declare"; st = SLIST0 [ s = sig_item; ";" -> s ]; "end" ->
+      [ "declare"; st = SV LIST0 [ s = sig_item; ";" -> s ]; "end" ->
           Qast.Node "SgDcl" [Qast.Loc; st]
       | "exception"; ctl = constructor_declaration ->
           let (_, c, tl) =
@@ -688,11 +694,11 @@ EXTEND
             [Qast.Loc;
              Qast.Node "ExLid" [Qast.Loc; Qast.VaVal (Qast.Str "~-.")]; e] ]
     | "simple"
-      [ s = a_INT -> Qast.Node "ExInt" [Qast.Loc; s; Qast.Str ""]
-      | s = a_INT_l -> Qast.Node "ExInt" [Qast.Loc; s; Qast.Str "l"]
-      | s = a_INT_L -> Qast.Node "ExInt" [Qast.Loc; s; Qast.Str "L"]
-      | s = a_INT_n -> Qast.Node "ExInt" [Qast.Loc; s; Qast.Str "n"]
-      | s = a_FLOAT -> Qast.Node "ExFlo" [Qast.Loc; s]
+      [ s = a_INT2 -> Qast.Node "ExInt" [Qast.Loc; s; Qast.Str ""]
+      | s = a_INT_l2 -> Qast.Node "ExInt" [Qast.Loc; s; Qast.Str "l"]
+      | s = a_INT_L2 -> Qast.Node "ExInt" [Qast.Loc; s; Qast.Str "L"]
+      | s = a_INT_n2 -> Qast.Node "ExInt" [Qast.Loc; s; Qast.Str "n"]
+      | s = a_FLOAT2 -> Qast.Node "ExFlo" [Qast.Loc; s]
       | s = a_STRING2 -> Qast.Node "ExStr" [Qast.Loc; s]
       | s = a_CHAR2 -> Qast.Node "ExChr" [Qast.Loc; s]
       | i = a_LIDENT2 -> Qast.Node "ExLid" [Qast.Loc; i]
@@ -780,11 +786,11 @@ EXTEND
     | "simple"
       [ s = a_LIDENT2 -> Qast.Node "PaLid" [Qast.Loc; s]
       | s = a_UIDENT2 -> Qast.Node "PaUid" [Qast.Loc; s]
-      | s = a_INT -> Qast.Node "PaInt" [Qast.Loc; s; Qast.Str ""]
-      | s = a_INT_l -> Qast.Node "PaInt" [Qast.Loc; s; Qast.Str "l"]
-      | s = a_INT_L -> Qast.Node "PaInt" [Qast.Loc; s; Qast.Str "L"]
-      | s = a_INT_n -> Qast.Node "PaInt" [Qast.Loc; s; Qast.Str "n"]
-      | s = a_FLOAT -> Qast.Node "PaFlo" [Qast.Loc; s]
+      | s = a_INT2 -> Qast.Node "PaInt" [Qast.Loc; s; Qast.Str ""]
+      | s = a_INT_l2 -> Qast.Node "PaInt" [Qast.Loc; s; Qast.Str "l"]
+      | s = a_INT_L2 -> Qast.Node "PaInt" [Qast.Loc; s; Qast.Str "L"]
+      | s = a_INT_n2 -> Qast.Node "PaInt" [Qast.Loc; s; Qast.Str "n"]
+      | s = a_FLOAT2 -> Qast.Node "PaFlo" [Qast.Loc; s]
       | s = a_STRING -> Qast.Node "PaStr" [Qast.Loc; s]
       | s = a_CHAR2 -> Qast.Node "PaChr" [Qast.Loc; s]
       | "-"; s = a_INT -> mkuminpat Qast.Loc (Qast.Str "-") (Qast.Bool True) s
@@ -795,7 +801,7 @@ EXTEND
           mklistpat Qast.Loc last pl
       | "[|"; pl = SLIST0 patt SEP ";"; "|]" ->
           Qast.Node "PaArr" [Qast.Loc; pl]
-      | "{"; lpl = SLIST1 label_patt SEP ";"; "}" ->
+      | "{"; lpl = SV LIST1 label_patt SEP ";"; "}" ->
           Qast.Node "PaRec" [Qast.Loc; lpl]
       | "("; p = paren_patt; ")" -> p
       | "_" -> Qast.Node "PaAny" [Qast.Loc] ] ]
@@ -824,7 +830,7 @@ EXTEND
       | i = a_LIDENT2 -> Qast.Node "PaLid" [Qast.Loc; i] ] ]
   ;
   ipatt:
-    [ [ "{"; lpl = SLIST1 label_ipatt SEP ";"; "}" ->
+    [ [ "{"; lpl = SV LIST1 label_ipatt SEP ";"; "}" ->
           Qast.Node "PaRec" [Qast.Loc; lpl]
       | "("; p = paren_ipatt; ")" -> p
       | s = a_LIDENT2 -> Qast.Node "PaLid" [Qast.Loc; s]
@@ -883,8 +889,10 @@ EXTEND
       | i = a_LIDENT2 -> Qast.Node "TyLid" [Qast.Loc; i]
       | i = a_UIDENT2 -> Qast.Node "TyUid" [Qast.Loc; i]
       | "("; t = SELF; "*"; tl = SLIST1 ctyp SEP "*"; ")" ->
-          Qast.Node "TyTup" [Qast.Loc; Qast.Cons t tl]
+          Qast.Node "TyTup" [Qast.Loc; Qast.VaVal (Qast.Cons t tl)]
       | "("; t = SELF; ")" -> t
+      | "("; tl = SV LIST1 ctyp SEP "*"; ")" ->
+          Qast.Node "TyTup" [Qast.Loc; tl]
       | "["; cdl = SLIST0 constructor_declaration SEP "|"; "]" ->
           Qast.Node "TySum" [Qast.Loc; cdl]
       | "{"; ldl = SLIST1 label_declaration SEP ";"; "}" ->
@@ -1259,8 +1267,10 @@ EXTEND
   ;
   ctyp: LEVEL "simple"
     [ [ a = ANTIQUOT "typ" -> antiquot "typ" loc a
-      | a = ANTIQUOT -> antiquot "" loc a
+      | a = ANTIQUOT -> antiquot "" loc a ] ]
+(*
       | "("; tl = a_list; ")" -> Qast.Node "TyTup" [Qast.Loc; tl] ] ]
+*)
   ;
   class_expr: LEVEL "simple"
     [ [ a = ANTIQUOT -> antiquot "" loc a ] ]
@@ -1338,25 +1348,55 @@ EXTEND
       | a = ANTIQUOT -> antiquot "" loc a
       | s = INT -> Qast.Str s ] ]
   ;
+  a_INT2:
+    [ [ a = ANTIQUOT "int" -> Qast.VaVal (antiquot "int" loc a)
+      | a = ANTIQUOT "aint" -> antiquot "int" loc a
+      | a = ANTIQUOT -> antiquot "" loc a
+      | s = INT -> Qast.VaVal (Qast.Str s) ] ]
+  ;
   a_INT_l:
     [ [ a = ANTIQUOT "int32" -> antiquot "int32" loc a
       | a = ANTIQUOT -> antiquot "" loc a
       | s = INT_l -> Qast.Str s ] ]
+  ;
+  a_INT_l2:
+    [ [ a = ANTIQUOT "int32" -> Qast.VaVal (antiquot "int32" loc a)
+      | a = ANTIQUOT "aint32" -> antiquot "int32" loc a
+      | a = ANTIQUOT -> antiquot "" loc a
+      | s = INT_l -> Qast.VaVal (Qast.Str s) ] ]
   ;
   a_INT_L:
     [ [ a = ANTIQUOT "int64" -> antiquot "int64" loc a
       | a = ANTIQUOT -> antiquot "" loc a
       | s = INT_L -> Qast.Str s ] ]
   ;
+  a_INT_L2:
+    [ [ a = ANTIQUOT "int64" -> Qast.VaVal (antiquot "int64" loc a)
+      | a = ANTIQUOT "aint64" -> antiquot "int64" loc a
+      | a = ANTIQUOT -> antiquot "" loc a
+      | s = INT_L -> Qast.VaVal (Qast.Str s) ] ]
+  ;
   a_INT_n:
     [ [ a = ANTIQUOT "nativeint" -> antiquot "nativeint" loc a
       | a = ANTIQUOT -> antiquot "" loc a
       | s = INT_n -> Qast.Str s ] ]
   ;
+  a_INT_n2:
+    [ [ a = ANTIQUOT "nativeint" -> Qast.VaVal (antiquot "nativeint" loc a)
+      | a = ANTIQUOT "anativeint" -> antiquot "nativeint" loc a
+      | a = ANTIQUOT -> antiquot "" loc a
+      | s = INT_n -> Qast.VaVal (Qast.Str s) ] ]
+  ;
   a_FLOAT:
     [ [ a = ANTIQUOT "flo" -> antiquot "flo" loc a
       | a = ANTIQUOT -> antiquot "" loc a
       | s = FLOAT -> Qast.Str s ] ]
+  ;
+  a_FLOAT2:
+    [ [ a = ANTIQUOT "flo" -> Qast.VaVal (antiquot "flo" loc a)
+      | a = ANTIQUOT "aflo" -> antiquot "flo" loc a
+      | a = ANTIQUOT -> antiquot "" loc a
+      | s = FLOAT -> Qast.VaVal (Qast.Str s) ] ]
   ;
   a_STRING:
     [ [ a = ANTIQUOT "str" -> antiquot "str" loc a

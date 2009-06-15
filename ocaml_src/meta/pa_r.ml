@@ -1485,6 +1485,14 @@ Grammar.extend
       Gramext.action
         (fun _ (cdl : 'constructor_declaration list) _ (loc : Ploc.t) ->
            (MLast.TySum (loc, cdl) : 'ctyp));
+      [Gramext.Stoken ("", "(");
+       Gramext.Slist1sep
+         (Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e)),
+          Gramext.Stoken ("", "*"));
+       Gramext.Stoken ("", ")")],
+      Gramext.action
+        (fun _ (tl : 'ctyp list) _ (loc : Ploc.t) ->
+           (MLast.TyTup (loc, tl) : 'ctyp));
       [Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ")")],
       Gramext.action (fun _ (t : 'ctyp) _ (loc : Ploc.t) -> (t : 'ctyp));
       [Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", "*");

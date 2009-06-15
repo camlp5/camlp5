@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: mLast.mli,v 1.26 2007/09/10 13:39:52 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.27 2007/09/10 17:19:30 deraugla Exp $ *)
 
 (* Module [MLast]: abstract syntax tree.
 
@@ -43,7 +43,7 @@ type ctyp =
   | TyQuo of loc and V string
   | TyRec of loc and list (loc * string * bool * ctyp)
   | TySum of loc and list (loc * string * list ctyp)
-  | TyTup of loc and list ctyp
+  | TyTup of loc and V (list ctyp)
   | TyUid of loc and V string
   | TyVrn of loc and list poly_variant and option (option (list string))
   | IFDEF STRICT THEN
@@ -72,14 +72,14 @@ type patt =
   | PaApp of loc and patt and patt
   | PaArr of loc and list patt
   | PaChr of loc and V string
-  | PaInt of loc and string and string
-  | PaFlo of loc and string
+  | PaInt of loc and V string and string
+  | PaFlo of loc and V string
   | PaLab of loc and string and option patt
   | PaLid of loc and V string
   | PaOlb of loc and string and option (patt * option expr)
   | PaOrp of loc and patt and patt
   | PaRng of loc and patt and patt
-  | PaRec of loc and list (patt * patt)
+  | PaRec of loc and V (list (patt * patt))
   | PaStr of loc and string
   | PaTup of loc and V (list patt)
   | PaTyc of loc and patt and ctyp
@@ -100,11 +100,11 @@ and expr =
   | ExBae of loc and expr and list expr
   | ExChr of loc and V string
   | ExCoe of loc and expr and option ctyp and ctyp
-  | ExFlo of loc and string
+  | ExFlo of loc and V string
   | ExFor of loc and string and expr and expr and bool and V (list expr)
   | ExFun of loc and list (patt * option expr * expr)
   | ExIfe of loc and expr and expr and expr
-  | ExInt of loc and string and string
+  | ExInt of loc and V string and string
   | ExLab of loc and string and option expr
   | ExLaz of loc and expr
   | ExLet of loc and V bool and V (list (patt * expr)) and expr
@@ -141,7 +141,7 @@ and module_type =
 and sig_item =
   [ SgCls of loc and list (class_infos class_type)
   | SgClt of loc and list (class_infos class_type)
-  | SgDcl of loc and list sig_item
+  | SgDcl of loc and V (list sig_item)
   | SgDir of loc and string and option expr
   | SgExc of loc and string and list ctyp
   | SgExt of loc and string and ctyp and list string
@@ -165,7 +165,7 @@ and module_expr =
 and str_item =
   [ StCls of loc and list (class_infos class_expr)
   | StClt of loc and list (class_infos class_type)
-  | StDcl of loc and list str_item
+  | StDcl of loc and V (list str_item)
   | StDir of loc and string and option expr
   | StExc of loc and string and list ctyp and list string
   | StExp of loc and expr

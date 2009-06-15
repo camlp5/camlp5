@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.56 2007/09/10 13:39:52 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.57 2007/09/10 17:19:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -187,8 +187,9 @@ module MetaAction =
           <:expr< MLast.ExFun $mloc$ $mlist mpwe pwel$ >>
       | MLast.ExIfe loc e1 e2 e3 ->
           <:expr< MLast.ExIfe $mloc$ $mexpr e1$ $mexpr e2$ $mexpr e3$ >>
-      | MLast.ExInt loc s c -> <:expr< MLast.ExInt $mloc$ $str:s$ $str:c$ >>
-      | MLast.ExFlo loc s -> <:expr< MLast.ExFlo $mloc$ $str:s$ >>
+      | MLast.ExInt loc s c ->
+          <:expr< MLast.ExInt $mloc$ $mvala mstring s$ $str:c$ >>
+      | MLast.ExFlo loc s -> <:expr< MLast.ExFlo $mloc$ $mvala mstring s$ >>
       | MLast.ExLet loc rf pel e ->
           let rf = mvala mbool rf in
           <:expr< MLast.ExLet $mloc$ $rf$ $mvala (mlist mpe) pel$ $mexpr e$ >>
@@ -219,7 +220,8 @@ module MetaAction =
       | MLast.PaAny loc -> <:expr< MLast.PaAny $mloc$ >>
       | MLast.PaApp loc p1 p2 ->
           <:expr< MLast.PaApp $mloc$ $mpatt p1$ $mpatt p2$ >>
-      | MLast.PaInt loc s c -> <:expr< MLast.PaInt $mloc$ $str:s$ $str:c$ >>
+      | MLast.PaInt loc s c ->
+          <:expr< MLast.PaInt $mloc$ $mvala mstring s$ $str:c$ >>
       | MLast.PaLid loc s -> <:expr< MLast.PaLid $mloc$ $mvala mstring s$ >>
       | MLast.PaOrp loc p1 p2 ->
           <:expr< MLast.PaOrp $mloc$ $mpatt p1$ $mpatt p2$ >>
@@ -239,7 +241,8 @@ module MetaAction =
           <:expr< MLast.TyApp $mloc$ $mctyp t1$ $mctyp t2$ >>
       | MLast.TyLid loc s -> <:expr< MLast.TyLid $mloc$ $mvala mstring s$ >>
       | MLast.TyQuo loc s -> <:expr< MLast.TyQuo $mloc$ $mvala mstring s$ >>
-      | MLast.TyTup loc tl -> <:expr< MLast.TyTup $mloc$ $mlist mctyp tl$ >>
+      | MLast.TyTup loc tl ->
+          <:expr< MLast.TyTup $mloc$ $mvala (mlist mctyp) tl$ >>
       | MLast.TyUid loc s -> <:expr< MLast.TyUid $mloc$ $mvala mstring s$ >>
       | x -> not_impl "mctyp" x ]
     and mpe (p, e) = <:expr< ($mpatt p$, $mexpr e$) >>
@@ -918,6 +921,22 @@ EXTEND
             let text = TXflag loc s.text in
             let styp = STlid loc "bool" in
             {used = s.used; text = text; styp = styp}
+      | UIDENT "V"; UIDENT "LIST0"; s = SELF;
+        sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
+          if quotify.val then sslist2 loc False sep s
+          else
+            let used =
+              match sep with
+              [ Some symb -> symb.used @ s.used
+              | None -> s.used ]
+            in
+            let text = slist loc False sep s in
+            let styp = STapp loc (STlid loc "list") s.styp in
+            let (text, styp) =
+              if not Pcaml.strict_mode.val then (text, styp)
+              else (TXvala loc text, STvala loc styp)
+            in
+            {used = used; text = text; styp = styp}
       | UIDENT "V"; UIDENT "LIST1"; s = SELF;
         sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
           if quotify.val then sslist2 loc True sep s

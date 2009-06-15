@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.22 2007/09/10 13:39:52 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.23 2007/09/10 17:19:30 deraugla Exp $ *)
 
 open MLast;
 
@@ -46,10 +46,10 @@ value rec ctyp =
   | TyLid _ _ -> ()
   | TyMan _ t1 t2 -> do { ctyp t1; ctyp t2 }
   | TyOlb _ _ t -> ctyp t
-  | TyQuo _ _ -> ()
+  | <:ctyp< ' $_$ >> -> ()
   | <:ctyp< { $list:ldl$ } >> -> list label_decl ldl
-  | TySum _ cdl -> list constr_decl cdl
-  | TyTup _ tl -> list ctyp tl
+  | <:ctyp< [ $list:cdl$ ] >> -> list constr_decl cdl
+  | <:ctyp< ( $list:tl$ ) >> -> list ctyp tl
   | TyVrn _ sbtll _ -> list variant sbtll
   | x -> not_impl "ctyp" x ]
 and constr_decl (_, _, tl) = list ctyp tl
@@ -79,9 +79,9 @@ value rec patt =
   | PaLid _ _ -> ()
   | PaOlb _ _ peoo ->
       option (fun (p, eo) -> do { patt p; option expr eo }) peoo
-  | PaOrp _ p1 p2 -> do { patt p1; patt p2 }
-  | PaRec _ lpl -> list label_patt lpl
-  | PaRng _ p1 p2 -> do { patt p1; patt p2 }
+  | <:patt< $p1$ | $p2$ >> -> do { patt p1; patt p2 }
+  | <:patt< {$list:lpl$} >> -> list label_patt lpl
+  | <:patt< $p1$ .. $p2$ >> -> do { patt p1; patt p2 }
   | <:patt< $str:_$ >> -> ()
   | <:patt< ($list:pl$) >> -> list patt pl
   | <:patt< ($p$ : $t$) >> -> do { patt p; ctyp t }
@@ -161,8 +161,8 @@ and with_constr =
   | x -> not_impl "with_constr" x ]
 and sig_item =
   fun
-  [ SgDcl _ sil -> list sig_item sil
-  | SgExc _ _ tl -> list ctyp tl
+  [ <:sig_item< declare $list:sil$ end >> -> list sig_item sil
+  | <:sig_item< exception $_$ of $list:tl$ >> -> list ctyp tl
   | SgExt _ _ t _ -> ctyp t
   | SgMod _ _ ntl -> list (fun (_, mt) -> module_type mt) ntl
   | SgMty _ _ mt -> module_type mt
@@ -182,7 +182,7 @@ and module_expr =
 and str_item =
   fun
   [ StCls _ cil -> list (fun ci -> class_expr ci.ciExp) cil
-  | StDcl _ sil -> list str_item sil
+  | <:str_item< declare $list:sil$ end >> -> list str_item sil
   | StDir _ _ _ -> ()
   | StExc _ _ tl _ -> list ctyp tl
   | StExp _ e -> expr e

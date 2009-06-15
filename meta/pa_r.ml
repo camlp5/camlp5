@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.63 2007/09/10 13:39:52 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.64 2007/09/10 17:19:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -137,8 +137,8 @@ EXTEND
   ;
   str_item:
     [ "top"
-      [ "declare"; st = LIST0 [ s = str_item; ";" -> s ]; "end" ->
-          <:str_item< declare $list:st$ end >>
+      [ "declare"; st = V LIST0 [ s = str_item; ";" -> s ]; "end" ->
+          <:str_item< declare $alist:st$ end >>
       | "exception"; (_, c, tl) = constructor_declaration; b = rebind_exn ->
           <:str_item< exception $uid:c$ of $list:tl$ = $b$ >>
       | "external"; i = LIDENT; ":"; t = ctyp; "="; pd = LIST1 STRING ->
@@ -187,8 +187,8 @@ EXTEND
   ;
   sig_item:
     [ "top"
-      [ "declare"; st = LIST0 [ s = sig_item; ";" -> s ]; "end" ->
-          <:sig_item< declare $list:st$ end >>
+      [ "declare"; st = V LIST0 [ s = sig_item; ";" -> s ]; "end" ->
+          <:sig_item< declare $alist:st$ end >>
       | "exception"; (_, c, tl) = constructor_declaration ->
           <:sig_item< exception $c$ of $list:tl$ >>
       | "external"; i = LIDENT; ":"; t = ctyp; "="; pd = LIST1 STRING ->
@@ -303,11 +303,11 @@ EXTEND
       [ "~-"; e = SELF -> <:expr< ~- $e$ >>
       | "~-."; e = SELF -> <:expr< ~-. $e$ >> ]
     | "simple"
-      [ s = INT -> <:expr< $int:s$ >>
-      | s = INT_l -> <:expr< $int32:s$ >>
-      | s = INT_L -> <:expr< $int64:s$ >>
-      | s = INT_n -> <:expr< $nativeint:s$ >>
-      | s = FLOAT -> <:expr< $flo:s$ >>
+      [ s = V INT -> <:expr< $aint:s$ >>
+      | s = V INT_l -> <:expr< $aint32:s$ >>
+      | s = V INT_L -> <:expr< $aint64:s$ >>
+      | s = V INT_n -> <:expr< $anativeint:s$ >>
+      | s = V FLOAT -> <:expr< $aflo:s$ >>
       | s = V STRING -> <:expr< $astr:s$ >>
       | s = V CHAR -> <:expr< $achr:s$ >>
       | i = V LIDENT -> <:expr< $alid:i$ >>
@@ -387,11 +387,11 @@ EXTEND
     | "simple"
       [ s = V LIDENT -> <:patt< $alid:s$ >>
       | s = V UIDENT -> <:patt< $auid:s$ >>
-      | s = INT -> <:patt< $int:s$ >>
-      | s = INT_l -> <:patt< $int32:s$ >>
-      | s = INT_L -> <:patt< $int64:s$ >>
-      | s = INT_n -> <:patt< $nativeint:s$ >>
-      | s = FLOAT -> <:patt< $flo:s$ >>
+      | s = V INT -> <:patt< $aint:s$ >>
+      | s = V INT_l -> <:patt< $aint32:s$ >>
+      | s = V INT_L -> <:patt< $aint64:s$ >>
+      | s = V INT_n -> <:patt< $anativeint:s$ >>
+      | s = V FLOAT -> <:patt< $aflo:s$ >>
       | s = STRING -> <:patt< $str:s$ >>
       | s = V CHAR -> <:patt< $achr:s$ >>
       | "-"; s = INT -> mkuminpat loc "-" True s
@@ -400,7 +400,8 @@ EXTEND
       | "["; pl = LIST1 patt SEP ";"; last = cons_patt_opt; "]" ->
           mklistpat loc last pl
       | "[|"; pl = LIST0 patt SEP ";"; "|]" -> <:patt< [| $list:pl$ |] >>
-      | "{"; lpl = LIST1 label_patt SEP ";"; "}" -> <:patt< { $list:lpl$ } >>
+      | "{"; lpl = V LIST1 label_patt SEP ";"; "}" ->
+          <:patt< { $alist:lpl$ } >>
       | "("; p = paren_patt; ")" -> p
       | "_" -> <:patt< _ >> ] ]
   ;
@@ -427,7 +428,8 @@ EXTEND
       | i = V LIDENT -> <:patt< $alid:i$ >> ] ]
   ;
   ipatt:
-    [ [ "{"; lpl = LIST1 label_ipatt SEP ";"; "}" -> <:patt< { $list:lpl$ } >>
+    [ [ "{"; lpl = V LIST1 label_ipatt SEP ";"; "}" ->
+          <:patt< { $alist:lpl$ } >>
       | "("; p = paren_ipatt; ")" -> p
       | s = V LIDENT -> <:patt< $alid:s$ >>
       | "_" -> <:patt< _ >> ] ]
@@ -483,6 +485,7 @@ EXTEND
       | "("; t = SELF; "*"; tl = LIST1 ctyp SEP "*"; ")" ->
           <:ctyp< ( $list:[t::tl]$ ) >>
       | "("; t = SELF; ")" -> <:ctyp< $t$ >>
+      | "("; tl = V LIST1 ctyp SEP "*"; ")" -> <:ctyp< ( $alist:tl$ ) >>
       | "["; cdl = LIST0 constructor_declaration SEP "|"; "]" ->
           <:ctyp< [ $list:cdl$ ] >>
       | "{"; ldl = LIST1 label_declaration SEP ";"; "}" ->
