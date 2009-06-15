@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_pprintf.ml,v 1.18 2007/12/08 08:59:50 deraugla Exp $ *)
+(* $Id: pa_pprintf.ml,v 1.19 2007/12/10 11:03:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* pprintf statement *)
@@ -345,12 +345,12 @@ value expand_pprintf loc pc fmt al =
                 [ Node t1 pp t2 ->
                     let (e1, oel1) = loop_1 True t1 in
                     let (e2, oel2) = loop_1 aft_is_empty t2 in
-                    let o =
+                    let (s, o) =
                       match pp with
-                      [ PPbreak sp off -> string_of_int off
-                      | PPspace -> "0" ]
+                      [ PPbreak s o -> (string_of_int s, string_of_int o)
+                      | PPspace -> ("1", "0") ]
                     in
-                    (e1, oel1 @ [(o, e2) :: oel2])
+                    (e1, oel1 @ [(s, o, e2) :: oel2])
                 | Offset _ t ->
                     loop_1 aft_is_empty t
                 | t ->
@@ -358,11 +358,11 @@ value expand_pprintf loc pc fmt al =
             in
             let fl =
               List.fold_right
-                (fun (o, e) el ->
-                   <:expr< [($int:o$, fun pc -> $e$) :: $el$] >>)
+                (fun (s, o, e) el ->
+                   <:expr< [($int:s$, $int:o$, fun pc -> $e$) :: $el$] >>)
                 oel <:expr< [] >>
             in
-            <:expr< sprint_break_all 1 $pc$ (fun pc -> $e$) $fl$ >> ] ]
+            <:expr< sprint_break_all $pc$ (fun pc -> $e$) $fl$ >> ] ]
 ;
 
 EXTEND

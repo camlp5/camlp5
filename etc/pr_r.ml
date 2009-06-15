@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.137 2007/12/10 04:49:55 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.138 2007/12/10 11:03:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -153,16 +153,15 @@ value sprint_break nspaces offset pc f g =
        sprintf "%s\n%s" s1 s2)
 ;
 
-value sprint_break_all nspaces pc f fl =
+value sprint_break_all pc f fl =
   horiz_vertic
     (fun () ->
-       let sp = String.make nspaces ' ' in
        loop (f (if fl = [] then pc else {(pc) with aft = ""})) fl
        where rec loop s =
          fun
-         [ [(_, f) :: fl] ->
+         [ [(sp, off, f) :: fl] ->
              let s =
-               sprintf "%s%s%s" s sp
+               sprintf "%s%s%s" s (String.make sp ' ')
                  (f {(pc) with bef = "";
                      aft = if fl = [] then pc.aft else ""})
              in
@@ -172,10 +171,10 @@ value sprint_break_all nspaces pc f fl =
        loop (f (if fl = [] then pc else {(pc) with aft = ""})) fl
        where rec loop s =
          fun
-         [ [(o, f) :: fl] ->
+         [ [(sp, off, f) :: fl] ->
              let s =
                sprintf "%s\n%s" s
-                 (f {(pc) with ind = pc.ind + o; bef = tab (pc.ind + o);
+                 (f {(pc) with ind = pc.ind + off; bef = tab (pc.ind + off);
                      aft = if fl = [] then pc.aft else ""})
              in
              loop s fl
@@ -560,48 +559,27 @@ value type_decl pc td =
   in
   horiz_vertic
     (fun () ->
-       pprintf pc "%s%s = %s%s"
-         (var_escaped {(pc) with bef = ""; aft = ""} (Pcaml.unvala tn))
-         (if Pcaml.unvala tp = [] then ""
-          else
-            sprintf " %s" (hlist type_var {(pc) with bef = ""; aft = ""}
-              (Pcaml.unvala tp)))
-         (ctyp {(pc) with bef = ""; aft = ""} te)
-         (hlist type_constraint {(pc) with bef = ""; aft = ""}
-            (Pcaml.unvala cl)))
+       pprintf pc "%p%s%p = %p%p" var_escaped (Pcaml.unvala tn)
+         (if Pcaml.unvala tp = [] then "" else " ")
+         (hlist type_var) (Pcaml.unvala tp) ctyp te
+         (hlist type_constraint) (Pcaml.unvala cl))
     (fun () ->
-       let s1 =
-         horiz_vertic
-           (fun () ->
-              let pc = {(pc) with aft = ""} in
-              pprintf pc "%s%s ="
-                (var_escaped {(pc) with bef = ""} (Pcaml.unvala tn))
-                (if Pcaml.unvala tp = [] then ""
-                 else
-                   sprintf " %s"
-                     (hlist type_var {(pc) with bef = ""} (Pcaml.unvala tp))))
-           (fun () -> not_impl "type_decl vertic 1" {(pc) with aft = ""} tn)
-       in
-       let s2 =
-         if Pcaml.unvala cl = [] then
-           ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""}
-             te
-         else
-           horiz_vertic
-             (fun () ->
-                sprintf "%s%s%s%s" (tab (pc.ind + 2))
-                  (ctyp {(pc) with bef = ""; aft = ""} te)
-                  (not_impl "type_decl cl 2" {(pc) with bef = ""; aft = ""}
-                     cl)
-                  "")
-             (fun () ->
-                not_impl "type_decl vertic 2" {(pc) with bef = ""; aft = ""}
-                  tn)
-       in
-       let s3 =
-         if pc.aft = "" then "" else sprintf "\n%s%s" (tab pc.ind) pc.aft
-       in
-       sprintf "%s\n%s%s" s1 s2 s3)
+       if pc.aft = "" then
+         pprintf pc "%p%s%p =@;%p%p" var_escaped (Pcaml.unvala tn)
+           (if Pcaml.unvala tp = [] then "" else " ")
+           (hlist type_var) (Pcaml.unvala tp) ctyp te
+           (fun pc cl ->
+              if Pcaml.unvala cl = [] then ""
+              else not_impl "type_decl cl 1" pc cl)
+           cl
+       else
+         pprintf pc "@[<a>%p%s%p =@;%p%p@ @]" var_escaped (Pcaml.unvala tn)
+           (if Pcaml.unvala tp = [] then "" else " ")
+           (hlist type_var) (Pcaml.unvala tp) ctyp te
+           (fun pc cl ->
+              if Pcaml.unvala cl = [] then ""
+              else not_impl "type_decl cl 2" pc cl)
+           cl)
 ;
 
 value label_decl pc (_, l, m, t) =
