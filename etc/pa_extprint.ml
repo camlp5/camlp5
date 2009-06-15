@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_extprint.ml,v 1.24 2007/12/17 20:30:52 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.25 2007/12/17 20:32:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -647,18 +647,19 @@ value rec meta_tree_for_trace loc (s, tl) =
 
 value get_format_args fmt al = ([], al);
 
-value make_pc loc erase_bef erase_aft empty_bef empty_aft pc bef bef_al
+value make_pc loc erase_bef erase_aft is_empty_bef is_empty_aft pc bef bef_al
     aft aft_al =
   let lbl =
     if not erase_bef && bef = "" then []
     else
       let e =
-        if (erase_bef || empty_bef) && bef_al = [] then <:expr< $str:bef$ >>
+        if (erase_bef || is_empty_bef) && bef_al = [] then
+          <:expr< $str:bef$ >>
         else
-          let bef = if erase_bef || empty_bef then bef else "%s" ^ bef in
+          let bef = if erase_bef || is_empty_bef then bef else "%s" ^ bef in
           let e = <:expr< Pretty.sprintf $str:bef$ >> in
           let e =
-            if erase_bef || empty_bef then e else <:expr< $e$ $pc$.bef >>
+            if erase_bef || is_empty_bef then e else <:expr< $e$ $pc$.bef >>
           in
           List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e bef_al
       in
@@ -668,12 +669,13 @@ value make_pc loc erase_bef erase_aft empty_bef empty_aft pc bef bef_al
     if not erase_aft && aft = "" then lbl
     else
       let e =
-        if (erase_aft || empty_aft) && aft_al = [] then <:expr< $str:aft$ >>
+        if (erase_aft || is_empty_aft) && aft_al = [] then
+          <:expr< $str:aft$ >>
         else
-          let aft = if erase_aft || empty_aft then aft else aft ^ "%s" in
+          let aft = if erase_aft || is_empty_aft then aft else aft ^ "%s" in
           let e = <:expr< Pretty.sprintf $str:aft$ >> in
           let e = List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e aft_al in
-          if erase_aft || empty_aft then e else <:expr< $e$ $pc$.aft >>
+          if erase_aft || is_empty_aft then e else <:expr< $e$ $pc$.aft >>
       in
       [(<:patt< aft >>, e) :: lbl]
   in
