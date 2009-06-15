@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.58 2007/12/28 04:13:12 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.59 2007/12/28 09:35:46 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -122,6 +122,8 @@ value type_param pc (s, (pl, mi)) =
   pprintf pc "%s'%s" (if pl then "+" else if mi then "-" else "")
     (Pcaml.unvala s)
 ;
+
+value type_var pc v = pprintf pc "'%s" v;
 
 value type_decl b pc td =
   let n = rename_id (Pcaml.unvala (snd td.MLast.tdNam)) in
@@ -563,6 +565,8 @@ EXTEND_PRINTER
           sprintf "%s_%s" pc.bef pc.aft
       | <:ctyp< # $list:sl$ >> ->
           pprintf pc "(# %p)" longident sl
+      | <:ctyp< ! $list:pl$ . $t$ >> ->
+          pprintf pc "(! (%p)@;<1 1>%p)" (hlist type_var) pl ctyp t
       | x ->
           not_impl "ctyp" pc x ] ]
   ;
