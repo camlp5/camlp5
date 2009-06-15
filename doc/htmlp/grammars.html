@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.4 2007/07/14 19:05:00 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.5 2007/07/15 01:50:29 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -19,7 +19,16 @@
 
 <h1 class="top">Extensible grammars</h1>
 
-<h2>Introduction</h2>
+<p>This chapter describes the whole syntax and semantics of the
+extensible grammars of camlp5.</p>
+
+<p>The extensible grammars are the most advanced parsing tool of
+camlp5. They apply to streams of characters using a lexer which has to
+be previously defined by the programmer. In camlp5, the syntax of the
+ocaml language is defined with extensible grammars, which makes camlp5
+a bootstrapped system (it compiles its own features by itself).</p>
+
+<h2>Getting started</h2>
 
 <p>The extensible grammars are a system to build <em>grammar
 entries</em> which can be extended dynamically. A grammar entry is an
@@ -36,9 +45,9 @@ value g = Grammar.gcreate lexer;
 </pre>
 
 <p>where "<tt>lexer</tt>" is a lexer previously defined. See the
-chapter explaining how make lexers for extensible grammars. In a first
-time, it is possible to use a lexer provided by camlp5 in the module
-"<tt>Plexer</tt>":</p>
+chapter explaining how make lexers for extensible grammars (<em>to be
+written</em>). In a first time, it is possible to use a lexer of the
+module "<tt>Plexer</tt>" provided by camlp5:</p>
 
 <pre>
 value g = Grammar.gcreate (Plexer.gmake ());
@@ -51,7 +60,7 @@ takes the grammar as first parameter and a name as second parameter. This
 name is used in case of syntax errors. For example:</p>
 
 <pre>
-value ex = Grammar.Entry.create g "expression";
+value exp = Grammar.Entry.create g "expression";
 </pre>
 
 <p>To apply a grammar entry, the function
@@ -59,7 +68,7 @@ value ex = Grammar.Entry.create g "expression";
 grammar entry, the second one a stream of characters:</p>
 
 <pre>
-Grammar.Entry.parse ex (Stream.of_string "hello");
+Grammar.Entry.parse exp (Stream.of_string "hello");
 </pre>
 
 <p>But if you experiment this, since the entry was just created
@@ -81,10 +90,61 @@ is loaded. Its syntax is:</p>
 
 <pre>
           expression ::= extend
-              extend ::= "EXTEND" extend_body "END"
-         extend_body ::= efunction_opt global_opt entries
-       efunction_opt ::= "FUNCTION" ":" qualid ";"
+              extend ::= "EXTEND" extend-body "END"
+         extend-body ::= efunction-opt global-opt entries
+       efunction-opt ::= "FUNCTION" ":" name ";"
                        | &lt;nothing&gt;
+          global-opt ::= "GLOBAL" ":" names ";"
+                       | &lt;nothing&gt;
+             entries ::= entry entries
+                       | entry
+               entry ::= name ":" position-opt "[" levels "]"
+        position-opt ::= "FIRST"
+                       | "LAST"
+                       | "BEFORE" string
+                       | "AFTER" string
+                       | "LEVEL" string
+                       | &lt;nothing&gt;
+              levels ::= level "|" levels
+                       | level
+               level ::= label-opt assoc-opt "[" rules "]"
+           label-opt ::= label
+                       | &lt;nothing&gt;
+           assoc-opt ::= "LEFTA"
+                       | "RIGHTA"
+                       | "NONA"
+                       | &lt;nothing&gt;
+               rules ::= rule "|" rules
+                       | rule
+                rule ::= psymbols-opt "->" expression
+                       | psymbols-opt
+        psymbols-opt ::= psymbols
+                       | &lt;nothing&gt;
+            psymbols ::= psymbol ";" psymbols
+                       | psymbol
+             psymbol ::= symbol
+                       | pattern "=" symbol
+              symbol ::= "LIST0" symbol
+                       | "LIST0" symbol "SEP" symbol
+                       | "LIST1" symbol
+                       | "LIST1" symbol "SEP" symbol
+                       | "OPT" symbol
+                       | "SELF"
+                       | "NEXT"
+                       | string
+                       | name
+                       | name "LEVEL" label
+                       | "(" symbol ")"
+               label ::= string
+                name ::= qualid
+              qualid ::= qualid "." qualid
+                       | uident
+                       | lident
+              uident ::= 'A'-'Z' ident
+              lident ::= ('a'-'z' | '_' | utf8-char) ident
+               ident ::= ident-char*
+          ident-char ::= ('a'-'a' | 'A'-'Z' | '0'-'9' | '_' | ''' | utf8-char)
+           utf8-char ::= '\128'-'\255'
 </pre>
 
 <p>... to be completed ...</p>
