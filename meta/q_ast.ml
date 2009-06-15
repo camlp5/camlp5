@@ -1,6 +1,15 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.32 2007/09/03 20:23:43 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.33 2007/09/04 04:29:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
+
+(* Experimental AST quotations while running the normal parser and
+   its possible extensions and meta-ifying the nodes. But antiquotations
+   are a hack (creation of extra values not belonging to their types) and
+   there is a risk of memory fault if the semantic actions of the parser
+   use these values in their supposed normal range. Example with
+   antiquotation in <:expr< parser [: x = $y$ :] -> z >>.
+     The real solution should be to completely change the syntax tree
+   but there is then a problem of backward compatibility. *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -159,9 +168,7 @@ module Meta =
         | None ->
             match t with
             [ TyAcc _ t1 t2 -> <:expr< MLast.TyAcc $ln$ $loop t1$ $loop t2$ >>
-(*
             | TyAny _ -> <:expr< MLast.TyAny $ln$ >>
-*)
             | TyApp _ t1 t2 -> <:expr< MLast.TyApp $ln$ $loop t1$ $loop t2$ >> 
             | TyLid _ s -> <:expr< MLast.TyLid $ln$ $e_string s$ >>
             | TyQuo _ s -> <:expr< MLast.TyQuo $ln$ $e_string s$ >>
@@ -514,6 +521,12 @@ value check_and_make_anti prm typ =
   let (loc, str) = check_anti_loc prm typ in
   make_anti loc typ str
 ;
+
+(* Need adding in grammar.ml in Slist* cases:
+      let pa = parser_of_token entry ("LIST", "") in
+   and
+      [: a = pa :] -> a
+   in their parsers. Same for OPT and FLAG. *)
 
 let lex = Grammar.glexer Pcaml.gram in
 let tok_match = lex.Plexing.tok_match in
