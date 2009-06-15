@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.123 2007/12/06 14:21:31 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.124 2007/12/06 20:51:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -151,6 +151,35 @@ value sprint_break nspaces offset pc f g =
          g {(pc) with ind = pc.ind + offset; bef = tab (pc.ind + offset)}
        in
        sprintf "%s\n%s" s1 s2)
+;
+
+value sprint_break_all nspaces pc f fl =
+  horiz_vertic
+    (fun () ->
+       let sp = String.make nspaces ' ' in
+       loop (f (if fl = [] then pc else {(pc) with aft = ""})) fl
+       where rec loop s =
+         fun
+         [ [(_, f) :: fl] ->
+             let s =
+               sprintf "%s%s%s" s sp
+                 (f {(pc) with bef = "";
+                     aft = if fl = [] then pc.aft else ""})
+             in
+             loop s fl
+         | [] -> s ])
+    (fun () ->
+       loop (f (if fl = [] then pc else {(pc) with aft = ""})) fl
+       where rec loop s =
+         fun
+         [ [(o, f) :: fl] ->
+             let s =
+               sprintf "%s\n%s" s
+                 (f {(pc) with ind = pc.ind + o; bef = tab (pc.ind + o);
+                     aft = if fl = [] then pc.aft else ""})
+             in
+             loop s fl
+         | [] -> s ])
 ;
 
 value var_escaped pc v =
@@ -896,18 +925,7 @@ EXTEND_PRINTER
                         if else_b = "" then
                           pprintf pc "@[<3>if %p@]@ then" curr e1
                         else
-                          let s1 =
-                            let s1 = sprintf "%s%sif" pc.bef else_b in
-                            let s2 =
-                              curr
-                                {(pc) with ind = pc.ind + 2;
-                                 bef = tab (pc.ind + 2); aft = ""}
-                                e1
-                            in
-                            sprintf "%s\n%s" s1 s2
-                          in
-                          let s2 = sprintf "%sthen%s" (tab pc.ind) pc.aft in
-                          sprintf "%s\n%s" s1 s2
+                          pprintf pc "@[<a>%sif@;%p@ then@]" else_b curr e1
                       in
                       match sequencify e2 with
                       [ Some el ->

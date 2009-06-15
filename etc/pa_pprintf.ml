@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_pprintf.ml,v 1.16 2007/12/06 11:00:01 deraugla Exp $ *)
+(* $Id: pa_pprintf.ml,v 1.17 2007/12/06 20:51:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* pprintf statement *)
@@ -94,6 +94,10 @@ value parse_paren_param =
   fparser [: `'<'; off = parse_int; `'>' :] -> off
 ;
 
+value parse_all_param =
+  fparser [: `'<'; `'a'; `'>' :] -> ()
+;
+
 value next_item loc pc fmt al i_beg =
   loop al i_beg where rec loop al i =
     if i + 1 < String.length fmt then
@@ -124,7 +128,8 @@ value next_item loc pc fmt al i_beg =
 type tree 'a 'b =
   [ Node of tree 'a 'b and 'a and tree 'a 'b
   | Leaf of 'b
-  | Offset of int and tree 'a 'b ]
+  | Offset of int and tree 'a 'b
+  | BreakAll of tree 'a 'b ]
 ;
 
 value rec concat_tree t1 t2 =
@@ -133,7 +138,9 @@ value rec concat_tree t1 t2 =
   | (_, Node t21 op2 t22) -> Node (concat_tree t1 t21) op2 t22
   | (Leaf l1, Leaf l2) -> Leaf (l1 @ l2)
   | (Offset _ t1, _) -> concat_tree t1 t2
-  | (_, Offset _ t2) -> concat_tree t1 t2 ]
+  | (_, Offset _ t2) -> concat_tree t1 t2
+  | (BreakAll t1, _) -> concat_tree t1 t2
+  | (_, BreakAll t2) -> concat_tree t1 t2 ]
 ;
 
 value rec read_tree loc pc fmt al i =
@@ -177,15 +184,23 @@ value rec read_tree loc pc fmt al i =
 
 and read_simple_tree loc pc fmt al i =
   if i + 1 < String.length fmt && fmt.[i] = '@' && fmt.[i+1] = '[' then
-    let (offset, i) =
-      let s = String.sub fmt (i + 2) (String.length fmt - i - 2) in
-      match parse_paren_param (Fstream.of_string s) with
-      [ Some (offset, strm) -> (offset, i + 2 + Fstream.count strm)
-      | None -> (0, i + 2) ]
-    in
-    let (tree, al, i) = read_tree loc pc fmt al i in
-    let tree = if offset > 0 then Offset offset tree else tree in
-    (tree, al, i)
+    let i = i + 2 in
+    let s = String.sub fmt i (String.length fmt - i) in
+    let strm = Fstream.of_string s in
+    match parse_paren_param strm with
+    [ Some (offset, strm) ->
+        let i = i + Fstream.count strm in
+        let (tree, al, i) = read_tree loc pc fmt al i in
+        (Offset offset tree, al, i)
+    | None ->
+        match parse_all_param strm with
+        [ Some (_, strm) ->
+            let i = i + Fstream.count strm in
+            let (tree, al, i) = read_tree loc pc fmt al i in
+            (BreakAll tree, al, i)
+        | None ->
+            let (tree, al, i) = read_tree loc pc fmt al i in
+            (tree, al, i) ] ]
   else
     let (pcl_al_opt, i) = next_item loc pc fmt al i in
     let (pcl, al) =
@@ -322,7 +337,34 @@ value expand_pprintf loc pc fmt al =
                 (fun pc -> $e2$)
             >>
         | Offset offset t ->
-            loop pc offset aft_is_empty t ] ]
+            loop pc offset aft_is_empty t
+        | BreakAll t ->
+            let (e, oel) =
+              loop_1 aft_is_empty t where rec loop_1 aft_is_empty =
+                fun
+                [ Node t1 pp t2 ->
+                    let (e1, oel1) = loop_1 True t1 in
+                    let (e2, oel2) = loop_1 aft_is_empty t2 in
+                    let o =
+                      match pp with
+                      [ PPbreak sp off -> string_of_int off
+                      | PPspace -> "0" ]
+                    in
+                    (e1, oel1 @ [(o, e2) :: oel2])
+                | Offset _ t ->
+                    loop_1 aft_is_empty t
+                | BreakAll t ->
+                    loop_1 aft_is_empty t
+                | t ->
+                    (loop pc offset aft_is_empty t, []) ]
+            in
+            let fl =
+              List.fold_right
+                (fun (o, e) el ->
+                   <:expr< [($int:o$, fun pc -> $e$) :: $el$] >>)
+                oel <:expr< [] >>
+            in
+            <:expr< sprint_break_all 1 $pc$ (fun pc -> $e$) $fl$ >> ] ]
 ;
 
 EXTEND
