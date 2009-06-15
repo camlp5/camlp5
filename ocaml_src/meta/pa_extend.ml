@@ -1,4 +1,4 @@
-(* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
+(* camlp5r pa_extend.cmo q_MLast.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp5                                  *)
@@ -1907,9 +1907,13 @@ Grammar.extend
       Gramext.action
         (fun (s : 'symbol) _ (loc : Ploc.t) ->
            (if !quotify then ssflag2 loc s
-            else
+            else if not !(Pcaml.strict_mode) then
               let styp = STlid (loc, "bool") in
               let text = TXflag (loc, s.text) in
+              {used = s.used; text = text; styp = styp}
+            else
+              let styp = STvala (loc, STlid (loc, "bool")) in
+              let text = TXflag2 (loc, s.text) in
               {used = s.used; text = text; styp = styp} :
             'symbol));
       [Gramext.Stoken ("UIDENT", "FLAG"); Gramext.Sself],

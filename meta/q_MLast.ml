@@ -1,4 +1,4 @@
-(* camlp5r pa_macro.cmo pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
+(* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp5                                  *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.41 2007/09/06 12:00:46 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.42 2007/09/06 20:21:40 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -1217,11 +1217,8 @@ EXTEND
   ;
   a_flag2:
     [ [ a = ANTIQUOT "flag" ->
-          IFNDEF STRICT THEN
-            antiquot "flag" loc a 
-          ELSE
-            Qast.VaVal (antiquot "flag" loc a)
-          END
+          if Pcaml.strict_mode.val then Qast.VaVal (antiquot "flag" loc a)
+          else antiquot "flag" loc a 
       | a = ANTIQUOT "aflag" -> antiquot "aflag" loc a ] ]
   ;
   (* compatibility; deprecated since version 4.07 *)

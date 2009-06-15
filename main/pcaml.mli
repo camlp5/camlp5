@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pcaml.mli,v 1.13 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: pcaml.mli,v 1.14 2007/09/06 20:21:40 deraugla Exp $ *)
 
 (** Language grammar, entries and printers.
 
@@ -156,6 +156,11 @@ value eq_class_str_item :
   MLast.class_str_item -> MLast.class_str_item -> bool;
 value eq_class_type : MLast.class_type -> MLast.class_type -> bool;
 value eq_class_expr : MLast.class_expr -> MLast.class_expr -> bool;
+
+(** {6 Other} *)
+
+value strict_mode : ref bool;
+   (* [True] if the current mode is "strict", [False] if "transitional" *)
 
 (**/**)
 

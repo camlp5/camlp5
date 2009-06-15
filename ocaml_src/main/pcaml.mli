@@ -155,6 +155,11 @@ val eq_class_str_item : MLast.class_str_item -> MLast.class_str_item -> bool;;
 val eq_class_type : MLast.class_type -> MLast.class_type -> bool;;
 val eq_class_expr : MLast.class_expr -> MLast.class_expr -> bool;;
 
+(** {6 Other} *)
+
+val strict_mode : bool ref;;
+   (* [True] if the current mode is "strict", [False] if "transitional" *)
+
 (**/**)
 
 (* for system use *)

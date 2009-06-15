@@ -1,4 +1,4 @@
-(* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
+(* camlp5r pa_extend.cmo q_MLast.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp5                                  *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.38 2007/09/06 04:58:13 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.39 2007/09/06 20:21:40 deraugla Exp $ *)
 
 value split_ext = ref False;
 
@@ -912,16 +912,14 @@ EXTEND
             {used = s.used; text = text; styp = styp}
       | UIDENT "FLAG2"; s = SELF ->
           if quotify.val then ssflag2 loc s
+          else if not Pcaml.strict_mode.val then
+            let styp = STlid loc "bool" in
+            let text = TXflag loc s.text in
+            {used = s.used; text = text; styp = styp}
           else
-            IFNDEF STRICT THEN
-              let styp = STlid loc "bool" in
-              let text = TXflag loc s.text in
-              {used = s.used; text = text; styp = styp}
-            ELSE
-              let styp = STvala loc (STlid loc "bool") in
-              let text = TXflag2 loc s.text in
-              {used = s.used; text = text; styp = styp}
-            END ]
+            let styp = STvala loc (STlid loc "bool") in
+            let text = TXflag2 loc s.text in
+            {used = s.used; text = text; styp = styp} ]
     | [ UIDENT "SELF" ->
           {used = []; text = TXself loc; styp = STself loc "SELF"}
       | UIDENT "NEXT" ->

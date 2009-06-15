@@ -1,4 +1,4 @@
-(* camlp5r pa_extend.cmo *)
+(* camlp5r pa_macro.cmo pa_extend.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp5                                  *)
@@ -474,3 +474,24 @@ let eq_class_sig_item = Reloc.eq_class_sig_item;;
 let eq_class_str_item = Reloc.eq_class_str_item;;
 let eq_class_type = Reloc.eq_class_type;;
 let eq_class_expr = Reloc.eq_class_expr;;
+
+(* Mode transitional or strict *)
+
+let strict_mode = ref false;;
+
+add_option "-mode"
+  (Arg.String
+     (function
+        "S" -> strict_mode := true
+      | "T" -> strict_mode := false
+      | _ -> failwith "bad mode; use option -help for details"))
+  "<mode> Set strict (S) or transitional (T) mode.";;
+
+add_option "-pmode"
+  (Arg.Unit
+     (fun () ->
+        if !strict_mode then Printf.eprintf "strict\n"
+        else Printf.eprintf "transitional\n";
+        flush stderr;
+        exit 0))
+  "Print the current mode and exit";;

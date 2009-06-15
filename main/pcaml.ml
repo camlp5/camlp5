@@ -1,4 +1,4 @@
-(* camlp5r pa_extend.cmo *)
+(* camlp5r pa_macro.cmo pa_extend.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp5                                  *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pcaml.ml,v 1.23 2007/09/05 18:40:31 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.24 2007/09/06 20:21:40 deraugla Exp $ *)
 
 value version = "4.09-exp";
 value syntax_name = ref "";
@@ -470,3 +470,25 @@ value eq_class_sig_item = Reloc.eq_class_sig_item;
 value eq_class_str_item = Reloc.eq_class_str_item;
 value eq_class_type = Reloc.eq_class_type;
 value eq_class_expr = Reloc.eq_class_expr;
+
+(* Mode transitional or strict *)
+
+value strict_mode = ref (IFNDEF STRICT THEN False ELSE True END);
+
+add_option "-mode"
+  (Arg.String
+     (fun
+      [ "S" -> strict_mode.val := True
+      | "T" -> strict_mode.val := False
+      | _ -> failwith "bad mode; use option -help for details" ]))
+  "<mode> Set strict (S) or transitional (T) mode.";
+
+add_option "-pmode"
+  (Arg.Unit
+     (fun () -> do {
+        if strict_mode.val then Printf.eprintf "strict\n"
+        else Printf.eprintf "transitional\n";
+        flush stderr;
+        exit 0
+      }))
+  "Print the current mode and exit";

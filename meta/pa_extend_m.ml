@@ -1,4 +1,4 @@
-(* camlp5r pa_macro.cmo pa_extend.cmo *)
+(* camlp5r pa_extend.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp5                                  *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend_m.ml,v 1.16 2007/09/06 04:44:02 deraugla Exp $ *)
+(* $Id: pa_extend_m.ml,v 1.17 2007/09/06 20:21:40 deraugla Exp $ *)
 
 open Pa_extend;
 
@@ -23,6 +23,6 @@ EXTEND
       | UIDENT "SOPT"; s = SELF -> ssopt loc s
       | UIDENT "SFLAG"; s = SELF -> ssflag loc s
       | UIDENT "SFLAG2"; s = SELF ->
-          IFNDEF STRICT THEN ssflag loc s ELSE ssflag2 loc s END ] ]
+          if Pcaml.strict_mode.val then ssflag2 loc s else ssflag loc s ] ]
   ;
 END;

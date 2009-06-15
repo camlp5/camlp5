@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extend.ml,v 1.29 2007/09/06 18:51:50 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.30 2007/09/06 20:21:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -9,6 +9,7 @@ open Pcaml;
 open Prtools;
 
 value no_slist = ref False;
+Pcaml.strict_mode.val := True;
 
 value not_impl name pc x =
   let desc =

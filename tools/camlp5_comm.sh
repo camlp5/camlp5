@@ -1,7 +1,7 @@
 #!/bin/bash
-# $Id: camlp5_comm.sh,v 1.2 2007/09/06 12:00:46 deraugla Exp $
+# $Id: camlp5_comm.sh,v 1.3 2007/09/06 20:21:40 deraugla Exp $
 
-DEFINE=-DNO_STRICT
+DEFINE=-DSTRICT
 ARGS1=
 FILE=
 QUIET=no

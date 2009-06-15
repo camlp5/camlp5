@@ -1,4 +1,4 @@
-(* camlp5r pa_macro.cmo pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
+(* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp5                                  *)
@@ -3816,7 +3816,9 @@ Grammar.extend
      [Gramext.Stoken ("ANTIQUOT", "flag")],
      Gramext.action
        (fun (a : string) (loc : Ploc.t) ->
-          (antiquot "flag" loc a : 'a_flag2))]];
+          (if !(Pcaml.strict_mode) then Qast.VaVal (antiquot "flag" loc a)
+           else antiquot "flag" loc a :
+           'a_flag2))]];
    Grammar.Entry.obj (a_opt : 'a_opt Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Stoken ("ANTIQUOT", "when")],
