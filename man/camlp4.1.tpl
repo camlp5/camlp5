@@ -200,6 +200,7 @@ Parsing files:
 .ta 1c
 	pa_r.cmo: revised syntax
 	pa_rp.cmo: streams and parsers
+        pa_lex.cmo: lexers
 	pa_o.cmo: normal syntax
 	pa_op.cmo: streams and parsers
 	pa_oop.cmo: streams and parsers (without code optimization)
@@ -210,7 +211,7 @@ Parsing files:
 	pa_fstream.cmo: syntax extension for functional streams
 	pa_macro.cmo: add macros (ifdef, define) like in C
 	pa_lefteval.cmo: left-to-right evaluation of parameters
-	pa_pragma.cmo: add directive #pragma
+	pa_pragma.cmo: directive #pragma
 .fi
 .LP
 Printing files:
@@ -223,7 +224,7 @@ Printing files:
 	pr_op.cmo: try to rebuild streams and parsers syntax
 	pr_extend.cmo: try to rebuild EXTEND statements
 	pr_extfun.cmo: try to rebuild extfun statements
-	pr_dump.cmo: syntax tree
+	pr_dump.cmo: dump syntax tree for ocaml compiler
 	pr_depend.cmo: file dependencies
 	pr_null.cmo: no output
 .fi

@@ -1,16 +1,16 @@
-# $Id: Makefile,v 1.16 2007/07/04 10:01:46 deraugla Exp $
+# $Id: Makefile,v 1.17 2007/07/05 03:17:41 deraugla Exp $
 
 include ../config/Makefile
 
 INCLUDES=-I ../camlp4 -I ../boot
 OCAMLCFLAGS=-warn-error A $(INCLUDES)
-OBJS=q_phony.cmo pa_o.cmo pa_op.cmo pa_oop.cmo pa_sml.cmo pa_lisp.cmo pa_scheme.cmo pa_extfold.cmo pa_extfun.cmo pa_fstream.cmo pa_lefteval.cmo pa_pragma.cmo pr_r_old.cmo pr_r.cmo pr_rp_old.cmo pr_ro.cmo pr_rp.cmo pr_o_old.cmo pr_o.cmo pr_op_old.cmo pr_op.cmo pr_scheme.cmo pr_schemep.cmo pr_extend_old.cmo pr_extend.cmo pr_extfun_old.cmo pr_extfun.cmo pr_null.cmo pr_depend.cmo
-INTF=pa_o.cmi
+OBJS=q_phony.cmo pa_o.cmo pa_op.cmo pa_oop.cmo pa_sml.cmo pa_lisp.cmo pa_scheme.cmo pa_extfold.cmo pa_extfun.cmo pa_fstream.cmo pa_lefteval.cmo pa_pragma.cmo pr_r.cmo pr_ro.cmo pr_rp.cmo pr_o.cmo pr_op.cmo pr_scheme.cmo pr_schemep.cmo pr_extend.cmo pr_extfun.cmo pr_null.cmo pr_depend.cmo
+OLD_OBJS=pr_r_old.cmo pr_rp_old.cmo pr_o_old.cmo pr_op_old.cmo pr_extend_old.cmo pr_extfun_old.cmo
 CAMLP4OM=pa_o.cmo pa_op.cmo ../meta/pr_dump.cmo
 CAMLP4SCHM=pa_scheme.cmo ../meta/pr_dump.cmo
 CAMLP4OMX=pa_o.cmx pa_op.cmx ../meta/pr_dump.cmx
 SHELL=/bin/sh
-COUT=$(OBJS) camlp4o$(EXE) camlp4sch$(EXE)
+COUT=$(OBJS) $(OLD_OBJS) camlp4o$(EXE) camlp4sch$(EXE)
 COPT=camlp4o.opt
 
 all: $(COUT) mkcamlp4.sh
@@ -75,7 +75,6 @@ get_promote:
 install:
 	-$(MKDIR) "$(LIBDIR)/camlp4" "$(BINDIR)"
 	cp $(OBJS) "$(LIBDIR)/camlp4/."
-	cp $(INTF) "$(LIBDIR)/camlp4/."
 	cp lib.sml "$(LIBDIR)/camlp4/."
 	cp camlp4o$(EXE) camlp4sch$(EXE) "$(BINDIR)/."
 	if test -f $(COPT); then cp $(COPT) "$(BINDIR)/."; fi
