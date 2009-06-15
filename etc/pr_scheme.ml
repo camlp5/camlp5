@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.52 2007/12/27 13:12:09 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.53 2007/12/27 20:49:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -21,6 +21,11 @@ do {
 };
 
 (* general functions *)
+
+(**)
+value test = ref False;
+Pcaml.add_option "-test" (Arg.Set test) " test";
+(**)
 
 value not_impl name pc x =
   let desc =
@@ -114,37 +119,18 @@ value brace pc b =
 ;
 
 value type_param pc (s, (pl, mi)) =
-  sprintf "%s%s'%s%s" pc.bef
-    (if pl then "+" else if mi then "-" else "") (Pcaml.unvala s) pc.aft
+  pprintf pc "%s'%s" (if pl then "+" else if mi then "-" else "")
+    (Pcaml.unvala s)
 ;
 
 value type_decl b pc td =
   let n = rename_id (Pcaml.unvala (snd td.MLast.tdNam)) in
-  horiz_vertic
-    (fun () ->
-       sprintf "%s(%s%s %s)%s" pc.bef b
-         (match Pcaml.unvala td.MLast.tdPrm with
-          [ [] -> n
-          | tp ->
-              sprintf "(%s %s)" n
-                (hlist type_param {(pc) with bef = ""; aft = ""} tp) ])
-         (ctyp {(pc) with bef = ""; aft = ""} td.MLast.tdDef) pc.aft)
-    (fun () ->
-       let s1 =
-         sprintf "%s(%s%s" pc.bef b
-           (match Pcaml.unvala td.MLast.tdPrm with
-            [ [] -> n
-            | tp ->
-                sprintf "(%s %s)" n
-                  (hlist type_param {(pc) with bef = ""; aft = ""} tp) ])
-       in
-       let s2 =
-         ctyp
-           {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
-            aft = sprintf ")%s" pc.aft}
-           td.MLast.tdDef
-       in
-       sprintf "%s\n%s" s1 s2)
+  pprintf pc "@[<1>(%s%p@ %p)@]" b
+    (fun pc ->
+       fun
+       [ [] -> pprintf pc "%s" n
+       | tp -> pprintf pc "(%s %p)" n (hlist type_param) tp ])
+    (Pcaml.unvala td.MLast.tdPrm) ctyp td.MLast.tdDef
 ;
 
 value type_decl_list pc =
