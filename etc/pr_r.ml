@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.23 2007/07/03 13:36:01 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.24 2007/07/04 02:23:37 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -930,22 +930,35 @@ value expr_top =
               (curr {(pc) with bef = ""; aft = ""} e2)
               (curr {(pc) with bef = ""; aft = ""} e3) pc.aft)
          (fun () ->
-            let if_then ind b_if e1 e2 =
+            let if_then pc else_b e1 e2 =
               horiz_vertic
                 (fun () ->
-                   sprintf "%s%s then %s" b_if
+                   sprintf "%s%sif %s then %s%s" pc.bef else_b
                      (curr {(pc) with bef = ""; aft = ""} e1)
-                     (curr {(pc) with bef = ""; aft = ""} e2))
+                     (curr {(pc) with bef = ""; aft = ""} e2) pc.aft)
                 (fun () ->
                    let horiz_if_then k =
-                     sprintf "%s%s then%s" b_if
+                     sprintf "%s%sif %s then%s" pc.bef else_b
                        (curr {(pc) with bef = ""; aft = ""} e1) k
                    in
                    let vertic_if_then k =
                      let s1 =
-                       curr {(pc) with ind = ind + 3; bef = b_if; aft = ""} e1
+                       if else_b = "" then
+                         curr
+                           {(pc) with ind = pc.ind + 3;
+                            bef = sprintf "%s%sif " pc.bef else_b; aft = ""}
+                           e1
+                       else
+                         let s1 = sprintf "%s%sif" pc.bef else_b in
+                         let s2 =
+                           curr
+                             {(pc) with ind = pc.ind + 2;
+                              bef = tab (pc.ind + 2); aft = ""}
+                             e1
+                         in
+                         sprintf "%s\n%s" s1 s2
                      in
-                     let s2 = sprintf "%sthen%s" (tab ind) k in
+                     let s2 = sprintf "%sthen%s" (tab pc.ind) k in
                      sprintf "%s\n%s" s1 s2
                    in
                    match sequencify e2 with
@@ -970,15 +983,14 @@ value expr_top =
                        in
                        sprintf "%s\n%s" s1 s2 ])
             in
-            let s1 = if_then pc.ind (sprintf "%sif " pc.bef) e1 e2 in
+            let s1 = if_then {(pc) with aft = ""} "" e1 e2 in
             let (eel, e3) = get_else_if e3 in
             let s2 =
               loop eel where rec loop =
                 fun
                 [ [(e1, e2) :: eel] ->
                     sprintf "\n%s%s"
-                      (if_then pc.ind (sprintf "%selse if " (tab pc.ind)) e1
-                         e2)
+                      (if_then {(pc) with aft = ""} "else if " e1 e2)
                       (loop eel)
                 | [] -> "" ]
             in

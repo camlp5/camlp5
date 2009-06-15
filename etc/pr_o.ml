@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.25 2007/07/04 02:17:26 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.26 2007/07/04 02:23:37 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1027,8 +1027,7 @@ value expr_expr1 =
                 (fun () ->
                    sprintf "%s%sif %s then %s%s" pc.bef else_b
                      (curr {(pc) with bef = ""; aft = ""; dang = ""} e1)
-                     (curr {(pc) with bef = ""; aft = ""} e2)
-                     pc.aft)
+                     (curr {(pc) with bef = ""; aft = ""} e2) pc.aft)
                 (fun () ->
                    let horiz_if_then k =
                      sprintf "%s%sif %s then%s" pc.bef else_b
@@ -2835,7 +2834,7 @@ Pcaml.add_option "-sep" (Arg.String (fun x -> sep.val := Some x))
 Pcaml.add_option "-ss" (Arg.Set flag_semi_semi) "Print double semicolons.";
 
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.25 2007/07/04 02:17:26 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.26 2007/07/04 02:23:37 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
