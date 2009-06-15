@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.96 2007/11/29 03:12:32 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.97 2007/11/29 11:04:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -389,20 +389,20 @@ value record_binding pc (p, e) =
   let (pl, e) = expr_fun_args e in
   let pl = [p :: pl] in
   let expr_wh = if flag_where_after_field_eq.val then expr_wh else expr in
-  horiz_vertic
-    (fun () ->
-       sprintf "%s%s = %s%s" pc.bef
-         (hlist patt {(pc) with bef = ""; aft = ""} pl)
-         (expr_wh {(pc) with bef = ""; aft = ""} e) pc.aft)
-    (fun () ->
-       match sequencify e with
-       [ Some el ->
+  match sequencify e with
+  [ Some el ->
+      horiz_vertic
+        (fun () ->
+           break 1 2 pc
+             (fun pc -> hlist patt {(pc) with aft = " ="} pl)
+             (fun pc -> expr_wh pc e))
+        (fun () ->
            sequence_box2 pc
-             (fun k -> hlist patt {(pc) with aft = sprintf " =%s" k} pl) el
-       | None ->
-           sprintf "%s\n%s" (hlist patt {(pc) with aft = " ="} pl)
-             (expr_wh {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
-                e) ])
+             (fun k -> hlist patt {(pc) with aft = sprintf " =%s" k} pl) el)
+  | None ->
+      break 1 2 pc
+        (fun pc -> hlist patt {(pc) with aft = " ="} pl)
+        (fun pc -> expr_wh pc e) ]
 ;
 
 (* Pretty printing improvements (optional):
