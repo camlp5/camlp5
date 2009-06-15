@@ -30,20 +30,17 @@ val tokens : g -> string -> (string * int) list;;
        The integer is the number of times this pattern value is used.
 
        Examples:
--      If the associated lexer uses ("", xxx) to represent a keyword
-       (what is represented by then simple string xxx in an [EXTEND]
-       statement rule), the call [Grammar.token g ""] returns the keywords
-       list.
--      The call [Grammar.token g "IDENT"] returns the list of all usages
+-      The call [Grammar.tokens g ""] returns the keywords list.
+-      The call [Grammar.tokens g "IDENT"] returns the list of all usages
        of the pattern "IDENT" in the [EXTEND] statements. *)
 val glexer : g -> token Token.glexer;;
    (** Return the lexer used by the grammar *)
 
 type parsable;;
 val parsable : g -> char Stream.t -> parsable;;
-   (** Type and value allowing to keep the token stream for several calls
-       of entries of the same grammar, to prevent loss of tokens. To be
-       used with [Entry.parse_parsable] below *)
+   (** Type and value allowing to keep the same token stream between
+       several calls of entries of the same grammar, to prevent possible
+       loss of tokens. To be used with [Entry.parse_parsable] below *)
 
 module Entry :
   sig
@@ -85,9 +82,9 @@ module Unsafe :
 ;;
    (** Module for clearing grammars and entries. To be manipulated with
        care, because: 1) reinitializing a grammar destroys all tokens
-       and there may have problems with the associated lexer if it has
-       a notion of keywords; 2) clearing an entry does not destroy the
-       tokens used only by itself.
+       and there may have problems with the associated lexer if there
+       are keywords; 2) clearing an entry does not destroy the tokens
+       used only by itself.
 -      [Unsafe.reinit_gram g lex] removes the tokens of the grammar
 -      and sets [lex] as a new lexer for [g]. Warning: the lexer
 -      itself is not reinitialized.
