@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.20 2007/07/16 09:40:23 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.21 2007/07/16 11:39:33 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -131,7 +131,7 @@ is loaded. Its syntax is:</p>
                        | entry-name "LEVEL" label
                        | "SELF"
                        | "NEXT"
-                       | "LITS0" symbol
+                       | "LIST0" symbol
                        | "LIST0" symbol "SEP" symbol
                        | "LIST1" symbol
                        | "LIST1" symbol "SEP" symbol
@@ -390,16 +390,85 @@ symbols. They are:</p>
 
 <p>... to be completed ...</p>
 
-<h2>Interface with lexer</h2>
+<h2>Interface with the lexer</h2>
 
-<p>The function which creates a grammar, "<tt>Grammar.gcreate</tt>",
-takes a lexer as parameter. This is a value of type "<tt>Token.glexer
-(string * string)</tt>".</p>
+<p>To see how the interface with the lexer works, it is important to
+understand the notion of "token patterns".</p>
 
-<p>This type is a record type containing six fields:</p>
+<h3>Token patterns</h3>
+
+<p>In grammar rules, the keywords and tokens symbols are represented
+by values of type "<tt>Token.pattern</tt>" defined like this:</p>
+
+<pre>
+type pattern = (string * string);
+</pre>
+
+<p>where the two strings represent:</p>
+
+<ol>
+  <li>The <em>constructor name</em>, an identifier starting with an
+    uppercase character,</li>
+  <li>The possible <em>value</em> to match with, if any.</li>
+</ol>
+
+<p>The empty constructor name corresponds to a keyword. The empty
+value corresponds to a match to any value of the symbol.</p>
+
+<p>For example, in the rule containing:</p>
+
+<pre>
+"for"; i = LIDENT; "="; e1 = SELF; "to"; e2 = SELF
+</pre>
+
+<p>the token patterns are:</p>
 
 <ul>
-  <li>tok_func: function returning a token from a char stream,</li>
+  <li>for the keywords "for", "=" and "to":
+    <ul>
+      <li><tt>("", "for")</tt></li>
+      <li><tt>("", "=")</tt></li>
+      <li><tt>("", "to")</tt>)</li>
+    </ul>
+  </li>
+  <li>for the token symbol LIDENT:
+    <ul>
+      <li><tt>("LIDENT", "")</tt></li>
+    </ul>
+  </li>
+</ul>
+
+<p>The symbol <tt>UIDENT "Foo"</tt> in a rule would be represented
+by the token pattern:</p>
+
+<pre>
+("UIDENT", "Foo")
+</pre>
+
+<p>On the other hand, the symbol "<tt>SELF</tt>" is a specific symbol
+of the EXTEND syntax: it does not correspond to a token pattern and is
+represented differently. A token constructor name must not belong to
+the specific symbols: SELF, NEXT, LIST0, LIST1 and OPT.</p>
+
+<h3>Grammar.gcreate</h3>
+
+<p>The function "<tt>Grammar.gcreate</tt>" takes a g-lexer as
+parameter. A g-lexer is a value of type "<tt>Token.glexer t</tt>"
+where "<tt>t</tt>" is the type of the tokens. The programmer of the
+lexer may choose any type he wants, on condition that he provides also
+a correct function "<tt>tok_match</tt>" (see further) which tells how
+a token pattern is matched against this token type.</p>
+
+<p>A suitable value for a g-lexer is the result of "<tt>Plexer.gmake
+()</tt>" which is the lexer used for the ocaml language in camlp5.</p>
+
+<h3>g-lexer type</h3>
+
+<p>The type "<tt>Token.glexer</tt>" is a record type containing six
+fields:</p>
+
+<ul>
+  <li>tok_func: function returning a token stream from a char stream,</li>
   <li>tok_using: function checking if a token pattern is recognized by
   the lexer,</li>
   <li>tok_removing: function telling the lexer that a token pattern
@@ -408,6 +477,17 @@ takes a lexer as parameter. This is a value of type "<tt>Token.glexer
   <li>tok_text: function returning the name of a token pattern,</li>
   <li>tok_comm: option value to ask the lexer to record the locations
   of the comments.</li>
+</ul>
+
+<p>The function "<tt>tok_using</tt>" is called by the EXTEND statement
+while treating the grammar rules. When encountering a keyword or a token
+symbol, this function is called:</p>
+
+<ul>
+  <li>if it is a token pattern, to check that this token is really
+    recognized by the lexer,</li>
+  <li>if it is a keyword, to check that also, or to allow the lexer
+    to record this keyword in its tables.</li>
 </ul>
 
 <p>Since this list is a little bit complicated, there are default
