@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: pcaml.mli,v 1.26 2007/10/29 11:58:49 deraugla Exp $ *)
+(* $Id: pcaml.mli,v 1.27 2007/12/17 10:41:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (** Language grammar, entries and printers.
@@ -66,6 +66,10 @@ value quotation_dump_file : ref (option string);
        result is syntactically incorrect.
        If [None] (default), this result is not dumped. If [Some fname], the
        result is dumped in the file [fname]. *)
+value quotation_location : unit -> Ploc.t;
+   (** while expanding a quotation, returns the location of the quotation
+       text (between the quotation quotes) in the source; raises
+       [Failure] if not in the context of a quotation expander. *)
 value version : string;
    (** The current version of Camlp5. *)
 value add_option : string -> Arg.spec -> string -> unit;

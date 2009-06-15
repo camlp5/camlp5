@@ -66,6 +66,10 @@ val quotation_dump_file : string option ref;;
        result is syntactically incorrect.
        If [None] (default), this result is not dumped. If [Some fname], the
        result is dumped in the file [fname]. *)
+val quotation_location : unit -> Ploc.t;;
+   (** while expanding a quotation, returns the location of the quotation
+       text (between the quotation quotes) in the source; raises
+       [Failure] if not in the context of a quotation expander. *)
 val version : string;;
    (** The current version of Camlp5. *)
 val add_option : string -> Arg.spec -> string -> unit;;

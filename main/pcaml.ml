@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo *)
-(* $Id: pcaml.ml,v 1.48 2007/11/27 12:04:05 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.49 2007/12/17 10:41:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value version = "5.05-exp";
@@ -59,6 +59,7 @@ value warning_default_function loc txt = do {
 };
 
 value warning = ref warning_default_function;
+value quotation_loc = ref None;
 
 List.iter (fun (n, f) -> Quotation.add n f)
   [("id", Quotation.ExStr (fun _ s -> "$0:" ^ s ^ "$"));
@@ -73,14 +74,30 @@ type err_ctx =
 ;
 exception Qerror of string and err_ctx and exn;
 
-value expand_quotation gloc expander shift name str =
+value quotation_location () =
+  match quotation_loc.val with
+  [ Some loc -> loc
+  | None -> failwith "Pcaml.quotation_location: not in quotation context" ]
+;
+
+value expand_quotation gloc expander shift name str = do {
   let new_warning =
     let warn = warning.val in
     let shift = Ploc.first_pos gloc + shift in
     fun loc txt -> warn (Ploc.shift shift loc) txt
   in
-  Ploc.call_with warning new_warning
-    (fun () ->
+  let restore =
+    let old_warning = warning.val in
+    let old_loc = quotation_loc.val in
+    fun () -> do {
+      warning.val := old_warning;
+      quotation_loc.val := old_loc;
+    }
+  in
+  warning.val := new_warning;
+  quotation_loc.val := Some (Ploc.shift shift gloc);
+  let r =
+     try
        try expander str with
        [ Ploc.Exc loc exc ->
            let exc1 = Qerror name Expanding exc in
@@ -100,9 +117,13 @@ value expand_quotation gloc expander shift name str =
            raise (Ploc.Exc loc exc1)
        | exc ->
            let exc1 = Qerror name Expanding exc in
-           Ploc.raise gloc exc1 ])
-    ()
-;
+           Ploc.raise gloc exc1 ]
+    with
+    [ exn -> do { restore (); raise exn } ]
+  in
+  restore ();
+  r;
+};
 
 value parse_quotation_result entry loc shift name str =
   let cs = Stream.of_string str in
@@ -119,7 +140,7 @@ value parse_quotation_result entry loc shift name str =
       Ploc.raise loc exc1 ]
 ;
 
-value handle_quotation loc proj in_expr entry reloc (name, str) =
+value handle_quotation loc proj proj2 in_expr entry reloc (name, str) =
   let shift =
     match name with
     [ "" -> String.length "<<"
@@ -153,11 +174,11 @@ EXTEND
 END;
 
 value handle_expr_quotation loc x =
-  handle_quotation loc fst True expr_eoi Reloc.expr x
+  handle_quotation loc fst fst True expr_eoi Reloc.expr x
 ;
 
 value handle_patt_quotation loc x =
-  handle_quotation loc snd False patt_eoi Reloc.patt x
+  handle_quotation loc snd snd False patt_eoi Reloc.patt x
 ;
 
 value expr_reloc = Reloc.expr;

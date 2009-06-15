@@ -60,6 +60,7 @@ let warning_default_function loc txt =
 ;;
 
 let warning = ref warning_default_function;;
+let quotation_loc = ref None;;
 
 List.iter (fun (n, f) -> Quotation.add n f)
   ["id", Quotation.ExStr (fun _ s -> "$0:" ^ s ^ "$");
@@ -74,34 +75,49 @@ type err_ctx =
 ;;
 exception Qerror of string * err_ctx * exn;;
 
+let quotation_location () =
+  match !quotation_loc with
+    Some loc -> loc
+  | None -> failwith "Pcaml.quotation_location: not in quotation context"
+;;
+
 let expand_quotation gloc expander shift name str =
   let new_warning =
     let warn = !warning in
     let shift = Ploc.first_pos gloc + shift in
     fun loc txt -> warn (Ploc.shift shift loc) txt
   in
-  Ploc.call_with warning new_warning
-    (fun () ->
-       try expander str with
-         Ploc.Exc (loc, exc) ->
-           let exc1 = Qerror (name, Expanding, exc) in
-           let shift = Ploc.first_pos gloc + shift in
-           let loc =
-             let gloc_line_nb = Ploc.line_nb gloc in
-             let loc_line_nb = Ploc.line_nb loc in
-             if gloc_line_nb < 0 || loc_line_nb < 0 then
-               Ploc.make_unlined
-                 (shift + Ploc.first_pos loc, shift + Ploc.last_pos loc)
-             else
-               Ploc.make (gloc_line_nb + loc_line_nb - 1)
-                 (if loc_line_nb = 1 then Ploc.bol_pos gloc
-                  else shift + Ploc.bol_pos loc)
-                 (shift + Ploc.first_pos loc, shift + Ploc.last_pos loc)
-           in
-           raise (Ploc.Exc (loc, exc1))
-       | exc ->
-           let exc1 = Qerror (name, Expanding, exc) in Ploc.raise gloc exc1)
-    ()
+  let restore =
+    let old_warning = !warning in
+    let old_loc = !quotation_loc in
+    fun () -> warning := old_warning; quotation_loc := old_loc
+  in
+  warning := new_warning;
+  quotation_loc := Some (Ploc.shift shift gloc);
+  let r =
+    try
+      try expander str with
+        Ploc.Exc (loc, exc) ->
+          let exc1 = Qerror (name, Expanding, exc) in
+          let shift = Ploc.first_pos gloc + shift in
+          let loc =
+            let gloc_line_nb = Ploc.line_nb gloc in
+            let loc_line_nb = Ploc.line_nb loc in
+            if gloc_line_nb < 0 || loc_line_nb < 0 then
+              Ploc.make_unlined
+                (shift + Ploc.first_pos loc, shift + Ploc.last_pos loc)
+            else
+              Ploc.make (gloc_line_nb + loc_line_nb - 1)
+                (if loc_line_nb = 1 then Ploc.bol_pos gloc
+                 else shift + Ploc.bol_pos loc)
+                (shift + Ploc.first_pos loc, shift + Ploc.last_pos loc)
+          in
+          raise (Ploc.Exc (loc, exc1))
+      | exc ->
+          let exc1 = Qerror (name, Expanding, exc) in Ploc.raise gloc exc1
+    with exn -> restore (); raise exn
+  in
+  restore (); r
 ;;
 
 let parse_quotation_result entry loc shift name str =
@@ -116,7 +132,7 @@ let parse_quotation_result entry loc shift name str =
       let exc1 = Qerror (name, ctx, exc) in Ploc.raise loc exc1
 ;;
 
-let handle_quotation loc proj in_expr entry reloc (name, str) =
+let handle_quotation loc proj proj2 in_expr entry reloc (name, str) =
   let shift =
     match name with
       "" -> String.length "<<"
@@ -154,11 +170,11 @@ Grammar.extend
      Gramext.action (fun _ (x : 'patt) (loc : Ploc.t) -> (x : 'patt_eoi))]]];;
 
 let handle_expr_quotation loc x =
-  handle_quotation loc fst true expr_eoi Reloc.expr x
+  handle_quotation loc fst fst true expr_eoi Reloc.expr x
 ;;
 
 let handle_patt_quotation loc x =
-  handle_quotation loc snd false patt_eoi Reloc.patt x
+  handle_quotation loc snd snd false patt_eoi Reloc.patt x
 ;;
 
 let expr_reloc = Reloc.expr;;

@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: pcaml.html,v 1.13 2007/10/17 02:28:34 deraugla Exp $ -->
+  <!-- $Id: pcaml.html,v 1.14 2007/12/17 10:41:12 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Pcaml</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -247,6 +247,11 @@ value print_implem :
       fname</tt>", the result is dumped in the file "<tt>fname</tt>".
     The same effect can be done with the option "<tt>-QD</tt>" of
     Camlp5 commands.</dd>
+  <dt><tt>value quotation_location : unit -> Ploc.t;</tt></dt>
+  <dd>While expanding a quotation, returns the location of the
+    quotation text (between the quotation quotes) in the source;
+    raises "<tt>Failure</tt>" if not in the context of a quotation
+    expander.</dd>
 </dl>
 
 <h2>Extensible directives and options</h2>

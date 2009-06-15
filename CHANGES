@@ -1,8 +1,11 @@
 Camlp5 Version 5.05:
 --------------------
 
+* [17 Dec 07] Added function [Pcaml.quotation_location] returning the
+  location of the quotation in the source in the context of a quotation
+  expander.
 * [04 Dec 07] Added generation of file META for ocamlfind in directory
-  etc (not installed).
+  etc (built but not installed).
 * [28 Nov 07] Upgraded to reflect changes done in parse tree in current
   OCaml (version 3.11+dev6).
 * [27 Nov 07] Fixed bug in installation. Some files where installed in
