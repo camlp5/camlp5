@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: quot.html,v 1.1 2007/07/21 20:48:58 deraugla Exp $ -->
+  <!-- $Id: quot.html,v 1.2 2007/07/24 17:48:59 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>quotations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -20,6 +20,163 @@
 <h1 class="top">Quotations</h1>
 
 <p>... to be written ...</p>
+
+<p>Just, for the moment, this section about antiquotations to answer
+  the remarks given in the chapter about <a href="ml_ast.html">syntax
+  tree quotations</a>. The rest of this chapter will follow later.</p>
+
+<div id="tableofcontents">
+</div>
+
+<h2>Antiquotations</h2>
+
+<p>A quotation obeys its own rules of lexing and parsing. Its result is
+  a syntax tree, of type "<tt>Pcaml.expr</tt>" if the quotation is in the
+  context of an expression, or "<tt>Pcaml.patt</tt>" if the quotation is
+  in the context of a pattern.</p>
+
+<p>But it can be interesting to insert portions of expressions or
+  patterns of the enclosing context in its own quotations. For that,
+  the syntax of the quotation must define a syntax
+  for <em>antiquotations areas</em>. It can be, for example:</p>
+
+<ul>
+  <li>A character introducing a variable: in this case the antiquotation
+    can just be a variable.</li>
+  <li>A couple of characters enclosing the antiquotations. For
+    example, in the predefined <a href="ml_ast.html">syntax tree
+    quotations</a>, the antiquotations are enclosed with dollar
+    ("<tt>$</tt>") signs.</li>
+</ul>
+
+<p>In quotations, the locations in the resulting syntax tree are all
+  set to the location of the quotation itself (if this resulting tree
+  contains locations, they are overwritten with this
+  location). Consequently, if there are semantic (typing) errors, the
+  ocaml compiler will underline the entire quotation.</p>
+
+<p>But in antiquotations, since they can be inserted in the resulting
+  syntax tree, it is interesting to keep their initial quotations. For
+  that, the nodes:</p>
+
+<pre>
+  &lt;:expr&lt; $anti:...$ >>
+  &lt;:patt&lt; $anti:...$ >>
+</pre>
+
+<p>equivalent to:</p>
+
+<pre>
+  MLast.ExAnt loc ...
+  MLast.PaAnt loc ...
+</pre>
+
+<p>are provided (see <a href="ml_ast.html">syntax tree
+    quotations</a>).</p>
+
+<p>Let us take an example, without this node, and with this specific
+  node.</p>
+
+<p>Let us consider an elementary quotation system whose contents is just
+  an antiquotation. This is just a school example, since the quotations
+  brackets are not necessary, in this case. But we are going to see how
+  the source code is underlined in errors messages.</p>
+
+<h3>Example without antiquotation node</h3>
+
+<p>The code for this quotation is (file "qa.ml"):</p>
+
+<pre>
+  #load "q_MLast.cmo";
+  let expr s = Grammar.Entry.parse Pcaml.expr (Stream.of_string s) in
+  Quotation.add "a" (Quotation.ExAst (expr, fun []));
+</pre>
+
+<p>The quotation expander "<tt>expr</tt>" just takes the string
+  parameter (the contents of the quotation), and returns the result
+  of the expression   parser of the ocaml language.</p>
+
+<p>Compilation:</p>
+
+<pre>
+  ocamlc -pp camlp5r -I +camlp5 -c qa.ml
+</pre>
+
+<p>Let us test it in the toplevel with a voluntary typing error:</p>
+
+<pre>
+  ocaml -I +camlp5 camlp5r.cma
+          Objective Caml version ...
+
+          Camlp5 Parsing version ...
+
+  # #load "qa.cmo";
+  # let x = "abc" and y = 25 in &lt;:a&lt; x ^ y >>;
+  Characters 28-41:
+    let x = "abc" and y = 25 in &lt;:a&lt; x ^ y >>;
+                                ^^^^^^^^^^^^^
+  This expression has type int but is here used with type string
+</pre>
+
+<p>We observe that the full quotation is underlined, although it concerns
+  only the variable "<tt>y</tt>".</p>
+
+<h3>Example with antiquotation node</h3>
+
+<p>Let us consider this second version (file "qb.ml"):</p>
+
+<pre>
+  #load "q_MLast.cmo";
+  let expr s =
+    let ast = Grammar.Entry.parse Pcaml.expr (Stream.of_string s) in
+    let loc = Stdpp.make_lined_loc 1 0 (0, String.length s) in
+    &lt;:expr&lt; $anti:ast$ >>
+  in
+  Quotation.add "b" (Quotation.ExAst (expr, fun []));
+</pre>
+
+<p>Like above, the quotation expander "<tt>expr</tt>" takes the string
+  parameter (the contents of the quotation) and applies the expression
+  parser of the ocaml language. But its result, instead of being
+  returned ast it is, is enclosed with the antiquotation node. (The
+  location built is the location of the whole string.)</p>
+
+<p>Compilation:</p>
+
+<pre>
+  ocamlc -pp camlp5r -I +camlp5 -c qb.ml
+</pre>
+
+<p>Now the same test gives:</p>
+
+<pre>
+  ocaml -I +camlp5 camlp5r.cma
+          Objective Caml version ...
+
+          Camlp5 Parsing version ...
+
+  # #load "qb.cmo";
+  # let x = "abc" and y = 25 in &lt;:b&lt; x ^ y >>;
+  Characters 37-38:
+    let x = "abc" and y = 25 in &lt;:b&lt; x ^ y >>;
+                                         ^
+  This expression has type int but is here used with type string
+</pre>
+
+<p>Notice that, now, only the variable "<tt>y</tt>" is underlined.</p>
+
+<h3>In conclusion</h3>
+
+<p>In the resulting tree of the quotation expander:</p>
+
+<ul>
+  <li>only portions of this tree, which are sons of the expr and patt
+    antiquotation nodes, have the right location they have in the
+    quotation (provided the quotation expander gives it the right
+    location of the antiquation in the quotation),</li>
+  <li>the other nodes inherit, as location, the location of the full
+    quotation.</li>
+</ul>
 
 <div class="trailer">
 </div>

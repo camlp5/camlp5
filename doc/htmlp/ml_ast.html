@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: ml_ast.html,v 1.22 2007/07/24 16:36:14 deraugla Exp $ -->
+  <!-- $Id: ml_ast.html,v 1.23 2007/07/24 17:48:59 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Abstract tree in concrete syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -98,36 +98,38 @@
 
 <h2>Location</h2>
 
-<p>In all nodes, the first parameter is the source location of the
-  node.</p>
+<p>In all syntax tree nodes, the first parameter is the source
+  location of the node.</p>
 
 <h3>In expressions</h3>
 
 <p>When a quotation is in the context of an expression, the location
   parameter is "<tt>loc</tt>" in the node and in all its possible
-  sub-nodes. The following example:</p>
+  sub-nodes. Example: if we consider the quotation:</p>
 
 <pre>
   &lt;:sig_item&lt; value foo : int -> bool >>
 </pre>
 
-<p>is equivalent, in an expression, to:</p>
+<p>This quotation, in a context of an expression, is equivalent
+  to:</p>
 
 <pre>
   MLast.SgVal loc "foo"
     (MLast.TyArr loc (MLast.TyLid loc "int") (MLast.TyLid loc "bool"));
 </pre>
 
-<p>The name "<tt>loc</tt>" is predefined, it is possible to change it
-  using the argument "<tt>-loc</tt>" of the camlp5 shell commands.</p>
+<p>This name, "<tt>loc</tt>", is predefined, but it is possible to
+  change it, using the argument "<tt>-loc</tt>" of the camlp5 shell
+  commands.</p>
 
 <p>Consequently, if there is no variable "<tt>loc</tt>" defined in the
   context of the quotation, or if it is not of the good type, a
   semantic error occur in the ocaml compiler.</p>
 
 <p>Note that in the <a href="grammars.html">extensible grammars</a>,
-  the value "<tt>loc</tt>" is bound in all semantic actions to the
-  location of the rule.</p>
+  the variable "<tt>loc</tt>" is bound, in all semantic actions, to
+  the location of the rule.</p>
 
 <p>If the created node has no location, the simplest way is to define
   the variable "<tt>loc</tt>" to have the value
