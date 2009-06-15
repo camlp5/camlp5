@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.10 2007/07/15 10:33:42 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.11 2007/07/15 11:12:49 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -132,6 +132,7 @@ is loaded. Its syntax is:</p>
                        | "LIST1" symbol
                        | "LIST1" symbol "SEP" symbol
                        | "OPT" symbol
+                       | "[" rules "]"
                        | "(" symbol ")"
              keyword ::= string
                label ::= string
@@ -338,6 +339,11 @@ root, descending on it as long as the parsing advances.</p>
 
 <p>Extra symbols exist, allowing to manipulate lists or optional
 symbols. They are:</p>
+
+<ul>
+  <li>LIST0 followed by a symbol: this is a list of this symbol,
+    possibly empty,</li>
+</ul>
 
 <p>... to be completed ...</p>
 
