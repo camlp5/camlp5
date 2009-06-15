@@ -2,9 +2,9 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: pretty.html,v 1.13 2007/07/28 16:20:24 deraugla Exp $ -->
+  <!-- $Id: pretty.html,v 1.14 2007/08/21 13:35:17 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
-  <title>Pretty</title>
+  <title>Pretty print</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <link rel="stylesheet" type="text/css" href="styles/base.css"
@@ -17,17 +17,16 @@
 
 <div id="content">
 
-<h1 class="top">Pretty module</h1>
+<h1 class="top">Pretty print</h1>
 
-<p>
-Pretty is a library module to pretty print data or programs. It contains:
-</p>
+<p>A pretty print system is provided in the library module Pretty. It allows
+  to pretty print data or programs. The Pretty module contains:</p>
 
 <ul>
-<li>The function "horiz_vertic" to specify how data has to be printed.</li>
-<li>The function "sprintf" to format strings.</li>
-<li>The variable "line_length" which is a reference specifying the
-maximum lines lengths.</li>
+  <li>The function "horiz_vertic" to specify how data has to be printed.</li>
+  <li>The function "sprintf" to format strings.</li>
+  <li>The variable "line_length" which is a reference specifying the
+    maximum lines lengths.</li>
 </ul>
 
 <div id="tableofcontents">
@@ -38,9 +37,9 @@ maximum lines lengths.</li>
 <h3>horiz_vertic</h3>
 
 <p>The function "horiz_vertic" takes two functions as parameters. When
-called, it calls its first function. If that function fails with some
-internal error that the function "<code>sprintf</code>" below may
-raise, the second function is called.</p>
+  called, it calls its first function. If that function fails with
+  some internal error that the function "<code>sprintf</code>" below
+  may raise, the second function is called.</p>
 
 <p>The type of "horiz_vertic" is:</p>
 
@@ -51,43 +50,45 @@ raise, the second function is called.</p>
 <h4>the horizontal function</h4>
 
 <p>The first function is said to be the "horizontal" function. It
-tries to pretty print the data on a single line. In the context of
-this function, if the strings built by the function "sprintf" (see
-below) contain newlines or have lengths greater than "line_length",
-the function fails (with a internal exception local to the
-module).</p>
+  tries to pretty print the data on a single line. In the context of
+  this function, if the strings built by the function "sprintf" (see
+  below) contain newlines or have lengths greater than "line_length",
+  the function fails (with a internal exception local to the
+  module).</p>
 
 <h4>the vertical function</h4>
 
-<p>In case of failure of the "horizontal function", the second function
-of "horiz_vertic", the "vertical" function, is called. In the context of
-that function, the "sprintf" function behaves like the normal "sprintf"
-function of the OCaml library module "Printf".</p>
+<p>In case of failure of the "horizontal function", the second
+  function of "horiz_vertic", the "vertical" function, is called. In
+  the context of that function, the "sprintf" function behaves like
+  the normal "sprintf" function of the OCaml library module
+  "Printf".</p>
 
 <h3>sprintf</h3>
 
 <p>The function "sprintf" works like its equivalent in the module
-"Printf" of the OCaml library, and takes the same parameters. Its
-difference is that if it is called in the context of the first
-function (the "horizontal" function) of the function "horiz_vertic"
-(above), all strings built by "sprintf" are checked for newlines or
-length greater than the maximum line length. If it is the case, the
-"sprintf" function fails, and the horizontal function fails also.</p>
+  "Printf" of the OCaml library, and takes the same parameters. Its
+  difference is that if it is called in the context of the first
+  function (the "horizontal" function) of the function "horiz_vertic"
+  (above), all strings built by "sprintf" are checked for newlines or
+  length greater than the maximum line length. If it is the case, the
+  "sprintf" function fails, and the horizontal function fails
+  also.</p>
 
 <p>If "sprintf" is not in the context of the horizontal function, it
-behaves like the usual "sprintf" function.</p>
+  behaves like the usual "sprintf" function.</p>
 
 <h3>line_length</h3>
 
 <p>The variable "line_length" is a reference holding the maximum line
-length of lines printed horizontally. Its default is 77. This can be
-changed by the user before using "horiz_vertic".</p>
+  length of lines printed horizontally. Its default is 78. This can be
+  changed by the user before using "horiz_vertic".</p>
 
 <h2>Example</h2>
 
 <p>Suppose you want to pretty print the XML code
-<tt>"&lt;li&gt;something&lt;/li&gt;"</tt>. If the "something" is
-short, you want to see:</p>
+  <tt>"&lt;li&gt;something&lt;/li&gt;"</tt>. If the "something" is
+  short, you want to see:</p>
 
 <pre>
   &lt;li&gt;something&lt;/li&gt;
@@ -111,12 +112,12 @@ short, you want to see:</p>
 </pre>
 
 <p>Notice that the "<code>sprintf</code>" above is the one of the
-library Pretty.</p>
+  library Pretty.</p>
 
 <p>Notice also that, in a program displaying XML code, this
-"something" may contain other XML tags, and is therefore generally the
-result of other pretty printing functions, and the program should
-rather look like:</p>
+  "something" may contain other XML tags, and is therefore generally
+  the result of other pretty printing functions, and the program
+  should rather look like:</p>
 
 <pre>
   horiz_vertic
@@ -125,12 +126,12 @@ rather look like:</p>
 </pre>
 
 <p>Parts of this "something" can be printed horizontally and other
-vertically using other calls to "horiz_vertic" in the user function
-"print" above. But it is important to remark that if they are called
-in the context of the first function parameter of "horiz_vertic"
-above, only horizontal functions are accepted: the first failing
-"horizontal" function triggers the failure of the horizontal pretty
-printing.</p>
+  vertically using other calls to "horiz_vertic" in the user function
+  "print" above. But it is important to remark that if they are called
+  in the context of the first function parameter of "horiz_vertic"
+  above, only horizontal functions are accepted: the first failing
+  "horizontal" function triggers the failure of the horizontal pretty
+  printing.</p>
 
 <h2>Programming with Pretty</h2>
 
@@ -139,17 +140,17 @@ printing.</p>
 <p>Just start with a call to "horiz_vertic".</p>
 
 <p>As its first function, use "sprintf" just to concat the strings
-without putting any newlines or indentations, just using e.g. spaces to
-separate pieces of data.</p>
+  without putting any newlines or indentations, just using e.g. spaces
+  to separate pieces of data.</p>
 
 <p>As its second function, wonder how you want your data to be cut.
-At the cutting point or points, add newlines. Notice that you probably
-need to give the current indentation string as parameter of the called
-functions because they need to be taken into account in the called
-"horizontal" functions.</p>
+  At the cutting point or points, add newlines. Notice that you
+  probably need to give the current indentation string as parameter of
+  the called functions because they need to be taken into account in
+  the called "horizontal" functions.</p>
 
-<p>In the example below, don't put the indentation in the sprintf function
-but give it as parameter of your "print" function:</p>
+<p>In the example below, don't put the indentation in the sprintf
+  function but give it as parameter of your "print" function:</p>
 
 <pre>
   horiz_vertic
@@ -158,8 +159,8 @@ but give it as parameter of your "print" function:</p>
 </pre>
 
 <p>Now, the "print" function could look like, supposing you print
-other things with "other" of the current indentation and "things" with
-a new shifted one:</p>
+  other things with "other" of the current indentation and "things"
+  with a new shifted one:</p>
 
 <pre>
   value print ind something =
@@ -169,8 +170,8 @@ a new shifted one:</p>
 </pre>
 
 <p>Supposing than "other" and "things" are the result of two other
-functions "print_other" and "print_things", your program could look
-like:</p>
+  functions "print_other" and "print_things", your program could look
+  like:</p>
 
 <pre>
   value print ind (x, y) =
@@ -182,8 +183,8 @@ like:</p>
 <h3>How to cancel a horizontal print</h3>
 
 <p>If you want to prevent a pretty printing function to be called in
-an horizontal context, constraining the pretty print to be on several
-lines in the calling function, just do:</p>
+  an horizontal context, constraining the pretty print to be on
+  several lines in the calling function, just do:</p>
 
 <pre>
   horiz_vertic
@@ -192,37 +193,37 @@ lines in the calling function, just do:</p>
 </pre>
 
 <p>In this case, the horizontal print always fails, due to the newline
-character in the sprintf format.</p>
+  character in the sprintf format.</p>
 
 <h2>Remarks</h2>
 
 <h3>Kernel</h3>
 
 <p>The module "Pretty" is supposed to be a basic, a "kernel" module to
-pretty print data. It supposes that the user takes care himself of the
-indentation. Programs using "Pretty" are not as short as the ones
-using "Format" of the OCaml library, but are more flexible. Later, it
-is planed to find a way to extend "Pretty" with functions allowing to
-use a short syntax similar to the "@" convention of the function
-"printf" of "Format", and taking care of the indentation for the user,
-resulting on shorter programs.</p>
+  pretty print data. It supposes that the user takes care himself of
+  the indentation. Programs using "Pretty" are not as short as the
+  ones using "Format" of the OCaml library, but are more
+  flexible. Later, it is planed to find a way to extend "Pretty" with
+  functions allowing to use a short syntax similar to the "@"
+  convention of the function "printf" of "Format", and taking care of
+  the indentation for the user, resulting on shorter programs.</p>
 
 <h3>Strings vs Channels</h3>
 
 <p>In "Pretty", the pretty print is done only on strings, not on
-files. To pretty print on files, just built the strings and print them
-afterwards with the usual output functions. Notice that OCaml
-allocates and frees strings very fast, and if pretty printed values
-are not huge, which is generally the case, it is not a real problem,
-memory sizes these days being much more than enough for this
-job.</p>
+  files. To pretty print on files, just built the strings and print
+  them afterwards with the usual output functions. Notice that OCaml
+  allocates and frees strings very fast, and if pretty printed values
+  are not huge, which is generally the case, it is not a real problem,
+  memory sizes these days being much more than enough for this
+  job.</p>
 
 <h3>Strings or other types</h3>
 
 <p>The "horiz_vertic" function can return values of other types than
-"string". For example, if you are interested only in the result of
-horizontal context and not on the vertical one, it is perfectly correct
-to write:</p>
+  "string". For example, if you are interested only in the result of
+  horizontal context and not on the vertical one, it is perfectly
+  correct to write:</p>
 
 <pre>
   horiz_vertic
@@ -233,20 +234,22 @@ to write:</p>
 <h3>Why raising exceptions ?</h3>
 
 <p>One could ask why this pretty print system has to raise internal
-exceptions. Why not simply write the pretty printing program like
-this:</p>
+  exceptions. Why not simply write the pretty printing program like
+  this:</p>
 
 <ol>
-<li>first build the data horizontally (without newlines)</li>
-<li>if the string length is lower than the maximum line length, return it</li>
-<li>if not, build the string by adding newlines in the specific places</li>
+  <li>first build the data horizontally (without newlines)</li>
+  <li>if the string length is lower than the maximum line length,
+    return it</li>
+  <li>if not, build the string by adding newlines in the specific
+    places</li>
 </ol>
 
 <p>This method works but is generally very slow (exponential in
-time). Because while printing horizontally, many unuseful strings are
-built. If, for example, the final printed data holds on 50 lines,
-tenth of lines may be build and build again unusefully before the
-overflowing is tested.</p>
+  time). Because while printing horizontally, many unuseful strings
+  are built. If, for example, the final printed data holds on 50
+  lines, tenth of lines may be build and build again unusefully before
+  the overflowing is tested.</p>
 
 <div class="trailer">
 </div>
