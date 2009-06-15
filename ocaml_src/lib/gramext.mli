@@ -20,6 +20,7 @@ type 'te grammar =
 type 'te g_entry =
   { egram : 'te grammar;
     ename : string;
+    elocal : bool;
     mutable estart : int -> 'te Stream.t -> Obj.t;
     mutable econtinue : int -> int -> Obj.t -> 'te Stream.t -> Obj.t;
     mutable edesc : 'te g_desc }

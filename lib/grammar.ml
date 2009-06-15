@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.21 2007/07/18 00:45:13 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.22 2007/07/18 14:14:00 deraugla Exp $ *)
 
 open Stdpp;
 open Gramext;
@@ -38,7 +38,9 @@ value rec print_symbol ppf =
   | Sopt s -> fprintf ppf "OPT %a" print_symbol1 s
   | Stoken (con, prm) when con <> "" && prm <> "" ->
       fprintf ppf "%s@ %a" con print_str prm
-  | Snterml e l -> fprintf ppf "%s@ LEVEL@ %a" e.ename print_str l
+  | Snterml e l ->
+      fprintf ppf "%s%s@ LEVEL@ %a" e.ename (if e.elocal then "*" else "")
+        print_str l
   | Snterm _ | Snext | Sself | Stoken _ | Stree _ as s ->
       print_symbol1 ppf s ]
 and print_meta ppf n sl =
@@ -55,7 +57,7 @@ and print_meta ppf n sl =
       } ]
 and print_symbol1 ppf =
   fun
-  [ Snterm e -> pp_print_string ppf e.ename
+  [ Snterm e -> fprintf ppf "%s%s" e.ename (if e.elocal then "*" else "")
   | Sself -> pp_print_string ppf "SELF"
   | Snext -> pp_print_string ppf "NEXT"
   | Stoken ("", s) -> print_str ppf s
@@ -910,7 +912,7 @@ module Entry =
     type te = token;
     type e 'a = g_entry te;
     value create g n =
-      {egram = g; ename = n; estart = empty_entry n;
+      {egram = g; ename = n; estart = empty_entry n; elocal = False;
        econtinue _ _ _ = parser []; edesc = Dlevels []}
     ;
     value parse_parsable (entry : e 'a) p : 'a =
@@ -925,7 +927,8 @@ module Entry =
     ;
     value name e = e.ename;
     value of_parser g n (p : Stream.t te -> 'a) : e 'a =
-      {egram = g; ename = n; estart _ = (Obj.magic p : Stream.t te -> Obj.t);
+      {egram = g; ename = n; elocal = False;
+       estart _ = (Obj.magic p : Stream.t te -> Obj.t);
        econtinue _ _ _ = parser [];
        edesc = Dparser (Obj.magic p : Stream.t te -> Obj.t)}
     ;
@@ -936,6 +939,11 @@ module Entry =
 ;
 
 value of_entry e = e.egram;
+
+value create_local_entry g n =
+  {egram = g; ename = n; elocal = True; estart = empty_entry n;
+   econtinue _ _ _ = parser []; edesc = Dlevels []}
+;
 
 (* Unsafe *)
 
@@ -1013,7 +1021,7 @@ module GMake (L : GLexerType) =
       struct
         type e 'a = g_entry te;
         value create n =
-          {egram = gram; ename = n; estart = empty_entry n;
+          {egram = gram; ename = n; elocal = False; estart = empty_entry n;
            econtinue _ _ _ = parser []; edesc = Dlevels []}
         ;
         external obj : e 'a -> Gramext.g_entry te = "%identity";
@@ -1025,7 +1033,7 @@ module GMake (L : GLexerType) =
         ;
         value name e = e.ename;
         value of_parser n (p : Stream.t te -> 'a) : e 'a =
-          {egram = gram; ename = n;
+          {egram = gram; ename = n; elocal = False;
            estart _ = (Obj.magic p : Stream.t te -> Obj.t);
            econtinue _ _ _ = parser [];
            edesc = Dparser (Obj.magic p : Stream.t te -> Obj.t)}

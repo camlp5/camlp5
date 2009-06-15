@@ -150,7 +150,7 @@ Grammar.extend
    and _ = (with_constr : 'with_constr Grammar.Entry.e)
    and _ = (poly_variant : 'poly_variant Grammar.Entry.e) in
    let grammar_entry_create s =
-     Grammar.Entry.create (Grammar.of_entry sig_item) s
+     Grammar.create_local_entry (Grammar.of_entry sig_item) s
    in
    let rebind_exn : 'rebind_exn Grammar.Entry.e =
      grammar_entry_create "rebind_exn"
@@ -2445,7 +2445,7 @@ Grammar.extend
    and _ = (expr : 'expr Grammar.Entry.e)
    and _ = (patt : 'patt Grammar.Entry.e) in
    let grammar_entry_create s =
-     Grammar.Entry.create (Grammar.of_entry interf) s
+     Grammar.create_local_entry (Grammar.of_entry interf) s
    in
    let sig_item_semi : 'sig_item_semi Grammar.Entry.e =
      grammar_entry_create "sig_item_semi"

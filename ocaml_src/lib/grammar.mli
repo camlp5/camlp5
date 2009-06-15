@@ -197,3 +197,4 @@ val parse_top_symb :
 val symb_failed_txt :
   'te Gramext.g_entry -> 'te Gramext.g_symbol -> 'te Gramext.g_symbol ->
     string;;
+val create_local_entry : g -> string -> 'a Entry.e;;

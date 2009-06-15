@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: gramext.ml,v 1.8 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: gramext.ml,v 1.9 2007/07/18 14:14:00 deraugla Exp $ *)
 
 open Printf;
 
@@ -22,6 +22,7 @@ type grammar 'te =
 type g_entry 'te =
   { egram : grammar 'te;
     ename : string;
+    elocal : bool;
     estart : mutable int -> Stream.t 'te -> Obj.t;
     econtinue : mutable int -> int -> Obj.t -> Stream.t 'te -> Obj.t;
     edesc : mutable g_desc 'te }

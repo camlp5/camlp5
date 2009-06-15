@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.17 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.18 2007/07/18 14:14:00 deraugla Exp $ *)
 
 open Stdpp;
 
@@ -664,14 +664,15 @@ value let_in_of_extend loc gmod functor_version gl el args =
         if ll = [] then args
         else if functor_version then
           <:expr<
-          let grammar_entry_create = $uid:gmod$.Entry.create in
-          let $list:locals$ in $args$ >>
+            let grammar_entry_create = $uid:gmod$.Entry.create in
+            let $list:locals$ in $args$ >>
         else
           <:expr<
-          let grammar_entry_create s =
-            $uid:gmod$.Entry.create ($uid:gmod$.of_entry $locate n1$) s
-          in
-          let $list:locals$ in $args$ >>
+            let grammar_entry_create s =
+              $uid:gmod$.create_local_entry ($uid:gmod$.of_entry $locate n1$)
+                s
+            in
+            let $list:locals$ in $args$ >>
       in
       <:expr< let $list:globals$ in $e$ >>
     }

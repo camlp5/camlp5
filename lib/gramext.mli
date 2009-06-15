@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: gramext.mli,v 1.4 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: gramext.mli,v 1.5 2007/07/18 14:14:00 deraugla Exp $ *)
 
 type grammar 'te =
   { gtokens : Hashtbl.t Token.pattern (ref int);
@@ -20,6 +20,7 @@ type grammar 'te =
 type g_entry 'te =
   { egram : grammar 'te;
     ename : string;
+    elocal : bool;
     estart : mutable int -> Stream.t 'te -> Obj.t;
     econtinue : mutable int -> int -> Obj.t -> Stream.t 'te -> Obj.t;
     edesc : mutable g_desc 'te }

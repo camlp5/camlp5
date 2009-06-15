@@ -223,7 +223,7 @@ let gcl = ref [];;
 Grammar.extend
   (let _ = (expr : 'expr Grammar.Entry.e) in
    let grammar_entry_create s =
-     Grammar.Entry.create (Grammar.of_entry expr) s
+     Grammar.create_local_entry (Grammar.of_entry expr) s
    in
    let rules : 'rules Grammar.Entry.e = grammar_entry_create "rules"
    and rule : 'rule Grammar.Entry.e = grammar_entry_create "rule"

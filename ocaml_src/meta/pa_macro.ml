@@ -222,7 +222,7 @@ Grammar.extend
    and _ = (str_item : 'str_item Grammar.Entry.e)
    and _ = (sig_item : 'sig_item Grammar.Entry.e) in
    let grammar_entry_create s =
-     Grammar.Entry.create (Grammar.of_entry expr) s
+     Grammar.create_local_entry (Grammar.of_entry expr) s
    in
    let macro_def : 'macro_def Grammar.Entry.e =
      grammar_entry_create "macro_def"

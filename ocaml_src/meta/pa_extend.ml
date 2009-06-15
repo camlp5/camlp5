@@ -1345,11 +1345,8 @@ let let_in_of_extend loc gmod functor_version gl el args =
                      MLast.ExApp
                        (loc,
                         MLast.ExAcc
-                          (loc,
-                           MLast.ExAcc
-                             (loc, MLast.ExUid (loc, gmod),
-                              MLast.ExUid (loc, "Entry")),
-                           MLast.ExLid (loc, "create")),
+                          (loc, MLast.ExUid (loc, gmod),
+                           MLast.ExLid (loc, "create_local_entry")),
                         MLast.ExApp
                           (loc,
                            MLast.ExAcc
@@ -1481,7 +1478,7 @@ Grammar.extend
   (let _ = (expr : 'expr Grammar.Entry.e)
    and _ = (symbol : 'symbol Grammar.Entry.e) in
    let grammar_entry_create s =
-     Grammar.Entry.create (Grammar.of_entry expr) s
+     Grammar.create_local_entry (Grammar.of_entry expr) s
    in
    let extend_body : 'extend_body Grammar.Entry.e =
      grammar_entry_create "extend_body"

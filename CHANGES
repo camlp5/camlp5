@@ -1,6 +1,8 @@
 Camlp5 Version 4.06:
 ---------------------
 
+* [18 Jul 07] In Grammar.Entry.print, local entries are displayed with
+  a star character "*".
 * [18 Jul 07] In Grammar module, added type 'parsable', functions 'parsable'
   and 'Entry.parse_parsable' like for the functorial interface.
 

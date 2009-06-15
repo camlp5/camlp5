@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.mli,v 1.7 2007/07/17 23:31:20 deraugla Exp $ *)
+(* $Id: grammar.mli,v 1.8 2007/07/18 14:14:00 deraugla Exp $ *)
 
 (** Extensible grammars.
 
@@ -201,3 +201,4 @@ value parse_top_symb :
 value symb_failed_txt :
   Gramext.g_entry 'te -> Gramext.g_symbol 'te -> Gramext.g_symbol 'te ->
     string;
+value create_local_entry : g -> string -> Entry.e 'a;

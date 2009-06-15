@@ -38,7 +38,9 @@ let rec print_symbol ppf =
   | Sopt s -> fprintf ppf "OPT %a" print_symbol1 s
   | Stoken (con, prm) when con <> "" && prm <> "" ->
       fprintf ppf "%s@ %a" con print_str prm
-  | Snterml (e, l) -> fprintf ppf "%s@ LEVEL@ %a" e.ename print_str l
+  | Snterml (e, l) ->
+      fprintf ppf "%s%s@ LEVEL@ %a" e.ename (if e.elocal then "*" else "")
+        print_str l
   | Snterm _ | Snext | Sself | Stoken _ | Stree _ as s -> print_symbol1 ppf s
 and print_meta ppf n sl =
   let rec loop i =
@@ -56,7 +58,7 @@ and print_meta ppf n sl =
   loop 0 sl
 and print_symbol1 ppf =
   function
-    Snterm e -> pp_print_string ppf e.ename
+    Snterm e -> fprintf ppf "%s%s" e.ename (if e.elocal then "*" else "")
   | Sself -> pp_print_string ppf "SELF"
   | Snext -> pp_print_string ppf "NEXT"
   | Stoken ("", s) -> print_str ppf s
@@ -941,7 +943,7 @@ module Entry =
     type te = token;;
     type 'a e = te g_entry;;
     let create g n =
-      {egram = g; ename = n; estart = empty_entry n;
+      {egram = g; ename = n; estart = empty_entry n; elocal = false;
        econtinue = (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);
        edesc = Dlevels []}
     ;;
@@ -956,7 +958,7 @@ module Entry =
     ;;
     let name e = e.ename;;
     let of_parser g n (p : te Stream.t -> 'a) : 'a e =
-      {egram = g; ename = n;
+      {egram = g; ename = n; elocal = false;
        estart = (fun _ -> (Obj.magic p : te Stream.t -> Obj.t));
        econtinue = (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);
        edesc = Dparser (Obj.magic p : te Stream.t -> Obj.t)}
@@ -968,6 +970,12 @@ module Entry =
 ;;
 
 let of_entry e = e.egram;;
+
+let create_local_entry g n =
+  {egram = g; ename = n; elocal = true; estart = empty_entry n;
+   econtinue = (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);
+   edesc = Dlevels []}
+;;
 
 (* Unsafe *)
 
@@ -1042,7 +1050,7 @@ module GMake (L : GLexerType) =
       struct
         type 'a e = te g_entry;;
         let create n =
-          {egram = gram; ename = n; estart = empty_entry n;
+          {egram = gram; ename = n; elocal = false; estart = empty_entry n;
            econtinue =
              (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);
            edesc = Dlevels []}
@@ -1054,7 +1062,7 @@ module GMake (L : GLexerType) =
         ;;
         let name e = e.ename;;
         let of_parser n (p : te Stream.t -> 'a) : 'a e =
-          {egram = gram; ename = n;
+          {egram = gram; ename = n; elocal = false;
            estart = (fun _ -> (Obj.magic p : te Stream.t -> Obj.t));
            econtinue =
              (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);

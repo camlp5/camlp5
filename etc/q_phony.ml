@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_phony.ml,v 1.10 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: q_phony.ml,v 1.11 2007/07/18 14:14:00 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -145,10 +145,15 @@ value macro_def pc =
 ;
                
 
-let lev = find_pr_level "apply" pr_expr.pr_levels in
-lev.pr_rules :=
-  extfun lev.pr_rules with
-  [ <:expr< IFDEF $_$ $_$ >> as z ->
-      fun curr next pc -> macro_def pc z
-  | <:expr< IFDEF $_$ $_$ $_$ >> as z ->
-      fun curr next pc -> macro_def pc z ];
+match
+  try Some (find_pr_level "apply" pr_expr.pr_levels) with
+  [ Failure _ -> None ]
+with
+[ Some lev ->
+    lev.pr_rules :=
+      extfun lev.pr_rules with
+      [ <:expr< IFDEF $_$ $_$ >> as z ->
+          fun curr next pc -> macro_def pc z
+      | <:expr< IFDEF $_$ $_$ $_$ >> as z ->
+          fun curr next pc -> macro_def pc z ]
+| None -> () ];

@@ -314,7 +314,7 @@ Grammar.extend
    and _ = (with_constr : 'with_constr Grammar.Entry.e)
    and _ = (poly_variant : 'poly_variant Grammar.Entry.e) in
    let grammar_entry_create s =
-     Grammar.Entry.create (Grammar.of_entry sig_item) s
+     Grammar.create_local_entry (Grammar.of_entry sig_item) s
    in
    let rebind_exn : 'rebind_exn Grammar.Entry.e =
      grammar_entry_create "rebind_exn"
@@ -3836,7 +3836,7 @@ Grammar.extend
   (let _ = (str_item : 'str_item Grammar.Entry.e)
    and _ = (sig_item : 'sig_item Grammar.Entry.e) in
    let grammar_entry_create s =
-     Grammar.Entry.create (Grammar.of_entry str_item) s
+     Grammar.create_local_entry (Grammar.of_entry str_item) s
    in
    let dir_param : 'dir_param Grammar.Entry.e =
      grammar_entry_create "dir_param"

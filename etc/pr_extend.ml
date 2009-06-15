@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_extend.ml,v 1.13 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.14 2007/07/18 14:14:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -207,9 +207,7 @@ value unextend_body e =
   let e =
     match e with
     [ <:expr<
-        let grammar_entry_create s =
-          Grammar.Entry.create (Grammar.of_entry $_$) s
-        in
+        let grammar_entry_create s = $_$ (Grammar.of_entry $_$) s in
         $e$ >> ->
        let e =
          match e with
