@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.8 2007/07/15 04:00:18 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.9 2007/07/15 07:46:30 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -206,8 +206,12 @@ say "unbound variable" under the first undefined entry, "foo".</p>
 <p>Then the list of entries extensions follow. An entry extension
 starts with the entry name followed by a colon. An entry may have
 several levels corresponding to several stream parsers which call the
-ones the others (see further). After the colon, it is possible to
-specify where to insert the defined levels:</p>
+ones the others (see further).</p>
+
+<h4>Optional position</h4>
+
+<p>After the colon, it is possible to specify a where to insert the
+defined levels:</p>
 
 <ul>
   <li>The identifier "<tt>FIRST</tt>" (resp. "<tt>LAST</tt>")
@@ -231,6 +235,30 @@ specify where to insert the defined levels:</p>
     modifying it. The other levels are inserted afterwards (before the
     possible second level which may previously exist in the entry).</li>
 </ul>
+
+<h4>Levels</h4>
+
+<p>After the optional "position", the <em>level</em> list follow. The
+levels are separated by vertical bars, the whole list being between
+brackets.</p>
+
+<p>A level starts with an optional label, which corresponds to its name.
+This label is useful to specify this level in case of future extension,
+using the <em>position</em> (see previous section).</p>
+
+<p>The level continues with an optional associativity indicator, which
+can be:</p>
+
+<ul>
+  <li>LEFTA for left associativity (default),</li>
+  <li>RIGHTA for right associativity,</li>
+  <li>NONA for no associativity.</li>
+</ul>
+
+<p>At last, the grammar <em>rule</em> list appear. The rules are
+separated by vertical bars, the whole list being brackets.</p>
+
+<h4>Rules</h4>
 
 <p>... to be completed ...</p>
 
