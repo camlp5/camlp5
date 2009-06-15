@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.88 2007/08/14 11:19:09 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.89 2007/08/24 02:29:44 deraugla Exp $ *)
 
 open Token;
 
@@ -126,23 +126,19 @@ value number =
     | end_integer ]! ]
 ;
 
-value char_qq =
-  lexer
-  [ ?= [ ''' ''' ] "'" "'"/
-  | "'"/ ]
-;
-
 value rec char_aux ctx bp =
   lexer
   [ "'"/
-  | "\\" [ char_qq | _ (char_aux ctx bp)! ]
   | _ (char_aux ctx bp)!
   | -> err ctx (bp, $pos) "char not terminated" ]
 ;
 
 value char ctx bp =
   lexer
-  [ ?= [ _ ''' | '\\' _ ] [ "'" (char_aux ctx bp)! | (char_aux ctx bp) ]! ]
+  [ "\\"
+    [ _ (char_aux ctx bp)!
+    | -> err ctx (bp, $pos) "char not terminated" ]
+  | ?= [ _ '''] _! "'"/ ]
 ;
 
 value any ctx buf =
