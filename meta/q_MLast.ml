@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.53 2007/09/09 09:06:35 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.54 2007/09/09 11:26:09 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -77,8 +77,16 @@ module Qast =
           in
           <:expr< $anti:e$ >>
       | VaVal a ->
-          if Pcaml.strict_mode.val then <:expr< Ploc.VaVal $to_expr m a$ >>
-          else to_expr m a
+          let e = to_expr m a in
+          if Pcaml.strict_mode.val then
+            match e with
+            [ <:expr< $anti:ee$ >> ->
+                let loc = MLast.loc_of_expr ee in
+                let ee = <:expr< Ploc.VaVal $ee$ >> in
+                let loc = MLast.loc_of_expr e in
+                <:expr< $anti:ee$ >>
+            | _ -> <:expr< Ploc.VaVal $e$ >> ]
+          else e
       | Vala a ->
           let e = to_expr m a in
           match e with
@@ -115,8 +123,16 @@ module Qast =
           in
           <:patt< $anti:p$ >>
       | VaVal a ->
-          if Pcaml.strict_mode.val then <:patt< Ploc.VaVal $to_patt m a$ >>
-          else to_patt m a
+          let p = to_patt m a in
+          if Pcaml.strict_mode.val then
+            match p with
+            [ <:patt< $anti:pp$ >> ->
+                let loc = MLast.loc_of_patt pp in
+                let pp = <:patt< Ploc.VaVal $pp$ >> in
+                let loc = MLast.loc_of_patt p in
+                <:patt< $anti:pp$ >>
+            | _ -> <:patt< Ploc.VaVal $p$ >> ]
+          else p
       | Vala a ->
           let p = to_patt m a in
           match p with
@@ -862,9 +878,9 @@ EXTEND
     | LEFTA
       [ t1 = SELF; "."; t2 = SELF -> Qast.Node "TyAcc" [Qast.Loc; t1; t2] ]
     | "simple"
-      [ i = typevar -> Qast.Node "TyQuo" [Qast.Loc; i]
+      [ i = typevar2 -> Qast.Node "TyQuo" [Qast.Loc; i]
       | "_" -> Qast.Node "TyAny" [Qast.Loc]
-      | i = a_LIDENT -> Qast.Node "TyLid" [Qast.Loc; i]
+      | i = a_LIDENT2 -> Qast.Node "TyLid" [Qast.Loc; i]
       | i = a_UIDENT -> Qast.Node "TyUid" [Qast.Loc; i]
       | "("; t = SELF; "*"; tl = SLIST1 ctyp SEP "*"; ")" ->
           Qast.Node "TyTup" [Qast.Loc; Qast.Cons t tl]
@@ -1060,6 +1076,10 @@ EXTEND
   typevar:
     [ [ "'"; i = ident -> i ] ]
   ;
+  typevar2:
+    [ [ "'"; i = a_LIDENT2 -> i
+      | "'"; i = a_UIDENT2 -> i ] ]
+  ;
   clty_longident:
     [ [ m = a_UIDENT; "."; l = SELF -> Qast.Cons m l
       | i = a_LIDENT -> Qast.List [i] ] ]
@@ -1182,6 +1202,10 @@ EXTEND
   ;
   direction_flag:
     [ [ a = ANTIQUOT "to" -> antiquot "to" loc a ] ]
+  ;
+  typevar2:
+    [ [ "'"; a = ANTIQUOT -> Qast.VaVal (antiquot "" loc a)
+      | "'"; a = ANTIQUOT "a" -> antiquot "a" loc a ] ]
   ;
 END;
 

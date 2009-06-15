@@ -218,6 +218,7 @@ Grammar.extend
      grammar_entry_create "field_expr"
    and field : 'field Grammar.Entry.e = grammar_entry_create "field"
    and typevar : 'typevar Grammar.Entry.e = grammar_entry_create "typevar"
+   and typevar2 : 'typevar2 Grammar.Entry.e = grammar_entry_create "typevar2"
    and clty_longident : 'clty_longident Grammar.Entry.e =
      grammar_entry_create "clty_longident"
    and class_longident : 'class_longident Grammar.Entry.e =
@@ -1497,9 +1498,9 @@ Grammar.extend
       [Gramext.Stoken ("", "_")],
       Gramext.action (fun _ (loc : Ploc.t) -> (MLast.TyAny loc : 'ctyp));
       [Gramext.Snterm
-         (Grammar.Entry.obj (typevar : 'typevar Grammar.Entry.e))],
+         (Grammar.Entry.obj (typevar2 : 'typevar2 Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'typevar) (loc : Ploc.t) ->
+        (fun (i : 'typevar2) (loc : Ploc.t) ->
            (MLast.TyQuo (loc, i) : 'ctyp))]];
     Grammar.Entry.obj
       (constructor_declaration : 'constructor_declaration Grammar.Entry.e),
@@ -2102,6 +2103,12 @@ Grammar.extend
      [[Gramext.Stoken ("", "'");
        Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
       Gramext.action (fun (i : 'ident) _ (loc : Ploc.t) -> (i : 'typevar))]];
+    Grammar.Entry.obj (typevar2 : 'typevar2 Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Stoken ("", "'"); Gramext.Stoken ("UIDENT", "")],
+      Gramext.action (fun (i : string) _ (loc : Ploc.t) -> (i : 'typevar2));
+      [Gramext.Stoken ("", "'"); Gramext.Stoken ("LIDENT", "")],
+      Gramext.action (fun (i : string) _ (loc : Ploc.t) -> (i : 'typevar2))]];
     Grammar.Entry.obj (clty_longident : 'clty_longident Grammar.Entry.e),
     None,
     [None, None,

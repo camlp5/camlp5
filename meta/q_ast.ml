@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.44 2007/09/09 09:06:35 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.45 2007/09/09 11:26:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -193,35 +193,37 @@ module Meta =
     value e_ctyp t = 
       let ln = ln () in
       loop t where rec loop t =
-        match get_anti t with
-        [ Some (loc, typ, str) ->
-            let r =
-              let (loc, r) = eval_anti expr_eoi loc typ str in
-              <:expr< $anti:r$ >>
-            in
-            match typ with
-            [ ""  -> r
-            | x -> not_impl ("e_ctyp anti " ^ x) 0 ]
-        | None ->
-            match t with
-            [ TyAcc _ t1 t2 -> <:expr< MLast.TyAcc $ln$ $loop t1$ $loop t2$ >>
-            | TyAny _ -> <:expr< MLast.TyAny $ln$ >>
-            | TyApp _ t1 t2 -> <:expr< MLast.TyApp $ln$ $loop t1$ $loop t2$ >> 
-            | TyLid _ s -> <:expr< MLast.TyLid $ln$ $e_string s$ >>
-            | TyQuo _ s -> <:expr< MLast.TyQuo $ln$ $e_string s$ >>
+        match t with
+        [ TyAcc _ t1 t2 -> <:expr< MLast.TyAcc $ln$ $loop t1$ $loop t2$ >>
+        | TyAny _ -> <:expr< MLast.TyAny $ln$ >>
+        | TyApp _ t1 t2 -> <:expr< MLast.TyApp $ln$ $loop t1$ $loop t2$ >> 
+        | TyLid _ s -> <:expr< MLast.TyLid $ln$ $e_vala e_string s$ >>
+        | TyQuo _ s -> <:expr< MLast.TyQuo $ln$ $e_vala e_string s$ >>
 (*
-            | TyRec _ lld ->
-                let lld =
-                  e_vala
-                    (e_list
-                       (fun (loc, lab, mf, t) ->
-                          <:expr< ($ln$, $str:lab$, $e_bool mf$, $loop t$) >>))
-                    lld
-                in
-                <:expr< MLast.TyRec $ln$ $lld$ >>
+        | TyRec _ lld ->
+            let lld =
+              e_vala
+                (e_list
+                   (fun (loc, lab, mf, t) ->
+                      <:expr< ($ln$, $str:lab$, $e_bool mf$, $loop t$) >>))
+                lld
+            in
+            <:expr< MLast.TyRec $ln$ $lld$ >>
 *)
-            | TyUid _ s -> <:expr< MLast.TyUid $ln$ $e_string s$ >>
-            | x -> not_impl "e_ctyp" x ] ]
+        | TyUid _ s -> <:expr< MLast.TyUid $ln$ $e_string s$ >>
+        | IFDEF STRICT THEN
+            TyXtr loc s _ ->
+              let asit = s.[0] = 'a' in
+              let s = String.sub s 1 (String.length s - 1) in
+              if asit then
+                let (loc, r) = eval_anti expr_eoi loc "" s in
+                <:expr< $anti:r$ >>
+              else
+                let (loc, r) = eval_anti expr_eoi loc "anti" s in
+                let r = <:expr< $anti:r$ >> in
+                <:expr< MLast.ExAnt loc $r$ >>
+          END
+        | x -> not_impl "e_ctyp" x ]
     ;
     value p_ctyp =
       fun
@@ -513,7 +515,7 @@ IFDEF STRICT THEN
         | s = ANTIQUOT_LOC "anti" -> make_anti loc "anti" s ] ]
     ;
     Pcaml.ctyp: LAST
-      [ [ s = ANTIQUOT_LOC -> make_anti loc "" s ] ]
+      [ [ s = ANTIQUOT_LOC -> MLast.TyXtr loc s None ] ]
     ;
   (*
     Pcaml.str_item: LAST

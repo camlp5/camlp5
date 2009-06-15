@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.54 2007/09/09 09:06:35 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.55 2007/09/09 11:26:09 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -481,9 +481,9 @@ EXTEND
     | LEFTA
       [ t1 = SELF; "."; t2 = SELF -> <:ctyp< $t1$ . $t2$ >> ]
     | "simple"
-      [ i = typevar -> <:ctyp< '$i$ >>
+      [ i = typevar2 -> <:ctyp< '$a:i$ >>
       | "_" -> <:ctyp< _ >>
-      | i = LIDENT -> <:ctyp< $lid:i$ >>
+      | i = V LIDENT -> <:ctyp< $alid:i$ >>
       | i = UIDENT -> <:ctyp< $uid:i$ >>
       | "("; t = SELF; "*"; tl = LIST1 ctyp SEP "*"; ")" ->
           <:ctyp< ( $list:[t::tl]$ ) >>
@@ -671,6 +671,10 @@ EXTEND
   ;
   typevar:
     [ [ "'"; i = ident -> i ] ]
+  ;
+  typevar2:
+    [ [ "'"; i = V LIDENT -> i
+      | "'"; i = V UIDENT -> i ] ]
   ;
   clty_longident:
     [ [ m = UIDENT; "."; l = SELF -> [m :: l]

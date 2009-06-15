@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.26 2007/09/09 02:23:26 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.27 2007/09/09 11:26:09 deraugla Exp $ *)
 
 (*
 Added statements:
@@ -308,6 +308,7 @@ EXTEND
   ;
   str_macro_def:
     [ [ "DEFINE"; i = uident; def = opt_macro_expr -> SdDef i def
+      | "DEFINE_TYPE"; i = uident; def = opt_macro_type -> SdDef i def
       | "UNDEF"; i = uident -> SdUnd i
       | "IFDEF"; e = dexpr; "THEN"; d = str_item_or_macro; "END" ->
           if e then d else SdNop
@@ -322,6 +323,7 @@ EXTEND
   ;
   sig_macro_def:
     [ [ "DEFINE"; i = uident; def = opt_macro_type -> SdDef i def
+      | "DEFINE_TYPE"; i = uident; def = opt_macro_type -> SdDef i def
       | "UNDEF"; i = uident -> SdUnd i
       | "IFDEF"; e = dexpr; "THEN"; d = sig_item_or_macro; "END" ->
           if e then d else SdNop

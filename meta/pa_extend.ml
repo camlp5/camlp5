@@ -1,16 +1,6 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: pa_extend.ml,v 1.50 2007/09/09 09:16:38 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.51 2007/09/09 11:26:09 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
 
@@ -246,8 +236,8 @@ module MetaAction =
           <:expr< MLast.TyAcc $mloc$ $mctyp t1$ $mctyp t2$ >>
       | MLast.TyApp loc t1 t2 ->
           <:expr< MLast.TyApp $mloc$ $mctyp t1$ $mctyp t2$ >>
-      | MLast.TyLid loc s -> <:expr< MLast.TyLid $mloc$ $str:s$ >>
-      | MLast.TyQuo loc s -> <:expr< MLast.TyQuo $mloc$ $str:s$ >>
+      | MLast.TyLid loc s -> <:expr< MLast.TyLid $mloc$ $mvala mstring s$ >>
+      | MLast.TyQuo loc s -> <:expr< MLast.TyQuo $mloc$ $mvala mstring s$ >>
       | MLast.TyTup loc tl -> <:expr< MLast.TyTup $mloc$ $mlist mctyp tl$ >>
       | MLast.TyUid loc s -> <:expr< MLast.TyUid $mloc$ $str:s$ >>
       | x -> not_impl "mctyp" x ]

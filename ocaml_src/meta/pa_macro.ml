@@ -410,6 +410,14 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (uident : 'uident Grammar.Entry.e))],
       Gramext.action
         (fun (i : 'uident) _ (loc : Ploc.t) -> (SdUnd i : 'str_macro_def));
+      [Gramext.Stoken ("", "DEFINE_TYPE");
+       Gramext.Snterm (Grammar.Entry.obj (uident : 'uident Grammar.Entry.e));
+       Gramext.Snterm
+         (Grammar.Entry.obj
+            (opt_macro_type : 'opt_macro_type Grammar.Entry.e))],
+      Gramext.action
+        (fun (def : 'opt_macro_type) (i : 'uident) _ (loc : Ploc.t) ->
+           (SdDef (i, def) : 'str_macro_def));
       [Gramext.Stoken ("", "DEFINE");
        Gramext.Snterm (Grammar.Entry.obj (uident : 'uident Grammar.Entry.e));
        Gramext.Snterm
@@ -474,6 +482,14 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (uident : 'uident Grammar.Entry.e))],
       Gramext.action
         (fun (i : 'uident) _ (loc : Ploc.t) -> (SdUnd i : 'sig_macro_def));
+      [Gramext.Stoken ("", "DEFINE_TYPE");
+       Gramext.Snterm (Grammar.Entry.obj (uident : 'uident Grammar.Entry.e));
+       Gramext.Snterm
+         (Grammar.Entry.obj
+            (opt_macro_type : 'opt_macro_type Grammar.Entry.e))],
+      Gramext.action
+        (fun (def : 'opt_macro_type) (i : 'uident) _ (loc : Ploc.t) ->
+           (SdDef (i, def) : 'sig_macro_def));
       [Gramext.Stoken ("", "DEFINE");
        Gramext.Snterm (Grammar.Entry.obj (uident : 'uident Grammar.Entry.e));
        Gramext.Snterm

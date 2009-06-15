@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.22 2007/09/09 09:06:35 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.23 2007/09/09 11:26:09 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -152,18 +152,18 @@ value rec ctyp_fa al =
 
 value rec ctyp_long_id =
   fun
-  [ TyAcc _ m (TyLid _ s) ->
+  [ <:ctyp< $m$.$lid:s$ >> ->
       let (is_cls, li) = ctyp_long_id m in
       (is_cls, ldot li s)
-  | TyAcc _ m (TyUid _ s) ->
+  | <:ctyp< $m$.$uid:s$ >> ->
       let (is_cls, li) = ctyp_long_id m in
       (is_cls, ldot li s)
-  | TyApp _ m1 m2 ->
+  | <:ctyp< $m1$ $m2$ >> ->
       let (is_cls, li1) = ctyp_long_id m1 in
       let (_, li2) = ctyp_long_id m2 in
       (is_cls, Lapply li1 li2)
-  | TyUid _ s -> (False, lident s)
-  | TyLid _ s -> (False, lident s)
+  | <:ctyp< $uid:s$ >> -> (False, lident s)
+  | <:ctyp< $lid:s$ >> -> (False, lident s)
   | TyCls loc sl -> (True, long_id_of_string_list loc sl)
   | t -> error (loc_of_ctyp t) "incorrect type" ]
 ;
@@ -177,8 +177,8 @@ value rec ctyp =
   | TyAli loc t1 t2 ->
       let (t, i) =
         match (t1, t2) with
-        [ (t, TyQuo _ s) -> (t, s)
-        | (TyQuo _ s, t) -> (t, s)
+        [ (t, <:ctyp< '$s$ >>) -> (t, s)
+        | (<:ctyp< '$s$ >>, t) -> (t, s)
         | _ -> error loc "incorrect alias type" ]
       in
       mktyp loc (Ptyp_alias (ctyp t) i)
@@ -191,18 +191,21 @@ value rec ctyp =
   | TyArr loc (TyLab loc1 lab t1) t2 ->
       mktyp loc (Ptyp_arrow lab (ctyp t1) (ctyp t2))
   | TyArr loc (TyOlb loc1 lab t1) t2 ->
-      let t1 = TyApp loc1 (TyLid loc1 "option") t1 in
+      let t1 =
+        let loc = loc1 in
+        <:ctyp< option $t1$ >>
+      in
       mktyp loc (Ptyp_arrow ("?" ^ lab) (ctyp t1) (ctyp t2))
   | TyArr loc t1 t2 -> mktyp loc (Ptyp_arrow "" (ctyp t1) (ctyp t2))
   | TyObj loc fl v -> mktyp loc (Ptyp_object (meth_list loc fl v))
   | TyCls loc id ->
       mktyp loc (Ptyp_class (long_id_of_string_list loc id) [] [])
   | TyLab loc _ _ -> error loc "labeled type not allowed here"
-  | TyLid loc s -> mktyp loc (Ptyp_constr (lident s) [])
+  | TyLid loc s -> mktyp loc (Ptyp_constr (lident (uv s)) [])
   | TyMan loc _ _ -> error loc "type manifest not allowed here"
   | TyOlb loc lab _ -> error loc "labeled type not allowed here"
   | TyPol loc pl t -> mktyp loc (Ptyp_poly pl (ctyp t))
-  | TyQuo loc s -> mktyp loc (Ptyp_var s)
+  | TyQuo loc s -> mktyp loc (Ptyp_var (uv s))
   | TyRec loc _ -> error loc "record type not allowed here"
   | TySum loc _ -> error loc "sum type not allowed here"
   | TyTup loc tl -> mktyp loc (Ptyp_tuple (List.map ctyp tl))
@@ -221,7 +224,10 @@ value rec ctyp =
         | Some None -> (False, None)
         | Some (Some sl) -> (True, Some sl) ]
       in
-      mktyp loc (Ptyp_variant catl clos sl) ]
+      mktyp loc (Ptyp_variant catl clos sl)
+  | IFDEF STRICT THEN
+      TyXtr loc _ _ -> error loc "bad ast"
+    END ]
 and meth_list loc fl v =
   match fl with
   [ [] -> if v then [mkfield loc Pfield_var] else []
@@ -266,7 +272,8 @@ value type_decl tl priv cl =
   | t ->
       let m =
         match t with
-        [ TyQuo _ s -> if List.mem_assoc s tl then Some (ctyp t) else None
+        [ <:ctyp< '$s$ >> ->
+            if List.mem_assoc s tl then Some (ctyp t) else None
         | _ -> Some (ctyp t) ]
       in
       mktype (loc_of_ctyp t) tl cl Ptype_abstract m ]
@@ -309,30 +316,30 @@ value paolab loc lab peoo =
 
 value rec same_type_expr ct ce =
   match (ct, ce) with
-  [ (TyLid _ s1, <:expr< $lid:s2$ >>) -> s1 = s2
-  | (TyUid _ s1, <:expr< $uid:s2$ >>) -> s1 = s2
-  | (TyAcc _ t1 t2, ExAcc _ e1 e2) ->
+  [ (<:ctyp< $lid:s1$ >>, <:expr< $lid:s2$ >>) -> s1 = s2
+  | (<:ctyp< $uid:s1$ >>, <:expr< $uid:s2$ >>) -> s1 = s2
+  | (<:ctyp< $t1$.$t2$ >>, <:expr< $e1$.$e2$ >>) ->
       same_type_expr t1 e1 && same_type_expr t2 e2
   | _ -> False ]
 ;
 
 value rec common_id loc t e =
   match (t, e) with
-  [ (TyLid _ s1, <:expr< $lid:s2$ >>) when s1 = s2 -> lident s1
-  | (TyUid _ s1, <:expr< $uid:s2$ >>) when s1 = s2 -> lident s1
-  | (TyAcc _ t1 (TyLid _ s1), <:expr< $e1$.$lid:s2$ >>) when s1 = s2 ->
+  [ (<:ctyp< $lid:s1$ >>, <:expr< $lid:s2$ >>) when s1 = s2 -> lident s1
+  | (<:ctyp< $uid:s1$ >>, <:expr< $uid:s2$ >>) when s1 = s2 -> lident s1
+  | (<:ctyp< $t1$.$lid:s1$ >>, <:expr< $e1$.$lid:s2$ >>) when s1 = s2 ->
       ldot (common_id loc t1 e1) s1
-  | (TyAcc _ t1 (TyUid _ s1), <:expr< $e1$.$uid:s2$ >>) when s1 = s2 ->
+  | (<:ctyp< $t1$.$uid:s1$ >>, <:expr< $e1$.$uid:s2$ >>) when s1 = s2 ->
       ldot (common_id loc t1 e1) s1
   | _ -> error loc "this expression should repeat the class id inherited" ]
 ;
 
 value rec type_id loc t =
   match t with
-  [ TyLid _ s1 -> lident s1
-  | TyUid _ s1 -> lident s1
-  | TyAcc _ t1 (TyLid _ s1) -> ldot (type_id loc t1) s1
-  | TyAcc _ t1 (TyUid _ s1) -> ldot (type_id loc t1) s1
+  [ <:ctyp< $lid:s1$ >> -> lident s1
+  | <:ctyp< $uid:s1$ >> -> lident s1
+  | <:ctyp< $t1$.$lid:s1$ >> -> ldot (type_id loc t1) s1
+  | <:ctyp< $t1$.$uid:s1$ >> -> ldot (type_id loc t1) s1
   | _ -> error loc "type identifier expected" ]
 ;
 
@@ -855,7 +862,10 @@ and class_type =
   | CtFun loc (TyLab _ lab t) ct ->
       mkcty loc (Pcty_fun lab (ctyp t) (class_type ct))
   | CtFun loc (TyOlb loc1 lab t) ct ->
-      let t = TyApp loc1 (TyLid loc1 "option") t in
+      let t =
+        let loc = loc1 in
+        <:ctyp< option $t$ >>
+      in
       mkcty loc (Pcty_fun ("?" ^ lab) (ctyp t) (class_type ct))
   | CtFun loc t ct -> mkcty loc (Pcty_fun "" (ctyp t) (class_type ct))
   | CtSig loc t_o ctfl ->

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: mLast.mli,v 1.21 2007/09/09 09:06:35 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.22 2007/09/09 11:26:09 deraugla Exp $ *)
 
 (* Module [MLast]: abstract syntax tree.
 
@@ -35,17 +35,20 @@ type ctyp =
   | TyArr of loc and ctyp and ctyp
   | TyCls of loc and list string
   | TyLab of loc and string and ctyp
-  | TyLid of loc and string
+  | TyLid of loc and V string
   | TyMan of loc and ctyp and ctyp
   | TyObj of loc and list (string * ctyp) and bool
   | TyOlb of loc and string and ctyp
   | TyPol of loc and list string and ctyp
-  | TyQuo of loc and string
+  | TyQuo of loc and V string
   | TyRec of loc and list (loc * string * bool * ctyp)
   | TySum of loc and list (loc * string * list ctyp)
   | TyTup of loc and list ctyp
   | TyUid of loc and string
-  | TyVrn of loc and list poly_variant and option (option (list string)) ]
+  | TyVrn of loc and list poly_variant and option (option (list string))
+  | IFDEF STRICT THEN
+      TyXtr of loc and string and option ctyp
+    END ]
 and poly_variant =
   [ PvTag of string and bool and list ctyp
   | PvInh of ctyp ]

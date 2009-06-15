@@ -1,10 +1,16 @@
-(* camlp5r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.52 2007/09/01 21:20:34 deraugla Exp $ *)
+(* camlp5r pa_macro.cmo q_MLast.cmo -qmod ctyp,Type *)
+(* $Id: pa_pragma.ml,v 1.53 2007/09/09 11:26:09 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
 
 open Printf;
+
+IFNDEF STRICT THEN
+  DEFINE_TYPE V t = t
+ELSE
+  DEFINE_TYPE V t = Ploc.vala t
+END;
 
 value string_of_obj_tag x =
   if Obj.is_block (Obj.repr x) then
@@ -27,8 +33,8 @@ module Type =
       | TyAny of loc
       | TyApp of loc and t and t
       | TyArr of loc and t and t
-      | TyLid of loc and string
-      | TyQuo of loc and ref (option t)
+      | TyLid of loc and V string
+      | TyQuo of loc and V (ref (option t))
       | TyTup of loc and list t
       | TyUid of loc and string ]
     ;
@@ -50,13 +56,13 @@ value ty_var =
 ;
 
 value vars = ref [];
-value rec type_of_ctyp =
-  fun
+value rec type_of_ctyp t =
+  match t with
   [ MLast.TyAcc loc t1 t2 -> <:ctyp< $type_of_ctyp t1$ . $type_of_ctyp t2$ >>
   | MLast.TyAny loc -> <:ctyp< _ >>
   | MLast.TyApp loc t1 t2 -> <:ctyp< $type_of_ctyp t1$ $type_of_ctyp t2$ >>
   | MLast.TyArr loc t1 t2 -> <:ctyp< $type_of_ctyp t1$ -> $type_of_ctyp t2$ >>
-  | MLast.TyLid loc s -> <:ctyp< $lid:s$ >>
+  | MLast.TyLid loc s -> <:ctyp< $alid:s$ >>
   | MLast.TyQuo loc s ->
       try List.assoc s vars.val with
       [ Not_found -> do {
@@ -125,7 +131,10 @@ value rec eval_type loc t =
       match s.val with
       [ Some t -> eval_type loc t
       | None -> t ]
-  | <:ctyp< $lid:_$ >> | <:ctyp< $uid:_$ >> | <:ctyp< _ >> -> t ]
+  | <:ctyp< $alid:_$ >> | <:ctyp< $uid:_$ >> | <:ctyp< _ >> -> t
+  | IFDEF STRICT THEN
+      _ -> failwith "eval_type"
+    END ]
 ;
 
 value str_of_ty loc t = do {

@@ -85,13 +85,28 @@ module Qast =
           in
           MLast.ExAnt (loc, e)
       | VaVal a ->
+          let e = to_expr m a in
           if !(Pcaml.strict_mode) then
-            MLast.ExApp
-              (loc,
-               MLast.ExAcc
-                 (loc, MLast.ExUid (loc, "Ploc"), MLast.ExUid (loc, "VaVal")),
-               to_expr m a)
-          else to_expr m a
+            match e with
+              MLast.ExAnt (_, ee) ->
+                let loc = MLast.loc_of_expr ee in
+                let ee =
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "Ploc"),
+                        MLast.ExUid (loc, "VaVal")),
+                     ee)
+                in
+                let loc = MLast.loc_of_expr e in MLast.ExAnt (loc, ee)
+            | _ ->
+                MLast.ExApp
+                  (loc,
+                   MLast.ExAcc
+                     (loc, MLast.ExUid (loc, "Ploc"),
+                      MLast.ExUid (loc, "VaVal")),
+                   e)
+          else e
       | Vala a ->
           let e = to_expr m a in
           match e with
@@ -145,13 +160,28 @@ module Qast =
           in
           MLast.PaAnt (loc, p)
       | VaVal a ->
+          let p = to_patt m a in
           if !(Pcaml.strict_mode) then
-            MLast.PaApp
-              (loc,
-               MLast.PaAcc
-                 (loc, MLast.PaUid (loc, "Ploc"), MLast.PaUid (loc, "VaVal")),
-               to_patt m a)
-          else to_patt m a
+            match p with
+              MLast.PaAnt (_, pp) ->
+                let loc = MLast.loc_of_patt pp in
+                let pp =
+                  MLast.PaApp
+                    (loc,
+                     MLast.PaAcc
+                       (loc, MLast.PaUid (loc, "Ploc"),
+                        MLast.PaUid (loc, "VaVal")),
+                     pp)
+                in
+                let loc = MLast.loc_of_patt p in MLast.PaAnt (loc, pp)
+            | _ ->
+                MLast.PaApp
+                  (loc,
+                   MLast.PaAcc
+                     (loc, MLast.PaUid (loc, "Ploc"),
+                      MLast.PaUid (loc, "VaVal")),
+                   p)
+          else p
       | Vala a ->
           let p = to_patt m a in
           match p with
@@ -454,6 +484,8 @@ Grammar.extend
      grammar_entry_create "class_longident"
    and direction_flag : 'direction_flag Grammar.Entry.e =
      grammar_entry_create "direction_flag"
+   and typevar2 : 'typevar2 Grammar.Entry.e =
+     grammar_entry_create "typevar2"
    in
    [Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e), None,
     [None, None,
@@ -641,7 +673,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 316, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 332, 19))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -891,7 +923,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 371, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 387, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -2449,17 +2481,17 @@ Grammar.extend
         (fun (i : 'a_UIDENT) (loc : Ploc.t) ->
            (Qast.Node ("TyUid", [Qast.Loc; i]) : 'ctyp));
       [Gramext.Snterm
-         (Grammar.Entry.obj (a_LIDENT : 'a_LIDENT Grammar.Entry.e))],
+         (Grammar.Entry.obj (a_LIDENT2 : 'a_LIDENT2 Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'a_LIDENT) (loc : Ploc.t) ->
+        (fun (i : 'a_LIDENT2) (loc : Ploc.t) ->
            (Qast.Node ("TyLid", [Qast.Loc; i]) : 'ctyp));
       [Gramext.Stoken ("", "_")],
       Gramext.action
         (fun _ (loc : Ploc.t) -> (Qast.Node ("TyAny", [Qast.Loc]) : 'ctyp));
       [Gramext.Snterm
-         (Grammar.Entry.obj (typevar : 'typevar Grammar.Entry.e))],
+         (Grammar.Entry.obj (typevar2 : 'typevar2 Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'typevar) (loc : Ploc.t) ->
+        (fun (i : 'typevar2) (loc : Ploc.t) ->
            (Qast.Node ("TyQuo", [Qast.Loc; i]) : 'ctyp))]];
     Grammar.Entry.obj
       (constructor_declaration : 'constructor_declaration Grammar.Entry.e),
@@ -3309,6 +3341,18 @@ Grammar.extend
      [[Gramext.Stoken ("", "'");
        Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
       Gramext.action (fun (i : 'ident) _ (loc : Ploc.t) -> (i : 'typevar))]];
+    Grammar.Entry.obj (typevar2 : 'typevar2 Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Stoken ("", "'");
+       Gramext.Snterm
+         (Grammar.Entry.obj (a_UIDENT2 : 'a_UIDENT2 Grammar.Entry.e))],
+      Gramext.action
+        (fun (i : 'a_UIDENT2) _ (loc : Ploc.t) -> (i : 'typevar2));
+      [Gramext.Stoken ("", "'");
+       Gramext.Snterm
+         (Grammar.Entry.obj (a_LIDENT2 : 'a_LIDENT2 Grammar.Entry.e))],
+      Gramext.action
+        (fun (i : 'a_LIDENT2) _ (loc : Ploc.t) -> (i : 'typevar2))]];
     Grammar.Entry.obj (clty_longident : 'clty_longident Grammar.Entry.e),
     None,
     [None, None,
@@ -3731,7 +3775,17 @@ Grammar.extend
      [[Gramext.Stoken ("ANTIQUOT", "to")],
       Gramext.action
         (fun (a : string) (loc : Ploc.t) ->
-           (antiquot "to" loc a : 'direction_flag))]]]);;
+           (antiquot "to" loc a : 'direction_flag))]];
+    Grammar.Entry.obj (typevar2 : 'typevar2 Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Stoken ("", "'"); Gramext.Stoken ("ANTIQUOT", "a")],
+      Gramext.action
+        (fun (a : string) _ (loc : Ploc.t) ->
+           (antiquot "a" loc a : 'typevar2));
+      [Gramext.Stoken ("", "'"); Gramext.Stoken ("ANTIQUOT", "")],
+      Gramext.action
+        (fun (a : string) _ (loc : Ploc.t) ->
+           (Qast.VaVal (antiquot "" loc a) : 'typevar2))]]]);;
 
 Grammar.extend
   (let _ = (str_item : 'str_item Grammar.Entry.e)

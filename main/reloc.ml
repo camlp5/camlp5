@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: reloc.ml,v 1.14 2007/09/09 09:06:35 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.15 2007/09/09 11:26:09 deraugla Exp $ *)
 
 open MLast;
 
@@ -57,7 +57,10 @@ value rec ctyp floc sh =
     | TyTup loc x1 -> TyTup (floc loc) (List.map self x1)
     | TyUid loc x1 -> TyUid (floc loc) x1
     | TyVrn loc x1 x2 ->
-        TyVrn (floc loc) (List.map (poly_variant floc sh) x1) x2 ]
+        TyVrn (floc loc) (List.map (poly_variant floc sh) x1) x2
+    | IFDEF STRICT THEN
+        TyXtr loc x1 x2 -> TyXtr (floc loc) x1 (option_map self x2)
+      END ]
 and poly_variant floc sh =
   fun
   [ PvTag x1 x2 x3 -> PvTag x1 x2 (List.map (ctyp floc sh) x3)

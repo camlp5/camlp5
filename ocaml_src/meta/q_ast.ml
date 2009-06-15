@@ -166,82 +166,71 @@ module Meta =
     let e_ctyp t =
       let ln = ln () in
       let rec loop t =
-        match get_anti t with
-          Some (loc, typ, str) ->
-            let r =
-              let (loc, r) = eval_anti expr_eoi loc typ str in
-              MLast.ExAnt (loc, r)
-            in
-            begin match typ with
-              "" -> r
-            | x -> not_impl ("e_ctyp anti " ^ x) 0
-            end
-        | None ->
-            match t with
-              TyAcc (_, t1, t2) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExApp
-                        (loc,
-                         MLast.ExAcc
-                           (loc, MLast.ExUid (loc, "MLast"),
-                            MLast.ExUid (loc, "TyAcc")),
-                         ln),
-                      loop t1),
-                   loop t2)
-            | TyAny _ ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExAcc
-                     (loc, MLast.ExUid (loc, "MLast"),
-                      MLast.ExUid (loc, "TyAny")),
-                   ln)
-            | TyApp (_, t1, t2) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExApp
-                        (loc,
-                         MLast.ExAcc
-                           (loc, MLast.ExUid (loc, "MLast"),
-                            MLast.ExUid (loc, "TyApp")),
-                         ln),
-                      loop t1),
-                   loop t2)
-            | TyLid (_, s) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExAcc
-                        (loc, MLast.ExUid (loc, "MLast"),
-                         MLast.ExUid (loc, "TyLid")),
-                      ln),
-                   e_string s)
-            | TyQuo (_, s) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExAcc
-                        (loc, MLast.ExUid (loc, "MLast"),
-                         MLast.ExUid (loc, "TyQuo")),
-                      ln),
-                   e_string s)
-            | TyUid (_, s) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExAcc
-                        (loc, MLast.ExUid (loc, "MLast"),
-                         MLast.ExUid (loc, "TyUid")),
-                      ln),
-                   e_string s)
-            | x -> not_impl "e_ctyp" x
+        match t with
+          TyAcc (_, t1, t2) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "TyAcc")),
+                     ln),
+                  loop t1),
+               loop t2)
+        | TyAny _ ->
+            MLast.ExApp
+              (loc,
+               MLast.ExAcc
+                 (loc, MLast.ExUid (loc, "MLast"),
+                  MLast.ExUid (loc, "TyAny")),
+               ln)
+        | TyApp (_, t1, t2) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "TyApp")),
+                     ln),
+                  loop t1),
+               loop t2)
+        | TyLid (_, s) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "TyLid")),
+                  ln),
+               e_vala e_string s)
+        | TyQuo (_, s) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "TyQuo")),
+                  ln),
+               e_vala e_string s)
+        | TyUid (_, s) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "TyUid")),
+                  ln),
+               e_string s)
+        | x -> not_impl "e_ctyp" x
       in
       loop t
     ;;
