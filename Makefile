@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.26 2007/07/08 18:32:04 deraugla Exp $
+# $Id: Makefile,v 1.27 2007/07/08 19:17:59 deraugla Exp $
 
 include config/Makefile
 
@@ -40,7 +40,9 @@ depend:
 	for i in $(DIRS) compile; do (cd $$i; $(MAKE) depend); done
 
 install:
-	rm -rf "$(LIBDIR)/camlp4"
+	@test ! -d "$(LIBDIR)/camlp4/Camlp4Parsers" || \
+	 (/bin/rm -rf "$(LIBDIR)/ocamlp4"; \
+	  mv "$(LIBDIR)/camlp4" "$(LIBDIR)/ocamlp4")
 	for i in $(DIRS) compile; do (cd $$i; $(MAKE) install BINDIR="$(BINDIR)" LIBDIR="$(LIBDIR)" MANDIR="$(MANDIR)"); done
 
 uninstall:
