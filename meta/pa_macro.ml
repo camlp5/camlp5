@@ -1,10 +1,10 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.22 2007/09/07 04:31:52 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.23 2007/09/07 04:43:58 deraugla Exp $ *)
 
 (*
 Added statements:
 
-  At toplevel (structure item):
+  In structure items:
 
      DEFINE <uident>
      DEFINE <uident> = <expression>
@@ -13,6 +13,16 @@ Added statements:
      IFDEF <dexpr> THEN <structure_items> ELSE <structure_items> END
      IFNDEF <dexpr> THEN <structure_items> END
      IFNDEF <dexpr> THEN <structure_items> ELSE <structure_items> END
+
+  In signature items:
+
+     DEFINE <uident>
+     DEFINE <uident> = <type>
+     DEFINE <uident> (<parameters>) = <type>
+     IFDEF <dexpr> THEN <signature_items> END
+     IFDEF <dexpr> THEN <signature_items> ELSE <signature_items> END
+     IFNDEF <dexpr> THEN <signature_items> END
+     IFNDEF <dexpr> THEN <signature_items> ELSE <signature_items> END
 
   In expressions:
 
@@ -25,6 +35,11 @@ Added statements:
 
      IFDEF <dexpr> THEN <pattern> ELSE <pattern> END
      IFNDEF <dexpr> THEN <pattern> ELSE <pattern> END
+
+  In types:
+
+     IFDEF <dexpr> THEN <type> ELSE <type> END
+     IFNDEF <dexpr> THEN <type> ELSE <type> END
 
   A <dexpr> is either:
 
@@ -153,7 +168,9 @@ value substp mloc env =
 value substt mloc env =
   loop where rec loop =
     fun
-    [ <:ctyp< $t1$ $t2$ >> -> <:ctyp< $loop t1$ $loop t2$ >>
+    [ <:ctyp< $t1$ -> $t2$ >> -> <:ctyp< $loop t1$ -> $loop t2$ >>
+    | <:ctyp< $t1$ $t2$ >> -> <:ctyp< $loop t1$ $loop t2$ >>
+    | <:ctyp< ($list:tl$) >> -> <:ctyp< ($list:List.map loop tl$) >>
     | <:ctyp< $lid:x$ >> | <:ctyp< $uid:x$ >> as t ->
         try List.assoc x env with [ Not_found -> t ]
     | t -> t ]
