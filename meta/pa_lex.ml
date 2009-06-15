@@ -59,6 +59,7 @@ value mk_lexer_match loc e rl =
   cparser_match loc e None (conv_rules loc rl)
 ;
 
+(* group together consecutive rules just containing one character *)
 value isolate_char_patt_list =
   loop [] where rec loop pl =
     fun
