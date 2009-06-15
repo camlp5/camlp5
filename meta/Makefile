@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.26 2007/11/26 09:20:52 deraugla Exp $
+# $Id: Makefile,v 1.27 2007/11/27 18:37:26 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -56,7 +56,9 @@ install:
 	cp $(OBJS) "$(DESTDIR)$(LIBDIR)/$(NAME)/."
 	cp pa_macro.cmi pa_extend.cmi "$(DESTDIR)$(LIBDIR)/$(NAME)/."
 	cp $(NAME)r$(EXE) "$(DESTDIR)$(BINDIR)/."
-	if test -f q_MLast.cmx; then cp $(COPT) "$(DESTDIR)$(BINDIR)/."; fi
+	if test -f q_MLast.cmx; then \
+	  cp $(COPT) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	fi
 	if test -f pa_r.cmx; then \
 	  cp $(OBJS:.cmo=.cmx) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
 	  cp $(OBJS:.cmo=$(EXT_OBJ)) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
