@@ -1,12 +1,13 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_fstream.ml,v 1.10 2007/11/30 15:00:22 deraugla Exp $ *)
+(* $Id: pa_fstream.ml,v 1.11 2007/11/30 23:22:38 deraugla Exp $ *)
 
 open Pcaml;
 
 type spat_comp =
   [ SpTrm of MLast.loc and MLast.patt and option MLast.expr
   | SpNtr of MLast.loc and MLast.patt and MLast.expr
-  | SpStr of MLast.loc and MLast.patt ]
+  | SpStr of MLast.loc and MLast.patt
+  | SpWhn of MLast.loc and MLast.expr ]
 ;
 type sexp_comp =
   [ SeTrm of MLast.loc and MLast.expr
@@ -51,7 +52,9 @@ value stream_pattern_component skont =
                 [ $p$ -> $skont$
                 | _ -> None ] >>
   | SpStr loc p ->
-      <:expr< let $p$ = $lid:strm_n$ in $skont$ >> ]
+      <:expr< let $p$ = $lid:strm_n$ in $skont$ >>
+  | SpWhn loc e ->
+      <:expr< if $e$ then $skont$ else None >> ]
 ;
 
 value rec stream_pattern loc epo e =
@@ -129,7 +132,29 @@ value patt_expr_of_patt p =
   | _ -> (<:patt< _ >>, <:expr< () >>) ]
 ;
 
-value mstream_pattern_component m =
+value no_compute =
+  fun
+  [ <:expr< $lid:_$ >> -> True
+  | <:expr< $uid:_$.$lid:_$ >> -> True
+  | _ -> False ]
+;
+
+value fun_p_strm_e loc p e =
+  match (p, e) with
+  [ (<:patt< $lid:a$ >>, <:expr< $e$ $lid:b$ $lid:strm_n$ >>)
+    when a = b && no_compute e -> e
+  | (p, <:expr< $e$ $lid:strm_n$ >>)
+    when no_compute e ->
+      <:expr< fun $p$ -> $e$ >>
+  | _ ->
+      <:expr< fun $p$ $lid:strm_n$ -> $e$ >> ]
+;
+
+value fun_strm_e_strm loc e =
+  if no_compute e then e else <:expr< fun $lid:strm_n$ -> $e$ $lid:strm_n$ >>
+;
+
+value mstream_pattern_component m skont =
   fun
   [ SpTrm loc p1 wo ->
       let (p, e) = patt_expr_of_patt p1 in
@@ -141,45 +166,38 @@ value mstream_pattern_component m =
         | _ ->
             <:expr< $uid:m$.b_term (fun [ $p1$ -> Some $e$ | _ -> None ]) >> ]
       in
-      (p, e)
+      let e2 = fun_p_strm_e loc p skont in
+      <:expr< $uid:m$.b_seq $e$ $e2$ $lid:strm_n$ >>
   | SpNtr loc p e ->
-      (p, e)
+      let e2 = fun_p_strm_e loc p skont in
+      <:expr< $uid:m$.b_seq $fun_strm_e_strm loc e$ $e2$ $lid:strm_n$ >>
   | SpStr loc p ->
-      Ploc.raise loc (Stream.Error "not impl: stream_pattern_component") ]
+      Ploc.raise loc (Stream.Error "not impl: stream_pattern_component 1")
+  | SpWhn loc e ->
+      <:expr< if $e$ then $skont$ else None >> ]
 ;
 
 value rec mstream_pattern loc m (spcl, epo, e) =
   match spcl with
   [ [] ->
-      let e =
-        let e = <:expr< $uid:m$.b_act $e$ $lid:strm_n$ >> in
-        match epo with
-        [ Some p -> <:expr< let $p$ = $uid:m$.count $lid:strm_n$ in $e$ >>
-        | None -> e ]
-      in
-      <:expr< fun $lid:strm_n$ -> $e$ >>
+      let e = <:expr< $uid:m$.b_act $e$ $lid:strm_n$ >> in
+      match epo with
+      [ Some p -> <:expr< let $p$ = $uid:m$.count $lid:strm_n$ in $e$ >>
+      | None -> e ]
   | [spc :: spcl] ->
-      let (p1, e1) = mstream_pattern_component m spc in
       let skont = mstream_pattern loc m (spcl, epo, e) in
-      let f =
-        match (p1, skont) with
-        [ (<:patt< $lid:a$ >>, <:expr< fun $lid:b$ -> $e$ $lid:c$ $lid:d$ >>)
-          when a = c && b = d ->
-            (* optimization *)
-            e
-        | _ ->
-            (* normal case *)
-            <:expr< fun $p1$ -> $skont$ >> ]
-      in
-      <:expr< $uid:m$.b_seq $e1$ $f$ >> ]
+      mstream_pattern_component m skont spc ]
 ;
 
 value mparser_cases loc m spel =
   let rel = List.rev_map (mstream_pattern loc m) spel in
   match rel with
-  [ [e :: rel] ->
+  [ [e] -> e
+  | [e :: rel] ->
       let e =
-        List.fold_left (fun e e1 -> <:expr< $uid:m$.b_or $e1$ $e$ >>) e rel
+        List.fold_left
+          (fun e e1 -> <:expr< $uid:m$.b_or (fun $lid:strm_n$ -> $e1$) $e$ >>)
+          <:expr< fun $lid:strm_n$ -> $e$ >> rel
       in
       <:expr< $e$ $lid:strm_n$ >>
   | [] ->
@@ -204,7 +222,7 @@ value mparser loc m bpo pc =
     | None -> e ]
   in
   let p = <:patt< ($lid:strm_n$ : $uid:m$.t _) >> in
-  <:expr< fun $p$ -> $e$ >>
+   <:expr< fun $p$ -> $e$ >>
 ;
 
 EXTEND
@@ -246,7 +264,8 @@ EXTEND
   stream_patt_comp:
     [ [ "`"; p = patt; eo = OPT [ "when"; e = expr -> e ] -> SpTrm loc p eo
       | p = patt; "="; e = expr -> SpNtr loc p e
-      | p = patt -> SpStr loc p ] ]
+      | p = patt -> SpStr loc p
+      | "when"; e = expr  -> SpWhn loc e ] ]
   ;
   ipatt:
     [ [ i = LIDENT -> <:patt< $lid:i$ >> ] ]

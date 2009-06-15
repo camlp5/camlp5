@@ -7,6 +7,7 @@ type spat_comp =
     SpTrm of MLast.loc * MLast.patt * MLast.expr option
   | SpNtr of MLast.loc * MLast.patt * MLast.expr
   | SpStr of MLast.loc * MLast.patt
+  | SpWhn of MLast.loc * MLast.expr
 ;;
 type sexp_comp =
     SeTrm of MLast.loc * MLast.expr
@@ -65,6 +66,7 @@ let stream_pattern_component skont =
            [p, None, skont; MLast.PaAny loc, None, MLast.ExUid (loc, "None")])
   | SpStr (loc, p) ->
       MLast.ExLet (loc, false, [p, MLast.ExLid (loc, strm_n)], skont)
+  | SpWhn (loc, e) -> MLast.ExIfe (loc, e, skont, MLast.ExUid (loc, "None"))
 ;;
 
 let rec stream_pattern loc epo e =
@@ -228,7 +230,38 @@ let patt_expr_of_patt p =
   | _ -> MLast.PaAny loc, MLast.ExUid (loc, "()")
 ;;
 
-let mstream_pattern_component m =
+let no_compute =
+  function
+    MLast.ExLid (_, _) -> true
+  | MLast.ExAcc (_, MLast.ExUid (_, _), MLast.ExLid (_, _)) -> true
+  | _ -> false
+;;
+
+let fun_p_strm_e loc p e =
+  match p, e with
+    MLast.PaLid (_, a),
+    MLast.ExApp
+      (_, MLast.ExApp (_, e, MLast.ExLid (_, b)), MLast.ExLid (_, strm_n))
+    when a = b && no_compute e ->
+      e
+  | p, MLast.ExApp (_, e, MLast.ExLid (_, strm_n)) when no_compute e ->
+      MLast.ExFun (loc, [p, None, e])
+  | _ ->
+      MLast.ExFun
+        (loc,
+         [p, None, MLast.ExFun (loc, [MLast.PaLid (loc, strm_n), None, e])])
+;;
+
+let fun_strm_e_strm loc e =
+  if no_compute e then e
+  else
+    MLast.ExFun
+      (loc,
+       [MLast.PaLid (loc, strm_n), None,
+        MLast.ExApp (loc, e, MLast.ExLid (loc, strm_n))])
+;;
+
+let mstream_pattern_component m skont =
   function
     SpTrm (loc, p1, wo) ->
       let (p, e) = patt_expr_of_patt p1 in
@@ -254,73 +287,72 @@ let mstream_pattern_component m =
                   [p1, None, MLast.ExApp (loc, MLast.ExUid (loc, "Some"), e);
                    MLast.PaAny loc, None, MLast.ExUid (loc, "None")]))
       in
-      p, e
-  | SpNtr (loc, p, e) -> p, e
+      let e2 = fun_p_strm_e loc p skont in
+      MLast.ExApp
+        (loc,
+         MLast.ExApp
+           (loc,
+            MLast.ExApp
+              (loc,
+               MLast.ExAcc
+                 (loc, MLast.ExUid (loc, m), MLast.ExLid (loc, "b_seq")),
+               e),
+            e2),
+         MLast.ExLid (loc, strm_n))
+  | SpNtr (loc, p, e) ->
+      let e2 = fun_p_strm_e loc p skont in
+      MLast.ExApp
+        (loc,
+         MLast.ExApp
+           (loc,
+            MLast.ExApp
+              (loc,
+               MLast.ExAcc
+                 (loc, MLast.ExUid (loc, m), MLast.ExLid (loc, "b_seq")),
+               fun_strm_e_strm loc e),
+            e2),
+         MLast.ExLid (loc, strm_n))
   | SpStr (loc, p) ->
-      Ploc.raise loc (Stream.Error "not impl: stream_pattern_component")
+      Ploc.raise loc (Stream.Error "not impl: stream_pattern_component 1")
+  | SpWhn (loc, e) -> MLast.ExIfe (loc, e, skont, MLast.ExUid (loc, "None"))
 ;;
 
 let rec mstream_pattern loc m (spcl, epo, e) =
   match spcl with
     [] ->
       let e =
-        let e =
-          MLast.ExApp
-            (loc,
-             MLast.ExApp
-               (loc,
-                MLast.ExAcc
-                  (loc, MLast.ExUid (loc, m), MLast.ExLid (loc, "b_act")),
-                e),
-             MLast.ExLid (loc, strm_n))
-        in
-        match epo with
-          Some p ->
-            MLast.ExLet
-              (loc, false,
-               [p,
-                MLast.ExApp
-                  (loc,
-                   MLast.ExAcc
-                     (loc, MLast.ExUid (loc, m), MLast.ExLid (loc, "count")),
-                   MLast.ExLid (loc, strm_n))],
-               e)
-        | None -> e
+        MLast.ExApp
+          (loc,
+           MLast.ExApp
+             (loc,
+              MLast.ExAcc
+                (loc, MLast.ExUid (loc, m), MLast.ExLid (loc, "b_act")),
+              e),
+           MLast.ExLid (loc, strm_n))
       in
-      MLast.ExFun (loc, [MLast.PaLid (loc, strm_n), None, e])
-  | spc :: spcl ->
-      let (p1, e1) = mstream_pattern_component m spc in
-      let skont = mstream_pattern loc m (spcl, epo, e) in
-      let f =
-        match p1, skont with
-          MLast.PaLid (_, a),
-          MLast.ExFun
-            (_,
-             [MLast.PaLid (_, b), None,
+      begin match epo with
+        Some p ->
+          MLast.ExLet
+            (loc, false,
+             [p,
               MLast.ExApp
-                (_, MLast.ExApp (_, e, MLast.ExLid (_, c)),
-                 MLast.ExLid (_, d))])
-          when a = c && b = d ->
-            (* optimization *)
-            e
-        | _ ->
-            (* normal case *)
-            MLast.ExFun (loc, [p1, None, skont])
-      in
-      MLast.ExApp
-        (loc,
-         MLast.ExApp
-           (loc,
-            MLast.ExAcc
-              (loc, MLast.ExUid (loc, m), MLast.ExLid (loc, "b_seq")),
-            e1),
-         f)
+                (loc,
+                 MLast.ExAcc
+                   (loc, MLast.ExUid (loc, m), MLast.ExLid (loc, "count")),
+                 MLast.ExLid (loc, strm_n))],
+             e)
+      | None -> e
+      end
+  | spc :: spcl ->
+      let skont = mstream_pattern loc m (spcl, epo, e) in
+      mstream_pattern_component m skont spc
 ;;
 
 let mparser_cases loc m spel =
   let rel = List.rev_map (mstream_pattern loc m) spel in
   match rel with
-    e :: rel ->
+    [e] -> e
+  | e :: rel ->
       let e =
         List.fold_left
           (fun e e1 ->
@@ -330,9 +362,9 @@ let mparser_cases loc m spel =
                   (loc,
                    MLast.ExAcc
                      (loc, MLast.ExUid (loc, m), MLast.ExLid (loc, "b_or")),
-                   e1),
+                   MLast.ExFun (loc, [MLast.PaLid (loc, strm_n), None, e1])),
                 e))
-          e rel
+          (MLast.ExFun (loc, [MLast.PaLid (loc, strm_n), None, e])) rel
       in
       MLast.ExApp (loc, e, MLast.ExLid (loc, strm_n))
   | [] -> MLast.ExUid (loc, "None")
@@ -549,7 +581,12 @@ Grammar.extend
     Grammar.Entry.obj (stream_patt_comp : 'stream_patt_comp Grammar.Entry.e),
     None,
     [None, None,
-     [[Gramext.Snterm (Grammar.Entry.obj (patt : 'patt Grammar.Entry.e))],
+     [[Gramext.Stoken ("", "when");
+       Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
+      Gramext.action
+        (fun (e : 'expr) _ (loc : Ploc.t) ->
+           (SpWhn (loc, e) : 'stream_patt_comp));
+      [Gramext.Snterm (Grammar.Entry.obj (patt : 'patt Grammar.Entry.e))],
       Gramext.action
         (fun (p : 'patt) (loc : Ploc.t) ->
            (SpStr (loc, p) : 'stream_patt_comp));
