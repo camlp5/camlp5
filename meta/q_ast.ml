@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.39 2007/09/08 09:18:14 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.40 2007/09/08 15:36:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -329,6 +329,13 @@ module Meta =
                 pwel
             in
             <:expr< MLast.ExMat $ln$ $loop e$ $pwel$ >>
+        | ExRec _ lpe oe ->
+            let lpe =
+              e_vala
+                (e_list (fun (p, e) -> <:expr< ($e_patt p$, $loop e$) >>)) lpe
+            in
+            let oe = e_option loop oe in
+            <:expr< MLast.ExRec $ln$ $lpe$ $oe$ >>
 (*
         | ExSeq _ el ->
             <:expr< MLast.ExSeq $ln$ $e_list loop el$ >>
@@ -370,7 +377,8 @@ module Meta =
             <:patt< MLast.ExLet _ $rf$ $lpe$ $loop e$ >>
         | ExRec _ lpe oe ->
             let lpe =
-              p_list (fun (p, e) -> <:patt< ($p_patt p$, $loop e$) >>) lpe
+              p_vala
+                (p_list (fun (p, e) -> <:patt< ($p_patt p$, $loop e$) >>)) lpe
             in
             let oe = p_option loop oe in
             <:patt< MLast.ExRec _ $lpe$ $oe$ >>
@@ -638,10 +646,16 @@ lex.Plexing.tok_match :=
       [ ("CHAR", prm) -> prm
       | ("ANTIQUOT_LOC", prm) -> check_and_make_anti prm "chr"
       | _ -> raise Stream.Failure ]
-  | ("LIST", "") ->
+*)
+  | ("V LIST", "") ->
       fun
-      [ ("ANTIQUOT_LOC", prm) -> check_and_make_anti prm "list"
+      [ ("ANTIQUOT_LOC", prm) ->
+          let kind = check_anti_loc2 prm in
+          if kind = "alist" then "a" ^ prm
+          else if kind = "list" then "b" ^ prm
+          else raise Stream.Failure
       | _ -> raise Stream.Failure ]
+(*
   | ("OPT", "") ->
       fun
       [ ("ANTIQUOT_LOC", prm) -> check_and_make_anti prm "opt"

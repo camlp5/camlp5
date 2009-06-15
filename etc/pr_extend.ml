@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extend.ml,v 1.33 2007/09/07 19:16:54 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.34 2007/09/08 15:36:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -425,26 +425,14 @@ and s_symbol pc =
         | s -> s ]
       in
       sprintf "%sSOPT %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
-  | Sflag s ->
-      let sy =
-        match s with
-        [ Srules
-            [([(Some <:patt< x >>, Stoken (Left ("", str)))],
-              Some <:expr< Qast.Str x >>)] ->
-            Stoken (Left ("", str))
-        | s -> s ]
-      in
+  | Sflag sy ->
       sprintf "%sSFLAG %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
-  | Svala (Sflag s) ->
-      let sy =
-        match s with
-        [ Srules
-            [([(Some <:patt< x >>, Stoken (Left ("", str)))],
-              Some <:expr< Qast.Str x >>)] ->
-            Stoken (Left ("", str))
-        | s -> s ]
-      in
+  | Svala (Sflag sy) ->
       sprintf "%sSV FLAG %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
+  | Svala (Slist1sep sy sep) ->
+      sprintf "%sSV LIST1 %s SEP %s" pc.bef
+        (simple_symbol {(pc) with bef = ""; aft = ""} sy)
+        (simple_symbol {(pc) with bef = ""} sep)
   | _ -> assert False ]
 and check_slist rl =
   if no_slist.val then None
@@ -455,6 +443,11 @@ and check_slist rl =
           ((Slist0 _ | Slist1 _ | Slist0sep _ _ | Slist1sep _ _) as s))],
           Some <:expr< Qast.List a >>)] ->
         Some s
+    | [([(Some <:patt< a >>, Snterm <:expr< a_list2 >>)], Some <:expr< a >>);
+       ([(Some <:patt< a >>,
+          ((Slist0 _ | Slist1 _ | Slist0sep _ _ | Slist1sep _ _) as s))],
+          Some <:expr< Qast.Node "Qast.Vala" [Qast.List a] >>)] ->
+        Some (Svala s)
     | [([(Some <:patt< a >>, Snterm <:expr< a_opt >>)], Some <:expr< a >>);
        ([(Some <:patt< a >>, Sopt s)], Some <:expr< Qast.Option a >>)] ->
         Some (Sopt s)
@@ -462,9 +455,9 @@ and check_slist rl =
        ([(Some <:patt< a >>, Sflag s)], Some <:expr< Qast.Bool a >>)] ->
         Some (Sflag s)
     | [([(Some <:patt< a >>, Snterm <:expr< a_flag2 >>)], Some <:expr< a >>);
-       ([(Some <:patt< a >>, Sflag s)],
+       ([(Some <:patt< a >>, (Sflag _ as s))],
           Some <:expr< Qast.Node "Qast.Vala" [Qast.Bool a] >>)] ->
-        Some (Svala (Sflag s))
+        Some (Svala s)
     | _ -> None ]
 ;
 

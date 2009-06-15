@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.47 2007/09/08 09:18:14 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.48 2007/09/08 15:36:54 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -322,10 +322,11 @@ EXTEND
       | "["; el = LIST1 expr SEP ";"; last = cons_expr_opt; "]" ->
           mklistexp loc last el
       | "[|"; el = LIST0 expr SEP ";"; "|]" -> <:expr< [| $list:el$ |] >>
-      | "{"; lel = LIST1 label_expr SEP ";"; "}" -> <:expr< { $list:lel$ } >>
-      | "{"; "("; e = SELF; ")"; "with"; lel = LIST1 label_expr SEP ";";
+      | "{"; lel = V LIST1 label_expr SEP ";"; "}" ->
+          <:expr< { $alist:lel$ } >>
+      | "{"; "("; e = SELF; ")"; "with"; lel = V LIST1 label_expr SEP ";";
         "}" ->
-          <:expr< { ($e$) with $list:lel$ } >>
+          <:expr< { ($e$) with $alist:lel$ } >>
       | "("; ")" -> <:expr< () >>
       | "("; e = SELF; ":"; t = ctyp; ")" -> <:expr< ($e$ : $t$) >>
       | "("; e = SELF; ","; el = LIST1 expr SEP ","; ")" ->

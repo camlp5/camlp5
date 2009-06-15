@@ -594,6 +594,25 @@ module Meta =
                      ln),
                   loop e),
                pwel)
+        | ExRec (_, lpe, oe) ->
+            let lpe =
+              e_vala
+                (e_list (fun (p, e) -> MLast.ExTup (loc, [e_patt p; loop e])))
+                lpe
+            in
+            let oe = e_option loop oe in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "ExRec")),
+                     ln),
+                  lpe),
+               oe)
         | ExStr (_, s) ->
             MLast.ExApp
               (loc,
@@ -692,7 +711,9 @@ module Meta =
                loop e)
         | ExRec (_, lpe, oe) ->
             let lpe =
-              p_list (fun (p, e) -> MLast.PaTup (loc, [p_patt p; loop e])) lpe
+              p_vala
+                (p_list (fun (p, e) -> MLast.PaTup (loc, [p_patt p; loop e])))
+                lpe
             in
             let oe = p_option loop oe in
             MLast.PaApp
@@ -938,6 +959,14 @@ lex.Plexing.tok_match <-
            let kind = check_anti_loc2 prm in
            if kind = "astr" then "a" ^ prm
            else if kind = "str" then "b" ^ prm
+           else raise Stream.Failure
+       | _ -> raise Stream.Failure)
+  | "V LIST", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           let kind = check_anti_loc2 prm in
+           if kind = "alist" then "a" ^ prm
+           else if kind = "list" then "b" ^ prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V FLAG", "" ->

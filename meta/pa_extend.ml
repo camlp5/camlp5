@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.43 2007/09/08 09:18:14 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.44 2007/09/08 15:36:54 deraugla Exp $ *)
 
 value split_ext = ref False;
 
@@ -206,7 +206,8 @@ module MetaAction =
       | MLast.ExMat loc e pwel ->
           <:expr< MLast.ExMat $mloc$ $mexpr e$ $mlist mpwe pwel$ >>
       | MLast.ExRec loc pel eo ->
-          <:expr< MLast.ExRec $mloc$ $mlist mpe pel$ $moption mexpr eo$ >>
+          let pel = mvala (mlist mpe) pel in
+          <:expr< MLast.ExRec $mloc$ $pel$ $moption mexpr eo$ >>
       | MLast.ExSeq loc el -> <:expr< MLast.ExSeq $mloc$ $mlist mexpr el$ >>
       | MLast.ExSte loc e1 e2 ->
           <:expr< MLast.ExSte $mloc$ $mexpr e1$ $mexpr e2$ >>
@@ -526,16 +527,20 @@ value slist loc min sep symb =
   TXlist loc min symb.text t
 ;
 
-value sstoken loc s =
-  let n = mk_name loc <:expr< $lid:"a_" ^ s$ >> in
+value sstoken_aux loc name s =
+  let a_name = "a_" ^ name in
+  let n = mk_name loc <:expr< $lid:a_name$ >> in
   let text = TXnterm loc n None in
   {used = []; text = text; styp = STlid loc "string"}
 ;
 
+value sstoken loc s =
+  sstoken_aux loc s s
+;
+
 value sstoken2 loc s =
-  let n = mk_name loc <:expr< $lid:"a_" ^ s ^ "2"$ >> in
-  let text = TXnterm loc n None in
-  {used = []; text = text; styp = STlid loc "string"}
+  let name = if Pcaml.strict_mode.val then s ^ "2" else s in
+  sstoken_aux loc name s
 ;
 
 value mk_psymbol p s t =
@@ -543,12 +548,12 @@ value mk_psymbol p s t =
   {pattern = Some p; symbol = symb}
 ;
 
-value sslist loc min sep s =
+value sslist_aux loc a_name vala min sep s =
   let rl =
     let r1 =
       let prod =
-        let n = mk_name loc <:expr< a_list >> in
-        [mk_psymbol <:patt< a >> (TXnterm loc n None) (STquo loc "a_list")]
+        let n = mk_name loc <:expr< $lid:a_name$ >> in
+        [mk_psymbol <:patt< a >> (TXnterm loc n None) (STquo loc a_name)]
       in
       let act = <:expr< a >> in
       {prod = prod; action = Some act}
@@ -558,7 +563,7 @@ value sslist loc min sep s =
         [mk_psymbol <:patt< a >> (slist loc min sep s)
            (STapp loc (STlid loc "list") s.styp)]
       in
-      let act = <:expr< Qast.List a >> in
+      let act = vala loc <:expr< Qast.List a >> in
       {prod = prod; action = Some act}
     in
     [r1; r2]
@@ -568,10 +573,23 @@ value sslist loc min sep s =
     [ Some symb -> symb.used @ s.used
     | None -> s.used ]
   in
-  let used = ["a_list" :: used] in
-  let text = TXrules loc (srules loc "a_list" rl "") in
-  let styp = STquo loc "a_list" in
+  let used = [a_name :: used] in
+  let text = TXrules loc (srules loc a_name rl "") in
+  let styp = STquo loc a_name in
   {used = used; text = text; styp = styp}
+;
+
+value sslist loc min sep s =
+  let vala loc x = x in
+  sslist_aux loc "a_list" vala min sep s
+;
+
+value sslist2 loc min sep s =
+  let vala loc x =
+    if Pcaml.strict_mode.val then <:expr< Qast.Vala $x$ >>
+    else x
+  in
+  sslist_aux loc "a_list2" vala min sep s
 ;
 
 value ssopt loc s =
@@ -612,12 +630,12 @@ value ssopt loc s =
   {used = used; text = text; styp = styp}
 ;
 
-value ssflag loc s =
+value ssflag_aux loc a_name vala s =
   let rl =
     let r1 =
       let prod =
-        let n = mk_name loc <:expr< a_flag >> in
-        [mk_psymbol <:patt< a >> (TXnterm loc n None) (STquo loc "a_flag")]
+        let n = mk_name loc <:expr< $lid:a_name$ >> in
+        [mk_psymbol <:patt< a >> (TXnterm loc n None) (STquo loc a_name)]
       in
       let act = <:expr< a >> in
       {prod = prod; action = Some act}
@@ -628,42 +646,27 @@ value ssflag loc s =
         let text = TXflag loc s.text in
         [mk_psymbol <:patt< a >> text styp]
       in
-      let act = <:expr< Qast.Bool a >> in
+      let act = vala loc <:expr< Qast.Bool a >> in
       {prod = prod; action = Some act}
     in
     [r1; r2]
   in
-  let used = ["a_flag" :: s.used] in
-  let text = TXrules loc (srules loc "a_flag" rl "") in
-  let styp = STquo loc "a_flag" in
+  let used = [a_name :: s.used] in
+  let text = TXrules loc (srules loc a_name rl "") in
+  let styp = STquo loc a_name in
   {used = used; text = text; styp = styp}
 ;
 
+value ssflag loc s =
+  let vala loc x = x in
+  ssflag_aux loc "a_flag" vala s
+;
+
 value ssflag2 loc s =
-  let rl =
-    let r1 =
-      let prod =
-        let n = mk_name loc <:expr< a_flag2 >> in
-        [mk_psymbol <:patt< a >> (TXnterm loc n None) (STquo loc "a_flag2")]
-      in
-      let act = <:expr< a >> in
-      {prod = prod; action = Some act}
-    in
-    let r2 =
-      let prod =
-        let styp = STlid loc "bool" in
-        let text = TXflag loc s.text in
-        [mk_psymbol <:patt< a >> text styp]
-      in
-      let act = <:expr< Qast.Vala (Qast.Bool a) >> in
-      {prod = prod; action = Some act}
-    in
-    [r1; r2]
+  let vala loc x =
+    if Pcaml.strict_mode.val then <:expr< Qast.Vala $x$ >> else x
   in
-  let used = ["a_flag2" :: s.used] in
-  let text = TXrules loc (srules loc "a_flag2" rl "") in
-  let styp = STquo loc "a_flag2" in
-  {used = used; text = text; styp = styp}
+  ssflag_aux loc "a_flag2" vala s
 ;
 
 value text_of_entry loc gmod e =
@@ -928,6 +931,23 @@ EXTEND
             let styp = STlid loc "bool" in
             let text = TXflag loc s.text in
             {used = s.used; text = text; styp = styp}
+      | UIDENT "V"; UIDENT "LIST1"; s = SELF;
+        sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
+          if quotify.val then sslist2 loc True sep s
+          else
+            let used =
+              match sep with
+              [ Some symb -> symb.used @ s.used
+              | None -> s.used ]
+            in
+            if not Pcaml.strict_mode.val then
+              let styp = STapp loc (STlid loc "list") s.styp in
+              let text = slist loc True sep s in
+              {used = used; text = text; styp = styp}
+            else
+              let styp = STvala loc (STapp loc (STlid loc "list") s.styp) in
+              let text = TXvala loc (slist loc True sep s) in
+              {used = used; text = text; styp = styp}
       | UIDENT "V"; UIDENT "FLAG"; s = SELF ->
           if quotify.val then ssflag2 loc s
           else if not Pcaml.strict_mode.val then

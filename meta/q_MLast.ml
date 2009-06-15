@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.47 2007/09/08 09:18:14 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.48 2007/09/08 15:36:54 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -162,6 +162,7 @@ value with_constr = Grammar.Entry.create gram "with_constr";
 value poly_variant = Grammar.Entry.create gram "poly_variant";
 
 value a_list = Grammar.Entry.create gram "a_list";
+value a_list2 = Grammar.Entry.create gram "a_list2";
 value a_opt = Grammar.Entry.create gram "a_opt";
 value a_flag = Grammar.Entry.create gram "a_flag";
 value a_flag2 = Grammar.Entry.create gram "a_flag2";
@@ -679,9 +680,9 @@ EXTEND
           mklistexp Qast.Loc last el
       | "[|"; el = SLIST0 expr SEP ";"; "|]" ->
           Qast.Node "ExArr" [Qast.Loc; el]
-      | "{"; lel = SLIST1 label_expr SEP ";"; "}" ->
+      | "{"; lel = SV LIST1 label_expr SEP ";"; "}" ->
           Qast.Node "ExRec" [Qast.Loc; lel; Qast.Option None]
-      | "{"; "("; e = SELF; ")"; "with"; lel = SLIST1 label_expr SEP ";";
+      | "{"; "("; e = SELF; ")"; "with"; lel = SV LIST1 label_expr SEP ";";
         "}" ->
           Qast.Node "ExRec" [Qast.Loc; lel; Qast.Option (Some e)]
       | "("; ")" -> Qast.Node "ExUid" [Qast.Loc; Qast.VaVal (Qast.Str "()")]
@@ -1255,7 +1256,12 @@ EXTEND
     [ [ "#"; a = a_list -> Qast.Node "PaTyp" [Qast.Loc; a] ] ]
   ;
   a_list:
-    [ [ a = ANTIQUOT "list" -> antiquot "list" loc a ] ]
+    [ [ a = ANTIQUOT "list" -> antiquot "list" loc a
+      | a = ANTIQUOT "alist" -> antiquot "list" loc a ] ]
+  ;
+  a_list2:
+    [ [ a = ANTIQUOT "list" -> Qast.VaVal (antiquot "list" loc a)
+      | a = ANTIQUOT "alist" -> antiquot "alist" loc a ] ]
   ;
   a_opt:
     [ [ a = ANTIQUOT "opt" -> antiquot "opt" loc a ] ]

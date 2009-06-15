@@ -1,6 +1,10 @@
 Camlp5 Version 4.09:
 ---------------------
 
+* [08 Sep 07] Fixed bug in normal syntax:
+     class foo : ?foo:unit -> bar
+  was accepted but not with space(s) after the colon:
+     class foo : ?foo: unit -> bar
 * [08 Sep 07] Added new features in pa_macro.cmo:
   - ability to define macro type expressions in signatures, e.g.:
        DEFINE V(t) = t -> t

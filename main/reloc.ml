@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: reloc.ml,v 1.10 2007/09/08 09:18:14 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.11 2007/09/08 15:36:54 deraugla Exp $ *)
 
 open MLast;
 
@@ -18,6 +18,16 @@ value option_map f =
   fun
   [ Some x -> Some (f x)
   | None -> None ]
+;
+
+value vala_map f =
+  IFNDEF STRICT THEN
+    fun x -> f x
+  ELSE
+    fun
+    [ Ploc.VaAnt s -> Ploc.VaAnt s
+    | Ploc.VaVal x -> Ploc.VaVal (f x) ]
+  END
 ;
 
 value rec ctyp floc sh =
@@ -174,7 +184,8 @@ and expr floc sh =
         ExOvr (floc loc) (List.map (fun (x1, x2) -> (x1, self x2)) x1)
     | ExRec loc x1 x2 ->
         ExRec (floc loc)
-          (List.map (fun (x1, x2) -> (patt floc sh x1, self x2)) x1)
+          (vala_map (List.map (fun (x1, x2) -> (patt floc sh x1, self x2)))
+             x1)
           (option_map self x2)
     | ExSeq loc x1 -> ExSeq (floc loc) (List.map self x1)
     | ExSnd loc x1 x2 -> ExSnd (floc loc) (self x1) x2

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.17 2007/09/08 09:18:14 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.18 2007/09/08 15:36:54 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -678,6 +678,7 @@ value rec expr =
   | ExOlb loc _ _ -> error loc "labeled expression not allowed here"
   | ExOvr loc iel -> mkexp loc (Pexp_override (List.map mkideexp iel))
   | ExRec loc lel eo ->
+      let lel = uv lel in
       if lel = [] then error loc "empty record"
       else
         let eo =

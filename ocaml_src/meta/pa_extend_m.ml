@@ -20,27 +20,42 @@ Grammar.extend
    [None, Some Gramext.NonA,
     [[Gramext.Stoken ("UIDENT", "SV"); Gramext.Stoken ("UIDENT", "")],
      Gramext.action
-       (fun (s : string) _ (loc : Ploc.t) ->
-          (if !(Pcaml.strict_mode) then sstoken2 loc s else sstoken loc s :
-           'symbol));
+       (fun (s : string) _ (loc : Ploc.t) -> (sstoken2 loc s : 'symbol));
      [Gramext.Stoken ("UIDENT", "SV"); Gramext.Stoken ("UIDENT", "FLAG");
       Gramext.Sself],
      Gramext.action
-       (fun (s : 'symbol) _ _ (loc : Ploc.t) ->
-          (if !(Pcaml.strict_mode) then ssflag2 loc s else ssflag loc s :
-           'symbol));
+       (fun (s : 'symbol) _ _ (loc : Ploc.t) -> (ssflag2 loc s : 'symbol));
+     [Gramext.Stoken ("UIDENT", "SV"); Gramext.Stoken ("UIDENT", "LIST1");
+      Gramext.Sself;
+      Gramext.Sopt
+        (Gramext.srules
+           [[Gramext.Stoken ("UIDENT", "SEP");
+             Gramext.Snterm
+               (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
+            Gramext.action
+              (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__4))])],
+     Gramext.action
+       (fun (sep : 'e__4 option) (s : 'symbol) _ _ (loc : Ploc.t) ->
+          (sslist2 loc true sep s : 'symbol));
+     [Gramext.Stoken ("UIDENT", "SV"); Gramext.Stoken ("UIDENT", "LIST0");
+      Gramext.Sself;
+      Gramext.Sopt
+        (Gramext.srules
+           [[Gramext.Stoken ("UIDENT", "SEP");
+             Gramext.Snterm
+               (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
+            Gramext.action
+              (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__3))])],
+     Gramext.action
+       (fun (sep : 'e__3 option) (s : 'symbol) _ _ (loc : Ploc.t) ->
+          (sslist2 loc false sep s : 'symbol));
      [Gramext.Stoken ("UIDENT", "SFLAG"); Gramext.Sself],
      Gramext.action
        (fun (s : 'symbol) _ (loc : Ploc.t) -> (ssflag loc s : 'symbol));
      [Gramext.Stoken ("UIDENT", "SOPT"); Gramext.Sself],
      Gramext.action
        (fun (s : 'symbol) _ (loc : Ploc.t) -> (ssopt loc s : 'symbol));
-     [Gramext.srules
-        [[Gramext.Stoken ("UIDENT", "SLIST1")],
-         Gramext.action (fun _ (loc : Ploc.t) -> (true : 'e__1));
-         [Gramext.Stoken ("UIDENT", "SLIST0")],
-         Gramext.action (fun _ (loc : Ploc.t) -> (false : 'e__1))];
-      Gramext.Sself;
+     [Gramext.Stoken ("UIDENT", "SLIST1"); Gramext.Sself;
       Gramext.Sopt
         (Gramext.srules
            [[Gramext.Stoken ("UIDENT", "SEP");
@@ -49,5 +64,16 @@ Grammar.extend
             Gramext.action
               (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__2))])],
      Gramext.action
-       (fun (sep : 'e__2 option) (s : 'symbol) (min : 'e__1) (loc : Ploc.t) ->
-          (sslist loc min sep s : 'symbol))]]];;
+       (fun (sep : 'e__2 option) (s : 'symbol) _ (loc : Ploc.t) ->
+          (sslist loc true sep s : 'symbol));
+     [Gramext.Stoken ("UIDENT", "SLIST0"); Gramext.Sself;
+      Gramext.Sopt
+        (Gramext.srules
+           [[Gramext.Stoken ("UIDENT", "SEP");
+             Gramext.Snterm
+               (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
+            Gramext.action
+              (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__1))])],
+     Gramext.action
+       (fun (sep : 'e__1 option) (s : 'symbol) _ (loc : Ploc.t) ->
+          (sslist loc false sep s : 'symbol))]]];;

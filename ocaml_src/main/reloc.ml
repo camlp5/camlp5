@@ -20,6 +20,8 @@ let option_map f =
   | None -> None
 ;;
 
+let vala_map f x = f x;;
+
 let rec ctyp floc sh =
   let rec self =
     function
@@ -174,7 +176,8 @@ and expr floc sh =
         ExOvr (floc loc, List.map (fun (x1, x2) -> x1, self x2) x1)
     | ExRec (loc, x1, x2) ->
         ExRec
-          (floc loc, List.map (fun (x1, x2) -> patt floc sh x1, self x2) x1,
+          (floc loc,
+           vala_map (List.map (fun (x1, x2) -> patt floc sh x1, self x2)) x1,
            option_map self x2)
     | ExSeq (loc, x1) -> ExSeq (floc loc, List.map self x1)
     | ExSnd (loc, x1, x2) -> ExSnd (floc loc, self x1, x2)

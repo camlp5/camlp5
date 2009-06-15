@@ -10,21 +10,30 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend_m.ml,v 1.19 2007/09/07 18:18:38 deraugla Exp $ *)
+(* $Id: pa_extend_m.ml,v 1.20 2007/09/08 15:36:54 deraugla Exp $ *)
 
 open Pa_extend;
 
 EXTEND
   symbol: LEVEL "top"
     [ NONA
-      [ min = [ UIDENT "SLIST0" -> False | UIDENT "SLIST1" -> True ];
-        s = SELF; sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
-          sslist loc min sep s
+      [ UIDENT "SLIST0"; s = SELF;
+        sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
+          sslist loc False sep s
+      | UIDENT "SLIST1"; s = SELF;
+        sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
+          sslist loc True sep s
       | UIDENT "SOPT"; s = SELF -> ssopt loc s
       | UIDENT "SFLAG"; s = SELF -> ssflag loc s
+      | UIDENT "SV"; UIDENT "LIST0"; s = SELF;
+        sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
+          sslist2 loc False sep s
+      | UIDENT "SV"; UIDENT "LIST1"; s = SELF;
+        sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
+          sslist2 loc True sep s
       | UIDENT "SV"; UIDENT "FLAG"; s = SELF ->
-          if Pcaml.strict_mode.val then ssflag2 loc s else ssflag loc s
+          ssflag2 loc s
       | UIDENT "SV"; s = UIDENT ->
-          if Pcaml.strict_mode.val then sstoken2 loc s else sstoken loc s ] ]
+          sstoken2 loc s ] ]
   ;
 END;
