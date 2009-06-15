@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.56 2007/12/11 19:40:46 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.57 2007/12/12 01:36:02 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -92,29 +92,11 @@ value class_type_params pc ctp =
 ;
 
 value class_def_or_type_decl char pc ci =
-  horiz_vertic
-    (fun () ->
-       sprintf "%s%s%s%s %c %s%s" pc.bef
-         (if Pcaml.unvala ci.MLast.ciVir then " virtual" else "")
-            (Pcaml.unvala ci.MLast.ciNam)
-         (class_type_params {(pc) with bef = ""; aft = ""}
-            (Pcaml.unvala (snd ci.MLast.ciPrm)))
-         char
-         (class_type {(pc) with bef = ""; aft = ""} ci.MLast.ciExp) pc.aft)
-    (fun () ->
-       let s1 =
-         sprintf "%s%s%s%s %c" pc.bef
-           (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
-           (Pcaml.unvala ci.MLast.ciNam)
-           (class_type_params {(pc) with bef = ""; aft = ""}
-              (Pcaml.unvala (snd ci.MLast.ciPrm)))
-           char
-       in
-       let s2 =
-         class_type {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
-           ci.MLast.ciExp
-       in
-       sprintf "%s\n%s" s1 s2)
+  pprintf pc "%s%s%p %c@;%p"
+    (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
+    (Pcaml.unvala ci.MLast.ciNam)
+    class_type_params (Pcaml.unvala (snd ci.MLast.ciPrm)) char
+    class_type ci.MLast.ciExp
 ;
 value class_def = class_def_or_type_decl ':';
 value class_type_decl = class_def_or_type_decl '=';
@@ -122,13 +104,11 @@ value class_type_decl = class_def_or_type_decl '=';
 value class_type_decl_list pc cd =
   horiz_vertic
     (fun () ->
-       sprintf "%sclass type %s%s" pc.bef
-         (hlist2 class_type_decl (and_before class_type_decl)
-            {(pc) with bef = ""; aft = ""} cd)
-         pc.aft)
+       pprintf pc "class type %p"
+         (hlist2 class_type_decl (and_before class_type_decl)) cd)
     (fun () ->
-       vlist2 class_type_decl (and_before class_type_decl)
-         {(pc) with bef = sprintf "%sclass type " pc.bef} cd)
+       pprintf pc "class type %p"
+         (vlist2 class_type_decl (and_before class_type_decl)) cd)
 ;
 
 value rec is_irrefut_patt =
