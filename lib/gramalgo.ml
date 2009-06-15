@@ -676,14 +676,14 @@ type lr0 =
     nterm_shift_tab : array (list (int * int)) }
 ;
 
-(*DEFINE TEST;*)
+(*DEFINE TEST1;*)
+(*DEFINE TEST2;*)
+(*DEFINE TEST3;*)
+IFDEF TEST1 OR TEST2 OR TEST3 THEN
+  DEFINE TEST
+END;
 
 value basic_lr0 entry lev = do {
-  IFDEF VERBOSE THEN do {
-    Printf.eprintf "LR(0) %s %d\n" entry.ename lev;
-    flush stderr;
-  }
-  ELSE () END;
   let (rules, term_name_tab, nterm_name_tab) =
     let (rl, entry_name) =
       IFNDEF TEST THEN
@@ -691,23 +691,21 @@ value basic_lr0 entry lev = do {
         (rl, name_of_entry entry lev)
       ELSE
         let rl =
-(*
-          [("E", [GS_term "1"; GS_nterm "E"]);
-           ("E", [GS_term "1"])]
-*)
-(**)
-          [("E", [GS_nterm "A"; GS_term "1"]);
-           ("E", [GS_nterm "B"; GS_term "2"]);
-           ("A", [GS_term "1"]);
-           ("B", [GS_term "1"])]
-(**)
-(*
-          [("E", [GS_nterm "E"; GS_term "*"; GS_nterm "B"]);
-           ("E", [GS_nterm "E"; GS_term "+"; GS_nterm "B"]);
-           ("E", [GS_nterm "B"]);
-           ("B", [GS_term "0"]);
-           ("B", [GS_term "1"])]
-*)
+          IFDEF TEST1 THEN
+            [("E", [GS_term "1"; GS_nterm "E"]);
+             ("E", [GS_term "1"])]
+          ELSE IFDEF TEST2 THEN
+            [("E", [GS_nterm "A"; GS_term "1"]);
+             ("E", [GS_nterm "B"; GS_term "2"]);
+             ("A", [GS_term "1"]);
+             ("B", [GS_term "1"])]
+          ELSE
+            [("E", [GS_nterm "E"; GS_term "*"; GS_nterm "B"]);
+             ("E", [GS_nterm "E"; GS_term "+"; GS_nterm "B"]);
+             ("E", [GS_nterm "B"]);
+             ("B", [GS_term "0"]);
+             ("B", [GS_term "1"])]
+          END END
         in
         (rl, "E")
       END
@@ -904,68 +902,92 @@ value make_action_table blr algo = do {
               else ()
             else if dot = List.length rh then
               let line = action_table.(i) in
-              match line.(0) with
-              [ ActReduce m1 -> do {
-                  IFDEF VERBOSE THEN do {
-                    if _nl.val then Printf.eprintf "\n" else ();
-                    _nl.val := False;
-                    Printf.eprintf
-                      "State %d: conflict reduce/reduce rules %d and %d\n" i
-                      m1 m;
-                    Printf.eprintf "  reduce with rule ";
-                    eprint_rule term_n nterm_n m1 blr.rules.(m1);
-                    Printf.eprintf "  reduce with rule ";
-                    eprint_rule term_n nterm_n m blr.rules.(m);
-                    match algo with
-                    [ LR0 -> ()
-                    | SLR follow_tab -> do {
-                        let i = fst blr.rules.(m1) in
-                        Printf.eprintf "  follow (%s) =" (nterm_n i);
-                        List.iter
-                          (fun s -> Printf.eprintf " %s" (term_n s))
-                          (List.sort compare_terms follow_tab.(i));
-                        Printf.eprintf "\n";
-                        let i = fst blr.rules.(m) in
-                        Printf.eprintf "  follow (%s) =" (nterm_n i);
-                        List.iter
-                          (fun s -> Printf.eprintf " %s" (term_n s))
-                          (List.sort compare_terms follow_tab.(i));
-                        Printf.eprintf "\n"
-                      } ];
-                    flush stderr;
-                  }
-                  ELSE () END;
-                }
-              | _ ->
-                  for j = 0 to Array.length line - 1 do {
-                    match line.(j) with
-                    [ ActShift n -> do {
-                        IFDEF VERBOSE THEN do {
-                          if _nl.val then Printf.eprintf "\n" else ();
-                          _nl.val := False;
-                          Printf.eprintf "State %d: conflict shift/reduce"
-                            i;
-                          Printf.eprintf " shift %d rule %d\n" n m;
-                          Printf.eprintf "  shift with terminal %s\n"
-                            (term_n j);
-                          Printf.eprintf "  reduce with rule ";
-                          eprint_rule term_n nterm_n m blr.rules.(m);
-                          match algo with
-                          [ LR0 -> ()
-                          | SLR follow_tab -> do {
-                              let i = fst blr.rules.(m) in
-                              Printf.eprintf "  follow (%s) =" (nterm_n i);
-                              List.iter
-                                (fun s -> Printf.eprintf " %s" (term_n s))
-                                (List.sort compare_terms follow_tab.(i));
-                              Printf.eprintf "\n"
-                            } ];
-                          flush stderr;
-                        }
-                        ELSE () END;
+              for j = 0 to Array.length line - 1 do {
+                let do_it =
+                  match algo with
+                  [ LR0 -> True
+                  | SLR follow_tab ->
+                      let i = fst blr.rules.(m) in
+                      List.mem j follow_tab.(i) ]
+                in
+                if do_it then
+                  match line.(j) with
+                  [ ActShift n -> do {
+                      IFDEF VERBOSE THEN do {
+                        if _nl.val then Printf.eprintf "\n" else ();
+                        _nl.val := False;
+                        Printf.eprintf "State %d: conflict shift/reduce" i;
+                        Printf.eprintf " shift %d rule %d\n" n m;
+                        Printf.eprintf "  shift with terminal %s\n"
+                          (term_n j);
+                        Printf.eprintf "  reduce with rule ";
+                        eprint_rule term_n nterm_n m blr.rules.(m);
+                        match algo with
+                        [ LR0 -> ()
+                        | SLR follow_tab -> do {
+                            let i = fst blr.rules.(m) in
+                            Printf.eprintf "  follow (%s) =" (nterm_n i);
+                            List.iter
+                              (fun s -> Printf.eprintf " %s" (term_n s))
+                              (List.sort compare_terms follow_tab.(i));
+                            Printf.eprintf "\n"
+                          } ];
+                        flush stderr;
                       }
-                    | _ -> line.(j) := ActReduce m ];
-                  } ]
+                      ELSE () END;
+                    }
+                  | ActReduce m1 -> do {
+                      match algo with
+                      [ LR0 ->
+                          IFDEF VERBOSE THEN
+                            if j = 0 then do {
+                              if _nl.val then Printf.eprintf "\n" else ();
+                              _nl.val := False;
+                              Printf.eprintf "State %d:" i;
+                              Printf.eprintf " conflict reduce/reduce";
+                              Printf.eprintf " rules %d and %d\n" m1 m;
+                              Printf.eprintf "  reduce with rule ";
+                              eprint_rule term_n nterm_n m1 blr.rules.(m1);
+                              Printf.eprintf "  reduce with rule ";
+                              eprint_rule term_n nterm_n m blr.rules.(m);
+                              flush stderr;
+                            }
+                            else ()
+                          ELSE () END
+                      | SLR follow_tab ->
+                          IFDEF VERBOSE THEN do {
+                            if _nl.val then Printf.eprintf "\n" else ();
+                            _nl.val := False;
+                            Printf.eprintf "State %d, terminal %s" i
+                              (term_n j);
+                            Printf.eprintf ": conflict reduce/reduce";
+                            Printf.eprintf " rules %d and %d\n" m1 m;
+                            Printf.eprintf "  reduce with rule ";
+                            eprint_rule term_n nterm_n m1 blr.rules.(m1);
+                            Printf.eprintf "  reduce with rule ";
+                            eprint_rule term_n nterm_n m blr.rules.(m);
+                            let i1 = fst blr.rules.(m1) in
+                            let i2 = fst blr.rules.(m) in
+                            let follow_m1 = follow_tab.(i1) in
+                            let follow_m = follow_tab.(i2) in
+                            Printf.eprintf "  follow (%s) =" (nterm_n i1);
+                            List.iter
+                              (fun s -> Printf.eprintf " %s" (term_n s))
+                              (List.sort compare_terms follow_m1);
+                            Printf.eprintf "\n";
+                            Printf.eprintf "  follow (%s) =" (nterm_n i2);
+                            List.iter
+                              (fun s -> Printf.eprintf " %s" (term_n s))
+                              (List.sort compare_terms follow_m);
+                            Printf.eprintf "\n";
+                            flush stderr;
+                          }
+                          ELSE () END ];
+                    }
+                  | _ ->
+                      line.(j) := ActReduce m ]
+                else ();
+              }
             else ())
          item_set)
     blr.item_set_tab;
@@ -1078,6 +1100,11 @@ value trace_follow_tab blr follow_tab =
 ;
 
 value lr0 entry lev = do {
+  IFDEF VERBOSE THEN do {
+    Printf.eprintf "LR(0) %s %d\n" entry.ename lev;
+    flush stderr;
+  }
+  ELSE () END;
   let blr = basic_lr0 entry lev in
   let goto_table = make_goto_table blr in
   trace_goto_table blr goto_table;
@@ -1086,6 +1113,11 @@ value lr0 entry lev = do {
 };
 
 value slr entry lev = do {
+  IFDEF VERBOSE THEN do {
+    Printf.eprintf "SLR %s %d\n" entry.ename lev;
+    flush stderr;
+  }
+  ELSE () END;
   let blr = basic_lr0 entry lev in
   let nb_nterms = Array.length blr.nterm_name_tab in
   let nterm_derive_eps_tab = make_derive_eps_tab blr.rules nb_nterms in
