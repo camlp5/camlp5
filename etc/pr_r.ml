@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.153 2007/12/19 16:54:19 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.154 2007/12/22 10:14:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -690,7 +690,7 @@ value str_module pref pc (m, me) =
     | None ->
         let mal = List.map (fun ma -> (ma, "")) mal in
         pprintf pc "%s %s%p =@;%p" pref m (plistb module_arg 2) mal
-        module_expr me ]
+          module_expr me ]
   else
     match mto with
     [ Some mt ->
@@ -700,7 +700,7 @@ value str_module pref pc (m, me) =
     | None ->
         let mal = List.map (fun ma -> (ma, "")) mal in
         pprintf pc "@[<a>%s %s%p =@;%p@;<0 0>@]" pref m (plistb module_arg 2)
-        mal module_expr me ]
+          mal module_expr me ]
 ;
 
 value sig_module_or_module_type pref defc pc (m, mt) =
@@ -713,18 +713,13 @@ value sig_module_or_module_type pref defc pc (m, mt) =
       | mt -> ([], mt) ]
   in
   let module_arg pc (s, mt) = pprintf pc "(%s :@;<1 1>%p)" s module_type mt in
-  horiz_vertic
-    (fun () ->
-       pprintf pc "%s %s%s%p %c %p" pref m (if mal = [] then "" else " ")
-         (hlist module_arg) mal defc module_type mt)
-    (fun () ->
-       let mal = List.map (fun ma -> (ma, "")) mal in
-       if pc.aft = "" then
-         pprintf pc "%s %s%p %c@;%p" pref m (plistb module_arg 2) mal defc
-           module_type mt
-       else
-         pprintf pc "@[<a>%s %s%p %c@;%p@ @]" pref m (plistb module_arg 2) mal
-           defc module_type mt)
+  let mal = List.map (fun ma -> (ma, "")) mal in
+  if pc.aft = "" then
+    pprintf pc "%s %s%p %c@;%p" pref m (plistb module_arg 2) mal defc
+      module_type mt
+  else
+    pprintf pc "@[<a>%s %s%p %c@;%p@;<0 0>@]" pref m (plistb module_arg 2) mal
+      defc module_type mt
 ;
 
 value str_or_sig_functor pc s mt module_expr_or_type met =
@@ -1412,7 +1407,7 @@ EXTEND_PRINTER
           vlist2 (sig_module_or_module_type ("module" ^ rf) ':')
             (sig_module_or_module_type "and" ':') pc mdl
       | <:sig_item< module type $uid:m$ = $mt$ >> ->
-          sig_module_or_module_type " type" '=' pc (m, mt)
+          sig_module_or_module_type "module type" '=' pc (m, mt)
       | <:sig_item< open $i$ >> ->
           pprintf pc "open %p" mod_ident i
       | <:sig_item< type $list:tdl$ >> ->
