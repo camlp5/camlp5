@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.17 2007/09/09 01:18:03 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.18 2007/09/09 08:35:08 deraugla Exp $ *)
 
 open MLast;
 
@@ -111,7 +111,7 @@ and expr =
   | ExFlo _ _ -> ()
   | ExLab _ _ eo -> option expr eo
   | ExLaz _ e -> expr e
-  | ExLet _ _ pel e -> do { list let_binding pel; expr e }
+  | <:expr< let $list:pel$ in $e$ >> -> do { list let_binding pel; expr e }
   | ExLid _ _ -> ()
   | ExLmd _ _ me e -> do { module_expr me; expr e }
   | ExMat _ e pwel -> do { expr e; list match_case pwel }

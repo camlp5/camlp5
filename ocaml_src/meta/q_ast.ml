@@ -537,7 +537,9 @@ module Meta =
         | ExLet (_, rf, lpe, e) ->
             let rf = e_vala e_bool rf in
             let lpe =
-              e_list (fun (p, e) -> MLast.ExTup (loc, [e_patt p; loop e])) lpe
+              e_vala
+                (e_list (fun (p, e) -> MLast.ExTup (loc, [e_patt p; loop e])))
+                lpe
             in
             MLast.ExApp
               (loc,
@@ -681,7 +683,9 @@ module Meta =
         | ExLet (_, rf, lpe, e) ->
             let rf = p_vala p_bool rf in
             let lpe =
-              p_list (fun (p, e) -> MLast.PaTup (loc, [p_patt p; loop e])) lpe
+              p_vala
+                (p_list (fun (p, e) -> MLast.PaTup (loc, [p_patt p; loop e])))
+                lpe
             in
             MLast.PaApp
               (loc,

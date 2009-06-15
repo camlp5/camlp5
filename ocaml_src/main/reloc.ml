@@ -155,7 +155,8 @@ and expr floc sh =
     | ExLet (loc, x1, x2, x3) ->
         ExLet
           (floc loc, x1,
-           List.map (fun (x1, x2) -> patt floc sh x1, self x2) x2, self x3)
+           vala_map (List.map (fun (x1, x2) -> patt floc sh x1, self x2)) x2,
+           self x3)
     | ExLid (loc, x1) -> ExLid (floc loc, x1)
     | ExLmd (loc, x1, x2, x3) ->
         ExLmd (floc loc, x1, module_expr floc sh x2, self x3)

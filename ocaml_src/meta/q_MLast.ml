@@ -1134,13 +1134,14 @@ Grammar.extend
               Gramext.Stoken ("", "and"))],
           Gramext.action
             (fun (a : 'let_binding list) (loc : Ploc.t) ->
-               (Qast.List a : 'a_list));
+               (Qast.Vala (Qast.List a) : 'a_list2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_list : 'a_list Grammar.Entry.e))],
-          Gramext.action (fun (a : 'a_list) (loc : Ploc.t) -> (a : 'a_list))];
+             (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
+          Gramext.action
+            (fun (a : 'a_list2) (loc : Ploc.t) -> (a : 'a_list2))];
        Gramext.Stoken ("", "in"); Gramext.Sself],
       Gramext.action
-        (fun (x : 'expr) _ (l : 'a_list) (r : 'a_flag2) _ (loc : Ploc.t) ->
+        (fun (x : 'expr) _ (l : 'a_list2) (r : 'a_flag2) _ (loc : Ploc.t) ->
            (Qast.Node ("ExLet", [Qast.Loc; r; l; x]) : 'expr))];
      Some "where", None,
      [[Gramext.Sself; Gramext.Stoken ("", "where");
@@ -1158,7 +1159,9 @@ Grammar.extend
       Gramext.action
         (fun (lb : 'let_binding) (rf : 'a_flag2) _ (e : 'expr)
              (loc : Ploc.t) ->
-           (Qast.Node ("ExLet", [Qast.Loc; rf; Qast.List [lb]; e]) : 'expr))];
+           (Qast.Node
+              ("ExLet", [Qast.Loc; rf; Qast.VaVal (Qast.List [lb]); e]) :
+            'expr))];
      Some ":=", Some Gramext.NonA,
      [[Gramext.Sself; Gramext.Stoken ("", ":="); Gramext.Sself;
        Gramext.Snterm (Grammar.Entry.obj (dummy : 'dummy Grammar.Entry.e))],
@@ -1837,13 +1840,14 @@ Grammar.extend
               Gramext.Stoken ("", "and"))],
           Gramext.action
             (fun (a : 'let_binding list) (loc : Ploc.t) ->
-               (Qast.List a : 'a_list));
+               (Qast.Vala (Qast.List a) : 'a_list2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_list : 'a_list Grammar.Entry.e))],
-          Gramext.action (fun (a : 'a_list) (loc : Ploc.t) -> (a : 'a_list))];
+             (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
+          Gramext.action
+            (fun (a : 'a_list2) (loc : Ploc.t) -> (a : 'a_list2))];
        Gramext.Stoken ("", "in"); Gramext.Sself],
       Gramext.action
-        (fun (el : 'sequence) _ (l : 'a_list) (rf : 'a_flag2) _
+        (fun (el : 'sequence) _ (l : 'a_list2) (rf : 'a_flag2) _
              (loc : Ploc.t) ->
            (Qast.List
               [Qast.Node

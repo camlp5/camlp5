@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: reloc.ml,v 1.12 2007/09/09 01:18:03 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.13 2007/09/09 08:35:08 deraugla Exp $ *)
 
 open MLast;
 
@@ -165,7 +165,9 @@ and expr floc sh =
     | ExLaz loc x1 -> ExLaz (floc loc) (self x1)
     | ExLet loc x1 x2 x3 ->
         ExLet (floc loc) x1
-          (List.map (fun (x1, x2) -> (patt floc sh x1, self x2)) x2) (self x3)
+          (vala_map (List.map (fun (x1, x2) -> (patt floc sh x1, self x2)))
+             x2)
+          (self x3)
     | ExLid loc x1 -> ExLid (floc loc) x1
     | ExLmd loc x1 x2 x3 ->
         ExLmd (floc loc) x1 (module_expr floc sh x2) (self x3)

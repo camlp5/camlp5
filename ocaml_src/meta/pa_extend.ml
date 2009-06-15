@@ -278,7 +278,7 @@ module MetaAction =
                          MLast.ExUid (loc, "ExLet")),
                       mloc),
                    rf),
-                mlist mpe pel),
+                mvala (mlist mpe) pel),
              mexpr e)
       | MLast.ExLid (loc, s) ->
           MLast.ExApp

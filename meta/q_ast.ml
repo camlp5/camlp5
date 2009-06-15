@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.42 2007/09/09 08:06:50 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.43 2007/09/09 08:35:08 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -319,7 +319,8 @@ module Meta =
         | ExLet _ rf lpe e ->
             let rf = e_vala e_bool rf in
             let lpe =
-              e_list (fun (p, e) -> <:expr< ($e_patt p$, $loop e$) >>) lpe
+              e_vala
+                (e_list (fun (p, e) -> <:expr< ($e_patt p$, $loop e$) >>)) lpe
             in
             <:expr< MLast.ExLet $ln$ $rf$ $lpe$ $loop e$ >>
         | ExLid _ s -> <:expr< MLast.ExLid $ln$ $e_vala e_string s$ >>
@@ -374,7 +375,8 @@ module Meta =
         | ExLet _ rf lpe e ->
             let rf = p_vala p_bool rf in
             let lpe =
-              p_list (fun (p, e) -> <:patt< ($p_patt p$, $loop e$) >>) lpe
+              p_vala
+                (p_list (fun (p, e) -> <:patt< ($p_patt p$, $loop e$) >>)) lpe
             in
             <:patt< MLast.ExLet _ $rf$ $lpe$ $loop e$ >>
         | ExRec _ lpe oe ->
