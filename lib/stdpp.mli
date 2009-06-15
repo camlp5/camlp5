@@ -10,11 +10,13 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: stdpp.mli,v 1.16 2007/08/19 14:24:05 deraugla Exp $ *)
+(* $Id: stdpp.mli,v 1.17 2007/08/19 14:39:44 deraugla Exp $ *)
 
 (** Locations *)
 
 type location = 'abstract;
+
+(* located exceptions *)
 
 exception Exc_located of location and exn;
    (** [Exc_located loc e] is an encapsulation of the exception [e] with
@@ -37,7 +39,7 @@ value make_lined_loc : int -> int -> (int * int) -> location;
        of the stream. *)
 value make_loc : (int * int) -> location;
    (** [make_loc] is like [make_lined_loc] except that the line number
-       is not provided (to be used when the line number is unknown). *)
+       is not provided (to be used e.g. when the line number is unknown). *)
 
 value dummy_loc : location;
    (** [dummy_loc] is a dummy location, used in situations when location
