@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.55 2007/11/27 14:40:30 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.56 2007/12/11 19:40:46 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -11,13 +11,12 @@ open Prtools;
 value not_impl name pc x =
   let desc =
     if Obj.tag (Obj.repr x) = Obj.tag (Obj.repr "") then
-      sprintf "\"%s\"" (Obj.magic x)
+      "\"" ^ Obj.magic x ^ "\""
     else if Obj.is_block (Obj.repr x) then
       "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
     else "int_val = " ^ string_of_int (Obj.magic x)
   in
-  sprintf "%s\"pr_ro, not impl: %s; %s\"%s" pc.bef name (String.escaped desc)
-    pc.aft
+  pprintf pc "\"pr_ro, not impl: %s; %s\"" name (String.escaped desc)
 ;
 
 value is_infix = do {
@@ -48,7 +47,7 @@ value var_escaped pc v =
     else if is_keyword v then v ^ "__"
     else v
   in
-  sprintf "%s%s%s" pc.bef x pc.aft
+  pprintf pc "%s" x
 ;
 
 value alone_in_line pc =
@@ -70,28 +69,26 @@ value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
 
 value rec mod_ident pc sl =
   match sl with
-  [ [] -> sprintf "%s%s" pc.bef pc.aft
-  | [s] -> sprintf "%s%s%s" pc.bef s pc.aft
-  | [s :: sl] -> mod_ident {(pc) with bef = sprintf "%s%s." pc.bef s} sl ]
+  [ [] -> pprintf pc ""
+  | [s] -> pprintf pc "%s" s
+  | [s :: sl] -> pprintf pc "%s.%p" s mod_ident sl ]
 ;
 
-value semi_after elem pc x = elem {(pc) with aft = sprintf ";%s" pc.aft} x;
-value amp_before elem pc x = elem {(pc) with bef = sprintf "%s& " pc.bef} x;
-value and_before elem pc x = elem {(pc) with bef = sprintf "%sand " pc.bef} x;
-value bar_before elem pc x = elem {(pc) with bef = sprintf "%s| " pc.bef} x;
+value semi_after elem pc x = pprintf pc "%p;" elem x;
+value amp_before elem pc x = pprintf pc "& %p" elem x;
+value and_before elem pc x = pprintf pc "and %p" elem x;
+value bar_before elem pc x = pprintf pc "| %p" elem x;
 
 value type_var pc (tv, (p, m)) =
-  sprintf "%s%s'%s%s" pc.bef (if p then "+" else if m then "-" else "")
-    (Pcaml.unvala tv) pc.aft
+  pprintf pc "%s'%s" (if p then "+" else if m then "-" else "")
+    (Pcaml.unvala tv)
 ;
 
 value class_type_params pc ctp =
-  if ctp = [] then sprintf "%s%s" pc.bef pc.aft
+  if ctp = [] then pprintf pc ""
   else
     let ctp = List.map (fun ct -> (ct, ",")) ctp in
-    plist type_var 1
-      {(pc) with bef = sprintf "%s [" pc.bef; aft = sprintf "]%s" pc.aft}
-      ctp
+    pprintf pc " [%p]" (plist type_var 1) ctp
 ;
 
 value class_def_or_type_decl char pc ci =

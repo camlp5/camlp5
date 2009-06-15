@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.146 2007/12/11 18:21:52 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.147 2007/12/11 19:40:46 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -123,10 +123,10 @@ value un_irrefut_patt p =
       (<:patt< ($list:upl$) >>, <:expr< ($list:uel$) >>) ]
 ;
 
-(*
+(**)
 value test = ref False;
 Pcaml.add_option "-test" (Arg.Set test) " test";
-*)
+(**)
 
 value not_impl name pc x =
   let desc =
