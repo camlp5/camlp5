@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: compile.ml,v 1.17 2007/08/21 10:55:31 deraugla Exp $ *)
+(* $Id: compile.ml,v 1.18 2007/08/21 13:04:05 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -288,7 +288,8 @@ and parse_symbol entry nlevn s rkont fkont ending_act =
       let kont = <:expr< raise Stream.Failure >> in
       let act_kont _ act = gen_let_loc loc (final_action act) in
       let e = parse_tree phony_entry 0 0 (tree, True) act_kont kont in
-      parse_standard_symbol <:expr< fun strm__ -> $e$ >> rkont fkont
+      parse_standard_symbol
+        <:expr< fun (strm__ : Stream.t _) -> $e$ >> rkont fkont
         ending_act
   | Snterm e ->
       let n =
@@ -342,7 +343,7 @@ and symbol_parser entry nlevn =
       let kont = <:expr< raise Stream.Failure >> in
       let act_kont _ act = final_action act in
       <:expr<
-        fun strm__ ->
+        fun (strm__ : Stream.t _) ->
           $parse_tree phony_entry 0 0 (tree, True) act_kont kont$
       >>
   | _ -> <:expr< aaa >> ]
@@ -353,7 +354,8 @@ value rec start_parser_of_levels entry clevn levs =
   let next = entry.ename ^ "_" ^ string_of_int (clevn + 1) in
   let p = <:patt< $lid:n$ >> in
   match levs with
-  [ [] -> [Some (p, <:expr< fun strm__ -> raise Stream.Failure >>)]
+  [ [] ->
+      [Some (p, <:expr< fun (strm__ : Stream.t _) -> raise Stream.Failure >>)]
   | [lev :: levs] ->
       let pel = start_parser_of_levels entry (succ clevn) levs in
       match lev.lprefix with
@@ -367,7 +369,7 @@ value rec start_parser_of_levels entry clevn levs =
             <:expr< let a = $lid:next$ strm__ in $lid:ncont$ bp a strm__ >>
           in
           let curr = <:expr< let bp = Stream.count strm__ in $curr$ >> in
-          let e = <:expr< fun strm__ -> $curr$ >> in
+          let e = <:expr< fun (strm__ : Stream.t _) -> $curr$ >> in
           let pel = if levs = [] then [] else pel in
           [Some (p, e) :: pel]
       | tree ->
@@ -401,7 +403,7 @@ value rec start_parser_of_levels entry clevn levs =
             parse_tree entry (succ clevn) alevn (tree, True) act_kont kont
           in
           let curr = <:expr< let bp = Stream.count strm__ in $curr$ >> in
-          let e = <:expr< fun strm__ -> $curr$ >> in
+          let e = <:expr< fun (strm__ : Stream.t _) -> $curr$ >> in
           [Some (p, e) :: pel] ] ]
 ;
 
@@ -471,7 +473,7 @@ value empty_entry ename =
   let p = <:patt< $lid:ename$ >> in
   let e =
     <:expr<
-      fun strm__ ->
+      fun (strm__ : Stream.t _) ->
         raise (Stream.Error $str:"entry [" ^ ename ^ "] is empty"$) >>
   in
   [Some (p, e)]
