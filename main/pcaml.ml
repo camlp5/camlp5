@@ -1,16 +1,6 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: pcaml.ml,v 1.28 2007/09/14 03:16:58 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.29 2007/09/15 19:15:19 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 value version = "4.09-exp";
 value syntax_name = ref "";
@@ -33,6 +23,7 @@ value module_type = Grammar.Entry.create gram "module_type";
 value module_expr = Grammar.Entry.create gram "module_expr";
 value expr = Grammar.Entry.create gram "expr";
 value patt = Grammar.Entry.create gram "patt";
+value ipatt = Grammar.Entry.create gram "ipatt";
 value ctyp = Grammar.Entry.create gram "type";
 value let_binding = Grammar.Entry.create gram "let_binding";
 value type_declaration = Grammar.Entry.create gram "type_declaration";

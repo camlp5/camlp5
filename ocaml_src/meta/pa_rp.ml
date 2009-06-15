@@ -8,7 +8,8 @@ open Pcaml;;
 (* Syntax extensions in Revised Syntax grammar *)
 
 Grammar.extend
-  (let _ = (expr : 'expr Grammar.Entry.e) in
+  (let _ = (expr : 'expr Grammar.Entry.e)
+   and _ = (ipatt : 'ipatt Grammar.Entry.e) in
    let grammar_entry_create s =
      Grammar.create_local_entry (Grammar.of_entry expr) s
    in
@@ -26,7 +27,6 @@ Grammar.extend
      grammar_entry_create "stream_patt_let"
    and lookahead : 'lookahead Grammar.Entry.e =
      grammar_entry_create "lookahead"
-   and ipatt : 'ipatt Grammar.Entry.e = grammar_entry_create "ipatt"
    and stream_expr_comp : 'stream_expr_comp Grammar.Entry.e =
      grammar_entry_create "stream_expr_comp"
    in
@@ -227,12 +227,6 @@ Grammar.extend
        Gramext.Stoken ("", "]")],
       Gramext.action
         (fun _ (pl : 'patt list) _ (loc : Ploc.t) -> (pl : 'lookahead))]];
-    Grammar.Entry.obj (ipatt : 'ipatt Grammar.Entry.e), None,
-    [None, None,
-     [[Gramext.Stoken ("LIDENT", "")],
-      Gramext.action
-        (fun (i : string) (loc : Ploc.t) ->
-           (MLast.PaLid (loc, i) : 'ipatt))]];
     Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
     Some (Gramext.Level "simple"),
     [None, None,

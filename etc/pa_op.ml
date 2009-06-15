@@ -1,16 +1,6 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: pa_op.ml,v 1.11 2007/07/16 15:35:46 deraugla Exp $ *)
+(* $Id: pa_op.ml,v 1.12 2007/09/15 19:15:19 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 open Exparser;
 open Pcaml;
@@ -18,7 +8,7 @@ open Pcaml;
 (* Syntax extensions in Ocaml grammar *)
 
 EXTEND
-  GLOBAL: expr;
+  GLOBAL: expr ipatt;
   expr: LEVEL "expr1"
     [ [ "parser"; po = OPT ipatt; OPT "|"; pcl = LIST1 parser_case SEP "|" ->
           <:expr< $cparser loc po pcl$ >>

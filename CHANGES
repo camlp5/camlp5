@@ -1,8 +1,34 @@
 Camlp5 Version 4.09:
 ---------------------
 
-* [14 Sep 07] Added 'Pcaml.with_constr' and 'Pcaml.poly_variant' among
-  predefined entries.
+* In Camlp5 compiled distributions, there are now two modes. If one wants
+  to compile Camlp5, the 'configure' script can select the mode:
+
+  The two modes are:
+
+  - transitional mode (default): the syntax tree is compatible with the
+    previous version; users don't have to change their programs, but in
+    the syntax tree quotations introduced by the new parsing kit 'q_ast.cmo',
+    not all cases of antiquotations are available. This mode is recommended
+    for users who don't want to risk possibilities of problems with the
+    current Camlp5 version, forcing them, if they have to downgrade Camlp5
+    to make their changes back. After some versions of Camlp5 or months or
+    years, transiting to 'strict' mode will be ok.
+
+  - strict mode: the syntax tree is not compatible with the previous
+    version. The user programs may compile without change, but not
+    necessarily, in particular if these programs use the syntax tree
+    with their constructors forms instead of their quotation forms
+    (which remain compatible). There is a new feature: the syntax
+    tree quotations in user syntax, introduced by the new parsing
+    kit 'q_ast.cmo".
+
+* [15 Sep 07] Added 'q_ast.cmo': this is the syntax tree quotations in
+  the current syntax, including the possible user syntax extensions.
+  The antiquotations work only in 'strict' mode, not in 'transitional'
+  mode.
+* [15 Sep 07] In module Pcaml, added grammar entries 'ipatt', 'match_case',
+  'constructor_declaration', 'with_constr', 'poly_variant'.
 * [09 Sep 07] In macros (pa_macro.cmo):
   - changed parameters syntax: now in curried form instead of parentheses,
   - added ability to define macro type expressions in signatures, e.g.:

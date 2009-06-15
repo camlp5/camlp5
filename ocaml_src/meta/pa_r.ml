@@ -21,6 +21,7 @@ Grammar.Unsafe.clear_entry sig_item;
 Grammar.Unsafe.clear_entry str_item;
 Grammar.Unsafe.clear_entry expr;
 Grammar.Unsafe.clear_entry patt;
+Grammar.Unsafe.clear_entry ipatt;
 Grammar.Unsafe.clear_entry ctyp;
 Grammar.Unsafe.clear_entry let_binding;
 Grammar.Unsafe.clear_entry type_declaration;
@@ -107,8 +108,6 @@ let mklistpat loc last =
 ;;
 
 let append_elem el e = el @ [e];;
-
-let ipatt = Grammar.Entry.create gram "ipatt";;
 
 Grammar.extend
   (let _ = (sig_item : 'sig_item Grammar.Entry.e)

@@ -42,6 +42,7 @@ val sig_item : MLast.sig_item Grammar.Entry.e;;
 val str_item : MLast.str_item Grammar.Entry.e;;
 val expr : MLast.expr Grammar.Entry.e;;
 val patt : MLast.patt Grammar.Entry.e;;
+val ipatt : MLast.patt Grammar.Entry.e;;
 val ctyp : MLast.ctyp Grammar.Entry.e;;
 val let_binding : (MLast.patt * MLast.expr) Grammar.Entry.e;;
 val type_declaration : MLast.type_decl Grammar.Entry.e;;

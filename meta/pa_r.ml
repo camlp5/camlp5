@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.88 2007/09/15 13:30:55 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.89 2007/09/15 19:15:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -22,6 +22,7 @@ do {
   Grammar.Unsafe.clear_entry str_item;
   Grammar.Unsafe.clear_entry expr;
   Grammar.Unsafe.clear_entry patt;
+  Grammar.Unsafe.clear_entry ipatt;
   Grammar.Unsafe.clear_entry ctyp;
   Grammar.Unsafe.clear_entry let_binding;
   Grammar.Unsafe.clear_entry type_declaration;
@@ -108,8 +109,6 @@ value mklistpat loc last =
 ;
 
 value append_elem el e = el @ [e];
-
-value ipatt = Grammar.Entry.create gram "ipatt";
 
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr class_type

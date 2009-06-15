@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_rp.ml,v 1.11 2007/09/15 16:30:43 deraugla Exp $ *)
+(* $Id: pa_rp.ml,v 1.12 2007/09/15 19:15:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Exparser;
@@ -8,7 +8,7 @@ open Pcaml;
 (* Syntax extensions in Revised Syntax grammar *)
 
 EXTEND
-  GLOBAL: expr;
+  GLOBAL: expr ipatt;
   expr: LEVEL "top"
     [ [ "parser"; po = OPT ipatt; "["; pcl = LIST0 parser_case SEP "|"; "]" ->
           <:expr< $cparser loc po pcl$ >>
@@ -53,9 +53,6 @@ EXTEND
   ;
   lookahead:
     [ [ "["; pl = LIST1 patt SEP ";"; "]" -> pl ] ]
-  ;
-  ipatt:
-    [ [ i = LIDENT -> <:patt< $lid:i$ >> ] ]
   ;
   expr: LEVEL "simple"
     [ [ "[:"; se = LIST0 stream_expr_comp SEP ";"; ":]" ->

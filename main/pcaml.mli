@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: pcaml.mli,v 1.18 2007/09/14 03:16:58 deraugla Exp $ *)
+(* $Id: pcaml.mli,v 1.19 2007/09/15 19:15:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 IFNDEF STRICT THEN
@@ -46,6 +46,7 @@ value sig_item : Grammar.Entry.e MLast.sig_item;
 value str_item : Grammar.Entry.e MLast.str_item;
 value expr : Grammar.Entry.e MLast.expr;
 value patt : Grammar.Entry.e MLast.patt;
+value ipatt : Grammar.Entry.e MLast.patt;
 value ctyp : Grammar.Entry.e MLast.ctyp;
 value let_binding : Grammar.Entry.e (MLast.patt * MLast.expr);
 value type_declaration : Grammar.Entry.e MLast.type_decl;
