@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_extprint.ml,v 1.32 2007/12/18 10:31:05 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.33 2007/12/18 11:49:46 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -810,11 +810,16 @@ value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc t al =
       (<:expr< let pc = $pc$ in $e$ >>, al)
   | {fst = {hd = ""; tl = []};
      flw = [(Tsub (PPall b) {fst = sl; flw = tl}, {hd = ""; tl = []})]} ->
-      let (e1, al) =
-        expr_of_pformat loc fmt empty_bef True <:expr< pc >> al sl
+      let (el1, al) =
+        if sl = {hd = ""; tl = []} then ([], al)
+        else
+          let (e, al) =
+            expr_of_pformat loc fmt empty_bef True <:expr< pc >> al sl
+          in
+          ([e], al)
       in
-      let (el1, rev_el, al) =
-        loop [e1] [] al tl where rec loop el1 rev_el al =
+      let (rev_el1, rev_el, al) =
+        loop el1 [] al tl where rec loop el1 rev_el al =
           fun
           [ [(Tbreak br, sl) :: tl] ->
                let (e, al) =
@@ -844,9 +849,9 @@ value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc t al =
               (el1, rev_el, al) ]
       in
       let e1 =
-        match el1 with
+        match rev_el1 with
         [ [e] -> e
-        | _ -> <:expr< Agaga >> ]
+        | _ -> failwith "not impl 1" ]
       in
       let e =
         let el =
