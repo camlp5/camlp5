@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.25 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.26 2007/07/16 15:18:32 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -681,7 +681,7 @@ EXTEND
   ctyp: AFTER "arrow"
     [ NONA
       [ i = TILDEIDENTCOLON; t = SELF -> <:ctyp< ~ $i$ : $t$ >>
-      | i = QUESTIONIDENT; ":"; t = SELF -> <:ctyp< ? $i$ : $t$ >> ] ]
+      | i = QUESTIONIDENTCOLON; t = SELF -> <:ctyp< ? $i$ : $t$ >> ] ]
   ;
   ctyp: LEVEL "simple"
     [ [ "["; "="; rfl = poly_variant_list; "]" ->
@@ -710,7 +710,7 @@ EXTEND
       | "#"; sl = mod_ident -> <:patt< # $list:sl$ >>
       | i = TILDEIDENTCOLON; p = SELF -> <:patt< ~ $i$ : $p$ >>
       | i = TILDEIDENT -> <:patt< ~ $i$ >>
-      | i = QUESTIONIDENT; ":"; "("; p = patt_tcon; eo = OPT eq_expr; ")" ->
+      | i = QUESTIONIDENTCOLON; "("; p = patt_tcon; eo = OPT eq_expr; ")" ->
           <:patt< ? $i$ : ($p$ $opt:eo$) >>
       | i = QUESTIONIDENT ->
           <:patt< ? $i$ >>
@@ -724,7 +724,7 @@ EXTEND
   ipatt:
     [ [ i = TILDEIDENTCOLON; p = SELF -> <:patt< ~ $i$ : $p$ >>
       | i = TILDEIDENT -> <:patt< ~ $i$ >>
-      | i = QUESTIONIDENT; ":"; "("; p = ipatt_tcon; eo = OPT eq_expr; ")" ->
+      | i = QUESTIONIDENTCOLON; "("; p = ipatt_tcon; eo = OPT eq_expr; ")" ->
           <:patt< ? $i$ : ($p$ $opt:eo$) >>
       | i = QUESTIONIDENT ->
           <:patt< ? $i$ >>
@@ -742,7 +742,7 @@ EXTEND
     [ "label" NONA
       [ i = TILDEIDENTCOLON; e = SELF -> <:expr< ~ $i$ : $e$ >>
       | i = TILDEIDENT -> <:expr< ~ $i$ >>
-      | i = QUESTIONIDENT; ":"; e = SELF -> <:expr< ? $i$ : $e$ >>
+      | i = QUESTIONIDENTCOLON; e = SELF -> <:expr< ? $i$ : $e$ >>
       | i = QUESTIONIDENT -> <:expr< ? $i$ >> ] ]
   ;
   expr: LEVEL "simple"

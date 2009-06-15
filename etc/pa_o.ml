@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.28 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.29 2007/07/16 15:18:32 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -1116,7 +1116,7 @@ EXTEND
   ctyp: AFTER "arrow"
     [ NONA
       [ i = lident_colon; t = SELF -> <:ctyp< ~ $i$ : $t$ >>
-      | i = QUESTIONIDENT; ":"; t = SELF -> <:ctyp< ? $i$ : $t$ >> ] ]
+      | i = QUESTIONIDENTCOLON; t = SELF -> <:ctyp< ? $i$ : $t$ >> ] ]
   ;
   ctyp: LEVEL "simple"
     [ [ "["; OPT "|"; rfl = LIST1 poly_variant SEP "|"; "]" ->
@@ -1146,7 +1146,7 @@ EXTEND
     [ "label"
       [ i = TILDEIDENTCOLON; e = SELF -> <:expr< ~ $i$ : $e$ >>
       | i = TILDEIDENT -> <:expr< ~ $i$ >>
-      | i = QUESTIONIDENT; ":"; e = SELF -> <:expr< ? $i$ : $e$ >>
+      | i = QUESTIONIDENTCOLON; e = SELF -> <:expr< ? $i$ : $e$ >>
       | i = QUESTIONIDENT -> <:expr< ? $i$ >> ] ]
   ;
   expr: LEVEL "simple"
@@ -1171,16 +1171,16 @@ EXTEND
            <:patt< ~ $i$ >>
       | "~"; "("; i = LIDENT; ":"; t = ctyp; ")" ->
            <:patt< ~ $i$ : ($lid:i$ : $t$) >>
-      | i = QUESTIONIDENT; ":"; j = LIDENT ->
+      | i = QUESTIONIDENTCOLON; j = LIDENT ->
            <:patt< ? $i$ : ($lid:j$) >>
-      | i = QUESTIONIDENT; ":"; "("; p = patt; "="; e = expr; ")" ->
+      | i = QUESTIONIDENTCOLON; "("; p = patt; "="; e = expr; ")" ->
           <:patt< ? $i$ : ( $p$ = $e$ ) >>
-      | i = QUESTIONIDENT; ":"; "("; p = patt; ":"; t = ctyp; ")" ->
+      | i = QUESTIONIDENTCOLON; "("; p = patt; ":"; t = ctyp; ")" ->
           <:patt< ? $i$ : ( $p$ : $t$ ) >>
-      | i = QUESTIONIDENT; ":"; "("; p = patt; ":"; t = ctyp; "=";
+      | i = QUESTIONIDENTCOLON; "("; p = patt; ":"; t = ctyp; "=";
         e = expr; ")" ->
           <:patt< ? $i$ : ( $p$ : $t$ = $e$ ) >>
-      | i = QUESTIONIDENT; ":"; "("; p = patt; ")" ->
+      | i = QUESTIONIDENTCOLON; "("; p = patt; ")" ->
           <:patt< ? $i$ : ( $p$ ) >>
       | i = QUESTIONIDENT -> <:patt< ? $i$ >>
       | "?"; "("; i = LIDENT; "="; e = expr; ")" ->
@@ -1195,7 +1195,7 @@ EXTEND
   class_type:
     [ [ i = lident_colon; t = ctyp LEVEL "ctyp1"; "->"; ct = SELF ->
           <:class_type< [ ~ $i$ : $t$ ] -> $ct$ >>
-      | i = QUESTIONIDENT; ":"; t = ctyp LEVEL "ctyp1"; "->"; ct = SELF ->
+      | i = QUESTIONIDENTCOLON; t = ctyp LEVEL "ctyp1"; "->"; ct = SELF ->
           <:class_type< [ ? $i$ : $t$ ] -> $ct$ >> ] ]
   ;
   class_fun_binding:

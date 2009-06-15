@@ -1,6 +1,8 @@
 Camlp5 Version 4.05:
 ---------------------
 
+* [16 Jul 07] Fixed syntax problems with "~id:" and "~id :" (with a space).
+
 Camlp5 Version 4.04:
 ---------------------
 

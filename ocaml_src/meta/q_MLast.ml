@@ -177,6 +177,7 @@ let a_CHAR = Grammar.Entry.create gram "a_CHAR";;
 let a_TILDEIDENT = Grammar.Entry.create gram "a_TILDEIDENT";;
 let a_TILDEIDENTCOLON = Grammar.Entry.create gram "a_TILDEIDENTCOLON";;
 let a_QUESTIONIDENT = Grammar.Entry.create gram "a_QUESTIONIDENT";;
+let a_QUESTIONIDENTCOLON = Grammar.Entry.create gram "a_QUESTIONIDENTCOLON";;
 
 let o2b =
   function
@@ -612,7 +613,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 287, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 288, 19))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -883,7 +884,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 342, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 343, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -3413,10 +3414,10 @@ Grammar.extend
     [None, Some Gramext.NonA,
      [[Gramext.Snterm
          (Grammar.Entry.obj
-            (a_QUESTIONIDENT : 'a_QUESTIONIDENT Grammar.Entry.e));
-       Gramext.Stoken ("", ":"); Gramext.Sself],
+            (a_QUESTIONIDENTCOLON : 'a_QUESTIONIDENTCOLON Grammar.Entry.e));
+       Gramext.Sself],
       Gramext.action
-        (fun (t : 'ctyp) _ (i : 'a_QUESTIONIDENT) (loc : Token.location) ->
+        (fun (t : 'ctyp) (i : 'a_QUESTIONIDENTCOLON) (loc : Token.location) ->
            (Qast.Node ("TyOlb", [Qast.Loc; i; t]) : 'ctyp));
       [Gramext.Snterm
          (Grammar.Entry.obj
@@ -3588,8 +3589,8 @@ Grammar.extend
            (Qast.Node ("PaOlb", [Qast.Loc; i; Qast.Option None]) : 'patt));
       [Gramext.Snterm
          (Grammar.Entry.obj
-            (a_QUESTIONIDENT : 'a_QUESTIONIDENT Grammar.Entry.e));
-       Gramext.Stoken ("", ":"); Gramext.Stoken ("", "(");
+            (a_QUESTIONIDENTCOLON : 'a_QUESTIONIDENTCOLON Grammar.Entry.e));
+       Gramext.Stoken ("", "(");
        Gramext.Snterm
          (Grammar.Entry.obj (patt_tcon : 'patt_tcon Grammar.Entry.e));
        Gramext.srules
@@ -3605,7 +3606,7 @@ Grammar.extend
             (fun (a : 'a_opt) (loc : Token.location) -> (a : 'a_opt))];
        Gramext.Stoken ("", ")")],
       Gramext.action
-        (fun _ (eo : 'a_opt) (p : 'patt_tcon) _ _ (i : 'a_QUESTIONIDENT)
+        (fun _ (eo : 'a_opt) (p : 'patt_tcon) _ (i : 'a_QUESTIONIDENTCOLON)
              (loc : Token.location) ->
            (Qast.Node
               ("PaOlb",
@@ -3678,8 +3679,8 @@ Grammar.extend
            (Qast.Node ("PaOlb", [Qast.Loc; i; Qast.Option None]) : 'ipatt));
       [Gramext.Snterm
          (Grammar.Entry.obj
-            (a_QUESTIONIDENT : 'a_QUESTIONIDENT Grammar.Entry.e));
-       Gramext.Stoken ("", ":"); Gramext.Stoken ("", "(");
+            (a_QUESTIONIDENTCOLON : 'a_QUESTIONIDENTCOLON Grammar.Entry.e));
+       Gramext.Stoken ("", "(");
        Gramext.Snterm
          (Grammar.Entry.obj (ipatt_tcon : 'ipatt_tcon Grammar.Entry.e));
        Gramext.srules
@@ -3695,7 +3696,7 @@ Grammar.extend
             (fun (a : 'a_opt) (loc : Token.location) -> (a : 'a_opt))];
        Gramext.Stoken ("", ")")],
       Gramext.action
-        (fun _ (eo : 'a_opt) (p : 'ipatt_tcon) _ _ (i : 'a_QUESTIONIDENT)
+        (fun _ (eo : 'a_opt) (p : 'ipatt_tcon) _ (i : 'a_QUESTIONIDENTCOLON)
              (loc : Token.location) ->
            (Qast.Node
               ("PaOlb",
@@ -3742,10 +3743,10 @@ Grammar.extend
            (Qast.Node ("ExOlb", [Qast.Loc; i; Qast.Option None]) : 'expr));
       [Gramext.Snterm
          (Grammar.Entry.obj
-            (a_QUESTIONIDENT : 'a_QUESTIONIDENT Grammar.Entry.e));
-       Gramext.Stoken ("", ":"); Gramext.Sself],
+            (a_QUESTIONIDENTCOLON : 'a_QUESTIONIDENTCOLON Grammar.Entry.e));
+       Gramext.Sself],
       Gramext.action
-        (fun (e : 'expr) _ (i : 'a_QUESTIONIDENT) (loc : Token.location) ->
+        (fun (e : 'expr) (i : 'a_QUESTIONIDENTCOLON) (loc : Token.location) ->
            (Qast.Node ("ExOlb", [Qast.Loc; i; Qast.Option (Some e)]) :
             'expr));
       [Gramext.Snterm
@@ -4203,7 +4204,20 @@ Grammar.extend
      [Gramext.Stoken ("", "?"); Gramext.Stoken ("ANTIQUOT", "")],
      Gramext.action
        (fun (a : string) _ (loc : Token.location) ->
-          (antiquot "" loc a : 'a_QUESTIONIDENT))]]];;
+          (antiquot "" loc a : 'a_QUESTIONIDENT))]];
+   Grammar.Entry.obj
+     (a_QUESTIONIDENTCOLON : 'a_QUESTIONIDENTCOLON Grammar.Entry.e),
+   None,
+   [None, None,
+    [[Gramext.Stoken ("QUESTIONIDENTCOLON", "")],
+     Gramext.action
+       (fun (s : string) (loc : Token.location) ->
+          (Qast.Str s : 'a_QUESTIONIDENTCOLON));
+     [Gramext.Stoken ("", "?"); Gramext.Stoken ("ANTIQUOT", "");
+      Gramext.Stoken ("", ":")],
+     Gramext.action
+       (fun _ (a : string) _ (loc : Token.location) ->
+          (antiquot "" loc a : 'a_QUESTIONIDENTCOLON))]]];;
 
 let quot_mod = ref [];;
 let any_quot_mod = ref "MLast";;
