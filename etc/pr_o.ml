@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.113 2007/12/20 14:09:49 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.114 2007/12/20 19:56:20 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -323,43 +323,14 @@ value match_assoc force_vertic pc ((p, w, e), is_last) =
            w
            (comm_expr expr) e pc_dang)
     (fun () ->
-       let patt_arrow k =
-         match w with
-         [ <:vala< Some e >> ->
-             horiz_vertic
-               (fun () ->
-                  sprintf "%s%s when %s ->%s" pc.bef
-                    (patt_as {(pc) with bef = ""; aft = ""} p)
-                    (expr {(pc) with bef = ""; aft = ""} e) k)
-               (fun () ->
-                  let s1 = patt_as {(pc) with aft = ""} p in
-                  let s2 =
-                    horiz_vertic
-                      (fun () ->
-                         sprintf "%swhen %s ->%s" (tab pc.ind)
-                           (expr {(pc) with bef = ""; aft = ""} e) k)
-                      (fun () ->
-                         let s1 = sprintf "%swhen" (tab pc.ind) in
-                         let s2 =
-                           expr
-                             {(pc) with ind = pc.ind + 2;
-                              bef = tab (pc.ind + 2);
-                              aft = sprintf " ->%s" k}
-                             e
-                         in
-                         sprintf "%s\n%s" s1 s2)
-                  in
-                  sprintf "%s\n%s" s1 s2)
-         | _ -> patt_as {(pc) with aft = sprintf " ->%s" k} p ]
-       in
-       let s1 = patt_arrow "" in
-       let s2 =
-         expr_with_comm_except_if_sequence
-           {ind = pc.ind + 2; bef = tab (pc.ind + 2);
-            aft = pc_aft; dang = pc_dang}
-           e
-       in
-       sprintf "%s\n%s" s1 s2)
+       pprintf pc "%p@;%q"
+         (fun pc ->
+            fun
+            [ <:vala< Some e >> ->
+                pprintf pc "%p@ @[when@;%p ->@]" patt_as p expr e
+            | _ ->
+                pprintf pc "%p ->" patt_as p ])
+         w expr_with_comm_except_if_sequence e pc_dang)
 ;
 
 value match_assoc_sh force_vertic pc pwe =
