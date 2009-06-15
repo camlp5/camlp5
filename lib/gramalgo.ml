@@ -425,7 +425,7 @@ value eprint_item (lh, dot, rh) = do {
           Printf.eprintf " %s" (sprint_symb  s);
           loop (dot - 1) rh
         }
-      | [] -> Printf.eprintf "... algorithm error..." ];
+      | [] -> Printf.eprintf "... algorithm error ..." ];
   Printf.eprintf "\n";
 };
 
@@ -439,94 +439,60 @@ value lr0 entry lev = do {
   List.iter eprint_rule rl;
   Printf.eprintf "\n";
   flush stderr;
-  Printf.eprintf "Item set 0\n\n";
-  let item_set_0 =
+  let item_set_and_rest =
     let item = ("start-symb", 0, [GS_nterm (name_of_entry entry lev)]) in
-    item_set_closure rl [item]
+    Some
+      (GS_nterm "start-symb", item_set_closure rl [item],
+       List.map (fun (lh, rh) -> (lh, 0, rh)) rl)
   in
-  List.iter eprint_item item_set_0;
-  flush stderr;
-  let item_set_and_rest =
-    let item_set =
-      List.filter (fun (lh, dot, rh) -> dot < List.length rh) item_set_0
-    in
-    let s =
-      loop item_set where rec loop =
-        fun
-        [ [(lh, dot, rh) :: rest] ->
-            match get_symbol_after_dot dot rh with
-            [ Some s -> Some s
-            | None -> loop rest ]
-        | [] -> None ]
-    in
-    match s with
-    [ Some s ->
-        let (item_set, rest) =
-          List.partition
-            (fun (lh, dot, rh) ->
-               match get_symbol_after_dot dot rh with
-               [ Some s1 -> s = s1
-               | None -> False ])
-            item_set_0
-        in
+  loop 0 item_set_and_rest where rec loop item_set_cnt =
+    fun
+    [ Some (s, item_set, rest) -> do {
         let item_set =
-          List.map (fun (lh, dot, rh)  -> (lh, dot + 1, rh)) item_set
+          List.filter (fun (lh, dot, rh) -> dot < List.length rh) item_set
         in
-        let item_set = item_set_closure rl item_set in
-        Some (s, item_set, rest)
-    | None -> None ]
-  in
-  match item_set_and_rest with
-  [ Some (s, item_set, rest) -> do {
-      Printf.eprintf "\n";
-      Printf.eprintf "state 1 = after symbol \"%s\"\n\n" (sprint_symb s);
-      Printf.eprintf "Item set 1\n\n";
-      List.iter eprint_item item_set;
-      flush stderr;
-    }
-  | None -> () ];
-  let item_set_and_rest =
-    match item_set_and_rest with
-    [ Some (s, item_set, rest) ->
-      let item_set =
-(*
-        List.filter (fun (lh, dot, rh) -> dot < List.length rh) item_set
-*)rest
-      in
-      let s =
-        loop item_set where rec loop =
-          fun
-          [ [(lh, dot, rh) :: rest] ->
-              match get_symbol_after_dot dot rh with
-              [ Some s -> Some s
-              | None -> loop rest ]
-          | [] -> None ]
-      in
-      match s with
-      [ Some s ->
-          let (item_set, rest) =
-            List.partition
-              (fun (lh, dot, rh) ->
-                 match get_symbol_after_dot dot rh with
-                 [ Some s1 -> s = s1
-                 | None -> False ])
-              item_set_0
-          in
-          let item_set =
-            List.map (fun (lh, dot, rh)  -> (lh, dot + 1, rh)) item_set
-          in
-          let item_set = item_set_closure rl item_set in
-          Some (s, item_set, rest)
-      | None -> None ]
-    | None -> None ]
-  in
-  match item_set_and_rest with
-  [ Some (s, item_set, rest) -> do {
-      Printf.eprintf "\n";
-      Printf.eprintf "state 2 = after symbol \"%s\"\n\n" (sprint_symb s);
-      Printf.eprintf "Item set 2\n\n";
-      List.iter eprint_item item_set;
-      flush stderr;
-    }
-  | None -> () ];
+        Printf.eprintf "\n";
+        Printf.eprintf "Item set %d (after %s)\n\n" item_set_cnt
+          (sprint_symb s);
+        List.iter eprint_item item_set;
+        flush stderr;
+        let s =
+          loop item_set where rec loop =
+            fun
+            [ [(lh, dot, rh) :: rest] ->
+                match get_symbol_after_dot dot rh with
+                [ Some s -> Some s
+                | None -> loop rest ]
+            | [] ->
+                loop rest where rec loop =
+                  fun
+                  [ [(lh, dot, rh) :: rest] ->
+                      match get_symbol_after_dot dot rh with
+                      [ Some s -> Some s
+                      | None -> loop rest ]
+                  | [] -> None ] ]
+        in
+        let item_set_and_rest =
+          match s with
+          [ Some s ->
+              let (item_set, rest) =
+                List.partition
+                  (fun (lh, dot, rh) ->
+                     match get_symbol_after_dot dot rh with
+                     [ Some s1 -> s = s1
+                     | None -> False ])
+                  (item_set @ rest)
+              in
+              let item_set =
+                List.map (fun (lh, dot, rh) -> (lh, dot + 1, rh)) item_set
+              in
+              let item_set = item_set_closure rl item_set in
+              Some (s, item_set, rest)
+          | None -> None ]
+        in
+        if item_set_cnt > 1000 then () else
+        loop (item_set_cnt + 1) item_set_and_rest
+      }
+    | None -> () ];
+
 };
