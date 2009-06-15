@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.37 2007/10/11 04:14:30 deraugla Exp $
+# $Id: Makefile,v 1.38 2007/10/11 09:29:39 deraugla Exp $
 
 include ../config/Makefile
 
@@ -15,13 +15,13 @@ COPT=$(NAME)o.opt
 all: $(COUT) mk$(NAME).sh
 opt: $(COPT)
 
-pr_rp_old.cmo: parserify.cmo pr_rp_main.cmo
+pr_rp.cmo: parserify.cmo pr_rp_main.cmo
 	$(OCAMLC) parserify.cmo pr_rp_main.cmo -a -o $@
 
-pr_op_old.cmo: parserify.cmo pr_op_main.cmo
+pr_op.cmo: parserify.cmo pr_op_main.cmo
 	$(OCAMLC) parserify.cmo pr_op_main.cmo -a -o $@
 
-pr_schemep_old.cmo: parserify.cmo pr_schp_main.cmo
+pr_schemep.cmo: parserify.cmo pr_schp_main.cmo
 	$(OCAMLC) parserify.cmo pr_schp_main.cmo -a -o $@
 
 $(NAME)o$(EXE): ../main/$(NAME)$(EXE) $(CAMLP5OM)

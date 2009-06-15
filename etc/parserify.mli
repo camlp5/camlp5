@@ -1,14 +1,3 @@
 (* camlp5r *)
 (* $Id$ *)
-
-type spc =
-  [ SPCterm of (MLast.patt * option MLast.expr)
-  | SPCnterm of MLast.patt and MLast.expr
-  | SPCsterm of MLast.patt ]
-;
-
-value parser_of_expr :
-  MLast.expr ->
-    list
-      (list (spc * option (option MLast.expr)) * option MLast.patt *
-       MLast.expr);
+(* Copyright (c) INRIA 2007 *)
