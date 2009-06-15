@@ -344,7 +344,7 @@ type sexpr =
   | Sqid of MLast.loc and MLast.v string
   | Squot of MLast.loc and string and string
   | Srec of MLast.loc and list sexpr
-  | Sstring of MLast.loc and string
+  | Sstring of MLast.loc and MLast.v string
   | Stid of MLast.loc and MLast.v string
   | Suid of MLast.loc and string
   | Suidv of MLast.loc and MLast.v string ]
@@ -381,7 +381,7 @@ value op_apply loc e1 e2 =
 
 value string_se =
   fun
-  [ Sstring loc s -> s
+  [ Sstring loc <:vala< s >> -> s
   | se -> error se "string" ]
 ;
 
@@ -558,7 +558,7 @@ and expr_se =
   | Sint_n loc s -> <:expr< $_nativeint:s$ >>
   | Sfloat loc s -> <:expr< $_flo:s$ >>
   | Schar loc s -> <:expr< $_chr:s$ >>
-  | Sstring loc s -> <:expr< $str:s$ >>
+  | Sstring loc s -> <:expr< $_str:s$ >>
   | Stid loc s -> <:expr< ~$_:s$ >>
   | Sqid loc s -> <:expr< ?$_:s$ >>
   | Sexpr loc [Sqid _ s; se] ->
@@ -746,11 +746,19 @@ and expr_se =
       | _ -> <:expr< let ($lid:strm_n$ : Stream.t _) = $me$ in $e$ >> ]
   | Sexpr loc [Slid _ "try"; se :: sel] ->
       let e = expr_se se in
-      let pel = List.map (match_case loc) sel in
-      <:expr< try $e$ with [ $list:pel$ ] >>
+      let pel =
+        match sel with
+        [ [Sexpr _ [Santi _ ("list" | "_list") s]] -> <:vala< $s$ >>
+        | _ -> <:vala< (List.map (match_case loc) sel) >> ]
+      in
+      <:expr< try $e$ with [ $_list:pel$ ] >>
   | Sexpr loc [Slid _ "begin" :: sel] ->
-      let el = List.map expr_se sel in
-      <:expr< do { $list:el$ } >>
+      let el =
+        match sel with
+        [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
+        | _ -> <:vala< (List.map expr_se sel) >> ]
+      in
+      <:expr< do { $_list:el$ } >>
   | Sexpr loc [Slid _ ":="; se1; se2] ->
       let e1 = expr_se se1 in
       let e2 = expr_se se2 in
@@ -759,15 +767,27 @@ and expr_se =
       let el = Pcaml.vala_map (List.map expr_se) sel in
       <:expr< [| $_list:el$ |] >>
   | Sexpr loc [Slid _ "values" :: sel] ->
-      let el = List.map expr_se sel in
-      <:expr< ( $list:el$ ) >>
+      let el =
+        match sel with
+        [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
+        | _ -> <:vala< (List.map expr_se sel) >> ]
+      in
+      <:expr< ( $_list:el$ ) >>
   | Srec loc [Slid _ "with"; se :: sel] ->
-      let e = expr_se se in
-      let lel = List.map (label_expr_se loc) sel in
-      <:expr< { ($e$) with $list:lel$ } >>
+      let e = expr_se se
+      and lel =
+        match sel with
+        [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
+        | _ -> <:vala< (List.map (label_expr_se loc) sel) >> ]
+      in
+      <:expr< { ($e$) with $_list:lel$ } >>
   | Srec loc sel ->
-      let lel = List.map (label_expr_se loc) sel in
-      <:expr< { $list:lel$ } >>
+      let lel =
+        match sel with
+        [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
+        | _ -> <:vala< (List.map (label_expr_se loc) sel) >> ]
+      in
+      <:expr< { $_list:lel$ } >>
   | Sexpr loc [Slid _ ":"; se1; se2] ->
       let e = expr_se se1 in
       let t = ctyp_se se2 in
@@ -926,7 +946,7 @@ and patt_se =
   | Sint_n loc s -> <:patt< $_nativeint:s$ >>
   | Sfloat loc s -> <:patt< $_flo:s$ >>
   | Schar loc s -> <:patt< $_chr:s$ >>
-  | Sstring loc s -> <:patt< $str:s$ >>
+  | Sstring loc s -> <:patt< $_str:s$ >>
   | Stid loc s -> error_loc loc "patt"
   | Sqid loc _ -> error_loc loc "patt"
   | Srec loc sel ->
@@ -1099,6 +1119,7 @@ and ctyp_se =
         <:ctyp< '$s$ >>
       else <:ctyp< $lid:(rename_id s)$ >>
   | Suid loc s -> <:ctyp< $uid:(rename_id s)$ >>
+  | Santi loc "" s -> <:ctyp< $xtr:s$ >>
   | se -> error se "ctyp" ]
 and constructor_declaration_se =
   fun
@@ -1224,7 +1245,7 @@ EXTEND
       | s = V INT_n -> Sint_n loc s
       | s = V FLOAT -> Sfloat loc s
       | s = V CHAR -> Schar loc s
-      | s = STRING -> Sstring loc s
+      | s = V STRING -> Sstring loc s
       | s = SPACEDOT -> Slid loc "."
       | s = QUOT ->
           let i = String.index s ':' in

@@ -56,27 +56,27 @@
 <:expr< ?$_:s$ >>
 <:expr< (?$s$ $e$) >>
 <:expr< (?$_:s$ $e$) >>
-; <:expr< {< $list:lse$ >} >>
-; <:expr< {< $_list:lse$ >} >>
-; <:expr< { $list:lpe$ } >>
-; <:expr< { $_list:lpe$ } >>
-; <:expr< { ($e$) with $list:lpe$ } >>
-; <:expr< { ($e$) with $_list:lpe$ } >>
-; <:expr< do { $list:le$ } >>
-; <:expr< do { $_list:le$ } >>
-; <:expr< $e$ # $lid:s$ >>
-; <:expr< $e$ # $_lid:s$ >>
-; <:expr< $e1$ .[ $e2$ ] >>
-; <:expr< $str:s$ >>
-; <:expr< $_str:s$ >>
-; <:expr< try $e$ with [ $list:lpwe$ ] >>
-; <:expr< try $e$ with [ $_list:lpwe$ ] >>
-; <:expr< ($list:le$) >>
-; <:expr< ($_list:le$) >>
-; <:expr< ($e$ : $t$) >>
-; <:expr< $uid:s$ >>
-; <:expr< $_uid:s$ >>
-; <:expr< `$s$ >>
+(MLast.ExOvr loc (Ploc.VaVal lse))
+(MLast.ExOvr loc lse)
+<:expr< { $list:lpe$ } >>
+<:expr< { $_list:lpe$ } >>
+<:expr< { with $e$ $list:lpe$ } >>
+<:expr< { with $e$ $_list:lpe$ } >>
+<:expr< (begin $list:le$) >>
+<:expr< (begin $_list:le$) >>
+(MLast.ExSnd loc e (Ploc.VaVal s))
+(MLast.ExSnd loc e s)
+<:expr< $e1$.[ $e2$ ] >>
+<:expr< $str:s$ >>
+<:expr< $_str:s$ >>
+<:expr< (try $e$ ($list:lpwe$)) >>
+<:expr< (try $e$ ($_list:lpwe$)) >>
+<:expr< (values $list:le$) >>
+<:expr< (values $_list:le$) >>
+<:expr< (: $e$ $t$) >>
+<:expr< $uid:s$ >>
+<:expr< $_uid:s$ >>
+<:expr< `$s$ >>
 ; <:expr< `$_:s$ >>
 ; <:expr< while $e$ do { $list:le$ } >>
 ; <:expr< while $e$ do { $_list:le$ } >>

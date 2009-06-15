@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.51 2007/10/07 19:50:20 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.52 2007/10/07 20:20:07 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -327,7 +327,7 @@
   (Sqid MLast.loc (MLast.v string))
   (Squot MLast.loc string string)
   (Srec MLast.loc (list sexpr))
-  (Sstring MLast.loc string)
+  (Sstring MLast.loc (MLast.v string))
   (Stid MLast.loc (MLast.v string))
   (Suid MLast.loc string)
   (Suidv MLast.loc (MLast.v string))))
@@ -361,7 +361,7 @@
 
 (define string_se
   (lambda_match
-     ((Sstring loc s) s)
+     ((Sstring loc <:vala< s >>) s)
      (se (error se "string"))))
 
 (definerec mod_ident_se
@@ -529,7 +529,7 @@
     ((Sint_n loc s) <:expr< $_nativeint:s$ >>)
     ((Sfloat loc s) <:expr< $_flo:s$ >>)
     ((Schar loc s) <:expr< $_chr:s$ >>)
-    ((Sstring loc s) <:expr< $str:s$ >>)
+    ((Sstring loc s) <:expr< $_str:s$ >>)
     ((Stid loc s) <:expr< ~$_:s$ >>)
     ((Sqid loc s) <:expr< ?$_:s$ >>)
     ((Sexpr loc [(Sqid _ s) se])
@@ -710,10 +710,17 @@
          (_ <:expr< let ($lid:strm_n$ : Stream.t _) = $me$ in $e$ >>))))
     ((Sexpr loc [(Slid _ "try") se . sel])
      (let* ((e (expr_se se))
-            (pel (List.map (match_case loc) sel)))
-        <:expr< try $e$ with [ $list:pel$ ] >>))
+            (pel
+             (match sel
+              ([(Sexpr _ [(Santi _ (or "list" "_list") s)])] <:vala< $s$ >>)
+              (_ <:vala< (List.map (match_case loc) sel) >>))))
+        <:expr< try $e$ with [ $_list:pel$ ] >>))
     ((Sexpr loc [(Slid _ "begin") . sel])
-     (let ((el (List.map expr_se sel))) <:expr< do { $list:el$ } >>))
+     (let ((el
+            (match sel
+             ([(Santi _ (or "list" "_list") s)] <:vala< $s$ >>)
+             (_ <:vala< (List.map expr_se sel) >>))))
+        <:expr< do { $_list:el$ } >>))
     ((Sexpr loc [(Slid _ ":=") se1 se2])
      (let* ((e1 (expr_se se1))
             (e2 (expr_se se2)))
@@ -722,14 +729,24 @@
      (let ((el (Pcaml.vala_map (List.map expr_se) sel)))
       <:expr< [| $_list:el$ |] >>))
     ((Sexpr loc [(Slid _ "values") . sel])
-     (let ((el (List.map expr_se sel))) <:expr< ( $list:el$ ) >>))
+     (let ((el
+            (match sel
+             ([(Santi _ (or "list" "_list") s)] <:vala< $s$ >>)
+             (_ <:vala< (List.map expr_se sel) >>))))
+        <:expr< ( $_list:el$ ) >>))
     ((Srec loc [(Slid _ "with") se . sel])
-     (let* ((e (expr_se se))
-            (lel (List.map (label_expr_se loc) sel)))
-        <:expr< { ($e$) with $list:lel$ } >>))
+     (let ((e (expr_se se))
+           (lel
+            (match sel
+             ([(Santi _ (or "list" "_list") s)] <:vala< $s$ >>)
+             (_ <:vala< (List.map (label_expr_se loc) sel) >>))))
+        <:expr< { ($e$) with $_list:lel$ } >>))
     ((Srec loc sel)
-     (let ((lel (List.map (label_expr_se loc) sel)))
-        <:expr< { $list:lel$ } >>))
+     (let ((lel
+            (match sel
+             ([(Santi _ (or "list" "_list") s)] <:vala< $s$ >>)
+             (_ <:vala< (List.map (label_expr_se loc) sel) >>))))
+        <:expr< { $_list:lel$ } >>))
     ((Sexpr loc [(Slid _ ":") se1 se2])
      (let* ((e (expr_se se1)) (t (ctyp_se se2))) <:expr< ( $e$ : $t$ ) >>))
     ((Sexpr loc [se]) (let ((e (expr_se se))) <:expr< $e$ () >>))
@@ -876,7 +893,7 @@
     ((Sint_n loc s) <:patt< $_nativeint:s$ >>)
     ((Sfloat loc s) <:patt< $_flo:s$ >>)
     ((Schar loc s) <:patt< $_chr:s$ >>)
-    ((Sstring loc s) <:patt< $str:s$ >>)
+    ((Sstring loc s) <:patt< $_str:s$ >>)
     ((Stid loc s) (error_loc loc "patt"))
     ((Sqid loc _) (error_loc loc "patt"))
     ((Srec loc sel)
@@ -1034,6 +1051,7 @@
            <:ctyp< '$s$ >>)
          <:ctyp< $lid:(rename_id s)$ >>))
     ((Suid loc s) <:ctyp< $uid:(rename_id s)$ >>)
+    ((Santi loc "" s) <:ctyp< $xtr:s$ >>)
     (se (error se "ctyp"))))
   (constructor_declaration_se
    (lambda_match
@@ -1158,7 +1176,7 @@ EXTEND
       | s = V INT_n -> (Sint_n loc s)
       | s = V FLOAT -> (Sfloat loc s)
       | s = V CHAR -> (Schar loc s)
-      | s = STRING -> (Sstring loc s)
+      | s = V STRING -> (Sstring loc s)
       | s = SPACEDOT -> (Slid loc ".")
       | s = QUOT ->
           (let* ((i (String.index s ':'))
