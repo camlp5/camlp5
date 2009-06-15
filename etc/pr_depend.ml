@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.28 2007/09/13 03:25:28 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.29 2007/09/13 05:10:16 deraugla Exp $ *)
 
 open MLast;
 
@@ -200,7 +200,8 @@ and module_expr =
   | x -> not_impl "module_expr" x ]
 and str_item =
   fun
-  [ StCls _ cil -> list (fun ci -> class_expr ci.ciExp) cil
+  [ <:str_item< class $list:cil$ >> ->
+      list (fun ci -> class_expr ci.ciExp) cil
   | <:str_item< declare $list:sil$ end >> -> list str_item sil
   | StDir _ _ _ -> ()
   | <:str_item< exception $_$ of $list:tl$ >> -> list ctyp tl
@@ -219,7 +220,10 @@ and class_expr =
   [ CeApp _ ce e -> do { class_expr ce; expr e }
   | CeCon _ li tl -> do { longident li; list ctyp tl }
   | CeFun _ p ce -> do { patt p; class_expr ce }
-  | CeLet _ _ pel ce -> do { list let_binding pel; class_expr ce }
+  | <:class_expr< let $flag:_$ $list:pel$ in $ce$ >> -> do {
+      list let_binding pel;
+      class_expr ce
+    }
   | CeStr _ po csil -> do { option patt po; list class_str_item csil }
   | x -> not_impl "class_expr" x ]
 and class_str_item =

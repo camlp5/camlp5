@@ -888,9 +888,11 @@ and module_type =
 and sig_item s l =
   match s with
     SgCls (loc, cd) ->
-      mksig loc (Psig_class (List.map (class_info class_type) cd)) :: l
+      mksig loc (Psig_class (List.map (class_info class_type) (uv cd))) :: l
   | SgClt (loc, ctd) ->
-      mksig loc (Psig_class_type (List.map (class_info class_type) ctd)) :: l
+      mksig loc
+        (Psig_class_type (List.map (class_info class_type) (uv ctd))) ::
+      l
   | SgDcl (loc, sl) -> List.fold_right sig_item (uv sl) l
   | SgDir (loc, _, _) -> l
   | SgExc (loc, n, tl) ->
@@ -936,9 +938,11 @@ and module_expr =
 and str_item s l =
   match s with
     StCls (loc, cd) ->
-      mkstr loc (Pstr_class (List.map (class_info class_expr) cd)) :: l
+      mkstr loc (Pstr_class (List.map (class_info class_expr) (uv cd))) :: l
   | StClt (loc, ctd) ->
-      mkstr loc (Pstr_class_type (List.map (class_info class_type) ctd)) :: l
+      mkstr loc
+        (Pstr_class_type (List.map (class_info class_type) (uv ctd))) ::
+      l
   | StDcl (loc, sl) -> List.fold_right str_item (uv sl) l
   | StDir (loc, _, _) -> l
   | StExc (loc, n, tl, sl) ->
@@ -1032,7 +1036,8 @@ and class_expr =
   | CeFun (loc, p, ce) ->
       mkpcl loc (Pcl_fun ("", None, patt p, class_expr ce))
   | CeLet (loc, rf, pel, ce) ->
-      mkpcl loc (Pcl_let (mkrf rf, List.map mkpe pel, class_expr ce))
+      mkpcl loc
+        (Pcl_let (mkrf (uv rf), List.map mkpe (uv pel), class_expr ce))
   | CeStr (loc, po, cfl) ->
       let p =
         match po with

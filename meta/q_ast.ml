@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.63 2007/09/13 04:04:32 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.64 2007/09/13 05:10:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -229,9 +229,13 @@ module Meta =
           END
         | x -> not_impl "p_ctyp" x ]
     ;
-    value e_type_decl =
+    value e_class_infos a =
       fun
-      [ x -> not_impl "e_type_decl" x ]
+      [ x -> not_impl "e_class_infos" x ]
+    ;
+    value e_type_var =
+      fun
+      [ x -> not_impl "e_type_var" x ]
     ;
     value e_patt p =
       let ln = ln () in
@@ -276,10 +280,6 @@ module Meta =
             PaXtr loc s _ -> p_xtr loc s
           END
         | x -> not_impl "p_patt" x ]
-    ;
-    value e_type_var =
-      fun
-      [ x -> not_impl "e_type_var" x ]
     ;
     value rec e_expr e =
       let ln = ln () in
@@ -421,7 +421,13 @@ module Meta =
       let ln = ln () in
       loop si where rec loop =
         fun
-        [ SgDcl _ lsi ->
+        [ SgCls _ cd ->
+            let cd = e_vala (e_list (e_class_infos e_class_type)) cd in
+            <:expr< MLast.SgCls $ln$ $cd$ >>
+        | SgClt _ ctd ->
+            let ctd = e_vala (e_list (e_class_infos e_class_type)) ctd in
+            <:expr< MLast.SgClt $ln$ $ctd$ >>
+        | SgDcl _ lsi ->
             <:expr< MLast.SgDcl $ln$ $e_vala (e_list loop) lsi$ >>
         | SgExc _ s lt ->
             let s = e_vala e_string s in
@@ -497,7 +503,13 @@ module Meta =
       let ln = ln () in
       loop si where rec loop =
         fun
-        [ StDcl _ lsi ->
+        [ StCls _ cd ->
+            let cd = e_vala (e_list (e_class_infos e_class_expr)) cd in
+            <:expr< MLast.StCls $ln$ $cd$ >>
+        | StClt _ ctd ->
+            let ctd = e_vala (e_list (e_class_infos e_class_type)) ctd in
+            <:expr< MLast.StClt $ln$ $ctd$ >>
+        | StDcl _ lsi ->
             <:expr< MLast.StDcl $ln$ $e_vala (e_list loop) lsi$ >>
         | StExc _ s lt ls ->
             let s = e_vala e_string s in
@@ -535,6 +547,35 @@ module Meta =
     and p_str_item =
       fun
       [ x -> not_impl "p_str_item" x ]
+    and e_type_decl =
+      fun
+      [ x -> not_impl "e_type_decl" x ]
+    and e_class_type =
+      fun
+      [ IFDEF STRICT THEN
+          CtXtr loc s _ -> e_xtr loc s
+        END
+      | x -> not_impl "e_class_type" x ]
+    and p_class_type =
+      fun
+      [ x -> not_impl "p_class_type" x ]
+    and e_class_expr ce =
+      let ln = ln () in
+      loop ce where rec loop =
+        fun
+        [ CeApp _ ce e -> <:expr< MLast.CeApp $ln$ $loop ce$ $e_expr e$ >>
+        | CeFun _ p ce -> <:expr< MLast.CeFun $ln$ $e_patt p$ $loop ce$ >>
+        | CeLet _ rf lb ce ->
+            <:expr< MLast.CeLet $ln$ $e_vala e_bool rf$ $loop ce$ >>
+        | CeTyc _ ce ct ->
+            <:expr< MLast.CeTyc $ln$ $loop ce$ $e_class_type ct$ >>
+        | IFDEF STRICT THEN
+            CeXtr loc s _ -> e_xtr loc s
+          END
+        | x -> not_impl "e_class_expr" x ]
+    and p_class_expr =
+      fun
+      [ x -> not_impl "p_class_expr" x ]
     ;
   end
 ;
@@ -547,6 +588,8 @@ value sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";
 value module_expr_eoi = Grammar.Entry.create Pcaml.gram "module_expr";
 value module_type_eoi = Grammar.Entry.create Pcaml.gram "module_type";
 value with_constr_eoi = Grammar.Entry.create Pcaml.gram "with_constr";
+value class_expr_eoi = Grammar.Entry.create Pcaml.gram "class_expr";
+value class_type_eoi = Grammar.Entry.create Pcaml.gram "class_type";
 
 EXTEND
   expr_eoi: [ [ x = Pcaml.expr; EOI -> x ] ];
@@ -557,6 +600,8 @@ EXTEND
   module_expr_eoi: [ [ x = Pcaml.module_expr; EOI -> x ] ];
   module_type_eoi: [ [ x = Pcaml.module_type; EOI -> x ] ];
   with_constr_eoi: [ [ x = Pcaml.with_constr; EOI -> x ] ];
+  class_expr_eoi: [ [ x = Pcaml.class_expr; EOI -> x ] ];
+  class_type_eoi: [ [ x = Pcaml.class_type; EOI -> x ] ];
 END;
 
 IFDEF STRICT THEN
@@ -584,6 +629,12 @@ IFDEF STRICT THEN
     ;
     Pcaml.module_type: LAST
       [ [ s = ANTIQUOT_LOC -> MLast.MtXtr loc s None ] ]
+    ;
+    Pcaml.class_expr: LAST
+      [ [ s = ANTIQUOT_LOC -> MLast.CeXtr loc s None ] ]
+    ;
+    Pcaml.class_type: LAST
+      [ [ s = ANTIQUOT_LOC -> MLast.CtXtr loc s None ] ]
     ;
   END
 END;
@@ -753,7 +804,11 @@ List.iter
    ("module_type",
     apply_entry module_type_eoi Meta.e_module_type Meta.p_module_type);
    ("with_constr",
-    apply_entry with_constr_eoi Meta.e_with_constr Meta.p_with_constr)]
+    apply_entry with_constr_eoi Meta.e_with_constr Meta.p_with_constr);
+   ("class_expr",
+    apply_entry class_expr_eoi Meta.e_class_expr Meta.p_class_expr);
+   ("class_type",
+    apply_entry class_type_eoi Meta.e_class_type Meta.p_class_type)]
 ;
 
 let expr s =

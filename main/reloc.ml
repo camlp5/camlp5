@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: reloc.ml,v 1.24 2007/09/13 04:04:32 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.25 2007/09/13 05:10:16 deraugla Exp $ *)
 
 open MLast;
 
@@ -243,9 +243,11 @@ and sig_item floc sh =
   self where rec self =
     fun
     [ SgCls loc x1 ->
-        SgCls (floc loc) (List.map (class_infos class_type floc sh) x1)
+        SgCls (floc loc)
+          (vala_map (List.map (class_infos class_type floc sh)) x1)
     | SgClt loc x1 ->
-        SgClt (floc loc) (List.map (class_infos class_type floc sh) x1)
+        SgClt (floc loc)
+          (vala_map (List.map (class_infos class_type floc sh)) x1)
     | SgDcl loc x1 -> SgDcl (floc loc) (vala_map (List.map self) x1)
     | SgDir loc x1 x2 -> SgDir (floc loc) x1 x2
     | SgExc loc x1 x2 ->
@@ -285,9 +287,11 @@ and str_item floc sh =
   self where rec self =
     fun
     [ StCls loc x1 ->
-        StCls (floc loc) (List.map (class_infos class_expr floc sh) x1)
+        StCls (floc loc)
+          (vala_map (List.map (class_infos class_expr floc sh)) x1)
     | StClt loc x1 ->
-        StClt (floc loc) (List.map (class_infos class_type floc sh) x1)
+        StClt (floc loc)
+          (vala_map (List.map (class_infos class_type floc sh)) x1)
     | StDcl loc x1 -> StDcl (floc loc) (vala_map (List.map self) x1)
     | StDir loc x1 x2 -> StDir (floc loc) x1 x2
     | StExc loc x1 x2 x3 ->
@@ -322,7 +326,10 @@ and class_type floc sh =
     | CtFun loc x1 x2 -> CtFun (floc loc) (ctyp floc sh x1) (self x2)
     | CtSig loc x1 x2 ->
         CtSig (floc loc) (option_map (ctyp floc sh) x1)
-          (List.map (class_sig_item floc sh) x2) ]
+          (List.map (class_sig_item floc sh) x2)
+    | IFDEF STRICT THEN
+        CtXtr loc x1 x2 -> CtXtr (floc loc) x1 (option_map (vala_map self) x2)
+      END ]
 and class_sig_item floc sh =
   self where rec self =
     fun
@@ -340,12 +347,17 @@ and class_expr floc sh =
     | CeFun loc x1 x2 -> CeFun (floc loc) (patt floc sh x1) (self x2)
     | CeLet loc x1 x2 x3 ->
         CeLet (floc loc) x1
-          (List.map (fun (x1, x2) -> (patt floc sh x1, expr floc sh x2)) x2)
+          (vala_map
+             (List.map (fun (x1, x2) -> (patt floc sh x1, expr floc sh x2)))
+             x2)
           (self x3)
     | CeStr loc x1 x2 ->
         CeStr (floc loc) (option_map (patt floc sh) x1)
           (List.map (class_str_item floc sh) x2)
-    | CeTyc loc x1 x2 -> CeTyc (floc loc) (self x1) (class_type floc sh x2) ]
+    | CeTyc loc x1 x2 -> CeTyc (floc loc) (self x1) (class_type floc sh x2)
+    | IFDEF STRICT THEN
+        CeXtr loc x1 x2 -> CeXtr (floc loc) x1 (option_map (vala_map self) x2)
+      END ]
 and class_str_item floc sh =
   self where rec self =
     fun

@@ -232,9 +232,11 @@ and sig_item floc sh =
   let rec self =
     function
       SgCls (loc, x1) ->
-        SgCls (floc loc, List.map (class_infos class_type floc sh) x1)
+        SgCls
+          (floc loc, vala_map (List.map (class_infos class_type floc sh)) x1)
     | SgClt (loc, x1) ->
-        SgClt (floc loc, List.map (class_infos class_type floc sh) x1)
+        SgClt
+          (floc loc, vala_map (List.map (class_infos class_type floc sh)) x1)
     | SgDcl (loc, x1) -> SgDcl (floc loc, vala_map (List.map self) x1)
     | SgDir (loc, x1, x2) -> SgDir (floc loc, x1, x2)
     | SgExc (loc, x1, x2) ->
@@ -278,9 +280,11 @@ and str_item floc sh =
   let rec self =
     function
       StCls (loc, x1) ->
-        StCls (floc loc, List.map (class_infos class_expr floc sh) x1)
+        StCls
+          (floc loc, vala_map (List.map (class_infos class_expr floc sh)) x1)
     | StClt (loc, x1) ->
-        StClt (floc loc, List.map (class_infos class_type floc sh) x1)
+        StClt
+          (floc loc, vala_map (List.map (class_infos class_type floc sh)) x1)
     | StDcl (loc, x1) -> StDcl (floc loc, vala_map (List.map self) x1)
     | StDir (loc, x1, x2) -> StDir (floc loc, x1, x2)
     | StExc (loc, x1, x2, x3) ->
@@ -342,7 +346,8 @@ and class_expr floc sh =
     | CeLet (loc, x1, x2, x3) ->
         CeLet
           (floc loc, x1,
-           List.map (fun (x1, x2) -> patt floc sh x1, expr floc sh x2) x2,
+           vala_map
+             (List.map (fun (x1, x2) -> patt floc sh x1, expr floc sh x2)) x2,
            self x3)
     | CeStr (loc, x1, x2) ->
         CeStr

@@ -399,7 +399,8 @@ module Meta =
       in
       loop
     ;;
-    let e_type_decl x = not_impl "e_type_decl" x;;
+    let e_class_infos a x = not_impl "e_class_infos" x;;
+    let e_type_var x = not_impl "e_type_var" x;;
     let e_patt p =
       let ln = ln () in
       let rec loop =
@@ -654,7 +655,6 @@ module Meta =
       in
       loop
     ;;
-    let e_type_var x = not_impl "e_type_var" x;;
     let rec e_expr e =
       let ln = ln () in
       let rec loop =
@@ -1299,7 +1299,29 @@ module Meta =
       let ln = ln () in
       let rec loop =
         function
-          SgDcl (_, lsi) ->
+          SgCls (_, cd) ->
+            let cd = e_vala (e_list (e_class_infos e_class_type)) cd in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "SgCls")),
+                  ln),
+               cd)
+        | SgClt (_, ctd) ->
+            let ctd = e_vala (e_list (e_class_infos e_class_type)) ctd in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "SgClt")),
+                  ln),
+               ctd)
+        | SgDcl (_, lsi) ->
             MLast.ExApp
               (loc,
                MLast.ExApp
@@ -1554,7 +1576,29 @@ module Meta =
       let ln = ln () in
       let rec loop =
         function
-          StDcl (_, lsi) ->
+          StCls (_, cd) ->
+            let cd = e_vala (e_list (e_class_infos e_class_expr)) cd in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "StCls")),
+                  ln),
+               cd)
+        | StClt (_, ctd) ->
+            let ctd = e_vala (e_list (e_class_infos e_class_type)) ctd in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "StClt")),
+                  ln),
+               ctd)
+        | StDcl (_, lsi) ->
             MLast.ExApp
               (loc,
                MLast.ExApp
@@ -1695,7 +1739,70 @@ module Meta =
         | x -> not_impl "e_str_item" x
       in
       loop si
-    and p_str_item x = not_impl "p_str_item" x;;
+    and p_str_item x = not_impl "p_str_item" x
+    and e_type_decl x = not_impl "e_type_decl" x
+    and e_class_type x = not_impl "e_class_type" x
+    and p_class_type x = not_impl "p_class_type" x
+    and e_class_expr ce =
+      let ln = ln () in
+      let rec loop =
+        function
+          CeApp (_, ce, e) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "CeApp")),
+                     ln),
+                  loop ce),
+               e_expr e)
+        | CeFun (_, p, ce) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "CeFun")),
+                     ln),
+                  e_patt p),
+               loop ce)
+        | CeLet (_, rf, lb, ce) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "CeLet")),
+                     ln),
+                  e_vala e_bool rf),
+               loop ce)
+        | CeTyc (_, ce, ct) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "CeTyc")),
+                     ln),
+                  loop ce),
+               e_class_type ct)
+        | x -> not_impl "e_class_expr" x
+      in
+      loop ce
+    and p_class_expr x = not_impl "p_class_expr" x;;
   end
 ;;
 
@@ -1707,6 +1814,8 @@ let sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";;
 let module_expr_eoi = Grammar.Entry.create Pcaml.gram "module_expr";;
 let module_type_eoi = Grammar.Entry.create Pcaml.gram "module_type";;
 let with_constr_eoi = Grammar.Entry.create Pcaml.gram "with_constr";;
+let class_expr_eoi = Grammar.Entry.create Pcaml.gram "class_expr";;
+let class_type_eoi = Grammar.Entry.create Pcaml.gram "class_type";;
 
 Grammar.extend
   [Grammar.Entry.obj (expr_eoi : 'expr_eoi Grammar.Entry.e), None,
@@ -1775,7 +1884,25 @@ Grammar.extend
       Gramext.Stoken ("EOI", "")],
      Gramext.action
        (fun _ (x : 'Pcaml__with_constr) (loc : Ploc.t) ->
-          (x : 'with_constr_eoi))]]];;
+          (x : 'with_constr_eoi))]];
+   Grammar.Entry.obj (class_expr_eoi : 'class_expr_eoi Grammar.Entry.e), None,
+   [None, None,
+    [[Gramext.Snterm
+        (Grammar.Entry.obj
+           (Pcaml.class_expr : 'Pcaml__class_expr Grammar.Entry.e));
+      Gramext.Stoken ("EOI", "")],
+     Gramext.action
+       (fun _ (x : 'Pcaml__class_expr) (loc : Ploc.t) ->
+          (x : 'class_expr_eoi))]];
+   Grammar.Entry.obj (class_type_eoi : 'class_type_eoi Grammar.Entry.e), None,
+   [None, None,
+    [[Gramext.Snterm
+        (Grammar.Entry.obj
+           (Pcaml.class_type : 'Pcaml__class_type Grammar.Entry.e));
+      Gramext.Stoken ("EOI", "")],
+     Gramext.action
+       (fun _ (x : 'Pcaml__class_type) (loc : Ploc.t) ->
+          (x : 'class_type_eoi))]]];;
 
 (* *)
 
@@ -1930,7 +2057,11 @@ List.iter (fun (q, f) -> Quotation.add q f)
    "module_type",
    apply_entry module_type_eoi Meta.e_module_type Meta.p_module_type;
    "with_constr",
-   apply_entry with_constr_eoi Meta.e_with_constr Meta.p_with_constr];;
+   apply_entry with_constr_eoi Meta.e_with_constr Meta.p_with_constr;
+   "class_expr",
+   apply_entry class_expr_eoi Meta.e_class_expr Meta.p_class_expr;
+   "class_type",
+   apply_entry class_type_eoi Meta.e_class_type Meta.p_class_type];;
 
 let expr s =
   let e =

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: mLast.mli,v 1.36 2007/09/13 04:04:32 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.37 2007/09/13 05:10:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Module [MLast]: abstract syntax tree.
@@ -132,8 +132,8 @@ and module_type =
       MtXtr of loc and string and option (V module_type)
     END ]
 and sig_item =
-  [ SgCls of loc and list (class_infos class_type)
-  | SgClt of loc and list (class_infos class_type)
+  [ SgCls of loc and V (list (class_infos class_type))
+  | SgClt of loc and V (list (class_infos class_type))
   | SgDcl of loc and V (list sig_item)
   | SgDir of loc and string and option expr
   | SgExc of loc and V string and V (list ctyp)
@@ -159,8 +159,8 @@ and module_expr =
       MeXtr of loc and string and option (V module_expr)
     END ]
 and str_item =
-  [ StCls of loc and list (class_infos class_expr)
-  | StClt of loc and list (class_infos class_type)
+  [ StCls of loc and V (list (class_infos class_expr))
+  | StClt of loc and V (list (class_infos class_type))
   | StDcl of loc and V (list str_item)
   | StDir of loc and string and option expr
   | StExc of loc and V string and V (list ctyp) and V (list string)
@@ -182,7 +182,10 @@ and type_decl =
 and class_type =
   [ CtCon of loc and list string and list ctyp
   | CtFun of loc and ctyp and class_type
-  | CtSig of loc and option ctyp and list class_sig_item ]
+  | CtSig of loc and option ctyp and list class_sig_item
+  | IFDEF STRICT THEN
+      CtXtr of loc and string and option (V class_type)
+    END ]
 and class_sig_item =
   [ CgCtr of loc and ctyp and ctyp
   | CgDcl of loc and list class_sig_item
@@ -194,9 +197,12 @@ and class_expr =
   [ CeApp of loc and class_expr and expr
   | CeCon of loc and list string and list ctyp
   | CeFun of loc and patt and class_expr
-  | CeLet of loc and bool and list (patt * expr) and class_expr
+  | CeLet of loc and V bool and V (list (patt * expr)) and class_expr
   | CeStr of loc and option patt and list class_str_item
-  | CeTyc of loc and class_expr and class_type ]
+  | CeTyc of loc and class_expr and class_type
+  | IFDEF STRICT THEN
+      CeXtr of loc and string and option (V class_expr)
+    END ]
 and class_str_item =
   [ CrCtr of loc and ctyp and ctyp
   | CrDcl of loc and list class_str_item

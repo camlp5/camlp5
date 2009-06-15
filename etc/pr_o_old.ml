@@ -768,12 +768,12 @@ pr_sig_item.pr_levels :=
           fun curr next dg k -> [: `modtype_declaration (s, mt) "" k :]
       | <:sig_item< open $sl$ >> ->
           fun curr next dg k -> [: `S LR "open"; mod_ident sl "" k :]
-      | MLast.SgCls _ cd ->
+      | <:sig_item< class $list:cd$ >> ->
           fun curr next dg k ->
             [: `HVbox [: :];
                listwbws class_description [: `S LR "class" :] (S LR "and") cd
                  "" k :]
-      | MLast.SgClt _ cd ->
+      | <:sig_item< class type $list:cd$ >> ->
           fun curr next dg k ->
             [: `HVbox [: :];
                listwbws class_type_declaration
@@ -840,12 +840,12 @@ pr_str_item.pr_levels :=
                            `S LR "=" :];
                      `module_type mt [: :] :];
                k :]
-      | MLast.StCls _ cd ->
+      | <:str_item< class $list:cd$ >> ->
           fun curr next dg k ->
             [: `HVbox [: :];
                listwbws class_declaration [: `S LR "class" :] (S LR "and") cd
                  "" k :]
-      | MLast.StClt _ cd ->
+      | <:str_item< class type $list:cd$ >> ->
           fun curr next dg k ->
             [: `HVbox [: :];
                listwbws class_type_declaration

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.36 2007/09/13 04:04:32 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.37 2007/09/13 05:10:16 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -775,10 +775,10 @@ and module_type =
 and sig_item s l =
   match s with
   [ SgCls loc cd ->
-      [mksig loc (Psig_class (List.map (class_info class_type) cd)) :: l]
+      [mksig loc (Psig_class (List.map (class_info class_type) (uv cd))) :: l]
   | SgClt loc ctd ->
-      [mksig loc (Psig_class_type (List.map (class_info class_type) ctd)) ::
-       l]
+      [mksig loc (Psig_class_type (List.map (class_info class_type) (uv ctd)))
+       :: l]
   | SgDcl loc sl -> List.fold_right sig_item (uv sl) l
   | SgDir loc _ _ -> l
   | SgExc loc n tl ->
@@ -828,9 +828,10 @@ and module_expr =
 and str_item s l =
   match s with
   [ StCls loc cd ->
-      [mkstr loc (Pstr_class (List.map (class_info class_expr) cd)) :: l]
+      [mkstr loc (Pstr_class (List.map (class_info class_expr) (uv cd))) :: l]
   | StClt loc ctd ->
-      [mkstr loc (Pstr_class_type (List.map (class_info class_type) ctd)) ::
+      [mkstr loc
+         (Pstr_class_type (List.map (class_info class_type) (uv ctd))) ::
        l]
   | StDcl loc sl -> List.fold_right str_item (uv sl) l
   | StDir loc _ _ -> l
@@ -897,7 +898,10 @@ and class_type =
         | None -> TyAny loc ]
       in
       let cil = List.fold_right class_sig_item ctfl [] in
-      mkcty loc (Pcty_signature (ctyp t, cil)) ]
+      mkcty loc (Pcty_signature (ctyp t, cil))
+  | IFDEF STRICT THEN
+      CtXtr loc _ _ -> error loc "bad ast"
+    END ]
 and class_sig_item c l =
   match c with
   [ CgCtr loc t1 t2 -> [Pctf_cstr (ctyp t1, ctyp t2, mkloc loc) :: l]
@@ -931,7 +935,8 @@ and class_expr =
         (Pcl_fun ("?" ^ lab) (option expr eo) (patt p) (class_expr ce))
   | CeFun loc p ce -> mkpcl loc (Pcl_fun "" None (patt p) (class_expr ce))
   | CeLet loc rf pel ce ->
-      mkpcl loc (Pcl_let (mkrf rf) (List.map mkpe pel) (class_expr ce))
+      mkpcl loc (Pcl_let (mkrf (uv rf)) (List.map mkpe (uv pel))
+        (class_expr ce))
   | CeStr loc po cfl ->
       let p =
         match po with
@@ -941,7 +946,10 @@ and class_expr =
       let cil = List.fold_right class_str_item cfl [] in
       mkpcl loc (Pcl_structure (patt p, cil))
   | CeTyc loc ce ct ->
-      mkpcl loc (Pcl_constraint (class_expr ce) (class_type ct)) ]
+      mkpcl loc (Pcl_constraint (class_expr ce) (class_type ct))
+  | IFDEF STRICT THEN
+      CeXtr loc _ _ -> error loc "bad ast"
+    END ]
 and class_str_item c l =
   match c with
   [ CrCtr loc t1 t2 -> [Pcf_cstr (ctyp t1, ctyp t2, mkloc loc) :: l]

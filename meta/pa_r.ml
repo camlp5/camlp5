@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.76 2007/09/13 04:04:32 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.77 2007/09/13 05:10:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -515,16 +515,16 @@ EXTEND
   ;
   (* Objects and Classes *)
   str_item:
-    [ [ "class"; cd = LIST1 class_declaration SEP "and" ->
-          <:str_item< class $list:cd$ >>
-      | "class"; "type"; ctd = LIST1 class_type_declaration SEP "and" ->
-          <:str_item< class type $list:ctd$ >> ] ]
+    [ [ "class"; cd = V LIST1 class_declaration SEP "and" ->
+          <:str_item< class $alist:cd$ >>
+      | "class"; "type"; ctd = V LIST1 class_type_declaration SEP "and" ->
+          <:str_item< class type $alist:ctd$ >> ] ]
   ;
   sig_item:
-    [ [ "class"; cd = LIST1 class_description SEP "and" ->
-          <:sig_item< class $list:cd$ >>
-      | "class"; "type"; ctd = LIST1 class_type_declaration SEP "and" ->
-          <:sig_item< class type $list:ctd$ >> ] ]
+    [ [ "class"; cd = V LIST1 class_description SEP "and" ->
+          <:sig_item< class $alist:cd$ >>
+      | "class"; "type"; ctd = V LIST1 class_type_declaration SEP "and" ->
+          <:sig_item< class type $alist:ctd$ >> ] ]
   ;
   class_declaration:
     [ [ vf = FLAG "virtual"; i = LIDENT; ctp = class_type_parameters;
@@ -550,9 +550,9 @@ EXTEND
     [ "top"
       [ "fun"; p = ipatt; ce = class_fun_def ->
           <:class_expr< fun $p$ -> $ce$ >>
-      | "let"; rf = FLAG "rec"; lb = LIST1 let_binding SEP "and"; "in";
+      | "let"; rf = V FLAG "rec"; lb = V LIST1 let_binding SEP "and"; "in";
         ce = SELF ->
-          <:class_expr< let $flag:rf$ $list:lb$ in $ce$ >> ]
+          <:class_expr< let $aflag:rf$ $alist:lb$ in $ce$ >> ]
     | "apply" LEFTA
       [ ce = SELF; e = expr LEVEL "label" ->
           <:class_expr< $ce$ $e$ >> ]

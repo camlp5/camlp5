@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.74 2007/09/13 04:04:32 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.75 2007/09/13 05:10:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -941,15 +941,15 @@ EXTEND
   ;
   (* Objects and Classes *)
   str_item:
-    [ [ "class"; cd = SLIST1 class_declaration SEP "and" ->
+    [ [ "class"; cd = SV LIST1 class_declaration SEP "and" ->
           Qast.Node "StCls" [Qast.Loc; cd]
-      | "class"; "type"; ctd = SLIST1 class_type_declaration SEP "and" ->
+      | "class"; "type"; ctd = SV LIST1 class_type_declaration SEP "and" ->
           Qast.Node "StClt" [Qast.Loc; ctd] ] ]
   ;
   sig_item:
-    [ [ "class"; cd = SLIST1 class_description SEP "and" ->
+    [ [ "class"; cd = SV LIST1 class_description SEP "and" ->
           Qast.Node "SgCls" [Qast.Loc; cd]
-      | "class"; "type"; ctd = SLIST1 class_type_declaration SEP "and" ->
+      | "class"; "type"; ctd = SV LIST1 class_type_declaration SEP "and" ->
           Qast.Node "SgClt" [Qast.Loc; ctd] ] ]
   ;
   class_declaration:
@@ -978,7 +978,7 @@ EXTEND
     [ "top"
       [ "fun"; p = ipatt; ce = class_fun_def ->
           Qast.Node "CeFun" [Qast.Loc; p; ce]
-      | "let"; rf = SFLAG "rec"; lb = SLIST1 let_binding SEP "and"; "in";
+      | "let"; rf = SV FLAG "rec"; lb = SV LIST1 let_binding SEP "and"; "in";
         ce = SELF ->
           Qast.Node "CeLet" [Qast.Loc; rf; lb; ce] ]
     | "apply" LEFTA
