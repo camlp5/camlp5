@@ -84,10 +84,10 @@ value cparser_match loc me bpo pc =
   let pc = parser_cases loc pc in
   let e =
     match bpo with
-    [ Some bp -> <:expr< let $bp$ = Stream.count $lid:strm_n$ in $pc$ >>
+    [ Some bp -> <:expr< let $bp$ = Fstream.count $lid:strm_n$ in $pc$ >>
     | None -> pc ]
   in
-  <:expr< let ($lid:strm_n$ : Stream.t _) = $me$ in $e$ >>
+  <:expr< let ($lid:strm_n$ : Fstream.t _) = $me$ in $e$ >>
 ;
 
 value cparser loc bpo pc =
