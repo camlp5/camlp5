@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_extprint.ml,v 1.19 2007/12/17 13:09:17 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.20 2007/12/17 14:27:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -652,10 +652,12 @@ value make_pc loc empty_bef empty_aft pc bef bef_al aft aft_al =
     if bef = "" then []
     else
       let e =
-        let bef = if empty_bef then bef else "%s" ^ bef in
-        let e = <:expr< Pretty.sprintf $str:bef$ >> in
-        let e = if empty_bef then e else <:expr< $e$ $pc$.bef >> in
-        List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e bef_al
+        if empty_bef && bef_al = [] then <:expr< $str:bef$ >>
+        else
+          let bef = if empty_bef then bef else "%s" ^ bef in
+          let e = <:expr< Pretty.sprintf $str:bef$ >> in
+          let e = if empty_bef then e else <:expr< $e$ $pc$.bef >> in
+          List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e bef_al
       in
       [(<:patt< bef >>, e)]
   in
@@ -663,12 +665,14 @@ value make_pc loc empty_bef empty_aft pc bef bef_al aft aft_al =
     if aft = "" then lbl
     else
       let e =
-        let aft = if empty_aft then aft else aft ^ "%s" in
-        let e = <:expr< Pretty.sprintf $str:aft$ >> in
-        let e =
-          List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e aft_al
-        in
-        if empty_aft then e else <:expr< $e$ $pc$.aft >>
+        if empty_aft && aft_al = [] then <:expr< $str:aft$ >>
+        else
+          let aft = if empty_aft then aft else aft ^ "%s" in
+          let e = <:expr< Pretty.sprintf $str:aft$ >> in
+          let e =
+            List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e aft_al
+          in
+          if empty_aft then e else <:expr< $e$ $pc$.aft >>
       in
       [(<:patt< aft >>, e) :: lbl]
   in
@@ -705,26 +709,51 @@ value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc t al =
   match t with
   [ (Pf sl, []) -> expr_of_pformat loc empty_bef empty_aft pc al sl
   | (Pf sl1, [(Tbreak br, Pf sl2) :: t]) ->
-      let e1 =
-        let pc1 = <:expr< pc >> in
-        let (e1, al) = expr_of_pformat loc empty_bef True pc1 al sl1 in
-        let (e2, al) =
-          expr_of_pformat loc True (t <> [] || empty_aft) pc1 al sl2
+      let (t1, br, t2) =
+        (* left associate *)
+        let r =
+          loop t where rec loop =
+            fun
+            [ [] -> None
+            | [x] ->
+                match x with
+                [ (Tbreak br, Pf sl) -> Some ([], br, (Pf sl, []))
+                | (Tsub _ _, _) -> None ]
+            | [x :: t] ->
+                match loop t with
+                [ Some (t1, br, t2) -> Some ([x :: t1], br, t2)
+                | None ->
+                    match x with
+                    [ (Tbreak br, Pf sl) -> Some ([], br, (Pf sl, t))
+                    | _ -> None ] ] ]
         in
-        let (soff, ssp) =
-          let (off, sp) =
-            match br with
-            [ PPbreak off sp -> (off, sp)
-            | PPspace -> (0, 1) ]
-          in
-          (string_of_int off, string_of_int sp)
+        match r with
+        [ Some (t1, br1, t2) ->
+           ((Pf sl1, [(Tbreak br, Pf sl2) :: t1]), br1, t2)
+        | None ->
+           ((Pf sl1, []), br, (Pf sl2, t)) ]
+      in
+      let (e1, al) =
+        expr_of_tree_aux loc fmt empty_bef True <:expr< pc >> t1 al
+      in
+      let (e2, al) =
+        expr_of_tree_aux loc fmt True empty_aft <:expr< pc >> t2 al
+      in
+      let (soff, ssp) =
+        let (off, sp) =
+          match br with
+          [ PPbreak off sp -> (off, sp)
+          | PPspace -> (1, 0) ]
         in
+        (string_of_int off, string_of_int sp)
+      in
+      let e =
         <:expr<
           Eprinter.sprint_break $int:soff$ $int:ssp$ $pc$
             (fun pc -> $e1$) (fun pc -> $e2$)
         >>
       in
-      (<:expr< ddd $str:fmt$ $e1$ "..." >>, al)
+      (e, al)
   | (Pf [""], [(Tsub (PPoffset off) t, Pf [""])]) ->
       let pc =
         let soff = string_of_int off in
