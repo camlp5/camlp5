@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.59 2007/07/08 17:59:30 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.60 2007/07/08 20:26:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -786,7 +786,7 @@ value ctyp_simple =
       fun curr next pc -> var_escaped {(pc) with bef = sprintf "%s'" pc.bef} s
   | <:ctyp< _ >> ->
       fun curr next pc -> sprintf "%s_%s" pc.bef pc.aft
-  | <:ctyp< ? $i$ : $t$ >> | <:ctyp< ~ $_$ : $t$ >> ->
+  | <:ctyp< ? $_$ : $_$ >> | <:ctyp< ~ $_$ : $_$ >> ->
       fun curr next pc ->
         failwith "labels not pretty printed (in type); add pr_ro.cmo"
   | <:ctyp< [ = $list:_$ ] >> | <:ctyp< [ > $list:_$ ] >> |
@@ -2382,7 +2382,13 @@ value module_type_top =
                (module_type {(pc) with bef = ""; aft = ""} mt)
                (hlist with_constraint {(pc) with bef = ""; aft = ""} wcl)
                   pc.aft)
-          (fun () -> not_impl "module type with vertic" pc wcl)
+          (fun () ->
+             let s1 = module_type {(pc) with aft = ""} mt in
+             let s2 =
+               vlist with_constraint
+                 {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} wcl
+             in
+             sprintf "%s\n%s" s1 s2)
   | z ->
       fun curr next pc -> next pc z ]
 ;
@@ -3074,11 +3080,7 @@ lev.pr_rules :=
 let lev = find_pr_level "simple" pr_ctyp.pr_levels in
 lev.pr_rules :=
   extfun lev.pr_rules with
-  [ <:ctyp< ? $i$ : $t$ >> ->
-      fun curr next pc -> curr {(pc) with bef = sprintf "%s?%s:" pc.bef i} t
-  | <:ctyp< ~ $i$ : $t$ >> ->
-      fun curr next pc -> curr {(pc) with bef = sprintf "%s%s:" pc.bef i} t
-  | <:ctyp< < $list:ml$ $opt:v$ > >> ->
+  [ <:ctyp< < $list:ml$ $opt:v$ > >> ->
       fun curr next pc ->
         if ml = [] then
           sprintf "%s<%s >%s" pc.bef (if v then " .." else "") pc.aft
@@ -3511,6 +3513,16 @@ value ctyp_poly =
   | z -> fun curr next pc -> next pc z ]
 ;
 
+value ctyp_label =
+  extfun Extfun.empty with
+  [ <:ctyp< ? $i$ : $t$ >> ->
+      fun curr next pc -> curr {(pc) with bef = sprintf "%s?%s:" pc.bef i} t
+  | <:ctyp< ~ $i$ : $t$ >> ->
+      fun curr next pc -> curr {(pc) with bef = sprintf "%s%s:" pc.bef i} t
+  | z ->
+      fun curr next pc -> next pc z ]
+;
+
 pr_expr.pr_levels :=
   [find_pr_level "top" pr_expr.pr_levels;
    find_pr_level "expr1" pr_expr.pr_levels;
@@ -3536,6 +3548,7 @@ pr_ctyp.pr_levels :=
    {pr_label = "as"; pr_rules = ctyp_as};
    {pr_label = "poly"; pr_rules = ctyp_poly};
    find_pr_level "arrow" pr_ctyp.pr_levels;
+   {pr_label = "label"; pr_rules = ctyp_label};
    find_pr_level "star" pr_ctyp.pr_levels;
    find_pr_level "apply" pr_ctyp.pr_levels;
    find_pr_level "dot" pr_ctyp.pr_levels;

@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.49 2007/07/08 17:59:30 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.50 2007/07/08 20:26:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -2262,7 +2262,13 @@ value module_type_top =
                (module_type {(pc) with bef = ""; aft = ""} mt)
                (hlist with_constraint {(pc) with bef = ""; aft = ""} wcl)
                   pc.aft)
-          (fun () -> not_impl "module type with vertic" pc wcl)
+          (fun () ->
+             let s1 = module_type {(pc) with aft = ""} mt in
+             let s2 =
+               vlist with_constraint
+                 {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} wcl
+             in
+             sprintf "%s\n%s" s1 s2)
   | z ->
       fun curr next pc -> next pc z ]
 ;
