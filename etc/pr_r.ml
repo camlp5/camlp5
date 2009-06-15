@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.132 2007/12/08 12:15:03 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.133 2007/12/08 13:47:33 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1313,14 +1313,10 @@ EXTEND_PRINTER
           let xl = List.map (fun x -> (x, ";")) xl in
           match y with
           [ Some y ->
-              let expr2 pc x = pprintf pc "%p ::@ %p]" expr x expr y in
-              plistl expr expr2 0
-                {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef} xl
+              let expr2 pc x = pprintf pc "%p ::@ %p" expr x expr y in
+              pprintf pc "@[<1>[%p]@]" (plistl expr expr2 0) xl
           | None ->
-              plist expr 0
-                {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef;
-                 aft = sprintf "]%s" pc.aft}
-                xl ]
+              pprintf pc "@[<1>[%p]@]" (plist expr 0) xl ]
       | <:expr< ($e$ : $t$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" expr e ctyp t
       | <:expr< $int:s$ >> | <:expr< $flo:s$ >> ->
@@ -1373,8 +1369,7 @@ EXTEND_PRINTER
           left_operator pc 0 unfold next z ]
     | "range"
       [ <:patt< $x$ .. $y$ >> ->
-          sprintf "%s..%s" (next {(pc) with aft = ""} x)
-            (next {(pc) with bef = ""} y) ]
+          pprintf pc "%p..%p" next x next y ]
     | "apply"
       [ <:patt< $_$ $_$ >> as z ->
           let unfold =
@@ -1386,15 +1381,13 @@ EXTEND_PRINTER
           left_operator pc 2 unfold next z ]
     | "dot"
       [ <:patt< $x$ . $y$ >> ->
-          curr {(pc) with bef = curr {(pc) with aft = "."} x} y ]
+          pprintf pc "%p.%p" curr x curr y ]
     | "simple"
       [ <:patt< ($x$ as $y$) >> ->
           pprintf pc "@[<1>(%p@ as %p)@]" patt x patt y
       | <:patt< ($list:pl$) >> ->
           let pl = List.map (fun p -> (p, ",")) pl in
-          plist patt 1
-            {(pc) with bef = sprintf "%s(" pc.bef; aft = sprintf ")%s" pc.aft}
-            pl
+          pprintf pc "@[<1>(%p)@]" (plist patt 0) pl
       | <:patt< {$list:lpl$} >> ->
           let lxl = List.map (fun lx -> (lx, ";")) lpl in
           plist (binding patt) 0
