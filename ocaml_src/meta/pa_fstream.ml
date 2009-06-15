@@ -304,9 +304,9 @@ let rec bstream_pattern loc (spcl, epo, e) =
 
 let bparser_cases loc spel =
   let rel = List.rev_map (bstream_pattern loc) spel in
-  let e =
-    match rel with
-      e :: rel ->
+  match rel with
+    e :: rel ->
+      let e =
         List.fold_left
           (fun e e1 ->
              MLast.ExApp
@@ -319,9 +319,9 @@ let bparser_cases loc spel =
                    e1),
                 e))
           e rel
-    | [] -> Ploc.raise loc (Stream.Error "not impl: bparser_cases")
-  in
-  MLast.ExApp (loc, e, MLast.ExLid (loc, strm_n))
+      in
+      MLast.ExApp (loc, e, MLast.ExLid (loc, strm_n))
+  | [] -> MLast.ExUid (loc, "None")
 ;;
 
 let bparser_match loc me bpo pc =

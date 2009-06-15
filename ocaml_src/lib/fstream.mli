@@ -55,7 +55,9 @@ val count_unfrozen : 'a t -> int;;
 
 (* Backtracking parsers *)
 
-type ('a, 'b) kont;;
+type ('a, 'b) kont =
+    K of (unit -> ('b * 'a t * ('a, 'b) kont) option)
+;;
     (* The type of continuation of a backtracking parser. *)
 type ('a, 'b) bp = 'a t -> ('b * 'a t * ('a, 'b) kont) option;;
     (* The type of a backtracking parser. *)

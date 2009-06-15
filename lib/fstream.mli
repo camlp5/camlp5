@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: fstream.mli,v 1.7 2007/11/22 20:21:08 deraugla Exp $ *)
+(* $Id: fstream.mli,v 1.8 2007/11/23 02:44:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Module [Fstream]: functional streams *)
@@ -55,7 +55,7 @@ value count_unfrozen : t 'a -> int;
 
 (* Backtracking parsers *)
 
-type kont 'a 'b = 'abstract;
+type kont 'a 'b = [ K of unit -> option ('b * t 'a * kont 'a 'b) ];
     (* The type of continuation of a backtracking parser. *)
 type bp 'a 'b = t 'a -> option ('b * t 'a * kont 'a 'b);
     (* The type of a backtracking parser. *)
