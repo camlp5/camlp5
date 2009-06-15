@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.133 2007/12/23 12:17:23 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.134 2007/12/23 12:54:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -834,16 +834,12 @@ EXTEND_PRINTER
           [ [(p, wo, e)] ->
               horiz_vertic
                 (fun () ->
-                   let (op_begin, op_end) =
-                     if List.mem pc.dang ["|"; ";"] then
-                       (sprintf "(%s" op, ")")
-                     else (op, "")
-                   in
-                   sprintf "%s%s %s with %s%s%s" pc.bef op_begin
-                     (expr {(pc) with bef = ""; aft = ""; dang = ""} e1)
-                     (match_assoc False {(pc) with bef = ""; aft = ""}
-                        ((p, wo, e), True))
-                     op_end pc.aft)
+                   if List.mem pc.dang ["|"; ";"] then
+                     pprintf pc "(%s %p with %p)" op expr e1
+                       (match_assoc False) ((p, wo, e), True)
+                   else
+                     pprintf pc "%s %p with %p" op expr e1
+                       (match_assoc False) ((p, wo, e), True))
                 (fun () ->
                    let (op_begin, pc_aft, op_end) =
                      if List.mem pc.dang ["|"; ";"] then
@@ -854,10 +850,8 @@ EXTEND_PRINTER
                    match
                      horiz_vertic
                        (fun () ->
-                          Some
-                            (sprintf "%s%s %s with" pc.bef op_begin
-                               (expr {(pc) with bef = ""; aft = ""; dang = ""}
-                                  e1)))
+                          let pc = {(pc) with aft = ""} in
+                          Some (pprintf pc "%s %q with" op_begin expr e1 ""))
                        (fun () -> None)
                    with
                    [ Some s1 ->
