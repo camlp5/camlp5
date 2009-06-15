@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: rprint.ml,v 1.14 2007/05/31 08:53:27 deraugla Exp $ *)
+(* $Id: rprint.ml,v 1.15 2007/07/08 17:47:44 deraugla Exp $ *)
 
 open Format;
 open Outcometree;
@@ -294,7 +294,7 @@ and print_out_class_sig_item ppf =
         (if priv then "private " else "") (if virt then "virtual " else "")
         name Toploop.print_out_type.val ty
   | x ->
-      IFDEF OCAML_3_10 OR OCAML_3_11 THEN
+      IFDEF OCAML_3_10 OR OCAML_3_10_0 OR OCAML_3_11 THEN
         failwith "Rprint.print_out_class_sig_item: not impl"
       ELSE
         match x with

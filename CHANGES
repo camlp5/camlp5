@@ -1,6 +1,7 @@
 Camlp4s Version 4.02:
 ---------------------
 
+* [08 Jul 07] Added missing compatibility with ocaml 3.10.0
 * [05 Jul 07] Rebuilt pretty printers with new pretty printer module
 * [27 Jun 07] Added private flag in type declarations and with constraints
 * [21 Jun 07] Added "let..in" in parsers
