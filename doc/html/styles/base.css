@@ -1,4 +1,4 @@
-/* $Id: base.css,v 1.4 2007/07/11 19:31:33 deraugla Exp $ */
+/* $Id: base.css,v 1.5 2007/07/12 03:04:45 deraugla Exp $ */
 
 body { margin: 0; background-color: rgb(228,214,189) }
 
@@ -36,7 +36,7 @@ pre {
   padding-left: 1em; padding-right: 0.5em; line-height: 1.2
 }
 
-tt { font-weight: bold }
+/* tt { font-weight: bold } */
 
 .top { margin-top: 0; padding-top: 1cm }
 .bottom { margin-bottom: 0 }

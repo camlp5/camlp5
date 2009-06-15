@@ -51,8 +51,8 @@
 
 <ul>
 
-<li>add syntax extensions,</li>
-<li>redefine the whole syntax of the language.</li>
+  <li>add syntax extensions,</li>
+  <li>redefine the whole syntax of the language.</li>
 
 </ul>
 
@@ -60,14 +60,47 @@
 
 <ul>
 
-<li>display programs in a elegant way,</li>
-<li>convert from a syntax to another,</li>
-<li>check the results of syntax extensions.</li>
+  <li>display programs in a elegant way,</li>
+  <li>convert from a syntax to another,</li>
+  <li>check the results of syntax extensions.</li>
 
 </ul>
 
 <p>It works as a shell command and can also be used in the ocaml
 toplevel.</p>
+
+<h2>Commands</h2>
+
+<p>The main shell commands are:</p>
+
+<ul>
+  <li><tt>camlp5o</tt> : treating files written in normal ocaml
+  syntax,</li>
+  <li><tt>camlp5r</tt> : treating files written in an original syntax
+    named the <em>revised syntax</em>.</li>
+</ul>
+
+<p>These commands can be given as parameters of the
+option <tt>-pp</tt> of the ocaml compiler. Examples:</p>
+
+<pre>
+ocamlc -pp camlp5o foo.ml
+ocamlc -pp camlp5r bar.ml
+</pre>
+
+<p>This way, the parsing is done by camlp5. In case of syntax errors,
+the parsing fails with an error message and the compilation is
+aborted. Otherwise, the ocaml compiler continues with the syntax tree
+provided by camlp5.</p>
+
+<p>In the toplevel, it is possible to preprocess the input phrases by
+loading one of the files <tt>camlp5o.cma</tt> or <tt>camlp5r.cma</tt>.
+The common usage is:</p>
+
+<pre>
+ocaml -I +camlp5 camlp5o.cma
+ocaml -I +camlp5 camlp5r.cma
+</pre>
 
 <div class="trailer">
 
