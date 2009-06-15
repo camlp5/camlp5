@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.110 2007/12/19 16:54:19 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.111 2007/12/19 20:26:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -237,28 +237,11 @@ value patt_as pc z =
    Some functions follow (some of them with '_binding' in their name) which
    use syntax or pretty printing shortcuts.
 *)
-value binding elem pc (p, e) =
-  horiz_vertic
-    (fun () ->
-       sprintf "%s%s = %s%s" pc.bef (patt {(pc) with bef = ""; aft = ""} p)
-         (elem {(pc) with bef = ""; aft = ""} e) pc.aft)
-    (fun () ->
-       sprintf "%s\n%s" (patt {(pc) with aft = " ="} p)
-         (elem {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e))
-;
+value binding elem pc (p, e) = pprintf pc "%p =@;%p" patt p elem e;
 
 value record_binding is_last pc (p, e) =
-  let pc_dang = if is_last then "" else ";" in
-  horiz_vertic
-    (fun () ->
-       sprintf "%s%s = %s%s" pc.bef (patt {(pc) with bef = ""; aft = ""} p)
-         (expr1 {(pc) with bef = ""; aft = ""; dang = pc_dang} e) pc.aft)
-    (fun () ->
-       sprintf "%s\n%s" (patt {(pc) with aft = " ="} p)
-         (expr1
-            {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-             dang = pc_dang}
-            e))
+  let pc = if is_last then pc else {(pc) with dang = ";"} in
+  pprintf pc "%p =@;%p" patt p expr1 e
 ;
 
 pr_expr_fun_args.val :=
