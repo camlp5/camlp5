@@ -264,10 +264,10 @@
 <:module_type< (with $mt$ $_list:lwc$) >>
 <:with_constr< (type ($s$ $list:ltv$) $t$) >>
 <:with_constr< (type ($_:s$ $_list:ltv$) $t$) >>
-; <:with_constr< (typeprivate ($s$ $list:ltv$) $t$) >>
-; <:with_constr< type $_:s$ $_list:ltv$ = private $t$ >>
-; <:with_constr< type $s$ $list:ltv$ = $flag:b$ $t$ >>
-; <:with_constr< type $_:s$ $_list:ltv$ = $_flag:b$ $t$ >>
+<:with_constr< (typeprivate ($s$ $list:ltv$) $t$) >>
+<:with_constr< (typeprivate ($_:s$ $_list:ltv$) $t$) >>
+(MLast.WcTyp loc (Ploc.VaVal s) (Ploc.VaVal ltv) (Ploc.VaVal b) t)
+(MLast.WcTyp loc s ltv b t)
 ; <:with_constr< module $list:ls$ = $me$ >>
 ; <:with_constr< module $_list:ls$ = $me$ >>
 ; <:class_expr< $ce$ $e$ >>

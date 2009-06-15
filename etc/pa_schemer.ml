@@ -498,7 +498,7 @@ and module_type_se =
   | se -> error se "module type" ]
 and with_constr_se =
   fun
-  [ Sexpr loc [Slid _ "type"; se1; se2] ->
+  [ Sexpr loc [Slid _ ("type" | "typeprivate" as pf); se1; se2] ->
       let (tn, tp) =
         match se1 with
         [ Santi _ ("list" | "_list") s -> (<:vala< $s$ >>, <:vala< [] >>)
@@ -508,8 +508,9 @@ and with_constr_se =
             (tn, tp)
         | se -> (<:vala< (mod_ident_se se) >>, <:vala< [] >>) ]
       in
+      let pf = pf = "typeprivate" in
       let te = ctyp_se se2 in
-      <:with_constr< type $_:tn$ $_list:tp$ = $te$ >>
+      <:with_constr< type $_:tn$ $_list:tp$ = $flag:pf$ $te$ >>
   | se -> error se "with constr" ]
 and sig_item_se =
   fun

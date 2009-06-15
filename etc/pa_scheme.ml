@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.67 2007/10/09 19:09:19 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.68 2007/10/10 01:29:01 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -468,7 +468,7 @@
      (se (error se "module type"))))
   (with_constr_se
     (lambda_match
-     ((Sexpr loc [(Slid _ "type") se1 se2])
+     ((Sexpr loc [(Slid _ (as (or "type" "typeprivate") pf)) se1 se2])
       (let*
        (((values tn tp)
          (match se1
@@ -480,8 +480,9 @@
              (tp (anti_list_map type_param_se sel)))
             (values tn tp)))
           (se (values <:vala< (mod_ident_se se) >> <:vala< [] >>))))
+        (pf (= pf "typeprivate"))
         (te (ctyp_se se2)))
-       <:with_constr< type $_:tn$ $_list:tp$ = $te$ >>))
+       <:with_constr< type $_:tn$ $_list:tp$ = $flag:pf$ $te$ >>))
      (se (error se "with constr"))))
   (sig_item_se
     (lambda_match
