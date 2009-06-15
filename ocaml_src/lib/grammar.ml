@@ -771,7 +771,7 @@ let start_parser_of_entry entry =
 
 (* Extend syntax *)
 
-let init_entry_functions entry elev =
+let init_entry_functions entry =
   entry.estart <-
     (fun lev strm ->
        let f = start_parser_of_entry entry in entry.estart <- f; f lev strm);
@@ -783,14 +783,14 @@ let init_entry_functions entry elev =
 
 let reinit_entry_functions entry =
   match entry.edesc with
-    Dlevels elev -> init_entry_functions entry elev
+    Dlevels elev -> init_entry_functions entry
   | _ -> ()
 ;;
 
 let extend_entry entry position rules =
   try
     let elev = Gramext.levels_of_rules entry position rules in
-    entry.edesc <- Dlevels elev; init_entry_functions entry elev
+    entry.edesc <- Dlevels elev; init_entry_functions entry
   with Plexing.Error s ->
     Printf.eprintf "Lexer initialization error:\n- %s\n" s;
     flush stderr;
@@ -958,7 +958,7 @@ module Entry =
     type te = token;;
     type 'a e = te g_entry;;
     let create g n =
-      {egram = g; ename = n; estart = empty_entry n; elocal = false;
+      {egram = g; ename = n; elocal = false; estart = empty_entry n;
        econtinue = (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);
        edesc = Dlevels []}
     ;;

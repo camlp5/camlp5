@@ -71,9 +71,9 @@ let rec parse_file pa getdir useast =
             match getdir rpl with
               Some x ->
                 begin match x with
-                  loc, "use", Some (MLast.ExStr (_, s)) ->
+                  loc1, "use", Some (MLast.ExStr (_, s)) ->
                     List.rev_append rpl
-                      [useast loc s (use_file pa getdir useast s), loc]
+                      [useast loc1 s (use_file pa getdir useast s), loc1]
                 | loc, x, eo ->
                     begin try let f = Pcaml.find_directive x in f eo with
                       Not_found ->

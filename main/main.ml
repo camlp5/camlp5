@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: main.ml,v 1.5 2007/09/01 21:20:34 deraugla Exp $ *)
+(* $Id: main.ml,v 1.6 2007/09/04 13:12:44 deraugla Exp $ *)
 
 open Printf;
 
@@ -81,9 +81,9 @@ value rec parse_file pa getdir useast = do {
             match getdir rpl with
             [ Some x ->
                 match x with
-                [ (loc, "use", Some <:expr< $str:s$ >>) ->
+                [ (loc1, "use", Some <:expr< $str:s$ >>) ->
                     List.rev_append rpl
-                      [(useast loc s (use_file pa getdir useast s), loc)]
+                      [(useast loc1 s (use_file pa getdir useast s), loc1)]
                 | (loc, x, eo) -> do {
                     try
                       let f = Pcaml.find_directive x in

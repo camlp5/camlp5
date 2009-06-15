@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.36 2007/09/04 04:29:01 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.37 2007/09/04 13:12:44 deraugla Exp $ *)
 
 open Gramext;
 open Format;
@@ -720,7 +720,7 @@ value start_parser_of_entry entry =
 
 (* Extend syntax *)
 
-value init_entry_functions entry elev = do {
+value init_entry_functions entry = do {
   entry.estart :=
     fun lev strm -> do {
       let f = start_parser_of_entry entry in
@@ -737,7 +737,7 @@ value init_entry_functions entry elev = do {
 
 value reinit_entry_functions entry =
   match entry.edesc with
-  [ Dlevels elev -> init_entry_functions entry elev
+  [ Dlevels elev -> init_entry_functions entry
   | _ -> () ]
 ;
 
@@ -745,7 +745,7 @@ value extend_entry entry position rules =
   try do {
     let elev = Gramext.levels_of_rules entry position rules in
     entry.edesc := Dlevels elev;
-    init_entry_functions entry elev;
+    init_entry_functions entry;
   }
   with
   [ Plexing.Error s -> do {
@@ -929,7 +929,7 @@ module Entry =
     type te = token;
     type e 'a = g_entry te;
     value create g n =
-      {egram = g; ename = n; estart = empty_entry n; elocal = False;
+      {egram = g; ename = n; elocal = False; estart = empty_entry n;
        econtinue _ _ _ = parser []; edesc = Dlevels []}
     ;
     value parse_parsable (entry : e 'a) p : 'a =

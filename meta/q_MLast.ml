@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.38 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.39 2007/09/04 13:12:44 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -1299,7 +1299,7 @@ let sig_item_eoi = Grammar.Entry.create gram "signature item" in
 let str_item_eoi = Grammar.Entry.create gram "structure item" in
 let ctyp_eoi = Grammar.Entry.create gram "type" in
 let patt_eoi = Grammar.Entry.create gram "pattern" in
-let expr_eoi = Grammar.Entry.create gram "epression" in
+let expr_eoi = Grammar.Entry.create gram "expression" in
 let module_type_eoi = Grammar.Entry.create gram "module type" in
 let module_expr_eoi = Grammar.Entry.create gram "module expression" in
 let class_type_eoi = Grammar.Entry.create gram "class type" in
