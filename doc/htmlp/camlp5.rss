@@ -3,8 +3,19 @@
   <channel>
     <title>Camlp5</title>
     <description>Camlp5 documentation</description>
-    <lastBuildDate>Mon Sep 17 11:46:52 CEST 2007</lastBuildDate>
+    <lastBuildDate>Mon Sep 17 15:10:47 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
+    <item>
+      <title>Syntax tree</title>
+      <description>
+        Changed structure of this chapter. Added introduction to explain
+        the general differences between "transitional" and "strict" modes.
+        Put the rest inside a section "syntax tree in transitional mode".
+        Added a section "syntax tree in strict mode" (to be completed).
+      </description>
+      <pubDate>Mon Sep 17 15:10:47 CEST 2007</pubDate>
+      <link>../ml_ast.html</link>
+    </item>
     <item>
       <title>Library - module Ploc</title>
       <description>

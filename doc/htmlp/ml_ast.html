@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ml_ast.html,v 1.32 2007/09/17 12:56:18 deraugla Exp $ -->
+  <!-- $Id: ml_ast.html,v 1.33 2007/09/17 13:12:21 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Abstract tree in concrete syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -35,7 +35,7 @@
 <div id="tableofcontents">
 </div>
 
-<h2>Preamble: transitional and strict modes</h2>
+<h2>Introduction: transitional and strict modes</h2>
 
 <h3>nodes vs quotations</h3>
 
@@ -113,13 +113,15 @@
   extensions added). It works fully in "strict" mode: in "transitional"
   mode, the antiquotations do no work.</p>
 
-<h2>Introduction</h2>
+<h2>Syntax tree in transitional mode</h2>
+
+<h3>Introduction</h3>
 
 <p>This syntax tree is defined in the module "<code>MLast</code>"
   provided by Camlp5.</p>
 
 <p>For example, the syntax tree of the statement "<code>if</code>" can
-  be written (in "transitional" mode):</p>
+  be written:</p>
 
 <pre>
   MLast.ExIfe loc e1 e2 e3
@@ -174,12 +176,12 @@
 <p>Instead of thinking of "a syntax tree", the programmer has to think
   of "a piece of program".</p>
 
-<h2>Location</h2>
+<h3>Location</h3>
 
 <p>In all syntax tree nodes, the first parameter is the source
   location of the node.</p>
 
-<h3>In expressions</h3>
+<h4>In expressions</h4>
 
 <p>When a quotation is in the context of an expression, the location
   parameter is "<tt>loc</tt>" in the node and in all its possible
@@ -213,7 +215,7 @@
   the variable "<tt>loc</tt>" to have the value
   "<tt>Ploc.dummy</tt>".</p>
 
-<h3>In patterns</h3>
+<h4>In patterns</h4>
 
 <p>When a quotation is in the context of a pattern, the location
   parameter of all nodes and possible sub-nodes is set to the wildcard
@@ -230,7 +232,7 @@
     (MLast.TyArr _ (MLast.TyLid _ "int") (MLast.TyLid _ "int"))
 </pre>
 
-<h2>Antiquotations</h2>
+<h3>Antiquotations</h3>
 
 <p>The expressions or patterns between dollar ($) characters are
   called <em>antiquotations</em>. In opposition to quotations which
@@ -256,7 +258,7 @@
    match p with [ &lt;:patt&lt; $_$ | $_$ >> -> Some p ]
 </pre>
 
-<h2>Nodes and Quotations</h2>
+<h3>Nodes and Quotations</h3>
 
 <p>This section describes all nodes defined in the module "MLast" of
   Camlp5 and how to write them with quotations. Notice that, inside
@@ -287,7 +289,7 @@
   <li><tt>lcsigi</tt>: list class_sig_item</li>
 </ul>
 
-<h3>expr</h3>
+<h4>expr</h4>
 
 <p>Expressions of the language.</p>
 
@@ -552,7 +554,7 @@
 </pre>
 </div>
 
-<h3>patt</h3>
+<h4>patt</h4>
 
 <p>Patterns of the language.</p>
 
@@ -689,7 +691,7 @@
   equivalent node in expressions. See above.
 </div>
 
-<h3>ctyp</h3>
+<h4>ctyp</h4>
 
 <p>Type expressions of the language.</p>
 
@@ -816,9 +818,9 @@
   </tr>
 </table>
 
-<h3>modules...</h3>
+<h4>modules...</h4>
 
-<h4>str_item</h4>
+<h5>str_item</h5>
 
 <p>Structure items, i.e. phrases in a ".ml" file or "struct"s
   elements.</p>
@@ -916,7 +918,7 @@
   </tr>
 </table>
 
-<h4>sig_item</h4>
+<h5>sig_item</h5>
 
 <p>Signature items, i.e. phrases in a ".mli" file or "sig"s
   elements.</p>
@@ -1009,7 +1011,7 @@
   </tr>
 </table>
 
-<h4>module_expr</h4>
+<h5>module_expr</h5>
 
 <table border="1">
   <tr>
@@ -1049,7 +1051,7 @@
   </tr>
 </table>
 
-<h4>module_type</h4>
+<h5>module_type</h5>
 
 <table border="1">
   <tr>
@@ -1099,9 +1101,9 @@
   </tr>
 </table>
 
-<h3>classes...</h3>
+<h4>classes...</h4>
 
-<h4>class_expr</h4>
+<h5>class_expr</h5>
 
 <table border="1">
   <tr>
@@ -1141,7 +1143,7 @@
   </tr>
 </table>  
 
-<h4>class_type</h4>
+<h5>class_type</h5>
 
 <table border="1">
   <tr>
@@ -1176,7 +1178,7 @@
   </tr>
 </table>
 
-<h4>class_str_item</h4>
+<h5>class_str_item</h5>
 
 <table border="1">
   <tr>
@@ -1271,7 +1273,7 @@
   </tr>
 </table>
 
-<h4>class_sig_item</h4>
+<h5>class_sig_item</h5>
 
 <table border="1">
   <tr>
@@ -1341,9 +1343,9 @@
   </tr>
 </table>
 
-<h3>other</h3>
+<h4>other</h4>
 
-<h4>with_constr</h4>
+<h5>with_constr</h5>
 
 <p>"With" possibly following a module type.</p>
 
@@ -1375,7 +1377,7 @@
   </tr>
 </table>
 
-<h4>poly_variant</h4>
+<h5>poly_variant</h5>
 
 <p>Polymorphic variants.</p>
 
@@ -1406,6 +1408,10 @@
     <td>type</td>
   </tr>
 </table>
+
+<h2>Syntax tree in strict mode</h2>
+
+<p>... to be written...</p>
 
 <div class="trailer">
 </div>
