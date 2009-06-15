@@ -1584,6 +1584,14 @@ Grammar.extend
       Gramext.action
         (fun (s : string) (loc : Ploc.t) ->
            (failwith "antiquot" : 'mod_ident2));
+      [Gramext.Stoken ("ANTIQUOT_LOC", "alist")],
+      Gramext.action
+        (fun (s : string) (loc : Ploc.t) ->
+           (failwith "antiquot" : 'mod_ident2));
+      [Gramext.Stoken ("ANTIQUOT_LOC", "list")],
+      Gramext.action
+        (fun (s : string) (loc : Ploc.t) ->
+           (failwith "antiquot" : 'mod_ident2));
       [Gramext.Snterm
          (Grammar.Entry.obj (mod_ident : 'mod_ident Grammar.Entry.e))],
       Gramext.action
@@ -2244,11 +2252,11 @@ Grammar.extend
            (MLast.TyLab (loc, i, t) : 'ctyp))]];
     Grammar.Entry.obj (tildeident : 'tildeident Grammar.Entry.e), None,
     [None, None,
-     [[Gramext.Stoken ("TILDEANTIQUOT_LOC", "a")],
+     [[Gramext.Stoken ("TILDEANTIQUOT_LOC", "")],
       Gramext.action
         (fun (a : string) (loc : Ploc.t) ->
            (failwith "antiquot" : 'tildeident));
-      [Gramext.Stoken ("TILDEANTIQUOT_LOC", "")],
+      [Gramext.Stoken ("TILDEANTIQUOT_LOC", "a")],
       Gramext.action
         (fun (a : string) (loc : Ploc.t) ->
            (failwith "antiquot" : 'tildeident));

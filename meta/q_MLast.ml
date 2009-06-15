@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.84 2007/09/14 22:48:11 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.85 2007/09/15 05:34:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -1143,7 +1143,7 @@ EXTEND
   tildeident:
     [ [ i = a_TILDEIDENT -> Qast.VaVal i
       | a = TILDEANTIQUOT "a" -> Qast.VaAnt "a" loc a
-      | "~"; a = ANTIQUOT "a" -> Qast.VaAnt "a" loc a ] ]
+      | a = TILDEANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a) ] ]
   ;
   tildeidentcolon:
     [ [ i = a_TILDEIDENTCOLON -> Qast.VaVal i
@@ -1481,9 +1481,8 @@ EXTEND
       | s = CHAR -> Qast.VaVal (Qast.Str s) ] ]
   ;
   a_TILDEIDENT:
-    [ [ "~"; a = ANTIQUOT -> Qast.VaAnt "" loc a
-      | a = TILDEANTIQUOT -> Qast.VaAnt "" loc a
-      | s = TILDEIDENT -> Qast.Str s ] ]
+    [ [ s = TILDEIDENT -> Qast.Str s
+      | "~"; a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
   ;
   a_TILDEIDENTCOLON:
     [ [ "~"; a = ANTIQUOT; ":" -> Qast.VaAnt "" loc a

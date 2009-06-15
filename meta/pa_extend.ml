@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.62 2007/09/14 23:39:14 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.63 2007/09/15 05:34:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -280,7 +280,9 @@ value rec expr_fa al =
 
 value anti_str psl =
   match psl with
-  [ [{symbol = {text = TXtok _ "ANTIQUOT_LOC" <:expr< $str:s$ >>}}] -> s
+  [ [{symbol =
+        {text =
+           TXtok _ ("ANTIQUOT" | "TILDEANTIQUOT") <:expr< $str:s$ >>}}] -> s
   | _ -> "" ]
 ;
 
@@ -293,7 +295,10 @@ value quot_expr psl e =
     | <:expr< False >> -> <:expr< Qast.Bool False >>
     | <:expr< True >> -> <:expr< Qast.Bool True >>
     | <:expr< Ploc.VaAnt $e$ >> ->
-        <:expr< Qast.VaAnt $str:anti_str psl$ loc $loop e$ >>
+        let s = anti_str psl in
+        let e = <:expr< Qast.VaAnt $str:s$ loc $loop e$ >> in
+        if String.length s > 0 && s.[0] = 'a' then e
+        else <:expr< Qast.VaVal $e$ >>
     | <:expr< Ploc.VaVal $e$ >> -> <:expr< Qast.VaVal $loop e$ >>
     | <:expr< () >> -> e
     | <:expr< Qast.Bool $_$ >> -> e
@@ -515,7 +520,6 @@ value expr_of_delete_rule loc gmod n sl =
 value rec ident_of_expr =
   fun
   [ <:expr< $lid:s$ >> -> s
-  | <:expr< $lid:s$ $_$ >> -> s
   | <:expr< $uid:s$ >> -> s
   | <:expr< $e1$ . $e2$ >> -> ident_of_expr e1 ^ "__" ^ ident_of_expr e2
   | _ -> failwith "internal error in pa_extend" ]
@@ -532,11 +536,21 @@ value slist loc min sep symb =
   TXlist loc min symb.text t
 ;
 
+value assoc_anti =
+  [("ANTIQUOT_LOC", "ANTIQUOT"); ("TILDEANTIQUOT_LOC", "TILDEANTIQUOT")]
+;
+
 value sstoken_aux loc name s =
-  let a_name = "a_" ^ name in
-  let n = mk_name loc <:expr< $lid:a_name$ >> in
-  let text = TXnterm loc n None in
-  {used = []; text = text; styp = STlid loc "string"}
+  try
+    let name = List.assoc name assoc_anti in
+    let text = TXtok loc name <:expr< "" >> in
+    {used = []; text = text; styp = STlid loc "string"}
+  with
+  [ Not_found ->
+      let a_name = "a_" ^ name in
+      let n = mk_name loc <:expr< $lid:a_name$ >> in
+      let text = TXnterm loc n None in
+      {used = []; text = text; styp = STlid loc "string"} ]
 ;
 
 value sstoken loc s =
@@ -549,9 +563,8 @@ value sstoken2 loc s =
 ;
 
 value sstoken_prm loc name prm =
-  let a_name = "a_" ^ name in
-  let n = mk_name loc <:expr< $lid:a_name$ $prm$ >> in
-  let text = TXnterm loc n None in
+  let name = try List.assoc name assoc_anti with [ Not_found -> name ] in
+  let text = TXtok loc name prm in
   {used = []; text = text; styp = STlid loc "string"}
 ;
 

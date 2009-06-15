@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.86 2007/09/14 22:48:11 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.87 2007/09/15 05:34:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -504,6 +504,8 @@ EXTEND
   ;
   mod_ident2:
     [ [ sl = mod_ident -> <:vala< sl >>
+      | s = ANTIQUOT_LOC "list" -> <:vala< $s$ >>
+      | s = ANTIQUOT_LOC "alist" -> <:vala< $s$ >>
       | s = ANTIQUOT_LOC -> <:vala< $s$ >>
       | s = ANTIQUOT_LOC "a" -> <:vala< $s$ >> ] ]
   ;
@@ -707,8 +709,8 @@ EXTEND
   ;
   tildeident:
     [ [ i = TILDEIDENT -> <:vala< i >>
-      | a = TILDEANTIQUOT_LOC -> <:vala< $a$ >>
-      | a = TILDEANTIQUOT_LOC "a" -> <:vala< $a$ >> ] ]
+      | a = TILDEANTIQUOT_LOC "a" -> <:vala< $a$ >>
+      | a = TILDEANTIQUOT_LOC -> <:vala< $a$ >> ] ]
   ;
   tildeidentcolon:
     [ [ i = TILDEIDENTCOLON -> <:vala< i >>

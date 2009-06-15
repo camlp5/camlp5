@@ -609,7 +609,10 @@ let rec expr_fa al =
 
 let anti_str psl =
   match psl with
-    [{symbol = {text = TXtok (_, "ANTIQUOT_LOC", MLast.ExStr (_, s))}}] -> s
+    [{symbol =
+        {text =
+           TXtok (_, ("ANTIQUOT" | "TILDEANTIQUOT"), MLast.ExStr (_, s))}}] ->
+      s
   | _ -> ""
 ;;
 
@@ -645,18 +648,28 @@ let quot_expr psl e =
         (_,
          MLast.ExAcc (_, MLast.ExUid (_, "Ploc"), MLast.ExUid (_, "VaAnt")),
          e) ->
-        MLast.ExApp
-          (loc,
-           MLast.ExApp
-             (loc,
-              MLast.ExApp
-                (loc,
-                 MLast.ExAcc
-                   (loc, MLast.ExUid (loc, "Qast"),
-                    MLast.ExUid (loc, "VaAnt")),
-                 MLast.ExStr (loc, anti_str psl)),
-              MLast.ExLid (loc, "loc")),
-           loop e)
+        let s = anti_str psl in
+        let e =
+          MLast.ExApp
+            (loc,
+             MLast.ExApp
+               (loc,
+                MLast.ExApp
+                  (loc,
+                   MLast.ExAcc
+                     (loc, MLast.ExUid (loc, "Qast"),
+                      MLast.ExUid (loc, "VaAnt")),
+                   MLast.ExStr (loc, s)),
+                MLast.ExLid (loc, "loc")),
+             loop e)
+        in
+        if String.length s > 0 && s.[0] = 'a' then e
+        else
+          MLast.ExApp
+            (loc,
+             MLast.ExAcc
+               (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "VaVal")),
+             e)
     | MLast.ExApp
         (_,
          MLast.ExAcc (_, MLast.ExUid (_, "Ploc"), MLast.ExUid (_, "VaVal")),
@@ -1152,7 +1165,6 @@ let expr_of_delete_rule loc gmod n sl =
 let rec ident_of_expr =
   function
     MLast.ExLid (_, s) -> s
-  | MLast.ExApp (_, MLast.ExLid (_, s), _) -> s
   | MLast.ExUid (_, s) -> s
   | MLast.ExAcc (_, e1, e2) -> ident_of_expr e1 ^ "__" ^ ident_of_expr e2
   | _ -> failwith "internal error in pa_extend"
@@ -1169,11 +1181,20 @@ let slist loc min sep symb =
   TXlist (loc, min, symb.text, t)
 ;;
 
+let assoc_anti =
+  ["ANTIQUOT_LOC", "ANTIQUOT"; "TILDEANTIQUOT_LOC", "TILDEANTIQUOT"]
+;;
+
 let sstoken_aux loc name s =
-  let a_name = "a_" ^ name in
-  let n = mk_name loc (MLast.ExLid (loc, a_name)) in
-  let text = TXnterm (loc, n, None) in
-  {used = []; text = text; styp = STlid (loc, "string")}
+  try
+    let name = List.assoc name assoc_anti in
+    let text = TXtok (loc, name, MLast.ExStr (loc, "")) in
+    {used = []; text = text; styp = STlid (loc, "string")}
+  with Not_found ->
+    let a_name = "a_" ^ name in
+    let n = mk_name loc (MLast.ExLid (loc, a_name)) in
+    let text = TXnterm (loc, n, None) in
+    {used = []; text = text; styp = STlid (loc, "string")}
 ;;
 
 let sstoken loc s = sstoken_aux loc s s;;
@@ -1184,9 +1205,8 @@ let sstoken2 loc s =
 ;;
 
 let sstoken_prm loc name prm =
-  let a_name = "a_" ^ name in
-  let n = mk_name loc (MLast.ExApp (loc, MLast.ExLid (loc, a_name), prm)) in
-  let text = TXnterm (loc, n, None) in
+  let name = try List.assoc name assoc_anti with Not_found -> name in
+  let text = TXtok (loc, name, prm) in
   {used = []; text = text; styp = STlid (loc, "string")}
 ;;
 
