@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.mli,v 1.15 2007/08/20 09:16:18 deraugla Exp $ *)
+(* $Id: grammar.mli,v 1.16 2007/08/20 19:34:26 deraugla Exp $ *)
 
 (** Extensible grammars.
 
@@ -67,7 +67,7 @@ module Entry :
 -      [Entry.print e] displays the entry [e] using [Format].
 -      [Entry.find e s] finds the entry named [s] in [e]'s rules.
 -      [Entry.obj e] converts an entry into a [Gramext.g_entry] allowing
--      to see what it holds ([Gramext] is visible, but not documented). *)
+-      to see what it holds. *)
 
 value of_entry : Entry.e 'a -> g;
    (** Return the grammar associated with an entry. *)
