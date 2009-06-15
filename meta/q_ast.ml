@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.13 2007/08/03 03:50:39 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.14 2007/08/03 05:04:11 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -426,13 +426,9 @@ lex.Token.tok_match :=
       fun
       [ ("ANTIQUOT_LOC", prm) -> check_anti_loc prm ""
       | _ -> raise Stream.Failure ]
-  | ("ANTIQUOT_LOC", "anti") ->
+  | ("ANTIQUOT_LOC", p_prm) ->
       fun
-      [ ("ANTIQUOT_LOC", prm) -> check_anti_loc prm "anti"
-      | _ -> raise Stream.Failure ]
-  | ("ANTIQUOT_LOC", "exp") ->
-      fun
-      [ ("ANTIQUOT_LOC", prm) -> check_anti_loc prm "exp"
+      [ ("ANTIQUOT_LOC", prm) -> check_anti_loc prm p_prm
       | _ -> raise Stream.Failure ]
   | ("INT", "") ->
       fun
