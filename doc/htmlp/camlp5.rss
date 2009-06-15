@@ -6,6 +6,15 @@
     <lastBuildDate>Mon Sep 17 15:10:47 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
     <item>
+      <title>Syntax tree - 2</title>
+      <description>
+        Separated the "syntax tree in strict mode" and "syntax tree in
+        transitional mode" into two chapters.
+      </description>
+      <pubDate>Tue Sep 18 12:15:14 CEST 2007</pubDate>
+      <link>../ml_ast.html</link>
+    </item>
+    <item>
       <title>Syntax tree - 1</title>
       <description>
         Added section about the syntax tree in "strict" mode, actually

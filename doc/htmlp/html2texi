@@ -1,10 +1,10 @@
 #!/bin/sh
-# $Id: html2texi,v 1.22 2007/09/17 13:12:21 deraugla Exp $
+# $Id: html2texi,v 1.23 2007/09/18 10:20:02 deraugla Exp $
 
 FILES1="index.html strict.html ptools.html"
 FILES2="parsers.html lexers.html fparsers.html grammars.html"
 FILES3="printers.html pretty.html"
-FILES4="locations.html ml_ast.html pcaml.html syntext.html opretty.html quot.html revsynt.html scheme.html macros.html pragma.html extfun.html"
+FILES4="locations.html ml_ast.html ast_transi.html ast_strict.html pcaml.html syntext.html opretty.html quot.html revsynt.html scheme.html macros.html pragma.html extfun.html"
 FILES5="conclusion.html"
 FILES6="commands.html library.html sources.html about.html"
 FILES="$FILES1 1 $FILES2 2 $FILES3 3 $FILES4 4 $FILES5 5 $FILES6"

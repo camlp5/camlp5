@@ -1,0 +1,1343 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
+ "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <!-- $Id: ast_transi.html,v 1.1 2007/09/18 10:20:02 deraugla Exp $ -->
+  <!-- Copyright (c) 2007 INRIA -->
+  <title>AST - transitional</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <link rel="stylesheet" type="text/css" href="styles/base.css"
+        title="Normal" />
+  <style type="text/css"><!--
+    table { margin-left: 1cm }
+    td { padding-right: 2mm }
+  --></style>
+</head>
+<body>
+
+<div id="menu">
+</div>
+
+<div id="content">
+
+<h1 class="top">Syntax tree - transitional mode</h1>
+
+<p>This chapter presents the Camlp5 syntax tree when Camlp5 is installed
+  in <em>transitional</em> mode.</p>
+
+<div id="tableofcontents">
+</div>
+
+<h2>Introduction</h2>
+
+<p>This syntax tree is defined in the module "<tt>MLast</tt>"
+  provided by Camlp5.</p>
+
+<p>For example, the syntax tree of the statement "<tt>if</tt>" can
+  be written:</p>
+
+<pre>
+  MLast.ExIfe loc e1 e2 e3
+</pre>
+
+<p>where "<tt>loc</tt>" is the location in the source, and
+  "<tt>e1</tt>", "<tt>e2</tt>" and "<tt>e3</tt>" are
+  respectively the expression after the "<tt>if</tt>", the one after
+  the "<tt>then</tt>" and the one after the "<tt>else</tt>".</p>
+
+<p>In all programs, it is possible to manipulate syntax trees like
+  that.</p>
+
+<p>However, the quotations systems of Camlp5 provides a quotation kit
+  named "<tt>q_MLast.cmo</tt>". When loaded, it is possible to
+  represent the syntax trees in concrete syntax. The example above can
+  be written:</p>
+
+<pre>
+  &lt;:expr&lt; if $e1$ then $e2$ else $e3$ >>
+</pre>
+
+<p>The interest of this representation is when one must manipulate
+  complicated syntax trees. An example taken from the Camlp5 sources is
+  this quotation (found in a pattern):</p>
+
+<pre>
+  &lt;:expr&lt;
+    match try Some $f$ with [ Stream.Failure -> None ] with
+    [ Some $p$ -> $e$
+    | _ -> raise (Stream.Error $e2$) ]
+  >>
+</pre>
+
+<p>In abstract syntax, it should have been written:</p>
+
+<pre>
+  MLast.ExMat _
+    (MLast.ExTry _ (MLast.ExApp _ (MLast.ExUid _ "Some") f)
+       [(MLast.PaAcc _ (MLast.PaUid _ "Stream") (MLast.PaUid _ "Failure"),
+         None, MLast.ExUid _ "None")])
+    [(MLast.PaApp _ (MLast.PaUid _ "Some") p, None, e);
+     (MLast.PaAny _, None,
+      MLast.ExApp _ (MLast.ExLid _ "raise")
+        (MLast.ExApp _
+           (MLast.ExAcc _ (MLast.ExUid _ "Stream") (MLast.ExUid _ "Error"))
+           e2))]
+</pre>
+
+<p>Which is less readable.</p>
+
+<p>Instead of thinking of "a syntax tree", the programmer has to think
+  of "a piece of program".</p>
+
+<h2>Location</h2>
+
+<p>In all syntax tree nodes, the first parameter is the source
+  location of the node.</p>
+
+<h3>In expressions</h3>
+
+<p>When a quotation is in the context of an expression, the location
+  parameter is "<tt>loc</tt>" in the node and in all its possible
+  sub-nodes. Example: if we consider the quotation:</p>
+
+<pre>
+  &lt;:sig_item&lt; value foo : int -> bool >>
+</pre>
+
+<p>This quotation, in a context of an expression, is equivalent
+  to:</p>
+
+<pre>
+  MLast.SgVal loc "foo"
+    (MLast.TyArr loc (MLast.TyLid loc "int") (MLast.TyLid loc "bool"));
+</pre>
+
+<p>This name, "<tt>loc</tt>", is predefined, but it is possible to
+  change it, using the argument "<tt>-loc</tt>" of the Camlp5 shell
+  commands.</p>
+
+<p>Consequently, if there is no variable "<tt>loc</tt>" defined in the
+  context of the quotation, or if it is not of the good type, a
+  semantic error occur in the OCaml compiler.</p>
+
+<p>Note that in the <a href="grammars.html">extensible grammars</a>,
+  the variable "<tt>loc</tt>" is bound, in all semantic actions, to
+  the location of the rule.</p>
+
+<p>If the created node has no location, the simplest way is to define
+  the variable "<tt>loc</tt>" to have the value
+  "<tt>Ploc.dummy</tt>".</p>
+
+<h3>In patterns</h3>
+
+<p>When a quotation is in the context of a pattern, the location
+  parameter of all nodes and possible sub-nodes is set to the wildcard
+  ("<tt>_</tt>"). The same example above:</p>
+
+<pre>
+  &lt;:sig_item&lt; value foo : int -> bool >>
+</pre>
+
+<p>is equivalent, in a pattern, to:</p>
+
+<pre>
+  MLast.SgVal _ "foo"
+    (MLast.TyArr _ (MLast.TyLid _ "int") (MLast.TyLid _ "int"))
+</pre>
+
+<h2>Antiquotations</h2>
+
+<p>The expressions or patterns between dollar ($) characters are
+  called <em>antiquotations</em>. In opposition to quotations which
+  has its own syntax rules, the antiquotation is an area in the syntax
+  of the enclosing context (expression or pattern). See the chapter
+  about <a href="quot.html">quotations</a>.</p>
+
+<p>If the quotation (any quotation) is in the context of an
+  expression, the antiquotation is an expression. It could be a call
+  to a function. Examples:</p>
+
+<pre>
+  value f e el = &lt;:expr&lt; [$e$ :: $loop False el$] >>;
+  value patt_list p pl = &lt;:patt&lt; ( $list:[p::pl]$) >>;
+</pre>
+
+<p>If the quotation (any quotation) is in the context of an pattern,
+  the antiquotation is a pattern. Any pattern is possible, including
+  the wildcard character ("<tt>_</tt>"). Examples:</p>
+
+<pre>
+   fun [ &lt;:expr&lt; $lid:op$ $_$ $_$ >> -> op ]
+   match p with [ &lt;:patt&lt; $_$ | $_$ >> -> Some p ]
+</pre>
+
+<h2>Nodes and Quotations</h2>
+
+<p>This section describes all nodes defined in the module "MLast" of
+  Camlp5 and how to write them with quotations. Notice that, inside
+  quotations, one is not restricted to these elementary cases, but
+  any complex value can be used, resulting on possibly complex combined
+  nodes.</p>
+
+<p>Variables names give information of their types:</p>
+
+<ul>
+  <li><tt>e</tt>, <tt>e1</tt>, <tt>e2</tt>, <tt>e3</tt>: expr</li>
+  <li><tt>p</tt>, <tt>p1</tt>, <tt>p2</tt>, <tt>p3</tt>: patt</li>
+  <li><tt>t</tt>, <tt>t1</tt>, <tt>t2</tt>, <tt>e3</tt>: ctyp</li>
+  <li><tt>s</tt>: string</li>
+  <li><tt>b</tt>: bool</li>
+  <li><tt>me</tt>, <tt>me1</tt>, <tt>me2</tt>: module_expr</li>
+  <li><tt>mt</tt>, <tt>mt1</tt>, <tt>mt2</tt>: module_type</li>
+  <li><tt>le</tt>: list expr</li>
+  <li><tt>lp</tt>: list patt</li>
+  <li><tt>lt</tt>: list ctyp</li>
+  <li><tt>ls</tt>: list string</li>
+  <li><tt>lse</tt>: list (string * expr)</li>
+  <li><tt>lpe</tt>: list (patt * expr)</li>
+  <li><tt>lpp</tt>: list (patt * patt)</li>
+  <li><tt>lpoee</tt>: list (patt * option expr * expr)</li>
+  <li><tt>op</tt>: option patt</li>
+  <li><tt>lcstri</tt>: list class_str_item</li>
+  <li><tt>lcsigi</tt>: list class_sig_item</li>
+</ul>
+
+<h3>expr</h3>
+
+<p>Expressions of the language.</p>
+
+<table border="1">
+  <tr>
+    <th>Node</th>
+    <th><tt>&lt;:expr&lt; ... >></tt></th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><tt>ExAcc loc e1 e2</tt></td>
+    <td align="center"><tt>$e1$ . $e2$</tt></td>
+    <td>dot</td>
+  </tr>
+  <tr>
+    <td><tt>ExAnt loc e</tt></td>
+    <td align="center"><tt>$anti:e$</tt></td>
+    <td>antiquotation <a href="#t_expr_1">(1)</a></td>
+  </tr>
+  <tr>
+    <td><tt>ExApp loc e1 e2</tt></td>
+    <td align="center"><tt>$e1$ $e2$</tt></td>
+    <td>application</td>
+  </tr>
+  <tr>
+    <td><tt>ExAre loc e1 e2</tt></td>
+    <td align="center"><tt>$e1$ .( $e2$ )</tt></td>
+    <td>array access</td>
+  </tr>
+  <tr>
+    <td><tt>ExArr loc le</tt></td>
+    <td align="center"><tt>[| $list:le$ |]</tt></td>
+    <td>array</td>
+  </tr>
+  <tr>
+    <td><tt>ExAsr loc e</tt></td>
+    <td align="center"><tt>assert $e$</tt></td>
+    <td>assert</td>
+  </tr>
+  <tr>
+    <td><tt>ExAss loc e1 e2</tt></td>
+    <td align="center"><tt>$e1$ := $e2$</tt></td>
+    <td>assignment</td>
+  </tr>
+  <tr>
+    <td><tt>ExBae loc e le</tt></td>
+    <td align="center"><tt>$e$ .{ $le$ }</tt></td>
+    <td>big array access</td>
+  </tr>
+  <tr>
+    <td><tt>ExChr loc s</tt></td>
+    <td align="center"><tt>$chr:s$</tt></td>
+    <td>character constant</td>
+  </tr>
+  <tr>
+    <td><tt>ExCoe loc e (Some t1) t2</tt></td>
+    <td align="center"><tt>($e1$ : $t1$ :> $t2$)</tt></td>
+    <td>coercion</td>
+  </tr>
+  <tr>
+    <td><tt>ExCoe loc e None t2</tt></td>
+    <td align="center"><tt>($e1$ :> $t2$)</tt></td>
+    <td>coercion</td>
+  </tr>
+  <tr>
+    <td><tt>ExFlo loc s</tt></td>
+    <td align="center"><tt>$flo:s$</tt></td>
+    <td>float constant</td>
+  </tr>
+  <tr>
+    <td><tt>ExFor loc s e1 e2 b le</tt></td>
+    <td align="center"><tt>for $s$ = $e1$ $to:b$ $e2$ do { $list:le$ }</tt></td>
+    <td>for</td>
+  </tr>
+  <tr>
+    <td><tt>ExFun loc lopee</tt></td>
+    <td align="center"><tt>fun [ $list:lpoee$ ]</tt></td>
+    <td>function <a href="#t_expr_2">(2)</a></td>
+  </tr>
+  <tr>
+    <td><tt>ExIfe loc e1 e2 e3</tt></td>
+    <td align="center"><tt>if $e1$ then $e2$ else $e3$</tt></td>
+    <td>if</td>
+  </tr>
+  <tr>
+    <td><tt>ExInt loc s ""</tt></td>
+    <td align="center"><tt>$int:s$</tt></td>
+    <td>integer constant</td>
+  </tr>
+  <tr>
+    <td><tt>ExInt loc s "l"</tt></td>
+    <td align="center"><tt>$int32:s$</tt></td>
+    <td>integer 32 bits</td>
+  </tr>
+  <tr>
+    <td><tt>ExInt loc s "L"</tt></td>
+    <td align="center"><tt>$int64:s$</tt></td>
+    <td>integer 64 bits</td>
+  </tr>
+  <tr>
+    <td><tt>ExInt loc s "n"</tt></td>
+    <td align="center"><tt>$nativeint:s$</tt></td>
+    <td>native integer</td>
+  </tr>
+  <tr>
+    <td><tt>ExLab loc s None</tt></td>
+    <td align="center"><tt>~ $s$</tt></td>
+    <td>label</td>
+  </tr>
+  <tr>
+    <td><tt>ExLab loc s (Some e)</tt></td>
+    <td align="center"><tt>~ $s$ : $e$</tt></td>
+    <td>label</td>
+  </tr>
+  <tr>
+    <td><tt>ExLaz loc e</tt></td>
+    <td align="center"><tt>lazy $e$</tt></td>
+    <td>lazy</td>
+  </tr>
+  <tr>
+    <td><tt>ExLet loc b lpe e</tt></td>
+    <td align="center"><tt>let $opt:b$ $list:lpe$ in $e$</tt></td>
+    <td>let binding</td>
+  </tr>
+  <tr>
+    <td><tt>ExLid loc s</tt></td>
+    <td align="center"><tt>$lid:s$</tt></td>
+    <td>lowercase identifier</td>
+  </tr>
+  <tr>
+    <td><tt>ExLmd loc s me e</tt></td>
+    <td align="center"><tt>let module $s$ = $me$ in $e$</tt></td>
+    <td>let module</td>
+  </tr>
+  <tr>
+    <td><tt>ExMat loc e lpoee</tt></td>
+    <td align="center"><tt>match $e$ with [ $list:lpoee$ ]</tt></td>
+    <td>match <a href="#t_expr_2">(2)</a></td>
+  </tr>
+  <tr>
+    <td><tt>ExNew loc ls</tt></td>
+    <td align="center"><tt>new $list:ls$</tt></td>
+    <td>new</td>
+  </tr>
+  <tr>
+    <td><tt>ExObj loc op lcstri</tt></td>
+    <td align="center"><tt>object ($opt:op$) $list:lcstri$ end</tt></td>
+    <td>object expression</td>
+  </tr>
+  <tr>
+    <td><tt>ExOlb loc s None</tt></td>
+    <td align="center"><tt>? $s$</tt></td>
+    <td>option label</td>
+  </tr>
+  <tr>
+    <td><tt>ExOlb loc s (Some e)</tt></td>
+    <td align="center"><tt>? $s$ : $e$</tt></td>
+    <td>option label</td>
+  </tr>
+  <tr>
+    <td><tt>ExOvr loc lse</tt></td>
+    <td align="center"><tt>{&lt; $lse$ >}</tt></td>
+    <td>override</td>
+  </tr>
+  <tr>
+    <td><tt>ExRec loc lpe None</tt></td>
+    <td align="center"><tt>{ $list:lpe$ }</tt></td>
+    <td>record</td>
+  </tr>
+  <tr>
+    <td><tt>ExRec loc lpe (Some e)</tt></td>
+    <td align="center"><tt>{ ($e$) with $list:lpe$ }</tt></td>
+    <td>record</td>
+  </tr>
+  <tr>
+    <td><tt>ExSeq loc le</tt></td>
+    <td align="center"><tt>do { $list:le$ }</tt></td>
+    <td>sequence</td>
+  </tr>
+  <tr>
+    <td><tt>ExSnd loc e s</tt></td>
+    <td align="center"><tt>$e$ # $s$</tt></td>
+    <td>method call</td>
+  </tr>
+  <tr>
+    <td><tt>ExSte loc e1 e2</tt></td>
+    <td align="center"><tt>$e1$ .[ $e2$ ]</tt></td>
+    <td>string element</td>
+  </tr>
+  <tr>
+    <td><tt>ExStr loc s</tt></td>
+    <td align="center"><tt>$str:s$</tt></td>
+    <td>string</td>
+  </tr>
+  <tr>
+    <td><tt>ExTry loc e lpoee</tt></td>
+    <td align="center"><tt>try $e$ with [ $list:lpoee$ ]</tt></td>
+    <td>try <a href="#t_expr_2">(2)</a></td>
+  </tr>
+  <tr>
+    <td><tt>ExTup loc le</tt></td>
+    <td align="center"><tt>($list:le$)</tt></td>
+    <td>t-uple</td>
+  </tr>
+  <tr>
+    <td><tt>ExTyc loc e t</tt></td>
+    <td align="center"><tt>($e$ : $t$)</tt></td>
+    <td>type constraint</td>
+  </tr>
+  <tr>
+    <td><tt>ExUid loc s</tt></td>
+    <td align="center"><tt>$uid:s$</tt></td>
+    <td>uppercase identifier</td>
+  </tr>
+  <tr>
+    <td><tt>ExVrn loc s</tt></td>
+    <td align="center"><tt>` $s$</tt></td>
+    <td>variant</td>
+  </tr>
+  <tr>
+    <td><tt>ExWhi loc e le</tt></td>
+    <td align="center"><tt>while $e$ do { $list:le$ }</tt></td>
+    <td>while</td>
+  </tr>
+</table>
+
+<div id="t_expr_1" style="margin: 5mm 0 0 1cm">(1)
+  <p>Node used in quotation expanders to specify that all locations of
+    the sub-tree is correcty located in the quotation. In quotations,
+    the locations of all generated nodes are by default the location
+    of the entire quotation, except for these nodes which are named
+    "antiquotations". See the chapter
+    about <a href="quot.html">quotations</a>.</p>
+</div>
+
+<div id="t_expr_2" style="margin: 5mm 0 0 1cm">(2)
+  <p>The variable "lpoee" found in "function", "match" and "try"
+    statements correspond to a list of "<tt>(patt * option expr *
+      expr)</tt>" where the "<tt>option expr</tt>" is the "when"
+    optionally following the pattern:</p>
+
+<pre>
+  p -> e
+</pre>
+
+  <p>is represented by:</p>
+
+<pre>
+  (p, None, e)
+</pre>
+
+<p>and</p>
+
+<pre>
+  p when e1 -> e
+</pre>
+
+  <p>is represented by:</p>
+
+<pre>
+  (p, Some e1, e)
+</pre>
+</div>
+
+<h3>patt</h3>
+
+<p>Patterns of the language.</p>
+
+<table border="1">
+  <tr>
+    <th>Node</th>
+    <th><tt>&lt;:patt&lt; ... >></tt></th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><tt>PaAcc loc p1 p2</tt></td>
+    <td align="center"><tt>$p1$ . $p2$</tt></td>
+    <td>dot</td>
+  </tr>
+  <tr>
+    <td><tt>PaAli loc p1 p2</tt></td>
+    <td align="center"><tt>($p1$ as $p2$)</tt></td>
+    <td>alias</td>
+  </tr>
+  <tr>
+    <td><tt>PaAnt loc p</tt></td>
+    <td align="center"><tt>$anti:p$</tt></td>
+    <td>antiquotation <a href="#t_patt_1">(1)</a></td>
+  </tr>
+  <tr>
+    <td><tt>PaAny loc</tt></td>
+    <td align="center"><tt>_</tt></td>
+    <td>wildcard</td>
+  </tr>
+  <tr>
+    <td><tt>PaApp loc p1 p2</tt></td>
+    <td align="center"><tt>$p1$ $p2$</tt></td>
+    <td>application</td>
+  </tr>
+  <tr>
+    <td><tt>PaArr loc lp</tt></td>
+    <td align="center"><tt>[| $list:lp$ |]</tt></td>
+    <td>array</td>
+  </tr>
+  <tr>
+    <td><tt>PaChr loc s</tt></td>
+    <td align="center"><tt>$chr:s$</tt></td>
+    <td>character</td>
+  </tr>
+  <tr>
+    <td><tt>PaInt loc s1 s2</tt></td>
+    <td align="center"><tt>$int:s$</tt></td>
+    <td>integer</td>
+  </tr>
+  <tr>
+    <td><tt>PaFlo loc s</tt></td>
+    <td align="center"><tt>$flo:s$</tt></td>
+    <td>float</td>
+  </tr>
+  <tr>
+    <td><tt>PaLab loc s None</tt></td>
+    <td align="center"><tt>~ $s$</tt></td>
+    <td>label</td>
+  </tr>
+  <tr>
+    <td><tt>PaLab loc s (Some p)</tt></td>
+    <td align="center"><tt>~ $s$ : $p$</tt></td>
+    <td>label</td>
+  </tr>
+  <tr>
+    <td><tt>PaLid loc s</tt></td>
+    <td align="center"><tt>$lid:s$</tt></td>
+    <td>lowercase identifier</td>
+  </tr>
+  <tr>
+    <td><tt>PaOlb loc s None</tt></td>
+    <td align="center"><tt>? $s$</tt></td>
+    <td>option label</td>
+  </tr>
+  <tr>
+    <td><tt>PaOlb loc s (Some (p, None))</tt></td>
+    <td align="center"><tt>? $s$ : ($p$)</tt></td>
+    <td>option label</td>
+  </tr>
+  <tr>
+    <td><tt>PaOlb loc s (Some (p, Some e))</tt></td>
+    <td align="center"><tt>? $s$ : ($p$ = $e$)</tt></td>
+    <td>option label</td>
+  </tr>
+  <tr>
+    <td><tt>PaOrp loc p1 p2</tt></td>
+    <td align="center"><tt>$p1$ | $p2$</tt></td>
+    <td>or</td>
+  </tr>
+  <tr>
+    <td><tt>PaRng loc p1 p2</tt></td>
+    <td align="center"><tt>$p1$ .. $p2$</tt></td>
+    <td>range</td>
+  </tr>
+  <tr>
+    <td><tt>PaRec loc lpp None</tt></td>
+    <td align="center"><tt>{ $list:lpp$ }</tt></td>
+    <td>record</td>
+  </tr>
+  <tr>
+    <td><tt>PaStr loc s</tt></td>
+    <td align="center"><tt>$str:s$</tt></td>
+    <td>string</td>
+  </tr>
+  <tr>
+    <td><tt>PaTup loc lp</tt></td>
+    <td align="center"><tt>($list:lp$)</tt></td>
+    <td>t-uple</td>
+  </tr>
+  <tr>
+    <td><tt>PaTyc loc p t</tt></td>
+    <td align="center"><tt>($p$ : $t$)</tt></td>
+    <td>type constraint</td>
+  </tr>
+  <tr>
+    <td><tt>PaTyp loc ls</tt></td>
+    <td align="center"><tt># $list:ls$</tt></td>
+    <td>type pattern</td>
+  </tr>
+  <tr>
+    <td><tt>PaUid loc s</tt></td>
+    <td align="center"><tt>$uid:s$</tt></td>
+    <td>uppercase identifier</td>
+  </tr>
+  <tr>
+    <td><tt>PaVrn loc s</tt></td>
+    <td align="center"><tt>` $s$</tt></td>
+    <td>variant</td>
+  </tr>
+</table>
+
+<div id="t_patt_1" style="margin: 5mm 0 0 1cm">(1)
+  Node used to specify an antiquotation area, like for the
+  equivalent node in expressions. See above.
+</div>
+
+<h3>ctyp</h3>
+
+<p>Type expressions of the language.</p>
+
+<table border="1">
+  <tr>
+    <th>Node</th>
+    <th><tt>&lt;:ctyp&lt; ... >></tt></th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><tt>TyAcc loc t1 t2</tt></td>
+    <td align="center"><tt>$t1$ . $t2$</tt></td>
+    <td>dot</td>
+  </tr>
+  <tr>
+    <td><tt>TyAli loc t1 t2</tt></td>
+    <td align="center"><tt>$t1$ as $t2$</tt></td>
+    <td>alias</td>
+  </tr>
+  <tr>
+    <td><tt>TyAny loc</tt></td>
+    <td align="center"><tt>_</tt></td>
+    <td>wildcard</td>
+  </tr>
+  <tr>
+    <td><tt>TyApp loc t1 t2</tt></td>
+    <td align="center"><tt>$t1$ $t2$</tt></td>
+    <td>application</td>
+  </tr>
+  <tr>
+    <td><tt>TyArr loc t1 t2</tt></td>
+    <td align="center"><tt>$t1$ -> $t2$</tt></td>
+    <td>arrow</td>
+  </tr>
+  <tr>
+    <td><tt>TyCls loc ls</tt></td>
+    <td align="center"><tt># $list:ls$</tt></td>
+    <td>class</td>
+  </tr>
+  <tr>
+    <td><tt>TyLab loc s t</tt></td>
+    <td align="center"><tt>~ $s$ : $t$</tt></td>
+    <td>label</td>
+  </tr>
+  <tr>
+    <td><tt>TyLid loc s</tt></td>
+    <td align="center"><tt>$lid:s$</tt></td>
+    <td>lowercase identifier</td>
+  </tr>
+  <tr>
+    <td><tt>TyMan loc t1 t2</tt></td>
+    <td align="center"><tt>$t1$ == $t2$</tt></td>
+    <td>manifest</td>
+  </tr>
+  <tr>
+    <td><tt>TyObj loc lst False</tt></td>
+    <td align="center"><tt>&lt; $list:lst$ ></tt></td>
+    <td>object</td>
+  </tr>
+  <tr>
+    <td><tt>TyObj loc lst True</tt></td>
+    <td align="center"><tt>&lt; $list:lst$ .. ></tt></td>
+    <td>object</td>
+  </tr>
+  <tr>
+    <td><tt>TyObj loc lst b</tt></td>
+    <td align="center"><tt>&lt; $list:lst$ $opt:b$ ></tt></td>
+    <td>object (general)</td>
+  </tr>
+  <tr>
+    <td><tt>TyOlb loc s t</tt></td>
+    <td align="center"><tt>? $s$ : $t$</tt></td>
+    <td>option label</td>
+  </tr>
+  <tr>
+    <td><tt>TyPol loc ls t</tt></td>
+    <td align="center"><tt>! $list:ls$ . $t$</tt></td>
+    <td>polymorph</td>
+  </tr>
+  <tr>
+    <td><tt>TyQuo loc s</tt></td>
+    <td align="center"><tt>' $s$</tt></td>
+    <td>variable</td>
+  </tr>
+  <tr>
+    <td><tt>TyRec loc llsbt</tt></td>
+    <td align="center"><tt>{ $list:llsbt$ }</tt></td>
+    <td>record</td>
+  </tr>
+  <tr>
+    <td><tt>TySum loc llslt</tt></td>
+    <td align="center"><tt>[ $list:llslt$ ]</tt></td>
+    <td>sum</td>
+  </tr>
+  <tr>
+    <td><tt>TyTup loc lt</tt></td>
+    <td align="center"><tt>( $list:lt$ )</tt></td>
+    <td>t-uple</td>
+  </tr>
+  <tr>
+    <td><tt>TyUid loc s</tt></td>
+    <td align="center"><tt>$uid:s$</tt></td>
+    <td>uppercase identifier</td>
+  </tr>
+  <tr>
+    <td><tt>TyVrn loc lpv None</tt></td>
+    <td align="center"><tt>[ = $list:lpv$ ]</tt></td>
+    <td>variant</td>
+  </tr>
+  <tr>
+    <td><tt>TyVrn loc lpv (Some None)</tt></td>
+    <td align="center"><tt>[ > $list:lpv$ ]</tt></td>
+    <td>variant</td>
+  </tr>
+  <tr>
+    <td><tt>TyVrn loc lpv (Some (Some []))</tt></td>
+    <td align="center"><tt>[ &lt; $list:lpv$ ]</tt></td>
+    <td>variant</td>
+  </tr>
+  <tr>
+    <td><tt>TyVrn loc lpv (Some (Some ls))</tt></td>
+    <td align="center"><tt>[ &lt; $list:lpv$ > $list:ls$ ]</tt></td>
+    <td>variant</td>
+  </tr>
+</table>
+
+<h3>modules...</h3>
+
+<h4>str_item</h4>
+
+<p>Structure items, i.e. phrases in a ".ml" file or "struct"s
+  elements.</p>
+
+<table border="1">
+  <tr>
+    <th>Node</th>
+    <th><tt>&lt;:str_item&lt; ... >></tt></th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><tt>StCls loc lcd</tt></td>
+    <td align="center"><tt>class $list:lcd$</tt></td>
+    <td>class declaration</td>
+  </tr>
+  <tr>
+    <td><tt>StClt loc lcdt</tt></td>
+    <td align="center"><tt>class type $list:lctd$</tt></td>
+    <td>class type declaration</td>
+  </tr>
+  <tr>
+    <td><tt>StDcl loc lstri</tt></td>
+    <td align="center"><tt>declare $list:lstri$ end</tt></td>
+    <td>declare</td>
+  </tr>
+  <tr>
+    <td><tt>StDir loc s None</tt></td>
+    <td align="center"><tt># $s$</tt></td>
+    <td>directive</td>
+  </tr>
+  <tr>
+    <td><tt>StDir loc s (Some e)</tt></td>
+    <td align="center"><tt># $s$ $e$</tt></td>
+    <td>directive</td>
+  </tr>
+  <tr>
+    <td><tt>StDir loc s oe</tt></td>
+    <td align="center"><tt># $s$ $opt:oe$</tt></td>
+    <td>directive (general)</td>
+  </tr>
+  <tr>
+    <td><tt>StExc loc s lt []</tt></td>
+    <td align="center"><tt>exception $s$ of $list:lt$</tt></td>
+    <td>exception</td>
+  </tr>
+  <tr>
+    <td><tt>StExc loc s lt ls</tt></td>
+    <td align="center"><tt>exception $s$ of $list:lt$ = $list:ls$</tt></td>
+    <td>exception</td>
+  </tr>
+  <tr>
+    <td><tt>StExp loc e</tt></td>
+    <td align="center"><tt>$exp:e$</tt></td>
+    <td>expression</td>
+  </tr>
+  <tr>
+    <td><tt>StExt loc s t ls</tt></td>
+    <td align="center"><tt>external $s$ : $t$ = $list:ls$</tt></td>
+    <td>external</td>
+  </tr>
+  <tr>
+    <td><tt>StInc loc me</tt></td>
+    <td align="center"><tt>include $me$</tt></td>
+    <td>include</td>
+  </tr>
+  <tr>
+    <td><tt>StMod loc b lsme</tt></td>
+    <td align="center"><tt>module $opt:b$ $list:lsme$</tt></td>
+    <td>module</td>
+  </tr>
+  <tr>
+    <td><tt>StMty loc s mt</tt></td>
+    <td align="center"><tt>module type $s$ = $mt$</tt></td>
+    <td>module type</td>
+  </tr>
+  <tr>
+    <td><tt>StOpn loc ls</tt></td>
+    <td align="center"><tt>open $list:ls$</tt></td>
+    <td>open</td>
+  </tr>
+  <tr>
+    <td><tt>StTyp loc ltd</tt></td>
+    <td align="center"><tt>type $list:ltd$</tt></td>
+    <td>type declaration</td>
+  </tr>
+  <tr>
+    <td><tt>StUse loc s lstrib</tt></td>
+    <td align="center"><tt>...internal use...</tt></td>
+    <td><a href="#t_str_item_1">(1)</a></td>
+  </tr>
+  <tr>
+    <td><tt>StVal loc b lpe</tt></td>
+    <td align="center"><tt>value $opt:b$ $list:lpe$</tt></td>
+    <td>value</td>
+  </tr>
+</table>
+
+<div id="t_str_item_1" style="margin: 5mm 0 0 1cm">(1)
+  <p>Node internally used to specify a different file name applying to
+    the whole subtree. This is generated by the directive "use" and
+    used when converting to the OCaml syntax tree which needs the file
+    name in its location type.</p>
+</div>
+
+<h4>sig_item</h4>
+
+<p>Signature items, i.e. phrases in a ".mli" file or "sig"s
+  elements.</p>
+
+<table border="1">
+  <tr>
+    <th>Node</th>
+    <th><tt>&lt;:sig_item&lt; ... >></tt></th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><tt>SgCls loc lcd</tt></td>
+    <td align="center"><tt>class $list:lcd$</tt></td>
+    <td>class</td>
+  </tr>
+  <tr>
+    <td><tt>SgClt loc lct</tt></td>
+    <td align="center"><tt>class type $list:lct$</tt></td>
+    <td>class type</td>
+  </tr>
+  <tr>
+    <td><tt>SgDcl loc lsigi</tt></td>
+    <td align="center"><tt>declare $list:lsigi$ end</tt></td>
+    <td>declare</td>
+  </tr>
+  <tr>
+    <td><tt>SgDir loc s None</tt></td>
+    <td align="center"><tt># $s$</tt></td>
+    <td>directive</td>
+  </tr>
+  <tr>
+    <td><tt>SgDir loc s (Some e)</tt></td>
+    <td align="center"><tt># $s$ $e$</tt></td>
+    <td>directive</td>
+  </tr>
+  <tr>
+    <td><tt>SgDir loc s oe</tt></td>
+    <td align="center"><tt># $s$ $opt:oe$</tt></td>
+    <td>directive (general)</td>
+  </tr>
+  <tr>
+    <td><tt>SgExc loc s []</tt></td>
+    <td align="center"><tt>exception $s$</tt></td>
+    <td>exception</td>
+  </tr>
+  <tr>
+    <td><tt>SgExc loc s lt</tt></td>
+    <td align="center"><tt>exception $s$ of $list:lt$</tt></td>
+    <td>exception</td>
+  </tr>
+  <tr>
+    <td><tt>SgExt loc s t ls</tt></td>
+    <td align="center"><tt>external $s$ : $t$ = $list:ls$</tt></td>
+    <td>external</td>
+  </tr>
+  <tr>
+    <td><tt>SgInc loc me</tt></td>
+    <td align="center"><tt>include $me$</tt></td>
+    <td>include</td>
+  </tr>
+  <tr>
+    <td><tt>SgMod loc b lsmt</tt></td>
+    <td align="center"><tt>module $opt:b$ $list:lsmt$</tt></td>
+    <td>module</td>
+  </tr>
+  <tr>
+    <td><tt>SgMty loc s mt</tt></td>
+    <td align="center"><tt>module type $s$ = $mt$</tt></td>
+    <td>module type</td>
+  </tr>
+  <tr>
+    <td><tt>SgOpn loc ls</tt></td>
+    <td align="center"><tt>open $list:ls$</tt></td>
+    <td>open</td>
+  </tr>
+  <tr>
+    <td><tt>SgTyp loc ltd</tt></td>
+    <td align="center"><tt>type $list:ltd$</tt></td>
+    <td>type declaration</td>
+  </tr>
+  <tr>
+    <td><tt>SgUse loc s lstrib</tt></td>
+    <td align="center"><tt>...internal use...</tt></td>
+    <td><a href="#t_sig_item_1">(1)</a></td>
+  </tr>
+  <tr>
+    <td><tt>SgVal loc s t</tt></td>
+    <td align="center"><tt>value $s$ : $t$</tt></td>
+    <td>value</td>
+  </tr>
+</table>
+
+<div id="t_sig_item_1" style="margin: 5mm 0 0 1cm">(1)
+  <p>Same remark as for "<tt>str_item</tt>" above.</p>
+</div>
+
+<h4>module_expr</h4>
+
+<table border="1">
+  <tr>
+    <th>Node</th>
+    <th><tt>&lt;:module_expr&lt; ... >></tt></th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><tt>MeAcc loc me1 me2</tt></td>
+    <td align="center"><tt>$me1$ . $me2$</tt></td>
+    <td>dot</td>
+  </tr>
+  <tr>
+    <td><tt>MeApp loc me1 me2</tt></td>
+    <td align="center"><tt>$me1$ $me2$</tt></td>
+    <td>application</td>
+  </tr>
+  <tr>
+    <td><tt>MeFun loc s mt me</tt></td>
+    <td align="center"><tt>functor ( $s$ : $mt$ ) ->  $me$</tt></td>
+    <td>functor</td>
+  </tr>
+  <tr>
+    <td><tt>MeStr loc lstri</tt></td>
+    <td align="center"><tt>struct $list:lstri$ end</tt></td>
+    <td>struct</td>
+  </tr>
+  <tr>
+    <td><tt>MeTyc loc me mt</tt></td>
+    <td align="center"><tt>( $me$ : $mt$ )</tt></td>
+    <td>module type constraint</td>
+  </tr>
+  <tr>
+    <td><tt>MeUid loc s</tt></td>
+    <td align="center"><tt>$uid:s$</tt></td>
+    <td>uppercase identifier</td>
+  </tr>
+</table>
+
+<h4>module_type</h4>
+
+<table border="1">
+  <tr>
+    <th>Node</th>
+    <th><tt>&lt;:module_type&lt; ... >></tt></th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><tt>MtAcc loc mt1 mt2</tt></td>
+    <td align="center"><tt>$mt1$ . $mt2$</tt></td>
+    <td>dot</td>
+  </tr>
+  <tr>
+    <td><tt>MtApp loc mt1 mt2</tt></td>
+    <td align="center"><tt>$mt1$ $mt2$</tt></td>
+    <td>application</td>
+  </tr>
+  <tr>
+    <td><tt>MtFun loc s mt1 mt2</tt></td>
+    <td align="center"><tt>functor ( $s$ : $mt1$ ) -> $mt2$</tt></td>
+    <td>functor</td>
+  </tr>
+  <tr>
+    <td><tt>MtLid loc s</tt></td>
+    <td align="center"><tt>$lid:s$</tt></td>
+    <td>lowercase identifier</td>
+  </tr>
+  <tr>
+    <td><tt>MtQuo loc s</tt></td>
+    <td align="center"><tt>' $s$</tt></td>
+    <td>abstract</td>
+  </tr>
+  <tr>
+    <td><tt>MtSig loc lsigi</tt></td>
+    <td align="center"><tt>sig $list:lsigi$ end</tt></td>
+    <td>signature</td>
+  </tr>
+  <tr>
+    <td><tt>MtUid loc s</tt></td>
+    <td align="center"><tt>$uid:s$</tt></td>
+    <td>uppercase identifier</td>
+  </tr>
+  <tr>
+    <td><tt>MtWit loc mt lwc</tt></td>
+    <td align="center"><tt>$mt$ with $list:lwc$</tt></td>
+    <td>with construction</td>
+  </tr>
+</table>
+
+<h3>classes...</h3>
+
+<h4>class_expr</h4>
+
+<table border="1">
+  <tr>
+    <th>Node</th>
+    <th><tt>&lt;:class_expr&lt; ... >></tt></th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><tt>CeApp loc ce e</tt></td>
+    <td align="center"><tt>$ce$ $e$</tt></td>
+    <td>application</td>
+  </tr>
+  <tr>
+    <td><tt>CeCon loc ls lt</tt></td>
+    <td align="center"><tt>$list:ls$ [ $list:lt$ ]</tt></td>
+    <td>constructor</td>
+  </tr>
+  <tr>
+    <td><tt>CeFun loc p ce</tt></td>
+    <td align="center"><tt>fun $p$ -> $ce$</tt></td>
+    <td>function</td>
+  </tr>
+  <tr>
+    <td><tt>CeLet loc b lpe ce</tt></td>
+    <td align="center"><tt>let $opt:b$ $list:lpe$ in $ce$</tt></td>
+    <td>let binding</td>
+  </tr>
+  <tr>
+    <td><tt>CeStr loc po lcstri</tt></td>
+    <td align="center"><tt>object ($opt:op$) $list:lcstri$ end</tt></td>
+    <td>object</td>
+  </tr>
+  <tr>
+    <td><tt>CeTyc loc ce ct</tt></td>
+    <td align="center"><tt>($ce$ : $ct$)</tt></td>
+    <td>class type constraint</td>
+  </tr>
+</table>  
+
+<h4>class_type</h4>
+
+<table border="1">
+  <tr>
+    <th>Node</th>
+    <th><tt>&lt;:class_type&lt; ... >></tt></th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><tt>CtCon loc ls lt</tt></td>
+    <td align="center"><tt>$list:ls$ [ $list:lt$ ] </tt></td>
+    <td>constructor</td>
+  </tr>
+  <tr>
+    <td><tt>CtFun loc t ct</tt></td>
+    <td align="center"><tt>[ $t$ ] -> $ct$</tt></td>
+    <td>arrow</td>
+  </tr>
+  <tr>
+    <td><tt>CtSig loc pt None lcsigi_item</tt></td>
+    <td align="center"><tt>object $list:lcsigi$ end</tt></td>
+    <td>object</td>
+  </tr>
+  <tr>
+    <td><tt>CtSig loc pt (Some t) lcsigi_item</tt></td>
+    <td align="center"><tt>object ($t$) $list:lcsigi$ end</tt></td>
+    <td>object</td>
+  </tr>
+  <tr>
+    <td><tt>CtSig loc pt ot lcsigi_item</tt></td>
+    <td align="center"><tt>object $opt:ot$ $list:lcsigi$ end</tt></td>
+    <td>object (general)</td>
+  </tr>
+</table>
+
+<h4>class_str_item</h4>
+
+<table border="1">
+  <tr>
+    <th>Node</th>
+    <th><tt>&lt;:class_str_item&lt; ... >></tt></th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><tt>CrCtr loc t1 t2</tt></td>
+    <td align="center"><tt>type $t1$ = $t2$</tt></td>
+    <td>type constraint</td>
+  </tr>
+  <tr>
+    <td><tt>CrDcl loc lcstri</tt></td>
+    <td align="center"><tt>declare $list:lcstri$ end </tt></td>
+    <td>declaration list</td>
+  </tr>
+  <tr>
+    <td><tt>CrInh loc ce None</tt></td>
+    <td align="center"><tt>inherit $ce$</tt></td>
+    <td>inheritance</td>
+  </tr>
+  <tr>
+    <td><tt>CrInh loc ce (Some s)</tt></td>
+    <td align="center"><tt>inherit $ce$ as $s$</tt></td>
+    <td>inheritance</td>
+  </tr>
+  <tr>
+    <td><tt>CrInh loc ce os</tt></td>
+    <td align="center"><tt>inherit $ce$ $opt:s$</tt></td>
+    <td>inheritance (general)</td>
+  </tr>
+  <tr>
+    <td><tt>CrIni loc e</tt></td>
+    <td align="center"><tt>initializer $e$</tt></td>
+    <td>initialization</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc s False e None</tt></td>
+    <td align="center"><tt>method $s$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc s False e (Some t)</tt></td>
+    <td align="center"><tt>method $s$ : $t$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc s True e None</tt></td>
+    <td align="center"><tt>method private $s$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc s True e (Some t)</tt></td>
+    <td align="center"><tt>method private $s$ : $t$ = $e$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CrMth loc s b e ot</tt></td>
+    <td align="center"><tt>method $opt:b$ $s$ $opt:ot$ = $e$</tt></td>
+    <td>method (general)</td>
+  </tr>
+  <tr>
+    <td><tt>CrVal loc s False e</tt></td>
+    <td align="center"><tt>value $s$ = $e$</tt></td>
+    <td>value</td>
+  </tr>
+  <tr>
+    <td><tt>CrVal loc s True e</tt></td>
+    <td align="center"><tt>value mutable $s$ = $e$</tt></td>
+    <td>value</td>
+  </tr>
+  <tr>
+    <td><tt>CrVal loc s b e</tt></td>
+    <td align="center"><tt>value $opt:b$ $s$ = $e$</tt></td>
+    <td>value (general)</td>
+  </tr>
+  <tr>
+    <td><tt>CrVir loc s False t</tt></td>
+    <td align="center"><tt>method virtual $s$ : $t$</tt></td>
+    <td>virtual method</td>
+  </tr>
+  <tr>
+    <td><tt>CrVir loc s True t</tt></td>
+    <td align="center"><tt>method virtual private $s$ : $t$</tt></td>
+    <td>virtual method</td>
+  </tr>
+  <tr>
+    <td><tt>CrVir loc s b t</tt></td>
+    <td align="center"><tt>method virtual $opt:b$ $s$ : $t$</tt></td>
+    <td>virtual method (general)</td>
+  </tr>
+</table>
+
+<h4>class_sig_item</h4>
+
+<table border="1">
+  <tr>
+    <th>Node</th>
+    <th><tt>&lt;:class_sig_item&lt; ... >></tt></th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><tt>CgCtr loc t1 t2</tt></td>
+    <td align="center"><tt>type $t1$ = $t2$</tt></td>
+    <td>type constraint</td>
+  </tr>
+  <tr>
+    <td><tt>CgDcl loc lcsigi</tt></td>
+    <td align="center"><tt>declare $list:lcsigi$ end</tt></td>
+    <td>declare</td>
+  </tr>
+  <tr>
+    <td><tt>CgInh loc ct</tt></td>
+    <td align="center"><tt>inherit $ct$</tt></td>
+    <td>inheritance </td>
+  </tr>
+  <tr>
+    <td><tt>CgMth loc s False t</tt></td>
+    <td align="center"><tt>method $s$ : $t$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CgMth loc s True t</tt></td>
+    <td align="center"><tt>method private $s$ : $t$</tt></td>
+    <td>method</td>
+  </tr>
+  <tr>
+    <td><tt>CgMth loc s b t</tt></td>
+    <td align="center"><tt>method $opt:b$ $s$ : $t$</tt></td>
+    <td>method (general)</td>
+  </tr>
+  <tr>
+    <td><tt>CgVal loc s False t</tt></td>
+    <td align="center"><tt>value $s$ : $t$</tt></td>
+    <td>value</td>
+  </tr>
+  <tr>
+    <td><tt>CgVal loc s True t</tt></td>
+    <td align="center"><tt>value mutable $s$ : $t$</tt></td>
+    <td>value</td>
+  </tr>
+  <tr>
+    <td><tt>CgVal loc s b t</tt></td>
+    <td align="center"><tt>value $opt:b$ $s$ : $t$</tt></td>
+    <td>value (general)</td>
+  </tr>
+  <tr>
+    <td><tt>CgVir loc s False t</tt></td>
+    <td align="center"><tt>method virtual $s$ : $t$</tt></td>
+    <td>method virtual</td>
+  </tr>
+  <tr>
+    <td><tt>CgVir loc s True t</tt></td>
+    <td align="center"><tt>method virtual private $s$ : $t$</tt></td>
+    <td>method virtual</td>
+  </tr>
+  <tr>
+    <td><tt>CgVir loc s b t</tt></td>
+    <td align="center"><tt>method virtual $opt:b$ $s$ : $t$</tt></td>
+    <td>method virtual (general)</td>
+  </tr>
+</table>
+
+<h3>other</h3>
+
+<h4>with_constr</h4>
+
+<p>"With" possibly following a module type.</p>
+
+<table border="1">
+  <tr>
+    <th>Node</th>
+    <th><tt>&lt;:with_const&lt; ... >></tt></th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><tt>WcTyp loc s ltv False t</tt></td>
+    <td align="center"><tt>type $s$ $list:ltv$ = $t$</tt></td>
+    <td>with type</td>
+  </tr>
+  <tr>
+    <td><tt>WcTyp loc s ltv True t</tt></td>
+    <td align="center"><tt>type $s$ $list:ltv$ = private $t$</tt></td>
+    <td>with type</td>
+  </tr>
+  <tr>
+    <td><tt>WcTyp loc s ltv b t</tt></td>
+    <td align="center"><tt>type $s$ $list:ltv$ = $opt:b$ $t$</tt></td>
+    <td>with type (general)</td>
+  </tr>
+  <tr>
+    <td><tt>WcMod loc ls me</tt></td>
+    <td align="center"><tt>module $list:ls$ = $me$</tt></td>
+    <td>with module</td>
+  </tr>
+</table>
+
+<h4>poly_variant</h4>
+
+<p>Polymorphic variants.</p>
+
+<table border="1">
+  <tr>
+    <th>Node</th>
+    <th><tt>&lt;:poly_variant&lt; ... >></tt></th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><tt>PvTag s False []</tt></td>
+    <td align="center"><tt>` $i$</tt></td>
+    <td>constructor</td>
+  </tr>
+  <tr>
+    <td><tt>PvTag s True lt</tt></td>
+    <td align="center"><tt>` $i$ of &amp; $list:lt$</tt></td>
+    <td>constructor</td>
+  </tr>
+  <tr>
+    <td><tt>PvTag s b lt</tt></td>
+    <td align="center"><tt>` $i$ of $opt:b$ $list:lt$</tt></td>
+    <td>constructor (general)</td>
+  </tr>
+  <tr>
+    <td><tt>PvInh t</tt></td>
+    <td align="center"><tt>$t$</tt></td>
+    <td>type</td>
+  </tr>
+</table>
+
+<div class="trailer">
+</div>
+
+</div>
+
+</body>
+</html>
