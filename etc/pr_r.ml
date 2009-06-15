@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.101 2007/12/03 14:47:24 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.102 2007/12/03 17:45:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -793,10 +793,7 @@ value str_module pref pc (m, me) =
           ([(s, mt) :: mal], me)
       | me -> ([], me) ]
   in
-  let module_arg pc (s, mt) =
-    sprint_break 1 1 pc (fun pc -> sprintf "%s(%s :" pc.bef s)
-      (fun pc -> module_type {(pc) with aft = sprintf ")%s" pc.aft} mt)
-  in
+  let module_arg pc (s, mt) = pprintf pc "(%s :@;<1 1>%p)" s module_type mt in
   let (me, mto) =
     match me with
     [ <:module_expr< ($me$ : $mt$) >> -> (me, Some mt)

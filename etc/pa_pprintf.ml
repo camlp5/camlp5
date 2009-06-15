@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_pprintf.ml,v 1.4 2007/12/03 14:47:24 deraugla Exp $ *)
+(* $Id: pa_pprintf.ml,v 1.5 2007/12/03 17:45:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* pprintf statement *)
@@ -70,12 +70,53 @@ value make_call loc (bef_is_empty, aft_is_empty) pc pcl =
     loop [] True pcl where rec loop rev_el is_first =
       fun
       [ [(bef, bef_al, aft, aft_al, f_f_a_opt) :: pcl] ->
-          let is_last = pcl = [] in
-          let lbl = [] in
-          let lbl =
-            if is_first && bef = "" then lbl
-            else              
-              let e =
+          let e =
+            match f_f_a_opt with
+            [ Some (f, f_a) ->
+                let is_last = pcl = [] in
+                let lbl = [] in
+                let lbl =
+                  if is_first && bef = "" then lbl
+                  else              
+                    let e =
+                      if not is_first && bef_al = [] then <:expr< $str:bef$ >>
+                      else
+                        let bef = if is_first then "%s" ^ bef else bef in
+                        let e = <:expr< sprintf $str:bef$ >> in
+                        let e =
+                          if is_first then <:expr< $e$ $pc$.bef >> else e
+                        in
+                        List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e bef_al
+                    in
+                    [(<:patt< bef >>, e) :: lbl]
+                in
+                let lbl =
+                  if is_last && aft = "" then lbl
+                  else
+                    let e =
+                      let add_pc_aft = not aft_is_empty && is_last in
+                      if not add_pc_aft && aft_al = [] then <:expr< $str:aft$ >>
+                      else if not add_pc_aft && aft = "%s" then
+                        match aft_al with
+                        [ [a] -> a
+                        | _ -> assert False ]
+                      else
+                        let aft = if add_pc_aft then aft ^ "%s" else aft in
+                        let e = <:expr< sprintf $str:aft$ >> in
+                        let e =
+                          List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e
+                            aft_al
+                        in
+                        if add_pc_aft then <:expr< $e$ $pc$.aft >> else e
+                    in
+                    [(<:patt< aft >>, e) :: lbl]
+                in
+                let pc =
+                  if lbl = [] then pc
+                  else <:expr< {($pc$) with $list:List.rev lbl$} >>
+                in
+                <:expr< $f$ $pc$ $f_a$ >>
+            | None ->
                 if not is_first && bef_al = [] then <:expr< $str:bef$ >>
                 else
                   let bef = if is_first then "%s" ^ bef else bef in
@@ -83,38 +124,7 @@ value make_call loc (bef_is_empty, aft_is_empty) pc pcl =
                   let e =
                     if is_first then <:expr< $e$ $pc$.bef >> else e
                   in
-                  List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e bef_al
-              in
-              [(<:patt< bef >>, e) :: lbl]
-          in
-          let lbl =
-            if is_last && aft = "" then lbl
-            else
-              let e =
-                let add_pc_aft = not aft_is_empty && is_last in
-                if not add_pc_aft && aft_al = [] then <:expr< $str:aft$ >>
-                else if not add_pc_aft && aft = "%s" then
-                  match aft_al with
-                  [ [a] -> a
-                  | _ -> assert False ]
-                else
-                  let aft = if add_pc_aft then aft ^ "%s" else aft in
-                  let e = <:expr< sprintf $str:aft$ >> in
-                  let e =
-                    List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e aft_al
-                  in
-                  if add_pc_aft then <:expr< $e$ $pc$.aft >> else e
-              in
-              [(<:patt< aft >>, e) :: lbl]
-          in
-          let pc =
-            if lbl = [] then pc
-            else <:expr< {($pc$) with $list:List.rev lbl$} >>
-          in
-          let e =
-            match f_f_a_opt with
-            [ Some (f, f_a) -> <:expr< $f$ $pc$ $f_a$ >>
-            | None -> Ploc.raise loc (Failure "not impl") ]
+                  List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e bef_al ]
           in
           loop [e :: rev_el] False pcl
       | [] ->
