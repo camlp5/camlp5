@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2texi,v 1.12 2007/08/28 08:15:35 deraugla Exp $
+# $Id: html2texi,v 1.13 2007/08/28 17:49:37 deraugla Exp $
 
 FILES1="index.html ptools.html"
 FILES2="parsers.html lexers.html fparsers.html grammars.html"
@@ -104,6 +104,10 @@ for i in $FILES; do
 @$chapter $N"
     cat $i |
     sed \
+      -e 's|^\(.*\)<ul>|\n\1<ul>|' |
+    sed \
+      -e '{:b; /^$/N; s/^\n$//; tb}' |
+    sed \
       -e 's|</p>|\n</p>|' \
       -e 's|\([^ ]\)</li>|\1\n</li>|g' \
       -e 's|\([^ ]\)</dd>|\1\n</dd>|g' \
@@ -128,7 +132,7 @@ for i in $FILES; do
       -e 's|<h4>|@subsubsection |' -e 's|</h4>||' \
       -e '/<pre>/,/<\/pre>/s/^  //' \
       -e 's|<br/>|\n\n@noindent |g' \
-      -e 's|^ *<p>|@noindent |' -e 's|</p>||' \
+      -e 's|^ *<p>|@noindent |' -e '/<\/p>/d' \
       -e 's|^ *<ul>|@itemize|' -e 's|^ *</ul>|@end itemize|' \
       -e 's|^ *<ol>|@enumerate|' -e 's|^ *</ol>|@end enumerate|' \
       -e 's|^ *<li>|@item |' -e '/<\/li>/d' \

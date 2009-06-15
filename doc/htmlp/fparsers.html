@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: fparsers.html,v 1.11 2007/08/28 02:20:19 deraugla Exp $ -->
+  <!-- $Id: fparsers.html,v 1.12 2007/08/28 17:49:37 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>functional parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -104,22 +104,19 @@ parameter.</p>
 recursive descent algorithm, except that:</p>
 
 <ul>
-
-<li>If the first stream pattern component matches the beginning of the
-stream, there is no error if the following stream patterns components
-do not match: the control simply passes to the next parser case with
-the initial stream.</li>
-
-<li>If the semantic actions are of type "<code>t</code>", the result
-of the parser is of type "<code>option (t * Fstream.t)</code>", not
-just "<code>t</code>" like in classical parsers. If a stream pattern
-matches, the semantic action is evaluated, giving some result
-"<code>e</code>" and the result of the parser is "<code>Some (e,
-strm)</code>" where "<code>strm</code>" is the remaining stream.</li>
-
-<li>If no parser case matches, the result of the parser is
-"<code>None</code>".</li>
-
+  <li>If the first stream pattern component matches the beginning of
+    the stream, there is no error if the following stream patterns
+    components do not match: the control simply passes to the next
+    parser case with the initial stream.</li>
+  <li>If the semantic actions are of type "<code>t</code>", the result
+    of the parser is of type "<code>option (t * Fstream.t)</code>",
+    not just "<code>t</code>" like in classical parsers. If a stream
+    pattern matches, the semantic action is evaluated, giving some
+    result "<code>e</code>" and the result of the parser is
+    "<code>Some (e, strm)</code>" where "<code>strm</code>" is the
+    remaining stream.</li>
+  <li>If no parser case matches, the result of the parser is
+    "<code>None</code>".</li>
 </ul>
 
 <h3>Error position</h3>

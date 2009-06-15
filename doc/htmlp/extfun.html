@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: extfun.html,v 1.11 2007/08/27 04:26:41 deraugla Exp $ -->
+  <!-- $Id: extfun.html,v 1.12 2007/08/28 17:49:37 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Extensible functions</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -80,24 +80,20 @@ clear, the associated expressions are not.</p>
 <p>The match cases are inserted according to the following rules:</p>
 
 <ul>
-
-<li>The match cases are inserted in the order they are defined in the
-syntax "<code>extend</code>"</li>
-
-<li>A match case pattern with "when" is insered before a match case
-pattern without "when".</li>
-
-<li>Two match cases patterns both with "when" or both without "when"
-  are insered according to the alphabetic order of some internal syntax
-  tree of the patterns where bound variables names are
-  <span class="u">not</span> taken into account.</li>
-
-<li>If two match cases patterns without "when" have the same patterns
-internal syntax tree, the initial one is silently removed.</li>
-
-<li>If two match cases patterns with "when" have the same patterns
-internal syntax tree, the new one is inserted before the old one.</li>
-
+  <li>The match cases are inserted in the order they are defined in
+    the syntax "<code>extend</code>"</li>
+  <li>A match case pattern with "when" is insered before a match case
+    pattern without "when".</li>
+  <li>Two match cases patterns both with "when" or both without "when"
+    are insered according to the alphabetic order of some internal
+    syntax tree of the patterns where bound variables names are
+    <span class="u">not</span> taken into account.</li>
+  <li>If two match cases patterns without "when" have the same
+    patterns internal syntax tree, the initial one is silently
+    removed.</li>
+  <li>If two match cases patterns with "when" have the same patterns
+    internal syntax tree, the new one is inserted before the old
+    one.</li>
 </ul>
 
 <div class="trailer">

@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: parsers.html,v 1.20 2007/08/28 02:20:19 deraugla Exp $ -->
+  <!-- $Id: parsers.html,v 1.21 2007/08/28 17:49:37 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -155,13 +155,10 @@
 <p>In short, a parser can return with three ways:</p>
 
 <ul>
-
-<li>A normal result, of type "<code>b</code>" for a parser of type "<code>Stream.t a -> b</code>".</li>
-
-<li>Raising the exception "<code>Stream.Failure</code>".</li>
-
-<li>Raising the exception "<code>Stream.Error</code>".</li>
-
+  <li>A normal result, of type "<code>b</code>" for a parser of type
+    "<code>Stream.t a -> b</code>".</li>
+  <li>Raising the exception "<code>Stream.Failure</code>".</li>
+  <li>Raising the exception "<code>Stream.Error</code>".</li>
 </ul>
 
 <p>Fundamentally, the exception "<code>Stream.Failure</code>" means
@@ -306,7 +303,6 @@
 <ul>
   <li>A direct test of one or several stream elements
     (called <b>terminal</b> symbol), in three ways:
-
     <ol>
       <li>The character "backquote" followed by a pattern, meaning: if
         the stream starts with an element which is matched by this
@@ -366,7 +362,6 @@
             stream pattern). See "no error optionization" below.</li>
           <li>Otherwise the exception parameter is the empty string.</li>
         </ul>
-
       </li>
     </ol>
   </li>
@@ -652,28 +647,22 @@ like:</p>
 <p>In general, while analyzing a language, there are two levels:</p>
 
 <ul>
-
-<li>The level where the input, considered as a stream of characters,
-  is read to make a stream of tokens (for example "words", if it is a
-  human language, or punctuation). This level is generally called
-  "lexing".</li>
-
-<li>The level where the input is a stream of tokens where grammar
-  rules are parsed. This level is generally called "parsing".</li>
-
+  <li>The level where the input, considered as a stream of characters,
+    is read to make a stream of tokens (for example "words", if it is
+    a human language, or punctuation). This level is generally called
+    "lexing".</li>
+  <li>The level where the input is a stream of tokens where grammar
+    rules are parsed. This level is generally called "parsing".</li>
 </ul>
 
 <p>The "parser" construction described here can be used for both,
   thanks to the polymorphism of OCaml:</p>
 
 <ul>
-
-<li>The lexing level is a "parser" of streams of characters returning
-  tokens.</li>
-
-<li>The parsing level is a "parser" of streams of tokens returning
-  syntax trees.</li>
-
+  <li>The lexing level is a "parser" of streams of characters
+    returning tokens.</li>
+  <li>The parsing level is a "parser" of streams of tokens returning
+    syntax trees.</li>
 </ul>
 
 <p>By comparison, the programs "lex" and "yacc" use two different

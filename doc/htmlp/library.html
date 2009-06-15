@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: library.html,v 1.21 2007/08/28 03:22:04 deraugla Exp $ -->
+  <!-- $Id: library.html,v 1.22 2007/08/28 17:49:37 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Library</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -153,7 +153,6 @@
   <dt><tt>type pattern = (string * string);</tt></dt>
   <dd>Type for values used by the generated code of the EXTEND
     statement to represent terminals in entry rules.
-
   <ul>
     <li>The first string is the constructor name (must start with an
       uppercase character). When it is empty, the second string is
@@ -186,7 +185,6 @@ type glexer 'te =
 <dl><dd>
     The type for lexers compatible with Camlp5 grammars. The parameter
     type "<tt>'te</tt>" is the type of the tokens.
-
     <ul>
       <li>The field "<tt>tok_func</tt>" is the main lexer
         function. See "<tt>lexer_func</tt>" type below.</li>
@@ -495,7 +493,6 @@ type g_entry 'te =
 
 <dl><dd>
     Meaning of the fields:
-
     <ul>
       <li><tt>egram</tt> : the associated grammar</li>
       <li><tt>ename</tt> : the entry name</li>
@@ -517,7 +514,6 @@ and g_desc 'te =
 
 <dl><dd>
     The entry description.
-
     <ul>
       <li>The constructor "<tt>Dlevels</tt>" is for entries built by
         "<tt>Grammar.Entry.create</tt>" and extendable by the EXTEND
@@ -538,7 +534,6 @@ and g_assoc = [ NonA | RightA | LeftA ]
 
 <dl><dd>
     Description of an entry level.
-
     <ul>
       <li><tt>assoc</tt> : the level associativity</li>
       <li><tt>lname</tt> : the level name, if any</li>
@@ -568,7 +563,6 @@ and g_symbol 'te =
 
 <dl><dd>
     Description of a rule symbol.
-
     <ul>
       <li>The constructor "<tt>Smeta</tt>" is used by the extensions
         <a href="grammars.html#a:Extensions-FOLD0-and-FOLD1">FOLD0 and
@@ -623,7 +617,6 @@ and g_node 'te =
 <dl><dd>
     The types of tree and tree nodes, representing a list of
     factorized rules in an entry level.
-
     <ul>
       <li>The constructor "<tt>Node</tt>" is a representation of a
         symbol (field "<tt>node</tt>"), the rest of the rule tree
@@ -654,14 +647,13 @@ type position =
 
 <dl><dd>
     The type of position where an entry extension takes place.
-
     <ul>
       <li><tt>First</tt> : corresponds to FIRST</li>
       <li><tt>Last</tt> : corresponds to LAST</li>
       <li><tt>Before s</tt> : corresponds to BEFORE "s"</li>
       <li><tt>After s</tt> : corresponds to AFTER "s"</li>
       <li><tt>Level s</tt> : corresponds to LEVEL "s"</li>
-      </ul>
+    </ul>
 </dd></dl>
 
 <p>The module contains other definitions but for internal use.</p>
@@ -746,7 +738,6 @@ module Entry =
 
 <dl><dd>
     Module to handle entries.
-
     <ul>
       <li><tt>Grammar.Entry.e</tt> : type for entries returning values
         of type "<tt>'a</tt>".</li>
@@ -805,7 +796,6 @@ module Unsafe :
    and there may have problems with the associated lexer if there are
    keywords; 2) clearing an entry does not destroy the tokens used
    only by itself.
-
    <ul>
      <li><tt>Grammar.Unsafe.reinit_gram g lex</tt> removes the tokens
        of the grammar and sets "<tt>lex</tt>" as a new lexer for
@@ -899,7 +889,6 @@ module type S =
 <dl><dd>
     Signature type of the functor "<tt>Grammar.GMake</tt>". The types
     and functions are almost the same than in generic interface, but:
-
     <ul>
       <li>Grammars are not values. Functions holding a grammar as
          parameter do not have this parameter yet.</li>
@@ -997,7 +986,6 @@ module type S =
       dang : string };</tt></dt>
   <dd>
     Printing context.
-
     <ul>
       <li>"<tt>ind</tt>" : the current indendation</li>
       <li>"<tt>bef</tt>" : what has to be printed before, in the same line</li>

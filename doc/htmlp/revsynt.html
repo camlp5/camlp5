@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: revsynt.html,v 1.30 2007/08/27 18:25:38 deraugla Exp $ -->
+  <!-- $Id: revsynt.html,v 1.31 2007/08/28 17:49:37 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>revised syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -295,7 +295,6 @@
 
 <ul>
   <li>The keyword "function" no longer exists. Only "fun" is used.</li>
-
   <li>The pattern matchings, in constructions with "fun", "match" and
     "try" are closed with brackets: an open bracket "[" before the
     first case, and a close bracket "]" after the last case:
@@ -335,7 +334,6 @@
       </tr>
     </table>
   </li>
-
   <li>It is possible to write the empty function, raising the
     exception "Match_failure" whichever parameter is applied, the
     empty "match", raising "Match_failure" after having evaluated its
@@ -347,7 +345,6 @@
   try e with []
 </pre>
   </li>
-
   <li>The patterns after "let" and "value" must be irrefutable. The
     following OCaml expression:
 <pre>
@@ -686,7 +683,6 @@
   <li>The streams and the stream patterns are bracketed with "<tt>[:</tt>"
     and "<tt>:]</tt>" instead of "<tt>[&lt;</tt>" and "<tt>&gt;]</tt>".
   </li>
-
   <li>The stream component "terminal" is written with a backquote
     instead of a quote:
     <table width="75%" class="centered" cellspacing="0" cellpadding="0">
@@ -700,7 +696,6 @@
       </tr>
     </table>
    </li>
-
    <li>The cases of parsers are bracketed with "<tt>[</tt>" and
      "<tt>]</tt>", like for "fun", "match" and "try". If there is one
      case, the brackets are not required:
@@ -727,7 +722,6 @@
       </tr>
     </table>
   </li>
-
    <li>It is possible to write the empty parser raising the exception
      "Stream.Failure" whichever parameter is applied, and the empty
      stream matching always raising "Stream.Failure":
@@ -736,7 +730,6 @@
   match e with parser []
 </pre>
    </li>
-
    <li>In normal syntax, the error indicator starts with a double question
      mark, in revised syntax with a simple question mark:
     <table width="75%" class="centered" cellspacing="0" cellpadding="0">
@@ -758,7 +751,6 @@
       </tr>
     </table>
   </li>
-
   <li>In normal syntax, the component optimization starts with
      "<tt>?!</tt>", in revised syntax with "<tt>!</tt>":
     <table width="75%" class="centered" cellspacing="0" cellpadding="0">
@@ -786,7 +778,6 @@
 
 <ul>
   <li>Object items end with a single semicolon which is required.</li>
-
   <li>Class type parameters follow the class identifier:
     <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
@@ -803,7 +794,6 @@
       </tr>
     </table>
   </li>
-
   <li>In the type of class with parameters, the type of the parameters
     are between brackets. Example in signature:
     <table width="75%" class="centered" cellspacing="0" cellpadding="0">
@@ -817,7 +807,6 @@
       </tr>
     </table>
   </li>
-
   <li>The keywords "virtual" and "private" must be in this order:
     <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
@@ -842,7 +831,6 @@
       </tr>
     </table>
   </li>
-
   <li>Object variables are introduced with "value" instead of "val":
     <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
@@ -855,7 +843,6 @@
       </tr>
     </table>
   </li>
-
   <li>Type constraints in objects are introduced with "type" instead of
     "constraint":
     <table width="75%" class="centered" cellspacing="0" cellpadding="0">

@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: opretty.html,v 1.25 2007/08/22 12:30:28 deraugla Exp $ -->
+  <!-- $Id: opretty.html,v 1.26 2007/08/28 17:49:37 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Extensions of printing</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -45,17 +45,14 @@ in the directory "etc". Look at them if you are interested on creating
 new ones. The main ones are:</p>
 
 <ul>
-
-<li>"etc/pr_r.ml": pretty print in revised syntax.</li>
-
-<li>"etc/pr_o.ml": pretty print in normal syntax.</li>
-
-<li>"etc/pr_rp.ml": rebuilding parsers in their original revised syntax.</li>
-
-<li>"etc/pr_op.ml": rebuilding parsers in their original normal syntax.</li>
-
-<li>"etc/pr_extend.ml": rebuilding EXTEND in its original syntax.</li>
-
+  <li>"etc/pr_r.ml": pretty print in revised syntax.</li>
+  <li>"etc/pr_o.ml": pretty print in normal syntax.</li>
+  <li>"etc/pr_rp.ml": rebuilding parsers in their original revised
+    syntax.</li>
+  <li>"etc/pr_op.ml": rebuilding parsers in their original normal
+    syntax.</li>
+  <li>"etc/pr_extend.ml": rebuilding EXTEND in its original
+    syntax.</li>
 </ul>
 
 <p>We present here how this system work inside these files. First, the
@@ -69,16 +66,13 @@ new ones. The main ones are:</p>
 printing context" (variable <code>pc</code>). It is a record holding :</p>
 
 <ul>
-
-<li>The current indendation : <code>pc.ind</code></li>
-
-<li>What has to be printed before, in the same line : <code>pc.bef</code></li>
-
-<li>What has to be printed after, in the same line : <code>pc.aft</code></li>
-
-<li>The dangling token, useful in normal syntax to know whether
-parentheses are necessary : <code>pc.dang</code></li>
-
+  <li>The current indendation : <code>pc.ind</code></li>
+  <li>What has to be printed before, in the same line
+    : <code>pc.bef</code></li>
+  <li>What has to be printed after, in the same line
+    : <code>pc.aft</code></li>
+  <li>The dangling token, useful in normal syntax to know whether
+    parentheses are necessary : <code>pc.dang</code></li>
 </ul>
 
 <p>A typical pretty printing function calls the
@@ -87,13 +81,10 @@ module <a href="pretty.html">Pretty</a>. This function takes two
 functions as parameter:</p>
 
 <ul>
-
-<li>The way to print the data in one only line (<i>horizontal</i>
-printing)</li>
-
-<li>The way to print the data in two or more lines (<i>vertical</i>
-printing)</li>
-
+  <li>The way to print the data in one only line (<i>horizontal</i>
+    printing)</li>
+  <li>The way to print the data in two or more lines (<i>vertical</i>
+    printing)</li>
 </ul>
 
 <p>Both functions catenate the strings by using the
