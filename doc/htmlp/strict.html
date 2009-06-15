@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: strict.html,v 1.1 2007/09/16 05:58:46 deraugla Exp $ -->
+  <!-- $Id: strict.html,v 1.2 2007/09/16 09:38:06 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Camlp5</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -19,7 +19,73 @@
 
 <h1 class="top">Transitional and Strict modes</h1>
 
-<p>... to be written ...</p>
+<p>Since version 4.09, Camlp5 can be installed in two
+  modes: <em>transitional</em> mode and <em>strict</em> mode.</p>
+
+<p>This notion has been introduced to ensure backward compatibility
+  and allow the use of a new quotation kit "<tt>q_ast.cmo</tt>",
+  defining Camlp5 syntax tree quotations in user syntax (with all its
+  possible extensions).</p>
+
+<p>Here are the differences with the two modes:</p>
+
+<dl>
+  <dt>Transitional</dt>
+  <dd>
+    <dl>
+      <dt>Compatibility</dt>
+      <dd>The syntax tree is fully compatible with the previous
+        versions of Camlp5, no changes has to be done in users'
+        programs.</dd>
+      <dt>Quotation kit "<tt>q_ast.cmo</tt>"</dt>
+      <dd>The antiquotations are not available: when used, a syntax
+        error message is displayed.</dd>
+    </dl>
+  </dd>
+  <dt>Strict</dt>
+  <dd>
+    <dl>
+      <dt>Compatibility</dt>
+      <dd>The syntax tree is different, users' programs may have to be
+        modified, but not necessarily.</dd>
+      <dt>Quotation kit "<tt>q_ast.cmo</tt>"</dt>
+      <dd>All antiquotations are available.</dd>
+    </dl>
+  </dd>
+</dl>
+
+<p>In strict mode, better compatibility is assumed in programs using
+  syntax tree quotations instead of syntax tree nodes. A solution is
+  therefore to use strict mode and change the usage of nodes into the
+  usage of quotations (which is backward compatible). But there may
+  exist other incompatibilities.<p>
+
+<p>... to be completed ...</p>
+
+<h2>Which mode is installed ?</h2>
+
+<p>To know in which mode an installed version of Camlp5 is installed,
+  type:</p>
+
+<pre>
+  camlp5 -pmode
+</pre>
+
+<h2>Selecting mode when compiling Camlp5</h2>
+
+<p>When compiling Camlp5 from its sources, the mode must be selected
+  at configuration time, before doing anything else. The <em>configure</em>
+  must be run with one of these options:</p>
+
+<pre>
+  ./configure -strict
+  ./configure -transitional
+</pre>
+
+<p>The default is "transitional", i.e. without option, the sources are
+  compiled in transitional mode.</p>
+
+<p>... to be completed ...</p>
 
 <div class="trailer">
 </div>

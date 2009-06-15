@@ -9,7 +9,7 @@ Camlp5 Version 4.09:
   - transitional mode (default): the syntax tree is compatible with the
     previous version; users don't have to change their programs, but in
     the syntax tree quotations introduced by the new parsing kit 'q_ast.cmo',
-    not all cases of antiquotations are available. This mode is recommended
+    the antiquotations are not available. This mode is recommended
     for users who don't want to risk possibilities of problems with the
     current Camlp5 version, forcing them, if they have to downgrade Camlp5
     to make their changes back. After some versions of Camlp5 or months or
@@ -17,8 +17,8 @@ Camlp5 Version 4.09:
 
   - strict mode: the syntax tree is not compatible with the previous
     version. The user programs may compile without change, but not
-    necessarily, in particular if these programs use the syntax tree
-    with their constructors forms instead of their quotation forms
+    necessarily, It depends on the fact that these programs use the syntax
+    tree with their constructors forms instead of their quotation forms.
     (which remain compatible). There is a new feature: the syntax
     tree quotations in user syntax, introduced by the new parsing
     kit 'q_ast.cmo".

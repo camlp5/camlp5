@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: sources.html,v 1.8 2007/09/10 01:17:54 deraugla Exp $ -->
+  <!-- $Id: sources.html,v 1.9 2007/09/16 09:38:06 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Camlp5 sources</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -337,6 +337,54 @@
 
 <p>And don't forget, if you want to commit, to re-create the pure OCaml
   sources like indicated above.</p>
+
+<h2>Switching between transitional and strict mode</h2>
+
+<p>If Camlp5 is compiled in some mode, it is possible to change its
+  mode in two boostrapping steps. Type:</p>
+
+<pre>
+  make MODE=T coreboot
+</pre>
+
+<p>to switch to transitional mode, or:</p>
+
+<pre>
+  make MODE=S coreboot
+</pre>
+
+<p>to switch to strict mode.</p>
+
+<p>After two (necessary) bootstraps, the kernel is compiled in the new
+  mode. Complete the compilation by:</p>
+
+<pre>
+  make MODE=T all opt opt.opt
+</pre>
+
+<p>or:</p>
+
+<pre>
+  make MODE=S all opt opt.opt
+</pre>
+
+<p>according to the new mode you want to use.</p>
+
+<p>Another solution is, of course, recompile everything from scratch:</p>
+
+<pre>
+  make clean
+  ./configure -transitional
+  make world.opt
+</pre>
+
+<p>or:</p>
+
+<pre>
+  make clean
+  ./configure -strict
+  make world.opt
+</pre>
 
 <div class="trailer">
 </div>
