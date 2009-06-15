@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: bparsers.html,v 1.1 2007/11/26 11:07:03 deraugla Exp $ -->
+  <!-- $Id: bparsers.html,v 1.2 2007/11/30 13:14:21 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>backtracking parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -146,6 +146,46 @@
   is proposed for that in the <a href="grammars.html">extensible
   grammars</a> system when the parsing algorithm is set to
   "backtracking".</p>
+
+<h2>Example</h2>
+
+<p>Here is an example which just shows the backtracking algorithm but
+  without parsing, an empty stream being given as parameter and never
+  referred.<p>
+
+<p>It creates a list of three strings, each of them being choosen
+  between <tt>"A"</tt>, <tt>"B"</tt> and <tt>"C"</tt>.</p>
+
+<p>The code is:</p>
+
+<pre>
+  #load "pa_fstream.cmo";
+  value choice = bparser [ [: :] -> "A" | [: :] -> "B" | [: :] -> "C" ];
+  value combine = bparser [: x = choice; y = choice; z = choice :] -> [x; y; z];
+</pre>
+
+<p>The function "combine" returns the first solution:</p>
+
+<pre>
+  # combine (fstream [: :]);
+  - : option (list string * Fstream.t '_a * Fstream.kont '_a (list string)) =
+  Some (["A"; "A"; "A"], &lt;abstr>, Fstream.K &lt;fun>)
+</pre>
+
+<p>The function "Fstream.bparse_all" returns the list of all solutions,
+  showing the interest of the backtracking:</p>
+
+<pre>
+  # Fstream.bparse_all combine (fstream [: :]);
+  - : list (list string) =
+  [["A"; "A"; "A"]; ["A"; "A"; "B"]; ["A"; "A"; "C"]; ["A"; "B"; "A"];
+   ["A"; "B"; "B"]; ["A"; "B"; "C"]; ["A"; "C"; "A"]; ["A"; "C"; "B"];
+   ["A"; "C"; "C"]; ["B"; "A"; "A"]; ["B"; "A"; "B"]; ["B"; "A"; "C"];
+   ["B"; "B"; "A"]; ["B"; "B"; "B"]; ["B"; "B"; "C"]; ["B"; "C"; "A"];
+   ["B"; "C"; "B"]; ["B"; "C"; "C"]; ["C"; "A"; "A"]; ["C"; "A"; "B"];
+   ["C"; "A"; "C"]; ["C"; "B"; "A"]; ["C"; "B"; "B"]; ["C"; "B"; "C"];
+   ["C"; "C"; "A"]; ["C"; "C"; "B"]; ["C"; "C"; "C"]]
+</pre>
 
 <div class="trailer">
 </div>

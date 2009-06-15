@@ -6,6 +6,14 @@
     <lastBuildDate>Mon Sep 17 15:10:47 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
     <item>
+      <title>Backtracking example</title>
+      <description>
+        Added an example of backtracking.
+      </description>
+      <pubDate>Fri Nov 30 12:59:11 CET 2007</pubDate>
+      <link>../bparser.html</link>
+    </item>
+    <item>
       <title>Fstream and Grammar library modules</title>
       <description>
         In Fstream module, added section about backtracking parsers.
