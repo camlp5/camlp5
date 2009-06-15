@@ -6,9 +6,24 @@ type pr_context =
   Eprinter.pr_context =
     { ind : int; bef : string; aft : string; dang : string }
 ;;
-type 'a pr_fun = pr_context -> 'a -> string;;
 
-val tab : int -> string;;
+(* comments *)
+
+val comm_bef : pr_context -> MLast.loc -> string;;
+   (** [comm_bef pc loc] get the comment from the source just before the
+       given location [loc]. May be reindented using [pc.ind]. Returns the
+       empty string if no comment found. *)
+
+val source : string ref;;
+   (** The initial source string, which must be set by the pretty printing
+       kit. Used by [comm_bef] above. *)
+val set_comm_min_pos : int -> unit;;
+   (** Set the minimum position of the source where comments can be found,
+       (to prevent possible duplication of comments). *)
+
+(* meta functions to treat lists *)
+
+type 'a pr_fun = pr_context -> 'a -> string;;
 
 val hlist : 'a pr_fun -> 'a list pr_fun;;
    (** horizontal list
@@ -56,6 +71,10 @@ val plistb : 'a pr_fun -> int -> ('a * string) list pr_fun;;
 val plistl : 'a pr_fun -> 'a pr_fun -> int -> ('a * string) list pr_fun;;
    (** paragraph list with a different function for the last element *)
 
+(* miscellaneous *)
+
+val tab : int -> string;;
+
 val flatten_sequence : MLast.expr -> MLast.expr list option;;
    (** [flatten_sequence e]. If [e] is an expression representing a sequence,
        return the list of expressions of the sequence. If some of these
@@ -65,15 +84,3 @@ val flatten_sequence : MLast.expr -> MLast.expr list option;;
        first expression of the sequence. If [e] is a let..in sequence, it
        works the same way. If [e] is not a sequence nor a let..in sequence,
        return None. *)
-
-val source : string ref;;
-   (** The initial source string, which must be set by the pretty printing
-       kit. Used by [comm_bef] below. *)
-val comm_bef : pr_context -> MLast.loc -> string;;
-   (** [comm_bef pc loc] get the comment from the source (in the global
-       variable [source] just before the given location [loc]. May be
-       reindented using [pc.ind]. Returns the empty string if no comment
-       found. *)
-val set_comm_min_pos : int -> unit;;
-   (** Set the minimum position of the source where comments can be found,
-       (to prevent possible duplication of comments). *)

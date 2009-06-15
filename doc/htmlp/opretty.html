@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: opretty.html,v 1.16 2007/08/18 00:51:54 deraugla Exp $ -->
+  <!-- $Id: opretty.html,v 1.17 2007/08/18 01:42:47 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Pretty Printing ocaml programs</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -301,6 +301,83 @@ necessary and remains the empty string.</p>
 </pre>
 
 <h2>The Prtools module</h2>
+
+<p>The Prtools module is defined inside camlp5 for pretty printing
+  kits. It provides variables and functions to treat comments, and
+  meta-functions to treat lists (horizontally, vertically,
+  paragraphly).</p>
+
+<h3>Comments</h3>
+
+<dl>
+  <dt><tt>value comm_bef : pr_context -> MLast.loc -> string;</tt></dt>
+  <dd>[comm_bef pc loc] get the comment from the source just before
+    the given location [loc]. This comment may be reindented using
+    [pc.ind]. Returns the empty string if no comment found.</dd>
+</dl>
+
+<dl>
+  <dt><tt>value source : ref string;</tt></dt>
+  <dd>The initial source string, which must be set by the pretty
+    printing kit. Used by [comm_bef] above.</dd>
+  <dt><tt>value set_comm_min_pos : int -> unit;</tt></dt>
+  <dd>Set the minimum position of the source where comments can be
+    found, (to prevent possible duplication of comments).</dd>
+</dl>
+
+<h3>Meta functions for lists</h3>
+
+<p>... section to be formatted ...</p>
+
+<pre>
+value hlist : pr_fun 'a -> pr_fun (list 'a);
+   (** horizontal list
+       [hlist elem pc e] returns the horizontally pretty printed string
+       of a list of elements; elements are separated with spaces.
+       The list is displayed in one only line. If this function is called
+       in the context of the [horiz] function of the function [horiz_vertic]
+       of the module Printing, and if the line overflows or contains newlines,
+       the function fails (the exception is catched by [horiz_vertic] for
+       a vertical pretty print). *)
+value hlist2 : pr_fun 'a -> pr_fun 'a -> pr_fun (list 'a);
+   (** horizontal list with different function from 2nd element on *)
+value hlistl : pr_fun 'a -> pr_fun 'a -> pr_fun (list 'a);
+   (** horizontal list with different function for the last element *)
+
+value vlist : pr_fun 'a -> pr_fun (list 'a);
+   (** vertical list
+       [vlist elem pc e] returns the vertically pretty printed string
+       of a list of elements; elements are separated with newlines and
+       indentations. *)
+value vlist2 : pr_fun 'a -> pr_fun 'a -> pr_fun (list 'a);
+   (** vertical list with different function from 2nd element on. *)
+value vlist3 : pr_fun ('a * bool) -> pr_fun ('a * bool) -> pr_fun (list 'a);
+   (** vertical list with different function from 2nd element on, the
+       boolean value being True if it is the last element of the list. *)
+value vlistl : pr_fun 'a -> pr_fun 'a -> pr_fun (list 'a);
+   (** vertical list with different function for the last element *)
+
+value plist : pr_fun 'a -> int -> pr_fun (list ('a * string));
+   (** paragraph list
+       [plist elem sh pc el] returns the pretty printed string of a list
+       of elements with separators. The elements are printed horizontally
+       as far as possible. When an element does not fit on the line, a
+       newline is added and the element is displayed in the next line with
+       an indentation of [sh]. [elem] is the function to print elements,
+       [el] a list of pairs (element * separator) (the last separator is
+       ignored). *)
+value plistb : pr_fun 'a -> int -> pr_fun (list ('a * string));
+   (** paragraph list with possible cut already after the beginner
+       [plist elem sh pc el] returns the pretty printed string of
+       the list of elements, like with [plist] but the value of
+       [pc.bef] corresponds to an element already printed, as it were
+       on the list. Therefore, if the first element of [el] does not fit
+       in the line, a newline and a tabulation is added after [pc.bef]. *)
+value plistl : pr_fun 'a -> pr_fun 'a -> int -> pr_fun (list ('a * string));
+   (** paragraph list with a different function for the last element *)
+</pre>
+
+<h3>Miscellaneous</h3>
 
 <p>... to be written ...</p>
 

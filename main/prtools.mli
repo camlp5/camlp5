@@ -1,14 +1,29 @@
 (* camlp5r *)
-(* $Id: prtools.mli,v 1.5 2007/08/16 16:01:19 deraugla Exp $ *)
+(* $Id: prtools.mli,v 1.6 2007/08/18 01:42:47 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 type pr_context =
   Eprinter.pr_context ==
     { ind : int; bef : string; aft : string; dang : string }
 ;
-type pr_fun 'a = pr_context -> 'a -> string;
 
-value tab : int -> string;
+(* comments *)
+
+value comm_bef : pr_context -> MLast.loc -> string;
+   (** [comm_bef pc loc] get the comment from the source just before the
+       given location [loc]. May be reindented using [pc.ind]. Returns the
+       empty string if no comment found. *)
+
+value source : ref string;
+   (** The initial source string, which must be set by the pretty printing
+       kit. Used by [comm_bef] above. *)
+value set_comm_min_pos : int -> unit;
+   (** Set the minimum position of the source where comments can be found,
+       (to prevent possible duplication of comments). *)
+
+(* meta functions to treat lists *)
+
+type pr_fun 'a = pr_context -> 'a -> string;
 
 value hlist : pr_fun 'a -> pr_fun (list 'a);
    (** horizontal list
@@ -56,6 +71,10 @@ value plistb : pr_fun 'a -> int -> pr_fun (list ('a * string));
 value plistl : pr_fun 'a -> pr_fun 'a -> int -> pr_fun (list ('a * string));
    (** paragraph list with a different function for the last element *)
 
+(* miscellaneous *)
+
+value tab : int -> string;
+
 value flatten_sequence : MLast.expr -> option (list MLast.expr);
    (** [flatten_sequence e]. If [e] is an expression representing a sequence,
        return the list of expressions of the sequence. If some of these
@@ -65,15 +84,3 @@ value flatten_sequence : MLast.expr -> option (list MLast.expr);
        first expression of the sequence. If [e] is a let..in sequence, it
        works the same way. If [e] is not a sequence nor a let..in sequence,
        return None. *)
-
-value source : ref string;
-   (** The initial source string, which must be set by the pretty printing
-       kit. Used by [comm_bef] below. *)
-value comm_bef : pr_context -> MLast.loc -> string;
-   (** [comm_bef pc loc] get the comment from the source (in the global
-       variable [source] just before the given location [loc]. May be
-       reindented using [pc.ind]. Returns the empty string if no comment
-       found. *)
-value set_comm_min_pos : int -> unit;
-   (** Set the minimum position of the source where comments can be found,
-       (to prevent possible duplication of comments). *)
