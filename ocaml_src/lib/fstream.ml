@@ -110,6 +110,15 @@ let b_act p f strm =
   loop (fun () -> p strm) ()
 ;;
 
+let b_act_ep p f strm =
+  let rec loop p () =
+    match p () with
+      Some (x, strm, K kont) -> Some (f x (count strm), strm, K (loop kont))
+    | None -> None
+  in
+  loop (fun () -> p strm) ()
+;;
+
 let b_seq a b strm =
   let rec app_a kont1 () =
     match kont1 () with
@@ -141,3 +150,5 @@ let b_term f strm =
       end
   | None -> None
 ;;
+
+let b_nop strm = Some ((), strm, K (fun _ -> None));;

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: fstream.mli,v 1.6 2007/11/22 19:21:05 deraugla Exp $ *)
+(* $Id: fstream.mli,v 1.7 2007/11/22 20:21:08 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Module [Fstream]: functional streams *)
@@ -76,6 +76,8 @@ value app : t 'a -> t 'a -> data 'a;
 value flazy : (unit -> data 'a) -> t 'a;
 
 value b_act : bp 'a 'b -> ('b -> 'c) -> bp 'a 'c;
+value b_act_ep : bp 'a 'b -> ('b -> int -> 'c) -> bp 'a 'c;
 value b_seq : bp 'a 'b -> bp 'a 'c -> bp 'a ('b * 'c);
 value b_or : bp 'a 'b -> bp 'a 'b -> bp 'a 'b;
 value b_term : ('a -> option 'b) -> bp 'a 'b;
+value b_nop : bp 'a unit;

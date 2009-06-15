@@ -252,7 +252,7 @@ let rec bstream_pattern loc (spcl, epo, e) =
     match rpel with
       (p, _) :: rpel ->
         List.fold_left (fun p (p1, _) -> MLast.PaTup (loc, [p1; p])) p rpel
-    | [] -> Ploc.raise loc (Stream.Error "not impl: stream_pattern 1")
+    | [] -> MLast.PaUid (loc, "()")
   in
   let e1 =
     match rpel with
@@ -269,16 +269,37 @@ let rec bstream_pattern loc (spcl, epo, e) =
                    e1),
                 e))
           e rpel
-    | [] -> Ploc.raise loc (Stream.Error "not impl: stream_pattern 2")
-  in
-  MLast.ExApp
-    (loc,
-     MLast.ExApp
-       (loc,
+    | [] ->
         MLast.ExAcc
-          (loc, MLast.ExUid (loc, "Fstream"), MLast.ExLid (loc, "b_act")),
-        e1),
-     MLast.ExFun (loc, [p, None, e]))
+          (loc, MLast.ExUid (loc, "Fstream"), MLast.ExLid (loc, "b_nop"))
+  in
+  match epo with
+    Some p1 ->
+      MLast.ExApp
+        (loc,
+         MLast.ExApp
+           (loc,
+            MLast.ExAcc
+              (loc, MLast.ExUid (loc, "Fstream"),
+               MLast.ExLid (loc, "b_act_ep")),
+            e1),
+         MLast.ExFun (loc, [p, None, MLast.ExFun (loc, [p1, None, e])]))
+  | None ->
+      match p, e with
+        MLast.PaLid (_, s1), MLast.ExLid (_, s2) when s1 = s2 ->
+          (* optimization *)
+          e1
+      | _ ->
+          (* normal case *)
+          MLast.ExApp
+            (loc,
+             MLast.ExApp
+               (loc,
+                MLast.ExAcc
+                  (loc, MLast.ExUid (loc, "Fstream"),
+                   MLast.ExLid (loc, "b_act")),
+                e1),
+             MLast.ExFun (loc, [p, None, e]))
 ;;
 
 let bparser_cases loc spel =

@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_fstream.ml,v 1.2 2007/11/22 19:21:05 deraugla Exp $ *)
+(* $Id: pa_fstream.ml,v 1.3 2007/11/22 20:21:08 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -146,16 +146,27 @@ value rec bstream_pattern loc (spcl, epo, e) =
     match rpel with
     [ [(p, _) :: rpel] ->
         List.fold_left (fun p (p1, _) -> <:patt< ($p1$, $p$) >>) p rpel
-    | [] -> Ploc.raise loc (Stream.Error "not impl: stream_pattern 1") ]
+    | [] ->
+        <:patt< () >> ]
   in
   let e1 =
     match rpel with
     [ [(_, e) :: rpel] ->
         List.fold_left (fun e (_, e1) -> <:expr< Fstream.b_seq $e1$ $e$ >>) e
           rpel
-    | [] -> Ploc.raise loc (Stream.Error "not impl: stream_pattern 2") ]
+    | [] ->
+        <:expr< Fstream.b_nop >> ]
   in
-  <:expr< Fstream.b_act $e1$ (fun $p$ -> $e$) >>
+  match epo with
+  [ Some p1 -> <:expr< Fstream.b_act_ep $e1$ (fun $p$ $p1$ -> $e$) >>
+  | None ->
+      match (p, e) with
+      [ (<:patt< $lid:s1$ >>, <:expr< $lid:s2$ >>) when s1 = s2 ->
+          (* optimization *)
+          e1
+      | _ ->
+          (* normal case *)
+          <:expr< Fstream.b_act $e1$ (fun $p$ -> $e$) >> ] ]
 ;
 
 value bparser_cases loc spel =

@@ -76,6 +76,8 @@ val app : 'a t -> 'a t -> 'a data;;
 val flazy : (unit -> 'a data) -> 'a t;;
 
 val b_act : ('a, 'b) bp -> ('b -> 'c) -> ('a, 'c) bp;;
+val b_act_ep : ('a, 'b) bp -> ('b -> int -> 'c) -> ('a, 'c) bp;;
 val b_seq : ('a, 'b) bp -> ('a, 'c) bp -> ('a, 'b * 'c) bp;;
 val b_or : ('a, 'b) bp -> ('a, 'b) bp -> ('a, 'b) bp;;
 val b_term : ('a -> 'b option) -> ('a, 'b) bp;;
+val b_nop : ('a, unit) bp;;

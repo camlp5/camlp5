@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: fstream.ml,v 1.7 2007/11/22 19:21:05 deraugla Exp $ *)
+(* $Id: fstream.ml,v 1.8 2007/11/22 20:21:08 deraugla Exp $ *)
 (* Copyright 2007 INRIA *)
 
 type t 'a = { count : int; data : Lazy.t (data 'a) }
@@ -97,6 +97,13 @@ value b_act p f strm =
     | None -> None ]
 ;
 
+value b_act_ep p f strm =
+  loop (fun () -> p strm) () where rec loop p () =
+    match p () with
+    [ Some (x, strm, K kont) -> Some (f x (count strm), strm, K (loop kont))
+    | None -> None ]
+;
+
 value b_seq a b strm =
   let rec app_a kont1 () =
     match kont1 () with
@@ -125,3 +132,5 @@ value b_term f strm =
       | None -> None ]
   | None -> None ]
 ;
+
+value b_nop strm = Some ((), strm, K (fun _ -> None));
