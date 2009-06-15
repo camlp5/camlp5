@@ -62,19 +62,55 @@ value module_type = Eprinter.apply pr_module_type;
 value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
 *)
 
+value match_assoc pc (p, we, e) =
+  horiz_vertic
+    (fun () ->
+       let s1 =
+         let pc = {(pc) with bef = sprintf "%s(" pc.bef; aft = ""} in
+         match we with
+         [ <:vala< Some e >> -> not_impl "match_assoc 1" pc 0
+         | _ -> patt pc p ]
+       in
+       let s2 = expr {(pc) with bef = ""; aft = sprintf ")%s" pc.aft} e in
+       sprintf "%s %s" s1 s2)
+    (fun () ->
+       let s1 =
+         let pc = {(pc) with bef = sprintf "%s(" pc.bef; aft = ""} in
+         match we with
+         [ <:vala< Some e >> -> not_impl "match_assoc 3" pc 0
+         | _ -> patt pc p ]
+       in
+       let s2 =
+         expr
+           {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+            aft = sprintf ")%s" pc.aft}
+           e
+       in
+       sprintf "%s\n%s" s1 s2)
+;
+
 EXTEND_PRINTER
   pr_expr:
     [ "top"
       [ (* <:expr< fun [] >> ->
           fun ppf curr next dg k ->
             fprintf ppf "(lambda%t" (ks ")" k)
-      | <:expr< fun $lid:s$ -> $e$ >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "(lambda@ %s@;<1 1>%a" s expr (e, ks ")" k)
+      | *) <:expr< fun $lid:s$ -> $e$ >> ->
+          horiz_vertic
+            (fun () -> not_impl "fun1 horiz" pc 0)
+            (fun () -> not_impl "fun1 vertic" pc 0)
       | <:expr< fun [ $list:pwel$ ] >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "(@[<hv>lambda_match@ %a@]" (list match_assoc)
-              (pwel, ks ")" k)
+          horiz_vertic (fun () -> sprintf "\n")
+            (fun () ->
+               let s1 = sprintf "%s(lambda_match" pc.bef in
+               let s2 =
+                 vlist match_assoc
+                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+                    aft = sprintf ")%s" pc.aft}
+                   pwel
+               in
+               sprintf "%s\n%s" s1 s2)
+(*
       | <:expr< match $e$ with [ $list:pwel$ ] >> ->
           fun ppf curr next dg k ->
             fprintf ppf "(@[<hv>@[<b 2>match@ %a@]@ %a@]" expr (e, nok)
@@ -197,15 +233,18 @@ EXTEND_PRINTER
             fprintf ppf "%a.%a" expr (e1, nok) expr (e2, k)
       | <:expr< $int:s$ >> ->
           fun ppf curr next dg k -> fprintf ppf "%s%t" (int_repr s) k
+*)
       | <:expr< $lid:s$ >> | <:expr< $uid:s$ >> ->
-          fun ppf curr next dg k -> fprintf ppf "%s%t" s k
+          sprintf "%s%s%s" pc.bef s pc.aft
+(*
       | <:expr< ` $s$ >> ->
           fun ppf curr next dg k -> fprintf ppf "`%s%t" s k
       | <:expr< $str:s$ >> ->
           fun ppf curr next dg k -> fprintf ppf "\"%s\"%t" s k
       | <:expr< $chr:s$ >> ->
           fun ppf curr next dg k -> fprintf ppf "'%s'%t" s k
-      | *) x ->
+*)
+      | x ->
           not_impl "expr" pc x ] ]
   ;
   pr_patt:
