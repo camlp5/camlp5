@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_extprint.ml,v 1.11 2007/12/11 18:21:52 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.12 2007/12/13 13:33:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -348,7 +348,7 @@ and read_simple_tree loc pc fmt al i =
     (pcl, al, i)
 ;
 
-value make_call loc aft_is_empty pc offset pcl =
+value make_call loc aft_is_empty pc pcl =
   let el =
     loop [] True pcl where rec loop rev_el is_first =
       fun
@@ -360,15 +360,6 @@ value make_call loc aft_is_empty pc offset pcl =
             match f_f_a_opt with
             [ Some (f, f_a) ->
                 let lbl = [] in
-                let lbl =
-                  if offset > 0 then
-                    let e =
-                      let soff = string_of_int offset in
-                      <:expr< $pc$.ind + $int:soff$ >>
-                    in
-                    [(<:patt< ind >>, e) :: lbl]
-                  else lbl
-                in
                 let lbl =
                   if is_first && bef = "" then lbl
                   else              
@@ -444,6 +435,11 @@ value make_call loc aft_is_empty pc offset pcl =
         <:expr< sprintf $str:fmt$ >> el ]
 ;
 
+value let_offset_in_e loc pc offset e =
+  let soff = string_of_int offset in
+  <:expr< let pc = {($pc$) with ind = $pc$.ind + $int:soff$} in $e$ >>
+;
+
 value expand_pprintf loc pc fmt al =
   let (tree, al, _) = read_tree loc pc fmt al 0 in
   match al with
@@ -452,50 +448,56 @@ value expand_pprintf loc pc fmt al =
       let loc = Ploc.encl (MLast.loc_of_expr a) (MLast.loc_of_expr last_a) in
       Ploc.raise loc (Stream.Error "too many parameters")
   | [] ->
-      loop pc 0 False tree where rec loop pc offset aft_is_empty =
+      loop pc False tree where rec loop pc aft_is_empty =
         fun
-        [ Leaf pcl -> make_call loc aft_is_empty pc offset pcl
+        [ Leaf pcl -> make_call loc aft_is_empty pc pcl
         | Node tree1 pp tree2 ->
             let (s, o) =
               match pp with
               [ PPbreak sp off -> (string_of_int sp, string_of_int off)
               | PPspace -> ("1", "0") ]
             in
-            let e1 = loop <:expr< pc >> 0 True tree1 in
-            let e2 = loop <:expr< pc >> 0 aft_is_empty tree2 in
-            let pc =
-              if offset > 0 then
-                let soff = string_of_int offset in
-                <:expr< {($pc$) with ind = $pc$.ind + $int:soff$} >>
-              else pc
-            in
+            let e1 = loop <:expr< pc >> True tree1 in
+            let e2 = loop <:expr< pc >> aft_is_empty tree2 in
             <:expr<
               Eprinter.sprint_break $int:s$ $int:o$ $pc$ (fun pc -> $e1$)
                 (fun pc -> $e2$)
             >>
         | Offset offset t ->
-            loop pc offset aft_is_empty t
+            let e = loop <:expr< pc >> aft_is_empty t in
+            let_offset_in_e loc pc offset e
         | BreakAll force_newlines t ->
             let (e, oel) =
-              loop_1 aft_is_empty t where rec loop_1 aft_is_empty =
+              loop_1 pc aft_is_empty t where rec loop_1 pc aft_is_empty =
                 fun
                 [ Node t1 pp t2 ->
-                    let (e1, oel1) = loop_1 True t1 in
-                    let (e2, oel2) = loop_1 aft_is_empty t2 in
+                    let (e1, oel1) = loop_1 pc True t1 in
+                    let (e2, oel2) = loop_1 pc aft_is_empty t2 in
                     let (s, o) =
                       match pp with
-                      [ PPbreak s o -> (string_of_int s, string_of_int o)
-                      | PPspace -> ("1", "0") ]
+                      [ PPbreak s o -> (s, o)
+                      | PPspace -> (1, 0) ]
                     in
                     (e1, oel1 @ [(s, o, e2) :: oel2])
-                | Offset _ t ->
-                    loop_1 aft_is_empty t
+                | Offset offset t ->
+                    let (e, oel) = loop_1 <:expr< pc >> aft_is_empty t in
+                    let e = let_offset_in_e loc pc offset e in
+                    let oel =
+                      List.map
+                        (fun (s, o, e) ->
+                           let o = if o = 0 then offset else o in
+                           (s, o, e))
+                        oel
+                    in
+                    (e, oel)
                 | t ->
-                    (loop pc offset aft_is_empty t, []) ]
+                    (loop pc aft_is_empty t, []) ]
             in
             let fl =
               List.fold_right
                 (fun (s, o, e) el ->
+                   let s = string_of_int s in
+                   let o = string_of_int o in
                    <:expr< [($int:s$, $int:o$, fun pc -> $e$) :: $el$] >>)
                 oel <:expr< [] >>
             in
