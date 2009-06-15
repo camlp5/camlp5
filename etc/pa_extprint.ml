@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_extprint.ml,v 1.22 2007/12/17 16:03:45 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.23 2007/12/17 16:29:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -763,6 +763,36 @@ value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc t al =
       in
       let (e, al) = expr_of_tree_aux loc fmt False False <:expr< pc >> t al in
       (<:expr< let pc = $pc$ in $e$ >>, al)
+  | (Pf [""], [(Tsub (PPall b) (Pf sl, tl), Pf [""])]) ->
+      let (e1, al) = expr_of_pformat loc empty_bef True <:expr< pc >> al sl in
+      let (rev_el, al) =
+        List.fold_left
+          (fun (rev_el, al) (br, pf) ->
+             let sl = match pf with [ Pf sl -> sl ] in
+             let (e, al) =
+               expr_of_pformat loc False False <:expr< pc >> al sl
+             in
+             let (off, sp) =
+               match br with
+               [ Tbreak (PPbreak off sp) -> (off, sp)
+               | Tbreak PPspace -> (1, 0)
+               | Tsub _ _ -> failwith "not impl Tsub" ]
+             in
+             ([(e, off, sp) :: rev_el], al))
+          ([], al) tl
+      in
+      let e =
+        let el =
+          List.fold_left
+            (fun e (e1, off, sp) ->
+               let (off, sp) = (string_of_int off, string_of_int sp) in
+               <:expr< [($int:off$, $int:sp$, fun pc -> $e1$) :: $e$] >>)
+            <:expr< [] >> rev_el
+        in
+        let b = if b then <:expr< True >> else <:expr< False >> in
+        <:expr< Eprinter.sprint_break_all $b$ $pc$ (fun pc -> $e1$) $el$ >>
+      in
+      (e, al)
   | (Pf [""], [(Tsub PPnone t, Pf [""])]) ->
       expr_of_tree_aux loc fmt empty_bef empty_aft pc t al
   | (Pf sl1, [(Tsub pp t1, Pf sl2) :: t]) ->
