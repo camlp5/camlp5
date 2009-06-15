@@ -470,6 +470,7 @@ value lr0 entry lev = do {
   List.iter eprint_item item_set;
   flush stderr;
 
+  let item_set_ht = Hashtbl.create 1 in
   let item_set_cnt =
     loop 0 0 item_set
     where rec loop ini_item_set_cnt item_set_cnt item_set = do {
@@ -525,12 +526,26 @@ value lr0 entry lev = do {
             (* complete by closure *)
             let item_set = close_item_set rl item_set in
             Printf.eprintf "\n";
-            Printf.eprintf "Item set %d (after %d and %s)\n\n"
-              (item_set_cnt + 1) ini_item_set_cnt (sprint_symb s);
-            List.iter eprint_item item_set;
-            flush stderr;
             let item_set_cnt =
-              loop (item_set_cnt + 1) (item_set_cnt + 1) item_set
+              match
+                try Some (Hashtbl.find item_set_ht item_set) with
+                [ Not_found -> None ]
+              with
+              [ Some n -> do {
+                  Printf.eprintf
+                    "Item set (after %d and %s) = Item set %d\n"
+                    ini_item_set_cnt (sprint_symb s) n;
+                  flush stderr;
+                  item_set_cnt
+                }
+              | None -> do {
+                  Printf.eprintf "Item set %d (after %d and %s)\n\n"
+                    (item_set_cnt + 1) ini_item_set_cnt (sprint_symb s);
+                  List.iter eprint_item item_set;
+                  flush stderr;
+                  Hashtbl.add item_set_ht item_set (item_set_cnt + 1);
+                  loop (item_set_cnt + 1) (item_set_cnt + 1) item_set
+                } ]
             in
             loop_1 item_set_cnt sl
           }
