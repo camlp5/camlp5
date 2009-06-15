@@ -1,5 +1,5 @@
-pa_extfold.cmo: ../main/mLast.cmi ../main/pcaml.cmi 
-pa_extfold.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
+pa_extfold.cmo: ../main/pcaml.cmi 
+pa_extfold.cmx: ../main/pcaml.cmx 
 pa_extfun.cmo: ../main/mLast.cmi ../main/pcaml.cmi 
 pa_extfun.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
 pa_extprint.cmo: ../main/mLast.cmi ../main/pcaml.cmi 
@@ -55,6 +55,8 @@ pr_rp_main.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/spretty.cmx \
     parserify.cmx 
 pr_scheme.cmo: ../main/mLast.cmi ../main/pcaml.cmi 
 pr_scheme.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
+pr_scheme_new.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi 
+pr_scheme_new.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx 
 pr_schp_main.cmo: ../main/mLast.cmi ../main/pcaml.cmi parserify.cmi \
     pr_scheme.cmo 
 pr_schp_main.cmx: ../main/mLast.cmi ../main/pcaml.cmx parserify.cmx \

@@ -1,16 +1,6 @@
 (* camlp5r pa_macro.cmo *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: reloc.ml,v 1.34 2007/09/18 02:33:32 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.35 2007/10/08 09:56:51 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 open MLast;
 
