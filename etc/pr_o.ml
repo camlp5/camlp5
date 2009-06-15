@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.111 2007/12/19 20:26:28 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.112 2007/12/20 03:42:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -270,9 +270,9 @@ value expr_with_comm_except_if_sequence pc e =
 (* Pretty printing improvements (optional):
    - prints "let x = e" instead of "let = fun x -> e"
    - if "e" is a type constraint, put the constraint after the params. E.g.
-        value f x y = (e : t)
+        let f x y = (e : t)
      is displayed:
-        value f x y : t = e
+        let f x y : t = e
    Cancellation of all these improvements could be done by changing calls
    to this function to a call to "binding expr" above.
 *)
@@ -289,47 +289,26 @@ value let_binding pc (p, e) =
     | _ -> (e, None) ]
   in
   let simple_patt = Eprinter.apply_level pr_patt "simple" in
-  horiz_vertic
-    (fun () ->
-       sprintf "%s%s%s = %s%s" pc.bef
-         (hlist simple_patt {(pc) with bef = ""; aft = ""} pl)
-         (match tyo with
-          [ Some t -> sprintf " : %s" (ctyp {(pc) with bef = ""; aft = ""} t)
-          | None -> "" ])
-         (expr {(pc) with bef = ""; aft = ""} e)
-         (if pc.aft = "in" then " in" else pc.aft))
-    (fun () ->
-       let patt_eq k =
-         horiz_vertic
-           (fun () ->
-              sprintf "%s%s%s =%s" pc.bef
-                (hlist simple_patt {(pc) with bef = ""; aft = ""} pl)
-                (match tyo with
-                 [ Some t ->
-                     sprintf " : %s" (ctyp {(pc) with bef = ""; aft = ""} t)
-                 | None -> "" ])
-                k)
-           (fun () ->
-              let patt_tycon tyo pc p =
-                match tyo with
-                [ Some t ->
-                    simple_patt
-                      {(pc) with aft = ctyp {(pc) with bef = " : "} t} p
-                | None -> simple_patt pc p ]
-              in
-              let pl = List.map (fun p -> (p, "")) pl in
-              plistl simple_patt (patt_tycon tyo) 4
-                {(pc) with aft = sprintf " =%s" k} pl)
-       in
-       let s1 = patt_eq "" in
-       let s2 =
-         expr_with_comm_except_if_sequence
-           {ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""; dang = ""} e
-       in
-       let s3 =
-         if pc.aft = "" then "" else sprintf "\n%s%s" (tab pc.ind) pc.aft
-       in
-       sprintf "%s\n%s%s" s1 s2 s3)
+  let patt_tycon tyo pc p =
+    match tyo with
+    [ Some t -> pprintf pc "%p : %p" simple_patt p ctyp t
+    | None -> simple_patt pc p ]
+  in
+  let pl = List.map (fun p -> (p, "")) pl in
+  let pc = {(pc) with dang = ""} in
+  match pc.aft with
+  [ "" ->
+      pprintf pc "%p =@;%p"
+        (plistl simple_patt (patt_tycon tyo) 4) pl
+        expr_with_comm_except_if_sequence e
+  | "in" ->
+      pprintf pc "@[<a>%p =@;%p@ @]"
+        (plistl simple_patt (patt_tycon tyo) 4) pl
+        expr_with_comm_except_if_sequence e
+  | _ ->
+      pprintf pc "@[<a>%p =@;%p@;<0 0>@]"
+        (plistl simple_patt (patt_tycon tyo) 4) pl
+        expr_with_comm_except_if_sequence e ]
 ;
 
 value match_assoc force_vertic pc ((p, w, e), is_last) =
