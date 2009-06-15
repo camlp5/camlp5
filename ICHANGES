@@ -1,6 +1,12 @@
 Internal, very small, undocumented, or invisible changes
 ********************************************************
 
+Camlp5 Version 5.01:
+---------------------
+
+* [30 Sep 2007] Cleaned up and simplified q_MLast.ml pa_extend.ml pa_r.ml
+  while keeping compatibility.
+
 Camlp5 Version 4.07:
 ---------------------
 
