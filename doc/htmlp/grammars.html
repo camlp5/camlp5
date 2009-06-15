@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: grammars.html,v 1.80 2007/09/26 16:50:41 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.81 2007/09/26 19:17:29 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -358,14 +358,25 @@ symbols. They are:</p>
   the syntax tree quotation
   kit <a href="q_ast.html"><tt>q_ast.cmo</tt></a>. It works only in
   strict mode. In transitional mode, it is just equivalent to its
-  symbol parameter. The optional list of strings following it gives
-  the allowed antiquotations kinds. By default, this string list
-  is:</p>
+  symbol parameter.</p>
+
+<h5>Antiquotation kind</h5>
+
+<p>The antiquotation kind is the optional identifier between the
+  starting "<tt>$</tt>" (dollar) and the "<tt>:</tt>" (colon) in a
+  quotation of syntax tree (see the
+  chapter <a href="ml_ast.html">syntax tree</a>).</p>
+
+<p>The optional list of strings following the "V" meta symbol and its
+  symbol parameter gives the allowed antiquotations kinds.</p>
+
+<p>By default, this string list, i.e. the available antiquotation
+  kinds, is:</p>
 
 <ul>
-  <li>"flag" for FLAG</li>
-  <li>"list" for LIST0 and LIST1</li>
-  <li>"opt" for OPT</li>
+  <li><tt>["flag"]</tt> for FLAG</li>
+  <li><tt>["list"]</tt> for LIST0 and LIST1</li>
+  <li><tt>["opt"]</tt> for OPT</li>
 </ul>
 
 <p>For example, the symbol:</p>
@@ -379,6 +390,52 @@ symbols. They are:</p>
   the keyword "<tt>rec</tt>" but, moreover, the antiquotation
   "<tt>$flag:..$</tt>" where "<tt>..</tt>" is an expression or a pattern
   depending on the position of the quotation.</p>
+
+<p>There are also default antiquotations kinds for the tokens used in
+  the OCaml language predefined parsers "<tt>pa_r.cmo</tt>" (revised
+  syntax) and "<tt>pa_o.cmo</tt>" (normal syntax), actually all
+  parsers using the provided lexer "<tt>Plexer</tt>" (see the
+  chapter <a href="library.html">Library</a>). They are:</p>
+
+<ul>
+  <li><tt>["chr"]</tt> for CHAR</li>
+  <li><tt>["flo"]</tt> for FLOAT</li>
+  <li><tt>["int"]</tt> for INT</li>
+  <li><tt>["int32"]</tt> for INT_l</li>
+  <li><tt>["int64"]</tt> for INT_L</li>
+  <li><tt>["nativeint"]</tt> for INT_n</li>
+  <li><tt>["lid"]</tt> for LIDENT</li>
+  <li><tt>["str"]</tt> for STRING</li>
+  <li><tt>["uid"]</tt> for UIDENT</li>
+</ul>
+
+<p>It is also possible to use the "V" meta symbol over non-terminals
+  (grammars entries), but there is no default antiquotation kind. For
+  example, while parsing a quotation, the symbol:</p>
+
+<pre>
+  V foo "bar" "oops"
+</pre>
+
+<p>corresponds to either a call to the grammar entry "<tt>foo</tt>",
+  or to the antiquotations "<tt>$bar:...$</tt>" or
+  "<tt>$oops:...$</tt>".</p>
+
+<h5>Type</h5>
+
+<p>The type of the value returned by a V meta symbol is:</p>
+
+<ul>
+  <li>in transitional mode, the type of its symbol parameter,</li>
+  <li>in strict mode, "<tt>Ploc.vala t</tt>", where "<tt>t</tt>" is
+    its symbol parameter.</li>
+</ul>
+
+<p>In strict mode, if the symbol parameter is found, whose value is,
+  say, "<tt>x</tt>", the result is "<tt>Ploc.VaVal x</tt>". If an
+  antiquotation is found the result is "<tt>Ploc.VaAnt s</tt>" where
+  "<tt>s</tt>" is some string containing the antiquotation text and
+  some other internal information.</p>
 
 <h3>Rules insertion</h3>
 
