@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.18 2007/07/16 01:39:50 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.19 2007/07/16 09:34:50 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -399,12 +399,31 @@ takes a lexer as parameter. This is a value of type "<tt>Token.glexer
 <p>This type is a record type containing six fields:</p>
 
 <ul>
-  <li>tok_func</li>
-  <li>tok_using</li>
-  <li>tok_removing</li>
-  <li>tok_match</li>
-  <li>tok_text</li>
-  <li>tok_comm</li>
+  <li>tok_func: function returning a token from a char stream,</li>
+  <li>tok_using: function checking if a token pattern is recognized by
+  the lexer,</li>
+  <li>tok_removing: function telling the lexer that a token pattern
+  has been removed,</li>
+  <li>tok_match: function telling how a token pattern is parsed,</li>
+  <li>tok_text: function returning the name of a token pattern,</li>
+  <li>tok_comm: option value to ask the lexer to record the locations
+  of the comments.</li>
+</ul>
+
+<p>Since this list is a little bit complicated, there are default
+functions and values that can be used in the first time:</p>
+
+<ul>
+  <li>Token.lexer_func_of_parser is a provided function returning a
+    value suitable value for the field tok_func from a char stream
+    parser,</li>
+  <li>Token.default_match is an acceptable function, suitable for the
+    field tok_match,</li>
+  <li>Token.lexer_text is an acceptable function, suitable for the
+    field tok_text,</li>
+  <li>the function "<tt>fun _ -> ()</tt>" can be used for the fields
+    tok_using and tok_removing in a first time,</li>
+  <li>the field tok_comm can be set to None.</li>
 </ul>
 
 <p>... to be completed ...</p>
