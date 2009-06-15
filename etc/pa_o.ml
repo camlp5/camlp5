@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.41 2007/09/05 18:55:19 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.42 2007/09/07 04:31:52 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -818,7 +818,7 @@ EXTEND
     | "star"
       [ t = SELF; "*"; tl = LIST1 (ctyp LEVEL "ctyp1") SEP "*" ->
           <:ctyp< ( $list:[t :: tl]$ ) >> ]
-    | "ctyp1"
+    | "apply"
       [ t1 = SELF; t2 = SELF -> <:ctyp< $t2$ $t1$ >> ]
     | "ctyp2"
       [ t1 = SELF; "."; t2 = SELF -> <:ctyp< $t1$ . $t2$ >>
