@@ -1,4 +1,4 @@
-/* $Id: base.css,v 1.12 2007/07/13 14:27:22 deraugla Exp $ */
+/* $Id: base.css,v 1.13 2007/07/14 02:48:32 deraugla Exp $ */
 
 body { margin: 0 0 1px 0; background-color: rgb(189,225,255) }
 
@@ -44,7 +44,7 @@ pre {
 .bottom { margin-bottom: 0 }
 .trailer { margin-top: 3cm }
 
-.value { background: #0f0 }
+.value { }
 .dangling { color: red; background: rgb(220,220,220) }
 .parenthesis { color: blue }
 .u { text-decoration: underline }
