@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.23 2007/07/16 13:27:54 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.24 2007/07/16 13:32:11 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -408,8 +408,9 @@ and the "match function", necessary to build the interface.</p>
 
 <h3>Token patterns</h3>
 
-<p>In grammar rules, the keywords and tokens symbols are represented
-by values of type "<tt>Token.pattern</tt>" defined like this:</p>
+<p>In grammar rules, the keywords and tokens symbols are internally
+represented by values of type "<tt>Token.pattern</tt>" defined like
+this:</p>
 
 <pre>
 type pattern = (string * string);
@@ -487,6 +488,7 @@ a token, returning the matched string or raising the exception
 
 <pre>
 type mytoken = [ Ident of string | Int of int | Comma | Equal | Keyw of string ];
+
 value mymatch =
   fun
   [ ("IDENT", "") -> fun [ Ident s -> s | _ -> raise Stream.Failure ]
