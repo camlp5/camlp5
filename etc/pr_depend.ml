@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.36 2007/09/16 05:48:11 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.37 2007/09/17 10:29:27 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open MLast;
@@ -135,7 +135,10 @@ and expr =
   | ExFlo _ _ -> ()
   | ExLab _ _ eo -> option expr eo
   | ExLaz _ e -> expr e
-  | <:expr< let $list:pel$ in $e$ >> -> do { list let_binding pel; expr e }
+  | <:expr< let $flag:_$ $list:pel$ in $e$ >> -> do {
+      list let_binding pel;
+      expr e
+    }
   | ExLid _ _ -> ()
   | <:expr< let module $_$ = $me$ in $e$ >> -> do { module_expr me; expr e }
   | <:expr< match $e$ with [ $list:pwel$ ] >> -> do {

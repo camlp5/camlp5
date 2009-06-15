@@ -10,8 +10,8 @@ pa_macro.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/reloc.cmx \
     $(OTOP)/utils/pconfig.cmx 
 pa_r.cmo: ../main/mLast.cmi ../main/pcaml.cmi 
 pa_r.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
-pa_rp.cmo: ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi 
-pa_rp.cmx: ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx 
+pa_rp.cmo: ../main/exparser.cmi ../main/pcaml.cmi 
+pa_rp.cmx: ../main/exparser.cmx ../main/pcaml.cmx 
 pr_dump.cmo: ../main/ast2pt.cmi ../main/pcaml.cmi \
     $(OTOP)/utils/pconfig.cmi 
 pr_dump.cmx: ../main/ast2pt.cmx ../main/pcaml.cmx \

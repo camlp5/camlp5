@@ -22,8 +22,8 @@ plexing.cmx: plexing.cmi ploc.cmx
 plexing.cmi: ploc.cmi 
 ploc.cmo: ploc.cmi 
 ploc.cmx: ploc.cmi 
-pretty.cmo: pretty.cmi 
-pretty.cmx: pretty.cmi 
+pretty.cmo: ploc.cmi pretty.cmi 
+pretty.cmx: ploc.cmx pretty.cmi 
 stdpp.cmo: ploc.cmi stdpp.cmi 
 stdpp.cmx: ploc.cmx stdpp.cmi 
 stdpp.cmi: ploc.cmi 
