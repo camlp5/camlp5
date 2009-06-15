@@ -202,7 +202,7 @@ let rec name_of_symbol entry =
     Snterm e -> "[" ^ e.ename ^ "]"
   | Snterml (e, l) -> "[" ^ e.ename ^ " level " ^ l ^ "]"
   | Sself | Snext -> "[" ^ entry.ename ^ "]"
-  | Stoken tok -> entry.egram.glexer.Token.tok_text tok
+  | Stoken tok -> entry.egram.glexer.Plexing.tok_text tok
   | _ -> "???"
 ;;
 
@@ -251,7 +251,7 @@ and name_of_tree_failed entry =
           List.fold_left
             (fun s tok ->
                (if s = "" then "" else s ^ " ") ^
-               entry.egram.glexer.Token.tok_text tok)
+               entry.egram.glexer.Plexing.tok_text tok)
             "" tokl
       end
   | DeadEnd | LocAct (_, _) -> "???"
@@ -554,7 +554,7 @@ and parser_of_token_list gram p1 tokl =
   let rec loop n =
     function
       tok :: tokl ->
-        let tematch = gram.glexer.Token.tok_match tok in
+        let tematch = gram.glexer.Plexing.tok_match tok in
         begin match tokl with
           [] ->
             let ps strm =
@@ -675,7 +675,7 @@ and parser_of_symbol entry nlevn =
   | Snext -> (fun (strm__ : _ Stream.t) -> entry.estart nlevn strm__)
   | Stoken tok -> parser_of_token entry tok
 and parser_of_token entry tok =
-  let f = entry.egram.glexer.Token.tok_match tok in
+  let f = entry.egram.glexer.Plexing.tok_match tok in
   fun strm ->
     match Stream.peek strm with
       Some tok -> let r = f tok in Stream.junk strm; Obj.repr r
@@ -791,7 +791,7 @@ let extend_entry entry position rules =
   try
     let elev = Gramext.levels_of_rules entry position rules in
     entry.edesc <- Dlevels elev; init_entry_functions entry elev
-  with Token.Error s ->
+  with Plexing.Error s ->
     Printf.eprintf "Lexer initialization error:\n- %s\n" s;
     flush stderr;
     failwith "Grammar.extend"
@@ -856,13 +856,13 @@ let glexer g = g.glexer;;
 type 'te gen_parsable =
   { pa_chr_strm : char Stream.t;
     pa_tok_strm : 'te Stream.t;
-    pa_loc_func : Token.location_function }
+    pa_loc_func : Plexing.location_function }
 ;;
 
 type parsable = token gen_parsable;;
 
 let parsable g cs =
-  let (ts, lf) = g.glexer.Token.tok_func cs in
+  let (ts, lf) = g.glexer.Plexing.tok_func cs in
   {pa_chr_strm = cs; pa_tok_strm = ts; pa_loc_func = lf}
 ;;
 
@@ -1013,7 +1013,7 @@ module Unsafe =
 
 (* Functorial interface *)
 
-module type GLexerType = sig type te;; val lexer : te Token.glexer;; end;;
+module type GLexerType = sig type te;; val lexer : te Plexing.lexer;; end;;
 
 module type S =
   sig
@@ -1021,7 +1021,7 @@ module type S =
     type parsable;;
     val parsable : char Stream.t -> parsable;;
     val tokens : string -> (string * int) list;;
-    val glexer : te Token.glexer;;
+    val glexer : te Plexing.lexer;;
     module Entry :
       sig
         type 'a e;;
@@ -1036,7 +1036,7 @@ module type S =
     ;;
     module Unsafe :
       sig
-        val gram_reinit : te Token.glexer -> unit;;
+        val gram_reinit : te Plexing.lexer -> unit;;
         val clear_entry : 'a Entry.e -> unit;;
       end
     ;;
@@ -1056,7 +1056,7 @@ module GMake (L : GLexerType) =
     type parsable = te gen_parsable;;
     let gram = gcreate L.lexer;;
     let parsable cs =
-      let (ts, lf) = L.lexer.Token.tok_func cs in
+      let (ts, lf) = L.lexer.Plexing.tok_func cs in
       {pa_chr_strm = cs; pa_tok_strm = ts; pa_loc_func = lf}
     ;;
     let tokens = tokens gram;;

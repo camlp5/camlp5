@@ -99,7 +99,7 @@ value unassoc =
 
 value rec unaction =
   fun
-  [ <:expr< fun ($lid:locp$ : Token.location) -> ($a$ : $_$) >>
+  [ <:expr< fun ($lid:locp$ : Ploc.t) -> ($a$ : $_$) >>
     when locp = Ploc.name.val ->
       let ao =
         match a with
@@ -131,7 +131,7 @@ type symbol =
   | Sopt of symbol
   | Sself
   | Snext
-  | Stoken of Token.pattern
+  | Stoken of Plexing.pattern
   | Srules of list (list (option MLast.patt * symbol) * option MLast.expr) ]
 ;
 

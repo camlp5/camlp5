@@ -15,8 +15,8 @@
 open Printf;;
 
 type 'te grammar =
-  { gtokens : (Token.pattern, int ref) Hashtbl.t;
-    mutable glexer : 'te Token.glexer }
+  { gtokens : (Plexing.pattern, int ref) Hashtbl.t;
+    mutable glexer : 'te Plexing.lexer }
 ;;
 
 type 'te g_entry =
@@ -47,7 +47,7 @@ and 'te g_symbol =
   | Sflag of 'te g_symbol
   | Sself
   | Snext
-  | Stoken of Token.pattern
+  | Stoken of Plexing.pattern
   | Stree of 'te g_tree
 and g_action = Obj.t
 and 'te g_tree =
@@ -331,7 +331,7 @@ let insert_tokens gram symbols =
     | Stree t -> tinsert t
     | Stoken ("ANY", _) -> ()
     | Stoken tok ->
-        gram.glexer.Token.tok_using tok;
+        gram.glexer.Plexing.tok_using tok;
         let r =
           try Hashtbl.find gram.gtokens tok with
             Not_found -> let r = ref 0 in Hashtbl.add gram.gtokens tok r; r
@@ -457,7 +457,7 @@ let rec decr_keyw_use gram =
       if !r == 0 then
         begin
           Hashtbl.remove gram.gtokens tok;
-          gram.glexer.Token.tok_removing tok
+          gram.glexer.Plexing.tok_removing tok
         end
   | Smeta (_, sl, _) -> List.iter (decr_keyw_use gram) sl
   | Slist0 s -> decr_keyw_use gram s

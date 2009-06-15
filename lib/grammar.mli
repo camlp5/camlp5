@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.mli,v 1.17 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: grammar.mli,v 1.18 2007/09/01 21:20:34 deraugla Exp $ *)
 
 (** Extensible grammars.
 
@@ -21,7 +21,7 @@
 type g = 'x;
    (** The type for grammars, holding entries. *)
 type token = (string * string);
-value gcreate : Token.glexer token -> g;
+value gcreate : Plexing.lexer token -> g;
    (** Create a new grammar, without keywords, using the lexer given
        as parameter. *)
 value tokens : g -> string -> list (string * int);
@@ -33,7 +33,7 @@ value tokens : g -> string -> list (string * int);
 -      The call [Grammar.tokens g ""] returns the keywords list.
 -      The call [Grammar.tokens g "IDENT"] returns the list of all usages
        of the pattern "IDENT" in the [EXTEND] statements. *)
-value glexer : g -> Token.glexer token;
+value glexer : g -> Plexing.lexer token;
    (** Return the lexer used by the grammar *)
 
 type parsable = 'abstract;
@@ -76,7 +76,7 @@ value of_entry : Entry.e 'a -> g;
 
 module Unsafe :
   sig
-    value gram_reinit : g -> Token.glexer token -> unit;
+    value gram_reinit : g -> Plexing.lexer token -> unit;
     value clear_entry : Entry.e 'a -> unit;
   end
 ;
@@ -97,7 +97,12 @@ module Unsafe :
        rule "an entry cannot call an entry of another grammar" by
        normal OCaml typing. *)
 
-module type GLexerType = sig type te = 'x; value lexer : Token.glexer te; end;
+module type GLexerType =
+  sig
+    type te = 'x;
+    value lexer : Plexing.lexer te;
+  end
+;
    (** The input signature for the functor [Grammar.GMake]: [te] is the
        type of the tokens. *)
 
@@ -107,7 +112,7 @@ module type S =
     type parsable = 'x;
     value parsable : Stream.t char -> parsable;
     value tokens : string -> list (string * int);
-    value glexer : Token.glexer te;
+    value glexer : Plexing.lexer te;
     module Entry :
       sig
         type e 'a = 'y;
@@ -122,7 +127,7 @@ module type S =
     ;
     module Unsafe :
       sig
-        value gram_reinit : Token.glexer te -> unit;
+        value gram_reinit : Plexing.lexer te -> unit;
         value clear_entry : Entry.e 'a -> unit;
       end
     ;

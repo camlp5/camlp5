@@ -1,8 +1,8 @@
 (* camlp5r *)
-(* $Id: stdpp.mli,v 1.18 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: stdpp.mli,v 1.19 2007/09/01 21:20:34 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
-(** Module deprecated since version 4.09. Use now module Ploc.
+(** Module deprecated since Camlp5 version 4.09. Use now module Ploc.
     Compatibility assumed. *)
 
 type location = Ploc.t;

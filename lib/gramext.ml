@@ -10,13 +10,13 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: gramext.ml,v 1.14 2007/08/14 11:19:09 deraugla Exp $ *)
+(* $Id: gramext.ml,v 1.15 2007/09/01 21:20:34 deraugla Exp $ *)
 
 open Printf;
 
 type grammar 'te =
-  { gtokens : Hashtbl.t Token.pattern (ref int);
-    glexer : mutable Token.glexer 'te }
+  { gtokens : Hashtbl.t Plexing.pattern (ref int);
+    glexer : mutable Plexing.lexer 'te }
 ;
 
 type g_entry 'te =
@@ -47,7 +47,7 @@ and g_symbol 'te =
   | Sflag of g_symbol 'te
   | Sself
   | Snext
-  | Stoken of Token.pattern
+  | Stoken of Plexing.pattern
   | Stree of g_tree 'te ]
 and g_action = Obj.t
 and g_tree 'te =
@@ -340,7 +340,7 @@ value insert_tokens gram symbols =
     | Stree t -> tinsert t
     | Stoken ("ANY", _) -> ()
     | Stoken tok -> do {
-        gram.glexer.Token.tok_using tok;
+        gram.glexer.Plexing.tok_using tok;
         let r =
           try Hashtbl.find gram.gtokens tok with
           [ Not_found -> do {
@@ -473,7 +473,7 @@ value rec decr_keyw_use gram =
       decr r;
       if r.val == 0 then do {
         Hashtbl.remove gram.gtokens tok;
-        gram.glexer.Token.tok_removing tok
+        gram.glexer.Plexing.tok_removing tok
       }
       else ()
     }

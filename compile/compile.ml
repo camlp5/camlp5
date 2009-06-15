@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: compile.ml,v 1.19 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: compile.ml,v 1.20 2007/09/01 21:20:34 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -21,7 +21,7 @@ value rec name_of_symbol entry =
   [ Snterm e -> "[" ^ e.ename ^ "]"
   | Snterml e l -> "[" ^ e.ename ^ " level " ^ l ^ "]"
   | Sself | Snext -> "[" ^ entry.ename ^ "]"
-  | Stoken tok -> entry.egram.glexer.Token.tok_text tok
+  | Stoken tok -> entry.egram.glexer.Plexing.tok_text tok
   | _ -> "???" ]
 ;
 
@@ -595,7 +595,7 @@ value compile () =
   let si2 =
     let list = List.sort compare keywords.val in
     <:str_item<
-      List.iter (fun kw -> P.lexer.Token.tok_using ("", kw))
+      List.iter (fun kw -> P.lexer.Plexing.tok_using ("", kw))
         $expr_list list$
     >>
   in

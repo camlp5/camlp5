@@ -55,11 +55,11 @@ let get_tag x =
 let error loc str = Ploc.raise loc (Failure str);;
 
 let char_of_char_token loc s =
-  try Token.eval_char s with Failure _ as exn -> Ploc.raise loc exn
+  try Plexing.eval_char s with Failure _ as exn -> Ploc.raise loc exn
 ;;
 
 let string_of_string_token loc s =
-  try Token.eval_string loc s with Failure _ as exn -> Ploc.raise loc exn
+  try Plexing.eval_string loc s with Failure _ as exn -> Ploc.raise loc exn
 ;;
 
 let glob_fname = ref "";;

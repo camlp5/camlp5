@@ -47,12 +47,12 @@ val last_pos : t -> int;;
 val line_nb : t -> int;;
    (** [Ploc.line_nb loc] returns the line number of the location or [-1] if
        the location does not contain a line number (i.e. built with
-       [make_unlined]. *)
+       [Ploc.make_unlined]. *)
 val bol_pos : t -> int;;
    (** [Ploc.bol_pos loc] returns the position of the beginning of the line
        of the location in number of characters since the beginning of
        the stream, or [0] if the location does not contain a line number
-       (i.e. built with [make_unlined]. *)
+       (i.e. built with [Ploc.make_unlined]. *)
 
 (* combining locations *)
 

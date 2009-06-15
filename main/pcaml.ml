@@ -10,16 +10,17 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pcaml.ml,v 1.21 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.22 2007/09/01 21:20:34 deraugla Exp $ *)
 
 value version = "4.09-exp";
 value syntax_name = ref "";
 
 value gram =
   Grammar.gcreate
-    {Token.tok_func _ = failwith "no loaded parsing module";
-     Token.tok_using _ = (); Token.tok_removing _ = ();
-     Token.tok_match = fun []; Token.tok_text _ = ""; Token.tok_comm = None}
+    {Plexing.tok_func _ = failwith "no loaded parsing module";
+     Plexing.tok_using _ = (); Plexing.tok_removing _ = ();
+     Plexing.tok_match = fun []; Plexing.tok_text _ = "";
+     Plexing.tok_comm = None}
 ;
 
 value interf = Grammar.Entry.create gram "interf";
@@ -282,7 +283,7 @@ value print_exn =
     }
   | Stream.Error str -> print_format ("Parse error: " ^ str)
   | Stream.Failure -> Format.print_string "Parse failure"
-  | Token.Error str -> do {
+  | Plexing.Error str -> do {
       Format.print_string "Lexing error: ";
       Format.print_string str
     }

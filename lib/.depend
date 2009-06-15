@@ -8,15 +8,18 @@ extfun.cmo: extfun.cmi
 extfun.cmx: extfun.cmi 
 fstream.cmo: fstream.cmi 
 fstream.cmx: fstream.cmi 
-gramext.cmo: gramext.cmi token.cmi 
-gramext.cmx: gramext.cmi token.cmx 
-gramext.cmi: token.cmi 
-grammar.cmo: gramext.cmi grammar.cmi ploc.cmi token.cmi 
-grammar.cmx: gramext.cmx grammar.cmi ploc.cmx token.cmx 
-grammar.cmi: token.cmi ploc.cmi gramext.cmi 
-plexer.cmo: plexer.cmi ploc.cmi token.cmi 
-plexer.cmx: plexer.cmi ploc.cmx token.cmx 
-plexer.cmi: token.cmi 
+gramext.cmo: gramext.cmi plexing.cmi 
+gramext.cmx: gramext.cmi plexing.cmx 
+gramext.cmi: plexing.cmi 
+grammar.cmo: gramext.cmi grammar.cmi plexing.cmi ploc.cmi 
+grammar.cmx: gramext.cmx grammar.cmi plexing.cmx ploc.cmx 
+grammar.cmi: ploc.cmi plexing.cmi gramext.cmi 
+plexer.cmo: plexer.cmi plexing.cmi ploc.cmi 
+plexer.cmx: plexer.cmi plexing.cmx ploc.cmx 
+plexer.cmi: plexing.cmi 
+plexing.cmo: plexing.cmi ploc.cmi 
+plexing.cmx: plexing.cmi ploc.cmx 
+plexing.cmi: ploc.cmi 
 ploc.cmo: ploc.cmi 
 ploc.cmx: ploc.cmi 
 pretty.cmo: pretty.cmi 
@@ -24,6 +27,6 @@ pretty.cmx: pretty.cmi
 stdpp.cmo: ploc.cmi stdpp.cmi 
 stdpp.cmx: ploc.cmx stdpp.cmi 
 stdpp.cmi: ploc.cmi 
-token.cmo: ploc.cmi token.cmi 
-token.cmx: ploc.cmx token.cmi 
-token.cmi: ploc.cmi 
+token.cmo: plexing.cmi ploc.cmi token.cmi 
+token.cmx: plexing.cmx ploc.cmx token.cmi 
+token.cmi: ploc.cmi plexing.cmi 

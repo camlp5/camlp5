@@ -1,8 +1,9 @@
 Camlp5 Version 4.09:
 ---------------------
 
-* [01 Sep 07] Renamed module Stdpp into Ploc. Changed the names of its
-  definitions. Backward compatibility assumed.
+* [01 Sep 07] Renamed modules Stdpp into Ploc and Token into Plexing.
+  Changed the names of some of their definitions. Backward compatibility
+  assumed.
 * [31 Aug 07] For packagers: added DESTDIR in Makefiles to allow installation
   in fake root directories. Usage: make install DESTDIR=fake-root-dir
 

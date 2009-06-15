@@ -10,9 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.91 2007/09/01 19:42:28 deraugla Exp $ *)
-
-open Token;
+(* $Id: plexer.ml,v 1.92 2007/09/01 21:20:34 deraugla Exp $ *)
 
 value no_quotations = ref False;
 value error_on_unknown_keywords = ref False;
@@ -58,7 +56,7 @@ type context =
 ;
 
 value err ctx loc msg =
-  Ploc.raise (ctx.make_lined_loc loc "") (Token.Error msg)
+  Ploc.raise (ctx.make_lined_loc loc "") (Plexing.Error msg)
 ;
 
 value keyword_or_error ctx loc s =
@@ -301,8 +299,8 @@ value next_token_after_spaces ctx bp =
 value rec next_token ctx buf =
   parser bp
   [ [: `('\n' | '\r' as c); s :] ep -> do {
-      incr Token.line_nb.val;
-      Token.bol_pos.val.val := ep;
+      incr Plexing.line_nb.val;
+      Plexing.bol_pos.val.val := ep;
       ctx.set_line_nb ();
       ctx.after_space := True;
       next_token ctx (B.add c buf) s
@@ -311,11 +309,11 @@ value rec next_token ctx buf =
       ctx.after_space := True;
       next_token ctx (B.add c buf) s
     }
-  | [: `'#' when bp = Token.bol_pos.val.val; s :] ->
+  | [: `'#' when bp = Plexing.bol_pos.val.val; s :] ->
       if linedir 1 s then do {
         let buf = any_to_nl (B.add '#' buf) s in
-        incr Token.line_nb.val;
-        Token.bol_pos.val.val := Stream.count s;
+        incr Plexing.line_nb.val;
+        Plexing.bol_pos.val.val := Stream.count s;
         ctx.set_line_nb ();
         ctx.after_space := True;
         next_token ctx buf s
@@ -345,24 +343,24 @@ value rec next_token ctx buf =
 
 value next_token_fun ctx glexr (cstrm, s_line_nb, s_bol_pos) =
   try do {
-    match Token.restore_lexing_info.val with
+    match Plexing.restore_lexing_info.val with
     [ Some (line_nb, bol_pos) -> do {
         s_line_nb.val := line_nb;
         s_bol_pos.val := bol_pos;
-        Token.restore_lexing_info.val := None
+        Plexing.restore_lexing_info.val := None
       }
     | None -> () ];
-    Token.line_nb.val := s_line_nb;
-    Token.bol_pos.val := s_bol_pos;
+    Plexing.line_nb.val := s_line_nb;
+    Plexing.bol_pos.val := s_bol_pos;
     let comm_bp = Stream.count cstrm in
     ctx.set_line_nb ();
     ctx.after_space := False;
     let (r, loc) = next_token ctx B.empty cstrm in
-    match glexr.val.tok_comm with
+    match glexr.val.Plexing.tok_comm with
     [ Some list ->
         if Ploc.first_pos loc > comm_bp then
           let comm_loc = Ploc.make_unlined (comm_bp, Ploc.last_pos loc) in
-          glexr.val.tok_comm := Some [comm_loc :: list]
+          glexr.val.Plexing.tok_comm := Some [comm_loc :: list]
         else ()
     | None -> () ];
     (r, loc)
@@ -383,18 +381,18 @@ value func kwd_table glexr =
      line_cnt bp1 c =
        match c with
        [ '\n' | '\r' -> do {
-           incr Token.line_nb.val;
-           Token.bol_pos.val.val := bp1 + 1;
+           incr Plexing.line_nb.val;
+           Plexing.bol_pos.val.val := bp1 + 1;
          }
        | c -> () ];
      set_line_nb () = do {
-       line_nb.val := Token.line_nb.val.val;
-       bol_pos.val := Token.bol_pos.val.val;
+       line_nb.val := Plexing.line_nb.val.val;
+       bol_pos.val := Plexing.bol_pos.val.val;
      };
      make_lined_loc loc comm =
        Ploc.make line_nb.val bol_pos.val loc}
   in
-  Token.lexer_func_of_parser (next_token_fun ctx glexr)
+  Plexing.lexer_func_of_parser (next_token_fun ctx glexr)
 ;
 
 value rec check_keyword_stream =
@@ -428,7 +426,7 @@ value check_keyword s =
 
 value error_no_respect_rules p_con p_prm =
   raise
-    (Token.Error
+    (Plexing.Error
        ("the token " ^
           (if p_con = "" then "\"" ^ p_prm ^ "\""
            else if p_prm = "" then p_con
@@ -438,7 +436,7 @@ value error_no_respect_rules p_con p_prm =
 
 value error_ident_and_keyword p_con p_prm =
   raise
-    (Token.Error
+    (Plexing.Error
        ("the token \"" ^ p_prm ^ "\" is used as " ^ p_con ^
           " and as keyword"))
 ;
@@ -478,7 +476,7 @@ value using_token kwd_table ident_table (p_con, p_prm) =
       ()
   | _ ->
       raise
-        (Token.Error
+        (Plexing.Error
            ("the constructor \"" ^ p_con ^
               "\" is not recognized by Plexer")) ]
 ;
@@ -533,7 +531,7 @@ value tok_match =
       fun
       [ ("ANTIQUOT", prm) when eq_before_colon p_prm prm -> after_colon prm
       | _ -> raise Stream.Failure ]
-  | tok -> Token.default_match tok ]
+  | tok -> Plexing.default_match tok ]
 ;
 
 value gmake () =
@@ -541,11 +539,11 @@ value gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-     {tok_func = fun []; tok_using = fun []; tok_removing = fun [];
+     {Plexing.tok_func = fun []; tok_using = fun []; tok_removing = fun [];
       tok_match = fun []; tok_text = fun []; tok_comm = None}
   in
   let glex =
-    {tok_func = func kwd_table glexr;
+    {Plexing.tok_func = func kwd_table glexr;
      tok_using = using_token kwd_table id_table;
      tok_removing = removing_token kwd_table id_table; tok_match = tok_match;
      tok_text = text; tok_comm = None}

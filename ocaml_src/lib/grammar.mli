@@ -21,7 +21,7 @@
 type g;;
    (** The type for grammars, holding entries. *)
 type token = string * string;;
-val gcreate : token Token.glexer -> g;;
+val gcreate : token Plexing.lexer -> g;;
    (** Create a new grammar, without keywords, using the lexer given
        as parameter. *)
 val tokens : g -> string -> (string * int) list;;
@@ -33,7 +33,7 @@ val tokens : g -> string -> (string * int) list;;
 -      The call [Grammar.tokens g ""] returns the keywords list.
 -      The call [Grammar.tokens g "IDENT"] returns the list of all usages
        of the pattern "IDENT" in the [EXTEND] statements. *)
-val glexer : g -> token Token.glexer;;
+val glexer : g -> token Plexing.lexer;;
    (** Return the lexer used by the grammar *)
 
 type parsable;;
@@ -76,7 +76,7 @@ val of_entry : 'a Entry.e -> g;;
 
 module Unsafe :
   sig
-    val gram_reinit : g -> token Token.glexer -> unit;;
+    val gram_reinit : g -> token Plexing.lexer -> unit;;
     val clear_entry : 'a Entry.e -> unit;;
   end
 ;;
@@ -97,7 +97,7 @@ module Unsafe :
        rule "an entry cannot call an entry of another grammar" by
        normal OCaml typing. *)
 
-module type GLexerType = sig type te;; val lexer : te Token.glexer;; end;;
+module type GLexerType = sig type te;; val lexer : te Plexing.lexer;; end;;
    (** The input signature for the functor [Grammar.GMake]: [te] is the
        type of the tokens. *)
 
@@ -107,7 +107,7 @@ module type S =
     type parsable;;
     val parsable : char Stream.t -> parsable;;
     val tokens : string -> (string * int) list;;
-    val glexer : te Token.glexer;;
+    val glexer : te Plexing.lexer;;
     module Entry :
       sig
         type 'a e;;
@@ -122,7 +122,7 @@ module type S =
     ;;
     module Unsafe :
       sig
-        val gram_reinit : te Token.glexer -> unit;;
+        val gram_reinit : te Plexing.lexer -> unit;;
         val clear_entry : 'a Entry.e -> unit;;
       end
     ;;

@@ -1239,7 +1239,7 @@ let check_anti_loc s kind =
 ;;
 
 let lex = Grammar.glexer Pcaml.gram in
-lex.Token.tok_match <-
+lex.Plexing.tok_match <-
   function
     "ANTIQUOT_LOC", "" ->
       (function
@@ -1286,7 +1286,7 @@ lex.Token.tok_match <-
       (function
          "ANTIQUOT_LOC", prm -> check_anti_loc prm "a_flag"
        | _ -> raise Stream.Failure)
-  | tok -> Token.default_match tok;;
+  | tok -> Plexing.default_match tok;;
 
 (* reinit the entry functions to take the new tok_match into account *)
 Grammar.iter_entry Grammar.reinit_entry_functions

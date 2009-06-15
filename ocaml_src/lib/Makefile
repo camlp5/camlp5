@@ -5,7 +5,7 @@ include $(TOP)/config/Makefile
 
 INCLUDES=
 OCAMLCFLAGS=-warn-error A $(INCLUDES)
-OBJS=ploc.cmo stdpp.cmo token.cmo plexer.cmo gramext.cmo grammar.cmo extfold.cmo extfun.cmo eprinter.cmo fstream.cmo pretty.cmo
+OBJS=ploc.cmo plexing.cmo plexer.cmo gramext.cmo grammar.cmo extfold.cmo extfun.cmo eprinter.cmo fstream.cmo pretty.cmo stdpp.cmo token.cmo
 SHELL=/bin/sh
 TARGET=gramlib.cma
 

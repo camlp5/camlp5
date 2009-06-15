@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.24 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.25 2007/09/01 21:20:34 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -442,7 +442,7 @@ value check_anti_loc s kind =
 ;
 
 let lex = Grammar.glexer Pcaml.gram in
-lex.Token.tok_match :=
+lex.Plexing.tok_match :=
   fun
   [ ("ANTIQUOT_LOC", "") ->
       fun
@@ -489,7 +489,7 @@ lex.Token.tok_match :=
       fun
       [ ("ANTIQUOT_LOC", prm) -> check_anti_loc prm "a_flag"
       | _ -> raise Stream.Failure ]
-  | tok -> Token.default_match tok ]
+  | tok -> Plexing.default_match tok ]
 ;
 
 (* reinit the entry functions to take the new tok_match into account *)

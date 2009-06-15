@@ -125,7 +125,7 @@ value lexer_using kwt (con, prm) =
       try Hashtbl.find kwt prm with [ Not_found -> Hashtbl.add kwt prm () ]
   | _ ->
       raise
-        (Token.Error
+        (Plexing.Error
            ("the constructor \"" ^ con ^ "\" is not recognized by Plexer")) ]
 ;
 
@@ -141,10 +141,10 @@ value lexer_gmake () =
     let (t, loc) = lexer kwt s in
     (t, Ploc.make_unlined loc)
   in
-  {Token.tok_func = Token.lexer_func_of_parser (lexer2 kwt);
-   Token.tok_using = lexer_using kwt; Token.tok_removing = fun [];
-   Token.tok_match = Token.default_match; Token.tok_text = lexer_text;
-   Token.tok_comm = None}
+  {Plexing.tok_func = Plexing.lexer_func_of_parser (lexer2 kwt);
+   Plexing.tok_using = lexer_using kwt; Plexing.tok_removing = fun [];
+   Plexing.tok_match = Plexing.default_match; Plexing.tok_text = lexer_text;
+   Plexing.tok_comm = None}
 ;
 
 (* Building AST *)

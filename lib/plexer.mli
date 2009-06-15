@@ -10,12 +10,12 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.mli,v 1.11 2007/08/20 02:55:04 deraugla Exp $ *)
+(* $Id: plexer.mli,v 1.12 2007/09/01 21:20:34 deraugla Exp $ *)
 
 (** This module contains the lexer used for ocaml syntax (revised and
     normal). *)
 
-value gmake : unit -> Token.glexer (string * string);
+value gmake : unit -> Plexing.lexer (string * string);
    (** [gmake ()] returns a lexer compatible with the extensible
     grammars. The returned tokens follow the normal syntax and the
     revised syntax lexing rules.
@@ -60,7 +60,7 @@ value gmake : unit -> Token.glexer (string * string);
 
        Same thing for the string associated with the [CHAR] constructor.
 
-       The functions [Token.eval_string] and [Token.eval_char] allow
+       The functions [Plexing.eval_string] and [Plexing.eval_char] allow
        to convert them into the real corresponding string or char
        value. *)
 

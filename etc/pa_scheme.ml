@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.13 2007/09/01 19:42:28 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.14 2007/09/01 21:20:34 deraugla Exp $
 
 (open Pcaml)
 
@@ -238,7 +238,7 @@
    ("" (try (Hashtbl.find kwt prm) (Not_found (Hashtbl.add kwt prm ()))))
    (_
     (raise
-     (Token.Error
+     (Plexing.Error
       (^ "the constructor \"" con "\" is not recognized by Plexer"))))))
 
 (define (lexer_text (values con prm))
@@ -253,12 +253,12 @@
          (lambda (kwt (values s _ _))
            (let (((values t loc) (lexer kwt s)))
              (values t (Ploc.make_unlined loc))))))
-     {(Token.tok_func (Token.lexer_func_of_parser (lexer2 kwt)))
-      (Token.tok_using (lexer_using kwt))
-      (Token.tok_removing (lambda))
-      (Token.tok_match Token.default_match)
-      (Token.tok_text lexer_text)
-      (Token.tok_comm None)}))
+     {(Plexing.tok_func (Plexing.lexer_func_of_parser (lexer2 kwt)))
+      (Plexing.tok_using (lexer_using kwt))
+      (Plexing.tok_removing (lambda))
+      (Plexing.tok_match Plexing.default_match)
+      (Plexing.tok_text lexer_text)
+      (Plexing.tok_comm None)}))
 
 ; Building AST
 

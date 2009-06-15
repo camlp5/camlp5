@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.10 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.11 2007/09/01 21:20:34 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -55,12 +55,12 @@ value get_tag x =
 value error loc str = Ploc.raise loc (Failure str);
 
 value char_of_char_token loc s =
-  try Token.eval_char s with
+  try Plexing.eval_char s with
   [ Failure _ as exn -> Ploc.raise loc exn ]
 ;
 
 value string_of_string_token loc s =
-  try Token.eval_string loc s with
+  try Plexing.eval_string loc s with
   [ Failure _ as exn -> Ploc.raise loc exn ]
 ;
 

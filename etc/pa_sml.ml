@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_sml.ml,v 1.13 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: pa_sml.ml,v 1.14 2007/09/01 21:20:34 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -321,7 +321,7 @@ value op =
   Grammar.Entry.of_parser gram "op"
     (parser [: `("", "op"); `(_, x) :] -> x)
 ;
-lexer.Token.tok_using ("", "op");
+lexer.Plexing.tok_using ("", "op");
 
 value special x =
   if String.length x >= 2 then

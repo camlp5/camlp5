@@ -1,12 +1,12 @@
 (* camlp5r *)
-(* $Id: elexer.ml,v 1.2 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: elexer.ml,v 1.3 2007/09/01 21:20:34 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* lexer written with extensible grammars; experimental *)
 
 #load "pa_extend.cmo";
 
-value lexlex cs = (cs, fun i -> Token.make_loc (i, i + 1));
+value lexlex cs = (cs, fun i -> Plexing.make_loc (i, i + 1));
 
 value next_char s i =
   if i = String.length s then invalid_arg "Elexer.next_char"
@@ -78,11 +78,11 @@ value lexlex_text (con, prm) =
 ;
 
 value glexlex =
-  {Token.tok_func = lexlex;
-   Token.tok_using _ = (); Token.tok_removing _ = ();
-   Token.tok_match = tok_match;
-   Token.tok_text = lexlex_text;
-   Token.tok_comm = None}
+  {Plexing.tok_func = lexlex;
+   Plexing.tok_using _ = (); Plexing.tok_removing _ = ();
+   Plexing.tok_match = tok_match;
+   Plexing.tok_text = lexlex_text;
+   Plexing.tok_comm = None}
 ;
 
 module Gram =
@@ -289,6 +289,6 @@ value gmake () =
   {tok_func = func kwd_table;
    tok_using = using_token kwd_table;
    tok_removing _ = ();
-   Token.tok_match = Token.default_match;
-   Token.tok_text = Token.lexer_text; tok_comm = None}
+   Plexing.tok_match = Plexing.default_match;
+   Plexing.tok_text = Plexing.lexer_text; tok_comm = None}
 ;

@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: main.ml,v 1.4 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: main.ml,v 1.5 2007/09/01 21:20:34 deraugla Exp $ *)
 
 open Printf;
 
@@ -73,7 +73,9 @@ value rec parse_file pa getdir useast = do {
       loop () where rec loop () =
         let (pl, stopped_at_directive) = pa cs in
         if stopped_at_directive then do {
-          let lexing_info = (Token.line_nb.val.val, Token.bol_pos.val.val) in
+          let lexing_info =
+            (Plexing.line_nb.val.val, Plexing.bol_pos.val.val)
+          in
           let pl =
             let rpl = List.rev pl in
             match getdir rpl with
@@ -93,7 +95,7 @@ value rec parse_file pa getdir useast = do {
                   } ]
             | None -> pl ]
           in
-          Token.restore_lexing_info.val := Some lexing_info;
+          Plexing.restore_lexing_info.val := Some lexing_info;
           pl @ loop ()
         }
         else pl

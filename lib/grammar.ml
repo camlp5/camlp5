@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.33 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.34 2007/09/01 21:20:34 deraugla Exp $ *)
 
 open Gramext;
 open Format;
@@ -206,7 +206,7 @@ value rec name_of_symbol entry =
   [ Snterm e -> "[" ^ e.ename ^ "]"
   | Snterml e l -> "[" ^ e.ename ^ " level " ^ l ^ "]"
   | Sself | Snext -> "[" ^ entry.ename ^ "]"
-  | Stoken tok -> entry.egram.glexer.Token.tok_text tok
+  | Stoken tok -> entry.egram.glexer.Plexing.tok_text tok
   | _ -> "???" ]
 ;
 
@@ -255,7 +255,7 @@ and name_of_tree_failed entry =
           List.fold_left
             (fun s tok ->
                (if s = "" then "" else s ^ " ") ^
-               entry.egram.glexer.Token.tok_text tok)
+               entry.egram.glexer.Plexing.tok_text tok)
             "" tokl ]
   | DeadEnd | LocAct _ _ -> "???" ]
 ;
@@ -527,7 +527,7 @@ and parser_of_token_list gram p1 tokl =
   loop 1 tokl where rec loop n =
     fun
     [ [tok :: tokl] ->
-        let tematch = gram.glexer.Token.tok_match tok in
+        let tematch = gram.glexer.Plexing.tok_match tok in
         match tokl with
         [ [] ->
             let ps strm =
@@ -625,7 +625,7 @@ and parser_of_symbol entry nlevn =
   | Snext -> parser [: a = entry.estart nlevn :] -> a
   | Stoken tok -> parser_of_token entry tok ]
 and parser_of_token entry tok =
-  let f = entry.egram.glexer.Token.tok_match tok in
+  let f = entry.egram.glexer.Plexing.tok_match tok in
   fun strm ->
     match Stream.peek strm with
     [ Some tok -> do {
@@ -748,7 +748,7 @@ value extend_entry entry position rules =
     init_entry_functions entry elev;
   }
   with
-  [ Token.Error s -> do {
+  [ Plexing.Error s -> do {
       Printf.eprintf "Lexer initialization error:\n- %s\n" s;
       flush stderr;
       failwith "Grammar.extend"
@@ -820,13 +820,13 @@ value glexer g = g.glexer;
 type gen_parsable 'te =
   { pa_chr_strm : Stream.t char;
     pa_tok_strm : Stream.t 'te;
-    pa_loc_func : Token.location_function }
+    pa_loc_func : Plexing.location_function }
 ;
 
 type parsable = gen_parsable token;
 
 value parsable g cs =
-  let (ts, lf) = g.glexer.Token.tok_func cs in
+  let (ts, lf) = g.glexer.Plexing.tok_func cs in
   {pa_chr_strm = cs; pa_tok_strm = ts; pa_loc_func = lf}
 ;
 
@@ -986,7 +986,12 @@ module Unsafe =
 
 (* Functorial interface *)
 
-module type GLexerType = sig type te = 'x; value lexer : Token.glexer te; end;
+module type GLexerType =
+  sig
+    type te = 'x;
+    value lexer : Plexing.lexer te;
+  end
+;
 
 module type S =
   sig
@@ -994,7 +999,7 @@ module type S =
     type parsable = 'x;
     value parsable : Stream.t char -> parsable;
     value tokens : string -> list (string * int);
-    value glexer : Token.glexer te;
+    value glexer : Plexing.lexer te;
     module Entry :
       sig
         type e 'a = 'x;
@@ -1009,7 +1014,7 @@ module type S =
     ;
     module Unsafe :
       sig
-        value gram_reinit : Token.glexer te -> unit;
+        value gram_reinit : Plexing.lexer te -> unit;
         value clear_entry : Entry.e 'a -> unit;
       end
     ;
@@ -1029,7 +1034,7 @@ module GMake (L : GLexerType) =
     type parsable = gen_parsable te;
     value gram = gcreate L.lexer;
     value parsable cs =
-      let (ts, lf) = L.lexer.Token.tok_func cs in
+      let (ts, lf) = L.lexer.Plexing.tok_func cs in
       {pa_chr_strm = cs; pa_tok_strm = ts; pa_loc_func = lf}
     ;
     value tokens = tokens gram;

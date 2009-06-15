@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extend.ml,v 1.27 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.28 2007/09/01 21:20:34 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -38,7 +38,7 @@ type symbol =
   | Sflag of symbol
   | Sself
   | Snext
-  | Stoken of alt Token.pattern MLast.expr
+  | Stoken of alt Plexing.pattern MLast.expr
   | Srules of list (list (option MLast.patt * symbol) * option MLast.expr) ]
 and alt 'a 'b =
   [ Left of 'a
@@ -93,7 +93,6 @@ value unassoc =
 value rec unaction =
   fun
   [ <:expr< fun ($lid:locp$ : Ploc.t) -> ($a$ : $_$) >>
-  | <:expr< fun ($lid:locp$ : Token.location) -> ($a$ : $_$) >>
     when locp = Ploc.name.val ->
       let ao =
         match a with

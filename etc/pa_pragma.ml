@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.51 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.52 2007/09/01 21:20:34 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -182,7 +182,7 @@ value instantiate loc s t = do { inst_vars.val := []; inst loc t };
 value rec unify loc t1 t2 =
   match (eval_type loc t1, eval_type loc t2) with
   [ (<:ctyp< MLast.loc >>, t2) ->
-      let t1 = <:ctyp< Token.location >> in
+      let t1 = <:ctyp< Ploc.t >> in
       unify loc t1 t2
 
   | (<:ctyp< $t11$ $t12$ >>, <:ctyp< $t21$ $t22$ >>) ->
@@ -223,7 +223,7 @@ value rec unify loc t1 t2 =
            list (MLast.ctyp * MLast.ctyp)) >>
       in
       unify loc t1 t2
-  | (<:ctyp< Token.pattern >>, t2) ->
+  | (<:ctyp< Plexing.pattern >>, t2) ->
       let t1 = <:ctyp< (string * string) >> in
       unify loc t1 t2
 
@@ -498,7 +498,7 @@ value val_tab = do {
          patt = std_patt Gramext.Sself});
      ("Gramext.Stoken",
       fun loc ->
-        {ctyp = <:ctyp< Token.pattern -> Gramext.g_symbol $ty_var ()$ >>;
+        {ctyp = <:ctyp< Plexing.pattern -> Gramext.g_symbol $ty_var ()$ >>;
          expr = Obj.repr (fun tp -> Gramext.Stoken tp);
          patt = no_patt loc});
      ("Grammar.Entry.create",
@@ -1065,10 +1065,10 @@ value rec eval_expr env e =
       {ctyp = <:ctyp< int >>; expr = Obj.repr (int_of_string s);
        patt = no_patt loc}
   | <:expr< $str:s$ >> ->
-      {ctyp = <:ctyp< string >>; expr = Obj.repr (Token.eval_string loc s);
+      {ctyp = <:ctyp< string >>; expr = Obj.repr (Plexing.eval_string loc s);
        patt = no_patt loc}
   | <:expr< $chr:s$ >> ->
-      {ctyp = <:ctyp< char >>; expr = Obj.repr (Token.eval_char s);
+      {ctyp = <:ctyp< char >>; expr = Obj.repr (Plexing.eval_char s);
        patt = no_patt loc}
 
   | <:expr< $lid:s$ >> ->

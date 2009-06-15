@@ -15,7 +15,7 @@
 (** This module contains the lexer used for ocaml syntax (revised and
     normal). *)
 
-val gmake : unit -> (string * string) Token.glexer;;
+val gmake : unit -> (string * string) Plexing.lexer;;
    (** [gmake ()] returns a lexer compatible with the extensible
     grammars. The returned tokens follow the normal syntax and the
     revised syntax lexing rules.
@@ -60,7 +60,7 @@ val gmake : unit -> (string * string) Token.glexer;;
 
        Same thing for the string associated with the [CHAR] constructor.
 
-       The functions [Token.eval_string] and [Token.eval_char] allow
+       The functions [Plexing.eval_string] and [Plexing.eval_char] allow
        to convert them into the real corresponding string or char
        value. *)
 

@@ -65,7 +65,7 @@ let rec parse_file pa getdir useast =
       let rec loop () =
         let (pl, stopped_at_directive) = pa cs in
         if stopped_at_directive then
-          let lexing_info = !(!(Token.line_nb)), !(!(Token.bol_pos)) in
+          let lexing_info = !(!(Plexing.line_nb)), !(!(Plexing.bol_pos)) in
           let pl =
             let rpl = List.rev pl in
             match getdir rpl with
@@ -83,7 +83,7 @@ let rec parse_file pa getdir useast =
                 end
             | None -> pl
           in
-          Token.restore_lexing_info := Some lexing_info; pl @ loop ()
+          Plexing.restore_lexing_info := Some lexing_info; pl @ loop ()
         else pl
       in
       loop ()
