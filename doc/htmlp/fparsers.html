@@ -2,9 +2,9 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: fparsers.html,v 1.2 2007/07/13 02:08:47 deraugla Exp $ -->
+  <!-- $Id: fparsers.html,v 1.3 2007/07/13 08:12:56 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
-  <title>purely functional parsers of streams</title>
+  <title>purely functional stream parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <link rel="shortcut icon" href="c4logo.png" />
@@ -17,16 +17,16 @@
 
 <div id="content">
 
-<h1 class="top">Purely functional parsers of streams</h1>
+<h1 class="top">Purely functional stream parsers</h1>
 
 <p>Purely functional parsers are an alternative
-of <a href="parsers.html">parsers of streams</a> where the used stream
+of <a href="parsers.html">stream parsers</a> where the used stream
 type is a lazy non-destructive type : these streams are lazy values,
-like in classical parsers of streams, but the values are not removed
-as long as the parsing advances. To make them work, the parsers of
-purely functional streams return, not the simple values, but a value
-of type option : "<code>Node</code>" meaning "mo match" (the equivalent
-of the exception "<code>Parse.Failure</code>" of normal streams) and
+like in classical stream parsers, but the values are not removed as
+long as the parsing advances. To make them work, the parsers of purely
+functional streams return, not the simple values, but a value of type
+option : "<code>Node</code>" meaning "mo match" (the equivalent of the
+exception "<code>Parse.Failure</code>" of normal streams) and
 "<code>Some (r, s)</code>" meaning "the result is r and the remaining
 stream is s".</p>
 
