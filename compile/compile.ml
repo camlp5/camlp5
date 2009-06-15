@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: compile.ml,v 1.8 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: compile.ml,v 1.9 2007/08/01 13:06:46 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -476,6 +476,7 @@ value compile_entry entry =
 ;
 
 (* get all entries connected together *)
+(* should be rewritten using a derived version of 'Grammar.iter_entry' *)
 
 value rec scan_tree list =
   fun
@@ -494,6 +495,7 @@ and scan_symbol list =
   | Slist1 s -> scan_symbol list s
   | Slist1sep s sep -> scan_symbol (scan_symbol list s) sep
   | Sopt s -> scan_symbol list s
+  | Sflag s -> scan_symbol list s
   | Stree t -> scan_tree list t
   | Smeta _ _ _ | Sself | Snext | Stoken _ -> list ]
 and scan_level list lev =
