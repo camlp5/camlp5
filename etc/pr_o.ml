@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.154 2007/12/25 08:17:52 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.155 2007/12/25 10:24:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1171,28 +1171,19 @@ EXTEND_PRINTER
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%s)" s
           else pprintf pc "%s" s
       | <:patt< $int32:s$ >> ->
-          let s = s ^ "l" in
-          if String.length s > 0 && s.[0] = '-' then
-            sprintf "%s(%s)%s" pc.bef s pc.aft
-          else
-            sprintf "%s%s%s" pc.bef s pc.aft
+          if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sl)" s
+          else pprintf pc "%sl" s
       | <:patt< $int64:s$ >> ->
-          let s = s ^ "L" in
-          if String.length s > 0 && s.[0] = '-' then
-            sprintf "%s(%s)%s" pc.bef s pc.aft
-          else
-            sprintf "%s%s%s" pc.bef s pc.aft
+          if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sL)" s
+          else pprintf pc "%sL" s
       | <:patt< $nativeint:s$ >> ->
-          let s = s ^ "n" in
-          if String.length s > 0 && s.[0] = '-' then
-            sprintf "%s(%s)%s" pc.bef s pc.aft
-          else
-            sprintf "%s%s%s" pc.bef s pc.aft
+          if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sn)" s
+          else pprintf pc "%sn" s
       | <:patt< $lid:s$ >> -> var_escaped pc s
       | <:patt< $uid:s$ >> -> cons_escaped pc s
-      | <:patt< $chr:s$ >> -> sprintf "%s'%s'%s" pc.bef (ocaml_char s) pc.aft
-      | <:patt< $str:s$ >> -> sprintf "%s\"%s\"%s" pc.bef s pc.aft
-      | <:patt< _ >> -> sprintf "%s_%s" pc.bef pc.aft
+      | <:patt< $chr:s$ >> -> pprintf pc "'%s'" (ocaml_char s)
+      | <:patt< $str:s$ >> -> pprintf pc "\"%s\"" s
+      | <:patt< _ >> -> pprintf pc "_"
       | <:patt< ?$_$ >> | <:patt< ? ($_$ $opt:_$) >> |
         <:patt< ?$_$: ($_$ $opt:_$) >> | <:patt< ~$_$ >> |
         <:patt< ~$_$: $_$ >> ->
@@ -1201,10 +1192,7 @@ EXTEND_PRINTER
           failwith "polymorphic variants not pretty printed; add pr_ro.cmo"
       | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >> |
         <:patt< ($list:_$) >> | <:patt< ($_$ as $_$) >> as z ->
-          patt
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            z ] ]
+          pprintf pc "@[<1>(%p)@]" patt z ] ]
   ;
   pr_ctyp:
     [ "top"
@@ -1219,15 +1207,8 @@ EXTEND_PRINTER
           right_operator pc 2 unfold next z ]
     | "star"
       [ <:ctyp< ($list:tl$) >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s%s%s" pc.bef
-                 (hlistl (star_after next) next {(pc) with bef = ""; aft = ""}
-                    tl)
-                 pc.aft)
-            (fun () ->
-               let tl = List.map (fun t -> (t, " *")) tl in
-               plist next 2 pc tl) ]
+          let tl = List.map (fun t -> (t, " *")) tl in
+          plist next 2 pc tl ]
     | "apply"
       [ <:ctyp< $_$ $_$ >> as z ->
           let (t, tl) =
@@ -1237,19 +1218,7 @@ EXTEND_PRINTER
               | t -> (t, args) ]
           in
           match tl with
-          [ [t2] ->
-              horiz_vertic
-                (fun () ->
-                   sprintf "%s%s %s%s" pc.bef
-                     (curr {(pc) with bef = ""; aft = ""} t2)
-                     (next {(pc) with bef = ""; aft = ""} t) pc.aft)
-                (fun () ->
-                   let s1 = curr {(pc) with aft = ""} t2 in
-                   let s2 =
-                     next {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
-                       t
-                   in
-                   sprintf "%s\n%s" s1 s2)
+          [ [t2] -> pprintf pc "%p@;%p" curr t2 next t
           | _ ->
               horiz_vertic
                 (fun () ->
