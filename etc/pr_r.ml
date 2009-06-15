@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.135 2007/12/09 11:05:35 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.136 2007/12/09 22:26:10 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -314,30 +314,6 @@ value sequencify e =
 ;
 
 (* Pretty printing improvement (optional):
-   - print the sequence beginner at end of previous lines,
-     therefore printing the sequence with one tabulation less
-   - example:
-          value f x =
-            do {
-              ...
-            }
-     is printed :
-          value f x = do {
-            ...
-          }
- *)
-value sequence_box pc bef expr el =
-  let s1 = bef {(pc) with aft = " do {"} in
-  let s2 =
-    vlistl (semi_after (comm_expr expr))
-      (comm_expr expr)
-      {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""} el
-  in
-  let s3 = sprintf "%s}%s" (tab pc.ind) pc.aft in
-  sprintf "%s\n%s\n%s" s1 s2 s3
-;
-
-(* Pretty printing improvement (optional):
    - test a "let" binding can be displayed as "where"
  *)
 value can_be_displayed_as_where e =
@@ -373,10 +349,8 @@ value rec where_binding pc (p, e, body) =
            let expr_wh =
              if flag_where_in_sequences.val then expr_wh else expr
            in
-           sequence_box pc
-             (fun pc ->
-                pprintf pc "%p@ where rec %p =" expr e (hlist patt) pl)
-             expr_wh el)
+           pprintf pc "%p@ where rec %p = do {@;%p@ }" expr e (hlist patt) pl
+             (vlistl (semi_after (comm_expr expr_wh)) (comm_expr expr_wh)) el)
   | None ->
       pprintf pc "%p@ where rec %p =@;%p" expr e (hlist patt) pl
         (comm_expr expr) body ]
@@ -387,9 +361,23 @@ and expr_wh pc e =
   | None -> expr pc e ]
 ;
 
-value sequence_box2 bef pc el =
+(* Pretty printing improvement (optional):
+   - print the sequence beginner at end of previous lines,
+     therefore printing the sequence with one tabulation less
+   - example:
+          value f x =
+            do {
+              ...
+            }
+     is printed :
+          value f x = do {
+            ...
+          }
+ *)
+value sequence_box bef pc el =
   let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
-  sequence_box pc bef expr_wh el
+  pprintf pc "%p do {@;%p@ }" (fun pc () -> bef pc) ()
+    (vlistl (semi_after (comm_expr expr_wh)) (comm_expr expr_wh)) el
 ;
 
 (* Pretty printing improvements (optional):
@@ -407,7 +395,7 @@ value record_binding pc (p, e) =
       horiz_vertic
         (fun () -> pprintf pc "%p =@;%p" (hlist patt) pl expr_wh e)
         (fun () ->
-           sequence_box2 (fun pc -> pprintf pc "%p =" (hlist patt) pl) pc el)
+           sequence_box (fun pc -> pprintf pc "%p =" (hlist patt) pl) pc el)
   | None ->
       pprintf pc "%p =@;%p" (hlist patt) pl expr_wh e ]
 ;
@@ -482,13 +470,13 @@ value value_or_let_binding flag_where sequ pc (p, e) =
 ;
 
 value value_binding pc pe =
-  let sequ pc bef el = sequence_box2 bef pc el in
+  let sequ pc bef el = sequence_box bef pc el in
   value_or_let_binding flag_where_after_value_eq sequ pc pe
 ;
 
 value let_binding pc pe =
   let sequ pc bef el =
-    let s = sequence_box2 bef {(pc) with aft = ""} el in
+    let s = sequence_box bef {(pc) with aft = ""} el in
     if pc.aft = "" then s else sprintf "%s\n%s%s" s (tab pc.ind) pc.aft
   in
   value_or_let_binding flag_where_after_let_eq sequ pc pe
@@ -517,7 +505,7 @@ value match_assoc force_vertic pc (p, w, e) =
        in
        match sequencify e with
        [ Some el ->
-           sequence_box2
+           sequence_box
              (fun pc ->
                 horiz_vertic (fun _ -> sprintf "\n")
                   (fun () -> patt_arrow pc))
@@ -929,7 +917,7 @@ EXTEND_PRINTER
                       in
                       match sequencify e2 with
                       [ Some el ->
-                          sequence_box2
+                          sequence_box
                             (fun pc ->
                                horiz_vertic (fun () -> horiz_if_then pc)
                                  (fun () -> vertic_if_then pc))
@@ -1020,7 +1008,7 @@ EXTEND_PRINTER
                    (fun () ->
                       match sequencify e3 with
                       [ Some el ->
-                          sequence_box2
+                          sequence_box
                             (fun pc ->
                                horiz_vertic (fun () -> sprintf "\n")
                                  (fun () ->
@@ -1047,7 +1035,7 @@ EXTEND_PRINTER
                    let pl = List.map (fun p -> (p, "")) pl in
                    match sequencify e1 with
                    [ Some el ->
-                       sequence_box2
+                       sequence_box
                          (fun pc -> pprintf pc "fun %p ->" (plist patt 4) pl)
                          pc el
                    | None ->
@@ -1093,7 +1081,7 @@ EXTEND_PRINTER
                        match sequencify e1 with
                        [ Some el ->
                            pprintf pc "%p@ with %p"
-                             (sequence_box2 (fun pc -> pprintf pc "%s" op)) el
+                             (sequence_box (fun pc -> pprintf pc "%s" op)) el
                              (match_assoc False) (p, wo, e)
                        | None ->
                            pprintf pc "@[<a>%s@;%p@ with %p@]" op expr_wh e1
@@ -1112,7 +1100,7 @@ EXTEND_PRINTER
                            (fun () -> pprintf pc "%s %p with" op expr_wh e1)
                            (fun () ->
                               pprintf pc "%p@ with"
-                                (sequence_box2
+                                (sequence_box
                                    (fun pc ->
                                       horiz_vertic (fun _ -> sprintf "\n")
                                         (fun () -> pprintf pc "%s" op)))
