@@ -1,12 +1,12 @@
 #!/bin/sh
-# $Id: html2texi,v 1.25 2007/09/18 20:30:18 deraugla Exp $
+# $Id: html2texi,v 1.26 2007/09/22 14:44:35 deraugla Exp $
 
 FILES1="index.html strict.html ptools.html"
 FILES2="parsers.html lexers.html fparsers.html grammars.html"
 FILES3="printers.html pretty.html"
 FILES4="locations.html ml_ast.html ast_transi.html ast_strict.html q_ast.html pcaml.html syntext.html opretty.html quot.html revsynt.html scheme.html macros.html pragma.html extfun.html"
 FILES5="conclusion.html"
-FILES6="commands.html library.html sources.html about.html"
+FILES6="commands.html library.html sources.html to_strict.html about.html"
 FILES="$FILES1 1 $FILES2 2 $FILES3 3 $FILES4 4 $FILES5 5 $FILES6"
 VERSION="$(grep "value version =" ../../main/pcaml.ml | sed -e 's/^[^"]*"\([^"]*\).*$/\1/')"
 

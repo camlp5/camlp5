@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_strict.html,v 1.8 2007/09/22 06:18:34 deraugla Exp $ -->
+  <!-- $Id: ast_strict.html,v 1.9 2007/09/22 14:44:35 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>AST - strict</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -753,133 +753,240 @@
 
 <p>Patterns of the language.</p>
 
-<table border="1">
-  <tr>
-    <th>Node</th>
-    <th><tt>&lt;:patt&lt; ... >></tt></th>
-    <th>Comment</th>
-  </tr>
-  <tr>
-    <td><tt>PaAcc loc p1 p2</tt></td>
-    <td align="center"><tt>$p1$ . $p2$</tt></td>
-    <td>dot</td>
-  </tr>
-  <tr>
-    <td><tt>PaAli loc p1 p2</tt></td>
-    <td align="center"><tt>($p1$ as $p2$)</tt></td>
-    <td>alias</td>
-  </tr>
-  <tr>
-    <td><tt>PaAnt loc p</tt></td>
-    <td align="center"><tt>$anti:p$</tt></td>
-    <td>antiquotation <a href="#patt_1">(1)</a></td>
-  </tr>
-  <tr>
-    <td><tt>PaAny loc</tt></td>
-    <td align="center"><tt>_</tt></td>
-    <td>wildcard</td>
-  </tr>
-  <tr>
-    <td><tt>PaApp loc p1 p2</tt></td>
-    <td align="center"><tt>$p1$ $p2$</tt></td>
-    <td>application</td>
-  </tr>
-  <tr>
-    <td><tt>PaArr loc lp</tt></td>
-    <td align="center"><tt>[| $list:lp$ |]</tt></td>
-    <td>array</td>
-  </tr>
-  <tr>
-    <td><tt>PaChr loc s</tt></td>
-    <td align="center"><tt>$chr:s$</tt></td>
-    <td>character</td>
-  </tr>
-  <tr>
-    <td><tt>PaInt loc s1 s2</tt></td>
-    <td align="center"><tt>$int:s$</tt></td>
-    <td>integer</td>
-  </tr>
-  <tr>
-    <td><tt>PaFlo loc s</tt></td>
-    <td align="center"><tt>$flo:s$</tt></td>
-    <td>float</td>
-  </tr>
-  <tr>
-    <td><tt>PaLab loc s None</tt></td>
-    <td align="center"><tt>~ $s$</tt></td>
-    <td>label</td>
-  </tr>
-  <tr>
-    <td><tt>PaLab loc s (Some p)</tt></td>
-    <td align="center"><tt>~ $s$ : $p$</tt></td>
-    <td>label</td>
-  </tr>
-  <tr>
-    <td><tt>PaLid loc s</tt></td>
-    <td align="center"><tt>$lid:s$</tt></td>
-    <td>lowercase identifier</td>
-  </tr>
-  <tr>
-    <td><tt>PaOlb loc s None</tt></td>
-    <td align="center"><tt>? $s$</tt></td>
-    <td>option label</td>
-  </tr>
-  <tr>
-    <td><tt>PaOlb loc s (Some (p, None))</tt></td>
-    <td align="center"><tt>? $s$ : ($p$)</tt></td>
-    <td>option label</td>
-  </tr>
-  <tr>
-    <td><tt>PaOlb loc s (Some (p, Some e))</tt></td>
-    <td align="center"><tt>? $s$ : ($p$ = $e$)</tt></td>
-    <td>option label</td>
-  </tr>
-  <tr>
-    <td><tt>PaOrp loc p1 p2</tt></td>
-    <td align="center"><tt>$p1$ | $p2$</tt></td>
-    <td>or</td>
-  </tr>
-  <tr>
-    <td><tt>PaRng loc p1 p2</tt></td>
-    <td align="center"><tt>$p1$ .. $p2$</tt></td>
-    <td>range</td>
-  </tr>
-  <tr>
-    <td><tt>PaRec loc lpp None</tt></td>
-    <td align="center"><tt>{ $list:lpp$ }</tt></td>
-    <td>record</td>
-  </tr>
-  <tr>
-    <td><tt>PaStr loc s</tt></td>
-    <td align="center"><tt>$str:s$</tt></td>
-    <td>string</td>
-  </tr>
-  <tr>
-    <td><tt>PaTup loc lp</tt></td>
-    <td align="center"><tt>($list:lp$)</tt></td>
-    <td>t-uple</td>
-  </tr>
-  <tr>
-    <td><tt>PaTyc loc p t</tt></td>
-    <td align="center"><tt>($p$ : $t$)</tt></td>
-    <td>type constraint</td>
-  </tr>
-  <tr>
-    <td><tt>PaTyp loc ls</tt></td>
-    <td align="center"><tt># $list:ls$</tt></td>
-    <td>type pattern</td>
-  </tr>
-  <tr>
-    <td><tt>PaUid loc s</tt></td>
-    <td align="center"><tt>$uid:s$</tt></td>
-    <td>uppercase identifier</td>
-  </tr>
-  <tr>
-    <td><tt>PaVrn loc s</tt></td>
-    <td align="center"><tt>` $s$</tt></td>
-    <td>variant</td>
-  </tr>
-</table>
+<dl class="nodelist">
+  <dt>- access</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; $p1$ . $p2$ >></tt><br/>
+    <tt style="color:red">PaAcc loc p1 p2</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- alias</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; ($p1$ as $p2$) >></tt><br/>
+    <tt style="color:red">PaAli loc p1 p2</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- antiquotation <a href="#patt_1">(1)</a></dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; $anti:p$ >></tt><br/>
+    <tt style="color:red">PaAnt loc p</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- any</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; _ >></tt><br/>
+    <tt style="color:red">PaAny loc</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- application</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; $p1$ $p2$ >></tt><br/>
+    <tt style="color:red">PaApp loc p1 p2</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- array</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; [| $list:lp$ |] >></tt><br/>
+    <tt style="color:red">PaArr loc (Ploc.VaVal lp)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:patt&lt; [| $_list:lp$ |] >></tt><br/>
+    <tt style="color:red">PaArr loc lp</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- character</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; $chr:s$ >></tt><br/>
+    <tt style="color:red">PaChr loc (Ploc.VaVal s)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:patt&lt; $_chr:s$ >></tt><br/>
+    <tt style="color:red">PaChr loc s</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- integer constant</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; $int:s$ >></tt><br/>
+    <tt style="color:red">PaInt loc (Ploc.VaVal s) ""</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:patt&lt; $_int:s$ >></tt><br/>
+    <tt style="color:red">PaInt loc s ""</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- integer 32 bits</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; $int32:s$ >></tt><br/>
+    <tt style="color:red">PaInt loc (Ploc.VaVal s) "l"</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:patt&lt; $_int32:s$ >></tt><br/>
+    <tt style="color:red">PaInt loc s "l"</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- integer 64 bits</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; $int64:s$ >></tt><br/>
+    <tt style="color:red">PaInt loc (Ploc.VaVal s) "L"</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:patt&lt; $_int:s$ >></tt><br/>
+    <tt style="color:red">PaInt loc s "L"</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- native integer</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; $nativeint:s$ >></tt><br/>
+    <tt style="color:red">PaInt loc (Ploc.VaVal s) "n"</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:patt&lt; $_nativeint:s$ >></tt><br/>
+    <tt style="color:red">PaInt loc s "n"</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- float</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; $flo:s$ >></tt><br/>
+    <tt style="color:red">PaFlo loc (Ploc.VaVal s)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:patt&lt; $_flo:s$ >></tt><br/>
+    <tt style="color:red">PaFlo loc s</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- label</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; ~$s$ >></tt><br/>
+    <tt style="color:red">PaLab loc (Ploc.VaVal s) None</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:patt&lt; ~$_:s$ >></tt><br/>
+    <tt style="color:red">PaLab loc s None</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:patt&lt; ~$s$: $p$ >></tt><br/>
+    <tt style="color:red">PaLab loc (Ploc.VaVal s) (Some p)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:patt&lt; ~$_s$: $p$ >></tt><br/>
+    <tt style="color:red">PaLab loc s (Some p)</tt><br/>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- lowercase identifier</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; $lid:s$ >></tt><br/>
+    <tt style="color:red">PaLid loc (Ploc.VaVal s)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:patt&lt; $_lid:s$ >></tt><br/>
+    <tt style="color:red">PaLid loc s</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- option label</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; ?$s$ >></tt><br/>
+    <tt style="color:red">PaOlb loc (Ploc.VaVal s) None</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:patt&lt; ?$_:s$ >></tt><br/>
+    <tt style="color:red">PaOlb loc s None</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:patt&lt; ?$s$: ($p$) >></tt><br/>
+    <tt style="color:red">PaOlb loc (Ploc.VaVal s) (Some (p, Ploc.VaVal None))</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:patt&lt; ?$_:s$: ($p$) >></tt><br/>
+    <tt style="color:red">PaOlb loc s (Some (p, Ploc.VaVal None))</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:patt&lt; ?$s$: ($p$ = $e$) >></tt><br/>
+    <tt style="color:red">PaOlb loc (Ploc.VaVal s) (Some (p, Ploc.VaVal (Some e)))</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:patt&lt; ?$_:s$: ($p$ = $e$) >></tt><br/>
+    <tt style="color:red">PaOlb loc s (Some (p, Ploc.VaVal (Some e)))</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- or</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; $p1$ | $p2$ >></tt><br/>
+    <tt style="color:red">PaOrp loc p1 p2</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- range</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; $p1$ .. $p2$ >></tt><br/>
+    <tt style="color:red">PaRng loc p1 p2</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- record</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; { $list:lpp$ } >></tt><br/>
+    <tt style="color:red">PaRec loc (Ploc.VaVal lpp)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:patt&lt; { $_list:lpp$ } >></tt><br/>
+    <tt style="color:red">PaRec loc lpp</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- string</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; $str:s$ >></tt><br/>
+    <tt style="color:red">PaStr loc (Ploc.VaVal s)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:patt&lt; $_str:s$ >></tt><br/>
+    <tt style="color:red">PaStr loc s</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- t-uple</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; ($list:lp$) >></tt><br/>
+    <tt style="color:red">PaTup loc (Ploc.VaVal lp)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:patt&lt; ($_list:lp$) >></tt><br/>
+    <tt style="color:red">PaTup loc lp</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- type constraint</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; ($p$ : $t$) >></tt><br/>
+    <tt style="color:red">PaTyc loc p t</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- type pattern</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; # $list:ls$ >></tt><br/>
+    <tt style="color:red">PaTyp loc (Ploc.VaVal ls)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:patt&lt; # $_list:ls$ >></tt><br/>
+    <tt style="color:red">PaTyp loc ls</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- uppercase identifier</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; $uid:s$ >></tt><br/>
+    <tt style="color:red">PaUid loc (Ploc.VaVal s)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:patt&lt; $_uid:s$ >></tt><br/>
+    <tt style="color:red">PaUid loc s</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- variant</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; ` $s$ >></tt><br/>
+    <tt style="color:red">PaVrn loc (Ploc.VaVal s)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:patt&lt; ` $_:s$ >></tt><br/>
+    <tt style="color:red">PaVrn loc s</tt>
+  </dd>
+</dl>
 
 <div id="patt_1" style="margin: 5mm 0 0 1cm">(1)
   Node used to specify an antiquotation area, like for the

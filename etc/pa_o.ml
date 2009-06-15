@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.64 2007/09/22 06:18:34 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.65 2007/09/22 14:44:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -473,7 +473,8 @@ EXTEND
     [ "top" RIGHTA
       [ e1 = SELF; ";"; e2 = SELF ->
           <:expr< do { $list:[e1 :: get_seq e2]$ } >>
-      | e1 = SELF; ";" -> e1 ]
+      | e1 = SELF; ";" -> e1
+      | el = V phony "list" -> <:expr< do { $_list:el$ } >> ]
     | "expr1"
       [ "let"; o = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = expr LEVEL "top" ->
@@ -605,6 +606,7 @@ EXTEND
           <:expr< { ($e$) with $_list:lel$ } >>
       | "("; ")" -> <:expr< () >>
       | "("; op = operator_rparen -> <:expr< $lid:op$ >>
+      | "("; el = V phony "list"; ")" -> <:expr< ($_list:el$) >>
       | "("; e = SELF; ":"; t = ctyp; ")" -> <:expr< ($e$ : $t$) >>
       | "("; e = SELF; ")" -> <:expr< $e$ >>
       | "begin"; e = SELF; "end" -> <:expr< $e$ >>
@@ -619,6 +621,9 @@ EXTEND
             [ Not_found -> ("", x) ]
           in
           Pcaml.handle_expr_quotation loc x ] ]
+  ;
+  phony:
+    [ [ -> raise Stream.Failure ] ]
   ;
   let_binding:
     [ [ p = val_ident; e = fun_binding -> (p, e)
@@ -673,7 +678,7 @@ EXTEND
   (* Patterns *)
   patt:
     [ LEFTA
-      [ p1 = SELF; "as"; i = LIDENT -> <:patt< ($p1$ as $lid:i$) >> ]
+      [ p1 = SELF; "as"; p2 = SELF -> <:patt< ($p1$ as $p2$) >> ]
     | LEFTA
       [ p1 = SELF; "|"; p2 = SELF -> <:patt< $p1$ | $p2$ >> ]
     | [ p = SELF; ","; pl = LIST1 NEXT SEP "," ->
@@ -711,15 +716,15 @@ EXTEND
     | "simple"
       [ s = LIDENT -> <:patt< $lid:s$ >>
       | s = UIDENT -> <:patt< $uid:s$ >>
-      | s = INT -> <:patt< $int:s$ >>
-      | s = INT_l -> <:patt< $int32:s$ >>
-      | s = INT_L -> <:patt< $int64:s$ >>
-      | s = INT_n -> <:patt< $nativeint:s$ >>
+      | s = V INT -> <:patt< $_int:s$ >>
+      | s = V INT_l -> <:patt< $_int32:s$ >>
+      | s = V INT_L -> <:patt< $_int64:s$ >>
+      | s = V INT_n -> <:patt< $_nativeint:s$ >>
       | "-"; s = INT -> <:patt< $int:"-" ^ s$ >>
       | "-"; s = FLOAT -> <:patt< $flo:"-" ^ s$ >>
-      | s = FLOAT -> <:patt< $flo:s$ >>
-      | s = STRING -> <:patt< $str:s$ >>
-      | s = CHAR -> <:patt< $chr:s$ >>
+      | s = V FLOAT -> <:patt< $_flo:s$ >>
+      | s = V STRING -> <:patt< $_str:s$ >>
+      | s = V CHAR -> <:patt< $_chr:s$ >>
       | UIDENT "True" -> <:patt< $uid:" True"$ >>
       | UIDENT "False" -> <:patt< $uid:" False"$ >>
       | "false" -> <:patt< False >>
@@ -727,8 +732,10 @@ EXTEND
       | "["; "]" -> <:patt< [] >>
       | "["; pl = patt_semi_list; "]" -> <:patt< $mklistpat loc None pl$ >>
       | "[|"; "|]" -> <:patt< [| |] >>
-      | "[|"; pl = patt_semi_list; "|]" -> <:patt< [| $list:pl$ |] >>
-      | "{"; lpl = V lbl_patt_list "list"; "}" -> <:patt< { $_list:lpl$ } >>
+      | "[|"; pl = V patt_semi_list "list"; "|]" ->
+          <:patt< [| $_list:pl$ |] >>
+      | "{"; lpl = V lbl_patt_list "list"; "}" ->
+          <:patt< { $_list:lpl$ } >>
       | "("; ")" -> <:patt< () >>
       | "("; op = operator_rparen -> <:patt< $lid:op$ >>
       | "("; p = SELF; ":"; t = ctyp; ")" -> <:patt< ($p$ : $t$) >>
