@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.127 2007/12/22 10:14:04 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.128 2007/12/22 12:17:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -655,61 +655,17 @@ value sig_module_or_module_type pref defc pc (m, mt) =
 ;
 
 value str_or_sig_functor pc s mt module_expr_or_type met =
-  horiz_vertic
-    (fun () ->
-       sprintf "%sfunctor (%s : %s) -> %s%s" pc.bef s
-         (module_type {(pc) with bef = ""; aft = ""} mt)
-         (module_expr_or_type {(pc) with bef = ""; aft = ""} met) pc.aft)
-    (fun () ->
-       let s1 =
-         horiz_vertic
-           (fun () ->
-              sprintf "%sfunctor (%s : %s) ->" pc.bef s
-                (module_type {(pc) with bef = ""; aft = ""} mt))
-           (fun () ->
-              let s1 = sprintf "%sfunctor" pc.bef in
-              let s2 =
-                horiz_vertic
-                  (fun () ->
-                     sprintf "%s(%s : %s)" (tab (pc.ind + 2)) s
-                       (module_type {(pc) with bef = ""; aft = ""} mt))
-                  (fun () ->
-                     let s1 = sprintf "%s(%s :" (tab (pc.ind + 2)) s in
-                     let s2 =
-                       module_type
-                         {(pc) with ind = pc.ind + 3;
-                          bef = tab (pc.ind + 3); aft = ")"}
-                         mt
-                     in
-                     sprintf "%s\n%s" s1 s2)
-              in
-              let s3 = sprintf "%s->" (tab pc.ind) in
-              sprintf "%s\n%s\n%s" s1 s2 s3)
-       in
-       let s2 =
-         module_expr_or_type
-           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} met
-       in
-       sprintf "%s\n%s" s1 s2)
+  pprintf pc "functor@;@[(%s :@;<1 1>%p)@]@ ->@;%p" s module_type mt
+    module_expr_or_type met
 ;
 
 value with_constraint pc wc =
   match wc with
   [ <:with_constr< type $sl$ $list:tpl$ = $flag:pf$ $t$ >> ->
-      let b =
-        let k = hlist type_var {(pc) with bef = ""; aft = " = "} tpl in
-        mod_ident {(pc) with bef = sprintf "%swith type " pc.bef; aft = k} sl
-      in
-      let pf = if pf then "private " else "" in
-      ctyp {(pc) with bef = sprintf "%s%s" b pf} t
+      pprintf pc "with type %p%p =%s %p" mod_ident sl (hlist type_var) tpl
+        (if pf then " private" else "") ctyp t
   | <:with_constr< module $sl$ = $me$ >> ->
-      module_expr
-        {(pc) with
-         bef =
-           mod_ident
-             {(pc) with bef = sprintf "%swith module " pc.bef; aft = " = "}
-             sl}
-        me
+      pprintf pc "with module %p = %p" mod_ident sl module_expr me
   | IFDEF STRICT THEN
       x -> not_impl "with_constraint" pc x
     END ]
