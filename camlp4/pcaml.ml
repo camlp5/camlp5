@@ -12,7 +12,7 @@
 
 (* $Id$ *)
 
-value version = "4.03";
+value version = "4.04-exp";
 value syntax_name = ref "";
 
 value gram =

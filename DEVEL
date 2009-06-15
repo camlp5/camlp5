@@ -176,14 +176,14 @@ IF YOU CHANGE THE MAIN PARSER
    quotations expanders of syntax tree 'meta/q_MLast.ml' match the new
    version. For that, do:
        cd meta
-       ./mk_q_MLast.sh > foo
+       make compare_q_MLast
 
-     This creates a file 'foo' which is supposed to be the new version
-   of 'q_MLast.ml'. Check its validity by typing:
-       diff q_MLast.ml foo | less
+     If no differences are displayed, it means that 'q_MLast.ml' is ok,
+   relatively to 'pa_r.ml'.
 
-     If you think it is ok, do:
-       mv foo q_MLast.ml
+     Otherwise, if the displayed differences seem reasonable, update the
+   version by typing:
+       make bootstrap_q_MLast
 
      Then returning to the top directory, do 'make core compare' and
    possibly 'make coreboot' (one of several times) to check the

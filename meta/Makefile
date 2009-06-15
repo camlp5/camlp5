@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.6 2007/07/10 14:09:06 deraugla Exp $
+# $Id: Makefile,v 1.7 2007/07/11 03:13:56 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -41,6 +41,13 @@ compare:
 	@for j in $(COUT); do \
 		if cmp $$j $(TOP)/boot/$$j; then :; else exit 1; fi; \
 	done
+
+bootstrap_q_MLast:
+	NAME=$(NAME) ./mk_q_MLast.sh > tmp
+	mv tmp q_MLast.ml
+
+compare_q_MLast:
+	NAME=$(NAME) ./mk_q_MLast.sh | diff -c q_MLast.ml -
 
 install:
 	-$(MKDIR) "$(LIBDIR)/$(NAME)" "$(BINDIR)"

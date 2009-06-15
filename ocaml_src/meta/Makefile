@@ -42,6 +42,13 @@ compare:
 		if cmp $$j $(TOP)/boot/$$j; then :; else exit 1; fi; \
 	done
 
+bootstrap_q_MLast:
+	NAME=$(NAME) ./mk_q_MLast.sh > tmp
+	mv tmp q_MLast.ml
+
+compare_q_MLast:
+	NAME=$(NAME) ./mk_q_MLast.sh | diff -c q_MLast.ml -
+
 install:
 	-$(MKDIR) "$(LIBDIR)/$(NAME)" "$(BINDIR)"
 	cp $(OBJS) "$(LIBDIR)/$(NAME)/."
