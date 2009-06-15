@@ -430,33 +430,10 @@ EXTEND_PRINTER
           let b = if rf then "letrec" else "let" in
           let_binding_list pc (b, pel, e)
       | <:expr< if $e1$ then $e2$ else () >> ->
-(**)
           plistb curr 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(if" pc.bef;
              aft = sprintf ")%s" pc.aft}
             [(e1, ""); (e2, "")]
-(*
-          horiz_vertic
-            (fun () ->
-               let pc1 = {(pc) with bef = ""; aft = ""} in
-               sprintf "%s(if %s %s)%s" pc.bef (curr pc1 e1) (curr pc1 e2)
-                 pc.aft)
-            (fun () ->
-               let s1 =
-                 horiz_vertic
-                   (fun () ->
-                      sprintf "%s(if %s" pc.bef
-                        (curr {(pc) with bef = ""; aft = ""} e1))
-                    (fun () -> not_impl "if else ... vertic" pc 0)
-               in
-               let s2 =
-                 curr
-                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
-                    aft = sprintf ")%s" pc.aft}
-                   e2
-               in
-               sprintf "%s\n%s" s1 s2)
-*)
       | <:expr< if $e1$ then $e2$ else $e3$ >> ->
           horiz_vertic
             (fun () ->
