@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2latex,v 1.6 2007/07/14 01:34:58 deraugla Exp $
+# $Id: html2latex,v 1.7 2007/07/14 01:50:12 deraugla Exp $
 
 FILES="index.html ptools.html parsers.html fparsers.html lexers.html grammars.html pretty.html opretty.html ml_ast.html pragma.html extfun.html"
 
@@ -47,6 +47,7 @@ for i in $FILES; do
     -e 's|<code>\([^<]*\)</code>|\\verb/\1/|g' \
     -e 's|<tt>\([^<]*\)</tt>|\\verb/\1/|g' \
     -e 's|<em>\([^<]*\)</em>|\\emph{\1}|g' \
+    -e 's|<b>\([^<]*\)</b>|\\textbf{\1}|g' \
     -e 's/<a [^>]*>//g' -e 's|</a>||g' \
     -e 's/<span [^>]*>//g' -e 's|</span>||g' \
     -e 's/&lt;/</g' -e 's/&gt;/>/g' \
@@ -57,7 +58,5 @@ for i in $FILES; do
     -e '/<div class="trailer">/,$d'
 done
 
-#    -e 's/^ *<p>/\\noindent /' -e 's|</p>||' \
-  
 echo "
 \\\\end{document}"

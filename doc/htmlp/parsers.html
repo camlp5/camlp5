@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: parsers.html,v 1.5 2007/07/14 01:34:58 deraugla Exp $ -->
+  <!-- $Id: parsers.html,v 1.6 2007/07/14 01:50:12 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -218,8 +218,7 @@ parser
      a =
        parser
        [ [: `Else; e3 = expr :] -> f e1 e2 e3
-       | [: :] -> g e1 e2 ] :] ->
-    a
+       | [: :] -> g e1 e2 ] :] -> a
 </pre>
 
 <h3>Match with parser</h3>
@@ -425,8 +424,7 @@ parser
      e =
        parser
        [ [: e = expr; `Rparen :] -> e
-       | [: `Minus; `Rparen :] -> minus_op ] :] ->
-    e
+       | [: `Minus; `Rparen :] -> minus_op ] :] -> e
 </pre>
 
 <p>this does not work if the input is "<code>(-)</code>" because the
