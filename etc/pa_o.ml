@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.34 2007/07/30 02:35:10 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.35 2007/08/07 15:10:09 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -940,13 +940,13 @@ EXTEND
       | "method"; "virtual"; l = label; ":"; t = poly_type ->
           <:class_str_item< method virtual $l$ : $t$ >>
       | "method"; "private"; l = label; ":"; t = poly_type; "="; e = expr ->
-          MLast.CrMth loc l True e (Some t)
+          <:class_str_item< method private $l$ : $t$ = $e$ >>
       | "method"; "private"; l = label; sb = fun_binding ->
-          MLast.CrMth loc l True sb None
+          <:class_str_item< method private $l$ = $sb$ >>
       | "method"; l = label; ":"; t = poly_type; "="; e = expr ->
-          MLast.CrMth loc l False e (Some t)
+          <:class_str_item< method $l$ : $t$ = $e$ >>
       | "method"; l = label; sb = fun_binding ->
-          MLast.CrMth loc l False sb None
+          <:class_str_item< method $l$ = $sb$ >>
       | "constraint"; t1 = ctyp; "="; t2 = ctyp ->
           <:class_str_item< type $t1$ = $t2$ >>
       | "initializer"; se = expr -> <:class_str_item< initializer $se$ >> ] ]

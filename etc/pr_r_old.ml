@@ -1501,18 +1501,18 @@ pr_class_str_item.pr_levels :=
                [ Some i -> [: `S LR "as"; `S LR i :]
                | _ -> [: :] ];
                k :]
-      | MLast.CrVal _ lab mf e ->
+      | <:class_str_item< value $opt:mf$ $lab$ = $e$ >> ->
           fun curr next _ k ->
             [: `cvalue [: `S LR "value" :] (lab, mf, e) k :]
-      | MLast.CrVir _ lab pf t ->
+      | <:class_str_item< method virtual $opt:pf$ $lab$ : $t$ >> ->
           fun curr next _ k ->
             [: `S LR "method"; `S LR "virtual"; flag "private" pf; `label lab;
                `S LR ":"; `ctyp t k :]
-      | MLast.CrMth _ lab pf fb None ->
+      | <:class_str_item< method $opt:pf$ $lab$ = $fb$ >> ->
           fun curr next _ k ->
             [: `fun_binding
                   [: `S LR "method"; flag "private" pf; `label lab :] fb k :]
-      | MLast.CrMth _ lab pf fb (Some t) ->
+      | <:class_str_item< method $opt:pf$ $lab$ : $t$ = $fb$ >> ->
           fun curr next dg k ->
             [: `HOVbox
                   [: `S LR "method"; flag "private" pf; `label lab; `S LR ":";
@@ -1544,7 +1544,7 @@ pr_class_expr.pr_levels :=
           fun curr next _ k ->
             [: `S LR "fun"; `simple_patt p [: `S LR "->" :];
                `class_expr ce k :]
-      | MLast.CeLet _ rf lb ce ->
+      | <:class_expr< let $opt:rf$ $list:lb$ in $ce$ >> ->
           fun curr next _ k ->
             [: `Vbox
                   [: `HVbox [: :];

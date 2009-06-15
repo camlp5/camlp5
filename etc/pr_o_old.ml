@@ -1651,8 +1651,9 @@ pr_ctyp.pr_levels :=
                      k :] :]
       | MLast.TyCls _ id ->
           fun curr next dg k -> [: `S LO "#"; `class_longident id "" k :]
-      | MLast.TyObj _ [] False -> fun curr next dg k -> [: `S LR "<>"; k :]
-      | MLast.TyObj _ ml v ->
+      | <:ctyp< < .. > >> ->
+          fun curr next dg k -> [: `S LR "<>"; k :]
+      | <:ctyp< < $list:ml$ $opt:v$ > >> ->
           fun curr next dg k ->
             [: `S LR "<"; meth_list (ml, v) "" [: `S LR ">"; k :] :]
       | MLast.TyPol _ pl t ->
@@ -1680,17 +1681,17 @@ pr_class_str_item.pr_levels :=
                [ Some i -> [: `S LR "as"; `S LR i :]
                | _ -> [: :] ];
                k :]
-      | MLast.CrVal _ lab mf e ->
+      | <:class_str_item< value $opt:mf$ $lab$ = $e$ >> ->
           fun curr next dg k -> [: `cvalue [: `S LR "val" :] (lab, mf, e) k :]
-      | MLast.CrVir _ lab pf t ->
+      | <:class_str_item< method virtual $opt:pf$ $lab$ : $t$ >> ->
           fun curr next dg k ->
             [: `S LR "method"; `S LR "virtual"; private_flag pf; `label lab;
                `S LR ":"; `ctyp t "" k :]
-      | MLast.CrMth _ lab pf fb None ->
+      | <:class_str_item< method $opt:pf$ $lab$ = $fb$ >> ->
           fun curr next dg k ->
             [: `fun_binding [: `S LR "method"; private_flag pf; `label lab :]
                   fb k :]
-      | MLast.CrMth _ lab pf fb (Some t) ->
+      | <:class_str_item< method $opt:pf$ $lab$ : $t$ = $fb$ >> ->
           fun curr next dg k ->
             [: `HOVbox
                   [: `S LR "method"; private_flag pf; `label lab; `S LR ":";
@@ -1718,18 +1719,18 @@ pr_class_sig_item.pr_levels :=
             [: `HVbox [: :]; list class_sig_item s "" [: :] :]
       | MLast.CgInh _ ce ->
           fun curr next dg k -> [: `S LR "inherit"; `class_type ce k :]
-      | MLast.CgMth _ lab pf t ->
+      | <:class_sig_item< method $opt:pf$ $lab$ : $t$ >> ->
           fun curr next dg k ->
             [: `HVbox
                   [: `S LR "method"; private_flag pf; `label lab;
                      `S LR ":" :];
                `ctyp t "" k :]
-      | MLast.CgVal _ lab mf t ->
+      | <:class_sig_item< value $opt:mf$ $lab$ : $t$ >> ->
           fun curr next dg k ->
             [: `HVbox
                   [: `S LR "val"; mutable_flag mf; `label lab; `S LR ":" :];
                `ctyp t "" k :]
-      | MLast.CgVir _ lab pf t ->
+      | <:class_sig_item< method virtual $opt:pf$ $lab$ : $t$ >> ->
           fun curr next dg k ->
             [: `HVbox
                   [: `S LR "method"; `S LR "virtual"; private_flag pf;
@@ -1754,7 +1755,7 @@ pr_class_expr.pr_levels :=
           fun curr next dg k ->
             [: `S LR "fun"; `simple_patt p "" [: `S LR "->" :];
                `class_expr ce k :]
-      | MLast.CeLet _ rf lb ce ->
+      | <:class_expr< let $opt:rf$ $list:lb$ in $ce$ >> ->
           fun curr next dg k ->
             [: `Vbox
                   [: `HVbox [: :];
