@@ -260,14 +260,14 @@ value match_assoc pc (p, we, e) =
 value constr_decl pc (_, c, tl) =
   let c = Pcaml.unvala c in
   let tl = Pcaml.unvala tl in
-  horiz_vertic
-    (fun () ->
-       match tl with
-       [ [] -> sprintf "%s(%s)%s" pc.bef c pc.aft
-       | _ ->
-           sprintf "%s(%s %s)%s" pc.bef c
-             (hlist ctyp {(pc) with bef = ""; aft = ""} tl) pc.aft ])
-    (fun () -> not_impl "constr_decl vertic" pc 0)
+  match tl with
+  [ [] -> sprintf "%s(%s)%s" pc.bef c pc.aft
+  | _ ->
+      plistf 0
+        {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+         aft = sprintf ")%s" pc.aft}
+        [(fun pc -> sprintf "%s%s%s" pc.bef c pc.aft, "") ::
+         List.map (fun t -> (fun pc -> ctyp pc t, "")) tl] ]
 ;
 
 value label_decl pc (_, l, m, t) =
@@ -486,8 +486,14 @@ EXTEND_PRINTER
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(for" pc.bef;
              aft = sprintf ")%s" pc.aft}
             [(fun pc -> sprintf "%s%s%s" pc.bef i pc.aft, "");
-             (fun pc -> curr pc e1, ""); (fun pc -> curr pc e2, "") ::
-             List.map (fun e -> (fun pc -> curr pc e, "")) el]
+             (fun pc -> curr pc e1, ""); (fun pc -> curr pc e2, "");
+             (fun pc -> plist curr 0 pc (List.map (fun e -> (e, "")) el), "")]
+      | <:expr< while $e$ do { $list:el$ } >> ->
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(while" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc -> curr pc e, "");
+             (fun pc -> plist curr 0 pc (List.map (fun e -> (e, "")) el), "")]
       | <:expr< ($e$ : $t$) >> ->
           plistbf 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(:" pc.bef;
@@ -612,6 +618,8 @@ EXTEND_PRINTER
              (curr {(pc) with bef = ""} e2)
       | <:expr< $int:s$ >> ->
           sprintf "%s%s%s" pc.bef s pc.aft
+      | <:expr< $flo:s$ >> ->
+          sprintf "%s%s%s" pc.bef s pc.aft
       | <:expr< $lid:s$ >> | <:expr< $uid:s$ >> ->
           sprintf "%s%s%s" pc.bef s pc.aft
 (*
@@ -673,7 +681,11 @@ EXTEND_PRINTER
               in
               horiz_vertic
                 (fun () -> hlistl curr dot_patt pc (pl @ [x]))
-                (fun () -> not_impl "patt list 2 vertic" pc 0) ]
+                (fun () ->
+                   let pl =
+                     List.rev_map (fun p -> (p, "")) [x :: List.rev pl]
+                   in
+                   plistl curr dot_patt 0 pc pl) ]
       | <:patt< $p1$ $p2$ >> ->
           let pl =
             loop [p2] p1 where rec loop pl =
@@ -786,13 +798,14 @@ EXTEND_PRINTER
              List.map (fun s -> (fun pc -> string pc s, "")) pd]
       | <:str_item< $exp:e$ >> ->
           expr pc e
-(*
       | <:str_item< # $lid:s$ $opt:x$ >> ->
-          fun ppf curr next dg k ->
-            match x with
-            [ Some e -> fprintf ppf "; # (%s %a" s expr (e, ks ")" k)
-            | None -> fprintf ppf "; # (%s%t" s (ks ")" k) ]
-*)
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(#" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "") ::
+             match x with
+             [ Some e -> [(fun pc -> expr pc e, "")]
+             | None -> [] ]]
       | <:str_item< declare $list:sil$ end >> ->
           if sil = [] then sprintf "%s%s" pc.bef pc.aft
           else vlist str_item pc sil
@@ -873,21 +886,22 @@ EXTEND_PRINTER
                    sil
                in
                sprintf "%s\n%s" s1 s2)
-(*
       | <:module_expr< $me1$ $me2$ >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "(@[%a@ %a@]" module_expr (me1, nok)
-              module_expr (me2, ks ")" k)
-*)
+          plist curr 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(me1, ""); (me2, "")]
       | <:module_expr< ($me$ : $mt$) >> ->
           plistbf 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(:" pc.bef;
              aft = sprintf ")%s" pc.aft}
             [(fun pc -> curr pc me, ""); (fun pc -> module_type pc mt, "")]
-(*
+      | <:module_expr< $me1$ . $me2$ >> ->
+           sprintf "%s.%s"
+             (curr {(pc) with aft = ""} me1)
+             (curr {(pc) with bef = ""} me2)
       | <:module_expr< $uid:s$ >> ->
-          fun ppf curr next dg k -> fprintf ppf "%s%t" s k
-*)
+          sprintf "%s%s%s" pc.bef s pc.aft
       | x ->
           not_impl "module_expr" pc x ] ]
   ;

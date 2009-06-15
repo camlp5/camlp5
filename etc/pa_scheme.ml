@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.30 2007/10/05 14:36:15 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.31 2007/10/05 14:38:51 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -929,14 +929,6 @@
 (:= Pcaml.parse_implem.val (Grammar.Entry.parse implem))
 
 (define sexpr (Grammar.Entry.create gram "sexpr"))
-
-(definerec leftify
-  (lambda_match
-    ((Sacc loc1 se1 se2)
-     (match (leftify se2)
-       ((Sacc loc2 se2 se3) (Sacc loc1 (Sacc loc2 se1 se2) se3))
-       (se2 (Sacc loc1 se1 se2))))
-    (x x)))
 
 EXTEND
   GLOBAL : implem interf top_phrase use_file str_item sig_item expr
