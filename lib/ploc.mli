@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ploc.mli,v 1.1 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: ploc.mli,v 1.2 2007/09/01 20:12:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (** Locations *)
@@ -47,12 +47,12 @@ value last_pos : t -> int;
 value line_nb : t -> int;
    (** [Ploc.line_nb loc] returns the line number of the location or [-1] if
        the location does not contain a line number (i.e. built with
-       [make_unlined]. *)
+       [Ploc.make_unlined]. *)
 value bol_pos : t -> int;
    (** [Ploc.bol_pos loc] returns the position of the beginning of the line
        of the location in number of characters since the beginning of
        the stream, or [0] if the location does not contain a line number
-       (i.e. built with [make_unlined]. *)
+       (i.e. built with [Ploc.make_unlined]. *)
 
 (* combining locations *)
 

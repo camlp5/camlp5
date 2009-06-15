@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: grammars.html,v 1.75 2007/08/28 12:09:26 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.76 2007/09/01 20:12:37 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -418,7 +418,7 @@ sources):</p>
 </ul>
 
 <p>The location is an abstract type defined in the module
-"<tt>Stdpp</tt>" of Camlp5.</p>
+  "<tt>Ploc</tt>" of Camlp5.</p>
 
 <p>It is possible to change the name of this variable by using the option
 "<tt>-loc</tt>" of Camlp5. For example, compiling a file like this:</p>
@@ -503,7 +503,7 @@ instead of "<tt>loc</tt>".</p>
   #load "pa_extend.cmo";
   #load "pa_extfold.cmo";
   #load "q_MLast.cmo";
-  let loc = Stdpp.dummy_loc in
+  let loc = Ploc.dummy in
   EXTEND
     Pcaml.expr:
       [ [ "sum";
@@ -666,8 +666,8 @@ instead of "<tt>loc</tt>".</p>
   that entry, which may resolve the problem.</p>
 
 <p>In extensible grammars, the exceptions are encapsulated with the
-  exception "Stdpp.Exc_located" giving the location of the error
-  together with the exception itself.</p>
+  exception "Ploc.Exc" giving the location of the error together with
+  the exception itself.</p>
 
 <h3>Tokens starting rules</h3>
 

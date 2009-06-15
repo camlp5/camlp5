@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: locations.html,v 1.5 2007/08/22 09:17:59 deraugla Exp $ -->
+  <!-- $Id: locations.html,v 1.6 2007/09/01 20:12:37 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Locations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -20,8 +20,8 @@
 <h1 class="top">Locations</h1>
 
 <p>The location is a concept often used in Camlp5, bound to know where
-  the errors occur in the source. The basic type is
-  "<tt>Stdpp.location</tt>" which is an abstract type.</p>
+  the errors occur in the source. The basic type is "<tt>Ploc.t</tt>"
+  which is an abstract type.</p>
 
 <div id="tableofcontents">
 </div>
@@ -61,15 +61,15 @@
 
 <h2>Building locations</h2>
 
-<p>Tools are provided in the module "<tt>Stdpp</tt>" to manage
+<p>Tools are provided in the module "<tt>Ploc</tt>" to manage
   locations.</p>
 
-<p>First, "<tt>Stdpp.dummy_loc</tt>" is a dummy location used when the
+<p>First, "<tt>Ploc.dummy</tt>" is a dummy location used when the
   element does not correspond to any source, or if the programmer does
   not want to busy about locations.</p>
 
-<p>The function "<tt>Stdpp.make_lined_loc</tt>" builds a location from
-  three parameters:</p>
+<p>The function "<tt>Ploc.make</tt>" builds a location from three
+  parameters:</p>
 
 <ul>
   <li>the line number, starting at 1</li>
@@ -80,26 +80,26 @@
 </ul>
 
 <p>If the line number is not known, it is possible to use the function
-  "<tt>Stdpp.make_loc</tt>" taking only the couple of positions of the
-  location. In this case, error messages may indicate the first line
-  and a big count of characters from this line (actually from the
+  "<tt>Ploc.make_unlined</tt>" taking only the couple of positions of
+  the location. In this case, error messages may indicate the first
+  line and a big count of characters from this line (actually from the
   beginning of the file). With a good text editor, it is possible,
   anyway to find the good location, anyway.</p>
 
-<p>If the location is built with "<tt>Stdpp.make_loc</tt>", and if
+<p>If the location is built with "<tt>Ploc.make_unlined</tt>", and if
   your program displays a source location itself, it is possible to
-  use the function "<tt>Stdpp.line_of_loc</tt>" which takes the file
+  use the function "<tt>Ploc.from_file</tt>" which takes the file
   name and the location as parameters and return, by reading that
   file, the line number, and the character positions of the
   location.</p>
 
 <h2>Raising with a location</h2>
 
-<p>The function "<tt>Stdpp.raise_with_loc</tt>" allows to raise an
-  exception together with a location. It is the case of all exceptions
-  raised in the <a href="grammars.html">extensible grammars</a>. The
-  raised exception is "<tt>Stdpp.Exc_located</tt>" with two
-  parameters: the location and the exception itself.</p>
+<p>The function "<tt>Ploc.raise</tt>" allows to raise an exception
+  together with a location. It is the case of all exceptions raised in
+  the <a href="grammars.html">extensible grammars</a>. The raised
+  exception is "<tt>Ploc.Exc</tt>" with two parameters: the location
+  and the exception itself.</p>
 
 <p>Notice that "<tt>raise_with_loc</tt>" just reraises the exception
   if it is already the exception "<tt>Exc_located</tt>", ignoring then
@@ -113,7 +113,7 @@
   try ... with exn ->
     let exn =
       match exn with
-      [ Stdpp.Exc_located loc exn -> do { ... print the location ...; exn }
+      [ Ploc.Exc loc exn -> do { ... print the location ...; exn }
       | _ -> exn ]
     in
     match exn with
@@ -125,41 +125,41 @@
 <p>Some other functions are provided:</p>
 
 <dl>
-  <dt><tt>Stdpp.first_pos</tt></dt>
+  <dt><tt>Ploc.first_pos</tt></dt>
   <dd>returns the first position (an integer) of the location.</dd>
-  <dt><tt>Stdpp.last_pos</tt></dt>
+  <dt><tt>Ploc.last_pos</tt></dt>
   <dd>returns the last position (an integer) of the location (position
     of the first character not belonging to the element.</dd>
-  <dt><tt>Stdpp.line_nb</tt></dt>
+  <dt><tt>Ploc.line_nb</tt></dt>
   <dd>returns the line number of the location or <tt>-1</tt> if the
     location does not contain a line number (i.e. built by
-    "<tt>Stdpp.make_loc</tt>").</dd>
-  <dt><tt>Stdpp.bol_pos</tt></dt>
+    "<tt>Ploc.make_unlined</tt>").</dd>
+  <dt><tt>Ploc.bol_pos</tt></dt>
   <dd>returns the position of the beginning of the line of the
     location. It is zero if the location does not contain a line
-    number (i.e. built by "<tt>Stdpp.make_loc</tt>").</dd>
+    number (i.e. built by "<tt>Ploc.make_unlined</tt>").</dd>
 </dl>
 
 <p>And still other ones used in Camlp5 sources:</p>
 
 <dl>
-  <dt><tt>Stdpp.encl_loc</tt></dt>
-  <dd>"<tt>Stdpp.encl_loc loc1 loc2</tt>" returns the location
-    starting at the smallest begin of "<tt>loc1</tt>" and
-    "<tt>loc2</tt>" and ending at their greatest end.. In simple
-    words, it is the location enclosing "<tt>loc1</tt>" and
-    "<tt>loc2</tt>" and all what is between them.</dd>
-  <dt><tt>Stdpp.shift_loc</tt></dt>
-  <dd>"<tt>shift_loc sh loc</tt>" returns the location "<tt>loc</tt>"
+  <dt><tt>Ploc.encl</tt></dt>
+  <dd>"<tt>Ploc.encl loc1 loc2</tt>" returns the location starting at
+    the smallest begin of "<tt>loc1</tt>" and "<tt>loc2</tt>" and
+    ending at their greatest end.. In simple words, it is the location
+    enclosing "<tt>loc1</tt>" and "<tt>loc2</tt>" and all what is
+    between them.</dd>
+  <dt><tt>Ploc.shift</tt></dt>
+  <dd>"<tt>Ploc.shift sh loc</tt>" returns the location "<tt>loc</tt>"
     shifted with "<tt>sh</tt>" characters. The line number is not
     recomputed.</dd>
-  <dt><tt>Stdpp.sub_loc</tt></dt>
-  <dd>"<tt>Stdpp.sub_loc loc sh len</tt>" is the location
-    "<tt>loc</tt>" shifted with "<tt>sh</tt>" characters and with
-    length "<tt>len</tt>". The previous ending position of the
-    location is lost.</dd>
-  <dt>"<tt>Stdpp.after_loc</tt>"</dt>
-  <dd>"<tt>Stdpp.after_loc loc sh len</tt>" is the location just after
+  <dt><tt>Ploc.sub</tt></dt>
+  <dd>"<tt>Ploc.sub loc sh len</tt>" is the location "<tt>loc</tt>"
+    shifted with "<tt>sh</tt>" characters and with length
+    "<tt>len</tt>". The previous ending position of the location is
+    lost.</dd>
+  <dt>"<tt>Ploc.after</tt>"</dt>
+  <dd>"<tt>Ploc.after loc sh len</tt>" is the location just after
     "<tt>loc</tt>" (i.e. starting at the end position of
     "<tt>loc</tt>"), shifted with "<tt>sh</tt>" characters, and of
     length "<tt>len</tt>".</dd>

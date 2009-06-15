@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: quot.html,v 1.17 2007/08/28 17:49:37 deraugla Exp $ -->
+  <!-- $Id: quot.html,v 1.18 2007/09/01 20:12:37 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>quotations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -254,7 +254,7 @@
   #load "q_MLast.cmo";
   let expr s =
     let ast = Grammar.Entry.parse Pcaml.expr (Stream.of_string s) in
-    let loc = Stdpp.make_lined_loc 1 0 (0, String.length s) in
+    let loc = Ploc.make 1 0 (0, String.length s) in
     &lt;:expr&lt; $anti:ast$ >>
   in
   Quotation.add "b" (Quotation.ExAst (expr, fun []));
@@ -482,12 +482,12 @@ type expander =
         Array.init (2 * Array.length loct.val + 1)
           (fun i ->
              if i &lt; Array.length loct.val then loct.val.(i)
-             else Stdpp.dummy_loc)
+             else Ploc.dummy)
       in
       loct.val := newt;
     }
     else ();
-    loct.val.(i) := Stdpp.make_loc (bp, ep)
+    loct.val.(i) := Ploc.make_unlined (bp, ep)
   };
 
   value lex_func cs =
@@ -542,7 +542,7 @@ type expander =
     expr_antiquot:
       [ [ i = IDENT ->
            let r =
-             let loc = Stdpp.make_loc (0, String.length i) in
+             let loc = Ploc.make_unlined (0, String.length i) in
              &lt;:expr&lt; $lid:i$ >>
            in
            &lt;:expr&lt; $anti:r$ >> ] ]
@@ -560,7 +560,7 @@ type expander =
     patt_antiquot:
       [ [ i = IDENT ->
            let r =
-             let loc = Stdpp.make_loc (0, String.length i) in
+             let loc = Ploc.make_unlined (0, String.length i) in
              &lt;:patt&lt; $lid:i$ >>
            in
            &lt;:patt&lt; $anti:r$ >> ] ]

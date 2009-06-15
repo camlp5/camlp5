@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: library.html,v 1.23 2007/08/30 10:35:21 deraugla Exp $ -->
+  <!-- $Id: library.html,v 1.24 2007/09/01 20:12:37 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Library</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -25,97 +25,96 @@
 <div id="tableofcontents">
 </div>
 
-<h2>Stdpp module</h2>
+<h2>Ploc module</h2>
 
-<p>Building and combining locations (this module should be renamed
-  "<tt>Ploc</tt>" one day).</p>
+<p>Building and combining locations.</p>
 
 <dl>
-  <dt><tt>type location = 'abstract;</tt></dt>
+  <dt><tt>type t = 'abstract;</tt></dt>
+  <dd>Location type.</dd>
 </dl>
 
 <h3>located exceptions</h3>
 
 <dl>
-  <dt><tt>exception Exc_located of location and exn;</tt></dt>
-  <dd>"<tt>Exc_located loc e</tt>" is an encapsulation of the
-    exception "<tt>e</tt>" with the input location "<tt>loc</tt>". To
-    be used to specify a location for an error. This exception must
-    not be raised by "<tt>raise</tt>" but rather by
-    "<tt>raise_with_loc</tt>" (see below), to prevent the risk of
-    several encapsulations of "<tt>Exc_located</tt>".</dd>
-  <dt><tt>value raise_with_loc : location -> exn -> 'a;</tt></dt>
-  <dd>"<tt>raise_with_loc loc e</tt>", if "<tt>e</tt>" is already the
-    exception "<tt>Exc_located</tt>", re-raise it (ignoring the new
+  <dt><tt>exception Exc of location and exn;</tt></dt>
+  <dd>"<tt>Ploc.Exc loc e</tt>" is an encapsulation of the exception
+    "<tt>e</tt>" with the input location "<tt>loc</tt>". To be used to
+    specify a location for an error. This exception must not be raised
+    by the OCaml function "<tt>raise</tt>", but rather by
+    "<tt>Ploc.raise</tt>" (see below), to prevent the risk of several
+    encapsulations of "<tt>Ploc.Exc</tt>".</dd>
+  <dt><tt>value raise : t -> exn -> 'a;</tt></dt>
+  <dd>"<tt>Ploc.raise loc e</tt>", if "<tt>e</tt>" is already the
+    exception "<tt>Ploc.Exc</tt>", re-raise it (ignoring the new
     location "<tt>loc</tt>"), else raise the exception
-    "<tt>Exc_located loc e</tt>".</dd>
+    "<tt>Ploc.Exc loc e</tt>".</dd>
 </dl>
 
 <h3>making locations</h3>
 
 <dl>
-  <dt><tt>value make_lined_loc : int -> int -> (int * int) ->
-      location;</tt></dt>
-  <dd>"<tt>make_lined_loc line_nb bol_pos (bp, ep)</tt>" creates a
+  <dt><tt>value make : int -> int -> (int * int) -> t;</tt></dt>
+  <dd>"<tt>Ploc.make line_nb bol_pos (bp, ep)</tt>" creates a
     location starting at line number "<tt>line_nb</tt>", where the
     position of the beginning of the line is "<tt>bol_pos</tt>" and
     between the positions "<tt>bp</tt>" (included) and "<tt>ep</tt>"
     excluded. The positions are in number of characters since the
     begin of the stream.</dd>
-  <dt><tt>value make_loc : (int * int) -> location;</tt></dt>
-  <dd>"<tt>make_loc</tt>" is like "<tt>make_lined_loc</tt>" except
+  <dt><tt>value make_unlined : (int * int) -> t;</tt></dt>
+  <dd>"<tt>Ploc.make_unlined</tt>" is like "<tt>Ploc.make</tt>" except
     that the line number is not provided (to be used e.g. when the
     line number is unknown).</dd>
 </dl>
 
 <dl>
-  <dt><tt>value dummy_loc : location;</tt></dt>
-  <dd>"<tt>dummy_loc</tt>" is a dummy location, used in situations
+  <dt><tt>value dummy : t;</tt></dt>
+  <dd>"<tt>Ploc.dummy</tt>" is a dummy location, used in situations
     when location has no meaning.</dd>
 </dl>
 
 <h3>getting location info</h3>
 
 <dl>
-  <dt><tt>value first_pos : location -> int;</tt></dt>
-  <dd>"<tt>first_pos loc</tt>" returns the position of the begin of
-    the location in number of characters since the beginning of the
+  <dt><tt>value first_pos : t -> int;</tt></dt>
+  <dd>"<tt>Ploc.first_pos loc</tt>" returns the position of the begin
+    of the location in number of characters since the beginning of the
     stream.</dd>
-  <dt><tt>value last_pos : location -> int;</tt></dt>
-  <dd>"<tt>first_pos loc</tt>" returns the position of the first
+  <dt><tt>value last_pos : t -> int;</tt></dt>
+  <dd>"<tt>Ploc.last_pos loc</tt>" returns the position of the first
     character not of the location in number of characters since the
     beginning of the stream.</dd>
-  <dt><tt>value line_nb : location -> int;</tt></dt>
-  <dd>"<tt>line_nb loc</tt>" returns the line number of the location
-    or "<tt>-1</tt>" if the location does not contain a line number
-    (i.e. built with "<tt>make_loc</tt>" above).</dd>
-  <dt><tt>value bol_pos : location -> int;</tt></dt>
-  <dd>"<tt>line_nb loc</tt>" returns the position of the beginning of
-    the line of the location in number of characters since the
-    beginning of the stream, or "<tt>0</tt>" if the location does not
-    contain a line number (i.e. built the with "<tt>make_loc</tt>"
-    above).</dd>
+  <dt><tt>value line_nb : t -> int;</tt></dt>
+  <dd>"<tt>Ploc.line_nb loc</tt>" returns the line number of the
+    location or "<tt>-1</tt>" if the location does not contain a line
+    number (i.e. built with "<tt>Ploc.make_unlined</tt>" above).</dd>
+  <dt><tt>value bol_pos : t -> int;</tt></dt>
+  <dd>"<tt>Ploc.bol_pos loc</tt>" returns the position of the
+    beginning of the line of the location in number of characters
+    since the beginning of the stream, or "<tt>0</tt>" if the location
+    does not contain a line number (i.e. built the with
+    "<tt>Ploc.make_unlined</tt>" above).</dd>
 </dl>
 
 <h3>combining locations</h3>
 
 <dl>
-  <dt><tt>value encl_loc : location -> location -> location;</tt></dt>
-  <dd>"<tt>encl_loc loc1 loc2</tt>" returns the location starting at
+  <dt><tt>value encl : t -> t -> t;</tt></dt>
+  <dd>"<tt>Ploc.encl loc1 loc2</tt>" returns the location starting at
     the smallest start and ending at the greatest end of the locations
     "<tt>loc1</tt>" and "<tt>loc2</tt>". In other words, it is the
     location enclosing "<tt>loc1</tt>" and "<tt>loc2</tt>".</dd>
-  <dt><tt>value shift_loc : int -> location -> location;</tt></dt>
-  <dd>"<tt>shift_loc sh loc</tt>" returns the location "<tt>loc</tt>"
+  <dt><tt>value shift : int -> t -> t;</tt></dt>
+  <dd>"<tt>Ploc.shift sh loc</tt>" returns the location "<tt>loc</tt>"
     shifted with "<tt>sh</tt>" characters. The line number is not
     recomputed.</dd>
-  <dt><tt>value sub_loc : location -> int -> int -> location;</tt></dt>
-  <dd>"<tt>sub_loc loc sh len</tt>" is the location "<tt>loc</tt>"
+  <dt><tt>value sub : t -> int -> int -> t;</tt></dt>
+  <dd>"<tt>Ploc.sub loc sh len</tt>" is the location "<tt>loc</tt>"
     shifted with "<tt>sh</tt>" characters and with length
     "<tt>len</tt>". The previous ending position of the location is
     lost.</dd>
-  <dt><tt>value after_loc : location -> int -> int -> location;</tt></dt>
-  <dd>"<tt>after_loc loc sh len</tt>" is the location just after loc
+  <dt><tt>value after : t -> int -> int -> t;</tt></dt>
+  <dd>"<tt>Ploc.after loc sh len</tt>" is the location just after loc
     (starting at the end position of "<tt>loc</tt>") shifted with
     "<tt>sh</tt>" characters and of length "<tt>len</tt>".</dd>
 </dl>
@@ -123,21 +122,21 @@
 <h3>miscellaneous</h3>
 
 <dl>
-  <dt><tt>value loc_name : ref string;</tt></dt>
-  <dd>"<tt>loc_name.val</tt>" is the name of the location variable
+  <dt><tt>value name : ref string;</tt></dt>
+  <dd>"<tt>Ploc.name.val</tt>" is the name of the location variable
     used in grammars and in the predefined quotations for OCaml syntax
     trees. Default: "<tt>"loc"</tt>".</dd>
 </dl>
 
 <dl>
-  <dt><tt>value line_of_loc : string -> location -> (string * int *
-      int * int);</tt></dt>
-  <dd>"<tt>line_of_loc fname loc</tt>" reads the file "<tt>fname</tt>"
-    up to the location "<tt>loc</tt>" and returns the real input file,
-    the line number and the characters location in the line; the real
-    input file can be different from "<tt>fname</tt>" because of
-    possibility of line directives typically generated by
-    /lib/cpp.</dd>
+  <dt><tt>value from_file : string -> t -> (string * int * int *
+      int);</tt></dt>
+  <dd>"<tt>Ploc.from_file fname loc</tt>" reads the file
+    "<tt>fname</tt>" up to the location "<tt>loc</tt>" and returns the
+    real input file, the line number and the characters location in
+    the line; the real input file can be different from
+    "<tt>fname</tt>" because of possibility of line directives
+    typically generated by /lib/cpp.</dd>
 </dl>
 
 <h2>Token module</h2>
@@ -179,7 +178,7 @@ type glexer 'te =
     tok_removing : pattern -> unit;
     tok_match : mutable pattern -> 'te -> string;
     tok_text : pattern -> string;
-    tok_comm : mutable option (list Stdpp.location) }
+    tok_comm : mutable option (list Ploc.t) }
 </pre>
 
 <dl><dd>
@@ -229,7 +228,7 @@ type glexer 'te =
 </dl>
 
 <dl>
-  <dt><tt>and location_function = int -> Stdpp.location;</tt></dt>
+  <dt><tt>and location_function = int -> Ploc.t;</tt></dt>
   <dd>The type of a function giving the location of a token in the
     source from the token number in the stream (starting from
     zero).</dd>
@@ -269,8 +268,7 @@ type glexer 'te =
 
 <pre style="border:0; margin-left: 1cm">
 value lexer_func_of_parser :
-  ((Stream.t char * ref int * ref int) -> ('te * Stdpp.location)) ->
-     lexer_func 'te;
+  ((Stream.t char * ref int * ref int) -> ('te * Ploc.t)) -> lexer_func 'te;
 </pre>
 
 <dl><dd>A lexer function from a lexer written as a char stream parser
@@ -291,14 +289,14 @@ value lexer_func_of_ocamllex : (Lexing.lexbuf -> 'te) -> lexer_func 'te;
 
 <pre style="border:0; margin-left: 1cm">
 value make_stream_and_location :
-  (unit -> ('te * Stdpp.location)) -> (Stream.t 'te * location_function);
+  (unit -> ('te * Ploc.t)) -> (Stream.t 'te * location_function);
 </pre>
 
 <h3>useful functions and values</h3>
 
 <dl>
   <dt><tt>value eval_char : string -> char;</tt></dt>
-  <dt><tt>value eval_string : Stdpp.location -> string -> string;</tt></dt>
+  <dt><tt>value eval_string : Ploc.t -> string -> string;</tt></dt>
   <dd>Convert a char or a string token, where the backslashes had not
     been interpreted into a real char or string; raise
     "<tt>Failure</tt>" if bad backslash sequence found;
@@ -324,7 +322,7 @@ value make_stream_and_location :
 <p>Deprecated since version 4.08.</p>
 
 <dl>
-  <dt><tt>type location = Stdpp.location;</tt></dt>
+  <dt><tt>type location = Ploc.t;</tt></dt>
   <dt><tt>value make_loc : (int * int) -> location;</tt></dt>
   <dt><tt>value dummy_loc : location;</tt></dt>
 </dl>
@@ -1133,6 +1131,17 @@ module type S =
     the line. Default = 78. Can be set to any other value before
     printing.</dd>
 </dl>
+
+<h2>Deprecated module Stdpp</h2>
+
+<p>The module "<tt>Stdpp</tt>" has been deprecated since version 4.09.
+  The new module is named "<tt>Ploc</tt>" and most of its variables
+  and types has been renamed too.</p>
+
+<p>The backward compatibility is assumed. See the file
+  "<tt>stdpp.mli</tt>" in the Camlp5 distribution to convert from old
+  into new names. After several versions or years, the module
+  "<tt>Stdpp</tt>" will disappear from Camlp5.</p>
 
 <div class="trailer">
 </div>
