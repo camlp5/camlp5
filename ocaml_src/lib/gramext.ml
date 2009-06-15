@@ -87,7 +87,9 @@ let rec eq_symbol s1 s2 =
   | Slist1 s1, Slist1 s2 -> eq_symbol s1 s2
   | Slist1sep (s1, sep1), Slist1sep (s2, sep2) ->
       eq_symbol s1 s2 && eq_symbol sep1 sep2
+  | Sflag s1, Sflag s2 -> eq_symbol s1 s2
   | Sopt s1, Sopt s2 -> eq_symbol s1 s2
+  | Svala (ls1, s1), Svala (ls2, s2) -> ls1 = ls2 && eq_symbol s1 s2
   | Stree _, Stree _ -> false
   | _ -> s1 = s2
 ;;
