@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.116 2007/12/05 15:15:37 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.117 2007/12/05 16:00:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -423,13 +423,13 @@ value value_or_let_binding flag_where sequ pc (p, e) =
   in
   horiz_vertic
     (fun () ->
-       sprintf "%s%s%s = %s%s" pc.bef
+       pprintf pc "%s%s = %s%s"
          (hlist patt {(pc) with bef = ""; aft = ""} pl)
          (match tyo with
           [ Some t -> sprintf " : %s" (ctyp {(pc) with bef = ""; aft = ""} t)
           | None -> "" ])
          (expr_wh {(pc) with bef = ""; aft = ""} e)
-         (if pc.aft = "in" then " in" else pc.aft))
+         (if pc.aft = "in" then " " else ""))
     (fun () ->
        let patt_eq pc =
          let patt_tycon tyo pc p =
