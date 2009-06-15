@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.56 2007/08/16 09:01:40 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.57 2007/08/16 09:13:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -986,92 +986,6 @@ value str_or_sig_functor pc s mt module_expr_or_type met =
        sprintf "%s\n%s" s1 s2)
 ;
 
-value module_expr_top =
-  extfun Extfun.empty with
-  [ <:module_expr< functor ($s$ : $mt$) -> $me$ >> ->
-      fun curr next pc ->
-        str_or_sig_functor pc s mt module_expr me
-  | <:module_expr< struct $list:sil$ end >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             if alone_in_line pc then
-               (* Heuristic : I don't like to print structs horizontally
-                  when alone in a line. *)
-               sprintf "\n"
-             else
-               sprintf "%sstruct%s%s%send%s" pc.bef " "
-                 (hlist (semi_after str_item) {(pc) with bef = ""; aft = ""}
-                    sil)
-                 " " pc.aft)
-          (fun () ->
-             sprintf "%sstruct%s%s%send%s" pc.bef "\n"
-               (vlist (semi_after str_item)
-                  {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                   aft = ""}
-                  sil)
-               ("\n" ^ tab pc.ind) pc.aft)
-  | z ->
-      fun curr next pc -> next pc z ]
-;
-
-value module_expr_apply =
-  extfun Extfun.empty with
-  [ <:module_expr< $x$ $y$ >> as z ->
-      fun curr next pc ->
-        let unfold =
-          fun
-          [ <:module_expr< $x$ $y$ >> -> Some (x, "", y)
-          | e -> None ]
-        in
-        left_operator pc 2 unfold next z
-  | z ->
-      fun curr next pc -> next pc z ]
-;
-
-value module_expr_dot =
-  extfun Extfun.empty with
-  [ <:module_expr< $x$ . $y$ >> ->
-      fun curr next pc ->
-        curr {(pc) with bef = curr {(pc) with aft = "."} x} y
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value module_expr_simple =
-  extfun Extfun.empty with
-  [ <:module_expr< $uid:s$ >> ->
-      fun curr next pc -> sprintf "%s%s%s" pc.bef s pc.aft
-  | <:module_expr< ($me$ : $mt$) >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s(%s : %s)%s" pc.bef
-               (module_expr {(pc) with bef = ""; aft = ""} me)
-               (module_type {(pc) with bef = ""; aft = ""} mt) pc.aft)
-          (fun () ->
-             let s1 =
-               module_expr
-                 {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-                  aft = " :"}
-                 me
-             in
-             let s2 =
-               module_type
-                 {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
-                  aft = sprintf ")%s" pc.aft}
-                 mt
-             in
-             sprintf "%s\n%s" s1 s2)
-  | <:module_expr< struct $list:_$ end >> as z ->
-      fun curr next pc ->
-        module_expr
-          {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-           aft = sprintf ")%s" pc.aft}
-          z
-  | z ->
-      fun curr next pc -> not_impl "module_expr" pc z ]
-;
-
 value with_constraint pc wc =
   match wc with
   [ <:with_constr< type $sl$ $list:tpl$ = $opt:pf$ $t$ >> ->
@@ -1089,67 +1003,6 @@ value with_constraint pc wc =
              {(pc) with bef = sprintf "%swith module " pc.bef; aft = " = "}
              sl}
         me ]
-;
-
-value module_type_top =
-  extfun Extfun.empty with
-  [ <:module_type< functor ($s$ : $mt1$) -> $mt2$ >> ->
-      fun curr next pc ->
-        str_or_sig_functor pc s mt1 module_type mt2
-  | <:module_type< sig $list:sil$ end >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             if alone_in_line pc then
-               (* Heuristic : I don't like to print sigs horizontally
-                  when alone in a line. *)
-               sprintf "\n"
-             else
-               sprintf "%ssig%s%s%send%s" pc.bef " "
-                 (hlist (semi_after sig_item) {(pc) with bef = ""; aft = ""}
-                    sil)
-                 " " pc.aft)
-          (fun () ->
-             sprintf "%ssig%s%s%send%s" pc.bef "\n"
-               (vlist (semi_after sig_item)
-                  {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                   aft = ""}
-                  sil)
-               ("\n" ^ tab pc.ind) pc.aft)
-  | <:module_type< $mt$ with $list:wcl$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s%s %s%s" pc.bef
-               (module_type {(pc) with bef = ""; aft = ""} mt)
-               (hlist with_constraint {(pc) with bef = ""; aft = ""} wcl)
-                  pc.aft)
-          (fun () ->
-             let s1 = module_type {(pc) with aft = ""} mt in
-             let s2 =
-               vlist with_constraint
-                 {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} wcl
-             in
-             sprintf "%s\n%s" s1 s2)
-  | z ->
-      fun curr next pc -> next pc z ]
-;
-
-value module_type_dot =
-  extfun Extfun.empty with
-  [ <:module_type< $x$ . $y$ >> ->
-      fun curr next pc ->
-        curr {(pc) with bef = curr {(pc) with aft = "."} x} y
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value module_type_simple =
-  extfun Extfun.empty with
-  [ <:module_type< $uid:s$ >> ->
-      fun curr next pc -> sprintf "%s%s%s" pc.bef s pc.aft
-  | <:module_type< ' $s$ >> ->
-      fun curr next pc -> sprintf "%s'%s%s" pc.bef s pc.aft
-  | z -> fun curr next pc -> not_impl "module_type" pc z ]
 ;
 
 EXTEND_PRINTER
@@ -2181,20 +2034,116 @@ EXTEND_PRINTER
       | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->
           failwith "classes and objects not pretty printed; add pr_ro.cmo" ] ]
   ;
+  pr_module_expr:
+    [ "top"
+      [ <:module_expr< functor ($s$ : $mt$) -> $me$ >> ->
+          str_or_sig_functor pc s mt module_expr me
+      | <:module_expr< struct $list:sil$ end >> ->
+          horiz_vertic
+            (fun () ->
+               if alone_in_line pc then
+                 (* Heuristic : I don't like to print structs horizontally
+                    when alone in a line. *)
+                 sprintf "\n"
+               else
+                 sprintf "%sstruct%s%s%send%s" pc.bef " "
+                   (hlist (semi_after str_item) {(pc) with bef = ""; aft = ""}
+                      sil)
+                   " " pc.aft)
+            (fun () ->
+               sprintf "%sstruct%s%s%send%s" pc.bef "\n"
+                 (vlist (semi_after str_item)
+                    {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+                     aft = ""}
+                    sil)
+                 ("\n" ^ tab pc.ind) pc.aft) ]
+    | "apply"
+      [ <:module_expr< $x$ $y$ >> as z ->
+          let unfold =
+            fun
+            [ <:module_expr< $x$ $y$ >> -> Some (x, "", y)
+            | e -> None ]
+          in
+          left_operator pc 2 unfold next z ]
+    | "dot"
+      [ <:module_expr< $x$ . $y$ >> ->
+          curr {(pc) with bef = curr {(pc) with aft = "."} x} y ]
+    | "simple"
+      [ <:module_expr< $uid:s$ >> ->
+          sprintf "%s%s%s" pc.bef s pc.aft
+      | <:module_expr< ($me$ : $mt$) >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s(%s : %s)%s" pc.bef
+                 (module_expr {(pc) with bef = ""; aft = ""} me)
+                 (module_type {(pc) with bef = ""; aft = ""} mt) pc.aft)
+            (fun () ->
+               let s1 =
+                 module_expr
+                   {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+                    aft = " :"}
+                   me
+               in
+               let s2 =
+                 module_type
+                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+                    aft = sprintf ")%s" pc.aft}
+                   mt
+               in
+               sprintf "%s\n%s" s1 s2)
+      | <:module_expr< struct $list:_$ end >> as z ->
+          module_expr
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            z ] ]
+  ;
+  pr_module_type:
+    [ "top"
+      [ <:module_type< functor ($s$ : $mt1$) -> $mt2$ >> ->
+          str_or_sig_functor pc s mt1 module_type mt2
+      | <:module_type< sig $list:sil$ end >> ->
+          horiz_vertic
+            (fun () ->
+               if alone_in_line pc then
+                 (* Heuristic : I don't like to print sigs horizontally
+                    when alone in a line. *)
+                 sprintf "\n"
+               else
+                 sprintf "%ssig%s%s%send%s" pc.bef " "
+                   (hlist (semi_after sig_item) {(pc) with bef = ""; aft = ""}
+                      sil)
+                   " " pc.aft)
+            (fun () ->
+               sprintf "%ssig%s%s%send%s" pc.bef "\n"
+                 (vlist (semi_after sig_item)
+                    {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+                     aft = ""}
+                    sil)
+                 ("\n" ^ tab pc.ind) pc.aft)
+      | <:module_type< $mt$ with $list:wcl$ >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s%s %s%s" pc.bef
+                 (module_type {(pc) with bef = ""; aft = ""} mt)
+                 (hlist with_constraint {(pc) with bef = ""; aft = ""} wcl)
+                    pc.aft)
+            (fun () ->
+               let s1 = module_type {(pc) with aft = ""} mt in
+               let s2 =
+                 vlist with_constraint
+                   {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} wcl
+               in
+               sprintf "%s\n%s" s1 s2) ]
+    | "dot"
+      [ <:module_type< $x$ . $y$ >> ->
+          curr {(pc) with bef = curr {(pc) with aft = "."} x} y ]
+    | "simple"
+      [ <:module_type< $uid:s$ >> ->
+          sprintf "%s%s%s" pc.bef s pc.aft
+      | <:module_type< ' $s$ >> ->
+          sprintf "%s'%s%s" pc.bef s pc.aft ] ]
+  ;
 END;
-
-pr_module_expr.pr_levels :=
-  [{pr_label = "top"; pr_rules = module_expr_top};
-   {pr_label = "apply"; pr_rules = module_expr_apply};
-   {pr_label = "dot"; pr_rules = module_expr_dot};
-   {pr_label = "simple"; pr_rules = module_expr_simple}]
-;
-
-pr_module_type.pr_levels :=
-  [{pr_label = "top"; pr_rules = module_type_top};
-   {pr_label = "dot"; pr_rules = module_type_dot};
-   {pr_label = "simple"; pr_rules = module_type_simple}]
-;
 
 (* main part *)
 
