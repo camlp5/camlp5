@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_fstream.ml,v 1.11 2007/11/30 23:22:38 deraugla Exp $ *)
+(* $Id: pa_fstream.ml,v 1.12 2007/12/20 16:58:46 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -129,6 +129,7 @@ value patt_expr_of_patt p =
   match p with
   [ <:patt< $lid:x$ >> -> (p, <:expr< $lid:x$ >>)
   | <:patt< $uid:_$ $lid:x$ >> -> (<:patt< $lid:x$ >>, <:expr< $lid:x$ >>)
+  | <:patt< ($_$ as $lid:x$) >> -> (<:patt< $lid:x$ >>, <:expr< $lid:x$ >>)
   | _ -> (<:patt< _ >>, <:expr< () >>) ]
 ;
 
