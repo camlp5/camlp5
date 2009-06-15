@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: pretty.html,v 1.4 2007/07/13 23:07:34 deraugla Exp $ -->
+  <!-- $Id: pretty.html,v 1.5 2007/07/14 02:37:16 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Pretty</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -103,7 +103,7 @@ short, you want to see:</p>
 <pre>
 open Pretty;
 horiz_vertic
-  (fun () -> sprintf "&lt;li&gt;something&lt;/&gt;")
+  (fun () -> sprintf "&lt;li&gt;something&lt;/li&gt;")
   (fun () -> sprintf "&lt;li&gt;\n  something\n&lt;/li&gt;");
 </pre>
 
@@ -117,7 +117,7 @@ rather look like:</p>
 
 <pre>
 horiz_vertic
-  (fun () -> sprintf "&lt;li&gt;%s&lt;/&gt;" (print something))
+  (fun () -> sprintf "&lt;li&gt;%s&lt;/li&gt;" (print something))
   (fun () -> sprintf "&lt;li&gt;\n  %s\n&lt;/li&gt;" (print something))
 </pre>
 
@@ -150,7 +150,7 @@ but give it as parameter of your "print" function:</p>
 
 <pre>
 horiz_vertic
-  (fun () -> sprintf "&lt;li&gt;%s&lt;/&gt;" (print "" something))
+  (fun () -> sprintf "&lt;li&gt;%s&lt;/li&gt;" (print "" something))
   (fun () -> sprintf "&lt;li&gt;\n%s\n&lt;/li&gt;" (print "  " something))
 </pre>
 

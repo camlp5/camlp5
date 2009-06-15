@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2latex,v 1.7 2007/07/14 01:50:12 deraugla Exp $
+# $Id: html2latex,v 1.8 2007/07/14 02:37:16 deraugla Exp $
 
 FILES="index.html ptools.html parsers.html fparsers.html lexers.html grammars.html pretty.html opretty.html ml_ast.html pragma.html extfun.html"
 
@@ -34,27 +34,36 @@ echo "\
 for i in $FILES; do
   echo "======" 1>&2
   echo "$i" 1>&2
-  sed -e "{/<\/p>/N; s/\\n *//; /<\/p>/N; s/\\n *//; s|</p><p>|\\n\\n\\\\ \\n\\n\\\\noindent |; s/^ *<p>/\\\\noindent /; s|</p>|\\n\\n|}" $i |
-  sed -e '0,/<div id="content">/d' \
+  cat $i |
+  sed -e '{/<\/p>/N; s/\\n *//; /<\/p>/N; s/\\n *//}' |
+  sed \
+    -e 's|</p><p>|\\n\\n\\\\ \\n\\n\\\\noindent |g' \
+    -e '{s/^ *<p>/\\noindent /; s|</p>||}' |
+  sed \
+    -e '0,/<div id="content">/d' \
     -e 's/^ *<h1[^>]*>/\\chapter{/' -e 's|</h1>|}|' \
     -e 's/^ *<h2>/\\section{/' -e 's|</h2>|}|' \
     -e 's/^ *<h3>/\\subsection{/' -e 's|</h3>|}|' \
+    -e 's/^ *<h4>/\\subsubsection{/' -e 's|</h4>|}|' \
     -e 's/^ *<ul>/\\begin{itemize}/' -e 's|^ *</ul>|\\end{itemize}|' \
     -e 's/^ *<ol>/\\begin{enumerate}/' -e 's|^ *</ol>|\\end{enumerate}|' \
     -e 's/^ *<li>/\\item /' -e 's| *</li>||' \
     -e '/<pre>/,/<\/pre>/s/^/  /g' \
     -e 's/^ *<pre>/\\begin{verbatim}/' -e 's|^ *</pre>|\\end{verbatim}|' \
-    -e 's|<code>\([^<]*\)</code>|\\verb/\1/|g' \
-    -e 's|<tt>\([^<]*\)</tt>|\\verb/\1/|g' \
-    -e 's|<em>\([^<]*\)</em>|\\emph{\1}|g' \
-    -e 's|<b>\([^<]*\)</b>|\\textbf{\1}|g' \
+    -e 's/<code>/\\texttt{/g' -e 's|</code>|}|g' \
+    -e 's/<tt>/\\texttt{/g' -e 's|</tt>|}|g' \
+    -e 's/<em>/\\emph{/g' -e 's|</em>|}|g' \
+    -e 's/<i>/\\emph{/g' -e 's|</i>|}|g' \
+    -e 's/<b>/\\textbf{/g' -e 's|</b>|}|g' \
     -e 's/<a [^>]*>//g' -e 's|</a>||g' \
     -e 's/<span [^>]*>//g' -e 's|</span>||g' \
     -e 's/&lt;/</g' -e 's/&gt;/>/g' \
     -e 's/_/\\_/g' \
     -e 's/#/\\#/g' \
+    -e 's/\$/\\$/g' \
     -e '/\\begin{verbatim}/,/\\end{verbatim}/s/\\_/_/g' \
     -e '/\\begin{verbatim}/,/\\end{verbatim}/s/\\#/#/g' \
+    -e '/\\begin{verbatim}/,/\\end{verbatim}/s/\\\$/$/g' \
     -e '/<div class="trailer">/,$d'
 done
 
