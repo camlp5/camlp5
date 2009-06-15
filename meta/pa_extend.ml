@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.63 2007/09/15 05:34:12 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.64 2007/09/15 13:30:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -278,11 +278,17 @@ value rec expr_fa al =
   | f -> (f, al) ]
 ;
 
+value assoc_anti =
+  [("ANTIQUOT_LOC", "ANTIQUOT"); ("TILDEANTIQUOT_LOC", "TILDEANTIQUOT");
+   ("TILDEANTIQUOTCOLON_LOC", "TILDEANTIQUOTCOLON");
+   ("QUESTIONANTIQUOT_LOC", "QUESTIONANTIQUOT");
+   ("QUESTIONANTIQUOTCOLON_LOC", "QUESTIONANTIQUOTCOLON")]
+;
+
 value anti_str psl =
   match psl with
-  [ [{symbol =
-        {text =
-           TXtok _ ("ANTIQUOT" | "TILDEANTIQUOT") <:expr< $str:s$ >>}}] -> s
+  [ [{symbol = {text = TXtok _ x <:expr< $str:s$ >>}}] ->
+      if List.exists (fun (_, y) -> x = y) assoc_anti then s else ""
   | _ -> "" ]
 ;
 
@@ -534,10 +540,6 @@ value slist loc min sep symb =
     | None -> None ]
   in
   TXlist loc min symb.text t
-;
-
-value assoc_anti =
-  [("ANTIQUOT_LOC", "ANTIQUOT"); ("TILDEANTIQUOT_LOC", "TILDEANTIQUOT")]
 ;
 
 value sstoken_aux loc name s =

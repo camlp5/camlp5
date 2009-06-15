@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.87 2007/09/15 05:34:12 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.88 2007/09/15 13:30:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -714,18 +714,18 @@ EXTEND
   ;
   tildeidentcolon:
     [ [ i = TILDEIDENTCOLON -> <:vala< i >>
-      | a = TILDEANTIQUOTCOLON_LOC -> <:vala< $a$ >>
-      | a = TILDEANTIQUOTCOLON_LOC "a" -> <:vala< $a$ >> ] ]
+      | a = TILDEANTIQUOTCOLON_LOC "a" -> <:vala< $a$ >>
+      | a = TILDEANTIQUOTCOLON_LOC -> <:vala< $a$ >> ] ]
   ;
   questionident:
     [ [ i = QUESTIONIDENT -> <:vala< i >>
-      | a = QUESTIONANTIQUOT_LOC -> <:vala< $a$ >>
-      | a = QUESTIONANTIQUOT_LOC "a" -> <:vala< $a$ >> ] ]
+      | a = QUESTIONANTIQUOT_LOC "a" -> <:vala< $a$ >>
+      | a = QUESTIONANTIQUOT_LOC -> <:vala< $a$ >> ] ]
   ;
   questionidentcolon:
     [ [ i = QUESTIONIDENTCOLON -> <:vala< i >>
-      | a = QUESTIONANTIQUOTCOLON_LOC -> <:vala< $a$ >>
-      | a = QUESTIONANTIQUOTCOLON_LOC "a" -> <:vala< $a$ >> ] ]
+      | a = QUESTIONANTIQUOTCOLON_LOC "a" -> <:vala< $a$ >>
+      | a = QUESTIONANTIQUOTCOLON_LOC -> <:vala< $a$ >> ] ]
   ;
   ctyp: LEVEL "simple"
     [ [ "["; "="; rfl = poly_variant_list; "]" ->

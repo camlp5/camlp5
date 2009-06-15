@@ -607,12 +607,17 @@ let rec expr_fa al =
   | f -> f, al
 ;;
 
+let assoc_anti =
+  ["ANTIQUOT_LOC", "ANTIQUOT"; "TILDEANTIQUOT_LOC", "TILDEANTIQUOT";
+   "TILDEANTIQUOTCOLON_LOC", "TILDEANTIQUOTCOLON";
+   "QUESTIONANTIQUOT_LOC", "QUESTIONANTIQUOT";
+   "QUESTIONANTIQUOTCOLON_LOC", "QUESTIONANTIQUOTCOLON"]
+;;
+
 let anti_str psl =
   match psl with
-    [{symbol =
-        {text =
-           TXtok (_, ("ANTIQUOT" | "TILDEANTIQUOT"), MLast.ExStr (_, s))}}] ->
-      s
+    [{symbol = {text = TXtok (_, x, MLast.ExStr (_, s))}}] ->
+      if List.exists (fun (_, y) -> x = y) assoc_anti then s else ""
   | _ -> ""
 ;;
 
@@ -1179,10 +1184,6 @@ let slist loc min sep symb =
     | None -> None
   in
   TXlist (loc, min, symb.text, t)
-;;
-
-let assoc_anti =
-  ["ANTIQUOT_LOC", "ANTIQUOT"; "TILDEANTIQUOT_LOC", "TILDEANTIQUOT"]
 ;;
 
 let sstoken_aux loc name s =
