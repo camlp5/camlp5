@@ -4,6 +4,8 @@
 
 open Printf;;
 
+type ('a, 'b) parser_t = 'a Stream.t -> 'b;;
+
 type 'te grammar =
   { gtokens : (Plexing.pattern, int ref) Hashtbl.t;
     mutable glexer : 'te Plexing.lexer }
@@ -13,12 +15,12 @@ type 'te g_entry =
   { egram : 'te grammar;
     ename : string;
     elocal : bool;
-    mutable estart : int -> 'te Stream.t -> Obj.t;
-    mutable econtinue : int -> int -> Obj.t -> 'te Stream.t -> Obj.t;
+    mutable estart : int -> ('te, Obj.t) parser_t;
+    mutable econtinue : int -> int -> Obj.t -> ('te, Obj.t) parser_t;
     mutable edesc : 'te g_desc }
 and 'te g_desc =
     Dlevels of 'te g_level list
-  | Dparser of ('te Stream.t -> Obj.t)
+  | Dparser of ('te, Obj.t) parser_t
 and 'te g_level =
   { assoc : g_assoc;
     lname : string option;
