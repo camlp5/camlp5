@@ -1,8 +1,7 @@
 #!/bin/bash
-# $Id: camlp5_comm.sh,v 1.7 2007/09/07 04:31:52 deraugla Exp $
+# $Id: camlp5_comm.sh,v 1.8 2007/09/07 11:49:03 deraugla Exp $
 
-MODE="-mode T"
-ARGS1="$MODE"
+ARGS1="-mode $MODE"
 FILE=
 QUIET=no
 while test "" != "$1"; do

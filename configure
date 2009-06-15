@@ -1,10 +1,11 @@
 #!/bin/bash
-# $Id: configure,v 1.17 2007/07/11 09:46:18 deraugla Exp $
+# $Id: configure,v 1.18 2007/09/07 11:49:03 deraugla Exp $
 
 prefix=''
 bindir=''
 libdir=''
 mandir=''
+mode=T
 name=camlp5
 
 # a local which command for sh
@@ -35,6 +36,10 @@ while : ; do
         libdir=$2; shift;;
     -mandir|--mandir)
         mandir=$2; shift;;
+    -transitional|--transitional)
+        mode=T;;
+    -strict|--strict)
+        mode=S;;
     *) echo "Unknown option \"$1\"." 1>&2; exit 2;;
   esac
   shift
@@ -134,6 +139,7 @@ fi
 
 (
 echo NAME=$name
+echo MODE=$mode
 echo EXE=$EXE
 echo OPT=$OPT
 echo OVERSION=$OVERSION
