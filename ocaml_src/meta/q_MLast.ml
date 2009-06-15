@@ -474,6 +474,8 @@ Grammar.extend
      grammar_entry_create "field_expr"
    and field : 'field Grammar.Entry.e = grammar_entry_create "field"
    and typevar : 'typevar Grammar.Entry.e = grammar_entry_create "typevar"
+   and class_longident2 : 'class_longident2 Grammar.Entry.e =
+     grammar_entry_create "class_longident2"
    and poly_variant_list : 'poly_variant_list Grammar.Entry.e =
      grammar_entry_create "poly_variant_list"
    and name_tag : 'name_tag Grammar.Entry.e = grammar_entry_create "name_tag"
@@ -2928,13 +2930,14 @@ Grammar.extend
            (Qast.Node ("CeStr", [Qast.Loc; cspo; cf]) : 'class_expr));
       [Gramext.Snterm
          (Grammar.Entry.obj
-            (class_longident : 'class_longident Grammar.Entry.e))],
+            (class_longident2 : 'class_longident2 Grammar.Entry.e))],
       Gramext.action
-        (fun (ci : 'class_longident) (loc : Ploc.t) ->
-           (Qast.Node ("CeCon", [Qast.Loc; ci; Qast.List []]) : 'class_expr));
+        (fun (ci : 'class_longident2) (loc : Ploc.t) ->
+           (Qast.Node ("CeCon", [Qast.Loc; ci; Qast.VaVal (Qast.List [])]) :
+            'class_expr));
       [Gramext.Snterm
          (Grammar.Entry.obj
-            (class_longident : 'class_longident Grammar.Entry.e));
+            (class_longident2 : 'class_longident2 Grammar.Entry.e));
        Gramext.Stoken ("", "[");
        Gramext.srules
          [[Gramext.Slist1sep
@@ -2942,13 +2945,15 @@ Grammar.extend
                 (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e)),
               Gramext.Stoken ("", ","))],
           Gramext.action
-            (fun (a : 'ctyp list) (loc : Ploc.t) -> (Qast.List a : 'a_list));
+            (fun (a : 'ctyp list) (loc : Ploc.t) ->
+               (Qast.Vala (Qast.List a) : 'a_list2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_list : 'a_list Grammar.Entry.e))],
-          Gramext.action (fun (a : 'a_list) (loc : Ploc.t) -> (a : 'a_list))];
+             (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
+          Gramext.action
+            (fun (a : 'a_list2) (loc : Ploc.t) -> (a : 'a_list2))];
        Gramext.Stoken ("", "]")],
       Gramext.action
-        (fun _ (ctcl : 'a_list) _ (ci : 'class_longident) (loc : Ploc.t) ->
+        (fun _ (ctcl : 'a_list2) _ (ci : 'class_longident2) (loc : Ploc.t) ->
            (Qast.Node ("CeCon", [Qast.Loc; ci; ctcl]) : 'class_expr))]];
     Grammar.Entry.obj (class_structure : 'class_structure Grammar.Entry.e),
     None,
@@ -3491,6 +3496,23 @@ Grammar.extend
       Gramext.action
         (fun (l : 'clty_longident) _ (m : 'a_UIDENT) (loc : Ploc.t) ->
            (Qast.Cons (m, l) : 'clty_longident))]];
+    Grammar.Entry.obj (class_longident2 : 'class_longident2 Grammar.Entry.e),
+    None,
+    [None, None,
+     [[Gramext.Stoken ("ANTIQUOT", "alist")],
+      Gramext.action
+        (fun (s : string) (loc : Ploc.t) ->
+           (antiquot "alist" loc s : 'class_longident2));
+      [Gramext.Stoken ("ANTIQUOT", "list")],
+      Gramext.action
+        (fun (s : string) (loc : Ploc.t) ->
+           (Qast.VaVal (antiquot "list" loc s) : 'class_longident2));
+      [Gramext.Snterm
+         (Grammar.Entry.obj
+            (class_longident : 'class_longident Grammar.Entry.e))],
+      Gramext.action
+        (fun (v : 'class_longident) (loc : Ploc.t) ->
+           (Qast.VaVal v : 'class_longident2))]];
     Grammar.Entry.obj (class_longident : 'class_longident Grammar.Entry.e),
     None,
     [None, None,

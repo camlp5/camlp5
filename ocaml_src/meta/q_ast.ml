@@ -513,6 +513,9 @@ module Meta =
       let rec loop =
         function
           CeApp (_, ce, e) -> e_node "CeApp" [loop ce; e_expr e]
+        | CeCon (_, c, l) ->
+            let c = e_vala (e_list e_string) c in
+            e_node "CeCon" [c; e_vala (e_list e_ctyp) l]
         | CeFun (_, p, ce) -> e_node "CeFun" [e_patt p; loop ce]
         | CeLet (_, rf, lb, ce) -> e_node "CeLet" [e_vala e_bool rf; loop ce]
         | CeTyc (_, ce, ct) -> e_node "CeTyc" [loop ce; e_class_type ct]

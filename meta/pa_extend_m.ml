@@ -1,16 +1,6 @@
 (* camlp5r pa_extend.cmo *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: pa_extend_m.ml,v 1.20 2007/09/08 15:36:54 deraugla Exp $ *)
+(* $Id: pa_extend_m.ml,v 1.21 2007/09/13 11:54:59 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 open Pa_extend;
 
@@ -31,9 +21,8 @@ EXTEND
       | UIDENT "SV"; UIDENT "LIST1"; s = SELF;
         sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
           sslist2 loc True sep s
-      | UIDENT "SV"; UIDENT "FLAG"; s = SELF ->
-          ssflag2 loc s
-      | UIDENT "SV"; s = UIDENT ->
-          sstoken2 loc s ] ]
+      | UIDENT "SV"; UIDENT "OPT"; s = SELF -> ssopt2 loc s
+      | UIDENT "SV"; UIDENT "FLAG"; s = SELF -> ssflag2 loc s
+      | UIDENT "SV"; s = UIDENT -> sstoken2 loc s ] ]
   ;
 END;

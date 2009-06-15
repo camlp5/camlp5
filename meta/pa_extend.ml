@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.59 2007/09/13 04:04:32 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.60 2007/09/13 11:54:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -584,12 +584,12 @@ value sslist2 loc min sep s =
   sslist_aux loc "a_list2" vala min sep s
 ;
 
-value ssopt loc s =
+value ssopt_aux loc a_name vala s =
   let rl =
     let r1 =
       let prod =
-        let n = mk_name loc <:expr< a_opt >> in
-        [mk_psymbol <:patt< a >> (TXnterm loc n None) (STquo loc "a_opt")]
+        let n = mk_name loc <:expr< $lid:a_name$ >> in
+        [mk_psymbol <:patt< a >> (TXnterm loc n None) (STquo loc a_name)]
       in
       let act = <:expr< a >> in
       {prod = prod; action = Some act}
@@ -611,15 +611,25 @@ value ssopt loc s =
         [mk_psymbol <:patt< a >> (TXopt loc s.text)
            (STapp loc (STlid loc "option") s.styp)]
       in
-      let act = <:expr< Qast.Option a >> in
+      let act = vala loc <:expr< Qast.Option a >> in
       {prod = prod; action = Some act}
     in
     [r1; r2]
   in
-  let used = ["a_opt" :: s.used] in
-  let text = TXrules loc (srules loc "a_opt" rl "") in
-  let styp = STquo loc "a_opt" in
+  let used = [a_name :: s.used] in
+  let text = TXrules loc (srules loc a_name rl "") in
+  let styp = STquo loc a_name in
   {used = used; text = text; styp = styp}
+;
+
+value ssopt loc s =
+  let vala loc x = x in
+  ssopt_aux loc "a_opt" vala s
+;
+
+value ssopt2 loc s =
+  let vala loc x = <:expr< Qast.Vala $x$ >> in
+  ssopt_aux loc "a_opt2" vala s
 ;
 
 value ssflag_aux loc a_name vala s =
@@ -953,6 +963,16 @@ EXTEND
               else (TXvala loc text, STvala loc styp)
             in
             {used = used; text = text; styp = styp}
+      | UIDENT "V"; UIDENT "OPT"; s = SELF ->
+          if quotify.val then ssopt2 loc s
+          else
+            let text = TXopt loc s.text in
+            let styp = STapp loc (STlid loc "option") s.styp in
+            let (text, styp) =
+              if not Pcaml.strict_mode.val then (text, styp)
+              else (TXvala loc text, STvala loc styp)
+            in
+            {used = s.used; text = text; styp = styp}
       | UIDENT "V"; UIDENT "FLAG"; s = SELF ->
           if quotify.val then ssflag2 loc s
           else

@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.75 2007/09/13 05:10:16 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.76 2007/09/13 11:54:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -985,10 +985,12 @@ EXTEND
       [ ce = SELF; e = expr LEVEL "label" ->
           Qast.Node "CeApp" [Qast.Loc; ce; e] ]
     | "simple"
-      [ ci = class_longident; "["; ctcl = SLIST1 ctyp SEP ","; "]" ->
+      [ ci = class_longident2; "["; ctcl = SV LIST1 ctyp SEP ","; "]" ->
           Qast.Node "CeCon" [Qast.Loc; ci; ctcl]
-      | ci = class_longident -> Qast.Node "CeCon" [Qast.Loc; ci; Qast.List []]
-      | "object"; cspo = SOPT class_self_patt; cf = class_structure; "end" ->
+      | ci = class_longident2 ->
+          Qast.Node "CeCon" [Qast.Loc; ci; Qast.VaVal (Qast.List [])]
+      | "object"; cspo = SOPT class_self_patt; cf = class_structure;
+        "end" ->
           Qast.Node "CeStr" [Qast.Loc; cspo; cf]
       | "("; ce = SELF; ":"; ct = class_type; ")" ->
           Qast.Node "CeTyc" [Qast.Loc; ce; ct]
@@ -1112,6 +1114,11 @@ EXTEND
   clty_longident:
     [ [ m = a_UIDENT; "."; l = SELF -> Qast.Cons m l
       | i = a_LIDENT -> Qast.List [i] ] ]
+  ;
+  class_longident2:
+    [ [ v = class_longident -> Qast.VaVal v
+      | s = ANTIQUOT "list" -> Qast.VaVal (antiquot "list" loc s)
+      | s = ANTIQUOT "alist" -> antiquot "alist" loc s ] ]
   ;
   class_longident:
     [ [ m = a_UIDENT; "."; l = SELF -> Qast.Cons m l

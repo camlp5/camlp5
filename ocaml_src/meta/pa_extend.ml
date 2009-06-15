@@ -1207,13 +1207,13 @@ let sslist2 loc min sep s =
   sslist_aux loc "a_list2" vala min sep s
 ;;
 
-let ssopt loc s =
+let ssopt_aux loc a_name vala s =
   let rl =
     let r1 =
       let prod =
-        let n = mk_name loc (MLast.ExLid (loc, "a_opt")) in
+        let n = mk_name loc (MLast.ExLid (loc, a_name)) in
         [mk_psymbol (MLast.PaLid (loc, "a")) (TXnterm (loc, n, None))
-           (STquo (loc, "a_opt"))]
+           (STquo (loc, a_name))]
       in
       let act = MLast.ExLid (loc, "a") in {prod = prod; action = Some act}
     in
@@ -1243,19 +1243,33 @@ let ssopt loc s =
            (STapp (loc, STlid (loc, "option"), s.styp))]
       in
       let act =
-        MLast.ExApp
-          (loc,
-           MLast.ExAcc
-             (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Option")),
-           MLast.ExLid (loc, "a"))
+        vala loc
+          (MLast.ExApp
+             (loc,
+              MLast.ExAcc
+                (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Option")),
+              MLast.ExLid (loc, "a")))
       in
       {prod = prod; action = Some act}
     in
     [r1; r2]
   in
-  let used = "a_opt" :: s.used in
-  let text = TXrules (loc, srules loc "a_opt" rl "") in
-  let styp = STquo (loc, "a_opt") in {used = used; text = text; styp = styp}
+  let used = a_name :: s.used in
+  let text = TXrules (loc, srules loc a_name rl "") in
+  let styp = STquo (loc, a_name) in {used = used; text = text; styp = styp}
+;;
+
+let ssopt loc s = let vala loc x = x in ssopt_aux loc "a_opt" vala s;;
+
+let ssopt2 loc s =
+  let vala loc x =
+    MLast.ExApp
+      (loc,
+       MLast.ExAcc
+         (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Vala")),
+       x)
+  in
+  ssopt_aux loc "a_opt2" vala s
 ;;
 
 let ssflag_aux loc a_name vala s =
@@ -1930,6 +1944,20 @@ Grammar.extend
             else
               let text = TXflag (loc, s.text) in
               let styp = STlid (loc, "bool") in
+              let (text, styp) =
+                if not !(Pcaml.strict_mode) then text, styp
+                else TXvala (loc, text), STvala (loc, styp)
+              in
+              {used = s.used; text = text; styp = styp} :
+            'symbol));
+      [Gramext.Stoken ("UIDENT", "V"); Gramext.Stoken ("UIDENT", "OPT");
+       Gramext.Sself],
+      Gramext.action
+        (fun (s : 'symbol) _ _ (loc : Ploc.t) ->
+           (if !quotify then ssopt2 loc s
+            else
+              let text = TXopt (loc, s.text) in
+              let styp = STapp (loc, STlid (loc, "option"), s.styp) in
               let (text, styp) =
                 if not !(Pcaml.strict_mode) then text, styp
                 else TXvala (loc, text), STvala (loc, styp)

@@ -341,7 +341,8 @@ and class_expr floc sh =
   let rec self =
     function
       CeApp (loc, x1, x2) -> CeApp (floc loc, self x1, expr floc sh x2)
-    | CeCon (loc, x1, x2) -> CeCon (floc loc, x1, List.map (ctyp floc sh) x2)
+    | CeCon (loc, x1, x2) ->
+        CeCon (floc loc, x1, vala_map (List.map (ctyp floc sh)) x2)
     | CeFun (loc, x1, x2) -> CeFun (floc loc, patt floc sh x1, self x2)
     | CeLet (loc, x1, x2, x3) ->
         CeLet

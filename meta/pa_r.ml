@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.77 2007/09/13 05:10:16 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.78 2007/09/13 11:54:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -557,9 +557,9 @@ EXTEND
       [ ce = SELF; e = expr LEVEL "label" ->
           <:class_expr< $ce$ $e$ >> ]
     | "simple"
-      [ ci = class_longident; "["; ctcl = LIST1 ctyp SEP ","; "]" ->
-          <:class_expr< $list:ci$ [ $list:ctcl$ ] >>
-      | ci = class_longident -> <:class_expr< $list:ci$ >>
+      [ ci = class_longident2; "["; ctcl = V LIST1 ctyp SEP ","; "]" ->
+          <:class_expr< $alist:ci$ [ $alist:ctcl$ ] >>
+      | ci = class_longident2 -> <:class_expr< $alist:ci$ >>
       | "object"; cspo = OPT class_self_patt; cf = class_structure; "end" ->
           <:class_expr< object $opt:cspo$ $list:cf$ end >>
       | "("; ce = SELF; ":"; ct = class_type; ")" ->
@@ -680,6 +680,11 @@ EXTEND
   clty_longident:
     [ [ m = UIDENT; "."; l = SELF -> [m :: l]
       | i = LIDENT -> [i] ] ]
+  ;
+  class_longident2:
+    [ [ v = class_longident -> <:vala< v >>
+      | s = ANTIQUOT_LOC "list" -> <:vala< $s$ >>
+      | s = ANTIQUOT_LOC "alist" -> <:vala< $s$ >> ] ]
   ;
   class_longident:
     [ [ m = UIDENT; "."; l = SELF -> [m :: l]

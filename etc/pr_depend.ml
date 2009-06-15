@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.29 2007/09/13 05:10:16 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.30 2007/09/13 11:54:59 deraugla Exp $ *)
 
 open MLast;
 
@@ -217,14 +217,20 @@ and str_item =
 and type_decl td = ctyp td.MLast.tdDef
 and class_expr =
   fun
-  [ CeApp _ ce e -> do { class_expr ce; expr e }
-  | CeCon _ li tl -> do { longident li; list ctyp tl }
-  | CeFun _ p ce -> do { patt p; class_expr ce }
+  [ <:class_expr< $ce$ $e$ >> -> do { class_expr ce; expr e }
+  | <:class_expr< $list:li$ [ $list:tl$ ] >> -> do {
+      longident li;
+      list ctyp tl
+    }
+  | <:class_expr< fun $p$ -> $ce$ >> -> do { patt p; class_expr ce }
   | <:class_expr< let $flag:_$ $list:pel$ in $ce$ >> -> do {
       list let_binding pel;
       class_expr ce
     }
-  | CeStr _ po csil -> do { option patt po; list class_str_item csil }
+  | <:class_expr< object $opt:po$ $list:csil$ end >> -> do {
+      option patt po;
+      list class_str_item csil
+    }
   | x -> not_impl "class_expr" x ]
 and class_str_item =
   fun

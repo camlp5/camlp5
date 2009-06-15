@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: reloc.ml,v 1.25 2007/09/13 05:10:16 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.26 2007/09/13 11:54:59 deraugla Exp $ *)
 
 open MLast;
 
@@ -343,7 +343,8 @@ and class_expr floc sh =
   self where rec self =
     fun
     [ CeApp loc x1 x2 -> CeApp (floc loc) (self x1) (expr floc sh x2)
-    | CeCon loc x1 x2 -> CeCon (floc loc) x1 (List.map (ctyp floc sh) x2)
+    | CeCon loc x1 x2 ->
+        CeCon (floc loc) x1 (vala_map (List.map (ctyp floc sh)) x2)
     | CeFun loc x1 x2 -> CeFun (floc loc) (patt floc sh x1) (self x2)
     | CeLet loc x1 x2 x3 ->
         CeLet (floc loc) x1

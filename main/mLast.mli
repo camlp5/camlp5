@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: mLast.mli,v 1.37 2007/09/13 05:10:16 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.38 2007/09/13 11:54:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Module [MLast]: abstract syntax tree.
@@ -195,7 +195,7 @@ and class_sig_item =
   | CgVir of loc and string and bool and ctyp ]
 and class_expr =
   [ CeApp of loc and class_expr and expr
-  | CeCon of loc and list string and list ctyp
+  | CeCon of loc and V (list string) and V (list ctyp)
   | CeFun of loc and patt and class_expr
   | CeLet of loc and V bool and V (list (patt * expr)) and class_expr
   | CeStr of loc and option patt and list class_str_item

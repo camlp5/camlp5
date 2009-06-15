@@ -1782,9 +1782,9 @@ pr_class_expr.pr_levels :=
    {pr_label = ""; pr_box s x = HVbox x;
     pr_rules =
       extfun Extfun.empty with
-      [ MLast.CeCon _ ci [] ->
+      [ <:class_expr< $list:ci$ >> ->
           fun curr next dg k -> [: `class_longident ci "" k :]
-      | MLast.CeCon _ ci ctcl ->
+      | <:class_expr< $list:ci$ [ $list:ctcl$ ] >> ->
           fun curr next dg k ->
             [: `S LO "["; listws ctyp (S RO ",") ctcl "" [: `S RO "]" :];
                `class_longident ci "" k :]

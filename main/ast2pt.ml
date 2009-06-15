@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.37 2007/09/13 05:10:16 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.38 2007/09/13 11:54:59 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -925,7 +925,8 @@ and class_expr =
       mkpcl loc (Pcl_apply (class_expr ce) el)
   | CeCon loc id tl ->
       mkpcl loc
-        (Pcl_constr (long_id_of_string_list loc id) (List.map ctyp tl))
+        (Pcl_constr (long_id_of_string_list loc (uv id))
+           (List.map ctyp (uv tl)))
   | CeFun loc (PaLab _ lab po) ce ->
       mkpcl loc
         (Pcl_fun lab None (patt (patt_of_lab loc lab po)) (class_expr ce))
