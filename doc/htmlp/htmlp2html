@@ -1,0 +1,28 @@
+#!/bin/sh
+# $Id: htmlp2html,v 1.1 2007/07/16 01:39:50 deraugla Exp $
+
+FILE=$1
+
+(
+  echo '<div id="tableofcontents">'
+  echo '  <ol>'
+  grep '<h2>' $FILE |
+  sed -e 's|^<h2>\(.*\)</h2>|    <li><a href="#\1">\1</a></li>|'
+  echo '  </ol>'
+  echo '</div>'
+) > toc.tmp
+
+cat $FILE |
+sed \
+  -e '/<div id="menu">/i\aaa' \
+  -e '/<div id="menu">/,/^<\/div>/d' |
+sed -e '/aaa/r menu.html' -e '/aaa/d' |
+sed \
+  -e '/<div id="tableofcontents">/i\aaa' \
+  -e '/<div id="tableofcontents">/,/^<\/div>/d' |
+sed -e '/aaa/r toc.tmp' -e '/aaa/d' |
+sed \
+  -e '/<div class="trailer">/i\aaa' \
+  -e '/<div class="trailer">/,/^<\/div>/d' |
+sed -e '/aaa/r trailer.html' -e '/aaa/d' |
+sed -e '/<h2>/s|<h2>\(.*\)</h2>|<a id="\1"></a><h2>\1</h2>|'
