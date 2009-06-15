@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: ast2pt.ml,v 1.47 2007/09/16 05:19:01 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.48 2007/09/17 10:22:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open MLast;
@@ -521,17 +521,6 @@ value class_info class_expr ci =
    pci_variance = variance}
 ;
 
-value call_with v x f =
-  let vx = v.val in
-  try do {
-    v.val := x;
-    let r = f () in
-    v.val := vx;
-    r
-  }
-  with e -> do { v.val := vx; raise e }
-;
-
 value bigarray_get loc e el =
   match el with
   [ [c1] -> <:expr< Bigarray.Array1.get $e$ $c1$ >>
@@ -796,8 +785,8 @@ and sig_item s l =
   | SgTyp loc tdl ->
       [mksig loc (Psig_type (List.map mktype_decl (uv tdl))) :: l]
   | SgUse loc fn sl ->
-      call_with glob_fname fn
-        (fun () -> List.fold_right (fun (si, _) -> sig_item si) sl l)
+      Ploc.call_with glob_fname fn
+        (fun () -> List.fold_right (fun (si, _) -> sig_item si) sl l) ()
   | SgVal loc n t ->
       [mksig loc (Psig_value (uv n) (mkvalue_desc t [])) :: l] ]
 and module_expr =
@@ -863,8 +852,8 @@ and str_item s l =
   | StTyp loc tdl ->
       [mkstr loc (Pstr_type (List.map mktype_decl (uv tdl))) :: l]
   | StUse loc fn sl ->
-      call_with glob_fname fn
-        (fun () -> List.fold_right (fun (si, _) -> str_item si) sl l)
+      Ploc.call_with glob_fname fn
+        (fun () -> List.fold_right (fun (si, _) -> str_item si) sl l) ()
   | StVal loc rf pel ->
       [mkstr loc (Pstr_value (mkrf (uv rf)) (List.map mkpe (uv pel))) :: l] ]
 and class_type =

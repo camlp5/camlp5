@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo *)
-(* $Id: pcaml.ml,v 1.29 2007/09/15 19:15:19 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.30 2007/09/17 10:22:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value version = "4.09-exp";
@@ -60,17 +60,6 @@ value warning_default_function loc txt = do {
 
 value warning = ref warning_default_function;
 
-value call_with v x f =
-  let vx = v.val in
-  try do {
-    v.val := x;
-    let r = f () in
-    v.val := vx;
-    r
-  }
-  with e -> do { v.val := vx; raise e }
-;
-
 List.iter (fun (n, f) -> Quotation.add n f)
   [("id", Quotation.ExStr (fun _ s -> "$0:" ^ s ^ "$"));
    ("string", Quotation.ExStr (fun _ s -> "\"" ^ String.escaped s ^ "\""))];
@@ -90,7 +79,7 @@ value expand_quotation gloc expander shift name str =
     let shift = Ploc.first_pos gloc + shift in
     fun loc txt -> warn (Ploc.shift shift loc) txt
   in
-  call_with warning new_warning
+  Ploc.call_with warning new_warning
     (fun () ->
        try expander str with
        [ Ploc.Exc loc exc ->
@@ -112,6 +101,7 @@ value expand_quotation gloc expander shift name str =
        | exc ->
            let exc1 = Qerror name Expanding exc in
            Ploc.raise gloc exc1 ])
+    ()
 ;
 
 value parse_quotation_result entry loc shift name str =

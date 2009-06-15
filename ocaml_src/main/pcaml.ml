@@ -61,11 +61,6 @@ let warning_default_function loc txt =
 
 let warning = ref warning_default_function;;
 
-let call_with v x f =
-  let vx = !v in
-  try v := x; let r = f () in v := vx; r with e -> v := vx; raise e
-;;
-
 List.iter (fun (n, f) -> Quotation.add n f)
   ["id", Quotation.ExStr (fun _ s -> "$0:" ^ s ^ "$");
    "string", Quotation.ExStr (fun _ s -> "\"" ^ String.escaped s ^ "\"")];;
@@ -85,7 +80,7 @@ let expand_quotation gloc expander shift name str =
     let shift = Ploc.first_pos gloc + shift in
     fun loc txt -> warn (Ploc.shift shift loc) txt
   in
-  call_with warning new_warning
+  Ploc.call_with warning new_warning
     (fun () ->
        try expander str with
          Ploc.Exc (loc, exc) ->
@@ -106,6 +101,7 @@ let expand_quotation gloc expander shift name str =
            raise (Ploc.Exc (loc, exc1))
        | exc ->
            let exc1 = Qerror (name, Expanding, exc) in Ploc.raise gloc exc1)
+    ()
 ;;
 
 let parse_quotation_result entry loc shift name str =
@@ -354,47 +350,47 @@ module OldPrinters =
     and 'a next = 'a -> string -> kont -> pretty
     and kont = pretty Stream.t;;
     let pr_str_item =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 386, 34)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 376, 34)));
        pr_levels = []}
     ;;
     let pr_sig_item =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 387, 34)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 377, 34)));
        pr_levels = []}
     ;;
     let pr_module_type =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 388, 37)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 378, 37)));
        pr_levels = []}
     ;;
     let pr_module_expr =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 389, 37)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 379, 37)));
        pr_levels = []}
     ;;
     let pr_expr =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 390, 30)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 380, 30)));
        pr_levels = []}
     ;;
     let pr_patt =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 391, 30)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 381, 30)));
        pr_levels = []}
     ;;
     let pr_ctyp =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 392, 30)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 382, 30)));
        pr_levels = []}
     ;;
     let pr_class_sig_item =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 393, 40)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 383, 40)));
        pr_levels = []}
     ;;
     let pr_class_str_item =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 394, 40)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 384, 40)));
        pr_levels = []}
     ;;
     let pr_class_type =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 395, 36)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 385, 36)));
        pr_levels = []}
     ;;
     let pr_class_expr =
-      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 396, 36)));
+      {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 386, 36)));
        pr_levels = []}
     ;;
     let pr_expr_fun_args = ref Extfun.empty;;

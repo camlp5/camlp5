@@ -99,6 +99,11 @@ let from_file fname loc =
   with Sys_error _ -> fname, 1, bp, ep
 ;;
 
+let call_with r v f a =
+  let saved = !r in
+  try r := v; let b = f a in r := saved; b with e -> r := saved; raise e
+;;
+
 exception Exc of t * exn;;
 
 let raise loc exc =

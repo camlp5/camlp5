@@ -17,12 +17,7 @@ let after_print s =
 
 let sprintf fmt = Printf.kprintf after_print fmt;;
 
-let call_with r v f a =
-  let saved = !r in
-  try r := v; let b = f a in r := saved; b with e -> r := saved; raise e
-;;
-
 let horiz_vertic horiz vertic =
-  try call_with horiz_ctx true horiz () with
+  try Ploc.call_with horiz_ctx true horiz () with
     GiveUp -> if !horiz_ctx then raise GiveUp else vertic ()
 ;;

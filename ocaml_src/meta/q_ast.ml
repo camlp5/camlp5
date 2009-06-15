@@ -15,11 +15,6 @@ let not_impl f x =
   failwith ("q_ast.ml: " ^ f ^ ", not impl: " ^ desc)
 ;;
 
-let call_with r v f a =
-  let saved = !r in
-  try r := v; let b = f a in r := saved; b with e -> r := saved; raise e
-;;
-
 let eval_anti entry loc typ str =
   let loc =
     let sh =
@@ -30,8 +25,8 @@ let eval_anti entry loc typ str =
   in
   let r =
     try
-      call_with Plexer.force_antiquot_loc false (Grammar.Entry.parse entry)
-        (Stream.of_string str)
+      Ploc.call_with Plexer.force_antiquot_loc false
+        (Grammar.Entry.parse entry) (Stream.of_string str)
     with Ploc.Exc (loc1, exc) ->
       let shift = Ploc.first_pos loc in
       let loc =
@@ -858,7 +853,7 @@ Grammar.iter_entry Grammar.reinit_entry_functions
 
 let apply_entry e me mp =
   let f s =
-    call_with Plexer.force_antiquot_loc true (Grammar.Entry.parse e)
+    Ploc.call_with Plexer.force_antiquot_loc true (Grammar.Entry.parse e)
       (Stream.of_string s)
   in
   let expr s = me (f s) in
@@ -931,12 +926,12 @@ Grammar.extend
                 MLast.ExStr (loc, "antiquot")) :
            'expr_eoi))]]];
 let expr s =
-  call_with Plexer.force_antiquot_loc true (Grammar.Entry.parse expr_eoi)
+  Ploc.call_with Plexer.force_antiquot_loc true (Grammar.Entry.parse expr_eoi)
     (Stream.of_string s)
 in
 let patt s =
   let p =
-    call_with Plexer.force_antiquot_loc true
+    Ploc.call_with Plexer.force_antiquot_loc true
       (Grammar.Entry.parse Pcaml.patt_eoi) (Stream.of_string s)
   in
   let loc = Ploc.make_unlined (0, 0) in

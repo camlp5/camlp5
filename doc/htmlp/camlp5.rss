@@ -3,8 +3,18 @@
   <channel>
     <title>Camlp5</title>
     <description>Camlp5 documentation</description>
-    <lastBuildDate>Mon Sep 17 05:18:59 CEST 2007</lastBuildDate>
+    <lastBuildDate>Mon Sep 17 11:46:52 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
+    <item>
+      <title>Library - module Ploc</title>
+      <description>
+        Explained that this module also contains pervasive type and function.
+        Commented the pervasive type Ploc.vala and added the pervasive
+        function Ploc.call_with.
+      </description>
+      <pubDate>Mon Sep 17 11:41:44 CEST 2007</pubDate>
+      <link>../library.html</link>
+    </item>
     <item>
       <title>Transitional and Strict - 1</title>
       <description>

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: q_ast.ml,v 1.80 2007/09/16 05:19:01 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.81 2007/09/17 10:22:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* AST quotations with works by running the language parser (and its possible
@@ -15,17 +15,6 @@ value not_impl f x =
   failwith ("q_ast.ml: " ^ f ^ ", not impl: " ^ desc)
 ;
 
-value call_with r v f a =
-  let saved = r.val in
-  try do {
-    r.val := v;
-    let b = f a in
-    r.val := saved;
-    b
-  }
-  with e -> do { r.val := saved; raise e }
-;
-
 value eval_anti entry loc typ str =
   let loc =
     let sh =
@@ -38,7 +27,7 @@ value eval_anti entry loc typ str =
   in
   let r =
     try
-      call_with Plexer.force_antiquot_loc False
+      Ploc.call_with Plexer.force_antiquot_loc False
         (Grammar.Entry.parse entry) (Stream.of_string str)
     with
     [ Ploc.Exc loc1 exc ->
@@ -841,7 +830,7 @@ Grammar.iter_entry Grammar.reinit_entry_functions
 
 value apply_entry e me mp =
   let f s =
-    call_with Plexer.force_antiquot_loc True
+    Ploc.call_with Plexer.force_antiquot_loc True
       (Grammar.Entry.parse e) (Stream.of_string s)
   in
   let expr s = me (f s) in
@@ -898,12 +887,12 @@ do {
     ;
   END;
   let expr s =
-    call_with Plexer.force_antiquot_loc True
+    Ploc.call_with Plexer.force_antiquot_loc True
       (Grammar.Entry.parse expr_eoi) (Stream.of_string s)
   in
   let patt s =
     let p =
-      call_with Plexer.force_antiquot_loc True
+      Ploc.call_with Plexer.force_antiquot_loc True
         (Grammar.Entry.parse Pcaml.patt_eoi) (Stream.of_string s)
     in
     let loc = Ploc.make_unlined (0, 0) in

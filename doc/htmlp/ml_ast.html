@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ml_ast.html,v 1.30 2007/09/07 06:25:45 deraugla Exp $ -->
+  <!-- $Id: ml_ast.html,v 1.31 2007/09/17 10:22:31 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Abstract tree in concrete syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -31,6 +31,13 @@
   "<code>ctyp</code>" for types, "<code>str_item</code>" for structure
   items, and so on. Each node corresponds to a possible value of this
   type.</p>
+
+<p>Since Camlp5 4.09, the syntax tree definition has been different
+  according to the mode Camlp5 has been compiled. In
+  "<em>transitional</em>" mode, its definition is the same than the
+  previous Camlp5 versions. In "<em>strict</em>" mode, the nodes names
+  are the same but many of their parameters are enclosed by a specific
+  type "<tt>Ploc.Vala</tt>".</p>
 
 <div id="tableofcontents">
 </div>

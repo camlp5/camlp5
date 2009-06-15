@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2texi,v 1.20 2007/09/17 04:32:01 deraugla Exp $
+# $Id: html2texi,v 1.21 2007/09/17 10:22:31 deraugla Exp $
 
 FILES1="index.html strict.html ptools.html"
 FILES2="parsers.html lexers.html fparsers.html grammars.html"
@@ -140,8 +140,10 @@ for i in $FILES; do
       -e 's|^ *<ul>|@itemize|' -e 's|^ *</ul>|@end itemize|' \
       -e 's|^ *<ol>|@enumerate|' -e 's|^ *</ol>|@end enumerate|' \
       -e 's|^ *<li>|@item |' -e '/<\/li>/d' \
-      -e 's|^ *<dl><dd>|@quotation |' -e 's|^ *</dd></dl>|@end quotation|' \
-      -e 's|^ *<dl[^>]*>|@table @asis|' -e 's|^ *</dl>|@end table|' \
+      -e 's|^ *<dl><dd>|@exampleindent 5\n@quotation |' \
+      -e 's|^ *</dd></dl>|@end quotation|' \
+      -e 's|^ *<dl[^>]*>|@exampleindent 5\n@table @asis|' \
+      -e 's|^ *</dl>|@end table|' \
       -e 's|^ *<dt>|@item |' -e 's|</dt>||' \
       -e 's|^ *<dd>||' -e '/<\/dd>/d' \
       -e 's|<b>|@strong{|g' -e 's|</b>|}|g' \

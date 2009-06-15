@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: elexer.ml,v 1.3 2007/09/01 21:20:34 deraugla Exp $ *)
+(* $Id: elexer.ml,v 1.4 2007/09/17 10:22:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* lexer written with extensible grammars; experimental *)
@@ -222,17 +222,6 @@ GEXTEND Gram
   ;
 END;
 
-value call_with r v f a =
-  let saved = r.val in
-  try do {
-    r.val := v;
-    let b = f a in
-    r.val := saved;
-    b
-  }
-  with e -> do { r.val := saved; raise e }
-;
-
 value locerr () = invalid_arg "Lexer: location function";
 value loct_create () = (ref (Array.create 1024 None), ref False);
 value loct_func (loct, ov) i =
@@ -258,7 +247,7 @@ value loct_add (loct, ov) i loc =
 ;
 
 value next_token_loc kwd_table (cs, pb) =
-  call_with gkwd_table kwd_table (Gram.Entry.parse next_token) pb
+  Ploc.call_with gkwd_table kwd_table (Gram.Entry.parse next_token) pb
 ;
 
 value func kwd_table cs =

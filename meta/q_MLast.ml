@@ -1,19 +1,8 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.89 2007/09/16 05:19:01 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.90 2007/09/17 10:22:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
-
-value call_with r v f a =
-  let saved = r.val in
-  try do {
-    r.val := v;
-    let b = f a in
-    r.val := saved;
-    b
-  }
-  with e -> do { r.val := saved; raise e }
-;
 
 value antiquot k loc s f =
   let shift_bp =
@@ -1584,7 +1573,7 @@ do {
     ;
   END;
   let expr s =
-    call_with Plexer.force_antiquot_loc True
+    Ploc.call_with Plexer.force_antiquot_loc True
       (Grammar.Entry.parse expr_eoi) (Stream.of_string s)
   in
   let patt_eoi = Grammar.Entry.create Pcaml.gram "patt_eoi" in
@@ -1608,7 +1597,7 @@ do {
     ;
   END;
   let patt s =
-    call_with Plexer.force_antiquot_loc True
+    Ploc.call_with Plexer.force_antiquot_loc True
       (Grammar.Entry.parse patt_eoi) (Stream.of_string s)
   in
   Quotation.add "vala" (Quotation.ExAst (expr, patt));

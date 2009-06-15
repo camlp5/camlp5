@@ -4,11 +4,6 @@
 
 let gram = Grammar.gcreate (Plexer.gmake ());;
 
-let call_with r v f a =
-  let saved = !r in
-  try r := v; let b = f a in r := saved; b with e -> r := saved; raise e
-;;
-
 let antiquot k loc s f =
   let shift_bp =
     if k = "" then String.length "$"
@@ -668,7 +663,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 319, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 308, 19))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -926,7 +921,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 375, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 364, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -4813,7 +4808,7 @@ Grammar.extend
            else MLast.ExAnt (loc, e) :
            'expr_eoi))]]];
 let expr s =
-  call_with Plexer.force_antiquot_loc true (Grammar.Entry.parse expr_eoi)
+  Ploc.call_with Plexer.force_antiquot_loc true (Grammar.Entry.parse expr_eoi)
     (Stream.of_string s)
 in
 let patt_eoi = Grammar.Entry.create Pcaml.gram "patt_eoi" in
@@ -4858,7 +4853,7 @@ Grammar.extend
            else MLast.PaAnt (loc, p) :
            'patt_eoi))]]];
 let patt s =
-  call_with Plexer.force_antiquot_loc true (Grammar.Entry.parse patt_eoi)
+  Ploc.call_with Plexer.force_antiquot_loc true (Grammar.Entry.parse patt_eoi)
     (Stream.of_string s)
 in
 Quotation.add "vala" (Quotation.ExAst (expr, patt));;

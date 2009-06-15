@@ -23,6 +23,7 @@ Camlp5 Version 4.09:
     tree quotations in user syntax, introduced by the new parsing
     kit 'q_ast.cmo".
 
+* [17 Sep 07] Added [Ploc.call_with], a pervasive function.
 * [15 Sep 07] Added 'q_ast.cmo': this is the syntax tree quotations in
   the current syntax, including the possible user syntax extensions.
   The antiquotations work only in 'strict' mode, not in 'transitional'

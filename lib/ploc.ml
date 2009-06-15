@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ploc.ml,v 1.2 2007/09/06 04:26:18 deraugla Exp $ *)
+(* $Id: ploc.ml,v 1.3 2007/09/17 10:22:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 type t =
@@ -88,6 +88,17 @@ value from_file fname loc =
     do { close_in ic; r }
   with
   [ Sys_error _ -> (fname, 1, bp, ep) ]
+;
+
+value call_with r v f a =
+  let saved = r.val in
+  try do {
+    r.val := v;
+    let b = f a in
+    r.val := saved;
+    b
+  }
+  with e -> do { r.val := saved; raise e }
 ;
 
 exception Exc of t and exn;
