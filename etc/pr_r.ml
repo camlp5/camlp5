@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.29 2007/07/04 16:09:32 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.30 2007/07/04 16:13:53 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -2064,7 +2064,7 @@ value str_item_top =
           (fun () ->
              sprintf "%svalue %s%s" pc.bef (if rf then "rec " else "")
                (hlist2 value_binding (and_before value_binding)
-                  {(pc) with bef = ""; aft = (None, Some (False, pc.aft))}
+                  {(pc) with bef = ""; aft = (None, Some (True, pc.aft))}
                   pel))
           (fun () ->
              vlist2 value_binding (and_before value_binding)
