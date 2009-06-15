@@ -13,10 +13,7 @@ type ('te, 'a, 'b) tsep =
 
 let gen_fold0 final f e entry symbl psymb =
   let rec fold accu (strm__ : _ Stream.t) =
-    match
-      try Some (psymb strm__) with
-        Stream.Failure -> None
-    with
+    match try Some (psymb strm__) with Stream.Failure -> None with
       Some a -> fold (f a accu) strm__
     | _ -> accu
   in
@@ -25,18 +22,14 @@ let gen_fold0 final f e entry symbl psymb =
 
 let gen_fold1 final f e entry symbl psymb =
   let rec fold accu (strm__ : _ Stream.t) =
-    match
-      try Some (psymb strm__) with
-        Stream.Failure -> None
-    with
+    match try Some (psymb strm__) with Stream.Failure -> None with
       Some a -> fold (f a accu) strm__
     | _ -> accu
   in
   fun (strm__ : _ Stream.t) ->
     let a = psymb strm__ in
     let a =
-      try fold (f a e) strm__ with
-        Stream.Failure -> raise (Stream.Error "")
+      try fold (f a e) strm__ with Stream.Failure -> raise (Stream.Error "")
     in
     final a
 ;;
@@ -48,10 +41,7 @@ let gen_fold0sep final f e entry symbl psymb psep =
     | _ -> "failed"
   in
   let rec kont accu (strm__ : _ Stream.t) =
-    match
-      try Some (psep strm__) with
-        Stream.Failure -> None
-    with
+    match try Some (psep strm__) with Stream.Failure -> None with
       Some v ->
         let a =
           try psymb strm__ with
@@ -61,10 +51,7 @@ let gen_fold0sep final f e entry symbl psymb psep =
     | _ -> accu
   in
   fun (strm__ : _ Stream.t) ->
-    match
-      try Some (psymb strm__) with
-        Stream.Failure -> None
-    with
+    match try Some (psymb strm__) with Stream.Failure -> None with
       Some a -> let a = kont (f a e) strm__ in final a
     | _ -> e
 ;;
@@ -81,10 +68,7 @@ let gen_fold1sep final f e entry symbl psymb psep =
     | _ -> raise Stream.Failure
   in
   let rec kont accu (strm__ : _ Stream.t) =
-    match
-      try Some (psep strm__) with
-        Stream.Failure -> None
-    with
+    match try Some (psep strm__) with Stream.Failure -> None with
       Some v ->
         let a =
           try
@@ -95,8 +79,7 @@ let gen_fold1sep final f e entry symbl psymb psep =
                     Stream.Failure -> raise (Stream.Error (failed symbl))
                 in
                 Obj.magic a
-          with
-            Stream.Failure -> raise (Stream.Error "")
+          with Stream.Failure -> raise (Stream.Error "")
         in
         kont (f a accu) strm__
     | _ -> accu
@@ -119,6 +102,5 @@ let slist0sep entry = gen_fold0sep List.rev cons nil entry;;
 let slist1sep entry = gen_fold1sep List.rev cons nil entry;;
 
 let sopt entry symbl psymb (strm__ : _ Stream.t) =
-  try Some (psymb strm__) with
-    Stream.Failure -> None
+  try Some (psymb strm__) with Stream.Failure -> None
 ;;

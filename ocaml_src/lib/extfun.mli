@@ -31,7 +31,6 @@ and patt =
   | Eint of string
   | Etup of patt list
   | Evar of unit
-and ('a, 'b) expr = 'a -> 'b option
-;;
+and ('a, 'b) expr = 'a -> 'b option;;
 
 val extend : ('a, 'b) t -> (patt * bool * ('a, 'b) expr) list -> ('a, 'b) t;;

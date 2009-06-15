@@ -65,8 +65,7 @@ let warning = ref warning_default_function;;
 
 let apply_with_var v x f =
   let vx = !v in
-  try v := x; let r = f () in v := vx; r with
-    e -> v := vx; raise e
+  try v := x; let r = f () in v := vx; r with e -> v := vx; raise e
 ;;
 
 List.iter (fun (n, f) -> Quotation.add n f)
@@ -216,12 +215,11 @@ let report_quotation_error name ctx =
             close_out oc;
             Printf.eprintf loc_fmt dump_file line c1 c2;
             flush stderr
-          with
-            _ ->
-              Printf.eprintf "Error while dumping result in file \"%s\""
-                dump_file;
-              Printf.eprintf "; dump aborted.\n";
-              flush stderr
+          with _ ->
+            Printf.eprintf "Error while dumping result in file \"%s\""
+              dump_file;
+            Printf.eprintf "; dump aborted.\n";
+            flush stderr
           end
       | None ->
           if !input_file = "" then
@@ -332,8 +330,8 @@ module Printers =
         mutable pr_levels : 'a pr_level list }
     and 'a pr_level = { pr_label : string; mutable pr_rules : 'a pr_rule }
     and 'a pr_rule =
-      ('a, ('a pr_fun -> 'a pr_fun -> (string, string) pr_context -> string))
-       Extfun.t
+      ('a, 'a pr_fun -> 'a pr_fun -> (string, string) pr_context -> string)
+        Extfun.t
     and 'a pr_fun = (string, string) pr_context -> 'a -> string
     and ('bef, 'aft) pr_context =
       { ind : int; bef : 'bef; aft : 'aft; dang : string }
@@ -400,11 +398,10 @@ module OldPrinters =
         pr_box : 'a -> pretty Stream.t -> pretty;
         mutable pr_rules : 'a pr_rule }
     and 'a pr_rule =
-      ('a, ('a curr -> 'a next -> string -> kont -> pretty Stream.t)) Extfun.t
+      ('a, 'a curr -> 'a next -> string -> kont -> pretty Stream.t) Extfun.t
     and 'a curr = 'a -> string -> kont -> pretty Stream.t
     and 'a next = 'a -> string -> kont -> pretty
-    and kont = pretty Stream.t
-    ;;
+    and kont = pretty Stream.t;;
     let pr_str_item =
       {pr_fun = (fun _ -> raise (Match_failure ("pcaml.ml", 428, 34)));
        pr_levels = []}

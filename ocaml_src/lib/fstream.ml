@@ -55,10 +55,7 @@ let of_string s =
 ;;
 
 let of_channel ic =
-  from
-    (fun _ ->
-       try Some (input_char ic) with
-         End_of_file -> None)
+  from (fun _ -> try Some (input_char ic) with End_of_file -> None)
 ;;
 
 let iter f =

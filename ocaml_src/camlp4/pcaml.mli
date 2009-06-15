@@ -110,8 +110,8 @@ module Printers :
         mutable pr_levels : 'a pr_level list }
     and 'a pr_level = { pr_label : string; mutable pr_rules : 'a pr_rule }
     and 'a pr_rule =
-      ('a, ('a pr_fun -> 'a pr_fun -> (string, string) pr_context -> string))
-       Extfun.t
+      ('a, 'a pr_fun -> 'a pr_fun -> (string, string) pr_context -> string)
+        Extfun.t
     and 'a pr_fun = (string, string) pr_context -> 'a -> string
     and ('bef, 'aft) pr_context =
       { ind : int; bef : 'bef; aft : 'aft; dang : string }
@@ -130,7 +130,7 @@ module Printers :
     val pr_class_expr : MLast.class_expr printer_t;;
     val find_pr_level : string -> 'a pr_level list -> 'a pr_level;;
     val pr_expr_fun_args :
-      (MLast.expr, (MLast.patt list * MLast.expr)) Extfun.t ref;;
+      (MLast.expr, MLast.patt list * MLast.expr) Extfun.t ref;;
   end
 ;;
 
@@ -145,11 +145,10 @@ module OldPrinters :
         pr_box : 'a -> pretty Stream.t -> pretty;
         mutable pr_rules : 'a pr_rule }
     and 'a pr_rule =
-      ('a, ('a curr -> 'a next -> string -> kont -> pretty Stream.t)) Extfun.t
+      ('a, 'a curr -> 'a next -> string -> kont -> pretty Stream.t) Extfun.t
     and 'a curr = 'a -> string -> kont -> pretty Stream.t
     and 'a next = 'a -> string -> kont -> pretty
-    and kont = pretty Stream.t
-    ;;
+    and kont = pretty Stream.t;;
     val pr_sig_item : MLast.sig_item printer_t;;
     val pr_str_item : MLast.str_item printer_t;;
     val pr_module_type : MLast.module_type printer_t;;
@@ -162,7 +161,7 @@ module OldPrinters :
     val pr_class_type : MLast.class_type printer_t;;
     val pr_class_expr : MLast.class_expr printer_t;;
     val pr_expr_fun_args :
-      (MLast.expr, (MLast.patt list * MLast.expr)) Extfun.t ref;;
+      (MLast.expr, MLast.patt list * MLast.expr) Extfun.t ref;;
     val find_pr_level : string -> 'a pr_level list -> 'a pr_level;;
     val top_printer : 'a printer_t -> 'a -> unit;;
     val string_of : 'a printer_t -> 'a -> string;;

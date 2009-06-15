@@ -37,5 +37,5 @@ Grammar.extend
               (fun (t : 'symbol) _ (loc : Token.location) -> (t : 'e__2))])],
      Gramext.action
        (fun (sep : 'e__2 option) (s : 'symbol) (min : 'e__1)
-          (loc : Token.location) ->
+            (loc : Token.location) ->
           (sslist loc min sep s : 'symbol))]]];;

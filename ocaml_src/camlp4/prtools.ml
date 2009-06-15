@@ -70,11 +70,19 @@ let rec vlistl elem eleml pc xl =
 ;;
 
 let rise_string ind sh b s =
-  if String.length s > ind + sh && s.[ind + sh] = '\"' then
-    match
-      try Some (String.index s '\n') with
-        Not_found -> None
-    with
+  (* hack for "plistl" (below): if s is a "string" (i.e. starting with
+     double-quote) which contains newlines, attempt to concat its first
+     line in the previous line, and, instead of displaying this:
+              eprintf
+                "\
+           hello, world"
+     displays that:
+              eprintf "\
+           hello, world"
+     what "saves" one line.
+   *)
+  if String.length s > ind + sh && s.[ind+sh] = '\"' then
+    match try Some (String.index s '\n') with Not_found -> None with
       Some i ->
         let t = String.sub s (ind + sh) (String.length s - ind - sh) in
         let i = i - ind - sh in
@@ -271,8 +279,7 @@ let rev_extract_comment strm =
         Stream.junk strm__;
         begin try
           while_space (Buff.mstore len (String.make 8 ' ')) strm__
-        with
-          Stream.Failure -> raise (Stream.Error "")
+        with Stream.Failure -> raise (Stream.Error "")
         end
     | Some '\n' ->
         Stream.junk strm__; while_space (Buff.store len '\n') strm__
@@ -315,16 +322,20 @@ let rev_read_comment_in_file bp ep =
   in
   let (s, nl_bef, ind_bef) = rev_extract_comment strm in
   if s = "" then
+    (* heuristic to find the possible comment before 'begin' or left
+       parenthesis *)
     let rec loop i =
       let (strm__ : _ Stream.t) = strm in
       match Stream.peek strm__ with
         Some '(' when i = 0 -> Stream.junk strm__; rev_extract_comment strm
-      | Some c when c = "begin".[4 - i] ->
+      | Some c when c = "begin".[4-i] ->
           Stream.junk strm__;
           if i = String.length "begin" - 1 then rev_extract_comment strm
           else loop (i + 1)
       | _ -> s, nl_bef, ind_bef
     in
+    (* heuristic to find the possible comment before 'begin' or left
+       parenthesis *)
     loop 0
   else s, nl_bef, ind_bef
 ;;
@@ -347,7 +358,7 @@ let adjust_comment_indentation ind s nl_bef ind_bef =
       else
         let olen = Buff.store olen s.[i] in
         let (olen, i) =
-          if s.[i] = '\n' && (i + 1 = len || s.[i + 1] <> '\n') then
+          if s.[i] = '\n' && (i + 1 = len || s.[i+1] <> '\n') then
             let delta_ind = if i = i_bef_ind then 0 else ind - ind_bef in
             if delta_ind >= 0 then
               Buff.mstore olen (String.make delta_ind ' '), i + 1

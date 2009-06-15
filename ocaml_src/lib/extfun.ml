@@ -14,8 +14,7 @@ and patt =
   | Eint of string
   | Etup of patt list
   | Evar of unit
-and ('a, 'b) expr = 'a -> 'b option
-;;
+and ('a, 'b) expr = 'a -> 'b option;;
 
 exception Failure;;
 

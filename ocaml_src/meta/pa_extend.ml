@@ -48,14 +48,9 @@ and ('e, 'p) level =
   { label : string option; assoc : 'e option; rules : ('e, 'p) rule list }
 and ('e, 'p) rule = { prod : ('e, 'p) psymbol list; action : 'e option }
 and ('e, 'p) psymbol = { pattern : 'p option; symbol : ('e, 'p) symbol }
-and ('e, 'p) symbol = { used : string list; text : 'e text; styp : styp }
-;;
+and ('e, 'p) symbol = { used : string list; text : 'e text; styp : styp };;
 
-type used =
-    Unused
-  | UsedScanned
-  | UsedNotScanned
-;;
+type used = Unused | UsedScanned | UsedNotScanned;;
 
 let mark_used modif ht n =
   try
@@ -64,8 +59,7 @@ let mark_used modif ht n =
       (fun (r, _) ->
          if !r == Unused then begin r := UsedNotScanned; modif := true end)
       rll
-  with
-    Not_found -> ()
+  with Not_found -> ()
 ;;
 
 let rec mark_symbol modif ht symb =
@@ -89,8 +83,7 @@ let check_use nl el =
        try
          let rll = Hashtbl.find_all ht n.tvar in
          List.iter (fun (r, _) -> r := UsedNotScanned) rll
-       with
-         _ -> ())
+       with _ -> ())
     nl;
   modif := true;
   while !modif do
@@ -141,8 +134,7 @@ let retype_rule_list_without_patterns loc rl =
        | {prod = []; action = Some _} as r -> r
        | _ -> raise Exit)
       rl
-  with
-    Exit -> rl
+  with Exit -> rl
 ;;
 
 let quotify = ref false;;
@@ -719,7 +711,7 @@ let rec quot_expr e =
                (loc,
                 MLast.ExAcc
                   (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Node")),
-                MLast.ExStr (loc, (m ^ "." ^ c))),
+                MLast.ExStr (loc, m ^ "." ^ c)),
              mklistexp loc al)
       | MLast.ExLid (_, f) ->
           let al = List.map quot_expr al in
@@ -747,8 +739,7 @@ let rec quot_expr e =
            MLast.ExAcc
              (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Record")),
            mklistexp loc lel)
-      with
-        Not_found -> e
+      with Not_found -> e
       end
   | MLast.ExLid (_, s) ->
       if s = !(Stdpp.loc_name) then
@@ -770,7 +761,7 @@ let rec quot_expr e =
            (loc,
             MLast.ExAcc
               (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Node")),
-            MLast.ExStr (loc, (m ^ "." ^ s))),
+            MLast.ExStr (loc, m ^ "." ^ s)),
          MLast.ExUid (loc, "[]"))
   | MLast.ExUid (_, s) ->
       MLast.ExApp
@@ -1126,8 +1117,7 @@ let slist loc min sep symb =
 ;;
 
 let sstoken loc s =
-  let n = mk_name loc (MLast.ExLid (loc, ("a_" ^ s))) in
-  TXnterm (loc, n, None)
+  let n = mk_name loc (MLast.ExLid (loc, "a_" ^ s)) in TXnterm (loc, n, None)
 ;;
 
 let mk_psymbol p s t =
@@ -1568,7 +1558,7 @@ Grammar.extend
                (fun _ (e : 'entry) (loc : Token.location) -> (e : 'e__1))])],
       Gramext.action
         (fun (el : 'e__1 list) (sl : 'global option) (f : 'efunction)
-           (loc : Token.location) ->
+             (loc : Token.location) ->
            (text_of_extend loc "Grammar" sl el f : 'extend_body))]];
     Grammar.Entry.obj (gextend_body : 'gextend_body Grammar.Entry.e), None,
     [None, None,
@@ -1586,7 +1576,7 @@ Grammar.extend
                (fun _ (e : 'entry) (loc : Token.location) -> (e : 'e__2))])],
       Gramext.action
         (fun (el : 'e__2 list) (sl : 'global option) (g : string)
-           (loc : Token.location) ->
+             (loc : Token.location) ->
            (text_of_functorial_extend loc g sl el : 'gextend_body))]];
     Grammar.Entry.obj (delete_rule_body : 'delete_rule_body Grammar.Entry.e),
     None,
@@ -1625,7 +1615,7 @@ Grammar.extend
             (Grammar.Entry.obj (semi_sep : 'semi_sep Grammar.Entry.e)))],
       Gramext.action
         (fun (sl : 'symbol list) _ (n : 'name) (g : string)
-           (loc : Token.location) ->
+             (loc : Token.location) ->
            (let (e, b) = expr_of_delete_rule loc g n sl in
             MLast.ExApp
               (loc,
@@ -1674,7 +1664,7 @@ Grammar.extend
          (Grammar.Entry.obj (level_list : 'level_list Grammar.Entry.e))],
       Gramext.action
         (fun (ll : 'level_list) (pos : 'position option) _ (n : 'name)
-           (loc : Token.location) ->
+             (loc : Token.location) ->
            ({name = n; pos = pos; levels = ll} : 'entry))]];
     Grammar.Entry.obj (position : 'position Grammar.Entry.e), None,
     [None, None,
@@ -1744,7 +1734,7 @@ Grammar.extend
          (Grammar.Entry.obj (rule_list : 'rule_list Grammar.Entry.e))],
       Gramext.action
         (fun (rules : 'rule_list) (ass : 'assoc option) (lab : string option)
-           (loc : Token.location) ->
+             (loc : Token.location) ->
            ({label = lab; assoc = ass; rules = rules} : 'level))]];
     Grammar.Entry.obj (assoc : 'assoc Grammar.Entry.e), None,
     [None, None,
@@ -1913,7 +1903,7 @@ Grammar.extend
                (fun (s : string) _ (loc : Token.location) -> (s : 'e__6))])],
       Gramext.action
         (fun (lev : 'e__6 option) (e : 'qualid) _ (i : string)
-           (loc : Token.location) ->
+             (loc : Token.location) ->
            (let n =
               mk_name loc (MLast.ExAcc (loc, MLast.ExUid (loc, i), e))
             in
@@ -1974,8 +1964,8 @@ Grammar.extend
        Gramext.Stoken ("", ")")],
       Gramext.action
         (fun _ (pl : 'patterns_comma) _ (p : 'pattern) _
-           (loc : Token.location) ->
-           (MLast.PaTup (loc, (p :: pl)) : 'pattern));
+             (loc : Token.location) ->
+           (MLast.PaTup (loc, p :: pl) : 'pattern));
       [Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ")")],
       Gramext.action
         (fun _ (p : 'pattern) _ (loc : Token.location) -> (p : 'pattern));

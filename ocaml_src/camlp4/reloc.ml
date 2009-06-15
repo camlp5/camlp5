@@ -59,11 +59,18 @@ and poly_variant floc sh =
 
 let class_infos a floc sh x =
   {ciLoc = floc x.ciLoc; ciVir = x.ciVir;
-   ciPrm = begin let (x1, x2) = x.ciPrm in floc x1, x2 end; ciNam = x.ciNam;
+   ciPrm = (let (x1, x2) = x.ciPrm in floc x1, x2); ciNam = x.ciNam;
    ciExp = a floc sh x.ciExp}
 ;;
 
 let anti_loc qloc sh loc loc1 =
+  (*
+    ...<:expr<.....$lid:...xxxxxxxx...$...>>...
+    |..|-----------------------------------|    qloc
+       <----->                                  sh
+              |.........|------------|          loc
+                        |..|------|             loc1
+  *)
   let sh1 = Stdpp.first_pos qloc + sh in
   let sh2 = sh1 + Stdpp.first_pos loc in
   Stdpp.make_lined_loc
@@ -269,9 +276,9 @@ and str_item floc sh =
   self
 and type_decl floc sh td =
   {td with tdNam = floc (fst td.tdNam), snd td.tdNam;
-    tdDef = ctyp floc sh td.tdDef;
-    tdCon =
-      List.map (fun (x1, x2) -> ctyp floc sh x1, ctyp floc sh x2) td.tdCon}
+   tdDef = ctyp floc sh td.tdDef;
+   tdCon =
+     List.map (fun (x1, x2) -> ctyp floc sh x1, ctyp floc sh x2) td.tdCon}
 and class_type floc sh =
   let rec self =
     function

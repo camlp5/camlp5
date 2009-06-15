@@ -88,8 +88,7 @@ let rec parse_file pa getdir useast =
         else pl
       in
       loop ()
-    with
-      x -> clear (); raise x
+    with x -> clear (); raise x
   in
   clear (); phr
 and use_file pa getdir useast s =
@@ -97,8 +96,7 @@ and use_file pa getdir useast s =
   Pcaml.input_file := s;
   try
     let r = parse_file pa getdir useast in Pcaml.input_file := v_input_file; r
-  with
-    e -> report_error_and_exit e
+  with e -> report_error_and_exit e
 ;;
 
 let process pa pr getdir useast = pr (parse_file pa getdir useast);;
@@ -125,10 +123,7 @@ let process_impl () =
   process !(Pcaml.parse_implem) !(Pcaml.print_implem) gimd usestr
 ;;
 
-type file_kind =
-    Intf
-  | Impl
-;;
+type file_kind = Intf | Impl;;
 let file_kind = ref Intf;;
 let file_kind_of_name name =
   if Filename.check_suffix name ".mli" then Intf
@@ -154,7 +149,7 @@ let initial_spec_list =
    "More verbose in parsing errors.";
    "-loc", Arg.String (fun x -> Stdpp.loc_name := x),
    "<name>   Name of the location variable (default: " ^ !(Stdpp.loc_name) ^
-     ")";
+   ")";
    "-QD", Arg.String (fun x -> Pcaml.quotation_dump_file := Some x),
    "<file> Dump quotation expander result in case of syntax error.";
    "-o", Arg.String (fun x -> Pcaml.output_file := Some x),
@@ -182,20 +177,18 @@ let go () =
         eprintf "%s: unknown or misused option\n" s;
         eprintf "Use option -help for usage\n";
         exit 2
-  with
-    Arg.Bad s ->
-      eprintf "Error: %s\n" s;
-      eprintf "Use option -help for usage\n";
-      flush stderr;
-      exit 2
+  with Arg.Bad s ->
+    eprintf "Error: %s\n" s;
+    eprintf "Use option -help for usage\n";
+    flush stderr;
+    exit 2
   end;
   try
     if !(Pcaml.input_file) <> "" then
       match !file_kind with
         Intf -> process_intf ()
       | Impl -> process_impl ()
-  with
-    exc -> report_error_and_exit exc
+  with exc -> report_error_and_exit exc
 ;;
 
 Odyl_main.name := "camlp4";;

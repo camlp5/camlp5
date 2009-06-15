@@ -27,12 +27,7 @@
    by dt.val spaces, except if first element of the box is empty: to not
    indent, put HVbox [: :] as first element *)
 
-type glue =
-    LO
-  | RO
-  | LR
-  | NO
-;;
+type glue = LO | RO | LR | NO;;
 type pretty =
     S of glue * string
   | Hbox of pretty Stream.t

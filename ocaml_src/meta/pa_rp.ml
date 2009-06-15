@@ -52,7 +52,7 @@ Grammar.extend
          (Grammar.Entry.obj (parser_case : 'parser_case Grammar.Entry.e))],
       Gramext.action
         (fun (pc : 'parser_case) (po : 'ipatt option) _ _ (e : 'expr) _
-           (loc : Token.location) ->
+             (loc : Token.location) ->
            (cparser_match loc e po [pc] : 'expr));
       [Gramext.Stoken ("", "match"); Gramext.Sself;
        Gramext.Stoken ("", "with"); Gramext.Stoken ("", "parser");
@@ -67,7 +67,7 @@ Grammar.extend
        Gramext.Stoken ("", "]")],
       Gramext.action
         (fun _ (pcl : 'parser_case list) _ (po : 'ipatt option) _ _
-           (e : 'expr) _ (loc : Token.location) ->
+             (e : 'expr) _ (loc : Token.location) ->
            (cparser_match loc e po pcl : 'expr));
       [Gramext.Stoken ("", "parser");
        Gramext.Sopt
@@ -77,7 +77,7 @@ Grammar.extend
          (Grammar.Entry.obj (parser_case : 'parser_case Grammar.Entry.e))],
       Gramext.action
         (fun (pc : 'parser_case) (po : 'ipatt option) _
-           (loc : Token.location) ->
+             (loc : Token.location) ->
            (cparser loc po [pc] : 'expr));
       [Gramext.Stoken ("", "parser");
        Gramext.Sopt
@@ -91,7 +91,7 @@ Grammar.extend
        Gramext.Stoken ("", "]")],
       Gramext.action
         (fun _ (pcl : 'parser_case list) _ (po : 'ipatt option) _
-           (loc : Token.location) ->
+             (loc : Token.location) ->
            (cparser loc po pcl : 'expr))]];
     Grammar.Entry.obj (parser_case : 'parser_case Grammar.Entry.e), None,
     [None, None,
@@ -106,7 +106,7 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
       Gramext.action
         (fun (e : 'expr) _ (po : 'ipatt option) _ (sp : 'stream_patt) _
-           (loc : Token.location) ->
+             (loc : Token.location) ->
            (sp, po, e : 'parser_case))]];
     Grammar.Entry.obj (stream_patt : 'stream_patt Grammar.Entry.e), None,
     [None, None,
@@ -117,7 +117,7 @@ Grammar.extend
        Gramext.Sself],
       Gramext.action
         (fun (sp : 'stream_patt) (spc : 'stream_patt_let)
-           (loc : Token.location) ->
+             (loc : Token.location) ->
            (spc :: sp : 'stream_patt));
       [Gramext.Snterm
          (Grammar.Entry.obj
@@ -128,7 +128,7 @@ Grammar.extend
             (stream_patt_kont : 'stream_patt_kont Grammar.Entry.e))],
       Gramext.action
         (fun (sp : 'stream_patt_kont) _ (spc : 'stream_patt_comp)
-           (loc : Token.location) ->
+             (loc : Token.location) ->
            ((spc, SpoNoth) :: sp : 'stream_patt));
       [Gramext.Snterm
          (Grammar.Entry.obj
@@ -145,7 +145,7 @@ Grammar.extend
        Gramext.Sself],
       Gramext.action
         (fun (sp : 'stream_patt_kont) (spc : 'stream_patt_let)
-           (loc : Token.location) ->
+             (loc : Token.location) ->
            (spc :: sp : 'stream_patt_kont));
       [Gramext.Snterm
          (Grammar.Entry.obj
@@ -153,7 +153,7 @@ Grammar.extend
        Gramext.Stoken ("", ";"); Gramext.Sself],
       Gramext.action
         (fun (sp : 'stream_patt_kont) _ (spc : 'stream_patt_comp_err)
-           (loc : Token.location) ->
+             (loc : Token.location) ->
            (spc :: sp : 'stream_patt_kont));
       [Gramext.Snterm
          (Grammar.Entry.obj

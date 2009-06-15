@@ -19,8 +19,7 @@ let sprintf fmt = Printf.ksprintf after_print fmt;;
 
 let call_with r v f a =
   let saved = !r in
-  try r := v; let b = f a in r := saved; b with
-    e -> r := saved; raise e
+  try r := v; let b = f a in r := saved; b with e -> r := saved; raise e
 ;;
 
 let horiz_vertic horiz vertic =

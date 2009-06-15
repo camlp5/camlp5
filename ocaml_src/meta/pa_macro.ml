@@ -49,8 +49,8 @@ Added statements:
 
 *)
 
-(* #load "pa_extend.cmo" *)
-(* #load "q_MLast.cmo" *)
+(* #load "pa_extend.cmo";; *)
+(* #load "q_MLast.cmo";; *)
 
 open Pcaml;;
 
@@ -96,9 +96,7 @@ let subst mloc env =
         MLast.ExIfe (loc, loop e1, loop e2, loop e3)
     | MLast.ExApp (_, e1, e2) -> MLast.ExApp (loc, loop e1, loop e2)
     | MLast.ExLid (_, x) | MLast.ExUid (_, x) as e ->
-        begin try MLast.ExAnt (loc, List.assoc x env) with
-          Not_found -> e
-        end
+        (try MLast.ExAnt (loc, List.assoc x env) with Not_found -> e)
     | MLast.ExTup (_, x) -> MLast.ExTup (loc, List.map loop x)
     | MLast.ExRec (_, pel, None) ->
         let pel = List.map (fun (p, e) -> p, loop e) pel in
@@ -215,8 +213,7 @@ let undef x =
     | None -> ()
     end;
     defined := list_remove x !defined
-  with
-    Not_found -> ()
+  with Not_found -> ()
 ;;
 
 Grammar.extend
@@ -264,7 +261,7 @@ Grammar.extend
        Gramext.Stoken ("", "END")],
       Gramext.action
         (fun _ (d2 : 'str_item_or_macro) _ (d1 : 'str_item_or_macro) _
-           (e : 'dexpr) _ (loc : Token.location) ->
+             (e : 'dexpr) _ (loc : Token.location) ->
            (if e then d2 else d1 : 'macro_def));
       [Gramext.Stoken ("", "IFNDEF");
        Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
@@ -275,7 +272,7 @@ Grammar.extend
        Gramext.Stoken ("", "END")],
       Gramext.action
         (fun _ (d : 'str_item_or_macro) _ (e : 'dexpr) _
-           (loc : Token.location) ->
+             (loc : Token.location) ->
            (if e then SdNop else d : 'macro_def));
       [Gramext.Stoken ("", "IFDEF");
        Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
@@ -290,7 +287,7 @@ Grammar.extend
        Gramext.Stoken ("", "END")],
       Gramext.action
         (fun _ (d2 : 'str_item_or_macro) _ (d1 : 'str_item_or_macro) _
-           (e : 'dexpr) _ (loc : Token.location) ->
+             (e : 'dexpr) _ (loc : Token.location) ->
            (if e then d1 else d2 : 'macro_def));
       [Gramext.Stoken ("", "IFDEF");
        Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
@@ -301,7 +298,7 @@ Grammar.extend
        Gramext.Stoken ("", "END")],
       Gramext.action
         (fun _ (d : 'str_item_or_macro) _ (e : 'dexpr) _
-           (loc : Token.location) ->
+             (loc : Token.location) ->
            (if e then d else SdNop : 'macro_def));
       [Gramext.Stoken ("", "UNDEF");
        Gramext.Snterm (Grammar.Entry.obj (uident : 'uident Grammar.Entry.e))],
@@ -315,7 +312,7 @@ Grammar.extend
             (opt_macro_value : 'opt_macro_value Grammar.Entry.e))],
       Gramext.action
         (fun (def : 'opt_macro_value) (i : 'uident) _
-           (loc : Token.location) ->
+             (loc : Token.location) ->
            (SdDef (i, def) : 'macro_def))]];
     Grammar.Entry.obj
       (str_item_or_macro : 'str_item_or_macro Grammar.Entry.e),
@@ -361,7 +358,7 @@ Grammar.extend
        Gramext.Stoken ("", "END")],
       Gramext.action
         (fun _ (e2 : 'expr) _ (e1 : 'expr) _ (e : 'dexpr) _
-           (loc : Token.location) ->
+             (loc : Token.location) ->
            (if e then e2 else e1 : 'expr));
       [Gramext.Stoken ("", "IFDEF");
        Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
@@ -370,7 +367,7 @@ Grammar.extend
        Gramext.Stoken ("", "END")],
       Gramext.action
         (fun _ (e2 : 'expr) _ (e1 : 'expr) _ (e : 'dexpr) _
-           (loc : Token.location) ->
+             (loc : Token.location) ->
            (if e then e1 else e2 : 'expr))]];
     Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
     Some (Gramext.Level "simple"),
@@ -396,7 +393,7 @@ Grammar.extend
        Gramext.Stoken ("", "END")],
       Gramext.action
         (fun _ (p2 : 'patt) _ (p1 : 'patt) _ (e : 'dexpr) _
-           (loc : Token.location) ->
+             (loc : Token.location) ->
            (if e then p2 else p1 : 'patt));
       [Gramext.Stoken ("", "IFDEF");
        Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
@@ -405,7 +402,7 @@ Grammar.extend
        Gramext.Stoken ("", "END")],
       Gramext.action
         (fun _ (p2 : 'patt) _ (p1 : 'patt) _ (e : 'dexpr) _
-           (loc : Token.location) ->
+             (loc : Token.location) ->
            (if e then p1 else p2 : 'patt))]];
     Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e), None,
     [None, None,

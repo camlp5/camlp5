@@ -4,8 +4,8 @@
 
 (* Simplified syntax of parsers of characters streams *)
 
-(* #load "pa_extend.cmo" *)
-(* #load "q_MLast.cmo" *)
+(* #load "pa_extend.cmo";; *)
+(* #load "q_MLast.cmo";; *)
 
 open Pcaml;;
 open Exparser;;
@@ -154,10 +154,10 @@ let next_char s i =
   else if s.[i] = '\\' then
     if i + 1 = String.length s then "\\", i + 1
     else
-      match s.[i + 1] with
+      match s.[i+1] with
         '0'..'9' ->
           if i + 3 < String.length s then
-            Printf.sprintf "\\%c%c%c" s.[i + 1] s.[i + 2] s.[i + 3], i + 4
+            Printf.sprintf "\\%c%c%c" s.[i+1] s.[i+2] s.[i+3], i + 4
           else "\\", i + 1
       | c -> "\\" ^ String.make 1 c, i + 2
   else String.make 1 s.[i], i + 1
@@ -179,7 +179,7 @@ let make_or_chars loc s norec sl cl errk =
         let (c, i) = next_char s i in
         let p = MLast.PaChr (loc, c) in
         let (p, i) =
-          if i < String.length s - 2 && s.[i] = '.' && s.[i + 1] = '.' then
+          if i < String.length s - 2 && s.[i] = '.' && s.[i+1] = '.' then
             let (c, i) = next_char s (i + 2) in
             MLast.PaRng (loc, p, MLast.PaChr (loc, c)), i
           else p, i
@@ -332,7 +332,7 @@ Grammar.extend
          (Grammar.Entry.obj (err_kont : 'err_kont Grammar.Entry.e))],
       Gramext.action
         (fun (kont : 'err_kont) (f : 'symb) (sl, cl : 'symbs)
-           (loc : Token.location) ->
+             (loc : Token.location) ->
            (f sl cl kont : 'symbs))]];
     Grammar.Entry.obj (symb : 'symb Grammar.Entry.e), None,
     [None, None,

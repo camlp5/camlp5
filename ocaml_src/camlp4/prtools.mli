@@ -18,7 +18,7 @@ val hlist : 'a pr_fun -> 'a list pr_fun;;
        the function fails (the exception is catched by [horiz_vertic] for
        a vertical pretty print). *)
 val hlist2 :
-  ('a, 'b) pr_gfun -> ('a, 'b) pr_gfun -> ('a list, ('b * 'b)) pr_gfun;;
+  ('a, 'b) pr_gfun -> ('a, 'b) pr_gfun -> ('a list, 'b * 'b) pr_gfun;;
    (** horizontal list with different function from 2nd element on *)
 val hlistl : 'a pr_fun -> 'a pr_fun -> 'a list pr_fun;;
    (** horizontal list with different function for the last element *)
@@ -29,7 +29,7 @@ val vlist : 'a pr_fun -> 'a list pr_fun;;
        of a list of elements; elements are separated with newlines and
        indentations. *)
 val vlist2 :
-  ('a, 'b) pr_gfun -> ('a, 'b) pr_gfun -> ('a list, ('b * 'b)) pr_gfun;;
+  ('a, 'b) pr_gfun -> ('a, 'b) pr_gfun -> ('a list, 'b * 'b) pr_gfun;;
    (** vertical list with different function from 2nd element on.
        In [vlist2 elem elem2 pc el], [pc.aft] is a couple where the first
        element is given as [pc.aft] to all elements except the last one,

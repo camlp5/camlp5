@@ -33,10 +33,7 @@ and 'te g_level =
     lname : string option;
     lsuffix : 'te g_tree;
     lprefix : 'te g_tree }
-and g_assoc =
-    NonA
-  | RightA
-  | LeftA
+and g_assoc = NonA | RightA | LeftA
 and 'te g_symbol =
     Smeta of string * 'te g_symbol list * Obj.t
   | Snterm of 'te g_entry
@@ -127,7 +124,7 @@ let insert_tree entry_name gsymbols action tree =
                 eprintf "some rule has been masked\n";
                 flush stderr
               end;
-            LocAct (action, (old_action :: action_list))
+            LocAct (action, old_action :: action_list)
         | DeadEnd -> LocAct (action, [])
   and insert_in_tree s sl tree =
     match try_insert s sl tree with
@@ -433,7 +430,7 @@ let delete_rule_in_tree entry =
         end
     | [], DeadEnd -> None
     | [], LocAct (_, []) -> Some (Some [], DeadEnd)
-    | [], LocAct (_, (action :: list)) -> Some (None, LocAct (action, list))
+    | [], LocAct (_, action :: list) -> Some (None, LocAct (action, list))
   and delete_son sl n =
     match delete_in_tree sl n.son with
       Some (Some dsl, DeadEnd) -> Some (Some (n.node :: dsl), n.brother)
@@ -455,7 +452,8 @@ let rec decr_keyw_use gram =
       decr r;
       if !r == 0 then
         begin
-          Hashtbl.remove gram.gtokens tok; gram.glexer.Token.tok_removing tok
+          Hashtbl.remove gram.gtokens tok;
+          gram.glexer.Token.tok_removing tok
         end
   | Smeta (_, sl, _) -> List.iter (decr_keyw_use gram) sl
   | Slist0 s -> decr_keyw_use gram s

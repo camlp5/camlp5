@@ -91,7 +91,8 @@ let rec ident2 buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some
       ('!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' |
-       '.' | ':' | '<' | '>' | '|' | '$' as c) ->
+       '.' | ':' | '<' | '>' | '|' | '$'
+        as c) ->
       Stream.junk strm__; ident2 (B.add c buf) strm__
   | _ -> buf
 ;;
@@ -101,7 +102,8 @@ let rec ident3 buf (strm__ : _ Stream.t) =
     Some
       ('0'..'9' | 'A'..'Z' | 'a'..'z' | '_' | '!' | '%' | '&' | '*' | '+' |
        '-' | '.' | '/' | ':' | '<' | '=' | '>' | '?' | '@' | '^' | '|' | '~' |
-       '\'' | '$' | '\128'..'\255' as c) ->
+       '\'' | '$' | '\128'..'\255'
+        as c) ->
       Stream.junk strm__; ident3 (B.add c buf) strm__
   | _ -> buf
 ;;
@@ -137,10 +139,7 @@ let end_integer buf (strm__ : _ Stream.t) =
 ;;
 
 let rec digits_under kind buf (strm__ : _ Stream.t) =
-  match
-    try Some (kind buf strm__) with
-      Stream.Failure -> None
-  with
+  match try Some (kind buf strm__) with Stream.Failure -> None with
     Some buf -> digits_under kind buf strm__
   | _ ->
       match Stream.peek strm__ with
@@ -188,15 +187,11 @@ let number buf (strm__ : _ Stream.t) =
     Some '.' ->
       Stream.junk strm__;
       let buf = decimal_digits_under (B.add '.' buf) strm__ in
-      let buf =
-        try exponent_part buf strm__ with
-          Stream.Failure -> buf
-      in
+      let buf = try exponent_part buf strm__ with Stream.Failure -> buf in
       "FLOAT", B.get buf
   | _ ->
       match
-        try Some (exponent_part buf strm__) with
-          Stream.Failure -> None
+        try Some (exponent_part buf strm__) with Stream.Failure -> None
       with
         Some buf -> "FLOAT", B.get buf
       | _ -> end_integer buf strm__
@@ -231,7 +226,7 @@ let char ctx bp buf (strm__ : _ Stream.t) =
 let any ctx buf (strm__ : _ Stream.t) =
   let bp = Stream.count strm__ in
   match Stream.peek strm__ with
-    Some c -> Stream.junk strm__; begin ctx.line_cnt bp c; B.add c buf end
+    Some c -> Stream.junk strm__; ctx.line_cnt bp c; B.add c buf
   | _ -> raise Stream.Failure
 ;;
 
@@ -246,10 +241,7 @@ let rec string ctx bp buf (strm__ : _ Stream.t) =
       in
       string ctx bp buf strm__
   | _ ->
-      match
-        try Some (any ctx buf strm__) with
-          Stream.Failure -> None
-      with
+      match try Some (any ctx buf strm__) with Stream.Failure -> None with
         Some buf -> string ctx bp buf strm__
       | _ -> err ctx (bp, Stream.count strm__) "string not terminated"
 ;;
@@ -280,16 +272,10 @@ let comment ctx bp =
     | Some '\'' ->
         Stream.junk strm__;
         let buf = B.add '\'' buf in
-        let buf =
-          try char ctx bp buf strm__ with
-            Stream.Failure -> buf
-        in
+        let buf = try char ctx bp buf strm__ with Stream.Failure -> buf in
         comment buf strm__
     | _ ->
-        match
-          try Some (any ctx buf strm__) with
-            Stream.Failure -> None
-        with
+        match try Some (any ctx buf strm__) with Stream.Failure -> None with
           Some buf -> comment buf strm__
         | _ -> err ctx (bp, Stream.count strm__) "comment not terminated"
   in
@@ -335,10 +321,7 @@ let rec quotation ctx bp buf (strm__ : _ Stream.t) =
       in
       quotation ctx bp buf strm__
   | _ ->
-      match
-        try Some (any ctx buf strm__) with
-          Stream.Failure -> None
-      with
+      match try Some (any ctx buf strm__) with Stream.Failure -> None with
         Some buf -> quotation ctx bp buf strm__
       | _ -> err ctx (bp, Stream.count strm__) "quotation not terminated"
 ;;
@@ -391,15 +374,11 @@ let rec antiquot ctx bp buf (strm__ : _ Stream.t) =
   | Some '\\' ->
       Stream.junk strm__;
       let buf =
-        try any ctx buf strm__ with
-          Stream.Failure -> raise (Stream.Error "")
+        try any ctx buf strm__ with Stream.Failure -> raise (Stream.Error "")
       in
       let buf = antiquot_rest ctx bp buf strm__ in "ANTIQUOT", ":" ^ B.get buf
   | _ ->
-      match
-        try Some (any ctx buf strm__) with
-          Stream.Failure -> None
-      with
+      match try Some (any ctx buf strm__) with Stream.Failure -> None with
         Some buf ->
           let buf = antiquot_rest ctx bp buf strm__ in
           "ANTIQUOT", ":" ^ B.get buf
@@ -410,15 +389,11 @@ and antiquot_rest ctx bp buf (strm__ : _ Stream.t) =
   | Some '\\' ->
       Stream.junk strm__;
       let buf =
-        try any ctx buf strm__ with
-          Stream.Failure -> raise (Stream.Error "")
+        try any ctx buf strm__ with Stream.Failure -> raise (Stream.Error "")
       in
       antiquot_rest ctx bp buf strm__
   | _ ->
-      match
-        try Some (any ctx buf strm__) with
-          Stream.Failure -> None
-      with
+      match try Some (any ctx buf strm__) with Stream.Failure -> None with
         Some buf -> antiquot_rest ctx bp buf strm__
       | _ -> err ctx (bp, Stream.count strm__) "antiquotation not terminated"
 ;;
@@ -465,16 +440,12 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
       Stream.junk strm__;
       let buf = ident (B.add c buf) strm__ in
       let id = B.get buf in
-      begin try "", ctx.find_kwd id with
-        Not_found -> "UIDENT", id
-      end
+      (try "", ctx.find_kwd id with Not_found -> "UIDENT", id)
   | Some ('a'..'z' | '_' | '\128'..'\255' as c) ->
       Stream.junk strm__;
       let buf = ident (B.add c buf) strm__ in
       let id = B.get buf in
-      begin try "", ctx.find_kwd id with
-        Not_found -> "LIDENT", id
-      end
+      (try "", ctx.find_kwd id with Not_found -> "LIDENT", id)
   | Some ('1'..'9' as c) -> Stream.junk strm__; number (B.add c buf) strm__
   | Some '0' ->
       Stream.junk strm__;
@@ -491,8 +462,7 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
   | Some '\'' ->
       Stream.junk strm__;
       begin match
-        try Some (char ctx bp buf strm__) with
-          Stream.Failure -> None
+        (try Some (char ctx bp buf strm__) with Stream.Failure -> None)
       with
         Some buf -> "CHAR", B.get buf
       | _ -> keyword_or_error ctx (bp, Stream.count strm__) "'"
@@ -668,9 +638,8 @@ let next_token_fun ctx glexr (cstrm, s_line_nb, s_bol_pos) =
     | None -> ()
     end;
     r, loc
-  with
-    Stream.Error str ->
-      err ctx (Stream.count cstrm, Stream.count cstrm + 1) str
+  with Stream.Error str ->
+    err ctx (Stream.count cstrm, Stream.count cstrm + 1) str
 ;;
 
 let func kwd_table glexr =
@@ -698,8 +667,7 @@ let func kwd_table glexr =
 let rec check_keyword_stream (strm__ : _ Stream.t) =
   let _ = check B.empty strm__ in
   let _ =
-    try Stream.empty strm__ with
-      Stream.Failure -> raise (Stream.Error "")
+    try Stream.empty strm__ with Stream.Failure -> raise (Stream.Error "")
   in
   true
 and check buf (strm__ : _ Stream.t) =
@@ -708,7 +676,8 @@ and check buf (strm__ : _ Stream.t) =
       Stream.junk strm__; check_ident (B.add c buf) strm__
   | Some
       ('!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' |
-       '.' as c) ->
+       '.'
+        as c) ->
       Stream.junk strm__; check_ident2 (B.add c buf) strm__
   | Some '<' ->
       Stream.junk strm__;
@@ -760,31 +729,31 @@ and check_ident2 buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some
       ('!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' |
-       '.' | ':' | '<' | '>' | '|' as c) ->
+       '.' | ':' | '<' | '>' | '|'
+        as c) ->
       Stream.junk strm__; check_ident2 (B.add c buf) strm__
   | _ -> buf
 ;;
 
 let check_keyword s =
-  try check_keyword_stream (Stream.of_string s) with
-    _ -> false
+  try check_keyword_stream (Stream.of_string s) with _ -> false
 ;;
 
 let error_no_respect_rules p_con p_prm =
   raise
     (Token.Error
        ("the token " ^
-          (if p_con = "" then "\"" ^ p_prm ^ "\""
-           else if p_prm = "" then p_con
-           else p_con ^ " \"" ^ p_prm ^ "\"") ^
-          " does not respect Plexer rules"))
+        (if p_con = "" then "\"" ^ p_prm ^ "\""
+         else if p_prm = "" then p_con
+         else p_con ^ " \"" ^ p_prm ^ "\"") ^
+        " does not respect Plexer rules"))
 ;;
 
 let error_ident_and_keyword p_con p_prm =
   raise
     (Token.Error
        ("the token \"" ^ p_prm ^ "\" is used as " ^ p_con ^
-          " and as keyword"))
+        " and as keyword"))
 ;;
 
 let using_token kwd_table ident_table (p_con, p_prm) =
@@ -868,17 +837,15 @@ let after_colon e =
   try
     let i = String.index e ':' in
     String.sub e (i + 1) (String.length e - i - 1)
-  with
-    Not_found -> ""
+  with Not_found -> ""
 ;;
 
 let tok_match =
   function
     "ANTIQUOT", p_prm ->
-      begin function
-        "ANTIQUOT", prm when eq_before_colon p_prm prm -> after_colon prm
-      | _ -> raise Stream.Failure
-      end
+      (function
+         "ANTIQUOT", prm when eq_before_colon p_prm prm -> after_colon prm
+       | _ -> raise Stream.Failure)
   | tok -> Token.default_match tok
 ;;
 

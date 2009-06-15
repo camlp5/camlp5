@@ -46,8 +46,7 @@ and print_meta ppf n sl =
       [] -> ()
     | s :: sl ->
         let j =
-          try String.index_from n i ' ' with
-            Not_found -> String.length n
+          try String.index_from n i ' ' with Not_found -> String.length n
         in
         fprintf ppf "%s %a" (String.sub n i (j - i)) print_symbol1 s;
         if sl = [] then ()
@@ -94,7 +93,7 @@ let print_levels ppf elev =
       (fun sep lev ->
          let rules =
            List.map (fun t -> Sself :: t) (flatten_tree lev.lsuffix) @
-             flatten_tree lev.lprefix
+           flatten_tree lev.lprefix
          in
          fprintf ppf "%t@[<hov 2>" sep;
          begin match lev.lname with
@@ -252,7 +251,7 @@ and name_of_tree_failed entry =
           List.fold_left
             (fun s tok ->
                (if s = "" then "" else s ^ " ") ^
-                 entry.egram.glexer.Token.tok_text tok)
+               entry.egram.glexer.Token.tok_text tok)
             "" tokl
       end
   | DeadEnd | LocAct (_, _) -> "???"
@@ -369,8 +368,7 @@ let tree_failed entry prev_symb_result prev_symb tree =
     | _ -> txt ^ " expected after " ^ name_of_symbol entry prev_symb
   in
   if !error_verbose then
-    begin
-      let tree = search_tree_in_entry prev_symb tree entry.edesc in
+    begin let tree = search_tree_in_entry prev_symb tree entry.edesc in
       let ppf = err_formatter in
       fprintf ppf "@[<v 0>@,";
       fprintf ppf "----------------------------------@,";
@@ -446,17 +444,16 @@ let continue entry bp a s son p1 (strm__ : _ Stream.t) =
   Gramext.action (fun _ -> app act a)
 ;;
 
-let do_recover
-  parser_of_tree entry nlevn alevn bp a s son (strm__ : _ Stream.t) =
+let do_recover parser_of_tree entry nlevn alevn bp a s son
+    (strm__ : _ Stream.t) =
   try parser_of_tree entry nlevn alevn (top_tree entry son) strm__ with
     Stream.Failure ->
       try
         skip_if_empty bp (fun (strm__ : _ Stream.t) -> raise Stream.Failure)
           strm__
-      with
-        Stream.Failure ->
-          continue entry bp a s son (parser_of_tree entry nlevn alevn son)
-            strm__
+      with Stream.Failure ->
+        continue entry bp a s son (parser_of_tree entry nlevn alevn son)
+          strm__
 ;;
 
 let strict_parsing = ref false;;
@@ -491,8 +488,7 @@ let rec parser_of_tree entry nlevn alevn =
       let p2 = parser_of_tree entry nlevn alevn bro in
       (fun (strm__ : _ Stream.t) ->
          match
-           try Some (entry.estart alevn strm__) with
-             Stream.Failure -> None
+           try Some (entry.estart alevn strm__) with Stream.Failure -> None
          with
            Some a -> app act a
          | _ -> p2 strm__)
@@ -534,10 +530,7 @@ let rec parser_of_tree entry nlevn alevn =
           let p2 = parser_of_tree entry nlevn alevn bro in
           (fun (strm__ : _ Stream.t) ->
              let bp = Stream.count strm__ in
-             match
-               try Some (ps strm__) with
-                 Stream.Failure -> None
-             with
+             match try Some (ps strm__) with Stream.Failure -> None with
                Some a ->
                  let act =
                    try p1 bp a strm__ with
@@ -551,8 +544,7 @@ let rec parser_of_tree entry nlevn alevn =
           let p1 = parser_of_token_list entry.egram p1 tokl in
           let p2 = parser_of_tree entry nlevn alevn bro in
           fun (strm__ : _ Stream.t) ->
-            try p1 strm__ with
-              Stream.Failure -> p2 strm__
+            try p1 strm__ with Stream.Failure -> p2 strm__
 and parser_cont p1 entry nlevn alevn s son bp a (strm__ : _ Stream.t) =
   try p1 strm__ with
     Stream.Failure ->
@@ -604,10 +596,7 @@ and parser_of_symbol entry nlevn =
   | Slist0 s ->
       let ps = parser_of_symbol entry nlevn s in
       let rec loop al (strm__ : _ Stream.t) =
-        match
-          try Some (ps strm__) with
-            Stream.Failure -> None
-        with
+        match try Some (ps strm__) with Stream.Failure -> None with
           Some a -> loop (a :: al) strm__
         | _ -> al
       in
@@ -617,10 +606,7 @@ and parser_of_symbol entry nlevn =
       let ps = parser_of_symbol entry nlevn symb in
       let pt = parser_of_symbol entry nlevn sep in
       let rec kont al (strm__ : _ Stream.t) =
-        match
-          try Some (pt strm__) with
-            Stream.Failure -> None
-        with
+        match try Some (pt strm__) with Stream.Failure -> None with
           Some v ->
             let a =
               try ps strm__ with
@@ -631,19 +617,13 @@ and parser_of_symbol entry nlevn =
         | _ -> al
       in
       (fun (strm__ : _ Stream.t) ->
-         match
-           try Some (ps strm__) with
-             Stream.Failure -> None
-         with
+         match try Some (ps strm__) with Stream.Failure -> None with
            Some a -> let a = kont [a] strm__ in Obj.repr (List.rev a)
          | _ -> Obj.repr [])
   | Slist1 s ->
       let ps = parser_of_symbol entry nlevn s in
       let rec loop al (strm__ : _ Stream.t) =
-        match
-          try Some (ps strm__) with
-            Stream.Failure -> None
-        with
+        match try Some (ps strm__) with Stream.Failure -> None with
           Some a -> loop (a :: al) strm__
         | _ -> al
       in
@@ -654,10 +634,7 @@ and parser_of_symbol entry nlevn =
       let ps = parser_of_symbol entry nlevn symb in
       let pt = parser_of_symbol entry nlevn sep in
       let rec kont al (strm__ : _ Stream.t) =
-        match
-          try Some (pt strm__) with
-            Stream.Failure -> None
-        with
+        match try Some (pt strm__) with Stream.Failure -> None with
           Some v ->
             let a =
               try ps strm__ with
@@ -675,10 +652,7 @@ and parser_of_symbol entry nlevn =
   | Sopt s ->
       let ps = parser_of_symbol entry nlevn s in
       (fun (strm__ : _ Stream.t) ->
-         match
-           try Some (ps strm__) with
-             Stream.Failure -> None
-         with
+         match try Some (ps strm__) with Stream.Failure -> None with
            Some a -> Obj.repr (Some a)
          | _ -> Obj.repr None)
   | Stree t ->
@@ -760,10 +734,7 @@ let rec start_parser_of_levels entry clevn =
                 else
                   let (strm__ : _ Stream.t) = strm in
                   let bp = Stream.count strm__ in
-                  match
-                    try Some (p2 strm__) with
-                      Stream.Failure -> None
-                  with
+                  match try Some (p2 strm__) with Stream.Failure -> None with
                     Some act ->
                       let ep = Stream.count strm__ in
                       let a = app act (loc_of_token_interval bp ep) in
@@ -776,8 +747,7 @@ let continue_parser_of_entry entry =
     Dlevels elev ->
       let p = continue_parser_of_levels entry 0 elev in
       (fun levn bp a (strm__ : _ Stream.t) ->
-         try p levn bp a strm__ with
-           Stream.Failure -> a)
+         try p levn bp a strm__ with Stream.Failure -> a)
   | Dparser p -> fun levn bp a (strm__ : _ Stream.t) -> raise Stream.Failure
 ;;
 
@@ -813,8 +783,7 @@ let parse_parsable entry efun p =
       let loc = fun_loc cnt in
       if !token_count - 1 <= cnt then loc
       else Stdpp.encl_loc loc (fun_loc (!token_count - 1))
-    with
-      _ -> Stdpp.make_loc (Stream.count cs, Stream.count cs + 1)
+    with _ -> Stdpp.make_loc (Stream.count cs, Stream.count cs + 1)
   in
   floc := fun_loc;
   token_count := 0;
@@ -854,11 +823,10 @@ let extend_entry entry position rules =
       fun lev bp a strm ->
         let f = continue_parser_of_entry entry in
         entry.econtinue <- f; f lev bp a strm
-  with
-    Token.Error s ->
-      Printf.eprintf "Lexer initialization error:\n- %s\n" s;
-      flush stderr;
-      failwith "Grammar.extend"
+  with Token.Error s ->
+    Printf.eprintf "Lexer initialization error:\n- %s\n" s;
+    flush stderr;
+    failwith "Grammar.extend"
 ;;
 
 let extend entry_rules_list =
@@ -910,7 +878,10 @@ let clear_entry e =
 let gram_reinit g glexer = Hashtbl.clear g.gtokens; g.glexer <- glexer;;
 
 module Unsafe =
-  struct let gram_reinit = gram_reinit;; let clear_entry = clear_entry;; end
+  struct
+    let gram_reinit = gram_reinit;;
+    let clear_entry = clear_entry;;
+  end
 ;;
 
 let find_entry e s =
