@@ -66,7 +66,7 @@ let rec vlist2 elem elem2 pc xl =
 (* vertical list with different function from 2nd element on *)
 let rec vlist3 elem elem2 pc xl =
   match xl with
-    [] -> invalid_arg "vlist2"
+    [] -> invalid_arg "vlist3"
   | [x] -> elem pc (x, true)
   | x :: xl ->
       sprintf "%s\n%s" (elem {pc with aft = ""} (x, false))

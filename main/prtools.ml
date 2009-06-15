@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: prtools.ml,v 1.11 2007/10/06 08:07:17 deraugla Exp $ *)
+(* $Id: prtools.ml,v 1.12 2007/12/07 23:29:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -66,7 +66,7 @@ value rec vlist2 elem elem2 pc xl =
 (* vertical list with different function from 2nd element on *)
 value rec vlist3 elem elem2 pc xl =
   match xl with
-  [ [] -> invalid_arg "vlist2"
+  [ [] -> invalid_arg "vlist3"
   | [x] -> elem pc (x, True)
   | [x :: xl] ->
       sprintf "%s\n%s" (elem {(pc) with aft = ""} (x, False))
