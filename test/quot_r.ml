@@ -217,3 +217,12 @@
 <:sig_item< type $_list:ltd$ >>;
 <:sig_item< value $s$ : $t$ >>;
 <:sig_item< value $_:s$ : $t$ >>;
+<:module_expr< $me1$ . $me2$ >>;
+<:module_expr< $me1$ $me2$ >>;
+<:module_expr< functor ($s$ : $mt$) -> $me$ >>;
+<:module_expr< functor ($_:s$ : $mt$) -> $me$ >>;
+<:module_expr< struct $list:lstri$ end >>;
+<:module_expr< struct $_list:lstri$ end >>;
+<:module_expr< ($me$ : $mt$) >>;
+<:module_expr< $uid:s$ >>;
+<:module_expr< $_uid:s$ >>;

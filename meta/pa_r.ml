@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.111 2007/09/25 03:16:23 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.112 2007/09/25 05:20:51 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -115,8 +115,8 @@ EXTEND
     class_expr class_sig_item class_str_item let_binding type_declaration
     constructor_declaration match_case ipatt with_constr poly_variant;
   module_expr:
-    [ [ "functor"; "("; i = V UIDENT; ":"; t = module_type; ")"; "->";
-        me = SELF ->
+    [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = module_type; ")";
+        "->"; me = SELF ->
           <:module_expr< functor ( $_uid:i$ : $t$ ) -> $me$ >>
       | "struct"; st = V (LIST0 [ s = str_item; ";" -> s ]); "end" ->
           <:module_expr< struct $_list:st$ end >> ]
@@ -167,7 +167,8 @@ EXTEND
       | "="; me = module_expr -> <:module_expr< $me$ >> ] ]
   ;
   module_type:
-    [ [ "functor"; "("; i = V UIDENT; ":"; t = SELF; ")"; "->"; mt = SELF ->
+    [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = SELF; ")"; "->";
+        mt = SELF ->
           <:module_type< functor ( $_uid:i$ : $t$ ) -> $mt$ >> ]
     | [ mt = SELF; "with"; wcl = V (LIST1 with_constr SEP "and") ->
           <:module_type< $mt$ with $_list:wcl$ >> ]

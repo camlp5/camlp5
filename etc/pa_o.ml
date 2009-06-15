@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.70 2007/09/25 03:16:23 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.71 2007/09/25 05:20:51 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -349,11 +349,11 @@ EXTEND
     class_expr class_sig_item class_str_item let_binding type_declaration
     constructor_declaration match_case with_constr poly_variant;
   module_expr:
-    [ [ "functor"; "("; i = UIDENT; ":"; t = module_type; ")"; "->";
-        me = SELF ->
-          <:module_expr< functor ( $uid:i$ : $t$ ) -> $me$ >>
-      | "struct"; st = LIST0 [ s = str_item; OPT ";;" -> s ]; "end" ->
-          <:module_expr< struct $list:st$ end >> ]
+    [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = module_type; ")";
+        "->"; me = SELF ->
+          <:module_expr< functor ( $_uid:i$ : $t$ ) -> $me$ >>
+      | "struct"; st = V (LIST0 [ s = str_item; OPT ";;" -> s ]); "end" ->
+          <:module_expr< struct $_list:st$ end >> ]
     | [ me1 = SELF; me2 = SELF -> <:module_expr< $me1$ $me2$ >> ]
     | [ i = mod_expr_ident -> i
       | "("; me = SELF; ":"; mt = module_type; ")" ->
@@ -363,7 +363,7 @@ EXTEND
   mod_expr_ident:
     [ LEFTA
       [ i = SELF; "."; j = SELF -> <:module_expr< $i$ . $j$ >> ]
-    | [ i = UIDENT -> <:module_expr< $uid:i$ >> ] ]
+    | [ i = V UIDENT -> <:module_expr< $_uid:i$ >> ] ]
   ;
   str_item:
     [ "top"

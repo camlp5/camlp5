@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_strict.html,v 1.12 2007/09/25 03:16:23 deraugla Exp $ -->
+  <!-- $Id: ast_strict.html,v 1.13 2007/09/25 05:20:51 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>AST - strict</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -1569,43 +1569,69 @@
 
 <h4>module_expr</h4>
 
-<table border="1">
-  <tr>
-    <th>Node</th>
-    <th><tt>&lt;:module_expr&lt; ... >></tt></th>
-    <th>Comment</th>
-  </tr>
-  <tr>
-    <td><tt>MeAcc loc me1 me2</tt></td>
-    <td align="center"><tt>$me1$ . $me2$</tt></td>
-    <td>dot</td>
-  </tr>
-  <tr>
-    <td><tt>MeApp loc me1 me2</tt></td>
-    <td align="center"><tt>$me1$ $me2$</tt></td>
-    <td>application</td>
-  </tr>
-  <tr>
-    <td><tt>MeFun loc s mt me</tt></td>
-    <td align="center"><tt>functor ( $s$ : $mt$ ) ->  $me$</tt></td>
-    <td>functor</td>
-  </tr>
-  <tr>
-    <td><tt>MeStr loc lstri</tt></td>
-    <td align="center"><tt>struct $list:lstri$ end</tt></td>
-    <td>struct</td>
-  </tr>
-  <tr>
-    <td><tt>MeTyc loc me mt</tt></td>
-    <td align="center"><tt>( $me$ : $mt$ )</tt></td>
-    <td>module type constraint</td>
-  </tr>
-  <tr>
-    <td><tt>MeUid loc s</tt></td>
-    <td align="center"><tt>$uid:s$</tt></td>
-    <td>uppercase identifier</td>
-  </tr>
-</table>
+<dl class="nodelist">
+  <dt> - access</dt>
+  <dd>
+    <tt style="color:blue">&lt;:module_expr&lt; $me1$ . $me2$ >></tt><br/>
+    <tt style="color:red">MLast.MeAcc loc me1 me2</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt> - application</dt>
+  <dd>
+    <tt style="color:blue">&lt;:module_expr&lt; $me1$ $me2$ >></tt><br/>
+    <tt style="color:red">MLast.MeApp loc me1 me2</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt> - functor</dt>
+  <dd>
+    <tt style="color:blue">&lt;:module_expr&lt; functor ($s$ : $mt$) ->  $me$ >></tt><br/>
+    <tt style="color:red">MLast.MeFun loc (Ploc.VaVal s) mt me</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:module_expr&lt; functor ($_:s$ : $mt$) ->  $me$ >></tt><br/>
+    <tt style="color:red">MLast.MeFun loc s mt me</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt> - struct</dt>
+  <dd>
+    <tt style="color:blue">&lt;:module_expr&lt; struct $list:lstri$ end >></tt><br/>
+    <tt style="color:red">MLast.MeStr loc (Ploc.VaVal lstri)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:module_expr&lt; struct $_list:lstri$ end >></tt><br/>
+    <tt style="color:red">MLast.MeStr loc lstri</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt> - module type constraint</dt>
+  <dd>
+    <tt style="color:blue">&lt;:module_expr&lt; ($me$ : $mt$) >></tt><br/>
+    <tt style="color:red">MLast.MeTyc loc me mt</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt> - uppercase identifier</dt>
+  <dd>
+    <tt style="color:blue">&lt;:module_expr&lt; $uid:s$ >></tt><br/>
+    <tt style="color:red">MLast.MeUid loc (Ploc.VaVal s)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:module_expr&lt; $_uid:s$ >></tt><br/>
+    <tt style="color:red">MLast.MeUid loc s</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- extra node <a href="#module_expr_1">(1)</a></dt>
+  <dd>
+    <tt style="color:blue">... no representation ...</tt><br/>
+    <tt style="color:red">MLast.MeXtr loc s ot</tt>
+  </dd>
+</dl>
+
+<div id="module_expr_1" style="margin: 5mm 0 0 1cm">(1)
+  Extra node internally used by the quotation kit "<tt>q_ast.cmo</tt>"
+    to build antiquotations of module expressions.
+</div>
 
 <h4>module_type</h4>
 
