@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.159 2007/12/25 16:44:26 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.160 2007/12/25 18:24:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1364,10 +1364,7 @@ EXTEND_PRINTER
             match me with
             [ <:module_expr< $uid:_$ >> | <:module_expr< $_$ . $_$ >>
               when not is_first ->
-                next
-                  {(pc) with bef = sprintf "%s(" pc.bef;
-                   aft = sprintf ")%s" pc.aft}
-                  me
+                pprintf pc "(%p)" next me
             | _ -> next pc me ]
           in
           let (me, mel) =
@@ -1376,44 +1373,17 @@ EXTEND_PRINTER
               [ <:module_expr< $x$ $y$ >> -> loop [(False, y) :: mel] x
               | me -> ((True, me), mel) ]
           in
-          horiz_vertic
-            (fun () ->
-               sprintf "%s%s%s" pc.bef
-                 (hlist mod_exp2 {(pc) with bef = ""; aft = ""} [me :: mel])
-                 pc.aft)
-            (fun () ->
-               let mel = List.map (fun me -> (me, "")) [me :: mel] in
-               plist mod_exp2 2 pc mel) ]
+          let mel = List.map (fun me -> (me, "")) [me :: mel] in
+          plist mod_exp2 2 pc mel ]
     | "dot"
       [ <:module_expr< $x$ . $y$ >> ->
-          curr {(pc) with bef = curr {(pc) with aft = "."} x} y ]
+          pprintf pc "%p.%p" curr x curr y ]
     | "simple"
       [ <:module_expr< $uid:s$ >> -> sprintf "%s%s%s" pc.bef s pc.aft
       | <:module_expr< ($me$ : $mt$) >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s(%s : %s)%s" pc.bef
-                 (module_expr {(pc) with bef = ""; aft = ""} me)
-                 (module_type {(pc) with bef = ""; aft = ""} mt) pc.aft)
-            (fun () ->
-               let s1 =
-                 module_expr
-                   {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-                    aft = " :"}
-                   me
-               in
-               let s2 =
-                 module_type
-                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
-                    aft = sprintf ")%s" pc.aft}
-                   mt
-               in
-               sprintf "%s\n%s" s1 s2)
+          pprintf pc "@[<1>(%p :@ %p)@]" module_expr me module_type mt
       | <:module_expr< struct $list:_$ end >> as z ->
-          module_expr
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            z ] ]
+          pprintf pc "@[<1>(%p)@]" module_expr z ] ]
   ;
   pr_module_type:
     [ "top"
