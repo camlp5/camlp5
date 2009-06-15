@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.42 2007/07/05 13:13:27 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.43 2007/07/06 04:23:36 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1831,6 +1831,174 @@ value exception_decl pc (e, tl, id) =
        sprintf "%s%s%s" s1 s2 s3)
 ;
 
+value str_module pc m me =
+  let (mal, me) =
+    loop me where rec loop =
+      fun
+      [ <:module_expr< functor ($s$ : $mt$) -> $me$ >> ->
+          let (mal, me) = loop me in
+          ([(s, mt) :: mal], me)
+      | me -> ([], me) ]
+  in
+  let module_arg pc (s, mt) =
+    horiz_vertic
+      (fun () ->
+         sprintf "%s(%s : %s)%s" pc.bef s
+           (module_type {(pc) with bef = ""; aft = ""} mt) pc.aft)
+      (fun () ->
+         let s1 = sprintf "%s(%s :" pc.bef s in
+         let s2 =
+           module_type
+             {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+              aft = sprintf ")%s" pc.aft}
+             mt
+         in
+         sprintf "%s\n%s" s1 s2)
+  in
+  let (me, mto) =
+    match me with
+    [ <:module_expr< ($me$ : $mt$) >> -> (me, Some mt)
+    | _ -> (me, None) ]
+  in
+  horiz_vertic
+    (fun () ->
+       sprintf "%smodule %s%s%s = %s%s" pc.bef m
+         (if mal = [] then ""
+          else hlist module_arg {(pc) with bef = " "; aft = ""} mal)
+         (match mto with
+          [ Some mt ->
+              sprintf " : %s"
+                (module_type {(pc) with bef = ""; aft = ""} mt)
+          | None -> "" ])
+         (module_expr {(pc) with bef = ""; aft = ""} me) pc.aft)
+    (fun () ->
+       let s1 =
+         match mto with
+         [ Some mt ->
+             horiz_vertic
+               (fun () ->
+                  sprintf "%smodule %s%s : %s =" pc.bef m
+                    (if mal = [] then ""
+                     else
+                       hlist module_arg {(pc) with bef = " "; aft = ""} mal)
+                    (module_type {(pc) with bef = ""; aft = ""} mt))
+               (fun () ->
+                  let s1 =
+                    sprintf "%smodule %s%s :" pc.bef m
+                      (if mal = [] then "" else
+                       hlist module_arg
+                         {(pc) with bef = " "; aft = ""} mal)
+                  in
+                  let s2 =
+                    module_type
+                      {(pc) with ind = pc.ind + 2;
+                       bef = tab (pc.ind + 2); aft = " ="}
+                      mt
+                  in
+                  sprintf "%s\n%s" s1 s2)
+         | None ->
+             let mal = List.map (fun ma -> (ma, "")) mal in
+             plistb module_arg 2
+               {(pc) with bef = sprintf "%smodule %s" pc.bef m;
+                aft = " ="}
+               mal ]
+       in
+       let s2 =
+         module_expr
+           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+            aft = ""}
+           me
+       in
+       sprintf "%s\n%s\n%s" s1 s2 (tab pc.ind ^ pc.aft))
+;
+
+value sig_module_or_module_type typ defc pc m mt =
+  let (mal, mt) =
+    loop mt where rec loop =
+      fun
+      [ <:module_type< functor ($s$ : $mt1$) -> $mt2$ >> ->
+          let (mal, mt) = loop mt2 in
+          ([(s, mt1) :: mal], mt)
+      | mt -> ([], mt) ]
+  in
+  let module_arg pc (s, mt) =
+    horiz_vertic
+      (fun () ->
+         sprintf "%s(%s : %s)%s" pc.bef s
+           (module_type {(pc) with bef = ""; aft = ""} mt) pc.aft)
+      (fun () ->
+         let s1 = sprintf "%s(%s :" pc.bef s in
+         let s2 =
+           module_type
+             {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+              aft = sprintf ")%s" pc.aft}
+             mt
+         in
+         sprintf "%s\n%s" s1 s2)
+  in
+  horiz_vertic
+    (fun () ->
+       sprintf "%smodule%s %s%s %c %s%s" pc.bef typ m
+         (if mal = [] then ""
+          else hlist module_arg {(pc) with bef = " "; aft = ""} mal)
+         defc (module_type {(pc) with bef = ""; aft = ""} mt) pc.aft)
+    (fun () ->
+       let s1 =
+         let mal = List.map (fun ma -> (ma, "")) mal in
+         plistb module_arg 2
+           {(pc) with bef = sprintf "%smodule%s %s" pc.bef typ m;
+            aft = sprintf " %c" defc}
+           mal
+       in
+       let s2 =
+         module_type
+           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+            aft = ""}
+           mt
+       in
+       let s3 = sprintf "%s%s" (tab pc.ind) pc.aft in
+       sprintf "%s\n%s\n%s" s1 s2 s3)
+;
+
+value str_or_sig_functor pc s mt module_expr_or_type met =
+  horiz_vertic
+    (fun () ->
+       sprintf "%sfunctor (%s : %s) -> %s%s" pc.bef s
+         (module_type {(pc) with bef = ""; aft = ""} mt)
+         (module_expr_or_type {(pc) with bef = ""; aft = ""} met) pc.aft)
+    (fun () ->
+       let s1 =
+         horiz_vertic
+           (fun () ->
+              sprintf "%sfunctor (%s : %s) ->" pc.bef s
+                (module_type {(pc) with bef = ""; aft = ""} mt))
+           (fun () ->
+              let s1 = sprintf "%sfunctor" pc.bef in
+              let s2 =
+                horiz_vertic
+                  (fun () ->
+                     sprintf "%s(%s : %s)" (tab (pc.ind + 2)) s
+                       (module_type {(pc) with bef = ""; aft = ""} mt))
+                  (fun () ->
+                     let s1 = sprintf "%s(%s :" (tab (pc.ind + 2)) s in
+                     let s2 =
+                       module_type
+                         {(pc) with ind = pc.ind + 3;
+                          bef = tab (pc.ind + 3); aft = ")"}
+                         mt
+                     in
+                     sprintf "%s\n%s" s1 s2)
+              in
+              let s3 = sprintf "%s->" (tab pc.ind) in
+              sprintf "%s\n%s\n%s" s1 s2 s3)
+       in
+       let s2 =
+         module_expr_or_type
+           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} met
+       in
+       sprintf "%s\n%s" s1 s2)
+;
+
 value str_item_top =
   extfun Extfun.empty with
   [ <:str_item< # $s$ $e$ >> ->
@@ -1863,102 +2031,9 @@ value str_item_top =
       fun curr next pc ->
         module_expr {(pc) with bef = sprintf "%sinclude " pc.bef} me
   | <:str_item< module $m$ = $me$ >> ->
-      fun curr next pc ->
-        let (mal, me) =
-          loop me where rec loop =
-            fun
-            [ <:module_expr< functor ($s$ : $mt$) -> $me$ >> ->
-                let (mal, me) = loop me in
-                ([(s, mt) :: mal], me)
-            | me -> ([], me) ]
-        in
-        let module_arg pc (s, mt) =
-          horiz_vertic
-            (fun () ->
-               sprintf "%s(%s : %s)%s" pc.bef s
-                 (module_type {(pc) with bef = ""; aft = ""} mt) pc.aft)
-            (fun () ->
-               let s1 = sprintf "%s(%s :" pc.bef s in
-               let s2 =
-                 module_type
-                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
-                    aft = sprintf ")%s" pc.aft}
-                   mt
-               in
-               sprintf "%s\n%s" s1 s2)
-        in
-        let (me, mto) =
-          match me with
-          [ <:module_expr< ($me$ : $mt$) >> -> (me, Some mt)
-          | _ -> (me, None) ]
-        in
-        horiz_vertic
-          (fun () ->
-             sprintf "%smodule %s%s%s = %s%s" pc.bef m
-               (if mal = [] then ""
-                else hlist module_arg {(pc) with bef = " "; aft = ""} mal)
-               (match mto with
-                [ Some mt ->
-                    sprintf " : %s"
-                      (module_type {(pc) with bef = ""; aft = ""} mt)
-                | None -> "" ])
-               (module_expr {(pc) with bef = ""; aft = ""} me) pc.aft)
-          (fun () ->
-             let s1 =
-               match mto with
-               [ Some mt ->
-                   horiz_vertic
-                     (fun () ->
-                        sprintf "%smodule %s%s : %s =" pc.bef m
-                          (if mal = [] then ""
-                           else
-                             hlist module_arg
-                               {(pc) with bef = " "; aft = ""} mal)
-                          (module_type {(pc) with bef = ""; aft = ""} mt))
-                     (fun () ->
-                        let s1 =
-                          sprintf "%smodule %s%s :" pc.bef m
-                            (if mal = [] then "" else
-                             hlist module_arg
-                               {(pc) with bef = " "; aft = ""} mal)
-                        in
-                        let s2 =
-                          module_type
-                            {(pc) with ind = pc.ind + 2;
-                             bef = tab (pc.ind + 2); aft = " ="}
-                            mt
-                        in
-                        sprintf "%s\n%s" s1 s2)
-               | None ->
-                   let mal = List.map (fun ma -> (ma, "")) mal in
-                   plistb module_arg 2
-                     {(pc) with bef = sprintf "%smodule %s" pc.bef m;
-                      aft = " ="}
-                     mal ]
-             in
-             let s2 =
-               module_expr
-                 {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                  aft = ""}
-                 me
-             in
-             sprintf "%s\n%s\n%s" s1 s2 (tab pc.ind ^ pc.aft))
+      fun curr next pc -> str_module pc m me
   | <:str_item< module type $m$ = $mt$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%smodule type %s = %s%s" pc.bef m
-               (module_type {(pc) with bef = ""; aft = ""} mt) pc.aft)
-          (fun () ->
-             let s1 = sprintf "%smodule type %s =" pc.bef m in
-             let s2 =
-               module_type
-                 {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                  aft = ""}
-                 mt
-             in
-             let s3 = sprintf "%s%s" (tab pc.ind) pc.aft in
-             sprintf "%s\n%s\n%s" s1 s2 s3)
+      fun curr next pc -> sig_module_or_module_type " type" '=' pc m mt
   | <:str_item< open $i$ >> ->
       fun curr next pc ->
         mod_ident {(pc) with bef = sprintf "%sopen " pc.bef} i
@@ -2016,37 +2091,9 @@ value sig_item_top =
       fun curr next pc ->
         module_type {(pc) with bef = sprintf "%sinclude " pc.bef} mt
   | <:sig_item< module $m$ : $mt$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%smodule %s : %s%s" pc.bef m
-               (module_type {(pc) with bef = ""; aft = ""} mt) pc.aft)
-          (fun () ->
-             let s1 =  sprintf "%smodule %s :" pc.bef m in
-             let s2 =
-               module_type
-                 {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                  aft = ""}
-                 mt
-             in
-             let s3 = sprintf "%s%s" (tab pc.ind) pc.aft in
-             sprintf "%s\n%s\n%s" s1 s2 s3)
+      fun curr next pc -> sig_module_or_module_type "" ':' pc m mt
   | <:sig_item< module type $m$ = $mt$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%smodule type %s = %s%s" pc.bef m
-               (module_type {(pc) with bef = ""; aft = ""} mt) pc.aft)
-          (fun () ->
-             let s1 = sprintf "%smodule type %s =" pc.bef m in
-             let s2 =
-               module_type
-                 {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                  aft = ""}
-                 mt
-             in
-             let s3 = sprintf "%s%s" (tab pc.ind) pc.aft in
-             sprintf "%s\n%s\n%s" s1 s2 s3)
+      fun curr next pc -> sig_module_or_module_type " type" '=' pc m mt
   | <:sig_item< open $i$ >> ->
       fun curr next pc ->
         mod_ident {(pc) with bef = (sprintf "%sopen " pc.bef)} i
@@ -2075,45 +2122,6 @@ value sig_item_top =
         failwith "classes and objects not pretty printed; add pr_ro.cmo"
   | z ->
       fun curr next pc -> not_impl "sig_item" pc z ]
-;
-
-value str_or_sig_functor pc s mt module_expr_or_type met =
-  horiz_vertic
-    (fun () ->
-       sprintf "%sfunctor (%s : %s) -> %s%s" pc.bef s
-         (module_type {(pc) with bef = ""; aft = ""} mt)
-         (module_expr_or_type {(pc) with bef = ""; aft = ""} met) pc.aft)
-    (fun () ->
-       let s1 =
-         horiz_vertic
-           (fun () ->
-              sprintf "%sfunctor (%s : %s) ->" pc.bef s
-                (module_type {(pc) with bef = ""; aft = ""} mt))
-           (fun () ->
-              let s1 = sprintf "%sfunctor" pc.bef in
-              let s2 =
-                horiz_vertic
-                  (fun () ->
-                     sprintf "%s(%s : %s)" (tab (pc.ind + 2)) s
-                       (module_type {(pc) with bef = ""; aft = ""} mt))
-                  (fun () ->
-                     let s1 = sprintf "%s(%s :" (tab (pc.ind + 2)) s in
-                     let s2 =
-                       module_type
-                         {(pc) with ind = pc.ind + 3;
-                          bef = tab (pc.ind + 3); aft = ")"}
-                         mt
-                     in
-                     sprintf "%s\n%s" s1 s2)
-              in
-              let s3 = sprintf "%s->" (tab pc.ind) in
-              sprintf "%s\n%s\n%s" s1 s2 s3)
-       in
-       let s2 =
-         module_expr_or_type
-           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} met
-       in
-       sprintf "%s\n%s" s1 s2)
 ;
 
 value module_expr_top =
