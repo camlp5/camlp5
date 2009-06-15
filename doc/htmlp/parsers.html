@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: parsers.html,v 1.9 2007/07/16 08:39:08 deraugla Exp $ -->
+  <!-- $Id: parsers.html,v 1.10 2007/07/16 11:57:00 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -332,8 +332,8 @@ current stream. If this sub-parser:
     <ul>
 
     <li>if the stream pattern component is the first one of the stream
-    case, the current parser fails with "<code>Stream.Failure</code>"
-    also.</li>
+    case, the current parser also fails with the
+    exception "<code>Stream.Failure</code>".</li>
 
     <li>if the stream pattern component is not the first one of the stream
     case, the current parser fails with the exception
