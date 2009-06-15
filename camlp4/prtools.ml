@@ -170,7 +170,7 @@ value plistb elem sh pc xl =
   match xl with
   [ [] -> sprintf "%s%s" pc.bef pc.aft
   | [(x, _)] ->
-      horiz_vertic (fun () -> elem pc x)
+      horiz_vertic (fun () -> elem {(pc) with bef = sprintf "%s " pc.bef} x)
         (fun () ->
            let s =
              elem {(pc) with ind = pc.ind + sh; bef = tab (pc.ind + sh)} x

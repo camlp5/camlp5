@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.36 2007/07/04 18:01:06 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.37 2007/07/04 18:21:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -417,9 +417,7 @@ value record_binding pc (p, e) =
    Cancellation of all these improvements could be done by changing calls
    to this function to a call to "binding expr" above.
 *)
-value value_binding pc (p, e) =
-  let sequ pc el = sequence_box2 pc el in
-  let expr_wh = if flag_where_after_value_eq.val then expr_wh else expr in
+value value_or_let_binding space sequ expr_wh pc (p, e) =
   let (p, e) =
     if is_irrefut_patt p then (p, e)
     else
@@ -448,7 +446,7 @@ value value_binding pc (p, e) =
           [ Some t -> sprintf " : %s" (ctyp {(pc) with bef = ""; aft = ""} t)
           | None -> "" ])
          (expr_wh {(pc) with bef = ""; aft = ""} e)
-         pc.aft)
+         (if pc.aft = "" then "" else sprintf "%s%s" space pc.aft))
     (fun () ->
        let patt_eq k =
          horiz_vertic
@@ -486,83 +484,21 @@ value value_binding pc (p, e) =
            sprintf "%s\n%s%s" s1 s2 s3 ])
 ;
 
-(* Pretty printing improvements (optional):
-   - prints "let f x = e" instead of "let f = fun x -> e"
-   - prints a newline before the "in" if last element not horizontal
-   - the expression after '=' is displayed as 'where' if possible (expr_wh)
-   Cancellation of all these improvements could be done by changing calls
-   to this function to a call to "binding expr" above.
-*)
-value let_binding pc (p, e) =
+value value_binding pc pe =
+  let space = "" in
+  let sequ pc el = sequence_box2 pc el in
+  let expr_wh = if flag_where_after_value_eq.val then expr_wh else expr in
+  value_or_let_binding space sequ expr_wh pc pe
+;
+
+value let_binding pc pe =
+  let space = " " in
   let sequ pc el =
     let s = sequence_box2 {(pc) with aft = ""} el in
     if pc.aft = "" then s else sprintf "%s\n%s%s" s (tab pc.ind) pc.aft
   in
   let expr_wh = if flag_where_after_let_eq.val then expr_wh else expr in
-  let (p, e) =
-    if is_irrefut_patt p then (p, e)
-    else
-      let loc = MLast.loc_of_expr e in
-      let (p, e) =
-        loop p e where rec loop p =
-          fun
-          [ <:expr< fun $p1$ -> $e$ >> -> loop <:patt< $p$ $p1$ >> e
-          | e -> (p, e) ]
-      in
-      let (up, ue) = un_irrefut_patt p in
-      (up, <:expr< match $e$ with [ $p$ -> $ue$ ] >>)
-  in
-  let (pl, e) = expr_fun_args e in
-  let pl = [p :: pl] in
-  let (e, tyo) =
-    match e with
-    [ <:expr< ($e$ : $t$) >>  -> (e, Some t)
-    | _ -> (e, None) ]
-  in
-  horiz_vertic
-    (fun () ->
-       sprintf "%s%s%s = %s%s" pc.bef
-         (hlist patt {(pc) with bef = ""; aft = ""} pl)
-         (match tyo with
-          [ Some t -> sprintf " : %s" (ctyp {(pc) with bef = ""; aft = ""} t)
-          | None -> "" ])
-         (expr_wh {(pc) with bef = ""; aft = ""} e)
-         (if pc.aft = "" then "" else sprintf " %s" pc.aft))
-    (fun () ->
-       let patt_eq k =
-         horiz_vertic
-           (fun () ->
-              sprintf "%s%s%s =%s" pc.bef
-                (hlist patt {(pc) with bef = ""; aft = ""} pl)
-                (match tyo with
-                 [ Some t ->
-                     sprintf " : %s" (ctyp {(pc) with bef = ""; aft = ""} t)
-                 | None -> "" ])
-                k)
-           (fun () ->
-              let patt_tycon tyo pc p =
-                match tyo with
-                [ Some t ->
-                    patt {(pc) with aft = ctyp {(pc) with bef = " : "} t} p
-                | None -> patt pc p ]
-              in
-              let pl = List.map (fun p -> (p, "")) pl in
-              plistl patt (patt_tycon tyo) 4
-                {(pc) with aft = sprintf " =%s" k} pl)
-       in
-       match sequencify e with
-       [ Some el -> sequ {(pc) with bef = patt_eq} el
-       | None ->
-           let s1 = patt_eq "" in
-           let s2 =
-             comm_expr expr_wh
-               {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""}
-               e
-           in
-           let s3 =
-             if pc.aft = "" then "" else sprintf "\n%s%s" (tab pc.ind) pc.aft
-           in
-           sprintf "%s\n%s%s" s1 s2 s3 ])
+  value_or_let_binding space sequ expr_wh pc pe
 ;
 
 value match_assoc pc (p, w, e) =

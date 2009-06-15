@@ -10,8 +10,8 @@ value tab : int -> string;
 
 value hlist : pr_fun 'a -> pr_fun (list 'a);
    (** horizontal list
-       [hlist elem ind b e k] returns the horizontally pretty printed
-       string of a list of elements; elements are separated with spaces.
+       [hlist elem pc e] returns the horizontally pretty printed string
+       of a list of elements; elements are separated with spaces.
        The list is displayed in one only line. If this function is called
        in the context of the [horiz] function of the function [horiz_vertic]
        of the module Printing, and if the line overflows or contains newlines,
@@ -24,9 +24,9 @@ value hlistl : pr_fun 'a -> pr_fun 'a -> pr_fun (list 'a);
 
 value vlist : pr_fun 'a -> pr_fun (list 'a);
    (** vertical list
-       [vlist elem ind b e k] returns the vertically pretty printed
-       string of a list of elements; elements are separated with newlines
-       and indentations. *)
+       [vlist elem pc e] returns the vertically pretty printed string
+       of a list of elements; elements are separated with newlines and
+       indentations. *)
 value vlist2 : pr_gfun 'a 'b -> pr_gfun 'a 'b -> pr_gfun (list 'a) ('b * 'b);
    (** vertical list with different function from 2nd element on.
        In [vlist2 elem elem2 pc el], [pc.aft] is a couple where the first
@@ -37,21 +37,20 @@ value vlistl : pr_fun 'a -> pr_fun 'a -> pr_fun (list 'a);
 
 value plist : pr_fun 'a -> int -> pr_fun (list ('a * string));
    (** paragraph list
-       [plist elem sh ind b el k] returns the pretty printed string of
-       a list of elements with separators. The elements are printed
-       horizontally as far as possible. When an element does not fit
-       on the line, a newline is added and the element is displayed
-       in the next line with an indentation of [sh]. [elem] is the
-       function to print elements, [ind] is the indentation, [b] the
-       beginning of the line, [el] a list of pairs (element * separator)
-       (the last separator is ignored), and [k] the end of the line *)
+       [plist elem sh pc el] returns the pretty printed string of a list
+       of elements with separators. The elements are printed horizontally
+       as far as possible. When an element does not fit on the line, a
+       newline is added and the element is displayed in the next line with
+       an indentation of [sh]. [elem] is the function to print elements,
+       [el] a list of pairs (element * separator) (the last separator is
+       ignored). *)
 value plistb : pr_fun 'a -> int -> pr_fun (list ('a * string));
    (** paragraph list with possible cut already after the beginner
-       [plist elem sh ind b el k] returns the pretty printed string of
-       the list of elements, like with [plist] but the [b] variable
-       correspond to an element already printed. Therefore, if the
-       first element of [el] does not fit in the line, a newline and
-       a tabulation is added after [b]. *)
+       [plist elem sh pc el] returns the pretty printed string of
+       the list of elements, like with [plist] but the value of
+       [pc.bef] corresponds to an element already printed, as it were
+       on the list. Therefore, if the first element of [el] does not fit
+       in the line, a newline and a tabulation is added after [pc.bef]. *)
 value plistl : pr_fun 'a -> pr_fun 'a -> int -> pr_fun (list ('a * string));
    (** paragraph list with a different function for the last element *)
 
