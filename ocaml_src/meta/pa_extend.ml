@@ -29,7 +29,7 @@ and ('e, 'p) a_psymbol =
 and ('e, 'p) a_symbol =
     ASflag of loc * ('e, 'p) a_symbol
   | ASkeyw of loc * 'e a_string
-  | ASlist of loc * bool * ('e, 'p) a_symbol * ('e, 'p) a_symbol option
+  | ASlist of loc * lmin_len * ('e, 'p) a_symbol * ('e, 'p) a_symbol option
   | ASnext of loc
   | ASnterm of loc * (string * 'e) * string option
   | ASopt of loc * ('e, 'p) a_symbol
@@ -45,7 +45,7 @@ and ('e, 'p) a_symbol =
 and 'e a_string =
     ATstring of loc * string
   | ATexpr of loc * 'e
-;;
+and lmin_len = LML_0 | LML_1;;
 
 type 'e name = { expr : 'e; tvar : string; loc : loc };;
 
@@ -61,7 +61,7 @@ type styp =
 type ('e, 'p) text =
     TXfacto of loc * ('e, 'p) text
   | TXmeta of loc * string * ('e, 'p) text list * 'e * styp
-  | TXlist of loc * bool * ('e, 'p) text * ('e, 'p) text option
+  | TXlist of loc * lmin_len * ('e, 'p) text * ('e, 'p) text option
   | TXnext of loc
   | TXnterm of loc * 'e name * string option
   | TXopt of loc * ('e, 'p) text
@@ -1095,21 +1095,21 @@ let rec make_expr gmod tvar =
   | TXlist (loc, min, t, ts) ->
       let txt = make_expr gmod "" t in
       begin match min, ts with
-        false, None ->
+        LML_0, None ->
           MLast.ExApp
             (loc,
              MLast.ExAcc
                (loc, MLast.ExUid (loc, "Gramext"),
                 MLast.ExUid (loc, "Slist0")),
              txt)
-      | true, None ->
+      | LML_1, None ->
           MLast.ExApp
             (loc,
              MLast.ExAcc
                (loc, MLast.ExUid (loc, "Gramext"),
                 MLast.ExUid (loc, "Slist1")),
              txt)
-      | false, Some s ->
+      | LML_0, Some s ->
           let x = make_expr gmod tvar s in
           MLast.ExApp
             (loc,
@@ -1120,7 +1120,7 @@ let rec make_expr gmod tvar =
                    MLast.ExUid (loc, "Slist0sep")),
                 txt),
              x)
-      | true, Some s ->
+      | LML_1, Some s ->
           let x = make_expr gmod tvar s in
           MLast.ExApp
             (loc,
@@ -2279,7 +2279,7 @@ Grammar.extend
                (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__5))])],
       Gramext.action
         (fun (sep : 'e__5 option) (s : 'symbol) _ (loc : Ploc.t) ->
-           (ASlist (loc, true, s, sep) : 'symbol));
+           (ASlist (loc, LML_1, s, sep) : 'symbol));
       [Gramext.Stoken ("UIDENT", "LIST0"); Gramext.Sself;
        Gramext.Sopt
          (Gramext.srules
@@ -2290,7 +2290,7 @@ Grammar.extend
                (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__4))])],
       Gramext.action
         (fun (sep : 'e__4 option) (s : 'symbol) _ (loc : Ploc.t) ->
-           (ASlist (loc, false, s, sep) : 'symbol))];
+           (ASlist (loc, LML_0, s, sep) : 'symbol))];
      Some "vala", None,
      [[Gramext.Stoken ("UIDENT", "V"); Gramext.Snext;
        Gramext.Slist0 (Gramext.Stoken ("STRING", ""))],

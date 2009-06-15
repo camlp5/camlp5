@@ -31,7 +31,7 @@ Grammar.extend
                (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__2))])],
       Gramext.action
         (fun (sep : 'e__2 option) (s : 'symbol) _ (loc : Ploc.t) ->
-           (ASquot (loc, ASlist (loc, true, s, sep)) : 'symbol));
+           (ASquot (loc, ASlist (loc, LML_1, s, sep)) : 'symbol));
       [Gramext.Stoken ("UIDENT", "SLIST0"); Gramext.Sself;
        Gramext.Sopt
          (Gramext.srules
@@ -42,7 +42,7 @@ Grammar.extend
                (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__1))])],
       Gramext.action
         (fun (sep : 'e__1 option) (s : 'symbol) _ (loc : Ploc.t) ->
-           (ASquot (loc, ASlist (loc, false, s, sep)) : 'symbol))]];
+           (ASquot (loc, ASlist (loc, LML_0, s, sep)) : 'symbol))]];
     Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e),
     Some (Gramext.Level "vala"),
     [None, None,

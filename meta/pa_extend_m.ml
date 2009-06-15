@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend_m.ml,v 1.31 2007/09/30 21:41:52 deraugla Exp $ *)
+(* $Id: pa_extend_m.ml,v 1.32 2007/10/24 11:42:27 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pa_extend;
@@ -10,10 +10,10 @@ EXTEND
     [ NONA
       [ UIDENT "SLIST0"; s = SELF;
         sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
-          ASquot loc (ASlist loc False s sep)
+          ASquot loc (ASlist loc LML_0 s sep)
       | UIDENT "SLIST1"; s = SELF;
         sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
-          ASquot loc (ASlist loc True s sep)
+          ASquot loc (ASlist loc LML_1 s sep)
       | UIDENT "SOPT"; s = SELF ->
           ASquot loc (ASopt loc s)
       | UIDENT "SFLAG"; s = SELF ->

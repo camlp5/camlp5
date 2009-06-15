@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.102 2007/10/13 23:53:29 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.103 2007/10/24 11:42:27 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -33,7 +33,7 @@ and a_psymbol 'e 'p =
 and a_symbol 'e 'p =
   [ ASflag of loc and a_symbol 'e 'p
   | ASkeyw of loc and a_string 'e
-  | ASlist of loc and bool and a_symbol 'e 'p and option (a_symbol 'e 'p)
+  | ASlist of loc and lmin_len and a_symbol 'e 'p and option (a_symbol 'e 'p)
   | ASnext of loc
   | ASnterm of loc and (string * 'e) and option string
   | ASopt of loc and a_symbol 'e 'p
@@ -49,6 +49,8 @@ and a_symbol 'e 'p =
 and a_string 'e =
   [ ATstring of loc and string
   | ATexpr of loc and 'e ]
+and lmin_len =
+  [ LML_0 | LML_1 ]
 ;
 
 type name 'e = { expr : 'e; tvar : string; loc : loc };
@@ -65,7 +67,7 @@ type styp =
 type text 'e 'p =
   [ TXfacto of loc and text 'e 'p
   | TXmeta of loc and string and list (text 'e 'p) and 'e and styp
-  | TXlist of loc and bool and text 'e 'p and option (text 'e 'p)
+  | TXlist of loc and lmin_len and text 'e 'p and option (text 'e 'p)
   | TXnext of loc
   | TXnterm of loc and name 'e and option string
   | TXopt of loc and text 'e 'p
@@ -545,12 +547,12 @@ value rec make_expr gmod tvar =
   | TXlist loc min t ts ->
       let txt = make_expr gmod "" t in
       match (min, ts) with
-      [ (False, None) -> <:expr< Gramext.Slist0 $txt$ >>
-      | (True, None) -> <:expr< Gramext.Slist1 $txt$ >>
-      | (False, Some s) ->
+      [ (LML_0, None) -> <:expr< Gramext.Slist0 $txt$ >>
+      | (LML_1, None) -> <:expr< Gramext.Slist1 $txt$ >>
+      | (LML_0, Some s) ->
           let x = make_expr gmod tvar s in
           <:expr< Gramext.Slist0sep $txt$ $x$ >>
-      | (True, Some s) ->
+      | (LML_1, Some s) ->
           let x = make_expr gmod tvar s in
           <:expr< Gramext.Slist1sep $txt$ $x$ >> ]
   | TXnext loc -> <:expr< Gramext.Snext >>
@@ -1096,10 +1098,10 @@ EXTEND
     [ "top" NONA
       [ UIDENT "LIST0"; s = SELF;
         sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
-          ASlist loc False s sep
+          ASlist loc LML_0 s sep
       | UIDENT "LIST1"; s = SELF;
         sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
-          ASlist loc True s sep
+          ASlist loc LML_1 s sep
       | UIDENT "OPT"; s = SELF ->
           ASopt loc s
       | UIDENT "FLAG"; s = SELF ->

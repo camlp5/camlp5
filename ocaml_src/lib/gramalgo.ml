@@ -51,7 +51,31 @@ type action =
   | ActErr
 ;;
 
-let name_of_entry entry lev = entry.ename ^ "-" ^ string_of_int lev;;
+let name_of_entry entry levn =
+  let lev_name =
+    match entry.edesc with
+      Dlevels levs ->
+        begin match
+          (try Some (List.nth levs levn) with Failure _ -> None)
+        with
+          Some {lname = Some n} ->
+            let good_ident_name =
+              let rec loop i =
+                if i = String.length n then true
+                else
+                  match n.[i] with
+                    'a'..'z' | 'A'..'Z' | '0'..'9' -> loop (i + 1)
+                  | _ -> false
+              in
+              loop 0
+            in
+            if good_ident_name then n else string_of_int levn
+        | Some {lname = None} | None -> string_of_int levn
+        end
+    | Dparser _ -> string_of_int levn
+  in
+  entry.ename ^ "-" ^ lev_name
+;;
 
 let fold_rules_of_tree f init tree =
   let rec do_tree r accu =
@@ -401,7 +425,8 @@ let eprint_item term_n nterm_n (m, added, lh, dot, rh) =
 ;;
 
 let make_item_sets rules_of_nterm term_n nterm_n item_set_ht =
-  let rec loop ini_item_set_cnt item_set_cnt shift_assoc item_set_ini =
+  let rec loop ini_item_set_cnt item_set_cnt term_shift nterm_shift
+      item_set_ini =
     let item_set =
       List.map (fun (m, _, lh, dot, rh) -> m, false, lh, dot, rh) item_set_ini
     in
@@ -432,9 +457,10 @@ let make_item_sets rules_of_nterm term_n nterm_n item_set_ht =
         Printf.eprintf "\n";
         flush stderr
       end;
-    let (item_set_cnt, symb_cnt_assoc, shift_assoc) =
+    let (item_set_cnt, term_assoc, nterm_assoc, term_shift, nterm_shift) =
       List.fold_left
-        (fun (item_set_cnt, symb_cnt_assoc, shift_assoc) s ->
+        (fun (item_set_cnt, term_assoc, nterm_assoc, term_shift, nterm_shift)
+             s ->
            let item_set =
              List.find_all
                (fun (m, added, lh, dot, rh) ->
@@ -460,8 +486,12 @@ let make_item_sets rules_of_nterm term_n nterm_n item_set_ht =
                Printf.eprintf "Item set (after %d and %s) = Item set %d\n"
                  ini_item_set_cnt (sprint_symb term_n nterm_n s) n;
                flush stderr;
-               let symb_cnt_assoc = (s, n) :: symb_cnt_assoc in
-               item_set_cnt, symb_cnt_assoc, shift_assoc
+               let (term_assoc, nterm_assoc) =
+                 match s with
+                   GS_term s -> (s, n) :: term_assoc, nterm_assoc
+                 | GS_nterm s -> term_assoc, (s, n) :: nterm_assoc
+               in
+               item_set_cnt, term_assoc, nterm_assoc, term_shift, nterm_shift
            | None ->
                Printf.eprintf "Item set %d (after %d and %s)\n\n"
                  (item_set_cnt + 1) ini_item_set_cnt
@@ -470,17 +500,24 @@ let make_item_sets rules_of_nterm term_n nterm_n item_set_ht =
                flush stderr;
                let item_set_cnt = item_set_cnt + 1 in
                Hashtbl.add item_set_ht item_set item_set_cnt;
-               let symb_cnt_assoc = (s, item_set_cnt) :: symb_cnt_assoc in
-               let (item_set_cnt, shift_assoc) =
-                 loop item_set_cnt item_set_cnt shift_assoc item_set
+               let (term_assoc, nterm_assoc) =
+                 let n = item_set_cnt in
+                 match s with
+                   GS_term s -> (s, n) :: term_assoc, nterm_assoc
+                 | GS_nterm s -> term_assoc, (s, n) :: nterm_assoc
                in
-               item_set_cnt, symb_cnt_assoc, shift_assoc)
-        (item_set_cnt, [], shift_assoc) sl
+               let (item_set_cnt, term_shift, nterm_shift) =
+                 loop item_set_cnt item_set_cnt term_shift nterm_shift
+                   item_set
+               in
+               item_set_cnt, term_assoc, nterm_assoc, term_shift, nterm_shift)
+        (item_set_cnt, [], [], term_shift, nterm_shift) sl
     in
-    let shift_assoc = (ini_item_set_cnt, symb_cnt_assoc) :: shift_assoc in
-    item_set_cnt, shift_assoc
+    let term_shift = (ini_item_set_cnt, term_assoc) :: term_shift in
+    let nterm_shift = (ini_item_set_cnt, nterm_assoc) :: nterm_shift in
+    item_set_cnt, term_shift, nterm_shift
   in
-  loop 0 0 []
+  loop 0 0 [] []
 ;;
 
 let make_derive_eps_tab rules nb_nterms =
@@ -598,11 +635,23 @@ let make_follow_tab rules first_tab nterm_derive_eps_tab =
   follow_tab
 ;;
 
-(*DEFINE TEST;*)
+type item = int * bool * int * int * (int, int) gram_symb list;;
 
-let lr0 entry lev =
-  Printf.eprintf "LR(0) %s %d\n" entry.ename lev;
-  flush stderr;
+type lr0 =
+  { rules : (int * (int, int) gram_symb list) array;
+    term_name_tab : string array;
+    nterm_name_tab : string array;
+    item_set_tab : item list array;
+    term_shift_tab : (int * int) list array;
+    nterm_shift_tab : (int * int) list array }
+;;
+
+(*DEFINE TEST1;*)
+(*DEFINE TEST2;*)
+(*DEFINE TEST3;*)
+(* *)
+
+let basic_lr0 entry lev =
   let (rules, term_name_tab, nterm_name_tab) =
     let (rl, entry_name) =
       let rl = flatten_gram entry lev in rl, name_of_entry entry lev
@@ -687,171 +736,272 @@ let lr0 entry lev =
   List.iter (eprint_item term_n nterm_n) item_set_0;
   flush stderr;
   let item_set_ht = Hashtbl.create 1 in
-  let (item_set_cnt, shift_assoc) =
+  let (item_set_cnt, term_assoc, nterm_assoc) =
     make_item_sets rules_of_nterm term_n nterm_n item_set_ht item_set_0
   in
+  let item_set_tab = Array.create (item_set_cnt + 1) [] in
+  Hashtbl.iter (fun s i -> item_set_tab.(i) <- s) item_set_ht;
+  let term_shift_tab = Array.create (item_set_cnt + 1) [] in
+  List.iter (fun (i, a) -> term_shift_tab.(i) <- a) term_assoc;
+  let nterm_shift_tab = Array.create (item_set_cnt + 1) [] in
+  List.iter (fun (i, a) -> nterm_shift_tab.(i) <- a) nterm_assoc;
   Printf.eprintf "\ntotal number of item sets %d\n" (item_set_cnt + 1);
   flush stderr;
   Printf.eprintf "\nshift:\n";
-  List.iter
-    (fun (i, symb_cnt_assoc) ->
-       Printf.eprintf "  state %d:" i;
-       List.iter
-         (fun (s, i) ->
-            Printf.eprintf " %s->%d" (sprint_symb term_n nterm_n s) i)
-         (List.rev symb_cnt_assoc);
-       Printf.eprintf "\n")
-    (List.sort compare shift_assoc);
+  for i = 0 to item_set_cnt do
+    Printf.eprintf "  state %d:" i;
+    let symb_shift = term_shift_tab.(i) in
+    List.iter (fun (s, i) -> Printf.eprintf " %s->%d" (term_n s) i)
+      (List.rev symb_shift);
+    let symb_shift = nterm_shift_tab.(i) in
+    List.iter (fun (s, i) -> Printf.eprintf " %s->%d" (nterm_n s) i)
+      (List.rev symb_shift);
+    Printf.eprintf "\n"
+  done;
   flush stderr;
-  let nterm_derive_eps_tab = make_derive_eps_tab rules nb_nterms in
+  {rules = rules; term_name_tab = term_name_tab;
+   nterm_name_tab = nterm_name_tab; item_set_tab = item_set_tab;
+   term_shift_tab = term_shift_tab; nterm_shift_tab = nterm_shift_tab}
+;;
+
+let make_goto_table blr =
+  let nb_item_sets = Array.length blr.item_set_tab in
+  let nb_nterms = Array.length blr.nterm_name_tab in
+  let goto_table =
+    Array.init nb_item_sets (fun _ -> Array.create nb_nterms (-1))
+  in
+  Array.iteri
+    (fun i symb_cnt_assoc ->
+       let line = goto_table.(i) in
+       List.iter (fun (s, n) -> line.(s) <- n) symb_cnt_assoc)
+    blr.nterm_shift_tab;
+  goto_table
+;;
+
+type algo =
+    LR0
+  | SLR of int list array
+;;
+
+let make_action_table blr algo =
+  let nb_terms = Array.length blr.term_name_tab in
+  let nb_item_sets = Array.length blr.item_set_tab in
+  let term_n i = if i = -1 then "ε" else Array.get blr.term_name_tab i in
+  let nterm_n = Array.get blr.nterm_name_tab in
+  let compare_terms i j = compare (term_n i) (term_n j) in
+  (* column size = number of terminals *)
+  let action_table =
+    Array.init nb_item_sets (fun _ -> Array.create nb_terms ActErr)
+  in
+  (* the columns for the terminals are copied to the action table as shift
+     actions *)
+  Array.iteri
+    (fun i symb_cnt_assoc ->
+       let line = action_table.(i) in
+       List.iter (fun (s, n) -> line.(s) <- ActShift n) symb_cnt_assoc)
+    blr.term_shift_tab;
+  (* for every item set that contains S → w •, an 'acc' is added in the
+     column of the '$' terminal (end of input) *)
+  let eoi_pos = 0 in
+  (* if an item set i contains an item of the form A → w • and A → w is
+     rule m with m > 0 then the row for state i in the action table is
+     completely filled with the reduce action rm. *)
+  let _nl = ref true in
+  Array.iteri
+    (fun i item_set ->
+       List.iter
+         (fun (m, _, _, dot, rh) ->
+            if m = 0 then
+              (if dot = List.length rh then
+                 action_table.(i).(eoi_pos) <- ActAcc)
+            else if dot = List.length rh then
+              let line = action_table.(i) in
+              for j = 0 to Array.length line - 1 do
+                let do_it =
+                  match algo with
+                    LR0 -> true
+                  | SLR follow_tab ->
+                      let i = fst blr.rules.(m) in List.mem j follow_tab.(i)
+                in
+                if do_it then
+                  match line.(j) with
+                    ActShift n ->
+                      if !_nl then Printf.eprintf "\n";
+                      _nl := false;
+                      Printf.eprintf "State %d: conflict shift/reduce" i;
+                      Printf.eprintf " shift %d rule %d\n" n m;
+                      Printf.eprintf "  shift with terminal %s\n" (term_n j);
+                      Printf.eprintf "  reduce with rule ";
+                      eprint_rule term_n nterm_n m blr.rules.(m);
+                      begin match algo with
+                        LR0 -> ()
+                      | SLR follow_tab ->
+                          let i = fst blr.rules.(m) in
+                          Printf.eprintf "  follow (%s) =" (nterm_n i);
+                          List.iter (fun s -> Printf.eprintf " %s" (term_n s))
+                            (List.sort compare_terms follow_tab.(i));
+                          Printf.eprintf "\n"
+                      end;
+                      flush stderr
+                  | ActReduce m1 ->
+                      begin match algo with
+                        LR0 ->
+                          if j = 0 then
+                            begin
+                              if !_nl then Printf.eprintf "\n";
+                              _nl := false;
+                              Printf.eprintf "State %d:" i;
+                              Printf.eprintf " conflict reduce/reduce";
+                              Printf.eprintf " rules %d and %d\n" m1 m;
+                              Printf.eprintf "  reduce with rule ";
+                              eprint_rule term_n nterm_n m1 blr.rules.(m1);
+                              Printf.eprintf "  reduce with rule ";
+                              eprint_rule term_n nterm_n m blr.rules.(m);
+                              flush stderr
+                            end
+                      | SLR follow_tab ->
+                          if !_nl then Printf.eprintf "\n";
+                          _nl := false;
+                          Printf.eprintf "State %d, terminal %s" i (term_n j);
+                          Printf.eprintf ": conflict reduce/reduce";
+                          Printf.eprintf " rules %d and %d\n" m1 m;
+                          Printf.eprintf "  reduce with rule ";
+                          eprint_rule term_n nterm_n m1 blr.rules.(m1);
+                          Printf.eprintf "  reduce with rule ";
+                          eprint_rule term_n nterm_n m blr.rules.(m);
+                          let i1 = fst blr.rules.(m1) in
+                          let i2 = fst blr.rules.(m) in
+                          let follow_m1 = follow_tab.(i1) in
+                          let follow_m = follow_tab.(i2) in
+                          Printf.eprintf "  follow (%s) =" (nterm_n i1);
+                          List.iter (fun s -> Printf.eprintf " %s" (term_n s))
+                            (List.sort compare_terms follow_m1);
+                          Printf.eprintf "\n";
+                          Printf.eprintf "  follow (%s) =" (nterm_n i2);
+                          List.iter (fun s -> Printf.eprintf " %s" (term_n s))
+                            (List.sort compare_terms follow_m);
+                          Printf.eprintf "\n";
+                          flush stderr
+                      end
+                  | _ -> line.(j) <- ActReduce m
+              done)
+         item_set)
+    blr.item_set_tab;
+  action_table
+;;
+
+let trace_goto_table blr goto_table =
+  Printf.eprintf "\ngoto table\n\n";
+  if Array.length goto_table > 20 then Printf.eprintf "  (big)\n"
+  else
+    begin
+      Printf.eprintf "           ";
+      for i = 0 to Array.length blr.nterm_name_tab - 1 do
+        Printf.eprintf " %s" blr.nterm_name_tab.(i)
+      done;
+      Printf.eprintf "\n";
+      for i = 0 to Array.length goto_table - 1 do
+        Printf.eprintf "  state %d :" i;
+        let line = goto_table.(i) in
+        for j = 0 to Array.length line - 1 do
+          if line.(j) = -1 then Printf.eprintf " -"
+          else Printf.eprintf " %d" line.(j)
+        done;
+        Printf.eprintf "\n"
+      done
+    end;
+  flush stderr
+;;
+
+let trace_action_table blr action_table =
+  Printf.eprintf "\naction table\n\n";
+  if Array.length action_table > 20 then Printf.eprintf "  (big)\n"
+  else
+    begin
+      Printf.eprintf "           ";
+      for i = 0 to Array.length blr.term_name_tab - 1 do
+        Printf.eprintf " %4s" blr.term_name_tab.(i)
+      done;
+      Printf.eprintf "\n";
+      for i = 0 to Array.length action_table - 1 do
+        Printf.eprintf "  state %d :" i;
+        let line = action_table.(i) in
+        for j = 0 to Array.length line - 1 do
+          match line.(j) with
+            ActShift n -> Printf.eprintf " %4s" (Printf.sprintf "s%d" n)
+          | ActReduce n -> Printf.eprintf " %4s" (Printf.sprintf "r%d" n)
+          | ActAcc -> Printf.eprintf "   acc"
+          | ActErr -> Printf.eprintf "    -"
+        done;
+        Printf.eprintf "\n"
+      done
+    end;
+  flush stderr
+;;
+
+let trace_nterm_derive_eps_tab blr nterm_derive_eps_tab =
+  let nterm_n = Array.get blr.nterm_name_tab in
   Printf.eprintf "\nDerive ε\n\n";
   Printf.eprintf " ";
   Array.iteri
     (fun i derive_eps -> if derive_eps then Printf.eprintf " %s" (nterm_n i))
     nterm_derive_eps_tab;
-  flush stderr;
-  (* compute first *)
-  let first_tab = make_first_tab rules nterm_derive_eps_tab in
-  begin let compare_terms i j = compare (term_n i) (term_n j) in
-    Printf.eprintf "\nFirst\n\n";
-    Array.iteri
-      (fun i s ->
-         Printf.eprintf "  first (%s) =" s;
-         List.iter (fun s -> Printf.eprintf " %s" (term_n s))
-           (List.sort compare_terms first_tab.(i));
-         Printf.eprintf "\n")
-      nterm_name_tab;
-    flush stderr
-  end;
-  (* compute follow *)
-  let follow_tab = make_follow_tab rules first_tab nterm_derive_eps_tab in
-  begin let compare_terms i j = compare (term_n i) (term_n j) in
-    Printf.eprintf "\nFollow\n\n";
-    Array.iteri
-      (fun i s ->
-         Printf.eprintf "  follow (%s) =" s;
-         List.iter (fun s -> Printf.eprintf " %s" (term_n s))
-           (List.sort compare_terms follow_tab.(i));
-         Printf.eprintf "\n")
-      nterm_name_tab;
-    flush stderr
-  end;
-  let _follow_tab = follow_tab in
-  (* make goto table *)
-  let goto_table =
-    Array.init (item_set_cnt + 1) (fun _ -> Array.create nb_nterms (-1))
-  in
-  List.iter
-    (fun (item_set_cnt, symb_cnt_assoc) ->
-       let line = goto_table.(item_set_cnt) in
-       List.iter
-         (fun (s, n) ->
-            match s with
-              GS_term s -> ()
-            | GS_nterm i -> line.(i) <- n)
-         symb_cnt_assoc)
-    shift_assoc;
-  Printf.eprintf "\ngoto table\n\n";
-  if Array.length goto_table > 20 then Printf.eprintf "  (big)\n"
-  else
-    for i = 0 to Array.length goto_table - 1 do
-      Printf.eprintf "  state %d :" i;
-      let line = goto_table.(i) in
-      for j = 0 to Array.length line - 1 do
-        if line.(j) = -1 then Printf.eprintf " -"
-        else Printf.eprintf " %d" line.(j)
-      done;
-      Printf.eprintf "\n"
-    done;
-  flush stderr;
-  (* make action table *)
-  (* column size = number of terminals *)
-  let action_table =
-    Array.init (item_set_cnt + 1) (fun _ -> Array.create nb_terms ActErr)
-  in
-  (* the columns for the terminals are copied to the action table as shift
-     actions *)
-  List.iter
-    (fun (item_set_cnt, symb_cnt_assoc) ->
-       let line = action_table.(item_set_cnt) in
-       List.iter
-         (fun (s, n) ->
-            match s with
-              GS_term i -> line.(i) <- ActShift n
-            | GS_nterm s -> ())
-         symb_cnt_assoc)
-    shift_assoc;
-  (* for every item set that contains S → w •, an 'acc' is added in the
-     column of the '$' terminal (end of input) *)
-  let eoi_pos = 0 in
-  Hashtbl.iter
-    (fun item_set n ->
-       List.iter
-         (fun (_, _, lh, dot, rh) ->
-            if nterm_n lh = "S" && dot = List.length rh then
-              action_table.(n).(eoi_pos) <- ActAcc)
-         item_set)
-    item_set_ht;
-  (* if an item set i contains an item of the form A → w • and A → w is
-     rule m with m > 0 then the row for state i in the action table is
-     completely filled with the reduce action rm. *)
-  let _nl = ref true in
-  Hashtbl.iter
-    (fun item_set i ->
-       List.iter
-         (fun (m, _, _, dot, rh) ->
-            if m > 0 then
-              if dot = List.length rh then
-                let line = action_table.(i) in
-                match line.(0) with
-                  ActReduce m1 ->
-                    if !_nl then Printf.eprintf "\n";
-                    _nl := false;
-                    Printf.eprintf
-                      "State %d: conflict reduce/reduce rules %d and %d\n" i
-                      m1 m;
-                    Printf.eprintf "  reduce with rule ";
-                    eprint_rule term_n nterm_n m1 rules.(m1);
-                    Printf.eprintf "  reduce with rule ";
-                    eprint_rule term_n nterm_n m rules.(m);
-                    flush stderr
-                | _ ->
-                    for j = 0 to Array.length line - 1 do
-                      match line.(j) with
-                        ActShift n ->
-                          if !_nl then Printf.eprintf "\n";
-                          _nl := false;
-                          Printf.eprintf "State %d: conflict shift/reduce" i;
-                          Printf.eprintf " shift %d rule %d\n" n m;
-                          Printf.eprintf "  shift with terminal %s\n"
-                            (term_n j);
-                          Printf.eprintf "  reduce with rule ";
-                          eprint_rule term_n nterm_n m rules.(m);
-                          flush stderr
-                      | _ -> line.(j) <- ActReduce m
-                    done)
-         item_set)
-    item_set_ht;
-  Printf.eprintf "\naction table\n\n";
-  if Array.length action_table > 20 then Printf.eprintf "  (big)\n"
-  else
-    for i = 0 to Array.length action_table - 1 do
-      Printf.eprintf "  state %d :" i;
-      let line = action_table.(i) in
-      for j = 0 to Array.length line - 1 do
-        match line.(j) with
-          ActShift n -> Printf.eprintf " %4s" (Printf.sprintf "s%d" n)
-        | ActReduce n -> Printf.eprintf " %4s" (Printf.sprintf "r%d" n)
-        | ActAcc -> Printf.eprintf "   acc"
-        | ActErr -> Printf.eprintf "    -"
-      done;
-      Printf.eprintf "\n"
-    done;
   flush stderr
 ;;
 
+let trace_first_tab blr first_tab =
+  let term_n i = if i = -1 then "ε" else Array.get blr.term_name_tab i in
+  let compare_terms i j = compare (term_n i) (term_n j) in
+  Printf.eprintf "\nFirst\n\n";
+  Array.iteri
+    (fun i s ->
+       Printf.eprintf "  first (%s) =" s;
+       List.iter (fun s -> Printf.eprintf " %s" (term_n s))
+         (List.sort compare_terms first_tab.(i));
+       Printf.eprintf "\n")
+    blr.nterm_name_tab;
+  flush stderr
+;;
+
+let trace_follow_tab blr follow_tab =
+  let term_n i = if i = -1 then "ε" else Array.get blr.term_name_tab i in
+  let compare_terms i j = compare (term_n i) (term_n j) in
+  Printf.eprintf "\nFollow\n\n";
+  Array.iteri
+    (fun i s ->
+       Printf.eprintf "  follow (%s) =" s;
+       List.iter (fun s -> Printf.eprintf " %s" (term_n s))
+         (List.sort compare_terms follow_tab.(i));
+       Printf.eprintf "\n")
+    blr.nterm_name_tab;
+  flush stderr
+;;
+
+let lr0 entry lev =
+  Printf.eprintf "LR(0) %s %d\n" entry.ename lev;
+  flush stderr;
+  let blr = basic_lr0 entry lev in
+  let goto_table = make_goto_table blr in
+  trace_goto_table blr goto_table;
+  let action_table = make_action_table blr LR0 in
+  trace_action_table blr action_table
+;;
+
 let slr entry lev =
-  Printf.eprintf "SLR %s %d\n" entry.ename lev; flush stderr
+  Printf.eprintf "SLR %s %d\n" entry.ename lev;
+  flush stderr;
+  let blr = basic_lr0 entry lev in
+  let nb_nterms = Array.length blr.nterm_name_tab in
+  let nterm_derive_eps_tab = make_derive_eps_tab blr.rules nb_nterms in
+  trace_nterm_derive_eps_tab blr nterm_derive_eps_tab;
+  let first_tab = make_first_tab blr.rules nterm_derive_eps_tab in
+  trace_first_tab blr first_tab;
+  let follow_tab = make_follow_tab blr.rules first_tab nterm_derive_eps_tab in
+  trace_follow_tab blr follow_tab;
+  let goto_table = make_goto_table blr in
+  trace_goto_table blr goto_table;
+  let action_table = make_action_table blr (SLR follow_tab) in
+  trace_action_table blr action_table
 ;;
 
 let f entry lev =
