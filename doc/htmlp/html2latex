@@ -1,12 +1,12 @@
 #!/bin/sh
-# $Id: html2latex,v 1.51 2007/08/22 13:47:17 deraugla Exp $
+# $Id: html2latex,v 1.52 2007/08/26 20:46:41 deraugla Exp $
 
 FILES1="index.html ptools.html"
 FILES2="parsers.html lexers.html fparsers.html grammars.html"
 FILES3="printers.html pretty.html"
 FILES4="locations.html ml_ast.html pcaml.html syntext.html opretty.html quot.html revsynt.html scheme.html macros.html pragma.html extfun.html"
 FILES5="conclusion.html"
-FILES6="library.html sources.html"
+FILES6="commands.html library.html sources.html"
 
 FILES="$FILES1 1 $FILES2 2 $FILES3 3 $FILES4 4 $FILES5 5 $FILES6"
 
