@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.22 2007/09/22 23:31:12 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.23 2007/09/26 07:10:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml.OldPrinters;
@@ -186,12 +186,6 @@ value and_by_couple_op_list = ["="; "<>"; "<"; ">"; "<="; ">="; "=="; "!="];
 
 (* extensible pretty print functions *)
 
-value uv c =
-  match (c, "") with
-  [ (<:vala< c >>, "") -> c
-  | _ -> assert False ]
-;
-
 pr_constr_decl.pr_levels :=
   [{pr_label = "top";
     pr_box ppf f x = fprintf ppf "@[%t@]" f;
@@ -199,10 +193,10 @@ pr_constr_decl.pr_levels :=
       extfun Extfun.empty with
       [ (loc, c, <:vala< [] >>) ->
           fun ppf curr next dg k ->
-            fprintf ppf "(@[<hv>%s%t@]" (uv c) (ks ")" k)
+            fprintf ppf "(@[<hv>%s%t@]" (Pcaml.unvala c) (ks ")" k)
       | (loc, c, <:vala< tl >>) ->
           fun ppf curr next dg k ->
-            fprintf ppf "(@[<hv>%s@ %a@]" (uv c) (list ctyp)
+            fprintf ppf "(@[<hv>%s@ %a@]" (Pcaml.unvala c) (list ctyp)
               (tl, ks ")" k) ]}];
 
 pr_ctyp.pr_levels :=
@@ -711,9 +705,11 @@ pr_type_decl.pr_levels :=
                  if b <> "" then fprintf ppf "%s@ " b
                  else ())
               (fun ppf ->
-                 match uv tp with
-                 [ [] -> fprintf ppf "%s" (uv tn)
-                 | tp -> fprintf ppf "(%s%a)" (uv tn) type_params (tp, nok) ])
+                 match Pcaml.unvala tp with
+                 [ [] -> fprintf ppf "%s" (Pcaml.unvala tn)
+                 | tp ->
+                     fprintf ppf "(%s%a)" (Pcaml.unvala tn)
+                       type_params (tp, nok) ])
                ctyp (te, k) ]}];
 
 pr_type_params.pr_levels :=
@@ -723,7 +719,7 @@ pr_type_params.pr_levels :=
       extfun Extfun.empty with
       [ [(s, vari) :: tpl] ->
           fun ppf curr next dg k ->
-            fprintf ppf "@ '%s%a" (uv s) type_params (tpl, k)
+            fprintf ppf "@ '%s%a" (Pcaml.unvala s) type_params (tpl, k)
       | [] ->
           fun ppf curr next dg k -> () ]}];
 

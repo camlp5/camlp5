@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: grammars.html,v 1.78 2007/09/08 15:36:54 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.79 2007/09/26 07:10:43 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -140,8 +140,11 @@ to <em>extend</em> it, using a specific syntactic statement:
                  | "LIST1" symbol "SEP" symbol
                  | "OPT" symbol
                  | "FLAG" symbol
+                 | "V" symbol opt-strings
                  | "[" rules "]"
                  | "(" symbol ")"
+   opt-strings ::= string opt-strings
+                 | &lt;nothing&gt;
        keyword ::= string
          token ::= uident
          label ::= string
@@ -348,6 +351,34 @@ symbols. They are:</p>
   <li>FLAG followed by a symbol: equivalent to "this symbol or
     nothing", returning a boolean.</li>
 </ul>
+
+<h4>The V meta symbol</h4>
+
+<p>The V meta symbol is destinated to allow antiquotations while using
+  the syntax tree quotation
+  kit <a href="q_ast.html"><tt>q_ast.cmo</tt></a>. It works only in
+  strict mode. In transitional mode, it is just equivalent to its
+  symbol parameter. The optional list of strings following it gives
+  the allowed antiquotations kinds. By default, this string list
+  is:</p>
+
+<ul>
+  <li>"flag" for FLAG</li>
+  <li>"list" for LIST0 and LIST1</li>
+  <li>"opt" for OPT</li>
+</ul>
+
+<p>For example, the symbol:</p>
+
+<pre>
+  V (FLAG "rec")
+</pre>
+
+<p>is like "FLAG" while normally parsing, allowing to parse the keyword
+  "<tt>rec</tt>". While using it in quotations, also allows the parse
+  the keyword "<tt>rec</tt>" but, moreover, the antiquotation
+  "<tt>$flag:..$</tt>" where "<tt>..</tt>" is an expression or a pattern
+  depending on the position of the quotation.</p>
 
 <h3>Rules insertion</h3>
 

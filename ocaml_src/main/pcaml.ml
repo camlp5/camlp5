@@ -472,6 +472,9 @@ let eq_class_expr = Reloc.eq_class_expr;;
 
 let strict_mode = ref false;;
 
+let unvala x = x;;
+let vala_map f x = f x;;
+
 add_option "-mode"
   (Arg.String
      (function

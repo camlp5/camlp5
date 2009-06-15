@@ -1,5 +1,5 @@
-(* camlp5r *)
-(* $Id: pcaml.mli,v 1.21 2007/09/16 05:19:01 deraugla Exp $ *)
+(* camlp5r pa_macro.cmo *)
+(* $Id: pcaml.mli,v 1.22 2007/09/26 07:10:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (** Language grammar, entries and printers.
@@ -158,6 +158,15 @@ value eq_class_expr : MLast.class_expr -> MLast.class_expr -> bool;
 
 value strict_mode : ref bool;
    (* [True] if the current mode is "strict", [False] if "transitional" *)
+
+IFNDEF STRICT THEN
+  DEFINE V t = t
+ELSE
+  DEFINE V t = Ploc.vala t
+END;
+
+value unvala : V 'a -> 'a;
+value vala_map : ('a -> 'b) -> V 'a -> V 'b;
 
 (**/**)
 

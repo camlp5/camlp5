@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: main.ml,v 1.8 2007/09/18 01:19:17 deraugla Exp $ *)
+(* $Id: main.ml,v 1.9 2007/09/26 07:10:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Printf;
@@ -118,21 +118,17 @@ and use_file pa getdir useast s = do {
 
 value process pa pr getdir useast = pr (parse_file pa getdir useast);
 
-value uv c =
-  match (c, "") with
-  [ (<:vala< c >>, "") -> c
-  | _ -> invalid_arg "Main.uv" ]
-;
-
 value gind =
   fun
-  [ [(MLast.SgDir loc n dp, _) :: _] -> Some (loc, uv n, uv dp)
+  [ [(MLast.SgDir loc n dp, _) :: _] ->
+      Some (loc, Pcaml.unvala n, Pcaml.unvala dp)
   | _ -> None ]
 ;
 
 value gimd =
   fun
-  [ [(MLast.StDir loc n dp, _) :: _] -> Some (loc, uv n, uv dp)
+  [ [(MLast.StDir loc n dp, _) :: _] ->
+      Some (loc, Pcaml.unvala n, Pcaml.unvala dp)
   | _ -> None ]
 ;
 

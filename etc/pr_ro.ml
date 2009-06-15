@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.48 2007/09/22 23:31:12 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.49 2007/09/26 07:10:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -80,15 +80,9 @@ value amp_before elem pc x = elem {(pc) with bef = sprintf "%s& " pc.bef} x;
 value and_before elem pc x = elem {(pc) with bef = sprintf "%sand " pc.bef} x;
 value bar_before elem pc x = elem {(pc) with bef = sprintf "%s| " pc.bef} x;
 
-value uv c =
-  match (c, "") with
-  [ (<:vala< c >>, "") -> c
-  | _ -> assert False ]
-;
-
 value type_var pc (tv, (p, m)) =
   sprintf "%s%s'%s%s" pc.bef (if p then "+" else if m then "-" else "")
-    (uv tv) pc.aft
+    (Pcaml.unvala tv) pc.aft
 ;
 
 value class_type_params pc ctp =
@@ -104,18 +98,19 @@ value class_def_or_type_decl char pc ci =
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s%s %c %s%s" pc.bef
-         (if uv ci.MLast.ciVir then " virtual" else "") (uv ci.MLast.ciNam)
+         (if Pcaml.unvala ci.MLast.ciVir then " virtual" else "")
+            (Pcaml.unvala ci.MLast.ciNam)
          (class_type_params {(pc) with bef = ""; aft = ""}
-            (uv (snd ci.MLast.ciPrm)))
+            (Pcaml.unvala (snd ci.MLast.ciPrm)))
          char
          (class_type {(pc) with bef = ""; aft = ""} ci.MLast.ciExp) pc.aft)
     (fun () ->
        let s1 =
          sprintf "%s%s%s%s %c" pc.bef
-           (if uv ci.MLast.ciVir then "virtual " else "")
-           (uv ci.MLast.ciNam)
+           (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
+           (Pcaml.unvala ci.MLast.ciNam)
            (class_type_params {(pc) with bef = ""; aft = ""}
-              (uv (snd ci.MLast.ciPrm)))
+              (Pcaml.unvala (snd ci.MLast.ciPrm)))
            char
        in
        let s2 =
@@ -161,19 +156,20 @@ value class_decl pc ci =
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s%s%s = %s%s" pc.bef
-         (if uv ci.MLast.ciVir then "virtual " else "") (uv ci.MLast.ciNam)
+         (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
+            (Pcaml.unvala ci.MLast.ciNam)
          (class_type_params {(pc) with bef = ""; aft = ""}
-            (uv (snd ci.MLast.ciPrm)))
+            (Pcaml.unvala (snd ci.MLast.ciPrm)))
          (if pl = [] then "" else
           hlist patt {(pc) with bef = " "; aft = ""} pl)
          (class_expr {(pc) with bef = ""; aft = ""} ce) pc.aft)
     (fun () ->
        let s1 =
          sprintf "%s%s%s%s%s =" pc.bef
-           (if uv ci.MLast.ciVir then "virtual " else "")
-           (uv ci.MLast.ciNam)
+           (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
+           (Pcaml.unvala ci.MLast.ciNam)
            (class_type_params {(pc) with bef = ""; aft = ""}
-              (uv (snd ci.MLast.ciPrm)))
+              (Pcaml.unvala (snd ci.MLast.ciPrm)))
            (if pl = [] then ""
             else hlist patt {(pc) with bef = " "; aft = ""} pl)
        in

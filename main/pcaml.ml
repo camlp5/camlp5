@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo *)
-(* $Id: pcaml.ml,v 1.31 2007/09/22 05:20:28 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.32 2007/09/26 07:10:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value version = "5.00-exp";
@@ -460,6 +460,23 @@ value eq_class_expr = Reloc.eq_class_expr;
 (* Mode transitional or strict *)
 
 value strict_mode = ref (IFNDEF STRICT THEN False ELSE True END);
+
+value unvala x =
+  IFNDEF STRICT THEN x
+  ELSE
+    match x with
+    [ Ploc.VaVal x -> x
+    | Ploc.VaAnt a -> failwith ("unexpected antiquotation value " ^ a) ]
+  END
+;
+value vala_map f x =
+  IFNDEF STRICT THEN f x
+  ELSE
+    match x with
+    [ Ploc.VaVal x -> Ploc.VaVal (f x)
+    | Ploc.VaAnt a -> Ploc.VaAnt a ]
+  END
+;
 
 add_option "-mode"
   (Arg.String

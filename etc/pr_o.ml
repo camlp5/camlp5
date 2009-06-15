@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.98 2007/09/22 23:31:12 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.99 2007/09/26 07:10:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -451,15 +451,9 @@ value rec make_patt_list =
   | x -> ([], Some x) ]
 ;
 
-value uv c =
-  match (c, "") with
-  [ (<:vala< c >>, "") -> c
-  | _ -> assert False ]
-;
-
 value type_var pc (tv, (p, m)) =
   sprintf "%s%s'%s%s" pc.bef (if p then "+" else if m then "-" else "")
-    (uv tv) pc.aft
+    (Pcaml.unvala tv) pc.aft
 ;
 
 value type_constraint pc (t1, t2) =
@@ -490,7 +484,7 @@ value type_constraint pc (t1, t2) =
     (fun () -> not_impl "type_constraint vertic" pc t1)
 ;
 
-value mem_tvar s tpl = List.exists (fun (t, _) -> uv t = s) tpl;
+value mem_tvar s tpl = List.exists (fun (t, _) -> Pcaml.unvala t = s) tpl;
 
 value type_decl pc td =
   let ((_, tn), tp, pf, te, cl) =
@@ -498,32 +492,35 @@ value type_decl pc td =
      td.MLast.tdCon)
   in
   match te with
-  [ <:ctyp< '$s$ >> when not (mem_tvar s (uv tp)) ->
+  [ <:ctyp< '$s$ >> when not (mem_tvar s (Pcaml.unvala tp)) ->
       sprintf "%s%s%s%s" pc.bef
-        (type_params {(pc) with bef = ""; aft = ""} (uv tp))
-        (var_escaped {(pc) with bef = ""; aft = ""} (uv tn))
+        (type_params {(pc) with bef = ""; aft = ""} (Pcaml.unvala tp))
+        (var_escaped {(pc) with bef = ""; aft = ""} (Pcaml.unvala tn))
         pc.aft
   | _ ->
       horiz_vertic
         (fun () ->
            sprintf "%s%s%s = %s%s%s" pc.bef
-             (type_params {(pc) with bef = ""; aft = ""} (uv tp))
-             (var_escaped {(pc) with bef = ""; aft = ""} (uv tn))
+             (type_params {(pc) with bef = ""; aft = ""} (Pcaml.unvala tp))
+             (var_escaped {(pc) with bef = ""; aft = ""} (Pcaml.unvala tn))
              (ctyp {(pc) with bef = ""; aft = ""} te)
-             (hlist type_constraint {(pc) with bef = ""; aft = ""} (uv cl))
+             (hlist type_constraint {(pc) with bef = ""; aft = ""}
+                (Pcaml.unvala cl))
              pc.aft)
         (fun () ->
            let s1 =
              horiz_vertic
                (fun () ->
                   sprintf "%s%s%s =" pc.bef
-                    (type_params {(pc) with bef = ""; aft = ""} (uv tp))
-                    (var_escaped {(pc) with bef = ""; aft = ""} (uv tn)))
+                    (type_params {(pc) with bef = ""; aft = ""}
+                       (Pcaml.unvala tp))
+                    (var_escaped {(pc) with bef = ""; aft = ""}
+                       (Pcaml.unvala tn)))
                (fun () ->
                   not_impl "type_decl vertic 1" {(pc) with aft = ""} tn)
            in
            let s2 =
-             if uv cl = [] then
+             if Pcaml.unvala cl = [] then
                ctyp
                  {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
                   aft = ""}
@@ -558,8 +555,8 @@ value label_decl pc (_, l, m, t) =
 ;
 
 value cons_decl pc (_, c, tl) =
-  let c = uv c in
-  let tl = uv tl in
+  let c = Pcaml.unvala c in
+  let tl = Pcaml.unvala tl in
   if tl = [] then cons_escaped pc c
   else
     let ctyp_apply = Eprinter.apply_level pr_ctyp "apply" in
@@ -2377,18 +2374,18 @@ value class_def_or_type_decl char pc ci =
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s%s %c %s%s" pc.bef
-         (if uv ci.MLast.ciVir then " virtual" else "")
+         (if Pcaml.unvala ci.MLast.ciVir then " virtual" else "")
          (class_type_params {(pc) with bef = ""; aft = ""}
-            (uv (snd ci.MLast.ciPrm)))
-         (uv ci.MLast.ciNam) char
+            (Pcaml.unvala (snd ci.MLast.ciPrm)))
+         (Pcaml.unvala ci.MLast.ciNam) char
          (class_type {(pc) with bef = ""; aft = ""} ci.MLast.ciExp) pc.aft)
     (fun () ->
        let s1 =
          sprintf "%s%s%s%s %c" pc.bef
-           (if uv ci.MLast.ciVir then "virtual " else "")
+           (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
            (class_type_params {(pc) with bef = ""; aft = ""}
-              (uv (snd ci.MLast.ciPrm)))
-           (uv ci.MLast.ciNam) char
+              (Pcaml.unvala (snd ci.MLast.ciPrm)))
+           (Pcaml.unvala ci.MLast.ciNam) char
        in
        let s2 =
          class_type {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
@@ -2425,20 +2422,20 @@ value class_decl pc ci =
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s%s%s = %s%s" pc.bef
-         (if uv ci.MLast.ciVir then "virtual " else "")
+         (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
          (class_type_params {(pc) with bef = ""; aft = ""}
-            (uv (snd ci.MLast.ciPrm)))
-         (uv ci.MLast.ciNam)
+            (Pcaml.unvala (snd ci.MLast.ciPrm)))
+         (Pcaml.unvala ci.MLast.ciNam)
          (if pl = [] then "" else
           hlist patt {(pc) with bef = " "; aft = ""} pl)
          (class_expr {(pc) with bef = ""; aft = ""} ce) pc.aft)
     (fun () ->
        let s1 =
          sprintf "%s%s%s%s%s =" pc.bef
-           (if uv ci.MLast.ciVir then "virtual " else "")
+           (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
            (class_type_params {(pc) with bef = ""; aft = ""}
-              (uv (snd ci.MLast.ciPrm)))
-           (uv ci.MLast.ciNam)
+              (Pcaml.unvala (snd ci.MLast.ciPrm)))
+           (Pcaml.unvala ci.MLast.ciNam)
            (if pl = [] then ""
             else hlist patt {(pc) with bef = " "; aft = ""} pl)
        in

@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_sml.ml,v 1.24 2007/09/22 23:31:12 deraugla Exp $ *)
+(* $Id: pa_sml.ml,v 1.25 2007/09/26 07:10:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -41,13 +41,7 @@ value get_seq =
   | e -> [e] ]
 ;
 
-value uv c =
-  match (c, "") with
-  [ (<:vala< c >>, "") -> c
-  | _ -> assert False ]
-;
-
-value mem_tvar s tpl = List.exists (fun (t, _) -> uv t = s) tpl;
+value mem_tvar s tpl = List.exists (fun (t, _) -> Pcaml.unvala t = s) tpl;
 
 value choose_tvar tpl =
   let rec find_alpha v =

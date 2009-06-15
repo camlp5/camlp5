@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.40 2007/09/18 18:20:50 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.41 2007/09/26 07:10:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open MLast;
@@ -43,12 +43,6 @@ value longident =
   | _ -> () ]
 ;
 
-value uv c =
-  match (c, "") with
-  [ (<:vala< c >>, "") -> c
-  | _ -> invalid_arg "Ast2pt.uv" ]
-;
-
 value rec ctyp =
   fun
   [ TyAcc _ t _ -> ctyp_module t
@@ -69,7 +63,7 @@ value rec ctyp =
   | <:ctyp< [ > $list:sbtll$ ] >> -> list variant sbtll
   | <:ctyp< [ < $list:sbtll$ > $list:_$ ] >> -> list variant sbtll
   | x -> not_impl "ctyp" x ]
-and constr_decl (_, _, tl) = list ctyp (uv tl)
+and constr_decl (_, _, tl) = list ctyp (Pcaml.unvala tl)
 and label_decl (_, _, _, t) = ctyp t
 and variant =
   fun

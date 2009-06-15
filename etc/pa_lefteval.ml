@@ -1,5 +1,5 @@
-(* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: pa_lefteval.ml,v 1.12 2007/09/18 18:20:50 deraugla Exp $ *)
+(* camlp5r q_MLast.cmo *)
+(* $Id: pa_lefteval.ml,v 1.13 2007/09/26 07:10:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value not_impl name x =
@@ -135,13 +135,7 @@ value map_option f =
   | None -> None ]
 ;
 
-value map_vala f =
-  fun
-  [ <:vala< x >> -> <:vala< f x >>
-  | IFDEF STRICT THEN
-      _ -> failwith "Pa_lefteval.map_vala"
-    END ]
-;
+value map_vala f x = <:vala< f (Pcaml.unvala x) >>;
 
 value class_infos f ci =
   {MLast.ciLoc = ci.MLast.ciLoc; MLast.ciVir = ci.MLast.ciVir;

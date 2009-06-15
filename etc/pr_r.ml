@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.74 2007/09/22 23:31:12 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.75 2007/09/26 07:10:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -592,15 +592,9 @@ value rec make_patt_list =
   | x -> ([], Some x) ]
 ;
 
-value uv c =
-  match (c, "") with
-  [ (<:vala< c >>, "") -> c
-  | _ -> assert False ]
-;
-
 value type_var pc (tv, (p, m)) =
   sprintf "%s%s'%s%s" pc.bef (if p then "+" else if m then "-" else "")
-    (uv tv) pc.aft
+    (Pcaml.unvala tv) pc.aft
 ;
 
 value type_constraint pc (t1, t2) =
@@ -620,28 +614,30 @@ value type_decl pc td =
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s = %s%s%s" pc.bef
-         (var_escaped {(pc) with bef = ""; aft = ""} (uv tn))
-         (if uv tp = [] then ""
+         (var_escaped {(pc) with bef = ""; aft = ""} (Pcaml.unvala tn))
+         (if Pcaml.unvala tp = [] then ""
           else
             sprintf " %s" (hlist type_var {(pc) with bef = ""; aft = ""}
-              (uv tp)))
+              (Pcaml.unvala tp)))
          (ctyp {(pc) with bef = ""; aft = ""} te)
-         (hlist type_constraint {(pc) with bef = ""; aft = ""} (uv cl))
+         (hlist type_constraint {(pc) with bef = ""; aft = ""}
+            (Pcaml.unvala cl))
          pc.aft)
     (fun () ->
        let s1 =
          horiz_vertic
            (fun () ->
               sprintf "%s%s%s =" pc.bef
-                (var_escaped {(pc) with bef = ""; aft = ""} (uv tn))
-                (if uv tp = [] then ""
+                (var_escaped {(pc) with bef = ""; aft = ""} (Pcaml.unvala tn))
+                (if Pcaml.unvala tp = [] then ""
                  else
                    sprintf " %s"
-                     (hlist type_var {(pc) with bef = ""; aft = ""} (uv tp))))
+                     (hlist type_var {(pc) with bef = ""; aft = ""}
+                        (Pcaml.unvala tp))))
            (fun () -> not_impl "type_decl vertic 1" {(pc) with aft = ""} tn)
        in
        let s2 =
-         if uv cl = [] then
+         if Pcaml.unvala cl = [] then
            ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""}
              te
          else
@@ -674,8 +670,8 @@ value label_decl pc (_, l, m, t) =
 ;
 
 value cons_decl pc (_, c, tl) =
-  let c = uv c in
-  let tl = uv tl in
+  let c = Pcaml.unvala c in
+  let tl = Pcaml.unvala tl in
   if tl = [] then cons_escaped pc c
   else
     horiz_vertic
