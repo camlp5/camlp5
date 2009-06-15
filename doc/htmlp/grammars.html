@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.6 2007/07/15 02:04:35 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.7 2007/07/15 02:56:38 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -91,9 +91,7 @@ is loaded. Its syntax is:</p>
 <pre>
           expression ::= extend
               extend ::= "EXTEND" extend-body "END"
-         extend-body ::= efunction-opt global-opt entries
-       efunction-opt ::= "FUNCTION" ":" name ";"
-                       | &lt;nothing&gt;
+         extend-body ::= global-opt entries
           global-opt ::= "GLOBAL" ":" names ";"
                        | &lt;nothing&gt;
              entries ::= entry entries
@@ -101,9 +99,9 @@ is loaded. Its syntax is:</p>
                entry ::= name ":" position-opt "[" levels "]"
         position-opt ::= "FIRST"
                        | "LAST"
-                       | "BEFORE" string
-                       | "AFTER" string
-                       | "LEVEL" string
+                       | "BEFORE" label
+                       | "AFTER" label
+                       | "LEVEL" label
                        | &lt;nothing&gt;
               levels ::= level "|" levels
                        | level
@@ -156,6 +154,58 @@ are new keywords (reserved words which cannot be used in variables,
 constructors or module names). The other strings
 (e.g. "<tt>GLOBAL</tt>", "<tt>LEVEL</tt>", "<tt>LIST0</tt>",
 "<tt>LEFTA</tt>", etc.) are not reserved.</p>
+
+<h2>Semantics of the EXTEND statement</h2>
+
+<p>The EXTEND statement starts with the "<tt>EXTEND</tt>" keyword and ends
+with the "<tt>END</tt>" keyword.</p>
+
+<p>After the first keyword, it is possible to see the identifier
+"<tt>GLOBAL</tt>" followed by a colon, a list of entries names and a
+semicolon. It says that these entries are supposed to be visible
+(previously defined) entry variables, in the context of the EXTEND
+statement, the other ones being locally and silently defined
+inside.</p>
+
+<ul>
+<li>If an entry, which is extended in the EXTEND statement, is in the
+  GLOBAL list, but is not defined in the context of the EXTEND
+  statement, the ocaml compiler will fail with the error "unbound
+  value".</li>
+<li>If there is no GLOBAL indicator, and an entry, which is extended
+  in the EXTEND statement, is not defined in the contex of the EXTEND
+  statement, the ocaml compiler will also fail with the error "unbound
+  value".</li>
+</ul>
+
+<p>Then the list of entries extensions follow. An entry extension
+starts with the entry name followed by a colon. An entry may have
+several levels corresponding to several stream parsers which call the
+ones the others (see further). After the colon, it is possible to
+specify where to insert the defined levels:</p>
+
+<ul>
+  <li>The identifier "<tt>FIRST</tt>" (resp. "<tt>LAST</tt>")
+    indicates that the level must be inserted before (resp. after) all
+    possibly existing levels of the entry. They become their first
+    (resp. last) levels.</li>
+  <li>The identifier "<tt>BEFORE</tt>" (resp. "<tt>AFTER</tt>")
+    followed by a level label (a string) indicates that the levels
+    must be inserted before (resp. after) that level, if it exists. If
+    it does not exist, the extend statement fails at run time.</li>
+  <li>The identifier "<tt>LEVEL</tt>" followed by a level label
+    indicates that the first level defined in the extend statement
+    must be inserted at the given level, extending and modifying
+    it. The other levels defined in the statement are inserted after
+    this level, and before the possible levels following this
+    level. If there is no level with this label, the extend statement
+    fails at run time.</li>
+  <li>By default, if the entry has no level, the levels defined in the
+    statement are inserted in the entry. Otherwise the first defined
+    level is inserted at the first level of the entry, extending or
+    modifying it. The other levels are inserted afterwards (before the
+    possible second level which may previously exist in the entry).</li>
+</ul>
 
 <p>... to be completed ...</p>
 
