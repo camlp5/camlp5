@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.73 2007/10/12 01:18:12 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.74 2007/10/12 02:17:25 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -1166,10 +1166,29 @@
      (values loc (rename_id lab) False (ctyp_se se)))
     (se
      (error se "label_declaration"))))
+  (class_sig_item_se
+   (lambda_match
+    ((Sexpr loc [(Slid _ "method") (Slid _ n) se])
+     (let ((t (ctyp_se se))) <:class_sig_item< method $n$ : $t$ >>))
+    ((Sexpr loc [(Slid _ "value") (Slid _ "mutable") (Slid _ n) se])
+     (let ((t (ctyp_se se))) <:class_sig_item< value mutable $n$ : $t$ >>))
+    (se
+     (error se "class_sig_item"))))
   (class_type_se
    (lambda_match
-    ((Sexpr loc [(Slid _ "->") . sel])
-     (error_loc loc "class_type_se -> not impl"))
+    ((Sexpr loc [(Slid _ "->") se . sel])
+     (letrec
+      ((loop
+        (lambda_match
+         ([] (assert False))
+         ([se] (class_type_se se))
+         ([se . sel]
+          (let* ((t (ctyp_se se)) (ct (loop sel)))
+           <:class_type< [ $t$ ] -> $ct$ >>)))))
+      (loop [se . sel])))
+    ((Sexpr loc [(Slid _ "object") . sel])
+     (let ((csl (List.map class_sig_item_se sel)))
+      <:class_type< object $list:csl$ end >>))
     (se (error se "class_type_se")))))
 
 (define directive_se

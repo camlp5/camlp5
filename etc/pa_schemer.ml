@@ -1231,10 +1231,29 @@ and label_declaration_se =
       (loc, rename_id lab, True, ctyp_se se)
   | Sexpr loc [Slid _ lab; se] -> (loc, rename_id lab, False, ctyp_se se)
   | se -> error se "label_declaration" ]
+and class_sig_item_se =
+  fun
+  [ Sexpr loc [Slid _ "method"; Slid _ n; se] ->
+      let t = ctyp_se se in
+      <:class_sig_item< method $n$ : $t$ >>
+  | Sexpr loc [Slid _ "value"; Slid _ "mutable"; Slid _ n; se] ->
+      let t = ctyp_se se in
+      <:class_sig_item< value mutable $n$ : $t$ >>
+  | se -> error se "class_sig_item" ]
 and class_type_se =
   fun
-  [ Sexpr loc [Slid _ "->" :: sel] ->
-      error_loc loc "class_type_se -> not impl"
+  [ Sexpr loc [Slid _ "->"; se :: sel] ->
+      loop [se :: sel] where rec loop =
+        fun
+        [ [] -> assert False
+        | [se] -> class_type_se se
+        | [se :: sel] ->
+            let t = ctyp_se se in
+            let ct = loop sel in
+            <:class_type< [ $t$ ] -> $ct$ >> ]
+  | Sexpr loc [Slid _ "object" :: sel] ->
+      let csl = List.map class_sig_item_se sel in
+      <:class_type< object $list:csl$ end >>
   | se -> error se "class_type_se" ]
 ;
 

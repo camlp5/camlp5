@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.28 2007/10/12 01:18:12 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.29 2007/10/12 02:17:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1173,7 +1173,7 @@ EXTEND_PRINTER
   pr_class_type:
     [ [ <:class_type< [ $t$ ] -> $ct$ >> ->
           let (rtl, ct) =
-            loop [] ct where rec loop rtl =
+            loop [t] ct where rec loop rtl =
               fun
               [ <:class_type< [ $t$ ] -> $ct$ >> -> loop [t :: rtl] ct
               | ct -> (rtl, ct) ]
