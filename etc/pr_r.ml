@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.94 2007/11/29 01:28:54 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.95 2007/11/29 02:24:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -2021,19 +2021,8 @@ EXTEND_PRINTER
                     sil)
                  ("\n" ^ tab pc.ind) pc.aft)
       | <:module_type< $mt$ with $list:wcl$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s%s %s%s" pc.bef
-                 (module_type {(pc) with bef = ""; aft = ""} mt)
-                 (hlist with_constraint {(pc) with bef = ""; aft = ""} wcl)
-                    pc.aft)
-            (fun () ->
-               let s1 = module_type {(pc) with aft = ""} mt in
-               let s2 =
-                 vlist with_constraint
-                   {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} wcl
-               in
-               sprintf "%s\n%s" s1 s2) ]
+          break 1 2 pc (fun pc -> module_type pc mt)
+            (fun pc -> vlist with_constraint pc wcl) ]
     | "dot"
       [ <:module_type< $x$ . $y$ >> ->
           curr {(pc) with bef = curr {(pc) with aft = "."} x} y ]
