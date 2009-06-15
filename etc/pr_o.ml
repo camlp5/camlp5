@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.128 2007/12/22 12:17:18 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.129 2007/12/22 18:01:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -682,10 +682,8 @@ EXTEND_PRINTER
           in
           horiz_vertic
             (fun () ->
-               sprintf "%s%s%s" pc.bef
-                 (hlistl (semi_after (comm_expr expr)) (comm_expr expr)
-                    {(pc) with bef = ""; aft = ""} el)
-                 pc.aft)
+               pprintf pc "%p"
+                 (hlistl (semi_after (comm_expr expr)) (comm_expr expr)) el)
             (fun () ->
                vlist3 expr_semi expr_semi pc el) ]
     | "expr1"
@@ -695,25 +693,18 @@ EXTEND_PRINTER
                match e3 with
                [ <:expr< () >> ->
                    if pc.dang = "else" then next pc ge
-                   else
-                     sprintf "%sif %s then %s%s" pc.bef
-                       (curr {(pc) with bef = ""; aft = ""; dang = ""} e1)
-                       (curr {(pc) with bef = ""; aft = ""} e2)
-                       pc.aft
+                   else pprintf pc "if %q then %p" curr e1 "" curr e2
                | _ ->
-                   sprintf "%sif %s then %s else %s%s" pc.bef
-                     (curr {(pc) with bef = ""; aft = ""; dang = ""} e1)
-                     (curr {(pc) with bef = ""; aft = ""; dang = "else"} e2)
-                     (curr {(pc) with bef = ""; aft = ""} e3) pc.aft ])
+                   pprintf pc "if %q then %q else %p" curr e1 "" curr e2 ""
+                     curr e3 ])
             (fun () ->
                let if_then force_vertic pc else_b e1 e2 =
                  horiz_vertic
                    (fun () ->
                       if force_vertic then sprintf "\n"
                       else
-                        sprintf "%s%sif %s then %s%s" pc.bef else_b
-                          (curr {(pc) with bef = ""; aft = ""; dang = ""} e1)
-                          (curr {(pc) with bef = ""; aft = ""} e2) pc.aft)
+                        pprintf pc "%sif %q then %p" else_b curr e1 ""
+                          curr e2)
                    (fun () ->
                       let horiz_if_then k =
                         sprintf "%s%sif %s then%s" pc.bef else_b
