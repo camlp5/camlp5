@@ -10,41 +10,29 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.mli,v 1.17 2007/08/16 08:45:24 deraugla Exp $ *)
+(* $Id: token.mli,v 1.18 2007/08/19 18:24:21 deraugla Exp $ *)
 
-(** Lexers for Camlp5 grammars.
+(** Lexing for Camlp5 grammars.
 
    This module defines the Camlp5 lexer type to be used in extensible
    grammars (see module [Grammar]). It also provides some useful functions
-   to create lexers (this module should be renamed [Glexer] one day). *)
+   to create lexers (this module should be renamed [Plexing] one day). *)
 
 type pattern = (string * string);
-    (** Token patterns come from the EXTEND statement.
--       The first string is the constructor name (must start with
-        an uppercase character). When it is empty, the second string
-        is supposed to be a keyword.
--       The second string is the constructor parameter. Empty if it
-        has no parameter.
--       The way tokens patterns are interpreted to parse tokens is
-        done by the lexer, function [tok_match] below. *)
+    (* Type for values used by the generated code of the EXTEND
+       statement to represent terminals in entry rules.
+-      The first string is the constructor name (must start with
+       an uppercase character). When it is empty, the second string
+       is supposed to be a keyword.
+-      The second string is the constructor parameter. Empty if it
+       has no parameter (corresponding to the 'wildcard' pattern).
+-      The way tokens patterns are interpreted to parse tokens is done
+       by the lexer, function [tok_match] below. *)
 
 exception Error of string;
     (** A lexing error exception to be used by lexers. *)
 
 (** {6 Lexer type} *)
-
-type location = Stdpp.location;
-type location_function = int -> location;
-  (** The type for a function associating a number of a token in a stream
-      (starting from 0) to its source location. *)
-type lexer_func 'te = Stream.t char -> (Stream.t 'te * location_function);
-  (** The type for a lexer function. The character stream is the input
-      stream to be lexed. The result is a pair of a token stream and
-      a location function for this tokens stream. *)
-
-value make_loc : (int * int) -> location;
-value dummy_loc : location;
-  (** compatibility camlp5 distributed with ocaml *)
 
 type glexer 'te =
   { tok_func : lexer_func 'te;
@@ -52,28 +40,49 @@ type glexer 'te =
     tok_removing : pattern -> unit;
     tok_match : mutable pattern -> 'te -> string;
     tok_text : pattern -> string;
-    tok_comm : mutable option (list location) }
-;
-   (** The type for a lexer used by Camlp5 grammars.
+    tok_comm : mutable option (list Stdpp.location) }
+   (** The type for lexers compatible with camlp5 grammars. The parameter
+       type ['te] is the type of the tokens.
 -      The field [tok_func] is the main lexer function. See [lexer_func]
-       type above. This function may be created from a [char stream parser]
-       or for an [ocamllex] function using the functions below.
--      The field [tok_using] is a function telling the lexer that the grammar
-       uses this token (pattern). The lexer can check that its constructor
-       is correct, and interpret some kind of tokens as keywords (to record
-       them in its tables). Called by [EXTEND] statements.
--      The field [tok_removing] is a function telling the lexer that the
-       grammar does not uses the given token (pattern) any more. If the
-       lexer has a notion of "keywords", it can release it from its tables.
-       Called by [DELETE_RULE] statements.
--      The field [tok_match] is a function taking a pattern and returning
-       a function matching a token against the pattern. Warning: for
-       efficency, write it as a function returning functions according
-       to the values of the pattern, not a function with two parameters.
--      The field [tok_text] returns the name of some token pattern,
-       used in error messages.
--      The field [tok_comm] if not None asks the lexer to record the
-       locations of the comments.  *)
+       type below.
+-      The field [tok_using] is a function called by the [EXTEND]
+       statement to warn the lexer that a rule uses this pattern
+       (given as parameter). This allow the lexer 1/ to check that
+       the pattern constructor is really among its possible constructors
+       2/ to enter the keywords in its tables.
+-      The field [tok_removing] is a function called by the
+       [DELETE_RULE] statement to warn the lexer that a rule using
+       this pattern (given as parameter) has been deleted. This allow
+       the lexer to possibly remove this keyword from its tables if
+       there are no more rules using it.
+-      The field [tok_match] is a function called by the camlp5
+       grammar system to ask the lexer how the input tokens have to
+       be matched against the patterns. Warning: for efficiency, this
+       function has to be written as a function taking patterns as
+       parameters and, for each pattern value, returning a function
+       matching a token, *not* as a function with two parameters.
+-      The field [tok_text] is a function called by the grammar
+       system to get the name of the tokens for the error messages,
+       in case of syntax error, or for the displaying of the rules
+       of an entry.
+-      The field [tok_comm] is a mutable place where the lexer can
+       put the locations of the comments, if its initial value is not
+       [None]. If it is [None], nothing has to be done by the lexer. *)
+
+and lexer_func 'te = Stream.t char -> (Stream.t 'te * location_function)
+  (** The type of a lexer function (field [tok_func] of the type
+      [glexer]). The character stream is the input stream to be
+      lexed. The result is a pair of a token stream and a location
+      function (see below) for this tokens stream. *)
+
+and location_function = int -> Stdpp.location;
+  (**>The type of a function giving the location of a token in the
+      source from the token number in the stream (starting from zero). *)
+
+type location = Stdpp.location;
+value make_loc : (int * int) -> location;
+value dummy_loc : location;
+  (** compatibility camlp5 distributed with ocaml *)
 
 value lexer_text : pattern -> string;
    (** A simple [tok_text] function for lexers *)

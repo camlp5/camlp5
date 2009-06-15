@@ -16,6 +16,8 @@
 
 type location;;
 
+(* located exceptions *)
+
 exception Exc_located of location * exn;;
    (** [Exc_located loc e] is an encapsulation of the exception [e] with
        the input location [loc]. To be used to specify a location
@@ -37,7 +39,7 @@ val make_lined_loc : int -> int -> int * int -> location;;
        of the stream. *)
 val make_loc : int * int -> location;;
    (** [make_loc] is like [make_lined_loc] except that the line number
-       is not provided (to be used when the line number is unknown). *)
+       is not provided (to be used e.g. when the line number is unknown). *)
 
 val dummy_loc : location;;
    (** [dummy_loc] is a dummy location, used in situations when location
