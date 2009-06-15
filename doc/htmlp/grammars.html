@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.53 2007/07/18 19:54:52 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.54 2007/07/19 01:27:36 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -569,47 +569,95 @@ instead of "<tt>loc</tt>".</p>
 <p>The Grammar module contains all what is necessary to manipulate
   grammars and entries. It contains:</p>
 
-<dl>
-  <dt><tt>type g = 'abstract;</tt></dt>
-  <dd>The type of grammars, holding entries,</dd>
-</dl>
+<pre style="border:0; margin-left: 0">
+  type g = 'abstract;
+</pre>
 
-<dl>
-  <dt><tt>value gcreate : Token.glexer (string * string) -> g;</tt></dt>
-  <dd>Create a new grammar, without keywords, using the lexer given as
-    parameter.</dd>
+<p style="margin-left: 1.5cm">
+  The type of grammars, holding entries.
+</p>
 
-  <dt><tt>value tokens : g -> string -> list (string * int);</tt></dt>
-  <dd>
-       Given a grammar and a token pattern constructor, returns the list of
-       the corresponding values currently used in all entries of this grammar.
-       The integer is the number of times this pattern value is used.
+<pre style="border:0; margin-left: 0">
+  value gcreate : Token.glexer (string * string) -> g;
+</pre>
 
-       Examples:
-       <ul>
-         <li>The call /<tt>Grammar.tokens g ""</tt>/ returns the keywords
-           list.</li>
-         <li>The call /<tt>Grammar.tokens g "IDENT"</tt>/ returns the list of
-           all usages of the pattern "IDENT" in the <tt>EXTEND</tt>
-           statements.</li>
-       </ul>
-  </dd>
+<p style="margin-left: 1.5cm">
+  Create a new grammar, without keywords, using the lexer given as
+  parameter.
+</p>
 
-  <dt><tt>value glexer : g -> Token.glexer token;</tt></dt>
-  <dd>Return the lexer used by the grammar</dd>
-</dl>
+<pre style="border:0; margin-left: 0">
+  value tokens : g -> string -> list (string * int);
+</pre>
 
-<dl>
-  <dt><tt>type parsable = 'abstract;</tt></dt>
-  <dd></dd>
+<p style="margin-left: 1.5cm">
+  Given a grammar and a token pattern constructor, returns the list of
+  the corresponding values currently used in all entries of this grammar.
+  The integer is the number of times this pattern value is used.
 
-  <dt><tt>value parsable : g -> Stream.t char -> parsable;</tt></dt>
-  <dd>
-       Type and value allowing to keep the same token stream between several
-       calls of entries of the same grammar, to prevent loss of tokens. To
-       be used with <tt>Entry.parse_parsable</tt> below
-  </dd>
-</dl>
+  Examples:
+  <ul>
+    <li>The call [<tt>Grammar.tokens g ""</tt>] returns the keywords
+      list.</li>
+    <li>The call [<tt>Grammar.tokens g "IDENT"</tt>] returns the list of
+      all usages of the pattern "IDENT" in the <tt>EXTEND</tt>
+      statements.</li>
+  </ul>
+</p>
+
+<pre style="border:0; margin-left: 0">
+  value glexer : g -> Token.glexer token;
+</pre>
+
+<p style="margin-left: 1.5cm">
+  Return the lexer used by the grammar
+</p>
+
+<pre style="border:0; margin-left: 0">
+  type parsable = 'abstract;
+  value parsable : g -> Stream.t char -> parsable;
+</pre>
+
+<p>
+  Type and value allowing to keep the same token stream between several
+  calls of entries of the same grammar, to prevent loss of tokens. To
+  be used with <tt>Entry.parse_parsable</tt> below
+</p>
+
+<pre style="border:0; margin-left: 0">
+  module Entry =
+    sig
+      type e 'a = 'x;
+      value create : g -> string -> e 'a;
+      value parse : e 'a -> Stream.t char -> 'a;
+      value parse_token : e 'a -> Stream.t token -> 'a;
+      value parse_parsable : e 'a -> parsable -> 'a;
+      value name : e 'a -> string;
+      value of_parser : g -> string -> (Stream.t token -> 'a) -> e 'a;
+      value print : e 'a -> unit;
+      value find : e 'a -> string -> e Obj.t;
+      external obj : e 'a -> Gramext.g_entry token = "%identity";
+    end;
+</pre>
+
+<p style="margin-left: 1.5cm">
+  Module to handle entries.
+  <ul>
+    <li>/Entry.e/ is the type for entries returning values of type ['a].</li>
+    <li>/Entry.create g n/ creates a new entry named [n] in the grammar
+      [g].</li>
+    <li>/Entry.parse e/ returns the stream parser of the entry [e].</li>
+    <li>/Entry.parse_token e/ returns the token parser of the entry [e].</li>
+    <li>/Entry.parse_parsable e/ returns the parsable parser of the entry
+      [e].</li>
+    <li>/Entry.name e/ returns the name of the entry [e].</li>
+    <li>/Entry.of_parser g n p/ makes an entry from a token stream parser.</li>
+    <li>/Entry.print e/ displays the entry [e] using [Format].</li>
+    <li>/Entry.find e s/ finds the entry named [s] in [e]'s rules.</li>
+    <li>/Entry.obj e/ converts an entry into a [Gramext.g_entry] allowing
+      to see what it holds ([Gramext] is visible, but not documented).</li>
+  </ul>
+</p>
 
 <p>... to be completed ...</p>
 

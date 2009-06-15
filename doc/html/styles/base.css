@@ -1,4 +1,4 @@
-/* $Id: base.css,v 1.20 2007/07/18 18:20:11 deraugla Exp $ */
+/* $Id: base.css,v 1.21 2007/07/19 01:27:36 deraugla Exp $ */
 
 body { margin: 0 0 1px 0; background-color: rgb(189,225,255) }
 body { border: 0 }
@@ -41,7 +41,7 @@ h4:before {
 p { text-align: justify; margin: 1em 1cm }
 
 pre {
-  border-left: silver solid 3px; margin-bottom: 1.5em; margin-left: 1.5cm;
+  border-left: silver solid 3px; margin-bottom: 1em; margin-left: 1.5cm;
   padding-left: 0; padding-right: 0.5em; line-height: 1.2
 }
 

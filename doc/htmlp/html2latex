@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2latex,v 1.20 2007/07/18 19:11:15 deraugla Exp $
+# $Id: html2latex,v 1.21 2007/07/19 01:27:36 deraugla Exp $
 
 FILES="index.html ptools.html revsynt.html parsers.html fparsers.html lexers.html grammars.html pretty.html opretty.html ml_ast.html pragma.html extfun.html"
 
@@ -31,6 +31,7 @@ pages.
 for i in $FILES; do
   /bin/echo '\cleardoublepage'
   cat $i |
+  sed -e 's|<p [^>]*>|<p>|g' |
   sed \
     -e '{:b; /<\/p>$/N; s|<\/p>\n *|<\/p>|g; tb}' \
     -e 's|</p><p>|\n\n\\\n\n\\noindent |g' \
@@ -52,7 +53,7 @@ for i in $FILES; do
     -e 's/^ *<dl>/\\begin{description}/' -e 's|</dl>|\\end{description}|' \
     -e 's/^ *<dt>/\\item[/' -e 's|</dt>|]|' \
     -e 's/^ *<dd>/\n\\\n\n/' -e 's|</dd>||' \
-    -e 's/^ *<pre>/\\begin{verbatim}/' -e 's|^ *</pre>|\\end{verbatim}|' \
+    -e 's/^ *<pre[^>]*>/\\begin{verbatim}/' -e 's|^ *</pre>|\\end{verbatim}|' \
     -e 's/<code>/\\texttt{/g' -e 's|</code>|}|g' \
     -e 's/<tt>/\\texttt{/g' -e 's|</tt>|}|g' \
     -e 's/<em>/\\emph{/g' -e 's|</em>|}|g' \
