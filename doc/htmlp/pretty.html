@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: pretty.html,v 1.7 2007/07/16 08:39:08 deraugla Exp $ -->
+  <!-- $Id: pretty.html,v 1.8 2007/07/16 19:35:43 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Pretty</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -34,7 +34,7 @@ maximum lines lengths.</li>
 
 <h2>Module description</h2>
 
-<h3><span class="value">horiz_vertic</span></h3>
+<h3>horiz_vertic</h3>
 
 <p>The function "horiz_vertic" takes two functions as parameters. When
 called, it calls its first function. If that function fails with some
@@ -63,7 +63,7 @@ of "horiz_vertic", the "vertical" function, is called. In the context of
 that function, the "sprintf" function behaves like the normal "sprintf"
 function of the OCaml library module "Printf".</p>
 
-<h3><span class="value">sprintf</span></h3>
+<h3>sprintf</h3>
 
 <p>The function "sprintf" works like its equivalent in the module
 "Printf" of the OCaml library, and takes the same parameters. Its
@@ -76,7 +76,7 @@ length greater than the maximum line length. If it is the case, the
 <p>If "sprintf" is not in the context of the horizontal function, it
 behaves like the usual "sprintf" function.</p>
 
-<h3><span class="value">line_length</span></h3>
+<h3>line_length</h3>
 
 <p>The variable "line_length" is a reference holding the maximum line
 length of lines printed horizontally. Its default is 77. This can be
