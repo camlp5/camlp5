@@ -50,22 +50,24 @@ value name_of_entry entry lev =
   entry.ename ^ "-" ^ string_of_int lev
 ;
 
-value fold_rules_of_level f name elev init =
-  let rec do_level accu lev =
-    let accu =
-      do_tree [] accu
-        (Node {node = Sself; son = lev.lsuffix; brother = DeadEnd})
-    in
-    do_tree [] accu lev.lprefix
-  and do_tree r accu =
+value fold_rules_of_tree f init tree =
+  let rec do_tree r accu =
     fun
     [ Node n ->
         let accu = do_tree [n.node :: r] accu n.son in
         do_tree r accu n.brother
-    | LocAct _ _ -> f (name, List.rev r) accu
+    | LocAct _ _ -> f (List.rev r) accu
     | DeadEnd -> accu ]
   in
-  do_level init elev
+  do_tree [] init tree
+;
+
+value fold_rules_of_level f lev init =
+  let accu =
+    fold_rules_of_tree f init
+      (Node {node = Sself; son = lev.lsuffix; brother = DeadEnd})
+  in
+  fold_rules_of_tree f accu lev.lprefix
 ;
 
 value gram_symb_list cnt to_treat self_middle self_end =
@@ -102,33 +104,40 @@ value gram_symb_list cnt to_treat self_middle self_end =
               to_treat.val := [(e, levn) :: to_treat.val];
               (GS_nterm (name_of_entry e levn), anon_rules)
             }
-          | Slist0 s -> do {
+          | Slist0 _ -> do {
               incr cnt;
               let n = "x-list0-" ^ string_of_int cnt.val in
-              let anon_rules = [(n, Slist0 s) :: anon_rules] in
+              let anon_rules = [(n, s) :: anon_rules] in
               (GS_nterm n, anon_rules)
             }
-          | Slist0sep s sep -> do {
+          | Slist0sep _ _ -> do {
               incr cnt;
               let n = "x-list0sep-" ^ string_of_int cnt.val in
-              let anon_rules = [(n, Slist0sep s sep) :: anon_rules] in
+              let anon_rules = [(n, s) :: anon_rules] in
               (GS_nterm n, anon_rules)
             }
           | Slist1 _ -> do {
               incr cnt;
               let n = "x-list1-" ^ string_of_int cnt.val in
+              let anon_rules = [(n, s) :: anon_rules] in
               (GS_nterm n, anon_rules)
             }
-          | Slist1sep s sep -> do {
+          | Slist1sep _ _ -> do {
               incr cnt;
               let n = "x-list1sep-" ^ string_of_int cnt.val in
-              let anon_rules = [(n, Slist1sep s sep) :: anon_rules] in
+              let anon_rules = [(n, s) :: anon_rules] in
               (GS_nterm n, anon_rules)
             }
-          | Sopt s -> do {
+          | Sopt _ -> do {
               incr cnt;
               let n = "x-opt-" ^ string_of_int cnt.val in
-              let anon_rules = [(n, Sopt s) :: anon_rules] in
+              let anon_rules = [(n, s) :: anon_rules] in
+              (GS_nterm n, anon_rules)
+            }
+          | Sflag _ -> do {
+              incr cnt;
+              let n = "x-flag-" ^ string_of_int cnt.val in
+              let anon_rules = [(n, s) :: anon_rules] in
               (GS_nterm n, anon_rules)
             }
           | Stoken p ->
@@ -176,6 +185,10 @@ value new_anon_rules cnt mar ename sy =
       let (sl4, ar4) = gram_symb_list cnt (ref []) self self [s] in
       ([(ename, sl1); (ename, sl2); (ename2, sl3); (ename2, sl4)],
        ar3 @ ar4 @ mar)
+  | Slist1 s ->
+      let (sl1, ar1) = gram_symb_list cnt (ref []) self self [s; Sself] in
+      let (sl2, ar2) = gram_symb_list cnt (ref []) self self [s] in
+      ([(ename, sl1); (ename, sl2)], ar1 @ ar2 @ mar)
   | Slist1sep s sy ->
       let (sl1, ar1) = gram_symb_list cnt (ref []) self self [s; sy; Sself] in
       let (sl2, ar2) = gram_symb_list cnt (ref []) self self [s] in
@@ -183,13 +196,20 @@ value new_anon_rules cnt mar ename sy =
   | Sopt sy ->
       let (sl, ar) = gram_symb_list cnt (ref []) self self [sy] in
       ([(ename, sl); (ename, [])], ar @ mar)
+  | Sflag sy ->
+      let (sl, ar) = gram_symb_list cnt (ref []) self self [sy] in
+      ([(ename, sl); (ename, [])], ar @ mar)
   | Stree t ->
-      ([(ename, [])], mar)
+      let f r accu =
+        let (sl, ar) = gram_symb_list cnt (ref []) self self r in
+        [(ename, sl) :: accu]
+      in
+      (fold_rules_of_tree f [] t, mar)
   | _ ->
       ([], mar) ]
 ;
 
-value flatten_rules entry levn =
+value flatten_gram entry levn =
   let cnt = ref 0 in
   let treat_level rules to_treat entry levn elev =
     let lev =
@@ -215,7 +235,8 @@ value flatten_rules entry levn =
       GS_nterm (name_of_entry entry n)
     }
     in
-    let f (name, r) accu = do {
+    let name = name_of_entry entry levn in
+    let f r accu = do {
       let (sl, anon_rules) =
         match r with
         [ [Sself :: r] ->
@@ -242,9 +263,7 @@ value flatten_rules entry levn =
       Fifo.add (name, sl) accu
     }
     in
-    let rules =
-      fold_rules_of_level f (name_of_entry entry levn) lev rules
-    in
+    let rules = fold_rules_of_level f lev rules in
     let rules =
       match
         try Some (List.nth elev (levn + 1)) with [ Failure _ -> None ]
@@ -314,12 +333,29 @@ value eprint_rule (n, sl) = do {
   Printf.eprintf "\n";
 };
 
+value check_closed rl = do {
+  let ht = Hashtbl.create 1 in
+  List.iter (fun (e, rh) -> Hashtbl.replace ht e e) rl;
+  List.iter
+    (fun (e, rh) ->
+       List.iter
+         (fun
+          [ GS_term _ -> ()
+          | GS_nterm s ->
+              if Hashtbl.mem ht s then ()
+              else Printf.eprintf "Missing non-terminal \"%s\"\n" s ])
+         rh)
+    rl;
+  flush stderr;
+};
+
 value lr0 entry lev = do {
   Printf.eprintf "LR(0) %s %d\n" entry.ename lev;
   flush stderr;
-  let rl = flatten_rules entry lev in
+  let rl = flatten_gram entry lev in
   Printf.eprintf "%d rules\n\n" (List.length rl);
   flush stderr;
+  check_closed rl;
   List.iter eprint_rule rl;
   Printf.eprintf "\n";
   flush stderr;
