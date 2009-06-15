@@ -1552,16 +1552,6 @@ let ssflag loc s =
   ss_aux loc "a_flag" r s.used
 ;;
 
-let ssvala loc al s =
-  if !quotify then ss2_of_ss loc al s
-  else
-    let (text, styp) =
-      if not !(Pcaml.strict_mode) then s.text, s.styp
-      else TXvala (loc, al, s.text), STvala (loc, s.styp)
-    in
-    {used = s.used; text = text; styp = styp}
-;;
-
 let string_of_a =
   function
     ATstring (loc, s) -> MLast.ExStr (loc, s)
@@ -1634,17 +1624,25 @@ let rec symbol_of_a =
           let text = TXtok (loc, s, MLast.ExStr (loc, "")) in
           {used = []; text = text; styp = STlid (loc, "string")}
       end
-  | ASvala (loc, s, ls) -> let s = symbol_of_a s in ssvala loc ls s
+  | ASvala (loc, s, ls) ->
+      let s = symbol_of_a s in
+      if !quotify then ss2_of_ss loc ls s
+      else
+        let (text, styp) =
+          if not !(Pcaml.strict_mode) then s.text, s.styp
+          else TXvala (loc, ls, s.text), STvala (loc, s.styp)
+        in
+        {used = s.used; text = text; styp = styp}
   | ASvala2 (loc, s, ls) ->
       match s with
-        ASquot (loc1, ASlist (loc2, min, s, sep)) ->
+        ASlist (loc, min, s, sep) ->
           let s = symbol_of_a s in
           let sep = option_map symbol_of_a sep in
-          ss2_of_ss loc1 [] (sslist loc2 min sep s)
-      | ASquot (loc1, ASflag (loc2, s)) ->
-          let s = symbol_of_a s in ss2_of_ss loc1 [] (ssflag loc2 s)
-      | ASquot (loc1, ASopt (loc2, s)) ->
-          let s = symbol_of_a s in ss2_of_ss loc1 [] (ssopt loc2 s)
+          ss2_of_ss loc [] (sslist loc min sep s)
+      | ASflag (loc, s) ->
+          let s = symbol_of_a s in ss2_of_ss loc [] (ssflag loc s)
+      | ASopt (loc, s) ->
+          let s = symbol_of_a s in ss2_of_ss loc [] (ssopt loc s)
       | _ -> Ploc.raise loc (Failure "not impl ASvala2")
 and psymbol_of_a ap = {pattern = ap.ap_patt; symbol = symbol_of_a ap.ap_symb}
 and rules_of_a au =
