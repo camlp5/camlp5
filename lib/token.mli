@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.mli,v 1.19 2007/08/19 19:22:35 deraugla Exp $ *)
+(* $Id: token.mli,v 1.20 2007/08/20 09:55:20 deraugla Exp $ *)
 
 (** Lexing for Camlp5 grammars.
 
@@ -50,11 +50,12 @@ type glexer 'te =
        (given as parameter). This allow the lexer 1/ to check that
        the pattern constructor is really among its possible constructors
        2/ to enter the keywords in its tables.
--      The field [tok_removing] is a function called by the
-       [DELETE_RULE] statement to warn the lexer that a rule using
-       this pattern (given as parameter) has been deleted. This allow
-       the lexer to possibly remove this keyword from its tables if
-       there are no more rules using it.
+-      The field [tok_removing] is a function possibly called by the
+       [DELETE_RULE] statement to warn the lexer that this pattern
+       (given as parameter) is no more used in the grammar (the grammar
+       system maintains a number of usages of all patterns and calls this
+       function when this number falls to zero). If it is a keyword, this
+       allow the lexer to remove it in its tables.
 -      The field [tok_match] is a function called by the camlp5
        grammar system to ask the lexer how the input tokens have to
        be matched against the patterns. Warning: for efficiency, this

@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: grammars.html,v 1.68 2007/08/18 11:23:19 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.69 2007/08/20 09:55:20 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -1071,11 +1071,11 @@ module type S =
   pattern -> unit
 </pre>
 
-<p>It is called by the DELETE_RULE statement for each token symbol and
-  each keyword that an occurence of them is no more used. This can be
-  interesting for keywords, if the lexer record the number of
-  occurences of the keywords: when the number of occurences falls to
-  zero, the keyword can be removed from the lexer tables.</p>
+<p>It is possibly called by the DELETE_RULE statement for tokens and
+  keywords no more used in the grammar. The grammar system maintains a
+  number of usages of all tokens and keywords and call this function
+  only when this number reaches zero. This can be interesting for
+  keywords: the lexer can remove them from its tables.</p>
 
 <h4><tt>tok_match</tt></h4>
 

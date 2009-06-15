@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: library.html,v 1.8 2007/08/20 09:16:18 deraugla Exp $ -->
+  <!-- $Id: library.html,v 1.9 2007/08/20 09:55:20 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Library</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -191,11 +191,13 @@ type glexer 'te =
         check that the pattern constructor is really among its
         possible constructors 2/ to enter the keywords in its
         tables.</li>
-      <li>The field "<tt>tok_removing</tt>" is a function called by
-        the "<tt>DELETE_RULE</tt>" statement to warn the lexer that a
-        rule using this pattern (given as parameter) has been
-        deleted. This allow the lexer to possibly remove this keyword
-        from its tables if there are no more rules using it.</li>
+      <li>The field "<tt>tok_removing</tt>" is a function possibly
+        called by the "<tt>DELETE_RULE</tt>" statement to warn the
+        lexer that this pattern (given as parameter) is no more used
+        in the grammar (the grammar system maintains a number of usages
+        of all patterns and calls this function when this number falls
+        to zero). If it is a keyword, this allow the lexer to remove
+        it in its tables.</li>
       <li>The field "<tt>tok_match</tt>" is a function called by the
         camlp5 grammar system to ask the lexer how the input tokens
         have to be matched against the patterns. Warning: for
@@ -432,6 +434,8 @@ value make_stream_and_location :
   entries types, the normal access being through the
   "<tt>Grammar</tt>" module where these types are abstract.</p>
 
+<h3>Grammar type</h3>
+
 <pre style="border:0; margin-left: 1cm">
 type grammar 'te =
   { gtokens : Hashtbl.t Token.pattern (ref int);
@@ -440,14 +444,25 @@ type grammar 'te =
 </pre>
 
 <dl><dd>
-    The visible type of grammars, i.e. the implementation of the abstract
-    type "<tt>Grammar.g</tt>". It is also the implementation of an internal
-    grammar type used in the Grammar functorial interface.
+  The visible type of grammars, i.e. the implementation of the abstract
+  type "<tt>Grammar.g</tt>". It is also the implementation of an internal
+  grammar type used in the Grammar functorial interface.
+</dl></dd>
+
+<dl><dd>
+  The type parameter "<tt>'te</tt>" is the type of the tokens, which
+  is "<tt>(string * string)</tt>" for grammars built with
+  "<tt>Grammar.gcreate</tt>", and any type for grammars built with the
+  functorial interface. The field "<tt>gtokens</tt>" records the
+  count of usages of each token pattern, allowing to call the lexer
+  function "<tt>tok_removing</tt>" (see the
+    <a href="#a:Token-module">Token module</a>) when this count reaches
+    zero. The field "<tt>glexer</tt>" is the lexer.
 </dd></dl>
 
-<p>... the following lines have to be structured ...</p>
+<h3>Entry type</h3>
 
-<pre>
+<pre style="border:0; margin-left: 1cm">
 type g_entry 'te =
   { egram : grammar 'te;
     ename : string;
@@ -455,6 +470,21 @@ type g_entry 'te =
     estart : mutable int -> Stream.t 'te -> Obj.t;
     econtinue : mutable int -> int -> Obj.t -> Stream.t 'te -> Obj.t;
     edesc : mutable g_desc 'te }
+</pre>
+
+<dl><dd>
+    The visible type for grammar entries, i.e. the implementation of
+    the abstract type "<tt>Grammar.Entry.e</tt>" and the type of
+    entries in the Grammar functorial interface. Notice that these
+    entry types have a type parameter which does not appear in the
+    "<tt>g_entry</tt>" type (the "<tt>'te</tt>" parameter is, like for
+    grammars above, the type of the tokens). This is due to the
+    specific typing system of the EXTEND statement which sometimes
+    has to hide real types, the ocaml normal type system not being
+    able to type camlp5 grammars.
+</dd></dl>
+
+<pre style="border:0; margin-left: 1cm">
 and g_desc 'te =
   [ Dlevels of list (g_level 'te)
   | Dparser of Stream.t 'te -> Obj.t ]
@@ -486,6 +516,11 @@ and g_tree 'te =
 and g_node 'te =
   { node : g_symbol 'te; son : g_tree 'te; brother : g_tree 'te }
 ;
+</pre>
+
+<p>... the following lines have to be structured ...</p>
+
+<pre>
 
 type position =
   [ First
