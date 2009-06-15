@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.44 2007/11/20 02:55:15 deraugla Exp $
+# $Id: Makefile,v 1.45 2007/11/22 20:40:30 deraugla Exp $
 
 include ../config/Makefile
 
@@ -91,10 +91,10 @@ install:
 	cp $(NAME)o$(EXE) $(NAME)sch$(EXE) "$(DESTDIR)$(BINDIR)/."
 	cp mk$(NAME).sh "$(DESTDIR)$(BINDIR)/mk$(NAME)"
 	chmod a+x "$(DESTDIR)$(BINDIR)/mk$(NAME)"
-	if test -f $(COPT); then cp $(COPT) "$(DESTDIR)$(BINDIR)/."; fi
 	if test -f pa_o.cmx; then \
 	  cp $(OBJS:.cmo=.cmx) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
 	  cp $(OBJS:.cmo=.o) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	  cp $(NAME)o.opt "$(DESTDIR)$(BINDIR)/."; \
 	  cp mk$(NAME).opt.sh "$(DESTDIR)$(BINDIR)/mk$(NAME).opt"; \
 	  chmod a+x "$(DESTDIR)$(BINDIR)/mk$(NAME).opt"; \
 	fi

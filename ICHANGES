@@ -1,6 +1,12 @@
 Internal, very small, undocumented, or invisible changes
 ********************************************************
 
+Camlp5 Version 5.04:
+---------------------
+
+* [22 Nov 07] Fixed small bug in "make install", displayed an error
+  while testing the presence of cmx files.
+
 Camlp5 Version 5.03:
 ---------------------
 
