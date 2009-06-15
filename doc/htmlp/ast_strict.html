@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_strict.html,v 1.16 2007/09/26 12:06:38 deraugla Exp $ -->
+  <!-- $Id: ast_strict.html,v 1.17 2007/10/15 10:57:56 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>AST - strict</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -48,12 +48,11 @@
   respectively the expression after the "<tt>if</tt>", the one after
   the "<tt>then</tt>" and the one after the "<tt>else</tt>".</p>
 
-<p>If a program needs to manipulate syntax trees, it can use the
-  nodes defined in the module "<tt>MLast</tt>". It supposes to
-  know how the concrete syntax is transformed in to this abstract
-  syntax.</p>
+<p>If a program needs to manipulate syntax trees, it can use the nodes
+  defined in the module "<tt>MLast</tt>". The programmer must know how
+  the concrete syntax is transformed into this abstract syntax.</p>
 
-<p>However, a simpler solution is to use one of the quotation kits
+<p>A simpler solution is to use one of the quotation kits
   "<tt>q_MLast.cmo</tt>" or "<tt>q_ast.cmo</tt>". Both propose
   <a href="quot.html">quotations</a> which represent the abstract
   syntax (the nodes of the module "<tt>MLast</tt>") into concrete
@@ -100,8 +99,8 @@
 <p>Which is less readable and much more complicated to build and
   update.</p>
 
-<p>Instead of thinking of "a syntax tree", the programmer has to think
-  of "a piece of program".</p>
+<p>Instead of thinking of "a syntax tree", the programmer can think of
+  "a piece of program".</p>
 
 <h2>Location</h2>
 
@@ -451,7 +450,7 @@
   </dd>
 </dl>
 <dl class="nodelist">
-  <dt>- for</dt>
+  <dt>- for loop</dt>
   <dd>
     <tt style="color:blue">&lt;:expr&lt; for $lid:s$ = $e1$ $to:b$ $e2$ do { $list:le$ } >></tt><br/>
     <tt style="color:red">MLast.ExFor loc (Ploc.VaVal s) e1 e2 (Ploc.VaVal b) (Ploc.VaVal le)</tt><br/>
@@ -601,7 +600,7 @@
   </dd>
 </dl>
 <dl class="nodelist">
-  <dt>- option label</dt>
+  <dt>- optional label</dt>
   <dd>
     <tt style="color:blue">&lt;:expr&lt; ?$s$ >></tt><br/>
     <tt style="color:red">MLast.ExOlb loc (Ploc.VaVal s) None</tt><br/>
@@ -690,7 +689,7 @@
   </dd>
 </dl>
 <dl class="nodelist">
-  <dt>- t-uple</dt>
+  <dt>- tuple</dt>
   <dd>
     <tt style="color:blue">&lt;:expr&lt; ($list:le$) >></tt><br/>
     <tt style="color:red">MLast.ExTup loc (Ploc.VaVal le)</tt><br/>
@@ -727,7 +726,7 @@
   </dd>
 </dl>
 <dl class="nodelist">
-  <dt>- while</dt>
+  <dt>- while loop</dt>
   <dd>
     <tt style="color:blue">&lt;:expr&lt; while $e$ do { $list:le$ } >></tt><br/>
     <tt style="color:red">MLast.ExWhi loc e (Ploc.VaVal le)</tt><br/>
@@ -897,7 +896,7 @@
   </dd>
 </dl>
 <dl class="nodelist">
-  <dt>- option label</dt>
+  <dt>- optional label</dt>
   <dd>
     <tt style="color:blue">&lt;:patt&lt; ?$s$ >></tt><br/>
     <tt style="color:red">MLast.PaOlb loc (Ploc.VaVal s) None</tt><br/>
@@ -953,7 +952,7 @@
   </dd>
 </dl>
 <dl class="nodelist">
-  <dt>- t-uple</dt>
+  <dt>- tuple</dt>
   <dd>
     <tt style="color:blue">&lt;:patt&lt; ($list:lp$) >></tt><br/>
     <tt style="color:red">MLast.PaTup loc (Ploc.VaVal lp)</tt><br/>
@@ -1116,7 +1115,7 @@
   </dd>
 </dl>
 <dl class="nodelist">
-  <dt>- option label</dt>
+  <dt>- optional label</dt>
   <dd>
     <tt style="color:blue">&lt;:ctyp&lt; ?$s$: $t$ >></tt><br/>
     <tt style="color:red">MLast.TyOlb loc (Ploc.VaVal s) t</tt><br/>
@@ -1166,7 +1165,7 @@
   </dd>
 </dl>
 <dl class="nodelist">
-  <dt>- t-uple</dt>
+  <dt>- tuple</dt>
   <dd>
     <tt style="color:blue">&lt;:ctyp&lt; ( $list:lt$ ) >></tt><br/>
     <tt style="color:red">MLast.TyTup loc (Ploc.VaVal lt)</tt><br/>
@@ -2110,7 +2109,7 @@
 <h2>Nodes without quotations</h2>
 
 <p>Some types defined in the AST tree module "<tt>MLast</tt>" don't
-  have any associated quotation. They are:</p>
+  have an associated quotation. They are:</p>
 
 <ul>
   <li><tt>type_var</tt></li>
@@ -2167,8 +2166,8 @@
     the type variable being "<tt>class_expr</tt>",</li>
   <li>the "class description" ("<tt>class ...</tt>" as signature item),
     the type variable being "<tt>class_type</tt>",</li>
-  <li>the "class type declaration" ("<tt>class type ...</tt>), the type
-    variable being "<tt>class_type</tt>".</li>
+  <li>the "class type declaration" ("<tt>class type ...</tt>"), the
+    type variable being "<tt>class_type</tt>".</li>
 </ul>
 
 <p>It is defined as:</p>
