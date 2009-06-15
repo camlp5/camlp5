@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.99 2007/10/08 09:56:51 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.100 2007/10/11 08:48:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -217,8 +217,10 @@ module MetaAction =
     value mstring s = <:expr< $str:s$ >>;
     value mstring_escaped s = <:expr< $str:String.escaped s$ >>;
     value mvala f s =
-      Pcaml.vala_mapa (fun s -> <:expr< Ploc.VaVal $f s$ >>)
-        (fun _ -> assert False) s
+      if not Pcaml.strict_mode.val then f s
+      else
+        Pcaml.vala_mapa (fun s -> <:expr< Ploc.VaVal $f s$ >>)
+          (fun _ -> assert False) s
     ;
     value mloc = <:expr< Ploc.dummy >>;
     value rec mexpr =
