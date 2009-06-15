@@ -81,6 +81,6 @@ val no_quotations : bool ref;;
    (** When True, all lexers built by [Plexer.gmake ()] do not lex the
        quotation syntax. Default is False (quotations are lexed). *)
 
-(**/**)
+(*** For system use *)
 
 val force_antiquot : bool ref;;

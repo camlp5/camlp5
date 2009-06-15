@@ -5,7 +5,6 @@
 (* #load "q_MLast.cmo";; *)
 
 let not_impl f x =
-  let _ = Printf.eprintf "not_impl\n"; flush stderr in
   let desc =
     if Obj.is_block (Obj.repr x) then
       "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
@@ -41,6 +40,7 @@ let str_item_eoi = Grammar.Entry.create Pcaml.gram "str_item";;
 let sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";;
 let module_expr_eoi = Grammar.Entry.create Pcaml.gram "module_expr";;
 
+(* upper bound of tags of all syntax tree nodes *)
 let anti_tag = 100;;
 
 let make_anti loc t s =
@@ -96,6 +96,16 @@ module Meta =
             in
             begin match typ with
               "" -> r
+            | "anti" ->
+                MLast.ExApp
+                  (loc,
+                   MLast.ExApp
+                     (loc,
+                      MLast.ExAcc
+                        (loc, MLast.ExUid (loc, "MLast"),
+                         MLast.ExUid (loc, "PaAnt")),
+                      ln),
+                   r)
             | "chr" ->
                 MLast.ExApp
                   (loc,
@@ -106,6 +116,19 @@ module Meta =
                          MLast.ExUid (loc, "PaChr")),
                       ln),
                    r)
+            | "int" ->
+                MLast.ExApp
+                  (loc,
+                   MLast.ExApp
+                     (loc,
+                      MLast.ExApp
+                        (loc,
+                         MLast.ExAcc
+                           (loc, MLast.ExUid (loc, "MLast"),
+                            MLast.ExUid (loc, "PaInt")),
+                         ln),
+                      r),
+                   MLast.ExStr (loc, ""))
             | "lid" ->
                 MLast.ExApp
                   (loc,
@@ -114,6 +137,16 @@ module Meta =
                       MLast.ExAcc
                         (loc, MLast.ExUid (loc, "MLast"),
                          MLast.ExUid (loc, "PaLid")),
+                      ln),
+                   r)
+            | "str" ->
+                MLast.ExApp
+                  (loc,
+                   MLast.ExApp
+                     (loc,
+                      MLast.ExAcc
+                        (loc, MLast.ExUid (loc, "MLast"),
+                         MLast.ExUid (loc, "PaStr")),
                       ln),
                    r)
             | "uid" ->
@@ -163,6 +196,19 @@ module Meta =
                      (loc, MLast.ExUid (loc, "MLast"),
                       MLast.ExUid (loc, "PaAny")),
                    ln)
+            | PaApp (_, p1, p2) ->
+                MLast.ExApp
+                  (loc,
+                   MLast.ExApp
+                     (loc,
+                      MLast.ExApp
+                        (loc,
+                         MLast.ExAcc
+                           (loc, MLast.ExUid (loc, "MLast"),
+                            MLast.ExUid (loc, "PaApp")),
+                         ln),
+                      loop p1),
+                   loop p2)
             | PaChr (_, s) ->
                 MLast.ExApp
                   (loc,
@@ -209,6 +255,16 @@ module Meta =
                          ln),
                       loop p1),
                    loop p2)
+            | PaStr (_, s) ->
+                MLast.ExApp
+                  (loc,
+                   MLast.ExApp
+                     (loc,
+                      MLast.ExAcc
+                        (loc, MLast.ExUid (loc, "MLast"),
+                         MLast.ExUid (loc, "PaStr")),
+                      ln),
+                   MLast.ExStr (loc, s))
             | PaUid (_, s) ->
                 MLast.ExApp
                   (loc,
@@ -487,7 +543,8 @@ module Meta =
               MLast.PaAnt (loc, r)
             in
             begin match typ with
-              "lid" ->
+              "" -> r
+            | "lid" ->
                 MLast.PaApp
                   (loc,
                    MLast.PaApp
@@ -497,9 +554,57 @@ module Meta =
                          MLast.PaUid (loc, "ExLid")),
                       MLast.PaAny loc),
                    r)
+            | "uid" ->
+                MLast.PaApp
+                  (loc,
+                   MLast.PaApp
+                     (loc,
+                      MLast.PaAcc
+                        (loc, MLast.PaUid (loc, "MLast"),
+                         MLast.PaUid (loc, "ExUid")),
+                      MLast.PaAny loc),
+                   r)
             | x -> not_impl ("p_expr anti " ^ x) 0
             end
-        | None -> match e with x -> not_impl "p_expr" x
+        | None ->
+            match e with
+              ExAcc (_, e1, e2) ->
+                MLast.PaApp
+                  (loc,
+                   MLast.PaApp
+                     (loc,
+                      MLast.PaApp
+                        (loc,
+                         MLast.PaAcc
+                           (loc, MLast.PaUid (loc, "MLast"),
+                            MLast.PaUid (loc, "ExAcc")),
+                         MLast.PaAny loc),
+                      loop e1),
+                   loop e2)
+            | ExApp (_, e1, e2) ->
+                MLast.PaApp
+                  (loc,
+                   MLast.PaApp
+                     (loc,
+                      MLast.PaApp
+                        (loc,
+                         MLast.PaAcc
+                           (loc, MLast.PaUid (loc, "MLast"),
+                            MLast.PaUid (loc, "ExApp")),
+                         MLast.PaAny loc),
+                      loop e1),
+                   loop e2)
+            | ExUid (_, s) ->
+                MLast.PaApp
+                  (loc,
+                   MLast.PaApp
+                     (loc,
+                      MLast.PaAcc
+                        (loc, MLast.PaUid (loc, "MLast"),
+                         MLast.PaUid (loc, "ExUid")),
+                      MLast.PaAny loc),
+                   MLast.PaStr (loc, s))
+            | x -> not_impl "p_expr" x
       in
       loop e
     ;;
@@ -607,14 +712,26 @@ Grammar.extend
      Gramext.action
        (fun (s : string) (loc : Ploc.t) ->
           (make_anti loc "uid" s : 'Pcaml__patt));
+     [Gramext.Stoken ("ANTIQUOT", "str")],
+     Gramext.action
+       (fun (s : string) (loc : Ploc.t) ->
+          (make_anti loc "str" s : 'Pcaml__patt));
      [Gramext.Stoken ("ANTIQUOT", "lid")],
      Gramext.action
        (fun (s : string) (loc : Ploc.t) ->
           (make_anti loc "lid" s : 'Pcaml__patt));
+     [Gramext.Stoken ("ANTIQUOT", "int")],
+     Gramext.action
+       (fun (s : string) (loc : Ploc.t) ->
+          (make_anti loc "int" s : 'Pcaml__patt));
      [Gramext.Stoken ("ANTIQUOT", "chr")],
      Gramext.action
        (fun (s : string) (loc : Ploc.t) ->
           (make_anti loc "chr" s : 'Pcaml__patt));
+     [Gramext.Stoken ("ANTIQUOT", "anti")],
+     Gramext.action
+       (fun (s : string) (loc : Ploc.t) ->
+          (make_anti loc "anti" s : 'Pcaml__patt));
      [Gramext.Stoken ("ANTIQUOT", "")],
      Gramext.action
        (fun (s : string) (loc : Ploc.t) ->
@@ -662,6 +779,7 @@ value check_anti s kind =
 ;
 
 let lex = Grammar.glexer Pcaml.gram in
+let tok_match = lex.Plexing.tok_match in
 lex.Plexing.tok_match :=
   fun
   [ (*("ANTIQUOT_LOC", "") ->
@@ -705,14 +823,12 @@ lex.Plexing.tok_match :=
       fun
       [ ("ANTIQUOT_LOC", prm) -> check_anti_loc prm "a_opt"
       | _ -> raise Stream.Failure ]
-  | *) ("FLAG", prm) ->
-let _ = do { Printf.eprintf "yop %s\n" prm; flush stderr; } in
+  | ("FLAG", "") ->
       fun
-      [ ("ANTIQUOT", prm) ->
-let _ = do { Printf.eprintf "yep %s\n" prm; flush stderr; } in
-          check_anti prm "flag"
+      [ ("ANTIQUOT_loc", prm) -> check_anti_loc prm "flag"
       | _ -> raise Stream.Failure ]
-  | tok -> Plexing.default_match tok ]
+*)
+  | tok -> tok_match tok ]
 ;
 
 (* reinit the entry functions to take the new tok_match into account *)
