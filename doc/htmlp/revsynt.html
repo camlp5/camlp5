@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: revsynt.html,v 1.11 2007/07/20 01:44:35 deraugla Exp $ -->
+  <!-- $Id: revsynt.html,v 1.12 2007/07/20 12:17:35 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>revised syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -298,6 +298,175 @@
       </tr>
     </table>
   </li>
+</ul>
+
+<h3>Types</h3>
+
+<ul>
+  <li>The type constructors are before their type parameters, which
+    are curryfied:
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>int list</tt></td>
+        <td><tt>list int</tt></td>
+      </tr>
+      <tr>
+        <td><tt>('a, bool) Hashtbl.t</tt></td>
+        <td><tt>Hashtbl.t 'a bool</tt></td>
+      </tr>
+      <tr>
+        <td><tt>type 'a foo = 'a list list</tt></td>
+        <td><tt>type foo 'a = list (list 'a)</tt></td>
+      </tr>
+    </table>
+  </li>
+
+  <li>The abstract types are represented by a unbound type variable:
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>type 'a foo;;</tt></td>
+        <td><tt>type foo 'a = 'b;</tt></td>
+      </tr>
+      <tr>
+        <td><tt>type bar;;</tt></td>
+        <td><tt>type bar = 'a;</tt></td>
+      </tr>
+    </table>
+  </li>
+
+  <li>Parentheses are mandatory in tuples of types:
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>int * bool</tt></td>
+        <td><tt>(int * bool)</tt></td>
+      </tr>
+    </table>
+  </li>
+
+  <li>In declaration of a concrete type, brackets must enclose the
+    constructor declarations:
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>type t = A of i | B;;</tt></td>
+        <td><tt>type t = [ A of i | B ];</tt></td>
+      </tr>
+    </table>
+  </li>
+
+  <li>It is possible to make the empty type, without constructor:
+<pre>
+  type foo = [];
+</pre>
+  </li>
+
+  <li>There is a syntax difference between data constructors with
+    several parameters and data constructors with one parameter of type
+    tuple:<br/><br/>
+
+    The declaration of a data constructor with several parameters
+    is done by separating the types with "and". In expressions and
+    patterns, this constructor parameters must be curryfied:
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>type t = C of t1 * t2;;</tt></td>
+        <td><tt>type t = [ C of t1 and t2 ];</tt></td>
+      </tr>
+      <tr>
+        <td><tt>C (x, y);;</tt></td>
+        <td><tt>C x y;</tt></td>
+      </tr>
+    </table>
+
+    The declaration of a data constructor with one parameter of type
+    tuple is done by using a tuple type. In expressions and patterns,
+    the parameter has not to be curryfied, since it is alone. In that
+    case the syntax of constructor parameters is the same between the
+    two syntaxes:
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>type t = D of (t1 * t2);;</tt></td>
+        <td><tt>type t = [ D of (t1 * t2) ];</tt></td>
+      </tr>
+      <tr>
+        <td><tt>D (x, y);;</tt></td>
+        <td><tt>D (x, y);</tt></td>
+      </tr>
+    </table>
+  </li>
+
+  <li>The bool constructors start with an uppercase letter. The identifiers
+    "true" and "false" are not keywords:
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>true && false</tt></td>
+        <td><tt>True && False</tt></td>
+      </tr>
+    </table>
+  </li>
+
+  <li>In record types, the keyword ``mutable'' must appear after the
+    colon:
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>type t = {mutable x : t1};;</tt></td>
+        <td><tt>type t = {x : mutable t1};</tt></td>
+      </tr>
+    </table>
+  </li>
+</ul>
+
+<h2>Modules</h2>
+
+<ul>
+  <li>Functor application uses curryfication. Parentheses are not
+    mandatory to apply them:
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>type t = Set.Make(M).t;;</tt></td>
+        <td><tt>type t = (Set.Make M).t;</tt></td>
+      </tr>
+      <tr>
+        <td><tt>module M = Mod.Make (M1) (M2);;</tt></td>
+        <td><tt>module M = Mod.Make M1 M2;</tt></td>
+      </tr>
+    </table>
+    </li>
 </ul>
 
 <p>...<em>to be continued</em>...</p>
