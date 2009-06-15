@@ -21,6 +21,12 @@
 
 type loc = Stdpp.location;;
 
+type 'a vala =
+  'a Stdpp.value_or_anti =
+      VaAnt of string
+    | VaVal of 'a
+;;
+
 type ctyp =
     TyAcc of loc * ctyp * ctyp
   | TyAli of loc * ctyp * ctyp
@@ -161,7 +167,7 @@ and str_item =
   | StOpn of loc * string list
   | StTyp of loc * type_decl list
   | StUse of loc * string * (str_item * loc) list
-  | StVal of loc * bool * (patt * expr) list
+  | StVal of loc * bool vala * (patt * expr) list
 and type_decl =
   { tdNam : loc * string;
     tdPrm : type_var list;

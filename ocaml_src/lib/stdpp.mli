@@ -86,3 +86,10 @@ val make_loc : int * int -> location;;
        (included) and ep (excluded), each of them being the number of
        characters since the beginning of the stream. The location created
        does not contain the line number. *)
+
+(*** For system use *)
+
+type 'a value_or_anti =
+    VaAnt of string
+  | VaVal of 'a
+;;

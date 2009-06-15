@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: mLast.mli,v 1.3 2007/07/20 15:12:37 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.4 2007/08/05 16:27:59 deraugla Exp $ *)
 
 (* Module [MLast]: abstract syntax tree.
 
@@ -20,6 +20,11 @@
    See also the file q_MLast.ml in Camlp5 sources. *)
 
 type loc = Stdpp.location;
+
+type vala 'a = Stdpp.value_or_anti 'a ==
+  [ VaAnt of string
+  | VaVal of 'a ]
+;
 
 type ctyp =
   [ TyAcc of loc and ctyp and ctyp
@@ -161,7 +166,7 @@ and str_item =
   | StOpn of loc and list string
   | StTyp of loc and list type_decl
   | StUse of loc and string and list (str_item * loc)
-  | StVal of loc and bool and list (patt * expr) ]
+  | StVal of loc and vala bool and list (patt * expr) ]
 and type_decl =
   { tdNam : (loc * string);
     tdPrm : list type_var;

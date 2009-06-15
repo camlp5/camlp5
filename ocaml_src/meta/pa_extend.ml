@@ -38,6 +38,7 @@ type 'e text =
   | TXnterm of loc * 'e name * string option
   | TXopt of loc * 'e text
   | TXflag of loc * 'e text
+  | TXflag2 of loc * 'e text
   | TXrules of loc * ('e text list * 'e) list
   | TXself of loc
   | TXtok of loc * string * 'e
@@ -1003,6 +1004,12 @@ let rec make_expr gmod tvar =
          MLast.ExAcc
            (loc, MLast.ExUid (loc, "Gramext"), MLast.ExUid (loc, "Sflag")),
          make_expr gmod "" t)
+  | TXflag2 (loc, t) ->
+      MLast.ExApp
+        (loc,
+         MLast.ExAcc
+           (loc, MLast.ExUid (loc, "Gramext"), MLast.ExUid (loc, "Sflag2")),
+         make_expr gmod "" t)
   | TXrules (loc, rl) ->
       MLast.ExApp
         (loc,
@@ -1252,6 +1259,54 @@ let ssflag loc s =
   let used = "a_flag" :: s.used in
   let text = TXrules (loc, srules loc "a_flag" rl "") in
   let styp = STquo (loc, "a_flag") in {used = used; text = text; styp = styp}
+;;
+
+let ssflag2 loc s =
+  let rl =
+    let r1 =
+      let prod =
+        let n = mk_name loc (MLast.ExLid (loc, "a_flag2")) in
+        [mk_psymbol (MLast.PaLid (loc, "a")) (TXnterm (loc, n, None))
+           (STquo (loc, "a_flag2"))]
+      in
+      let act = MLast.ExLid (loc, "a") in {prod = prod; action = Some act}
+    in
+    let r2 =
+      let prod =
+        [mk_psymbol (MLast.PaLid (loc, "a")) (TXflag2 (loc, s.text))
+           (STapp
+              (loc,
+               STtyp
+                 (MLast.TyAcc
+                    (loc, MLast.TyUid (loc, "MLast"),
+                     MLast.TyLid (loc, "vala"))),
+               STlid (loc, "bool")))]
+      in
+      let act =
+        MLast.ExApp
+          (loc,
+           MLast.ExApp
+             (loc,
+              MLast.ExAcc
+                (loc, MLast.ExUid (loc, "Qast"), MLast.ExLid (loc, "vala")),
+              MLast.ExFun
+                (loc,
+                 [MLast.PaLid (loc, "a"), None,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "Qast"),
+                        MLast.ExUid (loc, "Bool")),
+                     MLast.ExLid (loc, "a"))])),
+           MLast.ExLid (loc, "a"))
+      in
+      {prod = prod; action = Some act}
+    in
+    [r1; r2]
+  in
+  let used = "a_flag2" :: s.used in
+  let text = TXrules (loc, srules loc "a_flag2" rl "") in
+  let styp = STquo (loc, "a_flag2") in {used = used; text = text; styp = styp}
 ;;
 
 let text_of_entry loc gmod e =
@@ -1865,7 +1920,24 @@ Grammar.extend
             'psymbol))]];
     Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e), None,
     [Some "top", Some Gramext.NonA,
-     [[Gramext.Stoken ("UIDENT", "FLAG"); Gramext.Sself],
+     [[Gramext.Stoken ("UIDENT", "FLAG2"); Gramext.Sself],
+      Gramext.action
+        (fun (s : 'symbol) _ (loc : Token.location) ->
+           (if !quotify then ssflag2 loc s
+            else
+              let styp =
+                STapp
+                  (loc,
+                   STtyp
+                     (MLast.TyAcc
+                        (loc, MLast.TyUid (loc, "MLast"),
+                         MLast.TyLid (loc, "vala"))),
+                   STlid (loc, "bool"))
+              in
+              let text = TXflag2 (loc, s.text) in
+              {used = s.used; text = text; styp = styp} :
+            'symbol));
+      [Gramext.Stoken ("UIDENT", "FLAG"); Gramext.Sself],
       Gramext.action
         (fun (s : 'symbol) _ (loc : Token.location) ->
            (if !quotify then ssflag loc s

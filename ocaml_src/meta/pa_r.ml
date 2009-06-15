@@ -297,13 +297,14 @@ Grammar.extend
         (fun (e : 'expr) (loc : Token.location) ->
            (MLast.StExp (loc, e) : 'str_item));
       [Gramext.Stoken ("", "value");
-       Gramext.Sflag (Gramext.Stoken ("", "rec"));
+       Gramext.Sflag2 (Gramext.Stoken ("", "rec"));
        Gramext.Slist1sep
          (Gramext.Snterm
             (Grammar.Entry.obj (let_binding : 'let_binding Grammar.Entry.e)),
           Gramext.Stoken ("", "and"))],
       Gramext.action
-        (fun (l : 'let_binding list) (r : bool) _ (loc : Token.location) ->
+        (fun (l : 'let_binding list) (r : bool MLast.vala) _
+             (loc : Token.location) ->
            (MLast.StVal (loc, r, l) : 'str_item));
       [Gramext.Stoken ("", "type");
        Gramext.Slist1sep

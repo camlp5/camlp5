@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.22 2007/08/03 05:28:52 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.23 2007/08/05 16:27:59 deraugla Exp $ *)
 
 open Stdpp;
 
@@ -38,6 +38,7 @@ type text 'e =
   | TXnterm of loc and name 'e and option string
   | TXopt of loc and text 'e
   | TXflag of loc and text 'e
+  | TXflag2 of loc and text 'e
   | TXrules of loc and list (list (text 'e) * 'e)
   | TXself of loc
   | TXtok of loc and string and 'e ]
@@ -426,6 +427,7 @@ value rec make_expr gmod tvar =
                     ($n.expr$ : $uid:gmod$.Entry.e '$n.tvar$)) >> ]
   | TXopt loc t -> <:expr< Gramext.Sopt $make_expr gmod "" t$ >>
   | TXflag loc t -> <:expr< Gramext.Sflag $make_expr gmod "" t$ >>
+  | TXflag2 loc t -> <:expr< Gramext.Sflag2 $make_expr gmod "" t$ >>
   | TXrules loc rl ->
       <:expr< Gramext.srules $make_expr_rules loc gmod rl ""$ >>
   | TXself loc -> <:expr< Gramext.Sself >>
@@ -615,6 +617,32 @@ value ssflag loc s =
   let used = ["a_flag" :: s.used] in
   let text = TXrules loc (srules loc "a_flag" rl "") in
   let styp = STquo loc "a_flag" in
+  {used = used; text = text; styp = styp}
+;
+
+value ssflag2 loc s =
+  let rl =
+    let r1 =
+      let prod =
+        let n = mk_name loc <:expr< a_flag2 >> in
+        [mk_psymbol <:patt< a >> (TXnterm loc n None) (STquo loc "a_flag2")]
+      in
+      let act = <:expr< a >> in
+      {prod = prod; action = Some act}
+    in
+    let r2 =
+      let prod =
+        [mk_psymbol <:patt< a >> (TXflag2 loc s.text)
+           (STapp loc (STtyp <:ctyp< MLast.vala >>) (STlid loc "bool"))]
+      in
+      let act = <:expr< Qast.vala (fun a -> Qast.Bool a) a >> in
+      {prod = prod; action = Some act}
+    in
+    [r1; r2]
+  in
+  let used = ["a_flag2" :: s.used] in
+  let text = TXrules loc (srules loc "a_flag2" rl "") in
+  let styp = STquo loc "a_flag2" in
   {used = used; text = text; styp = styp}
 ;
 
@@ -878,6 +906,14 @@ EXTEND
           else
             let styp = STlid loc "bool" in
             let text = TXflag loc s.text in
+            {used = s.used; text = text; styp = styp}
+      | UIDENT "FLAG2"; s = SELF ->
+          if quotify.val then ssflag2 loc s
+          else
+            let styp =
+              STapp loc (STtyp <:ctyp< MLast.vala >>) (STlid loc "bool")
+            in
+            let text = TXflag2 loc s.text in
             {used = s.used; text = text; styp = styp} ]
     | [ UIDENT "SELF" ->
           {used = []; text = TXself loc; styp = STself loc "SELF"}

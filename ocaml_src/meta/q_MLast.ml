@@ -31,6 +31,11 @@ module Qast =
       | Antiquot of MLast.loc * string
     ;;
     let loc = Stdpp.dummy_loc;;
+    let vala f =
+      function
+        MLast.VaVal a -> Node ("VaVal", [f a])
+      | MLast.VaAnt a -> failwith ("q_MLast: " ^ a)
+    ;;
     let expr_node m n =
       if m = "" then MLast.ExUid (loc, n)
       else MLast.ExAcc (loc, MLast.ExUid (loc, m), MLast.ExUid (loc, n))
@@ -166,6 +171,7 @@ let poly_variant = Grammar.Entry.create gram "poly_variant";;
 let a_list = Grammar.Entry.create gram "a_list";;
 let a_opt = Grammar.Entry.create gram "a_opt";;
 let a_flag = Grammar.Entry.create gram "a_flag";;
+let a_flag2 = Grammar.Entry.create gram "a_flag2";;
 let a_UIDENT = Grammar.Entry.create gram "a_UIDENT";;
 let a_LIDENT = Grammar.Entry.create gram "a_LIDENT";;
 let a_INT = Grammar.Entry.create gram "a_INT";;
@@ -474,14 +480,14 @@ Grammar.extend
            (Qast.Node ("StExp", [Qast.Loc; e]) : 'str_item));
       [Gramext.Stoken ("", "value");
        Gramext.srules
-         [[Gramext.Sflag (Gramext.Stoken ("", "rec"))],
+         [[Gramext.Sflag2 (Gramext.Stoken ("", "rec"))],
           Gramext.action
-            (fun (a : bool) (loc : Token.location) ->
-               (Qast.Bool a : 'a_flag));
+            (fun (a : bool MLast.vala) (loc : Token.location) ->
+               (Qast.vala (fun a -> Qast.Bool a) a : 'a_flag2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_flag : 'a_flag Grammar.Entry.e))],
+             (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
-            (fun (a : 'a_flag) (loc : Token.location) -> (a : 'a_flag))];
+            (fun (a : 'a_flag2) (loc : Token.location) -> (a : 'a_flag2))];
        Gramext.srules
          [[Gramext.Slist1sep
              (Gramext.Snterm
@@ -496,7 +502,7 @@ Grammar.extend
           Gramext.action
             (fun (a : 'a_list) (loc : Token.location) -> (a : 'a_list))]],
       Gramext.action
-        (fun (l : 'a_list) (r : 'a_flag) _ (loc : Token.location) ->
+        (fun (l : 'a_list) (r : 'a_flag2) _ (loc : Token.location) ->
            (Qast.Node ("StVal", [Qast.Loc; r; l]) : 'str_item));
       [Gramext.Stoken ("", "type");
        Gramext.srules
@@ -597,7 +603,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 282, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 288, 19))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -863,7 +869,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 337, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 343, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -3964,6 +3970,16 @@ Grammar.extend
      Gramext.action
        (fun (a : string) (loc : Token.location) ->
           (antiquot "flag" loc a : 'a_flag))]];
+   Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e), None,
+   [None, None,
+    [[Gramext.Stoken ("ANTIQUOT", "flag")],
+     Gramext.action
+       (fun (a : string) (loc : Token.location) ->
+          (Qast.Node ("VaVal", [antiquot "flag" loc a]) : 'a_flag2));
+     [Gramext.Stoken ("ANTIQUOT", "flag2")],
+     Gramext.action
+       (fun (a : string) (loc : Token.location) ->
+          (antiquot "flag2" loc a : 'a_flag2))]];
    Grammar.Entry.obj (a_opt : 'a_opt Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Stoken ("ANTIQUOT", "when")],
@@ -3976,6 +3992,12 @@ Grammar.extend
      Gramext.action
        (fun (a : string) (loc : Token.location) ->
           (antiquot "opt" loc a : 'a_flag))]];
+   Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e), None,
+   [None, None,
+    [[Gramext.Stoken ("ANTIQUOT", "opt")],
+     Gramext.action
+       (fun (a : string) (loc : Token.location) ->
+          (Qast.Node ("VaVal", [antiquot "opt" loc a]) : 'a_flag2))]];
    Grammar.Entry.obj (a_UIDENT : 'a_UIDENT Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Stoken ("UIDENT", "")],

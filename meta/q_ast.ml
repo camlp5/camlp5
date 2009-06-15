@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.14 2007/08/03 05:04:11 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.15 2007/08/05 16:27:59 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -72,6 +72,16 @@ module Meta =
     open MLast;
     value loc = Stdpp.dummy_loc;
     value ln () = <:expr< $lid:Stdpp.loc_name.val$ >>;
+    value e_vala f =
+      fun
+      [ VaAnt s ->
+          match eval_antiquot expr_eoi s with
+          [ Some (loc, s) ->
+              let r = <:expr< MLast.VaVal $s$ >> in
+              <:expr< $anti:r$ >>
+          | None -> assert False ]
+      | VaVal v -> <:expr< MLast.VaVal $f v$ >> ]
+    ;
     value e_list elem el =
       match eval_antiquot_patch expr_eoi el with
       [ Some (loc, r) -> <:expr< $anti:r$ >>
@@ -98,12 +108,13 @@ module Meta =
           [ None -> <:expr< None >>
           | Some e -> <:expr< Some $elem e$ >> ] ]
     ;
-    value e_bool b =
+    value e_bool b = if b then <:expr< True >> else <:expr< False >>;
+    value e_bool_p b =
       match eval_antiquot_patch expr_eoi b with
       [ Some (loc, r) -> <:expr< $anti:r$ >>
       | None -> if b then <:expr< True >> else <:expr< False >> ]
     ;
-    value p_bool b =
+    value p_bool_p b =
       match eval_antiquot_patch patt_eoi b with
       [ Some (loc, r) -> <:patt< $anti:r$ >>
       | None -> if b then <:patt< True >> else <:patt< False >> ]
@@ -206,7 +217,7 @@ module Meta =
             in
             <:expr< MLast.ExFun $ln$ $pwel$ >>
         | ExLet _ rf lpe e ->
-            let rf = e_bool rf in
+            let rf = e_bool_p rf in
             let lpe =
               e_list (fun (p, e) -> <:expr< ($e_patt p$, $loop e$) >>) lpe
             in
@@ -253,7 +264,7 @@ module Meta =
         | ExInt _ s k -> <:patt< MLast.ExInt _ $p_string s$ $str:k$ >>
         | ExFlo _ s -> <:patt< MLast.ExFlo _ $p_string s$ >>
         | ExLet _ rf lpe e ->
-            let rf = p_bool rf in
+            let rf = p_bool_p rf in
             let lpe =
               p_list (fun (p, e) -> <:patt< ($p_patt p$, $loop e$) >>) lpe
             in
@@ -297,7 +308,7 @@ module Meta =
                 (fun (s, me) -> <:expr< ($e_string s$, $e_module_expr me$) >>)
                 lsme
             in
-            <:expr< MLast.StMod $ln$ $e_bool rf$ $lsme$ >>
+            <:expr< MLast.StMod $ln$ $e_bool_p rf$ $lsme$ >>
         | StMty _ s mt ->
             <:expr< MLast.StMty $ln$ $e_string s$ $e_module_type mt$ >>
         | StOpn _ sl ->
@@ -308,7 +319,7 @@ module Meta =
             let lpe =
               e_list (fun (p, e) -> <:expr< ($e_patt p$, $e_expr e$) >>) lpe
             in
-            <:expr< MLast.StVal $ln$ $e_bool rf$ $lpe$ >>
+            <:expr< MLast.StVal $ln$ $e_vala e_bool rf$ $lpe$ >>
         | x -> not_impl "e_str_item" x ]
     and p_str_item =
       fun
@@ -382,23 +393,6 @@ EXTEND
   ;
 END;
 
-value eq_before_colon p e =
-  loop 0 where rec loop i =
-    if i == String.length e then
-      failwith "Internal error in Plexer: incorrect ANTIQUOT"
-    else if i == String.length p then e.[i] == ':'
-    else if p.[i] == e.[i] then loop (i + 1)
-    else False
-;
-
-value after_colon e =
-  try
-    let i = String.index e ':' in
-    String.sub e (i + 1) (String.length e - i - 1)
-  with
-  [ Not_found -> "" ]
-;
-
 value check_anti_loc s kind =
   try
     let i = String.index s ':' in
@@ -465,7 +459,13 @@ lex.Token.tok_match :=
       | _ -> raise Stream.Failure ]
   | ("FLAG", "") ->
       fun
-      [ ("ANTIQUOT_LOC", prm) -> check_anti_loc prm "flag"
+      [ ("ANTIQUOT_LOC", prm) ->
+          try check_anti_loc prm "flag" with
+          [ Stream.Failure -> check_anti_loc prm "flag2" ]
+      | _ -> raise Stream.Failure ]
+  | ("FLAG2", "") ->
+      fun
+      [ ("ANTIQUOT_LOC", prm) -> check_anti_loc prm "flag2"
       | _ -> raise Stream.Failure ]
   | tok -> Token.default_match tok ]
 ;

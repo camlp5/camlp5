@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.4 2007/07/26 08:34:12 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.5 2007/08/05 16:27:59 deraugla Exp $ *)
 
 open Stdpp;
 open MLast;
@@ -115,6 +115,12 @@ value conv_lab = do {
 
 value array_function str name =
   ldot (lident str) (if fast.val then "unsafe_" ^ name else name)
+;
+
+value mkvala f =
+  fun
+  [ VaAnt _ -> failwith "vala"
+  | VaVal v -> f v ]
 ;
 
 value mkrf =
@@ -827,7 +833,7 @@ and str_item s l =
       apply_with_var glob_fname fn
         (fun () -> List.fold_right (fun (si, _) -> str_item si) sl l)
   | StVal loc rf pel ->
-      [mkstr loc (Pstr_value (mkrf rf) (List.map mkpe pel)) :: l] ]
+      [mkstr loc (Pstr_value (mkvala mkrf rf) (List.map mkpe pel)) :: l] ]
 and class_type =
   fun
   [ CtCon loc id tl ->

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: stdpp.mli,v 1.11 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: stdpp.mli,v 1.12 2007/08/05 16:27:59 deraugla Exp $ *)
 
 (** Standard definitions. *)
 
@@ -86,3 +86,10 @@ value make_loc : (int * int) -> location;
        (included) and ep (excluded), each of them being the number of
        characters since the beginning of the stream. The location created
        does not contain the line number. *)
+
+(*** For system use *)
+
+type value_or_anti 'a =
+  [ VaAnt of string
+  | VaVal of 'a ]
+;

@@ -141,3 +141,8 @@ let raise_with_loc loc exc =
 ;;
 
 let loc_name = ref "loc";;
+
+type 'a value_or_anti =
+    VaAnt of string
+  | VaVal of 'a
+;;

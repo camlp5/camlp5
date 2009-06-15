@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.32 2007/08/02 22:21:31 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.33 2007/08/05 16:27:59 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -157,8 +157,8 @@ EXTEND
       | "open"; i = mod_ident -> <:str_item< open $i$ >>
       | "type"; tdl = LIST1 type_declaration SEP "and" ->
           <:str_item< type $list:tdl$ >>
-      | "value"; r = FLAG "rec"; l = LIST1 let_binding SEP "and" ->
-          <:str_item< value $flag:r$ $list:l$ >>
+      | "value"; r = FLAG2 "rec"; l = LIST1 let_binding SEP "and" ->
+          <:str_item< value $flag2:r$ $list:l$ >>
       | e = expr -> <:str_item< $exp:e$ >> ] ]
   ;
   rebind_exn:

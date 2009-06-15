@@ -65,6 +65,29 @@ module Meta =
     open MLast;;
     let loc = Stdpp.dummy_loc;;
     let ln () = MLast.ExLid (loc, !(Stdpp.loc_name));;
+    let e_vala f =
+      function
+        VaAnt s ->
+          begin match eval_antiquot expr_eoi s with
+            Some (loc, s) ->
+              let r =
+                MLast.ExApp
+                  (loc,
+                   MLast.ExAcc
+                     (loc, MLast.ExUid (loc, "MLast"),
+                      MLast.ExUid (loc, "VaVal")),
+                   s)
+              in
+              MLast.ExAnt (loc, r)
+          | None -> assert false
+          end
+      | VaVal v ->
+          MLast.ExApp
+            (loc,
+             MLast.ExAcc
+               (loc, MLast.ExUid (loc, "MLast"), MLast.ExUid (loc, "VaVal")),
+             f v)
+    ;;
     let e_list elem el =
       match eval_antiquot_patch expr_eoi el with
         Some (loc, r) -> MLast.ExAnt (loc, r)
@@ -102,12 +125,15 @@ module Meta =
           | Some e -> MLast.ExApp (loc, MLast.ExUid (loc, "Some"), elem e)
     ;;
     let e_bool b =
+      if b then MLast.ExUid (loc, "True") else MLast.ExUid (loc, "False")
+    ;;
+    let e_bool_p b =
       match eval_antiquot_patch expr_eoi b with
         Some (loc, r) -> MLast.ExAnt (loc, r)
       | None ->
           if b then MLast.ExUid (loc, "True") else MLast.ExUid (loc, "False")
     ;;
-    let p_bool b =
+    let p_bool_p b =
       match eval_antiquot_patch patt_eoi b with
         Some (loc, r) -> MLast.PaAnt (loc, r)
       | None ->
@@ -478,7 +504,7 @@ module Meta =
                   ln),
                pwel)
         | ExLet (_, rf, lpe, e) ->
-            let rf = e_bool rf in
+            let rf = e_bool_p rf in
             let lpe =
               e_list (fun (p, e) -> MLast.ExTup (loc, [e_patt p; loop e])) lpe
             in
@@ -683,7 +709,7 @@ module Meta =
                   MLast.PaAny loc),
                p_string s)
         | ExLet (_, rf, lpe, e) ->
-            let rf = p_bool rf in
+            let rf = p_bool_p rf in
             let lpe =
               p_list (fun (p, e) -> MLast.PaTup (loc, [p_patt p; loop e])) lpe
             in
@@ -850,7 +876,7 @@ module Meta =
                        (loc, MLast.ExUid (loc, "MLast"),
                         MLast.ExUid (loc, "StMod")),
                      ln),
-                  e_bool rf),
+                  e_bool_p rf),
                lsme)
         | StMty (_, s, mt) ->
             MLast.ExApp
@@ -900,7 +926,7 @@ module Meta =
                        (loc, MLast.ExUid (loc, "MLast"),
                         MLast.ExUid (loc, "StVal")),
                      ln),
-                  e_bool rf),
+                  e_vala e_bool rf),
                lpe)
         | x -> not_impl "e_str_item" x
       in
@@ -1214,7 +1240,14 @@ lex.Token.tok_match <-
        | _ -> raise Stream.Failure)
   | "FLAG", "" ->
       (function
-         "ANTIQUOT_LOC", prm -> check_anti_loc prm "flag"
+         "ANTIQUOT_LOC", prm ->
+           begin try check_anti_loc prm "flag" with
+             Stream.Failure -> check_anti_loc prm "flag2"
+           end
+       | _ -> raise Stream.Failure)
+  | "FLAG2", "" ->
+      (function
+         "ANTIQUOT_LOC", prm -> check_anti_loc prm "flag2"
        | _ -> raise Stream.Failure)
   | tok -> Token.default_match tok;;
 

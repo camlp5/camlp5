@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: stdpp.ml,v 1.15 2007/07/12 01:37:33 deraugla Exp $ *)
+(* $Id: stdpp.ml,v 1.16 2007/08/05 16:27:59 deraugla Exp $ *)
 
 (* Two implementations of "locations" are available; both work. The
    following one is more recent. They are represented as "record",
@@ -132,3 +132,8 @@ value raise_with_loc loc exc =
 ;
 
 value loc_name = ref "loc";
+
+type value_or_anti 'a =
+  [ VaAnt of string
+  | VaVal of 'a ]
+;

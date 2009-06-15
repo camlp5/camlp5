@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.31 2007/08/01 18:57:15 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.32 2007/08/05 16:27:59 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -31,6 +31,11 @@ module Qast =
       | Antiquot of MLast.loc and string ]
     ;
     value loc = Stdpp.dummy_loc;
+    value vala f =
+      fun
+      [ MLast.VaVal a -> Node "VaVal" [f a]
+      | MLast.VaAnt a -> failwith ("q_MLast: " ^ a) ]
+    ;
     value expr_node m n =
       if m = "" then <:expr< $uid:n$ >> else <:expr< $uid:m$ . $uid:n$ >>
     ;
@@ -142,6 +147,7 @@ value poly_variant = Grammar.Entry.create gram "poly_variant";
 value a_list = Grammar.Entry.create gram "a_list";
 value a_opt = Grammar.Entry.create gram "a_opt";
 value a_flag = Grammar.Entry.create gram "a_flag";
+value a_flag2 = Grammar.Entry.create gram "a_flag2";
 value a_UIDENT = Grammar.Entry.create gram "a_UIDENT";
 value a_LIDENT = Grammar.Entry.create gram "a_LIDENT";
 value a_INT = Grammar.Entry.create gram "a_INT";
@@ -292,7 +298,7 @@ EXTEND
       | "open"; i = mod_ident -> Qast.Node "StOpn" [Qast.Loc; i]
       | "type"; tdl = SLIST1 type_declaration SEP "and" ->
           Qast.Node "StTyp" [Qast.Loc; tdl]
-      | "value"; r = SFLAG "rec"; l = SLIST1 let_binding SEP "and" ->
+      | "value"; r = SFLAG2 "rec"; l = SLIST1 let_binding SEP "and" ->
           Qast.Node "StVal" [Qast.Loc; r; l]
       | e = expr -> Qast.Node "StExp" [Qast.Loc; e] ] ]
   ;
@@ -1197,6 +1203,10 @@ EXTEND
   a_flag:
     [ [ a = ANTIQUOT "flag" -> antiquot "flag" loc a ] ]
   ;
+  a_flag2:
+    [ [ a = ANTIQUOT "flag2" -> antiquot "flag2" loc a
+      | a = ANTIQUOT "flag" -> Qast.Node "VaVal" [antiquot "flag" loc a] ] ]
+  ;
   (* compatibility; deprecated since version 4.07 *)
   a_opt:
     [ [ a = ANTIQUOT "when" -> antiquot "when" loc a ] ]
@@ -1204,6 +1214,10 @@ EXTEND
   (* compatibility; deprecated since version 4.07 *)
   a_flag:
     [ [ a = ANTIQUOT "opt" -> antiquot "opt" loc a ] ]
+  ;
+  (* compatibility; deprecated since version 4.07 *)
+  a_flag2:
+    [ [ a = ANTIQUOT "opt" -> Qast.Node "VaVal" [antiquot "opt" loc a] ] ]
   ;
   a_UIDENT:
     [ [ a = ANTIQUOT "uid" -> antiquot "uid" loc a
