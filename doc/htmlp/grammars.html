@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.12 2007/07/15 14:54:55 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.13 2007/07/15 15:22:48 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -123,6 +123,8 @@ is loaded. Its syntax is:</p>
              psymbol ::= symbol
                        | pattern "=" symbol
               symbol ::= keyword
+                       | token
+                       | token string
                        | entry-name
                        | entry-name "LEVEL" label
                        | "SELF"
@@ -135,6 +137,7 @@ is loaded. Its syntax is:</p>
                        | "[" rules "]"
                        | "(" symbol ")"
              keyword ::= string
+               token ::= uident
                label ::= string
           entry-name ::= qualid
               qualid ::= qualid "." qualid
@@ -279,6 +282,11 @@ whose value is bound to the pattern if any.</p>
 
 <ul>
   <li>a keyword (a string): the input must match this keyword,</li>
+  <li>a token name (an identifier starting with an uppercase
+    character), optionally followed by a string: the input must match
+    this token (any value if no string, or that string if a string
+    follows the token name), the list of the available tokens
+    depending on the associated lexer,</li>
   <li>an entry name, which correspond to a call to this entry,</li>
   <li>an entry name followed by the identifier "<tt>LEVEL</tt>" and a
     level label, which correspond to the call to this entry at that
