@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.32 2007/07/21 11:21:29 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.33 2007/07/30 02:25:48 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -128,6 +128,20 @@ value lident_colon =
            i
          }
        | _ -> raise Stream.Failure ])
+;
+
+value check_not_part_of_patt =
+  Grammar.Entry.of_parser gram "val_ident"
+    (fun strm ->
+       let tok =
+         match Stream.npeek 4 strm with
+         [ [("LIDENT", _); tok :: _] -> tok
+         | [("", "("); ("", s); ("", ")"); tok] when is_operator s -> tok
+         | _ -> raise Stream.Failure ]
+       in
+       match tok with
+       [ ("", ("," | "as" | "|" | "::")) -> raise Stream.Failure
+       | _ -> () ])
 ;
 
 value symbolchar =
@@ -336,35 +350,6 @@ value choose_tvar tpl =
   [ Some x -> x
   | None -> make_n 1 ]
 ;
-
-value rec patt_lid =
-  fun
-  [ <:patt< $p1$ $p2$ >> ->
-      match p1 with
-      [ <:patt< $lid:i$ >> -> Some (MLast.loc_of_patt p1, i, [p2])
-      | _ ->
-          match patt_lid p1 with
-          [ Some (loc, i, pl) -> Some (loc, i, [p2 :: pl])
-          | None -> None ] ]
-  | _ -> None ]
-;
-
-(* ...works bad...
-value rec sync cs =
-  match cs with parser
-  [ [: `';' :] -> sync_semi cs
-  | [: `_ :] -> sync cs ]
-and sync_semi cs =
-  match cs with parser
-  [ [: `';' :] -> sync_semisemi cs
-  | [: :] -> sync cs ]
-and sync_semisemi cs =
-  match Stream.peek cs with 
-  [ Some ('\010' | '\013') -> ()
-  | _ -> sync_semi cs ]
-;
-Pcaml.sync.val := sync;
-*)
 
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr class_type
@@ -638,14 +623,12 @@ EXTEND
           Pcaml.handle_expr_quotation loc x ] ]
   ;
   let_binding:
-    [ [ p = patt LEVEL "simple"; e = fun_binding ->
-          match patt_lid p with
-          [ Some (loc, i, pl) ->
-              let e =
-                List.fold_left (fun e p -> <:expr< fun $p$ -> $e$ >>) e pl
-              in
-              (<:patt< $lid:i$ >>, e)
-          | None -> (p, e) ] ] ]
+    [ [ p = val_ident; e = fun_binding -> (p, e)
+      | p = patt; "="; e = expr -> (p, e) ] ]
+  ;
+  val_ident:
+    [ [ check_not_part_of_patt; s = LIDENT -> <:patt< $lid:s$ >>
+      | check_not_part_of_patt; "("; s = ANY; ")" -> <:patt< $lid:s$ >> ] ]
   ;
   fun_binding:
     [ RIGHTA

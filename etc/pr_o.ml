@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.65 2007/07/21 11:21:29 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.66 2007/07/30 02:25:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -88,21 +88,6 @@ value rec get_defined_ident =
   | <:patt< $anti:p$ >> -> get_defined_ident p
   | _ -> [] ]
 ;
-
-value un_irrefut_patt p =
-  let loc = MLast.loc_of_patt p in
-  match get_defined_ident p with
-  [ [] -> (<:patt< _ >>, <:expr< () >>)
-  | [i] -> (<:patt< $lid:i$ >>, <:expr< $lid:i$ >>)
-  | il ->
-      let (upl, uel) =
-        List.fold_right
-          (fun i (upl, uel) ->
-             ([<:patt< $lid:i$ >> :: upl], [<:expr< $lid:i$ >> :: uel]))
-          il ([], [])
-      in
-      (<:patt< ($list:upl$) >>, <:expr< ($list:uel$) >>) ]
-;            
 
 value not_impl name pc x =
   let desc =
@@ -307,19 +292,6 @@ value expr_with_comm_except_if_sequence pc e =
    to this function to a call to "binding expr" above.
 *)
 value let_binding pc (p, e) =
-  let (p, e) =
-    if is_irrefut_patt p then (p, e)
-    else
-      let loc = MLast.loc_of_expr e in
-      let (p, e) =
-        loop p e where rec loop p =
-          fun
-          [ <:expr< fun $p1$ -> $e$ >> -> loop <:patt< $p$ $p1$ >> e
-          | e -> (p, e) ]
-      in
-      let (up, ue) = un_irrefut_patt p in
-      (up, <:expr< match $e$ with [ $p$ -> $ue$ ] >>)
-  in
   let (pl, e) =
     match p with
     [ <:patt< ($_$ : $_$) >> -> ([], e)

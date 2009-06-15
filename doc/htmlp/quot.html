@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: quot.html,v 1.12 2007/07/29 17:26:43 deraugla Exp $ -->
+  <!-- $Id: quot.html,v 1.13 2007/07/30 02:28:24 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>quotations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -335,27 +335,28 @@ type expander =
 </dd></dl>
 
 <dl>
-  <dt>value add : string -> expander -> unit;</dt>
+  <dt><tt>value add : string -> expander -> unit;</tt></dt>
   <dd>"<tt>Quotation.add name exp</tt>" adds the quotation "<tt>name</tt>"
     associated with the expander "<tt>exp</tt>".</dd>
 </dl>
 
 <dl>
-  <dt>value find : string -> expander;</dt>
+  <dt><tt>value find : string -> expander;</tt></dt>
   <dd>"<tt>Quotation.find name</tt>" returns the quotation expander of
     the given name.</dd>
 </dl>
 
 <dl>
-  <dt>value default : ref string;</dt>
+  <dt><tt>value default : ref string;</tt></dt>
   <dd>The name of the default quotation : it is possible to use this
     quotation between "<tt>&lt;&lt;</tt>" and "<tt>&gt;&gt;</tt>"
     without having to specify its name.</dd>
 </dl>
 
 <dl>
-  <dt>value translate : ref (string -> string);</dt>
-  <dd>Function translating quotation names; default = identity.</dd>
+  <dt><tt>value translate : ref (string -> string);</tt></dt>
+  <dd>Function translating quotation names; default = identity. Used
+    in the predefined quotation "<tt>q_phony.cmo</tt>". See below.</dd>
 </dl>
 
 <h2>Predefined quotations</h2>
