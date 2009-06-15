@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: grammars.html,v 1.66 2007/08/17 08:43:54 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.67 2007/08/18 07:33:10 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -19,14 +19,15 @@
 
 <h1 class="top">Extensible grammars</h1>
 
-<p>This chapter describes the whole syntax and semantics of the
-extensible grammars of camlp5.</p>
+<p>This chapter describes the syntax and semantics of the extensible
+  grammars of camlp5.</p>
 
 <p>The extensible grammars are the most advanced parsing tool of
-camlp5. They apply to streams of characters using a lexer which has to
-be previously defined by the programmer. In camlp5, the syntax of the
-ocaml language is defined with extensible grammars, which makes camlp5
-a bootstrapped system (it compiles its own features by itself).</p>
+  camlp5. They apply to streams of characters using a lexer which has
+  to be previously defined by the programmer. In camlp5, the syntax of
+  the ocaml language is defined with extensible grammars, which makes
+  camlp5 a bootstrapped system (it compiles its own features by
+  itself).</p>
 
 <div id="tableofcontents">
 </div>
@@ -34,23 +35,24 @@ a bootstrapped system (it compiles its own features by itself).</p>
 <h2>Getting started</h2>
 
 <p>The extensible grammars are a system to build <em>grammar
-entries</em> which can be extended dynamically. A grammar entry is an
-abstract value internally containing a stream parser. The type of a
-grammar entry is <tt>"Grammar.Entry.e t"</tt> where <tt>"t"</tt> is
-the type of the values returned by the grammar entry.</p>
+    entries</em> which can be extended dynamically. A grammar entry is
+  an abstract value internally containing a stream parser. The type
+  of a grammar entry is <tt>"Grammar.Entry.e t"</tt>
+  where <tt>"t"</tt> is the type of the values returned by the
+  grammar entry.</p>
 
 <p>To start with extensible grammars, it is necessary to build
-a <em>grammar</em>, a value of type "<tt>Grammar.g</tt>", using
-the function "<tt>Grammar.gcreate</tt>":</p>
+  a <em>grammar</em>, a value of type "<tt>Grammar.g</tt>", using the
+  function "<tt>Grammar.gcreate</tt>":</p>
 
 <pre>
   value g = Grammar.gcreate lexer;
 </pre>
 
 <p>where "<tt>lexer</tt>" is a lexer previously defined. See the
-section explaining the interface with lexers. In a first time, it is
-possible to use a lexer of the module "<tt>Plexer</tt>" provided by
-camlp5:</p>
+  section explaining the interface with lexers. In a first time, it is
+  possible to use a lexer of the module "<tt>Plexer</tt>" provided by
+  camlp5:</p>
 
 <pre>
   value g = Grammar.gcreate (Plexer.gmake ());
