@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: fparsers.html,v 1.12 2007/08/28 17:49:37 deraugla Exp $ -->
+  <!-- $Id: fparsers.html,v 1.13 2007/10/11 02:03:16 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>functional parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -20,15 +20,15 @@
 <h1 class="top">Functional parsers</h1>
 
 <p>Purely functional parsers are an alternative
-of <a href="parsers.html">stream parsers</a> where the used stream
-type is a lazy non-destructive type : these streams are lazy values,
-like in classical stream parsers, but the values are not removed as
-long as the parsing advances. To make them work, the parsers of purely
-functional streams return, not the simple values, but a value of type
-option : "<code>Node</code>" meaning "mo match" (the equivalent of the
-exception "<code>Parse.Failure</code>" of normal streams) and
-"<code>Some (r, s)</code>" meaning "the result is r and the remaining
-stream is s".</p>
+  of <a href="parsers.html">stream parsers</a> where the used stream
+  type is a lazy non-destructive type. These streams are lazy values,
+  as in classical stream parsers, but the values are not removed as
+  long as the parsing advances. To make them work, the parsers of
+  purely functional streams return, not the simple values, but a value
+  of type option : "<code>Node</code>" meaning "mo match" (the
+  equivalent of the exception "<code>Parse.Failure</code>" of normal
+  streams) and "<code>Some (r, s)</code>" meaning "the result is r and
+  the remaining stream is s".</p>
 
 <div id="tableofcontents">
 </div>
@@ -36,7 +36,7 @@ stream is s".</p>
 <h2>Syntax</h2>
 
 <p>The syntax of purely functional parsers, when loading
-"pa_fstream.cmo", is the following:</p>
+  "pa_fstream.cmo", is the following:</p>
 
 <pre>
           expression ::= fparser
@@ -57,22 +57,21 @@ stream is s".</p>
                        | &lt;nothing&gt;
 </pre>
 
-<p>Notice that, in difference with classical parsers, there is no
-difference, in a stream pattern, between the first stream pattern
-component and the other ones. In particular, there is not this syntax
-"question mark" and expression optionnally ending those
-components. Moreover, the "lookahead" case is not necessary, we see
-further why. On the contrary, the syntaxes "pattern when" and "let..in"
-inside stream patterns we see in classical parsers are just not
-implemented. </p>
+<p>Notice that, unlike classical parsers, there is no difference, in a
+  stream pattern, between the first stream pattern component and the
+  other ones. In particular, there is no "question mark" syntax and
+  expression optionnally ending those components. Moreover, the
+  "lookahead" case is not necessary, we see further why. The syntaxes
+  "pattern when" and "let..in" inside stream patterns we see in
+  classical parsers are not implemented. </p>
 
 <h2>Streams</h2>
 
 <p>The functional parsers are functions taking as parameters
-functional streams, which are values of type "<code>Fstream.t
-a</code>" for some type "<code>a</code>". It is possible to build
-functional streams using the functions defined in the module
-"<code>Fstream</code>":</p>
+  functional streams, which are values of type "<code>Fstream.t
+  a</code>" for some type "<code>a</code>". It is possible to build
+  functional streams using the functions defined in the module
+  "<code>Fstream</code>":</p>
 
 <h3>Fstream.from</h3>
 
@@ -122,29 +121,31 @@ recursive descent algorithm, except that:</p>
 <h3>Error position</h3>
 
 <p>A difficulty, with purely functional parsers, is how to find the
-position of the syntax error, when the input is wrong. Since the
-system tries all parsers cases before returning "<code>None</code>",
-and that the initial stream is not affected, it is not possible to
-directly find where the error happened. This is a problem for parsing
-using backtracking (here, it is limited backtracking, but the problem
-is the same).</p>
+  position of the syntax error, when the input is wrong. Since the
+  system tries all parsers cases before returning "<code>None</code>",
+  and that the initial stream is not affected, it is not possible to
+  directly find where the error happened. This is a problem for
+  parsing using backtracking (here, it is limited backtracking, but
+  the problem is the same).</p>
 
 <p>The solution is to use the function
-"<code>Fstream.count_unfrozen</code>" applied to the initial
-stream. Like its name says, it returns the number of unfrozen elements
-of the stream, which is exactly the longuest match found. If the input
-is a stream of characters, the return of this function is exactly the
-position in number of characters from the beginning of the stream.</p>
+  "<tt>Fstream.count_unfrozen</tt>" applied to the initial
+  stream. Like its name says, it returns the number of unfrozen
+  elements of the stream, which is exactly the longest match found. If
+  the input is a stream of characters, the return of this function is
+  exactly the position in number of characters from the beginning of
+  the stream.</p>
 
 <p>However, it is not possible to know directly which rule failed and
-therefore it is not possible, like in classical parsers, to specify
-and get clear error messages. Future versions of purely functional
-parsers may propose solutions to resolve this problem.</p>
+  therefore it is not possible, as in classical parsers, to specify
+  and get clear error messages. Future versions of purely functional
+  parsers may propose solutions to resolve this problem.</p>
 
-<p>Notice that, if using that method, it is not possible to reuse the
-same stream to call another parser, and hope to get the right position
-of the error, if another error happens, since it may test less terminals
-than the first parser. Use a fresh stream in this case, if possible.</p>
+<p>Notice that, if using the "<tt>count_unfrozen</tt>" method, it is
+  not possible to reuse that same stream to call another parser, and
+  hope to get the right position of the error, if another error
+  happens, since it may test less terminals than the first parser. Use
+  a fresh stream in this case, if possible.</p>
 
 <div class="trailer">
 </div>

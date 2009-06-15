@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: lexers.html,v 1.17 2007/08/28 17:49:37 deraugla Exp $ -->
+  <!-- $Id: lexers.html,v 1.18 2007/10/11 02:03:16 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>lexers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -139,12 +139,12 @@ them.</p>
 </pre>
 
 <p>where "<code>u</code>" is a type which depends on what the lexer
-returns. If there is no semantic action (since it it optional), this
-type is automatically "<code>B.t</code>".</p>
+  returns. If there is no semantic action (since it it optional), this
+  type is automatically "<code>B.t</code>".</p>
 
 <p>"<code>B</code>" is a module which must be defined by the user. It
-has to contain the lexing buffer type "<code>t</code>" and some
-variables and functions:</p>
+  must contain the lexing buffer type "<code>t</code>" and the
+  variables and functions:</p>
 
 <ul>
   <li><code>empty</code>: the empty lexing buffer</li>
@@ -211,20 +211,20 @@ itself.</p>
     "*"</code>, not <code>"(*"</code> which would mean "the character
     left parenthesis or the character star".</li>
   <li>An expression corresponding to a call to another lexer, which
-    takes the buffer as first parameter and has to return another
-    lexing buffer with all characters found in the stream catened to
-    the lexing buffer.</li>
+    takes the buffer as first parameter and returns another lexing
+    buffer with all characters found in the stream added to the
+    initial lexing buffer.</li>
   <li>The sequence "<code>?=</code>" introducing lookahead
     characters.</li>
   <li>A rule, recursively, between brackets, inlining a lexer.</li>
 </ul>
 
 <p>In the first two cases (namely, underscore and string), the symbol
-can be optionally followed by the character "slash" specifying that
-the found symbol must not be added into the lexing buffer. By default,
-it is. Useful, for example, when writing a lexer parsing strings, when
-the initial double quote and final double quote have not to be part of
-the string itself.</p>
+  can be optionally followed by the character "slash" specifying that
+  the found symbol must not be added into the lexing buffer. By
+  default, it is. Useful, for example, when writing a lexer parsing
+  strings, when the initial double quote and final double quote should
+  be part of the string itself.</p>
 
 <p>Moreover, a symbol can be followed by an optional error indicator,
 which can be:</p>
@@ -267,15 +267,15 @@ rules:</p>
   <li><code>$buf</code> which returns the lexing buffer converted into
     string.</li>
   <li><code>$empty</code> which returns an empty lexing buffer.</li>
-  <li><code>$pos</code> which return the current position in the
+  <li><code>$pos</code> which returns the current position of the
     stream in number of characters (starting at zero).</li>
 </ul>
 
 <h3>Lookahead</h3>
 
 <p>Lookahead is useful in some cases, when factorization of rules is
-impossible. To understand how it is useful, a first remark must
-be done, about the usual behaviour of Camlp5 stream parsers.</p>
+  impossible. To understand how it is useful, a first remark must be
+  done, about the usual behaviour of Camlp5 stream parsers.</p>
 
 <p>Stream parsers (including these lexers) use a limited parsing
   algorithm, in a way that when the first symbol of a rule is matched,
@@ -283,31 +283,31 @@ be done, about the usual behaviour of Camlp5 stream parsers.</p>
   is a syntax error. There is no backtrack. In most of the cases, left
   factorization of rules resolve conflicting problems. For example, in
   parsers of tokens (which is not our case here, since we parse only
-  characters), when one writes a parser to recognize both the typicall
+  characters), when one writes a parser to recognize both typical
   grammar rules "if..then..else" and the shorter "if..then..", the
-  solution is to write a rule starting with "if..then.." followed with
-  a call to a parser recognizing "else.." <span class="u">or</span>
-  nothing.</p>
+  system transforms them into a single rule starting with "if..then.."
+  followed by a call to a parser recognizing
+  "else.." <span class="u">or</span> nothing.</p>
 
 <p>Sometimes, however, this left factorization is not possible. A
-lookahead of the stream to check the presence of some elements (these
-element being characters, if we are using this "lexer" syntax) might
-be necessary to decide whether or not it is a good idea to start
-the rule. This lookahead feature may unfreeze several characters
-from the input stream but without removing them.</p>
+  lookahead of the stream to check the presence of some elements
+  (these elements being characters, if we are using this "lexer"
+  syntax) might be necessary to decide if is a good idea to start the
+  rule. This lookahead feature may unfreeze several characters from
+  the input stream but without removing them.</p>
 
 <p>Syntactically, a lookahead starts with <code>?=</code> and is
-followed by one or several lookahead sequences separated by the
-vertical bar <code>|</code>, the whole list being enclosed by
-braces.</p>
+  followed by one or several lookahead sequences separated by the
+  vertical bar <code>|</code>, the whole list being enclosed by
+  braces.</p>
 
 <p>If there are several lookaheads, they must all be of the same size
-(contain the same number of characters).</p>
+  (contain the same number of characters).</p>
 
 <p>If the lookahead sequence is just a string, it corresponds to all
-characters of this string in the order (which is different for strings
-outside lookahead sequences, representing a choice of all
-characters).</p>
+  characters of this string in the order (which is different for
+  strings outside lookahead sequences, representing a choice of all
+  characters).</p>
 
 <p>Examples of lookaheads:</p>
 
@@ -317,20 +317,20 @@ characters).</p>
 </pre>
 
 <p>The first line above matches a stream whose second character is a
-quote or a stream whose first character is a backslash (real example
-in the lexer of OCaml, in the library of Camlp5, named
-"plexer.ml"). The second line matches a stream starting with the two
-characters <code>&lt;</code> and <code>&lt;</code> or starting with
-the two characters <code>&lt;</code> and <code>:</code> (this is
-another example in the same file).</p>
+  quote or a stream whose first character is a backslash (real example
+  in the lexer of OCaml, in the library of Camlp5, named
+  "plexer.ml"). The second line matches a stream starting with the two
+  characters <code>&lt;</code> and <code>&lt;</code> or starting with
+  the two characters <code>&lt;</code> and <code>:</code> (this is
+  another example in the same file).</p>
 
 <h3>Semantic actions of rules</h3>
 
 <p>By default, the result of a "lexer" is the current lexing buffer,
-which is of type "<code>B.t</code>". But it is possible to return
-other values, by adding "<code>-&gt;</code>" at end of rules followed
-by the expression you want to return, like in usual pattern matching
-in OCaml.</p>
+  which is of type "<code>B.t</code>". But it is possible to return
+  other values, by adding "<code>-&gt;</code>" at end of rules
+  followed by the expression you want to return, like in usual pattern
+  matching in OCaml.</p>
 
 <p>An interesting result, for example, could be the string
   corresponding to the characters of the lexing buffer. This can be
@@ -345,7 +345,7 @@ in OCaml.</p>
 <h3>Compiling</h3>
 
 <p>To compile a file containing lexers, just
-load <code>pa_lex.cmo</code> using one of the following methods:</p>
+  load <code>pa_lex.cmo</code> using one of the following methods:</p>
 
 <ul>
   <li>Either by adding <code>pa_lex.cmo</code> among the Camlp5
@@ -357,7 +357,7 @@ load <code>pa_lex.cmo</code> using one of the following methods:</p>
 <h3>How to display the generated code</h3>
 
 <p>You can see the generated code, for a file "bar.ml" containing
-lexers, by typing in a command line:</p>
+  lexers, by typing in a command line:</p>
 
 <pre>
   camlp5r pa_lex.cmo pr_r.cmo bar.ml
