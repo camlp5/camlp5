@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_pprintf.ml,v 1.19 2007/12/10 11:03:03 deraugla Exp $ *)
+(* $Id: pa_pprintf.ml,v 1.20 2007/12/11 14:22:51 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* pprintf statement *)
@@ -95,7 +95,7 @@ value parse_paren_param =
 ;
 
 value parse_all_param =
-  fparser [: `'<'; `'a'; `'>' :] -> ()
+  fparser [: `'<'; `('a' | 'b' as c); `'>' :] -> c
 ;
 
 value next_item loc pc fmt al i_beg =
@@ -129,7 +129,7 @@ type tree 'a 'b =
   [ Node of tree 'a 'b and 'a and tree 'a 'b
   | Leaf of 'b
   | Offset of int and tree 'a 'b
-  | BreakAll of tree 'a 'b ]
+  | BreakAll of bool and tree 'a 'b ]
 ;
 
 value rec concat_tree t1 t2 =
@@ -139,8 +139,8 @@ value rec concat_tree t1 t2 =
   | (Leaf l1, Leaf l2) -> Leaf (l1 @ l2)
   | (Offset _ t1, _) -> concat_tree t1 t2
   | (_, Offset _ t2) -> concat_tree t1 t2
-  | (BreakAll t1, _) -> concat_tree t1 t2
-  | (_, BreakAll t2) -> concat_tree t1 t2 ]
+  | (BreakAll _ t1, _) -> concat_tree t1 t2
+  | (_, BreakAll _ t2) -> concat_tree t1 t2 ]
 ;
 
 value rec read_tree loc pc fmt al i =
@@ -194,10 +194,10 @@ and read_simple_tree loc pc fmt al i =
         (Offset offset tree, al, i)
     | None ->
         match parse_all_param strm with
-        [ Some (_, strm) ->
+        [ Some (c, strm) ->
             let i = i + Fstream.count strm in
             let (tree, al, i) = read_tree loc pc fmt al i in
-            (BreakAll tree, al, i)
+            (BreakAll (c = 'b') tree, al, i)
         | None ->
             let (tree, al, i) = read_tree loc pc fmt al i in
             (tree, al, i) ] ]
@@ -338,7 +338,7 @@ value expand_pprintf loc pc fmt al =
             >>
         | Offset offset t ->
             loop pc offset aft_is_empty t
-        | BreakAll t ->
+        | BreakAll force_newlines t ->
             let (e, oel) =
               loop_1 aft_is_empty t where rec loop_1 aft_is_empty =
                 fun
@@ -362,7 +362,10 @@ value expand_pprintf loc pc fmt al =
                    <:expr< [($int:s$, $int:o$, fun pc -> $e$) :: $el$] >>)
                 oel <:expr< [] >>
             in
-            <:expr< sprint_break_all $pc$ (fun pc -> $e$) $fl$ >> ] ]
+            let fn =
+              if force_newlines then <:expr< True >> else <:expr< False >>
+            in
+            <:expr< sprint_break_all $fn$ $pc$ (fun pc -> $e$) $fl$ >> ] ]
 ;
 
 EXTEND

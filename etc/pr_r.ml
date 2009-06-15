@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.144 2007/12/11 03:00:22 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.145 2007/12/11 14:22:51 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -123,18 +123,6 @@ value un_irrefut_patt p =
       (<:patt< ($list:upl$) >>, <:expr< ($list:uel$) >>) ]
 ;
 
-value not_impl name pc x =
-  let desc =
-    if Obj.tag (Obj.repr x) = Obj.tag (Obj.repr "") then
-      sprintf "\"%s\"" (Obj.magic x)
-    else if Obj.is_block (Obj.repr x) then
-      "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
-    else "int_val = " ^ string_of_int (Obj.magic x)
-  in
-  sprintf "%s\"pr_r, not impl: %s; %s\"%s" pc.bef name (String.escaped desc)
-    pc.aft
-;
-
 (*
 value test = ref False;
 Pcaml.add_option "-test" (Arg.Set test) " test";
@@ -153,20 +141,22 @@ value sprint_break nspaces offset pc f g =
        sprintf "%s\n%s" s1 s2)
 ;
 
-value sprint_break_all pc f fl =
+value sprint_break_all force_newlines pc f fl =
   horiz_vertic
     (fun () ->
-       loop (f (if fl = [] then pc else {(pc) with aft = ""})) fl
-       where rec loop s =
-         fun
-         [ [(sp, off, f) :: fl] ->
-             let s =
-               sprintf "%s%s%s" s (String.make sp ' ')
-                 (f {(pc) with bef = "";
-                     aft = if fl = [] then pc.aft else ""})
-             in
-             loop s fl
-         | [] -> s ])
+       if force_newlines then sprintf "\n"
+       else
+         loop (f (if fl = [] then pc else {(pc) with aft = ""})) fl
+         where rec loop s =
+           fun
+           [ [(sp, off, f) :: fl] ->
+               let s =
+                 sprintf "%s%s%s" s (String.make sp ' ')
+                   (f {(pc) with bef = "";
+                       aft = if fl = [] then pc.aft else ""})
+               in
+               loop s fl
+           | [] -> s ])
     (fun () ->
        loop (f (if fl = [] then pc else {(pc) with aft = ""})) fl
        where rec loop s =
@@ -179,6 +169,17 @@ value sprint_break_all pc f fl =
              in
              loop s fl
          | [] -> s ])
+;
+
+value not_impl name pc x =
+  let desc =
+    if Obj.tag (Obj.repr x) = Obj.tag (Obj.repr "") then
+      "\"" ^ Obj.magic x ^ "\""
+    else if Obj.is_block (Obj.repr x) then
+      "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
+    else "int_val = " ^ string_of_int (Obj.magic x)
+  in
+  pprintf pc "\"pr_r, not impl: %s; %s\"" name (String.escaped desc)
 ;
 
 value var_escaped pc v =
@@ -825,17 +826,11 @@ EXTEND_PRINTER
                             {(pc) with aft = ""} el
                       | None ->
                           let pc = {(pc) with aft = ""} in
-                          let s1 =
-                            horiz_vertic (fun () -> horiz_if_then pc)
-                              (fun () -> vertic_if_then pc)
-                          in
-                          let s2 =
-                            comm_expr expr_wh
-                              {(pc) with ind = pc.ind + 2;
-                               bef = tab (pc.ind + 2); aft = ""}
-                              e2
-                          in
-                          sprintf "%s\n%s" s1 s2 ])
+                          pprintf pc "%p@;%p"
+                            (fun pc () ->
+                               horiz_vertic (fun () -> horiz_if_then pc)
+                                  (fun () -> vertic_if_then pc))
+                            () (comm_expr expr_wh) e2 ])
                in
                let (force_vertic, eel, e3) =
                  if flag_equilibrate_cases.val then
@@ -942,10 +937,8 @@ EXTEND_PRINTER
                          pc el
                    | None ->
                        pprintf pc "fun %p ->@;%p" (plist patt 4) pl curr e1 ])
-          | [] -> sprintf "%sfun []%s" pc.bef pc.aft
-          | pwel ->
-              let s = match_assoc_list {(pc) with bef = tab pc.ind} pwel in
-              sprintf "%sfun\n%s" pc.bef s ]
+          | [] -> pprintf pc "fun []"
+          | pwel -> pprintf pc "@[<b>fun@ %p@]" match_assoc_list pwel ]
       | <:expr< try $e1$ with [ $list:pwel$ ] >> |
         <:expr< match $e1$ with [ $list:pwel$ ] >> as e ->
           let expr_wh =
@@ -997,22 +990,19 @@ EXTEND_PRINTER
                 (fun () ->
                    match sequencify e1 with
                    [ Some el ->
-                       let s1 =
-                         let pc = {(pc) with aft = ""} in
-                         horiz_vertic
-                           (fun () -> pprintf pc "%s %p with" op expr_wh e1)
-                           (fun () ->
-                              pprintf pc "%p@ with"
-                                (sequence_box
-                                   (fun pc () ->
-                                      horiz_vertic (fun _ -> sprintf "\n")
-                                        (fun () -> pprintf pc "%s" op)))
-                                el)
-                       in
-                       let s2 =
-                         match_assoc_list {(pc) with bef = tab pc.ind} pwel
-                       in
-                       sprintf "%s\n%s" s1 s2
+                       pprintf pc "%p@ %p"
+                         (fun pc () ->
+                            horiz_vertic
+                              (fun () ->
+                                 pprintf pc "%s %p with" op expr_wh e1)
+                              (fun () ->
+                                 pprintf pc "%p@ with"
+                                   (sequence_box
+                                      (fun pc () ->
+                                         horiz_vertic (fun _ -> sprintf "\n")
+                                           (fun () -> pprintf pc "%s" op)))
+                                   el))
+                         () match_assoc_list pwel
                    | None ->
                        pprintf pc "@[<a>%s@;%p@ with@]@ %p" op expr_wh e1
                          match_assoc_list pwel ]) ]
@@ -1463,7 +1453,7 @@ EXTEND_PRINTER
       | <:sig_item< external $lid:n$ : $t$ = $list:sl$ >> ->
           external_decl pc (n, t, sl)
       | <:sig_item< include $mt$ >> ->
-          module_type {(pc) with bef = sprintf "%sinclude " pc.bef} mt
+          pprintf pc "include %p" module_type mt
       | <:sig_item< module $flag:rf$ $list:mdl$ >> ->
           let mdl = List.map (fun (m, mt) -> (Pcaml.unvala m, mt)) mdl in
           let rf = if rf then " rec" else "" in
@@ -1494,12 +1484,8 @@ EXTEND_PRINTER
                else
                  pprintf pc "struct %p end" (hlist (semi_after str_item)) sil)
             (fun () ->
-               sprintf "%sstruct%s%s%send%s" pc.bef "\n"
-                 (vlist (semi_after str_item)
-                    {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                     aft = ""}
-                    sil)
-                 ("\n" ^ tab pc.ind) pc.aft) ]
+               pprintf pc "@[<b>struct@;%p@ end@]"
+                 (vlist (semi_after str_item)) sil) ]
     | "apply"
       [ <:module_expr< $x$ $y$ >> as z ->
           let unfold =
@@ -1510,17 +1496,14 @@ EXTEND_PRINTER
           left_operator pc 2 unfold next z ]
     | "dot"
       [ <:module_expr< $x$ . $y$ >> ->
-          curr {(pc) with bef = curr {(pc) with aft = "."} x} y ]
+          pprintf pc "%p.%p" curr x curr y ]
     | "simple"
       [ <:module_expr< $uid:s$ >> ->
-          sprintf "%s%s%s" pc.bef s pc.aft
+          pprintf pc "%s" s
       | <:module_expr< ($me$ : $mt$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" module_expr me module_type mt
       | <:module_expr< struct $list:_$ end >> as z ->
-          module_expr
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            z ] ]
+          pprintf pc "@[<1>(%p)@]" module_expr z ] ]
   ;
   pr_module_type:
     [ "top"
@@ -1534,27 +1517,20 @@ EXTEND_PRINTER
                     when alone in a line. *)
                  sprintf "\n"
                else
-                 sprintf "%ssig%s%s%send%s" pc.bef " "
-                   (hlist (semi_after sig_item) {(pc) with bef = ""; aft = ""}
-                      sil)
-                   " " pc.aft)
+                 pprintf pc "sig %p end" (hlist (semi_after sig_item)) sil)
             (fun () ->
-               sprintf "%ssig%s%s%send%s" pc.bef "\n"
-                 (vlist (semi_after sig_item)
-                    {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                     aft = ""}
-                    sil)
-                 ("\n" ^ tab pc.ind) pc.aft)
+               pprintf pc "@[<b>sig@;%p@ end@]"
+                 (vlist (semi_after sig_item)) sil)
       | <:module_type< $mt$ with $list:wcl$ >> ->
           pprintf pc "%p@;%p" module_type mt (vlist with_constraint) wcl ]
     | "dot"
       [ <:module_type< $x$ . $y$ >> ->
-          curr {(pc) with bef = curr {(pc) with aft = "."} x} y ]
+          pprintf pc "%p.%p" curr x curr y ]
     | "simple"
       [ <:module_type< $uid:s$ >> ->
-          sprintf "%s%s%s" pc.bef s pc.aft
+          pprintf pc "%s" s
       | <:module_type< ' $s$ >> ->
-          sprintf "%s'%s%s" pc.bef s pc.aft ] ]
+          pprintf pc "'%s" s ] ]
   ;
 END;
 
@@ -1709,7 +1685,7 @@ value default_flag () =
   let flag_on b t f = if b then t else "" in
   let flag_off b t f = if b then "" else f in
   let on_off flag =
-    sprintf "%s%s%s%s%s"
+    Printf.sprintf "%s%s%s%s%s"
       (flag flag_comments_in_phrases.val "C" "c")
       (flag flag_expand_declare.val "D" "d")
       (flag flag_equilibrate_cases.val "E" "e")
@@ -1718,8 +1694,8 @@ value default_flag () =
   in
   let on = on_off flag_on in
   let off = on_off flag_off in
-  if String.length on < String.length off then sprintf "a%s" on
-  else sprintf "A%s" off
+  if String.length on < String.length off then Printf.sprintf "a%s" on
+  else Printf.sprintf "A%s" off
 ;
 
 value set_wflags s =
@@ -1756,7 +1732,7 @@ value default_wflag () =
   let flag_on b t f = if b then t else "" in
   let flag_off b t f = if b then "" else f in
   let on_off flag =
-    sprintf "%s%s%s%s%s%s%s%s%s"
+    Printf.sprintf "%s%s%s%s%s%s%s%s%s"
       (flag flag_where_after_in.val "I" "i")
       (flag flag_where_after_let_eq.val "L" "l")
       (flag flag_where_after_match.val "M" "m")
@@ -1769,8 +1745,8 @@ value default_wflag () =
   in
   let on = on_off flag_on in
   let off = on_off flag_off in
-  if String.length on < String.length off then sprintf "a%s" on
-  else sprintf "A%s" off
+  if String.length on < String.length off then Printf.sprintf "a%s" on
+  else Printf.sprintf "A%s" off
 ;
 
 Pcaml.add_option "-flag" (Arg.String set_flags)
