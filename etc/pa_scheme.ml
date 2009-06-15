@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.62 2007/10/09 01:59:29 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.63 2007/10/09 02:53:07 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -390,6 +390,7 @@
  (lambda_match
   ((Slid _ s) (let ((s (rename_id s))) (Some <:vala< s >>)))
   ((Slidv _ s) (Some s))
+  ((Santi _ (or "" "_") s) (Some <:vala< $s$ >>))
   (_ None)))
 
 (define anti_lid_or_error
@@ -491,6 +492,11 @@
       (let* ((s (rename_id s))
              (mt (module_type_se se)))
          <:sig_item< module type $uid:s$ = $mt$ >>))
+     ((Sexpr loc [(Slid _ "#") se1])
+      (let ((s (anti_lid_or_error se1))) <:sig_item< # $_lid:s$ >>))
+     ((Sexpr loc [(Slid _ "#") se1 se2])
+      (let ((s (anti_lid_or_error se1)) (e (expr_se se2)))
+       <:sig_item< # $_lid:s$ $e$ >>))
      (se (error se "sig item"))))
   ((str_item_se se)
     (match se
@@ -516,10 +522,11 @@
       (let* ((r (= r "definerec"))
              ((values p e) (fun_binding_se se (begin_se loc sel))))
          <:str_item< value $flag:r$ $p$ = $e$ >>))
-     ((Sexpr loc [(Slid _ (as (or "define*" "definerec*") r)) . sel])
-      (let* ((r (= r "definerec*"))
-             (lbs (List.map let_binding_se sel)))
-         <:str_item< value $flag:r$ $list:lbs$ >>))
+     ((Sexpr loc [(Slid _ (as (or "define*" "definerec*") rf)) . sel])
+      (let*
+       ((rf (= rf "definerec*"))
+        (lbs (anti_list_map let_binding_se sel)))
+       <:str_item< value $flag:rf$ $_list:lbs$ >>))
      ((Sexpr loc [(Slid _ "external") se1 se2 . sel])
       (let*
        ((i (anti_lid_or_error se1))
@@ -544,8 +551,7 @@
      ((Sexpr loc [(Slid _ "#") se1])
       (match (anti_lid se1)
        ((Some s) <:str_item< # $_lid:s$ >>)
-       (None
-        (let* ((loc (loc_of_sexpr se)) (e (expr_se se)))
+       (None (let* ((loc (loc_of_sexpr se)) (e (expr_se se)))
          <:str_item< $exp:e$ >>))))
      ((Sexpr loc [(Slid _ "#") se1 se2])
       (match (anti_lid se1)

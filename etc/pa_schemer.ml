@@ -418,6 +418,7 @@ value anti_lid =
       let s = rename_id s in
       Some <:vala< s >>
   | Slidv _ s -> Some s
+  | Santi _ ("" | "_") s -> Some <:vala< $s$ >>
   | _ -> None ]
 ;
 
@@ -526,6 +527,13 @@ and sig_item_se =
       let s = rename_id s in
       let mt = module_type_se se in
       <:sig_item< module type $uid:s$ = $mt$ >>
+  | Sexpr loc [Slid _ "#"; se1] ->
+      let s = anti_lid_or_error se1 in
+      <:sig_item< # $_lid:s$ >>
+  | Sexpr loc [Slid _ "#"; se1; se2] ->
+      let s = anti_lid_or_error se1
+      and e = expr_se se2 in
+      <:sig_item< # $_lid:s$ $e$ >>
   | se -> error se "sig item" ]
 and str_item_se se =
   match se with
@@ -550,10 +558,10 @@ and str_item_se se =
       let r = r = "definerec" in
       let (p, e) = fun_binding_se se (begin_se loc sel) in
       <:str_item< value $flag:r$ $p$ = $e$ >>
-  | Sexpr loc [Slid _ ("define*" | "definerec*" as r) :: sel] ->
-      let r = r = "definerec*" in
-      let lbs = List.map let_binding_se sel in
-      <:str_item< value $flag:r$ $list:lbs$ >>
+  | Sexpr loc [Slid _ ("define*" | "definerec*" as rf) :: sel] ->
+      let rf = rf = "definerec*" in
+      let lbs = anti_list_map let_binding_se sel in
+      <:str_item< value $flag:rf$ $_list:lbs$ >>
   | Sexpr loc [Slid _ "external"; se1; se2 :: sel] ->
       let i = anti_lid_or_error se1 in
       let t = ctyp_se se2 in

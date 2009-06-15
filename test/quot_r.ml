@@ -200,6 +200,10 @@
 <:str_item< open $_list:ls$ >>;
 <:str_item< type $list:ltd$ >>;
 <:str_item< type $_list:ltd$ >>;
+<:str_item< value $list:lpe$ >>;
+<:str_item< value $_list:lpe$ >>;
+<:str_item< value rec $list:lpe$ >>;
+<:str_item< value rec $_list:lpe$ >>;
 <:str_item< value $flag:b$ $list:lpe$ >>;
 <:str_item< value $_flag:b$ $_list:lpe$ >>;
 <:sig_item< class $list:lcd$ >>;

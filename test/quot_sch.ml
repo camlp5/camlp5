@@ -172,10 +172,10 @@
 (MLast.StClt loc lctd)
 (MLast.StDcl loc (Ploc.VaVal lstri))
 (MLast.StDcl loc lstri)
-<:str_item< (# $lid:s$) >>
-<:str_item< (# $_lid:s$) >>
-<:str_item< (# $lid:s$ $e$) >>
-<:str_item< (# $_lid:s$ $e$) >>
+<:str_item< (# $s$) >>
+<:str_item< (# $_:s$) >>
+<:str_item< (# $s$ $e$) >>
+<:str_item< (# $_:s$ $e$) >>
 (MLast.StDir loc (Ploc.VaVal s) (Ploc.VaVal oe))
 (MLast.StDir loc s oe)
 <:str_item< (exception $uid:s$ $list:lt$) >>
@@ -200,20 +200,24 @@
 <:str_item< (open $_list:ls$) >>
 <:str_item< (type* $list:ltd$) >>
 <:str_item< (type* $_list:ltd$) >>
-; <:str_item< value $flag:b$ $list:lpe$ >>
-; <:str_item< value $_flag:b$ $_list:lpe$ >>
-; <:sig_item< class $list:lcd$ >>
-; <:sig_item< class $_list:lcd$ >>
-; <:sig_item< class type $list:lct$ >>
-; <:sig_item< class type $_list:lct$ >>
-; <:sig_item< declare $list:lsigi$ end >>
-; <:sig_item< declare $_list:lsigi$ end >>
-; <:sig_item< # $s$ >>
-; <:sig_item< # $_:s$ >>
-; <:sig_item< # $s$ $e$ >>
-; <:sig_item< # $_:s$ $e$ >>
-; <:sig_item< # $s$ $opt:oe$ >>
-; <:sig_item< # $_:s$ $_opt:oe$ >>
+<:str_item< (define* $list:lpe$) >>
+<:str_item< (define* $_list:lpe$) >>
+<:str_item< (definerec* $list:lpe$) >>
+<:str_item< (definerec* $_list:lpe$) >>
+(MLast.StVal loc (Ploc.VaVal b) (Ploc.VaVal lpe))
+(MLast.StVal loc b lpe)
+(MLast.SgCls loc (Ploc.VaVal lcd))
+(MLast.SgCls loc lcd)
+(MLast.SgClt loc (Ploc.VaVal lct))
+(MLast.SgClt loc lct)
+(MLast.SgDcl loc (Ploc.VaVal lsigi))
+(MLast.SgDcl loc lsigi)
+<:sig_item< (# $s$) >>
+<:sig_item< (# $_:s$) >>
+<:sig_item< (# $s$ $e$) >>
+<:sig_item< (# $_:s$ $e$) >>
+(MLast.SgDir loc (Ploc.VaVal s) (Ploc.VaVal oe))
+(MLast.SgDir loc s oe)
 ; <:sig_item< exception $s$ >>
 ; <:sig_item< exception $_:s$ >>
 ; <:sig_item< exception $s$ of $list:lt$ >>
