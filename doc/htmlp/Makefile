@@ -1,19 +1,32 @@
-# $Id: Makefile,v 1.25 2007/08/29 04:16:48 deraugla Exp $
+# $Id: Makefile,v 1.26 2007/08/29 12:12:22 deraugla Exp $
 
-OBJS=../html/index.html ../html/about.html ../html/commands.html ../html/conclusion.html ../html/extfun.html ../html/fparsers.html ../html/grammars.html ../html/lexers.html ../html/library.html ../html/locations.html ../html/macros.html ../html/ml_ast.html ../html/opretty.html ../html/parsers.html ../html/pcaml.html ../html/pragma.html ../html/pretty.html ../html/printers.html ../html/ptools.html ../html/quot.html ../html/revsynt.html ../html/scheme.html ../html/sources.html ../html/syntext.html
-
+H=../html
+OBJS=$H/index.html $H/about.html $H/commands.html $H/conclusion.html $H/extfun.html $H/fparsers.html $H/grammars.html $H/lexers.html $H/library.html $H/locations.html $H/macros.html $H/ml_ast.html $H/opretty.html $H/parsers.html $H/pcaml.html $H/pragma.html $H/pretty.html $H/printers.html $H/ptools.html $H/quot.html $H/revsynt.html $H/scheme.html $H/sources.html $H/syntext.html
 INDEX=index.html
 
 all: $(OBJS)
 
-info: camlp5.info
+info:
+	@$(MAKE) --no-print-directory camlp5.info H=.
 
-camlp5.info: $(OBJS) html2texi
+tex:
+	@$(MAKE) --no-print-directory camlp5.dvi H=.
+
+camlp5.info: html2texi $(OBJS)
 	./html2texi > camlp5.texi
 	makeinfo --force camlp5.texi
 
+camlp5.dvi: camlp5.tex $(OBJS)
+	latex camlp5.tex
+	latex camlp5.tex
+
+camlp5.tex: html2latex
+	./html2latex > camlp5.tex
+
 clean:
-	rm -f $(OBJS) camlp5.texi camlp5.info
+	rm -f $(OBJS)
+	rm -f camlp5.texi camlp5.info*
+	rm -f camlp5.tex camlp5.dvi camlp5.log camlp5.toc camlp5.aux
 
 ../html/%.html: %.html menu.html trailer.html
 	@rm -f $@
