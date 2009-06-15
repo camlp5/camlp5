@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_extend.ml,v 1.18 2007/08/07 07:08:56 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.19 2007/08/07 11:29:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -36,7 +36,7 @@ type symbol =
   | Slist1sep of symbol and symbol
   | Sopt of symbol
   | Sflag of symbol
-  | Svala of symbol
+  | Svala of string and symbol
   | Sself
   | Snext
   | Stoken of alt Token.pattern MLast.expr
@@ -163,7 +163,7 @@ and unsymbol =
       Slist1sep (unsymbol e1) (unsymbol e2)
   | <:expr< Gramext.Sopt $e$ >> -> Sopt (unsymbol e)
   | <:expr< Gramext.Sflag $e$ >> -> Sflag (unsymbol e)
-  | <:expr< Gramext.Svala $e$ >> -> Svala (unsymbol e)
+  | <:expr< Gramext.Svala $str:n$ $e$ >> -> Svala n (unsymbol e)
   | <:expr< Gramext.Sself >> -> Sself
   | <:expr< Gramext.Snext >> -> Snext
   | <:expr< Gramext.Stoken $e$ >> -> Stoken (untoken e)
@@ -364,9 +364,9 @@ and symbol pc sy =
       sprintf "%sOPT %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
   | Sflag sy ->
       sprintf "%sFLAG %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
-  | Svala (Sflag sy) ->
-      sprintf "%sFLAG2 %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
-  | Svala s -> not_impl "svala" pc s
+  | Svala name (Sflag sy) ->
+      sprintf "%s%s2 %s" pc.bef name (simple_symbol {(pc) with bef = ""} sy)
+  | Svala _ s -> not_impl "svala" pc s
   | Srules rl ->
       match check_slist rl with
       [ Some s -> s_symbol pc s
@@ -436,7 +436,7 @@ and s_symbol pc =
         | s -> s ]
       in
       sprintf "%sSFLAG %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
-  | Svala (Sflag s) ->
+  | Svala n (Sflag s) ->
       let sy =
         match s with
         [ Srules
@@ -445,7 +445,7 @@ and s_symbol pc =
             Stoken (Left ("", str))
         | s -> s ]
       in
-      sprintf "%sSFLAG2 %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
+      sprintf "%sS%s2 %s" pc.bef n (simple_symbol {(pc) with bef = ""} sy)
   | _ -> assert False ]
 and check_slist rl =
   if no_slist.val then None
@@ -463,9 +463,9 @@ and check_slist rl =
        ([(Some <:patt< a >>, Sflag s)], Some <:expr< Qast.Bool a >>)] ->
         Some (Sflag s)
     | [([(Some <:patt< a >>, Snterm <:expr< a_flag2 >>)], Some <:expr< a >>);
-       ([(Some <:patt< a >>, Svala (Sflag s))],
+       ([(Some <:patt< a >>, Svala n (Sflag s))],
         Some <:expr< Qast.vala (fun a -> Qast.Bool a) a >>)] ->
-        Some (Svala (Sflag s))
+        Some (Svala n (Sflag s))
     | _ -> None ]
 ;
 

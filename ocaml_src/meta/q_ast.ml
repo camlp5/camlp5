@@ -1212,7 +1212,7 @@ lex.Token.tok_match <-
          "STRING", prm -> prm
        | "ANTIQUOT_LOC", prm -> check_anti_loc prm "str"
        | _ -> raise Stream.Failure)
-  | ("LIST0" | "LIST1"), ("" | "SEP") ->
+  | "LIST", "" ->
       (function
          "ANTIQUOT_LOC", prm -> check_anti_loc prm "list"
        | _ -> raise Stream.Failure)
@@ -1222,10 +1222,7 @@ lex.Token.tok_match <-
        | _ -> raise Stream.Failure)
   | "FLAG", "" ->
       (function
-         "ANTIQUOT_LOC", prm ->
-           begin try check_anti_loc prm "flag" with
-             Stream.Failure -> check_anti_loc prm "flag2"
-           end
+         "ANTIQUOT_LOC", prm -> check_anti_loc prm "flag"
        | _ -> raise Stream.Failure)
   | tok -> Token.default_match tok;;
 

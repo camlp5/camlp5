@@ -37,8 +37,7 @@ let rec print_symbol ppf =
       fprintf ppf "LIST1 %a SEP %a" print_symbol1 s print_symbol1 t
   | Sopt s -> fprintf ppf "OPT %a" print_symbol1 s
   | Sflag s -> fprintf ppf "FLAG %a" print_symbol1 s
-  | Svala (Sflag s) -> fprintf ppf "FLAG2 %a" print_symbol1 s
-  | Svala _ -> fprintf ppf "svala???"
+  | Svala (name, s) -> fprintf ppf "%s2 %a" name print_symbol1 s
   | Stoken (con, prm) when con <> "" && prm <> "" ->
       fprintf ppf "%s@ %a" con print_str prm
   | Snterml (e, l) ->
@@ -68,7 +67,7 @@ and print_symbol1 ppf =
   | Stoken (con, "") -> pp_print_string ppf con
   | Stree t -> print_level ppf pp_print_space (flatten_tree t)
   | Smeta (_, _, _) | Snterml (_, _) | Slist0 _ | Slist0sep (_, _) |
-    Slist1 _ | Slist1sep (_, _) | Sopt _ | Sflag _ | Svala _ | Stoken _ as s ->
+    Slist1 _ | Slist1sep (_, _) | Sopt _ | Sflag _ | Svala (_, _) | Stoken _ as s ->
       fprintf ppf "(%a)" print_symbol s
 and print_rule ppf symbols =
   fprintf ppf "@[<hov 0>";
@@ -150,7 +149,7 @@ let iter_entry f e =
       Smeta (_, sl, _) -> List.iter do_symbol sl
     | Snterm e | Snterml (e, _) -> do_entry e
     | Slist0 s | Slist1 s | Sopt s | Sflag s -> do_symbol s
-    | Svala s -> do_symbol s
+    | Svala (_, s) -> do_symbol s
     | Slist0sep (s1, s2) | Slist1sep (s1, s2) -> do_symbol s1; do_symbol s2
     | Stree t -> do_tree t
     | Sself | Snext | Stoken _ -> ()
@@ -184,7 +183,7 @@ let fold_entry f e init =
       Smeta (_, sl, _) -> List.fold_left do_symbol accu sl
     | Snterm e | Snterml (e, _) -> do_entry accu e
     | Slist0 s | Slist1 s | Sopt s | Sflag s -> do_symbol accu s
-    | Svala s -> do_symbol accu s
+    | Svala (_, s) -> do_symbol accu s
     | Slist0sep (s1, s2) | Slist1sep (s1, s2) ->
         let accu = do_symbol accu s1 in do_symbol accu s2
     | Stree t -> do_tree accu t
@@ -228,7 +227,7 @@ let rec name_of_symbol_failed entry =
   | Slist1 s -> name_of_symbol_failed entry s
   | Slist1sep (s, _) -> name_of_symbol_failed entry s
   | Sopt s | Sflag s -> name_of_symbol_failed entry s
-  | Svala s -> name_of_symbol_failed entry s
+  | Svala (_, s) -> name_of_symbol_failed entry s
   | Stree t -> name_of_tree_failed entry t
   | Smeta (_, s :: _, _) -> name_of_symbol_failed entry s
   | s -> name_of_symbol entry s
@@ -602,20 +601,16 @@ and parser_of_symbol entry nlevn =
            act symbl)
   | Slist0 s ->
       let ps = parser_of_symbol entry nlevn s in
-      let pa = parser_of_token entry ("LIST0", "") in
       let rec loop al (strm__ : _ Stream.t) =
         match try Some (ps strm__) with Stream.Failure -> None with
           Some a -> loop (a :: al) strm__
         | _ -> al
       in
       (fun (strm__ : _ Stream.t) ->
-         match try Some (pa strm__) with Stream.Failure -> None with
-           Some a -> Obj.repr a
-         | _ -> let a = loop [] strm__ in Obj.repr (List.rev a))
+         let a = loop [] strm__ in Obj.repr (List.rev a))
   | Slist0sep (symb, sep) ->
       let ps = parser_of_symbol entry nlevn symb in
       let pt = parser_of_symbol entry nlevn sep in
-      let pa = parser_of_token entry ("LIST0", "SEP") in
       let rec kont al (strm__ : _ Stream.t) =
         match try Some (pt strm__) with Stream.Failure -> None with
           Some v ->
@@ -628,30 +623,22 @@ and parser_of_symbol entry nlevn =
         | _ -> al
       in
       (fun (strm__ : _ Stream.t) ->
-         match try Some (pa strm__) with Stream.Failure -> None with
-           Some a -> Obj.repr a
-         | _ ->
-             match try Some (ps strm__) with Stream.Failure -> None with
-               Some a -> let a = kont [a] strm__ in Obj.repr (List.rev a)
-             | _ -> Obj.repr [])
+         match try Some (ps strm__) with Stream.Failure -> None with
+           Some a -> let a = kont [a] strm__ in Obj.repr (List.rev a)
+         | _ -> Obj.repr [])
   | Slist1 s ->
       let ps = parser_of_symbol entry nlevn s in
-      let pa = parser_of_token entry ("LIST1", "") in
       let rec loop al (strm__ : _ Stream.t) =
         match try Some (ps strm__) with Stream.Failure -> None with
           Some a -> loop (a :: al) strm__
         | _ -> al
       in
       (fun (strm__ : _ Stream.t) ->
-         match try Some (pa strm__) with Stream.Failure -> None with
-           Some a -> Obj.repr a
-         | _ ->
-             let a = ps strm__ in
-             let a = loop [a] strm__ in Obj.repr (List.rev a))
+         let a = ps strm__ in
+         let a = loop [a] strm__ in Obj.repr (List.rev a))
   | Slist1sep (symb, sep) ->
       let ps = parser_of_symbol entry nlevn symb in
       let pt = parser_of_symbol entry nlevn sep in
-      let pa = parser_of_token entry ("LIST1", "SEP") in
       let rec kont al (strm__ : _ Stream.t) =
         match try Some (pt strm__) with Stream.Failure -> None with
           Some v ->
@@ -666,42 +653,27 @@ and parser_of_symbol entry nlevn =
         | _ -> al
       in
       (fun (strm__ : _ Stream.t) ->
-         match try Some (pa strm__) with Stream.Failure -> None with
-           Some a -> Obj.repr a
-         | _ ->
-             let a = ps strm__ in
-             let a = kont [a] strm__ in Obj.repr (List.rev a))
+         let a = ps strm__ in
+         let a = kont [a] strm__ in Obj.repr (List.rev a))
   | Sopt s ->
       let ps = parser_of_symbol entry nlevn s in
-      let pa = parser_of_token entry ("OPT", "") in
       (fun (strm__ : _ Stream.t) ->
-         match try Some (pa strm__) with Stream.Failure -> None with
-           Some a -> Obj.repr a
-         | _ ->
-             match try Some (ps strm__) with Stream.Failure -> None with
-               Some a -> Obj.repr (Some a)
-             | _ -> Obj.repr None)
+         match try Some (ps strm__) with Stream.Failure -> None with
+           Some a -> Obj.repr (Some a)
+         | _ -> Obj.repr None)
   | Sflag s ->
       let ps = parser_of_symbol entry nlevn s in
-      let pa = parser_of_token entry ("FLAG", "") in
       (fun (strm__ : _ Stream.t) ->
-         match try Some (pa strm__) with Stream.Failure -> None with
-           Some a -> Obj.repr a
-         | _ ->
-             match try Some (ps strm__) with Stream.Failure -> None with
-               Some _ -> Obj.repr true
-             | _ -> Obj.repr false)
-  | Svala (Sflag s) ->
+         match try Some (ps strm__) with Stream.Failure -> None with
+           Some _ -> Obj.repr true
+         | _ -> Obj.repr false)
+  | Svala (name, s) ->
       let ps = parser_of_symbol entry nlevn s in
-      let pa = parser_of_token entry ("FLAG", "") in
+      let pa = parser_of_token entry (name, "") in
       (fun (strm__ : _ Stream.t) ->
          match try Some (pa strm__) with Stream.Failure -> None with
            Some a -> Obj.repr (Stdpp.VaAnt (Obj.magic a))
-         | _ ->
-             match try Some (ps strm__) with Stream.Failure -> None with
-               Some _ -> Obj.repr (Stdpp.VaVal true)
-             | _ -> Obj.repr (Stdpp.VaVal false))
-  | Svala _ -> failwith "grammar.ml: Svala"
+         | _ -> let a = ps strm__ in Obj.repr (Stdpp.VaVal a))
   | Stree t ->
       let pt = parser_of_tree entry 1 0 t in
       (fun (strm__ : _ Stream.t) ->
@@ -963,7 +935,7 @@ let find_entry e s =
     | Slist1sep (s, _) -> find_symbol s
     | Sopt s -> find_symbol s
     | Sflag s -> find_symbol s
-    | Svala s -> find_symbol s
+    | Svala (_, s) -> find_symbol s
     | Stree t -> find_tree t
     | Sself | Snext | Stoken _ -> None
   and find_symbol_list =

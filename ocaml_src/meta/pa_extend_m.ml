@@ -21,7 +21,7 @@ Grammar.extend
     [[Gramext.Stoken ("UIDENT", "SFLAG2"); Gramext.Sself],
      Gramext.action
        (fun (s : 'symbol) _ (loc : Token.location) ->
-          (ssvala_flag loc s : 'symbol));
+          (ssvala_flag loc "FLAG" s : 'symbol));
      [Gramext.Stoken ("UIDENT", "SFLAG"); Gramext.Sself],
      Gramext.action
        (fun (s : 'symbol) _ (loc : Token.location) ->

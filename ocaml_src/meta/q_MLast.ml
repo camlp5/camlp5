@@ -480,7 +480,8 @@ Grammar.extend
            (Qast.Node ("StExp", [Qast.Loc; e]) : 'str_item));
       [Gramext.Stoken ("", "value");
        Gramext.srules
-         [[Gramext.Svala (Gramext.Sflag (Gramext.Stoken ("", "rec")))],
+         [[Gramext.Svala
+             ("FLAG", Gramext.Sflag (Gramext.Stoken ("", "rec")))],
           Gramext.action
             (fun (a : bool MLast.vala) (loc : Token.location) ->
                (Qast.vala (fun a -> Qast.Bool a) a : 'a_flag2));
