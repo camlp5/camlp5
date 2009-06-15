@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_extprint.ml,v 1.26 2007/12/18 02:05:52 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.27 2007/12/18 03:18:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -803,20 +803,21 @@ value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc t al =
         expr_of_pformat loc fmt empty_bef True <:expr< pc >> al sl
       in
       let (rev_el, al) =
-        List.fold_left
-          (fun (rev_el, al) (br, pf) ->
-             let sl = match pf with [ Pf sl -> sl ] in
-             let (e, al) =
-               expr_of_pformat loc fmt False False <:expr< pc >> al sl
-             in
-             let (off, sp) =
-               match br with
-               [ Tbreak (PPbreak off sp) -> (off, sp)
-               | Tbreak PPspace -> (1, 0)
-               | Tsub _ _ -> failwith "not impl Tsub" ]
-             in
-             ([(e, off, sp) :: rev_el], al))
-          ([], al) tl
+        loop [] al tl where rec loop rev_el al =
+          fun
+          [ [(Tbreak br, Pf sl) :: tl] ->
+               let (e, al) =
+                 expr_of_pformat loc fmt False False <:expr< pc >> al sl
+               in
+               let (off, sp) =
+                 match br with
+                 [ PPbreak off sp -> (off, sp)
+                 | PPspace -> (1, 0) ]
+               in
+               loop [(e, off, sp) :: rev_el] al tl
+          | [(Tsub _ _, Pf sl) :: tl] ->
+              failwith "not impl Tsub"
+          | [] -> (rev_el, al) ]
       in
       let e =
         let el =
