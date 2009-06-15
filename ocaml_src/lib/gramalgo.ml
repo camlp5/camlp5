@@ -402,88 +402,99 @@ let eprint_item (added, lh, dot, rh) =
 let lr0 entry lev =
   Printf.eprintf "LR(0) %s %d\n" entry.ename lev;
   flush stderr;
+  (**)
   let rl = flatten_gram entry lev in
+  let item_set =
+    let item = false, "start-symb", 0, [GS_nterm (name_of_entry entry lev)] in
+    close_item_set rl [item]
+  in
+  (*
+    let rl =
+      [("E", [GS_nterm "E"; GS_term "*"; GS_nterm "B"]);
+       ("E", [GS_nterm "E"; GS_term "+"; GS_nterm "B"]);
+       ("E", [GS_nterm "B"]);
+       ("B", [GS_term "0"]);
+       ("B", [GS_term "1"])]
+    in
+    let item_set =
+      let item = (False, "S", 0, [GS_nterm "E"]) in
+      close_item_set rl [item]
+    in
+  *)
   Printf.eprintf "%d rules\n\n" (List.length rl);
   flush stderr;
   check_closed rl;
   List.iter eprint_rule rl;
   Printf.eprintf "\n";
   flush stderr;
-  let item_set_and_rest =
-    let item = false, "start-symb", 0, [GS_nterm (name_of_entry entry lev)] in
-    Some
-      (GS_nterm "start-symb", close_item_set rl [item],
-       List.map (fun (lh, rh) -> false, lh, 0, rh) rl)
+  Printf.eprintf "\n";
+  Printf.eprintf "Item set 0\n\n";
+  List.iter eprint_item item_set;
+  flush stderr;
+  let item_set_cnt =
+    let rec loop ini_item_set_cnt item_set_cnt item_set =
+      let item_set =
+        List.map (fun (_, lh, dot, rh) -> false, lh, dot, rh) item_set
+      in
+      let sl =
+        let (rtl, rntl) =
+          (* terminals and non-terminals just after the dot *)
+          List.fold_left
+            (fun (rtl, rntl) (added, lh, dot, rh) ->
+               match get_symbol_after_dot dot rh with
+                 Some s ->
+                   begin match s with
+                     GS_term _ ->
+                       (if List.mem s rtl then rtl else s :: rtl), rntl
+                   | GS_nterm _ ->
+                       rtl, (if List.mem s rntl then rntl else s :: rntl)
+                   end
+               | None -> rtl, rntl)
+            ([], []) item_set
+        in
+        List.rev_append rtl (List.rev rntl)
+      in
+      if sl <> [] then
+        begin
+          Printf.eprintf "\nfrom item_set %d, symbols after dot:"
+            ini_item_set_cnt;
+          List.iter (fun s -> Printf.eprintf " %s" (sprint_symb s)) sl;
+          Printf.eprintf "\n";
+          flush stderr
+        end;
+      let rec loop_1 item_set_cnt =
+        function
+          s :: sl ->
+            (* select items where there is a dot before s *)
+            let item_set =
+              List.find_all
+                (fun (added, lh, dot, rh) ->
+                   match get_symbol_after_dot dot rh with
+                     Some s1 -> s = s1
+                   | None -> false)
+                item_set
+            in
+            (* move the dot after s *)
+            let item_set =
+              List.map (fun (added, lh, dot, rh) -> added, lh, dot + 1, rh)
+                item_set
+            in
+            (* complete by closure *)
+            let item_set = close_item_set rl item_set in
+            Printf.eprintf "\n";
+            Printf.eprintf "Item set %d (after %d and %s)\n\n"
+              (item_set_cnt + 1) ini_item_set_cnt (sprint_symb s);
+            List.iter eprint_item item_set;
+            flush stderr;
+            let item_set_cnt =
+              loop (item_set_cnt + 1) (item_set_cnt + 1) item_set
+            in
+            loop_1 item_set_cnt sl
+        | [] -> item_set_cnt
+      in
+      loop_1 item_set_cnt sl
+    in
+    loop 0 0 item_set
   in
-  let rec loop item_set_cnt =
-    function
-      Some (s, item_set, rest) ->
-        let item_set =
-          List.filter (fun (added, lh, dot, rh) -> dot <= List.length rh)
-            item_set
-        in
-        Printf.eprintf "\n";
-        Printf.eprintf "Item set %d (after %s)\n\n" item_set_cnt
-          (sprint_symb s);
-        List.iter eprint_item item_set;
-        flush stderr;
-        let s =
-          let rec loop =
-            function
-              (added, lh, dot, rh) :: rest ->
-                begin match get_symbol_after_dot dot rh with
-                  Some s -> Some s
-                | None -> loop rest
-                end
-            | [] ->
-                let rec loop =
-                  function
-                    (added, lh, dot, rh) :: rest ->
-                      begin match get_symbol_after_dot dot rh with
-                        Some s -> Some s
-                      | None -> loop rest
-                      end
-                  | [] -> None
-                in
-                loop rest
-          in
-          loop item_set
-        in
-        let item_set_and_rest =
-          match s with
-            Some s ->
-              let (item_set, rest) =
-                List.partition
-                  (fun (added, lh, dot, rh) ->
-                     match get_symbol_after_dot dot rh with
-                       Some s1 -> s = s1
-                     | None -> false)
-                  (item_set @ rest)
-              in
-              let rlist =
-                List.fold_left
-                  (fun rlist item ->
-                     if List.mem item rlist then rlist else item :: rlist)
-                  [] item_set
-              in
-              let item_set =
-                List.rev_map (fun (_, lh, dot, rh) -> false, lh, dot + 1, rh)
-                  rlist
-              in
-              (*
-                            Printf.eprintf "\n";
-                            Printf.eprintf "Item set initial %d (after %s)\n\n"
-                              (item_set_cnt + 1) (sprint_symb s);
-                            List.iter eprint_item item_set;
-                            flush stderr;
-              *)
-              let item_set = close_item_set rl item_set in
-              Some (s, item_set, rest)
-          | None -> None
-        in
-        if item_set_cnt > 2000 then ()
-        else loop (item_set_cnt + 1) item_set_and_rest
-    | None -> ()
-  in
-  loop 0 item_set_and_rest
+  Printf.eprintf "\ntotal number of item sets %d\n" item_set_cnt; flush stderr
 ;;
