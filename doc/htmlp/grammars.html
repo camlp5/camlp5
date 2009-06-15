@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.51 2007/07/18 19:11:15 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.52 2007/07/18 19:51:29 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -588,11 +588,11 @@ instead of "<tt>loc</tt>".</p>
        Examples:
        <ul>
          <li>If the associated lexer uses ("", xxx) to represent a keyword
-           (what is represented by then simple string xxx in an [EXTEND]
-           statement rule), the call [Grammar.token g ""] returns the keywords
-           list.</li>
-         <li>The call [Grammar.token g "IDENT"] returns the list of
-           all usages of the pattern "IDENT" in the [EXTEND]
+           (what is represented by then simple string xxx in an
+           <tt>EXTEND</tt> statement rule), the call
+           <tt>Grammar.token g ""</tt> returns the keywords list.</li>
+         <li>The call /<tt>Grammar.token g "IDENT"</tt>/ returns the list of
+           all usages of the pattern "IDENT" in the <tt>EXTEND</tt>
            statements.</li>
        </ul>
   </dd>
@@ -609,7 +609,7 @@ instead of "<tt>loc</tt>".</p>
   <dd>
        Type and value allowing to keep the same token stream between several
        calls of entries of the same grammar, to prevent loss of tokens. To
-       be used with [Entry.parse_parsable] below
+       be used with <tt>Entry.parse_parsable</tt> below
   </dd>
 </dl>
 
