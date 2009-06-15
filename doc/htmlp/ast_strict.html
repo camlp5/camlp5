@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_strict.html,v 1.11 2007/09/24 12:18:30 deraugla Exp $ -->
+  <!-- $Id: ast_strict.html,v 1.12 2007/09/25 03:16:23 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>AST - strict</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -1412,6 +1412,9 @@
   <dt>- class</dt>
   <dd>
     <tt style="color:blue">&lt;:sig_item&lt; class $list:lcd$ >></tt><br/>
+    <tt style="color:red">MLast.SgCls loc (Ploc.VaVal lcd)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:sig_item&lt; class $_list:lcd$ >></tt><br/>
     <tt style="color:red">MLast.SgCls loc lcd</tt>
   </dd>
 </dl>
@@ -1419,6 +1422,9 @@
   <dt>- class type</dt>
   <dd>
     <tt style="color:blue">&lt;:sig_item&lt; class type $list:lct$ >></tt><br/>
+    <tt style="color:red">MLast.SgClt loc (Ploc.VaVal lct)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:sig_item&lt; class type $_list:lct$ >></tt><br/>
     <tt style="color:red">MLast.SgClt loc lct</tt>
   </dd>
 </dl>
@@ -1426,6 +1432,9 @@
   <dt>- declare</dt>
   <dd>
     <tt style="color:blue">&lt;:sig_item&lt; declare $list:lsigi$ end >></tt><br/>
+    <tt style="color:red">MLast.SgDcl loc (Ploc.VaVal lsigi)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:sig_item&lt; declare $_list:lsigi$ end >></tt><br/>
     <tt style="color:red">MLast.SgDcl loc lsigi</tt>
   </dd>
 </dl>
@@ -1433,20 +1442,21 @@
   <dt>- directive</dt>
   <dd>
     <tt style="color:blue">&lt;:sig_item&lt; # $s$ >></tt><br/>
-    <tt style="color:red">MLast.SgDir loc s None</tt>
-  </dd>
-</dl>
-<dl class="nodelist">
-  <dt>- directive</dt>
-  <dd>
+    <tt style="color:red">MLast.SgDir loc (Ploc.VaVal s) (Ploc.VaVal None)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:sig_item&lt; # $_:s$ >></tt><br/>
+    <tt style="color:red">MLast.SgDir loc s (Ploc.VaVal None)</tt><br/>
+    <br/>
     <tt style="color:blue">&lt;:sig_item&lt; # $s$ $e$ >></tt><br/>
-    <tt style="color:red">MLast.SgDir loc s (Some e)</tt>
-  </dd>
-</dl>
-<dl class="nodelist">
-  <dt>- directive (general)</dt>
-  <dd>
+    <tt style="color:red">MLast.SgDir loc (Ploc.VaVal s) (Ploc.VaVal (Some e))</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:sig_item&lt; # $_:s$ $e$ >></tt><br/>
+    <tt style="color:red">MLast.SgDir loc s (Ploc.VaVal (Some e))</tt><br/>
+    <br/>
     <tt style="color:blue">&lt;:sig_item&lt; # $s$ $opt:oe$ >></tt><br/>
+    <tt style="color:red">MLast.SgDir loc (Ploc.VaVal s) (Ploc.VaVal oe)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:sig_item&lt; # $_:s$ $_opt:oe$ >></tt><br/>
     <tt style="color:red">MLast.SgDir loc s oe</tt>
   </dd>
 </dl>
@@ -1454,13 +1464,15 @@
   <dt>- exception</dt>
   <dd>
     <tt style="color:blue">&lt;:sig_item&lt; exception $s$ >></tt><br/>
-    <tt style="color:red">MLast.SgExc loc s []</tt>
-  </dd>
-</dl>
-<dl class="nodelist">
-  <dt>- exception</dt>
-  <dd>
+    <tt style="color:red">MLast.SgExc loc (Ploc.VaVal s) (Ploc.VaVal [])</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:sig_item&lt; exception $_:s$ >></tt><br/>
+    <tt style="color:red">MLast.SgExc loc s (Ploc.VaVal [])</tt><br/>
+    <br/>
     <tt style="color:blue">&lt;:sig_item&lt; exception $s$ of $list:lt$ >></tt><br/>
+    <tt style="color:red">MLast.SgExc loc (Ploc.VaVal s) (Ploc.VaVal lt)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:sig_item&lt; exception $_:s$ of $_list:lt$ >></tt><br/>
     <tt style="color:red">MLast.SgExc loc s lt</tt>
   </dd>
 </dl>
@@ -1468,6 +1480,9 @@
   <dt>- external</dt>
   <dd>
     <tt style="color:blue">&lt;:sig_item&lt; external $s$ : $t$ = $list:ls$ >></tt><br/>
+    <tt style="color:red">MLast.SgExt loc (Ploc.VaVal s) t (Ploc.VaVal ls)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:sig_item&lt; external $_:s$ : $t$ = $_list:ls$ >></tt><br/>
     <tt style="color:red">MLast.SgExt loc s t ls</tt>
   </dd>
 </dl>
@@ -1482,6 +1497,9 @@
   <dt>- module</dt>
   <dd>
     <tt style="color:blue">&lt;:sig_item&lt; module $flag:b$ $list:lsmt$ >></tt><br/>
+    <tt style="color:red">MLast.SgMod loc (Ploc.VaVal b) (Ploc.VaVal lsmt)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:sig_item&lt; module $_flag:b$ $_list:lsmt$ >></tt><br/>
     <tt style="color:red">MLast.SgMod loc b lsmt</tt>
   </dd>
 </dl>
@@ -1489,6 +1507,9 @@
   <dt>- module type</dt>
   <dd>
     <tt style="color:blue">&lt;:sig_item&lt; module type $s$ = $mt$ >></tt><br/>
+    <tt style="color:red">MLast.SgMty loc (Ploc.VaVal s) mt</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:sig_item&lt; module type $_:s$ = $mt$ >></tt><br/>
     <tt style="color:red">MLast.SgMty loc s mt</tt>
   </dd>
 </dl>
@@ -1496,6 +1517,9 @@
   <dt>- open</dt>
   <dd>
     <tt style="color:blue">&lt;:sig_item&lt; open $list:ls$ >></tt><br/>
+    <tt style="color:red">MLast.SgOpn loc (Ploc.VaVal ls)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:sig_item&lt; open $_list:ls$ >></tt><br/>
     <tt style="color:red">MLast.SgOpn loc ls</tt>
   </dd>
 </dl>
@@ -1503,6 +1527,9 @@
   <dt>- type declaration</dt>
   <dd>
     <tt style="color:blue">&lt;:sig_item&lt; type $list:ltd$ >></tt><br/>
+    <tt style="color:red">MLast.SgTyp loc (Ploc.VaVal ltd)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:sig_item&lt; type $_list:ltd$ >></tt><br/>
     <tt style="color:red">MLast.SgTyp loc ltd</tt>
   </dd>
 </dl>
@@ -1517,6 +1544,9 @@
   <dt>- value</dt>
   <dd>
     <tt style="color:blue">&lt;:sig_item&lt; value $s$ : $t$ >></tt><br/>
+    <tt style="color:red">MLast.SgVal loc (Ploc.VaVal s) t</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:sig_item&lt; value $_:s$ : $t$ >></tt><br/>
     <tt style="color:red">MLast.SgVal loc s t</tt>
   </dd>
 </dl>

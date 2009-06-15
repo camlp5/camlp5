@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.69 2007/09/24 12:18:30 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.70 2007/09/25 03:16:23 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -373,8 +373,8 @@ EXTEND
         pd = V (LIST1 STRING) ->
           <:str_item< external $_lid:i$ : $t$ = $_list:pd$ >>
       | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
-        pd = LIST1 STRING ->
-          <:str_item< external $lid:i$ : $t$ = $list:pd$ >>
+        pd = V (LIST1 STRING) ->
+          <:str_item< external $lid:i$ : $t$ = $_list:pd$ >>
       | "include"; me = module_expr -> <:str_item< include $me$ >>
       | "module"; r = V (FLAG "rec"); l = V (LIST1 mod_binding SEP "and") ->
           <:str_item< module $_flag:r$ $_list:l$ >>
@@ -437,11 +437,11 @@ EXTEND
       [ "exception"; (_, c, tl) = constructor_declaration ->
           <:sig_item< exception $_uid:c$ of $_list:tl$ >>
       | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
-        pd = LIST1 STRING ->
-          <:sig_item< external $_lid:i$ : $t$ = $list:pd$ >>
+        pd = V (LIST1 STRING) ->
+          <:sig_item< external $_lid:i$ : $t$ = $_list:pd$ >>
       | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
-        pd = LIST1 STRING ->
-          <:sig_item< external $lid:i$ : $t$ = $list:pd$ >>
+        pd = V (LIST1 STRING) ->
+          <:sig_item< external $lid:i$ : $t$ = $_list:pd$ >>
       | "include"; mt = module_type ->
           <:sig_item< include $mt$ >>
       | "module"; rf = V (FLAG "rec");
@@ -455,8 +455,8 @@ EXTEND
           <:sig_item< open $_:i$ >>
       | "type"; tdl = V (LIST1 type_declaration SEP "and") ->
           <:sig_item< type $_list:tdl$ >>
-      | "val"; i = LIDENT; ":"; t = ctyp ->
-          <:sig_item< value $lid:i$ : $t$ >>
+      | "val"; i = V LIDENT "lid" ""; ":"; t = ctyp ->
+          <:sig_item< value $_lid:i$ : $t$ >>
       | "val"; "("; i = operator_rparen; ":"; t = ctyp ->
           <:sig_item< value $lid:i$ : $t$ >> ] ]
   ;

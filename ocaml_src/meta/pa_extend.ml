@@ -1452,6 +1452,12 @@ let ss2 loc ls s =
            MLast.ExAcc
              (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Bool")),
            a)
+    | STlid (loc, "string") ->
+        MLast.ExApp
+          (loc,
+           MLast.ExAcc
+             (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Str")),
+           a)
     | STapp (loc, STlid (_, "list"), t) ->
         let a =
           match t with

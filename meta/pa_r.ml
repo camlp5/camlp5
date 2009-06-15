@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.110 2007/09/24 16:20:22 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.111 2007/09/25 03:16:23 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -199,7 +199,7 @@ EXTEND
       | "open"; i = V mod_ident "list" "" -> <:sig_item< open $_:i$ >>
       | "type"; tdl = V (LIST1 type_declaration SEP "and") ->
           <:sig_item< type $_list:tdl$ >>
-      | "value"; i = V LIDENT; ":"; t = ctyp ->
+      | "value"; i = V LIDENT "lid" ""; ":"; t = ctyp ->
           <:sig_item< value $_lid:i$ : $t$ >>
       | "#"; n = V LIDENT "lid" ""; dp = V (OPT expr) ->
           <:sig_item< # $_lid:n$ $_opt:dp$ >> ] ]

@@ -94,7 +94,11 @@ let from_file fname loc =
       in
       begin_line strm
     in
-    let r = try loop fname 1 with Stream.Failure -> fname, 1, bp, ep in
+    let r =
+      try loop fname 1 with
+        Stream.Failure ->
+          let bol = bol_pos loc in fname, line_nb loc, bp - bol, ep - bol
+    in
     close_in ic; r
   with Sys_error _ -> fname, 1, bp, ep
 ;;

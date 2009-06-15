@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ploc.ml,v 1.3 2007/09/17 10:22:31 deraugla Exp $ *)
+(* $Id: ploc.ml,v 1.4 2007/09/25 03:16:23 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 type t =
@@ -84,7 +84,12 @@ value from_file fname loc =
       in
       begin_line strm
     in
-    let r = try loop fname 1 with [ Stream.Failure -> (fname, 1, bp, ep) ] in
+    let r =
+      try loop fname 1 with
+      [ Stream.Failure ->
+          let bol = bol_pos loc in
+          (fname, line_nb loc, bp - bol, ep - bol) ]
+    in
     do { close_in ic; r }
   with
   [ Sys_error _ -> (fname, 1, bp, ep) ]

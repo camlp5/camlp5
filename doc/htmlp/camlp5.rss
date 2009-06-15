@@ -5,6 +5,14 @@
     <description>Camlp5 documentation</description>
     <lastBuildDate>Mon Sep 17 15:10:47 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
+    <item>
+      <title>Syntax tree - strict mode - 2</title>
+      <description>
+        Updated doc of 'patt', 'ctyp', 'str_item' and 'sig_item'.
+      </description>
+      <pubDate>Tue Sep 25 05:14:45 CEST 2007</pubDate>
+      <link>../ast_strict.html</link>
+    </item>
     <item> 
       <title>Version number</title>
       <description>
