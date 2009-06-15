@@ -8,45 +8,7 @@ Grammar.extend
   [Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e),
    Some (Gramext.Level "top"),
    [None, Some Gramext.NonA,
-    [[Gramext.Stoken ("UIDENT", "SV"); Gramext.Stoken ("UIDENT", "")],
-     Gramext.action
-       (fun (s : string) _ (loc : Ploc.t) ->
-          (ASvala2 (loc, AStok (loc, s, None), []) : 'symbol));
-     [Gramext.Stoken ("UIDENT", "SV"); Gramext.Stoken ("UIDENT", "FLAG");
-      Gramext.Sself],
-     Gramext.action
-       (fun (s : 'symbol) _ _ (loc : Ploc.t) ->
-          (ASvala2 (loc, ASflag (loc, s), []) : 'symbol));
-     [Gramext.Stoken ("UIDENT", "SV"); Gramext.Stoken ("UIDENT", "OPT");
-      Gramext.Sself],
-     Gramext.action
-       (fun (s : 'symbol) _ _ (loc : Ploc.t) ->
-          (ASvala2 (loc, ASopt (loc, s), []) : 'symbol));
-     [Gramext.Stoken ("UIDENT", "SV"); Gramext.Stoken ("UIDENT", "LIST1");
-      Gramext.Sself;
-      Gramext.Sopt
-        (Gramext.srules
-           [[Gramext.Stoken ("UIDENT", "SEP");
-             Gramext.Snterm
-               (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
-            Gramext.action
-              (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__4))])],
-     Gramext.action
-       (fun (sep : 'e__4 option) (s : 'symbol) _ _ (loc : Ploc.t) ->
-          (ASvala2 (loc, ASlist (loc, true, s, sep), []) : 'symbol));
-     [Gramext.Stoken ("UIDENT", "SV"); Gramext.Stoken ("UIDENT", "LIST0");
-      Gramext.Sself;
-      Gramext.Sopt
-        (Gramext.srules
-           [[Gramext.Stoken ("UIDENT", "SEP");
-             Gramext.Snterm
-               (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
-            Gramext.action
-              (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__3))])],
-     Gramext.action
-       (fun (sep : 'e__3 option) (s : 'symbol) _ _ (loc : Ploc.t) ->
-          (ASvala2 (loc, ASlist (loc, false, s, sep), []) : 'symbol));
-     [Gramext.Stoken ("UIDENT", "SFLAG"); Gramext.Sself],
+    [[Gramext.Stoken ("UIDENT", "SFLAG"); Gramext.Sself],
      Gramext.action
        (fun (s : 'symbol) _ (loc : Ploc.t) ->
           (ASquot (loc, ASflag (loc, s)) : 'symbol));
@@ -75,4 +37,11 @@ Grammar.extend
               (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__1))])],
      Gramext.action
        (fun (sep : 'e__1 option) (s : 'symbol) _ (loc : Ploc.t) ->
-          (ASquot (loc, ASlist (loc, false, s, sep)) : 'symbol))]]];;
+          (ASquot (loc, ASlist (loc, false, s, sep)) : 'symbol))]];
+   Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e),
+   Some (Gramext.Level "vala"),
+   [None, None,
+    [[Gramext.Stoken ("UIDENT", "SV"); Gramext.Snext],
+     Gramext.action
+       (fun (s : 'symbol) _ (loc : Ploc.t) ->
+          (ASvala2 (loc, s, []) : 'symbol))]]];;
