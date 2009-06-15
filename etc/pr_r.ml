@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.28 2007/07/04 15:35:05 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.29 2007/07/04 16:09:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -459,54 +459,35 @@ value value_binding pc (p, e) =
          (expr_wh {(pc) with bef = ""; aft = ""} e)
          (match pc.aft with [ Some (_, k) -> k | None -> "" ]))
     (fun () ->
+       let patt_eq k =
+         horiz_vertic
+           (fun () ->
+              sprintf "%s%s%s =%s" pc.bef
+                (hlist patt {(pc) with bef = ""; aft = ""} pl)
+                (match tyo with
+                 [ Some t ->
+                     sprintf " : %s" (ctyp {(pc) with bef = ""; aft = ""} t)
+                 | None -> "" ])
+                k)
+           (fun () ->
+              let patt_tycon tyo pc p =
+                match tyo with
+                [ Some t ->
+                    patt {(pc) with aft = ctyp {(pc) with bef = " : "} t} p
+                | None -> patt pc p ]
+              in
+              let pl = List.map (fun p -> (p, "")) pl in
+              plistl patt (patt_tycon tyo) 4
+                {(pc) with aft = sprintf " =%s" k} pl)
+       in
        match sequencify e with
        [ Some el ->
            sequence_box2
-             {(pc) with
-              bef k =
-                horiz_vertic
-                  (fun () ->
-                     sprintf "%s%s%s =%s" pc.bef
-                       (hlist patt {(pc) with bef = ""; aft = ""} pl)
-                       (match tyo with
-                        [ Some t ->
-                            sprintf " : %s"
-                              (ctyp {(pc) with bef = ""; aft = ""} t)
-                        | None -> "" ])
-                       k)
-                  (fun () ->
-                     sprintf "%s%s%s =%s" pc.bef
-                       (hlist patt {(pc) with bef = ""; aft = ""} pl)
-                       (match tyo with
-                        [ Some t ->
-                            sprintf " : %s"
-                              (ctyp {(pc) with bef = ""; aft = ""} t)
-                        | None -> "" ])
-                       k);
+             {(pc) with bef = patt_eq;
               aft = match pc.aft with [ Some (_, k) -> k | None -> "" ]}
              el
        | None ->
-           let s1 =
-             horiz_vertic
-               (fun () ->
-                  sprintf "%s%s%s =" pc.bef
-                    (hlist patt {(pc) with bef = ""; aft = ""} pl)
-                    (match tyo with
-                     [ Some t ->
-                         sprintf " : %s"
-                           (ctyp {(pc) with bef = ""; aft = ""} t)
-                     | None -> "" ]))
-               (fun () ->
-                  let patt_tycon tyo pc p =
-                    match tyo with
-                    [ Some t ->
-                        patt {(pc) with aft = ctyp {(pc) with bef = " : "} t}
-                          p
-                    | None -> patt pc p ]
-                  in
-                  let pl = List.map (fun p -> (p, "")) pl in
-                  plistl patt (patt_tycon tyo) 4 {(pc) with aft = " ="} pl)
-           in
+           let s1 = patt_eq "" in
            let s2 =
              comm_expr expr_wh
                {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
@@ -543,24 +524,48 @@ value let_binding pc (p, e) =
   in
   let (pl, e) = expr_fun_args e in
   let pl = [p :: pl] in
+  let (e, tyo) =
+    match e with
+    [ <:expr< ($e$ : $t$) >>  -> (e, Some t)
+    | _ -> (e, None) ]
+  in
   let expr_wh = if flag_where_after_let_eq.val then expr_wh else expr in
   horiz_vertic
     (fun () ->
-       sprintf "%s%s = %s%s" pc.bef
+       sprintf "%s%s%s = %s%s" pc.bef
          (hlist patt {(pc) with bef = ""; aft = ""} pl)
+         (match tyo with
+          [ Some t -> sprintf " : %s" (ctyp {(pc) with bef = ""; aft = ""} t)
+          | None -> "" ])
          (expr_wh {(pc) with bef = ""; aft = ""} e)
          (if pc.aft then " in" else ""))
     (fun () ->
+       let patt_eq k =
+         horiz_vertic
+           (fun () ->
+              sprintf "%s%s%s =%s" pc.bef
+                (hlist patt {(pc) with bef = ""; aft = ""} pl)
+                (match tyo with
+                 [ Some t ->
+                     sprintf " : %s" (ctyp {(pc) with bef = ""; aft = ""} t)
+                 | None -> "" ])
+                k)
+           (fun () ->
+              let patt_tycon tyo pc p =
+                match tyo with
+                [ Some t ->
+                    patt {(pc) with aft = ctyp {(pc) with bef = " : "} t} p
+                | None -> patt pc p ]
+              in
+              let pl = List.map (fun p -> (p, "")) pl in
+              plistl patt (patt_tycon tyo) 4
+                {(pc) with aft = sprintf " =%s" k} pl)
+       in
        let s =
          match sequencify e with
-         [ Some el ->
-             sequence_box2
-               {(pc) with
-                bef k = hlist patt {(pc) with aft = sprintf " =%s" k} pl;
-                aft = ""}
-               el
+         [ Some el -> sequence_box2 {(pc) with bef = patt_eq; aft = ""} el
          | None ->
-             let s1 = hlist patt {(pc) with aft = " ="} pl in
+             let s1 = patt_eq "" in
              let s2 =
                comm_expr expr_wh
                  {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
