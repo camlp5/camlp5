@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.100 2007/12/03 13:58:14 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.101 2007/12/03 14:47:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -742,16 +742,8 @@ value typevar pc tv = sprintf "%s'%s%s" pc.bef tv pc.aft;
 value string pc s = sprintf "%s\"%s\"%s" pc.bef s pc.aft;
 
 value external_decl pc (n, t, sl) =
-  sprint_break 1 2 pc
-    (fun pc ->
-       var_escaped {(pc) with bef = sprintf "%sexternal " pc.bef; aft = " :"}
-         n)
-    (fun pc ->
-       ctyp
-         {(pc) with
-          aft =
-            sprintf " = %s%s" (hlist string {(pc) with bef = ""; aft = ""} sl)
-              pc.aft} t)
+  pprintf pc "external %p :@;%p = %s" var_escaped n ctyp t
+    (hlist string {(pc) with bef = ""; aft = ""} sl)
 ;
 
 value exception_decl pc (e, tl, id) =

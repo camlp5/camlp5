@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_pprintf.ml,v 1.3 2007/12/03 13:58:14 deraugla Exp $ *)
+(* $Id: pa_pprintf.ml,v 1.4 2007/12/03 14:47:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* pprintf statement *)
@@ -53,10 +53,14 @@ value expand_item loc pc fmt al =
             | _ -> Ploc.raise loc (Stream.Error "Not enough parameters") ]
           in
           let (aft_al, al) = get_assoc_args loc aft al in
-          let pc = (bef, bef_al, aft, aft_al, f, f_a) in
+          let pc = (bef, bef_al, aft, aft_al, Some (f, f_a)) in
           loop [pc :: rev_pcl] "" al str_list
       | [] ->
-          (List.rev rev_pcl, al) ]
+          if bef = "" then (List.rev rev_pcl, al)
+          else
+            let (bef_al, al) = get_assoc_args loc bef al in
+            let pc = (bef, bef_al, "", [], None) in
+            ([pc], al) ]
   in
   (pcl, al)
 ;
@@ -65,7 +69,7 @@ value make_call loc (bef_is_empty, aft_is_empty) pc pcl =
   let el =
     loop [] True pcl where rec loop rev_el is_first =
       fun
-      [ [(bef, bef_al, aft, aft_al, f, f_a) :: pcl] ->
+      [ [(bef, bef_al, aft, aft_al, f_f_a_opt) :: pcl] ->
           let is_last = pcl = [] in
           let lbl = [] in
           let lbl =
@@ -107,7 +111,11 @@ value make_call loc (bef_is_empty, aft_is_empty) pc pcl =
             if lbl = [] then pc
             else <:expr< {($pc$) with $list:List.rev lbl$} >>
           in
-          let e = <:expr< $f$ $pc$ $f_a$ >> in
+          let e =
+            match f_f_a_opt with
+            [ Some (f, f_a) -> <:expr< $f$ $pc$ $f_a$ >>
+            | None -> Ploc.raise loc (Failure "not impl") ]
+          in
           loop [e :: rev_el] False pcl
       | [] ->
           List.rev rev_el ]
@@ -156,7 +164,7 @@ value expand_pprintf loc pc fmt al =
                   in
                   match parse_pp_param (Fstream.of_string s) with
                   [ Some ((nspaces, noffset), strm) ->
-                      (nspaces, noffset, i + 2 + Fstream.count strm)
+                      (nspaces, noffset, i + 2 + Fstream.count strm + 1)
                   | None -> (1, 2, i + 2) ]
                 in
                 (PPbreak nspaces offset, i)
