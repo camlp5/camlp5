@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.53 2007/09/09 11:26:09 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.54 2007/09/09 11:49:42 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
@@ -36,7 +36,7 @@ module Type =
       | TyLid of loc and V string
       | TyQuo of loc and V (ref (option t))
       | TyTup of loc and list t
-      | TyUid of loc and string ]
+      | TyUid of loc and V string ]
     ;
   end
 ;
@@ -70,7 +70,7 @@ value rec type_of_ctyp t =
           vars.val := [(s, v) :: vars.val];
           v
         } ]
-  | MLast.TyUid loc s -> <:ctyp< $uid:s$ >>
+  | MLast.TyUid loc s -> <:ctyp< $auid:s$ >>
   | t -> not_impl (MLast.loc_of_ctyp t) "Type.of_ctyp" t ]
 ;
 

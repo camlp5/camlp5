@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.54 2007/09/09 11:26:09 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.55 2007/09/09 11:49:42 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -881,7 +881,7 @@ EXTEND
       [ i = typevar2 -> Qast.Node "TyQuo" [Qast.Loc; i]
       | "_" -> Qast.Node "TyAny" [Qast.Loc]
       | i = a_LIDENT2 -> Qast.Node "TyLid" [Qast.Loc; i]
-      | i = a_UIDENT -> Qast.Node "TyUid" [Qast.Loc; i]
+      | i = a_UIDENT2 -> Qast.Node "TyUid" [Qast.Loc; i]
       | "("; t = SELF; "*"; tl = SLIST1 ctyp SEP "*"; ")" ->
           Qast.Node "TyTup" [Qast.Loc; Qast.Cons t tl]
       | "("; t = SELF; ")" -> t

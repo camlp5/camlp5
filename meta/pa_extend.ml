@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.51 2007/09/09 11:26:09 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.52 2007/09/09 11:49:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -239,7 +239,7 @@ module MetaAction =
       | MLast.TyLid loc s -> <:expr< MLast.TyLid $mloc$ $mvala mstring s$ >>
       | MLast.TyQuo loc s -> <:expr< MLast.TyQuo $mloc$ $mvala mstring s$ >>
       | MLast.TyTup loc tl -> <:expr< MLast.TyTup $mloc$ $mlist mctyp tl$ >>
-      | MLast.TyUid loc s -> <:expr< MLast.TyUid $mloc$ $str:s$ >>
+      | MLast.TyUid loc s -> <:expr< MLast.TyUid $mloc$ $mvala mstring s$ >>
       | x -> not_impl "mctyp" x ]
     and mpe (p, e) = <:expr< ($mpatt p$, $mexpr e$) >>
     and mpwe (p, w, e) = <:expr< ($mpatt p$, $moption mexpr w$, $mexpr e$) >>;
@@ -467,8 +467,8 @@ value text_of_action loc psl rtvar act tvar =
              let t = make_ctyp ps.symbol.styp tvar in
              let p =
                match p with
-               [ <:patt< ($p$, $list:pl$) >> when quotify.val ->
-                   <:patt< $lid:pname_of_ptuple [p :: pl]$ >>
+               [ <:patt< ($list:pl$) >> when quotify.val ->
+                   <:patt< $lid:pname_of_ptuple pl$ >>
                | _ -> p ]
              in
              <:expr< fun ($p$ : $t$) -> $txt$ >> ])

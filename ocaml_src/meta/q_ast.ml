@@ -229,7 +229,7 @@ module Meta =
                     (loc, MLast.ExUid (loc, "MLast"),
                      MLast.ExUid (loc, "TyUid")),
                   ln),
-               e_string s)
+               e_vala e_string s)
         | x -> not_impl "e_ctyp" x
       in
       loop t

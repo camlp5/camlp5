@@ -568,7 +568,7 @@ module MetaAction =
                   (loc, MLast.ExUid (loc, "MLast"),
                    MLast.ExUid (loc, "TyUid")),
                 mloc),
-             MLast.ExStr (loc, s))
+             mvala mstring s)
       | x -> not_impl "mctyp" x
     and mpe (p, e) = MLast.ExTup (loc, [mpatt p; mexpr e])
     and mpwe (p, w, e) =
@@ -1072,8 +1072,8 @@ let text_of_action loc psl rtvar act tvar =
              let t = make_ctyp ps.symbol.styp tvar in
              let p =
                match p with
-                 MLast.PaTup (_, p :: pl) when !quotify ->
-                   MLast.PaLid (loc, pname_of_ptuple (p :: pl))
+                 MLast.PaTup (_, pl) when !quotify ->
+                   MLast.PaLid (loc, pname_of_ptuple pl)
                | _ -> p
              in
              MLast.ExFun (loc, [MLast.PaTyc (loc, p, t), None, txt]))

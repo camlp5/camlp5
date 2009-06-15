@@ -2476,9 +2476,9 @@ Grammar.extend
         (fun _ (tl : 'a_list) _ (t : 'ctyp) _ (loc : Ploc.t) ->
            (Qast.Node ("TyTup", [Qast.Loc; Qast.Cons (t, tl)]) : 'ctyp));
       [Gramext.Snterm
-         (Grammar.Entry.obj (a_UIDENT : 'a_UIDENT Grammar.Entry.e))],
+         (Grammar.Entry.obj (a_UIDENT2 : 'a_UIDENT2 Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'a_UIDENT) (loc : Ploc.t) ->
+        (fun (i : 'a_UIDENT2) (loc : Ploc.t) ->
            (Qast.Node ("TyUid", [Qast.Loc; i]) : 'ctyp));
       [Gramext.Snterm
          (Grammar.Entry.obj (a_LIDENT2 : 'a_LIDENT2 Grammar.Entry.e))],

@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.19 2007/09/09 09:06:35 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.20 2007/09/09 11:49:42 deraugla Exp $ *)
 
 open MLast;
 
@@ -60,9 +60,9 @@ and variant =
   | PvInh t -> ctyp t ]
 and ctyp_module =
   fun
-  [ TyAcc _ t _ -> ctyp_module t
-  | TyApp _ t1 t2 -> do { ctyp t1; ctyp t2 }
-  | TyUid _ m -> addmodule m
+  [ <:ctyp< $t$.$_$ >> -> ctyp_module t
+  | <:ctyp< $t1$ $t2$ >> -> do { ctyp t1; ctyp t2 }
+  | <:ctyp< $uid:m$ >> -> addmodule m
   | x -> not_impl "ctyp_module" x ]
 ;
 

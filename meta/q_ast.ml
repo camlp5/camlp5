@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.45 2007/09/09 11:26:09 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.46 2007/09/09 11:49:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -210,7 +210,7 @@ module Meta =
             in
             <:expr< MLast.TyRec $ln$ $lld$ >>
 *)
-        | TyUid _ s -> <:expr< MLast.TyUid $ln$ $e_string s$ >>
+        | TyUid _ s -> <:expr< MLast.TyUid $ln$ $e_vala e_string s$ >>
         | IFDEF STRICT THEN
             TyXtr loc s _ ->
               let asit = s.[0] = 'a' in
@@ -511,8 +511,7 @@ IFDEF STRICT THEN
         | s = ANTIQUOT_LOC "anti" -> MLast.PaXtr loc ("b" ^ s) None ] ]
     ;
     ipatt: LAST
-      [ [ s = ANTIQUOT_LOC -> make_anti loc "" s
-        | s = ANTIQUOT_LOC "anti" -> make_anti loc "anti" s ] ]
+      [ [ s = ANTIQUOT_LOC "" -> Obj.repr (MLast.PaXtr loc ("a" ^ s) None) ] ]
     ;
     Pcaml.ctyp: LAST
       [ [ s = ANTIQUOT_LOC -> MLast.TyXtr loc s None ] ]

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.23 2007/09/09 11:26:09 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.24 2007/09/09 11:49:42 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -209,7 +209,7 @@ value rec ctyp =
   | TyRec loc _ -> error loc "record type not allowed here"
   | TySum loc _ -> error loc "sum type not allowed here"
   | TyTup loc tl -> mktyp loc (Ptyp_tuple (List.map ctyp tl))
-  | TyUid loc s -> mktyp loc (Ptyp_constr (lident s) [])
+  | TyUid loc s -> mktyp loc (Ptyp_constr (lident (uv s)) [])
   | TyVrn loc catl ool ->
       let catl =
         List.map

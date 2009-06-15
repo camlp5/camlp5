@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.55 2007/09/09 11:26:09 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.56 2007/09/09 11:49:42 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -484,7 +484,7 @@ EXTEND
       [ i = typevar2 -> <:ctyp< '$a:i$ >>
       | "_" -> <:ctyp< _ >>
       | i = V LIDENT -> <:ctyp< $alid:i$ >>
-      | i = UIDENT -> <:ctyp< $uid:i$ >>
+      | i = V UIDENT -> <:ctyp< $auid:i$ >>
       | "("; t = SELF; "*"; tl = LIST1 ctyp SEP "*"; ")" ->
           <:ctyp< ( $list:[t::tl]$ ) >>
       | "("; t = SELF; ")" -> <:ctyp< $t$ >>
