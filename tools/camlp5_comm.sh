@@ -1,8 +1,8 @@
 #!/bin/bash
-# $Id: camlp5_comm.sh,v 1.5 2007/09/06 20:48:56 deraugla Exp $
+# $Id: camlp5_comm.sh,v 1.6 2007/09/06 21:04:06 deraugla Exp $
 
 MODE="-mode T"
-ARGS1=$MODE
+ARGS1="$MODE"
 FILE=
 QUIET=no
 while test "" != "$1"; do
@@ -26,6 +26,8 @@ if test "$2" = "camlp5r" -o "$2" = "camlp5"; then
 	shift; shift
 	ARGS2=$(echo $* | sed -e "s/[()*]//g")
 #	ARGS1="$ARGS1 -verbose"
+echo "ARGS1=$ARGS1"
+echo "ARGS2=$ARGS2"
 	if test "$QUIET" = "no"; then echo $COMM $ARGS2 $ARGS1 $FILE; fi
 	$COMM $ARGS2 $ARGS1 $FILE
 else

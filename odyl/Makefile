@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.9 2007/08/31 10:41:10 deraugla Exp $
+# $Id: Makefile,v 1.10 2007/09/06 21:04:06 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -25,7 +25,7 @@ odyl.cmxa: $(OBJS:.cmo=.cmx)
 	$(OCAMLOPT) $(LINKFLAGS) $(OBJS:.cmo=.cmx) -a -o odyl.cmxa
 
 odyl_main.cmx: odyl_main.ml
-	$(CAMLP5_COMM) -nolib -DOPT -o odyl_main.ppo odyl_main.ml
+	$(CAMLP5_COMM) -DOPT -o odyl_main.ppo odyl_main.ml
 	$(OCAMLOPT) -c -impl odyl_main.ppo
 	rm -f odyl_main.ppo
 
