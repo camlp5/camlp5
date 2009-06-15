@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.84 2007/08/01 06:22:35 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.85 2007/08/02 03:25:43 deraugla Exp $ *)
 
 open Token;
 
@@ -221,11 +221,11 @@ value antiloc bp ep buf =
 
 value rec antiquot_loc ctx bp =
   lexer
-  [ "$"/ -> antiloc bp $pos (":" ^ $buf)
+  [ "$"/ -> antiloc bp $pos $buf
   | "a..zA..Z0..9" (antiquot_loc ctx bp)!
   | ":" (antiquot_rest ctx bp)! -> antiloc bp $pos $buf
-  | "\\"/ (any ctx) (antiquot_rest ctx bp)! -> antiloc bp $pos (":" ^ $buf)
-  | (any ctx) (antiquot_rest ctx bp)! -> antiloc bp $pos (":" ^ $buf)
+  | "\\"/ (any ctx) (antiquot_rest ctx bp)! -> antiloc bp $pos $buf
+  | (any ctx) (antiquot_rest ctx bp)! -> antiloc bp $pos $buf
   | -> err ctx (bp, $pos) "antiquotation not terminated" ]
 ;
 

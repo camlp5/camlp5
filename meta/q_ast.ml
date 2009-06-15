@@ -1,8 +1,10 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.8 2007/08/01 18:57:15 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.9 2007/08/02 03:25:43 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
+
+open Printf;
 
 value not_impl f x =
   let desc =
@@ -10,7 +12,7 @@ value not_impl f x =
       "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
     else "int_val = " ^ string_of_int (Obj.magic x)
   in
-  failwith ("q_ast_r.ml: " ^ f ^ ", not impl: " ^ desc)
+  failwith ("q_ast.ml: " ^ f ^ ", not impl: " ^ desc)
 ;
 
 value call_with r v f a =
@@ -24,22 +26,21 @@ value call_with r v f a =
   with e -> do { r.val := saved; raise e }
 ;
 
-value eval_antiquot kind entry s =
+value eval_antiquot entry s =
   try
     let i = String.index s ',' in
     let j = String.index_from s (i + 1) ':' in
+    let k = String.index_from s (j + 1) ':' in
     let bp = int_of_string (String.sub s 0 i) in
     let ep = int_of_string (String.sub s (i + 1) (j - i - 1)) in
-    let s = String.sub s (j + 1) (String.length s - j - 1) in
+    let sh = int_of_string (String.sub s (j + 1) (k - j - 1)) in
+    let str = String.sub s (k + 1) (String.length s - k - 1) in
     let r =
       call_with Plexer.dollar_for_antiquot_loc False
-        (Grammar.Entry.parse entry) (Stream.of_string s)
+        (Grammar.Entry.parse entry) (Stream.of_string str)
     in
     let loc =
-      let shift_bp =
-        if kind = "" then String.length "$"
-        else String.length "$" + String.length kind + String.length ":"
-      in
+      let shift_bp = String.length "$" + sh in
       let shift_ep = String.length "$" in
       Stdpp.make_loc (bp + shift_bp, ep - shift_ep)
     in
@@ -48,37 +49,13 @@ value eval_antiquot kind entry s =
   [ Not_found -> None ]
 ;
 
-(* horrible hack for lists antiquotations; a string has been installed in
-   the ASt at the place of a list, using Obj.repr; ugly but local to
-   q_ast.ml *)
-value eval_antiquot_list entry (el : list 'a) =
-  if Obj.tag (Obj.repr el) = Obj.string_tag then
-    let s : string = Obj.magic el in
-    match eval_antiquot "list" entry s with
-    [ Some loc_r -> Some loc_r
-    | None -> assert False ]
-  else None
-;
-
 (* horrible hack for opt antiquotations; a string has been installed in
-   the ASt at the place of an option, using Obj.repr; ugly but local to
-   q_ast.ml *)
-value eval_antiquot_option entry (oe : option 'a) =
-  if Obj.is_block (Obj.repr oe) && Obj.tag (Obj.repr oe) = Obj.string_tag then
-    let s : string = Obj.magic oe in
-    match eval_antiquot "opt" entry s with
-    [ Some loc_r -> Some loc_r
-    | None -> assert False ]
-  else None
-;
-
-(* horrible hack for bool antiquotations; a string has been installed in
-   the ASt at the place of a bool, using Obj.repr; ugly but local to
-   q_ast.ml *)
-value eval_antiquot_bool entry (b : bool) =
-  if Obj.is_block (Obj.repr b) && Obj.tag (Obj.repr b) = Obj.string_tag then
-    let s : string = Obj.magic b in
-    match eval_antiquot "flag" entry s with
+   the ASt at the place of a list, an option or a bool, using Obj.repr;
+   ugly but local to q_ast.ml *)
+value eval_antiquot_patch entry v =
+  if Obj.is_block (Obj.repr v) && Obj.tag (Obj.repr v) = Obj.string_tag then
+    let s : string = Obj.magic v in
+    match eval_antiquot entry s with
     [ Some loc_r -> Some loc_r
     | None -> assert False ]
   else None
@@ -94,7 +71,7 @@ module Meta =
     value loc = Stdpp.dummy_loc;
     value ln () = <:expr< $lid:Stdpp.loc_name.val$ >>;
     value e_list elem el =
-      match eval_antiquot_list expr_eoi el with
+      match eval_antiquot_patch expr_eoi el with
       [ Some (loc, r) -> <:expr< $anti:r$ >>
       | None ->
           loop el where rec loop =
@@ -103,7 +80,7 @@ module Meta =
             | [e :: el] -> <:expr< [$elem e$ :: $loop el$] >> ] ]
     ;
     value e_option elem eo =
-      match eval_antiquot_option expr_eoi eo with
+      match eval_antiquot_patch expr_eoi eo with
       [ Some (loc, r) -> <:expr< $anti:r$ >>
       | None ->
           match eo with
@@ -111,7 +88,7 @@ module Meta =
           | Some e -> <:expr< Some $elem e$ >> ] ]
     ;
     value e_bool b =
-      match eval_antiquot_bool expr_eoi b with
+      match eval_antiquot_patch expr_eoi b with
       [ Some (loc, r) -> <:expr< $anti:r$ >>
       | None -> if b then <:expr< True >> else <:expr< False >> ]
     ;
@@ -135,15 +112,44 @@ module Meta =
       let ln = ln () in
       loop p where rec loop =
         fun
-        [ PaLid _ s ->
+        [ PaAcc _ p1 p2 -> <:expr< MLast.PaAcc $ln$ $loop p1$ $loop p2$ >>
+        | PaAnt _ p ->
+            match p with
+            [ PaLid _ s ->
+                match eval_antiquot expr_eoi s with
+                [ Some (loc, r) ->
+                    let r = <:expr< MLast.PaAnt $ln$ $r$ >> in
+                    <:expr< $anti:r$ >>
+                | _ -> assert False ]
+            | PaStr _ s ->
+                match eval_antiquot expr_eoi s with
+                [ Some (loc, r) -> <:expr< $anti:r$ >>
+                | _ -> assert False ]
+            | _ -> assert False ]
+        | PaAny _ -> <:expr< MLast.PaAny $ln$ >>
+        | PaApp _ p1 p2 -> <:expr< MLast.PaApp $ln$ $loop p1$ $loop p2$ >>
+        | PaLid _ s ->
             let s =
-              match eval_antiquot "lid" expr_eoi s with
+              match eval_antiquot expr_eoi s with
+              [ Some (loc, r) -> <:expr< $anti:r$ >>
+              | _ -> <:expr< $str:s$ >> ]
+            in
+            <:expr< MLast.PaLid $ln$ $s$ >>
+        | PaStr _ s ->
+            let s =
+              match eval_antiquot expr_eoi s with
               [ Some (loc, r) -> <:expr< $anti:r$ >>
               | None -> <:expr< $str:s$ >> ]
             in
-            <:expr< MLast.PaLid $ln$ $s$ >>
-        | PaTyc _ p t ->
-            <:expr< MLast.PaTyc $ln$ $loop p$ $e_type t$ >>
+            <:expr< MLast.PaStr $ln$ $s$ >>
+        | PaTyc _ p t -> <:expr< MLast.PaTyc $ln$ $loop p$ $e_type t$ >>
+        | PaUid _ s ->
+            let s =
+              match eval_antiquot expr_eoi s with
+              [ Some (loc, r) -> <:expr< $anti:r$ >>
+              | None -> <:expr< $str:s$ >> ]
+            in
+            <:expr< MLast.PaUid $ln$ $s$ >>
         | x -> not_impl "e_patt" x ]
     ;
     value e_expr e =
@@ -151,7 +157,19 @@ module Meta =
       loop e where rec loop =
         fun
         [ ExAcc _ e1 e2 -> <:expr< MLast.ExAcc $ln$ $loop e1$ $loop e2$ >>
-        | ExAnt _ _ as e -> e
+        | ExAnt _ e ->
+            match e with
+            [ ExLid _ s ->
+                match eval_antiquot expr_eoi s with
+                [ Some (loc, r) ->
+                    let r = <:expr< MLast.ExAnt $ln$ $r$ >> in
+                    <:expr< $anti:r$ >>
+                | _ -> assert False ]
+            | ExStr _ s ->
+                match eval_antiquot expr_eoi s with
+                [ Some (loc, r) -> <:expr< $anti:r$ >>
+                | _ -> assert False ]
+            | _ -> assert False ]
         | ExApp _ e1 e2 -> <:expr< MLast.ExApp $ln$ $loop e1$ $loop e2$ >>
         | ExArr _ el ->
             <:expr< MLast.ExArr $ln$ $e_list loop el$ >>
@@ -175,14 +193,14 @@ module Meta =
             <:expr< MLast.ExLet $ln$ $rf$ $pel$ $loop e$ >>
         | ExLid _ s ->
             let s =
-              match eval_antiquot "lid" expr_eoi s with
+              match eval_antiquot expr_eoi s with
               [ Some (loc, r) -> <:expr< $anti:r$ >>
               | None -> <:expr< $str:s$ >> ]
             in
             <:expr< MLast.ExLid $ln$ $s$ >>
         | ExStr _ s ->
             let s =
-              match eval_antiquot "str" expr_eoi s with
+              match eval_antiquot expr_eoi s with
               [ Some (loc, r) -> <:expr< $anti:r$ >>
               | None -> <:expr< $str:s$ >> ]
             in
@@ -206,7 +224,7 @@ module Meta =
       fun
       [ SgVal _ s t ->
           let s =
-            match eval_antiquot "lid" expr_eoi s with
+            match eval_antiquot expr_eoi s with
             [ Some (loc, r) -> <:expr< $anti:r$ >>
             | None -> <:expr< $str:s$ >> ]
           in
@@ -217,7 +235,7 @@ module Meta =
       fun
       [ SgVal _ s t ->
           let s =
-            match eval_antiquot "lid" patt_eoi s with
+            match eval_antiquot patt_eoi s with
             [ Some (loc, r) -> <:patt< $anti:r$ >>
             | None -> <:patt< $str:s$ >> ]
           in
@@ -227,26 +245,17 @@ module Meta =
   end
 ;
 
-value check_anti_loc s kind =
-  try
-    let i = String.index s ':' in
-    let j = String.index_from s (i + 1) ':' in
-    if String.sub s (i + 1) (j - i - 1) = kind then
-      String.sub s 0 i ^ String.sub s j (String.length s - j)
-    else raise Stream.Failure
-  with
-  [ Not_found -> raise Stream.Failure ]
-;
-
 EXTEND
   expr_eoi: [ [ x = Pcaml.expr; EOI -> x ] ];
   patt_eoi: [ [ x = Pcaml.patt; EOI -> x ] ];
   sig_item_eoi: [ [ x = Pcaml.sig_item; EOI -> x ] ];
   Pcaml.expr: LEVEL "simple"
-    [ [ s = ANTIQUOT_LOC ->
-          match eval_antiquot "" expr_eoi s with
-          [ Some (loc, r) -> <:expr< $anti:r$ >>
-          | None -> assert False ] ] ]
+    [ [ s = ANTIQUOT_LOC "anti" -> MLast.ExAnt loc (MLast.ExLid loc s)
+      | s = ANTIQUOT_LOC -> MLast.ExAnt loc (MLast.ExStr loc s) ] ]
+  ;
+  Pcaml.patt: LEVEL "simple"
+    [ [ s = ANTIQUOT_LOC "anti" -> MLast.PaAnt loc (MLast.PaLid loc s)
+      | s = ANTIQUOT_LOC -> MLast.PaAnt loc (MLast.PaStr loc s) ] ]
   ;
 END;
 
@@ -267,16 +276,36 @@ value after_colon e =
   [ Not_found -> "" ]
 ;
 
+value check_anti_loc s kind =
+  try
+    let i = String.index s ':' in
+    let (j, len) =
+      loop (i + 1) where rec loop j =
+        if j = String.length s then (i, 0)
+        else
+          match s.[j] with
+          [ ':' -> (j, j - i - 1)
+          | 'a'..'z' | 'A'..'Z' | '0'..'9' -> loop (j + 1)
+          | _ -> (i, 0) ]
+    in
+    if String.sub s (i + 1) len = kind then
+      sprintf "%s:%d:%s" (String.sub s 0 i) (j - i)
+        (String.sub s (j + 1) (String.length s - j - 1))
+    else raise Stream.Failure
+  with
+  [ Not_found -> raise Stream.Failure ]
+;
+
 let lex = Grammar.glexer Pcaml.gram in
 lex.Token.tok_match :=
   fun
-  [ ("ANTIQUOT", p_prm) ->
-      fun
-      [ ("ANTIQUOT", prm) when eq_before_colon p_prm prm -> after_colon prm
-      | _ -> raise Stream.Failure ]
-  | ("ANTIQUOT_LOC", "") ->
+  [ ("ANTIQUOT_LOC", "") ->
       fun
       [ ("ANTIQUOT_LOC", prm) -> check_anti_loc prm ""
+      | _ -> raise Stream.Failure ]
+  | ("ANTIQUOT_LOC", "anti") ->
+      fun
+      [ ("ANTIQUOT_LOC", prm) -> check_anti_loc prm "anti"
       | _ -> raise Stream.Failure ]
   | ("LIDENT", "") ->
       fun
