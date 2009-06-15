@@ -138,7 +138,7 @@ BEFORE COMMITTING YOUR CHANGES
      After doing 'make new_sources' above, and before doing 'make
    promote_sources' below, it is possible to do 'make untouch_sources'
    which change the dates of the new created files with the dates of the
-   old files if they are not modified. This way, the "cvs commit" will not
+   old files if they are not modified. This way, the "svn commit" will not
    have to compare these files, which may have some importance if you
    network is not fast.
 

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: htmlp2html,v 1.11 2007/08/18 11:23:19 deraugla Exp $
+# $Id: htmlp2html,v 1.12 2007/08/21 04:04:47 deraugla Exp $
 
 FILE=$1
 
@@ -12,8 +12,9 @@ FILE=$1
   sed -e '{:b N; s/\n//; tb}' |
   sed -e 's/e2b3/\n      <ul>\n        <li>/g' |
   sed -e 's|e3b2|</li>\n      </ul>\n    </li>\n    <li>|g' |
+  sed -e 's|e2b2|</li>\n    <li>|g' |
+  sed -e 's|e2|</li>|g' |
   sed -e 's/b2/    <li>/g' |
-  sed -e 's|e2|</li>\n|g' |
   sed -e 's|e3b3|</li>\n        <li>|g' |
   sed -e 's|e3|</li>\n      </ul>\n    </li>|g'
   echo '  </ol>'
