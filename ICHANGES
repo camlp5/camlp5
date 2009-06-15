@@ -4,6 +4,9 @@ Internal, very small, undocumented, or invisible changes
 Camlp5 Version 5.01:
 ---------------------
 
+* [03 Oct 2007] Fixed bug in Prtools.plistb: if printing at least two
+  elements, with the first one fitting in the line, a space was missing.
+  E.g. using pr_r.cmo with "module M (N : P) (Q : R) = struct end".
 * [30 Sep 2007] Cleaned up and simplified q_MLast.ml pa_extend.ml pa_r.ml
   while keeping compatibility.
 

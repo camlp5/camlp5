@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: prtools.ml,v 1.7 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: prtools.ml,v 1.8 2007/10/03 02:29:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -193,22 +193,24 @@ value plistb elem sh pc xl =
   | [(x, sep) :: xl] ->
       let s =
         horiz_vertic
-          (fun () -> Some (elem {(pc) with aft = sep; dang = sep} x))
+          (fun () ->
+             Some
+               (elem {(pc) with bef = sprintf "%s " pc.bef; aft = sep;
+                dang = sep}
+               x))
           (fun () -> None)
       in
       match s with
       [ Some b -> plistl_kont_same_line elem elem sh {(pc) with bef = b} xl
       | None ->
           let s1 =
-            horiz_vertic (fun () -> elem {(pc) with aft = sep; dang = sep} x)
-              (fun () ->
-                 let s =
-                   elem
-                     {ind = pc.ind + sh; bef = tab (pc.ind + sh); aft = sep;
-                      dang = sep}
-                     x
-                 in
-                 sprintf "%s\n%s" pc.bef s)
+            let s =
+              elem
+                {ind = pc.ind + sh; bef = tab (pc.ind + sh); aft = sep;
+                 dang = sep}
+                x
+            in
+            sprintf "%s\n%s" pc.bef s
           in
           let s2 =
             plistl elem elem 0
