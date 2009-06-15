@@ -206,7 +206,9 @@ let rec name_of_symbol entry =
 let rec get_token_list entry tokl last_tok tree =
   match tree with
     Node {node = Stoken tok; son = son; brother = DeadEnd} ->
-      get_token_list entry (last_tok :: tokl) tok son
+      get_token_list entry (last_tok :: tokl) (tok, None) son
+  | Node {node = Svala (ls, Stoken tok); son = son; brother = DeadEnd} ->
+      get_token_list entry (last_tok :: tokl) (tok, Some ls) son
   | _ ->
       if tokl = [] then None
       else Some (List.rev (last_tok :: tokl), last_tok, tree)
@@ -229,7 +231,8 @@ and name_of_tree_failed entry =
     Node {node = s; brother = bro; son = son} ->
       let tokl =
         match s with
-          Stoken tok -> get_token_list entry [] tok son
+          Stoken tok -> get_token_list entry [] (tok, None) son
+        | Svala (ls, Stoken tok) -> get_token_list entry [] (tok, Some ls) son
         | _ -> None
       in
       begin match tokl with
@@ -248,7 +251,7 @@ and name_of_tree_failed entry =
           txt
       | Some (tokl, last_tok, son) ->
           List.fold_left
-            (fun s tok ->
+            (fun s (tok, _) ->
                (if s = "" then "" else s ^ " ") ^
                entry.egram.glexer.Plexing.tok_text tok)
             "" tokl
@@ -497,7 +500,8 @@ let rec parser_of_tree entry nlevn alevn =
   | Node {node = s; son = son; brother = DeadEnd} ->
       let tokl =
         match s with
-          Stoken tok -> get_token_list entry [] tok son
+          Stoken tok -> get_token_list entry [] (tok, None) son
+        | Svala (ls, Stoken tok) -> get_token_list entry [] (tok, Some ls) son
         | _ -> None
       in
       begin match tokl with
@@ -513,15 +517,22 @@ let rec parser_of_tree entry nlevn alevn =
                  Stream.Failure -> raise (Stream.Error "")
              in
              app act a)
-      | Some (tokl, last_tok, son) ->
+      | Some (tokl, (last_tok, svala), son) ->
+          let lt =
+            let t = Stoken last_tok in
+            match svala with
+              Some l -> Svala (l, t)
+            | None -> t
+          in
           let p1 = parser_of_tree entry nlevn alevn son in
-          let p1 = parser_cont p1 entry nlevn alevn (Stoken last_tok) son in
+          let p1 = parser_cont p1 entry nlevn alevn lt son in
           parser_of_token_list entry.egram p1 tokl
       end
   | Node {node = s; son = son; brother = bro} ->
       let tokl =
         match s with
-          Stoken tok -> get_token_list entry [] tok son
+          Stoken tok -> get_token_list entry [] (tok, None) son
+        | Svala (ls, Stoken tok) -> get_token_list entry [] (tok, Some ls) son
         | _ -> None
       in
       match tokl with
@@ -540,9 +551,15 @@ let rec parser_of_tree entry nlevn alevn =
                  in
                  app act a
              | _ -> p2 strm__)
-      | Some (tokl, last_tok, son) ->
+      | Some (tokl, (last_tok, vala), son) ->
+          let lt =
+            let t = Stoken last_tok in
+            match vala with
+              Some ls -> Svala (ls, t)
+            | None -> t
+          in
           let p1 = parser_of_tree entry nlevn alevn son in
-          let p1 = parser_cont p1 entry nlevn alevn (Stoken last_tok) son in
+          let p1 = parser_cont p1 entry nlevn alevn lt son in
           let p1 = parser_of_token_list entry.egram p1 tokl in
           let p2 = parser_of_tree entry nlevn alevn bro in
           fun (strm__ : _ Stream.t) ->
@@ -555,8 +572,33 @@ and parser_cont p1 entry nlevn alevn s son bp a (strm__ : _ Stream.t) =
 and parser_of_token_list gram p1 tokl =
   let rec loop n =
     function
-      tok :: tokl ->
-        let tematch = gram.glexer.Plexing.tok_match tok in
+      (tok, vala) :: tokl ->
+        let tematch =
+          let tematch = gram.glexer.Plexing.tok_match tok in
+          match vala with
+            Some al ->
+              let pa =
+                match al with
+                  [] ->
+                    let t = "V " ^ fst tok in
+                    gram.glexer.Plexing.tok_match (t, "")
+                | al ->
+                    let rec loop =
+                      function
+                        a :: al ->
+                          let pa = gram.glexer.Plexing.tok_match ("V", a) in
+                          let pal = loop al in
+                          (fun tok ->
+                             try pa tok with Stream.Failure -> pal tok)
+                      | [] -> fun tok -> raise Stream.Failure
+                    in
+                    loop al
+              in
+              (fun tok ->
+                 try Obj.repr (Ploc.VaAnt (Obj.magic (pa tok : string))) with
+                   Stream.Failure -> Obj.repr (Ploc.VaVal (tematch tok)))
+          | None -> fun tok -> Obj.repr (tematch tok : string)
+        in
         begin match tokl with
           [] ->
             let ps strm =

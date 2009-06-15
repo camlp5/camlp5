@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.75 2007/09/26 07:10:43 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.76 2007/09/27 16:49:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -832,7 +832,7 @@ value exception_decl pc (e, tl, id) =
        sprintf "%s%s%s" s1 s2 s3)
 ;
 
-value str_module pc m me =
+value str_module pref pc (m, me) =
   let (mal, me) =
     loop me where rec loop =
       fun
@@ -863,7 +863,7 @@ value str_module pc m me =
   in
   horiz_vertic
     (fun () ->
-       sprintf "%smodule %s%s%s = %s%s" pc.bef m
+       sprintf "%s%s %s%s%s = %s%s" pc.bef pref m
          (if mal = [] then ""
           else hlist module_arg {(pc) with bef = " "; aft = ""} mal)
          (match mto with
@@ -877,14 +877,14 @@ value str_module pc m me =
          [ Some mt ->
              horiz_vertic
                (fun () ->
-                  sprintf "%smodule %s%s : %s =" pc.bef m
+                  sprintf "%s%s %s%s : %s =" pc.bef pref m
                     (if mal = [] then ""
                      else
                        hlist module_arg {(pc) with bef = " "; aft = ""} mal)
                     (module_type {(pc) with bef = ""; aft = ""} mt))
                (fun () ->
                   let s1 =
-                    sprintf "%smodule %s%s :" pc.bef m
+                    sprintf "%s%s %s%s :" pc.bef pref m
                       (if mal = [] then "" else
                        hlist module_arg {(pc) with bef = " "; aft = ""} mal)
                   in
@@ -898,17 +898,20 @@ value str_module pc m me =
          | None ->
              let mal = List.map (fun ma -> (ma, "")) mal in
              plistb module_arg 2
-               {(pc) with bef = sprintf "%smodule %s" pc.bef m; aft = " ="}
+               {(pc) with bef = sprintf "%s%s %s" pc.bef pref m; aft = " ="}
                mal ]
        in
        let s2 =
          module_expr
            {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""} me
        in
-       sprintf "%s\n%s\n%s" s1 s2 (tab pc.ind ^ pc.aft))
+       let s3 =
+         if pc.aft = "" then "" else sprintf "\n%s%s" (tab pc.ind) pc.aft
+       in
+       sprintf "%s\n%s%s" s1 s2 s3)
 ;
 
-value sig_module_or_module_type typ defc pc m mt =
+value sig_module_or_module_type pref defc pc (m, mt) =
   let (mal, mt) =
     loop mt where rec loop =
       fun
@@ -934,7 +937,7 @@ value sig_module_or_module_type typ defc pc m mt =
   in
   horiz_vertic
     (fun () ->
-       sprintf "%smodule%s %s%s %c %s%s" pc.bef typ m
+       sprintf "%s%s %s%s %c %s%s" pc.bef pref m
          (if mal = [] then ""
           else hlist module_arg {(pc) with bef = " "; aft = ""} mal)
          defc (module_type {(pc) with bef = ""; aft = ""} mt) pc.aft)
@@ -942,7 +945,7 @@ value sig_module_or_module_type typ defc pc m mt =
        let s1 =
          let mal = List.map (fun ma -> (ma, "")) mal in
          plistb module_arg 2
-           {(pc) with bef = sprintf "%smodule%s %s" pc.bef typ m;
+           {(pc) with bef = sprintf "%s%s %s" pc.bef pref m;
             aft = sprintf " %c" defc}
            mal
        in
@@ -950,8 +953,10 @@ value sig_module_or_module_type typ defc pc m mt =
          module_type
            {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""} mt
        in
-       let s3 = sprintf "%s%s" (tab pc.ind) pc.aft in
-       sprintf "%s\n%s\n%s" s1 s2 s3)
+       let s3 =
+         if pc.aft = "" then "" else sprintf "\n%s%s" (tab pc.ind) pc.aft
+       in
+       sprintf "%s\n%s%s" s1 s2 s3)
 ;
 
 value str_or_sig_functor pc s mt module_expr_or_type met =
@@ -1956,10 +1961,13 @@ EXTEND_PRINTER
           external_decl pc (n, t, sl)
       | <:str_item< include $me$ >> ->
           module_expr {(pc) with bef = sprintf "%sinclude " pc.bef} me
-      | <:str_item< module $uid:m$ = $me$ >> ->
-          str_module pc m me
+      | <:str_item< module $flag:rf$ $list:mdl$ >> ->
+          let mdl = List.map (fun (m, mt) -> (Pcaml.unvala m, mt)) mdl in
+          let rf = if rf then " rec" else "" in
+          vlist2 (str_module ("module" ^ rf)) (str_module "and") pc
+            mdl
       | <:str_item< module type $uid:m$ = $mt$ >> ->
-          sig_module_or_module_type " type" '=' pc m mt
+          sig_module_or_module_type "module type" '=' pc (m, mt)
       | <:str_item< open $i$ >> ->
           mod_ident {(pc) with bef = sprintf "%sopen " pc.bef} i
       | <:str_item< type $list:tdl$ >> ->
@@ -2008,10 +2016,13 @@ EXTEND_PRINTER
           external_decl pc (n, t, sl)
       | <:sig_item< include $mt$ >> ->
           module_type {(pc) with bef = sprintf "%sinclude " pc.bef} mt
-      | <:sig_item< module $uid:m$ : $mt$ >> ->
-          sig_module_or_module_type "" ':' pc m mt
+      | <:sig_item< module $flag:rf$ $list:mdl$ >> ->
+          let mdl = List.map (fun (m, mt) -> (Pcaml.unvala m, mt)) mdl in
+          let rf = if rf then " rec" else "" in
+          vlist2 (sig_module_or_module_type ("module" ^ rf) ':')
+            (sig_module_or_module_type "and" ':') pc mdl
       | <:sig_item< module type $uid:m$ = $mt$ >> ->
-          sig_module_or_module_type " type" '=' pc m mt
+          sig_module_or_module_type " type" '=' pc (m, mt)
       | <:sig_item< open $i$ >> ->
           mod_ident {(pc) with bef = sprintf "%sopen " pc.bef} i
       | <:sig_item< type $list:tdl$ >> ->

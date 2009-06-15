@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.74 2007/09/26 07:10:43 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.75 2007/09/27 16:49:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -1055,6 +1055,8 @@ EXTEND
          <:ctyp< # $_list:id$ >>
       | "<"; ml = V meth_list "list"; v = V (FLAG ".."); ">" ->
           <:ctyp< < $_list:ml$ $_flag:v$ > >>
+      | "<"; ".."; ">" ->
+         <:ctyp< < .. > >>
       | "<"; ">" ->
           <:ctyp< < > >> ] ]
   ;
@@ -1087,7 +1089,7 @@ EXTEND
   (* Labels *)
   ctyp: AFTER "arrow"
     [ NONA
-      [ i = V LIDENT "lab"; ":"; t = SELF -> <:ctyp< ~$_:i$: $t$ >>
+      [ i = V LIDENT; ":"; t = SELF -> <:ctyp< ~$_:i$: $t$ >>
       | i = V QUESTIONIDENTCOLON; t = SELF -> <:ctyp< ?$_:i$: $t$ >>
       | i = V QUESTIONIDENT; ":"; t = SELF -> <:ctyp< ?$_:i$: $t$ >> ] ]
   ;
