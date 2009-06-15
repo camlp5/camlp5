@@ -346,18 +346,18 @@ value sprint_symb =
   | GS_nterm s -> s ]
 ;
 
-value eprint_rule (i, n, sl) = do {
+value eprint_rule i (n, sl) = do {
   Printf.eprintf "%d : %s ->" i n;
   if sl = [] then Printf.eprintf " ε"
   else List.iter (fun s -> Printf.eprintf " %s" (sprint_symb s)) sl;
   Printf.eprintf "\n";
 };
 
-value check_closed rl = do {
+value check_closed rules = do {
   let ht = Hashtbl.create 1 in
-  List.iter (fun (_, e, rh) -> Hashtbl.replace ht e e) rl;
-  List.iter
-    (fun (i, e, rh) ->
+  Array.iter (fun (e, rh) -> Hashtbl.replace ht e e) rules;
+  Array.iteri
+    (fun i (e, rh) ->
        List.iter
          (fun
           [ GS_term _ -> ()
@@ -366,7 +366,7 @@ value check_closed rl = do {
               else
                 Printf.eprintf "Rule %d: missing non-terminal \"%s\"\n" i s ])
          rh)
-    rl;
+    rules;
   flush stderr;
 };
 
@@ -378,7 +378,7 @@ value get_symbol_after_dot =
     | (n, [_ :: sl]) -> loop (n - 1) sl ]
 ;
 
-value close_item_set rl items =
+value close_item_set rules items =
   let rclos =
     loop [] items where rec loop rclos =
       fun
@@ -389,18 +389,17 @@ value close_item_set rl items =
               match get_symbol_after_dot dot rh with
               [ Some (GS_nterm n) ->
                   let rrest =
-                    loop [] rl where rec loop rrest =
-                      fun
-                      [ [(m, lh, rh) :: rest1] ->
-                          let rrest =
-                            if n = lh then
-                              let item = (m, True, lh, 0, rh) in
-                              [item :: rrest]
-                            else rrest
-                          in
-                          loop rrest rest1
-                      | [] ->
-                          rrest ]
+                    loop [] 0 where rec loop rrest m =
+                      if m = Array.length rules then rrest
+                      else
+                        let (lh, rh) = rules.(m) in
+                        let rrest =
+                          if n = lh then
+                            let item = (m, True, lh, 0, rh) in
+                            [item :: rrest]
+                          else rrest
+                        in
+                        loop rrest (m + 1)
                   in
                   List.rev_append rrest rest
               | Some (GS_term _) | None ->
@@ -431,7 +430,7 @@ value eprint_item (m, added, lh, dot, rh) = do {
   Printf.eprintf "\n";
 };
 
-value make_item_sets rl item_set_ht =
+value make_item_sets rules item_set_ht =
   loop 0 0 []
   where rec loop ini_item_set_cnt item_set_cnt shift_assoc item_set_ini =
   do {
@@ -486,7 +485,7 @@ value make_item_sets rl item_set_ht =
                item_set
            in
            (* complete by closure *)
-           let item_set = close_item_set rl item_set in
+           let item_set = close_item_set rules item_set in
            Printf.eprintf "\n";
            match
              try Some (Hashtbl.find item_set_ht item_set) with
@@ -561,7 +560,7 @@ value compute_nb_symbols item_set_ht term_table nterm_table =
     item_set_ht (0, 0)
 ;
 
-value make_first rl nterm_table nb_nterms = do {
+value make_first_tab rules nterm_table nb_nterms = do {
   let first_in_rule = Hashtbl.create 1 in
   let first_in_nterm = Array.create nb_nterms [] in
   let changes = ref False in
@@ -625,11 +624,11 @@ value make_first rl nterm_table nb_nterms = do {
   in
   loop () where rec loop () = do {
     changes.val := False;
-    List.iter
-      (fun (i, lh, rh) ->
+    Array.iteri
+      (fun i (lh, rh) ->
          let m = Hashtbl.find nterm_table lh in
          add_first m rh)
-      rl;
+      rules;
     if changes.val then loop () else ();
   };
   (first_in_nterm, first_in_rule)
@@ -640,43 +639,38 @@ value make_first rl nterm_table nb_nterms = do {
 value lr0 entry lev = do {
   Printf.eprintf "LR(0) %s %d\n" entry.ename lev;
   flush stderr;
-  let (rl, entry_name) =
-    IFNDEF TEST THEN
-      let rl = flatten_gram entry lev in
-      (rl, name_of_entry entry lev)
-    ELSE
-      let rl =
+  let rules =
+    let (rl, entry_name) =
+      IFNDEF TEST THEN
+        let rl = flatten_gram entry lev in
+        (rl, name_of_entry entry lev)
+      ELSE
+        let rl =
 (*
-        [("E", [GS_term "1"; GS_nterm "E"]);
-         ("E", [GS_term "1"])]
+          [("E", [GS_term "1"; GS_nterm "E"]);
+           ("E", [GS_term "1"])]
 *)
-        [("E", [GS_nterm "E"; GS_term "*"; GS_nterm "B"]);
-         ("E", [GS_nterm "E"; GS_term "+"; GS_nterm "B"]);
-         ("E", [GS_nterm "B"]);
-         ("B", [GS_term "0"]);
-         ("B", [GS_term "1"])]
+          [("E", [GS_nterm "E"; GS_term "*"; GS_nterm "B"]);
+           ("E", [GS_nterm "E"; GS_term "+"; GS_nterm "B"]);
+           ("E", [GS_nterm "B"]);
+           ("B", [GS_term "0"]);
+           ("B", [GS_term "1"])]
 (**)
-      in
-      (rl, "E")
-    END
-  in
-  let rl =
-    let (rrl, _) =
-      List.fold_left
-        (fun (rrl, i) (lh, rh) -> ([(i, lh, rh) :: rrl], i + 1))
-        ([], 1) rl
+        in
+        (rl, "E")
+      END
     in
-    List.rev rrl
+    Array.of_list [("S", [GS_nterm entry_name]) :: rl]
   in
-  Printf.eprintf "%d rules\n\n" (List.length rl);
+  Printf.eprintf "%d rules\n\n" (Array.length rules);
   flush stderr;
-  check_closed rl;
-  List.iter eprint_rule rl;
+  check_closed rules;
+  Array.iteri eprint_rule rules;
   Printf.eprintf "\n";
   flush stderr;
   let item_set_0 =
-    let item = (0, False, "S", 0, [GS_nterm entry_name]) in
-    close_item_set rl [item]
+    let item = (0, False, fst rules.(0), 0, snd rules.(0)) in
+    close_item_set rules [item]
   in
 
   Printf.eprintf "\n";
@@ -685,7 +679,9 @@ value lr0 entry lev = do {
   flush stderr;
 
   let item_set_ht = Hashtbl.create 1 in
-  let (item_set_cnt, shift_assoc) = make_item_sets rl item_set_ht item_set_0 in
+  let (item_set_cnt, shift_assoc) =
+    make_item_sets rules item_set_ht item_set_0
+  in
   Printf.eprintf "\ntotal number of item sets %d\n" (item_set_cnt + 1);
   flush stderr;
   Printf.eprintf "\nshift:\n";
@@ -709,7 +705,7 @@ value lr0 entry lev = do {
   flush stderr;
 
   (* compute first *)
-  let (first, first_in_rule) = make_first rl nterm_table nb_nterms in
+  let (first, first_in_rule) = make_first_tab rules nterm_table nb_nterms in
   Printf.eprintf "\nFirst\n\n";
   Hashtbl.iter
     (fun s i -> do {
@@ -726,8 +722,8 @@ value lr0 entry lev = do {
   let changed = ref False in
   loop () where rec loop () = do {
     changed.val := False;
-    List.iter
-      (fun (_, lh, rh) ->
+    Array.iter
+      (fun (lh, rh) ->
          loop rh where rec loop =
            fun
            [ [GS_nterm s :: rest] -> do {
@@ -761,7 +757,7 @@ value lr0 entry lev = do {
              }
            | [GS_term _ :: rest] -> loop rest
            | [] -> () ])
-      rl;
+      rules;
     if changed.val then loop () else ();
   };
   Printf.eprintf "\nFollow\n\n";
@@ -855,12 +851,10 @@ value lr0 entry lev = do {
                       "State %d: conflict reduce/reduce rules %d and %d\n"
                       i m1 m;
                     Printf.eprintf "  reduce with rule ";
-                    let r = List.find (fun (i, _, _) -> i = m) rl in
-                    eprint_rule r; 
+                    eprint_rule m rules.(m); 
                     Printf.eprintf "  reduce with rule ";
-                    let r = List.find (fun (i, _, _) -> i = m1) rl in
-                    eprint_rule r; 
-                   flush stderr;
+                    eprint_rule m1 rules.(m1); 
+                    flush stderr;
                   }
                 | _ ->
                     for j = 0 to Array.length line - 1 do {
@@ -880,8 +874,7 @@ value lr0 entry lev = do {
                              [ Some s -> s
                              | None -> "..." ]);
                           Printf.eprintf "  reduce with rule ";
-                          let r = List.find (fun (i, _, _) -> i = m) rl in
-                          eprint_rule r;
+                          eprint_rule m rules.(m);
                           flush stderr;
                         }
                       | _ -> line.(j) := ActReduce m ];
