@@ -1,12 +1,12 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.37 2007/07/04 19:51:35 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.38 2007/07/04 19:57:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
 open Pcaml.Printers;
 open Prtools;
 
-value flag_horiz_let_in = ref False;
+value flag_horiz_let_in = ref True;
 value flag_semi_semi = ref False;
 
 (* general functions *)
@@ -2546,7 +2546,7 @@ Pcaml.add_option "-ss" (Arg.Set flag_semi_semi)
   "Print double semicolons (equivalent to -flag M).";
 
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.37 2007/07/04 19:51:35 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.38 2007/07/04 19:57:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
