@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_extprint.ml,v 1.6 2007/08/16 08:45:24 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.7 2007/08/18 16:54:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 #load "pa_extend.cmo";
@@ -130,7 +130,7 @@ value text_of_extprint loc el =
                        <:expr< [$rule$ :: $rules$] >>)
                     rules <:expr< [] >>
                 in
-                let rules = <:expr< fun e -> Extfun.extend e $rules$ >> in
+                let rules = <:expr< fun e__ -> Extfun.extend e__ $rules$ >> in
                 <:expr< [($lab$, $rules$) :: $levs$] >>)
              e.levels <:expr< [] >>
          in

@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: printers.html,v 1.7 2007/08/18 07:33:10 deraugla Exp $ -->
+  <!-- $Id: printers.html,v 1.8 2007/08/18 16:54:05 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible printers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -217,6 +217,98 @@ defined levels:</p>
 <p>... to be completed ...</p>
 
 <h2>Examples</h2>
+
+<h3>Parser and Printer of expressions</h3>
+
+<p>This example illustrates the symmetry between parsers and
+  printers. A simple type of expressions is defined. A parser converts
+  a string to a value of this type, and a printer converts a value of
+  this type to a string.</p>
+
+<p>In the printer, there is no use of the "<tt>pc</tt>" parameter and
+  no use of the "<tt>Pretty</tt>" module. The strings are printed in
+  one only line.</p>
+
+<p>Here is the source (file "<tt>foo.ml</tt>"):</p>
+
+<pre>
+  #load "pa_extend.cmo";
+  #load "pa_extprint.cmo";
+
+  open Printf;
+
+  type expr =
+    [ Op of string and expr and expr
+    | Int of int
+    | Var of string ]
+  ;
+
+  value g = Grammar.gcreate (Plexer.gmake ());
+  value pa_e = Grammar.Entry.create g "expr";
+  value pr_e = Eprinter.make "expr";
+
+  EXTEND
+    pa_e:
+      [ [ x = SELF; "+"; y = SELF -> Op "+" x y
+        | x = SELF; "-"; y = SELF -> Op "-" x y ]
+      | [ x = SELF; "*"; y = SELF -> Op "*" x y
+        | x = SELF; "/"; y = SELF -> Op "/" x y ]
+      | [ x = INT -> Int (int_of_string x)
+        | x = LIDENT -> Var x
+        | "("; x = SELF; ")" -> x ] ]
+    ;
+  END;
+
+  EXTEND_PRINTER
+    pr_e:
+      [ [ Op "+" x y -> sprintf "%s + %s" (curr pc x) (next pc y)
+        | Op "-" x y -> sprintf "%s - %s" (curr pc x) (next pc y) ]
+      | [ Op "*" x y -> sprintf "%s * %s" (curr pc x) (next pc y)
+        | Op "/" x y -> sprintf "%s / %s" (curr pc x) (next pc y) ]
+      | [ Int x -> string_of_int x
+        | Var x -> x
+        | x -> sprintf "(%s)" (Eprinter.apply pr_e pc x) ] ]
+    ;
+  END;
+
+  value parse s = Grammar.Entry.parse pa_e (Stream.of_string s);
+  value print e = Eprinter.apply pr_e Eprinter.empty_pc e;
+
+  if Sys.interactive.val then ()
+  else print_endline (print (parse Sys.argv.(1)));
+</pre>
+
+<p>Remark the use of "curr" and "next" while printing
+  operators. Because of left associativity, the first operand uses
+  "curr" and the second operand uses "next". For right associativity
+  operators, they should be inverted. For no associativity, both
+  should use "next".</p>
+
+<p>The last line of the file allows to use it either in ocaml toplevel
+  or as standalone program, taking the string to be printed as
+  parameter. It can be compiled this way:</p>
+
+<pre>
+  ocamlc -pp camlp5r -I +camlp5 gramlib.cma foo.ml
+</pre>
+
+<p>Examples of use (notice the redundant parentheses automatically
+  removed by the printing algorithm):</p>
+
+<pre>
+  $ ./a.out "(3 * x) + (2 / y)"
+  3 * x + 2 / y
+  $ ./a.out "(x+y)*(x-y)"
+  (x + y) * (x - y)
+  $ ./a.out "x + y - z"
+  x + y - z
+  $ ./a.out "(x + y) - z"
+  x + y - z
+  $ ./a.out "x + (y - z)"
+  x + (y - z)
+</pre>
+
+<h3>Printing ocaml programs</h3>
 
 <p>Complete examples of usage of extensible printers are the printers
   in syntaxes and extended syntaxes provided by camlp5 in the pretty
