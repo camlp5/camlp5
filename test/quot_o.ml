@@ -73,7 +73,7 @@
 <:expr< while $e$ do $list:le$ done >>;;
 <:expr< while $e$ do $_list:le$ done >>;;
 <:patt< $p1$ . $p2$ >>;;
-<:patt< ($p1$ as $p2$) >>;;
+MLast.PaAli (loc, p1, p2);;
 <:patt< $anti:p$ >>;;
 <:patt< _ >>;;
 <:patt< $p1$ $p2$ >>;;

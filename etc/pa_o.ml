@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.75 2007/09/27 16:49:17 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.76 2007/10/01 08:22:47 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -674,7 +674,7 @@ EXTEND
   (* Patterns *)
   patt:
     [ LEFTA
-      [ p1 = SELF; "as"; p2 = SELF -> <:patt< ($p1$ as $p2$) >> ]
+      [ p1 = SELF; "as"; i = LIDENT -> <:patt< ($p1$ as $lid:i$) >> ]
     | LEFTA
       [ p1 = SELF; "|"; p2 = SELF -> <:patt< $p1$ | $p2$ >> ]
     | [ p = SELF; ","; pl = LIST1 NEXT SEP "," ->

@@ -1,5 +1,10 @@
 Camlp5 Version 5.01:
 ---------------------
+
+* [01 Oct 07] Fixed bug in pa_o.cmo (normal syntax) introduced in version
+  5.00. The example: "function Atom atext as cur :: tl' -> 0" did not
+  parse, printing the error "incorrect alias pattern".
+
 Camlp5 Version 5.00:
 ---------------------
 
