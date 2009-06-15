@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.108 2007/12/05 03:40:14 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.109 2007/12/05 03:47:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1579,13 +1579,8 @@ EXTEND_PRINTER
           curr {(pc) with bef = curr {(pc) with aft = "."} x} y ]
     | "simple"
       [ <:patt< ($x$ as $y$) >> ->
-          sprint_break 1 0 {(pc) with ind = pc.ind + 1}
-            (fun pc -> patt {(pc) with bef = sprintf "%s(" pc.bef} x)
-            (fun pc ->
-               patt
-                 {(pc) with bef = sprintf "%sas " pc.bef;
-                  aft = sprintf ")%s" pc.aft}
-                 y)
+          let pc = {(pc) with ind = pc.ind + 1} in
+          pprintf pc "(%p@ as %p)" patt x patt y
       | <:patt< ($list:pl$) >> ->
           let pl = List.map (fun p -> (p, ",")) pl in
           plist patt 1
