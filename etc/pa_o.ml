@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.40 2007/09/05 15:42:04 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.41 2007/09/05 18:55:19 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -375,9 +375,9 @@ EXTEND
       | "open"; i = mod_ident -> <:str_item< open $i$ >>
       | "type"; tdl = LIST1 type_declaration SEP "and" ->
           <:str_item< type $list:tdl$ >>
-      | "let"; r = OPT "rec"; l = LIST1 let_binding SEP "and"; "in";
+      | "let"; r = FLAG "rec"; l = LIST1 let_binding SEP "and"; "in";
         x = expr ->
-          let e = <:expr< let $opt:o2b r$ $list:l$ in $x$ >> in
+          let e = <:expr< let $opt:r$ $list:l$ in $x$ >> in
           <:str_item< $exp:e$ >>
       | "let"; r = FLAG "rec"; l = LIST1 let_binding SEP "and" ->
           match l with
