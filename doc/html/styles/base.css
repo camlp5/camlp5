@@ -1,4 +1,4 @@
-/* $Id: base.css,v 1.23 2007/07/20 05:18:58 deraugla Exp $ */
+/* $Id: base.css,v 1.24 2007/07/20 19:10:04 deraugla Exp $ */
 
 body { margin: 0 0 1px 0; background-color: rgb(189,225,255) }
 body { border: 0 }
@@ -26,7 +26,7 @@ h1 { text-align: center }
 h2:before { content: counter(h2cnt) " - "; counter-increment: h2cnt }
 h2 { border: 1px solid; text-align: center; background: rgb(189,225,255) }
 h2 { counter-reset: h3cnt }
-h3:target { background-color: #def }
+h3:target { background-color: #cde }
 
 h3:before {
   content: counter(h2cnt) "." counter(h3cnt) " - ";
@@ -47,6 +47,7 @@ pre {
 }
 
 dl { margin-left: 1cm }
+th { padding: 1mm 0 }
 
 .half { width: 50% }
 .centered { margin: auto }

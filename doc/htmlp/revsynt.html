@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: revsynt.html,v 1.18 2007/07/20 18:46:34 deraugla Exp $ -->
+  <!-- $Id: revsynt.html,v 1.19 2007/07/20 19:08:50 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>revised syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -604,6 +604,27 @@
       <tr>
         <td><tt>type t = {mutable x : t1};;</tt></td>
         <td><tt>type t = {x : mutable t1};</tt></td>
+      </tr>
+    </table>
+  </li>
+
+  <li>Manifest types are with "==":
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>type 'a t = 'a option =</tt></td>
+        <td><tt>type t 'a = option 'a ==</tt></td>
+      </tr>
+      <tr>
+        <td><tt>&nbsp;&nbsp;&nbsp;&nbsp;None</tt></td>
+        <td><tt>&nbsp;&nbsp;[ None</tt></td>
+      </tr>
+      <tr>
+        <td><tt>&nbsp;&nbsp;| Some of 'a</tt></td>
+        <td><tt>&nbsp;&nbsp;| Some of 'a ]</tt></td>
       </tr>
     </table>
   </li>
