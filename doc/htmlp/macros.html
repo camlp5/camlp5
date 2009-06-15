@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: macros.html,v 1.3 2007/08/19 04:35:51 deraugla Exp $ -->
+  <!-- $Id: macros.html,v 1.4 2007/08/22 09:17:59 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>macros</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -95,7 +95,7 @@
 <h2>Added command options</h2>
 
 <p>The parsing kit "<tt>pa_macro.cmo</tt>" also add two options usable
-  in all camlp5 commands:</p>
+  in all Camlp5 commands:</p>
 
 <dl>
   <dt><tt>-D uident</tt></dt>
@@ -153,7 +153,7 @@
 </pre>
 
 <p>Notice that in a definition of a macro, if the expression contains
-  an evaluation, the evaluation is not done by camlp5 but just transmitted
+  an evaluation, the evaluation is not done by Camlp5 but just transmitted
   as code. In this case, it does not work in pattern position. Example
   in the toplevel:</p>
 
@@ -191,17 +191,17 @@
 <p>The macro "<tt>CAMLP5</tt>" is always predefined.</p>
 
 <p>The macro "<tt>OCAML_oversion</tt>" is predefined, where
-  "<tt>oversion</tt>" is the ocaml version the camlp5 program has been
+  "<tt>oversion</tt>" is the ocaml version the Camlp5 program has been
   compiled with, where all characters but numbers are replaced by
   underscores. For example, if using ocaml 3.09.3, the macro
   "<tt>OCAML_3_09_3</tt>" is defined.</p>
 
-<p>Moreover, for <em>some</em> camlp5 versions (and all the versions
+<p>Moreover, for <em>some</em> Camlp5 versions (and all the versions
   which follows them), the macro "<tt>CAMLP5_version</tt>" is defined
-  where "<tt>version</tt>" is the camlp5 version where all characters
+  where "<tt>version</tt>" is the Camlp5 version where all characters
   but numbers are replaced by underscores. For example, in version
   4.02, the macro "<tt>CAMLP5_4_02</tt>" had been defined and this
-  macro have appeared in all versions of camlp5 since 4.02.</p>
+  macro have appeared in all versions of Camlp5 since 4.02.</p>
 
 <p>To see which macros are predefined, type:</p>
 

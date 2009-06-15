@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: grammars.html,v 1.70 2007/08/20 19:34:26 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.71 2007/08/22 09:17:59 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -20,13 +20,13 @@
 <h1 class="top">Extensible grammars</h1>
 
 <p>This chapter describes the syntax and semantics of the extensible
-  grammars of camlp5.</p>
+  grammars of Camlp5.</p>
 
 <p>The extensible grammars are the most advanced parsing tool of
-  camlp5. They apply to streams of characters using a lexer which has
-  to be previously defined by the programmer. In camlp5, the syntax of
+  Camlp5. They apply to streams of characters using a lexer which has
+  to be previously defined by the programmer. In Camlp5, the syntax of
   the ocaml language is defined with extensible grammars, which makes
-  camlp5 a bootstrapped system (it compiles its own features by
+  Camlp5 a bootstrapped system (it compiles its own features by
   itself).</p>
 
 <div id="tableofcontents">
@@ -52,7 +52,7 @@
 <p>where "<tt>lexer</tt>" is a lexer previously defined. See the
   section explaining the interface with lexers. In a first time, it is
   possible to use a lexer of the module "<tt>Plexer</tt>" provided by
-  camlp5:</p>
+  Camlp5:</p>
 
 <pre>
   value g = Grammar.gcreate (Plexer.gmake ());
@@ -351,7 +351,7 @@ symbols. They are:</p>
 <p>Remember that "<tt>EXTEND</tt>" is a statement, not a declaration:
 the rules are added in the entries at run time. Each rule is
 internally inserted in a tree, allowing the left factorization of the
-rule. For example, with this list of rules (borrowed from the camlp5
+rule. For example, with this list of rules (borrowed from the Camlp5
 sources):</p>
 
 <pre>
@@ -415,10 +415,10 @@ sources):</p>
 </ul>
 
 <p>The location is an abstract type defined in the module
-"<tt>Stdpp</tt>" of camlp5.</p>
+"<tt>Stdpp</tt>" of Camlp5.</p>
 
 <p>It is possible to change the name of this variable by using the option
-"<tt>-loc</tt>" of camlp5. For example, compiling a file like this:</p>
+"<tt>-loc</tt>" of Camlp5. For example, compiling a file like this:</p>
 
 <pre>
   camlp5r -loc foobar file.ml
@@ -558,7 +558,7 @@ instead of "<tt>loc</tt>".</p>
   the other, except that "q_MLast.ml" can parse antiquotations, what
   is done by replacing the list iterators by these specific
   iterators. This operation is done through the shell script
-  "mk_q_MLast.sh" in the "meta" directory of the camlp5 sources.</p>
+  "mk_q_MLast.sh" in the "meta" directory of the Camlp5 sources.</p>
 
 <h2>Grammar machinery</h2>
 
@@ -692,7 +692,7 @@ instead of "<tt>loc</tt>".</p>
 
 <p>A simple solution, as possible lexer, is the predefined lexer built
   by "<tt>Plexer.gmake ()</tt>", lexer used for the ocaml grammar of
-  camlp5. In this case, you can just put it as parameter of
+  Camlp5. In this case, you can just put it as parameter of
   "<tt>Grammar.gcreate</tt>" and it is not necessary to read this
   section.</p>
 
@@ -1067,7 +1067,7 @@ instead of "<tt>loc</tt>".</p>
   };
 </pre>
 
-<p>The link needs the library "gramlib.cma" provided with camlp5:</p>
+<p>The link needs the library "gramlib.cma" provided with Camlp5:</p>
 
 <pre>
   ocamlc -pp camlp5r -I +camlp5 gramlib.cma test/calc.ml -o calc

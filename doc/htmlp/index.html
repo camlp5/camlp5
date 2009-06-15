@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: index.html,v 1.17 2007/08/22 02:08:41 deraugla Exp $ -->
+  <!-- $Id: index.html,v 1.18 2007/08/22 09:17:59 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Camlp5</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -70,10 +70,10 @@ option <tt>-pp</tt> of the ocaml compiler. Examples:</p>
   ocamlc -pp camlp5r bar.ml
 </pre>
 
-<p>This way, the parsing is done by camlp5. In case of syntax errors,
+<p>This way, the parsing is done by Camlp5. In case of syntax errors,
 the parsing fails with an error message and the compilation is
 aborted. Otherwise, the ocaml compiler continues with the syntax tree
-provided by camlp5.</p>
+provided by Camlp5.</p>
 
 <p>In the toplevel, it is possible to preprocess the input phrases by
 loading one of the files "<tt>camlp5o.cma</tt>" or
@@ -93,16 +93,16 @@ loading one of the files "<tt>camlp5o.cma</tt>" or
   named parsing and printing <em>kits</em>.</p>
 
 <p>These files cannot be linked to produce executables because they
-  generally call functions and use variables defined only in camlp5
+  generally call functions and use variables defined only in Camlp5
   core, typically belonging to the module "<tt>Pcaml</tt>". The kits
-  are destinated to be loaded by the camlp5 commands, either through
+  are destinated to be loaded by the Camlp5 commands, either through
   their command arguments or through directives in the source
   files.</p>
 
 <p>It is therefore important to compile the <em>kits</em> with the
   option "<tt>-c</tt>" of the ocaml compiler (i.e. just compilation,
   not producing an executable) and with the option "<tt>-I +camlp5</tt>"
-  to inform the compiler to find module interfaces in installed camlp5
+  to inform the compiler to find module interfaces in installed Camlp5
   library.</p>
 
 <p>In the ocaml toplevel, it is possible to use a kit by simply
@@ -110,11 +110,11 @@ loading one of the files "<tt>camlp5o.cma</tt>" or
 
 <h2>Extending syntax</h2>
 
-<p>A syntax extension is a camlp5 parsing kit. There are two ways to
+<p>A syntax extension is a Camlp5 parsing kit. There are two ways to
   use a syntax extension:</p>
 
 <ul>
-  <li>Either by giving this object file as parameter to the camlp5
+  <li>Either by giving this object file as parameter to the Camlp5
     command. For example:
 
 <pre>
@@ -146,8 +146,8 @@ and then compile it simply like this:
 <h2>Pretty printing</h2>
 
 <p>Like for syntax extensions, the pretty printing is defined or
-  extended through camlp5 printing kits. Some pretty printing kits are
-  provided by camlp5, the main ones being:</p>
+  extended through Camlp5 printing kits. Some pretty printing kits are
+  provided by Camlp5, the main ones being:</p>
 
 <ul>
   <li><tt>pr_o.cmo</tt>: to pretty print in normal syntax,</li>

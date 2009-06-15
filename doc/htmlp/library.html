@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: library.html,v 1.18 2007/08/21 13:52:53 deraugla Exp $ -->
+  <!-- $Id: library.html,v 1.19 2007/08/22 09:17:59 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Library</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -20,7 +20,7 @@
 <h1 class="top">Library</h1>
 
 <p>All modules defined in "gramlib.cma", but <em>not</em> including
-  all camlp5 modules used by the camlp5 commands and kits.</p>
+  all Camlp5 modules used by the Camlp5 commands and kits.</p>
 
 <div id="tableofcontents">
 </div>
@@ -142,7 +142,7 @@
 
 <h2>Token module</h2>
 
-<p>Lexing for camlp5 grammars.</p>
+<p>Lexing for Camlp5 grammars.</p>
 
 <p>This module defines the Camlp5 lexer type to be used in extensible
   grammars (see module "<tt>Grammar</tt>"). It also provides some
@@ -183,7 +183,7 @@ type glexer 'te =
 </pre>
 
 <dl><dd>
-    The type for lexers compatible with camlp5 grammars. The parameter
+    The type for lexers compatible with Camlp5 grammars. The parameter
     type "<tt>'te</tt>" is the type of the tokens.
     <ul>
       <li>The field "<tt>tok_func</tt>" is the main lexer
@@ -202,7 +202,7 @@ type glexer 'te =
         to zero). If it is a keyword, this allow the lexer to remove
         it in its tables.</li>
       <li>The field "<tt>tok_match</tt>" is a function called by the
-        camlp5 grammar system to ask the lexer how the input tokens
+        Camlp5 grammar system to ask the lexer how the input tokens
         have to be matched against the patterns. Warning: for
         efficiency, this function has to be written as a function
         taking patterns as parameters and, for each pattern value,
@@ -488,7 +488,7 @@ type g_entry 'te =
     grammars above, the type of the tokens). This is due to the
     specific typing system of the EXTEND statement which sometimes
     has to hide real types, the ocaml normal type system not being
-    able to type camlp5 grammars.
+    able to type Camlp5 grammars.
 </dd></dl>
 
 <dl><dd>

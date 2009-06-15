@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: pcaml.html,v 1.9 2007/08/22 08:57:47 deraugla Exp $ -->
+  <!-- $Id: pcaml.html,v 1.10 2007/08/22 09:17:59 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Pcaml</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -21,7 +21,7 @@
 
 <p>All about language parsing entries, language printing functions,
   quotation management at parsing time, extensible directives, extensible
-  options, and generalities about camlp5.</p>
+  options, and generalities about Camlp5.</p>
 
 <div id="tableofcontents">
 </div>
@@ -154,7 +154,7 @@ t      (MLast.str_item * MLast.loc) * bool));</tt></dt>
 </dl>
 
 <p>By default, these functions fail. The printer kit
-  "<tt>pr_dump.cmo</tt>" (loaded by most camlp5 commands) set them to
+  "<tt>pr_dump.cmo</tt>" (loaded by most Camlp5 commands) set them to
   functions dumping the syntax tree in binary (for the ocaml
   compiler). The pretty printer kits, such as "<tt>pr_r.cmo</tt>" and
   "<tt>pr_o.cmo</tt>" set them to functions calling the predefined
@@ -228,7 +228,7 @@ t      (MLast.str_item * MLast.loc) * bool));</tt></dt>
     "<tt>None</tt>" (default), this result is not dumped. If "<tt>Some
       fname</tt>", the result is dumped in the file "<tt>fname</tt>".
     The same effect can be done with the option "<tt>-QD</tt>" of
-    camlp5 commands.</dd>
+    Camlp5 commands.</dd>
 </dl>
 
 <h2>Extensible directives and options</h2>
@@ -246,7 +246,7 @@ t      (MLast.str_item * MLast.loc) * bool));</tt></dt>
 
 <dl>
   <dt><tt>value add_option : string -> Arg.spec -> string -> unit;</tt></dt>
-  <dd>Add an option to the command line of the camlp5 command.</dd>
+  <dd>Add an option to the command line of the Camlp5 command.</dd>
 </dl>
 
 <h2>Equalities over syntax trees</h2>
@@ -301,7 +301,7 @@ t      (MLast.str_item * MLast.loc) * bool));</tt></dt>
   <dt><tt>value no_constructors_arity : ref bool;</tt></dt>
   <dd>True if the current syntax does not generate constructor arity,
     which is the case of the normal syntax, and not of the revised
-    one. This has an impact when converting camlp5 syntax tree into
+    one. This has an impact when converting Camlp5 syntax tree into
     ocaml compiler syntax tree.</dd>
 </dl>
 
