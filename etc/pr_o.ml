@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.41 2007/07/05 04:24:11 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.42 2007/07/05 04:47:57 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1055,16 +1055,16 @@ value expr_expr1 =
                    (match_assoc_list {(pc) with bef = ""; aft = ""} pwel)
                    pc.aft)
               (fun () ->
-                 let (op, pc_aft, op_end) =
+                 let (op_begin, pc_aft, pc_dang, op_end) =
                    if List.mem pc.dang ["|"; ";"] then
-                     (sprintf "begin %s" op, "",
+                     (sprintf "begin %s" op, "", "",
                       sprintf "\n%send%s" (tab pc.ind) pc.aft)
-                   else (op, pc.aft, "")
+                   else (op, pc.aft, pc.dang, "")
                  in
                  let s1 =
                    horiz_vertic
                      (fun () ->
-                        sprintf "%s%s %s with" pc.bef op
+                        sprintf "%s%s %s with" pc.bef op_begin
                           (expr {(pc) with bef = ""; aft = ""} e1))
                      (fun () ->
                         let s =
@@ -1074,12 +1074,14 @@ value expr_expr1 =
                                bef = tab (pc.ind + 2); aft = ""}
                               e1
                           in
-                          sprintf "%s%s\n%s" pc.bef op s
+                          sprintf "%s%s\n%s" pc.bef op_begin s
                         in
                         sprintf "%s\n%swith" s (tab pc.ind))
                  in
                  let s2 =
-                   match_assoc_list {(pc) with bef = tab pc.ind; aft = pc_aft}
+                   match_assoc_list
+                     {(pc) with bef = tab pc.ind; aft = pc_aft;
+                      dang = pc_dang}
                      pwel
                  in
                  let s3 = op_end in
@@ -2552,7 +2554,7 @@ Pcaml.add_option "-ss" (Arg.Set flag_semi_semi)
   "Print double semicolons (equivalent to -flag M).";
 
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.41 2007/07/05 04:24:11 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.42 2007/07/05 04:47:57 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
