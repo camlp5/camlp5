@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.54 2007/12/27 21:43:58 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.55 2007/12/28 02:36:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -144,7 +144,7 @@ value type_decl_list pc =
 
 value exception_decl pc (c, tl) =
   plistbf 0 (paren pc "exception")
-    [(fun pc -> sprintf "%s%s%s" pc.bef c pc.aft, "") ::
+    [(fun pc -> pprintf pc "%s" c, "") ::
      List.map (fun t -> (fun pc -> ctyp pc t, "")) tl]
 ;
 
@@ -152,23 +152,18 @@ value value_binding b pc (p, e) =
   let (pl, e) = expr_fun_args e in
   horiz_vertic
     (fun () ->
-       let s =
-         match pl with
-         [ [] -> patt {(pc) with bef = ""; aft = ""} p
-         | _ -> hlist patt {(pc) with bef = "("; aft = ")"} [p :: pl] ]
-       in
-       sprintf "%s(%s%s %s)%s" pc.bef (if b = "" then "" else b ^ " ") s
-         (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
+       pprintf pc "(%s%p %p)" (if b = "" then "" else b ^ " ")
+         (fun pc ->
+            fun
+            [ [] -> patt pc p
+            | _ -> pprintf pc "(%p)" (hlist patt) [p :: pl] ])
+         pl expr e)
     (fun () ->
        let s1 =
          match pl with
          [ [] ->
-             let pc =
-               {(pc) with ind = pc.ind + 1;
-                bef = sprintf "%s(%s" pc.bef (if b = "" then "" else b ^ " ");
-                aft = ""}
-             in
-             patt pc p
+             let pc = {(pc) with aft = ""} in
+             pprintf pc "@[<1>(%s%p@]" (if b = "" then "" else b ^ " ") patt p
          | _ ->
              let pc =
                {(pc) with ind = pc.ind + 1; bef = sprintf "%s(%s" pc.bef b;
@@ -196,18 +191,9 @@ value value_binding_list pc (rf, pel) =
   | _ ->
       horiz_vertic
         (fun () ->
-           sprintf "%s(%s* %s)%s" pc.bef b
-             (hlist (value_binding "") {(pc) with bef = ""; aft = ""} pel)
-             pc.aft)
+           pprintf pc "(%s* %p)" b (hlist (value_binding "")) pel)
         (fun () ->
-           let s1 = sprintf "%s(%s*" pc.bef b in
-           let s2 =
-             vlist (value_binding "")
-               {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
-                aft = sprintf ")%s" pc.aft}
-               pel
-           in
-           sprintf "%s\n%s" s1 s2) ]
+           pprintf pc "(%s*@;<1 1>%p)" b (vlist (value_binding "")) pel) ]
 ;
 
 value let_binding pc (p, e) =
@@ -216,11 +202,7 @@ value let_binding pc (p, e) =
     [(fun pc ->
         match pl with
         [ [] -> patt pc p
-        | _ ->
-            hlist patt
-              {(pc) with bef = sprintf "%s(" pc.bef;
-               aft = sprintf ")%s" pc.aft}
-              [p :: pl] ],
+        | _ -> pprintf pc "(%p)" (hlist patt) [p :: pl] ],
       "");
      (fun pc -> expr pc e, "")]
 ;
@@ -254,27 +236,26 @@ value constr_decl pc (_, c, tl) =
   let c = Pcaml.unvala c in
   let tl = Pcaml.unvala tl in
   match tl with
-  [ [] -> sprintf "%s(%s)%s" pc.bef c pc.aft
+  [ [] -> pprintf pc "(%s)" c
   | _ ->
       plistf 0 (paren pc "")
-        [(fun pc -> sprintf "%s%s%s" pc.bef c pc.aft, "") ::
+        [(fun pc -> pprintf pc "%s" c, "") ::
          List.map (fun t -> (fun pc -> ctyp pc t, "")) tl] ]
 ;
 
 value poly_variant_decl pc =
   fun
   [ <:poly_variant< `$s$ >> ->
-      sprintf "%s(` %s)%s" pc.bef s pc.aft
+      pprintf pc "(` %s)" s
   | <:poly_variant< `$s$ of $flag:a$ $list:tl$ >> ->
       let list =
         let list =
           [(fun pc -> plist ctyp 0 pc (List.map (fun t -> (t, "")) tl), "")]
         in
         let list =
-          if a then [(fun pc -> sprintf "%s&%s" pc.bef pc.aft, "") :: list]
-          else list
+          if a then [(fun pc -> pprintf pc "&", "") :: list] else list
         in
-        [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "") :: list]
+        [(fun pc -> pprintf pc "%s" s, "") :: list]
       in
       plistbf 0 (paren pc "`") list
   | <:poly_variant< $t$ >> ->
@@ -287,18 +268,17 @@ value poly_variant_decl pc =
 value label_decl pc (_, l, m, t) =
   let list = [(fun pc -> ctyp pc t, "")] in
   plistf 0 (paren pc "")
-    [(fun pc -> sprintf "%s%s%s" pc.bef l pc.aft, "") ::
-     if m then [(fun pc -> sprintf "%smutable%s" pc.bef pc.aft, "") :: list]
-     else list]
+    [(fun pc -> pprintf pc "%s" l, "") ::
+     if m then [(fun pc -> pprintf pc "mutable", "") :: list] else list]
 ;
 
 value module_type_decl pc (s, mt) =
   plistbf 0 (paren pc "moduletype")
-    [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
+    [(fun pc -> pprintf pc "%s" s, "");
      (fun pc -> module_type pc mt, "")]
 ;
 
-value string pc s = sprintf "%s\"%s\"%s" pc.bef s pc.aft;
+value string pc s = pprintf pc "\"%s\"" s;
 
 value int_repr s =
   if String.length s > 2 && s.[0] = '0' then
