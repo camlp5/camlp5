@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.129 2007/12/22 18:01:18 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.130 2007/12/23 03:40:07 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -706,41 +706,12 @@ EXTEND_PRINTER
                         pprintf pc "%sif %q then %p" else_b curr e1 ""
                           curr e2)
                    (fun () ->
-                      let horiz_if_then k =
-                        sprintf "%s%sif %s then%s" pc.bef else_b
-                          (curr {(pc) with bef = ""; aft = ""} e1) k
-                      in
-                      let vertic_if_then k =
-                        let s1 =
-                          if else_b = "" then
-                            curr
-                              {ind = pc.ind + 3;
-                               bef = sprintf "%s%sif " pc.bef else_b;
-                               aft = ""; dang = ""}
-                              e1
-                          else
-                            let s1 = sprintf "%s%sif" pc.bef else_b in
-                            let s2 =
-                              curr
-                                {ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                                 aft = ""; dang = ""}
-                                e1
-                            in
-                            sprintf "%s\n%s" s1 s2
-                        in
-                        let s2 = sprintf "%sthen%s" (tab pc.ind) k in
-                        sprintf "%s\n%s" s1 s2
-                      in
-                      let s1 =
-                        horiz_vertic (fun () -> horiz_if_then "")
-                          (fun () -> vertic_if_then "")
-                      in
-                      let s2 =
-                        comm_expr expr1
-                          {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
-                          e2
-                      in
-                      sprintf "%s\n%s" s1 s2)
+                      if else_b = "" then
+                        pprintf pc "@[<3>%sif %q@]@ then@;%p" else_b
+                          curr e1 "" (comm_expr expr1) e2
+                      else
+                        pprintf pc "@[<a>%sif@;%q@ then@]@;%p" else_b
+                          curr e1 "" (comm_expr expr1) e2)
                in
                let (force_vertic, eel, e3) =
                  if flag_equilibrate_cases.val then
