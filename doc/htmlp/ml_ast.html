@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: ml_ast.html,v 1.7 2007/07/22 11:18:16 deraugla Exp $ -->
+  <!-- $Id: ml_ast.html,v 1.8 2007/07/22 15:18:37 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Abstract tree in concrete syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -93,6 +93,12 @@
   of "a piece of program".</p>
 
 <h2>Nodes</h2>
+
+<p>A way to know what the nodes represent it to read the source file
+  q_MLast.ml of the camlp5 distribution. It is a version of the
+  revised syntax grammar (pa_r.ml) where the semantic action contain
+  their explicit names. Otherwise, you can read the following
+  sections.</p>
 
 <h3>expr</h3>
 
