@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: parsers.html,v 1.21 2007/08/28 17:49:37 deraugla Exp $ -->
+  <!-- $Id: parsers.html,v 1.22 2007/10/10 02:24:05 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -167,8 +167,9 @@
   locally fails, but the parsing can continue.</p>
 
 <p>Conversely, the exception "<code>Stream.Error</code>" means that
-  "this parser encountered a syntax error". In this case, the parsing
-  definitively fails.</p>
+  "this parser encountered a syntax error and elements have probably
+  been removed from the stream". In this case, there is no way to
+  recover the parsing, and it definitively fails.</p>
 
 <h3>Left factorization</h3>
 
@@ -413,8 +414,8 @@
 
 <p>The first case is treated in a rule, telling: "a left parenthesis,
   followed by an expression, and a right parenthesis". The second one
-  is "a left parenthesis, an operator, a right parenthesis". If
-  programming it like this (left factorizing the first
+  is "a left parenthesis, an operator, a right
+  parenthesis". Programming it like this (left factorizing the first
   parenthesis):</p>
 
 <pre>
@@ -426,10 +427,10 @@
          | [: `Minus; `Rparen :] -> minus_op ] :] -> e
 </pre>
 
-<p>this does not work if the input is "<code>(-)</code>" because the
-  rule "<code>e = expr</code>" accepts the minus sign as expression
-  start, removing it from the input stream and fails as parsing error,
-  while encountering the right parenthesis.</p>
+<p>does not work if the input is "<code>(-)</code>" because the rule
+  "<code>e = expr</code>" accepts the minus sign as expression start,
+  removing it from the input stream and fails as parsing error, while
+  encountering the right parenthesis.</p>
 
 <p>Conversely, writing it this way:</p>
 
@@ -448,10 +449,10 @@
   the variable "<code>x</code>" since a right parenthesis is
   expected.</p>
 
-<p>In general, this kind of situation is resolved by a left
+<p>In general, this kind of situation is best resolved by a left
   factorization of the parser cases (see the section "Semantics"
-  above), but it is not possible in this case. The solution is to test
-  whether the character after the minus sign is a right
+  above), but that is not possible in this case. The solution is to
+  test whether the character after the minus sign is a right
   parenthesis:</p>
 
 <pre>
@@ -490,13 +491,13 @@
 </pre>
 
 <p>One interest of the first syntax is that it shows to readers that
-  "<code>d</code>" is indeed a sub-parser. In the second syntax, it is
-  called in the semantic action, which makes the parser case not no
-  clear, as far as readability is concerned.</p>
+  "<code>d</code>" is indeed a syntactic sub-parser. In the second
+  syntax, it is called in the semantic action, which makes the parser
+  case not so clear, as far as readability is concerned.</p>
 
-<p>If the stream pattern component is the last one of the stream
-  pattern, this allow possible tail recursion done by the OCaml
-  compiler, in the following case:</p>
+<p>If the stream pattern component is at end of the stream pattern,
+  this allow possible tail recursion by the OCaml compiler, in the
+  following case:</p>
 
 <pre>
   parser [: a = b; c = d ! :] -> c
@@ -504,7 +505,7 @@
 
 <p>since it is equivalent (with the fact that "<code>c</code>" is at
   the same time the pattern of the last case and the expression of the
-  parser case semantic action:</p>
+  parser case semantic action) to:</p>
 
 <pre>
   parser [: a = b; s :] -> d s
@@ -519,16 +520,16 @@
     try d s with [ Stream.Failure -> raise (Stream.Error "") ]
 </pre>
 
-<p>which is not tail recursive (because the "try..with" construction
-  pushes a context), preventing the compiler to optimize its code. It
-  can have some importance when many recursive calls happen, since it
-  can overflow the OCaml stack.</p>
+<p>which is not tail recursive (due to the "try..with" construction
+  pushes a context), preventing the compiler to optimize its
+  code. This can be important when many recursive calls happen, since
+  it can overflow the OCaml stack.</p>
 
 <h3>Position</h3>
 
 <p>The optional "pattern" before and after a stream pattern is bound
-  to the current stream count. Indeed, streams internally contain the
-  count of its elements. At the beginning the count is zero. When an
+  to the current stream count. Indeed, streams internally contain a
+  count of their elements. At the beginning the count is zero. When an
   element is removed, the count is incremented. The example:</p>
 
 <pre>
@@ -541,14 +542,14 @@
   parser [: a = b; s :] -> let ep = Stream.count s in c
 </pre>
 
-<p>There is not direct syntax equivalent to the optional pattern at
+<p>There is no direct syntax equivalent to the optional pattern at
   beginning of the stream pattern:</p>
 
 <pre>
   parser bp [: a = b :] -> c
 </pre>
 
-<p>These optional patterns allow to dispose of the stream count at the
+<p>These optional patterns allow disposal of the stream count at the
   beginning and at the end of the parser case, allowing to compute
   locations of the rule in the source. In particular, if the stream is
   a stream of characters, these counts are the source location in
@@ -565,11 +566,10 @@
 
 <h3>Simplicity vs Associativity</h3>
 
-<p>This parsing technology has the advantage to be simple to use and
-  to understand. But is supposes to sometimes left factorize the
-  rules.  Moreover, it does not treat the associativity of
-  operators. For example, if you try to write a parser like this (to
-  compute arithmetic expressions):</p>
+<p>This parsing technology has the advantage of simplicity of use and
+  understanding, but it does not treat the associativity of
+  operators. For example, if you write a parser like this (to compute
+  arithmetic expressions):</p>
 
 <pre>
   value rec expr =
@@ -578,8 +578,8 @@
     | [: `('0'..'9' as c) :] -> Char.code c - Char.code '0' ]
 </pre>
 
-<p>this would endless loop, exactly like if you wrote a code starting
-like:</p>
+<p>this would loop endlessly, exactly as if you wrote code starting
+  with:</p>
 
 <pre>
   value rec expr e =
@@ -587,15 +587,15 @@ like:</p>
     ...
 </pre>
 
-<p>A solution to that is to treat the associavity "by hand", by
-  reading a sub-expression, then looping with a parser case parsing
-  the operator and another sub-expression, and so on.</p>
+<p>One solution is to treat the associavity "by hand": by reading a
+  sub-expression, then looping with a parser which parses the operator
+  and another sub-expression, and so on.</p>
 
-<p>Another solution is to previously write parsing
-  "combinators". Indeed, parsers being normal functions, it is
-  possible to make a function which takes a parser as parameter and
-  returning a parser using it. For example, left and right
-  associativity parsing combinators:</p>
+<p>An alternative solution is to write parsing "combinators". Indeed,
+  parsers being normal functions, it is possible to make a function
+  which takes a parser as parameter and returning a parser using
+  it. For example, left and right associativity parsing
+  combinators:</p>
 
 <pre>
   value rec left_assoc op elem =
@@ -635,8 +635,8 @@ like:</p>
   expr (Stream.of_string "2^3^2+1");
 </pre>
 
-<p>The same way, it is possible to parser non-context free grammars,
-  by programming parsers returning other parsers.</p>
+<p>The same way, it is possible to parse non-context free grammars, by
+  programming parsers returning other parsers.</p>
 
 <p>A third solution, to resolve the problem of associativity, is to
   use the grammars of Camlp5, which have the other advantage that they
@@ -684,22 +684,22 @@ like:</p>
   the stream structure is imperative: while parsing, the stream
   advances and the already parsed terminals disappear from the stream
   structure. This is useful because it is not necessary to return the
-  remaining stream together with the normal result. And it is the
-  reason why there is this <code>"Stream.Error"</code> exception: when
-  it happens, it means that some terminals have been consummed from
-  the stream, definitively lost, and that therefore it is no more
-  possible to try other parser cases.</p>
+  remaining stream together with the normal result. This is the reason
+  there is this <code>"Stream.Error"</code> exception: when it is
+  raised, it means that some terminals have been consummed from the
+  stream, which are definitively lost, and therefore that it is no
+  more possible parser cases to try.</p>
 
-<p>An alternative of that is using <a href="fparsers.html">purely
-  functional parsers</a> using a new stream type, lazy but not
+<p>An alternative is to use <a href="fparsers.html">purely functional
+  parsers</a> which use a new stream type, lazy but not
   destructive. Their advantage is that they use a limited backtrack:
   the case of "if..then..else.." and the shorter "if..then.." work
   without having to left factorize the parser cases, and there is no
   need to lookahead. They have no equivalent to the exception
   "<code>Stream.Error</code>": when all cases are tested, and have
-  failed, the parsers return the value "<code>None</code>". Their
+  failed, the parsers return the value "<code>None</code>". The
   drawback is that, when a parsing error happens, it is not easily
-  possible to know the location of the error in the input, since the
+  possible to know the location of the error in the input, as the
   initial stream has not been modified: the system would indicate a
   failure at the first character of the first line: this is a general
   drawback of backtracking parsers. See the solutions found to this
