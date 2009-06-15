@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.42 2007/10/06 18:56:10 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.43 2007/10/06 19:13:14 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -287,6 +287,7 @@
 (define (error_loc loc err)
   (Ploc.raise loc (Stream.Error (^ err " expected"))))
 (define (error se err) (error_loc (loc_of_sexpr se) err))
+(:= Pcaml.sync.val (lambda _ ()))
 
 (define strm_n "strm__")
 (define (peek_fun loc) <:expr< Stream.peek >>)

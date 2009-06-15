@@ -303,6 +303,7 @@ value loc_of_sexpr =
 ;
 value error_loc loc err = Ploc.raise loc (Stream.Error (err ^ " expected"));
 value error se err = error_loc (loc_of_sexpr se) err;
+Pcaml.sync.val := fun _ -> ();
 
 value strm_n = "strm__";
 value peek_fun loc = <:expr< Stream.peek >>;
