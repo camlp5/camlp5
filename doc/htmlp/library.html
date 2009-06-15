@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: library.html,v 1.13 2007/08/20 13:39:31 deraugla Exp $ -->
+  <!-- $Id: library.html,v 1.14 2007/08/20 15:48:20 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Library</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -170,7 +170,7 @@
   <dd>A lexing error exception to be used by lexers.</dd>
 </dl>
 
-<h3>Lexer type</h3>
+<h3>lexer type</h3>
 
 <pre style="border:0; margin-left: 1cm">
 type glexer 'te =
@@ -247,7 +247,7 @@ type glexer 'te =
        type "<tt>(string * string)</tt>".</dd>
 </dl>
 
-<h3>Lexers from parsers or ocamllex</h3>
+<h3>lexers from parsers or ocamllex</h3>
 
 <p>The functions below create lexer functions either from a "<tt>char
    stream</tt>" parser or for an "<tt>ocamllex</tt>" function. With
@@ -287,14 +287,14 @@ value lexer_func_of_ocamllex : (Lexing.lexbuf -> 'te) -> lexer_func 'te;
     A lexer function from a lexer created by "<tt>ocamllex</tt>".
 </dd></dl>
 
-<h3>Function to build a stream and a location function</h3>
+<h3>function to build a stream and a location function</h3>
 
 <pre style="border:0; margin-left: 1cm">
 value make_stream_and_location :
   (unit -> ('te * Stdpp.location)) -> (Stream.t 'te * location_function);
 </pre>
 
-<h3>Useful functions and values</h3>
+<h3>useful functions and values</h3>
 
 <dl>
   <dt><tt>value eval_char : string -> char;</tt></dt>
@@ -319,7 +319,7 @@ value make_stream_and_location :
     can be wrong.</dd>
 </dl>
 
-<h3>Backward compatibilities</h3>
+<h3>backward compatibilities</h3>
 
 <p>Deprecated since version 4.08.</p>
 
@@ -441,7 +441,7 @@ value make_stream_and_location :
  interested in scanning the contents of grammars and entries, for
  example to make analyses on them.</p>
 
-<h3>Grammar type</h3>
+<h3>grammar type</h3>
 
 <pre style="border:0; margin-left: 1cm">
 type grammar 'te =
@@ -467,7 +467,7 @@ type grammar 'te =
     zero. The field "<tt>glexer</tt>" is the lexer.
 </dd></dl>
 
-<h3>Entry type</h3>
+<h3>entry type</h3>
 
 <pre style="border:0; margin-left: 1cm">
 type g_entry 'te =
