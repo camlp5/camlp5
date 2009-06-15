@@ -18,7 +18,11 @@ Grammar.extend
   [Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e),
    Some (Gramext.Level "top"),
    [None, Some Gramext.NonA,
-    [[Gramext.Stoken ("UIDENT", "SOPT"); Gramext.Sself],
+    [[Gramext.Stoken ("UIDENT", "SFLAG"); Gramext.Sself],
+     Gramext.action
+       (fun (s : 'symbol) _ (loc : Token.location) ->
+          (ssflag loc s : 'symbol));
+     [Gramext.Stoken ("UIDENT", "SOPT"); Gramext.Sself],
      Gramext.action
        (fun (s : 'symbol) _ (loc : Token.location) ->
           (ssopt loc s : 'symbol));

@@ -668,16 +668,24 @@ and parser_of_symbol entry nlevn =
              let a = kont [a] strm__ in Obj.repr (List.rev a))
   | Sopt s ->
       let ps = parser_of_symbol entry nlevn s in
+      let pa = parser_of_token entry ("OPT", "") in
       (fun (strm__ : _ Stream.t) ->
-         match try Some (ps strm__) with Stream.Failure -> None with
-           Some a -> Obj.repr (Some a)
-         | _ -> Obj.repr None)
+         match try Some (pa strm__) with Stream.Failure -> None with
+           Some a -> Obj.repr a
+         | _ ->
+             match try Some (ps strm__) with Stream.Failure -> None with
+               Some a -> Obj.repr (Some a)
+             | _ -> Obj.repr None)
   | Sflag s ->
       let ps = parser_of_symbol entry nlevn s in
+      let pa = parser_of_token entry ("FLAG", "") in
       (fun (strm__ : _ Stream.t) ->
-         match try Some (ps strm__) with Stream.Failure -> None with
-           Some _ -> Obj.repr true
-         | _ -> Obj.repr false)
+         match try Some (pa strm__) with Stream.Failure -> None with
+           Some a -> Obj.repr a
+         | _ ->
+             match try Some (ps strm__) with Stream.Failure -> None with
+               Some _ -> Obj.repr true
+             | _ -> Obj.repr false)
   | Stree t ->
       let pt = parser_of_tree entry 1 0 t in
       (fun (strm__ : _ Stream.t) ->

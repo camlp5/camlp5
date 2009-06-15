@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: compile.ml,v 1.9 2007/08/01 13:06:46 deraugla Exp $ *)
+(* $Id: compile.ml,v 1.10 2007/08/01 18:01:19 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -32,6 +32,7 @@ value rec name_of_symbol_failed entry =
   | Slist1 s -> name_of_symbol_failed entry s
   | Slist1sep s _ -> name_of_symbol_failed entry s
   | Sopt s -> name_of_symbol_failed entry s
+  | Sflag s -> name_of_symbol_failed entry s
   | Stree t -> name_of_tree_failed entry t
   | s -> name_of_symbol entry s ]
 and name_of_tree_failed entry =
@@ -40,7 +41,8 @@ and name_of_tree_failed entry =
       let txt = name_of_symbol_failed entry s in
       let txt =
         match (s, son) with
-        [ (Sopt _, Node _) -> txt ^ " or " ^ name_of_tree_failed entry son
+        [ (Sopt _ | Sflag _, Node _) ->
+            txt ^ " or " ^ name_of_tree_failed entry son
         | _ -> txt ]
       in
       let txt =
@@ -68,7 +70,7 @@ value tree_failed entry prev_symb tree =
     | Slist1sep s sep ->
         let txt1 = name_of_symbol_failed entry s in
         ("", txt1 ^ " or " ^ txt)
-    | Sopt _ | Stree _ -> ("", txt)
+    | Sopt _ | Sflag _ | Stree _ -> ("", txt)
     | _ -> (name_of_symbol entry prev_symb, txt) ]
   in
   <:expr<
@@ -223,6 +225,9 @@ and parse_symbol entry nlevn s rkont fkont ending_act =
       parse_standard_symbol e rkont fkont ending_act
   | Sopt s ->
       let e = <:expr< P.option $symbol_parser entry nlevn s$ >> in
+      parse_symbol_no_failure e rkont fkont ending_act
+  | Sflag s ->
+      let e = <:expr< P.bool $symbol_parser entry nlevn s$ >> in
       parse_symbol_no_failure e rkont fkont ending_act
   | Stree tree ->
       let kont = <:expr< raise Stream.Failure >> in

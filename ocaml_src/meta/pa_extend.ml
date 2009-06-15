@@ -646,6 +646,10 @@ let rec quot_expr e =
          MLast.ExUid (loc, "True"))
   | MLast.ExUid (_, "()") -> e
   | MLast.ExApp
+      (_, MLast.ExAcc (_, MLast.ExUid (_, "Qast"), MLast.ExUid (_, "Bool")),
+       _) ->
+      e
+  | MLast.ExApp
       (_, MLast.ExAcc (_, MLast.ExUid (_, "Qast"), MLast.ExUid (_, "List")),
        _) ->
       e

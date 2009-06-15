@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo pa_extend.cmo *)
-(* $Id: comp_head.ml.tpl,v 1.2 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: comp_head.ml.tpl,v 1.3 2007/08/01 18:01:19 deraugla Exp $ *)
 
 module P =
   struct
@@ -42,6 +42,11 @@ module P =
       parser
       [ [: a = f :] -> Some a
       | [: :] -> None ]
+    ;
+    value bool f =
+      parser
+      [ [: _ = f :] -> True
+      | [: :] -> False ]
     ;
     value token (p_con, p_prm) =
       if p_prm = "" then parser [: `(con, prm) when con = p_con :] -> prm

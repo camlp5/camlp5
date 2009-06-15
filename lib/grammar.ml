@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.26 2007/08/01 13:06:46 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.27 2007/08/01 18:01:19 deraugla Exp $ *)
 
 open Stdpp;
 open Gramext;
@@ -617,13 +617,17 @@ and parser_of_symbol entry nlevn =
       | [: a = ps; a = kont [a] ! :] -> Obj.repr (List.rev a) ]
   | Sopt s ->
       let ps = parser_of_symbol entry nlevn s in
+      let pa = parser_of_token entry ("OPT", "") in
       parser
-      [ [: a = ps :] -> Obj.repr (Some a)
+      [ [: a = pa :] -> Obj.repr a
+      | [: a = ps :] -> Obj.repr (Some a)
       | [: :] -> Obj.repr None ]
   | Sflag s ->
       let ps = parser_of_symbol entry nlevn s in
+      let pa = parser_of_token entry ("FLAG", "") in
       parser
-      [ [: _ = ps :] -> Obj.repr True
+      [ [: a = pa :] -> Obj.repr a
+      | [: _ = ps :] -> Obj.repr True
       | [: :] -> Obj.repr False ]
   | Stree t ->
       let pt = parser_of_tree entry 1 0 t in

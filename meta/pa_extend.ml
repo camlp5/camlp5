@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.19 2007/08/01 13:06:46 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.20 2007/08/01 18:01:19 deraugla Exp $ *)
 
 open Stdpp;
 
@@ -278,6 +278,7 @@ value rec quot_expr e =
   | <:expr< False >> -> <:expr< Qast.Bool False >>
   | <:expr< True >> -> <:expr< Qast.Bool True >>
   | <:expr< () >> -> e
+  | <:expr< Qast.Bool $_$ >> -> e
   | <:expr< Qast.List $_$ >> -> e
   | <:expr< Qast.Option $_$ >> -> e
   | <:expr< Qast.Str $_$ >> -> e

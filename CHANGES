@@ -1,6 +1,8 @@
 Camlp5 Version 4.07:
 ---------------------
 
+* [01 Aug 07] In EXTEND statement, added symbol FLAG: like OPT but return
+  a boolean value.
 * [30 Jul 07] Fixed bug in normal syntax: let C x = C 1 was not accepted
   (bug rather difficult to resolve).
 * [30 Jul 07] Changed pretty printing *normal* syntax: let C x = .. printed
