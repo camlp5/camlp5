@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: locations.html,v 1.1 2007/07/26 08:34:12 deraugla Exp $ -->
+  <!-- $Id: locations.html,v 1.2 2007/07/26 19:37:14 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Locations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -19,7 +19,93 @@
 
 <h1 class="top">Locations</h1>
 
-<p>...work in progress...</p>
+<p>The location is a concept often used in camlp5, bound to know where
+  the errors occur in the source. The basic type is
+  "<tt>Stdpp.location</tt>" which is an abstract type.</p>
+
+<p>A location is internally a couple of source positions: the
+  beginning and the end of the located element which can be: a
+  character (the end is just the beginning plus one), a token, or a
+  longer sequence corresponding to a grammar rule.</p>
+
+<p>Tools are provided in the module "<tt>Stdpp</tt>" to manage
+  locations.</p>
+
+<p>First, "<tt>Stdpp.dummy_loc</tt>" is a dummy location used when the
+  element does not correspond to any source, or if the programmer does
+  not want to busy about locations.</p>
+
+<p>The function "<tt>Stdpp.make_lined_loc</tt>" builds a location from
+  three parameters:</p>
+
+<ul>
+  <li>the line number, starting at 1</li>
+  <li>the position of the first column of the line</li>
+  <li>a couple of positions of the location: the first one belonging
+    to the given line, the second one being able to belong to another
+    line, further.</li>
+</ul>
+
+<p>A <em>position</em> is a count of characters since the beginning of
+  the file, starting at zero. When a couple of positions define a
+  location, the first position is the position of the first character
+  of the element, and the last position is the first character <em>em</em>
+  part of the element. The location length is the difference between
+  those two numbers.</p>
+
+<p>If the line number is not known, it is possible to use the function
+  "<tt>Stdpp.make_loc</tt>" taking only the couple of positions of the
+  location. In this case, error messages may indicate the first line
+  and a big count of characters from this line (actually from the
+  beginning of the file). With a good text editor, it is possible,
+  anyway to find the good location, anyway.</p>
+
+<p>If the location is built with "<tt>Stdpp.make_loc</tt>", and if
+  your program displays a source location itself, it is possible to
+  use the function "<tt>Stdpp.line_of_loc</tt>" which takes the file
+  name and the location as parameters and return, by reading that
+  file, the line number, and the character positions of the
+  location.</p>
+
+<p>The function "<tt>Stdpp.raise_with_loc</tt>" allows to raise an
+  exception together with a location. It is the case of all exceptions
+  raised (parsing errors or other)
+  in <a href="grammars.html">extensible grammars</a>. The raised
+  exception is "<tt>Stdpp.Exc_located</tt>" with two parameters: the
+  location and the exception itself. Notice that
+  "<tt>raise_with_loc</tt>" just reraises the exception if it is
+  already the exception "<tt>Exc_located</tt>", ignoring then the new
+  given location.</p>
+
+<p>In <a href="grammars.html">extensible grammars</a>, the variable
+  "<tt>loc</tt>" is predefined in all semantic actions: it is the
+  location of the associated rule. Since
+  the <a href="ml_ast.html">syntax tree quotations</a> generate nodes
+  with "<tt>loc</tt>" as location part, this allow to generate
+  grammars without having to think about source locations.</p>
+
+<p>It is possible to change the name "<tt>loc</tt>" into another name,
+  through the parameter "<tt>-loc</tt>" of the camlp4 commands.</p>
+
+<p>Some other functions are provided:</p>
+
+<dl>
+  <dt><tt>Stdpp.first_pos</tt></dt>
+  <dd>returns the first position (an integer) of the location.</dd>
+  <dt><tt>Stdpp.last_pos</tt></dt>
+  <dd>returns the last position (an integer) of the location (position
+    of the first character not belonging to the element.</dd>
+  <dt><tt>Stdpp.line_nb</tt></dt>
+  <dd>returns the line number of the location or <tt>-1</tt> if the
+    location does not contain a line number (i.e. built by
+    "<tt>Stdpp.make_loc</tt>").</dd>
+  <dt><tt>Stdpp.bol_pos</tt></dt>
+  <dd>returns the position of the beginning of the line of the
+    location. It is zero if the location does not contain a line
+    number (i.e. built by "<tt>Stdpp.make_loc</tt>").</dd>
+</dl>
+
+<p>...to be continued...</p>
 
 <div class="trailer">
 </div>
