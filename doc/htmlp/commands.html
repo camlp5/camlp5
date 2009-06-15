@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: commands.html,v 1.17 2007/11/20 03:05:16 deraugla Exp $ -->
+  <!-- $Id: commands.html,v 1.18 2007/11/20 08:55:44 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Commands and Files</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -28,6 +28,10 @@
   command "<tt>camlp5</tt>" with some implicitely applied
   parameters.</p>
 
+<p>Two other commands are provided: "<tt>mkcamlp5</tt>" and
+  "<tt>mkcamlp5.opt</tt>". They allow to create camlp5 executables
+  with already loaded kits.</p>
+
 <p>All commands have an option "<tt>-help</tt>" which display all
   possible command parameters and options. Notice that some parameters
   (the parsing and pretting kits) may add new options. For example,
@@ -47,10 +51,6 @@
   printing kits (".cmo" and ".cma" files) which are loaded inside the
   "<tt>camlp5</tt>" core before any action. Other options may
   follow.</p>
-
-<p>Two other commands are provided: "<tt>mkcamlp5</tt>" and
-  "<tt>mkcamlp5.opt</tt>". They allow to create camlp5 executables
-  with already loaded kits.</p>
 
 <div id="tableofcontents">
 </div>

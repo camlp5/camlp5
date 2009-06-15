@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: mkcamlp5.sh.tpl,v 1.2 2007/11/20 02:55:15 deraugla Exp $
+# $Id: mkcamlp5.sh.tpl,v 1.3 2007/11/20 08:55:44 deraugla Exp $
 
 OLIB=`ocamlc -where`
 LIB=LIBDIR/camlp5
@@ -10,6 +10,18 @@ INCL="-I ."
 while test "" != "$1"; do
     case $1 in
     -I) INCL="$INCL -I $2"; shift;;
+    -help)
+        echo "Usage: mkcamlp5 [options] [files]"
+        echo "Options:"
+        echo "  -I <dir>   Add directory in search patch for object files"
+        echo
+        echo "All options of ocamlc are also available"
+        echo
+        echo "Files:"
+        echo "  .cmi file  Add visible interface for possible future loading"
+        echo "  .cmo file  Load this file in core"
+        echo "  .cma file  Load this file in core"
+        exit 0;;
     -*) OPTS="$OPTS $1";;
     *)
 	j=`basename $1 .cmi`
