@@ -31,10 +31,10 @@
 <:expr< $_int64:s$ >>
 <:expr< $nativeint:s$ >>
 <:expr< $_nativeint:s$ >>
-<:expr< ~$s$ >>
-<:expr< ~$_:s$ >>
-<:expr< (~$s$ $e$) >>
-<:expr< (~$_:s$ $e$) >>
+<:expr< (~ $s$) >>
+<:expr< (~ $_:s$) >>
+<:expr< (~ $s$ $e$) >>
+<:expr< (~ $_:s$ $e$) >>
 <:expr< (lazy $e$) >>
 <:expr< (let ($list:lpe$) $e$) >>
 <:expr< (let ($_list:lpe$) $e$) >>
@@ -52,10 +52,10 @@
 (MLast.ExNew loc ls)
 (MLast.ExObj loc (Ploc.VaVal op) (Ploc.VaVal lcstri))
 (MLast.ExObj loc op lcstri)
-<:expr< ?$s$ >>
-<:expr< ?$_:s$ >>
-<:expr< (?$s$ $e$) >>
-<:expr< (?$_:s$ $e$) >>
+<:expr< (? $s$) >>
+<:expr< (? $_:s$) >>
+<:expr< (? $s$ $e$) >>
+<:expr< (? $_:s$ $e$) >>
 (MLast.ExOvr loc (Ploc.VaVal lse))
 (MLast.ExOvr loc lse)
 <:expr< { $list:lpe$ } >>
@@ -99,18 +99,18 @@
 <:patt< $_nativeint:s$ >>
 <:patt< $flo:s$ >>
 <:patt< $_flo:s$ >>
-<:patt< ~$s$ >>
-<:patt< ~$_:s$ >>
-<:patt< (~$s$ $p$) >>
-<:patt< (~$_:s$ $p$) >>
+<:patt< (~ $s$) >>
+<:patt< (~ $_:s$) >>
+<:patt< (~ $s$ $p$) >>
+<:patt< (~ $_:s$ $p$) >>
 <:patt< $lid:s$ >>
 <:patt< $_lid:s$ >>
-<:patt< ?$s$ >>
-<:patt< ?$_:s$ >>
-<:patt< (?$s$ $p$) >>
-<:patt< (?$_:s$ $p$) >>
-<:patt< (?$s$ $p$ $e$) >>
-<:patt< (?$_:s$ $p$ $e$) >>
+<:patt< (? $s$) >>
+<:patt< (? $_:s$) >>
+<:patt< (? $s$ $p$) >>
+<:patt< (? $_:s$ $p$) >>
+<:patt< (? $s$ $p$ $e$) >>
+<:patt< (? $_:s$ $p$ $e$) >>
 <:patt< (or $p1$ $p2$) >>
 <:patt< (range $p1$ $p2$) >>
 <:patt< { $list:lpp$ } >>
@@ -133,8 +133,8 @@
 <:ctyp< (-> $t1$ $t2$) >>
 (MLast.TyCls loc (Ploc.VaVal ls))
 (MLast.TyCls loc ls)
-<:ctyp< (~$s$ $t$) >>
-<:ctyp< (~$_:s$ $t$) >>
+<:ctyp< (~ $s$ $t$) >>
+<:ctyp< (~ $_:s$ $t$) >>
 <:ctyp< $lid:s$ >>
 <:ctyp< $_lid:s$ >>
 <:ctyp< (== $t1$ $t2$) >>
@@ -144,8 +144,8 @@
 <:ctyp< (objectvar $_list:lst$) >>
 (MLast.TyObj loc (Ploc.VaVal lst) (Ploc.VaVal b))
 (MLast.TyObj loc lst b)
-<:ctyp< (?$s$ $t$) >>
-<:ctyp< (?$_:s$ $t$) >>
+<:ctyp< (? $s$ $t$) >>
+<:ctyp< (? $_:s$ $t$) >>
 (MLast.TyPol loc (Ploc.VaVal ls) t)
 (MLast.TyPol loc ls t)
 (MLast.TyQuo loc (Ploc.VaVal s))

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.38 2007/10/13 13:45:46 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.39 2007/10/14 09:53:23 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -577,15 +577,17 @@ EXTEND_PRINTER
           if fl = [] then sprintf "%s(%s)%s" pc.bef b pc.aft
           else not_impl "ty obj" pc 0
       | <:ctyp< ?$s$: $t$ >> ->
-          plistb ctyp 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(?%s" pc.bef s;
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(?" pc.bef;
              aft = sprintf ")%s" pc.aft}
-            [(t, "")]
+            [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
+             (fun pc -> curr pc t, "")]
       | <:ctyp< ~$s$: $t$ >> ->
-          plistb ctyp 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(~%s" pc.bef s;
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(~" pc.bef;
              aft = sprintf ")%s" pc.aft}
-            [(t, "")]
+            [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
+             (fun pc -> curr pc t, "")]
       | <:ctyp< $lid:s$ >> ->
           sprintf "%s%s%s" pc.bef (rename_id s) pc.aft
       | <:ctyp< $uid:s$ >> ->
@@ -882,20 +884,26 @@ EXTEND_PRINTER
              (fun pc -> curr pc e, "");
              (fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "")]
       | <:expr< ?$s$ >> ->
-          sprintf "%s?%s%s" pc.bef s pc.aft
-      | <:expr< ?$s$: $e$ >> ->
-          plistf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(?" pc.bef;
              aft = sprintf ")%s" pc.aft}
-            [(fun pc -> sprintf "%s?%s%s" pc.bef s pc.aft, "");
+            [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "")]
+      | <:expr< ?$s$: $e$ >> ->
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(?" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> curr pc e, "")]
       | <:expr< ~$s$ >> ->
-          sprintf "%s~%s%s" pc.bef s pc.aft
-      | <:expr< ~$s$: $e$ >> ->
-          plistf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(~" pc.bef;
              aft = sprintf ")%s" pc.aft}
-            [(fun pc -> sprintf "%s~%s%s" pc.bef s pc.aft, "");
+            [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "")]
+      | <:expr< ~$s$: $e$ >> ->
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(~" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> curr pc e, "")]
       | <:expr< $e1$ .[ $e2$ ] >> ->
           sprintf "%s%s.[%s]%s" pc.bef
@@ -1031,27 +1039,33 @@ EXTEND_PRINTER
              aft = sprintf "}%s" pc.aft}
             (List.map (fun fp -> (fp, "")) fpl)
       | <:patt< ?$s$ >> ->
-          sprintf "%s?%s%s" pc.bef s pc.aft
-      | <:patt< ?$s$: ($p$) >> ->
-          plistf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(?" pc.bef;
              aft = sprintf ")%s" pc.aft}
-            [(fun pc -> sprintf "%s?%s%s" pc.bef s pc.aft, "");
+            [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "")]
+      | <:patt< ?$s$: ($p$) >> ->
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(?" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> curr pc p, "")]
       | <:patt< ? ($lid:x$ = $e$) >> ->
-          plistf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(?" pc.bef;
              aft = sprintf ")%s" pc.aft}
-            [(fun pc -> sprintf "%s?%s" pc.bef pc.aft, "");
-             (fun pc -> sprintf "%s%s%s" pc.bef x pc.aft, "");
+            [(fun pc -> sprintf "%s%s%s" pc.bef x pc.aft, "");
+             (fun pc -> sprintf "%s=%s" pc.bef pc.aft, "");
              (fun pc -> expr pc e, "")]
       | <:patt< ~$s$ >> ->
-          sprintf "%s~%s%s" pc.bef s pc.aft
-      | <:patt< ~$s$: $p$ >> ->
-          plistf 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(~" pc.bef;
              aft = sprintf ")%s" pc.aft}
-            [(fun pc -> sprintf "%s~%s%s" pc.bef s pc.aft, "");
+            [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "")]
+      | <:patt< ~$s$: $p$ >> ->
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(~" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> curr pc p, "")]
       | <:patt< $p1$ . $p2$ >> ->
            sprintf "%s.%s"

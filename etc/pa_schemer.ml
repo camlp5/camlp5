@@ -223,15 +223,13 @@ value rec lexer kwt =
   | [: `'<'; tok = less kwt :] ep -> (tok, (bp, ep))
   | [: `'-'; tok = minus bp kwt :] ep -> (tok, (bp, ep))
   | [: `'#'; tok = sharp bp kwt :] ep -> (tok, (bp, ep))
-  | [: `'~'; tok = tilde bp :] ep -> (tok, (bp, ep))
-  | [: `'?'; tok = question bp :] ep -> (tok, (bp, ep))
   | [: `('0'..'9' as c); tok = number (Buff.store 0 c) :] ep ->
       (tok, (bp, ep))
-  | [: `('+' | '*' | '/' as c); len = ident (Buff.store 0 c);
+  | [: `('+' | '*' | '/' | '~' as c); len = ident (Buff.store 0 c);
        len = operator len :] ep ->
       (identifier kwt (Buff.get len), (bp, ep))
   | [: `'$'; tok = dollar bp kwt :] ep -> (tok, (bp, ep))
-  | [: `x; len = ident (Buff.store 0 x) :] ep ->
+  | [: `c; len = ident (Buff.store 0 c) :] ep ->
       (identifier kwt (Buff.get len), (bp, ep))
   | [: :] -> (("EOI", ""), (bp, bp + 1)) ]
 and after_space kwt =
@@ -244,32 +242,6 @@ and dollar bp kwt strm =
   else
     match strm with parser
       [: len = ident (Buff.store 0 '$') :] -> identifier kwt (Buff.get len)
-and tilde bp strm =
-  if Plexer.force_antiquot_loc.val then
-    match strm with parser
-    [ [: `('a'..'z' as c); len = ident (Buff.store 0 c) :] ->
-        ("TILDEIDENT", Buff.get len)
-    | [: `'$'; s = antiquot_loc bp 0 :] -> ("ANTIQUOT_LOC", "~" ^ s)
-    | [: len = ident (Buff.store 0 '~'); len = operator len :] ->
-        ("LIDENT", Buff.get len) ]
-  else
-    match strm with parser
-    [ [: `('a'..'z' as c); len = ident (Buff.store 0 c) :] ->
-        ("TILDEIDENT", Buff.get len)
-    | [: len = ident (Buff.store 0 '~'); len = operator len :] ->
-        ("LIDENT", Buff.get len) ]
-and question bp strm =
-  if Plexer.force_antiquot_loc.val then
-    match strm with parser
-    [ [: `('a'..'z' as c); len = ident (Buff.store 0 c) :] ->
-        ("QUESTIONIDENT", Buff.get len)
-    | [: `'$'; s = antiquot_loc bp 0 :] -> ("ANTIQUOT_LOC", "?" ^ s)
-    | [: len = ident (Buff.store 0 '?') :] -> ("LIDENT", Buff.get len) ]
-  else
-    match strm with parser
-    [ [: `('a'..'z' as c); len = ident (Buff.store 0 c) :] ->
-        ("QUESTIONIDENT", Buff.get len)
-    | [: len = ident (Buff.store 0 '?') :] -> ("LIDENT", Buff.get len) ]
 and sharp bp kwt =
   parser
   [ [: `'(' :] -> ("", "#(")
@@ -304,8 +276,7 @@ and quotation_greater len =
 value lexer_using kwt (con, prm) =
   match con with
   [ "CHAR" | "DOT" | "EOI" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
-    "LIDENT" | "NL" | "QUESTIONIDENT" | "QUOT" | "SPACEDOT" | "STRING" |
-    "TILDEIDENT" | "UIDENT" ->
+    "LIDENT" | "NL" | "QUOT" | "SPACEDOT" | "STRING" | "UIDENT" ->
       ()
   | "ANTIQUOT" | "ANTIQUOT_LOC" -> ()
   | "" ->
@@ -350,11 +321,9 @@ type sexpr =
   | Slid of MLast.loc and string
   | Slidv of MLast.loc and MLast.v string
   | Slist of MLast.loc and list sexpr
-  | Sqid of MLast.loc and MLast.v string
   | Squot of MLast.loc and string and string
   | Srec of MLast.loc and list sexpr
   | Sstring of MLast.loc and MLast.v string
-  | Stid of MLast.loc and MLast.v string
   | Suid of MLast.loc and string
   | Suidv of MLast.loc and MLast.v string ]
 ;
@@ -363,8 +332,8 @@ value loc_of_sexpr =
   fun
   [ Sacc loc _ _ | Santi loc _ _ | Sarr loc _ | Schar loc _ | Sexpr loc _ |
     Sint loc _ | Sint_l loc _ | Sint_L loc _ | Sint_n loc _ | Sfloat loc _ |
-    Slid loc _ | Slidv loc _ | Slist loc _ | Sqid loc _ | Squot loc _ _ |
-    Srec loc _ | Sstring loc _ | Stid loc _ | Suid loc _ | Suidv loc _ ->
+    Slid loc _ | Slidv loc _ | Slist loc _ | Squot loc _ _ | Srec loc _ |
+    Sstring loc _ | Suid loc _ | Suidv loc _ ->
       loc ]
 ;
 value error_loc loc err = Ploc.raise loc (Stream.Error (err ^ " expected"));
@@ -394,9 +363,9 @@ value string_se =
   | se -> error se "string" ]
 ;
 
-value rec mod_ident_se =
+value rec longident_se =
   fun
-  [ Sacc _ se1 se2 -> mod_ident_se se1 @ mod_ident_se se2
+  [ Sacc _ se1 se2 -> longident_se se1 @ longident_se se2
   | Suid _ s -> [rename_id s]
   | Slid _ s -> [rename_id s]
   | se -> error se "mod_ident" ]
@@ -415,10 +384,10 @@ value rec anti_list_map f =
   | sel -> <:vala< (List.map f sel) >> ]
 ;
 
-value anti_mod_ident_se =
+value anti_longident_se =
   fun
   [ Santi _ ("list" | "_list" | "" | "_") s -> <:vala< $s$ >>
-  | se -> <:vala< (mod_ident_se se) >> ]
+  | se -> <:vala< (longident_se se) >> ]
 ;
 
 value anti_lid =
@@ -512,10 +481,10 @@ and with_constr_se =
         match se1 with
         [ Santi _ ("list" | "_list") s -> (<:vala< $s$ >>, <:vala< [] >>)
         | Sexpr _ [se :: sel] ->
-            let tn = anti_mod_ident_se se in
+            let tn = anti_longident_se se in
             let tp = anti_list_map type_param_se sel in
             (tn, tp)
-        | se -> (<:vala< (mod_ident_se se) >>, <:vala< [] >>) ]
+        | se -> (<:vala< (longident_se se) >>, <:vala< [] >>) ]
       in
       let pf = pf = "typeprivate" in
       let te = ctyp_se se2 in
@@ -561,7 +530,7 @@ and sig_item_se =
       let mt = module_type_se se2 in
       <:sig_item< module type $_uid:s$ = $mt$ >>
   | Sexpr loc [Slid _ "open"; se] ->
-      let s = anti_mod_ident_se se in
+      let s = anti_longident_se se in
       <:sig_item< open $_:s$ >>
   | Sexpr loc [Slid _ "type" :: sel] ->
       let tdl = type_declaration_list_se sel in
@@ -600,7 +569,7 @@ and str_item_se se =
       <:str_item< exception $_:c$ of $_list:tl$ >>
   | Sexpr loc [Slid _ "exceptionrebind"; se1; se2] ->
       let c = anti_uid_or_error se1 in
-      let id = anti_mod_ident_se se2 in
+      let id = anti_longident_se se2 in
       <:str_item< exception $_uid:c$ = $_:id$ >>
   | Sexpr loc [Slid _ "external"; se1; se2 :: sel] ->
       let i = anti_lid_or_error se1 in
@@ -622,7 +591,7 @@ and str_item_se se =
       let mt = module_type_se se2 in
       <:str_item< module type $_uid:s$ = $mt$ >>
   | Sexpr loc [Slid _ "open"; se] ->
-      let s = anti_mod_ident_se se in
+      let s = anti_longident_se se in
       <:str_item< open $_:s$ >>
   | Sexpr loc [Slid _ "type" :: sel] ->
       let tdl = type_declaration_list_se sel in
@@ -683,11 +652,20 @@ and expr_se =
   | Sfloat loc s -> <:expr< $_flo:s$ >>
   | Schar loc s -> <:expr< $_chr:s$ >>
   | Sstring loc s -> <:expr< $_str:s$ >>
-  | Stid loc s -> <:expr< ~$_:s$ >>
-  | Sqid loc s -> <:expr< ?$_:s$ >>
-  | Sexpr loc [Sqid _ s; se] ->
-      let e = expr_se se in
+  | Sexpr loc [Slid _ "~"; se] ->
+      let s = anti_lid_or_error se in
+      <:expr< ~$_:s$ >>
+  | Sexpr loc [Slid _ "~"; se1; se2] ->
+      let s = anti_lid_or_error se1 in
+      let e = expr_se se2 in
+      <:expr< ~$_:s$: $e$ >>
+  | Sexpr loc [Slid _ "?"; se1; se2] ->
+      let s = anti_lid_or_error se1 in
+      let e = expr_se se2 in
       <:expr< ?$_:s$: $e$ >>
+  | Sexpr loc [Slid _ "?"; se] ->
+      let s = anti_lid_or_error se in
+      <:expr< ?$_:s$ >>
   | Sexpr loc [] -> <:expr< () >>
   | Sexpr loc [Slid _ s; e1 :: ([_ :: _] as sel)]
     when List.mem s assoc_left_parsed_op_list ->
@@ -714,9 +692,6 @@ and expr_se =
             let a1 = op_apply loc e1 e2 s in
             let a2 = loop el in
             <:expr< $a1$ && $a2$ >> ]
-  | Sexpr loc [Stid _ s; se] ->
-      let e = expr_se se in
-      <:expr< ~$_:s$: $e$ >>
   | Sexpr loc [Slid _ "-"; se] ->
       let e = expr_se se in
       <:expr< - $e$ >>
@@ -1024,17 +999,28 @@ and patt_se =
   | Sfloat loc s -> <:patt< $_flo:s$ >>
   | Schar loc s -> <:patt< $_chr:s$ >>
   | Sstring loc s -> <:patt< $_str:s$ >>
-  | Stid loc s -> <:patt< ~$_:s$ >>
-  | Sexpr loc [Stid _ s; se] ->
-      let p = patt_se se in
+  | Sexpr loc [Slid _ "~"; se] ->
+      let s = anti_lid_or_error se in
+      <:patt< ~$_:s$ >>
+  | Sexpr loc [Slid _ "~"; se1; se2] ->
+      let s = anti_lid_or_error se1
+      and p = patt_se se2 in
       <:patt< ~$_:s$: $p$ >>
-  | Sqid loc s -> <:patt< ?$_:s$ >>
-  | Sexpr loc [Sqid _ s; se] ->
-      let p = patt_se se in
+  | Sexpr loc [Slid _ "?"; se] ->
+      let s = anti_lid_or_error se in
+      <:patt< ?$_:s$ >>
+  | Sexpr loc [Slid _ "?"; se1; se2] ->
+      let s = anti_lid_or_error se1
+      and p = patt_se se2 in
       <:patt< ?$_:s$: ($p$) >>
-  | Sexpr loc [Sqid _ s; se1; se2] ->
+  | Sexpr loc [Slid _ "?"; se1; Slid _ "="; se2] ->
       let p = patt_se se1 in
       let e = expr_se se2 in
+      <:patt< ? ($p$ = $e$) >>
+  | Sexpr loc [Slid _ "?"; se1; se2; se3] ->
+      let s = anti_lid_or_error se1 in
+      let p = patt_se se2 in
+      let e = expr_se se3 in
       <:patt< ?$_:s$: ($p$ = $e$) >>
   | Srec loc sel ->
       let lpl = anti_list_map (label_patt_se loc) sel in
@@ -1094,18 +1080,22 @@ and ipatt_opt_se =
   fun
   [ Slid loc "_" -> Left <:patt< _ >>
   | Slid loc s -> Left <:patt< $lid:(rename_id s)$ >>
-  | Stid loc s -> Left <:patt< ~$_:s$ >>
-  | Sqid loc s -> Left <:patt< ?$_:s$ >>
-  | Sexpr loc [Sqid _ s; se] ->
+  | Sexpr loc [Slid _ "~"; Slid _ s] -> Left <:patt< ~$s$ >>
+  | Sexpr loc [Slid _ "~"; Slid _ s; se] ->
       let p = patt_se se in
-      Left <:patt< ?$_:s$: ($p$) >>
-  | Sexpr loc [Slid _ "?"; se1; se2] ->
-      let p = patt_se se1
-      and e = expr_se se2 in
+      Left <:patt< ~$s$: $p$ >>
+  | Sexpr loc [Slid _ "?"; Slid _ s] -> Left <:patt< ?$s$ >>
+  | Sexpr loc [Slid _ "?"; Slid _ s; se] ->
+      let p = patt_se se in
+      Left <:patt< ?$s$: ($p$) >>
+  | Sexpr loc [Slid _ "?"; se1; Slid _ "="; se2] ->
+      let p = patt_se se1 in
+      let e = expr_se se2 in
       Left <:patt< ? ($p$ = $e$) >>
-  | Sexpr loc [Stid _ s; se] ->
-      let p = patt_se se in
-      Left <:patt< ~$_:s$:$p$ >>
+  | Sexpr loc [Slid _ "?"; Slid _ s; se1; se2] ->
+      let p = patt_se se1 in
+      let e = expr_se se2 in
+      Left <:patt< ?$s$: ($p$ = $e$) >>
   | Sexpr loc [Slid _ ":"; se1; se2] ->
       let p = ipatt_se se1 in
       let t = ctyp_se se2 in
@@ -1200,11 +1190,13 @@ and ctyp_se =
       let t1 = ctyp_se se1 in
       let t2 = ctyp_se se2 in
       <:ctyp< $t1$ == $t2$ >>
-  | Sexpr loc [Sqid _ s; se] ->
-      let t = ctyp_se se in
+  | Sexpr loc [Slid _ "?"; se1; se2] ->
+      let s = anti_lid_or_error se1
+      and t = ctyp_se se2 in
       <:ctyp< ?$_:s$: $t$ >>
-  | Sexpr loc [Stid _ s; se] ->
-      let t = ctyp_se se in
+  | Sexpr loc [Slid _ "~"; se1; se2] ->
+      let s = anti_lid_or_error se1
+      and t = ctyp_se se2 in
       <:ctyp< ~$_:s$: $t$ >>
   | Sexpr loc [Slid _ "object" :: sel] ->
       let fl = object_field_list_se sel in
@@ -1435,8 +1427,6 @@ EXTEND
       | s = V UIDENT ->
           Pcaml.vala_mapa (fun s -> Suid loc s)
             (fun s -> Suidv loc <:vala< $s$ >>) s
-      | s = V TILDEIDENT -> Stid loc s
-      | s = V QUESTIONIDENT -> Sqid loc s
       | s = V INT -> Sint loc s
       | s = V INT_l -> Sint_l loc s
       | s = V INT_L -> Sint_L loc s
