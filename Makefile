@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.24 2007/07/05 11:37:21 deraugla Exp $
+# $Id: Makefile,v 1.25 2007/07/08 18:18:23 deraugla Exp $
 
 include config/Makefile
 
@@ -219,7 +219,9 @@ bootstrap_all_ast2pt:
 	  echo $$i; \
 	  j=$$(echo $$(basename $$i) | \
 	       sed -e 's/ast2pt.ml/OCAML/' -e 's/\./_/g'); \
-	  OTOP=$(OTOP) ../tools/conv.sh $(PR_O) -D$$j ast2pt.ml | \
+	  k=$$(echo OCAML_$(OVERSION) | \
+	       sed -e 's/ast2pt.ml/OCAML/' -e 's/\./_/g'); \
+	  OTOP=$(OTOP) ../tools/conv.sh $(PR_O) -U$$k -D$$j ast2pt.ml | \
 	  sed -e 's/\$$Id.*\$$/$(TXTGEN)/' > $$i -; \
 	done
 
@@ -231,7 +233,9 @@ compare_all_ast2pt:
 	  echo $$i; \
 	  j=$$(echo $$(basename $$i) | \
 	       sed -e 's/ast2pt.ml/OCAML/' -e 's/\./_/g'); \
-	  OTOP=$(OTOP) ../tools/conv.sh $(PR_O) -D$$j ast2pt.ml | \
+	  k=$$(echo OCAML_$(OVERSION) | \
+	       sed -e 's/ast2pt.ml/OCAML/' -e 's/\./_/g'); \
+	  OTOP=$(OTOP) ../tools/conv.sh $(PR_O) -U$$k -D$$j ast2pt.ml | \
 	  sed -e 's/\$$Id.*\$$/$(TXTGEN)/' | diff $$i -; \
 	done
 

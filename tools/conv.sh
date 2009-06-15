@@ -10,6 +10,7 @@ while test "" != "$1"; do
 	case $1 in
 	-I) INCL="$INCL -I $2"; shift;;
 	-D*) OPTS="$OPTS $1";;
+	-U*) OPTS="$OPTS $1";;
 	*) FILE=$1;;
 	esac
 	shift
