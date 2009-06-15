@@ -264,11 +264,9 @@ value print_match_with_parser pc e =
 
 (* Printers extensions *)
 
-(*
 pr_expr_fun_args.val :=
   extfun pr_expr_fun_args.val with
   [ <:expr< fun (strm__ : $_$) -> $_$ >> as e -> ([], e) ];
-*)
 
 EXTEND_PRINTER
   pr_expr: LEVEL "top"
