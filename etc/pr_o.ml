@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.146 2007/12/24 16:45:03 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.147 2007/12/24 17:11:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1054,13 +1054,10 @@ EXTEND_PRINTER
                (comm_patt_any (record_binding True)) 0)
             lxl
       | <:expr< [| $list:el$ |] >> ->
-          if el = [] then sprintf "%s[| |]%s" pc.bef pc.aft
+          if el = [] then pprintf pc "[| |]"
           else
             let el = List.map (fun e -> (e, ";")) el in
-            plist expr 0
-              {(pc) with ind = pc.ind + 3; bef = sprintf "%s[| " pc.bef;
-               aft = (sprintf " |]%s" pc.aft)}
-              el
+            pprintf pc "@[<3>[| %p |]@]" (plist expr 0) el
       | <:expr< [$_$ :: $_$] >> as z ->
           let (xl, y) = make_expr_list z in
           match y with
