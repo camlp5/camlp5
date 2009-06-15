@@ -1656,21 +1656,19 @@ let rec symbol_of_a =
   | ASvala (loc, s, ls) ->
       if !quotify then
         match s with
-          ASflag (_, _) ->
-            (* compatibility; deprecated since version 4.07 *)
-            let ls = if ls = [] then ["flag"; "opt"] else ls in
-            (* *)
-            let s = Ploc.call_with quotify false symbol_of_a s in ss2 loc ls s
-        | ASlist (_, _, _, _) ->
-            let ls = if ls = [] then ["list"] else ls in
-            let s = Ploc.call_with quotify false symbol_of_a s in ss2 loc ls s
-        | ASnterm (_, _, _) -> let s = symbol_of_a s in ss2 loc ls s
-        | ASopt (_, _) ->
-            let ls = if ls = [] then ["opt"] else ls in
-            let s = Ploc.call_with quotify false symbol_of_a s in ss2 loc ls s
-        | AStok (loc, s, p) ->
+          AStok (loc, s, p) ->
             let p = option_map string_of_a p in sstoken2 loc ls s p
-        | _ -> Ploc.raise loc (Failure "not impl ASvala")
+        | _ ->
+            let ls =
+              match s with
+                ASflag (_, _) ->
+                  (* "opt" = compatibility; deprecated since version 4.07 *)
+                  if ls = [] then ["flag"; "opt"] else ls
+              | ASlist (_, _, _, _) -> if ls = [] then ["list"] else ls
+              | ASopt (_, _) -> if ls = [] then ["opt"] else ls
+              | _ -> ls
+            in
+            let s = Ploc.call_with quotify false symbol_of_a s in ss2 loc ls s
       else
         let s = symbol_of_a s in
         let (text, styp) =
@@ -1680,19 +1678,17 @@ let rec symbol_of_a =
         {used = s.used; text = text; styp = styp}
   | ASvala2 (loc, s, ls) ->
       match s with
-        ASflag (_, _) ->
-          let ls = if ls = [] then ["flag"] else ls in
-          let s = symbol_of_a s in ss2 loc ls s
-      | ASlist (_, _, _, _) ->
-          let ls = if ls = [] then ["list"] else ls in
-          let s = symbol_of_a s in ss2 loc ls s
-      | ASnterm (_, _, _) -> let s = symbol_of_a s in ss2 loc ls s
-      | ASopt (_, _) ->
-          let ls = if ls = [] then ["opt"] else ls in
-          let s = symbol_of_a s in ss2 loc ls s
-      | AStok (loc, s, p) ->
+        AStok (loc, s, p) ->
           let p = option_map string_of_a p in sstoken2 loc ls s p
-      | _ -> Ploc.raise loc (Failure "not impl ASvala2")
+      | s ->
+          let ls =
+            match s with
+              ASflag (_, _) -> if ls = [] then ["flag"] else ls
+            | ASlist (_, _, _, _) -> if ls = [] then ["list"] else ls
+            | ASopt (_, _) -> if ls = [] then ["opt"] else ls
+            | _ -> ls
+          in
+          let s = symbol_of_a s in ss2 loc ls s
 and psymbol_of_a ap = {pattern = ap.ap_patt; symbol = symbol_of_a ap.ap_symb}
 and rules_of_a au =
   let rl = List.map rule_of_a au.au_rules in
