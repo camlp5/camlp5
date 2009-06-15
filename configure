@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: configure,v 1.21 2007/09/23 00:10:13 deraugla Exp $
+# $Id: configure,v 1.22 2007/09/28 00:09:14 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -44,6 +44,28 @@ while : ; do
         mode=T;;
     -strict|--strict)
         mode=S;;
+    -help|--help)
+        echo "Usage: configure [options]"
+        echo "Options:"
+        echo "  -bindir <dir>, --bindir <dir>"
+        echo "        Directory where the binaries will be installed"
+        echo "        Default: same than command ocamlc"
+        echo "  -libdir <dir>, --libdir <dir>"
+        echo "        Directory where the camlp5 directory will be installed"
+        echo "        Default: same than 'ocamlc -where'"
+        echo "  -mandir <dir>, --mandir <dir>"
+        echo "        Directory where the manual pages will be installed"
+        echo "        Default: <bindir>/../man"
+        echo "  -prefix <dir>, --prefix <dir>"
+        echo "        Set bindir, libdir and mandir respectively to"
+        echo "        <dir>/bin, <dir>/lib/ocaml, <dir>/man."
+        echo "  -transitional, --transitional"
+        echo "        compile in transitional mode"
+        echo "  -strict, --strict"
+        echo "        compile in strict mode" 
+        echo "  -help, --help"
+        echo "        this message"
+       exit 0;;
     *) echo "Unknown option \"$1\"." 1>&2; exit 2;;
   esac
   shift
