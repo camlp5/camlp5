@@ -279,11 +279,13 @@ value constr_decl pc (_, c, tl) =
 ;
 
 value label_decl pc (_, l, m, t) =
-  horiz_vertic
-    (fun () ->
-       sprintf "%s(%s%s %s)%s" pc.bef l (if m then " mutable" else "")
-         (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-    (fun () -> not_impl "label_decl vertic" pc 0)
+  let list = [(fun pc -> ctyp pc t, "")] in
+  plistf 0
+    {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+     aft = sprintf ")%s" pc.aft}
+    [(fun pc -> sprintf "%s%s%s" pc.bef l pc.aft, "") ::
+     if m then [(fun pc -> sprintf "%smutable%s" pc.bef pc.aft, "") :: list]
+     else list]
 ;
 
 value module_type_decl pc (s, mt) =
@@ -321,18 +323,14 @@ EXTEND_PRINTER
             (fun () ->
                if has_cons_with_params cdl then sprintf "\n"
                else
-                 sprintf "%s(sum %s)%s" pc.bef
+                 sprintf "%s[%s]%s" pc.bef
                    (hlist constr_decl {(pc) with bef = ""; aft = ""} cdl)
                    pc.aft)
             (fun () ->
-               let s1 = sprintf "%s(sum" pc.bef in
-               let s2 =
-                 vlist constr_decl
-                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
-                    aft = sprintf ")%s" pc.aft}
-                   cdl
-               in
-               sprintf "%s\n%s" s1 s2)
+               vlist constr_decl
+                 {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef;
+                  aft = sprintf "]%s" pc.aft}
+                 cdl)
       | <:ctyp< { $list:cdl$ } >> ->
           let cdl = List.map (fun cd -> (cd, "")) cdl in
           plist label_decl 0
@@ -962,6 +960,10 @@ EXTEND_PRINTER
                  (hlist with_constraint {(pc) with bef = ""; aft = ""} wcl)
                  pc.aft)
             (fun () -> not_impl "module_type with vertic" pc 0)
+      | <:module_type< $me1$ . $me2$ >> ->
+           sprintf "%s.%s"
+             (curr {(pc) with aft = ""} me1)
+             (curr {(pc) with bef = ""} me2)
       | <:module_type< $uid:s$ >> ->
           sprintf "%s%s%s" pc.bef s pc.aft
       | x ->

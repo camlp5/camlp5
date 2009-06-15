@@ -1,10 +1,10 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.34 2007/10/06 00:59:02 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.35 2007/10/06 01:31:16 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
 
-(type (choice 'a 'b) (sum (Left 'a) (Right 'b)))
+(type (choice 'a 'b) [(Left 'a) (Right 'b)])
 
 ; Buffer
 
@@ -242,8 +242,7 @@
 ; Building AST
 
 (type sexpr
-  (sum
-   (Sacc MLast.loc sexpr sexpr)
+  [(Sacc MLast.loc sexpr sexpr)
    (Schar MLast.loc string)
    (Sexpr MLast.loc (list sexpr))
    (Sint MLast.loc string)
@@ -255,7 +254,7 @@
    (Srec MLast.loc (list sexpr))
    (Sstring MLast.loc string)
    (Stid MLast.loc string)
-   (Suid MLast.loc string)))
+   (Suid MLast.loc string)])
 
 (define loc_of_sexpr
   (lambda_match
@@ -302,10 +301,6 @@
 (definerec*
   (module_expr_se
     (lambda_match
-     ((Sacc loc se1 se2)
-      (let* ((me1 (module_expr_se se1))
-             (me2 (module_expr_se se2)))
-         <:module_expr< $me1$ . $me2$ >>))
      ((Sexpr loc [(Slid _ "functor") (Suid _ s) se1 se2])
       (let* ((s (Pcaml.rename_id.val s))
              (mt (module_type_se se1))
@@ -322,6 +317,10 @@
       (let* ((me (module_expr_se se1))
              (mt (module_type_se se2)))
          <:module_expr< ($me$ : $mt$) >>))
+     ((Sacc loc se1 se2)
+      (let* ((me1 (module_expr_se se1))
+             (me2 (module_expr_se se2)))
+         <:module_expr< $me1$ . $me2$ >>))
      ((Suid loc s) <:module_expr< $uid:(Pcaml.rename_id.val s)$ >>)
      (se (error se "module expr"))))
   (module_type_se
@@ -338,6 +337,10 @@
       (let* ((mt (module_type_se se))
              (wcl (List.map with_constr_se sel)))
          <:module_type< $mt$ with $list:wcl$ >>))
+     ((Sacc loc se1 se2)
+      (let* ((mt1 (module_type_se se1))
+             (mt2 (module_type_se se2)))
+         <:module_type< $mt1$ . $mt2$ >>))
      ((Suid loc s) <:module_type< $uid:(Pcaml.rename_id.val s)$ >>)
      (se (error se "module type"))))
   (with_constr_se
@@ -856,7 +859,7 @@
      (error se "type_parameter"))))
   (ctyp_se
    (lambda_match
-    ((Sexpr loc [(Slid _ "sum") . sel])
+    ((Slist loc sel)
      (let ((cdl (List.map constructor_declaration_se sel)))
        <:ctyp< [ $list:cdl$ ] >>))
     ((Srec loc sel)

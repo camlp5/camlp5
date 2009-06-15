@@ -319,11 +319,7 @@ value lident_expr loc s =
 
 value rec module_expr_se =
   fun
-  [ Sacc loc se1 se2 ->
-      let me1 = module_expr_se se1 in
-      let me2 = module_expr_se se2 in
-      <:module_expr< $me1$ . $me2$ >>
-  | Sexpr loc [Slid _ "functor"; Suid _ s; se1; se2] ->
+  [ Sexpr loc [Slid _ "functor"; Suid _ s; se1; se2] ->
       let s = Pcaml.rename_id.val s in
       let mt = module_type_se se1 in
       let me = module_expr_se se2 in
@@ -339,6 +335,10 @@ value rec module_expr_se =
       let me = module_expr_se se1 in
       let mt = module_type_se se2 in
       <:module_expr< ($me$ : $mt$) >>
+  | Sacc loc se1 se2 ->
+      let me1 = module_expr_se se1 in
+      let me2 = module_expr_se se2 in
+      <:module_expr< $me1$ . $me2$ >>
   | Suid loc s -> <:module_expr< $uid:(Pcaml.rename_id.val s)$ >>
   | se -> error se "module expr" ]
 and module_type_se =
@@ -355,6 +355,10 @@ and module_type_se =
       let mt = module_type_se se in
       let wcl = List.map with_constr_se sel in
       <:module_type< $mt$ with $list:wcl$ >>
+  | Sacc loc se1 se2 ->
+      let mt1 = module_type_se se1 in
+      let mt2 = module_type_se se2 in
+      <:module_type< $mt1$ . $mt2$ >>
   | Suid loc s -> <:module_type< $uid:(Pcaml.rename_id.val s)$ >>
   | se -> error se "module type" ]
 and with_constr_se =
@@ -898,7 +902,7 @@ and type_parameter_se =
   | se -> error se "type_parameter" ]
 and ctyp_se =
   fun
-  [ Sexpr loc [Slid _ "sum" :: sel] ->
+  [ Slist loc sel ->
       let cdl = List.map constructor_declaration_se sel in
       <:ctyp< [ $list:cdl$ ] >>
   | Srec loc sel ->
