@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.76 2007/08/16 04:35:36 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.77 2007/08/16 08:45:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -206,13 +206,13 @@ value right_operator pc sh unfold next x =
  * Extensible printers
  *)
 
-value expr = Eprinter.apply_level pr_expr "top";
-value patt = Eprinter.apply_level pr_patt "top";
-value ctyp = Eprinter.apply_level pr_ctyp "top";
-value str_item = Eprinter.apply_level pr_str_item "top";
-value sig_item = Eprinter.apply_level pr_sig_item "top";
-value module_expr = Eprinter.apply_level pr_module_expr "top";
-value module_type = Eprinter.apply_level pr_module_type "top";
+value expr = Eprinter.apply pr_expr;
+value patt = Eprinter.apply pr_patt;
+value ctyp = Eprinter.apply pr_ctyp;
+value str_item = Eprinter.apply pr_str_item;
+value sig_item = Eprinter.apply pr_sig_item;
+value module_expr = Eprinter.apply pr_module_expr;
+value module_type = Eprinter.apply pr_module_type;
 value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
 
 value expr1 = Eprinter.apply_level pr_expr "expr1";
@@ -2402,10 +2402,10 @@ value alone_in_line pc =
     else False
 ;
 
-value class_expr = Eprinter.apply_level pr_class_expr "top";
-value class_type = Eprinter.apply_level pr_class_type "top";
-value class_str_item = Eprinter.apply_level pr_class_str_item "top";
-value class_sig_item = Eprinter.apply_level pr_class_sig_item "top";
+value class_expr = Eprinter.apply pr_class_expr;
+value class_type = Eprinter.apply pr_class_type;
+value class_str_item = Eprinter.apply pr_class_str_item;
+value class_sig_item = Eprinter.apply pr_class_sig_item;
 
 value rec mod_ident pc sl =
   match sl with

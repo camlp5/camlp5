@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.35 2007/08/07 15:10:09 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.36 2007/08/16 08:45:24 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -140,7 +140,7 @@ value check_not_part_of_patt =
          | _ -> raise Stream.Failure ]
        in
        match tok with
-       [ ("", ("," | "as" | "|" | "::")) -> raise Stream.Failure
+       [ ("", "," | "as" | "|" | "::") -> raise Stream.Failure
        | _ -> () ])
 ;
 

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.26 2007/08/16 04:11:44 deraugla Exp $
+# $Id: Makefile,v 1.27 2007/08/16 08:45:24 deraugla Exp $
 
 include ../config/Makefile
 
@@ -86,7 +86,7 @@ pa_scheme.cmo: pa_schemer.cmo
 pr_extend.cmo: pa_extfun.cmo
 pr_o.cmo: pa_extfun.cmo pa_extprint.cmo
 pr_op.cmo: pa_extfun.cmo
-pr_r.cmo: pa_extfun.cmo
+pr_r.cmo: pa_extfun.cmo pa_extprint.cmo
 pr_rp.cmo: pa_extfun.cmo
 
 include .depend

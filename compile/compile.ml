@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: compile.ml,v 1.14 2007/08/14 11:19:09 deraugla Exp $ *)
+(* $Id: compile.ml,v 1.15 2007/08/16 08:45:24 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -274,8 +274,7 @@ and parse_symbol entry nlevn s rkont fkont ending_act =
         [ Some $p$ -> do { Stream.junk strm__; $rkont$ }
         | _ -> $fkont$ ]
       >>
-  | _ ->
-      parse_standard_symbol <:expr< not_impl >> rkont fkont ending_act ]
+  | _ -> parse_standard_symbol <:expr< not_impl >> rkont fkont ending_act ]
 and symbol_parser entry nlevn =
   fun
   [ Snterm e ->
@@ -306,8 +305,7 @@ and symbol_parser entry nlevn =
         fun strm__ ->
           $parse_tree phony_entry 0 0 (tree, True) act_kont kont$
       >>
-  | _ ->
-      <:expr< aaa >> ]
+  | _ -> <:expr< aaa >> ]
 ;
 
 value rec start_parser_of_levels entry clevn levs =

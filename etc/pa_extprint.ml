@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_extprint.ml,v 1.5 2007/08/16 04:35:36 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.6 2007/08/16 08:45:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 #load "pa_extend.cmo";
@@ -97,7 +97,7 @@ value conv loc (p, wo, e) =
 value text_of_extprint loc el =
   let el =
     List.map
-      (fun e ->  
+      (fun e ->
          let pos =
            match e.pos with
            [ Some e -> <:expr< Some $e$ >>

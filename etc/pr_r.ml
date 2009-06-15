@@ -1,5 +1,5 @@
-(* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.54 2007/08/02 22:21:31 deraugla Exp $ *)
+(* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
+(* $Id: pr_r.ml,v 1.55 2007/08/16 08:45:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -19,6 +19,20 @@ value flag_where_in_sequences = ref False;
 value flag_where_after_then = ref True;
 value flag_where_after_value_eq = ref True;
 value flag_where_after_arrow = ref True;
+
+do {
+  Eprinter.clear pr_expr;
+  Eprinter.clear pr_patt;
+  Eprinter.clear pr_ctyp;
+  Eprinter.clear pr_str_item;
+  Eprinter.clear pr_sig_item;
+  Eprinter.clear pr_module_expr;
+  Eprinter.clear pr_module_type;
+  Eprinter.clear pr_class_sig_item;
+  Eprinter.clear pr_class_str_item;
+  Eprinter.clear pr_class_expr;
+  Eprinter.clear pr_class_type;
+};
 
 (* general functions *)
 
@@ -200,13 +214,13 @@ value right_operator pc sh unfold next x =
  * Extensible printers
  *)
 
-value expr pc z = pr_expr.pr_fun "top" pc z;
-value patt pc z = pr_patt.pr_fun "top" pc z;
-value ctyp pc z = pr_ctyp.pr_fun "top" pc z;
-value str_item pc z = pr_str_item.pr_fun "top" pc z;
-value sig_item pc z = pr_sig_item.pr_fun "top" pc z;
-value module_expr pc z = pr_module_expr.pr_fun "top" pc z;
-value module_type pc z = pr_module_type.pr_fun "top" pc z;
+value expr = Eprinter.apply pr_expr;
+value patt = Eprinter.apply pr_patt;
+value ctyp = Eprinter.apply pr_ctyp;
+value str_item = Eprinter.apply pr_str_item;
+value sig_item = Eprinter.apply pr_sig_item;
+value module_expr = Eprinter.apply pr_module_expr;
+value module_type = Eprinter.apply pr_module_type;
 value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
 
 (* expression with adding the possible comment before *)
@@ -742,1079 +756,9 @@ value expr_short pc x =
   [ Exit -> expr pc x ]
 ;
 
-(* definitions of printers by decreasing level *)
-
-value ctyp_top =
-  extfun Extfun.empty with
-  [ <:ctyp< $x$ == $y$ >> ->
-      fun curr next pc -> operator pc next next 2 "==" x y
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value ctyp_as =
-  extfun Extfun.empty with
-  [ <:ctyp< $t1$ as $t2$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s%s as %s%s" pc.bef
-               (curr {(pc) with bef = ""; aft = ""} t1)
-               (next {(pc) with bef = ""; aft = ""} t2) pc.aft)
-          (fun () -> not_impl "ctyp as vertic" pc t1)
-  | z -> fun curr next pc -> next pc z ]
-;
+(* definitions of printers *)
 
 value typevar pc tv = sprintf "%s'%s%s" pc.bef tv pc.aft;
-
-value ctyp_poly =
-  extfun Extfun.empty with
-  [ <:ctyp< ! $list:pl$ . $t$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s! %s . %s%s" pc.bef
-               (hlist typevar {(pc) with bef = ""; aft = ""} pl)
-               (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-          (fun () ->
-             let s1 =
-               sprintf "%s! %s ." pc.bef
-                 (hlist typevar {(pc) with bef = ""; aft = ""} pl)
-             in
-             let s2 =
-               ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t
-             in
-             sprintf "%s\n%s" s1 s2)
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value ctyp_arrow =
-  extfun Extfun.empty with
-  [ <:ctyp< $_$ -> $_$ >> as z ->
-      fun curr next pc ->
-        let unfold =
-          fun
-          [ <:ctyp< $x$ -> $y$ >> -> Some (x, " ->", y)
-          | _ -> None ]
-        in
-        right_operator pc 2 unfold next z
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value ctyp_apply =
-  extfun Extfun.empty with
-  [ <:ctyp< $_$ $_$ >> as z ->
-      fun curr next pc ->
-        let unfold =
-          fun
-          [ <:ctyp< $x$ $y$ >> -> Some (x, "", y)
-          | _ -> None ]
-        in
-        left_operator pc 2 unfold next z
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value ctyp_dot =
-  extfun Extfun.empty with
-  [ <:ctyp< $x$ . $y$ >> ->
-      fun curr next pc ->
-        curr {(pc) with bef = curr {(pc) with aft = "."} x} y
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value ctyp_simple =
-  extfun Extfun.empty with
-  [ <:ctyp< { $list:ltl$ } >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             hlistl (semi_after label_decl) label_decl
-               {(pc) with bef = sprintf "%s{ " pc.bef;
-                aft = sprintf " }%s" pc.aft}
-               ltl)
-          (fun () ->
-             vlistl (semi_after label_decl) label_decl
-               {(pc) with ind = pc.ind + 2; bef = sprintf "%s{ " pc.bef;
-                aft = sprintf " }%s" pc.aft}
-               ltl)
-  | <:ctyp< [ $list:vdl$ ] >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             if has_cons_with_params vdl then sprintf "\n"
-             else
-               hlist2 cons_decl (bar_before cons_decl)
-                 {(pc) with bef = sprintf "%s[ " pc.bef;
-                  aft = ("", sprintf " ]%s" pc.aft)}
-                 vdl)
-          (fun () ->
-             vlist2 cons_decl (bar_before cons_decl)
-               {(pc) with bef = sprintf "%s[ " pc.bef;
-                aft = ("", sprintf " ]%s" pc.aft)}
-               vdl)
-  | <:ctyp< ($list:tl$) >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s(%s)%s" pc.bef
-               (hlistl (star_after ctyp) ctyp {(pc) with bef = ""; aft = ""}
-                  tl)
-               pc.aft)
-          (fun () ->
-             let tl = List.map (fun t -> (t, " *")) tl in
-             plist ctyp 1
-               {(pc) with bef = sprintf "%s(" pc.bef;
-                aft = sprintf ")%s" pc.aft} tl)
-  | <:ctyp< $lid:t$ >> ->
-      fun curr next pc -> var_escaped pc t
-  | <:ctyp< $uid:t$ >> ->
-      fun curr next pc -> sprintf "%s%s%s" pc.bef t pc.aft
-  | <:ctyp< ' $s$ >> ->
-      fun curr next pc -> var_escaped {(pc) with bef = sprintf "%s'" pc.bef} s
-  | <:ctyp< _ >> ->
-      fun curr next pc -> sprintf "%s_%s" pc.bef pc.aft
-  | <:ctyp< ? $i$ : $t$ >> | <:ctyp< ~ $_$ : $t$ >> ->
-      fun curr next pc ->
-        failwith "labels not pretty printed (in type); add pr_ro.cmo"
-  | <:ctyp< [ = $list:_$ ] >> | <:ctyp< [ > $list:_$ ] >> |
-    <:ctyp< [ < $list:_$ ] >> | <:ctyp< [ < $list:_$ > $list:_$ ] >> ->
-      fun curr next pc ->
-        failwith "variants not pretty printed (in type); add pr_ro.cmo"
-  | <:ctyp< $_$ $_$ >> | <:ctyp< $_$ -> $_$ >> as z ->
-      fun curr next pc ->
-        ctyp
-          {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-           aft = sprintf ")%s" pc.aft}
-          z
-  | z ->
-      fun curr next pc -> not_impl "ctyp" pc z ]
-;
-
-value expr_top =
-  extfun Extfun.empty with
-  [ <:expr< if $e1$ then $e2$ else $e3$ >> ->
-      fun curr next pc ->
-        let expr_wh = if flag_where_after_then.val then expr_wh else expr in
-        horiz_vertic
-          (fun () ->
-             sprintf "%sif %s then %s else %s%s" pc.bef
-               (curr {(pc) with bef = ""; aft = ""} e1)
-               (curr {(pc) with bef = ""; aft = ""} e2)
-               (curr {(pc) with bef = ""; aft = ""} e3) pc.aft)
-          (fun () ->
-             let if_then pc else_b e1 e2 =
-               horiz_vertic
-                 (fun () ->
-                    sprintf "%s%sif %s then %s%s" pc.bef else_b
-                      (curr {(pc) with bef = ""; aft = ""} e1)
-                      (curr {(pc) with bef = ""; aft = ""} e2) pc.aft)
-                 (fun () ->
-                    let horiz_if_then k =
-                      sprintf "%s%sif %s then%s" pc.bef else_b
-                        (curr {(pc) with bef = ""; aft = ""} e1) k
-                    in
-                    let vertic_if_then k =
-                      let s1 =
-                        if else_b = "" then
-                          curr
-                            {(pc) with ind = pc.ind + 3;
-                             bef = sprintf "%s%sif " pc.bef else_b; aft = ""}
-                            e1
-                        else
-                          let s1 = sprintf "%s%sif" pc.bef else_b in
-                          let s2 =
-                            curr
-                              {(pc) with ind = pc.ind + 2;
-                               bef = tab (pc.ind + 2); aft = ""}
-                              e1
-                          in
-                          sprintf "%s\n%s" s1 s2
-                      in
-                      let s2 = sprintf "%sthen%s" (tab pc.ind) k in
-                      sprintf "%s\n%s" s1 s2
-                    in
-                    match sequencify e2 with
-                    [ Some el ->
-                        sequence_box2
-                          {(pc) with
-                           bef k =
-                             horiz_vertic (fun () -> horiz_if_then k)
-                               (fun () -> vertic_if_then k);
-                           aft = ""}
-                          el
-                    | None ->
-                        let s1 =
-                          horiz_vertic (fun () -> horiz_if_then "")
-                            (fun () -> vertic_if_then "")
-                        in
-                        let s2 =
-                          comm_expr expr_wh
-                            {(pc) with ind = pc.ind + 2;
-                             bef = tab (pc.ind + 2); aft = ""}
-                            e2
-                        in
-                        sprintf "%s\n%s" s1 s2 ])
-             in
-             let s1 = if_then {(pc) with aft = ""} "" e1 e2 in
-             let (eel, e3) = get_else_if e3 in
-             let s2 =
-               loop eel where rec loop =
-                 fun
-                 [ [(e1, e2) :: eel] ->
-                     sprintf "\n%s%s"
-                       (if_then {(pc) with bef = tab pc.ind; aft = ""} "else "
-                          e1 e2)
-                       (loop eel)
-                 | [] -> "" ]
-             in
-             let s3 =
-               horiz_vertic
-                 (fun () ->
-                    sprintf "%selse %s%s" (tab pc.ind)
-                      (comm_expr curr {(pc) with bef = ""; aft = ""} e3)
-                         pc.aft)
-                 (fun () ->
-                    match sequencify e3 with
-                    [ Some el ->
-                        sequence_box2
-                          {(pc) with
-                           bef k =
-                             horiz_vertic (fun () -> sprintf "\n")
-                               (fun () -> sprintf "%selse%s" (tab pc.ind) k)}
-                          el
-                    | None ->
-                        let s =
-                          comm_expr expr_wh
-                            {(pc) with ind = pc.ind + 2;
-                             bef = tab (pc.ind + 2)}
-                            e3
-                        in
-                        sprintf "%selse\n%s" (tab pc.ind) s ])
-             in
-             sprintf "%s%s\n%s" s1 s2 s3)
-  | <:expr< fun [ $list:pwel$ ] >> ->
-      fun curr next pc ->
-        match pwel with
-        [ [(p1, None, e1)] when is_irrefut_patt p1 ->
-            let (pl, e1) = expr_fun_args e1 in
-            let pl = [p1 :: pl] in
-            horiz_vertic
-              (fun () ->
-                 sprintf "%sfun %s -> %s%s" pc.bef
-                   (hlist patt {(pc) with bef = ""; aft = ""} pl)
-                   (curr {(pc) with bef = ""; aft = ""} e1) pc.aft)
-              (fun () ->
-                 let fun_arrow k =
-                   let pl = List.map (fun p -> (p, "")) pl in
-                   plist patt 4
-                     {(pc) with bef = sprintf "%sfun " pc.bef;
-                      aft = sprintf " ->%s" k}
-                     pl
-                 in
-                 match sequencify e1 with
-                 [ Some el ->
-                     sequence_box2
-                       {(pc) with
-                        bef k =
-                          horiz_vertic (fun _ -> sprintf "\n")
-                            (fun () -> fun_arrow k)}
-                       el
-                 | None ->
-                     let s1 = fun_arrow "" in
-                     let s2 =
-                       curr
-                         {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
-                         e1
-                     in
-                     sprintf "%s\n%s" s1 s2 ])
-        | [] -> sprintf "%sfun []%s" pc.bef pc.aft
-        | pwel ->
-            let s = match_assoc_list {(pc) with bef = tab pc.ind} pwel in
-            sprintf "%sfun\n%s" pc.bef s ]
-  | <:expr< try $e1$ with [ $list:pwel$ ] >> |
-    <:expr< match $e1$ with [ $list:pwel$ ] >> as e ->
-      fun curr next pc ->
-        let expr_wh = if flag_where_after_match.val then expr_wh else curr in
-        let op =
-          match e with
-          [ <:expr< try $_$ with [ $list:_$ ] >> -> "try"
-          | _ -> "match" ]
-        in
-        match pwel with
-        [ [(p, wo, e)] when is_irrefut_patt p ->
-            horiz_vertic
-              (fun () ->
-                 sprintf "%s%s %s with %s%s" pc.bef op
-                   (expr_wh {(pc) with bef = ""; aft = ""} e1)
-                   (match_assoc {(pc) with bef = ""; aft = ""} (p, wo, e))
-                   pc.aft)
-              (fun () ->
-                 match
-                   horiz_vertic
-                     (fun () ->
-                        Some
-                          (sprintf "%s%s %s with %s%s ->" pc.bef op
-                             (expr_wh {(pc) with bef = ""; aft = ""} e1)
-                             (patt {(pc) with bef = ""; aft = ""} p)
-                             (match wo with
-                              [ Some e ->
-                                  curr {(pc) with bef = " when"; aft = ""} e
-                              | None -> "" ])))
-                      (fun () -> None)
-                 with
-                 [ Some s1 ->
-                     let s2 =
-                       curr
-                         {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
-                         e
-                     in
-                     sprintf "%s\n%s" s1 s2
-                 | None ->
-                     let s1 =
-                       match sequencify e1 with
-                       [ Some el ->
-                           sequence_box2
-                             {(pc) with bef k = sprintf "%s%s%s" pc.bef op k;
-                              aft = ""}
-                             el
-                       | None ->
-                           let s =
-                             expr_wh
-                               {(pc) with ind = pc.ind + 2;
-                                bef = tab (pc.ind + 2); aft = ""}
-                               e1
-                           in
-                           sprintf "%s%s\n%s" pc.bef op s ]
-                     in
-                     let s2 =
-                       match_assoc
-                         {(pc) with bef = sprintf "%swith " (tab pc.ind)}
-                         (p, wo, e)
-                     in
-                     sprintf "%s\n%s" s1 s2 ])
-        | _ ->
-            horiz_vertic
-              (fun () ->
-                 sprintf "%s%s %s with %s%s" pc.bef op
-                   (expr_wh {(pc) with bef = ""; aft = ""} e1)
-                   (match_assoc_list {(pc) with bef = ""; aft = ""} pwel)
-                   pc.aft)
-              (fun () ->
-                 let s1 =
-                   horiz_vertic
-                     (fun () ->
-                        sprintf "%s%s %s with" pc.bef op
-                          (expr_wh {(pc) with bef = ""; aft = ""} e1))
-                     (fun () ->
-                        let s =
-                          match sequencify e1 with
-                          [ Some el ->
-                              sequence_box2
-                                {(pc) with
-                                 bef k =
-                                   horiz_vertic (fun _ -> sprintf "\n")
-                                     (fun () -> sprintf "%s%s%s" pc.bef op k);
-                                 aft = ""}
-                                el
-                          | None ->
-                              let s =
-                                expr_wh
-                                  {(pc) with ind = pc.ind + 2;
-                                   bef = tab (pc.ind + 2); aft = ""}
-                                  e1
-                              in
-                              sprintf "%s%s\n%s" pc.bef op s ]
-                        in
-                        sprintf "%s\n%swith" s (tab pc.ind))
-                 in
-                 let s2 =
-                   match_assoc_list {(pc) with bef = tab pc.ind} pwel
-                 in
-                 sprintf "%s\n%s" s1 s2) ]
-  | <:expr< let $opt:rf$ $list:pel$ in $e$ >> as ge ->
-      fun curr next pc ->
-        let expr_wh = if flag_where_after_in.val then expr_wh else curr in
-        horiz_vertic
-          (fun () ->
-             if not flag_horiz_let_in.val then sprintf "\n"
-             else
-               sprintf "%slet %s%s %s%s" pc.bef (if rf then "rec " else "")
-                 (hlist2 let_binding (and_before let_binding)
-                    {(pc) with bef = ""; aft = ("", "in")} pel)
-                 (curr {(pc) with bef = ""; aft = ""} e) pc.aft)
-          (fun () ->
-             match flatten_sequence ge with
-             [ Some el ->
-                 let loc = MLast.loc_of_expr ge in
-                 curr pc <:expr< do { $list:el$ } >>
-             | None ->
-                 let s1 =
-                   vlist2 let_binding (and_before let_binding)
-                     {(pc) with
-                      bef =
-                        sprintf "%slet %s" pc.bef (if rf then "rec " else "");
-                      aft = ("", "in")}
-                     pel
-                 in
-                 let s2 = comm_expr expr_wh {(pc) with bef = tab pc.ind} e in
-                 sprintf "%s\n%s" s1 s2 ])
-  | <:expr< let module $s$ = $me$ in $e$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%slet module %s = %s in %s%s" pc.bef s
-               (module_expr {(pc) with bef = ""; aft = ""} me)
-               (curr {(pc) with bef = ""; aft = ""} e) pc.aft)
-          (fun () ->
-             let s1 =
-               horiz_vertic
-                 (fun () ->
-                    sprintf "%slet module %s = %s in" pc.bef s
-                      (module_expr {(pc) with bef = ""; aft = ""} me))
-                 (fun () ->
-                    let s1 = sprintf "%slet module %s =" pc.bef s in
-                    let s2 =
-                      module_expr
-                        {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                         aft = ""}
-                        me
-                    in
-                    let s3 = sprintf "%sin" (tab pc.ind) in
-                    sprintf "%s\n%s\n%s" s1 s2 s3)
-             in
-             let s2 = curr {(pc) with bef = tab pc.ind} e in
-             sprintf "%s\n%s" s1 s2)
-  | <:expr< do { $list:el$ } >> as ge ->
-      fun curr next pc ->
-        let el =
-          match flatten_sequence ge with
-          [ Some el -> el
-          | None -> el ]
-        in
-        horiz_vertic
-          (fun () ->
-             sprintf "%sdo {%s%s%s}%s" pc.bef " "
-               (hlistl (semi_after (comm_expr curr)) (comm_expr curr)
-                  {(pc) with bef = ""; aft = ""} el)
-               " " pc.aft)
-          (fun () ->
-             sprintf "%sdo {%s%s%s}%s" pc.bef "\n"
-               (vlistl (semi_after (comm_expr curr)) (comm_expr curr)
-                  {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                   aft = ""}
-                  el)
-               ("\n" ^ tab pc.ind) pc.aft)
-  | <:expr< while $e1$ do { $list:el$ } >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%swhile %s do { %s }%s" pc.bef
-               (curr {(pc) with bef = ""; aft = ""} e1)
-               (hlistl (semi_after expr) curr {(pc) with bef = ""; aft = ""}
-                  el)
-               pc.aft)
-          (fun () ->
-             let s1 =
-               horiz_vertic
-                 (fun () ->
-                    sprintf "%swhile %s do {" pc.bef
-                      (curr {(pc) with bef = ""; aft = ""} e1))
-                 (fun () ->
-                    let s1 = sprintf "%swhile" pc.bef in
-                    let s2 =
-                      curr
-                        {(pc) with ind = pc.ind + 2;
-                         bef = tab (pc.ind + 2); aft = ""}
-                        e1
-                    in
-                    let s3 = sprintf "%sdo {" (tab pc.ind) in
-                    sprintf "%s\n%s\n%s" s1 s2 s3)
-             in
-             let s2 =
-               vlistl (semi_after expr) curr
-                 {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                  aft = ""}
-                 el
-             in
-             let s3 = sprintf "%s}%s" (tab pc.ind) pc.aft in
-             sprintf "%s\n%s\n%s" s1 s2 s3)
-  | <:expr< for $v$ = $e1$ $to:d$ $e2$ do { $list:el$ } >> ->
-      fun curr next pc ->
-        let el =
-          match el with
-          [ [e] ->
-              match sequencify e with
-              [ Some el -> el
-              | None -> el ]
-          | _ -> el ]
-        in
-        horiz_vertic
-          (fun () ->
-             sprintf "%sfor %s = %s %s %s do { %s }%s" pc.bef v
-               (curr {(pc) with bef = ""; aft = ""} e1)
-               (if d then "to" else "downto")
-               (curr {(pc) with bef = ""; aft = ""} e2)
-               (hlistl (semi_after curr) curr {(pc) with bef = ""; aft = ""}
-                  el) pc.aft)
-          (fun () ->
-             let s1 =
-               horiz_vertic
-                 (fun () ->
-                    sprintf "%sfor %s = %s %s %s do {" pc.bef v
-                      (curr {(pc) with bef = ""; aft = ""} e1)
-                      (if d then "to" else "downto")
-                      (curr {(pc) with bef = ""; aft = ""} e2))
-                 (fun () ->
-                    let s1 =
-                      curr
-                        {(pc) with bef = sprintf "%sfor %s = " pc.bef v;
-                         aft = if d then " to" else " downto"}
-                        e1
-                    in
-                    let s2 =
-                      curr
-                        {(pc) with ind = pc.ind + 4; bef = tab (pc.ind + 4);
-                         aft = ""}
-                        e2
-                    in
-                    let s3 = sprintf "%sdo {" (tab pc.ind) in
-                    sprintf "%s\n%s\n%s" s1 s2 s3)
-             in
-             let s2 =
-               vlist (semi_after curr)
-                 {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                  aft = ""}
-                 el
-             in
-             let s3 = sprintf "%s}%s" (tab pc.ind) pc.aft in
-             sprintf "%s\n%s\n%s" s1 s2 s3)
-  | z ->
-      fun curr next pc -> next pc z ]
-;
-
-value expr_assign =
-  extfun Extfun.empty with
-  [ <:expr< $x$ := $y$ >> ->
-      fun curr next pc -> operator pc next expr 2 ":=" x y
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value expr_or =
-  extfun Extfun.empty with
-  [ z ->
-      fun curr next pc ->
-        let unfold =
-          fun
-          [ <:expr< $lid:op$ $x$ $y$ >> ->
-              if List.mem op ["||"; "or"] then Some (x, " ||", y) else None
-          | _ -> None ]
-        in
-        right_operator pc 0 unfold next z ]
-;
-
-value expr_and =
-  extfun Extfun.empty with
-  [ z ->
-      fun curr next pc ->
-        let unfold =
-          fun
-          [ <:expr< $lid:op$ $x$ $y$ >> ->
-              if List.mem op ["&&"; "&"] then Some (x, " &&", y) else None
-          | _ -> None ]
-        in
-        right_operator pc 0 unfold next z ]
-;
-
-value expr_less =
-  extfun Extfun.empty with
-  [ <:expr< $lid:op$ $x$ $y$ >> as z ->
-      fun curr next pc ->
-        match op with
-        [ "!=" | "<" | "<=" | "<>" | "=" | "==" | ">" | ">=" ->
-            operator pc next next 0 op x y
-        | _ -> next pc z ]
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value expr_concat =
-  extfun Extfun.empty with
-  [ z ->
-      fun curr next pc ->
-        let unfold =
-          fun
-          [ <:expr< $lid:op$ $x$ $y$ >> ->
-              if List.mem op ["^"; "@"] then Some (x, " " ^ op, y) else None
-          | _ -> None ]
-        in
-        right_operator pc 0 unfold next z ]
-;
-
-value expr_add =
-  let ops = ["+"; "+."; "-"; "-."] in
-  extfun Extfun.empty with
-  [ z ->
-      fun curr next pc ->
-        let unfold =
-          fun
-          [ <:expr< $lid:op$ $x$ $y$ >> ->
-              if List.mem op ops then Some (x, " " ^ op, y) else None
-          | _ -> None ]
-        in
-        left_operator pc 0 unfold next z ]
-;
-
-value expr_mul =
-  let ops = ["*"; "*."; "/"; "/."; "land"; "lor"; "lxor"; "mod"] in
-  extfun Extfun.empty with
-  [ z ->
-      fun curr next pc ->
-        let unfold =
-          fun
-          [ <:expr< $lid:op$ $x$ $y$ >> ->
-              if List.mem op ops then Some (x, " " ^ op, y) else None
-          | _ -> None ]
-        in
-        left_operator pc 0 unfold next z ]
-;
-
-value expr_pow =
-  let ops = ["**"; "asr"; "lsl"; "lsr"] in
-  extfun Extfun.empty with
-  [ z ->
-      fun curr next pc ->
-        let unfold =
-          fun
-          [ <:expr< $lid:op$ $x$ $y$ >> ->
-              if List.mem op ops then Some (x, " " ^ op, y) else None
-          | _ -> None ]
-        in
-        right_operator pc 0 unfold next z ]
-;
-
-value expr_unary_minus =
-  extfun Extfun.empty with
-  [ <:expr< ~- $x$ >> ->
-      fun curr next pc -> curr {(pc) with bef = sprintf "%s-" pc.bef} x
-  | <:expr< ~-. $x$ >> ->
-      fun curr next pc -> curr {(pc) with bef = sprintf "%s-." pc.bef} x
-  | <:expr< $int:i$ >> ->
-      fun curr next pc -> sprintf "%s%s%s" pc.bef i pc.aft
-  | z ->
-      fun curr next pc -> next pc z ]
-;
-
-value expr_apply =
-  extfun Extfun.empty with
-  [ <:expr< assert $e$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%sassert %s%s" pc.bef
-               (next {(pc) with bef = ""; aft = ""} e) pc.aft)
-          (fun () -> not_impl "assert vertical" pc e)
-  | <:expr< lazy $e$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%slazy %s%s" pc.bef
-               (next {(pc) with bef = ""; aft = ""} e) pc.aft)
-          (fun () ->
-             let s1 = sprintf "%slazy" pc.bef in
-             let s2 =
-               next {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
-             in
-             sprintf "%s\n%s" s1 s2)
-  | <:expr< $_$ $_$ >> as z ->
-      fun curr next pc ->
-        let inf =
-          match z with
-          [ <:expr< $lid:n$ $_$ $_$ >> -> is_infix n
-          | <:expr< [$_$ :: $_$] >> -> True
-          | _ -> False ]
-        in
-        if inf then next pc z
-        else
-          let unfold =
-            fun
-            [ <:expr< $x$ $y$ >> -> Some (x, "", y)
-            | e -> None ]
-          in
-          left_operator pc 2 unfold next z
-  | z ->
-      fun curr next pc -> next pc z ]
-;
-
-value expr_dot =
-  extfun Extfun.empty with
-  [ <:expr< $x$ . $y$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s%s.%s%s" pc.bef
-               (curr {(pc) with bef = ""; aft = ""} x)
-               (curr {(pc) with bef = ""; aft = ""} y) pc.aft)
-          (fun () ->
-             let s1 = curr {(pc) with aft = "."} x in
-             let s2 = curr {(pc) with bef = tab pc.ind} y in
-             sprintf "%s\n%s" s1 s2)
-  | <:expr< $x$ .( $y$ ) >> ->
-      fun curr next pc ->
-        expr_short
-          {(pc) with bef = curr {(pc) with aft = ".("} x;
-           aft = sprintf ")%s" pc.aft}
-          y
-  | <:expr< $x$ .[ $y$ ] >> ->
-      fun curr next pc ->
-        expr_short
-          {(pc) with bef = curr {(pc) with aft = ".["} x;
-           aft = (sprintf "]%s" pc.aft)}
-          y
-  | <:expr< $e$ .{ $list:el$ } >> ->
-      fun curr next pc ->
-        let el = List.map (fun e -> (e, ",")) el in
-        plist expr_short 0
-          {(pc) with bef = curr {(pc) with aft = ".{"} e;
-           aft = (sprintf "}%s" pc.aft)}
-          el
-  | z ->
-      fun curr next pc -> next pc z ]
-;
-
-value expr_simple =
-  extfun Extfun.empty with
-  [ <:expr< ($list:el$) >> ->
-      fun curr next pc ->
-        let el = List.map (fun e -> (e, ",")) el in
-        plist expr 0
-          {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-           aft = (sprintf ")%s" pc.aft)}
-          el
-  | <:expr< {$list:lel$} >> ->
-      fun curr next pc ->
-        let lxl = List.map (fun lx -> (lx, ";")) lel in
-        plist (comm_patt_any record_binding) 0
-          {(pc) with ind = pc.ind + 1; bef = sprintf "%s{" pc.bef;
-           aft = (sprintf "}%s" pc.aft)}
-          lxl
-  | <:expr< {($e$) with $list:lel$} >> ->
-      fun curr next pc ->
-        let lxl = List.map (fun lx -> (lx, ";")) lel in
-        plist record_binding 0
-          {(pc) with ind = pc.ind + 1;
-           bef =
-             expr {(pc) with bef = sprintf "%s{(" pc.bef; aft = ") with "} e;
-           aft = (sprintf "}%s" pc.aft)} lxl
-  | <:expr< [| $list:el$ |] >> ->
-      fun curr next pc ->
-        if el = [] then sprintf "%s[| |]%s" pc.bef pc.aft
-        else
-          let el = List.map (fun e -> (e, ";")) el in
-          plist expr 0
-            {(pc) with ind = pc.ind + 3; bef = sprintf "%s[| " pc.bef;
-             aft = (sprintf " |]%s" pc.aft)}
-            el
-  | <:expr< [$_$ :: $_$] >> as z ->
-      fun curr next pc ->
-        let (xl, y) = make_expr_list z in
-        let xl = List.map (fun x -> (x, ";")) xl in
-        match y with
-        [ Some y ->
-            let expr2 pc x =
-              horiz_vertic
-                (fun () ->
-                   sprintf "%s%s :: %s]%s" pc.bef
-                     (expr {(pc) with bef = ""; aft = ""} x)
-                     (expr {(pc) with bef = ""; aft = ""} y) pc.aft)
-                (fun () ->
-                   let s1 = expr {(pc) with aft = " ::"} x in
-                   let s2 =
-                     expr
-                       {(pc) with bef = tab pc.ind;
-                        aft = sprintf "]%s" pc.aft}
-                       y
-                   in
-                   sprintf "%s\n%s" s1 s2)
-            in
-            plistl expr expr2 0
-              {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef} xl
-        | None ->
-            plist expr 0
-              {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef;
-               aft = sprintf "]%s" pc.aft}
-              xl ]
-  | <:expr< ($e$ : $t$) >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s(%s : %s)%s" pc.bef
-               (expr {(pc) with bef = ""; aft = ""} e)
-               (ctyp {(pc) with bef = ""; aft = ""} t)
-               pc.aft)
-          (fun () ->
-             let s1 =
-               expr
-                 {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-                  aft = " :"}
-                 e
-             in
-             let s2 =
-               ctyp
-                 {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
-                  aft = sprintf ")%s" pc.aft}
-                 t
-             in
-             sprintf "%s\n%s" s1 s2)
-  | <:expr< $int:s$ >> | <:expr< $flo:s$ >> ->
-      fun curr next pc ->
-        if String.length s > 0 && s.[0] = '-' then
-          sprintf "%s(%s)%s" pc.bef s pc.aft
-        else
-          sprintf "%s%s%s" pc.bef s pc.aft
-  | <:expr< $int32:s$ >> ->
-      fun curr next pc ->
-        let s = s ^ "l" in
-        if String.length s > 0 && s.[0] = '-' then
-          sprintf "%s(%s)%s" pc.bef s pc.aft
-        else
-          sprintf "%s%s%s" pc.bef s pc.aft
-  | <:expr< $int64:s$ >> ->
-      fun curr next pc ->
-        let s = s ^ "L" in
-        if String.length s > 0 && s.[0] = '-' then
-          sprintf "%s(%s)%s" pc.bef s pc.aft
-        else
-          sprintf "%s%s%s" pc.bef s pc.aft
-  | <:expr< $nativeint:s$ >> ->
-      fun curr next pc ->
-        let s = s ^ "n" in
-        if String.length s > 0 && s.[0] = '-' then
-          sprintf "%s(%s)%s" pc.bef s pc.aft
-        else
-          sprintf "%s%s%s" pc.bef s pc.aft
-  | <:expr< $lid:s$ >> ->
-      fun curr next pc -> var_escaped pc s
-  | <:expr< $uid:s$ >> ->
-      fun curr next pc -> cons_escaped pc s
-  | <:expr< `$uid:s$ >> ->
-      fun curr next pc ->
-        failwith "variants not pretty printed (in expr); add pr_ro.cmo"
-  | <:expr< $str:s$ >> ->
-      fun curr next pc -> sprintf "%s\"%s\"%s" pc.bef s pc.aft
-  | <:expr< $chr:s$ >> ->
-      fun curr next pc -> sprintf "%s'%s'%s" pc.bef s pc.aft
-  | <:expr< ? $_$ >> | <:expr< ~ $_$ >> | <:expr< ~ $_$ : $_$ >> ->
-      fun curr next pc ->
-        failwith "labels not pretty printed (in expr); add pr_ro.cmo"
-  | <:expr< $_$ $_$ >> | <:expr< assert $_$ >> | <:expr< lazy $_$ >> |
-    <:expr< $_$ := $_$ >> |
-    <:expr< fun [ $list:_$ ] >> | <:expr< if $_$ then $_$ else $_$ >> |
-    <:expr< do { $list:_$ } >> |
-    <:expr< for $_$ = $_$ $to:_$ $_$ do { $list:_$ } >> |
-    <:expr< while $_$ do { $list:_$ } >> |
-    <:expr< let $opt:_$ $list:_$ in $_$ >> |
-    <:expr< match $_$ with [ $list:_$ ] >> |
-    <:expr< try $_$ with [ $list:_$ ] >> as z ->
-      fun curr next pc ->
-        let expr_wh = if flag_where_after_lparen.val then expr_wh else expr in
-        expr_wh
-          {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-           aft = sprintf ")%s" pc.aft}
-          z
-  | z ->
-      fun curr next pc -> not_impl "expr" pc z ]
-;
-
-value patt_top =
-  extfun Extfun.empty with
-  [ <:patt< $_$ | $_$ >> as z ->
-      fun curr next pc ->
-        let unfold =
-          fun
-          [ <:patt< $x$ | $y$ >> -> Some (x, " |", y)
-          | _ -> None ]
-        in
-        left_operator pc 0 unfold next z
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value patt_range =
-  extfun Extfun.empty with
-  [ <:patt< $x$ .. $y$ >> ->
-      fun curr next pc ->
-        sprintf "%s..%s" (next {(pc) with aft = ""} x)
-          (next {(pc) with bef = ""} y)
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value patt_apply =
-  extfun Extfun.empty with
-  [ <:patt< $_$ $_$ >> as z ->
-      fun curr next pc ->
-        let unfold =
-          fun
-          [ <:patt< [ $_$ :: $_$ ] >> -> None
-          | <:patt< $x$ $y$ >> -> Some (x, "", y)
-          | p -> None ]
-        in
-        left_operator pc 2 unfold next z
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value patt_dot =
-  extfun Extfun.empty with
-  [ <:patt< $x$ . $y$ >> ->
-      fun curr next pc ->
-        curr {(pc) with bef = curr {(pc) with aft = "."} x} y
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value patt_simple =
-  extfun Extfun.empty with
-  [ <:patt< ($x$ as $y$) >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s(%s as %s)%s" pc.bef
-               (patt {(pc) with bef = ""; aft = ""} x)
-               (patt {(pc) with bef = ""; aft = ""} y) pc.aft)
-          (fun () ->
-             let s1 =
-               patt
-                 {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-                  aft = ""}
-                 x
-             in
-             let s2 =
-               patt
-                 {(pc) with ind = pc.ind + 1;
-                  bef = sprintf "%sas " (tab (pc.ind + 1));
-                  aft = sprintf ")%s" pc.aft}
-                 y
-             in
-             sprintf "%s\n%s" s1 s2)
-  | <:patt< ($list:pl$) >> ->
-      fun curr next pc ->
-        let pl = List.map (fun p -> (p, ",")) pl in
-        plist patt 1
-          {(pc) with bef = sprintf "%s(" pc.bef; aft = sprintf ")%s" pc.aft}
-          pl
-  | <:patt< {$list:lpl$} >> ->
-      fun curr next pc ->
-        let lxl = List.map (fun lx -> (lx, ";")) lpl in
-        plist (binding patt) 0
-          {(pc) with ind = pc.ind + 1; bef = sprintf "%s{" pc.bef;
-           aft = sprintf "}%s" pc.aft}
-          lxl
-  | <:patt< [| $list:pl$ |] >> ->
-      fun curr next pc ->
-        if pl = [] then sprintf "%s[| |]%s" pc.bef pc.aft
-        else
-          let pl = List.map (fun p -> (p, ";")) pl in
-          plist patt 0
-            {(pc) with ind = pc.ind + 3; bef = sprintf "%s[| " pc.bef;
-             aft = (sprintf " |]%s" pc.aft)}
-            pl
-  | <:patt< [$_$ :: $_$] >> as z ->
-      fun curr next pc ->
-        let (xl, y) = make_patt_list z in
-        let xl = List.map (fun x -> (x, ";")) xl in
-        match y with
-        [ Some  y ->
-            let patt2 pc x =
-              horiz_vertic
-                (fun () ->
-                   sprintf "%s%s :: %s]%s" pc.bef
-                     (patt {(pc) with bef = ""; aft = ""} x)
-                     (patt {(pc) with bef = ""; aft = ""} y) pc.aft)
-                (fun () ->
-                   let s1 = patt {(pc) with aft = " ::"} x in
-                   let s2 =
-                     patt
-                       {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                        aft = sprintf "]%s" pc.aft}
-                       y
-                   in
-                   sprintf "%s\n%s" s1 s2)
-            in
-            plistl patt patt2 0
-              {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef} xl
-        | None ->
-            plist patt 0
-              {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef;
-               aft = sprintf "]%s" pc.aft}
-              xl ]
-  | <:patt< ($p$ : $t$) >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s(%s : %s)%s" pc.bef
-               (patt {(pc) with bef = ""; aft = ""} p)
-               (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-          (fun () ->
-             let s1 =
-               patt {(pc) with bef = sprintf "%s(" pc.bef; aft = " :"} p
-             in
-             let s2 =
-               ctyp
-                 {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
-                  aft = (sprintf ")%s" pc.aft)}
-                 t
-             in
-             sprintf "%s\n%s" s1 s2)
-  | <:patt< $int:s$ >> | <:patt< $flo:s$ >> ->
-      fun curr next pc ->
-        if String.length s > 0 && s.[0] = '-' then
-          sprintf "%s(%s)%s" pc.bef s pc.aft
-        else
-          sprintf "%s%s%s" pc.bef s pc.aft
-  | <:patt< $int32:s$ >> ->
-      fun curr next pc ->
-        let s = s ^ "l" in
-        if String.length s > 0 && s.[0] = '-' then
-          sprintf "%s(%s)%s" pc.bef s pc.aft
-        else
-          sprintf "%s%s%s" pc.bef s pc.aft
-  | <:patt< $int64:s$ >> ->
-      fun curr next pc ->
-        let s = s ^ "L" in
-        if String.length s > 0 && s.[0] = '-' then
-          sprintf "%s(%s)%s" pc.bef s pc.aft
-        else
-          sprintf "%s%s%s" pc.bef s pc.aft
-  | <:patt< $nativeint:s$ >> ->
-      fun curr next pc ->
-        let s = s ^ "n" in
-        if String.length s > 0 && s.[0] = '-' then
-          sprintf "%s(%s)%s" pc.bef s pc.aft
-        else
-          sprintf "%s%s%s" pc.bef s pc.aft
-  | <:patt< $lid:s$ >> ->
-      fun curr next pc -> var_escaped pc s
-  | <:patt< $uid:s$ >> ->
-      fun curr next pc -> cons_escaped pc s
-  | <:patt< $chr:s$ >> ->
-      fun curr next pc -> sprintf "%s'%s'%s" pc.bef s pc.aft
-  | <:patt< $str:s$ >> ->
-      fun curr next pc -> sprintf "%s\"%s\"%s" pc.bef s pc.aft
-  | <:patt< _ >> ->
-      fun curr next pc -> sprintf "%s_%s" pc.bef pc.aft
-  | <:patt< ? $_$ >> | <:patt< ? ($_$ $opt:_$) >> |
-    <:patt< ? $_$ : ($_$ $opt:_$) >> | <:patt< ~ $_$ >> |
-    <:patt< ~ $_$ : $_$ >> ->
-      fun curr next pc ->
-        failwith "labels not pretty printed (in patt); add pr_ro.cmo"
-  | <:patt< `$uid:s$ >> ->
-      fun curr next pc ->
-        failwith "variants not pretty printed (in patt); add pr_ro.cmo"
-  | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >>
-    as z ->
-      fun curr next pc ->
-        patt
-          {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-           aft = sprintf ")%s" pc.aft}
-          z
-  | z ->
-      fun curr next pc -> not_impl "patt" pc z ]
-;
 
 value string pc s = sprintf "%s\"%s\"%s" pc.bef s pc.aft;
 
@@ -2333,41 +1277,915 @@ value module_type_simple =
   | z -> fun curr next pc -> not_impl "module_type" pc z ]
 ;
 
-(* initialization or re-initialization of predefined printers *)
-
-pr_expr.pr_levels :=
-  [{pr_label = "top"; pr_rules = expr_top};
-   {pr_label = "ass"; pr_rules = expr_assign};
-   {pr_label = "bar"; pr_rules = expr_or};
-   {pr_label = "amp"; pr_rules = expr_and};
-   {pr_label = "less"; pr_rules = expr_less};
-   {pr_label = "concat"; pr_rules = expr_concat};
-   {pr_label = "add"; pr_rules = expr_add};
-   {pr_label = "mul"; pr_rules = expr_mul};
-   {pr_label = "pow"; pr_rules = expr_pow};
-   {pr_label = "unary"; pr_rules = expr_unary_minus};
-   {pr_label = "apply"; pr_rules = expr_apply};
-   {pr_label = "dot"; pr_rules = expr_dot};
-   {pr_label = "simple"; pr_rules = expr_simple}]
-;
-
-pr_patt.pr_levels :=
-  [{pr_label = "top"; pr_rules = patt_top};
-   {pr_label = "range"; pr_rules = patt_range};
-   {pr_label = "apply"; pr_rules = patt_apply};
-   {pr_label = "dot"; pr_rules = patt_dot};
-   {pr_label = "simple"; pr_rules = patt_simple}]
-;
-
-pr_ctyp.pr_levels :=
-  [{pr_label = "top"; pr_rules = ctyp_top};
-   {pr_label = "as"; pr_rules = ctyp_as};
-   {pr_label = "poly"; pr_rules = ctyp_poly};
-   {pr_label = "arrow"; pr_rules = ctyp_arrow};
-   {pr_label = "apply"; pr_rules = ctyp_apply};
-   {pr_label = "dot"; pr_rules = ctyp_dot};
-   {pr_label = "simple"; pr_rules = ctyp_simple}]
-;
+EXTEND_PRINTER
+  pr_expr:
+    [ "top"
+      [ <:expr< if $e1$ then $e2$ else $e3$ >> ->
+          let expr_wh = if flag_where_after_then.val then expr_wh else expr in
+          horiz_vertic
+            (fun () ->
+               sprintf "%sif %s then %s else %s%s" pc.bef
+                 (curr {(pc) with bef = ""; aft = ""} e1)
+                 (curr {(pc) with bef = ""; aft = ""} e2)
+                 (curr {(pc) with bef = ""; aft = ""} e3) pc.aft)
+            (fun () ->
+               let if_then pc else_b e1 e2 =
+                 horiz_vertic
+                   (fun () ->
+                      sprintf "%s%sif %s then %s%s" pc.bef else_b
+                        (curr {(pc) with bef = ""; aft = ""} e1)
+                        (curr {(pc) with bef = ""; aft = ""} e2) pc.aft)
+                   (fun () ->
+                      let horiz_if_then k =
+                        sprintf "%s%sif %s then%s" pc.bef else_b
+                          (curr {(pc) with bef = ""; aft = ""} e1) k
+                      in
+                      let vertic_if_then k =
+                        let s1 =
+                          if else_b = "" then
+                            curr
+                              {(pc) with ind = pc.ind + 3;
+                               bef = sprintf "%s%sif " pc.bef else_b; aft = ""}
+                              e1
+                          else
+                            let s1 = sprintf "%s%sif" pc.bef else_b in
+                            let s2 =
+                              curr
+                                {(pc) with ind = pc.ind + 2;
+                                 bef = tab (pc.ind + 2); aft = ""}
+                                e1
+                            in
+                            sprintf "%s\n%s" s1 s2
+                        in
+                        let s2 = sprintf "%sthen%s" (tab pc.ind) k in
+                        sprintf "%s\n%s" s1 s2
+                      in
+                      match sequencify e2 with
+                      [ Some el ->
+                          sequence_box2
+                            {(pc) with
+                             bef k =
+                               horiz_vertic (fun () -> horiz_if_then k)
+                                 (fun () -> vertic_if_then k);
+                             aft = ""}
+                            el
+                      | None ->
+                          let s1 =
+                            horiz_vertic (fun () -> horiz_if_then "")
+                              (fun () -> vertic_if_then "")
+                          in
+                          let s2 =
+                            comm_expr expr_wh
+                              {(pc) with ind = pc.ind + 2;
+                               bef = tab (pc.ind + 2); aft = ""}
+                              e2
+                          in
+                          sprintf "%s\n%s" s1 s2 ])
+               in
+               let s1 = if_then {(pc) with aft = ""} "" e1 e2 in
+               let (eel, e3) = get_else_if e3 in
+               let s2 =
+                 loop eel where rec loop =
+                   fun
+                   [ [(e1, e2) :: eel] ->
+                       sprintf "\n%s%s"
+                         (if_then {(pc) with bef = tab pc.ind; aft = ""} "else "
+                            e1 e2)
+                         (loop eel)
+                   | [] -> "" ]
+               in
+               let s3 =
+                 horiz_vertic
+                   (fun () ->
+                      sprintf "%selse %s%s" (tab pc.ind)
+                        (comm_expr curr {(pc) with bef = ""; aft = ""} e3)
+                           pc.aft)
+                   (fun () ->
+                      match sequencify e3 with
+                      [ Some el ->
+                          sequence_box2
+                            {(pc) with
+                             bef k =
+                               horiz_vertic (fun () -> sprintf "\n")
+                                 (fun () -> sprintf "%selse%s" (tab pc.ind) k)}
+                            el
+                      | None ->
+                          let s =
+                            comm_expr expr_wh
+                              {(pc) with ind = pc.ind + 2;
+                               bef = tab (pc.ind + 2)}
+                              e3
+                          in
+                          sprintf "%selse\n%s" (tab pc.ind) s ])
+               in
+               sprintf "%s%s\n%s" s1 s2 s3)
+      | <:expr< fun [ $list:pwel$ ] >> ->
+          match pwel with
+          [ [(p1, None, e1)] when is_irrefut_patt p1 ->
+              let (pl, e1) = expr_fun_args e1 in
+              let pl = [p1 :: pl] in
+              horiz_vertic
+                (fun () ->
+                   sprintf "%sfun %s -> %s%s" pc.bef
+                     (hlist patt {(pc) with bef = ""; aft = ""} pl)
+                     (curr {(pc) with bef = ""; aft = ""} e1) pc.aft)
+                (fun () ->
+                   let fun_arrow k =
+                     let pl = List.map (fun p -> (p, "")) pl in
+                     plist patt 4
+                       {(pc) with bef = sprintf "%sfun " pc.bef;
+                        aft = sprintf " ->%s" k}
+                       pl
+                   in
+                   match sequencify e1 with
+                   [ Some el ->
+                       sequence_box2
+                         {(pc) with
+                          bef k =
+                            horiz_vertic (fun _ -> sprintf "\n")
+                              (fun () -> fun_arrow k)}
+                         el
+                   | None ->
+                       let s1 = fun_arrow "" in
+                       let s2 =
+                         curr
+                           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
+                           e1
+                       in
+                       sprintf "%s\n%s" s1 s2 ])
+          | [] -> sprintf "%sfun []%s" pc.bef pc.aft
+          | pwel ->
+              let s = match_assoc_list {(pc) with bef = tab pc.ind} pwel in
+              sprintf "%sfun\n%s" pc.bef s ]
+      | <:expr< try $e1$ with [ $list:pwel$ ] >> |
+        <:expr< match $e1$ with [ $list:pwel$ ] >> as e ->
+          let expr_wh = if flag_where_after_match.val then expr_wh else curr in
+          let op =
+            match e with
+            [ <:expr< try $_$ with [ $list:_$ ] >> -> "try"
+            | _ -> "match" ]
+          in
+          match pwel with
+          [ [(p, wo, e)] when is_irrefut_patt p ->
+              horiz_vertic
+                (fun () ->
+                   sprintf "%s%s %s with %s%s" pc.bef op
+                     (expr_wh {(pc) with bef = ""; aft = ""} e1)
+                     (match_assoc {(pc) with bef = ""; aft = ""} (p, wo, e))
+                     pc.aft)
+                (fun () ->
+                   match
+                     horiz_vertic
+                       (fun () ->
+                          Some
+                            (sprintf "%s%s %s with %s%s ->" pc.bef op
+                               (expr_wh {(pc) with bef = ""; aft = ""} e1)
+                               (patt {(pc) with bef = ""; aft = ""} p)
+                               (match wo with
+                                [ Some e ->
+                                    curr {(pc) with bef = " when"; aft = ""} e
+                                | None -> "" ])))
+                        (fun () -> None)
+                   with
+                   [ Some s1 ->
+                       let s2 =
+                         curr
+                           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
+                           e
+                       in
+                       sprintf "%s\n%s" s1 s2
+                   | None ->
+                       let s1 =
+                         match sequencify e1 with
+                         [ Some el ->
+                             sequence_box2
+                               {(pc) with bef k = sprintf "%s%s%s" pc.bef op k;
+                                aft = ""}
+                               el
+                         | None ->
+                             let s =
+                               expr_wh
+                                 {(pc) with ind = pc.ind + 2;
+                                  bef = tab (pc.ind + 2); aft = ""}
+                                 e1
+                             in
+                             sprintf "%s%s\n%s" pc.bef op s ]
+                       in
+                       let s2 =
+                         match_assoc
+                           {(pc) with bef = sprintf "%swith " (tab pc.ind)}
+                           (p, wo, e)
+                       in
+                       sprintf "%s\n%s" s1 s2 ])
+          | _ ->
+              horiz_vertic
+                (fun () ->
+                   sprintf "%s%s %s with %s%s" pc.bef op
+                     (expr_wh {(pc) with bef = ""; aft = ""} e1)
+                     (match_assoc_list {(pc) with bef = ""; aft = ""} pwel)
+                     pc.aft)
+                (fun () ->
+                   let s1 =
+                     horiz_vertic
+                       (fun () ->
+                          sprintf "%s%s %s with" pc.bef op
+                            (expr_wh {(pc) with bef = ""; aft = ""} e1))
+                       (fun () ->
+                          let s =
+                            match sequencify e1 with
+                            [ Some el ->
+                                sequence_box2
+                                  {(pc) with
+                                   bef k =
+                                     horiz_vertic (fun _ -> sprintf "\n")
+                                       (fun () -> sprintf "%s%s%s" pc.bef op k);
+                                   aft = ""}
+                                  el
+                            | None ->
+                                let s =
+                                  expr_wh
+                                    {(pc) with ind = pc.ind + 2;
+                                     bef = tab (pc.ind + 2); aft = ""}
+                                    e1
+                                in
+                                sprintf "%s%s\n%s" pc.bef op s ]
+                          in
+                          sprintf "%s\n%swith" s (tab pc.ind))
+                   in
+                   let s2 =
+                     match_assoc_list {(pc) with bef = tab pc.ind} pwel
+                   in
+                   sprintf "%s\n%s" s1 s2) ]
+      | <:expr< let $opt:rf$ $list:pel$ in $e$ >> as ge ->
+          let expr_wh = if flag_where_after_in.val then expr_wh else curr in
+          horiz_vertic
+            (fun () ->
+               if not flag_horiz_let_in.val then sprintf "\n"
+               else
+                 sprintf "%slet %s%s %s%s" pc.bef (if rf then "rec " else "")
+                   (hlist2 let_binding (and_before let_binding)
+                      {(pc) with bef = ""; aft = ("", "in")} pel)
+                   (curr {(pc) with bef = ""; aft = ""} e) pc.aft)
+            (fun () ->
+               match flatten_sequence ge with
+               [ Some el ->
+                   let loc = MLast.loc_of_expr ge in
+                   curr pc <:expr< do { $list:el$ } >>
+               | None ->
+                   let s1 =
+                     vlist2 let_binding (and_before let_binding)
+                       {(pc) with
+                        bef =
+                          sprintf "%slet %s" pc.bef (if rf then "rec " else "");
+                        aft = ("", "in")}
+                       pel
+                   in
+                   let s2 = comm_expr expr_wh {(pc) with bef = tab pc.ind} e in
+                   sprintf "%s\n%s" s1 s2 ])
+      | <:expr< let module $s$ = $me$ in $e$ >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%slet module %s = %s in %s%s" pc.bef s
+                 (module_expr {(pc) with bef = ""; aft = ""} me)
+                 (curr {(pc) with bef = ""; aft = ""} e) pc.aft)
+            (fun () ->
+               let s1 =
+                 horiz_vertic
+                   (fun () ->
+                      sprintf "%slet module %s = %s in" pc.bef s
+                        (module_expr {(pc) with bef = ""; aft = ""} me))
+                   (fun () ->
+                      let s1 = sprintf "%slet module %s =" pc.bef s in
+                      let s2 =
+                        module_expr
+                          {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+                           aft = ""}
+                          me
+                      in
+                      let s3 = sprintf "%sin" (tab pc.ind) in
+                      sprintf "%s\n%s\n%s" s1 s2 s3)
+               in
+               let s2 = curr {(pc) with bef = tab pc.ind} e in
+               sprintf "%s\n%s" s1 s2)
+      | <:expr< do { $list:el$ } >> as ge ->
+          let el =
+            match flatten_sequence ge with
+            [ Some el -> el
+            | None -> el ]
+          in
+          horiz_vertic
+            (fun () ->
+               sprintf "%sdo {%s%s%s}%s" pc.bef " "
+                 (hlistl (semi_after (comm_expr curr)) (comm_expr curr)
+                    {(pc) with bef = ""; aft = ""} el)
+                 " " pc.aft)
+            (fun () ->
+               sprintf "%sdo {%s%s%s}%s" pc.bef "\n"
+                 (vlistl (semi_after (comm_expr curr)) (comm_expr curr)
+                    {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+                     aft = ""}
+                    el)
+                 ("\n" ^ tab pc.ind) pc.aft)
+      | <:expr< while $e1$ do { $list:el$ } >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%swhile %s do { %s }%s" pc.bef
+                 (curr {(pc) with bef = ""; aft = ""} e1)
+                 (hlistl (semi_after expr) curr {(pc) with bef = ""; aft = ""}
+                    el)
+                 pc.aft)
+            (fun () ->
+               let s1 =
+                 horiz_vertic
+                   (fun () ->
+                      sprintf "%swhile %s do {" pc.bef
+                        (curr {(pc) with bef = ""; aft = ""} e1))
+                   (fun () ->
+                      let s1 = sprintf "%swhile" pc.bef in
+                      let s2 =
+                        curr
+                          {(pc) with ind = pc.ind + 2;
+                           bef = tab (pc.ind + 2); aft = ""}
+                          e1
+                      in
+                      let s3 = sprintf "%sdo {" (tab pc.ind) in
+                      sprintf "%s\n%s\n%s" s1 s2 s3)
+               in
+               let s2 =
+                 vlistl (semi_after expr) curr
+                   {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+                    aft = ""}
+                   el
+               in
+               let s3 = sprintf "%s}%s" (tab pc.ind) pc.aft in
+               sprintf "%s\n%s\n%s" s1 s2 s3)
+      | <:expr< for $v$ = $e1$ $to:d$ $e2$ do { $list:el$ } >> ->
+          let el =
+            match el with
+            [ [e] ->
+                match sequencify e with
+                [ Some el -> el
+                | None -> el ]
+            | _ -> el ]
+          in
+          horiz_vertic
+            (fun () ->
+               sprintf "%sfor %s = %s %s %s do { %s }%s" pc.bef v
+                 (curr {(pc) with bef = ""; aft = ""} e1)
+                 (if d then "to" else "downto")
+                 (curr {(pc) with bef = ""; aft = ""} e2)
+                 (hlistl (semi_after curr) curr {(pc) with bef = ""; aft = ""}
+                    el) pc.aft)
+            (fun () ->
+               let s1 =
+                 horiz_vertic
+                   (fun () ->
+                      sprintf "%sfor %s = %s %s %s do {" pc.bef v
+                        (curr {(pc) with bef = ""; aft = ""} e1)
+                        (if d then "to" else "downto")
+                        (curr {(pc) with bef = ""; aft = ""} e2))
+                   (fun () ->
+                      let s1 =
+                        curr
+                          {(pc) with bef = sprintf "%sfor %s = " pc.bef v;
+                           aft = if d then " to" else " downto"}
+                          e1
+                      in
+                      let s2 =
+                        curr
+                          {(pc) with ind = pc.ind + 4; bef = tab (pc.ind + 4);
+                           aft = ""}
+                          e2
+                      in
+                      let s3 = sprintf "%sdo {" (tab pc.ind) in
+                      sprintf "%s\n%s\n%s" s1 s2 s3)
+               in
+               let s2 =
+                 vlist (semi_after curr)
+                   {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+                    aft = ""}
+                   el
+               in
+               let s3 = sprintf "%s}%s" (tab pc.ind) pc.aft in
+               sprintf "%s\n%s\n%s" s1 s2 s3) ]
+    | "ass"
+      [ <:expr< $x$ := $y$ >> -> operator pc next expr 2 ":=" x y ]
+    | "or"
+      [ z ->
+          let unfold =
+            fun
+            [ <:expr< $lid:op$ $x$ $y$ >> ->
+                if List.mem op ["||"; "or"] then Some (x, " ||", y) else None
+            | _ -> None ]
+          in
+          right_operator pc 0 unfold next z ]
+    | "and"
+      [ z ->
+          let unfold =
+            fun
+            [ <:expr< $lid:op$ $x$ $y$ >> ->
+                if List.mem op ["&&"; "&"] then Some (x, " &&", y) else None
+            | _ -> None ]
+          in
+          right_operator pc 0 unfold next z ]
+    | "less"
+      [ <:expr< $lid:op$ $x$ $y$ >> as z ->
+          match op with
+          [ "!=" | "<" | "<=" | "<>" | "=" | "==" | ">" | ">=" ->
+              operator pc next next 0 op x y
+          | _ -> next pc z ] ]
+    | "concat"
+      [ z ->
+          let unfold =
+            fun
+            [ <:expr< $lid:op$ $x$ $y$ >> ->
+                if List.mem op ["^"; "@"] then Some (x, " " ^ op, y) else None
+            | _ -> None ]
+          in
+          right_operator pc 0 unfold next z ]
+    | "add"
+      [ z ->
+          let ops = ["+"; "+."; "-"; "-."] in
+          let unfold =
+            fun
+            [ <:expr< $lid:op$ $x$ $y$ >> ->
+                if List.mem op ops then Some (x, " " ^ op, y) else None
+            | _ -> None ]
+          in
+          left_operator pc 0 unfold next z ]
+    | "mul"
+      [ z ->
+          let ops = ["*"; "*."; "/"; "/."; "land"; "lor"; "lxor"; "mod"] in
+          let unfold =
+            fun
+            [ <:expr< $lid:op$ $x$ $y$ >> ->
+                if List.mem op ops then Some (x, " " ^ op, y) else None
+            | _ -> None ]
+          in
+          left_operator pc 0 unfold next z ]
+    | "pow"
+      [ z ->
+          let ops = ["**"; "asr"; "lsl"; "lsr"] in
+          let unfold =
+            fun
+            [ <:expr< $lid:op$ $x$ $y$ >> ->
+                if List.mem op ops then Some (x, " " ^ op, y) else None
+            | _ -> None ]
+          in
+          right_operator pc 0 unfold next z ]
+    | "unary"
+      [ <:expr< ~- $x$ >> -> curr {(pc) with bef = sprintf "%s-" pc.bef} x
+      | <:expr< ~-. $x$ >> -> curr {(pc) with bef = sprintf "%s-." pc.bef} x
+      | <:expr< $int:i$ >> -> sprintf "%s%s%s" pc.bef i pc.aft ]
+    | "apply"
+      [ <:expr< assert $e$ >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%sassert %s%s" pc.bef
+                 (next {(pc) with bef = ""; aft = ""} e) pc.aft)
+            (fun () -> not_impl "assert vertical" pc e)
+      | <:expr< lazy $e$ >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%slazy %s%s" pc.bef
+                 (next {(pc) with bef = ""; aft = ""} e) pc.aft)
+            (fun () ->
+               let s1 = sprintf "%slazy" pc.bef in
+               let s2 =
+                 next {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
+               in
+               sprintf "%s\n%s" s1 s2)
+      | <:expr< $_$ $_$ >> as z ->
+          let inf =
+            match z with
+            [ <:expr< $lid:n$ $_$ $_$ >> -> is_infix n
+            | <:expr< [$_$ :: $_$] >> -> True
+            | _ -> False ]
+          in
+          if inf then next pc z
+          else
+            let unfold =
+              fun
+              [ <:expr< $x$ $y$ >> -> Some (x, "", y)
+              | e -> None ]
+            in
+            left_operator pc 2 unfold next z ]
+    | "dot"
+      [ <:expr< $x$ . $y$ >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s%s.%s%s" pc.bef
+                 (curr {(pc) with bef = ""; aft = ""} x)
+                 (curr {(pc) with bef = ""; aft = ""} y) pc.aft)
+            (fun () ->
+               let s1 = curr {(pc) with aft = "."} x in
+               let s2 = curr {(pc) with bef = tab pc.ind} y in
+               sprintf "%s\n%s" s1 s2)
+      | <:expr< $x$ .( $y$ ) >> ->
+          expr_short
+            {(pc) with bef = curr {(pc) with aft = ".("} x;
+             aft = sprintf ")%s" pc.aft}
+            y
+      | <:expr< $x$ .[ $y$ ] >> ->
+          expr_short
+            {(pc) with bef = curr {(pc) with aft = ".["} x;
+             aft = (sprintf "]%s" pc.aft)}
+            y
+      | <:expr< $e$ .{ $list:el$ } >> ->
+          let el = List.map (fun e -> (e, ",")) el in
+          plist expr_short 0
+            {(pc) with bef = curr {(pc) with aft = ".{"} e;
+             aft = (sprintf "}%s" pc.aft)}
+            el ]
+    | "simple"
+      [ <:expr< ($list:el$) >> ->
+          let el = List.map (fun e -> (e, ",")) el in
+          plist expr 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+             aft = (sprintf ")%s" pc.aft)}
+            el
+      | <:expr< {$list:lel$} >> ->
+          let lxl = List.map (fun lx -> (lx, ";")) lel in
+          plist (comm_patt_any record_binding) 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s{" pc.bef;
+             aft = (sprintf "}%s" pc.aft)}
+            lxl
+      | <:expr< {($e$) with $list:lel$} >> ->
+          let lxl = List.map (fun lx -> (lx, ";")) lel in
+          plist record_binding 0
+            {(pc) with ind = pc.ind + 1;
+             bef =
+               expr {(pc) with bef = sprintf "%s{(" pc.bef; aft = ") with "} e;
+             aft = (sprintf "}%s" pc.aft)} lxl
+      | <:expr< [| $list:el$ |] >> ->
+          if el = [] then sprintf "%s[| |]%s" pc.bef pc.aft
+          else
+            let el = List.map (fun e -> (e, ";")) el in
+            plist expr 0
+              {(pc) with ind = pc.ind + 3; bef = sprintf "%s[| " pc.bef;
+               aft = (sprintf " |]%s" pc.aft)}
+              el
+      | <:expr< [$_$ :: $_$] >> as z ->
+          let (xl, y) = make_expr_list z in
+          let xl = List.map (fun x -> (x, ";")) xl in
+          match y with
+          [ Some y ->
+              let expr2 pc x =
+                horiz_vertic
+                  (fun () ->
+                     sprintf "%s%s :: %s]%s" pc.bef
+                       (expr {(pc) with bef = ""; aft = ""} x)
+                       (expr {(pc) with bef = ""; aft = ""} y) pc.aft)
+                  (fun () ->
+                     let s1 = expr {(pc) with aft = " ::"} x in
+                     let s2 =
+                       expr
+                         {(pc) with bef = tab pc.ind;
+                          aft = sprintf "]%s" pc.aft}
+                         y
+                     in
+                     sprintf "%s\n%s" s1 s2)
+              in
+              plistl expr expr2 0
+                {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef} xl
+          | None ->
+              plist expr 0
+                {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef;
+                 aft = sprintf "]%s" pc.aft}
+                xl ]
+      | <:expr< ($e$ : $t$) >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s(%s : %s)%s" pc.bef
+                 (expr {(pc) with bef = ""; aft = ""} e)
+                 (ctyp {(pc) with bef = ""; aft = ""} t)
+                 pc.aft)
+            (fun () ->
+               let s1 =
+                 expr
+                   {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+                    aft = " :"}
+                   e
+               in
+               let s2 =
+                 ctyp
+                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+                    aft = sprintf ")%s" pc.aft}
+                   t
+               in
+               sprintf "%s\n%s" s1 s2)
+      | <:expr< $int:s$ >> | <:expr< $flo:s$ >> ->
+          if String.length s > 0 && s.[0] = '-' then
+            sprintf "%s(%s)%s" pc.bef s pc.aft
+          else
+            sprintf "%s%s%s" pc.bef s pc.aft
+      | <:expr< $int32:s$ >> ->
+          let s = s ^ "l" in
+          if String.length s > 0 && s.[0] = '-' then
+            sprintf "%s(%s)%s" pc.bef s pc.aft
+          else
+            sprintf "%s%s%s" pc.bef s pc.aft
+      | <:expr< $int64:s$ >> ->
+          let s = s ^ "L" in
+          if String.length s > 0 && s.[0] = '-' then
+            sprintf "%s(%s)%s" pc.bef s pc.aft
+          else
+            sprintf "%s%s%s" pc.bef s pc.aft
+      | <:expr< $nativeint:s$ >> ->
+          let s = s ^ "n" in
+          if String.length s > 0 && s.[0] = '-' then
+            sprintf "%s(%s)%s" pc.bef s pc.aft
+          else
+            sprintf "%s%s%s" pc.bef s pc.aft
+      | <:expr< $lid:s$ >> ->
+          var_escaped pc s
+      | <:expr< $uid:s$ >> ->
+          cons_escaped pc s
+      | <:expr< `$uid:s$ >> ->
+          failwith "variants not pretty printed (in expr); add pr_ro.cmo"
+      | <:expr< $str:s$ >> ->
+          sprintf "%s\"%s\"%s" pc.bef s pc.aft
+      | <:expr< $chr:s$ >> ->
+          sprintf "%s'%s'%s" pc.bef s pc.aft
+      | <:expr< ? $_$ >> | <:expr< ~ $_$ >> | <:expr< ~ $_$ : $_$ >> ->
+          failwith "labels not pretty printed (in expr); add pr_ro.cmo"
+      | <:expr< $_$ $_$ >> | <:expr< assert $_$ >> | <:expr< lazy $_$ >> |
+        <:expr< $_$ := $_$ >> |
+        <:expr< fun [ $list:_$ ] >> | <:expr< if $_$ then $_$ else $_$ >> |
+        <:expr< do { $list:_$ } >> |
+        <:expr< for $_$ = $_$ $to:_$ $_$ do { $list:_$ } >> |
+        <:expr< while $_$ do { $list:_$ } >> |
+        <:expr< let $opt:_$ $list:_$ in $_$ >> |
+        <:expr< match $_$ with [ $list:_$ ] >> |
+        <:expr< try $_$ with [ $list:_$ ] >> as z ->
+          let expr_wh = if flag_where_after_lparen.val then expr_wh else expr in
+          expr_wh
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            z ] ]
+  ;
+  pr_patt:
+    [ "top"
+      [ <:patt< $_$ | $_$ >> as z ->
+          let unfold =
+            fun
+            [ <:patt< $x$ | $y$ >> -> Some (x, " |", y)
+            | _ -> None ]
+          in
+          left_operator pc 0 unfold next z ]
+    | "range"
+      [ <:patt< $x$ .. $y$ >> ->
+          sprintf "%s..%s" (next {(pc) with aft = ""} x)
+            (next {(pc) with bef = ""} y) ]
+    | "apply"
+      [ <:patt< $_$ $_$ >> as z ->
+          let unfold =
+            fun
+            [ <:patt< [ $_$ :: $_$ ] >> -> None
+            | <:patt< $x$ $y$ >> -> Some (x, "", y)
+            | p -> None ]
+          in
+          left_operator pc 2 unfold next z ]
+    | "dot"
+      [ <:patt< $x$ . $y$ >> ->
+          curr {(pc) with bef = curr {(pc) with aft = "."} x} y ]
+    | "simple"
+      [ <:patt< ($x$ as $y$) >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s(%s as %s)%s" pc.bef
+                 (patt {(pc) with bef = ""; aft = ""} x)
+                 (patt {(pc) with bef = ""; aft = ""} y) pc.aft)
+            (fun () ->
+               let s1 =
+                 patt
+                   {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+                    aft = ""}
+                   x
+               in
+               let s2 =
+                 patt
+                   {(pc) with ind = pc.ind + 1;
+                    bef = sprintf "%sas " (tab (pc.ind + 1));
+                    aft = sprintf ")%s" pc.aft}
+                   y
+               in
+               sprintf "%s\n%s" s1 s2)
+      | <:patt< ($list:pl$) >> ->
+          let pl = List.map (fun p -> (p, ",")) pl in
+          plist patt 1
+            {(pc) with bef = sprintf "%s(" pc.bef; aft = sprintf ")%s" pc.aft}
+            pl
+      | <:patt< {$list:lpl$} >> ->
+          let lxl = List.map (fun lx -> (lx, ";")) lpl in
+          plist (binding patt) 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s{" pc.bef;
+             aft = sprintf "}%s" pc.aft}
+            lxl
+      | <:patt< [| $list:pl$ |] >> ->
+          if pl = [] then sprintf "%s[| |]%s" pc.bef pc.aft
+          else
+            let pl = List.map (fun p -> (p, ";")) pl in
+            plist patt 0
+              {(pc) with ind = pc.ind + 3; bef = sprintf "%s[| " pc.bef;
+               aft = (sprintf " |]%s" pc.aft)}
+              pl
+      | <:patt< [$_$ :: $_$] >> as z ->
+          let (xl, y) = make_patt_list z in
+          let xl = List.map (fun x -> (x, ";")) xl in
+          match y with
+          [ Some  y ->
+              let patt2 pc x =
+                horiz_vertic
+                  (fun () ->
+                     sprintf "%s%s :: %s]%s" pc.bef
+                       (patt {(pc) with bef = ""; aft = ""} x)
+                       (patt {(pc) with bef = ""; aft = ""} y) pc.aft)
+                  (fun () ->
+                     let s1 = patt {(pc) with aft = " ::"} x in
+                     let s2 =
+                       patt
+                         {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+                          aft = sprintf "]%s" pc.aft}
+                         y
+                     in
+                     sprintf "%s\n%s" s1 s2)
+              in
+              plistl patt patt2 0
+                {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef} xl
+          | None ->
+              plist patt 0
+                {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef;
+                 aft = sprintf "]%s" pc.aft}
+                xl ]
+      | <:patt< ($p$ : $t$) >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s(%s : %s)%s" pc.bef
+                 (patt {(pc) with bef = ""; aft = ""} p)
+                 (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
+            (fun () ->
+               let s1 =
+                 patt {(pc) with bef = sprintf "%s(" pc.bef; aft = " :"} p
+               in
+               let s2 =
+                 ctyp
+                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+                    aft = (sprintf ")%s" pc.aft)}
+                   t
+               in
+               sprintf "%s\n%s" s1 s2)
+      | <:patt< $int:s$ >> | <:patt< $flo:s$ >> ->
+          if String.length s > 0 && s.[0] = '-' then
+            sprintf "%s(%s)%s" pc.bef s pc.aft
+          else
+            sprintf "%s%s%s" pc.bef s pc.aft
+      | <:patt< $int32:s$ >> ->
+          let s = s ^ "l" in
+          if String.length s > 0 && s.[0] = '-' then
+            sprintf "%s(%s)%s" pc.bef s pc.aft
+          else
+            sprintf "%s%s%s" pc.bef s pc.aft
+      | <:patt< $int64:s$ >> ->
+          let s = s ^ "L" in
+          if String.length s > 0 && s.[0] = '-' then
+            sprintf "%s(%s)%s" pc.bef s pc.aft
+          else
+            sprintf "%s%s%s" pc.bef s pc.aft
+      | <:patt< $nativeint:s$ >> ->
+          let s = s ^ "n" in
+          if String.length s > 0 && s.[0] = '-' then
+            sprintf "%s(%s)%s" pc.bef s pc.aft
+          else
+            sprintf "%s%s%s" pc.bef s pc.aft
+      | <:patt< $lid:s$ >> ->
+          var_escaped pc s
+      | <:patt< $uid:s$ >> ->
+          cons_escaped pc s
+      | <:patt< $chr:s$ >> ->
+          sprintf "%s'%s'%s" pc.bef s pc.aft
+      | <:patt< $str:s$ >> ->
+          sprintf "%s\"%s\"%s" pc.bef s pc.aft
+      | <:patt< _ >> ->
+          sprintf "%s_%s" pc.bef pc.aft
+      | <:patt< ? $_$ >> | <:patt< ? ($_$ $opt:_$) >> |
+        <:patt< ? $_$ : ($_$ $opt:_$) >> | <:patt< ~ $_$ >> |
+        <:patt< ~ $_$ : $_$ >> ->
+          failwith "labels not pretty printed (in patt); add pr_ro.cmo"
+      | <:patt< `$uid:s$ >> ->
+          failwith "variants not pretty printed (in patt); add pr_ro.cmo"
+      | <:patt< $_$ $_$ >> | <:patt< $_$ | $_$ >> | <:patt< $_$ .. $_$ >>
+        as z ->
+          patt
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            z ] ]
+  ;
+  pr_ctyp:
+    [ "top"
+      [ <:ctyp< $x$ == $y$ >> -> operator pc next next 2 "==" x y ]
+    | "as"
+      [ <:ctyp< $t1$ as $t2$ >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s%s as %s%s" pc.bef
+                 (curr {(pc) with bef = ""; aft = ""} t1)
+                 (next {(pc) with bef = ""; aft = ""} t2) pc.aft)
+            (fun () -> not_impl "ctyp as vertic" pc t1) ]
+    | "poly"
+      [ <:ctyp< ! $list:pl$ . $t$ >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s! %s . %s%s" pc.bef
+                 (hlist typevar {(pc) with bef = ""; aft = ""} pl)
+                 (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
+            (fun () ->
+               let s1 =
+                 sprintf "%s! %s ." pc.bef
+                   (hlist typevar {(pc) with bef = ""; aft = ""} pl)
+               in
+               let s2 =
+                 ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t
+               in
+               sprintf "%s\n%s" s1 s2) ]
+    | "arrow"
+      [ <:ctyp< $_$ -> $_$ >> as z ->
+          let unfold =
+            fun
+            [ <:ctyp< $x$ -> $y$ >> -> Some (x, " ->", y)
+            | _ -> None ]
+          in
+          right_operator pc 2 unfold next z ]
+    | "apply"
+      [ <:ctyp< $_$ $_$ >> as z ->
+          let unfold =
+            fun
+            [ <:ctyp< $x$ $y$ >> -> Some (x, "", y)
+            | _ -> None ]
+          in
+          left_operator pc 2 unfold next z ]
+    | "dot"
+      [ <:ctyp< $x$ . $y$ >> ->
+          curr {(pc) with bef = curr {(pc) with aft = "."} x} y ]
+    | "simple"
+      [ <:ctyp< { $list:ltl$ } >> ->
+          horiz_vertic
+            (fun () ->
+               hlistl (semi_after label_decl) label_decl
+                 {(pc) with bef = sprintf "%s{ " pc.bef;
+                  aft = sprintf " }%s" pc.aft}
+                 ltl)
+            (fun () ->
+               vlistl (semi_after label_decl) label_decl
+                 {(pc) with ind = pc.ind + 2; bef = sprintf "%s{ " pc.bef;
+                  aft = sprintf " }%s" pc.aft}
+                 ltl)
+      | <:ctyp< [ $list:vdl$ ] >> ->
+          horiz_vertic
+            (fun () ->
+               if has_cons_with_params vdl then sprintf "\n"
+               else
+                 hlist2 cons_decl (bar_before cons_decl)
+                   {(pc) with bef = sprintf "%s[ " pc.bef;
+                    aft = ("", sprintf " ]%s" pc.aft)}
+                   vdl)
+            (fun () ->
+               vlist2 cons_decl (bar_before cons_decl)
+                 {(pc) with bef = sprintf "%s[ " pc.bef;
+                  aft = ("", sprintf " ]%s" pc.aft)}
+                 vdl)
+      | <:ctyp< ($list:tl$) >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s(%s)%s" pc.bef
+                 (hlistl (star_after ctyp) ctyp {(pc) with bef = ""; aft = ""}
+                    tl)
+                 pc.aft)
+            (fun () ->
+               let tl = List.map (fun t -> (t, " *")) tl in
+               plist ctyp 1
+                 {(pc) with bef = sprintf "%s(" pc.bef;
+                  aft = sprintf ")%s" pc.aft} tl)
+      | <:ctyp< $lid:t$ >> ->
+          var_escaped pc t
+      | <:ctyp< $uid:t$ >> ->
+          sprintf "%s%s%s" pc.bef t pc.aft
+      | <:ctyp< ' $s$ >> ->
+          var_escaped {(pc) with bef = sprintf "%s'" pc.bef} s
+      | <:ctyp< _ >> ->
+          sprintf "%s_%s" pc.bef pc.aft
+      | <:ctyp< ? $i$ : $t$ >> | <:ctyp< ~ $_$ : $t$ >> ->
+          failwith "labels not pretty printed (in type); add pr_ro.cmo"
+      | <:ctyp< [ = $list:_$ ] >> | <:ctyp< [ > $list:_$ ] >> |
+        <:ctyp< [ < $list:_$ ] >> | <:ctyp< [ < $list:_$ > $list:_$ ] >> ->
+          failwith "variants not pretty printed (in type); add pr_ro.cmo"
+      | <:ctyp< $_$ $_$ >> | <:ctyp< $_$ -> $_$ >> as z ->
+          ctyp
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            z ] ]
+  ;
+END;
 
 pr_str_item.pr_levels := [{pr_label = "top"; pr_rules = str_item_top}];
 pr_sig_item.pr_levels := [{pr_label = "top"; pr_rules = sig_item_top}];

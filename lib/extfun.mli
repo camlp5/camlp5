@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: extfun.mli,v 1.2 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: extfun.mli,v 1.3 2007/08/16 08:45:24 deraugla Exp $ *)
 
 (** Extensible functions.
 
@@ -30,7 +30,6 @@ and patt =
   | Eint of string
   | Etup of list patt
   | Evar of unit ]
-and expr 'a 'b = 'a -> option 'b
-;
+and expr 'a 'b = 'a -> option 'b;
 
 value extend : t 'a 'b -> list (patt * bool * expr 'a 'b) -> t 'a 'b;

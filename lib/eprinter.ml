@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: eprinter.ml,v 1.5 2007/08/16 04:35:36 deraugla Exp $ *)
+(* $Id: eprinter.ml,v 1.6 2007/08/16 08:45:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 type t 'a =
@@ -85,7 +85,7 @@ value pr_fun name pr lab =
             (Printf.sprintf "unable to print %s%s" name
                (if lab = "" then "" else " \"" ^ lab ^ "\""))
     | [lev :: levl] ->
-        if app || lev.pr_label = lab then
+        if lab = "" || app || lev.pr_label = lab then
           let next = loop True levl in
           curr where rec curr pc z =
             Extfun.apply lev.pr_rules z curr next pc
@@ -104,3 +104,4 @@ value clear pr = do {
 };
 
 value apply_level pr lname pc z = pr.pr_fun lname pc z;
+value apply pr pc z = pr.pr_fun "" pc z;

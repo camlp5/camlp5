@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.mli,v 1.13 2007/07/31 14:29:41 deraugla Exp $ *)
+(* $Id: grammar.mli,v 1.14 2007/08/16 08:45:24 deraugla Exp $ *)
 
 (** Extensible grammars.
 
@@ -97,11 +97,7 @@ module Unsafe :
        rule "an entry cannot call an entry of another grammar" by
        normal OCaml typing. *)
 
-module type GLexerType =
-  sig
-    type te = 'x;
-    value lexer : Token.glexer te;
-  end;
+module type GLexerType = sig type te = 'x; value lexer : Token.glexer te; end;
    (** The input signature for the functor [Grammar.GMake]: [te] is the
        type of the tokens. *)
 

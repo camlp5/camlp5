@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.mli,v 1.16 2007/07/31 14:29:41 deraugla Exp $ *)
+(* $Id: token.mli,v 1.17 2007/08/16 08:45:24 deraugla Exp $ *)
 
 (** Lexers for Camlp5 grammars.
 
@@ -100,8 +100,7 @@ value default_match : pattern -> (string * string) -> string;
    as well. *)
 
 value lexer_func_of_parser :
-  ((Stream.t char * ref int * ref int) -> ('te * location)) ->
-    lexer_func 'te;
+  ((Stream.t char * ref int * ref int) -> ('te * location)) -> lexer_func 'te;
    (** A lexer function from a lexer written as a char stream parser
        returning the next token and its location. The two references
        with the char stream contain the current line number and the

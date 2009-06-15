@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: gramext.mli,v 1.10 2007/08/14 11:19:09 deraugla Exp $ *)
+(* $Id: gramext.mli,v 1.11 2007/08/16 08:45:24 deraugla Exp $ *)
 
 type grammar 'te =
   { gtokens : Hashtbl.t Token.pattern (ref int);
@@ -32,10 +32,7 @@ and g_level 'te =
     lname : option string;
     lsuffix : g_tree 'te;
     lprefix : g_tree 'te }
-and g_assoc =
-  [ NonA
-  | RightA
-  | LeftA ]
+and g_assoc = [ NonA | RightA | LeftA ]
 and g_symbol 'te =
   [ Smeta of string and list (g_symbol 'te) and Obj.t
   | Snterm of g_entry 'te

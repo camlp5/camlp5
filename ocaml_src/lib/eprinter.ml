@@ -81,7 +81,7 @@ let pr_fun name pr lab =
              (Printf.sprintf "unable to print %s%s" name
                 (if lab = "" then "" else " \"" ^ lab ^ "\"")))
     | lev :: levl ->
-        if app || lev.pr_label = lab then
+        if lab = "" || app || lev.pr_label = lab then
           let next = loop true levl in
           let rec curr pc z = Extfun.apply lev.pr_rules z curr next pc in curr
         else loop app levl
@@ -101,3 +101,4 @@ let make name =
 let clear pr = pr.pr_levels <- []; pr.pr_fun <- pr_fun pr.pr_name pr;;
 
 let apply_level pr lname pc z = pr.pr_fun lname pc z;;
+let apply pr pc z = pr.pr_fun "" pc z;;
