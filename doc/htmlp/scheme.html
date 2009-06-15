@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: scheme.html,v 1.4 2007/08/22 09:23:33 deraugla Exp $ -->
+  <!-- $Id: scheme.html,v 1.5 2007/10/19 01:35:48 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Scheme</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -20,7 +20,7 @@
 <h1 class="top">Scheme and Lisp syntaxes</h1>
 
 <p>It is possible to write OCaml programs with Scheme or Lisp
-  syntax. They are close the one to the other, both using parentheses
+  syntax. They are close to one another, both using parentheses
   to identify and separate statements.</p>
 
 <div id="tableofcontents">
@@ -31,7 +31,7 @@
 <p>The syntax extension kits are named "<tt>pa_scheme.cmo</tt>" and
   "<tt>pa_lisp.cmo</tt>". The sources (same names ending with ".ml"
   in the Camlp5 sources), are written in their own syntax. They are
-  boostrapped thanks to versions written in revised syntax and to
+  boostrapped thanks to the versions being written in revised syntax and to
   the Camlp5 pretty printing system.</p>
 
 <p>In the OCaml toplevel, it is possible to use them by loading
@@ -66,8 +66,8 @@
 
 <p>However, the syntax extension EXTEND ("<tt>pa_extend.cmo</tt>" in
   <a href="grammars.html">extensible grammars</a>) works for them:
-  only the semantic actions have to be written with the Scheme or Lisp
-  syntax. The stream parsers are also implemented.</p>
+  only the semantic actions need be written with the Scheme or Lisp
+  syntax. Stream parsers are also implemented.</p>
 
 <p>Warning: these syntaxes are incomplete, but can be completed, if
   Camlp5 users are insterested.</p>
