@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: library.html,v 1.32 2007/10/20 02:09:53 deraugla Exp $ -->
+  <!-- $Id: library.html,v 1.33 2007/10/20 02:17:21 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Library</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -326,9 +326,9 @@ value make_stream_and_location :
   <dd>Convert a char or a string token, where the backslashes are not
     been interpreted into a real char or string; raise
     "<tt>Failure</tt>" if a bad backslash sequence is found;
-    "<tt>Plexing.eval_char (Char.escaped c)</tt>" returns
-    "<tt>c</tt>" and "<tt>Plexing.eval_string (String.escaped s)</tt>"
-    returns "<tt>s</tt>".</dd>
+    "<tt>Plexing.eval_char (Char.escaped c)</tt>" returns "<tt>c</tt>"
+    and "<tt>Plexing.eval_string (String.escaped s)</tt>"
+    returns <tt>s</tt>.</dd>
 </dl>
 
 <dl>
@@ -373,38 +373,37 @@ value make_stream_and_location :
 <p>The meaning of the tokens are:</p>
 
 <ul>
-  <li><tt>("", s)</tt> is the keyword "<tt>s</tt>",</li>
-  <li><tt>("LIDENT", s)</tt> is the ident "<tt>s</tt>" starting with a
+  <li><tt>("", s)</tt> is the keyword <tt>s</tt>,</li>
+  <li><tt>("LIDENT", s)</tt> is the ident <tt>s</tt> starting with a
     lowercase letter,</li>
-  <li><tt>("UIDENT", s)</tt> is the ident "<tt>s</tt>" starting with
-    an uppercase letter,</li>
+  <li><tt>("UIDENT", s)</tt> is the ident <tt>s</tt> starting with an
+    uppercase letter,</li>
   <li><tt>("INT", s)</tt> is an integer constant whose string source
-    is "<tt>s</tt>",</li>
+    is <tt>s</tt>,</li>
   <li><tt>("INT_l", s)</tt> is an 32 bits integer constant whose
-    string source is "<tt>s</tt>",</li>
+    string source is <tt>s</tt>,</li>
   <li><tt>("INT_L", s)</tt> is an 64 bits integer constant whose
-    string source is "<tt>s</tt>",</li>
+    string source is <tt>s</tt>,</li>
   <li><tt>("INT_n", s)</tt> is an native integer constant whose string
-    source is "<tt>s</tt>",</li>
+    source is <tt>s</tt>,</li>
   <li><tt>("FLOAT", s)</tt> is a float constant whose string source is
-    "<tt>s</tt>",</li>
-  <li><tt>("STRING", s)</tt> is the string constant "<tt>s</tt>",</li>
-  <li><tt>("CHAR", s)</tt> is the character constant
-    "<tt>s</tt>",</li>
+    <tt>s</tt>,</li>
+  <li><tt>("STRING", s)</tt> is the string constant <tt>s</tt>,</li>
+  <li><tt>("CHAR", s)</tt> is the character constant <tt>s</tt>,</li>
   <li><tt>("TILDEIDENT", s)</tt> is the tilde character "<tt>~</tt>"
-    followed by the ident "<tt>s</tt>",</li>
+    followed by the ident <tt>s</tt>,</li>
   <li><tt>("TILDEIDENTCOLON", s)</tt> is the tilde character
-    "<tt>~</tt>" followed by the ident "<tt>s</tt>" and a colon
+    "<tt>~</tt>" followed by the ident <tt>s</tt> and a colon
     "<tt>:</tt>",</li>
   <li><tt>("QUESTIONIDENT", s)</tt> is the question mark "<tt>?</tt>"
-    followed by the ident "<tt>s</tt>",</li>
+    followed by the ident <tt>s</tt>,</li>
   <li><tt>("QUESTIONIDENTCOLON", s)</tt> is the question mark
-    "<tt>?</tt>" followed by the ident "<tt>s</tt>" and a colon
+    "<tt>?</tt>" followed by the ident <tt>s</tt> and a colon
     "<tt>:</tt>",</li>
   <li><tt>("QUOTATION", "t:s")</tt> is a quotation "<tt>t</tt>"
-    holding the string "<tt>s</tt>",</li>
+    holding the string <tt>s</tt>,</li>
   <li><tt>("ANTIQUOT", "t:s")</tt> is an antiquotation "<tt>t</tt>"
-    holding the string "<tt>s</tt>",</li>
+    holding the string <tt>s</tt>,</li>
   <li><tt>("EOI", "")</tt> is the end of input.</li>
 </ul>
 
@@ -777,7 +776,7 @@ module Entry =
       <li><tt>Grammar.Entry.print e</tt> : displays the entry
         "<tt>e</tt>" using "<tt>Format</tt>".</li>
       <li><tt>Grammar.Entry.find e s</tt> : finds the entry named
-        "<tt>s</tt>" in the rules of "<tt>e</tt>".</li>
+        <tt>s</tt> in the rules of "<tt>e</tt>".</li>
       <li><tt>Grammar.Entry.obj e</tt> : converts an entry into a
         "<tt>Gramext.g_entry</tt>" allowing to see what it holds.</li>
     </ul>
@@ -1139,11 +1138,11 @@ value f : array 'a -> array 'a -> (array bool * array bool);</tt></dt>
 <dl>
   <dt><tt>value next : t 'a -> option ('a * t 'a);</tt></dt>
   <dd>Return "<tt>Some (a, s)</tt>" where "<tt>a</tt>" is the first
-    element of the stream and "<tt>s</tt>" the remaining stream, or
+    element of the stream and <tt>s</tt> the remaining stream, or
     "<tt>None</tt>" if the stream is empty.</dd>
   <dt><tt>value empty : t 'a -> option (unit * t 'a);</tt></dt>
   <dd>Return "<tt>Some ((), s)</tt>" if the stream is empty where
-    "<tt>s</tt>" is itself, else "<tt>None</tt>".</dd>
+    <tt>s</tt> is itself, else "<tt>None</tt>".</dd>
   <dt><tt>value count : t 'a -> int;</tt></dt>
   <dd>Return the current count of the stream elements, i.e. the number
     of the stream elements discarded.</dd>
