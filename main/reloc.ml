@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: reloc.ml,v 1.32 2007/09/16 05:19:01 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.33 2007/09/18 01:19:17 deraugla Exp $ *)
 
 open MLast;
 
@@ -266,7 +266,10 @@ and sig_item floc sh =
     | SgTyp loc x1 ->
         SgTyp (floc loc) (vala_map (List.map (type_decl floc sh)) x1)
     | SgUse loc x1 x2 -> SgUse loc x1 x2
-    | SgVal loc x1 x2 -> SgVal (floc loc) x1 (ctyp floc sh x2) ]
+    | SgVal loc x1 x2 -> SgVal (floc loc) x1 (ctyp floc sh x2)
+    | IFDEF STRICT THEN
+        SgXtr loc x1 x2 -> SgXtr (floc loc) x1 (option_map (vala_map self) x2)
+      END ]
 and with_constr floc sh =
   self where rec self =
     fun
@@ -315,7 +318,10 @@ and str_item floc sh =
         StVal (floc loc) x1
           (vala_map
              (List.map (fun (x1, x2) -> (patt floc sh x1, expr floc sh x2)))
-                x2) ]
+                x2)
+    | IFDEF STRICT THEN
+        StXtr loc x1 x2 -> StXtr (floc loc) x1 (option_map (vala_map self) x2)
+      END ]
 and type_decl floc sh td =
   {(td) with
    tdNam = (floc (fst td.tdNam), snd td.tdNam);

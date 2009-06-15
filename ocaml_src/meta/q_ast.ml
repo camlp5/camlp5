@@ -77,7 +77,7 @@ module type MetaSig =
     val bool : bool -> t;;
     val string : string -> t;;
     val tuple : t list -> t;;
-    val of_expr : MLast.expr -> t;;
+    val record : (MLast.patt * t) list -> t;;
     val xtr : Ploc.t -> string -> t;;
     val xtr_or_anti : Ploc.t -> (t -> t) -> string -> t;;
   end
@@ -146,6 +146,7 @@ module Meta_make (C : MetaSig) =
       function
         PaAcc (_, p1, p2) -> C.node "PaAcc" [patt p1; patt p2]
       | PaAli (_, p1, p2) -> C.node "PaAli" [patt p1; patt p2]
+      | PaAnt (_, p) -> C.node "PaAnt" [patt p]
       | PaAny _ -> C.node "PaAny" []
       | PaApp (_, p1, p2) -> C.node "PaApp" [patt p1; patt p2]
       | PaArr (_, pl) -> C.node "PaArr" [C.vala (C.list patt) pl]
@@ -173,11 +174,10 @@ module Meta_make (C : MetaSig) =
       | PaTyp (_, ls) -> C.node "PaTyp" [C.vala (C.list C.string) ls]
       | PaUid (_, s) -> C.node "PaUid" [C.vala C.string s]
       | PaVrn (_, s) -> C.node "PaVrn" [C.vala C.string s]
-      | x -> not_impl "patt" x
     and expr =
       function
         ExAcc (_, e1, e2) -> C.node "ExAcc" [expr e1; expr e2]
-      | ExAnt (_, _) as e -> C.of_expr e
+      | ExAnt (_, p) -> C.node "ExAnt" [expr p]
       | ExApp (_, e1, e2) -> C.node "ExApp" [expr e1; expr e2]
       | ExAre (_, e1, e2) -> C.node "ExAre" [expr e1; expr e2]
       | ExArr (_, el) -> C.node "ExArr" [C.vala (C.list expr) el]
@@ -297,9 +297,12 @@ module Meta_make (C : MetaSig) =
           C.node "SgMod" [C.vala C.bool rf; lsmt]
       | SgMty (_, s, mt) -> C.node "SgMty" [C.vala C.string s; module_type mt]
       | SgOpn (_, sl) -> C.node "SgOpn" [C.vala (C.list C.string) sl]
-      | SgTyp (_, ltd) -> C.node "SgTyp" [C.vala (C.list e_type_decl) ltd]
+      | SgTyp (_, ltd) -> C.node "SgTyp" [C.vala (C.list type_decl) ltd]
+      | SgUse (_, s, sil) ->
+          C.node "SgUse"
+            [C.string s;
+             C.list (fun (si, _) -> C.tuple [sig_item si; C.loc_v ()]) sil]
       | SgVal (_, s, t) -> C.node "SgVal" [C.vala C.string s; ctyp t]
-      | x -> not_impl "sig_item" x
     and with_constr =
       function
         WcTyp (_, li, ltp, pf, t) ->
@@ -348,14 +351,27 @@ module Meta_make (C : MetaSig) =
           C.node "StMod" [C.vala C.bool rf; lsme]
       | StMty (_, s, mt) -> C.node "StMty" [C.vala C.string s; module_type mt]
       | StOpn (_, sl) -> C.node "StOpn" [C.vala (C.list C.string) sl]
-      | StTyp (_, ltd) -> C.node "StTyp" [C.vala (C.list e_type_decl) ltd]
+      | StTyp (_, ltd) -> C.node "StTyp" [C.vala (C.list type_decl) ltd]
+      | StUse (_, s, sil) ->
+          C.node "StUse"
+            [C.string s;
+             C.list (fun (si, _) -> C.tuple [str_item si; C.loc_v ()]) sil]
       | StVal (_, rf, lpe) ->
           let lpe =
             C.vala (C.list (fun (p, e) -> C.tuple [patt p; expr e])) lpe
           in
           C.node "StVal" [C.vala C.bool rf; lpe]
-      | x -> not_impl "str_item" x
-    and e_type_decl x = not_impl "e_type_decl" x
+    and type_decl td =
+      C.record
+        [record_label "tdNam", C.tuple [C.loc_v (); C.string (snd td.tdNam)];
+         record_label "tdPrm", C.list type_var td.tdPrm;
+         record_label "tdPrv", C.bool td.tdPrv;
+         record_label "tdDef", ctyp td.tdDef;
+         record_label "tdCon",
+         C.list (fun (t1, t2) -> C.tuple [ctyp t1; ctyp t2]) td.tdCon]
+    and record_label lab =
+      let loc = Ploc.dummy in
+      MLast.PaAcc (loc, MLast.PaUid (loc, "MLast"), MLast.PaLid (loc, lab))
     and class_type =
       function
         CtCon (_, ls, lt) ->
@@ -456,8 +472,8 @@ module Meta_E =
          if b then MLast.ExUid (loc, "True") else MLast.ExUid (loc, "False")
        ;;
        let string s = MLast.ExStr (loc, s);;
-       let tuple el = MLast.ExTup (loc, el);;
-       let of_expr e = e;;
+       let tuple le = MLast.ExTup (loc, le);;
+       let record lfe = MLast.ExRec (loc, lfe, None);;
        let xtr loc s =
          match get_anti_loc s with
            Some (loc, typ, str) ->
@@ -473,8 +489,8 @@ module Meta_E =
          match get_anti_loc s with
            Some (loc, typ, str) ->
              begin match typ with
-               "" ->
-                 let (loc, r) = eval_anti Pcaml.expr_eoi loc "" str in
+               "" | "exp" ->
+                 let (loc, r) = eval_anti Pcaml.expr_eoi loc typ str in
                  MLast.ExAnt (loc, r)
              | "anti" ->
                  let (loc, r) = eval_anti Pcaml.expr_eoi loc "anti" str in
@@ -528,8 +544,8 @@ module Meta_P =
          if b then MLast.PaUid (loc, "True") else MLast.PaUid (loc, "False")
        ;;
        let string s = MLast.PaStr (loc, s);;
-       let tuple pl = MLast.PaTup (loc, pl);;
-       let of_expr _ = assert false;;
+       let tuple lp = MLast.PaTup (loc, lp);;
+       let record lfp = MLast.PaRec (loc, lfp);;
        let xtr loc s =
          match get_anti_loc s with
            Some (loc, typ, str) ->
@@ -545,8 +561,8 @@ module Meta_P =
          match get_anti_loc s with
            Some (loc, typ, str) ->
              begin match typ with
-               "" ->
-                 let (loc, r) = eval_anti Pcaml.patt_eoi loc "" str in
+               "" | "exp" ->
+                 let (loc, r) = eval_anti Pcaml.patt_eoi loc "exp" str in
                  MLast.PaAnt (loc, r)
              | "anti" ->
                  let (loc, r) = eval_anti Pcaml.patt_eoi loc "anti" str in

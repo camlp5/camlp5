@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: q_ast.ml,v 1.83 2007/09/17 23:32:31 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.84 2007/09/18 01:19:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* AST quotations with works by running the language parser (and its possible
@@ -81,7 +81,7 @@ module type MetaSig =
     value bool : bool -> t;
     value string : string -> t;
     value tuple : list t -> t;
-    value of_expr : MLast.expr -> t;
+    value record : list (MLast.patt * t) -> t;
     value xtr : Ploc.t -> string -> t;
     value xtr_or_anti : Ploc.t -> (t -> t) -> string -> t;
   end
@@ -160,6 +160,7 @@ module Meta_make (C : MetaSig) =
       fun
       [ PaAcc _ p1 p2 -> C.node "PaAcc" [patt p1; patt p2]
       | PaAli _ p1 p2 -> C.node "PaAli" [patt p1; patt p2]
+      | PaAnt _ p -> C.node "PaAnt" [patt p]
       | PaAny _ -> C.node "PaAny" []
       | PaApp _ p1 p2 -> C.node "PaApp" [patt p1; patt p2]
       | PaArr _ pl -> C.node "PaArr" [C.vala (C.list patt) pl]
@@ -192,12 +193,11 @@ module Meta_make (C : MetaSig) =
       | PaVrn _ s -> C.node "PaVrn" [C.vala C.string s]
       | IFDEF STRICT THEN
           PaXtr loc s _ -> C.xtr_or_anti loc (fun r -> C.node "PaAnt" [r]) s
-        END
-      | x -> not_impl "patt" x ]
+        END ]
     and expr =
       fun
       [ ExAcc _ e1 e2 -> C.node "ExAcc" [expr e1; expr e2]
-      | ExAnt _ _ as e -> C.of_expr e
+      | ExAnt _ p -> C.node "ExAnt" [expr p]
       | ExApp _ e1 e2 -> C.node "ExApp" [expr e1; expr e2]
       | ExAre _ e1 e2 -> C.node "ExAre" [expr e1; expr e2]
       | ExArr _ el -> C.node "ExArr" [C.vala (C.list expr) el]
@@ -334,9 +334,15 @@ module Meta_make (C : MetaSig) =
           C.node "SgMod" [C.vala C.bool rf; lsmt]
       | SgMty _ s mt -> C.node "SgMty" [C.vala C.string s; module_type mt]
       | SgOpn _ sl -> C.node "SgOpn" [C.vala (C.list C.string) sl]
-      | SgTyp _ ltd -> C.node "SgTyp" [C.vala (C.list e_type_decl) ltd]
+      | SgTyp _ ltd -> C.node "SgTyp" [C.vala (C.list type_decl) ltd]
+      | SgUse _ s sil ->
+          C.node "SgUse"
+            [C.string s;
+             C.list (fun (si, _) -> C.tuple [sig_item si; C.loc_v ()]) sil]
       | SgVal _ s t -> C.node "SgVal" [C.vala C.string s; ctyp t]
-      | x -> not_impl "sig_item" x ]
+      | IFDEF STRICT THEN
+          SgXtr loc s _ -> C.xtr loc s
+        END ]
     and with_constr =
       fun
       [ WcTyp _ li ltp pf t ->
@@ -351,13 +357,10 @@ module Meta_make (C : MetaSig) =
           C.node "WcMod" [li; me] ]
     and module_expr =
       fun
-      [ MeAcc _ me1 me2 ->
-          C.node "MeAcc" [module_expr me1; module_expr me2]
-      | MeApp _ me1 me2 ->
-          C.node "MeApp" [module_expr me1; module_expr me2]
+      [ MeAcc _ me1 me2 -> C.node "MeAcc" [module_expr me1; module_expr me2]
+      | MeApp _ me1 me2 -> C.node "MeApp" [module_expr me1; module_expr me2]
       | MeFun _ s mt me ->
-          C.node "MeFun"
-            [C.vala C.string s; module_type mt; module_expr me]
+          C.node "MeFun" [C.vala C.string s; module_type mt; module_expr me]
       | MeStr _ lsi -> C.node "MeStr" [C.vala (C.list str_item) lsi]
       | MeTyc _ me mt -> C.node "MeTyc" [module_expr me; module_type mt]
       | MeUid _ s -> C.node "MeUid" [C.vala C.string s]
@@ -395,17 +398,32 @@ module Meta_make (C : MetaSig) =
       | StMty _ s mt ->
           C.node "StMty" [C.vala C.string s; module_type mt]
       | StOpn _ sl -> C.node "StOpn" [C.vala (C.list C.string) sl]
-      | StTyp _ ltd -> C.node "StTyp" [C.vala (C.list e_type_decl) ltd]
+      | StTyp _ ltd -> C.node "StTyp" [C.vala (C.list type_decl) ltd]
+      | StUse _ s sil ->
+          C.node "StUse"
+            [C.string s;
+             C.list (fun (si, _) -> C.tuple [str_item si; C.loc_v ()]) sil]
       | StVal _ rf lpe ->
           let lpe =
             C.vala (C.list (fun (p, e) -> C.tuple [patt p; expr e]))
               lpe
           in
           C.node "StVal" [C.vala C.bool rf; lpe]
-      | x -> not_impl "str_item" x ]
-    and e_type_decl =
-      fun
-      [ x -> not_impl "e_type_decl" x ]
+      | IFDEF STRICT THEN
+          StXtr loc s _ -> C.xtr loc s
+        END ]
+    and type_decl td =
+      C.record
+        [(record_label "tdNam",
+          C.tuple [C.loc_v (); C.string (snd td.tdNam)]);
+         (record_label "tdPrm", C.list type_var td.tdPrm);
+         (record_label "tdPrv", C.bool td.tdPrv);
+         (record_label "tdDef", ctyp td.tdDef);
+         (record_label "tdCon",
+          C.list (fun (t1, t2) -> C.tuple [ctyp t1; ctyp t2]) td.tdCon)]
+    and record_label lab =
+      let loc = Ploc.dummy in
+      <:patt< MLast.$lid:lab$ >>
     and class_type =
       fun
       [ CtCon _ ls lt ->
@@ -513,8 +531,8 @@ module Meta_E =
        ;
        value bool b = if b then <:expr< True >> else <:expr< False >>;
        value string s = <:expr< $str:s$ >>;
-       value tuple el = <:expr< ($list:el$) >>;
-       value of_expr e = e;
+       value tuple le = <:expr< ($list:le$) >>;
+       value record lfe = <:expr< {$list:lfe$} >>;
        value xtr loc s =
          match get_anti_loc s with
          [ Some (loc, typ, str) ->
@@ -529,8 +547,8 @@ module Meta_E =
          match get_anti_loc s with
          [ Some (loc, typ, str) ->
              match typ with
-             [ "" ->
-                 let (loc, r) = eval_anti Pcaml.expr_eoi loc "" str in
+             [ "" | "exp" ->
+                 let (loc, r) = eval_anti Pcaml.expr_eoi loc typ str in
                  <:expr< $anti:r$ >>
              | "anti" ->
                  let (loc, r) = eval_anti Pcaml.expr_eoi loc "anti" str in
@@ -583,8 +601,8 @@ module Meta_P =
        ;
        value bool b = if b then <:patt< True >> else <:patt< False >>;
        value string s = <:patt< $str:s$ >>;
-       value tuple pl = <:patt< ($list:pl$) >>;
-       value of_expr _ = assert False;
+       value tuple lp = <:patt< ($list:lp$) >>;
+       value record lfp = <:patt< {$list:lfp$} >>;
        value xtr loc s =
          match get_anti_loc s with
          [ Some (loc, typ, str) ->
@@ -599,8 +617,8 @@ module Meta_P =
          match get_anti_loc s with
          [ Some (loc, typ, str) ->
              match typ with
-             [ "" ->
-                 let (loc, r) = eval_anti Pcaml.patt_eoi loc "" str in
+             [ "" | "exp" ->
+                 let (loc, r) = eval_anti Pcaml.patt_eoi loc "exp" str in
                  <:patt< $anti:r$ >>
              | "anti" ->
                  let (loc, r) = eval_anti Pcaml.patt_eoi loc "anti" str in
@@ -658,16 +676,13 @@ IFDEF STRICT THEN
     Pcaml.ctyp: LAST
       [ [ s = ANTIQUOT_LOC -> MLast.TyXtr loc s None ] ]
     ;
-    Pcaml.str_item: LAST
-      [ [ s = ANTIQUOT_LOC "exp" ->
-            let e =
-              match get_anti_loc s with
-              [ Some (loc, _, str) ->
-                  let (loc, r) = eval_anti Pcaml.expr_eoi loc "exp" str in
-                  <:expr< $anti:r$ >>
-              | None -> assert False ]
-            in
-            MLast.StExp loc e ] ]
+    Pcaml.str_item: FIRST
+      [ [ s = ANTIQUOT_LOC -> MLast.StXtr loc s None
+        | s = ANTIQUOT_LOC "exp" ->
+            MLast.StExp loc (MLast.ExXtr loc s None) ] ]
+    ;
+    Pcaml.sig_item: FIRST
+      [ [ s = ANTIQUOT_LOC -> MLast.SgXtr loc s None ] ]
     ;
     Pcaml.module_expr: LAST
       [ [ s = ANTIQUOT_LOC -> MLast.MeXtr loc s None ] ]

@@ -1,5 +1,6 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: main.ml,v 1.7 2007/09/14 16:03:54 deraugla Exp $ *)
+(* $Id: main.ml,v 1.8 2007/09/18 01:19:17 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 open Printf;
 

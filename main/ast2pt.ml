@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: ast2pt.ml,v 1.49 2007/09/17 23:32:31 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.50 2007/09/18 01:19:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open MLast;
@@ -789,7 +789,10 @@ and sig_item s l =
       Ploc.call_with glob_fname fn
         (fun () -> List.fold_right (fun (si, _) -> sig_item si) sl l) ()
   | SgVal loc n t ->
-      [mksig loc (Psig_value (uv n) (mkvalue_desc t [])) :: l] ]
+      [mksig loc (Psig_value (uv n) (mkvalue_desc t [])) :: l]
+  | IFDEF STRICT THEN
+      SgXtr loc _ _ -> error loc "bad ast SgXtr"
+    END ]
 and module_expr =
   fun
   [ MeAcc loc _ _ as f -> mkmod loc (Pmod_ident (module_expr_long_id f))
@@ -856,7 +859,10 @@ and str_item s l =
       Ploc.call_with glob_fname fn
         (fun () -> List.fold_right (fun (si, _) -> str_item si) sl l) ()
   | StVal loc rf pel ->
-      [mkstr loc (Pstr_value (mkrf (uv rf)) (List.map mkpe (uv pel))) :: l] ]
+      [mkstr loc (Pstr_value (mkrf (uv rf)) (List.map mkpe (uv pel))) :: l]
+  | IFDEF STRICT THEN
+      StXtr loc _ _ -> error loc "bad ast StXtr"
+    END ]
 and class_type =
   fun
   [ CtCon loc id tl ->

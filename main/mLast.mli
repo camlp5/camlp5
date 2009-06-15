@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: mLast.mli,v 1.47 2007/09/17 23:32:31 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.48 2007/09/18 01:19:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Module [MLast]: abstract syntax tree.
@@ -147,7 +147,10 @@ and sig_item =
   | SgOpn of loc and V (list string)
   | SgTyp of loc and V (list type_decl)
   | SgUse of loc and string and list (sig_item * loc)
-  | SgVal of loc and V string and ctyp ]
+  | SgVal of loc and V string and ctyp
+  | IFDEF STRICT THEN
+      SgXtr of loc and string and option (V sig_item)
+    END ]
 and with_constr =
   [ WcTyp of loc and V (list string) and V (list type_var) and V bool and ctyp
   | WcMod of loc and V (list string) and module_expr ]
@@ -175,7 +178,10 @@ and str_item =
   | StOpn of loc and V (list string)
   | StTyp of loc and V (list type_decl)
   | StUse of loc and string and list (str_item * loc)
-  | StVal of loc and V bool and V (list (patt * expr)) ]
+  | StVal of loc and V bool and V (list (patt * expr))
+  | IFDEF STRICT THEN
+      StXtr of loc and string and option (V str_item)
+    END ]
 and type_decl =
   { tdNam : (loc * string);
     tdPrm : list type_var;
