@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: ml_ast.html,v 1.16 2007/07/23 17:17:06 deraugla Exp $ -->
+  <!-- $Id: ml_ast.html,v 1.17 2007/07/23 19:02:54 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Abstract tree in concrete syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -666,74 +666,84 @@
     <th>Comment</th>
   </tr>
   <tr>
-    <td><tt>StCls loc lcie</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td><tt>StCls loc lcd</tt></td>
+    <td align="center"><tt>class $list:lcd$</tt></td>
+    <td>class declaration</td>
   </tr>
   <tr>
-    <td><tt>StClt loc lcit</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td><tt>StClt loc lcdt</tt></td>
+    <td align="center"><tt>class type $list:lctd$</tt></td>
+    <td>class type declaration</td>
   </tr>
   <tr>
     <td><tt>StDcl loc lstri</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td align="center"><tt>declare $list:lstri$ end</tt></td>
+    <td>declare</td>
   </tr>
   <tr>
-    <td><tt>StDir loc s oe</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td><tt>StDir loc s None</tt></td>
+    <td align="center"><tt># $s$</tt></td>
+    <td>directive</td>
+  </tr>
+  <tr>
+    <td><tt>StDir loc s (Some e)</tt></td>
+    <td align="center"><tt># $s$ $e$</tt></td>
+    <td>directive</td>
+  </tr>
+  <tr>
+    <td><tt>StExc loc s lt []</tt></td>
+    <td align="center"><tt>exception $s$ of $list:lt$</tt></td>
+    <td>exception</td>
   </tr>
   <tr>
     <td><tt>StExc loc s lt ls</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td align="center"><tt>exception $s$ of $list:lt$ = $list:ls$</tt></td>
+    <td>exception</td>
   </tr>
   <tr>
     <td><tt>StExp loc e</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td align="center"><tt>$exp:e$</tt></td>
+    <td>expression</td>
   </tr>
   <tr>
     <td><tt>StExt loc s t ls</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td align="center"><tt>external $s$ : $t$ = $list:ls$</tt></td>
+    <td>external</td>
   </tr>
   <tr>
     <td><tt>StInc loc me</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td align="center"><tt>include $me$</tt></td>
+    <td>include</td>
   </tr>
   <tr>
     <td><tt>StMod loc b lsme</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td align="center"><tt>module $opt:b$ $list:lsme$</tt></td>
+    <td>module</td>
   </tr>
   <tr>
     <td><tt>StMty loc s mt</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td align="center"><tt>module type $s$ = $mt$</tt></td>
+    <td>module type</td>
   </tr>
   <tr>
     <td><tt>StOpn loc ls</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td align="center"><tt>open $list:ls$</tt></td>
+    <td>open</td>
   </tr>
   <tr>
     <td><tt>StTyp loc ltd</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td align="center"><tt>type $list:ltd$</tt></td>
+    <td>type declaration</td>
   </tr>
   <tr>
     <td><tt>StUse loc s lstrib</tt></td>
-    <td align="center"><tt></tt></td>
+    <td align="center"><tt>...internal use...</tt></td>
     <td></td>
   </tr>
   <tr>
     <td><tt>StVal loc b lpe</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td align="center"><tt>value $opt:b$ $list:lpe$</tt></td>
+    <td>value</td>
   </tr>
 </table>
 
