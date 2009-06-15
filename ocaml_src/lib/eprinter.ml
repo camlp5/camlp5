@@ -98,3 +98,5 @@ let clear pr = pr.pr_levels <- []; pr.pr_fun <- pr_fun pr.pr_name pr;;
 
 let apply_level pr lname pc z = pr.pr_fun lname pc z;;
 let apply pr pc z = pr.pr_fun "" pc z;;
+
+let empty_pc = {ind = 0; bef = ""; aft = ""; dang = ""};;

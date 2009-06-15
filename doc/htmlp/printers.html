@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: printers.html,v 1.1 2007/08/16 16:38:54 deraugla Exp $ -->
+  <!-- $Id: printers.html,v 1.2 2007/08/16 18:40:41 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible printers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -22,7 +22,49 @@
 <p>This chapter describes the whole syntax and semantics of the
   extensible printers of camlp5.</p>
 
-<p>... to be written ...</p>
+<p>Symmetric to the <a href="grammars.html">extensible grammars</a>,
+  the extensible printers allow to define and extend printers of data
+  or programs. A specific statement "<tt>EXTEND_PRINTER</tt>" define
+  these extensions.</p>
+
+<p>... to be continued ...</p>
+
+<div id="tableofcontents">
+</div>
+
+<h2>Getting started</h2>
+
+<p>A printer is a value of type "<tt>Eprinter.t a</tt>" where
+  "<tt>a</tt>" is the type of the item to be printed. When applied, a
+  printer return a string, representing the printed item.</p>
+
+<p>To create a printer, one has to use the function
+  "<tt>Eprinter.make</tt>" with, as parameter, the name of the
+  printer, (used in error messages). A printer is created empty,
+  i.e. it fails if it is applied.</p>
+
+<p>Like grammar entries, printers may have several levels. When the
+  function "<tt>Eprinter.apply</tt>" is applied to a printer, the
+  first level is called.  The function "<tt>Eprinter.apply_level</tt>"
+  allows to call a printer at some specific level possibly different
+  from the first one. When a level does not match any value of the
+  printed item, the next level is tested. If there is no more levels,
+  the printer fails.</p>
+
+<p>In semantic actions of printers, functions are provided to
+  recursively call the current level and the next level. Moreover,
+  a <em>printing context</em> variable is also given, giving the
+  current indentation, what has to be printed before in the same line
+  and what has to be printed after in the same line (it is not
+  mandatory to use them).</p>
+
+<p>The extension of printers can ben done with the
+  "<tt>EXTEND_PRINTER</tt>" statement added by the <em>parsing
+  kit</em> "<tt>pa_extprint.cmo</tt>".</p>
+
+<h2>Syntax of the EXTEND_PRINTER statement</h2>
+
+<p>... to be continued ...</p>
 
 <div class="trailer">
 </div>

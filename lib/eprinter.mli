@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: eprinter.mli,v 1.2 2007/08/16 16:01:19 deraugla Exp $ *)
+(* $Id: eprinter.mli,v 1.3 2007/08/16 18:40:41 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 type t 'a = 'abstract;
@@ -11,6 +11,8 @@ value apply : t 'a -> pr_context -> 'a -> string;
 value apply_level : t 'a -> string -> pr_context -> 'a -> string;
 
 value clear : t 'a -> unit;
+
+value empty_pc : pr_context;
 
 (**/**)
 

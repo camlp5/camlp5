@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: eprinter.ml,v 1.9 2007/08/16 16:01:19 deraugla Exp $ *)
+(* $Id: eprinter.ml,v 1.10 2007/08/16 18:40:41 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 type t 'a =
@@ -98,3 +98,5 @@ value clear pr = do {
 
 value apply_level pr lname pc z = pr.pr_fun lname pc z;
 value apply pr pc z = pr.pr_fun "" pc z;
+
+value empty_pc = {ind = 0; bef = ""; aft = ""; dang = ""};
