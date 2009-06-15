@@ -1,10 +1,10 @@
-# $Id: Makefile,v 1.39 2007/10/14 03:41:11 deraugla Exp $
+# $Id: Makefile,v 1.40 2007/10/25 02:41:51 deraugla Exp $
 
 include ../config/Makefile
 
 INCLUDES=-I ../main -I ../boot
 OCAMLCFLAGS=-warn-error A $(INCLUDES)
-OBJS=pa_o.cmo pa_op.cmo pa_oop.cmo pa_sml.cmo pa_lisp.cmo pa_scheme.cmo pa_extfold.cmo pa_extfun.cmo pa_extprint.cmo pa_fstream.cmo pa_lefteval.cmo pa_lex.cmo pa_pragma.cmo pr_r.cmo pr_ro.cmo pr_rp.cmo pr_o.cmo pr_op.cmo pr_scheme.cmo pr_schemep.cmo pr_extend.cmo pr_extfun.cmo pr_null.cmo pr_depend.cmo q_phony.cmo
+OBJS=pa_o.cmo pa_op.cmo pa_oop.cmo pa_sml.cmo pa_lisp.cmo pa_scheme.cmo pa_extfold.cmo pa_extfun.cmo pa_extprint.cmo pa_fstream.cmo pa_lefteval.cmo pa_pragma.cmo pr_r.cmo pr_ro.cmo pr_rp.cmo pr_o.cmo pr_op.cmo pr_scheme.cmo pr_schemep.cmo pr_extend.cmo pr_extfun.cmo pr_null.cmo pr_depend.cmo q_phony.cmo
 CAMLP5OM=pa_o.cmo pa_op.cmo ../meta/pr_dump.cmo
 CAMLP5SCHM=pa_scheme.cmo ../meta/pr_dump.cmo
 CAMLP5OMX=pa_o.cmx pa_op.cmx ../meta/pr_dump.cmx
@@ -73,6 +73,7 @@ get_promote:
 
 install:
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(NAME)" "$(DESTDIR)$(BINDIR)"
+	rm -f "$(DESTDIR)$(LIBDIR)/$(NAME)/pa_lex.cmo"
 	cp $(OBJS) "$(DESTDIR)$(LIBDIR)/$(NAME)/."
 	cp lib.sml "$(DESTDIR)$(LIBDIR)/$(NAME)/."
 	cp $(NAME)o$(EXE) $(NAME)sch$(EXE) "$(DESTDIR)$(BINDIR)/."
