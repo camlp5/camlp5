@@ -1,5 +1,7 @@
 #!/bin/sh
-# $Id: html2latex,v 1.2 2007/07/13 23:10:04 deraugla Exp $
+# $Id: html2latex,v 1.3 2007/07/14 00:12:50 deraugla Exp $
+
+FILES="index.html ptools.html parsers.html fparsers.html lexers.html grammars.html pretty.html opretty.html ml_ast.html pragma.html extfun.html"
 
 echo "\
 \\\\documentclass{book}
@@ -10,27 +12,30 @@ echo "\
 \\\\addtolength{\\\\textheight}{1.75in}
 \\\\begin{document}"
 
-while [ "$1" != "" ]; do
+for i in $FILES; do
+  echo "======" 1>&2
+  echo "$i" 1>&2
   sed -e '0,/<div id="content">/d' \
-    -e 's/<h1[^>]*>/\\chapter{/' -e 's|</h1>|}|' \
-    -e 's/<h2>/\\section{/' -e 's|</h2>|}|' \
-    -e 's/<p>//' -e 's|</p>||' \
-    -e 's/<ul>/\\begin{itemize}/' -e 's|</ul>|\\end{itemize}|' \
-    -e 's/<ol>/\\begin{enumerate}/' -e 's|</ol>|\\end{enumerate}|' \
-    -e 's/<li>/\\item /' -e 's|</li>||' \
-    -e 's/<pre>/\\begin{verbatim}/' -e 's|</pre>|\\end{verbatim}|' \
+    -e 's/^ *<h1[^>]*>/\\chapter{/' -e 's|</h1>|}|' \
+    -e 's/^ *<h2>/\\section{/' -e 's|</h2>|}|' \
+    -e 's/^ *<h3>/\\subsection{/' -e 's|</h3>|}|' \
+    -e 's/^ *<p>/\\noindent /' -e 's|</p>||' \
+    -e 's/^ *<ul>/\\begin{itemize}/' -e 's|^ *</ul>|\\end{itemize}|' \
+    -e 's/^ *<ol>/\\begin{enumerate}/' -e 's|^ *</ol>|\\end{enumerate}|' \
+    -e 's/^ *<li>/\\item /' -e 's| *</li>||' \
+    -e '/<pre>/,/<\/pre>/s/^/  /g' \
+    -e 's/^ *<pre>/\\begin{verbatim}/' -e 's|^ *</pre>|\\end{verbatim}|' \
     -e 's|<code>\([^<]*\)</code>|\\verb/\1/|g' \
     -e 's|<tt>\([^<]*\)</tt>|\\verb/\1/|g' \
-    -e 's/<a href=[^>]*>//g' -e 's|</a>||g' \
+    -e 's|<em>\([^<]*\)</em>|\\emph{\1}|g' \
+    -e 's/<a [^>]*>//g' -e 's|</a>||g' \
     -e 's/<span [^>]*>//g' -e 's|</span>||g' \
     -e 's/&lt;/</g' -e 's/&gt;/>/g' \
     -e 's/_/\\_/g' \
     -e 's/#/\\#/g' \
     -e '/\\begin{verbatim}/,/\\end{verbatim}/s/\\_/_/g' \
     -e '/\\begin{verbatim}/,/\\end{verbatim}/s/\\#/#/g' \
-    -e '/\\begin{verbatim}/,/\\end{verbatim}/s/^/  /g' \
-    -e '/<div class="trailer">/,$d' $1
-  shift
+    -e '/<div class="trailer">/,$d' $i
 done
   
 echo "
