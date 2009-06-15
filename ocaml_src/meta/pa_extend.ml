@@ -264,7 +264,7 @@ module MetaAction =
                 mloc),
              MLast.ExStr (loc, s))
       | MLast.ExLet (loc, rf, pel, e) ->
-          let rf = mbool rf in
+          let rf = mvala mbool rf in
           MLast.ExApp
             (loc,
              MLast.ExApp

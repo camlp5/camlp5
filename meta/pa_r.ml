@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.51 2007/09/09 07:39:45 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.52 2007/09/09 08:06:50 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -229,9 +229,9 @@ EXTEND
   ;
   expr:
     [ "top" RIGHTA
-      [ "let"; r = FLAG "rec"; l = LIST1 let_binding SEP "and"; "in";
+      [ "let"; r = V FLAG "rec"; l = LIST1 let_binding SEP "and"; "in";
         x = SELF ->
-          <:expr< let $flag:r$ $list:l$ in $x$ >>
+          <:expr< let $aflag:r$ $list:l$ in $x$ >>
       | "let"; "module"; m = UIDENT; mb = mod_fun_binding; "in"; e = SELF ->
           <:expr< let module $m$ = $mb$ in $e$ >>
       | "fun"; "["; l = LIST0 match_case SEP "|"; "]" ->
@@ -254,8 +254,8 @@ EXTEND
       | "while"; e = SELF; "do"; "{"; seq = sequence; "}" ->
           <:expr< while $e$ do { $list:seq$ } >> ]
     | "where"
-      [ e = SELF; "where"; rf = FLAG "rec"; lb = let_binding ->
-          <:expr< let $flag:rf$ $list:[lb]$ in $e$ >> ]
+      [ e = SELF; "where"; rf = V FLAG "rec"; lb = let_binding ->
+          <:expr< let $aflag:rf$ $list:[lb]$ in $e$ >> ]
     | ":=" NONA
       [ e1 = SELF; ":="; e2 = SELF; dummy -> <:expr< $e1$ := $e2$ >> ]
     | "||" RIGHTA
@@ -342,9 +342,9 @@ EXTEND
     [ [ -> () ] ]
   ;
   sequence:
-    [ [ "let"; rf = FLAG "rec"; l = LIST1 let_binding SEP "and"; "in";
+    [ [ "let"; rf = V FLAG "rec"; l = LIST1 let_binding SEP "and"; "in";
         el = SELF ->
-          [<:expr< let $flag:rf$ $list:l$ in $mksequence loc el$ >>]
+          [<:expr< let $aflag:rf$ $list:l$ in $mksequence loc el$ >>]
       | e = expr; ";"; el = SELF -> [e :: el]
       | e = expr; ";" -> [e]
       | e = expr -> [e] ] ]

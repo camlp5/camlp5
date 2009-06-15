@@ -772,7 +772,7 @@ let rec expr =
   | ExLab (loc, _, _) -> error loc "labeled expression not allowed here"
   | ExLaz (loc, e) -> mkexp loc (Pexp_lazy (expr e))
   | ExLet (loc, rf, pel, e) ->
-      mkexp loc (Pexp_let (mkrf rf, List.map mkpe pel, expr e))
+      mkexp loc (Pexp_let (mkrf (uv rf), List.map mkpe pel, expr e))
   | ExLid (loc, s) -> mkexp loc (Pexp_ident (lident (uv s)))
   | ExLmd (loc, i, me, e) ->
       mkexp loc (Pexp_letmodule (i, module_expr me, expr e))
