@@ -511,10 +511,11 @@ and type_declaration_list_se =
         | Satom loc Alid n -> (n, loc, [])
         | se -> error se "type declaration" ]
       in
+      let empty = [] in
       let td =
         {MLast.tdNam = (loc1, <:vala< n1 >>); MLast.tdPrm = <:vala< tpl >>;
          MLast.tdPrv = <:vala< False >>; MLast.tdDef = ctyp_se se2;
-         MLast.tdCon = <:vala< [] >>}
+         MLast.tdCon = <:vala< empty >>}
       in
       [td :: type_declaration_list_se sel]
   | [] -> []

@@ -1,5 +1,5 @@
 ;; camlp5 ./pa_lispr.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-;; $Id: pa_lisp.ml,v 1.22 2007/09/19 16:22:18 deraugla Exp $
+;; $Id: pa_lisp.ml,v 1.23 2007/09/21 19:25:27 deraugla Exp $
 ;; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -540,10 +540,11 @@
                   (, n loc (list)))
                  ((se)
                   (error se "type declaration")))))
-     (let ((td ({} (MLast.tdNam (, loc1 <:vala< n1 >>))
-                   (MLast.tdPrm <:vala< tpl >>) (MLast.tdPrv <:vala< False >>)
-                   (MLast.tdDef (ctyp_se se2))
-                   (MLast.tdCon <:vala< (list) >>))))
+     (let* ((empty (list))
+            (td ({} (MLast.tdNam (, loc1 <:vala< n1 >>))
+                    (MLast.tdPrm <:vala< tpl >>) (MLast.tdPrv <:vala< False >>)
+                    (MLast.tdDef (ctyp_se se2))
+                    (MLast.tdCon <:vala< empty >>))))
           (list td :: (type_declaration_list_se sel)))))
   ((list) (list))
   ((list se :: _) (error se "type_declaration")))
