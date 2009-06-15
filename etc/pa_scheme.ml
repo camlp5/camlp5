@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.22 2007/09/18 02:33:32 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.23 2007/09/19 16:22:18 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -327,7 +327,7 @@
       (let* ((s (Pcaml.rename_id.val s))
              (mt (module_type_se se1))
              (me (module_expr_se se2)))
-         <:module_expr< functor ($s$ : $mt$) -> $me$ >>))
+         <:module_expr< functor ($uid:s$ : $mt$) -> $me$ >>))
      ((Sexpr loc [(Slid _ "struct") . sl])
       (let ((mel (List.map str_item_se sl)))
          <:module_expr< struct $list:mel$ end >>))
@@ -343,7 +343,7 @@
       (let* ((s (Pcaml.rename_id.val s))
              (mt1 (module_type_se se1))
              (mt2 (module_type_se se2)))
-         <:module_type< functor ($s$ : $mt1$) -> $mt2$ >>))
+         <:module_type< functor ($uid:s$ : $mt1$) -> $mt2$ >>))
      ((Sexpr loc [(Slid _ "sig") . sel])
       (let ((sil (List.map sig_item_se sel)))
          <:module_type< sig $list:sil$ end >>))
@@ -368,24 +368,24 @@
      ((Sexpr loc [(Slid _ "exception") (Suid _ c) . sel])
       (let* ((c (Pcaml.rename_id.val c))
              (tl (List.map ctyp_se sel)))
-         <:sig_item< exception $c$ of $list:tl$ >>))
+         <:sig_item< exception $uid:c$ of $list:tl$ >>))
      ((Sexpr loc [(Slid _ "value") (Slid _ s) se])
       (let* ((s (Pcaml.rename_id.val s))
              (t (ctyp_se se)))
-         <:sig_item< value $s$ : $t$ >>))
+         <:sig_item< value $lid:s$ : $t$ >>))
      ((Sexpr loc [(Slid _ "external") (Slid _ i) se . sel])
       (let* ((i (Pcaml.rename_id.val i))
              (pd (List.map string_se sel))
              (t (ctyp_se se)))
-         <:sig_item< external $i$ : $t$ = $list:pd$ >>))
+         <:sig_item< external $lid:i$ : $t$ = $list:pd$ >>))
      ((Sexpr loc [(Slid _ "module") (Suid _ s) se])
       (let* ((s (Pcaml.rename_id.val s))
              (mb (module_type_se se)))
-         <:sig_item< module $s$ : $mb$ >>))
+         <:sig_item< module $uid:s$ : $mb$ >>))
      ((Sexpr loc [(Slid _ "moduletype") (Suid _ s) se])
       (let* ((s (Pcaml.rename_id.val s))
              (mt (module_type_se se)))
-         <:sig_item< module type $s$ = $mt$ >>))
+         <:sig_item< module type $uid:s$ = $mt$ >>))
      (se (error se "sig item"))))
   ((str_item_se se)
     (match se
@@ -397,7 +397,7 @@
      ((Sexpr loc [(Slid _ "exception") (Suid _ c) . sel])
       (let* ((c (Pcaml.rename_id.val c))
              (tl (List.map ctyp_se sel)))
-         <:str_item< exception $c$ of $list:tl$ >>))
+         <:str_item< exception $uid:c$ of $list:tl$ >>))
      ((Sexpr loc [(Slid _ (as (or "define" "definerec") r)) se . sel])
       (let* ((r (= r "definerec"))
              ((values p e) (fun_binding_se se (begin_se loc sel))))
@@ -410,15 +410,15 @@
       (let* ((i (Pcaml.rename_id.val i))
              (pd (List.map string_se sel))
              (t (ctyp_se se)))
-         <:str_item< external $i$ : $t$ = $list:pd$ >>))
+         <:str_item< external $lid:i$ : $t$ = $list:pd$ >>))
      ((Sexpr loc [(Slid _ "module") (Suid _ i) se])
       (let* ((i (Pcaml.rename_id.val i))
              (mb (module_binding_se se)))
-         <:str_item< module $i$ = $mb$ >>))
+         <:str_item< module $uid:i$ = $mb$ >>))
      ((Sexpr loc [(Slid _ "moduletype") (Suid _ s) se])
       (let* ((s (Pcaml.rename_id.val s))
              (mt (module_type_se se)))
-         <:str_item< module type $s$ = $mt$ >>))
+         <:str_item< module type $uid:s$ = $mt$ >>))
      (_
       (let* ((loc (loc_of_sexpr se))
              (e (expr_se se)))
@@ -440,8 +440,8 @@
      ((Sfloat loc s) <:expr< $flo:s$ >>)
      ((Schar loc s) <:expr< $chr:s$ >>)
      ((Sstring loc s) <:expr< $str:s$ >>)
-     ((Stid loc s) <:expr< ~ $(Pcaml.rename_id.val s)$ >>)
-     ((Sqid loc s) <:expr< ? $(Pcaml.rename_id.val s)$ >>)
+     ((Stid loc s) <:expr< ~$(Pcaml.rename_id.val s)$ >>)
+     ((Sqid loc s) <:expr< ?$(Pcaml.rename_id.val s)$ >>)
      ((Sexpr loc []) <:expr< () >>)
      ((when (Sexpr loc [(Slid _ s) e1 . (as [_ . _] sel)])
       (List.mem s assoc_left_parsed_op_list))
@@ -474,7 +474,7 @@
                <:expr< $a1$ && $a2$ >>)))))
        (loop (List.map expr_se sel))))
      ((Sexpr loc [(Stid _ s) se])
-      (let ((e (expr_se se))) <:expr< ~ $s$ : $e$ >>))
+      (let ((e (expr_se se))) <:expr< ~$s$: $e$ >>))
      ((Sexpr loc [(Slid _ "-") se])
       (let ((e (expr_se se))) <:expr< - $e$ >>))
      ((Sexpr loc [(Slid _ "if") se se1])
@@ -508,7 +508,7 @@
              (e1 (expr_se se1))
              (e2 (expr_se se2))
              (el (List.map expr_se sel)))
-         <:expr< for $i$ = $e1$ to $e2$ do { $list:el$ } >>))
+         <:expr< for $lid:i$ = $e1$ to $e2$ do { $list:el$ } >>))
      ((Sexpr loc [(Slid loc1 "lambda")]) <:expr< fun [] >>)
      ((Sexpr loc [(Slid loc1 "lambda") sep . sel])
       (let ((e (begin_se loc1 sel)))
@@ -528,7 +528,7 @@
         (let* ((r (= r "letrec"))
                (lbs (List.map let_binding_se sel1))
                (e (begin_se loc sel2)))
-           <:expr< let $opt:r$ $list:lbs$ in $e$ >>))
+           <:expr< let $flag:r$ $list:lbs$ in $e$ >>))
        ([(Slid _ n) (Sexpr _ sl) . sel]
         (let* ((n (Pcaml.rename_id.val n))
                ((values pl el)
@@ -789,8 +789,8 @@
    (lambda_match
     ((Slid loc "_") (Left <:patt< _ >>))
     ((Slid loc s) (Left <:patt< $lid:(Pcaml.rename_id.val s)$ >>))
-    ((Stid loc s) (Left <:patt< ~ $(Pcaml.rename_id.val s)$ >>))
-    ((Sqid loc s) (Left <:patt< ? $(Pcaml.rename_id.val s)$ >>))
+    ((Stid loc s) (Left <:patt< ~$(Pcaml.rename_id.val s)$ >>))
+    ((Sqid loc s) (Left <:patt< ?$(Pcaml.rename_id.val s)$ >>))
     ((Sexpr loc [(Sqid _ s) se])
      (let* ((s (Pcaml.rename_id.val s))
             (e (expr_se se)))
@@ -929,7 +929,7 @@ EXTEND
   implem :
     [ [ "#" / se = sexpr ->
           (let (((values n dp) (directive_se se)))
-             (values [(values <:str_item< # $n$ $opt:dp$ >> loc)] True))
+             (values [(values <:str_item< # $lid:n$ $opt:dp$ >> loc)] True))
       | si = str_item / x = SELF ->
           (let* (((values sil stopped) x)
                  (loc (MLast.loc_of_str_item si)))
@@ -939,7 +939,7 @@ EXTEND
   interf :
     [ [ "#" / se = sexpr ->
           (let (((values n dp) (directive_se se)))
-             (values [(values <:sig_item< # $n$ $opt:dp$ >> loc)] True))
+             (values [(values <:sig_item< # $lid:n$ $opt:dp$ >> loc)] True))
       | si = sig_item / x = SELF ->
           (let* (((values sil stopped) x)
                  (loc (MLast.loc_of_sig_item si)))
@@ -949,14 +949,14 @@ EXTEND
   top_phrase :
     [ [ "#" / se = sexpr ->
           (let (((values n dp) (directive_se se)))
-             (Some <:str_item< # $n$ $opt:dp$ >>))
+             (Some <:str_item< # $lid:n$ $opt:dp$ >>))
       | se = sexpr -> (Some (str_item_se se))
       | EOI -> None ] ]
   /
   use_file :
     [ [ "#" / se = sexpr ->
           (let (((values n dp) (directive_se se)))
-             (values [<:str_item< # $n$ $opt:dp$ >>] True))
+             (values [<:str_item< # $lid:n$ $opt:dp$ >>] True))
       | si = str_item / x = SELF ->
           (let (((values sil stopped) x)) (values [si . sil] stopped))
       | EOI -> (values [] False) ] ]

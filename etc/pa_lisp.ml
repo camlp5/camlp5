@@ -1,5 +1,5 @@
 ;; camlp5 ./pa_lispr.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-;; $Id: pa_lisp.ml,v 1.21 2007/09/18 02:33:32 deraugla Exp $
+;; $Id: pa_lisp.ml,v 1.22 2007/09/19 16:22:18 deraugla Exp $
 ;; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -215,7 +215,7 @@
            (let ((e (expr_se se))) <:str_item< $exp:e$ >>))
           ((Sexpr loc (list (Satom _ Alid "module") (Satom _ Auid i) se))
            (let ((mb (module_binding_se se)))
-             <:str_item< module $i$ = $mb$ >>))
+             <:str_item< module $uid:i$ = $mb$ >>))
           ((Sexpr loc (list (Satom _ Alid "open") (Satom _ Auid s)))
            (let ((s (list s)))
              <:str_item< open $s$ >>))
@@ -283,7 +283,7 @@
             ((list (Sexpr _ sel1) :: sel2)
              (let* ((lbs (List.map let_binding_se sel1))
                     (e (progn_se loc sel2)))
-               <:expr< let $opt:r$ $list:lbs$ in $e$ >>))
+               <:expr< let $flag:r$ $list:lbs$ in $e$ >>))
             ((list se :: _) (error se "let_binding"))
             ((_) (error_loc loc "let_binding")))))
   ((Sexpr loc (list (Satom _ Alid "let*") :: sel))
@@ -602,7 +602,7 @@
                      (let ((n (String.sub s 1 (- (String.length s) 1))))
                        (match sl
                               ((list (Satom _ Astring s))
-                               (<:str_item< # $n$ $str:s$ >>))
+                               (<:str_item< # $lid:n$ $str:s$ >>))
                               (_ (match ()))))
                    (str_item_se se)))
                 ((Sexpr loc _) (str_item_se se)))))

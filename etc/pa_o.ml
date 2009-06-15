@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.58 2007/09/18 18:47:44 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.59 2007/09/19 16:22:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -621,7 +621,7 @@ EXTEND
       | ":"; t = ctyp; "="; e = expr -> <:expr< ($e$ : $t$) >> ] ]
   ;
   match_case:
-    [ [ x1 = patt; w = V OPT [ "when"; e = expr -> e ]; "->"; x2 = expr ->
+    [ [ x1 = patt; w = V (OPT [ "when"; e = expr -> e ]); "->"; x2 = expr ->
           (x1, w, x2) ] ]
   ;
   lbl_expr_list:
@@ -753,11 +753,11 @@ EXTEND
   ;
   (* Type declaration *)
   type_declaration:
-    [ [ tpl = type_parameters; n = type_patt; "="; pf = V FLAG "private";
-        tk = type_kind; cl = V LIST0 constrain ->
+    [ [ tpl = type_parameters; n = type_patt; "="; pf = V (FLAG "private");
+        tk = type_kind; cl = V (LIST0 constrain) ->
           {MLast.tdNam = n; MLast.tdPrm = <:vala< tpl >>;
            MLast.tdPrv = pf; MLast.tdDef = tk; MLast.tdCon = cl}
-      | tpl = type_parameters; n = type_patt; cl = V LIST0 constrain ->
+      | tpl = type_parameters; n = type_patt; cl = V (LIST0 constrain) ->
           {MLast.tdNam = n; MLast.tdPrm = <:vala< tpl >>;
            MLast.tdPrv = <:vala< False >>;
            MLast.tdDef = <:ctyp< '$choose_tvar tpl$ >>; MLast.tdCon = cl} ] ]
@@ -790,7 +790,7 @@ EXTEND
       | "-"; "'"; i = ident2 -> (i, (False, True)) ] ]
   ;
   constructor_declaration:
-    [ [ ci = cons_ident; "of"; cal = V LIST1 (ctyp LEVEL "apply") SEP "*" ->
+    [ [ ci = cons_ident; "of"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*") ->
           (loc, ci, cal)
       | ci = cons_ident -> (loc, ci, <:vala< [] >>) ] ]
   ;
@@ -867,7 +867,7 @@ EXTEND
   ;
   (* Class expressions *)
   class_declaration:
-    [ [ vf = V FLAG "virtual"; ctp = class_type_parameters; i = V LIDENT;
+    [ [ vf = V (FLAG "virtual"); ctp = class_type_parameters; i = V LIDENT;
         cfb = class_fun_binding ->
           {MLast.ciLoc = loc; MLast.ciVir = vf; MLast.ciPrm = ctp;
            MLast.ciNam = i; MLast.ciExp = cfb} ] ]
@@ -881,7 +881,7 @@ EXTEND
   ;
   class_type_parameters:
     [ [ -> (loc, <:vala< [] >>)
-      | "["; tpl = V LIST1 type_parameter SEP ","; "]" -> (loc, tpl) ] ]
+      | "["; tpl = V (LIST1 type_parameter SEP ","); "]" -> (loc, tpl) ] ]
   ;
   class_fun_def:
     [ [ p = patt LEVEL "simple"; "->"; ce = class_expr ->
@@ -987,13 +987,13 @@ EXTEND
           <:class_sig_item< type $t1$ = $t2$ >> ] ]
   ;
   class_description:
-    [ [ vf = V FLAG "virtual"; ctp = class_type_parameters; n = V LIDENT;
+    [ [ vf = V (FLAG "virtual"); ctp = class_type_parameters; n = V LIDENT;
         ":"; ct = class_type ->
           {MLast.ciLoc = loc; MLast.ciVir = vf; MLast.ciPrm = ctp;
            MLast.ciNam = n; MLast.ciExp = ct} ] ]
   ;
   class_type_declaration:
-    [ [ vf = V FLAG "virtual"; ctp = class_type_parameters; n = V LIDENT;
+    [ [ vf = V (FLAG "virtual"); ctp = class_type_parameters; n = V LIDENT;
         "="; cs = class_signature ->
           {MLast.ciLoc = loc; MLast.ciVir = vf; MLast.ciPrm = ctp;
            MLast.ciNam = n; MLast.ciExp = cs} ] ]
