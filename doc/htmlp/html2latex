@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2latex,v 1.1 2007/07/13 23:07:34 deraugla Exp $
+# $Id: html2latex,v 1.2 2007/07/13 23:10:04 deraugla Exp $
 
 echo "\
 \\\\documentclass{book}
@@ -28,7 +28,7 @@ while [ "$1" != "" ]; do
     -e 's/#/\\#/g' \
     -e '/\\begin{verbatim}/,/\\end{verbatim}/s/\\_/_/g' \
     -e '/\\begin{verbatim}/,/\\end{verbatim}/s/\\#/#/g' \
-    -e '/\\begin{verbatim}/,/\\end{verbatim}/s/^/    /g' \
+    -e '/\\begin{verbatim}/,/\\end{verbatim}/s/^/  /g' \
     -e '/<div class="trailer">/,$d' $1
   shift
 done
