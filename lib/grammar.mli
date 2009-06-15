@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.mli,v 1.18 2007/09/01 21:20:34 deraugla Exp $ *)
+(* $Id: grammar.mli,v 1.19 2007/09/02 19:30:29 deraugla Exp $ *)
 
 (** Extensible grammars.
 
@@ -65,7 +65,7 @@ module Entry :
 -      [Entry.name e] returns the name of the entry [e].
 -      [Entry.of_parser g n p] makes an entry from a token stream parser.
 -      [Entry.print e] displays the entry [e] using [Format].
--      [Entry.find e s] finds the entry named [s] in [e]'s rules.
+-      [Entry.find e s] finds the entry named [s] in the rules of [e].
 -      [Entry.obj e] converts an entry into a [Gramext.g_entry] allowing
 -      to see what it holds. *)
 

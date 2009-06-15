@@ -80,3 +80,7 @@ val specific_space_dot : bool ref;;
 val no_quotations : bool ref;;
    (** When True, all lexers built by [Plexer.gmake ()] do not lex the
        quotation syntax. Default is False (quotations are lexed). *)
+
+(**/**)
+
+val force_antiquot : bool ref;;

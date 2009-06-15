@@ -10,13 +10,15 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.92 2007/09/01 21:20:34 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.93 2007/09/02 19:30:29 deraugla Exp $ *)
 
 value no_quotations = ref False;
 value error_on_unknown_keywords = ref False;
 
 value dollar_for_antiquotation = ref True;
 value specific_space_dot = ref False;
+
+value force_antiquot = ref False;
 
 (* The string buffering machinery *)
 
@@ -212,7 +214,7 @@ value rec antiquot ctx bp =
 ;
 
 value dollar ctx bp buf strm =
-  if ctx.dollar_for_antiquotation then
+  if ctx.dollar_for_antiquotation || force_antiquot.val then
     antiquot ctx bp buf strm
   else
     match strm with lexer

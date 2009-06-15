@@ -18,6 +18,8 @@ let error_on_unknown_keywords = ref false;;
 let dollar_for_antiquotation = ref true;;
 let specific_space_dot = ref false;;
 
+let force_antiquot = ref false;;
+
 (* The string buffering machinery *)
 
 let rev_implode l =
@@ -410,7 +412,8 @@ let rec antiquot ctx bp buf (strm__ : _ Stream.t) =
 ;;
 
 let dollar ctx bp buf strm =
-  if ctx.dollar_for_antiquotation then antiquot ctx bp buf strm
+  if ctx.dollar_for_antiquotation || !force_antiquot then
+    antiquot ctx bp buf strm
   else
     let (strm__ : _ Stream.t) = strm in
     let buf = B.add '$' buf in let buf = ident2 buf strm__ in "", B.get buf
@@ -871,11 +874,11 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-         (fun _ -> raise (Match_failure ("plexer.ml", 542, 25)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 542, 45)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 542, 68)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 543, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 543, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 544, 25)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 544, 45)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 544, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 545, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 545, 37)));
        tok_comm = None}
   in
   let glex =
