@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.132 2007/12/23 10:36:27 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.133 2007/12/23 12:17:23 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -814,36 +814,15 @@ EXTEND_PRINTER
                 pprintf pc "fun %p ->@;%p" (plist simple_patt 4) pl expr e1
           | [] ->
               let loc = MLast.loc_of_expr ge in
-              horiz_vertic
-                (fun () ->
-                   let (op_begin, op_end) =
-                     if List.mem pc.dang ["|"; ";"] then ("(", ")")
-                     else ("", "")
-                   in
-                   sprintf "%s%sfun _ -> %s%s%s" pc.bef op_begin
-                     (raise_match_failure {(pc) with bef = ""; aft = ""} loc)
-                     op_end pc.aft)
-                (fun () ->
-                   let s1 = sprintf "%sfun _ ->" pc.bef in
-                   let s2 =
-                     raise_match_failure
-                       {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
-                       loc
-                   in
-                   sprintf "%s\n%s" s1 s2)
+              if List.mem pc.dang ["|"; ";"] then
+                pprintf pc "(fun _ ->@;%p)" raise_match_failure loc
+              else
+                pprintf pc "fun _ ->@;%p" raise_match_failure loc
           | pwel ->
-              let (op_begin, sh, pc_aft, pc_dang, op_end) =
-                if List.mem pc.dang ["|"; ";"] then
-                  ("(", 1, "", "", sprintf ")%s" pc.aft)
-                else ("", 0, pc.aft, pc.dang, "")
-              in
-              let s =
-                match_assoc_list
-                  {ind = pc.ind + sh; bef = tab (pc.ind + sh); aft = pc_aft;
-                   dang = pc_dang}
-                  pwel
-              in
-              sprintf "%s%sfunction\n%s%s" pc.bef op_begin s op_end ]
+              if List.mem pc.dang ["|"; ";"] then
+                pprintf pc "@[<1>(function@ %p)@]"match_assoc_list pwel
+              else
+                pprintf pc "@[<b>function@ %p@]" match_assoc_list pwel ]
       | <:expr< try $e1$ with [ $list:pwel$ ] >> |
         <:expr< match $e1$ with [ $list:pwel$ ] >> as e ->
           let op =
