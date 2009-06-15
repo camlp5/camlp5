@@ -400,6 +400,41 @@ value lident_expr loc s =
   else <:expr< $lid:(rename_id s)$ >>
 ;
 
+value rec anti_list_map f =
+  fun
+  [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
+  | sel -> <:vala< (List.map f sel) >> ]
+;
+
+value anti_lid =
+  fun
+  [ Slid _ s ->
+      let s = rename_id s in
+      Some <:vala< s >>
+  | Slidv _ s -> Some s
+  | _ -> None ]
+;
+
+value anti_lid_or_error =
+  fun
+  [ Slid _ s ->
+      let s = rename_id s in
+      <:vala< s >>
+  | Slidv _ s -> s
+  | Santi _ ("" | "_") s -> <:vala< $s$ >>
+  | se -> error se "lowercase identifier" ]
+;
+
+value anti_uid_or_error =
+  fun
+  [ Suid _ s ->
+      let s = rename_id s in
+      <:vala< s >>
+  | Suidv _ s -> s
+  | Santi _ ("" | "_") s -> <:vala< $s$ >>
+  | se -> error se "uppercase identifier" ]
+;
+
 value rec module_expr_se =
   fun
   [ Sexpr loc [Slid _ "functor"; Suid _ s; se1; se2] ->
@@ -473,9 +508,9 @@ and sig_item_se =
       <:sig_item< value $lid:s$ : $t$ >>
   | Sexpr loc [Slid _ "external"; Slid _ i; se :: sel] ->
       let i = rename_id i in
-      let pd = List.map string_se sel in
       let t = ctyp_se se in
-      <:sig_item< external $lid:i$ : $t$ = $list:pd$ >>
+      let pd = anti_list_map string_se sel in
+      <:sig_item< external $lid:i$ : $t$ = $_list:pd$ >>
   | Sexpr loc [Slid _ "module"; Suid _ s; se] ->
       let s = rename_id s in
       let mb = module_type_se se in
@@ -505,11 +540,7 @@ and str_item_se se =
         | Suidv _ s -> s
         | se -> error se "uident" ]
       in
-      let tl =
-        match sel with
-        [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
-        | _ -> <:vala< (List.map ctyp_se sel) >> ]
-      in
+      let tl = anti_list_map ctyp_se sel in
       <:str_item< exception $_:c$ of $_list:tl$ >>
   | Sexpr loc [Slid _ "exceptionrebind"; se1; se2] ->
       let c =
@@ -532,39 +563,38 @@ and str_item_se se =
       let r = r = "definerec*" in
       let lbs = List.map let_binding_se sel in
       <:str_item< value $flag:r$ $list:lbs$ >>
-  | Sexpr loc [Slid _ "external"; Slid _ i; se :: sel] ->
-      let i = rename_id i in
-      let pd = List.map string_se sel in
-      let t = ctyp_se se in
-      <:str_item< external $lid:i$ : $t$ = $list:pd$ >>
-  | Sexpr loc [Slid _ "module"; Suid _ i; se] ->
-      let i = rename_id i in
-      let mb = module_binding_se se in
-      <:str_item< module $uid:i$ = $mb$ >>
+  | Sexpr loc [Slid _ "external"; se1; se2 :: sel] ->
+      let i = anti_lid_or_error se1 in
+      let t = ctyp_se se2 in
+      let pd = anti_list_map string_se sel in
+      <:str_item< external $_lid:i$ : $t$ = $_list:pd$ >>
+  | Sexpr loc [Slid _ "include"; se] ->
+      let me = module_expr_se se in
+      <:str_item< include $me$ >>
+  | Sexpr loc [Slid _ "module"; se1; se2] ->
+      let (i, mb) = module_binding_se (Sexpr loc [se1; se2]) in
+      <:str_item< module $_uid:i$ = $mb$ >>
+  | Sexpr loc [Slid _ ("module*" | "modulerec*" as rf) :: sel] ->
+      let rf = rf = "modulerec*" in
+      let lmb = anti_list_map module_binding_se sel in
+      <:str_item< module $flag:rf$ $_list:lmb$ >>
   | Sexpr loc [Slid _ "moduletype"; Suid _ s; se] ->
       let s = rename_id s in
       let mt = module_type_se se in
       <:str_item< module type $uid:s$ = $mt$ >>
   | Sexpr loc [Slid _ "#"; se1] ->
-      match se1 with
-      [ Slid _ s ->
-          let s = rename_id s in
-          <:str_item< # $lid:s$ >>
-      | Slidv _ s -> <:str_item< # $_lid:s$ >>
-      | _ ->
+      match anti_lid se1 with
+      [ Some s -> <:str_item< # $_lid:s$ >>
+      | None ->
           let loc = loc_of_sexpr se in
           let e = expr_se se in
           <:str_item< $exp:e$ >> ]
   | Sexpr loc [Slid _ "#"; se1; se2] ->
-      match se1 with
-      [ Slid _ s ->
-          let s = rename_id s in
-          let e = expr_se se2 in
-          <:str_item< # $lid:s$ $e$ >>
-      | Slidv _ s ->
+      match anti_lid se1 with
+      [ Some s ->
           let e = expr_se se2 in
           <:str_item< # $_lid:s$ $e$ >>
-      | _ ->
+      | None ->
           let loc = loc_of_sexpr se in
           let e = expr_se se in
           <:str_item< $exp:e$ >> ]
@@ -572,7 +602,10 @@ and str_item_se se =
       let loc = loc_of_sexpr se in
       let e = expr_se se in
       <:str_item< $exp:e$ >> ]
-and module_binding_se se = module_expr_se se
+and module_binding_se =
+  fun
+  [ Sexpr loc [se1; se2] -> (anti_uid_or_error se1, module_expr_se se2)
+  | se -> error se "module binding" ]
 and expr_se =
   fun
   [ Sacc loc se1 se2 ->
@@ -660,27 +693,14 @@ and expr_se =
         | [se :: _] -> error se "cond clause" ]
   | Sexpr loc [Slid _ "while"; se :: sel] ->
       let e = expr_se se in
-      let el =
-        match sel with
-        [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
-        | _ -> <:vala< (List.map expr_se sel) >> ]
-      in
+      let el = anti_list_map expr_se sel in
       <:expr< while $e$ do { $_list:el$ } >>
   | Sexpr loc [Slid _ ("for" | "fordown" as d); sei; se1; se2 :: sel] ->
-      let i =
-        match sei with
-        [ Slid _ i -> <:vala< (rename_id i) >>
-        | Slidv _ i -> i
-        | se -> error_loc (loc_of_sexpr se) "lident" ]
-      in
+      let i = anti_lid_or_error sei in
       let e1 = expr_se se1 in
       let e2 = expr_se se2 in
       let dir = d = "for" in
-      let el =
-        match sel with
-        [ [Santi loc ("list" | "_list") s] -> <:vala< $s$ >>
-        | _ -> <:vala< (List.map expr_se sel) >> ]
-      in
+      let el = anti_list_map expr_se sel in
       <:expr< for $_lid:i$ = $e1$ $to:dir$ $e2$ do { $_list:el$ } >>
   | Sexpr loc [Slid loc1 "lambda"] -> <:expr< fun [] >>
   | Sexpr loc [Slid loc1 "lambda"; sep :: sel] ->
@@ -704,11 +724,7 @@ and expr_se =
       match sel with
       [ [Sexpr _ sel1 :: sel2] ->
           let r = r = "letrec" in
-          let lbs =
-            match sel1 with
-            [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
-            | _ -> <:vala< (List.map let_binding_se sel1) >> ]
-          in
+          let lbs = anti_list_map let_binding_se sel1 in
           let e = begin_se loc sel2 in
           <:expr< let $flag:r$ $_list:lbs$ in $e$ >>
       | [Slid _ n; Sexpr _ sl :: sel] ->
@@ -796,11 +812,7 @@ and expr_se =
       in
       <:expr< try $e$ with [ $_list:pel$ ] >>
   | Sexpr loc [Slid _ "begin" :: sel] ->
-      let el =
-        match sel with
-        [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
-        | _ -> <:vala< (List.map expr_se sel) >> ]
-      in
+      let el = anti_list_map expr_se sel in
       <:expr< do { $_list:el$ } >>
   | Sexpr loc [Slid _ ":="; se1; se2] ->
       let e1 = expr_se se1 in
@@ -810,26 +822,14 @@ and expr_se =
       let el = Pcaml.vala_map (List.map expr_se) sel in
       <:expr< [| $_list:el$ |] >>
   | Sexpr loc [Slid _ "values" :: sel] ->
-      let el =
-        match sel with
-        [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
-        | _ -> <:vala< (List.map expr_se sel) >> ]
-      in
+      let el = anti_list_map expr_se sel in
       <:expr< ($_list:el$) >>
   | Srec loc [Slid _ "with"; se :: sel] ->
       let e = expr_se se
-      and lel =
-        match sel with
-        [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
-        | _ -> <:vala< (List.map (label_expr_se loc) sel) >> ]
-      in
+      and lel = anti_list_map (label_expr_se loc) sel in
       <:expr< { ($e$) with $_list:lel$ } >>
   | Srec loc sel ->
-      let lel =
-        match sel with
-        [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
-        | _ -> <:vala< (List.map (label_expr_se loc) sel) >> ]
-      in
+      let lel = anti_list_map (label_expr_se loc) sel in
       <:expr< { $_list:lel$ } >>
   | Sexpr loc [Slid _ ":"; se1; se2] ->
       let e = expr_se se1 in
@@ -1003,11 +1003,7 @@ and patt_se =
       let e = expr_se se2 in
       <:patt< ?$_:s$: ($p$ = $e$) >>
   | Srec loc sel ->
-      let lpl =
-        match sel with
-        [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
-        | _ -> <:vala< (List.map (label_patt_se loc) sel) >> ]
-      in
+      let lpl = anti_list_map (label_patt_se loc) sel in
       <:patt< { $_list:lpl$ } >>
   | Sexpr loc [Slid _ ":"; se1; se2] ->
       let p = patt_se se1 in
@@ -1027,11 +1023,7 @@ and patt_se =
       let pl = Pcaml.vala_map (List.map patt_se) sel in
       <:patt< [| $_list:pl$ |] >>
   | Sexpr loc [Slid _ "values" :: sel] ->
-      let pl =
-        match sel with
-        [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
-        | _ -> <:vala< (List.map patt_se sel) >> ]
-      in
+      let pl = anti_list_map patt_se sel in
       <:patt< ($_list:pl$) >>
   | Sexpr loc [Slid _ "as"; se1; se2] ->
       let p1 = patt_se se1 in
@@ -1140,18 +1132,10 @@ and type_param_se se =
 and ctyp_se =
   fun
   [ Sexpr loc [Slid _ "sum" :: sel] ->
-      let cdl =
-        match sel with
-        [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
-        | _ -> <:vala< (List.map constructor_declaration_se sel) >> ]
-      in
+      let cdl = anti_list_map constructor_declaration_se sel in
       <:ctyp< [ $_list:cdl$ ] >>
   | Srec loc sel ->
-      let ldl =
-        match sel with
-        [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
-        | _ -> <:vala< (List.map label_declaration_se sel) >> ]
-      in
+      let ldl = anti_list_map label_declaration_se sel in
       <:ctyp< { $_list:ldl$ } >>
   | Sexpr loc [Slid _ "->" :: ([_; _ :: _] as sel)] ->
       loop sel where rec loop =
@@ -1168,11 +1152,7 @@ and ctyp_se =
       let t2 = ctyp_se se2 in
       <:ctyp< ($t1$ as $t2$) >>
   | Sexpr loc [Slid _ "*" :: sel] ->
-      let tl =
-        match sel with
-        [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
-        | _ -> <:vala< (List.map ctyp_se sel) >> ]
-      in
+      let tl = anti_list_map ctyp_se sel in
       <:ctyp< ($_list:tl$) >>
   | Sexpr loc [Slid _ "=="; se1; se2] ->
       let t1 = ctyp_se se1 in
@@ -1211,20 +1191,14 @@ and ctyp_se =
   | Suidv loc s -> <:ctyp< $_uid:s$ >>
   | Santi loc "" s -> <:ctyp< $xtr:s$ >>
   | se -> error se "ctyp" ]
-and object_field_list_se =
-  fun
-  [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
-  | sel ->
-      let fl =
-        List.map
-          (fun
-           [ Sexpr loc [Slid _ s; se] ->
-               let t = ctyp_se se in
-               (s, t)
-           | se -> error_loc (loc_of_sexpr se) "object field" ])
-          sel
-      in
-      <:vala< fl >> ]
+and object_field_list_se sel =
+  anti_list_map
+    (fun
+     [ Sexpr loc [Slid _ s; se] ->
+         let t = ctyp_se se in
+         (s, t)
+     | se -> error_loc (loc_of_sexpr se) "object field" ])
+    sel
 and constructor_declaration_se =
   fun
   [ Sexpr loc [Suid _ ci :: sel] ->

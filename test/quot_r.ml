@@ -188,6 +188,10 @@
 <:str_item< external $s$ : $t$ = $list:ls$ >>;
 <:str_item< external $_:s$ : $t$ = $_list:ls$ >>;
 <:str_item< include $me$ >>;
+<:str_item< module $list:lsme$ >>;
+<:str_item< module $_list:lsme$ >>;
+<:str_item< module rec $list:lsme$ >>;
+<:str_item< module rec $_list:lsme$ >>;
 <:str_item< module $flag:b$ $list:lsme$ >>;
 <:str_item< module $_flag:b$ $_list:lsme$ >>;
 <:str_item< module type $s$ = $mt$ >>;
