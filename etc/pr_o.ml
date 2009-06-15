@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.143 2007/12/24 10:32:20 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.144 2007/12/24 12:32:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -994,23 +994,14 @@ EXTEND_PRINTER
           in
           right_operator pc 0 unfold next z ]
     | "unary"
-      [ <:expr< ~- $x$ >> -> curr {(pc) with bef = sprintf "%s-" pc.bef} x
-      | <:expr< ~-. $x$ >> -> curr {(pc) with bef = sprintf "%s-." pc.bef} x
-      | <:expr< $int:i$ >> -> sprintf "%s%s%s" pc.bef i pc.aft ]
+      [ <:expr< ~- $x$ >> -> pprintf pc "-%p" curr x
+      | <:expr< ~-. $x$ >> -> pprintf pc "-.%p" curr x
+      | <:expr< $int:i$ >> -> pprintf pc "%s" i ]
     | "apply"
       [ <:expr< assert $e$ >> ->
           pprintf pc "assert@;%p" next e
       | <:expr< lazy $e$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%slazy %s%s" pc.bef
-                 (next {(pc) with bef = ""; aft = ""} e) pc.aft)
-            (fun () ->
-               let s1 = sprintf "%slazy" pc.bef in
-               let s2 =
-                 next {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
-               in
-               sprintf "%s\n%s" s1 s2)
+          pprintf pc "lazy@;%p" next e
       | <:expr< $_$ $_$ >> as z ->
           let inf =
             match z with
