@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.37 2007/07/04 18:21:50 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.38 2007/07/04 18:44:37 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -404,20 +404,18 @@ value record_binding pc (p, e) =
 ;
 
 (* Pretty printing improvements (optional):
-   - prints "value x = e" instead of "value = fun x -> e"
+   - prints "let x = e" instead of "let = fun x -> e"
    - if vertical and "e" is a sequence, put the "do {" at after the "="
-   - the continuation after the expression is optionally on next line if
-     it not a sequence
    - the expression after '=' is displayed with the 'where' statement if
      possible (expr_wh)
    - if "e" is a type constraint, put the constraint after the params. E.g.
-        value f x y = (e : t)
+        let f x y = (e : t) ...
      is displayed:
-        value f x y : t = e
+        let f x y : t = e ...
    Cancellation of all these improvements could be done by changing calls
    to this function to a call to "binding expr" above.
 *)
-value value_or_let_binding space sequ expr_wh pc (p, e) =
+value value_or_let_binding hspace sequ expr_wh pc (p, e) =
   let (p, e) =
     if is_irrefut_patt p then (p, e)
     else
@@ -446,7 +444,7 @@ value value_or_let_binding space sequ expr_wh pc (p, e) =
           [ Some t -> sprintf " : %s" (ctyp {(pc) with bef = ""; aft = ""} t)
           | None -> "" ])
          (expr_wh {(pc) with bef = ""; aft = ""} e)
-         (if pc.aft = "" then "" else sprintf "%s%s" space pc.aft))
+         (if pc.aft = "" then "" else sprintf "%s%s" hspace pc.aft))
     (fun () ->
        let patt_eq k =
          horiz_vertic
@@ -485,20 +483,20 @@ value value_or_let_binding space sequ expr_wh pc (p, e) =
 ;
 
 value value_binding pc pe =
-  let space = "" in
+  let hspace = "" in
   let sequ pc el = sequence_box2 pc el in
   let expr_wh = if flag_where_after_value_eq.val then expr_wh else expr in
-  value_or_let_binding space sequ expr_wh pc pe
+  value_or_let_binding hspace sequ expr_wh pc pe
 ;
 
 value let_binding pc pe =
-  let space = " " in
+  let hspace = " " in
   let sequ pc el =
     let s = sequence_box2 {(pc) with aft = ""} el in
     if pc.aft = "" then s else sprintf "%s\n%s%s" s (tab pc.ind) pc.aft
   in
   let expr_wh = if flag_where_after_let_eq.val then expr_wh else expr in
-  value_or_let_binding space sequ expr_wh pc pe
+  value_or_let_binding hspace sequ expr_wh pc pe
 ;
 
 value match_assoc pc (p, w, e) =
