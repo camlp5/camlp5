@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.58 2007/12/12 11:33:39 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.59 2007/12/12 13:15:53 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -141,29 +141,10 @@ value class_decl pc ci =
 value variant_decl pc pv =
   match pv with
   [ <:poly_variant< `$c$ >> ->
-       sprintf "%s`%s%s" pc.bef c pc.aft
+       pprintf pc "`%s" c
   | <:poly_variant< `$c$ of $flag:ao$ $list:tl$ >> ->
-       horiz_vertic
-         (fun () ->
-            sprintf "%s`%s of %s%s%s" pc.bef c (if ao then "& " else "")
-              (hlist2 ctyp (amp_before ctyp)
-                 {(pc) with bef = ""; aft = ""} tl) pc.aft)
-         (fun () ->
-            let s1 =
-              sprintf "%s`%s of%s" pc.bef c (if ao then " &" else "")
-            in
-            let s2 =
-               horiz_vertic
-                 (fun () ->
-                    sprintf "%s%s%s" (tab (pc.ind + 6))
-                      (hlist2 ctyp (amp_before ctyp)
-                         {(pc) with bef = ""; aft = ""} tl) pc.aft)
-                 (fun () ->
-                    let tl = List.map (fun t -> (t, " &")) tl in
-                    plist ctyp 2
-                      {(pc) with ind = pc.ind + 6; bef = tab (pc.ind + 5)} tl)
-             in
-             sprintf "%s\n%s" s1 s2)
+       pprintf pc "`%s of%s@;<1 5>%p" c (if ao then "& " else "")
+         (hlist2 ctyp (amp_before ctyp)) tl
   | <:poly_variant< $t$ >> ->
        ctyp pc t
   | IFDEF STRICT THEN
