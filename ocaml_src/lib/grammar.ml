@@ -842,8 +842,10 @@ type 'te gen_parsable =
     pa_loc_func : Token.location_function }
 ;;
 
-let parsable_of_char_stream lex cs =
-  let (ts, lf) = lex.Token.tok_func cs in
+type parsable = token gen_parsable;;
+
+let parsable g cs =
+  let (ts, lf) = g.glexer.Token.tok_func cs in
   {pa_chr_strm = cs; pa_tok_strm = ts; pa_loc_func = lf}
 ;;
 
@@ -943,9 +945,11 @@ module Entry =
        econtinue = (fun _ _ _ (strm__ : _ Stream.t) -> raise Stream.Failure);
        edesc = Dlevels []}
     ;;
+    let parse_parsable (entry : 'a e) p : 'e =
+      Obj.magic (parse_parsable entry p)
+    ;;
     let parse (entry : 'a e) cs : 'a =
-      let parsable = parsable_of_char_stream entry.egram.glexer cs in
-      Obj.magic (parse_parsable entry parsable)
+      let parsable = parsable entry.egram cs in parse_parsable entry parsable
     ;;
     let parse_token (entry : 'a e) ts : 'a = Obj.magic (entry.estart 0 ts);;
     let name e = e.ename;;
@@ -1025,7 +1029,10 @@ module GMake (L : GLexerType) =
     type te = L.te;;
     type parsable = te gen_parsable;;
     let gram = gcreate L.lexer;;
-    let parsable = parsable_of_char_stream L.lexer;;
+    let parsable cs =
+      let (ts, lf) = L.lexer.Token.tok_func cs in
+      {pa_chr_strm = cs; pa_tok_strm = ts; pa_loc_func = lf}
+    ;;
     let tokens = tokens gram;;
     let glexer = glexer gram;;
     module Entry =

@@ -39,12 +39,19 @@ val tokens : g -> string -> (string * int) list;;
 val glexer : g -> token Token.glexer;;
    (** Return the lexer used by the grammar *)
 
+type parsable;;
+val parsable : g -> char Stream.t -> parsable;;
+   (** Type and value allowing to keep the token stream for several calls
+       of entries of the same grammar, to prevent loss of tokens. To be
+       used with [Entry.parse_parsable] below *)
+
 module Entry :
   sig
     type 'a e;;
     val create : g -> string -> 'a e;;
     val parse : 'a e -> char Stream.t -> 'a;;
     val parse_token : 'a e -> token Stream.t -> 'a;;
+    val parse_parsable : 'a e -> parsable -> 'a;;
     val name : 'a e -> string;;
     val of_parser : g -> string -> (token Stream.t -> 'a) -> 'a e;;
     val print : 'a e -> unit;;
@@ -57,6 +64,7 @@ module Entry :
 -      [Entry.create g n] creates a new entry named [n] in the grammar [g].
 -      [Entry.parse e] returns the stream parser of the entry [e].
 -      [Entry.parse_token e] returns the token parser of the entry [e].
+-      [Entry.parse_parsable e] returns the parsable parser of the entry [e].
 -      [Entry.name e] returns the name of the entry [e].
 -      [Entry.of_parser g n p] makes an entry from a token stream parser.
 -      [Entry.print e] displays the entry [e] using [Format].

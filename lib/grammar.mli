@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.mli,v 1.6 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: grammar.mli,v 1.7 2007/07/17 23:31:20 deraugla Exp $ *)
 
 (** Extensible grammars.
 
@@ -39,12 +39,19 @@ value tokens : g -> string -> list (string * int);
 value glexer : g -> Token.glexer token;
    (** Return the lexer used by the grammar *)
 
+type parsable = 'abstract;
+value parsable : g -> Stream.t char -> parsable;
+   (** Type and value allowing to keep the token stream for several calls
+       of entries of the same grammar, to prevent loss of tokens. To be
+       used with [Entry.parse_parsable] below *)
+
 module Entry :
   sig
     type e 'a = 'x;
     value create : g -> string -> e 'a;
     value parse : e 'a -> Stream.t char -> 'a;
     value parse_token : e 'a -> Stream.t token -> 'a;
+    value parse_parsable : e 'a -> parsable -> 'a;
     value name : e 'a -> string;
     value of_parser : g -> string -> (Stream.t token -> 'a) -> e 'a;
     value print : e 'a -> unit;
@@ -57,6 +64,7 @@ module Entry :
 -      [Entry.create g n] creates a new entry named [n] in the grammar [g].
 -      [Entry.parse e] returns the stream parser of the entry [e].
 -      [Entry.parse_token e] returns the token parser of the entry [e].
+-      [Entry.parse_parsable e] returns the parsable parser of the entry [e].
 -      [Entry.name e] returns the name of the entry [e].
 -      [Entry.of_parser g n p] makes an entry from a token stream parser.
 -      [Entry.print e] displays the entry [e] using [Format].
