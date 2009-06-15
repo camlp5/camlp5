@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_op.ml,v 1.19 2007/12/27 09:13:47 deraugla Exp $ *)
+(* $Id: pr_op.ml,v 1.20 2007/12/27 10:00:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Parserify;
@@ -54,38 +54,18 @@ value stream pc e =
 
 (* Parsers *)
 
-value ident_option =
+value ident_option pc =
   fun
-  [ Some s -> sprintf " %s" s
-  | None -> "" ]
+  [ Some s -> pprintf pc " %s" s
+  | None -> pprintf pc "" ]
 ;
 
 value stream_patt_comp pc spc =
   match spc with
   [ SpTrm _ p <:vala< None >> ->
-      patt {(pc) with ind = pc.ind + 1; bef = sprintf "%s'" pc.bef} p
+      pprintf pc "@[<1>'%p@]" patt p
   | SpTrm _ p <:vala< Some e >> ->
-      horiz_vertic
-        (fun () ->
-           sprintf "%s'%s when %s%s" pc.bef
-             (patt {(pc) with ind = pc.ind + 1; bef = ""; aft = ""} p)
-             (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
-        (fun () ->
-           let s1 = patt {(pc) with bef = sprintf "%s'" pc.bef; aft = ""} p in
-           let s2 =
-             horiz_vertic
-               (fun () ->
-                  sprintf "%swhen %s%s" (tab (pc.ind + 1))
-                    (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
-               (fun () ->
-                  let s1 = sprintf "%swhen" (tab (pc.ind + 1)) in
-                  let s2 =
-                    expr {(pc) with ind = pc.ind + 3; bef = tab (pc.ind + 3)}
-                      e
-                  in
-                  sprintf "%s\n%s" s1 s2)
-           in
-           sprintf "%s\n%s" s1 s2)
+      pprintf pc "'%p@;<1 1>@[when@;%p@]" patt p expr e
   | SpNtr _ p e ->
       horiz_vertic
         (fun () ->
@@ -166,10 +146,14 @@ value parser_case force_vertic pc (sp, po, e) =
         (fun () ->
            if force_vertic then sprintf "\n"
            else
-             sprintf "%s[< >]%s -> %s%s" pc.bef (ident_option po)
+             sprintf "%s[< >]%s -> %s%s" pc.bef
+               (ident_option {(pc) with bef = ""; aft = ""} po)
                (expr {(pc) with bef = ""; aft = ""; dang = "|"} e) pc.aft)
         (fun () ->
-           let s1 = sprintf "%s[< >]%s ->" pc.bef (ident_option po) in
+           let s1 =
+             sprintf "%s[< >]%s ->" pc.bef
+               (ident_option {(pc) with bef = ""; aft = ""} po)
+           in
            let s2 =
              expr
                {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
@@ -178,25 +162,8 @@ value parser_case force_vertic pc (sp, po, e) =
            in
            sprintf "%s\n%s" s1 s2)
   | _ ->
-      horiz_vertic
-        (fun () ->
-           sprintf "%s[< %s >]%s -> %s%s" pc.bef
-             (stream_patt {(pc) with bef = ""; aft = ""} sp) (ident_option po)
-             (expr {(pc) with bef = ""; aft = ""; dang = "|"} e) pc.aft)
-        (fun () ->
-           let s1 =
-             stream_patt
-               {(pc) with bef = sprintf "%s[< " pc.bef;
-                aft = sprintf " >]%s ->" (ident_option po)}
-               sp
-           in
-           let s2 =
-             expr
-               {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                dang = "|"}
-               e
-           in
-           sprintf "%s\n%s" s1 s2) ]
+      pprintf pc "[< %p@[ >]%p ->@]@;%q" stream_patt sp ident_option po
+        expr e "|" ]
 ;
 
 value parser_case_sh force_vertic pc spe =
@@ -206,7 +173,7 @@ value parser_case_sh force_vertic pc spe =
 value flag_equilibrate_cases = Pcaml.flag_equilibrate_cases;
 
 value parser_body pc (po, spel) =
-  let s1 = ident_option po in
+  let s1 = ident_option {(pc) with bef = ""; aft = ""} po in
   let s2o =
     match spel with
     [ [spe] ->
