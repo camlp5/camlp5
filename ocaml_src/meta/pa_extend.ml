@@ -704,6 +704,23 @@ let quot_expr psl e =
         (_, MLast.ExAcc (_, MLast.ExUid (_, "Qast"), MLast.ExUid (_, "Str")),
          _) ->
         e
+    | MLast.ExApp
+        (_,
+         MLast.ExApp
+           (_,
+            MLast.ExApp
+              (_,
+               MLast.ExAcc
+                 (_, MLast.ExUid (_, "Qast"), MLast.ExUid (_, "VaAnt")),
+               _),
+            _),
+         _) ->
+        e
+    | MLast.ExApp
+        (_,
+         MLast.ExAcc (_, MLast.ExUid (_, "Qast"), MLast.ExUid (_, "VaVal")),
+         _) ->
+        e
     | MLast.ExUid (_, "[]") ->
         MLast.ExApp
           (loc,
@@ -1198,7 +1215,7 @@ let mk_psymbol p s t =
   {pattern = Some p; symbol = symb}
 ;;
 
-let ss2_of_ss s =
+let ss2_of_ss loc al s =
   let text =
     match s.text with
       TXrules
@@ -1231,10 +1248,91 @@ let ss2_of_ss s =
           {prod = prod2; action = Some act2}
         in
         TXrules (loc, t, [r1; r2])
-    | TXnterm (loc, ({expr = MLast.ExLid (_, name)} as n), None) ->
+    | TXnterm (loc, ({expr = MLast.ExLid (_, name)} as n), None)
+      when String.length name > 2 && name.[0] = 'a' && name.[1] = '_' ->
         let name = if !(Pcaml.strict_mode) then name ^ "2" else name in
         TXnterm (loc, {n with expr = MLast.ExLid (loc, name)}, None)
-    | _ -> assert false
+    | x ->
+        let rl =
+          List.fold_right
+            (fun a rl ->
+               let r1 =
+                 let ps =
+                   let text = TXtok (loc, "ANTIQUOT", MLast.ExStr (loc, a)) in
+                   let styp =
+                     STtyp
+                       (MLast.TyAcc
+                          (loc, MLast.TyUid (loc, "Qast"),
+                           MLast.TyLid (loc, "t")))
+                   in
+                   let s = {used = []; text = text; styp = styp} in
+                   {pattern = Some (MLast.PaLid (loc, "a")); symbol = s}
+                 in
+                 let act =
+                   MLast.ExApp
+                     (loc,
+                      MLast.ExAcc
+                        (loc, MLast.ExUid (loc, "Qast"),
+                         MLast.ExUid (loc, "VaVal")),
+                      MLast.ExApp
+                        (loc,
+                         MLast.ExApp
+                           (loc,
+                            MLast.ExApp
+                              (loc,
+                               MLast.ExAcc
+                                 (loc, MLast.ExUid (loc, "Qast"),
+                                  MLast.ExUid (loc, "VaAnt")),
+                               MLast.ExStr (loc, a)),
+                            MLast.ExLid (loc, "loc")),
+                         MLast.ExLid (loc, "a")))
+                 in
+                 {prod = [ps]; action = Some act}
+               in
+               let r2 =
+                 let a = "a" ^ a in
+                 let ps =
+                   let text = TXtok (loc, "ANTIQUOT", MLast.ExStr (loc, a)) in
+                   let styp =
+                     STtyp
+                       (MLast.TyAcc
+                          (loc, MLast.TyUid (loc, "Qast"),
+                           MLast.TyLid (loc, "t")))
+                   in
+                   let s = {used = []; text = text; styp = styp} in
+                   {pattern = Some (MLast.PaLid (loc, "a")); symbol = s}
+                 in
+                 let act =
+                   MLast.ExApp
+                     (loc,
+                      MLast.ExApp
+                        (loc,
+                         MLast.ExApp
+                           (loc,
+                            MLast.ExAcc
+                              (loc, MLast.ExUid (loc, "Qast"),
+                               MLast.ExUid (loc, "VaAnt")),
+                            MLast.ExStr (loc, a)),
+                         MLast.ExLid (loc, "loc")),
+                      MLast.ExLid (loc, "a"))
+                 in
+                 {prod = [ps]; action = Some act}
+               in
+               r1 :: r2 :: rl)
+            al []
+        in
+        let r2 =
+          let ps = {pattern = Some (MLast.PaLid (loc, "a")); symbol = s} in
+          let act =
+            MLast.ExApp
+              (loc,
+               MLast.ExAcc
+                 (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "VaVal")),
+               MLast.ExLid (loc, "a"))
+          in
+          {prod = [ps]; action = Some act}
+        in
+        TXrules (loc, "", rl @ [r2])
   in
   {used = s.used; text = text; styp = s.styp}
 ;;
@@ -1362,7 +1460,7 @@ let ssflag loc s =
 ;;
 
 let ssvala loc al s =
-  if !quotify then ss2_of_ss s
+  if !quotify then ss2_of_ss loc al s
   else
     let (text, styp) =
       if not !(Pcaml.strict_mode) then s.text, s.styp

@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extend.ml,v 1.40 2007/09/19 12:47:10 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.41 2007/09/20 03:26:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -458,7 +458,7 @@ and check_slist rl =
     | [([(Some <:patt< a >>, Snterm <:expr< a_list2 >>)], Some <:expr< a >>);
        ([(Some <:patt< a >>,
           ((Slist0 _ | Slist1 _ | Slist0sep _ _ | Slist1sep _ _) as s))],
-          Some <:expr< Qast.Node "Qast.VaVal" [Qast.List a] >>)] ->
+          Some <:expr< Qast.VaVal (Qast.List a) >>)] ->
         Some (Svala s)
     | [([(Some <:patt< a >>, Snterm <:expr< a_opt >>)], Some <:expr< a >>);
        ([(Some <:patt< a >>, Sopt s)], Some <:expr< Qast.Option a >>)] ->
@@ -468,11 +468,11 @@ and check_slist rl =
         Some (Sflag s)
     | [([(Some <:patt< a >>, Snterm <:expr< a_flag2 >>)], Some <:expr< a >>);
        ([(Some <:patt< a >>, (Sflag _ as s))],
-          Some <:expr< Qast.Node "Qast.VaVal" [Qast.Bool a] >>)] ->
+          Some <:expr< Qast.VaVal (Qast.Bool a) >>)] ->
         Some (Svala s)
     | [([(Some <:patt< a >>, Snterm <:expr< a_opt2 >>)], Some <:expr< a >>);
        ([(Some <:patt< a >>, (Sopt _ as s))],
-          Some <:expr< Qast.Node "Qast.VaVal" [Qast.Option a] >>)] ->
+          Some <:expr< Qast.VaVal (Qast.Option a) >>)] ->
         Some (Svala s)
     | _ -> None ]
 ;

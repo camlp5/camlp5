@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.71 2007/09/19 20:36:57 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.72 2007/09/20 03:26:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -312,6 +312,8 @@ value quot_expr psl e =
     | <:expr< Qast.List $_$ >> -> e
     | <:expr< Qast.Option $_$ >> -> e
     | <:expr< Qast.Str $_$ >> -> e
+    | <:expr< Qast.VaAnt $_$ $_$ $_$ >> -> e
+    | <:expr< Qast.VaVal $_$ >> -> e
     | <:expr< [] >> -> <:expr< Qast.List [] >>
     | <:expr< [$e$] >> -> <:expr< Qast.List [$loop e$] >>
     | <:expr< [$e1$ :: $e2$] >> -> <:expr< Qast.Cons $loop e1$  $loop e2$ >>
@@ -552,7 +554,7 @@ value mk_psymbol p s t =
   {pattern = Some p; symbol = symb}
 ;
 
-value ss2_of_ss s =
+value ss2_of_ss loc al s =
   let text =
     match s.text with
     [ TXrules loc t
@@ -579,10 +581,44 @@ value ss2_of_ss s =
           {prod = prod2; action = Some act2}
         in
         TXrules loc t [r1; r2]
-    | TXnterm loc ({expr = <:expr< $lid:name$ >>} as n) None ->
+    | TXnterm loc ({expr = <:expr< $lid:name$ >>} as n) None
+      when String.length name > 2 && name.[0] = 'a' && name.[1] = '_' ->
         let name = if Pcaml.strict_mode.val then name ^ "2" else name in
         TXnterm loc {(n) with expr = <:expr< $lid:name$ >>} None
-    | _ -> assert False ]
+    | x ->
+        let rl =
+          List.fold_right
+            (fun a rl ->
+               let r1 =
+                 let ps =
+                   let text = TXtok loc "ANTIQUOT" <:expr< $str:a$ >> in
+                   let styp = STtyp <:ctyp< Qast.t >> in
+                   let s = {used = []; text = text; styp = styp} in
+                   {pattern = Some <:patt< a >>; symbol = s}
+                 in
+                 let act = <:expr< Qast.VaVal (Qast.VaAnt $str:a$ loc a) >> in
+                 {prod = [ps]; action = Some act}
+               in
+               let r2 =
+                 let a = "a" ^ a in
+                 let ps =
+                   let text = TXtok loc "ANTIQUOT" <:expr< $str:a$ >> in
+                   let styp = STtyp <:ctyp< Qast.t >> in
+                   let s = {used = []; text = text; styp = styp} in
+                   {pattern = Some <:patt< a >>; symbol = s}
+                 in
+                 let act = <:expr< Qast.VaAnt $str:a$ loc a >> in
+                 {prod = [ps]; action = Some act}
+               in
+               [r1; r2 :: rl])
+            al []
+        in
+        let r2 =
+          let ps = {pattern = Some <:patt< a >>; symbol = s} in
+          let act = <:expr< Qast.VaVal a >> in
+          {prod = [ps]; action = Some act}
+        in
+        TXrules loc "" (rl @ [r2]) ]
   in
   {used = s.used; text = text; styp = s.styp}
 ;
@@ -686,7 +722,7 @@ value ssflag loc s =
 ;
 
 value ssvala loc al s =
-  if quotify.val then ss2_of_ss s
+  if quotify.val then ss2_of_ss loc al s
   else
     let (text, styp) =
       if not Pcaml.strict_mode.val then (s.text, s.styp)

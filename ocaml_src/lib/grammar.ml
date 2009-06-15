@@ -674,14 +674,17 @@ and parser_of_symbol entry nlevn =
           [] ->
             let t =
               match s with
-                Sflag _ -> "V FLAG"
-              | Sopt _ -> "V OPT"
-              | Slist0 _ | Slist0sep (_, _) | Slist1 _ | Slist1sep (_, _) ->
-                  "V LIST"
-              | Stoken (con, "") -> "V " ^ con
-              | _ -> failwith "Grammar: not impl Svala"
+                Sflag _ -> Some "V FLAG"
+              | Sopt _ -> Some "V OPT"
+              | Slist0 _ | Slist0sep (_, _) -> Some "V LIST"
+              | Slist1 _ | Slist1sep (_, _) -> Some "V LIST"
+              | Stoken (con, "") -> Some ("V " ^ con)
+              | _ -> None
             in
-            parser_of_token entry (t, "")
+            begin match t with
+              Some t -> parser_of_token entry (t, "")
+            | None -> fun (strm__ : _ Stream.t) -> raise Stream.Failure
+            end
         | al ->
             let rec loop =
               function

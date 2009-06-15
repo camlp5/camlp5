@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.96 2007/09/19 16:22:18 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.97 2007/09/20 03:26:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -235,11 +235,11 @@ EXTEND
           <:expr< try $e$ with $p1$ -> $e1$ >>
       | "if"; e1 = SELF; "then"; e2 = SELF; "else"; e3 = SELF ->
           <:expr< if $e1$ then $e2$ else $e3$ >>
-      | "do"; "{"; seq = sequence2; "}" -> mksequence2 loc seq
+      | "do"; "{"; seq = V sequence "list"; "}" -> mksequence2 loc seq
       | "for"; i = V LIDENT; "="; e1 = SELF; df = direction_flag2; e2 = SELF;
-        "do"; "{"; seq = sequence2; "}" ->
+        "do"; "{"; seq = V sequence "list"; "}" ->
           <:expr< for $alid:i$ = $e1$ $ato:df$ $e2$ do { $alist:seq$ } >>
-      | "while"; e = SELF; "do"; "{"; seq = sequence2; "}" ->
+      | "while"; e = SELF; "do"; "{"; seq = V sequence "list"; "}" ->
           <:expr< while $e$ do { $alist:seq$ } >> ]
     | "where"
       [ e = SELF; "where"; rf = V (FLAG "rec"); lb = let_binding ->
@@ -329,10 +329,6 @@ EXTEND
   ;
   dummy:
     [ [ -> () ] ]
-  ;
-  sequence2:
-    [ [ seq = sequence -> <:vala< seq >>
-      | seq = V (LIST1 expr SEP ";") -> seq ] ]
   ;
   sequence:
     [ [ "let"; rf = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and");
