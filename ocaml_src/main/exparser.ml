@@ -479,8 +479,11 @@ let mk_rule x =
         let p =
           MLast.PaTyc
             (loc, MLast.PaLid (loc, strm_n),
-             MLast.TyAcc
-               (loc, MLast.TyUid (loc, "Stream"), MLast.TyLid (loc, "t")))
+             MLast.TyApp
+               (loc,
+                MLast.TyAcc
+                  (loc, MLast.TyUid (loc, "Stream"), MLast.TyLid (loc, "t")),
+                MLast.TyAny loc))
         in
         MLast.ExFun (loc, [p, None, e])
       in

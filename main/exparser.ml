@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: exparser.ml,v 1.6 2007/08/26 20:05:38 deraugla Exp $ *)
+(* $Id: exparser.ml,v 1.7 2007/08/26 20:15:24 deraugla Exp $ *)
 
 type spat_comp =
   [ SpTrm of MLast.loc and MLast.patt and option MLast.expr
@@ -334,7 +334,7 @@ value mk_rule x =
       let e =
         let rl = List.map (fun (rl, (eo, a)) -> (rl, eo, a)) ll in
         let e = parser_cases loc rl in
-        let p = <:patt< ($lid:strm_n$ : Stream.t) >> in
+        let p = <:patt< ($lid:strm_n$ : Stream.t _) >> in
         <:expr< fun $p$ -> $e$ >>
       in
       let spo =
