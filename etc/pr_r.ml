@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.117 2007/12/05 16:00:40 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.118 2007/12/05 18:40:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -246,9 +246,7 @@ value comm_patt_any f pc z =
 
 value patt_as pc z =
   match z with
-  [ <:patt< ($x$ as $y$) >> ->
-      let s = patt {(pc) with bef = ""} y in
-      patt {(pc) with aft = sprintf " as %s" s} x
+  [ <:patt< ($x$ as $y$) >> -> pprintf pc "%p as %p" patt x patt y
   | z -> patt pc z ]
 ;
 
@@ -489,13 +487,14 @@ value match_assoc force_vertic pc (p, w, e) =
          [ <:vala< Some e >> ->
              pprintf pc "%p@ @[when@;%p ->@]" patt_as p expr e
          | _ ->
-             patt_as {(pc) with aft = sprintf " ->%s" pc.aft} p ]
+             pprintf pc "%p ->" patt_as p ]
        in
        match sequencify e with
        [ Some el ->
            sequence_box2 pc
              (fun pc ->
-                horiz_vertic (fun _ -> sprintf "\n") (fun () -> patt_arrow pc))
+                horiz_vertic (fun _ -> sprintf "\n")
+                  (fun () -> patt_arrow pc))
              el
        | None ->
            let s1 = patt_arrow {(pc) with aft = ""} in
@@ -507,7 +506,7 @@ value match_assoc force_vertic pc (p, w, e) =
 ;
 
 value match_assoc_sh force_vertic pc pwe =
-  match_assoc force_vertic {(pc) with ind = pc.ind + 2} pwe
+  pprintf pc "@[<2>%p@]" (match_assoc force_vertic) pwe
 ;
 
 value match_assoc_list pc pwel =
@@ -583,13 +582,13 @@ value type_decl pc td =
        let s1 =
          horiz_vertic
            (fun () ->
-              sprintf "%s%s%s =" pc.bef
-                (var_escaped {(pc) with bef = ""; aft = ""} (Pcaml.unvala tn))
+              let pc = {(pc) with aft = ""} in
+              pprintf pc "%s%s ="
+                (var_escaped {(pc) with bef = ""} (Pcaml.unvala tn))
                 (if Pcaml.unvala tp = [] then ""
                  else
                    sprintf " %s"
-                     (hlist type_var {(pc) with bef = ""; aft = ""}
-                        (Pcaml.unvala tp))))
+                     (hlist type_var {(pc) with bef = ""} (Pcaml.unvala tp))))
            (fun () -> not_impl "type_decl vertic 1" {(pc) with aft = ""} tn)
        in
        let s2 =
