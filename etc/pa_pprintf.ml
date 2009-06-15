@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_pprintf.ml,v 1.1 2007/12/03 09:57:52 deraugla Exp $ *)
+(* $Id: pa_pprintf.ml,v 1.2 2007/12/03 10:28:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* pprintf statement *)
@@ -61,7 +61,7 @@ value expand_item loc pc fmt al =
   (pcl, al)
 ;
 
-value make_call loc pc pcl =
+value make_call loc (bef_is_empty, aft_is_empty) pc pcl =
   let el =
     loop [] True pcl where rec loop rev_el is_first =
       fun
@@ -87,14 +87,19 @@ value make_call loc pc pcl =
             if is_last && aft = "" then lbl
             else
               let e =
-                if not is_last && aft_al = [] then <:expr< $str:aft$ >>
+                let add_pc_aft = not aft_is_empty && is_last in
+                if not add_pc_aft && aft_al = [] then <:expr< $str:aft$ >>
+                else if not add_pc_aft && aft = "%s" then
+                  match aft_al with
+                  [ [a] -> a
+                  | _ -> assert False ]
                 else
-                  let aft = if is_last then aft ^ "%s" else aft in
+                  let aft = if add_pc_aft then aft ^ "%s" else aft in
                   let e = <:expr< sprintf $str:aft$ >> in
                   let e =
                     List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e aft_al
                   in
-                  if is_last then <:expr< $e$ $pc$.aft >> else e
+                  if add_pc_aft then <:expr< $e$ $pc$.aft >> else e
               in
               [(<:patt< aft >>, e) :: lbl]
           in
@@ -152,21 +157,29 @@ value expand_pprintf loc pc fmt al =
       let loc = Ploc. encl (MLast.loc_of_expr a) (MLast.loc_of_expr last_a) in
       Ploc.raise loc (Stream.Error "too many parameters")
   | [] ->
-      if pclcl = [] then make_call loc pc pcl
+      if pclcl = [] then make_call loc (False, False) pc pcl
       else
-        List.fold_left
-          (fun e (c, pcl1) ->
-             let (s, o) =
-               match c with
-               [ ' ' -> ("1", "2")
-               | ',' -> ("1", "0")
-               | _ -> ("0", "0") ]
-             in
-             let e1 = make_call loc <:expr< pc >> pcl1 in
-             <:expr<
-               break $int:s$ $int:o$ $pc$ (fun pc -> $e$) (fun pc -> $e1$)
-             >>)
-          (make_call loc <:expr< pc >> pcl) pclcl ]
+        loop (make_call loc (False, True) <:expr< pc >> pcl) pclcl
+        where rec loop e =
+          fun
+          [ [(c, pcl1) :: pclcl] ->
+               let (s, o) =
+                 match c with
+                 [ ' ' -> ("1", "2")
+                 | ',' -> ("1", "0")
+                 | _ -> ("0", "0") ]
+               in
+               let aft_is_empty = pclcl <> [] in
+               let e1 =
+                 make_call loc (True, aft_is_empty) <:expr< pc >> pcl1
+               in
+               let e =
+                 <:expr<
+                   break $int:s$ $int:o$ $pc$ (fun pc -> $e$) (fun pc -> $e1$)
+                 >>
+               in
+               loop e pclcl
+          | [] -> e ] ]
 ;
 
 EXTEND

@@ -1,5 +1,5 @@
-(* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.98 2007/11/29 11:18:21 deraugla Exp $ *)
+(* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
+(* $Id: pr_r.ml,v 1.99 2007/12/03 10:28:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -136,8 +136,8 @@ value not_impl name pc x =
 ;
 
 (*
-value use_break = ref False;
-Pcaml.add_option "-use_break" (Arg.Set use_break) " test with break";
+value test = ref False;
+Pcaml.add_option "-test" (Arg.Set test) " test";
 *)
 
 value break nspaces offset pc f g =
@@ -181,16 +181,14 @@ value rec mod_ident pc sl =
 
 value semi_after elem pc x = elem {(pc) with aft = sprintf ";%s" pc.aft} x;
 value star_after elem pc x = elem {(pc) with aft = sprintf " *%s" pc.aft} x;
-value op_after elem pc (x, op) =
-  elem {(pc) with aft = sprintf "%s%s" op pc.aft} x
-;
+value op_after elem pc (x, op) = pprintf pc "%p%s" elem x op;
 
-value and_before elem pc x = elem {(pc) with bef = sprintf "%sand " pc.bef} x;
-value bar_before elem pc x = elem {(pc) with bef = sprintf "%s| " pc.bef} x;
+value and_before elem pc x = pprintf pc "and %p" elem x;
+value bar_before elem pc x = pprintf pc "| %p" elem x;
 
 value operator pc left right sh op x y =
   let op = if op = "" then "" else " " ^ op in
-  break 1 2 pc (fun pc -> left {(pc) with aft = op} x) (fun pc -> right pc y)
+  pprintf pc "%p%s@ %p" left x op right y
 ;
 
 value left_operator pc sh unfold next x =
