@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.90 2007/11/28 17:07:10 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.91 2007/11/28 18:24:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -140,10 +140,11 @@ value use_break = ref False;
 Pcaml.add_option "-use_break" (Arg.Set use_break) " test with break";
 *)
 
-value break offset pc f g =
+value break nspaces offset pc f g =
   horiz_vertic
     (fun () ->
-       sprintf "%s %s" (f {(pc) with aft = ""}) (g {(pc) with bef = ""}))
+       let sp = String.make nspaces ' ' in
+       sprintf "%s%s%s" (f {(pc) with aft = ""}) sp (g {(pc) with bef = ""}))
     (fun () ->
        let s1 = f {(pc) with aft = ""} in
        let s2 =
@@ -189,7 +190,7 @@ value bar_before elem pc x = elem {(pc) with bef = sprintf "%s| " pc.bef} x;
 
 value operator pc left right sh op x y =
   let op = if op = "" then "" else " " ^ op in
-  break 2 pc (fun pc -> left {(pc) with aft = op} x) (fun pc -> right pc y)
+  break 1 2 pc (fun pc -> left {(pc) with aft = op} x) (fun pc -> right pc y)
 ;
 
 value left_operator pc sh unfold next x =
@@ -272,7 +273,7 @@ value patt_as pc z =
    use syntax or pretty printing shortcuts.
 *)
 value binding elem pc (p, e) =
-  break 2 pc (fun pc -> patt {(pc) with aft = " ="} p) (fun pc -> elem pc e)
+  break 1 2 pc (fun pc -> patt {(pc) with aft = " ="} p) (fun pc -> elem pc e)
 ;
 
 pr_expr_fun_args.val :=
@@ -353,7 +354,7 @@ value rec where_binding pc (p, e, body) =
            in
            sequence_box pc
              (fun k ->
-                break 0 pc (fun pc -> expr pc e)
+                break 1 0 pc (fun pc -> expr pc e)
                   (fun pc ->
                      hlist patt
                        {(pc) with bef = sprintf "%swhere rec " pc.bef;
@@ -362,7 +363,7 @@ value rec where_binding pc (p, e, body) =
              expr_wh el
        | None ->
            let s1 =
-             break 0 pc (fun pc -> expr pc e)
+             break 1 0 pc (fun pc -> expr pc e)
                (fun pc ->
                   hlist patt
                     {(pc) with bef = sprintf "%swhere rec " pc.bef;
@@ -522,9 +523,9 @@ value match_assoc force_vertic pc (p, w, e) =
        let patt_arrow k =
          match w with
          [ <:vala< Some e >> ->
-             break 0 pc (fun pc -> patt_as pc p)
+             break 1 0 pc (fun pc -> patt_as pc p)
                (fun pc ->
-                  break 2 pc (fun pc -> sprintf "%swhen" pc.bef)
+                  break 1 2 pc (fun pc -> sprintf "%swhen" pc.bef)
                     (fun pc -> expr {(pc) with aft = sprintf " ->%s" k} e))
          | _ -> patt_as {(pc) with aft = sprintf " ->%s" k} p ]
        in
@@ -597,7 +598,7 @@ value type_var pc (tv, (p, m)) =
 ;
 
 value type_constraint pc (t1, t2) =
-  break 2 pc
+  break 1 2 pc
     (fun pc ->
        ctyp {(pc) with bef = sprintf "%s constraint " pc.bef; aft = " ="} t1)
     (fun pc -> ctyp pc t2)
@@ -656,7 +657,7 @@ value type_decl pc td =
 ;
 
 value label_decl pc (_, l, m, t) =
-  break 2 pc
+  break 1 2 pc
     (fun pc -> sprintf "%s%s :%s" pc.bef l (if m then " mutable" else ""))
     (fun pc -> ctyp pc t)
 ;
@@ -666,7 +667,7 @@ value cons_decl pc (_, c, tl) =
   let tl = Pcaml.unvala tl in
   if tl = [] then cons_escaped pc c
   else
-    break 4 pc
+    break 1 4 pc
       (fun pc -> cons_escaped {(pc) with aft = sprintf " of%s" pc.aft} c)
       (fun pc ->
          let tl = List.map (fun t -> (t, " and")) tl in
@@ -778,7 +779,7 @@ value typevar pc tv = sprintf "%s'%s%s" pc.bef tv pc.aft;
 value string pc s = sprintf "%s\"%s\"%s" pc.bef s pc.aft;
 
 value external_decl pc (n, t, sl) =
-  break 2 pc
+  break 1 2 pc
     (fun pc ->
        var_escaped {(pc) with bef = sprintf "%sexternal " pc.bef; aft = " :"}
          n)
@@ -838,7 +839,7 @@ value str_module pref pc (m, me) =
       | me -> ([], me) ]
   in
   let module_arg pc (s, mt) =
-    break 1 pc (fun pc -> sprintf "%s(%s :" pc.bef s)
+    break 1 1 pc (fun pc -> sprintf "%s(%s :" pc.bef s)
       (fun pc -> module_type {(pc) with aft = sprintf ")%s" pc.aft} mt)
   in
   let (me, mto) =
@@ -860,7 +861,7 @@ value str_module pref pc (m, me) =
        let s1 =
          match mto with
          [ Some mt ->
-             break 2 pc
+             break 1 2 pc
                (fun pc ->
                   sprintf "%s%s %s%s :" pc.bef pref m
                     (if mal = [] then "" else
@@ -892,7 +893,7 @@ value sig_module_or_module_type pref defc pc (m, mt) =
       | mt -> ([], mt) ]
   in
   let module_arg pc (s, mt) =
-    break 1 pc (fun pc -> sprintf "%s(%s :" pc.bef s)
+    break 1 1 pc (fun pc -> sprintf "%s(%s :" pc.bef s)
       (fun pc -> module_type {(pc) with aft = sprintf ")%s" pc.aft} mt)
   in
   horiz_vertic
@@ -934,7 +935,7 @@ value str_or_sig_functor pc s mt module_expr_or_type met =
            (fun () ->
               let s1 = sprintf "%sfunctor" pc.bef in
               let s2 =
-                break 3 pc
+                break 1 3 pc
                   (fun pc -> sprintf "%s(%s :" (tab (pc.ind + 2)) s)
                   (fun pc -> module_type {(pc) with aft = ")"} mt)
               in
@@ -1494,16 +1495,7 @@ EXTEND_PRINTER
                  (next {(pc) with bef = ""; aft = ""} e) pc.aft)
             (fun () -> not_impl "assert vertical" pc e)
       | <:expr< lazy $e$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%slazy %s%s" pc.bef
-                 (next {(pc) with bef = ""; aft = ""} e) pc.aft)
-            (fun () ->
-               let s1 = sprintf "%slazy" pc.bef in
-               let s2 =
-                 next {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
-               in
-               sprintf "%s\n%s" s1 s2)
+          break 1 2 pc (fun pc -> sprintf "%slazy" pc.bef) (fun pc -> next pc e)
       | <:expr< $_$ $_$ >> as z ->
           let inf =
             match z with
@@ -1521,15 +1513,8 @@ EXTEND_PRINTER
             left_operator pc 2 unfold next z ]
     | "dot"
       [ <:expr< $x$ . $y$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s%s.%s%s" pc.bef
-                 (curr {(pc) with bef = ""; aft = ""} x)
-                 (curr {(pc) with bef = ""; aft = ""} y) pc.aft)
-            (fun () ->
-               let s1 = curr {(pc) with aft = "."} x in
-               let s2 = curr {(pc) with bef = tab pc.ind} y in
-               sprintf "%s\n%s" s1 s2)
+          break 0 0 pc (fun pc -> curr {(pc) with aft = "."} x)
+            (fun pc -> curr pc y)
       | <:expr< $x$ .( $y$ ) >> ->
           expr_short
             {(pc) with bef = curr {(pc) with aft = ".("} x;
@@ -1581,20 +1566,9 @@ EXTEND_PRINTER
           match y with
           [ Some y ->
               let expr2 pc x =
-                horiz_vertic
-                  (fun () ->
-                     sprintf "%s%s :: %s]%s" pc.bef
-                       (expr {(pc) with bef = ""; aft = ""} x)
-                       (expr {(pc) with bef = ""; aft = ""} y) pc.aft)
-                  (fun () ->
-                     let s1 = expr {(pc) with aft = " ::"} x in
-                     let s2 =
-                       expr
-                         {(pc) with bef = tab pc.ind;
-                          aft = sprintf "]%s" pc.aft}
-                         y
-                     in
-                     sprintf "%s\n%s" s1 s2)
+                break 1 0 pc
+                  (fun pc -> expr {(pc) with aft = " ::"} x)
+                  (fun pc -> expr {(pc) with aft = sprintf "]%s" pc.aft} y)
               in
               plistl expr expr2 0
                 {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef} xl
@@ -1604,26 +1578,11 @@ EXTEND_PRINTER
                  aft = sprintf "]%s" pc.aft}
                 xl ]
       | <:expr< ($e$ : $t$) >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s(%s : %s)%s" pc.bef
-                 (expr {(pc) with bef = ""; aft = ""} e)
-                 (ctyp {(pc) with bef = ""; aft = ""} t)
-                 pc.aft)
-            (fun () ->
-               let s1 =
-                 expr
-                   {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-                    aft = " :"}
-                   e
-               in
-               let s2 =
-                 ctyp
-                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
-                    aft = sprintf ")%s" pc.aft}
-                   t
-               in
-               sprintf "%s\n%s" s1 s2)
+          break 1 0 {(pc) with ind = pc.ind + 1}
+            (fun pc ->
+               expr {(pc) with bef = sprintf "%s(" pc.bef; aft = " :"} e)
+            (fun pc ->
+               ctyp {(pc) with aft = sprintf ")%s" pc.aft} t)
       | <:expr< $int:s$ >> | <:expr< $flo:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then
             sprintf "%s(%s)%s" pc.bef s pc.aft
@@ -1704,26 +1663,13 @@ EXTEND_PRINTER
           curr {(pc) with bef = curr {(pc) with aft = "."} x} y ]
     | "simple"
       [ <:patt< ($x$ as $y$) >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s(%s as %s)%s" pc.bef
-                 (patt {(pc) with bef = ""; aft = ""} x)
-                 (patt {(pc) with bef = ""; aft = ""} y) pc.aft)
-            (fun () ->
-               let s1 =
-                 patt
-                   {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-                    aft = ""}
-                   x
-               in
-               let s2 =
-                 patt
-                   {(pc) with ind = pc.ind + 1;
-                    bef = sprintf "%sas " (tab (pc.ind + 1));
-                    aft = sprintf ")%s" pc.aft}
-                   y
-               in
-               sprintf "%s\n%s" s1 s2)
+          break 1 0 {(pc) with ind = pc.ind + 1}
+            (fun pc -> patt {(pc) with bef = sprintf "%s(" pc.bef} x)
+            (fun pc ->
+               patt
+                 {(pc) with bef = sprintf "%sas " pc.bef;
+                  aft = sprintf ")%s" pc.aft}
+                 y)
       | <:patt< ($list:pl$) >> ->
           let pl = List.map (fun p -> (p, ",")) pl in
           plist patt 1
