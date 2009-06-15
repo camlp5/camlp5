@@ -48,8 +48,8 @@
 <:expr< (letmodule $_uid:s$ $me$ $e$) >>
 <:expr< (match $e$ ($list:lpwe$)) >>
 <:expr< (match $e$ ($_list:lpwe$)) >>
-(MLast.ExNew loc (Ploc.VaVal ls))
-(MLast.ExNew loc ls)
+<:expr< (new $ls$) >>
+<:expr< (new $_:ls$) >>
 (MLast.ExObj loc (Ploc.VaVal op) (Ploc.VaVal lcstri))
 (MLast.ExObj loc op lcstri)
 <:expr< (? $s$) >>

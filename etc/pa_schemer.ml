@@ -368,7 +368,7 @@ value rec longident_se =
   [ Sacc _ se1 se2 -> longident_se se1 @ longident_se se2
   | Suid _ s -> [rename_id s]
   | Slid _ s -> [rename_id s]
-  | se -> error se "mod_ident" ]
+  | se -> error se "longident" ]
 ;
 
 value lident_expr loc s =
@@ -857,6 +857,9 @@ and expr_se =
   | Sexpr loc [Slid _ "lazy"; se] ->
       let e = expr_se se in
       <:expr< lazy $e$ >>
+  | Sexpr loc [Slid _ "new"; se] ->
+      let sl = anti_longident_se se in
+      <:expr< new $_list:sl$ >>
   | Sexpr loc [Slid _ "`"; Suid _ s] -> <:expr< ` $s$ >>
   | Sexpr loc [Slid _ "send"; se; Slid _ s] ->
       let e = expr_se se in

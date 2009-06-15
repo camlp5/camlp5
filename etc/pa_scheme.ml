@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.83 2007/10/14 10:59:12 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.84 2007/10/14 11:30:00 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -341,7 +341,7 @@
    ((Sacc _ se1 se2) (@ (longident_se se1) (longident_se se2)))
    ((Suid _ s) [(rename_id s)])
    ((Slid _ s) [(rename_id s)])
-   (se (error se "mod_ident"))))
+   (se (error se "longident"))))
 
 (define (lident_expr loc s)
   (if (&& (> (String.length s) 1) (= s.[0] '`'))
@@ -811,6 +811,8 @@
        (let ((e (expr_se se))) <:expr< assert $e$ >>))
     ((Sexpr loc [(Slid _ "lazy") se])
        (let ((e (expr_se se))) <:expr< lazy $e$ >>))
+    ((Sexpr loc [(Slid _ "new") se])
+       (let ((sl (anti_longident_se se)))  <:expr< new $_list:sl$ >>))
     ((Sexpr loc [(Slid _ "`") (Suid _ s)])
      <:expr< ` $s$ >>)
     ((Sexpr loc [(Slid _ "send") se (Slid _ s)])
