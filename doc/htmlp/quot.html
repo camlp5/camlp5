@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: quot.html,v 1.24 2007/10/25 02:49:47 deraugla Exp $ -->
+  <!-- $Id: quot.html,v 1.25 2007/10/27 03:31:59 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>quotations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -586,22 +586,6 @@ type expander =
   (* lexer *)
 
   #load "pa_lexer.cmo";
-
-  value rev_implode l =
-    let s = String.create (List.length l) in
-    loop (String.length s - 1) l where rec loop i =
-      fun
-      [ [c :: l] -> do { String.unsafe_set s i c; loop (i - 1) l }
-      | [] -> s ]
-  ;
-
-  module B =
-    struct
-      value empty = [];
-      value add x l = [x :: l];
-      value get = rev_implode;
-    end
-  ;
 
   value rec ident =
     lexer

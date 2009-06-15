@@ -1,6 +1,10 @@
 Camlp5 Version 5.03:
 --------------------
 
+* [27 Oct 07] Added a default lexing buffer (in module [Plexing]) for
+  pa_lexer.cmo: then, the programmer does not need to write it any
+  more.
+
 Camlp5 Version 5.02:
 --------------------
 

@@ -202,3 +202,30 @@ let default_match =
 let line_nb = ref (ref 0);;
 let bol_pos = ref (ref 0);;
 let restore_lexing_info = ref None;;
+
+(* The lexing buffer used by pa_lexer.cmo *)
+
+let rev_implode l =
+  let s = String.create (List.length l) in
+  let rec loop i =
+    function
+      c :: l -> String.unsafe_set s i c; loop (i - 1) l
+    | [] -> s
+  in
+  loop (String.length s - 1) l
+;;
+
+module Lexbuf :
+  sig
+    type t;;
+    val empty : t;;
+    val add : char -> t -> t;;
+    val get : t -> string;;
+  end =
+  struct
+    type t = char list;;
+    let empty = [];;
+    let add c l = c :: l;;
+    let get = rev_implode;;
+  end
+;;

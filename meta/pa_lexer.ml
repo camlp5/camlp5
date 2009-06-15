@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_lexer.ml,v 1.1 2007/10/14 02:29:22 deraugla Exp $ *)
+(* $Id: pa_lexer.ml,v 1.2 2007/10/27 03:31:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Simplified syntax of parsers of characters streams *)
@@ -7,17 +7,10 @@
 open Pcaml;
 open Exparser;
 
-(**)
 value var () = "buf";
-value empty loc = <:expr< B.empty >>;
-value add_char loc c cl = <:expr< B.add $c$ $cl$ >>;
-value get_buf loc cl = <:expr< B.get $cl$ >>;
-(*
-value var () = "buf";
-value empty loc = <:expr< [] >>;
-value add_char loc c cl = <:expr< [$c$ :: $cl$] >>;
-value get_buf loc cl = <:expr< List.rev $cl$ >>;
-*)
+value empty loc = <:expr< Plexing.Lexbuf.empty >>;
+value add_char loc c cl = <:expr< Plexing.Lexbuf.add $c$ $cl$ >>;
+value get_buf loc cl = <:expr< Plexing.Lexbuf.get $cl$ >>;
 
 value fresh_c cl =
   let n =
@@ -246,7 +239,8 @@ EXTEND
             [ (Some p, rl) ->
                 let p = <:patt< ($p$ as c) >> in
                 let e = <:expr< c >> in
-                [([(SpTrm loc p <:vala< None >>, SpoNoth)], [e], None) :: rl]
+                [([(SpTrm loc p <:vala< None >>, SpoNoth)], [e], None) ::
+                 rl]
             | (None, rl) -> rl ]
           in
           <:expr< fun $lid:var ()$ -> $mk_lexer loc rl$ >>
@@ -273,7 +267,7 @@ EXTEND
     [ [ "["; rl = LIST0 rule SEP "|"; "]" -> rl ] ]
   ;
   rule:
-    [ [ (sl, cl) = symb_list; a = act -> (sl, cl, a) ] ]
+    [ [ (sl, cl) = symb_list; a = act -> do { gcl.val := []; (sl, cl, a) } ] ]
   ;
   symb_list:
     [ [ (sl, cl) = symbs -> do { gcl.val := cl; (sl, cl) } ] ]

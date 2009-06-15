@@ -6,14 +6,22 @@
     <lastBuildDate>Mon Sep 17 15:10:47 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
     <item>
+      <title>Lexers 2</title>
+      <description>
+        Updated the chapter about lexers, the lexing buffer being now
+        provided in Camlp5 library, instead of having to be written
+        by the programmer.
+      </description>
+      <pubDate>Thu Oct 11 12:56:15 CEST 2007</pubDate>
+      <link>../lexers.html</link>
+    </item>
+    <item>
       <title>Lexers</title>
       <description>
         Changed the chapter about lexers, their syntax being changed.
-        The old version is kept for compatibility but there is no more
-        link to its documentation page.
       </description>
       <pubDate>Thu Oct 11 12:56:15 CEST 2007</pubDate>
-      <link>../lexers2.html</link>
+      <link>../lexers.html</link>
     </item>
     <item>
       <title>Future work</title>

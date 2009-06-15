@@ -22,7 +22,7 @@ type pattern = string * string;;
 exception Error of string;;
     (** A lexing error exception to be used by lexers. *)
 
-(** {6 Lexer type} *)
+(** Lexer type *)
 
 type 'te lexer =
   { tok_func : 'te lexer_func;
@@ -43,7 +43,7 @@ val default_match : pattern -> string * string -> string;;
    (** A simple [tok_match] function, appling to the token type
        [(string * string)] *)
 
-(** {6 Lexers from parsers or ocamllex}
+(** Lexers from parsers or ocamllex
 
    The functions below create lexer functions either from a [char stream]
    parser or for an [ocamllex] function. With the returned function [f],
@@ -69,13 +69,13 @@ val lexer_func_of_parser :
 val lexer_func_of_ocamllex : (Lexing.lexbuf -> 'te) -> 'te lexer_func;;
    (** A lexer function from a lexer created by [ocamllex] *)
 
-(** {6 Function to build a stream and a location function} *)
+(** Function to build a stream and a location function *)
 
 val make_stream_and_location :
   (unit -> 'te * Ploc.t) -> 'te Stream.t * location_function;;
    (** General function *)
 
-(** {6 Useful functions and values} *)
+(** Useful functions and values *)
 
 val eval_char : string -> char;;
 val eval_string : Ploc.t -> string -> string;;
@@ -94,3 +94,14 @@ val bol_pos : int ref ref;;
        for directives (e.g. #load or #use) which interrupt the parsing.
        Without usage of these variables, locations after the directives
        can be wrong. *)
+
+(** The lexing buffer used by streams lexers *)
+
+module Lexbuf :
+  sig
+    type t;;
+    val empty : t;;
+    val add : char -> t -> t;;
+    val get : t -> string;;
+  end
+;;

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: plexing.mli,v 1.2 2007/09/03 18:08:42 deraugla Exp $ *)
+(* $Id: plexing.mli,v 1.3 2007/10/27 03:31:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (** Lexing for Camlp5 grammars.
@@ -22,7 +22,7 @@ type pattern = (string * string);
 exception Error of string;
     (** A lexing error exception to be used by lexers. *)
 
-(** {6 Lexer type} *)
+(** Lexer type *)
 
 type lexer 'te =
   { tok_func : lexer_func 'te;
@@ -77,7 +77,7 @@ value default_match : pattern -> (string * string) -> string;
    (** A simple [tok_match] function, appling to the token type
        [(string * string)] *)
 
-(** {6 Lexers from parsers or ocamllex}
+(** Lexers from parsers or ocamllex
 
    The functions below create lexer functions either from a [char stream]
    parser or for an [ocamllex] function. With the returned function [f],
@@ -103,13 +103,13 @@ value lexer_func_of_parser :
 value lexer_func_of_ocamllex : (Lexing.lexbuf -> 'te) -> lexer_func 'te;
    (** A lexer function from a lexer created by [ocamllex] *)
 
-(** {6 Function to build a stream and a location function} *)
+(** Function to build a stream and a location function *)
 
 value make_stream_and_location :
   (unit -> ('te * Ploc.t)) -> (Stream.t 'te * location_function);
    (** General function *)
 
-(** {6 Useful functions and values} *)
+(** Useful functions and values *)
 
 value eval_char : string -> char;
 value eval_string : Ploc.t -> string -> string;
@@ -128,3 +128,14 @@ value bol_pos : ref (ref int);
        for directives (e.g. #load or #use) which interrupt the parsing.
        Without usage of these variables, locations after the directives
        can be wrong. *)
+
+(** The lexing buffer used by streams lexers *)
+
+module Lexbuf :
+  sig
+    type t = 'a;
+    value empty : t;
+    value add : char -> t -> t;
+    value get : t -> string;
+  end
+;

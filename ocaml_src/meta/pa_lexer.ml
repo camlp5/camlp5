@@ -7,31 +7,37 @@
 open Pcaml;;
 open Exparser;;
 
-(**)
 let var () = "buf";;
 let empty loc =
-  MLast.ExAcc (loc, MLast.ExUid (loc, "B"), MLast.ExLid (loc, "empty"))
+  MLast.ExAcc
+    (loc,
+     MLast.ExAcc
+       (loc, MLast.ExUid (loc, "Plexing"), MLast.ExUid (loc, "Lexbuf")),
+     MLast.ExLid (loc, "empty"))
 ;;
 let add_char loc c cl =
   MLast.ExApp
     (loc,
      MLast.ExApp
        (loc,
-        MLast.ExAcc (loc, MLast.ExUid (loc, "B"), MLast.ExLid (loc, "add")),
+        MLast.ExAcc
+          (loc,
+           MLast.ExAcc
+             (loc, MLast.ExUid (loc, "Plexing"), MLast.ExUid (loc, "Lexbuf")),
+           MLast.ExLid (loc, "add")),
         c),
      cl)
 ;;
 let get_buf loc cl =
   MLast.ExApp
-    (loc, MLast.ExAcc (loc, MLast.ExUid (loc, "B"), MLast.ExLid (loc, "get")),
+    (loc,
+     MLast.ExAcc
+       (loc,
+        MLast.ExAcc
+          (loc, MLast.ExUid (loc, "Plexing"), MLast.ExUid (loc, "Lexbuf")),
+        MLast.ExLid (loc, "get")),
      cl)
 ;;
-(*
-value var () = "buf";
-value empty loc = <:expr< [] >>;
-value add_char loc c cl = <:expr< [$c$ :: $cl$] >>;
-value get_buf loc cl = <:expr< List.rev $cl$ >>;
-*)
 
 let fresh_c cl =
   let n =
@@ -340,7 +346,7 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (act : 'act Grammar.Entry.e))],
       Gramext.action
         (fun (a : 'act) (sl, cl : 'symb_list) (loc : Ploc.t) ->
-           (sl, cl, a : 'rule))]];
+           (gcl := []; sl, cl, a : 'rule))]];
     Grammar.Entry.obj (symb_list : 'symb_list Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm (Grammar.Entry.obj (symbs : 'symbs Grammar.Entry.e))],

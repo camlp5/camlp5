@@ -1,5 +1,5 @@
 (* camlp5r pa_lexer.cmo *)
-(* $Id: plexer.ml,v 1.100 2007/10/14 02:50:31 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.101 2007/10/27 03:31:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value no_quotations = ref False;
@@ -9,33 +9,6 @@ value dollar_for_antiquotation = ref True;
 value specific_space_dot = ref False;
 
 value force_antiquot_loc = ref False;
-
-(* The string buffering machinery *)
-
-value rev_implode l =
-  let s = String.create (List.length l) in
-  loop (String.length s - 1) l where rec loop i =
-    fun
-    [ [c :: l] -> do { String.unsafe_set s i c; loop (i - 1) l }
-    | [] -> s ]
-;
-
-module B :
-  sig
-    type t = 'abstract;
-    value empty : t;
-    value add : char -> t -> t;
-    value get : t -> string;
-  end =
-  struct
-    type t = list char;
-    value empty = [];
-    value add c l = [c :: l];
-    value get = rev_implode;
-  end
-;
-
-(* The lexer *)
 
 type context =
   { after_space : mutable bool;
@@ -148,7 +121,7 @@ value char ctx bp =
 ;
 
 value any ctx buf =
-  parser bp [: `c :] -> do { ctx.line_cnt bp c; B.add c buf }
+  parser bp [: `c :] -> do { ctx.line_cnt bp c; $add c }
 ;
 
 value rec string ctx bp =
@@ -405,15 +378,15 @@ value rec next_token ctx buf =
       Plexing.bol_pos.val.val := ep;
       ctx.set_line_nb ();
       ctx.after_space := True;
-      next_token ctx (B.add c buf) s
+      next_token ctx ($add c) s
     }
   | [: `(' ' | '\t' | '\026' | '\012' as c); s :] -> do {
       ctx.after_space := True;
-      next_token ctx (B.add c buf) s
+      next_token ctx ($add c) s
     }
   | [: `'#' when bp = Plexing.bol_pos.val.val; s :] ->
       if linedir 1 s then do {
-        let buf = any_to_nl (B.add '#' buf) s in
+        let buf = any_to_nl ($add '#') s in
         incr Plexing.line_nb.val;
         Plexing.bol_pos.val.val := Stream.count s;
         ctx.set_line_nb ();
@@ -421,25 +394,24 @@ value rec next_token ctx buf =
         next_token ctx buf s
       }
       else
-        let loc = ctx.make_lined_loc (bp, bp + 1) (B.get buf) in
+        let loc = ctx.make_lined_loc (bp, bp + 1) $buf in
         (keyword_or_error ctx (bp, bp + 1) "#", loc)
   | [: `'(';
        a =
          parser
-         [ [: `'*'; buf = comment ctx bp (B.add '*' (B.add '(' buf)) !;
-              s :] -> do {
+         [ [: `'*'; buf = comment ctx bp ($add "(*") !; s :] -> do {
              ctx.set_line_nb ();
              ctx.after_space := True;
              next_token ctx buf s
            }
          | [: :] ep ->
-             let loc = ctx.make_lined_loc (bp, ep) (B.get buf) in
+             let loc = ctx.make_lined_loc (bp, ep) $buf in
              (keyword_or_error ctx (bp, ep) "(", loc) ] ! :] -> a
   | [: tok = next_token_after_spaces ctx bp $empty :] ep ->
-      let loc = ctx.make_lined_loc (bp, max (bp + 1) ep) (B.get buf) in
+      let loc = ctx.make_lined_loc (bp, max (bp + 1) ep) $buf in
       (tok, loc)
   | [: _ = Stream.empty :] ->
-      let loc = ctx.make_lined_loc (bp, bp + 1) (B.get buf) in
+      let loc = ctx.make_lined_loc (bp, bp + 1) $buf in
       (("EOI", ""), loc) ]
 ;
 
@@ -457,7 +429,7 @@ value next_token_fun ctx glexr (cstrm, s_line_nb, s_bol_pos) =
     let comm_bp = Stream.count cstrm in
     ctx.set_line_nb ();
     ctx.after_space := False;
-    let (r, loc) = next_token ctx B.empty cstrm in
+    let (r, loc) = next_token ctx $empty cstrm in
     match glexr.val.Plexing.tok_comm with
     [ Some list ->
         if Ploc.first_pos loc > comm_bp then

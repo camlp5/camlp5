@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: lexers.html,v 1.22 2007/10/26 19:27:48 deraugla Exp $ -->
+  <!-- $Id: lexers.html,v 1.23 2007/10/27 03:31:59 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>lexers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -51,9 +51,12 @@
 <pre>
   fun buf ->
     parser
-    [ [: `'['; `'&lt;' :] -> B.add '&lt;' (B.add '[' buf)
-    | [: `'['; `':' :] -> B.add ':' (B.add '[' buf)
-    | [: `'[' :] -> B.add '[' buf ]
+    [ [: `'['; `'&lt;' :] ->
+        Plexing.Lexbuf.add '&lt;' (Plexing.Lexbuf.add '[' buf)
+    | [: `'['; `':' :] ->
+        Plexing.Lexbuf.add ':' (Plexing.Lexbuf.add '[' buf)
+    | [: `'[' :] ->
+        Plexing.Lexbuf '[' buf ]
 </pre>
 
 <p>With the new syntax, it is possible to write it as:</p>
@@ -139,54 +142,19 @@
 <p>Our lexers are of the type:</p>
 
 <pre>
-  B.t -&gt; Stream.t char -&gt; u
+  Plexing.Lexbuf.t -&gt; Stream.t char -&gt; u
 </pre>
 
 <p>where "<tt>u</tt>" is a type which depends on what the lexer
   returns. If there is no semantic action (since it it optional), this
-  type is automatically "<tt>B.t</tt>".</p>
+  type is automatically "<tt>Plexing.Lexbuf.t</tt>" also.</p>
 
-<p>"<tt>B</tt>" is a module which must be defined by the user. It must
-  contain the lexing buffer type "<tt>t</tt>" and the variables and
-  functions:</p>
-
-<ul>
-  <li><tt>empty</tt>: the empty lexing buffer</li>
-  <li><tt>add</tt>: the way to add a character to a lexing buffer</li>
-  <li><tt>get</tt>: the way to get a string from the lexing buffer</li>
-</ul>
-
-<p>A possible implementation, using "<tt>list char</tt>" as lexing
-  buffer type ("<tt>B.t</tt>"), recording the characters at top of the
-  list (therefore creating a list in reverse order) could be:</p>
-
-<pre>
-  (* tool function, converting a reversed list of char into a string *)
-  value rev_implode cl =
-    let s = String.create (List.length cl) in
-    loop (String.length s - 1) cl where rec loop i =
-      fun
-      [ [c :: cl] -&gt; do { s.[i] := c; loop (i - 1) cl }
-      | [] -&gt; s ]
-   ;
-
-   (* the lexing buffer module *)
-   module B =
-     struct
-       type t = list char;
-       value empty = [];
-       value add c l = [c :: l];
-       value get = rev_implode;
-     end
-  ;
-</pre>
-
-<p>A lexer is a function with two parameters: the first one is the
-  lexing buffer itself, and the second one the stream. When called, it
-  tries to match the stream against its first rule. If it fails, it
-  tries its second rule, and so on, up to its last rule. If the last
-  rule fails, the lexer fails by raising the exception
-  "<tt>Stream.Failure</tt>". All of this is
+<p>A lexer is, actually, a function with two implicit parameters: the
+  first one is the lexing buffer itself, and the second one the
+  stream. When called, it tries to match the stream against its first
+  rule. If it fails, it tries its second rule, and so on, up to its
+  last rule. If the last rule fails, the lexer fails by raising the
+  exception "<tt>Stream.Failure</tt>". All of this is
   the <a href="parsers.html">usual behaviour of stream
   parsers</a>.</p>
 
@@ -261,8 +229,8 @@
   <li><tt>$add</tt> followed by a string, specifing that the
     programmer wants to add all characters of the string in the lexing
     buffer. It returns the new lexing buffer. It corresponds to an
-    iteration of calls to <tt>B.add</tt> with all characters of
-    the string with the current lexing buffer as initial
+    iteration of calls to <tt>Plexing.Lexbuf.add</tt> with all
+    characters of the string with the current lexing buffer as initial
     parameter.</li>
   <li><tt>$buf</tt> which returns the lexing buffer converted into
     string.</li>
@@ -327,8 +295,8 @@
 <h3>Semantic actions of rules</h3>
 
 <p>By default, the result of a "lexer" is the current lexing buffer,
-  which is of type "<tt>B.t</tt>". But it is possible to return
-  other values, by adding "<tt>-&gt;</tt>" at end of rules
+  which is of type "<tt>Plexing.Lexbuf.t</tt>". But it is possible to
+  return other values, by adding "<tt>-&gt;</tt>" at end of rules
   followed by the expression you want to return, as in usual pattern
   matching in OCaml.</p>
 

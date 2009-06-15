@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: plexing.ml,v 1.2 2007/09/03 18:08:42 deraugla Exp $ *)
+(* $Id: plexing.ml,v 1.3 2007/10/27 03:31:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 type pattern = (string * string);
@@ -210,3 +210,28 @@ value default_match =
 value line_nb = ref (ref 0);
 value bol_pos = ref (ref 0);
 value restore_lexing_info = ref None;
+
+(* The lexing buffer used by pa_lexer.cmo *)
+
+value rev_implode l =
+  let s = String.create (List.length l) in
+  loop (String.length s - 1) l where rec loop i =
+    fun
+    [ [c :: l] -> do { String.unsafe_set s i c; loop (i - 1) l }
+    | [] -> s ]
+;
+
+module Lexbuf :
+  sig
+    type t = 'abstract;
+    value empty : t;
+    value add : char -> t -> t;
+    value get : t -> string;
+  end =
+  struct
+    type t = list char;
+    value empty = [];
+    value add c l = [c :: l];
+    value get = rev_implode;
+  end
+;
