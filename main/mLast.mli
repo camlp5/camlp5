@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: mLast.mli,v 1.31 2007/09/12 16:02:06 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.32 2007/09/12 17:30:53 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Module [MLast]: abstract syntax tree.
@@ -122,7 +122,7 @@ and expr =
 and module_type =
   [ MtAcc of loc and module_type and module_type
   | MtApp of loc and module_type and module_type
-  | MtFun of loc and string and module_type and module_type
+  | MtFun of loc and V string and module_type and module_type
   | MtLid of loc and string
   | MtQuo of loc and string
   | MtSig of loc and list sig_item

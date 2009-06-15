@@ -962,11 +962,31 @@ module Meta =
       loop si
     ;;
     let e_module_type mt =
-      (*
-            let ln = ln () in
-      *)
-      let rec loop x = not_impl "e_module_type" x in loop mt
+      let ln = ln () in
+      let rec loop =
+        function
+          MtFun (_, s, mt1, mt2) ->
+            let s = e_vala e_string s in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExApp
+                       (loc,
+                        MLast.ExAcc
+                          (loc, MLast.ExUid (loc, "MLast"),
+                           MLast.ExUid (loc, "MtFun")),
+                        ln),
+                     s),
+                  loop mt1),
+               loop mt2)
+        | x -> not_impl "e_module_type" x
+      in
+      loop mt
     ;;
+    let p_module_type x = not_impl "p_module_type" x;;
     let rec e_str_item si =
       let ln = ln () in
       let rec loop =
@@ -1207,6 +1227,7 @@ let ctyp_eoi = Grammar.Entry.create Pcaml.gram "type";;
 let str_item_eoi = Grammar.Entry.create Pcaml.gram "str_item";;
 let sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";;
 let module_expr_eoi = Grammar.Entry.create Pcaml.gram "module_expr";;
+let module_type_eoi = Grammar.Entry.create Pcaml.gram "module_type";;
 
 Grammar.extend
   [Grammar.Entry.obj (expr_eoi : 'expr_eoi Grammar.Entry.e), None,
@@ -1255,7 +1276,17 @@ Grammar.extend
       Gramext.Stoken ("EOI", "")],
      Gramext.action
        (fun _ (x : 'Pcaml__module_expr) (loc : Ploc.t) ->
-          (x : 'module_expr_eoi))]]];;
+          (x : 'module_expr_eoi))]];
+   Grammar.Entry.obj (module_type_eoi : 'module_type_eoi Grammar.Entry.e),
+   None,
+   [None, None,
+    [[Gramext.Snterm
+        (Grammar.Entry.obj
+           (Pcaml.module_type : 'Pcaml__module_type Grammar.Entry.e));
+      Gramext.Stoken ("EOI", "")],
+     Gramext.action
+       (fun _ (x : 'Pcaml__module_type) (loc : Ploc.t) ->
+          (x : 'module_type_eoi))]]];;
 
 (* *)
 
@@ -1385,7 +1416,9 @@ List.iter (fun (q, f) -> Quotation.add q f)
    "str_item", apply_entry str_item_eoi Meta.e_str_item Meta.p_str_item;
    "sig_item", apply_entry sig_item_eoi Meta.e_sig_item Meta.p_sig_item;
    "module_expr",
-   apply_entry module_expr_eoi Meta.e_module_expr Meta.p_module_expr];;
+   apply_entry module_expr_eoi Meta.e_module_expr Meta.p_module_expr;
+   "module_type",
+   apply_entry module_type_eoi Meta.e_module_type Meta.p_module_type];;
 
 let expr s =
   let e =

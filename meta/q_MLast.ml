@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.69 2007/09/12 16:02:06 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.70 2007/09/12 17:30:53 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -371,7 +371,7 @@ EXTEND
       | "="; me = module_expr -> me ] ]
   ;
   module_type:
-    [ [ "functor"; "("; i = a_UIDENT; ":"; t = SELF; ")"; "->"; mt = SELF ->
+    [ [ "functor"; "("; i = a_UIDENT2; ":"; t = SELF; ")"; "->"; mt = SELF ->
           Qast.Node "MtFun" [Qast.Loc; i; t; mt] ]
     | [ mt = SELF; "with"; wcl = SLIST1 with_constr SEP "and" ->
           Qast.Node "MtWit" [Qast.Loc; mt; wcl] ]
@@ -415,7 +415,7 @@ EXTEND
   module_declaration:
     [ RIGHTA
       [ ":"; mt = module_type -> mt
-      | "("; i = a_UIDENT; ":"; t = module_type; ")"; mt = SELF ->
+      | "("; i = a_UIDENT2; ":"; t = module_type; ")"; mt = SELF ->
           Qast.Node "MtFun" [Qast.Loc; i; t; mt] ] ]
   ;
   with_constr:

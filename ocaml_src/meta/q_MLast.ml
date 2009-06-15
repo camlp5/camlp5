@@ -762,11 +762,11 @@ Grammar.extend
     [None, None,
      [[Gramext.Stoken ("", "functor"); Gramext.Stoken ("", "(");
        Gramext.Snterm
-         (Grammar.Entry.obj (a_UIDENT : 'a_UIDENT Grammar.Entry.e));
+         (Grammar.Entry.obj (a_UIDENT2 : 'a_UIDENT2 Grammar.Entry.e));
        Gramext.Stoken ("", ":"); Gramext.Sself; Gramext.Stoken ("", ")");
        Gramext.Stoken ("", "->"); Gramext.Sself],
       Gramext.action
-        (fun (mt : 'module_type) _ _ (t : 'module_type) _ (i : 'a_UIDENT) _ _
+        (fun (mt : 'module_type) _ _ (t : 'module_type) _ (i : 'a_UIDENT2) _ _
              (loc : Ploc.t) ->
            (Qast.Node ("MtFun", [Qast.Loc; i; t; mt]) : 'module_type))];
      None, None,
@@ -981,14 +981,14 @@ Grammar.extend
     [None, Some Gramext.RightA,
      [[Gramext.Stoken ("", "(");
        Gramext.Snterm
-         (Grammar.Entry.obj (a_UIDENT : 'a_UIDENT Grammar.Entry.e));
+         (Grammar.Entry.obj (a_UIDENT2 : 'a_UIDENT2 Grammar.Entry.e));
        Gramext.Stoken ("", ":");
        Gramext.Snterm
          (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e));
        Gramext.Stoken ("", ")"); Gramext.Sself],
       Gramext.action
-        (fun (mt : 'module_declaration) _ (t : 'module_type) _ (i : 'a_UIDENT)
-             _ (loc : Ploc.t) ->
+        (fun (mt : 'module_declaration) _ (t : 'module_type) _
+             (i : 'a_UIDENT2) _ (loc : Ploc.t) ->
            (Qast.Node ("MtFun", [Qast.Loc; i; t; mt]) : 'module_declaration));
       [Gramext.Stoken ("", ":");
        Gramext.Snterm

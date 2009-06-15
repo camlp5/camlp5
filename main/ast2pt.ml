@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.31 2007/09/12 16:02:06 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.32 2007/09/12 17:30:53 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -758,7 +758,7 @@ and module_type =
   [ MtAcc loc _ _ as f -> mkmty loc (Pmty_ident (module_type_long_id f))
   | MtApp loc _ _ as f -> mkmty loc (Pmty_ident (module_type_long_id f))
   | MtFun loc n nt mt ->
-      mkmty loc (Pmty_functor n (module_type nt) (module_type mt))
+      mkmty loc (Pmty_functor (uv n) (module_type nt) (module_type mt))
   | MtLid loc s -> mkmty loc (Pmty_ident (lident s))
   | MtQuo loc _ -> error loc "abstract module type not allowed here"
   | MtSig loc sl ->

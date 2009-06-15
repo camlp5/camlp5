@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.58 2007/09/12 16:18:03 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.59 2007/09/12 17:30:53 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -364,16 +364,23 @@ module Meta =
         | x -> not_impl "e_sig_item" x ]
     ;
     value e_module_type mt =
-(*
       let ln = ln () in
-*)
       loop mt where rec loop =
         fun
-        [ (*MtUid _ s -> <:expr< MLast.MtUid $ln$ $e_string s$ >>
-        | *)IFDEF STRICT THEN
+        [ MtFun _ s mt1 mt2 ->
+            let s = e_vala e_string s in
+            <:expr< MLast.MtFun $ln$ $s$ $loop mt1$ $loop mt2$ >>
+(*
+        | MtUid _ s -> <:expr< MLast.MtUid $ln$ $e_string s$ >>
+*)
+        | IFDEF STRICT THEN
             MtXtr loc s _ -> e_xtr loc s
           END
         | x -> not_impl "e_module_type" x ]
+    ;
+    value p_module_type =
+      fun
+      [ x -> not_impl "p_module_type" x ]
     ;
     value rec e_str_item si =
       let ln = ln () in
@@ -455,6 +462,7 @@ value ctyp_eoi = Grammar.Entry.create Pcaml.gram "type";
 value str_item_eoi = Grammar.Entry.create Pcaml.gram "str_item";
 value sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";
 value module_expr_eoi = Grammar.Entry.create Pcaml.gram "module_expr";
+value module_type_eoi = Grammar.Entry.create Pcaml.gram "module_type";
 
 EXTEND
   expr_eoi: [ [ x = Pcaml.expr; EOI -> x ] ];
@@ -463,6 +471,7 @@ EXTEND
   sig_item_eoi: [ [ x = Pcaml.sig_item; EOI -> x ] ];
   str_item_eoi: [ [ x = Pcaml.str_item; EOI -> x ] ];
   module_expr_eoi: [ [ x = Pcaml.module_expr; EOI -> x ] ];
+  module_type_eoi: [ [ x = Pcaml.module_type; EOI -> x ] ];
 END;
 
 IFDEF STRICT THEN
@@ -634,7 +643,9 @@ List.iter
    ("str_item", apply_entry str_item_eoi Meta.e_str_item Meta.p_str_item);
    ("sig_item", apply_entry sig_item_eoi Meta.e_sig_item Meta.p_sig_item);
    ("module_expr",
-    apply_entry module_expr_eoi Meta.e_module_expr Meta.p_module_expr)]
+    apply_entry module_expr_eoi Meta.e_module_expr Meta.p_module_expr);
+   ("module_type",
+    apply_entry module_type_eoi Meta.e_module_type Meta.p_module_type)]
 ;
 
 let expr s =

@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.71 2007/09/12 16:02:06 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.72 2007/09/12 17:30:53 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -165,8 +165,8 @@ EXTEND
       | "="; me = module_expr -> <:module_expr< $me$ >> ] ]
   ;
   module_type:
-    [ [ "functor"; "("; i = UIDENT; ":"; t = SELF; ")"; "->"; mt = SELF ->
-          <:module_type< functor ( $i$ : $t$ ) -> $mt$ >> ]
+    [ [ "functor"; "("; i = V UIDENT; ":"; t = SELF; ")"; "->"; mt = SELF ->
+          <:module_type< functor ( $auid:i$ : $t$ ) -> $mt$ >> ]
     | [ mt = SELF; "with"; wcl = LIST1 with_constr SEP "and" ->
           <:module_type< $mt$ with $list:wcl$ >> ]
     | [ "sig"; sg = LIST0 [ s = sig_item; ";" -> s ]; "end" ->
@@ -204,8 +204,8 @@ EXTEND
   module_declaration:
     [ RIGHTA
       [ ":"; mt = module_type -> <:module_type< $mt$ >>
-      | "("; i = UIDENT; ":"; t = module_type; ")"; mt = SELF ->
-          <:module_type< functor ( $i$ : $t$ ) -> $mt$ >> ] ]
+      | "("; i = V UIDENT; ":"; t = module_type; ")"; mt = SELF ->
+          <:module_type< functor ( $auid:i$ : $t$ ) -> $mt$ >> ] ]
   ;
   with_constr:
     [ [ "type"; i = mod_ident; tpl = LIST0 type_parameter; "=";
