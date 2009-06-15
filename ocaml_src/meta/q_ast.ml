@@ -53,6 +53,30 @@ let eval_antiquot_list entry (el : 'a list) =
   else None
 ;;
 
+(* horrible hack for opt antiquotations; a string has been installed in
+   the ASt at the place of an option, using Obj.repr; ugly but local to
+   q_ast.ml *)
+let eval_antiquot_option entry (oe : 'a option) =
+  if Obj.is_block (Obj.repr oe) && Obj.tag (Obj.repr oe) = Obj.string_tag then
+    let s : string = Obj.magic oe in
+    match eval_antiquot "opt" entry s with
+      Some loc_r -> Some loc_r
+    | None -> assert false
+  else None
+;;
+
+(* horrible hack for bool antiquotations; a string has been installed in
+   the ASt at the place of a bool, using Obj.repr; ugly but local to
+   q_ast.ml *)
+let eval_antiquot_bool entry (b : bool) =
+  if Obj.is_block (Obj.repr b) && Obj.tag (Obj.repr b) = Obj.string_tag then
+    let s : string = Obj.magic b in
+    match eval_antiquot "flag" entry s with
+      Some loc_r -> Some loc_r
+    | None -> assert false
+  else None
+;;
+
 let expr_eoi = Grammar.Entry.create Pcaml.gram "expr";;
 let patt_eoi = Grammar.Entry.create Pcaml.gram "patt";;
 let sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";;
@@ -76,13 +100,19 @@ module Meta =
           in
           loop el
     ;;
-    let e_option elem =
-      function
-        None -> MLast.ExUid (loc, "None")
-      | Some e -> MLast.ExApp (loc, MLast.ExUid (loc, "Some"), elem e)
+    let e_option elem eo =
+      match eval_antiquot_option expr_eoi eo with
+        Some (loc, r) -> MLast.ExAnt (loc, r)
+      | None ->
+          match eo with
+            None -> MLast.ExUid (loc, "None")
+          | Some e -> MLast.ExApp (loc, MLast.ExUid (loc, "Some"), elem e)
     ;;
     let e_bool b =
-      if b then MLast.ExUid (loc, "True") else MLast.ExUid (loc, "False")
+      match eval_antiquot_bool expr_eoi b with
+        Some (loc, r) -> MLast.ExAnt (loc, r)
+      | None ->
+          if b then MLast.ExUid (loc, "True") else MLast.ExUid (loc, "False")
     ;;
     let e_type t =
       let ln = ln () in
@@ -496,6 +526,14 @@ lex.Token.tok_match <-
   | ("LIST0" | "LIST1"), ("" | "SEP") ->
       (function
          "ANTIQUOT_LOC", prm -> check_anti_loc prm "list"
+       | _ -> raise Stream.Failure)
+  | "OPT", "" ->
+      (function
+         "ANTIQUOT_LOC", prm -> check_anti_loc prm "opt"
+       | _ -> raise Stream.Failure)
+  | "FLAG", "" ->
+      (function
+         "ANTIQUOT_LOC", prm -> check_anti_loc prm "flag"
        | _ -> raise Stream.Failure)
   | tok -> Token.default_match tok;;
 

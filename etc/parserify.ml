@@ -186,7 +186,7 @@ value rewrite_parser =
              (<:patt< _ >>, None, p_kont) :: _] ->
                <:expr<
                  match Stream.peek strm__ with
-                 [ Some $p$ $when:eo$ ->
+                 [ Some $p$ $opt:eo$ ->
                      do { Stream.junk strm__; $rewrite False sp_kont$ }
                  | _ -> $rewrite top p_kont$ ]
                >>
@@ -195,7 +195,7 @@ value rewrite_parser =
                let p_kont = iter pel in
                <:expr<
                  match Stream.peek strm__ with
-                 [ Some $p$ $when:eo$ ->
+                 [ Some $p$ $opt:eo$ ->
                      do { Stream.junk strm__; $rewrite False sp_kont$ }
                  | _ -> $p_kont$ ]
                >>
@@ -245,7 +245,7 @@ value spc_of_parser =
         [([spc :: sp], epo, e) :: parser_cases p_kont]
     | <:expr<
         match Stream.peek strm__ with
-        [ Some $p$ $when:wo$ -> do { Stream.junk strm__; $sp_kont$ }
+        [ Some $p$ $opt:wo$ -> do { Stream.junk strm__; $sp_kont$ }
         | _ -> $p_kont$ ]
       >> ->
         let spc = (SPCterm (p, wo), None) in
@@ -280,7 +280,7 @@ value spc_of_parser =
         | None -> ([], None, e) ]
     | <:expr<
         match Stream.peek strm__ with
-        [ Some $p$ $when:wo$ -> do { Stream.junk strm__; $sp_kont$ }
+        [ Some $p$ $opt:wo$ -> do { Stream.junk strm__; $sp_kont$ }
         | _ -> raise $err$ ]
       >> ->
         let err =

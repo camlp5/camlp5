@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.28 2007/08/01 18:01:19 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.29 2007/08/01 18:57:15 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -356,16 +356,15 @@ EXTEND
       | ":"; t = ctyp; "="; e = expr -> <:expr< ($e$ : $t$) >> ] ]
   ;
   match_case:
-    [ [ p = patt; aso = as_patt_opt; w = when_expr_opt; "->"; e = expr ->
+    [ [ p = patt; aso = as_patt_opt; w = OPT when_expr; "->"; e = expr ->
           mkmatchcase loc p aso w e ] ]
   ;
   as_patt_opt:
     [ [ "as"; p = patt -> Some p
       | -> None ] ]
   ;
-  when_expr_opt:
-    [ [ "when"; e = expr -> Some e
-      | -> None ] ]
+  when_expr:
+    [ [ "when"; e = expr -> e ] ]
   ;
   label_expr:
     [ [ i = patt_label_ident; e = fun_binding -> (i, e) ] ]

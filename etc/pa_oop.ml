@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_oop.ml,v 1.5 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: pa_oop.ml,v 1.6 2007/08/01 18:57:15 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -64,7 +64,7 @@ value rec stream_pattern loc epo e ekont =
       let (tst, p, wo, e) = stream_pattern_component skont spc in
       let ckont = ekont err in
       <:expr< match $tst$ with
-              [ Some $p$ $when:wo$ -> $e$ | _ -> $ckont$ ] >> ]
+              [ Some $p$ $opt:wo$ -> $e$ | _ -> $ckont$ ] >> ]
 ;
 
 value rec parser_cases loc =

@@ -166,8 +166,8 @@ Grammar.extend
      grammar_entry_create "match_case"
    and as_patt_opt : 'as_patt_opt Grammar.Entry.e =
      grammar_entry_create "as_patt_opt"
-   and when_expr_opt : 'when_expr_opt Grammar.Entry.e =
-     grammar_entry_create "when_expr_opt"
+   and when_expr : 'when_expr Grammar.Entry.e =
+     grammar_entry_create "when_expr"
    and label_expr : 'label_expr Grammar.Entry.e =
      grammar_entry_create "label_expr"
    and expr_ident : 'expr_ident Grammar.Entry.e =
@@ -1130,12 +1130,13 @@ Grammar.extend
      [[Gramext.Snterm (Grammar.Entry.obj (patt : 'patt Grammar.Entry.e));
        Gramext.Snterm
          (Grammar.Entry.obj (as_patt_opt : 'as_patt_opt Grammar.Entry.e));
-       Gramext.Snterm
-         (Grammar.Entry.obj (when_expr_opt : 'when_expr_opt Grammar.Entry.e));
+       Gramext.Sopt
+         (Gramext.Snterm
+            (Grammar.Entry.obj (when_expr : 'when_expr Grammar.Entry.e)));
        Gramext.Stoken ("", "->");
        Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
       Gramext.action
-        (fun (e : 'expr) _ (w : 'when_expr_opt) (aso : 'as_patt_opt)
+        (fun (e : 'expr) _ (w : 'when_expr option) (aso : 'as_patt_opt)
              (p : 'patt) (loc : Token.location) ->
            (mkmatchcase loc p aso w e : 'match_case))]];
     Grammar.Entry.obj (as_patt_opt : 'as_patt_opt Grammar.Entry.e), None,
@@ -1147,15 +1148,12 @@ Grammar.extend
       Gramext.action
         (fun (p : 'patt) _ (loc : Token.location) ->
            (Some p : 'as_patt_opt))]];
-    Grammar.Entry.obj (when_expr_opt : 'when_expr_opt Grammar.Entry.e), None,
+    Grammar.Entry.obj (when_expr : 'when_expr Grammar.Entry.e), None,
     [None, None,
-     [[],
-      Gramext.action (fun (loc : Token.location) -> (None : 'when_expr_opt));
-      [Gramext.Stoken ("", "when");
+     [[Gramext.Stoken ("", "when");
        Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
       Gramext.action
-        (fun (e : 'expr) _ (loc : Token.location) ->
-           (Some e : 'when_expr_opt))]];
+        (fun (e : 'expr) _ (loc : Token.location) -> (e : 'when_expr))]];
     Grammar.Entry.obj (label_expr : 'label_expr Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm

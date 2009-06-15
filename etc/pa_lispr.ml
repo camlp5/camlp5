@@ -420,7 +420,7 @@ and stream_pattern_component skont ekont err =
       let j = junk_fun loc in
       let k = ekont err in
       <:expr< match $e$ $lid:strm_n$ with
-       [ Some $p$ $when:wo$ -> do { $j$ $lid:strm_n$ ; $skont$ }
+       [ Some $p$ $opt:wo$ -> do { $j$ $lid:strm_n$ ; $skont$ }
        | _ -> $k$ ] >>
   | Sexpr loc [se1; se2] ->
       let p = patt_se se1 in

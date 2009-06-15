@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.30 2007/08/01 18:01:19 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.31 2007/08/01 18:57:15 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -653,16 +653,15 @@ EXTEND
       | ":"; t = ctyp; "="; e = expr -> Qast.Node "ExTyc" [Qast.Loc; e; t] ] ]
   ;
   match_case:
-    [ [ p = patt; aso = as_patt_opt; w = when_expr_opt; "->"; e = expr ->
+    [ [ p = patt; aso = as_patt_opt; w = SOPT when_expr; "->"; e = expr ->
           mkmatchcase Qast.Loc p aso w e ] ]
   ;
   as_patt_opt:
     [ [ "as"; p = patt -> Qast.Option (Some p)
       | -> Qast.Option None ] ]
   ;
-  when_expr_opt:
-    [ [ "when"; e = expr -> Qast.Option (Some e)
-      | -> Qast.Option None ] ]
+  when_expr:
+    [ [ "when"; e = expr -> e ] ]
   ;
   label_expr:
     [ [ i = patt_label_ident; e = fun_binding -> Qast.Tuple [i; e] ] ]
@@ -1095,9 +1094,6 @@ EXTEND
   patt_label_ident: LEVEL "simple"
     [ [ a = ANTIQUOT -> antiquot "" loc a ] ]
   ;
-  when_expr_opt:
-    [ [ a = ANTIQUOT "when" -> antiquot "when" loc a ] ]
-  ;
   mod_ident:
     [ [ a = ANTIQUOT -> antiquot "" loc a ] ]
   ;
@@ -1199,10 +1195,15 @@ EXTEND
     [ [ a = ANTIQUOT "opt" -> antiquot "opt" loc a ] ]
   ;
   a_flag:
-    [ [ a = ANTIQUOT "flag" -> antiquot "flag" loc a
-      | a = ANTIQUOT "opt" ->
-          (* deprecated since version 4.07 *)
-          antiquot "opt" loc a ] ]
+    [ [ a = ANTIQUOT "flag" -> antiquot "flag" loc a ] ]
+  ;
+  (* compatibility; deprecated since version 4.07 *)
+  a_opt:
+    [ [ a = ANTIQUOT "when" -> antiquot "when" loc a ] ]
+  ;
+  (* compatibility; deprecated since version 4.07 *)
+  a_flag:
+    [ [ a = ANTIQUOT "opt" -> antiquot "opt" loc a ] ]
   ;
   a_UIDENT:
     [ [ a = ANTIQUOT "uid" -> antiquot "uid" loc a

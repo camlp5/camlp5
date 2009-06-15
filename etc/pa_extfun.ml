@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo pa_extend.cmo *)
-(* $Id: pa_extfun.ml,v 1.5 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: pa_extfun.ml,v 1.6 2007/08/01 18:57:15 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -63,7 +63,7 @@ value conv (p, wo, e) =
   let loc = Stdpp.encl_loc (MLast.loc_of_patt p) (MLast.loc_of_expr e) in
   let e =
     if wo = None && catch_any p then <:expr< fun $p$ -> Some $e$ >>
-    else <:expr< fun [ $p$ $when:wo$ -> Some $e$ | _ -> None ] >>
+    else <:expr< fun [ $p$ $opt:wo$ -> Some $e$ | _ -> None ] >>
   in
   let has_when =
     match wo with

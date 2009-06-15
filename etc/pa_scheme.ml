@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.11 2007/07/11 12:01:39 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.12 2007/08/01 18:57:15 deraugla Exp $
 
 (open Pcaml)
 (open Stdpp)
@@ -716,7 +716,7 @@
             (j (junk_fun loc))
             (k (ekont err)))
        <:expr< match $e$ $lid:strm_n$ with
-               [ Some $p$ $when:wo$ -> do { $j$ $lid:strm_n$ ; $skont$ }
+               [ Some $p$ $opt:wo$ -> do { $j$ $lid:strm_n$ ; $skont$ }
                | _ -> $k$ ] >>))
     ((Sexpr loc [se1 se2])
      (let* ((p (patt_se se1))

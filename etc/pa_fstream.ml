@@ -41,7 +41,7 @@ value stream_pattern_component skont =
         <:expr< $next_fun loc$ $lid:strm_n$ >>
       else
         <:expr< match $next_fun loc$ $lid:strm_n$ with
-                [ $p$ $when:wo$ -> $skont$
+                [ $p$ $opt:wo$ -> $skont$
                 | _ -> None ] >>
   | SpNtr loc p e ->
       let p = <:patt< Some ($p$, $lid:strm_n$) >> in

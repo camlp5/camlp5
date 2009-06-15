@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: exparser.ml,v 1.3 2007/07/25 10:12:21 deraugla Exp $ *)
+(* $Id: exparser.ml,v 1.4 2007/08/01 18:57:15 deraugla Exp $ *)
 
 type spat_comp =
   [ SpTrm of MLast.loc and MLast.patt and option MLast.expr
@@ -135,7 +135,7 @@ value stream_pattern_component skont ckont =
   fun
   [ SpTrm loc p wo ->
       <:expr< match $peek_fun loc$ $lid:strm_n$ with
-              [ Some $p$ $when:wo$ ->
+              [ Some $p$ $opt:wo$ ->
                   do { $junk_fun loc$ $lid:strm_n$; $skont$ }
               | _ -> $ckont$ ] >>
   | SpNtr loc p e ->
