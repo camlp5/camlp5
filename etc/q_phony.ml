@@ -1,4 +1,4 @@
-(* camlp4r pa_extend.cmo q_MLast.cmo *)
+(* camlp4r -I . *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp4                                  *)
@@ -10,7 +10,10 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_phony.ml,v 1.8 2007/07/10 02:09:55 deraugla Exp $ *)
+(* $Id: q_phony.ml,v 1.9 2007/07/10 09:05:15 deraugla Exp $ *)
+
+#load "pa_extend.cmo";
+#load "q_MLast.cmo";
 
 open Pcaml;
 
@@ -66,7 +69,7 @@ EXTEND
   ;
 END;
 
-#load "./pa_extfun.cmo";
+#load "pa_extfun.cmo";
 
 open Pretty;
 open Pcaml.Printers;

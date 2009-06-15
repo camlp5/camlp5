@@ -69,5 +69,7 @@ pr_schp_main.cmo: pr_scheme.cmo ../camlp4/pcaml.cmi parserify.cmi \
     ../camlp4/mLast.cmi 
 pr_schp_main.cmx: pr_scheme.cmx ../camlp4/pcaml.cmx parserify.cmx \
     ../camlp4/mLast.cmi 
-q_phony.cmo: ../camlp4/quotation.cmi ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
-q_phony.cmx: ../camlp4/quotation.cmx ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
+q_phony.cmo: ../camlp4/quotation.cmi ../camlp4/prtools.cmi \
+    ../camlp4/pcaml.cmi ../camlp4/mLast.cmi 
+q_phony.cmx: ../camlp4/quotation.cmx ../camlp4/prtools.cmx \
+    ../camlp4/pcaml.cmx ../camlp4/mLast.cmi 
