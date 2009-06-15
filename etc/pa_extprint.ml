@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_extprint.ml,v 1.37 2007/12/18 18:41:00 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.38 2007/12/18 19:10:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -252,12 +252,15 @@ and parse_atom_list =
   | [: :] -> [] ]
 and parse_atom =
   fparser
-  [ [: `'@'; `'['; pp = parse_paren_param; t = parse_format; `'@'; `']' :] ->
-      Tparen pp t
-  | [: `'@'; `'['; pp = parse_paren_param; t = parse_format :] ->
+  [ [: `'@'; `'['; pp = parse_paren_param; t = parse_format;
+       _ = end_paren :] ->
       Tparen pp t
   | [: cl = parse_string :] ->
       Tstring (pformat_of_char_list cl) ]
+and end_paren =
+  fparser
+  [ [: `'@'; `']' :] -> ()
+  | [: :] -> () ]
 ;
 
 value make_pc loc erase_bef erase_aft is_empty_bef is_empty_aft pc bef bef_al

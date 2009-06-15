@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.150 2007/12/17 13:09:17 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.151 2007/12/18 19:10:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1353,7 +1353,7 @@ EXTEND_PRINTER
                  pprintf pc "declare %p end"
                    (hlist (semi_after str_item)) sil)
               (fun () ->
-                 pprintf pc "@[<a>declare@;%p@ end"
+                 pprintf pc "@[<a>declare@;%p@ end@]"
                    (vlist (semi_after str_item)) sil)
       | <:str_item< exception $uid:e$ of $list:tl$ = $id$ >> ->
           exception_decl pc (e, tl, id)
@@ -1397,7 +1397,7 @@ EXTEND_PRINTER
                  pprintf pc "declare %p end"
                    (hlist (semi_after sig_item)) sil)
               (fun () ->
-                 pprintf pc "@[<a>declare@;%p@ end"
+                 pprintf pc "@[<a>declare@;%p@ end@]"
                    (vlist (semi_after sig_item)) sil)
       | <:sig_item< exception $uid:e$ of $list:tl$ >> ->
           exception_decl pc (e, tl, [])
