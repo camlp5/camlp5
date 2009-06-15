@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.124 2007/12/06 20:51:55 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.125 2007/12/06 23:52:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1042,34 +1042,16 @@ EXTEND_PRINTER
               let (pl, e1) = expr_fun_args e1 in
               let pl = [p1 :: pl] in
               horiz_vertic
+                (fun () -> pprintf pc "fun %p -> %p" (hlist patt) pl curr e1)
                 (fun () ->
-                   sprintf "%sfun %s -> %s%s" pc.bef
-                     (hlist patt {(pc) with bef = ""; aft = ""} pl)
-                     (curr {(pc) with bef = ""; aft = ""} e1) pc.aft)
-                (fun () ->
-                   let fun_arrow k =
-                     let pl = List.map (fun p -> (p, "")) pl in
-                     plist patt 4
-                       {(pc) with bef = sprintf "%sfun " pc.bef;
-                        aft = sprintf " ->%s" k}
-                       pl
-                   in
+                   let pl = List.map (fun p -> (p, "")) pl in
                    match sequencify e1 with
                    [ Some el ->
                        sequence_box2 pc
-                         (fun pc ->
-                            horiz_vertic (fun _ -> sprintf "\n")
-                              (fun () -> fun_arrow pc.aft))
+                         (fun pc -> pprintf pc "fun %p ->" (plist patt 4) pl)
                          el
                    | None ->
-                       let s1 = fun_arrow "" in
-                       let s2 =
-                         curr
-                           {(pc) with ind = pc.ind + 2;
-                            bef = tab (pc.ind + 2)}
-                           e1
-                       in
-                       sprintf "%s\n%s" s1 s2 ])
+                       pprintf pc "fun %p ->@;%p" (plist patt 4) pl curr e1 ])
           | [] -> sprintf "%sfun []%s" pc.bef pc.aft
           | pwel ->
               let s = match_assoc_list {(pc) with bef = tab pc.ind} pwel in
