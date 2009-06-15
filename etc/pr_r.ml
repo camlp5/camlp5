@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.91 2007/11/28 18:24:18 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.92 2007/11/28 18:47:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1695,20 +1695,9 @@ EXTEND_PRINTER
           match y with
           [ Some  y ->
               let patt2 pc x =
-                horiz_vertic
-                  (fun () ->
-                     sprintf "%s%s :: %s]%s" pc.bef
-                       (patt {(pc) with bef = ""; aft = ""} x)
-                       (patt {(pc) with bef = ""; aft = ""} y) pc.aft)
-                  (fun () ->
-                     let s1 = patt {(pc) with aft = " ::"} x in
-                     let s2 =
-                       patt
-                         {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                          aft = sprintf "]%s" pc.aft}
-                         y
-                     in
-                     sprintf "%s\n%s" s1 s2)
+                break 1 0 pc
+                  (fun pc -> patt {(pc) with aft = " ::"} x)
+                  (fun pc -> patt {(pc) with aft = sprintf "]%s" pc.aft} y)
               in
               plistl patt patt2 0
                 {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef} xl
@@ -1718,22 +1707,11 @@ EXTEND_PRINTER
                  aft = sprintf "]%s" pc.aft}
                 xl ]
       | <:patt< ($p$ : $t$) >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s(%s : %s)%s" pc.bef
-                 (patt {(pc) with bef = ""; aft = ""} p)
-                 (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-            (fun () ->
-               let s1 =
-                 patt {(pc) with bef = sprintf "%s(" pc.bef; aft = " :"} p
-               in
-               let s2 =
-                 ctyp
-                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
-                    aft = (sprintf ")%s" pc.aft)}
-                   t
-               in
-               sprintf "%s\n%s" s1 s2)
+          break 1 0 {(pc) with ind = pc.ind + 1}
+            (fun pc ->
+               patt {(pc) with bef = sprintf "%s(" pc.bef; aft = " :"} p)
+            (fun pc ->
+               ctyp {(pc) with aft = sprintf ")%s" pc.aft} t)
       | <:patt< $int:s$ >> | <:patt< $flo:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then
             sprintf "%s(%s)%s" pc.bef s pc.aft
