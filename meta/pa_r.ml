@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.30 2007/08/02 05:03:07 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.31 2007/08/02 12:45:48 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -146,7 +146,7 @@ EXTEND
       [ "declare"; st = LIST0 [ s = str_item; ";" -> s ]; "end" ->
           <:str_item< declare $list:st$ end >>
       | "exception"; (_, c, tl) = constructor_declaration; b = rebind_exn ->
-          <:str_item< exception $c$ of $list:tl$ = $b$ >>
+          <:str_item< exception $uid:c$ of $list:tl$ = $b$ >>
       | "external"; i = LIDENT; ":"; t = ctyp; "="; pd = LIST1 STRING ->
           <:str_item< external $i$ : $t$ = $list:pd$ >>
       | "include"; me = module_expr -> <:str_item< include $me$ >>
