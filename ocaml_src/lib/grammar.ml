@@ -1534,8 +1534,6 @@ let parse_parsable entry p =
   in
   floc := fun_loc;
   token_count := 0;
-  max_fcount := 0;
-  nb_ftry := 0;
   try let r = efun ts in restore (); r with
     Stream.Failure ->
       let loc = get_loc () in
@@ -1556,7 +1554,13 @@ let bparse_parsable entry p =
   let restore =
     let old_floc = !floc in
     let old_tc = !token_count in
-    fun () -> floc := old_floc; token_count := old_tc
+    let old_max_fcount = !max_fcount in
+    let old_nb_ftry = !nb_ftry in
+    fun () ->
+      floc := old_floc;
+      token_count := old_tc;
+      max_fcount := old_max_fcount;
+      nb_ftry := old_nb_ftry
   in
   let get_loc () =
     try
@@ -1568,6 +1572,9 @@ let bparse_parsable entry p =
   in
   floc := fun_loc;
   token_count := 0;
+  max_fcount := 0;
+  nb_ftry := 0;
+  if !backtrack_trace_try then begin Printf.eprintf "\n"; flush stderr end;
   try
     let r = efun fts in
     restore ();

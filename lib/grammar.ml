@@ -1,5 +1,5 @@
 (* camlp5r pa_fstream.cmo *)
-(* $Id: grammar.ml,v 1.68 2007/11/26 09:20:52 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.69 2007/11/26 10:23:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Gramext;
@@ -1400,7 +1400,10 @@ value parse_parsable entry p = do {
   let restore =
     let old_floc = floc.val in
     let old_tc = token_count.val in
-    fun () -> do { floc.val := old_floc; token_count.val := old_tc }
+    fun () -> do {
+      floc.val := old_floc;
+      token_count.val := old_tc;
+    }
   in
   let get_loc () =
     try
@@ -1413,8 +1416,6 @@ value parse_parsable entry p = do {
   in
   floc.val := fun_loc;
   token_count.val := 0;
-  max_fcount.val := 0;
-  nb_ftry.val := 0;
   try do {
     let r = efun ts in
     restore ();
@@ -1446,7 +1447,14 @@ value bparse_parsable entry p = do {
   let restore =
     let old_floc = floc.val in
     let old_tc = token_count.val in
-    fun () -> do { floc.val := old_floc; token_count.val := old_tc }
+    let old_max_fcount = max_fcount.val in
+    let old_nb_ftry = nb_ftry.val in
+    fun () -> do {
+      floc.val := old_floc;
+      token_count.val := old_tc;
+      max_fcount.val := old_max_fcount;
+      nb_ftry.val := old_nb_ftry;
+    }
   in
   let get_loc () =
     try
@@ -1459,6 +1467,13 @@ value bparse_parsable entry p = do {
   in
   floc.val := fun_loc;
   token_count.val := 0;
+  max_fcount.val := 0;
+  nb_ftry.val := 0;
+  if backtrack_trace_try.val then do {
+    Printf.eprintf "\n";
+    flush stderr;
+  }
+  else ();
   try do {
     let r = efun fts in
     restore ();
