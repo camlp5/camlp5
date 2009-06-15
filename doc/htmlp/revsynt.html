@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: revsynt.html,v 1.21 2007/07/21 02:05:16 deraugla Exp $ -->
+  <!-- $Id: revsynt.html,v 1.22 2007/07/21 02:55:11 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>revised syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -733,6 +733,8 @@
    </li>
 </ul>
 
+<p>... to be completed ... </p>
+
 <h2>Classes and Objects</h2>
 
 <ul>
@@ -837,9 +839,34 @@
       </tr>
     </table>
   </li>
-</ul>
 
-<p>...<em>to be completed</em>...</p>
+  <li>Types whose number of variants are fixed start with "<tt>[ =</tt>":
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>type t = [`On | `Off];;</tt></td>
+        <td><tt>type t = [ = `On | `Off];</tt></td>
+      </tr>
+    </table>
+  </li>
+
+  <li>The "<tt>[</tt>" and the "<tt>&lt;</tt>" in variant types must
+    not be sticked:
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>type t = [< `Foo | `Bar ];;</tt></td>
+        <td><tt>type t = [ < `Foo | `Bar ];</tt></td>
+      </tr>
+    </table>
+  </li>
+</ul>
 
 <div class="trailer">
 </div>
