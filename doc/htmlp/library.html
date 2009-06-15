@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: library.html,v 1.16 2007/08/20 20:43:10 deraugla Exp $ -->
+  <!-- $Id: library.html,v 1.17 2007/08/21 03:26:48 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Library</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -454,7 +454,7 @@ type grammar 'te =
   The visible type of grammars, i.e. the implementation of the abstract
   type "<tt>Grammar.g</tt>". It is also the implementation of an internal
   grammar type used in the Grammar functorial interface.
-</dl></dd>
+</dd></dl>
 
 <dl><dd>
   The type parameter "<tt>'te</tt>" is the type of the tokens, which
@@ -497,7 +497,7 @@ type g_entry 'te =
       <li><tt>egram</tt> : the associated grammar</li>
       <li><tt>ename</tt> : the entry name</li>
       <li><tt>elocal</tt> : True if the entry is local (local entries
-        are written with a star character "*" by Grammar.Entry.print)
+        are written with a star character "*" by Grammar.Entry.print)</li>
       <li><tt>estart</tt> and <tt>econtinue</tt> are parsers of the
         entry used in
         the <a href="grammars.html#a:Grammar-machinery">grammar
@@ -667,7 +667,7 @@ type position =
   statement, added by loading the Camlp5 "<tt>pa_extend.cmo</tt>"
   file.</p>
 
-<h3>Main types and values</h3>
+<h3>main types and values</h3>
 
 <dl>
   <dt><tt>type g = 'abstract;</tt></dt>
@@ -766,7 +766,7 @@ module Entry =
   <dd>Return the grammar associated with an entry.</dd>
 </dl>
 
-<h3>Printing grammar entries</h3>
+<h3>printing grammar entries</h3>
 
 <p>The function "<tt>Grammar.Entry.print</tt>" displays the current
   contents of an entry. Interesting for debugging, to look at the
@@ -779,7 +779,7 @@ module Entry =
   of the EXTEND statement) are indicated with a star ("<tt>*</tt>") to
   inform that they are not directly accessible.</p>
 
-<h3>Clearing grammars and entries</h3>
+<h3>clearing grammars and entries</h3>
 
 <pre style="border:0; margin-left: 1cm">
 module Unsafe :
@@ -805,7 +805,38 @@ module Unsafe :
    </ul>
 </dd></dl>
 
-<h3>Functorial interface</h3>
+<h3>scan entries</h3>
+
+<dl>
+  <dt><tt>value print_entry : Format.formatter -> Gramext.g_entry 'te -> unit;</tt></dt>
+  <dd>
+    General printer for all kinds of entries (obj entries).
+  </dd>
+</dl>
+
+<dl>
+  <dt><tt>value iter_entry : (Gramext.g_entry 'te -> unit) -> Gramext.g_entry 'te -> unit;</tt></dt>
+  <dd>
+    "<tt>Grammar.iter_entry f e</tt>" applies "<tt>f</tt>" to the
+    entry "<tt>e</tt>" and transitively all entries called by
+    "<tt>e</tt>". The order in which the entries are passed to
+    "<tt>f</tt>" is the order they appear in each entry. Each entry is
+    passed only once. *)
+  </dd>
+</dl>
+
+<dl>
+  <dt><tt>value fold_entry : (Gramext.g_entry 'te -> 'a -> 'a) -> Gramext.g_entry 'te -> 'a -> 'a;</tt></dt>
+  <dd>
+    "<tt>Grammar.fold_entry f e init</tt>" computes "<tt>(f eN .. (f
+    e2 (f e1 init)))</tt>", where "<tt>e1 .. eN</tt>" are "<tt>e</tt>"
+    and transitively all entries called by "<tt>e</tt>".  The order in
+    which the entries are passed to "<tt>f</tt>" is the order they
+    appear in each entry. Each entry is passed only once. *)
+  </dd>
+</dl>
+
+<h3>functorial interface</h3>
 
 <p>Alternative for grammars use. Grammars are no more Ocaml values:
   there is no type for them. Modules generated preserve the rule "an
@@ -872,7 +903,7 @@ module type S =
   <dd></dd>
 </dl>
 
-<h3>Miscellaneous</h3>
+<h3>grammar flags</h3>
 
 <dl>
   <dt><tt>value error_verbose : ref bool;</tt></dt>
@@ -895,35 +926,6 @@ module type S =
   <dd>
     Flag to apply strict parsing, without trying to recover errors;
     default = "<tt>False</tt>".
-  </dd>
-</dl>
-
-<dl>
-  <dt><tt>value print_entry : Format.formatter -> Gramext.g_entry 'te -> unit;</tt></dt>
-  <dd>
-    General printer for all kinds of entries (obj entries).
-  </dd>
-</dl>
-
-<dl>
-  <dt><tt>value iter_entry : (Gramext.g_entry 'te -> unit) -> Gramext.g_entry 'te -> unit;</tt></dt>
-  <dd>
-    "<tt>Grammar.iter_entry f e</tt>" applies "<tt>f</tt>" to the
-    entry "<tt>e</tt>" and transitively all entries called by
-    "<tt>e</tt>". The order in which the entries are passed to
-    "<tt>f</tt>" is the order they appear in each entry. Each entry is
-    passed only once. *)
-  </dd>
-</dl>
-
-<dl>
-  <dt><tt>value fold_entry : (Gramext.g_entry 'te -> 'a -> 'a) -> Gramext.g_entry 'te -> 'a -> 'a;</tt></dt>
-  <dd>
-    "<tt>Grammar.fold_entry f e init</tt>" computes "<tt>(f eN .. (f
-    e2 (f e1 init)))</tt>", where "<tt>e1 .. eN</tt>" are "<tt>e</tt>"
-    and transitively all entries called by "<tt>e</tt>".  The order in
-    which the entries are passed to "<tt>f</tt>" is the order they
-    appear in each entry. Each entry is passed only once. *)
   </dd>
 </dl>
 
@@ -963,20 +965,171 @@ module type S =
   <dd>Match failure while applying an extensible function.</dd>
   <dt><tt>value print : t 'a 'b -> unit;</tt></dt>
   <dd>Print patterns in the order they are recorded in the data
-    structure.</ddt>
+    structure.</dd>
 </dl>
 
 <h2>Eprinter module</h2>
 
-<p>... to be written ...</p>
+<p>This module allows to create printers, apply them and clear them. It
+  is also internally used by the "<tt>EXTEND_PRINTER</tt>" statement.</p>
+
+<dl>
+  <dt><tt>type t 'a = 'abstract;</tt></dt>
+  <dd>Printer type, to print values of type "<tt>'a</tt>".</dd>
+</dl>
+
+<dl>
+  <dt><tt>type pr_context = { ind : int; bef : string; aft : string;
+      dang : string };</tt></dt>
+  <dd>
+    Printing context.
+    <ul>
+      <li>"<tt>ind</tt>" : the current indendation</li>
+      <li>"<tt>bef</tt>" : what has to be printed before, in the same line</li>
+      <li>"<tt>aft</tt>" : what has to be printed after, in the same line</li>
+      <li>"<tt>dang</tt>" : the dangling token to know whether parentheses
+        are necessary</li>
+    </ul>
+  </dd>
+</dl>
+
+<dl>
+  <dt><tt>value make : string -> t 'a;</tt></dt>
+  <dd>Builds a printer. The string parameter is used in error
+    messages. The printer is created empty and can be extended with
+    the "<tt>EXTEND_PRINTER</tt>" statement.</dd>
+</dl>
+
+<dl>
+  <dt><tt>value apply : t 'a -> pr_context -> 'a -> string;</tt></dt>
+  <dd>Applies a printer, returning the printed string of the
+    parameter.</dd>
+  <dt><tt>value apply_level : t 'a -> string -> pr_context -> 'a ->
+      string;</tt></dt>
+  <dd>Applies a printer at some specific level. Raises "<tt>Failure</tt>"
+    if the given level does not exist.</dd>
+</dl>
+
+<dl>
+  <dt><tt>value clear : t 'a -> unit;</tt></dt>
+  <dd>Clears a printer, removing all its levels and rules.</dd>
+</dl>
+
+<dl>
+  <dt><tt>value empty_pc : pr_context;</tt></dt>
+  <dd>Empty printer context, equal to <tt>{ind = 0; bef = ""; aft =
+      ""; dang = ""}</tt></dd>
+</dl>
+
+<p>Some other types and functions exist, for internal use.</p>
 
 <h2>Fstream module</h2>
 
-<p>... to be written ...</p>
+<p>This module implement functional streams.</p>
+
+<p>To be used with syntax "<tt>pa_fstream.cmo</tt>". The syntax is:</p>
+
+<ul>
+  <li>stream: "<tt>fstream [: ... :]</tt>"</li>
+  <li>parser: "<tt>parser [ [: ... :] -> ... | ... ]</tt>"</li>
+</ul>
+
+<p>Functional parsers are of type:</p>
+
+<pre>
+  Fstream.t 'a -> option ('a * Fstream.t 'a)
+</pre>
+
+<p>They use limited backtrack, i.e if a rule fails, the next rule is
+  tested with the initial stream; limited because when in case of a
+  rule with two consecutive symbols "<tt>a</tt>" and "<tt>b</tt>", if
+  "<tt>b</tt>" fails, the rule fails: there is no try with the next
+  rule of "<tt>a</tt>".</p>
+
+<dl>
+  <dt><tt>type t 'a = 'x;</tt></dt>
+  <dd>The type of 'a functional streams.</dd>
+</dl>
+
+<dl>
+  <dt><tt>value from : (int -> option 'a) -> t 'a;</tt></dt>
+  <dd>"<tt>Fstream.from f</tt>" returns a stream built from the
+    function "<tt>f</tt>".  To create a new stream element, the
+    function "<tt>f</tt>" is called with the current stream
+    count. The user function "<tt>f</tt>" must return either
+    "<tt>Some &lt;value></tt>" for a value or "<tt>None</tt>" to
+    specify the end of the stream.</dd>
+</dl>
+
+<dl>
+  <dt><tt>value of_list : list 'a -> t 'a;</tt></dt>
+  <dd>Return the stream holding the elements of the list in the same
+    order.</dd>
+  <dt><tt>value of_string : string -> t char;</tt></dt>
+  <dd>Return the stream of the characters of the string parameter.</dd>
+  <dt><tt>value of_channel : in_channel -> t char;</tt></dt>
+  <dd>Return the stream of the characters read from the input channel.</dd>
+</dl>
+
+<dl>
+  <dt><tt>value iter : ('a -> unit) -> t 'a -> unit;</tt></dt>
+  <dd>"<tt>Fstream.iter f s</tt>" scans the whole stream s, applying
+    function "<tt>f</tt>" in turn to each stream element
+    encountered.</dd>
+</dl>
+
+<dl>
+  <dt><tt>value next : t 'a -> option ('a * t 'a);</tt></dt>
+  <dd>Return "<tt>Some (a, s)</tt>" where "<tt>a</tt>" is the first
+    element of the stream and "<tt>s</tt>" the remaining stream, or
+    "<tt>None</tt>" if the stream is empty.</dd>
+  <dt><tt>value empty : t 'a -> option (unit * t 'a);</tt></dt>
+  <dd>Return "<tt>Some ((), s)</tt>" if the stream is empty where
+    "<tt>s</tt>" is itself, else "<tt>None</tt>".</dd>
+  <dt><tt>value count : t 'a -> int;</tt></dt>
+  <dd>Return the current count of the stream elements, i.e. the number
+    of the stream elements discarded.</dd>
+  <dt><tt>value count_unfrozen : t 'a -> int;</tt></dt>
+  <dd>Return the number of unfrozen elements in the beginning of the
+    stream; useful to determine the position of a parsing error (longuest
+    path).</dd>
+</dl>
 
 <h2>Pretty module</h2>
 
-<p>... to be written ...</p>
+<p>Pretty printing on strings.</p>
+
+<dl>
+  <dt><tt>value horiz_vertic : (unit -> 'a) -> (unit -> 'a) -> 'a;</tt></dt>
+  <dd>"<tt>horiz_vertic h v</tt>" first calls "<tt>h</tt>" to print
+    the data horizontally, i.e. without newlines. If the displaying
+    contains newlines or if its size exceeds the maximum line length
+    (see variable "<tt>line_length</tt>" below), then the function
+    "<tt>h</tt>" stops and the function "<tt>v</tt>" is called which
+    can print using several lines.</dd>
+</dl>
+
+<dl>
+  <dt><tt>value sprintf : format 'a unit string -> 'a;</tt></dt>
+  <dd>"<tt>sprintf fmt ...</tt>" formats some string like
+    "<tt>Printf.sprintf</tt>" does, except that, if it is called in
+    the context of the *first* function of "<tt>horiz_vertic</tt>"
+    above, it checks whether the resulting string has chances to fit
+    in the line. If not, i.e. if it contains newlines or if its length
+    is greater than "<tt>max_line_length.val</tt>", the function gives
+    up (raising some internal exception). Otherwise the built string
+    is returned.  "<tt>sprintf</tt>" behaves like
+    "<tt>Printf.sprintf</tt>" if it is called in the context of the
+    *second* function of "<tt>horiz_vertic</tt>" or without context at
+    all.</dd>
+</dl>
+
+<dl>
+  <dt><tt>value line_length : ref int;</tt></dt>
+  <dd>"<tt>line_length</tt>" is the maximum length (in characters) of
+    the line. Default = 78. Can be set to any other value before
+    printing.</dd>
+</dl>
 
 <div class="trailer">
 </div>

@@ -1,5 +1,6 @@
 (* camlp5r *)
-(* $Id: fstream.mli,v 1.3 2007/08/16 16:01:19 deraugla Exp $ *)
+(* $Id: fstream.mli,v 1.4 2007/08/21 03:26:48 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 (* Module [Fstream]: functional streams *)
 

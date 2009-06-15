@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: printers.html,v 1.9 2007/08/18 18:39:31 deraugla Exp $ -->
+  <!-- $Id: printers.html,v 1.10 2007/08/21 03:26:48 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible printers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -214,49 +214,8 @@ defined levels:</p>
 
 <h2>The Eprinter module</h2>
 
-<p>This module allows to create printers, apply them and clear them. It
-  is also internally used by the "<tt>EXTEND_PRINTER</tt>" statement.</p>
-
-<dl>
-  <dt><tt>type t 'a = 'abstract;</tt></dt>
-  <dd>Printer type, to print values of type "<tt>'a</tt>".</dd>
-</dl>
-
-<dl>
-  <dt><tt>type pr_context = { ind : int; bef : string; aft : string;
-      dang : string };</tt></dt>
-  <dd>Printing context. See above.</dd>
-</dl>
-
-<dl>
-  <dt><tt>value make : string -> t 'a;</tt></dt>
-  <dd>Builds a printer. The string parameter is used in error
-    messages. The printer is created empty and can be extended with
-    the "<tt>EXTEND_PRINTER</tt>" statement.</dd>
-</dl>
-
-<dl>
-  <dt><tt>value apply : t 'a -> pr_context -> 'a -> string;</tt></dt>
-  <dd>Applies a printer, returning the printed string of the
-    parameter.</dd>
-  <dt><tt>value apply_level : t 'a -> string -> pr_context -> 'a ->
-      string;</tt></dt>
-  <dd>Applies a printer at some specific level. Raises "<tt>Failure</tt>"
-    if the given level does not exist.</dd>
-</dl>
-
-<dl>
-  <dt><tt>value clear : t 'a -> unit;</tt></dt>
-  <dd>Clears a printer, removing all its levels and rules.</dd>
-</dl>
-
-<dl>
-  <dt><tt>value empty_pc : pr_context;</tt></dt>
-  <dd>Empty printer context, equal to <tt>{ind = 0; bef = ""; aft =
-      ""; dang = ""}</tt></dd>
-</dl>
-
-<p>Some other types and functions exist, for internal use.</p>
+<p>See its <a href="library.html#a:Eprinter-module">section</a> in the
+  chapter "Librabry".</p>
 
 <h2>Examples</h2>
 
