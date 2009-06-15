@@ -428,8 +428,9 @@ value eprint_item term_n nterm_n (m, added, lh, dot, rh) = do {
 };
 
 value make_item_sets rules_of_nterm term_n nterm_n item_set_ht =
-  loop 0 0 []
-  where rec loop ini_item_set_cnt item_set_cnt shift_assoc item_set_ini =
+  loop 0 0 [] []
+  where rec loop ini_item_set_cnt item_set_cnt term_shift nterm_shift
+    item_set_ini =
   do {
     let item_set =
       List.map (fun (m, _, lh, dot, rh) -> (m, False, lh, dot, rh))
@@ -465,9 +466,11 @@ value make_item_sets rules_of_nterm term_n nterm_n item_set_ht =
       else ();
     }
     ELSE () END;
-    let (item_set_cnt, symb_cnt_assoc, shift_assoc) =
+    let (item_set_cnt, term_assoc, nterm_assoc, term_shift, nterm_shift) =
       List.fold_left
-        (fun (item_set_cnt, symb_cnt_assoc, shift_assoc) s -> do {
+        (fun (item_set_cnt, term_assoc, nterm_assoc, term_shift, nterm_shift)
+           s ->
+         do {
            (* select items where there is a dot before s *)
            let item_set =
              List.find_all
@@ -497,8 +500,13 @@ value make_item_sets rules_of_nterm term_n nterm_n item_set_ht =
                  flush stderr;
                }
                ELSE () END;
-               let symb_cnt_assoc = [(s, n) :: symb_cnt_assoc] in
-               (item_set_cnt, symb_cnt_assoc, shift_assoc)
+               let (term_assoc, nterm_assoc) =
+                 match s with
+                 [ GS_term _ -> ([(s, n) :: term_assoc], nterm_assoc)
+                 | GS_nterm _ -> (term_assoc, [(s, n) :: nterm_assoc]) ]
+               in
+               (item_set_cnt, term_assoc, nterm_assoc, term_shift,
+                nterm_shift)
              }
            | None -> do {
                IFDEF VERBOSE THEN do {
@@ -511,17 +519,25 @@ value make_item_sets rules_of_nterm term_n nterm_n item_set_ht =
                ELSE () END;
                let item_set_cnt = item_set_cnt + 1 in
                Hashtbl.add item_set_ht item_set item_set_cnt;
-               let symb_cnt_assoc = [(s, item_set_cnt) :: symb_cnt_assoc] in
-               let (item_set_cnt, shift_assoc) =
-                 loop item_set_cnt item_set_cnt shift_assoc item_set
+               let (term_assoc, nterm_assoc) =
+                 let n = item_set_cnt in
+                 match s with
+                 [ GS_term _ -> ([(s, n) :: term_assoc], nterm_assoc)
+                 | GS_nterm _ -> (term_assoc, [(s, n) :: nterm_assoc]) ]
                in
-               (item_set_cnt, symb_cnt_assoc, shift_assoc)
+               let (item_set_cnt, term_shift, nterm_shift) =
+                 loop item_set_cnt item_set_cnt term_shift nterm_shift
+                   item_set
+               in
+               (item_set_cnt, term_assoc, nterm_assoc, term_shift,
+                nterm_shift)
              } ]
          })
-        (item_set_cnt, [], shift_assoc) sl
+        (item_set_cnt, [], [], term_shift, nterm_shift) sl
       in
-      let shift_assoc = [(ini_item_set_cnt, symb_cnt_assoc) :: shift_assoc] in
-      (item_set_cnt, shift_assoc)
+      let term_shift = [(ini_item_set_cnt, term_assoc) :: term_shift] in
+      let nterm_shift = [(ini_item_set_cnt, nterm_assoc) :: nterm_shift] in
+      (item_set_cnt, term_shift, nterm_shift)
   }
 ;
 
@@ -657,9 +673,9 @@ type lr0 =
   { rules : array (int * list (gram_symb int int));
     term_name_tab : array string;
     nterm_name_tab : array string;
-    nb_items : int;
-    item_set_ht : Hashtbl.t (list item) int;
-    shift_assoc : list (int * list (gram_symb int int * int)) }
+    item_set_tab : array (list item);
+    term_shift_tab : array (list (int * int));
+    nterm_shift_tab : array (list (int * int)) }
 ;
 
 value basic_lr0 entry lev = do {
@@ -802,36 +818,48 @@ value basic_lr0 entry lev = do {
   ELSE () END;
 
   let item_set_ht = Hashtbl.create 1 in
-  let (item_set_cnt, shift_assoc) =
+  let (item_set_cnt, term_assoc, nterm_assoc) =
     make_item_sets rules_of_nterm term_n nterm_n item_set_ht item_set_0
   in
+  let item_set_tab = Array.create (item_set_cnt + 1) [] in
+  Hashtbl.iter (fun s i -> item_set_tab.(i) := s) item_set_ht;
+
+  let term_shift_tab = Array.create (item_set_cnt + 1) [] in
+  List.iter (fun (i, a) -> term_shift_tab.(i) := a) term_assoc;
+  let nterm_shift_tab = Array.create (item_set_cnt + 1) [] in
+  List.iter (fun (i, a) -> nterm_shift_tab.(i) := a) nterm_assoc;
 
   IFDEF VERBOSE THEN do {
     Printf.eprintf "\ntotal number of item sets %d\n" (item_set_cnt + 1);
     flush stderr;
     Printf.eprintf "\nshift:\n";
-    List.iter
-      (fun (i, symb_cnt_assoc) -> do {
-         Printf.eprintf "  state %d:" i;
-         List.iter
-           (fun (s, i) ->
-              Printf.eprintf " %s->%d" (sprint_symb term_n nterm_n s) i)
-           (List.rev symb_cnt_assoc);
-         Printf.eprintf "\n";
-       })
-      (List.sort compare shift_assoc);
+    for i = 0 to item_set_cnt do {
+      Printf.eprintf "  state %d:" i;
+      let symb_shift = term_shift_tab.(i) in
+      List.iter
+        (fun (s, i) ->
+           Printf.eprintf " %s->%d" (sprint_symb term_n nterm_n s) i)
+        (List.rev symb_shift);
+      let symb_shift = nterm_shift_tab.(i) in
+      List.iter
+        (fun (s, i) ->
+           Printf.eprintf " %s->%d" (sprint_symb term_n nterm_n s) i)
+        (List.rev symb_shift);
+      Printf.eprintf "\n";
+    };
     flush stderr;
   }
   ELSE () END;
   {rules = rules; term_name_tab = term_name_tab;
-   nterm_name_tab = nterm_name_tab; nb_items = item_set_cnt + 1;
-   item_set_ht = item_set_ht; shift_assoc = shift_assoc}
+   nterm_name_tab = nterm_name_tab; item_set_tab = item_set_tab;
+   term_shift_tab = term_shift_tab; nterm_shift_tab = nterm_shift_tab}
 };
 
 value lr0 entry lev = do {
   let blr = basic_lr0 entry lev in
   let nb_terms = Array.length blr.term_name_tab in
   let nb_nterms = Array.length blr.nterm_name_tab in
+  let nb_item_sets = Array.length blr.item_set_tab in
   let term_n i = if i = -1 then "ε" else Array.get blr.term_name_tab i in
   let nterm_n = Array.get blr.nterm_name_tab in
   let nterm_derive_eps_tab = make_derive_eps_tab blr.rules nb_nterms in
@@ -883,18 +911,18 @@ value lr0 entry lev = do {
 
   (* make goto table *)
   let goto_table =
-    Array.init blr.nb_items (fun _ -> Array.create nb_nterms (-1))
+    Array.init nb_item_sets (fun _ -> Array.create nb_nterms (-1))
   in
-  List.iter
-    (fun (item_set_cnt, symb_cnt_assoc) ->
-       let line = goto_table.(item_set_cnt) in
+  Array.iteri
+    (fun i symb_cnt_assoc ->
+       let line = goto_table.(i) in
        List.iter
          (fun (s, n) ->
             match s with
             [ GS_term s -> ()
             | GS_nterm i -> line.(i) := n ])
          symb_cnt_assoc)
-    blr.shift_assoc;
+    blr.nterm_shift_tab;
   IFDEF VERBOSE THEN do {
     Printf.eprintf "\ngoto table\n\n";
     if Array.length goto_table > 20 then
@@ -915,38 +943,38 @@ value lr0 entry lev = do {
   (* make action table *)
   (* column size = number of terminals *)
   let action_table =
-    Array.init blr.nb_items (fun _ -> Array.create nb_terms ActErr)
+    Array.init nb_item_sets (fun _ -> Array.create nb_terms ActErr)
   in
   (* the columns for the terminals are copied to the action table as shift
      actions *)
-  List.iter
-    (fun (item_set_cnt, symb_cnt_assoc) ->
-       let line = action_table.(item_set_cnt) in
+  Array.iteri
+    (fun i symb_cnt_assoc ->
+       let line = action_table.(i) in
        List.iter
          (fun (s, n) ->
             match s with
             [ GS_term i -> line.(i) := ActShift n
             | GS_nterm s -> () ])
          symb_cnt_assoc)
-    blr.shift_assoc;
+    blr.term_shift_tab;
   (* for every item set that contains S → w •, an 'acc' is added in the
      column of the '$' terminal (end of input) *)
   let eoi_pos = 0 in
-  Hashtbl.iter
-    (fun item_set n ->
+  Array.iteri
+    (fun n item_set ->
        List.iter
          (fun (_, _, lh, dot, rh) ->
             if nterm_n lh = "S" && dot = List.length rh then
               action_table.(n).(eoi_pos) := ActAcc
             else ())
          item_set)
-    blr.item_set_ht;
+    blr.item_set_tab;
   (* if an item set i contains an item of the form A → w • and A → w is
      rule m with m > 0 then the row for state i in the action table is
      completely filled with the reduce action rm. *)
   let _nl = ref True in
-  Hashtbl.iter
-    (fun item_set i ->
+  Array.iteri
+    (fun i item_set ->
        List.iter
          (fun (m, _, _, dot, rh) ->
             if m > 0 then
@@ -991,7 +1019,7 @@ value lr0 entry lev = do {
               else ()
             else ())
          item_set)
-    blr.item_set_ht;
+    blr.item_set_tab;
   IFDEF VERBOSE THEN do {
     Printf.eprintf "\naction table\n\n";
     if Array.length action_table > 20 then
