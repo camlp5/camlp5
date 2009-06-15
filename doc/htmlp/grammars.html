@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.36 2007/07/17 08:44:23 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.37 2007/07/17 08:55:29 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -87,8 +87,8 @@ to <em>extend</em> it, using a specific syntactic statement:
 <h2>Syntax of the EXTEND statement</h2>
 
 <p>The "<tt>EXTEND</tt>" statement is added in the expressions of the
-ocaml language when the syntax extension kit "<tt>pa_extend.cmo</tt>"
-is loaded. Its syntax is:</p>
+  ocaml language when the syntax extension kit "<tt>pa_extend.cmo</tt>"
+  is loaded. Its syntax is:</p>
 
 <pre>
     expression ::= extend
@@ -153,19 +153,19 @@ is loaded. Its syntax is:</p>
 </pre>
 
 <p>Other statements, "<tt>GEXTEND</tt>", "<tt>DELETE_RULE</tt>",
-"<tt>GDELETE_RULES</tt>" are also defined by the same syntax extension
-kit. See further.</p>
+  "<tt>GDELETE_RULE</tt>" are also defined by the same syntax extension
+  kit. See further.</p>
 
 <p>In the description above, ony "<tt>EXTEND</tt>" and "<tt>END</tt>"
-are new keywords (reserved words which cannot be used in variables,
-constructors or module names). The other strings
-(e.g. "<tt>GLOBAL</tt>", "<tt>LEVEL</tt>", "<tt>LIST0</tt>",
-"<tt>LEFTA</tt>", etc.) are not reserved.</p>
+  are new keywords (reserved words which cannot be used in variables,
+  constructors or module names). The other strings
+  (e.g. "<tt>GLOBAL</tt>", "<tt>LEVEL</tt>", "<tt>LIST0</tt>",
+  "<tt>LEFTA</tt>", etc.) are not reserved.</p>
 
 <h2>Semantics of the EXTEND statement</h2>
 
 <p>The EXTEND statement starts with the "<tt>EXTEND</tt>" keyword and ends
-with the "<tt>END</tt>" keyword.</p>
+  with the "<tt>END</tt>" keyword.</p>
 
 <h3>GLOBAL indicator</h3>
 
@@ -424,6 +424,18 @@ in rules, contain in its environment:</p>
 instead of "<tt>loc</tt>".</p>
 
 <h2>Syntax of the DELETE_RULE statement</h2>
+
+<p>The "<tt>DELETE_RULE</tt>" statement is also added in the
+  expressions of the ocaml language when the syntax extension kit
+  "<tt>pa_extend.cmo</tt>" is loaded. Its syntax is:</p>
+
+<pre>
+        expression ::= delete-rule
+       delete-rule ::= "DELETE_RULE" delete-rule-body "END"
+  delete-rule-body ::= ...
+</pre>
+
+<p>... to be completed...</p>
 
 <h2>Semantics of the DELETE_RULE statement</h2>
 
