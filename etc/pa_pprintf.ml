@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_pprintf.ml,v 1.9 2007/12/05 09:56:01 deraugla Exp $ *)
+(* $Id: pa_pprintf.ml,v 1.10 2007/12/05 10:04:56 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* pprintf statement *)
@@ -179,7 +179,7 @@ and read_simple_tree loc pc fmt al i =
     (pcl, al, i)
 ;
 
-value make_call loc (bef_is_empty, aft_is_empty) pc pcl =
+value make_call loc (bef_is_empty, aft_is_empty) pc offset pcl =
   let el =
     loop [] True pcl where rec loop rev_el is_first =
       fun
@@ -190,6 +190,15 @@ value make_call loc (bef_is_empty, aft_is_empty) pc pcl =
             match f_f_a_opt with
             [ Some (f, f_a) ->
                 let lbl = [] in
+                let lbl =
+                  if offset > 0 then
+                    let e =
+                      let soff = string_of_int offset in
+                      <:expr< $pc$.ind + $int:soff$ >>
+                    in
+                    [(<:patt< ind >>, e) :: lbl]
+                  else lbl
+                in
                 let lbl =
                   if is_first && bef = "" then lbl
                   else              
@@ -267,7 +276,7 @@ value expand_pprintf loc pc fmt al =
       loop pc 0 (False, False) tree
       where rec loop pc offset (bef_is_empty, aft_is_empty) =
         fun
-        [ Leaf pcl -> make_call loc (bef_is_empty, aft_is_empty) pc pcl
+        [ Leaf pcl -> make_call loc (bef_is_empty, aft_is_empty) pc offset pcl
         | Node tree1 pp tree2 ->
             let (s, o) =
               match pp with

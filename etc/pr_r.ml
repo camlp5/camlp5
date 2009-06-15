@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.110 2007/12/05 09:56:01 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.111 2007/12/05 10:04:56 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1548,8 +1548,7 @@ EXTEND_PRINTER
           let expr_wh =
             if flag_where_after_lparen.val then expr_wh else expr
           in
-          let pc = {(pc) with ind = pc.ind + 1} in
-          pprintf pc "(%p)" expr_wh z ] ]
+          pprintf pc "@[<1>(%p)@]" expr_wh z ] ]
   ;
   pr_patt:
     [ "top"
@@ -1578,8 +1577,7 @@ EXTEND_PRINTER
           curr {(pc) with bef = curr {(pc) with aft = "."} x} y ]
     | "simple"
       [ <:patt< ($x$ as $y$) >> ->
-          let pc = {(pc) with ind = pc.ind + 1} in
-          pprintf pc "(%p@ as %p)" patt x patt y
+          pprintf pc "@[<1>(%p@ as %p)@]" patt x patt y
       | <:patt< ($list:pl$) >> ->
           let pl = List.map (fun p -> (p, ",")) pl in
           plist patt 1
