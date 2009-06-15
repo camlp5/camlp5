@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_extprint.ml,v 1.30 2007/12/18 09:57:28 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.31 2007/12/18 10:04:41 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -517,11 +517,9 @@ type list_with_sep 'a 'b = { fst : 'a; flw : list ('b * 'a) };
 type break = [ PPbreak of int and int | PPspace ];
 type paren_param = [ PPoffset of int | PPall of bool | PPnone ];
 
-type pformat = { pf : list string };
-
 type tree2 =
   [ Tbreak of break
-  | Tsub of paren_param and (list_with_sep pformat tree2) ]
+  | Tsub of paren_param and (list_with_sep (not_empty_list string) tree2) ]
 ;
 
 value implode l =
@@ -555,7 +553,7 @@ value rec parse_pformat =
 
 value pformat_of_char_list cl =
   match parse_pformat (Fstream.of_list cl) with
-  [ Some ((cl, sl), _) -> {pf = [implode cl :: sl]}
+  [ Some ((cl, sl), _) -> {hd = implode cl; tl = sl}
   | None -> assert False ]
 ;
 
@@ -624,7 +622,7 @@ value rec meta_tree_for_trace loc {fst = s; flw = tl} =
       (fun t e ->
          let t =
            match t with
-           [ (Tbreak br, {pf = sl}) ->
+           [ (Tbreak br, sl) ->
                let br =
                  match br with
                  [ PPbreak sp off ->
@@ -633,16 +631,16 @@ value rec meta_tree_for_trace loc {fst = s; flw = tl} =
                      <:expr< PPbreak $int:ssp$ $int:soff$ >>
                  | PPspace -> <:expr< PPspace >> ]
                in
-               let sl = expr_of_string_list loc sl in
+               let sl = expr_of_string_list loc [sl.hd :: sl.tl] in
                <:expr< (Tbreak $br$, {pf = $sl$}) >>
-           | (Tsub pp s_tl, {pf = sl}) ->
+           | (Tsub pp s_tl, sl) ->
                let s_tl = meta_tree_for_trace loc s_tl in
                <:expr< Tsub $s_tl$ >> ]
          in
          <:expr< [$t$ :: $e$] >>)
       tl <:expr< [] >>
   in
-  let s = expr_of_string_list loc s.pf in
+  let s = expr_of_string_list loc [s.hd :: s.tl] in
   <:expr< ($s$, $tl$) >>
 ;
 
@@ -686,8 +684,7 @@ value make_pc loc erase_bef erase_aft is_empty_bef is_empty_aft pc bef bef_al
 
 value expr_of_pformat loc fmt empty_bef empty_aft pc al =
   fun
-  [ [] -> assert False
-  | [fmt] ->
+  [ {hd = fmt; tl = []} ->
       let (bef_al, al) = get_assoc_args loc fmt al in
       let e =
         if empty_bef && empty_aft && bef_al = [] then <:expr< $str:fmt$ >>
@@ -700,7 +697,7 @@ value expr_of_pformat loc fmt empty_bef empty_aft pc al =
           if empty_aft then e else <:expr< $e$ $pc$.aft >>
       in
       (e, al)
-  | [fmt1; fmt2 :: fmtl] ->
+  | {hd = fmt1; tl = [fmt2 :: fmtl]} ->
       let (e, al) =
         let (bef_al, al) = get_assoc_args loc fmt1 al in
         let (f, a, al) =
@@ -745,9 +742,9 @@ value expr_of_pformat loc fmt empty_bef empty_aft pc al =
 
 value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc t al =
   match t with
-  [ {fst = {pf = sl}; flw = []} ->
+  [ {fst = sl; flw = []} ->
       expr_of_pformat loc fmt empty_bef empty_aft pc al sl
-  | {fst = {pf = sl1}; flw = [(Tbreak br, {pf = sl2}) :: t]} ->
+  | {fst = sl1; flw = [(Tbreak br, sl2) :: t]} ->
       let (t1, br, t2) =
         (* left associate *)
         let r =
@@ -756,23 +753,23 @@ value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc t al =
             [ [] -> None
             | [x] ->
                 match x with
-                [ (Tbreak br, {pf = sl}) ->
-                     Some ([], br, {fst = {pf = sl}; flw = []})
+                [ (Tbreak br, sl) ->
+                     Some ([], br, {fst = sl; flw = []})
                 | (Tsub _ _, _) -> None ]
             | [x :: t] ->
                 match loop t with
                 [ Some (t1, br, t2) -> Some ([x :: t1], br, t2)
                 | None ->
                     match x with
-                    [ (Tbreak br, {pf = sl}) ->
-                        Some ([], br, {fst = {pf = sl}; flw = t})
+                    [ (Tbreak br, sl) ->
+                        Some ([], br, {fst = sl; flw = t})
                     | _ -> None ] ] ]
         in
         match r with
         [ Some (t1, br1, t2) ->
-           ({fst = {pf = sl1}; flw = [(Tbreak br, {pf = sl2}) :: t1]}, br1, t2)
+           ({fst = sl1; flw = [(Tbreak br, sl2) :: t1]}, br1, t2)
         | None ->
-           ({fst = {pf = sl1}; flw = []}, br, {fst = {pf = sl2}; flw = t}) ]
+           ({fst = sl1; flw = []}, br, {fst = sl2; flw = t}) ]
       in
       let (e1, al) =
         expr_of_tree_aux loc fmt empty_bef True <:expr< pc >> t1 al
@@ -795,22 +792,23 @@ value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc t al =
         >>
       in
       (e, al)
-  | {fst = {pf = [""]}; flw = [(Tsub (PPoffset off) t, {pf = [""]})]} ->
+  | {fst = {hd = ""; tl = []};
+     flw = [(Tsub (PPoffset off) t, {hd = ""; tl = []})]} ->
       let pc =
         let soff = string_of_int off in
         <:expr< {($pc$) with ind = $pc$.ind + $int:soff$} >>
       in
       let (e, al) = expr_of_tree_aux loc fmt False False <:expr< pc >> t al in
       (<:expr< let pc = $pc$ in $e$ >>, al)
-  | {fst = {pf = [""]};
-     flw = [(Tsub (PPall b) {fst = {pf = sl}; flw = tl}, {pf = [""]})]} ->
+  | {fst = {hd = ""; tl = []};
+     flw = [(Tsub (PPall b) {fst = sl; flw = tl}, {hd = ""; tl = []})]} ->
       let (e1, al) =
         expr_of_pformat loc fmt empty_bef True <:expr< pc >> al sl
       in
       let (rev_el, al) =
         loop [] al tl where rec loop rev_el al =
           fun
-          [ [(Tbreak br, {pf = sl}) :: tl] ->
+          [ [(Tbreak br, sl) :: tl] ->
                let (e, al) =
                  expr_of_pformat loc fmt False False <:expr< pc >> al sl
                in
@@ -820,7 +818,7 @@ value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc t al =
                  | PPspace -> (1, 0) ]
                in
                loop [(e, off, sp) :: rev_el] al tl
-          | [(Tsub _ _, {pf = sl}) :: tl] ->
+          | [(Tsub _ _, sl) :: tl] ->
               failwith "not impl Tsub"
           | [] -> (rev_el, al) ]
       in
@@ -836,9 +834,9 @@ value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc t al =
         <:expr< Eprinter.sprint_break_all $b$ $pc$ (fun pc -> $e1$) $el$ >>
       in
       (e, al)
-  | {fst = {pf = [""]}; flw = [(Tsub PPnone t, {pf = [""]})]} ->
+  | {fst = {hd = ""; tl = []}; flw = [(Tsub PPnone t, {hd = ""; tl = []})]} ->
       expr_of_tree_aux loc fmt empty_bef empty_aft pc t al
-  | {fst = {pf = sl1}; flw = [(Tsub pp t1, {pf = sl2}) :: t]} ->
+  | {fst = sl1; flw = [(Tsub pp t1, sl2) :: t]} ->
       let (e1, al) = expr_of_pformat loc fmt empty_bef True pc al sl1 in
       let (e, al) = expr_of_tree_aux loc fmt True True pc t1 al in
       let (e2, al) =
