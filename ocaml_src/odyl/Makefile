@@ -54,5 +54,9 @@ compare:
 install:
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(NAME)" "$(DESTDIR)$(BINDIR)"
 	cp odyl.cmo odyl.cma "$(DESTDIR)$(LIBDIR)/$(NAME)/."
+	if test -f odyl.cmxa; then \
+	  cp odyl.cmxa odyl.cmx "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	  cp odyl.a odyl.o "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	fi
 
 include .depend

@@ -10,7 +10,7 @@ CAMLP5RM=pa_r.cmo pa_rp.cmo pr_dump.cmo
 CAMLP5RMX=pa_r.cmx pa_rp.cmx pr_dump.cmx
 SHELL=/bin/sh
 COUT=$(OBJS) $(NAME)r$(EXE)
-COPT=$(NAME)r.opt
+COPT=$(OBJS:.cmo=.cmx) $(NAME)r.opt
 
 all: $(COUT)
 opt: $(COPT)
@@ -57,5 +57,9 @@ install:
 	cp pa_macro.cmi pa_extend.cmi "$(DESTDIR)$(LIBDIR)/$(NAME)/."
 	cp $(NAME)r$(EXE) "$(DESTDIR)$(BINDIR)/."
 	if test -f $(COPT); then cp $(COPT) "$(DESTDIR)$(BINDIR)/."; fi
+	if test -f pa_r.cmx; then \
+	  cp $(OBJS:.cmo=.cmx) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	  cp $(OBJS:.cmo=.o) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	fi
 
 include .depend
