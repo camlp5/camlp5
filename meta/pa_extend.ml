@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.60 2007/09/13 11:54:59 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.61 2007/09/14 22:48:11 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -278,68 +278,77 @@ value rec expr_fa al =
   | f -> (f, al) ]
 ;
 
-value rec quot_expr e =
-  let loc = MLast.loc_of_expr e in
-  match e with
-  [ <:expr< None >> -> <:expr< Qast.Option None >>
-  | <:expr< Some $e$ >> -> <:expr< Qast.Option (Some $quot_expr e$) >>
-  | <:expr< False >> -> <:expr< Qast.Bool False >>
-  | <:expr< True >> -> <:expr< Qast.Bool True >>
-  | <:expr< Ploc.VaVal $e$ >> -> <:expr< Qast.VaVal $quot_expr e$ >>
-  | <:expr< () >> -> e
-  | <:expr< Qast.Bool $_$ >> -> e
-  | <:expr< Qast.List $_$ >> -> e
-  | <:expr< Qast.Option $_$ >> -> e
-  | <:expr< Qast.Str $_$ >> -> e
-  | <:expr< [] >> -> <:expr< Qast.List [] >>
-  | <:expr< [$e$] >> -> <:expr< Qast.List [$quot_expr e$] >>
-  | <:expr< [$e1$ :: $e2$] >> ->
-      <:expr< Qast.Cons $quot_expr e1$  $quot_expr e2$ >>
-  | <:expr< $_$ $_$ >> ->
-      let (f, al) = expr_fa [] e in
-      match f with
-      [ <:expr< $uid:c$ >> ->
-          let al = List.map quot_expr al in
-          <:expr< Qast.Node $str:c$ $mklistexp loc al$ >>
-      | <:expr< MLast.$uid:c$ >> ->
-          let al = List.map quot_expr al in
-          <:expr< Qast.Node $str:c$ $mklistexp loc al$ >>
-      | <:expr< $uid:m$.$uid:c$ >> ->
-          let al = List.map quot_expr al in
-          <:expr< Qast.Node $str:m ^ "." ^ c$ $mklistexp loc al$ >>
-      | <:expr< $lid:f$ >> ->
-          let al = List.map quot_expr al in
-          List.fold_left (fun f e -> <:expr< $f$ $e$ >>) <:expr< $lid:f$ >> al
-      | _ -> e ]
-  | <:expr< {$list:pel$} >> ->
-      try
-        let lel =
-          List.map
-            (fun (p, e) ->
-               let lab =
-                 match p with
-                 [ <:patt< $lid:c$ >> -> <:expr< $str:c$ >>
-                 | <:patt< $_$.$lid:c$ >> -> <:expr< $str:c$ >>
-                 | _ -> raise Not_found ]
-               in
-               <:expr< ($lab$, $quot_expr e$) >>)
-            pel
-        in
-        <:expr< Qast.Record $mklistexp loc lel$>>
-      with
-      [ Not_found -> e ]
-  | <:expr< $lid:s$ >> -> if s = Ploc.name.val then <:expr< Qast.Loc >> else e
-  | <:expr< MLast.$uid:s$ >> -> <:expr< Qast.Node $str:s$ [] >>
-  | <:expr< $uid:m$.$uid:s$ >> -> <:expr< Qast.Node $str:m ^ "." ^ s$ [] >>
-  | <:expr< $uid:s$ >> -> <:expr< Qast.Node $str:s$ [] >>
-  | <:expr< $str:s$ >> -> <:expr< Qast.Str $str:s$ >>
-  | <:expr< ($list:el$) >> ->
-      let el = List.map quot_expr el in
-      <:expr< Qast.Tuple $mklistexp loc el$ >>
-  | <:expr< let $flag:r$ $list:pel$ in $e$ >> ->
-      let pel = List.map (fun (p, e) -> (p, quot_expr e)) pel in
-      <:expr< let $flag:r$ $list:pel$ in $quot_expr e$ >>
-  | _ -> e ]
+value anti_str psl =
+  match psl with
+  [ [{symbol = {text = TXtok _ "ANTIQUOT_LOC" <:expr< $str:s$ >>}}] -> s
+  | _ -> "" ]
+;
+
+value quot_expr psl e =
+  loop e where rec loop e =
+    let loc = MLast.loc_of_expr e in
+    match e with
+    [ <:expr< None >> -> <:expr< Qast.Option None >>
+    | <:expr< Some $e$ >> -> <:expr< Qast.Option (Some $loop e$) >>
+    | <:expr< False >> -> <:expr< Qast.Bool False >>
+    | <:expr< True >> -> <:expr< Qast.Bool True >>
+    | <:expr< Ploc.VaAnt $e$ >> ->
+        <:expr< Qast.VaAnt $str:anti_str psl$ loc $loop e$ >>
+    | <:expr< Ploc.VaVal $e$ >> -> <:expr< Qast.VaVal $loop e$ >>
+    | <:expr< () >> -> e
+    | <:expr< Qast.Bool $_$ >> -> e
+    | <:expr< Qast.List $_$ >> -> e
+    | <:expr< Qast.Option $_$ >> -> e
+    | <:expr< Qast.Str $_$ >> -> e
+    | <:expr< [] >> -> <:expr< Qast.List [] >>
+    | <:expr< [$e$] >> -> <:expr< Qast.List [$loop e$] >>
+    | <:expr< [$e1$ :: $e2$] >> -> <:expr< Qast.Cons $loop e1$  $loop e2$ >>
+    | <:expr< $_$ $_$ >> ->
+        let (f, al) = expr_fa [] e in
+        match f with
+        [ <:expr< $uid:c$ >> ->
+            let al = List.map loop al in
+            <:expr< Qast.Node $str:c$ $mklistexp loc al$ >>
+        | <:expr< MLast.$uid:c$ >> ->
+            let al = List.map loop al in
+            <:expr< Qast.Node $str:c$ $mklistexp loc al$ >>
+        | <:expr< $uid:m$.$uid:c$ >> ->
+            let al = List.map loop al in
+            <:expr< Qast.Node $str:m ^ "." ^ c$ $mklistexp loc al$ >>
+        | <:expr< $lid:f$ >> ->
+            let al = List.map loop al in
+            List.fold_left (fun f e -> <:expr< $f$ $e$ >>) <:expr< $lid:f$ >>
+              al
+        | _ -> e ]
+    | <:expr< {$list:pel$} >> ->
+        try
+          let lel =
+            List.map
+              (fun (p, e) ->
+                 let lab =
+                   match p with
+                   [ <:patt< $lid:c$ >> -> <:expr< $str:c$ >>
+                   | <:patt< $_$.$lid:c$ >> -> <:expr< $str:c$ >>
+                   | _ -> raise Not_found ]
+                 in
+                 <:expr< ($lab$, $loop e$) >>)
+              pel
+          in
+          <:expr< Qast.Record $mklistexp loc lel$>>
+        with
+        [ Not_found -> e ]
+    | <:expr< $lid:s$ >> -> if s = Ploc.name.val then <:expr< Qast.Loc >> else e
+    | <:expr< MLast.$uid:s$ >> -> <:expr< Qast.Node $str:s$ [] >>
+    | <:expr< $uid:m$.$uid:s$ >> -> <:expr< Qast.Node $str:m ^ "." ^ s$ [] >>
+    | <:expr< $uid:s$ >> -> <:expr< Qast.Node $str:s$ [] >>
+    | <:expr< $str:s$ >> -> <:expr< Qast.Str $str:s$ >>
+    | <:expr< ($list:el$) >> ->
+        let el = List.map loop el in
+        <:expr< Qast.Tuple $mklistexp loc el$ >>
+    | <:expr< let $flag:r$ $list:pel$ in $e$ >> ->
+        let pel = List.map (fun (p, e) -> (p, loop e)) pel in
+        <:expr< let $flag:r$ $list:pel$ in $loop e$ >>
+    | _ -> e ]
 ;
 
 value symgen = "xx";
@@ -354,7 +363,7 @@ value pname_of_ptuple pl =
 ;
 
 value quotify_action psl act =
-  let e = quot_expr act in
+  let e = quot_expr psl act in
   List.fold_left
     (fun e ps ->
        match ps.pattern with

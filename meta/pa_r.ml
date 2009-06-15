@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.85 2007/09/14 16:03:54 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.86 2007/09/14 22:48:11 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -494,9 +494,9 @@ EXTEND
           (loc, i, mf, t) ] ]
   ;
   ident2:
-    [ [ i = ident -> <:vala< i >>
-      | s = ANTIQUOT_LOC -> <:vala< $s$ >>
-      | s = ANTIQUOT_LOC "a" -> <:vala< $s$ >> ] ]
+    [ [ s = ANTIQUOT_LOC -> <:vala< $s$ >>
+      | s = ANTIQUOT_LOC "a" -> <:vala< $s$ >>
+      | i = ident -> <:vala< i >> ] ]
   ;
   ident:
     [ [ i = LIDENT -> i

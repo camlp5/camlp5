@@ -607,191 +607,223 @@ let rec expr_fa al =
   | f -> f, al
 ;;
 
-let rec quot_expr e =
-  let loc = MLast.loc_of_expr e in
-  match e with
-    MLast.ExUid (_, "None") ->
-      MLast.ExApp
-        (loc,
-         MLast.ExAcc
-           (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Option")),
-         MLast.ExUid (loc, "None"))
-  | MLast.ExApp (_, MLast.ExUid (_, "Some"), e) ->
-      MLast.ExApp
-        (loc,
-         MLast.ExAcc
-           (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Option")),
-         MLast.ExApp (loc, MLast.ExUid (loc, "Some"), quot_expr e))
-  | MLast.ExUid (_, "False") ->
-      MLast.ExApp
-        (loc,
-         MLast.ExAcc
-           (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Bool")),
-         MLast.ExUid (loc, "False"))
-  | MLast.ExUid (_, "True") ->
-      MLast.ExApp
-        (loc,
-         MLast.ExAcc
-           (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Bool")),
-         MLast.ExUid (loc, "True"))
-  | MLast.ExApp
-      (_, MLast.ExAcc (_, MLast.ExUid (_, "Ploc"), MLast.ExUid (_, "VaVal")),
-       e) ->
-      MLast.ExApp
-        (loc,
-         MLast.ExAcc
-           (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "VaVal")),
-         quot_expr e)
-  | MLast.ExUid (_, "()") -> e
-  | MLast.ExApp
-      (_, MLast.ExAcc (_, MLast.ExUid (_, "Qast"), MLast.ExUid (_, "Bool")),
-       _) ->
-      e
-  | MLast.ExApp
-      (_, MLast.ExAcc (_, MLast.ExUid (_, "Qast"), MLast.ExUid (_, "List")),
-       _) ->
-      e
-  | MLast.ExApp
-      (_, MLast.ExAcc (_, MLast.ExUid (_, "Qast"), MLast.ExUid (_, "Option")),
-       _) ->
-      e
-  | MLast.ExApp
-      (_, MLast.ExAcc (_, MLast.ExUid (_, "Qast"), MLast.ExUid (_, "Str")),
-       _) ->
-      e
-  | MLast.ExUid (_, "[]") ->
-      MLast.ExApp
-        (loc,
-         MLast.ExAcc
-           (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "List")),
-         MLast.ExUid (loc, "[]"))
-  | MLast.ExApp
-      (_, MLast.ExApp (_, MLast.ExUid (_, "::"), e), MLast.ExUid (_, "[]")) ->
-      MLast.ExApp
-        (loc,
-         MLast.ExAcc
-           (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "List")),
-         MLast.ExApp
-           (loc, MLast.ExApp (loc, MLast.ExUid (loc, "::"), quot_expr e),
-            MLast.ExUid (loc, "[]")))
-  | MLast.ExApp (_, MLast.ExApp (_, MLast.ExUid (_, "::"), e1), e2) ->
-      MLast.ExApp
-        (loc,
-         MLast.ExApp
-           (loc,
-            MLast.ExAcc
-              (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Cons")),
-            quot_expr e1),
-         quot_expr e2)
-  | MLast.ExApp (_, _, _) ->
-      let (f, al) = expr_fa [] e in
-      begin match f with
-        MLast.ExUid (_, c) ->
-          let al = List.map quot_expr al in
-          MLast.ExApp
-            (loc,
-             MLast.ExApp
-               (loc,
-                MLast.ExAcc
-                  (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Node")),
-                MLast.ExStr (loc, c)),
-             mklistexp loc al)
-      | MLast.ExAcc (_, MLast.ExUid (_, "MLast"), MLast.ExUid (_, c)) ->
-          let al = List.map quot_expr al in
-          MLast.ExApp
-            (loc,
-             MLast.ExApp
-               (loc,
-                MLast.ExAcc
-                  (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Node")),
-                MLast.ExStr (loc, c)),
-             mklistexp loc al)
-      | MLast.ExAcc (_, MLast.ExUid (_, m), MLast.ExUid (_, c)) ->
-          let al = List.map quot_expr al in
-          MLast.ExApp
-            (loc,
-             MLast.ExApp
-               (loc,
-                MLast.ExAcc
-                  (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Node")),
-                MLast.ExStr (loc, m ^ "." ^ c)),
-             mklistexp loc al)
-      | MLast.ExLid (_, f) ->
-          let al = List.map quot_expr al in
-          List.fold_left (fun f e -> MLast.ExApp (loc, f, e))
-            (MLast.ExLid (loc, f)) al
-      | _ -> e
-      end
-  | MLast.ExRec (_, pel, None) ->
-      begin try
-        let lel =
-          List.map
-            (fun (p, e) ->
-               let lab =
-                 match p with
-                   MLast.PaLid (_, c) -> MLast.ExStr (loc, c)
-                 | MLast.PaAcc (_, _, MLast.PaLid (_, c)) ->
-                     MLast.ExStr (loc, c)
-                 | _ -> raise Not_found
-               in
-               MLast.ExTup (loc, [lab; quot_expr e]))
-            pel
-        in
+let anti_str psl =
+  match psl with
+    [{symbol = {text = TXtok (_, "ANTIQUOT_LOC", MLast.ExStr (_, s))}}] -> s
+  | _ -> ""
+;;
+
+let quot_expr psl e =
+  let rec loop e =
+    let loc = MLast.loc_of_expr e in
+    match e with
+      MLast.ExUid (_, "None") ->
         MLast.ExApp
           (loc,
            MLast.ExAcc
-             (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Record")),
-           mklistexp loc lel)
-      with Not_found -> e
-      end
-  | MLast.ExLid (_, s) ->
-      if s = !(Ploc.name) then
-        MLast.ExAcc (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Loc"))
-      else e
-  | MLast.ExAcc (_, MLast.ExUid (_, "MLast"), MLast.ExUid (_, s)) ->
-      MLast.ExApp
-        (loc,
-         MLast.ExApp
-           (loc,
-            MLast.ExAcc
-              (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Node")),
-            MLast.ExStr (loc, s)),
-         MLast.ExUid (loc, "[]"))
-  | MLast.ExAcc (_, MLast.ExUid (_, m), MLast.ExUid (_, s)) ->
-      MLast.ExApp
-        (loc,
-         MLast.ExApp
-           (loc,
-            MLast.ExAcc
-              (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Node")),
-            MLast.ExStr (loc, m ^ "." ^ s)),
-         MLast.ExUid (loc, "[]"))
-  | MLast.ExUid (_, s) ->
-      MLast.ExApp
-        (loc,
-         MLast.ExApp
-           (loc,
-            MLast.ExAcc
-              (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Node")),
-            MLast.ExStr (loc, s)),
-         MLast.ExUid (loc, "[]"))
-  | MLast.ExStr (_, s) ->
-      MLast.ExApp
-        (loc,
-         MLast.ExAcc
-           (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Str")),
-         MLast.ExStr (loc, s))
-  | MLast.ExTup (_, el) ->
-      let el = List.map quot_expr el in
-      MLast.ExApp
-        (loc,
-         MLast.ExAcc
-           (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Tuple")),
-         mklistexp loc el)
-  | MLast.ExLet (_, r, pel, e) ->
-      let pel = List.map (fun (p, e) -> p, quot_expr e) pel in
-      MLast.ExLet (loc, r, pel, quot_expr e)
-  | _ -> e
+             (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Option")),
+           MLast.ExUid (loc, "None"))
+    | MLast.ExApp (_, MLast.ExUid (_, "Some"), e) ->
+        MLast.ExApp
+          (loc,
+           MLast.ExAcc
+             (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Option")),
+           MLast.ExApp (loc, MLast.ExUid (loc, "Some"), loop e))
+    | MLast.ExUid (_, "False") ->
+        MLast.ExApp
+          (loc,
+           MLast.ExAcc
+             (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Bool")),
+           MLast.ExUid (loc, "False"))
+    | MLast.ExUid (_, "True") ->
+        MLast.ExApp
+          (loc,
+           MLast.ExAcc
+             (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Bool")),
+           MLast.ExUid (loc, "True"))
+    | MLast.ExApp
+        (_,
+         MLast.ExAcc (_, MLast.ExUid (_, "Ploc"), MLast.ExUid (_, "VaAnt")),
+         e) ->
+        MLast.ExApp
+          (loc,
+           MLast.ExApp
+             (loc,
+              MLast.ExApp
+                (loc,
+                 MLast.ExAcc
+                   (loc, MLast.ExUid (loc, "Qast"),
+                    MLast.ExUid (loc, "VaAnt")),
+                 MLast.ExStr (loc, anti_str psl)),
+              MLast.ExLid (loc, "loc")),
+           loop e)
+    | MLast.ExApp
+        (_,
+         MLast.ExAcc (_, MLast.ExUid (_, "Ploc"), MLast.ExUid (_, "VaVal")),
+         e) ->
+        MLast.ExApp
+          (loc,
+           MLast.ExAcc
+             (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "VaVal")),
+           loop e)
+    | MLast.ExUid (_, "()") -> e
+    | MLast.ExApp
+        (_, MLast.ExAcc (_, MLast.ExUid (_, "Qast"), MLast.ExUid (_, "Bool")),
+         _) ->
+        e
+    | MLast.ExApp
+        (_, MLast.ExAcc (_, MLast.ExUid (_, "Qast"), MLast.ExUid (_, "List")),
+         _) ->
+        e
+    | MLast.ExApp
+        (_,
+         MLast.ExAcc (_, MLast.ExUid (_, "Qast"), MLast.ExUid (_, "Option")),
+         _) ->
+        e
+    | MLast.ExApp
+        (_, MLast.ExAcc (_, MLast.ExUid (_, "Qast"), MLast.ExUid (_, "Str")),
+         _) ->
+        e
+    | MLast.ExUid (_, "[]") ->
+        MLast.ExApp
+          (loc,
+           MLast.ExAcc
+             (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "List")),
+           MLast.ExUid (loc, "[]"))
+    | MLast.ExApp
+        (_, MLast.ExApp (_, MLast.ExUid (_, "::"), e),
+         MLast.ExUid (_, "[]")) ->
+        MLast.ExApp
+          (loc,
+           MLast.ExAcc
+             (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "List")),
+           MLast.ExApp
+             (loc, MLast.ExApp (loc, MLast.ExUid (loc, "::"), loop e),
+              MLast.ExUid (loc, "[]")))
+    | MLast.ExApp (_, MLast.ExApp (_, MLast.ExUid (_, "::"), e1), e2) ->
+        MLast.ExApp
+          (loc,
+           MLast.ExApp
+             (loc,
+              MLast.ExAcc
+                (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Cons")),
+              loop e1),
+           loop e2)
+    | MLast.ExApp (_, _, _) ->
+        let (f, al) = expr_fa [] e in
+        begin match f with
+          MLast.ExUid (_, c) ->
+            let al = List.map loop al in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "Qast"),
+                     MLast.ExUid (loc, "Node")),
+                  MLast.ExStr (loc, c)),
+               mklistexp loc al)
+        | MLast.ExAcc (_, MLast.ExUid (_, "MLast"), MLast.ExUid (_, c)) ->
+            let al = List.map loop al in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "Qast"),
+                     MLast.ExUid (loc, "Node")),
+                  MLast.ExStr (loc, c)),
+               mklistexp loc al)
+        | MLast.ExAcc (_, MLast.ExUid (_, m), MLast.ExUid (_, c)) ->
+            let al = List.map loop al in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "Qast"),
+                     MLast.ExUid (loc, "Node")),
+                  MLast.ExStr (loc, m ^ "." ^ c)),
+               mklistexp loc al)
+        | MLast.ExLid (_, f) ->
+            let al = List.map loop al in
+            List.fold_left (fun f e -> MLast.ExApp (loc, f, e))
+              (MLast.ExLid (loc, f)) al
+        | _ -> e
+        end
+    | MLast.ExRec (_, pel, None) ->
+        begin try
+          let lel =
+            List.map
+              (fun (p, e) ->
+                 let lab =
+                   match p with
+                     MLast.PaLid (_, c) -> MLast.ExStr (loc, c)
+                   | MLast.PaAcc (_, _, MLast.PaLid (_, c)) ->
+                       MLast.ExStr (loc, c)
+                   | _ -> raise Not_found
+                 in
+                 MLast.ExTup (loc, [lab; loop e]))
+              pel
+          in
+          MLast.ExApp
+            (loc,
+             MLast.ExAcc
+               (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Record")),
+             mklistexp loc lel)
+        with Not_found -> e
+        end
+    | MLast.ExLid (_, s) ->
+        if s = !(Ploc.name) then
+          MLast.ExAcc
+            (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Loc"))
+        else e
+    | MLast.ExAcc (_, MLast.ExUid (_, "MLast"), MLast.ExUid (_, s)) ->
+        MLast.ExApp
+          (loc,
+           MLast.ExApp
+             (loc,
+              MLast.ExAcc
+                (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Node")),
+              MLast.ExStr (loc, s)),
+           MLast.ExUid (loc, "[]"))
+    | MLast.ExAcc (_, MLast.ExUid (_, m), MLast.ExUid (_, s)) ->
+        MLast.ExApp
+          (loc,
+           MLast.ExApp
+             (loc,
+              MLast.ExAcc
+                (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Node")),
+              MLast.ExStr (loc, m ^ "." ^ s)),
+           MLast.ExUid (loc, "[]"))
+    | MLast.ExUid (_, s) ->
+        MLast.ExApp
+          (loc,
+           MLast.ExApp
+             (loc,
+              MLast.ExAcc
+                (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Node")),
+              MLast.ExStr (loc, s)),
+           MLast.ExUid (loc, "[]"))
+    | MLast.ExStr (_, s) ->
+        MLast.ExApp
+          (loc,
+           MLast.ExAcc
+             (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Str")),
+           MLast.ExStr (loc, s))
+    | MLast.ExTup (_, el) ->
+        let el = List.map loop el in
+        MLast.ExApp
+          (loc,
+           MLast.ExAcc
+             (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Tuple")),
+           mklistexp loc el)
+    | MLast.ExLet (_, r, pel, e) ->
+        let pel = List.map (fun (p, e) -> p, loop e) pel in
+        MLast.ExLet (loc, r, pel, loop e)
+    | _ -> e
+  in
+  loop e
 ;;
 
 let symgen = "xx";;
@@ -806,7 +838,7 @@ let pname_of_ptuple pl =
 ;;
 
 let quotify_action psl act =
-  let e = quot_expr act in
+  let e = quot_expr psl act in
   List.fold_left
     (fun e ps ->
        match ps.pattern with

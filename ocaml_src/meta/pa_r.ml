@@ -1559,14 +1559,15 @@ Grammar.extend
            (loc, i, mf, t : 'label_declaration))]];
     Grammar.Entry.obj (ident2 : 'ident2 Grammar.Entry.e), None,
     [None, None,
-     [[Gramext.Stoken ("ANTIQUOT_LOC", "a")],
+     [[Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
+      Gramext.action (fun (i : 'ident) (loc : Ploc.t) -> (i : 'ident2));
+      [Gramext.Stoken ("ANTIQUOT_LOC", "a")],
       Gramext.action
         (fun (s : string) (loc : Ploc.t) -> (failwith "antiquot" : 'ident2));
       [Gramext.Stoken ("ANTIQUOT_LOC", "")],
       Gramext.action
-        (fun (s : string) (loc : Ploc.t) -> (failwith "antiquot" : 'ident2));
-      [Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
-      Gramext.action (fun (i : 'ident) (loc : Ploc.t) -> (i : 'ident2))]];
+        (fun (s : string) (loc : Ploc.t) ->
+           (failwith "antiquot" : 'ident2))]];
     Grammar.Entry.obj (ident : 'ident Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("UIDENT", "")],
