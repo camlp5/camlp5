@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_strict.html,v 1.1 2007/09/18 10:20:02 deraugla Exp $ -->
+  <!-- $Id: ast_strict.html,v 1.2 2007/09/18 14:17:28 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>AST - strict</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -53,7 +53,7 @@
   syntax.<p>
 
 <p>However, a simpler solution is to use one of the quotation kits
-  "<tt>q_MLast.cmo</tt>" or "<tt>q_ast.cmo</tt>". Both proposes
+  "<tt>q_MLast.cmo</tt>" or "<tt>q_ast.cmo</tt>". Both propose
   <a href="quot.html">quotations</a> which represent the abstract
   syntax (the nodes of the module "<tt>MLast</tt>") into concrete
   syntax with antiquotations to bind variables inside. The example
@@ -75,27 +75,29 @@
   >>
 </pre>
 
-<p>In abstract syntax, it should have been written:</p>
+<p>This example was in a position of a pattern. In abstract syntax, it
+  should have been written:</p>
 
 <pre>
-  MLast.ExMat loc
-    (MLast.ExTry loc
-       (MLast.ExApp loc (MLast.ExUid loc (Ploc.VaVal "Some")) f)
+  MLast.ExMat _
+    (MLast.ExTry _ (MLast.ExApp _ (MLast.ExUid _ (Ploc.VaVal "Some")) f)
        (Ploc.VaVal
-          [(MLast.PaAcc loc (MLast.PaUid loc (Ploc.VaVal "Stream"))
-              (MLast.PaUid loc (Ploc.VaVal "Failure")),
-            Ploc.VaVal None, MLast.ExUid loc (Ploc.VaVal "None"))]))
+          [(MLast.PaAcc _ (MLast.PaUid _ (Ploc.VaVal "Stream"))
+             (MLast.PaUid _ (Ploc.VaVal "Failure")),
+            Ploc.VaVal None, MLast.ExUid _ (Ploc.VaVal "None"))]))
     (Ploc.VaVal
-       [(MLast.PaApp loc (MLast.PaUid loc (Ploc.VaVal "Some")) p,
-         Ploc.VaVal None, e);
-        (MLast.PaAny loc, Ploc.VaVal None,
-         MLast.ExApp loc (MLast.ExLid loc (Ploc.VaVal "raise"))
-           (MLast.ExApp loc
-              (MLast.ExAcc loc (MLast.ExUid loc (Ploc.VaVal "Stream"))
-                 (MLast.ExUid loc (Ploc.VaVal "Error")))
+       [(MLast.PaApp _ (MLast.PaUid _ (Ploc.VaVal "Some")) p, Ploc.VaVal None,
+         e);
+        (MLast.PaAny _, Ploc.VaVal None,
+         MLast.ExApp _ (MLast.ExLid _ (Ploc.VaVal "raise"))
+           (MLast.ExApp _
+              (MLast.ExAcc _ (MLast.ExUid _ (Ploc.VaVal "Stream"))
+                 (MLast.ExUid _ (Ploc.VaVal "Error")))
+              e2))])
 </pre>
 
-<p>Which is less readable.</p>
+<p>Which is less readable and much more complicated to build and
+  update.</p>
 
 <p>Instead of thinking of "a syntax tree", the programmer has to think
   of "a piece of program".</p>
@@ -188,9 +190,9 @@
 
 <h3>Preliminary remark</h3>
 
-<p>In this mode, we remark that most constructors defined of
-  the module "<tt>MLast</tt>" are of type "<tt>Ploc.vala</tt>".  This
-  type is defined like this:</p>
+<p>In strict mode, we remark that most constructors defined of the
+  module "<tt>MLast</tt>" are of type "<tt>Ploc.vala</tt>". This type
+  is defined like this:</p>
 
 <pre>
   type vala 'a =
@@ -199,45 +201,62 @@
   ;
 </pre>
 
-<p>The first case corresponds to an antiquotation in the concrete syntax.
-  The second case to a normal syntax situation, without antiquotation.</p>
+<p>The type argument is the real type of the node. For example, a
+  value of type "<tt>bool</tt>" in transitional mode is frequently
+  represented by a value of type "<tt>Ploc.vala bool</tt>".</p>
 
-<p>For example, in the "let" statement, the fact that it is "rec" or
-  not is represented by a boolean encapsulated with the type
-  "<tt>Ploc.vala</tt>". Also, identifiers are strings which are also
-  encapsulated with "<tt>Ploc.vala</tt>". The syntax tree of the two
-  following lines:</p>
+<p>The first case of the type "<tt>vala</tt>" corresponds to an
+  antiquotation in the concrete syntax. The second case to a normal
+  syntax situation, without antiquotation.</p>
+
+<p>Example: in the "let" statement, the fact that it is "rec" or not
+  is represented by a boolean. This boolean is, in the syntax tree,
+  encapsulated with the type "<tt>Ploc.vala</tt>". The syntax tree of
+  the two following lines:</p>
 
 <pre>
   let x = y in z
   let rec x = y in z
 </pre>
 
-<p>are, respectively:</p>
+<p>start with, respectively:</p>
 
 <pre>
   MLast.ExLet loc (Ploc.VaVal False)
-    (Ploc.VaVal
-       [(MLast.PaLid loc (Ploc.VaVal "x"),
-         MLast.ExLid loc (Ploc.VaVal "y"))])
-    (MLast.ExLid loc (Ploc.VaVal "z"));
+    ... (* and so on *)
 </pre>
 
 <p>and:</p>
 
 <pre>
   MLast.ExLet loc (Ploc.VaVal True)
-    (Ploc.VaVal
-       [(MLast.PaLid loc (Ploc.VaVal "x"),
-         MLast.ExLid loc (Ploc.VaVal "y"))])
-    (MLast.ExLid loc (Ploc.VaVal "z"));
+    ... (* and so on *)
 </pre>
+
+<p>The case "<tt>Ploc.VaAnt s</tt>" is internally used by the parsers
+  and by the quotation kit "<tt>q_ast.cmo</tt>" to record
+  antiquotation strings representing the expression or the patterns
+  having this value. For example, in this "let" statement:</p>
+
+<pre>
+  MLast.ExLet loc (Ploc.VaAnt s)
+    ... (* and so on *)
+</pre>
+
+<p>The contents of this "<tt>s</tt>" is internally handled. For
+  information, it contains the antiquotation string (kind included)
+  together with representation of the location of the antiquotation
+  in the quotation. See the next section.</p>
 
 <h3>Antiquoting</h3>
 
 <p>To antiquotate the fact that the "let" is with or without rec (a flag
-  of type boolean), there are two ways. The first way, hidding the
-  type "<tt>Ploc.val</tt>" can be written:</p>
+  of type boolean), there are two ways.</p>
+
+<h4>direct antiquoting</h4>
+
+<p>The first way, hidding the type "<tt>Ploc.val</tt>", can be
+  written with the antiquotation kind "flag":</p>
 
 <pre>
   &lt;:expr&lt; let $flag:rf$ x = y in z >>
@@ -250,32 +269,33 @@
      ... (* and so on *)
 </pre>
 
-<p>The type of the variable "<tt>rf</tt>" is then simply
+<p>And, therefore, the type of the variable "<tt>rf</tt>" is simply
   "<tt>bool</tt>".</p>
 
-<p>On the other hand, to extract the whole value, the programmer has to
-  write the antiquotation like this:</p>
+<h4>general antiquoting</h4>
+
+<p>The second way, introducing variables of type "<tt>Ploc.vala</tt>"
+  can be written a kind prefixed by "a", namely here "aflag":</p>
 
 <pre>
   &lt;:expr&lt; let $aflag:rf$ x = y in z >>
 </pre>
 
-<p>This corresponds to the syntax tree:</p>
+<p>In that case, it corresponds to the syntax tree:</p>
 
 <pre>
   MLast.ExLet loc rf
      ... (* and so on *)
 </pre>
 
-<p>The type of the variable "<tt>rf</tt>" is there "<tt>Ploc.vala
-  bool</tt>".</p>
+<p>And, therefore, the type of the variable "<tt>rf</tt>" is now
+  "<tt>Ploc.vala bool</tt>".</p>
 
 <h3>Remarks</h3>
 
 <p>The first form of antiquotation ensures the compatibility with
-  versions of Camlp5 preceeding the introduction of these modes
-  ("transitional" and "strict"). The syntax tree is not the same,
-  but the bound variables have the same type.<p>
+  previous versions of Camlp5. The syntax tree is <em>not</em> the
+  same, but the bound variables keep the same type.<p>
 
 <p>All antiquotations kinds have these two forms: one with some name
   (e.g. "flag") and one with the same name prefixed by "a"
@@ -289,19 +309,23 @@
   any complex value can be used, resulting on possibly complex combined
   nodes.</p>
 
-<p>The quotation form is written here
-    in <a href="revsynt.html">revised syntax</a>. Actually, it depends
-    on which quotation kit is loaded:</p>
+<p>The quotation forms are described here
+    in <a href="revsynt.html">revised syntax</a> (like the rest of
+    this document). In reality, it depends on which quotation kit is
+    loaded:</p>
 
 <ul>
-  <li>If "<tt>q_MLast.cmo</tt>" is used, this is mandatory: the quotations
-    must be in revised syntax without any extension.</li>
+  <li>If "<tt>q_MLast.cmo</tt>" is used, the revised syntax is
+    mandatory: the quotations must be in that syntax without any
+    extension.</li>
   <li>If "<tt>q_ast.cmo</tt>" is used, the quotation
-    syntax <em>must</em> be in the current user syntax, and it is possible
-    to use, in the quotation, the possibly added syntax extensions.</li>
+    syntax <em>must</em> be in the current user syntax with
+    all extensions added to compile the file.</li>
 </ul>
 
-<p>Variables names give information of their types:</p>
+<p>Last remark: in the following tables, the variables names give
+  information of their types. The details can be found in the
+  distributed source file "<tt>mLast.mli</tt>".</p>
 
 <ul>
   <li><tt>e</tt>, <tt>e1</tt>, <tt>e2</tt>, <tt>e3</tt>: expr</li>
@@ -342,7 +366,7 @@
   <tr>
     <td><tt>ExAnt loc e</tt></td>
     <td align="center"><tt>$anti:e$</tt></td>
-    <td>antiquotation <a href="#s_expr_1">(1)</a></td>
+    <td>antiquotation <a href="#expr_1">(1)</a></td>
   </tr>
   <tr>
     <td><tt>ExApp loc e1 e2</tt></td>
@@ -402,7 +426,7 @@
   <tr>
     <td><tt>ExFun loc lopee</tt></td>
     <td align="center"><tt>fun [ $list:lpoee$ ]</tt></td>
-    <td>function <a href="#s_expr_2">(2)</a></td>
+    <td>function <a href="#expr_2">(2)</a></td>
   </tr>
   <tr>
     <td><tt>ExIfe loc e1 e2 e3</tt></td>
@@ -462,7 +486,7 @@
   <tr>
     <td><tt>ExMat loc e lpoee</tt></td>
     <td align="center"><tt>match $e$ with [ $list:lpoee$ ]</tt></td>
-    <td>match <a href="#s_expr_2">(2)</a></td>
+    <td>match <a href="#expr_2">(2)</a></td>
   </tr>
   <tr>
     <td><tt>ExNew loc ls</tt></td>
@@ -522,7 +546,7 @@
   <tr>
     <td><tt>ExTry loc e lpoee</tt></td>
     <td align="center"><tt>try $e$ with [ $list:lpoee$ ]</tt></td>
-    <td>try <a href="#s_expr_2">(2)</a></td>
+    <td>try <a href="#expr_2">(2)</a></td>
   </tr>
   <tr>
     <td><tt>ExTup loc le</tt></td>
@@ -551,16 +575,19 @@
   </tr>
 </table>
 
-<div id="s_expr_1" style="margin: 5mm 0 0 1cm">(1)
-  <p>Node used in quotation expanders to specify that all locations of
-    the sub-tree is correcty located in the quotation. In quotations,
-    the locations of all generated nodes are by default the location
-    of the entire quotation, except for these nodes which are named
-    "antiquotations". See the chapter
-    about <a href="quot.html">quotations</a>.</p>
+<div id="expr_1" style="margin: 5mm 0 0 1cm">(1)
+  <p>Node used in the quotation expanders to tells at conversion to
+    OCaml compiler syntax tree time, that all locations of the
+    sub-tree is correcty located in the quotation. By default, in
+    quotations, the locations of all generated nodes are the location
+    of the whole quotation. This node allows to make an exception to
+    this rule, since we know that the antiquotation belongs to the
+    universe of the enclosing program. See the chapter
+    about <a href="quot.html">quotations</a> and, in particular, its
+    section about antiquotations.</p>
 </div>
 
-<div id="s_expr_2" style="margin: 5mm 0 0 1cm">(2)
+<div id="expr_2" style="margin: 5mm 0 0 1cm">(2)
   <p>The variable "lpoee" found in "function", "match" and "try"
     statements correspond to a list of "<tt>(patt * option expr *
       expr)</tt>" where the "<tt>option expr</tt>" is the "when"
@@ -612,7 +639,7 @@
   <tr>
     <td><tt>PaAnt loc p</tt></td>
     <td align="center"><tt>$anti:p$</tt></td>
-    <td>antiquotation <a href="#s_patt_1">(1)</a></td>
+    <td>antiquotation <a href="#patt_1">(1)</a></td>
   </tr>
   <tr>
     <td><tt>PaAny loc</tt></td>
@@ -721,7 +748,7 @@
   </tr>
 </table>
 
-<div id="s_patt_1" style="margin: 5mm 0 0 1cm">(1)
+<div id="patt_1" style="margin: 5mm 0 0 1cm">(1)
   Node used to specify an antiquotation area, like for the
   equivalent node in expressions. See above.
 </div>
@@ -944,7 +971,7 @@
   <tr>
     <td><tt>StUse loc s lstrib</tt></td>
     <td align="center"><tt>...internal use...</tt></td>
-    <td></td>
+    <td><a href="#str_item_1">(1)</a></td>
   </tr>
   <tr>
     <td><tt>StVal loc b lpe</tt></td>
@@ -952,6 +979,13 @@
     <td>value</td>
   </tr>
 </table>
+
+<div id="t_str_item_1" style="margin: 5mm 0 0 1cm">(1)
+  <p>Node internally used to specify a different file name applying to
+    the whole subtree. This is generated by the directive "use" and
+    used when converting to the OCaml syntax tree which needs the file
+    name in its location type.</p>
+</div>
 
 <h4>sig_item</h4>
 
@@ -1037,7 +1071,7 @@
   <tr>
     <td><tt>SgUse loc s lstrib</tt></td>
     <td align="center"><tt>...internal use...</tt></td>
-    <td></td>
+    <td><a href="#sig_item_1">(1)</a></td>
   </tr>
   <tr>
     <td><tt>SgVal loc s t</tt></td>
@@ -1045,6 +1079,10 @@
     <td>value</td>
   </tr>
 </table>
+
+<div id="t_sig_item_1" style="margin: 5mm 0 0 1cm">(1)
+  <p>Same remark as for "<tt>str_item</tt>" above.</p>
+</div>
 
 <h4>module_expr</h4>
 

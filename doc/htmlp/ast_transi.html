@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_transi.html,v 1.1 2007/09/18 10:20:02 deraugla Exp $ -->
+  <!-- $Id: ast_transi.html,v 1.2 2007/09/18 14:17:28 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -31,8 +31,9 @@
 
 <h2>Introduction</h2>
 
-<p>This syntax tree is defined in the module "<tt>MLast</tt>"
-  provided by Camlp5.</p>
+<p>This syntax tree is defined in the module "<tt>MLast</tt>" provided
+  by Camlp5. Each node corresponds to a syntactic entity of the
+  corresponding type.</p>
 
 <p>For example, the syntax tree of the statement "<tt>if</tt>" can
   be written:</p>
@@ -46,21 +47,25 @@
   respectively the expression after the "<tt>if</tt>", the one after
   the "<tt>then</tt>" and the one after the "<tt>else</tt>".</p>
 
-<p>In all programs, it is possible to manipulate syntax trees like
-  that.</p>
+<p>If a program needs to manipulate syntax trees, it can use the
+  nodes defined in the module "<tt>MLast</tt>". It supposes to
+  know how the concrete syntax is transformed in to this abstract
+  syntax.<p>
 
-<p>However, the quotations systems of Camlp5 provides a quotation kit
-  named "<tt>q_MLast.cmo</tt>". When loaded, it is possible to
-  represent the syntax trees in concrete syntax. The example above can
-  be written:</p>
+<p>However, a simpler solution is to use one of the quotation kit
+  "<tt>q_MLast.cmo</tt>". It
+  proposes <a href="quot.html">quotations</a> which represent the
+  abstract syntax (the nodes of the module "<tt>MLast</tt>") into
+  concrete syntax with antiquotations to bind variables inside. The
+  example above can be written:</p>
 
 <pre>
   &lt;:expr&lt; if $e1$ then $e2$ else $e3$ >>
 </pre>
 
-<p>The interest of this representation is when one must manipulate
-  complicated syntax trees. An example taken from the Camlp5 sources is
-  this quotation (found in a pattern):</p>
+<p>This representation is very interesting when one wants to
+  manipulate complicated syntax trees. Here is an example taken from
+  the Camlp5 sources themselves:</p>
 
 <pre>
   &lt;:expr&lt;
@@ -70,7 +75,8 @@
   >>
 </pre>
 
-<p>In abstract syntax, it should have been written:</p>
+<p>This example was in a position of a pattern. In abstract syntax, it
+  should have been written:</p>
 
 <pre>
   MLast.ExMat _
@@ -85,7 +91,8 @@
            e2))]
 </pre>
 
-<p>Which is less readable.</p>
+<p>Which is less readable and much more complicated to build and
+  update.</p>
 
 <p>Instead of thinking of "a syntax tree", the programmer has to think
   of "a piece of program".</p>
@@ -113,21 +120,26 @@
     (MLast.TyArr loc (MLast.TyLid loc "int") (MLast.TyLid loc "bool"));
 </pre>
 
-<p>This name, "<tt>loc</tt>", is predefined, but it is possible to
+<p>The name "<tt>loc</tt>" is predefined. However, it is possible to
   change it, using the argument "<tt>-loc</tt>" of the Camlp5 shell
   commands.</p>
 
 <p>Consequently, if there is no variable "<tt>loc</tt>" defined in the
   context of the quotation, or if it is not of the good type, a
-  semantic error occur in the OCaml compiler.</p>
+  semantic error occur in the OCaml compiler ("Unbound value
+  loc").</p>
 
 <p>Note that in the <a href="grammars.html">extensible grammars</a>,
   the variable "<tt>loc</tt>" is bound, in all semantic actions, to
   the location of the rule.</p>
 
-<p>If the created node has no location, the simplest way is to define
-  the variable "<tt>loc</tt>" to have the value
-  "<tt>Ploc.dummy</tt>".</p>
+<p>If the created node has no location, the 
+<p>Note that in the <a href="grammars.html">extensible grammars</a>,
+  the variable "<tt>loc</tt>" is bound, in all semantic actions, to
+  the location of the rule.</p>
+
+<p>If the created node has no location, the programmer can define a
+  variable named "<tt>loc</tt>" equal to "<tt>Ploc.dummy</tt>".</p>
 
 <h3>In patterns</h3>
 
@@ -154,18 +166,18 @@
   of the enclosing context (expression or pattern). See the chapter
   about <a href="quot.html">quotations</a>.</p>
 
-<p>If the quotation (any quotation) is in the context of an
-  expression, the antiquotation is an expression. It could be a call
-  to a function. Examples:</p>
+<p>If a quotation is in the context of an expression, the
+  antiquotation must be an expression. It could be any expression,
+  including function calls. Examples:</p>
 
 <pre>
   value f e el = &lt;:expr&lt; [$e$ :: $loop False el$] >>;
   value patt_list p pl = &lt;:patt&lt; ( $list:[p::pl]$) >>;
 </pre>
 
-<p>If the quotation (any quotation) is in the context of an pattern,
-  the antiquotation is a pattern. Any pattern is possible, including
-  the wildcard character ("<tt>_</tt>"). Examples:</p>
+<p>If a quotation is in the context of an pattern, the antiquotation
+  is a pattern. Any pattern is possible, including the wildcard
+  character ("<tt>_</tt>"). Examples:</p>
 
 <pre>
    fun [ &lt;:expr&lt; $lid:op$ $_$ $_$ >> -> op ]
@@ -221,7 +233,7 @@
   <tr>
     <td><tt>ExAnt loc e</tt></td>
     <td align="center"><tt>$anti:e$</tt></td>
-    <td>antiquotation <a href="#t_expr_1">(1)</a></td>
+    <td>antiquotation <a href="#expr_1">(1)</a></td>
   </tr>
   <tr>
     <td><tt>ExApp loc e1 e2</tt></td>
@@ -281,7 +293,7 @@
   <tr>
     <td><tt>ExFun loc lopee</tt></td>
     <td align="center"><tt>fun [ $list:lpoee$ ]</tt></td>
-    <td>function <a href="#t_expr_2">(2)</a></td>
+    <td>function <a href="#expr_2">(2)</a></td>
   </tr>
   <tr>
     <td><tt>ExIfe loc e1 e2 e3</tt></td>
@@ -341,7 +353,7 @@
   <tr>
     <td><tt>ExMat loc e lpoee</tt></td>
     <td align="center"><tt>match $e$ with [ $list:lpoee$ ]</tt></td>
-    <td>match <a href="#t_expr_2">(2)</a></td>
+    <td>match <a href="#expr_2">(2)</a></td>
   </tr>
   <tr>
     <td><tt>ExNew loc ls</tt></td>
@@ -401,7 +413,7 @@
   <tr>
     <td><tt>ExTry loc e lpoee</tt></td>
     <td align="center"><tt>try $e$ with [ $list:lpoee$ ]</tt></td>
-    <td>try <a href="#t_expr_2">(2)</a></td>
+    <td>try <a href="#expr_2">(2)</a></td>
   </tr>
   <tr>
     <td><tt>ExTup loc le</tt></td>
@@ -430,16 +442,19 @@
   </tr>
 </table>
 
-<div id="t_expr_1" style="margin: 5mm 0 0 1cm">(1)
-  <p>Node used in quotation expanders to specify that all locations of
-    the sub-tree is correcty located in the quotation. In quotations,
-    the locations of all generated nodes are by default the location
-    of the entire quotation, except for these nodes which are named
-    "antiquotations". See the chapter
-    about <a href="quot.html">quotations</a>.</p>
+<div id="expr_1" style="margin: 5mm 0 0 1cm">(1)
+  <p>Node used in the quotation expanders to tells at conversion to
+    OCaml compiler syntax tree time, that all locations of the
+    sub-tree is correcty located in the quotation. By default, in
+    quotations, the locations of all generated nodes are the location
+    of the whole quotation. This node allows to make an exception to
+    this rule, since we know that the antiquotation belongs to the
+    universe of the enclosing program. See the chapter
+    about <a href="quot.html">quotations</a> and, in particular, its
+    section about antiquotations.</p>
 </div>
 
-<div id="t_expr_2" style="margin: 5mm 0 0 1cm">(2)
+<div id="expr_2" style="margin: 5mm 0 0 1cm">(2)
   <p>The variable "lpoee" found in "function", "match" and "try"
     statements correspond to a list of "<tt>(patt * option expr *
       expr)</tt>" where the "<tt>option expr</tt>" is the "when"
@@ -491,7 +506,7 @@
   <tr>
     <td><tt>PaAnt loc p</tt></td>
     <td align="center"><tt>$anti:p$</tt></td>
-    <td>antiquotation <a href="#t_patt_1">(1)</a></td>
+    <td>antiquotation <a href="#patt_1">(1)</a></td>
   </tr>
   <tr>
     <td><tt>PaAny loc</tt></td>
@@ -600,7 +615,7 @@
   </tr>
 </table>
 
-<div id="t_patt_1" style="margin: 5mm 0 0 1cm">(1)
+<div id="patt_1" style="margin: 5mm 0 0 1cm">(1)
   Node used to specify an antiquotation area, like for the
   equivalent node in expressions. See above.
 </div>
@@ -823,7 +838,7 @@
   <tr>
     <td><tt>StUse loc s lstrib</tt></td>
     <td align="center"><tt>...internal use...</tt></td>
-    <td><a href="#t_str_item_1">(1)</a></td>
+    <td><a href="#str_item_1">(1)</a></td>
   </tr>
   <tr>
     <td><tt>StVal loc b lpe</tt></td>
@@ -923,7 +938,7 @@
   <tr>
     <td><tt>SgUse loc s lstrib</tt></td>
     <td align="center"><tt>...internal use...</tt></td>
-    <td><a href="#t_sig_item_1">(1)</a></td>
+    <td><a href="#sig_item_1">(1)</a></td>
   </tr>
   <tr>
     <td><tt>SgVal loc s t</tt></td>

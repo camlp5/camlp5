@@ -6,6 +6,18 @@
     <lastBuildDate>Mon Sep 17 15:10:47 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
     <item>
+      <title>Syntax tree - 3</title>
+      <description>
+        Improved the text of the description of the chapters about
+        syntax tree nodes in strict and in transitional modes. Added
+        a chapter (empty for the moment) where the quotation kit
+        "q_ast.cmo" (AST quotations in user syntax) will be specifically
+        described.
+      </description>
+      <pubDate>Tue Sep 18 16:16:23 CEST 2007</pubDate>
+      <link>../ml_ast.html</link>
+    </item>
+    <item>
       <title>Syntax tree - 2</title>
       <description>
         Separated the "syntax tree in strict mode" and "syntax tree in

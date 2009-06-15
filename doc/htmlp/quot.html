@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: quot.html,v 1.19 2007/09/02 04:13:51 deraugla Exp $ -->
+  <!-- $Id: quot.html,v 1.20 2007/09/18 14:17:28 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>quotations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -366,6 +366,16 @@ type expander =
 <p>This extension kit add quotations of OCaml syntax tree, allowing to
   use concrete syntax to represent abstract syntax. See the chapter
   <a href="ml_ast.html">Syntax tree</a>.</p>
+
+<h3>q_ast.cmo</h3>
+
+<p>Like the previous quotation, this extension kit add quotations of
+  OCaml syntax tree, but in the current user syntax with all
+  extensions, the previous one being restricted to revised syntax
+  without extension. See the chapters
+  <a href="ml_ast.html">Syntax tree</a>
+  and <a href="q_ast.html">Syntax tree quotations in user
+  syntax</a>.</p>
 
 <h3>q_phony.cmo</h3>
 
