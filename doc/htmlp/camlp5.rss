@@ -6,6 +6,15 @@
     <lastBuildDate>Mon Sep 17 15:10:47 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
     <item>
+      <title>SLIST0...</title>
+      <description>
+        Deleted section about internal extensions SLIST0, SLIST1, SOPT
+        and SFLAG, which are not yet supported.
+      </description>
+      <pubDate>Mon Oct  1 11:38:46 CEST 2007</pubDate>
+      <link>../grammars.html</link>
+    </item>
+    <item>
       <title>Syntax tree - strict mode - nodes without quotations</title>
       <description>
         Added a section about types of nodes without quotations:

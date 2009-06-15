@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: grammars.html,v 1.81 2007/09/26 19:17:29 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.82 2007/10/01 09:39:10 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -620,37 +620,6 @@ instead of "<tt>loc</tt>".</p>
   # sum 3;4;5 end; 
 - : int = 12
 </pre>
-
-<h2>Extensions SLIST0, SLIST1, SOPT and SFLAG</h2>
-
-<p>The parsing kit "<tt>pa_extend_m.cmo</tt>" adds the specific
-  iterators "<tt>SLIST0</tt>", "<tt>SLIST1</tt>", "<tt>SOPT</tt>" and
-  "<tt>SFLAG</tt>".  They are used in the file "q_MLast.ml". They
-  allow to generate rules for antiquotations of kind "list" and
-  "opt".</p>
-
-<p>They are not supposed to be used by the programmer.</p>
-
-<p>For information:</p>
-
-<p>The symbol "<tt>SLIST0 symb</tt>" is equivalent to the rule symbol:</p>
-
-<pre>
-  [ a = a_list -> a
-  | a = LIST0 symb -> Qast.List a ] 
-</pre>
-
-<p>Same for the other specific iterators.</p>
-
-<p>The entry "<tt>a_list</tt>" and the constructor
-  "<tt>Qast.List</tt>" are locally defined in "q_MLast.ml". This
-  system allows the updating of the source file "q_MLast.ml" (syntax
-  tree quotations, with antiquotations, in revised syntax) from the
-  file "pa_r.ml" (revised syntax). These grammars are close the one to
-  the other, except that "q_MLast.ml" can parse antiquotations, what
-  is done by replacing the list iterators by these specific
-  iterators. This operation is done through the shell script
-  "mk_q_MLast.sh" in the "meta" directory of the Camlp5 sources.</p>
 
 <h2>Grammar machinery</h2>
 
