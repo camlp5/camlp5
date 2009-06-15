@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.53 2007/09/10 22:46:41 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.54 2007/09/11 19:14:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -120,13 +120,13 @@ module Meta =
         fun
         [ Ploc.VaAnt s ->
             let asit = s.[0] = 'a' in
-            let s = String.sub s 1 (String.length s - 1) in
-            match get_anti_loc s with
+            let s1 = String.sub s 1 (String.length s - 1) in
+            match get_anti_loc s1 with
             [ Some (loc, typ, str) ->
                 let (loc, r) = eval_anti Pcaml.expr_eoi loc typ str in
                 if asit then <:expr< $anti:r$ >>
                 else <:expr< Ploc.VaVal $anti:r$ >>
-            | None -> assert False ]
+            | None -> failwith s ]
         | Ploc.VaVal v -> <:expr< Ploc.VaVal $elem v$ >> ]
       END
     ;
@@ -445,14 +445,12 @@ module Meta =
         fun
         [ StDcl _ lsi ->
             <:expr< MLast.StDcl $ln$ $e_vala (e_list loop) lsi$ >>
-(*
         | StExc _ s lt ls ->
-            let ls =
-              match eval_antiquot_patch expr_eoi ls with
-              [ Some (loc, r) -> <:expr< $anti:r$ >>
-              | None -> e_list e_string ls ]
-            in
-            <:expr< MLast.StExc $ln$ $e_string s$ $e_list e_ctyp lt$ $ls$ >>
+            let s = e_vala e_string s in
+            let lt = e_vala (e_list e_ctyp) lt in
+            let ls = e_vala (e_list e_string) ls in
+            <:expr< MLast.StExc $ln$ $s$ $lt$ $ls$ >>
+(*
         | StExp _ e -> <:expr< MLast.StExp $ln$ $e_expr e$ >>
         | StExt _ s t ls ->
             let ls = e_list e_string ls in
@@ -748,13 +746,19 @@ List.iter
 ;
 
 let expr s =
-  let e = Grammar.Entry.parse Pcaml.expr_eoi (Stream.of_string s) in
+  let e =
+    call_with Plexer.force_antiquot_loc True
+      (Grammar.Entry.parse Pcaml.expr_eoi) (Stream.of_string s)
+  in
   let loc = Ploc.make_unlined (0, 0) in
   if Pcaml.strict_mode.val then <:expr< Ploc.VaVal $anti:e$ >>
   else <:expr< $anti:e$ >>
 in
 let patt s =
-  let p = Grammar.Entry.parse Pcaml.patt_eoi (Stream.of_string s) in
+  let p =
+    call_with Plexer.force_antiquot_loc True
+      (Grammar.Entry.parse Pcaml.patt_eoi) (Stream.of_string s)
+  in
   let loc = Ploc.make_unlined (0, 0) in
   if Pcaml.strict_mode.val then <:patt< Ploc.VaVal $anti:p$ >>
   else <:patt< $anti:p$ >>

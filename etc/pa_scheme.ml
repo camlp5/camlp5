@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.16 2007/09/10 22:46:41 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.17 2007/09/11 19:14:13 deraugla Exp $
 
 (open Pcaml)
 
@@ -234,7 +234,7 @@
    ((or "CHAR" "EOI" "INT" "FLOAT" "LIDENT" "LIDENTDOT" "QUESTIONIDENT"
      "QUOT" "STRING" "TILDEIDENT" "UIDENT" "UIDENTDOT")
     ())
-   ("ANTIQUOT" ())
+   ((or "ANTIQUOT" "ANTIQUOT_LOC") ())
    ("" (try (Hashtbl.find kwt prm) (Not_found (Hashtbl.add kwt prm ()))))
    (_
     (raise

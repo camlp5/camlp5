@@ -1,5 +1,5 @@
 ;; camlp5 ./pa_lispr.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-;; $Id: pa_lisp.ml,v 1.15 2007/09/10 22:46:41 deraugla Exp $
+;; $Id: pa_lisp.ml,v 1.16 2007/09/11 19:14:13 deraugla Exp $
 
 (open Pcaml)
 
@@ -125,7 +125,7 @@
        (lambda (kwt (, con prm))
          (match con
                 ((or "CHAR" "EOI" "INT" "LIDENT" "QUOT" "STRING" "UIDENT") ())
-                (("ANTIQUOT") ())
+                ((or "ANTIQUOT" "ANTIQUOT_LOC") ())
                 (("")
                  (try (Hashtbl.find kwt prm)
                       (Not_found (Hashtbl.add kwt prm ()))))

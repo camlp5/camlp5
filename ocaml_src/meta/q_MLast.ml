@@ -4,6 +4,11 @@
 
 let gram = Grammar.gcreate (Plexer.gmake ());;
 
+let call_with r v f a =
+  let saved = !r in
+  try r := v; let b = f a in r := saved; b with e -> r := saved; raise e
+;;
+
 module Qast =
   struct
     type t =
@@ -396,8 +401,8 @@ Grammar.extend
    in
    let rebind_exn : 'rebind_exn Grammar.Entry.e =
      grammar_entry_create "rebind_exn"
-   and a_antiquot : 'a_antiquot Grammar.Entry.e =
-     grammar_entry_create "a_antiquot"
+   and a_mod_ident : 'a_mod_ident Grammar.Entry.e =
+     grammar_entry_create "a_mod_ident"
    and mod_binding : 'mod_binding Grammar.Entry.e =
      grammar_entry_create "mod_binding"
    and mod_fun_binding : 'mod_fun_binding Grammar.Entry.e =
@@ -678,7 +683,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 329, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 340, 19))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -710,25 +715,25 @@ Grammar.extend
         (fun (loc : Ploc.t) -> (Qast.VaVal (Qast.List []) : 'rebind_exn));
       [Gramext.Stoken ("", "=");
        Gramext.Snterm
-         (Grammar.Entry.obj (a_antiquot : 'a_antiquot Grammar.Entry.e))],
+         (Grammar.Entry.obj (a_mod_ident : 'a_mod_ident Grammar.Entry.e))],
       Gramext.action
-        (fun (a : 'a_antiquot) _ (loc : Ploc.t) -> (a : 'rebind_exn));
+        (fun (a : 'a_mod_ident) _ (loc : Ploc.t) -> (a : 'rebind_exn));
       [Gramext.Stoken ("", "=");
        Gramext.Snterm
          (Grammar.Entry.obj (mod_ident : 'mod_ident Grammar.Entry.e))],
       Gramext.action
         (fun (sl : 'mod_ident) _ (loc : Ploc.t) ->
            (Qast.VaVal sl : 'rebind_exn))]];
-    Grammar.Entry.obj (a_antiquot : 'a_antiquot Grammar.Entry.e), None,
+    Grammar.Entry.obj (a_mod_ident : 'a_mod_ident Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("ANTIQUOT", "a")],
       Gramext.action
         (fun (s : string) (loc : Ploc.t) ->
-           (antiquot "a" loc s : 'a_antiquot));
+           (antiquot "a" loc s : 'a_mod_ident));
       [Gramext.Stoken ("ANTIQUOT", "")],
       Gramext.action
         (fun (s : string) (loc : Ploc.t) ->
-           (Qast.VaVal (antiquot "" loc s) : 'a_antiquot))]];
+           (Qast.VaVal (antiquot "" loc s) : 'a_mod_ident))]];
     Grammar.Entry.obj (mod_binding : 'mod_binding Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm
@@ -948,7 +953,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 389, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 400, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -4546,19 +4551,56 @@ List.iter (fun (q, f) -> Quotation.add q (f q))
    "with_constr", apply_entry with_constr_eoi;
    "poly_variant", apply_entry poly_variant_eoi];;
 
+let expr_eoi = Grammar.Entry.create Pcaml.gram "expr_eoi" in
+Grammar.extend
+  [Grammar.Entry.obj (expr_eoi : 'expr_eoi Grammar.Entry.e), None,
+   [None, None,
+    [[Gramext.Stoken ("ANTIQUOT_LOC", ""); Gramext.Stoken ("EOI", "")],
+     Gramext.action
+       (fun _ (a : string) (loc : Ploc.t) ->
+          (let loc = Ploc.make_unlined (0, 0) in
+           if !(Pcaml.strict_mode) then
+             let a =
+               let i = String.index a ':' in
+               let i = String.index_from a (i + 1) ':' in
+               let a = String.sub a (i + 1) (String.length a - i - 1) in
+               Grammar.Entry.parse Pcaml.expr_eoi (Stream.of_string a)
+             in
+             MLast.ExApp
+               (loc,
+                MLast.ExAcc
+                  (loc, MLast.ExUid (loc, "Ploc"),
+                   MLast.ExUid (loc, "VaAnt")),
+                MLast.ExAnt (loc, a))
+           else
+             MLast.ExApp
+               (loc, MLast.ExLid (loc, "failwith"),
+                MLast.ExStr (loc, "antiquot")) :
+           'expr_eoi));
+     [Gramext.Snterm
+        (Grammar.Entry.obj (Pcaml.expr : 'Pcaml__expr Grammar.Entry.e));
+      Gramext.Stoken ("EOI", "")],
+     Gramext.action
+       (fun _ (e : 'Pcaml__expr) (loc : Ploc.t) ->
+          (let loc = Ploc.make_unlined (0, 0) in
+           if !(Pcaml.strict_mode) then
+             MLast.ExApp
+               (loc,
+                MLast.ExAcc
+                  (loc, MLast.ExUid (loc, "Ploc"),
+                   MLast.ExUid (loc, "VaVal")),
+                MLast.ExAnt (loc, e))
+           else MLast.ExAnt (loc, e) :
+           'expr_eoi))]]];
 let expr s =
-  let e = Grammar.Entry.parse Pcaml.expr_eoi (Stream.of_string s) in
-  let loc = Ploc.make_unlined (0, 0) in
-  if !(Pcaml.strict_mode) then
-    MLast.ExApp
-      (loc,
-       MLast.ExAcc
-         (loc, MLast.ExUid (loc, "Ploc"), MLast.ExUid (loc, "VaVal")),
-       MLast.ExAnt (loc, e))
-  else MLast.ExAnt (loc, e)
+  call_with Plexer.force_antiquot_loc true (Grammar.Entry.parse expr_eoi)
+    (Stream.of_string s)
 in
 let patt s =
-  let p = Grammar.Entry.parse Pcaml.patt_eoi (Stream.of_string s) in
+  let p =
+    call_with Plexer.force_antiquot_loc true
+      (Grammar.Entry.parse Pcaml.patt_eoi) (Stream.of_string s)
+  in
   let loc = Ploc.make_unlined (0, 0) in
   if !(Pcaml.strict_mode) then
     MLast.PaApp

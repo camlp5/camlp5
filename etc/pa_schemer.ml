@@ -243,7 +243,7 @@ value lexer_using kwt (con, prm) =
     "QUESTIONIDENT" | "QUOT" | "STRING" | "TILDEIDENT" | "UIDENT" |
     "UIDENTDOT" ->
       ()
-  | "ANTIQUOT" -> ()
+  | "ANTIQUOT" | "ANTIQUOT_LOC" -> ()
   | "" ->
       try Hashtbl.find kwt prm with [ Not_found -> Hashtbl.add kwt prm () ]
   | _ ->

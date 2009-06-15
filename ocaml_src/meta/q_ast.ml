@@ -980,6 +980,25 @@ module Meta =
                      MLast.ExUid (loc, "StDcl")),
                   ln),
                e_vala (e_list loop) lsi)
+        | StExc (_, s, lt, ls) ->
+            let s = e_vala e_string s in
+            let lt = e_vala (e_list e_ctyp) lt in
+            let ls = e_vala (e_list e_string) ls in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExApp
+                       (loc,
+                        MLast.ExAcc
+                          (loc, MLast.ExUid (loc, "MLast"),
+                           MLast.ExUid (loc, "StExc")),
+                        ln),
+                     s),
+                  lt),
+               ls)
         | StVal (_, rf, lpe) ->
             let lpe =
               e_list (fun (p, e) -> MLast.ExTup (loc, [e_patt p; e_expr e]))
@@ -1314,7 +1333,10 @@ List.iter (fun (q, f) -> Quotation.add q f)
    apply_entry module_expr_eoi Meta.e_module_expr Meta.p_module_expr];;
 
 let expr s =
-  let e = Grammar.Entry.parse Pcaml.expr_eoi (Stream.of_string s) in
+  let e =
+    call_with Plexer.force_antiquot_loc true
+      (Grammar.Entry.parse Pcaml.expr_eoi) (Stream.of_string s)
+  in
   let loc = Ploc.make_unlined (0, 0) in
   if !(Pcaml.strict_mode) then
     MLast.ExApp
@@ -1325,7 +1347,10 @@ let expr s =
   else MLast.ExAnt (loc, e)
 in
 let patt s =
-  let p = Grammar.Entry.parse Pcaml.patt_eoi (Stream.of_string s) in
+  let p =
+    call_with Plexer.force_antiquot_loc true
+      (Grammar.Entry.parse Pcaml.patt_eoi) (Stream.of_string s)
+  in
   let loc = Ploc.make_unlined (0, 0) in
   if !(Pcaml.strict_mode) then
     MLast.PaApp

@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.68 2007/09/11 12:59:09 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.69 2007/09/11 19:14:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -151,7 +151,17 @@ EXTEND
   ;
   rebind_exn:
     [ [ "="; sl = mod_ident -> <:vala< sl >>
+      | "="; a = a_mod_ident -> a
       | -> <:vala< [] >> ] ]
+  ;
+  a_mod_ident:
+    [ [ s = ANTIQUOT_LOC ->
+         let _s =
+           Printf.sprintf "%d,%d::%s" (Ploc.first_pos loc) (Ploc.last_pos loc)
+             s
+         in
+         <:vala< $"a" ^ _s$ >>
+      | s = ANTIQUOT_LOC "a" -> <:vala< $"b" ^ s$ >> ] ]
   ;
   mod_binding:
     [ [ i = UIDENT; me = mod_fun_binding -> (i, me) ] ]

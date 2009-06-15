@@ -135,6 +135,8 @@ Grammar.extend
    in
    let rebind_exn : 'rebind_exn Grammar.Entry.e =
      grammar_entry_create "rebind_exn"
+   and a_mod_ident : 'a_mod_ident Grammar.Entry.e =
+     grammar_entry_create "a_mod_ident"
    and mod_binding : 'mod_binding Grammar.Entry.e =
      grammar_entry_create "mod_binding"
    and mod_fun_binding : 'mod_fun_binding Grammar.Entry.e =
@@ -362,9 +364,29 @@ Grammar.extend
      [[], Gramext.action (fun (loc : Ploc.t) -> ([] : 'rebind_exn));
       [Gramext.Stoken ("", "=");
        Gramext.Snterm
+         (Grammar.Entry.obj (a_mod_ident : 'a_mod_ident Grammar.Entry.e))],
+      Gramext.action
+        (fun (a : 'a_mod_ident) _ (loc : Ploc.t) -> (a : 'rebind_exn));
+      [Gramext.Stoken ("", "=");
+       Gramext.Snterm
          (Grammar.Entry.obj (mod_ident : 'mod_ident Grammar.Entry.e))],
       Gramext.action
         (fun (sl : 'mod_ident) _ (loc : Ploc.t) -> (sl : 'rebind_exn))]];
+    Grammar.Entry.obj (a_mod_ident : 'a_mod_ident Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Stoken ("ANTIQUOT_LOC", "a")],
+      Gramext.action
+        (fun (s : string) (loc : Ploc.t) ->
+           (failwith "antiquot" : 'a_mod_ident));
+      [Gramext.Stoken ("ANTIQUOT_LOC", "")],
+      Gramext.action
+        (fun (s : string) (loc : Ploc.t) ->
+           (let _s =
+              Printf.sprintf "%d,%d::%s" (Ploc.first_pos loc)
+                (Ploc.last_pos loc) s
+            in
+            failwith "antiquot" :
+            'a_mod_ident))]];
     Grammar.Entry.obj (mod_binding : 'mod_binding Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("UIDENT", "");

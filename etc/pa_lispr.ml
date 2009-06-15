@@ -120,7 +120,7 @@ and quotation_greater len =
 value lexer_using kwt (con, prm) =
   match con with
   [ "CHAR" | "EOI" | "INT" | "LIDENT" | "QUOT" | "STRING" | "UIDENT" -> ()
-  | "ANTIQUOT" -> ()
+  | "ANTIQUOT" | "ANTIQUOT_LOC" -> ()
   | "" ->
       try Hashtbl.find kwt prm with [ Not_found -> Hashtbl.add kwt prm () ]
   | _ ->
