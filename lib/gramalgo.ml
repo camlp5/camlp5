@@ -528,75 +528,131 @@ value make_item_sets rules term_n nterm_n item_set_ht =
   }
 ;
 
-value make_first_tab rules nterm_n nb_nterms = do {
-  let first_in_rule = Hashtbl.create 1 in
-  let first_in_nterm = Array.create nb_nterms [] in
+value make_derive_eps_tab rules nb_nterms = do {
+  let nterm_derive_eps_tab = Array.create nb_nterms False in
   let changes = ref False in
-  let add_in_ht ht a b =
-    let list = try Hashtbl.find ht a with [ Not_found -> [] ] in
-    if not (List.mem b list) then do {
-      Hashtbl.replace ht a [b :: list];
-      changes.val := True;
-    }
-    else ()
-  in
-  let add_in_arr arr i a =
-    if not (List.mem a arr.(i)) then do {
-      arr.(i) := [a :: arr.(i)];
-      changes.val := True;
-    }
-    else ()
-  in
-  let rec add_first_in_rest rh =
-    match rh with
-    [ [s :: rest] -> do {
-        match s with
-        [ GS_nterm m ->
-            List.iter
-              (fun s1 ->
-                 if s1 = -1 then
-                   List.iter
-                     (fun s2 -> add_in_ht first_in_rule rh s2)
-                     (try Hashtbl.find first_in_rule rest with
-                      [ Not_found -> [] ])
-                 else add_in_arr first_in_nterm m s1)
-              first_in_nterm.(m)
-        | GS_term s ->
-            add_in_ht first_in_rule rh s ];
-        add_first_in_rest rest
-      }
-    | [] -> () ]
-  in
-  let rec add_first m rh =
-    match rh with
-    [ [s :: rest] -> do {
-        match s with
-        [ GS_term s -> do {
-            add_in_ht first_in_rule rh s;
-            add_in_arr first_in_nterm m s;
-          }
-        | GS_nterm m1 ->
-            List.iter
-              (fun s1 ->
-                 if s1 = -1 then add_first m rest
-                 else add_in_arr first_in_nterm m s1)
-              first_in_nterm.(m1) ];
-        add_first_in_rest rest;
-      }
-    | [] -> do {
-        add_in_ht first_in_rule rh (-1);
-        add_in_arr first_in_nterm m  (-1);
-      } ]
-  in
   loop () where rec loop () = do {
-    changes.val := False;
-    Array.iter (fun (lh, rh) -> add_first lh rh) rules;
-    if changes.val then loop () else ();
+    Array.iteri
+      (fun i (lh, rh) ->
+         let derive_eps =
+            List.for_all
+              (fun
+               [ GS_term _ -> False
+               | GS_nterm i -> nterm_derive_eps_tab.(i) ])
+              rh
+         in
+         if derive_eps then
+           if not nterm_derive_eps_tab.(lh) then do {
+             nterm_derive_eps_tab.(lh) := True;
+             changes.val := True;
+           }
+           else ()
+         else ())
+      rules;
+    if changes.val then do {
+      changes.val := False;
+      loop ()
+    }
+    else ()
   };
-  (first_in_nterm, first_in_rule)
+  nterm_derive_eps_tab
 };
 
-DEFINE TEST;
+value set_first first_tab nterm_derive_eps_tab changes (lh, rh) =
+  loop rh where rec loop =
+    fun
+    [ [GS_term i :: _] ->
+        if not (List.mem i first_tab.(lh)) then do {
+          first_tab.(lh) := [i :: first_tab.(lh)];
+          changes.val := True
+        }
+        else ()
+    | [GS_nterm i :: rest] -> do {
+        List.iter
+          (fun i ->
+             if not (List.mem i first_tab.(lh)) then do {
+               first_tab.(lh) := [i :: first_tab.(lh)];
+               changes.val := True
+             }
+             else ())
+          first_tab.(i);
+        if nterm_derive_eps_tab.(i) then loop rest else ();
+      }
+    | [] -> () ]
+;
+
+value set_follow first_tab follow_tab nterm_derive_eps_tab changes (lh, rh) =
+  loop rh where rec loop =
+    fun
+    [ [s :: rest] -> do {
+        match s with
+        [ GS_term _ -> ()
+        | GS_nterm i ->
+            loop rest where rec loop =
+              fun
+              [ [GS_term j :: _] ->
+                  if not (List.mem j follow_tab.(i)) then do {
+                    follow_tab.(i) := [j :: follow_tab.(i)];
+                    changes.val := True
+                  }
+                  else ()
+              | [GS_nterm j :: rest] -> do {
+                  List.iter
+                    (fun k ->
+                       if not (List.mem k follow_tab.(i)) then do {
+                         follow_tab.(i) := [k :: follow_tab.(i)];
+                         changes.val := True
+                       }
+                       else ())
+                    first_tab.(j);
+                  if nterm_derive_eps_tab.(j) then loop rest else ();
+                }
+              | [] ->
+                  List.iter
+                    (fun k ->
+                       if not (List.mem k follow_tab.(i)) then do {
+                         follow_tab.(i) := [k :: follow_tab.(i)];
+                         changes.val := True
+                       }
+                       else ())
+                    follow_tab.(lh) ] ];
+        loop rest
+      }
+    | [] -> () ]
+;
+
+value make_first_tab rules nterm_derive_eps_tab = do {
+  let nb_nterms = Array.length nterm_derive_eps_tab in
+  let first_tab = Array.create nb_nterms [] in
+  let changes = ref False in
+  loop () where rec loop () = do {
+    Array.iter (set_first first_tab nterm_derive_eps_tab changes) rules;
+    if changes.val then do {
+      changes.val := False;
+      loop ()
+    }
+    else ();
+  };
+  first_tab
+};
+
+value make_follow_tab rules first_tab nterm_derive_eps_tab = do {
+  let nb_terms = Array.length nterm_derive_eps_tab in
+  let follow_tab = Array.create nb_terms [] in
+  let changes = ref False in
+  loop () where rec loop () = do {
+    Array.iter (set_follow first_tab follow_tab nterm_derive_eps_tab changes)
+      rules;
+    if changes.val then do {
+      changes.val := False;
+      loop ()
+    }
+    else ();
+  };
+  follow_tab
+};
+
+(*DEFINE TEST;*)
 
 value lr0 entry lev = do {
   Printf.eprintf "LR(0) %s %d\n" entry.ename lev;
@@ -608,16 +664,16 @@ value lr0 entry lev = do {
         (rl, name_of_entry entry lev)
       ELSE
         let rl =
-(*
+(**)
           [("E", [GS_term "1"; GS_nterm "E"]);
            ("E", [GS_term "1"])]
-*)
+(*
           [("E", [GS_nterm "E"; GS_term "*"; GS_nterm "B"]);
            ("E", [GS_nterm "E"; GS_term "+"; GS_nterm "B"]);
            ("E", [GS_nterm "B"]);
            ("B", [GS_term "0"]);
            ("B", [GS_term "1"])]
-(**)
+*)
         in
         (rl, "E")
       END
@@ -724,67 +780,37 @@ value lr0 entry lev = do {
   Printf.eprintf "nb of non-terms %d\n" nb_nterms;
   flush stderr;
 
+  let nterm_derive_eps_tab = make_derive_eps_tab rules nb_nterms in
+  Printf.eprintf "\nDerive ε\n\n";
+  Array.iteri
+    (fun i derive_eps ->
+       if derive_eps then Printf.eprintf "  %s" (nterm_n i) else ())
+    nterm_derive_eps_tab;
+  flush stderr;
+
+  let compare_terms i j = compare (term_n i) (term_n j) in
+
   (* compute first *)
-  let (first, first_in_rule) = make_first_tab rules nterm_n nb_nterms in
+  let first_tab = make_first_tab rules nterm_derive_eps_tab in
   Printf.eprintf "\nFirst\n\n";
   Array.iteri
     (fun i s -> do {
        Printf.eprintf "  first (%s) =" s;
        List.iter (fun s -> Printf.eprintf " %s" (term_n s))
-         (List.sort compare first.(i));
+         (List.sort compare_terms first_tab.(i));
        Printf.eprintf "\n";
      })
     nterm_name_tab;
   flush stderr;
 
   (* compute follow *)
-  let follow = Array.create nb_nterms [] in
-  let changed = ref False in
-  loop () where rec loop () = do {
-    changed.val := False;
-    Array.iter
-      (fun (lh, rh) ->
-         loop rh where rec loop =
-           fun
-           [ [GS_nterm m :: rest] -> do {
-               let fir =
-                 try Hashtbl.find first_in_rule rest with
-                 [ Not_found -> [] ]
-               in
-               List.iter
-                 (fun s ->
-                    if s = -1 then ()
-                    else if not (List.mem s follow.(m)) then do {
-                      follow.(m) := [s :: follow.(m)];
-                      changed.val := True;
-                    }
-                    else ())
-                 fir;
-               if List.mem (-1) fir then
-                 let m1 = lh in
-                 List.iter
-                   (fun s ->
-                      if s = -1 then ()
-                      else if not (List.mem s follow.(m)) then do {
-                        follow.(m) := [s :: follow.(m)];
-                        changed.val := True;
-                      }
-                      else ())
-                   follow.(m1)
-               else ();
-               loop rest
-             }
-           | [GS_term _ :: rest] -> loop rest
-           | [] -> () ])
-      rules;
-    if changed.val then loop () else ();
-  };
+  let follow_tab = make_follow_tab rules first_tab nterm_derive_eps_tab in
   Printf.eprintf "\nFollow\n\n";
   Array.iteri
     (fun i s -> do {
        Printf.eprintf "  follow (%s) =" s;
        List.iter (fun s -> Printf.eprintf " %s" (term_n s))
-         (List.sort compare follow.(i));
+         (List.sort compare_terms follow_tab.(i));
        Printf.eprintf "\n";
      })
     nterm_name_tab;
