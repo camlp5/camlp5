@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: syntext.html,v 1.12 2007/08/22 12:30:28 deraugla Exp $ -->
+  <!-- $Id: syntext.html,v 1.13 2007/10/17 12:02:35 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Extensions of syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -19,16 +19,16 @@
 
 <h1 class="top">Extensions of syntax</h1>
 
-<p>Camlp5 allows to extend the syntax of the OCaml language, and even
-  change the whole syntax.</p>
+<p>Camlp5 allows one to extend the syntax of the OCaml language, and
+  even change the entire syntax.</p>
 
 <p>It uses for that one of its parsing tools:
   the <a href="grammars.html">extensible grammars</a>.</p>
 
 <p>To understand the whole syntax in the examples given in this
-  chapter, it is a good thing to know this parsing tool (the
-  extensible grammars), but we shall try to give some minimal
-  explanations to allow the reader to follow them.</p>
+  chapter, it is good to understand this parsing tool (the extensible
+  grammars), but we shall try to give some minimal explanations to
+  allow the reader to follow them.</p>
 
 <p>A syntax extension is an OCaml object file (ending with ".cmo" or
   ".cma") which is loaded inside Camlp5. The source of this file uses
@@ -94,7 +94,7 @@
   types of the syntax tree are in the Camlp5 module
   "<tt>MLast</tt>".</p>
 
-<p>However, there is a simpler way to make values of these syntax tree
+<p>There is however a simpler way to make values of these syntax tree
   types: the system quotations (see chapters
   about <a href="quot.html">quotations</a>
   and <a href="ml_ast.html">syntax tree</a>). With this system, it is
@@ -124,10 +124,10 @@
 
 <h2>An example : repeat..until</h2>
 
-<p>A classical extension is the programmation of the "repeat" statement.
-  The "repeat" statement is like a "while" except that the loop is executed
-  at least one time and that the test is at the end of the loop and is
-  inverted. The equivalent of:</p>
+<p>A classical extension is the creation of the "repeat" statement.
+  The "repeat" statement is like a "while" except that the loop is
+  executed at least one time and that the test is at the end of the
+  loop and is inverted. The equivalent of:</p>
 
 <pre>
   repeat x; y; z until c
