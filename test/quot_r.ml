@@ -165,7 +165,6 @@
 <:str_item< declare $list:lstri$ end >>;
 <:str_item< declare $_list:lstri$ end >>;
 <:str_item< # $s$ >>;
-(*
 <:str_item< # $_:s$ >>;
 <:str_item< # $s$ $e$ >>;
 <:str_item< # $_:s$ $e$ >>;
@@ -189,4 +188,3 @@
 <:str_item< type $_list:ltd$ >>;
 <:str_item< value $flag:b$ $list:lpe$ >>;
 <:str_item< value $_flag:b$ $_list:lpe$ >>;
-*)

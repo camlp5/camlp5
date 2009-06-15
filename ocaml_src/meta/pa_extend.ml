@@ -1760,6 +1760,8 @@ let rec symbol_of_a =
           let sep = option_map symbol_of_a sep in sslist2 loc ls min sep s
       | ASnterm (_, _, _) -> let s = symbol_of_a s in ss2 loc ls s
       | ASopt (loc, s) -> let s = symbol_of_a s in ssopt2 loc ls s
+      | AStok (loc, s, p) ->
+          let p = option_map string_of_a p in sstoken2 loc ls s p
       | _ -> Ploc.raise loc (Failure "not impl ASvala2")
 and psymbol_of_a ap = {pattern = ap.ap_patt; symbol = symbol_of_a ap.ap_symb}
 and rules_of_a au =

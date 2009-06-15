@@ -275,6 +275,12 @@ Grammar.extend
       Gramext.action
         (fun (e : 'expr) (loc : Ploc.t) ->
            (MLast.StExp (loc, e) : 'str_item));
+      [Gramext.Stoken ("", "#"); Gramext.Stoken ("LIDENT", "");
+       Gramext.Sopt
+         (Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e)))],
+      Gramext.action
+        (fun (dp : 'expr option) (n : string) _ (loc : Ploc.t) ->
+           (MLast.StDir (loc, n, dp) : 'str_item));
       [Gramext.Stoken ("", "value");
        Gramext.Sflag (Gramext.Stoken ("", "rec"));
        Gramext.Slist1sep
@@ -456,7 +462,13 @@ Grammar.extend
            (MLast.MtUid (loc, i) : 'module_type))]];
     Grammar.Entry.obj (sig_item : 'sig_item Grammar.Entry.e), None,
     [Some "top", None,
-     [[Gramext.Stoken ("", "value"); Gramext.Stoken ("LIDENT", "");
+     [[Gramext.Stoken ("", "#"); Gramext.Stoken ("LIDENT", "");
+       Gramext.Sopt
+         (Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e)))],
+      Gramext.action
+        (fun (dp : 'expr option) (n : string) _ (loc : Ploc.t) ->
+           (MLast.SgDir (loc, n, dp) : 'sig_item));
+      [Gramext.Stoken ("", "value"); Gramext.Stoken ("LIDENT", "");
        Gramext.Stoken ("", ":");
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
@@ -2350,26 +2362,6 @@ Grammar.extend
       Gramext.action (fun _ (loc : Ploc.t) -> (false : 'direction_flag));
       [Gramext.Stoken ("", "to")],
       Gramext.action (fun _ (loc : Ploc.t) -> (true : 'direction_flag))]]]);;
-
-Grammar.extend
-  (let _ = (str_item : 'str_item Grammar.Entry.e)
-   and _ = (sig_item : 'sig_item Grammar.Entry.e) in
-   [Grammar.Entry.obj (str_item : 'str_item Grammar.Entry.e), None,
-    [None, None,
-     [[Gramext.Stoken ("", "#"); Gramext.Stoken ("LIDENT", "");
-       Gramext.Sopt
-         (Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e)))],
-      Gramext.action
-        (fun (dp : 'expr option) (n : string) _ (loc : Ploc.t) ->
-           (MLast.StDir (loc, n, dp) : 'str_item))]];
-    Grammar.Entry.obj (sig_item : 'sig_item Grammar.Entry.e), None,
-    [None, None,
-     [[Gramext.Stoken ("", "#"); Gramext.Stoken ("LIDENT", "");
-       Gramext.Sopt
-         (Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e)))],
-      Gramext.action
-        (fun (dp : 'expr option) (n : string) _ (loc : Ploc.t) ->
-           (MLast.SgDir (loc, n, dp) : 'sig_item))]]]);;
 
 Grammar.extend
   (let _ = (interf : 'interf Grammar.Entry.e)

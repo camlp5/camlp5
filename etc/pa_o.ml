@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.68 2007/09/24 08:34:40 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.69 2007/09/24 12:18:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -368,35 +368,40 @@ EXTEND
   str_item:
     [ "top"
       [ "exception"; (_, c, tl) = constructor_declaration; b = rebind_exn ->
-          <:str_item< exception $_uid:c$ of $_list:tl$ = $b$ >>
-      | "external"; i = LIDENT; ":"; t = ctyp; "="; pd = LIST1 STRING ->
-          <:str_item< external $lid:i$ : $t$ = $list:pd$ >>
+          <:str_item< exception $_uid:c$ of $_list:tl$ = $_list:b$ >>
+      | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
+        pd = V (LIST1 STRING) ->
+          <:str_item< external $_lid:i$ : $t$ = $_list:pd$ >>
       | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
         pd = LIST1 STRING ->
           <:str_item< external $lid:i$ : $t$ = $list:pd$ >>
       | "include"; me = module_expr -> <:str_item< include $me$ >>
-      | "module"; r = FLAG "rec"; l = LIST1 mod_binding SEP "and" ->
-          <:str_item< module $flag:r$ $list:l$ >>
-      | "module"; "type"; i = UIDENT; "="; mt = module_type ->
-          <:str_item< module type $uid:i$ = $mt$ >>
-      | "open"; i = mod_ident -> <:str_item< open $i$ >>
-      | "type"; tdl = LIST1 type_declaration SEP "and" ->
-          <:str_item< type $list:tdl$ >>
+      | "module"; r = V (FLAG "rec"); l = V (LIST1 mod_binding SEP "and") ->
+          <:str_item< module $_flag:r$ $_list:l$ >>
+      | "module"; "type"; i = V UIDENT "uid" ""; "="; mt = module_type ->
+          <:str_item< module type $_uid:i$ = $mt$ >>
+      | "open"; i = V mod_ident "list" "" ->
+          <:str_item< open $_:i$ >>
+      | "type"; tdl = V (LIST1 type_declaration SEP "and") ->
+          <:str_item< type $_list:tdl$ >>
       | "let"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = expr ->
           let e = <:expr< let $_flag:r$ $_list:l$ in $x$ >> in
           <:str_item< $exp:e$ >>
       | "let"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and") ->
-          match uv l with
-          [ [(<:patt< _ >>, e)] -> <:str_item< $exp:e$ >>
+          match l with
+          [ <:vala< [(p, e)] >> ->
+              match p with
+              [ <:patt< _ >> -> <:str_item< $exp:e$ >>
+              | _ -> <:str_item< value $_flag:r$ $_list:l$ >> ]
           | _ -> <:str_item< value $_flag:r$ $_list:l$ >> ]
       | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in"; e = expr ->
           <:str_item< let module $_uid:m$ = $mb$ in $e$ >>
       | e = expr -> <:str_item< $exp:e$ >> ] ]
   ;
   rebind_exn:
-    [ [ "="; sl = mod_ident -> sl
-      | -> [] ] ]
+    [ [ "="; sl = V mod_ident "list" -> sl
+      | -> <:vala< [] >> ] ]
   ;
   mod_binding:
     [ [ i = V UIDENT; me = mod_fun_binding -> (i, me) ] ]
@@ -431,22 +436,27 @@ EXTEND
     [ "top"
       [ "exception"; (_, c, tl) = constructor_declaration ->
           <:sig_item< exception $_uid:c$ of $_list:tl$ >>
-      | "external"; i = LIDENT; ":"; t = ctyp; "="; pd = LIST1 STRING ->
-          <:sig_item< external $lid:i$ : $t$ = $list:pd$ >>
+      | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
+        pd = LIST1 STRING ->
+          <:sig_item< external $_lid:i$ : $t$ = $list:pd$ >>
       | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
         pd = LIST1 STRING ->
           <:sig_item< external $lid:i$ : $t$ = $list:pd$ >>
-      | "include"; mt = module_type -> <:sig_item< include $mt$ >>
-      | "module"; rf = FLAG "rec"; l = LIST1 mod_decl_binding SEP "and" ->
-          <:sig_item< module $flag:rf$ $list:l$ >>
-      | "module"; "type"; i = UIDENT; "="; mt = module_type ->
-          <:sig_item< module type $uid:i$ = $mt$ >>
-      | "module"; "type"; i = UIDENT ->
-          <:sig_item< module type $uid:i$ = 'abstract >>
-      | "open"; i = mod_ident -> <:sig_item< open $i$ >>
-      | "type"; tdl = LIST1 type_declaration SEP "and" ->
-          <:sig_item< type $list:tdl$ >>
-      | "val"; i = LIDENT; ":"; t = ctyp -> <:sig_item< value $lid:i$ : $t$ >>
+      | "include"; mt = module_type ->
+          <:sig_item< include $mt$ >>
+      | "module"; rf = V (FLAG "rec");
+        l = V (LIST1 mod_decl_binding SEP "and") ->
+          <:sig_item< module $_flag:rf$ $_list:l$ >>
+      | "module"; "type"; i = V UIDENT "uid" ""; "="; mt = module_type ->
+          <:sig_item< module type $_uid:i$ = $mt$ >>
+      | "module"; "type"; i = V UIDENT "uid" "" ->
+          <:sig_item< module type $_uid:i$ = 'abstract >>
+      | "open"; i = V mod_ident "list" "" ->
+          <:sig_item< open $_:i$ >>
+      | "type"; tdl = V (LIST1 type_declaration SEP "and") ->
+          <:sig_item< type $_list:tdl$ >>
+      | "val"; i = LIDENT; ":"; t = ctyp ->
+          <:sig_item< value $lid:i$ : $t$ >>
       | "val"; "("; i = operator_rparen; ":"; t = ctyp ->
           <:sig_item< value $lid:i$ : $t$ >> ] ]
   ;
@@ -822,7 +832,7 @@ EXTEND
       | ci = cons_ident -> (loc, ci, <:vala< [] >>) ] ]
   ;
   cons_ident:
-    [ [ i = UIDENT -> <:vala< i >>
+    [ [ i = V UIDENT "uid" "" -> i
       | UIDENT "True" -> <:vala< " True" >>
       | UIDENT "False" -> <:vala< " False" >> ] ]
   ;
@@ -876,16 +886,16 @@ EXTEND
   ;
   (* Objects and Classes *)
   str_item:
-    [ [ "class"; cd = LIST1 class_declaration SEP "and" ->
-          <:str_item< class $list:cd$ >>
-      | "class"; "type"; ctd = LIST1 class_type_declaration SEP "and" ->
-          <:str_item< class type $list:ctd$ >> ] ]
+    [ [ "class"; cd = V (LIST1 class_declaration SEP "and") ->
+          <:str_item< class $_list:cd$ >>
+      | "class"; "type"; ctd = V (LIST1 class_type_declaration SEP "and") ->
+          <:str_item< class type $_list:ctd$ >> ] ]
   ;
   sig_item:
-    [ [ "class"; cd = LIST1 class_description SEP "and" ->
-          <:sig_item< class $list:cd$ >>
-      | "class"; "type"; ctd = LIST1 class_type_declaration SEP "and" ->
-          <:sig_item< class type $list:ctd$ >> ] ]
+    [ [ "class"; cd = V (LIST1 class_description SEP "and") ->
+          <:sig_item< class $_list:cd$ >>
+      | "class"; "type"; ctd = V (LIST1 class_type_declaration SEP "and") ->
+          <:sig_item< class type $_list:ctd$ >> ] ]
   ;
   (* Class expressions *)
   class_declaration:

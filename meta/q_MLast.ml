@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.106 2007/09/24 08:34:40 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.107 2007/09/24 12:18:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -327,6 +327,8 @@ EXTEND
           Qast.Node "StTyp" [Qast.Loc; tdl]
       | "value"; r = SV (FLAG "rec"); l = SV (LIST1 let_binding SEP "and") ->
           Qast.Node "StVal" [Qast.Loc; r; l]
+      | "#"; n = a_LIDENT2; dp = SV (OPT expr) ->
+          Qast.Node "StDir" [Qast.Loc; n; dp]
       | e = expr -> Qast.Node "StExp" [Qast.Loc; e] ] ]
   ;
   rebind_exn:
@@ -383,7 +385,9 @@ EXTEND
       | "type"; tdl = SV (LIST1 type_declaration SEP "and") ->
           Qast.Node "SgTyp" [Qast.Loc; tdl]
       | "value"; i = a_LIDENT2; ":"; t = ctyp ->
-          Qast.Node "SgVal" [Qast.Loc; i; t] ] ]
+          Qast.Node "SgVal" [Qast.Loc; i; t]
+      | "#"; n = a_LIDENT2; dp = SV (OPT expr) ->
+          Qast.Node "SgDir" [Qast.Loc; n; dp] ] ]
   ;
   mod_decl_binding:
     [ [ i = a_UIDENT2; mt = module_declaration -> Qast.Tuple [i; mt] ] ]
@@ -1212,24 +1216,6 @@ EXTEND
   ;
 END;
 
-EXTEND
-  GLOBAL: str_item sig_item;
-  str_item:
-    [ [ "#"; n = a_LIDENT2; dp = dir_param ->
-          Qast.Node "StDir" [Qast.Loc; n; dp] ] ]
-  ;
-  sig_item:
-    [ [ "#"; n = a_LIDENT2; dp = dir_param ->
-          Qast.Node "SgDir" [Qast.Loc; n; dp] ] ]
-  ;
-  dir_param:
-    [ [ a = ANTIQUOT "opt" -> Qast.VaVal (Qast.VaAnt "opt" loc a)
-      | a = ANTIQUOT "_opt" -> Qast.VaAnt "_opt" loc a
-      | e = expr -> Qast.VaVal (Qast.Option (Some e))
-      | -> Qast.VaVal (Qast.Option None) ] ]
-  ;
-END;
-
 (* Antiquotations *)
 
 EXTEND
@@ -1325,7 +1311,8 @@ EXTEND
   a_UIDENT2:
     [ [ a = ANTIQUOT "uid" -> Qast.VaVal (Qast.VaAnt "uid" loc a)
       | a = ANTIQUOT "_uid" -> Qast.VaAnt "_uid" loc a
-      | a = ANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a)
+      | a = ANTIQUOT "" -> Qast.VaVal (Qast.VaAnt "" loc a)
+      | a = ANTIQUOT "_" -> Qast.VaAnt "_" loc a
       | i = UIDENT -> Qast.VaVal (Qast.Str i) ] ]
   ;
   a_LIDENT:
@@ -1335,7 +1322,8 @@ EXTEND
   a_LIDENT2:
     [ [ a = ANTIQUOT "lid" -> Qast.VaVal (Qast.VaAnt "lid" loc a)
       | a = ANTIQUOT "_lid" -> Qast.VaAnt "_lid" loc a
-      | a = ANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a)
+      | a = ANTIQUOT "" -> Qast.VaVal (Qast.VaAnt "" loc a)
+      | a = ANTIQUOT "_" -> Qast.VaAnt "_" loc a
       | i = LIDENT -> Qast.VaVal (Qast.Str i) ] ]
   ;
   a_INT:
