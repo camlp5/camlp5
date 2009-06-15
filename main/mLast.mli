@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: mLast.mli,v 1.52 2007/12/27 10:30:24 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.53 2007/12/28 09:53:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 (* Module [MLast]: abstract syntax tree.
@@ -12,9 +12,9 @@
 type loc = Ploc.t;
 
 IFNDEF STRICT THEN
-  DEFINE V t = t
+  DEFINE_TYPE V t = t
 ELSE
-  DEFINE V t = Ploc.vala t
+  DEFINE_TYPE V t = Ploc.vala t
 END;
 
 type v 'a = V 'a;
