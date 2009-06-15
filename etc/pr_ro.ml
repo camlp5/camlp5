@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.73 2007/12/14 08:18:04 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.74 2007/12/14 15:51:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -414,63 +414,15 @@ EXTEND_PRINTER
             [ Some _ -> ([], e)
             | None -> expr_fun_args e ]
           in
-          horiz_vertic
-            (fun () ->
-               let args =
-                 if pl = [] then ""
-                 else hlist patt {(pc) with bef = " "; aft = ""} pl
-               in
-               sprintf "%smethod%s %s%s%s = %s%s" pc.bef
-                 (if priv then " private" else "") s args
-                 (match topt with
-                  [ Some t ->
-                      sprintf " : %s" (ctyp {(pc) with bef = ""; aft = ""} t)
-                  | None -> "" ])
-                 (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
-            (fun () ->
-               let s1 =
-                 match topt with
-                 [ None ->
-                     let list =
-                       let list =
-                         [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "") ::
-                          List.map (fun p -> (fun pc -> patt pc p, "")) pl]
-                       in
-                       if priv then
-                         [(fun pc -> sprintf "%sprivate%s" pc.bef pc.aft, "")
-                          :: list]
-                       else list
-                     in
-                     plistbf 2
-                       {(pc) with bef = sprintf "%smethod" pc.bef; aft = " ="}
-                       list
-                 | Some t ->
-                     let args =
-                       if pl = [] then ""
-                       else hlist patt {(pc) with bef = " "; aft = ""} pl
-                     in
-                     horiz_vertic
-                       (fun () ->
-                          sprintf "%smethod%s %s%s : %s =" pc.bef
-                            (if priv then " private" else "") s args
-                            (ctyp {(pc) with bef = ""; aft = ""} t))
-                       (fun () ->
-                          let s1 =
-                            sprintf "%smethod%s %s%s :" pc.bef
-                              (if priv then " private" else "") s args
-                          in
-                          let s2 =
-                            ctyp
-                              {(pc) with ind = pc.ind + 4;
-                               bef = tab (pc.ind + 4); aft = " ="}
-                              t
-                          in
-                          sprintf "%s\n%s" s1 s2) ]
-               in
-               let s2 =
-                 expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
-               in
-               sprintf "%s\n%s" s1 s2)
+          let pl = List.map (fun p -> (p, "")) pl in
+          pprintf pc "method%s %s%s%p%p =@;%p"
+            (if priv then " private" else "") s
+            (if pl = [] then "" else " ") (plist patt 2) pl
+            (fun pc ->
+               fun
+               [ Some t -> pprintf pc " : %p" ctyp t
+               | None -> pprintf pc "" ])
+            topt expr e
       | <:class_str_item< type $t1$ = $t2$ >> ->
           pprintf pc "type %p =@;%p" ctyp t1 ctyp t2
       | <:class_str_item< value $flag:mf$ $lid:s$ = $e$ >> ->
