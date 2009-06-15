@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: conclusion.html,v 1.15 2007/10/14 03:41:11 deraugla Exp $ -->
+  <!-- $Id: conclusion.html,v 1.16 2007/10/19 14:26:18 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Conclusion</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -19,15 +19,15 @@
 
 <h1 class="top">Future work</h1>
 
-<p>Just some ideas... things to implement or to thing about...</p>
+<p>Just some ideas... things to implement or to think about...</p>
 
 <h2>pretty print in shorter syntax</h2>
 
-<p>It is also planed to improve the <a href="pretty.html">pretty
+<p>It is planned to improve the <a href="pretty.html">pretty
     printing</a> system and the <a href="printers.html">printers</a>,
   so that the management of the lines (indentation, continuations)
-  be handled by the system. For the moment, the programmer has to
-  manage them using the "<tt>pc</tt>" variable.</p>
+  are automatically handled by the system. For the moment, the programmer must
+  explicitly manage them using the "<tt>pc</tt>" variable.</p>
 
 <h2>printer for EXTEND_PRINTER</h2>
 
@@ -36,16 +36,16 @@
 
 <h2>extensible lexers</h2>
 
-<p>Extensible <a href="lexers2.html">lexers</a> would be a interesting
-  extension, also. And possibly lexers using regular expressions
+<p>Extensible <a href="lexers2.html">lexers</a> would be an interesting
+  extension. And possibly lexers using regular expressions
   (extensible if possible, otherwise as a different module).</p>
 
 <h2>utf-8</h2>
 
 <p>The Camlp5 lexer for OCaml programs (module Plexer) allows utf-8
   characters. Since utf-8 seems to have some success among unicode
-  formats, perhaps a reflexion to add greek characters and/or real
-  utf-8 arrows in the syntax (in particular in types) could be
+  formats, perhaps a reflection to add greek characters and/or real
+  utf-8 arrows in the syntax (in particular in types) would be
   interesting.</p>
 
 <h2>GLR grammars</h2>
