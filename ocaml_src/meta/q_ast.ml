@@ -24,16 +24,26 @@ let call_with r v f a =
 ;;
 
 let eval_anti entry loc typ str =
-  let r =
-    call_with Plexer.force_antiquot_loc false (Grammar.Entry.parse entry)
-      (Stream.of_string str)
-  in
   let loc =
     let sh =
       if typ = "" then String.length "$"
       else String.length "$" + String.length typ + String.length ":"
     in
     let len = String.length str in Ploc.sub loc sh len
+  in
+  let r =
+    try
+      call_with Plexer.force_antiquot_loc false (Grammar.Entry.parse entry)
+        (Stream.of_string str)
+    with Ploc.Exc (loc1, exc) ->
+      let shift = Ploc.first_pos loc in
+      let loc =
+        Ploc.make (Ploc.line_nb loc + Ploc.line_nb loc1 - 1)
+          (if Ploc.line_nb loc1 = 1 then Ploc.bol_pos loc
+           else shift + Ploc.bol_pos loc1)
+          (shift + Ploc.first_pos loc1, shift + Ploc.last_pos loc1)
+      in
+      raise (Ploc.Exc (loc, exc))
   in
   loc, r
 ;;
@@ -62,13 +72,6 @@ let get_anti_loc s =
     Some (loc, kind, String.sub s (j + 1) (String.length s - j - 1))
   with Not_found | Failure _ -> None
 ;;
-
-let expr_eoi = Grammar.Entry.create Pcaml.gram "expr";;
-let patt_eoi = Grammar.Entry.create Pcaml.gram "patt";;
-let ctyp_eoi = Grammar.Entry.create Pcaml.gram "type";;
-let str_item_eoi = Grammar.Entry.create Pcaml.gram "str_item";;
-let sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";;
-let module_expr_eoi = Grammar.Entry.create Pcaml.gram "module_expr";;
 
 (*
 (* upper bound of tags of all syntax tree nodes *)
@@ -132,7 +135,7 @@ module Meta =
     let p_option elem oe =
       match get_anti oe with
         Some (loc, typ, str) ->
-          let (loc, r) = eval_anti patt_eoi loc typ str in
+          let (loc, r) = eval_anti Pcaml.patt_eoi loc typ str in
           MLast.PaAnt (loc, r)
       | None ->
           match oe with
@@ -142,7 +145,7 @@ module Meta =
     let e_bool b =
       match get_anti b with
         Some (loc, typ, str) ->
-          let (loc, r) = eval_anti expr_eoi loc typ str in
+          let (loc, r) = eval_anti Pcaml.expr_eoi loc typ str in
           MLast.ExAnt (loc, r)
       | None ->
           if b then MLast.ExUid (loc, "True") else MLast.ExUid (loc, "False")
@@ -150,7 +153,7 @@ module Meta =
     let p_bool b =
       match get_anti b with
         Some (loc, typ, str) ->
-          let (loc, r) = eval_anti patt_eoi loc typ str in
+          let (loc, r) = eval_anti Pcaml.patt_eoi loc typ str in
           MLast.PaAnt (loc, r)
       | None ->
           if b then MLast.PaUid (loc, "True") else MLast.PaUid (loc, "False")
@@ -159,7 +162,7 @@ module Meta =
     let p_string s =
       match get_anti s with
         Some (loc, typ, str) ->
-          let (loc, r) = eval_anti patt_eoi loc typ str in
+          let (loc, r) = eval_anti Pcaml.patt_eoi loc typ str in
           MLast.PaAnt (loc, r)
       | None -> MLast.PaStr (loc, s)
     ;;
@@ -593,6 +596,16 @@ module Meta =
                      ln),
                   lpe),
                oe)
+        | ExSeq (_, el) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "ExSeq")),
+                  ln),
+               e_vala (e_list loop) el)
         | ExStr (_, s) ->
             MLast.ExApp
               (loc,
@@ -789,6 +802,13 @@ module Meta =
     let p_sig_item x = not_impl "p_sig_item" x;;
   end
 ;;
+
+let expr_eoi = Grammar.Entry.create Pcaml.gram "expr";;
+let patt_eoi = Grammar.Entry.create Pcaml.gram "patt";;
+let ctyp_eoi = Grammar.Entry.create Pcaml.gram "type";;
+let str_item_eoi = Grammar.Entry.create Pcaml.gram "str_item";;
+let sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";;
+let module_expr_eoi = Grammar.Entry.create Pcaml.gram "module_expr";;
 
 Grammar.extend
   [Grammar.Entry.obj (expr_eoi : 'expr_eoi Grammar.Entry.e), None,

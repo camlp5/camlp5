@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.20 2007/09/09 11:49:42 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.21 2007/09/09 15:25:09 deraugla Exp $ *)
 
 open MLast;
 
@@ -102,10 +102,14 @@ and expr =
   | ExArr _ el -> list expr el
   | ExAsr _ e -> expr e
   | ExAss _ e1 e2 -> do { expr e1; expr e2 }
-  | ExChr _ _ -> ()
+  | <:expr< $chr:_$ >> -> ()
   | ExCoe _ e t1 t2 -> do { expr e; option ctyp t1; ctyp t2 }
-  | ExFor _ _ e1 e2 _ el -> do { expr e1; expr e2; list expr el }
-  | ExFun _ pwel -> list match_case pwel
+  | <:expr< for $_$ = $e1$ $to:_$ $e2$ do { $list:el$ } >> -> do {
+      expr e1;
+      expr e2;
+      list expr el
+    }
+  | <:expr< fun [ $list:pwel$ ] >> -> list match_case pwel
   | ExIfe _ e1 e2 e3 -> do { expr e1; expr e2; expr e3 }
   | ExInt _ _ _ -> ()
   | ExFlo _ _ -> ()
@@ -122,16 +126,19 @@ and expr =
       list label_expr lel;
       expr w
     }
-  | ExSeq _ el -> list expr el
+  | <:expr< do { $list:el$ } >> -> list expr el
   | ExSnd _ e _ -> expr e
   | ExSte _ e1 e2 -> do { expr e1; expr e2 }
-  | ExStr _ _ -> ()
-  | ExTry _ e pwel -> do { expr e; list match_case pwel }
+  | <:expr< $str:_$ >> -> ()
+  | <:expr< try $e$ with [ $list:pwel$ ] >> -> do {
+      expr e;
+      list match_case pwel
+    }
   | <:expr< ($list:el$) >> -> list expr el
-  | ExTyc _ e t -> do { expr e; ctyp t }
-  | ExUid _ _ -> ()
+  | <:expr< ($e$ : $t$) >> -> do { expr e; ctyp t }
+  | <:expr< $uid:_$ >> -> ()
   | ExVrn _ _ -> ()
-  | ExWhi _ e el -> do { expr e; list expr el }
+  | <:expr< while $e$ do { $list:el$ } >> -> do { expr e; list expr el }
   | x -> not_impl "expr" x ]
 and expr_module =
   fun

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.55 2007/09/09 11:49:42 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.56 2007/09/09 15:25:09 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -206,7 +206,7 @@ value a_QUESTIONIDENTCOLON = Grammar.Entry.create gram "a_QUESTIONIDENTCOLON";
 value mksequence _ =
   fun
   [ Qast.List [e] -> e
-  | el -> Qast.Node "ExSeq" [Qast.Loc; el] ]
+  | el -> Qast.Node "ExSeq" [Qast.Loc; Qast.Vala el] ]
 ;
 
 value mkmatchcase _ p aso w e =
@@ -441,10 +441,17 @@ EXTEND
       | "if"; e1 = SELF; "then"; e2 = SELF; "else"; e3 = SELF ->
           Qast.Node "ExIfe" [Qast.Loc; e1; e2; e3]
       | "do"; "{"; seq = sequence; "}" -> mksequence Qast.Loc seq
+      | "do"; "{"; seq = SV LIST1 expr SEP ";"; "}" ->
+          Qast.Node "ExSeq" [Qast.Loc; seq]
       | "for"; i = a_LIDENT; "="; e1 = SELF; df = direction_flag; e2 = SELF;
         "do"; "{"; seq = sequence; "}" ->
+          Qast.Node "ExFor" [Qast.Loc; i; e1; e2; df; Qast.VaVal seq]
+      | "for"; i = a_LIDENT; "="; e1 = SELF; df = direction_flag; e2 = SELF;
+        "do"; "{"; seq = SV LIST1 expr SEP ";"; "}" ->
           Qast.Node "ExFor" [Qast.Loc; i; e1; e2; df; seq]
       | "while"; e = SELF; "do"; "{"; seq = sequence; "}" ->
+          Qast.Node "ExWhi" [Qast.Loc; e; Qast.VaVal seq]
+      | "while"; e = SELF; "do"; "{"; seq = SV LIST1 expr SEP ";"; "}" ->
           Qast.Node "ExWhi" [Qast.Loc; e; seq] ]
     | "where"
       [ e = SELF; "where"; rf = SV FLAG "rec"; lb = let_binding ->
@@ -1182,9 +1189,6 @@ EXTEND
       | "downto" -> Qast.Bool False ] ]
   ;
   (* Antiquotations for local entries *)
-  sequence:
-    [ [ a = ANTIQUOT "list" -> antiquot "list" loc a ] ]
-  ;
   expr_ident:
     [ [ a = ANTIQUOT -> antiquot "" loc a ] ]
   ;

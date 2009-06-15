@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.52 2007/09/09 11:49:42 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.53 2007/09/09 15:25:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -198,7 +198,8 @@ module MetaAction =
       | MLast.ExRec loc pel eo ->
           let pel = mvala (mlist mpe) pel in
           <:expr< MLast.ExRec $mloc$ $pel$ $moption mexpr eo$ >>
-      | MLast.ExSeq loc el -> <:expr< MLast.ExSeq $mloc$ $mlist mexpr el$ >>
+      | MLast.ExSeq loc el ->
+          <:expr< MLast.ExSeq $mloc$ $mvala (mlist mexpr) el$ >>
       | MLast.ExSte loc e1 e2 ->
           <:expr< MLast.ExSte $mloc$ $mexpr e1$ $mexpr e2$ >>
       | MLast.ExStr loc s ->

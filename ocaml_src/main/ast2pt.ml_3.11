@@ -144,15 +144,15 @@ let rec ctyp_fa al =
 
 let rec ctyp_long_id =
   function
-    TyAcc (_, m, TyLid (_, s)) ->
+    MLast.TyAcc (_, m, MLast.TyLid (_, s)) ->
       let (is_cls, li) = ctyp_long_id m in is_cls, ldot li s
-  | TyAcc (_, m, TyUid (_, s)) ->
+  | MLast.TyAcc (_, m, MLast.TyUid (_, s)) ->
       let (is_cls, li) = ctyp_long_id m in is_cls, ldot li s
-  | TyApp (_, m1, m2) ->
+  | MLast.TyApp (_, m1, m2) ->
       let (is_cls, li1) = ctyp_long_id m1 in
       let (_, li2) = ctyp_long_id m2 in is_cls, Lapply (li1, li2)
-  | TyUid (_, s) -> false, lident s
-  | TyLid (_, s) -> false, lident s
+  | MLast.TyUid (_, s) -> false, lident s
+  | MLast.TyLid (_, s) -> false, lident s
   | TyCls (loc, sl) -> true, long_id_of_string_list loc sl
   | t -> error (loc_of_ctyp t) "incorrect type"
 ;;
@@ -166,8 +166,8 @@ let rec ctyp =
   | TyAli (loc, t1, t2) ->
       let (t, i) =
         match t1, t2 with
-          t, TyQuo (_, s) -> t, s
-        | TyQuo (_, s), t -> t, s
+          t, MLast.TyQuo (_, s) -> t, s
+        | MLast.TyQuo (_, s), t -> t, s
         | _ -> error loc "incorrect alias type"
       in
       mktyp loc (Ptyp_alias (ctyp t, i))
@@ -180,22 +180,24 @@ let rec ctyp =
   | TyArr (loc, TyLab (loc1, lab, t1), t2) ->
       mktyp loc (Ptyp_arrow (lab, ctyp t1, ctyp t2))
   | TyArr (loc, TyOlb (loc1, lab, t1), t2) ->
-      let t1 = TyApp (loc1, TyLid (loc1, "option"), t1) in
+      let t1 =
+        let loc = loc1 in MLast.TyApp (loc, MLast.TyLid (loc, "option"), t1)
+      in
       mktyp loc (Ptyp_arrow ("?" ^ lab, ctyp t1, ctyp t2))
   | TyArr (loc, t1, t2) -> mktyp loc (Ptyp_arrow ("", ctyp t1, ctyp t2))
   | TyObj (loc, fl, v) -> mktyp loc (Ptyp_object (meth_list loc fl v))
   | TyCls (loc, id) ->
       mktyp loc (Ptyp_class (long_id_of_string_list loc id, [], []))
   | TyLab (loc, _, _) -> error loc "labeled type not allowed here"
-  | TyLid (loc, s) -> mktyp loc (Ptyp_constr (lident s, []))
+  | TyLid (loc, s) -> mktyp loc (Ptyp_constr (lident (uv s), []))
   | TyMan (loc, _, _) -> error loc "type manifest not allowed here"
   | TyOlb (loc, lab, _) -> error loc "labeled type not allowed here"
   | TyPol (loc, pl, t) -> mktyp loc (Ptyp_poly (pl, ctyp t))
-  | TyQuo (loc, s) -> mktyp loc (Ptyp_var s)
+  | TyQuo (loc, s) -> mktyp loc (Ptyp_var (uv s))
   | TyRec (loc, _) -> error loc "record type not allowed here"
   | TySum (loc, _) -> error loc "sum type not allowed here"
   | TyTup (loc, tl) -> mktyp loc (Ptyp_tuple (List.map ctyp tl))
-  | TyUid (loc, s) -> mktyp loc (Ptyp_constr (lident s, []))
+  | TyUid (loc, s) -> mktyp loc (Ptyp_constr (lident (uv s), []))
   | TyVrn (loc, catl, ool) ->
       let catl =
         List.map
@@ -244,7 +246,8 @@ let type_decl tl priv cl =
   | t ->
       let m =
         match t with
-          TyQuo (_, s) -> if List.mem_assoc s tl then Some (ctyp t) else None
+          MLast.TyQuo (_, s) ->
+            if List.mem_assoc s tl then Some (ctyp t) else None
         | _ -> Some (ctyp t)
       in
       mktype (loc_of_ctyp t) tl cl Ptype_abstract m
@@ -290,21 +293,23 @@ let paolab loc lab peoo =
 
 let rec same_type_expr ct ce =
   match ct, ce with
-    TyLid (_, s1), MLast.ExLid (_, s2) -> s1 = s2
-  | TyUid (_, s1), MLast.ExUid (_, s2) -> s1 = s2
-  | TyAcc (_, t1, t2), ExAcc (_, e1, e2) ->
+    MLast.TyLid (_, s1), MLast.ExLid (_, s2) -> s1 = s2
+  | MLast.TyUid (_, s1), MLast.ExUid (_, s2) -> s1 = s2
+  | MLast.TyAcc (_, t1, t2), MLast.ExAcc (_, e1, e2) ->
       same_type_expr t1 e1 && same_type_expr t2 e2
   | _ -> false
 ;;
 
 let rec common_id loc t e =
   match t, e with
-    TyLid (_, s1), MLast.ExLid (_, s2) when s1 = s2 -> lident s1
-  | TyUid (_, s1), MLast.ExUid (_, s2) when s1 = s2 -> lident s1
-  | TyAcc (_, t1, TyLid (_, s1)), MLast.ExAcc (_, e1, MLast.ExLid (_, s2))
+    MLast.TyLid (_, s1), MLast.ExLid (_, s2) when s1 = s2 -> lident s1
+  | MLast.TyUid (_, s1), MLast.ExUid (_, s2) when s1 = s2 -> lident s1
+  | MLast.TyAcc (_, t1, MLast.TyLid (_, s1)),
+    MLast.ExAcc (_, e1, MLast.ExLid (_, s2))
     when s1 = s2 ->
       ldot (common_id loc t1 e1) s1
-  | TyAcc (_, t1, TyUid (_, s1)), MLast.ExAcc (_, e1, MLast.ExUid (_, s2))
+  | MLast.TyAcc (_, t1, MLast.TyUid (_, s1)),
+    MLast.ExAcc (_, e1, MLast.ExUid (_, s2))
     when s1 = s2 ->
       ldot (common_id loc t1 e1) s1
   | _ -> error loc "this expression should repeat the class id inherited"
@@ -312,10 +317,10 @@ let rec common_id loc t e =
 
 let rec type_id loc t =
   match t with
-    TyLid (_, s1) -> lident s1
-  | TyUid (_, s1) -> lident s1
-  | TyAcc (_, t1, TyLid (_, s1)) -> ldot (type_id loc t1) s1
-  | TyAcc (_, t1, TyUid (_, s1)) -> ldot (type_id loc t1) s1
+    MLast.TyLid (_, s1) -> lident s1
+  | MLast.TyUid (_, s1) -> lident s1
+  | MLast.TyAcc (_, t1, MLast.TyLid (_, s1)) -> ldot (type_id loc t1) s1
+  | MLast.TyAcc (_, t1, MLast.TyUid (_, s1)) -> ldot (type_id loc t1) s1
   | _ -> error loc "type identifier expected"
 ;;
 
@@ -747,7 +752,7 @@ let rec expr =
       mkexp loc (Pexp_constraint (expr e, option ctyp t1, Some (ctyp t2)))
   | ExFlo (loc, s) -> mkexp loc (Pexp_constant (Const_float s))
   | ExFor (loc, i, e1, e2, df, el) ->
-      let e3 = ExSeq (loc, el) in
+      let e3 = MLast.ExSeq (loc, uv el) in
       let df = if df then Upto else Downto in
       mkexp loc (Pexp_for (i, expr e1, expr e2, df, expr e3))
   | ExFun (loc, [PaLab (_, lab, po), w, e]) ->
@@ -809,7 +814,7 @@ let rec expr =
             let loc = Ploc.encl (loc_of_expr e) loc in
             mkexp loc (Pexp_sequence (expr e, loop el))
       in
-      loop el
+      loop (uv el)
   | ExSnd (loc, e, s) -> mkexp loc (Pexp_send (expr e, s))
   | ExSte (loc, e1, e2) ->
       mkexp loc
@@ -828,7 +833,8 @@ let rec expr =
       mkexp loc (Pexp_construct (lident (conv_con (uv s)), None, ca))
   | ExVrn (loc, s) -> mkexp loc (Pexp_variant (s, None))
   | ExWhi (loc, e1, el) ->
-      let e2 = ExSeq (loc, el) in mkexp loc (Pexp_while (expr e1, expr e2))
+      let e2 = MLast.ExSeq (loc, uv el) in
+      mkexp loc (Pexp_while (expr e1, expr e2))
 and label_expr =
   function
     ExLab (loc, lab, eo) -> lab, expr (expr_of_lab loc lab eo)
@@ -968,7 +974,9 @@ and class_type =
   | CtFun (loc, TyLab (_, lab, t), ct) ->
       mkcty loc (Pcty_fun (lab, ctyp t, class_type ct))
   | CtFun (loc, TyOlb (loc1, lab, t), ct) ->
-      let t = TyApp (loc1, TyLid (loc1, "option"), t) in
+      let t =
+        let loc = loc1 in MLast.TyApp (loc, MLast.TyLid (loc, "option"), t)
+      in
       mkcty loc (Pcty_fun ("?" ^ lab, ctyp t, class_type ct))
   | CtFun (loc, t, ct) -> mkcty loc (Pcty_fun ("", ctyp t, class_type ct))
   | CtSig (loc, t_o, ctfl) ->

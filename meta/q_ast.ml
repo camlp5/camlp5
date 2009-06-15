@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.46 2007/09/09 11:49:42 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.47 2007/09/09 15:25:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -30,10 +30,6 @@ value call_with r v f a =
 ;
 
 value eval_anti entry loc typ str =
-  let r =
-    call_with Plexer.force_antiquot_loc False
-      (Grammar.Entry.parse entry) (Stream.of_string str)
-  in
   let loc =
     let sh =
       if typ = "" then String.length "$"
@@ -42,6 +38,23 @@ value eval_anti entry loc typ str =
     in
     let len = String.length str in
     Ploc.sub loc sh len
+  in
+  let r =
+    try
+      call_with Plexer.force_antiquot_loc False
+        (Grammar.Entry.parse entry) (Stream.of_string str)
+    with
+    [ Ploc.Exc loc1 exc ->
+        let shift = Ploc.first_pos loc in
+        let loc =
+          Ploc.make
+            (Ploc.line_nb loc + Ploc.line_nb loc1 - 1)
+            (if Ploc.line_nb loc1 = 1 then Ploc.bol_pos loc
+             else shift + Ploc.bol_pos loc1)
+            (shift + Ploc.first_pos loc1,
+             shift + Ploc.last_pos loc1)
+          in
+          raise (Ploc.Exc loc exc) ]
   in
   (loc, r)
 ;
@@ -69,13 +82,6 @@ value get_anti_loc s =
   with
   [ Not_found | Failure _ -> None ]
 ;
-
-value expr_eoi = Grammar.Entry.create Pcaml.gram "expr";
-value patt_eoi = Grammar.Entry.create Pcaml.gram "patt";
-value ctyp_eoi = Grammar.Entry.create Pcaml.gram "type";
-value str_item_eoi = Grammar.Entry.create Pcaml.gram "str_item";
-value sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";
-value module_expr_eoi = Grammar.Entry.create Pcaml.gram "module_expr";
 
 (*
 (* upper bound of tags of all syntax tree nodes *)
@@ -117,7 +123,7 @@ module Meta =
             let s = String.sub s 1 (String.length s - 1) in
             match get_anti_loc s with
             [ Some (loc, typ, str) ->
-                let (loc, r) = eval_anti expr_eoi loc typ str in
+                let (loc, r) = eval_anti Pcaml.expr_eoi loc typ str in
                 if asit then <:expr< $anti:r$ >>
                 else <:expr< Ploc.VaVal $anti:r$ >>
             | None -> assert False ]
@@ -134,7 +140,7 @@ module Meta =
             let s = String.sub s 1 (String.length s - 1) in
             match get_anti_loc s with
             [ Some (loc, typ, str) ->
-                let (loc, r) = eval_anti patt_eoi loc typ str in
+                let (loc, r) = eval_anti Pcaml.patt_eoi loc typ str in
                 if asit then <:patt< $anti:r$ >>
                 else <:patt< Ploc.VaVal $anti:r$ >>
             | None -> assert False ]
@@ -161,7 +167,7 @@ module Meta =
     value p_option elem oe =
       match get_anti oe with
       [ Some (loc, typ, str) ->
-          let (loc, r) = eval_anti patt_eoi loc typ str in
+          let (loc, r) = eval_anti Pcaml.patt_eoi loc typ str in
           <:patt< $anti:r$ >>
       | None ->
           match oe with
@@ -171,14 +177,14 @@ module Meta =
     value e_bool b =
       match get_anti b with
       [ Some (loc, typ, str) ->
-          let (loc, r) = eval_anti expr_eoi loc typ str in
+          let (loc, r) = eval_anti Pcaml.expr_eoi loc typ str in
           <:expr< $anti:r$ >>
       | None -> if b then <:expr< True >> else <:expr< False >> ]
     ;
     value p_bool b =
       match get_anti b with
       [ Some (loc, typ, str) ->
-          let (loc, r) = eval_anti patt_eoi loc typ str in
+          let (loc, r) = eval_anti Pcaml.patt_eoi loc typ str in
           <:patt< $anti:r$ >>
       | None -> if b then <:patt< True >> else <:patt< False >> ]
     ;
@@ -186,7 +192,7 @@ module Meta =
     value p_string s =
       match get_anti s with
       [ Some (loc, typ, str) ->
-          let (loc, r) = eval_anti patt_eoi loc typ str in
+          let (loc, r) = eval_anti Pcaml.patt_eoi loc typ str in
           <:patt< $anti:r$ >>
       | None -> <:patt< $str:s$ >> ]
     ;
@@ -213,15 +219,8 @@ module Meta =
         | TyUid _ s -> <:expr< MLast.TyUid $ln$ $e_vala e_string s$ >>
         | IFDEF STRICT THEN
             TyXtr loc s _ ->
-              let asit = s.[0] = 'a' in
-              let s = String.sub s 1 (String.length s - 1) in
-              if asit then
-                let (loc, r) = eval_anti expr_eoi loc "" s in
-                <:expr< $anti:r$ >>
-              else
-                let (loc, r) = eval_anti expr_eoi loc "anti" s in
-                let r = <:expr< $anti:r$ >> in
-                <:expr< MLast.ExAnt loc $r$ >>
+              let (loc, r) = eval_anti Pcaml.expr_eoi loc "" s in
+              <:expr< $anti:r$ >>
           END
         | x -> not_impl "e_ctyp" x ]
     ;
@@ -261,10 +260,10 @@ module Meta =
               let asit = s.[0] = 'a' in
               let s = String.sub s 1 (String.length s - 1) in
               if asit then
-                let (loc, r) = eval_anti expr_eoi loc "" s in
+                let (loc, r) = eval_anti Pcaml.expr_eoi loc "" s in
                 <:expr< $anti:r$ >>
               else
-                let (loc, r) = eval_anti expr_eoi loc "anti" s in
+                let (loc, r) = eval_anti Pcaml.expr_eoi loc "anti" s in
                 let r = <:expr< $anti:r$ >> in
                 <:expr< MLast.ExAnt loc $r$ >>
           END
@@ -283,10 +282,10 @@ module Meta =
               let asit = s.[0] = 'a' in
               let s = String.sub s 1 (String.length s - 1) in
               if asit then
-                let (loc, r) = eval_anti patt_eoi loc "" s in
+                let (loc, r) = eval_anti Pcaml.patt_eoi loc "" s in
                 <:patt< $anti:r$ >>
               else
-                let (loc, r) = eval_anti patt_eoi loc "anti" s in
+                let (loc, r) = eval_anti Pcaml.patt_eoi loc "anti" s in
                 let r = <:patt< $anti:r$ >> in
                 <:patt< MLast.PaAnt loc $r$ >>
           END
@@ -341,10 +340,7 @@ module Meta =
             in
             let oe = e_option loop oe in
             <:expr< MLast.ExRec $ln$ $lpe$ $oe$ >>
-(*
-        | ExSeq _ el ->
-            <:expr< MLast.ExSeq $ln$ $e_list loop el$ >>
-*)
+        | ExSeq _ el -> <:expr< MLast.ExSeq $ln$ $e_vala (e_list loop) el$ >>
         | ExStr _ s -> <:expr< MLast.ExStr $ln$ $e_vala e_string s$ >>
         | ExTup _ el -> <:expr< MLast.ExTup $ln$ $e_vala (e_list loop) el$ >>
         | ExTyc _ e t -> <:expr< MLast.ExTyc $ln$ $loop e$ $e_ctyp t$ >>
@@ -354,10 +350,10 @@ module Meta =
               let asit = s.[0] = 'a' in
               let s = String.sub s 1 (String.length s - 1) in
               if asit then
-                let (loc, r) = eval_anti expr_eoi loc "" s in
+                let (loc, r) = eval_anti Pcaml.expr_eoi loc "" s in
                 <:expr< $anti:r$ >>
               else
-                let (loc, r) = eval_anti expr_eoi loc "anti" s in
+                let (loc, r) = eval_anti Pcaml.expr_eoi loc "anti" s in
                 let r = <:expr< $anti:r$ >> in
                 <:expr< MLast.ExAnt loc $r$ >>
           END
@@ -397,10 +393,10 @@ module Meta =
               let asit = s.[0] = 'a' in
               let s = String.sub s 1 (String.length s - 1) in
               if asit then
-                let (loc, r) = eval_anti patt_eoi loc "" s in
+                let (loc, r) = eval_anti Pcaml.patt_eoi loc "" s in
                 <:patt< $anti:r$ >>
               else
-                let (loc, r) = eval_anti patt_eoi loc "anti" s in
+                let (loc, r) = eval_anti Pcaml.patt_eoi loc "anti" s in
                 let r = <:patt< $anti:r$ >> in
                 <:patt< MLast.ExAnt loc $r$ >>
           END
@@ -489,6 +485,13 @@ module Meta =
     ;
   end
 ;
+
+value expr_eoi = Grammar.Entry.create Pcaml.gram "expr";
+value patt_eoi = Grammar.Entry.create Pcaml.gram "patt";
+value ctyp_eoi = Grammar.Entry.create Pcaml.gram "type";
+value str_item_eoi = Grammar.Entry.create Pcaml.gram "str_item";
+value sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";
+value module_expr_eoi = Grammar.Entry.create Pcaml.gram "module_expr";
 
 EXTEND
   expr_eoi: [ [ x = Pcaml.expr; EOI -> x ] ];

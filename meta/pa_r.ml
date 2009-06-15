@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.56 2007/09/09 11:49:42 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.57 2007/09/09 15:25:09 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -248,11 +248,18 @@ EXTEND
       | "if"; e1 = SELF; "then"; e2 = SELF; "else"; e3 = SELF ->
           <:expr< if $e1$ then $e2$ else $e3$ >>
       | "do"; "{"; seq = sequence; "}" -> mksequence loc seq
+      | "do"; "{"; seq = V LIST1 expr SEP ";"; "}" ->
+          <:expr< do { $alist:seq$ } >>
       | "for"; i = LIDENT; "="; e1 = SELF; df = direction_flag; e2 = SELF;
         "do"; "{"; seq = sequence; "}" ->
           <:expr< for $i$ = $e1$ $to:df$ $e2$ do { $list:seq$ } >>
+      | "for"; i = LIDENT; "="; e1 = SELF; df = direction_flag; e2 = SELF;
+        "do"; "{"; seq = V LIST1 expr SEP ";"; "}" ->
+          <:expr< for $i$ = $e1$ $to:df$ $e2$ do { $alist:seq$ } >>
       | "while"; e = SELF; "do"; "{"; seq = sequence; "}" ->
-          <:expr< while $e$ do { $list:seq$ } >> ]
+          <:expr< while $e$ do { $list:seq$ } >>
+      | "while"; e = SELF; "do"; "{"; seq = V LIST1 expr SEP ";"; "}" ->
+          <:expr< while $e$ do { $alist:seq$ } >> ]
     | "where"
       [ e = SELF; "where"; rf = V FLAG "rec"; lb = let_binding ->
           <:expr< let $aflag:rf$ $list:[lb]$ in $e$ >> ]

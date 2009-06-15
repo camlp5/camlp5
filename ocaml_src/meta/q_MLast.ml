@@ -265,7 +265,7 @@ let a_QUESTIONIDENTCOLON = Grammar.Entry.create gram "a_QUESTIONIDENTCOLON";;
 let mksequence _ =
   function
     Qast.List [e] -> e
-  | el -> Qast.Node ("ExSeq", [Qast.Loc; el])
+  | el -> Qast.Node ("ExSeq", [Qast.Loc; Qast.Vala el])
 ;;
 
 let mkmatchcase _ p aso w e =
@@ -411,6 +411,7 @@ Grammar.extend
    and cons_expr_opt : 'cons_expr_opt Grammar.Entry.e =
      grammar_entry_create "cons_expr_opt"
    and dummy : 'dummy Grammar.Entry.e = grammar_entry_create "dummy"
+   and sequence : 'sequence Grammar.Entry.e = grammar_entry_create "sequence"
    and fun_binding : 'fun_binding Grammar.Entry.e =
      grammar_entry_create "fun_binding"
    and as_patt_opt : 'as_patt_opt Grammar.Entry.e =
@@ -471,8 +472,8 @@ Grammar.extend
    and ipatt_tcon : 'ipatt_tcon Grammar.Entry.e =
      grammar_entry_create "ipatt_tcon"
    and eq_expr : 'eq_expr Grammar.Entry.e = grammar_entry_create "eq_expr"
-   and sequence : 'sequence Grammar.Entry.e = grammar_entry_create "sequence"
    and expr_ident : 'expr_ident Grammar.Entry.e =
+     (* Antiquotations for local entries *)
      grammar_entry_create "expr_ident"
    and patt_label_ident : 'patt_label_ident Grammar.Entry.e =
      grammar_entry_create "patt_label_ident"
@@ -1020,12 +1021,55 @@ Grammar.extend
     [Some "top", Some Gramext.RightA,
      [[Gramext.Stoken ("", "while"); Gramext.Sself; Gramext.Stoken ("", "do");
        Gramext.Stoken ("", "{");
+       Gramext.srules
+         [[Gramext.Slist1sep
+             (Gramext.Snterm
+                (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e)),
+              Gramext.Stoken ("", ";"))],
+          Gramext.action
+            (fun (a : 'expr list) (loc : Ploc.t) ->
+               (Qast.Vala (Qast.List a) : 'a_list2));
+          [Gramext.Snterm
+             (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
+          Gramext.action
+            (fun (a : 'a_list2) (loc : Ploc.t) -> (a : 'a_list2))];
+       Gramext.Stoken ("", "}")],
+      Gramext.action
+        (fun _ (seq : 'a_list2) _ _ (e : 'expr) _ (loc : Ploc.t) ->
+           (Qast.Node ("ExWhi", [Qast.Loc; e; seq]) : 'expr));
+      [Gramext.Stoken ("", "while"); Gramext.Sself; Gramext.Stoken ("", "do");
+       Gramext.Stoken ("", "{");
        Gramext.Snterm
          (Grammar.Entry.obj (sequence : 'sequence Grammar.Entry.e));
        Gramext.Stoken ("", "}")],
       Gramext.action
         (fun _ (seq : 'sequence) _ _ (e : 'expr) _ (loc : Ploc.t) ->
-           (Qast.Node ("ExWhi", [Qast.Loc; e; seq]) : 'expr));
+           (Qast.Node ("ExWhi", [Qast.Loc; e; Qast.VaVal seq]) : 'expr));
+      [Gramext.Stoken ("", "for");
+       Gramext.Snterm
+         (Grammar.Entry.obj (a_LIDENT : 'a_LIDENT Grammar.Entry.e));
+       Gramext.Stoken ("", "="); Gramext.Sself;
+       Gramext.Snterm
+         (Grammar.Entry.obj
+            (direction_flag : 'direction_flag Grammar.Entry.e));
+       Gramext.Sself; Gramext.Stoken ("", "do"); Gramext.Stoken ("", "{");
+       Gramext.srules
+         [[Gramext.Slist1sep
+             (Gramext.Snterm
+                (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e)),
+              Gramext.Stoken ("", ";"))],
+          Gramext.action
+            (fun (a : 'expr list) (loc : Ploc.t) ->
+               (Qast.Vala (Qast.List a) : 'a_list2));
+          [Gramext.Snterm
+             (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
+          Gramext.action
+            (fun (a : 'a_list2) (loc : Ploc.t) -> (a : 'a_list2))];
+       Gramext.Stoken ("", "}")],
+      Gramext.action
+        (fun _ (seq : 'a_list2) _ _ (e2 : 'expr) (df : 'direction_flag)
+             (e1 : 'expr) _ (i : 'a_LIDENT) _ (loc : Ploc.t) ->
+           (Qast.Node ("ExFor", [Qast.Loc; i; e1; e2; df; seq]) : 'expr));
       [Gramext.Stoken ("", "for");
        Gramext.Snterm
          (Grammar.Entry.obj (a_LIDENT : 'a_LIDENT Grammar.Entry.e));
@@ -1040,7 +1084,25 @@ Grammar.extend
       Gramext.action
         (fun _ (seq : 'sequence) _ _ (e2 : 'expr) (df : 'direction_flag)
              (e1 : 'expr) _ (i : 'a_LIDENT) _ (loc : Ploc.t) ->
-           (Qast.Node ("ExFor", [Qast.Loc; i; e1; e2; df; seq]) : 'expr));
+           (Qast.Node ("ExFor", [Qast.Loc; i; e1; e2; df; Qast.VaVal seq]) :
+            'expr));
+      [Gramext.Stoken ("", "do"); Gramext.Stoken ("", "{");
+       Gramext.srules
+         [[Gramext.Slist1sep
+             (Gramext.Snterm
+                (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e)),
+              Gramext.Stoken ("", ";"))],
+          Gramext.action
+            (fun (a : 'expr list) (loc : Ploc.t) ->
+               (Qast.Vala (Qast.List a) : 'a_list2));
+          [Gramext.Snterm
+             (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
+          Gramext.action
+            (fun (a : 'a_list2) (loc : Ploc.t) -> (a : 'a_list2))];
+       Gramext.Stoken ("", "}")],
+      Gramext.action
+        (fun _ (seq : 'a_list2) _ _ (loc : Ploc.t) ->
+           (Qast.Node ("ExSeq", [Qast.Loc; seq]) : 'expr));
       [Gramext.Stoken ("", "do"); Gramext.Stoken ("", "{");
        Gramext.Snterm
          (Grammar.Entry.obj (sequence : 'sequence Grammar.Entry.e));
@@ -3732,12 +3794,6 @@ Grammar.extend
       [Gramext.Stoken ("", "to")],
       Gramext.action
         (fun _ (loc : Ploc.t) -> (Qast.Bool true : 'direction_flag))]];
-    Grammar.Entry.obj (sequence : 'sequence Grammar.Entry.e), None,
-    [None, None,
-     [[Gramext.Stoken ("ANTIQUOT", "list")],
-      Gramext.action
-        (fun (a : string) (loc : Ploc.t) ->
-           (antiquot "list" loc a : 'sequence))]];
     Grammar.Entry.obj (expr_ident : 'expr_ident Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("ANTIQUOT", "")],

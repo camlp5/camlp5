@@ -600,12 +600,35 @@ Grammar.extend
     [Some "top", Some Gramext.RightA,
      [[Gramext.Stoken ("", "while"); Gramext.Sself; Gramext.Stoken ("", "do");
        Gramext.Stoken ("", "{");
+       Gramext.Slist1sep
+         (Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e)),
+          Gramext.Stoken ("", ";"));
+       Gramext.Stoken ("", "}")],
+      Gramext.action
+        (fun _ (seq : 'expr list) _ _ (e : 'expr) _ (loc : Ploc.t) ->
+           (MLast.ExWhi (loc, e, seq) : 'expr));
+      [Gramext.Stoken ("", "while"); Gramext.Sself; Gramext.Stoken ("", "do");
+       Gramext.Stoken ("", "{");
        Gramext.Snterm
          (Grammar.Entry.obj (sequence : 'sequence Grammar.Entry.e));
        Gramext.Stoken ("", "}")],
       Gramext.action
         (fun _ (seq : 'sequence) _ _ (e : 'expr) _ (loc : Ploc.t) ->
            (MLast.ExWhi (loc, e, seq) : 'expr));
+      [Gramext.Stoken ("", "for"); Gramext.Stoken ("LIDENT", "");
+       Gramext.Stoken ("", "="); Gramext.Sself;
+       Gramext.Snterm
+         (Grammar.Entry.obj
+            (direction_flag : 'direction_flag Grammar.Entry.e));
+       Gramext.Sself; Gramext.Stoken ("", "do"); Gramext.Stoken ("", "{");
+       Gramext.Slist1sep
+         (Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e)),
+          Gramext.Stoken ("", ";"));
+       Gramext.Stoken ("", "}")],
+      Gramext.action
+        (fun _ (seq : 'expr list) _ _ (e2 : 'expr) (df : 'direction_flag)
+             (e1 : 'expr) _ (i : string) _ (loc : Ploc.t) ->
+           (MLast.ExFor (loc, i, e1, e2, df, seq) : 'expr));
       [Gramext.Stoken ("", "for"); Gramext.Stoken ("LIDENT", "");
        Gramext.Stoken ("", "="); Gramext.Sself;
        Gramext.Snterm
@@ -619,6 +642,14 @@ Grammar.extend
         (fun _ (seq : 'sequence) _ _ (e2 : 'expr) (df : 'direction_flag)
              (e1 : 'expr) _ (i : string) _ (loc : Ploc.t) ->
            (MLast.ExFor (loc, i, e1, e2, df, seq) : 'expr));
+      [Gramext.Stoken ("", "do"); Gramext.Stoken ("", "{");
+       Gramext.Slist1sep
+         (Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e)),
+          Gramext.Stoken ("", ";"));
+       Gramext.Stoken ("", "}")],
+      Gramext.action
+        (fun _ (seq : 'expr list) _ _ (loc : Ploc.t) ->
+           (MLast.ExSeq (loc, seq) : 'expr));
       [Gramext.Stoken ("", "do"); Gramext.Stoken ("", "{");
        Gramext.Snterm
          (Grammar.Entry.obj (sequence : 'sequence Grammar.Entry.e));

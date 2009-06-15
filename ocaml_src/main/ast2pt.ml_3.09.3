@@ -752,7 +752,7 @@ let rec expr =
       mkexp loc (Pexp_constraint (expr e, option ctyp t1, Some (ctyp t2)))
   | ExFlo (loc, s) -> mkexp loc (Pexp_constant (Const_float s))
   | ExFor (loc, i, e1, e2, df, el) ->
-      let e3 = ExSeq (loc, el) in
+      let e3 = MLast.ExSeq (loc, uv el) in
       let df = if df then Upto else Downto in
       mkexp loc (Pexp_for (i, expr e1, expr e2, df, expr e3))
   | ExFun (loc, [PaLab (_, lab, po), w, e]) ->
@@ -814,7 +814,7 @@ let rec expr =
             let loc = Ploc.encl (loc_of_expr e) loc in
             mkexp loc (Pexp_sequence (expr e, loop el))
       in
-      loop el
+      loop (uv el)
   | ExSnd (loc, e, s) -> mkexp loc (Pexp_send (expr e, s))
   | ExSte (loc, e1, e2) ->
       mkexp loc
@@ -833,7 +833,8 @@ let rec expr =
       mkexp loc (Pexp_construct (lident (conv_con (uv s)), None, ca))
   | ExVrn (loc, s) -> mkexp loc (Pexp_variant (s, None))
   | ExWhi (loc, e1, el) ->
-      let e2 = ExSeq (loc, el) in mkexp loc (Pexp_while (expr e1, expr e2))
+      let e2 = MLast.ExSeq (loc, uv el) in
+      mkexp loc (Pexp_while (expr e1, expr e2))
 and label_expr =
   function
     ExLab (loc, lab, eo) -> lab, expr (expr_of_lab loc lab eo)

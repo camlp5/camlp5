@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.24 2007/09/09 11:49:42 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.25 2007/09/09 15:25:09 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -644,7 +644,7 @@ value rec expr =
       mkexp loc (Pexp_constraint (expr e) (option ctyp t1) (Some (ctyp t2)))
   | ExFlo loc s -> mkexp loc (Pexp_constant (Const_float s))
   | ExFor loc i e1 e2 df el ->
-      let e3 = ExSeq loc el in
+      let e3 = <:expr< do { $list:uv el$ } >> in
       let df = if df then Upto else Downto in
       mkexp loc (Pexp_for i (expr e1) (expr e2) df (expr e3))
   | ExFun loc [(PaLab _ lab po, w, e)] ->
@@ -695,7 +695,7 @@ value rec expr =
         in
         mkexp loc (Pexp_record (List.map mklabexp lel) eo)
   | ExSeq loc el ->
-      loop el where rec loop =
+      loop (uv el) where rec loop =
         fun
         [ [] -> expr <:expr< () >>
         | [e] -> expr e
@@ -718,7 +718,7 @@ value rec expr =
       mkexp loc (Pexp_construct (lident (conv_con (uv s))) None ca)
   | ExVrn loc s -> mkexp loc (Pexp_variant s None)
   | ExWhi loc e1 el ->
-      let e2 = ExSeq loc el in
+      let e2 = <:expr< do { $list:uv el$ } >> in
       mkexp loc (Pexp_while (expr e1) (expr e2))
   | IFDEF STRICT THEN
       ExXtr loc _ _ -> error loc "bad ast"

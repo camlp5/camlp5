@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: reloc.ml,v 1.15 2007/09/09 11:26:09 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.16 2007/09/09 15:25:09 deraugla Exp $ *)
 
 open MLast;
 
@@ -155,7 +155,8 @@ and expr floc sh =
           (ctyp floc sh x3)
     | ExFlo loc x1 -> ExFlo (floc loc) x1
     | ExFor loc x1 x2 x3 x4 x5 ->
-        ExFor (floc loc) x1 (self x2) (self x3) x4 (List.map self x5)
+        ExFor (floc loc) x1 (self x2) (self x3) x4
+          (vala_map (List.map self) x5)
     | ExFun loc x1 ->
         ExFun (floc loc)
           (List.map
@@ -192,7 +193,7 @@ and expr floc sh =
           (vala_map (List.map (fun (x1, x2) -> (patt floc sh x1, self x2)))
              x1)
           (option_map self x2)
-    | ExSeq loc x1 -> ExSeq (floc loc) (List.map self x1)
+    | ExSeq loc x1 -> ExSeq (floc loc) (vala_map (List.map self) x1)
     | ExSnd loc x1 x2 -> ExSnd (floc loc) (self x1) x2
     | ExSte loc x1 x2 -> ExSte (floc loc) (self x1) (self x2)
     | ExStr loc x1 -> ExStr (floc loc) x1
@@ -206,7 +207,8 @@ and expr floc sh =
     | ExTyc loc x1 x2 -> ExTyc (floc loc) (self x1) (ctyp floc sh x2)
     | ExUid loc x1 -> ExUid (floc loc) x1
     | ExVrn loc x1 -> ExVrn (floc loc) x1
-    | ExWhi loc x1 x2 -> ExWhi (floc loc) (self x1) (List.map self x2)
+    | ExWhi loc x1 x2 ->
+        ExWhi (floc loc) (self x1) (vala_map (List.map self) x2)
     | IFDEF STRICT THEN
         ExXtr loc x1 x2 -> ExXtr (floc loc) x1 (option_map self x2)
       END ]
