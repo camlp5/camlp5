@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_rp.ml,v 1.22 2007/12/19 11:48:17 deraugla Exp $ *)
+(* $Id: pr_rp.ml,v 1.23 2007/12/19 13:10:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Parserify;
@@ -172,7 +172,7 @@ value print_parser pc e =
   match e with
   [ <:expr< fun (strm__ : Stream.t _) -> $e$ >> ->
       let pa = unparser_body e in
-      parser_body {(pc) with bef = sprintf "%sparser" pc.bef} pa
+      pprintf pc "parser%p" parser_body pa
   | e -> expr pc e ]
 ;
 
@@ -180,11 +180,7 @@ value print_match_with_parser pc e =
   match e with
   [ <:expr< let (strm__ : Stream.t _) = $e1$ in $e2$ >> ->
       let pa = unparser_body e2 in
-      let b =
-        sprintf "%smatch %s with parser" pc.bef
-          (expr {(pc) with bef = ""; aft = ""} e1)
-      in
-      parser_body {(pc) with bef = b} pa
+      pprintf pc "match %p with parser%p" expr e1 parser_body pa
   | e -> expr pc e ]
 ;
 
@@ -211,7 +207,7 @@ EXTEND_PRINTER
           stream pc e ] ]
   ;
   pr_expr: LEVEL "dot"
-    [ [ <:expr< Stream.sempty >> -> sprintf "%s[: :]%s" pc.bef pc.aft ] ]
+    [ [ <:expr< Stream.sempty >> -> pprintf pc "[: :]" ] ]
   ;
   pr_expr: LEVEL "simple"
     [ [ <:expr< Stream.iapp $_$ $_$ >> | <:expr< Stream.icons $_$ $_$ >> |
