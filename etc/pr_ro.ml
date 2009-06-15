@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.66 2007/12/13 13:48:15 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.67 2007/12/13 14:10:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -253,25 +253,7 @@ EXTEND_PRINTER
     [ [ <:expr< ( $e$ : $t$ :> $t2$ ) >> ->
           pprintf pc "@[<a>@[<1>(%p :@ %p :>@ %p)@]@]" expr e ctyp t ctyp t2
       | <:expr< ( $e$ :> $t$ ) >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s(%s :> %s)%s" pc.bef
-                 (expr {(pc) with bef = ""; aft = ""} e)
-                 (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-            (fun () ->
-               let s1 =
-                 expr
-                   {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-                    aft = " :>"}
-                   e
-               in
-               let s2 =
-                 ctyp
-                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
-                    aft = sprintf ")%s" pc.aft}
-                   t
-               in
-               sprintf "%s\n%s" s1 s2)
+          pprintf pc "@[<1>(%p :>@ %p)@]" expr e ctyp t
       | <:expr< {< $list:fel$ >} >> ->
           if fel = [] then sprintf "%s{< >}%s" pc.bef pc.aft
           else
