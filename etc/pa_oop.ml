@@ -1,16 +1,6 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: pa_oop.ml,v 1.6 2007/08/01 18:57:15 deraugla Exp $ *)
+(* $Id: pa_oop.ml,v 1.7 2007/09/15 19:35:16 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
 

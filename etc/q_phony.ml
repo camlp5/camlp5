@@ -1,20 +1,6 @@
-(* camlp5r -I . *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: q_phony.ml,v 1.15 2007/09/01 19:42:28 deraugla Exp $ *)
-
-#load "pa_extend.cmo";
-#load "pa_extprint.cmo";
-#load "q_MLast.cmo";
+(* camlp5r -I . pa_extend.cmo pa_extprint.cmo q_MLast.cmo *)
+(* $Id: q_phony.ml,v 1.16 2007/09/15 19:35:16 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
 

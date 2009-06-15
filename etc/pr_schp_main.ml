@@ -1,5 +1,6 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
 (* $Id$ *)
+(* Copyright (c) INRIA 2007 *)
 
 open Format;
 open Pcaml.OldPrinters;

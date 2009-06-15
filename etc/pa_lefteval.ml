@@ -1,16 +1,6 @@
 (* camlp5r q_MLast.cmo *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: pa_lefteval.ml,v 1.7 2007/09/10 18:19:31 deraugla Exp $ *)
+(* $Id: pa_lefteval.ml,v 1.8 2007/09/15 19:35:16 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 value not_impl name x =
   let desc =

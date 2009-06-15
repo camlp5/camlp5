@@ -1,5 +1,6 @@
 (* camlp5r q_MLast.cmo *)
 (* $Id$ *)
+(* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the parsers with their initial syntax *)
 

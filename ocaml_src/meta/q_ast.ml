@@ -236,12 +236,55 @@ module Meta =
              e_option (e_option (e_vala (e_list e_string))) ools]
     and p_ctyp =
       function
-        TyArr (_, t1, t2) -> p_node "TyArr" [p_ctyp t1; p_ctyp t2]
+        TyAcc (_, t1, t2) -> p_node "TyAcc" [p_ctyp t1; p_ctyp t2]
+      | TyAli (_, t1, t2) -> p_node "TyAli" [p_ctyp t1; p_ctyp t2]
+      | TyArr (_, t1, t2) -> p_node "TyArr" [p_ctyp t1; p_ctyp t2]
+      | TyAny _ -> p_node "TyAny" []
       | TyApp (_, t1, t2) -> p_node "TyApp" [p_ctyp t1; p_ctyp t2]
+      | TyCls (_, ls) -> p_node "TyCls" [p_vala (p_list p_string) ls]
+      | TyLab (_, i, t) -> p_node "TyLab" [p_vala p_string i; p_ctyp t]
       | TyLid (_, s) -> p_node "TyLid" [p_vala p_string s]
+      | TyMan (_, t1, t2) -> p_node "TyMan" [p_ctyp t1; p_ctyp t2]
+      | TyObj (_, lm, v) ->
+          p_node "TyObj"
+            [p_vala
+               (p_list
+                  (fun (s, t) -> MLast.PaTup (loc, [p_string s; p_ctyp t])))
+               lm;
+             p_vala p_bool v]
+      | TyOlb (_, i, t) -> p_node "TyOlb" [p_vala p_string i; p_ctyp t]
+      | TyPol (_, lv, t) ->
+          p_node "TyPol" [p_vala (p_list p_string) lv; p_ctyp t]
+      | TyQuo (_, s) -> p_node "TyQuo" [p_vala p_string s]
+      | TyRec (_, lld) ->
+          let lld =
+            p_vala
+              (p_list
+                 (fun (loc, lab, mf, t) ->
+                    MLast.PaTup
+                      (loc,
+                       [MLast.PaAny loc; MLast.PaStr (loc, lab); p_bool mf;
+                        p_ctyp t])))
+              lld
+          in
+          p_node "TyRec" [lld]
+      | TySum (_, lcd) ->
+          let lcd =
+            p_vala
+              (p_list
+                 (fun (loc, lab, lt) ->
+                    let lt = p_vala (p_list p_ctyp) lt in
+                    MLast.PaTup
+                      (loc, [MLast.PaAny loc; p_vala p_string lab; lt])))
+              lcd
+          in
+          p_node "TySum" [lcd]
       | TyTup (_, tl) -> p_node "TyTup" [p_vala (p_list p_ctyp) tl]
       | TyUid (_, s) -> p_node "TyUid" [p_vala p_string s]
-      | x -> not_impl "p_ctyp" x
+      | TyVrn (_, lpv, ools) ->
+          p_node "TyVrn"
+            [p_vala (p_list p_poly_variant) lpv;
+             p_option (p_option (p_vala (p_list p_string))) ools]
     and e_poly_variant =
       function
         PvTag (s, a, lt) ->

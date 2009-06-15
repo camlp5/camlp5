@@ -1,7 +1,6 @@
-(* camlp5r *)
-(* $Id: compile.ml,v 1.23 2007/09/11 06:04:37 deraugla Exp $ *)
-
-#load "q_MLast.cmo";
+(* camlp5r q_MLast.cmo *)
+(* $Id: compile.ml,v 1.24 2007/09/15 19:35:16 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 open Gramext;
 
