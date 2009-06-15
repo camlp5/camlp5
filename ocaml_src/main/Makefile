@@ -33,7 +33,7 @@ $(NAME).cmxa: $(CAMLP5_XOBJS)
 	$(OCAMLOPT) $(LINKFLAGS) $(CAMLP5_XOBJS) -a -o $(NAME).cmxa
 
 clean::
-	rm -f *.cm* *.pp[io] *.o *.bak .*.bak *.out *.opt
+	rm -f *.cm* *.pp[io] *.[oa] *.bak .*.bak *.out *.opt
 	rm -f $(CAMLP5)
 
 depend:

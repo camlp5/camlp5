@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.2 2007/07/11 12:01:39 deraugla Exp $
+# $Id: Makefile,v 1.3 2007/07/27 12:02:59 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -33,7 +33,7 @@ $(NAME).cmxa: $(CAMLP5_XOBJS)
 	$(OCAMLOPT) $(LINKFLAGS) $(CAMLP5_XOBJS) -a -o $(NAME).cmxa
 
 clean::
-	rm -f *.cm* *.pp[io] *.o *.bak .*.bak *.out *.opt
+	rm -f *.cm* *.pp[io] *.[oa] *.bak .*.bak *.out *.opt
 	rm -f $(CAMLP5)
 
 depend:
