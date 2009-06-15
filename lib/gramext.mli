@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: gramext.mli,v 1.17 2007/10/13 23:53:29 deraugla Exp $ *)
+(* $Id: gramext.mli,v 1.18 2007/10/21 17:29:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 type grammar 'te =
@@ -65,6 +65,7 @@ value levels_of_rules :
     list (g_level 'te);
 value srules : list (list (g_symbol 'te) * g_action) -> g_symbol 'te;
 external action : 'a -> g_action = "%identity";
+value eq_symbol : g_symbol 'a -> g_symbol 'a -> bool;
 
 value delete_rule_in_level_list :
   g_entry 'te -> list (g_symbol 'te) -> list (g_level 'te) ->
