@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.166 2007/12/26 14:56:34 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.167 2007/12/26 19:07:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1723,39 +1723,28 @@ value class_object pc (csp, csl) =
   in
   horiz_vertic
     (fun () ->
-       sprintf "%sobject%s %s end%s" pc.bef
-         (match csp with
-          [ Some (<:patt< ($_$ : $_$) >> as p) ->
-              patt {(pc) with bef = " "; aft = ""} p
-          | Some p -> patt {(pc) with bef = " ("; aft = ")"} p
-          | None -> "" ])
-         (hlist class_str_item_sep
-            {(pc) with bef = ""; aft = ""} csl) pc.aft)
+       pprintf pc "object%p %p end"
+         (fun pc ->
+            fun
+            [ Some (<:patt< ($_$ : $_$) >> as p) -> pprintf pc " %p" patt p
+            | Some p -> pprintf pc " (%p)" patt p
+            | None -> pprintf pc "" ])
+         csp (hlist class_str_item_sep) csl)
     (fun () ->
-       let s1 =
-         match csp with
-         [ None -> sprintf "%sobject" pc.bef
-         | Some p ->
-             let pc = {(pc) with aft = ""} in
-             match p with
-             [ <:patt< ($_$ : $_$) >> -> pprintf pc "object@;%p" patt p
-             | p -> pprintf pc "object@;(%p)" patt p ] ]
-       in
-       let s2 =
-         vlist class_str_item_sep
-           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-            aft = ""}
-           csl
-       in
-       let s3 = sprintf "%send%s" (tab pc.ind) pc.aft in
-       sprintf "%s\n%s\n%s" s1 s2 s3)
+       pprintf pc "@[<a>object%p@;%p@ end@]"
+         (fun pc ->
+            fun
+            [ Some (<:patt< ($_$ : $_$) >> as p) -> pprintf pc " %p" patt p
+            | Some p -> pprintf pc " (%p)" patt p
+            | None -> pprintf pc "" ])
+         csp (vlist class_str_item_sep) csl)
 ;
 
 (* *)
 
 EXTEND_PRINTER
   pr_patt: LEVEL "simple"
-    [ [ <:patt< ?$s$ >> -> sprintf "%s?%s%s" pc.bef s pc.aft
+    [ [ <:patt< ?$s$ >> -> pprintf pc "?%s" s
       | <:patt< ? ($p$ $opt:eo$) >> ->
           match eo with
           [ Some e -> pprintf pc "?(%p =@;%p)" patt_tcon p expr e
@@ -1767,13 +1756,13 @@ EXTEND_PRINTER
           | None ->
               pprintf pc "?%s:@;<0 1>(%p)" i patt p ]
       | <:patt< ~$s$ >> ->
-          sprintf "%s~%s%s" pc.bef s pc.aft
+          pprintf pc "~%s" s
       | <:patt< ~$s$: $p$ >> ->
-          curr {(pc) with bef = sprintf "%s~%s:" pc.bef s} p
+          pprintf pc "~%s:%p" s curr p
       | <:patt< `$s$ >> ->
-          sprintf "%s`%s%s" pc.bef s pc.aft
+          pprintf pc "`%s" s
       | <:patt< # $list:sl$ >> ->
-          mod_ident {(pc) with bef = sprintf "%s#" pc.bef} sl ] ]
+          pprintf pc "#%p" mod_ident sl ] ]
   ;
   pr_expr: LEVEL "apply"
     [ [ <:expr< new $list:cl$ >> ->
@@ -1786,26 +1775,8 @@ EXTEND_PRINTER
   ;
   pr_expr: LEVEL "simple"
     [ [ <:expr< ( $e$ : $t$ :> $t2$ ) >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s(%s : %s :> %s)%s" pc.bef
-                 (expr {(pc) with bef = ""; aft = ""} e)
-                 (ctyp {(pc) with bef = ""; aft = ""} t)
-                 (ctyp {(pc) with bef = ""; aft = ""} t2) pc.aft)
-            (fun () ->
-               let s1 =
-                 expr {(pc) with bef = sprintf "%s(" pc.bef; aft = " :"} e
-               in
-               let s2 =
-                 ctyp {(pc) with bef = tab (pc.ind + 1); aft = " :>"} t
-               in
-               let s3 =
-                 ctyp
-                   {(pc) with bef = tab (pc.ind + 1);
-                    aft = sprintf ")%s" pc.aft}
-                   t2
-               in
-               sprintf "%s\n%s\n%s" s1 s2 s3)
+          pprintf pc "@[<a>(%p :@;<1 1>%p :>@;<1 1>%p)@]" expr e ctyp t
+            ctyp t2
       | <:expr< ( $e$ :> $t$ ) >> ->
           horiz_vertic
             (fun () ->
