@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.27 2007/08/07 16:43:17 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.28 2007/08/07 19:31:18 deraugla Exp $ *)
 
 open Stdpp;
 
@@ -563,6 +563,38 @@ value sslist loc min sep s =
   {used = used; text = text; styp = styp}
 ;
 
+value ssvala_list loc name min sep s =
+  let rl =
+    let r1 =
+      let prod =
+        let n = mk_name loc <:expr< a_list2 >> in
+        [mk_psymbol <:patt< a >> (TXnterm loc n None) (STquo loc "a_list2")]
+      in
+      let act = <:expr< a >> in
+      {prod = prod; action = Some act}
+    in
+    let r2 =
+      let prod =
+        [mk_psymbol <:patt< a >> (TXvala loc name (slist loc min sep s))
+           (STapp loc (STtyp <:ctyp< MLast.vala >>)
+              (STapp loc (STlid loc "list") s.styp))]
+      in
+      let act = <:expr< Qast.vala (fun a -> Qast.List a) a >> in
+      {prod = prod; action = Some act}
+    in
+    [r1; r2]
+  in
+  let used =
+    match sep with
+    [ Some symb -> symb.used @ s.used
+    | None -> s.used ]
+  in
+  let used = ["a_list2" :: used] in
+  let text = TXrules loc (srules loc "a_list2" rl "") in
+  let styp = STquo loc "a_list2" in
+  {used = used; text = text; styp = styp}
+;
+
 value ssopt loc s =
   let rl =
     let r1 =
@@ -900,6 +932,21 @@ EXTEND
             in
             let styp = STapp loc (STlid loc "list") s.styp in
             let text = slist loc True sep s in
+            {used = used; text = text; styp = styp}
+      | UIDENT "LIST12"; s = SELF;
+        sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
+          if quotify.val then ssvala_list loc "LIST1" True sep s
+          else
+            let used =
+              match sep with
+              [ Some symb -> symb.used @ s.used
+              | None -> s.used ]
+            in
+            let styp =
+              STapp loc (STtyp <:ctyp< MLast.vala >>)
+                (STapp loc (STlid loc "list") s.styp)
+            in
+            let text = TXvala loc "LIST" (slist loc True sep s) in
             {used = used; text = text; styp = styp}
       | UIDENT "OPT"; s = SELF ->
           if quotify.val then ssopt loc s

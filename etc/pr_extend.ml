@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_extend.ml,v 1.19 2007/08/07 11:29:42 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.20 2007/08/07 19:31:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -366,6 +366,10 @@ and symbol pc sy =
       sprintf "%sFLAG %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
   | Svala name (Sflag sy) ->
       sprintf "%s%s2 %s" pc.bef name (simple_symbol {(pc) with bef = ""} sy)
+  | Svala name (Slist1sep sy sep) ->
+      sprintf "%s%s2 %s SEP %s" pc.bef name
+        (simple_symbol {(pc) with bef = ""; aft = ""} sy)
+        (simple_symbol {(pc) with bef = ""} sep)
   | Svala _ s -> not_impl "svala" pc s
   | Srules rl ->
       match check_slist rl with
@@ -416,6 +420,10 @@ and s_symbol pc =
       sprintf "%sSLIST1 %s SEP %s" pc.bef
         (simple_symbol {(pc) with bef = ""; aft = ""} sy)
         (simple_symbol {(pc) with bef = ""} sep)
+  | Svala n (Slist1sep sy sep) ->
+      sprintf "%sS%s2 %s SEP %s" pc.bef n
+        (simple_symbol {(pc) with bef = ""; aft = ""} sy)
+        (simple_symbol {(pc) with bef = ""} sep)
   | Sopt s ->
       let sy =
         match s with
@@ -455,6 +463,12 @@ and check_slist rl =
        ([(Some <:patt< a >>,
           ((Slist0 _ | Slist1 _ | Slist0sep _ _ | Slist1sep _ _) as s))],
           Some <:expr< Qast.List a >>)] ->
+        Some s
+    | [([(Some <:patt< a >>, Snterm <:expr< a_list2 >>)], Some <:expr< a >>);
+       ([(Some <:patt< a >>,
+          (Svala _ (Slist0 _ | Slist1 _ | Slist0sep _ _ | Slist1sep _ _)
+           as s))],
+          Some <:expr< Qast.vala (fun a -> Qast.List a) a >>)] ->
         Some s
     | [([(Some <:patt< a >>, Snterm <:expr< a_opt >>)], Some <:expr< a >>);
        ([(Some <:patt< a >>, Sopt s)], Some <:expr< Qast.Option a >>)] ->

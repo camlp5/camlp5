@@ -20,6 +20,12 @@ let option_map f =
   | None -> None
 ;;
 
+let vala_map f =
+  function
+    VaAnt _ -> failwith "reloc.ml: vala_map"
+  | VaVal v -> VaVal (f v)
+;;
+
 let rec ctyp floc sh =
   let rec self =
     function
@@ -40,7 +46,9 @@ let rec ctyp floc sh =
     | TyRec (loc, x1) ->
         TyRec
           (floc loc,
-           List.map (fun (loc, x1, x2, x3) -> floc loc, x1, x2, self x3) x1)
+           vala_map
+             (List.map (fun (loc, x1, x2, x3) -> floc loc, x1, x2, self x3))
+             x1)
     | TySum (loc, x1) ->
         TySum
           (floc loc,

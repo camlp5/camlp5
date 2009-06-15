@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.35 2007/08/07 16:43:17 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.36 2007/08/07 19:31:18 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -483,8 +483,8 @@ EXTEND
       | "("; t = SELF; ")" -> <:ctyp< $t$ >>
       | "["; cdl = LIST0 constructor_declaration SEP "|"; "]" ->
           <:ctyp< [ $list:cdl$ ] >>
-      | "{"; ldl = LIST1 label_declaration SEP ";"; "}" ->
-          <:ctyp< { $list:ldl$ } >> ] ]
+      | "{"; ldl = LIST12 label_declaration SEP ";"; "}" ->
+          <:ctyp< { $list2:ldl$ } >> ] ]
   ;
   constructor_declaration:
     [ [ ci = UIDENT; "of"; cal = LIST1 ctyp SEP "and" -> (loc, ci, cal)

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.7 2007/08/07 16:43:17 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.8 2007/08/07 19:31:18 deraugla Exp $ *)
 
 open Stdpp;
 open MLast;
@@ -251,13 +251,14 @@ value mkvariant (loc, c, tl) =
 value type_decl tl priv cl =
   fun
   [ TyMan loc t (TyRec _ ltl) ->
-      mktype loc tl cl (Ptype_record (List.map mktrecord ltl) priv)
+      mktype loc tl cl (Ptype_record (mkvala (List.map mktrecord) ltl) priv)
         (Some (ctyp t))
   | TyMan loc t (TySum _ ctl) ->
       mktype loc tl cl (Ptype_variant (List.map mkvariant ctl) priv)
         (Some (ctyp t))
   | TyRec loc ltl ->
-      mktype loc tl cl (Ptype_record (List.map mktrecord ltl) priv) None
+      mktype loc tl cl (Ptype_record (mkvala (List.map mktrecord) ltl) priv)
+        None
   | TySum loc ctl ->
       mktype loc tl cl (Ptype_variant (List.map mkvariant ctl) priv) None
   | t ->

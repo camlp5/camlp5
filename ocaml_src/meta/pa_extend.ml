@@ -1193,6 +1193,60 @@ let sslist loc min sep s =
   let styp = STquo (loc, "a_list") in {used = used; text = text; styp = styp}
 ;;
 
+let ssvala_list loc name min sep s =
+  let rl =
+    let r1 =
+      let prod =
+        let n = mk_name loc (MLast.ExLid (loc, "a_list2")) in
+        [mk_psymbol (MLast.PaLid (loc, "a")) (TXnterm (loc, n, None))
+           (STquo (loc, "a_list2"))]
+      in
+      let act = MLast.ExLid (loc, "a") in {prod = prod; action = Some act}
+    in
+    let r2 =
+      let prod =
+        [mk_psymbol (MLast.PaLid (loc, "a"))
+           (TXvala (loc, name, slist loc min sep s))
+           (STapp
+              (loc,
+               STtyp
+                 (MLast.TyAcc
+                    (loc, MLast.TyUid (loc, "MLast"),
+                     MLast.TyLid (loc, "vala"))),
+               STapp (loc, STlid (loc, "list"), s.styp)))]
+      in
+      let act =
+        MLast.ExApp
+          (loc,
+           MLast.ExApp
+             (loc,
+              MLast.ExAcc
+                (loc, MLast.ExUid (loc, "Qast"), MLast.ExLid (loc, "vala")),
+              MLast.ExFun
+                (loc,
+                 [MLast.PaLid (loc, "a"), None,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "Qast"),
+                        MLast.ExUid (loc, "List")),
+                     MLast.ExLid (loc, "a"))])),
+           MLast.ExLid (loc, "a"))
+      in
+      {prod = prod; action = Some act}
+    in
+    [r1; r2]
+  in
+  let used =
+    match sep with
+      Some symb -> symb.used @ s.used
+    | None -> s.used
+  in
+  let used = "a_list2" :: used in
+  let text = TXrules (loc, srules loc "a_list2" rl "") in
+  let styp = STquo (loc, "a_list2") in {used = used; text = text; styp = styp}
+;;
+
 let ssopt loc s =
   let rl =
     let r1 =
@@ -1970,6 +2024,35 @@ Grammar.extend
               let text = TXopt (loc, s.text) in
               {used = s.used; text = text; styp = styp} :
             'symbol));
+      [Gramext.Stoken ("UIDENT", "LIST12"); Gramext.Sself;
+       Gramext.Sopt
+         (Gramext.srules
+            [[Gramext.Stoken ("UIDENT", "SEP");
+              Gramext.Snterm
+                (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
+             Gramext.action
+               (fun (t : 'symbol) _ (loc : Token.location) -> (t : 'e__6))])],
+      Gramext.action
+        (fun (sep : 'e__6 option) (s : 'symbol) _ (loc : Token.location) ->
+           (if !quotify then ssvala_list loc "LIST1" true sep s
+            else
+              let used =
+                match sep with
+                  Some symb -> symb.used @ s.used
+                | None -> s.used
+              in
+              let styp =
+                STapp
+                  (loc,
+                   STtyp
+                     (MLast.TyAcc
+                        (loc, MLast.TyUid (loc, "MLast"),
+                         MLast.TyLid (loc, "vala"))),
+                   STapp (loc, STlid (loc, "list"), s.styp))
+              in
+              let text = TXvala (loc, "LIST", slist loc true sep s) in
+              {used = used; text = text; styp = styp} :
+            'symbol));
       [Gramext.Stoken ("UIDENT", "LIST1"); Gramext.Sself;
        Gramext.Sopt
          (Gramext.srules
@@ -2022,9 +2105,9 @@ Grammar.extend
             [[Gramext.Stoken ("UIDENT", "LEVEL");
               Gramext.Stoken ("STRING", "")],
              Gramext.action
-               (fun (s : string) _ (loc : Token.location) -> (s : 'e__7))])],
+               (fun (s : string) _ (loc : Token.location) -> (s : 'e__8))])],
       Gramext.action
-        (fun (lev : 'e__7 option) (n : 'name) (loc : Token.location) ->
+        (fun (lev : 'e__8 option) (n : 'name) (loc : Token.location) ->
            ({used = [n.tvar]; text = TXnterm (loc, n, lev);
              styp = STquo (loc, n.tvar)} :
             'symbol));
@@ -2035,9 +2118,9 @@ Grammar.extend
             [[Gramext.Stoken ("UIDENT", "LEVEL");
               Gramext.Stoken ("STRING", "")],
              Gramext.action
-               (fun (s : string) _ (loc : Token.location) -> (s : 'e__6))])],
+               (fun (s : string) _ (loc : Token.location) -> (s : 'e__7))])],
       Gramext.action
-        (fun (lev : 'e__6 option) (e : 'qualid) _ (i : string)
+        (fun (lev : 'e__7 option) (e : 'qualid) _ (i : string)
              (loc : Token.location) ->
            (let n =
               mk_name loc (MLast.ExAcc (loc, MLast.ExUid (loc, i), e))

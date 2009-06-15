@@ -236,13 +236,14 @@ let mkvariant (loc, c, tl) = conv_con c, List.map ctyp tl;;
 let type_decl tl priv cl =
   function
     TyMan (loc, t, TyRec (_, ltl)) ->
-      mktype loc tl cl (Ptype_record (List.map mktrecord ltl, priv))
+      mktype loc tl cl (Ptype_record (mkvala (List.map mktrecord) ltl, priv))
         (Some (ctyp t))
   | TyMan (loc, t, TySum (_, ctl)) ->
       mktype loc tl cl (Ptype_variant (List.map mkvariant ctl, priv))
         (Some (ctyp t))
   | TyRec (loc, ltl) ->
-      mktype loc tl cl (Ptype_record (List.map mktrecord ltl, priv)) None
+      mktype loc tl cl (Ptype_record (mkvala (List.map mktrecord) ltl, priv))
+        None
   | TySum (loc, ctl) ->
       mktype loc tl cl (Ptype_variant (List.map mkvariant ctl, priv)) None
   | t ->

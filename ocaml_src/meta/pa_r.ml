@@ -1501,14 +1501,17 @@ Grammar.extend
            (MLast.TyAcc (loc, t1, t2) : 'ctyp))];
      Some "simple", None,
      [[Gramext.Stoken ("", "{");
-       Gramext.Slist1sep
-         (Gramext.Snterm
-            (Grammar.Entry.obj
-               (label_declaration : 'label_declaration Grammar.Entry.e)),
-          Gramext.Stoken ("", ";"));
+       Gramext.Svala
+         ("LIST",
+          Gramext.Slist1sep
+            (Gramext.Snterm
+               (Grammar.Entry.obj
+                  (label_declaration : 'label_declaration Grammar.Entry.e)),
+             Gramext.Stoken ("", ";")));
        Gramext.Stoken ("", "}")],
       Gramext.action
-        (fun _ (ldl : 'label_declaration list) _ (loc : Token.location) ->
+        (fun _ (ldl : 'label_declaration list MLast.vala) _
+             (loc : Token.location) ->
            (MLast.TyRec (loc, ldl) : 'ctyp));
       [Gramext.Stoken ("", "[");
        Gramext.Slist0sep

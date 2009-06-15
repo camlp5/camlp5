@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.19 2007/08/07 16:43:17 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.20 2007/08/07 19:31:18 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -63,6 +63,7 @@ value eval_antiquot_patch entry v =
 
 value expr_eoi = Grammar.Entry.create Pcaml.gram "expr";
 value patt_eoi = Grammar.Entry.create Pcaml.gram "patt";
+value ctyp_eoi = Grammar.Entry.create Pcaml.gram "type";
 value str_item_eoi = Grammar.Entry.create Pcaml.gram "str_item";
 value sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";
 value module_expr_eoi = Grammar.Entry.create Pcaml.gram "module_expr";
@@ -93,6 +94,12 @@ module Meta =
       | VaVal v -> <:patt< MLast.VaVal $f v$ >> ]
     ;
     value e_list elem el =
+      loop el where rec loop =
+        fun
+        [ [] -> <:expr< [] >>
+        | [e :: el] -> <:expr< [$elem e$ :: $loop el$] >> ]
+    ;
+    value e_list_p elem el =
       match eval_antiquot_patch expr_eoi el with
       [ Some (loc, r) -> <:expr< $anti:r$ >>
       | None ->
@@ -101,7 +108,7 @@ module Meta =
             [ [] -> <:expr< [] >>
             | [e :: el] -> <:expr< [$elem e$ :: $loop el$] >> ] ]
     ;
-    value p_list elem el =
+    value p_list_p elem el =
       match eval_antiquot_patch patt_eoi el with
       [ Some (loc, r) -> <:patt< $anti:r$ >>
       | None ->
@@ -140,7 +147,7 @@ module Meta =
       [ Some (loc, r) -> <:patt< $anti:r$ >>
       | None -> <:patt< $str:s$ >> ]
     ;
-    value e_type t = 
+    value e_ctyp t = 
       let ln = ln () in
       loop t where rec loop =
         fun 
@@ -149,13 +156,22 @@ module Meta =
         | TyApp _ t1 t2 -> <:expr< MLast.TyApp $ln$ $loop t1$ $loop t2$ >> 
         | TyLid _ s -> <:expr< MLast.TyLid $ln$ $e_string s$ >>
         | TyQuo _ s -> <:expr< MLast.TyQuo $ln$ $e_string s$ >>
+        | TyRec _ lld ->
+            let lld =
+              e_vala
+                (e_list
+                   (fun (loc, lab, mf, t) ->
+                      <:expr< ($ln$, $str:lab$, $e_bool mf$, $loop t$) >>))
+                lld
+            in
+            <:expr< MLast.TyRec $ln$ $lld$ >>
         | TyUid _ s -> <:expr< MLast.TyUid $ln$ $e_string s$ >>
-        | x -> not_impl "e_type" x ]
+        | x -> not_impl "e_ctyp" x ]
     ;
-    value p_type =
+    value p_ctyp =
       fun
       [ TyLid _ s -> <:patt< MLast.TyLid _ $p_string s$ >>
-      | x -> not_impl "p_type" x ]
+      | x -> not_impl "p_ctyp" x ]
     ;
     value e_type_decl =
       fun
@@ -186,7 +202,7 @@ module Meta =
         | PaFlo _ s -> <:expr< MLast.PaFlo $ln$ $e_string s$ >>
         | PaLid _ s -> <:expr< MLast.PaLid $ln$ $e_string s$ >>
         | PaStr _ s -> <:expr< MLast.PaStr $ln$ $e_string s$ >>
-        | PaTyc _ p t -> <:expr< MLast.PaTyc $ln$ $loop p$ $e_type t$ >>
+        | PaTyc _ p t -> <:expr< MLast.PaTyc $ln$ $loop p$ $e_ctyp t$ >>
         | PaUid _ s -> <:expr< MLast.PaUid $ln$ $e_string s$ >>
         | x -> not_impl "e_patt" x ]
     ;
@@ -248,7 +264,7 @@ module Meta =
         | ExTup _ [e :: el] ->
             let el = <:expr< [$loop e$ :: $e_list loop el$] >> in
             <:expr< MLast.ExTup $ln$ $el$ >>
-        | ExTyc _ e t -> <:expr< MLast.ExTyc $ln$ $loop e$ $e_type t$ >>
+        | ExTyc _ e t -> <:expr< MLast.ExTyc $ln$ $loop e$ $e_ctyp t$ >>
         | ExUid _ s -> <:expr< MLast.ExUid $ln$ $e_string s$ >>
         | x -> not_impl "e_expr" x ]
     ;
@@ -277,7 +293,7 @@ module Meta =
         | ExLet _ rf lpe e ->
             let rf = p_vala p_bool rf in
             let lpe =
-              p_list (fun (p, e) -> <:patt< ($p_patt p$, $loop e$) >>) lpe
+              p_list_p (fun (p, e) -> <:patt< ($p_patt p$, $loop e$) >>) lpe
             in
             <:patt< MLast.ExLet _ $rf$ $lpe$ $loop e$ >>
         | ExLid _ s -> <:patt< MLast.ExLid _ $p_string s$ >>
@@ -286,7 +302,7 @@ module Meta =
     ;
     value e_sig_item =
       fun
-      [ SgVal _ s t -> <:expr< MLast.SgVal $ln ()$ $e_string s$ $e_type t$ >>
+      [ SgVal _ s t -> <:expr< MLast.SgVal $ln ()$ $e_string s$ $e_ctyp t$ >>
       | x -> not_impl "e_sig_item" x ]
     ;
     value e_module_type mt =
@@ -307,11 +323,11 @@ module Meta =
               [ Some (loc, r) -> <:expr< $anti:r$ >>
               | None -> e_list e_string ls ]
             in
-            <:expr< MLast.StExc $ln$ $e_string s$ $e_list e_type lt$ $ls$ >>
+            <:expr< MLast.StExc $ln$ $e_string s$ $e_list e_ctyp lt$ $ls$ >>
         | StExp _ e -> <:expr< MLast.StExp $ln$ $e_expr e$ >>
         | StExt _ s t ls ->
             let ls = e_list e_string ls in
-            <:expr< MLast.StExt $ln$ $e_string s$ $e_type t$ $ls$ >>
+            <:expr< MLast.StExt $ln$ $e_string s$ $e_ctyp t$ $ls$ >>
         | StInc _ me -> <:expr< MLast.StInc $ln$ $e_module_expr me$ >>
         | StMod _ rf lsme ->
             let lsme =
@@ -357,7 +373,7 @@ module Meta =
     ;
     value p_sig_item =
       fun
-      [ SgVal _ s t -> <:patt< MLast.SgVal _ $p_string s$ $p_type t$ >>
+      [ SgVal _ s t -> <:patt< MLast.SgVal _ $p_string s$ $p_ctyp t$ >>
       | x -> not_impl "p_sig_item" x ]
     ;
   end
@@ -366,6 +382,7 @@ module Meta =
 EXTEND
   expr_eoi: [ [ x = Pcaml.expr; EOI -> x ] ];
   patt_eoi: [ [ x = Pcaml.patt; EOI -> x ] ];
+  ctyp_eoi: [ [ x = Pcaml.ctyp; EOI -> x ] ];
   sig_item_eoi: [ [ x = Pcaml.sig_item; EOI -> x ] ];
   str_item_eoi: [ [ x = Pcaml.str_item; EOI -> x ] ];
   module_expr_eoi: [ [ x = Pcaml.module_expr; EOI -> x ] ];
@@ -493,6 +510,7 @@ List.iter
   (fun (q, f) -> Quotation.add q f)
   [("expr", apply_entry expr_eoi Meta.e_expr Meta.p_expr);
    ("patt", apply_entry patt_eoi Meta.e_patt Meta.p_patt);
+   ("ctyp", apply_entry ctyp_eoi Meta.e_ctyp Meta.p_ctyp);
    ("str_item", apply_entry str_item_eoi Meta.e_str_item Meta.p_str_item);
    ("sig_item", apply_entry sig_item_eoi Meta.e_sig_item Meta.p_sig_item);
    ("module_expr",

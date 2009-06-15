@@ -31,6 +31,24 @@ Grammar.extend
        (fun (s : 'symbol) _ (loc : Token.location) ->
           (ssopt loc s : 'symbol));
      [Gramext.srules
+        [[Gramext.Stoken ("UIDENT", "SLIST12")],
+         Gramext.action (fun _ (loc : Token.location) -> (true : 'e__3));
+         [Gramext.Stoken ("UIDENT", "SLIST02")],
+         Gramext.action (fun _ (loc : Token.location) -> (false : 'e__3))];
+      Gramext.Sself;
+      Gramext.Sopt
+        (Gramext.srules
+           [[Gramext.Stoken ("UIDENT", "SEP");
+             Gramext.Snterm
+               (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
+            Gramext.action
+              (fun (t : 'symbol) _ (loc : Token.location) -> (t : 'e__4))])],
+     Gramext.action
+       (fun (sep : 'e__4 option) (s : 'symbol) (min : 'e__3)
+            (loc : Token.location) ->
+          (ssvala_list loc (if min then "LIST0" else "LIST1") min sep s :
+           'symbol));
+     [Gramext.srules
         [[Gramext.Stoken ("UIDENT", "SLIST1")],
          Gramext.action (fun _ (loc : Token.location) -> (true : 'e__1));
          [Gramext.Stoken ("UIDENT", "SLIST0")],

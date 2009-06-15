@@ -43,10 +43,12 @@ compare:
 	done
 
 bootstrap_q_MLast:
+	cd ../etc; $(MAKE) pr_r.cmo pr_extend.cmo
 	NAME=$(NAME) ./mk_q_MLast.sh > tmp
 	mv tmp q_MLast.ml
 
 compare_q_MLast:
+	cd ../etc; $(MAKE) pr_r.cmo pr_extend.cmo
 	NAME=$(NAME) ./mk_q_MLast.sh | diff -c q_MLast.ml -
 
 install:

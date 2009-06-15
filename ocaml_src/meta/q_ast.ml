@@ -56,6 +56,7 @@ let eval_antiquot_patch entry v =
 
 let expr_eoi = Grammar.Entry.create Pcaml.gram "expr";;
 let patt_eoi = Grammar.Entry.create Pcaml.gram "patt";;
+let ctyp_eoi = Grammar.Entry.create Pcaml.gram "type";;
 let str_item_eoi = Grammar.Entry.create Pcaml.gram "str_item";;
 let sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";;
 let module_expr_eoi = Grammar.Entry.create Pcaml.gram "module_expr";;
@@ -112,6 +113,17 @@ module Meta =
              f v)
     ;;
     let e_list elem el =
+      let rec loop =
+        function
+          [] -> MLast.ExUid (loc, "[]")
+        | e :: el ->
+            MLast.ExApp
+              (loc, MLast.ExApp (loc, MLast.ExUid (loc, "::"), elem e),
+               loop el)
+      in
+      loop el
+    ;;
+    let e_list_p elem el =
       match eval_antiquot_patch expr_eoi el with
         Some (loc, r) -> MLast.ExAnt (loc, r)
       | None ->
@@ -125,7 +137,7 @@ module Meta =
           in
           loop el
     ;;
-    let p_list elem el =
+    let p_list_p elem el =
       match eval_antiquot_patch patt_eoi el with
         Some (loc, r) -> MLast.PaAnt (loc, r)
       | None ->
@@ -175,7 +187,7 @@ module Meta =
         Some (loc, r) -> MLast.PaAnt (loc, r)
       | None -> MLast.PaStr (loc, s)
     ;;
-    let e_type t =
+    let e_ctyp t =
       let ln = ln () in
       let rec loop =
         function
@@ -232,6 +244,25 @@ module Meta =
                      MLast.ExUid (loc, "TyQuo")),
                   ln),
                e_string s)
+        | TyRec (_, lld) ->
+            let lld =
+              e_vala
+                (e_list
+                   (fun (loc, lab, mf, t) ->
+                      MLast.ExTup
+                        (loc,
+                         [ln; MLast.ExStr (loc, lab); e_bool mf; loop t])))
+                lld
+            in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "TyRec")),
+                  ln),
+               lld)
         | TyUid (_, s) ->
             MLast.ExApp
               (loc,
@@ -242,11 +273,11 @@ module Meta =
                      MLast.ExUid (loc, "TyUid")),
                   ln),
                e_string s)
-        | x -> not_impl "e_type" x
+        | x -> not_impl "e_ctyp" x
       in
       loop t
     ;;
-    let p_type =
+    let p_ctyp =
       function
         TyLid (_, s) ->
           MLast.PaApp
@@ -258,7 +289,7 @@ module Meta =
                    MLast.PaUid (loc, "TyLid")),
                 MLast.PaAny loc),
              p_string s)
-      | x -> not_impl "p_type" x
+      | x -> not_impl "p_ctyp" x
     ;;
     let e_type_decl x = not_impl "e_type_decl" x;;
     let e_patt p =
@@ -392,7 +423,7 @@ module Meta =
                         MLast.ExUid (loc, "PaTyc")),
                      ln),
                   loop p),
-               e_type t)
+               e_ctyp t)
         | PaUid (_, s) ->
             MLast.ExApp
               (loc,
@@ -625,7 +656,7 @@ module Meta =
                         MLast.ExUid (loc, "ExTyc")),
                      ln),
                   loop e),
-               e_type t)
+               e_ctyp t)
         | ExUid (_, s) ->
             MLast.ExApp
               (loc,
@@ -737,7 +768,8 @@ module Meta =
         | ExLet (_, rf, lpe, e) ->
             let rf = p_vala p_bool rf in
             let lpe =
-              p_list (fun (p, e) -> MLast.PaTup (loc, [p_patt p; loop e])) lpe
+              p_list_p (fun (p, e) -> MLast.PaTup (loc, [p_patt p; loop e]))
+                lpe
             in
             MLast.PaApp
               (loc,
@@ -792,7 +824,7 @@ module Meta =
                       MLast.ExUid (loc, "SgVal")),
                    ln ()),
                 e_string s),
-             e_type t)
+             e_ctyp t)
       | x -> not_impl "e_sig_item" x
     ;;
     let e_module_type mt =
@@ -846,7 +878,7 @@ module Meta =
                            MLast.ExUid (loc, "StExc")),
                         ln),
                      e_string s),
-                  e_list e_type lt),
+                  e_list e_ctyp lt),
                ls)
         | StExp (_, e) ->
             MLast.ExApp
@@ -873,7 +905,7 @@ module Meta =
                            MLast.ExUid (loc, "StExt")),
                         ln),
                      e_string s),
-                  e_type t),
+                  e_ctyp t),
                ls)
         | StInc (_, me) ->
             MLast.ExApp
@@ -1056,7 +1088,7 @@ module Meta =
                       MLast.PaUid (loc, "SgVal")),
                    MLast.PaAny loc),
                 p_string s),
-             p_type t)
+             p_ctyp t)
       | x -> not_impl "p_sig_item" x
     ;;
   end
@@ -1077,6 +1109,13 @@ Grammar.extend
       Gramext.Stoken ("EOI", "")],
      Gramext.action
        (fun _ (x : 'Pcaml__patt) (loc : Token.location) -> (x : 'patt_eoi))]];
+   Grammar.Entry.obj (ctyp_eoi : 'ctyp_eoi Grammar.Entry.e), None,
+   [None, None,
+    [[Gramext.Snterm
+        (Grammar.Entry.obj (Pcaml.ctyp : 'Pcaml__ctyp Grammar.Entry.e));
+      Gramext.Stoken ("EOI", "")],
+     Gramext.action
+       (fun _ (x : 'Pcaml__ctyp) (loc : Token.location) -> (x : 'ctyp_eoi))]];
    Grammar.Entry.obj (sig_item_eoi : 'sig_item_eoi Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Snterm
@@ -1268,6 +1307,7 @@ let apply_entry e me mp =
 List.iter (fun (q, f) -> Quotation.add q f)
   ["expr", apply_entry expr_eoi Meta.e_expr Meta.p_expr;
    "patt", apply_entry patt_eoi Meta.e_patt Meta.p_patt;
+   "ctyp", apply_entry ctyp_eoi Meta.e_ctyp Meta.p_ctyp;
    "str_item", apply_entry str_item_eoi Meta.e_str_item Meta.p_str_item;
    "sig_item", apply_entry sig_item_eoi Meta.e_sig_item Meta.p_sig_item;
    "module_expr",

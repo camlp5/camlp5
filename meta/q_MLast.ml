@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.34 2007/08/07 16:43:17 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.35 2007/08/07 19:31:18 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -145,6 +145,7 @@ value with_constr = Grammar.Entry.create gram "with_constr";
 value poly_variant = Grammar.Entry.create gram "poly_variant";
 
 value a_list = Grammar.Entry.create gram "a_list";
+value a_list2 = Grammar.Entry.create gram "a_list2";
 value a_opt = Grammar.Entry.create gram "a_opt";
 value a_flag = Grammar.Entry.create gram "a_flag";
 value a_flag2 = Grammar.Entry.create gram "a_flag2";
@@ -800,7 +801,7 @@ EXTEND
       | "("; t = SELF; ")" -> t
       | "["; cdl = SLIST0 constructor_declaration SEP "|"; "]" ->
           Qast.Node "TySum" [Qast.Loc; cdl]
-      | "{"; ldl = SLIST1 label_declaration SEP ";"; "}" ->
+      | "{"; ldl = SLIST12 label_declaration SEP ";"; "}" ->
           Qast.Node "TyRec" [Qast.Loc; ldl] ] ]
   ;
   constructor_declaration:
@@ -1204,6 +1205,10 @@ EXTEND
   ;
   a_flag:
     [ [ a = ANTIQUOT "flag" -> antiquot "flag" loc a ] ]
+  ;
+  a_list2:
+    [ [ a = ANTIQUOT "list2" -> antiquot "list2" loc a
+      | a = ANTIQUOT "list" -> Qast.Node "VaVal" [antiquot "list" loc a] ] ]
   ;
   a_flag2:
     [ [ a = ANTIQUOT "flag2" -> antiquot "flag2" loc a
