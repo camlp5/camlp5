@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2latex,v 1.25 2007/07/19 11:03:00 deraugla Exp $
+# $Id: html2latex,v 1.26 2007/07/19 11:39:24 deraugla Exp $
 
 FILES="index.html ptools.html revsynt.html parsers.html fparsers.html lexers.html grammars.html pretty.html opretty.html ml_ast.html pragma.html extfun.html"
 
@@ -78,7 +78,7 @@ for i in $FILES; do
     -e 's/<b>/\\textbf{/g' -e 's|</b>|}|g' \
     -e 's/<a [^>]*>//g' -e 's|</a>||g' \
     -e 's/<span [^>]*>//g' -e 's|</span>||g' \
-    -e 's/&lt;/</g' -e 's/&gt;/>/g' -e 's/&amp;/\&/g' \
+    -e 's/&lt;/</g' -e 's/&gt;/>/g' -e 's/&amp;/\&/g' -e 's/&nbsp;/\\ /g' \
     -e 's/_/\\_/g' \
     -e 's/#/\\#/g' \
     -e 's/\$/\\$/g' \
