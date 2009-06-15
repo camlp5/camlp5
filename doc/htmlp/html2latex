@@ -1,36 +1,35 @@
 #!/bin/sh
-# $Id: html2latex,v 1.11 2007/07/16 01:39:50 deraugla Exp $
+# $Id: html2latex,v 1.12 2007/07/16 07:38:41 deraugla Exp $
 
 FILES="index.html ptools.html parsers.html fparsers.html lexers.html grammars.html pretty.html opretty.html ml_ast.html pragma.html extfun.html"
 
-echo "\
-\\\\documentclass{report}
-\\\\addtolength{\\\\oddsidemargin}{-2.2cm}
-\\\\addtolength{\\\\evensidemargin}{-2.2cm}
-\\\\addtolength{\\\\textwidth}{4.4cm}
-\\\\addtolength{\\\\topmargin}{-2.2cm}
-\\\\addtolength{\\\\textheight}{4.4cm}
-\\\\begin{document}
+echo '\documentclass{report}
+\addtolength{\oddsidemargin}{-2.2cm}
+\addtolength{\evensidemargin}{-2.2cm}
+\addtolength{\textwidth}{4.4cm}
+\addtolength{\topmargin}{-2.2cm}
+\addtolength{\textheight}{4.4cm}
+\begin{document}
 
-\\\\def\\\\cslversion{4.04}
+\def\cslversion{4.04}
 
-\\\\thispagestyle{empty}
-\\\\begin{center}
-~\\\\vfill
-\\\\Huge           Camlp5 - Reference Manual \\\\\\\\
-\\\\Large          version \\\\cslversion \\\\\\\\[1cm]
-\\\\large          Daniel de Rauglaudre \\\\\\\\
-                \\\\today \\\\\\\\[1cm]
-\\\\vfill
-\\\\normalsize	Copyright \\\\copyright\\\\ 2007 Institut National de
+\thispagestyle{empty}
+\begin{center}
+~\vfill
+\Huge           Camlp5 - Reference Manual \\
+\Large          version \cslversion \\[1cm]
+\large          Daniel de Rauglaudre \\
+                \today \\[1cm]
+\vfill
+\normalsize	Copyright \copyright\ 2007 Institut National de
                 Recherche en Informatique et Automatique
 
 This document was generated from the html documentation pages by an
 internal shell script.
-\\\\end{center} \\\\setcounter{page}{1} \\\\cleardoublepage
+\end{center} \setcounter{page}{1} \cleardoublepage
 
-\\\\tableofcontents
-\\\\cleardoublepage"
+\tableofcontents
+\cleardoublepage'
 
 for i in $FILES; do
   echo "======" 1>&2
@@ -69,5 +68,4 @@ for i in $FILES; do
     -e '/<div class="trailer">/,$d'
 done
 
-echo "
-\\\\end{document}"
+echo '\end{document}'
