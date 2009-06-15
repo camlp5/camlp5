@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.97 2007/09/20 03:26:28 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.98 2007/09/21 18:25:15 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -175,7 +175,7 @@ EXTEND
     | "simple"
       [ i = V UIDENT -> <:module_type< $auid:i$ >>
       | i = V LIDENT -> <:module_type< $alid:i$ >>
-      | "'"; i = ident2 -> <:module_type< ' $a:i$ >>
+      | "'"; i = V ident "" -> <:module_type< ' $a:i$ >>
       | "("; mt = SELF; ")" -> <:module_type< $mt$ >> ] ]
   ;
   sig_item:

@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.59 2007/09/19 16:22:18 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.60 2007/09/21 18:25:15 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -560,8 +560,8 @@ EXTEND
     | "." LEFTA
       [ e1 = SELF; "."; "("; e2 = SELF; ")" -> <:expr< $e1$ .( $e2$ ) >>
       | e1 = SELF; "."; "["; e2 = SELF; "]" -> <:expr< $e1$ .[ $e2$ ] >>
-      | e = SELF; "."; "{"; el = LIST1 expr SEP ","; "}" ->
-          <:expr< $e$ .{ $list:el$ } >>
+      | e = SELF; "."; "{"; el = V (LIST1 expr SEP ","); "}" ->
+          <:expr< $e$ .{ $alist:el$ } >>
       | e1 = SELF; "."; e2 = SELF -> <:expr< $e1$ . $e2$ >> ]
     | "~-" NONA
       [ "!"; e = SELF -> <:expr< $e$ . val>>
@@ -573,9 +573,9 @@ EXTEND
       | s = INT_l -> <:expr< $int32:s$ >>
       | s = INT_L -> <:expr< $int64:s$ >>
       | s = INT_n -> <:expr< $nativeint:s$ >>
-      | s = FLOAT -> <:expr< $flo:s$ >>
+      | s = V FLOAT -> <:expr< $aflo:s$ >>
       | s = STRING -> <:expr< $str:s$ >>
-      | c = CHAR -> <:expr< $chr:c$ >>
+      | c = V CHAR -> <:expr< $achr:c$ >>
       | UIDENT "True" -> <:expr< $uid:" True"$ >>
       | UIDENT "False" -> <:expr< $uid:" False"$ >>
       | i = expr_ident -> i
@@ -584,7 +584,8 @@ EXTEND
       | "["; "]" -> <:expr< [] >>
       | "["; el = expr1_semi_list; "]" -> <:expr< $mklistexp loc None el$ >>
       | "[|"; "|]" -> <:expr< [| |] >>
-      | "[|"; el = expr1_semi_list; "|]" -> <:expr< [| $list:el$ |] >>
+      | "[|"; el = V expr1_semi_list "list"; "|]" ->
+          <:expr< [| $alist:el$ |] >>
       | "{"; test_label_eq; lel = lbl_expr_list; "}" ->
           <:expr< { $list:lel$ } >>
       | "{"; e = expr LEVEL "."; "with"; lel = lbl_expr_list; "}" ->

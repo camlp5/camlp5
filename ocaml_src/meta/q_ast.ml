@@ -742,6 +742,8 @@ let check_anti_loc2 s =
   with Not_found | Failure _ -> raise Stream.Failure
 ;;
 
+let anti_anti n = "a" ^ n;;
+
 let lex = Grammar.glexer Pcaml.gram in
 let tok_match = lex.Plexing.tok_match in
 lex.Plexing.tok_match <-
@@ -756,84 +758,91 @@ lex.Plexing.tok_match <-
       (function
          "ANTIQUOT_LOC", prm ->
            let kind = check_anti_loc2 prm in
-           if kind = p_prm || kind = "a" ^ p_prm then prm
+           if kind = p_prm || kind = anti_anti p_prm then prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V INT", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
            let kind = check_anti_loc2 prm in
-           if kind = "aint" || kind = "int" then prm else raise Stream.Failure
+           if kind = "int" || kind = anti_anti "int" then prm
+           else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V INT_l", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
            let kind = check_anti_loc2 prm in
-           if kind = "aint32" || kind = "int32" then prm
+           if kind = "int32" || kind = anti_anti "int32" then prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V INT_L", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
            let kind = check_anti_loc2 prm in
-           if kind = "aint64" || kind = "int64" then prm
+           if kind = "int64" || kind = anti_anti "int64" then prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V INT_n", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
            let kind = check_anti_loc2 prm in
-           if kind = "anativeint" || kind = "nativeint" then prm
+           if kind = "nativeint" || kind = anti_anti "nativeint" then prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V FLOAT", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
            let kind = check_anti_loc2 prm in
-           if kind = "aflo" || kind = "flo" then prm else raise Stream.Failure
+           if kind = "flo" || kind = anti_anti "flo" then prm
+           else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V LIDENT", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
            let kind = check_anti_loc2 prm in
-           if kind = "alid" || kind = "lid" then prm else raise Stream.Failure
+           if kind = "lid" || kind = anti_anti "lid" then prm
+           else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V UIDENT", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
            let kind = check_anti_loc2 prm in
-           if kind = "auid" || kind = "uid" then prm else raise Stream.Failure
+           if kind = "uid" || kind = anti_anti "uid" then prm
+           else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V STRING", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
            let kind = check_anti_loc2 prm in
-           if kind = "astr" || kind = "str" then prm else raise Stream.Failure
+           if kind = "str" || kind = anti_anti "str" then prm
+           else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V CHAR", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
            let kind = check_anti_loc2 prm in
-           if kind = "achr" || kind = "chr" then prm else raise Stream.Failure
+           if kind = "chr" || kind = anti_anti "chr" then prm
+           else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V LIST", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
            let kind = check_anti_loc2 prm in
-           if kind = "alist" || kind = "list" then prm
+           if kind = "list" || kind = anti_anti "list" then prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V OPT", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
            let kind = check_anti_loc2 prm in
-           if kind = "aopt" || kind = "opt" then prm else raise Stream.Failure
+           if kind = "opt" || kind = anti_anti "opt" then prm
+           else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V FLAG", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
            let kind = check_anti_loc2 prm in
-           if kind = "aflag" || kind = "flag" then prm
+           if kind = "flag" || kind = anti_anti "flag" then prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | tok -> tok_match tok;;

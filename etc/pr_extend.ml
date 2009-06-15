@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extend.ml,v 1.43 2007/09/21 17:41:21 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.44 2007/09/21 18:25:15 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -283,6 +283,8 @@ value rec string_list =
   | [] -> "" ]
 ;
 
+value anti_anti n = "a" ^ n;
+
 value rec rule pc (sl, a) =
   match a with
   [ None -> not_impl "rule 1" pc sl
@@ -488,7 +490,7 @@ and check_slist rl =
               Some <:expr< Qast.VaVal (Qast.VaAnt $str:_$ loc a) >>);
              ([(Some <:patt< a >>, Stoken (Left ("ANTIQUOT", a_n)))],
               Some <:expr< Qast.VaAnt $str:_$ loc a >>) :: rl]
-            when a_n = "a" ^ n ->
+            when a_n = anti_anti n ->
               loop [n :: ls] rl
           | [([(Some <:patt< a >>, (Snterm <:expr< $lid:_$ >> as s))],
                 Some <:expr< Qast.VaVal a >>)] ->

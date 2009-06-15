@@ -1,16 +1,6 @@
 (* camlp5r pa_lex.cmo *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: plexer.ml,v 1.95 2007/09/14 12:44:26 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.96 2007/09/21 18:25:15 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 value no_quotations = ref False;
 value error_on_unknown_keywords = ref False;

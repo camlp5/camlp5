@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.77 2007/09/21 17:41:21 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.78 2007/09/21 18:25:15 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -814,6 +814,8 @@ value ssflag2 loc ls s =
   {used = s.used; text = text; styp = STtyp <:ctyp< Qast.t >>}
 ;
 
+value anti_anti n = "a" ^ n;
+
 value ssnterm2 loc ls (i, n) lev =
   let t = new_type_var () in
   let text =
@@ -831,7 +833,7 @@ value ssnterm2 loc ls (i, n) lev =
              {prod = [ps]; action = Some act}
            in
            let r2 =
-             let a = "a" ^ a in
+             let a = anti_anti a in
              let ps =
                let text = TXtok loc "ANTIQUOT" <:expr< $str:a$ >> in
                let styp = STlid loc "string" in

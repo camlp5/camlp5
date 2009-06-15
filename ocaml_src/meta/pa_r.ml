@@ -461,9 +461,9 @@ Grammar.extend
       Gramext.action
         (fun _ (mt : 'module_type) _ (loc : Ploc.t) -> (mt : 'module_type));
       [Gramext.Stoken ("", "'");
-       Gramext.Snterm (Grammar.Entry.obj (ident2 : 'ident2 Grammar.Entry.e))],
+       Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'ident2) _ (loc : Ploc.t) ->
+        (fun (i : 'ident) _ (loc : Ploc.t) ->
            (MLast.MtQuo (loc, i) : 'module_type));
       [Gramext.Stoken ("LIDENT", "")],
       Gramext.action

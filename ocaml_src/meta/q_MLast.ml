@@ -4108,7 +4108,7 @@ Grammar.extend
       [Gramext.Stoken ("ANTIQUOT", "aopt")],
       Gramext.action
         (fun (a : string) (loc : Ploc.t) ->
-           (Qast.VaAnt ("opt", loc, a) : 'dir_param));
+           (Qast.VaAnt ("aopt", loc, a) : 'dir_param));
       [Gramext.Stoken ("ANTIQUOT", "opt")],
       Gramext.action
         (fun (a : string) (loc : Ploc.t) ->

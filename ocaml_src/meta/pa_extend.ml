@@ -1567,6 +1567,8 @@ let ssflag2 loc ls s =
        (MLast.TyAcc (loc, MLast.TyUid (loc, "Qast"), MLast.TyLid (loc, "t")))}
 ;;
 
+let anti_anti n = "a" ^ n;;
+
 let ssnterm2 loc ls (i, n) lev =
   let t = new_type_var () in
   let text =
@@ -1602,7 +1604,7 @@ let ssnterm2 loc ls (i, n) lev =
              {prod = [ps]; action = Some act}
            in
            let r2 =
-             let a = "a" ^ a in
+             let a = anti_anti a in
              let ps =
                let text = TXtok (loc, "ANTIQUOT", MLast.ExStr (loc, a)) in
                let styp = STlid (loc, "string") in

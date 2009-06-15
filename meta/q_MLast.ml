@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.96 2007/09/21 17:41:21 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.97 2007/09/21 18:25:15 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -1266,7 +1266,7 @@ EXTEND
   ;
   dir_param:
     [ [ a = ANTIQUOT "opt" -> Qast.VaVal (Qast.VaAnt "opt" loc a)
-      | a = ANTIQUOT "aopt" -> Qast.VaAnt "opt" loc a
+      | a = ANTIQUOT "aopt" -> Qast.VaAnt "aopt" loc a
       | e = expr -> Qast.VaVal (Qast.Option (Some e))
       | -> Qast.VaVal (Qast.Option None) ] ]
   ;
