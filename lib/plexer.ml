@@ -1,5 +1,5 @@
 (* camlp5r pa_lexer.cmo *)
-(* $Id: plexer.ml,v 1.99 2007/10/14 02:29:22 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.100 2007/10/14 02:50:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value no_quotations = ref False;
@@ -178,8 +178,7 @@ value rec quotation ctx bp =
   [ ">>"/
   | ">" (quotation ctx bp)!
   | "<<" (quotation ctx bp)! [ -> $add ">>" ]! (quotation ctx bp)!
-  | "<:" ident! "<" (quotation ctx bp)! [ -> $add ">>" ]!
-      (quotation ctx bp)!
+  | "<:" ident! "<" (quotation ctx bp)! [ -> $add ">>" ]! (quotation ctx bp)!
   | "<:" ident! (quotation ctx bp)!
   | "<" (quotation ctx bp)!
   | "\\"/ [ '>' | '<' | '\\' ] (quotation ctx bp)!
@@ -366,13 +365,27 @@ value next_token_after_spaces ctx bp =
   | "?"/ 'a'-'z' ident! questionident!
   | "?" (question ctx bp)!
   | "<"/ (less ctx bp)!
-  | ":" [ ']' | ':' | '=' | '>' ] -> keyword_or_error ctx (bp, $pos) $buf
+  | ":]" -> keyword_or_error ctx (bp, $pos) $buf
+  | "::" -> keyword_or_error ctx (bp, $pos) $buf
+  | ":=" -> keyword_or_error ctx (bp, $pos) $buf
+  | ":>" -> keyword_or_error ctx (bp, $pos) $buf
   | ":" -> keyword_or_error ctx (bp, $pos) $buf
-  | [ '>' | '|' ] [ ']' | '}' ] -> keyword_or_error ctx (bp, $pos) $buf
-  | [ '>' | '|' ] ident2! -> keyword_or_error ctx (bp, $pos) $buf
-  | [ '[' | '{' ] ?= [ "<<" | "<:" ] -> keyword_or_error ctx (bp, $pos) $buf
-  | [ '[' | '{' ] [ '|' | '<' | ':' ] -> keyword_or_error ctx (bp, $pos) $buf
-  | [ '[' | '{' ] -> keyword_or_error ctx (bp, $pos) $buf
+  | ">]" -> keyword_or_error ctx (bp, $pos) $buf
+  | ">}" -> keyword_or_error ctx (bp, $pos) $buf
+  | ">" ident2! -> keyword_or_error ctx (bp, $pos) $buf
+  | "|]" -> keyword_or_error ctx (bp, $pos) $buf
+  | "|}" -> keyword_or_error ctx (bp, $pos) $buf
+  | "|" ident2! -> keyword_or_error ctx (bp, $pos) $buf
+  | "[" ?= [ "<<" | "<:" ] -> keyword_or_error ctx (bp, $pos) $buf
+  | "[|" -> keyword_or_error ctx (bp, $pos) $buf
+  | "[<" -> keyword_or_error ctx (bp, $pos) $buf
+  | "[:" -> keyword_or_error ctx (bp, $pos) $buf
+  | "[" -> keyword_or_error ctx (bp, $pos) $buf
+  | "{" ?= [ "<<" | "<:" ] -> keyword_or_error ctx (bp, $pos) $buf
+  | "{|" -> keyword_or_error ctx (bp, $pos) $buf
+  | "{<" -> keyword_or_error ctx (bp, $pos) $buf
+  | "{:" -> keyword_or_error ctx (bp, $pos) $buf
+  | "{" -> keyword_or_error ctx (bp, $pos) $buf
   | ".." -> keyword_or_error ctx (bp, $pos) ".."
   | "." ->
       let id =
@@ -495,13 +508,27 @@ and check =
   | "$" check_ident2!
   | "<" ?= [ ":" | "<" ]
   | "<" check_ident2!
-  | ":" [ ']' | ':' | '=' | '>' ]
+  | ":]"
+  | "::"
+  | ":="
+  | ":>"
   | ":"
-  | [ '>' | '|' ] [ ']' | '}' ]
-  | [ '>' | '|' ] check_ident2!
-  | [ '[' | '{' ] ?= [ "<<" | "<:" ]
-  | [ '[' | '{' ] [ '|' | '<' | ':' ]
-  | [ '[' | '{' ]
+  | ">]"
+  | ">}"
+  | ">" check_ident2!
+  | "|]"
+  | "|}"
+  | "|" check_ident2!
+  | "[" ?= [ "<<" | "<:" ]
+  | "[|"
+  | "[<"
+  | "[:"
+  | "["
+  | "{" ?= [ "<<" | "<:" ]
+  | "{|"
+  | "{<"
+  | "{:"
+  | "{"
   | ";;"
   | ";"
   | _ ]

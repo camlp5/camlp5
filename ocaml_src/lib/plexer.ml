@@ -632,39 +632,103 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
   | Some ':' ->
       Stream.junk strm__;
       begin match Stream.peek strm__ with
-        Some (']' | ':' | '=' | '>' as c) ->
+        Some ']' ->
           Stream.junk strm__;
           keyword_or_error ctx (bp, Stream.count strm__)
-            (B.get (B.add c (B.add ':' buf)))
+            (B.get (B.add ']' (B.add ':' buf)))
+      | Some ':' ->
+          Stream.junk strm__;
+          keyword_or_error ctx (bp, Stream.count strm__)
+            (B.get (B.add ':' (B.add ':' buf)))
+      | Some '=' ->
+          Stream.junk strm__;
+          keyword_or_error ctx (bp, Stream.count strm__)
+            (B.get (B.add '=' (B.add ':' buf)))
+      | Some '>' ->
+          Stream.junk strm__;
+          keyword_or_error ctx (bp, Stream.count strm__)
+            (B.get (B.add '>' (B.add ':' buf)))
       | _ ->
           keyword_or_error ctx (bp, Stream.count strm__)
             (B.get (B.add ':' buf))
       end
-  | Some ('>' | '|' as c) ->
+  | Some '>' ->
       Stream.junk strm__;
       begin match Stream.peek strm__ with
-        Some (']' | '}' as c1) ->
+        Some ']' ->
           Stream.junk strm__;
           keyword_or_error ctx (bp, Stream.count strm__)
-            (B.get (B.add c1 (B.add c buf)))
+            (B.get (B.add ']' (B.add '>' buf)))
+      | Some '}' ->
+          Stream.junk strm__;
+          keyword_or_error ctx (bp, Stream.count strm__)
+            (B.get (B.add '}' (B.add '>' buf)))
       | _ ->
-          let buf = ident2 (B.add c buf) strm__ in
+          let buf = ident2 (B.add '>' buf) strm__ in
           keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
       end
-  | Some ('[' | '{' as c) ->
+  | Some '|' ->
+      Stream.junk strm__;
+      begin match Stream.peek strm__ with
+        Some ']' ->
+          Stream.junk strm__;
+          keyword_or_error ctx (bp, Stream.count strm__)
+            (B.get (B.add ']' (B.add '|' buf)))
+      | Some '}' ->
+          Stream.junk strm__;
+          keyword_or_error ctx (bp, Stream.count strm__)
+            (B.get (B.add '}' (B.add '|' buf)))
+      | _ ->
+          let buf = ident2 (B.add '|' buf) strm__ in
+          keyword_or_error ctx (bp, Stream.count strm__) (B.get buf)
+      end
+  | Some '[' ->
       Stream.junk strm__;
       begin match Stream.npeek 2 strm__ with
         ['<'; '<'] | ['<'; ':'] ->
-          keyword_or_error ctx (bp, Stream.count strm__) (B.get (B.add c buf))
+          keyword_or_error ctx (bp, Stream.count strm__)
+            (B.get (B.add '[' buf))
       | _ ->
           match Stream.peek strm__ with
-            Some ('|' | '<' | ':' as c1) ->
+            Some '|' ->
               Stream.junk strm__;
               keyword_or_error ctx (bp, Stream.count strm__)
-                (B.get (B.add c1 (B.add c buf)))
+                (B.get (B.add '|' (B.add '[' buf)))
+          | Some '<' ->
+              Stream.junk strm__;
+              keyword_or_error ctx (bp, Stream.count strm__)
+                (B.get (B.add '<' (B.add '[' buf)))
+          | Some ':' ->
+              Stream.junk strm__;
+              keyword_or_error ctx (bp, Stream.count strm__)
+                (B.get (B.add ':' (B.add '[' buf)))
           | _ ->
               keyword_or_error ctx (bp, Stream.count strm__)
-                (B.get (B.add c buf))
+                (B.get (B.add '[' buf))
+      end
+  | Some '{' ->
+      Stream.junk strm__;
+      begin match Stream.npeek 2 strm__ with
+        ['<'; '<'] | ['<'; ':'] ->
+          keyword_or_error ctx (bp, Stream.count strm__)
+            (B.get (B.add '{' buf))
+      | _ ->
+          match Stream.peek strm__ with
+            Some '|' ->
+              Stream.junk strm__;
+              keyword_or_error ctx (bp, Stream.count strm__)
+                (B.get (B.add '|' (B.add '{' buf)))
+          | Some '<' ->
+              Stream.junk strm__;
+              keyword_or_error ctx (bp, Stream.count strm__)
+                (B.get (B.add '<' (B.add '{' buf)))
+          | Some ':' ->
+              Stream.junk strm__;
+              keyword_or_error ctx (bp, Stream.count strm__)
+                (B.get (B.add ':' (B.add '{' buf)))
+          | _ ->
+              keyword_or_error ctx (bp, Stream.count strm__)
+                (B.get (B.add '{' buf))
       end
   | Some '.' ->
       Stream.junk strm__;
@@ -824,25 +888,47 @@ and check buf (strm__ : _ Stream.t) =
   | Some ':' ->
       Stream.junk strm__;
       begin match Stream.peek strm__ with
-        Some (']' | ':' | '=' | '>' as c) ->
-          Stream.junk strm__; B.add c (B.add ':' buf)
+        Some ']' -> Stream.junk strm__; B.add ']' (B.add ':' buf)
+      | Some ':' -> Stream.junk strm__; B.add ':' (B.add ':' buf)
+      | Some '=' -> Stream.junk strm__; B.add '=' (B.add ':' buf)
+      | Some '>' -> Stream.junk strm__; B.add '>' (B.add ':' buf)
       | _ -> B.add ':' buf
       end
-  | Some ('>' | '|' as c) ->
+  | Some '>' ->
       Stream.junk strm__;
       begin match Stream.peek strm__ with
-        Some (']' | '}' as c1) -> Stream.junk strm__; B.add c1 (B.add c buf)
-      | _ -> check_ident2 (B.add c buf) strm__
+        Some ']' -> Stream.junk strm__; B.add ']' (B.add '>' buf)
+      | Some '}' -> Stream.junk strm__; B.add '}' (B.add '>' buf)
+      | _ -> check_ident2 (B.add '>' buf) strm__
       end
-  | Some ('[' | '{' as c) ->
+  | Some '|' ->
+      Stream.junk strm__;
+      begin match Stream.peek strm__ with
+        Some ']' -> Stream.junk strm__; B.add ']' (B.add '|' buf)
+      | Some '}' -> Stream.junk strm__; B.add '}' (B.add '|' buf)
+      | _ -> check_ident2 (B.add '|' buf) strm__
+      end
+  | Some '[' ->
       Stream.junk strm__;
       begin match Stream.npeek 2 strm__ with
-        ['<'; '<'] | ['<'; ':'] -> B.add c buf
+        ['<'; '<'] | ['<'; ':'] -> B.add '[' buf
       | _ ->
           match Stream.peek strm__ with
-            Some ('|' | '<' | ':' as c1) ->
-              Stream.junk strm__; B.add c1 (B.add c buf)
-          | _ -> B.add c buf
+            Some '|' -> Stream.junk strm__; B.add '|' (B.add '[' buf)
+          | Some '<' -> Stream.junk strm__; B.add '<' (B.add '[' buf)
+          | Some ':' -> Stream.junk strm__; B.add ':' (B.add '[' buf)
+          | _ -> B.add '[' buf
+      end
+  | Some '{' ->
+      Stream.junk strm__;
+      begin match Stream.npeek 2 strm__ with
+        ['<'; '<'] | ['<'; ':'] -> B.add '{' buf
+      | _ ->
+          match Stream.peek strm__ with
+            Some '|' -> Stream.junk strm__; B.add '|' (B.add '{' buf)
+          | Some '<' -> Stream.junk strm__; B.add '<' (B.add '{' buf)
+          | Some ':' -> Stream.junk strm__; B.add ':' (B.add '{' buf)
+          | _ -> B.add '{' buf
       end
   | Some ';' ->
       Stream.junk strm__;
@@ -1014,11 +1100,11 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-         (fun _ -> raise (Match_failure ("plexer.ml", 665, 25)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 665, 45)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 665, 68)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 666, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 666, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 692, 25)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 692, 45)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 692, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 693, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 693, 37)));
        tok_comm = None}
   in
   let glex =
