@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pcaml.ml,v 1.22 2007/09/01 21:20:34 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.23 2007/09/05 18:40:31 deraugla Exp $ *)
 
 value version = "4.09-exp";
 value syntax_name = ref "";
@@ -101,10 +101,16 @@ value expand_quotation gloc expander shift name str =
            let exc1 = Qerror name Expanding exc in
            let shift = Ploc.first_pos gloc + shift in
            let loc =
-             Ploc.make (Ploc.line_nb gloc + Ploc.line_nb loc - 1)
-               (if Ploc.line_nb loc = 1 then Ploc.bol_pos gloc
-                else shift + Ploc.bol_pos loc)
-               (shift + Ploc.first_pos loc, shift + Ploc.last_pos loc)
+             let gloc_line_nb = Ploc.line_nb gloc in
+             let loc_line_nb = Ploc.line_nb loc in
+             if gloc_line_nb < 0 || loc_line_nb < 0 then
+               Ploc.make_unlined
+                 (shift + Ploc.first_pos loc, shift + Ploc.last_pos loc)
+             else
+               Ploc.make (gloc_line_nb + loc_line_nb - 1)
+                 (if loc_line_nb = 1 then Ploc.bol_pos gloc
+                  else shift + Ploc.bol_pos loc)
+                 (shift + Ploc.first_pos loc, shift + Ploc.last_pos loc)
            in
            raise (Ploc.Exc loc exc1)
        | exc ->
