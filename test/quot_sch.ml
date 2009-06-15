@@ -218,15 +218,19 @@
 <:sig_item< (# $_:s$ $e$) >>
 (MLast.SgDir loc (Ploc.VaVal s) (Ploc.VaVal oe))
 (MLast.SgDir loc s oe)
-; <:sig_item< exception $s$ >>
-; <:sig_item< exception $_:s$ >>
-; <:sig_item< exception $s$ of $list:lt$ >>
-; <:sig_item< exception $_:s$ of $_list:lt$ >>
-; <:sig_item< external $s$ : $t$ = $list:ls$ >>
-; <:sig_item< external $_:s$ : $t$ = $_list:ls$ >>
-; <:sig_item< include $me$ >>
-; <:sig_item< module $flag:b$ $list:lsmt$ >>
-; <:sig_item< module $_flag:b$ $_list:lsmt$ >>
+<:sig_item< (exception $s$) >>
+<:sig_item< (exception $_:s$) >>
+<:sig_item< (exception $s$ $list:lt$) >>
+<:sig_item< (exception $_:s$ $_list:lt$) >>
+<:sig_item< (external $s$ $t$ $list:ls$) >>
+<:sig_item< (external $_:s$ $t$ $_list:ls$) >>
+<:sig_item< (include $me$) >>
+<:sig_item< (module* $list:lsmt$) >>
+<:sig_item< (module* $_list:lsmt$) >>
+<:sig_item< (modulerec* $list:lsmt$) >>
+<:sig_item< (modulerec* $_list:lsmt$) >>
+(MLast.SgMod loc (Ploc.VaVal b) (Ploc.VaVal lsmt))
+(MLast.SgMod loc b lsmt)
 ; <:sig_item< module type $s$ = $mt$ >>
 ; <:sig_item< module type $_:s$ = $mt$ >>
 ; <:sig_item< open $list:ls$ >>

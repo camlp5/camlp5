@@ -225,6 +225,10 @@
 <:sig_item< external $s$ : $t$ = $list:ls$ >>;
 <:sig_item< external $_:s$ : $t$ = $_list:ls$ >>;
 <:sig_item< include $me$ >>;
+<:sig_item< module $list:lsmt$ >>;
+<:sig_item< module $_list:lsmt$ >>;
+<:sig_item< module rec $list:lsmt$ >>;
+<:sig_item< module rec $_list:lsmt$ >>;
 <:sig_item< module $flag:b$ $list:lsmt$ >>;
 <:sig_item< module $_flag:b$ $_list:lsmt$ >>;
 <:sig_item< module type $s$ = $mt$ >>;

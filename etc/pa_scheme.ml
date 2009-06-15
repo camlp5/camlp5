@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.63 2007/10/09 02:53:07 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.64 2007/10/09 09:20:38 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -463,6 +463,33 @@
      (se (error se "with constr"))))
   (sig_item_se
     (lambda_match
+     ((Sexpr loc [(Slid _ "exception") se . sel])
+      (let*
+       ((c (anti_uid_or_error se))
+        (tl (anti_list_map ctyp_se sel)))
+        <:sig_item< exception $_:c$ of $_list:tl$ >>))
+     ((Sexpr loc [(Slid _ "external") se1 se2 . sel])
+      (let*
+       ((i (anti_lid_or_error se1))
+        (t (ctyp_se se2))
+        (pd (anti_list_map string_se sel)))
+       <:sig_item< external $_lid:i$ : $t$ = $_list:pd$ >>))
+     ((Sexpr loc [(Slid _ "include") se])
+      (let ((mt (module_type_se se))) <:sig_item< include $mt$ >>))
+     ((Sexpr loc [(Slid _ "module") se1 se2])
+      (let*
+       ((s (anti_uid_or_error se1))
+        (mb (module_type_se se2)))
+       <:sig_item< module $_uid:s$ : $mb$ >>))
+     ((Sexpr loc [(Slid _ (as (or "module*" "modulerec*") rf)) . sel])
+      (let
+       ((rf (= rf "modulerec*"))
+        (lmb (anti_list_map sig_module_se sel)))
+        <:sig_item< module $flag:rf$ $_list:lmb$ >>))
+     ((Sexpr loc [(Slid _ "moduletype") (Suid _ s) se])
+      (let* ((s (rename_id s))
+             (mt (module_type_se se)))
+         <:sig_item< module type $uid:s$ = $mt$ >>))
      ((Sexpr loc [(Slid _ "open") se])
       (let ((s (mod_ident_se se))) <:sig_item< open $s$ >>))
      ((Sexpr loc [(Slid _ "type") . sel])
@@ -471,27 +498,10 @@
      ((Sexpr loc [(Slid _ "type*") . sel])
       (let ((tdl (List.map type_declaration_se sel)))
          <:sig_item< type $list:tdl$ >>))
-     ((Sexpr loc [(Slid _ "exception") (Suid _ c) . sel])
-      (let* ((c (rename_id c))
-             (tl (List.map ctyp_se sel)))
-         <:sig_item< exception $uid:c$ of $list:tl$ >>))
      ((Sexpr loc [(Slid _ "value") (Slid _ s) se])
       (let* ((s (rename_id s))
              (t (ctyp_se se)))
          <:sig_item< value $lid:s$ : $t$ >>))
-     ((Sexpr loc [(Slid _ "external") (Slid _ i) se . sel])
-      (let* ((i (rename_id i))
-             (t (ctyp_se se))
-             (pd (anti_list_map string_se sel)))
-         <:sig_item< external $lid:i$ : $t$ = $_list:pd$ >>))
-     ((Sexpr loc [(Slid _ "module") (Suid _ s) se])
-      (let* ((s (rename_id s))
-             (mb (module_type_se se)))
-         <:sig_item< module $uid:s$ : $mb$ >>))
-     ((Sexpr loc [(Slid _ "moduletype") (Suid _ s) se])
-      (let* ((s (rename_id s))
-             (mt (module_type_se se)))
-         <:sig_item< module type $uid:s$ = $mt$ >>))
      ((Sexpr loc [(Slid _ "#") se1])
       (let ((s (anti_lid_or_error se1))) <:sig_item< # $_lid:s$ >>))
      ((Sexpr loc [(Slid _ "#") se1 se2])
@@ -500,14 +510,15 @@
      (se (error se "sig item"))))
   ((str_item_se se)
     (match se
-     ((Sexpr loc [(Slid _ "open") se])
-      (let ((s (anti_mod_ident se))) <:str_item< open $_:s$ >>))
-     ((Sexpr loc [(Slid _ "type") . sel])
-      (let ((tdl (type_declaration_list_se sel)))
-         <:str_item< type $list:tdl$ >>))
-     ((Sexpr loc [(Slid _ "type*") . sel])
-      (let ((tdl (anti_list_map type_declaration_se sel)))
-         <:str_item< type $_list:tdl$ >>))
+     ((Sexpr loc [(Slid _ (as (or "define" "definerec") r)) se . sel])
+      (let* ((r (= r "definerec"))
+             ((values p e) (fun_binding_se se (begin_se loc sel))))
+         <:str_item< value $flag:r$ $p$ = $e$ >>))
+     ((Sexpr loc [(Slid _ (as (or "define*" "definerec*") rf)) . sel])
+      (let*
+       ((rf (= rf "definerec*"))
+        (lbs (anti_list_map let_binding_se sel)))
+       <:str_item< value $flag:rf$ $_list:lbs$ >>))
      ((Sexpr loc [(Slid _ "exception") se . sel])
       (let*
        ((c (anti_uid_or_error se))
@@ -518,15 +529,6 @@
        ((c (anti_uid_or_error se1))
         (id (anti_mod_ident se2)))
        <:str_item< exception $_uid:c$ = $_:id$ >>))
-     ((Sexpr loc [(Slid _ (as (or "define" "definerec") r)) se . sel])
-      (let* ((r (= r "definerec"))
-             ((values p e) (fun_binding_se se (begin_se loc sel))))
-         <:str_item< value $flag:r$ $p$ = $e$ >>))
-     ((Sexpr loc [(Slid _ (as (or "define*" "definerec*") rf)) . sel])
-      (let*
-       ((rf (= rf "definerec*"))
-        (lbs (anti_list_map let_binding_se sel)))
-       <:str_item< value $flag:rf$ $_list:lbs$ >>))
      ((Sexpr loc [(Slid _ "external") se1 se2 . sel])
       (let*
        ((i (anti_lid_or_error se1))
@@ -536,18 +538,26 @@
      ((Sexpr loc [(Slid _ "include") se])
       (let ((me (module_expr_se se))) <:str_item< include $me$ >>))
      ((Sexpr loc [(Slid _ "module") se1 se2])
-      (let (((values i mb) (module_binding_se (Sexpr loc [se1 se2]))))
-         <:str_item< module $_uid:i$ = $mb$ >>))
+      (let (((values i mb) (str_module_se (Sexpr loc [se1 se2]))))
+       <:str_item< module $_uid:i$ = $mb$ >>))
      ((Sexpr loc [(Slid _ (as (or "module*" "modulerec*") rf)) . sel])
       (let*
        ((rf (= rf "modulerec*"))
-       (lmb (anti_list_map module_binding_se sel)))
+       (lmb (anti_list_map str_module_se sel)))
         <:str_item< module $flag:rf$ $_list:lmb$ >>))
      ((Sexpr loc [(Slid _ "moduletype") se1 se2])
       (let*
        ((s (anti_uid_or_error se1))
         (mt (module_type_se se2)))
        <:str_item< module type $_uid:s$ = $mt$ >>))
+     ((Sexpr loc [(Slid _ "open") se])
+      (let ((s (anti_mod_ident se))) <:str_item< open $_:s$ >>))
+     ((Sexpr loc [(Slid _ "type") . sel])
+      (let ((tdl (type_declaration_list_se sel)))
+         <:str_item< type $list:tdl$ >>))
+     ((Sexpr loc [(Slid _ "type*") . sel])
+      (let ((tdl (anti_list_map type_declaration_se sel)))
+         <:str_item< type $_list:tdl$ >>))
      ((Sexpr loc [(Slid _ "#") se1])
       (match (anti_lid se1)
        ((Some s) <:str_item< # $_lid:s$ >>)
@@ -563,10 +573,15 @@
       (let* ((loc (loc_of_sexpr se))
              (e (expr_se se)))
          <:str_item< $exp:e$ >>))))
-  (module_binding_se
+  (str_module_se
    (lambda_match
     ((Sexpr loc [se1 se2])
      (values (anti_uid_or_error se1) (module_expr_se se2)))
+    (se (error se "module binding"))))
+  (sig_module_se
+   (lambda_match
+    ((Sexpr loc [se1 se2])
+     (values (anti_uid_or_error se1) (module_type_se se2)))
     (se (error se "module binding"))))
   (expr_se
    (lambda_match
