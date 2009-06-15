@@ -41,7 +41,8 @@ Grammar.extend
    Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e),
    Some (Gramext.Level "vala"),
    [None, None,
-    [[Gramext.Stoken ("UIDENT", "SV"); Gramext.Snext],
+    [[Gramext.Stoken ("UIDENT", "SV"); Gramext.Snext;
+      Gramext.Slist0 (Gramext.Stoken ("STRING", ""))],
      Gramext.action
-       (fun (s : 'symbol) _ (loc : Ploc.t) ->
-          (ASvala2 (loc, s, []) : 'symbol))]]];;
+       (fun (al : string list) (s : 'symbol) _ (loc : Ploc.t) ->
+          (ASvala2 (loc, s, al) : 'symbol))]]];;

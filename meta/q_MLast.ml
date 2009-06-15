@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.95 2007/09/21 12:17:13 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.96 2007/09/21 17:41:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -430,11 +430,11 @@ EXTEND
                   [Qast.Tuple [p1; Qast.VaVal (Qast.Option None); e1]])]
       | "if"; e1 = SELF; "then"; e2 = SELF; "else"; e3 = SELF ->
           Qast.Node "ExIfe" [Qast.Loc; e1; e2; e3]
-      | "do"; "{"; seq = sequence2; "}" -> mksequence2 Qast.Loc seq
+      | "do"; "{"; seq = SV sequence "list"; "}" -> mksequence2 Qast.Loc seq
       | "for"; i = a_LIDENT2; "="; e1 = SELF; df = direction_flag2; e2 = SELF;
-        "do"; "{"; seq = sequence2; "}" ->
+        "do"; "{"; seq = SV sequence "list"; "}" ->
           Qast.Node "ExFor" [Qast.Loc; i; e1; e2; df; seq]
-      | "while"; e = SELF; "do"; "{"; seq = sequence2; "}" ->
+      | "while"; e = SELF; "do"; "{"; seq = SV sequence "list"; "}" ->
           Qast.Node "ExWhi" [Qast.Loc; e; seq] ]
     | "where"
       [ e = SELF; "where"; rf = SV (FLAG "rec"); lb = let_binding ->
@@ -711,10 +711,6 @@ EXTEND
   ;
   dummy:
     [ [ -> () ] ]
-  ;
-  sequence2:
-    [ [ seq = sequence -> Qast.VaVal seq
-      | seq = SV (LIST1 expr SEP ";") -> seq ] ]
   ;
   sequence:
     [ [ "let"; rf = SV (FLAG "rec"); l = SV (LIST1 let_binding SEP "and");

@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo *)
-(* $Id: pa_extend_m.ml,v 1.28 2007/09/21 12:20:56 deraugla Exp $ *)
+(* $Id: pa_extend_m.ml,v 1.29 2007/09/21 17:41:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pa_extend;
@@ -19,6 +19,6 @@ EXTEND
           ASquot loc (ASflag loc s) ] ]
   ;
   symbol: LEVEL "vala"
-    [ [ UIDENT "SV"; s = NEXT -> ASvala2 loc s [] ] ]
+    [ [ UIDENT "SV"; s = NEXT; al = LIST0 STRING -> ASvala2 loc s al ] ]
   ;
 END;

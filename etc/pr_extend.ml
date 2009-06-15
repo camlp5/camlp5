@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extend.ml,v 1.42 2007/09/21 12:17:13 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.43 2007/09/21 17:41:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -41,7 +41,7 @@ type symbol =
   | Snext
   | Stoken of alt Plexing.pattern MLast.expr
   | Srules of list (list (option MLast.patt * symbol) * option MLast.expr)
-  | Svala of symbol ]
+  | Svala of list string and symbol ]
 and alt 'a 'b =
   [ Left of 'a
   | Right of 'b ]
@@ -111,6 +111,26 @@ value rec unaction =
   | _ -> raise Not_found ]
 ;
 
+value rec unlist unelem =
+  fun
+  [ <:expr< [$e$ :: $el$] >> -> [unelem e :: unlist unelem el]
+  | <:expr< [] >> -> []
+  | _ -> raise Not_found ]
+;
+
+value rec rev_unlist unelem list =
+  fun
+  [ <:expr< [$e$ :: $el$] >> -> rev_unlist unelem [unelem e :: list] el
+  | <:expr< [] >> -> list
+  | _ -> raise Not_found ]
+;
+
+value unstring =
+  fun
+  [ <:expr< $str:s$ >> -> s
+  | _ -> assert False ]
+;
+
 value untoken =
   fun
   [ <:expr< ($str:x$, $str:y$) >> -> Left (x, y)
@@ -118,12 +138,7 @@ value untoken =
   | _ -> raise Not_found ]
 ;
 
-value rec unrule_list rl =
-  fun
-  [ <:expr< [$e$ :: $el$] >> -> unrule_list [unrule e :: rl] el
-  | <:expr< [] >> -> rl
-  | _ -> raise Not_found ]
-and unrule =
+value rec unrule =
   fun
   [ <:expr< ($e1$, Gramext.action $e2$) >> ->
       let (pl, a) =
@@ -167,22 +182,16 @@ and unsymbol =
   | <:expr< Gramext.Sself >> -> Sself
   | <:expr< Gramext.Snext >> -> Snext
   | <:expr< Gramext.Stoken $e$ >> -> Stoken (untoken e)
-  | <:expr< Gramext.srules $e$ >> -> Srules (unrule_list [] e)
-  | <:expr< Gramext.Svala $_$ $e$ >> -> Svala (unsymbol e)
+  | <:expr< Gramext.srules $e$ >> -> Srules (rev_unlist unrule [] e)
+  | <:expr< Gramext.Svala $ls$ $e$ >> ->
+      Svala (unlist unstring ls) (unsymbol e)
   | _ -> raise Not_found ]
 ;
 
 value unlevel =
   fun
   [ <:expr< ($e1$, $e2$, $e3$) >> ->
-      (unlabel e1, unassoc e2, unrule_list [] e3)
-  | _ -> raise Not_found ]
-;
-
-value rec unlevel_list =
-  fun
-  [ <:expr< [$e$ :: $el$] >> -> [unlevel e :: unlevel_list el]
-  | <:expr< [] >> -> []
+      (unlabel e1, unassoc e2, rev_unlist unrule [] e3)
   | _ -> raise Not_found ]
 ;
 
@@ -191,7 +200,7 @@ value unentry =
   [ <:expr<
       (Grammar.Entry.obj ($e$ : Grammar.Entry.e '$_$), $pos$, $ll$)
     >> ->
-      (e, unposition pos, unlevel_list ll)
+      (e, unposition pos, unlist unlevel ll)
   | _ -> raise Not_found ]
 ;
 
@@ -266,6 +275,12 @@ value token pc tok =
       sprintf "%s%s $%s$%s" pc.bef con (expr {(pc) with bef = ""; aft = ""} x)
         pc.aft
   | Right _ -> assert False ]
+;
+
+value rec string_list =
+  fun
+  [ [s :: sl] -> sprintf " \"%s\"%s" s (string_list sl)
+  | [] -> "" ]
 ;
 
 value rec rule pc (sl, a) =
@@ -370,7 +385,9 @@ and symbol pc sy =
       [ Some s -> s_symbol pc s
       | None -> simple_symbol pc sy ]
   | Stoken tok -> token pc tok
-  | Svala sy -> symbol {(pc) with bef = "V " ^ pc.bef} sy
+  | Svala sl sy ->
+      sprintf "%sV %s%s%s" pc.bef (symbol {(pc) with bef = ""; aft = ""} sy)
+        (string_list sl) pc.aft
   | sy -> simple_symbol pc sy ]
 and simple_symbol pc sy =
   match sy with  
@@ -428,9 +445,10 @@ and s_symbol pc =
       sprintf "%sSOPT %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
   | Sflag sy ->
       sprintf "%sSFLAG %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
-  | Svala s ->
-      sprintf "%sSV %s%s" pc.bef
-        (simple_symbol {(pc) with bef = ""; aft= ""} s) pc.aft
+  | Svala ls s ->
+      sprintf "%sSV %s%s%s" pc.bef
+        (simple_symbol {(pc) with bef = ""; aft= ""} s) (string_list ls)
+        pc.aft
   | _ -> assert False ]
 and check_slist rl =
   if no_slist.val then None
@@ -445,22 +463,37 @@ and check_slist rl =
        ([(Some <:patt< a >>,
           ((Slist0 _ | Slist1 _ | Slist0sep _ _ | Slist1sep _ _) as s))],
           Some <:expr< Qast.VaVal (Qast.List a) >>)] ->
-        Some (Svala s)
+        Some (Svala [] s)
+
     | [([(Some <:patt< a >>, Snterm <:expr< a_opt >>)], Some <:expr< a >>);
        ([(Some <:patt< a >>, Sopt s)], Some <:expr< Qast.Option a >>)] ->
         Some (Sopt s)
+    | [([(Some <:patt< a >>, Snterm <:expr< a_opt2 >>)], Some <:expr< a >>);
+       ([(Some <:patt< a >>, (Sopt _ as s))],
+          Some <:expr< Qast.VaVal (Qast.Option a) >>)] ->
+        Some (Svala [] s)
+
     | [([(Some <:patt< a >>, Snterm <:expr< a_flag >>)], Some <:expr< a >>);
        ([(Some <:patt< a >>, Sflag s)], Some <:expr< Qast.Bool a >>)] ->
         Some (Sflag s)
     | [([(Some <:patt< a >>, Snterm <:expr< a_flag2 >>)], Some <:expr< a >>);
        ([(Some <:patt< a >>, (Sflag _ as s))],
           Some <:expr< Qast.VaVal (Qast.Bool a) >>)] ->
-        Some (Svala s)
-    | [([(Some <:patt< a >>, Snterm <:expr< a_opt2 >>)], Some <:expr< a >>);
-       ([(Some <:patt< a >>, (Sopt _ as s))],
-          Some <:expr< Qast.VaVal (Qast.Option a) >>)] ->
-        Some (Svala s)
-    | _ -> None ]
+        Some (Svala [] s)
+
+    | rl ->
+        loop [] rl where rec loop ls =
+          fun
+          [ [([(Some <:patt< a >>, Stoken (Left ("ANTIQUOT", n)))],
+              Some <:expr< Qast.VaVal (Qast.VaAnt $str:_$ loc a) >>);
+             ([(Some <:patt< a >>, Stoken (Left ("ANTIQUOT", a_n)))],
+              Some <:expr< Qast.VaAnt $str:_$ loc a >>) :: rl]
+            when a_n = "a" ^ n ->
+              loop [n :: ls] rl
+          | [([(Some <:patt< a >>, (Snterm <:expr< $lid:_$ >> as s))],
+                Some <:expr< Qast.VaVal a >>)] ->
+              Some (Svala (List.rev ls) s)
+          | _ -> None ] ]
 ;
 
 value label =
