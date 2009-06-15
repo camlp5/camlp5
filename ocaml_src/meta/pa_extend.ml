@@ -1262,7 +1262,41 @@ let ssflag loc s =
   let styp = STquo (loc, "a_flag") in {used = used; text = text; styp = styp}
 ;;
 
-let ssflag2 loc s = ssflag loc s;;
+let ssflag2 loc s =
+  let rl =
+    let r1 =
+      let prod =
+        let n = mk_name loc (MLast.ExLid (loc, "a_flag2")) in
+        [mk_psymbol (MLast.PaLid (loc, "a")) (TXnterm (loc, n, None))
+           (STquo (loc, "a_flag2"))]
+      in
+      let act = MLast.ExLid (loc, "a") in {prod = prod; action = Some act}
+    in
+    let r2 =
+      let prod =
+        let styp = STlid (loc, "bool") in
+        let text = TXflag (loc, s.text) in
+        [mk_psymbol (MLast.PaLid (loc, "a")) text styp]
+      in
+      let act =
+        MLast.ExApp
+          (loc,
+           MLast.ExAcc
+             (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Vala")),
+           MLast.ExApp
+             (loc,
+              MLast.ExAcc
+                (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Bool")),
+              MLast.ExLid (loc, "a")))
+      in
+      {prod = prod; action = Some act}
+    in
+    [r1; r2]
+  in
+  let used = "a_flag2" :: s.used in
+  let text = TXrules (loc, srules loc "a_flag2" rl "") in
+  let styp = STquo (loc, "a_flag2") in {used = used; text = text; styp = styp}
+;;
 
 let text_of_entry loc gmod e =
   let ent =

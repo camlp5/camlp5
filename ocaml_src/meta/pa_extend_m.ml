@@ -1,4 +1,4 @@
-(* camlp5r pa_extend.cmo *)
+(* camlp5r pa_macro.cmo pa_extend.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp5                                  *)
@@ -20,7 +20,7 @@ Grammar.extend
    [None, Some Gramext.NonA,
     [[Gramext.Stoken ("UIDENT", "SFLAG2"); Gramext.Sself],
      Gramext.action
-       (fun (s : 'symbol) _ (loc : Ploc.t) -> (ssflag2 loc s : 'symbol));
+       (fun (s : 'symbol) _ (loc : Ploc.t) -> (ssflag loc s : 'symbol));
      [Gramext.Stoken ("UIDENT", "SFLAG"); Gramext.Sself],
      Gramext.action
        (fun (s : 'symbol) _ (loc : Ploc.t) -> (ssflag loc s : 'symbol));

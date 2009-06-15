@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.36 2007/09/06 04:33:20 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.37 2007/09/06 04:44:02 deraugla Exp $ *)
 
 value split_ext = ref False;
 
@@ -622,34 +622,30 @@ value ssflag loc s =
 ;
 
 value ssflag2 loc s =
-  IFNDEF STRICT THEN
-    ssflag loc s
-  ELSE
-    let rl =
-      let r1 =
-        let prod =
-          let n = mk_name loc <:expr< a_flag2 >> in
-          [mk_psymbol <:patt< a >> (TXnterm loc n None) (STquo loc "a_flag2")]
-        in
-        let act = <:expr< a >> in
-        {prod = prod; action = Some act}
+  let rl =
+    let r1 =
+      let prod =
+        let n = mk_name loc <:expr< a_flag2 >> in
+        [mk_psymbol <:patt< a >> (TXnterm loc n None) (STquo loc "a_flag2")]
       in
-      let r2 =
-        let prod =
-          let styp = STlid loc "bool" in
-          let text = TXflag loc s.text in
-          [mk_psymbol <:patt< a >> text styp]
-        in
-        let act = <:expr< Qast.Vala (Qast.Bool a) >> in
-        {prod = prod; action = Some act}
-      in
-      [r1; r2]
+      let act = <:expr< a >> in
+      {prod = prod; action = Some act}
     in
-    let used = ["a_flag2" :: s.used] in
-    let text = TXrules loc (srules loc "a_flag2" rl "") in
-    let styp = STquo loc "a_flag2" in
-    {used = used; text = text; styp = styp}
-  END
+    let r2 =
+      let prod =
+        let styp = STlid loc "bool" in
+        let text = TXflag loc s.text in
+        [mk_psymbol <:patt< a >> text styp]
+      in
+      let act = <:expr< Qast.Vala (Qast.Bool a) >> in
+      {prod = prod; action = Some act}
+    in
+    [r1; r2]
+  in
+  let used = ["a_flag2" :: s.used] in
+  let text = TXrules loc (srules loc "a_flag2" rl "") in
+  let styp = STquo loc "a_flag2" in
+  {used = used; text = text; styp = styp}
 ;
 
 value text_of_entry loc gmod e =
