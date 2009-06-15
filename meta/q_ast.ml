@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.30 2007/09/03 10:13:13 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.31 2007/09/03 13:50:19 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -371,7 +371,6 @@ module Meta =
   end
 ;
 
-let ipatt = Grammar.Entry.find Pcaml.expr "ipatt" in
 EXTEND
   expr_eoi: [ [ x = Pcaml.expr; EOI -> x ] ];
   patt_eoi: [ [ x = Pcaml.patt; EOI -> x ] ];
@@ -386,9 +385,6 @@ EXTEND
   Pcaml.patt: LAST
     [ [ s = ANTIQUOT_LOC -> make_anti loc "" s
       | s = ANTIQUOT_LOC "anti" -> make_anti loc "anti" s ] ]
-  ;
-  ipatt: LAST
-    [ [ s = ANTIQUOT "lid" -> make_anti loc "lid" s ] ]
   ;
 (*
   Pcaml.ctyp: LAST
