@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_fstream.ml,v 1.3 2007/11/22 20:21:08 deraugla Exp $ *)
+(* $Id: pa_fstream.ml,v 1.4 2007/11/23 02:23:53 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -171,13 +171,14 @@ value rec bstream_pattern loc (spcl, epo, e) =
 
 value bparser_cases loc spel =
   let rel = List.rev_map (bstream_pattern loc) spel in
-  let e =
-    match rel with
-    [ [e :: rel] ->
+  match rel with
+  [ [e :: rel] ->
+      let e =
         List.fold_left (fun e e1 -> <:expr< Fstream.b_or $e1$ $e$ >>) e rel
-    | [] -> Ploc.raise loc (Stream.Error "not impl: bparser_cases") ]
-  in
-  <:expr< $e$ $lid:strm_n$ >>
+      in
+      <:expr< $e$ $lid:strm_n$ >>
+  | [] ->
+      <:expr< None >> ]
 ;
 
 value bparser_match loc me bpo pc =
