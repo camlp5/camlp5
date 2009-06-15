@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_pprintf.ml,v 1.11 2007/12/05 13:35:50 deraugla Exp $ *)
+(* $Id: pa_pprintf.ml,v 1.12 2007/12/06 01:10:49 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* pprintf statement *)
@@ -106,7 +106,7 @@ value next_item loc pc fmt al i_beg =
                 let fmt1 = String.sub fmt i_beg (i - i_beg) in
                 Some (expand_item loc pc fmt1 al)
             in
-            (pcl_al_opt, i + 1)
+            (pcl_al_opt, i)
         | _ ->
             loop al (i + 1) ]
       else loop al (i + 1)
@@ -127,22 +127,31 @@ type tree 'a 'b =
   | Offset of int and tree 'a 'b ]
 ;
 
+value rec concat_tree t1 t2 =
+  match (t1, t2) with
+  [ (Node t11 op1 t12, _) -> Node t11 op1 (concat_tree t12 t2)
+  | (_, Node t21 op2 t22) -> Node (concat_tree t1 t21) op2 t22
+  | (Leaf l1, Leaf l2) -> Leaf (l1 @ l2)
+  | (Offset _ t1, _) -> concat_tree t1 t2
+  | (_, Offset _ t2) -> concat_tree t1 t2 ]
+;
+
 value rec read_tree loc pc fmt al i =
   let (tree, al, i) = read_simple_tree loc pc fmt al i in
   kont tree al i where rec kont tree al i =
     if i = String.length fmt then (tree, al, i)
-    else
-      match fmt.[i] with
+    else if i + 1 < String.length fmt && fmt.[i] = '@' then
+      match fmt.[i+1] with
       [ ';' ->
           let (pp, i) =
             let (nspaces, offset, i) =
               let s =
-                String.sub fmt (i + 1) (String.length fmt - i - 1)
+                String.sub fmt (i + 2) (String.length fmt - i - 2)
               in
               match parse_pp_param (Fstream.of_string s) with
               [ Some ((nspaces, noffset), strm) ->
-                  (nspaces, noffset, i + 1 + Fstream.count strm)
-              | None -> (1, 2, i + 1) ]
+                  (nspaces, noffset, i + 2 + Fstream.count strm)
+              | None -> (1, 2, i + 2) ]
             in
             (PPbreak nspaces offset, i)
           in
@@ -150,12 +159,21 @@ value rec read_tree loc pc fmt al i =
           let tree = Node tree pp tree2 in
           kont tree al i
       | ' ' ->
-          let (tree2, al, i) = read_simple_tree loc pc fmt al (i + 1) in
+          let (tree2, al, i) = read_simple_tree loc pc fmt al (i + 2) in
           let tree = Node tree PPspace tree2 in
           kont tree al i
       | ']' ->
-          (tree, al, i + 1)
-      | c -> failwith ("not impl '" ^ String.make 1 c ^ "'") ]
+          (tree, al, i + 2)
+      | '[' ->
+          let (tree2, al, i) = read_simple_tree loc pc fmt al i in
+          let tree = concat_tree tree tree2 in
+          kont tree al i
+      | c ->
+          failwith ("not impl '" ^ String.make 1 c ^ "'") ]
+    else
+      let (tree2, al, i) = read_simple_tree loc pc fmt al i in
+      let tree = concat_tree tree tree2 in
+      kont tree al i
 
 and read_simple_tree loc pc fmt al i =
   if i + 1 < String.length fmt && fmt.[i] = '@' && fmt.[i+1] = '[' then
@@ -167,12 +185,7 @@ and read_simple_tree loc pc fmt al i =
     in
     let (tree, al, i) = read_tree loc pc fmt al i in
     let tree = if offset > 0 then Offset offset tree else tree in
-    if i + 1 < String.length fmt && fmt.[i] = '@' && fmt.[i+1] = ']' then
-      (tree, al, i + 2)
-    else if i = String.length fmt then
-      (tree, al, i)
-    else
-       assert False
+    (tree, al, i)
   else
     let (pcl_al_opt, i) = next_item loc pc fmt al i in
     let (pcl, al) =

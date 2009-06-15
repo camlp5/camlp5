@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.118 2007/12/05 18:40:06 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.119 2007/12/06 01:10:49 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -692,19 +692,13 @@ value expr_short pc x =
   let rec expr1 pc z =
     match z with
     [ <:expr< $lid:op$ $x$ $y$ >> ->
-        if op = "+" || op = "-" then
-          sprintf "%s%s%s%s%s" pc.bef
-            (expr1 {(pc) with bef = ""; aft = ""} x) op
-            (expr2 {(pc) with bef = ""; aft = ""} y) pc.aft
+        if op = "+" || op = "-" then pprintf pc "%p%s%p" expr1 x op expr2 y
         else expr2 pc z
     | _ -> expr2 pc z ]
   and expr2 pc z =
     match z with
     [ <:expr< $lid:op$ $x$ $y$ >> ->
-        if op = "*" || op = "/" then
-          sprintf "%s%s%s%s%s" pc.bef
-            (expr2 {(pc) with bef = ""; aft = ""} x) op
-            (expr3 {(pc) with bef = ""; aft = ""} y) pc.aft
+        if op = "*" || op = "/" then pprintf pc "%p%s%p" expr2 x op expr3 y
         else expr3 pc z
     | _ -> expr3 pc z ]
   and expr3 pc z =
@@ -712,11 +706,9 @@ value expr_short pc x =
     [ <:expr< $lid:v$ >> ->
         if is_infix v || has_special_chars v then raise Exit
         else var_escaped pc v
-    | <:expr< $int:s$ >> -> sprintf "%s%s%s" pc.bef s pc.aft
+    | <:expr< $int:s$ >> -> pprintf pc "%s" s
     | <:expr< $lid:op$ $_$ $_$ >> ->
-        if List.mem op ["+"; "-"; "*"; "/"] then
-          sprintf "%s(%s)%s" pc.bef (expr1 {(pc) with bef = ""; aft = ""} z)
-            pc.aft
+        if List.mem op ["+"; "-"; "*"; "/"] then pprintf pc "(%p)" expr1 z
         else raise Exit
     | _ -> raise Exit ]
   in
