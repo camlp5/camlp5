@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_extprint.ml,v 1.31 2007/12/18 10:04:41 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.32 2007/12/18 10:31:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -652,14 +652,17 @@ value make_pc loc erase_bef erase_aft is_empty_bef is_empty_aft pc bef bef_al
     if not erase_bef && bef = "" then []
     else
       let e =
-        if (erase_bef || is_empty_bef) && bef_al = [] then
-          <:expr< $str:bef$ >>
+        if erase_bef || is_empty_bef then
+          match bef_al with
+          [ [] -> <:expr< $str:bef$ >>
+          | [a] when bef = "%s" -> a
+          | _ ->
+              let e = <:expr< Pretty.sprintf $str:bef$ >> in
+              List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e bef_al ]
         else
-          let bef = if erase_bef || is_empty_bef then bef else "%s" ^ bef in
+          let bef = "%s" ^ bef in
           let e = <:expr< Pretty.sprintf $str:bef$ >> in
-          let e =
-            if erase_bef || is_empty_bef then e else <:expr< $e$ $pc$.bef >>
-          in
+          let e = <:expr< $e$ $pc$.bef >> in
           List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e bef_al
       in
       [(<:patt< bef >>, e)]
@@ -668,13 +671,18 @@ value make_pc loc erase_bef erase_aft is_empty_bef is_empty_aft pc bef bef_al
     if not erase_aft && aft = "" then lbl
     else
       let e =
-        if (erase_aft || is_empty_aft) && aft_al = [] then
-          <:expr< $str:aft$ >>
+        if erase_aft || is_empty_aft then
+          match aft_al with
+          [ [] -> <:expr< $str:aft$ >>
+          | [a] when aft = "%s" -> a
+          | _ ->
+              let e = <:expr< Pretty.sprintf $str:aft$ >> in
+              List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e aft_al ]
         else
-          let aft = if erase_aft || is_empty_aft then aft else aft ^ "%s" in
+          let aft = aft ^ "%s" in
           let e = <:expr< Pretty.sprintf $str:aft$ >> in
           let e = List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e aft_al in
-          if erase_aft || is_empty_aft then e else <:expr< $e$ $pc$.aft >>
+          <:expr< $e$ $pc$.aft >>
       in
       [(<:patt< aft >>, e) :: lbl]
   in
@@ -805,8 +813,8 @@ value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc t al =
       let (e1, al) =
         expr_of_pformat loc fmt empty_bef True <:expr< pc >> al sl
       in
-      let (rev_el, al) =
-        loop [] al tl where rec loop rev_el al =
+      let (el1, rev_el, al) =
+        loop [e1] [] al tl where rec loop el1 rev_el al =
           fun
           [ [(Tbreak br, sl) :: tl] ->
                let (e, al) =
@@ -817,15 +825,38 @@ value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc t al =
                  [ PPbreak off sp -> (off, sp)
                  | PPspace -> (1, 0) ]
                in
-               loop [(e, off, sp) :: rev_el] al tl
-          | [(Tsub _ _, sl) :: tl] ->
-              failwith "not impl Tsub"
-          | [] -> (rev_el, al) ]
+               loop el1 [([e], off, sp) :: rev_el] al tl
+          | [((Tsub _ _, sl) as t) :: tl] ->
+              let (e, al) =
+                let t = {fst = {hd = ""; tl = []}; flw = [t]} in
+                expr_of_tree_aux loc fmt empty_bef empty_aft <:expr< pc >> t
+                  al
+              in
+              let (el1, rev_el) =
+                match rev_el with
+                [ [(el, off, sp) :: rev_el] ->
+                    (el1, [([e :: el], off, sp) :: rev_el])
+                | [] ->
+                    ([e :: el1], rev_el) ]
+              in
+              loop el1 rev_el al tl
+          | [] ->
+              (el1, rev_el, al) ]
+      in
+      let e1 =
+        match el1 with
+        [ [e] -> e
+        | _ -> <:expr< Agaga >> ]
       in
       let e =
         let el =
           List.fold_left
-            (fun e (e1, off, sp) ->
+            (fun e (el, off, sp) ->
+               let e1 =
+                 match el with
+                 [ [e] -> e
+                 | _ -> failwith "not impl 2" ]
+               in
                let (off, sp) = (string_of_int off, string_of_int sp) in
                <:expr< [($int:off$, $int:sp$, fun pc -> $e1$) :: $e$] >>)
             <:expr< [] >> rev_el
