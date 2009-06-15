@@ -68,86 +68,99 @@ value fold_rules_of_level f name elev init =
   do_level init elev
 ;
 
-value rec gram_symb cnt to_treat e levn lev s sl =
-  match s with
-  [ Sfacto s -> gram_symb cnt to_treat e levn lev s sl
-  | Snterm e -> do {
-      to_treat.val := [(e, 0) :: to_treat.val];
-      [GS_nterm (name_of_entry e 0) :: sl]
-    }
-  | Snterml e lev_name -> do {
-      let levn =
-        match e.edesc with
-        [ Dlevels levs ->
-            loop 0 levs where rec loop n =
-              fun
-              [ [lev :: levs] ->
-                  match lev.lname with
-                  [ Some s -> if s = lev_name then n else loop (n + 1) levs
-                  | None -> loop (n + 1) levs ]
-              | [] -> n ]
-        | Dparser _ -> 1 ]
-      in
-      to_treat.val := [(e, levn) :: to_treat.val];
-      [GS_nterm (name_of_entry e levn) :: sl]
-    }
-  | Slist0 _ -> do {
-      incr cnt;
-      let n = "x-list0-" ^ string_of_int cnt.val in
-      [GS_nterm n :: sl]
-    }
-  | Slist0sep _ _ -> do {
-      incr cnt;
-      let n = "x-list0sep-" ^ string_of_int cnt.val in
-      [GS_nterm n :: sl]
-    }
-  | Slist1 _ -> do {
-      incr cnt;
-      let n = "x-list1-" ^ string_of_int cnt.val in
-      [GS_nterm n :: sl]
-    }
-  | Slist1sep _ _ -> do {
-      incr cnt;
-      let n = "x-list1sep-" ^ string_of_int cnt.val in
-      [GS_nterm n :: sl]
-    }
-  | Sopt s -> do {
-      incr cnt;
-      let n = "x-opt-" ^ string_of_int cnt.val in
-      [GS_nterm n :: sl]
-    }
-  | Stoken p ->
-      let n =
-        match p with
-        [ ("", prm) -> "\"" ^ prm ^ "\""
-        | (con, "") -> con
-        | (con, prm) -> "(" ^ con ^ " \"" ^ prm ^ "\")" ]
-      in
-      [GS_term n :: sl]
-  | Sself ->  do {
-      let n =
-        match sl with
-        [ [] ->
-            match lev.assoc with
-            [ NonA | LeftA -> levn + 1
-            | RightA -> levn ]
-        | _ -> 0 ]
-      in
-      if n <> levn then to_treat.val := [(e, n) :: to_treat.val] else ();
-      [GS_nterm (name_of_entry e n) :: sl]
-    }
-  | Stree _ -> do {
-      incr cnt;
-      let n = "x-rules-" ^ string_of_int cnt.val in
-      [GS_nterm n :: sl]
-    }
-  | Svala ls s -> do {
-      incr cnt;
-      let n = "x-v-" ^ string_of_int cnt.val in
-      [GS_nterm n :: sl]
-    }
-  | s ->
-      [GS_term (not_impl "gram_symb" s) :: sl] ]
+value gram_symb_list cnt to_treat e levn lev =
+  loop where rec loop =
+    fun
+    [ [Sself] -> do {
+        let n =
+          match lev.assoc with
+          [ NonA | LeftA -> levn + 1
+          | RightA -> levn ]
+        in
+        if n <> levn then to_treat.val := [(e, n) :: to_treat.val] else ();
+        [GS_nterm (name_of_entry e n)]
+      }
+    | [s :: sl] ->
+        let s =
+          match s with
+          [ Sfacto s -> s
+          | s -> s ]
+        in
+        let gs =
+          match s with
+          [ Snterm e -> do {
+              to_treat.val := [(e, 0) :: to_treat.val];
+              GS_nterm (name_of_entry e 0)
+            }
+          | Snterml e lev_name -> do {
+              let levn =
+                match e.edesc with
+                [ Dlevels levs ->
+                    loop 0 levs where rec loop n =
+                      fun
+                      [ [lev :: levs] ->
+                          match lev.lname with
+                          [ Some s ->
+                              if s = lev_name then n else loop (n + 1) levs
+                          | None -> loop (n + 1) levs ]
+                      | [] -> n ]
+                | Dparser _ -> 1 ]
+              in
+              to_treat.val := [(e, levn) :: to_treat.val];
+              GS_nterm (name_of_entry e levn)
+            }
+          | Slist0 _ -> do {
+              incr cnt;
+              let n = "x-list0-" ^ string_of_int cnt.val in
+              GS_nterm n
+            }
+          | Slist0sep _ _ -> do {
+              incr cnt;
+              let n = "x-list0sep-" ^ string_of_int cnt.val in
+              GS_nterm n
+            }
+          | Slist1 _ -> do {
+              incr cnt;
+              let n = "x-list1-" ^ string_of_int cnt.val in
+              GS_nterm n
+            }
+          | Slist1sep _ _ -> do {
+              incr cnt;
+              let n = "x-list1sep-" ^ string_of_int cnt.val in
+              GS_nterm n
+            }
+          | Sopt s -> do {
+              incr cnt;
+              let n = "x-opt-" ^ string_of_int cnt.val in
+              GS_nterm n
+            }
+          | Stoken p ->
+              let n =
+                match p with
+                [ ("", prm) -> "\"" ^ prm ^ "\""
+                | (con, "") -> con
+                | (con, prm) -> "(" ^ con ^ " \"" ^ prm ^ "\")" ]
+              in
+              GS_term n
+          | Sself ->  do {
+              to_treat.val := [(e, 0) :: to_treat.val];
+              GS_nterm (name_of_entry e 0)
+            }
+          | Stree _ -> do {
+              incr cnt;
+              let n = "x-rules-" ^ string_of_int cnt.val in
+              GS_nterm n
+            }
+          | Svala ls s -> do {
+              incr cnt;
+              let n = "x-v-" ^ string_of_int cnt.val in
+              GS_nterm n
+            }
+          | s ->
+              GS_term (not_impl "gram_symb" s) ]
+        in
+        [gs :: loop sl]
+    | [] -> [] ]
 ;
 
 value create_closed_rules entry levn =
@@ -179,14 +192,10 @@ value create_closed_rules entry levn =
                   in
                   GS_nterm (name_of_entry entry n)
                 in
-                let sl =
-                  List.fold_right (gram_symb cnt to_treat_r entry levn lev) r
-                    []
-                in
+                let sl = gram_symb_list cnt to_treat_r entry levn lev r in
                 [s :: sl]
             | r ->
-                List.fold_right (gram_symb cnt to_treat_r entry levn lev) r
-                  [] ]
+                gram_symb_list cnt to_treat_r entry levn lev r ]
           in
           Fifo.add (name, sl) accu
         in
