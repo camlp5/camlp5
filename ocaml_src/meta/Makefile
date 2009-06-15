@@ -21,7 +21,7 @@ $(NAME)r$(EXE): ../main/$(NAME)$(EXE) $(CAMLP5RM)
 
 $(NAME)r.opt: $(CAMLP5RMX)
 	rm -f $(NAME)r.opt
-	cd ../main; $(MAKE) optp4 OTOP=$(OTOP) CAMLP5OPT=../meta/$(NAME)r.opt CAMLP5M="-I ../meta $(CAMLP5RMX)"
+	cd ../main; $(MAKE) optp5 OTOP=$(OTOP) CAMLP5OPT=../meta/$(NAME)r.opt CAMLP5M="-I ../meta $(CAMLP5RMX)"
 
 clean::
 	rm -f *.cm* *.pp[io] *.o *.bak .*.bak $(COUT) $(COPT)

@@ -9,7 +9,7 @@ INCLUDES=-I ../odyl -I $(TOP)/boot -I $(OTOP)/utils -I $(OTOP)/parsing
 OCAMLCFLAGS=-warn-error A $(INCLUDES)
 LINKFLAGS=$(INCLUDES)
 CAMLP5_OBJS=$(TOP)/boot/stdpp.cmo $(TOP)/boot/token.cmo $(TOP)/boot/plexer.cmo $(TOP)/boot/gramext.cmo $(TOP)/boot/grammar.cmo $(TOP)/boot/extfold.cmo $(TOP)/boot/extfun.cmo $(TOP)/boot/eprinter.cmo $(TOP)/boot/fstream.cmo $(TOP)/boot/pretty.cmo $(OTOP)/utils/pconfig.cmo quotation.cmo ast2pt.cmo exparser.cmo spretty.cmo reloc.cmo pcaml.cmo prtools.cmo argl.cmo main.cmo
-CAMLP5_XOBJS=../lib/stdpp.cmx ../lib/token.cmx ../lib/plexer.cmx ../lib/gramext.cmx ../lib/grammar.cmx ../lib/extfold.cmx ../lib/extfun.cmx ../lib/fstream.cmx ../lib/pretty.cmx $(OTOP)/utils/pconfig.cmx quotation.cmx ast2pt.cmx exparser.cmx spretty.cmx reloc.cmx pcaml.cmx prtools.cmx argl.cmx main.cmx
+CAMLP5_XOBJS=../lib/stdpp.cmx ../lib/token.cmx ../lib/plexer.cmx ../lib/gramext.cmx ../lib/grammar.cmx ../lib/extfold.cmx ../lib/extfun.cmx ../lib/eprinter.cmx ../lib/fstream.cmx ../lib/pretty.cmx $(OTOP)/utils/pconfig.cmx quotation.cmx ast2pt.cmx exparser.cmx spretty.cmx reloc.cmx pcaml.cmx prtools.cmx argl.cmx main.cmx
 OBJS=../odyl/odyl.cma $(NAME).cma
 CAMLP5M=
 
@@ -18,7 +18,7 @@ CAMLP5OPT=phony
 
 all: $(CAMLP5)
 opt: $(OBJS:.cma=.cmxa)
-optp4: $(CAMLP5OPT)
+optp5: $(CAMLP5OPT)
 
 $(CAMLP5): $(OBJS) ../odyl/odyl.cmo
 	$(OCAMLC) $(OBJS) $(CAMLP5M) ../odyl/odyl.cmo -linkall -o $(CAMLP5)

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.12 2007/08/14 11:19:09 deraugla Exp $
+# $Id: Makefile,v 1.13 2007/08/16 04:11:44 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -21,7 +21,7 @@ $(NAME)r$(EXE): ../main/$(NAME)$(EXE) $(CAMLP5RM)
 
 $(NAME)r.opt: $(CAMLP5RMX)
 	rm -f $(NAME)r.opt
-	cd ../main; $(MAKE) optp4 OTOP=$(OTOP) CAMLP5OPT=../meta/$(NAME)r.opt CAMLP5M="-I ../meta $(CAMLP5RMX)"
+	cd ../main; $(MAKE) optp5 OTOP=$(OTOP) CAMLP5OPT=../meta/$(NAME)r.opt CAMLP5M="-I ../meta $(CAMLP5RMX)"
 
 clean::
 	rm -f *.cm* *.pp[io] *.o *.bak .*.bak $(COUT) $(COPT)

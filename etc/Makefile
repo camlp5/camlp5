@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.25 2007/08/15 15:44:25 deraugla Exp $
+# $Id: Makefile,v 1.26 2007/08/16 04:11:44 deraugla Exp $
 
 include ../config/Makefile
 
@@ -35,7 +35,7 @@ $(NAME)sch$(EXE): ../main/$(NAME)$(EXE) $(CAMLP5SCHM)
 
 $(NAME)o.opt: $(CAMLP5OMX)
 	rm -f $(NAME)o.opt
-	cd ../main; $(MAKE) optp4 CAMLP5OPT=../etc/$(NAME)o.opt CAMLP5M="-I ../etc $(CAMLP5OMX)"
+	cd ../main; $(MAKE) optp5 CAMLP5OPT=../etc/$(NAME)o.opt CAMLP5M="-I ../etc $(CAMLP5OMX)"
 
 mk$(NAME).sh: mkcamlp5.sh.tpl
 	sed -e "s!LIBDIR!$(LIBDIR)!g" -e "s/camlp5/$(NAME)/g" mkcamlp5.sh.tpl > mk$(NAME).sh
