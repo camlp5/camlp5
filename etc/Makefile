@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.34 2007/10/08 01:56:43 deraugla Exp $
+# $Id: Makefile,v 1.35 2007/10/10 10:31:30 deraugla Exp $
 
 include ../config/Makefile
 
@@ -9,7 +9,7 @@ CAMLP5OM=pa_o.cmo pa_op.cmo ../meta/pr_dump.cmo
 CAMLP5SCHM=pa_scheme.cmo ../meta/pr_dump.cmo
 CAMLP5OMX=pa_o.cmx pa_op.cmx ../meta/pr_dump.cmx
 SHELL=/bin/sh
-COUT=$(OBJS) $(NAME)o$(EXE) $(NAME)sch$(EXE) pr_scheme_new.cmo
+COUT=$(OBJS) $(NAME)o$(EXE) $(NAME)sch$(EXE) pr_scheme_new.cmo pr_schemep_new.cmo
 COPT=$(NAME)o.opt
 
 all: $(COUT) mk$(NAME).sh
