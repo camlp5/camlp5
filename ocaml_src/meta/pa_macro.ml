@@ -84,6 +84,19 @@ let defined =
 
 let is_defined i = List.mem_assoc i !defined;;
 
+let print_defined () =
+  List.iter
+    (fun (d, v) ->
+       print_string d;
+       begin match v with
+         Some _ -> print_string " = ..."
+       | None -> ()
+       end;
+       print_newline ())
+    !defined;
+  if !(Sys.interactive) then () else exit 0
+;;
+
 let loc = Stdpp.dummy_loc;;
 
 let subst mloc env =
@@ -435,3 +448,6 @@ Pcaml.add_option "-D" (Arg.String (define None))
 
 Pcaml.add_option "-U" (Arg.String undef)
   "<string> Undefine for IFDEF instruction.";;
+
+Pcaml.add_option "-defined" (Arg.Unit print_defined)
+  " Print the defined macros and exit.";;

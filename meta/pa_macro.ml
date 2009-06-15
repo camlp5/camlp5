@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.15 2007/08/02 10:57:44 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.16 2007/08/19 04:35:51 deraugla Exp $ *)
 
 (*
 Added statements:
@@ -84,6 +84,19 @@ value defined =
 ;
 
 value is_defined i = List.mem_assoc i defined.val;
+
+value print_defined () = do {
+  List.iter
+    (fun (d, v) -> do {
+       print_string d;
+       match v with
+       [ Some _ -> print_string " = ..."
+       | None -> () ];
+       print_newline ()
+     })
+    defined.val;
+  if Sys.interactive.val then () else exit 0
+};
 
 value loc = Stdpp.dummy_loc;
 
@@ -270,3 +283,6 @@ Pcaml.add_option "-D" (Arg.String (define None))
 
 Pcaml.add_option "-U" (Arg.String undef)
   "<string> Undefine for IFDEF instruction.";
+
+Pcaml.add_option "-defined" (Arg.Unit print_defined)
+  " Print the defined macros and exit.";

@@ -1,10 +1,17 @@
-Camlp5 Version 4.07:
+Camlp5 Version 4.08:
 ---------------------
 
+* [no date] Updated documentation.
+* [19 Aug 07] Added option -define with 'pa_macro.cmo' which prints the
+  predefined macros and exit.
 * [16 Aug 07] Added pa_extprint.cmo, a new syntax for extensible pretty
   printers adding a statement EXTEND_PRINTER (cf files pr_r.cmo and pr_o.ml
   as examples). Added library module Eprinter. Changes (simplifications) in
   intefaces of Pcaml for the printers.
+
+Camlp5 Version 4.07:
+---------------------
+
 * [02 Aug 07] Fixed bug: option -o did not work for pr_r.cmo and pr_o.cmo
   (was always stdout).
 * [01 Aug 07] In EXTEND statement, added symbol FLAG: like OPT but return
