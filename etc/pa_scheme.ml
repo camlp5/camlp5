@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.29 2007/10/05 12:44:17 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.30 2007/10/05 14:36:15 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -299,6 +299,10 @@
 (definerec*
   (module_expr_se
     (lambda_match
+     ((Sacc loc se1 se2)
+      (let* ((me1 (module_expr_se se1))
+             (me2 (module_expr_se se2)))
+         <:module_expr< $me1$ . $me2$ >>))
      ((Sexpr loc [(Slid _ "functor") (Suid _ s) se1 se2])
       (let* ((s (Pcaml.rename_id.val s))
              (mt (module_type_se se1))
@@ -406,6 +410,10 @@
       (let* ((s (Pcaml.rename_id.val s))
              (mt (module_type_se se)))
          <:str_item< module type $uid:s$ = $mt$ >>))
+     ((Sexpr loc [(Slid _ "#") (Slid _ s) se])
+      (let* ((s (Pcaml.rename_id.val s))
+             (e (expr_se se)))
+         <:str_item< # $lid:s$ $e$ >>))
      (_
       (let* ((loc (loc_of_sexpr se))
              (e (expr_se se)))
@@ -1010,6 +1018,7 @@ EXTEND
       | "," -> ","
       | "=" -> "="
       | ":" -> ":"
-      | "/" -> "/" ] ]
+      | "/" -> "/"
+      | "#" -> "#" ] ]
   /
 END
