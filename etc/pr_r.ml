@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.122 2007/12/06 10:56:21 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.123 2007/12/06 14:21:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -880,33 +880,23 @@ EXTEND_PRINTER
           let expr_wh = if flag_where_after_then.val then expr_wh else expr in
           horiz_vertic
             (fun () ->
-               sprintf "%sif %s then %s else %s%s" pc.bef
-                 (curr {(pc) with bef = ""; aft = ""} e1)
-                 (curr {(pc) with bef = ""; aft = ""} e2)
-                 (curr {(pc) with bef = ""; aft = ""} e3) pc.aft)
+               pprintf pc "if %p then %p else %p" curr e1 curr e2 curr e3)
             (fun () ->
                let if_then force_vertic pc else_b e1 e2 =
                  horiz_vertic
                    (fun () ->
                       if force_vertic then sprintf "\n"
                       else
-                        sprintf "%s%sif %s then %s%s" pc.bef else_b
-                          (curr {(pc) with bef = ""; aft = ""} e1)
-                          (curr {(pc) with bef = ""; aft = ""} e2) pc.aft)
+                        pprintf pc "%sif %p then %p" else_b curr e1 curr e2)
                    (fun () ->
-                      let horiz_if_then k =
-                        sprintf "%s%sif %s then%s" pc.bef else_b
-                          (curr {(pc) with bef = ""; aft = ""} e1) k
+                      let horiz_if_then pc =
+                        pprintf pc "%sif %p then" else_b curr e1
                       in
-                      let vertic_if_then k =
-                        let s1 =
-                          if else_b = "" then
-                            curr
-                              {(pc) with ind = pc.ind + 3;
-                               bef = sprintf "%s%sif " pc.bef else_b;
-                               aft = ""}
-                              e1
-                          else
+                      let vertic_if_then pc =
+                        if else_b = "" then
+                          pprintf pc "@[<3>if %p@]@ then" curr e1
+                        else
+                          let s1 =
                             let s1 = sprintf "%s%sif" pc.bef else_b in
                             let s2 =
                               curr
@@ -915,21 +905,22 @@ EXTEND_PRINTER
                                 e1
                             in
                             sprintf "%s\n%s" s1 s2
-                        in
-                        let s2 = sprintf "%sthen%s" (tab pc.ind) k in
-                        sprintf "%s\n%s" s1 s2
+                          in
+                          let s2 = sprintf "%sthen%s" (tab pc.ind) pc.aft in
+                          sprintf "%s\n%s" s1 s2
                       in
                       match sequencify e2 with
                       [ Some el ->
                           sequence_box2 {(pc) with aft = ""}
                             (fun pc ->
-                               horiz_vertic (fun () -> horiz_if_then pc.aft)
-                                 (fun () -> vertic_if_then pc.aft))
+                               horiz_vertic (fun () -> horiz_if_then pc)
+                                 (fun () -> vertic_if_then pc))
                             el
                       | None ->
+                          let pc = {(pc) with aft = ""} in
                           let s1 =
-                            horiz_vertic (fun () -> horiz_if_then "")
-                              (fun () -> vertic_if_then "")
+                            horiz_vertic (fun () -> horiz_if_then pc)
+                              (fun () -> vertic_if_then pc)
                           in
                           let s2 =
                             comm_expr expr_wh
