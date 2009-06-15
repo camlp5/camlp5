@@ -100,7 +100,7 @@ let rec patt floc sh =
         patt new_floc sh x1
     | PaAny loc -> PaAny (floc loc)
     | PaApp (loc, x1, x2) -> PaApp (floc loc, self x1, self x2)
-    | PaArr (loc, x1) -> PaArr (floc loc, List.map self x1)
+    | PaArr (loc, x1) -> PaArr (floc loc, vala_map (List.map self) x1)
     | PaChr (loc, x1) -> PaChr (floc loc, x1)
     | PaInt (loc, x1, x2) -> PaInt (floc loc, x1, x2)
     | PaFlo (loc, x1) -> PaFlo (floc loc, x1)
@@ -134,10 +134,11 @@ and expr floc sh =
         expr new_floc sh x1
     | ExApp (loc, x1, x2) -> ExApp (floc loc, self x1, self x2)
     | ExAre (loc, x1, x2) -> ExAre (floc loc, self x1, self x2)
-    | ExArr (loc, x1) -> ExArr (floc loc, List.map self x1)
+    | ExArr (loc, x1) -> ExArr (floc loc, vala_map (List.map self) x1)
     | ExAsr (loc, x1) -> let nloc = floc loc in ExAsr (nloc, self x1)
     | ExAss (loc, x1, x2) -> ExAss (floc loc, self x1, self x2)
-    | ExBae (loc, x1, x2) -> ExBae (floc loc, self x1, List.map self x2)
+    | ExBae (loc, x1, x2) ->
+        ExBae (floc loc, self x1, vala_map (List.map self) x2)
     | ExChr (loc, x1) -> ExChr (floc loc, x1)
     | ExCoe (loc, x1, x2, x3) ->
         ExCoe
@@ -149,9 +150,10 @@ and expr floc sh =
     | ExFun (loc, x1) ->
         ExFun
           (floc loc,
-           List.map
-             (fun (x1, x2, x3) ->
-                patt floc sh x1, option_map self x2, self x3)
+           vala_map
+             (List.map
+                (fun (x1, x2, x3) ->
+                   patt floc sh x1, option_map self x2, self x3))
              x1)
     | ExIfe (loc, x1, x2, x3) -> ExIfe (floc loc, self x1, self x2, self x3)
     | ExInt (loc, x1, x2) -> ExInt (floc loc, x1, x2)
@@ -168,9 +170,10 @@ and expr floc sh =
     | ExMat (loc, x1, x2) ->
         ExMat
           (floc loc, self x1,
-           List.map
-             (fun (x1, x2, x3) ->
-                patt floc sh x1, option_map self x2, self x3)
+           vala_map
+             (List.map
+                (fun (x1, x2, x3) ->
+                   patt floc sh x1, option_map self x2, self x3))
              x2)
     | ExNew (loc, x1) -> ExNew (floc loc, x1)
     | ExObj (loc, x1, x2) ->
@@ -192,9 +195,10 @@ and expr floc sh =
     | ExTry (loc, x1, x2) ->
         ExTry
           (floc loc, self x1,
-           List.map
-             (fun (x1, x2, x3) ->
-                patt floc sh x1, option_map self x2, self x3)
+           vala_map
+             (List.map
+                (fun (x1, x2, x3) ->
+                   patt floc sh x1, option_map self x2, self x3))
              x2)
     | ExTup (loc, x1) -> ExTup (floc loc, vala_map (List.map self) x1)
     | ExTyc (loc, x1, x2) -> ExTyc (floc loc, self x1, ctyp floc sh x2)

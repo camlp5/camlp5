@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.34 2007/09/12 19:58:05 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.35 2007/09/13 03:25:28 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -462,7 +462,7 @@ value rec patt =
       | _ ->
           error (loc_of_patt f)
             "this is not a constructor, it cannot be applied in a pattern" ]
-  | PaArr loc pl -> mkpat loc (Ppat_array (List.map patt pl))
+  | PaArr loc pl -> mkpat loc (Ppat_array (List.map patt (uv pl)))
   | PaChr loc s ->
       mkpat loc (Ppat_constant (Const_char (char_of_char_token loc (uv s))))
   | PaInt loc s "" ->
@@ -482,7 +482,8 @@ value rec patt =
       | _ -> error loc "range pattern allowed only for characters" ]
   | PaRec loc lpl -> mkpat loc (Ppat_record (List.map mklabpat (uv lpl)))
   | PaStr loc s ->
-      mkpat loc (Ppat_constant (Const_string (string_of_string_token loc s)))
+      mkpat loc
+        (Ppat_constant (Const_string (string_of_string_token loc (uv s))))
   | PaTup loc pl -> mkpat loc (Ppat_tuple (List.map patt (uv pl)))
   | PaTyc loc p t -> mkpat loc (Ppat_constraint (patt p) (ctyp t))
   | PaTyp loc sl -> mkpat loc (Ppat_type (long_id_of_string_list loc sl))
@@ -618,7 +619,7 @@ value rec expr =
       mkexp loc
         (Pexp_apply (mkexp loc (Pexp_ident (array_function "Array" "get")))
            [("", expr e1); ("", expr e2)])
-  | ExArr loc el -> mkexp loc (Pexp_array (List.map expr el))
+  | ExArr loc el -> mkexp loc (Pexp_array (List.map expr (uv el)))
   | ExAss loc e v ->
       match e with
       [ ExAcc loc x <:expr< val >> ->
@@ -634,7 +635,7 @@ value rec expr =
             (Pexp_apply
                (mkexp loc (Pexp_ident (array_function "Array" "set")))
                [("", expr e1); ("", expr e2); ("", expr v)])
-      | ExBae loc e el -> expr (bigarray_set loc e el v)
+      | ExBae loc e el -> expr (bigarray_set loc e (uv el) v)
       | <:expr< $lid:lab$ >> -> mkexp loc (Pexp_setinstvar lab (expr v))
       | ExSte _ e1 e2 ->
           mkexp loc
@@ -644,7 +645,7 @@ value rec expr =
       | _ -> error loc "bad left part of assignment" ]
   | ExAsr loc <:expr< False >> -> mkexp loc Pexp_assertfalse
   | ExAsr loc e -> mkexp loc (Pexp_assert (expr e))
-  | ExBae loc e el -> expr (bigarray_get loc e el)
+  | ExBae loc e el -> expr (bigarray_get loc e (uv el))
   | ExChr loc s ->
       mkexp loc (Pexp_constant (Const_char (char_of_char_token loc (uv s))))
   | ExCoe loc e t1 t2 ->
@@ -652,17 +653,20 @@ value rec expr =
   | ExFlo loc s -> mkexp loc (Pexp_constant (Const_float (uv s)))
   | ExFor loc i e1 e2 df el ->
       let e3 = <:expr< do { $list:uv el$ } >> in
-      let df = if df then Upto else Downto in
-      mkexp loc (Pexp_for i (expr e1) (expr e2) df (expr e3))
-  | ExFun loc [(PaLab _ lab po, w, e)] ->
-      mkexp loc
-        (Pexp_function lab None
-           [(patt (patt_of_lab loc lab po), when_expr e w)])
-  | ExFun loc [(PaOlb _ lab peoo, w, e)] ->
-      let (lab, p, eo) = paolab loc lab peoo in
-      mkexp loc
-        (Pexp_function ("?" ^ lab) (option expr eo) [(patt p, when_expr e w)])
-  | ExFun loc pel -> mkexp loc (Pexp_function "" None (List.map mkpwe pel))
+      let df = if uv df then Upto else Downto in
+      mkexp loc (Pexp_for (uv i) (expr e1) (expr e2) df (expr e3))
+  | ExFun loc pel ->
+      match uv pel with
+      [ [(PaLab _ lab po, w, e)] ->
+          mkexp loc
+            (Pexp_function lab None
+               [(patt (patt_of_lab loc lab po), when_expr e w)])
+      | [(PaOlb _ lab peoo, w, e)] ->
+          let (lab, p, eo) = paolab loc lab peoo in
+          mkexp loc
+            (Pexp_function ("?" ^ lab) (option expr eo)
+               [(patt p, when_expr e w)])
+      | pel -> mkexp loc (Pexp_function "" None (List.map mkpwe pel)) ]
   | ExIfe loc e1 e2 e3 ->
       mkexp loc (Pexp_ifthenelse (expr e1) (expr e2) (Some (expr e3)))
   | ExInt loc s "" ->
@@ -679,8 +683,10 @@ value rec expr =
   | ExLet loc rf pel e ->
       mkexp loc (Pexp_let (mkrf (uv rf)) (List.map mkpe (uv pel)) (expr e))
   | ExLid loc s -> mkexp loc (Pexp_ident (lident (uv s)))
-  | ExLmd loc i me e -> mkexp loc (Pexp_letmodule i (module_expr me) (expr e))
-  | ExMat loc e pel -> mkexp loc (Pexp_match (expr e) (List.map mkpwe pel))
+  | ExLmd loc i me e ->
+      mkexp loc (Pexp_letmodule (uv i) (module_expr me) (expr e))
+  | ExMat loc e pel ->
+      mkexp loc (Pexp_match (expr e) (List.map mkpwe (uv pel)))
   | ExNew loc id -> mkexp loc (Pexp_new (long_id_of_string_list loc id))
   | ExObj loc po cfl ->
       let p =
@@ -718,7 +724,7 @@ value rec expr =
   | ExStr loc s ->
       mkexp loc
         (Pexp_constant (Const_string (string_of_string_token loc (uv s))))
-  | ExTry loc e pel -> mkexp loc (Pexp_try (expr e) (List.map mkpwe pel))
+  | ExTry loc e pel -> mkexp loc (Pexp_try (expr e) (List.map mkpwe (uv pel)))
   | ExTup loc el -> mkexp loc (Pexp_tuple (List.map expr (uv el)))
   | ExTyc loc e t -> mkexp loc (Pexp_constraint (expr e) (Some (ctyp t)) None)
   | ExUid loc s ->

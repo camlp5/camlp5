@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.27 2007/09/12 19:28:52 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.28 2007/09/13 03:25:28 deraugla Exp $ *)
 
 open MLast;
 
@@ -78,7 +78,7 @@ value rec patt =
   | PaAli _ p1 p2 -> do { patt p1; patt p2 }
   | PaAny _ -> ()
   | PaApp _ p1 p2 -> do { patt p1; patt p2 }
-  | PaArr _ pl -> list patt pl
+  | <:patt< [| $list:pl$ |] >> -> list patt pl
   | PaChr _ _ -> ()
   | PaInt _ _ _ -> ()
   | PaLab _ _ po -> option patt po
@@ -105,7 +105,7 @@ and expr =
   [ <:expr< $e1$.$e2$ >> -> do { expr_module e1; expr e2 }
   | ExApp _ e1 e2 -> do { expr e1; expr e2 }
   | ExAre _ e1 e2 -> do { expr e1; expr e2 }
-  | ExArr _ el -> list expr el
+  | <:expr< [| $list:el$ |] >> -> list expr el
   | ExAsr _ e -> expr e
   | ExAss _ e1 e2 -> do { expr e1; expr e2 }
   | <:expr< $chr:_$ >> -> ()
@@ -123,8 +123,11 @@ and expr =
   | ExLaz _ e -> expr e
   | <:expr< let $list:pel$ in $e$ >> -> do { list let_binding pel; expr e }
   | ExLid _ _ -> ()
-  | ExLmd _ _ me e -> do { module_expr me; expr e }
-  | ExMat _ e pwel -> do { expr e; list match_case pwel }
+  | <:expr< let module $_$ = $me$ in $e$ >> -> do { module_expr me; expr e }
+  | <:expr< match $e$ with [ $list:pwel$ ] >> -> do {
+      expr e;
+      list match_case pwel
+    }
   | ExNew _ li -> longident li
   | ExOlb _ _ eo -> option expr eo
   | <:expr< {$list:lel$} >> -> list label_expr lel

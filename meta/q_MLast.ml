@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.72 2007/09/12 19:58:05 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.73 2007/09/13 03:25:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -432,27 +432,32 @@ EXTEND
       [ "let"; r = SV FLAG "rec"; l = SV LIST1 let_binding SEP "and"; "in";
         x = SELF ->
           Qast.Node "ExLet" [Qast.Loc; r; l; x]
-      | "let"; "module"; m = a_UIDENT; mb = mod_fun_binding; "in"; e = SELF ->
+      | "let"; "module"; m = a_UIDENT2; mb = mod_fun_binding; "in";
+        e = SELF ->
           Qast.Node "ExLmd" [Qast.Loc; m; mb; e]
-      | "fun"; "["; l = SLIST0 match_case SEP "|"; "]" ->
+      | "fun"; "["; l = SV LIST0 match_case SEP "|"; "]" ->
           Qast.Node "ExFun" [Qast.Loc; l]
       | "fun"; p = ipatt; e = fun_def ->
           Qast.Node "ExFun"
-            [Qast.Loc; Qast.List [Qast.Tuple [p; Qast.Option None; e]]]
-      | "match"; e = SELF; "with"; "["; l = SLIST0 match_case SEP "|"; "]" ->
+            [Qast.Loc;
+             Qast.VaVal (Qast.List [Qast.Tuple [p; Qast.Option None; e]])]
+      | "match"; e = SELF; "with"; "["; l = SV LIST0 match_case SEP "|";
+        "]" ->
           Qast.Node "ExMat" [Qast.Loc; e; l]
       | "match"; e = SELF; "with"; p1 = ipatt; "->"; e1 = SELF ->
           Qast.Node "ExMat"
-            [Qast.Loc; e; Qast.List [Qast.Tuple [p1; Qast.Option None; e1]]]
-      | "try"; e = SELF; "with"; "["; l = SLIST0 match_case SEP "|"; "]" ->
+            [Qast.Loc; e;
+             Qast.VaVal (Qast.List [Qast.Tuple [p1; Qast.Option None; e1]])]
+      | "try"; e = SELF; "with"; "["; l = SV LIST0 match_case SEP "|"; "]" ->
           Qast.Node "ExTry" [Qast.Loc; e; l]
       | "try"; e = SELF; "with"; p1 = ipatt; "->"; e1 = SELF ->
           Qast.Node "ExTry"
-            [Qast.Loc; e; Qast.List [Qast.Tuple [p1; Qast.Option None; e1]]]
+            [Qast.Loc; e;
+             Qast.VaVal (Qast.List [Qast.Tuple [p1; Qast.Option None; e1]])]
       | "if"; e1 = SELF; "then"; e2 = SELF; "else"; e3 = SELF ->
           Qast.Node "ExIfe" [Qast.Loc; e1; e2; e3]
       | "do"; "{"; seq = sequence2; "}" -> mksequence2 Qast.Loc seq
-      | "for"; i = a_LIDENT; "="; e1 = SELF; df = direction_flag; e2 = SELF;
+      | "for"; i = a_LIDENT2; "="; e1 = SELF; df = direction_flag2; e2 = SELF;
         "do"; "{"; seq = sequence2; "}" ->
           Qast.Node "ExFor" [Qast.Loc; i; e1; e2; df; seq]
       | "while"; e = SELF; "do"; "{"; seq = sequence2; "}" ->
@@ -685,7 +690,7 @@ EXTEND
           Qast.Node "ExAre" [Qast.Loc; e1; e2]
       | e1 = SELF; "."; "["; e2 = SELF; "]" ->
           Qast.Node "ExSte" [Qast.Loc; e1; e2]
-      | e = SELF; "."; "{"; el = SLIST1 expr SEP ","; "}" ->
+      | e = SELF; "."; "{"; el = SV LIST1 expr SEP ","; "}" ->
           Qast.Node "ExBae" [Qast.Loc; e; el]
       | e1 = SELF; "."; e2 = SELF -> Qast.Node "ExAcc" [Qast.Loc; e1; e2] ]
     | "~-" NONA
@@ -710,7 +715,7 @@ EXTEND
       | "["; "]" -> Qast.Node "ExUid" [Qast.Loc; Qast.VaVal (Qast.Str "[]")]
       | "["; el = SLIST1 expr SEP ";"; last = cons_expr_opt; "]" ->
           mklistexp Qast.Loc last el
-      | "[|"; el = SLIST0 expr SEP ";"; "|]" ->
+      | "[|"; el = SV LIST0 expr SEP ";"; "|]" ->
           Qast.Node "ExArr" [Qast.Loc; el]
       | "{"; lel = SV LIST1 label_expr SEP ";"; "}" ->
           Qast.Node "ExRec" [Qast.Loc; lel; Qast.Option None]
@@ -753,7 +758,8 @@ EXTEND
     [ RIGHTA
       [ p = ipatt; e = SELF ->
           Qast.Node "ExFun"
-            [Qast.Loc; Qast.List [Qast.Tuple [p; Qast.Option None; e]]]
+            [Qast.Loc;
+             Qast.VaVal (Qast.List [Qast.Tuple [p; Qast.Option None; e]])]
       | "="; e = expr -> e
       | ":"; t = ctyp; "="; e = expr -> Qast.Node "ExTyc" [Qast.Loc; e; t] ] ]
   ;
@@ -775,7 +781,8 @@ EXTEND
     [ RIGHTA
       [ p = ipatt; e = SELF ->
           Qast.Node "ExFun"
-            [Qast.Loc; Qast.List [Qast.Tuple [p; Qast.Option None; e]]]
+            [Qast.Loc;
+             Qast.VaVal (Qast.List [Qast.Tuple [p; Qast.Option None; e]])]
       | "->"; e = expr -> e ] ]
   ;
   patt:
@@ -795,7 +802,7 @@ EXTEND
       | s = a_INT_L2 -> Qast.Node "PaInt" [Qast.Loc; s; Qast.Str "L"]
       | s = a_INT_n2 -> Qast.Node "PaInt" [Qast.Loc; s; Qast.Str "n"]
       | s = a_FLOAT2 -> Qast.Node "PaFlo" [Qast.Loc; s]
-      | s = a_STRING -> Qast.Node "PaStr" [Qast.Loc; s]
+      | s = a_STRING2 -> Qast.Node "PaStr" [Qast.Loc; s]
       | s = a_CHAR2 -> Qast.Node "PaChr" [Qast.Loc; s]
       | "-"; s = a_INT -> mkuminpat Qast.Loc (Qast.Str "-") (Qast.Bool True) s
       | "-"; s = a_FLOAT ->
@@ -803,7 +810,7 @@ EXTEND
       | "["; "]" -> Qast.Node "PaUid" [Qast.Loc; Qast.VaVal (Qast.Str "[]")]
       | "["; pl = SLIST1 patt SEP ";"; last = cons_patt_opt; "]" ->
           mklistpat Qast.Loc last pl
-      | "[|"; pl = SLIST0 patt SEP ";"; "|]" ->
+      | "[|"; pl = SV LIST0 patt SEP ";"; "|]" ->
           Qast.Node "PaArr" [Qast.Loc; pl]
       | "{"; lpl = SV LIST1 label_patt SEP ";"; "}" ->
           Qast.Node "PaRec" [Qast.Loc; lpl]
@@ -1199,6 +1206,11 @@ EXTEND
   ;
   expr: LEVEL "simple"
     [ [ "`"; s = ident -> Qast.Node "ExVrn" [Qast.Loc; s] ] ]
+  ;
+  direction_flag2:
+    [ [ df = direction_flag -> Qast.VaVal df
+      | s = ANTIQUOT "to" -> Qast.VaVal (antiquot "" loc s)
+      | s = ANTIQUOT "ato" -> antiquot "a" loc s ] ]
   ;
   direction_flag:
     [ [ "to" -> Qast.Bool True

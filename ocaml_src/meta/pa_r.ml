@@ -225,6 +225,8 @@ Grammar.extend
    and ipatt_tcon : 'ipatt_tcon Grammar.Entry.e =
      grammar_entry_create "ipatt_tcon"
    and eq_expr : 'eq_expr Grammar.Entry.e = grammar_entry_create "eq_expr"
+   and direction_flag2 : 'direction_flag2 Grammar.Entry.e =
+     grammar_entry_create "direction_flag2"
    and direction_flag : 'direction_flag Grammar.Entry.e =
      grammar_entry_create "direction_flag"
    in
@@ -604,13 +606,13 @@ Grammar.extend
        Gramext.Stoken ("", "="); Gramext.Sself;
        Gramext.Snterm
          (Grammar.Entry.obj
-            (direction_flag : 'direction_flag Grammar.Entry.e));
+            (direction_flag2 : 'direction_flag2 Grammar.Entry.e));
        Gramext.Sself; Gramext.Stoken ("", "do"); Gramext.Stoken ("", "{");
        Gramext.Snterm
          (Grammar.Entry.obj (sequence2 : 'sequence2 Grammar.Entry.e));
        Gramext.Stoken ("", "}")],
       Gramext.action
-        (fun _ (seq : 'sequence2) _ _ (e2 : 'expr) (df : 'direction_flag)
+        (fun _ (seq : 'sequence2) _ _ (e2 : 'expr) (df : 'direction_flag2)
              (e1 : 'expr) _ (i : string) _ (loc : Ploc.t) ->
            (MLast.ExFor (loc, i, e1, e2, df, seq) : 'expr));
       [Gramext.Stoken ("", "do"); Gramext.Stoken ("", "{");
@@ -2391,6 +2393,23 @@ Grammar.extend
       Gramext.action
         (fun (s : 'ident) _ (loc : Ploc.t) ->
            (MLast.ExVrn (loc, s) : 'expr))]];
+    Grammar.Entry.obj (direction_flag2 : 'direction_flag2 Grammar.Entry.e),
+    None,
+    [None, None,
+     [[Gramext.Stoken ("ANTIQUOT_LOC", "ato")],
+      Gramext.action
+        (fun (s : string) (loc : Ploc.t) ->
+           (failwith "antiquot" : 'direction_flag2));
+      [Gramext.Stoken ("ANTIQUOT_LOC", "to")],
+      Gramext.action
+        (fun (s : string) (loc : Ploc.t) ->
+           (failwith "antiquot" : 'direction_flag2));
+      [Gramext.Snterm
+         (Grammar.Entry.obj
+            (direction_flag : 'direction_flag Grammar.Entry.e))],
+      Gramext.action
+        (fun (df : 'direction_flag) (loc : Ploc.t) ->
+           (df : 'direction_flag2))]];
     Grammar.Entry.obj (direction_flag : 'direction_flag Grammar.Entry.e),
     None,
     [None, None,

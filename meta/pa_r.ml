@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.74 2007/09/12 19:58:05 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.75 2007/09/13 03:25:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -219,25 +219,25 @@ EXTEND
       [ "let"; r = V FLAG "rec"; l = V LIST1 let_binding SEP "and"; "in";
         x = SELF ->
           <:expr< let $aflag:r$ $alist:l$ in $x$ >>
-      | "let"; "module"; m = UIDENT; mb = mod_fun_binding; "in"; e = SELF ->
-          <:expr< let module $m$ = $mb$ in $e$ >>
-      | "fun"; "["; l = LIST0 match_case SEP "|"; "]" ->
-          <:expr< fun [ $list:l$ ] >>
+      | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in"; e = SELF ->
+          <:expr< let module $auid:m$ = $mb$ in $e$ >>
+      | "fun"; "["; l = V LIST0 match_case SEP "|"; "]" ->
+          <:expr< fun [ $alist:l$ ] >>
       | "fun"; p = ipatt; e = fun_def -> <:expr< fun $p$ -> $e$ >>
-      | "match"; e = SELF; "with"; "["; l = LIST0 match_case SEP "|"; "]" ->
-          <:expr< match $e$ with [ $list:l$ ] >>
+      | "match"; e = SELF; "with"; "["; l = V LIST0 match_case SEP "|"; "]" ->
+          <:expr< match $e$ with [ $alist:l$ ] >>
       | "match"; e = SELF; "with"; p1 = ipatt; "->"; e1 = SELF ->
           <:expr< match $e$ with $p1$ -> $e1$ >>
-      | "try"; e = SELF; "with"; "["; l = LIST0 match_case SEP "|"; "]" ->
-          <:expr< try $e$ with [ $list:l$ ] >>
+      | "try"; e = SELF; "with"; "["; l = V LIST0 match_case SEP "|"; "]" ->
+          <:expr< try $e$ with [ $alist:l$ ] >>
       | "try"; e = SELF; "with"; p1 = ipatt; "->"; e1 = SELF ->
           <:expr< try $e$ with $p1$ -> $e1$ >>
       | "if"; e1 = SELF; "then"; e2 = SELF; "else"; e3 = SELF ->
           <:expr< if $e1$ then $e2$ else $e3$ >>
       | "do"; "{"; seq = sequence2; "}" -> mksequence2 loc seq
-      | "for"; i = LIDENT; "="; e1 = SELF; df = direction_flag; e2 = SELF;
+      | "for"; i = V LIDENT; "="; e1 = SELF; df = direction_flag2; e2 = SELF;
         "do"; "{"; seq = sequence2; "}" ->
-          <:expr< for $i$ = $e1$ $to:df$ $e2$ do { $alist:seq$ } >>
+          <:expr< for $alid:i$ = $e1$ $ato:df$ $e2$ do { $alist:seq$ } >>
       | "while"; e = SELF; "do"; "{"; seq = sequence2; "}" ->
           <:expr< while $e$ do { $alist:seq$ } >> ]
     | "where"
@@ -290,8 +290,8 @@ EXTEND
     | "." LEFTA
       [ e1 = SELF; "."; "("; e2 = SELF; ")" -> <:expr< $e1$ .( $e2$ ) >>
       | e1 = SELF; "."; "["; e2 = SELF; "]" -> <:expr< $e1$ .[ $e2$ ] >>
-      | e = SELF; "."; "{"; el = LIST1 expr SEP ","; "}" ->
-          <:expr< $e$ . { $list:el$ } >>
+      | e = SELF; "."; "{"; el = V LIST1 expr SEP ","; "}" ->
+          <:expr< $e$ . { $alist:el$ } >>
       | e1 = SELF; "."; e2 = SELF -> <:expr< $e1$ . $e2$ >> ]
     | "~-" NONA
       [ "~-"; e = SELF -> <:expr< ~- $e$ >>
@@ -309,7 +309,7 @@ EXTEND
       | "["; "]" -> <:expr< [] >>
       | "["; el = LIST1 expr SEP ";"; last = cons_expr_opt; "]" ->
           mklistexp loc last el
-      | "[|"; el = LIST0 expr SEP ";"; "|]" -> <:expr< [| $list:el$ |] >>
+      | "[|"; el = V LIST0 expr SEP ";"; "|]" -> <:expr< [| $alist:el$ |] >>
       | "{"; lel = V LIST1 label_expr SEP ";"; "}" ->
           <:expr< { $alist:lel$ } >>
       | "{"; "("; e = SELF; ")"; "with"; lel = V LIST1 label_expr SEP ";";
@@ -386,14 +386,14 @@ EXTEND
       | s = V INT_L -> <:patt< $aint64:s$ >>
       | s = V INT_n -> <:patt< $anativeint:s$ >>
       | s = V FLOAT -> <:patt< $aflo:s$ >>
-      | s = STRING -> <:patt< $str:s$ >>
+      | s = V STRING -> <:patt< $astr:s$ >>
       | s = V CHAR -> <:patt< $achr:s$ >>
       | "-"; s = INT -> mkuminpat loc "-" True s
       | "-"; s = FLOAT -> mkuminpat loc "-" False s
       | "["; "]" -> <:patt< [] >>
       | "["; pl = LIST1 patt SEP ";"; last = cons_patt_opt; "]" ->
           mklistpat loc last pl
-      | "[|"; pl = LIST0 patt SEP ";"; "|]" -> <:patt< [| $list:pl$ |] >>
+      | "[|"; pl = V LIST0 patt SEP ";"; "|]" -> <:patt< [| $alist:pl$ |] >>
       | "{"; lpl = V LIST1 label_patt SEP ";"; "}" ->
           <:patt< { $alist:lpl$ } >>
       | "("; p = paren_patt; ")" -> p
@@ -756,6 +756,11 @@ EXTEND
   ;
   expr: LEVEL "simple"
     [ [ "`"; s = ident -> <:expr< ` $s$ >> ] ]
+  ;
+  direction_flag2:
+    [ [ df = direction_flag -> <:vala< df >>
+      | s = ANTIQUOT_LOC "to" -> <:vala< $s$ >>
+      | s = ANTIQUOT_LOC "ato" -> <:vala< $s$ >> ] ]
   ;
   direction_flag:
     [ [ "to" -> True

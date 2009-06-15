@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.57 2007/09/10 17:19:30 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.58 2007/09/13 03:25:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -184,7 +184,7 @@ module MetaAction =
           <:expr< MLast.ExApp $mloc$ $mexpr e1$ $mexpr e2$ >>
       | MLast.ExChr loc s -> <:expr< MLast.ExChr $mloc$ $mvala mstring s$ >>
       | MLast.ExFun loc pwel ->
-          <:expr< MLast.ExFun $mloc$ $mlist mpwe pwel$ >>
+          <:expr< MLast.ExFun $mloc$ $mvala (mlist mpwe) pwel$ >>
       | MLast.ExIfe loc e1 e2 e3 ->
           <:expr< MLast.ExIfe $mloc$ $mexpr e1$ $mexpr e2$ $mexpr e3$ >>
       | MLast.ExInt loc s c ->
@@ -195,7 +195,7 @@ module MetaAction =
           <:expr< MLast.ExLet $mloc$ $rf$ $mvala (mlist mpe) pel$ $mexpr e$ >>
       | MLast.ExLid loc s -> <:expr< MLast.ExLid $mloc$ $mvala mstring s$ >>
       | MLast.ExMat loc e pwel ->
-          <:expr< MLast.ExMat $mloc$ $mexpr e$ $mlist mpwe pwel$ >>
+          <:expr< MLast.ExMat $mloc$ $mexpr e$ $mvala (mlist mpwe) pwel$ >>
       | MLast.ExRec loc pel eo ->
           let pel = mvala (mlist mpe) pel in
           <:expr< MLast.ExRec $mloc$ $pel$ $moption mexpr eo$ >>
@@ -206,7 +206,7 @@ module MetaAction =
       | MLast.ExStr loc s ->
           <:expr< MLast.ExStr $mloc$ $mvala mstring_escaped s$ >>
       | MLast.ExTry loc e pwel ->
-          <:expr< MLast.ExTry $mloc$ $mexpr e$ $mlist mpwe pwel$ >>
+          <:expr< MLast.ExTry $mloc$ $mexpr e$ $mvala (mlist mpwe) pwel$ >>
       | MLast.ExTup loc el ->
           <:expr< MLast.ExTup $mloc$ $mvala (mlist mexpr) el$ >>
       | MLast.ExTyc loc e t ->
@@ -226,7 +226,7 @@ module MetaAction =
       | MLast.PaOrp loc p1 p2 ->
           <:expr< MLast.PaOrp $mloc$ $mpatt p1$ $mpatt p2$ >>
       | MLast.PaStr loc s ->
-          <:expr< MLast.PaStr $mloc$ $str:String.escaped s$ >>
+          <:expr< MLast.PaStr $mloc$ $mvala mstring_escaped s$ >>
       | MLast.PaTup loc pl ->
           <:expr< MLast.PaTup $mloc$ $mvala (mlist mpatt) pl$ >>
       | MLast.PaTyc loc p t ->

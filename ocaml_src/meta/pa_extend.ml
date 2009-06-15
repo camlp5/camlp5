@@ -213,7 +213,7 @@ module MetaAction =
                   (loc, MLast.ExUid (loc, "MLast"),
                    MLast.ExUid (loc, "ExFun")),
                 mloc),
-             mlist mpwe pwel)
+             mvala (mlist mpwe) pwel)
       | MLast.ExIfe (loc, e1, e2, e3) ->
           MLast.ExApp
             (loc,
@@ -292,7 +292,7 @@ module MetaAction =
                       MLast.ExUid (loc, "ExMat")),
                    mloc),
                 mexpr e),
-             mlist mpwe pwel)
+             mvala (mlist mpwe) pwel)
       | MLast.ExRec (loc, pel, eo) ->
           let pel = mvala (mlist mpe) pel in
           MLast.ExApp
@@ -352,7 +352,7 @@ module MetaAction =
                       MLast.ExUid (loc, "ExTry")),
                    mloc),
                 mexpr e),
-             mlist mpwe pwel)
+             mvala (mlist mpwe) pwel)
       | MLast.ExTup (loc, el) ->
           MLast.ExApp
             (loc,
@@ -466,7 +466,7 @@ module MetaAction =
                   (loc, MLast.ExUid (loc, "MLast"),
                    MLast.ExUid (loc, "PaStr")),
                 mloc),
-             MLast.ExStr (loc, String.escaped s))
+             mvala mstring_escaped s)
       | MLast.PaTup (loc, pl) ->
           MLast.ExApp
             (loc,

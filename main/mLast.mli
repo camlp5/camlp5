@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: mLast.mli,v 1.34 2007/09/12 19:58:05 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.35 2007/09/13 03:25:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Module [MLast]: abstract syntax tree.
@@ -60,7 +60,7 @@ type patt =
   | PaAnt of loc and patt
   | PaAny of loc
   | PaApp of loc and patt and patt
-  | PaArr of loc and list patt
+  | PaArr of loc and V (list patt)
   | PaChr of loc and V string
   | PaInt of loc and V string and string
   | PaFlo of loc and V string
@@ -70,7 +70,7 @@ type patt =
   | PaOrp of loc and patt and patt
   | PaRng of loc and patt and patt
   | PaRec of loc and V (list (patt * patt))
-  | PaStr of loc and string
+  | PaStr of loc and V string
   | PaTup of loc and V (list patt)
   | PaTyc of loc and patt and ctyp
   | PaTyp of loc and list string
@@ -84,23 +84,23 @@ and expr =
   | ExAnt of loc and expr
   | ExApp of loc and expr and expr
   | ExAre of loc and expr and expr
-  | ExArr of loc and list expr
+  | ExArr of loc and V (list expr)
   | ExAsr of loc and expr
   | ExAss of loc and expr and expr
-  | ExBae of loc and expr and list expr
+  | ExBae of loc and expr and V (list expr)
   | ExChr of loc and V string
   | ExCoe of loc and expr and option ctyp and ctyp
   | ExFlo of loc and V string
-  | ExFor of loc and string and expr and expr and bool and V (list expr)
-  | ExFun of loc and list (patt * option expr * expr)
+  | ExFor of loc and V string and expr and expr and V bool and V (list expr)
+  | ExFun of loc and V (list (patt * option expr * expr))
   | ExIfe of loc and expr and expr and expr
   | ExInt of loc and V string and string
   | ExLab of loc and string and option expr
   | ExLaz of loc and expr
   | ExLet of loc and V bool and V (list (patt * expr)) and expr
   | ExLid of loc and V string
-  | ExLmd of loc and string and module_expr and expr
-  | ExMat of loc and expr and list (patt * option expr * expr)
+  | ExLmd of loc and V string and module_expr and expr
+  | ExMat of loc and expr and V (list (patt * option expr * expr))
   | ExNew of loc and list string
   | ExObj of loc and option patt and list class_str_item
   | ExOlb of loc and string and option expr
@@ -110,7 +110,7 @@ and expr =
   | ExSnd of loc and expr and string
   | ExSte of loc and expr and expr
   | ExStr of loc and V string
-  | ExTry of loc and expr and list (patt * option expr * expr)
+  | ExTry of loc and expr and V (list (patt * option expr * expr))
   | ExTup of loc and V (list expr)
   | ExTyc of loc and expr and ctyp
   | ExUid of loc and V string

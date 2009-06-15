@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.61 2007/09/12 19:58:05 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.62 2007/09/13 03:25:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -229,6 +229,7 @@ module Meta =
         | PaAli _ p1 p2 -> <:expr< MLast.PaAli $ln$ $loop p1$ $loop p2$ >>
         | PaAny _ -> <:expr< MLast.PaAny $ln$ >>
         | PaApp _ p1 p2 -> <:expr< MLast.PaApp $ln$ $loop p1$ $loop p2$ >>
+        | PaArr _ pl -> <:expr< MLast.PaArr $ln$ $e_vala (e_list loop) pl$ >>
         | PaChr _ s -> <:expr< MLast.PaChr $ln$ $e_vala e_string s$ >>
         | PaInt _ s k ->
             <:expr< MLast.PaInt $ln$ $e_vala e_string s$ $str:k$ >>
@@ -242,7 +243,7 @@ module Meta =
             in
             <:expr< MLast.PaRec $ln$ $lpe$ >>
         | PaRng _ p1 p2 -> <:expr< MLast.PaRng $ln$ $loop p1$ $loop p2$ >>
-        | PaStr _ s -> <:expr< MLast.PaStr $ln$ $e_string s$ >>
+        | PaStr _ s -> <:expr< MLast.PaStr $ln$ $e_vala e_string s$ >>
         | PaTup _ pl -> <:expr< MLast.PaTup $ln$ $e_vala (e_list loop) pl$ >>
         | PaTyc _ p t -> <:expr< MLast.PaTyc $ln$ $loop p$ $e_ctyp t$ >>
         | PaUid _ s -> <:expr< MLast.PaUid $ln$ $e_vala e_string s$ >>
@@ -264,29 +265,43 @@ module Meta =
           END
         | x -> not_impl "p_patt" x ]
     ;
-    value e_expr e =
+    value e_type_var =
+      fun
+      [ x -> not_impl "e_type_var" x ]
+    ;
+    value rec e_expr e =
       let ln = ln () in
       loop e where rec loop =
         fun
         [ ExAcc _ e1 e2 -> <:expr< MLast.ExAcc $ln$ $loop e1$ $loop e2$ >>
         | ExApp _ e1 e2 -> <:expr< MLast.ExApp $ln$ $loop e1$ $loop e2$ >>
-(*
-        | ExArr _ el -> <:expr< MLast.ExArr $ln$ $e_list loop el$ >>
-*)
+        | ExAre _ e1 e2 -> <:expr< MLast.ExAre $ln$ $loop e1$ $loop e2$ >>
+        | ExArr _ el -> <:expr< MLast.ExArr $ln$ $e_vala (e_list loop) el$ >>
+        | ExAss _ e1 e2 -> <:expr< MLast.ExAss $ln$ $loop e1$ $loop e2$ >>
+        | ExAsr _ e -> <:expr< MLast.ExAsr $ln$ $loop e$ >>
+        | ExBae _ e el ->
+            <:expr< MLast.ExBae $ln$ $loop e$ $e_vala (e_list loop) el$ >>
         | ExChr _ s -> <:expr< MLast.ExChr $ln$ $e_vala e_string s$ >>
         | ExIfe _ e1 e2 e3 ->
             <:expr< MLast.ExIfe $ln$ $loop e1$ $loop e2$ $loop e3$ >>
         | ExInt _ s k ->
             <:expr< MLast.ExInt $ln$ $e_vala e_string s$ $str:k$ >>
         | ExFlo _ s -> <:expr< MLast.ExFlo $ln$ $e_vala e_string s$ >>
+        | ExFor _ i e1 e2 df el ->
+            let i = e_vala e_string i in
+            let df = e_vala e_bool df in
+            let el = e_vala (e_list loop) el in
+            <:expr< MLast.ExFor $ln$ $i$ $loop e1$ $loop e2$ $df$ $el$ >>
         | ExFun _ pwel ->
             let pwel =
-              e_list
-                (fun (p, oe, e) ->
-                   <:expr< ($e_patt p$, $e_option loop oe$, $loop e$) >>)
+              e_vala
+                (e_list
+                  (fun (p, oe, e) ->
+                     <:expr< ($e_patt p$, $e_option loop oe$, $loop e$) >>))
                 pwel
             in
             <:expr< MLast.ExFun $ln$ $pwel$ >>
+        | ExLaz _ e -> <:expr< MLast.ExLaz $ln$ $loop e$ >>
         | ExLet _ rf lpe e ->
             let rf = e_vala e_bool rf in
             let lpe =
@@ -295,11 +310,16 @@ module Meta =
             in
             <:expr< MLast.ExLet $ln$ $rf$ $lpe$ $loop e$ >>
         | ExLid _ s -> <:expr< MLast.ExLid $ln$ $e_vala e_string s$ >>
+        | ExLmd _ i me e ->
+            let i = e_vala e_string i in
+            let me = e_module_expr me in
+            <:expr< MLast.ExLmd $ln$ $i$ $me$ $loop e$ >>
         | ExMat _ e pwel ->
             let pwel =
-              e_list
-                (fun (p, oe, e) ->
-                   <:expr< ($e_patt p$, $e_option loop oe$, $loop e$) >>)
+              e_vala
+                (e_list
+                   (fun (p, oe, e) ->
+                      <:expr< ($e_patt p$, $e_option loop oe$, $loop e$) >>))
                 pwel
             in
             <:expr< MLast.ExMat $ln$ $loop e$ $pwel$ >>
@@ -311,16 +331,27 @@ module Meta =
             let oe = e_option loop oe in
             <:expr< MLast.ExRec $ln$ $lpe$ $oe$ >>
         | ExSeq _ el -> <:expr< MLast.ExSeq $ln$ $e_vala (e_list loop) el$ >>
+        | ExSte _ e1 e2 -> <:expr< MLast.ExSte $ln$ $loop e1$ $loop e2$ >>
         | ExStr _ s -> <:expr< MLast.ExStr $ln$ $e_vala e_string s$ >>
+        | ExTry _ e pwel ->
+            let pwel =
+              e_vala
+                (e_list
+                   (fun (p, oe, e) ->
+                      <:expr< ($e_patt p$, $e_option loop oe$, $loop e$) >>))
+                pwel
+            in
+            <:expr< MLast.ExTry $ln$ $loop e$ $pwel$ >>
         | ExTup _ el -> <:expr< MLast.ExTup $ln$ $e_vala (e_list loop) el$ >>
         | ExTyc _ e t -> <:expr< MLast.ExTyc $ln$ $loop e$ $e_ctyp t$ >>
         | ExUid _ s -> <:expr< MLast.ExUid $ln$ $e_vala e_string s$ >>
+        | ExWhi _ e el ->
+            <:expr< MLast.ExWhi $ln$ $loop e$ $e_vala (e_list loop) el$ >>
         | IFDEF STRICT THEN
             ExXtr loc s _ -> e_xtr loc s
           END
         | x -> not_impl "e_expr" x ]
-    ;
-    value p_expr e =
+    and p_expr e =
       loop e where rec loop =
         fun
         [ ExAcc _ e1 e2 -> <:patt< MLast.ExAcc _ $loop e1$ $loop e2$ >>
@@ -351,12 +382,30 @@ module Meta =
             ExXtr loc s _ -> p_xtr loc s
           END
         | x -> not_impl "p_expr" x ]
-    ;
-    value e_type_var =
+    and e_module_type mt =
+      let ln = ln () in
+      loop mt where rec loop =
+        fun
+        [ MtAcc _ mt1 mt2 -> <:expr< MLast.MtAcc $ln$ $loop mt1$ $loop mt2$ >>
+        | MtApp _ mt1 mt2 -> <:expr< MLast.MtApp $ln$ $loop mt1$ $loop mt2$ >>
+        | MtFun _ s mt1 mt2 ->
+            let s = e_vala e_string s in
+            <:expr< MLast.MtFun $ln$ $s$ $loop mt1$ $loop mt2$ >>
+        | MtLid _ s -> <:expr< MLast.MtLid $ln$ $e_vala e_string s$ >>
+        | MtQuo _ s -> <:expr< MLast.MtQuo $ln$ $e_vala e_string s$ >>
+        | MtSig _ sil ->
+            <:expr< MLast.MtSig $ln$ $e_vala (e_list e_sig_item) sil$ >>
+        | MtUid _ s -> <:expr< MLast.MtUid $ln$ $e_vala e_string s$ >>
+        | MtWit _ mt lwc ->
+            let lwc = e_vala (e_list e_with_constr) lwc in
+            <:expr< MLast.MtWit $ln$ $loop mt$ $lwc$ >>
+        | IFDEF STRICT THEN
+            MtXtr loc s _ -> e_xtr loc s
+          END ]
+    and p_module_type =
       fun
-      [ x -> not_impl "e_type_var" x ]
-    ;
-    value rec e_sig_item si =
+      [ x -> not_impl "p_module_type" x ]
+    and e_sig_item si =
       let ln = ln () in
       loop si where rec loop =
         fun
@@ -388,6 +437,10 @@ module Meta =
         | SgVal _ s t ->
             <:expr< MLast.SgVal $ln$ $e_vala e_string s$ $e_ctyp t$ >>
         | x -> not_impl "e_sig_item" x ]
+    and p_sig_item =
+      fun
+      [ (* SgVal _ s t -> <:patt< MLast.SgVal _ $p_string s$ $p_ctyp t$ >>
+      | *) x -> not_impl "p_sig_item" x ]
     and e_with_constr wc =
       let ln = ln () in
       loop wc where rec loop =
@@ -470,35 +523,6 @@ module Meta =
     and p_str_item =
       fun
       [ x -> not_impl "p_str_item" x ]
-    and e_module_type mt =
-      let ln = ln () in
-      loop mt where rec loop =
-        fun
-        [ MtAcc _ mt1 mt2 -> <:expr< MLast.MtAcc $ln$ $loop mt1$ $loop mt2$ >>
-        | MtApp _ mt1 mt2 -> <:expr< MLast.MtApp $ln$ $loop mt1$ $loop mt2$ >>
-        | MtFun _ s mt1 mt2 ->
-            let s = e_vala e_string s in
-            <:expr< MLast.MtFun $ln$ $s$ $loop mt1$ $loop mt2$ >>
-        | MtLid _ s -> <:expr< MLast.MtLid $ln$ $e_vala e_string s$ >>
-        | MtQuo _ s -> <:expr< MLast.MtQuo $ln$ $e_vala e_string s$ >>
-        | MtSig _ sil ->
-            <:expr< MLast.MtSig $ln$ $e_vala (e_list e_sig_item) sil$ >>
-        | MtUid _ s -> <:expr< MLast.MtUid $ln$ $e_vala e_string s$ >>
-        | MtWit _ mt lwc ->
-            let lwc = e_vala (e_list e_with_constr) lwc in
-            <:expr< MLast.MtWit $ln$ $loop mt$ $lwc$ >>
-        | IFDEF STRICT THEN
-            MtXtr loc s _ -> e_xtr loc s
-          END ]
-    ;
-    value p_module_type =
-      fun
-      [ x -> not_impl "p_module_type" x ]
-    ;
-    value p_sig_item =
-      fun
-      [ (* SgVal _ s t -> <:patt< MLast.SgVal _ $p_string s$ $p_ctyp t$ >>
-      | *) x -> not_impl "p_sig_item" x ]
     ;
   end
 ;
@@ -610,6 +634,27 @@ lex.Plexing.tok_match :=
       [ ("ANTIQUOT_LOC", prm) ->
           let kind = check_anti_loc2 prm in
           if kind = "aint" || kind = "int" then prm
+          else raise Stream.Failure
+      | _ -> raise Stream.Failure ]
+  | ("V INT_l", "") ->
+      fun
+      [ ("ANTIQUOT_LOC", prm) ->
+          let kind = check_anti_loc2 prm in
+          if kind = "aint32" || kind = "int32" then prm
+          else raise Stream.Failure
+      | _ -> raise Stream.Failure ]
+  | ("V INT_L", "") ->
+      fun
+      [ ("ANTIQUOT_LOC", prm) ->
+          let kind = check_anti_loc2 prm in
+          if kind = "aint64" || kind = "int64" then prm
+          else raise Stream.Failure
+      | _ -> raise Stream.Failure ]
+  | ("V INT_n", "") ->
+      fun
+      [ ("ANTIQUOT_LOC", prm) ->
+          let kind = check_anti_loc2 prm in
+          if kind = "anativeint" || kind = "nativeint" then prm
           else raise Stream.Failure
       | _ -> raise Stream.Failure ]
   | ("V FLOAT", "") ->
