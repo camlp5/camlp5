@@ -214,10 +214,11 @@ and meth_list loc fl v =
       mkfield loc (Pfield (lab, ctyp (mkpolytype t))) :: meth_list loc fl v
 ;;
 
-let mktype loc tl cl tk tm =
+let mktype loc tl cl tk pf tm =
   let (params, variance) = List.split tl in
   {ptype_params = List.map uv params; ptype_cstrs = cl; ptype_kind = tk;
-   ptype_manifest = tm; ptype_loc = mkloc loc; ptype_variance = variance}
+   ptype_private = pf; ptype_manifest = tm; ptype_loc = mkloc loc;
+   ptype_variance = variance}
 ;;
 let mkmutable m = if m then Mutable else Immutable;;
 let mkprivate m = if m then Private else Public;;
@@ -231,16 +232,15 @@ let mkvariant (loc, c, tl) =
 let type_decl tl priv cl =
   function
     TyMan (loc, t, MLast.TyRec (_, ltl)) ->
-      mktype loc tl cl (Ptype_record (List.map mktrecord ltl, priv))
+      mktype loc tl cl (Ptype_record (List.map mktrecord ltl)) priv
         (Some (ctyp t))
   | TyMan (loc, t, MLast.TySum (_, ctl)) ->
-      mktype loc tl cl (Ptype_variant (List.map mkvariant ctl, priv))
+      mktype loc tl cl (Ptype_variant (List.map mkvariant ctl)) priv
         (Some (ctyp t))
   | TyRec (loc, ltl) ->
-      mktype loc tl cl (Ptype_record (List.map mktrecord (uv ltl), priv)) None
+      mktype loc tl cl (Ptype_record (List.map mktrecord (uv ltl))) priv None
   | TySum (loc, ctl) ->
-      mktype loc tl cl (Ptype_variant (List.map mkvariant (uv ctl), priv))
-        None
+      mktype loc tl cl (Ptype_variant (List.map mkvariant (uv ctl))) priv None
   | t ->
       let m =
         match t with
@@ -249,7 +249,7 @@ let type_decl tl priv cl =
             else None
         | _ -> Some (ctyp t)
       in
-      mktype (loc_of_ctyp t) tl cl Ptype_abstract m
+      mktype (loc_of_ctyp t) tl cl Ptype_abstract priv m
 ;;
 
 let mkvalue_desc t p = {pval_type = ctyp t; pval_prim = p};;
@@ -345,12 +345,14 @@ let mkwithc =
   function
     WcTyp (loc, id, tpl, pf, ct) ->
       let (params, variance) = List.split (uv tpl) in
-      let tk = if uv pf then Ptype_private else Ptype_abstract in
+      let tk = Ptype_abstract in
       long_id_of_string_list loc (uv id),
-      Pwith_type
-        {ptype_params = List.map uv params; ptype_cstrs = []; ptype_kind = tk;
-         ptype_manifest = Some (ctyp ct); ptype_loc = mkloc loc;
-         ptype_variance = variance}
+      (let pf = if uv pf then Private else Public in
+       Pwith_type
+         {ptype_params = List.map uv params; ptype_cstrs = [];
+          ptype_kind = tk; ptype_private = pf;
+          ptype_manifest = Some (ctyp ct); ptype_loc = mkloc loc;
+          ptype_variance = variance})
   | WcMod (loc, id, m) ->
       long_id_of_string_list loc (uv id), Pwith_module (module_expr_long_id m)
 ;;

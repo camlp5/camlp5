@@ -1,6 +1,8 @@
 Camlp5 Version 5.05:
 --------------------
 
+* [28 Nov 07] Upgraded to reflect changes done in parse tree in current
+  OCaml (version 3.11+dev6).
 * [27 Nov 07] Fixed bug in installation. Some files where installed in
   the bin directory instead of lib directory.
 * [27 Nov 07] Fixed bug in parsing comments: comments containing '\' where

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: ast2pt.ml,v 1.54 2007/10/01 04:44:09 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.55 2007/11/28 14:06:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open MLast;
@@ -226,11 +226,18 @@ and meth_list loc fl v =
       [mkfield loc (Pfield lab (ctyp (mkpolytype t))) :: meth_list loc fl v] ]
 ;
 
-value mktype loc tl cl tk tm =
-  let (params, variance) = List.split tl in
-  {ptype_params = List.map uv params; ptype_cstrs = cl; ptype_kind = tk;
-   ptype_manifest = tm; ptype_loc = mkloc loc; ptype_variance = variance}
-;
+IFDEF OCAML_3_11 THEN
+  value mktype loc tl cl tk pf tm =
+    let (params, variance) = List.split tl in
+    {ptype_params = List.map uv params; ptype_cstrs = cl; ptype_kind = tk;
+     ptype_private = pf; ptype_manifest = tm; ptype_loc = mkloc loc;
+     ptype_variance = variance}
+ELSE
+  value mktype loc tl cl tk tm =
+    let (params, variance) = List.split tl in
+    {ptype_params = List.map uv params; ptype_cstrs = cl; ptype_kind = tk;
+     ptype_manifest = tm; ptype_loc = mkloc loc; ptype_variance = variance}
+END;
 value mkmutable m = if m then Mutable else Immutable;
 value mkprivate m = if m then Private else Public;
 value mktrecord (loc, n, m, t) =
@@ -251,17 +258,37 @@ value mkvariant (loc, c, tl) =
 value type_decl tl priv cl =
   fun
   [ TyMan loc t <:ctyp< { $list:ltl$ } >> ->
-      mktype loc tl cl (Ptype_record (List.map mktrecord ltl) priv)
-        (Some (ctyp t))
+      IFDEF OCAML_3_11 THEN
+        mktype loc tl cl (Ptype_record (List.map mktrecord ltl)) priv
+          (Some (ctyp t))
+      ELSE
+        mktype loc tl cl (Ptype_record (List.map mktrecord ltl) priv)
+          (Some (ctyp t))
+      END
   | TyMan loc t <:ctyp< [ $list:ctl$ ] >> ->
-      mktype loc tl cl (Ptype_variant (List.map mkvariant ctl) priv)
-        (Some (ctyp t))
+      IFDEF OCAML_3_11 THEN
+        mktype loc tl cl (Ptype_variant (List.map mkvariant ctl)) priv
+          (Some (ctyp t))
+      ELSE
+        mktype loc tl cl (Ptype_variant (List.map mkvariant ctl) priv)
+          (Some (ctyp t))
+      END
   | TyRec loc ltl ->
-      mktype loc tl cl (Ptype_record (List.map mktrecord (uv ltl)) priv)
-        None
+      IFDEF OCAML_3_11 THEN
+        mktype loc tl cl (Ptype_record (List.map mktrecord (uv ltl))) priv
+          None
+      ELSE
+        mktype loc tl cl (Ptype_record (List.map mktrecord (uv ltl)) priv)
+          None
+      END
   | TySum loc ctl ->
-      mktype loc tl cl (Ptype_variant (List.map mkvariant (uv ctl)) priv)
-        None
+      IFDEF OCAML_3_11 THEN
+        mktype loc tl cl (Ptype_variant (List.map mkvariant (uv ctl))) priv
+          None
+      ELSE
+        mktype loc tl cl (Ptype_variant (List.map mkvariant (uv ctl)) priv)
+          None
+      END
   | t ->
       let m =
         match t with
@@ -270,7 +297,11 @@ value type_decl tl priv cl =
             else None
         | _ -> Some (ctyp t) ]
       in
-      mktype (loc_of_ctyp t) tl cl Ptype_abstract m ]
+      IFDEF OCAML_3_11 THEN
+        mktype (loc_of_ctyp t) tl cl Ptype_abstract priv m
+      ELSE
+        mktype (loc_of_ctyp t) tl cl Ptype_abstract m
+      END ]
 ;
 
 value mkvalue_desc t p = {pval_type = ctyp t; pval_prim = p};
@@ -359,14 +390,23 @@ value mkwithc =
   [ WcTyp loc id tpl pf ct ->
       let (params, variance) = List.split (uv tpl) in
       let tk =
-        IFDEF OCAML_3_08 THEN Ptype_abstract
+        IFDEF OCAML_3_08 OR OCAML_3_11 THEN Ptype_abstract
         ELSE if uv pf then Ptype_private else Ptype_abstract END
       in
       (long_id_of_string_list loc (uv id),
-       Pwith_type
-         {ptype_params = List.map uv params; ptype_cstrs = [];
-          ptype_kind = tk; ptype_manifest = Some (ctyp ct);
-          ptype_loc = mkloc loc; ptype_variance = variance})
+       IFDEF OCAML_3_11 THEN
+         let pf = if uv pf then Private else Public in
+         Pwith_type
+           {ptype_params = List.map uv params; ptype_cstrs = [];
+            ptype_kind = tk; ptype_private = pf;
+            ptype_manifest = Some (ctyp ct); ptype_loc = mkloc loc;
+            ptype_variance = variance}
+       ELSE
+         Pwith_type
+           {ptype_params = List.map uv params; ptype_cstrs = [];
+            ptype_kind = tk; ptype_manifest = Some (ctyp ct);
+            ptype_loc = mkloc loc; ptype_variance = variance}
+       END)
   | WcMod loc id m ->
       (long_id_of_string_list loc (uv id),
        Pwith_module (module_expr_long_id m)) ]
