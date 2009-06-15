@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.24 2007/07/31 14:29:41 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.25 2007/08/01 12:41:25 deraugla Exp $ *)
 
 open Stdpp;
 open Gramext;
@@ -559,15 +559,19 @@ and parser_of_symbol entry nlevn =
            act symbl)
   | Slist0 s ->
       let ps = parser_of_symbol entry nlevn s in
+      let pa = parser_of_token entry ("LIST0", "") in
       let rec loop al =
         parser
         [ [: a = ps; a = loop [a :: al] ! :] -> a
         | [: :] -> al ]
       in
-      parser [: a = loop [] :] -> Obj.repr (List.rev a)
+      parser
+      [ [: a = pa :] -> Obj.repr a
+      | [: a = loop [] :] -> Obj.repr (List.rev a) ]
   | Slist0sep symb sep ->
       let ps = parser_of_symbol entry nlevn symb in
       let pt = parser_of_symbol entry nlevn sep in
+      let pa = parser_of_token entry ("LIST0", "SEP") in
       let rec kont al =
         parser
         [ [: v = pt; a = ps ? symb_failed entry v sep symb;
@@ -576,19 +580,24 @@ and parser_of_symbol entry nlevn =
         | [: :] -> al ]
       in
       parser
-      [ [: a = ps; a = kont [a] ! :] -> Obj.repr (List.rev a)
+      [ [: a = pa :] -> Obj.repr a
+      | [: a = ps; a = kont [a] ! :] -> Obj.repr (List.rev a)
       | [: :] -> Obj.repr [] ]
   | Slist1 s ->
       let ps = parser_of_symbol entry nlevn s in
+      let pa = parser_of_token entry ("LIST1", "") in
       let rec loop al =
         parser
         [ [: a = ps; a = loop [a :: al] ! :] -> a
         | [: :] -> al ]
       in
-      parser [: a = ps; a = loop [a] ! :] -> Obj.repr (List.rev a)
+      parser
+      [ [: a = pa :] -> Obj.repr a
+      | [: a = ps; a = loop [a] ! :] -> Obj.repr (List.rev a) ]
   | Slist1sep symb sep ->
       let ps = parser_of_symbol entry nlevn symb in
       let pt = parser_of_symbol entry nlevn sep in
+      let pa = parser_of_token entry ("LIST1", "SEP") in
       let rec kont al =
         parser
         [ [: v = pt;
@@ -602,7 +611,9 @@ and parser_of_symbol entry nlevn =
             a
         | [: :] -> al ]
       in
-      parser [: a = ps; a = kont [a] ! :] -> Obj.repr (List.rev a)
+      parser
+      [ [: a = pa :] -> Obj.repr a
+      | [: a = ps; a = kont [a] ! :] -> Obj.repr (List.rev a) ]
   | Sopt s ->
       let ps = parser_of_symbol entry nlevn s in
       parser
@@ -618,16 +629,17 @@ and parser_of_symbol entry nlevn =
   | Snterml e l -> parser [: a = e.estart (level_number e l) :] -> a
   | Sself -> parser [: a = entry.estart 0 :] -> a
   | Snext -> parser [: a = entry.estart nlevn :] -> a
-  | Stoken tok ->
-      let f = entry.egram.glexer.Token.tok_match tok in
-      fun strm ->
-        match Stream.peek strm with
-        [ Some tok -> do {
-            let r = f tok in
-            Stream.junk strm;
-            Obj.repr r
-          }
-        | None -> raise Stream.Failure ] ]
+  | Stoken tok -> parser_of_token entry tok ]
+and parser_of_token entry tok =
+  let f = entry.egram.glexer.Token.tok_match tok in
+  fun strm ->
+    match Stream.peek strm with
+    [ Some tok -> do {
+        let r = f tok in
+        Stream.junk strm;
+        Obj.repr r
+      }
+    | None -> raise Stream.Failure ]
 and parse_top_symb entry symb =
   parser_of_symbol entry 0 (top_symb entry symb)
 ;

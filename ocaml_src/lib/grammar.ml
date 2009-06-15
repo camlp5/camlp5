@@ -596,16 +596,20 @@ and parser_of_symbol entry nlevn =
            act symbl)
   | Slist0 s ->
       let ps = parser_of_symbol entry nlevn s in
+      let pa = parser_of_token entry ("LIST0", "") in
       let rec loop al (strm__ : _ Stream.t) =
         match try Some (ps strm__) with Stream.Failure -> None with
           Some a -> loop (a :: al) strm__
         | _ -> al
       in
       (fun (strm__ : _ Stream.t) ->
-         let a = loop [] strm__ in Obj.repr (List.rev a))
+         match try Some (pa strm__) with Stream.Failure -> None with
+           Some a -> Obj.repr a
+         | _ -> let a = loop [] strm__ in Obj.repr (List.rev a))
   | Slist0sep (symb, sep) ->
       let ps = parser_of_symbol entry nlevn symb in
       let pt = parser_of_symbol entry nlevn sep in
+      let pa = parser_of_token entry ("LIST0", "SEP") in
       let rec kont al (strm__ : _ Stream.t) =
         match try Some (pt strm__) with Stream.Failure -> None with
           Some v ->
@@ -618,22 +622,30 @@ and parser_of_symbol entry nlevn =
         | _ -> al
       in
       (fun (strm__ : _ Stream.t) ->
-         match try Some (ps strm__) with Stream.Failure -> None with
-           Some a -> let a = kont [a] strm__ in Obj.repr (List.rev a)
-         | _ -> Obj.repr [])
+         match try Some (pa strm__) with Stream.Failure -> None with
+           Some a -> Obj.repr a
+         | _ ->
+             match try Some (ps strm__) with Stream.Failure -> None with
+               Some a -> let a = kont [a] strm__ in Obj.repr (List.rev a)
+             | _ -> Obj.repr [])
   | Slist1 s ->
       let ps = parser_of_symbol entry nlevn s in
+      let pa = parser_of_token entry ("LIST1", "") in
       let rec loop al (strm__ : _ Stream.t) =
         match try Some (ps strm__) with Stream.Failure -> None with
           Some a -> loop (a :: al) strm__
         | _ -> al
       in
       (fun (strm__ : _ Stream.t) ->
-         let a = ps strm__ in
-         let a = loop [a] strm__ in Obj.repr (List.rev a))
+         match try Some (pa strm__) with Stream.Failure -> None with
+           Some a -> Obj.repr a
+         | _ ->
+             let a = ps strm__ in
+             let a = loop [a] strm__ in Obj.repr (List.rev a))
   | Slist1sep (symb, sep) ->
       let ps = parser_of_symbol entry nlevn symb in
       let pt = parser_of_symbol entry nlevn sep in
+      let pa = parser_of_token entry ("LIST1", "SEP") in
       let rec kont al (strm__ : _ Stream.t) =
         match try Some (pt strm__) with Stream.Failure -> None with
           Some v ->
@@ -648,8 +660,11 @@ and parser_of_symbol entry nlevn =
         | _ -> al
       in
       (fun (strm__ : _ Stream.t) ->
-         let a = ps strm__ in
-         let a = kont [a] strm__ in Obj.repr (List.rev a))
+         match try Some (pa strm__) with Stream.Failure -> None with
+           Some a -> Obj.repr a
+         | _ ->
+             let a = ps strm__ in
+             let a = kont [a] strm__ in Obj.repr (List.rev a))
   | Sopt s ->
       let ps = parser_of_symbol entry nlevn s in
       (fun (strm__ : _ Stream.t) ->
@@ -668,12 +683,13 @@ and parser_of_symbol entry nlevn =
       (fun (strm__ : _ Stream.t) -> e.estart (level_number e l) strm__)
   | Sself -> (fun (strm__ : _ Stream.t) -> entry.estart 0 strm__)
   | Snext -> (fun (strm__ : _ Stream.t) -> entry.estart nlevn strm__)
-  | Stoken tok ->
-      let f = entry.egram.glexer.Token.tok_match tok in
-      fun strm ->
-        match Stream.peek strm with
-          Some tok -> let r = f tok in Stream.junk strm; Obj.repr r
-        | None -> raise Stream.Failure
+  | Stoken tok -> parser_of_token entry tok
+and parser_of_token entry tok =
+  let f = entry.egram.glexer.Token.tok_match tok in
+  fun strm ->
+    match Stream.peek strm with
+      Some tok -> let r = f tok in Stream.junk strm; Obj.repr r
+    | None -> raise Stream.Failure
 and parse_top_symb entry symb =
   parser_of_symbol entry 0 (top_symb entry symb)
 ;;

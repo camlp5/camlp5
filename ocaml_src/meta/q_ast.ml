@@ -18,7 +18,7 @@ let call_with r v f a =
   try r := v; let b = f a in r := saved; b with e -> r := saved; raise e
 ;;
 
-let eval_antiquot kind e s =
+let eval_antiquot kind entry s =
   try
     let i = String.index s ',' in
     let j = String.index_from s (i + 1) ':' in
@@ -26,8 +26,8 @@ let eval_antiquot kind e s =
     let ep = int_of_string (String.sub s (i + 1) (j - i - 1)) in
     let s = String.sub s (j + 1) (String.length s - j - 1) in
     let r =
-      call_with Plexer.dollar_for_antiquot_loc false (Grammar.Entry.parse e)
-        (Stream.of_string s)
+      call_with Plexer.dollar_for_antiquot_loc false
+        (Grammar.Entry.parse entry) (Stream.of_string s)
     in
     let loc =
       let shift_bp =
@@ -41,6 +41,18 @@ let eval_antiquot kind e s =
   with Not_found -> None
 ;;
 
+(* horrible hack for lists antiquotations; a string has been installed in
+   the ASt at the place of a list, using Obj.repr; ugly but local to
+   q_ast.ml *)
+let eval_antiquot_list entry (el : 'a list) =
+  if Obj.tag (Obj.repr el) = Obj.string_tag then
+    let s : string = Obj.magic el in
+    match eval_antiquot "list" entry s with
+      Some loc_r -> Some loc_r
+    | None -> assert false
+  else None
+;;
+
 let expr_eoi = Grammar.Entry.create Pcaml.gram "expr";;
 let patt_eoi = Grammar.Entry.create Pcaml.gram "patt";;
 let sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";;
@@ -50,13 +62,19 @@ module Meta =
     open MLast;;
     let loc = Stdpp.dummy_loc;;
     let ln () = MLast.ExLid (loc, !(Stdpp.loc_name));;
-    let rec e_list elem =
-      function
-        [] -> MLast.ExUid (loc, "[]")
-      | e :: el ->
-          MLast.ExApp
-            (loc, MLast.ExApp (loc, MLast.ExUid (loc, "::"), elem e),
-             e_list elem el)
+    let e_list elem el =
+      match eval_antiquot_list expr_eoi el with
+        Some (loc, r) -> MLast.ExAnt (loc, r)
+      | None ->
+          let rec loop =
+            function
+              [] -> MLast.ExUid (loc, "[]")
+            | e :: el ->
+                MLast.ExApp
+                  (loc, MLast.ExApp (loc, MLast.ExUid (loc, "::"), elem e),
+                   loop el)
+          in
+          loop el
     ;;
     let e_option elem =
       function
@@ -313,7 +331,12 @@ module Meta =
                      MLast.ExUid (loc, "ExStr")),
                   ln),
                s)
-        | ExTup (_, el) ->
+        | ExTup (_, e :: el) ->
+            let el =
+              MLast.ExApp
+                (loc, MLast.ExApp (loc, MLast.ExUid (loc, "::"), loop e),
+                 e_list loop el)
+            in
             MLast.ExApp
               (loc,
                MLast.ExApp
@@ -322,7 +345,7 @@ module Meta =
                     (loc, MLast.ExUid (loc, "MLast"),
                      MLast.ExUid (loc, "ExTup")),
                   ln),
-               e_list loop el)
+               el)
         | ExUid (_, s) ->
             MLast.ExApp
               (loc,
@@ -469,6 +492,10 @@ lex.Token.tok_match <-
       (function
          "STRING", prm -> prm
        | "ANTIQUOT_LOC", prm -> check_anti_loc prm "str"
+       | _ -> raise Stream.Failure)
+  | ("LIST0" | "LIST1"), ("" | "SEP") ->
+      (function
+         "ANTIQUOT_LOC", prm -> check_anti_loc prm "list"
        | _ -> raise Stream.Failure)
   | tok -> Token.default_match tok;;
 

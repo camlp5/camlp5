@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.6 2007/08/01 06:22:35 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.7 2007/08/01 12:41:25 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -24,7 +24,7 @@ value call_with r v f a =
   with e -> do { r.val := saved; raise e }
 ;
 
-value eval_antiquot kind e s =
+value eval_antiquot kind entry s =
   try
     let i = String.index s ',' in
     let j = String.index_from s (i + 1) ':' in
@@ -33,7 +33,7 @@ value eval_antiquot kind e s =
     let s = String.sub s (j + 1) (String.length s - j - 1) in
     let r =
       call_with Plexer.dollar_for_antiquot_loc False
-        (Grammar.Entry.parse e) (Stream.of_string s)
+        (Grammar.Entry.parse entry) (Stream.of_string s)
     in
     let loc =
       let shift_bp =
@@ -48,6 +48,18 @@ value eval_antiquot kind e s =
   [ Not_found -> None ]
 ;
 
+(* horrible hack for lists antiquotations; a string has been installed in
+   the ASt at the place of a list, using Obj.repr; ugly but local to
+   q_ast.ml *)
+value eval_antiquot_list entry (el : list 'a) =
+  if Obj.tag (Obj.repr el) = Obj.string_tag then
+    let s : string = Obj.magic el in
+    match eval_antiquot "list" entry s with
+    [ Some loc_r -> Some loc_r
+    | None -> assert False ]
+  else None
+;
+
 value expr_eoi = Grammar.Entry.create Pcaml.gram "expr";
 value patt_eoi = Grammar.Entry.create Pcaml.gram "patt";
 value sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";
@@ -57,19 +69,21 @@ module Meta =
     open MLast;
     value loc = Stdpp.dummy_loc;
     value ln () = <:expr< $lid:Stdpp.loc_name.val$ >>;
-    value rec e_list elem =
-      fun
-      [ [] -> <:expr< [] >>
-      | [e :: el] -> <:expr< [$elem e$ :: $e_list elem el$] >> ]
+    value e_list elem el =
+      match eval_antiquot_list expr_eoi el with
+      [ Some (loc, r) -> <:expr< $anti:r$ >>
+      | None ->
+          loop el where rec loop =
+            fun
+            [ [] -> <:expr< [] >>
+            | [e :: el] -> <:expr< [$elem e$ :: $loop el$] >> ] ]
     ;
     value e_option elem =
       fun
       [ None -> <:expr< None >>
       | Some e -> <:expr< Some $elem e$ >> ]
     ;
-    value e_bool b =
-      if b then <:expr< True >> else <:expr< False >>
-    ;
+    value e_bool b = if b then <:expr< True >> else <:expr< False >>;
     value e_type t = 
       let ln = ln () in
       loop t where rec loop =
@@ -142,8 +156,9 @@ module Meta =
               | None -> <:expr< $str:s$ >> ]
             in
             <:expr< MLast.ExStr $ln$ $s$ >>
-        | ExTup _ el ->
-            <:expr< MLast.ExTup $ln$ $e_list loop el$ >>
+        | ExTup _ [e :: el] ->
+            let el = <:expr< [$loop e$ :: $e_list loop el$] >> in
+            <:expr< MLast.ExTup $ln$ $el$ >>
         | ExUid _ s ->
             <:expr< MLast.ExUid $ln$ $str:s$ >>
         | x -> not_impl "e_expr" x ]
@@ -241,6 +256,10 @@ lex.Token.tok_match :=
       fun
       [ ("STRING", prm) -> prm
       | ("ANTIQUOT_LOC", prm) -> check_anti_loc prm "str"
+      | _ -> raise Stream.Failure ]
+  | ("LIST0" | "LIST1", "" | "SEP") ->
+      fun
+      [ ("ANTIQUOT_LOC", prm) -> check_anti_loc prm "list"
       | _ -> raise Stream.Failure ]
   | tok -> Token.default_match tok ]
 ;
