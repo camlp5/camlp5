@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.53 2007/07/21 00:35:21 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.54 2007/08/02 22:21:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -2470,22 +2470,38 @@ value apply_printer f ast = do {
     Prtools.source.val := src;
     close_in ic
   };
-  let oc = stdout in
-  let (first, last_pos) =
-    List.fold_left
-      (fun (first, last_pos) (si, loc) -> do {
-         let bp = Stdpp.first_pos loc in
-         let ep = Stdpp.last_pos loc in
-         copy_source Prtools.source.val oc first last_pos bp;
-         flush oc;
-         set_comm_min_pos bp;
-         output_string oc (f {ind = 0; bef = ""; aft = ";"; dang = ""} si);
-         (False, ep)
-       })
-      (True, 0) ast
+  let oc =
+    match Pcaml.output_file.val with
+    [ Some f -> open_out_bin f
+    | None -> stdout ]
   in
-  copy_to_end Prtools.source.val oc first last_pos;
-  flush oc
+  let cleanup () =
+    match Pcaml.output_file.val with
+    [ Some f -> close_out oc
+    | None -> () ]
+  in
+  try do {
+    let (first, last_pos) =
+      List.fold_left
+        (fun (first, last_pos) (si, loc) -> do {
+           let bp = Stdpp.first_pos loc in
+           let ep = Stdpp.last_pos loc in
+           copy_source Prtools.source.val oc first last_pos bp;
+           flush oc;
+           set_comm_min_pos bp;
+           output_string oc (f {ind = 0; bef = ""; aft = ";"; dang = ""} si);
+           (False, ep)
+         })
+        (True, 0) ast
+    in
+    copy_to_end Prtools.source.val oc first last_pos;
+    flush oc
+  }
+  with exn -> do {
+    cleanup ();
+    raise exn
+  };
+  cleanup ();
 };
 
 Pcaml.print_interf.val := apply_printer sig_item;

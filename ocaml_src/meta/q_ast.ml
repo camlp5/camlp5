@@ -79,6 +79,20 @@ module Meta =
           in
           loop el
     ;;
+    let p_list elem el =
+      match eval_antiquot_patch patt_eoi el with
+        Some (loc, r) -> MLast.PaAnt (loc, r)
+      | None ->
+          let rec loop =
+            function
+              [] -> MLast.PaUid (loc, "[]")
+            | e :: el ->
+                MLast.PaApp
+                  (loc, MLast.PaApp (loc, MLast.PaUid (loc, "::"), elem e),
+                   loop el)
+          in
+          loop el
+    ;;
     let e_option elem eo =
       match eval_antiquot_patch expr_eoi eo with
         Some (loc, r) -> MLast.ExAnt (loc, r)
@@ -92,6 +106,12 @@ module Meta =
         Some (loc, r) -> MLast.ExAnt (loc, r)
       | None ->
           if b then MLast.ExUid (loc, "True") else MLast.ExUid (loc, "False")
+    ;;
+    let p_bool b =
+      match eval_antiquot_patch patt_eoi b with
+        Some (loc, r) -> MLast.PaAnt (loc, r)
+      | None ->
+          if b then MLast.PaUid (loc, "True") else MLast.PaUid (loc, "False")
     ;;
     let e_string s =
       match eval_antiquot expr_eoi s with
@@ -188,6 +208,7 @@ module Meta =
              p_string s)
       | x -> not_impl "p_type" x
     ;;
+    let e_type_decl x = not_impl "e_type_decl" x;;
     let e_patt p =
       let ln = ln () in
       let rec loop =
@@ -456,10 +477,10 @@ module Meta =
                      MLast.ExUid (loc, "ExFun")),
                   ln),
                pwel)
-        | ExLet (_, rf, pel, e) ->
+        | ExLet (_, rf, lpe, e) ->
             let rf = e_bool rf in
-            let pel =
-              e_list (fun (p, e) -> MLast.ExTup (loc, [e_patt p; loop e])) pel
+            let lpe =
+              e_list (fun (p, e) -> MLast.ExTup (loc, [e_patt p; loop e])) lpe
             in
             MLast.ExApp
               (loc,
@@ -474,7 +495,7 @@ module Meta =
                            MLast.ExUid (loc, "ExLet")),
                         ln),
                      rf),
-                  pel),
+                  lpe),
                loop e)
         | ExLid (_, s) ->
             MLast.ExApp
@@ -632,6 +653,26 @@ module Meta =
                      MLast.PaUid (loc, "ExFlo")),
                   MLast.PaAny loc),
                p_string s)
+        | ExLet (_, rf, lpe, e) ->
+            let rf = p_bool rf in
+            let lpe =
+              p_list (fun (p, e) -> MLast.PaTup (loc, [p_patt p; loop e])) lpe
+            in
+            MLast.PaApp
+              (loc,
+               MLast.PaApp
+                 (loc,
+                  MLast.PaApp
+                    (loc,
+                     MLast.PaApp
+                       (loc,
+                        MLast.PaAcc
+                          (loc, MLast.PaUid (loc, "MLast"),
+                           MLast.PaUid (loc, "ExLet")),
+                        MLast.PaAny loc),
+                     rf),
+                  lpe),
+               loop e)
         | x -> not_impl "p_expr" x
       in
       loop e
@@ -653,7 +694,25 @@ module Meta =
              e_type t)
       | x -> not_impl "e_sig_item" x
     ;;
-    let e_str_item si =
+    let e_module_type mt =
+      let ln = ln () in
+      let rec loop =
+        function
+          MtUid (_, s) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "MtUid")),
+                  ln),
+               e_string s)
+        | x -> not_impl "e_module_type" x
+      in
+      loop mt
+    ;;
+    let rec e_str_item si =
       let ln = ln () in
       let rec loop =
         function
@@ -688,47 +747,117 @@ module Meta =
                      e_string s),
                   e_list e_type lt),
                ls)
-        | x -> not_impl "e_str_item" x
-      in
-      loop si
-    ;;
-    let p_str_item x = not_impl "p_str_item" x;;
-    let p_sig_item =
-      function
-        SgVal (_, s, t) ->
-          MLast.PaApp
-            (loc,
-             MLast.PaApp
-               (loc,
-                MLast.PaApp
-                  (loc,
-                   MLast.PaAcc
-                     (loc, MLast.PaUid (loc, "MLast"),
-                      MLast.PaUid (loc, "SgVal")),
-                   MLast.PaAny loc),
-                p_string s),
-             p_type t)
-      | x -> not_impl "p_sig_item" x
-    ;;
-    let e_module_type mt =
-      let ln = ln () in
-      let rec loop =
-        function
-          MtUid (_, s) ->
+        | StExp (_, e) ->
             MLast.ExApp
               (loc,
                MLast.ExApp
                  (loc,
                   MLast.ExAcc
                     (loc, MLast.ExUid (loc, "MLast"),
-                     MLast.ExUid (loc, "MtUid")),
+                     MLast.ExUid (loc, "StExp")),
                   ln),
-               e_string s)
-        | x -> not_impl "e_module_type" x
+               e_expr e)
+        | StExt (_, s, t, ls) ->
+            let ls = e_list e_string ls in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExApp
+                       (loc,
+                        MLast.ExAcc
+                          (loc, MLast.ExUid (loc, "MLast"),
+                           MLast.ExUid (loc, "StExt")),
+                        ln),
+                     e_string s),
+                  e_type t),
+               ls)
+        | StInc (_, me) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "StInc")),
+                  ln),
+               e_module_expr me)
+        | StMod (_, rf, lsme) ->
+            let lsme =
+              e_list
+                (fun (s, me) ->
+                   MLast.ExTup (loc, [e_string s; e_module_expr me]))
+                lsme
+            in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "StMod")),
+                     ln),
+                  e_bool rf),
+               lsme)
+        | StMty (_, s, mt) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "StMty")),
+                     ln),
+                  e_string s),
+               e_module_type mt)
+        | StOpn (_, sl) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "StOpn")),
+                  ln),
+               e_list e_string sl)
+        | StTyp (_, ltd) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "StTyp")),
+                  ln),
+               e_list e_type_decl ltd)
+        | StVal (_, rf, lpe) ->
+            let lpe =
+              e_list (fun (p, e) -> MLast.ExTup (loc, [e_patt p; e_expr e]))
+                lpe
+            in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "StVal")),
+                     ln),
+                  e_bool rf),
+               lpe)
+        | x -> not_impl "e_str_item" x
       in
-      loop mt
-    ;;
-    let e_module_expr me =
+      loop si
+    and p_str_item x = not_impl "p_str_item" x
+    and e_module_expr me =
       let ln = ln () in
       let rec loop =
         function
@@ -811,8 +940,24 @@ module Meta =
                e_string s)
       in
       loop me
+    and p_module_expr x = not_impl "p_module_expr" x;;
+    let p_sig_item =
+      function
+        SgVal (_, s, t) ->
+          MLast.PaApp
+            (loc,
+             MLast.PaApp
+               (loc,
+                MLast.PaApp
+                  (loc,
+                   MLast.PaAcc
+                     (loc, MLast.PaUid (loc, "MLast"),
+                      MLast.PaUid (loc, "SgVal")),
+                   MLast.PaAny loc),
+                p_string s),
+             p_type t)
+      | x -> not_impl "p_sig_item" x
     ;;
-    let p_module_expr x = not_impl "p_module_expr" x;;
   end
 ;;
 
@@ -892,6 +1037,22 @@ Grammar.extend
      Gramext.action
        (fun (s : string) (loc : Token.location) ->
           (MLast.PaAnt (loc, MLast.PaLid (loc, s)) : 'Pcaml__patt))]];
+   Grammar.Entry.obj (Pcaml.ctyp : 'Pcaml__ctyp Grammar.Entry.e),
+   Some (Gramext.Level "simple"),
+   [None, None,
+    [[Gramext.Stoken ("ANTIQUOT_LOC", "")],
+     Gramext.action
+       (fun (s : string) (loc : Token.location) ->
+          (MLast.TyUid (loc, s) : 'Pcaml__ctyp))]];
+   Grammar.Entry.obj (Pcaml.str_item : 'Pcaml__str_item Grammar.Entry.e),
+   None,
+   [None, None,
+    [[Gramext.Stoken ("ANTIQUOT_LOC", "exp")],
+     Gramext.action
+       (fun (s : string) (loc : Token.location) ->
+          (let e = MLast.ExAnt (loc, MLast.ExLid (loc, s)) in
+           MLast.StExp (loc, e) :
+           'Pcaml__str_item))]];
    Grammar.Entry.obj
      (Pcaml.module_expr : 'Pcaml__module_expr Grammar.Entry.e),
    Some (Gramext.Level "simple"),
@@ -968,6 +1129,10 @@ lex.Token.tok_match <-
   | "ANTIQUOT_LOC", "anti" ->
       (function
          "ANTIQUOT_LOC", prm -> check_anti_loc prm "anti"
+       | _ -> raise Stream.Failure)
+  | "ANTIQUOT_LOC", "exp" ->
+      (function
+         "ANTIQUOT_LOC", prm -> check_anti_loc prm "exp"
        | _ -> raise Stream.Failure)
   | "INT", "" ->
       (function
