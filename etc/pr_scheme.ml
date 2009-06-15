@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.57 2007/12/28 04:01:10 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.58 2007/12/28 04:13:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -314,23 +314,13 @@ value class_descr b pc cd =
   let n = Pcaml.unvala cd.MLast.ciNam in
   horiz_vertic
     (fun () ->
-       if test.val then
-       pprintf pc "{%s%s%p %p}" (if b = "" then "" else b ^ " ")
+       pprintf pc "(%s%s%p %p)" (if b = "" then "" else b ^ " ")
          (if Pcaml.unvala cd.MLast.ciVir then "virtual " else "")
          (fun pc ->
             fun
             [ [] -> pprintf pc "%s" n
             | tvl -> pprintf pc "(%s %p)" n (hlist type_param) tvl ])
-         (Pcaml.unvala (snd cd.MLast.ciPrm)) class_type cd.MLast.ciExp
-       else
-       sprintf "%s(%s%s%s %s)%s" pc.bef (if b = "" then "" else b ^ " ")
-         (if Pcaml.unvala cd.MLast.ciVir then "virtual " else "")
-         (match Pcaml.unvala (snd cd.MLast.ciPrm) with
-          [ [] -> n
-          | tvl ->
-              sprintf "(%s %s)" n
-                (hlist type_param {(pc) with bef = ""; aft = ""} tvl) ])
-         (class_type {(pc) with bef = ""; aft = ""} cd.MLast.ciExp) pc.aft)
+         (Pcaml.unvala (snd cd.MLast.ciPrm)) class_type cd.MLast.ciExp)
     (fun () ->
        let list =
          let list =
@@ -875,6 +865,32 @@ EXTEND_PRINTER
           sprintf "%s'%s'%s" pc.bef s pc.aft
       | <:expr< ` $s$ >> ->
           sprintf "%s(` %s)%s" pc.bef s pc.aft
+      | <:expr< object $opt:cst$ $list:csl$ end >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s(object%s %s)%s" pc.bef
+                 (match cst with
+                  [ Some t -> not_impl "expr object self horiz " pc 0
+                  | None -> "" ])
+                 (hlist class_str_item {(pc) with bef = ""; aft = ""} csl)
+                    pc.aft)
+            (fun () ->
+               let s1 =
+                 let s = sprintf "%s(object" pc.bef in
+                 match cst with
+                 [ Some p ->
+                     plistb patt 0
+                       {(pc) with ind = pc.ind + 1; bef = s; aft = ""}
+                       [(p, "")]
+                 | None -> s ]
+               in
+               let s2 =
+                 vlist class_str_item
+                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+                    aft = sprintf ")%s" pc.aft}
+                   csl
+               in
+               sprintf "%s\n%s" s1 s2)
       | x ->
           not_impl "expr" pc x ] ]
   ;
