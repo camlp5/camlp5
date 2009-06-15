@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_op.ml,v 1.1 2007/07/03 13:36:01 deraugla Exp $ *)
+(* $Id: pr_op.ml,v 1.2 2007/07/05 03:39:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Heuristic to rebuild parsers and streams from the AST *)
@@ -229,10 +229,42 @@ value unparser_body e =
   (po, spel)
 ;
 
-(* Printing *)
+(** Printing **)
 
 value expr pc z = pr_expr.pr_fun "top" pc z;
 value patt pc z = pr_patt.pr_fun "top" pc z;
+
+(* Streams *)
+
+value stream pc e =
+  let rec get =
+    fun
+    [ <:expr< Stream.iapp $x$ $y$ >> -> [(False, x) :: get y]
+    | <:expr< Stream.icons $x$ $y$ >> -> [(True, x) :: get y]
+    | <:expr< Stream.ising $x$ >> -> [(True, x)]
+    | <:expr< Stream.lapp (fun _ -> $x$) $y$ >> -> [(False, x) :: get y]
+    | <:expr< Stream.lcons (fun _ -> $x$) $y$ >> -> [(True, x) :: get y]
+    | <:expr< Stream.lsing (fun _ -> $x$) >> -> [(True, x)]
+    | <:expr< Stream.sempty >> -> []
+    | <:expr< Stream.slazy (fun _ -> $x$) >> -> [(False, x)]
+    | <:expr< Stream.slazy $x$ >> -> [(False, <:expr< $x$ () >>)]
+    | e -> [(False, e)] ]
+  in
+  let elem pc e =
+    match e with
+    [ (True, e) -> expr {(pc) with bef = sprintf "%s'" pc.bef} e
+    | (False, e) -> expr pc e ]
+  in
+  let el = List.map (fun e -> (e, ";")) (get e) in
+  if el = [] then sprintf "%s[< >]%s" pc.bef pc.aft
+  else
+    plist elem 0
+      {(pc) with ind = pc.ind + 3; bef = sprintf "%s[< " pc.bef;
+       aft = sprintf " >]%s" pc.aft}
+      el
+;
+
+(* Parsers *)
 
 value sequence_box pc expr el =
   let s1 = pc.bef " do {" in
@@ -470,8 +502,28 @@ lev.pr_rules :=
   | <:expr< let (strm__ : Stream.t _) = $_$ in $_$ >> as e ->
       fun curr next pc -> print_match_with_parser pc e ];
 
+let lev = find_pr_level "apply" pr_expr.pr_levels in
+lev.pr_rules :=
+  extfun lev.pr_rules with
+  [ <:expr< Stream.iapp $_$ $_$ >> | <:expr< Stream.icons $_$ $_$ >> |
+    <:expr< Stream.ising $_$ >> | <:expr< Stream.lapp (fun _ -> $_$) $_$ >> |
+    <:expr< Stream.lcons (fun _ -> $_$) $_$ >> |
+    <:expr< Stream.lsing (fun _ -> $_$) >> | <:expr< Stream.sempty >> |
+    <:expr< Stream.slazy $_$ >> as e ->
+      fun curr next pc -> stream pc e ];
+
 let lev = find_pr_level "dot" pr_expr.pr_levels in
 lev.pr_rules :=
   extfun lev.pr_rules with
   [ <:expr< Stream.sempty >> ->
       fun curr next pc -> sprintf "%s[< >]%s" pc.bef pc.aft ];
+
+let lev = find_pr_level "simple" pr_expr.pr_levels in
+lev.pr_rules :=
+  extfun lev.pr_rules with
+  [ <:expr< Stream.iapp $_$ $_$ >> | <:expr< Stream.icons $_$ $_$ >> |
+    <:expr< Stream.ising $_$ >> | <:expr< Stream.lapp (fun _ -> $_$) $_$ >> |
+    <:expr< Stream.lcons (fun _ -> $_$) $_$ >> |
+    <:expr< Stream.lsing (fun _ -> $_$) >> | <:expr< Stream.sempty >> |
+    <:expr< Stream.slazy $_$ >> as e ->
+      fun curr next pc -> stream pc e ];
