@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_extprint.ml,v 1.23 2007/12/17 16:29:26 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.24 2007/12/17 20:30:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -647,30 +647,33 @@ value rec meta_tree_for_trace loc (s, tl) =
 
 value get_format_args fmt al = ([], al);
 
-value make_pc loc empty_bef empty_aft pc bef bef_al aft aft_al =
+value make_pc loc erase_bef erase_aft empty_bef empty_aft pc bef bef_al
+    aft aft_al =
   let lbl =
-    if bef = "" then []
+    if not erase_bef && bef = "" then []
     else
       let e =
-        if empty_bef && bef_al = [] then <:expr< $str:bef$ >>
+        if (erase_bef || empty_bef) && bef_al = [] then <:expr< $str:bef$ >>
         else
-          let bef = if empty_bef then bef else "%s" ^ bef in
+          let bef = if erase_bef || empty_bef then bef else "%s" ^ bef in
           let e = <:expr< Pretty.sprintf $str:bef$ >> in
-          let e = if empty_bef then e else <:expr< $e$ $pc$.bef >> in
+          let e =
+            if erase_bef || empty_bef then e else <:expr< $e$ $pc$.bef >>
+          in
           List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e bef_al
       in
       [(<:patt< bef >>, e)]
   in
   let lbl =
-    if aft = "" then lbl
+    if not erase_aft && aft = "" then lbl
     else
       let e =
-        if empty_aft && aft_al = [] then <:expr< $str:aft$ >>
+        if (erase_aft || empty_aft) && aft_al = [] then <:expr< $str:aft$ >>
         else
-          let aft = if empty_aft then aft else aft ^ "%s" in
+          let aft = if erase_aft || empty_aft then aft else aft ^ "%s" in
           let e = <:expr< Pretty.sprintf $str:aft$ >> in
           let e = List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e aft_al in
-          if empty_aft then e else <:expr< $e$ $pc$.aft >>
+          if erase_aft || empty_aft then e else <:expr< $e$ $pc$.aft >>
       in
       [(<:patt< aft >>, e) :: lbl]
   in
@@ -678,7 +681,7 @@ value make_pc loc empty_bef empty_aft pc bef bef_al aft aft_al =
   else <:expr< {($pc$) with $list:List.rev lbl$} >>
 ;
 
-value expr_of_pformat loc empty_bef empty_aft pc al =
+value expr_of_pformat loc fmt empty_bef empty_aft pc al =
   fun
   [ [fmt] ->
       let (al, al_rest) = get_assoc_args loc fmt al in
@@ -701,15 +704,39 @@ value expr_of_pformat loc empty_bef empty_aft pc al =
         | _ -> Ploc.raise loc (Stream.Error "Not enough parameters") ]
       in
       let (aft_al, al) = get_assoc_args loc fmt2 al in
-      let pc = make_pc loc empty_bef empty_aft pc fmt1 bef_al fmt2 aft_al in
+      let pc =
+        make_pc loc False False empty_bef empty_aft pc fmt1 bef_al fmt2 aft_al
+      in
       let e = <:expr< $f$ $pc$ $a$ >> in
       (e, al)
-  | _ -> (<:expr< ccc >>, al) ]
+  | [fmt1; fmt2; fmt3] ->
+      let (bef_al, al) = get_assoc_args loc fmt1 al in
+      let (f1, a1, al) =
+        match al with
+        [ [f; a :: al] -> (f, a, al)
+        | _ -> Ploc.raise loc (Stream.Error "Not enough parameters") ]
+      in
+      let (aft_al, al) = get_assoc_args loc fmt2 al in
+      let pc1 =
+        make_pc loc False True False False pc fmt1 bef_al fmt2 aft_al
+      in
+      let e1 = <:expr< $f1$ $pc1$ $a1$ >> in
+      let (f2, a2, al) =
+        match al with
+        [ [f; a :: al] -> (f, a, al)
+        | _ -> Ploc.raise loc (Stream.Error "Not enough parameters") ]
+      in
+      let (aft2_al, al) = get_assoc_args loc fmt3 al in
+      let pc2 = make_pc loc True False False False pc "" [] fmt3 aft2_al in
+      let e2 = <:expr< $f2$ $pc2$ $a2$ >> in
+      (<:expr< Pretty.sprintf "%s%s" $e1$ $e2$ >>, al)
+  | _ ->
+      (<:expr< ccc $str:fmt$ >>, al) ]
 ;
 
 value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc t al =
   match t with
-  [ (Pf sl, []) -> expr_of_pformat loc empty_bef empty_aft pc al sl
+  [ (Pf sl, []) -> expr_of_pformat loc fmt empty_bef empty_aft pc al sl
   | (Pf sl1, [(Tbreak br, Pf sl2) :: t]) ->
       let (t1, br, t2) =
         (* left associate *)
@@ -764,13 +791,15 @@ value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc t al =
       let (e, al) = expr_of_tree_aux loc fmt False False <:expr< pc >> t al in
       (<:expr< let pc = $pc$ in $e$ >>, al)
   | (Pf [""], [(Tsub (PPall b) (Pf sl, tl), Pf [""])]) ->
-      let (e1, al) = expr_of_pformat loc empty_bef True <:expr< pc >> al sl in
+      let (e1, al) =
+        expr_of_pformat loc fmt empty_bef True <:expr< pc >> al sl
+      in
       let (rev_el, al) =
         List.fold_left
           (fun (rev_el, al) (br, pf) ->
              let sl = match pf with [ Pf sl -> sl ] in
              let (e, al) =
-               expr_of_pformat loc False False <:expr< pc >> al sl
+               expr_of_pformat loc fmt False False <:expr< pc >> al sl
              in
              let (off, sp) =
                match br with
@@ -796,10 +825,10 @@ value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc t al =
   | (Pf [""], [(Tsub PPnone t, Pf [""])]) ->
       expr_of_tree_aux loc fmt empty_bef empty_aft pc t al
   | (Pf sl1, [(Tsub pp t1, Pf sl2) :: t]) ->
-      let (e1, al) = expr_of_pformat loc empty_bef True pc al sl1 in
+      let (e1, al) = expr_of_pformat loc fmt empty_bef True pc al sl1 in
       let (e, al) = expr_of_tree_aux loc fmt True True pc t1 al in
       let (e2, al) =
-        expr_of_pformat loc True (t <> [] || empty_aft) pc al sl2
+        expr_of_pformat loc fmt True (t <> [] || empty_aft) pc al sl2
       in
       (<:expr< eee $str:fmt$ $e1$ $e$ $e2$ >>, al) ]
 ;
