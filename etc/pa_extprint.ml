@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_extprint.ml,v 1.44 2007/12/24 16:45:03 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.45 2007/12/27 09:42:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -162,17 +162,17 @@ value implode l =
     | [] -> s ]
 ;
 
-value rec parse_int_loop n =
+value rec parse_int_aux n =
   fparser
   [ [: `('0'..'9' as c);
-       n = parse_int_loop (10 * n + Char.code c - Char.code '0') :] -> n
+       n = parse_int_aux (10 * n + Char.code c - Char.code '0') :] -> n
   | [: :] -> n ]
 ;
 
 value parse_int =
   fparser
     [: `('0'..'9' as c);
-       n = parse_int_loop (Char.code c - Char.code '0') :] ->
+       n = parse_int_aux (Char.code c - Char.code '0') :] ->
       n
 ;
 
@@ -240,13 +240,13 @@ value rec parse_string strm =
       None ]
 ;
 
-value rec parse_format =
+value rec parse_epformat =
   fparser
-  [ [: t = parse_simple_format; t = parse_format_kont t :] -> t ]
-and parse_format_kont t1 =
+  [ [: t = parse_simple_format; t = parse_epformat_kont t :] -> t ]
+and parse_epformat_kont t1 =
   fparser
   [ [: b = parse_break; t2 = parse_simple_format;
-       t = parse_format_kont (Tnode b t1 t2) :] -> t
+       t = parse_epformat_kont (Tnode b t1 t2) :] -> t
   | [: :] -> t1 ]
 and parse_simple_format =
   fparser
@@ -261,7 +261,7 @@ and parse_atom_list =
   | [: :] -> [] ]
 and parse_atom =
   fparser
-  [ [: `'@'; `'['; pp = parse_paren_param; t = parse_format;
+  [ [: `'@'; `'['; pp = parse_paren_param; t = parse_epformat;
        _ = end_paren :] ->
       Tparen pp t
   | [: cl = parse_string :] ->
@@ -321,30 +321,56 @@ value make_pc loc erase_bef erase_aft is_empty_bef is_empty_aft pc bef bef_al
   else <:expr< {($pc$) with $list:List.rev lbl$} >>
 ;
 
-value get_assoc_args loc str al =
-  loop [] al 0 where rec loop rev_str_al al i =
-    if i + 1 < String.length str then
-      let (rev_str_al, al, i) =
-        if str.[i] = '%' then
-          let (rev_str_al, al) =
-            match str.[i+1] with
-            [ 'c' | 's' ->
-                match al with
-                [ [a :: al] -> ([a :: rev_str_al], al)
-                | [] ->
-                    Ploc.raise loc (Stream.Error "Not enough parameters") ]
-            | _ ->
-                (rev_str_al, al) ]
-          in
-          (rev_str_al, al, i + 2)
-        else (rev_str_al, al, i + 1)
-      in
-      loop rev_str_al al i
-    else if i < String.length str && str.[i] = '%' then
+value parse_flags =
+  fparser
+  [ [: `'-' | '0' | '+' | ' ' | '#' :] -> ()
+  | [: :] -> () ]
+;
+
+value parse_width =
+  fparser
+  [ [: _ = parse_int :] -> ()
+  | [: :] -> () ]
+;
+
+value parse_precision =
+  fparser
+  [ [: `'.'; _ = parse_int :] -> ()
+  | [: :] -> () ]
+;
+
+value parse_format_type loc rev_str_al al =
+  fparser
+  [ [: `'a' :] ->
+      match al with
+      [ [a1; a2 :: al] -> ([a2; a1 :: rev_str_al], al)
+      | [_] | [] -> Ploc.raise loc (Stream.Error "Not enough parameters") ]
+  | [: `'A'..'Z' | 'a'..'z' :] ->
+      match al with
+      [ [a :: al] -> ([a :: rev_str_al], al)
+      | [] -> Ploc.raise loc (Stream.Error "Not enough parameters") ]
+  | [: `'!' | '%' :] ->
+      (rev_str_al, al)
+  | [: `c :] ->
       Ploc.raise loc
-        (Stream.Error
-           (Printf.sprintf "Premature end of format string ``\"%s\"''" str))
-    else (List.rev rev_str_al, al)
+        (Stream.Error ("Invalid format type: %" ^ String.make 1 c))
+  | [: :] ->
+      (rev_str_al, al) ]
+;
+
+value rec parse_format loc rev_str_al al =
+  fparser
+  [ [: `'%'; _ = parse_flags; _ = parse_width; _ = parse_precision;
+       (rev_str_al, al) = parse_format_type loc rev_str_al al;
+       a = parse_format loc rev_str_al al :] -> a
+  | [: `_; a = parse_format loc rev_str_al al :] -> a
+  | [: :] -> (List.rev rev_str_al, al) ]
+;
+
+value get_assoc_args loc str al =
+  match parse_format loc [] al (Fstream.of_string str) with
+  [ Some (r, _) -> r
+  | None -> assert False ]
 ;
 
 value expr_of_pformat loc fmt is_empty_bef is_empty_aft pc al fmt1 =
@@ -538,7 +564,7 @@ value expr_of_tree loc fmt pc al t =
 ;
 
 value expand_pprintf loc pc fmt al =
-  match parse_format (Fstream.of_string fmt) with
+  match parse_epformat (Fstream.of_string fmt) with
   [ Some (t, _) -> expr_of_tree loc fmt pc al t
   | None -> assert False ]
 ;
