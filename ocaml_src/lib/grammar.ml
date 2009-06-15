@@ -28,7 +28,7 @@ let rec print_symbol ppf =
   | Sflag s -> fprintf ppf "FLAG %a" print_symbol1 s
   | Stoken (con, prm) when con <> "" && prm <> "" ->
       fprintf ppf "%s@ %a" con print_str prm
-  | Svala s -> fprintf ppf "V %a" print_symbol s
+  | Svala (_, s) -> fprintf ppf "V %a" print_symbol s
   | Snterml (e, l) ->
       fprintf ppf "%s%s@ LEVEL@ %a" e.ename (if e.elocal then "*" else "")
         print_str l
@@ -56,7 +56,7 @@ and print_symbol1 ppf =
   | Stoken (con, "") -> pp_print_string ppf con
   | Stree t -> print_level ppf pp_print_space (flatten_tree t)
   | Smeta (_, _, _) | Snterml (_, _) | Slist0 _ | Slist0sep (_, _) |
-    Slist1 _ | Slist1sep (_, _) | Sopt _ | Sflag _ | Stoken _ | Svala _ as s ->
+    Slist1 _ | Slist1sep (_, _) | Sopt _ | Sflag _ | Stoken _ | Svala (_, _) as s ->
       fprintf ppf "(%a)" print_symbol s
 and print_rule ppf symbols =
   fprintf ppf "@[<hov 0>";
@@ -140,7 +140,7 @@ let iter_entry f e =
     | Slist0 s | Slist1 s | Sopt s | Sflag s -> do_symbol s
     | Slist0sep (s1, s2) | Slist1sep (s1, s2) -> do_symbol s1; do_symbol s2
     | Stree t -> do_tree t
-    | Svala s -> do_symbol s
+    | Svala (_, s) -> do_symbol s
     | Sself | Snext | Stoken _ -> ()
   in
   do_entry e
@@ -175,7 +175,7 @@ let fold_entry f e init =
     | Slist0sep (s1, s2) | Slist1sep (s1, s2) ->
         let accu = do_symbol accu s1 in do_symbol accu s2
     | Stree t -> do_tree accu t
-    | Svala s -> do_symbol accu s
+    | Svala (_, s) -> do_symbol accu s
     | Sself | Snext | Stoken _ -> accu
   in
   do_entry init e
@@ -216,7 +216,7 @@ let rec name_of_symbol_failed entry =
   | Slist1sep (s, _) -> name_of_symbol_failed entry s
   | Sopt s | Sflag s -> name_of_symbol_failed entry s
   | Stree t -> name_of_tree_failed entry t
-  | Svala s -> name_of_symbol_failed entry s
+  | Svala (_, s) -> name_of_symbol_failed entry s
   | Smeta (_, s :: _, _) -> name_of_symbol_failed entry s
   | s -> name_of_symbol entry s
 and name_of_tree_failed entry =
@@ -358,7 +358,7 @@ let tree_failed entry prev_symb_result prev_symb tree =
             let txt1 = name_of_symbol_failed entry sep in
             txt1 ^ " or " ^ txt ^ " expected"
         end
-    | Sopt _ | Sflag _ | Stree _ | Svala _ -> txt ^ " expected"
+    | Sopt _ | Sflag _ | Stree _ | Svala (_, _) -> txt ^ " expected"
     | _ -> txt ^ " expected after " ^ name_of_symbol entry prev_symb
   in
   if !error_verbose then
@@ -668,18 +668,31 @@ and parser_of_symbol entry nlevn =
          let a = pt strm__ in
          let ep = Stream.count strm__ in
          let loc = loc_of_token_interval bp ep in app a loc)
-  | Svala s ->
+  | Svala (al, s) ->
       let pa =
-        let t =
-          match s with
-            Sflag _ -> "V FLAG"
-          | Sopt _ -> "V OPT"
-          | Slist0 _ | Slist0sep (_, _) | Slist1 _ | Slist1sep (_, _) ->
-              "V LIST"
-          | Stoken (con, "") -> "V " ^ con
-          | _ -> failwith "Grammar: not impl Svala"
-        in
-        parser_of_token entry (t, "")
+        match al with
+          [] ->
+            let t =
+              match s with
+                Sflag _ -> "V FLAG"
+              | Sopt _ -> "V OPT"
+              | Slist0 _ | Slist0sep (_, _) | Slist1 _ | Slist1sep (_, _) ->
+                  "V LIST"
+              | Stoken (con, "") -> "V " ^ con
+              | _ -> failwith "Grammar: not impl Svala"
+            in
+            parser_of_token entry (t, "")
+        | al ->
+            let rec loop =
+              function
+                a :: al ->
+                  let pa = parser_of_token entry ("V V", a) in
+                  let pal = loop al in
+                  (fun (strm__ : _ Stream.t) ->
+                     try pa strm__ with Stream.Failure -> pal strm__)
+              | [] -> fun (strm__ : _ Stream.t) -> raise Stream.Failure
+            in
+            loop al
       in
       let ps = parser_of_symbol entry nlevn s in
       (fun (strm__ : _ Stream.t) ->
@@ -940,7 +953,7 @@ let find_entry e s =
     | Sopt s -> find_symbol s
     | Sflag s -> find_symbol s
     | Stree t -> find_tree t
-    | Svala s -> find_symbol s
+    | Svala (_, s) -> find_symbol s
     | Sself | Snext | Stoken _ -> None
   and find_symbol_list =
     function

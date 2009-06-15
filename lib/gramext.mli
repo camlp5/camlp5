@@ -1,16 +1,6 @@
 (* camlp5r *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: gramext.mli,v 1.14 2007/09/07 13:24:52 deraugla Exp $ *)
+(* $Id: gramext.mli,v 1.15 2007/09/19 05:24:55 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 type grammar 'te =
   { gtokens : Hashtbl.t Plexing.pattern (ref int);
@@ -47,7 +37,7 @@ and g_symbol 'te =
   | Snext
   | Stoken of Plexing.pattern
   | Stree of g_tree 'te
-  | Svala of g_symbol 'te ]
+  | Svala of list string and g_symbol 'te ]
 and g_action = Obj.t
 and g_tree 'te =
   [ Node of g_node 'te

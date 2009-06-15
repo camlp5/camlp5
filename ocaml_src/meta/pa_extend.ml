@@ -30,7 +30,7 @@ type 'e text =
   | TXrules of loc * ('e text list * 'e) list
   | TXself of loc
   | TXtok of loc * string * 'e
-  | TXvala of loc * 'e text
+  | TXvala of loc * string list * 'e text
 ;;
 
 type ('e, 'p) entry =
@@ -128,6 +128,15 @@ let retype_rule_list_without_patterns loc rl =
   with Exit -> rl
 ;;
 
+let rec make_list loc f =
+  function
+    [] -> MLast.ExUid (loc, "[]")
+  | x :: l ->
+      MLast.ExApp
+        (loc, MLast.ExApp (loc, MLast.ExUid (loc, "::"), f x),
+         make_list loc f l)
+;;
+
 let quotify = ref false;;
 let meta_action = ref false;;
 
@@ -142,14 +151,7 @@ module MetaAction =
       failwith ("pa_extend.ml: " ^ f ^ ", not impl: " ^ desc)
     ;;
     let loc = Ploc.dummy;;
-    let rec mlist mf =
-      function
-        [] -> MLast.ExUid (loc, "[]")
-      | x :: l ->
-          MLast.ExApp
-            (loc, MLast.ExApp (loc, MLast.ExUid (loc, "::"), mf x),
-             mlist mf l)
-    ;;
+    let mlist f l = make_list loc f l;;
     let moption mf =
       function
         None -> MLast.ExUid (loc, "None")
@@ -1072,11 +1074,15 @@ let rec make_expr gmod tvar =
          MLast.ExAcc
            (loc, MLast.ExUid (loc, "Gramext"), MLast.ExUid (loc, "Stoken")),
          MLast.ExTup (loc, [MLast.ExStr (loc, s); e]))
-  | TXvala (loc, t) ->
+  | TXvala (loc, al, t) ->
+      let al = make_list loc (fun s -> MLast.ExStr (loc, s)) al in
       MLast.ExApp
         (loc,
-         MLast.ExAcc
-           (loc, MLast.ExUid (loc, "Gramext"), MLast.ExUid (loc, "Svala")),
+         MLast.ExApp
+           (loc,
+            MLast.ExAcc
+              (loc, MLast.ExUid (loc, "Gramext"), MLast.ExUid (loc, "Svala")),
+            al),
          make_expr gmod "" t)
 and make_expr_rules loc gmod rl tvar =
   List.fold_left
@@ -1984,7 +1990,20 @@ Grammar.extend
             'psymbol))]];
     Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e), None,
     [Some "top", Some Gramext.NonA,
-     [[Gramext.Stoken ("UIDENT", "V"); Gramext.Stoken ("UIDENT", "")],
+     [[Gramext.Stoken ("UIDENT", "V");
+       Gramext.Snterm (Grammar.Entry.obj (name : 'name Grammar.Entry.e));
+       Gramext.Slist0 (Gramext.Stoken ("STRING", ""))],
+      Gramext.action
+        (fun (al : string list) (n : 'name) _ (loc : Ploc.t) ->
+           (let text = TXnterm (loc, n, None) in
+            let styp = STquo (loc, n.tvar) in
+            let (text, styp) =
+              if not !(Pcaml.strict_mode) then text, styp
+              else TXvala (loc, al, text), STvala (loc, styp)
+            in
+            {used = [n.tvar]; text = text; styp = styp} :
+            'symbol));
+      [Gramext.Stoken ("UIDENT", "V"); Gramext.Stoken ("UIDENT", "")],
       Gramext.action
         (fun (x : string) _ (loc : Ploc.t) ->
            (if !quotify then sstoken2 loc x
@@ -1993,7 +2012,7 @@ Grammar.extend
               let styp = STlid (loc, "string") in
               let (text, styp) =
                 if not !(Pcaml.strict_mode) then text, styp
-                else TXvala (loc, text), STvala (loc, styp)
+                else TXvala (loc, [], text), STvala (loc, styp)
               in
               {used = []; text = text; styp = styp} :
             'symbol));
@@ -2007,7 +2026,7 @@ Grammar.extend
               let styp = STlid (loc, "bool") in
               let (text, styp) =
                 if not !(Pcaml.strict_mode) then text, styp
-                else TXvala (loc, text), STvala (loc, styp)
+                else TXvala (loc, [], text), STvala (loc, styp)
               in
               {used = s.used; text = text; styp = styp} :
             'symbol));
@@ -2021,7 +2040,7 @@ Grammar.extend
               let styp = STapp (loc, STlid (loc, "option"), s.styp) in
               let (text, styp) =
                 if not !(Pcaml.strict_mode) then text, styp
-                else TXvala (loc, text), STvala (loc, styp)
+                else TXvala (loc, [], text), STvala (loc, styp)
               in
               {used = s.used; text = text; styp = styp} :
             'symbol));
@@ -2047,7 +2066,7 @@ Grammar.extend
               let styp = STapp (loc, STlid (loc, "list"), s.styp) in
               let (text, styp) =
                 if not !(Pcaml.strict_mode) then text, styp
-                else TXvala (loc, text), STvala (loc, styp)
+                else TXvala (loc, [], text), STvala (loc, styp)
               in
               {used = used; text = text; styp = styp} :
             'symbol));
@@ -2073,7 +2092,7 @@ Grammar.extend
               let styp = STapp (loc, STlid (loc, "list"), s.styp) in
               let (text, styp) =
                 if not !(Pcaml.strict_mode) then text, styp
-                else TXvala (loc, text), STvala (loc, styp)
+                else TXvala (loc, [], text), STvala (loc, styp)
               in
               {used = used; text = text; styp = styp} :
             'symbol));

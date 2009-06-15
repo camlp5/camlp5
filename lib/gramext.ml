@@ -1,16 +1,6 @@
 (* camlp5r *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: gramext.ml,v 1.17 2007/09/07 13:24:52 deraugla Exp $ *)
+(* $Id: gramext.ml,v 1.18 2007/09/19 05:24:55 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 open Printf;
 
@@ -49,7 +39,7 @@ and g_symbol 'te =
   | Snext
   | Stoken of Plexing.pattern
   | Stree of g_tree 'te
-  | Svala of g_symbol 'te ]
+  | Svala of list string and g_symbol 'te ]
 and g_action = Obj.t
 and g_tree 'te =
   [ Node of g_node 'te
@@ -75,7 +65,7 @@ value rec derive_eps =
   | Slist0sep _ _ -> True
   | Sopt _ | Sflag _ -> True
   | Stree t -> tree_derive_eps t
-  | Svala s -> derive_eps s
+  | Svala _ s -> derive_eps s
   | Smeta _ _ _ | Slist1 _ | Slist1sep _ _ | Snterm _ | Snterml _ _ | Snext |
     Sself | Stoken _ ->
       False ]
@@ -306,7 +296,7 @@ Error: entries \"%s\" and \"%s\" do not belong to the same grammar.\n"
   | Sopt s -> check_gram entry s
   | Sflag s -> check_gram entry s
   | Stree t -> tree_check_gram entry t
-  | Svala s -> check_gram entry s
+  | Svala _ s -> check_gram entry s
   | Snext | Sself | Stoken _ -> () ]
 and tree_check_gram entry =
   fun
@@ -341,7 +331,7 @@ value insert_tokens gram symbols =
     | Sopt s -> insert s
     | Sflag s -> insert s
     | Stree t -> tinsert t
-    | Svala s -> insert s
+    | Svala _ s -> insert s
     | Stoken ("ANY", _) -> ()
     | Stoken tok -> do {
         gram.glexer.Plexing.tok_using tok;
@@ -489,7 +479,7 @@ value rec decr_keyw_use gram =
   | Sopt s -> decr_keyw_use gram s
   | Sflag s -> decr_keyw_use gram s
   | Stree t -> decr_keyw_use_in_tree gram t
-  | Svala s -> decr_keyw_use gram s
+  | Svala _ s -> decr_keyw_use gram s
   | Sself | Snext | Snterm _ | Snterml _ _ -> () ]
 and decr_keyw_use_in_tree gram =
   fun

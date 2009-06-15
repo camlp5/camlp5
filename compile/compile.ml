@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: compile.ml,v 1.24 2007/09/15 19:35:16 deraugla Exp $ *)
+(* $Id: compile.ml,v 1.25 2007/09/19 05:29:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Gramext;
@@ -319,7 +319,7 @@ and symbol_parser entry nlevn =
       let p_con = String.escaped (fst tok) in
       let p_prm = String.escaped (snd tok) in
       <:expr< P.token ($str:p_con$, $str:p_prm$) >>
-  | Svala s -> <:expr< P.vala $symbol_parser entry nlevn s$ >>
+  | Svala _ s -> <:expr< P.vala $symbol_parser entry nlevn s$ >>
   | _ -> <:expr< aaa >> ]
 ;
 
@@ -516,7 +516,7 @@ and scan_symbol list =
   | Sopt s -> scan_symbol list s
   | Sflag s -> scan_symbol list s
   | Stree t -> scan_tree list t
-  | Svala s -> scan_symbol list s
+  | Svala _ s -> scan_symbol list s
   | Smeta _ _ _ | Sself | Snext | Stoken _ -> list ]
 and scan_level list lev =
   let list = scan_tree list lev.lsuffix in

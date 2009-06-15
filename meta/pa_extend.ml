@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.66 2007/09/16 05:19:01 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.67 2007/09/19 05:24:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -30,7 +30,7 @@ type text 'e =
   | TXrules of loc and list (list (text 'e) * 'e)
   | TXself of loc
   | TXtok of loc and string and 'e
-  | TXvala of loc and text 'e ]
+  | TXvala of loc and list string and text 'e ]
 ;
 
 type entry 'e 'p =
@@ -136,6 +136,12 @@ value retype_rule_list_without_patterns loc rl =
   [ Exit -> rl ]
 ;
 
+value rec make_list loc f =
+  fun
+  [ [] -> <:expr< [] >>
+  | [x :: l] -> <:expr< [ $f x$ :: $make_list loc f l$ ] >> ]
+;
+
 value quotify = ref False;
 value meta_action = ref False;
 
@@ -150,11 +156,7 @@ module MetaAction =
       failwith ("pa_extend.ml: " ^ f ^ ", not impl: " ^ desc)
     ;
     value loc = Ploc.dummy;
-    value rec mlist mf =
-      fun
-      [ [] -> <:expr< [] >>
-      | [x :: l] -> <:expr< [ $mf x$ :: $mlist mf l$ ] >> ]
-    ;
+    value mlist f l = make_list loc f l;
     value moption mf =
       fun
       [ None -> <:expr< None >>
@@ -460,7 +462,9 @@ value rec make_expr gmod tvar =
       <:expr< Gramext.srules $make_expr_rules loc gmod rl ""$ >>
   | TXself loc -> <:expr< Gramext.Sself >>
   | TXtok loc s e -> <:expr< Gramext.Stoken ($str:s$, $e$) >>
-  | TXvala loc t -> <:expr< Gramext.Svala $make_expr gmod "" t$ >> ]
+  | TXvala loc al t ->
+      let al = make_list loc (fun s -> <:expr< $str:s$ >>) al in
+      <:expr< Gramext.Svala $al$ $make_expr gmod "" t$ >> ]
 and make_expr_rules loc gmod rl tvar =
   List.fold_left
     (fun txt (sl, ac) ->
@@ -977,7 +981,7 @@ EXTEND
             let styp = STapp loc (STlid loc "list") s.styp in
             let (text, styp) =
               if not Pcaml.strict_mode.val then (text, styp)
-              else (TXvala loc text, STvala loc styp)
+              else (TXvala loc [] text, STvala loc styp)
             in
             {used = used; text = text; styp = styp}
       | UIDENT "V"; UIDENT "LIST1"; s = SELF;
@@ -993,7 +997,7 @@ EXTEND
             let styp = STapp loc (STlid loc "list") s.styp in
             let (text, styp) =
               if not Pcaml.strict_mode.val then (text, styp)
-              else (TXvala loc text, STvala loc styp)
+              else (TXvala loc [] text, STvala loc styp)
             in
             {used = used; text = text; styp = styp}
       | UIDENT "V"; UIDENT "OPT"; s = SELF ->
@@ -1003,7 +1007,7 @@ EXTEND
             let styp = STapp loc (STlid loc "option") s.styp in
             let (text, styp) =
               if not Pcaml.strict_mode.val then (text, styp)
-              else (TXvala loc text, STvala loc styp)
+              else (TXvala loc [] text, STvala loc styp)
             in
             {used = s.used; text = text; styp = styp}
       | UIDENT "V"; UIDENT "FLAG"; s = SELF ->
@@ -1013,7 +1017,7 @@ EXTEND
             let styp = STlid loc "bool" in
             let (text, styp) =
               if not Pcaml.strict_mode.val then (text, styp)
-              else (TXvala loc text, STvala loc styp)
+              else (TXvala loc [] text, STvala loc styp)
             in
             {used = s.used; text = text; styp = styp}
       | UIDENT "V"; x = UIDENT ->
@@ -1023,9 +1027,17 @@ EXTEND
             let styp = STlid loc "string" in
             let (text, styp) =
               if not Pcaml.strict_mode.val then (text, styp)
-              else (TXvala loc text, STvala loc styp)
+              else (TXvala loc [] text, STvala loc styp)
             in
-            {used = []; text = text; styp = styp} ]
+            {used = []; text = text; styp = styp}
+       | UIDENT "V"; n = name; al = LIST0 STRING ->
+          let text = TXnterm loc n None in
+          let styp = STquo loc n.tvar in
+          let (text,  styp) =
+            if not Pcaml.strict_mode.val then (text, styp)
+            else (TXvala loc al text, STvala loc styp)
+          in
+          {used = [n.tvar]; text = text; styp = styp} ]
     | [ UIDENT "SELF" ->
           {used = []; text = TXself loc; styp = STself loc "SELF"}
       | UIDENT "NEXT" ->
