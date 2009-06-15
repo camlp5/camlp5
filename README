@@ -8,6 +8,9 @@ OVERVIEW
 
   This Camlp5 version is 4.09.
 
+  Camlp5 must be compiler either in "transitional mode" or in "strict mode".
+  See the file MODE for information.
+
 INSTALL
 
   Read the file INSTALL to compile.

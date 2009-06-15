@@ -1,0 +1,14 @@
+In order to allow users to slowly convert to a new syntax tree,
+uncompatible with the previous one, Camlp5 can be compiled in
+two modes:
+
+  - "transitional": syntax tree is compatible but the new syntax tree
+    quotations kit in user syntax q_ast.cmo is not available.
+
+  - "strict": the new syntax tree quotations kit in user syntax q_ast.cmo
+    is available but the syntax tree is not compatible with the previous
+    versions.
+
+You have to choose among these modes at configuration time.
+
+See Camlp5 documentation.

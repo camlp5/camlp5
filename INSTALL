@@ -2,8 +2,11 @@ INSTALL UNDER UNIX
 
   You need the ocaml compiler installed. It must be accessible in the path.
 
-1. Do:
-     ./configure
+1. Choose which compilation mode "transitional" or "strict" (see the
+   file "MODE") and do either:
+     ./configure --transitional
+   or
+     ./configure --strict
   
 2. Then, to make everything, do:
      make world.opt
