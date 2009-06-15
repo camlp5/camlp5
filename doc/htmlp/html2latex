@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2latex,v 1.37 2007/07/24 16:36:14 deraugla Exp $
+# $Id: html2latex,v 1.38 2007/07/25 02:02:07 deraugla Exp $
 
 FILES="index.html ptools.html syntext.html revsynt.html quot.html parsers.html fparsers.html lexers.html grammars.html pretty.html opretty.html ml_ast.html pragma.html extfun.html"
 
@@ -43,7 +43,7 @@ for i in $FILES; do
     -e 's|</p><p>|\n\n\\\n\n\\noindent |g' \
     -e '{s/^ *<p>/\\noindent /; s|</p>|\n\n|}' |
   sed \
-    -e '{/<table[^>]*>$/N; :b; /<tr>$/N; s/\n *//; tb; /<\/tr>$/N; s/\n *//; tb; /<\/th>$/N; s/\n *//; tb; /<\/td>$/N; s/\n *//; tb}' |
+    -e '{/<table[^>]*>$/N; :b; /<tr>$/N; s/\n *//; tb; /<\/tr>$/N; s/\n *//; tb; /<\/th>$/N; s/\n *//; tb; /<\/td>$/N; s/\n *//; tb; /<thead>$/N; s/\n *//; tb; /<\/thead>$/N; s/\n *//; tb; /<tbody>$/N; s/\n *//; tb; /<\/tbody>$/N; s/\n *//; tb}' |
   sed \
     -e 's/{/\\{/g' -e 's/}/\\}/g' \
     -e '0,/<div id="content">/d' \
@@ -54,6 +54,8 @@ for i in $FILES; do
     -e 's/^ *<h4>/\\subsubsection{/' -e 's|</h4>|}|' \
     -e 's| *<table width[^>]*>\(.*\)</table>|\\begin{center}\n\\begin{tabular}\1\\hline\n\\end{tabular}\n\\end{center}|' \
     -e 's| *<table[^>]*>\(.*\)</table>|\\begin{center}\n\\begin{longtable}\1\\hline\n\\end{longtable}\n\\end{center}|' \
+    -e 's/<thead>//g' -e 's|</thead>||g' \
+    -e 's/<tbody>//g' -e 's|</tbody>||g' \
     -e 's/<tr>\(<th[^>]*>.*<th[^>]*>.*<th[^>]*>\)/{|l|c|l|}\ntr\1/' \
     -e 's/<tr>\(<th[^>]*>.*<th[^>]*>\)/{|l|l|}\ntr\1/' \
     -e 's/tr<th/\\hline\n<th/' \
