@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.56 2007/12/28 03:17:21 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.57 2007/12/28 04:01:10 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -314,6 +314,15 @@ value class_descr b pc cd =
   let n = Pcaml.unvala cd.MLast.ciNam in
   horiz_vertic
     (fun () ->
+       if test.val then
+       pprintf pc "{%s%s%p %p}" (if b = "" then "" else b ^ " ")
+         (if Pcaml.unvala cd.MLast.ciVir then "virtual " else "")
+         (fun pc ->
+            fun
+            [ [] -> pprintf pc "%s" n
+            | tvl -> pprintf pc "(%s %p)" n (hlist type_param) tvl ])
+         (Pcaml.unvala (snd cd.MLast.ciPrm)) class_type cd.MLast.ciExp
+       else
        sprintf "%s(%s%s%s %s)%s" pc.bef (if b = "" then "" else b ^ " ")
          (if Pcaml.unvala cd.MLast.ciVir then "virtual " else "")
          (match Pcaml.unvala (snd cd.MLast.ciPrm) with
@@ -403,6 +412,43 @@ value class_decl b pc cd =
        plistf 0 (paren pc "") list)
 ;
 
+value class_type_decl b pc cd =
+  let n = Pcaml.unvala cd.MLast.ciNam in
+  let ct = cd.MLast.ciExp in
+  horiz_vertic
+    (fun () ->
+       sprintf "%s(%s%s%s %s)%s" pc.bef (if b = "" then "" else b ^ " ")
+         (if Pcaml.unvala cd.MLast.ciVir then "virtual " else "")
+         (match Pcaml.unvala (snd cd.MLast.ciPrm) with
+          [ [] -> n
+          | tvl ->
+              sprintf "(%s %s)" n
+                (hlist type_param {(pc) with bef = ""; aft = ""} tvl) ])
+         (class_type {(pc) with bef = ""; aft = ""} ct) pc.aft)
+    (fun () ->
+       let list =
+         let list =
+           [(fun pc ->
+               match Pcaml.unvala (snd cd.MLast.ciPrm) with
+               [ [] -> sprintf "%s%s%s" pc.bef n pc.aft
+               | tvl ->
+                   plistb type_param 0 (paren pc n)
+                     (List.map (fun tv -> (tv, "")) tvl) ],
+             "");
+            (fun pc -> class_type pc ct, "")]
+         in
+         let list =
+           if Pcaml.unvala cd.MLast.ciVir then
+             [(fun pc -> sprintf "%svirtual%s" pc.bef pc.aft, "") ::
+              list]
+           else list
+         in
+         if b = "" then list
+         else [(fun pc -> sprintf "%s%s%s" pc.bef b pc.aft, "") :: list]
+       in
+       plistf 0 (paren pc "") list)
+;
+
 value class_decl_list pc =
   fun
   [ [cd] -> class_decl "class" pc cd
@@ -419,6 +465,26 @@ value class_decl_list pc =
                {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
                 aft = sprintf ")%s" pc.aft}
                cdl
+           in
+           sprintf "%s\n%s" s1 s2) ]
+;
+
+value class_type_decl_list pc =
+  fun
+  [ [ctd] -> class_type_decl "class" pc ctd
+  | ctdl ->
+      horiz_vertic
+        (fun () ->
+           sprintf "%s(class* %s)%s" pc.bef
+             (hlist (class_type_decl "") {(pc) with bef = ""; aft = ""} ctdl)
+             pc.aft)
+        (fun () ->
+           let s1 = sprintf "%s(classtype*" pc.bef in
+           let s2 =
+             vlist (class_type_decl "")
+               {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+                aft = sprintf ")%s" pc.aft}
+               ctdl
            in
            sprintf "%s\n%s" s1 s2) ]
 ;
@@ -505,6 +571,8 @@ EXTEND_PRINTER
           sprintf "%s'%s%s" pc.bef s pc.aft
       | <:ctyp< _ >> ->
           sprintf "%s_%s" pc.bef pc.aft
+      | <:ctyp< # $list:sl$ >> ->
+          pprintf pc "(# %p)" longident sl
       | x ->
           not_impl "ctyp" pc x ] ]
   ;
@@ -935,6 +1003,8 @@ EXTEND_PRINTER
           sprintf "%s(` %s)%s" pc.bef s pc.aft
       | <:patt< _ >> ->
           sprintf "%s_%s" pc.bef pc.aft
+      | <:patt< # $list:sl$ >> ->
+          pprintf pc "(# %p)" longident sl
       | x ->
           not_impl "patt" pc x ] ]
   ;
@@ -942,6 +1012,8 @@ EXTEND_PRINTER
     [ "top"
       [ <:str_item< class $list:cdl$ >> ->
           class_decl_list pc cdl
+      | <:str_item< class type $list:ctdl$ >> ->
+          class_type_decl_list pc ctdl
       | <:str_item< open $i$ >> ->
           plistb longident 0 (paren pc "open") [(i, "")]
       | <:str_item< include $me$ >> ->
@@ -997,6 +1069,8 @@ EXTEND_PRINTER
             [(fun pc -> sprintf "%s%s%s" pc.bef i pc.aft, "");
              (fun pc -> ctyp pc t, "") ::
              List.map (fun s -> (fun pc -> string pc s, "")) pd]
+      | <:sig_item< include $mt$ >> ->
+          plistb module_type 0 (paren pc "include") [(mt, "")]
       | <:sig_item< module $uid:s$ : $mt$ >> ->
           plistbf 0 (paren pc "module")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
@@ -1164,6 +1238,8 @@ EXTEND_PRINTER
             else list
           in
           plistbf 0 (paren pc "value") list
+      | <:class_str_item< type $t1$ = $t2$ >> ->
+          pprintf pc "(type %p@;<1 1>%p)" ctyp t1 ctyp t2
       | x ->
           not_impl "class_str_item" pc x ] ]
   ;
