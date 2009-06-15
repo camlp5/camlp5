@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: camlp5_top.ml,v 1.4 2007/09/14 16:03:54 deraugla Exp $ *)
+(* $Id: camlp5_top.ml,v 1.5 2007/10/01 04:44:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Parsetree;
@@ -170,7 +170,9 @@ Toploop.parse_use_file.val :=
   wrap use_file (fun lb -> lb.lex_curr_pos - lb.lex_start_pos)
 ;
 
-IFDEF OCAML_3_08_1 OR OCAML_3_08_2 OR OCAML_3_08_3 OR OCAML_3_08_4 THEN
+IFDEF
+  OCAML_3_08_0 OR OCAML_3_08_1 OR OCAML_3_08_2 OR OCAML_3_08_3 OR OCAML_3_08_4
+THEN
   DEFINE OCAML_3_08
 END;
 

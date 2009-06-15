@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: ast2pt.ml,v 1.53 2007/09/18 15:40:03 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.54 2007/10/01 04:44:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open MLast;
@@ -7,7 +7,9 @@ open Parsetree;
 open Longident;
 open Asttypes;
 
-IFDEF OCAML_3_08_1 OR OCAML_3_08_2 OR OCAML_3_08_3 OR OCAML_3_08_4 THEN
+IFDEF
+  OCAML_3_08_0 OR OCAML_3_08_1 OR OCAML_3_08_2 OR OCAML_3_08_3 OR OCAML_3_08_4
+THEN
   DEFINE OCAML_3_08
 END;
 

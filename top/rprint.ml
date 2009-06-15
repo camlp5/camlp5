@@ -1,21 +1,13 @@
 (* camlp5r pa_macro.cmo *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: rprint.ml,v 1.18 2007/08/16 16:01:19 deraugla Exp $ *)
+(* $Id: rprint.ml,v 1.19 2007/10/01 04:44:09 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 open Format;
 open Outcometree;
 
-IFDEF OCAML_3_08_1 OR OCAML_3_08_2 OR OCAML_3_08_3 OR OCAML_3_08_4 THEN
+IFDEF
+  OCAML_3_08_0 OR OCAML_3_08_1 OR OCAML_3_08_2 OR OCAML_3_08_3 OR OCAML_3_08_4
+THEN
   DEFINE OCAML_3_08
 END;
 
