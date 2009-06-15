@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: compile.ml,v 1.11 2007/08/05 16:27:59 deraugla Exp $ *)
+(* $Id: compile.ml,v 1.12 2007/08/07 07:08:56 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -500,7 +500,8 @@ and scan_symbol list =
   | Slist1 s -> scan_symbol list s
   | Slist1sep s sep -> scan_symbol (scan_symbol list s) sep
   | Sopt s -> scan_symbol list s
-  | Sflag s | Sflag2 s -> scan_symbol list s
+  | Sflag s -> scan_symbol list s
+  | Svala s -> scan_symbol list s
   | Stree t -> scan_tree list t
   | Smeta _ _ _ | Sself | Snext | Stoken _ -> list ]
 and scan_level list lev =

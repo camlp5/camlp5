@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: gramext.ml,v 1.11 2007/08/05 16:27:59 deraugla Exp $ *)
+(* $Id: gramext.ml,v 1.12 2007/08/07 07:08:56 deraugla Exp $ *)
 
 open Printf;
 
@@ -45,7 +45,7 @@ and g_symbol 'te =
   | Slist1sep of g_symbol 'te and g_symbol 'te
   | Sopt of g_symbol 'te
   | Sflag of g_symbol 'te
-  | Sflag2 of g_symbol 'te
+  | Svala of g_symbol 'te
   | Sself
   | Snext
   | Stoken of Token.pattern
@@ -73,7 +73,8 @@ value rec derive_eps =
   fun
   [ Slist0 _ -> True
   | Slist0sep _ _ -> True
-  | Sopt _ | Sflag _ | Sflag2 _ -> True
+  | Sopt _ | Sflag _ -> True
+  | Svala s -> derive_eps s
   | Stree t -> tree_derive_eps t
   | Smeta _ _ _ | Slist1 _ | Slist1sep _ _ | Snterm _ | Snterml _ _ | Snext |
     Sself | Stoken _ ->
@@ -303,7 +304,8 @@ Error: entries \"%s\" and \"%s\" do not belong to the same grammar.\n"
   | Slist0 s -> check_gram entry s
   | Slist1 s -> check_gram entry s
   | Sopt s -> check_gram entry s
-  | Sflag s | Sflag2 s -> check_gram entry s
+  | Sflag s -> check_gram entry s
+  | Svala s -> check_gram entry s
   | Stree t -> tree_check_gram entry t
   | Snext | Sself | Stoken _ -> () ]
 and tree_check_gram entry =
@@ -337,7 +339,8 @@ value insert_tokens gram symbols =
     | Slist0sep s t -> do { insert s; insert t }
     | Slist1sep s t -> do { insert s; insert t }
     | Sopt s -> insert s
-    | Sflag s | Sflag2 s -> insert s
+    | Sflag s -> insert s
+    | Svala s -> insert s
     | Stree t -> tinsert t
     | Stoken ("ANY", _) -> ()
     | Stoken tok -> do {
@@ -484,7 +487,8 @@ value rec decr_keyw_use gram =
   | Slist0sep s1 s2 -> do { decr_keyw_use gram s1; decr_keyw_use gram s2 }
   | Slist1sep s1 s2 -> do { decr_keyw_use gram s1; decr_keyw_use gram s2 }
   | Sopt s -> decr_keyw_use gram s
-  | Sflag s | Sflag2 s -> decr_keyw_use gram s
+  | Sflag s -> decr_keyw_use gram s
+  | Svala s -> decr_keyw_use gram s
   | Stree t -> decr_keyw_use_in_tree gram t
   | Sself | Snext | Snterm _ | Snterml _ _ -> () ]
 and decr_keyw_use_in_tree gram =

@@ -38,7 +38,7 @@ type 'e text =
   | TXnterm of loc * 'e name * string option
   | TXopt of loc * 'e text
   | TXflag of loc * 'e text
-  | TXflag2 of loc * 'e text
+  | TXvala of loc * 'e text
   | TXrules of loc * ('e text list * 'e) list
   | TXself of loc
   | TXtok of loc * string * 'e
@@ -150,7 +150,7 @@ module MetaAction =
           "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
         else "int_val = " ^ string_of_int (Obj.magic x)
       in
-      failwith (f ^ ", not impl: " ^ desc)
+      failwith ("pa_extend.ml: " ^ f ^ ", not impl: " ^ desc)
     ;;
     let loc = Stdpp.dummy_loc;;
     let rec mlist mf =
@@ -1004,11 +1004,11 @@ let rec make_expr gmod tvar =
          MLast.ExAcc
            (loc, MLast.ExUid (loc, "Gramext"), MLast.ExUid (loc, "Sflag")),
          make_expr gmod "" t)
-  | TXflag2 (loc, t) ->
+  | TXvala (loc, t) ->
       MLast.ExApp
         (loc,
          MLast.ExAcc
-           (loc, MLast.ExUid (loc, "Gramext"), MLast.ExUid (loc, "Sflag2")),
+           (loc, MLast.ExUid (loc, "Gramext"), MLast.ExUid (loc, "Svala")),
          make_expr gmod "" t)
   | TXrules (loc, rl) ->
       MLast.ExApp
@@ -1261,7 +1261,7 @@ let ssflag loc s =
   let styp = STquo (loc, "a_flag") in {used = used; text = text; styp = styp}
 ;;
 
-let ssflag2 loc s =
+let ssvala_flag loc s =
   let rl =
     let r1 =
       let prod =
@@ -1273,7 +1273,8 @@ let ssflag2 loc s =
     in
     let r2 =
       let prod =
-        [mk_psymbol (MLast.PaLid (loc, "a")) (TXflag2 (loc, s.text))
+        [mk_psymbol (MLast.PaLid (loc, "a"))
+           (TXvala (loc, TXflag (loc, s.text)))
            (STapp
               (loc,
                STtyp
@@ -1923,7 +1924,7 @@ Grammar.extend
      [[Gramext.Stoken ("UIDENT", "FLAG2"); Gramext.Sself],
       Gramext.action
         (fun (s : 'symbol) _ (loc : Token.location) ->
-           (if !quotify then ssflag2 loc s
+           (if !quotify then ssvala_flag loc s
             else
               let styp =
                 STapp
@@ -1934,7 +1935,7 @@ Grammar.extend
                          MLast.TyLid (loc, "vala"))),
                    STlid (loc, "bool"))
               in
-              let text = TXflag2 (loc, s.text) in
+              let text = TXvala (loc, TXflag (loc, s.text)) in
               {used = s.used; text = text; styp = styp} :
             'symbol));
       [Gramext.Stoken ("UIDENT", "FLAG"); Gramext.Sself],

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: gramext.mli,v 1.7 2007/08/05 16:27:59 deraugla Exp $ *)
+(* $Id: gramext.mli,v 1.8 2007/08/07 07:08:56 deraugla Exp $ *)
 
 type grammar 'te =
   { gtokens : Hashtbl.t Token.pattern (ref int);
@@ -46,7 +46,7 @@ and g_symbol 'te =
   | Slist1sep of g_symbol 'te and g_symbol 'te
   | Sopt of g_symbol 'te
   | Sflag of g_symbol 'te
-  | Sflag2 of g_symbol 'te
+  | Svala of g_symbol 'te
   | Sself
   | Snext
   | Stoken of Token.pattern
