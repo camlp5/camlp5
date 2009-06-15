@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.45 2007/09/07 18:18:38 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.46 2007/09/08 04:54:38 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -313,7 +313,7 @@ EXTEND
       | s = INT_L -> <:expr< $int64:s$ >>
       | s = INT_n -> <:expr< $nativeint:s$ >>
       | s = FLOAT -> <:expr< $flo:s$ >>
-      | s = STRING -> <:expr< $str:s$ >>
+      | s = V STRING -> <:expr< $astr:s$ >>
       | s = CHAR -> <:expr< $chr:s$ >>
       | i = expr_ident -> i
       | "["; "]" -> <:expr< [] >>

@@ -624,7 +624,7 @@ module Meta =
                     (loc, MLast.ExUid (loc, "MLast"),
                      MLast.ExUid (loc, "ExStr")),
                   ln),
-               e_string s)
+               e_vala e_string s)
         | ExTup (_, el) ->
             MLast.ExApp
               (loc,
@@ -760,7 +760,7 @@ module Meta =
                         (loc, MLast.PaUid (loc, "MLast"),
                          MLast.PaUid (loc, "ExStr")),
                       MLast.PaAny loc),
-                   p_string s)
+                   p_vala p_string s)
             | ExTup (_, el) ->
                 MLast.PaApp
                   (loc,
@@ -956,6 +956,14 @@ lex.Plexing.tok_match <-
            let kind = check_anti_loc2 prm in
            if kind = "alid" then "a" ^ prm
            else if kind = "lid" then "b" ^ prm
+           else raise Stream.Failure
+       | _ -> raise Stream.Failure)
+  | "V STRING", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           let kind = check_anti_loc2 prm in
+           if kind = "astr" then "a" ^ prm
+           else if kind = "str" then "b" ^ prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V FLAG", "" ->

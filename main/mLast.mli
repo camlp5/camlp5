@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: mLast.mli,v 1.13 2007/09/08 03:59:36 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.14 2007/09/08 04:54:38 deraugla Exp $ *)
 
 (* Module [MLast]: abstract syntax tree.
 
@@ -113,7 +113,7 @@ and expr =
   | ExSeq of loc and list expr
   | ExSnd of loc and expr and string
   | ExSte of loc and expr and expr
-  | ExStr of loc and string
+  | ExStr of loc and V string
   | ExTry of loc and expr and list (patt * option expr * expr)
   | ExTup of loc and list expr
   | ExTyc of loc and expr and ctyp

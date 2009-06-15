@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.41 2007/09/07 18:18:38 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.42 2007/09/08 04:54:38 deraugla Exp $ *)
 
 value split_ext = ref False;
 
@@ -175,12 +175,13 @@ module MetaAction =
       [ False -> <:expr< False >>
       | True -> <:expr< True >> ]
     ;
-    value mvala s =
-      IFNDEF STRICT THEN
-        <:expr< $str:s$ >>
+    value mstring s = <:expr< $str:s$ >>;
+    value mstring_escaped s = <:expr< $str:String.escaped s$ >>;
+    value mvala f s =
+      IFNDEF STRICT THEN f s
       ELSE
         match s with
-        [ Ploc.VaVal s -> <:expr< Ploc.VaVal $str:s$ >>
+        [ Ploc.VaVal s -> <:expr< Ploc.VaVal $f s$ >>
         | _ -> assert False ]
       END
     ;
@@ -201,7 +202,7 @@ module MetaAction =
       | MLast.ExLet loc rf pel e ->
           let rf = mbool rf in
           <:expr< MLast.ExLet $mloc$ $rf$ $mlist mpe pel$ $mexpr e$ >>
-      | MLast.ExLid loc s -> <:expr< MLast.ExLid $mloc$ $mvala s$ >>
+      | MLast.ExLid loc s -> <:expr< MLast.ExLid $mloc$ $mvala mstring s$ >>
       | MLast.ExMat loc e pwel ->
           <:expr< MLast.ExMat $mloc$ $mexpr e$ $mlist mpwe pwel$ >>
       | MLast.ExRec loc pel eo ->
@@ -210,7 +211,7 @@ module MetaAction =
       | MLast.ExSte loc e1 e2 ->
           <:expr< MLast.ExSte $mloc$ $mexpr e1$ $mexpr e2$ >>
       | MLast.ExStr loc s ->
-          <:expr< MLast.ExStr $mloc$ $str:String.escaped s$ >>
+          <:expr< MLast.ExStr $mloc$ $mvala mstring_escaped s$ >>
       | MLast.ExTry loc e pwel ->
           <:expr< MLast.ExTry $mloc$ $mexpr e$ $mlist mpwe pwel$ >>
       | MLast.ExTup loc el -> <:expr< MLast.ExTup $mloc$ $mlist mexpr el$ >>

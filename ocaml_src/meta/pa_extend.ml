@@ -170,7 +170,9 @@ module MetaAction =
         false -> MLast.ExUid (loc, "False")
       | true -> MLast.ExUid (loc, "True")
     ;;
-    let mvala s = MLast.ExStr (loc, s);;
+    let mstring s = MLast.ExStr (loc, s);;
+    let mstring_escaped s = MLast.ExStr (loc, String.escaped s);;
+    let mvala f s = f s;;
     let mloc =
       MLast.ExAcc (loc, MLast.ExUid (loc, "Ploc"), MLast.ExLid (loc, "dummy"))
     ;;
@@ -287,7 +289,7 @@ module MetaAction =
                   (loc, MLast.ExUid (loc, "MLast"),
                    MLast.ExUid (loc, "ExLid")),
                 mloc),
-             mvala s)
+             mvala mstring s)
       | MLast.ExMat (loc, e, pwel) ->
           MLast.ExApp
             (loc,
@@ -346,7 +348,7 @@ module MetaAction =
                   (loc, MLast.ExUid (loc, "MLast"),
                    MLast.ExUid (loc, "ExStr")),
                 mloc),
-             MLast.ExStr (loc, String.escaped s))
+             mvala mstring_escaped s)
       | MLast.ExTry (loc, e, pwel) ->
           MLast.ExApp
             (loc,

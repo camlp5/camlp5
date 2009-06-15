@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.17 2007/09/06 04:58:13 deraugla Exp $
+# $Id: Makefile,v 1.18 2007/09/08 04:54:38 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -12,7 +12,7 @@ SHELL=/bin/sh
 COUT=$(OBJS) $(NAME)r$(EXE)
 COPT=$(NAME)r.opt
 
-all: $(COUT)
+all: $(COUT) q_ast.cmo
 opt: $(COPT)
 
 $(NAME)r$(EXE): ../main/$(NAME)$(EXE) $(CAMLP5RM)

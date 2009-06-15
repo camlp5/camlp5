@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.45 2007/09/07 18:18:38 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.46 2007/09/08 04:54:38 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -170,6 +170,7 @@ value a_INT_L = Grammar.Entry.create gram "a_INT_L";
 value a_INT_n = Grammar.Entry.create gram "a_INT_n";
 value a_FLOAT = Grammar.Entry.create gram "a_FLOAT";
 value a_STRING = Grammar.Entry.create gram "a_STRING";
+value a_STRING2 = Grammar.Entry.create gram "a_STRING2";
 value a_CHAR = Grammar.Entry.create gram "a_CHAR";
 value a_TILDEIDENT = Grammar.Entry.create gram "a_TILDEIDENT";
 value a_TILDEIDENTCOLON = Grammar.Entry.create gram "a_TILDEIDENTCOLON";
@@ -663,7 +664,7 @@ EXTEND
       | s = a_INT_L -> Qast.Node "ExInt" [Qast.Loc; s; Qast.Str "L"]
       | s = a_INT_n -> Qast.Node "ExInt" [Qast.Loc; s; Qast.Str "n"]
       | s = a_FLOAT -> Qast.Node "ExFlo" [Qast.Loc; s]
-      | s = a_STRING -> Qast.Node "ExStr" [Qast.Loc; s]
+      | s = a_STRING2 -> Qast.Node "ExStr" [Qast.Loc; s]
       | s = a_CHAR -> Qast.Node "ExChr" [Qast.Loc; s]
       | i = expr_ident -> i
       | "["; "]" -> Qast.Node "ExUid" [Qast.Loc; Qast.Str "[]"]
@@ -1317,6 +1318,12 @@ EXTEND
     [ [ a = ANTIQUOT "str" -> antiquot "str" loc a
       | a = ANTIQUOT -> antiquot "" loc a
       | s = STRING -> Qast.Str s ] ]
+  ;
+  a_STRING2:
+    [ [ a = ANTIQUOT "str" -> Qast.VaVal (antiquot "str" loc a)
+      | a = ANTIQUOT "astr" -> antiquot "str" loc a
+      | a = ANTIQUOT -> antiquot "" loc a
+      | s = STRING -> Qast.VaVal (Qast.Str s) ] ]
   ;
   a_CHAR:
     [ [ a = ANTIQUOT "chr" -> antiquot "chr" loc a

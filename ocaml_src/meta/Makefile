@@ -12,7 +12,7 @@ SHELL=/bin/sh
 COUT=$(OBJS) $(NAME)r$(EXE)
 COPT=$(NAME)r.opt
 
-all: $(COUT)
+all: $(COUT) q_ast.cmo
 opt: $(COPT)
 
 $(NAME)r$(EXE): ../main/$(NAME)$(EXE) $(CAMLP5RM)

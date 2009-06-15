@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.15 2007/09/08 03:59:36 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.16 2007/09/08 04:54:38 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -696,7 +696,8 @@ value rec expr =
         (Pexp_apply (mkexp loc (Pexp_ident (array_function "String" "get")))
            [("", expr e1); ("", expr e2)])
   | ExStr loc s ->
-      mkexp loc (Pexp_constant (Const_string (string_of_string_token loc s)))
+      mkexp loc
+        (Pexp_constant (Const_string (string_of_string_token loc (uv s))))
   | ExTry loc e pel -> mkexp loc (Pexp_try (expr e) (List.map mkpwe pel))
   | ExTup loc el -> mkexp loc (Pexp_tuple (List.map expr el))
   | ExTyc loc e t -> mkexp loc (Pexp_constraint (expr e) (Some (ctyp t)) None)
@@ -933,7 +934,7 @@ value implem fname ast = do {
 value directive loc =
   fun
   [ None -> Pdir_none
-  | Some (ExStr _ s) -> Pdir_string s
+  | Some <:expr< $str:s$ >> -> Pdir_string s
   | Some (ExInt _ i "") -> Pdir_int (int_of_string i)
   | Some (ExUid _ "True") -> Pdir_bool True
   | Some (ExUid _ "False") -> Pdir_bool False

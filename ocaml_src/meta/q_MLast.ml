@@ -214,6 +214,7 @@ let a_INT_L = Grammar.Entry.create gram "a_INT_L";;
 let a_INT_n = Grammar.Entry.create gram "a_INT_n";;
 let a_FLOAT = Grammar.Entry.create gram "a_FLOAT";;
 let a_STRING = Grammar.Entry.create gram "a_STRING";;
+let a_STRING2 = Grammar.Entry.create gram "a_STRING2";;
 let a_CHAR = Grammar.Entry.create gram "a_CHAR";;
 let a_TILDEIDENT = Grammar.Entry.create gram "a_TILDEIDENT";;
 let a_TILDEIDENTCOLON = Grammar.Entry.create gram "a_TILDEIDENTCOLON";;
@@ -626,7 +627,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 303, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 304, 19))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -876,7 +877,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 358, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 359, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -1724,9 +1725,9 @@ Grammar.extend
         (fun (s : 'a_CHAR) (loc : Ploc.t) ->
            (Qast.Node ("ExChr", [Qast.Loc; s]) : 'expr));
       [Gramext.Snterm
-         (Grammar.Entry.obj (a_STRING : 'a_STRING Grammar.Entry.e))],
+         (Grammar.Entry.obj (a_STRING2 : 'a_STRING2 Grammar.Entry.e))],
       Gramext.action
-        (fun (s : 'a_STRING) (loc : Ploc.t) ->
+        (fun (s : 'a_STRING2) (loc : Ploc.t) ->
            (Qast.Node ("ExStr", [Qast.Loc; s]) : 'expr));
       [Gramext.Snterm
          (Grammar.Entry.obj (a_FLOAT : 'a_FLOAT Grammar.Entry.e))],
@@ -4010,6 +4011,23 @@ Grammar.extend
      Gramext.action
        (fun (a : string) (loc : Ploc.t) ->
           (antiquot "str" loc a : 'a_STRING))]];
+   Grammar.Entry.obj (a_STRING2 : 'a_STRING2 Grammar.Entry.e), None,
+   [None, None,
+    [[Gramext.Stoken ("STRING", "")],
+     Gramext.action
+       (fun (s : string) (loc : Ploc.t) ->
+          (Qast.VaVal (Qast.Str s) : 'a_STRING2));
+     [Gramext.Stoken ("ANTIQUOT", "")],
+     Gramext.action
+       (fun (a : string) (loc : Ploc.t) -> (antiquot "" loc a : 'a_STRING2));
+     [Gramext.Stoken ("ANTIQUOT", "astr")],
+     Gramext.action
+       (fun (a : string) (loc : Ploc.t) ->
+          (antiquot "str" loc a : 'a_STRING2));
+     [Gramext.Stoken ("ANTIQUOT", "str")],
+     Gramext.action
+       (fun (a : string) (loc : Ploc.t) ->
+          (Qast.VaVal (antiquot "str" loc a) : 'a_STRING2))]];
    Grammar.Entry.obj (a_CHAR : 'a_CHAR Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Stoken ("CHAR", "")],
