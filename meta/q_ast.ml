@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.17 2007/08/07 11:29:42 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.18 2007/08/07 15:40:21 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -82,6 +82,16 @@ module Meta =
           | None -> assert False ]
       | VaVal v -> <:expr< MLast.VaVal $f v$ >> ]
     ;
+    value p_vala f =
+      fun
+      [ VaAnt s ->
+          match eval_antiquot patt_eoi s with
+          [ Some (loc, s) ->
+              let r = <:patt< MLast.VaVal $s$ >> in
+              <:patt< $anti:r$ >>
+          | None -> assert False ]
+      | VaVal v -> <:patt< MLast.VaVal $f v$ >> ]
+    ;
     value e_list elem el =
       match eval_antiquot_patch expr_eoi el with
       [ Some (loc, r) -> <:expr< $anti:r$ >>
@@ -109,6 +119,7 @@ module Meta =
           | Some e -> <:expr< Some $elem e$ >> ] ]
     ;
     value e_bool b = if b then <:expr< True >> else <:expr< False >>;
+    value p_bool b = if b then <:patt< True >> else <:patt< False >>;
     value e_bool_p b =
       match eval_antiquot_patch expr_eoi b with
       [ Some (loc, r) -> <:expr< $anti:r$ >>
@@ -217,7 +228,7 @@ module Meta =
             in
             <:expr< MLast.ExFun $ln$ $pwel$ >>
         | ExLet _ rf lpe e ->
-            let rf = e_bool_p rf in
+            let rf = e_bool rf in
             let lpe =
               e_list (fun (p, e) -> <:expr< ($e_patt p$, $loop e$) >>) lpe
             in
@@ -264,7 +275,7 @@ module Meta =
         | ExInt _ s k -> <:patt< MLast.ExInt _ $p_string s$ $str:k$ >>
         | ExFlo _ s -> <:patt< MLast.ExFlo _ $p_string s$ >>
         | ExLet _ rf lpe e ->
-            let rf = p_bool_p rf in
+            let rf = p_bool rf in
             let lpe =
               p_list (fun (p, e) -> <:patt< ($p_patt p$, $loop e$) >>) lpe
             in
@@ -308,7 +319,7 @@ module Meta =
                 (fun (s, me) -> <:expr< ($e_string s$, $e_module_expr me$) >>)
                 lsme
             in
-            <:expr< MLast.StMod $ln$ $e_bool_p rf$ $lsme$ >>
+            <:expr< MLast.StMod $ln$ $e_vala e_bool rf$ $lsme$ >>
         | StMty _ s mt ->
             <:expr< MLast.StMty $ln$ $e_string s$ $e_module_type mt$ >>
         | StOpn _ sl ->

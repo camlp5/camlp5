@@ -171,6 +171,11 @@ module MetaAction =
         false -> MLast.ExUid (loc, "False")
       | true -> MLast.ExUid (loc, "True")
     ;;
+    let mvala f =
+      function
+        MLast.VaAnt s -> failwith "pa_extend.ml: mvala"
+      | MLast.VaVal v -> f v
+    ;;
     let mloc =
       MLast.ExAcc
         (loc, MLast.ExUid (loc, "Stdpp"), MLast.ExLid (loc, "dummy_loc"))
@@ -263,6 +268,7 @@ module MetaAction =
                 mloc),
              MLast.ExStr (loc, s))
       | MLast.ExLet (loc, rf, pel, e) ->
+          let rf = mbool rf in
           MLast.ExApp
             (loc,
              MLast.ExApp
@@ -275,7 +281,7 @@ module MetaAction =
                         (loc, MLast.ExUid (loc, "MLast"),
                          MLast.ExUid (loc, "ExLet")),
                       mloc),
-                   mbool rf),
+                   rf),
                 mlist mpe pel),
              mexpr e)
       | MLast.ExLid (loc, s) ->

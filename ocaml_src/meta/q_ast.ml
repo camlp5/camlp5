@@ -88,6 +88,29 @@ module Meta =
                (loc, MLast.ExUid (loc, "MLast"), MLast.ExUid (loc, "VaVal")),
              f v)
     ;;
+    let p_vala f =
+      function
+        VaAnt s ->
+          begin match eval_antiquot patt_eoi s with
+            Some (loc, s) ->
+              let r =
+                MLast.PaApp
+                  (loc,
+                   MLast.PaAcc
+                     (loc, MLast.PaUid (loc, "MLast"),
+                      MLast.PaUid (loc, "VaVal")),
+                   s)
+              in
+              MLast.PaAnt (loc, r)
+          | None -> assert false
+          end
+      | VaVal v ->
+          MLast.PaApp
+            (loc,
+             MLast.PaAcc
+               (loc, MLast.PaUid (loc, "MLast"), MLast.PaUid (loc, "VaVal")),
+             f v)
+    ;;
     let e_list elem el =
       match eval_antiquot_patch expr_eoi el with
         Some (loc, r) -> MLast.ExAnt (loc, r)
@@ -126,6 +149,9 @@ module Meta =
     ;;
     let e_bool b =
       if b then MLast.ExUid (loc, "True") else MLast.ExUid (loc, "False")
+    ;;
+    let p_bool b =
+      if b then MLast.PaUid (loc, "True") else MLast.PaUid (loc, "False")
     ;;
     let e_bool_p b =
       match eval_antiquot_patch expr_eoi b with
@@ -504,7 +530,7 @@ module Meta =
                   ln),
                pwel)
         | ExLet (_, rf, lpe, e) ->
-            let rf = e_bool_p rf in
+            let rf = e_bool rf in
             let lpe =
               e_list (fun (p, e) -> MLast.ExTup (loc, [e_patt p; loop e])) lpe
             in
@@ -709,7 +735,7 @@ module Meta =
                   MLast.PaAny loc),
                p_string s)
         | ExLet (_, rf, lpe, e) ->
-            let rf = p_bool_p rf in
+            let rf = p_bool rf in
             let lpe =
               p_list (fun (p, e) -> MLast.PaTup (loc, [p_patt p; loop e])) lpe
             in
@@ -876,7 +902,7 @@ module Meta =
                        (loc, MLast.ExUid (loc, "MLast"),
                         MLast.ExUid (loc, "StMod")),
                      ln),
-                  e_bool_p rf),
+                  e_vala e_bool rf),
                lsme)
         | StMty (_, s, mt) ->
             MLast.ExApp

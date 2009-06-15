@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.33 2007/08/05 16:27:59 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.34 2007/08/07 15:40:21 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -150,8 +150,8 @@ EXTEND
       | "external"; i = LIDENT; ":"; t = ctyp; "="; pd = LIST1 STRING ->
           <:str_item< external $lid:i$ : $t$ = $list:pd$ >>
       | "include"; me = module_expr -> <:str_item< include $me$ >>
-      | "module"; r = FLAG "rec"; l = LIST1 mod_binding SEP "and" ->
-          <:str_item< module $flag:r$ $list:l$ >>
+      | "module"; r = FLAG2 "rec"; l = LIST1 mod_binding SEP "and" ->
+          <:str_item< module $flag2:r$ $list:l$ >>
       | "module"; "type"; i = UIDENT; "="; mt = module_type ->
           <:str_item< module type $uid:i$ = $mt$ >>
       | "open"; i = mod_ident -> <:str_item< open $i$ >>
@@ -200,8 +200,8 @@ EXTEND
       | "external"; i = LIDENT; ":"; t = ctyp; "="; pd = LIST1 STRING ->
           <:sig_item< external $i$ : $t$ = $list:pd$ >>
       | "include"; mt = module_type -> <:sig_item< include $mt$ >>
-      | "module"; rf = FLAG "rec"; l = LIST1 mod_decl_binding SEP "and" ->
-          <:sig_item< module $flag:rf$ $list:l$ >>
+      | "module"; rf = FLAG2 "rec"; l = LIST1 mod_decl_binding SEP "and" ->
+          <:sig_item< module $flag2:rf$ $list:l$ >>
       | "module"; "type"; i = UIDENT; "="; mt = module_type ->
           <:sig_item< module type $i$ = $mt$ >>
       | "open"; i = mod_ident -> <:sig_item< open $i$ >>
@@ -541,9 +541,9 @@ EXTEND
     [ "top"
       [ "fun"; p = ipatt; ce = class_fun_def ->
           <:class_expr< fun $p$ -> $ce$ >>
-      | "let"; rf = FLAG "rec"; lb = LIST1 let_binding SEP "and"; "in";
+      | "let"; rf = FLAG2 "rec"; lb = LIST1 let_binding SEP "and"; "in";
         ce = SELF ->
-          <:class_expr< let $flag:rf$ $list:lb$ in $ce$ >> ]
+          <:class_expr< let $flag2:rf$ $list:lb$ in $ce$ >> ]
     | "apply" LEFTA
       [ ce = SELF; e = expr LEVEL "label" ->
           <:class_expr< $ce$ $e$ >> ]
@@ -569,13 +569,13 @@ EXTEND
           <:class_str_item< declare $list:st$ end >>
       | "inherit"; ce = class_expr; pb = OPT as_lident ->
           <:class_str_item< inherit $ce$ $opt:pb$ >>
-      | "value"; mf = FLAG "mutable"; lab = label; e = cvalue_binding ->
-          <:class_str_item< value $flag:mf$ $lab$ = $e$ >>
-      | "method"; "virtual"; pf = FLAG "private"; l = label; ":"; t = ctyp ->
-          <:class_str_item< method virtual $flag:pf$ $l$ : $t$ >>
-      | "method"; pf = FLAG "private"; l = label; topt = OPT polyt;
+      | "value"; mf = FLAG2 "mutable"; lab = label; e = cvalue_binding ->
+          <:class_str_item< value $flag2:mf$ $lab$ = $e$ >>
+      | "method"; "virtual"; pf = FLAG2 "private"; l = label; ":"; t = ctyp ->
+          <:class_str_item< method virtual $flag2:pf$ $l$ : $t$ >>
+      | "method"; pf = FLAG2 "private"; l = label; topt = OPT polyt;
         e = fun_binding ->
-          <:class_str_item< method $flag:pf$ $l$ $opt:topt$ = $e$ >>
+          <:class_str_item< method $flag2:pf$ $l$ $opt:topt$ = $e$ >>
       | "type"; t1 = ctyp; "="; t2 = ctyp ->
           <:class_str_item< type $t1$ = $t2$ >>
       | "initializer"; se = expr -> <:class_str_item< initializer $se$ >> ] ]
@@ -613,12 +613,12 @@ EXTEND
     [ [ "declare"; st = LIST0 [ s = class_sig_item; ";" -> s ]; "end" ->
           <:class_sig_item< declare $list:st$ end >>
       | "inherit"; cs = class_type -> <:class_sig_item< inherit $cs$ >>
-      | "value"; mf = FLAG "mutable"; l = label; ":"; t = ctyp ->
-          <:class_sig_item< value $flag:mf$ $l$ : $t$ >>
-      | "method"; "virtual"; pf = FLAG "private"; l = label; ":"; t = ctyp ->
-          <:class_sig_item< method virtual $flag:pf$ $l$ : $t$ >>
-      | "method"; pf = FLAG "private"; l = label; ":"; t = ctyp ->
-          <:class_sig_item< method $flag:pf$ $l$ : $t$ >>
+      | "value"; mf = FLAG2 "mutable"; l = label; ":"; t = ctyp ->
+          <:class_sig_item< value $flag2:mf$ $l$ : $t$ >>
+      | "method"; "virtual"; pf = FLAG2 "private"; l = label; ":"; t = ctyp ->
+          <:class_sig_item< method virtual $flag2:pf$ $l$ : $t$ >>
+      | "method"; pf = FLAG2 "private"; l = label; ":"; t = ctyp ->
+          <:class_sig_item< method $flag2:pf$ $l$ : $t$ >>
       | "type"; t1 = ctyp; "="; t2 = ctyp ->
           <:class_sig_item< type $t1$ = $t2$ >> ] ]
   ;
@@ -655,8 +655,8 @@ EXTEND
   ;
   ctyp: LEVEL "simple"
     [ [ "#"; id = class_longident -> <:ctyp< # $list:id$ >>
-      | "<"; ml = LIST0 field SEP ";"; v = FLAG ".."; ">" ->
-          <:ctyp< < $list:ml$ $flag:v$ > >> ] ]
+      | "<"; ml = LIST0 field SEP ";"; v = FLAG2 ".."; ">" ->
+          <:ctyp< < $list:ml$ $flag2:v$ > >> ] ]
   ;
   field:
     [ [ lab = LIDENT; ":"; t = ctyp -> (lab, t) ] ]

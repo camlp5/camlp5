@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.5 2007/08/05 16:27:59 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.6 2007/08/07 15:40:21 deraugla Exp $ *)
 
 open Stdpp;
 open MLast;
@@ -119,7 +119,7 @@ value array_function str name =
 
 value mkvala f =
   fun
-  [ VaAnt _ -> failwith "vala"
+  [ VaAnt _ -> failwith "mkvala"
   | VaVal v -> f v ]
 ;
 
@@ -222,7 +222,7 @@ value rec ctyp =
       mktyp loc (Ptyp_variant catl clos sl) ]
 and meth_list loc fl v =
   match fl with
-  [ [] -> if v then [mkfield loc Pfield_var] else []
+  [ [] -> if mkvala (fun b -> b) v then [mkfield loc Pfield_var] else []
   | [(lab, t) :: fl] ->
       [mkfield loc (Pfield lab (ctyp (mkpolytype t))) :: meth_list loc fl v] ]
 ;
@@ -753,13 +753,14 @@ and sig_item s l =
   | SgExc loc n tl -> [mksig loc (Psig_exception n (List.map ctyp tl)) :: l]
   | SgExt loc n t p -> [mksig loc (Psig_value n (mkvalue_desc t p)) :: l]
   | SgInc loc mt -> [mksig loc (Psig_include (module_type mt)) :: l]
-  | SgMod loc False ntl ->
-      List.fold_right
-        (fun (n, mt) l -> [mksig loc (Psig_module n (module_type mt)) :: l])
-        ntl l
-  | SgMod loc True ntl ->
-      let ntl = List.map (fun (n, mt) -> (n, module_type mt)) ntl in
-      [mksig loc (Psig_recmodule ntl) :: l]
+  | SgMod loc rf ntl ->
+      if mkvala (fun b -> b) rf = False then
+        List.fold_right
+          (fun (n, mt) l -> [mksig loc (Psig_module n (module_type mt)) :: l])
+          ntl l
+      else
+        let ntl = List.map (fun (n, mt) -> (n, module_type mt)) ntl in
+        [mksig loc (Psig_recmodule ntl) :: l]
   | SgMty loc n mt ->
       let si =
         match mt with
@@ -806,25 +807,26 @@ and str_item s l =
   | StExp loc e -> [mkstr loc (Pstr_eval (expr e)) :: l]
   | StExt loc n t p -> [mkstr loc (Pstr_primitive n (mkvalue_desc t p)) :: l]
   | StInc loc me -> [mkstr loc (Pstr_include (module_expr me)) :: l]
-  | StMod loc False nel ->
-      List.fold_right
-        (fun (n, me) l -> [mkstr loc (Pstr_module n (module_expr me)) :: l])
-        nel l
-  | StMod loc True nel ->
-      let nel =
-        List.map
-          (fun (n, me) ->
-             let (me, mt) =
-               match me with
-               [ MeTyc _ me mt -> (me, mt)
-               | _ ->
-                   error (MLast.loc_of_module_expr me)
-                     "module rec needs module types constraints" ]
-             in
-             (n, module_type mt, module_expr me))
-          nel
-      in
-      [mkstr loc (Pstr_recmodule nel) :: l]
+  | StMod loc rf nel ->
+      if mkvala (fun v -> v) rf = False then
+        List.fold_right
+          (fun (n, me) l -> [mkstr loc (Pstr_module n (module_expr me)) :: l])
+          nel l
+      else
+        let nel =
+          List.map
+            (fun (n, me) ->
+               let (me, mt) =
+                 match me with
+                 [ MeTyc _ me mt -> (me, mt)
+                 | _ ->
+                     error (MLast.loc_of_module_expr me)
+                       "module rec needs module types constraints" ]
+               in
+               (n, module_type mt, module_expr me))
+            nel
+        in
+        [mkstr loc (Pstr_recmodule nel) :: l]
   | StMty loc n mt -> [mkstr loc (Pstr_modtype n (module_type mt)) :: l]
   | StOpn loc id ->
       [mkstr loc (Pstr_open (long_id_of_string_list loc id)) :: l]
@@ -859,15 +861,17 @@ and class_sig_item c l =
   | CgDcl loc cl -> List.fold_right class_sig_item cl l
   | CgInh loc ct -> [Pctf_inher (class_type ct) :: l]
   | CgMth loc s pf t ->
-      [Pctf_meth (s, mkprivate pf, ctyp (mkpolytype t), mkloc loc) :: l]
+      [Pctf_meth (s, mkvala mkprivate pf, ctyp (mkpolytype t), mkloc loc) ::
+       l]
   | CgVal loc s b t ->
       IFDEF OCAML_3_10 OR OCAML_3_10_0 OR OCAML_3_11 THEN
-        [Pctf_val (s, mkmutable b, Concrete, ctyp t, mkloc loc) :: l]
+        [Pctf_val (s, mkvala mkmutable b, Concrete, ctyp t, mkloc loc) :: l]
       ELSE
-        [Pctf_val (s, mkmutable b, Some (ctyp t), mkloc loc) :: l]
+        [Pctf_val (s, mkvala mkmutable b, Some (ctyp t), mkloc loc) :: l]
       END
   | CgVir loc s b t ->
-      [Pctf_virt (s, mkprivate b, ctyp (mkpolytype t), mkloc loc) :: l] ]
+      [Pctf_virt (s, mkvala mkprivate b, ctyp (mkpolytype t), mkloc loc) ::
+       l] ]
 and class_expr =
   fun
   [ CeApp loc _ _ as c ->
@@ -886,7 +890,7 @@ and class_expr =
         (Pcl_fun ("?" ^ lab) (option expr eo) (patt p) (class_expr ce))
   | CeFun loc p ce -> mkpcl loc (Pcl_fun "" None (patt p) (class_expr ce))
   | CeLet loc rf pel ce ->
-      mkpcl loc (Pcl_let (mkrf rf) (List.map mkpe pel) (class_expr ce))
+      mkpcl loc (Pcl_let (mkvala mkrf rf) (List.map mkpe pel) (class_expr ce))
   | CeStr loc po cfl ->
       let p =
         match po with
@@ -906,10 +910,12 @@ and class_str_item c l =
   | CrMth loc s b e t ->
       let t = option (fun t -> ctyp (mkpolytype t)) t in
       let e = mkexp loc (Pexp_poly (expr e) t) in
-      [Pcf_meth (s, mkprivate b, e, mkloc loc) :: l]
-  | CrVal loc s b e -> [Pcf_val (s, mkmutable b, expr e, mkloc loc) :: l]
+      [Pcf_meth (s, mkvala mkprivate b, e, mkloc loc) :: l]
+  | CrVal loc s b e ->
+      [Pcf_val (s, mkvala mkmutable b, expr e, mkloc loc) :: l]
   | CrVir loc s b t ->
-      [Pcf_virt (s, mkprivate b, ctyp (mkpolytype t), mkloc loc) :: l] ]
+      [Pcf_virt (s, mkvala mkprivate b, ctyp (mkpolytype t), mkloc loc) ::
+       l] ]
 ;
 
 value interf fname ast = do {

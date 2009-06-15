@@ -540,14 +540,15 @@ Grammar.extend
            (Qast.Node ("StMty", [Qast.Loc; i; mt]) : 'str_item));
       [Gramext.Stoken ("", "module");
        Gramext.srules
-         [[Gramext.Sflag (Gramext.Stoken ("", "rec"))],
+         [[Gramext.Svala
+             ("FLAG", Gramext.Sflag (Gramext.Stoken ("", "rec")))],
           Gramext.action
-            (fun (a : bool) (loc : Token.location) ->
-               (Qast.Bool a : 'a_flag));
+            (fun (a : bool MLast.vala) (loc : Token.location) ->
+               (Qast.vala (fun a -> Qast.Bool a) a : 'a_flag2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_flag : 'a_flag Grammar.Entry.e))],
+             (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
-            (fun (a : 'a_flag) (loc : Token.location) -> (a : 'a_flag))];
+            (fun (a : 'a_flag2) (loc : Token.location) -> (a : 'a_flag2))];
        Gramext.srules
          [[Gramext.Slist1sep
              (Gramext.Snterm
@@ -562,7 +563,7 @@ Grammar.extend
           Gramext.action
             (fun (a : 'a_list) (loc : Token.location) -> (a : 'a_list))]],
       Gramext.action
-        (fun (l : 'a_list) (r : 'a_flag) _ (loc : Token.location) ->
+        (fun (l : 'a_list) (r : 'a_flag2) _ (loc : Token.location) ->
            (Qast.Node ("StMod", [Qast.Loc; r; l]) : 'str_item));
       [Gramext.Stoken ("", "include");
        Gramext.Snterm
@@ -809,14 +810,15 @@ Grammar.extend
            (Qast.Node ("SgMty", [Qast.Loc; i; mt]) : 'sig_item));
       [Gramext.Stoken ("", "module");
        Gramext.srules
-         [[Gramext.Sflag (Gramext.Stoken ("", "rec"))],
+         [[Gramext.Svala
+             ("FLAG", Gramext.Sflag (Gramext.Stoken ("", "rec")))],
           Gramext.action
-            (fun (a : bool) (loc : Token.location) ->
-               (Qast.Bool a : 'a_flag));
+            (fun (a : bool MLast.vala) (loc : Token.location) ->
+               (Qast.vala (fun a -> Qast.Bool a) a : 'a_flag2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_flag : 'a_flag Grammar.Entry.e))],
+             (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
-            (fun (a : 'a_flag) (loc : Token.location) -> (a : 'a_flag))];
+            (fun (a : 'a_flag2) (loc : Token.location) -> (a : 'a_flag2))];
        Gramext.srules
          [[Gramext.Slist1sep
              (Gramext.Snterm
@@ -831,7 +833,7 @@ Grammar.extend
           Gramext.action
             (fun (a : 'a_list) (loc : Token.location) -> (a : 'a_list))]],
       Gramext.action
-        (fun (l : 'a_list) (rf : 'a_flag) _ (loc : Token.location) ->
+        (fun (l : 'a_list) (rf : 'a_flag2) _ (loc : Token.location) ->
            (Qast.Node ("SgMod", [Qast.Loc; rf; l]) : 'sig_item));
       [Gramext.Stoken ("", "include");
        Gramext.Snterm
@@ -2630,14 +2632,15 @@ Grammar.extend
     [Some "top", None,
      [[Gramext.Stoken ("", "let");
        Gramext.srules
-         [[Gramext.Sflag (Gramext.Stoken ("", "rec"))],
+         [[Gramext.Svala
+             ("FLAG", Gramext.Sflag (Gramext.Stoken ("", "rec")))],
           Gramext.action
-            (fun (a : bool) (loc : Token.location) ->
-               (Qast.Bool a : 'a_flag));
+            (fun (a : bool MLast.vala) (loc : Token.location) ->
+               (Qast.vala (fun a -> Qast.Bool a) a : 'a_flag2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_flag : 'a_flag Grammar.Entry.e))],
+             (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
-            (fun (a : 'a_flag) (loc : Token.location) -> (a : 'a_flag))];
+            (fun (a : 'a_flag2) (loc : Token.location) -> (a : 'a_flag2))];
        Gramext.srules
          [[Gramext.Slist1sep
              (Gramext.Snterm
@@ -2653,7 +2656,7 @@ Grammar.extend
             (fun (a : 'a_list) (loc : Token.location) -> (a : 'a_list))];
        Gramext.Stoken ("", "in"); Gramext.Sself],
       Gramext.action
-        (fun (ce : 'class_expr) _ (lb : 'a_list) (rf : 'a_flag) _
+        (fun (ce : 'class_expr) _ (lb : 'a_list) (rf : 'a_flag2) _
              (loc : Token.location) ->
            (Qast.Node ("CeLet", [Qast.Loc; rf; lb; ce]) : 'class_expr));
       [Gramext.Stoken ("", "fun");
@@ -2789,14 +2792,15 @@ Grammar.extend
            (Qast.Node ("CrCtr", [Qast.Loc; t1; t2]) : 'class_str_item));
       [Gramext.Stoken ("", "method");
        Gramext.srules
-         [[Gramext.Sflag (Gramext.Stoken ("", "private"))],
+         [[Gramext.Svala
+             ("FLAG", Gramext.Sflag (Gramext.Stoken ("", "private")))],
           Gramext.action
-            (fun (a : bool) (loc : Token.location) ->
-               (Qast.Bool a : 'a_flag));
+            (fun (a : bool MLast.vala) (loc : Token.location) ->
+               (Qast.vala (fun a -> Qast.Bool a) a : 'a_flag2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_flag : 'a_flag Grammar.Entry.e))],
+             (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
-            (fun (a : 'a_flag) (loc : Token.location) -> (a : 'a_flag))];
+            (fun (a : 'a_flag2) (loc : Token.location) -> (a : 'a_flag2))];
        Gramext.Snterm (Grammar.Entry.obj (label : 'label Grammar.Entry.e));
        Gramext.srules
          [[Gramext.Sopt
@@ -2812,43 +2816,45 @@ Grammar.extend
        Gramext.Snterm
          (Grammar.Entry.obj (fun_binding : 'fun_binding Grammar.Entry.e))],
       Gramext.action
-        (fun (e : 'fun_binding) (topt : 'a_opt) (l : 'label) (pf : 'a_flag) _
+        (fun (e : 'fun_binding) (topt : 'a_opt) (l : 'label) (pf : 'a_flag2) _
              (loc : Token.location) ->
            (Qast.Node ("CrMth", [Qast.Loc; l; pf; e; topt]) :
             'class_str_item));
       [Gramext.Stoken ("", "method"); Gramext.Stoken ("", "virtual");
        Gramext.srules
-         [[Gramext.Sflag (Gramext.Stoken ("", "private"))],
+         [[Gramext.Svala
+             ("FLAG", Gramext.Sflag (Gramext.Stoken ("", "private")))],
           Gramext.action
-            (fun (a : bool) (loc : Token.location) ->
-               (Qast.Bool a : 'a_flag));
+            (fun (a : bool MLast.vala) (loc : Token.location) ->
+               (Qast.vala (fun a -> Qast.Bool a) a : 'a_flag2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_flag : 'a_flag Grammar.Entry.e))],
+             (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
-            (fun (a : 'a_flag) (loc : Token.location) -> (a : 'a_flag))];
+            (fun (a : 'a_flag2) (loc : Token.location) -> (a : 'a_flag2))];
        Gramext.Snterm (Grammar.Entry.obj (label : 'label Grammar.Entry.e));
        Gramext.Stoken ("", ":");
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
-        (fun (t : 'ctyp) _ (l : 'label) (pf : 'a_flag) _ _
+        (fun (t : 'ctyp) _ (l : 'label) (pf : 'a_flag2) _ _
              (loc : Token.location) ->
            (Qast.Node ("CrVir", [Qast.Loc; l; pf; t]) : 'class_str_item));
       [Gramext.Stoken ("", "value");
        Gramext.srules
-         [[Gramext.Sflag (Gramext.Stoken ("", "mutable"))],
+         [[Gramext.Svala
+             ("FLAG", Gramext.Sflag (Gramext.Stoken ("", "mutable")))],
           Gramext.action
-            (fun (a : bool) (loc : Token.location) ->
-               (Qast.Bool a : 'a_flag));
+            (fun (a : bool MLast.vala) (loc : Token.location) ->
+               (Qast.vala (fun a -> Qast.Bool a) a : 'a_flag2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_flag : 'a_flag Grammar.Entry.e))],
+             (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
-            (fun (a : 'a_flag) (loc : Token.location) -> (a : 'a_flag))];
+            (fun (a : 'a_flag2) (loc : Token.location) -> (a : 'a_flag2))];
        Gramext.Snterm (Grammar.Entry.obj (label : 'label Grammar.Entry.e));
        Gramext.Snterm
          (Grammar.Entry.obj
             (cvalue_binding : 'cvalue_binding Grammar.Entry.e))],
       Gramext.action
-        (fun (e : 'cvalue_binding) (lab : 'label) (mf : 'a_flag) _
+        (fun (e : 'cvalue_binding) (lab : 'label) (mf : 'a_flag2) _
              (loc : Token.location) ->
            (Qast.Node ("CrVal", [Qast.Loc; lab; mf; e]) : 'class_str_item));
       [Gramext.Stoken ("", "inherit");
@@ -3033,53 +3039,56 @@ Grammar.extend
            (Qast.Node ("CgCtr", [Qast.Loc; t1; t2]) : 'class_sig_item));
       [Gramext.Stoken ("", "method");
        Gramext.srules
-         [[Gramext.Sflag (Gramext.Stoken ("", "private"))],
+         [[Gramext.Svala
+             ("FLAG", Gramext.Sflag (Gramext.Stoken ("", "private")))],
           Gramext.action
-            (fun (a : bool) (loc : Token.location) ->
-               (Qast.Bool a : 'a_flag));
+            (fun (a : bool MLast.vala) (loc : Token.location) ->
+               (Qast.vala (fun a -> Qast.Bool a) a : 'a_flag2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_flag : 'a_flag Grammar.Entry.e))],
+             (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
-            (fun (a : 'a_flag) (loc : Token.location) -> (a : 'a_flag))];
+            (fun (a : 'a_flag2) (loc : Token.location) -> (a : 'a_flag2))];
        Gramext.Snterm (Grammar.Entry.obj (label : 'label Grammar.Entry.e));
        Gramext.Stoken ("", ":");
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
-        (fun (t : 'ctyp) _ (l : 'label) (pf : 'a_flag) _
+        (fun (t : 'ctyp) _ (l : 'label) (pf : 'a_flag2) _
              (loc : Token.location) ->
            (Qast.Node ("CgMth", [Qast.Loc; l; pf; t]) : 'class_sig_item));
       [Gramext.Stoken ("", "method"); Gramext.Stoken ("", "virtual");
        Gramext.srules
-         [[Gramext.Sflag (Gramext.Stoken ("", "private"))],
+         [[Gramext.Svala
+             ("FLAG", Gramext.Sflag (Gramext.Stoken ("", "private")))],
           Gramext.action
-            (fun (a : bool) (loc : Token.location) ->
-               (Qast.Bool a : 'a_flag));
+            (fun (a : bool MLast.vala) (loc : Token.location) ->
+               (Qast.vala (fun a -> Qast.Bool a) a : 'a_flag2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_flag : 'a_flag Grammar.Entry.e))],
+             (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
-            (fun (a : 'a_flag) (loc : Token.location) -> (a : 'a_flag))];
+            (fun (a : 'a_flag2) (loc : Token.location) -> (a : 'a_flag2))];
        Gramext.Snterm (Grammar.Entry.obj (label : 'label Grammar.Entry.e));
        Gramext.Stoken ("", ":");
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
-        (fun (t : 'ctyp) _ (l : 'label) (pf : 'a_flag) _ _
+        (fun (t : 'ctyp) _ (l : 'label) (pf : 'a_flag2) _ _
              (loc : Token.location) ->
            (Qast.Node ("CgVir", [Qast.Loc; l; pf; t]) : 'class_sig_item));
       [Gramext.Stoken ("", "value");
        Gramext.srules
-         [[Gramext.Sflag (Gramext.Stoken ("", "mutable"))],
+         [[Gramext.Svala
+             ("FLAG", Gramext.Sflag (Gramext.Stoken ("", "mutable")))],
           Gramext.action
-            (fun (a : bool) (loc : Token.location) ->
-               (Qast.Bool a : 'a_flag));
+            (fun (a : bool MLast.vala) (loc : Token.location) ->
+               (Qast.vala (fun a -> Qast.Bool a) a : 'a_flag2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_flag : 'a_flag Grammar.Entry.e))],
+             (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
-            (fun (a : 'a_flag) (loc : Token.location) -> (a : 'a_flag))];
+            (fun (a : 'a_flag2) (loc : Token.location) -> (a : 'a_flag2))];
        Gramext.Snterm (Grammar.Entry.obj (label : 'label Grammar.Entry.e));
        Gramext.Stoken ("", ":");
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
-        (fun (t : 'ctyp) _ (l : 'label) (mf : 'a_flag) _
+        (fun (t : 'ctyp) _ (l : 'label) (mf : 'a_flag2) _
              (loc : Token.location) ->
            (Qast.Node ("CgVal", [Qast.Loc; l; mf; t]) : 'class_sig_item));
       [Gramext.Stoken ("", "inherit");
@@ -3267,17 +3276,17 @@ Grammar.extend
           Gramext.action
             (fun (a : 'a_list) (loc : Token.location) -> (a : 'a_list))];
        Gramext.srules
-         [[Gramext.Sflag (Gramext.Stoken ("", ".."))],
+         [[Gramext.Svala ("FLAG", Gramext.Sflag (Gramext.Stoken ("", "..")))],
           Gramext.action
-            (fun (a : bool) (loc : Token.location) ->
-               (Qast.Bool a : 'a_flag));
+            (fun (a : bool MLast.vala) (loc : Token.location) ->
+               (Qast.vala (fun a -> Qast.Bool a) a : 'a_flag2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_flag : 'a_flag Grammar.Entry.e))],
+             (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
           Gramext.action
-            (fun (a : 'a_flag) (loc : Token.location) -> (a : 'a_flag))];
+            (fun (a : 'a_flag2) (loc : Token.location) -> (a : 'a_flag2))];
        Gramext.Stoken ("", ">")],
       Gramext.action
-        (fun _ (v : 'a_flag) (ml : 'a_list) _ (loc : Token.location) ->
+        (fun _ (v : 'a_flag2) (ml : 'a_list) _ (loc : Token.location) ->
            (Qast.Node ("TyObj", [Qast.Loc; ml; v]) : 'ctyp));
       [Gramext.Stoken ("", "#");
        Gramext.Snterm

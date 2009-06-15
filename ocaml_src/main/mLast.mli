@@ -37,7 +37,7 @@ type ctyp =
   | TyLab of loc * string * ctyp
   | TyLid of loc * string
   | TyMan of loc * ctyp * ctyp
-  | TyObj of loc * (string * ctyp) list * bool
+  | TyObj of loc * (string * ctyp) list * bool vala
   | TyOlb of loc * string * ctyp
   | TyPol of loc * string list * ctyp
   | TyQuo of loc * string
@@ -137,7 +137,7 @@ and sig_item =
   | SgExc of loc * string * ctyp list
   | SgExt of loc * string * ctyp * string list
   | SgInc of loc * module_type
-  | SgMod of loc * bool * (string * module_type) list
+  | SgMod of loc * bool vala * (string * module_type) list
   | SgMty of loc * string * module_type
   | SgOpn of loc * string list
   | SgTyp of loc * type_decl list
@@ -162,7 +162,7 @@ and str_item =
   | StExp of loc * expr
   | StExt of loc * string * ctyp * string list
   | StInc of loc * module_expr
-  | StMod of loc * bool * (string * module_expr) list
+  | StMod of loc * bool vala * (string * module_expr) list
   | StMty of loc * string * module_type
   | StOpn of loc * string list
   | StTyp of loc * type_decl list
@@ -182,14 +182,14 @@ and class_sig_item =
     CgCtr of loc * ctyp * ctyp
   | CgDcl of loc * class_sig_item list
   | CgInh of loc * class_type
-  | CgMth of loc * string * bool * ctyp
-  | CgVal of loc * string * bool * ctyp
-  | CgVir of loc * string * bool * ctyp
+  | CgMth of loc * string * bool vala * ctyp
+  | CgVal of loc * string * bool vala * ctyp
+  | CgVir of loc * string * bool vala * ctyp
 and class_expr =
     CeApp of loc * class_expr * expr
   | CeCon of loc * string list * ctyp list
   | CeFun of loc * patt * class_expr
-  | CeLet of loc * bool * (patt * expr) list * class_expr
+  | CeLet of loc * bool vala * (patt * expr) list * class_expr
   | CeStr of loc * patt option * class_str_item list
   | CeTyc of loc * class_expr * class_type
 and class_str_item =
@@ -197,9 +197,9 @@ and class_str_item =
   | CrDcl of loc * class_str_item list
   | CrInh of loc * class_expr * string option
   | CrIni of loc * expr
-  | CrMth of loc * string * bool * expr * ctyp option
-  | CrVal of loc * string * bool * expr
-  | CrVir of loc * string * bool * ctyp
+  | CrMth of loc * string * bool vala * expr * ctyp option
+  | CrVal of loc * string * bool vala * expr
+  | CrVir of loc * string * bool vala * ctyp
 ;;
 
 external loc_of_ctyp : ctyp -> loc = "%field0";;
