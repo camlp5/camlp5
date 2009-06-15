@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.138 2007/12/23 19:34:03 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.139 2007/12/24 03:41:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -905,30 +905,8 @@ EXTEND_PRINTER
                    (vlist2 let_binding (and_before let_binding)) pel ""
                    expr_with_comm_except_if_sequence e)
       | <:expr< let module $uid:s$ = $me$ in $e$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%slet module %s = %s in %s%s" pc.bef s
-                 (module_expr {(pc) with bef = ""; aft = ""} me)
-                 (curr {(pc) with bef = ""; aft = ""} e) pc.aft)
-            (fun () ->
-               let s1 =
-                 horiz_vertic
-                   (fun () ->
-                      sprintf "%slet module %s = %s in" pc.bef s
-                        (module_expr {(pc) with bef = ""; aft = ""} me))
-                   (fun () ->
-                      let s1 = sprintf "%slet module %s =" pc.bef s in
-                      let s2 =
-                        module_expr
-                          {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                           aft = ""}
-                          me
-                      in
-                      let s3 = sprintf "%sin" (tab pc.ind) in
-                      sprintf "%s\n%s\n%s" s1 s2 s3)
-               in
-               let s2 = curr {(pc) with bef = tab pc.ind} e in
-               sprintf "%s\n%s" s1 s2)
+          pprintf pc "@[<a>let module %s =@;%p@ in@]@ %p" s module_expr me
+            curr e
       | <:expr< while $e1$ do { $list:el$ } >> ->
           horiz_vertic
             (fun () ->
