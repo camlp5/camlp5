@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.163 2007/12/26 10:12:56 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.164 2007/12/26 10:20:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1687,19 +1687,15 @@ value variant_decl pc pv =
 ;
 
 value variant_decl_list char pc pvl =
-  if pvl = [] then sprintf "%s[%s ]%s" pc.bef char pc.aft
+  if pvl = [] then pprintf pc "[%s ]" char
   else
     horiz_vertic
       (fun () ->
-         hlist2 variant_decl (bar_before variant_decl)
-           {(pc) with bef = sprintf "%s[%s " pc.bef char;
-            aft = sprintf " ]%s" pc.aft}
-           pvl)
+         pprintf pc "[%s %p ]" char
+           (hlist2 variant_decl (bar_before variant_decl)) pvl)
       (fun () ->
-         vlist2 variant_decl (bar_before variant_decl)
-           {(pc) with bef = sprintf "%s[%s " (tab pc.ind) char;
-            aft = sprintf " ]%s" pc.aft}
-           pvl)
+         pprintf pc "[%s %p ]" char
+           (vlist2 variant_decl (bar_before variant_decl)) pvl)
 ;
 
 value rec class_longident pc cl =
