@@ -1,9 +1,9 @@
-/* $Id: base.css,v 1.35 2007/08/22 13:20:03 deraugla Exp $ */
+/* $Id: base.css,v 1.36 2007/08/29 03:29:37 deraugla Exp $ */
 
 body { margin: 0 0 1px 0; background-color: rgb(189,225,255) }
 body { border: 0 }
 
-#menu { width: 20%; position: relative; float: left }
+#menu { width: 21%; position: relative; float: left }
 #menu { border-top: 1px solid; border-left: 1px solid }
 #menu { font-size: 90% }
 #menu ul { padding: 0 }
@@ -17,7 +17,7 @@ body { border: 0 }
 #tableofcontents ul { margin-left: 2mm }
 #tableofcontents li ul { margin-left: 0 }
 
-#content { margin-left: 20.1%; padding: 0 5mm; background-color: white }
+#content { margin-left: 21.1%; padding: 0 5mm; background-color: white }
 #content { border: 1px solid }
 #content ul { margin-left: 1cm }
 #content ul ul { margin-left: 2mm }

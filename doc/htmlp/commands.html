@@ -2,9 +2,9 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: commands.html,v 1.8 2007/08/29 02:31:37 deraugla Exp $ -->
+  <!-- $Id: commands.html,v 1.9 2007/08/29 03:29:37 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
-  <title>Commands and Kits</title>
+  <title>Commands and Files</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <link rel="stylesheet" type="text/css" href="styles/base.css"
@@ -17,11 +17,16 @@
 
 <div id="content">
 
-<h1 class="top">Commands and Kits</h1>
+<h1 class="top">Commands and Files</h1>
 
-<p>The main command of Camlp5 is "<tt>camlp5</tt>". All other commands
-  derive from that one: they are the command "<tt>camlp5</tt>" with
-  some implicitely applied parameters.</p>
+<p>The main command of Camlp5 is "<tt>camlp5</tt>". It is an OCaml
+  program in bytecode (compiled with ocamlc, not ocamlopt), able to
+  dynamically load OCaml object files (ending with ".cmo" and
+  ".cma").</p>
+
+<p>All other Camlp5 commands derive from that one: they are the
+  command "<tt>camlp5</tt>" with some implicitely applied
+  parameters.</p>
 
 <p>All commands have an option "<tt>-help</tt>" which display all
   possible command parameters and options. Notice that some parameters
@@ -46,7 +51,7 @@
 <div id="tableofcontents">
 </div>
 
-<h2>Kits</h2>
+<h2>Parsing and Printing Kits</h2>
 
 <h3>Parsing kits</h3>
 
@@ -274,25 +279,66 @@
 
 <h2>Commands</h2>
 
-<p>... to be completed ...</p>
-
 <dl>
   <dt><tt>camlp5r</tt></dt>
+  <dd>Shortcut for "<tt>camlp5 pa_r.cmo pa_rp.cmo pr_dump.cmo</tt>"</dd>
   <dt><tt>camlp5r.opt</tt></dt>
+  <dd>Same as previous, but in native code instead of bytecode,
+    therefore faster. But not extensible: it is not possible to add
+    other parsing or printing kits neither in command arguments nor
+    with the "load" directive inside sources. Suitable for compiling
+    sources not using other syntax extensions.</dd>
   <dt><tt>camlp5o</tt></dt>
+  <dd>Shortcut for "<tt>camlp5 pa_o.cmo pa_op.cmo pr_dump.cmo</tt>"</dd>
   <dt><tt>camlp5o.opt</tt></dt>
+  <dd>Same as previous, and like "<tt>camlp5r.opt</tt>", faster and
+    not extensible. Moreover, this has been produced by compilation of
+    Camlp5 grammars, resulting in a still faster executable.</dd>
   <dt><tt>camlp5sch</tt></dt>
+  <dd>Shortcut for "<tt>camlp5 pa_scheme.cmo pr_dump.cmo</tt>"</dd>
 </dl>
 
-<h2>OCaml toplevel</h2>
+<h2>OCaml toplevel files</h2>
 
-<p>... to be completed ...</p>
+<p>These object files can be loaded in the OCaml toplevel to make Camlp5
+  parse the input. It is possible to load them either by putting them
+  as parameter of the toplevel, or by using the directive "load". The
+  option "<tt>-I +camlp5</tt>" has to be added to the "<tt>ocaml</tt>"
+  command (the OCaml toplevel).</p>
 
 <dl>
   <dt><tt>camlp5r.cma</tt></dt>
+  <dd>Read phrases and display results in revised syntax</dd>
   <dt><tt>camlp5o.cma</tt></dt>
+  <dd>Read phrases and display results in normal syntax</dd>
   <dt><tt>camlp5sch.cma</tt></dt>
+  <dd>Read phrases in Scheme syntax</dd>
 </dl>
+
+<h2>Library files</h2>
+
+<p>The <a href="library.html">Camlp5 library</a> is named
+  "<tt>gramlib.cma</tt>" and its native code version is
+  "<tt>gramlib.cmxa</tt>". They contain the modules:</p>
+
+<ul>
+  <li>Stdpp : building and
+    combining <a href="locations.html">locations</a></li>
+  <li>Token : lexing for Camlp5 grammars</li>
+  <li>Plexer : lexer used in revised and normal syntax</li>
+  <li>Gramext : implementation of extensible grammars</li>
+  <li>Grammar : <a href="grammars.html">extensible grammars</a></li>
+  <li>Extfold : functions for grammar extensions FOLD0 and FOLD1</li>
+  <li>Extfun : functions for <a href="extfun.html">extensible
+      functions</a></li>
+  <li>Eprinter : <a href="printers.html">extensible printers</a></li>
+  <li>Fstream : <a href="fparsers.html">functional streams</a></li>
+  <li>Pretty : <a href="pretty.html">pretty printing</a> on
+    strings</li>
+</ul>
+
+<p>This is a pure library : when linking with it, the Camlp5 program
+  is <em>not</em> included.</p>
 
 <div class="trailer">
 </div>
