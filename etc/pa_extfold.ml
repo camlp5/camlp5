@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extfold.ml,v 1.3 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: pa_extfold.ml,v 1.4 2007/07/27 22:32:27 deraugla Exp $ *)
 
 open Pcaml;
 open Pa_extend;
@@ -36,7 +36,6 @@ EXTEND
           sfoldsep loc "FOLD1 SEP" "sfold1sep" f e s sep ] ]
   ;
   simple_expr:
-    [ [ i = LIDENT -> <:expr< $lid:i$ >>
-      | "("; e = expr; ")" -> e ] ]
+    [ [ e = expr LEVEL "simple" -> e ] ]
   ;
 END;

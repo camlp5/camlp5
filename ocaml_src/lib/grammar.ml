@@ -224,6 +224,7 @@ let rec name_of_symbol_failed entry =
   | Slist1sep (s, _) -> name_of_symbol_failed entry s
   | Sopt s -> name_of_symbol_failed entry s
   | Stree t -> name_of_tree_failed entry t
+  | Smeta (_, s :: _, _) -> name_of_symbol_failed entry s
   | s -> name_of_symbol entry s
 and name_of_tree_failed entry =
   function
