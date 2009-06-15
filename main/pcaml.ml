@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pcaml.ml,v 1.12 2007/08/15 15:44:25 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.13 2007/08/16 04:02:25 deraugla Exp $ *)
 
 value version = "4.08-exp";
 value syntax_name = ref "";
@@ -351,7 +351,8 @@ value add_option name spec descr =
 module Printers =
   struct
     type printer_t 'a = Eprinter.t 'a ==
-      { pr_fun : mutable string -> pr_fun 'a;
+      { pr_name : string;
+        pr_fun : mutable string -> pr_fun 'a;
         pr_levels : mutable list (pr_level 'a) }
     and pr_level 'a = Eprinter.pr_level 'a ==
       { pr_label : string; pr_rules : mutable pr_rule 'a }
@@ -364,41 +365,18 @@ module Printers =
         bef : 'bef;
         aft : 'aft;
         dang : string };
-    value printer loc_of name = do {
-      let pr_fun name pr lab =
-        loop False pr.pr_levels where rec loop app =
-          fun
-          [ [] ->
-              fun pc z ->
-                failwith
-                  (Printf.sprintf "unable to print %s%s" name
-                     (if lab = "" then "" else " \"" ^ lab ^ "\""))
-          | [lev :: levl] ->
-              if app || lev.pr_label = lab then
-                let next = loop True levl in
-                curr where rec curr pc z =
-                  Extfun.apply lev.pr_rules z curr next pc
-              else loop app levl ]
-      in
-      let pr = {pr_fun = fun []; pr_levels = []} in
-      pr.pr_fun := pr_fun name pr;
-      pr
-    };
-    value pr_expr = printer MLast.loc_of_expr "expr";
-    value pr_patt = printer MLast.loc_of_patt "patt";
-    value pr_ctyp = printer MLast.loc_of_ctyp "type";
-    value pr_str_item = printer MLast.loc_of_str_item "str_item";
-    value pr_sig_item = printer MLast.loc_of_sig_item "sig_item";
-    value pr_module_expr = printer MLast.loc_of_module_expr "module_expr";
-    value pr_module_type = printer MLast.loc_of_module_type "module_type";
-    value pr_class_sig_item =
-      printer MLast.loc_of_class_sig_item "class_sig_item"
-    ;
-    value pr_class_str_item =
-      printer MLast.loc_of_class_str_item "class_str_item"
-    ;
-    value pr_class_expr = printer MLast.loc_of_class_expr "class_expr";
-    value pr_class_type = printer MLast.loc_of_class_type "class_type";
+    value printer = Eprinter.make;
+    value pr_expr = printer "expr";
+    value pr_patt = printer "patt";
+    value pr_ctyp = printer "type";
+    value pr_str_item = printer "str_item";
+    value pr_sig_item = printer "sig_item";
+    value pr_module_expr = printer "module_expr";
+    value pr_module_type = printer "module_type";
+    value pr_class_sig_item = printer "class_sig_item";
+    value pr_class_str_item = printer "class_str_item";
+    value pr_class_expr = printer "class_expr";
+    value pr_class_type = printer "class_type";
     value rec find_pr_level lab =
       fun
       [ [] -> failwith ("level " ^ lab ^ " not found")

@@ -89,7 +89,8 @@ module Printers :
   sig
     type 'a printer_t =
       'a Eprinter.t =
-        { mutable pr_fun : string -> 'a pr_fun;
+        { pr_name : string;
+          mutable pr_fun : string -> 'a pr_fun;
           mutable pr_levels : 'a pr_level list }
     and 'a pr_level =
       'a Eprinter.pr_level =
@@ -102,7 +103,7 @@ module Printers :
       ('bef, 'aft) Eprinter.pr_context =
         { ind : int; bef : 'bef; aft : 'aft; dang : string }
     ;;
-    val printer : 'a -> string -> 'b printer_t;;
+    val printer : string -> 'b printer_t;;
     val pr_expr : MLast.expr printer_t;;
     val pr_patt : MLast.patt printer_t;;
     val pr_ctyp : MLast.ctyp printer_t;;

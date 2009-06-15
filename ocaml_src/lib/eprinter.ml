@@ -3,7 +3,8 @@
 (* Copyright (c) INRIA 2007 *)
 
 type 'a t =
-  { mutable pr_fun : string -> 'a pr_fun;
+  { pr_name : string;
+    mutable pr_fun : string -> 'a pr_fun;
     mutable pr_levels : 'a pr_level list }
 and 'a pr_level = { pr_label : string; mutable pr_rules : 'a pr_rule }
 and 'a pr_rule =
@@ -70,3 +71,31 @@ let extend_printer pr pos levs =
       pr.pr_levels <- levels
   | Some _ -> failwith "not impl EXTEND_PRINTER entry with at level parameter"
 ;;
+
+let pr_fun name pr lab =
+  let rec loop app =
+    function
+      [] ->
+        (fun pc z ->
+           failwith
+             (Printf.sprintf "unable to print %s%s" name
+                (if lab = "" then "" else " \"" ^ lab ^ "\"")))
+    | lev :: levl ->
+        if app || lev.pr_label = lab then
+          let next = loop true levl in
+          let rec curr pc z = Extfun.apply lev.pr_rules z curr next pc in curr
+        else loop app levl
+  in
+  loop false pr.pr_levels
+;;
+
+let make name =
+  let pr =
+    {pr_name = name;
+     pr_fun = (fun _ -> raise (Match_failure ("eprinter.ml", 96, 37)));
+     pr_levels = []}
+  in
+  pr.pr_fun <- pr_fun name pr; pr
+;;
+
+let clear pr = pr.pr_levels <- []; pr.pr_fun <- pr_fun pr.pr_name pr;;

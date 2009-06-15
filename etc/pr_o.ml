@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.74 2007/08/15 21:38:15 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.75 2007/08/16 04:02:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -8,6 +8,20 @@ open Prtools;
 
 value flag_horiz_let_in = ref True;
 value flag_semi_semi = ref False;
+
+do {
+  Eprinter.clear pr_expr;
+  Eprinter.clear pr_patt;
+  Eprinter.clear pr_ctyp;
+  Eprinter.clear pr_str_item;
+  Eprinter.clear pr_sig_item;
+  Eprinter.clear pr_module_expr;
+  Eprinter.clear pr_module_type;
+  Eprinter.clear pr_class_sig_item;
+  Eprinter.clear pr_class_str_item;
+  Eprinter.clear pr_class_expr;
+  Eprinter.clear pr_class_type;
+};
 
 (* general functions *)
 
@@ -966,8 +980,8 @@ EXTEND_PRINTER
                           if else_b = "" then
                             curr
                               {ind = pc.ind + 3;
-                               bef = sprintf "%s%sif " pc.bef else_b; aft = "";
-                               dang = ""}
+                               bef = sprintf "%s%sif " pc.bef else_b;
+                               aft = ""; dang = ""}
                               e1
                           else
                             let s1 = sprintf "%s%sif" pc.bef else_b in
@@ -1095,7 +1109,8 @@ EXTEND_PRINTER
                    let s1 = sprintf "%sfun _ ->" pc.bef in
                    let s2 =
                      raise_match_failure
-                       {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} loc
+                       {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
+                       loc
                    in
                    sprintf "%s\n%s" s1 s2)
           | pwel ->
@@ -1123,7 +1138,8 @@ EXTEND_PRINTER
               horiz_vertic
                 (fun () ->
                    let (op_begin, op_end) =
-                     if List.mem pc.dang ["|"; ";"] then (sprintf "(%s" op, ")")
+                     if List.mem pc.dang ["|"; ";"] then
+                       (sprintf "(%s" op, ")")
                      else (op, "")
                    in
                    sprintf "%s%s %s with %s%s%s" pc.bef op_begin
@@ -2638,139 +2654,116 @@ value class_object pc (csp, csl) =
 
 (* *)
 
-let lev = find_pr_level "simple" pr_patt.pr_levels in
-lev.pr_rules :=
-  extfun lev.pr_rules with
-  [ <:patt< ? $s$ >> ->
-      fun curr next pc -> sprintf "%s?%s%s" pc.bef s pc.aft
-  | <:patt< ? ($p$ $opt:eo$) >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s?(%s%s)%s" pc.bef
-               (patt_tcon {(pc) with bef = ""; aft = ""} p)
-               (match eo with
-                [ Some e ->
-                    sprintf " = %s" (expr {(pc) with bef = ""; aft = ""} e)
-                | None -> "" ])
-               pc.aft)
-          (fun () -> not_impl "patt ?(p=e) vertic" pc p)
-  | <:patt< ? $i$ : ($p$ $opt:eo$) >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s?%s:(%s%s)%s" pc.bef i
-               (patt {(pc) with bef = ""; aft = ""} p)
-               (match eo with
-                [ Some e ->
-                    sprintf " = %s" (expr {(pc) with bef = ""; aft = ""} e)
-                | None -> "" ])
-               pc.aft)
-          (fun () -> not_impl "patt ?i:(p=e) vertic" pc i)
-  | <:patt< ~ $s$ >> ->
-      fun curr next pc -> sprintf "%s~%s%s" pc.bef s pc.aft
-  | <:patt< ~ $s$ : $p$ >> ->
-      fun curr next pc -> curr {(pc) with bef = sprintf "%s~%s:" pc.bef s} p
-  | <:patt< `$uid:s$ >> ->
-      fun curr next pc -> sprintf "%s`%s%s" pc.bef s pc.aft
-  | <:patt< # $list:sl$ >> ->
-      fun curr next pc ->
-        mod_ident {(pc) with bef = sprintf "%s#" pc.bef} sl ]
-;
-
-let lev = find_pr_level "apply" pr_expr.pr_levels in
-lev.pr_rules :=
-  extfun lev.pr_rules with
-  [ <:expr< new $list:cl$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%snew %s%s" pc.bef
-               (class_longident {(pc) with bef = ""; aft = ""} cl) pc.aft)
-          (fun () -> not_impl "new vertic" pc cl)
-  | <:expr< object $opt:csp$ $list:csl$ end >> ->
-      fun curr next pc ->
-        class_object pc (csp, csl) ]
-;
-
-let lev = find_pr_level "dot" pr_expr.pr_levels in
-lev.pr_rules :=
-  extfun lev.pr_rules with
-  [ <:expr< $e$ # $s$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s%s#%s%s" pc.bef
-               (curr {(pc) with bef = ""; aft = ""} e) s pc.aft)
-          (fun () -> not_impl "# vertic" pc e) ]
-;
-
-let lev = find_pr_level "simple" pr_expr.pr_levels in
-lev.pr_rules :=
-  extfun lev.pr_rules with
-  [ <:expr< ( $e$ : $t$ :> $t2$ ) >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s(%s : %s :> %s)%s" pc.bef
-               (expr {(pc) with bef = ""; aft = ""} e)
-               (ctyp {(pc) with bef = ""; aft = ""} t)
-               (ctyp {(pc) with bef = ""; aft = ""} t2) pc.aft)
-          (fun () ->
-             let s1 =
-               expr {(pc) with bef = sprintf "%s(" pc.bef; aft = " :"} e
-             in
-             let s2 =
-               ctyp {(pc) with bef = tab (pc.ind + 1); aft = " :>"} t
-             in
-             let s3 =
-               ctyp
-                 {(pc) with bef = tab (pc.ind + 1);
-                  aft = sprintf ")%s" pc.aft}
-                 t2
-             in
-             sprintf "%s\n%s\n%s" s1 s2 s3)
-  | <:expr< ( $e$ :> $t$ ) >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s(%s :> %s)%s" pc.bef
-               (expr {(pc) with bef = ""; aft = ""} e)
-               (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-          (fun () ->
-             let s1 =
-               expr
-                 {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-                  aft = " :>"}
-                 e
-             in
-             let s2 =
-               ctyp
-                 {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
-                  aft = sprintf ")%s" pc.aft}
-                 t
-             in
-             sprintf "%s\n%s" s1 s2)
-  | <:expr< {< $list:fel$ >} >> ->
-      fun curr next pc ->
-        if fel = [] then sprintf "%s{< >}%s" pc.bef pc.aft
-        else
-          let fel = List.map (fun fe -> (fe, ";")) fel in
-          plist field_expr 3
-            {(pc) with bef = sprintf "%s{< " pc.bef;
-             aft = sprintf " >}%s" pc.aft}
-            fel
-  | <:expr< `$uid:s$ >> ->
-      fun curr next pc -> sprintf "%s`%s%s" pc.bef s pc.aft
-  | <:expr< new $list:_$ >> | <:expr< object $list:_$ end >> as z ->
-      fun curr next pc ->
-        expr
-          {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-           aft = sprintf ")%s" pc.aft}
-          z ]
-;
-
 EXTEND_PRINTER
+  pr_patt: LEVEL "simple"
+    [ [ <:patt< ? $s$ >> -> sprintf "%s?%s%s" pc.bef s pc.aft
+      | <:patt< ? ($p$ $opt:eo$) >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s?(%s%s)%s" pc.bef
+                 (patt_tcon {(pc) with bef = ""; aft = ""} p)
+                 (match eo with
+                  [ Some e ->
+                      sprintf " = %s" (expr {(pc) with bef = ""; aft = ""} e)
+                  | None -> "" ])
+                 pc.aft)
+            (fun () -> not_impl "patt ?(p=e) vertic" pc p)
+      | <:patt< ? $i$ : ($p$ $opt:eo$) >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s?%s:(%s%s)%s" pc.bef i
+                 (patt {(pc) with bef = ""; aft = ""} p)
+                 (match eo with
+                  [ Some e ->
+                      sprintf " = %s" (expr {(pc) with bef = ""; aft = ""} e)
+                  | None -> "" ])
+                 pc.aft)
+            (fun () -> not_impl "patt ?i:(p=e) vertic" pc i)
+      | <:patt< ~ $s$ >> ->
+          sprintf "%s~%s%s" pc.bef s pc.aft
+      | <:patt< ~ $s$ : $p$ >> ->
+          curr {(pc) with bef = sprintf "%s~%s:" pc.bef s} p
+      | <:patt< `$uid:s$ >> ->
+          sprintf "%s`%s%s" pc.bef s pc.aft
+      | <:patt< # $list:sl$ >> ->
+          mod_ident {(pc) with bef = sprintf "%s#" pc.bef} sl ] ]
+  ;
+  pr_expr: LEVEL "apply"
+    [ [ <:expr< new $list:cl$ >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%snew %s%s" pc.bef
+                 (class_longident {(pc) with bef = ""; aft = ""} cl) pc.aft)
+            (fun () -> not_impl "new vertic" pc cl)
+      | <:expr< object $opt:csp$ $list:csl$ end >> ->
+          class_object pc (csp, csl) ] ]
+  ;
+  pr_expr: LEVEL "dot"
+    [ [ <:expr< $e$ # $s$ >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s%s#%s%s" pc.bef
+                 (curr {(pc) with bef = ""; aft = ""} e) s pc.aft)
+            (fun () -> not_impl "# vertic" pc e) ] ]
+  ;
+  pr_expr: LEVEL "simple"
+    [ [ <:expr< ( $e$ : $t$ :> $t2$ ) >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s(%s : %s :> %s)%s" pc.bef
+                 (expr {(pc) with bef = ""; aft = ""} e)
+                 (ctyp {(pc) with bef = ""; aft = ""} t)
+                 (ctyp {(pc) with bef = ""; aft = ""} t2) pc.aft)
+            (fun () ->
+               let s1 =
+                 expr {(pc) with bef = sprintf "%s(" pc.bef; aft = " :"} e
+               in
+               let s2 =
+                 ctyp {(pc) with bef = tab (pc.ind + 1); aft = " :>"} t
+               in
+               let s3 =
+                 ctyp
+                   {(pc) with bef = tab (pc.ind + 1);
+                    aft = sprintf ")%s" pc.aft}
+                   t2
+               in
+               sprintf "%s\n%s\n%s" s1 s2 s3)
+      | <:expr< ( $e$ :> $t$ ) >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s(%s :> %s)%s" pc.bef
+                 (expr {(pc) with bef = ""; aft = ""} e)
+                 (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
+            (fun () ->
+               let s1 =
+                 expr
+                   {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+                    aft = " :>"}
+                   e
+               in
+               let s2 =
+                 ctyp
+                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+                    aft = sprintf ")%s" pc.aft}
+                   t
+               in
+               sprintf "%s\n%s" s1 s2)
+      | <:expr< {< $list:fel$ >} >> ->
+          if fel = [] then sprintf "%s{< >}%s" pc.bef pc.aft
+          else
+            let fel = List.map (fun fe -> (fe, ";")) fel in
+            plist field_expr 3
+              {(pc) with bef = sprintf "%s{< " pc.bef;
+               aft = sprintf " >}%s" pc.aft}
+              fel
+      | <:expr< `$uid:s$ >> ->
+          sprintf "%s`%s%s" pc.bef s pc.aft
+      | <:expr< new $list:_$ >> | <:expr< object $list:_$ end >> as z ->
+          expr
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            z ] ]
+  ;
   pr_ctyp: LEVEL "simple"
     [ [ <:ctyp< < $list:ml$ $opt:v$ > >> ->
           if ml = [] then
@@ -2797,214 +2790,37 @@ EXTEND_PRINTER
              aft = sprintf ")%s" pc.aft}
             z ] ]
   ;
+  pr_sig_item: LEVEL "top"
+    [ [ <:sig_item< class $list:cd$ >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%sclass %s%s" pc.bef
+                 (hlist2 class_def (and_before class_def)
+                    {(pc) with bef = ""; aft = ("", "")} cd)
+                 pc.aft)
+            (fun () ->
+               vlist2 class_def (and_before class_def)
+                 {(pc) with bef = sprintf "%sclass " pc.bef; aft = ("", pc.aft)}
+                 cd)
+      | <:sig_item< class type $list:cd$ >> ->
+          class_type_decl_list pc cd ] ]
+  ;
+  pr_str_item: LEVEL "top"
+    [ [ <:str_item< class $list:cd$ >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%sclass %s%s" pc.bef
+                 (hlist2 class_decl (and_before class_decl)
+                    {(pc) with bef = ""; aft = ("", "")} cd)
+                 pc.aft)
+            (fun () ->
+               vlist2 class_decl (and_before class_decl)
+                 {(pc) with bef = sprintf "%sclass " pc.bef; aft = ("", pc.aft)}
+                 cd)
+      | <:str_item< class type $list:cd$ >> ->
+          class_type_decl_list pc cd ] ]
+  ;
 END;
-
-let lev = find_pr_level "top" pr_sig_item.pr_levels in
-lev.pr_rules :=
-  extfun lev.pr_rules with
-  [ <:sig_item< class $list:cd$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%sclass %s%s" pc.bef
-               (hlist2 class_def (and_before class_def)
-                  {(pc) with bef = ""; aft = ("", "")} cd)
-               pc.aft)
-          (fun () ->
-             vlist2 class_def (and_before class_def)
-               {(pc) with bef = sprintf "%sclass " pc.bef; aft = ("", pc.aft)}
-               cd)
-  | <:sig_item< class type $list:cd$ >> ->
-      fun curr next pc -> class_type_decl_list pc cd ]
-;
-
-let lev = find_pr_level "top" pr_str_item.pr_levels in
-lev.pr_rules :=
-  extfun lev.pr_rules with
-  [ <:str_item< class $list:cd$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%sclass %s%s" pc.bef
-               (hlist2 class_decl (and_before class_decl)
-                  {(pc) with bef = ""; aft = ("", "")} cd)
-               pc.aft)
-          (fun () ->
-             vlist2 class_decl (and_before class_decl)
-               {(pc) with bef = sprintf "%sclass " pc.bef; aft = ("", pc.aft)}
-               cd)
-  | <:str_item< class type $list:cd$ >> ->
-      fun curr next pc -> class_type_decl_list pc cd ]
-;
-
-value class_type_top =
-  extfun Extfun.empty with
-  [ <:class_type< [ $t$ ] -> $ct$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s%s -> %s%s" pc.bef
-               (ctyp {(pc) with bef = ""; aft = ""} t)
-               (curr {(pc) with bef = ""; aft = ""} ct) pc.aft)
-          (fun () ->
-             let s1 = ctyp {(pc) with aft = " ->"} t in
-             let s2 =
-               curr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} ct
-             in
-             sprintf "%s\n%s" s1 s2)
-  | <:class_type< object $opt:cst$ $list:csi$ end >> ->
-      fun curr next pc ->
-        let class_sig_item_sep =
-          if flag_semi_semi.val then semi_semi_after class_sig_item
-          else class_sig_item
-        in
-        horiz_vertic
-          (fun () ->
-             if alone_in_line pc then
-               (* Heuristic : I don't like to print it horizontally
-                  when alone in a line. *)
-               sprintf "\n"
-             else
-               sprintf "%sobject%s %s end%s" pc.bef
-                 (match cst with
-                 [ Some t ->
-                      sprintf " (%s)" (ctyp {(pc) with bef = ""; aft = ""} t)
-                  | None -> "" ])
-                 (hlist class_sig_item_sep
-                    {(pc) with bef = ""; aft = ""} csi) pc.aft)
-          (fun () ->
-             let s1 =
-               match cst with
-               [ None -> sprintf "%sobject" pc.bef
-               | Some t ->
-                   horiz_vertic
-                     (fun () ->
-                        sprintf "%sobject (%s)" pc.bef
-                          (ctyp {(pc) with bef = ""; aft = ""} t))
-                     (fun () ->
-                        not_impl "class_type vertic 1" {(pc) with aft = ""}
-                          t) ]
-             in
-             let s2 =
-               vlist class_sig_item_sep
-                 {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                  aft = ""}
-                 csi
-             in
-             let s3 = sprintf "%send%s" (tab pc.ind) pc.aft in
-             sprintf "%s\n%s\n%s" s1 s2 s3)
-  | <:class_type< $list:cl$ >> ->
-      fun curr next pc -> class_longident pc cl
-  | <:class_type< $list:cl$ [ $list:ctcl$ ] >> ->
-      fun curr next pc ->
-        let ctcl = List.map (fun ct -> (ct, ",")) ctcl in
-        horiz_vertic
-          (fun  () ->
-             sprintf "%s[%s] %s%s" pc.bef
-               (plist ctyp 0 {(pc) with bef = ""; aft = ""} ctcl)
-               (class_longident {(pc) with bef = ""; aft = ""} cl)
-               pc.aft)
-          (fun  () -> not_impl "class_type c [t, t] vertic" pc cl)
-  | z -> fun curr next pc -> not_impl "class_type" pc z ]
-;
-
-value class_expr_top =
-  extfun Extfun.empty with
-  [ <:class_expr< fun $p$ -> $ce$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%sfun %s -> %s%s" pc.bef
-               (patt {(pc) with bef = ""; aft = ""} p)
-               (curr {(pc) with bef = ""; aft = ""} ce) pc.aft)
-          (fun () ->
-             let s1 =
-               patt {(pc) with bef = sprintf "%sfun " pc.bef; aft = " ->"} p
-             in
-             let s2 =
-               curr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} ce
-             in
-             sprintf "%s\n%s" s1 s2)
-  | <:class_expr< let $opt:rf$ $list:pel$ in $ce$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             let s1 =
-               hlist2 (binding expr) (and_before (binding expr))
-                 {(pc) with
-                  bef = sprintf "%slet %s" pc.bef (if rf then "rec " else "");
-                  aft = ("", " in")}
-                 pel
-             in
-             let s2 = class_expr {(pc) with bef = ""} ce in
-             sprintf "%s %s" s1 s2)
-          (fun () ->
-             let s1 =
-               vlist2 (binding expr) (and_before (binding expr))
-                 {(pc) with
-                  bef = sprintf "%slet %s" pc.bef (if rf then "rec " else "");
-                  aft = ("", " in")}
-                 pel
-             in
-             let s2 = class_expr {(pc) with bef = tab pc.ind} ce in
-             sprintf "%s\n%s" s1 s2)
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value class_expr_apply =
-  extfun Extfun.empty with
-  [ <:class_expr< $ce$ $e$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s%s %s%s" pc.bef
-               (curr {(pc) with bef = ""; aft = ""} ce)
-               (pr_expr.pr_fun "label" {(pc) with bef = ""; aft = ""} e)
-               pc.aft)
-          (fun () -> not_impl "class_expr_apply" pc ce)
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value class_expr_simple =
-  extfun Extfun.empty with
-  [ <:class_expr< $list:cl$ >> ->
-      fun curr next pc -> class_longident pc cl
-  | <:class_expr< $list:cl$ [ $list:ctcl$ ] >> ->
-      fun curr next pc ->
-        let ctcl = List.map (fun ct -> (ct, ",")) ctcl in
-        horiz_vertic
-          (fun  () ->
-             sprintf "%s[%s] %s%s" pc.bef
-               (plist ctyp 0 {(pc) with bef = ""; aft = ""} ctcl)
-               (class_longident {(pc) with bef = ""; aft = ""} cl)
-               pc.aft)
-          (fun  () -> not_impl "class_expr c [t, t] vertic" pc cl)
-  | <:class_expr< object $opt:csp$ $list:csl$ end >> ->
-      fun curr next pc ->
-        class_object pc (csp, csl)      
-  | <:class_expr< ($ce$ : $ct$) >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s(%s : %s)%s" pc.bef
-               (curr {(pc) with bef = ""; aft = ""} ce)
-               (class_type {(pc) with bef = ""; aft = ""} ct) pc.aft)
-          (fun () ->
-             let s1 =
-               curr
-                 {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-                  aft = " :"}
-                 ce
-             in
-             let s2 =
-               class_type
-                 {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
-                  aft = sprintf ")%s" pc.aft}
-                 ct
-             in
-             sprintf "%s\n%s" s1 s2)
-  | z -> fun curr next pc -> not_impl "class_expr" pc z ]
-;
 
 value sig_method_or_method_virtual pc virt priv s t =
   horiz_vertic
@@ -3021,41 +2837,6 @@ value sig_method_or_method_virtual pc virt priv s t =
          ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t
        in
        sprintf "%s\n%s" s1 s2)
-;
-
-value class_sig_item_top =
-  extfun Extfun.empty with
-  [ <:class_sig_item< inherit $ct$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%sinherit %s%s" pc.bef
-               (class_type {(pc) with bef = ""; aft = ""} ct) pc.aft)
-          (fun () -> not_impl "class_sig_item inherit vertic" pc ct)
-  | <:class_sig_item< method $opt:priv$ $s$ : $t$ >> ->
-      fun curr next pc ->
-        sig_method_or_method_virtual pc "" priv s t
-  | <:class_sig_item< method virtual $opt:priv$ $s$ : $t$ >> ->
-      fun curr next pc ->
-        sig_method_or_method_virtual pc " virtual" priv s t
-  | <:class_sig_item< value $opt:mf$ $s$ : $t$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%sval%s %s : %s%s" pc.bef
-               (if mf then " mutable" else "")
-               (var_escaped {(pc) with bef = ""; aft = ""} s)
-               (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-          (fun () ->
-             let s1 =
-               sprintf "%sval%s %s :" pc.bef (if mf then " mutable" else "")
-                 (var_escaped {(pc) with bef = ""; aft = ""} s)
-             in
-             let s2 =
-               ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t
-             in
-             sprintf "%s\n%s" s1 s2) 
-  | z -> fun curr next pc -> not_impl "class_sig_item" pc z ]
 ;
 
 value poly_type pc =
@@ -3078,141 +2859,6 @@ value poly_type pc =
   | t -> ctyp pc t ]
 ;
 
-value class_str_item_top =
-  extfun Extfun.empty with
-  [ <:class_str_item< inherit $ce$ $opt:pb$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%sinherit %s%s%s" pc.bef
-               (class_expr {(pc) with bef = ""; aft = ""} ce)
-               (match pb with
-                [ Some s -> sprintf " as %s" s
-                | None -> "" ]) pc.aft)
-          (fun () -> not_impl "inherit vertic" pc ce)
-  | <:class_str_item< initializer $e$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%sinitializer %s%s" pc.bef
-               (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
-          (fun () ->
-             let s1 = sprintf "%sinitializer" pc.bef in
-             let s2 =
-               expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
-             in
-             sprintf "%s\n%s" s1 s2)
-  | <:class_str_item< method virtual $opt:priv$ $s$ : $t$ >> ->
-      fun curr next pc ->
-        sig_method_or_method_virtual pc " virtual" priv s t
-  | <:class_str_item< method $opt:priv$ $s$ $opt:topt$ = $e$ >> ->
-      fun curr next pc ->
-        let (pl, e) =
-          match topt with
-          [ Some _ -> ([], e)
-          | None -> expr_fun_args e ]
-        in
-        let simple_patt = pr_patt.pr_fun "simple" in
-        let args =
-          if pl = [] then ""
-          else hlist simple_patt {(pc) with bef = " "; aft = ""} pl
-        in
-        horiz_vertic
-          (fun () ->
-             sprintf "%smethod%s %s%s%s = %s%s" pc.bef
-               (if priv then " private" else "") s args
-               (match topt with
-                [ Some t ->
-                    sprintf " : %s"
-                      (poly_type {(pc) with bef = ""; aft = ""} t)
-                | None -> "" ])
-               (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
-          (fun () ->
-             let s1 =
-               match topt with
-               [ None ->
-                   sprintf "%smethod%s %s%s =" pc.bef
-                     (if priv then " private" else "") s args
-               | Some t ->
-                   horiz_vertic
-                     (fun () ->
-                        sprintf "%smethod%s %s%s : %s =" pc.bef
-                          (if priv then " private" else "") s args
-                          (poly_type {(pc) with bef = ""; aft = ""} t))
-                     (fun () ->
-                        let s1 =
-                          sprintf "%smethod%s %s%s :" pc.bef
-                            (if priv then " private" else "") s args
-                        in
-                        let s2 =
-                          poly_type
-                            {(pc) with ind = pc.ind + 4;
-                             bef = tab (pc.ind + 4); aft = " ="}
-                            t
-                        in
-                        sprintf "%s\n%s" s1 s2) ]
-             in
-             let s2 =
-               expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
-             in
-             sprintf "%s\n%s" s1 s2)
-  | <:class_str_item< type $t1$ = $t2$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%sconstraint %s = %s%s" pc.bef
-               (ctyp {(pc) with bef = ""; aft = ""} t1)
-               (ctyp {(pc) with bef = ""; aft = ""} t2) pc.aft)
-          (fun () -> not_impl "class_str_item type vertic" pc t1)
-  | <:class_str_item< value $opt:mf$ $s$ = $e$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%sval%s %s = %s%s" pc.bef
-               (if mf then " mutable" else "") s
-               (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
-          (fun () ->
-             let s1 =
-               sprintf "%sval%s %s =" pc.bef (if mf then " mutable" else "")
-                 s
-             in
-             let s2 =
-               expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
-             in
-             sprintf "%s\n%s" s1 s2)
-  | z -> fun curr next pc -> not_impl "class_str_item" pc z ]
-;
-
-value ctyp_as =
-  extfun Extfun.empty with
-  [ <:ctyp< $t1$ as $t2$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s%s as %s%s" pc.bef
-               (curr {(pc) with bef = ""; aft = ""} t1)
-               (next {(pc) with bef = ""; aft = ""} t2) pc.aft)
-          (fun () -> not_impl "ctyp as vertic" pc t1)
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value ctyp_poly =
-  extfun Extfun.empty with
-  [ <:ctyp< ! $list:_$ . $_$ >> as z ->
-      fun curr next pc -> poly_type pc z
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value ctyp_label =
-  extfun Extfun.empty with
-  [ <:ctyp< ? $i$ : $t$ >> ->
-      fun curr next pc -> curr {(pc) with bef = sprintf "%s?%s:" pc.bef i} t
-  | <:ctyp< ~ $i$ : $t$ >> ->
-      fun curr next pc -> curr {(pc) with bef = sprintf "%s%s:" pc.bef i} t
-  | z ->
-      fun curr next pc -> next pc z ]
-;
-
 EXTEND_PRINTER
   pr_expr: AFTER "apply"
     [ "label"
@@ -3225,34 +2871,299 @@ EXTEND_PRINTER
           pr_expr.pr_fun "dot" {(pc) with bef = sprintf "%s~%s:" pc.bef s}
             e ] ]
   ;
+  pr_ctyp: AFTER "top"
+    [ "as"
+      [ <:ctyp< $t1$ as $t2$ >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s%s as %s%s" pc.bef
+                 (curr {(pc) with bef = ""; aft = ""} t1)
+                 (next {(pc) with bef = ""; aft = ""} t2) pc.aft)
+            (fun () -> not_impl "ctyp as vertic" pc t1) ]
+    | "poly"
+      [ <:ctyp< ! $list:_$ . $_$ >> as z -> poly_type pc z ] ]
+  ;
+  pr_ctyp: AFTER "arrow"
+    [ "label"
+      [ <:ctyp< ? $i$ : $t$ >> ->
+          curr {(pc) with bef = sprintf "%s?%s:" pc.bef i} t
+      | <:ctyp< ~ $i$ : $t$ >> ->
+          curr {(pc) with bef = sprintf "%s%s:" pc.bef i} t ] ]
+  ;
+  pr_class_expr:
+    [ "top"
+      [ <:class_expr< fun $p$ -> $ce$ >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%sfun %s -> %s%s" pc.bef
+                 (patt {(pc) with bef = ""; aft = ""} p)
+                 (curr {(pc) with bef = ""; aft = ""} ce) pc.aft)
+            (fun () ->
+               let s1 =
+                 patt {(pc) with bef = sprintf "%sfun " pc.bef; aft = " ->"} p
+               in
+               let s2 =
+                 curr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} ce
+               in
+               sprintf "%s\n%s" s1 s2)
+      | <:class_expr< let $opt:rf$ $list:pel$ in $ce$ >> ->
+          horiz_vertic
+            (fun () ->
+               let s1 =
+                 hlist2 (binding expr) (and_before (binding expr))
+                   {(pc) with
+                    bef =
+                      sprintf "%slet %s" pc.bef (if rf then "rec " else "");
+                    aft = ("", " in")}
+                   pel
+               in
+               let s2 = class_expr {(pc) with bef = ""} ce in
+               sprintf "%s %s" s1 s2)
+            (fun () ->
+               let s1 =
+                 vlist2 (binding expr) (and_before (binding expr))
+                   {(pc) with
+                    bef =
+                      sprintf "%slet %s" pc.bef (if rf then "rec " else "");
+                    aft = ("", " in")}
+                   pel
+               in
+               let s2 = class_expr {(pc) with bef = tab pc.ind} ce in
+               sprintf "%s\n%s" s1 s2) ]
+    | "apply"
+      [ <:class_expr< $ce$ $e$ >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s%s %s%s" pc.bef
+                 (curr {(pc) with bef = ""; aft = ""} ce)
+                 (pr_expr.pr_fun "label" {(pc) with bef = ""; aft = ""} e)
+                 pc.aft)
+            (fun () -> not_impl "class_expr_apply" pc ce) ]
+    | "simple"
+      [ <:class_expr< $list:cl$ >> -> class_longident pc cl
+      | <:class_expr< $list:cl$ [ $list:ctcl$ ] >> ->
+          let ctcl = List.map (fun ct -> (ct, ",")) ctcl in
+          horiz_vertic
+            (fun  () ->
+               sprintf "%s[%s] %s%s" pc.bef
+                 (plist ctyp 0 {(pc) with bef = ""; aft = ""} ctcl)
+                 (class_longident {(pc) with bef = ""; aft = ""} cl)
+                 pc.aft)
+            (fun  () -> not_impl "class_expr c [t, t] vertic" pc cl)
+      | <:class_expr< object $opt:csp$ $list:csl$ end >> ->
+          class_object pc (csp, csl)      
+      | <:class_expr< ($ce$ : $ct$) >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s(%s : %s)%s" pc.bef
+                 (curr {(pc) with bef = ""; aft = ""} ce)
+                 (class_type {(pc) with bef = ""; aft = ""} ct) pc.aft)
+            (fun () ->
+               let s1 =
+                 curr
+                   {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+                    aft = " :"}
+                   ce
+               in
+               let s2 =
+                 class_type
+                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+                    aft = sprintf ")%s" pc.aft}
+                   ct
+               in
+               sprintf "%s\n%s" s1 s2) ] ]
+  ;
+  pr_class_type:
+    [ "top"
+      [ <:class_type< [ $t$ ] -> $ct$ >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s%s -> %s%s" pc.bef
+                 (ctyp {(pc) with bef = ""; aft = ""} t)
+                 (curr {(pc) with bef = ""; aft = ""} ct) pc.aft)
+            (fun () ->
+               let s1 = ctyp {(pc) with aft = " ->"} t in
+               let s2 =
+                 curr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} ct
+               in
+               sprintf "%s\n%s" s1 s2)
+      | <:class_type< object $opt:cst$ $list:csi$ end >> ->
+          let class_sig_item_sep =
+            if flag_semi_semi.val then semi_semi_after class_sig_item
+            else class_sig_item
+          in
+          horiz_vertic
+            (fun () ->
+               if alone_in_line pc then
+                 (* Heuristic : I don't like to print it horizontally
+                    when alone in a line. *)
+                 sprintf "\n"
+               else
+                 sprintf "%sobject%s %s end%s" pc.bef
+                   (match cst with
+                   [ Some t ->
+                        sprintf " (%s)"
+                          (ctyp {(pc) with bef = ""; aft = ""} t)
+                    | None -> "" ])
+                   (hlist class_sig_item_sep
+                      {(pc) with bef = ""; aft = ""} csi) pc.aft)
+            (fun () ->
+               let s1 =
+                 match cst with
+                 [ None -> sprintf "%sobject" pc.bef
+                 | Some t ->
+                     horiz_vertic
+                       (fun () ->
+                          sprintf "%sobject (%s)" pc.bef
+                            (ctyp {(pc) with bef = ""; aft = ""} t))
+                       (fun () ->
+                          not_impl "class_type vertic 1" {(pc) with aft = ""}
+                            t) ]
+               in
+               let s2 =
+                 vlist class_sig_item_sep
+                   {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+                    aft = ""}
+                   csi
+               in
+               let s3 = sprintf "%send%s" (tab pc.ind) pc.aft in
+               sprintf "%s\n%s\n%s" s1 s2 s3)
+      | <:class_type< $list:cl$ >> ->
+          class_longident pc cl
+      | <:class_type< $list:cl$ [ $list:ctcl$ ] >> ->
+          let ctcl = List.map (fun ct -> (ct, ",")) ctcl in
+          horiz_vertic
+            (fun  () ->
+               sprintf "%s[%s] %s%s" pc.bef
+                 (plist ctyp 0 {(pc) with bef = ""; aft = ""} ctcl)
+                 (class_longident {(pc) with bef = ""; aft = ""} cl)
+                 pc.aft)
+            (fun  () -> not_impl "class_type c [t, t] vertic" pc cl) ] ]
+  ;
+  pr_class_sig_item:
+    [ "top"
+      [ <:class_sig_item< inherit $ct$ >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%sinherit %s%s" pc.bef
+                 (class_type {(pc) with bef = ""; aft = ""} ct) pc.aft)
+            (fun () -> not_impl "class_sig_item inherit vertic" pc ct)
+      | <:class_sig_item< method $opt:priv$ $s$ : $t$ >> ->
+          sig_method_or_method_virtual pc "" priv s t
+      | <:class_sig_item< method virtual $opt:priv$ $s$ : $t$ >> ->
+          sig_method_or_method_virtual pc " virtual" priv s t
+      | <:class_sig_item< value $opt:mf$ $s$ : $t$ >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%sval%s %s : %s%s" pc.bef
+                 (if mf then " mutable" else "")
+                 (var_escaped {(pc) with bef = ""; aft = ""} s)
+                 (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
+            (fun () ->
+               let s1 =
+                 sprintf "%sval%s %s :" pc.bef (if mf then " mutable" else "")
+                   (var_escaped {(pc) with bef = ""; aft = ""} s)
+               in
+               let s2 =
+                 ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t
+               in
+               sprintf "%s\n%s" s1 s2) ] ]
+  ;
+  pr_class_str_item:
+    [ "top"
+      [ <:class_str_item< inherit $ce$ $opt:pb$ >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%sinherit %s%s%s" pc.bef
+                 (class_expr {(pc) with bef = ""; aft = ""} ce)
+                 (match pb with
+                  [ Some s -> sprintf " as %s" s
+                  | None -> "" ]) pc.aft)
+            (fun () -> not_impl "inherit vertic" pc ce)
+      | <:class_str_item< initializer $e$ >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%sinitializer %s%s" pc.bef
+                 (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
+            (fun () ->
+               let s1 = sprintf "%sinitializer" pc.bef in
+               let s2 =
+                 expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
+               in
+               sprintf "%s\n%s" s1 s2)
+      | <:class_str_item< method virtual $opt:priv$ $s$ : $t$ >> ->
+          sig_method_or_method_virtual pc " virtual" priv s t
+      | <:class_str_item< method $opt:priv$ $s$ $opt:topt$ = $e$ >> ->
+          let (pl, e) =
+            match topt with
+            [ Some _ -> ([], e)
+            | None -> expr_fun_args e ]
+          in
+          let simple_patt = pr_patt.pr_fun "simple" in
+          let args =
+            if pl = [] then ""
+            else hlist simple_patt {(pc) with bef = " "; aft = ""} pl
+          in
+          horiz_vertic
+            (fun () ->
+               sprintf "%smethod%s %s%s%s = %s%s" pc.bef
+                 (if priv then " private" else "") s args
+                 (match topt with
+                  [ Some t ->
+                      sprintf " : %s"
+                        (poly_type {(pc) with bef = ""; aft = ""} t)
+                  | None -> "" ])
+                 (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
+            (fun () ->
+               let s1 =
+                 match topt with
+                 [ None ->
+                     sprintf "%smethod%s %s%s =" pc.bef
+                       (if priv then " private" else "") s args
+                 | Some t ->
+                     horiz_vertic
+                       (fun () ->
+                          sprintf "%smethod%s %s%s : %s =" pc.bef
+                            (if priv then " private" else "") s args
+                            (poly_type {(pc) with bef = ""; aft = ""} t))
+                       (fun () ->
+                          let s1 =
+                            sprintf "%smethod%s %s%s :" pc.bef
+                              (if priv then " private" else "") s args
+                          in
+                          let s2 =
+                            poly_type
+                              {(pc) with ind = pc.ind + 4;
+                               bef = tab (pc.ind + 4); aft = " ="}
+                              t
+                          in
+                          sprintf "%s\n%s" s1 s2) ]
+               in
+               let s2 =
+                 expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
+               in
+               sprintf "%s\n%s" s1 s2)
+      | <:class_str_item< type $t1$ = $t2$ >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%sconstraint %s = %s%s" pc.bef
+                 (ctyp {(pc) with bef = ""; aft = ""} t1)
+                 (ctyp {(pc) with bef = ""; aft = ""} t2) pc.aft)
+            (fun () -> not_impl "class_str_item type vertic" pc t1)
+      | <:class_str_item< value $opt:mf$ $s$ = $e$ >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%sval%s %s = %s%s" pc.bef
+                 (if mf then " mutable" else "") s
+                 (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
+            (fun () ->
+               let s1 =
+                 sprintf "%sval%s %s =" pc.bef (if mf then " mutable" else "")
+                   s
+               in
+               let s2 =
+                 expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
+               in
+               sprintf "%s\n%s" s1 s2) ] ]
+  ;
 END;
-
-pr_ctyp.pr_levels :=
-  [find_pr_level "top" pr_ctyp.pr_levels;
-   {pr_label = "as"; pr_rules = ctyp_as};
-   {pr_label = "poly"; pr_rules = ctyp_poly};
-   find_pr_level "arrow" pr_ctyp.pr_levels;
-   {pr_label = "label"; pr_rules = ctyp_label};
-   find_pr_level "star" pr_ctyp.pr_levels;
-   find_pr_level "apply" pr_ctyp.pr_levels;
-   find_pr_level "dot" pr_ctyp.pr_levels;
-   find_pr_level "simple" pr_ctyp.pr_levels]
-;
-
-pr_class_expr.pr_levels :=
-  [{pr_label = "top"; pr_rules = class_expr_top};
-   {pr_label = "apply"; pr_rules = class_expr_apply};
-   {pr_label = "simple"; pr_rules = class_expr_simple}]
-;
-
-pr_class_type.pr_levels :=
-  [{pr_label = "top"; pr_rules = class_type_top}]
-;
-
-pr_class_sig_item.pr_levels :=
-  [{pr_label = "top"; pr_rules = class_sig_item_top}]
-;
-
-pr_class_str_item.pr_levels :=
-  [{pr_label = "top"; pr_rules = class_str_item_top}]
-;
