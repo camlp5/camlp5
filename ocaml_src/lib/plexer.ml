@@ -52,8 +52,7 @@ let rec ident2 buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some
       ('!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' |
-       '.' | ':' | '<' | '>' | '|' | '$'
-        as c) ->
+       '.' | ':' | '<' | '>' | '|' | '$' as c) ->
       Stream.junk strm__; ident2 (Plexing.Lexbuf.add c buf) strm__
   | _ -> buf
 ;;
@@ -63,8 +62,7 @@ let rec ident3 buf (strm__ : _ Stream.t) =
     Some
       ('0'..'9' | 'A'..'Z' | 'a'..'z' | '_' | '!' | '%' | '&' | '*' | '+' |
        '-' | '.' | '/' | ':' | '<' | '=' | '>' | '?' | '@' | '^' | '|' | '~' |
-       '\'' | '$' | '\128'..'\255'
-        as c) ->
+       '\'' | '$' | '\128'..'\255' as c) ->
       Stream.junk strm__; ident3 (Plexing.Lexbuf.add c buf) strm__
   | _ -> buf
 ;;
@@ -927,8 +925,7 @@ and check buf (strm__ : _ Stream.t) =
       Stream.junk strm__; check_ident (Plexing.Lexbuf.add c buf) strm__
   | Some
       ('!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' |
-       '.'
-        as c) ->
+       '.' as c) ->
       Stream.junk strm__; check_ident2 (Plexing.Lexbuf.add c buf) strm__
   | Some '$' ->
       Stream.junk strm__; check_ident2 (Plexing.Lexbuf.add '$' buf) strm__
@@ -1031,8 +1028,7 @@ and check_ident2 buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some
       ('!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' |
-       '.' | ':' | '<' | '>' | '|'
-        as c) ->
+       '.' | ':' | '<' | '>' | '|' as c) ->
       Stream.junk strm__; check_ident2 (Plexing.Lexbuf.add c buf) strm__
   | _ -> buf
 ;;

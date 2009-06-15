@@ -1,6 +1,6 @@
 (* camlp5r q_MLast.cmo pa_extend.cmo *)
-(* $Id: comp_head.ml.tpl,v 1.7 2007/10/08 09:56:51 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007 *)
+(* $Id: comp_head.ml.tpl,v 1.8 2007/12/27 10:47:20 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2008 *)
 
 module P =
   struct

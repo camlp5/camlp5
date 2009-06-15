@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.174 2007/12/27 10:30:24 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.175 2007/12/27 10:43:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -1033,8 +1033,10 @@ EXTEND_PRINTER
     | "dot"
       [ <:expr< $x$ . val >> -> pprintf pc "!%p" next x
       | <:expr< $x$ . $y$ >> -> pprintf pc "%p.@;<0 0>%p" curr x curr y
-      | <:expr< $x$ .( $y$ ) >> -> pprintf pc "%p@;<0 0>.(%p)" curr x expr y
-      | <:expr< $x$ .[ $y$ ] >> -> pprintf pc "%p@;<0 0>.[%p]" curr x expr y
+      | <:expr< $x$ .( $y$ ) >> ->
+          pprintf pc "%p@;<0 0>.(%p)" curr x expr_short y
+      | <:expr< $x$ .[ $y$ ] >> ->
+          pprintf pc "%p@;<0 0>.[%p]" curr x expr_short y
       | <:expr< $e$ .{ $list:el$ } >> ->
           let el = List.map (fun e -> (e, ",")) el in
           pprintf pc "%p.{%p}" curr e (plist expr_short 0) el ]
@@ -1255,9 +1257,12 @@ EXTEND_PRINTER
   pr_str_item:
     [ "top"
       [ <:str_item< # $lid:s$ $e$ >> ->
+          let pc = {(pc) with aft = ""} in
           pprintf pc "(* #%s %p *)" s expr e
       | <:str_item< declare $list:sil$ end >> ->
-          if sil = [] then pprintf pc "(* *)"
+          if sil = [] then
+            let pc = {(pc) with aft = ""} in
+            pprintf pc "(* *)"
           else
             let str_item_sep =
               if flag_semi_semi.val then semi_semi_after str_item
@@ -1302,7 +1307,9 @@ EXTEND_PRINTER
       | <:sig_item< include $mt$ >> ->
           pprintf pc "include %p" module_type mt
       | <:sig_item< declare $list:sil$ end >> ->
-          if sil = [] then pprintf pc "(* *)"
+          if sil = [] then
+            let pc = {(pc) with aft = ""} in
+            pprintf pc "(* *)"
           else
             let sig_item_sep =
               if flag_semi_semi.val then semi_semi_after sig_item

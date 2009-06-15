@@ -322,15 +322,15 @@ let rec unparser_cases_list =
           [MLast.PaAny _, None, e] ->
             List.rev_append rev_spel (unparser_cases_list e)
         | (MLast.PaApp (_, MLast.PaUid (_, "Some"), p), eo,
-            MLast.ExSeq
-              (_,
-               [MLast.ExApp
-                  (_,
-                   MLast.ExAcc
-                     (_, MLast.ExUid (_, "Stream"), MLast.ExLid (_, "junk")),
-                   MLast.ExLid (_, "strm__"));
-                e])) ::
-           pel ->
+           MLast.ExSeq
+             (_,
+              [MLast.ExApp
+                 (_,
+                  MLast.ExAcc
+                    (_, MLast.ExUid (_, "Stream"), MLast.ExLid (_, "junk")),
+                  MLast.ExLid (_, "strm__"));
+               e])) ::
+          pel ->
             let spe =
               let (sp, epo, e) = unstream_pattern_kont e in
               let sp = (SpTrm (loc, p, eo), SpoNoth) :: sp in sp, epo, e

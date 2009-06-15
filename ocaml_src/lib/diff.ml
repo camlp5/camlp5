@@ -13,23 +13,23 @@ let diag fd bd sh xv yv xoff xlim yoff ylim =
   let fmid = xoff - yoff in
   let bmid = xlim - ylim in
   let odd = (fmid - bmid) land 1 <> 0 in
-  fd.(sh + fmid) <- xoff;
-  bd.(sh + bmid) <- xlim;
+  fd.(sh+fmid) <- xoff;
+  bd.(sh+bmid) <- xlim;
   try
     let rec loop fmin fmax bmin bmax =
       let fmin =
-        if fmin > dmin then begin fd.(sh + fmin - 2) <- -1; fmin - 1 end
+        if fmin > dmin then begin fd.(sh+fmin-2) <- -1; fmin - 1 end
         else fmin + 1
       in
       let fmax =
-        if fmax < dmax then begin fd.(sh + fmax + 2) <- -1; fmax + 1 end
+        if fmax < dmax then begin fd.(sh+fmax+2) <- -1; fmax + 1 end
         else fmax - 1
       in
       begin let rec loop d =
         if d < fmin then ()
         else
-          let tlo = fd.(sh + d - 1) in
-          let thi = fd.(sh + d + 1) in
+          let tlo = fd.(sh+d-1) in
+          let thi = fd.(sh+d+1) in
           let x = if tlo >= thi then tlo + 1 else thi in
           let x =
             let rec loop xv yv xlim ylim x y =
@@ -39,26 +39,26 @@ let diag fd bd sh xv yv xoff xlim yoff ylim =
             in
             loop xv yv xlim ylim x (x - d)
           in
-          fd.(sh + d) <- x;
-          if odd && bmin <= d && d <= bmax && bd.(sh + d) <= fd.(sh + d) then
+          fd.(sh+d) <- x;
+          if odd && bmin <= d && d <= bmax && bd.(sh+d) <= fd.(sh+d) then
             raise (DiagReturn d)
           else loop (d - 2)
       in
         loop fmax
       end;
       let bmin =
-        if bmin > dmin then begin bd.(sh + bmin - 2) <- max_int; bmin - 1 end
+        if bmin > dmin then begin bd.(sh+bmin-2) <- max_int; bmin - 1 end
         else bmin + 1
       in
       let bmax =
-        if bmax < dmax then begin bd.(sh + bmax + 2) <- max_int; bmax + 1 end
+        if bmax < dmax then begin bd.(sh+bmax+2) <- max_int; bmax + 1 end
         else bmax - 1
       in
       begin let rec loop d =
         if d < bmin then ()
         else
-          let tlo = bd.(sh + d - 1) in
-          let thi = bd.(sh + d + 1) in
+          let tlo = bd.(sh+d-1) in
+          let thi = bd.(sh+d+1) in
           let x = if tlo < thi then tlo else thi - 1 in
           let x =
             let rec loop xv yv xoff yoff x y =
@@ -68,9 +68,8 @@ let diag fd bd sh xv yv xoff xlim yoff ylim =
             in
             loop xv yv xoff yoff x (x - d)
           in
-          bd.(sh + d) <- x;
-          if not odd && fmin <= d && d <= fmax && bd.(sh + d) <= fd.(sh + d)
-          then
+          bd.(sh+d) <- x;
+          if not odd && fmin <= d && d <= fmax && bd.(sh+d) <= fd.(sh+d) then
             raise (DiagReturn d)
           else loop (d - 2)
       in
@@ -116,8 +115,7 @@ let diff_loop a ai b bi n m =
       for x = xoff to xlim - 1 do chng1.(ai.(x)) <- true done
     else
       let d = diag fd bd sh xvec yvec xoff xlim yoff ylim in
-      let b = bd.(sh + d) in
-      loop xoff b yoff (b - d); loop b xlim (b - d) ylim
+      let b = bd.(sh+d) in loop xoff b yoff (b - d); loop b xlim (b - d) ylim
   in
   loop 0 n 0 m; chng1, chng2
 ;;
