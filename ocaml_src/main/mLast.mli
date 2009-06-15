@@ -21,7 +21,7 @@
 
 type loc = Ploc.t;;
 
-type 'a vala = 'a;;
+(* *)
 
 type ctyp =
     TyAcc of loc * ctyp * ctyp
@@ -163,7 +163,7 @@ and str_item =
   | StOpn of loc * string list
   | StTyp of loc * type_decl list
   | StUse of loc * string * (str_item * loc) list
-  | StVal of loc * bool vala * (patt * expr) list
+  | StVal of loc * bool * (patt * expr) list
 and type_decl =
   { tdNam : loc * string;
     tdPrm : type_var list;

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: mLast.mli,v 1.10 2007/09/06 04:26:18 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.11 2007/09/07 04:31:52 deraugla Exp $ *)
 
 (* Module [MLast]: abstract syntax tree.
 
@@ -22,9 +22,9 @@
 type loc = Ploc.t;
 
 IFNDEF STRICT THEN
-  type vala 'a = 'a
+  DEFINE V(t) = t
 ELSE
-  type vala 'a = Ploc.vala 'a
+  DEFINE V(t) = Ploc.vala t
 END;
 
 type ctyp =
@@ -167,7 +167,7 @@ and str_item =
   | StOpn of loc and list string
   | StTyp of loc and list type_decl
   | StUse of loc and string and list (str_item * loc)
-  | StVal of loc and vala bool and list (patt * expr) ]
+  | StVal of loc and V bool and list (patt * expr) ]
 and type_decl =
   { tdNam : (loc * string);
     tdPrm : list type_var;

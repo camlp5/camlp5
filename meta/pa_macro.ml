@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.21 2007/09/06 20:48:56 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.22 2007/09/07 04:31:52 deraugla Exp $ *)
 
 (*
 Added statements:
@@ -54,9 +54,15 @@ Added statements:
 
 open Pcaml;
 
+type macro_value =
+  [ MvExpr of list string and MLast.expr
+  | MvType of list string and MLast.ctyp
+  | MvNone ]
+;
+
 type item_or_def 'a =
   [ SdStr of 'a
-  | SdDef of string and option (list string * MLast.expr)
+  | SdDef of string and macro_value
   | SdUnd of string
   | SdNop ]
 ;
@@ -80,7 +86,8 @@ value oversion = do {
 
 value defined =
   ref
-    [("CAMLP5", None); ("CAMLP5_4_02", None); ("OCAML_" ^ oversion, None)]
+    [("CAMLP5", MvNone); ("CAMLP5_4_02", MvNone);
+     ("OCAML_" ^ oversion, MvNone)]
 ;
 
 value is_defined i =
@@ -93,8 +100,9 @@ value print_defined () = do {
     (fun (d, v) -> do {
        print_string d;
        match v with
-       [ Some _ -> print_string " = ..."
-       | None -> () ];
+       [ MvExpr _ _ -> print_string " = <expr>"
+       | MvType _ _ -> print_string " = <type>"
+       | MvNone -> () ];
        print_newline ()
      })
     defined.val;
@@ -142,6 +150,15 @@ value substp mloc env =
              "this macro cannot be used in a pattern (see its definition)") ]
 ;
 
+value substt mloc env =
+  loop where rec loop =
+    fun
+    [ <:ctyp< $t1$ $t2$ >> -> <:ctyp< $loop t1$ $loop t2$ >>
+    | <:ctyp< $lid:x$ >> | <:ctyp< $uid:x$ >> as t ->
+        try List.assoc x env with [ Not_found -> t ]
+    | t -> t ]
+;
+
 value incorrect_number loc l1 l2 =
   Ploc.raise loc
     (Failure
@@ -151,7 +168,7 @@ value incorrect_number loc l1 l2 =
 
 value define eo x = do {
   match eo with
-  [ Some ([], e) ->
+  [ MvExpr [] e ->
       EXTEND
         expr: LEVEL "simple"
           [ [ UIDENT $x$ -> Reloc.expr (fun _ -> loc) 0 e ] ]
@@ -162,7 +179,7 @@ value define eo x = do {
                 Reloc.patt (fun _ -> loc) 0 p ] ]
         ;
       END
-  | Some (sl, e) ->
+  | MvExpr sl e ->
       EXTEND
         expr: LEVEL "apply"
           [ [ UIDENT $x$; param = SELF ->
@@ -193,7 +210,30 @@ value define eo x = do {
                   incorrect_number loc pl sl ] ]
         ;
       END
-  | None -> () ];
+  | MvType [] t ->
+      EXTEND
+        ctyp: LEVEL "simple"
+          [ [ UIDENT $x$ -> t ] ]
+        ;
+      END
+  | MvType sl t ->
+      EXTEND
+        ctyp: LEVEL "apply"
+          [ [ UIDENT $x$; param = SELF ->
+                let tl =
+                  match param with
+                  [ <:ctyp< ($list:tl$) >> -> tl
+                  | t -> [t] ]
+                in
+                if List.length tl = List.length sl then
+                  let env = List.combine sl tl in
+                  let t = substt loc env t in
+                  t
+                else
+                  incorrect_number loc tl sl ] ]
+        ;
+      END
+  | MvNone -> () ];
   defined.val := [(x, eo) :: defined.val]
 };
 
@@ -201,15 +241,21 @@ value undef x =
   try do {
     let eo = List.assoc x defined.val in
     match eo with
-    [ Some ([], _) -> do {
+    [ MvExpr [] _ -> do {
         DELETE_RULE expr: UIDENT $x$ END;
         DELETE_RULE patt: UIDENT $x$ END;
       }
-    | Some (_, _) -> do {
+    | MvExpr _ _ -> do {
         DELETE_RULE expr: UIDENT $x$; SELF END;
         DELETE_RULE patt: UIDENT $x$; SELF END;
       }
-    | None -> () ];
+    | MvType [] _ -> do {
+        DELETE_RULE ctyp: UIDENT $x$ END;
+      }
+    | MvType _ _ -> do {
+        DELETE_RULE ctyp: UIDENT $x$; SELF END;
+      }
+    | MvNone -> () ];
     defined.val := list_remove x defined.val
   }
   with
@@ -237,7 +283,7 @@ EXTEND
           | SdNop -> <:sig_item< declare end >> ] ] ]
   ;
   str_macro_def:
-    [ [ "DEFINE"; i = uident; def = opt_macro_value -> SdDef i def
+    [ [ "DEFINE"; i = uident; def = opt_macro_expr -> SdDef i def
       | "UNDEF"; i = uident -> SdUnd i
       | "IFDEF"; e = dexpr; "THEN"; d = str_item_or_macro; "END" ->
           if e then d else SdNop
@@ -251,7 +297,7 @@ EXTEND
           if e then d2 else d1 ] ]
   ;
   sig_macro_def:
-    [ [ "DEFINE"; i = uident -> SdDef i None
+    [ [ "DEFINE"; i = uident; def = opt_macro_type -> SdDef i def
       | "UNDEF"; i = uident -> SdUnd i
       | "IFDEF"; e = dexpr; "THEN"; d = sig_item_or_macro; "END" ->
           if e then d else SdNop
@@ -272,10 +318,15 @@ EXTEND
     [ [ d = sig_macro_def -> d
       | si = LIST1 sig_item -> SdStr si ] ]
   ;
-  opt_macro_value:
-    [ [ "("; pl = LIST1 LIDENT SEP ","; ")"; "="; e = expr -> Some (pl, e)
-      | "="; e = expr -> Some ([], e)
-      | -> None ] ]
+  opt_macro_expr:
+    [ [ "("; pl = LIST1 LIDENT SEP ","; ")"; "="; e = expr -> MvExpr pl e
+      | "="; e = expr -> MvExpr [] e
+      | -> MvNone ] ]
+  ;
+  opt_macro_type:
+    [ [ "("; pl = LIST1 LIDENT SEP ","; ")"; "="; t = ctyp -> MvType pl t
+      | "="; t = ctyp -> MvType [] t
+      | -> MvNone ] ]
   ;
   expr: LEVEL "top"
     [ [ "IFDEF"; e = dexpr; "THEN"; e1 = SELF; "ELSE"; e2 = SELF; "END" ->
@@ -308,7 +359,7 @@ EXTEND
   ;
 END;
 
-Pcaml.add_option "-D" (Arg.String (define None))
+Pcaml.add_option "-D" (Arg.String (define MvNone))
   "<string> Define for IFDEF instruction.";
 
 Pcaml.add_option "-U" (Arg.String undef)

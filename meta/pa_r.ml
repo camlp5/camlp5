@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.41 2007/09/06 04:26:18 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.42 2007/09/07 04:31:52 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -468,7 +468,7 @@ EXTEND
           <:ctyp< ! $list:pl$ . $t$ >> ]
     | "arrow" RIGHTA
       [ t1 = SELF; "->"; t2 = SELF -> <:ctyp< $t1$ -> $t2$ >> ]
-    | LEFTA
+    | "apply" LEFTA
       [ t1 = SELF; t2 = SELF -> <:ctyp< $t1$ $t2$ >> ]
     | LEFTA
       [ t1 = SELF; "."; t2 = SELF -> <:ctyp< $t1$ . $t2$ >> ]

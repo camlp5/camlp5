@@ -25,7 +25,7 @@ odyl.cmxa: $(OBJS:.cmo=.cmx)
 	$(OCAMLOPT) $(LINKFLAGS) $(OBJS:.cmo=.cmx) -a -o odyl.cmxa
 
 odyl_main.cmx: odyl_main.ml
-	$(CAMLP5_COMM) -nolib -DOPT -o odyl_main.ppo odyl_main.ml
+	$(CAMLP5_COMM) -DOPT -o odyl_main.ppo odyl_main.ml
 	$(OCAMLOPT) -c -impl odyl_main.ppo
 	rm -f odyl_main.ppo
 

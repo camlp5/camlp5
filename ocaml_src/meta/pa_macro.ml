@@ -54,9 +54,15 @@ Added statements:
 
 open Pcaml;;
 
+type macro_value =
+    MvExpr of string list * MLast.expr
+  | MvType of string list * MLast.ctyp
+  | MvNone
+;;
+
 type 'a item_or_def =
     SdStr of 'a
-  | SdDef of string * (string list * MLast.expr) option
+  | SdDef of string * macro_value
   | SdUnd of string
   | SdNop
 ;;
@@ -79,7 +85,7 @@ let oversion =
 ;;
 
 let defined =
-  ref ["CAMLP5", None; "CAMLP5_4_02", None; "OCAML_" ^ oversion, None]
+  ref ["CAMLP5", MvNone; "CAMLP5_4_02", MvNone; "OCAML_" ^ oversion, MvNone]
 ;;
 
 let is_defined i =
@@ -91,8 +97,9 @@ let print_defined () =
     (fun (d, v) ->
        print_string d;
        begin match v with
-         Some _ -> print_string " = ..."
-       | None -> ()
+         MvExpr (_, _) -> print_string " = <expr>"
+       | MvType (_, _) -> print_string " = <type>"
+       | MvNone -> ()
        end;
        print_newline ())
     !defined;
@@ -146,6 +153,17 @@ let substp mloc env =
   loop
 ;;
 
+let substt mloc env =
+  let rec loop =
+    function
+      MLast.TyApp (_, t1, t2) -> MLast.TyApp (loc, loop t1, loop t2)
+    | MLast.TyLid (_, x) | MLast.TyUid (_, x) as t ->
+        (try List.assoc x env with Not_found -> t)
+    | t -> t
+  in
+  loop
+;;
+
 let incorrect_number loc l1 l2 =
   Ploc.raise loc
     (Failure
@@ -155,7 +173,7 @@ let incorrect_number loc l1 l2 =
 
 let define eo x =
   begin match eo with
-    Some ([], e) ->
+    MvExpr ([], e) ->
       Grammar.extend
         [Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
          Some (Gramext.Level "simple"),
@@ -172,7 +190,7 @@ let define eo x =
              (fun _ (loc : Ploc.t) ->
                 (let p = substp loc [] e in Reloc.patt (fun _ -> loc) 0 p :
                  'patt))]]]
-  | Some (sl, e) ->
+  | MvExpr (sl, e) ->
       Grammar.extend
         [Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
          Some (Gramext.Level "apply"),
@@ -206,7 +224,32 @@ let define eo x =
                    let p = substp loc env e in Reloc.patt (fun _ -> loc) 0 p
                  else incorrect_number loc pl sl :
                  'patt))]]]
-  | None -> ()
+  | MvType ([], t) ->
+      Grammar.extend
+        [Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e),
+         Some (Gramext.Level "simple"),
+         [None, None,
+          [[Gramext.Stoken ("UIDENT", x)],
+           Gramext.action (fun _ (loc : Ploc.t) -> (t : 'ctyp))]]]
+  | MvType (sl, t) ->
+      Grammar.extend
+        [Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e),
+         Some (Gramext.Level "apply"),
+         [None, None,
+          [[Gramext.Stoken ("UIDENT", x); Gramext.Sself],
+           Gramext.action
+             (fun (param : 'ctyp) _ (loc : Ploc.t) ->
+                (let tl =
+                   match param with
+                     MLast.TyTup (_, tl) -> tl
+                   | t -> [t]
+                 in
+                 if List.length tl = List.length sl then
+                   let env = List.combine sl tl in
+                   let t = substt loc env t in t
+                 else incorrect_number loc tl sl :
+                 'ctyp))]]]
+  | MvNone -> ()
   end;
   defined := (x, eo) :: !defined
 ;;
@@ -215,14 +258,18 @@ let undef x =
   try
     let eo = List.assoc x !defined in
     begin match eo with
-      Some ([], _) ->
+      MvExpr ([], _) ->
         Grammar.delete_rule expr [Gramext.Stoken ("UIDENT", x)];
         Grammar.delete_rule patt [Gramext.Stoken ("UIDENT", x)]
-    | Some (_, _) ->
+    | MvExpr (_, _) ->
         Grammar.delete_rule expr
           [Gramext.Stoken ("UIDENT", x); Gramext.Sself];
         Grammar.delete_rule patt [Gramext.Stoken ("UIDENT", x); Gramext.Sself]
-    | None -> ()
+    | MvType ([], _) ->
+        Grammar.delete_rule ctyp [Gramext.Stoken ("UIDENT", x)]
+    | MvType (_, _) ->
+        Grammar.delete_rule ctyp [Gramext.Stoken ("UIDENT", x); Gramext.Sself]
+    | MvNone -> ()
     end;
     defined := list_remove x !defined
   with Not_found -> ()
@@ -244,8 +291,10 @@ Grammar.extend
      grammar_entry_create "str_item_or_macro"
    and sig_item_or_macro : 'sig_item_or_macro Grammar.Entry.e =
      grammar_entry_create "sig_item_or_macro"
-   and opt_macro_value : 'opt_macro_value Grammar.Entry.e =
-     grammar_entry_create "opt_macro_value"
+   and opt_macro_expr : 'opt_macro_expr Grammar.Entry.e =
+     grammar_entry_create "opt_macro_expr"
+   and opt_macro_type : 'opt_macro_type Grammar.Entry.e =
+     grammar_entry_create "opt_macro_type"
    and dexpr : 'dexpr Grammar.Entry.e = grammar_entry_create "dexpr"
    and uident : 'uident Grammar.Entry.e = grammar_entry_create "uident" in
    [Grammar.Entry.obj (str_item : 'str_item Grammar.Entry.e),
@@ -338,9 +387,9 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (uident : 'uident Grammar.Entry.e));
        Gramext.Snterm
          (Grammar.Entry.obj
-            (opt_macro_value : 'opt_macro_value Grammar.Entry.e))],
+            (opt_macro_expr : 'opt_macro_expr Grammar.Entry.e))],
       Gramext.action
-        (fun (def : 'opt_macro_value) (i : 'uident) _ (loc : Ploc.t) ->
+        (fun (def : 'opt_macro_expr) (i : 'uident) _ (loc : Ploc.t) ->
            (SdDef (i, def) : 'str_macro_def))]];
     Grammar.Entry.obj (sig_macro_def : 'sig_macro_def Grammar.Entry.e), None,
     [None, None,
@@ -399,10 +448,13 @@ Grammar.extend
       Gramext.action
         (fun (i : 'uident) _ (loc : Ploc.t) -> (SdUnd i : 'sig_macro_def));
       [Gramext.Stoken ("", "DEFINE");
-       Gramext.Snterm (Grammar.Entry.obj (uident : 'uident Grammar.Entry.e))],
+       Gramext.Snterm (Grammar.Entry.obj (uident : 'uident Grammar.Entry.e));
+       Gramext.Snterm
+         (Grammar.Entry.obj
+            (opt_macro_type : 'opt_macro_type Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'uident) _ (loc : Ploc.t) ->
-           (SdDef (i, None) : 'sig_macro_def))]];
+        (fun (def : 'opt_macro_type) (i : 'uident) _ (loc : Ploc.t) ->
+           (SdDef (i, def) : 'sig_macro_def))]];
     Grammar.Entry.obj
       (str_item_or_macro : 'str_item_or_macro Grammar.Entry.e),
     None,
@@ -435,15 +487,15 @@ Grammar.extend
       Gramext.action
         (fun (d : 'sig_macro_def) (loc : Ploc.t) ->
            (d : 'sig_item_or_macro))]];
-    Grammar.Entry.obj (opt_macro_value : 'opt_macro_value Grammar.Entry.e),
+    Grammar.Entry.obj (opt_macro_expr : 'opt_macro_expr Grammar.Entry.e),
     None,
     [None, None,
-     [[], Gramext.action (fun (loc : Ploc.t) -> (None : 'opt_macro_value));
+     [[], Gramext.action (fun (loc : Ploc.t) -> (MvNone : 'opt_macro_expr));
       [Gramext.Stoken ("", "=");
        Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
       Gramext.action
         (fun (e : 'expr) _ (loc : Ploc.t) ->
-           (Some ([], e) : 'opt_macro_value));
+           (MvExpr ([], e) : 'opt_macro_expr));
       [Gramext.Stoken ("", "(");
        Gramext.Slist1sep
          (Gramext.Stoken ("LIDENT", ""), Gramext.Stoken ("", ","));
@@ -451,7 +503,24 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
       Gramext.action
         (fun (e : 'expr) _ _ (pl : string list) _ (loc : Ploc.t) ->
-           (Some (pl, e) : 'opt_macro_value))]];
+           (MvExpr (pl, e) : 'opt_macro_expr))]];
+    Grammar.Entry.obj (opt_macro_type : 'opt_macro_type Grammar.Entry.e),
+    None,
+    [None, None,
+     [[], Gramext.action (fun (loc : Ploc.t) -> (MvNone : 'opt_macro_type));
+      [Gramext.Stoken ("", "=");
+       Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
+      Gramext.action
+        (fun (t : 'ctyp) _ (loc : Ploc.t) ->
+           (MvType ([], t) : 'opt_macro_type));
+      [Gramext.Stoken ("", "(");
+       Gramext.Slist1sep
+         (Gramext.Stoken ("LIDENT", ""), Gramext.Stoken ("", ","));
+       Gramext.Stoken ("", ")"); Gramext.Stoken ("", "=");
+       Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
+      Gramext.action
+        (fun (t : 'ctyp) _ _ (pl : string list) _ (loc : Ploc.t) ->
+           (MvType (pl, t) : 'opt_macro_type))]];
     Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
     Some (Gramext.Level "top"),
     [None, None,
@@ -529,7 +598,7 @@ Grammar.extend
      [[Gramext.Stoken ("UIDENT", "")],
       Gramext.action (fun (i : string) (loc : Ploc.t) -> (i : 'uident))]]]);;
 
-Pcaml.add_option "-D" (Arg.String (define None))
+Pcaml.add_option "-D" (Arg.String (define MvNone))
   "<string> Define for IFDEF instruction.";;
 
 Pcaml.add_option "-U" (Arg.String undef)

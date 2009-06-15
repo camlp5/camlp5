@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.42 2007/09/07 04:31:52 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.43 2007/09/07 04:36:35 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -792,7 +792,7 @@ EXTEND
       | "-"; "'"; i = ident -> (i, (False, True)) ] ]
   ;
   constructor_declaration:
-    [ [ ci = cons_ident; "of"; cal = LIST1 (ctyp LEVEL "ctyp1") SEP "*" ->
+    [ [ ci = cons_ident; "of"; cal = LIST1 (ctyp LEVEL "apply") SEP "*" ->
           (loc, ci, cal)
       | ci = cons_ident -> (loc, ci, []) ] ]
   ;
@@ -816,7 +816,7 @@ EXTEND
     | "arrow" RIGHTA
       [ t1 = SELF; "->"; t2 = SELF -> <:ctyp< $t1$ -> $t2$ >> ]
     | "star"
-      [ t = SELF; "*"; tl = LIST1 (ctyp LEVEL "ctyp1") SEP "*" ->
+      [ t = SELF; "*"; tl = LIST1 (ctyp LEVEL "apply") SEP "*" ->
           <:ctyp< ( $list:[t :: tl]$ ) >> ]
     | "apply"
       [ t1 = SELF; t2 = SELF -> <:ctyp< $t2$ $t1$ >> ]
@@ -1132,9 +1132,9 @@ EXTEND
           <:patt< ? ( $lid:i$ : $t$ ) >> ] ]
   ;
   class_type:
-    [ [ i = LIDENT; ":"; t = ctyp LEVEL "ctyp1"; "->"; ct = SELF ->
+    [ [ i = LIDENT; ":"; t = ctyp LEVEL "apply"; "->"; ct = SELF ->
           <:class_type< [ ~ $i$ : $t$ ] -> $ct$ >>
-      | i = QUESTIONIDENTCOLON; t = ctyp LEVEL "ctyp1"; "->"; ct = SELF ->
+      | i = QUESTIONIDENTCOLON; t = ctyp LEVEL "apply"; "->"; ct = SELF ->
           <:class_type< [ ? $i$ : $t$ ] -> $ct$ >> ] ]
   ;
   class_fun_binding:
