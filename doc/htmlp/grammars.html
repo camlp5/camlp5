@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.56 2007/07/19 03:48:24 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.57 2007/07/19 08:44:14 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -573,14 +573,14 @@ instead of "<tt>loc</tt>".</p>
 
 <dl>
   <dt><tt>type g = 'abstract;</tt></dt>
-  <dd><br/>
+  <dd>
     The type of grammars, holding entries.
   </dd>
 </dl>
 
 <dl>
   <dt><tt>value gcreate : Token.glexer (string * string) -> g;</tt></dt>
-  <dd><br/>
+  <dd>
     Create a new grammar, without keywords, using the lexer given as
     parameter.
   </dd>
@@ -588,7 +588,7 @@ instead of "<tt>loc</tt>".</p>
 
 <dl>
   <dt><tt>value tokens : g -> string -> list (string * int);</tt></dt>
-  <dd><br/>
+  <dd>
     Given a grammar and a token pattern constructor, returns the list of
     the corresponding values currently used in all entries of this grammar.
     The integer is the number of times this pattern value is used.
@@ -606,7 +606,7 @@ instead of "<tt>loc</tt>".</p>
 
 <dl>
   <dt><tt>value glexer : g -> Token.glexer token;</tt></dt>
-  <dd><br/>
+  <dd>
     Return the lexer used by the grammar
   </dd>
 </dl>
@@ -614,7 +614,7 @@ instead of "<tt>loc</tt>".</p>
 <dl>
   <dt><tt>type parsable = 'abstract;</tt></dt>
   <dt><tt>value parsable : g -> Stream.t char -> parsable;</tt></dt>
-  <dd><br/>
+  <dd>
     Type and value allowing to keep the same token stream between
     several calls of entries of the same grammar, to prevent loss of
     tokens. To be used with <tt>Entry.parse_parsable</tt> below
@@ -664,7 +664,7 @@ module Entry =
 
 <dl>
   <dt><tt>value of_entry : Entry.e 'a -> g;</tt></dt>
-  <dd><br/>Return the grammar associated with an entry.</dd>
+  <dd>Return the grammar associated with an entry.</dd>
 </dl>
 
 <h3>Clearing grammars and entries</h3>
@@ -761,14 +761,14 @@ module type S =
 
 <dl>
   <dt><tt>module GMake (L : GLexerType) : S with type te = L.te;</tt></dt>
-  <dd><br/></dd>
+  <dd></dd>
 </dl>
 
 <h3>Miscellaneous</h3>
 
 <dl>
   <dt><tt>value error_verbose : ref bool;</tt></dt>
-  <dd><br/>
+  <dd>
     Flag for displaying more information in case of parsing error;
     default = [False].
   </dd>
@@ -776,14 +776,14 @@ module type S =
 
 <dl>
   <dt><tt>value warning_verbose : ref bool;</tt></dt>
-  <dd><br/>
+  <dd>
     Flag for displaying warnings while extension; default = [True].
   </dd>
 </dl>
 
 <dl>
   <dt><tt>value strict_parsing : ref bool;</tt></dt>
-  <dd><br/>
+  <dd>
     Flag to apply strict parsing, without trying to recover errors;
     default = [False].
   </dd>
@@ -791,14 +791,14 @@ module type S =
 
 <dl>
   <dt><tt>value print_entry : Format.formatter -> Gramext.g_entry 'te -> unit;</tt></dt>
-  <dd><br/>
+  <dd>
     General printer for all kinds of entries (obj entries).
   </dd>
 </dl>
 
 <dl>
   <dt><tt>value iter_entry : (Gramext.g_entry 'te -> unit) -> Gramext.g_entry 'te -> unit;</tt></dt>
-  <dd><br/>
+  <dd>
     [Grammar.iter_entry f e] applies [f] to the entry [e] and
     transitively all entries called by [e]. The order in which
     the entries are passed to [f] is the order they appear in
@@ -808,7 +808,7 @@ module type S =
 
 <dl>
   <dt><tt>value fold_entry : (Gramext.g_entry 'te -> 'a -> 'a) -> Gramext.g_entry 'te -> 'a -> 'a;</tt></dt>
-  <dd><br/>
+  <dd>
     [Grammar.fold_entry f e init] computes [(f eN .. (f e2 (f e1 init)))],
     where [e1 .. eN] are [e] and transitively all entries called by [e].
     The order in which the entries are passed to [f] is the order they
