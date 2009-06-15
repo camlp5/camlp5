@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: sources.html,v 1.2 2007/08/21 04:04:47 deraugla Exp $ -->
+  <!-- $Id: sources.html,v 1.3 2007/08/21 08:26:39 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>camlp5 sources</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -24,16 +24,37 @@
 <div id="tableofcontents">
 </div>
 
-<h2>Overview</h2>
+<h2>Kernel</h2>
 
-<p>Although the sources of camlp5 are written in camlp5 syntaxes, the
-  distribution contains no 'magic' binary file for the first
-  compilation.</p>
+<p>The sources are composed of:</p>
 
-<p>This first compilation can be done thanks to a version of the core
-  of camlp5 written in pure ocaml syntax. Once this 'core' is
-  compiled, all sources in revised syntax with syntax extensions can
-  be compiled.</p>
+<ul>
+  <li>the ocaml stuff, copied from the ocaml compiler</li>
+  <li>the <em>kernel</em> composed of the directories:
+    <ul>
+      <li>odyl : the dynamic loading system</li>
+      <li>lib : the library</li>
+      <li>main : the main program camlp5</li>
+      <li>meta : the parsers for revised syntax, ast quotations,
+        EXTEND statement, etc/</li>
+    </ul>
+  </li>
+  <li>the rest: directories etc, compile, ocpp</li>
+</ul>
+
+<p>Some other directories contain configuration files, tools,
+  documentation and manual pages.</p>
+
+<p>The kernel is sufficient to make the core system work: it is possible
+  to compile and bootstrap only it. All sources being in revised syntax,
+  the first compilation of camlp5 is done by a version of this kernel
+  in pure ocaml syntax, located in the directory ocaml_src.</p>
+
+<p>These sources in pure ocaml syntax are not modified by hand. When
+  changes are done in the kernel, and when the check is done that it
+  correctly compiles and bootstraps, the kernel in pure ocaml syntax
+  is rebuilt using camlp5 pretty print. This is done by the command
+  "make bootstrap_sources".</p>
 
 <h2>Compatibility</h2>
 
