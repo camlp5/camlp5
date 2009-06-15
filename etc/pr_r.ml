@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.89 2007/11/28 13:19:10 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.90 2007/11/28 17:07:10 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -892,19 +892,8 @@ value sig_module_or_module_type pref defc pc (m, mt) =
       | mt -> ([], mt) ]
   in
   let module_arg pc (s, mt) =
-    horiz_vertic
-      (fun () ->
-         sprintf "%s(%s : %s)%s" pc.bef s
-           (module_type {(pc) with bef = ""; aft = ""} mt) pc.aft)
-      (fun () ->
-         let s1 = sprintf "%s(%s :" pc.bef s in
-         let s2 =
-           module_type
-             {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
-              aft = sprintf ")%s" pc.aft}
-             mt
-         in
-         sprintf "%s\n%s" s1 s2)
+    break 1 pc (fun pc -> sprintf "%s(%s :" pc.bef s)
+      (fun pc -> module_type {(pc) with aft = sprintf ")%s" pc.aft} mt)
   in
   horiz_vertic
     (fun () ->
@@ -945,19 +934,9 @@ value str_or_sig_functor pc s mt module_expr_or_type met =
            (fun () ->
               let s1 = sprintf "%sfunctor" pc.bef in
               let s2 =
-                horiz_vertic
-                  (fun () ->
-                     sprintf "%s(%s : %s)" (tab (pc.ind + 2)) s
-                       (module_type {(pc) with bef = ""; aft = ""} mt))
-                  (fun () ->
-                     let s1 = sprintf "%s(%s :" (tab (pc.ind + 2)) s in
-                     let s2 =
-                       module_type
-                         {(pc) with ind = pc.ind + 3;
-                          bef = tab (pc.ind + 3); aft = ")"}
-                         mt
-                     in
-                     sprintf "%s\n%s" s1 s2)
+                break 3 pc
+                  (fun pc -> sprintf "%s(%s :" (tab (pc.ind + 2)) s)
+                  (fun pc -> module_type {(pc) with aft = ")"} mt)
               in
               let s3 = sprintf "%s->" (tab pc.ind) in
               sprintf "%s\n%s\n%s" s1 s2 s3)
