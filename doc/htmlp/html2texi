@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2texi,v 1.4 2007/08/27 03:37:47 deraugla Exp $
+# $Id: html2texi,v 1.5 2007/08/27 03:46:15 deraugla Exp $
 
 FILES1="index.html ptools.html"
 FILES2="parsers.html lexers.html fparsers.html grammars.html"
@@ -83,6 +83,8 @@ for i in $FILES; do
     sed \
       -e 's|</p>|\n</p>|' |
     sed \
+      -e '/<div id="tableofcontents">/,/<\/div>/d' \
+      -e '/<div class="trailer">/,$d' \
       -e '1,/<h1/d' \
       -e 's|{| |g' -e 's|}| |g' \
       -e 's|@| |g' \
@@ -92,7 +94,6 @@ for i in $FILES; do
       -e 's|^ *<ul>|@itemize|' -e 's|</ul>|@end itemize|' \
       -e 's|^ *<ol>|@enumerate|' -e 's|</ol>|@end enumerate|' \
       -e 's|^ *<li>|@item |' -e 's|</li>||' \
-      -e '/<div id="tableofcontents">/,/<\/div>/d' \
       -e 's|<h2>|@section |' -e 's|</h2>||' \
       -e 's|<em>|@emph{|g' -e 's|</em>|}|g' \
       -e 's|<tt>|@code{|g' -e 's|</tt>|}|g' \
