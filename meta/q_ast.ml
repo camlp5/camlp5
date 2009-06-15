@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.22 2007/08/13 23:21:22 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.23 2007/08/13 23:40:02 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -390,26 +390,26 @@ EXTEND
     [ [ "do"; "{"; el = LIST0 Pcaml.expr SEP ";"; "}" ->
           MLast.ExSeq loc el ] ]
   ;
-  Pcaml.expr: LEVEL "simple"
+  Pcaml.expr: LAST
     [ [ s = ANTIQUOT_LOC "anti" -> MLast.ExAnt loc (MLast.ExLid loc s)
       | s = ANTIQUOT_LOC -> MLast.ExAnt loc (MLast.ExStr loc s) ] ]
   ;
-  Pcaml.patt: LEVEL "simple"
+  Pcaml.patt: LAST
     [ [ s = ANTIQUOT_LOC "anti" -> MLast.PaAnt loc (MLast.PaLid loc s)
       | s = ANTIQUOT_LOC -> MLast.PaAnt loc (MLast.PaStr loc s) ] ]
   ;
-  Pcaml.ctyp: LEVEL "simple"
+  Pcaml.ctyp: LAST
     [ [ s = ANTIQUOT_LOC -> MLast.TyUid loc s ] ]
   ;
-  Pcaml.str_item:
+  Pcaml.str_item: LAST
     [ [ s = ANTIQUOT_LOC "exp" ->
           let e = MLast.ExAnt loc (MLast.ExLid loc s) in
           MLast.StExp loc e ] ]
   ;
-  Pcaml.module_expr: LEVEL "simple"
+  Pcaml.module_expr: LAST
     [ [ s = ANTIQUOT_LOC -> MLast.MeUid loc s ] ]
   ;
-  Pcaml.module_type: LEVEL "simple"
+  Pcaml.module_type: LAST
     [ [ s = ANTIQUOT_LOC -> MLast.MtUid loc s ] ]
   ;
 END;
