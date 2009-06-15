@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: mLast.mli,v 1.28 2007/09/10 18:19:31 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.29 2007/09/10 22:46:41 deraugla Exp $ *)
 
 (* Module [MLast]: abstract syntax tree.
 
@@ -42,7 +42,7 @@ type ctyp =
   | TyPol of loc and list string and ctyp
   | TyQuo of loc and V string
   | TyRec of loc and list (loc * string * bool * ctyp)
-  | TySum of loc and list (loc * string * list ctyp)
+  | TySum of loc and list (loc * V string * V (list ctyp))
   | TyTup of loc and V (list ctyp)
   | TyUid of loc and V string
   | TyVrn of loc and list poly_variant and option (option (list string))
@@ -146,7 +146,7 @@ and sig_item =
   | SgClt of loc and list (class_infos class_type)
   | SgDcl of loc and V (list sig_item)
   | SgDir of loc and string and option expr
-  | SgExc of loc and string and list ctyp
+  | SgExc of loc and V string and V (list ctyp)
   | SgExt of loc and string and ctyp and list string
   | SgInc of loc and module_type
   | SgMod of loc and bool and list (string * module_type)
@@ -173,7 +173,7 @@ and str_item =
   | StClt of loc and list (class_infos class_type)
   | StDcl of loc and V (list str_item)
   | StDir of loc and string and option expr
-  | StExc of loc and string and list ctyp and list string
+  | StExc of loc and V string and V (list ctyp) and list string
   | StExp of loc and expr
   | StExt of loc and string and ctyp and list string
   | StInc of loc and module_expr

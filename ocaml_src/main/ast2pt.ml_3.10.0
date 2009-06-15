@@ -113,7 +113,11 @@ let array_function str name =
   ldot (lident str) (if !fast then "unsafe_" ^ name else name)
 ;;
 
-let uv x = x;;
+let uv c =
+  match c, "" with
+    c, "" -> c
+  | _ -> invalid_arg "Ast2pt.uv"
+;;
 
 let mkrf =
   function
@@ -231,18 +235,22 @@ let mktrecord (loc, n, m, t) =
   n, mkmutable m, ctyp (mkpolytype t), mkloc loc
 ;;
 let mkvariant (loc, c, tl) = conv_con c, List.map ctyp tl, mkloc loc;;
+let mkvariant2 (loc, c, tl) =
+  conv_con (uv c), List.map ctyp (uv tl), mkloc loc
+;;
+
 let type_decl tl priv cl =
   function
     TyMan (loc, t, TyRec (_, ltl)) ->
       mktype loc tl cl (Ptype_record (List.map mktrecord ltl, priv))
         (Some (ctyp t))
   | TyMan (loc, t, TySum (_, ctl)) ->
-      mktype loc tl cl (Ptype_variant (List.map mkvariant ctl, priv))
+      mktype loc tl cl (Ptype_variant (List.map mkvariant2 ctl, priv))
         (Some (ctyp t))
   | TyRec (loc, ltl) ->
       mktype loc tl cl (Ptype_record (List.map mktrecord ltl, priv)) None
   | TySum (loc, ctl) ->
-      mktype loc tl cl (Ptype_variant (List.map mkvariant ctl, priv)) None
+      mktype loc tl cl (Ptype_variant (List.map mkvariant2 ctl, priv)) None
   | t ->
       let m =
         match t with
@@ -880,7 +888,7 @@ and sig_item s l =
   | SgDcl (loc, sl) -> List.fold_right sig_item (uv sl) l
   | SgDir (loc, _, _) -> l
   | SgExc (loc, n, tl) ->
-      mksig loc (Psig_exception (n, List.map ctyp tl)) :: l
+      mksig loc (Psig_exception (uv n, List.map ctyp (uv tl))) :: l
   | SgExt (loc, n, t, p) -> mksig loc (Psig_value (n, mkvalue_desc t p)) :: l
   | SgInc (loc, mt) -> mksig loc (Psig_include (module_type mt)) :: l
   | SgMod (loc, rf, ntl) ->
@@ -927,9 +935,9 @@ and str_item s l =
   | StDir (loc, _, _) -> l
   | StExc (loc, n, tl, sl) ->
       let si =
-        match tl, sl with
-          tl, [] -> Pstr_exception (n, List.map ctyp tl)
-        | [], sl -> Pstr_exn_rebind (n, long_id_of_string_list loc sl)
+        match uv tl, sl with
+          tl, [] -> Pstr_exception (uv n, List.map ctyp tl)
+        | [], sl -> Pstr_exn_rebind (uv n, long_id_of_string_list loc sl)
         | _ -> error loc "bad exception declaration"
       in
       mkstr loc si :: l

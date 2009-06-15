@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.13 2007/09/05 15:42:04 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.14 2007/09/10 22:46:41 deraugla Exp $ *)
 
 open Pcaml.OldPrinters;
 open Format;
@@ -185,16 +185,24 @@ value and_by_couple_op_list = ["="; "<>"; "<"; ">"; "<="; ">="; "=="; "!="];
 
 (* extensible pretty print functions *)
 
+value uv c =
+  match (c, "") with
+  [ (<:vala< c >>, "") -> c
+  | _ -> assert False ]
+;
+
 pr_constr_decl.pr_levels :=
   [{pr_label = "top";
     pr_box ppf f x = fprintf ppf "@[%t@]" f;
     pr_rules =
       extfun Extfun.empty with
-      [ (loc, c, []) ->
-          fun ppf curr next dg k -> fprintf ppf "(@[<hv>%s%t@]" c (ks ")" k)
-      | (loc, c, tl) ->
+      [ (loc, c, <:vala< [] >>) ->
           fun ppf curr next dg k ->
-            fprintf ppf "(@[<hv>%s@ %a@]" c (list ctyp) (tl, ks ")" k) ]}];
+            fprintf ppf "(@[<hv>%s%t@]" (uv c) (ks ")" k)
+      | (loc, c, <:vala< tl >>) ->
+          fun ppf curr next dg k ->
+            fprintf ppf "(@[<hv>%s@ %a@]" (uv c) (list ctyp)
+              (tl, ks ")" k) ]}];
 
 pr_ctyp.pr_levels :=
   [{pr_label = "top";

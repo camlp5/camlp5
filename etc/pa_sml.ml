@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_sml.ml,v 1.14 2007/09/01 21:20:34 deraugla Exp $ *)
+(* $Id: pa_sml.ml,v 1.15 2007/09/10 22:46:41 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -192,8 +192,8 @@ value extract_label_types loc tn tal cdol =
                 MLast.tdCon = []}
              in
              let tl = [<:ctyp< $lid:new_tn$ >>] in
-             ([(loc, c, tl) :: cdl], [aux_def :: aux])
-         | None -> ([(loc, c, tl) :: cdl], aux) ])
+             ([(loc, <:vala< c >>, <:vala< tl >>) :: cdl], [aux_def :: aux])
+         | None -> ([(loc, <:vala< c >>, <:vala< tl >>) :: cdl], aux) ])
       cdol ([], [])
   in
   let td1 =
@@ -646,7 +646,10 @@ EXTEND
           {MLast.tdNam = (loc, uncap x2); MLast.tdPrm = x1;
            MLast.tdPrv =  False; MLast.tdDef = x3; MLast.tdCon = []}
       | x1 = tyvars; x2 = idd; "="; x3 = ctyp; "=="; x4 = dbrhs ->
-          let x4 = List.map (fun (loc, c, tl, _) -> (loc, c, tl)) x4 in
+          let x4 =
+            List.map
+              (fun (loc, c, tl, _) -> (loc, <:vala< c>>, <:vala< tl >>)) x4
+          in
           {MLast.tdNam = (loc, uncap x2); MLast.tdPrm = x1;
            MLast.tdPrv =  False;
            MLast.tdDef = <:ctyp< $x3$ == [ $list:x4$ ] >>;

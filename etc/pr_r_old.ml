@@ -172,6 +172,12 @@ and label is_last b (loc, f, m, t) k =
 
 value rec ctyp_list tel k = listws ctyp (S LR "and") tel k;
 
+value uv c =
+  match (c, "") with
+  [ (<:vala< c >>, "") -> c
+  | _ -> assert False ]
+;
+
 value rec variants loc b vl k =
   match vl with
   [ [] -> [: b; k :]
@@ -181,6 +187,8 @@ value rec variants loc b vl k =
                `LocInfo (Ploc.after loc 0 1) (HVbox k) :] :]
   | [v :: l] -> [: `variant b v [: :]; variants loc [: `S LR "|" :] l k :] ]
 and variant b (loc, c, tl) k =
+  let c = uv c in
+  let tl = uv tl in
   match tl with
   [ [] -> HVbox [: `LocInfo loc (HVbox b); `HOVbox [: `S LR c; k :] :]
   | _ ->
@@ -745,7 +753,8 @@ pr_sig_item.pr_levels :=
           fun curr next _ k -> [: `not_impl "sig_item1" si :]
       | <:sig_item< exception $c$ of $list:tl$ >> ->
           fun curr next _ k ->
-            [: `variant [: `S LR "exception" :] (loc, c, tl) k :]
+            [: `variant [: `S LR "exception" :]
+                  (loc, <:vala< c >>, <:vala< tl >>) k :]
       | <:sig_item< value $s$ : $t$ >> ->
           fun curr next _ k -> [: `value_description s t k :]
       | <:sig_item< include $mt$ >> ->
@@ -801,7 +810,7 @@ pr_str_item.pr_levels :=
                 " *)"
             in
             [: `S LR s :]
-      | <:str_item< exception $c$ of $list:tl$ = $b$ >> ->
+      | <:str_item< exception $auid:c$ of $alist:tl$ = $b$ >> ->
           fun curr next _ k ->
             match b with
             [ [] -> [: `variant [: `S LR "exception" :] (loc, c, tl) k :]

@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.65 2007/09/05 15:42:04 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.66 2007/09/10 22:46:41 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -666,7 +666,15 @@ value label_decl pc (_, l, m, t) =
        sprintf "%s\n%s" s1 s2)
 ;
 
+value uv c =
+  match (c, "") with
+  [ (<:vala< c >>, "") -> c
+  | _ -> assert False ]
+;
+
 value cons_decl pc (_, c, tl) =
+  let c = uv c in
+  let tl = uv tl in
   if tl = [] then cons_escaped pc c
   else
     horiz_vertic
@@ -694,7 +702,14 @@ value cons_decl pc (_, c, tl) =
          sprintf "%s\n%s" s1 s2)
 ;
 
-value has_cons_with_params vdl = List.exists (fun (_, _, tl) -> tl <> []) vdl;
+value has_cons_with_params vdl =
+  List.exists
+    (fun (_, _, tl) ->
+       match tl with
+       [ <:vala< [] >> -> False
+       | _ -> True ])
+    vdl
+;
 
 value rec get_else_if =
   fun

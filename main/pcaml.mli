@@ -1,16 +1,12 @@
-(* camlp5r *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
+(* camlp5r pa_macro.cmo *)
+(* $Id: pcaml.mli,v 1.16 2007/09/10 22:46:41 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
-(* $Id: pcaml.mli,v 1.15 2007/09/08 09:18:14 deraugla Exp $ *)
+IFNDEF STRICT THEN
+  DEFINE V t = t
+ELSE
+  DEFINE V t = Ploc.vala t
+END;
 
 (** Language grammar, entries and printers.
 
@@ -56,7 +52,7 @@ value type_declaration : Grammar.Entry.e MLast.type_decl;
 value match_case :
   Grammar.Entry.e (MLast.patt * option MLast.expr * MLast.expr);
 value constructor_declaration :
-  Grammar.Entry.e (MLast.loc * string * list MLast.ctyp);
+  Grammar.Entry.e (MLast.loc * V string * V (list MLast.ctyp));
 value class_sig_item : Grammar.Entry.e MLast.class_sig_item;
 value class_str_item : Grammar.Entry.e MLast.class_str_item;
 value class_expr : Grammar.Entry.e MLast.class_expr;

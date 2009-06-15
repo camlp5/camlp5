@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.66 2007/09/10 20:43:09 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.67 2007/09/10 22:46:41 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -134,7 +134,7 @@ EXTEND
       [ "declare"; st = V LIST0 [ s = str_item; ";" -> s ]; "end" ->
           <:str_item< declare $alist:st$ end >>
       | "exception"; (_, c, tl) = constructor_declaration; b = rebind_exn ->
-          <:str_item< exception $uid:c$ of $list:tl$ = $b$ >>
+          <:str_item< exception $auid:c$ of $alist:tl$ = $b$ >>
       | "external"; i = LIDENT; ":"; t = ctyp; "="; pd = LIST1 STRING ->
           <:str_item< external $lid:i$ : $t$ = $list:pd$ >>
       | "include"; me = module_expr -> <:str_item< include $me$ >>
@@ -184,7 +184,7 @@ EXTEND
       [ "declare"; st = V LIST0 [ s = sig_item; ";" -> s ]; "end" ->
           <:sig_item< declare $alist:st$ end >>
       | "exception"; (_, c, tl) = constructor_declaration ->
-          <:sig_item< exception $c$ of $list:tl$ >>
+          <:sig_item< exception $auid:c$ of $alist:tl$ >>
       | "external"; i = LIDENT; ":"; t = ctyp; "="; pd = LIST1 STRING ->
           <:sig_item< external $i$ : $t$ = $list:pd$ >>
       | "include"; mt = module_type -> <:sig_item< include $mt$ >>
@@ -481,13 +481,13 @@ EXTEND
       | "("; t = SELF; ")" -> <:ctyp< $t$ >>
       | "("; tl = V LIST1 ctyp SEP "*"; ")" -> <:ctyp< ( $alist:tl$ ) >>
       | "["; cdl = LIST0 constructor_declaration SEP "|"; "]" ->
-          <:ctyp< [ $list:cdl$ ] >>
+          <:ctyp< [ $alist:cdl$ ] >>
       | "{"; ldl = LIST1 label_declaration SEP ";"; "}" ->
           <:ctyp< { $list:ldl$ } >> ] ]
   ;
   constructor_declaration:
-    [ [ ci = UIDENT; "of"; cal = LIST1 ctyp SEP "and" -> (loc, ci, cal)
-      | ci = UIDENT -> (loc, ci, []) ] ]
+    [ [ ci = V UIDENT; "of"; cal = V LIST1 ctyp SEP "and" -> (loc, ci, cal)
+      | ci = V UIDENT -> (loc, ci, <:vala< [] >>) ] ]
   ;
   label_declaration:
     [ [ i = LIDENT; ":"; mf = FLAG "mutable"; t = ctyp ->

@@ -905,7 +905,8 @@ and ctyp_se =
 and constructor_declaration_se =
   fun
   [ Sexpr loc [Suid _ ci :: sel] ->
-      (loc, Pcaml.rename_id.val ci, List.map ctyp_se sel)
+      (loc, <:vala< (Pcaml.rename_id.val ci) >>,
+       <:vala< (List.map ctyp_se sel) >>)
   | se -> error se "constructor_declaration" ]
 and label_declaration_se =
   fun

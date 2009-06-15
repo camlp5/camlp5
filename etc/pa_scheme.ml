@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.15 2007/09/05 15:42:04 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.16 2007/09/10 22:46:41 deraugla Exp $
 
 (open Pcaml)
 
@@ -864,7 +864,8 @@
   (constructor_declaration_se
    (lambda_match
     ((Sexpr loc [(Suid _ ci) . sel])
-     (values loc (Pcaml.rename_id.val ci) (List.map ctyp_se sel)))
+     (values loc <:vala< (Pcaml.rename_id.val ci) >>
+        <:vala< (List.map ctyp_se sel) >>))
     (se
      (error se "constructor_declaration"))))
   (label_declaration_se

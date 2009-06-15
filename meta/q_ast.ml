@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.52 2007/09/10 18:19:31 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.53 2007/09/10 22:46:41 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -746,3 +746,17 @@ List.iter
    ("module_expr",
     apply_entry module_expr_eoi Meta.e_module_expr Meta.p_module_expr)]
 ;
+
+let expr s =
+  let e = Grammar.Entry.parse Pcaml.expr_eoi (Stream.of_string s) in
+  let loc = Ploc.make_unlined (0, 0) in
+  if Pcaml.strict_mode.val then <:expr< Ploc.VaVal $anti:e$ >>
+  else <:expr< $anti:e$ >>
+in
+let patt s =
+  let p = Grammar.Entry.parse Pcaml.patt_eoi (Stream.of_string s) in
+  let loc = Ploc.make_unlined (0, 0) in
+  if Pcaml.strict_mode.val then <:patt< Ploc.VaVal $anti:p$ >>
+  else <:patt< $anti:p$ >>
+in
+Quotation.add "vala" (Quotation.ExAst (expr, patt));

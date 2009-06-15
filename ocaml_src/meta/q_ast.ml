@@ -1312,3 +1312,27 @@ List.iter (fun (q, f) -> Quotation.add q f)
    "sig_item", apply_entry sig_item_eoi Meta.e_sig_item Meta.p_sig_item;
    "module_expr",
    apply_entry module_expr_eoi Meta.e_module_expr Meta.p_module_expr];;
+
+let expr s =
+  let e = Grammar.Entry.parse Pcaml.expr_eoi (Stream.of_string s) in
+  let loc = Ploc.make_unlined (0, 0) in
+  if !(Pcaml.strict_mode) then
+    MLast.ExApp
+      (loc,
+       MLast.ExAcc
+         (loc, MLast.ExUid (loc, "Ploc"), MLast.ExUid (loc, "VaVal")),
+       MLast.ExAnt (loc, e))
+  else MLast.ExAnt (loc, e)
+in
+let patt s =
+  let p = Grammar.Entry.parse Pcaml.patt_eoi (Stream.of_string s) in
+  let loc = Ploc.make_unlined (0, 0) in
+  if !(Pcaml.strict_mode) then
+    MLast.PaApp
+      (loc,
+       MLast.PaAcc
+         (loc, MLast.PaUid (loc, "Ploc"), MLast.PaUid (loc, "VaVal")),
+       MLast.PaAnt (loc, p))
+  else MLast.PaAnt (loc, p)
+in
+Quotation.add "vala" (Quotation.ExAst (expr, patt));;

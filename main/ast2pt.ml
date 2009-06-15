@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.28 2007/09/10 18:19:31 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.29 2007/09/10 22:46:41 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -116,14 +116,11 @@ value array_function str name =
   ldot (lident str) (if fast.val then "unsafe_" ^ name else name)
 ;
 
-IFNDEF STRICT THEN
-  value uv x = x
-ELSE
-  value uv =
-    fun
-    [ Ploc.VaAnt _ -> invalid_arg "unvala"
-    | Ploc.VaVal v -> v ]
-END;
+value uv c =
+  match (c, "") with
+  [ (<:vala< c >>, "") -> c
+  | _ -> invalid_arg "Ast2pt.uv" ]
+;
 
 value mkrf =
   fun
@@ -256,19 +253,27 @@ value mkvariant (loc, c, tl) =
     (conv_con c, List.map ctyp tl, mkloc loc)
   END
 ;
+value mkvariant2 (loc, c, tl) =
+  IFDEF OCAML_3_08 THEN
+    (conv_con (uv c), List.map ctyp (uv tl))
+  ELSE
+    (conv_con (uv c), List.map ctyp (uv tl), mkloc loc)
+  END
+;
+
 value type_decl tl priv cl =
   fun
   [ TyMan loc t (TyRec _ ltl) ->
       mktype loc tl cl (Ptype_record (List.map mktrecord ltl) priv)
         (Some (ctyp t))
   | TyMan loc t (TySum _ ctl) ->
-      mktype loc tl cl (Ptype_variant (List.map mkvariant ctl) priv)
+      mktype loc tl cl (Ptype_variant (List.map mkvariant2 ctl) priv)
         (Some (ctyp t))
   | TyRec loc ltl ->
       mktype loc tl cl (Ptype_record (List.map mktrecord ltl) priv)
         None
   | TySum loc ctl ->
-      mktype loc tl cl (Ptype_variant (List.map mkvariant ctl) priv) None
+      mktype loc tl cl (Ptype_variant (List.map mkvariant2 ctl) priv) None
   | t ->
       let m =
         match t with
@@ -773,7 +778,8 @@ and sig_item s l =
        l]
   | SgDcl loc sl -> List.fold_right sig_item (uv sl) l
   | SgDir loc _ _ -> l
-  | SgExc loc n tl -> [mksig loc (Psig_exception n (List.map ctyp tl)) :: l]
+  | SgExc loc n tl ->
+      [mksig loc (Psig_exception (uv n) (List.map ctyp (uv tl))) :: l]
   | SgExt loc n t p -> [mksig loc (Psig_value n (mkvalue_desc t p)) :: l]
   | SgInc loc mt -> [mksig loc (Psig_include (module_type mt)) :: l]
   | SgMod loc rf ntl ->
@@ -824,9 +830,9 @@ and str_item s l =
   | StDir loc _ _ -> l
   | StExc loc n tl sl ->
       let si =
-        match (tl, sl) with
-        [ (tl, []) -> Pstr_exception n (List.map ctyp tl)
-        | ([], sl) -> Pstr_exn_rebind n (long_id_of_string_list loc sl)
+        match (uv tl, sl) with
+        [ (tl, []) -> Pstr_exception (uv n) (List.map ctyp tl)
+        | ([], sl) -> Pstr_exn_rebind (uv n) (long_id_of_string_list loc sl)
         | _ -> error loc "bad exception declaration" ]
       in
       [mkstr loc si :: l]

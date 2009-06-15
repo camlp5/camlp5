@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: reloc.ml,v 1.19 2007/09/10 18:19:31 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.20 2007/09/10 22:46:41 deraugla Exp $ *)
 
 open MLast;
 
@@ -52,7 +52,9 @@ value rec ctyp floc sh =
           (List.map (fun (loc, x1, x2, x3) -> (floc loc, x1, x2, self x3)) x1)
     | TySum loc x1 ->
         TySum (floc loc)
-          (List.map (fun (loc, x1, x2) -> (floc loc, x1, List.map self x2))
+          (List.map
+             (fun (loc, x1, x2) ->
+                (floc loc, x1, vala_map (List.map self) x2))
              x1)
     | TyTup loc x1 -> TyTup (floc loc) (vala_map (List.map self) x1)
     | TyUid loc x1 -> TyUid (floc loc) x1
@@ -237,7 +239,8 @@ and sig_item floc sh =
         SgClt (floc loc) (List.map (class_infos class_type floc sh) x1)
     | SgDcl loc x1 -> SgDcl (floc loc) (vala_map (List.map self) x1)
     | SgDir loc x1 x2 -> SgDir (floc loc) x1 x2
-    | SgExc loc x1 x2 -> SgExc (floc loc) x1 (List.map (ctyp floc sh) x2)
+    | SgExc loc x1 x2 ->
+        SgExc (floc loc) x1 (vala_map (List.map (ctyp floc sh)) x2)
     | SgExt loc x1 x2 x3 -> SgExt (floc loc) x1 (ctyp floc sh x2) x3
     | SgInc loc x1 -> SgInc (floc loc) (module_type floc sh x1)
     | SgMod loc x1 x2 ->
@@ -277,7 +280,7 @@ and str_item floc sh =
     | StDcl loc x1 -> StDcl (floc loc) (vala_map (List.map self) x1)
     | StDir loc x1 x2 -> StDir (floc loc) x1 x2
     | StExc loc x1 x2 x3 ->
-        StExc (floc loc) x1 (List.map (ctyp floc sh) x2) x3
+        StExc (floc loc) x1 (vala_map (List.map (ctyp floc sh)) x2) x3
     | StExp loc x1 -> StExp (floc loc) (expr floc sh x1)
     | StExt loc x1 x2 x3 -> StExt (floc loc) x1 (ctyp floc sh x2) x3
     | StInc loc x1 -> StInc (floc loc) (module_expr floc sh x1)

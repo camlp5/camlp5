@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.46 2007/09/08 15:44:05 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.47 2007/09/10 22:46:41 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -364,7 +364,7 @@ EXTEND
   str_item:
     [ "top"
       [ "exception"; (_, c, tl) = constructor_declaration; b = rebind_exn ->
-          <:str_item< exception $c$ of $list:tl$ = $b$ >>
+          <:str_item< exception $auid:c$ of $alist:tl$ = $b$ >>
       | "external"; i = LIDENT; ":"; t = ctyp; "="; pd = LIST1 STRING ->
           <:str_item< external $i$ : $t$ = $list:pd$ >>
       | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
@@ -426,7 +426,7 @@ EXTEND
   sig_item:
     [ "top"
       [ "exception"; (_, c, tl) = constructor_declaration ->
-          <:sig_item< exception $c$ of $list:tl$ >>
+          <:sig_item< exception $auid:c$ of $alist:tl$ >>
       | "external"; i = LIDENT; ":"; t = ctyp; "="; pd = LIST1 STRING ->
           <:sig_item< external $i$ : $t$ = $list:pd$ >>
       | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
@@ -781,7 +781,7 @@ EXTEND
       | t = ctyp; "="; "{"; ldl = label_declarations; "}" ->
           <:ctyp< $t$ == { $list:ldl$ } >>
       | t = ctyp; "="; OPT "|"; cdl = LIST1 constructor_declaration SEP "|" ->
-          <:ctyp< $t$ == [ $list:cdl$ ] >>
+          <:ctyp< $t$ == [ $alist:cdl$ ] >>
       | "{"; ldl = label_declarations; "}" -> <:ctyp< { $list:ldl$ } >> ] ]
   ;
   type_parameters:
@@ -795,14 +795,14 @@ EXTEND
       | "-"; "'"; i = ident -> (i, (False, True)) ] ]
   ;
   constructor_declaration:
-    [ [ ci = cons_ident; "of"; cal = LIST1 (ctyp LEVEL "apply") SEP "*" ->
+    [ [ ci = cons_ident; "of"; cal = V LIST1 (ctyp LEVEL "apply") SEP "*" ->
           (loc, ci, cal)
-      | ci = cons_ident -> (loc, ci, []) ] ]
+      | ci = cons_ident -> (loc, ci, <:vala< [] >>) ] ]
   ;
   cons_ident:
-    [ [ i = UIDENT -> i
-      | UIDENT "True" -> " True"
-      | UIDENT "False" -> " False" ] ]
+    [ [ i = UIDENT -> <:vala< i >>
+      | UIDENT "True" -> <:vala< " True" >>
+      | UIDENT "False" -> <:vala< " False" >> ] ]
   ;
   label_declarations:
     [ [ ld = label_declaration; ";"; ldl = SELF -> [ld :: ldl]

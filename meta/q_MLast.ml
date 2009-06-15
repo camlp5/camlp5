@@ -1,16 +1,6 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: q_MLast.ml,v 1.65 2007/09/10 20:43:09 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.66 2007/09/10 22:46:41 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -899,9 +889,10 @@ EXTEND
           Qast.Node "TyRec" [Qast.Loc; ldl] ] ]
   ;
   constructor_declaration:
-    [ [ ci = a_UIDENT; "of"; cal = SLIST1 ctyp SEP "and" ->
+    [ [ ci = a_UIDENT2; "of"; cal = SV LIST1 ctyp SEP "and" ->
           Qast.Tuple [Qast.Loc; ci; cal]
-      | ci = a_UIDENT -> Qast.Tuple [Qast.Loc; ci; Qast.List []] ] ]
+      | ci = a_UIDENT2 ->
+          Qast.Tuple [Qast.Loc; ci; Qast.VaVal (Qast.List [])] ] ]
   ;
   label_declaration:
     [ [ i = a_LIDENT; ":"; mf = SFLAG "mutable"; t = ctyp ->

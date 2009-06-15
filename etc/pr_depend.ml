@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.24 2007/09/10 18:19:31 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.25 2007/09/10 22:46:41 deraugla Exp $ *)
 
 open MLast;
 
@@ -34,6 +34,12 @@ value longident =
   | _ -> () ]
 ;
 
+value uv c =
+  match (c, "") with
+  [ (<:vala< c >>, "") -> c
+  | _ -> invalid_arg "Ast2pt.uv" ]
+;
+
 value rec ctyp =
   fun
   [ TyAcc _ t _ -> ctyp_module t
@@ -52,7 +58,7 @@ value rec ctyp =
   | <:ctyp< ( $list:tl$ ) >> -> list ctyp tl
   | TyVrn _ sbtll _ -> list variant sbtll
   | x -> not_impl "ctyp" x ]
-and constr_decl (_, _, tl) = list ctyp tl
+and constr_decl (_, _, tl) = list ctyp (uv tl)
 and label_decl (_, _, _, t) = ctyp t
 and variant =
   fun
@@ -187,8 +193,8 @@ and str_item =
   [ StCls _ cil -> list (fun ci -> class_expr ci.ciExp) cil
   | <:str_item< declare $list:sil$ end >> -> list str_item sil
   | StDir _ _ _ -> ()
-  | StExc _ _ tl _ -> list ctyp tl
-  | StExp _ e -> expr e
+  | <:str_item< exception $_$ of $list:tl$ >> -> list ctyp tl
+  | <:str_item< $exp:e$ >> -> expr e
   | StExt _ _ t _ -> ctyp t
   | StMod _ _ nel -> list (fun (_, me) -> module_expr me) nel
   | StMty _ _ mt -> module_type mt
