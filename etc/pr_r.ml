@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.103 2007/12/03 18:59:12 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.104 2007/12/04 13:59:37 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -487,10 +487,7 @@ value match_assoc force_vertic pc (p, w, e) =
        let patt_arrow pc k =
          match w with
          [ <:vala< Some e >> ->
-             sprint_break 1 0 pc (fun pc -> patt_as pc p)
-               (fun pc ->
-                  sprint_break 1 2 pc (fun pc -> sprintf "%swhen" pc.bef)
-                    (fun pc -> expr {(pc) with aft = sprintf " ->%s" k} e))
+             pprintf pc "%p@ @[when@;%p ->%s@]" patt_as p expr e k
          | _ ->
              patt_as {(pc) with aft = sprintf " ->%s" k} p ]
        in
