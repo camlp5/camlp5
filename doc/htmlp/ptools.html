@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ptools.html,v 1.11 2007/08/27 12:02:39 deraugla Exp $ -->
+  <!-- $Id: ptools.html,v 1.12 2007/08/27 12:07:09 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>parsing and printing tools</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -64,35 +64,30 @@
   two kinds of streams parsers:</p>
 
 <ul>
-
-<li>The imperative <a href="parsers.html">streams parsers</a>, where
-  the elements are removed from the stream as long as they are parsed.
-  Parsers return either:
-
-  <ul>
-    <li>A value, in case of success,</li>
-    <li>The exception "<tt>Stream.Failure</tt>" when the parser does not
-      apply and no elements have been removed from the stream, indicating
-      that, possibly, other parsers may apply,</li>
-    <li>The exception "<tt>Stream.Error</tt>" when the parser does not
-      apply, but one or several elements have been removed from the
-      stream, indicating that nothing can to be done to make up the
-      error.</li>
-  </ul>
-
-</li>
-
-<li>The purely <a href="fparsers.html">functional stream parsers</a>
-  where the elements are not removed from the stream during the
-  parsing. These parsers return a value of type "option", i.e either:
-
-  <ul>
-    <li>"Some" a value and the remaining stream, in case of success,</li>
-    <li>"None", in case of failure.</li>
-  </ul>
-
-</li>
-
+  <li>The imperative <a href="parsers.html">streams parsers</a>, where
+    the elements are removed from the stream as long as they are
+    parsed.  Parsers return either:
+    <ul>
+      <li>A value, in case of success,</li>
+      <li>The exception "<tt>Stream.Failure</tt>" when the parser does
+        not apply and no elements have been removed from the stream,
+        indicating that, possibly, other parsers may apply,</li>
+      <li>The exception "<tt>Stream.Error</tt>" when the parser does
+        not apply, but one or several elements have been removed from
+        the stream, indicating that nothing can to be done to make up
+        the error.</li>
+    </ul>
+  </li>
+  <li>The purely <a href="fparsers.html">functional stream parsers</a>
+    where the elements are not removed from the stream during the
+    parsing. These parsers return a value of type "option", i.e
+    either:
+    <ul>
+      <li>"Some" a value and the remaining stream, in case of
+        success,</li>
+      <li>"None", in case of failure.</li>
+    </ul>
+  </li>
 </ul>
 
 <p>The differences are about:</p>

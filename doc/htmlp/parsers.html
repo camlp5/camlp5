@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: parsers.html,v 1.17 2007/08/27 12:02:39 deraugla Exp $ -->
+  <!-- $Id: parsers.html,v 1.18 2007/08/27 12:07:09 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -295,6 +295,7 @@ this:</p>
 <ul>
   <li>A direct test of one or several stream elements
     (called <b>terminal</b> symbol), in three ways:
+
     <ol>
       <li>The character "backquote" followed by a pattern, meaning: if
         the stream starts with an element which is matched by this
@@ -318,11 +319,13 @@ this:</p>
     "<code>y</code>". This expression is called a <b>non terminal</b>
     symbol. It means: call the expression (which is a parser) with the
     current stream. If this sub-parser:
+
     <ol>
       <li>Returns an element, the pattern is bound to this result and
         the next stream pattern component is tested.</li>
       <li>Raises the exception "<code>Stream.Failure</code>", there
         are two cases:
+
         <ul>
           <li>if the stream pattern component is the first one of the
             stream case, the current parser also fails with the
@@ -331,7 +334,9 @@ this:</p>
             the stream case, the current parser fails with the
             exception "<code>Stream.Error</code>".</li>
         </ul>
+
         In this second case:
+
         <ul>
           <li>If the stream pattern component is followed by a
             "question mark" and an expression (which must be of type
@@ -350,6 +355,7 @@ this:</p>
             stream pattern). See "no error optionization" below.</li>
           <li>Otherwise the exception parameter is the empty string.</li>
         </ul>
+
       </li>
     </ol>
   </li>
