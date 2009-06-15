@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.20 2007/09/06 12:00:46 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.21 2007/09/06 20:48:56 deraugla Exp $ *)
 
 (*
 Added statements:
@@ -83,7 +83,10 @@ value defined =
     [("CAMLP5", None); ("CAMLP5_4_02", None); ("OCAML_" ^ oversion, None)]
 ;
 
-value is_defined i = List.mem_assoc i defined.val;
+value is_defined i =
+  (i = "STRICT" && Pcaml.strict_mode.val) ||
+  List.mem_assoc i defined.val 
+;
 
 value print_defined () = do {
   List.iter

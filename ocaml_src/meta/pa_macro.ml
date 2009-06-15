@@ -82,7 +82,9 @@ let defined =
   ref ["CAMLP5", None; "CAMLP5_4_02", None; "OCAML_" ^ oversion, None]
 ;;
 
-let is_defined i = List.mem_assoc i !defined;;
+let is_defined i =
+  i = "STRICT" && !(Pcaml.strict_mode) || List.mem_assoc i !defined
+;;
 
 let print_defined () =
   List.iter
