@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2latex,v 1.28 2007/07/20 12:37:23 deraugla Exp $
+# $Id: html2latex,v 1.29 2007/07/20 13:42:58 deraugla Exp $
 
 FILES="index.html ptools.html revsynt.html parsers.html fparsers.html lexers.html grammars.html pretty.html opretty.html ml_ast.html pragma.html extfun.html"
 
@@ -42,7 +42,9 @@ pages.
 for i in $FILES; do
   /bin/echo '\cleardoublepage'
   cat $i |
-  sed -e 's|<p [^>]*>|<p>|g' |
+  sed \
+    -e 's/\\/\\backslash/g' \
+    -e 's|<p [^>]*>|<p>|g' |
   sed \
     -e '{:b; /<\/p>$/N; s|<\/p>\n *|<\/p>|g; tb}' \
     -e 's|</p><p>|\n\n\\\n\n\\noindent |g' \
@@ -83,8 +85,10 @@ for i in $FILES; do
     -e 's/_/\\_/g' \
     -e 's/#/\\#/g' \
     -e 's/\$/\\$/g' \
+    -e 's/\\backslash/$\\backslash$/g' \
     -e '/\\begin{verbatim}/,/\\end{verbatim}/s/\\_/_/g' \
     -e '/\\begin{verbatim}/,/\\end{verbatim}/s/\\#/#/g' \
+    -e '/\\begin{verbatim}/,/\\end{verbatim}/s/$\\backslash\$/\\/g' \
     -e '/\\begin{verbatim}/,/\\end{verbatim}/s/\\\$/$/g' \
     -e '/<div class="trailer">/,$d'
 done

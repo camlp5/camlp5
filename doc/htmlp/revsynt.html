@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: revsynt.html,v 1.13 2007/07/20 12:37:23 deraugla Exp $ -->
+  <!-- $Id: revsynt.html,v 1.14 2007/07/20 13:42:58 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>revised syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -77,6 +77,19 @@
         <td><tt>value x : int;</tt></td>
       </tr>
     </table>
+  </li>
+
+  <li>It is possible to group several declarations together either in
+    an interface or in an implementation by enclosing them between
+    "declare" and "end" (this is useful when using syntax extensions
+    to generate several declarations from one). Example in an
+    interface:
+<pre>
+  declare
+    type foo = [ Foo of int | Bar ];
+    value f : foo -> int;
+  end;
+</pre>
   </li>
 </ul>
 
@@ -315,7 +328,67 @@
   </li>
 </ul>
 
-<h3>Types</h3>
+<h3>Miscellaneous</h3>
+
+<ul>
+  <li>The "<tt>else</tt>" is mandatory in the "<tt>if</tt>"
+    statement:
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>if a then b</tt></td>
+        <td><tt>if a then b else ()</tt></td>
+      </tr>
+    </table>
+  </li>
+
+  <li>The boolean operations "<tt>or</tt>" and "<tt>and</tt>" can only
+    be written with "<tt>||</tt>" and "<tt>&amp;&amp;</tt>":
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>a or b &amp; c</tt></td>
+        <td><tt>a || b &amp;&amp; c</tt></td>
+      </tr>
+      <tr>
+        <td><tt>a || b &amp;&amp; c</tt></td>
+        <td><tt>a || b &amp;&amp; c</tt></td>
+      </tr>
+    </table>
+  </li>
+
+  <li>No more "<tt>begin end</tt>" construction. One must use
+    parentheses.</li>
+
+  <li>The operators as values are written with an backslash:
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>(+)</tt></td>
+        <td><tt>\+</tt></td>
+      </tr>
+      <tr>
+        <td><tt>(mod)</tt></td>
+        <td><tt>\mod</tt></td>
+      </tr>
+    </table>
+  </li>
+
+  <li>The operators with special characters are not automatically
+    infix. To define infixes, use the syntax extensions.
+  </li>
+</ul>
+
+<h2>Types and constructors</h2>
 
 <ul>
   <li>The type constructors are before their type parameters, which
@@ -481,14 +554,72 @@
         <td><tt>module M = Mod.Make M1 M2;</tt></td>
       </tr>
     </table>
-    </li>
+  </li>
 </ul>
 
 <h2>Objects</h2>
 
-<p>...<em>to be continued</em>...</p>
+<p>...<em>to be completed</em>...</p>
 
 <h2>Streams and parsers</h2>
+
+<ul>
+  <li>The streams and the stream patterns are bracketed with "<tt>[:</tt>"
+    and "<tt>:]</tt>" instead of "<tt>[&lt;</tt>" and "<tt>&gt;]</tt>".
+  </li>
+
+  <li>The stream component "terminal" is written with a backquote
+    instead of a quote:
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>[&lt; '1; '2; s; '3 &gt;]</tt></td>
+        <td><tt>[: `1; `2; s; `3 :]</tt></td>
+      </tr>
+    </table>
+   </li>
+
+   <li>The cases of parsers are bracketed with "<tt>[</tt>" and
+     "<tt>]</tt>", like for "fun", "match" and "try". If there is one
+     case, the brackets are not mandatory:
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>parser</tt></td>
+        <td><tt>parser</tt></td>
+      </tr>
+      <tr>
+        <td><tt>&nbsp;&nbsp;[&lt; 'Foo &gt;] -> e</tt></td>
+        <td><tt>[ [: `Foo :] -> e</tt></td>
+      </tr>
+      <tr>
+        <td><tt>| [&lt; p = f &gt;] -> f;;</tt></td>
+        <td><tt>| [: p = f :] -> f ];</tt></td>
+      </tr>
+      <tr>
+        <td><tt>parser [&lt; 'x &gt;] -> x;;</tt></td>
+        <td><tt>parser [: `x :] -> x;</tt></td>
+      </tr>
+    </table>
+  </li>
+
+   <li>It is possible to write the empty parser raising the exception
+     ``Stream.Failure'' whichever parameter is applied, and the empty
+     stream matching always raising ``Stream.Failure'':
+<pre>
+  parser []
+  match e with parser []
+</pre>
+   </li>
+</ul>
+
+<p>...<em>to be completed</em>...</p>
 
 <p>...<em>to be continued</em>...</p>
 
