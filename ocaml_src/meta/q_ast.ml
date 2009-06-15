@@ -3,10 +3,8 @@
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
-   its possible extensions and meta-ifying the nodes.
-     Antiquotations over tokens work only in "strict" mode.
-     Antiquotations over values of syntax tree types not yet
-   implemented. Needs extension of syntax trees definitions. *)
+   its possible extensions and meta-ifying the nodes. Antiquotations
+   work only in "strict" mode. *)
 
 (* #load "pa_extend.cmo";; *)
 (* #load "q_MLast.cmo";; *)
@@ -501,190 +499,166 @@ module Meta =
     ;;
     let rec e_expr e =
       let ln = ln () in
-      let rec loop e =
-        match get_anti e with
-          Some (loc, typ, str) ->
-            let r =
-              let (loc, r) = eval_anti expr_eoi loc typ str in
-              MLast.ExAnt (loc, r)
+      let rec loop =
+        function
+          ExAcc (_, e1, e2) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "ExAcc")),
+                     ln),
+                  loop e1),
+               loop e2)
+        | ExApp (_, e1, e2) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "ExApp")),
+                     ln),
+                  loop e1),
+               loop e2)
+        | ExChr (_, s) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "ExChr")),
+                  ln),
+               e_string s)
+        | ExInt (_, s, k) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "ExInt")),
+                     ln),
+                  e_string s),
+               MLast.ExStr (loc, k))
+        | ExFun (_, pwel) ->
+            let pwel =
+              e_list
+                (fun (p, oe, e) ->
+                   MLast.ExTup (loc, [e_patt p; e_option loop oe; loop e]))
+                pwel
             in
-            begin match typ with
-              "" -> r
-            | "anti" ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExAcc
-                        (loc, MLast.ExUid (loc, "MLast"),
-                         MLast.ExUid (loc, "ExAnt")),
-                      ln),
-                   r)
-            | x -> not_impl ("e_expr anti " ^ x) 0
-            end
-        | None ->
-            match e with
-              ExAcc (_, e1, e2) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExApp
-                        (loc,
-                         MLast.ExAcc
-                           (loc, MLast.ExUid (loc, "MLast"),
-                            MLast.ExUid (loc, "ExAcc")),
-                         ln),
-                      loop e1),
-                   loop e2)
-            | ExApp (_, e1, e2) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExApp
-                        (loc,
-                         MLast.ExAcc
-                           (loc, MLast.ExUid (loc, "MLast"),
-                            MLast.ExUid (loc, "ExApp")),
-                         ln),
-                      loop e1),
-                   loop e2)
-            | ExChr (_, s) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExAcc
-                        (loc, MLast.ExUid (loc, "MLast"),
-                         MLast.ExUid (loc, "ExChr")),
-                      ln),
-                   e_string s)
-            | ExInt (_, s, k) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExApp
-                        (loc,
-                         MLast.ExAcc
-                           (loc, MLast.ExUid (loc, "MLast"),
-                            MLast.ExUid (loc, "ExInt")),
-                         ln),
-                      e_string s),
-                   MLast.ExStr (loc, k))
-            | ExFun (_, pwel) ->
-                let pwel =
-                  e_list
-                    (fun (p, oe, e) ->
-                       MLast.ExTup
-                         (loc, [e_patt p; e_option loop oe; loop e]))
-                    pwel
-                in
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExAcc
-                        (loc, MLast.ExUid (loc, "MLast"),
-                         MLast.ExUid (loc, "ExFun")),
-                      ln),
-                   pwel)
-            | ExLet (_, rf, lpe, e) ->
-                let rf = e_bool rf in
-                let lpe =
-                  e_list (fun (p, e) -> MLast.ExTup (loc, [e_patt p; loop e]))
-                    lpe
-                in
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExApp
-                        (loc,
-                         MLast.ExApp
-                           (loc,
-                            MLast.ExAcc
-                              (loc, MLast.ExUid (loc, "MLast"),
-                               MLast.ExUid (loc, "ExLet")),
-                            ln),
-                         rf),
-                      lpe),
-                   loop e)
-            | ExLid (_, s) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExAcc
-                        (loc, MLast.ExUid (loc, "MLast"),
-                         MLast.ExUid (loc, "ExLid")),
-                      ln),
-                   e_vala e_string s)
-            | ExMat (_, e, pwel) ->
-                let pwel =
-                  e_list
-                    (fun (p, oe, e) ->
-                       MLast.ExTup
-                         (loc, [e_patt p; e_option loop oe; loop e]))
-                    pwel
-                in
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExApp
-                        (loc,
-                         MLast.ExAcc
-                           (loc, MLast.ExUid (loc, "MLast"),
-                            MLast.ExUid (loc, "ExMat")),
-                         ln),
-                      loop e),
-                   pwel)
-            | ExStr (_, s) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExAcc
-                        (loc, MLast.ExUid (loc, "MLast"),
-                         MLast.ExUid (loc, "ExStr")),
-                      ln),
-                   e_string s)
-            | ExTup (_, el) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExAcc
-                        (loc, MLast.ExUid (loc, "MLast"),
-                         MLast.ExUid (loc, "ExTup")),
-                      ln),
-                   e_list loop el)
-            | ExTyc (_, e, t) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExApp
-                        (loc,
-                         MLast.ExAcc
-                           (loc, MLast.ExUid (loc, "MLast"),
-                            MLast.ExUid (loc, "ExTyc")),
-                         ln),
-                      loop e),
-                   e_ctyp t)
-            | ExUid (_, s) ->
-                MLast.ExApp
-                  (loc,
-                   MLast.ExApp
-                     (loc,
-                      MLast.ExAcc
-                        (loc, MLast.ExUid (loc, "MLast"),
-                         MLast.ExUid (loc, "ExUid")),
-                      ln),
-                   e_string s)
-            | x -> not_impl "e_expr" x
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "ExFun")),
+                  ln),
+               pwel)
+        | ExLet (_, rf, lpe, e) ->
+            let rf = e_bool rf in
+            let lpe =
+              e_list (fun (p, e) -> MLast.ExTup (loc, [e_patt p; loop e])) lpe
+            in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExApp
+                       (loc,
+                        MLast.ExAcc
+                          (loc, MLast.ExUid (loc, "MLast"),
+                           MLast.ExUid (loc, "ExLet")),
+                        ln),
+                     rf),
+                  lpe),
+               loop e)
+        | ExLid (_, s) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "ExLid")),
+                  ln),
+               e_vala e_string s)
+        | ExMat (_, e, pwel) ->
+            let pwel =
+              e_list
+                (fun (p, oe, e) ->
+                   MLast.ExTup (loc, [e_patt p; e_option loop oe; loop e]))
+                pwel
+            in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "ExMat")),
+                     ln),
+                  loop e),
+               pwel)
+        | ExStr (_, s) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "ExStr")),
+                  ln),
+               e_string s)
+        | ExTup (_, el) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "ExTup")),
+                  ln),
+               e_list loop el)
+        | ExTyc (_, e, t) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExAcc
+                       (loc, MLast.ExUid (loc, "MLast"),
+                        MLast.ExUid (loc, "ExTyc")),
+                     ln),
+                  loop e),
+               e_ctyp t)
+        | ExUid (_, s) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExAcc
+                    (loc, MLast.ExUid (loc, "MLast"),
+                     MLast.ExUid (loc, "ExUid")),
+                  ln),
+               e_string s)
+        | x -> not_impl "e_expr" x
       in
       loop e
     ;;
@@ -847,7 +821,6 @@ module Meta =
   end
 ;;
 
-let ipatt = Grammar.Entry.find Pcaml.expr "ipatt" in
 Grammar.extend
   [Grammar.Entry.obj (expr_eoi : 'expr_eoi Grammar.Entry.e), None,
    [None, None,
@@ -895,44 +868,9 @@ Grammar.extend
       Gramext.Stoken ("EOI", "")],
      Gramext.action
        (fun _ (x : 'Pcaml__module_expr) (loc : Ploc.t) ->
-          (x : 'module_expr_eoi))]];
-   Grammar.Entry.obj (Pcaml.expr : 'Pcaml__expr Grammar.Entry.e),
-   Some Gramext.Last,
-   [None, None,
-    [[Gramext.Stoken ("ANTIQUOT_LOC", "anti")],
-     Gramext.action
-       (fun (s : string) (loc : Ploc.t) ->
-          (make_anti loc "anti" s : 'Pcaml__expr));
-     [Gramext.Stoken ("ANTIQUOT_LOC", "")],
-     Gramext.action
-       (fun (s : string) (loc : Ploc.t) ->
-          (make_anti loc "" s : 'Pcaml__expr))]];
-   Grammar.Entry.obj (Pcaml.patt : 'Pcaml__patt Grammar.Entry.e),
-   Some Gramext.Last,
-   [None, None,
-    [[Gramext.Stoken ("ANTIQUOT_LOC", "anti")],
-     Gramext.action
-       (fun (s : string) (loc : Ploc.t) ->
-          (make_anti loc "anti" s : 'Pcaml__patt));
-     [Gramext.Stoken ("ANTIQUOT_LOC", "")],
-     Gramext.action
-       (fun (s : string) (loc : Ploc.t) ->
-          (make_anti loc "" s : 'Pcaml__patt))]];
-   Grammar.Entry.obj (ipatt : 'ipatt Grammar.Entry.e), Some Gramext.Last,
-   [None, None,
-    [[Gramext.Stoken ("ANTIQUOT_LOC", "anti")],
-     Gramext.action
-       (fun (s : string) (loc : Ploc.t) -> (make_anti loc "anti" s : 'ipatt));
-     [Gramext.Stoken ("ANTIQUOT_LOC", "")],
-     Gramext.action
-       (fun (s : string) (loc : Ploc.t) -> (make_anti loc "" s : 'ipatt))]];
-   Grammar.Entry.obj (Pcaml.ctyp : 'Pcaml__ctyp Grammar.Entry.e),
-   Some Gramext.Last,
-   [None, None,
-    [[Gramext.Stoken ("ANTIQUOT_LOC", "")],
-     Gramext.action
-       (fun (s : string) (loc : Ploc.t) ->
-          (make_anti loc "" s : 'Pcaml__ctyp))]]];;
+          (x : 'module_expr_eoi))]]];;
+
+(* *)
 
 (*
 let mod_ident = Grammar.Entry.find Pcaml.str_item "mod_ident" in

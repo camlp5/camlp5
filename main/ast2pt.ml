@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.14 2007/09/07 18:18:38 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.15 2007/09/08 03:59:36 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -706,7 +706,10 @@ value rec expr =
   | ExVrn loc s -> mkexp loc (Pexp_variant s None)
   | ExWhi loc e1 el ->
       let e2 = ExSeq loc el in
-      mkexp loc (Pexp_while (expr e1) (expr e2)) ]
+      mkexp loc (Pexp_while (expr e1) (expr e2))
+  | IFDEF STRICT THEN
+      ExXtr loc _ _ -> error loc "bad ast"
+    END ]
 and label_expr =
   fun
   [ ExLab loc lab eo -> (lab, expr (expr_of_lab loc lab eo))

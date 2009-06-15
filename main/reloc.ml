@@ -1,4 +1,4 @@
-(* camlp5r *)
+(* camlp5r pa_macro.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp5                                  *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: reloc.ml,v 1.8 2007/09/05 18:40:31 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.9 2007/09/08 03:59:36 deraugla Exp $ *)
 
 open MLast;
 
@@ -187,7 +187,10 @@ and expr floc sh =
     | ExTyc loc x1 x2 -> ExTyc (floc loc) (self x1) (ctyp floc sh x2)
     | ExUid loc x1 -> ExUid (floc loc) x1
     | ExVrn loc x1 -> ExVrn (floc loc) x1
-    | ExWhi loc x1 x2 -> ExWhi (floc loc) (self x1) (List.map self x2) ]
+    | ExWhi loc x1 x2 -> ExWhi (floc loc) (self x1) (List.map self x2)
+    | IFDEF STRICT THEN
+        ExXtr loc x1 x2 -> ExXtr (floc loc) x1 (option_map self x2)
+      END ]
 and module_type floc sh =
   self where rec self =
     fun

@@ -1,12 +1,10 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.36 2007/09/08 03:07:55 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.37 2007/09/08 03:59:36 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
-   its possible extensions and meta-ifying the nodes.
-     Antiquotations over tokens work only in "strict" mode.
-     Antiquotations over values of syntax tree types not yet
-   implemented. Needs extension of syntax trees definitions. *)
+   its possible extensions and meta-ifying the nodes. Antiquotations
+   work only in "strict" mode. *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -291,66 +289,66 @@ module Meta =
     ;
     value rec e_expr e =
       let ln = ln () in
-      loop e where rec loop e =
-        match get_anti e with
-        [ Some (loc, typ, str) ->
-            let r =
-              let (loc, r) = eval_anti expr_eoi loc typ str in
-              <:expr< $anti:r$ >>
+      loop e where rec loop =
+        fun
+        [ ExAcc _ e1 e2 -> <:expr< MLast.ExAcc $ln$ $loop e1$ $loop e2$ >>
+        | ExApp _ e1 e2 -> <:expr< MLast.ExApp $ln$ $loop e1$ $loop e2$ >>
+(*
+        | ExArr _ el -> <:expr< MLast.ExArr $ln$ $e_list loop el$ >>
+*)
+        | ExChr _ s -> <:expr< MLast.ExChr $ln$ $e_string s$ >>
+(*
+        | ExIfe _ e1 e2 e3 ->
+            <:expr< MLast.ExIfe $ln$ $loop e1$ $loop e2$ $loop e3$ >>
+*)
+        | ExInt _ s k -> <:expr< MLast.ExInt $ln$ $e_string s$ $str:k$ >>
+(*
+        | ExFlo _ s -> <:expr< MLast.ExFlo $ln$ $e_string s$ >>
+*)
+        | ExFun _ pwel ->
+            let pwel =
+              e_list
+                (fun (p, oe, e) ->
+                   <:expr< ($e_patt p$, $e_option loop oe$, $loop e$) >>)
+                pwel
             in
-            match typ with
-            [ "" -> r
-            | "anti" -> <:expr< MLast.ExAnt $ln$ $r$ >>
-            | x -> not_impl ("e_expr anti " ^ x) 0 ]
-        | None ->
-            match e with
-            [ ExAcc _ e1 e2 -> <:expr< MLast.ExAcc $ln$ $loop e1$ $loop e2$ >>
-            | ExApp _ e1 e2 -> <:expr< MLast.ExApp $ln$ $loop e1$ $loop e2$ >>
+            <:expr< MLast.ExFun $ln$ $pwel$ >>
+        | ExLet _ rf lpe e ->
+            let rf = e_bool rf in
+            let lpe =
+              e_list (fun (p, e) -> <:expr< ($e_patt p$, $loop e$) >>) lpe
+            in
+            <:expr< MLast.ExLet $ln$ $rf$ $lpe$ $loop e$ >>
+        | ExLid _ s -> <:expr< MLast.ExLid $ln$ $e_vala e_string s$ >>
+        | ExMat _ e pwel ->
+            let pwel =
+              e_list
+                (fun (p, oe, e) ->
+                   <:expr< ($e_patt p$, $e_option loop oe$, $loop e$) >>)
+                pwel
+            in
+            <:expr< MLast.ExMat $ln$ $loop e$ $pwel$ >>
 (*
-            | ExArr _ el ->
-                <:expr< MLast.ExArr $ln$ $e_list loop el$ >>
+        | ExSeq _ el ->
+            <:expr< MLast.ExSeq $ln$ $e_list loop el$ >>
 *)
-            | ExChr _ s -> <:expr< MLast.ExChr $ln$ $e_string s$ >>
-(*
-            | ExIfe _ e1 e2 e3 ->
-                <:expr< MLast.ExIfe $ln$ $loop e1$ $loop e2$ $loop e3$ >>
-*)
-            | ExInt _ s k -> <:expr< MLast.ExInt $ln$ $e_string s$ $str:k$ >>
-(*
-            | ExFlo _ s -> <:expr< MLast.ExFlo $ln$ $e_string s$ >>
-*)
-            | ExFun _ pwel ->
-                let pwel =
-                  e_list
-                    (fun (p, oe, e) ->
-                       <:expr< ($e_patt p$, $e_option loop oe$, $loop e$) >>)
-                    pwel
-                in
-                <:expr< MLast.ExFun $ln$ $pwel$ >>
-            | ExLet _ rf lpe e ->
-                let rf = e_bool rf in
-                let lpe =
-                  e_list (fun (p, e) -> <:expr< ($e_patt p$, $loop e$) >>) lpe
-                in
-                <:expr< MLast.ExLet $ln$ $rf$ $lpe$ $loop e$ >>
-            | ExLid _ s -> <:expr< MLast.ExLid $ln$ $e_vala e_string s$ >>
-            | ExMat _ e pwel ->
-                let pwel =
-                  e_list
-                    (fun (p, oe, e) ->
-                       <:expr< ($e_patt p$, $e_option loop oe$, $loop e$) >>)
-                    pwel
-                in
-                <:expr< MLast.ExMat $ln$ $loop e$ $pwel$ >>
-(*
-            | ExSeq _ el ->
-                <:expr< MLast.ExSeq $ln$ $e_list loop el$ >>
-*)
-            | ExStr _ s -> <:expr< MLast.ExStr $ln$ $e_string s$ >>
-            | ExTup _ el -> <:expr< MLast.ExTup $ln$ $e_list loop el$ >>
-            | ExTyc _ e t -> <:expr< MLast.ExTyc $ln$ $loop e$ $e_ctyp t$ >>
-            | ExUid _ s -> <:expr< MLast.ExUid $ln$ $e_string s$ >>
-            | x -> not_impl "e_expr" x ] ]
+        | ExStr _ s -> <:expr< MLast.ExStr $ln$ $e_string s$ >>
+        | ExTup _ el -> <:expr< MLast.ExTup $ln$ $e_list loop el$ >>
+        | ExTyc _ e t -> <:expr< MLast.ExTyc $ln$ $loop e$ $e_ctyp t$ >>
+        | ExUid _ s -> <:expr< MLast.ExUid $ln$ $e_string s$ >>
+        | IFDEF STRICT THEN
+            ExXtr loc s _ ->
+              let asit = s.[0] = 'a' in
+              let s = String.sub s 1 (String.length s - 1) in
+              if asit then
+                let (loc, r) = eval_anti expr_eoi loc "" s in
+                <:expr< $anti:r$ >>
+              else
+                let (loc, r) = eval_anti expr_eoi loc "anti" s in
+                let r = <:expr< $anti:r$ >> in
+                <:expr< MLast.ExAnt loc $r$ >>
+          END
+        | x -> not_impl "e_expr" x ]
     ;
     value p_expr e =
       loop e where rec loop e =
@@ -475,7 +473,6 @@ module Meta =
   end
 ;
 
-let ipatt = Grammar.Entry.find Pcaml.expr "ipatt" in
 EXTEND
   expr_eoi: [ [ x = Pcaml.expr; EOI -> x ] ];
   patt_eoi: [ [ x = Pcaml.patt; EOI -> x ] ];
@@ -483,34 +480,40 @@ EXTEND
   sig_item_eoi: [ [ x = Pcaml.sig_item; EOI -> x ] ];
   str_item_eoi: [ [ x = Pcaml.str_item; EOI -> x ] ];
   module_expr_eoi: [ [ x = Pcaml.module_expr; EOI -> x ] ];
-  Pcaml.expr: LAST
-    [ [ s = ANTIQUOT_LOC "" -> make_anti loc "" s
-      | s = ANTIQUOT_LOC "anti" -> make_anti loc "anti" s ] ]
-  ;
-  Pcaml.patt: LAST
-    [ [ s = ANTIQUOT_LOC -> make_anti loc "" s
-      | s = ANTIQUOT_LOC "anti" -> make_anti loc "anti" s ] ]
-  ;
-  ipatt: LAST
-    [ [ s = ANTIQUOT_LOC -> make_anti loc "" s
-      | s = ANTIQUOT_LOC "anti" -> make_anti loc "anti" s ] ]
-  ;
-  Pcaml.ctyp: LAST
-    [ [ s = ANTIQUOT_LOC -> make_anti loc "" s ] ]
-  ;
-(*
-  Pcaml.str_item: LAST
-    [ [ s = ANTIQUOT_LOC "exp" ->
-          let e = MLast.ExAnt loc (MLast.ExLid loc s) in
-          MLast.StExp loc e ] ]
-  ;
-  Pcaml.module_expr: LAST
-    [ [ s = ANTIQUOT_LOC -> MLast.MeUid loc s ] ]
-  ;
-  Pcaml.module_type: LAST
-    [ [ s = ANTIQUOT_LOC -> MLast.MtUid loc s ] ]
-  ;
-*)
+END;
+
+IFDEF STRICT THEN
+  let ipatt = Grammar.Entry.find Pcaml.expr "ipatt" in
+  EXTEND
+    Pcaml.expr: LAST
+      [ [ s = ANTIQUOT_LOC "" -> MLast.ExXtr loc ("a" ^ s) None
+        | s = ANTIQUOT_LOC "anti" -> MLast.ExXtr loc ("b" ^ s) None ] ]
+    ;
+    Pcaml.patt: LAST
+      [ [ s = ANTIQUOT_LOC -> make_anti loc "" s
+        | s = ANTIQUOT_LOC "anti" -> make_anti loc "anti" s ] ]
+    ;
+    ipatt: LAST
+      [ [ s = ANTIQUOT_LOC -> make_anti loc "" s
+        | s = ANTIQUOT_LOC "anti" -> make_anti loc "anti" s ] ]
+    ;
+    Pcaml.ctyp: LAST
+      [ [ s = ANTIQUOT_LOC -> make_anti loc "" s ] ]
+    ;
+  (*
+    Pcaml.str_item: LAST
+      [ [ s = ANTIQUOT_LOC "exp" ->
+            let e = MLast.ExAnt loc (MLast.ExLid loc s) in
+            MLast.StExp loc e ] ]
+    ;
+    Pcaml.module_expr: LAST
+      [ [ s = ANTIQUOT_LOC -> MLast.MeUid loc s ] ]
+    ;
+    Pcaml.module_type: LAST
+      [ [ s = ANTIQUOT_LOC -> MLast.MtUid loc s ] ]
+    ;
+  *)
+  END
 END;
 
 (*

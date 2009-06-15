@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: mLast.mli,v 1.12 2007/09/07 18:18:38 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.13 2007/09/08 03:59:36 deraugla Exp $ *)
 
 (* Module [MLast]: abstract syntax tree.
 
@@ -119,7 +119,10 @@ and expr =
   | ExTyc of loc and expr and ctyp
   | ExUid of loc and string
   | ExVrn of loc and string
-  | ExWhi of loc and expr and list expr ]
+  | ExWhi of loc and expr and list expr
+  | IFDEF STRICT THEN
+      ExXtr of loc and string and option expr
+    END ]
 and module_type =
   [ MtAcc of loc and module_type and module_type
   | MtApp of loc and module_type and module_type
