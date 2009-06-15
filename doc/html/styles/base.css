@@ -1,4 +1,4 @@
-/* $Id: base.css,v 1.33 2007/08/18 02:04:30 deraugla Exp $ */
+/* $Id: base.css,v 1.34 2007/08/18 11:23:19 deraugla Exp $ */
 
 body { margin: 0 0 1px 0; background-color: rgb(189,225,255) }
 body { border: 0 }
@@ -24,6 +24,7 @@ body { border: 0 }
 #content dl p { margin-left: 0 }
 #content p { text-align: justify }
 #content li { text-align: justify }
+#content dd { text-align: justify }
 
 #menu:target { position: relative; float: left }
 #menu:target { background-color: rgb(189,225,255) }

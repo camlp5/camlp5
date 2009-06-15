@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: grammars.html,v 1.67 2007/08/18 07:33:10 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.68 2007/08/18 11:23:19 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -476,7 +476,7 @@ instead of "<tt>loc</tt>".</p>
   fold iterators where the initial "expr" would be:</p>
 
 <pre>
-  &lt;:expr&lt; [] >></tt>
+  &lt;:expr&lt; [] >>
 </pre>
 
 <p>and the fold function would be:</p>
@@ -505,7 +505,7 @@ instead of "<tt>loc</tt>".</p>
     Pcaml.expr:
       [ [ "sum";
           e =
-            FOLD0 (fun e1 e2 -> <:expr< $e2$ + $e1$ >>) <:expr< 0 >>
+            FOLD0 (fun e1 e2 -> &lt;:expr&lt; $e2$ + $e1$ >>) &lt;:expr&lt; 0 >>
               Pcaml.expr SEP ";";
           "end" -> e ] ]
     ;

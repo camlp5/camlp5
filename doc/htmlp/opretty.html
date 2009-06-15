@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: opretty.html,v 1.17 2007/08/18 01:42:47 deraugla Exp $ -->
+  <!-- $Id: opretty.html,v 1.18 2007/08/18 11:23:19 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Pretty Printing ocaml programs</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -327,59 +327,85 @@ necessary and remains the empty string.</p>
 
 <h3>Meta functions for lists</h3>
 
-<p>... section to be formatted ...</p>
+<dl>
+  <dt><tt>type pr_fun 'a = pr_context -> 'a -> string;</tt></dt>
+  <dd>Type of printer functions.</dd>
+</dl>
 
-<pre>
-value hlist : pr_fun 'a -> pr_fun (list 'a);
-   (** horizontal list
-       [hlist elem pc e] returns the horizontally pretty printed string
-       of a list of elements; elements are separated with spaces.
-       The list is displayed in one only line. If this function is called
-       in the context of the [horiz] function of the function [horiz_vertic]
-       of the module Printing, and if the line overflows or contains newlines,
-       the function fails (the exception is catched by [horiz_vertic] for
-       a vertical pretty print). *)
-value hlist2 : pr_fun 'a -> pr_fun 'a -> pr_fun (list 'a);
-   (** horizontal list with different function from 2nd element on *)
-value hlistl : pr_fun 'a -> pr_fun 'a -> pr_fun (list 'a);
-   (** horizontal list with different function for the last element *)
+<dl>
+  <dt><tt>value hlist : pr_fun 'a -> pr_fun (list 'a);</tt></dt>
+  <dd>[hlist elem pc el] returns the horizontally pretty printed
+    string of a list of elements; elements are separated with
+    spaces.<br/>The list is displayed in one only line. If this
+    function is called in the context of the [horiz] function of the
+    function [horiz_vertic] of the module Printing, and if the line
+    overflows or contains newlines, the function internally fails (the
+    exception is catched by [horiz_vertic] for a vertical pretty
+    print).</dd>
+  <dt><tt>value hlist2 : pr_fun 'a -> pr_fun 'a -> pr_fun (list 'a);</tt></dt>
+  <dd>horizontal list with a different function from 2nd element on.</dd>
+  <dt><tt>value hlistl : pr_fun 'a -> pr_fun 'a -> pr_fun (list 'a);</tt></dt>
+  <dd>horizontal list with a different function for the last element.</dd>
+</dl>
 
-value vlist : pr_fun 'a -> pr_fun (list 'a);
-   (** vertical list
-       [vlist elem pc e] returns the vertically pretty printed string
-       of a list of elements; elements are separated with newlines and
-       indentations. *)
-value vlist2 : pr_fun 'a -> pr_fun 'a -> pr_fun (list 'a);
-   (** vertical list with different function from 2nd element on. *)
-value vlist3 : pr_fun ('a * bool) -> pr_fun ('a * bool) -> pr_fun (list 'a);
-   (** vertical list with different function from 2nd element on, the
-       boolean value being True if it is the last element of the list. *)
-value vlistl : pr_fun 'a -> pr_fun 'a -> pr_fun (list 'a);
-   (** vertical list with different function for the last element *)
+<dl>
+  <dt><tt>value vlist : pr_fun 'a -> pr_fun (list 'a);</tt></dt>
+  <dd>[vlist elem pc el] returns the vertically pretty printed string
+    of a list of elements; elements are separated with newlines and
+    indentations.</dd>
+  <dt><tt>value vlist2 : pr_fun 'a -> pr_fun 'a -> pr_fun (list
+   'a);</tt></dt>
+  <dd>vertical list with different function from 2nd element on.</dd>
+  <dt><tt>value vlist3 : pr_fun ('a * bool) -> pr_fun ('a * bool) -> pr_fun
+      (list 'a);</tt></dt>
+  <dd>vertical list with different function from 2nd element on, the
+    boolean value being True for the last element of the list.</dd>
+  <dt><tt>value vlistl : pr_fun 'a -> pr_fun 'a -> pr_fun (list
+   'a);</tt></dt>
+  <dd>vertical list with different function for the last element.</dd>
+</dl>
 
-value plist : pr_fun 'a -> int -> pr_fun (list ('a * string));
-   (** paragraph list
-       [plist elem sh pc el] returns the pretty printed string of a list
-       of elements with separators. The elements are printed horizontally
-       as far as possible. When an element does not fit on the line, a
-       newline is added and the element is displayed in the next line with
-       an indentation of [sh]. [elem] is the function to print elements,
-       [el] a list of pairs (element * separator) (the last separator is
-       ignored). *)
-value plistb : pr_fun 'a -> int -> pr_fun (list ('a * string));
-   (** paragraph list with possible cut already after the beginner
-       [plist elem sh pc el] returns the pretty printed string of
-       the list of elements, like with [plist] but the value of
-       [pc.bef] corresponds to an element already printed, as it were
-       on the list. Therefore, if the first element of [el] does not fit
-       in the line, a newline and a tabulation is added after [pc.bef]. *)
-value plistl : pr_fun 'a -> pr_fun 'a -> int -> pr_fun (list ('a * string));
-   (** paragraph list with a different function for the last element *)
-</pre>
+<dl>
+  <dt><tt>value plist : pr_fun 'a -> int -> pr_fun (list ('a *
+   string));</tt></dt>
+  <dd>[plist elem sh pc el] returns the pretty printed string of a
+   list of elements with separators. The elements are printed
+   horizontally as far as possible. When an element does not fit on
+   the line, a newline is added and the element is displayed in the
+   next line with an indentation of [sh]. [elem] is the function to
+   print elements, [el] a list of pairs (element * separator) (the
+   last separator being ignored).</dd>
+  <dt><tt>value plistb : pr_fun 'a -> int -> pr_fun (list ('a *
+      string));</tt></dt>
+  <dd>[plist elem sh pc el] returns the pretty printed string of the
+   list of elements, like with [plist] but the value of [pc.bef]
+   corresponds to an element already printed, as it were on the
+   list. Therefore, if the first element of [el] does not fit in the
+   line, a newline and a tabulation is added after [pc.bef].</dd>
+  <dt><tt>value plistl : pr_fun 'a -> pr_fun 'a -> int -> pr_fun (list
+      ('a * string));</tt></dt>
+  <dd>paragraph list with a different function for the last element.</dd>
+</dl>
 
 <h3>Miscellaneous</h3>
 
-<p>... to be written ...</p>
+<dl>
+  <dt><tt>value tab : int -> string;</tt></dt>
+  <dd>[tab ind] is equivalent to [String.make ind ' ']</dd>
+</dl>
+
+<dl>
+  <dt><tt>value flatten_sequence : MLast.expr -> option (list
+   MLast.expr);</tt></dt>
+  <dd>[flatten_sequence e]. If [e] is an expression representing a
+   sequence, return the list of expressions of the sequence. If some
+   of these expressions are already sequences, they are flattened in
+   the list. If that list contains expressions of the form let..in
+   sequence, this sub-sequence is also flattened with the let..in
+   applying only to the first expression of the sequence. If [e] is a
+   let..in sequence, it works the same way. If [e] is not a sequence
+   nor a let..in sequence, return None.</dd>
+</dl>
 
 <div class="trailer">
 </div>
