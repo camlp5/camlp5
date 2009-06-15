@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.8 2006/12/06 13:28:00 deraugla Exp $
+# $Id: Makefile,v 1.9 2007/12/21 09:54:32 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -29,7 +29,7 @@ depend:
 
 steal:
 	@if test "$(OCAML_SRC)" = ""; then \
-		echo "usage: make steal OCAML_SRC=..."; exit 1; \
+		echo "usage: $(MAKE) steal OCAML_SRC=..."; exit 1; \
 	fi
 	@$(MAKE) real_steal OCAML_SRC="$$(cd ..; cd $(OCAML_SRC); pwd)"
 

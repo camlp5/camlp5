@@ -227,6 +227,8 @@ let patt_expr_of_patt p =
     MLast.PaLid (_, x) -> p, MLast.ExLid (loc, x)
   | MLast.PaApp (_, MLast.PaUid (_, _), MLast.PaLid (_, x)) ->
       MLast.PaLid (loc, x), MLast.ExLid (loc, x)
+  | MLast.PaAli (_, _, MLast.PaLid (_, x)) ->
+      MLast.PaLid (loc, x), MLast.ExLid (loc, x)
   | _ -> MLast.PaAny loc, MLast.ExUid (loc, "()")
 ;;
 

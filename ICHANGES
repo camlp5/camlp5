@@ -4,6 +4,9 @@ Internal, very small, undocumented, or invisible changes
 Camlp5 Version 5.07:
 ---------------------
 
+* [21 Dec 07] Changed all calls to "make" into "$(MAKE)" in Makefiles.
+  (Some were missing.)
+
 Camlp5 Version 5.06:
 ---------------------
 

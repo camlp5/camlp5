@@ -428,7 +428,9 @@ Grammar.extend
    and eq_expr : 'eq_expr Grammar.Entry.e = grammar_entry_create "eq_expr"
    and direction_flag : 'direction_flag Grammar.Entry.e =
      grammar_entry_create "direction_flag"
-   and a_ti : 'a_ti Grammar.Entry.e = grammar_entry_create "a_ti"
+   and a_ti : 'a_ti Grammar.Entry.e =
+     (* Antiquotations for local entries *)
+     grammar_entry_create "a_ti"
    and a_tic : 'a_tic Grammar.Entry.e = grammar_entry_create "a_tic"
    and a_qi : 'a_qi Grammar.Entry.e = grammar_entry_create "a_qi"
    and a_qic : 'a_qic Grammar.Entry.e = grammar_entry_create "a_qic" in

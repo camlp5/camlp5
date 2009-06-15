@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.39 2007/11/20 09:04:06 deraugla Exp $
+# $Id: Makefile,v 1.40 2007/12/21 09:54:32 deraugla Exp $
 
 include config/Makefile
 
@@ -40,7 +40,7 @@ clean_hot:
 	for i in $(DIRS) compile; do (cd $$i; $(MAKE) clean); done
 
 depend:
-	cd etc; make pr_depend.cmo
+	cd etc; $(MAKE) pr_depend.cmo
 	cd ocaml_stuff; $(MAKE) depend
 	for i in $(DIRS) compile; do (cd $$i; $(MAKE) depend); done
 
@@ -68,13 +68,13 @@ bootstrap: backup promote clean_hot all compare
 
 backup:
 	mkdir boot.new
-	make mv_svn FROM=boot TO=boot.new
+	$(MAKE) mv_svn FROM=boot TO=boot.new
 	mv boot boot.new/SAVED
 	mv boot.new boot
 
 restore:
 	mv boot/SAVED boot.new
-	make mv_svn FROM=boot TO=boot.new
+	$(MAKE) mv_svn FROM=boot TO=boot.new
 	rm -rf boot
 	mv boot.new boot
 
@@ -157,7 +157,7 @@ bootstrap_sources:
 	$(MAKE) new_sources untouch_sources promote_sources clean_sources
 
 new_sources:
-	cd etc; make $(PR_O)
+	cd etc; $(MAKE) $(PR_O)
 	mkdir ocaml_src.new
 	@-for i in $(FDIRS); do \
 	  (mkdir ocaml_src.new/$$i; cd ocaml_src.new/$$i; \
@@ -188,7 +188,7 @@ new_sources:
 	done
 
 compare_sources:
-	cd etc; make $(PR_O)
+	cd etc; $(MAKE) $(PR_O)
 	@-for i in $(FDIRS); do \
 	  (cd ocaml_src/$$i; \
 	   echo ============================================; \
@@ -218,7 +218,7 @@ compare_sources:
 	done
 
 bootstrap_all_ast2pt:
-	cd etc; make $(PR_O)
+	cd etc; $(MAKE) $(PR_O)
 	@cd main; \
 	for i in ../ocaml_src/main/ast2pt.ml_*; do \
 	  echo ============================================; \
@@ -232,7 +232,7 @@ bootstrap_all_ast2pt:
 	done
 
 compare_all_ast2pt:
-	cd etc; make $(PR_O)
+	cd etc; $(MAKE) $(PR_O)
 	@cd main; \
 	for i in ../ocaml_src/main/ast2pt.ml_*; do \
 	  echo ============================================; \
@@ -256,9 +256,9 @@ untouch_sources:
 	done
 
 promote_sources:
-	make mv_svn FROM=ocaml_src TO=ocaml_src.new
+	$(MAKE) mv_svn FROM=ocaml_src TO=ocaml_src.new
 	for i in $(FDIRS); do \
-		make mv_svn FROM=ocaml_src/$$i TO=ocaml_src.new/$$i; \
+		$(MAKE) mv_svn FROM=ocaml_src/$$i TO=ocaml_src.new/$$i; \
 	done
 	mv ocaml_src/tools ocaml_src.new/.
 	cd ocaml_src; for i in main/ast2pt.ml_*; do \
@@ -274,15 +274,15 @@ unpromote_sources:
 	mv ocaml_src.new/SAVED ocaml_src
 	mv ocaml_src.new/tools ocaml_src/.
 	for i in $(FDIRS); do \
-		make mv_svn FROM=ocaml_src.new/$$i TO=ocaml_src/$$i; \
+		$(MAKE) mv_svn FROM=ocaml_src.new/$$i TO=ocaml_src/$$i; \
 	done
-	make mv_svn FROM=ocaml_src.new TO=ocaml_src
+	$(MAKE) mv_svn FROM=ocaml_src.new TO=ocaml_src
 
 clean_sources:
 	rm -rf ocaml_src/SAVED/SAVED
 
 printer:
-	cd etc; make $(PR_O)
+	cd etc; $(MAKE) $(PR_O)
 
 # Utility
 
