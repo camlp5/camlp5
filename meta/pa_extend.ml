@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.53 2007/09/09 15:25:09 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.54 2007/09/09 19:34:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -891,8 +891,8 @@ EXTEND
               [ Some symb -> symb.used @ s.used
               | None -> s.used ]
             in
-            let styp = STapp loc (STlid loc "list") s.styp in
             let text = slist loc False sep s in
+            let styp = STapp loc (STlid loc "list") s.styp in
             {used = used; text = text; styp = styp}
       | UIDENT "LIST1"; s = SELF;
         sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
@@ -903,20 +903,20 @@ EXTEND
               [ Some symb -> symb.used @ s.used
               | None -> s.used ]
             in
-            let styp = STapp loc (STlid loc "list") s.styp in
             let text = slist loc True sep s in
+            let styp = STapp loc (STlid loc "list") s.styp in
             {used = used; text = text; styp = styp}
       | UIDENT "OPT"; s = SELF ->
           if quotify.val then ssopt loc s
           else
-            let styp = STapp loc (STlid loc "option") s.styp in
             let text = TXopt loc s.text in
+            let styp = STapp loc (STlid loc "option") s.styp in
             {used = s.used; text = text; styp = styp}
       | UIDENT "FLAG"; s = SELF ->
           if quotify.val then ssflag loc s
           else
-            let styp = STlid loc "bool" in
             let text = TXflag loc s.text in
+            let styp = STlid loc "bool" in
             {used = s.used; text = text; styp = styp}
       | UIDENT "V"; UIDENT "LIST1"; s = SELF;
         sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
@@ -927,31 +927,39 @@ EXTEND
               [ Some symb -> symb.used @ s.used
               | None -> s.used ]
             in
-            let styp = STapp loc (STlid loc "list") s.styp in
             let text = slist loc True sep s in
-            let (styp, text) =
-              if not Pcaml.strict_mode.val then (styp, text)
-              else (STvala loc styp, TXvala loc text)
+            let styp = STapp loc (STlid loc "list") s.styp in
+            let (text, styp) =
+              if not Pcaml.strict_mode.val then (text, styp)
+              else (TXvala loc text, STvala loc styp)
             in
             {used = used; text = text; styp = styp}
       | UIDENT "V"; UIDENT "FLAG"; s = SELF ->
           if quotify.val then ssflag2 loc s
           else
-            let styp = STlid loc "bool" in
             let text = TXflag loc s.text in
-            let (styp, text) =
-              if not Pcaml.strict_mode.val then (styp, text)
-              else (STvala loc styp, TXvala loc text)
+            let styp = STlid loc "bool" in
+            let (text, styp) =
+              if not Pcaml.strict_mode.val then (text, styp)
+              else (TXvala loc text, STvala loc styp)
             in
             {used = s.used; text = text; styp = styp}
+      | UIDENT "V"; UIDENT "SELF" ->
+          let text = TXself loc in
+          let styp = STself loc "SELF" in
+          let (text, styp) =
+            if not Pcaml.strict_mode.val then (text, styp)
+            else (TXvala loc text, STvala loc styp)
+          in
+          {used = []; text = text; styp = styp}
       | UIDENT "V"; x = UIDENT ->
           if quotify.val then sstoken2 loc x
           else
-            let styp = STlid loc "string" in
             let text = TXtok loc x <:expr< "" >> in
-            let (styp, text) =
-              if not Pcaml.strict_mode.val then (styp, text)
-              else (STvala loc styp, TXvala loc text)
+            let styp = STlid loc "string" in
+            let (text, styp) =
+              if not Pcaml.strict_mode.val then (text, styp)
+              else (TXvala loc text, STvala loc styp)
             in
             {used = []; text = text; styp = styp} ]
     | [ UIDENT "SELF" ->
@@ -976,7 +984,11 @@ EXTEND
           {used = []; text = text; styp = STlid loc "string"}
       | i = UIDENT; "."; e = qualid;
         lev = OPT [ UIDENT "LEVEL"; s = STRING -> s ] ->
+(**)
           let n = mk_name loc <:expr< $uid:i$ . $e$ >> in
+(*
+          let n = mk_name loc (MLast.ExAcc loc <:expr< $uid:i$ >> e) in
+*)
           {used = [n.tvar]; text = TXnterm loc n lev; styp = STquo loc n.tvar}
       | n = name; lev = OPT [ UIDENT "LEVEL"; s = STRING -> s ] ->
           {used = [n.tvar]; text = TXnterm loc n lev; styp = STquo loc n.tvar}

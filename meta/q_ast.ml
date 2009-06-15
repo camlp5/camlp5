@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.47 2007/09/09 15:25:09 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.48 2007/09/09 19:34:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -346,16 +346,27 @@ module Meta =
         | ExTyc _ e t -> <:expr< MLast.ExTyc $ln$ $loop e$ $e_ctyp t$ >>
         | ExUid _ s -> <:expr< MLast.ExUid $ln$ $e_vala e_string s$ >>
         | IFDEF STRICT THEN
-            ExXtr loc s _ ->
-              let asit = s.[0] = 'a' in
-              let s = String.sub s 1 (String.length s - 1) in
-              if asit then
-                let (loc, r) = eval_anti Pcaml.expr_eoi loc "" s in
-                <:expr< $anti:r$ >>
-              else
-                let (loc, r) = eval_anti Pcaml.expr_eoi loc "anti" s in
-                let r = <:expr< $anti:r$ >> in
-                <:expr< MLast.ExAnt loc $r$ >>
+            ExXtr loc s eo ->
+              match eo with
+              [ Some (Ploc.VaAnt s) ->
+                  match get_anti_loc s with
+                  [ Some (loc, typ, str) ->
+                      let (loc, r) = eval_anti Pcaml.expr_eoi loc typ str in
+                      <:expr< $anti:r$ >>
+                  | None -> assert False ]
+              | Some (Ploc.VaVal e) ->
+let _ = do { Printf.eprintf "ExXtr \"%s\" VaVal\n" s; flush stderr; } in
+not_impl "e_expr ExXtr" e
+              | None ->
+                  let asit = s.[0] = 'a' in
+                  let s = String.sub s 1 (String.length s - 1) in
+                  if asit then
+                    let (loc, r) = eval_anti Pcaml.expr_eoi loc "" s in
+                    <:expr< $anti:r$ >>
+                  else
+                    let (loc, r) = eval_anti Pcaml.expr_eoi loc "anti" s in
+                    let r = <:expr< $anti:r$ >> in
+                    <:expr< MLast.ExAnt loc $r$ >> ]
           END
         | x -> not_impl "e_expr" x ]
     ;
@@ -655,6 +666,12 @@ lex.Plexing.tok_match :=
       | ("ANTIQUOT_LOC", prm) -> check_and_make_anti prm "chr"
       | _ -> raise Stream.Failure ]
 *)
+  | ("V SELF", "") ->
+      fun
+      [ ("ANTIQUOT_LOC", prm) ->
+          let kind = check_anti_loc2 prm in
+          if kind = "" then prm else raise Stream.Failure
+      | _ -> raise Stream.Failure ]
   | ("V LIST", "") ->
       fun
       [ ("ANTIQUOT_LOC", prm) ->

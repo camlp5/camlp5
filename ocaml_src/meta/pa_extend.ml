@@ -1914,13 +1914,24 @@ Grammar.extend
         (fun (x : string) _ (loc : Ploc.t) ->
            (if !quotify then sstoken2 loc x
             else
-              let styp = STlid (loc, "string") in
               let text = TXtok (loc, x, MLast.ExStr (loc, "")) in
-              let (styp, text) =
-                if not !(Pcaml.strict_mode) then styp, text
-                else STvala (loc, styp), TXvala (loc, text)
+              let styp = STlid (loc, "string") in
+              let (text, styp) =
+                if not !(Pcaml.strict_mode) then text, styp
+                else TXvala (loc, text), STvala (loc, styp)
               in
               {used = []; text = text; styp = styp} :
+            'symbol));
+      [Gramext.Stoken ("UIDENT", "V"); Gramext.Stoken ("UIDENT", "SELF")],
+      Gramext.action
+        (fun _ _ (loc : Ploc.t) ->
+           (let text = TXself loc in
+            let styp = STself (loc, "SELF") in
+            let (text, styp) =
+              if not !(Pcaml.strict_mode) then text, styp
+              else TXvala (loc, text), STvala (loc, styp)
+            in
+            {used = []; text = text; styp = styp} :
             'symbol));
       [Gramext.Stoken ("UIDENT", "V"); Gramext.Stoken ("UIDENT", "FLAG");
        Gramext.Sself],
@@ -1928,11 +1939,11 @@ Grammar.extend
         (fun (s : 'symbol) _ _ (loc : Ploc.t) ->
            (if !quotify then ssflag2 loc s
             else
-              let styp = STlid (loc, "bool") in
               let text = TXflag (loc, s.text) in
-              let (styp, text) =
-                if not !(Pcaml.strict_mode) then styp, text
-                else STvala (loc, styp), TXvala (loc, text)
+              let styp = STlid (loc, "bool") in
+              let (text, styp) =
+                if not !(Pcaml.strict_mode) then text, styp
+                else TXvala (loc, text), STvala (loc, styp)
               in
               {used = s.used; text = text; styp = styp} :
             'symbol));
@@ -1954,11 +1965,11 @@ Grammar.extend
                   Some symb -> symb.used @ s.used
                 | None -> s.used
               in
-              let styp = STapp (loc, STlid (loc, "list"), s.styp) in
               let text = slist loc true sep s in
-              let (styp, text) =
-                if not !(Pcaml.strict_mode) then styp, text
-                else STvala (loc, styp), TXvala (loc, text)
+              let styp = STapp (loc, STlid (loc, "list"), s.styp) in
+              let (text, styp) =
+                if not !(Pcaml.strict_mode) then text, styp
+                else TXvala (loc, text), STvala (loc, styp)
               in
               {used = used; text = text; styp = styp} :
             'symbol));
@@ -1967,8 +1978,8 @@ Grammar.extend
         (fun (s : 'symbol) _ (loc : Ploc.t) ->
            (if !quotify then ssflag loc s
             else
-              let styp = STlid (loc, "bool") in
               let text = TXflag (loc, s.text) in
+              let styp = STlid (loc, "bool") in
               {used = s.used; text = text; styp = styp} :
             'symbol));
       [Gramext.Stoken ("UIDENT", "OPT"); Gramext.Sself],
@@ -1976,8 +1987,8 @@ Grammar.extend
         (fun (s : 'symbol) _ (loc : Ploc.t) ->
            (if !quotify then ssopt loc s
             else
-              let styp = STapp (loc, STlid (loc, "option"), s.styp) in
               let text = TXopt (loc, s.text) in
+              let styp = STapp (loc, STlid (loc, "option"), s.styp) in
               {used = s.used; text = text; styp = styp} :
             'symbol));
       [Gramext.Stoken ("UIDENT", "LIST1"); Gramext.Sself;
@@ -1997,8 +2008,8 @@ Grammar.extend
                   Some symb -> symb.used @ s.used
                 | None -> s.used
               in
-              let styp = STapp (loc, STlid (loc, "list"), s.styp) in
               let text = slist loc true sep s in
+              let styp = STapp (loc, STlid (loc, "list"), s.styp) in
               {used = used; text = text; styp = styp} :
             'symbol));
       [Gramext.Stoken ("UIDENT", "LIST0"); Gramext.Sself;
@@ -2018,8 +2029,8 @@ Grammar.extend
                   Some symb -> symb.used @ s.used
                 | None -> s.used
               in
-              let styp = STapp (loc, STlid (loc, "list"), s.styp) in
               let text = slist loc false sep s in
+              let styp = STapp (loc, STlid (loc, "list"), s.styp) in
               {used = used; text = text; styp = styp} :
             'symbol))];
      None, None,
@@ -2052,6 +2063,9 @@ Grammar.extend
            (let n =
               mk_name loc (MLast.ExAcc (loc, MLast.ExUid (loc, i), e))
             in
+            (*
+                      let n = mk_name loc (MLast.ExAcc loc <:expr< $uid:i$ >> e) in
+            *)
             {used = [n.tvar]; text = TXnterm (loc, n, lev);
              styp = STquo (loc, n.tvar)} :
             'symbol));

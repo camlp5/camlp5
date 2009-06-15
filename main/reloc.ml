@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: reloc.ml,v 1.16 2007/09/09 15:25:09 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.17 2007/09/09 19:34:16 deraugla Exp $ *)
 
 open MLast;
 
@@ -59,7 +59,7 @@ value rec ctyp floc sh =
     | TyVrn loc x1 x2 ->
         TyVrn (floc loc) (List.map (poly_variant floc sh) x1) x2
     | IFDEF STRICT THEN
-        TyXtr loc x1 x2 -> TyXtr (floc loc) x1 (option_map self x2)
+        TyXtr loc x1 x2 -> TyXtr (floc loc) x1 (option_map (vala_map self) x2)
       END ]
 and poly_variant floc sh =
   fun
@@ -132,7 +132,7 @@ value rec patt floc sh =
     | PaUid loc x1 -> PaUid (floc loc) x1
     | PaVrn loc x1 -> PaVrn (floc loc) x1
     | IFDEF STRICT THEN
-        PaXtr loc x1 x2 -> PaXtr (floc loc) x1 (option_map self x2)
+        PaXtr loc x1 x2 -> PaXtr (floc loc) x1 (option_map (vala_map self) x2)
       END ]
 and expr floc sh =
   self where rec self =
@@ -210,7 +210,7 @@ and expr floc sh =
     | ExWhi loc x1 x2 ->
         ExWhi (floc loc) (self x1) (vala_map (List.map self) x2)
     | IFDEF STRICT THEN
-        ExXtr loc x1 x2 -> ExXtr (floc loc) x1 (option_map self x2)
+        ExXtr loc x1 x2 -> ExXtr (floc loc) x1 (option_map (vala_map self) x2)
       END ]
 and module_type floc sh =
   self where rec self =

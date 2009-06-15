@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: mLast.mli,v 1.24 2007/09/09 15:25:09 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.25 2007/09/09 19:34:16 deraugla Exp $ *)
 
 (* Module [MLast]: abstract syntax tree.
 
@@ -47,7 +47,7 @@ type ctyp =
   | TyUid of loc and V string
   | TyVrn of loc and list poly_variant and option (option (list string))
   | IFDEF STRICT THEN
-      TyXtr of loc and string and option ctyp
+      TyXtr of loc and string and option (V ctyp)
     END ]
 and poly_variant =
   [ PvTag of string and bool and list ctyp
@@ -87,7 +87,7 @@ type patt =
   | PaUid of loc and string
   | PaVrn of loc and string
   | IFDEF STRICT THEN
-      PaXtr of loc and string and option patt
+      PaXtr of loc and string and option (V patt)
     END ]
 and expr =
   [ ExAcc of loc and expr and expr
@@ -127,7 +127,7 @@ and expr =
   | ExVrn of loc and string
   | ExWhi of loc and expr and V (list expr)
   | IFDEF STRICT THEN
-      ExXtr of loc and string and option expr
+      ExXtr of loc and string and option (V expr)
     END ]
 and module_type =
   [ MtAcc of loc and module_type and module_type

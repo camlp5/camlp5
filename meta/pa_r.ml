@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.57 2007/09/09 15:25:09 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.58 2007/09/09 19:34:16 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -384,6 +384,11 @@ EXTEND
       [ i = V LIDENT -> <:expr< $alid:i$ >>
       | i = V UIDENT -> <:expr< $auid:i$ >>
       | i = V UIDENT; "."; j = SELF -> mkexprident loc i j ] ]
+(*
+      | i = V UIDENT; "."; j = V SELF ->
+          let j = MLast.ExXtr loc "" (Some j) in
+          <:expr< $auid:i$.$j$ >> ] ]
+*)
   ;
   fun_def:
     [ RIGHTA

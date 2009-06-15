@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.56 2007/09/09 15:25:09 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.57 2007/09/09 19:34:16 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -1251,7 +1251,7 @@ EXTEND
   ;
   expr: LEVEL "simple"
     [ [ a = ANTIQUOT "exp" -> antiquot "exp" loc a
-      | a = ANTIQUOT -> antiquot "" loc a
+      | a = ANTIQUOT "" -> antiquot "" loc a
       | a = ANTIQUOT "anti" ->
           Qast.Node "ExAnt" [Qast.Loc; antiquot "anti" loc a] ] ]
   ;
