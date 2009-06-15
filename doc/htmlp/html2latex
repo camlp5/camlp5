@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2latex,v 1.63 2007/10/25 02:49:47 deraugla Exp $
+# $Id: html2latex,v 1.64 2007/11/20 09:17:13 deraugla Exp $
 
 FILES1="index.html strict.html ptools.html"
 FILES2="parsers.html lexers.html fparsers.html grammars.html"
@@ -50,6 +50,7 @@ for i in $FILES; do
   elif [ "$i" = "4" ]; then
     /bin/echo '\part{Conclusion}'
   elif [ "$i" = "5" ]; then
+    /bin/echo '\part{Appendix}'
     /bin/echo '\appendix{}'
   else
     cat $i |
