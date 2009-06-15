@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.62 2007/08/22 13:03:55 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.63 2007/08/29 02:22:34 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -2341,7 +2341,7 @@ value default_wflag () =
 ;
 
 Pcaml.add_option "-flag" (Arg.String set_flags)
-  ("<str> Change pretty printing behaviour according to <flags>:
+  ("<str> Change pretty printing behaviour according to <str>:
        A/a enable/disable all flags
        D/d enable/disable allowing expanding 'declare'
        L/l enable/disable allowing printing 'let..in' horizontally

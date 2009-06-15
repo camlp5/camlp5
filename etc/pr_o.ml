@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.83 2007/08/22 13:03:55 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.84 2007/08/29 02:22:34 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -2307,7 +2307,7 @@ value default_flag () =
 ;
 
 Pcaml.add_option "-flag" (Arg.String set_flags)
-  ("<str> Change pretty printing behaviour according to <flags>:
+  ("<str> Change pretty printing behaviour according to <str>:
        A/a enable/disable all flags
        L/l enable/disable allowing printing 'let..in' horizontally
        M/m enable/disable printing double semicolons
