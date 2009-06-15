@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2latex,v 1.36 2007/07/23 14:52:55 deraugla Exp $
+# $Id: html2latex,v 1.37 2007/07/24 16:36:14 deraugla Exp $
 
 FILES="index.html ptools.html syntext.html revsynt.html quot.html parsers.html fparsers.html lexers.html grammars.html pretty.html opretty.html ml_ast.html pragma.html extfun.html"
 
@@ -92,7 +92,8 @@ for i in $FILES; do
     -e '/\\begin{verbatim}/,/\\end{verbatim}/s/\\\$/$/g' \
     -e '/\\begin{verbatim}/,/\\end{verbatim}/s/\\{/{/g' \
     -e '/\\begin{verbatim}/,/\\end{verbatim}/s/\\}/}/g' \
-    -e '/<div class="trailer">/,$d'
+    -e '/<div class="trailer">/,$d' \
+    -e 's/<div[^>]*>/\\noindent /' -e 's|</div>||'
 done
 
 /bin/echo '\end{document}'

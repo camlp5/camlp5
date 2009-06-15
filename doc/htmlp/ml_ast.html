@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: ml_ast.html,v 1.21 2007/07/24 12:59:57 deraugla Exp $ -->
+  <!-- $Id: ml_ast.html,v 1.22 2007/07/24 16:36:14 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Abstract tree in concrete syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -96,22 +96,80 @@
 <p>Instead of thinking of "a syntax tree", the programmer has to think
   of "a piece of program".</p>
 
-<h2>Antiquotations</h2>
+<h2>Location</h2>
 
-<p>The expressions or patterns between dollar ($) characters
-  are <em>antiquotations</em>. If the quotation is an expression, they
-  are expressions, if it is in a pattern, they are patterns.  Any
-  acceptable expression or pattern is allowed, except quotations
-  themselves.</p>
+<p>In all nodes, the first parameter is the source location of the
+  node.</p>
 
-<p>Examples of expressions:</p>
+<h3>In expressions</h3>
+
+<p>When a quotation is in the context of an expression, the location
+  parameter is "<tt>loc</tt>" in the node and in all its possible
+  sub-nodes. The following example:</p>
 
 <pre>
-  &lt;:expr&lt; [$e$ :: $loop False el$] >>
-  &lt;:patt&lt; ( $list:[p::pl]$) >>
+  &lt;:sig_item&lt; value foo : int -> bool >>
 </pre>
 
-<p>Examples of patterns (in their contexts):</p>
+<p>is equivalent, in an expression, to:</p>
+
+<pre>
+  MLast.SgVal loc "foo"
+    (MLast.TyArr loc (MLast.TyLid loc "int") (MLast.TyLid loc "bool"));
+</pre>
+
+<p>The name "<tt>loc</tt>" is predefined, it is possible to change it
+  using the argument "<tt>-loc</tt>" of the camlp5 shell commands.</p>
+
+<p>Consequently, if there is no variable "<tt>loc</tt>" defined in the
+  context of the quotation, or if it is not of the good type, a
+  semantic error occur in the ocaml compiler.</p>
+
+<p>Note that in the <a href="grammars.html">extensible grammars</a>,
+  the value "<tt>loc</tt>" is bound in all semantic actions to the
+  location of the rule.</p>
+
+<p>If the created node has no location, the simplest way is to define
+  the variable "<tt>loc</tt>" to have the value
+  "<tt>Stdpp.dummy_loc</tt>".</p>
+
+<h3>In patterns</h3>
+
+<p>When a quotation is in the context of a pattern, the location
+  parameter of all nodes and possible sub-nodes is set to the wildcard
+  ("<tt>_</tt>"). The same example above:</p>
+
+<pre>
+  &lt;:sig_item&lt; value foo : int -> bool >>
+</pre>
+
+<p>is equivalent, in a pattern, to:</p>
+
+<pre>
+  MLast.SgVal _ "foo"
+    (MLast.TyArr _ (MLast.TyLid _ "int") (MLast.TyLid _ "int"))
+</pre>
+
+<h2>Antiquotations</h2>
+
+<p>The expressions or patterns between dollar ($) characters are
+  called <em>antiquotations</em>. In opposition to quotations which
+  has its own syntax rules, the antiquotation is an area in the syntax
+  of the enclosing context (expression or pattern). See the chapter
+  about <a href="quot.html">quotations</a>.</p>
+
+<p>If the quotation (any quotation) is in the context of an
+  expression, the antiquotation is an expression. It could ba a call
+  to a function. Examples:</p>
+
+<pre>
+  value f e el = &lt;:expr&lt; [$e$ :: $loop False el$] >>;
+  value patt_list p pl = &lt;:patt&lt; ( $list:[p::pl]$) >>;
+</pre>
+
+<p>If the quotation (any quotation) is in the context of an pattern,
+  the antiquotation is a pattern. Any pattern is possible, including
+  the wildcard character ("<tt>_</tt>"). Examples:</p>
 
 <pre>
    fun [ &lt;:expr&lt; $lid:op$ $_$ $_$ >> -> op ]
@@ -166,8 +224,8 @@
   </tr>
   <tr>
     <td><tt>ExAnt loc e</tt></td>
-    <td align="center">...internal use...</td>
-    <td></td>
+    <td align="center">$anti:e$</td>
+    <td>antiquotation <a href="#expr_1">(1)</a></td>
   </tr>
   <tr>
     <td><tt>ExApp loc e1 e2</tt></td>
@@ -227,7 +285,7 @@
   <tr>
     <td><tt>ExFun loc lopee</tt></td>
     <td align="center"><tt>fun [ $list:lpoee$ ]</tt></td>
-    <td>function</td>
+    <td>function <a href="#expr_2">(2)</a></td>
   </tr>
   <tr>
     <td><tt>ExIfe loc e1 e2 e3</tt></td>
@@ -287,7 +345,7 @@
   <tr>
     <td><tt>ExMat loc e lpoee</tt></td>
     <td align="center"><tt>match $e$ with [ $list:lpoee$ ]</tt></td>
-    <td>match</td>
+    <td>match <a href="#expr_2">(2)</a></td>
   </tr>
   <tr>
     <td><tt>ExNew loc ls</tt></td>
@@ -347,7 +405,7 @@
   <tr>
     <td><tt>ExTry loc e lpoee</tt></td>
     <td align="center"><tt>try $e$ with [ $list:lpoee$ ]</tt></td>
-    <td>try</td>
+    <td>try <a href="#expr_2">(2)</a></td>
   </tr>
   <tr>
     <td><tt>ExTup loc le</tt></td>
@@ -376,16 +434,22 @@
   </tr>
 </table>
 
-<p>The variable "lpoee" found in the "match" and "try" statements
-  correspond to a list of "<tt>(patt * option expr * expr)</tt>" where
-  the "<tt>option expr</tt>" is the "when" optionally following the
-  pattern:</p>
+<div id="expr_1" style="margin: 5mm 0 0 1cm">(1)
+  Node used to specify an antiquotation area. See the chapter about
+    <a href="quot.html">quotations</a>.
+</div>
+
+<div id="expr_2" style="margin: 5mm 0 0 1cm">(2)
+  <p>The variable "lpoee" found in "function", "match" and "try"
+    statements correspond to a list of "<tt>(patt * option expr *
+      expr)</tt>" where the "<tt>option expr</tt>" is the "when"
+    optionally following the pattern:</p>
 
 <pre>
   p -> e
 </pre>
 
-<p>is represented by:</p>
+  <p>is represented by:</p>
 
 <pre>
   (p, None, e)
@@ -397,11 +461,12 @@
   p when e1 -> e
 </pre>
 
-<p>is represented by:</p>
+  <p>is represented by:</p>
 
 <pre>
   (p, Some e1, e)
 </pre>
+</div>
 
 <h3>patt</h3>
 
@@ -425,8 +490,8 @@
   </tr>
   <tr>
     <td><tt>PaAnt loc p</tt></td>
-    <td align="center">...internal use...</td>
-    <td></td>
+    <td align="center">$anti:e$</td>
+    <td>antiquotation <a href="#patt_1">(1)</a></td>
   </tr>
   <tr>
     <td><tt>PaAny loc</tt></td>
@@ -534,6 +599,11 @@
     <td>variant</td>
   </tr>
 </table>
+
+<div id="patt_1" style="margin: 5mm 0 0 1cm">(1)
+  Node used to specify an antiquotation area. See the chapter about
+  <a href="quot.html">quotations</a>.
+</div>
 
 <h3>ctyp</h3>
 
