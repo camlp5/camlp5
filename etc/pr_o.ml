@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.81 2007/08/16 16:07:42 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.82 2007/08/22 12:30:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -33,11 +33,6 @@ value is_infix = do {
      "lxor"; "mod"; "or"; "||"; "~-"; "~-."];
   fun s -> try Hashtbl.find infixes s with [ Not_found -> False ]
 };
-
-value is_keyword =
-  let keywords = ["value"; "where"] in
-  fun s -> List.mem s keywords
-;
 
 value has_special_chars s =
   if String.length s = 0 then False
@@ -119,7 +114,6 @@ value var_escaped pc v =
   let x =
     if v.[0] = '*' || v.[String.length v - 1] = '*' then "( " ^ v ^ " )"
     else if is_infix v || has_special_chars v then "(" ^ v ^ ")"
-    else if is_keyword v then v ^ "__"
     else v
   in
   sprintf "%s%s%s" pc.bef x pc.aft
