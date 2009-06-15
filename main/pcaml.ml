@@ -1,6 +1,6 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo *)
-(* $Id: pcaml.ml,v 1.52 2007/12/19 18:38:30 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007 *)
+(* $Id: pcaml.ml,v 1.53 2007/12/27 10:30:24 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2008 *)
 
 value version = "5.07-exp";
 value syntax_name = ref "";

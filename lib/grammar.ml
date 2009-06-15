@@ -1,6 +1,6 @@
 (* camlp5r pa_fstream.cmo *)
-(* $Id: grammar.ml,v 1.70 2007/11/28 10:01:57 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007 *)
+(* $Id: grammar.ml,v 1.71 2007/12/27 10:30:24 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2008 *)
 
 open Gramext;
 open Format;

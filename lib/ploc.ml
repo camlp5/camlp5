@@ -1,6 +1,6 @@
 (* camlp5r *)
-(* $Id: ploc.ml,v 1.5 2007/10/04 19:17:30 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007 *)
+(* $Id: ploc.ml,v 1.6 2007/12/27 10:30:24 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2008 *)
 
 type t =
   { line_nb : int;

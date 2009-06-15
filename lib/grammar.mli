@@ -1,6 +1,6 @@
 (* camlp5r *)
-(* $Id: grammar.mli,v 1.28 2007/11/26 09:20:52 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007 *)
+(* $Id: grammar.mli,v 1.29 2007/12/27 10:30:24 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2008 *)
 
 (** Extensible grammars.
 

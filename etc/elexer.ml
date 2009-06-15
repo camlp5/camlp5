@@ -1,6 +1,6 @@
 (* camlp5r *)
-(* $Id: elexer.ml,v 1.4 2007/09/17 10:22:31 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007 *)
+(* $Id: elexer.ml,v 1.5 2007/12/27 10:30:24 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2008 *)
 
 (* lexer written with extensible grammars; experimental *)
 

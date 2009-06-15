@@ -1,6 +1,6 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: reloc.ml,v 1.35 2007/10/08 09:56:51 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007 *)
+(* $Id: reloc.ml,v 1.36 2007/12/27 10:30:24 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2008 *)
 
 open MLast;
 

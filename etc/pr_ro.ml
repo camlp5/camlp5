@@ -1,6 +1,6 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.79 2007/12/18 18:33:35 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007 *)
+(* $Id: pr_ro.ml,v 1.80 2007/12/27 10:30:24 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2008 *)
 
 (* Pretty printing extension for objects and labels *)
 

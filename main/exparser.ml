@@ -1,6 +1,6 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: exparser.ml,v 1.11 2007/09/21 19:11:06 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007 *)
+(* $Id: exparser.ml,v 1.12 2007/12/27 10:30:24 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2008 *)
 
 type spat_comp =
   [ SpTrm of MLast.loc and MLast.patt and MLast.v (option MLast.expr)

@@ -1,6 +1,6 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: ast2pt.ml,v 1.56 2007/12/19 18:00:30 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007 *)
+(* $Id: ast2pt.ml,v 1.57 2007/12/27 10:30:24 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2008 *)
 
 open MLast;
 open Parsetree;

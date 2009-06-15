@@ -1,6 +1,6 @@
 (* camlp5r *)
-(* $Id: prtools.mli,v 1.9 2007/12/24 10:21:08 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007 *)
+(* $Id: prtools.mli,v 1.10 2007/12/27 10:30:24 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2008 *)
 
 type pr_context =
   Eprinter.pr_context ==

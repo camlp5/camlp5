@@ -1,6 +1,6 @@
 (* camlp5r pa_lexer.cmo *)
-(* $Id: plexer.ml,v 1.104 2007/11/27 14:40:30 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007 *)
+(* $Id: plexer.ml,v 1.105 2007/12/27 10:30:24 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2008 *)
 
 value no_quotations = ref False;
 value error_on_unknown_keywords = ref False;
