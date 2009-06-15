@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2latex,v 1.16 2007/07/17 01:37:40 deraugla Exp $
+# $Id: html2latex,v 1.17 2007/07/17 01:41:51 deraugla Exp $
 
 FILES="index.html ptools.html revsynt.html parsers.html fparsers.html lexers.html grammars.html pretty.html opretty.html ml_ast.html pragma.html extfun.html"
 
@@ -29,8 +29,6 @@ internal shell script.
 \tableofcontents'
 
 for i in $FILES; do
-  echo "======" 1>&2
-  echo "$i" 1>&2
   /bin/echo '\cleardoublepage'
   cat $i |
   sed \
