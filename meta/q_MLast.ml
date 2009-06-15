@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.97 2007/09/21 18:25:15 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.98 2007/09/21 19:11:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -350,7 +350,7 @@ EXTEND
     | "simple"
       [ i = a_UIDENT2 -> Qast.Node "MtUid" [Qast.Loc; i]
       | i = a_LIDENT2 -> Qast.Node "MtLid" [Qast.Loc; i]
-      | "'"; i = ident2 -> Qast.Node "MtQuo" [Qast.Loc; i]
+      | "'"; i = SV ident "" -> Qast.Node "MtQuo" [Qast.Loc; i]
       | "("; mt = SELF; ")" -> mt ] ]
   ;
   sig_item:
@@ -893,7 +893,7 @@ EXTEND
   ;
   ident2:
     [ [ s = ANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc s)
-      | s = ANTIQUOT "a" -> Qast.VaAnt "a" loc s
+      | s = ANTIQUOT "_" -> Qast.VaAnt "_" loc s
       | i = ident -> Qast.VaVal i ] ]
   ;
   ident:
@@ -903,9 +903,9 @@ EXTEND
   mod_ident2:
     [ [ sl = mod_ident -> Qast.VaVal sl
       | s = ANTIQUOT "list" -> Qast.VaVal (Qast.VaAnt "list" loc s)
-      | s = ANTIQUOT "alist" -> Qast.VaAnt "alist" loc s
+      | s = ANTIQUOT "_list" -> Qast.VaAnt "_list" loc s
       | s = ANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc s)
-      | s = ANTIQUOT "a" -> Qast.VaAnt "a" loc s ] ]
+      | s = ANTIQUOT "_" -> Qast.VaAnt "_" loc s ] ]
   ;
   mod_ident:
     [ RIGHTA
@@ -1096,7 +1096,7 @@ EXTEND
   clty_longident2:
     [ [ v = clty_longident -> Qast.VaVal v
       | s = ANTIQUOT "list" -> Qast.VaVal (Qast.VaAnt "list" loc s)
-      | s = ANTIQUOT "alist" -> Qast.VaAnt "alist" loc s ] ]
+      | s = ANTIQUOT "_list" -> Qast.VaAnt "_list" loc s ] ]
   ;
   clty_longident:
     [ [ m = a_UIDENT; "."; l = SELF -> Qast.Cons m l
@@ -1105,7 +1105,7 @@ EXTEND
   class_longident2:
     [ [ v = class_longident -> Qast.VaVal v
       | s = ANTIQUOT "list" -> Qast.VaVal (Qast.VaAnt "list" loc s)
-      | s = ANTIQUOT "alist" -> Qast.VaAnt "alist" loc s ] ]
+      | s = ANTIQUOT "_list" -> Qast.VaAnt "_list" loc s ] ]
   ;
   class_longident:
     [ [ m = a_UIDENT; "."; l = SELF -> Qast.Cons m l
@@ -1120,23 +1120,23 @@ EXTEND
   ;
   tildeident:
     [ [ i = a_TILDEIDENT -> Qast.VaVal i
-      | a = TILDEANTIQUOT "a" -> Qast.VaAnt "a" loc a
-      | a = TILDEANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a) ] ]
+      | a = TILDEANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a)
+      | a = TILDEANTIQUOT "_" -> Qast.VaAnt "_" loc a ] ]
   ;
   tildeidentcolon:
     [ [ i = a_TILDEIDENTCOLON -> Qast.VaVal i
-      | a = TILDEANTIQUOTCOLON "a" -> Qast.VaAnt "a" loc a
-      | a = TILDEANTIQUOTCOLON -> Qast.VaVal (Qast.VaAnt "" loc a) ] ]
+      | a = TILDEANTIQUOTCOLON -> Qast.VaVal (Qast.VaAnt "" loc a)
+      | a = TILDEANTIQUOTCOLON "_" -> Qast.VaAnt "_" loc a ] ]
   ;
   questionident:
     [ [ i = a_QUESTIONIDENT -> Qast.VaVal i
-      | a = QUESTIONANTIQUOT "a" -> Qast.VaAnt "a" loc a
-      | a = QUESTIONANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a) ] ]
+      | a = QUESTIONANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a)
+      | a = QUESTIONANTIQUOT "_" -> Qast.VaAnt "_" loc a ] ]
   ;
   questionidentcolon:
     [ [ i = a_QUESTIONIDENTCOLON -> Qast.VaVal i
-      | a = QUESTIONANTIQUOTCOLON "a" -> Qast.VaAnt "a" loc a
-      | a = QUESTIONANTIQUOTCOLON -> Qast.VaVal (Qast.VaAnt "" loc a) ] ]
+      | a = QUESTIONANTIQUOTCOLON -> Qast.VaVal (Qast.VaAnt "" loc a)
+      | a = QUESTIONANTIQUOTCOLON "_" -> Qast.VaAnt "_" loc a ] ]
   ;
   ctyp: LEVEL "simple"
     [ [ "["; "="; rfl = poly_variant_list; "]" ->
@@ -1226,7 +1226,7 @@ EXTEND
   direction_flag2:
     [ [ df = direction_flag -> Qast.VaVal df
       | s = ANTIQUOT "to" -> Qast.VaVal (Qast.VaAnt "to" loc s)
-      | s = ANTIQUOT "ato" -> Qast.VaAnt "ato" loc s ] ]
+      | s = ANTIQUOT "_to" -> Qast.VaAnt "_to" loc s ] ]
   ;
   direction_flag:
     [ [ "to" -> Qast.Bool True
@@ -1250,7 +1250,7 @@ EXTEND
   ;
   typevar2:
     [ [ "'"; a = ANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a)
-      | "'"; a = ANTIQUOT "a" -> Qast.VaAnt "a" loc a ] ]
+      | "'"; a = ANTIQUOT "_" -> Qast.VaAnt "_" loc a ] ]
   ;
 END;
 
@@ -1266,7 +1266,7 @@ EXTEND
   ;
   dir_param:
     [ [ a = ANTIQUOT "opt" -> Qast.VaVal (Qast.VaAnt "opt" loc a)
-      | a = ANTIQUOT "aopt" -> Qast.VaAnt "aopt" loc a
+      | a = ANTIQUOT "_opt" -> Qast.VaAnt "_opt" loc a
       | e = expr -> Qast.VaVal (Qast.Option (Some e))
       | -> Qast.VaVal (Qast.Option None) ] ]
   ;
@@ -1327,26 +1327,26 @@ EXTEND
   ;
   a_list:
     [ [ a = ANTIQUOT "list" -> Qast.VaAnt "list" loc a
-      | a = ANTIQUOT "alist" -> Qast.VaAnt "list" loc a ] ]
+      | a = ANTIQUOT "_list" -> Qast.VaAnt "_list" loc a ] ]
   ;
   a_list2:
     [ [ a = ANTIQUOT "list" -> Qast.VaVal (Qast.VaAnt "list" loc a)
-      | a = ANTIQUOT "alist" -> Qast.VaAnt "alist" loc a ] ]
+      | a = ANTIQUOT "_list" -> Qast.VaAnt "_list" loc a ] ]
   ;
   a_opt:
     [ [ a = ANTIQUOT "opt" -> Qast.VaAnt "opt" loc a ] ]
   ;
   a_opt2:
     [ [ a = ANTIQUOT "opt" -> Qast.VaVal (Qast.VaAnt "opt" loc a)
-      | a = ANTIQUOT "aopt" -> Qast.VaAnt "aopt" loc a ] ]
+      | a = ANTIQUOT "_opt" -> Qast.VaAnt "_opt" loc a ] ]
   ;
   a_flag:
     [ [ a = ANTIQUOT "flag" -> Qast.VaAnt "flag" loc a
-      | a = ANTIQUOT "aflag" -> Qast.VaAnt "aflag" loc a ] ]
+      | a = ANTIQUOT "_flag" -> Qast.VaAnt "_flag" loc a ] ]
   ;
   a_flag2:
     [ [ a = ANTIQUOT "flag" -> Qast.VaVal (Qast.VaAnt "flag" loc a)
-      | a = ANTIQUOT "aflag" -> Qast.VaAnt "aflag" loc a ] ]
+      | a = ANTIQUOT "_flag" -> Qast.VaAnt "_flag" loc a ] ]
   ;
   (* compatibility; deprecated since version 4.07 *)
   a_opt:
@@ -1367,7 +1367,7 @@ EXTEND
   ;
   a_UIDENT2:
     [ [ a = ANTIQUOT "uid" -> Qast.VaVal (Qast.VaAnt "uid" loc a)
-      | a = ANTIQUOT "auid" -> Qast.VaAnt "" loc a
+      | a = ANTIQUOT "_uid" -> Qast.VaAnt "_uid" loc a
       | a = ANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a)
       | i = UIDENT -> Qast.VaVal (Qast.Str i) ] ]
   ;
@@ -1378,7 +1378,7 @@ EXTEND
   ;
   a_LIDENT2:
     [ [ a = ANTIQUOT "lid" -> Qast.VaVal (Qast.VaAnt "lid" loc a)
-      | a = ANTIQUOT "alid" -> Qast.VaAnt "" loc a
+      | a = ANTIQUOT "_lid" -> Qast.VaAnt "_lid" loc a
       | a = ANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a)
       | i = LIDENT -> Qast.VaVal (Qast.Str i) ] ]
   ;
@@ -1389,7 +1389,7 @@ EXTEND
   ;
   a_INT2:
     [ [ a = ANTIQUOT "int" -> Qast.VaVal (Qast.VaAnt "int" loc a)
-      | a = ANTIQUOT "aint" -> Qast.VaAnt "int" loc a
+      | a = ANTIQUOT "_int" -> Qast.VaAnt "_int" loc a
       | a = ANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a)
       | s = INT -> Qast.VaVal (Qast.Str s) ] ]
   ;
@@ -1400,7 +1400,7 @@ EXTEND
   ;
   a_INT_l2:
     [ [ a = ANTIQUOT "int32" -> Qast.VaVal (Qast.VaAnt "int32" loc a)
-      | a = ANTIQUOT "aint32" -> Qast.VaAnt "int32" loc a
+      | a = ANTIQUOT "_int32" -> Qast.VaAnt "_int32" loc a
       | a = ANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a)
       | s = INT_l -> Qast.VaVal (Qast.Str s) ] ]
   ;
@@ -1411,7 +1411,7 @@ EXTEND
   ;
   a_INT_L2:
     [ [ a = ANTIQUOT "int64" -> Qast.VaVal (Qast.VaAnt "int64" loc a)
-      | a = ANTIQUOT "aint64" -> Qast.VaAnt "int64" loc a
+      | a = ANTIQUOT "_int64" -> Qast.VaAnt "_int64" loc a
       | a = ANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a)
       | s = INT_L -> Qast.VaVal (Qast.Str s) ] ]
   ;
@@ -1422,7 +1422,7 @@ EXTEND
   ;
   a_INT_n2:
     [ [ a = ANTIQUOT "nativeint" -> Qast.VaVal (Qast.VaAnt "nativeint" loc a)
-      | a = ANTIQUOT "anativeint" -> Qast.VaAnt "nativeint" loc a
+      | a = ANTIQUOT "_nativeint" -> Qast.VaAnt "_nativeint" loc a
       | a = ANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a)
       | s = INT_n -> Qast.VaVal (Qast.Str s) ] ]
   ;
@@ -1433,7 +1433,7 @@ EXTEND
   ;
   a_FLOAT2:
     [ [ a = ANTIQUOT "flo" -> Qast.VaVal (Qast.VaAnt "flo" loc a)
-      | a = ANTIQUOT "aflo" -> Qast.VaAnt "flo" loc a
+      | a = ANTIQUOT "_flo" -> Qast.VaAnt "_flo" loc a
       | a = ANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a)
       | s = FLOAT -> Qast.VaVal (Qast.Str s) ] ]
   ;
@@ -1444,7 +1444,7 @@ EXTEND
   ;
   a_STRING2:
     [ [ a = ANTIQUOT "str" -> Qast.VaVal (Qast.VaAnt "str" loc a)
-      | a = ANTIQUOT "astr" -> Qast.VaAnt "str" loc a
+      | a = ANTIQUOT "_str" -> Qast.VaAnt "_str" loc a
       | a = ANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a)
       | s = STRING -> Qast.VaVal (Qast.Str s) ] ]
   ;
@@ -1455,7 +1455,7 @@ EXTEND
   ;
   a_CHAR2:
     [ [ a = ANTIQUOT "chr" -> Qast.VaVal (Qast.VaAnt "chr" loc a)
-      | a = ANTIQUOT "achr" -> Qast.VaAnt "chr" loc a
+      | a = ANTIQUOT "_chr" -> Qast.VaAnt "_chr" loc a
       | a = ANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a)
       | s = CHAR -> Qast.VaVal (Qast.Str s) ] ]
   ;

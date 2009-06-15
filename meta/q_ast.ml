@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: q_ast.ml,v 1.91 2007/09/21 18:25:15 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.92 2007/09/21 19:11:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* AST quotations with works by running the language parser (and its possible
@@ -738,7 +738,7 @@ value check_anti_loc2 s =
   [ Not_found | Failure _ -> raise Stream.Failure ]
 ;
 
-value anti_anti n = "a" ^ n;
+value anti_anti n = "_" ^ n;
 
 let lex = Grammar.glexer Pcaml.gram in
 let tok_match = lex.Plexing.tok_match in

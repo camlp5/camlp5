@@ -6,6 +6,15 @@
     <lastBuildDate>Mon Sep 17 15:10:47 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
     <item>
+      <title>Syntax tree - strict mode - 1</title>
+      <description>
+        General antiquoting will start with "_" (underscore) instead
+        of "a".
+      </description>
+      <pubDate>Fri Sep 21 21:06:25 CEST 2007</pubDate>
+      <link>../ast_strict.html</link>
+    </item>
+    <item>
       <title>Syntax tree - strict mode</title>
       <description>
         Trying a different display for the "expr" quotation, the

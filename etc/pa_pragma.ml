@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.58 2007/09/16 05:19:01 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.59 2007/09/21 19:11:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* expressions evaluated in the context of the preprocessor *)
@@ -57,7 +57,7 @@ value rec type_of_ctyp t =
   | MLast.TyAny loc -> <:ctyp< _ >>
   | MLast.TyApp loc t1 t2 -> <:ctyp< $type_of_ctyp t1$ $type_of_ctyp t2$ >>
   | MLast.TyArr loc t1 t2 -> <:ctyp< $type_of_ctyp t1$ -> $type_of_ctyp t2$ >>
-  | MLast.TyLid loc s -> <:ctyp< $alid:s$ >>
+  | MLast.TyLid loc s -> <:ctyp< $_lid:s$ >>
   | MLast.TyQuo loc s ->
       try List.assoc s vars.val with
       [ Not_found -> do {
@@ -65,7 +65,7 @@ value rec type_of_ctyp t =
           vars.val := [(s, v) :: vars.val];
           v
         } ]
-  | MLast.TyUid loc s -> <:ctyp< $auid:s$ >>
+  | MLast.TyUid loc s -> <:ctyp< $_uid:s$ >>
   | t -> not_impl (MLast.loc_of_ctyp t) "Type.of_ctyp" t ]
 ;
 
@@ -126,7 +126,7 @@ value rec eval_type loc t =
       match s.val with
       [ Some t -> eval_type loc t
       | None -> t ]
-  | <:ctyp< $alid:_$ >> | <:ctyp< $uid:_$ >> | <:ctyp< _ >> -> t
+  | <:ctyp< $_lid:_$ >> | <:ctyp< $uid:_$ >> | <:ctyp< _ >> -> t
   | IFDEF STRICT THEN
       _ -> failwith "eval_type"
     END ]

@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extend.ml,v 1.44 2007/09/21 18:25:15 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.45 2007/09/21 19:11:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -283,7 +283,7 @@ value rec string_list =
   | [] -> "" ]
 ;
 
-value anti_anti n = "a" ^ n;
+value anti_anti n = "_" ^ n;
 
 value rec rule pc (sl, a) =
   match a with

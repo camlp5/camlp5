@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.60 2007/09/21 18:25:15 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.61 2007/09/21 19:11:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -358,7 +358,7 @@ EXTEND
   str_item:
     [ "top"
       [ "exception"; (_, c, tl) = constructor_declaration; b = rebind_exn ->
-          <:str_item< exception $auid:c$ of $alist:tl$ = $b$ >>
+          <:str_item< exception $_uid:c$ of $_list:tl$ = $b$ >>
       | "external"; i = LIDENT; ":"; t = ctyp; "="; pd = LIST1 STRING ->
           <:str_item< external $lid:i$ : $t$ = $list:pd$ >>
       | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
@@ -420,7 +420,7 @@ EXTEND
   sig_item:
     [ "top"
       [ "exception"; (_, c, tl) = constructor_declaration ->
-          <:sig_item< exception $auid:c$ of $alist:tl$ >>
+          <:sig_item< exception $_uid:c$ of $_list:tl$ >>
       | "external"; i = LIDENT; ":"; t = ctyp; "="; pd = LIST1 STRING ->
           <:sig_item< external $lid:i$ : $t$ = $list:pd$ >>
       | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
@@ -561,7 +561,7 @@ EXTEND
       [ e1 = SELF; "."; "("; e2 = SELF; ")" -> <:expr< $e1$ .( $e2$ ) >>
       | e1 = SELF; "."; "["; e2 = SELF; "]" -> <:expr< $e1$ .[ $e2$ ] >>
       | e = SELF; "."; "{"; el = V (LIST1 expr SEP ","); "}" ->
-          <:expr< $e$ .{ $alist:el$ } >>
+          <:expr< $e$ .{ $_list:el$ } >>
       | e1 = SELF; "."; e2 = SELF -> <:expr< $e1$ . $e2$ >> ]
     | "~-" NONA
       [ "!"; e = SELF -> <:expr< $e$ . val>>
@@ -573,9 +573,9 @@ EXTEND
       | s = INT_l -> <:expr< $int32:s$ >>
       | s = INT_L -> <:expr< $int64:s$ >>
       | s = INT_n -> <:expr< $nativeint:s$ >>
-      | s = V FLOAT -> <:expr< $aflo:s$ >>
+      | s = V FLOAT -> <:expr< $_flo:s$ >>
       | s = STRING -> <:expr< $str:s$ >>
-      | c = V CHAR -> <:expr< $achr:c$ >>
+      | c = V CHAR -> <:expr< $_chr:c$ >>
       | UIDENT "True" -> <:expr< $uid:" True"$ >>
       | UIDENT "False" -> <:expr< $uid:" False"$ >>
       | i = expr_ident -> i
@@ -585,7 +585,7 @@ EXTEND
       | "["; el = expr1_semi_list; "]" -> <:expr< $mklistexp loc None el$ >>
       | "[|"; "|]" -> <:expr< [| |] >>
       | "[|"; el = V expr1_semi_list "list"; "|]" ->
-          <:expr< [| $alist:el$ |] >>
+          <:expr< [| $_list:el$ |] >>
       | "{"; test_label_eq; lel = lbl_expr_list; "}" ->
           <:expr< { $list:lel$ } >>
       | "{"; e = expr LEVEL "."; "with"; lel = lbl_expr_list; "}" ->

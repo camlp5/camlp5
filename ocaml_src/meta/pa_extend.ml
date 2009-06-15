@@ -667,6 +667,9 @@ let anti_str psl =
   | _ -> ""
 ;;
 
+let anti_anti n = "_" ^ n;;
+let is_anti_anti n = String.length n > 0 && n.[0] = '_';;
+
 let quot_expr psl e =
   let rec loop e =
     let loc = MLast.loc_of_expr e in
@@ -714,7 +717,7 @@ let quot_expr psl e =
                 MLast.ExLid (loc, "loc")),
              loop e)
         in
-        if String.length s > 0 && s.[0] = 'a' then e
+        if is_anti_anti s then e
         else
           MLast.ExApp
             (loc,
@@ -1566,8 +1569,6 @@ let ssflag2 loc ls s =
      STtyp
        (MLast.TyAcc (loc, MLast.TyUid (loc, "Qast"), MLast.TyLid (loc, "t")))}
 ;;
-
-let anti_anti n = "a" ^ n;;
 
 let ssnterm2 loc ls (i, n) lev =
   let t = new_type_var () in

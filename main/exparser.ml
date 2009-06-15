@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: exparser.ml,v 1.10 2007/09/16 05:19:01 deraugla Exp $ *)
+(* $Id: exparser.ml,v 1.11 2007/09/21 19:11:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 type spat_comp =
@@ -125,7 +125,7 @@ value stream_pattern_component skont ckont =
   fun
   [ SpTrm loc p wo ->
       <:expr< match $peek_fun loc$ $lid:strm_n$ with
-              [ Some $p$ $aopt:wo$ ->
+              [ Some $p$ $_opt:wo$ ->
                   do { $junk_fun loc$ $lid:strm_n$; $skont$ }
               | _ -> $ckont$ ] >>
   | SpNtr loc p e ->

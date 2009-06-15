@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_strict.html,v 1.5 2007/09/19 03:33:33 deraugla Exp $ -->
+  <!-- $Id: ast_strict.html,v 1.6 2007/09/21 19:11:06 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>AST - strict</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -276,10 +276,11 @@
 <h4>general antiquoting</h4>
 
 <p>The second way, introducing variables of type "<tt>Ploc.vala</tt>"
-  can be written a kind prefixed by "a", namely here "aflag":</p>
+  can be written a kind prefixed by "<tt>_</tt>", namely here
+  "<tt>_flag</tt>":</p>
 
 <pre>
-  &lt;:expr&lt; let $aflag:rf$ x = y in z >>
+  &lt;:expr&lt; let $_flag:rf$ x = y in z >>
 </pre>
 
 <p>In that case, it corresponds to the syntax tree:</p>
@@ -387,7 +388,7 @@
     <tt style="color:blue">&lt;:expr&lt; [| $list:le$ |] >></tt><br/>
     <tt style="color:red">ExArr loc (Ploc.VaVal le)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; [| $alist:le$ |] >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; [| $_list:le$ |] >></tt><br/>
     <tt style="color:red">ExArr loc le</tt>
   </dd>
 </dl>
@@ -411,7 +412,7 @@
     <tt style="color:blue">&lt;:expr&lt; $e$ .{ $list:le$ } >></tt><br/>
     <tt style="color:red">ExBae loc e (Ploc.VaVal le)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; $e$ .{ $alist:le$ } >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; $e$ .{ $_list:le$ } >></tt><br/>
     <tt style="color:red">ExBae loc e le</tt>
   </dd>
 </dl>
@@ -421,7 +422,7 @@
     <tt style="color:blue">&lt;:expr&lt; $chr:s$ >></tt><br/>
     <tt style="color:red">ExChr loc (Ploc.VaVal s)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; $achr:s$ >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; $_chr:s$ >></tt><br/>
     <tt style="color:red">ExChr loc s</tt>
   </dd>
 </dl>
@@ -445,7 +446,7 @@
     <tt style="color:blue">&lt;:expr&lt; $flo:s$ >></tt><br/>
     <tt style="color:red">ExFlo loc (Ploc.VaVal s)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; $aflo:s$ >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; $_flo:s$ >></tt><br/>
     <tt style="color:red">ExFlo loc s</tt>
   </dd>
 </dl>
@@ -455,7 +456,7 @@
     <tt style="color:blue">&lt;:expr&lt; for $lid:s$ = $e1$ $to:b$ $e2$ do { $list:le$ } >></tt><br/>
     <tt style="color:red">ExFor loc (Ploc.VaVal s) e1 e2 (Ploc.VaVal b) (Ploc.VaVal le)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; for $alid:s$ = $e1$ $ato:b$ $e2$ do { $alist:le$ } >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; for $_lid:s$ = $e1$ $_to:b$ $e2$ do { $_list:le$ } >></tt><br/>
     <tt style="color:red">ExFor loc s e1 e2 b le</tt>
   </dd>
 </dl>
@@ -465,7 +466,7 @@
     <tt style="color:blue">&lt;:expr&lt; fun [ $list:lpwe$ ] >></tt><br/>
     <tt style="color:red">ExFun loc (Ploc.vala lpwe)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; fun [ $alist:lpwe$ ] >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; fun [ $_list:lpwe$ ] >></tt><br/>
     <tt style="color:red">ExFun loc lpwe</tt>
   </dd>
 </dl>
@@ -482,7 +483,7 @@
     <tt style="color:blue">&lt;:expr&lt; $int:s$ >></tt><br/>
     <tt style="color:red">ExInt loc (Ploc.VaVal s) ""</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; $aint:s$ >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; $_int:s$ >></tt><br/>
     <tt style="color:red">ExInt loc s ""</tt><br/>
   </dd>
 </dl>
@@ -492,7 +493,7 @@
     <tt style="color:blue">&lt;:expr&lt; $int32:s$ >></tt><br/>
     <tt style="color:red">ExInt loc (Ploc.VaVal s) "l"</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; $aint32:s$ >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; $_int32:s$ >></tt><br/>
     <tt style="color:red">ExInt loc s "l"</tt><br/>
   </dd>
 </dl>
@@ -502,7 +503,7 @@
     <tt style="color:blue">&lt;:expr&lt; $int64:s$ >></tt><br/>
     <tt style="color:red">ExInt loc (Ploc.VaVal s) "L"</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; $aint64:s$ >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; $_int64:s$ >></tt><br/>
     <tt style="color:red">ExInt loc s "L"</tt>
   </dd>
 </dl>
@@ -512,7 +513,7 @@
     <tt style="color:blue">&lt;:expr&lt; $nativeint:s$ >></tt><br/>
     <tt style="color:red">ExInt loc (Ploc.VaVal s) "n"</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; $anativeint:s$ >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; $_nativeint:s$ >></tt><br/>
     <tt style="color:red">ExInt loc s "n"</tt>
   </dd>
 </dl>
@@ -522,13 +523,13 @@
     <tt style="color:blue">&lt;:expr&lt; ~$s$ >></tt><br/>
     <tt style="color:red">ExLab loc (Ploc.VaVal s) None</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; ~$a:s$ >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; ~$_:s$ >></tt><br/>
     <tt style="color:red">ExLab loc s None</tt><br/>
     <br/>
     <tt style="color:blue">&lt;:expr&lt; ~$s$: $e$ >></tt><br/>
     <tt style="color:red">ExLab loc (Ploc.VaVal s) (Some e)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; ~$a:s$: $e$ >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; ~$_:s$: $e$ >></tt><br/>
     <tt style="color:red">ExLab loc s (Some e)</tt>
   </dd>
 </dl>
@@ -545,7 +546,7 @@
     <tt style="color:blue">&lt;:expr&lt; let $opt:b$ $list:lpe$ in $e$ >></tt><br/>
     <tt style="color:red">ExLet loc (Ploc.VaVal b) (Ploc.VaVal lpe) e</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; let $aopt:b$ $alist:lpe$ in $e$ >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; let $_opt:b$ $_list:lpe$ in $e$ >></tt><br/>
     <tt style="color:red">ExLet loc b lpe e</tt>
   </dd>
 </dl>
@@ -555,7 +556,7 @@
     <tt style="color:blue">&lt;:expr&lt; $lid:s$ >></tt><br/>
     <tt style="color:red">ExLid loc (Ploc.VaVal s)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; $alid:s$ >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; $_lid:s$ >></tt><br/>
     <tt style="color:red">ExLid loc s</tt>
   </dd>
 </dl>
@@ -565,7 +566,7 @@
     <tt style="color:blue">&lt;:expr&lt; let module $uid:s$ = $me$ in $e$ >></tt><br/>
     <tt style="color:red">ExLmd loc s (Ploc.VaVal me) e</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; let module $auid:s$ = $me$ in $e$ >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; let module $_uid:s$ = $me$ in $e$ >></tt><br/>
     <tt style="color:red">ExLmd loc s me e</tt>
   </dd>
 </dl>
@@ -575,7 +576,7 @@
     <tt style="color:blue">&lt;:expr&lt; match $e$ with [ $list:lpwe$ ] >></tt><br/>
     <tt style="color:red">ExMat loc e (Ploc.VaVal lpwe)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; match $e$ with [ $alist:lpwe$ ] >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; match $e$ with [ $_list:lpwe$ ] >></tt><br/>
     <tt style="color:red">ExMat loc e lpwe</tt>
   </dd>
 </dl>
@@ -585,7 +586,7 @@
     <tt style="color:blue">&lt;:expr&lt; new $list:ls$ >></tt><br/>
     <tt style="color:red">ExNew loc (Ploc.VaVal ls)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; new $alist:ls$ >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; new $_list:ls$ >></tt><br/>
     <tt style="color:red">ExNew loc ls</tt>
   </dd>
 </dl>
@@ -595,7 +596,7 @@
     <tt style="color:blue">&lt;:expr&lt; object ($opt:op$) $list:lcstri$ end >></tt><br/>
     <tt style="color:red">ExObj loc (Ploc.VaVal op) (Ploc.VaVal lcstri)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; object ($aopt:op$) $alist:lcstri$ end >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; object ($_opt:op$) $_list:lcstri$ end >></tt><br/>
     <tt style="color:red">ExObj loc op lcstri</tt>
   </dd>
 </dl>
@@ -605,13 +606,13 @@
     <tt style="color:blue">&lt;:expr&lt; ?$s$ >></tt><br/>
     <tt style="color:red">ExOlb loc (Ploc.VaVal s) None</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; ?$a:s$ >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; ?$_:s$ >></tt><br/>
     <tt style="color:red">ExOlb loc s None</tt><br/>
     <br/>
     <tt style="color:blue">&lt;:expr&lt; ?$s$: $e$ >></tt><br/>
     <tt style="color:red">ExOlb loc (Ploc.VaVal s) (Some e)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; ?$a:s$: $e$ >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; ?$_:s$: $e$ >></tt><br/>
     <tt style="color:red">ExOlb loc s (Some e)</tt>
   </dd>
 </dl>
@@ -621,7 +622,7 @@
     <tt style="color:blue">&lt;:expr&lt; {&lt; $list:lse$ >} >></tt><br/>
     <tt style="color:red">ExOvr loc (Ploc.VaVal lse)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; {&lt; $alist:lse$ >} >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; {&lt; $_list:lse$ >} >></tt><br/>
     <tt style="color:red">ExOvr loc lse</tt>
   </dd>
 </dl>
@@ -631,13 +632,13 @@
     <tt style="color:blue">&lt;:expr&lt; { $list:lpe$ } >></tt><br/>
     <tt style="color:red">ExRec loc (Ploc.VaVal lpe) None</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; { $alist:lpe$ } >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; { $_list:lpe$ } >></tt><br/>
     <tt style="color:red">ExRec loc lpe None</tt><br/>
     <br/>
     <tt style="color:blue">&lt;:expr&lt; { ($e$) with $list:lpe$ } >></tt><br/>
     <tt style="color:red">ExRec loc (Ploc.VaVal lpe) (Some e)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; { ($e$) with $alist:lpe$ } >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; { ($e$) with $_list:lpe$ } >></tt><br/>
     <tt style="color:red">ExRec loc lpe (Some e)</tt>
   </dd>
 </dl>
@@ -647,7 +648,7 @@
     <tt style="color:blue">&lt;:expr&lt; do { $list:le$ } >></tt><br/>
     <tt style="color:red">ExSeq loc (Ploc.VaVal le)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; do { $alist:le$ } >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; do { $_list:le$ } >></tt><br/>
     <tt style="color:red">ExSeq loc le</tt>
   </dd>
 </dl>
@@ -657,7 +658,7 @@
     <tt style="color:blue">&lt;:expr&lt; $e$ # $lid:s$ >></tt><br/>
     <tt style="color:red">ExSnd loc e (Ploc.VaVal s)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; $e$ # $alid:s$ >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; $e$ # $_lid:s$ >></tt><br/>
     <tt style="color:red">ExSnd loc e s</tt>
   </dd>
 </dl>
@@ -674,7 +675,7 @@
     <tt style="color:blue">&lt;:expr&lt; $str:s$ >></tt><br/>
     <tt style="color:red">ExStr loc (Ploc.VaVal s)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; $astr:s$ >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; $_str:s$ >></tt><br/>
     <tt style="color:red">ExStr loc s</tt>
   </dd>
 </dl>
@@ -684,7 +685,7 @@
     <tt style="color:blue">&lt;:expr&lt; try $e$ with [ $list:lpwe$ ] >></tt><br/>
     <tt style="color:red">ExTry loc e (Ploc.VaVal lpwe)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; try $e$ with [ $alist:lpwe$ ] >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; try $e$ with [ $_list:lpwe$ ] >></tt><br/>
     <tt style="color:red">ExTry loc e lpwe</tt>
   </dd>
 </dl>
@@ -694,7 +695,7 @@
     <tt style="color:blue">&lt;:expr&lt; ($list:le$) >></tt><br/>
     <tt style="color:red">ExTup loc (Ploc.VaVal le)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; ($alist:le$) >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; ($_list:le$) >></tt><br/>
     <tt style="color:red">ExTup loc le</tt>
   </dd>
 </dl>
@@ -711,7 +712,7 @@
     <tt style="color:blue">&lt;:expr&lt; $uid:s$ >></tt><br/>
     <tt style="color:red">ExUid loc (Ploc.VaVal s)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; $auid:s$ >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; $_uid:s$ >></tt><br/>
     <tt style="color:red">ExUid loc s</tt>
   </dd>
 </dl>
@@ -721,7 +722,7 @@
     <tt style="color:blue">&lt;:expr&lt; `$s$ >></tt><br/>
     <tt style="color:red">ExVrn loc (Ploc.VaVal s)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; `$a:s$ >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; `$_:s$ >></tt><br/>
     <tt style="color:red">ExVrn loc s</tt>
   </dd>
 </dl>
@@ -731,7 +732,7 @@
     <tt style="color:blue">&lt;:expr&lt; while $e$ do { $list:le$ } >></tt><br/>
     <tt style="color:red">ExWhi loc e (Ploc.VaVal le)</tt><br/>
     <br/>
-    <tt style="color:blue">&lt;:expr&lt; while $e$ do { $alist:le$ } >></tt><br/>
+    <tt style="color:blue">&lt;:expr&lt; while $e$ do { $_list:le$ } >></tt><br/>
     <tt style="color:red">ExWhi loc e le</tt>
   </dd>
 </dl>

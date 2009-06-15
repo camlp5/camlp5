@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.78 2007/09/21 18:25:15 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.79 2007/09/21 19:11:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -340,6 +340,9 @@ value anti_str psl =
   | _ -> "" ]
 ;
 
+value anti_anti n = "_" ^ n;
+value is_anti_anti n = String.length n > 0 && n.[0] = '_';
+
 value quot_expr psl e =
   loop e where rec loop e =
     let loc = MLast.loc_of_expr e in
@@ -351,8 +354,7 @@ value quot_expr psl e =
     | <:expr< Ploc.VaAnt $e$ >> ->
         let s = anti_str psl in
         let e = <:expr< Qast.VaAnt $str:s$ loc $loop e$ >> in
-        if String.length s > 0 && s.[0] = 'a' then e
-        else <:expr< Qast.VaVal $e$ >>
+        if is_anti_anti s then e else <:expr< Qast.VaVal $e$ >>
     | <:expr< Ploc.VaVal $e$ >> -> <:expr< Qast.VaVal $loop e$ >>
     | <:expr< () >> -> e
     | <:expr< Qast.Bool $_$ >> -> e
@@ -813,8 +815,6 @@ value ssflag2 loc ls s =
   in
   {used = s.used; text = text; styp = STtyp <:ctyp< Qast.t >>}
 ;
-
-value anti_anti n = "a" ^ n;
 
 value ssnterm2 loc ls (i, n) lev =
   let t = new_type_var () in

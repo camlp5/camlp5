@@ -742,7 +742,7 @@ let check_anti_loc2 s =
   with Not_found | Failure _ -> raise Stream.Failure
 ;;
 
-let anti_anti n = "a" ^ n;;
+let anti_anti n = "_" ^ n;;
 
 let lex = Grammar.glexer Pcaml.gram in
 let tok_match = lex.Plexing.tok_match in
