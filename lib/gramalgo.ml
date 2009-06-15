@@ -373,46 +373,51 @@ value get_symbol_after_dot =
     | (n, [_ :: sl]) -> loop (n - 1) sl ]
 ;
 
-value item_set_closure rl items =
+value close_item_set rl items =
   let processed = ref [] in
-  List.fold_left
-    (fun clos ((lh, dot, rh) as item) ->
-       match get_symbol_after_dot dot rh with
-       [ Some (GS_nterm n) -> do {
-           processed.val := [lh :: processed.val];
-           loop [item :: clos] [n] where rec loop clos =
-             fun
-             [ [n :: to_process] ->
-                 if List.mem n processed.val then loop clos to_process
-                 else do {
-                   processed.val := [n :: processed.val];
-                   let rl = List.filter (fun (lh, rh) -> n = lh) rl in
-                   let clos =
-                     List.fold_left
-                       (fun clos (lh, rh) -> [(lh, 0, rh) :: clos])
-                       clos rl
-                   in
-                   let to_process =
-                     List.fold_left
-                       (fun to_process (lh, rh) ->
-                          match rh with
-                          [ [] -> to_process
-                          | [s :: sl] ->
-                              match s with
-                              [ GS_nterm n -> [n :: to_process]
-                              | GS_term _ -> to_process ] ])
-                       to_process rl
-                   in
-                   loop clos to_process
-                 }
-             | [] ->
-                 List.rev clos ]
-         }
-       | Some (GS_term _) | None -> [item :: clos] ])
-    [] items
+  let rclos =
+    List.fold_left
+      (fun clos ((added, lh, dot, rh) as item) ->
+         match get_symbol_after_dot dot rh with
+         [ Some (GS_nterm n) -> do {
+             processed.val := [lh :: processed.val];
+             loop [item :: clos] (Fifo.single n)
+             where rec loop clos to_process =
+               match Fifo.get to_process with
+               [ Some (n, to_process) ->
+                   if List.mem n processed.val then loop clos to_process
+                   else do {
+                     processed.val := [n :: processed.val];
+                     let rl = List.filter (fun (lh, rh) -> n = lh) rl in
+                     let clos =
+                       List.fold_left
+                         (fun clos (lh, rh) -> [(True, lh, 0, rh) :: clos])
+                         clos rl
+                     in
+                     let to_process =
+                       List.fold_left
+                         (fun to_process (lh, rh) ->
+                            match rh with
+                            [ [] -> to_process
+                            | [s :: sl] ->
+                                match s with
+                                [ GS_nterm n -> Fifo.add n to_process
+                                | GS_term _ -> to_process ] ])
+                         to_process rl
+                     in
+                     loop clos to_process
+                   }
+               | None ->
+                   clos ]
+           }
+         | Some (GS_term _) | None -> [item :: clos] ])
+      [] items
+  in
+  List.rev rclos
 ;
 
-value eprint_item (lh, dot, rh) = do {
+value eprint_item (added, lh, dot, rh) = do {
+  if added then Printf.eprintf "+ " else Printf.eprintf "  ";
   Printf.eprintf "%s ->" lh;
   loop dot rh where rec loop dot rh =
     if dot = 0 then do {
@@ -440,16 +445,19 @@ value lr0 entry lev = do {
   Printf.eprintf "\n";
   flush stderr;
   let item_set_and_rest =
-    let item = ("start-symb", 0, [GS_nterm (name_of_entry entry lev)]) in
+    let item =
+      (False, "start-symb", 0, [GS_nterm (name_of_entry entry lev)])
+    in
     Some
-      (GS_nterm "start-symb", item_set_closure rl [item],
-       List.map (fun (lh, rh) -> (lh, 0, rh)) rl)
+      (GS_nterm "start-symb", close_item_set rl [item],
+       List.map (fun (lh, rh) -> (False, lh, 0, rh)) rl)
   in
   loop 0 item_set_and_rest where rec loop item_set_cnt =
     fun
     [ Some (s, item_set, rest) -> do {
         let item_set =
-          List.filter (fun (lh, dot, rh) -> dot <= List.length rh) item_set
+          List.filter (fun (added, lh, dot, rh) -> dot <= List.length rh)
+            item_set
         in
         Printf.eprintf "\n";
         Printf.eprintf "Item set %d (after %s)\n\n" item_set_cnt
@@ -459,14 +467,14 @@ value lr0 entry lev = do {
         let s =
           loop item_set where rec loop =
             fun
-            [ [(lh, dot, rh) :: rest] ->
+            [ [(added, lh, dot, rh) :: rest] ->
                 match get_symbol_after_dot dot rh with
                 [ Some s -> Some s
                 | None -> loop rest ]
             | [] ->
                 loop rest where rec loop =
                   fun
-                  [ [(lh, dot, rh) :: rest] ->
+                  [ [(added, lh, dot, rh) :: rest] ->
                       match get_symbol_after_dot dot rh with
                       [ Some s -> Some s
                       | None -> loop rest ]
@@ -477,26 +485,36 @@ value lr0 entry lev = do {
           [ Some s -> do {
               let (item_set, rest) =
                 List.partition
-                  (fun (lh, dot, rh) ->
+                  (fun (added, lh, dot, rh) ->
                      match get_symbol_after_dot dot rh with
                      [ Some s1 -> s = s1
                      | None -> False ])
                   (item_set @ rest)
               in
-              let item_set =
-                List.map (fun (lh, dot, rh) -> (lh, dot + 1, rh)) item_set
+              let rlist =
+                List.fold_left
+                  (fun rlist item ->
+                     if List.mem item rlist then rlist else [item :: rlist])
+                  [] item_set
               in
+              let item_set =
+                List.rev_map
+                  (fun (_, lh, dot, rh) -> (False, lh, dot + 1, rh))
+                  rlist
+              in
+(*
               Printf.eprintf "\n";
               Printf.eprintf "Item set initial %d (after %s)\n\n"
                 (item_set_cnt + 1) (sprint_symb s);
               List.iter eprint_item item_set;
               flush stderr;
-              let item_set = item_set_closure rl item_set in
+*)
+              let item_set = close_item_set rl item_set in
               Some (s, item_set, rest)
             }
           | None -> None ]
         in
-        if item_set_cnt > 1000 then () else
+        if item_set_cnt > 2000 then () else
         loop (item_set_cnt + 1) item_set_and_rest
       }
     | None -> () ];
