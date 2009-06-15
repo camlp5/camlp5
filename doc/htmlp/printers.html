@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: printers.html,v 1.12 2007/08/22 09:23:33 deraugla Exp $ -->
+  <!-- $Id: printers.html,v 1.13 2007/08/28 02:20:19 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible printers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -88,10 +88,10 @@
                      | uident
                      | lident
             uident ::= 'A'-'Z' ident
-            lident ::= ('a'-'z' | '_' | utf8-char) ident
+            lident ::= ('a'-'z' | '_' | utf8-byte) ident
              ident ::= ident-char*
-        ident-char ::= ('a'-'a' | 'A'-'Z' | '0'-'9' | '_' | ''' | utf8-char)
-         utf8-char ::= '\128'-'\255'
+        ident-char ::= ('a'-'a' | 'A'-'Z' | '0'-'9' | '_' | ''' | utf8-byte)
+         utf8-byte ::= '\128'-'\255'
 </pre>
 
 <h2>Semantics of EXTEND_PRINTER</h2>

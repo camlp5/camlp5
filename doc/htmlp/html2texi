@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2texi,v 1.9 2007/08/27 18:25:38 deraugla Exp $
+# $Id: html2texi,v 1.10 2007/08/28 02:20:19 deraugla Exp $
 
 FILES1="index.html ptools.html"
 FILES2="parsers.html lexers.html fparsers.html grammars.html"
@@ -104,12 +104,14 @@ for i in $FILES; do
     sed \
       -e 's|</p>|\n</p>|' \
       -e 's|\([^ ]\)</li>|\1\n</li>|g' \
-      -e 's|\([^ ]\)</dd>|\1\n</dd>|g' |
+      -e 's|\([^ ]\)</dd>|\1\n</dd>|g' \
+      -e '/<pre[^>]*>/,/<\/pre>/s/ /~~/g' |
     sed \
       -e '/<p>/,/<\/p>/s/^ *//' \
       -e '/<li>/,/^ <\/li>/s/^ *//' \
       -e '/<dd>/,/<\/dd>/s/^ *//' \
-      -e '/<div[^>]*>/,/<\/div>/s/^ *//' |
+      -e '/<div[^>]*>/,/<\/div>/s/^ *//' \
+      -e '/<pre[^>]*>/,/<\/pre>/s/~~/ /g' |
     sed \
       -e '{/<table[^>]*>$/N; :b; /<tr>$/N; s/\n *//; tb; /<\/tr>$/N; s/\n *//; tb; /<\/th>$/N; s/\n *//; tb; /<\/td>$/N; s/\n *//; tb; /<thead>$/N; s/\n *//; tb; /<\/thead>$/N; s/\n *//; tb; /<tbody>$/N; s/\n *//; tb; /<\/tbody>$/N; s/\n *//; tb}' |
     sed \
@@ -148,7 +150,7 @@ for i in $FILES; do
       -e 's|</th></tr>|\n|g' \
       -e 's|<tr><td>|@item |g' -e 's|</td><td[^>]*>| @tab |g' \
       -e 's|</td></tr>|\n|g' \
-      -e 's/&lt;/</g' -e 's/&gt;/>/g' -e 's/&nbsp;/ /g'
+      -e 's/&lt;/</g' -e 's/&gt;/>/g' -e 's/&nbsp;/ /g' -e 's/&amp;/\&/g'
   fi
 done |
 sh ./tmp

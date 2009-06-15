@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: fparsers.html,v 1.10 2007/07/25 13:08:43 deraugla Exp $ -->
+  <!-- $Id: fparsers.html,v 1.11 2007/08/28 02:20:19 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>functional parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -43,8 +43,7 @@ stream is s".</p>
                        | match-with-fparser
              fparser ::= "fparser" pos-opt "[" parser-cases "]"
                        | "fparser" pos-opt parser-case
-  match-with-fparser ::= "match" expression with "fparser" pos-opt "[" parser-cases "]"
-                       | "match" expression with "fparser" pos-opt parser-case
+  match-with-fparser ::= "match" expression "with" fparser
         parser-cases ::= parser-cases parser-case
                        | &lt;nothing&gt;
          parser-case ::= "[:" stream-pattern ":]" pos-opt "->" expression

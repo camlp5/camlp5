@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: parsers.html,v 1.19 2007/08/28 01:44:12 deraugla Exp $ -->
+  <!-- $Id: parsers.html,v 1.20 2007/08/28 02:20:19 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -74,8 +74,7 @@
                          | match-with-parser
                 parser ::= "parser" pos-opt "[" parser-cases "]"
                          | "parser" pos-opt parser-case
-     match-with-parser ::= "match" expression with "parser" pos-opt "[" parser-cases "]"
-                         | "match" expression with "parser" pos-opt parser-case
+     match-with-parser ::= "match" expression "with" parser
           parser-cases ::= parser-cases parser-case
                          | &lt;nothing&gt;
            parser-case ::= "[:" stream-pattern ":]" pos-opt "->" expression
@@ -219,9 +218,9 @@
     following parser:
 <pre>
   parser
-  [ [: `If; e1 = expr; `Then; e2 = expr; `Else; e3 = expr :] -> f e1 e2 e3
+  [ [: `If; e1 = expr; `Then; e2 = expr; `Else; e3 = expr :] -> ...
   | [: a = b :] -> a
-  | [: `If; e1 = expr; `Then; e2 = expr :] -> g e1 e2 ]
+  | [: `If; e1 = expr; `Then; e2 = expr :] -> ... ]
 </pre>
     the two rules starting with "<tt>If</tt>" are not left factorized,
     and the second "<tt>If</tt>" rule will never work.
@@ -230,8 +229,8 @@
     factorized. In the following parser:
 <pre>
   parser
-  [ [: `If; e1 = expr; `Then; e2 = expr; `Else; e3 = expr :] -> f e1 e2 e3
-  | [: `If; e4 = expr; `Then; e2 = expr :] -> g e4 e2 ]
+  [ [: `If; e1 = expr; `Then; e2 = expr; `Else; e3 = expr :] -> ...
+  | [: `If; e4 = expr; `Then; e2 = expr :] -> ... ]
 </pre>
     only the first component, "<tt>If</tt>" is factorized, the second
     one being different because of different patterns ("<tt>e1</tt>" and

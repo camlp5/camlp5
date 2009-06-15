@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: grammars.html,v 1.72 2007/08/22 09:23:33 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.73 2007/08/28 02:20:19 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -149,10 +149,10 @@ to <em>extend</em> it, using a specific syntactic statement:
                  | uident
                  | lident
         uident ::= 'A'-'Z' ident
-        lident ::= ('a'-'z' | '_' | utf8-char) ident
+        lident ::= ('a'-'z' | '_' | utf8-byte) ident
          ident ::= ident-char*
-    ident-char ::= ('a'-'a' | 'A'-'Z' | '0'-'9' | '_' | ''' | utf8-char)
-     utf8-char ::= '\128'-'\255'
+    ident-char ::= ('a'-'a' | 'A'-'Z' | '0'-'9' | '_' | ''' | utf8-byte)
+     utf8-byte ::= '\128'-'\255'
 </pre>
 
 <p>Other statements, "<tt>GEXTEND</tt>", "<tt>DELETE_RULE</tt>",
@@ -952,14 +952,23 @@ instead of "<tt>loc</tt>".</p>
   function:</p>
 
 <pre>
-  type mytoken = [ Ident of string | Int of int | Comma | Equal | Keyw of string  ];
+  type mytoken =
+    [ Ident of string
+    | Int of int
+    | Comma | Equal
+    | Keyw of string  ]
+  ;
 
   value mymatch =
     fun
-    [ ("IDENT", "") -> fun [ Ident s -> s | _ -> raise Stream.Failure ]
-    | ("INT", "") -> fun [ Int i -> string_of_int i | _ -> raise Stream.Failure ]
-    | ("", ",") -> fun [ Comma -> "" | _ -> raise Stream.Failure ]
-    | ("", "=") -> fun [ Equal -> "" | _ -> raise Stream.Failure ]
+    [ ("IDENT", "") ->
+        fun [ Ident s -> s | _ -> raise Stream.Failure ]
+    | ("INT", "") ->
+        fun [ Int i -> string_of_int i | _ -> raise Stream.Failure ]
+    | ("", ",") ->
+        fun [ Comma -> "" | _ -> raise Stream.Failure ]
+    | ("", "=") ->
+        fun [ Equal -> "" | _ -> raise Stream.Failure ]
     | ("", s) ->
         fun
         [ Keyw k -> if k = s then "" else raise Stream.Failure
