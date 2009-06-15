@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.105 2007/12/04 14:37:44 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.106 2007/12/04 20:43:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -836,10 +836,7 @@ value sig_module_or_module_type pref defc pc (m, mt) =
           ([(s, mt1) :: mal], mt)
       | mt -> ([], mt) ]
   in
-  let module_arg pc (s, mt) =
-    sprint_break 1 1 pc (fun pc -> sprintf "%s(%s :" pc.bef s)
-      (fun pc -> module_type {(pc) with aft = sprintf ")%s" pc.aft} mt)
-  in
+  let module_arg pc (s, mt) = pprintf pc "(%s :@;<1 1>%p)" s module_type mt in
   horiz_vertic
     (fun () ->
        sprintf "%s%s %s%s %c %s%s" pc.bef pref m
@@ -879,9 +876,11 @@ value str_or_sig_functor pc s mt module_expr_or_type met =
            (fun () ->
               let s1 = sprintf "%sfunctor" pc.bef in
               let s2 =
-                sprint_break 1 3 pc
-                  (fun pc -> sprintf "%s(%s :" (tab (pc.ind + 2)) s)
-                  (fun pc -> module_type {(pc) with aft = ")"} mt)
+                let pc =
+                  {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+                   aft = ""}
+                in
+                pprintf pc "(%s :@;<1 3>%p)" s module_type mt
               in
               let s3 = sprintf "%s->" (tab pc.ind) in
               sprintf "%s\n%s\n%s" s1 s2 s3)
@@ -1439,8 +1438,7 @@ EXTEND_PRINTER
                  (next {(pc) with bef = ""; aft = ""} e) pc.aft)
             (fun () -> not_impl "assert vertical" pc e)
       | <:expr< lazy $e$ >> ->
-          sprint_break 1 2 pc (fun pc -> sprintf "%slazy" pc.bef)
-            (fun pc -> next pc e)
+          pprintf pc "lazy@;%p" next e
       | <:expr< $_$ $_$ >> as z ->
           let inf =
             match z with
@@ -1458,18 +1456,11 @@ EXTEND_PRINTER
             left_operator pc 2 unfold next z ]
     | "dot"
       [ <:expr< $x$ . $y$ >> ->
-          sprint_break 0 0 pc (fun pc -> curr {(pc) with aft = "."} x)
-            (fun pc -> curr pc y)
+          pprintf pc "%p.@;<0 0>%p" curr x curr y
       | <:expr< $x$ .( $y$ ) >> ->
-          expr_short
-            {(pc) with bef = curr {(pc) with aft = ".("} x;
-             aft = sprintf ")%s" pc.aft}
-            y
+          pprintf pc "%p.(%p)" curr x expr_short y
       | <:expr< $x$ .[ $y$ ] >> ->
-          expr_short
-            {(pc) with bef = curr {(pc) with aft = ".["} x;
-             aft = (sprintf "]%s" pc.aft)}
-            y
+          pprintf pc "%p.[%p]" curr x expr_short y
       | <:expr< $e$ .{ $list:el$ } >> ->
           let el = List.map (fun e -> (e, ",")) el in
           plist expr_short 0
