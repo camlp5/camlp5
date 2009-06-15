@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.94 2007/10/01 05:18:39 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.95 2007/10/01 05:46:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -677,42 +677,6 @@ value ss_aux loc a_name r2 used2 =
   {used = used; text = text; styp = styp}
 ;
 
-value ssopt loc s =
-  let r =
-    let s =
-      match s.text with
-      [ TXtok loc "" <:expr< $str:_$ >> ->
-          let rl =
-            [{prod = [{pattern = Some <:patt< x >>; symbol = s}];
-              action = Some <:expr< Qast.Str x >>}]
-          in
-          let t = new_type_var () in
-          {used = []; text = TXrules loc t rl; styp = STquo loc t}
-      | _ -> s ]
-    in
-    let prod =
-      [mk_psymbol <:patt< a >> (TXopt loc s.text)
-         (STapp loc (STlid loc "option") s.styp)]
-    in
-    let act = <:expr< Qast.Option a >> in
-    {prod = prod; action = Some act}
-  in
-  ss_aux loc "a_opt" r s.used
-;
-
-value ssflag loc s =
-  let r =
-    let prod =
-      let styp = STlid loc "bool" in
-      let text = TXflag loc s.text in
-      [mk_psymbol <:patt< a >> text styp]
-    in
-    let act = <:expr< Qast.Bool a >> in
-    {prod = prod; action = Some act}
-  in
-  ss_aux loc "a_flag" r s.used
-;
-
 value ss2 loc ls oe s =
   let qast_f a =
     match s.styp with
@@ -805,11 +769,9 @@ value rec symbol_of_a =
   fun
   [ ASflag loc s ->
       let s = symbol_of_a s in
-      if quotify.val then ssflag loc s
-      else
-        let text = TXflag loc s.text in
-        let styp = STlid loc "bool" in
-        {used = s.used; text = text; styp = styp}
+      let text = TXflag loc s.text in
+      let styp = STlid loc "bool" in
+      {used = s.used; text = text; styp = styp}
   | ASfold loc n foldfun f e s sep ->
       let s = symbol_of_a s in
       match sep with
@@ -837,22 +799,16 @@ value rec symbol_of_a =
       {used = [i]; text = text; styp = styp}
   | ASopt loc s ->
       let s = symbol_of_a s in
-      if quotify.val then ssopt loc s
-      else
-        let text = TXopt loc s.text in
-        let styp = STapp loc (STlid loc "option") s.styp in
-        {used = s.used; text = text; styp = styp}
+      let text = TXopt loc s.text in
+      let styp = STapp loc (STlid loc "option") s.styp in
+      {used = s.used; text = text; styp = styp}
   | ASquot loc s ->
       match s with
-      [ ASflag loc s ->
-          let s = symbol_of_a s in
-          ssflag loc s
-      | ASopt loc s -> ssopt loc (symbol_of_a s)
-      | AStok loc s p ->
+      [ AStok loc s p ->
           match p with
           [ Some e -> sstoken_prm loc s (string_of_a e)
           | None -> sstoken loc s ]
-      | _ -> Ploc.raise loc (Failure "not impl ASquot") ]
+      | _ -> symbol_of_a s ]
   | ASrules loc rl ->
       let rl = rules_of_a rl in
       let t = new_type_var () in

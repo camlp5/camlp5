@@ -196,7 +196,6 @@ let constructor_declaration =
 let with_constr = Grammar.Entry.create gram "with_constr";;
 let poly_variant = Grammar.Entry.create gram "poly_variant";;
 
-let a_flag = Grammar.Entry.create gram "a_flag";;
 let a_UIDENT = Grammar.Entry.create gram "a_UIDENT";;
 let a_LIDENT = Grammar.Entry.create gram "a_LIDENT";;
 let a_INT = Grammar.Entry.create gram "a_INT";;
@@ -322,6 +321,8 @@ let mktuppat _ p pl =
 let mktuptyp _ t tl =
   Qast.Node ("TyTup", [Qast.Loc; Qast.VaVal (Qast.Cons (t, Qast.List tl))])
 ;;
+
+let mklabdecl _ i mf t = Qast.Tuple [Qast.Loc; i; Qast.Bool mf; t];;
 
 Grammar.extend
   (let _ = (sig_item : 'sig_item Grammar.Entry.e)
@@ -822,7 +823,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 293, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 294, 19))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -1380,7 +1381,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 351, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 352, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -3829,17 +3830,11 @@ Grammar.extend
      [[Gramext.Snterm
          (Grammar.Entry.obj (a_LIDENT : 'a_LIDENT Grammar.Entry.e));
        Gramext.Stoken ("", ":");
-       Gramext.srules
-         [[Gramext.Sflag (Gramext.Stoken ("", "mutable"))],
-          Gramext.action
-            (fun (a : bool) (loc : Ploc.t) -> (Qast.Bool a : 'a_flag));
-          [Gramext.Snterm
-             (Grammar.Entry.obj (a_flag : 'a_flag Grammar.Entry.e))],
-          Gramext.action (fun (a : 'a_flag) (loc : Ploc.t) -> (a : 'a_flag))];
+       Gramext.Sflag (Gramext.Stoken ("", "mutable"));
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
-        (fun (t : 'ctyp) (mf : 'a_flag) _ (i : 'a_LIDENT) (loc : Ploc.t) ->
-           (Qast.Tuple [Qast.Loc; i; mf; t] : 'label_declaration))]];
+        (fun (t : 'ctyp) (mf : bool) _ (i : 'a_LIDENT) (loc : Ploc.t) ->
+           (mklabdecl Qast.Loc i mf t : 'label_declaration))]];
     Grammar.Entry.obj (ident : 'ident Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm
@@ -6094,22 +6089,6 @@ Grammar.extend
      Gramext.action
        (fun (a : string) (loc : Ploc.t) ->
           (Qast.VaAnt ("", loc, a) : 'class_type))]];
-   Grammar.Entry.obj (a_flag : 'a_flag Grammar.Entry.e), None,
-   [None, None,
-    [[Gramext.Stoken ("ANTIQUOT", "_flag")],
-     Gramext.action
-       (fun (a : string) (loc : Ploc.t) ->
-          (Qast.VaAnt ("_flag", loc, a) : 'a_flag));
-     [Gramext.Stoken ("ANTIQUOT", "flag")],
-     Gramext.action
-       (fun (a : string) (loc : Ploc.t) ->
-          (Qast.VaAnt ("flag", loc, a) : 'a_flag))]];
-   Grammar.Entry.obj (a_flag : 'a_flag Grammar.Entry.e), None,
-   [None, None,
-    [[Gramext.Stoken ("ANTIQUOT", "opt")],
-     Gramext.action
-       (fun (a : string) (loc : Ploc.t) ->
-          (Qast.VaAnt ("opt", loc, a) : 'a_flag))]];
    Grammar.Entry.obj (a_UIDENT : 'a_UIDENT Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Stoken ("UIDENT", "")],

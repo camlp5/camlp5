@@ -111,6 +111,8 @@ let mktupexp loc e el = MLast.ExTup (loc, e :: el);;
 let mktuppat loc p pl = MLast.PaTup (loc, p :: pl);;
 let mktuptyp loc t tl = MLast.TyTup (loc, t :: tl);;
 
+let mklabdecl loc i mf t = loc, i, mf, t;;
+
 Grammar.extend
   (let _ = (sig_item : 'sig_item Grammar.Entry.e)
    and _ = (str_item : 'str_item Grammar.Entry.e)
@@ -1537,7 +1539,7 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
         (fun (t : 'ctyp) (mf : bool) _ (i : string) (loc : Ploc.t) ->
-           (loc, i, mf, t : 'label_declaration))]];
+           (mklabdecl loc i mf t : 'label_declaration))]];
     Grammar.Entry.obj (ident : 'ident Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("UIDENT", "")],

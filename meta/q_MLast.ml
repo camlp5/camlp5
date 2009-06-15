@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.114 2007/10/01 05:18:39 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.115 2007/10/01 05:46:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -149,7 +149,6 @@ value constructor_declaration =
 value with_constr = Grammar.Entry.create gram "with_constr";
 value poly_variant = Grammar.Entry.create gram "poly_variant";
 
-value a_flag = Grammar.Entry.create gram "a_flag";
 value a_UIDENT = Grammar.Entry.create gram "a_UIDENT";
 value a_LIDENT = Grammar.Entry.create gram "a_LIDENT";
 value a_INT = Grammar.Entry.create gram "a_INT";
@@ -262,6 +261,8 @@ value mktuppat _ p pl =
 value mktuptyp _ t tl =
   Qast.Node "TyTup" [Qast.Loc; Qast.VaVal (Qast.Cons t (Qast.List tl))]
 ;
+
+value mklabdecl _ i mf t = Qast.Tuple [Qast.Loc; i; Qast.Bool mf; t];
 
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr class_type
@@ -875,8 +876,8 @@ EXTEND
           Qast.Tuple [Qast.Loc; ci; Qast.VaVal (Qast.List [])] ] ]
   ;
   label_declaration:
-    [ [ i = a_LIDENT; ":"; mf = SFLAG "mutable"; t = ctyp ->
-          Qast.Tuple [Qast.Loc; i; mf; t] ] ]
+    [ [ i = a_LIDENT; ":"; mf = FLAG "mutable"; t = ctyp ->
+          mklabdecl Qast.Loc i mf t ] ]
   ;
   ident:
     [ [ i = a_LIDENT -> i
@@ -1249,14 +1250,6 @@ EXTEND
   ;
   class_type:
     [ [ a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
-  ;
-  a_flag:
-    [ [ a = ANTIQUOT "flag" -> Qast.VaAnt "flag" loc a
-      | a = ANTIQUOT "_flag" -> Qast.VaAnt "_flag" loc a ] ]
-  ;
-  (* compatibility; deprecated since version 4.07 *)
-  a_flag:
-    [ [ a = ANTIQUOT "opt" -> Qast.VaAnt "opt" loc a ] ]
   ;
   a_UIDENT:
     [ [ a = ANTIQUOT "uid" -> Qast.VaAnt "uid" loc a

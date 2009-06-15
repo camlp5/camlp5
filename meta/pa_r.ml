@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.114 2007/10/01 05:18:39 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.115 2007/10/01 05:46:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -111,6 +111,8 @@ value mklistpat loc last =
 value mktupexp loc e el = <:expr< ($list:[e::el]$) >>;
 value mktuppat loc p pl = <:patt< ($list:[p::pl]$) >>;
 value mktuptyp loc t tl = <:ctyp< ( $list:[t::tl]$ ) >>;
+
+value mklabdecl loc i mf t = (loc, i, mf, t);
 
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr class_type
@@ -498,7 +500,7 @@ EXTEND
   ;
   label_declaration:
     [ [ i = LIDENT; ":"; mf = FLAG "mutable"; t = ctyp ->
-          (loc, i, mf, t) ] ]
+          mklabdecl loc i mf t ] ]
   ;
   ident:
     [ [ i = LIDENT -> i

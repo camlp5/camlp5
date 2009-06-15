@@ -1376,61 +1376,6 @@ let ss_aux loc a_name r2 used2 =
   let styp = STquo (loc, a_name) in {used = used; text = text; styp = styp}
 ;;
 
-let ssopt loc s =
-  let r =
-    let s =
-      match s.text with
-        TXtok (loc, "", MLast.ExStr (_, _)) ->
-          let rl =
-            [{prod = [{pattern = Some (MLast.PaLid (loc, "x")); symbol = s}];
-              action =
-                Some
-                  (MLast.ExApp
-                     (loc,
-                      MLast.ExAcc
-                        (loc, MLast.ExUid (loc, "Qast"),
-                         MLast.ExUid (loc, "Str")),
-                      MLast.ExLid (loc, "x")))}]
-          in
-          let t = new_type_var () in
-          {used = []; text = TXrules (loc, t, rl); styp = STquo (loc, t)}
-      | _ -> s
-    in
-    let prod =
-      [mk_psymbol (MLast.PaLid (loc, "a")) (TXopt (loc, s.text))
-         (STapp (loc, STlid (loc, "option"), s.styp))]
-    in
-    let act =
-      MLast.ExApp
-        (loc,
-         MLast.ExAcc
-           (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Option")),
-         MLast.ExLid (loc, "a"))
-    in
-    {prod = prod; action = Some act}
-  in
-  ss_aux loc "a_opt" r s.used
-;;
-
-let ssflag loc s =
-  let r =
-    let prod =
-      let styp = STlid (loc, "bool") in
-      let text = TXflag (loc, s.text) in
-      [mk_psymbol (MLast.PaLid (loc, "a")) text styp]
-    in
-    let act =
-      MLast.ExApp
-        (loc,
-         MLast.ExAcc
-           (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Bool")),
-         MLast.ExLid (loc, "a"))
-    in
-    {prod = prod; action = Some act}
-  in
-  ss_aux loc "a_flag" r s.used
-;;
-
 let ss2 loc ls oe s =
   let qast_f a =
     match s.styp with
@@ -1595,11 +1540,9 @@ let rec symbol_of_a =
   function
     ASflag (loc, s) ->
       let s = symbol_of_a s in
-      if !quotify then ssflag loc s
-      else
-        let text = TXflag (loc, s.text) in
-        let styp = STlid (loc, "bool") in
-        {used = s.used; text = text; styp = styp}
+      let text = TXflag (loc, s.text) in
+      let styp = STlid (loc, "bool") in
+      {used = s.used; text = text; styp = styp}
   | ASfold (loc, n, foldfun, f, e, s, sep) ->
       let s = symbol_of_a s in
       begin match sep with
@@ -1627,21 +1570,17 @@ let rec symbol_of_a =
       let styp = STquo (loc, i) in {used = [i]; text = text; styp = styp}
   | ASopt (loc, s) ->
       let s = symbol_of_a s in
-      if !quotify then ssopt loc s
-      else
-        let text = TXopt (loc, s.text) in
-        let styp = STapp (loc, STlid (loc, "option"), s.styp) in
-        {used = s.used; text = text; styp = styp}
+      let text = TXopt (loc, s.text) in
+      let styp = STapp (loc, STlid (loc, "option"), s.styp) in
+      {used = s.used; text = text; styp = styp}
   | ASquot (loc, s) ->
       begin match s with
-        ASflag (loc, s) -> let s = symbol_of_a s in ssflag loc s
-      | ASopt (loc, s) -> ssopt loc (symbol_of_a s)
-      | AStok (loc, s, p) ->
+        AStok (loc, s, p) ->
           begin match p with
             Some e -> sstoken_prm loc s (string_of_a e)
           | None -> sstoken loc s
           end
-      | _ -> Ploc.raise loc (Failure "not impl ASquot")
+      | _ -> symbol_of_a s
       end
   | ASrules (loc, rl) ->
       let rl = rules_of_a rl in
