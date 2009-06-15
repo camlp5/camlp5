@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ml_ast.html,v 1.38 2007/09/22 05:20:28 deraugla Exp $ -->
+  <!-- $Id: ml_ast.html,v 1.39 2007/10/14 14:56:34 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Abstract tree in concrete syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -24,12 +24,12 @@
 <h1 class="top">Syntax tree</h1>
 
 <p>In Camlp5, one often uses syntax trees. For example, in grammars of
-  the language (semantic actions), in pretty printing (as patterns), in
-  optimizing syntax code (typically streams parsers). Syntax trees are
-  mainly defined by sum types, one for each kind of tree:
+  the language (semantic actions), in pretty printing (as patterns),
+  in optimizing syntax code (typically stream parsers). Syntax trees
+  are mainly defined by sum types, one for each kind of tree:
   "<tt>expr</tt>" for expressions, "<tt>patt</tt>" for patterns,
-  "<tt>ctyp</tt>" for types, "<tt>str_item</tt>" for structure
-  items, and so on. Each node corresponds to a possible value of this
+  "<tt>ctyp</tt>" for types, "<tt>str_item</tt>" for structure items,
+  and so on. Each node corresponds to a possible value of this
   type.</p>
 
 <div id="tableofcontents">
@@ -45,29 +45,29 @@
     this definition is the same than in the previous Camlp5
     versions.</li>
   <li>In <a href="ast_strict.html"><em>strict</em></a> mode, many
-    constructors parameters have a type enclosed by the predefined
-    type "<tt>Ploc.vala</tt>".</li>
+    constructor parameters have a type enclosed by the predefined type
+    "<tt>Ploc.vala</tt>".</li>
 </ul>
 
 <p>The advantage of the transitional mode is that the abstract syntax
   tree is fully compatible with previous versions of Camlp5. Its
   drawback is that when using the <a href="q_ast.html">syntax tree
   quotations in user syntax</a>, it is not possible to use
-  antiquotations, which is a worrying limitation.</p>
+  antiquotations, a significatant limitation.</p>
 
 <p>In strict mode, the abstract syntax is not compatible with versions
   of Camlp5 previous to 5.00. Most of the parameters of the
   constructor are enclosed with the type "<tt>Ploc.vala</tt>" whose
   aim is to allow nodes to be either of the type argument, or an
   antiquotation. In this mode, the syntax tree quotations in user
-  syntax can be used, with the same power than the previous syntax
-  tree quotations provided by Camlp5.</p>
+  syntax can be used, with the same power of the previous syntax tree
+  quotations provided by Camlp5.</p>
 
 <h2>Compatibility</h2>
 
-<p>Since there is a problem of compatibility in strict mode, a good
+<p>As there is a problem of compatibility in strict mode, a good
   solution, for the programmer, is to always use syntax trees using
-  quotations, which has been backward compatible. See the chapter
+  quotations, which is backward compatible. See the chapter
   about <a href="ast_strict.html">syntax tree in strict mode</a>.</p>
 
 <p>For example, if the program made a value of the syntax tree of the
@@ -77,7 +77,7 @@
   ExLet loc rf pel e
 </pre>
 
-<p>If strict mode, to be equivalent, this expression should be
+<p>In strict mode, to be equivalent, this expression should be
   rewritten like this:</p>
 
 <pre>
@@ -102,7 +102,7 @@
 <p>The quotation expanders ensure that, in strict mode, the variable
   "rf" is still of type "<tt>bool</tt>", and that the variable "pel"
   of type "<tt>list (patt * expr)</tt>", by enclosing them around
-  "<tt>Ploc.VaVal</tt>.</p>
+  "<tt>Ploc.VaVal</tt>".</p>
 
 <p>In transitional mode, it is equivalent to the first form above.  In
   strict mode, it is equivalent to the second form. And the previous
@@ -113,19 +113,18 @@
 <p>Camlp5 provides two quotations expanders of syntax trees:
   "<tt>q_MLast.cmo</tt>" and "<tt>q_ast.cmo</tt>".</p>
 
-<p>Both allow to write syntax trees in concrete syntax like explained
-  in the previous section.</p>
+<p>Both allow writing syntax trees in concrete syntax as explained in
+  the previous section.</p>
 
 <p>The first one, "<tt>q_MLast.cmo</tt>" requires that the contents of
   the quotation be in <a href="revsynt.html">revised syntax</a>
-  without any syntax extension (even not
-  the <a href="parsers.html">stream parsers</a>). It works in transitional
-  and in strict modes.</p>
+  without any syntax extension (even the <a href="parsers.html">stream
+  parsers</a>). It works in transitional and in strict modes.</p>
 
 <p>The second one, "<tt>q_ast.cmo</tt>" requires that the contents of
   the quotation be in the current user syntax (normal, revised, lisp,
   scheme, or other) and can accept all the syntax extensions he added
-  to compile his program. But it fully work only in strict mode. In
+  to compile his program. It fully works only in strict mode. In
   transitional mode, the antiquotations are not available.</p>
 
 <h2>Syntax tree and Quotations in the two modes</h2>
