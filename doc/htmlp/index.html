@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: index.html,v 1.9 2007/07/16 23:38:11 deraugla Exp $ -->
+  <!-- $Id: index.html,v 1.10 2007/07/17 01:35:36 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Camlp5</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -80,7 +80,6 @@ loading one of the files "<tt>camlp5o.cma</tt>" or
   ocaml -I +camlp5 camlp5r.cma
 </pre>
 
-<a id="ExtSynt"></a>
 <h2>Extending syntax</h2>
 
 <p>A syntax extension is an ocaml object file, i.e. a file with the
@@ -120,7 +119,6 @@ extensions. These object files are named <em>parsing kits</em>.</p>
 <p>Several syntax extensions can be used for a single file. The way to
 create one's own syntax extensions is explained further.</p>
 
-<a id="PrettPr"></a>
 <h2>Pretty printing</h2>
 
 <p>Like for syntax extensions, <em>pretty printing kits</em> are ocaml
@@ -153,17 +151,19 @@ syntax:</p>
 <p>The way to create one's own pretty printing extensions is
 explained further.</p>
 
+<h2>Note: the revised syntax</h2>
+
+<p>The <em>revised syntax</em> is a specific syntax whose aim is to
+  resolve some syntax problems and inconsistencies of the normal ocaml
+  syntax.  A chapter will explain the differences between the normal
+  and the revised syntax.</p>
+
+<p>All examples of this documentation are written in revised syntax.
+  Even if you don't know it, it is not difficult to understand. The
+  same examples can be written in normal syntax. In case of problems,
+  refer to the chapter describing it.</p>
+
 <div class="trailer">
-
-  <hr style="margin:0" /><div style="font-size: 80%"><em>Copyright 2007
-      Daniel de Rauglaudre (INRIA)</em></div>
-
-  <p class="bottom">
-    <a href="http://validator.w3.org/check?uri=referer"><img
-       src="http://www.w3.org/Icons/valid-xhtml11" style="border:0"
-       alt="Valid XHTML 1.1" height="31" width="88" /></a>
-  </p>
-
 </div>
 
 </div>

@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.33 2007/07/17 00:11:12 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.34 2007/07/17 01:35:36 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -455,53 +455,104 @@ camlp5. In this case, you can just put it as parameter of
 "<tt>Grammar.gcreate</tt>" and it is not necessary to read this
 section.</p>
 
-<p>Otherwise, if you want to create your own lexer, and interface it
-with the extensible grammars, it is necessary to follow some
-steps. This section explains the notions of "token pattern", "token"
-and the "match function", necessary to build the interface.</p>
+<p>Otherwise, it is necessary to create a value of type
+"<tt>Token.glexer t</tt>", where "<tt>t</tt>" is the token type, to
+give as parameter to "<tt>Grammar.create</tt>". This type is defined
+like this:</p>
+
+<pre>
+  type glexer 't =
+    { tok_func : lexer_func 't;
+      tok_match : pattern -> 't -> string;
+      tok_using : pattern -> unit;
+      tok_removing : pattern -> unit;
+      tok_text : pattern -> string;
+      tok_comm : mutable option (list location) }
+  ;
+</pre>
+
+<p>The types used in this type are defined as long as the explanations
+of the next sections.</p>
+
+<h3>The token type</h3>
+
+<p>The token type, which is the type parameter of the
+"<tt>glexer</tt>" type, can any user type.</p>
+
+<p>Values of the token type will be returned by the lexer, and the way
+the values of this type will be matched against the rules symbols will
+be defined in the "match" function.</p>
+
+<h3>The lexer</h3>
+
+<p>The lexer is the field "<tt>tok_func</tt>" defined above. Its type
+is defined like this:</p>
+
+<pre>
+  type lexer_func 't = Stream.t char -> (Stream.t 't * location_function);
+</pre>
+
+<p>The location function is a function taking the token count
+  (starting from zero) as parameter and returning its location in the
+  source. It is important if you want to get the good locations in the
+  semantic actions of the grammar rules.</p>
+
+<p>Notice that, despite the lexer takes a character stream as
+  parameter, you are not obliged to use the stream parsers technology
+  to write your lexer. What is important is that it does the job.</p>
 
 <h3>Token patterns</h3>
 
-<p>In grammar rules, the keywords and tokens symbols are internally
-represented by values of type "<tt>pattern</tt>" defined in the module
-"<tt>Token</tt>" like this:</p>
+<p>Before going further, it is important to understand the notion
+  of <em>token patterns</em>. A token pattern is a value of the type
+  defined like this:</p>
 
 <pre>
   type pattern = (string * string);
 </pre>
 
-<p>where the two strings represent:</p>
+<p>This type represents values of the token symbols and keywords in
+  the grammar rules.</p>
 
-<ol>
-  <li>The <em>constructor name</em>, an identifier starting with an
-    uppercase character,</li>
-  <li>The possible <em>parameter</em> to match with, if any.</li>
-</ol>
+<p>As one can see, it is a couple of strings:</p>
 
-<p>The empty constructor name corresponds to a keyword. The empty
-parameter corresponds to a match to any value of the symbol.</p>
+<ul>
+  <li>The first string is the <em>constructor name</em>, an identifier
+    starting with an uppercase character:
+    <ul>
+      <li>for a token symbol, it is its name,</li>
+      <li>for a keyword, it is the empty string.</li>
+    </ul>
+  </li>
 
-<p>For example, in the rule containing:</p>
+  <li>The second string is the <em>parameter</em>:
+    <ul>
+      <li>for a token symbol:
+        <ul>
+          <li>if the string is empty, it indicates any value (like the
+            pattern "<tt>_</tt>" in the ocaml language)</li>
+          <li>if the string is not empty, it indicates a match of this
+            constructor with that value.</li>
+        </ul>
+      <li>for a keyword, it is the keyword itself.</li>
+    </ul>
+  </li>
+</ul>
+
+<p>For example, in the following grammar rule:</p>
 
 <pre>
   "for"; i = LIDENT; "="; e1 = SELF; "to"; e2 = SELF
 </pre>
 
-<p>the token patterns are:</p>
+<p>the different symbols and keywords are represented by the following
+token patterns:</p>
 
 <ul>
-  <li>for the keywords "for", "=" and "to":
-    <ul>
-      <li><tt>("", "for")</tt></li>
-      <li><tt>("", "=")</tt></li>
-      <li><tt>("", "to")</tt>)</li>
-    </ul>
-  </li>
-  <li>for the token symbol LIDENT:
-    <ul>
-      <li><tt>("LIDENT", "")</tt></li>
-    </ul>
-  </li>
+  <li>the keyword "for" is represented by <tt>("", "for")</tt>,</li>
+  <li>the keyword "=" by <tt>("", "=")</tt>,</li>
+  <li>the keyword "to" by <tt>("", "to")</tt>),</li>
+  <li>and the token symbol <tt>LIDENT</tt> by <tt>("LIDENT", "")</tt>.</li>
 </ul>
 
 <p>The symbol <tt>UIDENT "Foo"</tt> in a rule would be represented
@@ -511,38 +562,41 @@ by the token pattern:</p>
   ("UIDENT", "Foo")
 </pre>
 
-<p>On the other hand, the symbol "<tt>SELF</tt>" is a specific symbol
-of the EXTEND syntax: it does not correspond to a token pattern and is
+<p>Notice that the symbol "<tt>SELF</tt>" is a specific symbol of the
+EXTEND syntax: it does not correspond to a token pattern and is
 represented differently. A token constructor name must not belong to
 the specific symbols: SELF, NEXT, LIST0, LIST1 and OPT.</p>
 
 <h3>Match function</h3>
 
-<p>When one writes a lexer, one generally creates a type for the
-tokens that the lexer returns. Any type is possible. One has to
-provide a function telling how a token (type defined by the
-programmer) is matched against a token pattern (predefined type, see
-above).</p>
+<p>The "match" function, the field "<tt>tok_match</tt>", indicates how
+  a token is matched against a token symbol of a grammar rule, i.e. a
+  token pattern.</p>
 
-<p>If you don't want to busy about that, you can choose the type
-"<tt>(string * string)</tt>" for your token type (just like the token
-pattern type) and use the default match function provided in camlp5:
-"<tt>Token.default_match</tt>". If you chose that solution, you can
-skip the rest of this section.</p>
+<p>If you choose the token type identical to token pattern type, i.e.
+  "<tt>(string * string)</tt>", a simple and direct solution is to use
+  the function "<tt>default_match</tt>" defined in the module
+  "<tt>Token</tt>" which does the job. In this case, you can ignore
+  the rest of this section.</p>
 
 <p>Otherwise, if you want to use your own specific token type (or if
-you don't have the choice), you have to write your specific match
-function.</p>
+  you don't have the choice), you have to write your specific match
+  function.</p>
 
-<p>This function takes a token pattern and return a function matching
-a token, returning the matched string or raising the exception
-"<tt>Stream.Failure</tt>" if the token does not match.</p>
+<p>This function takes a token pattern as parameter and return a
+  function matching a token, returning the matched string or raising
+  the exception "<tt>Stream.Failure</tt>" if the token does not
+  match.</p>
 
-<p>Example:</p>
+<p>Example. If the token type is defined like this:</p>
 
 <pre>
   type mytoken = [ Ident of string | Int of int | Comma | Equal | Keyw of string ];
+</pre>
 
+<p>a possible implementation of the "match" function could be that:</p>
+
+<pre>
   value mymatch =
     fun
     [ ("IDENT", "") -> fun [ Ident s -> s | _ -> raise Stream.Failure ]
@@ -557,33 +611,30 @@ a token, returning the matched string or raising the exception
 </pre>
 
 <p>Notice that, for efficiency, it is necessary to write this function
-like above, as a match of token patterns returning, for each case, the
-function which matches the token, <em>not</em> a function matching the
-token pattern and the token together and returning a string for each
-case.</p>
+  like above, as a match of token patterns returning, for each case, the
+  function which matches the token, <em>not</em> a function matching the
+  token pattern and the token together and returning a string for each
+  case.</p>
 
-<p>This "match" function will be used at creation of the lexer
-interface. See further. For the moment, keep it somewhere.</p>
-
-<h3>The lexer</h3>
-
-<p>The lexer must be of type:</p>
+<p>Another example is the "default_match" function proposed above for
+  users who don't want to busy about that and choosed the token type
+  identical to the token pattern type. The code of this function is
+  something like:</p>
 
 <pre>
-  Stream.t char -> (Stream.t t * location_function)
+  value default_match =
+    fun
+    [ (p_con, "") ->
+        fun (con, prm) -> if con = p_con then prm else raise Stream.Failure
+    | (p_con, p_prm) ->
+        fun (con, prm) ->
+          if con = p_con && prm = p_prm then prm else raise Stream.Failure ]
+  ;
 </pre>
 
-<p>where "<tt>t</tt>" is your token type and the location function is
-  a function taking the token number (starting from zero) as parameter
-  and returing its location in the source. It is important if you want
-  to get the good locations in the semantic actions of the grammar
-  rules.</p>
+<p>... to be completed ...</p>
 
-<p>Notice that, despite the lexer takes a character stream as
-  parameter, you are not obliged to use the stream parsers technology
-  to write your lexer. What is important is that it does the job.</p>
-
-<h3>Using and removing tokens</h3>
+<h3>...</h3>
 
 <p>Two extra functions, of type "<tt>Token.pattern -> unit</tt>" have
   to be written: the <em>using</em> and <em>removing</em>
