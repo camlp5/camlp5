@@ -1,6 +1,6 @@
-# $Id: Makefile,v 1.14 2007/07/28 11:50:04 deraugla Exp $
+# $Id: Makefile,v 1.15 2007/07/29 17:26:43 deraugla Exp $
 
-OBJS=../html/index.html ../html/extfun.html ../html/fparsers.html ../html/grammars.html ../html/lexers.html ../html/locations.html ../html/ml_ast.html ../html/opretty.html ../html/parsers.html ../html/pcaml.html ../html/pragma.html ../html/pretty.html ../html/ptools.html ../html/quot.html ../html/revsynt.html ../html/scheme.html ../html/syntext.html
+OBJS=../html/index.html ../html/extfun.html ../html/fparsers.html ../html/grammars.html ../html/lexers.html ../html/locations.html ../html/macros.html ../html/ml_ast.html ../html/opretty.html ../html/parsers.html ../html/pcaml.html ../html/pragma.html ../html/pretty.html ../html/ptools.html ../html/quot.html ../html/revsynt.html ../html/scheme.html ../html/syntext.html
 
 INDEX=index.html
 

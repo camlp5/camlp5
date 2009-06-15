@@ -1,7 +1,7 @@
 #!/bin/sh
-# $Id: html2latex,v 1.42 2007/07/28 11:50:04 deraugla Exp $
+# $Id: html2latex,v 1.43 2007/07/29 17:26:43 deraugla Exp $
 
-FILES="index.html ptools.html syntext.html revsynt.html quot.html pcaml.html parsers.html fparsers.html lexers.html grammars.html pretty.html opretty.html scheme.html ml_ast.html locations.html pragma.html extfun.html"
+FILES="index.html ptools.html syntext.html revsynt.html quot.html pcaml.html parsers.html fparsers.html lexers.html grammars.html pretty.html opretty.html macros.html scheme.html ml_ast.html locations.html pragma.html extfun.html"
 
 /bin/echo '\documentclass[twoside]{report}
 \usepackage{fullpage}

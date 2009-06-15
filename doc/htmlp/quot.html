@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: quot.html,v 1.11 2007/07/29 04:13:15 deraugla Exp $ -->
+  <!-- $Id: quot.html,v 1.12 2007/07/29 17:26:43 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>quotations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -362,11 +362,20 @@ type expander =
 
 <h3>q_MLast.cmo</h3>
 
-<p>... to be written ...</p>
+<p>This extension kit add quotations of ocaml syntax tree, allowing to
+  use concrete syntax to represent abstract syntax. See the chapter
+  <a href="ml_ast.html">Syntax tree</a>.</p>
 
 <h3>q_phony.cmo</h3>
 
-<p>... to be written ...</p>
+<p>This extension kit is destinated to pretty printing and must be loaded
+  after a language pretty printing kit (in normal or in revised syntax).
+  It prevents the expansions of all the quotations, transforming them
+  into variables. The pretty printing keeps then their initial form.</p>
+
+<p>Moreover the <a href="macros.html">macros</a> (extension
+  "<tt>pa_macro.cmo</tt>") are also displayed in their initial form,
+  instead of expanded.</p>
 
 <h2>A full example: lambda terms</h2>
 
