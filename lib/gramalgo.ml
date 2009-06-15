@@ -977,7 +977,7 @@ value trace_goto_table blr goto_table =
     Printf.eprintf "\ngoto table\n\n";
     if Array.length goto_table > 20 then
       Printf.eprintf "  (big)\n"
-    else
+    else do {
       Printf.eprintf "           ";
       for i = 0 to Array.length blr.nterm_name_tab - 1 do {
         Printf.eprintf " %s" blr.nterm_name_tab.(i);
@@ -992,6 +992,7 @@ value trace_goto_table blr goto_table =
         };
         Printf.eprintf "\n";
       };
+    };
     flush stderr;
   }
   ELSE () END
@@ -1002,7 +1003,7 @@ value trace_action_table blr action_table =
     Printf.eprintf "\naction table\n\n";
     if Array.length action_table > 20 then
       Printf.eprintf "  (big)\n"
-    else
+    else do {
       Printf.eprintf "           ";
       for i = 0 to Array.length blr.term_name_tab - 1 do {
         Printf.eprintf " %4s" blr.term_name_tab.(i);
@@ -1020,6 +1021,7 @@ value trace_action_table blr action_table =
         };
         Printf.eprintf "\n";
       };
+    };
     flush stderr;
   }
   ELSE () END
