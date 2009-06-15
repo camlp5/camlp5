@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.45 2007/07/18 02:54:35 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.46 2007/07/18 09:45:18 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -446,13 +446,19 @@ instead of "<tt>loc</tt>".</p>
 
 <h2>Grammar machinery</h2>
 
+<p>We explain here the detail of the mechanism of the parsing of an
+  entry.</p>
+
+<h3>Start and Continue</h3>
+
 <p>At each entry level, the rules are separated into two trees:</p>
 
 <ul>
   <li>The tree of the rules <em>not</em> starting with the current entry
     name nor by "<tt>SELF</tt>".</li>
   <li>The tree of the rules starting with the current entry name or by
-    the identifier "<tt>SELF</tt>",</li>
+    the identifier "<tt>SELF</tt>", this symbol not being included in
+    the tree.</li>
 </ul>
 
 <p>They determine two functions:</p>
@@ -469,15 +475,79 @@ instead of "<tt>loc</tt>".</p>
 
 <p>The "start" function tries its associated tree. If it works, it
   calls the "continue" function of the same level, giving the result
-  of "start" as parameter. If it fails, it tries the "start" function
-  of the next level. If there is no more levels, the parsing
-  fails.</p>
+  of "start" as parameter. If this "continue" function fails, this
+  parameter is simply returned. If the "start" function fails, the
+  "start" function of the next level is tested. If there is no more
+  levels, the parsing fails.</p>
 
 <p>The "continue" function first tries the "continue" function of the
   next level. If it fails, or if it is the last level, it tries its
   associated tree, then calls itself again, giving the result as
   parameter. If its associated tree fails, it returns its extra
   parameter.</p>
+
+<h3>Associativity</h3>
+
+<p>While testing the tree, there is a special case for rules ending
+  with SELF or with the current entry name. For this last symbol,
+  there is a call to the "start" function: of the current level if the
+  level is right associative, or of the next level otherwise.</p>
+
+<p>There is no behaviour difference between left and non associative,
+  because, in case of syntax error, the system attempts, anyway, to
+  recover the error by applying the "continue" function of the
+  previous symbol (if this symbol is a call to an entry).</p>
+
+<p>When a SELF or the current entry name is encountered in the middle
+  of the rule (i.e. if it is not the last symbol), there is a call to
+  the "start" function of the first level of the current entry.</p>
+
+<p>Example. Let us consider the following grammar:</p>
+
+<pre>
+  EXTEND
+    expr:
+      [ "minus" LEFTA
+        [ x = SELF; "-"; y = SELF -> x -. y ]
+      | "power" RIGHTA
+        [ x = SELF; "**"; y = SELF -> x ** y ]
+      | "simple"
+        [ "("; x = SELF; ")" -> x
+        | x = INT -> float_of_int x ] ]
+    ;
+  END
+</pre>
+
+<p>The left "SELF"s of the two levels "minus" and "power" correspond
+  to a call to the next level. In the level "minus", the right "SELF"
+  also, and the left associativity is treated by the fact that the
+  "continue" function is called (starting with the keyword "-" since
+  the left "SELF" is not part of the tree). On the other hand, for the
+  level "power", the right "SELF" corresponds to a call to the current
+  level, i.e. the level "power" again. At end, the "SELF" between
+  parentheses of the level "simple" correspond to a call to the first
+  level, namely "minus" in this grammar.</p>
+
+<h3>Errors and Errors recovery</h3>
+
+<p>In extensible grammars, the error exceptions are encapsulated with
+  the exception "Stdpp.Exc_located" giving the location of the error
+  together with the exception itself.</p>
+
+<p>Like for stream parsers, two exceptions may happen:
+  "Stream.Failure" or "Stream.Error". The first one indicates that the
+  parsing just could not start. The second one indicates that the
+  parsing started but failed further.</p>
+
+<p>In stream parsers, when a symbol has been accepted in a rule, all
+  the symbols of the same rule must be accepted, otherwise the exception
+  "Stream.Error" is raised.</p>
+
+<p>Here, in extensible grammars, unlike stream parsers, before the of
+  the "Stream.Error" exception, the system attempts to recover the
+  error by the following trick: if the previous symbol of the rule was
+  a call to another entry, the system calls the "continue" function of
+  that entry, which may resolve the problem.</p>
 
 <p>... to be completed ...</p>
 
