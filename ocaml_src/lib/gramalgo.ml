@@ -327,6 +327,69 @@ let check_closed rl =
   flush stderr
 ;;
 
+let get_symbol_after_dot =
+  let rec loop dot rh =
+    match dot, rh with
+      0, s :: _ -> Some s
+    | _, [] -> None
+    | n, _ :: sl -> loop (n - 1) sl
+  in
+  loop
+;;
+
+let item_closure rl (lh, dot, rh as item) =
+  match get_symbol_after_dot dot rh with
+    Some (GS_nterm n) ->
+      let processed = ref [lh] in
+      let rec loop clos =
+        function
+          n :: to_process ->
+            if List.mem n !processed then loop clos to_process
+            else
+              begin
+                processed := n :: !processed;
+                let rl = List.filter (fun (lh, rh) -> n = lh) rl in
+                let clos =
+                  List.fold_left (fun clos (lh, rh) -> (lh, dot, rh) :: clos)
+                    clos rl
+                in
+                let to_process =
+                  List.fold_left
+                    (fun to_process (lh, rh) ->
+                       match rh with
+                         [] -> to_process
+                       | s :: sl ->
+                           match s with
+                             GS_nterm n -> n :: to_process
+                           | GS_term _ -> to_process)
+                    to_process rl
+                in
+                loop clos to_process
+              end
+        | [] -> List.rev clos
+      in
+      loop [item] [n]
+  | Some (GS_term _) | None -> [item]
+;;
+
+let eprint_item (lh, dot, rh) =
+  Printf.eprintf "%s ->" lh;
+  begin let rec loop dot rh =
+    if dot = 0 then
+      begin
+        Printf.eprintf " •";
+        List.iter (fun s -> Printf.eprintf " %s" (sprint_symb s)) rh
+      end
+    else
+      match rh with
+        s :: rh -> Printf.eprintf " %s" (sprint_symb s); loop (dot - 1) rh
+      | [] -> Printf.eprintf "... algorithm error..."
+  in
+    loop dot rh
+  end;
+  Printf.eprintf "\n"
+;;
+
 let lr0 entry lev =
   Printf.eprintf "LR(0) %s %d\n" entry.ename lev;
   flush stderr;
@@ -336,5 +399,11 @@ let lr0 entry lev =
   check_closed rl;
   List.iter eprint_rule rl;
   Printf.eprintf "\n";
-  flush stderr
+  flush stderr;
+  Printf.eprintf "Item set 0\n\n";
+  let item_set_0 =
+    let item = "start-symb", 0, [GS_nterm (name_of_entry entry lev)] in
+    item_closure rl item
+  in
+  List.iter eprint_item item_set_0; flush stderr
 ;;

@@ -332,7 +332,8 @@ value flatten_gram entry levn =
                   loop rules more_anon_rules ]
           in
           loop rules treated to_treat_r.val
-    | [] -> Fifo.to_list rules ]
+    | [] ->
+        Fifo.to_list rules ]
 ;
 
 value sprint_symb =
@@ -364,6 +365,64 @@ value check_closed rl = do {
   flush stderr;
 };
 
+value get_symbol_after_dot =
+  loop where rec loop dot rh =
+    match (dot, rh) with
+    [ (0, [s :: _]) -> Some s
+    | (_, []) -> None
+    | (n, [_ :: sl]) -> loop (n - 1) sl ]
+;
+
+value item_closure rl ((lh, dot, rh) as item) =
+  match get_symbol_after_dot dot rh with
+  [ Some (GS_nterm n) ->
+      let processed = ref [lh] in
+      loop [item] [n] where rec loop clos =
+        fun
+        [ [n :: to_process] ->
+            if List.mem n processed.val then loop clos to_process
+            else do {
+              processed.val := [n :: processed.val];
+              let rl = List.filter (fun (lh, rh) -> n = lh) rl in
+              let clos =
+                List.fold_left (fun clos (lh, rh) -> [(lh, dot, rh) :: clos])
+                  clos rl
+              in
+              let to_process =
+                List.fold_left
+                  (fun to_process (lh, rh) ->
+                     match rh with
+                     [ [] -> to_process
+                     | [s :: sl] ->
+                         match s with
+                         [ GS_nterm n -> [n :: to_process]
+                         | GS_term _ -> to_process ] ])
+                  to_process rl
+              in
+              loop clos to_process
+            }
+        | [] ->
+            List.rev clos ]
+  | Some (GS_term _) | None -> [item] ]
+;
+
+value eprint_item (lh, dot, rh) = do {
+  Printf.eprintf "%s ->" lh;
+  loop dot rh where rec loop dot rh =
+    if dot = 0 then do {
+      Printf.eprintf " •";
+      List.iter (fun s -> Printf.eprintf " %s" (sprint_symb s)) rh
+    }
+    else
+      match rh with
+      [ [s :: rh] -> do {
+          Printf.eprintf " %s" (sprint_symb  s);
+          loop (dot - 1) rh
+        }
+      | [] -> Printf.eprintf "... algorithm error..." ];
+  Printf.eprintf "\n";
+};
+
 value lr0 entry lev = do {
   Printf.eprintf "LR(0) %s %d\n" entry.ename lev;
   flush stderr;
@@ -373,5 +432,12 @@ value lr0 entry lev = do {
   check_closed rl;
   List.iter eprint_rule rl;
   Printf.eprintf "\n";
+  flush stderr;
+  Printf.eprintf "Item set 0\n\n";
+  let item_set_0 =
+    let item = ("start-symb", 0, [GS_nterm (name_of_entry entry lev)]) in
+    item_closure rl item
+  in
+  List.iter eprint_item item_set_0;
   flush stderr;
 };
