@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.71 2007/08/15 19:57:01 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.72 2007/08/15 20:05:33 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -892,118 +892,6 @@ value str_or_sig_functor pc s mt module_expr_or_type met =
            {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} met
        in
        sprintf "%s\n%s" s1 s2)
-;
-
-value str_item_top =
-  extfun Extfun.empty with
-  [ <:str_item< # $s$ $e$ >> ->
-      fun curr next pc ->
-        expr
-          {(pc) with bef = sprintf "%s(* #%s " pc.bef s;
-           aft = sprintf "%s *)" pc.aft}
-        e
-  | <:str_item< declare $list:sil$ end >> ->
-      fun curr next pc ->
-        if sil = [] then sprintf "%s(* *)" pc.bef
-        else
-          let str_item_sep =
-            if flag_semi_semi.val then semi_semi_after str_item else str_item
-          in
-          vlistl str_item_sep str_item pc sil
-  | <:str_item< exception $e$ of $list:tl$ = $id$ >> ->
-      fun curr next pc -> exception_decl pc (e, tl, id)
-  | <:str_item< external $n$ : $t$ = $list:sl$ >> ->
-      fun curr next pc -> external_decl pc (n, t, sl)
-  | <:str_item< include $me$ >> ->
-      fun curr next pc ->
-        module_expr {(pc) with bef = sprintf "%sinclude " pc.bef} me
-  | <:str_item< module $m$ = $me$ >> ->
-      fun curr next pc -> str_module pc m me
-  | <:str_item< module type $m$ = $mt$ >> ->
-      fun curr next pc -> sig_module_or_module_type " type" '=' pc m mt
-  | <:str_item< open $i$ >> ->
-      fun curr next pc ->
-        mod_ident {(pc) with bef = sprintf "%sopen " pc.bef} i
-  | <:str_item< type $list:tdl$ >> ->
-      fun curr next pc ->
-        vlist2 type_decl (and_before type_decl)
-          {(pc) with bef = sprintf "%stype " pc.bef; aft = ("", pc.aft)}
-          tdl
-  | <:str_item< value $opt:rf$ $list:pel$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%slet %s%s" pc.bef (if rf then "rec " else "")
-               (hlist2 let_binding (and_before let_binding)
-                  {(pc) with bef = ""; aft = ("", pc.aft)} pel))
-          (fun () ->
-             vlist2 let_binding (and_before let_binding)
-               {(pc) with
-                bef = sprintf "%slet %s" pc.bef (if rf then "rec " else "");
-                aft = ("", pc.aft)} pel)
-  | <:str_item< $exp:e$ >> ->
-      fun curr next pc ->
-        if pc.aft = ";;" then expr pc e
-        else
-          let loc = MLast.loc_of_expr e in
-          curr pc <:str_item< value _ = $e$ >>
-  | <:str_item< class type $list:_$ >> | <:str_item< class $list:_$ >> ->
-      fun curr next pc ->
-        failwith "classes and objects not pretty printed; add pr_ro.cmo"
-  | z ->
-      fun curr next pc -> not_impl "str_item" pc z ]
-;
-
-value sig_item_top =
-  extfun Extfun.empty with
-  [ <:sig_item< exception $e$ of $list:tl$ >> ->
-      fun curr next pc -> exception_decl pc (e, tl, [])
-  | <:sig_item< external $n$ : $t$ = $list:sl$ >> ->
-      fun curr next pc -> external_decl pc (n, t, sl)
-  | <:sig_item< include $mt$ >> ->
-      fun curr next pc ->
-        module_type {(pc) with bef = sprintf "%sinclude " pc.bef} mt
-  | <:sig_item< declare $list:sil$ end >> ->
-      fun curr next pc ->
-        if sil = [] then sprintf "%s(* *)" pc.bef
-        else
-          let sig_item_sep =
-            if flag_semi_semi.val then semi_semi_after sig_item else sig_item
-          in
-          vlistl sig_item_sep sig_item pc sil
-  | <:sig_item< module $m$ : $mt$ >> ->
-      fun curr next pc -> sig_module_or_module_type "" ':' pc m mt
-  | <:sig_item< module type $m$ = $mt$ >> ->
-      fun curr next pc -> sig_module_or_module_type " type" '=' pc m mt
-  | <:sig_item< open $i$ >> ->
-      fun curr next pc ->
-        mod_ident {(pc) with bef = sprintf "%sopen " pc.bef} i
-  | <:sig_item< type $list:tdl$ >> ->
-      fun curr next pc ->
-        vlist2 type_decl (and_before type_decl)
-          {(pc) with bef = sprintf "%stype " pc.bef; aft = ("", pc.aft)}
-          tdl
-  | <:sig_item< value $s$ : $t$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%sval %s : %s%s" pc.bef
-               (var_escaped {(pc) with bef = ""; aft = ""} s)
-               (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-          (fun () ->
-             let s1 =
-               sprintf "%sval %s :" pc.bef
-                 (var_escaped {(pc) with bef = ""; aft = ""} s)
-             in
-             let s2 =
-               ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t
-             in
-             sprintf "%s\n%s" s1 s2)
-  | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->
-      fun curr next pc ->
-        failwith "classes and objects not pretty printed; add pr_ro.cmo"
-  | z ->
-      fun curr next pc -> not_impl "sig_item" pc z ]
 ;
 
 value module_expr_top =
@@ -2200,10 +2088,101 @@ EXTEND_PRINTER
              aft = sprintf ")%s" pc.aft}
             z ] ]
   ;
+  pr_str_item:
+    [ "top"
+      [ <:str_item< # $s$ $e$ >> ->
+          expr
+            {(pc) with bef = sprintf "%s(* #%s " pc.bef s;
+             aft = sprintf "%s *)" pc.aft}
+          e
+      | <:str_item< declare $list:sil$ end >> ->
+          if sil = [] then sprintf "%s(* *)" pc.bef
+          else
+            let str_item_sep =
+              if flag_semi_semi.val then semi_semi_after str_item
+              else str_item
+            in
+            vlistl str_item_sep str_item pc sil
+      | <:str_item< exception $e$ of $list:tl$ = $id$ >> ->
+          exception_decl pc (e, tl, id)
+      | <:str_item< external $n$ : $t$ = $list:sl$ >> ->
+          external_decl pc (n, t, sl)
+      | <:str_item< include $me$ >> ->
+          module_expr {(pc) with bef = sprintf "%sinclude " pc.bef} me
+      | <:str_item< module $m$ = $me$ >> ->
+          str_module pc m me
+      | <:str_item< module type $m$ = $mt$ >> ->
+          sig_module_or_module_type " type" '=' pc m mt
+      | <:str_item< open $i$ >> ->
+          mod_ident {(pc) with bef = sprintf "%sopen " pc.bef} i
+      | <:str_item< type $list:tdl$ >> ->
+          vlist2 type_decl (and_before type_decl)
+            {(pc) with bef = sprintf "%stype " pc.bef; aft = ("", pc.aft)}
+            tdl
+      | <:str_item< value $opt:rf$ $list:pel$ >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%slet %s%s" pc.bef (if rf then "rec " else "")
+                 (hlist2 let_binding (and_before let_binding)
+                    {(pc) with bef = ""; aft = ("", pc.aft)} pel))
+            (fun () ->
+               vlist2 let_binding (and_before let_binding)
+                 {(pc) with
+                  bef = sprintf "%slet %s" pc.bef (if rf then "rec " else "");
+                  aft = ("", pc.aft)} pel)
+      | <:str_item< $exp:e$ >> ->
+          if pc.aft = ";;" then expr pc e
+          else
+            let loc = MLast.loc_of_expr e in
+            curr pc <:str_item< value _ = $e$ >>
+      | <:str_item< class type $list:_$ >> | <:str_item< class $list:_$ >> ->
+          failwith "classes and objects not pretty printed; add pr_ro.cmo" ] ]
+  ;
+  pr_sig_item:
+    [ "top"
+      [ <:sig_item< exception $e$ of $list:tl$ >> ->
+          exception_decl pc (e, tl, [])
+      | <:sig_item< external $n$ : $t$ = $list:sl$ >> ->
+          external_decl pc (n, t, sl)
+      | <:sig_item< include $mt$ >> ->
+          module_type {(pc) with bef = sprintf "%sinclude " pc.bef} mt
+      | <:sig_item< declare $list:sil$ end >> ->
+          if sil = [] then sprintf "%s(* *)" pc.bef
+          else
+            let sig_item_sep =
+              if flag_semi_semi.val then semi_semi_after sig_item
+              else sig_item
+            in
+            vlistl sig_item_sep sig_item pc sil
+      | <:sig_item< module $m$ : $mt$ >> ->
+          sig_module_or_module_type "" ':' pc m mt
+      | <:sig_item< module type $m$ = $mt$ >> ->
+          sig_module_or_module_type " type" '=' pc m mt
+      | <:sig_item< open $i$ >> ->
+          mod_ident {(pc) with bef = sprintf "%sopen " pc.bef} i
+      | <:sig_item< type $list:tdl$ >> ->
+          vlist2 type_decl (and_before type_decl)
+            {(pc) with bef = sprintf "%stype " pc.bef; aft = ("", pc.aft)}
+            tdl
+      | <:sig_item< value $s$ : $t$ >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%sval %s : %s%s" pc.bef
+                 (var_escaped {(pc) with bef = ""; aft = ""} s)
+                 (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
+            (fun () ->
+               let s1 =
+                 sprintf "%sval %s :" pc.bef
+                   (var_escaped {(pc) with bef = ""; aft = ""} s)
+               in
+               let s2 =
+                 ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t
+               in
+               sprintf "%s\n%s" s1 s2)
+      | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->
+          failwith "classes and objects not pretty printed; add pr_ro.cmo" ] ]
+  ;
 END;
-
-pr_str_item.pr_levels := [{pr_label = "top"; pr_rules = str_item_top}];
-pr_sig_item.pr_levels := [{pr_label = "top"; pr_rules = sig_item_top}];
 
 pr_module_expr.pr_levels :=
   [{pr_label = "top"; pr_rules = module_expr_top};
