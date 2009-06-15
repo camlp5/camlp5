@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: locations.html,v 1.2 2007/07/26 19:37:14 deraugla Exp $ -->
+  <!-- $Id: locations.html,v 1.3 2007/07/26 19:40:33 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Locations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -49,9 +49,11 @@
 <p>A <em>position</em> is a count of characters since the beginning of
   the file, starting at zero. When a couple of positions define a
   location, the first position is the position of the first character
-  of the element, and the last position is the first character <em>em</em>
-  part of the element. The location length is the difference between
-  those two numbers.</p>
+  of the element, and the last position is the first
+  character <em>em</em> part of the element. The location length is
+  the difference between those two numbers. Notice that the position
+  corresponds exactly to the character count in the streams of
+  characters.</p>
 
 <p>If the line number is not known, it is possible to use the function
   "<tt>Stdpp.make_loc</tt>" taking only the couple of positions of the
