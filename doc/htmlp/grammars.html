@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.7 2007/07/15 02:56:38 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.8 2007/07/15 04:00:18 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -160,9 +160,11 @@ constructors or module names). The other strings
 <p>The EXTEND statement starts with the "<tt>EXTEND</tt>" keyword and ends
 with the "<tt>END</tt>" keyword.</p>
 
+<h3>Global indicator</h3>
+
 <p>After the first keyword, it is possible to see the identifier
 "<tt>GLOBAL</tt>" followed by a colon, a list of entries names and a
-semicolon. It says that these entries are supposed to be visible
+semicolon. It says that these entries correspond to visible
 (previously defined) entry variables, in the context of the EXTEND
 statement, the other ones being locally and silently defined
 inside.</p>
@@ -177,6 +179,29 @@ inside.</p>
   statement, the ocaml compiler will also fail with the error "unbound
   value".</li>
 </ul>
+
+<p>Example:</p>
+
+<pre>
+value exp = Grammar.Entry.create g "exp";
+EXTEND
+  GLOBAL: exp;
+  exp: [ [ x = foo; y = bar ] ];
+  foo: [ [ "foo" ] ];
+  bar: [ [ "bar" ] ];
+END;
+</pre>
+
+<p>The entry "exp" is an existing variable (defined by value exp =
+...). On the other hand, the entries "foo" and "bar" have not been
+defined. Because of the GLOBAL indicator, the system define them
+locally.</p>
+
+<p>Without the GLOBAL indicator, the three entries would have been
+considered as global variables, therefore the ocaml compiler would
+say "unbound variable" under the first undefined entry, "foo".</p>
+
+<h3>Entries list</h3>
 
 <p>Then the list of entries extensions follow. An entry extension
 starts with the entry name followed by a colon. An entry may have
