@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: pcaml.html,v 1.12 2007/08/28 03:22:04 deraugla Exp $ -->
+  <!-- $Id: pcaml.html,v 1.13 2007/10/17 02:28:34 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Pcaml</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -126,9 +126,9 @@ value parse_implem :
 <dl>
   <dt><tt>value interf : Grammar.Entry.e (list (MLast.sig_item * MLast.loc) * bool);</tt></dt>
   <dd>Interface, i.e. files with extension ".mli". The location is the
-    one of the top of the tree. The boolean says whether the parsing
-    stopped because of the presence of a directive (which potentially
-    could change the syntax).</dd>
+    top of the tree. The boolean says whether the parsing stopped
+    because of the presence of a directive (which potentially could
+    change the syntax).</dd>
   <dt><tt>value implem : Grammar.Entry.e (list (MLast.str_item * MLast.loc) * bool);</tt></dt>
   <dd>Implementation, i.e. files with extension ".ml". Same remark
     about the location and the boolean.</dd>
@@ -139,8 +139,8 @@ value parse_implem :
   <dt><tt>value use_file : Grammar.Entry.e (list MLast.str_item *
       bool);</tt></dt>
   <dd>Phrases in files included by the directive "<tt>#use</tt>". The
-    boolean indicates whether the parsing stopped because of a directive
-    (like for "<tt>interf</tt>" below).</dd>
+    boolean indicates whether the parsing stopped because of a
+    directive (as for "<tt>interf</tt>" above).</dd>
 </dl>
 
 <h2>Language printing</h2>
@@ -172,7 +172,7 @@ value print_implem :
 </dd></dl>
 
 <p>By default, these functions fail. The printer kit
-  "<tt>pr_dump.cmo</tt>" (loaded by most Camlp5 commands) set them to
+  "<tt>pr_dump.cmo</tt>" (loaded by most Camlp5 commands) sets them to
   functions dumping the syntax tree in binary (for the OCaml
   compiler). The pretty printer kits, such as "<tt>pr_r.cmo</tt>" and
   "<tt>pr_o.cmo</tt>" set them to functions calling the predefined
