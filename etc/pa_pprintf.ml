@@ -1,5 +1,5 @@
-(* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_pprintf.ml,v 1.2 2007/12/03 10:28:52 deraugla Exp $ *)
+(* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
+(* $Id: pa_pprintf.ml,v 1.3 2007/12/03 13:58:14 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* pprintf statement *)
@@ -120,14 +120,54 @@ value make_call loc (bef_is_empty, aft_is_empty) pc pcl =
         <:expr< sprintf $str:fmt$ >> el ]
 ;
 
+type pp = [ PPbreak of int and int | PPspace ];
+
+value rec parse_int_loop n =
+  fparser
+  [ [: `('0'..'9' as c);
+       n = parse_int_loop (10 * n + Char.code c - Char.code '0') :] -> n
+  | [: :] -> n ]
+;
+
+value parse_int =
+  fparser
+    [: `('0'..'9' as c);
+       n = parse_int_loop (Char.code c - Char.code '0') :] ->
+      n
+;
+
+value parse_pp_param =
+  fparser [: `'<'; nsp = parse_int; `' '; off = parse_int :] -> (nsp, off)
+;
+
 value expand_pprintf loc pc fmt al =
   let (pclcl, pcl, al) =
     loop [] al 0 0 where rec loop rev_pclcl al i_beg i =
       if i + 1 < String.length fmt then
-        if fmt.[i] = '@' && List.mem fmt.[i+1] [' '; ','] then
-          let fmt1 = String.sub fmt i_beg (i - i_beg) in
-          let (pcl, al) = expand_item loc pc fmt1 al in
-          loop [(pcl, fmt.[i+1]) :: rev_pclcl] al (i + 2) (i + 2)
+        if fmt.[i] = '@' then
+          match fmt.[i+1] with
+          [ ';' ->
+              let fmt1 = String.sub fmt i_beg (i - i_beg) in
+              let (pcl, al) = expand_item loc pc fmt1 al in
+              let (pp, i) =
+                let (nspaces, offset, i) =
+                  let s =
+                    String.sub fmt (i + 2) (String.length fmt - i - 2)
+                  in
+                  match parse_pp_param (Fstream.of_string s) with
+                  [ Some ((nspaces, noffset), strm) ->
+                      (nspaces, noffset, i + 2 + Fstream.count strm)
+                  | None -> (1, 2, i + 2) ]
+                in
+                (PPbreak nspaces offset, i)
+              in
+              loop [(pcl, pp) :: rev_pclcl] al i i
+          | ' ' ->
+              let fmt1 = String.sub fmt i_beg (i - i_beg) in
+              let (pcl, al) = expand_item loc pc fmt1 al in
+              loop [(pcl, PPspace) :: rev_pclcl] al (i + 2) (i + 2)
+          | _ ->
+              loop rev_pclcl al i_beg (i + 1) ]
         else loop rev_pclcl al i_beg (i + 1)
       else
         let (pcl, al) =
@@ -165,9 +205,8 @@ value expand_pprintf loc pc fmt al =
           [ [(c, pcl1) :: pclcl] ->
                let (s, o) =
                  match c with
-                 [ ' ' -> ("1", "2")
-                 | ',' -> ("1", "0")
-                 | _ -> ("0", "0") ]
+                 [ PPbreak sp off -> (string_of_int sp, string_of_int off)
+                 | PPspace -> ("1", "0") ]
                in
                let aft_is_empty = pclcl <> [] in
                let e1 =
@@ -175,7 +214,8 @@ value expand_pprintf loc pc fmt al =
                in
                let e =
                  <:expr<
-                   break $int:s$ $int:o$ $pc$ (fun pc -> $e$) (fun pc -> $e1$)
+                   sprint_break $int:s$ $int:o$ $pc$ (fun pc -> $e$)
+                     (fun pc -> $e1$)
                  >>
                in
                loop e pclcl
