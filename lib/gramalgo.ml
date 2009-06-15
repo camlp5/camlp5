@@ -651,7 +651,18 @@ value make_follow_tab rules first_tab nterm_derive_eps_tab = do {
 
 (*DEFINE TEST;*)
 
-value lr0 entry lev = do {
+type item = (int * bool * int * int * list (gram_symb int int));
+
+type lr0 =
+  { rules : array (int * list (gram_symb int int));
+    term_name_tab : array string;
+    nterm_name_tab : array string;
+    nb_items : int;
+    item_set_ht : Hashtbl.t (list item) int;
+    shift_assoc : list (int * list (gram_symb int int * int)) }
+;
+
+value basic_lr0 entry lev = do {
   IFDEF VERBOSE THEN do {
     Printf.eprintf "LR(0) %s %d\n" entry.ename lev;
     flush stderr;
@@ -812,8 +823,18 @@ value lr0 entry lev = do {
     flush stderr;
   }
   ELSE () END;
+  {rules = rules; term_name_tab = term_name_tab;
+   nterm_name_tab = nterm_name_tab; nb_items = item_set_cnt + 1;
+   item_set_ht = item_set_ht; shift_assoc = shift_assoc}
+};
 
-  let nterm_derive_eps_tab = make_derive_eps_tab rules nb_nterms in
+value lr0 entry lev = do {
+  let blr = basic_lr0 entry lev in
+  let nb_terms = Array.length blr.term_name_tab in
+  let nb_nterms = Array.length blr.nterm_name_tab in
+  let term_n i = if i = -1 then "ε" else Array.get blr.term_name_tab i in
+  let nterm_n = Array.get blr.nterm_name_tab in
+  let nterm_derive_eps_tab = make_derive_eps_tab blr.rules nb_nterms in
   IFDEF VERBOSE THEN do {
     Printf.eprintf "\nDerive ε\n\n";
     Printf.eprintf " ";
@@ -826,7 +847,7 @@ value lr0 entry lev = do {
   ELSE () END;
 
   (* compute first *)
-  let first_tab = make_first_tab rules nterm_derive_eps_tab in
+  let first_tab = make_first_tab blr.rules nterm_derive_eps_tab in
   IFDEF VERBOSE THEN do {
     let compare_terms i j = compare (term_n i) (term_n j) in
     Printf.eprintf "\nFirst\n\n";
@@ -837,13 +858,13 @@ value lr0 entry lev = do {
            (List.sort compare_terms first_tab.(i));
          Printf.eprintf "\n";
        })
-      nterm_name_tab;
+      blr.nterm_name_tab;
     flush stderr;
   }
   ELSE () END;
 
   (* compute follow *)
-  let follow_tab = make_follow_tab rules first_tab nterm_derive_eps_tab in
+  let follow_tab = make_follow_tab blr.rules first_tab nterm_derive_eps_tab in
   IFDEF VERBOSE THEN do {
     let compare_terms i j = compare (term_n i) (term_n j) in
     Printf.eprintf "\nFollow\n\n";
@@ -854,7 +875,7 @@ value lr0 entry lev = do {
            (List.sort compare_terms follow_tab.(i));
          Printf.eprintf "\n";
        })
-      nterm_name_tab;
+      blr.nterm_name_tab;
     flush stderr;
   }
   ELSE () END;
@@ -862,7 +883,7 @@ value lr0 entry lev = do {
 
   (* make goto table *)
   let goto_table =
-    Array.init (item_set_cnt + 1) (fun _ -> Array.create nb_nterms (-1))
+    Array.init blr.nb_items (fun _ -> Array.create nb_nterms (-1))
   in
   List.iter
     (fun (item_set_cnt, symb_cnt_assoc) ->
@@ -873,7 +894,7 @@ value lr0 entry lev = do {
             [ GS_term s -> ()
             | GS_nterm i -> line.(i) := n ])
          symb_cnt_assoc)
-    shift_assoc;
+    blr.shift_assoc;
   IFDEF VERBOSE THEN do {
     Printf.eprintf "\ngoto table\n\n";
     if Array.length goto_table > 20 then
@@ -894,7 +915,7 @@ value lr0 entry lev = do {
   (* make action table *)
   (* column size = number of terminals *)
   let action_table =
-    Array.init (item_set_cnt + 1) (fun _ -> Array.create nb_terms ActErr)
+    Array.init blr.nb_items (fun _ -> Array.create nb_terms ActErr)
   in
   (* the columns for the terminals are copied to the action table as shift
      actions *)
@@ -907,7 +928,7 @@ value lr0 entry lev = do {
             [ GS_term i -> line.(i) := ActShift n
             | GS_nterm s -> () ])
          symb_cnt_assoc)
-    shift_assoc;
+    blr.shift_assoc;
   (* for every item set that contains S → w •, an 'acc' is added in the
      column of the '$' terminal (end of input) *)
   let eoi_pos = 0 in
@@ -919,7 +940,7 @@ value lr0 entry lev = do {
               action_table.(n).(eoi_pos) := ActAcc
             else ())
          item_set)
-    item_set_ht;
+    blr.item_set_ht;
   (* if an item set i contains an item of the form A → w • and A → w is
      rule m with m > 0 then the row for state i in the action table is
      completely filled with the reduce action rm. *)
@@ -940,9 +961,9 @@ value lr0 entry lev = do {
                         "State %d: conflict reduce/reduce rules %d and %d\n" i
                         m1 m;
                       Printf.eprintf "  reduce with rule ";
-                      eprint_rule term_n nterm_n m1 rules.(m1);
+                      eprint_rule term_n nterm_n m1 blr.rules.(m1);
                       Printf.eprintf "  reduce with rule ";
-                      eprint_rule term_n nterm_n m rules.(m);
+                      eprint_rule term_n nterm_n m blr.rules.(m);
                       flush stderr;
                     }
                     ELSE () END;
@@ -960,7 +981,7 @@ value lr0 entry lev = do {
                             Printf.eprintf "  shift with terminal %s\n"
                               (term_n j);
                             Printf.eprintf "  reduce with rule ";
-                            eprint_rule term_n nterm_n m rules.(m);
+                            eprint_rule term_n nterm_n m blr.rules.(m);
                             flush stderr;
                           }
                           ELSE () END;
@@ -970,7 +991,7 @@ value lr0 entry lev = do {
               else ()
             else ())
          item_set)
-    item_set_ht;
+    blr.item_set_ht;
   IFDEF VERBOSE THEN do {
     Printf.eprintf "\naction table\n\n";
     if Array.length action_table > 20 then
