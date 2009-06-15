@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: opretty.html,v 1.10 2007/07/25 13:08:43 deraugla Exp $ -->
+  <!-- $Id: opretty.html,v 1.11 2007/07/28 16:20:24 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Pretty Printing ocaml programs</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -58,7 +58,8 @@ new ones. The main ones are:</p>
 
 </ul>
 
-<p>We present here how this system work inside these files.</p>
+<p>We present here how this system work inside these files. First, the
+  general principles. Second, more details of the implementation.</p>
 
 <h2>Principles</h2>
 
@@ -83,7 +84,7 @@ parentheses are necessary : <code>pc.dang</code></li>
 <p>A typical pretty printing function calls the
 function <code>horiz_vertic</code> of the library
 module <a href="pretty.html">Pretty</a>. This function takes two
-functions as paramter:</p>
+functions as parameter:</p>
 
 <ul>
 
@@ -334,6 +335,16 @@ be extended, e.g.</p>
     | &lt;:expr&lt; .... &gt;&gt; -> ... 
     | ... ];
 </pre>
+
+<h2>Details</h2>
+
+<h3>The Pcaml.Printers module</h3>
+
+<p>... to be written ...</p>
+
+<h3>The Prtools module</h3>
+
+<p>... to be written ...</p>
 
 <div class="trailer">
 </div>
