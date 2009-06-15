@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: library.html,v 1.31 2007/10/13 00:35:46 deraugla Exp $ -->
+  <!-- $Id: library.html,v 1.32 2007/10/20 02:09:53 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Library</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -28,7 +28,7 @@
 <h2>Ploc module</h2>
 
 <p>Building and combining locations. This module also contains some
-  pervasive type and function.</p>
+  pervasive types and functions.</p>
 
 <dl>
   <dt><tt>type t = 'abstract;</tt></dt>
@@ -78,12 +78,12 @@
 
 <dl>
   <dt><tt>value first_pos : t -> int;</tt></dt>
-  <dd>"<tt>Ploc.first_pos loc</tt>" returns the position of the begin
+  <dd>"<tt>Ploc.first_pos loc</tt>" returns the initial position
     of the location in number of characters since the beginning of the
     stream.</dd>
   <dt><tt>value last_pos : t -> int;</tt></dt>
-  <dd>"<tt>Ploc.last_pos loc</tt>" returns the position of the first
-    character not of the location in number of characters since the
+  <dd>"<tt>Ploc.last_pos loc</tt>" returns the final position plus one
+    of the location in number of characters since the
     beginning of the stream.</dd>
   <dt><tt>value line_nb : t -> int;</tt></dt>
   <dd>"<tt>Ploc.line_nb loc</tt>" returns the line number of the
@@ -179,8 +179,8 @@ type vala 'a =
     statement to represent terminals in entry rules.
   <ul>
     <li>The first string is the constructor name (must start with an
-      uppercase character). When it is empty, the second string is
-      supposed to be a keyword.</li>
+      uppercase character). When empty, the second string should
+      be a keyword.</li>
     <li>The second string is the constructor parameter. Empty if it
       has no parameter (corresponding to the 'wildcard' pattern).</li>
     <li>The way tokens patterns are interpreted to parse tokens is
@@ -220,15 +220,15 @@ type lexer 'te =
         tables.</li>
       <li>The field "<tt>tok_removing</tt>" is a function possibly
         called by the "<tt>DELETE_RULE</tt>" statement to warn the
-        lexer that this pattern (given as parameter) is no more used
+        lexer that this pattern (given as parameter) is no longer used
         in the grammar (the grammar system maintains a number of usages
         of all patterns and calls this function when this number falls
-        to zero). If it is a keyword, this allow the lexer to remove
+        to zero). If it is a keyword, this allows the lexer to remove
         it in its tables.</li>
       <li>The field "<tt>tok_match</tt>" is a function called by the
         Camlp5 grammar system to ask the lexer how the input tokens
-        have to be matched against the patterns. Warning: for
-        efficiency, this function has to be written as a function
+        should be matched against the patterns. Warning: for
+        efficiency, this function must be written as a function
         taking patterns as parameters and, for each pattern value,
         returning a function matching a token, <em>not</em> as a
         function with two parameters.</li>
@@ -286,7 +286,7 @@ type lexer 'te =
     Plexing.tok_text = Plexing.lexer_text}
 </pre>
 
-<p>Note that a better "<tt>tok_using</tt>" function should check the
+<p>Note that a better "<tt>tok_using</tt>" function would check the
   used tokens and raise "<tt>Plexing.Error</tt>" for incorrect
   ones. The other functions "<tt>tok_removing</tt>",
   "<tt>tok_match</tt>" and "<tt>tok_text</tt>" may have other
@@ -323,12 +323,12 @@ value make_stream_and_location :
 <dl>
   <dt><tt>value eval_char : string -> char;</tt></dt>
   <dt><tt>value eval_string : Ploc.t -> string -> string;</tt></dt>
-  <dd>Convert a char or a string token, where the backslashes had not
+  <dd>Convert a char or a string token, where the backslashes are not
     been interpreted into a real char or string; raise
-    "<tt>Failure</tt>" if bad backslash sequence found;
-    "<tt>Plexing.eval_char (Char.escaped c)</tt>" would returns
+    "<tt>Failure</tt>" if a bad backslash sequence is found;
+    "<tt>Plexing.eval_char (Char.escaped c)</tt>" returns
     "<tt>c</tt>" and "<tt>Plexing.eval_string (String.escaped s)</tt>"
-    would return "<tt>s</tt>".</dd>
+    returns "<tt>s</tt>".</dd>
 </dl>
 
 <dl>
@@ -409,7 +409,7 @@ value make_stream_and_location :
 </ul>
 
 <p>The associated token patterns in the EXTEND statement hold the same
-  names than the first string (constructor name) of the tokens
+  names as the first string (constructor name) of the tokens
   expressions above.</p>
 
 <p>Warning: the string associated with the "<tt>STRING</tt>"
@@ -457,9 +457,9 @@ value make_stream_and_location :
 
 <h2>Gramext module</h2>
 
-<p>This module is not supposed to be used by the casual user.</p>
+<p>This module is not intended to be used by the casual programmer.</p>
 
-<p>It shows in clear the implementations of grammars and entries
+<p>It shows, in clear, the implementations of grammars and entries
  types, the normal access being through the "<tt>Grammar</tt>" module
  where these types are abstract. It can be useful for programmers
  interested in scanning the contents of grammars and entries, for
@@ -508,10 +508,10 @@ type g_entry 'te =
     the abstract type "<tt>Grammar.Entry.e</tt>" and the type of
     entries in the Grammar functorial interface. Notice that these
     entry types have a type parameter which does not appear in the
-    "<tt>g_entry</tt>" type (the "<tt>'te</tt>" parameter is, like for
+    "<tt>g_entry</tt>" type (the "<tt>'te</tt>" parameter is, as for
     grammars above, the type of the tokens). This is due to the
     specific typing system of the EXTEND statement which sometimes
-    has to hide real types, the OCaml normal type system not being
+    must hide real types, the OCaml normal type system not being
     able to type Camlp5 grammars.
 </dd></dl>
 
@@ -623,8 +623,8 @@ and g_action = Obj.t
 </pre>
 
 <dl><dd>
-    The semantic action, represented by a type "<tt>Obj.t</tt>" because
-    of the specific typing of the EXTEND statement (the semantic action
+    The semantic action, represented by a type "<tt>Obj.t</tt>" due
+    to the specific typing of the EXTEND statement (the semantic action
     being able to be any function type, depending on the rule).
 </dd></dl>
 
@@ -646,7 +646,7 @@ and g_node 'te =
         symbol (field "<tt>node</tt>"), the rest of the rule tree
         (field "<tt>son</tt>"), and the following node, if this node
         fails (field "<tt>brother</tt>")</li>
-      <li>The constructor "<tt>LocAct</tt>" is the representation of a
+      <li>The constructor "<tt>LocAct</tt>" is the representation of an
         action, which is a function having all pattern variables of
         the rule as parameters and returning the rule semantic action.
         The list of actions in the constructor correspond to possible
@@ -656,8 +656,6 @@ and g_node 'te =
         nodes where the tree fails or is in syntax error.</li>
     </ul>
 </dd></dl>
-
-<p>... the following lines have to be structured ...</p>
 
 <pre style="border:0; margin-left: 1cm">
 type position =
@@ -703,8 +701,7 @@ type position =
 <dl>
   <dt><tt>value gcreate : Plexing.lexer (string * string) -> g;</tt></dt>
   <dd>
-    Create a new grammar, without keywords, using the lexer given as
-    parameter.
+    Create a new grammar, without keywords, using the given lexer.
   </dd>
 </dl>
 
@@ -817,7 +814,7 @@ module Unsafe :
 <dl><dd>
    Module for clearing grammars and entries. To be manipulated
    with care, because: 1) reinitializing a grammar destroys all tokens
-   and there may have problems with the associated lexer if there are
+   and there may be problems with the associated lexer if there are
    keywords; 2) clearing an entry does not destroy the tokens used
    only by itself.
    <ul>
@@ -849,7 +846,7 @@ value iter_entry :
     entry "<tt>e</tt>" and transitively all entries called by
     "<tt>e</tt>". The order in which the entries are passed to
     "<tt>f</tt>" is the order they appear in each entry. Each entry is
-    passed only once. *)
+    passed only once.
 </dd></dl>
 
 <dl>
@@ -859,13 +856,13 @@ value iter_entry :
     e2 (f e1 init)))</tt>", where "<tt>e1 .. eN</tt>" are "<tt>e</tt>"
     and transitively all entries called by "<tt>e</tt>".  The order in
     which the entries are passed to "<tt>f</tt>" is the order they
-    appear in each entry. Each entry is passed only once. *)
+    appear in each entry. Each entry is passed only once.
   </dd>
 </dl>
 
 <h3>functorial interface</h3>
 
-<p>Alternative for grammars use. Grammars are no more Ocaml values:
+<p>Alternative for grammar use. Grammars are not Ocaml values:
   there is no type for them. Modules generated preserve the rule "an
   entry cannot call an entry of another grammar" by normal OCaml
   typing.</p>
@@ -966,8 +963,7 @@ value f : array 'a -> array 'a -> (array bool * array bool);</tt></dt>
 </pre>
 
 <dl><dd>
-    <tt>Diff.f a1 a2</tt> returns a couple of two arrays of
-    booleans <tt>(d1, d2)</tt>.
+    <tt>Diff.f a1 a2</tt> returns a pair of boolean arrays <tt>(d1, d2)</tt>.
     <ul>
       <li><tt>d1</tt> has the same size as <tt>a1</tt>.</li>
       <li><tt>d2</tt> has the same size as <tt>a2</tt>.</li>
@@ -998,7 +994,7 @@ value f : array 'a -> array 'a -> (array bool * array bool);</tt></dt>
 <p>Extensible functions.</p>
 
 <p>This module implements pattern matching extensible functions which
-  works with the parsing kit "<tt>pa_extfun.cmo</tt>", the syntax of
+  work with the parsing kit "<tt>pa_extfun.cmo</tt>", the syntax of
   an extensible function being:</p>
 
 <pre>
@@ -1027,7 +1023,7 @@ value f : array 'a -> array 'a -> (array bool * array bool);</tt></dt>
 
 <h2>Eprinter module</h2>
 
-<p>This module allows to create printers, apply them and clear them. It
+<p>This module allows creation of printers, apply them and clear them. It
   is also internally used by the "<tt>EXTEND_PRINTER</tt>" statement.</p>
 
 <dl>
@@ -1042,8 +1038,8 @@ value f : array 'a -> array 'a -> (array bool * array bool);</tt></dt>
     Printing context.
     <ul>
       <li>"<tt>ind</tt>" : the current indendation</li>
-      <li>"<tt>bef</tt>" : what has to be printed before, in the same line</li>
-      <li>"<tt>aft</tt>" : what has to be printed after, in the same line</li>
+      <li>"<tt>bef</tt>" : what should be printed before, in the same line</li>
+      <li>"<tt>aft</tt>" : what should be printed after, in the same line</li>
       <li>"<tt>dang</tt>" : the dangling token to know whether parentheses
         are necessary</li>
     </ul>
@@ -1087,7 +1083,7 @@ value f : array 'a -> array 'a -> (array bool * array bool);</tt></dt>
 
 <h2>Fstream module</h2>
 
-<p>This module implement functional streams.</p>
+<p>This module implements functional streams.</p>
 
 <p>To be used with syntax "<tt>pa_fstream.cmo</tt>". The syntax is:</p>
 
@@ -1103,7 +1099,7 @@ value f : array 'a -> array 'a -> (array bool * array bool);</tt></dt>
 </pre>
 
 <p>They use limited backtrack, i.e if a rule fails, the next rule is
-  tested with the initial stream; limited because when in case of a
+  tested with the initial stream; limited because in the case of a
   rule with two consecutive symbols "<tt>a</tt>" and "<tt>b</tt>", if
   "<tt>b</tt>" fails, the rule fails: there is no try with the next
   rule of "<tt>a</tt>".</p>
@@ -1153,7 +1149,7 @@ value f : array 'a -> array 'a -> (array bool * array bool);</tt></dt>
     of the stream elements discarded.</dd>
   <dt><tt>value count_unfrozen : t 'a -> int;</tt></dt>
   <dd>Return the number of unfrozen elements in the beginning of the
-    stream; useful to determine the position of a parsing error (longuest
+    stream; useful to determine the position of a parsing error (longest
     path).</dd>
 </dl>
 
@@ -1195,15 +1191,15 @@ value f : array 'a -> array 'a -> (array bool * array bool);</tt></dt>
 
 <h2>Deprecated modules Stdpp and Token</h2>
 
-<p>The modules "<tt>Stdpp</tt>" and "<tt>Token</tt>" has been
+<p>The modules "<tt>Stdpp</tt>" and "<tt>Token</tt>" have been
   deprecated since version 5.00.  The module "<tt>Stdpp</tt>" was
-  renamed "<tt>Ploc</tt>" and most of its variables and types was
-  renamed too. The module "<tt>Token</tt>" was renamed
+  renamed "<tt>Ploc</tt>" and most of its variables and types were also
+  renamed. The module "<tt>Token</tt>" was renamed
   "<tt>Plexing</tt>"</p>
 
-<p>The backward compatibility is assumed. See the files
+<p>Backward compatibility is assured. See the files
   "<tt>stdpp.mli</tt>" and "<tt>token.mli</tt>" in the Camlp5
-  distribution to convert from old into new names if any. After
+  distribution to convert from old to new names, if any. After
   several versions or years, the modules "<tt>Stdpp</tt>" and
   "<tt>Token</tt>" will disappear from Camlp5.</p>
 
