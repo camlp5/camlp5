@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.122 2007/12/21 13:19:59 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.123 2007/12/21 13:45:41 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -577,41 +577,20 @@ value external_decl pc (n, t, sl) =
 
 value exception_decl pc (e, tl, id) =
   let ctyp_apply = Eprinter.apply_level pr_ctyp "apply" in
-  horiz_vertic
-    (fun () ->
-       sprintf "%sexception %s%s%s%s" pc.bef e
-         (if tl = [] then ""
-          else
-            sprintf " of %s"
-              (hlist2 ctyp_apply (star_before ctyp_apply)
-                 {(pc) with bef = ""; aft = ""} tl))
-         (if id = [] then ""
-          else sprintf " = %s" (mod_ident {(pc) with bef = ""; aft = ""} id))
-         pc.aft)
-    (fun () ->
-       let s1 =
-         sprintf "%sexception %s%s" pc.bef e (if tl = [] then "" else " of")
-       in
-       let s2 =
-         if tl = [] then ""
-         else
-           let tl = List.map (fun t -> (t, " *")) tl in
-           sprintf "\n%s"
-             (plist ctyp_apply 2
-                {(pc) with bef = tab (pc.ind + 2);
-                 aft = if id = [] then pc.aft else ""}
-                tl)
-       in
-       let s3 =
-         if id = [] then ""
-         else
-           sprintf "\n%s"
-             (mod_ident
-                {(pc) with ind = pc.ind + 2;
-                 bef = sprintf "%s= " (tab (pc.ind + 2)); aft = pc.aft}
-                id)
-       in
-       sprintf "%s%s%s" s1 s2 s3)
+  match id with
+  [ [] ->
+      match tl with
+      [ [] -> pprintf pc "exception %s" e
+      | tl ->
+          let tl = List.map (fun t -> (t, " *")) tl in
+          pprintf pc "exception %s of@;%p" e (plist ctyp_apply 2) tl ]
+  | id ->
+      match tl with
+      [ [] -> pprintf pc "exception %s =@;%p" e mod_ident id
+      | tl ->
+          let tl = List.map (fun t -> (t, " *")) tl in
+          pprintf pc "exception %s of@;%p =@;%p" e
+            (plist ctyp_apply 2) tl mod_ident id ] ]
 ;
 
 value str_module pref pc (m, me) =
