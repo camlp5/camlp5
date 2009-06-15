@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_fstream.ml,v 1.5 2007/11/23 03:55:32 deraugla Exp $ *)
+(* $Id: pa_fstream.ml,v 1.6 2007/11/28 10:01:57 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -129,16 +129,16 @@ value patt_expr_of_patt p =
   | _ -> (<:patt< () >>, <:expr< () >>) ]
 ;
 
-value bstream_pattern_component skont =
+value bstream_pattern_component =
   fun
   [ SpTrm loc p wo ->
-      let (p1, e1) = patt_expr_of_patt p in
+      let (p, e) = patt_expr_of_patt p in
       let e =
-        <:expr< Fstream.b_term (fun [ $p$ -> Some $e1$ | _ -> None ]) >>
+        <:expr< Fstream.b_term (fun [ $p$ -> Some $e$ | _ -> None ]) >>
       in
-      <:expr< Fstream.b_seq $e$ (fun $p1$ -> $skont$) >>
+      (p, e)
   | SpNtr loc p e ->
-      <:expr< Fstream.b_seq $e$ (fun $p$ -> $skont$) >>
+      (p, e)
   | SpStr loc p ->
       Ploc.raise loc (Stream.Error "not impl: stream_pattern_component") ]
 ;
@@ -147,16 +147,17 @@ value rec bstream_pattern loc (spcl, epo, e) =
   match spcl with
   [ [] ->
       let e =
-        let ek = <:expr< Fstream.b_nok >> in
-        let e = <:expr< Some ($e$, $lid:strm_n$, $ek$) >> in
+        let e = <:expr< Fstream.b_act $e$ $lid:strm_n$ >> in
         match epo with
         [ Some p -> <:expr< let $p$ = Fstream.count $lid:strm_n$ in $e$ >>
         | None -> e ]
       in
       <:expr< fun $lid:strm_n$ -> $e$ >>
   | [spc :: spcl] ->
+      let (p1, e1) = bstream_pattern_component spc in
       let skont = bstream_pattern loc (spcl, epo, e) in
-      bstream_pattern_component skont spc ]
+      let f = <:expr< fun $p1$ -> $skont$ >> in
+      <:expr< Fstream.b_seq $e1$ $f$ >> ]
 ;
 
 value bparser_cases loc spel =

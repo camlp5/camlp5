@@ -1,5 +1,5 @@
 (* camlp5r pa_fstream.cmo *)
-(* $Id: grammar.ml,v 1.69 2007/11/26 10:23:54 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.70 2007/11/28 10:01:57 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Gramext;
@@ -842,7 +842,7 @@ value btop_tree entry son strm =
       match btop_symb entry s with
       [ Some sy ->
           let r = Node {node = sy; brother = bro; son = son} in
-          Some (r, strm, Fstream.b_nok)
+          Fstream.b_act r strm
       | None ->
           None ]
   | LocAct _ _ | DeadEnd ->
@@ -1080,7 +1080,7 @@ and bparser_of_token entry tok =
             }
             else ()
           in
-          Some (Obj.repr r, strm, Fstream.b_nok)
+          Fstream.b_act (Obj.repr r) strm
         with
         [ Stream.Failure ->
             let _ =
@@ -1107,7 +1107,7 @@ and bparse_top_symb entry symb =
   | None -> bparser [] ]
 ;
 
-value bcount strm = Some (Fstream.count strm, strm, Fstream.b_nok);
+value bcount strm = Fstream.b_act (Fstream.count strm) strm;
 
 value rec bstart_parser_of_levels entry clevn =
   fun
@@ -1597,7 +1597,7 @@ module Entry =
                  [ Some (_, fstrm) -> loop fstrm (i - 1)
                  | None -> failwith "internal error in Entry.of_parser" ]
            in
-           Some (r, fstrm, Fstream.b_nok)
+           Fstream.b_act r fstrm
          with
          [ Stream.Failure -> None ]
        };

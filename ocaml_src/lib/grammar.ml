@@ -895,7 +895,7 @@ let btop_tree entry son strm =
       begin match btop_symb entry s with
         Some sy ->
           let r = Node {node = sy; brother = bro; son = son} in
-          Some (r, strm, Fstream.b_nok)
+          Fstream.b_act r strm
       | None -> None
       end
   | LocAct (_, _) | DeadEnd -> None
@@ -906,7 +906,7 @@ let brecover bparser_of_tree entry nlevn alevn bp a s son
   Fstream.b_seq (btop_tree entry son)
     (fun t ->
        Fstream.b_seq (bparser_of_tree entry nlevn alevn t)
-         (fun a strm__ -> Some (a, strm__, Fstream.b_nok)))
+         (fun a strm__ -> Fstream.b_act a strm__))
     strm__
 ;;
 
@@ -945,20 +945,18 @@ let rec bparser_of_tree entry nlevn alevn =
     DeadEnd -> (fun (strm__ : _ Fstream.t) -> None)
   | LocAct (act, _) ->
       (fun (strm__ : _ Fstream.t) ->
-         (fun strm__ -> Some (act, strm__, Fstream.b_nok)) strm__)
+         (fun strm__ -> Fstream.b_act act strm__) strm__)
   | Node {node = Sself; son = LocAct (act, _); brother = DeadEnd} ->
       (fun (strm__ : _ Fstream.t) ->
          Fstream.b_seq (entry.bstart alevn)
-           (fun a strm__ -> Some (app act a, strm__, Fstream.b_nok)) strm__)
+           (fun a strm__ -> Fstream.b_act (app act a) strm__) strm__)
   | Node {node = Sself; son = LocAct (act, _); brother = bro} ->
       let p2 = bparser_of_tree entry nlevn alevn bro in
       (fun (strm__ : _ Fstream.t) ->
          Fstream.b_or
            (Fstream.b_seq (entry.bstart alevn)
-              (fun a strm__ -> Some (app act a, strm__, Fstream.b_nok)))
-           (Fstream.b_seq p2
-              (fun a strm__ -> Some (a, strm__, Fstream.b_nok)))
-           strm__)
+              (fun a strm__ -> Fstream.b_act (app act a) strm__))
+           (Fstream.b_seq p2 (fun a strm__ -> Fstream.b_act a strm__)) strm__)
   | Node {node = s; son = son; brother = DeadEnd} ->
       let ps = bparser_of_symbol entry nlevn s in
       let p1 = bparser_of_tree entry nlevn alevn son in
@@ -968,7 +966,7 @@ let rec bparser_of_tree entry nlevn alevn =
          Fstream.b_seq ps
            (fun a ->
               Fstream.b_seq (p1 bp a)
-                (fun act strm__ -> Some (app act a, strm__, Fstream.b_nok)))
+                (fun act strm__ -> Fstream.b_act (app act a) strm__))
            strm__)
   | Node {node = s; son = son; brother = bro} ->
       let ps = bparser_of_symbol entry nlevn s in
@@ -981,15 +979,12 @@ let rec bparser_of_tree entry nlevn alevn =
           (Fstream.b_seq ps
              (fun a ->
                 Fstream.b_seq (p1 bp a)
-                  (fun act strm__ ->
-                     Some (app act a, strm__, Fstream.b_nok))))
-          (Fstream.b_seq p2 (fun a strm__ -> Some (a, strm__, Fstream.b_nok)))
-          strm__
+                  (fun act strm__ -> Fstream.b_act (app act a) strm__)))
+          (Fstream.b_seq p2 (fun a strm__ -> Fstream.b_act a strm__)) strm__
 and bparser_cont p1 entry nlevn alevn s son bp a (strm__ : _ Fstream.t) =
-  Fstream.b_or
-    (Fstream.b_seq p1 (fun a strm__ -> Some (a, strm__, Fstream.b_nok)))
+  Fstream.b_or (Fstream.b_seq p1 (fun a strm__ -> Fstream.b_act a strm__))
     (Fstream.b_seq (brecover bparser_of_tree entry nlevn alevn bp a s son)
-       (fun a strm__ -> Some (a, strm__, Fstream.b_nok)))
+       (fun a strm__ -> Fstream.b_act a strm__))
     strm__
 and bparser_of_symbol entry nlevn =
   function
@@ -1008,13 +1003,12 @@ and bparser_of_symbol entry nlevn =
           (Fstream.b_seq (ps al)
              (fun al ->
                 Fstream.b_seq (loop al)
-                  (fun a strm__ -> Some (a, strm__, Fstream.b_nok))))
-          (fun strm__ -> Some (al, strm__, Fstream.b_nok)) strm__
+                  (fun a strm__ -> Fstream.b_act a strm__)))
+          (fun strm__ -> Fstream.b_act al strm__) strm__
       in
       (fun (strm__ : _ Fstream.t) ->
          Fstream.b_seq (loop [])
-           (fun a strm__ ->
-              Some (Obj.repr (List.rev a), strm__, Fstream.b_nok))
+           (fun a strm__ -> Fstream.b_act (Obj.repr (List.rev a)) strm__)
            strm__)
   | Slist0sep (symb, sep) ->
       let ps = bcall_and_push (bparser_of_symbol entry nlevn symb) in
@@ -1026,8 +1020,8 @@ and bparser_of_symbol entry nlevn =
                 Fstream.b_seq (ps al)
                   (fun al ->
                      Fstream.b_seq (kont al)
-                       (fun a strm__ -> Some (a, strm__, Fstream.b_nok)))))
-          (fun strm__ -> Some (al, strm__, Fstream.b_nok)) strm__
+                       (fun a strm__ -> Fstream.b_act a strm__))))
+          (fun strm__ -> Fstream.b_act al strm__) strm__
       in
       (fun (strm__ : _ Fstream.t) ->
          Fstream.b_or
@@ -1035,8 +1029,8 @@ and bparser_of_symbol entry nlevn =
               (fun al ->
                  Fstream.b_seq (kont al)
                    (fun a strm__ ->
-                      Some (Obj.repr (List.rev a), strm__, Fstream.b_nok))))
-           (fun strm__ -> Some (Obj.repr [], strm__, Fstream.b_nok)) strm__)
+                      Fstream.b_act (Obj.repr (List.rev a)) strm__)))
+           (fun strm__ -> Fstream.b_act (Obj.repr []) strm__) strm__)
   | Slist1 s ->
       let ps = bcall_and_push (bparser_of_symbol entry nlevn s) in
       let rec loop al (strm__ : _ Fstream.t) =
@@ -1044,15 +1038,15 @@ and bparser_of_symbol entry nlevn =
           (Fstream.b_seq (ps al)
              (fun al ->
                 Fstream.b_seq (loop al)
-                  (fun a strm__ -> Some (a, strm__, Fstream.b_nok))))
-          (fun strm__ -> Some (al, strm__, Fstream.b_nok)) strm__
+                  (fun a strm__ -> Fstream.b_act a strm__)))
+          (fun strm__ -> Fstream.b_act al strm__) strm__
       in
       (fun (strm__ : _ Fstream.t) ->
          Fstream.b_seq (ps [])
            (fun al ->
               Fstream.b_seq (loop al)
                 (fun a strm__ ->
-                   Some (Obj.repr (List.rev a), strm__, Fstream.b_nok)))
+                   Fstream.b_act (Obj.repr (List.rev a)) strm__))
            strm__)
   | Slist1sep (symb, sep) ->
       let ps = bcall_and_push (bparser_of_symbol entry nlevn symb) in
@@ -1065,39 +1059,36 @@ and bparser_of_symbol entry nlevn =
                   (fun (strm__ : _ Fstream.t) ->
                      Fstream.b_or
                        (Fstream.b_seq (ps al)
-                          (fun a strm__ -> Some (a, strm__, Fstream.b_nok)))
+                          (fun a strm__ -> Fstream.b_act a strm__))
                        (Fstream.b_seq (bparse_top_symb entry symb)
-                          (fun a strm__ ->
-                             Some (a :: al, strm__, Fstream.b_nok)))
+                          (fun a strm__ -> Fstream.b_act (a :: al) strm__))
                        strm__)
                   (fun al ->
                      Fstream.b_seq (kont al)
-                       (fun a strm__ -> Some (a, strm__, Fstream.b_nok)))))
-          (fun strm__ -> Some (al, strm__, Fstream.b_nok)) strm__
+                       (fun a strm__ -> Fstream.b_act a strm__))))
+          (fun strm__ -> Fstream.b_act al strm__) strm__
       in
       (fun (strm__ : _ Fstream.t) ->
          Fstream.b_seq (ps [])
            (fun al ->
               Fstream.b_seq (kont al)
                 (fun a strm__ ->
-                   Some (Obj.repr (List.rev a), strm__, Fstream.b_nok)))
+                   Fstream.b_act (Obj.repr (List.rev a)) strm__))
            strm__)
   | Sopt s ->
       let ps = bparser_of_symbol entry nlevn s in
       (fun (strm__ : _ Fstream.t) ->
          Fstream.b_or
            (Fstream.b_seq ps
-              (fun a strm__ ->
-                 Some (Obj.repr (Some a), strm__, Fstream.b_nok)))
-           (fun strm__ -> Some (Obj.repr None, strm__, Fstream.b_nok)) strm__)
+              (fun a strm__ -> Fstream.b_act (Obj.repr (Some a)) strm__))
+           (fun strm__ -> Fstream.b_act (Obj.repr None) strm__) strm__)
   | Sflag s ->
       let ps = bparser_of_symbol entry nlevn s in
       (fun (strm__ : _ Fstream.t) ->
          Fstream.b_or
            (Fstream.b_seq ps
-              (fun _ strm__ -> Some (Obj.repr true, strm__, Fstream.b_nok)))
-           (fun strm__ -> Some (Obj.repr false, strm__, Fstream.b_nok))
-           strm__)
+              (fun _ strm__ -> Fstream.b_act (Obj.repr true) strm__))
+           (fun strm__ -> Fstream.b_act (Obj.repr false) strm__) strm__)
   | Stree t ->
       let pt = bparser_of_tree entry 1 0 t in
       (fun (strm__ : _ Fstream.t) ->
@@ -1105,9 +1096,8 @@ and bparser_of_symbol entry nlevn =
          Fstream.b_seq pt
            (fun a strm__ ->
               let ep = Fstream.count strm__ in
-              Some
-                ((let loc = loc_of_token_interval bp ep in app a loc), strm__,
-                 Fstream.b_nok))
+              Fstream.b_act
+                (let loc = loc_of_token_interval bp ep in app a loc) strm__)
            strm__)
   | Svala (al, s) ->
       let pa =
@@ -1135,9 +1125,9 @@ and bparser_of_symbol entry nlevn =
                   (fun (strm__ : _ Fstream.t) ->
                      Fstream.b_or
                        (Fstream.b_seq pa
-                          (fun a strm__ -> Some (a, strm__, Fstream.b_nok)))
+                          (fun a strm__ -> Fstream.b_act a strm__))
                        (Fstream.b_seq pal
-                          (fun a strm__ -> Some (a, strm__, Fstream.b_nok)))
+                          (fun a strm__ -> Fstream.b_act a strm__))
                        strm__)
               | [] -> fun (strm__ : _ Fstream.t) -> None
             in
@@ -1148,29 +1138,28 @@ and bparser_of_symbol entry nlevn =
          Fstream.b_or
            (Fstream.b_seq pa
               (fun a strm__ ->
-                 Some
-                   (Obj.repr (Ploc.VaAnt (Obj.magic a : string)), strm__,
-                    Fstream.b_nok)))
+                 Fstream.b_act (Obj.repr (Ploc.VaAnt (Obj.magic a : string)))
+                   strm__))
            (Fstream.b_seq ps
               (fun a strm__ ->
-                 Some (Obj.repr (Ploc.VaVal a), strm__, Fstream.b_nok)))
+                 Fstream.b_act (Obj.repr (Ploc.VaVal a)) strm__))
            strm__)
   | Snterm e ->
       (fun (strm__ : _ Fstream.t) ->
-         Fstream.b_seq (e.bstart 0)
-           (fun a strm__ -> Some (a, strm__, Fstream.b_nok)) strm__)
+         Fstream.b_seq (e.bstart 0) (fun a strm__ -> Fstream.b_act a strm__)
+           strm__)
   | Snterml (e, l) ->
       (fun (strm__ : _ Fstream.t) ->
          Fstream.b_seq (e.bstart (level_number e l))
-           (fun a strm__ -> Some (a, strm__, Fstream.b_nok)) strm__)
+           (fun a strm__ -> Fstream.b_act a strm__) strm__)
   | Sself ->
       (fun (strm__ : _ Fstream.t) ->
          Fstream.b_seq (entry.bstart 0)
-           (fun a strm__ -> Some (a, strm__, Fstream.b_nok)) strm__)
+           (fun a strm__ -> Fstream.b_act a strm__) strm__)
   | Snext ->
       (fun (strm__ : _ Fstream.t) ->
          Fstream.b_seq (entry.bstart nlevn)
-           (fun a strm__ -> Some (a, strm__, Fstream.b_nok)) strm__)
+           (fun a strm__ -> Fstream.b_act a strm__) strm__)
   | Stoken tok -> bparser_of_token entry tok
 and bparser_of_token entry tok =
   let f = entry.egram.glexer.Plexing.tok_match tok in
@@ -1214,7 +1203,7 @@ and bparser_of_token entry tok =
             if !backtrack_trace then
               begin Printf.eprintf " yes!!!\n"; flush stderr end
           in
-          Some (Obj.repr r, strm, Fstream.b_nok)
+          Fstream.b_act (Obj.repr r) strm
         with Stream.Failure ->
           let _ =
             if !backtrack_trace then
@@ -1238,7 +1227,7 @@ and bparse_top_symb entry symb =
   | None -> fun (strm__ : _ Fstream.t) -> None
 ;;
 
-let bcount strm = Some (Fstream.count strm, strm, Fstream.b_nok);;
+let bcount strm = Fstream.b_act (Fstream.count strm) strm;;
 
 let rec bstart_parser_of_levels entry clevn =
   function
@@ -1266,8 +1255,7 @@ let rec bstart_parser_of_levels entry clevn =
                            Fstream.b_seq
                              (entry.bcontinue levn bp
                                 (app act (loc_of_token_interval bp ep)))
-                             (fun a strm__ ->
-                                Some (a, strm__, Fstream.b_nok))))
+                             (fun a strm__ -> Fstream.b_act a strm__)))
                    strm__)
           | _ ->
               fun levn strm ->
@@ -1283,10 +1271,9 @@ let rec bstart_parser_of_levels entry clevn =
                                Fstream.b_seq
                                  (entry.bcontinue levn bp
                                     (app act (loc_of_token_interval bp ep)))
-                                 (fun a strm__ ->
-                                    Some (a, strm__, Fstream.b_nok)))))
+                                 (fun a strm__ -> Fstream.b_act a strm__))))
                     (Fstream.b_seq (p1 levn)
-                       (fun a strm__ -> Some (a, strm__, Fstream.b_nok)))
+                       (fun a strm__ -> Fstream.b_act a strm__))
                     strm__
 ;;
 
@@ -1310,7 +1297,7 @@ let rec bcontinue_parser_of_levels entry clevn =
               let (strm__ : _ Fstream.t) = strm in
               Fstream.b_or
                 (Fstream.b_seq (p1 levn bp a)
-                   (fun a strm__ -> Some (a, strm__, Fstream.b_nok)))
+                   (fun a strm__ -> Fstream.b_act a strm__))
                 (Fstream.b_seq p2
                    (fun act ->
                       Fstream.b_seq bcount
@@ -1318,8 +1305,7 @@ let rec bcontinue_parser_of_levels entry clevn =
                            Fstream.b_seq
                              (entry.bcontinue levn bp
                                 (app act a (loc_of_token_interval bp ep)))
-                             (fun a strm__ ->
-                                Some (a, strm__, Fstream.b_nok)))))
+                             (fun a strm__ -> Fstream.b_act a strm__))))
                 strm__
 ;;
 
@@ -1337,8 +1323,8 @@ let bcontinue_parser_of_entry entry =
       (fun levn bp a (strm__ : _ Fstream.t) ->
          Fstream.b_or
            (Fstream.b_seq (p levn bp a)
-              (fun a strm__ -> Some (a, strm__, Fstream.b_nok)))
-           (fun strm__ -> Some (a, strm__, Fstream.b_nok)) strm__)
+              (fun a strm__ -> Fstream.b_act a strm__))
+           (fun strm__ -> Fstream.b_act a strm__) strm__)
   | Dparser p -> fun levn bp a (strm__ : _ Fstream.t) -> None
 ;;
 
@@ -1699,7 +1685,7 @@ module Entry =
                 in
                 loop fstrm (Stream.count ts)
               in
-              Some (r, fstrm, Fstream.b_nok)
+              Fstream.b_act r fstrm
             with Stream.Failure -> None);
        bcontinue = (fun _ _ _ (strm__ : _ Fstream.t) -> None);
        edesc = Dparser (Obj.magic p : te Stream.t -> Obj.t)}

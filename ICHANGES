@@ -4,6 +4,8 @@ Internal, very small, undocumented, or invisible changes
 Camlp5 Version 5.05:
 ---------------------
 
+* [28 Nov 07] Small change in interface Fstream for backtracking parsers.
+
 Camlp5 Version 5.04:
 ---------------------
 

@@ -92,4 +92,4 @@ val flazy : (unit -> 'a data) -> 'a t;;
 val b_seq : ('a, 'b) bp -> ('b -> ('a, 'c) bp) -> ('a, 'c) bp;;
 val b_or : ('a, 'b) bp -> ('a, 'b) bp -> ('a, 'b) bp;;
 val b_term : ('a -> 'b option) -> ('a, 'b) bp;;
-val b_nok : (_, _) kont;;
+val b_act : 'b -> ('a, 'b) bp;;

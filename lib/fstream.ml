@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: fstream.ml,v 1.9 2007/11/23 03:55:32 deraugla Exp $ *)
+(* $Id: fstream.ml,v 1.10 2007/11/28 10:01:57 deraugla Exp $ *)
 (* Copyright 2007 INRIA *)
 
 type t 'a = { count : int; data : Lazy.t (data 'a) }
@@ -119,4 +119,4 @@ value b_term f strm =
   | None -> None ]
 ;
 
-value b_nok = K (fun _ -> None);
+value b_act a strm = Some (a, strm, K (fun _ -> None));

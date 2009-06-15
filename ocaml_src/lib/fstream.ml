@@ -133,4 +133,4 @@ let b_term f strm =
   | None -> None
 ;;
 
-let b_nok = K (fun _ -> None);;
+let b_act a strm = Some (a, strm, K (fun _ -> None));;
