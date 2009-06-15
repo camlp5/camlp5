@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.9 2007/07/15 07:46:30 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.10 2007/07/15 10:33:42 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -92,11 +92,11 @@ is loaded. Its syntax is:</p>
           expression ::= extend
               extend ::= "EXTEND" extend-body "END"
          extend-body ::= global-opt entries
-          global-opt ::= "GLOBAL" ":" names ";"
+          global-opt ::= "GLOBAL" ":" entry-names ";"
                        | &lt;nothing&gt;
-             entries ::= entry entries
-                       | entry
-               entry ::= name ":" position-opt "[" levels "]"
+         entry-names ::= entry-name entry-names
+                       | entry-name
+               entry ::= entry-name ":" position-opt "[" levels "]"
         position-opt ::= "FIRST"
                        | "LAST"
                        | "BEFORE" label
@@ -122,19 +122,20 @@ is loaded. Its syntax is:</p>
                        | psymbol
              psymbol ::= symbol
                        | pattern "=" symbol
-              symbol ::= "LIST0" symbol
+              symbol ::= keyword
+                       | entry-name
+                       | entry-name "LEVEL" label
+                       | "SELF"
+                       | "NEXT"
+                       | "LIST0" symbol
                        | "LIST0" symbol "SEP" symbol
                        | "LIST1" symbol
                        | "LIST1" symbol "SEP" symbol
                        | "OPT" symbol
-                       | "SELF"
-                       | "NEXT"
-                       | string
-                       | name
-                       | name "LEVEL" label
                        | "(" symbol ")"
+             keyword ::= string
                label ::= string
-                name ::= qualid
+          entry-name ::= qualid
               qualid ::= qualid "." qualid
                        | uident
                        | lident
@@ -255,10 +256,88 @@ can be:</p>
   <li>NONA for no associativity.</li>
 </ul>
 
+<h4>Rules</h4>
+
 <p>At last, the grammar <em>rule</em> list appear. The rules are
 separated by vertical bars, the whole list being brackets.</p>
 
-<h4>Rules</h4>
+<p>A rule looks like a match case in the "<tt>match</tt>" statement or
+a parser case in the "<tt>parser</tt>" statement: a list of psymbols
+(see next paragraph) separated by semicolons, followed by a right
+arrow and an expression, the semantic action. Actually, the right
+arrow and expression are optional: in this case, it is equivalent to
+an expression which would be the unit "<tt>()</tt>" constructor.</p>
+
+<p>A psymbol is either a pattern, followed with the equal sign and a
+symbol, or by a symbol alone. It corresponds to a test of this symbol,
+whose value is bound to the pattern if any.</p>
+
+<h4>Symbols</h4>
+
+<p>A symbol is either:</p>
+
+<ul>
+  <li>a keyword (a string): the input must match this keyword,</li>
+  <li>an entry name, which correspond to a call to this entry,</li>
+  <li>an entry name followed by the identifier "<tt>LEVEL</tt>" and a
+    level label, which correspond to the call to this entry at that
+    level,</li>
+  <li>the identifier "<tt>SELF</tt>" which is a recursive call to the
+    present entry, according to the associativity (i.e. it may be a
+    call at the current level, to the next level, or to the top level
+    of the entry): "<tt>SELF</tt>" is equivalent to the name of the
+    entry itself,</li>
+  <li>the identifier "<tt>NEXT</tt>", which is a call to the next level
+    of the current entry,</li>
+  <li>a meta symbol (see further),</li>
+  <li>a symbol between parentheses.</li>
+</ul>
+
+<p>The syntactic analysis follow the list of symbols. If it fails,
+depending on the first items of the rule (see the section about the
+kind of grammars recognized (<em>to be written</em>)):</p>
+
+<ul>
+  <li>the parsing may fail by raising the exception
+    "<tt>Stream.Error</tt>"</li>
+  <li>the parsing may continue with the next rule.</li>
+</ul>
+
+<h4>Rules insertion</h4>
+
+<p>Remember that "<tt>EXTEND</tt>" is a statement, not a declaration:
+the rules are added in the entries at run time. Each rule is
+internally inserted in a tree, allowing the left factorization of the
+rule. For example, if two rules have as list of symbols:</p>
+
+<pre>
+"if"; e1 = expr; "then"; e2 = expr
+"if"; e1 = expr; "then"; e2 = expr; "else"; e3 = expr
+</pre>
+
+<p>the rules are inserted in a tree and the result look like:<p>
+
+<pre>
+"if"
+   expr
+     "then"
+       expr
+         "else"
+           expr
+         &lt;nothing&gt;
+</pre>
+
+<p>This tree is built as long as rules are inserted. When used, by
+applying the function "<tt>Grammar.Entry.parse</tt>" to the current
+entry, the input is matched with that tree, starting from the tree
+root, descending on it as long as the parsing advances.</p>
+
+<p>There is a different tree by entry level.</p>
+
+<h4>Meta symbols</h4>
+
+<p>Extra symbols exist, allowing to manipulate lists or optional
+symbols. They are:</p>
 
 <p>... to be completed ...</p>
 
