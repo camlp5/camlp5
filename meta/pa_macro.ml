@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.29 2007/09/10 13:39:52 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.30 2007/09/12 14:12:30 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -108,7 +108,7 @@ value oversion = do {
 
 value defined =
   ref
-    [("CAMLP5", MvNone); ("CAMLP5_4_02", MvNone);
+    [("CAMLP5", MvNone); ("CAMLP5_4_02", MvNone); ("CAMLP5_4_09", MvNone);
      ("OCAML_" ^ oversion, MvNone)]
 ;
 
@@ -118,6 +118,10 @@ value is_defined i =
 ;
 
 value print_defined () = do {
+  let deflist =
+    if Pcaml.strict_mode.val then [("STRICT", MvNone) :: defined.val]
+    else defined.val
+  in
   List.iter
     (fun (d, v) -> do {
        print_string d;
@@ -127,7 +131,7 @@ value print_defined () = do {
        | MvNone -> () ];
        print_newline ()
      })
-    defined.val;
+    deflist;
   if Sys.interactive.val then () else exit 0
 };
 

@@ -107,7 +107,9 @@ let oversion =
 ;;
 
 let defined =
-  ref ["CAMLP5", MvNone; "CAMLP5_4_02", MvNone; "OCAML_" ^ oversion, MvNone]
+  ref
+    ["CAMLP5", MvNone; "CAMLP5_4_02", MvNone; "CAMLP5_4_09", MvNone;
+     "OCAML_" ^ oversion, MvNone]
 ;;
 
 let is_defined i =
@@ -115,6 +117,9 @@ let is_defined i =
 ;;
 
 let print_defined () =
+  let deflist =
+    if !(Pcaml.strict_mode) then ("STRICT", MvNone) :: !defined else !defined
+  in
   List.iter
     (fun (d, v) ->
        print_string d;
@@ -124,7 +129,7 @@ let print_defined () =
        | MvNone -> ()
        end;
        print_newline ())
-    !defined;
+    deflist;
   if !(Sys.interactive) then () else exit 0
 ;;
 

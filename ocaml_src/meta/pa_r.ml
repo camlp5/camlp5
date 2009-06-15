@@ -381,12 +381,7 @@ Grammar.extend
       [Gramext.Stoken ("ANTIQUOT_LOC", "")],
       Gramext.action
         (fun (s : string) (loc : Ploc.t) ->
-           (let _s =
-              Printf.sprintf "%d,%d::%s" (Ploc.first_pos loc)
-                (Ploc.last_pos loc) s
-            in
-            failwith "antiquot" :
-            'a_mod_ident))]];
+           (failwith "antiquot" : 'a_mod_ident))]];
     Grammar.Entry.obj (mod_binding : 'mod_binding Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("UIDENT", "");

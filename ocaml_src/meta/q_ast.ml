@@ -73,31 +73,6 @@ let get_anti_loc s =
   with Not_found | Failure _ -> None
 ;;
 
-(*
-(* upper bound of tags of all syntax tree nodes *)
-value anti_tag = 100;
-
-value make_anti loc t s = do {
-  let r = Obj.new_block anti_tag 3 in
-  Obj.set_field r 0 (Obj.repr (loc : Ploc.t));
-  Obj.set_field r 1 (Obj.repr (t : string));
-  Obj.set_field r 2 (Obj.repr (s : string));
-  Obj.magic r
-};
-
-value get_anti v =
-  if Obj.tag (Obj.repr v) = anti_tag && Obj.size (Obj.repr v) = 3 then
-    let loc : Ploc.t = Obj.magic (Obj.field (Obj.repr v) 0) in
-    let t : string = Obj.magic (Obj.field (Obj.repr v) 1) in
-    let s : string = Obj.magic (Obj.field (Obj.repr v) 2) in
-    Some (loc, t, s)
-  else None
-;
-*)
-
-let make_anti loc t s = failwith "not impl: make_anti";;
-let get_anti v = None;;
-
 module Meta =
   struct
     open MLast;;
@@ -105,6 +80,52 @@ module Meta =
     let ln () = MLast.ExLid (loc, !(Ploc.name));;
     let e_vala elem e = elem e;;
     let p_vala elem p = elem p;;
+    let e_xtr loc s =
+      match get_anti_loc s with
+        Some (loc, typ, str) ->
+          begin match typ with
+            "" ->
+              let (loc, r) = eval_anti Pcaml.expr_eoi loc "" str in
+              MLast.ExAnt (loc, r)
+          | "anti" ->
+              let (loc, r) = eval_anti Pcaml.expr_eoi loc "anti" str in
+              let r = MLast.ExAnt (loc, r) in
+              MLast.ExApp
+                (loc,
+                 MLast.ExApp
+                   (loc,
+                    MLast.ExAcc
+                      (loc, MLast.ExUid (loc, "MLast"),
+                       MLast.ExUid (loc, "ExAnt")),
+                    MLast.ExLid (loc, "loc")),
+                 r)
+          | _ -> assert false
+          end
+      | _ -> assert false
+    ;;
+    let p_xtr loc s =
+      match get_anti_loc s with
+        Some (loc, typ, str) ->
+          begin match typ with
+            "" ->
+              let (loc, r) = eval_anti Pcaml.patt_eoi loc "" str in
+              MLast.PaAnt (loc, r)
+          | "anti" ->
+              let (loc, r) = eval_anti Pcaml.patt_eoi loc "anti" str in
+              let r = MLast.PaAnt (loc, r) in
+              MLast.PaApp
+                (loc,
+                 MLast.PaApp
+                   (loc,
+                    MLast.PaAcc
+                      (loc, MLast.PaUid (loc, "MLast"),
+                       MLast.PaUid (loc, "PaAnt")),
+                    MLast.PaLid (loc, "loc")),
+                 r)
+          | _ -> assert false
+          end
+      | _ -> assert false
+    ;;
     let e_list elem el =
       let rec loop el =
         match el with
@@ -133,39 +154,18 @@ module Meta =
       | Some e -> MLast.ExApp (loc, MLast.ExUid (loc, "Some"), elem e)
     ;;
     let p_option elem oe =
-      match get_anti oe with
-        Some (loc, typ, str) ->
-          let (loc, r) = eval_anti Pcaml.patt_eoi loc typ str in
-          MLast.PaAnt (loc, r)
-      | None ->
-          match oe with
-            None -> MLast.PaUid (loc, "None")
-          | Some e -> MLast.PaApp (loc, MLast.PaUid (loc, "Some"), elem e)
+      match oe with
+        None -> MLast.PaUid (loc, "None")
+      | Some e -> MLast.PaApp (loc, MLast.PaUid (loc, "Some"), elem e)
     ;;
     let e_bool b =
-      match get_anti b with
-        Some (loc, typ, str) ->
-          let (loc, r) = eval_anti Pcaml.expr_eoi loc typ str in
-          MLast.ExAnt (loc, r)
-      | None ->
-          if b then MLast.ExUid (loc, "True") else MLast.ExUid (loc, "False")
+      if b then MLast.ExUid (loc, "True") else MLast.ExUid (loc, "False")
     ;;
     let p_bool b =
-      match get_anti b with
-        Some (loc, typ, str) ->
-          let (loc, r) = eval_anti Pcaml.patt_eoi loc typ str in
-          MLast.PaAnt (loc, r)
-      | None ->
-          if b then MLast.PaUid (loc, "True") else MLast.PaUid (loc, "False")
+      if b then MLast.PaUid (loc, "True") else MLast.PaUid (loc, "False")
     ;;
     let e_string s = MLast.ExStr (loc, s);;
-    let p_string s =
-      match get_anti s with
-        Some (loc, typ, str) ->
-          let (loc, r) = eval_anti Pcaml.patt_eoi loc typ str in
-          MLast.PaAnt (loc, r)
-      | None -> MLast.PaStr (loc, s)
-    ;;
+    let p_string s = MLast.PaStr (loc, s);;
     let e_ctyp t =
       let ln = ln () in
       let rec loop t =
@@ -1166,22 +1166,6 @@ Grammar.extend
 
 (* *)
 
-(*
-let mod_ident = Grammar.Entry.find Pcaml.str_item "mod_ident" in
-EXTEND
-  mod_ident: FIRST
-    [ [ s = ANTIQUOT_LOC "" -> Obj.repr s ] ]
-  ;
-END;
-
-value check_anti s kind =
-  if String.length s > String.length kind then
-    if String.sub s 0 (String.length kind + 1) = kind ^ ":" then s
-    else raise Stream.Failure
-  else raise Stream.Failure
-;
-*)
-
 let check_anti_loc s kind =
   try
     let i = String.index s ':' in
@@ -1226,86 +1210,64 @@ let check_anti_loc2 s =
   with Not_found | Failure _ -> raise Stream.Failure
 ;;
 
-let check_and_make_anti prm typ =
-  let (loc, str) = check_anti_loc prm typ in make_anti loc typ str
-;;
-
-(* Need adding in grammar.ml in Slist* cases:
-      let pa = parser_of_token entry ("LIST", "") in
-   and
-      [: a = pa :] -> a
-   in their parsers. Same for OPT and FLAG. *)
-
 let lex = Grammar.glexer Pcaml.gram in
 let tok_match = lex.Plexing.tok_match in
 lex.Plexing.tok_match <-
   function
     "ANTIQUOT_LOC", p_prm ->
       (function
-         "ANTIQUOT_LOC", prm -> snd (check_anti_loc prm p_prm)
+         "ANTIQUOT_LOC", prm ->
+           let kind = check_anti_loc2 prm in
+           if kind = p_prm then prm else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V INT", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
            let kind = check_anti_loc2 prm in
-           if kind = "aint" then "a" ^ prm
-           else if kind = "int" then "b" ^ prm
-           else raise Stream.Failure
+           if kind = "aint" || kind = "int" then prm else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V FLOAT", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
            let kind = check_anti_loc2 prm in
-           if kind = "aflo" then "a" ^ prm
-           else if kind = "flo" then "b" ^ prm
-           else raise Stream.Failure
+           if kind = "aflo" || kind = "flo" then prm else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V LIDENT", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
            let kind = check_anti_loc2 prm in
-           if kind = "alid" then "a" ^ prm
-           else if kind = "lid" then "b" ^ prm
-           else raise Stream.Failure
+           if kind = "alid" || kind = "lid" then prm else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V UIDENT", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
            let kind = check_anti_loc2 prm in
-           if kind = "auid" then "a" ^ prm
-           else if kind = "uid" then "b" ^ prm
-           else raise Stream.Failure
+           if kind = "auid" || kind = "uid" then prm else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V STRING", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
            let kind = check_anti_loc2 prm in
-           if kind = "astr" then "a" ^ prm
-           else if kind = "str" then "b" ^ prm
-           else raise Stream.Failure
+           if kind = "astr" || kind = "str" then prm else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V CHAR", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
            let kind = check_anti_loc2 prm in
-           if kind = "achr" then "a" ^ prm
-           else if kind = "chr" then "b" ^ prm
-           else raise Stream.Failure
+           if kind = "achr" || kind = "chr" then prm else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V LIST", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
            let kind = check_anti_loc2 prm in
-           if kind = "alist" then "a" ^ prm
-           else if kind = "list" then "b" ^ prm
+           if kind = "alist" || kind = "list" then prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V FLAG", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
            let kind = check_anti_loc2 prm in
-           if kind = "aflag" then "a" ^ prm
-           else if kind = "flag" then "b" ^ prm
+           if kind = "aflag" || kind = "flag" then prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | tok -> tok_match tok;;
