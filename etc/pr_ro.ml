@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.59 2007/12/12 13:15:53 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.60 2007/12/12 20:12:53 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -153,41 +153,25 @@ value variant_decl pc pv =
 ;
 
 value variant_decl_list char pc pvl =
-  if pvl = [] then sprintf "%s[ %c ]%s" pc.bef char pc.aft
+  if pvl = [] then pprintf pc "[ %c ]" char
   else
     horiz_vertic
       (fun () ->
-         hlist2 variant_decl (bar_before variant_decl)
-           {(pc) with bef = sprintf "%s[ %c " pc.bef char;
-            aft = sprintf " ]%s" pc.aft}
-           pvl)
+         pprintf pc "[ %c %p ]" char
+           (hlist2 variant_decl (bar_before variant_decl)) pvl)
       (fun () ->
-         let s1 = sprintf "%s[ %c" pc.bef char in
-         let s2 =
-           vlist2 variant_decl (bar_before variant_decl)
-             {(pc) with bef = tab (pc.ind + 2); aft = sprintf " ]%s" pc.aft}
-             pvl
-         in
-         sprintf "%s\n%s" s1 s2)
+         pprintf pc "[ %c@   %p ]" char
+           (vlist2 variant_decl (bar_before variant_decl)) pvl)
 ;
 
 value rec class_longident pc cl =
   match cl with
-  [ [] -> sprintf "%s%s" pc.bef pc.aft
-  | [c] -> sprintf "%s%s%s" pc.bef c pc.aft
-  | [c :: cl] ->
-      sprintf "%s%s.%s" pc.bef c (class_longident {(pc) with bef = ""} cl) ]
+  [ [] -> pprintf pc ""
+  | [c] -> pprintf pc "%s" c
+  | [c :: cl] -> pprintf pc "%s.%p" c class_longident cl ]
 ;
 
-value binding elem pc (p, e) =
-  horiz_vertic
-    (fun () ->
-       sprintf "%s %s%s" (patt {(pc) with aft = " ="} p)
-         (elem {(pc) with bef = ""; aft = ""} e) pc.aft)
-    (fun () ->
-       sprintf "%s\n%s" (patt {(pc) with aft = " ="} p)
-         (elem {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e))
-;
+value binding elem pc (p, e) = pprintf pc "%p =@;%p" patt p expr e;
 
 value field pc (s, t) =
   horiz_vertic
