@@ -1,26 +1,25 @@
-Since version 4.0
+Version 4.0
 
-  Once this version of Camlp5 installed, if your files do not compile, it
+  Once this version of camlp5 installed, if your files do not compile, it
   be due to the new type 'location' which is now abstract. In particular,
-  you can see it as first parameter of the exception 'Exc_located' (now
-  renamed 'Ploc.Exc' but name compatibility is assumed) raised by the
-  function 'Stdpp.raise_with_loc' (now renamed 'Ploc.raise'). If you
-  handled that exception and looked at the 'location' by considering it
-  is a couple of source positions ('int' or 'Lexing.position' depending
-  on the version of Camlp4 you had before), it does not work any more.
+  you can see it as first parameter of the exception 'Exc_located' raised
+  by the function 'Stdpp.raise_with_loc'. If you handled that exception
+  and looked at the 'location' by considering it is a couple of source
+  positions ('int' or 'Lexing.position' depending on the version of camlp5
+  you had before), it does not work any more.
 
-    Look at the functions defined in 'ploc.mli'.
+    Look at the functions defined in 'stdpp.mli'.
 
     To get the first and last positions of a location, use the functions
-  'Ploc.first_pos' and 'Ploc.last_pos'. They return integers, which are
+  'Stdpp.first_pos' and 'Stdpp.last_pos'. They return integers, which are
   positions in characters from the beginning of the file. But you can
-  also get the line number by the function 'Ploc.line_nb'. Consider also
-  using the function 'Ploc.encl'. See the other functions.
+  also get the line number by the function 'Stdpp.line_nb'. Consider also
+  using the function 'Stdpp.encl_loc'. See the other functions.
 
-    With Camlp5, when loading 'pa_macro.cmo', you get the identifier
-  'CAMLP5' defined. If you want to make your sources compatible with
-  several versions of Camlp4 or Camlp5, you can add, in <expressions>,
-  <patterns>, or toplevel definition (<structure items>), things like :
+    With this version of camlp5, when loading 'pa_macro.cmo', you get the
+  identifier 'CAMLP5' defined. If you want to make your sources compatible
+  with several versions of camlp5, you can add, in <expressions>, <patterns>,
+  or toplevel definition (<structure items>), things like :
 
       IFDEF CAMLP5 THEN
         <source compatible with this version of camlp5>
