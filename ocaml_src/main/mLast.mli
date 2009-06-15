@@ -13,6 +13,8 @@ type loc = Ploc.t;;
 
 (* *)
 
+type 'a v = 'a;;
+
 type ctyp =
     TyAcc of loc * ctyp * ctyp
   | TyAli of loc * ctyp * ctyp

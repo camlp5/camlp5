@@ -1,17 +1,11 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.56 2007/09/15 19:35:16 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.57 2007/09/16 03:59:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)
 
 open Printf;
-
-IFNDEF STRICT THEN
-  DEFINE_TYPE V t = t
-ELSE
-  DEFINE_TYPE V t = Ploc.vala t
-END;
 
 value string_of_obj_tag x =
   if Obj.is_block (Obj.repr x) then
@@ -34,10 +28,10 @@ module Type =
       | TyAny of loc
       | TyApp of loc and t and t
       | TyArr of loc and t and t
-      | TyLid of loc and V string
-      | TyQuo of loc and V (ref (option t))
-      | TyTup of loc and V (list t)
-      | TyUid of loc and V string ]
+      | TyLid of loc and MLast.v string
+      | TyQuo of loc and MLast.v (ref (option t))
+      | TyTup of loc and MLast.v (list t)
+      | TyUid of loc and MLast.v string ]
     ;
   end
 ;

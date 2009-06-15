@@ -1,12 +1,6 @@
-(* camlp5r pa_macro.cmo *)
-(* $Id: pcaml.mli,v 1.19 2007/09/15 19:15:19 deraugla Exp $ *)
+(* camlp5r *)
+(* $Id: pcaml.mli,v 1.20 2007/09/16 03:59:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
-
-IFNDEF STRICT THEN
-  DEFINE V t = t
-ELSE
-  DEFINE V t = Ploc.vala t
-END;
 
 (** Language grammar, entries and printers.
 
@@ -53,7 +47,7 @@ value type_declaration : Grammar.Entry.e MLast.type_decl;
 value match_case :
   Grammar.Entry.e (MLast.patt * option MLast.expr * MLast.expr);
 value constructor_declaration :
-  Grammar.Entry.e (MLast.loc * V string * V (list MLast.ctyp));
+  Grammar.Entry.e (MLast.loc * MLast.v string * MLast.v (list MLast.ctyp));
 value with_constr : Grammar.Entry.e MLast.with_constr;
 value poly_variant : Grammar.Entry.e MLast.poly_variant;
 value class_sig_item : Grammar.Entry.e MLast.class_sig_item;

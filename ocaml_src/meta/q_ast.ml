@@ -82,7 +82,7 @@ module Meta =
         val node_no_loc : string -> t list -> t;;
         val list : ('a -> t) -> 'a list -> t;;
         val option : ('a -> t) -> 'a option -> t;;
-        val vala : ('a -> t) -> 'a Ploc.vala -> t;;
+        val vala : ('a -> t) -> 'a MLast.v -> t;;
         val bool : bool -> t;;
         val string : string -> t;;
         val tuple : t list -> t;;

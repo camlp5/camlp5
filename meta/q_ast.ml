@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: q_ast.ml,v 1.78 2007/09/16 03:41:14 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.79 2007/09/16 03:59:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* AST quotations with works by running the language parser (and its possible
@@ -92,7 +92,7 @@ module Meta =
         value node_no_loc : string -> list t -> t;
         value list : ('a -> t) -> list 'a -> t;
         value option : ('a -> t) -> option 'a -> t;
-        value vala : ('a -> t) -> Ploc.vala 'a -> t;
+        value vala : ('a -> t) -> MLast.v 'a -> t;
         value bool : bool -> t;
         value string : string -> t;
         value tuple : list t -> t;
