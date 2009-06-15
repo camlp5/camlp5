@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.43 2007/07/05 11:37:21 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.44 2007/07/05 12:26:47 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -933,10 +933,11 @@ value expr_expr1 =
                    (hlist simple_patt {(pc) with bef = ""; aft = ""} pl)
                    (expr {(pc) with bef = ""; aft = ""} e1) op_end pc.aft)
               (fun () ->
-                 let (op_begin, pc_aft, op_end) =
+                 let (op_begin, pc_aft, pc_dang, op_end) =
                    if List.mem pc.dang ["|"; ";"] then
-                     ("begin ", "", sprintf "\n%send%s" (tab pc.ind) pc.aft)
-                   else ("", pc.aft, "")
+                     ("begin ", "", "",
+                      sprintf "\n%send%s" (tab pc.ind) pc.aft)
+                   else ("", pc.aft, pc.dang, "")
                  in
                  let fun_arrow k =
                    let pl = List.map (fun p -> (p, "")) pl in
@@ -948,8 +949,8 @@ value expr_expr1 =
                  let s1 = fun_arrow "" in
                  let s2 =
                    expr
-                     {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                      aft = pc_aft}
+                     {ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = pc_aft;
+                      dang = pc_dang}
                      e1
                  in
                  sprintf "%s\n%s%s" s1 s2 op_end)
@@ -2561,7 +2562,7 @@ Pcaml.add_option "-ss" (Arg.Set flag_semi_semi)
   "Print double semicolons (equivalent to -flag M).";
 
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.43 2007/07/05 11:37:21 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.44 2007/07/05 12:26:47 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
