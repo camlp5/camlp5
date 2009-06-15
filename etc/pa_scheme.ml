@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.27 2007/10/05 01:48:23 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.28 2007/10/05 12:32:31 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -25,21 +25,20 @@
    (((` (or '\n' '\r'))) ())
    (((` _) s) (skip_to_eol s))))
 
-(define no_ident ['(' ')' '[' ']' '{' '}' ' ' '\t' '\n' '\r' ';'])
+(define no_ident ['(' ')' '[' ']' '{' '}' ' ' '\t' '\n' '\r' ';' '.'])
 
 (definerec (ident len)
   (parser
-   (((` '.')) (values (Buff.get len) True))
    (((` x (not (List.mem x no_ident))) s) (ident (Buff.store len x) s))
-   (() (values (Buff.get len) False))))
+   (() (Buff.get len))))
 
-(define (identifier kwt (values s dot))
+(define (identifier kwt s)
   (let ((con
           (try (begin (: (Hashtbl.find kwt s) unit) "")
            (Not_found
             (match s.[0]
-             ((range 'A' 'Z') (if dot "UIDENTDOT" "UIDENT"))
-             (_ (if dot "LIDENTDOT" "LIDENT")))))))
+             ((range 'A' 'Z') "UIDENT")
+             (_ "LIDENT"))))))
      (values con s)))
 
 (definerec (string len)
@@ -122,8 +121,8 @@
         (Ploc.raise (Ploc.make_unlined (values (- ep 2) (- ep 1)))
          (Stream.Error "bad quote"))
         (let* ((len (Buff.store (Buff.store 0 ''') x))
-               ((values s dot) (ident len s)))
-          (values (if dot "LIDENTDOT" "LIDENT") s))))))
+               (s (ident len s)))
+          (values "LIDENT" s))))))
 
 (definerec (char len)
   (parser
@@ -136,40 +135,20 @@
     (values "CHAR" (Buff.get len)))
    (((` x) s) (char_or_quote_id x s))))
 
-; The system with LIDENTDOT and UIDENTDOT is not great (it would be
-; better to have a token DOT (actually SPACEDOT and DOT)) but it is
-; the only way (that I have found) to have a good behaviour in the
-; toplevel (not expecting tokens after a phrase). Drawbacks: 1/ to be
-; complete, we should have STRINGDOT, RIGHTPARENDOT, and so on 2/ the
-; parser rule with dot is right associative and we have to reverse
-; the resulting tree (using the function leftify).
-; This is a complicated issue: the behaviour of the OCaml toplevel
-; is strange, anyway. For example, even without Camlp5, The OCaml
-; toplevel accepts that:
-;     # let x = 32;; foo bar match let )
-
 (definerec*
   ((lexer kwt)
-     (parser
-      (((t (lexer0 kwt))
-       (_ no_dot)) t)))
-  (no_dot
-    (parser
-     (((` '.')) ep
-      (Ploc.raise (Ploc.make_unlined (values (- ep 1) ep))
-                  (Stream.Error "bad dot")))
-     (() ())))
-  ((lexer0 kwt)
     (parser bp
-     (((` (or '\t' '\n' '\r')) s) (lexer0 kwt s))
+     (((` (or '\t' '\r')) s) (lexer kwt s))
      (((` ' ') s) (after_space kwt s))
      (((` ';') (_ skip_to_eol) s) (lexer kwt s))
+     (((` '\n')) (values (values "NL" "") (values bp (+ bp 1))))
      (((` '(')) (values (values "" "(") (values bp (+ bp 1))))
-     (((` ')') s) ep (values (values "" (rparen s)) (values bp ep)))
+     (((` ')')) (values (values "" ")") (values bp (+ bp 1))))
      (((` '[')) (values (values "" "[") (values bp (+ bp 1))))
      (((` ']')) (values (values "" "]") (values bp (+ bp 1))))
      (((` '{')) (values (values "" "{") (values bp (+ bp 1))))
      (((` '}')) (values (values "" "}") (values bp (+ bp 1))))
+     (((` '.')) (values (values "DOT" "") (values bp (+ bp 1))))
      (((` '"') (s (string 0))) ep
       (values (values "STRING" s) (values bp ep)))
      (((` ''') (tok quote)) ep (values tok (values bp ep)))
@@ -182,31 +161,27 @@
      (((` (as (range '0' '9') c)) (tok (number (Buff.store 0 c)))) ep
       (values tok (values bp ep)))
      (((` (as (or '+' '*' '/') c)) (id (operator (Buff.store 0 c)))) ep
-      (values (identifier kwt (values id False)) (values bp ep)))
+      (values (identifier kwt id) (values bp ep)))
      (((` x) (id (ident (Buff.store 0 x)))) ep
       (values (identifier kwt id) (values bp ep)))
      (() (values (values "EOI" "") (values bp (+ bp 1))))))
-  (rparen
-   (parser
-    (((` '.')) ").")
-    (() ")")))
   ((after_space kwt)
     (parser
-     (((` '.')) ep (values (values "" ".") (values (- ep 1) ep)))
-     (((x (lexer0 kwt))) x)))
+     (((` '.')) ep (values (values "SPACEDOT" "") (values (- ep 1) ep)))
+     (((x (lexer kwt))) x)))
   (tilde
     (parser
-     (((` (as (range 'a' 'z') c)) ((values s dot) (ident (Buff.store 0 c))))
+     (((` (as (range 'a' 'z') c)) (s (ident (Buff.store 0 c))))
       (values "TILDEIDENT" s))
      (() (values "LIDENT" "~"))))
   (question
     (parser
-     (((` (as (range 'a' 'z') c)) ((values s dot) (ident (Buff.store 0 c))))
+     (((` (as (range 'a' 'z') c)) (s (ident (Buff.store 0 c))))
       (values "QUESTIONIDENT" s))
      (() (values "LIDENT" "?"))))
   ((minus kwt)
     (parser
-     (((` '.')) (identifier kwt (values "-." False)))
+     (((` '.')) (identifier kwt "-."))
      (((` (as (range '0' '9') c))
       (n (number (Buff.store (Buff.store 0 '-') c)))) n)
      (((id (ident (Buff.store 0 '-')))) (identifier kwt id))))
@@ -232,8 +207,8 @@
 
 (define (lexer_using kwt (values con prm))
   (match con
-   ((or "CHAR" "EOI" "INT" "FLOAT" "LIDENT" "LIDENTDOT" "QUESTIONIDENT"
-     "QUOT" "STRING" "TILDEIDENT" "UIDENT" "UIDENTDOT")
+   ((or "CHAR" "DOT" "EOI" "INT" "FLOAT" "LIDENT" "NL" "QUESTIONIDENT"
+     "QUOT" "SPACEDOT" "STRING" "TILDEIDENT" "UIDENT")
     ())
    ((or "ANTIQUOT" "ANTIQUOT_LOC") ())
    ("" (try (Hashtbl.find kwt prm) (Not_found (Hashtbl.add kwt prm ()))))
@@ -1005,10 +980,8 @@ EXTEND
     [ [ se = sexpr -> (patt_se se) ] ]
   /
   sexpr :
-    [ [ se1 = sexpr_dot / se2 = sexpr -> (leftify (Sacc loc se1 se2)) ]
+    [ [ se1 = sexpr / DOT / se2 = sexpr -> (Sacc loc se1 se2) ]
     | [ "(" / sl = LIST0 sexpr / ")" -> (Sexpr loc sl)
-      | "(" / sl = LIST0 sexpr / ")." / se = sexpr ->
-          (leftify (Sacc loc (Sexpr loc sl) se))
       | "[" / sl = LIST0 sexpr / "]" -> (Slist loc sl)
       | "{" / sl = LIST0 sexpr / "}" -> (Srec loc sl)
       | a = pa_extend_keyword -> (Slid loc a)
@@ -1020,22 +993,20 @@ EXTEND
       | s = FLOAT -> (Sfloat loc s)
       | s = CHAR -> (Schar loc s)
       | s = STRING -> (Sstring loc s)
+      | s = SPACEDOT -> (Slid loc ".")
       | s = QUOT ->
           (let* ((i (String.index s ':'))
                  (typ (String.sub s 0 i))
                  (txt (String.sub s (+ i 1) (- (- (String.length s) i) 1))))
-            (Squot loc typ txt)) ] ]
-  /
-  sexpr_dot :
-    [ [ s = LIDENTDOT -> (Slid loc s)
-      | s = UIDENTDOT -> (Suid loc s) ] ]
+            (Squot loc typ txt))
+      | NL / s = sexpr -> s
+      | NL -> (raise Stream.Failure) ] ]
   /
   pa_extend_keyword :
     [ [ "_" -> "_"
       | "," -> ","
       | "=" -> "="
       | ":" -> ":"
-      | "." -> "."
       | "/" -> "/" ] ]
   /
 END
