@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.48 2007/07/18 14:33:49 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.49 2007/07/18 15:10:42 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -557,12 +557,12 @@ instead of "<tt>loc</tt>".</p>
   "Stream.Error" may happen, only from the symbol following them on,
   if any.</p>
 
-<h2>Kind of grammar</h2>
+<h3>Kind of grammar</h3>
 
-<p>Honnestly, I don't know which kind of grammar it corresponds to. I
-  would say: the grammar which behaviour is described in the section
-  "grammar machinery". It is improved recursive descendant grammar,
-  something close to LL(1).</p>
+<p>The kind of grammar is predictive parsing grammar, i.e. recursive
+  descent parsing without backtrack. But with some nuances, due to the
+  improvements (error recovery and token starting rules) indicated in
+  the previous sections.</p>
 
 <h2>The Grammar module</h2>
 
