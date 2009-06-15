@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.53 2007/12/27 20:49:35 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.54 2007/12/27 21:43:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -138,19 +138,8 @@ value type_decl_list pc =
   [ [td] -> type_decl "type " pc td
   | tdl ->
       horiz_vertic
-        (fun () ->
-           sprintf "%s(type* %s)%s" pc.bef
-             (hlist (type_decl "") {(pc) with bef = ""; aft = ""} tdl)
-             pc.aft)
-        (fun () ->
-           let s1 = sprintf "%s(type*" pc.bef in
-           let s2 =
-             vlist (type_decl "")
-               {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
-                aft = sprintf ")%s" pc.aft}
-               tdl
-           in
-           sprintf "%s\n%s" s1 s2) ]
+        (fun () -> pprintf pc "(type* %p)" (hlist (type_decl "")) tdl)
+        (fun () -> pprintf pc "(type*@;<1 1>%p)" (vlist (type_decl "")) tdl) ]
 ;
 
 value exception_decl pc (c, tl) =
