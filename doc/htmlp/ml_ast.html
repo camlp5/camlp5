@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ml_ast.html,v 1.24 2007/07/25 13:08:43 deraugla Exp $ -->
+  <!-- $Id: ml_ast.html,v 1.25 2007/07/26 08:34:12 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Abstract tree in concrete syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -23,11 +23,6 @@
 
 <h1 class="top">Syntax tree</h1>
 
-<div id="tableofcontents">
-</div>
-
-<h2>Introduction</h2>
-
 <p>In Camlp5, one often uses syntax trees. For example, in grammars of
   the language (semantic actions), in pretty printing (as patterns), in
   optimizing syntax code (typically streams parsers). Syntax trees are
@@ -36,6 +31,11 @@
   "<code>ctyp</code>" for types, "<code>str_item</code>" for structure
   items, and so on. Each node corresponds to a possible value of this
   type.</p>
+
+<div id="tableofcontents">
+</div>
+
+<h2>Introduction</h2>
 
 <p>This syntax tree is defined in the module "<code>MLast</code>"
   provided by Camlp5.</p>

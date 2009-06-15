@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: quot.html,v 1.7 2007/07/25 13:08:43 deraugla Exp $ -->
+  <!-- $Id: quot.html,v 1.8 2007/07/26 08:34:12 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>quotations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -357,6 +357,8 @@
   because the lexer of ocaml programs ("<tt>Plexer.gmake ()</tt>"),
   cannot recognize the backslashes alone.</p>
 
+<h3>Lexer</h3>
+
 <pre>
   (* lexer *)
 
@@ -436,7 +438,11 @@
      Token.tok_text = Token.lexer_text;
      Token.tok_comm = None}
   ;
+</pre>
 
+<h3>Parser</h3>
+
+<pre>
   (* parser *)
 
   #load "pa_extend.cmo";
@@ -492,6 +498,8 @@
   Quotation.add "term" (Quotation.ExAst (expand_expr, expand_patt));
   Quotation.default.val := "term";
 </pre>
+
+<h3>Compilation and test</h3>
 
 <p>Compilation:</p>
 

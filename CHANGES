@@ -1,6 +1,8 @@
 Camlp5 Version 4.06:
 ---------------------
 
+* [25 Jul 07] Fixed bug: in normal syntax, the declaration of a constructor
+  named "True" or "False" did not work.
 * [25 Jul 07] While expanding stream parsers, transform unused bound
   variables into wildcards to prevent compiler warnings.
 * [21 Jul 07] Fixed bug in normal syntax and printing of normal syntax:

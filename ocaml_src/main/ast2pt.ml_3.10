@@ -228,7 +228,7 @@ let mkprivate m = if m then Private else Public;;
 let mktrecord (loc, n, m, t) =
   n, mkmutable m, ctyp (mkpolytype t), mkloc loc
 ;;
-let mkvariant (loc, c, tl) = c, List.map ctyp tl, mkloc loc;;
+let mkvariant (loc, c, tl) = conv_con c, List.map ctyp tl, mkloc loc;;
 let type_decl tl priv cl =
   function
     TyMan (loc, t, TyRec (_, ltl)) ->

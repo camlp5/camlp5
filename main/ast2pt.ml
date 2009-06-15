@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.3 2007/07/20 15:12:37 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.4 2007/07/26 08:34:12 deraugla Exp $ *)
 
 open Stdpp;
 open MLast;
@@ -237,9 +237,9 @@ value mktrecord (loc, n, m, t) =
 ;
 value mkvariant (loc, c, tl) =
   IFDEF OCAML_3_08 THEN
-    (c, List.map ctyp tl)
+    (conv_con c, List.map ctyp tl)
   ELSE
-    (c, List.map ctyp tl, mkloc loc)
+    (conv_con c, List.map ctyp tl, mkloc loc)
   END
 ;
 value type_decl tl priv cl =

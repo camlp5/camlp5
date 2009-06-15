@@ -226,7 +226,7 @@ let mktype loc tl cl tk tm =
 let mkmutable m = if m then Mutable else Immutable;;
 let mkprivate m = if m then Private else Public;;
 let mktrecord (loc, n, m, t) = n, mkmutable m, ctyp (mkpolytype t);;
-let mkvariant (loc, c, tl) = c, List.map ctyp tl;;
+let mkvariant (loc, c, tl) = conv_con c, List.map ctyp tl;;
 let type_decl tl priv cl =
   function
     TyMan (loc, t, TyRec (_, ltl)) ->
