@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.136 2007/12/23 17:37:10 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.137 2007/12/23 19:03:51 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -889,34 +889,20 @@ EXTEND_PRINTER
                    if pc.dang = ";" then ("(", "", ")")
                    else ("", pc.dang, "")
                  in
-                 sprintf "%s%slet %s%s %s%s%s" pc.bef begin_op
-                   (if rf then "rec " else "")
-                   (hlist2 let_binding (and_before let_binding)
-                      {(pc) with bef = ""; aft = "in"; dang = ""} pel)
-                   (expr {(pc) with bef = ""; aft = ""; dang = pc_dang} e)
-                   end_op pc.aft)
+                 pprintf pc "%slet%s %q in %q%s" begin_op
+                   (if rf then " rec" else "")
+                   (hlist2 let_binding (and_before let_binding)) pel ""
+                   expr e pc_dang end_op)
             (fun () ->
-               let (begin_op, ind, pc_aft, pc_dang, end_op) =
-                 if pc.dang = ";" then
-                   ("begin ", pc.ind + 2, "", "",
-                    sprintf "\n%send%s" (tab pc.ind) pc.aft)
-                 else ("", pc.ind, pc.aft, pc.dang, "")
-               in
-               let s1 =
-                 vlist2 let_binding (and_before let_binding)
-                   {(pc) with
-                    bef =
-                      sprintf "%s%slet %s" pc.bef begin_op
-                        (if rf then "rec " else "");
-                    aft = "in"; dang = ""}
-                   pel
-               in
-               let s2 =
-                 expr_with_comm_except_if_sequence
-                   {ind = ind; bef = tab ind; aft = pc_aft; dang = pc_dang} e
-               in
-               let s3 = end_op in
-               sprintf "%s\n%s%s" s1 s2 s3)
+               if pc.dang = ";" then
+                 pprintf pc "@[<a>begin let%s %qin@;%q@ end@]"
+                   (if rf then " rec" else "")
+                   (vlist2 let_binding (and_before let_binding)) pel ""
+                   expr_with_comm_except_if_sequence e ""
+               else
+                 pprintf pc "let%s %qin@ %p" (if rf then " rec" else "")
+                   (vlist2 let_binding (and_before let_binding)) pel ""
+                   expr_with_comm_except_if_sequence e)
       | <:expr< let module $uid:s$ = $me$ in $e$ >> ->
           horiz_vertic
             (fun () ->
