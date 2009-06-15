@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.169 2007/12/26 19:55:25 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.170 2007/12/27 01:24:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1813,13 +1813,11 @@ EXTEND_PRINTER
     [ [ <:sig_item< class $list:cd$ >> ->
           horiz_vertic
             (fun () ->
-               sprintf "%sclass %s%s" pc.bef
-                 (hlist2 class_def (and_before class_def)
-                    {(pc) with bef = ""; aft = ""} cd)
-                 pc.aft)
+               pprintf pc "class %p"
+                 (hlist2 class_def (and_before class_def)) cd)
             (fun () ->
-               vlist2 class_def (and_before class_def)
-                 {(pc) with bef = sprintf "%sclass " pc.bef} cd)
+               pprintf pc "class %p"
+                 (vlist2 class_def (and_before class_def)) cd)
       | <:sig_item< class type $list:cd$ >> ->
           class_type_decl_list pc cd ] ]
   ;
@@ -1827,66 +1825,39 @@ EXTEND_PRINTER
     [ [ <:str_item< class $list:cd$ >> ->
           horiz_vertic
             (fun () ->
-               sprintf "%sclass %s%s" pc.bef
-                 (hlist2 class_decl (and_before class_decl)
-                    {(pc) with bef = ""; aft = ""} cd)
-                 pc.aft)
+               pprintf pc "class %p"
+                 (hlist2 class_decl (and_before class_decl)) cd)
             (fun () ->
-               vlist2 class_decl (and_before class_decl)
-                 {(pc) with bef = sprintf "%sclass " pc.bef} cd)
+               pprintf pc "class %p"
+                 (vlist2 class_decl (and_before class_decl)) cd)
       | <:str_item< class type $list:cd$ >> ->
           class_type_decl_list pc cd ] ]
   ;
 END;
 
 value sig_method_or_method_virtual pc virt priv s t =
-  horiz_vertic
-    (fun () ->
-       sprintf "%smethod%s%s %s : %s%s" pc.bef virt
-         (if priv then " private" else "") s
-         (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-    (fun () ->
-       let s1 =
-         sprintf "%smethod%s%s %s:" pc.bef virt
-           (if priv then " private" else "") s
-       in
-       let s2 =
-         ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t
-       in
-       sprintf "%s\n%s" s1 s2)
+  pprintf pc "method%s%s %s :@;%p" virt (if priv then " private" else "")
+    s ctyp t
 ;
 
 value poly_type pc =
   fun
   [ <:ctyp< ! $list:tpl$ . $t$ >> ->
-      horiz_vertic
-        (fun () ->
-           sprintf "%s%s . %s%s" pc.bef
-             (hlist typevar {(pc) with bef = ""; aft = ""} tpl)
-             (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-        (fun () ->
-           let s1 =
-             sprintf "%s%s ." pc.bef
-               (hlist typevar {(pc) with bef = ""; aft = ""} tpl)
-           in
-           let s2 =
-             ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t
-           in
-           sprintf "%s\n%s" s1 s2)
+      pprintf pc "%p .@;%p" (hlist typevar) tpl ctyp t
   | t -> ctyp pc t ]
 ;
 
 EXTEND_PRINTER
   pr_expr: AFTER "apply"
     [ "label"
-      [ <:expr< ?$s$ >> -> sprintf "%s?%s%s" pc.bef s pc.aft
+      [ <:expr< ?$s$ >> ->
+          pprintf pc "?%s" s
       | <:expr< ?$i$: $e$ >> ->
-          curr {(pc) with bef = sprintf "%s?%s:" pc.bef i} e
+          pprintf pc "?%s:%p" i curr e
       | <:expr< ~$s$ >> ->
-          sprintf "%s~%s%s" pc.bef s pc.aft
+          pprintf pc "~%s" s
       | <:expr< ~$s$: $e$ >> ->
-          Eprinter.apply_level pr_expr "dot"
-            {(pc) with bef = sprintf "%s~%s:" pc.bef s} e ] ]
+          pprintf pc "~%s:%p" s (Eprinter.apply_level pr_expr "dot") e ] ]
   ;
   pr_ctyp: AFTER "top"
     [ "as"
@@ -1896,10 +1867,8 @@ EXTEND_PRINTER
   ;
   pr_ctyp: AFTER "arrow"
     [ "label"
-      [ <:ctyp< ?$i$: $t$ >> ->
-          curr {(pc) with bef = sprintf "%s?%s:" pc.bef i} t
-      | <:ctyp< ~$i$: $t$ >> ->
-          curr {(pc) with bef = sprintf "%s%s:" pc.bef i} t ] ]
+      [ <:ctyp< ?$i$: $t$ >> -> pprintf pc "?%s:%p" i curr t
+      | <:ctyp< ~$i$: $t$ >> -> pprintf pc "%s:%p" i curr t ] ]
   ;
   pr_class_expr:
     [ "top"
