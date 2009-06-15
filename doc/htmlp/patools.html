@@ -122,6 +122,25 @@ elements are of the specific type '<tt>char</tt>'.</p>
 <a id="Grammars"></a>
 <h2>Extensible grammars</h2>
 
+<p>Extensible grammars manipulate <em>grammar entries</em>. Grammar
+entries are abstract values internally containing mutable stream
+parsers. When a grammar entry is created, its internal parser is
+empty, i.e. it raises "<tt>Parse.Failure</tt>" if used. A specific
+syntax, with the keyword "<tt>EXTEND</tt>" allow to extend grammar
+entries with new grammar rules.</p>
+
+<p>In opposition to stream parsers, grammar entries take care of
+associativity, left factorization, and levels. Moreover, the syntax
+for grammars allows to define optional calls, lists and lists with
+separators. However, they are not functions and cannot take
+parameters.</p>
+
+<p>Since the internal system is stream parsers, extensible grammars
+use recursive descendant parsing.</p>
+
+<p>The parser of the ocaml language in camlp5 is written with
+extensible grammars.</p>
+
 <a id="Pretty"></a>
 <h2>Pretty module</h2>
 
