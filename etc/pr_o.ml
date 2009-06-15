@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.137 2007/12/23 19:03:51 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.138 2007/12/23 19:34:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -884,15 +884,16 @@ EXTEND_PRINTER
           horiz_vertic
             (fun () ->
                if not flag_horiz_let_in.val then sprintf "\n"
-               else
-                 let (begin_op, pc_dang, end_op) =
-                   if pc.dang = ";" then ("(", "", ")")
-                   else ("", pc.dang, "")
-                 in
-                 pprintf pc "%slet%s %q in %q%s" begin_op
+               else if pc.dang = ";" then
+                 pprintf pc "(let%s %q in %q)"
                    (if rf then " rec" else "")
                    (hlist2 let_binding (and_before let_binding)) pel ""
-                   expr e pc_dang end_op)
+                   expr e ""
+               else
+                 pprintf pc "let%s %q in %p"
+                   (if rf then " rec" else "")
+                   (hlist2 let_binding (and_before let_binding)) pel ""
+                   expr e)
             (fun () ->
                if pc.dang = ";" then
                  pprintf pc "@[<a>begin let%s %qin@;%q@ end@]"
