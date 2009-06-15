@@ -217,7 +217,7 @@ let rec cstream loc =
          slazy loc x)
 ;;
 
-(* backtracking parsers *)
+(* meta parsers *)
 
 let patt_expr_of_patt p =
   let loc = MLast.loc_of_patt p in
@@ -228,7 +228,7 @@ let patt_expr_of_patt p =
   | _ -> MLast.PaUid (loc, "()"), MLast.ExUid (loc, "()")
 ;;
 
-let bstream_pattern_component =
+let mstream_pattern_component m =
   function
     SpTrm (loc, p, wo) ->
       let (p, e) = patt_expr_of_patt p in
@@ -236,7 +236,7 @@ let bstream_pattern_component =
         MLast.ExApp
           (loc,
            MLast.ExAcc
-             (loc, MLast.ExUid (loc, "Fstream"), MLast.ExLid (loc, "b_term")),
+             (loc, MLast.ExUid (loc, m), MLast.ExLid (loc, "b_term")),
            MLast.ExFun
              (loc,
               [p, None, MLast.ExApp (loc, MLast.ExUid (loc, "Some"), e);
@@ -248,7 +248,7 @@ let bstream_pattern_component =
       Ploc.raise loc (Stream.Error "not impl: stream_pattern_component")
 ;;
 
-let rec bstream_pattern loc (spcl, epo, e) =
+let rec mstream_pattern loc m (spcl, epo, e) =
   match spcl with
     [] ->
       let e =
@@ -258,8 +258,7 @@ let rec bstream_pattern loc (spcl, epo, e) =
              MLast.ExApp
                (loc,
                 MLast.ExAcc
-                  (loc, MLast.ExUid (loc, "Fstream"),
-                   MLast.ExLid (loc, "b_act")),
+                  (loc, MLast.ExUid (loc, m), MLast.ExLid (loc, "b_act")),
                 e),
              MLast.ExLid (loc, strm_n))
         in
@@ -271,29 +270,28 @@ let rec bstream_pattern loc (spcl, epo, e) =
                 MLast.ExApp
                   (loc,
                    MLast.ExAcc
-                     (loc, MLast.ExUid (loc, "Fstream"),
-                      MLast.ExLid (loc, "count")),
+                     (loc, MLast.ExUid (loc, m), MLast.ExLid (loc, "count")),
                    MLast.ExLid (loc, strm_n))],
                e)
         | None -> e
       in
       MLast.ExFun (loc, [MLast.PaLid (loc, strm_n), None, e])
   | spc :: spcl ->
-      let (p1, e1) = bstream_pattern_component spc in
-      let skont = bstream_pattern loc (spcl, epo, e) in
+      let (p1, e1) = mstream_pattern_component m spc in
+      let skont = mstream_pattern loc m (spcl, epo, e) in
       let f = MLast.ExFun (loc, [p1, None, skont]) in
       MLast.ExApp
         (loc,
          MLast.ExApp
            (loc,
             MLast.ExAcc
-              (loc, MLast.ExUid (loc, "Fstream"), MLast.ExLid (loc, "b_seq")),
+              (loc, MLast.ExUid (loc, m), MLast.ExLid (loc, "b_seq")),
             e1),
          f)
 ;;
 
-let bparser_cases loc spel =
-  let rel = List.rev_map (bstream_pattern loc) spel in
+let mparser_cases loc m spel =
+  let rel = List.rev_map (mstream_pattern loc m) spel in
   match rel with
     e :: rel ->
       let e =
@@ -304,8 +302,7 @@ let bparser_cases loc spel =
                 MLast.ExApp
                   (loc,
                    MLast.ExAcc
-                     (loc, MLast.ExUid (loc, "Fstream"),
-                      MLast.ExLid (loc, "b_or")),
+                     (loc, MLast.ExUid (loc, m), MLast.ExLid (loc, "b_or")),
                    e1),
                 e))
           e rel
@@ -314,8 +311,8 @@ let bparser_cases loc spel =
   | [] -> MLast.ExUid (loc, "None")
 ;;
 
-let bparser_match loc me bpo pc =
-  let pc = bparser_cases loc pc in
+let mparser_match loc m me bpo pc =
+  let pc = mparser_cases loc m pc in
   let e =
     match bpo with
       Some bp ->
@@ -325,8 +322,7 @@ let bparser_match loc me bpo pc =
             MLast.ExApp
               (loc,
                MLast.ExAcc
-                 (loc, MLast.ExUid (loc, "Fstream"),
-                  MLast.ExLid (loc, "count")),
+                 (loc, MLast.ExUid (loc, m), MLast.ExLid (loc, "count")),
                MLast.ExLid (loc, strm_n))],
            pc)
     | None -> pc
@@ -337,15 +333,14 @@ let bparser_match loc me bpo pc =
         (loc, MLast.PaLid (loc, strm_n),
          MLast.TyApp
            (loc,
-            MLast.TyAcc
-              (loc, MLast.TyUid (loc, "Fstream"), MLast.TyLid (loc, "t")),
+            MLast.TyAcc (loc, MLast.TyUid (loc, m), MLast.TyLid (loc, "t")),
             MLast.TyAny loc)),
       me],
      e)
 ;;
 
-let bparser loc bpo pc =
-  let e = bparser_cases loc pc in
+let mparser loc m bpo pc =
+  let e = mparser_cases loc m pc in
   let e =
     match bpo with
       Some bp ->
@@ -355,8 +350,7 @@ let bparser loc bpo pc =
             MLast.ExApp
               (loc,
                MLast.ExAcc
-                 (loc, MLast.ExUid (loc, "Fstream"),
-                  MLast.ExLid (loc, "count")),
+                 (loc, MLast.ExUid (loc, m), MLast.ExLid (loc, "count")),
                MLast.ExLid (loc, strm_n))],
            e)
     | None -> e
@@ -366,8 +360,7 @@ let bparser loc bpo pc =
       (loc, MLast.PaLid (loc, strm_n),
        MLast.TyApp
          (loc,
-          MLast.TyAcc
-            (loc, MLast.TyUid (loc, "Fstream"), MLast.TyLid (loc, "t")),
+          MLast.TyAcc (loc, MLast.TyUid (loc, m), MLast.TyLid (loc, "t")),
           MLast.TyAny loc))
   in
   MLast.ExFun (loc, [p, None, e])
@@ -401,7 +394,7 @@ Grammar.extend
       Gramext.action
         (fun (pc : 'parser_case) (po : 'ipatt option) _ _ (e : 'expr) _
              (loc : Ploc.t) ->
-           (bparser_match loc e po [pc] : 'expr));
+           (mparser_match loc "Fstream" e po [pc] : 'expr));
       [Gramext.Stoken ("", "match"); Gramext.Sself;
        Gramext.Stoken ("", "with"); Gramext.Stoken ("", "bparser");
        Gramext.Sopt
@@ -416,7 +409,7 @@ Grammar.extend
       Gramext.action
         (fun _ (pcl : 'parser_case list) _ (po : 'ipatt option) _ _
              (e : 'expr) _ (loc : Ploc.t) ->
-           (bparser_match loc e po pcl : 'expr));
+           (mparser_match loc "Fstream" e po pcl : 'expr));
       [Gramext.Stoken ("", "bparser");
        Gramext.Sopt
          (Gramext.Snterm
@@ -425,7 +418,7 @@ Grammar.extend
          (Grammar.Entry.obj (parser_case : 'parser_case Grammar.Entry.e))],
       Gramext.action
         (fun (pc : 'parser_case) (po : 'ipatt option) _ (loc : Ploc.t) ->
-           (bparser loc po [pc] : 'expr));
+           (mparser loc "Fstream" po [pc] : 'expr));
       [Gramext.Stoken ("", "bparser");
        Gramext.Sopt
          (Gramext.Snterm
@@ -439,7 +432,7 @@ Grammar.extend
       Gramext.action
         (fun _ (pcl : 'parser_case list) _ (po : 'ipatt option) _
              (loc : Ploc.t) ->
-           (bparser loc po pcl : 'expr));
+           (mparser loc "Fstream" po pcl : 'expr));
       [Gramext.Stoken ("", "match"); Gramext.Sself;
        Gramext.Stoken ("", "with"); Gramext.Stoken ("", "fparser");
        Gramext.Sopt

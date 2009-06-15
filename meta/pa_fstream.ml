@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_fstream.ml,v 1.6 2007/11/28 10:01:57 deraugla Exp $ *)
+(* $Id: pa_fstream.ml,v 1.7 2007/11/28 11:36:20 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -119,7 +119,7 @@ value rec cstream loc =
       <:expr< Fstream.flazy $slazy loc x$ >> ]
 ;
 
-(* backtracking parsers *)
+(* meta parsers *)
 
 value patt_expr_of_patt p =
   let loc = MLast.loc_of_patt p in
@@ -129,12 +129,12 @@ value patt_expr_of_patt p =
   | _ -> (<:patt< () >>, <:expr< () >>) ]
 ;
 
-value bstream_pattern_component =
+value mstream_pattern_component m =
   fun
   [ SpTrm loc p wo ->
       let (p, e) = patt_expr_of_patt p in
       let e =
-        <:expr< Fstream.b_term (fun [ $p$ -> Some $e$ | _ -> None ]) >>
+        <:expr< $uid:m$.b_term (fun [ $p$ -> Some $e$ | _ -> None ]) >>
       in
       (p, e)
   | SpNtr loc p e ->
@@ -143,53 +143,53 @@ value bstream_pattern_component =
       Ploc.raise loc (Stream.Error "not impl: stream_pattern_component") ]
 ;
 
-value rec bstream_pattern loc (spcl, epo, e) =
+value rec mstream_pattern loc m (spcl, epo, e) =
   match spcl with
   [ [] ->
       let e =
-        let e = <:expr< Fstream.b_act $e$ $lid:strm_n$ >> in
+        let e = <:expr< $uid:m$.b_act $e$ $lid:strm_n$ >> in
         match epo with
-        [ Some p -> <:expr< let $p$ = Fstream.count $lid:strm_n$ in $e$ >>
+        [ Some p -> <:expr< let $p$ = $uid:m$.count $lid:strm_n$ in $e$ >>
         | None -> e ]
       in
       <:expr< fun $lid:strm_n$ -> $e$ >>
   | [spc :: spcl] ->
-      let (p1, e1) = bstream_pattern_component spc in
-      let skont = bstream_pattern loc (spcl, epo, e) in
+      let (p1, e1) = mstream_pattern_component m spc in
+      let skont = mstream_pattern loc m (spcl, epo, e) in
       let f = <:expr< fun $p1$ -> $skont$ >> in
-      <:expr< Fstream.b_seq $e1$ $f$ >> ]
+      <:expr< $uid:m$.b_seq $e1$ $f$ >> ]
 ;
 
-value bparser_cases loc spel =
-  let rel = List.rev_map (bstream_pattern loc) spel in
+value mparser_cases loc m spel =
+  let rel = List.rev_map (mstream_pattern loc m) spel in
   match rel with
   [ [e :: rel] ->
       let e =
-        List.fold_left (fun e e1 -> <:expr< Fstream.b_or $e1$ $e$ >>) e rel
+        List.fold_left (fun e e1 -> <:expr< $uid:m$.b_or $e1$ $e$ >>) e rel
       in
       <:expr< $e$ $lid:strm_n$ >>
   | [] ->
       <:expr< None >> ]
 ;
 
-value bparser_match loc me bpo pc =
-  let pc = bparser_cases loc pc in
+value mparser_match loc m me bpo pc =
+  let pc = mparser_cases loc m pc in
   let e =
     match bpo with
-    [ Some bp -> <:expr< let $bp$ = Fstream.count $lid:strm_n$ in $pc$ >>
+    [ Some bp -> <:expr< let $bp$ = $uid:m$.count $lid:strm_n$ in $pc$ >>
     | None -> pc ]
   in
-  <:expr< let ($lid:strm_n$ : Fstream.t _) = $me$ in $e$ >>
+  <:expr< let ($lid:strm_n$ : $uid:m$.t _) = $me$ in $e$ >>
 ;
 
-value bparser loc bpo pc =
-  let e = bparser_cases loc pc in
+value mparser loc m bpo pc =
+  let e = mparser_cases loc m pc in
   let e =
     match bpo with
-    [ Some bp -> <:expr< let $bp$ = Fstream.count $lid:strm_n$ in $e$ >>
+    [ Some bp -> <:expr< let $bp$ = $uid:m$.count $lid:strm_n$ in $e$ >>
     | None -> e ]
   in
-  let p = <:patt< ($lid:strm_n$ : Fstream.t _) >> in
+  let p = <:patt< ($lid:strm_n$ : $uid:m$.t _) >> in
   <:expr< fun $p$ -> $e$ >>
 ;
 
@@ -209,15 +209,15 @@ EXTEND
           <:expr< $cparser_match loc e po [pc]$ >>
       | "bparser"; po = OPT ipatt; "["; pcl = LIST0 parser_case SEP "|";
         "]" ->
-          <:expr< $bparser loc po pcl$ >>
+          <:expr< $mparser loc "Fstream" po pcl$ >>
       | "bparser"; po = OPT ipatt; pc = parser_case ->
-          <:expr< $bparser loc po [pc]$ >>
+          <:expr< $mparser loc "Fstream" po [pc]$ >>
       | "match"; e = SELF; "with"; "bparser"; po = OPT ipatt; "[";
         pcl = LIST0 parser_case SEP "|"; "]" ->
-          <:expr< $bparser_match loc e po pcl$ >>
+          <:expr< $mparser_match loc "Fstream" e po pcl$ >>
       | "match"; e = SELF; "with"; "bparser"; po = OPT ipatt;
         pc = parser_case ->
-          <:expr< $bparser_match loc e po [pc]$ >> ] ]
+          <:expr< $mparser_match loc "Fstream" e po [pc]$ >> ] ]
   ;
   parser_case:
     [ [ "[:"; sp = stream_patt; ":]"; po = OPT ipatt; "->"; e = expr ->
