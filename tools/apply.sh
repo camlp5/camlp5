@@ -1,15 +1,14 @@
 #!/bin/sh
-# $Id: apply.sh,v 1.8 2007/07/10 01:31:27 deraugla Exp $
+# $Id: apply.sh,v 1.7 2007/06/13 19:44:01 deraugla Exp $
 
 ARGS1=
-ARGS2=
 ARGS3=
 FILE=
 while [ $# -gt 0 ]; do
 	case "$1" in
 	*.ml*) FILE=$1;;
-	*.cm[oa]) ARGS2="$ARGS2 $1";;
-	-I) ARGS2="$ARGS2 $1 $2"; shift;;
+	*.cm[oa]) ARGS1="$ARGS1 $1";;
+	-I) ARGS1="$ARGS1 $1 $2"; shift;;
         '') ARGS3="$ARGS3 ''";;
 	*) ARGS3="$ARGS3 $1";;
 	esac
@@ -22,10 +21,10 @@ set - `head -1 $FILE`
 if test "$2" = "camlp4r" -o "$2" = "camlp4"; then
 	COMM="../boot/$2 -nolib -I ../boot -I ../etc"
 	shift; shift
-	ARGS1=`echo $* | sed -e "s/[()*]//g"`
+	ARGS2=`echo $* | sed -e "s/[()*]//g"`
 else
 	COMM="../boot/camlp4 -nolib -I ../boot -I ../etc pa_o.cmo"
-	ARGS1=
+	ARGS2=
 fi
 
 OTOP=../..
