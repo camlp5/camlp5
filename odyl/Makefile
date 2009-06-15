@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.10 2007/09/06 21:04:06 deraugla Exp $
+# $Id: Makefile,v 1.11 2007/11/17 21:52:29 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -54,5 +54,8 @@ compare:
 install:
 	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(NAME)" "$(DESTDIR)$(BINDIR)"
 	cp odyl.cmo odyl.cma "$(DESTDIR)$(LIBDIR)/$(NAME)/."
+	if test -f odyl.cmxa; then \
+	  cp odyl.cmxa odyl.cmx "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	fi
 
 include .depend

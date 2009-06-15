@@ -4,6 +4,7 @@ Internal, very small, undocumented, or invisible changes
 Camlp5 Version 5.03:
 ---------------------
 
+* [17 Nov 07] Added more installed cmx and cmxa files.
 * [29 Oct 07] Replaced the exception [Grammar.SkipItem] (designed
   to make IFDEF in constructor declarations and pattern matching
   cases work) by the function [Grammar.skip_item].

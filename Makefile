@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.35 2007/10/11 10:49:08 deraugla Exp $
+# $Id: Makefile,v 1.36 2007/11/17 21:52:29 deraugla Exp $
 
 include config/Makefile
 
@@ -24,6 +24,7 @@ opt:
 
 opt.opt:
 	set -e; for i in $(OPTDIRS); do cd $$i; $(MAKE) opt; cd ..; done
+	cd etc; $(MAKE) opt
 
 ocaml_src/main/ast2pt.ml:
 	@echo "Please run 'configure' first"; exit 2
@@ -44,9 +45,6 @@ depend:
 	for i in $(DIRS) compile; do (cd $$i; $(MAKE) depend); done
 
 install:
-	@test ! -d "$(DESTDIR)$(LIBDIR)/$(NAME)/Camlp4Parsers" || \
-	 (/bin/rm -rf "$(DESTDIR)$(LIBDIR)/omain"; \
-	  mv "$(DESTDIR)$(LIBDIR)/$(NAME)" "$(DESTDIR)$(LIBDIR)/o$(NAME)")
 	for i in $(DIRS) compile; do \
 	  (cd $$i; $(MAKE) install DESTDIR=$(DESTDIR)); \
 	done

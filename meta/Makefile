@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.22 2007/10/28 15:42:36 deraugla Exp $
+# $Id: Makefile,v 1.23 2007/11/17 21:52:29 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -57,5 +57,8 @@ install:
 	cp pa_macro.cmi pa_extend.cmi "$(DESTDIR)$(LIBDIR)/$(NAME)/."
 	cp $(NAME)r$(EXE) "$(DESTDIR)$(BINDIR)/."
 	if test -f $(COPT); then cp $(COPT) "$(DESTDIR)$(BINDIR)/."; fi
+	if test -f pa_r.cmx; then \
+	  cp pa_r.cmx pa_rp.cmx "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	fi
 
 include .depend

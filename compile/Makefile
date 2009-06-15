@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.14 2007/08/31 10:41:10 deraugla Exp $
+# $Id: Makefile,v 1.15 2007/11/17 21:52:29 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -32,6 +32,9 @@ $D_fast.ml.tmp: compile.cmo $(SRC)
 install:
 	if test -f $(NAME)o.fast.opt; then \
 	  cp $(NAME)o.fast.opt "$(DESTDIR)$(BINDIR)/$(NAME)o.opt"; \
+	fi
+	if test -f pa_o_fast.cmx; then \
+	  cp pa_o_fast.cmx "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
 	fi
 
 clean::

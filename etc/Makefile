@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.41 2007/10/28 15:42:36 deraugla Exp $
+# $Id: Makefile,v 1.42 2007/11/17 21:52:29 deraugla Exp $
 
 include ../config/Makefile
 
@@ -78,6 +78,9 @@ install:
 	cp lib.sml "$(DESTDIR)$(LIBDIR)/$(NAME)/."
 	cp $(NAME)o$(EXE) $(NAME)sch$(EXE) "$(DESTDIR)$(BINDIR)/."
 	if test -f $(COPT); then cp $(COPT) "$(DESTDIR)$(BINDIR)/."; fi
+	if test -f pa_o.cmx; then \
+	  cp pa_o.cmx pa_op.cmx "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	fi
 
 pa_lisp.cmo: pa_lispr.cmo
 pa_scheme.cmo: pa_schemer.cmo
