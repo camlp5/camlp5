@@ -1,6 +1,8 @@
 Camlp5 Version 5.01:
 ---------------------
 
+* [11 Oct 07] Rewritten parsers and printers in Scheme syntax. Deleted
+  old module Spretty.
 * [06 Oct 07] Fixed bug in grammars: there was a parsing confusion with
   entries with qualified names with same final identifier, resulting
   bad results. Example: (qualified names "Prim.ident" and "Constr.ident"

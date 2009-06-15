@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: conclusion.html,v 1.13 2007/09/18 01:53:23 deraugla Exp $ -->
+  <!-- $Id: conclusion.html,v 1.14 2007/10/11 10:57:47 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Conclusion</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -29,14 +29,6 @@
   be handled by the system. For the moment, the programmer has to
   manage them using the "<tt>pc</tt>" variable.</p>
 
-<h2>rewritting pretty printer in Scheme syntax</h2>
-
-<p>The pretty printer kit "<tt>pr_scheme.cmo</tt>" still uses an old
-  technology of pretty printing using old module named
-  "<tt>Spretty</tt>". I has to be rewritten using
-  <a href="printers.html">EXTEND_PRINTER</a> and the
-  module <a href="pretty.html">Pretty</a>.</p>
-
 <h2>printer for EXTEND_PRINTER</h2>
 
 <p>There is a syntax "<tt>EXTEND_PRINTER</tt>" but the corresponding
@@ -55,6 +47,11 @@
   formats, perhaps a reflexion to add greek characters and/or real
   utf-8 arrows in the syntax (in particular in types) could be
   interesting.</p>
+
+<h2>GLR grammars</h2>
+
+<p>Asked by users: change the grammar technology to GLR grammars, or
+  provide a system allowing the users to optionally use it.</p>
 
 <div class="trailer">
 </div>

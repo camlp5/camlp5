@@ -6,6 +6,16 @@
     <lastBuildDate>Mon Sep 17 15:10:47 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
     <item>
+      <title>Future work</title>
+      <description>
+        Deleted section about the rewritting of the pretty print in
+        Scheme syntax (this is implemented). Added section about GLR
+        grammars.
+      </description>
+      <pubDate>Thu Oct 11 12:56:15 CEST 2007</pubDate>
+      <link>../conclusion.html</link>
+    </item>
+    <item>
       <title>Locations in quotations and antiquotations</title>
       <description>
         Added detailed explanations about the problem of locations in
