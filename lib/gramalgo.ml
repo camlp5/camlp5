@@ -383,7 +383,7 @@ value get_symbol_after_dot =
     | (n, [_ :: sl]) -> loop (n - 1) sl ]
 ;
 
-value close_item_set rules items =
+value close_item_set rules_of_nterm items =
   let rclos =
     loop [] items where rec loop rclos =
       fun
@@ -394,17 +394,8 @@ value close_item_set rules items =
               match get_symbol_after_dot dot rh with
               [ Some (GS_nterm n) ->
                   let rrest =
-                    loop [] 0 where rec loop rrest m =
-                      if m = Array.length rules then rrest
-                      else
-                        let (lh, rh) = rules.(m) in
-                        let rrest =
-                          if n = lh then
-                            let item = (m, True, lh, 0, rh) in
-                            [item :: rrest]
-                          else rrest
-                        in
-                        loop rrest (m + 1)
+                    List.rev_map (fun (i, rh) -> (i, True, n, 0, rh))
+                      (rules_of_nterm n)
                   in
                   List.rev_append rrest rest
               | Some (GS_term _) | None ->
@@ -436,7 +427,7 @@ value eprint_item term_n nterm_n (m, added, lh, dot, rh) = do {
   Printf.eprintf "\n";
 };
 
-value make_item_sets rules term_n nterm_n item_set_ht =
+value make_item_sets rules_of_nterm term_n nterm_n item_set_ht =
   loop 0 0 []
   where rec loop ini_item_set_cnt item_set_cnt shift_assoc item_set_ini =
   do {
@@ -496,7 +487,7 @@ value make_item_sets rules term_n nterm_n item_set_ht =
                item_set
            in
            (* complete by closure *)
-           let item_set = close_item_set rules item_set in
+           let item_set = close_item_set rules_of_nterm item_set in
            IFDEF VERBOSE THEN Printf.eprintf "\n" ELSE () END;
            match
              try Some (Hashtbl.find item_set_ht item_set) with
@@ -773,9 +764,28 @@ value lr0 entry lev = do {
     flush stderr;
   }
   ELSE () END;
+  let nb_terms = Array.length term_name_tab in
+  let nb_nterms = Array.length nterm_name_tab in
+  IFDEF VERBOSE THEN do {
+    Printf.eprintf "\n";
+    Printf.eprintf "nb of terms %d\n" nb_terms;
+    Printf.eprintf "nb of non-terms %d\n" nb_nterms;
+    flush stderr;
+  }
+  ELSE () END;
+
+  let rules_of_nterm_tab = Array.create nb_nterms [] in
+  Array.iteri
+    (fun i (lh, rh) ->
+       rules_of_nterm_tab.(lh) := [(i, rh) :: rules_of_nterm_tab.(lh)])
+    rules;
+  Array.iteri (fun i v -> rules_of_nterm_tab.(i) := List.rev v)
+    rules_of_nterm_tab;
+  let rules_of_nterm = Array.get rules_of_nterm_tab in
+
   let item_set_0 =
     let item = (0, False, fst rules.(0), 0, snd rules.(0)) in
-    close_item_set rules [item]
+    close_item_set rules_of_nterm [item]
   in
 
   IFDEF VERBOSE THEN do {
@@ -788,8 +798,9 @@ value lr0 entry lev = do {
 
   let item_set_ht = Hashtbl.create 1 in
   let (item_set_cnt, shift_assoc) =
-    make_item_sets rules term_n nterm_n item_set_ht item_set_0
+    make_item_sets rules_of_nterm term_n nterm_n item_set_ht item_set_0
   in
+
   IFDEF VERBOSE THEN do {
     Printf.eprintf "\ntotal number of item sets %d\n" (item_set_cnt + 1);
     flush stderr;
@@ -804,15 +815,6 @@ value lr0 entry lev = do {
          Printf.eprintf "\n";
        })
       (List.sort compare shift_assoc);
-    flush stderr;
-  }
-  ELSE () END;
-  let nb_terms = Array.length term_name_tab in
-  let nb_nterms = Array.length nterm_name_tab in
-  IFDEF VERBOSE THEN do {
-    Printf.eprintf "\n";
-    Printf.eprintf "nb of terms %d\n" nb_terms;
-    Printf.eprintf "nb of non-terms %d\n" nb_nterms;
     flush stderr;
   }
   ELSE () END;
