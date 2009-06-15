@@ -67,6 +67,13 @@ value has_cons_with_params vdl =
     vdl
 ;
 
+value rec cons_ident pc sl =
+  match sl with
+  [ [] -> sprintf "%s%s" pc.bef pc.aft
+  | [s] -> sprintf "%s%s%s" pc.bef s pc.aft
+  | [s :: sl] -> cons_ident {(pc) with bef = sprintf "%s%s." pc.bef s} sl ]
+;
+
 value type_param pc (s, vari) =
   sprintf "%s'%s%s" pc.bef (Pcaml.unvala s) pc.aft
 ;
@@ -207,7 +214,7 @@ value constr_decl pc (_, c, tl) =
   horiz_vertic
     (fun () ->
        match tl with
-       [ [] -> sprintf "%s%s%s" pc.bef c pc.aft
+       [ [] -> sprintf "%s(%s)%s" pc.bef c pc.aft
        | _ ->
            sprintf "%s(%s %s)%s" pc.bef c
              (hlist ctyp {(pc) with bef = ""; aft = ""} tl) pc.aft ])
@@ -279,6 +286,11 @@ EXTEND_PRINTER
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
              aft = sprintf ")%s" pc.aft}
             tl
+      | <:ctyp< $t1$ == $t2$ >> ->
+          plistb curr 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(==" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(t1, ""); (t2, "")]
       | <:ctyp< $t1$ . $t2$ >> ->
            sprintf "%s.%s"
              (curr {(pc) with aft = ""} t1)
@@ -469,20 +481,22 @@ EXTEND_PRINTER
                aft = sprintf ")%s" pc.aft}
               [(fun pc -> patt pc p, ""); (fun pc -> curr pc e, "")]
           in
-          let fel = List.map (fun fe -> (fe, "")) fel in
           plist record_binding 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s{" pc.bef;
              aft = sprintf "}%s" pc.aft}
-            fel
-(*
+            (List.map (fun fe -> (fe, "")) fel)
       | <:expr< { ($e$) with $list:fel$ } >> ->
-          fun ppf curr next dg k ->
-            let record_binding ppf ((p, e), k) =
-              fprintf ppf "(@[%a@ %a@]" patt (p, nok) expr (e, ks ")" k)
-            in
-            fprintf ppf "{@[@[with@ %a@]@ @[%a@]@]" expr (e, nok)
-              (list record_binding) (fel, ks "}" k)
-*)
+          let record_binding pc (p, e) =
+            plistf 0
+              {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+               aft = sprintf ")%s" pc.aft}
+              [(fun pc -> patt pc p, ""); (fun pc -> curr pc e, "")]
+          in
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s{with" pc.bef;
+             aft = sprintf "}%s" pc.aft}
+            [(fun pc -> curr pc e, "") ::
+             List.map (fun fe -> (fun pc -> record_binding pc fe, "")) fel]
       | <:expr< $e1$ := $e2$ >> ->
           plistb curr 1
             {(pc) with bef = sprintf "%s(:=" pc.bef;
@@ -513,10 +527,13 @@ EXTEND_PRINTER
               horiz_vertic
                 (fun () -> hlistl curr dot_expr pc (el @ [x]))
                 (fun () -> not_impl "expr list 2 vertic" pc 0) ]
-(*
       | <:expr< lazy ($x$) >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "(@[lazy@ %a@]" expr (x, ks ")" k)
+          plistf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc -> sprintf "%slazy%s" pc.bef pc.aft, "");
+             (fun pc -> curr pc x, "")]
+(*
       | <:expr< $lid:s$ $e1$ $e2$ >>
         when List.mem s assoc_right_parsed_op_list ->
           fun ppf curr next dg k ->
@@ -704,6 +721,13 @@ EXTEND_PRINTER
              aft = sprintf ")%s" pc.aft}
             [(fun pc -> sprintf "%s%s%s" pc.bef c pc.aft, "") ::
              List.map (fun t -> (fun pc -> ctyp pc t, "")) tl]
+      | <:str_item< exception $uid:c$ of $list:_$ = $id$ >> ->
+          plistbf 0
+            {(pc) with ind = pc.ind + 1;
+             bef = sprintf "%s(exceptionrebind" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc -> sprintf "%s%s%s" pc.bef c pc.aft, "");
+             (fun pc -> cons_ident pc id, "")]
       | <:str_item< value $flag:rf$ $list:pel$ >> ->
           value_binding_list pc (rf, pel)
       | <:str_item< module $uid:s$ = $me$ >> ->

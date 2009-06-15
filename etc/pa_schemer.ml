@@ -322,9 +322,10 @@ value string_se =
   | se -> error se "string" ]
 ;
 
-value mod_ident_se =
+value rec mod_ident_se =
   fun
-  [ Suid _ s -> [Pcaml.rename_id.val s]
+  [ Sacc _ se1 se2 -> mod_ident_se se1 @ mod_ident_se se2
+  | Suid _ s -> [Pcaml.rename_id.val s]
   | Slid _ s -> [Pcaml.rename_id.val s]
   | se -> error se "mod_ident" ]
 ;
@@ -421,6 +422,10 @@ and str_item_se se =
       let c = Pcaml.rename_id.val c in
       let tl = List.map ctyp_se sel in
       <:str_item< exception $uid:c$ of $list:tl$ >>
+  | Sexpr loc [Slid _ "exceptionrebind"; Suid _ c; se] ->
+      let c = Pcaml.rename_id.val c in
+      let id = mod_ident_se se in
+      <:str_item< exception $uid:c$ = $id$ >>
   | Sexpr loc [Slid _ ("define" | "definerec" as r); se :: sel] ->
       let r = r = "definerec" in
       let (p, e) = fun_binding_se se (begin_se loc sel) in
@@ -908,6 +913,10 @@ and ctyp_se =
   | Sexpr loc [Slid _ "*" :: sel] ->
       let tl = List.map ctyp_se sel in
       <:ctyp< ($list:tl$) >>
+  | Sexpr loc [Slid _ "=="; se1; se2] ->
+      let t1 = ctyp_se se1 in
+      let t2 = ctyp_se se2 in
+      <:ctyp< $t1$ == $t2$ >>
   | Sexpr loc [se :: sel] ->
       List.fold_left
         (fun t se ->
