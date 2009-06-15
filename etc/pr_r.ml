@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.111 2007/12/05 10:04:56 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.112 2007/12/05 10:11:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1663,15 +1663,10 @@ EXTEND_PRINTER
       [ <:ctyp< $x$ == $y$ >> -> operator pc next next 2 "==" x y ]
     | "as"
       [ <:ctyp< $t1$ as $t2$ >> ->
-          sprint_break 1 0 pc (fun pc -> curr pc t1)
-            (fun pc -> next {(pc) with bef = sprintf "%sas " pc.bef} t2) ]
+          pprintf pc "%p@ as %p" curr t1 next t2 ]
     | "poly"
       [ <:ctyp< ! $list:pl$ . $t$ >> ->
-          sprint_break 1 2 pc
-            (fun pc ->
-               hlist typevar
-                 {(pc) with bef = sprintf "%s! " pc.bef; aft = " ."} pl)
-            (fun pc -> ctyp pc t) ]
+          pprintf pc "! %p .@;%p" (hlist typevar) pl ctyp t ]
     | "arrow"
       [ <:ctyp< $_$ -> $_$ >> as z ->
           let unfold =
