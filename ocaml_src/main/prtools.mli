@@ -82,6 +82,9 @@ val plistbf : int -> ((pr_context -> string) * string) list pr_fun;;
    (** [plistbf sh pc fl] acts like [plistb] except that the list is a
        list of functions returning the pretty printed string. *)
 
+val hvlistl : 'a pr_fun -> 'a pr_fun -> 'a list pr_fun;;
+   (** applies [hlistl] if the context is horizontal; else applies [vlistl] *)
+
 (* miscellaneous *)
 
 val tab : int -> string;;

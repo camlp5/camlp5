@@ -21,3 +21,5 @@ let horiz_vertic horiz vertic =
   try Ploc.call_with horiz_ctx true horiz () with
     GiveUp -> if !horiz_ctx then raise GiveUp else vertic ()
 ;;
+
+let horizontally () = !horiz_ctx;;

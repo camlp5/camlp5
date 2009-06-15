@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: opretty.html,v 1.27 2007/10/18 04:57:54 deraugla Exp $ -->
+  <!-- $Id: opretty.html,v 1.28 2007/12/24 10:21:08 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Extensions of printing</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -378,6 +378,13 @@ print the sub-expressions <code>e1</code> and <code>e2</code>:</p>
   <dt><tt>value plistl : pr_fun 'a -> pr_fun 'a -> int -> pr_fun (list
       ('a * string));</tt></dt>
   <dd>paragraph list with a different function for the last element.</dd>
+</dl>
+
+<dl>
+  <dt><tt>value hvlistl : pr_fun 'a -> pr_fun 'a -> pr_fun (list
+   'a);</tt></dt>
+  <dd>applies "<tt>hlistl</tt>" if the context is horizontal; else
+    applies "<tt>vlistl</tt>".</dd>
 </dl>
 
 <h3>Miscellaneous</h3>

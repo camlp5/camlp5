@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: prtools.mli,v 1.8 2007/10/06 08:07:17 deraugla Exp $ *)
+(* $Id: prtools.mli,v 1.9 2007/12/24 10:21:08 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 type pr_context =
@@ -81,6 +81,9 @@ value plistf : int -> pr_fun (list (pr_context -> string * string));
 value plistbf : int -> pr_fun (list (pr_context -> string * string));
    (** [plistbf sh pc fl] acts like [plistb] except that the list is a
        list of functions returning the pretty printed string. *)
+
+value hvlistl : pr_fun 'a -> pr_fun 'a -> pr_fun (list 'a);
+   (** applies [hlistl] if the context is horizontal; else applies [vlistl] *)
 
 (* miscellaneous *)
 

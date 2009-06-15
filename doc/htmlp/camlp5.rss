@@ -6,6 +6,17 @@
     <lastBuildDate>Mon Sep 17 15:10:47 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
     <item>
+      <title>Pretty print</title>
+      <description>
+        Added function "Pretty.horizontally" returning the fact that
+        the current print is horizontal or not. Added function
+        "Prtools.hvlistl" using "hlistl" or "vlistl" according to
+        the fact that the current print is horizontal or not.
+      </description>
+      <pubDate>Mon Dec 24 11:24:34 CET 2007</pubDate>
+      <link>../opretty.html</link>
+    </item>
+    <item>
       <title>Located exceptions</title>
       <description>
         Explained in a new section "Located errors" how put locations

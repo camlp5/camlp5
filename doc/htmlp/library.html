@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: library.html,v 1.35 2007/12/07 23:29:04 deraugla Exp $ -->
+  <!-- $Id: library.html,v 1.36 2007/12/24 10:21:08 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Library</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -1286,6 +1286,12 @@ value f : array 'a -> array 'a -> (array bool * array bool);</tt></dt>
   <dd>"<tt>line_length</tt>" is the maximum length (in characters) of
     the line. Default = 78. Can be set to any other value before
     printing.</dd>
+</dl>
+
+<dl>
+  <dt><tt>value horizontally : unit -> bool;</tt></dt> 
+  <dd>"<tt>horizontally ()</tt>" returns the fact that the context is
+      an horizontal print.</dd>
 </dl>
 
 <h2>Deprecated modules Stdpp and Token</h2>

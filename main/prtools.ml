@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: prtools.ml,v 1.12 2007/12/07 23:29:04 deraugla Exp $ *)
+(* $Id: prtools.ml,v 1.13 2007/12/24 10:21:08 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -518,4 +518,11 @@ value flatten_sequence e =
       in
       Some (list_of_sequence el)
   | None -> None ]
+;
+
+value hvlistl elem eleml pc xl =
+  if Pretty.horizontally () then
+    hlistl elem eleml pc xl
+  else
+    vlistl elem eleml pc xl
 ;

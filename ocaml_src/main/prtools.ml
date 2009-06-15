@@ -553,3 +553,8 @@ let flatten_sequence e =
       Some (list_of_sequence el)
   | None -> None
 ;;
+
+let hvlistl elem eleml pc xl =
+  if Pretty.horizontally () then hlistl elem eleml pc xl
+  else vlistl elem eleml pc xl
+;;

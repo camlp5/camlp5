@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.141 2007/12/24 09:22:51 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.142 2007/12/24 10:21:08 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -916,16 +916,10 @@ EXTEND_PRINTER
                pprintf pc "@[<a>@[<a>while@;%p@ do@]@;%p@ done@]" curr e1
                  (vlistl (semi_after expr) curr) el)
       | <:expr< for $lid:v$ = $e1$ $to:d$ $e2$ do { $list:el$ } >> ->
-          horiz_vertic
-            (fun () ->
-               pprintf pc "for %s = %p %s %p do %p done" v curr e1
-                 (if d then "to" else "downto") curr e2
-                 (hlistl (semi_after curr) curr) el)
-            (fun () ->
-               pprintf pc
-                 "@[<a>@[<a>for %s = %p %s@;<1 4>%p@ do@]@;%q@ done@]" v
-                 curr e1 (if d then "to" else "downto") curr e2
-                 (vlistl (semi_after curr) curr) el "") ]
+          pprintf pc
+            "@[<a>@[<a>for %s = %p %s@;<1 4>%p@ do@]@;%q@ done@]" v
+            curr e1 (if d then "to" else "downto") curr e2
+            (hvlistl (semi_after curr) curr) el "" ]
     | "tuple"
       [ <:expr< ($list:el$) >> ->
           let el = List.map (fun e -> (e, ",")) el in
