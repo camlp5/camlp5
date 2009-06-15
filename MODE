@@ -9,6 +9,6 @@ two modes:
     is available but the syntax tree is not compatible with the previous
     versions.
 
-You have to choose among these modes at configuration time.
+You must choose among these modes at configuration time.
 
 See Camlp5 documentation.
