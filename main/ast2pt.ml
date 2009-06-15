@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.6 2007/08/07 15:40:21 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.7 2007/08/07 16:43:17 deraugla Exp $ *)
 
 open Stdpp;
 open MLast;
@@ -656,7 +656,7 @@ value rec expr =
   | ExLab loc _ _ -> error loc "labeled expression not allowed here"
   | ExLaz loc e -> mkexp loc (Pexp_lazy (expr e))
   | ExLet loc rf pel e ->
-      mkexp loc (Pexp_let (mkrf rf) (List.map mkpe pel) (expr e))
+      mkexp loc (Pexp_let (mkvala mkrf rf) (List.map mkpe pel) (expr e))
   | ExLid loc s -> mkexp loc (Pexp_ident (lident s))
   | ExLmd loc i me e -> mkexp loc (Pexp_letmodule i (module_expr me) (expr e))
   | ExMat loc e pel -> mkexp loc (Pexp_match (expr e) (List.map mkpwe pel))

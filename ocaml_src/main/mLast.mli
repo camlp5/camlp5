@@ -101,7 +101,7 @@ and expr =
   | ExInt of loc * string * string
   | ExLab of loc * string * expr option
   | ExLaz of loc * expr
-  | ExLet of loc * bool * (patt * expr) list * expr
+  | ExLet of loc * bool vala * (patt * expr) list * expr
   | ExLid of loc * string
   | ExLmd of loc * string * module_expr * expr
   | ExMat of loc * expr * (patt * expr option * expr) list

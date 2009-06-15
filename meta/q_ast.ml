@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.18 2007/08/07 15:40:21 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.19 2007/08/07 16:43:17 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -228,7 +228,7 @@ module Meta =
             in
             <:expr< MLast.ExFun $ln$ $pwel$ >>
         | ExLet _ rf lpe e ->
-            let rf = e_bool rf in
+            let rf = e_vala e_bool rf in
             let lpe =
               e_list (fun (p, e) -> <:expr< ($e_patt p$, $loop e$) >>) lpe
             in
@@ -275,7 +275,7 @@ module Meta =
         | ExInt _ s k -> <:patt< MLast.ExInt _ $p_string s$ $str:k$ >>
         | ExFlo _ s -> <:patt< MLast.ExFlo _ $p_string s$ >>
         | ExLet _ rf lpe e ->
-            let rf = p_bool rf in
+            let rf = p_vala p_bool rf in
             let lpe =
               p_list (fun (p, e) -> <:patt< ($p_patt p$, $loop e$) >>) lpe
             in

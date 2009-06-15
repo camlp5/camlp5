@@ -174,7 +174,12 @@ module MetaAction =
     let mvala f =
       function
         MLast.VaAnt s -> failwith "pa_extend.ml: mvala"
-      | MLast.VaVal v -> f v
+      | MLast.VaVal v ->
+          MLast.ExApp
+            (loc,
+             MLast.ExAcc
+               (loc, MLast.ExUid (loc, "MLast"), MLast.ExUid (loc, "VaVal")),
+             f v)
     ;;
     let mloc =
       MLast.ExAcc
@@ -268,7 +273,7 @@ module MetaAction =
                 mloc),
              MLast.ExStr (loc, s))
       | MLast.ExLet (loc, rf, pel, e) ->
-          let rf = mbool rf in
+          let rf = mvala mbool rf in
           MLast.ExApp
             (loc,
              MLast.ExApp
@@ -797,9 +802,9 @@ let rec quot_expr e =
          MLast.ExAcc
            (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Tuple")),
          mklistexp loc el)
-  | MLast.ExLet (_, r, pel, e) ->
+  | MLast.ExLet (_, MLast.VaVal r, pel, e) ->
       let pel = List.map (fun (p, e) -> p, quot_expr e) pel in
-      MLast.ExLet (loc, r, pel, quot_expr e)
+      MLast.ExLet (loc, MLast.VaVal r, pel, quot_expr e)
   | _ -> e
 ;;
 
@@ -834,7 +839,7 @@ let quotify_action psl act =
              List.map (fun s -> MLast.ExLid (loc, s)) l
            in
            MLast.ExLet
-             (loc, false,
+             (loc, MLast.VaVal false,
               [MLast.PaTup (loc, pl),
                MLast.ExMat
                  (loc, MLast.ExLid (loc, pname),
@@ -1432,17 +1437,17 @@ let let_in_of_extend loc gmod functor_version gl el args =
         if ll = [] then args
         else if functor_version then
           MLast.ExLet
-            (loc, false,
+            (loc, MLast.VaVal false,
              [MLast.PaLid (loc, "grammar_entry_create"),
               MLast.ExAcc
                 (loc,
                  MLast.ExAcc
                    (loc, MLast.ExUid (loc, gmod), MLast.ExUid (loc, "Entry")),
                  MLast.ExLid (loc, "create"))],
-             MLast.ExLet (loc, false, locals, args))
+             MLast.ExLet (loc, MLast.VaVal false, locals, args))
         else
           MLast.ExLet
-            (loc, false,
+            (loc, MLast.VaVal false,
              [MLast.PaLid (loc, "grammar_entry_create"),
               MLast.ExFun
                 (loc,
@@ -1461,9 +1466,9 @@ let let_in_of_extend loc gmod functor_version gl el args =
                               MLast.ExLid (loc, "of_entry")),
                            locate n1)),
                      MLast.ExLid (loc, "s"))])],
-             MLast.ExLet (loc, false, locals, args))
+             MLast.ExLet (loc, MLast.VaVal false, locals, args))
       in
-      MLast.ExLet (loc, false, globals, e)
+      MLast.ExLet (loc, MLast.VaVal false, globals, e)
   | _ -> args
 ;;
 
@@ -1486,7 +1491,7 @@ let text_of_extend loc gmod gl el f =
            in
            let e = MLast.ExTup (loc, [ent; pos; txt]) in
            MLast.ExLet
-             (loc, false,
+             (loc, MLast.VaVal false,
               [MLast.PaLid (loc, "aux"),
                MLast.ExFun
                  (loc,
@@ -1549,7 +1554,7 @@ let text_of_functorial_extend loc gmod gl el =
            in
            if !split_ext then
              MLast.ExLet
-               (loc, false,
+               (loc, MLast.VaVal false,
                 [MLast.PaLid (loc, "aux"),
                  MLast.ExFun (loc, [MLast.PaUid (loc, "()"), None, e])],
                 MLast.ExApp

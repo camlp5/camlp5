@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.33 2007/08/07 15:40:21 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.34 2007/08/07 16:43:17 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -374,7 +374,7 @@ EXTEND
   ;
   expr:
     [ "top" RIGHTA
-      [ "let"; r = SFLAG "rec"; l = SLIST1 let_binding SEP "and"; "in";
+      [ "let"; r = SFLAG2 "rec"; l = SLIST1 let_binding SEP "and"; "in";
         x = SELF ->
           Qast.Node "ExLet" [Qast.Loc; r; l; x]
       | "let"; "module"; m = a_UIDENT; mb = mod_fun_binding; "in"; e = SELF ->
@@ -403,7 +403,7 @@ EXTEND
       | "while"; e = SELF; "do"; "{"; seq = sequence; "}" ->
           Qast.Node "ExWhi" [Qast.Loc; e; seq] ]
     | "where"
-      [ e = SELF; "where"; rf = SFLAG "rec"; lb = let_binding ->
+      [ e = SELF; "where"; rf = SFLAG2 "rec"; lb = let_binding ->
           Qast.Node "ExLet" [Qast.Loc; rf; Qast.List [lb]; e] ]
     | ":=" NONA
       [ e1 = SELF; ":="; e2 = SELF; dummy ->
@@ -639,7 +639,7 @@ EXTEND
     [ [ -> () ] ]
   ;
   sequence:
-    [ [ "let"; rf = SFLAG "rec"; l = SLIST1 let_binding SEP "and"; "in";
+    [ [ "let"; rf = SFLAG2 "rec"; l = SLIST1 let_binding SEP "and"; "in";
         el = SELF ->
           Qast.List
             [Qast.Node "ExLet" [Qast.Loc; rf; l; mksequence Qast.Loc el]]

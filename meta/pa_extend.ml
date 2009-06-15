@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.26 2007/08/07 15:40:21 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.27 2007/08/07 16:43:17 deraugla Exp $ *)
 
 open Stdpp;
 
@@ -179,7 +179,7 @@ module MetaAction =
     value mvala f =
       fun
       [ MLast.VaAnt s -> failwith "pa_extend.ml: mvala"
-      | MLast.VaVal v -> f v ]
+      | MLast.VaVal v -> <:expr< MLast.VaVal $f v$ >> ]
     ;
     value mloc = <:expr< Stdpp.dummy_loc >>;
     value rec mexpr =
@@ -196,7 +196,7 @@ module MetaAction =
       | MLast.ExInt loc s c -> <:expr< MLast.ExInt $mloc$ $str:s$ $str:c$ >>
       | MLast.ExFlo loc s -> <:expr< MLast.ExFlo $mloc$ $str:s$ >>
       | MLast.ExLet loc rf pel e ->
-          let rf = mbool rf in
+          let rf = mvala mbool rf in
           <:expr< MLast.ExLet $mloc$ $rf$ $mlist mpe pel$ $mexpr e$ >>
       | MLast.ExLid loc s -> <:expr< MLast.ExLid $mloc$ $str:s$ >>
       | MLast.ExMat loc e pwel ->

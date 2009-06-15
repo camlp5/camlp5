@@ -716,23 +716,24 @@ Grammar.extend
         (fun (e : 'expr) _ (mb : 'mod_fun_binding) (m : string) _ _
              (loc : Token.location) ->
            (MLast.ExLmd (loc, m, mb, e) : 'expr));
-      [Gramext.Stoken ("", "let"); Gramext.Sflag (Gramext.Stoken ("", "rec"));
+      [Gramext.Stoken ("", "let");
+       Gramext.Svala ("FLAG", Gramext.Sflag (Gramext.Stoken ("", "rec")));
        Gramext.Slist1sep
          (Gramext.Snterm
             (Grammar.Entry.obj (let_binding : 'let_binding Grammar.Entry.e)),
           Gramext.Stoken ("", "and"));
        Gramext.Stoken ("", "in"); Gramext.Sself],
       Gramext.action
-        (fun (x : 'expr) _ (l : 'let_binding list) (r : bool) _
+        (fun (x : 'expr) _ (l : 'let_binding list) (r : bool MLast.vala) _
              (loc : Token.location) ->
            (MLast.ExLet (loc, r, l, x) : 'expr))];
      Some "where", None,
      [[Gramext.Sself; Gramext.Stoken ("", "where");
-       Gramext.Sflag (Gramext.Stoken ("", "rec"));
+       Gramext.Svala ("FLAG", Gramext.Sflag (Gramext.Stoken ("", "rec")));
        Gramext.Snterm
          (Grammar.Entry.obj (let_binding : 'let_binding Grammar.Entry.e))],
       Gramext.action
-        (fun (lb : 'let_binding) (rf : bool) _ (e : 'expr)
+        (fun (lb : 'let_binding) (rf : bool MLast.vala) _ (e : 'expr)
              (loc : Token.location) ->
            (MLast.ExLet (loc, rf, [lb], e) : 'expr))];
      Some ":=", Some Gramext.NonA,
@@ -1091,15 +1092,16 @@ Grammar.extend
       Gramext.action
         (fun (el : 'sequence) _ (e : 'expr) (loc : Token.location) ->
            (e :: el : 'sequence));
-      [Gramext.Stoken ("", "let"); Gramext.Sflag (Gramext.Stoken ("", "rec"));
+      [Gramext.Stoken ("", "let");
+       Gramext.Svala ("FLAG", Gramext.Sflag (Gramext.Stoken ("", "rec")));
        Gramext.Slist1sep
          (Gramext.Snterm
             (Grammar.Entry.obj (let_binding : 'let_binding Grammar.Entry.e)),
           Gramext.Stoken ("", "and"));
        Gramext.Stoken ("", "in"); Gramext.Sself],
       Gramext.action
-        (fun (el : 'sequence) _ (l : 'let_binding list) (rf : bool) _
-             (loc : Token.location) ->
+        (fun (el : 'sequence) _ (l : 'let_binding list) (rf : bool MLast.vala)
+             _ (loc : Token.location) ->
            ([MLast.ExLet (loc, rf, l, mksequence loc el)] : 'sequence))]];
     Grammar.Entry.obj (let_binding : 'let_binding Grammar.Entry.e), None,
     [None, None,
