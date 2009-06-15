@@ -204,7 +204,7 @@ value new_anon_rules cnt to_treat mar ename sy =
         let (sl, ar) = gram_symb_list cnt to_treat self self r in
         ([(ename, sl) :: rl], ar @ mar)
       in
-      let (rl, ar) = fold_rules_of_tree f ([], mar) t in
+      let (rl, mar) = fold_rules_of_tree f ([], mar) t in
       (rl, mar)
   | _ ->
       ([], mar) ]
