@@ -58,7 +58,8 @@ and print_symbol1 ppf =
   | Stoken (con, "") -> pp_print_string ppf con
   | Stree t -> print_level ppf pp_print_space (flatten_tree t)
   | Smeta (_, _, _) | Snterml (_, _) | Slist0 _ | Slist0sep (_, _) |
-    Slist1 _ | Slist1sep (_, _) | Sopt _ | Sflag _ | Stoken _ | Svala (_, _) as s ->
+    Slist1 _ | Slist1sep (_, _) | Sopt _ | Sflag _ | Stoken _ |
+    Svala (_, _) as s ->
       fprintf ppf "(%a)" print_symbol s
 and print_rule ppf symbols =
   fprintf ppf "@[<hov 0>";

@@ -56,7 +56,9 @@ install:
 	cp $(OBJS) "$(DESTDIR)$(LIBDIR)/$(NAME)/."
 	cp pa_macro.cmi pa_extend.cmi "$(DESTDIR)$(LIBDIR)/$(NAME)/."
 	cp $(NAME)r$(EXE) "$(DESTDIR)$(BINDIR)/."
-	if test -f q_MLast.cmx; then cp $(COPT) "$(DESTDIR)$(BINDIR)/."; fi
+	if test -f $(NAME)r.opt; then \
+	  cp $(NAME)r.opt "$(DESTDIR)$(BINDIR)/."; \
+	fi
 	if test -f pa_r.cmx; then \
 	  cp $(OBJS:.cmo=.cmx) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
 	  cp $(OBJS:.cmo=$(EXT_OBJ)) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
