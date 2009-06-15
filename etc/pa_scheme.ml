@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.41 2007/10/06 11:40:47 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.42 2007/10/06 18:56:10 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -696,19 +696,22 @@
   ((fun_binding_se se e)
    (match se
           ((Sexpr _ [(Slid _ "values") . _]) (values (ipatt_se se) e))
-          ((Sexpr _ [(Slid loc s) . sel])
-           (let* ((s (rename_id s))
-                  (e
-                   (List.fold_right
-                    (lambda (se e)
-                      (let* ((loc
-                              (Ploc.encl (loc_of_sexpr se)
-                                         (MLast.loc_of_expr e)))
-                             (p (ipatt_se se)))
-                        <:expr< fun $p$ -> $e$ >>))
-                    sel e))
-                  (p <:patt< $lid:s$ >>))
+          ((Sexpr _ [(Slid _ ":") _ _]) (values (ipatt_se se) e))
+          ((Sexpr _ [se1 . sel])
+           (match (ipatt_opt_se se1)
+            ((Left p)
+             (let
+              ((e
+                (List.fold_right
+                 (lambda (se e)
+                  (let*
+                   ((loc
+                     (Ploc.encl (loc_of_sexpr se) (MLast.loc_of_expr e)))
+                    (p (ipatt_se se)))
+                   <:expr< fun $p$ -> $e$ >>))
+                  sel e)))
              (values p e)))
+            ((Right _) (values (ipatt_se se) e))))
           ((_) (values (ipatt_se se) e))))
   ((match_case loc)
    (lambda_match

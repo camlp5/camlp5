@@ -733,18 +733,22 @@ and let_binding_se =
 and fun_binding_se se e =
   match se with
   [ Sexpr _ [Slid _ "values" :: _] -> (ipatt_se se, e)
-  | Sexpr _ [Slid loc s :: sel] ->
-      let s = rename_id s in
-      let e =
-        List.fold_right
-          (fun se e ->
-             let loc = Ploc.encl (loc_of_sexpr se) (MLast.loc_of_expr e) in
-             let p = ipatt_se se in
-             <:expr< fun $p$ -> $e$ >>)
-          sel e
-      in
-      let p = <:patt< $lid:s$ >> in
-      (p, e)
+  | Sexpr _ [Slid _ ":"; _; _] -> (ipatt_se se, e)
+  | Sexpr _ [se1 :: sel] ->
+      match ipatt_opt_se se1 with
+      [ Left p ->
+          let e =
+            List.fold_right
+              (fun se e ->
+                 let loc =
+                   Ploc.encl (loc_of_sexpr se) (MLast.loc_of_expr e)
+                 in
+                 let p = ipatt_se se in
+                 <:expr< fun $p$ -> $e$ >>)
+              sel e
+          in
+          (p, e)
+      | Right _ -> (ipatt_se se, e) ]
   | _ -> (ipatt_se se, e) ]
 and match_case loc =
   fun
