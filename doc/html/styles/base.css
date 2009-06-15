@@ -1,4 +1,4 @@
-/* $Id: base.css,v 1.3 2007/07/10 12:36:35 deraugla Exp $ */
+/* $Id: base.css,v 1.4 2007/07/11 19:31:33 deraugla Exp $ */
 
 body { margin: 0; background-color: rgb(228,214,189) }
 
@@ -38,7 +38,7 @@ pre {
 
 tt { font-weight: bold }
 
-.top { margin-top: 0 }
+.top { margin-top: 0; padding-top: 1cm }
 .bottom { margin-bottom: 0 }
 .trailer { margin-top: 3cm }
 
