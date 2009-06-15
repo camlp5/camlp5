@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.38 2007/08/14 11:19:09 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.39 2007/08/17 17:58:25 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -455,7 +455,7 @@ EXTEND
     [ [ "constraint"; t1 = ctyp; "="; t2 = ctyp -> (t1, t2) ] ]
   ;
   type_parameter:
-    [ [ "'"; i = ident -> (i, (False, False))
+    [ [ i = typevar -> (i, (False, False))
       | "+"; "'"; i = ident -> (i, (True, False))
       | "-"; "'"; i = ident -> (i, (False, True)) ] ]
   ;
@@ -474,7 +474,7 @@ EXTEND
     | LEFTA
       [ t1 = SELF; "."; t2 = SELF -> <:ctyp< $t1$ . $t2$ >> ]
     | "simple"
-      [ "'"; i = ident -> <:ctyp< '$i$ >>
+      [ i = typevar -> <:ctyp< '$i$ >>
       | "_" -> <:ctyp< _ >>
       | i = LIDENT -> <:ctyp< $lid:i$ >>
       | i = UIDENT -> <:ctyp< $uid:i$ >>

@@ -1455,10 +1455,10 @@ Grammar.extend
       Gramext.action
         (fun (i : 'ident) _ _ (loc : Token.location) ->
            (i, (true, false) : 'type_parameter));
-      [Gramext.Stoken ("", "'");
-       Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
+      [Gramext.Snterm
+         (Grammar.Entry.obj (typevar : 'typevar Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'ident) _ (loc : Token.location) ->
+        (fun (i : 'typevar) (loc : Token.location) ->
            (i, (false, false) : 'type_parameter))]];
     Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e), None,
     [None, Some Gramext.LeftA,
@@ -1540,10 +1540,10 @@ Grammar.extend
       [Gramext.Stoken ("", "_")],
       Gramext.action
         (fun _ (loc : Token.location) -> (MLast.TyAny loc : 'ctyp));
-      [Gramext.Stoken ("", "'");
-       Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
+      [Gramext.Snterm
+         (Grammar.Entry.obj (typevar : 'typevar Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'ident) _ (loc : Token.location) ->
+        (fun (i : 'typevar) (loc : Token.location) ->
            (MLast.TyQuo (loc, i) : 'ctyp))]];
     Grammar.Entry.obj
       (constructor_declaration : 'constructor_declaration Grammar.Entry.e),
