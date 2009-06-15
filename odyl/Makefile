@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.7 2007/07/11 09:46:18 deraugla Exp $
+# $Id: Makefile,v 1.8 2007/07/11 12:01:39 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -25,13 +25,13 @@ odyl.cmxa: $(OBJS:.cmo=.cmx)
 	$(OCAMLOPT) $(LINKFLAGS) $(OBJS:.cmo=.cmx) -a -o odyl.cmxa
 
 odyl_main.cmx: odyl_main.ml
-	$(CAMLP4_COMM) -nolib -DOPT -o odyl_main.ppo odyl_main.ml
+	$(CAMLP5_COMM) -nolib -DOPT -o odyl_main.ppo odyl_main.ml
 	$(OCAMLOPT) -c -impl odyl_main.ppo
 	rm -f odyl_main.ppo
 
 odyl_config.ml:
 	echo "let standard_library =" > odyl_config.ml
-	echo "  try Sys.getenv \"CAMLP4LIB\" with" >> odyl_config.ml
+	echo "  try Sys.getenv \"CAMLP5LIB\" with" >> odyl_config.ml
 	echo "    Not_found -> \"$(LIBDIR)/$(NAME)\"" | \
 	sed -e 's|\\|/|g' >> odyl_config.ml
 

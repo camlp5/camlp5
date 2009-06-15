@@ -1,5 +1,5 @@
-(* camlp4r q_MLast.cmo *)
-(* $Id: main.ml,v 1.2 2007/07/11 10:31:06 deraugla Exp $ *)
+(* camlp5r q_MLast.cmo *)
+(* $Id: main.ml,v 1.3 2007/07/11 12:01:39 deraugla Exp $ *)
 
 open Printf;
 
@@ -219,5 +219,5 @@ value go () = do {
   with exc -> report_error_and_exit exc
 };
 
-Odyl_main.name.val := "camlp4";
+Odyl_main.name.val := "camlp5";
 Odyl_main.go.val := go;

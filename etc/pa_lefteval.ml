@@ -1,7 +1,7 @@
-(* camlp4r q_MLast.cmo *)
+(* camlp5r q_MLast.cmo *)
 (***********************************************************************)
 (*                                                                     *)
-(*                             Camlp4                                  *)
+(*                             Camlp5                                  *)
 (*                                                                     *)
 (*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_lefteval.ml,v 1.4 2007/06/09 07:40:29 deraugla Exp $ *)
+(* $Id: pa_lefteval.ml,v 1.5 2007/07/11 12:01:39 deraugla Exp $ *)
 
 value not_impl name x =
   let desc =

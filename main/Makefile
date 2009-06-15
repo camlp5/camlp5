@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.1 2007/07/11 09:46:18 deraugla Exp $
+# $Id: Makefile,v 1.2 2007/07/11 12:01:39 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -8,33 +8,33 @@ SHELL=/bin/sh
 INCLUDES=-I ../odyl -I $(TOP)/boot -I $(OTOP)/utils -I $(OTOP)/parsing
 OCAMLCFLAGS=-warn-error A $(INCLUDES)
 LINKFLAGS=$(INCLUDES)
-CAMLP4_OBJS=$(TOP)/boot/stdpp.cmo $(TOP)/boot/token.cmo $(TOP)/boot/plexer.cmo $(TOP)/boot/gramext.cmo $(TOP)/boot/grammar.cmo $(TOP)/boot/extfold.cmo $(TOP)/boot/extfun.cmo $(TOP)/boot/fstream.cmo $(TOP)/boot/pretty.cmo $(OTOP)/utils/pconfig.cmo quotation.cmo ast2pt.cmo exparser.cmo spretty.cmo reloc.cmo pcaml.cmo prtools.cmo argl.cmo main.cmo
-CAMLP4_XOBJS=../lib/stdpp.cmx ../lib/token.cmx ../lib/plexer.cmx ../lib/gramext.cmx ../lib/grammar.cmx ../lib/extfold.cmx ../lib/extfun.cmx ../lib/fstream.cmx ../lib/pretty.cmx $(OTOP)/utils/pconfig.cmx quotation.cmx ast2pt.cmx exparser.cmx spretty.cmx reloc.cmx pcaml.cmx prtools.cmx argl.cmx main.cmx
+CAMLP5_OBJS=$(TOP)/boot/stdpp.cmo $(TOP)/boot/token.cmo $(TOP)/boot/plexer.cmo $(TOP)/boot/gramext.cmo $(TOP)/boot/grammar.cmo $(TOP)/boot/extfold.cmo $(TOP)/boot/extfun.cmo $(TOP)/boot/fstream.cmo $(TOP)/boot/pretty.cmo $(OTOP)/utils/pconfig.cmo quotation.cmo ast2pt.cmo exparser.cmo spretty.cmo reloc.cmo pcaml.cmo prtools.cmo argl.cmo main.cmo
+CAMLP5_XOBJS=../lib/stdpp.cmx ../lib/token.cmx ../lib/plexer.cmx ../lib/gramext.cmx ../lib/grammar.cmx ../lib/extfold.cmx ../lib/extfun.cmx ../lib/fstream.cmx ../lib/pretty.cmx $(OTOP)/utils/pconfig.cmx quotation.cmx ast2pt.cmx exparser.cmx spretty.cmx reloc.cmx pcaml.cmx prtools.cmx argl.cmx main.cmx
 OBJS=../odyl/odyl.cma $(NAME).cma
-CAMLP4M=
+CAMLP5M=
 
-CAMLP4=$(NAME)$(EXE)
-CAMLP4OPT=phony
+CAMLP5=$(NAME)$(EXE)
+CAMLP5OPT=phony
 
-all: $(CAMLP4)
+all: $(CAMLP5)
 opt: $(OBJS:.cma=.cmxa)
-optp4: $(CAMLP4OPT)
+optp4: $(CAMLP5OPT)
 
-$(CAMLP4): $(OBJS) ../odyl/odyl.cmo
-	$(OCAMLC) $(OBJS) $(CAMLP4M) ../odyl/odyl.cmo -linkall -o $(CAMLP4)
+$(CAMLP5): $(OBJS) ../odyl/odyl.cmo
+	$(OCAMLC) $(OBJS) $(CAMLP5M) ../odyl/odyl.cmo -linkall -o $(CAMLP5)
 
-$(CAMLP4OPT): $(OBJS:.cma=.cmxa) ../odyl/odyl.cmx
-	$(OCAMLOPT) $(OBJS:.cma=.cmxa) $(CAMLP4M) ../odyl/odyl.cmx -linkall -o $(CAMLP4OPT)
+$(CAMLP5OPT): $(OBJS:.cma=.cmxa) ../odyl/odyl.cmx
+	$(OCAMLOPT) $(OBJS:.cma=.cmxa) $(CAMLP5M) ../odyl/odyl.cmx -linkall -o $(CAMLP5OPT)
 
-$(NAME).cma: $(CAMLP4_OBJS)
-	$(OCAMLC) $(LINKFLAGS) $(CAMLP4_OBJS) -a -o $(NAME).cma
+$(NAME).cma: $(CAMLP5_OBJS)
+	$(OCAMLC) $(LINKFLAGS) $(CAMLP5_OBJS) -a -o $(NAME).cma
 
-$(NAME).cmxa: $(CAMLP4_XOBJS)
-	$(OCAMLOPT) $(LINKFLAGS) $(CAMLP4_XOBJS) -a -o $(NAME).cmxa
+$(NAME).cmxa: $(CAMLP5_XOBJS)
+	$(OCAMLOPT) $(LINKFLAGS) $(CAMLP5_XOBJS) -a -o $(NAME).cmxa
 
 clean::
 	rm -f *.cm* *.pp[io] *.o *.bak .*.bak *.out *.opt
-	rm -f $(CAMLP4)
+	rm -f $(CAMLP5)
 
 depend:
 	cp .depend .depend.bak
@@ -45,19 +45,19 @@ depend:
 	done
 
 promote:
-	cp $(CAMLP4) $(TOP)/boot/.
+	cp $(CAMLP5) $(TOP)/boot/.
 
 compare:
-	@for j in $(CAMLP4); do \
+	@for j in $(CAMLP5); do \
 		if cmp $$j $(TOP)/boot/$$j; then :; else exit 1; fi; \
 	done
 
 install:
 	-$(MKDIR) "$(BINDIR)"
 	-$(MKDIR) "$(LIBDIR)/$(NAME)"
-	cp $(CAMLP4) "$(BINDIR)/."
-	cp mLast.mli quotation.mli ast2pt.mli pcaml.mli spretty.mli prtools.mli "$(LIBDIR)/$(NAME)/."
-	cp mLast.cmi quotation.cmi ast2pt.cmi pcaml.cmi spretty.cmi prtools.cmi "$(LIBDIR)/$(NAME)/."
+	cp $(CAMLP5) "$(BINDIR)/."
+	cp mLast.mli quotation.mli ast2pt.mli pcaml.mli prtools.mli "$(LIBDIR)/$(NAME)/."
+	cp mLast.cmi quotation.cmi ast2pt.cmi pcaml.cmi prtools.cmi "$(LIBDIR)/$(NAME)/."
 	cp $(NAME).cma "$(LIBDIR)/$(NAME)/."
 
 include .depend

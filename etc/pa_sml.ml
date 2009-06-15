@@ -1,7 +1,7 @@
-(* camlp4r pa_extend.cmo q_MLast.cmo *)
+(* camlp5r pa_extend.cmo q_MLast.cmo *)
 (***********************************************************************)
 (*                                                                     *)
-(*                             Camlp4                                  *)
+(*                             Camlp5                                  *)
 (*                                                                     *)
 (*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_sml.ml,v 1.9 2007/06/28 04:11:18 deraugla Exp $ *)
+(* $Id: pa_sml.ml,v 1.10 2007/07/11 12:01:39 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;

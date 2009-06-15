@@ -1,7 +1,7 @@
-(* camlp4r *)
+(* camlp5r *)
 (***********************************************************************)
 (*                                                                     *)
-(*                             Camlp4                                  *)
+(*                             Camlp5                                  *)
 (*                                                                     *)
 (*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: stdpp.ml,v 1.13 2007/05/07 08:38:53 deraugla Exp $ *)
+(* $Id: stdpp.ml,v 1.14 2007/07/11 12:01:39 deraugla Exp $ *)
 
 (* Two implementations of "locations" are available; both work. The
    following one is more recent. They are represented as "record",

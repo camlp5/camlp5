@@ -1,4 +1,4 @@
-(* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
+(* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
 (* $Id$ *)
 
 open Format;

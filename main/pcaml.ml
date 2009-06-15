@@ -1,7 +1,7 @@
-(* camlp4r pa_extend.cmo *)
+(* camlp5r pa_extend.cmo *)
 (***********************************************************************)
 (*                                                                     *)
-(*                             Camlp4                                  *)
+(*                             Camlp5                                  *)
 (*                                                                     *)
 (*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pcaml.ml,v 1.1 2007/07/11 09:46:18 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.2 2007/07/11 12:01:39 deraugla Exp $ *)
 
 value version = "4.04-exp";
 value syntax_name = ref "";

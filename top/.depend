@@ -1,6 +1,6 @@
-camlp4_top.cmo: ../main/ast2pt.cmi ../main/mLast.cmi \
+camlp5_top.cmo: ../main/ast2pt.cmi ../main/mLast.cmi \
     $(OTOP)/parsing/parsetree.cmi ../main/pcaml.cmi \
     $(OTOP)/utils/warnings.cmi 
-camlp4_top.cmx: ../main/ast2pt.cmx ../main/mLast.cmi \
+camlp5_top.cmx: ../main/ast2pt.cmx ../main/mLast.cmi \
     $(OTOP)/parsing/parsetree.cmi ../main/pcaml.cmx \
     $(OTOP)/utils/warnings.cmi 

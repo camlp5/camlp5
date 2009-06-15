@@ -1,5 +1,5 @@
-(* camlp4r *)
-(* $Id: pretty.mli,v 1.1 2007/06/16 07:44:17 deraugla Exp $ *)
+(* camlp5r *)
+(* $Id: pretty.mli,v 1.2 2007/07/11 12:01:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (** Pretty printing on strings *)

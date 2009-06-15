@@ -1,7 +1,7 @@
-(* camlp4r *)
+(* camlp5r *)
 (***********************************************************************)
 (*                                                                     *)
-(*                             Camlp4                                  *)
+(*                             Camlp5                                  *)
 (*                                                                     *)
 (*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: oprint.ml,v 1.6 2007/06/17 20:01:36 deraugla Exp $ *)
+(* $Id: oprint.ml,v 1.7 2007/07/11 12:01:39 deraugla Exp $ *)
 
 open Format;
 open Outcometree;

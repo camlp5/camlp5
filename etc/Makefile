@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.22 2007/07/11 09:46:18 deraugla Exp $
+# $Id: Makefile,v 1.23 2007/07/11 12:01:39 deraugla Exp $
 
 include ../config/Makefile
 
@@ -6,9 +6,9 @@ INCLUDES=-I ../main -I ../boot
 OCAMLCFLAGS=-warn-error A $(INCLUDES)
 OBJS=pa_o.cmo pa_op.cmo pa_oop.cmo pa_sml.cmo pa_lisp.cmo pa_scheme.cmo pa_extfold.cmo pa_extfun.cmo pa_fstream.cmo pa_lefteval.cmo pa_pragma.cmo pr_r.cmo pr_ro.cmo pr_rp.cmo pr_o.cmo pr_op.cmo pr_scheme.cmo pr_schemep.cmo pr_extend.cmo pr_extfun.cmo pr_null.cmo pr_depend.cmo q_phony.cmo
 OLD_OBJS=pr_r_old.cmo pr_rp_old.cmo pr_o_old.cmo pr_op_old.cmo pr_extend_old.cmo pr_extfun_old.cmo
-CAMLP4OM=pa_o.cmo pa_op.cmo ../meta/pr_dump.cmo
-CAMLP4SCHM=pa_scheme.cmo ../meta/pr_dump.cmo
-CAMLP4OMX=pa_o.cmx pa_op.cmx ../meta/pr_dump.cmx
+CAMLP5OM=pa_o.cmo pa_op.cmo ../meta/pr_dump.cmo
+CAMLP5SCHM=pa_scheme.cmo ../meta/pr_dump.cmo
+CAMLP5OMX=pa_o.cmx pa_op.cmx ../meta/pr_dump.cmx
 SHELL=/bin/sh
 COUT=$(OBJS) $(OLD_OBJS) $(NAME)o$(EXE) $(NAME)sch$(EXE)
 COPT=$(NAME)o.opt
@@ -25,20 +25,20 @@ pr_op_old.cmo: parserify.cmo pr_op_main.cmo
 pr_schemep.cmo: parserify.cmo pr_schp_main.cmo
 	$(OCAMLC) parserify.cmo pr_schp_main.cmo -a -o $@
 
-$(NAME)o$(EXE): ../main/$(NAME)$(EXE) $(CAMLP4OM)
+$(NAME)o$(EXE): ../main/$(NAME)$(EXE) $(CAMLP5OM)
 	rm -f $(NAME)o$(EXE)
-	cd ../main; $(MAKE) CAMLP4=../etc/$(NAME)o$(EXE) CAMLP4M="-I ../etc $(CAMLP4OM)"
+	cd ../main; $(MAKE) CAMLP5=../etc/$(NAME)o$(EXE) CAMLP5M="-I ../etc $(CAMLP5OM)"
 
-$(NAME)sch$(EXE): ../main/$(NAME)$(EXE) $(CAMLP4SCHM)
+$(NAME)sch$(EXE): ../main/$(NAME)$(EXE) $(CAMLP5SCHM)
 	rm -f $(NAME)sch$(EXE)
-	cd ../main; $(MAKE) CAMLP4=../etc/$(NAME)sch$(EXE) CAMLP4M="-I ../etc $(CAMLP4SCHM)"
+	cd ../main; $(MAKE) CAMLP5=../etc/$(NAME)sch$(EXE) CAMLP5M="-I ../etc $(CAMLP5SCHM)"
 
-$(NAME)o.opt: $(CAMLP4OMX)
+$(NAME)o.opt: $(CAMLP5OMX)
 	rm -f $(NAME)o.opt
-	cd ../main; $(MAKE) optp4 CAMLP4OPT=../etc/$(NAME)o.opt CAMLP4M="-I ../etc $(CAMLP4OMX)"
+	cd ../main; $(MAKE) optp4 CAMLP5OPT=../etc/$(NAME)o.opt CAMLP5M="-I ../etc $(CAMLP5OMX)"
 
-mk$(NAME).sh: mkcamlp4.sh.tpl
-	sed -e "s!LIBDIR!$(LIBDIR)!g" -e "s/camlp5/$(NAME)/g" mkcamlp4.sh.tpl > mk$(NAME).sh
+mk$(NAME).sh: mkcamlp5.sh.tpl
+	sed -e "s!LIBDIR!$(LIBDIR)!g" -e "s/camlp5/$(NAME)/g" mkcamlp5.sh.tpl > mk$(NAME).sh
 
 bootstrap_scheme:
 	@$(MAKE) bootstrap_l L=scheme | grep -v directory

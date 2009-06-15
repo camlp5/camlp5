@@ -1,7 +1,7 @@
-(* camlp4r -I . *)
+(* camlp5r -I . *)
 (***********************************************************************)
 (*                                                                     *)
-(*                             Camlp4                                  *)
+(*                             Camlp5                                  *)
 (*                                                                     *)
 (*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_phony.ml,v 1.9 2007/07/10 09:05:15 deraugla Exp $ *)
+(* $Id: q_phony.ml,v 1.10 2007/07/11 12:01:39 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";

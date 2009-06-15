@@ -1,7 +1,7 @@
-(* camlp4r pa_lex.cmo *)
+(* camlp5r pa_lex.cmo *)
 (***********************************************************************)
 (*                                                                     *)
-(*                             Camlp4                                  *)
+(*                             Camlp5                                  *)
 (*                                                                     *)
 (*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.78 2007/07/08 20:26:44 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.79 2007/07/11 12:01:39 deraugla Exp $ *)
 
 open Token;
 

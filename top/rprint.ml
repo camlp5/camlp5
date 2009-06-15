@@ -1,7 +1,7 @@
-(* camlp4r pa_macro.cmo *)
+(* camlp5r pa_macro.cmo *)
 (***********************************************************************)
 (*                                                                     *)
-(*                             Camlp4                                  *)
+(*                             Camlp5                                  *)
 (*                                                                     *)
 (*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: rprint.ml,v 1.15 2007/07/08 17:47:44 deraugla Exp $ *)
+(* $Id: rprint.ml,v 1.16 2007/07/11 12:01:39 deraugla Exp $ *)
 
 open Format;
 open Outcometree;

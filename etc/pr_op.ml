@@ -1,5 +1,5 @@
-(* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_op.ml,v 1.6 2007/07/06 10:53:59 deraugla Exp $ *)
+(* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
+(* $Id: pr_op.ml,v 1.7 2007/07/11 12:01:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Heuristic to rebuild parsers and streams from the AST *)

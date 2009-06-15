@@ -1,7 +1,7 @@
-(* camlp4r *)
+(* camlp5r *)
 (***********************************************************************)
 (*                                                                     *)
-(*                             Camlp4                                  *)
+(*                             Camlp5                                  *)
 (*                                                                     *)
 (*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
@@ -10,11 +10,11 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.mli,v 1.14 2006/12/26 08:54:09 deraugla Exp $ *)
+(* $Id: token.mli,v 1.15 2007/07/11 12:01:39 deraugla Exp $ *)
 
-(** Lexers for Camlp4 grammars.
+(** Lexers for Camlp5 grammars.
 
-   This module defines the Camlp4 lexer type to be used in extensible
+   This module defines the Camlp5 lexer type to be used in extensible
    grammars (see module [Grammar]). It also provides some useful functions
    to create lexers (this module should be renamed [Glexer] one day). *)
 
@@ -44,7 +44,7 @@ type lexer_func 'te = Stream.t char -> (Stream.t 'te * location_function);
 
 value make_loc : (int * int) -> location;
 value dummy_loc : location;
-  (** compatibility camlp4 distributed with ocaml *)
+  (** compatibility camlp5 distributed with ocaml *)
 
 type glexer 'te =
   { tok_func : lexer_func 'te;
@@ -54,7 +54,7 @@ type glexer 'te =
     tok_text : pattern -> string;
     tok_comm : mutable option (list location) }
 ;
-   (** The type for a lexer used by Camlp4 grammars.
+   (** The type for a lexer used by Camlp5 grammars.
 -      The field [tok_func] is the main lexer function. See [lexer_func]
        type above. This function may be created from a [char stream parser]
        or for an [ocamllex] function using the functions below.

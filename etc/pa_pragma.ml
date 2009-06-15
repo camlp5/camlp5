@@ -1,5 +1,5 @@
-(* camlp4r q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.49 2007/06/15 08:26:04 deraugla Exp $ *)
+(* camlp5r q_MLast.cmo -qmod ctyp,Type *)
+(* $Id: pa_pragma.ml,v 1.50 2007/07/11 12:01:39 deraugla Exp $ *)
 
 (* expressions evaluated in the context of the preprocessor *)
 (* syntax at toplevel: #pragma <expr> *)

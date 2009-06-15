@@ -1,2 +1,3 @@
-camlp4o.out
-camlp4r.out
+*.cm[oiax]
+camlp5r
+camlp5r.opt

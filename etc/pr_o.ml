@@ -1,5 +1,5 @@
-(* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.61 2007/07/10 01:04:44 deraugla Exp $ *)
+(* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
+(* $Id: pr_o.ml,v 1.62 2007/07/11 12:01:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;

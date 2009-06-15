@@ -1,7 +1,7 @@
-(* camlp4r *)
+(* camlp5r *)
 (***********************************************************************)
 (*                                                                     *)
-(*                             Camlp4                                  *)
+(*                             Camlp5                                  *)
 (*                                                                     *)
 (*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pr_dump.ml,v 1.5 2007/06/17 00:43:39 deraugla Exp $ *)
+(* $Id: pr_dump.ml,v 1.6 2007/07/11 12:01:39 deraugla Exp $ *)
 
 value open_out_file () =
   match Pcaml.output_file.val with

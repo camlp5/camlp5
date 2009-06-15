@@ -1,7 +1,7 @@
-(* camlp4r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
+(* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
 (***********************************************************************)
 (*                                                                     *)
-(*                             Camlp4                                  *)
+(*                             Camlp5                                  *)
 (*                                                                     *)
 (*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.26 2007/07/07 20:00:08 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.27 2007/07/11 12:01:39 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 

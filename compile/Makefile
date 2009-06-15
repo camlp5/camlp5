@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.11 2007/07/11 09:46:18 deraugla Exp $
+# $Id: Makefile,v 1.12 2007/07/11 12:01:39 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -17,11 +17,11 @@ opt: $(NAME)$D.fast.opt
 
 $(NAME)$D.fast: pa_$D_fast.cmo
 	rm -f $(NAME)$D.fast
-	cd ../main; $(MAKE) CAMLP4=../compile/$(NAME)$D.fast CAMLP4M="../compile/pa_$D_fast.cmo ../meta/pr_dump.cmo"
+	cd ../main; $(MAKE) CAMLP5=../compile/$(NAME)$D.fast CAMLP5M="../compile/pa_$D_fast.cmo ../meta/pr_dump.cmo"
 
 $(NAME)$D.fast.opt: pa_$D_fast.cmx
 	rm -f $(NAME)$D.fast.opt
-	cd ../main; $(MAKE) optp4 CAMLP4OPT=../compile/$(NAME)$D.fast.opt CAMLP4M="../compile/pa_$D_fast.cmx ../meta/pr_dump.cmx"
+	cd ../main; $(MAKE) optp4 CAMLP5OPT=../compile/$(NAME)$D.fast.opt CAMLP5M="../compile/pa_$D_fast.cmx ../meta/pr_dump.cmx"
 
 pa_$D_fast.ml: comp_head.ml.tpl $D_fast.ml.tmp comp_trail.ml.tpl
 	cat $(SRC) | sed -e "s/Plexer.gmake ()/P.lexer/" -e "/EXTEND/,/END/d" -e "/Grammar.Entry.of_parser/d" -e "/Grammar.Entry.gcreate/d" -e "/Grammar.Entry.create/d" | cat comp_head.ml.tpl - $D_fast.ml.tmp comp_trail.ml.tpl > pa_$D_fast.ml

@@ -1,7 +1,7 @@
-(* camlp4r *)
+(* camlp5r *)
 (***********************************************************************)
 (*                                                                     *)
-(*                             Camlp4                                  *)
+(*                             Camlp5                                  *)
 (*                                                                     *)
 (*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pcaml.mli,v 1.1 2007/07/11 09:46:18 deraugla Exp $ *)
+(* $Id: pcaml.mli,v 1.2 2007/07/11 12:01:39 deraugla Exp $ *)
 
 (** Language grammar, entries and printers.
 
@@ -33,7 +33,7 @@ value parse_implem :
        stops, the directive is evaluated, and this function is called
        again.
        These functions are references, because they can be changed to
-       use another technology than the Camlp4 extended grammars. By
+       use another technology than the Camlp5 extended grammars. By
        default, they use the grammars entries [implem] and [interf]
        defined below. *)
 
@@ -71,7 +71,7 @@ value quotation_dump_file : ref (option string);
        If [None] (default), this result is not dumped. If [Some fname], the
        result is dumped in the file [fname]. *)
 value version : string;
-   (** The current version of Camlp4. *)
+   (** The current version of Camlp5. *)
 value add_option : string -> Arg.spec -> string -> unit;
    (** Add an option to the command line options. *)
 value no_constructors_arity : ref bool;

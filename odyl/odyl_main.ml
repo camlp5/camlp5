@@ -1,7 +1,7 @@
-(* camlp4r pa_macro.cmo *)
+(* camlp5r pa_macro.cmo *)
 (***********************************************************************)
 (*                                                                     *)
-(*                             Camlp4                                  *)
+(*                             Camlp5                                  *)
 (*                                                                     *)
 (*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: odyl_main.ml,v 1.4 2006/12/26 08:54:09 deraugla Exp $ *)
+(* $Id: odyl_main.ml,v 1.5 2007/07/11 12:01:39 deraugla Exp $ *)
 
 value go = ref (fun () -> ());
 value name = ref "odyl";

@@ -1,5 +1,5 @@
-(* camlp4r *)
-(* $Id: argl.ml,v 1.1 2007/07/11 09:46:18 deraugla Exp $ *)
+(* camlp5r *)
+(* $Id: argl.ml,v 1.2 2007/07/11 12:01:39 deraugla Exp $ *)
 
 open Printf;
 
@@ -138,12 +138,12 @@ value print_usage_list l =
 
 value usage ini_sl ext_sl = do {
   eprintf "\
-Usage: camlp4 [load-options] [--] [other-options]
+Usage: camlp5 [load-options] [--] [other-options]
 Load options:
   -I directory  Add directory in search patch for object files.
-  -where        Print camlp4 library directory and exit.
+  -where        Print camlp5 library directory and exit.
   -nolib        No automatic search for object files in library directory.
-  <object-file> Load this file in Camlp4 core.
+  <object-file> Load this file in Camlp5 core.
 Other options:
   <file>        Parse this file.\n";
   print_usage_list ini_sl;

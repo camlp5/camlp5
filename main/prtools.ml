@@ -1,5 +1,5 @@
-(* camlp4r q_MLast.cmo *)
-(* $Id: prtools.ml,v 1.1 2007/07/11 09:46:18 deraugla Exp $ *)
+(* camlp5r q_MLast.cmo *)
+(* $Id: prtools.ml,v 1.2 2007/07/11 12:01:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;

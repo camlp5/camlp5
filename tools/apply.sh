@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: apply.sh,v 1.8 2007/07/10 01:31:27 deraugla Exp $
+# $Id: apply.sh,v 1.9 2007/07/11 12:01:39 deraugla Exp $
 
 ARGS1=
 ARGS2=
@@ -19,12 +19,12 @@ done
 head -1 "$FILE" >/dev/null || exit 1
 
 set - `head -1 $FILE`
-if test "$2" = "camlp4r" -o "$2" = "camlp4"; then
+if test "$2" = "camlp5r" -o "$2" = "camlp5"; then
 	COMM="../boot/$2 -nolib -I ../boot -I ../etc"
 	shift; shift
 	ARGS1=`echo $* | sed -e "s/[()*]//g"`
 else
-	COMM="../boot/camlp4 -nolib -I ../boot -I ../etc pa_o.cmo"
+	COMM="../boot/camlp5 -nolib -I ../boot -I ../etc pa_o.cmo"
 	ARGS1=
 fi
 

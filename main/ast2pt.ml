@@ -1,7 +1,7 @@
-(* camlp4r pa_macro.cmo *)
+(* camlp5r pa_macro.cmo *)
 (***********************************************************************)
 (*                                                                     *)
-(*                             Camlp4                                  *)
+(*                             Camlp5                                  *)
 (*                                                                     *)
 (*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.1 2007/07/11 09:46:18 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.2 2007/07/11 12:01:39 deraugla Exp $ *)
 
 open Stdpp;
 open MLast;
@@ -35,11 +35,11 @@ let ov = String.sub ov 0 oi in
 if ov <> Pconfig.ocaml_version then do {
   flush stdout;
   Printf.eprintf "\n";
-  Printf.eprintf "This ocaml and this camlp4 are not compatible:\n";
+  Printf.eprintf "This ocaml and this camlp5 are not compatible:\n";
   Printf.eprintf "- OCaml version is %s\n" Sys.ocaml_version;
-  Printf.eprintf "- Camlp4 compiled with ocaml %s\n" Pconfig.ocaml_version;
+  Printf.eprintf "- Camlp5 compiled with ocaml %s\n" Pconfig.ocaml_version;
   Printf.eprintf "\n";
-  Printf.eprintf "You need to recompile camlp4.\n";
+  Printf.eprintf "You need to recompile camlp5.\n";
   Printf.eprintf "\n";
   flush stderr;
   failwith "bad version"

@@ -1,5 +1,5 @@
-; camlp4 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.10 2007/07/05 14:35:52 deraugla Exp $
+; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
+; $Id: pa_scheme.ml,v 1.11 2007/07/11 12:01:39 deraugla Exp $
 
 (open Pcaml)
 (open Stdpp)
@@ -144,7 +144,7 @@
 ; parser rule with dot is right associative and we have to reverse
 ; the resulting tree (using the function leftify).
 ; This is a complicated issue: the behaviour of the OCaml toplevel
-; is strange, anyway. For example, even without Camlp4, The OCaml
+; is strange, anyway. For example, even without Camlp5, The OCaml
 ; toplevel accepts that:
 ;     # let x = 32;; foo bar match let )
 

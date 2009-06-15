@@ -1,5 +1,5 @@
-(* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_extfun.ml,v 1.8 2007/07/06 09:38:42 deraugla Exp $ *)
+(* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
+(* $Id: pr_extfun.ml,v 1.9 2007/07/11 12:01:39 deraugla Exp $ *)
 
 (* heuristic to rebuild the extfun statement from the AST *)
 

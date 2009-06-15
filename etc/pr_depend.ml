@@ -1,5 +1,5 @@
-(* camlp4r *)
-(* $Id: pr_depend.ml,v 1.11 2007/06/28 04:11:18 deraugla Exp $ *)
+(* camlp5r *)
+(* $Id: pr_depend.ml,v 1.12 2007/07/11 12:01:39 deraugla Exp $ *)
 
 open MLast;
 

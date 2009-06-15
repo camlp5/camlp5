@@ -1,7 +1,7 @@
-(* camlp4r *)
+(* camlp5r *)
 (***********************************************************************)
 (*                                                                     *)
-(*                             Camlp4                                  *)
+(*                             Camlp5                                  *)
 (*                                                                     *)
 (*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: gramext.mli,v 1.3 2006/12/26 08:54:09 deraugla Exp $ *)
+(* $Id: gramext.mli,v 1.4 2007/07/11 12:01:39 deraugla Exp $ *)
 
 type grammar 'te =
   { gtokens : Hashtbl.t Token.pattern (ref int);

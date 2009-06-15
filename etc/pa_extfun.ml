@@ -1,5 +1,5 @@
-(* camlp4r q_MLast.cmo pa_extend.cmo *)
-(* $Id: pa_extfun.ml,v 1.4 2007/06/09 07:40:29 deraugla Exp $ *)
+(* camlp5r q_MLast.cmo pa_extend.cmo *)
+(* $Id: pa_extfun.ml,v 1.5 2007/07/11 12:01:39 deraugla Exp $ *)
 
 open Pcaml;
 

@@ -1,5 +1,5 @@
-(* camlp4r *)
-(* $Id: compile.ml,v 1.7 2007/06/15 08:26:04 deraugla Exp $ *)
+(* camlp5r *)
+(* $Id: compile.ml,v 1.8 2007/07/11 12:01:39 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -11,7 +11,7 @@ value keywords = ref [];
 value loc = Stdpp.dummy_loc;
 
 (* Watch the segmentation faults here! the compiled file must have been
-   loaded in camlp4 with the option pa_extend.cmo -meta_action. *)
+   loaded in camlp5 with the option pa_extend.cmo -meta_action. *)
 value magic_act (act : Obj.t) : MLast.expr = Obj.magic act;
 
 (* Names of symbols for error messages; code borrowed to grammar.ml *)

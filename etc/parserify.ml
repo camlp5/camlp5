@@ -1,4 +1,4 @@
-(* camlp4r q_MLast.cmo *)
+(* camlp5r q_MLast.cmo *)
 (* $Id$ *)
 
 (* heuristic to rebuild the parsers with their initial syntax *)

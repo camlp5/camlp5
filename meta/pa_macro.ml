@@ -1,5 +1,5 @@
-(* camlp4r *)
-(* $Id: pa_macro.ml,v 1.12 2007/07/11 10:31:06 deraugla Exp $ *)
+(* camlp5r *)
+(* $Id: pa_macro.ml,v 1.13 2007/07/11 12:01:39 deraugla Exp $ *)
 
 (*
 Added statements:
@@ -34,7 +34,7 @@ Added statements:
      ( <dexpr> )
      <uident>
 
-  As Camlp4 options:
+  As Camlp5 options:
 
      -D<uident>
      -U<uident>

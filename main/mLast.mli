@@ -1,7 +1,7 @@
-(* camlp4r *)
+(* camlp5r *)
 (***********************************************************************)
 (*                                                                     *)
-(*                             Camlp4                                  *)
+(*                             Camlp5                                  *)
 (*                                                                     *)
 (*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
@@ -10,14 +10,14 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: mLast.mli,v 1.1 2007/07/11 09:46:18 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.2 2007/07/11 12:01:39 deraugla Exp $ *)
 
 (* Module [MLast]: abstract syntax tree.
 
    This is undocumented because the AST is not supposed to be used
    directly; the good usage is to use the quotations representing
-   these values in concrete syntax (see the Camlp4 documentation).
-   See also the file q_MLast.ml in Camlp4 sources. *)
+   these values in concrete syntax (see the Camlp5 documentation).
+   See also the file q_MLast.ml in Camlp5 sources. *)
 
 type loc = Stdpp.location;
 

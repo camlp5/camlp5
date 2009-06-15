@@ -1,5 +1,5 @@
-(* camlp4r *)
-(* $Id: extfun.ml,v 1.5 2007/06/11 15:50:57 deraugla Exp $ *)
+(* camlp5r *)
+(* $Id: extfun.ml,v 1.6 2007/07/11 12:01:39 deraugla Exp $ *)
 (* Copyright 2007 INRIA *)
 
 (* Extensible Functions *)

@@ -1,7 +1,7 @@
-(* camlp4r *)
+(* camlp5r *)
 (***********************************************************************)
 (*                                                                     *)
-(*                             Camlp4                                  *)
+(*                             Camlp5                                  *)
 (*                                                                     *)
 (*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.16 2007/06/16 00:30:42 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.17 2007/07/11 12:01:39 deraugla Exp $ *)
 
 open Stdpp;
 open Gramext;

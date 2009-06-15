@@ -6,8 +6,8 @@ include $(TOP)/config/Makefile
 INCLUDES=-I ../main -I $(TOP)/boot -I $(OTOP)/utils
 OCAMLCFLAGS=-warn-error A $(INCLUDES)
 OBJS=q_MLast.cmo pa_r.cmo pa_rp.cmo pa_extend.cmo pa_extend_m.cmo pa_macro.cmo pr_dump.cmo pa_lex.cmo
-CAMLP4RM=pa_r.cmo pa_rp.cmo pr_dump.cmo
-CAMLP4RMX=pa_r.cmx pa_rp.cmx pr_dump.cmx
+CAMLP5RM=pa_r.cmo pa_rp.cmo pr_dump.cmo
+CAMLP5RMX=pa_r.cmx pa_rp.cmx pr_dump.cmx
 SHELL=/bin/sh
 COUT=$(OBJS) $(NAME)r$(EXE)
 COPT=$(NAME)r.opt
@@ -15,13 +15,13 @@ COPT=$(NAME)r.opt
 all: $(COUT)
 opt: $(COPT)
 
-$(NAME)r$(EXE): ../main/$(NAME)$(EXE) $(CAMLP4RM)
+$(NAME)r$(EXE): ../main/$(NAME)$(EXE) $(CAMLP5RM)
 	rm -f $(NAME)r$(EXE)
-	cd ../main; $(MAKE) OTOP=$(OTOP) CAMLP4=../meta/$(NAME)r$(EXE) CAMLP4M="-I ../meta $(CAMLP4RM)"
+	cd ../main; $(MAKE) OTOP=$(OTOP) CAMLP5=../meta/$(NAME)r$(EXE) CAMLP5M="-I ../meta $(CAMLP5RM)"
 
-$(NAME)r.opt: $(CAMLP4RMX)
+$(NAME)r.opt: $(CAMLP5RMX)
 	rm -f $(NAME)r.opt
-	cd ../main; $(MAKE) optp4 OTOP=$(OTOP) CAMLP4OPT=../meta/$(NAME)r.opt CAMLP4M="-I ../meta $(CAMLP4RMX)"
+	cd ../main; $(MAKE) optp4 OTOP=$(OTOP) CAMLP5OPT=../meta/$(NAME)r.opt CAMLP5M="-I ../meta $(CAMLP5RMX)"
 
 clean::
 	rm -f *.cm* *.pp[io] *.o *.bak .*.bak $(COUT) $(COPT)

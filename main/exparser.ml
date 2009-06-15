@@ -1,7 +1,7 @@
-(* camlp4r q_MLast.cmo *)
+(* camlp5r q_MLast.cmo *)
 (***********************************************************************)
 (*                                                                     *)
-(*                             Camlp4                                  *)
+(*                             Camlp5                                  *)
 (*                                                                     *)
 (*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: exparser.ml,v 1.1 2007/07/11 09:46:18 deraugla Exp $ *)
+(* $Id: exparser.ml,v 1.2 2007/07/11 12:01:39 deraugla Exp $ *)
 
 type spat_comp =
   [ SpTrm of MLast.loc and MLast.patt and option MLast.expr

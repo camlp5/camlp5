@@ -1,7 +1,7 @@
-(* camlp4r *)
+(* camlp5r *)
 (***********************************************************************)
 (*                                                                     *)
-(*                             Camlp4                                  *)
+(*                             Camlp5                                  *)
 (*                                                                     *)
 (*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
@@ -33,7 +33,7 @@ val parse_implem :
        stops, the directive is evaluated, and this function is called
        again.
        These functions are references, because they can be changed to
-       use another technology than the Camlp4 extended grammars. By
+       use another technology than the Camlp5 extended grammars. By
        default, they use the grammars entries [implem] and [interf]
        defined below. *)
 
@@ -71,7 +71,7 @@ val quotation_dump_file : string option ref;;
        If [None] (default), this result is not dumped. If [Some fname], the
        result is dumped in the file [fname]. *)
 val version : string;;
-   (** The current version of Camlp4. *)
+   (** The current version of Camlp5. *)
 val add_option : string -> Arg.spec -> string -> unit;;
    (** Add an option to the command line options. *)
 val no_constructors_arity : bool ref;;

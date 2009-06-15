@@ -1,4 +1,4 @@
-(* camlp4r *)
+(* camlp5r *)
 (* $Id$ *)
 
 type spc =

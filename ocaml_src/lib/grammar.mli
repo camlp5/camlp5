@@ -1,7 +1,7 @@
-(* camlp4r *)
+(* camlp5r *)
 (***********************************************************************)
 (*                                                                     *)
-(*                             Camlp4                                  *)
+(*                             Camlp5                                  *)
 (*                                                                     *)
 (*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
@@ -14,9 +14,9 @@
 
 (** Extensible grammars.
 
-    This module implements the Camlp4 extensible grammars system.
+    This module implements the Camlp5 extensible grammars system.
     Grammars entries can be extended using the [EXTEND] statement,
-    added by loading the Camlp4 [pa_extend.cmo] file. *)
+    added by loading the Camlp5 [pa_extend.cmo] file. *)
 
 type g;;
    (** The type for grammars, holding entries. *)

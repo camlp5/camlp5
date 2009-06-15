@@ -1,7 +1,7 @@
-(* camlp4r *)
+(* camlp5r *)
 (***********************************************************************)
 (*                                                                     *)
-(*                             Camlp4                                  *)
+(*                             Camlp5                                  *)
 (*                                                                     *)
 (*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ocpp.ml,v 1.4 2006/12/26 08:54:09 deraugla Exp $ *)
+(* $Id: ocpp.ml,v 1.5 2007/07/11 12:01:39 deraugla Exp $ *)
 
 value buff = ref (String.create 80);
 value store len x =

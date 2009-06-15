@@ -1,7 +1,7 @@
-(* camlp4r *)
+(* camlp5r *)
 (***********************************************************************)
 (*                                                                     *)
-(*                             Camlp4                                  *)
+(*                             Camlp5                                  *)
 (*                                                                     *)
 (*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
 (*                                                                     *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: reloc.mli,v 1.1 2007/07/11 09:46:18 deraugla Exp $ *)
+(* $Id: reloc.mli,v 1.2 2007/07/11 12:01:39 deraugla Exp $ *)
 
 value patt : (MLast.loc -> MLast.loc) -> int -> MLast.patt -> MLast.patt;
 value expr : (MLast.loc -> MLast.loc) -> int -> MLast.expr -> MLast.expr;

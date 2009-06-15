@@ -1,5 +1,5 @@
-(* camlp4r *)
-(* $Id: argl.mli,v 1.1 2007/07/11 09:46:18 deraugla Exp $ *)
+(* camlp5r *)
+(* $Id: argl.mli,v 1.2 2007/07/11 12:01:39 deraugla Exp $ *)
 
 value usage :
   list (string * Arg.spec * string) -> list (string * Arg.spec * string) ->

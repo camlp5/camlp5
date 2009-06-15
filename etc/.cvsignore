@@ -1,6 +1,6 @@
 *.cm[oiax]
-camlp4o
-camlp4sch
-camlp4o.opt
-mkcamlp4.sh
-mkcamlp4.mpw
+camlp5o
+camlp5sch
+camlp5o.opt
+mkcamlp5.sh
+mkcamlp5.mpw

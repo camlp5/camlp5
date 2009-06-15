@@ -1,5 +1,5 @@
-;; camlp4 ./pa_lispr.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-;; $Id: pa_lisp.ml,v 1.8 2007/06/28 02:30:24 deraugla Exp $
+;; camlp5 ./pa_lispr.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
+;; $Id: pa_lisp.ml,v 1.9 2007/07/11 12:01:39 deraugla Exp $
 
 (open Pcaml)
 (open Stdpp)

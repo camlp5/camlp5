@@ -1,4 +1,2 @@
-camlp4
-crc.ml
-extract_crc
+camlp5
 ast2pt.ml

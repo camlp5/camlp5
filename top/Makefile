@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.11 2007/07/11 09:46:18 deraugla Exp $
+# $Id: Makefile,v 1.12 2007/07/11 12:01:39 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -6,13 +6,13 @@ include ../config/Makefile
 INCLUDES=-I ../main -I ../boot -I $(OTOP)/utils -I $(OTOP)/parsing -I $(OTOP)/typing -I $(OTOP)/toplevel
 OCAMLCFLAGS=-warn-error A $(INCLUDES)
 
-CAMLP4_OBJS=$(OTOP)/utils/pconfig.cmo ../boot/stdpp.cmo ../boot/token.cmo ../boot/plexer.cmo ../boot/gramext.cmo ../boot/grammar.cmo ../boot/extfold.cmo ../boot/extfun.cmo ../boot/fstream.cmo ../main/quotation.cmo ../main/ast2pt.cmo ../main/reloc.cmo ../main/exparser.cmo ../main/spretty.cmo ../main/pcaml.cmo
-CTOP=camlp4_top.cmo
-ROBJS=$(CAMLP4_OBJS) ../meta/pa_r.cmo ../meta/pa_rp.cmo rprint.cmo $(CTOP)
-OOBJS=$(CAMLP4_OBJS) ../etc/pa_o.cmo ../etc/pa_op.cmo $(CTOP)
-SOBJS=$(CAMLP4_OBJS) ../etc/pa_scheme.cmo $(CTOP)
-OOOBJS=$(CAMLP4_OBJS) ../etc/pa_o.cmo ../etc/pa_oop.cmo $(CTOP)
-OBJS=$(OTOP)/utils/pconfig.cmo ../main/quotation.cmo ../main/reloc.cmo ../main/ast2pt.cmo ../main/spretty.cmo ../main/pcaml.cmo camlp4_top.cmo
+CAMLP5_OBJS=$(OTOP)/utils/pconfig.cmo ../boot/stdpp.cmo ../boot/token.cmo ../boot/plexer.cmo ../boot/gramext.cmo ../boot/grammar.cmo ../boot/extfold.cmo ../boot/extfun.cmo ../boot/fstream.cmo ../main/quotation.cmo ../main/ast2pt.cmo ../main/reloc.cmo ../main/exparser.cmo ../main/spretty.cmo ../main/pcaml.cmo
+CTOP=camlp5_top.cmo
+ROBJS=$(CAMLP5_OBJS) ../meta/pa_r.cmo ../meta/pa_rp.cmo rprint.cmo $(CTOP)
+OOBJS=$(CAMLP5_OBJS) ../etc/pa_o.cmo ../etc/pa_op.cmo $(CTOP)
+SOBJS=$(CAMLP5_OBJS) ../etc/pa_scheme.cmo $(CTOP)
+OOOBJS=$(CAMLP5_OBJS) ../etc/pa_o.cmo ../etc/pa_oop.cmo $(CTOP)
+OBJS=$(OTOP)/utils/pconfig.cmo ../main/quotation.cmo ../main/reloc.cmo ../main/ast2pt.cmo ../main/spretty.cmo ../main/pcaml.cmo camlp5_top.cmo
 
 TARGET=$(NAME)o.cma $(NAME)r.cma $(NAME)sch.cma $(NAME)_top.cma
 
