@@ -75,7 +75,9 @@ value match_assoc pc (p, we, e) =
        sprintf "%s %s" s1 s2)
     (fun () ->
        let s1 =
-         let pc = {(pc) with bef = sprintf "%s(" pc.bef; aft = ""} in
+         let pc =
+           {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef; aft = ""}
+         in
          match we with
          [ <:vala< Some e >> ->
              horiz_vertic
@@ -150,15 +152,37 @@ EXTEND_PRINTER
           fun ppf curr next dg k ->
             fprintf ppf "(@[<hv>@[<b 2>match@ %a@]@ %a@]" expr (e, nok)
               (list match_assoc) (pwel, ks ")" k)
-      | <:expr< try $e$ with [ $list:pwel$ ] >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "(@[<hv>@[<b 2>try@ %a@]@ %a@]" expr (e, nok)
-              (list match_assoc) (pwel, ks ")" k)
 *)
+      | <:expr< try $e$ with [ $list:pwel$ ] >> ->
+          horiz_vertic
+            (fun () ->
+               sprintf "%s(try %s %s)%s" pc.bef
+                 (curr {(pc) with bef = ""; aft = ""} e)
+                 (hlist match_assoc {(pc) with bef = ""; aft = ""} pwel)
+                 pc.aft)
+            (fun () ->
+               let s1 =
+                 horiz_vertic
+                   (fun () ->
+                      sprintf "%s(try %s" pc.bef
+                        (curr {(pc) with bef = ""; aft = ""} e))
+                   (fun () -> not_impl "try vertic" pc 0)
+               in
+               let s2 =
+                 let pc =
+                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1)}
+                 in
+                 vlist match_assoc {(pc) with aft = sprintf ")%s" pc.aft} pwel
+               in
+               sprintf "%s\n%s" s1 s2)
       | <:expr< let $flag:rf$ $p1$ = $e1$ in $e2$ >> ->
           let b = if rf then "letrec" else "let" in
           horiz_vertic
-            (fun () -> sprintf "\n")
+            (fun () ->
+               sprintf "%s(%s ((%s %s) %s))%s" pc.bef b
+                 (patt {(pc) with bef = ""; aft = ""} p1)
+                 (curr {(pc) with bef = ""; aft = ""} e1)
+                 (curr {(pc) with bef = ""; aft = ""} e2) pc.aft)
             (fun () ->
                let s1 =
                  horiz_vertic
@@ -211,11 +235,42 @@ EXTEND_PRINTER
                let pc1 = {(pc) with bef = ""; aft = ""} in
                sprintf "%s(if %s %s %s)%s" pc.bef (curr pc1 e1) (curr pc1 e2)
                  (curr pc1 e3) pc.aft)
-            (fun () -> not_impl "if else ... vertic" pc 0)
-(*
+            (fun () ->
+               let s1 =
+                 horiz_vertic
+                   (fun () ->
+                      sprintf "%s(if %s" pc.bef
+                        (curr {(pc) with bef = ""; aft = ""} e1))
+                    (fun () -> not_impl "if else ... vertic" pc 0)
+               in
+               let s2 =
+                 curr
+                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+                    aft = ""}
+                   e2
+               in
+               let s3 =
+                 curr
+                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+                    aft = sprintf ")%s" pc.aft}
+                   e3
+               in
+               sprintf "%s\n%s\n%s" s1 s2 s3)
       | <:expr< do { $list:el$ } >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "(begin@;<1 1>@[<hv>%a@]" (list expr) (el, ks ")" k)
+          horiz_vertic
+            (fun () ->
+               sprintf "%s(begin %s)%s" pc.bef
+                 (hlist curr {(pc) with bef = ""; aft = ""} el) pc.aft)
+            (fun () ->
+               let s1 = sprintf "%s(begin" pc.bef in
+               let s2 =
+                 vlist curr
+                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+                    aft = sprintf ")%s" pc.aft}
+                   el
+               in
+               sprintf "%s\n%s" s1 s2)
+(*
       | <:expr< for $lid:i$ = $e1$ to $e2$ do { $list:el$ } >> ->
           fun ppf curr next dg k ->
             fprintf ppf "(@[for %s@ %a@ %a %a@]" i expr (e1, nok)
@@ -314,10 +369,8 @@ EXTEND_PRINTER
                  (curr {(pc) with bef = ""; aft = ""} e1)
                  (curr {(pc) with bef = ""; aft = ""} e2) pc.aft)
             (fun () -> not_impl "expr dot vertic" pc 0)
-(*
       | <:expr< $int:s$ >> ->
-          fun ppf curr next dg k -> fprintf ppf "%s%t" (int_repr s) k
-*)
+          sprintf "%s%s%s" pc.bef s pc.aft
       | <:expr< $lid:s$ >> | <:expr< $uid:s$ >> ->
           sprintf "%s%s%s" pc.bef s pc.aft
 (*
@@ -326,10 +379,8 @@ EXTEND_PRINTER
 *)
       | <:expr< $str:s$ >> ->
           sprintf "%s\"%s\"%s" pc.bef s pc.aft
-(*
       | <:expr< $chr:s$ >> ->
-          fun ppf curr next dg k -> fprintf ppf "'%s'%t" s k
-*)
+          sprintf "%s'%s'%s" pc.bef s pc.aft
       | x ->
           not_impl "expr" pc x ] ]
   ;
@@ -353,7 +404,28 @@ EXTEND_PRINTER
                sprintf "%s(as %s %s)%s" pc.bef
                  (curr {(pc) with bef = ""; aft = ""} p1)
                  (curr {(pc) with bef = ""; aft = ""} p2) pc.aft)
-            (fun () -> not_impl "patt as vertic" pc 0)
+            (fun () ->
+               let s1 =
+                 horiz_vertic
+                   (fun () ->
+                      sprintf "%s(as %s" pc.bef
+                        (curr {(pc) with bef = ""; aft = ""} p1))
+                   (fun () ->
+                      let s1 = sprintf "%s(as" pc.bef in
+                      let s2 =
+                        curr
+                          {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+                           aft = ""} p1
+                      in
+                      sprintf "%s\n%s" s1 s2)
+               in
+               let s2 =
+                 curr
+                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+                    aft = sprintf ")%s" pc.aft}
+                   p2
+               in
+               sprintf "%s\n%s" s1 s2)
 (*
       | <:patt< $p1$ .. $p2$ >> ->
           fun ppf curr next dg k ->
@@ -426,9 +498,9 @@ EXTEND_PRINTER
 *)
       | <:patt< $lid:s$ >> | <:patt< $uid:s$ >> ->
           sprintf "%s%s%s" pc.bef s pc.aft
-(*
       | <:patt< $str:s$ >> ->
-          fun ppf curr next dg k -> fprintf ppf "\"%s\"%t" s k
+          sprintf "%s\"%s\"%s" pc.bef s pc.aft
+(*
       | <:patt< $chr:s$ >> ->
           fun ppf curr next dg k -> fprintf ppf "'%s'%t" s k
       | <:patt< $int:s$ >> ->
