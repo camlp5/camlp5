@@ -6,6 +6,15 @@
     <lastBuildDate>Mon Sep 17 15:10:47 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
     <item>
+      <title>Version number</title>
+      <description>
+        New version number will be 5.00 instead of 4.09, because the
+        AST quotations in user syntax is a major change.
+      </description>
+      <pubDate>Sat Sep 22 07:14:37 CEST 2007</pubDate>
+      <link>../index.html</link>
+    </item>
+    <item>
       <title>Syntax tree - strict mode - 1</title>
       <description>
         General antiquoting will start with "_" (underscore) instead

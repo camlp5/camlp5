@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: gramext.ml,v 1.19 2007/09/21 21:09:36 deraugla Exp $ *)
+(* $Id: gramext.ml,v 1.20 2007/09/22 05:20:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Printf;
@@ -26,7 +26,8 @@ and g_level 'te =
     lprefix : g_tree 'te }
 and g_assoc = [ NonA | RightA | LeftA ]
 and g_symbol 'te =
-  [ Smeta of string and list (g_symbol 'te) and Obj.t
+  [ Sfacto of g_symbol 'te
+  | Smeta of string and list (g_symbol 'te) and Obj.t
   | Snterm of g_entry 'te
   | Snterml of g_entry 'te and string
   | Slist0 of g_symbol 'te
@@ -64,6 +65,7 @@ value rec derive_eps =
   [ Slist0 _ -> True
   | Slist0sep _ _ -> True
   | Sopt _ | Sflag _ -> True
+  | Sfacto s -> derive_eps s
   | Stree t -> tree_derive_eps t
   | Svala _ s -> derive_eps s
   | Smeta _ _ _ | Slist1 _ | Slist1sep _ _ | Snterm _ | Snterml _ _ | Snext |
@@ -91,6 +93,19 @@ value rec eq_symbol s1 s2 =
   | (Sopt s1, Sopt s2) -> eq_symbol s1 s2
   | (Svala ls1 s1, Svala ls2 s2) -> ls1 = ls2 && eq_symbol s1 s2
   | (Stree _, Stree _) -> False
+  | (Sfacto (Stree t1), Sfacto (Stree t2)) ->
+      (* The only goal of the node 'Sfacto' is to allow tree comparison
+         (therefore factorization) without looking at the semantic
+         actions; allow factorization of rules like "SV foo" which are
+         actually expanded into a tree. *)
+      eq_tree t1 t2 where rec eq_tree t1 t2 =
+        match (t1, t2) with
+        [ (Node n1, Node n2) ->
+            eq_symbol n1.node n2.node && eq_tree n1.son n2.son &&
+            eq_tree n1.brother n2.brother
+        | (LocAct _ _, LocAct _ _) -> True
+        | (DeadEnd,  DeadEnd) -> True
+        | _ -> False ]
   | _ -> s1 = s2 ]
 ;
 
@@ -290,6 +305,7 @@ Error: entries \"%s\" and \"%s\" do not belong to the same grammar.\n"
         failwith "Grammar.extend error"
       }
       else ()
+  | Sfacto s -> check_gram entry s
   | Smeta _ sl _ -> List.iter (check_gram entry) sl
   | Slist0sep s t -> do { check_gram entry t; check_gram entry s }
   | Slist1sep s t -> do { check_gram entry t; check_gram entry s }
@@ -325,7 +341,8 @@ value get_initial entry =
 value insert_tokens gram symbols =
   let rec insert =
     fun
-    [ Smeta _ sl _ -> List.iter insert sl
+    [ Sfacto s -> insert s
+    | Smeta _ sl _ -> List.iter insert sl
     | Slist0 s -> insert s
     | Slist1 s -> insert s
     | Slist0sep s t -> do { insert s; insert t }
@@ -473,6 +490,7 @@ value rec decr_keyw_use gram =
       }
       else ()
     }
+  | Sfacto s -> decr_keyw_use gram s
   | Smeta _ sl _ -> List.iter (decr_keyw_use gram) sl
   | Slist0 s -> decr_keyw_use gram s
   | Slist1 s -> decr_keyw_use gram s

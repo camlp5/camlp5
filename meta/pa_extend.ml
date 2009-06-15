@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.80 2007/09/21 20:23:52 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.81 2007/09/22 05:20:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -62,7 +62,8 @@ type styp =
 ;
 
 type text 'e 'p =
-  [ TXmeta of loc and string and list (text 'e 'p) and 'e and styp
+  [ TXfacto of loc and text 'e 'p
+  | TXmeta of loc and string and list (text 'e 'p) and 'e and styp
   | TXlist of loc and bool and text 'e 'p and option (text 'e 'p)
   | TXnext of loc
   | TXnterm of loc and name 'e and option string
@@ -510,7 +511,8 @@ value srules loc t rl tvar =
 
 value rec make_expr gmod tvar =
   fun
-  [ TXmeta loc n tl e t ->
+  [ TXfacto loc t -> <:expr< Gramext.Sfacto $make_expr gmod tvar t$ >>
+  | TXmeta loc n tl e t ->
       let el =
         List.fold_right
           (fun t el -> <:expr< [$make_expr gmod "" t$ :: $el$] >>) tl
@@ -816,7 +818,7 @@ value ssflag2 loc ls s =
   {used = s.used; text = text; styp = STtyp <:ctyp< Qast.t >>}
 ;
 
-value ssnterm2 loc ls (i, n) lev =
+value ss2 loc ls s =
   let t = new_type_var () in
   let text =
     let rl =
@@ -847,21 +849,13 @@ value ssnterm2 loc ls (i, n) lev =
         ls []
     in
     let r2 =
-      let ps =
-        let s =
-          let name = mk_name2 (i, n) in
-          let text = TXnterm loc name lev in
-          let styp = STquo loc i in
-          {used = [i]; text = text; styp = styp}
-        in
-        {pattern = Some <:patt< a >>; symbol = s}
-      in
+      let ps = {pattern = Some <:patt< a >>; symbol = s} in
       let act = <:expr< Qast.VaVal a >> in
       {prod = [ps]; action = Some act}
     in
-    TXrules loc t (rl @ [r2])
+    TXfacto loc (TXrules loc t (rl @ [r2]))
   in
-  {used = [i]; text = text; styp = STquo loc t}
+  {used = s.used; text = text; styp = STquo loc t}
 ;
 
 value string_of_a =
@@ -958,8 +952,9 @@ value rec symbol_of_a =
             let s = symbol_of_a s in
             let sep = option_map symbol_of_a sep in
             sslist2 loc ls min sep s
-        | ASnterm loc (i, n) lev ->
-            ssnterm2 loc ls (i, n) lev
+        | ASnterm _ _ _ ->
+            let s = symbol_of_a s in
+            ss2 loc ls s
         | ASopt loc s ->
             let s = symbol_of_a s in
             ssopt2 loc ls s
@@ -984,8 +979,9 @@ value rec symbol_of_a =
           let s = symbol_of_a s in
           let sep = option_map symbol_of_a sep in
           sslist2 loc ls min sep s
-      | ASnterm loc (i, n) lev ->
-          ssnterm2 loc ls (i, n) lev
+      | ASnterm _ _ _ ->
+          let s = symbol_of_a s in
+          ss2 loc ls s
       | ASopt loc s ->
           let s = symbol_of_a s in
           ssopt2 loc ls s

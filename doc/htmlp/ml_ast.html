@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ml_ast.html,v 1.37 2007/09/18 14:17:28 deraugla Exp $ -->
+  <!-- $Id: ml_ast.html,v 1.38 2007/09/22 05:20:28 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Abstract tree in concrete syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -37,7 +37,7 @@
 
 <h2>Transitional and Strict modes</h2>
 
-<p>Since version 4.09 of Camlp5, the definition of the syntax tree has
+<p>Since version 5.00 of Camlp5, the definition of the syntax tree has
   been different according to the mode Camlp5 has been installed:</p>
 
 <ul>
@@ -46,7 +46,7 @@
     versions.</li>
   <li>In <a href="ast_strict.html"><em>strict</em></a> mode, many
     constructors parameters have a type enclosed by the predefined
-    type <tt>Ploc.vala</tt>".</li>
+    type "<tt>Ploc.vala</tt>".</li>
 </ul>
 
 <p>The advantage of the transitional mode is that the abstract syntax
@@ -56,7 +56,7 @@
   antiquotations, which is a worrying limitation.</p>
 
 <p>In strict mode, the abstract syntax is not compatible with versions
-  of Camlp5 previous to 4.09. Most of the parameters of the
+  of Camlp5 previous to 5.00. Most of the parameters of the
   constructor are enclosed with the type "<tt>Ploc.vala</tt>" whose
   aim is to allow nodes to be either of the type argument, or an
   antiquotation. In this mode, the syntax tree quotations in user

@@ -17,7 +17,8 @@ let print_str ppf s = fprintf ppf "\"%s\"" (String.escaped s);;
 
 let rec print_symbol ppf =
   function
-    Smeta (n, sl, _) -> print_meta ppf n sl
+    Sfacto s -> print_symbol ppf s
+  | Smeta (n, sl, _) -> print_meta ppf n sl
   | Slist0 s -> fprintf ppf "LIST0 %a" print_symbol1 s
   | Slist0sep (s, t) ->
       fprintf ppf "LIST0 %a SEP %a" print_symbol1 s print_symbol1 t
@@ -49,7 +50,8 @@ and print_meta ppf n sl =
   loop 0 sl
 and print_symbol1 ppf =
   function
-    Snterm e -> fprintf ppf "%s%s" e.ename (if e.elocal then "*" else "")
+    Sfacto s -> print_symbol1 ppf s
+  | Snterm e -> fprintf ppf "%s%s" e.ename (if e.elocal then "*" else "")
   | Sself -> pp_print_string ppf "SELF"
   | Snext -> pp_print_string ppf "NEXT"
   | Stoken ("", s) -> print_str ppf s
@@ -135,7 +137,8 @@ let iter_entry f e =
   and do_node n = do_symbol n.node; do_tree n.son; do_tree n.brother
   and do_symbol =
     function
-      Smeta (_, sl, _) -> List.iter do_symbol sl
+      Sfacto s -> do_symbol s
+    | Smeta (_, sl, _) -> List.iter do_symbol sl
     | Snterm e | Snterml (e, _) -> do_entry e
     | Slist0 s | Slist1 s | Sopt s | Sflag s -> do_symbol s
     | Slist0sep (s1, s2) | Slist1sep (s1, s2) -> do_symbol s1; do_symbol s2
@@ -169,7 +172,8 @@ let fold_entry f e init =
     let accu = do_tree accu n.son in do_tree accu n.brother
   and do_symbol accu =
     function
-      Smeta (_, sl, _) -> List.fold_left do_symbol accu sl
+      Sfacto s -> do_symbol accu s
+    | Smeta (_, sl, _) -> List.fold_left do_symbol accu sl
     | Snterm e | Snterml (e, _) -> do_entry accu e
     | Slist0 s | Slist1 s | Sopt s | Sflag s -> do_symbol accu s
     | Slist0sep (s1, s2) | Slist1sep (s1, s2) ->
@@ -584,7 +588,8 @@ and parser_of_token_list gram p1 tokl =
   loop 1 tokl
 and parser_of_symbol entry nlevn =
   function
-    Smeta (_, symbl, act) ->
+    Sfacto s -> parser_of_symbol entry nlevn s
+  | Smeta (_, symbl, act) ->
       let act = Obj.magic act entry symbl in
       Obj.magic
         (List.fold_left
@@ -946,7 +951,8 @@ let find_entry e s =
         | x -> x
   and find_symbol =
     function
-      Snterm e -> if e.ename = s then Some e else None
+      Sfacto s -> find_symbol s
+    | Snterm e -> if e.ename = s then Some e else None
     | Snterml (e, _) -> if e.ename = s then Some e else None
     | Smeta (_, sl, _) -> find_symbol_list sl
     | Slist0 s -> find_symbol s

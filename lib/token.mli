@@ -1,8 +1,8 @@
 (* camlp5r *)
-(* $Id: token.mli,v 1.22 2007/09/01 21:20:34 deraugla Exp $ *)
+(* $Id: token.mli,v 1.23 2007/09/22 05:20:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
-(** Module deprecated since Camlp5 version 4.09. Use now module Plexing.
+(** Module deprecated since Camlp5 version 5.00. Use now module Plexing.
     Compatibility assumed. *)
 
 type pattern = Plexing.pattern;

@@ -26,7 +26,8 @@ and 'te g_level =
     lprefix : 'te g_tree }
 and g_assoc = NonA | RightA | LeftA
 and 'te g_symbol =
-    Smeta of string * 'te g_symbol list * Obj.t
+    Sfacto of 'te g_symbol
+  | Smeta of string * 'te g_symbol list * Obj.t
   | Snterm of 'te g_entry
   | Snterml of 'te g_entry * string
   | Slist0 of 'te g_symbol
@@ -64,6 +65,7 @@ let rec derive_eps =
     Slist0 _ -> true
   | Slist0sep (_, _) -> true
   | Sopt _ | Sflag _ -> true
+  | Sfacto s -> derive_eps s
   | Stree t -> tree_derive_eps t
   | Svala (_, s) -> derive_eps s
   | Smeta (_, _, _) | Slist1 _ | Slist1sep (_, _) | Snterm _ |
@@ -91,6 +93,25 @@ let rec eq_symbol s1 s2 =
   | Sopt s1, Sopt s2 -> eq_symbol s1 s2
   | Svala (ls1, s1), Svala (ls2, s2) -> ls1 = ls2 && eq_symbol s1 s2
   | Stree _, Stree _ -> false
+  | Sfacto (Stree t1), Sfacto (Stree t2) ->
+      (* The only goal of the node 'Sfacto' is to allow tree comparison
+         (therefore factorization) without looking at the semantic
+         actions; allow factorization of rules like "SV foo" which are
+         actually expanded into a tree. *)
+      let rec eq_tree t1 t2 =
+        match t1, t2 with
+          Node n1, Node n2 ->
+            eq_symbol n1.node n2.node && eq_tree n1.son n2.son &&
+            eq_tree n1.brother n2.brother
+        | LocAct (_, _), LocAct (_, _) -> true
+        | DeadEnd, DeadEnd -> true
+        | _ -> false
+      in
+      (* The only goal of the node 'Sfacto' is to allow tree comparison
+         (therefore factorization) without looking at the semantic
+         actions; allow factorization of rules like "SV foo" which are
+         actually expanded into a tree. *)
+      eq_tree t1 t2
   | _ -> s1 = s2
 ;;
 
@@ -284,6 +305,7 @@ Error: entries \"%s\" and \"%s\" do not belong to the same grammar.\n"
           flush stderr;
           failwith "Grammar.extend error"
         end
+  | Sfacto s -> check_gram entry s
   | Smeta (_, sl, _) -> List.iter (check_gram entry) sl
   | Slist0sep (s, t) -> check_gram entry t; check_gram entry s
   | Slist1sep (s, t) -> check_gram entry t; check_gram entry s
@@ -316,7 +338,8 @@ let get_initial entry =
 let insert_tokens gram symbols =
   let rec insert =
     function
-      Smeta (_, sl, _) -> List.iter insert sl
+      Sfacto s -> insert s
+    | Smeta (_, sl, _) -> List.iter insert sl
     | Slist0 s -> insert s
     | Slist1 s -> insert s
     | Slist0sep (s, t) -> insert s; insert t
@@ -455,6 +478,7 @@ let rec decr_keyw_use gram =
           Hashtbl.remove gram.gtokens tok;
           gram.glexer.Plexing.tok_removing tok
         end
+  | Sfacto s -> decr_keyw_use gram s
   | Smeta (_, sl, _) -> List.iter (decr_keyw_use gram) sl
   | Slist0 s -> decr_keyw_use gram s
   | Slist1 s -> decr_keyw_use gram s

@@ -59,7 +59,8 @@ type styp =
 ;;
 
 type ('e, 'p) text =
-    TXmeta of loc * string * ('e, 'p) text list * 'e * styp
+    TXfacto of loc * ('e, 'p) text
+  | TXmeta of loc * string * ('e, 'p) text list * 'e * styp
   | TXlist of loc * bool * ('e, 'p) text * ('e, 'p) text option
   | TXnext of loc
   | TXnterm of loc * 'e name * string option
@@ -1037,7 +1038,13 @@ let srules loc t rl tvar =
 
 let rec make_expr gmod tvar =
   function
-    TXmeta (loc, n, tl, e, t) ->
+    TXfacto (loc, t) ->
+      MLast.ExApp
+        (loc,
+         MLast.ExAcc
+           (loc, MLast.ExUid (loc, "Gramext"), MLast.ExUid (loc, "Sfacto")),
+         make_expr gmod tvar t)
+  | TXmeta (loc, n, tl, e, t) ->
       let el =
         List.fold_right
           (fun t el ->
@@ -1570,7 +1577,7 @@ let ssflag2 loc ls s =
        (MLast.TyAcc (loc, MLast.TyUid (loc, "Qast"), MLast.TyLid (loc, "t")))}
 ;;
 
-let ssnterm2 loc ls (i, n) lev =
+let ss2 loc ls s =
   let t = new_type_var () in
   let text =
     let rl =
@@ -1632,14 +1639,7 @@ let ssnterm2 loc ls (i, n) lev =
         ls []
     in
     let r2 =
-      let ps =
-        let s =
-          let name = mk_name2 (i, n) in
-          let text = TXnterm (loc, name, lev) in
-          let styp = STquo (loc, i) in {used = [i]; text = text; styp = styp}
-        in
-        {pattern = Some (MLast.PaLid (loc, "a")); symbol = s}
-      in
+      let ps = {pattern = Some (MLast.PaLid (loc, "a")); symbol = s} in
       let act =
         MLast.ExApp
           (loc,
@@ -1649,9 +1649,9 @@ let ssnterm2 loc ls (i, n) lev =
       in
       {prod = [ps]; action = Some act}
     in
-    TXrules (loc, t, rl @ [r2])
+    TXfacto (loc, TXrules (loc, t, rl @ [r2]))
   in
-  {used = [i]; text = text; styp = STquo (loc, t)}
+  {used = s.used; text = text; styp = STquo (loc, t)}
 ;;
 
 let string_of_a =
@@ -1743,7 +1743,7 @@ let rec symbol_of_a =
         | ASlist (loc, min, s, sep) ->
             let s = symbol_of_a s in
             let sep = option_map symbol_of_a sep in sslist2 loc ls min sep s
-        | ASnterm (loc, (i, n), lev) -> ssnterm2 loc ls (i, n) lev
+        | ASnterm (_, _, _) -> let s = symbol_of_a s in ss2 loc ls s
         | ASopt (loc, s) -> let s = symbol_of_a s in ssopt2 loc ls s
         | AStok (loc, s, p) ->
             let p = option_map string_of_a p in sstoken2 loc ls s p
@@ -1761,7 +1761,7 @@ let rec symbol_of_a =
       | ASlist (loc, min, s, sep) ->
           let s = symbol_of_a s in
           let sep = option_map symbol_of_a sep in sslist2 loc ls min sep s
-      | ASnterm (loc, (i, n), lev) -> ssnterm2 loc ls (i, n) lev
+      | ASnterm (_, _, _) -> let s = symbol_of_a s in ss2 loc ls s
       | ASopt (loc, s) -> let s = symbol_of_a s in ssopt2 loc ls s
       | _ -> Ploc.raise loc (Failure "not impl ASvala2")
 and psymbol_of_a ap = {pattern = ap.ap_patt; symbol = symbol_of_a ap.ap_symb}

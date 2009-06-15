@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: compile.ml,v 1.25 2007/09/19 05:29:40 deraugla Exp $ *)
+(* $Id: compile.ml,v 1.26 2007/09/22 05:20:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Gramext;
@@ -507,7 +507,8 @@ value rec scan_tree list =
   | LocAct _ _ | DeadEnd -> list ]
 and scan_symbol list =
   fun
-  [ Snterm e -> scan_entry list e
+  [ Sfacto e -> scan_symbol list e
+  | Snterm e -> scan_entry list e
   | Snterml e l -> scan_entry list e
   | Slist0 s -> scan_symbol list s
   | Slist0sep s sep -> scan_symbol (scan_symbol list s) sep

@@ -106,7 +106,7 @@ let oversion =
 
 let defined =
   ref
-    ["CAMLP5", MvNone; "CAMLP5_4_02", MvNone; "CAMLP5_4_09", MvNone;
+    ["CAMLP5", MvNone; "CAMLP5_4_02", MvNone; "CAMLP5_5_00", MvNone;
      "OCAML_" ^ oversion, MvNone]
 ;;
 

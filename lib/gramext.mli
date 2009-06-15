@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: gramext.mli,v 1.15 2007/09/19 05:24:55 deraugla Exp $ *)
+(* $Id: gramext.mli,v 1.16 2007/09/22 05:20:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 type grammar 'te =
@@ -24,7 +24,8 @@ and g_level 'te =
     lprefix : g_tree 'te }
 and g_assoc = [ NonA | RightA | LeftA ]
 and g_symbol 'te =
-  [ Smeta of string and list (g_symbol 'te) and Obj.t
+  [ Sfacto of g_symbol 'te
+  | Smeta of string and list (g_symbol 'te) and Obj.t
   | Snterm of g_entry 'te
   | Snterml of g_entry 'te and string
   | Slist0 of g_symbol 'te

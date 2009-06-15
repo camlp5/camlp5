@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_macro.ml,v 1.31 2007/09/15 16:30:43 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.32 2007/09/22 05:20:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (*
@@ -106,7 +106,7 @@ value oversion = do {
 
 value defined =
   ref
-    [("CAMLP5", MvNone); ("CAMLP5_4_02", MvNone); ("CAMLP5_4_09", MvNone);
+    [("CAMLP5", MvNone); ("CAMLP5_4_02", MvNone); ("CAMLP5_5_00", MvNone);
      ("OCAML_" ^ oversion, MvNone)]
 ;
 
