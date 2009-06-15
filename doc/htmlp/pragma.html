@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: pragma.html,v 1.5 2007/07/19 11:23:00 deraugla Exp $ -->
+  <!-- $Id: pragma.html,v 1.6 2007/07/20 18:46:34 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>pragma</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -37,7 +37,7 @@ using it just after:</p>
               &lt;:expr&lt; do { $e1$; while not $e2$ do { $e1$ } } &gt;&gt; ] ]
       ;
       sequence:
-        [ [ el = LIST1 expr_semi -> &lt;:expr&lt; do { $list:el$ } &gt;&gt;  ] ]
+        [ [ el = LIST1 expr_semi -> &lt;:expr&lt; do { $list:el$ } &gt;&gt; ] ]
       ;
       expr_semi:
         [ [ e = expr; ";" -> e ] ]

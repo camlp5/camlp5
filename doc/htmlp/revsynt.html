@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: revsynt.html,v 1.17 2007/07/20 15:58:17 deraugla Exp $ -->
+  <!-- $Id: revsynt.html,v 1.18 2007/07/20 18:46:34 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>revised syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -59,8 +59,7 @@
 
   <li>In structures, the declaration of a value is introduced by the
     keyword "value", instead of "let":
-
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -78,7 +77,7 @@
 
   <li>In signatures, the declaration of a value is also introduced by
     the keyword "value", instead of "val":
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -113,7 +112,7 @@
     and terminated by "}"; it is possible to put a semicolon after the
     last expression:
 
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -129,7 +128,7 @@
     by a "{" and the loop end with "}"; it is possible to put a
     semicolon after the last expression:
 
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -170,7 +169,7 @@
 
 <ul>
   <li>Parentheses are mandatory in tuples:
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -187,7 +186,7 @@
     optionally followed by colon-colon and an element, and ended by a
     right bracket. Warning: the colon-colon is not an infix but is
     just part of the syntactic construction.
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -213,7 +212,7 @@
 <ul>
   <li>In record update, parentheses are required around the initial
     expression:
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -227,7 +226,7 @@
 
   <li>It is authorized to use function binding syntax in record field
     definitions:
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -267,7 +266,7 @@
   <li>The pattern matchings, in constructions with "fun", "match" and
     "try" are closed with brackets: an open bracket "[" before the
     first case, and a close bracket "]" after the last case:
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -288,7 +287,7 @@
     But if there is only one case and if the pattern is irrefutable,
       the brackets are not mandatory. These examples work identically
       in OCaml and in revised syntax:
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -343,7 +342,7 @@
 
 <ul>
   <li>The statement "<tt>&lt;-</tt>" is written "<tt>:=</tt>":
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -358,7 +357,7 @@
   <li>The "ref" type is declared as a record type with one field named
     "val", instead of "contents". The operator "!" does not exist any
     more, and references are assigned like the other mutables:
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -376,7 +375,7 @@
 <ul>
   <li>The "<tt>else</tt>" is mandatory in the "<tt>if</tt>"
     statement:
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -390,7 +389,7 @@
 
   <li>The boolean operations "<tt>or</tt>" and "<tt>and</tt>" can only
     be written with "<tt>||</tt>" and "<tt>&amp;&amp;</tt>":
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -410,7 +409,7 @@
     parentheses.</li>
 
   <li>The operators as values are written with an backslash:
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -427,7 +426,7 @@
   </li>
 
   <li>Nested "as" patterns require parenthesis:
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -442,7 +441,7 @@
       </tr>
     </table>
     But they are not required before the right arrow:
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -468,7 +467,7 @@
 <ul>
   <li>The type constructors are before their type parameters, which
     are curryfied:
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -489,7 +488,7 @@
   </li>
 
   <li>The abstract types are represented by a unbound type variable:
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -506,7 +505,7 @@
   </li>
 
   <li>Parentheses are mandatory in tuples of types:
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -520,7 +519,7 @@
 
   <li>In declaration of a concrete type, brackets must enclose the
     constructor declarations:
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -545,7 +544,7 @@
     The declaration of a data constructor with several parameters
     is done by separating the types with "and". In expressions and
     patterns, this constructor parameters must be curryfied:
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -565,7 +564,7 @@
     the parameter has not to be curryfied, since it is alone. In that
     case the syntax of constructor parameters is the same between the
     two syntaxes:
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -583,7 +582,7 @@
 
   <li>The bool constructors start with an uppercase letter. The identifiers
     "true" and "false" are not keywords:
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -597,7 +596,7 @@
 
   <li>In record types, the keyword "mutable" must appear after the
     colon:
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -615,7 +614,7 @@
 <ul>
   <li>Functor application uses curryfication. Parentheses are not
     mandatory to apply them:
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -641,7 +640,7 @@
 
   <li>The stream component "terminal" is written with a backquote
     instead of a quote:
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
@@ -656,7 +655,7 @@
    <li>The cases of parsers are bracketed with "<tt>[</tt>" and
      "<tt>]</tt>", like for "fun", "match" and "try". If there is one
      case, the brackets are not mandatory:
-    <table width="75%" class="centered">
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
