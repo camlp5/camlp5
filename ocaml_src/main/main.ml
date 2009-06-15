@@ -100,15 +100,21 @@ and use_file pa getdir useast s =
 
 let process pa pr getdir useast = pr (parse_file pa getdir useast);;
 
+let uv c =
+  match c, "" with
+    c, "" -> c
+  | _ -> invalid_arg "Main.uv"
+;;
+
 let gind =
   function
-    (MLast.SgDir (loc, n, dp), _) :: _ -> Some (loc, n, dp)
+    (MLast.SgDir (loc, n, dp), _) :: _ -> Some (loc, uv n, uv dp)
   | _ -> None
 ;;
 
 let gimd =
   function
-    (MLast.StDir (loc, n, dp), _) :: _ -> Some (loc, n, dp)
+    (MLast.StDir (loc, n, dp), _) :: _ -> Some (loc, uv n, uv dp)
   | _ -> None
 ;;
 

@@ -1,16 +1,6 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: ast2pt.ml,v 1.44 2007/09/14 12:44:26 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.45 2007/09/14 16:03:54 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 open MLast;
 open Parsetree;
@@ -726,7 +716,7 @@ value rec expr =
   | ExUid loc s ->
       let ca = not no_constructors_arity.val in
       mkexp loc (Pexp_construct (lident (conv_con (uv s))) None ca)
-  | ExVrn loc s -> mkexp loc (Pexp_variant s None)
+  | ExVrn loc s -> mkexp loc (Pexp_variant (uv s) None)
   | ExWhi loc e1 el ->
       let e2 = <:expr< do { $list:uv el$ } >> in
       mkexp loc (Pexp_while (expr e1) (expr e2))
@@ -735,8 +725,8 @@ value rec expr =
     END ]
 and label_expr =
   fun
-  [ ExLab loc lab eo -> (lab, expr (expr_of_lab loc lab eo))
-  | ExOlb loc lab eo -> ("?" ^ lab, expr (expr_of_lab loc lab eo))
+  [ ExLab loc lab eo -> (uv lab, expr (expr_of_lab loc (uv lab) eo))
+  | ExOlb loc lab eo -> ("?" ^ uv lab, expr (expr_of_lab loc (uv lab) eo))
   | e -> ("", expr e) ]
 and mkpe (p, e) = (patt p, expr e)
 and mkpwe (p, w, e) = (patt p, when_expr e w)
@@ -1003,6 +993,6 @@ value directive loc =
 
 value phrase =
   fun
-  [ StDir loc d dp -> Ptop_dir d (directive loc dp)
+  [ StDir loc d dp -> Ptop_dir (uv d) (directive loc (uv dp))
   | si -> Ptop_def (str_item si []) ]
 ;

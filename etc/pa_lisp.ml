@@ -1,5 +1,5 @@
 ;; camlp5 ./pa_lispr.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-;; $Id: pa_lisp.ml,v 1.16 2007/09/11 19:14:13 deraugla Exp $
+;; $Id: pa_lisp.ml,v 1.17 2007/09/14 16:03:54 deraugla Exp $
 
 (open Pcaml)
 
@@ -599,7 +599,7 @@
                      (let ((n (String.sub s 1 (- (String.length s) 1))))
                        (match sl
                               ((list (Satom _ Astring s))
-                               (MLast.StDir loc n (Some <:expr< $str:s$ >>)))
+                               (<:str_item< # $n$ $str:s$ >>))
                               (_ (match ()))))
                    (str_item_se se)))
                 ((Sexpr loc _) (str_item_se se)))))

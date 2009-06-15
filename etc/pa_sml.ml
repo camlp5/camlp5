@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_sml.ml,v 1.16 2007/09/12 19:58:05 deraugla Exp $ *)
+(* $Id: pa_sml.ml,v 1.17 2007/09/14 16:03:54 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -364,7 +364,7 @@ EXTEND
   phrase:
     [ [ x = str_item -> x
       | x = expr -> <:str_item< $exp:x$ >>
-      | "#"; n = LIDENT; dp = dir_param -> MLast.StDir loc n dp ] ]
+      | "#"; n = LIDENT; dp = dir_param -> <:str_item< # $n$ $opt:dp$ >> ] ]
   ;
   dir_param:
     [ [ -> None

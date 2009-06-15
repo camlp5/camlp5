@@ -1,16 +1,6 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: camlp5_top.ml,v 1.3 2007/09/06 12:00:46 deraugla Exp $ *)
+(* $Id: camlp5_top.ml,v 1.4 2007/09/14 16:03:54 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 open Parsetree;
 open Lexing;
@@ -139,7 +129,7 @@ value use_file cs = do {
         in
         if stopped_at_directive then
           match pl with
-          [ [MLast.StDir loc s eo] ->
+          [ [<:str_item< # $s$ $opt:eo$ >>] ->
               let ok =
                 try do {
                   let f = Pcaml.find_directive s in

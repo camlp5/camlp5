@@ -2499,29 +2499,38 @@ Grammar.extend
     Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
     Some (Gramext.After "apply"),
     [Some "label", Some Gramext.NonA,
-     [[Gramext.Stoken ("QUESTIONIDENT", "")],
+     [[Gramext.Snterm
+         (Grammar.Entry.obj
+            (questionident : 'questionident Grammar.Entry.e))],
       Gramext.action
-        (fun (i : string) (loc : Ploc.t) ->
+        (fun (i : 'questionident) (loc : Ploc.t) ->
            (MLast.ExOlb (loc, i, None) : 'expr));
-      [Gramext.Stoken ("QUESTIONIDENTCOLON", ""); Gramext.Sself],
+      [Gramext.Snterm
+         (Grammar.Entry.obj
+            (questionidentcolon : 'questionidentcolon Grammar.Entry.e));
+       Gramext.Sself],
       Gramext.action
-        (fun (e : 'expr) (i : string) (loc : Ploc.t) ->
+        (fun (e : 'expr) (i : 'questionidentcolon) (loc : Ploc.t) ->
            (MLast.ExOlb (loc, i, Some e) : 'expr));
-      [Gramext.Stoken ("TILDEIDENT", "")],
+      [Gramext.Snterm
+         (Grammar.Entry.obj (tildeident : 'tildeident Grammar.Entry.e))],
       Gramext.action
-        (fun (i : string) (loc : Ploc.t) ->
+        (fun (i : 'tildeident) (loc : Ploc.t) ->
            (MLast.ExLab (loc, i, None) : 'expr));
-      [Gramext.Stoken ("TILDEIDENTCOLON", ""); Gramext.Sself],
+      [Gramext.Snterm
+         (Grammar.Entry.obj
+            (tildeidentcolon : 'tildeidentcolon Grammar.Entry.e));
+       Gramext.Sself],
       Gramext.action
-        (fun (e : 'expr) (i : string) (loc : Ploc.t) ->
+        (fun (e : 'expr) (i : 'tildeidentcolon) (loc : Ploc.t) ->
            (MLast.ExLab (loc, i, Some e) : 'expr))]];
     Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
     Some (Gramext.Level "simple"),
     [None, None,
      [[Gramext.Stoken ("", "`");
-       Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
+       Gramext.Snterm (Grammar.Entry.obj (ident2 : 'ident2 Grammar.Entry.e))],
       Gramext.action
-        (fun (s : 'ident) _ (loc : Ploc.t) ->
+        (fun (s : 'ident2) _ (loc : Ploc.t) ->
            (MLast.ExVrn (loc, s) : 'expr))]];
     Grammar.Entry.obj (direction_flag2 : 'direction_flag2 Grammar.Entry.e),
     None,
@@ -2547,6 +2556,46 @@ Grammar.extend
       Gramext.action (fun _ (loc : Ploc.t) -> (false : 'direction_flag));
       [Gramext.Stoken ("", "to")],
       Gramext.action (fun _ (loc : Ploc.t) -> (true : 'direction_flag))]]]);;
+
+Grammar.extend
+  (let _ = (str_item : 'str_item Grammar.Entry.e)
+   and _ = (sig_item : 'sig_item Grammar.Entry.e) in
+   let grammar_entry_create s =
+     Grammar.create_local_entry (Grammar.of_entry str_item) s
+   in
+   let dir_param : 'dir_param Grammar.Entry.e =
+     grammar_entry_create "dir_param"
+   in
+   [Grammar.Entry.obj (str_item : 'str_item Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Stoken ("", "#"); Gramext.Stoken ("LIDENT", "");
+       Gramext.Snterm
+         (Grammar.Entry.obj (dir_param : 'dir_param Grammar.Entry.e))],
+      Gramext.action
+        (fun (dp : 'dir_param) (n : string) _ (loc : Ploc.t) ->
+           (MLast.StDir (loc, n, dp) : 'str_item))]];
+    Grammar.Entry.obj (sig_item : 'sig_item Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Stoken ("", "#"); Gramext.Stoken ("LIDENT", "");
+       Gramext.Snterm
+         (Grammar.Entry.obj (dir_param : 'dir_param Grammar.Entry.e))],
+      Gramext.action
+        (fun (dp : 'dir_param) (n : string) _ (loc : Ploc.t) ->
+           (MLast.SgDir (loc, n, dp) : 'sig_item))]];
+    Grammar.Entry.obj (dir_param : 'dir_param Grammar.Entry.e), None,
+    [None, None,
+     [[], Gramext.action (fun (loc : Ploc.t) -> (None : 'dir_param));
+      [Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
+      Gramext.action
+        (fun (e : 'expr) (loc : Ploc.t) -> (Some e : 'dir_param));
+      [Gramext.Stoken ("ANTIQUOT_LOC", "aopt")],
+      Gramext.action
+        (fun (a : string) (loc : Ploc.t) ->
+           (failwith "antiquot" : 'dir_param));
+      [Gramext.Stoken ("ANTIQUOT_LOC", "opt")],
+      Gramext.action
+        (fun (a : string) (loc : Ploc.t) ->
+           (failwith "antiquot" : 'dir_param))]]]);;
 
 Grammar.extend
   (let _ = (interf : 'interf Grammar.Entry.e)

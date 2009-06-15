@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.72 2007/09/14 14:57:38 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.73 2007/09/14 16:03:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -341,6 +341,7 @@ module Meta =
               pwel
           in
           e_node "ExFun" [pwel]
+      | ExLab _ s oe -> e_node "ExLab" [e_vala e_string s; e_option e_expr oe]
       | ExLaz _ e -> e_node "ExLaz" [e_expr e]
       | ExLet _ rf lpe e ->
           let rf = e_vala e_bool rf in
@@ -369,6 +370,8 @@ module Meta =
           e_node "ExObj"
             [e_vala (e_option e_patt) op;
              e_vala (e_list e_class_str_item) lcsi]
+      | ExOlb _ s oe ->
+          e_node "ExOlb" [e_vala e_string s; e_option e_expr oe]
       | ExOvr _ lse ->
           e_node "ExOvr"
             [e_vala
@@ -397,6 +400,7 @@ module Meta =
       | ExTup _ el -> e_node "ExTup" [e_vala (e_list e_expr) el]
       | ExTyc _ e t -> e_node "ExTyc" [e_expr e; e_ctyp t]
       | ExUid _ s -> e_node "ExUid" [e_vala e_string s]
+      | ExVrn _ s -> e_node "ExVrn" [e_vala e_string s]
       | ExWhi _ e el -> e_node "ExWhi" [e_expr e; e_vala (e_list e_expr) el]
       | IFDEF STRICT THEN
           ExXtr loc s _ -> e_xtr loc s
@@ -460,6 +464,8 @@ module Meta =
           e_node "SgClt" [e_vala (e_list (e_class_infos e_class_type)) ctd]
       | SgDcl _ lsi ->
           e_node "SgDcl" [e_vala (e_list e_sig_item) lsi]
+      | SgDir _ n dp ->
+          e_node "SgDir" [e_vala e_string n; e_vala (e_option e_expr) dp]
       | SgExc _ s lt ->
           let s = e_vala e_string s in
           let lt = e_vala (e_list e_ctyp) lt in
@@ -527,6 +533,8 @@ module Meta =
           e_node "StClt" [e_vala (e_list (e_class_infos e_class_type)) ctd]
       | StDcl _ lsi ->
           e_node "StDcl" [e_vala (e_list e_str_item) lsi]
+      | StDir _ n dp ->
+          e_node "StDir" [e_vala e_string n; e_vala (e_option e_expr) dp]
       | StExc _ s lt ls ->
           let s = e_vala e_string s in
           let lt = e_vala (e_list e_ctyp) lt in

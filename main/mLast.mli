@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: mLast.mli,v 1.43 2007/09/14 03:16:58 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.44 2007/09/14 16:03:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Module [MLast]: abstract syntax tree.
@@ -96,7 +96,7 @@ and expr =
   | ExFun of loc and V (list (patt * option expr * expr))
   | ExIfe of loc and expr and expr and expr
   | ExInt of loc and V string and string
-  | ExLab of loc and string and option expr
+  | ExLab of loc and V string and option expr
   | ExLaz of loc and expr
   | ExLet of loc and V bool and V (list (patt * expr)) and expr
   | ExLid of loc and V string
@@ -104,7 +104,7 @@ and expr =
   | ExMat of loc and expr and V (list (patt * option expr * expr))
   | ExNew of loc and V (list string)
   | ExObj of loc and V (option patt) and V (list class_str_item)
-  | ExOlb of loc and string and option expr
+  | ExOlb of loc and V string and option expr
   | ExOvr of loc and V (list (string * expr))
   | ExRec of loc and V (list (patt * expr)) and option expr
   | ExSeq of loc and V (list expr)
@@ -115,7 +115,7 @@ and expr =
   | ExTup of loc and V (list expr)
   | ExTyc of loc and expr and ctyp
   | ExUid of loc and V string
-  | ExVrn of loc and string
+  | ExVrn of loc and V string
   | ExWhi of loc and expr and V (list expr)
   | IFDEF STRICT THEN
       ExXtr of loc and string and option (V expr)
@@ -136,7 +136,7 @@ and sig_item =
   [ SgCls of loc and V (list (class_infos class_type))
   | SgClt of loc and V (list (class_infos class_type))
   | SgDcl of loc and V (list sig_item)
-  | SgDir of loc and string and option expr
+  | SgDir of loc and V string and V (option expr)
   | SgExc of loc and V string and V (list ctyp)
   | SgExt of loc and V string and ctyp and V (list string)
   | SgInc of loc and module_type
@@ -163,7 +163,7 @@ and str_item =
   [ StCls of loc and V (list (class_infos class_expr))
   | StClt of loc and V (list (class_infos class_type))
   | StDcl of loc and V (list str_item)
-  | StDir of loc and string and option expr
+  | StDir of loc and V string and V (option expr)
   | StExc of loc and V string and V (list ctyp) and V (list string)
   | StExp of loc and expr
   | StExt of loc and V string and ctyp and V (list string)

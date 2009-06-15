@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.84 2007/09/14 14:57:38 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.85 2007/09/14 16:03:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -783,13 +783,13 @@ EXTEND
   ;
   expr: AFTER "apply"
     [ "label" NONA
-      [ i = TILDEIDENTCOLON; e = SELF -> <:expr< ~$i$: $e$ >>
-      | i = TILDEIDENT -> <:expr< ~ $i$ >>
-      | i = QUESTIONIDENTCOLON; e = SELF -> <:expr< ? $i$ : $e$ >>
-      | i = QUESTIONIDENT -> <:expr< ? $i$ >> ] ]
+      [ i = tildeidentcolon; e = SELF -> <:expr< ~$a:i$: $e$ >>
+      | i = tildeident -> <:expr< ~$a:i$ >>
+      | i = questionidentcolon; e = SELF -> <:expr< ?$a:i$: $e$ >>
+      | i = questionident -> <:expr< ?$a:i$ >> ] ]
   ;
   expr: LEVEL "simple"
-    [ [ "`"; s = ident -> <:expr< ` $s$ >> ] ]
+    [ [ "`"; s = ident2 -> <:expr< ` $a:s$ >> ] ]
   ;
   direction_flag2:
     [ [ df = direction_flag -> <:vala< df >>
@@ -803,10 +803,28 @@ EXTEND
 END;
 
 EXTEND
+  GLOBAL: str_item sig_item;
+  str_item:
+    [ [ "#"; n = V LIDENT; dp = dir_param ->
+          <:str_item< # $alid:n$ $aopt:dp$ >> ] ]
+  ;
+  sig_item:
+    [ [ "#"; n = V LIDENT; dp = dir_param ->
+          <:sig_item< # $alid:n$ $aopt:dp$ >> ] ]
+  ;
+  dir_param:
+    [ [ a = ANTIQUOT_LOC "opt" -> <:vala< $a$ >>
+      | a = ANTIQUOT_LOC "aopt" -> <:vala< $a$ >>
+      | e = expr -> <:vala< Some e >>
+      | -> <:vala< None >> ] ]
+  ;
+END;
+
+EXTEND
   GLOBAL: interf implem use_file top_phrase expr patt;
   interf:
-    [ [ "#"; n = LIDENT; dp = OPT expr; ";" ->
-          ([(<:sig_item< # $n$ $opt:dp$ >>, loc)], True)
+    [ [ "#"; n = V LIDENT; dp = OPT expr; ";" ->
+          ([(<:sig_item< # $alid:n$ $opt:dp$ >>, loc)], True)
       | si = sig_item_semi; (sil, stopped) = SELF -> ([si :: sil], stopped)
       | EOI -> ([], False) ] ]
   ;
@@ -814,8 +832,8 @@ EXTEND
     [ [ si = sig_item; ";" -> (si, loc) ] ]
   ;
   implem:
-    [ [ "#"; n = LIDENT; dp = OPT expr; ";" ->
-          ([(<:str_item< # $n$ $opt:dp$ >>, loc)], True)
+    [ [ "#"; n = V LIDENT; dp = OPT expr; ";" ->
+          ([(<:str_item< # $alid:n$ $opt:dp$ >>, loc)], True)
       | si = str_item_semi; (sil, stopped) = SELF -> ([si :: sil], stopped)
       | EOI -> ([], False) ] ]
   ;
@@ -828,13 +846,13 @@ EXTEND
   ;
   use_file:
     [ [ "#"; n = LIDENT; dp = OPT expr; ";" ->
-          ([<:str_item< # $n$ $opt:dp$ >>], True)
+          ([<:str_item< # $lid:n$ $opt:dp$ >>], True)
       | si = str_item; ";"; (sil, stopped) = SELF -> ([si :: sil], stopped)
       | EOI -> ([], False) ] ]
   ;
   phrase:
     [ [ "#"; n = LIDENT; dp = OPT expr; ";" ->
-          <:str_item< # $n$ $opt:dp$ >>
+          <:str_item< # $lid:n$ $opt:dp$ >>
       | sti = str_item; ";" -> sti ] ]
   ;
   expr: LEVEL "simple"

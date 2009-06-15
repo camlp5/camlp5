@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.82 2007/09/14 14:57:38 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.83 2007/09/14 16:03:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -1240,16 +1240,16 @@ EXTEND
   ;
   expr: AFTER "apply"
     [ "label" NONA
-      [ i = a_TILDEIDENTCOLON; e = SELF ->
+      [ i = tildeidentcolon; e = SELF ->
           Qast.Node "ExLab" [Qast.Loc; i; Qast.Option (Some e)]
-      | i = a_TILDEIDENT -> Qast.Node "ExLab" [Qast.Loc; i; Qast.Option None]
-      | i = a_QUESTIONIDENTCOLON; e = SELF ->
+      | i = tildeident -> Qast.Node "ExLab" [Qast.Loc; i; Qast.Option None]
+      | i = questionidentcolon; e = SELF ->
           Qast.Node "ExOlb" [Qast.Loc; i; Qast.Option (Some e)]
-      | i = a_QUESTIONIDENT ->
+      | i = questionident ->
           Qast.Node "ExOlb" [Qast.Loc; i; Qast.Option None] ] ]
   ;
   expr: LEVEL "simple"
-    [ [ "`"; s = ident -> Qast.Node "ExVrn" [Qast.Loc; s] ] ]
+    [ [ "`"; s = ident2 -> Qast.Node "ExVrn" [Qast.Loc; s] ] ]
   ;
   direction_flag2:
     [ [ df = direction_flag -> Qast.VaVal df
@@ -1285,17 +1285,18 @@ END;
 EXTEND
   GLOBAL: str_item sig_item;
   str_item:
-    [ [ "#"; n = a_LIDENT; dp = dir_param ->
+    [ [ "#"; n = a_LIDENT2; dp = dir_param ->
           Qast.Node "StDir" [Qast.Loc; n; dp] ] ]
   ;
   sig_item:
-    [ [ "#"; n = a_LIDENT; dp = dir_param ->
+    [ [ "#"; n = a_LIDENT2; dp = dir_param ->
           Qast.Node "SgDir" [Qast.Loc; n; dp] ] ]
   ;
   dir_param:
-    [ [ a = ANTIQUOT "opt" -> antiquot "opt" loc a
-      | e = expr -> Qast.Option (Some e)
-      | -> Qast.Option None ] ]
+    [ [ a = ANTIQUOT "opt" -> Qast.VaVal (antiquot "opt" loc a)
+      | a = ANTIQUOT "aopt" -> antiquot "opt" loc a
+      | e = expr -> Qast.VaVal (Qast.Option (Some e))
+      | -> Qast.VaVal (Qast.Option None) ] ]
   ;
 END;
 
@@ -1352,11 +1353,6 @@ EXTEND
   class_type:
     [ [ a = ANTIQUOT -> antiquot "" loc a ] ]
   ;
-(*
-  patt: LEVEL "simple"
-    [ [ "#"; a = a_list -> Qast.Node "PaTyp" [Qast.Loc; a] ] ]
-  ;
-*)
   a_list:
     [ [ a = ANTIQUOT "list" -> antiquot "list" loc a
       | a = ANTIQUOT "alist" -> antiquot "list" loc a ] ]
