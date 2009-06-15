@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: htmlp2html,v 1.6 2007/07/19 03:00:51 deraugla Exp $
+# $Id: htmlp2html,v 1.7 2007/07/19 03:54:06 deraugla Exp $
 
 FILE=$1
 
@@ -7,8 +7,8 @@ FILE=$1
   echo '<div id="tableofcontents">'
   echo '  <ol>'
   grep '<h[23]>' $FILE |
-  sed -e 's|^<h2>\(.*\)</h2>|b2<a href="#\1">\1</a>e2|' |
-  sed -e 's|^<h3>\(.*\)</h3>|b3<a href="#\1">\1</a>e3|' |
+  sed -e 's|^<h2>\(.*\)</h2>|b2<a href="#a:\1">\1</a>e2|' |
+  sed -e 's|^<h3>\(.*\)</h3>|b3<a href="#b:\1">\1</a>e3|' |
   sed -e '{:b N; s/\n//; tb}' |
   sed -e 's/e2b3/\n      <ul>\n        <li>/g' |
   sed -e 's|e3b2|</li>\n      </ul>\n    </li>\n    <li>|g' |
@@ -33,8 +33,8 @@ sed \
   -e '/<div class="trailer">/i\aaa' \
   -e '/<div class="trailer">/,/^<\/div>/d' |
 sed -e '/aaa/r trailer.html' -e '/aaa/d' |
-sed -e '/<h2>/s|<h2>\(.*\)</h2>|<a id="\1"></a>\n<h2>\1</h2>|' |
-sed -e '/<h3>/s|<h3>\(.*\)</h3>|<a id="\1"></a>\n<h3>\1</h3>|' |
+sed -e '/<h2>/s|<h2>\(.*\)</h2>|<a id="a:\1"></a>\n<h2>\1</h2>|' |
+sed -e '/<h3>/s|<h3>\(.*\)</h3>|<a id="b:\1"></a>\n<h3>\1</h3>|' |
 sed -e '{:b s/\(href="#[^ "]*\) /\1-/; tb}' |
 sed -e '{:b s/\(id="[^ "]*\) /\1-/; tb}'
 
