@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.56 2007/07/08 03:12:03 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.57 2007/07/08 05:05:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1140,7 +1140,7 @@ value expr_expr1 =
                sprintf "%s%slet %s%s %s%s%s" pc.bef begin_op
                  (if rf then "rec " else "")
                  (hlist2 let_binding (and_before let_binding)
-                    {(pc) with bef = ""; aft = ("", "in")} pel)
+                    {(pc) with bef = ""; aft = ("", "in"); dang = ""} pel)
                  (expr {(pc) with bef = ""; aft = ""; dang = pc_dang} e)
                  end_op pc.aft)
           (fun () ->
@@ -1156,7 +1156,7 @@ value expr_expr1 =
                   bef =
                     sprintf "%s%slet %s" pc.bef begin_op
                       (if rf then "rec " else "");
-                  aft = ("", "in")}
+                  aft = ("", "in"); dang = ""}
                  pel
              in
              let s2 =
