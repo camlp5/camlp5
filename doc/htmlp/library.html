@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: library.html,v 1.12 2007/08/20 12:10:51 deraugla Exp $ -->
+  <!-- $Id: library.html,v 1.13 2007/08/20 13:39:31 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Library</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -615,7 +615,7 @@ and g_node 'te =
 </pre>
 
 <dl><dd>
-    The type of tree (and tree nodes) representing a list of
+    The types of tree and tree nodes, representing a list of
     factorized rules in an entry level.
     <ul>
       <li>The constructor "<tt>Node</tt>" is a representation of a
@@ -635,8 +635,7 @@ and g_node 'te =
 
 <p>... the following lines have to be structured ...</p>
 
-<pre>
-
+<pre style="border:0; margin-left: 1cm">
 type position =
   [ First
   | Last
@@ -644,22 +643,20 @@ type position =
   | After of string
   | Level of string ]
 ;
-
-value levels_of_rules :
-  g_entry 'te -> option position ->
-    list
-      (option string * option g_assoc *
-       list (list (g_symbol 'te) * g_action)) ->
-    list (g_level 'te);
-value srules : list (list (g_symbol 'te) * g_action) -> g_symbol 'te;
-external action : 'a -> g_action = "%identity";
-
-value delete_rule_in_level_list :
-  g_entry 'te -> list (g_symbol 'te) -> list (g_level 'te) ->
-    list (g_level 'te);
-
-value warning_verbose : ref bool;
 </pre>
+
+<dl><dd>
+    The type of position where an entry extension takes place.
+    <ul>
+      <li><tt>First</tt> : corresponds to FIRST</li>
+      <li><tt>Last</tt> : corresponds to LAST</li>
+      <li><tt>Before s</tt> : corresponds to BEFORE "s"</li>
+      <li><tt>After s</tt> : corresponds to AFTER "s"</li>
+      <li><tt>LEVEL s</tt> : corresponds to LEVEL "s"</li>
+      </ul>
+</dd></dl>
+
+<p>The module contains other definitions but for internal use.</p>
 
 <h2>Grammar module</h2>
 
