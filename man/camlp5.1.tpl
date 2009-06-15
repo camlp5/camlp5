@@ -214,6 +214,8 @@ Printing files:
 	pr_rp.cmo: try to rebuild streams and parsers syntax
 	pr_o.cmo: normal syntax
 	pr_op.cmo: try to rebuild streams and parsers syntax
+	pr_scheme.cmo: Scheme syntax
+	pr_schemep.cmo: try to rebuild streams and parsers syntax
 	pr_extend.cmo: try to rebuild EXTEND statements
 	pr_extfun.cmo: try to rebuild extfun statements
 	pr_dump.cmo: dump syntax tree for ocaml compiler

@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: conclusion.html,v 1.12 2007/09/10 08:09:09 deraugla Exp $ -->
+  <!-- $Id: conclusion.html,v 1.13 2007/09/18 01:53:23 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Conclusion</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -19,17 +19,7 @@
 
 <h1 class="top">Future work</h1>
 
-<p>Just some ideas... All these extensions will be done if there are
-  good basic ideas for their implementations.</p>
-
-<h2>extensible syntax tree quotations</h2>
-
-<p>A new implementation of quotation for <a href="ml_ast.html">syntax
-  trees</a> allowing to use the user current syntax (his extensions
-  included) was tested some time ago, but the result was not 100%
-  satisfactory. Several implementations are possible, and
-  compatibility with previous versions and user programs is a
-  problem. We are continuing thinking of it.</p>
+<p>Just some ideas... things to implement or to thing about...</p>
 
 <h2>pretty print in shorter syntax</h2>
 
@@ -38,6 +28,14 @@
   so that the management of the lines (indentation, continuations)
   be handled by the system. For the moment, the programmer has to
   manage them using the "<tt>pc</tt>" variable.</p>
+
+<h2>rewritting pretty printer in Scheme syntax</h2>
+
+<p>The pretty printer kit "<tt>pr_scheme.cmo</tt>" still uses an old
+  technology of pretty printing using old module named
+  "<tt>Spretty</tt>". I has to be rewritten using
+  <a href="printers.html">EXTEND_PRINTER</a> and the
+  module <a href="pretty.html">Pretty</a>.</p>
 
 <h2>printer for EXTEND_PRINTER</h2>
 

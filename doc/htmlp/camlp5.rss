@@ -6,6 +6,16 @@
     <lastBuildDate>Mon Sep 17 15:10:47 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
     <item>
+      <title>Future work</title>
+      <description>
+        Changed intro sentence. Deleted section "extensible syntax
+        tree quotations" (implemented). Added section "rewritting
+        pretty printer in Scheme syntax".
+      </description>
+      <pubDate>Tue Sep 18 03:51:21 CEST 2007</pubDate>
+      <link>../conclusion.html</link>
+    </item>
+    <item>
       <title>Syntax tree</title>
       <description>
         Changed structure of this chapter. Added introduction to explain
