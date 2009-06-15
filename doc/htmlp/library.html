@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: library.html,v 1.5 2007/08/19 19:22:35 deraugla Exp $ -->
+  <!-- $Id: library.html,v 1.6 2007/08/20 02:55:04 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Library</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -25,7 +25,7 @@
 <h2>Stdpp module</h2>
 
 <p>Building and combining locations (this module should be renamed
-  [Ploc] one day).</p>
+  "<tt>Ploc</tt>" one day).</p>
 
 <dl>
   <dt><tt>type location = 'abstract;</tt></dt>
@@ -35,15 +35,17 @@
 
 <dl>
   <dt><tt>exception Exc_located of location and exn;</tt></dt>
-  <dd>[Exc_located loc e] is an encapsulation of the exception [e] with
-    the input location [loc]. To be used to specify a location
-    for an error. This exception must not be raised by [raise] but
-    rather by [raise_with_loc] (see below), to prevent the risk of
-    several encapsulations of [Exc_located].</dd>
+  <dd>"<tt>Exc_located loc e</tt>" is an encapsulation of the
+    exception "<tt>e</tt>" with the input location "<tt>loc</tt>". To
+    be used to specify a location for an error. This exception must
+    not be raised by "<tt>raise</tt>" but rather by
+    "<tt>raise_with_loc</tt>" (see below), to prevent the risk of
+    several encapsulations of "<tt>Exc_located</tt>".</dd>
   <dt><tt>value raise_with_loc : location -> exn -> 'a;</tt></dt>
-  <dd>[raise_with_loc loc e], if [e] is already the exception [Exc_located],
-    re-raise it (ignoring the new location [loc]), else raise the
-    exception [Exc_located loc e].</dd>
+  <dd>"<tt>raise_with_loc loc e</tt>", if "<tt>e</tt>" is already the
+    exception "<tt>Exc_located</tt>", re-raise it (ignoring the new
+    location "<tt>loc</tt>"), else raise the exception
+    "<tt>Exc_located loc e</tt>".</dd>
 </dl>
 
 <h3>making locations</h3>
@@ -51,82 +53,88 @@
 <dl>
   <dt><tt>value make_lined_loc : int -> int -> (int * int) ->
       location;</tt></dt>
-  <dd>[make_lined_loc line_nb bol_pos (bp, ep)] creates a location
-    starting at line number [line_nb], where the position of the
-    beginning of the line is [bol_pos] and between the positions [bp]
-    (included) and [ep] excluded. The positions are in number of
-    characters since the begin of the stream.</dd>
+  <dd>"<tt>make_lined_loc line_nb bol_pos (bp, ep)</tt>" creates a
+    location starting at line number "<tt>line_nb</tt>", where the
+    position of the beginning of the line is "<tt>bol_pos</tt>" and
+    between the positions "<tt>bp</tt>" (included) and "<tt>ep</tt>"
+    excluded. The positions are in number of characters since the
+    begin of the stream.</dd>
   <dt><tt>value make_loc : (int * int) -> location;</tt></dt>
-  <dd>[make_loc] is like [make_lined_loc] except that the line number
-    is not provided (to be used e.g. when the line number is
-    unknown).</dd>
+  <dd>"<tt>make_loc</tt>" is like "<tt>make_lined_loc</tt>" except
+    that the line number is not provided (to be used e.g. when the
+    line number is unknown).</dd>
 </dl>
 
 <dl>
   <dt><tt>value dummy_loc : location;</tt></dt>
-  <dd>[dummy_loc] is a dummy location, used in situations when
-    location has no meaning.</dd>
+  <dd>"<tt>dummy_loc</tt>" is a dummy location, used in situations
+    when location has no meaning.</dd>
 </dl>
 
 <h3>getting location info</h3>
 
 <dl>
   <dt><tt>value first_pos : location -> int;</tt></dt>
-  <dd>[first_pos loc] returns the position of the begin of the location in
-    number of characters since the beginning of the stream.</dd>
+  <dd>"<tt>first_pos loc</tt>" returns the position of the begin of
+    the location in number of characters since the beginning of the
+    stream.</dd>
   <dt><tt>value last_pos : location -> int;</tt></dt>
-  <dd>[first_pos loc] returns the position of the first character not
-    of the location in number of characters since the beginning of
-    the stream.</dd>
+  <dd>"<tt>first_pos loc</tt>" returns the position of the first
+    character not of the location in number of characters since the
+    beginning of the stream.</dd>
   <dt><tt>value line_nb : location -> int;</tt></dt>
-  <dd>[line_nb loc] returns the line number of the location or [-1] if
-    the location does not contain a line number (i.e. built the old
-    way with [make_loc] above.</dd>
+  <dd>"<tt>line_nb loc</tt>" returns the line number of the location
+    or "<tt>-1</tt>" if the location does not contain a line number
+    (i.e. built the old way with "<tt>make_loc</tt>" above.</dd>
   <dt><tt>value bol_pos : location -> int;</tt></dt>
-  <dd>[line_nb loc] returns the position of the beginning of the line
-    of the location in number of characters since the beginning of
-    the stream, or [0] if the location does not contain a line number
-    (i.e. built the old with with [make_loc] above.</dd>
+  <dd>"<tt>line_nb loc</tt>" returns the position of the beginning of
+    the line of the location in number of characters since the
+    beginning of the stream, or "<tt>0</tt>" if the location does not
+    contain a line number (i.e. built the old with with
+    "<tt>make_loc</tt>" above.</dd>
 </dl>
 
 <h3>combining locations</h3>
 
 <dl>
   <dt><tt>value encl_loc : location -> location -> location;</tt></dt>
-  <dd>[encl_loc loc1 loc2] returns the location starting at the smallest
-    start and ending at the greatest end of the locations [loc1] and
-    [loc2]. In other words, it is the location enclosing [loc1] and
-    [loc2].</dd>
+  <dd>"<tt>encl_loc loc1 loc2</tt>" returns the location starting at
+    the smallest start and ending at the greatest end of the locations
+    "<tt>loc1</tt>" and "<tt>loc2</tt>". In other words, it is the
+    location enclosing "<tt>loc1</tt>" and "<tt>loc2</tt>".</dd>
   <dt><tt>value shift_loc : int -> location -> location;</tt></dt>
-  <dd>[shift_loc sh loc] returns the location [loc] shifted with [sh]
-    characters. The line number is not recomputed.</dd>
+  <dd>"<tt>shift_loc sh loc</tt>" returns the location "<tt>loc</tt>"
+    shifted with "<tt>sh</tt>" characters. The line number is not
+    recomputed.</dd>
   <dt><tt>value sub_loc : location -> int -> int -> location;</tt></dt>
-  <dd>[sub_loc loc sh len] is the location [loc] shifted with [sh] characters
-    and with length [len]. The previous ending position of the location
-    is lost.</dd>
+  <dd>"<tt>sub_loc loc sh len</tt>" is the location "<tt>loc</tt>"
+    shifted with "<tt>sh</tt>" characters and with length
+    "<tt>len</tt>". The previous ending position of the location is
+    lost.</dd>
   <dt><tt>value after_loc : location -> int -> int -> location;</tt></dt>
-  <dd>[after_loc loc sh len] is the location just after loc (starting at
-    the end position of [loc]) shifted with [sh] characters and of length
-    [len].</dd>
+  <dd>"<tt>after_loc loc sh len</tt>" is the location just after loc
+    (starting at the end position of "<tt>loc</tt>") shifted with
+    "<tt>sh</tt>" characters and of length "<tt>len</tt>".</dd>
 </dl>
 
 <h3>miscellaneous</h3>
 
 <dl>
   <dt><tt>value loc_name : ref string;</tt></dt>
-  <dd>[loc_name.val] is the name of the location variable used in
-    grammars and in the predefined quotations for OCaml syntax
-    trees. Default: ["loc"].</dd>
+  <dd>"<tt>loc_name.val</tt>" is the name of the location variable
+    used in grammars and in the predefined quotations for OCaml syntax
+    trees. Default: "<tt>"loc"</tt>".</dd>
 </dl>
 
 <dl>
   <dt><tt>value line_of_loc : string -> location -> (string * int *
       int * int);</tt></dt>
-  <dd>[line_of_loc fname loc] reads the file [fname] up to the
-    location [loc] and returns the real input file, the line number and
-    the characters location in the line; the real input file can be
-    different from [fname] because of possibility of line directives
-    typically generated by /lib/cpp.</dd>
+  <dd>"<tt>line_of_loc fname loc</tt>" reads the file "<tt>fname</tt>"
+    up to the location "<tt>loc</tt>" and returns the real input file,
+    the line number and the characters location in the line; the real
+    input file can be different from "<tt>fname</tt>" because of
+    possibility of line directives typically generated by
+    /lib/cpp.</dd>
 </dl>
 
 <h2>Token module</h2>
@@ -134,9 +142,9 @@
 <p>Lexing for camlp5 grammars.</p>
 
 <p>This module defines the Camlp5 lexer type to be used in extensible
-  grammars (see module [Grammar]). It also provides some useful
-  functions to create lexers (this module should be renamed [Plexing]
-  one day).</p>
+  grammars (see module "<tt>Grammar</tt>"). It also provides some
+  useful functions to create lexers (this module should be renamed
+  "<tt>Plexing</tt>" one day).</p>
 
 <dl>
   <dt><tt>type pattern = (string * string);</tt></dt>
@@ -149,7 +157,7 @@
     <li>The second string is the constructor parameter. Empty if it
       has no parameter (corresponding to the 'wildcard' pattern).</li>
     <li>The way tokens patterns are interpreted to parse tokens is
-      done by the lexer, function [tok_match] below.</li>
+      done by the lexer, function "<tt>tok_match</tt>" below.</li>
     </ul>
   </dd>
 </dl>
@@ -173,44 +181,45 @@ type glexer 'te =
 
 <dl><dd>
     The type for lexers compatible with camlp5 grammars. The parameter
-    type ['te] is the type of the tokens.
+    type "<tt>'te</tt>" is the type of the tokens.
     <ul>
-      <li>The field [tok_func] is the main lexer function. See
-        [lexer_func] type below.</li>
-      <li>The field [tok_using] is a function called by the [EXTEND]
-        statement to warn the lexer that a rule uses this pattern
-        (given as parameter). This allow the lexer 1/ to check that
-        the pattern constructor is really among its possible
-        constructors 2/ to enter the keywords in its tables.</li>
-      <li>The field [tok_removing] is a function called by the
-        [DELETE_RULE] statement to warn the lexer that a rule using
-        this pattern (given as parameter) has been deleted. This allow
-        the lexer to possibly remove this keyword from its tables if
-        there are no more rules using it.</li>
-      <li>The field [tok_match] is a function called by the camlp5
-        grammar system to ask the lexer how the input tokens have to
-        be matched against the patterns. Warning: for efficiency, this
-        function has to be written as a function taking patterns as
-        parameters and, for each pattern value, returning a function
-        matching a token, <em>not</em> as a function with two
-        parameters.</li>
-      <li>The field [tok_text] is a function called by the grammar
-        system to get the name of the tokens for the error messages,
-        in case of syntax error, or for the displaying of the rules
-        of an entry.</li>
-      <li>The field [tok_comm] is a mutable place where the lexer can
-        put the locations of the comments, if its initial value is not
-        [None]. If it is [None], nothing has to be done by the
-        lexer.</li>
+      <li>The field "<tt>tok_func</tt>" is the main lexer
+        function. See "<tt>lexer_func</tt>" type below.</li>
+      <li>The field "<tt>tok_using</tt>" is a function called by the
+        "<tt>EXTEND</tt>" statement to warn the lexer that a rule uses
+        this pattern (given as parameter). This allow the lexer 1/ to
+        check that the pattern constructor is really among its
+        possible constructors 2/ to enter the keywords in its
+        tables.</li>
+      <li>The field "<tt>tok_removing</tt>" is a function called by
+        the "<tt>DELETE_RULE</tt>" statement to warn the lexer that a
+        rule using this pattern (given as parameter) has been
+        deleted. This allow the lexer to possibly remove this keyword
+        from its tables if there are no more rules using it.</li>
+      <li>The field "<tt>tok_match</tt>" is a function called by the
+        camlp5 grammar system to ask the lexer how the input tokens
+        have to be matched against the patterns. Warning: for
+        efficiency, this function has to be written as a function
+        taking patterns as parameters and, for each pattern value,
+        returning a function matching a token, <em>not</em> as a
+        function with two parameters.</li>
+      <li>The field "<tt>tok_text</tt>" is a function called by the
+        grammar system to get the name of the tokens for the error
+        messages, in case of syntax error, or for the displaying of
+        the rules of an entry.</li>
+      <li>The field "<tt>tok_comm</tt>" is a mutable place where the
+        lexer can put the locations of the comments, if its initial
+        value is not "<tt>None</tt>". If it is "<tt>None</tt>",
+        nothing has to be done by the lexer.</li>
     </ul>
 </dd></dl>
 
 <dl>
   <dt><tt>and lexer_func 'te = Stream.t char -> (Stream.t 'te *
       location_function)</tt></dt>
-  <dd>The type of a lexer function (field [tok_func] of the type
-    [glexer]). The character stream is the input stream to be
-    lexed. The result is a pair of a token stream and a location
+  <dd>The type of a lexer function (field "<tt>tok_func</tt>" of the
+    type "<tt>glexer</tt>"). The character stream is the input stream
+    to be lexed. The result is a pair of a token stream and a location
     function (see below) for this tokens stream.</dd>
 </dl>
 
@@ -223,22 +232,22 @@ type glexer 'te =
 
 <dl>
   <dt><tt>value lexer_text : pattern -> string;</tt></dt>
-  <dd>A simple [tok_text] function.</dd>
+  <dd>A simple "<tt>tok_text</tt>" function.</dd>
 </dl>
 
 <dl>
   <dt><tt>value default_match : pattern -> (string * string) ->
       string;</tt></dt>
-  <dd>A simple [tok_match] function, appling to the token type
-       "<tt>(string * string)</tt>".</dd>
+  <dd>A simple "<tt>tok_match</tt>" function, appling to the token
+       type "<tt>(string * string)</tt>".</dd>
 </dl>
 
 <h3>Lexers from parsers or ocamllex</h3>
 
-<p>The functions below create lexer functions either from a [char
-   stream] parser or for an [ocamllex] function. With the returned
-   function [f], it is possible to get a simple lexer (of the type
-   [Token.glexer] above):</p>
+<p>The functions below create lexer functions either from a "<tt>char
+   stream</tt>" parser or for an "<tt>ocamllex</tt>" function. With
+   the returned function "<tt>f</tt>", it is possible to get a simple
+   lexer (of the type "<tt>Token.glexer</tt>" above):</p>
 
 <pre>
    { Token.tok_func = f;
@@ -248,10 +257,10 @@ type glexer 'te =
      Token.tok_text = Token.lexer_text }
 </pre>
 
-<p>Note that a better [tok_using] function should check the used
-  tokens and raise [Token.Error] for incorrect ones. The other
-  functions [tok_removing], [tok_match] and [tok_text] may have other
-  implementations as well.</p>
+<p>Note that a better "<tt>tok_using</tt>" function should check the
+  used tokens and raise "<tt>Token.Error</tt>" for incorrect ones. The
+  other functions "<tt>tok_removing</tt>", "<tt>tok_match</tt>" and
+  "<tt>tok_text</tt>" may have other implementations as well.</p>
 
 <pre style="border:0; margin-left: 1cm">
 value lexer_func_of_parser :
@@ -270,13 +279,13 @@ value lexer_func_of_ocamllex : (Lexing.lexbuf -> 'te) -> lexer_func 'te;
 </pre>
 
 <dl><dd>
-    A lexer function from a lexer created by [ocamllex].
+    A lexer function from a lexer created by "<tt>ocamllex</tt>".
 </dd></dl>
 
 <h3>Function to build a stream and a location function</h3>
 
 <pre style="border:0; margin-left: 1cm">
-value make_stream_and_location :</tt></dt>
+value make_stream_and_location :
   (unit -> ('te * Stdpp.location)) -> (Stream.t 'te * location_function);
 </pre>
 
@@ -286,10 +295,11 @@ value make_stream_and_location :</tt></dt>
   <dt><tt>value eval_char : string -> char;</tt></dt>
   <dt><tt>value eval_string : Stdpp.location -> string -> string;</tt></dt>
   <dd>Convert a char or a string token, where the backslashes had not
-    been interpreted into a real char or string; raise [Failure] if
-    bad backslash sequence found; [Token.eval_char (Char.escaped c)]
-    would returns [c] and [Token.eval_string (String.escaped s)] would
-    return [s].</dd>
+    been interpreted into a real char or string; raise
+    "<tt>Failure</tt>" if bad backslash sequence found;
+    "<tt>Token.eval_char (Char.escaped c)</tt>" would returns
+    "<tt>c</tt>" and "<tt>Token.eval_string (String.escaped s)</tt>"
+    would return "<tt>s</tt>".</dd>
 </dl>
 
 <dl>
@@ -316,10 +326,105 @@ value make_stream_and_location :</tt></dt>
 
 <h2>Plexer module</h2>
 
-<p>This module contains the lexer used for ocaml syntax (revised and
+<p>This module contains a lexer used for ocaml syntax (revised and
   normal).</p>
 
-<p>... to be continued ...</p>
+<h3>lexer</h3>
+
+<dl>
+  <dt><tt>value gmake : unit -> Token.glexer (string * string);</tt></dt>
+  <dd>"<tt>gmake ()</tt>" returns a lexer compatible with the
+    extensible grammars.  The returned tokens follow the normal syntax
+    and the revised syntax lexing rules.</dd>
+</dl>
+
+<p>The token type is "<tt>(string * string)</tt>" just like the pattern
+  type.</p>
+
+<p>The meaning of the tokens are:</p>
+
+<ul>
+  <li><tt>("", s)</tt> is the keyword "<tt>s</tt>",</li>
+  <li><tt>("LIDENT", s)</tt> is the ident "<tt>s</tt>" starting with a
+    lowercase letter,</li>
+  <li><tt>("UIDENT", s)</tt> is the ident "<tt>s</tt>" starting with
+    an uppercase letter,</li>
+  <li><tt>("INT", s)</tt> is an integer constant whose string source
+    is "<tt>s</tt>",</li>
+  <li><tt>("INT_l", s)</tt> is an 32 bits integer constant whose
+    string source is "<tt>s</tt>",</li>
+  <li><tt>("INT_L", s)</tt> is an 64 bits integer constant whose
+    string source is "<tt>s</tt>",</li>
+  <li><tt>("INT_n", s)</tt> is an native integer constant whose string
+    source is "<tt>s</tt>",</li>
+  <li><tt>("FLOAT", s)</tt> is a float constant whose string source is
+    "<tt>s</tt>",</li>
+  <li><tt>("STRING", s)</tt> is the string constant "<tt>s</tt>",</li>
+  <li><tt>("CHAR", s)</tt> is the character constant
+    "<tt>s</tt>",</li>
+  <li><tt>("TILDEIDENT", s)</tt> is the tilde character "<tt>~</tt>"
+    followed by the ident "<tt>s</tt>",</li>
+  <li><tt>("TILDEIDENTCOLON", s)</tt> is the tilde character
+    "<tt>~</tt>" followed by the ident "<tt>s</tt>" and a colon
+    "<tt>:</tt>",</li>
+  <li><tt>("QUESTIONIDENT", s)</tt> is the question mark "<tt>?</tt>"
+    followed by the ident "<tt>s</tt>",</li>
+  <li><tt>("QUESTIONIDENTCOLON", s)</tt> is the question mark
+    "<tt>?</tt>" followed by the ident "<tt>s</tt>" and a colon
+    "<tt>:</tt>",</li>
+  <li><tt>("QUOTATION", "t:s")</tt> is a quotation "<tt>t</tt>"
+    holding the string "<tt>s</tt>",</li>
+  <li><tt>("ANTIQUOT", "t:s")</tt> is an antiquotation "<tt>t</tt>"
+    holding the string "<tt>s</tt>",</li>
+  <li><tt>("EOI", "")</tt> is the end of input.</li>
+</ul>
+
+<p>The associated token patterns in the EXTEND statement hold the same
+  names than the first string (constructor name) of the tokens
+  expressions above.</p>
+
+<p>Warning: the string associated with the "<tt>STRING</tt>"
+  constructor is the string found in the source without any
+  interpretation. In particular, the backslashes are not
+  interpreted. For example, if the input is <tt>"\n"</tt> the string
+  is *not* a string with one element containing the "newline"
+  character, but a string of two elements: the backslash and the
+  <tt>"n"</tt> letter.</p>
+
+<p>Same thing for the string associated with the "<tt>CHAR</tt>"
+  constructor.</p>
+
+<p>The functions "<tt>Token.eval_string</tt>" and
+  "<tt>Token.eval_char</tt>" allow to convert them into the real
+  corresponding string or char value.</p>
+
+<h3>flags</h3>
+
+<dl>
+  <dt><tt>value dollar_for_antiquotation : ref bool;</tt></dt>
+  <dd>When True (default), the next call to "<tt>Plexer.gmake ()</tt>"
+    returns a lexer where the dollar sign is used for antiquotations.
+    If False, there is no antiquotations and the dollar sign can be
+    used as normal token.</dd>
+</dl>
+
+<dl>
+  <dt><tt>value specific_space_dot : ref bool;</tt></dt>
+  <dd>When "<tt>False</tt>" (default), the next call to
+    "<tt>Plexer.gmake ()</tt>" returns a lexer where there is no
+    difference between dots which have spaces before and dots which
+    don't have spaces before. If "<tt>True</tt>", dots which have
+    spaces before return the keyword <tt>" ."</tt> (space dot) and the
+    ones which don't have spaces before return the
+    keyword <tt>"."</tt>  (dot alone).</dd>
+</dl>
+
+<dl>
+  <dt><tt>value no_quotations : ref bool;</tt></dt>
+  <dd>When "<tt>True</tt>", all lexers built by "<tt>Plexer.make
+      ()</tt>" do not lex the quotation syntax. Default is
+      "<tt>False</tt>" (quotations are lexed).</dd>
+</dl>
 
 <h2>Gramext module</h2>
 

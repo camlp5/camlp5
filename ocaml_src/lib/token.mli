@@ -46,23 +46,18 @@ and location_function = int -> Stdpp.location;;
   (**>The type of a function giving the location of a token in the
       source from the token number in the stream (starting from zero). *)
 
-type location = Stdpp.location;;
-val make_loc : int * int -> location;;
-val dummy_loc : location;;
-  (** compatibility camlp5 distributed with ocaml *)
-
 val lexer_text : pattern -> string;;
-   (** A simple [tok_text] function for lexers *)
+   (** A simple [tok_text] function. *)
 
 val default_match : pattern -> string * string -> string;;
-   (** A simple [tok_match] function for lexers, appling to token type
+   (** A simple [tok_match] function, appling to the token type
        [(string * string)] *)
 
-(** {6 Lexers from char stream parsers or ocamllex function}
+(** {6 Lexers from parsers or ocamllex}
 
    The functions below create lexer functions either from a [char stream]
    parser or for an [ocamllex] function. With the returned function [f],
-   the simplest [Token.lexer] can be written:
+   it is possible to get a simple lexer (of the type [Token.glexer] above):
    {[
           { Token.tok_func = f;
             Token.tok_using = (fun _ -> ());
@@ -76,7 +71,8 @@ val default_match : pattern -> string * string -> string;;
    as well. *)
 
 val lexer_func_of_parser :
-  (char Stream.t * int ref * int ref -> 'te * location) -> 'te lexer_func;;
+  (char Stream.t * int ref * int ref -> 'te * Stdpp.location) ->
+    'te lexer_func;;
    (** A lexer function from a lexer written as a char stream parser
        returning the next token and its location. The two references
        with the char stream contain the current line number and the
@@ -84,18 +80,21 @@ val lexer_func_of_parser :
 val lexer_func_of_ocamllex : (Lexing.lexbuf -> 'te) -> 'te lexer_func;;
    (** A lexer function from a lexer created by [ocamllex] *)
 
+(** {6 Function to build a stream and a location function} *)
+
 val make_stream_and_location :
-  (unit -> 'te * location) -> 'te Stream.t * location_function;;
+  (unit -> 'te * Stdpp.location) -> 'te Stream.t * location_function;;
    (** General function *)
 
 (** {6 Useful functions and values} *)
 
 val eval_char : string -> char;;
-val eval_string : location -> string -> string;;
+val eval_string : Stdpp.location -> string -> string;;
    (** Convert a char or a string token, where the backslashes had not
        been interpreted into a real char or string; raise [Failure] if
        bad backslash sequence found; [Token.eval_char (Char.escaped c)]
-       returns [c] and [Token.eval_string (String.escaped s)] returns [s] *)
+       would return [c] and [Token.eval_string (String.escaped s)] would
+       return [s] *)
 
 val restore_lexing_info : (int * int) option ref;;
 val line_nb : int ref ref;;
@@ -106,3 +105,11 @@ val bol_pos : int ref ref;;
        for directives (e.g. #load or #use) which interrupt the parsing.
        Without usage of these variables, locations after the directives
        can be wrong. *)
+
+(** {6 Backward compatibilities} *)
+
+(* deprecated since version 4.08 *)
+
+type location = Stdpp.location;;
+val make_loc : int * int -> location;;
+val dummy_loc : location;;

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2latex,v 1.49 2007/08/19 08:35:21 deraugla Exp $
+# $Id: html2latex,v 1.50 2007/08/20 02:55:04 deraugla Exp $
 
 FILES="index.html ptools.html syntext.html revsynt.html quot.html pcaml.html parsers.html fparsers.html lexers.html grammars.html printers.html opretty.html pretty.html macros.html scheme.html ml_ast.html locations.html pragma.html extfun.html library.html sources.html conclusion.html"
 
@@ -86,6 +86,7 @@ for i in $FILES; do
     -e 's/&lt;/</g' -e 's/&gt;/>/g' -e 's/&amp;/\\\&/g' -e 's/&nbsp;/\\ /g' \
     -e 's/_/\\_/g' \
     -e 's/#/\\#/g' \
+    -e 's/~/\\~{}/g' \
     -e 's/\$/\\$/g' \
     -e 's/\^/\\^/g' \
     -e 's/\\backslash/$\\backslash$/g' \
