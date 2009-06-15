@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.140 2007/12/10 17:06:31 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.141 2007/12/10 18:44:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -728,40 +728,26 @@ value str_module pref pc (m, me) =
     [ <:module_expr< ($me$ : $mt$) >> -> (me, Some mt)
     | _ -> (me, None) ]
   in
-  horiz_vertic
-    (fun () ->
-       pprintf pc "%s %s%s%s = %s" pref m
-         (if mal = [] then ""
-          else hlist module_arg {(pc) with bef = " "; aft = ""} mal)
-         (match mto with
-          [ Some mt ->
-              sprintf " : %s" (module_type {(pc) with bef = ""; aft = ""} mt)
-          | None -> "" ])
-         (module_expr {(pc) with bef = ""; aft = ""} me))
-    (fun () ->
-       let s1 =
-         match mto with
-         [ Some mt ->
-             let pc = {(pc) with aft = ""} in
-             if mal = [] then
-               pprintf pc "%s %s :@;%p =" pref m module_type mt
-             else
-               pprintf pc "%s %s %p :@;%p =" pref m (hlist module_arg) mal
-                 module_type mt
-         | None ->
-             let mal = List.map (fun ma -> (ma, "")) mal in
-             plistb module_arg 2
-               {(pc) with bef = sprintf "%s%s %s" pc.bef pref m; aft = " ="}
-               mal ]
-       in
-       let s2 =
-         module_expr
-           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""} me
-       in
-       let s3 =
-         if pc.aft = "" then "" else sprintf "\n%s%s" (tab pc.ind) pc.aft
-       in
-       sprintf "%s\n%s%s" s1 s2 s3)
+  if pc.aft = "" then
+    match mto with
+    [ Some mt ->
+        pprintf pc "%s %s%s%p :@;%p =@;%p" pref m
+          (if mal = [] then "" else " ") (hlist module_arg) mal
+          module_type mt module_expr me
+    | None ->
+        let mal = List.map (fun ma -> (ma, "")) mal in
+        pprintf pc "%s %s%p =@;%p" pref m (plistb module_arg 2) mal
+        module_expr me ]
+  else
+    match mto with
+    [ Some mt ->
+        pprintf pc "%s %s%s%p :@;%p =@;%p@;<0 0>" pref m
+          (if mal = [] then "" else " ") (hlist module_arg) mal
+          module_type mt module_expr me
+    | None ->
+        let mal = List.map (fun ma -> (ma, "")) mal in
+        pprintf pc "@[<a>%s %s%p =@;%p@;<0 0>@]" pref m (plistb module_arg 2)
+        mal module_expr me ]
 ;
 
 value sig_module_or_module_type pref defc pc (m, mt) =
