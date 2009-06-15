@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: ml_ast.html,v 1.18 2007/07/24 00:45:27 deraugla Exp $ -->
+  <!-- $Id: ml_ast.html,v 1.19 2007/07/24 01:51:58 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Abstract tree in concrete syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -126,7 +126,7 @@
   any complex value can be used, resulting on possibly complex combined
   nodes.</p>
 
-<p>Variables names give information to their types:</p>
+<p>Variables names give information of their types:</p>
 
 <ul>
   <li><tt>e</tt>, <tt>e1</tt>, <tt>e2</tt>, <tt>e3</tt>: expr</li>
@@ -134,16 +134,19 @@
   <li><tt>t</tt>, <tt>t1</tt>, <tt>t2</tt>, <tt>e3</tt>: ctyp</li>
   <li><tt>s</tt>: string</li>
   <li><tt>b</tt>: bool</li>
-  <li><tt>me</tt>: module_expr</li>
+  <li><tt>me</tt>, <tt>me1</tt>, <tt>me2</tt>: module_expr</li>
+  <li><tt>mt</tt>, <tt>mt1</tt>, <tt>mt2</tt>: module_type</li>
   <li><tt>le</tt>: list expr</li>
   <li><tt>lp</tt>: list patt</li>
+  <li><tt>lt</tt>: list ctyp</li>
   <li><tt>ls</tt>: list string</li>
   <li><tt>lse</tt>: list (string * expr)</li>
   <li><tt>lpe</tt>: list (patt * expr)</li>
   <li><tt>lpp</tt>: list (patt * patt)</li>
   <li><tt>lpoee</tt>: list (patt * option expr * expr)</li>
   <li><tt>op</tt>: option patt</li>
-  <li><tt>lcsi</tt>: list class_str_item</li>
+  <li><tt>lcstri</tt>: list class_str_item</li>
+  <li><tt>lcsigi</tt>: list class_sig_item</li>
 </ul>
 
 <h3>expr</h3>
@@ -292,8 +295,8 @@
     <td>new</td>
   </tr>
   <tr>
-    <td><tt>ExObj loc op lcsi</tt></td>
-    <td align="center"><tt>object ($opt:op$) $list:lcsi$ end</tt></td>
+    <td><tt>ExObj loc op lcstri</tt></td>
+    <td align="center"><tt>object ($opt:op$) $list:lcstri$ end</tt></td>
     <td>object expression</td>
   </tr>
   <tr>
@@ -832,35 +835,291 @@
 
 <h3>module_expr</h3>
 
-<p>...to be completed...</p>
+<table border="1">
+  <tr>
+    <th>Node</th>
+    <th><tt>&lt;:module_expr&lt; ... >></tt></th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><tt>MeAcc loc me1 me2</tt></td>
+    <td align="center"><tt>$me1$ . $me2$</tt></td>
+    <td>dot</td>
+  </tr>
+  <tr>
+    <td><tt>MeApp loc me1 me2</tt></td>
+    <td align="center"><tt>$me1$ $me2$</tt></td>
+    <td>application</td>
+  </tr>
+  <tr>
+    <td><tt>MeFun loc s mt me</tt></td>
+    <td align="center"><tt>functor ( $s$ : $mt$ ) ->  $me$</tt></td>
+    <td>functor</td>
+  </tr>
+  <tr>
+    <td><tt>MeStr loc lstri</tt></td>
+    <td align="center"><tt>struct $list:lstri$ end</tt></td>
+    <td>struct</td>
+  </tr>
+  <tr>
+    <td><tt>MeTyc loc me mt</tt></td>
+    <td align="center"><tt>( $me$ : $mt$ )</tt></td>
+    <td>module type constraint</td>
+  </tr>
+  <tr>
+    <td><tt>MeUid loc s</tt></td>
+    <td align="center"><tt>$uid:s$</tt></td>
+    <td>uppercase identifier</td>
+  </tr>
+</table>
 
 <h3>module_type</h3>
 
-<p>...to be completed...</p>
+<table border="1">
+  <tr>
+    <th>Node</th>
+    <th><tt>&lt;:module_type&lt; ... >></tt></th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><tt>MtAcc loc mt1 mt2</tt></td>
+    <td align="center"><tt>$mt1$ . $mt2$</tt></td>
+    <td>dot</td>
+  </tr>
+  <tr>
+    <td><tt>MtApp loc mt1 mt2</tt></td>
+    <td align="center"><tt>$mt1$ $mt2$</tt></td>
+    <td>application</td>
+  </tr>
+  <tr>
+    <td><tt>MtFun loc s mt1 mt2</tt></td>
+    <td align="center"><tt>functor ( $s$ : $mt1$ ) -> $mt2$</tt></td>
+    <td>functor</td>
+  </tr>
+  <tr>
+    <td><tt>MtLid loc s</tt></td>
+    <td align="center"><tt>$lid:s$</tt></td>
+    <td>lowercase identifier</td>
+  </tr>
+  <tr>
+    <td><tt>MtQuo loc s</tt></td>
+    <td align="center"><tt>' $s$</tt></td>
+    <td>abstract</td>
+  </tr>
+  <tr>
+    <td><tt>MtSig loc lsigi</tt></td>
+    <td align="center"><tt>sig $list:lsigi$ end</tt></td>
+    <td>signature</td>
+  </tr>
+  <tr>
+    <td><tt>MtUid loc s</tt></td>
+    <td align="center"><tt>$uid:s$</tt></td>
+    <td>uppercase identifier</td>
+  </tr>
+  <tr>
+    <td><tt>MtWit loc mt lwc</tt></td>
+    <td align="center"><tt>$mt$ with $list:lwc$</tt></td>
+    <td>with construction</td>
+  </tr>
+</table>
 
 <h3>class_expr</h3>
 
-<p>...to be completed...</p>
+<table border="1">
+  <tr>
+    <th>Node</th>
+    <th><tt>&lt;:class_expr&lt; ... >></tt></th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><tt>CeApp loc ce e</tt></td>
+    <td align="center"><tt>$ce$ $e$</tt></td>
+    <td>application</td>
+  </tr>
+  <tr>
+    <td><tt>CeCon loc ls lt</tt></td>
+    <td align="center"><tt>$list:ls$ [ $list:lt$ ]</tt></td>
+    <td>constructor</td>
+  </tr>
+  <tr>
+    <td><tt>CeFun loc p ce</tt></td>
+    <td align="center"><tt>fun $p$ -> $ce$</tt></td>
+    <td>function</td>
+  </tr>
+  <tr>
+    <td><tt>CeLet loc b lpe ce</tt></td>
+    <td align="center"><tt>let $opt:b$ $list:lpe$ in $ce$</tt></td>
+    <td>let binding</td>
+  </tr>
+  <tr>
+    <td><tt>CeStr loc po lcstri</tt></td>
+    <td align="center"><tt>object ($opt:op$) $list:lcstri$ end</tt></td>
+    <td>object</td>
+  </tr>
+  <tr>
+    <td><tt>CeTyc loc ce ct</tt></td>
+    <td align="center"><tt>($ce$ : $ct$)</tt></td>
+    <td>class type constraint</td>
+  </tr>
+</table>  
 
 <h3>class_type</h3>
 
-<p>...to be completed...</p>
+<table border="1">
+  <tr>
+    <th>Node</th>
+    <th><tt>&lt;:class_type&lt; ... >></tt></th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><tt>CtCon loc ls lt</tt></td>
+    <td align="center"><tt>$list:ls$ [ $list:lt$ ] </tt></td>
+    <td>constructor</td>
+  </tr>
+  <tr>
+    <td><tt>CtFun loc t ct</tt></td>
+    <td align="center"><tt>[ $t$ ] -> $ct$</tt></td>
+    <td>arrow</td>
+  </tr>
+  <tr>
+    <td><tt>CtSig loc pt ot lcsigi_item</tt></td>
+    <td align="center"><tt>object ($opt:ot$) $list:lcsigi$ end</tt></td>
+    <td>object</td>
+  </tr>
+</table>
 
 <h3>class_str_item</h3>
 
 <p>...to be completed...</p>
 
+<table border="1">
+  <tr>
+    <th>Node</th>
+    <th><tt>&lt;:class_str_item&lt; ... >></tt></th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><tt>CrCtr of loc and ctyp and ctyp</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>CrDcl of loc and list class_str_item</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>CrInh of loc and class_expr and option string</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>CrIni of loc and expr</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>CrMth of loc and string and bool and expr and option ctyp</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>CrVal of loc and string and bool and expr</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>CrVir of loc and string and bool and ctyp</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+</table>
+
 <h3>class_sig_item</h3>
 
 <p>...to be completed...</p>
+
+<table border="1">
+  <tr>
+    <th>Node</th>
+    <th><tt>&lt;:class_sig_item&lt; ... >></tt></th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><tt>CgCtr of loc and ctyp and ctyp</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>CgDcl of loc and list class_sig_item</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>CgInh of loc and class_type</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>CgMth of loc and string and bool and ctyp</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>CgVal of loc and string and bool and ctyp</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>CgVir of loc and string and bool and ctyp</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+</table>
 
 <h3>with_constr</h3>
 
 <p>...to be completed...</p>
 
+<table border="1">
+  <tr>
+    <th>Node</th>
+    <th><tt>&lt;:with_const&lt; ... >></tt></th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><tt>WcTyp of loc and list string and list type_var and bool and ctyp</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>WcMod of loc and list string and module_expr</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+</table>
+
 <h3>poly_variant</h3>
 
 <p>...to be completed...</p>
+
+<table border="1">
+  <tr>
+    <th>Node</th>
+    <th><tt>&lt;:poly_variant&lt; ... >></tt></th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><tt>PvTag of string and bool and list ctyp</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>PvInh of ctyp</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+</table>
 
 <div class="trailer">
 </div>
