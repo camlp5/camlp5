@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.143 2007/12/11 01:55:56 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.144 2007/12/11 03:00:22 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1492,10 +1492,7 @@ EXTEND_PRINTER
                     when alone in a line. *)
                  sprintf "\n"
                else
-                 sprintf "%sstruct%s%s%send%s" pc.bef " "
-                   (hlist (semi_after str_item) {(pc) with bef = ""; aft = ""}
-                      sil)
-                   " " pc.aft)
+                 pprintf pc "struct %p end" (hlist (semi_after str_item)) sil)
             (fun () ->
                sprintf "%sstruct%s%s%send%s" pc.bef "\n"
                  (vlist (semi_after str_item)
