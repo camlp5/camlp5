@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.156 2007/12/25 13:22:43 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.157 2007/12/25 13:45:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1253,11 +1253,11 @@ EXTEND_PRINTER
       | <:ctyp< $lid:t$ >> ->
           var_escaped pc t
       | <:ctyp< $uid:t$ >> ->
-          sprintf "%s%s%s" pc.bef t pc.aft
+          pprintf pc "%s"t
       | <:ctyp< ' $s$ >> ->
-          var_escaped {(pc) with bef = sprintf "%s'" pc.bef} s
+          pprintf pc "'%p" var_escaped s
       | <:ctyp< _ >> ->
-          sprintf "%s_%s" pc.bef pc.aft
+          pprintf pc "_"
       | <:ctyp< ?$_$: $_$ >> | <:ctyp< ~$_$: $_$ >> ->
           failwith "labels not pretty printed (in type); add pr_ro.cmo"
       | <:ctyp< [ = $list:_$ ] >> | <:ctyp< [ > $list:_$ ] >> |
@@ -1265,20 +1265,14 @@ EXTEND_PRINTER
           failwith "variants not pretty printed (in type); add pr_ro.cmo"
       | <:ctyp< $_$ $_$ >> | <:ctyp< $_$ -> $_$ >> | <:ctyp< ($list:_$) >>
         as z ->
-          ctyp
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            z ] ]
+          pprintf pc "@[<1>(%p)@]" ctyp z ] ]
   ;
   pr_str_item:
     [ "top"
       [ <:str_item< # $lid:s$ $e$ >> ->
-          expr
-            {(pc) with bef = sprintf "%s(* #%s " pc.bef s;
-             aft = sprintf "%s *)" pc.aft}
-          e
+          pprintf pc "(* #%s %p *)" s expr e
       | <:str_item< declare $list:sil$ end >> ->
-          if sil = [] then sprintf "%s(* *)" pc.bef
+          if sil = [] then pprintf pc "(* *)"
           else
             let str_item_sep =
               if flag_semi_semi.val then semi_semi_after str_item
@@ -1290,16 +1284,15 @@ EXTEND_PRINTER
       | <:str_item< external $lid:n$ : $t$ = $list:sl$ >> ->
           external_decl pc (n, t, sl)
       | <:str_item< include $me$ >> ->
-          module_expr {(pc) with bef = sprintf "%sinclude " pc.bef} me
+          pprintf pc "include %p" module_expr me
       | <:str_item< module $flag:rf$ $list:mdl$ >> ->
           let mdl = List.map (fun (m, mt) -> (Pcaml.unvala m, mt)) mdl in
           let rf = if rf then " rec" else "" in
-          vlist2 (str_module ("module" ^ rf)) (str_module "and") pc
-            mdl
+          vlist2 (str_module ("module" ^ rf)) (str_module "and") pc mdl
       | <:str_item< module type $uid:m$ = $mt$ >> ->
           sig_module_or_module_type "module type" '=' pc (m, mt)
       | <:str_item< open $i$ >> ->
-          mod_ident {(pc) with bef = sprintf "%sopen " pc.bef} i
+          pprintf pc "open %p" mod_ident i
       | <:str_item< type $list:tdl$ >> ->
           vlist2 type_decl (and_before type_decl)
             {(pc) with bef = sprintf "%stype " pc.bef} tdl
