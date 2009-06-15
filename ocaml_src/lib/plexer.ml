@@ -20,8 +20,6 @@ let error_on_unknown_keywords = ref false;;
 let dollar_for_antiquotation = ref true;;
 let specific_space_dot = ref false;;
 
-let dollar_for_antiquot_loc = ref false;;
-
 (* The string buffering machinery *)
 
 let rev_implode l =
@@ -424,15 +422,8 @@ let rec antiquot ctx bp buf (strm__ : _ Stream.t) =
       | _ -> err ctx (bp, Stream.count strm__) "antiquotation not terminated"
 ;;
 
-let rec antiquot_loc ctx bp buf (strm__ : _ Stream.t) =
-  let buf = antiquot_rest ctx bp buf strm__ in
-  let prm = Printf.sprintf "%d,%d:%s" bp (Stream.count strm__) (B.get buf) in
-  "ANTIQUOT_LOC", prm
-;;
-
 let dollar ctx bp buf strm =
   if ctx.dollar_for_antiquotation then antiquot ctx bp buf strm
-  else if !dollar_for_antiquot_loc then antiquot_loc ctx bp buf strm
   else
     let (strm__ : _ Stream.t) = strm in
     let buf = B.add '$' buf in let buf = ident2 buf strm__ in "", B.get buf
@@ -827,7 +818,7 @@ let using_token kwd_table ident_table (p_con, p_prm) =
         end
   | "TILDEIDENT" | "TILDEIDENTCOLON" | "QUESTIONIDENT" |
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
-    "CHAR" | "STRING" | "QUOTATION" | "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
+    "CHAR" | "STRING" | "QUOTATION" | "ANTIQUOT" | "EOI" ->
       ()
   | _ ->
       raise
@@ -894,11 +885,11 @@ let gmake () =
   let id_table = Hashtbl.create 301 in
   let glexr =
     ref
-      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 549, 17)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 549, 37)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 549, 60)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 550, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 550, 37)));
+      {tok_func = (fun _ -> raise (Match_failure ("plexer.ml", 538, 17)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 538, 37)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 538, 60)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 539, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 539, 37)));
        tok_comm = None}
   in
   let glex =

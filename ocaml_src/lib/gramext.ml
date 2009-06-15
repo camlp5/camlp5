@@ -45,7 +45,6 @@ and 'te g_symbol =
   | Slist1sep of 'te g_symbol * 'te g_symbol
   | Sopt of 'te g_symbol
   | Sflag of 'te g_symbol
-  | Svala of string * 'te g_symbol
   | Sself
   | Snext
   | Stoken of Token.pattern
@@ -74,7 +73,6 @@ let rec derive_eps =
     Slist0 _ -> true
   | Slist0sep (_, _) -> true
   | Sopt _ | Sflag _ -> true
-  | Svala (_, s) -> derive_eps s
   | Stree t -> tree_derive_eps t
   | Smeta (_, _, _) | Slist1 _ | Slist1sep (_, _) | Snterm _ |
     Snterml (_, _) | Snext | Sself | Stoken _ ->
@@ -299,7 +297,6 @@ Error: entries \"%s\" and \"%s\" do not belong to the same grammar.\n"
   | Slist1 s -> check_gram entry s
   | Sopt s -> check_gram entry s
   | Sflag s -> check_gram entry s
-  | Svala (_, s) -> check_gram entry s
   | Stree t -> tree_check_gram entry t
   | Snext | Sself | Stoken _ -> ()
 and tree_check_gram entry =
@@ -331,7 +328,6 @@ let insert_tokens gram symbols =
     | Slist1sep (s, t) -> insert s; insert t
     | Sopt s -> insert s
     | Sflag s -> insert s
-    | Svala (_, s) -> insert s
     | Stree t -> tinsert t
     | Stoken ("ANY", _) -> ()
     | Stoken tok ->
@@ -470,7 +466,6 @@ let rec decr_keyw_use gram =
   | Slist1sep (s1, s2) -> decr_keyw_use gram s1; decr_keyw_use gram s2
   | Sopt s -> decr_keyw_use gram s
   | Sflag s -> decr_keyw_use gram s
-  | Svala (_, s) -> decr_keyw_use gram s
   | Stree t -> decr_keyw_use_in_tree gram t
   | Sself | Snext | Snterm _ | Snterml (_, _) -> ()
 and decr_keyw_use_in_tree gram =

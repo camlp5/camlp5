@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.29 2007/08/08 07:01:49 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.30 2007/08/14 11:19:09 deraugla Exp $ *)
 
 open Stdpp;
 
@@ -38,7 +38,6 @@ type text 'e =
   | TXnterm of loc and name 'e and option string
   | TXopt of loc and text 'e
   | TXflag of loc and text 'e
-  | TXvala of loc and string and text 'e
   | TXrules of loc and list (list (text 'e) * 'e)
   | TXself of loc
   | TXtok of loc and string and 'e ]
@@ -176,11 +175,6 @@ module MetaAction =
       [ False -> <:expr< False >>
       | True -> <:expr< True >> ]
     ;
-    value mvala f =
-      fun
-      [ MLast.VaAnt s -> failwith "pa_extend.ml: mvala"
-      | MLast.VaVal v -> <:expr< MLast.VaVal $f v$ >> ]
-    ;
     value mloc = <:expr< Stdpp.dummy_loc >>;
     value rec mexpr =
       fun
@@ -196,7 +190,7 @@ module MetaAction =
       | MLast.ExInt loc s c -> <:expr< MLast.ExInt $mloc$ $str:s$ $str:c$ >>
       | MLast.ExFlo loc s -> <:expr< MLast.ExFlo $mloc$ $str:s$ >>
       | MLast.ExLet loc rf pel e ->
-          let rf = mvala mbool rf in
+          let rf = mbool rf in
           <:expr< MLast.ExLet $mloc$ $rf$ $mlist mpe pel$ $mexpr e$ >>
       | MLast.ExLid loc s -> <:expr< MLast.ExLid $mloc$ $str:s$ >>
       | MLast.ExMat loc e pwel ->
@@ -433,7 +427,6 @@ value rec make_expr gmod tvar =
                     ($n.expr$ : $uid:gmod$.Entry.e '$n.tvar$)) >> ]
   | TXopt loc t -> <:expr< Gramext.Sopt $make_expr gmod "" t$ >>
   | TXflag loc t -> <:expr< Gramext.Sflag $make_expr gmod "" t$ >>
-  | TXvala loc n t -> <:expr< Gramext.Svala $str:n$ $make_expr gmod "" t$ >>
   | TXrules loc rl ->
       <:expr< Gramext.srules $make_expr_rules loc gmod rl ""$ >>
   | TXself loc -> <:expr< Gramext.Sself >>
@@ -563,38 +556,6 @@ value sslist loc min sep s =
   {used = used; text = text; styp = styp}
 ;
 
-value ssvala_list loc name min sep s =
-  let rl =
-    let r1 =
-      let prod =
-        let n = mk_name loc <:expr< a_list2 >> in
-        [mk_psymbol <:patt< a >> (TXnterm loc n None) (STquo loc "a_list2")]
-      in
-      let act = <:expr< a >> in
-      {prod = prod; action = Some act}
-    in
-    let r2 =
-      let prod =
-        [mk_psymbol <:patt< a >> (TXvala loc name (slist loc min sep s))
-           (STapp loc (STtyp <:ctyp< MLast.vala >>)
-              (STapp loc (STlid loc "list") s.styp))]
-      in
-      let act = <:expr< Qast.vala (fun a -> Qast.List a) a >> in
-      {prod = prod; action = Some act}
-    in
-    [r1; r2]
-  in
-  let used =
-    match sep with
-    [ Some symb -> symb.used @ s.used
-    | None -> s.used ]
-  in
-  let used = ["a_list2" :: used] in
-  let text = TXrules loc (srules loc "a_list2" rl "") in
-  let styp = STquo loc "a_list2" in
-  {used = used; text = text; styp = styp}
-;
-
 value ssopt loc s =
   let rl =
     let r1 =
@@ -655,32 +616,6 @@ value ssflag loc s =
   let used = ["a_flag" :: s.used] in
   let text = TXrules loc (srules loc "a_flag" rl "") in
   let styp = STquo loc "a_flag" in
-  {used = used; text = text; styp = styp}
-;
-
-value ssvala_flag loc name s =
-  let rl =
-    let r1 =
-      let prod =
-        let n = mk_name loc <:expr< a_flag2 >> in
-        [mk_psymbol <:patt< a >> (TXnterm loc n None) (STquo loc "a_flag2")]
-      in
-      let act = <:expr< a >> in
-      {prod = prod; action = Some act}
-    in
-    let r2 =
-      let prod =
-        [mk_psymbol <:patt< a >> (TXvala loc name (TXflag loc s.text))
-           (STapp loc (STtyp <:ctyp< MLast.vala >>) (STlid loc "bool"))]
-      in
-      let act = <:expr< Qast.vala (fun a -> Qast.Bool a) a >> in
-      {prod = prod; action = Some act}
-    in
-    [r1; r2]
-  in
-  let used = ["a_flag2" :: s.used] in
-  let text = TXrules loc (srules loc "a_flag2" rl "") in
-  let styp = STquo loc "a_flag2" in
   {used = used; text = text; styp = styp}
 ;
 
@@ -933,21 +868,6 @@ EXTEND
             let styp = STapp loc (STlid loc "list") s.styp in
             let text = slist loc True sep s in
             {used = used; text = text; styp = styp}
-      | UIDENT "A_LIST1"; s = SELF;
-        sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
-          if quotify.val then ssvala_list loc "LIST1" True sep s
-          else
-            let used =
-              match sep with
-              [ Some symb -> symb.used @ s.used
-              | None -> s.used ]
-            in
-            let styp =
-              STapp loc (STtyp <:ctyp< MLast.vala >>)
-                (STapp loc (STlid loc "list") s.styp)
-            in
-            let text = TXvala loc "LIST" (slist loc True sep s) in
-            {used = used; text = text; styp = styp}
       | UIDENT "OPT"; s = SELF ->
           if quotify.val then ssopt loc s
           else
@@ -959,14 +879,6 @@ EXTEND
           else
             let styp = STlid loc "bool" in
             let text = TXflag loc s.text in
-            {used = s.used; text = text; styp = styp}
-      | UIDENT "A_FLAG"; s = SELF ->
-          if quotify.val then ssvala_flag loc "FLAG" s
-          else
-            let styp =
-              STapp loc (STtyp <:ctyp< MLast.vala >>) (STlid loc "bool")
-            in
-            let text = TXvala loc "FLAG" (TXflag loc s.text) in
             {used = s.used; text = text; styp = styp} ]
     | [ UIDENT "SELF" ->
           {used = []; text = TXself loc; styp = STself loc "SELF"}

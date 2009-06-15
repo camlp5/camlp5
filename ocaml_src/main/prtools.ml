@@ -398,7 +398,7 @@ let flatten_sequence e =
   let rec get_sequence =
     function
       MLast.ExSeq (_, el) -> Some el
-    | MLast.ExLet (_, MLast.VaVal rf, pel, e) as se ->
+    | MLast.ExLet (_, rf, pel, e) as se ->
         begin match get_sequence e with
           Some (e :: el) ->
             let e =
@@ -406,7 +406,7 @@ let flatten_sequence e =
                 let loc1 = MLast.loc_of_expr se in
                 let loc2 = MLast.loc_of_expr e in Stdpp.encl_loc loc1 loc2
               in
-              MLast.ExLet (loc, MLast.VaVal rf, pel, e)
+              MLast.ExLet (loc, rf, pel, e)
             in
             Some (e :: el)
         | None | _ -> None

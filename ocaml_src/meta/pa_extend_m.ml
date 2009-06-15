@@ -18,11 +18,7 @@ Grammar.extend
   [Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e),
    Some (Gramext.Level "top"),
    [None, Some Gramext.NonA,
-    [[Gramext.Stoken ("UIDENT", "SA_FLAG"); Gramext.Sself],
-     Gramext.action
-       (fun (s : 'symbol) _ (loc : Token.location) ->
-          (ssvala_flag loc "FLAG" s : 'symbol));
-     [Gramext.Stoken ("UIDENT", "SFLAG"); Gramext.Sself],
+    [[Gramext.Stoken ("UIDENT", "SFLAG"); Gramext.Sself],
      Gramext.action
        (fun (s : 'symbol) _ (loc : Token.location) ->
           (ssflag loc s : 'symbol));
@@ -30,24 +26,6 @@ Grammar.extend
      Gramext.action
        (fun (s : 'symbol) _ (loc : Token.location) ->
           (ssopt loc s : 'symbol));
-     [Gramext.srules
-        [[Gramext.Stoken ("UIDENT", "SA_LIST1")],
-         Gramext.action (fun _ (loc : Token.location) -> (true : 'e__3));
-         [Gramext.Stoken ("UIDENT", "SA_LIST0")],
-         Gramext.action (fun _ (loc : Token.location) -> (false : 'e__3))];
-      Gramext.Sself;
-      Gramext.Sopt
-        (Gramext.srules
-           [[Gramext.Stoken ("UIDENT", "SEP");
-             Gramext.Snterm
-               (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
-            Gramext.action
-              (fun (t : 'symbol) _ (loc : Token.location) -> (t : 'e__4))])],
-     Gramext.action
-       (fun (sep : 'e__4 option) (s : 'symbol) (min : 'e__3)
-            (loc : Token.location) ->
-          (ssvala_list loc (if min then "LIST1" else "LIST0") min sep s :
-           'symbol));
      [Gramext.srules
         [[Gramext.Stoken ("UIDENT", "SLIST1")],
          Gramext.action (fun _ (loc : Token.location) -> (true : 'e__1));

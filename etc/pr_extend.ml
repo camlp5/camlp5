@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_extend.ml,v 1.21 2007/08/08 07:01:49 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.22 2007/08/14 11:19:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -36,7 +36,6 @@ type symbol =
   | Slist1sep of symbol and symbol
   | Sopt of symbol
   | Sflag of symbol
-  | Svala of string and symbol
   | Sself
   | Snext
   | Stoken of alt Token.pattern MLast.expr
@@ -163,7 +162,6 @@ and unsymbol =
       Slist1sep (unsymbol e1) (unsymbol e2)
   | <:expr< Gramext.Sopt $e$ >> -> Sopt (unsymbol e)
   | <:expr< Gramext.Sflag $e$ >> -> Sflag (unsymbol e)
-  | <:expr< Gramext.Svala $str:n$ $e$ >> -> Svala n (unsymbol e)
   | <:expr< Gramext.Sself >> -> Sself
   | <:expr< Gramext.Snext >> -> Snext
   | <:expr< Gramext.Stoken $e$ >> -> Stoken (untoken e)
@@ -364,13 +362,6 @@ and symbol pc sy =
       sprintf "%sOPT %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
   | Sflag sy ->
       sprintf "%sFLAG %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
-  | Svala name (Sflag sy) ->
-      sprintf "%sSA_%s %s" pc.bef name (simple_symbol {(pc) with bef = ""} sy)
-  | Svala name (Slist1sep sy sep) ->
-      sprintf "%sSA_%s %s SEP %s" pc.bef name
-        (simple_symbol {(pc) with bef = ""; aft = ""} sy)
-        (simple_symbol {(pc) with bef = ""} sep)
-  | Svala _ s -> not_impl "svala" pc s
   | Srules rl ->
       match check_slist rl with
       [ Some s -> s_symbol pc s
@@ -420,10 +411,6 @@ and s_symbol pc =
       sprintf "%sSLIST1 %s SEP %s" pc.bef
         (simple_symbol {(pc) with bef = ""; aft = ""} sy)
         (simple_symbol {(pc) with bef = ""} sep)
-  | Svala n (Slist1sep sy sep) ->
-      sprintf "%sSA_%s %s SEP %s" pc.bef n
-        (simple_symbol {(pc) with bef = ""; aft = ""} sy)
-        (simple_symbol {(pc) with bef = ""} sep)
   | Sopt s ->
       let sy =
         match s with
@@ -444,16 +431,6 @@ and s_symbol pc =
         | s -> s ]
       in
       sprintf "%sSFLAG %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
-  | Svala n (Sflag s) ->
-      let sy =
-        match s with
-        [ Srules
-            [([(Some <:patt< x >>, Stoken (Left ("", str)))],
-              Some <:expr< Qast.Str x >>)] ->
-            Stoken (Left ("", str))
-        | s -> s ]
-      in
-      sprintf "%sSA_%s %s" pc.bef n (simple_symbol {(pc) with bef = ""} sy)
   | _ -> assert False ]
 and check_slist rl =
   if no_slist.val then None
@@ -464,22 +441,12 @@ and check_slist rl =
           ((Slist0 _ | Slist1 _ | Slist0sep _ _ | Slist1sep _ _) as s))],
           Some <:expr< Qast.List a >>)] ->
         Some s
-    | [([(Some <:patt< a >>, Snterm <:expr< a_list2 >>)], Some <:expr< a >>);
-       ([(Some <:patt< a >>,
-          (Svala _ (Slist0 _ | Slist1 _ | Slist0sep _ _ | Slist1sep _ _)
-           as s))],
-          Some <:expr< Qast.vala (fun a -> Qast.List a) a >>)] ->
-        Some s
     | [([(Some <:patt< a >>, Snterm <:expr< a_opt >>)], Some <:expr< a >>);
        ([(Some <:patt< a >>, Sopt s)], Some <:expr< Qast.Option a >>)] ->
         Some (Sopt s)
     | [([(Some <:patt< a >>, Snterm <:expr< a_flag >>)], Some <:expr< a >>);
        ([(Some <:patt< a >>, Sflag s)], Some <:expr< Qast.Bool a >>)] ->
         Some (Sflag s)
-    | [([(Some <:patt< a >>, Snterm <:expr< a_flag2 >>)], Some <:expr< a >>);
-       ([(Some <:patt< a >>, Svala n (Sflag s))],
-        Some <:expr< Qast.vala (fun a -> Qast.Bool a) a >>)] ->
-        Some (Svala n (Sflag s))
     | _ -> None ]
 ;
 

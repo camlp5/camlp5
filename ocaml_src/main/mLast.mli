@@ -21,12 +21,6 @@
 
 type loc = Stdpp.location;;
 
-type 'a vala =
-  'a Stdpp.value_or_anti =
-      VaAnt of string
-    | VaVal of 'a
-;;
-
 type ctyp =
     TyAcc of loc * ctyp * ctyp
   | TyAli of loc * ctyp * ctyp
@@ -37,11 +31,11 @@ type ctyp =
   | TyLab of loc * string * ctyp
   | TyLid of loc * string
   | TyMan of loc * ctyp * ctyp
-  | TyObj of loc * (string * ctyp) list * bool vala
+  | TyObj of loc * (string * ctyp) list * bool
   | TyOlb of loc * string * ctyp
   | TyPol of loc * string list * ctyp
   | TyQuo of loc * string
-  | TyRec of loc * (loc * string * bool * ctyp) list vala
+  | TyRec of loc * (loc * string * bool * ctyp) list
   | TySum of loc * (loc * string * ctyp list) list
   | TyTup of loc * ctyp list
   | TyUid of loc * string
@@ -101,7 +95,7 @@ and expr =
   | ExInt of loc * string * string
   | ExLab of loc * string * expr option
   | ExLaz of loc * expr
-  | ExLet of loc * bool vala * (patt * expr) list * expr
+  | ExLet of loc * bool * (patt * expr) list * expr
   | ExLid of loc * string
   | ExLmd of loc * string * module_expr * expr
   | ExMat of loc * expr * (patt * expr option * expr) list
@@ -137,7 +131,7 @@ and sig_item =
   | SgExc of loc * string * ctyp list
   | SgExt of loc * string * ctyp * string list
   | SgInc of loc * module_type
-  | SgMod of loc * bool vala * (string * module_type) list
+  | SgMod of loc * bool * (string * module_type) list
   | SgMty of loc * string * module_type
   | SgOpn of loc * string list
   | SgTyp of loc * type_decl list
@@ -162,12 +156,12 @@ and str_item =
   | StExp of loc * expr
   | StExt of loc * string * ctyp * string list
   | StInc of loc * module_expr
-  | StMod of loc * bool vala * (string * module_expr) list
+  | StMod of loc * bool * (string * module_expr) list
   | StMty of loc * string * module_type
   | StOpn of loc * string list
   | StTyp of loc * type_decl list
   | StUse of loc * string * (str_item * loc) list
-  | StVal of loc * bool vala * (patt * expr) list
+  | StVal of loc * bool * (patt * expr) list
 and type_decl =
   { tdNam : loc * string;
     tdPrm : type_var list;
@@ -182,14 +176,14 @@ and class_sig_item =
     CgCtr of loc * ctyp * ctyp
   | CgDcl of loc * class_sig_item list
   | CgInh of loc * class_type
-  | CgMth of loc * string * bool vala * ctyp
-  | CgVal of loc * string * bool vala * ctyp
-  | CgVir of loc * string * bool vala * ctyp
+  | CgMth of loc * string * bool * ctyp
+  | CgVal of loc * string * bool * ctyp
+  | CgVir of loc * string * bool * ctyp
 and class_expr =
     CeApp of loc * class_expr * expr
   | CeCon of loc * string list * ctyp list
   | CeFun of loc * patt * class_expr
-  | CeLet of loc * bool vala * (patt * expr) list * class_expr
+  | CeLet of loc * bool * (patt * expr) list * class_expr
   | CeStr of loc * patt option * class_str_item list
   | CeTyc of loc * class_expr * class_type
 and class_str_item =
@@ -197,9 +191,9 @@ and class_str_item =
   | CrDcl of loc * class_str_item list
   | CrInh of loc * class_expr * string option
   | CrIni of loc * expr
-  | CrMth of loc * string * bool vala * expr * ctyp option
-  | CrVal of loc * string * bool vala * expr
-  | CrVir of loc * string * bool vala * ctyp
+  | CrMth of loc * string * bool * expr * ctyp option
+  | CrVal of loc * string * bool * expr
+  | CrVir of loc * string * bool * ctyp
 ;;
 
 external loc_of_ctyp : ctyp -> loc = "%field0";;

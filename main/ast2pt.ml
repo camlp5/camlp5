@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.8 2007/08/07 19:31:18 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.9 2007/08/14 11:19:09 deraugla Exp $ *)
 
 open Stdpp;
 open MLast;
@@ -117,12 +117,6 @@ value array_function str name =
   ldot (lident str) (if fast.val then "unsafe_" ^ name else name)
 ;
 
-value mkvala f =
-  fun
-  [ VaAnt _ -> failwith "mkvala"
-  | VaVal v -> f v ]
-;
-
 value mkrf =
   fun
   [ True -> Recursive
@@ -222,7 +216,7 @@ value rec ctyp =
       mktyp loc (Ptyp_variant catl clos sl) ]
 and meth_list loc fl v =
   match fl with
-  [ [] -> if mkvala (fun b -> b) v then [mkfield loc Pfield_var] else []
+  [ [] -> if v then [mkfield loc Pfield_var] else []
   | [(lab, t) :: fl] ->
       [mkfield loc (Pfield lab (ctyp (mkpolytype t))) :: meth_list loc fl v] ]
 ;
@@ -251,13 +245,13 @@ value mkvariant (loc, c, tl) =
 value type_decl tl priv cl =
   fun
   [ TyMan loc t (TyRec _ ltl) ->
-      mktype loc tl cl (Ptype_record (mkvala (List.map mktrecord) ltl) priv)
+      mktype loc tl cl (Ptype_record (List.map mktrecord ltl) priv)
         (Some (ctyp t))
   | TyMan loc t (TySum _ ctl) ->
       mktype loc tl cl (Ptype_variant (List.map mkvariant ctl) priv)
         (Some (ctyp t))
   | TyRec loc ltl ->
-      mktype loc tl cl (Ptype_record (mkvala (List.map mktrecord) ltl) priv)
+      mktype loc tl cl (Ptype_record (List.map mktrecord ltl) priv)
         None
   | TySum loc ctl ->
       mktype loc tl cl (Ptype_variant (List.map mkvariant ctl) priv) None
@@ -657,7 +651,7 @@ value rec expr =
   | ExLab loc _ _ -> error loc "labeled expression not allowed here"
   | ExLaz loc e -> mkexp loc (Pexp_lazy (expr e))
   | ExLet loc rf pel e ->
-      mkexp loc (Pexp_let (mkvala mkrf rf) (List.map mkpe pel) (expr e))
+      mkexp loc (Pexp_let (mkrf rf) (List.map mkpe pel) (expr e))
   | ExLid loc s -> mkexp loc (Pexp_ident (lident s))
   | ExLmd loc i me e -> mkexp loc (Pexp_letmodule i (module_expr me) (expr e))
   | ExMat loc e pel -> mkexp loc (Pexp_match (expr e) (List.map mkpwe pel))
@@ -755,7 +749,7 @@ and sig_item s l =
   | SgExt loc n t p -> [mksig loc (Psig_value n (mkvalue_desc t p)) :: l]
   | SgInc loc mt -> [mksig loc (Psig_include (module_type mt)) :: l]
   | SgMod loc rf ntl ->
-      if mkvala (fun b -> b) rf = False then
+      if not rf then
         List.fold_right
           (fun (n, mt) l -> [mksig loc (Psig_module n (module_type mt)) :: l])
           ntl l
@@ -809,7 +803,7 @@ and str_item s l =
   | StExt loc n t p -> [mkstr loc (Pstr_primitive n (mkvalue_desc t p)) :: l]
   | StInc loc me -> [mkstr loc (Pstr_include (module_expr me)) :: l]
   | StMod loc rf nel ->
-      if mkvala (fun v -> v) rf = False then
+      if not rf then
         List.fold_right
           (fun (n, me) l -> [mkstr loc (Pstr_module n (module_expr me)) :: l])
           nel l
@@ -836,7 +830,7 @@ and str_item s l =
       apply_with_var glob_fname fn
         (fun () -> List.fold_right (fun (si, _) -> str_item si) sl l)
   | StVal loc rf pel ->
-      [mkstr loc (Pstr_value (mkvala mkrf rf) (List.map mkpe pel)) :: l] ]
+      [mkstr loc (Pstr_value (mkrf rf) (List.map mkpe pel)) :: l] ]
 and class_type =
   fun
   [ CtCon loc id tl ->
@@ -862,17 +856,15 @@ and class_sig_item c l =
   | CgDcl loc cl -> List.fold_right class_sig_item cl l
   | CgInh loc ct -> [Pctf_inher (class_type ct) :: l]
   | CgMth loc s pf t ->
-      [Pctf_meth (s, mkvala mkprivate pf, ctyp (mkpolytype t), mkloc loc) ::
-       l]
+      [Pctf_meth (s, mkprivate pf, ctyp (mkpolytype t), mkloc loc) :: l]
   | CgVal loc s b t ->
       IFDEF OCAML_3_10 OR OCAML_3_10_0 OR OCAML_3_11 THEN
-        [Pctf_val (s, mkvala mkmutable b, Concrete, ctyp t, mkloc loc) :: l]
+        [Pctf_val (s, mkmutable b, Concrete, ctyp t, mkloc loc) :: l]
       ELSE
-        [Pctf_val (s, mkvala mkmutable b, Some (ctyp t), mkloc loc) :: l]
+        [Pctf_val (s, mkmutable b, Some (ctyp t), mkloc loc) :: l]
       END
   | CgVir loc s b t ->
-      [Pctf_virt (s, mkvala mkprivate b, ctyp (mkpolytype t), mkloc loc) ::
-       l] ]
+      [Pctf_virt (s, mkprivate b, ctyp (mkpolytype t), mkloc loc) :: l] ]
 and class_expr =
   fun
   [ CeApp loc _ _ as c ->
@@ -891,7 +883,7 @@ and class_expr =
         (Pcl_fun ("?" ^ lab) (option expr eo) (patt p) (class_expr ce))
   | CeFun loc p ce -> mkpcl loc (Pcl_fun "" None (patt p) (class_expr ce))
   | CeLet loc rf pel ce ->
-      mkpcl loc (Pcl_let (mkvala mkrf rf) (List.map mkpe pel) (class_expr ce))
+      mkpcl loc (Pcl_let (mkrf rf) (List.map mkpe pel) (class_expr ce))
   | CeStr loc po cfl ->
       let p =
         match po with
@@ -911,12 +903,11 @@ and class_str_item c l =
   | CrMth loc s b e t ->
       let t = option (fun t -> ctyp (mkpolytype t)) t in
       let e = mkexp loc (Pexp_poly (expr e) t) in
-      [Pcf_meth (s, mkvala mkprivate b, e, mkloc loc) :: l]
+      [Pcf_meth (s, mkprivate b, e, mkloc loc) :: l]
   | CrVal loc s b e ->
-      [Pcf_val (s, mkvala mkmutable b, expr e, mkloc loc) :: l]
+      [Pcf_val (s, mkmutable b, expr e, mkloc loc) :: l]
   | CrVir loc s b t ->
-      [Pcf_virt (s, mkvala mkprivate b, ctyp (mkpolytype t), mkloc loc) ::
-       l] ]
+      [Pcf_virt (s, mkprivate b, ctyp (mkpolytype t), mkloc loc) :: l] ]
 ;
 
 value interf fname ast = do {

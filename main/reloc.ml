@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: reloc.ml,v 1.4 2007/08/07 19:31:18 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.5 2007/08/14 11:19:09 deraugla Exp $ *)
 
 open MLast;
 
@@ -18,12 +18,6 @@ value option_map f =
   fun
   [ Some x -> Some (f x)
   | None -> None ]
-;
-
-value vala_map f =
-  fun
-  [ VaAnt _ -> failwith "reloc.ml: vala_map"
-  | VaVal v -> VaVal (f v) ]
 ;
 
 value rec ctyp floc sh =
@@ -45,9 +39,7 @@ value rec ctyp floc sh =
     | TyQuo loc x1 -> TyQuo (floc loc) x1
     | TyRec loc x1 ->
         TyRec (floc loc)
-          (vala_map
-             (List.map (fun (loc, x1, x2, x3) -> (floc loc, x1, x2, self x3)))
-             x1)
+          (List.map (fun (loc, x1, x2, x3) -> (floc loc, x1, x2, self x3)) x1)
     | TySum loc x1 ->
         TySum (floc loc)
           (List.map (fun (loc, x1, x2) -> (floc loc, x1, List.map self x2))

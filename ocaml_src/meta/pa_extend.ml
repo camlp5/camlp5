@@ -38,7 +38,6 @@ type 'e text =
   | TXnterm of loc * 'e name * string option
   | TXopt of loc * 'e text
   | TXflag of loc * 'e text
-  | TXvala of loc * string * 'e text
   | TXrules of loc * ('e text list * 'e) list
   | TXself of loc
   | TXtok of loc * string * 'e
@@ -171,16 +170,6 @@ module MetaAction =
         false -> MLast.ExUid (loc, "False")
       | true -> MLast.ExUid (loc, "True")
     ;;
-    let mvala f =
-      function
-        MLast.VaAnt s -> failwith "pa_extend.ml: mvala"
-      | MLast.VaVal v ->
-          MLast.ExApp
-            (loc,
-             MLast.ExAcc
-               (loc, MLast.ExUid (loc, "MLast"), MLast.ExUid (loc, "VaVal")),
-             f v)
-    ;;
     let mloc =
       MLast.ExAcc
         (loc, MLast.ExUid (loc, "Stdpp"), MLast.ExLid (loc, "dummy_loc"))
@@ -273,7 +262,7 @@ module MetaAction =
                 mloc),
              MLast.ExStr (loc, s))
       | MLast.ExLet (loc, rf, pel, e) ->
-          let rf = mvala mbool rf in
+          let rf = mbool rf in
           MLast.ExApp
             (loc,
              MLast.ExApp
@@ -802,9 +791,9 @@ let rec quot_expr e =
          MLast.ExAcc
            (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Tuple")),
          mklistexp loc el)
-  | MLast.ExLet (_, MLast.VaVal r, pel, e) ->
+  | MLast.ExLet (_, r, pel, e) ->
       let pel = List.map (fun (p, e) -> p, quot_expr e) pel in
-      MLast.ExLet (loc, MLast.VaVal r, pel, quot_expr e)
+      MLast.ExLet (loc, r, pel, quot_expr e)
   | _ -> e
 ;;
 
@@ -839,7 +828,7 @@ let quotify_action psl act =
              List.map (fun s -> MLast.ExLid (loc, s)) l
            in
            MLast.ExLet
-             (loc, MLast.VaVal false,
+             (loc, false,
               [MLast.PaTup (loc, pl),
                MLast.ExMat
                  (loc, MLast.ExLid (loc, pname),
@@ -1015,15 +1004,6 @@ let rec make_expr gmod tvar =
          MLast.ExAcc
            (loc, MLast.ExUid (loc, "Gramext"), MLast.ExUid (loc, "Sflag")),
          make_expr gmod "" t)
-  | TXvala (loc, n, t) ->
-      MLast.ExApp
-        (loc,
-         MLast.ExApp
-           (loc,
-            MLast.ExAcc
-              (loc, MLast.ExUid (loc, "Gramext"), MLast.ExUid (loc, "Svala")),
-            MLast.ExStr (loc, n)),
-         make_expr gmod "" t)
   | TXrules (loc, rl) ->
       MLast.ExApp
         (loc,
@@ -1193,60 +1173,6 @@ let sslist loc min sep s =
   let styp = STquo (loc, "a_list") in {used = used; text = text; styp = styp}
 ;;
 
-let ssvala_list loc name min sep s =
-  let rl =
-    let r1 =
-      let prod =
-        let n = mk_name loc (MLast.ExLid (loc, "a_list2")) in
-        [mk_psymbol (MLast.PaLid (loc, "a")) (TXnterm (loc, n, None))
-           (STquo (loc, "a_list2"))]
-      in
-      let act = MLast.ExLid (loc, "a") in {prod = prod; action = Some act}
-    in
-    let r2 =
-      let prod =
-        [mk_psymbol (MLast.PaLid (loc, "a"))
-           (TXvala (loc, name, slist loc min sep s))
-           (STapp
-              (loc,
-               STtyp
-                 (MLast.TyAcc
-                    (loc, MLast.TyUid (loc, "MLast"),
-                     MLast.TyLid (loc, "vala"))),
-               STapp (loc, STlid (loc, "list"), s.styp)))]
-      in
-      let act =
-        MLast.ExApp
-          (loc,
-           MLast.ExApp
-             (loc,
-              MLast.ExAcc
-                (loc, MLast.ExUid (loc, "Qast"), MLast.ExLid (loc, "vala")),
-              MLast.ExFun
-                (loc,
-                 [MLast.PaLid (loc, "a"), None,
-                  MLast.ExApp
-                    (loc,
-                     MLast.ExAcc
-                       (loc, MLast.ExUid (loc, "Qast"),
-                        MLast.ExUid (loc, "List")),
-                     MLast.ExLid (loc, "a"))])),
-           MLast.ExLid (loc, "a"))
-      in
-      {prod = prod; action = Some act}
-    in
-    [r1; r2]
-  in
-  let used =
-    match sep with
-      Some symb -> symb.used @ s.used
-    | None -> s.used
-  in
-  let used = "a_list2" :: used in
-  let text = TXrules (loc, srules loc "a_list2" rl "") in
-  let styp = STquo (loc, "a_list2") in {used = used; text = text; styp = styp}
-;;
-
 let ssopt loc s =
   let rl =
     let r1 =
@@ -1327,55 +1253,6 @@ let ssflag loc s =
   let used = "a_flag" :: s.used in
   let text = TXrules (loc, srules loc "a_flag" rl "") in
   let styp = STquo (loc, "a_flag") in {used = used; text = text; styp = styp}
-;;
-
-let ssvala_flag loc name s =
-  let rl =
-    let r1 =
-      let prod =
-        let n = mk_name loc (MLast.ExLid (loc, "a_flag2")) in
-        [mk_psymbol (MLast.PaLid (loc, "a")) (TXnterm (loc, n, None))
-           (STquo (loc, "a_flag2"))]
-      in
-      let act = MLast.ExLid (loc, "a") in {prod = prod; action = Some act}
-    in
-    let r2 =
-      let prod =
-        [mk_psymbol (MLast.PaLid (loc, "a"))
-           (TXvala (loc, name, TXflag (loc, s.text)))
-           (STapp
-              (loc,
-               STtyp
-                 (MLast.TyAcc
-                    (loc, MLast.TyUid (loc, "MLast"),
-                     MLast.TyLid (loc, "vala"))),
-               STlid (loc, "bool")))]
-      in
-      let act =
-        MLast.ExApp
-          (loc,
-           MLast.ExApp
-             (loc,
-              MLast.ExAcc
-                (loc, MLast.ExUid (loc, "Qast"), MLast.ExLid (loc, "vala")),
-              MLast.ExFun
-                (loc,
-                 [MLast.PaLid (loc, "a"), None,
-                  MLast.ExApp
-                    (loc,
-                     MLast.ExAcc
-                       (loc, MLast.ExUid (loc, "Qast"),
-                        MLast.ExUid (loc, "Bool")),
-                     MLast.ExLid (loc, "a"))])),
-           MLast.ExLid (loc, "a"))
-      in
-      {prod = prod; action = Some act}
-    in
-    [r1; r2]
-  in
-  let used = "a_flag2" :: s.used in
-  let text = TXrules (loc, srules loc "a_flag2" rl "") in
-  let styp = STquo (loc, "a_flag2") in {used = used; text = text; styp = styp}
 ;;
 
 let text_of_entry loc gmod e =
@@ -1491,17 +1368,17 @@ let let_in_of_extend loc gmod functor_version gl el args =
         if ll = [] then args
         else if functor_version then
           MLast.ExLet
-            (loc, MLast.VaVal false,
+            (loc, false,
              [MLast.PaLid (loc, "grammar_entry_create"),
               MLast.ExAcc
                 (loc,
                  MLast.ExAcc
                    (loc, MLast.ExUid (loc, gmod), MLast.ExUid (loc, "Entry")),
                  MLast.ExLid (loc, "create"))],
-             MLast.ExLet (loc, MLast.VaVal false, locals, args))
+             MLast.ExLet (loc, false, locals, args))
         else
           MLast.ExLet
-            (loc, MLast.VaVal false,
+            (loc, false,
              [MLast.PaLid (loc, "grammar_entry_create"),
               MLast.ExFun
                 (loc,
@@ -1520,9 +1397,9 @@ let let_in_of_extend loc gmod functor_version gl el args =
                               MLast.ExLid (loc, "of_entry")),
                            locate n1)),
                      MLast.ExLid (loc, "s"))])],
-             MLast.ExLet (loc, MLast.VaVal false, locals, args))
+             MLast.ExLet (loc, false, locals, args))
       in
-      MLast.ExLet (loc, MLast.VaVal false, globals, e)
+      MLast.ExLet (loc, false, globals, e)
   | _ -> args
 ;;
 
@@ -1545,7 +1422,7 @@ let text_of_extend loc gmod gl el f =
            in
            let e = MLast.ExTup (loc, [ent; pos; txt]) in
            MLast.ExLet
-             (loc, MLast.VaVal false,
+             (loc, false,
               [MLast.PaLid (loc, "aux"),
                MLast.ExFun
                  (loc,
@@ -1608,7 +1485,7 @@ let text_of_functorial_extend loc gmod gl el =
            in
            if !split_ext then
              MLast.ExLet
-               (loc, MLast.VaVal false,
+               (loc, false,
                 [MLast.PaLid (loc, "aux"),
                  MLast.ExFun (loc, [MLast.PaUid (loc, "()"), None, e])],
                 MLast.ExApp
@@ -1989,24 +1866,7 @@ Grammar.extend
             'psymbol))]];
     Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e), None,
     [Some "top", Some Gramext.NonA,
-     [[Gramext.Stoken ("UIDENT", "A_FLAG"); Gramext.Sself],
-      Gramext.action
-        (fun (s : 'symbol) _ (loc : Token.location) ->
-           (if !quotify then ssvala_flag loc "FLAG" s
-            else
-              let styp =
-                STapp
-                  (loc,
-                   STtyp
-                     (MLast.TyAcc
-                        (loc, MLast.TyUid (loc, "MLast"),
-                         MLast.TyLid (loc, "vala"))),
-                   STlid (loc, "bool"))
-              in
-              let text = TXvala (loc, "FLAG", TXflag (loc, s.text)) in
-              {used = s.used; text = text; styp = styp} :
-            'symbol));
-      [Gramext.Stoken ("UIDENT", "FLAG"); Gramext.Sself],
+     [[Gramext.Stoken ("UIDENT", "FLAG"); Gramext.Sself],
       Gramext.action
         (fun (s : 'symbol) _ (loc : Token.location) ->
            (if !quotify then ssflag loc s
@@ -2023,35 +1883,6 @@ Grammar.extend
               let styp = STapp (loc, STlid (loc, "option"), s.styp) in
               let text = TXopt (loc, s.text) in
               {used = s.used; text = text; styp = styp} :
-            'symbol));
-      [Gramext.Stoken ("UIDENT", "A_LIST1"); Gramext.Sself;
-       Gramext.Sopt
-         (Gramext.srules
-            [[Gramext.Stoken ("UIDENT", "SEP");
-              Gramext.Snterm
-                (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
-             Gramext.action
-               (fun (t : 'symbol) _ (loc : Token.location) -> (t : 'e__6))])],
-      Gramext.action
-        (fun (sep : 'e__6 option) (s : 'symbol) _ (loc : Token.location) ->
-           (if !quotify then ssvala_list loc "LIST1" true sep s
-            else
-              let used =
-                match sep with
-                  Some symb -> symb.used @ s.used
-                | None -> s.used
-              in
-              let styp =
-                STapp
-                  (loc,
-                   STtyp
-                     (MLast.TyAcc
-                        (loc, MLast.TyUid (loc, "MLast"),
-                         MLast.TyLid (loc, "vala"))),
-                   STapp (loc, STlid (loc, "list"), s.styp))
-              in
-              let text = TXvala (loc, "LIST", slist loc true sep s) in
-              {used = used; text = text; styp = styp} :
             'symbol));
       [Gramext.Stoken ("UIDENT", "LIST1"); Gramext.Sself;
        Gramext.Sopt
@@ -2105,9 +1936,9 @@ Grammar.extend
             [[Gramext.Stoken ("UIDENT", "LEVEL");
               Gramext.Stoken ("STRING", "")],
              Gramext.action
-               (fun (s : string) _ (loc : Token.location) -> (s : 'e__8))])],
+               (fun (s : string) _ (loc : Token.location) -> (s : 'e__7))])],
       Gramext.action
-        (fun (lev : 'e__8 option) (n : 'name) (loc : Token.location) ->
+        (fun (lev : 'e__7 option) (n : 'name) (loc : Token.location) ->
            ({used = [n.tvar]; text = TXnterm (loc, n, lev);
              styp = STquo (loc, n.tvar)} :
             'symbol));
@@ -2118,9 +1949,9 @@ Grammar.extend
             [[Gramext.Stoken ("UIDENT", "LEVEL");
               Gramext.Stoken ("STRING", "")],
              Gramext.action
-               (fun (s : string) _ (loc : Token.location) -> (s : 'e__7))])],
+               (fun (s : string) _ (loc : Token.location) -> (s : 'e__6))])],
       Gramext.action
-        (fun (lev : 'e__7 option) (e : 'qualid) _ (i : string)
+        (fun (lev : 'e__6 option) (e : 'qualid) _ (i : string)
              (loc : Token.location) ->
            (let n =
               mk_name loc (MLast.ExAcc (loc, MLast.ExUid (loc, i), e))

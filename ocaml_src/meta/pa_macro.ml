@@ -89,9 +89,9 @@ let loc = Stdpp.dummy_loc;;
 let subst mloc env =
   let rec loop =
     function
-      MLast.ExLet (_, MLast.VaVal rf, pel, e) ->
+      MLast.ExLet (_, rf, pel, e) ->
         let pel = List.map (fun (p, e) -> p, loop e) pel in
-        MLast.ExLet (loc, MLast.VaVal rf, pel, loop e)
+        MLast.ExLet (loc, rf, pel, loop e)
     | MLast.ExIfe (_, e1, e2, e3) ->
         MLast.ExIfe (loc, loop e1, loop e2, loop e3)
     | MLast.ExApp (_, e1, e2) -> MLast.ExApp (loc, loop e1, loop e2)

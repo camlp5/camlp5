@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.87 2007/08/08 07:47:26 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.88 2007/08/14 11:19:09 deraugla Exp $ *)
 
 open Token;
 
@@ -19,8 +19,6 @@ value error_on_unknown_keywords = ref False;
 
 value dollar_for_antiquotation = ref True;
 value specific_space_dot = ref False;
-
-value dollar_for_antiquot_loc = ref False;
 
 (* The string buffering machinery *)
 
@@ -214,18 +212,9 @@ value rec antiquot ctx bp =
   | -> err ctx (bp, $pos) "antiquotation not terminated" ]
 ;
 
-value rec antiquot_loc ctx bp =
-  lexer
-  [ (antiquot_rest ctx bp) ->
-      let prm = Printf.sprintf "%d,%d:%s" bp $pos $buf in
-      ("ANTIQUOT_LOC", prm) ]
-;
-
 value dollar ctx bp buf strm =
   if ctx.dollar_for_antiquotation then
     antiquot ctx bp buf strm
-  else if dollar_for_antiquot_loc.val then
-    antiquot_loc ctx bp buf strm
   else
     match strm with lexer
     [ [ -> $add "$" ] ident2! -> ("", $buf) ]
@@ -479,7 +468,7 @@ value using_token kwd_table ident_table (p_con, p_prm) =
   | "TILDEIDENT" | "TILDEIDENTCOLON" | "QUESTIONIDENT" |
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
     "CHAR" | "STRING" | "QUOTATION" |
-    "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
+    "ANTIQUOT" | "EOI" ->
       ()
   | _ ->
       raise

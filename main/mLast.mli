@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: mLast.mli,v 1.7 2007/08/07 19:31:18 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.8 2007/08/14 11:19:09 deraugla Exp $ *)
 
 (* Module [MLast]: abstract syntax tree.
 
@@ -20,11 +20,6 @@
    See also the file q_MLast.ml in Camlp5 sources. *)
 
 type loc = Stdpp.location;
-
-type vala 'a = Stdpp.value_or_anti 'a ==
-  [ VaAnt of string
-  | VaVal of 'a ]
-;
 
 type ctyp =
   [ TyAcc of loc and ctyp and ctyp
@@ -36,11 +31,11 @@ type ctyp =
   | TyLab of loc and string and ctyp
   | TyLid of loc and string
   | TyMan of loc and ctyp and ctyp
-  | TyObj of loc and list (string * ctyp) and vala bool
+  | TyObj of loc and list (string * ctyp) and bool
   | TyOlb of loc and string and ctyp
   | TyPol of loc and list string and ctyp
   | TyQuo of loc and string
-  | TyRec of loc and vala (list (loc * string * bool * ctyp))
+  | TyRec of loc and list (loc * string * bool * ctyp)
   | TySum of loc and list (loc * string * list ctyp)
   | TyTup of loc and list ctyp
   | TyUid of loc and string
@@ -100,7 +95,7 @@ and expr =
   | ExInt of loc and string and string
   | ExLab of loc and string and option expr
   | ExLaz of loc and expr
-  | ExLet of loc and vala bool and list (patt * expr) and expr
+  | ExLet of loc and bool and list (patt * expr) and expr
   | ExLid of loc and string
   | ExLmd of loc and string and module_expr and expr
   | ExMat of loc and expr and list (patt * option expr * expr)
@@ -136,7 +131,7 @@ and sig_item =
   | SgExc of loc and string and list ctyp
   | SgExt of loc and string and ctyp and list string
   | SgInc of loc and module_type
-  | SgMod of loc and vala bool and list (string * module_type)
+  | SgMod of loc and bool and list (string * module_type)
   | SgMty of loc and string and module_type
   | SgOpn of loc and list string
   | SgTyp of loc and list type_decl
@@ -161,12 +156,12 @@ and str_item =
   | StExp of loc and expr
   | StExt of loc and string and ctyp and list string
   | StInc of loc and module_expr
-  | StMod of loc and vala bool and list (string * module_expr)
+  | StMod of loc and bool and list (string * module_expr)
   | StMty of loc and string and module_type
   | StOpn of loc and list string
   | StTyp of loc and list type_decl
   | StUse of loc and string and list (str_item * loc)
-  | StVal of loc and vala bool and list (patt * expr) ]
+  | StVal of loc and bool and list (patt * expr) ]
 and type_decl =
   { tdNam : (loc * string);
     tdPrm : list type_var;
@@ -181,14 +176,14 @@ and class_sig_item =
   [ CgCtr of loc and ctyp and ctyp
   | CgDcl of loc and list class_sig_item
   | CgInh of loc and class_type
-  | CgMth of loc and string and vala bool and ctyp
-  | CgVal of loc and string and vala bool and ctyp
-  | CgVir of loc and string and vala bool and ctyp ]
+  | CgMth of loc and string and bool and ctyp
+  | CgVal of loc and string and bool and ctyp
+  | CgVir of loc and string and bool and ctyp ]
 and class_expr =
   [ CeApp of loc and class_expr and expr
   | CeCon of loc and list string and list ctyp
   | CeFun of loc and patt and class_expr
-  | CeLet of loc and vala bool and list (patt * expr) and class_expr
+  | CeLet of loc and bool and list (patt * expr) and class_expr
   | CeStr of loc and option patt and list class_str_item
   | CeTyc of loc and class_expr and class_type ]
 and class_str_item =
@@ -196,9 +191,9 @@ and class_str_item =
   | CrDcl of loc and list class_str_item
   | CrInh of loc and class_expr and option string
   | CrIni of loc and expr
-  | CrMth of loc and string and vala bool and expr and option ctyp
-  | CrVal of loc and string and vala bool and expr
-  | CrVir of loc and string and vala bool and ctyp ]
+  | CrMth of loc and string and bool and expr and option ctyp
+  | CrVal of loc and string and bool and expr
+  | CrVir of loc and string and bool and ctyp ]
 ;
 
 external loc_of_ctyp : ctyp -> loc = "%field0";
