@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.89 2007/09/15 19:15:19 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.90 2007/09/16 03:41:14 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -55,7 +55,7 @@ value mkmatchcase loc p aso w e =
   let p =
     match aso with
     [ Some p2 -> <:patt< ($p$ as $p2$) >>
-    | _ -> p ]
+    | None -> p ]
   in
   (p, w, e)
 ;

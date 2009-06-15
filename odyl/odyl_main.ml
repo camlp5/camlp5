@@ -1,16 +1,6 @@
 (* camlp5r pa_macro.cmo *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: odyl_main.ml,v 1.5 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: odyl_main.ml,v 1.6 2007/09/16 03:41:14 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 value go = ref (fun () -> ());
 value name = ref "odyl";

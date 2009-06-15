@@ -53,7 +53,7 @@ let mkmatchcase loc p aso w e =
   let p =
     match aso with
       Some p2 -> MLast.PaAli (loc, p, p2)
-    | _ -> p
+    | None -> p
   in
   p, w, e
 ;;
