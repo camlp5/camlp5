@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: opretty.html,v 1.20 2007/08/21 17:50:22 deraugla Exp $ -->
+  <!-- $Id: opretty.html,v 1.21 2007/08/21 18:50:28 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Pretty Printing ocaml programs</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -453,8 +453,7 @@ necessary and remains the empty string.</p>
             [ [<:expr< while not $e$ do { $list:el$ } >> :: _] ->
                 horiz_vertic
                   (fun () ->
-                     sprintf "%srepeat %s until %s%s"
-                       pc.bef
+                     sprintf "%srepeat %s until %s%s" pc.bef
                        (hlistl (semi_after curr) curr
                           {(pc) with bef = ""; aft = ""} el)
                        (curr {(pc) with bef = ""; aft = ""} e)

@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: conclusion.html,v 1.5 2007/08/21 13:35:17 deraugla Exp $ -->
+  <!-- $Id: conclusion.html,v 1.6 2007/08/21 18:50:28 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Conclusion</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -19,6 +19,11 @@
 
 <h1 class="top">Future work</h1>
 
+<p>Just some ideas... All these extensions will be done if there are
+  good basic ideas for their implementations.</p>
+
+<h2>extensible syntax tree quotations</h2>
+
 <p>A new implementation of quotation for <a href="ml_ast.html">syntax
   trees</a> allowing to use the user current syntax (his extensions
   included) was tested some time ago, but the result was not 100%
@@ -26,22 +31,27 @@
   compatibility with previous versions and user programs is a
   problem. We are continuing thinking of it.</p>
 
+<h2>pretty print in shorter syntax</h2>
+
 <p>It is also planed to improve the <a href="pretty.html">pretty
     printing</a> system and the <a href="printers.html">printers</a>,
   so that the management of the lines (indentation, continuations)
   be handled by the system. For the moment, the programmer has to
   manage them using the "<tt>pc</tt>" variable.</p>
 
+<h2>extensible lexers</h2>
+
 <p>Extensible <a href="lexers.html">lexers</a> would be a interesting
   extension, also. And possibly lexers using regular expressions
   (extensible if possible, otherwise as a different module).</p>
 
-<p>The camlp5 lexer for ocaml programs (module Plexer) allow utf-8
-  characters. Perhaps a reflexion to add greek characters and/or real
-  utf-8 arrows in the syntax could be interesting.</p>
+<h2>utf-8</h2>
 
-<p>All these extensions will be done if there are good basic ideas for
-  their implementations.</p>
+<p>The camlp5 lexer for ocaml programs (module Plexer) allows utf-8
+  characters. Since utf-8 seems to have some success among unicode
+  formats, perhaps a reflexion to add greek characters and/or real
+  utf-8 arrows in the syntax (in particular in types) could be
+  interesting.</p>
 
 <div class="trailer">
 </div>
