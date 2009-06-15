@@ -561,36 +561,56 @@ value compute_nb_symbols item_set_ht term_table nterm_table =
     item_set_ht (0, 0)
 ;
 
-value rec derive_eps rl =
-  fun
-  [ [] -> True
-  | [GS_term _ :: _] -> False
-  | [GS_nterm s :: rest] -> nterm_derive_eps rl s && derive_eps rl rest ]
-and nterm_derive_eps rl s =
-let _ = do { Printf.eprintf "test derive_eps \"%s\"\n" s; flush stderr; } in
-  List.exists (fun (_, lh, rh) -> if lh = s then derive_eps rl rh else False)
-    rl
-;
-
-value first_of rl w =
-  let rec first_of_symbols first =
-    fun
-    [ [] -> first
-    | [GS_term s :: _] -> [s :: first]
-    | [GS_nterm s :: rest] -> first_of_nterm first rest s ]
-  and first_of_nterm first kont s =
-    List.fold_left
-      (fun first (_, lh, rh) ->
-         if lh = s then
-           if derive_eps rl rh then first_of_symbols first kont
-           else first_of_symbols first rh
-         else first)
-      first rl
+value make_first rl nterm_table nb_nterms = do {
+  let first_in_rule = Hashtbl.create 1 in
+  let first_in_nterm = Array.create nb_nterms [] in
+  let changes = ref False in
+  let add_in_ht ht a b =
+    let list = try Hashtbl.find ht a with [ Not_found -> [] ] in
+    if not (List.mem b list) then do {
+      Hashtbl.replace ht a [b :: list];
+      changes.val := True;
+    }
+    else ()
   in
-  first_of_symbols [] w
-;
+  let add_in_arr arr i a =
+    if not (List.mem a arr.(i)) then do {
+      arr.(i) := [a :: arr.(i)];
+      changes.val := True;
+    }
+    else ()
+  in
+  let rec add_first m rh =
+    match rh with
+    [ [GS_term s :: _] -> do {
+        add_in_ht first_in_rule rh s;
+        add_in_arr first_in_nterm m s;
+      }
+    | [GS_nterm s :: rest] ->
+        let m1 = Hashtbl.find nterm_table s in
+        List.iter
+          (fun s1 ->
+             if s1 = "ε" then add_first m rest
+             else add_in_arr first_in_nterm m s1)
+          first_in_nterm.(m1)
+    | [] -> do {
+        add_in_ht first_in_rule rh "ε";
+        add_in_arr first_in_nterm m  "ε";
+      } ]
+  in
+  loop () where rec loop () = do {
+    changes.val := False;
+    List.iter
+      (fun (i, lh, rh) ->
+         let m = Hashtbl.find nterm_table lh in
+         add_first m rh)
+      rl;
+    if changes.val then loop () else ();
+  };
+  first_in_nterm
+};
 
-(*DEFINE TEST;*)
+DEFINE TEST;
 
 value lr0 entry lev = do {
   Printf.eprintf "LR(0) %s %d\n" entry.ename lev;
@@ -601,16 +621,16 @@ value lr0 entry lev = do {
       (rl, name_of_entry entry lev)
     ELSE
       let rl =
-(**)
+(*
         [("E", [GS_term "1"; GS_nterm "E"]);
          ("E", [GS_term "1"])]
-(*
+*)
         [("E", [GS_nterm "E"; GS_term "*"; GS_nterm "B"]);
          ("E", [GS_nterm "E"; GS_term "+"; GS_nterm "B"]);
          ("E", [GS_nterm "B"]);
          ("B", [GS_term "0"]);
          ("B", [GS_term "1"])]
-*)
+(**)
       in
       (rl, "E")
     END
@@ -646,7 +666,7 @@ value lr0 entry lev = do {
   Printf.eprintf "\nshift:\n";
   List.iter
     (fun (i, symb_cnt_assoc) -> do {
-       Printf.eprintf "state %d:" i;
+       Printf.eprintf "  state %d:" i;
        List.iter (fun (s, i) -> Printf.eprintf " %s->%d" (sprint_symb s) i)
          (List.rev symb_cnt_assoc);
        Printf.eprintf "\n";
@@ -658,10 +678,24 @@ value lr0 entry lev = do {
   let (nb_terms, nb_nterms) =
     compute_nb_symbols item_set_ht term_table nterm_table
   in
+  Printf.eprintf "\n";
   Printf.eprintf "nb of terms %d\n" nb_terms;
   Printf.eprintf "nb of non-terms %d\n" nb_nterms;
   flush stderr;
 
+  (* compute first *)
+  let first = make_first rl nterm_table nb_nterms in
+  Printf.eprintf "\nFirst\n\n";
+  Hashtbl.iter
+    (fun s i -> do {
+       Printf.eprintf "  first (%s) =" s;
+       List.iter (fun s -> Printf.eprintf " %s" s) first.(i);
+       Printf.eprintf "\n";
+     })
+    nterm_table;
+  flush stderr;
+
+(*
   (* compute follow *)
   let follow = Array.create nb_nterms [] in
   List.iter
@@ -693,6 +727,7 @@ List.hd r ];
     List.iter (fun s -> Printf.eprintf " %s" s) follow.(i);
     Printf.eprintf "\n";
   };
+*)
 
   (* make goto table *)
   let goto_table =
@@ -715,7 +750,7 @@ List.hd r ];
     Printf.eprintf "  (big)\n"
   else
     for i = 0 to Array.length goto_table - 1 do {
-      Printf.eprintf "state %d :" i;
+      Printf.eprintf "  state %d :" i;
       let line = goto_table.(i) in
       for j = 0 to Array.length line - 1 do {
         if line.(j) = -1 then Printf.eprintf " -"
@@ -814,7 +849,7 @@ List.hd r ];
     Printf.eprintf "  (big)\n"
   else
     for i = 0 to Array.length action_table - 1 do {
-      Printf.eprintf "state %d :" i;
+      Printf.eprintf "  state %d :" i;
       let line = action_table.(i) in
       for j = 0 to Array.length line - 1 do {
         match line.(j) with
