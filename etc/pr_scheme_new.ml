@@ -103,8 +103,9 @@ value has_cons_with_params vdl =
     vdl
 ;
 
-value type_param pc (s, vari) =
-  sprintf "%s'%s%s" pc.bef (Pcaml.unvala s) pc.aft
+value type_param pc (s, (pl, mi)) =
+  sprintf "%s%s'%s%s" pc.bef
+    (if pl then "+" else if mi then "-" else "") (Pcaml.unvala s) pc.aft
 ;
 
 value type_decl b pc td =
@@ -311,8 +312,9 @@ value string pc s = sprintf "%s\"%s\"%s" pc.bef s pc.aft;
 value int_repr s =
   if String.length s > 2 && s.[0] = '0' then
     match s.[1] with
-    [ 'b' | 'o' | 'x' | 'B' | 'O' | 'X' ->
-        "#" ^ String.sub s 1 (String.length s - 1)
+    [ 'b' | 'B' -> "#b" ^ String.sub s 2 (String.length s - 2)
+    | 'o' | 'O' -> "#o" ^ String.sub s 2 (String.length s - 2)
+    | 'x' | 'X' -> "#x" ^ String.sub s 2 (String.length s - 2)
     | _ -> s ]
   else s
 ;
@@ -684,6 +686,12 @@ EXTEND_PRINTER
              (curr {(pc) with bef = ""} e2)
       | <:expr< $int:s$ >> ->
           sprintf "%s%s%s" pc.bef (int_repr s) pc.aft
+      | <:expr< $int32:s$ >> ->
+          sprintf "%s%sl%s" pc.bef (int_repr s) pc.aft
+      | <:expr< $int64:s$ >> ->
+          sprintf "%s%sL%s" pc.bef (int_repr s) pc.aft
+      | <:expr< $nativeint:s$ >> ->
+          sprintf "%s%sn%s" pc.bef (int_repr s) pc.aft
       | <:expr< $flo:s$ >> ->
           sprintf "%s%s%s" pc.bef s pc.aft
       | <:expr< $lid:s$ >> ->

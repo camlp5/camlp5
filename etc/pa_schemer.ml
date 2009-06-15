@@ -97,6 +97,9 @@ value rec number len =
   [ [: `('0'..'9' as c); s :] -> number (Buff.store len c) s
   | [: `'.'; s :] -> decimal_part (Buff.store len '.') s
   | [: `'e' | 'E'; s :] -> exponent_part (Buff.store len 'E') s
+  | [: `'l' :] -> ("INT_l", Buff.get len)
+  | [: `'L' :] -> ("INT_L", Buff.get len)
+  | [: `'n' :] -> ("INT_n", Buff.get len)
   | [: :] -> ("INT", Buff.get len) ]
 ;
 
@@ -109,12 +112,15 @@ value hexa = parser [: `('0'..'9' | 'a'..'f' | 'A'..'F' as c) :] -> c;
 value rec digits_under kind len =
   parser
   [ [: d = kind; s :] -> digits_under kind (Buff.store len d) s
-  | [: :] -> Buff.get len ]
+  | [: `'l' :] -> ("INT_l", Buff.get len)
+  | [: `'L' :] -> ("INT_L", Buff.get len)
+  | [: `'n' :] -> ("INT_n", Buff.get len)
+  | [: :] -> ("INT", Buff.get len) ]
 ;
 
 value digits kind bp len =
   parser
-  [ [: d = kind; s :] -> ("INT", digits_under kind (Buff.store len d) s)
+  [ [: d = kind; tok = digits_under kind (Buff.store len d) :] -> tok
   | [: :] ep ->
       Ploc.raise (Ploc.make_unlined (bp, ep))
         (Failure "ill-formed integer constant") ]
@@ -230,9 +236,9 @@ and quotation_greater len =
 
 value lexer_using kwt (con, prm) =
   match con with
-  [ "CHAR" | "DOT" | "EOI" | "INT" | "FLOAT" | "LIDENT" | "NL" |
-    "QUESTIONIDENT" | "QUOT" | "SPACEDOT" | "STRING" | "TILDEIDENT" |
-    "UIDENT" ->
+  [ "CHAR" | "DOT" | "EOI" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
+    "LIDENT" | "NL" | "QUESTIONIDENT" | "QUOT" | "SPACEDOT" | "STRING" |
+    "TILDEIDENT" | "UIDENT" ->
       ()
   | "ANTIQUOT" | "ANTIQUOT_LOC" -> ()
   | "" ->
@@ -269,6 +275,9 @@ type sexpr =
   | Schar of MLast.loc and string
   | Sexpr of MLast.loc and list sexpr
   | Sint of MLast.loc and string
+  | Sint_l of MLast.loc and string
+  | Sint_L of MLast.loc and string
+  | Sint_n of MLast.loc and string
   | Sfloat of MLast.loc and string
   | Slid of MLast.loc and string
   | Slist of MLast.loc and list sexpr
@@ -283,8 +292,9 @@ type sexpr =
 value loc_of_sexpr =
   fun
   [ Sacc loc _ _ | Sarr loc _ | Schar loc _ | Sexpr loc _ | Sint loc _ |
-    Sfloat loc _ | Slid loc _ | Slist loc _ | Sqid loc _ | Squot loc _ _ |
-    Srec loc _ | Sstring loc _ | Stid loc _ | Suid loc _ ->
+    Sint_l loc _ | Sint_L loc _ | Sint_n loc _ | Sfloat loc _ | Slid loc _ |
+    Slist loc _ | Sqid loc _ | Squot loc _ _ | Srec loc _ | Sstring loc _ |
+    Stid loc _ | Suid loc _ ->
       loc ]
 ;
 value error_loc loc err = Ploc.raise loc (Stream.Error (err ^ " expected"));
@@ -478,6 +488,9 @@ and expr_se =
   | Slid loc s -> lident_expr loc s
   | Suid loc s -> <:expr< $uid:(rename_id s)$ >>
   | Sint loc s -> <:expr< $int:s$ >>
+  | Sint_l loc s -> <:expr< $int32:s$ >>
+  | Sint_L loc s -> <:expr< $int64:s$ >>
+  | Sint_n loc s -> <:expr< $nativeint:s$ >>
   | Sfloat loc s -> <:expr< $flo:s$ >>
   | Schar loc s -> <:expr< $chr:s$ >>
   | Sstring loc s -> <:expr< $str:s$ >>
@@ -810,6 +823,9 @@ and patt_se =
   | Slid loc s -> <:patt< $lid:(rename_id s)$ >>
   | Suid loc s -> <:patt< $uid:(rename_id s)$ >>
   | Sint loc s -> <:patt< $int:s$ >>
+  | Sint_l loc s -> <:patt< $int32:s$ >>
+  | Sint_L loc s -> <:patt< $int64:s$ >>
+  | Sint_n loc s -> <:patt< $nativeint:s$ >>
   | Sfloat loc s -> <:patt< $flo:s$ >>
   | Schar loc s -> <:patt< $chr:s$ >>
   | Sstring loc s -> <:patt< $str:s$ >>
@@ -903,7 +919,7 @@ and type_declaration_se =
       let (n1, loc1, tpl) =
         match se1 with
         [ Sexpr _ [Slid loc n :: sel] ->
-            (rename_id n, loc, List.map type_parameter_se sel)
+            (rename_id n, loc, type_param_list_se sel)
         | Slid loc n -> (rename_id n, loc, [])
         | se -> error se "type declaration" ]
       in
@@ -917,7 +933,7 @@ and type_declaration_list_se =
       let (n1, loc1, tpl) =
         match se1 with
         [ Sexpr _ [Slid loc n :: sel] ->
-            (rename_id n, loc, List.map type_parameter_se sel)
+            (rename_id n, loc, type_param_list_se sel)
         | Slid loc n -> (rename_id n, loc, [])
         | se -> error se "type declaration" ]
       in
@@ -929,12 +945,21 @@ and type_declaration_list_se =
       [td :: type_declaration_list_se sel]
   | [] -> []
   | [se :: _] -> error se "type_declaration" ]
-and type_parameter_se =
+and type_param_list_se =
+  fun
+  [ [] -> []
+  | [Slid _ "+"; se :: sel] ->
+      [(type_param_se se, (True, False)) :: type_param_list_se sel]
+  | [Slid _ "-"; se :: sel] ->
+      [(type_param_se se, (False, True)) :: type_param_list_se sel]
+  | [se :: sel] ->
+      [(type_param_se se, (False, False)) :: type_param_list_se sel] ]
+and type_param_se =
   fun
   [ Slid _ s when String.length s >= 2 && s.[0] = ''' ->
       let s = String.sub s 1 (String.length s - 1) in
-      (<:vala< s >>, (False, False))
-  | se -> error se "type_parameter" ]
+      <:vala< s >>
+  | se -> error se "type_param" ]
 and ctyp_se =
   fun
   [ Sexpr loc [Slid _ "sum" :: sel] ->
@@ -1095,6 +1120,9 @@ EXTEND
       | s = TILDEIDENT -> Stid loc s
       | s = QUESTIONIDENT -> Sqid loc s
       | s = INT -> Sint loc s
+      | s = INT_l -> Sint_l loc s
+      | s = INT_L -> Sint_L loc s
+      | s = INT_n -> Sint_n loc s
       | s = FLOAT -> Sfloat loc s
       | s = CHAR -> Schar loc s
       | s = STRING -> Sstring loc s

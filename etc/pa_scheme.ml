@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.39 2007/10/06 08:07:17 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.40 2007/10/06 09:12:27 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -80,6 +80,9 @@
    (((` (as (range '0' '9') c)) s) (number (Buff.store len c) s))
    (((` '.') s) (decimal_part (Buff.store len '.') s))
    (((` (or 'e' 'E')) s) (exponent_part (Buff.store len 'E') s))
+   (((` 'l')) (values "INT_l" (Buff.get len)))
+   (((` 'L')) (values "INT_L" (Buff.get len)))
+   (((` 'n')) (values "INT_n" (Buff.get len)))
    (() (values "INT" (Buff.get len)))))
 
 (define binary
@@ -97,11 +100,14 @@
 (definerec (digits_under kind len)
   (parser
    (((d kind) s) (digits_under kind (Buff.store len d) s))
-   (() (Buff.get len))))
+   (((` 'l')) (values "INT_l" (Buff.get len)))
+   (((` 'L')) (values "INT_L" (Buff.get len)))
+   (((` 'n')) (values "INT_n" (Buff.get len)))
+   (() (values "INT" (Buff.get len)))))
 
 (define (digits kind bp len)
   (parser
-   (((d kind) s) (values "INT" (digits_under kind (Buff.store len d) s)))
+   (((d kind) (tok (digits_under kind (Buff.store len d)))) tok)
    (() ep
     (Ploc.raise (Ploc.make_unlined (values bp ep))
                 (Failure "ill-formed integer constant")))))
@@ -218,8 +224,8 @@
 
 (define (lexer_using kwt (values con prm))
   (match con
-   ((or "CHAR" "DOT" "EOI" "INT" "FLOAT" "LIDENT" "NL" "QUESTIONIDENT"
-     "QUOT" "SPACEDOT" "STRING" "TILDEIDENT" "UIDENT")
+   ((or "CHAR" "DOT" "EOI" "INT" "INT_l" "INT_L" "INT_n" "FLOAT" "LIDENT" "NL"
+     "QUESTIONIDENT" "QUOT" "SPACEDOT" "STRING" "TILDEIDENT" "UIDENT")
     ())
    ((or "ANTIQUOT" "ANTIQUOT_LOC") ())
    ("" (try (Hashtbl.find kwt prm) (Not_found (Hashtbl.add kwt prm ()))))
@@ -256,6 +262,9 @@
   (Schar MLast.loc string)
   (Sexpr MLast.loc (list sexpr))
   (Sint MLast.loc string)
+  (Sint_l MLast.loc string)
+  (Sint_L MLast.loc string)
+  (Sint_n MLast.loc string)
   (Sfloat MLast.loc string)
   (Slid MLast.loc string)
   (Slist MLast.loc (list sexpr))
@@ -269,8 +278,9 @@
 (define loc_of_sexpr
   (lambda_match
    ((or (Sacc loc _ _) (Sarr loc _) (Schar loc _) (Sexpr loc _) (Sint loc _)
-     (Sfloat loc _) (Slid loc _) (Slist loc _) (Sqid loc _) (Squot loc _ _)
-     (Srec loc _) (Sstring loc _) (Stid loc _) (Suid loc _))
+     (Sint_l loc _) (Sint_L loc _) (Sint_n loc _) (Sfloat loc _) (Slid loc _)
+     (Slist loc _) (Sqid loc _) (Squot loc _ _) (Srec loc _) (Sstring loc _)
+     (Stid loc _) (Suid loc _))
     loc)))
 (define (error_loc loc err)
   (Ploc.raise loc (Stream.Error (^ err " expected"))))
@@ -452,6 +462,9 @@
     ((Slid loc s) (lident_expr loc s))
     ((Suid loc s) <:expr< $uid:(rename_id s)$ >>)
     ((Sint loc s) <:expr< $int:s$ >>)
+    ((Sint_l loc s) <:expr< $int32:s$ >>)
+    ((Sint_L loc s) <:expr< $int64:s$ >>)
+    ((Sint_n loc s) <:expr< $nativeint:s$ >>)
     ((Sfloat loc s) <:expr< $flo:s$ >>)
     ((Schar loc s) <:expr< $chr:s$ >>)
     ((Sstring loc s) <:expr< $str:s$ >>)
@@ -771,6 +784,9 @@
     ((Slid loc s) <:patt< $lid:(rename_id s)$ >>)
     ((Suid loc s) <:patt< $uid:(rename_id s)$ >>)
     ((Sint loc s) <:patt< $int:s$ >>)
+    ((Sint_l loc s) <:patt< $int32:s$ >>)
+    ((Sint_L loc s) <:patt< $int64:s$ >>)
+    ((Sint_n loc s) <:patt< $nativeint:s$ >>)
     ((Sfloat loc s) <:patt< $flo:s$ >>)
     ((Schar loc s) <:patt< $chr:s$ >>)
     ((Sstring loc s) <:patt< $str:s$ >>)
@@ -853,8 +869,7 @@
      (let (((values n1 loc1 tpl)
             (match se1
                    ((Sexpr _ [(Slid loc n) . sel])
-                    (values (rename_id n) loc
-                     (List.map type_parameter_se sel)))
+                    (values (rename_id n) loc (type_param_list_se sel)))
                    ((Slid loc n)
                     (values (rename_id n) loc []))
                    ((se)
@@ -869,8 +884,7 @@
      (let (((values n1 loc1 tpl)
             (match se1
                    ((Sexpr _ [(Slid loc n) . sel])
-                    (values (rename_id n) loc
-                     (List.map type_parameter_se sel)))
+                    (values (rename_id n) loc (type_param_list_se sel)))
                    ((Slid loc n)
                     (values (rename_id n) loc []))
                    ((se)
@@ -881,13 +895,24 @@
             [td . (type_declaration_list_se sel)])))
     ([] [])
     ([se . _] (error se "type_declaration"))))
-  (type_parameter_se
+  (type_param_list_se
+   (lambda_match
+    ([] [])
+    ([(Slid _ "+") se . sel]
+     [(values (type_param_se se) (values True False)) .
+      (type_param_list_se sel)])
+    ([(Slid _ "-") se . sel]
+     [(values (type_param_se se) (values False True)) .
+      (type_param_list_se sel)])
+    ([se . sel]
+     [(values (type_param_se se) (values False False)) .
+      (type_param_list_se sel)])))
+  (type_param_se
    (lambda_match
     ((when (Slid _ s) (and (>= (String.length s) 2) (= s.[0] ''')))
-     (let ((s (String.sub s 1 (- (String.length s) 1))))
-        (values <:vala< s >> (values False False))))
+      (let ((s (String.sub s 1 (- (String.length s) 1)))) <:vala< s >>))
     (se
-     (error se "type_parameter"))))
+     (error se "type_param"))))
   (ctyp_se
    (lambda_match
     ((Sexpr loc [(Slid _ "sum") . sel])
@@ -1042,6 +1067,9 @@ EXTEND
       | s = TILDEIDENT -> (Stid loc s)
       | s = QUESTIONIDENT -> (Sqid loc s)
       | s = INT -> (Sint loc s)
+      | s = INT_l -> (Sint_l loc s)
+      | s = INT_L -> (Sint_L loc s)
+      | s = INT_n -> (Sint_n loc s)
       | s = FLOAT -> (Sfloat loc s)
       | s = CHAR -> (Schar loc s)
       | s = STRING -> (Sstring loc s)
