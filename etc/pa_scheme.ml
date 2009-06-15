@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.61 2007/10/09 01:33:50 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.62 2007/10/09 01:59:29 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -381,6 +381,11 @@
   ([(Santi _ (or "list" "_list") s)] <:vala< $s$ >>)
   (sel <:vala< (List.map f sel) >>)))
 
+(define anti_mod_ident
+ (lambda_match
+  ((Santi _ (or "list" "_list") s) <:vala< $s$ >>)
+  (se <:vala< (mod_ident_se se) >>)))
+
 (define anti_lid
  (lambda_match
   ((Slid _ s) (let ((s (rename_id s))) (Some <:vala< s >>)))
@@ -446,6 +451,7 @@
              (mt2 (module_type_se se2)))
          <:module_type< $mt1$ . $mt2$ >>))
      ((Suid loc s) <:module_type< $uid:(rename_id s)$ >>)
+     ((Santi loc "" s) <:module_type< $xtr:s$ >>)
      (se (error se "module type"))))
   (with_constr_se
     (lambda_match
@@ -489,35 +495,23 @@
   ((str_item_se se)
     (match se
      ((Sexpr loc [(Slid _ "open") se])
-      (let ((s (mod_ident_se se))) <:str_item< open $s$ >>))
+      (let ((s (anti_mod_ident se))) <:str_item< open $_:s$ >>))
      ((Sexpr loc [(Slid _ "type") . sel])
       (let ((tdl (type_declaration_list_se sel)))
          <:str_item< type $list:tdl$ >>))
      ((Sexpr loc [(Slid _ "type*") . sel])
-      (let ((tdl (List.map type_declaration_se sel)))
-         <:str_item< type $list:tdl$ >>))
+      (let ((tdl (anti_list_map type_declaration_se sel)))
+         <:str_item< type $_list:tdl$ >>))
      ((Sexpr loc [(Slid _ "exception") se . sel])
       (let*
-       ((c
-         (match se
-          ((Suid _ c) (let ((s (rename_id c))) <:vala< s >>))
-          ((Suidv _ s) s)
-          (se (error se "uident"))))
-        (tl
-         (anti_list_map ctyp_se sel)))
+       ((c (anti_uid_or_error se))
+        (tl (anti_list_map ctyp_se sel)))
         <:str_item< exception $_:c$ of $_list:tl$ >>))
      ((Sexpr loc [(Slid _ "exceptionrebind") se1 se2])
       (let*
-       ((c
-         (match se1
-          ((Suid _ c) <:vala< (rename_id c) >>)
-          ((Suidv _ s) s)
-          (se (error se "uident"))))
-        (id
-         (match se2
-          ((Santi _ (or "list" "_list") s) <:vala< $s$ >>)
-          (_ <:vala< (mod_ident_se se2) >>))))
-         <:str_item< exception $_uid:c$ = $_:id$ >>))
+       ((c (anti_uid_or_error se1))
+        (id (anti_mod_ident se2)))
+       <:str_item< exception $_uid:c$ = $_:id$ >>))
      ((Sexpr loc [(Slid _ (as (or "define" "definerec") r)) se . sel])
       (let* ((r (= r "definerec"))
              ((values p e) (fun_binding_se se (begin_se loc sel))))
@@ -542,10 +536,11 @@
        ((rf (= rf "modulerec*"))
        (lmb (anti_list_map module_binding_se sel)))
         <:str_item< module $flag:rf$ $_list:lmb$ >>))
-     ((Sexpr loc [(Slid _ "moduletype") (Suid _ s) se])
-      (let* ((s (rename_id s))
-             (mt (module_type_se se)))
-         <:str_item< module type $uid:s$ = $mt$ >>))
+     ((Sexpr loc [(Slid _ "moduletype") se1 se2])
+      (let*
+       ((s (anti_uid_or_error se1))
+        (mt (module_type_se se2)))
+       <:str_item< module type $_uid:s$ = $mt$ >>))
      ((Sexpr loc [(Slid _ "#") se1])
       (match (anti_lid se1)
        ((Some s) <:str_item< # $_lid:s$ >>)
@@ -715,15 +710,12 @@
         sel1 (begin_se loc sel2)))
       ([se . _] (error se "let_binding"))
       (_ (error_loc loc "let_binding"))))
-    ((Sexpr loc [(Slid _ "letmodule") seu se1 se2])
-     (let* ((s
-             (match seu
-              ((Suid _ s) <:vala< s >>)
-              ((Suidv _ i) i)
-              (se (error_loc (loc_of_sexpr se) "uident"))))
-            (me (module_expr_se se1))
-            (e (expr_se se2)))
-        <:expr< let module $_:s$ = $me$ in $e$ >>))
+    ((Sexpr loc [(Slid _ "letmodule") se1 se2 se3])
+     (let*
+      ((s (anti_uid_or_error se1))
+       (me (module_expr_se se2))
+       (e (expr_se se3)))
+      <:expr< let module $_:s$ = $me$ in $e$ >>))
     ((Sexpr loc [(Slid _ "match") se . sel])
      (let* ((e (expr_se se))
             (pel
@@ -1168,8 +1160,8 @@
 (define sexpr (Grammar.Entry.create gram "sexpr"))
 
 EXTEND
-  GLOBAL : implem interf top_phrase use_file str_item sig_item expr
-    patt ctyp sexpr /
+  GLOBAL : implem interf top_phrase use_file str_item sig_item
+    module_expr module_type expr patt ctyp sexpr /
   implem :
     [ [ "#" / se = sexpr ->
           (let (((values n dp) (directive_se se)))
@@ -1211,6 +1203,12 @@ EXTEND
   /
   sig_item :
     [ [ se = sexpr -> (sig_item_se se) ] ]
+  /
+  module_expr :
+    [ [ se = sexpr -> (module_expr_se se) ] ]
+  /
+  module_type :
+    [ [ se = sexpr -> (module_type_se se) ] ]
   /
   expr :
     [ "top"

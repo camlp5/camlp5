@@ -194,12 +194,12 @@
 <:str_item< (modulerec* $_list:lsme$) >>
 (MLast.StMod loc (Ploc.VaVal b) (Ploc.VaVal lsme))
 (MLast.StMod loc b lsme)
-; <:str_item< module type $s$ = $mt$ >>
-; <:str_item< module type $_:s$ = $mt$ >>
-; <:str_item< open $list:ls$ >>
-; <:str_item< open $_list:ls$ >>
-; <:str_item< type $list:ltd$ >>
-; <:str_item< type $_list:ltd$ >>
+<:str_item< (moduletype $s$ $mt$) >>
+<:str_item< (moduletype $_:s$ $mt$) >>
+<:str_item< (open $list:ls$) >>
+<:str_item< (open $_list:ls$) >>
+<:str_item< (type* $list:ltd$) >>
+<:str_item< (type* $_list:ltd$) >>
 ; <:str_item< value $flag:b$ $list:lpe$ >>
 ; <:str_item< value $_flag:b$ $_list:lpe$ >>
 ; <:sig_item< class $list:lcd$ >>

@@ -406,6 +406,12 @@ value rec anti_list_map f =
   | sel -> <:vala< (List.map f sel) >> ]
 ;
 
+value anti_mod_ident =
+  fun
+  [ Santi _ ("list" | "_list") s -> <:vala< $s$ >>
+  | se -> <:vala< (mod_ident_se se) >> ]
+;
+
 value anti_lid =
   fun
   [ Slid _ s ->
@@ -479,6 +485,7 @@ and module_type_se =
       let mt2 = module_type_se se2 in
       <:module_type< $mt1$ . $mt2$ >>
   | Suid loc s -> <:module_type< $uid:(rename_id s)$ >>
+  | Santi loc "" s -> <:module_type< $xtr:s$ >>
   | se -> error se "module type" ]
 and with_constr_se =
   fun
@@ -523,37 +530,21 @@ and sig_item_se =
 and str_item_se se =
   match se with
   [ Sexpr loc [Slid _ "open"; se] ->
-      let s = mod_ident_se se in
-      <:str_item< open $s$ >>
+      let s = anti_mod_ident se in
+      <:str_item< open $_:s$ >>
   | Sexpr loc [Slid _ "type" :: sel] ->
       let tdl = type_declaration_list_se sel in
       <:str_item< type $list:tdl$ >>
   | Sexpr loc [Slid _ "type*" :: sel] ->
-      let tdl = List.map type_declaration_se sel in
-      <:str_item< type $list:tdl$ >>
+      let tdl = anti_list_map type_declaration_se sel in
+      <:str_item< type $_list:tdl$ >>
   | Sexpr loc [Slid _ "exception"; se :: sel] ->
-      let c =
-        match se with
-        [ Suid _ c ->
-            let s = rename_id c in
-            <:vala< s >>
-        | Suidv _ s -> s
-        | se -> error se "uident" ]
-      in
+      let c = anti_uid_or_error se in
       let tl = anti_list_map ctyp_se sel in
       <:str_item< exception $_:c$ of $_list:tl$ >>
   | Sexpr loc [Slid _ "exceptionrebind"; se1; se2] ->
-      let c =
-        match se1 with
-        [ Suid _ c -> <:vala< (rename_id c) >>
-        | Suidv _ s -> s
-        | se -> error se "uident" ]
-      in
-      let id =
-        match se2 with
-        [ Santi _ ("list" | "_list") s -> <:vala< $s$ >>
-        | _ -> <:vala< (mod_ident_se se2) >> ]
-      in
+      let c = anti_uid_or_error se1 in
+      let id = anti_mod_ident se2 in
       <:str_item< exception $_uid:c$ = $_:id$ >>
   | Sexpr loc [Slid _ ("define" | "definerec" as r); se :: sel] ->
       let r = r = "definerec" in
@@ -578,10 +569,10 @@ and str_item_se se =
       let rf = rf = "modulerec*" in
       let lmb = anti_list_map module_binding_se sel in
       <:str_item< module $flag:rf$ $_list:lmb$ >>
-  | Sexpr loc [Slid _ "moduletype"; Suid _ s; se] ->
-      let s = rename_id s in
-      let mt = module_type_se se in
-      <:str_item< module type $uid:s$ = $mt$ >>
+  | Sexpr loc [Slid _ "moduletype"; se1; se2] ->
+      let s = anti_uid_or_error se1 in
+      let mt = module_type_se se2 in
+      <:str_item< module type $_uid:s$ = $mt$ >>
   | Sexpr loc [Slid _ "#"; se1] ->
       match anti_lid se1 with
       [ Some s -> <:str_item< # $_lid:s$ >>
@@ -759,15 +750,10 @@ and expr_se =
             sel1 (begin_se loc sel2)
       | [se :: _] -> error se "let_binding"
       | _ -> error_loc loc "let_binding" ]
-  | Sexpr loc [Slid _ "letmodule"; seu; se1; se2] ->
-      let s =
-        match seu with
-        [ Suid _ s -> <:vala< s >>
-        | Suidv _ i -> i
-        | se -> error_loc (loc_of_sexpr se) "uident" ]
-      in
-      let me = module_expr_se se1 in
-      let e = expr_se se2 in
+  | Sexpr loc [Slid _ "letmodule"; se1; se2; se3] ->
+      let s = anti_uid_or_error se1 in
+      let me = module_expr_se se2 in
+      let e = expr_se se3 in
       <:expr< let module $_:s$ = $me$ in $e$ >>
   | Sexpr loc [Slid _ "match"; se :: sel] ->
       let e = expr_se se in
@@ -1253,8 +1239,8 @@ Pcaml.parse_implem.val := Grammar.Entry.parse implem;
 value sexpr = Grammar.Entry.create gram "sexpr";
 
 EXTEND
-  GLOBAL: implem interf top_phrase use_file str_item sig_item expr patt ctyp
-    sexpr;
+  GLOBAL: implem interf top_phrase use_file str_item sig_item module_expr
+    module_type expr patt ctyp sexpr;
   implem:
     [ [ "#"; se = sexpr ->
           let (n, dp) = directive_se se in
@@ -1297,6 +1283,12 @@ EXTEND
   ;
   sig_item:
     [ [ se = sexpr -> sig_item_se se ] ]
+  ;
+  module_expr:
+    [ [ se = sexpr -> module_expr_se se ] ]
+  ;
+  module_type:
+    [ [ se = sexpr -> module_type_se se ] ]
   ;
   expr:
     [ "top"
