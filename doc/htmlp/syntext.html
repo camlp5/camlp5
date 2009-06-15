@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: syntext.html,v 1.6 2007/07/22 10:15:44 deraugla Exp $ -->
+  <!-- $Id: syntext.html,v 1.7 2007/07/22 11:18:16 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>syntax extensions</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -227,7 +227,9 @@
   # #load "foo.cmo";
   # value x = ref 42;                                                     
   value x : ref int = {val=42}
-  # repeat print_int x.val; print_endline ""; x.val := x.val + 3 until x.val > 70;
+  # repeat
+      print_int x.val; print_endline ""; x.val := x.val + 3
+    until x.val > 70;
   42
   45
   48

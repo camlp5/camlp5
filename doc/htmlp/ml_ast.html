@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: ml_ast.html,v 1.6 2007/07/21 12:06:35 deraugla Exp $ -->
+  <!-- $Id: ml_ast.html,v 1.7 2007/07/22 11:18:16 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Abstract tree in concrete syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -19,45 +19,50 @@
 
 <h1 class="top">Syntax tree</h1>
 
+<div id="tableofcontents">
+</div>
+
+<h2>Introduction</h2>
+
 <p>In Camlp5, one often uses syntax trees. For example, in grammars of
-the language (semantic actions), in pretty printing (as patterns), in
-optimizing syntax code (typically streams parsers). Syntax trees are
-mainly defined by sum types, one for each kind of tree:
-"<code>expr</code>" for expressions, "<code>patt</code>" for patterns,
-"<code>ctyp</code>" for types, "<code>str_item</code>" for structure
-items, and so on. Each node corresponds to a possible value of this
-type.</p>
+  the language (semantic actions), in pretty printing (as patterns), in
+  optimizing syntax code (typically streams parsers). Syntax trees are
+  mainly defined by sum types, one for each kind of tree:
+  "<code>expr</code>" for expressions, "<code>patt</code>" for patterns,
+  "<code>ctyp</code>" for types, "<code>str_item</code>" for structure
+  items, and so on. Each node corresponds to a possible value of this
+  type.</p>
 
 <p>This syntax tree is defined in the module "<code>MLast</code>"
-provided by Camlp5.</p>
+  provided by Camlp5.</p>
 
 <p>For example, the syntax tree of the statement "<code>if</code>" can
-be written:</p>
+  be written:</p>
 
 <pre>
   MLast.ExIfe loc e1 e2 e3
 </pre>
 
-<p>Where "<code>loc</code>" is the location in the source, and
-"<code>e1</code>", "<code>e2</code>" and "<code>e3</code>" are
-respectively the expression after the "<code>if</code>", the one after
-the "<code>then</code>" and the one after the "<code>else</code>".</p>
+<p>where "<code>loc</code>" is the location in the source, and
+  "<code>e1</code>", "<code>e2</code>" and "<code>e3</code>" are
+  respectively the expression after the "<code>if</code>", the one after
+  the "<code>then</code>" and the one after the "<code>else</code>".</p>
 
 <p>In all programs, it is possible to manipulate syntax trees like
-that.</p>
+  that.</p>
 
 <p>However, the quotations systems of Camlp5 provides a quotation kit
-named "<code>q_MLast.cmo</code>". When loaded, it is possible to
-represent the syntax trees in concrete syntax. The example above can
-be written:</p>
+  named "<code>q_MLast.cmo</code>". When loaded, it is possible to
+  represent the syntax trees in concrete syntax. The example above can
+  be written:</p>
 
 <pre>
   &lt;:expr&lt; if $e1$ then $e2$ else $e3$ >>
 </pre>
 
 <p>The interest of this representation is when one must manipulate
-complicated syntax trees. An example taken from the Camlp5 sources
-is this quotation (found in a pattern):</p>
+  complicated syntax trees. An example taken from the Camlp5 sources is
+  this quotation (found in a pattern):</p>
 
 <pre>
   &lt;:expr&lt;
@@ -85,19 +90,13 @@ is this quotation (found in a pattern):</p>
 <p>Which is less readable.</p>
 
 <p>Instead of thinking of "a syntax tree", the programmer has to think
-of "a piece of program".</p>
+  of "a piece of program".</p>
+
+<h2>Nodes</h2>
+
+<h3>expr</h3>
 
 <div class="trailer">
-
-  <hr style="margin:0" /><div style="font-size: 80%"><em>Copyright 2007
-      Daniel de Rauglaudre (INRIA)</em></div>
-
-  <p class="bottom">
-    <a href="http://validator.w3.org/check?uri=referer"><img
-       src="http://www.w3.org/Icons/valid-xhtml11" style="border:0"
-       alt="Valid XHTML 1.1" height="31" width="88" /></a>
-  </p>
-
 </div>
 
 </div>
