@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.42 2007/07/05 04:47:57 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.43 2007/07/05 11:37:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1912,11 +1912,10 @@ value str_item_top =
       fun curr next pc ->
         if sil = [] then sprintf "%s(* *)" pc.bef
         else
-          horiz_vertic
-            (fun () ->
-               hlist (semi_after str_item) {(pc) with bef = ""; aft = ""}
-                 sil)
-            (fun () -> not_impl "expand declare vertic" pc sil)
+          let str_item_sep =
+            if flag_semi_semi.val then semi_semi_after str_item else str_item
+          in
+          vlistl str_item_sep str_item pc sil
   | <:str_item< exception $e$ of $list:tl$ = $id$ >> ->
       fun curr next pc -> exception_decl pc (e, tl, id)
   | <:str_item< external $n$ : $t$ = $list:sl$ >> ->
@@ -2070,6 +2069,14 @@ value sig_item_top =
   | <:sig_item< include $mt$ >> ->
       fun curr next pc ->
         module_type {(pc) with bef = sprintf "%sinclude " pc.bef} mt
+  | <:sig_item< declare $list:sil$ end >> ->
+      fun curr next pc ->
+        if sil = [] then sprintf "%s(* *)" pc.bef
+        else
+          let sig_item_sep =
+            if flag_semi_semi.val then semi_semi_after sig_item else sig_item
+          in
+          vlistl sig_item_sep sig_item pc sil
   | <:sig_item< module $m$ : $mt$ >> ->
       fun curr next pc ->
         horiz_vertic
@@ -2554,7 +2561,7 @@ Pcaml.add_option "-ss" (Arg.Set flag_semi_semi)
   "Print double semicolons (equivalent to -flag M).";
 
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.42 2007/07/05 04:47:57 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.43 2007/07/05 11:37:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)

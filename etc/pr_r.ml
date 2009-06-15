@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.40 2007/07/04 19:05:40 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.41 2007/07/05 11:37:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1839,10 +1839,7 @@ value str_item_top =
   | <:str_item< declare $list:sil$ end >> ->
       fun curr next pc ->
         if flag_expand_declare.val then
-          horiz_vertic
-            (fun () ->
-               hlist (semi_after str_item) {(pc) with bef = ""; aft = ""} sil)
-            (fun () -> not_impl "expand declare vertic" pc sil)
+          vlistl (semi_after str_item) str_item pc sil
         else if sil = [] then sprintf "%sdeclare end%s" pc.bef pc.aft
         else
           horiz_vertic
@@ -1992,7 +1989,26 @@ value str_item_top =
 
 value sig_item_top =
   extfun Extfun.empty with
-  [ <:sig_item< exception $e$ of $list:tl$ >> ->
+  [ <:sig_item< declare $list:sil$ end >> ->
+      fun curr next pc ->
+        if flag_expand_declare.val then
+          vlistl (semi_after sig_item) sig_item pc sil
+        else if sil = [] then sprintf "%sdeclare end%s" pc.bef pc.aft
+        else
+          horiz_vertic
+            (fun () ->
+               sprintf "%sdeclare%s%s%send%s" pc.bef " "
+                 (hlist (semi_after sig_item) {(pc) with bef = ""; aft = ""}
+                    sil)
+                 " " pc.aft)
+            (fun () ->
+               sprintf "%sdeclare%s%s%send%s" pc.bef "\n"
+                 (vlist (semi_after sig_item)
+                    {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+                     aft = ""}
+                    sil)
+                 ("\n" ^ tab pc.ind) pc.aft)
+  | <:sig_item< exception $e$ of $list:tl$ >> ->
       fun curr next pc -> exception_decl pc (e, tl, [])
   | <:sig_item< external $n$ : $t$ = $list:sl$ >> ->
       fun curr next pc -> external_decl pc (n, t, sl)
