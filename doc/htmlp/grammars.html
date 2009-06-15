@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.47 2007/07/18 09:49:37 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.48 2007/07/18 14:33:49 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -539,25 +539,30 @@ instead of "<tt>loc</tt>".</p>
   accepted, all the symbols of the same rule must be accepted,
   otherwise the exception "Stream.Error" is raised.</p>
 
-<p>Here, in extensible grammars, unlike stream parsers, before the of
-  the "Stream.Error" exception, the system attempts to recover the
-  error by the following trick: if the previous symbol of the rule was
-  a call to another entry, the system calls the "continue" function of
+<p>Here, in extensible grammars, unlike stream parsers, before the
+  "Stream.Error" exception, the system attempts to recover the error
+  by the following trick: if the previous symbol of the rule was a
+  call to another entry, the system calls the "continue" function of
   that entry, which may resolve the problem.</p>
 
 <p>In extensible grammars, the exceptions are encapsulated with the
   exception "Stdpp.Exc_located" giving the location of the error
   together with the exception itself.</p>
 
-<p>... to be completed ...</p>
+<h3>Tokens starting rules</h3>
 
-<h3>Improvement</h3>
-
-<p>... to be completed ...</p>
+<p>Another improvement (than the error recovery) is the fact that,
+  when a rule starts with several tokens and/or keywords, all these
+  tokens and keywords are tested in one time, and the possible
+  "Stream.Error" may happen, only from the symbol following them on,
+  if any.</p>
 
 <h2>Kind of grammar</h2>
 
-<p>... to be completed ...</p>
+<p>Honnestly, I don't know which kind of grammar it corresponds to. I
+  would say: the grammar which behaviour is described in the section
+  "grammar machinery". It is improved recursive descendant grammar,
+  something close to LL(1).</p>
 
 <h2>The Grammar module</h2>
 
