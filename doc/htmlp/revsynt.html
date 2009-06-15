@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: revsynt.html,v 1.16 2007/07/20 15:12:37 deraugla Exp $ -->
+  <!-- $Id: revsynt.html,v 1.17 2007/07/20 15:58:17 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>revised syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -248,8 +248,8 @@
 
 <ul>
   <li>A variable,</li>
-  <li>The wildcard ``_'',</li>
-  <li>The constructor ``()'',</li>
+  <li>The wildcard "_",</li>
+  <li>The constructor "()",</li>
   <li>A tuple with irrefutable patterns,</li>
   <li>A record with irrefutable patterns,</li>
   <li>A type constraint with an irrefutable pattern.</li>
@@ -426,6 +426,38 @@
     </table>
   </li>
 
+  <li>Nested "as" patterns require parenthesis:
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>function Some a as b, c -></tt></td>
+        <td><tt>fun [ ((Some a as b), c) -></tt></td>
+      </tr>
+      <tr>
+        <td><tt>&nbsp;&nbsp;...</tt></td>
+        <td><tt>&nbsp;&nbsp;...</tt></td>
+      </tr>
+    </table>
+    But they are not required before the right arrow:
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>function Some a as b -></tt></td>
+        <td><tt>fun [ Some a as b -></tt></td>
+      </tr>
+      <tr>
+        <td><tt>&nbsp;&nbsp;...</tt></td>
+        <td><tt>&nbsp;&nbsp;...</tt></td>
+      </tr>
+    </table>
+  </li>
+
   <li>The operators with special characters are not automatically
     infix. To define infixes, use the syntax extensions.
   </li>
@@ -563,7 +595,7 @@
     </table>
   </li>
 
-  <li>In record types, the keyword ``mutable'' must appear after the
+  <li>In record types, the keyword "mutable" must appear after the
     colon:
     <table width="75%" class="centered">
       <tr>
@@ -649,8 +681,8 @@
   </li>
 
    <li>It is possible to write the empty parser raising the exception
-     ``Stream.Failure'' whichever parameter is applied, and the empty
-     stream matching always raising ``Stream.Failure'':
+     "Stream.Failure" whichever parameter is applied, and the empty
+     stream matching always raising "Stream.Failure":
 <pre>
   parser []
   match e with parser []
