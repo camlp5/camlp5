@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2texi,v 1.17 2007/08/29 04:26:06 deraugla Exp $
+# $Id: html2texi,v 1.18 2007/08/29 15:26:16 deraugla Exp $
 
 FILES1="index.html ptools.html"
 FILES2="parsers.html lexers.html fparsers.html grammars.html"
@@ -120,10 +120,13 @@ for i in $FILES; do
       -e '/<div[^>]*>/,/<\/div>/s/^ *//' \
       -e '/<pre[^>]*>/,/<\/pre>/s/~~/ /g' |
     sed \
-      -e '{/<table[^>]*>$/N; :b; /<tr>$/N; s/\n *//; tb; /<\/tr>$/N; s/\n *//; tb; /<\/th>$/N; s/\n *//; tb; /<\/td>$/N; s/\n *//; tb; /<thead>$/N; s/\n *//; tb; /<\/thead>$/N; s/\n *//; tb; /<tbody>$/N; s/\n *//; tb; /<\/tbody>$/N; s/\n *//; tb}' |
-    sed \
+      -e '{/<table[^>]*>$/N; :b; /<tr>$/N; s/\n *//; tb; /<\/tr>$/N; s/\n *//; tb; /<\/th>$/N; s/\n *//; tb; /<\/td>$/N; s/\n *//; tb; /<thead>$/N; s/\n *//; tb; /<\/thead>$/N; s/\n *//; tb; /<tbody>$/N; s/\n *//; tb; /<\/tbody>$/N; s/\n *//; tb}' \
       -e 's|@|@@|g' \
-      -e 's|{|@{|g' -e 's|}|@}|g' \
+      -e 's|{|@{|g' -e 's|}|@}|g' |
+    sed \
+      -e '{s|<a href=\"\([^.]*\.html\)[^>]*>|(@pxref{\1}) |; tb; bc; :b; h; s|(@pxref{.*}) ||; :c}' \
+      -e '{/<\/a>/bd; be; :d; /<\/a/G; x; s/^.*$//; x; s|</a>\(.*\)\n.*\((@pxref{.*})\).*$| \2\1|; s/\n//; :e}' |
+    sed \
       -e '/<div id="tableofcontents">/,/<\/div>/d' \
       -e '/<div class="trailer">/,$d' \
       -e 's|<div[^>]*>|@noindent |' -e 's|</div>||' \
@@ -146,7 +149,7 @@ for i in $FILES; do
       -e 's|<tt>||g' -e 's|</tt>||g' \
       -e 's|<code>||g' -e 's|</code>||g' \
       -e 's|<span [^>]*>|@emph{|g' -e 's|</span>|}|g' \
-      -e 's|<a href=\"\([^.]*.html\)[^>]*>|(@pxref{\1}) |g' -e 's|</a>||g' \
+      -e 's|</a>||g' \
       -e 's|<a [^>]*>||g' \
       -e 's|<pre>|@exampleindent 5\n@example|' -e 's|</pre>|@end example|' \
       -e 's|<pre [^>]*>|@exampleindent 0\n@example|' \
