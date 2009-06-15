@@ -8,6 +8,8 @@ value trace =
   ref (try let _ = Sys.getenv "GRAMTEST" in True with [ Not_found -> False ])
 ;
 
+DEFINE VERBOSE;
+
 (* LR(0) test (experiment) *)
 
 value not_impl name x =
@@ -462,15 +464,19 @@ value make_item_sets rules term_n nterm_n item_set_ht =
       in
       List.rev_append rtl (List.rev rntl)
     in
-    if sl <> [] then do {
-      Printf.eprintf "\nfrom item_set %d, symbols after dot:"
-        ini_item_set_cnt;
-      List.iter (fun s -> Printf.eprintf " %s" (sprint_symb term_n nterm_n s))
-        sl;
-      Printf.eprintf "\n";
-      flush stderr;
+    IFDEF VERBOSE THEN do {
+      if sl <> [] then do {
+        Printf.eprintf "\nfrom item_set %d, symbols after dot:"
+          ini_item_set_cnt;
+        List.iter
+          (fun s -> Printf.eprintf " %s" (sprint_symb term_n nterm_n s))
+          sl;
+        Printf.eprintf "\n";
+        flush stderr;
+      }
+      else ();
     }
-    else ();
+    ELSE () END;
     let (item_set_cnt, symb_cnt_assoc, shift_assoc) =
       List.fold_left
         (fun (item_set_cnt, symb_cnt_assoc, shift_assoc) s -> do {
@@ -491,25 +497,31 @@ value make_item_sets rules term_n nterm_n item_set_ht =
            in
            (* complete by closure *)
            let item_set = close_item_set rules item_set in
-           Printf.eprintf "\n";
+           IFDEF VERBOSE THEN Printf.eprintf "\n" ELSE () END;
            match
              try Some (Hashtbl.find item_set_ht item_set) with
              [ Not_found -> None ]
            with
            [ Some n -> do {
-               Printf.eprintf
-                 "Item set (after %d and %s) = Item set %d\n"
-                 ini_item_set_cnt (sprint_symb term_n nterm_n s) n;
-               flush stderr;
+               IFDEF VERBOSE THEN do {
+                 Printf.eprintf
+                   "Item set (after %d and %s) = Item set %d\n"
+                   ini_item_set_cnt (sprint_symb term_n nterm_n s) n;
+                 flush stderr;
+               }
+               ELSE () END;
                let symb_cnt_assoc = [(s, n) :: symb_cnt_assoc] in
                (item_set_cnt, symb_cnt_assoc, shift_assoc)
              }
            | None -> do {
-               Printf.eprintf "Item set %d (after %d and %s)\n\n"
-                 (item_set_cnt + 1) ini_item_set_cnt
-                 (sprint_symb term_n nterm_n s);
-               List.iter (eprint_item term_n nterm_n) item_set;
-               flush stderr;
+               IFDEF VERBOSE THEN do {
+                 Printf.eprintf "Item set %d (after %d and %s)\n\n"
+                   (item_set_cnt + 1) ini_item_set_cnt
+                   (sprint_symb term_n nterm_n s);
+                 List.iter (eprint_item term_n nterm_n) item_set;
+                 flush stderr;
+               }
+               ELSE () END;
                let item_set_cnt = item_set_cnt + 1 in
                Hashtbl.add item_set_ht item_set item_set_cnt;
                let symb_cnt_assoc = [(s, item_set_cnt) :: symb_cnt_assoc] in
@@ -655,8 +667,11 @@ value make_follow_tab rules first_tab nterm_derive_eps_tab = do {
 (*DEFINE TEST;*)
 
 value lr0 entry lev = do {
-  Printf.eprintf "LR(0) %s %d\n" entry.ename lev;
-  flush stderr;
+  IFDEF VERBOSE THEN do {
+    Printf.eprintf "LR(0) %s %d\n" entry.ename lev;
+    flush stderr;
+  }
+  ELSE () END;
   let (rules, term_name_tab, nterm_name_tab) =
     let (rl, entry_name) =
       IFNDEF TEST THEN
@@ -746,83 +761,108 @@ value lr0 entry lev = do {
   in
   let term_n i = if i = -1 then "ε" else Array.get term_name_tab i in
   let nterm_n = Array.get nterm_name_tab in
-  Printf.eprintf "%d rules\n\n" (Array.length rules);
-  flush stderr;
+  IFDEF VERBOSE THEN do {
+    Printf.eprintf "%d rules\n\n" (Array.length rules);
+    flush stderr;
+  }
+  ELSE () END;
   check_closed nterm_n rules;
-  Array.iteri (eprint_rule term_n nterm_n) rules;
-  Printf.eprintf "\n";
-  flush stderr;
+  IFDEF VERBOSE THEN do {
+    Array.iteri (eprint_rule term_n nterm_n) rules;
+    Printf.eprintf "\n";
+    flush stderr;
+  }
+  ELSE () END;
   let item_set_0 =
     let item = (0, False, fst rules.(0), 0, snd rules.(0)) in
     close_item_set rules [item]
   in
 
-  Printf.eprintf "\n";
-  Printf.eprintf "Item set 0\n\n";
-  List.iter (eprint_item term_n nterm_n) item_set_0;
-  flush stderr;
+  IFDEF VERBOSE THEN do {
+    Printf.eprintf "\n";
+    Printf.eprintf "Item set 0\n\n";
+    List.iter (eprint_item term_n nterm_n) item_set_0;
+    flush stderr;
+  }
+  ELSE () END;
 
   let item_set_ht = Hashtbl.create 1 in
   let (item_set_cnt, shift_assoc) =
     make_item_sets rules term_n nterm_n item_set_ht item_set_0
   in
-  Printf.eprintf "\ntotal number of item sets %d\n" (item_set_cnt + 1);
-  flush stderr;
-  Printf.eprintf "\nshift:\n";
-  List.iter
-    (fun (i, symb_cnt_assoc) -> do {
-       Printf.eprintf "  state %d:" i;
-       List.iter
-         (fun (s, i) ->
-            Printf.eprintf " %s->%d" (sprint_symb term_n nterm_n s) i)
-         (List.rev symb_cnt_assoc);
-       Printf.eprintf "\n";
-     })
-    (List.sort compare shift_assoc);
-  flush stderr;
+  IFDEF VERBOSE THEN do {
+    Printf.eprintf "\ntotal number of item sets %d\n" (item_set_cnt + 1);
+    flush stderr;
+    Printf.eprintf "\nshift:\n";
+    List.iter
+      (fun (i, symb_cnt_assoc) -> do {
+         Printf.eprintf "  state %d:" i;
+         List.iter
+           (fun (s, i) ->
+              Printf.eprintf " %s->%d" (sprint_symb term_n nterm_n s) i)
+           (List.rev symb_cnt_assoc);
+         Printf.eprintf "\n";
+       })
+      (List.sort compare shift_assoc);
+    flush stderr;
+  }
+  ELSE () END;
   let nb_terms = Array.length term_name_tab in
   let nb_nterms = Array.length nterm_name_tab in
-  Printf.eprintf "\n";
-  Printf.eprintf "nb of terms %d\n" nb_terms;
-  Printf.eprintf "nb of non-terms %d\n" nb_nterms;
-  flush stderr;
+  IFDEF VERBOSE THEN do {
+    Printf.eprintf "\n";
+    Printf.eprintf "nb of terms %d\n" nb_terms;
+    Printf.eprintf "nb of non-terms %d\n" nb_nterms;
+    flush stderr;
+  }
+  ELSE () END;
 
   let nterm_derive_eps_tab = make_derive_eps_tab rules nb_nterms in
-  Printf.eprintf "\nDerive ε\n\n";
-  Printf.eprintf " ";
-  Array.iteri
-    (fun i derive_eps ->
-       if derive_eps then Printf.eprintf " %s" (nterm_n i) else ())
-    nterm_derive_eps_tab;
-  flush stderr;
-
-  let compare_terms i j = compare (term_n i) (term_n j) in
+  IFDEF VERBOSE THEN do {
+    Printf.eprintf "\nDerive ε\n\n";
+    Printf.eprintf " ";
+    Array.iteri
+      (fun i derive_eps ->
+         if derive_eps then Printf.eprintf " %s" (nterm_n i) else ())
+      nterm_derive_eps_tab;
+    flush stderr;
+  }
+  ELSE () END;
 
   (* compute first *)
   let first_tab = make_first_tab rules nterm_derive_eps_tab in
-  Printf.eprintf "\nFirst\n\n";
-  Array.iteri
-    (fun i s -> do {
-       Printf.eprintf "  first (%s) =" s;
-       List.iter (fun s -> Printf.eprintf " %s" (term_n s))
-         (List.sort compare_terms first_tab.(i));
-       Printf.eprintf "\n";
-     })
-    nterm_name_tab;
-  flush stderr;
+  IFDEF VERBOSE THEN do {
+    let compare_terms i j = compare (term_n i) (term_n j) in
+    Printf.eprintf "\nFirst\n\n";
+    Array.iteri
+      (fun i s -> do {
+         Printf.eprintf "  first (%s) =" s;
+         List.iter (fun s -> Printf.eprintf " %s" (term_n s))
+           (List.sort compare_terms first_tab.(i));
+         Printf.eprintf "\n";
+       })
+      nterm_name_tab;
+    flush stderr;
+  }
+  ELSE () END;
 
   (* compute follow *)
   let follow_tab = make_follow_tab rules first_tab nterm_derive_eps_tab in
-  Printf.eprintf "\nFollow\n\n";
-  Array.iteri
-    (fun i s -> do {
-       Printf.eprintf "  follow (%s) =" s;
-       List.iter (fun s -> Printf.eprintf " %s" (term_n s))
-         (List.sort compare_terms follow_tab.(i));
-       Printf.eprintf "\n";
-     })
-    nterm_name_tab;
-  flush stderr;
+  IFDEF VERBOSE THEN do {
+    let compare_terms i j = compare (term_n i) (term_n j) in
+    Printf.eprintf "\nFollow\n\n";
+    Array.iteri
+      (fun i s -> do {
+         Printf.eprintf "  follow (%s) =" s;
+         List.iter (fun s -> Printf.eprintf " %s" (term_n s))
+           (List.sort compare_terms follow_tab.(i));
+         Printf.eprintf "\n";
+       })
+      nterm_name_tab;
+    flush stderr;
+  }
+  ELSE () END;
+  let _follow_tab = follow_tab in
 
   (* make goto table *)
   let goto_table =
@@ -838,20 +878,23 @@ value lr0 entry lev = do {
             | GS_nterm i -> line.(i) := n ])
          symb_cnt_assoc)
     shift_assoc;
-  Printf.eprintf "\ngoto table\n\n";
-  if Array.length goto_table > 20 then
-    Printf.eprintf "  (big)\n"
-  else
-    for i = 0 to Array.length goto_table - 1 do {
-      Printf.eprintf "  state %d :" i;
-      let line = goto_table.(i) in
-      for j = 0 to Array.length line - 1 do {
-        if line.(j) = -1 then Printf.eprintf " -"
-        else Printf.eprintf " %d" line.(j);
+  IFDEF VERBOSE THEN do {
+    Printf.eprintf "\ngoto table\n\n";
+    if Array.length goto_table > 20 then
+      Printf.eprintf "  (big)\n"
+    else
+      for i = 0 to Array.length goto_table - 1 do {
+        Printf.eprintf "  state %d :" i;
+        let line = goto_table.(i) in
+        for j = 0 to Array.length line - 1 do {
+          if line.(j) = -1 then Printf.eprintf " -"
+          else Printf.eprintf " %d" line.(j);
+        };
+        Printf.eprintf "\n";
       };
-      Printf.eprintf "\n";
-    };
-  flush stderr;
+    flush stderr;
+  }
+  ELSE () END;
   (* make action table *)
   (* column size = number of terminals *)
   let action_table =
@@ -884,7 +927,7 @@ value lr0 entry lev = do {
   (* if an item set i contains an item of the form A → w • and A → w is
      rule m with m > 0 then the row for state i in the action table is
      completely filled with the reduce action rm. *)
-  let nl = ref True in
+  let _nl = ref True in
   Hashtbl.iter
     (fun item_set i ->
        List.iter
@@ -894,30 +937,36 @@ value lr0 entry lev = do {
                 let line = action_table.(i) in
                 match line.(0) with
                 [ ActReduce m1 -> do {
-                    if nl.val then Printf.eprintf "\n" else ();
-                    nl.val := False;
-                    Printf.eprintf
-                      "State %d: conflict reduce/reduce rules %d and %d\n"
-                      i m1 m;
-                    Printf.eprintf "  reduce with rule ";
-                    eprint_rule term_n nterm_n m1 rules.(m1); 
-                    Printf.eprintf "  reduce with rule ";
-                    eprint_rule term_n nterm_n m rules.(m); 
-                    flush stderr;
+                    IFDEF VERBOSE THEN do {
+                      if _nl.val then Printf.eprintf "\n" else ();
+                      _nl.val := False;
+                      Printf.eprintf
+                        "State %d: conflict reduce/reduce rules %d and %d\n"
+                        i m1 m;
+                      Printf.eprintf "  reduce with rule ";
+                      eprint_rule term_n nterm_n m1 rules.(m1); 
+                      Printf.eprintf "  reduce with rule ";
+                      eprint_rule term_n nterm_n m rules.(m); 
+                      flush stderr;
+                    }
+                    ELSE () END;
                   }
                 | _ ->
                     for j = 0 to Array.length line - 1 do {
                       match line.(j) with
                       [ ActShift n -> do {
-                          if nl.val then Printf.eprintf "\n" else ();
-                          nl.val := False;
-                          Printf.eprintf "State %d: conflict shift/reduce" i;
-                          Printf.eprintf " shift %d rule %d\n" n m;
-                          Printf.eprintf "  shift with terminal %s\n"
-                            (term_n j);
-                          Printf.eprintf "  reduce with rule ";
-                          eprint_rule term_n nterm_n m rules.(m);
-                          flush stderr;
+                          IFDEF VERBOSE THEN do {
+                            if _nl.val then Printf.eprintf "\n" else ();
+                            _nl.val := False;
+                            Printf.eprintf "State %d: conflict shift/reduce" i;
+                            Printf.eprintf " shift %d rule %d\n" n m;
+                            Printf.eprintf "  shift with terminal %s\n"
+                              (term_n j);
+                            Printf.eprintf "  reduce with rule ";
+                            eprint_rule term_n nterm_n m rules.(m);
+                            flush stderr;
+                          }
+                          ELSE () END;
                         }
                       | _ -> line.(j) := ActReduce m ];
                     } ]
@@ -925,23 +974,26 @@ value lr0 entry lev = do {
             else ())
          item_set)
     item_set_ht;
-  Printf.eprintf "\naction table\n\n";
-  if Array.length action_table > 20 then
-    Printf.eprintf "  (big)\n"
-  else
-    for i = 0 to Array.length action_table - 1 do {
-      Printf.eprintf "  state %d :" i;
-      let line = action_table.(i) in
-      for j = 0 to Array.length line - 1 do {
-        match line.(j) with
-        [ ActShift n -> Printf.eprintf " %4s" (Printf.sprintf "s%d" n)
-        | ActReduce n -> Printf.eprintf " %4s" (Printf.sprintf "r%d" n)
-        | ActAcc -> Printf.eprintf "   acc"
-        | ActErr -> Printf.eprintf "    -" ];
+  IFDEF VERBOSE THEN do {
+    Printf.eprintf "\naction table\n\n";
+    if Array.length action_table > 20 then
+      Printf.eprintf "  (big)\n"
+    else
+      for i = 0 to Array.length action_table - 1 do {
+        Printf.eprintf "  state %d :" i;
+        let line = action_table.(i) in
+        for j = 0 to Array.length line - 1 do {
+          match line.(j) with
+          [ ActShift n -> Printf.eprintf " %4s" (Printf.sprintf "s%d" n)
+          | ActReduce n -> Printf.eprintf " %4s" (Printf.sprintf "r%d" n)
+          | ActAcc -> Printf.eprintf "   acc"
+          | ActErr -> Printf.eprintf "    -" ];
+        };
+        Printf.eprintf "\n";
       };
-      Printf.eprintf "\n";
-    };
-  flush stderr;
+    flush stderr;
+  }
+  ELSE () END;
 };
 
 value slr entry lev = do {
