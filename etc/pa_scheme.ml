@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.35 2007/10/06 01:31:16 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.36 2007/10/06 02:24:13 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -157,10 +157,9 @@
      (((` ''') (tok quote)) ep (values tok (values bp ep)))
      (((` '<') (tok (less kwt))) ep (values tok (values bp ep)))
      (((` '-') (tok (minus kwt))) ep (values tok (values bp ep)))
+     (((` '#') (tok (sharp bp kwt))) ep (values tok (values bp ep)))
      (((` '~') (tok tilde)) ep (values tok (values bp ep)))
      (((` '?') (tok question)) ep (values tok (values bp ep)))
-     (((` '#') (tok (base_number kwt bp (Buff.store 0 '0')))) ep
-      (values tok (values bp ep)))
      (((` (as (range '0' '9') c)) (tok (number (Buff.store 0 c)))) ep
       (values tok (values bp ep)))
      (((` (as (or '+' '*' '/') c)) (id (operator (Buff.store 0 c)))) ep
@@ -182,6 +181,10 @@
      (((` (as (range 'a' 'z') c)) (s (ident (Buff.store 0 c))))
       (values "QUESTIONIDENT" s))
      (() (values "LIDENT" "?"))))
+  ((sharp bp kwt)
+   (parser
+     (((` '(')) (values "" "#("))
+     (((tok (base_number kwt bp (Buff.store 0 '0')))) tok)))
   ((minus kwt)
     (parser
      (((` '.')) (identifier kwt "-."))
@@ -243,6 +246,7 @@
 
 (type sexpr
   [(Sacc MLast.loc sexpr sexpr)
+   (Sarr MLast.loc (list sexpr))
    (Schar MLast.loc string)
    (Sexpr MLast.loc (list sexpr))
    (Sint MLast.loc string)
@@ -258,7 +262,7 @@
 
 (define loc_of_sexpr
   (lambda_match
-   ((or (Sacc loc _ _) (Schar loc _) (Sexpr loc _) (Sint loc _)
+   ((or (Sacc loc _ _) (Sarr loc _) (Schar loc _) (Sexpr loc _) (Sint loc _)
      (Sfloat loc _) (Slid loc _) (Slist loc _) (Sqid loc _) (Squot loc _ _)
      (Srec loc _) (Sstring loc _) (Stid loc _) (Suid loc _))
     loc)))
@@ -431,221 +435,227 @@
          <:str_item< $exp:e$ >>))))
   ((module_binding_se se) (module_expr_se se))
   (expr_se
-    (lambda_match
-     ((Sacc loc se1 se2)
-      (let ((e1 (expr_se se1)))
-         (match se2
-          ((Slist loc [se2])
-           (let ((e2 (expr_se se2))) <:expr< $e1$ .[ $e2$ ] >>))
-          ((Sexpr loc [se2])
-           (let ((e2 (expr_se se2))) <:expr< $e1$ .( $e2$ ) >>))
-          (_ (let ((e2 (expr_se se2))) <:expr< $e1$ . $e2$ >>)))))
-     ((Slid loc s) (lident_expr loc s))
-     ((Suid loc s) <:expr< $uid:(Pcaml.rename_id.val s)$ >>)
-     ((Sint loc s) <:expr< $int:s$ >>)
-     ((Sfloat loc s) <:expr< $flo:s$ >>)
-     ((Schar loc s) <:expr< $chr:s$ >>)
-     ((Sstring loc s) <:expr< $str:s$ >>)
-     ((Stid loc s) <:expr< ~$(Pcaml.rename_id.val s)$ >>)
-     ((Sqid loc s) <:expr< ?$(Pcaml.rename_id.val s)$ >>)
-     ((Sexpr loc []) <:expr< () >>)
-     ((when (Sexpr loc [(Slid _ s) e1 . (as [_ . _] sel)])
-      (List.mem s assoc_left_parsed_op_list))
-      (letrec
-       (((loop e1)
-          (lambda_match
-           ([] e1)
-           ([e2 . el] (loop (op_apply loc e1 e2 s) el)))))
-       (loop (expr_se e1) (List.map expr_se sel))))
-     ((when (Sexpr loc [(Slid _ s) . (as [_ _ . _] sel)])
-      (List.mem s assoc_right_parsed_op_list))
-      (letrec
-       ((loop
-          (lambda_match
-           ([]
-            (assert False))
-           ([e1] e1)
-           ([e1 . el] (let ((e2 (loop el))) (op_apply loc e1 e2 s))))))
-       (loop (List.map expr_se sel))))
-     ((when (Sexpr loc [(Slid _ s) . (as [_ _ . _] sel)])
-      (List.mem s and_by_couple_op_list))
-      (letrec
-       ((loop
-          (lambda_match
-           ((or [] [_]) (assert False))
-           ([e1 e2] <:expr< $lid:s$ $e1$ $e2$ >>)
-           ([e1 . (as [e2 _ . _] el)]
-            (let* ((a1 (op_apply loc e1 e2 s))
-                   (a2 (loop el)))
-               <:expr< $a1$ && $a2$ >>)))))
-       (loop (List.map expr_se sel))))
-     ((Sexpr loc [(Stid _ s) se])
-      (let ((e (expr_se se))) <:expr< ~$s$: $e$ >>))
-     ((Sexpr loc [(Slid _ "-") se])
-      (let ((e (expr_se se))) <:expr< - $e$ >>))
-     ((Sexpr loc [(Slid _ "if") se se1])
-      (let* ((e (expr_se se))
-             (e1 (expr_se se1)))
-         <:expr< if $e$ then $e1$ else () >>))
-     ((Sexpr loc [(Slid _ "if") se se1 se2])
-      (let* ((e (expr_se se))
-             (e1 (expr_se se1))
-             (e2 (expr_se se2)))
-         <:expr< if $e$ then $e1$ else $e2$ >>))
-     ((Sexpr loc [(Slid _ "cond") . sel])
-      (letrec
-       ((loop
-          (lambda_match
-           ([(Sexpr loc [(Slid _ "else") . sel])] (begin_se loc sel))
-           ([(Sexpr loc [se1 . sel1]) . sel]
-            (let* ((e1 (expr_se se1))
-                   (e2 (begin_se loc sel1))
-                   (e3 (loop sel)))
-               <:expr< if $e1$ then $e2$ else $e3$ >>))
-           ([] <:expr< () >>)
-           ([se . _] (error se "cond clause")))))
-       (loop sel)))
-     ((Sexpr loc [(Slid _ "while") se . sel])
-      (let* ((e (expr_se se))
-             (el (List.map expr_se sel)))
-         <:expr< while $e$ do { $list:el$ } >>))
-     ((Sexpr loc [(Slid _ "for") (Slid _ i) se1 se2 . sel])
-      (let* ((i (Pcaml.rename_id.val i))
-             (e1 (expr_se se1))
-             (e2 (expr_se se2))
-             (el (List.map expr_se sel)))
-         <:expr< for $lid:i$ = $e1$ to $e2$ do { $list:el$ } >>))
-     ((Sexpr loc [(Slid _ "fordown") (Slid _ i) se1 se2 . sel])
-      (let* ((i (Pcaml.rename_id.val i))
-             (e1 (expr_se se1))
-             (e2 (expr_se se2))
-             (el (List.map expr_se sel)))
-         <:expr< for $lid:i$ = $e1$ downto $e2$ do { $list:el$ } >>))
-     ((Sexpr loc [(Slid loc1 "lambda")]) <:expr< fun [] >>)
-     ((Sexpr loc [(Slid loc1 "lambda") sep . sel])
-      (let ((e (begin_se loc1 sel)))
-         (match (ipatt_opt_se sep)
-          ((Left p) <:expr< fun $p$ -> $e$ >>)
-          ((Right (values se sel))
-           (List.fold_right
-            (lambda (se e)
-              (let ((p (ipatt_se se))) <:expr< fun $p$ -> $e$ >>))
-            [se . sel] e)))))
-     ((Sexpr loc [(Slid _ "lambda_match") . sel])
-      (let ((pel (List.map (match_case loc) sel)))
-         <:expr< fun [ $list:pel$ ] >>))
-     ((Sexpr loc [(Slid _ (as (or "let" "letrec") r)) . sel])
-      (match sel
-       ([(Sexpr _ sel1) . sel2]
-        (let* ((r (= r "letrec"))
-               (lbs (List.map let_binding_se sel1))
-               (e (begin_se loc sel2)))
-           <:expr< let $flag:r$ $list:lbs$ in $e$ >>))
-       ([(Slid _ n) (Sexpr _ sl) . sel]
-        (let* ((n (Pcaml.rename_id.val n))
-               ((values pl el)
-                 (List.fold_right
-                  (lambda (se (values pl el))
-                    (match se
-                           ((Sexpr _ [se1 se2])
-                            (values [(patt_se se1) . pl]
-                                    [(expr_se se2) . el]))
-                           (se (error se "named let"))))
-                  sl (values [] [])))
-               (e1
-                 (List.fold_right
-                  (lambda (p e) <:expr< fun $p$ -> $e$ >>)
-                  pl (begin_se loc sel)))
-               (e2
-                 (List.fold_left
-                  (lambda (e1 e2) <:expr< $e1$ $e2$ >>)
-                  <:expr< $lid:n$ >> el)))
-           <:expr< let rec $lid:n$ = $e1$ in $e2$ >>))
-       ([se . _] (error se "let_binding"))
-       (_ (error_loc loc "let_binding"))))
-     ((Sexpr loc [(Slid _ "let*") . sel])
-      (match sel
-       ([(Sexpr _ sel1) . sel2]
-        (List.fold_right
-         (lambda (se ek)
-           (let (((values p e) (let_binding_se se)))
-              <:expr< let $p$ = $e$ in $ek$ >>))
-         sel1 (begin_se loc sel2)))
-       ([se . _] (error se "let_binding"))
-       (_ (error_loc loc "let_binding"))))
-     ((Sexpr loc [(Slid _ "match") se . sel])
-      (let* ((e (expr_se se))
-             (pel (List.map (match_case loc) sel)))
-         <:expr< match $e$ with [ $list:pel$ ] >>))
-     ((Sexpr loc [(Slid _ "parser") . sel])
-      (let ((e
+   (lambda_match
+    ((Sacc loc se1 se2)
+     (let ((e1 (expr_se se1)))
+        (match se2
+         ((Slist loc [se2])
+          (let ((e2 (expr_se se2))) <:expr< $e1$ .[ $e2$ ] >>))
+         ((Sexpr loc [se2])
+          (let ((e2 (expr_se se2))) <:expr< $e1$ .( $e2$ ) >>))
+         (_ (let ((e2 (expr_se se2))) <:expr< $e1$ . $e2$ >>)))))
+    ((Slid loc s) (lident_expr loc s))
+    ((Suid loc s) <:expr< $uid:(Pcaml.rename_id.val s)$ >>)
+    ((Sint loc s) <:expr< $int:s$ >>)
+    ((Sfloat loc s) <:expr< $flo:s$ >>)
+    ((Schar loc s) <:expr< $chr:s$ >>)
+    ((Sstring loc s) <:expr< $str:s$ >>)
+    ((Stid loc s) <:expr< ~$(Pcaml.rename_id.val s)$ >>)
+    ((Sqid loc s) <:expr< ?$(Pcaml.rename_id.val s)$ >>)
+    ((Sexpr loc []) <:expr< () >>)
+    ((when (Sexpr loc [(Slid _ s) e1 . (as [_ . _] sel)])
+     (List.mem s assoc_left_parsed_op_list))
+     (letrec
+      (((loop e1)
+         (lambda_match
+          ([] e1)
+          ([e2 . el] (loop (op_apply loc e1 e2 s) el)))))
+      (loop (expr_se e1) (List.map expr_se sel))))
+    ((when (Sexpr loc [(Slid _ s) . (as [_ _ . _] sel)])
+     (List.mem s assoc_right_parsed_op_list))
+     (letrec
+      ((loop
+         (lambda_match
+          ([]
+           (assert False))
+          ([e1] e1)
+          ([e1 . el] (let ((e2 (loop el))) (op_apply loc e1 e2 s))))))
+      (loop (List.map expr_se sel))))
+    ((when (Sexpr loc [(Slid _ s) . (as [_ _ . _] sel)])
+     (List.mem s and_by_couple_op_list))
+     (letrec
+      ((loop
+         (lambda_match
+          ((or [] [_]) (assert False))
+          ([e1 e2] <:expr< $lid:s$ $e1$ $e2$ >>)
+          ([e1 . (as [e2 _ . _] el)]
+           (let* ((a1 (op_apply loc e1 e2 s))
+                  (a2 (loop el)))
+              <:expr< $a1$ && $a2$ >>)))))
+      (loop (List.map expr_se sel))))
+    ((Sexpr loc [(Stid _ s) se])
+     (let ((e (expr_se se))) <:expr< ~$s$: $e$ >>))
+    ((Sexpr loc [(Slid _ "-") se])
+     (let ((e (expr_se se))) <:expr< - $e$ >>))
+    ((Sexpr loc [(Slid _ "if") se se1])
+     (let* ((e (expr_se se))
+            (e1 (expr_se se1)))
+        <:expr< if $e$ then $e1$ else () >>))
+    ((Sexpr loc [(Slid _ "if") se se1 se2])
+     (let* ((e (expr_se se))
+            (e1 (expr_se se1))
+            (e2 (expr_se se2)))
+        <:expr< if $e$ then $e1$ else $e2$ >>))
+    ((Sexpr loc [(Slid _ "cond") . sel])
+     (letrec
+      ((loop
+         (lambda_match
+          ([(Sexpr loc [(Slid _ "else") . sel])] (begin_se loc sel))
+          ([(Sexpr loc [se1 . sel1]) . sel]
+           (let* ((e1 (expr_se se1))
+                  (e2 (begin_se loc sel1))
+                  (e3 (loop sel)))
+              <:expr< if $e1$ then $e2$ else $e3$ >>))
+          ([] <:expr< () >>)
+          ([se . _] (error se "cond clause")))))
+      (loop sel)))
+    ((Sexpr loc [(Slid _ "while") se . sel])
+     (let* ((e (expr_se se))
+            (el (List.map expr_se sel)))
+        <:expr< while $e$ do { $list:el$ } >>))
+    ((Sexpr loc [(Slid _ "for") (Slid _ i) se1 se2 . sel])
+     (let* ((i (Pcaml.rename_id.val i))
+            (e1 (expr_se se1))
+            (e2 (expr_se se2))
+            (el (List.map expr_se sel)))
+        <:expr< for $lid:i$ = $e1$ to $e2$ do { $list:el$ } >>))
+    ((Sexpr loc [(Slid _ "fordown") (Slid _ i) se1 se2 . sel])
+     (let* ((i (Pcaml.rename_id.val i))
+            (e1 (expr_se se1))
+            (e2 (expr_se se2))
+            (el (List.map expr_se sel)))
+        <:expr< for $lid:i$ = $e1$ downto $e2$ do { $list:el$ } >>))
+    ((Sexpr loc [(Slid loc1 "lambda")]) <:expr< fun [] >>)
+    ((Sexpr loc [(Slid loc1 "lambda") sep . sel])
+     (let ((e (begin_se loc1 sel)))
+        (match (ipatt_opt_se sep)
+         ((Left p) <:expr< fun $p$ -> $e$ >>)
+         ((Right (values se sel))
+          (List.fold_right
+           (lambda (se e)
+             (let ((p (ipatt_se se))) <:expr< fun $p$ -> $e$ >>))
+           [se . sel] e)))))
+    ((Sexpr loc [(Slid _ "lambda_match") . sel])
+     (let ((pel (List.map (match_case loc) sel)))
+        <:expr< fun [ $list:pel$ ] >>))
+    ((Sexpr loc [(Slid _ (as (or "let" "letrec") r)) . sel])
+     (match sel
+      ([(Sexpr _ sel1) . sel2]
+       (let* ((r (= r "letrec"))
+              (lbs (List.map let_binding_se sel1))
+              (e (begin_se loc sel2)))
+          <:expr< let $flag:r$ $list:lbs$ in $e$ >>))
+      ([(Slid _ n) (Sexpr _ sl) . sel]
+       (let* ((n (Pcaml.rename_id.val n))
+              ((values pl el)
+                (List.fold_right
+                 (lambda (se (values pl el))
+                   (match se
+                          ((Sexpr _ [se1 se2])
+                           (values [(patt_se se1) . pl]
+                                   [(expr_se se2) . el]))
+                          (se (error se "named let"))))
+                 sl (values [] [])))
+              (e1
+                (List.fold_right
+                 (lambda (p e) <:expr< fun $p$ -> $e$ >>)
+                 pl (begin_se loc sel)))
+              (e2
+                (List.fold_left
+                 (lambda (e1 e2) <:expr< $e1$ $e2$ >>)
+                 <:expr< $lid:n$ >> el)))
+          <:expr< let rec $lid:n$ = $e1$ in $e2$ >>))
+      ([se . _] (error se "let_binding"))
+      (_ (error_loc loc "let_binding"))))
+    ((Sexpr loc [(Slid _ "let*") . sel])
+     (match sel
+      ([(Sexpr _ sel1) . sel2]
+       (List.fold_right
+        (lambda (se ek)
+          (let (((values p e) (let_binding_se se)))
+             <:expr< let $p$ = $e$ in $ek$ >>))
+        sel1 (begin_se loc sel2)))
+      ([se . _] (error se "let_binding"))
+      (_ (error_loc loc "let_binding"))))
+    ((Sexpr loc [(Slid _ "letmodule") (Suid _ s) se1 se2])
+     (let* ((me (module_expr_se se1))
+            (e (expr_se se2)))
+        <:expr< let module $s$ = $me$ in $e$ >>))
+    ((Sexpr loc [(Slid _ "match") se . sel])
+     (let* ((e (expr_se se))
+            (pel (List.map (match_case loc) sel)))
+        <:expr< match $e$ with [ $list:pel$ ] >>))
+    ((Sexpr loc [(Slid _ "parser") . sel])
+     (let ((e
+             (match sel
+              ([(as (Slid _ _) se) . sel]
+               (let* ((p (patt_se se))
+                      (pc (parser_cases_se loc sel)))
+                  <:expr< let $p$ = Stream.count $lid:strm_n$ in $pc$ >>))
+              (_ (parser_cases_se loc sel)))))
+        <:expr< fun ($lid:strm_n$ : Stream.t _) -> $e$ >>))
+    ((Sexpr loc [(Slid _ "match_with_parser") se . sel])
+     (let* ((me (expr_se se))
+            ((values bpo sel)
               (match sel
-               ([(as (Slid _ _) se) . sel]
-                (let* ((p (patt_se se))
-                       (pc (parser_cases_se loc sel)))
-                   <:expr< let $p$ = Stream.count $lid:strm_n$ in $pc$ >>))
-               (_ (parser_cases_se loc sel)))))
-         <:expr< fun ($lid:strm_n$ : Stream.t _) -> $e$ >>))
-     ((Sexpr loc [(Slid _ "match_with_parser") se . sel])
-      (let* ((me (expr_se se))
-             ((values bpo sel)
-               (match sel
-                ([(as (Slid _ _) se) . sel] (values (Some (patt_se se)) sel))
-                (_ (values None sel))))
-             (pc (parser_cases_se loc sel))
-             (e
-               (match bpo
-                ((Some bp)
-                 <:expr< let $bp$ = Stream.count $lid:strm_n$ in $pc$ >>)
-                (None pc))))
-         (match me
-          ((when <:expr< $lid:x$ >> (= x strm_n)) e)
-          (_ <:expr< let ($lid:strm_n$ : Stream.t _) = $me$ in $e$ >>))))
-     ((Sexpr loc [(Slid _ "try") se . sel])
-      (let* ((e (expr_se se))
-             (pel (List.map (match_case loc) sel)))
-         <:expr< try $e$ with [ $list:pel$ ] >>))
-     ((Sexpr loc [(Slid _ "begin") . sel])
-      (let ((el (List.map expr_se sel))) <:expr< do { $list:el$ } >>))
-     ((Sexpr loc [(Slid _ ":=") se1 se2])
-      (let* ((e1 (expr_se se1))
-             (e2 (expr_se se2)))
-         <:expr< $e1$ := $e2$ >>))
-     ((Sexpr loc [(Slid _ "values") . sel])
-      (let ((el (List.map expr_se sel))) <:expr< ( $list:el$ ) >>))
-     ((Srec loc [(Slid _ "with") se . sel])
-      (let* ((e (expr_se se))
-             (lel (List.map (label_expr_se loc) sel)))
-         <:expr< { ($e$) with $list:lel$ } >>))
-     ((Srec loc sel)
-      (let ((lel (List.map (label_expr_se loc) sel)))
-         <:expr< { $list:lel$ } >>))
-     ((Sexpr loc [(Slid _ ":") se1 se2])
-      (let* ((e (expr_se se1)) (t (ctyp_se se2))) <:expr< ( $e$ : $t$ ) >>))
-     ((Sexpr loc [se]) (let ((e (expr_se se))) <:expr< $e$ () >>))
-     ((Sexpr loc [(Slid _ "assert") se])
-        (let ((e (expr_se se))) <:expr< assert $e$ >>))
-     ((Sexpr loc [(Slid _ "lazy") se])
-        (let ((e (expr_se se))) <:expr< lazy $e$ >>))
-     ((Sexpr loc [se . sel])
-      (List.fold_left
-       (lambda (e se) (let ((e1 (expr_se se))) <:expr< $e$ $e1$ >>))
-       (expr_se se) sel))
-     ((Slist loc sel)
-      (letrec ((loop
-                 (lambda_match
-                  ([] <:expr< [] >>)
-                  ([se1 (Slid _ ".") se2]
-                   (let* ((e (expr_se se1))
-                          (el (expr_se se2)))
-                     <:expr< [$e$ :: $el$] >>))
-                  ([se . sel]
-                   (let* ((e (expr_se se))
-                          (el (loop sel)))
-                     <:expr< [$e$ :: $el$] >>)))))
-           (loop sel)))
-     ((Squot loc typ txt)
-      (Pcaml.handle_expr_quotation loc (values typ txt)))))
+               ([(as (Slid _ _) se) . sel] (values (Some (patt_se se)) sel))
+               (_ (values None sel))))
+            (pc (parser_cases_se loc sel))
+            (e
+              (match bpo
+               ((Some bp)
+                <:expr< let $bp$ = Stream.count $lid:strm_n$ in $pc$ >>)
+               (None pc))))
+        (match me
+         ((when <:expr< $lid:x$ >> (= x strm_n)) e)
+         (_ <:expr< let ($lid:strm_n$ : Stream.t _) = $me$ in $e$ >>))))
+    ((Sexpr loc [(Slid _ "try") se . sel])
+     (let* ((e (expr_se se))
+            (pel (List.map (match_case loc) sel)))
+        <:expr< try $e$ with [ $list:pel$ ] >>))
+    ((Sexpr loc [(Slid _ "begin") . sel])
+     (let ((el (List.map expr_se sel))) <:expr< do { $list:el$ } >>))
+    ((Sexpr loc [(Slid _ ":=") se1 se2])
+     (let* ((e1 (expr_se se1))
+            (e2 (expr_se se2)))
+        <:expr< $e1$ := $e2$ >>))
+    ((Sarr loc sel)
+     (let ((el (List.map expr_se sel))) <:expr< [| $list:el$ |] >>))
+    ((Sexpr loc [(Slid _ "values") . sel])
+     (let ((el (List.map expr_se sel))) <:expr< ( $list:el$ ) >>))
+    ((Srec loc [(Slid _ "with") se . sel])
+     (let* ((e (expr_se se))
+            (lel (List.map (label_expr_se loc) sel)))
+        <:expr< { ($e$) with $list:lel$ } >>))
+    ((Srec loc sel)
+     (let ((lel (List.map (label_expr_se loc) sel)))
+        <:expr< { $list:lel$ } >>))
+    ((Sexpr loc [(Slid _ ":") se1 se2])
+     (let* ((e (expr_se se1)) (t (ctyp_se se2))) <:expr< ( $e$ : $t$ ) >>))
+    ((Sexpr loc [se]) (let ((e (expr_se se))) <:expr< $e$ () >>))
+    ((Sexpr loc [(Slid _ "assert") se])
+       (let ((e (expr_se se))) <:expr< assert $e$ >>))
+    ((Sexpr loc [(Slid _ "lazy") se])
+       (let ((e (expr_se se))) <:expr< lazy $e$ >>))
+    ((Sexpr loc [se . sel])
+     (List.fold_left
+      (lambda (e se) (let ((e1 (expr_se se))) <:expr< $e$ $e1$ >>))
+      (expr_se se) sel))
+    ((Slist loc sel)
+     (letrec ((loop
+                (lambda_match
+                 ([] <:expr< [] >>)
+                 ([se1 (Slid _ ".") se2]
+                  (let* ((e (expr_se se1))
+                         (el (expr_se se2)))
+                    <:expr< [$e$ :: $el$] >>))
+                 ([se . sel]
+                  (let* ((e (expr_se se))
+                         (el (loop sel)))
+                    <:expr< [$e$ :: $el$] >>)))))
+          (loop sel)))
+    ((Squot loc typ txt)
+     (Pcaml.handle_expr_quotation loc (values typ txt)))))
   ((begin_se loc)
    (lambda_match
     ([] <:expr< () >>)
@@ -694,6 +704,10 @@
    (lambda_match
     ((Sexpr _ [se1 se2]) (values (patt_se se1) (patt_se se2)))
     (se (error se "label_patt"))))
+  ((label_ipatt_se loc)
+   (lambda_match
+    ((Sexpr _ [se1 se2]) (values (ipatt_se se1) (ipatt_se se2)))
+    (se (error se "label_ipatt"))))
   ((parser_cases_se loc)
    (lambda_match
     ([] <:expr< raise Stream.Failure >>)
@@ -767,6 +781,8 @@
       (patt_se se) sel))
     ((Sexpr loc [(Slid _ "range") se1 se2])
      (let* ((p1 (patt_se se1)) (p2 (patt_se se2))) <:patt< $p1$ .. $p2$ >>))
+    ((Sarr loc sel)
+     (let ((pl (List.map patt_se sel))) <:patt< [| $list:pl$ |] >>))
     ((Sexpr loc [(Slid _ "values") . sel])
      (let ((pl (List.map patt_se sel))) <:patt< ( $list:pl$ ) >>))
     ((Sexpr loc [(Slid _ "as") se1 se2])
@@ -815,6 +831,9 @@
         (Left <:patt< ($p1$ as $p2$) >>)))
     ((Sexpr loc [(Slid _ "values") . sel])
      (let ((pl (List.map ipatt_se sel))) (Left <:patt< ( $list:pl$ ) >>)))
+    ((Srec loc sel)
+     (let ((lpl (List.map (label_ipatt_se loc) sel)))
+        (Left <:patt< { $list:lpl$ } >>)))
     ((Sexpr loc []) (Left <:patt< () >>))
     ((Sexpr loc [se . sel]) (Right (values se sel)))
     (se (error se "ipatt"))))
@@ -1004,6 +1023,7 @@ EXTEND
     | [ "(" / sl = LIST0 sexpr / ")" -> (Sexpr loc sl)
       | "[" / sl = LIST0 sexpr / "]" -> (Slist loc sl)
       | "{" / sl = LIST0 sexpr / "}" -> (Srec loc sl)
+      | "#(" / sl = LIST0 sexpr / ")" -> (Sarr loc sl)
       | a = pa_extend_keyword -> (Slid loc a)
       | s = LIDENT -> (Slid loc s)
       | s = UIDENT -> (Suid loc s)

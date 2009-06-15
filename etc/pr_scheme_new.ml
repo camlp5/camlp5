@@ -298,6 +298,15 @@ value module_type_decl pc (s, mt) =
 
 value string pc s = sprintf "%s\"%s\"%s" pc.bef s pc.aft;
 
+value int_repr s =
+  if String.length s > 2 && s.[0] = '0' then
+    match s.[1] with
+    [ 'b' | 'o' | 'x' | 'B' | 'O' | 'X' ->
+        "#" ^ String.sub s 1 (String.length s - 1)
+    | _ -> s ]
+  else s
+;
+
 value with_constraint pc =
   fun
   [ <:with_constr< type $sl$ $list:tvl$ = $flag:pf$ $t$ >> ->
@@ -459,6 +468,13 @@ EXTEND_PRINTER
       | <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
           let b = if rf then "letrec" else "let" in
           let_binding_list pc (b, pel, e)
+      | <:expr< let module $s$ = $me$ in $e$  >> ->
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(letmodule" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
+             (fun pc -> module_expr pc me, "");
+             (fun pc -> curr pc e, "")]
       | <:expr< if $e1$ then $e2$ else () >> ->
           plistb curr 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(if" pc.bef;
@@ -594,6 +610,11 @@ EXTEND_PRINTER
                      List.rev_map (fun e -> (e, "")) [x :: List.rev el]
                    in
                    plistl curr dot_expr 0 pc el) ]
+      | <:expr< [| $list:el$ |] >> ->
+          plist curr 0
+            {(pc) with ind = pc.ind + 2; bef = sprintf "%s#(" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            (List.map (fun e -> (e, "")) el)
       | <:expr< assert $x$ >> ->
           plistf 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
@@ -649,7 +670,7 @@ EXTEND_PRINTER
              (curr {(pc) with aft = ""} e1)
              (curr {(pc) with bef = ""} e2)
       | <:expr< $int:s$ >> ->
-          sprintf "%s%s%s" pc.bef s pc.aft
+          sprintf "%s%s%s" pc.bef (int_repr s) pc.aft
       | <:expr< $flo:s$ >> ->
           sprintf "%s%s%s" pc.bef s pc.aft
       | <:expr< $lid:s$ >> ->
@@ -780,7 +801,7 @@ EXTEND_PRINTER
       | <:patt< $chr:s$ >> ->
           sprintf "%s'%s'%s" pc.bef s pc.aft
       | <:patt< $int:s$ >> ->
-          sprintf "%s%s%s" pc.bef s pc.aft
+          sprintf "%s%s%s" pc.bef (int_repr s) pc.aft
 (*
       | <:patt< $flo:s$ >> ->
           fun ppf curr next dg k -> fprintf ppf "%s%t" s k

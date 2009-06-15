@@ -171,10 +171,9 @@ value rec lexer kwt =
   | [: `'''; tok = quote :] ep -> (tok, (bp, ep))
   | [: `'<'; tok = less kwt :] ep -> (tok, (bp, ep))
   | [: `'-'; tok = minus kwt :] ep -> (tok, (bp, ep))
+  | [: `'#'; tok = sharp bp kwt :] ep -> (tok, (bp, ep))
   | [: `'~'; tok = tilde :] ep -> (tok, (bp, ep))
   | [: `'?'; tok = question :] ep -> (tok, (bp, ep))
-  | [: `'#'; tok = base_number kwt bp (Buff.store 0 '0') :] ep ->
-      (tok, (bp, ep))
   | [: `('0'..'9' as c); tok = number (Buff.store 0 c) :] ep ->
       (tok, (bp, ep))
   | [: `('+' | '*' | '/' as c); id = operator (Buff.store 0 c) :] ep ->
@@ -193,6 +192,10 @@ and question =
   parser
   [ [: `('a'..'z' as c); s = ident (Buff.store 0 c) :] -> ("QUESTIONIDENT", s)
   | [: :] -> ("LIDENT", "?") ]
+and sharp bp kwt =
+  parser
+  [ [: `'(' :] -> ("", "#(")
+  | [: tok = base_number kwt bp (Buff.store 0 '0') :] -> tok ]
 and minus kwt =
   parser
   [ [: `'.' :] -> identifier kwt "-."
@@ -255,6 +258,7 @@ value lexer_gmake () =
 
 type sexpr =
   [ Sacc of MLast.loc and sexpr and sexpr
+  | Sarr of MLast.loc and list sexpr
   | Schar of MLast.loc and string
   | Sexpr of MLast.loc and list sexpr
   | Sint of MLast.loc and string
@@ -271,9 +275,9 @@ type sexpr =
 
 value loc_of_sexpr =
   fun
-  [ Sacc loc _ _ | Schar loc _ | Sexpr loc _ | Sint loc _ | Sfloat loc _ |
-    Slid loc _ | Slist loc _ | Sqid loc _ | Squot loc _ _ | Srec loc _ |
-    Sstring loc _ | Stid loc _ | Suid loc _ ->
+  [ Sacc loc _ _ | Sarr loc _ | Schar loc _ | Sexpr loc _ | Sint loc _ |
+    Sfloat loc _ | Slid loc _ | Slist loc _ | Sqid loc _ | Squot loc _ _ |
+    Srec loc _ | Sstring loc _ | Stid loc _ | Suid loc _ ->
       loc ]
 ;
 value error_loc loc err = Ploc.raise loc (Stream.Error (err ^ " expected"));
@@ -593,6 +597,10 @@ and expr_se =
             sel1 (begin_se loc sel2)
       | [se :: _] -> error se "let_binding"
       | _ -> error_loc loc "let_binding" ]
+  | Sexpr loc [Slid _ "letmodule"; Suid _ s; se1; se2] ->
+      let me = module_expr_se se1 in
+      let e = expr_se se2 in
+      <:expr< let module $s$ = $me$ in $e$ >>
   | Sexpr loc [Slid _ "match"; se :: sel] ->
       let e = expr_se se in
       let pel = List.map (match_case loc) sel in
@@ -634,6 +642,9 @@ and expr_se =
       let e1 = expr_se se1 in
       let e2 = expr_se se2 in
       <:expr< $e1$ := $e2$ >>
+  | Sarr loc sel ->
+      let el = List.map expr_se sel in
+      <:expr< [| $list:el$ |] >>
   | Sexpr loc [Slid _ "values" :: sel] ->
       let el = List.map expr_se sel in
       <:expr< ( $list:el$ ) >>
@@ -722,6 +733,10 @@ and label_patt_se loc =
   fun
   [ Sexpr _ [se1; se2] -> (patt_se se1, patt_se se2)
   | se -> error se "label_patt" ]
+and label_ipatt_se loc =
+  fun
+  [ Sexpr _ [se1; se2] -> (ipatt_se se1, ipatt_se se2)
+  | se -> error se "label_ipatt" ]
 and parser_cases_se loc =
   fun
   [ [] -> <:expr< raise Stream.Failure >>
@@ -807,6 +822,9 @@ and patt_se =
       let p1 = patt_se se1 in
       let p2 = patt_se se2 in
       <:patt< $p1$ .. $p2$ >>
+  | Sarr loc sel ->
+      let pl = List.map patt_se sel in
+      <:patt< [| $list:pl$ |] >>
   | Sexpr loc [Slid _ "values" :: sel] ->
       let pl = List.map patt_se sel in
       <:patt< ( $list:pl$ ) >>
@@ -859,6 +877,9 @@ and ipatt_opt_se =
   | Sexpr loc [Slid _ "values" :: sel] ->
       let pl = List.map ipatt_se sel in
       Left <:patt< ( $list:pl$ ) >>
+  | Srec loc sel ->
+      let lpl = List.map (label_ipatt_se loc) sel in
+      Left <:patt< { $list:lpl$ } >>
   | Sexpr loc [] -> Left <:patt< () >>
   | Sexpr loc [se :: sel] -> Right (se, sel)
   | se -> error se "ipatt" ]
@@ -1055,6 +1076,7 @@ EXTEND
     | [ "("; sl = LIST0 sexpr; ")" -> Sexpr loc sl
       | "["; sl = LIST0 sexpr; "]" -> Slist loc sl
       | "{"; sl = LIST0 sexpr; "}" -> Srec loc sl
+      | "#("; sl = LIST0 sexpr; ")" -> Sarr loc sl
       | a = pa_extend_keyword -> Slid loc a
       | s = LIDENT -> Slid loc s
       | s = UIDENT -> Suid loc s
