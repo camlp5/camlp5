@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.139 2007/12/10 13:11:21 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.140 2007/12/10 17:06:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -697,41 +697,20 @@ value external_decl pc (n, t, sl) =
 ;
 
 value exception_decl pc (e, tl, id) =
-  horiz_vertic
-    (fun () ->
-       pprintf pc "exception %s%p%p" e
-         (fun pc tl ->
-            if tl = [] then pprintf pc ""
-            else pprintf pc " of %p" (hlist2 ctyp (and_before ctyp)) tl)
-         tl
-         (fun pc id ->
-            if id = [] then pprintf pc ""
-            else pprintf pc " = %p" mod_ident id)
-         id)
-    (fun () ->
-       let s1 =
-         sprintf "%sexception %s%s" pc.bef e (if tl = [] then "" else " of")
-       in
-       let s2 =
-         if tl = [] then ""
-         else
-           let tl = List.map (fun t -> (t, " and")) tl in
-           sprintf "\n%s"
-             (plist ctyp 2
-                {(pc) with bef = tab (pc.ind + 2);
-                 aft = if id = [] then pc.aft else ""}
-                tl)
-       in
-       let s3 =
-         if id = [] then ""
-         else
-           sprintf "\n%s"
-             (mod_ident
-                {(pc) with ind = pc.ind + 2;
-                 bef = sprintf "%s= " (tab (pc.ind + 2)); aft = pc.aft}
-                id)
-       in
-       sprintf "%s%s%s" s1 s2 s3)
+  match id with
+  [ [] ->
+      match tl with
+      [ [] -> pprintf pc "exception %s" e
+      | tl ->
+          let tl = List.map (fun t -> (t, " and")) tl in
+          pprintf pc "exception %s of@;%p" e (plist ctyp 0) tl ]
+  | id ->
+      match tl with
+      [ [] -> pprintf pc "exception %s@;= %p" e mod_ident id
+      | tl ->
+          let tl = List.map (fun t -> (t, " and")) tl in
+          pprintf pc "exception %s of@;%p@;= %p" e (plist ctyp 0) tl
+            mod_ident id ] ]
 ;
 
 value str_module pref pc (m, me) =
