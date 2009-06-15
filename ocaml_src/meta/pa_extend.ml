@@ -1336,16 +1336,13 @@ let sstoken_prm loc name prm =
   {used = []; text = text; styp = STlid (loc, "string")}
 ;;
 
-let sstoken2 loc ls s p =
-  match p with
-    Some e -> Ploc.raise loc (Failure "not impl sstoken2")
-  | None ->
-      let name = "a_" ^ s ^ "2" in
-      let text =
-        let n = {expr = MLast.ExLid (loc, name); tvar = name; loc = loc} in
-        TXnterm (loc, n, None)
-      in
-      {used = [name]; text = text; styp = STquo (loc, name)}
+let sstoken2 loc ls s =
+  let name = "a_" ^ s ^ "2" in
+  let text =
+    let n = {expr = MLast.ExLid (loc, name); tvar = name; loc = loc} in
+    TXnterm (loc, n, None)
+  in
+  {used = [name]; text = text; styp = STquo (loc, name)}
 ;;
 
 let ss_aux loc a_name r2 used2 =
@@ -1656,8 +1653,8 @@ let rec symbol_of_a =
   | ASvala (loc, s, ls) ->
       if !quotify then
         match s with
-          AStok (loc, s, p) ->
-            let p = option_map string_of_a p in sstoken2 loc ls s p
+          AStok (_, _, Some _) -> symbol_of_a s
+        | AStok (loc, s, None) -> sstoken2 loc ls s
         | _ ->
             let ls =
               match s with
@@ -1678,8 +1675,8 @@ let rec symbol_of_a =
         {used = s.used; text = text; styp = styp}
   | ASvala2 (loc, s, ls) ->
       match s with
-        AStok (loc, s, p) ->
-          let p = option_map string_of_a p in sstoken2 loc ls s p
+        AStok (_, _, Some _) -> symbol_of_a s
+      | AStok (loc, s, None) -> sstoken2 loc ls s
       | s ->
           let ls =
             match s with
