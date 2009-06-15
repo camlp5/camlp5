@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_extfun.ml,v 1.7 2007/07/04 12:21:29 deraugla Exp $ *)
+(* $Id: pr_extfun.ml,v 1.8 2007/07/06 09:38:42 deraugla Exp $ *)
 
 (* heuristic to rebuild the extfun statement from the AST *)
 
@@ -73,6 +73,7 @@ value patt_as pc z =
 ;
 
 value match_assoc pc (p, w, e) =
+  let pc_dang = if pc.aft = "" then "|" else "" in
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s -> %s%s" pc.bef
@@ -81,7 +82,8 @@ value match_assoc pc (p, w, e) =
           [ Some e ->
               sprintf " when %s" (expr {(pc) with bef = ""; aft = ""} e)
           | None -> "" ])
-         (comm_expr expr {(pc) with bef = ""; aft = ""} e) pc.aft)
+         (comm_expr expr {(pc) with bef = ""; aft = ""; dang = pc_dang} e)
+         pc.aft)
     (fun () ->
        let patt_arrow k =
          match w with
@@ -113,7 +115,10 @@ value match_assoc pc (p, w, e) =
        in
        let s1 = patt_arrow "" in
        let s2 =
-         comm_expr expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
+         comm_expr expr
+           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+            dang = pc_dang}
+           e
        in
        sprintf "%s\n%s" s1 s2)
 ;

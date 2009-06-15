@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_op.ml,v 1.3 2007/07/05 14:29:55 deraugla Exp $ *)
+(* $Id: pr_op.ml,v 1.4 2007/07/06 09:38:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Heuristic to rebuild parsers and streams from the AST *)
@@ -482,7 +482,13 @@ value print_parser pc e =
   match e with
   [ <:expr< fun (strm__ : Stream.t _) -> $e$ >> ->
       let pa = unparser_body e in
-      parser_body {(pc) with bef = sprintf "%sparser" pc.bef} pa
+      let (op_begin, op_end, sh, pc_dang) =
+        if pc.dang = ";" then ("(", ")", 1, "") else ("", "", 0, pc.dang)
+      in
+      parser_body
+        {ind = pc.ind + sh; bef = sprintf "%s%sparser" pc.bef op_begin;
+         aft = sprintf "%s%s" op_end pc.aft; dang = pc_dang}
+        pa
   | e -> expr pc e ]
 ;
 

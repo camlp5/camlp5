@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_op.ml,v 1.8 2007/07/03 10:17:47 deraugla Exp $ *)
+(* $Id: pa_op.ml,v 1.9 2007/07/06 09:38:42 deraugla Exp $ *)
 
 open Exparser;
 open Pcaml;
@@ -43,14 +43,16 @@ EXTEND
       | spc = stream_patt_let; sp = stream_patt_kont -> [spc :: sp] ] ]
   ;
   stream_patt_comp_err:
-    [ [ spc = stream_patt_comp; "??"; e = expr -> (spc, SpoQues e)
+    [ [ spc = stream_patt_comp; "??"; e = expr LEVEL "expr1" ->
+          (spc, SpoQues e)
       | spc = stream_patt_comp; "?!" -> (spc, SpoBang)
       | spc = stream_patt_comp -> (spc, SpoNoth) ] ]
   ;
   stream_patt_comp:
-    [ [ "'"; p = patt; eo = OPT [ "when"; e = expr -> e ] -> SpTrm loc p eo
+    [ [ "'"; p = patt; eo = OPT [ "when"; e = expr LEVEL "expr1" -> e ] ->
+          SpTrm loc p eo
       | "?="; pll = LIST1 lookahead SEP "|" -> SpLhd loc pll
-      | p = patt; "="; e = expr -> SpNtr loc p e
+      | p = patt; "="; e = expr LEVEL "expr1" -> SpNtr loc p e
       | p = patt -> SpStr loc p ] ]
   ;
   stream_patt_let:

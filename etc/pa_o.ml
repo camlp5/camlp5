@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.24 2007/06/28 09:40:36 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.25 2007/07/06 09:38:42 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -570,7 +570,6 @@ EXTEND
       | e1 = SELF; "<>"; e2 = SELF -> <:expr< $e1$ <> $e2$ >>
       | e1 = SELF; "=="; e2 = SELF -> <:expr< $e1$ == $e2$ >>
       | e1 = SELF; "!="; e2 = SELF -> <:expr< $e1$ != $e2$ >>
-      | e1 = SELF; "$"; e2 = SELF -> <:expr< $lid:"\$"$ $e1$ $e2$ >>
       | e1 = SELF; op = infixop0; e2 = SELF -> <:expr< $lid:op$ $e1$ $e2$ >> ]
     | "^" RIGHTA
       [ e1 = SELF; "^"; e2 = SELF -> <:expr< $e1$ ^ $e2$ >>

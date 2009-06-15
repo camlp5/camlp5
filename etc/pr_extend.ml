@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_extend.ml,v 1.11 2007/07/05 13:13:27 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.12 2007/07/06 09:38:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -256,6 +256,9 @@ value token pc tok =
       else
         sprintf "%s%s %s%s" pc.bef con
           (string {(pc) with bef = ""; aft = ""} prm) pc.aft
+  | Right <:expr< ("", $x$) >> ->
+      sprintf "%s$%s$%s" pc.bef (expr {(pc) with bef = ""; aft = ""} x)
+        pc.aft
   | Right <:expr< ($str:con$, $x$) >> ->
       sprintf "%s%s $%s$%s" pc.bef con (expr {(pc) with bef = ""; aft = ""} x)
         pc.aft
@@ -270,7 +273,8 @@ value rec rule pc (sl, a) =
         action expr
           {(pc) with ind = pc.ind + 4;
            bef =
-             sprintf "%s->%s " pc.bef (comm_bef pc (MLast.loc_of_expr a))}
+             sprintf "%s->%s " pc.bef (comm_bef pc (MLast.loc_of_expr a));
+           dang = "|"}
           a
       else
         match
@@ -287,11 +291,14 @@ value rec rule pc (sl, a) =
             horiz_vertic
               (fun () ->
                  sprintf "%s %s%s" s1
-                   (action expr {(pc) with bef = ""; aft = ""} a) pc.aft)
+                   (action expr {(pc) with bef = ""; aft = ""; dang = "|"} a)
+                   pc.aft)
               (fun () ->
                  let s2 =
                    action expr
-                     {(pc) with ind = pc.ind + 4; bef = tab (pc.ind + 4)} a
+                     {(pc) with ind = pc.ind + 4; bef = tab (pc.ind + 4);
+                      dang = "|"}
+                     a
                  in
                  sprintf "%s\n%s" s1 s2)
         | None ->
@@ -301,7 +308,9 @@ value rec rule pc (sl, a) =
             in
             let s2 =
               action expr
-                {(pc) with ind = pc.ind + 4; bef = tab (pc.ind + 4)} a
+                {(pc) with ind = pc.ind + 4; bef = tab (pc.ind + 4);
+                 dang = "|"}
+                a
             in
             sprintf "%s\n%s" s1 s2 ] ]
 and psymbol pc (p, s) =
@@ -311,14 +320,28 @@ and psymbol pc (p, s) =
       horiz_vertic
         (fun () ->
            sprintf "%s%s = %s%s" pc.bef
-             (patt {(pc) with bef = ""; aft = ""} p)
+             (pattern {(pc) with bef = ""; aft = ""} p)
              (symbol {(pc) with bef = ""; aft = ""} s) pc.aft)
         (fun () ->
-           let s1 = patt {(pc) with aft = " ="} p in
+           let s1 = pattern {(pc) with aft = " ="} p in
            let s2 =
              symbol {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} s
            in
            sprintf "%s\n%s" s1 s2) ]
+and pattern pc p =
+  match p with
+  [ <:patt< $lid:i$ >> -> sprintf "%s%s%s" pc.bef i pc.aft
+  | <:patt< _ >> -> sprintf "%s_%s" pc.bef pc.aft
+  | <:patt< ($list:pl$) >> ->
+      let pl = List.map (fun p -> (p, ",")) pl in
+      plist patt 1
+        {(pc) with bef = sprintf "%s(" pc.bef; aft = sprintf ")%s" pc.aft}
+        pl
+  | p ->
+      patt
+        {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+         aft = sprintf ")%s" pc.aft}
+        p ]
 and symbol pc sy =
   match sy with
   [ Snterm e -> expr pc e
@@ -493,7 +516,8 @@ value extend pc e =
           sprintf "%sGrammar.extend\n%s" pc.bef
             (expr
                {(pc) with ind = pc.ind + 2;
-                bef = sprintf "%s(" (tab (pc.ind + 2))}
+                bef = sprintf "%s(" (tab (pc.ind + 2));
+                aft = sprintf ")%s" pc.aft}
                e) ]
   | e -> expr pc e ]
 ;
