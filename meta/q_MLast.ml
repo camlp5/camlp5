@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.115 2007/10/01 05:46:05 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.116 2007/10/01 06:03:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -149,11 +149,6 @@ value constructor_declaration =
 value with_constr = Grammar.Entry.create gram "with_constr";
 value poly_variant = Grammar.Entry.create gram "poly_variant";
 
-value a_UIDENT = Grammar.Entry.create gram "a_UIDENT";
-value a_LIDENT = Grammar.Entry.create gram "a_LIDENT";
-value a_INT = Grammar.Entry.create gram "a_INT";
-value a_FLOAT = Grammar.Entry.create gram "a_FLOAT";
-
 value mksequence2 _ =
   fun
   [ Qast.VaVal (Qast.List [e]) -> e
@@ -203,11 +198,7 @@ value mkumin _ f arg =
 ;
 
 value mkuminpat _ f is_int s =
-  let s =
-    match s with
-    [ Qast.Str s -> Qast.Str (neg_string s)
-    | s -> failwith "bad unary minus" ]
-  in
+  let s = Qast.Str (neg_string s) in
   match is_int with
   [ Qast.Bool True -> Qast.Node "PaInt" [Qast.Loc; Qast.VaVal s; Qast.Str ""]
   | Qast.Bool False -> Qast.Node "PaFlo" [Qast.Loc; Qast.VaVal s]
@@ -262,7 +253,9 @@ value mktuptyp _ t tl =
   Qast.Node "TyTup" [Qast.Loc; Qast.VaVal (Qast.Cons t (Qast.List tl))]
 ;
 
-value mklabdecl _ i mf t = Qast.Tuple [Qast.Loc; i; Qast.Bool mf; t];
+value mklabdecl _ i mf t = Qast.Tuple [Qast.Loc; Qast.Str i; Qast.Bool mf; t];
+
+value mkident i = Qast.Str i;
 
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr class_type
@@ -766,8 +759,8 @@ EXTEND
       | s = SV FLOAT -> Qast.Node "PaFlo" [Qast.Loc; s]
       | s = SV STRING -> Qast.Node "PaStr" [Qast.Loc; s]
       | s = SV CHAR -> Qast.Node "PaChr" [Qast.Loc; s]
-      | "-"; s = a_INT -> mkuminpat Qast.Loc (Qast.Str "-") (Qast.Bool True) s
-      | "-"; s = a_FLOAT ->
+      | "-"; s = INT -> mkuminpat Qast.Loc (Qast.Str "-") (Qast.Bool True) s
+      | "-"; s = FLOAT ->
           mkuminpat Qast.Loc (Qast.Str "-") (Qast.Bool False) s
       | "["; "]" -> Qast.Node "PaUid" [Qast.Loc; Qast.VaVal (Qast.Str "[]")]
       | "["; pl = LIST1 patt SEP ";"; last = cons_patt_opt; "]" ->
@@ -876,18 +869,18 @@ EXTEND
           Qast.Tuple [Qast.Loc; ci; Qast.VaVal (Qast.List [])] ] ]
   ;
   label_declaration:
-    [ [ i = a_LIDENT; ":"; mf = FLAG "mutable"; t = ctyp ->
+    [ [ i = LIDENT; ":"; mf = FLAG "mutable"; t = ctyp ->
           mklabdecl Qast.Loc i mf t ] ]
   ;
   ident:
-    [ [ i = a_LIDENT -> i
-      | i = a_UIDENT -> i ] ]
+    [ [ i = LIDENT -> mkident i
+      | i = UIDENT -> mkident i ] ]
   ;
   mod_ident:
     [ RIGHTA
-      [ i = a_UIDENT -> Qast.List [i]
-      | i = a_LIDENT -> Qast.List [i]
-      | i = a_UIDENT; "."; j = SELF -> Qast.Cons i j ] ]
+      [ i = UIDENT -> Qast.List [mkident i]
+      | i = LIDENT -> Qast.List [mkident i]
+      | i = UIDENT; "."; j = SELF -> Qast.Cons (mkident i) j ] ]
   ;
   (* Objects and Classes *)
   str_item:
@@ -974,7 +967,7 @@ EXTEND
       | "initializer"; se = expr -> Qast.Node "CrIni" [Qast.Loc; se] ] ]
   ;
   as_lident:
-    [ [ "as"; i = a_LIDENT -> i ] ]
+    [ [ "as"; i = LIDENT -> mkident i ] ]
   ;
   polyt:
     [ [ ":"; t = ctyp -> t ] ]
@@ -988,7 +981,7 @@ EXTEND
           Qast.Node "ExCoe" [Qast.Loc; e; Qast.Option None; t] ] ]
   ;
   label:
-    [ [ i = a_LIDENT -> i ] ]
+    [ [ i = LIDENT -> mkident i ] ]
   ;
   class_type:
     [ [ "["; t = ctyp; "]"; "->"; ct = SELF ->
@@ -1065,18 +1058,18 @@ EXTEND
           Qast.Node "TyObj" [Qast.Loc; ml; v] ] ]
   ;
   field:
-    [ [ lab = a_LIDENT; ":"; t = ctyp -> Qast.Tuple [lab; t] ] ]
+    [ [ lab = LIDENT; ":"; t = ctyp -> Qast.Tuple [mkident lab; t] ] ]
   ;
   typevar:
     [ [ "'"; i = ident -> i ] ]
   ;
   clty_longident:
-    [ [ m = a_UIDENT; "."; l = SELF -> Qast.Cons m l
-      | i = a_LIDENT -> Qast.List [i] ] ]
+    [ [ m = UIDENT; "."; l = SELF -> Qast.Cons (mkident m) l
+      | i = LIDENT -> Qast.List [mkident i] ] ]
   ;
   class_longident:
-    [ [ m = a_UIDENT; "."; l = SELF -> Qast.Cons m l
-      | i = a_LIDENT -> Qast.List [i] ] ]
+    [ [ m = UIDENT; "."; l = SELF -> Qast.Cons (mkident m) l
+      | i = LIDENT -> Qast.List [mkident i] ] ]
   ;
   (* Labels *)
   ctyp: AFTER "arrow"
@@ -1250,22 +1243,6 @@ EXTEND
   ;
   class_type:
     [ [ a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
-  ;
-  a_UIDENT:
-    [ [ a = ANTIQUOT "uid" -> Qast.VaAnt "uid" loc a
-      | i = UIDENT -> Qast.Str i ] ]
-  ;
-  a_LIDENT:
-    [ [ a = ANTIQUOT "lid" -> Qast.VaAnt "lid" loc a
-      | i = LIDENT -> Qast.Str i ] ]
-  ;
-  a_INT:
-    [ [ a = ANTIQUOT "int" -> Qast.VaAnt "int" loc a
-      | s = INT -> Qast.Str s ] ]
-  ;
-  a_FLOAT:
-    [ [ a = ANTIQUOT "flo" -> Qast.VaAnt "flo" loc a
-      | s = FLOAT -> Qast.Str s ] ]
   ;
 END;
 

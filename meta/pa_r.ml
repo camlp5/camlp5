@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.115 2007/10/01 05:46:05 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.116 2007/10/01 06:03:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -113,6 +113,8 @@ value mktuppat loc p pl = <:patt< ($list:[p::pl]$) >>;
 value mktuptyp loc t tl = <:ctyp< ( $list:[t::tl]$ ) >>;
 
 value mklabdecl loc i mf t = (loc, i, mf, t);
+
+value mkident i : string = i;
 
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr class_type
@@ -503,14 +505,14 @@ EXTEND
           mklabdecl loc i mf t ] ]
   ;
   ident:
-    [ [ i = LIDENT -> i
-      | i = UIDENT -> i ] ]
+    [ [ i = LIDENT -> mkident i
+      | i = UIDENT -> mkident i ] ]
   ;
   mod_ident:
     [ RIGHTA
-      [ i = UIDENT -> [i]
-      | i = LIDENT -> [i]
-      | i = UIDENT; "."; j = SELF -> [i :: j] ] ]
+      [ i = UIDENT -> [mkident i]
+      | i = LIDENT -> [mkident i]
+      | i = UIDENT; "."; j = SELF -> [mkident i :: j] ] ]
   ;
   (* Objects and Classes *)
   str_item:
@@ -594,7 +596,7 @@ EXTEND
       | "initializer"; se = expr -> <:class_str_item< initializer $se$ >> ] ]
   ;
   as_lident:
-    [ [ "as"; i = LIDENT -> i ] ]
+    [ [ "as"; i = LIDENT -> mkident i ] ]
   ;
   polyt:
     [ [ ":"; t = ctyp -> t ] ]
@@ -607,7 +609,7 @@ EXTEND
       | ":>"; t = ctyp; "="; e = expr -> <:expr< ($e$ :> $t$) >> ] ]
   ;
   label:
-    [ [ i = LIDENT -> i ] ]
+    [ [ i = LIDENT -> mkident i ] ]
   ;
   class_type:
     [ [ "["; t = ctyp; "]"; "->"; ct = SELF ->
@@ -677,18 +679,18 @@ EXTEND
           <:ctyp< < $_list:ml$ $_flag:v$ > >> ] ]
   ;
   field:
-    [ [ lab = LIDENT; ":"; t = ctyp -> (lab, t) ] ]
+    [ [ lab = LIDENT; ":"; t = ctyp -> (mkident lab, t) ] ]
   ;
   typevar:
     [ [ "'"; i = ident -> i ] ]
   ;
   clty_longident:
-    [ [ m = UIDENT; "."; l = SELF -> [m :: l]
-      | i = LIDENT -> [i] ] ]
+    [ [ m = UIDENT; "."; l = SELF -> [mkident m :: l]
+      | i = LIDENT -> [mkident i] ] ]
   ;
   class_longident:
-    [ [ m = UIDENT; "."; l = SELF -> [m :: l]
-      | i = LIDENT -> [i] ] ]
+    [ [ m = UIDENT; "."; l = SELF -> [mkident m :: l]
+      | i = LIDENT -> [mkident i] ] ]
   ;
   (* Labels *)
   ctyp: AFTER "arrow"

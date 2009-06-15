@@ -1339,43 +1339,6 @@ let mk_psymbol p s t =
   {pattern = Some p; symbol = symb}
 ;;
 
-let sstoken loc s =
-  let name = s in
-  let text =
-    try
-      let name = List.assoc name assoc_anti in
-      TXtok (loc, name, MLast.ExStr (loc, ""))
-    with Not_found ->
-      let a_name = "a_" ^ name in
-      let n = mk_name loc (MLast.ExLid (loc, a_name)) in
-      TXnterm (loc, n, None)
-  in
-  {used = []; text = text; styp = STlid (loc, "string")}
-;;
-
-let sstoken_prm loc name prm =
-  let name = try List.assoc name assoc_anti with Not_found -> name in
-  let text = TXtok (loc, name, prm) in
-  {used = []; text = text; styp = STlid (loc, "string")}
-;;
-
-let ss_aux loc a_name r2 used2 =
-  let rl =
-    let r1 =
-      let prod =
-        let n = mk_name loc (MLast.ExLid (loc, a_name)) in
-        [mk_psymbol (MLast.PaLid (loc, "a")) (TXnterm (loc, n, None))
-           (STquo (loc, a_name))]
-      in
-      let act = MLast.ExLid (loc, "a") in {prod = prod; action = Some act}
-    in
-    [r1; r2]
-  in
-  let used = a_name :: used2 in
-  let text = TXrules (loc, a_name, rl) in
-  let styp = STquo (loc, a_name) in {used = used; text = text; styp = styp}
-;;
-
 let ss2 loc ls oe s =
   let qast_f a =
     match s.styp with
@@ -1573,15 +1536,7 @@ let rec symbol_of_a =
       let text = TXopt (loc, s.text) in
       let styp = STapp (loc, STlid (loc, "option"), s.styp) in
       {used = s.used; text = text; styp = styp}
-  | ASquot (loc, s) ->
-      begin match s with
-        AStok (loc, s, p) ->
-          begin match p with
-            Some e -> sstoken_prm loc s (string_of_a e)
-          | None -> sstoken loc s
-          end
-      | _ -> symbol_of_a s
-      end
+  | ASquot (loc, s) -> symbol_of_a s
   | ASrules (loc, rl) ->
       let rl = rules_of_a rl in
       let t = new_type_var () in
@@ -1589,18 +1544,13 @@ let rec symbol_of_a =
        styp = STquo (loc, t)}
   | ASself loc -> {used = []; text = TXself loc; styp = STself (loc, "SELF")}
   | AStok (loc, s, p) ->
-      if !quotify then
+      let e =
         match p with
-          Some e -> sstoken_prm loc s (string_of_a e)
-        | None -> sstoken loc s
-      else
-        let e =
-          match p with
-            Some e -> string_of_a e
-          | None -> MLast.ExStr (loc, "")
-        in
-        let text = TXtok (loc, s, e) in
-        {used = []; text = text; styp = STlid (loc, "string")}
+          Some e -> string_of_a e
+        | None -> MLast.ExStr (loc, "")
+      in
+      let text = TXtok (loc, s, e) in
+      {used = []; text = text; styp = STlid (loc, "string")}
   | ASvala (loc, s, ls) ->
       if !quotify then
         match s with

@@ -113,6 +113,8 @@ let mktuptyp loc t tl = MLast.TyTup (loc, t :: tl);;
 
 let mklabdecl loc i mf t = loc, i, mf, t;;
 
+let mkident i : string = i;;
+
 Grammar.extend
   (let _ = (sig_item : 'sig_item Grammar.Entry.e)
    and _ = (str_item : 'str_item Grammar.Entry.e)
@@ -1543,21 +1545,24 @@ Grammar.extend
     Grammar.Entry.obj (ident : 'ident Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("UIDENT", "")],
-      Gramext.action (fun (i : string) (loc : Ploc.t) -> (i : 'ident));
+      Gramext.action
+        (fun (i : string) (loc : Ploc.t) -> (mkident i : 'ident));
       [Gramext.Stoken ("LIDENT", "")],
-      Gramext.action (fun (i : string) (loc : Ploc.t) -> (i : 'ident))]];
+      Gramext.action
+        (fun (i : string) (loc : Ploc.t) -> (mkident i : 'ident))]];
     Grammar.Entry.obj (mod_ident : 'mod_ident Grammar.Entry.e), None,
     [None, Some Gramext.RightA,
      [[Gramext.Stoken ("UIDENT", ""); Gramext.Stoken ("", ".");
        Gramext.Sself],
       Gramext.action
         (fun (j : 'mod_ident) _ (i : string) (loc : Ploc.t) ->
-           (i :: j : 'mod_ident));
+           (mkident i :: j : 'mod_ident));
       [Gramext.Stoken ("LIDENT", "")],
-      Gramext.action (fun (i : string) (loc : Ploc.t) -> ([i] : 'mod_ident));
+      Gramext.action
+        (fun (i : string) (loc : Ploc.t) -> ([mkident i] : 'mod_ident));
       [Gramext.Stoken ("UIDENT", "")],
       Gramext.action
-        (fun (i : string) (loc : Ploc.t) -> ([i] : 'mod_ident))]];
+        (fun (i : string) (loc : Ploc.t) -> ([mkident i] : 'mod_ident))]];
     Grammar.Entry.obj (str_item : 'str_item Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "class"); Gramext.Stoken ("", "type");
@@ -1840,7 +1845,7 @@ Grammar.extend
     [None, None,
      [[Gramext.Stoken ("", "as"); Gramext.Stoken ("LIDENT", "")],
       Gramext.action
-        (fun (i : string) _ (loc : Ploc.t) -> (i : 'as_lident))]];
+        (fun (i : string) _ (loc : Ploc.t) -> (mkident i : 'as_lident))]];
     Grammar.Entry.obj (polyt : 'polyt Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", ":");
@@ -1879,7 +1884,8 @@ Grammar.extend
     Grammar.Entry.obj (label : 'label Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("LIDENT", "")],
-      Gramext.action (fun (i : string) (loc : Ploc.t) -> (i : 'label))]];
+      Gramext.action
+        (fun (i : string) (loc : Ploc.t) -> (mkident i : 'label))]];
     Grammar.Entry.obj (class_type : 'class_type Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "object");
@@ -2110,7 +2116,7 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
         (fun (t : 'ctyp) _ (lab : string) (loc : Ploc.t) ->
-           (lab, t : 'field))]];
+           (mkident lab, t : 'field))]];
     Grammar.Entry.obj (typevar : 'typevar Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "'");
@@ -2121,23 +2127,23 @@ Grammar.extend
     [None, None,
      [[Gramext.Stoken ("LIDENT", "")],
       Gramext.action
-        (fun (i : string) (loc : Ploc.t) -> ([i] : 'clty_longident));
+        (fun (i : string) (loc : Ploc.t) -> ([mkident i] : 'clty_longident));
       [Gramext.Stoken ("UIDENT", ""); Gramext.Stoken ("", ".");
        Gramext.Sself],
       Gramext.action
         (fun (l : 'clty_longident) _ (m : string) (loc : Ploc.t) ->
-           (m :: l : 'clty_longident))]];
+           (mkident m :: l : 'clty_longident))]];
     Grammar.Entry.obj (class_longident : 'class_longident Grammar.Entry.e),
     None,
     [None, None,
      [[Gramext.Stoken ("LIDENT", "")],
       Gramext.action
-        (fun (i : string) (loc : Ploc.t) -> ([i] : 'class_longident));
+        (fun (i : string) (loc : Ploc.t) -> ([mkident i] : 'class_longident));
       [Gramext.Stoken ("UIDENT", ""); Gramext.Stoken ("", ".");
        Gramext.Sself],
       Gramext.action
         (fun (l : 'class_longident) _ (m : string) (loc : Ploc.t) ->
-           (m :: l : 'class_longident))]];
+           (mkident m :: l : 'class_longident))]];
     Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e),
     Some (Gramext.After "arrow"),
     [None, Some Gramext.NonA,
