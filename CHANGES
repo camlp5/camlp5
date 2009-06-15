@@ -1,3 +1,13 @@
+Camlp5 Version 5.04:
+--------------------
+
+* [22 Nov 07] Added backtracking parsers. Functions defined in the module
+  Fstream (already containing functional streams and parsers). Syntax
+  added in pa_fstream.cmo (already containing syntax for functinal streams
+  and parsers). The new syntax uses "bparser" instead of "fparser" and
+  a backtracking parser returns, together with its result and its
+  remaining stream, the continuation to compute the next solution.
+
 Camlp5 Version 5.03:
 --------------------
 

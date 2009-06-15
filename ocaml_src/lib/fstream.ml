@@ -79,3 +79,65 @@ let count_unfrozen s =
   in
   loop 0 s
 ;;
+
+(* backtracking parsers *)
+
+type ('a, 'b) kont =
+    K of (unit -> ('b * 'a t * ('a, 'b) kont) option)
+;;
+type ('a, 'b) bp = 'a t -> ('b * 'a t * ('a, 'b) kont) option;;
+
+let bcontinue =
+  function
+    K k -> k ()
+;;
+
+let bparse_all p strm =
+  let rec loop p =
+    match p () with
+      Some (r, _, K k) -> r :: loop k
+    | None -> []
+  in
+  loop (fun () -> p strm)
+;;
+
+let b_act p f strm =
+  let rec loop p () =
+    match p () with
+      Some (x, strm, K kont) -> Some (f x, strm, K (loop kont))
+    | None -> None
+  in
+  loop (fun () -> p strm) ()
+;;
+
+let b_seq a b strm =
+  let rec app_a kont1 () =
+    match kont1 () with
+      Some (x, strm, K kont1) -> app_b x (fun () -> b strm) kont1 ()
+    | None -> None
+  and app_b x kont2 kont1 () =
+    match kont2 () with
+      Some (y, strm, K kont2) -> Some ((x, y), strm, K (app_b x kont2 kont1))
+    | None -> app_a kont1 ()
+  in
+  app_a (fun () -> a strm) ()
+;;
+
+let b_or a b strm =
+  let rec loop kont () =
+    match kont () with
+      Some (x, strm, K kont) -> Some (x, strm, K (loop kont))
+    | None -> b strm
+  in
+  loop (fun () -> a strm) ()
+;;
+
+let b_term f strm =
+  match next strm with
+    Some (x, strm) ->
+      begin match f x with
+        Some y -> Some (y, strm, K (fun _ -> None))
+      | None -> None
+      end
+  | None -> None
+;;

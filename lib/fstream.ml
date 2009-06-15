@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: fstream.ml,v 1.6 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: fstream.ml,v 1.7 2007/11/22 19:21:05 deraugla Exp $ *)
 (* Copyright 2007 INRIA *)
 
 type t 'a = { count : int; data : Lazy.t (data 'a) }
@@ -74,4 +74,54 @@ value count_unfrozen s =
       [ Cons _ s -> loop (cnt + 1) s
       | _ -> cnt ]
     else cnt
+;
+
+(* backtracking parsers *)
+
+type kont 'a 'b = [ K of unit -> option ('b * t 'a * kont 'a 'b) ];
+type bp 'a 'b = t 'a -> option ('b * t 'a * kont 'a 'b);
+
+value bcontinue = fun [ (K k) -> k () ];
+
+value bparse_all p strm =
+  loop (fun () -> p strm) where rec loop p =
+    match p () with
+    [ Some (r, _, K k) -> [r :: loop k]
+    | None -> [] ]
+;
+
+value b_act p f strm =
+  loop (fun () -> p strm) () where rec loop p () =
+    match p () with
+    [ Some (x, strm, K kont) -> Some (f x, strm, K (loop kont))
+    | None -> None ]
+;
+
+value b_seq a b strm =
+  let rec app_a kont1 () =
+    match kont1 () with
+    [ Some (x, strm, K kont1) -> app_b x (fun () -> b strm) kont1 ()
+    | None -> None ]
+  and app_b x kont2 kont1 () =
+    match kont2 () with
+    [ Some (y, strm, K kont2) -> Some ((x, y), strm, K (app_b x kont2 kont1))
+    | None -> app_a kont1 () ]
+  in
+  app_a (fun () -> a strm) ()
+;
+
+value b_or a b strm =
+  loop (fun () -> a strm) () where rec loop kont () =
+    match kont () with
+    [ Some (x, strm, K kont) -> Some (x, strm, K (loop kont))
+    | None -> b strm ]
+;
+
+value b_term f strm =
+  match next strm with
+  [ Some (x, strm) ->
+      match f x with
+      [ Some y -> Some (y, strm, K (fun _ -> None))
+      | None -> None ]
+  | None -> None ]
 ;

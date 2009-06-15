@@ -217,6 +217,151 @@ let rec cstream loc =
          slazy loc x)
 ;;
 
+(* backtracking parsers *)
+
+let patt_expr_of_patt p =
+  let loc = MLast.loc_of_patt p in
+  match p with
+    MLast.PaLid (_, x) -> p, MLast.ExLid (loc, x)
+  | MLast.PaApp (_, MLast.PaUid (_, _), MLast.PaLid (_, x)) ->
+      MLast.PaLid (loc, x), MLast.ExLid (loc, x)
+  | _ -> MLast.PaUid (loc, "()"), MLast.ExUid (loc, "()")
+;;
+
+let bstream_pattern_component =
+  function
+    SpTrm (loc, p, wo) ->
+      let (p1, e1) = patt_expr_of_patt p in
+      p1,
+      MLast.ExApp
+        (loc,
+         MLast.ExAcc
+           (loc, MLast.ExUid (loc, "Fstream"), MLast.ExLid (loc, "b_term")),
+         MLast.ExFun
+           (loc,
+            [p, None, MLast.ExApp (loc, MLast.ExUid (loc, "Some"), e1);
+             MLast.PaAny loc, None, MLast.ExUid (loc, "None")]))
+  | SpNtr (loc, p, e) -> p, e
+  | SpStr (loc, p) ->
+      Ploc.raise loc (Stream.Error "not impl: stream_pattern_component")
+;;
+
+let rec bstream_pattern loc (spcl, epo, e) =
+  let rpel = List.rev_map bstream_pattern_component spcl in
+  let p =
+    match rpel with
+      (p, _) :: rpel ->
+        List.fold_left (fun p (p1, _) -> MLast.PaTup (loc, [p1; p])) p rpel
+    | [] -> Ploc.raise loc (Stream.Error "not impl: stream_pattern 1")
+  in
+  let e1 =
+    match rpel with
+      (_, e) :: rpel ->
+        List.fold_left
+          (fun e (_, e1) ->
+             MLast.ExApp
+               (loc,
+                MLast.ExApp
+                  (loc,
+                   MLast.ExAcc
+                     (loc, MLast.ExUid (loc, "Fstream"),
+                      MLast.ExLid (loc, "b_seq")),
+                   e1),
+                e))
+          e rpel
+    | [] -> Ploc.raise loc (Stream.Error "not impl: stream_pattern 2")
+  in
+  MLast.ExApp
+    (loc,
+     MLast.ExApp
+       (loc,
+        MLast.ExAcc
+          (loc, MLast.ExUid (loc, "Fstream"), MLast.ExLid (loc, "b_act")),
+        e1),
+     MLast.ExFun (loc, [p, None, e]))
+;;
+
+let bparser_cases loc spel =
+  let rel = List.rev_map (bstream_pattern loc) spel in
+  let e =
+    match rel with
+      e :: rel ->
+        List.fold_left
+          (fun e e1 ->
+             MLast.ExApp
+               (loc,
+                MLast.ExApp
+                  (loc,
+                   MLast.ExAcc
+                     (loc, MLast.ExUid (loc, "Fstream"),
+                      MLast.ExLid (loc, "b_or")),
+                   e1),
+                e))
+          e rel
+    | [] -> Ploc.raise loc (Stream.Error "not impl: bparser_cases")
+  in
+  MLast.ExApp (loc, e, MLast.ExLid (loc, strm_n))
+;;
+
+let bparser_match loc me bpo pc =
+  let pc = bparser_cases loc pc in
+  let e =
+    match bpo with
+      Some bp ->
+        MLast.ExLet
+          (loc, false,
+           [bp,
+            MLast.ExApp
+              (loc,
+               MLast.ExAcc
+                 (loc, MLast.ExUid (loc, "Fstream"),
+                  MLast.ExLid (loc, "count")),
+               MLast.ExLid (loc, strm_n))],
+           pc)
+    | None -> pc
+  in
+  MLast.ExLet
+    (loc, false,
+     [MLast.PaTyc
+        (loc, MLast.PaLid (loc, strm_n),
+         MLast.TyApp
+           (loc,
+            MLast.TyAcc
+              (loc, MLast.TyUid (loc, "Fstream"), MLast.TyLid (loc, "t")),
+            MLast.TyAny loc)),
+      me],
+     e)
+;;
+
+let bparser loc bpo pc =
+  let e = bparser_cases loc pc in
+  let e =
+    match bpo with
+      Some bp ->
+        MLast.ExLet
+          (loc, false,
+           [bp,
+            MLast.ExApp
+              (loc,
+               MLast.ExAcc
+                 (loc, MLast.ExUid (loc, "Fstream"),
+                  MLast.ExLid (loc, "count")),
+               MLast.ExLid (loc, strm_n))],
+           e)
+    | None -> e
+  in
+  let p =
+    MLast.PaTyc
+      (loc, MLast.PaLid (loc, strm_n),
+       MLast.TyApp
+         (loc,
+          MLast.TyAcc
+            (loc, MLast.TyUid (loc, "Fstream"), MLast.TyLid (loc, "t")),
+          MLast.TyAny loc))
+  in
+  MLast.ExFun (loc, [p, None, e])
+;;
+
 Grammar.extend
   (let _ = (expr : 'expr Grammar.Entry.e) in
    let grammar_entry_create s =
@@ -236,6 +381,55 @@ Grammar.extend
     Some (Gramext.Level "top"),
     [None, None,
      [[Gramext.Stoken ("", "match"); Gramext.Sself;
+       Gramext.Stoken ("", "with"); Gramext.Stoken ("", "bparser");
+       Gramext.Sopt
+         (Gramext.Snterm
+            (Grammar.Entry.obj (ipatt : 'ipatt Grammar.Entry.e)));
+       Gramext.Snterm
+         (Grammar.Entry.obj (parser_case : 'parser_case Grammar.Entry.e))],
+      Gramext.action
+        (fun (pc : 'parser_case) (po : 'ipatt option) _ _ (e : 'expr) _
+             (loc : Ploc.t) ->
+           (bparser_match loc e po [pc] : 'expr));
+      [Gramext.Stoken ("", "match"); Gramext.Sself;
+       Gramext.Stoken ("", "with"); Gramext.Stoken ("", "bparser");
+       Gramext.Sopt
+         (Gramext.Snterm
+            (Grammar.Entry.obj (ipatt : 'ipatt Grammar.Entry.e)));
+       Gramext.Stoken ("", "[");
+       Gramext.Slist0sep
+         (Gramext.Snterm
+            (Grammar.Entry.obj (parser_case : 'parser_case Grammar.Entry.e)),
+          Gramext.Stoken ("", "|"));
+       Gramext.Stoken ("", "]")],
+      Gramext.action
+        (fun _ (pcl : 'parser_case list) _ (po : 'ipatt option) _ _
+             (e : 'expr) _ (loc : Ploc.t) ->
+           (bparser_match loc e po pcl : 'expr));
+      [Gramext.Stoken ("", "bparser");
+       Gramext.Sopt
+         (Gramext.Snterm
+            (Grammar.Entry.obj (ipatt : 'ipatt Grammar.Entry.e)));
+       Gramext.Snterm
+         (Grammar.Entry.obj (parser_case : 'parser_case Grammar.Entry.e))],
+      Gramext.action
+        (fun (pc : 'parser_case) (po : 'ipatt option) _ (loc : Ploc.t) ->
+           (bparser loc po [pc] : 'expr));
+      [Gramext.Stoken ("", "bparser");
+       Gramext.Sopt
+         (Gramext.Snterm
+            (Grammar.Entry.obj (ipatt : 'ipatt Grammar.Entry.e)));
+       Gramext.Stoken ("", "[");
+       Gramext.Slist0sep
+         (Gramext.Snterm
+            (Grammar.Entry.obj (parser_case : 'parser_case Grammar.Entry.e)),
+          Gramext.Stoken ("", "|"));
+       Gramext.Stoken ("", "]")],
+      Gramext.action
+        (fun _ (pcl : 'parser_case list) _ (po : 'ipatt option) _
+             (loc : Ploc.t) ->
+           (bparser loc po pcl : 'expr));
+      [Gramext.Stoken ("", "match"); Gramext.Sself;
        Gramext.Stoken ("", "with"); Gramext.Stoken ("", "fparser");
        Gramext.Sopt
          (Gramext.Snterm

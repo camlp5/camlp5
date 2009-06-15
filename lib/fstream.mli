@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: fstream.mli,v 1.5 2007/10/29 02:49:04 deraugla Exp $ *)
+(* $Id: fstream.mli,v 1.6 2007/11/22 19:21:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Module [Fstream]: functional streams *)
@@ -53,6 +53,20 @@ value count_unfrozen : t 'a -> int;
        stream; useful to determine the position of a parsing error (longuest
        path). *)
 
+(* Backtracking parsers *)
+
+type kont 'a 'b = 'abstract;
+    (* The type of continuation of a backtracking parser. *)
+type bp 'a 'b = t 'a -> option ('b * t 'a * kont 'a 'b);
+    (* The type of a backtracking parser. *)
+
+value bcontinue : kont 'a 'b -> option ('b * t 'a * kont 'a 'b);
+   (* [bcontinue k] return the next solution of a backtracking parser. *)
+
+value bparse_all : bp 'a 'b -> t 'a -> list 'b;
+    (* [bparse_all p strm] return the list of all solutions of a
+       backtracking parser applied to a functional stream. *)
+
 (*--*)
 
 value nil : t 'a;
@@ -60,3 +74,8 @@ type data 'a = 'x;
 value cons : 'a -> t 'a -> data 'a;
 value app : t 'a -> t 'a -> data 'a;
 value flazy : (unit -> data 'a) -> t 'a;
+
+value b_act : bp 'a 'b -> ('b -> 'c) -> bp 'a 'c;
+value b_seq : bp 'a 'b -> bp 'a 'c -> bp 'a ('b * 'c);
+value b_or : bp 'a 'b -> bp 'a 'b -> bp 'a 'b;
+value b_term : ('a -> option 'b) -> bp 'a 'b;

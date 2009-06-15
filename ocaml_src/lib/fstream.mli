@@ -53,6 +53,20 @@ val count_unfrozen : 'a t -> int;;
        stream; useful to determine the position of a parsing error (longuest
        path). *)
 
+(* Backtracking parsers *)
+
+type ('a, 'b) kont;;
+    (* The type of continuation of a backtracking parser. *)
+type ('a, 'b) bp = 'a t -> ('b * 'a t * ('a, 'b) kont) option;;
+    (* The type of a backtracking parser. *)
+
+val bcontinue : ('a, 'b) kont -> ('b * 'a t * ('a, 'b) kont) option;;
+   (* [bcontinue k] return the next solution of a backtracking parser. *)
+
+val bparse_all : ('a, 'b) bp -> 'a t -> 'b list;;
+    (* [bparse_all p strm] return the list of all solutions of a
+       backtracking parser applied to a functional stream. *)
+
 (*--*)
 
 val nil : 'a t;;
@@ -60,3 +74,8 @@ type 'a data;;
 val cons : 'a -> 'a t -> 'a data;;
 val app : 'a t -> 'a t -> 'a data;;
 val flazy : (unit -> 'a data) -> 'a t;;
+
+val b_act : ('a, 'b) bp -> ('b -> 'c) -> ('a, 'c) bp;;
+val b_seq : ('a, 'b) bp -> ('a, 'c) bp -> ('a, 'b * 'c) bp;;
+val b_or : ('a, 'b) bp -> ('a, 'b) bp -> ('a, 'b) bp;;
+val b_term : ('a -> 'b option) -> ('a, 'b) bp;;
