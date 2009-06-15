@@ -621,8 +621,12 @@ and expr_se =
         | [se :: _] -> error se "cond clause" ]
   | Sexpr loc [Slid _ "while"; se :: sel] ->
       let e = expr_se se in
-      let el = List.map expr_se sel in
-      <:expr< while $e$ do { $list:el$ } >>
+      let el =
+        match sel with
+        [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
+        | _ -> <:vala< (List.map expr_se sel) >> ]
+      in
+      <:expr< while $e$ do { $_list:el$ } >>
   | Sexpr loc [Slid _ ("for" | "fordown" as d); sei; se1; se2 :: sel] ->
       let i =
         match sei with
@@ -772,7 +776,7 @@ and expr_se =
         [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
         | _ -> <:vala< (List.map expr_se sel) >> ]
       in
-      <:expr< ( $_list:el$ ) >>
+      <:expr< ($_list:el$) >>
   | Srec loc [Slid _ "with"; se :: sel] ->
       let e = expr_se se
       and lel =
@@ -791,7 +795,7 @@ and expr_se =
   | Sexpr loc [Slid _ ":"; se1; se2] ->
       let e = expr_se se1 in
       let t = ctyp_se se2 in
-      <:expr< ( $e$ : $t$ ) >>
+      <:expr< ($e$ : $t$) >>
   | Sexpr loc [se] ->
       let e = expr_se se in
       <:expr< $e$ () >>
@@ -821,7 +825,7 @@ and expr_se =
             <:expr< [$e$ :: $el$] >> ]
   | Squot loc typ txt -> Pcaml.handle_expr_quotation loc (typ, txt)
   | Santi loc "" s -> <:expr< $xtr:s$ >>
-  | Santi loc _ s -> failwith "expr_se" ]
+  | Santi loc _ s -> error_loc loc "expr_se" ]
 and begin_se loc =
   fun
   [ [] -> <:expr< () >>
@@ -947,11 +951,25 @@ and patt_se =
   | Sfloat loc s -> <:patt< $_flo:s$ >>
   | Schar loc s -> <:patt< $_chr:s$ >>
   | Sstring loc s -> <:patt< $_str:s$ >>
-  | Stid loc s -> error_loc loc "patt"
-  | Sqid loc _ -> error_loc loc "patt"
+  | Stid loc s -> <:patt< ~$_:s$ >>
+  | Sexpr loc [Stid _ s; se] ->
+      let p = patt_se se in
+      <:patt< ~$_:s$: $p$ >>
+  | Sqid loc s -> <:patt< ?$_:s$ >>
+  | Sexpr loc [Sqid _ s; se] ->
+      let p = patt_se se in
+      <:patt< ?$_:s$: ($p$) >>
+  | Sexpr loc [Sqid _ s; se1; se2] ->
+      let p = patt_se se1 in
+      let e = expr_se se2 in
+      <:patt< ?$_:s$: ($p$ = $e$) >>
   | Srec loc sel ->
-      let lpl = List.map (label_patt_se loc) sel in
-      <:patt< { $list:lpl$ } >>
+      let lpl =
+        match sel with
+        [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
+        | _ -> <:vala< (List.map (label_patt_se loc) sel) >> ]
+      in
+      <:patt< { $_list:lpl$ } >>
   | Sexpr loc [Slid _ ":"; se1; se2] ->
       let p = patt_se se1 in
       let t = ctyp_se se2 in
@@ -970,8 +988,12 @@ and patt_se =
       let pl = Pcaml.vala_map (List.map patt_se) sel in
       <:patt< [| $_list:pl$ |] >>
   | Sexpr loc [Slid _ "values" :: sel] ->
-      let pl = List.map patt_se sel in
-      <:patt< ( $list:pl$ ) >>
+      let pl =
+        match sel with
+        [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
+        | _ -> <:vala< (List.map patt_se sel) >> ]
+      in
+      <:patt< ($_list:pl$) >>
   | Sexpr loc [Slid _ "as"; se1; se2] ->
       let p1 = patt_se se1 in
       let p2 = patt_se se2 in
@@ -997,7 +1019,7 @@ and patt_se =
             <:patt< [$p$ :: $pl$] >> ]
   | Squot loc typ txt -> Pcaml.handle_patt_quotation loc (typ, txt)
   | Santi loc "" s -> <:patt< $xtr:s$ >>
-  | Santi loc _ s -> failwith "patt_se" ]
+  | Santi loc _ s -> error_loc loc "patt_se" ]
 and ipatt_se se =
   match ipatt_opt_se se with
   [ Left p -> p

@@ -76,56 +76,56 @@
 <:expr< (: $e$ $t$) >>
 <:expr< $uid:s$ >>
 <:expr< $_uid:s$ >>
-<:expr< `$s$ >>
-; <:expr< `$_:s$ >>
-; <:expr< while $e$ do { $list:le$ } >>
-; <:expr< while $e$ do { $_list:le$ } >>
-; <:patt< $p1$ . $p2$ >>
-; <:patt< ($p1$ as $p2$) >>
-; <:patt< $anti:p$ >>
-; <:patt< _ >>
-; <:patt< $p1$ $p2$ >>
-; <:patt< [| $list:lp$ |] >>
-; <:patt< [| $_list:lp$ |] >>
-; <:patt< $chr:s$ >>
-; <:patt< $_chr:s$ >>
-; <:patt< $int:s$ >>
-; <:patt< $_int:s$ >>
-; <:patt< $int32:s$ >>
-; <:patt< $_int32:s$ >>
-; <:patt< $int64:s$ >>
-; <:patt< $_int64:s$ >>
-; <:patt< $nativeint:s$ >>
-; <:patt< $_nativeint:s$ >>
-; <:patt< $flo:s$ >>
-; <:patt< $_flo:s$ >>
-; <:patt< ~$s$ >>
-; <:patt< ~$_:s$ >>
-; <:patt< ~$s$: $p$ >>
-; <:patt< ~$_:s$: $p$ >>
-; <:patt< $lid:s$ >>
-; <:patt< $_lid:s$ >>
-; <:patt< ?$s$ >>
-; <:patt< ?$_:s$ >>
-; <:patt< ?$s$: ($p$) >>
-; <:patt< ?$_:s$: ($p$) >>
-; <:patt< ?$s$: ($p$ = $e$) >>
-; <:patt< ?$_:s$: ($p$ = $e$) >>
-; <:patt< $p1$ | $p2$ >>
-; <:patt< $p1$ .. $p2$ >>
-; <:patt< { $list:lpp$ } >>
-; <:patt< { $_list:lpp$ } >>
-; <:patt< $str:s$ >>
-; <:patt< $_str:s$ >>
-; <:patt< ($list:lp$) >>
-; <:patt< ($_list:lp$) >>
-; <:patt< ($p$ : $t$) >>
-; <:patt< # $list:ls$ >>
-; <:patt< # $_list:ls$ >>
-; <:patt< $uid:s$ >>
-; <:patt< $_uid:s$ >>
-; <:patt< ` $s$ >>
-; <:patt< ` $_:s$ >>
+(MLast.ExVrn loc (Ploc.VaVal s))
+(MLast.ExVrn loc s)
+<:expr< (while $e$ $list:le$) >>
+<:expr< (while $e$ $_list:le$) >>
+<:patt< $p1$. $p2$ >>
+<:patt< (as $p1$ $p2$) >>
+<:patt< $anti:p$ >>
+<:patt< _ >>
+<:patt< ($p1$ $p2$) >>
+<:patt< #( $list:lp$ ) >>
+<:patt< #( $_list:lp$ ) >>
+<:patt< $chr:s$ >>
+<:patt< $_chr:s$ >>
+<:patt< $int:s$ >>
+<:patt< $_int:s$ >>
+<:patt< $int32:s$ >>
+<:patt< $_int32:s$ >>
+<:patt< $int64:s$ >>
+<:patt< $_int64:s$ >>
+<:patt< $nativeint:s$ >>
+<:patt< $_nativeint:s$ >>
+<:patt< $flo:s$ >>
+<:patt< $_flo:s$ >>
+<:patt< ~$s$ >>
+<:patt< ~$_:s$ >>
+<:patt< (~$s$ $p$) >>
+<:patt< (~$_:s$ $p$) >>
+<:patt< $lid:s$ >>
+<:patt< $_lid:s$ >>
+<:patt< ?$s$ >>
+<:patt< ?$_:s$ >>
+<:patt< (?$s$ $p$) >>
+<:patt< (?$_:s$ $p$) >>
+<:patt< (?$s$ $p$ $e$) >>
+<:patt< (?$_:s$ $p$ $e$) >>
+<:patt< (or $p1$ $p2$) >>
+<:patt< (range $p1$ $p2$) >>
+<:patt< { $list:lpp$ } >>
+<:patt< { $_list:lpp$ } >>
+<:patt< $str:s$ >>
+<:patt< $_str:s$ >>
+<:patt< (values $list:lp$) >>
+<:patt< (values $_list:lp$) >>
+<:patt< (: $p$ $t$) >>
+(MLast.PaTyp loc (Ploc.VaVal ls))
+(MLast.PaTyp loc ls)
+<:patt< $uid:s$ >>
+<:patt< $_uid:s$ >>
+(MLast.PaVrn loc (Ploc.VaVal s))
+(MLast.PaVrn loc s)
 ; <:ctyp< $t1$ . $t2$ >>
 ; <:ctyp< $t1$ as $t2$ >>
 ; <:ctyp< _ >>

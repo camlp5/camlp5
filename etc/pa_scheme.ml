@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.52 2007/10/07 20:20:07 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.53 2007/10/08 00:55:25 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -594,8 +594,11 @@
       (loop sel)))
     ((Sexpr loc [(Slid _ "while") se . sel])
      (let* ((e (expr_se se))
-            (el (List.map expr_se sel)))
-        <:expr< while $e$ do { $list:el$ } >>))
+            (el
+             (match sel
+              ([(Santi _ (or "list" "_list") s)] <:vala< $s$ >>)
+              (_ <:vala< (List.map expr_se sel) >>))))
+        <:expr< while $e$ do { $_list:el$ } >>))
     ((Sexpr loc [(Slid _ (as (or "for" "fordown") d)) sei se1 se2 . sel])
      (let* ((i
              (match sei
@@ -733,7 +736,7 @@
             (match sel
              ([(Santi _ (or "list" "_list") s)] <:vala< $s$ >>)
              (_ <:vala< (List.map expr_se sel) >>))))
-        <:expr< ( $_list:el$ ) >>))
+        <:expr< ($_list:el$) >>))
     ((Srec loc [(Slid _ "with") se . sel])
      (let ((e (expr_se se))
            (lel
@@ -748,7 +751,7 @@
              (_ <:vala< (List.map (label_expr_se loc) sel) >>))))
         <:expr< { $_list:lel$ } >>))
     ((Sexpr loc [(Slid _ ":") se1 se2])
-     (let* ((e (expr_se se1)) (t (ctyp_se se2))) <:expr< ( $e$ : $t$ ) >>))
+     (let* ((e (expr_se se1)) (t (ctyp_se se2))) <:expr< ($e$ : $t$) >>))
     ((Sexpr loc [se]) (let ((e (expr_se se))) <:expr< $e$ () >>))
     ((Sexpr loc [(Slid _ "assert") se])
        (let ((e (expr_se se))) <:expr< assert $e$ >>))
@@ -773,7 +776,7 @@
           (loop sel)))
     ((Squot loc typ txt) (Pcaml.handle_expr_quotation loc (values typ txt)))
     ((Santi loc "" s) <:expr< $xtr:s$ >>)
-    ((Santi loc _ s) (failwith "expr_se"))))
+    ((Santi loc _ s) (error_loc loc "expr_se"))))
   ((begin_se loc)
    (lambda_match
     ([] <:expr< () >>)
@@ -894,11 +897,21 @@
     ((Sfloat loc s) <:patt< $_flo:s$ >>)
     ((Schar loc s) <:patt< $_chr:s$ >>)
     ((Sstring loc s) <:patt< $_str:s$ >>)
-    ((Stid loc s) (error_loc loc "patt"))
-    ((Sqid loc _) (error_loc loc "patt"))
+    ((Stid loc s) <:patt< ~$_:s$ >>)
+    ((Sexpr loc [(Stid _ s) se])
+     (let ((p (patt_se se))) <:patt< ~$_:s$: $p$ >>))
+    ((Sqid loc s) <:patt< ?$_:s$ >>)
+    ((Sexpr loc [(Sqid _ s) se])
+     (let ((p (patt_se se))) <:patt< ?$_:s$: ($p$) >>))
+    ((Sexpr loc [(Sqid _ s) se1 se2])
+     (let* ((p (patt_se se1)) (e (expr_se se2)))
+        <:patt< ?$_:s$: ($p$ = $e$) >>))
     ((Srec loc sel)
-     (let ((lpl (List.map (label_patt_se loc) sel)))
-        <:patt< { $list:lpl$ } >>))
+     (let ((lpl
+            (match sel
+             ([(Santi _ (or "list" "_list") s)] <:vala< $s$ >>)
+             (_ <:vala< (List.map (label_patt_se loc) sel) >>))))
+        <:patt< { $_list:lpl$ } >>))
     ((Sexpr loc [(Slid _ ":") se1 se2])
      (let* ((p (patt_se se1)) (t (ctyp_se se2))) <:patt< ($p$ : $t$) >>))
     ((Sexpr loc [(Slid _ "or") se . sel])
@@ -911,7 +924,11 @@
      (let ((pl (Pcaml.vala_map (List.map patt_se) sel)))
       <:patt< [| $_list:pl$ |] >>))
     ((Sexpr loc [(Slid _ "values") . sel])
-     (let ((pl (List.map patt_se sel))) <:patt< ( $list:pl$ ) >>))
+     (let ((pl
+            (match sel
+             ([(Santi _ (or "list" "_list") s)] <:vala< $s$ >>)
+             (_ <:vala< (List.map patt_se sel) >>))))
+       <:patt< ($_list:pl$) >>))
     ((Sexpr loc [(Slid _ "as") se1 se2])
      (let* ((p1 (patt_se se1))
             (p2 (patt_se se2)))
@@ -936,7 +953,7 @@
           (loop sel)))
     ((Squot loc typ txt) (Pcaml.handle_patt_quotation loc (values typ txt)))
     ((Santi loc "" s) <:patt< $xtr:s$ >>)
-    ((Santi loc _ s) (failwith "patt_se"))))
+    ((Santi loc _ s) (error_loc loc "patt_se"))))
   ((ipatt_se se)
    (match (ipatt_opt_se se)
           ((Left p) p)
