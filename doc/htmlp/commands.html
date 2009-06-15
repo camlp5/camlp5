@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: commands.html,v 1.20 2007/11/26 09:20:52 deraugla Exp $ -->
+  <!-- $Id: commands.html,v 1.21 2007/11/27 10:14:52 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Commands and Files</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -311,6 +311,31 @@
   <dd>creates camlp5 executables like <tt>mkcamlp5</tt>, except that
     it is in native code, therefore faster, but not extensible; the
     added kits must be cmx or cmxa files</dd>
+</dl>
+
+<h2>Environment variable</h2>
+
+<p>When running a program using extensible grammars (in particular,
+  the camlp5 commands), the environment variable
+  "<tt>CAMLP5PARAM</tt>" is consulted. It sets the grammar parsing
+  algoritm parameters.</p>
+
+<p>This variable must be a sequence of parameter specifications. A
+  parameter specification is a letter optionally followed by an = and
+  a value, with any separator. There are four possible parameters:</p>
+
+<dl>
+  <dt><tt>b</tt></dt>
+  <dd>Set the backtrack algorithm as default.</dd>
+  <dt><tt>t</tt></dt>
+  <dd>Trace symbols (terminals and non-terminals) while parsing with
+    backtracking.</dd>
+  <dt><tt>y</tt></dt>
+  <dd>In backtracking, trace the advance in the input stream (number
+    of unfrozen tokens) and the possible stalling (number of
+    tokens tests).</dd>
+  <dt><tt>l=value</tt></dt>
+  <dd>Set the maximum stalling value.</dd>
 </dl>
 
 <h2>OCaml toplevel files</h2>
