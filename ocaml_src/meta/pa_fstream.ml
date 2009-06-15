@@ -230,10 +230,10 @@ let patt_expr_of_patt p =
 
 let mstream_pattern_component m =
   function
-    SpTrm (loc, p, wo) ->
-      let (p, e) = patt_expr_of_patt p in
+    SpTrm (loc, p1, wo) ->
+      let (p, e) = patt_expr_of_patt p1 in
       let e =
-        match p with
+        match p1 with
           MLast.PaAny _ ->
             (* prevent compiler warning *)
             MLast.ExApp
@@ -251,7 +251,7 @@ let mstream_pattern_component m =
                  (loc, MLast.ExUid (loc, m), MLast.ExLid (loc, "b_term")),
                MLast.ExFun
                  (loc,
-                  [p, None, MLast.ExApp (loc, MLast.ExUid (loc, "Some"), e);
+                  [p1, None, MLast.ExApp (loc, MLast.ExUid (loc, "Some"), e);
                    MLast.PaAny loc, None, MLast.ExUid (loc, "None")]))
       in
       p, e
