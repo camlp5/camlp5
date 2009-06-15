@@ -532,6 +532,17 @@ let cparser loc bpo pc =
   MLast.ExFun (loc, [p, None, e])
 ;;
 
+let rec is_not_bound s =
+  function
+    MLast.ExUid (_, _) -> true
+  | MLast.ExApp
+      (_, MLast.ExLid (_, "raise"),
+       MLast.ExAcc
+         (_, MLast.ExUid (_, "Stream"), MLast.ExUid (_, "Failure"))) ->
+      true
+  | _ -> false
+;;
+
 let cparser_match loc me bpo pc =
   let pc = left_factorize pc in
   let pc = parser_cases loc pc in
@@ -553,10 +564,14 @@ let cparser_match loc me bpo pc =
   match me with
     MLast.ExLid (_, x) when x = strm_n -> e
   | _ ->
+      let p =
+        if is_not_bound strm_n e then MLast.PaAny loc
+        else MLast.PaLid (loc, strm_n)
+      in
       MLast.ExLet
         (loc, false,
          [MLast.PaTyc
-            (loc, MLast.PaLid (loc, strm_n),
+            (loc, p,
              MLast.TyApp
                (loc,
                 MLast.TyAcc

@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: exparser.ml,v 1.12 2007/12/27 10:30:24 deraugla Exp $ *)
+(* $Id: exparser.ml,v 1.13 2007/12/27 19:50:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 type spat_comp =
@@ -364,6 +364,13 @@ value cparser loc bpo pc =
   <:expr< fun $p$ -> $e$ >>
 ;
 
+value rec is_not_bound s =
+  fun
+  [ <:expr< $uid:_$ >> -> True
+  | <:expr< raise Stream.Failure >> -> True
+  | _ -> False ]
+;
+
 value cparser_match loc me bpo pc =
   let pc = left_factorize pc in
   let pc = parser_cases loc pc in
@@ -374,7 +381,12 @@ value cparser_match loc me bpo pc =
   in
   match me with
   [ <:expr< $lid:x$ >> when x = strm_n -> e
-  | _ -> <:expr< let ($lid:strm_n$ : Stream.t _) = $me$ in $e$ >> ]
+  | _ ->
+      let p =
+        if is_not_bound strm_n e then <:patt< _ >>
+        else <:patt< $lid:strm_n$ >>
+      in
+      <:expr< let ($p$ : Stream.t _) = $me$ in $e$ >> ]
 ;
 
 (* Streams *)

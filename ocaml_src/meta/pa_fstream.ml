@@ -372,6 +372,12 @@ let mparser_cases loc m spel =
   | [] -> MLast.ExUid (loc, "None")
 ;;
 
+let rec is_not_bound s =
+  function
+    MLast.ExUid (_, _) -> true
+  | _ -> false
+;;
+
 let mparser_match loc m me bpo pc =
   let pc = mparser_cases loc m pc in
   let e =
@@ -388,10 +394,14 @@ let mparser_match loc m me bpo pc =
            pc)
     | None -> pc
   in
+  let p =
+    if is_not_bound strm_n e then MLast.PaAny loc
+    else MLast.PaLid (loc, strm_n)
+  in
   MLast.ExLet
     (loc, false,
      [MLast.PaTyc
-        (loc, MLast.PaLid (loc, strm_n),
+        (loc, p,
          MLast.TyApp
            (loc,
             MLast.TyAcc (loc, MLast.TyUid (loc, m), MLast.TyLid (loc, "t")),

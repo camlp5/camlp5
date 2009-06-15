@@ -6,6 +6,14 @@
     <lastBuildDate>Mon Sep 17 15:10:47 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
     <item>
+      <title>Grammar.Entry.parse_all</title>
+      <description>
+        Added function "Grammar.Entry.parse_all".
+      </description>
+      <pubDate>Thu Dec 27 20:42:30 CET 2007</pubDate>
+      <link>../library.html</link>
+    </item>
+    <item>
       <title>Pretty print</title>
       <description>
         Added function "Pretty.horizontally" returning the fact that

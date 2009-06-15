@@ -2699,7 +2699,7 @@ Grammar.extend
     Grammar.Entry.obj (dummy : 'dummy Grammar.Entry.e), None,
     [None, None, [[], Gramext.action (fun (loc : Ploc.t) -> (() : 'dummy))]];
     Grammar.Entry.obj (sequence : 'sequence Grammar.Entry.e), None,
-    [None, None,
+    [None, Some Gramext.RightA,
      [[Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
       Gramext.action
         (fun (e : 'expr) (loc : Ploc.t) -> (Qast.List [e] : 'sequence));

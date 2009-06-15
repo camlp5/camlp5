@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: grammar.mli,v 1.29 2007/12/27 10:30:24 deraugla Exp $ *)
+(* $Id: grammar.mli,v 1.30 2007/12/27 19:50:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 (** Extensible grammars.
@@ -38,6 +38,7 @@ module Entry :
     type e 'a = 'x;
     value create : g -> string -> e 'a;
     value parse : e 'a -> Stream.t char -> 'a;
+    value parse_all : e 'a -> Stream.t char -> list 'a;
     value parse_token : e 'a -> Stream.t token -> 'a;
     value parse_parsable : e 'a -> parsable -> 'a;
     value name : e 'a -> string;
@@ -51,6 +52,10 @@ module Entry :
 -      [Entry.e] is the type for entries returning values of type ['a].
 -      [Entry.create g n] creates a new entry named [n] in the grammar [g].
 -      [Entry.parse e] returns the stream parser of the entry [e].
+-      [Entry.parse_all e] returns the stream parser returning all possible
+          values while parsing with the entry [e]: may return more than one
+          value when the parsing algorithm is [Backtracking]
+-      [Entry.parse_all e] returns the parser returning all possible values.
 -      [Entry.parse_token e] returns the token parser of the entry [e].
 -      [Entry.parse_parsable e] returns the parsable parser of the entry [e].
 -      [Entry.name e] returns the name of the entry [e].
@@ -58,7 +63,7 @@ module Entry :
 -      [Entry.print e] displays the entry [e] using [Format].
 -      [Entry.find e s] finds the entry named [s] in the rules of [e].
 -      [Entry.obj e] converts an entry into a [Gramext.g_entry] allowing
--      to see what it holds. *)
+          to see what it holds. *)
 
 value of_entry : Entry.e 'a -> g;
    (** Return the grammar associated with an entry. *)

@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.121 2007/12/27 10:30:24 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.122 2007/12/27 19:50:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -696,7 +696,8 @@ EXTEND
     [ [ -> () ] ]
   ;
   sequence:
-    [ [ "let"; rf = SV (FLAG "rec"); l = SV (LIST1 let_binding SEP "and");
+    [ RIGHTA
+      [ "let"; rf = SV (FLAG "rec"); l = SV (LIST1 let_binding SEP "and");
         "in"; el = SELF ->
           Qast.List
             [Qast.Node "ExLet" [Qast.Loc; rf; l; mksequence Qast.Loc el]]

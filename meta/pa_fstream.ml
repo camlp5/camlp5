@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_fstream.ml,v 1.12 2007/12/20 16:58:46 deraugla Exp $ *)
+(* $Id: pa_fstream.ml,v 1.13 2007/12/27 19:50:50 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -205,6 +205,12 @@ value mparser_cases loc m spel =
       <:expr< None >> ]
 ;
 
+value rec is_not_bound s =
+  fun
+  [ <:expr< $uid:_$ >> -> True
+  | _ -> False ]
+;
+
 value mparser_match loc m me bpo pc =
   let pc = mparser_cases loc m pc in
   let e =
@@ -212,7 +218,11 @@ value mparser_match loc m me bpo pc =
     [ Some bp -> <:expr< let $bp$ = $uid:m$.count $lid:strm_n$ in $pc$ >>
     | None -> pc ]
   in
-  <:expr< let ($lid:strm_n$ : $uid:m$.t _) = $me$ in $e$ >>
+  let p =
+    if is_not_bound strm_n e then <:patt< _ >>
+    else <:patt< $lid:strm_n$ >>
+  in
+  <:expr< let ($p$ : $uid:m$.t _) = $me$ in $e$ >>
 ;
 
 value mparser loc m bpo pc =

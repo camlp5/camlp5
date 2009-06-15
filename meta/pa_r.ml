@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.117 2007/12/27 10:30:24 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.118 2007/12/27 19:50:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pcaml;
@@ -343,7 +343,8 @@ EXTEND
     [ [ -> () ] ]
   ;
   sequence:
-    [ [ "let"; rf = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and");
+    [ RIGHTA
+      [ "let"; rf = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and");
         "in"; el = SELF ->
           [<:expr< let $_flag:rf$ $_list:l$ in $mksequence loc el$ >>]
       | e = expr; ";"; el = SELF -> [e :: el]

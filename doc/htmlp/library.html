@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: library.html,v 1.36 2007/12/24 10:21:08 deraugla Exp $ -->
+  <!-- $Id: library.html,v 1.37 2007/12/27 19:50:50 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Library</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -746,6 +746,7 @@ module Entry =
     type e 'a = 'x;
     value create : g -> string -> e 'a;
     value parse : e 'a -> Stream.t char -> 'a;
+    value parse_all : e 'a -> Stream.t char -> list 'a;
     value parse_token : e 'a -> Stream.t token -> 'a;
     value parse_parsable : e 'a -> parsable -> 'a;
     value name : e 'a -> string;
@@ -765,6 +766,10 @@ module Entry =
         named "<tt>n</tt>" in the grammar "<tt>g</tt>".</li>
       <li><tt>Grammar.Entry.parse e</tt> : returns the stream parser
         of the entry "<tt>e</tt>".</li>
+      <li><tt>Grammar.Entry.parse_all e</tt> : returns the stream
+        parser returning all possible values while parsing with the
+        entry "<tt>e</tt>": may return more than one value when the
+        parsing algorithm is "<tt>Grammar.Backtracking</tt>".</li>
       <li><tt>Grammar.Entry.parse_token e</tt> : returns the token
         parser of the entry "<tt>e</tt>".</li>
       <li><tt>Grammar.Entry.parse_parsable e</tt> : returns the

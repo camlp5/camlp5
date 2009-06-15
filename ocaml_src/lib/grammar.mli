@@ -38,6 +38,7 @@ module Entry :
     type 'a e;;
     val create : g -> string -> 'a e;;
     val parse : 'a e -> char Stream.t -> 'a;;
+    val parse_all : 'a e -> char Stream.t -> 'a list;;
     val parse_token : 'a e -> token Stream.t -> 'a;;
     val parse_parsable : 'a e -> parsable -> 'a;;
     val name : 'a e -> string;;
@@ -51,6 +52,10 @@ module Entry :
 -      [Entry.e] is the type for entries returning values of type ['a].
 -      [Entry.create g n] creates a new entry named [n] in the grammar [g].
 -      [Entry.parse e] returns the stream parser of the entry [e].
+-      [Entry.parse_all e] returns the stream parser returning all possible
+          values while parsing with the entry [e]: may return more than one
+          value when the parsing algorithm is [Backtracking]
+-      [Entry.parse_all e] returns the parser returning all possible values.
 -      [Entry.parse_token e] returns the token parser of the entry [e].
 -      [Entry.parse_parsable e] returns the parsable parser of the entry [e].
 -      [Entry.name e] returns the name of the entry [e].
@@ -58,7 +63,7 @@ module Entry :
 -      [Entry.print e] displays the entry [e] using [Format].
 -      [Entry.find e s] finds the entry named [s] in the rules of [e].
 -      [Entry.obj e] converts an entry into a [Gramext.g_entry] allowing
--      to see what it holds. *)
+          to see what it holds. *)
 
 val of_entry : 'a Entry.e -> g;;
    (** Return the grammar associated with an entry. *)

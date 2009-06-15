@@ -1,6 +1,9 @@
 Camlp5 Version 5.07:
 --------------------
 
+* [27 Dec 07] Added function [Grammar.Entry.parse_all] returning the
+  list of all solutions when using the parsing algorithm [Backtracking].
+
 Camlp5 Version 5.06:
 --------------------
 

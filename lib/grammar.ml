@@ -1,5 +1,5 @@
 (* camlp5r pa_fstream.cmo *)
-(* $Id: grammar.ml,v 1.71 2007/12/27 10:30:24 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.72 2007/12/27 19:50:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Gramext;
@@ -361,7 +361,7 @@ value tree_failed entry prev_symb_result prev_symb tree = do {
             let txt1 = name_of_symbol_failed entry sep in
             txt1 ^ " or " ^ txt ^ " expected" ]
     | Sopt _ | Sflag _ | Stree _ | Svala _ _ -> txt ^ " expected"
-    | _ -> txt ^ " expected after " ^ name_of_symbol entry prev_symb ]
+    | _ -> txt ^ " expected after " ^ name_of_symbol_failed entry prev_symb ]
   in
   if error_verbose.val then do {
     let tree = search_tree_in_entry prev_symb tree entry.edesc in
@@ -786,6 +786,13 @@ value rec start_parser_of_levels entry clevn =
           match levs with
           [ [] ->
               fun levn strm ->
+                (* this code should be there but is commented to preserve
+                   compatibility with previous versions... with this code,
+                   the grammar entry e: [[ "x"; a = e | "y" ]] should fail
+                   because it should be: e: [RIGHTA[ "x"; a = e | "y" ]]...
+                if levn > clevn then match strm with parser []
+                else
+                *)
                 match strm with parser bp
                   [: act = p2 :] ep ->
                     let a = app act (loc_of_token_interval bp ep) in
@@ -825,40 +832,6 @@ value start_parser_of_entry entry =
 
 (* version for backtracking parsers *)
 
-value rec btop_symb entry =
-  fun
-  [ Sself | Snext -> Some (Snterm entry)
-  | Snterml e _ -> Some (Snterm e)
-  | Slist1sep s sep ->
-      match btop_symb entry s with
-      [ Some s -> Some (Slist1sep s sep)
-      | None -> None ]
-  | _ -> None ]
-;
-
-value btop_tree entry son strm =
-  match son with
-  [ Node {node = s; brother = bro; son = son} ->
-      match btop_symb entry s with
-      [ Some sy ->
-          let r = Node {node = sy; brother = bro; son = son} in
-          Fstream.b_act r strm
-      | None ->
-          None ]
-  | LocAct _ _ | DeadEnd ->
-      None ]
-;
-
-value brecover bparser_of_tree entry nlevn alevn bp a s son =
-  bparser
-  [ [: t = btop_tree entry son; a = bparser_of_tree entry nlevn alevn t :] ->
-      a
-(*
-  | [: :] -> raise (Stream.Error (tree_failed entry a s son))
-*)
-  ]
-;
-
 value backtrack_stalling_limit = ref 10000;
 value backtrack_parse = ref False;
 value backtrack_trace = ref False;
@@ -897,6 +870,47 @@ loop 0 where rec loop i =
 value tind = ref "";
 value max_fcount = ref 0;
 value nb_ftry = ref 0;
+
+value rec btop_symb entry =
+  fun
+  [ Sself | Snext -> Some (Snterm entry)
+  | Snterml e _ -> Some (Snterm e)
+  | Slist1sep s sep ->
+      match btop_symb entry s with
+      [ Some s -> Some (Slist1sep s sep)
+      | None -> None ]
+  | _ -> None ]
+;
+
+value btop_tree entry son strm =
+  match son with
+  [ Node {node = s; brother = bro; son = son} ->
+      match btop_symb entry s with
+      [ Some sy ->
+          let r = Node {node = sy; brother = bro; son = son} in
+          let _ =
+            if backtrack_trace.val then do {
+              Printf.eprintf "recovering pos %d\n" (Fstream.count strm);
+              flush stderr;
+            }
+            else ()
+          in
+          Fstream.b_act r strm
+      | None ->
+          None ]
+  | LocAct _ _ | DeadEnd ->
+      None ]
+;
+
+value brecover bparser_of_tree entry nlevn alevn bp a s son =
+  bparser
+  [ [: t = btop_tree entry son; a = bparser_of_tree entry nlevn alevn t :] ->
+      a
+(*
+  | [: :] -> raise (Stream.Error (tree_failed entry a s son))
+*)
+  ]
+;
 
 value rec bparser_of_tree entry nlevn alevn =
   fun
@@ -1075,7 +1089,7 @@ and bparser_of_token entry tok =
           let r = f tok in
           let _ =
             if backtrack_trace.val then do {
-              Printf.eprintf " yes!!!\n";
+              Printf.eprintf " yes!!! \"%s\"\n" (snd (Obj.magic tok));
               flush stderr;
             }
             else ()
@@ -1126,12 +1140,15 @@ value rec bstart_parser_of_levels entry clevn =
           match levs with
           [ [] ->
               fun levn strm ->
-                match strm with bparser bp
-                  [: act = p2; ep = bcount;
-                     a =
-                       entry.bcontinue levn bp
-                         (app act (loc_of_token_interval bp ep)) :] ->
-                    a
+                if levn > clevn then
+                  match strm with bparser []
+                else
+                  match strm with bparser bp
+                    [: act = p2; ep = bcount;
+                       a =
+                         entry.bcontinue levn bp
+                           (app act (loc_of_token_interval bp ep)) :] ->
+                      a
           | _ ->
               fun levn strm ->
                 if levn > clevn then p1 levn strm
@@ -1242,8 +1259,8 @@ value init_entry_functions entry = do {
         if backtrack_trace.val then
           fun lev bp a strm -> do {
             let t = tind.val in
-            Printf.eprintf "%s>> continue %s lev %d bp %d\n" tind.val
-              entry.ename lev bp;
+            Printf.eprintf "%s>> continue %s lev %d bp %d pos %d\n" tind.val
+              entry.ename lev bp (Fstream.count strm);
             flush stderr;
             tind.val := tind.val ^ " ";
             try do {
@@ -1494,6 +1511,57 @@ value bparse_parsable entry p = do {
     } ]
 };
 
+value bparse_parsable_all entry p = do {
+  let efun = entry.bstart 0 in
+  let fts = p.pa_tok_fstrm in
+  let cs = p.pa_chr_strm in
+  let fun_loc = p.pa_loc_func in
+  let restore =
+    let old_floc = floc.val in
+    let old_tc = token_count.val in
+    let old_max_fcount = max_fcount.val in
+    let old_nb_ftry = nb_ftry.val in
+    fun () -> do {
+      floc.val := old_floc;
+      token_count.val := old_tc;
+      max_fcount.val := old_max_fcount;
+      nb_ftry.val := old_nb_ftry;
+    }
+  in
+  floc.val := fun_loc;
+  token_count.val := 0;
+  max_fcount.val := 0;
+  nb_ftry.val := 0;
+  if backtrack_trace_try.val then do {
+    Printf.eprintf "\n";
+    flush stderr;
+  }
+  else ();
+  try do {
+    let rl =
+      loop [] (efun fts) where rec loop rev_rl =
+        fun
+        [ Some (r, strm, k) ->
+            let _ =
+              if backtrack_trace.val then do {
+                Printf.eprintf "result found !\n\n";
+                flush stderr;
+              }
+              else ()
+            in
+            loop [r :: rev_rl] (Fstream.bcontinue k)
+        | None -> List.rev rev_rl ]
+    in
+    restore ();
+    rl
+  }
+  with exc -> do {
+    let loc = (Stream.count cs, Stream.count cs + 1) in
+    restore ();
+    Ploc.raise (Ploc.make_unlined loc) exc
+  }
+};
+
 value find_entry e s =
   let rec find_levels =
     fun
@@ -1569,6 +1637,24 @@ module Entry =
     value parse (entry : e 'a) cs : 'a =
       let parsable = parsable entry.egram cs in
       parse_parsable entry parsable
+    ;
+    value parse_parsable_all (entry : e 'a) p : 'a =
+      match entry.egram.galgo with
+      [ DefaultAlgorithm ->
+          if backtrack_parse.val then
+            Obj.magic (bparse_parsable_all entry p : list Obj.t)
+          else
+            try Obj.magic [(parse_parsable entry p : Obj.t)] with
+            [ Stream.Failure | Stream.Error _ -> [] ]
+      | Predictive ->
+          try Obj.magic [(parse_parsable entry p : Obj.t)] with
+          [ Stream.Failure | Stream.Error _ -> [] ]
+      | Backtracking ->
+          Obj.magic (bparse_parsable_all entry p : list Obj.t) ]
+    ;
+    value parse_all (entry : e 'a) cs : 'a =
+      let parsable = parsable entry.egram cs in
+      parse_parsable_all entry parsable
     ;
     value parse_token (entry : e 'a) ts : 'a =
       Obj.magic (entry.estart 0 ts : Obj.t)
