@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: revsynt.html,v 1.22 2007/07/21 02:55:11 deraugla Exp $ -->
+  <!-- $Id: revsynt.html,v 1.23 2007/07/21 09:24:33 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>revised syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -731,6 +731,50 @@
   match e with parser []
 </pre>
    </li>
+
+   <li>In normal syntax, the error indicator starts with a double question
+     mark, in revised syntax with a simple question mark:
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>parser</tt></td>
+        <td><tt>parser</tt></td>
+      </tr>
+      <tr>
+        <td><tt>&nbsp;&nbsp;[&lt; '1; '2 ?? "error" &gt;] -></tt></td>
+        <td><tt>&nbsp;&nbsp;[: `1; `2 ? "error" :] -></tt></td>
+      </tr>
+      <tr>
+        <td><tt>&nbsp;&nbsp;&nbsp;&nbsp;...</tt></td>
+        <td><tt>&nbsp;&nbsp;&nbsp;&nbsp;...</tt></td>
+      </tr>
+    </table>
+  </li>
+
+  <li>In normal syntax, the component optimization starts with
+     "<tt>?!</tt>", in revised syntax with "<tt>!</tt>:
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>parser</tt></td>
+        <td><tt>parser</tt></td>
+      </tr>
+      <tr>
+        <td><tt>&nbsp;&nbsp;[&lt; '1; '2 ?! &gt;] -></tt></td>
+        <td><tt>&nbsp;&nbsp;[: `1; `2 ! :] -></tt></td>
+      </tr>
+      <tr>
+        <td><tt>&nbsp;&nbsp;&nbsp;&nbsp;...</tt></td>
+        <td><tt>&nbsp;&nbsp;&nbsp;&nbsp;...</tt></td>
+      </tr>
+    </table>
+  </li>
 </ul>
 
 <p>... to be completed ... </p>

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2latex,v 1.30 2007/07/20 18:46:34 deraugla Exp $
+# $Id: html2latex,v 1.31 2007/07/21 09:24:33 deraugla Exp $
 
 FILES="index.html ptools.html revsynt.html parsers.html fparsers.html lexers.html grammars.html pretty.html opretty.html ml_ast.html pragma.html extfun.html"
 
@@ -10,7 +10,7 @@ FILES="index.html ptools.html revsynt.html parsers.html fparsers.html lexers.htm
 \begin{center}
 \begin{tabular}{#1}
 \hline
-\makebox[5cm][l]{#2} & \makebox[5cm][l]{#3} \\
+\makebox[5.5cm][l]{#2} & \makebox[5.5cm][l]{#3} \\
 \hline
 }
 \def\endtableau{\hline\end{tabular}\end{center}}
