@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.110 2007/09/24 18:45:56 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.111 2007/09/29 23:15:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -150,8 +150,6 @@ value with_constr = Grammar.Entry.create gram "with_constr";
 value poly_variant = Grammar.Entry.create gram "poly_variant";
 
 value a_list = Grammar.Entry.create gram "a_list";
-value a_list2 = Grammar.Entry.create gram "a_list2";
-value a_opt = Grammar.Entry.create gram "a_opt";
 value a_flag = Grammar.Entry.create gram "a_flag";
 value a_UIDENT = Grammar.Entry.create gram "a_UIDENT";
 value a_UIDENT2 = Grammar.Entry.create gram "a_UIDENT2";
@@ -159,25 +157,16 @@ value a_LIDENT = Grammar.Entry.create gram "a_LIDENT";
 value a_LIDENT2 = Grammar.Entry.create gram "a_LIDENT2";
 value a_INT = Grammar.Entry.create gram "a_INT";
 value a_INT2 = Grammar.Entry.create gram "a_INT2";
-value a_INT_l = Grammar.Entry.create gram "a_INT_l";
 value a_INT_l2 = Grammar.Entry.create gram "a_INT_l2";
-value a_INT_L = Grammar.Entry.create gram "a_INT_L";
 value a_INT_L2 = Grammar.Entry.create gram "a_INT_L2";
-value a_INT_n = Grammar.Entry.create gram "a_INT_n";
 value a_INT_n2 = Grammar.Entry.create gram "a_INT_n2";
 value a_FLOAT = Grammar.Entry.create gram "a_FLOAT";
 value a_FLOAT2 = Grammar.Entry.create gram "a_FLOAT2";
-value a_STRING = Grammar.Entry.create gram "a_STRING";
 value a_STRING2 = Grammar.Entry.create gram "a_STRING2";
-value a_CHAR = Grammar.Entry.create gram "a_CHAR";
 value a_CHAR2 = Grammar.Entry.create gram "a_CHAR2";
-value a_TILDEIDENT = Grammar.Entry.create gram "a_TILDEIDENT";
 value a_TILDEIDENT2 = Grammar.Entry.create gram "a_TILDEIDENT2";
-value a_TILDEIDENTCOLON = Grammar.Entry.create gram "a_TILDEIDENTCOLON";
 value a_TILDEIDENTCOLON2 = Grammar.Entry.create gram "a_TILDEIDENTCOLON2";
-value a_QUESTIONIDENT = Grammar.Entry.create gram "a_QUESTIONIDENT";
 value a_QUESTIONIDENT2 = Grammar.Entry.create gram "a_QUESTIONIDENT2";
-value a_QUESTIONIDENTCOLON = Grammar.Entry.create gram "a_QUESTIONIDENTCOLON";
 value a_QUESTIONIDENTCOLON2 =
   Grammar.Entry.create gram "a_QUESTIONIDENTCOLON2"
 ;
@@ -1276,20 +1265,9 @@ EXTEND
     [ [ a = ANTIQUOT "list" -> Qast.VaAnt "list" loc a
       | a = ANTIQUOT "_list" -> Qast.VaAnt "_list" loc a ] ]
   ;
-  a_list2:
-    [ [ a = ANTIQUOT "list" -> Qast.VaVal (Qast.VaAnt "list" loc a)
-      | a = ANTIQUOT "_list" -> Qast.VaAnt "_list" loc a ] ]
-  ;
-  a_opt:
-    [ [ a = ANTIQUOT "opt" -> Qast.VaAnt "opt" loc a ] ]
-  ;
   a_flag:
     [ [ a = ANTIQUOT "flag" -> Qast.VaAnt "flag" loc a
       | a = ANTIQUOT "_flag" -> Qast.VaAnt "_flag" loc a ] ]
-  ;
-  (* compatibility; deprecated since version 4.07 *)
-  a_opt:
-    [ [ a = ANTIQUOT "when" -> Qast.VaAnt "when" loc a ] ]
   ;
   (* compatibility; deprecated since version 4.07 *)
   a_flag:
@@ -1326,27 +1304,15 @@ EXTEND
       | a = ANTIQUOT "_int" -> Qast.VaAnt "_int" loc a
       | s = INT -> Qast.VaVal (Qast.Str s) ] ]
   ;
-  a_INT_l:
-    [ [ a = ANTIQUOT "int32" -> Qast.VaAnt "int32" loc a
-      | s = INT_l -> Qast.Str s ] ]
-  ;
   a_INT_l2:
     [ [ a = ANTIQUOT "int32" -> Qast.VaVal (Qast.VaAnt "int32" loc a)
       | a = ANTIQUOT "_int32" -> Qast.VaAnt "_int32" loc a
       | s = INT_l -> Qast.VaVal (Qast.Str s) ] ]
   ;
-  a_INT_L:
-    [ [ a = ANTIQUOT "int64" -> Qast.VaAnt "int64" loc a
-      | s = INT_L -> Qast.Str s ] ]
-  ;
   a_INT_L2:
     [ [ a = ANTIQUOT "int64" -> Qast.VaVal (Qast.VaAnt "int64" loc a)
       | a = ANTIQUOT "_int64" -> Qast.VaAnt "_int64" loc a
       | s = INT_L -> Qast.VaVal (Qast.Str s) ] ]
-  ;
-  a_INT_n:
-    [ [ a = ANTIQUOT "nativeint" -> Qast.VaAnt "nativeint" loc a
-      | s = INT_n -> Qast.Str s ] ]
   ;
   a_INT_n2:
     [ [ a = ANTIQUOT "nativeint" -> Qast.VaVal (Qast.VaAnt "nativeint" loc a)
@@ -1362,27 +1328,15 @@ EXTEND
       | a = ANTIQUOT "_flo" -> Qast.VaAnt "_flo" loc a
       | s = FLOAT -> Qast.VaVal (Qast.Str s) ] ]
   ;
-  a_STRING:
-    [ [ a = ANTIQUOT "str" -> Qast.VaAnt "str" loc a
-      | s = STRING -> Qast.Str s ] ]
-  ;
   a_STRING2:
     [ [ a = ANTIQUOT "str" -> Qast.VaVal (Qast.VaAnt "str" loc a)
       | a = ANTIQUOT "_str" -> Qast.VaAnt "_str" loc a
       | s = STRING -> Qast.VaVal (Qast.Str s) ] ]
   ;
-  a_CHAR:
-    [ [ a = ANTIQUOT "chr" -> Qast.VaAnt "chr" loc a
-      | s = CHAR -> Qast.Str s ] ]
-  ;
   a_CHAR2:
     [ [ a = ANTIQUOT "chr" -> Qast.VaVal (Qast.VaAnt "chr" loc a)
       | a = ANTIQUOT "_chr" -> Qast.VaAnt "_chr" loc a
       | s = CHAR -> Qast.VaVal (Qast.Str s) ] ]
-  ;
-  a_TILDEIDENT:
-    [ [ s = TILDEIDENT -> Qast.Str s
-      | "~"; a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
   ;
   a_TILDEIDENT2:
     [ [ a = ANTIQUOT "~" -> Qast.VaVal (Qast.VaAnt "~" loc a)
@@ -1390,29 +1344,17 @@ EXTEND
       | s = TILDEIDENT -> Qast.VaVal (Qast.Str s)
       | "~"; a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
   ;
-  a_TILDEIDENTCOLON:
-    [ [ s = TILDEIDENTCOLON -> Qast.Str s
-      | "~"; a = ANTIQUOT; ":" -> Qast.VaAnt "" loc a ] ]
-  ;
   a_TILDEIDENTCOLON2:
     [ [ a = ANTIQUOT "~:" -> Qast.VaVal (Qast.VaAnt "~" loc a)
       | a = ANTIQUOT "~_:" -> Qast.VaAnt "~_" loc a
       | s = TILDEIDENTCOLON -> Qast.VaVal (Qast.Str s)
       | "~"; a = ANTIQUOT; ":" -> Qast.VaAnt "" loc a ] ]
   ;
-  a_QUESTIONIDENT:
-    [ [ s = QUESTIONIDENT -> Qast.Str s
-      | "?"; a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
-  ;
   a_QUESTIONIDENT2:
     [ [ a = ANTIQUOT "?" -> Qast.VaVal (Qast.VaAnt "?" loc a)
       | a = ANTIQUOT "?_" -> Qast.VaAnt "?_" loc a
       | s = QUESTIONIDENT -> Qast.VaVal (Qast.Str s)
       | "?"; a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
-  ;
-  a_QUESTIONIDENTCOLON:
-    [ [ s = QUESTIONIDENTCOLON -> Qast.Str s
-      | "?"; a = ANTIQUOT; ":" -> Qast.VaAnt "" loc a ] ]
   ;
   a_QUESTIONIDENTCOLON2:
     [ [ a = ANTIQUOT "?:" -> Qast.VaVal (Qast.VaAnt "?" loc a)
