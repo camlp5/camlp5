@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.114 2007/12/05 13:35:50 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.115 2007/12/05 15:05:36 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -571,7 +571,7 @@ value type_decl pc td =
   in
   horiz_vertic
     (fun () ->
-       sprintf "%s%s%s = %s%s%s" pc.bef
+       pprintf pc "%s%s = %s%s"
          (var_escaped {(pc) with bef = ""; aft = ""} (Pcaml.unvala tn))
          (if Pcaml.unvala tp = [] then ""
           else
@@ -579,8 +579,7 @@ value type_decl pc td =
               (Pcaml.unvala tp)))
          (ctyp {(pc) with bef = ""; aft = ""} te)
          (hlist type_constraint {(pc) with bef = ""; aft = ""}
-            (Pcaml.unvala cl))
-         pc.aft)
+            (Pcaml.unvala cl)))
     (fun () ->
        let s1 =
          horiz_vertic
