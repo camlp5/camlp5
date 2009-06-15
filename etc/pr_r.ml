@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.113 2007/12/05 12:49:25 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.114 2007/12/05 13:35:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -159,7 +159,7 @@ value var_escaped pc v =
     else if is_keyword v then "\\" ^ v
     else v
   in
-  sprintf "%s%s%s" pc.bef x pc.aft
+  pprintf pc "%s" x
 ;
 
 value cons_escaped pc v =
@@ -169,18 +169,18 @@ value cons_escaped pc v =
     | " False" -> "False_"
     | _ -> v ]
   in
-  sprintf "%s%s%s" pc.bef x pc.aft
+  pprintf pc "%s" x
 ;
 
 value rec mod_ident pc sl =
   match sl with
-  [ [] -> sprintf "%s%s" pc.bef pc.aft
+  [ [] -> pprintf pc ""
   | [s] -> var_escaped pc s
-  | [s :: sl] -> mod_ident {(pc) with bef = sprintf "%s%s." pc.bef s} sl ]
+  | [s :: sl] -> pprintf pc "%s.%p" s mod_ident sl ]
 ;
 
-value semi_after elem pc x = elem {(pc) with aft = sprintf ";%s" pc.aft} x;
-value star_after elem pc x = elem {(pc) with aft = sprintf " *%s" pc.aft} x;
+value semi_after elem pc x = pprintf pc "%p;" elem x;
+value star_after elem pc x = pprintf pc "%p *" elem x;
 value op_after elem pc (x, op) = pprintf pc "%p%s" elem x op;
 
 value and_before elem pc x = pprintf pc "and %p" elem x;
@@ -476,13 +476,13 @@ value match_assoc force_vertic pc (p, w, e) =
     (fun () ->
        if force_vertic then sprintf "\n"
        else
-         sprintf "%s%s%s -> %s%s" pc.bef
+         pprintf pc "%s%s -> %s"
            (patt_as {(pc) with bef = ""; aft = ""} p)
            (match w with
             [ <:vala< Some e >> ->
                 sprintf " when %s" (expr {(pc) with bef = ""; aft = ""} e)
             | _ -> "" ])
-           (comm_expr expr {(pc) with bef = ""; aft = ""} e) pc.aft)
+           (comm_expr expr {(pc) with bef = ""; aft = ""} e))
     (fun () ->
        let patt_arrow pc k =
          match w with
@@ -512,7 +512,7 @@ value match_assoc_sh force_vertic pc pwe =
 ;
 
 value match_assoc_list pc pwel =
-  if pwel = [] then sprintf "%s[]%s" pc.bef pc.aft
+  if pwel = [] then pprintf pc "[]"
   else
     let force_vertic =
       if flag_equilibrate_cases.val then
@@ -531,9 +531,9 @@ value match_assoc_list pc pwel =
         has_vertic
       else False
     in
-    vlist2 (match_assoc_sh force_vertic)
-      (bar_before (match_assoc_sh force_vertic))
-      {(pc) with bef = sprintf "%s[ " pc.bef; aft = sprintf " ]%s" pc.aft}
+    pprintf pc "[ %p ]"
+      (vlist2 (match_assoc_sh force_vertic)
+         (bar_before (match_assoc_sh force_vertic)))
       pwel
 ;
 
@@ -556,8 +556,8 @@ value rec make_patt_list =
 ;
 
 value type_var pc (tv, (p, m)) =
-  sprintf "%s%s'%s%s" pc.bef (if p then "+" else if m then "-" else "")
-    (Pcaml.unvala tv) pc.aft
+  pprintf pc "%s'%s" (if p then "+" else if m then "-" else "")
+    (Pcaml.unvala tv)
 ;
 
 value type_constraint pc (t1, t2) =

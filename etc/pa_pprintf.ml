@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_pprintf.ml,v 1.10 2007/12/05 10:04:56 deraugla Exp $ *)
+(* $Id: pa_pprintf.ml,v 1.11 2007/12/05 13:35:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* pprintf statement *)
@@ -25,6 +25,10 @@ value get_assoc_args loc str al =
         else (rev_str_al, al, i + 1)
       in
       loop rev_str_al al i
+    else if i < String.length str && str.[i] = '%' then
+      Ploc.raise loc
+        (Stream.Error
+           (Printf.sprintf "Premature end of format string ``\"%s\"''" str))
     else (List.rev rev_str_al, al)
 ;
 
@@ -108,7 +112,7 @@ value next_item loc pc fmt al i_beg =
       else loop al (i + 1)
     else
       let pcl_al_opt =
-        if i = i_beg then None
+        if fmt = "" then None
         else
           let fmt1 = String.sub fmt i_beg (String.length fmt - i_beg) in
           Some (expand_item loc pc fmt1 al)
@@ -258,7 +262,13 @@ value make_call loc (bef_is_empty, aft_is_empty) pc offset pcl =
           List.rev rev_el ]
   in
   match el with
-  [ [e] -> e
+  [ [] ->
+      let fmt = if not bef_is_empty then "%s" else "" in
+      let fmt = if not aft_is_empty then fmt ^ "%s" else "" in
+      let e = <:expr< sprintf $str:fmt$ >> in
+      let e = if not bef_is_empty then <:expr< $e$ $pc$.bef >> else e in
+      if not aft_is_empty then <:expr< $e$ $pc$.aft >> else e
+  | [e] -> e
   | _ ->
       let fmt = String.concat "" (List.map (fun _ -> "%s") el) in
       List.fold_left (fun f e -> <:expr< $f$ $e$ >>)
