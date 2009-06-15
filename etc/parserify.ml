@@ -5,9 +5,6 @@
 (* Heuristic to rebuild parsers and streams from the AST *)
 
 open Pretty;
-(*
-open Pcaml;
-*)
 open Prtools;
 
 type spat_comp =
@@ -23,26 +20,6 @@ type spat_comp_opt =
   | SpoBang
   | SpoQues of MLast.expr ]
 ;
-
-type alt 'a 'b =
-  [ Left of 'a
-  | Right of 'b ]
-;
-
-value not_impl name pc x =
-  let desc =
-    if Obj.tag (Obj.repr x) = Obj.tag (Obj.repr "") then
-      sprintf "\"%s\"" (Obj.magic x)
-    else if Obj.is_block (Obj.repr x) then
-      "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
-    else "int_val = " ^ string_of_int (Obj.magic x)
-  in
-  sprintf "%s\"pr_rp, not impl: %s; %s\"%s" pc.bef name (String.escaped desc)
-    pc.aft
-;
-
-value bar_before elem pc x = elem {(pc) with bef = sprintf "%s| " pc.bef} x;
-value semi_after elem pc x = elem {(pc) with aft = sprintf ";%s" pc.aft} x;
 
 (* Rebuilding syntax tree *)
 
