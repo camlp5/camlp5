@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: revsynt.html,v 1.6 2007/07/19 13:32:35 deraugla Exp $ -->
+  <!-- $Id: revsynt.html,v 1.7 2007/07/19 13:39:17 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>revised syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -108,6 +108,10 @@
         <td><tt>}</tt></td>
       </tr>
       <tr>
+        <td><tt></tt></td>
+        <td><tt></tt></td>
+      </tr>
+      <tr>
         <td><tt>for i = e1 to e2 do&nbsp;&nbsp;</tt></td>
         <td><tt>for i = e1 to e2 do {</tt></td>
       </tr>
@@ -123,9 +127,22 @@
   </li>
 </ul>
 
-<p>...<em>to be continued</em>...</p>
-
 <h3>Tuples and lists</h3>
+
+<ul>
+  <li>Parentheses are mandatory in tuples:
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>1, "hello", World</tt></td>
+        <td><tt>(1, "hello", World)</tt></td>
+      </tr>
+    </table>
+  </li>
+</ul>
 
 <p>...<em>to be continued</em>...</p>
 
