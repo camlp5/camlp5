@@ -106,15 +106,6 @@ let mklistpat loc last =
   loop true
 ;;
 
-let mkexprident loc i j =
-  let rec loop m =
-    function
-      MLast.ExAcc (_, x, y) -> loop (MLast.ExAcc (loc, m, x)) y
-    | e -> MLast.ExAcc (loc, m, e)
-  in
-  loop (MLast.ExUid (loc, i)) j
-;;
-
 let append_elem el e = el @ [e];;
 
 let ipatt = Grammar.Entry.create gram "ipatt";;
@@ -168,8 +159,6 @@ Grammar.extend
      grammar_entry_create "when_expr"
    and label_expr : 'label_expr Grammar.Entry.e =
      grammar_entry_create "label_expr"
-   and expr_ident : 'expr_ident Grammar.Entry.e =
-     grammar_entry_create "expr_ident"
    and fun_def : 'fun_def Grammar.Entry.e = grammar_entry_create "fun_def"
    and paren_patt : 'paren_patt Grammar.Entry.e =
      grammar_entry_create "paren_patt"
@@ -1011,9 +1000,12 @@ Grammar.extend
       [Gramext.Stoken ("", "["); Gramext.Stoken ("", "]")],
       Gramext.action
         (fun _ _ (loc : Ploc.t) -> (MLast.ExUid (loc, "[]") : 'expr));
-      [Gramext.Snterm
-         (Grammar.Entry.obj (expr_ident : 'expr_ident Grammar.Entry.e))],
-      Gramext.action (fun (i : 'expr_ident) (loc : Ploc.t) -> (i : 'expr));
+      [Gramext.Stoken ("UIDENT", "")],
+      Gramext.action
+        (fun (i : string) (loc : Ploc.t) -> (MLast.ExUid (loc, i) : 'expr));
+      [Gramext.Stoken ("LIDENT", "")],
+      Gramext.action
+        (fun (i : string) (loc : Ploc.t) -> (MLast.ExLid (loc, i) : 'expr));
       [Gramext.Stoken ("CHAR", "")],
       Gramext.action
         (fun (s : string) (loc : Ploc.t) -> (MLast.ExChr (loc, s) : 'expr));
@@ -1142,21 +1134,6 @@ Grammar.extend
       Gramext.action
         (fun (e : 'fun_binding) (i : 'patt_label_ident) (loc : Ploc.t) ->
            (i, e : 'label_expr))]];
-    Grammar.Entry.obj (expr_ident : 'expr_ident Grammar.Entry.e), None,
-    [None, Some Gramext.RightA,
-     [[Gramext.Stoken ("UIDENT", ""); Gramext.Stoken ("", ".");
-       Gramext.Sself],
-      Gramext.action
-        (fun (j : 'expr_ident) _ (i : string) (loc : Ploc.t) ->
-           (mkexprident loc i j : 'expr_ident));
-      [Gramext.Stoken ("UIDENT", "")],
-      Gramext.action
-        (fun (i : string) (loc : Ploc.t) ->
-           (MLast.ExUid (loc, i) : 'expr_ident));
-      [Gramext.Stoken ("LIDENT", "")],
-      Gramext.action
-        (fun (i : string) (loc : Ploc.t) ->
-           (MLast.ExLid (loc, i) : 'expr_ident))]];
     Grammar.Entry.obj (fun_def : 'fun_def Grammar.Entry.e), None,
     [None, Some Gramext.RightA,
      [[Gramext.Stoken ("", "->");

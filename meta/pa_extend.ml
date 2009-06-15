@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.54 2007/09/09 19:34:16 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.55 2007/09/10 08:09:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -944,14 +944,6 @@ EXTEND
               else (TXvala loc text, STvala loc styp)
             in
             {used = s.used; text = text; styp = styp}
-      | UIDENT "V"; UIDENT "SELF" ->
-          let text = TXself loc in
-          let styp = STself loc "SELF" in
-          let (text, styp) =
-            if not Pcaml.strict_mode.val then (text, styp)
-            else (TXvala loc text, STvala loc styp)
-          in
-          {used = []; text = text; styp = styp}
       | UIDENT "V"; x = UIDENT ->
           if quotify.val then sstoken2 loc x
           else

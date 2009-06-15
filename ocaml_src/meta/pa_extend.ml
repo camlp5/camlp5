@@ -1922,17 +1922,6 @@ Grammar.extend
               in
               {used = []; text = text; styp = styp} :
             'symbol));
-      [Gramext.Stoken ("UIDENT", "V"); Gramext.Stoken ("UIDENT", "SELF")],
-      Gramext.action
-        (fun _ _ (loc : Ploc.t) ->
-           (let text = TXself loc in
-            let styp = STself (loc, "SELF") in
-            let (text, styp) =
-              if not !(Pcaml.strict_mode) then text, styp
-              else TXvala (loc, text), STvala (loc, styp)
-            in
-            {used = []; text = text; styp = styp} :
-            'symbol));
       [Gramext.Stoken ("UIDENT", "V"); Gramext.Stoken ("UIDENT", "FLAG");
        Gramext.Sself],
       Gramext.action

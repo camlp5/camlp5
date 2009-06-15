@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.60 2007/09/10 03:39:10 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.61 2007/09/10 08:09:09 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -296,14 +296,6 @@ value mklistpat _ last =
              [Qast.Loc; Qast.Node "PaUid" [Qast.Loc; Qast.Str "::"]; p1];
            loop False (Qast.List pl)]
     | a -> a ]
-;
-
-value mkexprident loc i j =
-  loop (Qast.Node "ExUid" [Qast.Loc; i]) j where rec loop m =
-    fun
-    [ Qast.Node "ExAcc" [_; x; y] ->
-        loop (Qast.Node "ExAcc" [Qast.Loc; m; x]) y
-    | e -> Qast.Node "ExAcc" [Qast.Loc; m; e] ]
 ;
 
 value append_elem el e = Qast.Apply "@" [el; Qast.List [e]];
@@ -700,7 +692,8 @@ EXTEND
       | s = a_FLOAT -> Qast.Node "ExFlo" [Qast.Loc; s]
       | s = a_STRING2 -> Qast.Node "ExStr" [Qast.Loc; s]
       | s = a_CHAR -> Qast.Node "ExChr" [Qast.Loc; s]
-      | i = expr_ident -> i
+      | i = a_LIDENT2 -> Qast.Node "ExLid" [Qast.Loc; i]
+      | i = a_UIDENT2 -> Qast.Node "ExUid" [Qast.Loc; i]
       | "["; "]" -> Qast.Node "ExUid" [Qast.Loc; Qast.VaVal (Qast.Str "[]")]
       | "["; el = SLIST1 expr SEP ";"; last = cons_expr_opt; "]" ->
           mklistexp Qast.Loc last el
@@ -764,12 +757,6 @@ EXTEND
   ;
   label_expr:
     [ [ i = patt_label_ident; e = fun_binding -> Qast.Tuple [i; e] ] ]
-  ;
-  expr_ident:
-    [ RIGHTA
-      [ i = a_LIDENT2 -> Qast.Node "ExLid" [Qast.Loc; i]
-      | i = a_UIDENT2 -> Qast.Node "ExUid" [Qast.Loc; i]
-      | i = a_UIDENT2; "."; j = SELF -> mkexprident Qast.Loc i j ] ]
   ;
   fun_def:
     [ RIGHTA
@@ -1192,9 +1179,6 @@ EXTEND
       | "downto" -> Qast.Bool False ] ]
   ;
   (* Antiquotations for local entries *)
-  expr_ident:
-    [ [ a = ANTIQUOT -> antiquot "" loc a ] ]
-  ;
   patt_label_ident: LEVEL "simple"
     [ [ a = ANTIQUOT -> antiquot "" loc a ] ]
   ;

@@ -686,7 +686,6 @@ and parser_of_symbol entry nlevn =
           | Slist0 _ | Slist0sep (_, _) | Slist1 _ | Slist1sep (_, _) ->
               "V LIST"
           | Stoken (con, "") -> "V " ^ con
-          | Sself -> "V SELF"
           | _ -> failwith "Grammar: not impl Svala"
         in
         parser_of_token entry (t, "")

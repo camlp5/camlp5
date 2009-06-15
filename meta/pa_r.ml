@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.61 2007/09/10 03:39:10 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.62 2007/09/10 08:09:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -109,21 +109,6 @@ value mklistpat loc last =
           if top then loc else Ploc.encl (MLast.loc_of_patt p1) loc
         in
         <:patt< [$p1$ :: $loop False pl$] >> ]
-;
-
-value mkexprident loc i j =
-  let rec loop m =
-    fun
-    [ <:expr< $x$ . $y$ >> -> loop <:expr< $m$ . $x$ >> y
-    | e -> <:expr< $m$ . $e$ >> ]
-  in
-  IFNDEF STRICT THEN
-    loop <:expr< $auid:i$ >> j
-  ELSE
-    match j with
-    [ Ploc.VaVal j -> loop <:expr< $auid:i$ >> j
-    | Ploc.VaAnt _ -> <:expr< $auid:i$ . $MLast.ExXtr loc "" (Some j)$ >> ]
-  END
 ;
 
 value append_elem el e = el @ [e];
@@ -325,7 +310,8 @@ EXTEND
       | s = FLOAT -> <:expr< $flo:s$ >>
       | s = V STRING -> <:expr< $astr:s$ >>
       | s = CHAR -> <:expr< $chr:s$ >>
-      | i = expr_ident -> i
+      | i = V LIDENT -> <:expr< $alid:i$ >>
+      | i = V UIDENT -> <:expr< $auid:i$ >>
       | "["; "]" -> <:expr< [] >>
       | "["; el = LIST1 expr SEP ";"; last = cons_expr_opt; "]" ->
           mklistexp loc last el
@@ -383,12 +369,6 @@ EXTEND
   ;
   label_expr:
     [ [ i = patt_label_ident; e = fun_binding -> (i, e) ] ]
-  ;
-  expr_ident:
-    [ RIGHTA
-      [ i = V LIDENT -> <:expr< $alid:i$ >>
-      | i = V UIDENT -> <:expr< $auid:i$ >>
-      | i = V UIDENT; "."; j = V SELF -> mkexprident loc i j ] ]
   ;
   fun_def:
     [ RIGHTA

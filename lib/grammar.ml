@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.45 2007/09/09 19:34:16 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.46 2007/09/10 08:09:09 deraugla Exp $ *)
 
 open Gramext;
 open Format;
@@ -633,7 +633,6 @@ and parser_of_symbol entry nlevn =
           [ Sflag _ -> "V FLAG"
           | Slist0 _ | Slist0sep _ _ | Slist1 _ | Slist1sep _ _ -> "V LIST"
           | Stoken (con, "") -> "V " ^ con
-          | Sself -> "V SELF"
           | _ -> failwith "Grammar: not impl Svala" ]
         in
         parser_of_token entry (t, "")

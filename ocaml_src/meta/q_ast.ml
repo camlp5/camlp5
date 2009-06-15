@@ -963,12 +963,6 @@ lex.Plexing.tok_match <-
            else if kind = "str" then "b" ^ prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
-  | "V SELF", "" ->
-      (function
-         "ANTIQUOT_LOC", prm ->
-           let kind = check_anti_loc2 prm in
-           if kind = "" then prm else raise Stream.Failure
-       | _ -> raise Stream.Failure)
   | "V LIST", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
