@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.11 2007/07/15 11:12:49 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.12 2007/07/15 14:54:55 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -45,9 +45,9 @@ value g = Grammar.gcreate lexer;
 </pre>
 
 <p>where "<tt>lexer</tt>" is a lexer previously defined. See the
-chapter explaining how make lexers for extensible grammars (<em>to be
-written</em>). In a first time, it is possible to use a lexer of the
-module "<tt>Plexer</tt>" provided by camlp5:</p>
+section explaining the interface with lexers. In a first time, it is
+possible to use a lexer of the module "<tt>Plexer</tt>" provided by
+camlp5:</p>
 
 <pre>
 value g = Grammar.gcreate (Plexer.gmake ());
@@ -127,7 +127,7 @@ is loaded. Its syntax is:</p>
                        | entry-name "LEVEL" label
                        | "SELF"
                        | "NEXT"
-                       | "LIST0" symbol
+                       | "LITS0" symbol
                        | "LIST0" symbol "SEP" symbol
                        | "LIST1" symbol
                        | "LIST1" symbol "SEP" symbol
@@ -290,13 +290,16 @@ whose value is bound to the pattern if any.</p>
     entry itself,</li>
   <li>the identifier "<tt>NEXT</tt>", which is a call to the next level
     of the current entry,</li>
+  <li>a left brace, followed by a list of rules separated by vertical
+    bars, and a right brace: equivalent to a call to an entry, with
+    these rules, inlined,</li>
   <li>a meta symbol (see further),</li>
   <li>a symbol between parentheses.</li>
 </ul>
 
 <p>The syntactic analysis follow the list of symbols. If it fails,
 depending on the first items of the rule (see the section about the
-kind of grammars recognized (<em>to be written</em>)):</p>
+kind of grammars recognized):</p>
 
 <ul>
   <li>the parsing may fail by raising the exception
@@ -343,7 +346,27 @@ symbols. They are:</p>
 <ul>
   <li>LIST0 followed by a symbol: this is a list of this symbol,
     possibly empty,</li>
+  <li>LIST0 followed by a symbol, SEP and another symbol: this is a
+    list, possibly empty, of the first symbol separated by the second
+    one,</li>
+  <li>LIST1 followed by a symbol: this is a list of this symbol,
+    with at least one element,</li>
+  <li>LIST0 followed by a symbol, SEP and another symbol: this is a
+    list, with at least one element, of the first symbol separated by
+    the second one,</li>
+  <li>OPT followed by a symbol: equivalent to "this symbol or
+    nothing".</li>
 </ul>
+
+<h2>Kind of grammar</h2>
+
+<p>... to be completed ...</p>
+
+<h2>Interface with a lexer</h2>
+
+<p>... to be completed ...</p>
+
+<h2>Functorial interface</h2>
 
 <p>... to be completed ...</p>
 
