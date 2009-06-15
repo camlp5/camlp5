@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: ml_ast.html,v 1.17 2007/07/23 19:02:54 deraugla Exp $ -->
+  <!-- $Id: ml_ast.html,v 1.18 2007/07/24 00:45:27 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Abstract tree in concrete syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -118,7 +118,7 @@
    match p with [ &lt;:patt&lt; $_$ | $_$ >> -> Some p ]
 </pre>
 
-<h2>Nodes</h2>
+<h2>Nodes and Quotations</h2>
 
 <p>This section describes all nodes defined in the module "MLast" of
   camlp5 and how to write them with quotations. Notice that, inside
@@ -656,7 +656,7 @@
 
 <h3>str_item</h3>
 
-<p>Structure items, i.e. toplevel phrase in a ".ml" file or "struct"s
+<p>Structure items, i.e. phrases in a ".ml" file or "struct"s
   elements.</p>
 
 <table border="1">
@@ -749,8 +749,8 @@
 
 <h3>sig_item</h3>
 
-<p>Signature items, i.e. phrases at toplevel in a ".mli" file or
-  "sig"s elements.</p>
+<p>Signature items, i.e. phrases in a ".mli" file or "sig"s
+  elements.</p>
 
 <table border="1">
   <tr>
@@ -759,71 +759,106 @@
     <th>Comment</th>
   </tr>
   <tr>
-    <td><tt>SgCls loc lcit</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td><tt>SgCls loc lcd</tt></td>
+    <td align="center"><tt>class $list:lcd$</tt></td>
+    <td>class</td>
   </tr>
   <tr>
-    <td><tt>SgClt loc lcit</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td><tt>SgClt loc lct</tt></td>
+    <td align="center"><tt>class type $list:lct$</tt></td>
+    <td>class type</td>
   </tr>
   <tr>
     <td><tt>SgDcl loc lsigi</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td align="center"><tt>declare $list:lsigi$ end</tt></td>
+    <td>declare</td>
   </tr>
   <tr>
-    <td><tt>SgDir loc s oe</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td><tt>SgDir loc s None</tt></td>
+    <td align="center"><tt># $s$</tt></td>
+    <td>directive</td>
+  </tr>
+  <tr>
+    <td><tt>SgDir loc s (Some e)</tt></td>
+    <td align="center"><tt># $s$ $e$</tt></td>
+    <td>directive</td>
   </tr>
   <tr>
     <td><tt>SgExc loc s lt</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td align="center"><tt>exception $s$ of $list:lt$</tt></td>
+    <td>exception</td>
   </tr>
   <tr>
     <td><tt>SgExt loc s t ls</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td align="center"><tt>external $s$ : $t$ = $list:ls$</tt></td>
+    <td>external</td>
   </tr>
   <tr>
-    <td><tt>SgInc loc mt</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td><tt>SgInc loc me</tt></td>
+    <td align="center"><tt>include $me$</tt></td>
+    <td>include</td>
   </tr>
   <tr>
     <td><tt>SgMod loc b lsmt</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td align="center"><tt>module $opt:b$ $list:lsmt$</tt></td>
+    <td>module</td>
   </tr>
   <tr>
     <td><tt>SgMty loc s mt</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td align="center"><tt>module type $s$ = $mt$</tt></td>
+    <td>module type</td>
   </tr>
   <tr>
     <td><tt>SgOpn loc ls</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td align="center"><tt>open $list:ls$</tt></td>
+    <td>open</td>
   </tr>
   <tr>
     <td><tt>SgTyp loc ltd</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td align="center"><tt>type $list:ltd$</tt></td>
+    <td>type declaration</td>
   </tr>
   <tr>
-    <td><tt>SgUse loc s lsigil</tt></td>
-    <td align="center"><tt></tt></td>
+    <td><tt>SgUse loc s lstrib</tt></td>
+    <td align="center"><tt>...internal use...</tt></td>
     <td></td>
   </tr>
   <tr>
     <td><tt>SgVal loc s t</tt></td>
-    <td align="center"><tt></tt></td>
-    <td></td>
+    <td align="center"><tt>value $s$ : $t$</tt></td>
+    <td>value</td>
   </tr>
 </table>
+
+<h3>module_expr</h3>
+
+<p>...to be completed...</p>
+
+<h3>module_type</h3>
+
+<p>...to be completed...</p>
+
+<h3>class_expr</h3>
+
+<p>...to be completed...</p>
+
+<h3>class_type</h3>
+
+<p>...to be completed...</p>
+
+<h3>class_str_item</h3>
+
+<p>...to be completed...</p>
+
+<h3>class_sig_item</h3>
+
+<p>...to be completed...</p>
+
+<h3>with_constr</h3>
+
+<p>...to be completed...</p>
+
+<h3>poly_variant</h3>
 
 <p>...to be completed...</p>
 
