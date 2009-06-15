@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.53 2007/07/06 12:24:07 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.54 2007/07/06 15:31:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -2677,20 +2677,19 @@ value class_type_params pc ctp =
 value class_def_or_type_decl char pc ci =
   horiz_vertic
     (fun () ->
-       sprintf "%s%s%s %s%c %s%s" pc.bef
-         (if ci.MLast.ciVir then " virtual" else "") ci.MLast.ciNam
+       sprintf "%s%s%s%s %c %s%s" pc.bef
+         (if ci.MLast.ciVir then " virtual" else "")
          (class_type_params {(pc) with bef = ""; aft = ""}
             (snd ci.MLast.ciPrm))
-         char
+         ci.MLast.ciNam char
          (class_type {(pc) with bef = ""; aft = ""} ci.MLast.ciExp) pc.aft)
     (fun () ->
        let s1 =
-         sprintf "%s%s%s %s%c" pc.bef
+         sprintf "%s%s%s%s %c" pc.bef
            (if ci.MLast.ciVir then "virtual " else "")
-           ci.MLast.ciNam
            (class_type_params {(pc) with bef = ""; aft = ""}
               (snd ci.MLast.ciPrm))
-           char
+           ci.MLast.ciNam char
        in
        let s2 =
          class_type {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
@@ -2717,18 +2716,19 @@ value class_type_decl_list pc cd =
 value class_decl pc ci =
   horiz_vertic
     (fun () ->
-       sprintf "%s%s%s %s= %s%s" pc.bef
-         (if ci.MLast.ciVir then "virtual " else "") ci.MLast.ciNam
+       sprintf "%s%s%s%s = %s%s" pc.bef
+         (if ci.MLast.ciVir then "virtual " else "")
          (class_type_params {(pc) with bef = ""; aft = ""}
             (snd ci.MLast.ciPrm))
+         ci.MLast.ciNam
          (class_expr {(pc) with bef = ""; aft = ""} ci.MLast.ciExp) pc.aft)
     (fun () ->
        let s1 =
-         sprintf "%s%s%s %s=" pc.bef
+         sprintf "%s%s%s%s =" pc.bef
            (if ci.MLast.ciVir then "virtual " else "")
-           ci.MLast.ciNam
            (class_type_params {(pc) with bef = ""; aft = ""}
               (snd ci.MLast.ciPrm))
+           ci.MLast.ciNam
        in
        let s2 =
          class_expr
@@ -3028,7 +3028,7 @@ lev.pr_rules :=
   [ <:ctyp< ? $i$ : $t$ >> ->
       fun curr next pc -> curr {(pc) with bef = sprintf "%s?%s:" pc.bef i} t
   | <:ctyp< ~ $i$ : $t$ >> ->
-      fun curr next pc -> curr {(pc) with bef = sprintf "%s~%s:" pc.bef i} t
+      fun curr next pc -> curr {(pc) with bef = sprintf "%s%s:" pc.bef i} t
   | <:ctyp< < $list:ml$ $opt:v$ > >> ->
       fun curr next pc ->
         if ml = [] then
@@ -3045,9 +3045,9 @@ lev.pr_rules :=
   | <:ctyp< [ = $list:pvl$ ] >> ->
       fun curr next pc -> variant_decl_list "" pc pvl
   | <:ctyp< [ > $list:pvl$ ] >> ->
-      fun curr next pc -> variant_decl_list " >" pc pvl
+      fun curr next pc -> variant_decl_list "> " pc pvl
   | <:ctyp< [ < $list:pvl$ ] >> ->
-      fun curr next pc -> variant_decl_list " <" pc pvl
+      fun curr next pc -> variant_decl_list "< " pc pvl
   | <:ctyp< [ < $list:pvl$ > $list:_$ ] >> ->
       fun curr next pc -> not_impl "variants 4" pc pvl
   | <:ctyp< $_$ as $_$ >> as z ->
@@ -3265,7 +3265,7 @@ value class_expr_simple =
   | z -> fun curr next pc -> not_impl "class_expr" pc z ]
 ;
 
-value method_or_method_virtual pc virt priv s t =
+value sig_method_or_method_virtual pc virt priv s t =
   horiz_vertic
     (fun () ->
        sprintf "%smethod%s%s %s : %s%s" pc.bef virt
@@ -3293,10 +3293,10 @@ value class_sig_item_top =
           (fun () -> not_impl "class_sig_item inherit vertic" pc ct)
   | <:class_sig_item< method $opt:priv$ $s$ : $t$ >> ->
       fun curr next pc ->
-        method_or_method_virtual pc "" priv s t
+        sig_method_or_method_virtual pc "" priv s t
   | <:class_sig_item< method virtual $opt:priv$ $s$ : $t$ >> ->
       fun curr next pc ->
-        method_or_method_virtual pc " virtual" priv s t
+        sig_method_or_method_virtual pc " virtual" priv s t
   | <:class_sig_item< value $opt:mf$ $s$ : $t$ >> ->
       fun curr next pc ->
         horiz_vertic
@@ -3343,29 +3343,19 @@ value class_str_item_top =
              sprintf "%s\n%s" s1 s2)
   | <:class_str_item< method virtual $opt:priv$ $s$ : $t$ >> ->
       fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%smethod virtual%s %s : %s%s" pc.bef
-               (if priv then " private" else "") s
-               (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-          (fun () ->
-             let s1 =
-               horiz_vertic
-                 (fun () ->
-                    sprintf "%smethod virtual%s %s :" pc.bef
-                      (if priv then " private" else "") s)
-                 (fun () -> not_impl "method vertic 2" pc s)
-             in
-             let s2 =
-               ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t
-             in
-             sprintf "%s\n%s" s1 s2)
+        sig_method_or_method_virtual pc "virtual " priv s t
   | <:class_str_item< method $opt:priv$ $s$ $opt:topt$ = $e$ >> ->
       fun curr next pc ->
+        let (pl, e) = expr_fun_args e in
+        let simple_patt = pr_patt.pr_fun "simple" in
+        let args =
+          if pl = [] then ""
+          else hlist simple_patt {(pc) with bef = " "; aft = ""} pl
+        in
         horiz_vertic
           (fun () ->
-             sprintf "%smethod%s %s%s = %s%s" pc.bef
-               (if priv then " private" else "") s
+             sprintf "%smethod%s %s%s%s = %s%s" pc.bef
+               (if priv then " private" else "") s args
                (match topt with
                 [ Some t ->
                     sprintf " : %s" (ctyp {(pc) with bef = ""; aft = ""} t)
@@ -3375,18 +3365,18 @@ value class_str_item_top =
              let s1 =
                match topt with
                [ None ->
-                   sprintf "%smethod%s %s =" pc.bef
-                     (if priv then " private" else "") s
+                   sprintf "%smethod%s %s%s =" pc.bef
+                     (if priv then " private" else "") s args
                | Some t ->
                    horiz_vertic
                      (fun () ->
-                        sprintf "%smethod%s %s : %s =" pc.bef
-                          (if priv then " private" else "") s
+                        sprintf "%smethod%s %s%s : %s =" pc.bef
+                          (if priv then " private" else "") s args
                           (ctyp {(pc) with bef = ""; aft = ""} t))
                      (fun () ->
                         let s1 =
-                          sprintf "%smethod%s %s :" pc.bef
-                            (if priv then " private" else "") s
+                          sprintf "%smethod%s %s%s :" pc.bef
+                            (if priv then " private" else "") s args
                         in
                         let s2 =
                           ctyp
@@ -3404,7 +3394,7 @@ value class_str_item_top =
       fun curr next pc ->
         horiz_vertic
           (fun () ->
-             sprintf "%stype %s = %s%s" pc.bef
+             sprintf "%sconstraint %s = %s%s" pc.bef
                (ctyp {(pc) with bef = ""; aft = ""} t1)
                (ctyp {(pc) with bef = ""; aft = ""} t2) pc.aft)
           (fun () -> not_impl "class_str_item type vertic" pc t1)
