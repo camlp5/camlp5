@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.80 2007/08/16 16:01:19 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.81 2007/08/16 16:07:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1367,7 +1367,7 @@ EXTEND_PRINTER
     | "assign"
       [ <:expr< $x$.val := $y$ >> -> operator pc next expr 2 ":=" x y
       | <:expr< $x$ := $y$ >> -> operator pc next expr 2 "<-" x y ]
-    | "bar"
+    | "or"
       [ z ->
           let unfold =
             fun
@@ -1376,7 +1376,7 @@ EXTEND_PRINTER
             | _ -> None ]
           in
           right_operator pc 0 unfold next z ]
-    | "amp"
+    | "and"
       [ z ->
           let unfold =
             fun
@@ -1479,7 +1479,7 @@ EXTEND_PRINTER
             in
             match cons_args_opt with
             [ Some (e, ([_; _ :: _] as al)) ->
-                let expr_or = Eprinter.apply_level pr_expr "bar" in
+                let expr_or = Eprinter.apply_level pr_expr "or" in
                 horiz_vertic
                   (fun () ->
                      sprintf "%s%s (%s)%s" pc.bef

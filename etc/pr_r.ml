@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.60 2007/08/16 16:01:19 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.61 2007/08/16 16:07:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1393,7 +1393,7 @@ EXTEND_PRINTER
                in
                let s3 = sprintf "%s}%s" (tab pc.ind) pc.aft in
                sprintf "%s\n%s\n%s" s1 s2 s3) ]
-    | "ass"
+    | "assign"
       [ <:expr< $x$ := $y$ >> -> operator pc next expr 2 ":=" x y ]
     | "or"
       [ z ->
