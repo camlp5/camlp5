@@ -1,6 +1,9 @@
 Camlp5 Version 5.01:
 ---------------------
 
+* [14 Oct 07] Changed 'pa_lex.cmo' into 'pa_lexer.cmo' with a different
+  syntax (actually 'pa_lex.cmo' will be still distributed for compatibility,
+  but without documentation).
 * [14 Oct 07] In the EXTEND statement, added "LIKE s" as possible
   level position to specify a level containing a rule containing "s"
   in its keywords or tokens.

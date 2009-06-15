@@ -192,7 +192,7 @@ Parsing files:
 .ta 1c
 	pa_r.cmo: revised syntax
 	pa_rp.cmo: streams and parsers
-        pa_lex.cmo: lexers
+	pa_lexer.cmo: lexers
 	pa_o.cmo: normal syntax
 	pa_op.cmo: streams and parsers
 	pa_oop.cmo: streams and parsers (without code optimization)
