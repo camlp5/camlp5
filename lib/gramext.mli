@@ -1,13 +1,18 @@
 (* camlp5r *)
-(* $Id: gramext.mli,v 1.21 2007/10/28 20:45:17 deraugla Exp $ *)
+(* $Id: gramext.mli,v 1.22 2007/10/29 12:29:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 type parser_t 'a = Stream.t 'a -> Obj.t;
 type fparser_t 'a = Fstream.t 'a -> option (Obj.t * Fstream.t 'a);
 
+type parse_algorithm =
+  [ ImperativeStreams | FunctionalStreams | DefaultAlgorithm ]
+;
+
 type grammar 'te =
   { gtokens : Hashtbl.t Plexing.pattern (ref int);
-    glexer : mutable Plexing.lexer 'te }
+    glexer : mutable Plexing.lexer 'te;
+    galgo : mutable parse_algorithm }
 ;
 
 type g_entry 'te =

@@ -1,5 +1,5 @@
 (* camlp5r pa_fstream.cmo *)
-(* $Id: grammar.ml,v 1.62 2007/10/29 09:02:59 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.63 2007/10/29 12:29:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Gramext;
@@ -1152,6 +1152,10 @@ value delete_rule entry sl =
   | Dparser _ -> () ]
 ;
 
+type parse_algorithm = Gramext.parse_algorithm ==
+  [ ImperativeStreams | FunctionalStreams | DefaultAlgorithm ]
+;
+
 value warning_verbose = Gramext.warning_verbose;
 
 (* Normal interface *)
@@ -1160,7 +1164,11 @@ type token = (string * string);
 type g = Gramext.grammar token;
 
 value create_toktab () = Hashtbl.create 301;
-value gcreate glexer = {gtokens = create_toktab (); glexer = glexer};
+value gcreate glexer =
+  {gtokens = create_toktab (); glexer = glexer; galgo = DefaultAlgorithm}
+;
+
+value set_algorithm g algo = g.galgo := algo;
 
 value tokens g con = do {
   let list = ref [] in
@@ -1332,7 +1340,7 @@ value find_entry e s =
 ;
 
 value functional_parse =
-  ref (try Sys.getenv "FPARSE" = "t" with [ Not_found -> False ])
+  ref (try Sys.getenv "CAMLP5_FPARSE" = "t" with [ Not_found -> False ])
 ;
 
 module Entry =
@@ -1345,8 +1353,15 @@ module Entry =
        fcontinue _ _ _ = fparser []; edesc = Dlevels []}
     ;
     value parse_parsable (entry : e 'a) p : 'a =
-      if functional_parse.val then Obj.magic (fparse_parsable entry p : Obj.t)
-      else Obj.magic (parse_parsable entry p : Obj.t)
+      match entry.egram.galgo with
+      [ DefaultAlgorithm ->
+          if functional_parse.val then
+            Obj.magic (fparse_parsable entry p : Obj.t)
+          else Obj.magic (parse_parsable entry p : Obj.t)
+      | ImperativeStreams ->
+          Obj.magic (parse_parsable entry p : Obj.t)
+      | FunctionalStreams ->
+          Obj.magic (fparse_parsable entry p : Obj.t) ]
     ;
     value parse (entry : e 'a) cs : 'a =
       let parsable = parsable entry.egram cs in
@@ -1432,6 +1447,7 @@ module type S =
     value parsable : Stream.t char -> parsable;
     value tokens : string -> list (string * int);
     value glexer : Plexing.lexer te;
+    value set_algorithm : parse_algorithm -> unit;
     module Entry :
       sig
         type e 'a = 'x;
@@ -1479,6 +1495,7 @@ module GMake (L : GLexerType) =
     ;
     value tokens = tokens gram;
     value glexer = glexer gram;
+    value set_algorithm algo = gram.galgo := algo;
     module Entry =
       struct
         type e 'a = g_entry te;
@@ -1489,8 +1506,15 @@ module GMake (L : GLexerType) =
         ;
         external obj : e 'a -> Gramext.g_entry te = "%identity";
         value parse (e : e 'a) p : 'a =
-          if functional_parse.val then Obj.magic (fparse_parsable e p : Obj.t)
-          else Obj.magic (parse_parsable e p : Obj.t)
+          match gram.galgo with
+          [ DefaultAlgorithm ->
+              if functional_parse.val then
+                Obj.magic (fparse_parsable e p : Obj.t)
+              else Obj.magic (parse_parsable e p : Obj.t)
+          | ImperativeStreams ->
+              Obj.magic (parse_parsable e p : Obj.t)
+          | FunctionalStreams ->
+              Obj.magic (fparse_parsable e p : Obj.t) ]
         ;
         value parse_token (e : e 'a) ts : 'a =
           Obj.magic (e.estart 0 ts : Obj.t)

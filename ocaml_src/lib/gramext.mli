@@ -5,9 +5,14 @@
 type 'a parser_t = 'a Stream.t -> Obj.t;;
 type 'a fparser_t = 'a Fstream.t -> (Obj.t * 'a Fstream.t) option;;
 
+type parse_algorithm =
+  ImperativeStreams | FunctionalStreams | DefaultAlgorithm
+;;
+
 type 'te grammar =
   { gtokens : (Plexing.pattern, int ref) Hashtbl.t;
-    mutable glexer : 'te Plexing.lexer }
+    mutable glexer : 'te Plexing.lexer;
+    mutable galgo : parse_algorithm }
 ;;
 
 type 'te g_entry =
