@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.142 2007/12/11 01:49:33 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.143 2007/12/11 01:55:56 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1449,21 +1449,15 @@ EXTEND_PRINTER
           if flag_expand_declare.val then
             if sil = [] then pc.bef
             else vlistl (semi_after sig_item) sig_item pc sil
-          else if sil = [] then sprintf "%sdeclare end%s" pc.bef pc.aft
+          else if sil = [] then pprintf pc "declare end"
           else
             horiz_vertic
               (fun () ->
-                 sprintf "%sdeclare%s%s%send%s" pc.bef " "
-                   (hlist (semi_after sig_item) {(pc) with bef = ""; aft = ""}
-                      sil)
-                   " " pc.aft)
+                 pprintf pc "declare %p end"
+                   (hlist (semi_after sig_item)) sil)
               (fun () ->
-                 sprintf "%sdeclare%s%s%send%s" pc.bef "\n"
-                   (vlist (semi_after sig_item)
-                      {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                       aft = ""}
-                      sil)
-                   ("\n" ^ tab pc.ind) pc.aft)
+                 pprintf pc "@[<a>declare@;%p@ end"
+                   (vlist (semi_after sig_item)) sil)
       | <:sig_item< exception $uid:e$ of $list:tl$ >> ->
           exception_decl pc (e, tl, [])
       | <:sig_item< external $lid:n$ : $t$ = $list:sl$ >> ->
@@ -1478,10 +1472,9 @@ EXTEND_PRINTER
       | <:sig_item< module type $uid:m$ = $mt$ >> ->
           sig_module_or_module_type " type" '=' pc (m, mt)
       | <:sig_item< open $i$ >> ->
-          mod_ident {(pc) with bef = sprintf "%sopen " pc.bef} i
+          pprintf pc "open %p" mod_ident i
       | <:sig_item< type $list:tdl$ >> ->
-          vlist2 type_decl (and_before type_decl)
-            {(pc) with bef = sprintf "%stype " pc.bef} tdl
+          pprintf pc "type %p" (vlist2 type_decl (and_before type_decl)) tdl
       | <:sig_item< value $lid:s$ : $t$ >> ->
           pprintf pc "value %p :@;%p" var_escaped s ctyp t
       | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->
