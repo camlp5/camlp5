@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.22 2007/07/16 13:20:48 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.23 2007/07/16 13:27:54 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -392,10 +392,19 @@ symbols. They are:</p>
 
 <h2>Interface with the lexer</h2>
 
-<p>To create one's lexer, and interface it with the extensible
-grammars, it is necessary to follow some steps. This section explains
-the notions of "token pattern", "token" and the "match function",
-necessary to build the interface.</p>
+<p>To create a grammar, the function "<tt>Grammar.gcreate</tt>" must be
+called, with a lexer as parameter.</p>
+
+<p>A simple solution, as possible lexer, is the predefined lexer built
+by "<tt>Plexer.gmake ()</tt>", lexer used for the ocaml grammar of
+camlp5. In this case, you can just put it as parameter of
+"<tt>Grammar.gcreate</tt>" and it is not necessary to read this
+section.</p>
+
+<p>Otherwise, if you want to create your own lexer, and interface it
+with the extensible grammars, it is necessary to follow some
+steps. This section explains the notions of "token pattern", "token"
+and the "match function", necessary to build the interface.</p>
 
 <h3>Token patterns</h3>
 
