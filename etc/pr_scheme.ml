@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.29 2007/10/12 02:17:25 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.30 2007/10/12 02:23:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -433,6 +433,8 @@ EXTEND_PRINTER
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s{" pc.bef;
              aft = sprintf "}%s" pc.aft}
             cdl
+      | <:ctyp< [ = $list:vl$ ] >> ->
+          not_impl "variants" pc 0
       | <:ctyp< ( $list:tl$ ) >> ->
           let tl = List.map (fun t -> (t, "")) tl in
           plistb curr 0
