@@ -1662,9 +1662,11 @@ let rec symbol_of_a =
             (* *)
             let s = Ploc.call_with quotify false symbol_of_a s in ss2 loc ls s
         | ASlist (_, _, _, _) ->
+            let ls = if ls = [] then ["list"] else ls in
             let s = Ploc.call_with quotify false symbol_of_a s in ss2 loc ls s
         | ASnterm (_, _, _) -> let s = symbol_of_a s in ss2 loc ls s
         | ASopt (_, _) ->
+            let ls = if ls = [] then ["opt"] else ls in
             let s = Ploc.call_with quotify false symbol_of_a s in ss2 loc ls s
         | AStok (loc, s, p) ->
             let p = option_map string_of_a p in sstoken2 loc ls s p

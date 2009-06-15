@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extend.ml,v 1.48 2007/09/24 15:26:37 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.49 2007/09/30 11:48:15 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -493,14 +493,15 @@ and check_slist rl =
               Some <:expr< Qast.VaAnt $str:_$ loc a >>) :: rl]
             when a_n = anti_anti n ->
               loop [n :: ls] rl
-(*
-          | [([(Some <:patt< a >>, (Snterm <:expr< $lid:_$ >> as s))],
-                Some <:expr< Qast.VaVal a >>)] ->
-              Some (Svala (List.rev ls) s)
-*)
           | [([(Some <:patt< a >>, s)], Some <:expr< Qast.VaVal $_$ >>)] ->
+              let ls =
+                match (s, ls) with
+                [ ((Slist0 _ | Slist0sep _ _), ["list"]) -> []
+                | ((Slist1 _ | Slist1sep _ _), ["list"]) -> []
+                | (Sopt _, ["opt"]) -> []
+                | _ -> ls ]                   
+              in
               Some (Svala (List.rev ls) s)
-(**)
           | _ -> None ] ]
 ;
 

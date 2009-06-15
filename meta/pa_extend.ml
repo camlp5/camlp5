@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.89 2007/09/24 20:29:44 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.90 2007/09/30 11:48:15 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -867,12 +867,14 @@ value rec symbol_of_a =
             let s = Ploc.call_with quotify False symbol_of_a s in
             ss2 loc ls s
         | ASlist _ _ _ _ ->
+            let ls = if ls = [] then ["list"] else ls in
             let s = Ploc.call_with quotify False symbol_of_a s in
             ss2 loc ls s
         | ASnterm _ _ _ ->
             let s = symbol_of_a s in
             ss2 loc ls s
         | ASopt _ _ ->
+            let ls = if ls = [] then ["opt"] else ls in
             let s = Ploc.call_with quotify False symbol_of_a s in
             ss2 loc ls s
         | AStok loc s p ->
