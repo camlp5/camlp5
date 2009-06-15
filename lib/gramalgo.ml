@@ -714,7 +714,8 @@ value lr0 entry lev = do {
   Hashtbl.iter
     (fun s i -> do {
        Printf.eprintf "  first (%s) =" s;
-       List.iter (fun s -> Printf.eprintf " %s" s) first.(i);
+       List.iter (fun s -> Printf.eprintf " %s" s)
+         (List.sort compare first.(i));
        Printf.eprintf "\n";
      })
     nterm_table;
@@ -767,7 +768,8 @@ value lr0 entry lev = do {
   Hashtbl.iter
     (fun s i -> do {
        Printf.eprintf "  follow (%s) =" s;
-       List.iter (fun s -> Printf.eprintf " %s" s) follow.(i);
+       List.iter (fun s -> Printf.eprintf " %s" s)
+         (List.sort compare follow.(i));
        Printf.eprintf "\n";
      })
     nterm_table;
