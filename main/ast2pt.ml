@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.11 2007/09/01 21:20:34 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.12 2007/09/06 04:26:18 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -115,6 +115,15 @@ value conv_lab = do {
 value array_function str name =
   ldot (lident str) (if fast.val then "unsafe_" ^ name else name)
 ;
+
+IFNDEF STRICT THEN
+  value unvala x = x
+ELSE
+  value unvala =
+    fun
+    [ Ploc.VaAnt _ -> invalid_arg "unvala"
+    | Ploc.VaVal v -> v ]
+END;
 
 value mkrf =
   fun
@@ -828,7 +837,7 @@ and str_item s l =
       apply_with_var glob_fname fn
         (fun () -> List.fold_right (fun (si, _) -> str_item si) sl l)
   | StVal loc rf pel ->
-      [mkstr loc (Pstr_value (mkrf rf) (List.map mkpe pel)) :: l] ]
+      [mkstr loc (Pstr_value (mkrf (unvala rf)) (List.map mkpe pel)) :: l] ]
 and class_type =
   fun
   [ CtCon loc id tl ->

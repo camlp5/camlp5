@@ -1,4 +1,4 @@
-(* camlp5r pa_extend.cmo q_MLast.cmo *)
+(* camlp5r pa_extend.cmo q_MLast.cmo pa_macro.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp5                                  *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.34 2007/09/03 20:44:01 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.35 2007/09/06 04:26:18 deraugla Exp $ *)
 
 value split_ext = ref False;
 
@@ -26,7 +26,8 @@ type styp =
   | STapp of loc and styp and styp
   | STquo of loc and string
   | STself of loc and string
-  | STtyp of MLast.ctyp ]
+  | STtyp of MLast.ctyp
+  | STvala of loc and styp ]
 ;
 
 type text 'e =
@@ -36,6 +37,7 @@ type text 'e =
   | TXnterm of loc and name 'e and option string
   | TXopt of loc and text 'e
   | TXflag of loc and text 'e
+  | TXflag2 of loc and text 'e
   | TXrules of loc and list (list (text 'e) * 'e)
   | TXself of loc
   | TXtok of loc and string and 'e ]
@@ -383,7 +385,8 @@ value rec make_ctyp styp tvar =
         Ploc.raise loc
           (Stream.Error ("'" ^ x ^ "' illegal in anonymous entry level"))
       else <:ctyp< '$lid:tvar$ >>
-  | STtyp t -> t ]
+  | STtyp t -> t
+  | STvala loc t -> <:ctyp< MLast.vala $make_ctyp t tvar$ >> ]
 ;
 
 value rec make_expr gmod tvar =
@@ -425,6 +428,7 @@ value rec make_expr gmod tvar =
                     ($n.expr$ : $uid:gmod$.Entry.e '$lid:n.tvar$)) >> ]
   | TXopt loc t -> <:expr< Gramext.Sopt $make_expr gmod "" t$ >>
   | TXflag loc t -> <:expr< Gramext.Sflag $make_expr gmod "" t$ >>
+  | TXflag2 loc t -> <:expr< Gramext.Sflag2 $make_expr gmod "" t$ >>
   | TXrules loc rl ->
       <:expr< Gramext.srules $make_expr_rules loc gmod rl ""$ >>
   | TXself loc -> <:expr< Gramext.Sself >>
@@ -602,7 +606,9 @@ value ssflag loc s =
     in
     let r2 =
       let prod =
-        [mk_psymbol <:patt< a >> (TXflag loc s.text) (STlid loc "bool")]
+        let styp = STlid loc "bool" in
+        let text = TXflag loc s.text in
+        [mk_psymbol <:patt< a >> text styp]
       in
       let act = <:expr< Qast.Bool a >> in
       {prod = prod; action = Some act}
@@ -613,6 +619,37 @@ value ssflag loc s =
   let text = TXrules loc (srules loc "a_flag" rl "") in
   let styp = STquo loc "a_flag" in
   {used = used; text = text; styp = styp}
+;
+
+value ssflag2 loc s =
+  IFNDEF STRICT THEN
+    ssflag loc s
+  ELSE
+    let rl =
+      let r1 =
+        let prod =
+          let n = mk_name loc <:expr< a_flag2 >> in
+          [mk_psymbol <:patt< a >> (TXnterm loc n None) (STquo loc "a_flag2")]
+        in
+        let act = <:expr< a >> in
+        {prod = prod; action = Some act}
+      in
+      let r2 =
+        let prod =
+          let styp = STlid loc "bool" in
+          let text = TXflag loc s.text in
+          [mk_psymbol <:patt< a >> text styp]
+        in
+        let act = <:expr< Qast.Vala (Qast.Bool a) >> in
+        {prod = prod; action = Some act}
+      in
+      [r1; r2]
+    in
+    let used = ["a_flag2" :: s.used] in
+    let text = TXrules loc (srules loc "a_flag2" rl "") in
+    let styp = STquo loc "a_flag2" in
+    {used = used; text = text; styp = styp}
+  END
 ;
 
 value text_of_entry loc gmod e =
@@ -876,7 +913,19 @@ EXTEND
           else
             let styp = STlid loc "bool" in
             let text = TXflag loc s.text in
-            {used = s.used; text = text; styp = styp} ]
+            {used = s.used; text = text; styp = styp}
+      | UIDENT "FLAG2"; s = SELF ->
+          if quotify.val then ssflag2 loc s
+          else
+            IFNDEF STRICT THEN
+              let styp = STlid loc "bool" in
+              let text = TXflag loc s.text in
+              {used = s.used; text = text; styp = styp}
+            ELSE
+              let styp = STvala loc (STlid loc "bool") in
+              let text = TXflag2 loc s.text in
+              {used = s.used; text = text; styp = styp}
+            END ]
     | [ UIDENT "SELF" ->
           {used = []; text = TXself loc; styp = STself loc "SELF"}
       | UIDENT "NEXT" ->

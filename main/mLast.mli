@@ -1,4 +1,4 @@
-(* camlp5r *)
+(* camlp5r pa_macro.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp5                                  *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: mLast.mli,v 1.9 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.10 2007/09/06 04:26:18 deraugla Exp $ *)
 
 (* Module [MLast]: abstract syntax tree.
 
@@ -20,6 +20,12 @@
    See also the file q_MLast.ml in Camlp5 sources. *)
 
 type loc = Ploc.t;
+
+IFNDEF STRICT THEN
+  type vala 'a = 'a
+ELSE
+  type vala 'a = Ploc.vala 'a
+END;
 
 type ctyp =
   [ TyAcc of loc and ctyp and ctyp
@@ -161,7 +167,7 @@ and str_item =
   | StOpn of loc and list string
   | StTyp of loc and list type_decl
   | StUse of loc and string and list (str_item * loc)
-  | StVal of loc and bool and list (patt * expr) ]
+  | StVal of loc and vala bool and list (patt * expr) ]
 and type_decl =
   { tdNam : (loc * string);
     tdPrm : list type_var;

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ploc.ml,v 1.1 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: ploc.ml,v 1.2 2007/09/06 04:26:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 type t =
@@ -96,4 +96,9 @@ value raise loc exc =
   match exc with
   [ Exc _ _ -> raise exc
   | _ -> raise (Exc loc exc) ]
+;
+
+type vala 'a =
+  [ VaAnt of string
+  | VaVal of 'a ]
 ;

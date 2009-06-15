@@ -1,4 +1,4 @@
-(* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
+(* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo pa_macro.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp5                                  *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.39 2007/09/04 13:12:44 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.40 2007/09/06 04:26:18 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -28,7 +28,9 @@ module Qast =
       | Apply of string and list t
       | Record of list (string * t)
       | Loc
-      | Antiquot of MLast.loc and string ]
+      | Antiquot of MLast.loc and string
+      | VaVal of t
+      | Vala of t ]
     ;
     value loc = Ploc.dummy;
     value expr_node m n =
@@ -73,7 +75,14 @@ module Qast =
                 in
                 raise (Ploc.Exc loc exc) ]
           in
-          <:expr< $anti:e$ >> ]
+          <:expr< $anti:e$ >>
+      | VaVal a ->
+          <:expr< Ploc.VaVal $to_expr m a$ >>
+      | Vala a ->
+          let e = to_expr m a in
+          match e with
+          [ <:expr< $anti:_$ >> -> e
+          | _ -> <:expr< Ploc.VaVal $e$ >> ] ]
     and to_expr_label m (l, a) = (<:patt< MLast.$lid:l$ >>, to_expr m a);
     value rec to_patt m =
       fun
@@ -101,7 +110,14 @@ module Qast =
                 let shift = Ploc.first_pos loc in
                 raise (Ploc.Exc (Ploc.shift shift loc1) exc) ]
           in
-          <:patt< $anti:p$ >> ]
+          <:patt< $anti:p$ >>
+      | VaVal a ->
+          <:patt< Ploc.VaVal $to_patt m a$ >>
+      | Vala a ->
+          let p = to_patt m a in
+          match p with
+          [ <:patt< $anti:_$ >> -> p
+          | _ -> <:patt< Ploc.VaVal $p$ >> ] ]
     and to_patt_label m (l, a) = (<:patt< MLast.$lid:l$ >>, to_patt m a);
   end
 ;
@@ -142,6 +158,7 @@ value poly_variant = Grammar.Entry.create gram "poly_variant";
 value a_list = Grammar.Entry.create gram "a_list";
 value a_opt = Grammar.Entry.create gram "a_opt";
 value a_flag = Grammar.Entry.create gram "a_flag";
+value a_flag2 = Grammar.Entry.create gram "a_flag2";
 value a_UIDENT = Grammar.Entry.create gram "a_UIDENT";
 value a_LIDENT = Grammar.Entry.create gram "a_LIDENT";
 value a_INT = Grammar.Entry.create gram "a_INT";
@@ -292,7 +309,7 @@ EXTEND
       | "open"; i = mod_ident -> Qast.Node "StOpn" [Qast.Loc; i]
       | "type"; tdl = SLIST1 type_declaration SEP "and" ->
           Qast.Node "StTyp" [Qast.Loc; tdl]
-      | "value"; r = SFLAG "rec"; l = SLIST1 let_binding SEP "and" ->
+      | "value"; r = SFLAG2 "rec"; l = SLIST1 let_binding SEP "and" ->
           Qast.Node "StVal" [Qast.Loc; r; l]
       | e = expr -> Qast.Node "StExp" [Qast.Loc; e] ] ]
   ;
@@ -1195,7 +1212,17 @@ EXTEND
     [ [ a = ANTIQUOT "opt" -> antiquot "opt" loc a ] ]
   ;
   a_flag:
-    [ [ a = ANTIQUOT "flag" -> antiquot "flag" loc a ] ]
+    [ [ a = ANTIQUOT "flag" -> antiquot "flag" loc a
+      | a = ANTIQUOT "aflag" -> antiquot "aflag" loc a ] ]
+  ;
+  a_flag2:
+    [ [ a = ANTIQUOT "flag" ->
+          IFNDEF STRICT THEN
+            antiquot "flag" loc a 
+          ELSE
+            Qast.VaVal (antiquot "flag" loc a)
+          END
+      | a = ANTIQUOT "aflag" -> antiquot "aflag" loc a ] ]
   ;
   (* compatibility; deprecated since version 4.07 *)
   a_opt:
@@ -1203,6 +1230,10 @@ EXTEND
   ;
   (* compatibility; deprecated since version 4.07 *)
   a_flag:
+    [ [ a = ANTIQUOT "opt" -> antiquot "opt" loc a ] ]
+  ;
+  (* compatibility; deprecated since version 4.07 *)
+  a_flag2:
     [ [ a = ANTIQUOT "opt" -> antiquot "opt" loc a ] ]
   ;
   a_UIDENT:

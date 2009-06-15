@@ -113,6 +113,8 @@ let array_function str name =
   ldot (lident str) (if !fast then "unsafe_" ^ name else name)
 ;;
 
+let unvala x = x;;
+
 let mkrf =
   function
     true -> Recursive
@@ -946,7 +948,7 @@ and str_item s l =
       apply_with_var glob_fname fn
         (fun () -> List.fold_right (fun (si, _) -> str_item si) sl l)
   | StVal (loc, rf, pel) ->
-      mkstr loc (Pstr_value (mkrf rf, List.map mkpe pel)) :: l
+      mkstr loc (Pstr_value (mkrf (unvala rf), List.map mkpe pel)) :: l
 and class_type =
   function
     CtCon (loc, id, tl) ->

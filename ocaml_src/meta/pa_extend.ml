@@ -1,4 +1,4 @@
-(* camlp5r pa_extend.cmo q_MLast.cmo *)
+(* camlp5r pa_extend.cmo q_MLast.cmo pa_macro.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp5                                  *)
@@ -27,6 +27,7 @@ type styp =
   | STquo of loc * string
   | STself of loc * string
   | STtyp of MLast.ctyp
+  | STvala of loc * styp
 ;;
 
 type 'e text =
@@ -36,6 +37,7 @@ type 'e text =
   | TXnterm of loc * 'e name * string option
   | TXopt of loc * 'e text
   | TXflag of loc * 'e text
+  | TXflag2 of loc * 'e text
   | TXrules of loc * ('e text list * 'e) list
   | TXself of loc
   | TXtok of loc * string * 'e
@@ -851,6 +853,12 @@ let rec make_ctyp styp tvar =
           (Stream.Error ("'" ^ x ^ "' illegal in anonymous entry level"))
       else MLast.TyQuo (loc, tvar)
   | STtyp t -> t
+  | STvala (loc, t) ->
+      MLast.TyApp
+        (loc,
+         MLast.TyAcc
+           (loc, MLast.TyUid (loc, "MLast"), MLast.TyLid (loc, "vala")),
+         make_ctyp t tvar)
 ;;
 
 let rec make_expr gmod tvar =
@@ -996,6 +1004,12 @@ let rec make_expr gmod tvar =
         (loc,
          MLast.ExAcc
            (loc, MLast.ExUid (loc, "Gramext"), MLast.ExUid (loc, "Sflag")),
+         make_expr gmod "" t)
+  | TXflag2 (loc, t) ->
+      MLast.ExApp
+        (loc,
+         MLast.ExAcc
+           (loc, MLast.ExUid (loc, "Gramext"), MLast.ExUid (loc, "Sflag2")),
          make_expr gmod "" t)
   | TXrules (loc, rl) ->
       MLast.ExApp
@@ -1228,8 +1242,9 @@ let ssflag loc s =
     in
     let r2 =
       let prod =
-        [mk_psymbol (MLast.PaLid (loc, "a")) (TXflag (loc, s.text))
-           (STlid (loc, "bool"))]
+        let styp = STlid (loc, "bool") in
+        let text = TXflag (loc, s.text) in
+        [mk_psymbol (MLast.PaLid (loc, "a")) text styp]
       in
       let act =
         MLast.ExApp
@@ -1246,6 +1261,8 @@ let ssflag loc s =
   let text = TXrules (loc, srules loc "a_flag" rl "") in
   let styp = STquo (loc, "a_flag") in {used = used; text = text; styp = styp}
 ;;
+
+let ssflag2 loc s = ssflag loc s;;
 
 let text_of_entry loc gmod e =
   let ent =
@@ -1852,7 +1869,16 @@ Grammar.extend
             'psymbol))]];
     Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e), None,
     [Some "top", Some Gramext.NonA,
-     [[Gramext.Stoken ("UIDENT", "FLAG"); Gramext.Sself],
+     [[Gramext.Stoken ("UIDENT", "FLAG2"); Gramext.Sself],
+      Gramext.action
+        (fun (s : 'symbol) _ (loc : Ploc.t) ->
+           (if !quotify then ssflag2 loc s
+            else
+              let styp = STlid (loc, "bool") in
+              let text = TXflag (loc, s.text) in
+              {used = s.used; text = text; styp = styp} :
+            'symbol));
+      [Gramext.Stoken ("UIDENT", "FLAG"); Gramext.Sself],
       Gramext.action
         (fun (s : 'symbol) _ (loc : Ploc.t) ->
            (if !quotify then ssflag loc s

@@ -106,3 +106,8 @@ let raise loc exc =
     Exc (_, _) -> raise exc
   | _ -> raise (Exc (loc, exc))
 ;;
+
+type 'a vala =
+    VaAnt of string
+  | VaVal of 'a
+;;

@@ -535,3 +535,5 @@ Pcaml.add_option "-U" (Arg.String undef)
 
 Pcaml.add_option "-defined" (Arg.Unit print_defined)
   " Print the defined macros and exit.";;
+
+define None "NO_STRICT";;

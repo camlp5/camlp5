@@ -1,4 +1,4 @@
-(* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
+(* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo pa_macro.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp5                                  *)
@@ -29,6 +29,8 @@ module Qast =
       | Record of (string * t) list
       | Loc
       | Antiquot of MLast.loc * string
+      | VaVal of t
+      | Vala of t
     ;;
     let loc = Ploc.dummy;;
     let expr_node m n =
@@ -82,6 +84,23 @@ module Qast =
                 raise (Ploc.Exc (loc, exc))
           in
           MLast.ExAnt (loc, e)
+      | VaVal a ->
+          MLast.ExApp
+            (loc,
+             MLast.ExAcc
+               (loc, MLast.ExUid (loc, "Ploc"), MLast.ExUid (loc, "VaVal")),
+             to_expr m a)
+      | Vala a ->
+          let e = to_expr m a in
+          match e with
+            MLast.ExAnt (_, _) -> e
+          | _ ->
+              MLast.ExApp
+                (loc,
+                 MLast.ExAcc
+                   (loc, MLast.ExUid (loc, "Ploc"),
+                    MLast.ExUid (loc, "VaVal")),
+                 e)
     and to_expr_label m (l, a) =
       MLast.PaAcc (loc, MLast.PaUid (loc, "MLast"), MLast.PaLid (loc, l)),
       to_expr m a
@@ -121,6 +140,23 @@ module Qast =
                 raise (Ploc.Exc (Ploc.shift shift loc1, exc))
           in
           MLast.PaAnt (loc, p)
+      | VaVal a ->
+          MLast.PaApp
+            (loc,
+             MLast.PaAcc
+               (loc, MLast.PaUid (loc, "Ploc"), MLast.PaUid (loc, "VaVal")),
+             to_patt m a)
+      | Vala a ->
+          let p = to_patt m a in
+          match p with
+            MLast.PaAnt (_, _) -> p
+          | _ ->
+              MLast.PaApp
+                (loc,
+                 MLast.PaAcc
+                   (loc, MLast.PaUid (loc, "Ploc"),
+                    MLast.PaUid (loc, "VaVal")),
+                 p)
     and to_patt_label m (l, a) =
       MLast.PaAcc (loc, MLast.PaUid (loc, "MLast"), MLast.PaLid (loc, l)),
       to_patt m a
@@ -164,6 +200,7 @@ let poly_variant = Grammar.Entry.create gram "poly_variant";;
 let a_list = Grammar.Entry.create gram "a_list";;
 let a_opt = Grammar.Entry.create gram "a_opt";;
 let a_flag = Grammar.Entry.create gram "a_flag";;
+let a_flag2 = Grammar.Entry.create gram "a_flag2";;
 let a_UIDENT = Grammar.Entry.create gram "a_UIDENT";;
 let a_LIDENT = Grammar.Entry.create gram "a_LIDENT";;
 let a_INT = Grammar.Entry.create gram "a_INT";;
@@ -583,7 +620,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 282, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 299, 19))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -833,7 +870,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 337, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 354, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -3762,10 +3799,24 @@ Grammar.extend
        (fun (a : string) (loc : Ploc.t) -> (antiquot "opt" loc a : 'a_opt))]];
    Grammar.Entry.obj (a_flag : 'a_flag Grammar.Entry.e), None,
    [None, None,
-    [[Gramext.Stoken ("ANTIQUOT", "flag")],
+    [[Gramext.Stoken ("ANTIQUOT", "aflag")],
+     Gramext.action
+       (fun (a : string) (loc : Ploc.t) ->
+          (antiquot "aflag" loc a : 'a_flag));
+     [Gramext.Stoken ("ANTIQUOT", "flag")],
      Gramext.action
        (fun (a : string) (loc : Ploc.t) ->
           (antiquot "flag" loc a : 'a_flag))]];
+   Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e), None,
+   [None, None,
+    [[Gramext.Stoken ("ANTIQUOT", "aflag")],
+     Gramext.action
+       (fun (a : string) (loc : Ploc.t) ->
+          (antiquot "aflag" loc a : 'a_flag2));
+     [Gramext.Stoken ("ANTIQUOT", "flag")],
+     Gramext.action
+       (fun (a : string) (loc : Ploc.t) ->
+          (antiquot "flag" loc a : 'a_flag2))]];
    Grammar.Entry.obj (a_opt : 'a_opt Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Stoken ("ANTIQUOT", "when")],
@@ -3778,6 +3829,12 @@ Grammar.extend
      Gramext.action
        (fun (a : string) (loc : Ploc.t) ->
           (antiquot "opt" loc a : 'a_flag))]];
+   Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e), None,
+   [None, None,
+    [[Gramext.Stoken ("ANTIQUOT", "opt")],
+     Gramext.action
+       (fun (a : string) (loc : Ploc.t) ->
+          (antiquot "opt" loc a : 'a_flag2))]];
    Grammar.Entry.obj (a_UIDENT : 'a_UIDENT Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Stoken ("UIDENT", "")],

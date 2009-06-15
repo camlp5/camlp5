@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.40 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.41 2007/09/06 04:26:18 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -156,8 +156,8 @@ EXTEND
       | "open"; i = mod_ident -> <:str_item< open $i$ >>
       | "type"; tdl = LIST1 type_declaration SEP "and" ->
           <:str_item< type $list:tdl$ >>
-      | "value"; r = FLAG "rec"; l = LIST1 let_binding SEP "and" ->
-          <:str_item< value $flag:r$ $list:l$ >>
+      | "value"; r = FLAG2 "rec"; l = LIST1 let_binding SEP "and" ->
+          <:str_item< value $aflag:(*Ploc.VaVal*) r$ $list:l$ >>
       | e = expr -> <:str_item< $exp:e$ >> ] ]
   ;
   rebind_exn:
