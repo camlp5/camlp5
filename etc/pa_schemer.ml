@@ -321,9 +321,9 @@ type sexpr =
   | Schar of MLast.loc and MLast.v string
   | Sexpr of MLast.loc and list sexpr
   | Sint of MLast.loc and MLast.v string
-  | Sint_l of MLast.loc and string
-  | Sint_L of MLast.loc and string
-  | Sint_n of MLast.loc and string
+  | Sint_l of MLast.loc and MLast.v string
+  | Sint_L of MLast.loc and MLast.v string
+  | Sint_n of MLast.loc and MLast.v string
   | Sfloat of MLast.loc and MLast.v string
   | Slid of MLast.loc and string
   | Slidv of MLast.loc and MLast.v string
@@ -333,7 +333,8 @@ type sexpr =
   | Srec of MLast.loc and list sexpr
   | Sstring of MLast.loc and string
   | Stid of MLast.loc and string
-  | Suid of MLast.loc and string ]
+  | Suid of MLast.loc and string
+  | Suidv of MLast.loc and MLast.v string ]
 ;
 
 value loc_of_sexpr =
@@ -341,7 +342,7 @@ value loc_of_sexpr =
   [ Sacc loc _ _ | Santi loc _ _ | Sarr loc _ | Schar loc _ | Sexpr loc _ |
     Sint loc _ | Sint_l loc _ | Sint_L loc _ | Sint_n loc _ | Sfloat loc _ |
     Slid loc _ | Slidv loc _ | Slist loc _ | Sqid loc _ | Squot loc _ _ |
-    Srec loc _ | Sstring loc _ | Stid loc _ | Suid loc _ ->
+    Srec loc _ | Sstring loc _ | Stid loc _ | Suid loc _ | Suidv loc _ ->
       loc ]
 ;
 value error_loc loc err = Ploc.raise loc (Stream.Error (err ^ " expected"));
@@ -409,6 +410,7 @@ value rec module_expr_se =
       let me2 = module_expr_se se2 in
       <:module_expr< $me1$ . $me2$ >>
   | Suid loc s -> <:module_expr< $uid:(rename_id s)$ >>
+  | Santi loc "" s -> <:module_expr< $xtr:s$ >>
   | se -> error se "module expr" ]
 and module_type_se =
   fun
@@ -536,10 +538,11 @@ and expr_se =
   | Slid loc s -> lident_expr loc s
   | Slidv loc s -> <:expr< $_lid:s$ >>
   | Suid loc s -> <:expr< $uid:(rename_id s)$ >>
+  | Suidv loc s -> <:expr< $_uid:s$ >>
   | Sint loc s -> <:expr< $_int:s$ >>
-  | Sint_l loc s -> <:expr< $int32:s$ >>
-  | Sint_L loc s -> <:expr< $int64:s$ >>
-  | Sint_n loc s -> <:expr< $nativeint:s$ >>
+  | Sint_l loc s -> <:expr< $_int32:s$ >>
+  | Sint_L loc s -> <:expr< $_int64:s$ >>
+  | Sint_n loc s -> <:expr< $_nativeint:s$ >>
   | Sfloat loc s -> <:expr< $_flo:s$ >>
   | Schar loc s -> <:expr< $_chr:s$ >>
   | Sstring loc s -> <:expr< $str:s$ >>
@@ -613,7 +616,7 @@ and expr_se =
         match sei with
         [ Slid _ i -> <:vala< (rename_id i) >>
         | Slidv _ i -> i
-        | _ -> error_loc loc "lid" ]
+        | se -> error_loc (loc_of_sexpr se) "lident" ]
       in
       let e1 = expr_se se1 in
       let e2 = expr_se se2 in
@@ -646,9 +649,13 @@ and expr_se =
       match sel with
       [ [Sexpr _ sel1 :: sel2] ->
           let r = r = "letrec" in
-          let lbs = List.map let_binding_se sel1 in
+          let lbs =
+            match sel1 with
+            [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
+            | _ -> <:vala< (List.map let_binding_se sel1) >> ]
+          in
           let e = begin_se loc sel2 in
-          <:expr< let $flag:r$ $list:lbs$ in $e$ >>
+          <:expr< let $flag:r$ $_list:lbs$ in $e$ >>
       | [Slid _ n; Sexpr _ sl :: sel] ->
           let n = rename_id n in
           let (pl, el) =
@@ -681,10 +688,16 @@ and expr_se =
             sel1 (begin_se loc sel2)
       | [se :: _] -> error se "let_binding"
       | _ -> error_loc loc "let_binding" ]
-  | Sexpr loc [Slid _ "letmodule"; Suid _ s; se1; se2] ->
+  | Sexpr loc [Slid _ "letmodule"; seu; se1; se2] ->
+      let s =
+        match seu with
+        [ Suid _ s -> <:vala< s >>
+        | Suidv _ i -> i
+        | se -> error_loc (loc_of_sexpr se) "uident" ]
+      in
       let me = module_expr_se se1 in
       let e = expr_se se2 in
-      <:expr< let module $s$ = $me$ in $e$ >>
+      <:expr< let module $_:s$ = $me$ in $e$ >>
   | Sexpr loc [Slid _ "match"; se :: sel] ->
       let e = expr_se se in
       let pel = List.map (match_case loc) sel in
@@ -888,12 +901,13 @@ and patt_se =
       <:patt< $p1$ . $p2$ >>
   | Slid loc "_" -> <:patt< _ >>
   | Slid loc s -> <:patt< $lid:(rename_id s)$ >>
-  | Slidv loc s -> Ploc.raise loc (Failure "Slidv")
+  | Slidv loc s -> <:patt< $_lid:s$ >>
   | Suid loc s -> <:patt< $uid:(rename_id s)$ >>
+  | Suidv loc s -> <:patt< $_uid:s$ >>
   | Sint loc s -> <:patt< $_int:s$ >>
-  | Sint_l loc s -> <:patt< $int32:s$ >>
-  | Sint_L loc s -> <:patt< $int64:s$ >>
-  | Sint_n loc s -> <:patt< $nativeint:s$ >>
+  | Sint_l loc s -> <:patt< $_int32:s$ >>
+  | Sint_L loc s -> <:patt< $_int64:s$ >>
+  | Sint_n loc s -> <:patt< $_nativeint:s$ >>
   | Sfloat loc s -> <:patt< $_flo:s$ >>
   | Schar loc s -> <:patt< $_chr:s$ >>
   | Sstring loc s -> <:patt< $str:s$ >>
@@ -1187,12 +1201,13 @@ EXTEND
       | s = LIDENT -> Slid loc s
       | s = V LIDENT -> Slidv loc s
       | s = UIDENT -> Suid loc s
+      | s = V UIDENT -> Suidv loc s
       | s = TILDEIDENT -> Stid loc s
       | s = QUESTIONIDENT -> Sqid loc s
       | s = V INT -> Sint loc s
-      | s = INT_l -> Sint_l loc s
-      | s = INT_L -> Sint_L loc s
-      | s = INT_n -> Sint_n loc s
+      | s = V INT_l -> Sint_l loc s
+      | s = V INT_L -> Sint_L loc s
+      | s = V INT_n -> Sint_n loc s
       | s = V FLOAT -> Sfloat loc s
       | s = V CHAR -> Schar loc s
       | s = STRING -> Sstring loc s

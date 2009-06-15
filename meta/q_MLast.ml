@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.118 2007/10/07 10:49:01 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.119 2007/10/07 18:58:22 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -1190,59 +1190,63 @@ END;
 
 (* Antiquotations *)
 
+value antiquot_xtr loc n a =
+  if Pcaml.strict_mode.val then
+    Qast.Node n [Qast.Loc; Qast.VaAnt "xtr" loc a; Qast.Option None]
+  else
+    Qast.Apply "failwith" [Qast.Str "antiquotation not authorized"]
+;
+
 EXTEND
   module_expr: LEVEL "simple"
     [ [ a = ANTIQUOT "mexp" -> Qast.VaAnt "mexp" loc a
+      | a = ANTIQUOT "xtr" -> antiquot_xtr loc "MeXtr" a
       | a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
   ;
   str_item: LEVEL "top"
     [ [ a = ANTIQUOT "stri" -> Qast.VaAnt "stri" loc a
+      | a = ANTIQUOT "xtr" -> antiquot_xtr loc "StXtr" a
       | a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
   ;
   module_type: LEVEL "simple"
     [ [ a = ANTIQUOT "mtyp" -> Qast.VaAnt "mtyp" loc a
+      | a = ANTIQUOT "xtr" -> antiquot_xtr loc "MtXtr" a
       | a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
   ;
   sig_item: LEVEL "top"
     [ [ a = ANTIQUOT "sigi" -> Qast.VaAnt "sigi" loc a
+      | a = ANTIQUOT "xtr" -> antiquot_xtr loc "SgXtr" a
       | a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
   ;
   expr: LEVEL "simple"
     [ [ a = ANTIQUOT "exp" -> Qast.VaAnt "exp" loc a
       | a = ANTIQUOT "" -> Qast.VaAnt "" loc a
-      | a = ANTIQUOT "xtr" ->
-          if Pcaml.strict_mode.val then
-            Qast.Node "ExXtr"
-              [Qast.Loc; Qast.VaAnt "xtr" loc a; Qast.Option None]
-          else
-            Qast.Apply "failwith" [Qast.Str "antiquotation not authorized"]
+      | a = ANTIQUOT "xtr" -> antiquot_xtr loc "ExXtr" a
       | a = ANTIQUOT "anti" ->
           Qast.Node "ExAnt" [Qast.Loc; Qast.VaAnt "anti" loc a] ] ]
   ;
   patt: LEVEL "simple"
     [ [ a = ANTIQUOT "pat" -> Qast.VaAnt "pat" loc a
       | a = ANTIQUOT -> Qast.VaAnt "" loc a
-      | a = ANTIQUOT "xtr" ->
-          if Pcaml.strict_mode.val then
-            Qast.Node "PaXtr"
-              [Qast.Loc; Qast.VaAnt "xtr" loc a; Qast.Option None]
-          else
-            Qast.Apply "failwith" [Qast.Str "antiquotation not authorized"]
+      | a = ANTIQUOT "xtr" -> antiquot_xtr loc "PaXtr" a
       | a = ANTIQUOT "anti" ->
           Qast.Node "PaAnt" [Qast.Loc; Qast.VaAnt "anti" loc a] ] ]
   ;
   ipatt:
     [ [ a = ANTIQUOT "pat" -> Qast.VaAnt "pat" loc a
+      | a = ANTIQUOT "xtr" -> antiquot_xtr loc "PaXtr" a
       | a = ANTIQUOT -> Qast.VaAnt "" loc a
       | a = ANTIQUOT "anti" ->
           Qast.Node "PaAnt" [Qast.Loc; Qast.VaAnt "anti" loc a] ] ]
   ;
   ctyp: LEVEL "simple"
     [ [ a = ANTIQUOT "typ" -> Qast.VaAnt "typ" loc a
+      | a = ANTIQUOT "xtr" -> antiquot_xtr loc "TyXtr" a
       | a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
   ;
   class_expr: LEVEL "simple"
-    [ [ a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
+    [ [ a = ANTIQUOT "xtr" -> antiquot_xtr loc "CeXtr" a
+      | a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
   ;
   class_str_item:
     [ [ a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
@@ -1251,7 +1255,8 @@ EXTEND
     [ [ a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
   ;
   class_type:
-    [ [ a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
+    [ [ a = ANTIQUOT "xtr" -> antiquot_xtr loc "CtXtr" a
+      | a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
   ;
 END;
 

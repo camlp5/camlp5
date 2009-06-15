@@ -36,6 +36,10 @@
 <:expr< ~$s$: $e$ >>;
 <:expr< ~$_:s$: $e$ >>;
 <:expr< lazy $e$ >>;
+<:expr< let $list:lpe$ in $e$ >>;
+<:expr< let $_list:lpe$ in $e$ >>;
+<:expr< let rec $list:lpe$ in $e$ >>;
+<:expr< let rec $_list:lpe$ in $e$ >>;
 <:expr< let $flag:b$ $list:lpe$ in $e$ >>;
 <:expr< let $_flag:b$ $_list:lpe$ in $e$ >>;
 <:expr< $lid:s$ >>;

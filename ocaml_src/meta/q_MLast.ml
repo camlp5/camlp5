@@ -5934,6 +5934,12 @@ Grammar.extend
 
 (* Antiquotations *)
 
+let antiquot_xtr loc n a =
+  if !(Pcaml.strict_mode) then
+    Qast.Node (n, [Qast.Loc; Qast.VaAnt ("xtr", loc, a); Qast.Option None])
+  else Qast.Apply ("failwith", [Qast.Str "antiquotation not authorized"])
+;;
+
 Grammar.extend
   [Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e),
    Some (Gramext.Level "simple"),
@@ -5942,6 +5948,10 @@ Grammar.extend
      Gramext.action
        (fun (a : string) (loc : Ploc.t) ->
           (Qast.VaAnt ("", loc, a) : 'module_expr));
+     [Gramext.Stoken ("ANTIQUOT", "xtr")],
+     Gramext.action
+       (fun (a : string) (loc : Ploc.t) ->
+          (antiquot_xtr loc "MeXtr" a : 'module_expr));
      [Gramext.Stoken ("ANTIQUOT", "mexp")],
      Gramext.action
        (fun (a : string) (loc : Ploc.t) ->
@@ -5953,6 +5963,10 @@ Grammar.extend
      Gramext.action
        (fun (a : string) (loc : Ploc.t) ->
           (Qast.VaAnt ("", loc, a) : 'str_item));
+     [Gramext.Stoken ("ANTIQUOT", "xtr")],
+     Gramext.action
+       (fun (a : string) (loc : Ploc.t) ->
+          (antiquot_xtr loc "StXtr" a : 'str_item));
      [Gramext.Stoken ("ANTIQUOT", "stri")],
      Gramext.action
        (fun (a : string) (loc : Ploc.t) ->
@@ -5964,6 +5978,10 @@ Grammar.extend
      Gramext.action
        (fun (a : string) (loc : Ploc.t) ->
           (Qast.VaAnt ("", loc, a) : 'module_type));
+     [Gramext.Stoken ("ANTIQUOT", "xtr")],
+     Gramext.action
+       (fun (a : string) (loc : Ploc.t) ->
+          (antiquot_xtr loc "MtXtr" a : 'module_type));
      [Gramext.Stoken ("ANTIQUOT", "mtyp")],
      Gramext.action
        (fun (a : string) (loc : Ploc.t) ->
@@ -5975,6 +5993,10 @@ Grammar.extend
      Gramext.action
        (fun (a : string) (loc : Ploc.t) ->
           (Qast.VaAnt ("", loc, a) : 'sig_item));
+     [Gramext.Stoken ("ANTIQUOT", "xtr")],
+     Gramext.action
+       (fun (a : string) (loc : Ploc.t) ->
+          (antiquot_xtr loc "SgXtr" a : 'sig_item));
      [Gramext.Stoken ("ANTIQUOT", "sigi")],
      Gramext.action
        (fun (a : string) (loc : Ploc.t) ->
@@ -5990,14 +6012,7 @@ Grammar.extend
      [Gramext.Stoken ("ANTIQUOT", "xtr")],
      Gramext.action
        (fun (a : string) (loc : Ploc.t) ->
-          (if !(Pcaml.strict_mode) then
-             Qast.Node
-               ("ExXtr",
-                [Qast.Loc; Qast.VaAnt ("xtr", loc, a); Qast.Option None])
-           else
-             Qast.Apply
-               ("failwith", [Qast.Str "antiquotation not authorized"]) :
-           'expr));
+          (antiquot_xtr loc "ExXtr" a : 'expr));
      [Gramext.Stoken ("ANTIQUOT", "")],
      Gramext.action
        (fun (a : string) (loc : Ploc.t) -> (Qast.VaAnt ("", loc, a) : 'expr));
@@ -6016,14 +6031,7 @@ Grammar.extend
      [Gramext.Stoken ("ANTIQUOT", "xtr")],
      Gramext.action
        (fun (a : string) (loc : Ploc.t) ->
-          (if !(Pcaml.strict_mode) then
-             Qast.Node
-               ("PaXtr",
-                [Qast.Loc; Qast.VaAnt ("xtr", loc, a); Qast.Option None])
-           else
-             Qast.Apply
-               ("failwith", [Qast.Str "antiquotation not authorized"]) :
-           'patt));
+          (antiquot_xtr loc "PaXtr" a : 'patt));
      [Gramext.Stoken ("ANTIQUOT", "")],
      Gramext.action
        (fun (a : string) (loc : Ploc.t) -> (Qast.VaAnt ("", loc, a) : 'patt));
@@ -6042,6 +6050,10 @@ Grammar.extend
      Gramext.action
        (fun (a : string) (loc : Ploc.t) ->
           (Qast.VaAnt ("", loc, a) : 'ipatt));
+     [Gramext.Stoken ("ANTIQUOT", "xtr")],
+     Gramext.action
+       (fun (a : string) (loc : Ploc.t) ->
+          (antiquot_xtr loc "PaXtr" a : 'ipatt));
      [Gramext.Stoken ("ANTIQUOT", "pat")],
      Gramext.action
        (fun (a : string) (loc : Ploc.t) ->
@@ -6052,6 +6064,10 @@ Grammar.extend
     [[Gramext.Stoken ("ANTIQUOT", "")],
      Gramext.action
        (fun (a : string) (loc : Ploc.t) -> (Qast.VaAnt ("", loc, a) : 'ctyp));
+     [Gramext.Stoken ("ANTIQUOT", "xtr")],
+     Gramext.action
+       (fun (a : string) (loc : Ploc.t) ->
+          (antiquot_xtr loc "TyXtr" a : 'ctyp));
      [Gramext.Stoken ("ANTIQUOT", "typ")],
      Gramext.action
        (fun (a : string) (loc : Ploc.t) ->
@@ -6062,7 +6078,11 @@ Grammar.extend
     [[Gramext.Stoken ("ANTIQUOT", "")],
      Gramext.action
        (fun (a : string) (loc : Ploc.t) ->
-          (Qast.VaAnt ("", loc, a) : 'class_expr))]];
+          (Qast.VaAnt ("", loc, a) : 'class_expr));
+     [Gramext.Stoken ("ANTIQUOT", "xtr")],
+     Gramext.action
+       (fun (a : string) (loc : Ploc.t) ->
+          (antiquot_xtr loc "CeXtr" a : 'class_expr))]];
    Grammar.Entry.obj (class_str_item : 'class_str_item Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Stoken ("ANTIQUOT", "")],
@@ -6080,7 +6100,11 @@ Grammar.extend
     [[Gramext.Stoken ("ANTIQUOT", "")],
      Gramext.action
        (fun (a : string) (loc : Ploc.t) ->
-          (Qast.VaAnt ("", loc, a) : 'class_type))]]];;
+          (Qast.VaAnt ("", loc, a) : 'class_type));
+     [Gramext.Stoken ("ANTIQUOT", "xtr")],
+     Gramext.action
+       (fun (a : string) (loc : Ploc.t) ->
+          (antiquot_xtr loc "CtXtr" a : 'class_type))]]];;
 
 let quot_mod = ref [];;
 let any_quot_mod = ref "MLast";;

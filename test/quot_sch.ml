@@ -20,28 +20,32 @@
 <:expr< (fordown $_lid:s$ $e1$ $e2$ $_list:le$) >>
 (MLast.ExFor loc (Ploc.VaVal s) e1 e2 (Ploc.VaVal b) (Ploc.VaVal le))
 (MLast.ExFor loc s e1 e2 b le)
-; <:expr< (lambda ($list:lpwe$)) >>
-; <:expr< fun [ $_list:lpwe$ ] >>
-; <:expr< if $e1$ then $e2$ else $e3$ >>
-; <:expr< $int:s$ >>
-; <:expr< $_int:s$ >>
-; <:expr< $int32:s$ >>
-; <:expr< $_int32:s$ >>
-; <:expr< $int64:s$ >>
-; <:expr< $_int64:s$ >>
-; <:expr< $nativeint:s$ >>
-; <:expr< $_nativeint:s$ >>
-; <:expr< ~$s$ >>
-; <:expr< ~$_:s$ >>
-; <:expr< ~$s$: $e$ >>
-; <:expr< ~$_:s$: $e$ >>
-; <:expr< lazy $e$ >>
-; <:expr< let $flag:b$ $list:lpe$ in $e$ >>
-; <:expr< let $_flag:b$ $_list:lpe$ in $e$ >>
-; <:expr< $lid:s$ >>
-; <:expr< $_lid:s$ >>
-; <:expr< let module $uid:s$ = $me$ in $e$ >>
-; <:expr< let module $_uid:s$ = $me$ in $e$ >>
+<:expr< (lambda_match ($list:lpwe$)) >>
+<:expr< (lambda_match ($_list:lpwe$)) >>
+<:expr< (if $e1$ $e2$ $e3$) >>
+<:expr< $int:s$ >>
+<:expr< $_int:s$ >>
+<:expr< $int32:s$ >>
+<:expr< $_int32:s$ >>
+<:expr< $int64:s$ >>
+<:expr< $_int64:s$ >>
+<:expr< $nativeint:s$ >>
+<:expr< $_nativeint:s$ >>
+(MLast.ExLab loc (Ploc.VaVal s) None)
+(MLast.ExLab loc s None)
+(MLast.ExLab loc (Ploc.VaVal s) (Some e))
+(MLast.ExLab loc s (Some e))
+<:expr< (lazy $e$) >>
+<:expr< (let ($list:lpe$) $e$) >>
+<:expr< (let ($_list:lpe$) $e$) >>
+<:expr< (letrec ($list:lpe$) $e$) >>
+<:expr< (letrec ($_list:lpe$) $e$) >>
+(MLast.ExLet loc (Ploc.VaVal b) (Ploc.VaVal lpe) e)
+(MLast.ExLet loc b lpe e)
+<:expr< $lid:s$ >>
+<:expr< $_lid:s$ >>
+<:expr< (letmodule $uid:s$ $me$ $e$) >>
+<:expr< (letmodule $_uid:s$ $me$ $e$) >>
 ; <:expr< match $e$ with [ $list:lpwe$ ] >>
 ; <:expr< match $e$ with [ $_list:lpwe$ ] >>
 ; <:expr< new $list:ls$ >>

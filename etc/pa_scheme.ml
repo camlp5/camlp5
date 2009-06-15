@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.49 2007/10/07 18:13:30 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.50 2007/10/07 18:58:22 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -304,9 +304,9 @@
   (Schar MLast.loc (MLast.v string))
   (Sexpr MLast.loc (list sexpr))
   (Sint MLast.loc (MLast.v string))
-  (Sint_l MLast.loc string)
-  (Sint_L MLast.loc string)
-  (Sint_n MLast.loc string)
+  (Sint_l MLast.loc (MLast.v string))
+  (Sint_L MLast.loc (MLast.v string))
+  (Sint_n MLast.loc (MLast.v string))
   (Sfloat MLast.loc (MLast.v string))
   (Slid MLast.loc string)
   (Slidv MLast.loc (MLast.v string))
@@ -316,14 +316,16 @@
   (Srec MLast.loc (list sexpr))
   (Sstring MLast.loc string)
   (Stid MLast.loc string)
-  (Suid MLast.loc string)))
+  (Suid MLast.loc string)
+  (Suidv MLast.loc (MLast.v string))))
 
 (define loc_of_sexpr
   (lambda_match
    ((or (Sacc loc _ _) (Santi loc _ _) (Sarr loc _) (Schar loc _)
      (Sexpr loc _) (Sint loc _) (Sint_l loc _) (Sint_L loc _) (Sint_n loc _)
      (Sfloat loc _) (Slid loc _) (Slidv loc _) (Slist loc _) (Sqid loc _)
-     (Squot loc _ _) (Srec loc _) (Sstring loc _) (Stid loc _) (Suid loc _))
+     (Squot loc _ _) (Srec loc _) (Sstring loc _) (Stid loc _) (Suid loc _)
+     (Suidv loc _))
     loc)))
 (define (error_loc loc err)
   (Ploc.raise loc (Stream.Error (^ err " expected"))))
@@ -385,6 +387,7 @@
              (me2 (module_expr_se se2)))
          <:module_expr< $me1$ . $me2$ >>))
      ((Suid loc s) <:module_expr< $uid:(rename_id s)$ >>)
+     ((Santi loc "" s) <:module_expr< $xtr:s$ >>)
      (se (error se "module expr"))))
   (module_type_se
     (lambda_match
@@ -506,10 +509,11 @@
     ((Slid loc s) (lident_expr loc s))
     ((Slidv loc s) <:expr< $_lid:s$ >>)
     ((Suid loc s) <:expr< $uid:(rename_id s)$ >>)
+    ((Suidv loc s) <:expr< $_uid:s$ >>)
     ((Sint loc s) <:expr< $_int:s$ >>)
-    ((Sint_l loc s) <:expr< $int32:s$ >>)
-    ((Sint_L loc s) <:expr< $int64:s$ >>)
-    ((Sint_n loc s) <:expr< $nativeint:s$ >>)
+    ((Sint_l loc s) <:expr< $_int32:s$ >>)
+    ((Sint_L loc s) <:expr< $_int64:s$ >>)
+    ((Sint_n loc s) <:expr< $_nativeint:s$ >>)
     ((Sfloat loc s) <:expr< $_flo:s$ >>)
     ((Schar loc s) <:expr< $_chr:s$ >>)
     ((Sstring loc s) <:expr< $str:s$ >>)
@@ -584,7 +588,7 @@
              (match sei
               ((Slid _ i) <:vala< (rename_id i) >>)
               ((Slidv _ i) i)
-              (_ (error_loc loc "lid"))))
+              (se (error_loc (loc_of_sexpr se) "lident"))))
             (e1 (expr_se se1))
             (e2 (expr_se se2))
             (dir (= d "for"))
@@ -613,9 +617,12 @@
      (match sel
       ([(Sexpr _ sel1) . sel2]
        (let* ((r (= r "letrec"))
-              (lbs (List.map let_binding_se sel1))
+              (lbs
+               (match sel1
+                ([(Santi _ (or "list" "_list") s)] <:vala< $s$ >>)
+                (_ <:vala< (List.map let_binding_se sel1) >>)))
               (e (begin_se loc sel2)))
-          <:expr< let $flag:r$ $list:lbs$ in $e$ >>))
+          <:expr< let $flag:r$ $_list:lbs$ in $e$ >>))
       ([(Slid _ n) (Sexpr _ sl) . sel]
        (let* ((n (rename_id n))
               ((values pl el)
@@ -648,10 +655,15 @@
         sel1 (begin_se loc sel2)))
       ([se . _] (error se "let_binding"))
       (_ (error_loc loc "let_binding"))))
-    ((Sexpr loc [(Slid _ "letmodule") (Suid _ s) se1 se2])
-     (let* ((me (module_expr_se se1))
+    ((Sexpr loc [(Slid _ "letmodule") seu se1 se2])
+     (let* ((s
+             (match seu
+              ((Suid _ s) <:vala< s >>)
+              ((Suidv _ i) i)
+              (se (error_loc (loc_of_sexpr se) "uident"))))
+            (me (module_expr_se se1))
             (e (expr_se se2)))
-        <:expr< let module $s$ = $me$ in $e$ >>))
+        <:expr< let module $_:s$ = $me$ in $e$ >>))
     ((Sexpr loc [(Slid _ "match") se . sel])
      (let* ((e (expr_se se))
             (pel (List.map (match_case loc) sel)))
@@ -839,12 +851,13 @@
      (let* ((p1 (patt_se se1)) (p2 (patt_se se2))) <:patt< $p1$ . $p2$ >>))
     ((Slid loc "_") <:patt< _ >>)
     ((Slid loc s) <:patt< $lid:(rename_id s)$ >>)
-    ((Slidv loc s) (Ploc.raise loc (Failure "Slidv")))
+    ((Slidv loc s) <:patt< $_lid:s$ >>)
     ((Suid loc s) <:patt< $uid:(rename_id s)$ >>)
+    ((Suidv loc s) <:patt< $_uid:s$ >>)
     ((Sint loc s) <:patt< $_int:s$ >>)
-    ((Sint_l loc s) <:patt< $int32:s$ >>)
-    ((Sint_L loc s) <:patt< $int64:s$ >>)
-    ((Sint_n loc s) <:patt< $nativeint:s$ >>)
+    ((Sint_l loc s) <:patt< $_int32:s$ >>)
+    ((Sint_L loc s) <:patt< $_int64:s$ >>)
+    ((Sint_n loc s) <:patt< $_nativeint:s$ >>)
     ((Sfloat loc s) <:patt< $_flo:s$ >>)
     ((Schar loc s) <:patt< $_chr:s$ >>)
     ((Sstring loc s) <:patt< $str:s$ >>)
@@ -1124,12 +1137,13 @@ EXTEND
       | s = LIDENT -> (Slid loc s)
       | s = V LIDENT -> (Slidv loc s)
       | s = UIDENT -> (Suid loc s)
+      | s = V UIDENT -> (Suidv loc s)
       | s = TILDEIDENT -> (Stid loc s)
       | s = QUESTIONIDENT -> (Sqid loc s)
       | s = V INT -> (Sint loc s)
-      | s = INT_l -> (Sint_l loc s)
-      | s = INT_L -> (Sint_L loc s)
-      | s = INT_n -> (Sint_n loc s)
+      | s = V INT_l -> (Sint_l loc s)
+      | s = V INT_L -> (Sint_L loc s)
+      | s = V INT_n -> (Sint_n loc s)
       | s = V FLOAT -> (Sfloat loc s)
       | s = V CHAR -> (Schar loc s)
       | s = STRING -> (Sstring loc s)
