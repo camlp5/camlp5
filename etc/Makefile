@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.45 2007/11/22 20:40:30 deraugla Exp $
+# $Id: Makefile,v 1.46 2007/11/23 18:24:16 deraugla Exp $
 
 include ../config/Makefile
 
@@ -14,24 +14,6 @@ COPT=$(OBJS:.cmo=.cmx) $(NAME)o.opt
 
 all: $(COUT) mk$(NAME).sh
 opt: $(COPT) mk$(NAME).opt.sh
-
-pr_rp.cmo: parserify.cmo pr_rp_main.cmo
-	$(OCAMLC) parserify.cmo pr_rp_main.cmo -a -o $@
-
-pr_op.cmo: parserify.cmo pr_op_main.cmo
-	$(OCAMLC) parserify.cmo pr_op_main.cmo -a -o $@
-
-pr_schemep.cmo: parserify.cmo pr_schp_main.cmo
-	$(OCAMLC) parserify.cmo pr_schp_main.cmo -a -o $@
-
-pr_rp.cmx: parserify.cmx pr_rp_main.cmx
-	$(OCAMLOPT) parserify.cmx pr_rp_main.cmx -a -o $@
-
-pr_op.cmx: parserify.cmx pr_op_main.cmx
-	$(OCAMLOPT) parserify.cmx pr_op_main.cmx -a -o $@
-
-pr_schemep.cmx: parserify.cmx pr_schp_main.cmx
-	$(OCAMLOPT) parserify.cmx pr_schp_main.cmx -a -o $@
 
 $(NAME)o$(EXE): ../main/$(NAME)$(EXE) $(CAMLP5OM)
 	rm -f $(NAME)o$(EXE)
