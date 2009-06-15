@@ -426,13 +426,15 @@ EXTEND_PRINTER
       | <:expr< ~$s$: ($e$) >> ->
           fun ppf curr next dg k ->
             fprintf ppf "(~%s@ %a" s expr (e, ks ")" k)
-      | <:expr< $e1$ .[ $e2$ ] >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "%a.[%a" expr (e1, nok) expr (e2, ks "]" k)
-      | <:expr< $e1$ .( $e2$ ) >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "%a.(%a" expr (e1, nok) expr (e2, ks ")" k)
 *)
+      | <:expr< $e1$ .[ $e2$ ] >> ->
+          sprintf "%s%s.[%s]%s" pc.bef
+            (curr {(pc) with bef = ""; aft = ""} e1)
+            (curr {(pc) with bef = ""; aft = ""} e2) pc.aft
+      | <:expr< $e1$ .( $e2$ ) >> ->
+          sprintf "%s%s.(%s)%s" pc.bef
+            (curr {(pc) with bef = ""; aft = ""} e1)
+            (curr {(pc) with bef = ""; aft = ""} e2) pc.aft
       | <:expr< $e1$ . $e2$ >> ->
            sprintf "%s.%s"
              (curr {(pc) with aft = ""} e1)
@@ -467,16 +469,15 @@ EXTEND_PRINTER
              aft = sprintf ")%s" pc.aft}
             pl
       | <:patt< ($p1$ as $p2$) >> ->
-          plistbf 0
+          plistb curr 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(as" pc.bef;
              aft = sprintf ")%s" pc.aft}
-            [(fun pc -> curr pc p1, ""); (fun pc -> curr pc p2, "")]
-(*
+            [(p1, ""); (p2, "")]
       | <:patt< $p1$ .. $p2$ >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "(@[range@ %a@ %a@]" patt (p1, nok) patt
-              (p2, ks ")" k)
-*)
+          plistb curr 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(range" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(p1, ""); (p2, "")]
       | <:patt< [$_$ :: $_$] >> as p ->
           let (pl, c) =
             make_list p where rec make_list p =
@@ -554,10 +555,8 @@ EXTEND_PRINTER
           sprintf "%s%s%s" pc.bef s pc.aft
       | <:patt< $str:s$ >> ->
           sprintf "%s\"%s\"%s" pc.bef s pc.aft
-(*
       | <:patt< $chr:s$ >> ->
-          fun ppf curr next dg k -> fprintf ppf "'%s'%t" s k
-*)
+          sprintf "%s'%s'%s" pc.bef s pc.aft
       | <:patt< $int:s$ >> ->
           sprintf "%s%s%s" pc.bef s pc.aft
 (*
@@ -736,6 +735,13 @@ EXTEND_PRINTER
           fun ppf curr next dg k ->
             fprintf ppf "(@[%a@ %a@]" module_expr (me1, nok)
               module_expr (me2, ks ")" k)
+*)
+      | <:module_expr< ($me$ : $mt$) >> ->
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(:" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc -> curr pc me, ""); (fun pc -> module_type pc mt, "")]
+(*
       | <:module_expr< $uid:s$ >> ->
           fun ppf curr next dg k -> fprintf ppf "%s%t" s k
 *)

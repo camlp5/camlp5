@@ -350,6 +350,10 @@ value rec module_expr_se =
       let me1 = module_expr_se se1 in
       let me2 = module_expr_se se2 in
       <:module_expr< $me1$ $me2$ >>
+  | Sexpr loc [Slid _ ":"; se1; se2] ->
+      let me = module_expr_se se1 in
+      let mt = module_type_se se2 in
+      <:module_expr< ($me$ : $mt$) >>
   | Suid loc s -> <:module_expr< $uid:(Pcaml.rename_id.val s)$ >>
   | se -> error se "module expr" ]
 and module_type_se =

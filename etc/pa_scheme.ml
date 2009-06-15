@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.24 2007/09/22 23:31:12 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.25 2007/10/04 15:04:07 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -335,6 +335,10 @@
       (let* ((me1 (module_expr_se se1))
              (me2 (module_expr_se se2)))
          <:module_expr< $me1$ $me2$ >>))
+     ((Sexpr loc [(Slid _ ":") se1 se2])
+      (let* ((me (module_expr_se se1))
+             (mt (module_type_se se2)))
+         <:module_expr< ($me$ : $mt$) >>))
      ((Suid loc s) <:module_expr< $uid:(Pcaml.rename_id.val s)$ >>)
      (se (error se "module expr"))))
   (module_type_se
