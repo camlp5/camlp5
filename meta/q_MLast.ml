@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.24 2007/06/28 04:11:18 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.25 2007/07/05 13:13:27 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -861,11 +861,11 @@ EXTEND
       | "let"; rf = SOPT "rec"; lb = SLIST1 let_binding SEP "and"; "in";
         ce = SELF ->
           Qast.Node "CeLet" [Qast.Loc; o2b rf; lb; ce] ]
-    | "apply" NONA
+    | "apply" LEFTA
       [ ce = SELF; e = expr LEVEL "label" ->
           Qast.Node "CeApp" [Qast.Loc; ce; e] ]
     | "simple"
-      [ ci = class_longident; "["; ctcl = SLIST0 ctyp SEP ","; "]" ->
+      [ ci = class_longident; "["; ctcl = SLIST1 ctyp SEP ","; "]" ->
           Qast.Node "CeCon" [Qast.Loc; ci; ctcl]
       | ci = class_longident -> Qast.Node "CeCon" [Qast.Loc; ci; Qast.List []]
       | "object"; cspo = SOPT class_self_patt; cf = class_structure; "end" ->

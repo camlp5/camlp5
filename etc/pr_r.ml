@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.41 2007/07/05 11:37:21 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.42 2007/07/05 13:13:27 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -2545,3 +2545,6 @@ Pcaml.add_option "-l" (Arg.Int (fun x -> Pretty.line_length.val := x))
 
 Pcaml.add_option "-sep" (Arg.String (fun x -> sep.val := Some x))
   "<string> Use this string between phrases instead of reading source.";
+
+Pcaml.add_option "-cip" (Arg.Unit (fun x -> x))
+  "(obsolete since version 4.02)";

@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_extend.ml,v 1.10 2007/07/03 13:36:01 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.11 2007/07/05 13:13:27 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -7,6 +7,8 @@
 open Pretty;
 open Pcaml.Printers;
 open Prtools;
+
+value no_slist = ref False;
 
 value not_impl name pc x =
   let desc =
@@ -335,6 +337,10 @@ and symbol pc sy =
         (simple_symbol {(pc) with bef = ""} sep)
   | Sopt sy ->
       sprintf "%sOPT %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
+  | Srules rl ->
+      match check_slist rl with
+      [ Some s -> s_symbol pc s
+      | None -> simple_symbol pc sy ]
   | Stoken tok -> token pc tok
   | sy -> simple_symbol pc sy ]
 and simple_symbol pc sy =
@@ -343,23 +349,67 @@ and simple_symbol pc sy =
   | Sself -> sprintf "%sSELF%s" pc.bef pc.aft
   | Snext -> sprintf "%sNEXT%s" pc.bef pc.aft
   | Srules rl ->
-      horiz_vertic
-        (fun () ->
-           hlist2 rule (bar_before rule)
-             {(pc) with bef = sprintf "%s[ " pc.bef;
-              aft = ("", sprintf " ]%s" pc.aft)}
-             rl)
-        (fun () ->
-           vlist2 rule (bar_before rule)
-             {(pc) with bef = sprintf "%s[ " pc.bef;
-              aft = ("", sprintf " ]%s" pc.aft)}
-             rl)
+      match check_slist rl with
+      [ Some _ ->
+          symbol
+            {(pc) with bef = sprintf "%s(" pc.bef; aft = sprintf ")%s" pc.aft}
+            sy
+      | None ->
+          horiz_vertic
+            (fun () ->
+               hlist2 rule (bar_before rule)
+                 {(pc) with bef = sprintf "%s[ " pc.bef;
+                  aft = ("", sprintf " ]%s" pc.aft)}
+                 rl)
+            (fun () ->
+               vlist2 rule (bar_before rule)
+                 {(pc) with bef = sprintf "%s[ " pc.bef;
+                  aft = ("", sprintf " ]%s" pc.aft)}
+                 rl) ]
   | Stoken (Left ("", _) | Left (_, "")) -> symbol pc sy
   | Snterml _ _ | Slist0 _ | Slist0sep _ _ | Slist1 _ | Slist1sep _ _ ->
       symbol
         {(pc) with bef = sprintf "%s(" pc.bef; aft = sprintf ")%s" pc.aft}
         sy
   | sy -> not_impl "simple_symbol" pc sy ]
+and s_symbol pc =
+  fun
+  [ Slist0 sy ->
+      sprintf "%sSLIST0 %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
+  | Slist1 sy ->
+      sprintf "%sSLIST1 %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
+  | Slist0sep sy sep ->
+      sprintf "%sSLIST0 %s SEP %s" pc.bef
+        (simple_symbol {(pc) with bef = ""; aft = ""} sy)
+        (simple_symbol {(pc) with bef = ""} sep)
+  | Slist1sep sy sep ->
+      sprintf "%sSLIST1 %s SEP %s" pc.bef
+        (simple_symbol {(pc) with bef = ""; aft = ""} sy)
+        (simple_symbol {(pc) with bef = ""} sep)
+  | Sopt s ->
+      let sy =
+        match s with
+        [ Srules
+            [([(Some <:patt< x >>, Stoken (Left ("", str)))],
+              Some <:expr< Qast.Str x >>)] ->
+            Stoken (Left ("", str))
+        | s -> s ]
+      in
+      sprintf "%sSOPT %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
+  | _ -> assert False ]
+and check_slist rl =
+  if no_slist.val then None
+  else
+    match rl with
+    [ [([(Some <:patt< a >>, Snterm <:expr< a_list >>)], Some <:expr< a >>);
+       ([(Some <:patt< a >>,
+          ((Slist0 _ | Slist1 _ | Slist0sep _ _ | Slist1sep _ _) as s))],
+          Some <:expr< Qast.List a >>)] ->
+        Some s
+    | [([(Some <:patt< a >>, Snterm <:expr< a_opt >>)], Some <:expr< a >>);
+       ([(Some <:patt< a >>, Sopt s)], Some <:expr< Qast.Option a >>)] ->
+        Some (Sopt s)
+    | _ -> None ]
 ;
 
 value label =
