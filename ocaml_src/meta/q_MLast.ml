@@ -4748,11 +4748,10 @@ Grammar.extend
                (loc, MLast.ExLid (loc, "failwith"),
                 MLast.ExStr (loc, "antiquot")) :
            'expr_eoi));
-     [Gramext.Snterm
-        (Grammar.Entry.obj (Pcaml.expr : 'Pcaml__expr Grammar.Entry.e));
+     [Gramext.Snterm (Grammar.Entry.obj (Pcaml.expr : 'expr Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (e : 'Pcaml__expr) (loc : Ploc.t) ->
+       (fun _ (e : 'expr) (loc : Ploc.t) ->
           (let loc = Ploc.make_unlined (0, 0) in
            if !(Pcaml.strict_mode) then
              MLast.ExApp
@@ -4793,11 +4792,10 @@ Grammar.extend
                (loc, MLast.PaLid (loc, "failwith"),
                 MLast.PaStr (loc, "antiquot")) :
            'patt_eoi));
-     [Gramext.Snterm
-        (Grammar.Entry.obj (Pcaml.patt : 'Pcaml__patt Grammar.Entry.e));
+     [Gramext.Snterm (Grammar.Entry.obj (Pcaml.patt : 'patt Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (p : 'Pcaml__patt) (loc : Ploc.t) ->
+       (fun _ (p : 'patt) (loc : Ploc.t) ->
           (let loc = Ploc.make_unlined (0, 0) in
            if !(Pcaml.strict_mode) then
              MLast.PaApp

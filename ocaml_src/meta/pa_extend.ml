@@ -9,6 +9,44 @@ Pcaml.add_option "-split_ext" (Arg.Set split_ext)
 
 type loc = Ploc.t;;
 
+type ('e, 'p) a_entry =
+  { ae_loc : loc;
+    ae_name : string * 'e;
+    ae_pos : 'e option;
+    ae_levels : ('e, 'p) a_level list }
+and ('e, 'p) a_level =
+  { al_loc : loc;
+    al_label : string option;
+    al_assoc : 'e option;
+    al_rules : ('e, 'p) a_rules }
+and ('e, 'p) a_rules = { au_loc : loc; au_rules : ('e, 'p) a_rule list }
+and ('e, 'p) a_rule =
+  { ar_loc : loc;
+    ar_psymbols : ('e, 'p) a_psymbol list;
+    ar_action : 'e option }
+and ('e, 'p) a_psymbol =
+  { ap_loc : loc; ap_patt : 'p option; ap_symb : ('e, 'p) a_symbol }
+and ('e, 'p) a_symbol =
+    ASflag of loc * ('e, 'p) a_symbol
+  | ASkeyw of loc * 'e a_string
+  | ASlist of loc * bool * ('e, 'p) a_symbol * ('e, 'p) a_symbol option
+  | ASnext of loc
+  | ASopt of loc * ('e, 'p) a_symbol
+  | ASfold of
+      loc * string * string * 'e * 'e * ('e, 'p) a_symbol *
+        ('e, 'p) a_symbol option
+  | ASquot of loc * ('e, 'p) a_symbol
+  | ASrules of loc * ('e, 'p) a_rules
+  | ASself of loc
+  | ASterm of loc * (string * 'e) * string option
+  | AStok of loc * string * 'e a_string option
+  | ASvala of loc * ('e, 'p) a_symbol * string list
+  | ASvala2 of loc * ('e, 'p) a_symbol * string list
+and 'e a_string =
+    ATstring of loc * string
+  | ATexpr of loc * 'e
+;;
+
 type 'e name = { expr : 'e; tvar : string; loc : loc };;
 
 type styp =
@@ -42,6 +80,12 @@ and ('e, 'p) symbol =
 ;;
 
 type used = Unused | UsedScanned | UsedNotScanned;;
+
+let option_map f =
+  function
+    Some x -> Some (f x)
+  | None -> None
+;;
 
 let mark_used modif ht n =
   try
@@ -1177,20 +1221,6 @@ and make_expr_rules loc gmod rl tvar =
     (MLast.ExUid (loc, "[]")) rl
 ;;
 
-let expr_of_delete_rule loc gmod n sl =
-  let sl =
-    List.fold_right
-      (fun s e ->
-         MLast.ExApp
-           (loc,
-            MLast.ExApp
-              (loc, MLast.ExUid (loc, "::"), make_expr gmod "" s.text),
-            e))
-      sl (MLast.ExUid (loc, "[]"))
-  in
-  n.expr, sl
-;;
-
 let rec ident_of_expr =
   function
     MLast.ExLid (_, s) -> s
@@ -1200,6 +1230,9 @@ let rec ident_of_expr =
 ;;
 
 let mk_name loc e = {expr = e; tvar = ident_of_expr e; loc = loc};;
+let mk_name2 (i, e) =
+  let loc = MLast.loc_of_expr e in {expr = e; tvar = i; loc = loc}
+;;
 
 let slist loc min sep symb =
   let t =
@@ -1208,6 +1241,66 @@ let slist loc min sep symb =
     | None -> None
   in
   TXlist (loc, min, symb.text, t)
+;;
+
+let sfold loc n foldfun f e s =
+  let styp = STquo (loc, new_type_var ()) in
+  let e =
+    MLast.ExApp
+      (loc,
+       MLast.ExApp
+         (loc,
+          MLast.ExAcc
+            (loc, MLast.ExUid (loc, "Extfold"), MLast.ExLid (loc, foldfun)),
+          f),
+       e)
+  in
+  let t =
+    STapp
+      (loc,
+       STapp
+         (loc,
+          STtyp
+            (MLast.TyApp
+               (loc,
+                MLast.TyAcc
+                  (loc, MLast.TyUid (loc, "Extfold"), MLast.TyLid (loc, "t")),
+                MLast.TyAny loc)),
+          s.styp),
+       styp)
+  in
+  {used = s.used; text = TXmeta (loc, n, [s.text], e, t); styp = styp}
+;;
+
+let sfoldsep loc n foldfun f e s sep =
+  let styp = STquo (loc, new_type_var ()) in
+  let e =
+    MLast.ExApp
+      (loc,
+       MLast.ExApp
+         (loc,
+          MLast.ExAcc
+            (loc, MLast.ExUid (loc, "Extfold"), MLast.ExLid (loc, foldfun)),
+          f),
+       e)
+  in
+  let t =
+    STapp
+      (loc,
+       STapp
+         (loc,
+          STtyp
+            (MLast.TyApp
+               (loc,
+                MLast.TyAcc
+                  (loc, MLast.TyUid (loc, "Extfold"),
+                   MLast.TyLid (loc, "tsep")),
+                MLast.TyAny loc)),
+          s.styp),
+       styp)
+  in
+  {used = s.used @ sep.used; text = TXmeta (loc, n, [s.text; sep.text], e, t);
+   styp = styp}
 ;;
 
 let mk_psymbol p s t =
@@ -1469,6 +1562,124 @@ let ssvala loc al s =
     {used = s.used; text = text; styp = styp}
 ;;
 
+let string_of_a =
+  function
+    ATstring (loc, s) -> MLast.ExStr (loc, s)
+  | ATexpr (_, e) -> e
+;;
+
+let rec symbol_of_a =
+  function
+    ASflag (loc, s) ->
+      let s = symbol_of_a s in
+      let text = TXflag (loc, s.text) in
+      let styp = STlid (loc, "bool") in
+      {used = s.used; text = text; styp = styp}
+  | ASfold (loc, n, foldfun, f, e, s, sep) ->
+      let s = symbol_of_a s in
+      begin match sep with
+        Some sep -> sfoldsep loc n foldfun f e s (symbol_of_a sep)
+      | None -> sfold loc n foldfun f e s
+      end
+  | ASkeyw (loc, s) ->
+      let text = TXtok (loc, "", string_of_a s) in
+      {used = []; text = text; styp = STlid (loc, "string")}
+  | ASlist (loc, min, s, sep) ->
+      let s = symbol_of_a s in
+      let sep = option_map symbol_of_a sep in
+      let used =
+        match sep with
+          Some symb -> symb.used @ s.used
+        | None -> s.used
+      in
+      let text = slist loc min sep s in
+      let styp = STapp (loc, STlid (loc, "list"), s.styp) in
+      {used = used; text = text; styp = styp}
+  | ASnext loc -> {used = []; text = TXnext loc; styp = STself (loc, "NEXT")}
+  | ASopt (loc, s) ->
+      let s = symbol_of_a s in
+      let text = TXopt (loc, s.text) in
+      let styp = STapp (loc, STlid (loc, "option"), s.styp) in
+      {used = s.used; text = text; styp = styp}
+  | ASquot (loc, s) ->
+      begin match s with
+        ASflag (loc, s) -> let s = symbol_of_a s in ssflag loc s
+      | ASlist (loc, min, s, sep) ->
+          let s = symbol_of_a s in
+          let sep = option_map symbol_of_a sep in sslist loc min sep s
+      | ASopt (loc, s) -> ssopt loc (symbol_of_a s)
+      | AStok (loc, s, p) ->
+          begin match p with
+            Some e -> sstoken_prm loc s (string_of_a e)
+          | None -> sstoken loc s
+          end
+      | _ -> Ploc.raise loc (Failure "not impl ASquot")
+      end
+  | ASrules (loc, rl) ->
+      let rl = rules_of_a rl in
+      let t = new_type_var () in
+      {used = used_of_rule_list rl; text = TXrules (loc, t, rl);
+       styp = STquo (loc, t)}
+  | ASself loc -> {used = []; text = TXself loc; styp = STself (loc, "SELF")}
+  | ASterm (loc, (i, n), lev) ->
+      let name = mk_name2 (i, n) in
+      let text = TXnterm (loc, name, lev) in
+      let styp = STquo (loc, i) in {used = [i]; text = text; styp = styp}
+  | AStok (loc, s, p) ->
+      begin match p with
+        Some e ->
+          let text = TXtok (loc, s, string_of_a e) in
+          {used = []; text = text; styp = STlid (loc, "string")}
+      | None ->
+          let text = TXtok (loc, s, MLast.ExStr (loc, "")) in
+          {used = []; text = text; styp = STlid (loc, "string")}
+      end
+  | ASvala (loc, s, ls) -> let s = symbol_of_a s in ssvala loc ls s
+  | ASvala2 (loc, s, ls) ->
+      match s with
+        ASquot (loc1, ASlist (loc2, min, s, sep)) ->
+          let s = symbol_of_a s in
+          let sep = option_map symbol_of_a sep in
+          ss2_of_ss loc1 [] (sslist loc2 min sep s)
+      | ASquot (loc1, ASflag (loc2, s)) ->
+          let s = symbol_of_a s in ss2_of_ss loc1 [] (ssflag loc2 s)
+      | ASquot (loc1, ASopt (loc2, s)) ->
+          let s = symbol_of_a s in ss2_of_ss loc1 [] (ssopt loc2 s)
+      | _ -> Ploc.raise loc (Failure "not impl ASvala2")
+and psymbol_of_a ap = {pattern = ap.ap_patt; symbol = symbol_of_a ap.ap_symb}
+and rules_of_a au =
+  let rl = List.map rule_of_a au.au_rules in
+  retype_rule_list_without_patterns au.au_loc rl
+and rule_of_a ar =
+  {prod = List.map psymbol_of_a ar.ar_psymbols; action = ar.ar_action}
+;;
+
+let level_of_a alv =
+  let rl = rules_of_a alv.al_rules in
+  {label = alv.al_label; assoc = alv.al_assoc; rules = rl}
+;;
+
+let entry_of_a ae =
+  {name = mk_name2 ae.ae_name; pos = ae.ae_pos;
+   levels = List.map level_of_a ae.ae_levels}
+;;
+
+let expr_of_delete_rule loc gmod n sl =
+  let n = mk_name2 n in
+  let sl = List.map symbol_of_a sl in
+  let sl =
+    List.fold_right
+      (fun s e ->
+         MLast.ExApp
+           (loc,
+            MLast.ExApp
+              (loc, MLast.ExUid (loc, "::"), make_expr gmod "" s.text),
+            e))
+      sl (MLast.ExUid (loc, "[]"))
+  in
+  n.expr, sl
+;;
+
 let text_of_entry loc gmod e =
   let ent =
     let x = e.name in
@@ -1618,6 +1829,8 @@ let let_in_of_extend loc gmod functor_version gl el args =
 ;;
 
 let text_of_extend loc gmod gl el f =
+  let el = List.map entry_of_a el in
+  let gl = option_map (List.map mk_name2) gl in
   if !split_ext then
     let args =
       List.map
@@ -1678,6 +1891,8 @@ let text_of_extend loc gmod gl el f =
 ;;
 
 let text_of_functorial_extend loc gmod gl el =
+  let el = List.map entry_of_a el in
+  let gl = option_map (List.map mk_name2) gl in
   let args =
     let el =
       List.map
@@ -1892,7 +2107,7 @@ Grammar.extend
        Gramext.Snterm
          (Grammar.Entry.obj (semi_sep : 'semi_sep Grammar.Entry.e))],
       Gramext.action
-        (fun _ (f : 'qualid) _ _ (loc : Ploc.t) -> (f : 'efunction))]];
+        (fun _ (f : 'qualid) _ _ (loc : Ploc.t) -> (snd f : 'efunction))]];
     Grammar.Entry.obj (global : 'global Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("UIDENT", "GLOBAL"); Gramext.Stoken ("", ":");
@@ -1914,7 +2129,8 @@ Grammar.extend
       Gramext.action
         (fun (ll : 'level_list) (pos : 'position option) _ (n : 'name)
              (loc : Ploc.t) ->
-           ({name = n; pos = pos; levels = ll} : 'entry))]];
+           ({ae_loc = loc; ae_name = n; ae_pos = pos; ae_levels = ll} :
+            'entry))]];
     Grammar.Entry.obj (position : 'position Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("UIDENT", "LEVEL");
@@ -1926,7 +2142,7 @@ Grammar.extend
                MLast.ExAcc
                  (loc, MLast.ExUid (loc, "Gramext"),
                   MLast.ExUid (loc, "Level")),
-               n) :
+               string_of_a n) :
             'position));
       [Gramext.Stoken ("UIDENT", "AFTER");
        Gramext.Snterm (Grammar.Entry.obj (string : 'string Grammar.Entry.e))],
@@ -1937,7 +2153,7 @@ Grammar.extend
                MLast.ExAcc
                  (loc, MLast.ExUid (loc, "Gramext"),
                   MLast.ExUid (loc, "After")),
-               n) :
+               string_of_a n) :
             'position));
       [Gramext.Stoken ("UIDENT", "BEFORE");
        Gramext.Snterm (Grammar.Entry.obj (string : 'string Grammar.Entry.e))],
@@ -1948,7 +2164,7 @@ Grammar.extend
                MLast.ExAcc
                  (loc, MLast.ExUid (loc, "Gramext"),
                   MLast.ExUid (loc, "Before")),
-               n) :
+               string_of_a n) :
             'position));
       [Gramext.Stoken ("UIDENT", "LAST")],
       Gramext.action
@@ -1983,7 +2199,8 @@ Grammar.extend
       Gramext.action
         (fun (rules : 'rule_list) (ass : 'assoc option) (lab : string option)
              (loc : Ploc.t) ->
-           ({label = lab; assoc = ass; rules = rules} : 'level))]];
+           ({al_loc = loc; al_label = lab; al_assoc = ass; al_rules = rules} :
+            'level))]];
     Grammar.Entry.obj (assoc : 'assoc Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("UIDENT", "NONA")],
@@ -2015,9 +2232,11 @@ Grammar.extend
        Gramext.Stoken ("", "]")],
       Gramext.action
         (fun _ (rules : 'rule list) _ (loc : Ploc.t) ->
-           (retype_rule_list_without_patterns loc rules : 'rule_list));
+           ({au_loc = loc; au_rules = rules} : 'rule_list));
       [Gramext.Stoken ("", "["); Gramext.Stoken ("", "]")],
-      Gramext.action (fun _ _ (loc : Ploc.t) -> ([] : 'rule_list))]];
+      Gramext.action
+        (fun _ _ (loc : Ploc.t) ->
+           ({au_loc = loc; au_rules = []} : 'rule_list))]];
     Grammar.Entry.obj (rule : 'rule Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Slist0sep
@@ -2027,7 +2246,7 @@ Grammar.extend
             (Grammar.Entry.obj (semi_sep : 'semi_sep Grammar.Entry.e)))],
       Gramext.action
         (fun (psl : 'psymbol list) (loc : Ploc.t) ->
-           ({prod = psl; action = None} : 'rule));
+           ({ar_loc = loc; ar_psymbols = psl; ar_action = None} : 'rule));
       [Gramext.Slist0sep
          (Gramext.Snterm
             (Grammar.Entry.obj (psymbol : 'psymbol Grammar.Entry.e)),
@@ -2037,20 +2256,21 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
       Gramext.action
         (fun (act : 'expr) _ (psl : 'psymbol list) (loc : Ploc.t) ->
-           ({prod = psl; action = Some act} : 'rule))]];
+           ({ar_loc = loc; ar_psymbols = psl; ar_action = Some act} :
+            'rule))]];
     Grammar.Entry.obj (psymbol : 'psymbol Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
       Gramext.action
         (fun (s : 'symbol) (loc : Ploc.t) ->
-           ({pattern = None; symbol = s} : 'psymbol));
+           ({ap_loc = loc; ap_patt = None; ap_symb = s} : 'psymbol));
       [Gramext.Snterm
          (Grammar.Entry.obj (pattern : 'pattern Grammar.Entry.e));
        Gramext.Stoken ("", "=");
        Gramext.Snterm (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
       Gramext.action
         (fun (s : 'symbol) _ (p : 'pattern) (loc : Ploc.t) ->
-           ({pattern = Some p; symbol = s} : 'psymbol));
+           ({ap_loc = loc; ap_patt = Some p; ap_symb = s} : 'psymbol));
       [Gramext.Stoken ("LIDENT", "");
        Gramext.Sopt
          (Gramext.srules
@@ -2060,37 +2280,30 @@ Grammar.extend
                (fun (s : string) _ (loc : Ploc.t) -> (s : 'e__3))])],
       Gramext.action
         (fun (lev : 'e__3 option) (i : string) (loc : Ploc.t) ->
-           (let name = mk_name loc (MLast.ExLid (loc, i)) in
-            let text = TXnterm (loc, name, lev) in
-            let styp = STquo (loc, i) in
-            let symb = {used = [i]; text = text; styp = styp} in
-            {pattern = None; symbol = symb} :
+           (let n = MLast.ExLid (loc, i) in
+            {ap_loc = loc; ap_patt = None;
+             ap_symb = ASterm (loc, (i, n), lev)} :
             'psymbol));
       [Gramext.Stoken ("LIDENT", ""); Gramext.Stoken ("", "=");
        Gramext.Snterm (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
       Gramext.action
         (fun (s : 'symbol) _ (p : string) (loc : Ploc.t) ->
-           ({pattern = Some (MLast.PaLid (loc, p)); symbol = s} :
+           ({ap_loc = loc; ap_patt = Some (MLast.PaLid (loc, p));
+             ap_symb = s} :
             'psymbol))]];
     Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e), None,
     [Some "top", Some Gramext.NonA,
      [[Gramext.Stoken ("UIDENT", "FLAG"); Gramext.Sself],
       Gramext.action
         (fun (s : 'symbol) _ (loc : Ploc.t) ->
-           (if !quotify then ssflag loc s
-            else
-              let text = TXflag (loc, s.text) in
-              let styp = STlid (loc, "bool") in
-              {used = s.used; text = text; styp = styp} :
+           (if !quotify then ASquot (loc, ASflag (loc, s))
+            else ASflag (loc, s) :
             'symbol));
       [Gramext.Stoken ("UIDENT", "OPT"); Gramext.Sself],
       Gramext.action
         (fun (s : 'symbol) _ (loc : Ploc.t) ->
-           (if !quotify then ssopt loc s
-            else
-              let text = TXopt (loc, s.text) in
-              let styp = STapp (loc, STlid (loc, "option"), s.styp) in
-              {used = s.used; text = text; styp = styp} :
+           (if !quotify then ASquot (loc, ASopt (loc, s))
+            else ASopt (loc, s) :
             'symbol));
       [Gramext.Stoken ("UIDENT", "LIST1"); Gramext.Sself;
        Gramext.Sopt
@@ -2102,16 +2315,8 @@ Grammar.extend
                (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__5))])],
       Gramext.action
         (fun (sep : 'e__5 option) (s : 'symbol) _ (loc : Ploc.t) ->
-           (if !quotify then sslist loc true sep s
-            else
-              let used =
-                match sep with
-                  Some symb -> symb.used @ s.used
-                | None -> s.used
-              in
-              let text = slist loc true sep s in
-              let styp = STapp (loc, STlid (loc, "list"), s.styp) in
-              {used = used; text = text; styp = styp} :
+           (if !quotify then ASquot (loc, ASlist (loc, true, s, sep))
+            else ASlist (loc, true, s, sep) :
             'symbol));
       [Gramext.Stoken ("UIDENT", "LIST0"); Gramext.Sself;
        Gramext.Sopt
@@ -2123,34 +2328,24 @@ Grammar.extend
                (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__4))])],
       Gramext.action
         (fun (sep : 'e__4 option) (s : 'symbol) _ (loc : Ploc.t) ->
-           (if !quotify then sslist loc false sep s
-            else
-              let used =
-                match sep with
-                  Some symb -> symb.used @ s.used
-                | None -> s.used
-              in
-              let text = slist loc false sep s in
-              let styp = STapp (loc, STlid (loc, "list"), s.styp) in
-              {used = used; text = text; styp = styp} :
+           (if !quotify then ASquot (loc, ASlist (loc, false, s, sep))
+            else ASlist (loc, false, s, sep) :
             'symbol))];
      Some "vala", None,
      [[Gramext.Stoken ("UIDENT", "V"); Gramext.Snext;
        Gramext.Slist0 (Gramext.Stoken ("STRING", ""))],
       Gramext.action
         (fun (al : string list) (s : 'symbol) _ (loc : Ploc.t) ->
-           (ssvala loc al s : 'symbol));
+           (ASvala (loc, s, al) : 'symbol));
       [Gramext.Stoken ("UIDENT", "V"); Gramext.Stoken ("UIDENT", "");
        Gramext.Slist0 (Gramext.Stoken ("STRING", ""))],
       Gramext.action
         (fun (al : string list) (x : string) _ (loc : Ploc.t) ->
            (let s =
-              if !quotify then sstoken loc x
-              else
-                let text = TXtok (loc, x, MLast.ExStr (loc, "")) in
-                {used = []; text = text; styp = STlid (loc, "string")}
+              if !quotify then ASquot (loc, AStok (loc, x, None))
+              else AStok (loc, x, None)
             in
-            ssvala loc al s :
+            ASvala (loc, s, al) :
             'symbol))];
      Some "simple", None,
      [[Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ")")],
@@ -2165,9 +2360,7 @@ Grammar.extend
                (fun (s : string) _ (loc : Ploc.t) -> (s : 'e__7))])],
       Gramext.action
         (fun (lev : 'e__7 option) (n : 'name) (loc : Ploc.t) ->
-           ({used = [n.tvar]; text = TXnterm (loc, n, lev);
-             styp = STquo (loc, n.tvar)} :
-            'symbol));
+           (ASterm (loc, n, lev) : 'symbol));
       [Gramext.Stoken ("UIDENT", ""); Gramext.Stoken ("", ".");
        Gramext.Snterm (Grammar.Entry.obj (qualid : 'qualid Grammar.Entry.e));
        Gramext.Sopt
@@ -2179,34 +2372,24 @@ Grammar.extend
       Gramext.action
         (fun (lev : 'e__6 option) (e : 'qualid) _ (i : string)
              (loc : Ploc.t) ->
-           (let n =
-              mk_name loc (MLast.ExAcc (loc, MLast.ExUid (loc, i), e))
-            in
-            {used = [n.tvar]; text = TXnterm (loc, n, lev);
-             styp = STquo (loc, n.tvar)} :
+           (let v = MLast.ExAcc (loc, MLast.ExUid (loc, i), snd e) in
+            ASterm (loc, (fst e, v), lev) :
             'symbol));
       [Gramext.Snterm (Grammar.Entry.obj (string : 'string Grammar.Entry.e))],
       Gramext.action
-        (fun (e : 'string) (loc : Ploc.t) ->
-           (let text = TXtok (loc, "", e) in
-            {used = []; text = text; styp = STlid (loc, "string")} :
-            'symbol));
+        (fun (e : 'string) (loc : Ploc.t) -> (ASkeyw (loc, e) : 'symbol));
       [Gramext.Stoken ("UIDENT", "");
        Gramext.Snterm (Grammar.Entry.obj (string : 'string Grammar.Entry.e))],
       Gramext.action
         (fun (e : 'string) (x : string) (loc : Ploc.t) ->
-           (if !quotify then sstoken_prm loc x e
-            else
-              let text = TXtok (loc, x, e) in
-              {used = []; text = text; styp = STlid (loc, "string")} :
+           (if !quotify then ASquot (loc, AStok (loc, x, Some e))
+            else AStok (loc, x, Some e) :
             'symbol));
       [Gramext.Stoken ("UIDENT", "")],
       Gramext.action
         (fun (x : string) (loc : Ploc.t) ->
-           (if !quotify then sstoken loc x
-            else
-              let text = TXtok (loc, x, MLast.ExStr (loc, "")) in
-              {used = []; text = text; styp = STlid (loc, "string")} :
+           (if !quotify then ASquot (loc, AStok (loc, x, None))
+            else AStok (loc, x, None) :
             'symbol));
       [Gramext.Stoken ("", "[");
        Gramext.Slist0sep
@@ -2215,21 +2398,11 @@ Grammar.extend
        Gramext.Stoken ("", "]")],
       Gramext.action
         (fun _ (rl : 'rule list) _ (loc : Ploc.t) ->
-           (let rl = retype_rule_list_without_patterns loc rl in
-            let t = new_type_var () in
-            {used = used_of_rule_list rl; text = TXrules (loc, t, rl);
-             styp = STquo (loc, t)} :
-            'symbol));
+           (ASrules (loc, {au_loc = loc; au_rules = rl}) : 'symbol));
       [Gramext.Stoken ("UIDENT", "NEXT")],
-      Gramext.action
-        (fun _ (loc : Ploc.t) ->
-           ({used = []; text = TXnext loc; styp = STself (loc, "NEXT")} :
-            'symbol));
+      Gramext.action (fun _ (loc : Ploc.t) -> (ASnext loc : 'symbol));
       [Gramext.Stoken ("UIDENT", "SELF")],
-      Gramext.action
-        (fun _ (loc : Ploc.t) ->
-           ({used = []; text = TXself loc; styp = STself (loc, "SELF")} :
-            'symbol))]];
+      Gramext.action (fun _ (loc : Ploc.t) -> (ASself loc : 'symbol))]];
     Grammar.Entry.obj (pattern : 'pattern Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ",");
@@ -2266,32 +2439,33 @@ Grammar.extend
     Grammar.Entry.obj (name : 'name Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm (Grammar.Entry.obj (qualid : 'qualid Grammar.Entry.e))],
-      Gramext.action
-        (fun (e : 'qualid) (loc : Ploc.t) -> (mk_name loc e : 'name))]];
+      Gramext.action (fun (e : 'qualid) (loc : Ploc.t) -> (e : 'name))]];
     Grammar.Entry.obj (qualid : 'qualid Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Sself; Gramext.Stoken ("", "."); Gramext.Sself],
       Gramext.action
         (fun (e2 : 'qualid) _ (e1 : 'qualid) (loc : Ploc.t) ->
-           (MLast.ExAcc (loc, e1, e2) : 'qualid))];
+           (fst e2, MLast.ExAcc (loc, snd e1, snd e2) : 'qualid))];
      None, None,
      [[Gramext.Stoken ("LIDENT", "")],
       Gramext.action
-        (fun (i : string) (loc : Ploc.t) -> (MLast.ExLid (loc, i) : 'qualid));
+        (fun (i : string) (loc : Ploc.t) ->
+           (i, MLast.ExLid (loc, i) : 'qualid));
       [Gramext.Stoken ("UIDENT", "")],
       Gramext.action
         (fun (i : string) (loc : Ploc.t) ->
-           (MLast.ExUid (loc, i) : 'qualid))]];
+           (i, MLast.ExUid (loc, i) : 'qualid))]];
     Grammar.Entry.obj (string : 'string Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "$");
        Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e));
        Gramext.Stoken ("", "$")],
-      Gramext.action (fun _ (e : 'expr) _ (loc : Ploc.t) -> (e : 'string));
+      Gramext.action
+        (fun _ (e : 'expr) _ (loc : Ploc.t) -> (ATexpr (loc, e) : 'string));
       [Gramext.Stoken ("STRING", "")],
       Gramext.action
         (fun (s : string) (loc : Ploc.t) ->
-           (MLast.ExStr (loc, s) : 'string))]]]);;
+           (ATstring (loc, s) : 'string))]]]);;
 
 Pcaml.add_option "-quotify" (Arg.Set quotify) "Generate code for quotations";;
 Pcaml.add_option "-meta_action" (Arg.Set meta_action) "Undocumented";;

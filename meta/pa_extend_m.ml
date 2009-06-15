@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo *)
-(* $Id: pa_extend_m.ml,v 1.24 2007/09/20 03:26:28 deraugla Exp $ *)
+(* $Id: pa_extend_m.ml,v 1.25 2007/09/20 19:31:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pa_extend;
@@ -9,23 +9,26 @@ EXTEND
     [ NONA
       [ UIDENT "SLIST0"; s = SELF;
         sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
-          sslist loc False sep s
+          ASquot loc (ASlist loc False s sep)
       | UIDENT "SLIST1"; s = SELF;
         sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
-          sslist loc True sep s
-      | UIDENT "SOPT"; s = SELF -> ssopt loc s
-      | UIDENT "SFLAG"; s = SELF -> ssflag loc s
+          ASquot loc (ASlist loc True s sep)
+      | UIDENT "SOPT"; s = SELF ->
+          ASquot loc (ASopt loc s)
+      | UIDENT "SFLAG"; s = SELF ->
+          ASquot loc (ASflag loc s)
 
       | UIDENT "SV"; UIDENT "LIST0"; s = SELF;
         sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
-          ss2_of_ss loc [] (sslist loc False sep s)
+          ASvala2 loc (ASquot loc (ASlist loc False s sep)) []
       | UIDENT "SV"; UIDENT "LIST1"; s = SELF;
         sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
-          ss2_of_ss loc [] (sslist loc True sep s)
+          ASvala2 loc (ASquot loc (ASlist loc True s sep)) []
       | UIDENT "SV"; UIDENT "OPT"; s = SELF ->
-          ss2_of_ss loc [] (ssopt loc s)
+          ASvala2 loc (ASquot loc (ASopt loc s)) []
       | UIDENT "SV"; UIDENT "FLAG"; s = SELF ->
-          ss2_of_ss loc [] (ssflag loc s)
-      | UIDENT "SV"; s = UIDENT -> ss2_of_ss loc [] (sstoken loc s) ] ]
+          ASvala2 loc (ASquot loc (ASflag loc s)) []
+      | UIDENT "SV"; s = UIDENT ->
+          ASvala2 loc (ASquot loc (AStok loc s None)) [] ] ]
   ;
 END;

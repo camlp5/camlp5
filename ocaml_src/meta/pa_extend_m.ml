@@ -11,17 +11,17 @@ Grammar.extend
     [[Gramext.Stoken ("UIDENT", "SV"); Gramext.Stoken ("UIDENT", "")],
      Gramext.action
        (fun (s : string) _ (loc : Ploc.t) ->
-          (ss2_of_ss loc [] (sstoken loc s) : 'symbol));
+          (ASvala2 (loc, ASquot (loc, AStok (loc, s, None)), []) : 'symbol));
      [Gramext.Stoken ("UIDENT", "SV"); Gramext.Stoken ("UIDENT", "FLAG");
       Gramext.Sself],
      Gramext.action
        (fun (s : 'symbol) _ _ (loc : Ploc.t) ->
-          (ss2_of_ss loc [] (ssflag loc s) : 'symbol));
+          (ASvala2 (loc, ASquot (loc, ASflag (loc, s)), []) : 'symbol));
      [Gramext.Stoken ("UIDENT", "SV"); Gramext.Stoken ("UIDENT", "OPT");
       Gramext.Sself],
      Gramext.action
        (fun (s : 'symbol) _ _ (loc : Ploc.t) ->
-          (ss2_of_ss loc [] (ssopt loc s) : 'symbol));
+          (ASvala2 (loc, ASquot (loc, ASopt (loc, s)), []) : 'symbol));
      [Gramext.Stoken ("UIDENT", "SV"); Gramext.Stoken ("UIDENT", "LIST1");
       Gramext.Sself;
       Gramext.Sopt
@@ -33,7 +33,8 @@ Grammar.extend
               (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__4))])],
      Gramext.action
        (fun (sep : 'e__4 option) (s : 'symbol) _ _ (loc : Ploc.t) ->
-          (ss2_of_ss loc [] (sslist loc true sep s) : 'symbol));
+          (ASvala2 (loc, ASquot (loc, ASlist (loc, true, s, sep)), []) :
+           'symbol));
      [Gramext.Stoken ("UIDENT", "SV"); Gramext.Stoken ("UIDENT", "LIST0");
       Gramext.Sself;
       Gramext.Sopt
@@ -45,13 +46,16 @@ Grammar.extend
               (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__3))])],
      Gramext.action
        (fun (sep : 'e__3 option) (s : 'symbol) _ _ (loc : Ploc.t) ->
-          (ss2_of_ss loc [] (sslist loc false sep s) : 'symbol));
+          (ASvala2 (loc, ASquot (loc, ASlist (loc, false, s, sep)), []) :
+           'symbol));
      [Gramext.Stoken ("UIDENT", "SFLAG"); Gramext.Sself],
      Gramext.action
-       (fun (s : 'symbol) _ (loc : Ploc.t) -> (ssflag loc s : 'symbol));
+       (fun (s : 'symbol) _ (loc : Ploc.t) ->
+          (ASquot (loc, ASflag (loc, s)) : 'symbol));
      [Gramext.Stoken ("UIDENT", "SOPT"); Gramext.Sself],
      Gramext.action
-       (fun (s : 'symbol) _ (loc : Ploc.t) -> (ssopt loc s : 'symbol));
+       (fun (s : 'symbol) _ (loc : Ploc.t) ->
+          (ASquot (loc, ASopt (loc, s)) : 'symbol));
      [Gramext.Stoken ("UIDENT", "SLIST1"); Gramext.Sself;
       Gramext.Sopt
         (Gramext.srules
@@ -62,7 +66,7 @@ Grammar.extend
               (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__2))])],
      Gramext.action
        (fun (sep : 'e__2 option) (s : 'symbol) _ (loc : Ploc.t) ->
-          (sslist loc true sep s : 'symbol));
+          (ASquot (loc, ASlist (loc, true, s, sep)) : 'symbol));
      [Gramext.Stoken ("UIDENT", "SLIST0"); Gramext.Sself;
       Gramext.Sopt
         (Gramext.srules
@@ -73,4 +77,4 @@ Grammar.extend
               (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__1))])],
      Gramext.action
        (fun (sep : 'e__1 option) (s : 'symbol) _ (loc : Ploc.t) ->
-          (sslist loc false sep s : 'symbol))]]];;
+          (ASquot (loc, ASlist (loc, false, s, sep)) : 'symbol))]]];;
