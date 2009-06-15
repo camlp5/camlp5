@@ -552,8 +552,18 @@ EXTEND_PRINTER
               in
               horiz_vertic
                 (fun () -> hlistl curr dot_expr pc (el @ [x]))
-                (fun () -> not_impl "expr list 2 vertic" pc 0) ]
-      | <:expr< lazy ($x$) >> ->
+                (fun () ->
+                   let el =
+                     List.rev_map (fun e -> (e, "")) [x :: List.rev el]
+                   in
+                   plistl curr dot_expr 0 pc el) ]
+      | <:expr< assert $x$ >> ->
+          plistf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc -> sprintf "%sassert%s" pc.bef pc.aft, "");
+             (fun pc -> curr pc x, "")]
+      | <:expr< lazy $x$ >> ->
           plistf 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
              aft = sprintf ")%s" pc.aft}
@@ -775,19 +785,19 @@ EXTEND_PRINTER
             [(fun pc -> sprintf "%s%s%s" pc.bef i pc.aft, "");
              (fun pc -> ctyp pc t, "") ::
              List.map (fun s -> (fun pc -> string pc s, "")) pd]
-(*
       | <:str_item< $exp:e$ >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "%a" expr (e, k)
+          expr pc e
+(*
       | <:str_item< # $lid:s$ $opt:x$ >> ->
           fun ppf curr next dg k ->
             match x with
             [ Some e -> fprintf ppf "; # (%s %a" s expr (e, ks ")" k)
             | None -> fprintf ppf "; # (%s%t" s (ks ")" k) ]
-      | <:str_item< declare $list:s$ end >> ->
-          fun ppf curr next dg k ->
-            if s = [] then fprintf ppf "; ..."
-            else fprintf ppf "%a" (list str_item) (s, k)
+*)
+      | <:str_item< declare $list:sil$ end >> ->
+          if sil = [] then sprintf "%s%s" pc.bef pc.aft
+          else vlist str_item pc sil
+(*
       | MLast.StUse _ _ _ ->
           fun ppf curr next dg k -> ()
 *)

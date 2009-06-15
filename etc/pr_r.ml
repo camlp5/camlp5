@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.81 2007/10/04 15:29:59 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.82 2007/10/05 08:55:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -2054,7 +2054,8 @@ EXTEND_PRINTER
           expr {(pc) with bef = sprintf "%s#%s " pc.bef s} e
       | <:str_item< declare $list:sil$ end >> ->
           if flag_expand_declare.val then
-            vlistl (semi_after str_item) str_item pc sil
+            if sil = [] then pc.bef
+            else vlistl (semi_after str_item) str_item pc sil
           else if sil = [] then sprintf "%sdeclare end%s" pc.bef pc.aft
           else
             horiz_vertic
@@ -2109,7 +2110,8 @@ EXTEND_PRINTER
     [ "top"
       [ <:sig_item< declare $list:sil$ end >> ->
           if flag_expand_declare.val then
-            vlistl (semi_after sig_item) sig_item pc sil
+            if sil = [] then pc.bef
+            else vlistl (semi_after sig_item) sig_item pc sil
           else if sil = [] then sprintf "%sdeclare end%s" pc.bef pc.aft
           else
             horiz_vertic
