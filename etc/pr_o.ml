@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.109 2007/12/19 13:36:17 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.110 2007/12/19 16:54:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -151,26 +151,15 @@ value semi_after elem pc x =
 ;
 value semi_semi_after elem pc x = pprintf pc "%p;;" elem x;
 value star_after elem pc x = pprintf pc "%p *" elem x;
-value op_after elem pc (x, op) =
-  elem {(pc) with aft = sprintf "%s%s" op pc.aft} x
-;
+value op_after elem pc (x, op) = pprintf pc "%p%s" elem x op;
 
-value and_before elem pc x = elem {(pc) with bef = sprintf "%sand " pc.bef} x;
-value bar_before elem pc x = elem {(pc) with bef = sprintf "%s| " pc.bef} x;
-value star_before elem pc x = elem {(pc) with bef = sprintf "%s* " pc.bef} x;
+value and_before elem pc x = pprintf pc "and %p" elem x;
+value bar_before elem pc x = pprintf pc "| %p" elem x;
+value star_before elem pc x = pprintf pc "* %p" elem x;
 
 value operator pc left right sh op x y =
   let op = if op = "" then "" else " " ^ op in
-  horiz_vertic
-    (fun () ->
-       sprintf "%s%s%s %s%s" pc.bef (left {(pc) with bef = ""; aft = ""} x)
-         op (right {(pc) with bef = ""; aft = ""} y) pc.aft)
-    (fun () ->
-       let s1 = left {(pc) with aft = op} x in
-       let s2 =
-         right {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} y
-       in
-       sprintf "%s\n%s" s1 s2)
+  pprintf pc "%p%s@;%p" left x op right y
 ;
 
 value left_operator pc sh unfold next x =
@@ -235,8 +224,7 @@ value comm_patt_any f pc z =
 value patt_as pc z =
   match z with
   [ <:patt< ($x$ as $y$) >> ->
-      let s = patt {(pc) with bef = ""} y in
-      patt {(pc) with aft = sprintf " as %s" s} x
+      pprintf pc "%p as %s" patt x (patt {(pc) with bef = ""; aft = ""} y)
   | z -> patt pc z ]
 ;
 

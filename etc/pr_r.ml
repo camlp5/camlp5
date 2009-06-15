@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.152 2007/12/19 13:36:17 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.153 2007/12/19 16:54:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -123,6 +123,11 @@ value un_irrefut_patt p =
       (<:patt< ($list:upl$) >>, <:expr< ($list:uel$) >>) ]
 ;
 
+(**)
+value test = ref False;
+Pcaml.add_option "-test" (Arg.Set test) " test";
+(**)
+
 value not_impl name pc x =
   let desc =
     if Obj.tag (Obj.repr x) = Obj.tag (Obj.repr "") then
@@ -227,7 +232,8 @@ value comm_patt_any f pc z =
 
 value patt_as pc z =
   match z with
-  [ <:patt< ($x$ as $y$) >> -> pprintf pc "%p as %p" patt x patt y
+  [ <:patt< ($x$ as $y$) >> ->
+      pprintf pc "%p as %s" patt x (patt {(pc) with bef = ""; aft = ""} y)
   | z -> patt pc z ]
 ;
 
