@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.31 2007/07/04 16:30:37 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.32 2007/07/04 16:57:49 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -407,7 +407,7 @@ value record_binding pc (p, e) =
    - prints "value x = e" instead of "value = fun x -> e"
    - if vertical and "e" is a sequence, put the "do {" at after the "="
    - the continuation after the expression is optionally on next line if
-     it not a sequence (see 'particularity for the parameter 'pc.aft' below)
+     it not a sequence
    - the expression after '=' is displayed with the 'where' statement if
      possible (expr_wh)
    - if "e" is a type constraint, put the constraint after the params. E.g.
@@ -476,7 +476,8 @@ value value_binding pc (p, e) =
            let s1 = patt_eq "" in
            let s2 =
              comm_expr expr_wh
-               {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
+               {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""}
+               e
            in
            let s3 =
              if pc.aft = "" then "" else sprintf "\n%s%s" (tab pc.ind) pc.aft
@@ -689,7 +690,8 @@ value type_decl pc td =
        in
        let s2 =
          if cl = [] then
-           ctyp {(pc) with ind = pc.ind + 2; bef = (tab (pc.ind + 2))} te
+           ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""}
+             te
          else
            horiz_vertic
              (fun () ->

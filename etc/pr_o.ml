@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.32 2007/07/04 14:55:54 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.33 2007/07/04 16:57:49 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -302,33 +302,21 @@ value expr_with_comm_except_if_sequence pc e =
 
 (* Pretty printing improvements (optional):
    - prints "value x = e" instead of "value = fun x -> e"
-   - the continuation after the expression is optionally on next line if
-     it not a sequence (see 'particularity for the parameter 'ko' below)
    - if "e" is a type constraint, put the constraint after the params. E.g.
         value f x y = (e : t)
      is displayed:
         value f x y : t = e
-   Particularity for the parameter 'pc.aft':
-     It is of type option (bool * string). The boolean asks whether we
-     want that a newline be displayed before the continuation string if
-     the value binding is vertical (does not fit on the line). If False,
-     the continuation string is displayed in the last (possibly alone) line
-     of the value binding. The string is the continuation, which is the
-     empty string if the pc.aft value is None.
-       If the expression is a sequence, with the sequence beginner after
-     the "=", it is not taken into account, the continuation will always be
-     in the same line than the sequence closer.
    Cancellation of all these improvements could be done by changing calls
    to this function to a call to "binding expr" above.
 *)
 value value_binding pc (p, e) =
   let (pl, e) = expr_fun_args e in
+  let pl = [p :: pl] in
   let (e, tyo) =
     match e with
     [ <:expr< ($e$ : $t$) >>  -> (e, Some t)
     | _ -> (e, None) ]
   in
-  let pl = [p :: pl] in
   let simple_patt = pr_patt.pr_fun "simple" in
   horiz_vertic
     (fun () ->
@@ -338,39 +326,37 @@ value value_binding pc (p, e) =
           [ Some t -> sprintf " : %s" (ctyp {(pc) with bef = ""; aft = ""} t)
           | None -> "" ])
          (expr {(pc) with bef = ""; aft = ""} e)
-         (match pc.aft with [ Some (_, k) -> k | None -> "" ]))
+         pc.aft)
     (fun () ->
-       let s1 =
+       let patt_eq k =
          horiz_vertic
            (fun () ->
-              sprintf "%s%s%s =" pc.bef
+              sprintf "%s%s%s =%s" pc.bef
                 (hlist simple_patt {(pc) with bef = ""; aft = ""} pl)
                 (match tyo with
                  [ Some t ->
-                     sprintf " : %s"
-                       (ctyp {(pc) with bef = ""; aft = ""} t)
-                 | None -> "" ]))
+                     sprintf " : %s" (ctyp {(pc) with bef = ""; aft = ""} t)
+                 | None -> "" ])
+                k)
            (fun () ->
               let patt_tycon tyo pc p =
                 match tyo with
                 [ Some t ->
                     simple_patt
-                      {(pc) with aft = ctyp {(pc) with bef = " : "} t}
-                      p
-                | None -> patt pc p ]
+                      {(pc) with aft = ctyp {(pc) with bef = " : "} t} p
+                | None -> simple_patt pc p ]
               in
               let pl = List.map (fun p -> (p, "")) pl in
-              plistl simple_patt (patt_tycon tyo) 4 {(pc) with aft = " ="} pl)
+              plistl simple_patt (patt_tycon tyo) 4
+                {(pc) with aft = sprintf " =%s" k} pl)
        in
+       let s1 = patt_eq "" in
        let s2 =
          expr_with_comm_except_if_sequence
-           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-            aft = match pc.aft with [ Some (False, k) -> k | _ -> "" ]} e
+           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""} e
        in
        let s3 =
-         match pc.aft with
-         [ Some (True, k) -> sprintf "\n%s%s" (tab pc.ind) k
-         | _ -> "" ]
+         if pc.aft = "" then "" else sprintf "\n%s%s" (tab pc.ind) pc.aft
        in
        sprintf "%s\n%s%s" s1 s2 s3)
 ;
@@ -544,8 +530,6 @@ value type_params pc tvl =
         tvl ]
 ;
 
-(* type_decl: particularity for the value of 'pc.aft' ->
-   see 'value_binding' *)
 value type_decl pc td =
   let ((_, tn), tp, pf, te, cl) =
     (td.MLast.tdNam, td.MLast.tdPrm, td.MLast.tdPrv, td.MLast.tdDef,
@@ -556,7 +540,7 @@ value type_decl pc td =
       sprintf "%s%s%s%s" pc.bef
         (type_params {(pc) with bef = ""; aft = ""} tp)
         (var_escaped {(pc) with bef = ""; aft = ""} tn)
-        (match pc.aft with [ Some (_, k) -> k | None -> "" ])
+        pc.aft
   | _ ->
       horiz_vertic
         (fun () ->
@@ -566,7 +550,7 @@ value type_decl pc td =
              (ctyp {(pc) with bef = ""; aft = ""} te)
              (if cl = [] then ""
               else not_impl "type_decl cl" {(pc) with bef = ""; aft = ""} cl)
-             (match pc.aft with [ Some (_, k) -> k | None -> "" ]))
+             pc.aft)
         (fun () ->
            let s1 =
              horiz_vertic
@@ -581,7 +565,7 @@ value type_decl pc td =
              if cl = [] then
                ctyp
                  {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                  aft = match pc.aft with [ Some (False, k) -> k | _ -> "" ]}
+                  aft = ""}
                  te
              else
                horiz_vertic
@@ -596,9 +580,7 @@ value type_decl pc td =
                       {(pc) with bef = ""; aft = ""} tn)
            in
            let s3 =
-             match pc.aft with
-             [ Some (True, k) -> sprintf "\n%s%s" (tab pc.ind) k
-             | _ -> "" ]
+             if pc.aft = "" then "" else sprintf "\n%s%s" (tab pc.ind) pc.aft
            in
            sprintf "%s\n%s%s" s1 s2 s3) ]
 ;
@@ -2078,10 +2060,8 @@ value str_item_top =
         mod_ident {(pc) with bef = sprintf "%sopen " pc.bef} i
   | <:str_item< type $list:tdl$ >> ->
       fun curr next pc ->
-        let nl = pc.aft <> "" in
         vlist2 type_decl (and_before type_decl)
-          {(pc) with bef = sprintf "%stype " pc.bef;
-           aft = (None, Some (nl, pc.aft))}
+          {(pc) with bef = sprintf "%stype " pc.bef; aft = ("", pc.aft)}
           tdl
   | <:str_item< value $opt:rf$ $list:pel$ >> ->
       fun curr next pc ->
@@ -2089,14 +2069,12 @@ value str_item_top =
           (fun () ->
              sprintf "%slet %s%s" pc.bef (if rf then "rec " else "")
                (hlist2 value_binding (and_before value_binding)
-                  {(pc) with bef = ""; aft = (None, Some (False, pc.aft))}
-                  pel))
+                  {(pc) with bef = ""; aft = ("", pc.aft)} pel))
           (fun () ->
-             let nl = pc.aft <> "" in
              vlist2 value_binding (and_before value_binding)
                {(pc) with
                 bef = sprintf "%slet %s" pc.bef (if rf then "rec " else "");
-                aft = (None, Some (nl, pc.aft))} pel)
+                aft = ("", pc.aft)} pel)
   | <:str_item< $exp:e$ >> ->
       fun curr next pc ->
         if pc.aft = ";;" then expr pc e
@@ -2162,10 +2140,8 @@ value sig_item_top =
         mod_ident {(pc) with bef = (sprintf "%sopen " pc.bef)} i
   | <:sig_item< type $list:tdl$ >> ->
       fun curr next pc ->
-        let nl = pc.aft <> "" in
         vlist2 type_decl (and_before type_decl)
-          {(pc) with bef = sprintf "%stype " pc.bef;
-           aft = (None, Some (nl, pc.aft))}
+          {(pc) with bef = sprintf "%stype " pc.bef; aft = ("", pc.aft)}
           tdl
   | <:sig_item< value $s$ : $t$ >> ->
       fun curr next pc ->
@@ -2609,7 +2585,7 @@ Pcaml.add_option "-ss" (Arg.Set flag_semi_semi)
   "Print double semicolons (equivalent to -flag M).";
 
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.32 2007/07/04 14:55:54 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.33 2007/07/04 16:57:49 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
