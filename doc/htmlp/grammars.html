@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.42 2007/07/17 23:12:30 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.43 2007/07/18 00:23:03 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -434,7 +434,7 @@ instead of "<tt>loc</tt>".</p>
        delete-rule ::= "DELETE_RULE" delete-rule-body "END"
   delete-rule-body ::= entry-name ":" symbols
            symbols ::= symbol symbols
-                     | &lt;nothing&gt;
+                     | symbol
 </pre>
 
 <p>See the syntax of the EXTEND statement for the meaning of the syntax
@@ -458,6 +458,10 @@ instead of "<tt>loc</tt>".</p>
 <p>... to be completed ...</p>
 
 <h2>Kind of grammar</h2>
+
+<p>... to be completed ...</p>
+
+<h2>The Grammar module</h2>
 
 <p>... to be completed ...</p>
 
@@ -683,20 +687,132 @@ instead of "<tt>loc</tt>".</p>
   has two drawbacks:</p>
 
 <ul>
-  <li>First, there is no static control that, when an entry calls
-    another entry, this other entry is compatible, i.e. comes from the
-    same grammar. This check is only done at run time.</p>
-  <li>Second, the entries are called with a character stream as
-    parameter. Internally, this character stream is transformed into a
-    token stream. It is therefore not always possible to call an entry
-    several times, because a token may have been unfrozen but not
-    consumed in the stream, causing it to be lost in the second
-    call. Actually, it may work or not depending on the grammar.</li>
+  <li>First, the type of tokens of the lexers must be "<tt>(string *
+      string)</tt>"</li>
+  <li>Second, since the entry type has no parameter to specify the
+    grammar it is bound to, there is no static check that entries are
+    compatible, i.e.  belong to the same grammar. The check is done at
+    run time.</li>
 </ul>
 
-<p>To illustrate this second problem, let us take an example.</p>
+<p>The functorial interface resolve these two problems. The functor
+  takes a module as parameter where the token type has to be defined,
+  together with the lexer returning streams of tokens of this
+  type. The resulting module define entries compatible the ones to the
+  other, and this is controlled by the ocaml type checker.</p>
 
-<p>... to be completed ...</p>
+<p>The syntax extension must be done with the statement GEXTEND, instead
+  of EXTEND, and deletion by GDELETE_RULE instead of DELETE_RULE.</p>
+
+<h3>The glexer type</h3>
+
+<p>In the section about the interface with the lexer, we presented the
+  glexer type as a record without type parameter. Actually, this type
+  is defined as:</p>
+
+<pre>
+  type glexer 'te =
+    { tok_func : lexer_func 'te;
+      tok_using : pattern -> unit;
+      tok_removing : pattern -> unit;
+      tok_match : pattern -> 'te -> string;
+      tok_text : pattern -> string;
+      tok_comm : mutable option (list location) }
+  ;
+</pre>
+
+<p>where the type parameter is the type of the token, which can be any
+  type, different from "<tt>(string * string)</tt>", providing the
+  lexer function (<tt>tok_func</tt>) returns a stream of this token
+  type and the match function (<tt>tok_match</tt>) indicates how to
+  match values of this token type against the token patterns (which
+  remain defined as "<tt>(string * string)</tt>").</p>
+
+<p>Here is an example of an user token type and the associated match
+  function:</p>
+
+<pre>
+  type mytoken = [ Ident of string | Int of int | Comma | Equal | Keyw of string  ];
+
+  value mymatch =
+    fun
+    [ ("IDENT", "") -> fun [ Ident s -> s | _ -> raise Stream.Failure ]
+    | ("INT", "") -> fun [ Int i -> string_of_int i | _ -> raise Stream.Failure ]
+    | ("", ",") -> fun [ Comma -> "" | _ -> raise Stream.Failure ]
+    | ("", "=") -> fun [ Equal -> "" | _ -> raise Stream.Failure ]
+    | ("", s) ->
+        fun
+        [ Keyw k -> if k = s then "" else raise Stream.Failure
+        | _ -> raise Stream.Failure ]
+    | _ -> raise (Token.Error "bad token in match function") ]
+  ;
+</pre>
+
+<h3>The functor parameter</h3>
+
+<p>The type of the functor parameter is defined as:</p>
+
+<pre>
+  module type GLexerType =
+    sig
+      type te = 'x;
+      value lexer : Token.glexer te;
+    end;
+</pre>
+
+<p>The token type must be specified (type "<tt>te</tt>") and the lexer
+  also, with the interface for lexers, of the glexer type defined
+  above, the record fields being described in the section "interface
+  with the lexer", but with a general token type.</p>
+
+<h3>The resulting grammar module</h3>
+
+<p>Once a module of type "<tt>GLexerType</tt>" has been built (previous
+  section, it is possible to create a grammar module by applying the
+  functor "<tt>Grammar.GMake</tt>". For example:</p>
+
+<pre>
+  module MyGram = Grammar.GMake MyLexer;
+</pre>
+
+<p>Notice that the function "<tt>Entry.parse</tt>" of this resulting
+  module does not take a character stream as parameter, but a value of
+  type "<tt>parsable</tt>". This function is equivalent to the
+  function "<tt>parse_parsable</tt>" of the non functorial
+  interface. In short, the parsing of some character stream
+  "<tt>cs</tt>" by some entry "<tt>e</tt>" of the example grammar
+  above, must be done by:</p>
+
+<pre>
+  MyGram.Entry.parse e (MyGram.parsable cs)
+</pre>
+
+<p>instead of:</p>
+
+<pre>
+  MyGram.Entry.parse e cs
+</pre>
+
+<h3>GEXTEND and GDELETE_RULE</h3>
+
+<p>The "<tt>GEXTEND</tt>" and "<tt>GDELETE_RULE</tt>" statements are
+  also added in the expressions of the ocaml language when the syntax
+  extension kit "<tt>pa_extend.cmo</tt>" is loaded. They have to be
+  used for grammars defined with the functorial interface. Their
+  syntax are:</p>
+
+<pre>
+           expression ::= gextend
+                        | gdelete-rule
+         gdelete-rule ::= "GDELETE_RULE" gdelete-rule-body "END"
+              gextend ::= "GEXTEND" gextend-body "END"
+         gextend-body ::= grammar-module-name extend-body
+    gdelete-rule-body ::= grammar-module-name delete-rule-body
+  grammar-module-name ::= qualid
+</pre>
+
+<p>See the syntax of the EXTEND statement for the meaning of the syntax
+  entries not defined above.</p>
 
 <div class="trailer">
 </div>
