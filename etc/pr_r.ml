@@ -1,11 +1,12 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.80 2007/10/02 10:01:03 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.81 2007/10/04 15:29:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
 open Pcaml;
 open Prtools;
 
+value flag_comments_in_phrases = ref True;
 value flag_expand_declare = ref False;
 value flag_horiz_let_in = ref False;
 value flag_sequ_begin_at_eol = ref True;
@@ -223,6 +224,10 @@ value sig_item = Eprinter.apply pr_sig_item;
 value module_expr = Eprinter.apply pr_module_expr;
 value module_type = Eprinter.apply pr_module_type;
 value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
+
+value comm_bef pc loc =
+  if flag_comments_in_phrases.val then Prtools.comm_bef pc loc else ""
+;
 
 (* expression with adding the possible comment before *)
 value comm_expr expr pc z =
@@ -2398,11 +2403,13 @@ value set_flags s =
       match s.[i] with
       [ 'A' | 'a' -> do {
           let v = is_uppercase s.[i] in
+          flag_comments_in_phrases.val := v;
           flag_expand_declare.val := v;
           flag_equilibrate_cases.val := v;
           flag_horiz_let_in.val := v;
           flag_sequ_begin_at_eol.val := v;
         }
+      | 'C' | 'c' -> flag_comments_in_phrases.val := is_uppercase s.[i]
       | 'D' | 'd' -> flag_expand_declare.val := is_uppercase s.[i]
       | 'E' | 'e' -> flag_equilibrate_cases.val := is_uppercase s.[i]
       | 'L' | 'l' -> flag_horiz_let_in.val := is_uppercase s.[i]
@@ -2416,7 +2423,8 @@ value default_flag () =
   let flag_on b t f = if b then t else "" in
   let flag_off b t f = if b then "" else f in
   let on_off flag =
-    sprintf "%s%s%s%s"
+    sprintf "%s%s%s%s%s"
+      (flag flag_comments_in_phrases.val "C" "c")
       (flag flag_expand_declare.val "D" "d")
       (flag flag_equilibrate_cases.val "E" "e")
       (flag flag_horiz_let_in.val "L" "l")
@@ -2482,6 +2490,7 @@ value default_wflag () =
 Pcaml.add_option "-flag" (Arg.String set_flags)
   ("<str> Change pretty printing behaviour according to <str>:
        A/a enable/disable all flags
+       C/c enable/disable comments in phrases
        D/d enable/disable allowing expanding 'declare'
        E/e enable/disable equilibrate cases
        L/l enable/disable allowing printing 'let..in' horizontally
@@ -2516,10 +2525,10 @@ Pcaml.add_option "-no_where" (Arg.Unit (fun () -> set_wflags "a"))
   "(obsolete since version 4.02; use rather \"-wflag a\")";
 
 Pcaml.add_option "-cip" (Arg.Unit (fun x -> x))
-  "(obsolete since version 4.02)";
+  "(obsolete since version 4.02; use rather \"-flag C\")";
 
 Pcaml.add_option "-ncip" (Arg.Unit (fun x -> x))
-  "(obsolete since version 4.02)";
+  "(obsolete since version 4.02; use rather \"-flag c\")";
 
 Pcaml.add_option "-exp_dcl" (Arg.Unit (fun () -> set_flags "D"))
   "(obsolete since version 4.02; use rather \"-flag D\")";

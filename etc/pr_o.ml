@@ -1,11 +1,12 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.101 2007/10/02 10:01:03 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.102 2007/10/04 15:29:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
 open Pcaml;
 open Prtools;
 
+value flag_comments_in_phrases = ref True;
 value flag_equilibrate_cases = Pcaml.flag_equilibrate_cases;
 value flag_horiz_let_in = ref True;
 value flag_semi_semi = ref False;
@@ -211,6 +212,10 @@ value module_type = Eprinter.apply pr_module_type;
 value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
 
 value expr1 = Eprinter.apply_level pr_expr "expr1";
+
+value comm_bef pc loc =
+  if flag_comments_in_phrases.val then Prtools.comm_bef pc loc else ""
+;
 
 (* expression with adding the possible comment before *)
 value comm_expr expr pc z =
@@ -2413,10 +2418,12 @@ value set_flags s =
       match s.[i] with
       [ 'A' | 'a' -> do {
           let v = is_uppercase s.[i] in
+          flag_comments_in_phrases.val := v;
           flag_equilibrate_cases.val := v;
           flag_horiz_let_in.val := v;
           flag_semi_semi.val := v;
         }
+      | 'C' | 'c' -> flag_comments_in_phrases.val := is_uppercase s.[i]
       | 'E' | 'e' -> flag_equilibrate_cases.val := is_uppercase s.[i]
       | 'L' | 'l' -> flag_horiz_let_in.val := is_uppercase s.[i]
       | 'M' | 'm' -> flag_semi_semi.val := is_uppercase s.[i]
@@ -2429,7 +2436,8 @@ value default_flag () =
   let flag_on b t f = if b then t else "" in
   let flag_off b t f = if b then "" else f in
   let on_off flag =
-    sprintf "%s%s%s"
+    sprintf "%s%s%s%s"
+      (flag flag_comments_in_phrases.val "C" "c")
       (flag flag_equilibrate_cases.val "E" "e")
       (flag flag_horiz_let_in.val "L" "l")
       (flag flag_semi_semi.val "M" "m")
@@ -2443,6 +2451,7 @@ value default_flag () =
 Pcaml.add_option "-flag" (Arg.String set_flags)
   ("<str> Change pretty printing behaviour according to <str>:
        A/a enable/disable all flags
+       C/c enable/disable comments in phrases
        E/e enable/disable equilibrate cases
        L/l enable/disable allowing printing 'let..in' horizontally
        M/m enable/disable printing double semicolons
@@ -2452,23 +2461,23 @@ Pcaml.add_option "-l" (Arg.Int (fun x -> Pretty.line_length.val := x))
   ("<length> Maximum line length for pretty printing (default " ^
      string_of_int Pretty.line_length.val ^ ")");
 
-Pcaml.add_option "-ss" (Arg.Set flag_semi_semi)
-  "(obsolete since version 4.02; use rather \"-flag M\").";
-
-Pcaml.add_option "-no_ss" (Arg.Clear flag_semi_semi)
-  "(obsolete since version 4.02; use rather \"-flag m\").";
-
 Pcaml.add_option "-sep_src" (Arg.Unit (fun () -> sep.val := None))
   "Read source file for text between phrases (default).";
 
 Pcaml.add_option "-sep" (Arg.String (fun x -> sep.val := Some x))
   "<string> Use this string between phrases instead of reading source.";
 
+Pcaml.add_option "-ss" (Arg.Set flag_semi_semi)
+  "(obsolete since version 4.02; use rather \"-flag M\").";
+
+Pcaml.add_option "-no_ss" (Arg.Clear flag_semi_semi)
+  "(obsolete since version 4.02; use rather \"-flag m\").";
+
 Pcaml.add_option "-cip" (Arg.Unit (fun x -> x))
-  "(obsolete since version 4.02)";
+  "(obsolete since version 4.02; use rather \"-flag C\")";
 
 Pcaml.add_option "-ncip" (Arg.Unit (fun x -> x))
-  "(obsolete since version 4.02)";
+  "(obsolete since version 4.02; use rather \"-flag c\")";
 
 (* Pretty printing extension for objects and labels *)
 
