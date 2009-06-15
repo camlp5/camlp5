@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: index.html,v 1.12 2007/07/21 12:52:01 deraugla Exp $ -->
+  <!-- $Id: index.html,v 1.13 2007/07/25 10:32:43 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Camlp5</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -81,14 +81,34 @@ loading one of the files "<tt>camlp5o.cma</tt>" or
   ocaml -I +camlp5 camlp5r.cma
 </pre>
 
+<h2>Parsing and Printing kits</h2>
+
+<p>Parsing and printing extensions are ocaml object files, i.e. files
+  with the extension "<tt>.cmo</tt>" or "<tt>.cma</tt>. They are the
+  result of the compilation of ocaml source files containing what is
+  necessary to do the parsing or printing extensions. These object
+  files are named <em>parsing</em> or <em>printing kits</em>.</p>
+
+<p>These files cannot be linked to produce executables because they
+  generally call functions and use variables defined only in camlp5
+  core, typically belonging to the module "<tt>Pcaml</tt>". The kits
+  are destinated to be loaded by the camlp5 commands, either by their
+  command arguments or by the source files using them through the
+  directive "<tt>#load</tt>".</p>
+
+<p>It is therefore important to compile the <em>kits</em> with the
+  option "<tt>-c</tt>" of the ocaml compiler (i.e. just compilation,
+  do not produce executable) and with the option "<tt>-I +camlp5</tt>"
+  to inform the compiler to find module interfaces in installed camlp5
+  library.</p>  
+
+<p>In the ocaml toplevel, it is possible to use a kit by simply
+  loading it with the directive "<tt>#load</tt>".</p>
+
 <h2>Extending syntax</h2>
 
-<p>A syntax extension is an ocaml object file, i.e. a file with the
-extension "<tt>.cmo</tt>". It is a result of the compilation of an
-ocaml source file containing what is necessary to do the syntax
-extensions. These object files are named <em>parsing kits</em>.</p>
-
-<p>There are two ways to use a syntax extension:</p>
+<p>A syntax extension is a camlp5 parsing kit. There are two ways to
+  use a syntax extension:</p>
 
 <ul>
 
@@ -122,8 +142,9 @@ create one's own syntax extensions is explained further.</p>
 
 <h2>Pretty printing</h2>
 
-<p>Like for syntax extensions, <em>pretty printing kits</em> are ocaml
-object files. The main pretty printing kits provided by camlp5 are:</p>
+<p>Like for syntax extensions, the pretty printing are defined or
+  extended through camlp5 printing kits. The main pretty printing kits
+  provided by camlp5 are:</p>
 
 <ul>
 
