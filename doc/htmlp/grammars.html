@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.15 2007/07/15 18:49:09 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.16 2007/07/16 00:24:52 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -174,14 +174,14 @@ statement, the other ones being locally and silently defined
 inside.</p>
 
 <ul>
-<li>If an entry, which is extended in the EXTEND statement, is in the
-  GLOBAL list, but is not defined in the context of the EXTEND
-  statement, the ocaml compiler will fail with the error "unbound
-  value".</li>
-<li>If there is no GLOBAL indicator, and an entry, which is extended
-  in the EXTEND statement, is not defined in the contex of the EXTEND
-  statement, the ocaml compiler will also fail with the error "unbound
-  value".</li>
+  <li>If an entry, which is extended in the EXTEND statement, is in the
+    GLOBAL list, but is not defined in the context of the EXTEND
+    statement, the ocaml compiler will fail with the error "unbound
+    value".</li>
+  <li>If there is no GLOBAL indicator, and an entry, which is extended
+    in the EXTEND statement, is not defined in the contex of the EXTEND
+    statement, the ocaml compiler will also fail with the error "unbound
+    value".</li>
 </ul>
 
 <p>Example:</p>
