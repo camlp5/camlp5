@@ -835,7 +835,8 @@ and class_sig_item c l =
   | CgInh (loc, ct) -> Pctf_inher (class_type ct) :: l
   | CgMth (loc, s, pf, t) ->
       Pctf_meth (s, mkprivate pf, ctyp (mkpolytype t), mkloc loc) :: l
-  | CgVal (loc, s, b, t) -> failwith "not impl CgVal"
+  | CgVal (loc, s, b, t) ->
+      Pctf_val (s, mkmutable b, Concrete, ctyp t, mkloc loc) :: l
   | CgVir (loc, s, b, t) ->
       Pctf_virt (s, mkprivate b, ctyp (mkpolytype t), mkloc loc) :: l
 and class_expr =
