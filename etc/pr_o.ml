@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.151 2007/12/24 19:23:30 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.152 2007/12/25 06:53:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1121,15 +1121,14 @@ EXTEND_PRINTER
           plist next 0 pc pl ]
     | "range"
       [ <:patt< $x$ .. $y$ >> ->
-          sprintf "%s..%s" (next {(pc) with aft = ""} x)
-            (next {(pc) with bef = ""} y) ]
+          pprintf pc "%p..%p" next x next y ]
     | "cons"
       [ <:patt< [$_$ :: $_$] >> as z ->
           let (xl, y) = make_patt_list z in
           match y with
           [ Some y ->
               let xl = List.map (fun x -> (x, " ::")) (xl @ [y]) in
-              plist next 0 {(pc) with ind = pc.ind + 1} xl
+              plist next 0 pc xl
           | None -> next pc z ] ]
     | "apply"
       [ <:patt< $_$ $_$ >> as z ->
@@ -1142,38 +1141,11 @@ EXTEND_PRINTER
           in
           match p_pl_opt with
           [ None -> next pc z
-          | Some (p1, [p2]) ->
-              horiz_vertic
-                (fun () ->
-                   sprintf "%s%s %s%s" pc.bef
-                     (curr {(pc) with bef = ""; aft = ""} p1)
-                     (next {(pc) with bef = ""; aft = ""} p2) pc.aft)
-                (fun () ->
-                   let s1 = curr {(pc) with aft = ""} p1 in
-                   let s2 =
-                     next
-                       {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} p2
-                   in
-                   sprintf "%s\n%s" s1 s2)
+          | Some (p1, [p2]) -> pprintf pc "%p@;%p" curr p1 next p2
           | Some (p, pl) ->
               let patt = Eprinter.apply_level pr_patt "range" in
-              horiz_vertic
-                (fun () ->
-                   sprintf "%s%s (%s)%s" pc.bef
-                     (next {(pc) with bef = ""; aft = ""} p)
-                     (hlistl (comma_after patt) patt
-                        {(pc) with bef = ""; aft = ""} pl) pc.aft)
-                (fun () ->
-                   let al = List.map (fun a -> (a, ",")) pl in
-                   let s1 = next {(pc) with aft = ""} p in
-                   let s2 =
-                     plist patt 0
-                       {(pc) with ind = pc.ind + 3;
-                        bef = sprintf "%s(" (tab (pc.ind + 2));
-                        aft = sprintf ")%s" pc.aft}
-                       al
-                   in
-                   sprintf "%s\n%s" s1 s2) ] ]
+              let al = List.map (fun a -> (a, ",")) pl in
+              pprintf pc "%p@;@[<1>(%p)@]" next p (plist patt 0) al ] ]
     | "dot"
       [ <:patt< $x$ . $y$ >> ->
           curr {(pc) with bef = curr {(pc) with aft = "."} x} y ]
