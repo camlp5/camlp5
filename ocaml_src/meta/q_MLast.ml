@@ -396,6 +396,8 @@ Grammar.extend
    and label_declaration : 'label_declaration Grammar.Entry.e =
      grammar_entry_create "label_declaration"
    and ident : 'ident Grammar.Entry.e = grammar_entry_create "ident"
+   and mod_ident : 'mod_ident Grammar.Entry.e =
+     grammar_entry_create "mod_ident"
    and class_declaration : 'class_declaration Grammar.Entry.e =
      grammar_entry_create "class_declaration"
    and class_fun_binding : 'class_fun_binding Grammar.Entry.e =
@@ -424,6 +426,10 @@ Grammar.extend
      grammar_entry_create "field_expr"
    and field : 'field Grammar.Entry.e = grammar_entry_create "field"
    and typevar : 'typevar Grammar.Entry.e = grammar_entry_create "typevar"
+   and clty_longident : 'clty_longident Grammar.Entry.e =
+     grammar_entry_create "clty_longident"
+   and class_longident : 'class_longident Grammar.Entry.e =
+     grammar_entry_create "class_longident"
    and poly_variant_list : 'poly_variant_list Grammar.Entry.e =
      grammar_entry_create "poly_variant_list"
    and name_tag : 'name_tag Grammar.Entry.e = grammar_entry_create "name_tag"
@@ -432,17 +438,11 @@ Grammar.extend
    and ipatt_tcon : 'ipatt_tcon Grammar.Entry.e =
      grammar_entry_create "ipatt_tcon"
    and eq_expr : 'eq_expr Grammar.Entry.e = grammar_entry_create "eq_expr"
+   and direction_flag : 'direction_flag Grammar.Entry.e =
+     grammar_entry_create "direction_flag"
    and patt_label_ident : 'patt_label_ident Grammar.Entry.e =
      (* Antiquotations for local entries *)
      grammar_entry_create "patt_label_ident"
-   and mod_ident : 'mod_ident Grammar.Entry.e =
-     grammar_entry_create "mod_ident"
-   and clty_longident : 'clty_longident Grammar.Entry.e =
-     grammar_entry_create "clty_longident"
-   and class_longident : 'class_longident Grammar.Entry.e =
-     grammar_entry_create "class_longident"
-   and direction_flag : 'direction_flag Grammar.Entry.e =
-     grammar_entry_create "direction_flag"
    in
    [Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e), None,
     [None, None,
@@ -4957,32 +4957,7 @@ Grammar.extend
      [[Gramext.Stoken ("ANTIQUOT", "")],
       Gramext.action
         (fun (a : string) (loc : Ploc.t) ->
-           (Qast.VaAnt ("", loc, a) : 'patt_label_ident))]];
-    Grammar.Entry.obj (mod_ident : 'mod_ident Grammar.Entry.e), None,
-    [None, None,
-     [[Gramext.Stoken ("ANTIQUOT", "")],
-      Gramext.action
-        (fun (a : string) (loc : Ploc.t) ->
-           (Qast.VaAnt ("", loc, a) : 'mod_ident))]];
-    Grammar.Entry.obj (clty_longident : 'clty_longident Grammar.Entry.e),
-    None,
-    [None, None,
-     [[Gramext.Snterm (Grammar.Entry.obj (a_list : 'a_list Grammar.Entry.e))],
-      Gramext.action
-        (fun (a : 'a_list) (loc : Ploc.t) -> (a : 'clty_longident))]];
-    Grammar.Entry.obj (class_longident : 'class_longident Grammar.Entry.e),
-    None,
-    [None, None,
-     [[Gramext.Snterm (Grammar.Entry.obj (a_list : 'a_list Grammar.Entry.e))],
-      Gramext.action
-        (fun (a : 'a_list) (loc : Ploc.t) -> (a : 'class_longident))]];
-    Grammar.Entry.obj (direction_flag : 'direction_flag Grammar.Entry.e),
-    None,
-    [None, None,
-     [[Gramext.Stoken ("ANTIQUOT", "to")],
-      Gramext.action
-        (fun (a : string) (loc : Ploc.t) ->
-           (Qast.VaAnt ("to", loc, a) : 'direction_flag))]]]);;
+           (Qast.VaAnt ("", loc, a) : 'patt_label_ident))]]]);;
 
 (* Antiquotations *)
 

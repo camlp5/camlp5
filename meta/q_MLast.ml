@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.111 2007/09/29 23:15:50 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.112 2007/09/29 23:30:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -1193,18 +1193,6 @@ EXTEND
   (* Antiquotations for local entries *)
   patt_label_ident: LEVEL "simple"
     [ [ a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
-  ;
-  mod_ident:
-    [ [ a = ANTIQUOT -> Qast.VaAnt "" loc a ] ]
-  ;
-  clty_longident:
-    [ [ a = a_list -> a ] ]
-  ;
-  class_longident:
-    [ [ a = a_list -> a ] ]
-  ;
-  direction_flag:
-    [ [ a = ANTIQUOT "to" -> Qast.VaAnt "to" loc a ] ]
   ;
 END;
 
