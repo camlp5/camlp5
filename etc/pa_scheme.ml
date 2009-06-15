@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.76 2007/10/12 18:31:18 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.77 2007/10/13 00:31:18 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -489,12 +489,18 @@
      (se (error se "with constr"))))
   (sig_item_se
     (lambda_match
-     ((Sexpr loc [(Slid _ "class") (Slid _ n) se])
+     ((Sexpr loc [(Slid _ "class") se1 se2])
       (let*
-       ((cd
+       (((values n tvl)
+         (match se1
+          ((Slid _ n) (values n []))
+          ((Sexpr _ [(Slid _ n) . sel])
+           (values n (List.map type_param_se sel)))
+          (se (error se "class name"))))
+        (cd
          {(MLast.ciLoc loc) (MLast.ciVir <:vala< False >>)
-          (MLast.ciPrm (values loc <:vala< [] >>)) (MLast.ciNam <:vala< n >>)
-          (MLast.ciExp (class_type_se se))}))
+          (MLast.ciPrm (values loc <:vala< tvl >>)) (MLast.ciNam <:vala< n >>)
+          (MLast.ciExp (class_type_se se2))}))
        <:sig_item< class $list:[cd]$ >>))
      ((Sexpr loc [(Slid _ "exception") se . sel])
       (let*
@@ -1014,7 +1020,7 @@
           (loop sel)))
     ((Squot loc typ txt) (Pcaml.handle_patt_quotation loc (values typ txt)))
     ((Santi loc "" s) <:patt< $xtr:s$ >>)
-    ((Santi loc _ s) (error_loc loc "patt_se"))))
+    ((Santi loc _ s) (error_loc loc "patt"))))
   ((ipatt_se se)
    (match (ipatt_opt_se se)
           ((Left p) p)

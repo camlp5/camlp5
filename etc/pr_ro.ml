@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.50 2007/10/12 15:31:11 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.51 2007/10/13 00:31:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -455,7 +455,9 @@ EXTEND_PRINTER
           expr
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
              aft = sprintf ")%s" pc.aft}
-            z ] ]
+            z
+      | z ->
+          not_impl "expr" pc z ] ]
   ;
   pr_ctyp: AFTER "arrow"
     [ "label"

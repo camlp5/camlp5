@@ -11,6 +11,7 @@ val apply : 'a t -> pr_context -> 'a -> string;;
 val apply_level : 'a t -> string -> pr_context -> 'a -> string;;
 
 val clear : 'a t -> unit;;
+val print : 'a t -> unit;;
 
 val empty_pc : pr_context;;
 

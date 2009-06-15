@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: library.html,v 1.30 2007/10/01 19:49:50 deraugla Exp $ -->
+  <!-- $Id: library.html,v 1.31 2007/10/13 00:35:46 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Library</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -1070,6 +1070,11 @@ value f : array 'a -> array 'a -> (array bool * array bool);</tt></dt>
 <dl>
   <dt><tt>value clear : t 'a -> unit;</tt></dt>
   <dd>Clears a printer, removing all its levels and rules.</dd>
+</dl>
+
+<dl>
+  <dt><tt>value print : t 'a -> unit;</tt></dt>
+  <dd>Print printer patterns, in the order they are recorded.</dd>
 </dl>
 
 <dl>

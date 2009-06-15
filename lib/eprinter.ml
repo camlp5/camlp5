@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: eprinter.ml,v 1.10 2007/08/16 18:40:41 deraugla Exp $ *)
+(* $Id: eprinter.ml,v 1.11 2007/10/13 00:31:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 type t 'a =
@@ -100,3 +100,13 @@ value apply_level pr lname pc z = pr.pr_fun lname pc z;
 value apply pr pc z = pr.pr_fun "" pc z;
 
 value empty_pc = {ind = 0; bef = ""; aft = ""; dang = ""};
+
+value print pr =
+  List.iter
+    (fun lev -> do {
+       Printf.printf "level \"%s\"\n" lev.pr_label;
+       Extfun.print lev.pr_rules;
+       flush stdout;
+     })
+    pr.pr_levels
+;

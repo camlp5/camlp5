@@ -523,11 +523,17 @@ and with_constr_se =
   | se -> error se "with constr" ]
 and sig_item_se =
   fun
-  [ Sexpr loc [Slid _ "class"; Slid _ n; se] ->
+  [ Sexpr loc [Slid _ "class"; se1; se2] ->
+      let (n, tvl) =
+        match se1 with
+        [ Slid _ n -> (n, [])
+        | Sexpr _ [Slid _ n :: sel] -> (n, List.map type_param_se sel)
+        | se -> error se "class name" ]
+      in
       let cd =
         {MLast.ciLoc = loc; MLast.ciVir = <:vala< False >>;
-         MLast.ciPrm = (loc, <:vala< [] >>); MLast.ciNam = <:vala< n >>;
-         MLast.ciExp = class_type_se se}
+         MLast.ciPrm = (loc, <:vala< tvl >>); MLast.ciNam = <:vala< n >>;
+         MLast.ciExp = class_type_se se2}
       in
       <:sig_item< class $list:[cd]$ >>
   | Sexpr loc [Slid _ "exception"; se :: sel] ->
@@ -1071,7 +1077,7 @@ and patt_se =
             <:patt< [$p$ :: $pl$] >> ]
   | Squot loc typ txt -> Pcaml.handle_patt_quotation loc (typ, txt)
   | Santi loc "" s -> <:patt< $xtr:s$ >>
-  | Santi loc _ s -> error_loc loc "patt_se" ]
+  | Santi loc _ s -> error_loc loc "patt" ]
 and ipatt_se se =
   match ipatt_opt_se se with
   [ Left p -> p

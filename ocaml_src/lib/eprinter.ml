@@ -100,3 +100,12 @@ let apply_level pr lname pc z = pr.pr_fun lname pc z;;
 let apply pr pc z = pr.pr_fun "" pc z;;
 
 let empty_pc = {ind = 0; bef = ""; aft = ""; dang = ""};;
+
+let print pr =
+  List.iter
+    (fun lev ->
+       Printf.printf "level \"%s\"\n" lev.pr_label;
+       Extfun.print lev.pr_rules;
+       flush stdout)
+    pr.pr_levels
+;;

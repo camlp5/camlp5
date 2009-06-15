@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.33 2007/10/12 18:31:18 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.34 2007/10/13 00:31:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -378,42 +378,45 @@ value with_constraint pc =
 ;
 
 value class_descr b pc cd =
+  let n = Pcaml.unvala cd.MLast.ciNam in
   horiz_vertic
     (fun () ->
-       match Pcaml.unvala (snd cd.MLast.ciPrm) with
-       [ [] ->
-           sprintf "%s(%s%s%s %s)%s" pc.bef (if b = "" then "" else b ^ " ")
-             (if Pcaml.unvala cd.MLast.ciVir then "virtual " else "")
-             (Pcaml.unvala cd.MLast.ciNam)
-             (class_type {(pc) with bef = ""; aft = ""} cd.MLast.ciExp) pc.aft
-       | _ ->
-           not_impl "class_descr horiz params" pc 0 ])
+       sprintf "%s(%s%s%s %s)%s" pc.bef (if b = "" then "" else b ^ " ")
+         (if Pcaml.unvala cd.MLast.ciVir then "virtual " else "")
+         (match Pcaml.unvala (snd cd.MLast.ciPrm) with
+          [ [] -> n
+          | tvl ->
+              sprintf "(%s %s)" n
+                (hlist type_param {(pc) with bef = ""; aft = ""} tvl) ])
+         (class_type {(pc) with bef = ""; aft = ""} cd.MLast.ciExp) pc.aft)
     (fun () ->
-       match Pcaml.unvala (snd cd.MLast.ciPrm) with
-       [ [] ->
-           let list =
-             let list =
-               [(fun pc ->
-                   sprintf "%s%s%s" pc.bef (Pcaml.unvala cd.MLast.ciNam)
-                     pc.aft,
-                 "");
-                (fun pc -> class_type pc cd.MLast.ciExp, "")]
-             in
-             let list =
-               if Pcaml.unvala cd.MLast.ciVir then
-                 [(fun pc -> sprintf "%svirtual%s" pc.bef pc.aft, "") ::
-                  list]
-               else list
-             in
-             if b = "" then list
-             else [(fun pc -> sprintf "%s%s%s" pc.bef b pc.aft, "") :: list]
-           in
-           plistf 0
-             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-              aft = sprintf ")%s" pc.aft}
-             list
-       | _ ->
-           not_impl "class_descr vertic params" pc 0 ])
+       let list =
+         let list =
+           [(fun pc ->
+               match Pcaml.unvala (snd cd.MLast.ciPrm) with
+               [ [] -> sprintf "%s%s%s" pc.bef n pc.aft
+               | tvl ->
+                   plistb type_param 0
+                     {(pc) with ind = pc.ind + 1;
+                      bef = sprintf "%s(%s" pc.bef n;
+                      aft = sprintf ")%s" pc.aft}
+                     (List.map (fun tv -> (tv, "")) tvl) ],
+             "");
+            (fun pc -> class_type pc cd.MLast.ciExp, "")]
+         in
+         let list =
+           if Pcaml.unvala cd.MLast.ciVir then
+             [(fun pc -> sprintf "%svirtual%s" pc.bef pc.aft, "") ::
+              list]
+           else list
+         in
+         if b = "" then list
+         else [(fun pc -> sprintf "%s%s%s" pc.bef b pc.aft, "") :: list]
+       in
+       plistf 0
+         {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+          aft = sprintf ")%s" pc.aft}
+         list)
 ;
 
 value class_descr_list pc =
@@ -818,6 +821,8 @@ EXTEND_PRINTER
              aft = sprintf ")%s" pc.aft}
             [(fun pc -> sprintf "%s?%s%s" pc.bef s pc.aft, "");
              (fun pc -> curr pc e, "")]
+      | <:expr< ~$s$ >> ->
+          sprintf "%s~%s%s" pc.bef s pc.aft
       | <:expr< ~$s$: $e$ >> ->
           plistf 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
@@ -999,6 +1004,8 @@ EXTEND_PRINTER
       | <:patt< $flo:s$ >> ->
           fun ppf curr next dg k -> fprintf ppf "%s%t" s k
 *)
+      | <:patt< ` $s$ >> ->
+          sprintf "%s(` %s)%s" pc.bef s pc.aft
       | <:patt< _ >> ->
           sprintf "%s_%s" pc.bef pc.aft
       | x ->

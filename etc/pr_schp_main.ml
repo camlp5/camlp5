@@ -275,6 +275,8 @@ EXTEND_PRINTER
     [ [ <:expr< fun (strm__ : Stream.t _) -> $_$ >> as e ->
           print_parser pc e
       | <:expr< let (strm__ : Stream.t _) = $_$ in $_$ >> as e ->
-          print_match_with_parser pc e ] ]
+          print_match_with_parser pc e
+      | x ->
+          not_impl "expr" pc x ] ]
   ;
 END;
