@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.55 2007/07/07 20:00:08 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.56 2007/07/08 03:12:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -170,7 +170,7 @@ value operator pc left right sh op x y =
     (fun () ->
        let s1 = left {(pc) with aft = op} x in
        let s2 =
-         right {(pc) with ind = pc.ind + 2; bef = (tab (pc.ind + 2))} y
+         right {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} y
        in
        sprintf "%s\n%s" s1 s2)
 ;
@@ -255,7 +255,7 @@ value binding elem pc (p, e) =
          (elem {(pc) with bef = ""; aft = ""} e) pc.aft)
     (fun () ->
        sprintf "%s\n%s" (patt {(pc) with aft = " ="} p)
-         (elem {(pc) with ind = pc.ind + 2; bef = (tab (pc.ind + 2))} e))
+         (elem {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e))
 ;
 
 value record_binding is_last pc (p, e) =
@@ -267,7 +267,7 @@ value record_binding is_last pc (p, e) =
     (fun () ->
        sprintf "%s\n%s" (patt {(pc) with aft = " ="} p)
          (expr
-            {(pc) with ind = pc.ind + 2; bef = (tab (pc.ind + 2));
+            {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
              dang = pc_dang}
             e))
 ;
@@ -324,7 +324,7 @@ value let_binding pc (p, e) =
   let pl = [p :: pl] in
   let (e, tyo) =
     match (p, e) with
-    [ (<:patt< $lid:_$ >>, <:expr< ($e$ : $t$) >>)  -> (e, Some t)
+    [ (<:patt< $lid:_$ >>, <:expr< ($e$ : $t$) >>) -> (e, Some t)
     | _ -> (e, None) ]
   in
   let simple_patt = pr_patt.pr_fun "simple" in
@@ -386,13 +386,13 @@ value match_assoc pc (p, w, e) =
               sprintf " when %s" (expr {(pc) with bef = ""; aft = ""} e)
           | None -> "" ])
          (comm_expr expr {(pc) with bef = ""; aft = ""; dang = pc_dang} e)
-            pc_aft)
+         pc_aft)
     (fun () ->
        let patt_arrow k =
          match w with
          [ Some e ->
              horiz_vertic
-               (fun () -> 
+               (fun () ->
                   sprintf "%s%s when %s ->%s" pc.bef
                     (patt_as {(pc) with bef = ""; aft = ""} p)
                     (expr {(pc) with bef = ""; aft = ""} e) k)
@@ -408,7 +408,7 @@ value match_assoc pc (p, w, e) =
                          let s2 =
                            expr
                              {(pc) with ind = pc.ind + 2;
-                              bef = (tab (pc.ind + 2));
+                              bef = tab (pc.ind + 2);
                               aft = sprintf " ->%s" k}
                              e
                          in
@@ -845,116 +845,116 @@ value expr_expr1 =
   [ <:expr< if $e1$ then $e2$ else $e3$ >> as ge ->
       fun curr next pc ->
         horiz_vertic
-         (fun () ->
-            match e3 with
-            [ <:expr< () >> ->
-                if pc.dang = "else" then next pc ge
-                else
-                  sprintf "%sif %s then %s%s" pc.bef
-                    (curr {(pc) with bef = ""; aft = ""; dang = ""} e1)
-                    (curr {(pc) with bef = ""; aft = ""} e2)
-                    pc.aft
-            | _ ->
-                sprintf "%sif %s then %s else %s%s" pc.bef
-                  (curr {(pc) with bef = ""; aft = ""; dang = ""} e1)
-                  (curr {(pc) with bef = ""; aft = ""; dang = "else"} e2)
-                  (curr {(pc) with bef = ""; aft = ""} e3) pc.aft ])
-         (fun () ->
-            let (eel, e3) = get_else_if e3 in
-            let if_then pc else_b e1 e2 =
-              horiz_vertic
-                (fun () ->
-                   sprintf "%s%sif %s then %s%s" pc.bef else_b
+          (fun () ->
+             match e3 with
+             [ <:expr< () >> ->
+                 if pc.dang = "else" then next pc ge
+                 else
+                   sprintf "%sif %s then %s%s" pc.bef
                      (curr {(pc) with bef = ""; aft = ""; dang = ""} e1)
-                     (curr {(pc) with bef = ""; aft = ""} e2) pc.aft)
-                (fun () ->
-                   let horiz_if_then k =
-                     sprintf "%s%sif %s then%s" pc.bef else_b
-                       (curr {(pc) with bef = ""; aft = ""} e1) k
-                   in
-                   let vertic_if_then k =
-                     let s1 =
-                       if else_b = "" then
-                         curr
-                           {ind = pc.ind + 3;
-                            bef = sprintf "%s%sif " pc.bef else_b; aft = "";
-                            dang = ""}
-                           e1
-                       else
-                         let s1 = sprintf "%s%sif" pc.bef else_b in
-                         let s2 =
-                           curr
-                             {ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                              aft = ""; dang = ""}
-                             e1
-                         in
-                         sprintf "%s\n%s" s1 s2
-                     in
-                     let s2 = sprintf "%sthen%s" (tab pc.ind) k in
-                     sprintf "%s\n%s" s1 s2
-                   in
-                   let s1 =
-                     horiz_vertic (fun () -> horiz_if_then "")
-                       (fun () -> vertic_if_then "")
-                   in
-                   let s2 =
-                     comm_expr expr1
-                       {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
-                       e2
-                   in
-                   sprintf "%s\n%s" s1 s2)
-            in
-            match e3 with
-            [ <:expr< () >> when pc.dang = "else" -> next pc ge
-            | _ ->
-                let s1 =
-                  let (pc_dang, pc_aft) =
-                    match (eel, e3) with
-                    [ ([], <:expr< () >>) -> (pc.dang, pc.aft)
-                    | _ -> ("else", "") ]
-                  in
-                  if_then {(pc) with aft = pc_aft; dang = pc_dang} "" e1 e2
-                in
-                let s2 =
-                  loop eel where rec loop =
-                    fun
-                    [ [(e1, e2) :: eel] ->
-                        let (pc_dang, pc_aft) =
-                          match (eel, e3) with
-                          [ ([], <:expr< () >>) -> (pc.dang, pc.aft)
-                          | _ -> ("else", "") ]
-                        in
-                        sprintf "\n%s%s"
-                          (if_then
-                             {(pc) with bef = tab pc.ind; aft = pc_aft;
-                              dang = pc_dang}
-                             "else " e1 e2)
-                          (loop eel)
-                    | [] -> "" ]
-                in
-                let s3 =
-                  match e3 with
-                  [ <:expr< () >> -> ""
-                  | _ ->
-                      let s =
-                        horiz_vertic
-                          (fun () ->
-                             sprintf "%selse %s%s" (tab pc.ind)
-                               (comm_expr curr
-                                  {(pc) with bef = ""; aft = ""} e3)
-                                  pc.aft)
-                          (fun () ->
-                             let s =
-                               comm_expr expr1
-                                 {(pc) with ind = pc.ind + 2;
-                                  bef = tab (pc.ind + 2)}
-                                 e3
-                             in
-                             sprintf "%selse\n%s" (tab pc.ind) s)
+                     (curr {(pc) with bef = ""; aft = ""} e2)
+                     pc.aft
+             | _ ->
+                 sprintf "%sif %s then %s else %s%s" pc.bef
+                   (curr {(pc) with bef = ""; aft = ""; dang = ""} e1)
+                   (curr {(pc) with bef = ""; aft = ""; dang = "else"} e2)
+                   (curr {(pc) with bef = ""; aft = ""} e3) pc.aft ])
+          (fun () ->
+             let (eel, e3) = get_else_if e3 in
+             let if_then pc else_b e1 e2 =
+               horiz_vertic
+                 (fun () ->
+                    sprintf "%s%sif %s then %s%s" pc.bef else_b
+                      (curr {(pc) with bef = ""; aft = ""; dang = ""} e1)
+                      (curr {(pc) with bef = ""; aft = ""} e2) pc.aft)
+                 (fun () ->
+                    let horiz_if_then k =
+                      sprintf "%s%sif %s then%s" pc.bef else_b
+                        (curr {(pc) with bef = ""; aft = ""} e1) k
+                    in
+                    let vertic_if_then k =
+                      let s1 =
+                        if else_b = "" then
+                          curr
+                            {ind = pc.ind + 3;
+                             bef = sprintf "%s%sif " pc.bef else_b; aft = "";
+                             dang = ""}
+                            e1
+                        else
+                          let s1 = sprintf "%s%sif" pc.bef else_b in
+                          let s2 =
+                            curr
+                              {ind = pc.ind + 2; bef = tab (pc.ind + 2);
+                               aft = ""; dang = ""}
+                              e1
+                          in
+                          sprintf "%s\n%s" s1 s2
                       in
-                      sprintf "\n%s" s ]
-                in
-                sprintf "%s%s%s" s1 s2 s3 ])
+                      let s2 = sprintf "%sthen%s" (tab pc.ind) k in
+                      sprintf "%s\n%s" s1 s2
+                    in
+                    let s1 =
+                      horiz_vertic (fun () -> horiz_if_then "")
+                        (fun () -> vertic_if_then "")
+                    in
+                    let s2 =
+                      comm_expr expr1
+                        {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
+                        e2
+                    in
+                    sprintf "%s\n%s" s1 s2)
+             in
+             match e3 with
+             [ <:expr< () >> when pc.dang = "else" -> next pc ge
+             | _ ->
+                 let s1 =
+                   let (pc_dang, pc_aft) =
+                     match (eel, e3) with
+                     [ ([], <:expr< () >>) -> (pc.dang, pc.aft)
+                     | _ -> ("else", "") ]
+                   in
+                   if_then {(pc) with aft = pc_aft; dang = pc_dang} "" e1 e2
+                 in
+                 let s2 =
+                   loop eel where rec loop =
+                     fun
+                     [ [(e1, e2) :: eel] ->
+                         let (pc_dang, pc_aft) =
+                           match (eel, e3) with
+                           [ ([], <:expr< () >>) -> (pc.dang, pc.aft)
+                           | _ -> ("else", "") ]
+                         in
+                         sprintf "\n%s%s"
+                           (if_then
+                              {(pc) with bef = tab pc.ind; aft = pc_aft;
+                               dang = pc_dang}
+                              "else " e1 e2)
+                           (loop eel)
+                     | [] -> "" ]
+                 in
+                 let s3 =
+                   match e3 with
+                   [ <:expr< () >> -> ""
+                   | _ ->
+                       let s =
+                         horiz_vertic
+                           (fun () ->
+                              sprintf "%selse %s%s" (tab pc.ind)
+                                (comm_expr curr
+                                   {(pc) with bef = ""; aft = ""} e3)
+                                   pc.aft)
+                           (fun () ->
+                              let s =
+                                comm_expr expr1
+                                  {(pc) with ind = pc.ind + 2;
+                                   bef = tab (pc.ind + 2)}
+                                  e3
+                              in
+                              sprintf "%selse\n%s" (tab pc.ind) s)
+                       in
+                       sprintf "\n%s" s ]
+                 in
+                 sprintf "%s%s%s" s1 s2 s3 ])
   | <:expr< fun [ $list:pwel$ ] >> as ge ->
       fun curr next pc ->
         match pwel with
@@ -2187,7 +2187,7 @@ value sig_item_top =
       fun curr next pc -> sig_module_or_module_type " type" '=' pc m mt
   | <:sig_item< open $i$ >> ->
       fun curr next pc ->
-        mod_ident {(pc) with bef = (sprintf "%sopen " pc.bef)} i
+        mod_ident {(pc) with bef = sprintf "%sopen " pc.bef} i
   | <:sig_item< type $list:tdl$ >> ->
       fun curr next pc ->
         vlist2 type_decl (and_before type_decl)
