@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: grammars.html,v 1.61 2007/07/27 03:06:18 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.62 2007/07/27 23:06:29 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -447,7 +447,85 @@ instead of "<tt>loc</tt>".</p>
 
 <h2>Extensions FOLD0 and FOLD1</h2>
 
-<p>...To be written...</p>
+<p>When loading "<tt>pa_extfold.cmo</tt>" after
+  "<tt>pa_extend.cmo</tt>", the entry "<tt>symbol</tt>" of the EXTEND
+  statement is extended with what is named the <em>fold
+  iterators</em>, like this:</p>
+
+<pre>
+       symbol ::= "FOLD0" simple_expr simple_expr symbol
+                | "FOLD1" simple_expr simple_expr symbol
+                | "FOLD0" simple_expr simple_expr symbol "SEP" symbol
+                | "FOLD1" simple_expr simple_expr symbol "SEP" symbol
+  simple_expr ::= expr (level "simple")
+</pre>
+
+<p>Like their equivalent with the lists iterators: "<tt>LIST0</tt>",
+  "<tt>LIST1</tt>", "<tt>LIST0SEP</tt>", "<tt>LIST1SEP</tt>", they
+  read a sequence of symbols, possibly with the separators, but
+  instead of building the list of these symbols, apply a fold function
+  to each symbol, starting at the second "expr" (which must be a
+  expression node) and continuing with the first "expr" (which must be
+  a function taking two expressions and returing a new
+  expression).</p>
+
+<p>The list iterators can be seen almost as a specific case of these
+  fold iterators where the initial "expr" would be:</p>
+
+<pre>
+  &lt;:expr&lt; [] >></tt>
+</pre>
+
+<p>and the fold function would be:</p>
+
+<pre>
+  fun e1 e2 -> &lt;:expr&lt; [$e1$ :: $e2$ ] >>
+</pre>
+
+<p>except that, implemented like that, they would return the list in
+  reverse order.</p>
+
+<p>Actually, a program using them can be written with the lists
+  iterators with the semantic action applying the function
+  "<tt>List.fold_left</tt>" to the returned list, except that with the
+  fold iterators, this operation is done as long as the symbols
+  are read on the input, no intermediate list being built.</p>
+
+<p>Example, file "sum.ml":</p>
+
+<pre>
+  #load "pa_extend.cmo";
+  #load "pa_extfold.cmo";
+  #load "q_MLast.cmo";
+  let loc = Stdpp.dummy_loc in
+  EXTEND
+    Pcaml.expr:
+      [ [ "sum";
+          e =
+            FOLD0 (fun e1 e2 -> <:expr< $e2$ + $e1$ >>) <:expr< 0 >>
+              Pcaml.expr SEP ";";
+          "end" -> e ] ]
+    ;
+  END;
+</pre>
+
+<p>which can be compiled like this:</p>
+
+<pre>
+  ocamlc -pp camlp5r -I +camlp5 -c sum.ml
+</pre>
+
+<p>and tested:</p>
+
+<pre>
+  ocaml -I +camlp5 camlp5r.cma sum.cmo
+          Objective Caml version ...
+
+          Camlp5 Parsing version ...
+
+  # sum 3;4;5 end; 
+- : int = 12
+</pre>
 
 <h2>Extensions SLIST0, SLIST1 and SOPT</h2>
 
