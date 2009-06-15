@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.64 2007/09/13 05:10:16 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.65 2007/09/13 09:53:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -176,41 +176,47 @@ module Meta =
     value p_bool b = if b then <:patt< True >> else <:patt< False >>;
     value e_string s = <:expr< $str:s$ >>;
     value p_string s = <:patt< $str:s$ >>;
-    value e_ctyp t = 
-      let ln = ln () in
-      loop t where rec loop t =
-        match t with
-        [ TyAcc _ t1 t2 -> <:expr< MLast.TyAcc $ln$ $loop t1$ $loop t2$ >>
-        | TyAli _ t1 t2 -> <:expr< MLast.TyAli $ln$ $loop t1$ $loop t2$ >> 
-        | TyArr _ t1 t2 -> <:expr< MLast.TyArr $ln$ $loop t1$ $loop t2$ >>
-        | TyAny _ -> <:expr< MLast.TyAny $ln$ >>
-        | TyApp _ t1 t2 -> <:expr< MLast.TyApp $ln$ $loop t1$ $loop t2$ >> 
-        | TyLid _ s -> <:expr< MLast.TyLid $ln$ $e_vala e_string s$ >>
-        | TyMan _ t1 t2 -> <:expr< MLast.TyMan $ln$ $loop t1$ $loop t2$ >> 
-        | TyPol _ lv t ->
-            <:expr< MLast.TyPol $ln$ $e_vala (e_list e_string) lv$ $loop t$ >>
-        | TyQuo _ s -> <:expr< MLast.TyQuo $ln$ $e_vala e_string s$ >>
+    value e_node con el =
+      List.fold_left (fun e1 e2 -> <:expr< $e1$ $e2$ >>)
+        <:expr< MLast.$uid:con$ $ln ()$ >> el
+    ;
+    value p_node con pl =
+      List.fold_left (fun p1 p2 -> <:patt< $p1$ $p2$ >>)
+        <:patt< MLast.$uid:con$ _ >> pl
+    ;
+    value e_ctyp = 
+      loop where rec loop =
+        fun
+        [ TyAcc _ t1 t2 -> e_node "TyAcc" [loop t1; loop t2]
+        | TyAli _ t1 t2 -> e_node "TyAli" [loop t1; loop t2] 
+        | TyArr _ t1 t2 -> e_node "TyArr" [loop t1; loop t2]
+        | TyAny _ -> e_node "TyAny" []
+        | TyApp _ t1 t2 -> e_node "TyApp" [loop t1; loop t2] 
+        | TyLid _ s -> e_node "TyLid" [e_vala e_string s]
+        | TyMan _ t1 t2 -> e_node "TyMan" [loop t1; loop t2] 
+        | TyPol _ lv t -> e_node "TyPol" [e_vala (e_list e_string) lv; loop t]
+        | TyQuo _ s -> e_node "TyQuo" [e_vala e_string s]
         | TyRec _ lld ->
             let lld =
               e_vala
                 (e_list
                    (fun (loc, lab, mf, t) ->
-                      <:expr< ($ln$, $str:lab$, $e_bool mf$, $loop t$) >>))
+                      <:expr< ($ln ()$, $str:lab$, $e_bool mf$, $loop t$) >>))
                 lld
             in
-            <:expr< MLast.TyRec $ln$ $lld$ >>
+            e_node "TyRec" [lld]
         | TySum _ lcd ->
             let lcd =
               e_vala
                 (e_list
                    (fun (loc, lab, lt) ->
                       let lt = e_vala (e_list loop) lt in
-                      <:expr< ($ln$, $e_vala e_string lab$, $lt$) >>))
+                      <:expr< ($ln ()$, $e_vala e_string lab$, $lt$) >>))
                 lcd
             in
-            <:expr< MLast.TySum $ln$ $lcd$ >>
-        | TyTup _ tl -> <:expr< MLast.TyTup $ln$ $e_vala (e_list loop) tl$ >>
-        | TyUid _ s -> <:expr< MLast.TyUid $ln$ $e_vala e_string s$ >>
+            e_node "TySum" [lcd]
+        | TyTup _ tl -> e_node "TyTup" [e_vala (e_list loop) tl]
+        | TyUid _ s -> e_node "TyUid" [e_vala e_string s]
         | IFDEF STRICT THEN
             TyXtr loc s _ -> e_xtr loc s
           END
@@ -219,11 +225,11 @@ module Meta =
     value p_ctyp =
       loop where rec loop =
         fun
-        [ TyArr _ t1 t2 -> <:patt< MLast.TyArr _ $loop t1$ $loop t2$ >>
-        | TyApp _ t1 t2 -> <:patt< MLast.TyApp _ $loop t1$ $loop t2$ >>
-        | TyLid _ s -> <:patt< MLast.TyLid _ $p_vala p_string s$ >>
-        | TyTup _ tl -> <:patt< MLast.TyTup _ $p_vala (p_list loop) tl$ >>
-        | TyUid _ s -> <:patt< MLast.TyUid _ $p_vala p_string s$ >>
+        [ TyArr _ t1 t2 -> p_node "TyArr" [loop t1; loop t2]
+        | TyApp _ t1 t2 -> p_node "TyApp" [loop t1; loop t2]
+        | TyLid _ s -> p_node "TyLid" [p_vala p_string s]
+        | TyTup _ tl -> p_node "TyTup" [p_vala (p_list loop) tl]
+        | TyUid _ s -> p_node "TyUid" [p_vala p_string s]
         | IFDEF STRICT THEN
             TyXtr loc s _ -> p_xtr loc s
           END
@@ -237,32 +243,30 @@ module Meta =
       fun
       [ x -> not_impl "e_type_var" x ]
     ;
-    value e_patt p =
-      let ln = ln () in
-      loop p where rec loop =
+    value e_patt =
+      loop where rec loop =
         fun
-        [ PaAcc _ p1 p2 -> <:expr< MLast.PaAcc $ln$ $loop p1$ $loop p2$ >>
-        | PaAli _ p1 p2 -> <:expr< MLast.PaAli $ln$ $loop p1$ $loop p2$ >>
-        | PaAny _ -> <:expr< MLast.PaAny $ln$ >>
-        | PaApp _ p1 p2 -> <:expr< MLast.PaApp $ln$ $loop p1$ $loop p2$ >>
-        | PaArr _ pl -> <:expr< MLast.PaArr $ln$ $e_vala (e_list loop) pl$ >>
-        | PaChr _ s -> <:expr< MLast.PaChr $ln$ $e_vala e_string s$ >>
-        | PaInt _ s k ->
-            <:expr< MLast.PaInt $ln$ $e_vala e_string s$ $str:k$ >>
-        | PaFlo _ s -> <:expr< MLast.PaFlo $ln$ $e_vala e_string s$ >>
-        | PaLid _ s -> <:expr< MLast.PaLid $ln$ $e_vala e_string s$ >>
-        | PaOrp _ p1 p2 -> <:expr< MLast.PaOrp $ln$ $loop p1$ $loop p2$ >>
+        [ PaAcc _ p1 p2 -> e_node "PaAcc" [loop p1; loop p2]
+        | PaAli _ p1 p2 -> e_node "PaAli" [loop p1; loop p2]
+        | PaAny _ -> e_node "PaAny" []
+        | PaApp _ p1 p2 -> e_node "PaApp" [loop p1; loop p2]
+        | PaArr _ pl -> e_node "PaArr" [e_vala (e_list loop) pl]
+        | PaChr _ s -> e_node "PaChr" [e_vala e_string s]
+        | PaInt _ s k -> e_node "PaInt" [e_vala e_string s; e_string k]
+        | PaFlo _ s -> e_node "PaFlo" [e_vala e_string s]
+        | PaLid _ s -> e_node "PaLid" [e_vala e_string s]
+        | PaOrp _ p1 p2 -> e_node "PaOrp" [loop p1; loop p2]
         | PaRec _ lpe ->
             let lpe =
               e_vala
                 (e_list (fun (p, e) -> <:expr< ($loop p$, $loop e$) >>)) lpe
             in
-            <:expr< MLast.PaRec $ln$ $lpe$ >>
-        | PaRng _ p1 p2 -> <:expr< MLast.PaRng $ln$ $loop p1$ $loop p2$ >>
-        | PaStr _ s -> <:expr< MLast.PaStr $ln$ $e_vala e_string s$ >>
-        | PaTup _ pl -> <:expr< MLast.PaTup $ln$ $e_vala (e_list loop) pl$ >>
-        | PaTyc _ p t -> <:expr< MLast.PaTyc $ln$ $loop p$ $e_ctyp t$ >>
-        | PaUid _ s -> <:expr< MLast.PaUid $ln$ $e_vala e_string s$ >>
+            e_node "PaRec" [lpe]
+        | PaRng _ p1 p2 -> e_node "PaRng" [loop p1; loop p2]
+        | PaStr _ s -> e_node "PaStr" [e_vala e_string s]
+        | PaTup _ pl -> e_node "PaTup" [e_vala (e_list loop) pl]
+        | PaTyc _ p t -> e_node "PaTyc" [loop p; e_ctyp t]
+        | PaUid _ s -> e_node "PaUid" [e_vala e_string s]
         | IFDEF STRICT THEN
             PaXtr loc s _ -> e_xtr loc s
           END
@@ -271,39 +275,35 @@ module Meta =
     value p_patt =
       loop where rec loop =
         fun
-        [ PaAcc _ p1 p2 -> <:patt< MLast.PaAcc _ $loop p1$ $loop p2$ >>
-        | PaAli _ p1 p2 -> <:patt< MLast.PaAli _ $loop p1$ $loop p2$ >>
-        | PaChr _ s -> <:patt< MLast.PaChr _ $p_vala p_string s$ >>
-        | PaLid _ s -> <:patt< MLast.PaLid _ $p_vala p_string s$ >>
-        | PaTup _ pl -> <:patt< MLast.PaTup _ $p_vala (p_list loop) pl$ >>
+        [ PaAcc _ p1 p2 -> p_node "PaAcc" [loop p1; loop p2]
+        | PaAli _ p1 p2 -> p_node "PaAli" [loop p1; loop p2]
+        | PaChr _ s -> p_node "PaChr" [p_vala p_string s]
+        | PaLid _ s -> p_node "PaLid" [p_vala p_string s]
+        | PaTup _ pl -> p_node "PaTup" [p_vala (p_list loop) pl]
         | IFDEF STRICT THEN
             PaXtr loc s _ -> p_xtr loc s
           END
         | x -> not_impl "p_patt" x ]
     ;
-    value rec e_expr e =
-      let ln = ln () in
-      loop e where rec loop =
+    value rec e_expr x =
+      loop x where rec loop =
         fun
-        [ ExAcc _ e1 e2 -> <:expr< MLast.ExAcc $ln$ $loop e1$ $loop e2$ >>
-        | ExApp _ e1 e2 -> <:expr< MLast.ExApp $ln$ $loop e1$ $loop e2$ >>
-        | ExAre _ e1 e2 -> <:expr< MLast.ExAre $ln$ $loop e1$ $loop e2$ >>
-        | ExArr _ el -> <:expr< MLast.ExArr $ln$ $e_vala (e_list loop) el$ >>
-        | ExAss _ e1 e2 -> <:expr< MLast.ExAss $ln$ $loop e1$ $loop e2$ >>
-        | ExAsr _ e -> <:expr< MLast.ExAsr $ln$ $loop e$ >>
-        | ExBae _ e el ->
-            <:expr< MLast.ExBae $ln$ $loop e$ $e_vala (e_list loop) el$ >>
-        | ExChr _ s -> <:expr< MLast.ExChr $ln$ $e_vala e_string s$ >>
-        | ExIfe _ e1 e2 e3 ->
-            <:expr< MLast.ExIfe $ln$ $loop e1$ $loop e2$ $loop e3$ >>
-        | ExInt _ s k ->
-            <:expr< MLast.ExInt $ln$ $e_vala e_string s$ $str:k$ >>
-        | ExFlo _ s -> <:expr< MLast.ExFlo $ln$ $e_vala e_string s$ >>
+        [ ExAcc _ e1 e2 -> e_node "ExAcc" [loop e1; loop e2]
+        | ExApp _ e1 e2 -> e_node "ExApp" [loop e1; loop e2]
+        | ExAre _ e1 e2 -> e_node "ExAre" [loop e1; loop e2]
+        | ExArr _ el -> e_node "ExArr" [e_vala (e_list loop) el]
+        | ExAss _ e1 e2 -> e_node "ExAss" [loop e1; loop e2]
+        | ExAsr _ e -> e_node "ExAsr" [loop e]
+        | ExBae _ e el -> e_node "ExBae" [loop e; e_vala (e_list loop) el]
+        | ExChr _ s -> e_node "ExChr" [e_vala e_string s]
+        | ExIfe _ e1 e2 e3 -> e_node "ExIfe" [loop e1; loop e2; loop e3]
+        | ExInt _ s k -> e_node "ExInt" [e_vala e_string s; e_string k]
+        | ExFlo _ s -> e_node "ExFlo" [e_vala e_string s]
         | ExFor _ i e1 e2 df el ->
             let i = e_vala e_string i in
             let df = e_vala e_bool df in
             let el = e_vala (e_list loop) el in
-            <:expr< MLast.ExFor $ln$ $i$ $loop e1$ $loop e2$ $df$ $el$ >>
+            e_node "ExFor" [i; loop e1; loop e2; df; el]
         | ExFun _ pwel ->
             let pwel =
               e_vala
@@ -312,20 +312,20 @@ module Meta =
                      <:expr< ($e_patt p$, $e_option loop oe$, $loop e$) >>))
                 pwel
             in
-            <:expr< MLast.ExFun $ln$ $pwel$ >>
-        | ExLaz _ e -> <:expr< MLast.ExLaz $ln$ $loop e$ >>
+            e_node "ExFun" [pwel]
+        | ExLaz _ e -> e_node "ExLaz" [loop e]
         | ExLet _ rf lpe e ->
             let rf = e_vala e_bool rf in
             let lpe =
               e_vala
                 (e_list (fun (p, e) -> <:expr< ($e_patt p$, $loop e$) >>)) lpe
             in
-            <:expr< MLast.ExLet $ln$ $rf$ $lpe$ $loop e$ >>
-        | ExLid _ s -> <:expr< MLast.ExLid $ln$ $e_vala e_string s$ >>
+            e_node "ExLet" [rf; lpe; loop e]
+        | ExLid _ s -> e_node "ExLid" [e_vala e_string s]
         | ExLmd _ i me e ->
             let i = e_vala e_string i in
             let me = e_module_expr me in
-            <:expr< MLast.ExLmd $ln$ $i$ $me$ $loop e$ >>
+            e_node "ExLmd" [i; me; loop e]
         | ExMat _ e pwel ->
             let pwel =
               e_vala
@@ -334,17 +334,17 @@ module Meta =
                       <:expr< ($e_patt p$, $e_option loop oe$, $loop e$) >>))
                 pwel
             in
-            <:expr< MLast.ExMat $ln$ $loop e$ $pwel$ >>
+            e_node "ExMat" [loop e; pwel]
         | ExRec _ lpe oe ->
             let lpe =
               e_vala
                 (e_list (fun (p, e) -> <:expr< ($e_patt p$, $loop e$) >>)) lpe
             in
             let oe = e_option loop oe in
-            <:expr< MLast.ExRec $ln$ $lpe$ $oe$ >>
-        | ExSeq _ el -> <:expr< MLast.ExSeq $ln$ $e_vala (e_list loop) el$ >>
-        | ExSte _ e1 e2 -> <:expr< MLast.ExSte $ln$ $loop e1$ $loop e2$ >>
-        | ExStr _ s -> <:expr< MLast.ExStr $ln$ $e_vala e_string s$ >>
+            e_node "ExRec" [lpe; oe]
+        | ExSeq _ el -> e_node "ExSeq" [e_vala (e_list loop) el]
+        | ExSte _ e1 e2 -> e_node "ExSte" [loop e1; loop e2]
+        | ExStr _ s -> e_node "ExStr" [e_vala e_string s]
         | ExTry _ e pwel ->
             let pwel =
               e_vala
@@ -353,90 +353,81 @@ module Meta =
                       <:expr< ($e_patt p$, $e_option loop oe$, $loop e$) >>))
                 pwel
             in
-            <:expr< MLast.ExTry $ln$ $loop e$ $pwel$ >>
-        | ExTup _ el -> <:expr< MLast.ExTup $ln$ $e_vala (e_list loop) el$ >>
-        | ExTyc _ e t -> <:expr< MLast.ExTyc $ln$ $loop e$ $e_ctyp t$ >>
-        | ExUid _ s -> <:expr< MLast.ExUid $ln$ $e_vala e_string s$ >>
-        | ExWhi _ e el ->
-            <:expr< MLast.ExWhi $ln$ $loop e$ $e_vala (e_list loop) el$ >>
+            e_node "ExTry" [loop e; pwel]
+        | ExTup _ el -> e_node "ExTup" [e_vala (e_list loop) el]
+        | ExTyc _ e t -> e_node "ExTyc" [loop e; e_ctyp t]
+        | ExUid _ s -> e_node "ExUid" [e_vala e_string s]
+        | ExWhi _ e el -> e_node "ExWhi" [loop e; e_vala (e_list loop) el]
         | IFDEF STRICT THEN
             ExXtr loc s _ -> e_xtr loc s
           END
         | x -> not_impl "e_expr" x ]
-    and p_expr e =
-      loop e where rec loop =
+    and p_expr =
+      loop where rec loop =
         fun
-        [ ExAcc _ e1 e2 -> <:patt< MLast.ExAcc _ $loop e1$ $loop e2$ >>
-        | ExApp _ e1 e2 -> <:patt< MLast.ExApp _ $loop e1$ $loop e2$ >>
-        | ExIfe _ e1 e2 e3 ->
-            <:patt< MLast.ExIfe _ $loop e1$ $loop e2$ $loop e3$ >>
-        | ExInt _ s k -> <:patt< MLast.ExInt _ $p_vala p_string s$ $str:k$ >>
-        | ExFlo _ s -> <:patt< MLast.ExFlo _ $p_vala p_string s$ >>
+        [ ExAcc _ e1 e2 -> p_node "ExAcc" [loop e1; loop e2]
+        | ExApp _ e1 e2 -> p_node "ExApp" [loop e1; loop e2]
+        | ExIfe _ e1 e2 e3 -> p_node "ExIfe" [loop e1; loop e2; loop e3]
+        | ExInt _ s k -> p_node "ExInt" [p_vala p_string s; p_string k]
+        | ExFlo _ s -> p_node "ExFlo" [p_vala p_string s]
         | ExLet _ rf lpe e ->
             let rf = p_vala p_bool rf in
             let lpe =
               p_vala
                 (p_list (fun (p, e) -> <:patt< ($p_patt p$, $loop e$) >>)) lpe
             in
-            <:patt< MLast.ExLet _ $rf$ $lpe$ $loop e$ >>
+            p_node "ExLet" [rf; lpe; loop e]
         | ExRec _ lpe oe ->
             let lpe =
               p_vala
                 (p_list (fun (p, e) -> <:patt< ($p_patt p$, $loop e$) >>)) lpe
             in
             let oe = p_option loop oe in
-            <:patt< MLast.ExRec _ $lpe$ $oe$ >>
-        | ExLid _ s -> <:patt< MLast.ExLid _ $p_vala p_string s$ >>
-        | ExStr _ s -> <:patt< MLast.ExStr _ $p_vala p_string s$ >>
-        | ExTup _ el -> <:patt< MLast.ExTup _ $p_vala (p_list loop) el$ >>
-        | ExUid _ s -> <:patt< MLast.ExUid _ $p_vala p_string s$ >>
+            p_node "ExRec" [lpe; oe]
+        | ExLid _ s -> p_node "ExLid" [p_vala p_string s]
+        | ExStr _ s -> p_node "ExStr" [p_vala p_string s]
+        | ExTup _ el -> p_node "ExTup" [p_vala (p_list loop) el]
+        | ExUid _ s -> p_node "ExUid" [p_vala p_string s]
         | IFDEF STRICT THEN
             ExXtr loc s _ -> p_xtr loc s
           END
         | x -> not_impl "p_expr" x ]
-    and e_module_type mt =
-      let ln = ln () in
-      loop mt where rec loop =
+    and e_module_type x =
+      loop x where rec loop =
         fun
-        [ MtAcc _ mt1 mt2 -> <:expr< MLast.MtAcc $ln$ $loop mt1$ $loop mt2$ >>
-        | MtApp _ mt1 mt2 -> <:expr< MLast.MtApp $ln$ $loop mt1$ $loop mt2$ >>
+        [ MtAcc _ mt1 mt2 -> e_node "MtAcc" [loop mt1; loop mt2]
+        | MtApp _ mt1 mt2 -> e_node "MtApp" [loop mt1; loop mt2]
         | MtFun _ s mt1 mt2 ->
-            let s = e_vala e_string s in
-            <:expr< MLast.MtFun $ln$ $s$ $loop mt1$ $loop mt2$ >>
-        | MtLid _ s -> <:expr< MLast.MtLid $ln$ $e_vala e_string s$ >>
-        | MtQuo _ s -> <:expr< MLast.MtQuo $ln$ $e_vala e_string s$ >>
-        | MtSig _ sil ->
-            <:expr< MLast.MtSig $ln$ $e_vala (e_list e_sig_item) sil$ >>
-        | MtUid _ s -> <:expr< MLast.MtUid $ln$ $e_vala e_string s$ >>
+            e_node "MtFun" [e_vala e_string s; loop mt1; loop mt2]
+        | MtLid _ s -> e_node "MtLid" [e_vala e_string s]
+        | MtQuo _ s -> e_node "MtQuo" [e_vala e_string s]
+        | MtSig _ sil -> e_node "MtSig" [e_vala (e_list e_sig_item) sil]
+        | MtUid _ s -> e_node "MtUid" [e_vala e_string s]
         | MtWit _ mt lwc ->
-            let lwc = e_vala (e_list e_with_constr) lwc in
-            <:expr< MLast.MtWit $ln$ $loop mt$ $lwc$ >>
+            e_node "MtWit" [loop mt; e_vala (e_list e_with_constr) lwc]
         | IFDEF STRICT THEN
             MtXtr loc s _ -> e_xtr loc s
           END ]
     and p_module_type =
       fun
       [ x -> not_impl "p_module_type" x ]
-    and e_sig_item si =
-      let ln = ln () in
-      loop si where rec loop =
+    and e_sig_item x =
+      loop x where rec loop =
         fun
         [ SgCls _ cd ->
-            let cd = e_vala (e_list (e_class_infos e_class_type)) cd in
-            <:expr< MLast.SgCls $ln$ $cd$ >>
+            e_node "SgCls" [e_vala (e_list (e_class_infos e_class_type)) cd]
         | SgClt _ ctd ->
-            let ctd = e_vala (e_list (e_class_infos e_class_type)) ctd in
-            <:expr< MLast.SgClt $ln$ $ctd$ >>
+            e_node "SgClt" [e_vala (e_list (e_class_infos e_class_type)) ctd]
         | SgDcl _ lsi ->
-            <:expr< MLast.SgDcl $ln$ $e_vala (e_list loop) lsi$ >>
+            e_node "SgDcl" [e_vala (e_list loop) lsi]
         | SgExc _ s lt ->
             let s = e_vala e_string s in
             let lt = e_vala (e_list e_ctyp) lt in
-            <:expr< MLast.SgExc $ln$ $s$ $lt$ >>
+            e_node "SgExc" [s; lt]
         | SgExt _ s t ls ->
             let ls = e_vala (e_list e_string) ls in
-            <:expr< MLast.SgExt $ln$ $e_vala e_string s$ $e_ctyp t$ $ls$ >>
-        | SgInc _ mt -> <:expr< MLast.SgInc $ln$ $e_module_type mt$ >>
+            e_node "SgExt" [e_vala e_string s; e_ctyp t; ls]
+        | SgInc _ mt -> e_node "SgInc" [e_module_type mt]
         | SgMod _ rf lsmt ->
             let lsmt =
               e_vala
@@ -445,82 +436,67 @@ module Meta =
                       <:expr< ($e_string s$, $e_module_type mt$) >>))
                 lsmt
             in
-            <:expr< MLast.SgMod $ln$ $e_vala e_bool rf$ $lsmt$ >>
-        | SgMty _ s mt ->
-            <:expr< MLast.SgMty $ln$ $e_vala e_string s$ $e_module_type mt$ >>
-        | SgOpn _ sl ->
-            <:expr< MLast.SgOpn $ln$ $e_vala (e_list e_string) sl$ >>
-        | SgTyp _ ltd ->
-            <:expr< MLast.SgTyp $ln$ $e_vala (e_list e_type_decl) ltd$ >>
-        | SgVal _ s t ->
-            <:expr< MLast.SgVal $ln$ $e_vala e_string s$ $e_ctyp t$ >>
+            e_node "SgMod" [e_vala e_bool rf; lsmt]
+        | SgMty _ s mt -> e_node "SgMty" [e_vala e_string s; e_module_type mt]
+        | SgOpn _ sl -> e_node "SgOpn" [e_vala (e_list e_string) sl]
+        | SgTyp _ ltd -> e_node "SgTyp" [e_vala (e_list e_type_decl) ltd]
+        | SgVal _ s t -> e_node "SgVal" [e_vala e_string s; e_ctyp t]
         | x -> not_impl "e_sig_item" x ]
     and p_sig_item =
       fun
-      [ (* SgVal _ s t -> <:patt< MLast.SgVal _ $p_string s$ $p_ctyp t$ >>
+      [ (* SgVal _ s t -> p_node "SgVal" [p_string s; p_ctyp t]
       | *) x -> not_impl "p_sig_item" x ]
-    and e_with_constr wc =
-      let ln = ln () in
-      loop wc where rec loop =
+    and e_with_constr x =
+      loop x where rec loop =
         fun
         [ WcTyp _ li ltp pf t ->
             let li = e_vala (e_list e_string) li in
             let ltp = e_vala (e_list e_type_var) ltp in
             let pf = e_vala e_bool pf in
             let t = e_ctyp t in
-            <:expr< MLast.WcTyp $ln$ $li$ $ltp$ $pf$ $t$ >>
+            e_node "WcTyp" [li; ltp; pf; t]
         | WcMod _ li me ->
             let li = e_vala (e_list e_string) li in
             let me = e_module_expr me in
-            <:expr< MLast.WcMod $ln$ $li$ $me$ >> ]
+            e_node "WcMod" [li; me] ]
     and p_with_constr =
       fun
       [ x -> not_impl "p_with_constr" x ]
-    and e_module_expr me =
-      let ln = ln () in
-      loop me where rec loop =
+    and e_module_expr x =
+      loop x where rec loop =
         fun
-        [ MeAcc _ me1 me2 ->
-            <:expr< MLast.MeAcc $ln$ $loop me1$ $loop me2$ >>
-        | MeApp _ me1 me2 ->
-            <:expr< MLast.MeApp $ln$ $loop me1$ $loop me2$ >>
+        [ MeAcc _ me1 me2 -> e_node "MeAcc" [loop me1; loop me2]
+        | MeApp _ me1 me2 -> e_node "MeApp" [loop me1; loop me2]
         | MeFun _ s mt me ->
-            let mt = e_module_type mt in
-            <:expr< MLast.MeFun $ln$ $e_vala e_string s$ $mt$ $loop me$ >>
-        | MeStr _ lsi ->
-            <:expr< MLast.MeStr $ln$ $e_vala (e_list e_str_item) lsi$ >>
-        | MeTyc _ me mt ->
-            let mt = e_module_type mt in
-            <:expr< MLast.MeTyc $ln$ $loop me$ $mt$ >>
-        | MeUid _ s -> <:expr< MLast.MeUid $ln$ $e_vala e_string s$ >>
+            e_node "MeFun" [e_vala e_string s; e_module_type mt; loop me]
+        | MeStr _ lsi -> e_node "MeStr" [e_vala (e_list e_str_item) lsi]
+        | MeTyc _ me mt -> e_node "MeTyc" [loop me; e_module_type mt]
+        | MeUid _ s -> e_node "MeUid" [e_vala e_string s]
         | IFDEF STRICT THEN
             MeXtr loc s _ -> e_xtr loc s
           END ]
     and p_module_expr =
       fun
       [ x -> not_impl "p_module_expr" x ]
-    and e_str_item si =
-      let ln = ln () in
-      loop si where rec loop =
+    and e_str_item x =
+      loop x where rec loop =
         fun
         [ StCls _ cd ->
-            let cd = e_vala (e_list (e_class_infos e_class_expr)) cd in
-            <:expr< MLast.StCls $ln$ $cd$ >>
+            e_node "StCls" [e_vala (e_list (e_class_infos e_class_expr)) cd]
         | StClt _ ctd ->
-            let ctd = e_vala (e_list (e_class_infos e_class_type)) ctd in
-            <:expr< MLast.StClt $ln$ $ctd$ >>
+            e_node "StClt" [e_vala (e_list (e_class_infos e_class_type)) ctd]
         | StDcl _ lsi ->
-            <:expr< MLast.StDcl $ln$ $e_vala (e_list loop) lsi$ >>
+            e_node "StDcl" [e_vala (e_list loop) lsi]
         | StExc _ s lt ls ->
             let s = e_vala e_string s in
             let lt = e_vala (e_list e_ctyp) lt in
             let ls = e_vala (e_list e_string) ls in
-            <:expr< MLast.StExc $ln$ $s$ $lt$ $ls$ >>
-        | StExp _ e -> <:expr< MLast.StExp $ln$ $e_expr e$ >>
+            e_node "StExc" [s; lt; ls]
+        | StExp _ e -> e_node "StExp" [e_expr e]
         | StExt _ s t ls ->
             let ls = e_vala (e_list e_string) ls in
-            <:expr< MLast.StExt $ln$ $e_vala e_string s$ $e_ctyp t$ $ls$ >>
-        | StInc _ me -> <:expr< MLast.StInc $ln$ $e_module_expr me$ >>
+            e_node "StExt" [e_vala e_string s; e_ctyp t; ls]
+        | StInc _ me -> e_node "StInc" [e_module_expr me]
         | StMod _ rf lsme ->
             let lsme =
               e_vala
@@ -529,20 +505,17 @@ module Meta =
                       <:expr< ($e_string s$, $e_module_expr me$) >>))
                 lsme
             in
-            <:expr< MLast.StMod $ln$ $e_vala e_bool rf$ $lsme$ >>
-        | StMty _ s mt ->
-            <:expr< MLast.StMty $ln$ $e_vala e_string s$ $e_module_type mt$ >>
-        | StOpn _ sl ->
-            <:expr< MLast.StOpn $ln$ $e_vala (e_list e_string) sl$ >>
-        | StTyp _ ltd ->
-            <:expr< MLast.StTyp $ln$ $e_vala (e_list e_type_decl) ltd$ >>
+            e_node "StMod" [e_vala e_bool rf; lsme]
+        | StMty _ s mt -> e_node "StMty" [e_vala e_string s; e_module_type mt]
+        | StOpn _ sl -> e_node "StOpn" [e_vala (e_list e_string) sl]
+        | StTyp _ ltd -> e_node "StTyp" [e_vala (e_list e_type_decl) ltd]
         | StVal _ rf lpe ->
             let lpe =
               e_vala
                 (e_list (fun (p, e) -> <:expr< ($e_patt p$, $e_expr e$) >>))
                 lpe
             in
-            <:expr< MLast.StVal $ln$ $e_vala e_bool rf$ $lpe$ >>
+            e_node "StVal" [e_vala e_bool rf; lpe]
         | x -> not_impl "e_str_item" x ]
     and p_str_item =
       fun
@@ -559,16 +532,13 @@ module Meta =
     and p_class_type =
       fun
       [ x -> not_impl "p_class_type" x ]
-    and e_class_expr ce =
-      let ln = ln () in
-      loop ce where rec loop =
+    and e_class_expr x =
+      loop x where rec loop =
         fun
-        [ CeApp _ ce e -> <:expr< MLast.CeApp $ln$ $loop ce$ $e_expr e$ >>
-        | CeFun _ p ce -> <:expr< MLast.CeFun $ln$ $e_patt p$ $loop ce$ >>
-        | CeLet _ rf lb ce ->
-            <:expr< MLast.CeLet $ln$ $e_vala e_bool rf$ $loop ce$ >>
-        | CeTyc _ ce ct ->
-            <:expr< MLast.CeTyc $ln$ $loop ce$ $e_class_type ct$ >>
+        [ CeApp _ ce e -> e_node "CeApp" [loop ce; e_expr e]
+        | CeFun _ p ce -> e_node "CeFun" [e_patt p; loop ce]
+        | CeLet _ rf lb ce -> e_node "CeLet" [e_vala e_bool rf; loop ce]
+        | CeTyc _ ce ct -> e_node "CeTyc" [loop ce; e_class_type ct]
         | IFDEF STRICT THEN
             CeXtr loc s _ -> e_xtr loc s
           END
