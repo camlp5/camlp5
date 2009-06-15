@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: commands.html,v 1.16 2007/10/19 14:26:18 deraugla Exp $ -->
+  <!-- $Id: commands.html,v 1.17 2007/11/20 03:05:16 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Commands and Files</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -24,7 +24,7 @@
   dynamically load OCaml object files (ending with ".cmo" and
   ".cma").</p>
 
-<p>All other Camlp5 commands derive from that one: they are the
+<p>Most other Camlp5 commands derive from that one: they are the
   command "<tt>camlp5</tt>" with some implicitely applied
   parameters.</p>
 
@@ -47,6 +47,10 @@
   printing kits (".cmo" and ".cma" files) which are loaded inside the
   "<tt>camlp5</tt>" core before any action. Other options may
   follow.</p>
+
+<p>Two other commands are provided: "<tt>mkcamlp5</tt>" and
+  "<tt>mkcamlp5.opt</tt>". They allow to create camlp5 executables
+  with already loaded kits.</p>
 
 <div id="tableofcontents">
 </div>
@@ -296,6 +300,16 @@
     Camlp5 grammars, resulting in a still faster executable.</dd>
   <dt><tt>camlp5sch</tt></dt>
   <dd>Shortcut for "<tt>camlp5 pa_scheme.cmo pr_dump.cmo</tt>"</dd>
+  <dt><tt>mkcamlp5</tt></dt>
+  <dd>creates camlp5 executables with almost the same options than
+    ocamlmktop. The interfaces to be visible must be explicitly added
+    in the command line as ".cmi" files. For example, how to add the
+    the OCaml module "str": "<tt>mkcamlp5 -custom str.cmi str.cma
+    -cclib -lstr -o camlp5str</tt>"</dd>
+  <dt><tt>mkcamlp5.opt</tt></dt>
+  <dd>creates camlp5 executables like <tt>mkcamlp5</tt>, except that
+    it is in native code, therefore faster, but not extensible; the
+    added kits must be cmx or cmxa files</tt>
 </dl>
 
 <h2>OCaml toplevel files</h2>
