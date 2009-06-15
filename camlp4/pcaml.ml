@@ -359,7 +359,7 @@ module Printers =
     and pr_rule 'a =
       Extfun.t 'a
         (pr_fun 'a -> pr_fun 'a -> pr_context string string -> string)
-    and pr_fun 'a = pr_context string string -> 'a  -> string
+    and pr_fun 'a = pr_context string string -> 'a -> string
     and pr_context 'bef 'aft =
       { ind : int;
         bef : 'bef;

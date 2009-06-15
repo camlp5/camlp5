@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.24 2007/07/04 02:23:37 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.25 2007/07/04 02:45:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -990,7 +990,7 @@ value expr_top =
                 fun
                 [ [(e1, e2) :: eel] ->
                     sprintf "\n%s%s"
-                      (if_then {(pc) with aft = ""} "else if " e1 e2)
+                      (if_then {(pc) with aft = ""} "else " e1 e2)
                       (loop eel)
                 | [] -> "" ]
             in

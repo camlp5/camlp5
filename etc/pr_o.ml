@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.26 2007/07/04 02:23:37 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.27 2007/07/04 02:45:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1215,20 +1215,16 @@ value expr_expr1 =
                    horiz_vertic
                      (fun () ->
                         Some
-                          (sprintf "%s%s %s with %s%s ->" pc.bef op_begin
-                             (expr_wh {(pc) with bef = ""; aft = ""} e1)
-                             (patt {(pc) with bef = ""; aft = ""} p)
-                             (match wo with
-                              [ Some e ->
-                                  curr {(pc) with bef = " when"; aft = ""} e
-                              | None -> "" ])))
-                      (fun () -> None)
+                          (sprintf "%s%s %s with" pc.bef op_begin
+                             (expr_wh {(pc) with bef = ""; aft = ""} e1)))
+                     (fun () -> None)
                  with
                  [ Some s1 ->
                      let s2 =
-                       curr
-                         {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
-                         e
+                       match_assoc
+                         {(pc) with ind = pc.ind + 2;
+                          bef = tab (pc.ind + 2); aft = Some pc_aft}
+                         (p, wo, e)
                      in
                      let s3 = op_end in
                      sprintf "%s\n%s%s" s1 s2 s3
@@ -2834,7 +2830,7 @@ Pcaml.add_option "-sep" (Arg.String (fun x -> sep.val := Some x))
 Pcaml.add_option "-ss" (Arg.Set flag_semi_semi) "Print double semicolons.";
 
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.26 2007/07/04 02:23:37 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.27 2007/07/04 02:45:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
