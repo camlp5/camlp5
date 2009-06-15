@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.117 2007/10/01 06:13:51 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.118 2007/10/07 10:49:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -1210,12 +1210,24 @@ EXTEND
   expr: LEVEL "simple"
     [ [ a = ANTIQUOT "exp" -> Qast.VaAnt "exp" loc a
       | a = ANTIQUOT "" -> Qast.VaAnt "" loc a
+      | a = ANTIQUOT "xtr" ->
+          if Pcaml.strict_mode.val then
+            Qast.Node "ExXtr"
+              [Qast.Loc; Qast.VaAnt "xtr" loc a; Qast.Option None]
+          else
+            Qast.Apply "failwith" [Qast.Str "antiquotation not authorized"]
       | a = ANTIQUOT "anti" ->
           Qast.Node "ExAnt" [Qast.Loc; Qast.VaAnt "anti" loc a] ] ]
   ;
   patt: LEVEL "simple"
     [ [ a = ANTIQUOT "pat" -> Qast.VaAnt "pat" loc a
       | a = ANTIQUOT -> Qast.VaAnt "" loc a
+      | a = ANTIQUOT "xtr" ->
+          if Pcaml.strict_mode.val then
+            Qast.Node "PaXtr"
+              [Qast.Loc; Qast.VaAnt "xtr" loc a; Qast.Option None]
+          else
+            Qast.Apply "failwith" [Qast.Str "antiquotation not authorized"]
       | a = ANTIQUOT "anti" ->
           Qast.Node "PaAnt" [Qast.Loc; Qast.VaAnt "anti" loc a] ] ]
   ;

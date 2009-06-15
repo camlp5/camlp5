@@ -6,15 +6,15 @@
 <:expr< #( $_list:le$ ) >>
 <:expr< (assert $e$) >>
 <:expr< (:= $e1$ $e2$) >>
-; <:expr< $e$.{ $list:le$ } >>
-; <:expr< $e$ .{ $_list:le$ } >>
-; <:expr< $chr:s$ >>
-; <:expr< $_chr:s$ >>
-; <:expr< ($e$ : $t1$ :> $t2$) >>
-; <:expr< ($e$ :> $t2$) >>
-; <:expr< $flo:s$ >>
-; <:expr< $_flo:s$ >>
-; <:expr< for $lid:s$ = $e1$ $to:b$ $e2$ do { $list:le$ } >>
+(MLast.ExBae loc e (Ploc.VaVal le))
+(MLast.ExBae loc e le)
+<:expr< $chr:s$ >>
+<:expr< $_chr:s$ >>
+(MLast.ExCoe loc e (Some t1) t2)
+(MLast.ExCoe loc e None t2)
+<:expr< $flo:s$ >>
+<:expr< $_flo:s$ >>
+<:expr< (for $lid:s$ $e1$ $e2$ $list:le$) >>
 ; <:expr< for $_lid:s$ = $e1$ $_to:b$ $e2$ do { $_list:le$ } >>
 ; <:expr< fun [ $list:lpwe$ ] >>
 ; <:expr< fun [ $_list:lpwe$ ] >>

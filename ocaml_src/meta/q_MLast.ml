@@ -5987,6 +5987,17 @@ Grammar.extend
        (fun (a : string) (loc : Ploc.t) ->
           (Qast.Node ("ExAnt", [Qast.Loc; Qast.VaAnt ("anti", loc, a)]) :
            'expr));
+     [Gramext.Stoken ("ANTIQUOT", "xtr")],
+     Gramext.action
+       (fun (a : string) (loc : Ploc.t) ->
+          (if !(Pcaml.strict_mode) then
+             Qast.Node
+               ("ExXtr",
+                [Qast.Loc; Qast.VaAnt ("xtr", loc, a); Qast.Option None])
+           else
+             Qast.Apply
+               ("failwith", [Qast.Str "antiquotation not authorized"]) :
+           'expr));
      [Gramext.Stoken ("ANTIQUOT", "")],
      Gramext.action
        (fun (a : string) (loc : Ploc.t) -> (Qast.VaAnt ("", loc, a) : 'expr));
@@ -6001,6 +6012,17 @@ Grammar.extend
      Gramext.action
        (fun (a : string) (loc : Ploc.t) ->
           (Qast.Node ("PaAnt", [Qast.Loc; Qast.VaAnt ("anti", loc, a)]) :
+           'patt));
+     [Gramext.Stoken ("ANTIQUOT", "xtr")],
+     Gramext.action
+       (fun (a : string) (loc : Ploc.t) ->
+          (if !(Pcaml.strict_mode) then
+             Qast.Node
+               ("PaXtr",
+                [Qast.Loc; Qast.VaAnt ("xtr", loc, a); Qast.Option None])
+           else
+             Qast.Apply
+               ("failwith", [Qast.Str "antiquotation not authorized"]) :
            'patt));
      [Gramext.Stoken ("ANTIQUOT", "")],
      Gramext.action

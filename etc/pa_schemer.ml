@@ -318,13 +318,13 @@ type sexpr =
   [ Sacc of MLast.loc and sexpr and sexpr
   | Santi of MLast.loc and string
   | Sarr of MLast.loc and MLast.v (list sexpr)
-  | Schar of MLast.loc and string
+  | Schar of MLast.loc and MLast.v string
   | Sexpr of MLast.loc and list sexpr
   | Sint of MLast.loc and MLast.v string
   | Sint_l of MLast.loc and string
   | Sint_L of MLast.loc and string
   | Sint_n of MLast.loc and string
-  | Sfloat of MLast.loc and string
+  | Sfloat of MLast.loc and MLast.v string
   | Slid of MLast.loc and string
   | Slist of MLast.loc and list sexpr
   | Sqid of MLast.loc and string
@@ -538,8 +538,8 @@ and expr_se =
   | Sint_l loc s -> <:expr< $int32:s$ >>
   | Sint_L loc s -> <:expr< $int64:s$ >>
   | Sint_n loc s -> <:expr< $nativeint:s$ >>
-  | Sfloat loc s -> <:expr< $flo:s$ >>
-  | Schar loc s -> <:expr< $chr:s$ >>
+  | Sfloat loc s -> <:expr< $_flo:s$ >>
+  | Schar loc s -> <:expr< $_chr:s$ >>
   | Sstring loc s -> <:expr< $str:s$ >>
   | Stid loc s -> <:expr< ~$(rename_id s)$ >>
   | Sqid loc s -> <:expr< ?$(rename_id s)$ >>
@@ -761,7 +761,7 @@ and expr_se =
             let el = loop sel in
             <:expr< [$e$ :: $el$] >> ]
   | Squot loc typ txt -> Pcaml.handle_expr_quotation loc (typ, txt)
-  | Santi loc s -> failwith "not impl Santi" ]
+  | Santi loc s -> <:expr< $xtr:s$ >> ]
 and begin_se loc =
   fun
   [ [] -> <:expr< () >>
@@ -882,8 +882,8 @@ and patt_se =
   | Sint_l loc s -> <:patt< $int32:s$ >>
   | Sint_L loc s -> <:patt< $int64:s$ >>
   | Sint_n loc s -> <:patt< $nativeint:s$ >>
-  | Sfloat loc s -> <:patt< $flo:s$ >>
-  | Schar loc s -> <:patt< $chr:s$ >>
+  | Sfloat loc s -> <:patt< $_flo:s$ >>
+  | Schar loc s -> <:patt< $_chr:s$ >>
   | Sstring loc s -> <:patt< $str:s$ >>
   | Stid loc s -> error_loc loc "patt"
   | Sqid loc _ -> error_loc loc "patt"
@@ -934,7 +934,7 @@ and patt_se =
             let pl = loop sel in
             <:patt< [$p$ :: $pl$] >> ]
   | Squot loc typ txt -> Pcaml.handle_patt_quotation loc (typ, txt)
-  | Santi loc s -> failwith "not impl Santi" ]
+  | Santi loc s -> <:patt< $xtr:s$ >> ]
 and ipatt_se se =
   match ipatt_opt_se se with
   [ Left p -> p
@@ -1179,8 +1179,8 @@ EXTEND
       | s = INT_l -> Sint_l loc s
       | s = INT_L -> Sint_L loc s
       | s = INT_n -> Sint_n loc s
-      | s = FLOAT -> Sfloat loc s
-      | s = CHAR -> Schar loc s
+      | s = V FLOAT -> Sfloat loc s
+      | s = V CHAR -> Schar loc s
       | s = STRING -> Sstring loc s
       | s = SPACEDOT -> Slid loc "."
       | s = QUOT ->
