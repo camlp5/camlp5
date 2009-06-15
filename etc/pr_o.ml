@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.131 2007/12/23 04:00:05 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.132 2007/12/23 10:36:27 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -806,36 +806,12 @@ EXTEND_PRINTER
               let (pl, e1) = expr_fun_args e1 in
               let pl = [p1 :: pl] in
               let simple_patt = Eprinter.apply_level pr_patt "simple" in
-              horiz_vertic
-                (fun () ->
-                   let (op_begin, op_end) =
-                     if List.mem pc.dang ["|"; ";"] then ("(", ")")
-                     else ("", "")
-                   in
-                   sprintf "%s%sfun %s -> %s%s%s" pc.bef op_begin
-                     (hlist simple_patt {(pc) with bef = ""; aft = ""} pl)
-                     (expr {(pc) with bef = ""; aft = ""} e1) op_end pc.aft)
-                (fun () ->
-                   let (op_begin, sh, pc_aft, pc_dang) =
-                     if List.mem pc.dang ["|"; ";"] then
-                       ("(", 3, sprintf ")%s" pc.aft, "")
-                     else ("", 2, pc.aft, pc.dang)
-                   in
-                   let fun_arrow k =
-                     let pl = List.map (fun p -> (p, "")) pl in
-                     plist simple_patt 4
-                       {(pc) with bef = sprintf "%s%sfun " pc.bef op_begin;
-                        aft = sprintf " ->%s" k}
-                       pl
-                   in
-                   let s1 = fun_arrow "" in
-                   let s2 =
-                     expr
-                       {ind = pc.ind + sh; bef = tab (pc.ind + sh);
-                        aft = pc_aft; dang = pc_dang}
-                       e1
-                   in
-                   sprintf "%s\n%s" s1 s2)
+              let pl = List.map (fun p -> (p, "")) pl in
+              if List.mem pc.dang ["|"; ";"] then
+                pprintf pc "(fun %p ->@;<1 3>%q)" (plist simple_patt 4) pl
+                  expr e1 ""
+              else
+                pprintf pc "fun %p ->@;%p" (plist simple_patt 4) pl expr e1
           | [] ->
               let loc = MLast.loc_of_expr ge in
               horiz_vertic
