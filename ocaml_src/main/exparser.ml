@@ -131,6 +131,21 @@ and subst_pe v (p, e) =
 
 let optim = ref true;;
 
+let rec perhaps_bound s =
+  function
+    MLast.ExTup (_, el) -> List.exists (perhaps_bound s) el
+  | MLast.ExUid (_, _) | MLast.ExStr (_, _) -> false
+  | _ -> true
+;;
+
+let wildcard_if_not_bound p e =
+  match p with
+    MLast.PaLid (_, s) ->
+      if perhaps_bound s e then p
+      else let loc = MLast.loc_of_patt p in MLast.PaAny loc
+  | _ -> p
+;;
+
 let stream_pattern_component skont ckont =
   function
     SpTrm (loc, p, wo) ->
@@ -171,17 +186,8 @@ let stream_pattern_component skont ckont =
                    MLast.PaUid (loc, "Failure")),
                 None, ckont])
         else if is_raise_failure ckont then
+          let p = wildcard_if_not_bound p skont in
           MLast.ExLet (loc, false, [p, e], skont)
-        else if
-          pattern_eq_expression
-            (MLast.PaApp (loc, MLast.PaUid (loc, "Some"), p)) skont
-        then
-          MLast.ExTry
-            (loc, MLast.ExApp (loc, MLast.ExUid (loc, "Some"), e),
-             [MLast.PaAcc
-                (loc, MLast.PaUid (loc, "Stream"),
-                 MLast.PaUid (loc, "Failure")),
-              None, ckont])
         else if is_raise ckont then
           let tst =
             if handle_failure e then e
@@ -193,7 +199,18 @@ let stream_pattern_component skont ckont =
                      MLast.PaUid (loc, "Failure")),
                   None, ckont])
           in
+          let p = wildcard_if_not_bound p skont in
           MLast.ExLet (loc, false, [p, tst], skont)
+        else if
+          pattern_eq_expression
+            (MLast.PaApp (loc, MLast.PaUid (loc, "Some"), p)) skont
+        then
+          MLast.ExTry
+            (loc, MLast.ExApp (loc, MLast.ExUid (loc, "Some"), e),
+             [MLast.PaAcc
+                (loc, MLast.PaUid (loc, "Stream"),
+                 MLast.PaUid (loc, "Failure")),
+              None, ckont])
         else
           MLast.ExMat
             (loc,

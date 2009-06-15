@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: exparser.ml,v 1.2 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: exparser.ml,v 1.3 2007/07/25 10:12:21 deraugla Exp $ *)
 
 type spat_comp =
   [ SpTrm of MLast.loc and MLast.patt and option MLast.expr
@@ -114,6 +114,23 @@ and subst_pe v (p, e) =
 
 value optim = ref True;
 
+value rec perhaps_bound s =
+  fun
+  [ <:expr< ($list:el$) >> -> List.exists (perhaps_bound s) el
+  | <:expr< $uid:_$ >> | <:expr< $str:_$ >> -> False
+  | _ -> True ]
+;
+
+value wildcard_if_not_bound p e =
+  match p with
+  [ <:patt< $lid:s$ >> ->
+      if perhaps_bound s e then p
+      else
+        let loc = MLast.loc_of_patt p in
+        <:patt< _ >>
+  | _ -> p ]
+;
+
 value stream_pattern_component skont ckont =
   fun
   [ SpTrm loc p wo ->
@@ -134,15 +151,17 @@ value stream_pattern_component skont ckont =
           else if handle_failure e then e
           else <:expr< try $e$ with [ Stream.Failure -> $ckont$ ] >>
         else if is_raise_failure ckont then
+          let p = wildcard_if_not_bound p skont in
           <:expr< let $p$ = $e$ in $skont$ >>
-        else if pattern_eq_expression <:patt< Some $p$ >> skont then
-          <:expr< try Some $e$ with [ Stream.Failure -> $ckont$ ] >>
         else if is_raise ckont then
           let tst =
             if handle_failure e then e
             else <:expr< try $e$ with [ Stream.Failure -> $ckont$ ] >>
           in
+          let p = wildcard_if_not_bound p skont in
           <:expr< let $p$ = $tst$ in $skont$ >>
+        else if pattern_eq_expression <:patt< Some $p$ >> skont then
+          <:expr< try Some $e$ with [ Stream.Failure -> $ckont$ ] >>
         else
           <:expr< match try Some $e$ with [ Stream.Failure -> None ] with
                   [ Some $p$ -> $skont$

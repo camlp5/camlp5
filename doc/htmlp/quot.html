@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: quot.html,v 1.5 2007/07/25 04:32:36 deraugla Exp $ -->
+  <!-- $Id: quot.html,v 1.6 2007/07/25 10:12:21 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>quotations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -358,11 +358,9 @@
   cannot recognize the backslashes alone.</p>
 
 <pre>
-  #load "q_MLast.cmo";
-  #load "pa_lex.cmo";
-  #load "pa_extend.cmo";
-
   (* lexer *)
+
+  #load "pa_lex.cmo";
 
   value rev_implode l =
     let s = String.create (List.length l) in
@@ -395,7 +393,7 @@
     | "(" -> ("", "(")
     | ")" -> ("", ")")
     | "." -> ("", ".")
-    | empty -> let _ = $buf in ("EOS", "")
+    | empty -> ("EOS", "")
     | -> raise (Stream.Error "lexing error: bad character") ]
   ;
 
@@ -440,6 +438,9 @@
   ;
 
   (* parser *)
+
+  #load "pa_extend.cmo";
+  #load "q_MLast.cmo";
 
   value g = Grammar.gcreate lam_lex;
   value expr_term_eos = Grammar.Entry.create g "term";
