@@ -3,9 +3,9 @@ Camlp4s Version 4.03:
 
 * [10 Jul 07] Added argument "-name" in "configure" to specify another name
   of commands and libraries (default = camlp4). E.g. "configure -name camlp5"
-  will rename, at installation time, camlp4r into camlp5r, camlp4r.cma into
-  camlp5r.cma, and the library will be installed into a directory named
-  camlp5.
+  will build "camlp5", "camlp5r", "camlp5o", "mkcamlp5", and so on, and
+  the library directory will be installed in ocaml library directory as
+  name "camlp5".
 
 Camlp4s Version 4.02:
 ---------------------
