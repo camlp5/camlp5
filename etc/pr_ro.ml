@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.68 2007/12/13 18:56:43 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.69 2007/12/13 20:05:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -321,29 +321,9 @@ EXTEND_PRINTER
       [ <:class_expr< fun $p$ -> $ce$ >> ->
           pprintf pc "fun %p ->@;%p" patt p curr ce
       | <:class_expr< let $flag:rf$ $list:pel$ in $ce$ >> ->
-          horiz_vertic
-            (fun () ->
-               let s1 =
-                 hlist2 (binding expr) (and_before (binding expr))
-                   {(pc) with
-                    bef =
-                      sprintf "%slet %s" pc.bef (if rf then "rec " else "");
-                    aft = " in"}
-                   pel
-               in
-               let s2 = class_expr {(pc) with bef = ""} ce in
-               sprintf "%s %s" s1 s2)
-            (fun () ->
-               let s1 =
-                 vlist2 (binding expr) (and_before (binding expr))
-                   {(pc) with
-                    bef =
-                      sprintf "%slet %s" pc.bef (if rf then "rec " else "");
-                    aft = " in"}
-                   pel
-               in
-               let s2 = class_expr {(pc) with bef = tab pc.ind} ce in
-               sprintf "%s\n%s" s1 s2) ]
+          pprintf pc "let%s %p in@ %p" (if rf then " rec" else "")
+            (vlist2 (binding expr) (and_before (binding expr))) pel
+            class_expr ce ]
     | "apply"
       [ <:class_expr< $ce$ $e$ >> ->
           let (ce, el) =
@@ -367,25 +347,7 @@ EXTEND_PRINTER
       | <:class_expr< object $opt:csp$ $list:csl$ end >> ->
           class_object pc (csp, csl)
       | <:class_expr< ($ce$ : $ct$) >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s(%s : %s)%s" pc.bef
-                 (curr {(pc) with bef = ""; aft = ""} ce)
-                 (class_type {(pc) with bef = ""; aft = ""} ct) pc.aft)
-            (fun () ->
-               let s1 =
-                 curr
-                   {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-                    aft = " :"}
-                   ce
-               in
-               let s2 =
-                 class_type
-                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
-                    aft = sprintf ")%s" pc.aft}
-                   ct
-               in
-               sprintf "%s\n%s" s1 s2) ] ]
+          pprintf pc "@[<1>(%p :@ %p)@]" curr ce class_type ct ] ]
   ;
   pr_class_type:
     [ "top"
