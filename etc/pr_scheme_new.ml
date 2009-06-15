@@ -79,6 +79,38 @@ value let_binding pc (p1, e1) =
        sprintf "%s\n%s" s1 s2)
 ;
 
+value let_binding_list pc (b, pel, e) =
+  horiz_vertic
+    (fun () ->
+       sprintf "%s(%s (%s) %s)%s" pc.bef b
+         (hlist let_binding {(pc) with bef = ""; aft = ""} pel)
+         (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
+    (fun () ->
+       let s1 =
+         horiz_vertic
+           (fun () ->
+              sprintf "%s(%s (%s)" pc.bef b
+                (hlist let_binding {(pc) with bef = ""; aft = ""}
+                   pel))
+           (fun () ->
+              let s1 = sprintf "%s(%s" pc.bef b in
+              let s2 =
+                (vlist let_binding
+                   {(pc) with ind = pc.ind + 2;
+                    bef = sprintf "%s(" (tab (pc.ind + 1)); aft = ")"}
+                   pel)
+              in
+              sprintf "%s\n%s" s1 s2)
+       in
+       let s2 =
+         expr
+           {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+            aft = sprintf ")%s" pc.aft}
+           e
+       in
+       sprintf "%s\n%s" s1 s2)
+;
+
 value match_assoc pc (p, we, e) =
   horiz_vertic
     (fun () ->
@@ -198,37 +230,23 @@ EXTEND_PRINTER
                  vlist match_assoc {(pc) with aft = sprintf ")%s" pc.aft} pwel
                in
                sprintf "%s\n%s" s1 s2)
+      | <:expr< let $p1$ = $e1$ in $e2$ >> ->
+          let (pel, e) =
+            loop [(p1, e1)] e2 where rec loop pel =
+              fun
+              [ <:expr< let $p1$ = $e1$ in $e2$ >> ->
+                  loop [(p1, e1) :: pel] e2
+              | e -> (List.rev pel, e) ]
+          in
+          let b =
+            match pel with
+            [ [_] -> "let"
+            | _ -> "let*" ]
+          in
+          let_binding_list pc (b, pel, e)
       | <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
           let b = if rf then "letrec" else "let" in
-          horiz_vertic
-            (fun () ->
-               sprintf "%s(%s (%s) %s)%s" pc.bef b
-                 (hlist let_binding {(pc) with bef = ""; aft = ""} pel)
-                 (curr {(pc) with bef = ""; aft = ""} e) pc.aft)
-            (fun () ->
-               let s1 =
-                 horiz_vertic
-                   (fun () ->
-                      sprintf "%s(%s (%s)" pc.bef b
-                        (hlist let_binding {(pc) with bef = ""; aft = ""}
-                           pel))
-                   (fun () ->
-                      let s1 = sprintf "%s(%s" pc.bef b in
-                      let s2 =
-                        (vlist let_binding
-                           {(pc) with ind = pc.ind + 2;
-                            bef = sprintf "%s(" (tab (pc.ind + 1)); aft = ")"}
-                           pel)
-                      in
-                      sprintf "%s\n%s" s1 s2)
-               in
-               let s2 =
-                 curr
-                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
-                    aft = sprintf ")%s" pc.aft}
-                   e
-               in
-               sprintf "%s\n%s" s1 s2)
+          let_binding_list pc (b, pel, e)
       | <:expr< if $e1$ then $e2$ else () >> ->
           not_impl "if else ()" pc 0
       | <:expr< if $e1$ then $e2$ else $e3$ >> ->
@@ -397,7 +415,7 @@ EXTEND_PRINTER
           in
           let pl = List.map (fun p -> (p, "")) pl in
           plistb curr 1
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(or" pc.bef;
+            {(pc) with bef = sprintf "%s(or" pc.bef;
              aft = sprintf ")%s" pc.aft}
             pl
       | <:patt< ($p1$ as $p2$) >> ->
