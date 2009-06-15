@@ -355,10 +355,9 @@ EXTEND_PRINTER
   ;
   pr_expr:
     [ "top"
-      [ (* <:expr< fun [] >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "(lambda%t" (ks ")" k)
-      | *) <:expr< fun $lid:s$ -> $e$ >> ->
+      [ <:expr< fun [] >> ->
+          sprintf "%s(lambda)%s" pc.bef pc.aft
+      | <:expr< fun $lid:s$ -> $e$ >> ->
           plistbf 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(lambda" pc.bef;
              aft = sprintf ")%s" pc.aft}
