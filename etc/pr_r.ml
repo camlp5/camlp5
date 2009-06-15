@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.107 2007/12/05 02:33:57 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.108 2007/12/05 03:40:14 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1516,23 +1516,14 @@ EXTEND_PRINTER
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%s)" s
           else pprintf pc "%s" s
       | <:expr< $int32:s$ >> ->
-          let s = s ^ "l" in
-          if String.length s > 0 && s.[0] = '-' then
-            sprintf "%s(%s)%s" pc.bef s pc.aft
-          else
-            sprintf "%s%s%s" pc.bef s pc.aft
+          if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sl)" s
+          else pprintf pc "%sl" s
       | <:expr< $int64:s$ >> ->
-          let s = s ^ "L" in
-          if String.length s > 0 && s.[0] = '-' then
-            sprintf "%s(%s)%s" pc.bef s pc.aft
-          else
-            sprintf "%s%s%s" pc.bef s pc.aft
+          if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sL)" s
+          else pprintf pc "%sL" s
       | <:expr< $nativeint:s$ >> ->
-          let s = s ^ "n" in
-          if String.length s > 0 && s.[0] = '-' then
-            sprintf "%s(%s)%s" pc.bef s pc.aft
-          else
-            sprintf "%s%s%s" pc.bef s pc.aft
+          if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sn)" s
+          else pprintf pc "%sn" s
       | <:expr< $lid:s$ >> ->
           var_escaped pc s
       | <:expr< $uid:s$ >> ->
@@ -1540,9 +1531,9 @@ EXTEND_PRINTER
       | <:expr< `$s$ >> ->
           failwith "variants not pretty printed (in expr); add pr_ro.cmo"
       | <:expr< $str:s$ >> ->
-          sprintf "%s\"%s\"%s" pc.bef s pc.aft
+          pprintf pc "\"%s\"" s
       | <:expr< $chr:s$ >> ->
-          sprintf "%s'%s'%s" pc.bef s pc.aft
+          pprintf pc "'%s'" s
       | <:expr< ?$_$ >> | <:expr< ?$_$: $_$ >> |
         <:expr< ~$_$ >> | <:expr< ~$_$: $_$ >> ->
           failwith "labels not pretty printed (in expr); add pr_ro.cmo"
@@ -1558,10 +1549,8 @@ EXTEND_PRINTER
           let expr_wh =
             if flag_where_after_lparen.val then expr_wh else expr
           in
-          expr_wh
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            z ] ]
+          let pc = {(pc) with ind = pc.ind + 1} in
+          pprintf pc "(%p)" expr_wh z ] ]
   ;
   pr_patt:
     [ "top"
