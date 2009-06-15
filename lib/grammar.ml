@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.38 2007/09/06 04:26:18 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.39 2007/09/07 06:05:07 deraugla Exp $ *)
 
 open Gramext;
 open Format;
@@ -616,8 +616,10 @@ and parser_of_symbol entry nlevn =
       | [: :] -> Obj.repr False ]
   | Sflag2 s ->
       let ps = parser_of_symbol entry nlevn s in
+      let pa = parser_of_token entry ("FLAG2", "") in
       parser
-      [ [: _ = ps :] -> Obj.repr (Ploc.VaVal True)
+      [ [: a = pa :] -> Obj.repr (Ploc.VaAnt (Obj.magic a : string))
+      | [: _ = ps :] -> Obj.repr (Ploc.VaVal True)
       | [: :] -> Obj.repr (Ploc.VaVal False) ]
   | Stree t ->
       let pt = parser_of_tree entry 1 0 t in

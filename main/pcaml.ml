@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pcaml.ml,v 1.24 2007/09/06 20:21:40 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.25 2007/09/07 06:05:07 deraugla Exp $ *)
 
 value version = "4.09-exp";
 value syntax_name = ref "";
@@ -64,7 +64,7 @@ value warning_default_function loc txt = do {
 
 value warning = ref warning_default_function;
 
-value apply_with_var v x f =
+value call_with v x f =
   let vx = v.val in
   try do {
     v.val := x;
@@ -94,7 +94,7 @@ value expand_quotation gloc expander shift name str =
     let shift = Ploc.first_pos gloc + shift in
     fun loc txt -> warn (Ploc.shift shift loc) txt
   in
-  apply_with_var warning new_warning
+  call_with warning new_warning
     (fun () ->
        try expander str with
        [ Ploc.Exc loc exc ->

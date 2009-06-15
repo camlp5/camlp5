@@ -664,10 +664,14 @@ and parser_of_symbol entry nlevn =
          | _ -> Obj.repr false)
   | Sflag2 s ->
       let ps = parser_of_symbol entry nlevn s in
+      let pa = parser_of_token entry ("FLAG2", "") in
       (fun (strm__ : _ Stream.t) ->
-         match try Some (ps strm__) with Stream.Failure -> None with
-           Some _ -> Obj.repr (Ploc.VaVal true)
-         | _ -> Obj.repr (Ploc.VaVal false))
+         match try Some (pa strm__) with Stream.Failure -> None with
+           Some a -> Obj.repr (Ploc.VaAnt (Obj.magic a : string))
+         | _ ->
+             match try Some (ps strm__) with Stream.Failure -> None with
+               Some _ -> Obj.repr (Ploc.VaVal true)
+             | _ -> Obj.repr (Ploc.VaVal false))
   | Stree t ->
       let pt = parser_of_tree entry 1 0 t in
       (fun (strm__ : _ Stream.t) ->

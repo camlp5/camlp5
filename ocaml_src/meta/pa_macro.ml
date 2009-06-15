@@ -4,7 +4,7 @@
 (*
 Added statements:
 
-  At toplevel (structure item):
+  In structure items:
 
      DEFINE <uident>
      DEFINE <uident> = <expression>
@@ -13,6 +13,16 @@ Added statements:
      IFDEF <dexpr> THEN <structure_items> ELSE <structure_items> END
      IFNDEF <dexpr> THEN <structure_items> END
      IFNDEF <dexpr> THEN <structure_items> ELSE <structure_items> END
+
+  In signature items:
+
+     DEFINE <uident>
+     DEFINE <uident> = <type>
+     DEFINE <uident> (<parameters>) = <type>
+     IFDEF <dexpr> THEN <signature_items> END
+     IFDEF <dexpr> THEN <signature_items> ELSE <signature_items> END
+     IFNDEF <dexpr> THEN <signature_items> END
+     IFNDEF <dexpr> THEN <signature_items> ELSE <signature_items> END
 
   In expressions:
 
@@ -25,6 +35,11 @@ Added statements:
 
      IFDEF <dexpr> THEN <pattern> ELSE <pattern> END
      IFNDEF <dexpr> THEN <pattern> ELSE <pattern> END
+
+  In types:
+
+     IFDEF <dexpr> THEN <type> ELSE <type> END
+     IFNDEF <dexpr> THEN <type> ELSE <type> END
 
   A <dexpr> is either:
 

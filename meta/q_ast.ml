@@ -1,15 +1,17 @@
-(* camlp5r *)
-(* $Id: q_ast.ml,v 1.33 2007/09/04 04:29:01 deraugla Exp $ *)
+(* camlp5r pa_macro.cmo *)
+(* $Id: q_ast.ml,v 1.34 2007/09/07 06:05:07 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
-   its possible extensions and meta-ifying the nodes. But antiquotations
-   are a hack (creation of extra values not belonging to their types) and
-   there is a risk of memory fault if the semantic actions of the parser
-   use these values in their supposed normal range. Example with
-   antiquotation in <:expr< parser [: x = $y$ :] -> z >>.
-     The real solution should be to completely change the syntax tree
-   but there is then a problem of backward compatibility. *)
+   its possible extensions and meta-ifying the nodes.
+     Antiquotations over tokens work only in "strict" mode.
+     Antiquotations over values of syntax tree types are a hack (creation
+   of extra values not belonging to their types) and there is a risk of
+   memory fault if the semantic actions of the parser use these values in
+   their supposed normal range. Example with antiquotation in
+         <:expr< parser [: x = $y$ :] -> z >>
+     The good solution should be to extend the syntax tree for these
+   nodes. *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -58,6 +60,7 @@ value str_item_eoi = Grammar.Entry.create Pcaml.gram "str_item";
 value sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";
 value module_expr_eoi = Grammar.Entry.create Pcaml.gram "module_expr";
 
+(*
 (* upper bound of tags of all syntax tree nodes *)
 value anti_tag = 100;
 
@@ -77,43 +80,41 @@ value get_anti v =
     Some (loc, t, s)
   else None
 ;
+*)
+
+value make_anti loc t s = failwith "not impl: make_anti";
+value get_anti v = None;
 
 module Meta =
   struct
     open MLast;
     value loc = Ploc.dummy;
     value ln () = <:expr< $lid:Ploc.name.val$ >>;
+    value e_vala elem =
+      IFNDEF STRICT THEN
+        fun e -> elem e
+      ELSE
+        fun
+        [ Ploc.VaAnt s -> failwith ("not impl VaAnt " ^ s)
+        | Ploc.VaVal v -> elem v ]
+      END
+    ;
     value e_list elem el =
       loop el where rec loop el =
-        match get_anti el with
-        [ Some (loc, typ, str) ->
-            let (loc, r) = eval_anti expr_eoi loc typ str in
-            <:expr< $anti:r$ >>
-        | None ->
-            match el with
-            [ [] -> <:expr< [] >>
-            | [e :: el] -> <:expr< [$elem e$ :: $loop el$] >> ] ]
+        match el with
+        [ [] -> <:expr< [] >>
+        | [e :: el] -> <:expr< [$elem e$ :: $loop el$] >> ]
     ;
     value p_list elem el =
       loop el where rec loop el =
-        match get_anti el with
-        [ Some (loc, typ, str) ->
-            let (loc, r) = eval_anti patt_eoi loc typ str in
-            <:patt< $anti:r$ >>
-        | None ->
-            match el with
-            [ [] -> <:patt< [] >>
-            | [e :: el] -> <:patt< [$elem e$ :: $loop el$] >> ] ]
+        match el with
+        [ [] -> <:patt< [] >>
+        | [e :: el] -> <:patt< [$elem e$ :: $loop el$] >> ]
     ;
     value e_option elem oe =
-      match get_anti oe with
-      [ Some (loc, typ, str) ->
-          let (loc, r) = eval_anti expr_eoi loc typ str in
-          <:expr< $anti:r$ >>
-      | None ->
-          match oe with
-          [ None -> <:expr< None >>
-          | Some e -> <:expr< Some $elem e$ >> ] ]
+      match oe with
+      [ None -> <:expr< None >>
+      | Some e -> <:expr< Some $elem e$ >> ]
     ;
     value p_option elem oe =
       match get_anti oe with
@@ -367,9 +368,7 @@ module Meta =
     ;
 *)
     value rec e_str_item si =
-(*
       let ln = ln () in
-*)
       loop si where rec loop =
         fun
         [ (* StDcl _ lsi -> <:expr< MLast.StDcl $ln$ $e_list loop lsi$ >>
@@ -398,12 +397,12 @@ module Meta =
             <:expr< MLast.StOpn $ln$ $e_list e_string sl$ >>
         | StTyp _ ltd ->
             <:expr< MLast.StTyp $ln$ $e_list e_type_decl ltd$ >>
-        | StVal _ rf lpe ->
+        | *) StVal _ rf lpe ->
             let lpe =
               e_list (fun (p, e) -> <:expr< ($e_patt p$, $e_expr e$) >>) lpe
             in
             <:expr< MLast.StVal $ln$ $e_vala e_bool rf$ $lpe$ >>
-        | *) x -> not_impl "e_str_item" x ]
+        | x -> not_impl "e_str_item" x ]
     and p_str_item =
       fun
       [ x -> not_impl "p_str_item" x ]
@@ -517,6 +516,25 @@ value check_anti_loc s kind =
   [ Not_found | Failure _ -> raise Stream.Failure ]
 ;
 
+
+value check_anti_loc2 s kind =
+  try
+    let i = String.index s ':' in
+    let (j, len) =
+      loop (i + 1) where rec loop j =
+        if j = String.length s then (i, 0)
+        else
+          match s.[j] with
+          [ ':' -> (j, j - i - 1)
+          | 'a'..'z' | 'A'..'Z' | '0'..'9' | '_' -> loop (j + 1)
+          | _ -> (i, 0) ]
+    in
+    if String.sub s (i + 1) len = kind then s
+    else raise Stream.Failure
+  with
+  [ Not_found | Failure _ -> raise Stream.Failure ]
+;
+
 value check_and_make_anti prm typ =
   let (loc, str) = check_anti_loc prm typ in
   make_anti loc typ str
@@ -536,6 +554,7 @@ lex.Plexing.tok_match :=
       fun
       [ ("ANTIQUOT_LOC", prm) -> snd (check_anti_loc prm p_prm)
       | _ -> raise Stream.Failure ]
+(*
   | ("INT", "") ->
       fun
       [ ("INT", prm) -> prm
@@ -574,9 +593,10 @@ lex.Plexing.tok_match :=
       fun
       [ ("ANTIQUOT_LOC", prm) -> check_and_make_anti prm "opt"
       | _ -> raise Stream.Failure ]
-  | ("FLAG", "") ->
+*)
+  | ("FLAG2", "") ->
       fun
-      [ ("ANTIQUOT_LOC", prm) -> check_and_make_anti prm "flag"
+      [ ("ANTIQUOT_LOC", prm) -> check_anti_loc2 prm "aflag"
       | _ -> raise Stream.Failure ]
   | tok -> tok_match tok ]
 ;

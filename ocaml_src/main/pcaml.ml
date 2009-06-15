@@ -64,7 +64,7 @@ let warning_default_function loc txt =
 
 let warning = ref warning_default_function;;
 
-let apply_with_var v x f =
+let call_with v x f =
   let vx = !v in
   try v := x; let r = f () in v := vx; r with e -> v := vx; raise e
 ;;
@@ -88,7 +88,7 @@ let expand_quotation gloc expander shift name str =
     let shift = Ploc.first_pos gloc + shift in
     fun loc txt -> warn (Ploc.shift shift loc) txt
   in
-  apply_with_var warning new_warning
+  call_with warning new_warning
     (fun () ->
        try expander str with
          Ploc.Exc (loc, exc) ->

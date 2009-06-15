@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.12 2007/09/06 04:26:18 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.13 2007/09/07 06:05:07 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -516,7 +516,7 @@ value class_info class_expr ci =
    pci_variance = variance}
 ;
 
-value apply_with_var v x f =
+value call_with v x f =
   let vx = v.val in
   try do {
     v.val := x;
@@ -774,7 +774,7 @@ and sig_item s l =
       [mksig loc (Psig_open (long_id_of_string_list loc id)) :: l]
   | SgTyp loc tdl -> [mksig loc (Psig_type (List.map mktype_decl tdl)) :: l]
   | SgUse loc fn sl ->
-      apply_with_var glob_fname fn
+      call_with glob_fname fn
         (fun () -> List.fold_right (fun (si, _) -> sig_item si) sl l)
   | SgVal loc n t -> [mksig loc (Psig_value n (mkvalue_desc t [])) :: l] ]
 and module_expr =
@@ -834,7 +834,7 @@ and str_item s l =
       [mkstr loc (Pstr_open (long_id_of_string_list loc id)) :: l]
   | StTyp loc tdl -> [mkstr loc (Pstr_type (List.map mktype_decl tdl)) :: l]
   | StUse loc fn sl ->
-      apply_with_var glob_fname fn
+      call_with glob_fname fn
         (fun () -> List.fold_right (fun (si, _) -> str_item si) sl l)
   | StVal loc rf pel ->
       [mkstr loc (Pstr_value (mkrf (unvala rf)) (List.map mkpe pel)) :: l] ]
