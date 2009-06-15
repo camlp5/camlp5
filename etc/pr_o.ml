@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.130 2007/12/23 03:40:07 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.131 2007/12/23 04:00:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -749,10 +749,8 @@ EXTEND_PRINTER
                      horiz_vertic
                        (fun () ->
                           let _ : string =
-                            sprintf "%selse %s%s" (tab pc.ind)
-                              (comm_expr curr {(pc) with bef = ""; aft = ""}
-                                 e3)
-                              pc.aft
+                            let pc = {(pc) with bef = tab pc.ind} in
+                            pprintf pc "else %p" (comm_expr curr) e3
                           in
                           False)
                        (fun () -> True)
@@ -796,20 +794,8 @@ EXTEND_PRINTER
                      [ <:expr< () >> -> ""
                      | _ ->
                          let s =
-                           horiz_vertic
-                             (fun () ->
-                                sprintf "%selse %s%s" (tab pc.ind)
-                                  (comm_expr curr
-                                     {(pc) with bef = ""; aft = ""} e3)
-                                     pc.aft)
-                             (fun () ->
-                                let s =
-                                  comm_expr expr1
-                                    {(pc) with ind = pc.ind + 2;
-                                     bef = tab (pc.ind + 2)}
-                                    e3
-                                in
-                                sprintf "%selse\n%s" (tab pc.ind) s)
+                           let pc = {(pc) with bef = tab pc.ind} in
+                           pprintf pc "else@;%p" (comm_expr curr) e3
                          in
                          sprintf "\n%s" s ]
                    in
