@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: htmlp2html,v 1.8 2007/07/19 11:23:00 deraugla Exp $
+# $Id: htmlp2html,v 1.9 2007/07/20 05:18:58 deraugla Exp $
 
 FILE=$1
 
@@ -33,8 +33,8 @@ sed \
   -e '/<div class="trailer">/i\aaa' \
   -e '/<div class="trailer">/,/^<\/div>/d' |
 sed -e '/aaa/r trailer.html' -e '/aaa/d' |
-sed -e '/<h2>/s|<h2>\(.*\)</h2>|<a id="a:\1"></a>\n<h2>\1</h2>|' |
-sed -e '/<h3>/s|<h3>\(.*\)</h3>|<a id="b:\1"></a>\n<h3>\1</h3>|' |
+sed -e '/<h2>/s|<h2>\(.*\)</h2>|<h2 id="a:\1">\1</h2>|' |
+sed -e '/<h3>/s|<h3>\(.*\)</h3>|<h3 id="b:\1">\1</h3>|' |
 sed -e '{:b s/\(href="#[^ "]*\)[ ,]/\1-/; tb}' |
 sed -e '{:b s/\(id="[^ "]*\)[ ,]/\1-/; tb}'
 
