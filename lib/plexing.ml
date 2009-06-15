@@ -1,16 +1,6 @@
 (* camlp5r *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: plexing.ml,v 1.1 2007/09/03 08:37:06 deraugla Exp $ *)
+(* $Id: plexing.ml,v 1.2 2007/09/03 18:08:42 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 type pattern = (string * string);
 

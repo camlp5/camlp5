@@ -18,7 +18,7 @@ let error_on_unknown_keywords = ref false;;
 let dollar_for_antiquotation = ref true;;
 let specific_space_dot = ref false;;
 
-let force_antiquot = ref false;;
+let force_antiquot_loc = ref false;;
 
 (* The string buffering machinery *)
 
@@ -411,9 +411,36 @@ let rec antiquot ctx bp buf (strm__ : _ Stream.t) =
       | _ -> err ctx (bp, Stream.count strm__) "antiquotation not terminated"
 ;;
 
+let antiloc bp ep s = "ANTIQUOT_LOC", Printf.sprintf "%d,%d:%s" bp ep s;;
+
+let rec antiquot_loc ctx bp buf (strm__ : _ Stream.t) =
+  match Stream.peek strm__ with
+    Some '$' ->
+      Stream.junk strm__; antiloc bp (Stream.count strm__) (":" ^ B.get buf)
+  | Some ('a'..'z' | 'A'..'Z' | '0'..'9' | '_' as c) ->
+      Stream.junk strm__; antiquot_loc ctx bp (B.add c buf) strm__
+  | Some ':' ->
+      Stream.junk strm__;
+      let buf = antiquot_rest ctx bp (B.add ':' buf) strm__ in
+      antiloc bp (Stream.count strm__) (B.get buf)
+  | Some '\\' ->
+      Stream.junk strm__;
+      let buf =
+        try any ctx buf strm__ with Stream.Failure -> raise (Stream.Error "")
+      in
+      let buf = antiquot_rest ctx bp buf strm__ in
+      antiloc bp (Stream.count strm__) (":" ^ B.get buf)
+  | _ ->
+      match try Some (any ctx buf strm__) with Stream.Failure -> None with
+        Some buf ->
+          let buf = antiquot_rest ctx bp buf strm__ in
+          antiloc bp (Stream.count strm__) (":" ^ B.get buf)
+      | _ -> err ctx (bp, Stream.count strm__) "antiquotation not terminated"
+;;
+
 let dollar ctx bp buf strm =
-  if ctx.dollar_for_antiquotation || !force_antiquot then
-    antiquot ctx bp buf strm
+  if ctx.dollar_for_antiquotation then antiquot ctx bp buf strm
+  else if !force_antiquot_loc then antiquot_loc ctx bp buf strm
   else
     let (strm__ : _ Stream.t) = strm in
     let buf = B.add '$' buf in let buf = ident2 buf strm__ in "", B.get buf
@@ -806,7 +833,7 @@ let using_token kwd_table ident_table (p_con, p_prm) =
         end
   | "TILDEIDENT" | "TILDEIDENTCOLON" | "QUESTIONIDENT" |
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
-    "CHAR" | "STRING" | "QUOTATION" | "ANTIQUOT" | "EOI" ->
+    "CHAR" | "STRING" | "QUOTATION" | "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
       ()
   | _ ->
       raise
@@ -874,11 +901,11 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-         (fun _ -> raise (Match_failure ("plexer.ml", 544, 25)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 544, 45)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 544, 68)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 545, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 545, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 558, 25)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 558, 45)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 558, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 559, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 559, 37)));
        tok_comm = None}
   in
   let glex =

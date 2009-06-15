@@ -1,22 +1,12 @@
 (* camlp5r *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: plexing.mli,v 1.1 2007/09/03 08:37:06 deraugla Exp $ *)
+(* $Id: plexing.mli,v 1.2 2007/09/03 18:08:42 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 (** Lexing for Camlp5 grammars.
 
    This module defines the Camlp5 lexer type to be used in extensible
    grammars (see module [Grammar]). It also provides some useful functions
-   to create lexers (this module should be renamed [Plexing] one day). *)
+   to create lexers. *)
 
 type pattern = (string * string);
     (* Type for values used by the generated code of the EXTEND
@@ -93,11 +83,11 @@ value default_match : pattern -> (string * string) -> string;
    parser or for an [ocamllex] function. With the returned function [f],
    it is possible to get a simple lexer (of the type [Plexing.glexer] above):
    {[
-          {Plexing.tok_func = f;
-           Plexing.tok_using = (fun _ -> ());
-           Plexing.tok_removing = (fun _ -> ());
-           Plexing.tok_match = Plexing.default_match;
-           Plexing.tok_text = Plexing.lexer_text}
+          { Plexing.tok_func = f;
+            Plexing.tok_using = (fun _ -> ());
+            Plexing.tok_removing = (fun _ -> ());
+            Plexing.tok_match = Plexing.default_match;
+            Plexing.tok_text = Plexing.lexer_text }
    ]}
    Note that a better [tok_using] function should check the used tokens
    and raise [Plexing.Error] for incorrect ones. The other functions
@@ -105,8 +95,7 @@ value default_match : pattern -> (string * string) -> string;
    as well. *)
 
 value lexer_func_of_parser :
-  ((Stream.t char * ref int * ref int) -> ('te * Ploc.t)) ->
-     lexer_func 'te;
+  ((Stream.t char * ref int * ref int) -> ('te * Ploc.t)) -> lexer_func 'te;
    (** A lexer function from a lexer written as a char stream parser
        returning the next token and its location. The two references
        with the char stream contain the current line number and the
@@ -139,11 +128,3 @@ value bol_pos : ref (ref int);
        for directives (e.g. #load or #use) which interrupt the parsing.
        Without usage of these variables, locations after the directives
        can be wrong. *)
-
-(** {6 Backward compatibilities} *)
-
-(* deprecated since version 4.08 *)
-
-type location = Ploc.t;
-value make_loc : (int * int) -> location;
-value dummy_loc : location;

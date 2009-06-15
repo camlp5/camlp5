@@ -83,4 +83,4 @@ val no_quotations : bool ref;;
 
 (*** For system use *)
 
-val force_antiquot : bool ref;;
+val force_antiquot_loc : bool ref;;
