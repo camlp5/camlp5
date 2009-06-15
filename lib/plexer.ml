@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.93 2007/09/02 19:30:29 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.94 2007/09/03 09:49:06 deraugla Exp $ *)
 
 value no_quotations = ref False;
 value error_on_unknown_keywords = ref False;
@@ -18,7 +18,7 @@ value error_on_unknown_keywords = ref False;
 value dollar_for_antiquotation = ref True;
 value specific_space_dot = ref False;
 
-value force_antiquot = ref False;
+value force_antiquot_loc = ref False;
 
 (* The string buffering machinery *)
 
@@ -213,9 +213,23 @@ value rec antiquot ctx bp =
   | -> err ctx (bp, $pos) "antiquotation not terminated" ]
 ;
 
+value antiloc bp ep s = ("ANTIQUOT_LOC", Printf.sprintf "%d,%d:%s" bp ep s);
+
+value rec antiquot_loc ctx bp =
+  lexer
+  [ "$"/ -> antiloc bp $pos (":" ^ $buf)
+  | "a..zA..Z0..9_" (antiquot_loc ctx bp)!
+  | ":" (antiquot_rest ctx bp)! -> antiloc bp $pos $buf
+  | "\\"/ (any ctx) (antiquot_rest ctx bp)! -> antiloc bp $pos (":" ^ $buf)
+  | (any ctx) (antiquot_rest ctx bp)! -> antiloc bp $pos (":" ^ $buf)
+  | -> err ctx (bp, $pos) "antiquotation not terminated" ]
+;
+
 value dollar ctx bp buf strm =
-  if ctx.dollar_for_antiquotation || force_antiquot.val then
+  if ctx.dollar_for_antiquotation then
     antiquot ctx bp buf strm
+  else if force_antiquot_loc.val then
+    antiquot_loc ctx bp buf strm
   else
     match strm with lexer
     [ [ -> $add "$" ] ident2! -> ("", $buf) ]
@@ -474,7 +488,7 @@ value using_token kwd_table ident_table (p_con, p_prm) =
   | "TILDEIDENT" | "TILDEIDENTCOLON" | "QUESTIONIDENT" |
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
     "CHAR" | "STRING" | "QUOTATION" |
-    "ANTIQUOT" | "EOI" ->
+    "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
       ()
   | _ ->
       raise

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.28 2007/09/02 20:59:49 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.29 2007/09/03 09:49:06 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -26,7 +26,7 @@ value call_with r v f a =
 
 value eval_anti entry loc typ str =
   let r =
-    call_with Plexer.force_antiquot False
+    call_with Plexer.force_antiquot_loc False
       (Grammar.Entry.parse entry) (Stream.of_string str)
   in
   let loc =
@@ -85,6 +85,20 @@ module Meta =
        | Some e -> <:expr< Some $elem e$ >> ]
     ;
     value e_bool b = if b then <:expr< True >> else <:expr< False >>;
+    value e_string s =
+      match get_anti s with
+      [ Some (loc, typ, str) ->
+          let (loc, r) = eval_anti expr_eoi loc typ str in
+          <:expr< $anti:r$ >>
+      | None -> <:expr< $str:s$ >> ]
+    ;
+    value p_string s =
+      match get_anti s with
+      [ Some (loc, typ, str) ->
+          let (loc, r) = eval_anti patt_eoi loc typ str in
+          <:patt< $anti:r$ >>
+      | None -> <:patt< $str:s$ >> ]
+    ;
     value e_ctyp t = 
 (*
       let ln = ln () in
@@ -143,19 +157,19 @@ module Meta =
             | PaAli _ p1 p2 -> <:expr< MLast.PaAli $ln$ $loop p1$ $loop p2$ >>
             | PaAny _ -> <:expr< MLast.PaAny $ln$ >>
             | PaApp _ p1 p2 -> <:expr< MLast.PaApp $ln$ $loop p1$ $loop p2$ >>
-            | PaChr _ s -> <:expr< MLast.PaChr $ln$ $str:s$ >>
+            | PaChr _ s -> <:expr< MLast.PaChr $ln$ $e_string s$ >>
 (*
             | PaInt _ s k -> <:expr< MLast.PaInt $ln$ $e_string s$ $str:k$ >>
             | PaFlo _ s -> <:expr< MLast.PaFlo $ln$ $e_string s$ >>
 *)
-            | PaLid _ s -> <:expr< MLast.PaLid $ln$ $str:s$ >>
+            | PaLid _ s -> <:expr< MLast.PaLid $ln$ $e_string s$ >>
             | PaOrp _ p1 p2 -> <:expr< MLast.PaOrp $ln$ $loop p1$ $loop p2$ >>
             | PaRng _ p1 p2 -> <:expr< MLast.PaRng $ln$ $loop p1$ $loop p2$ >>
-            | PaStr _ s -> <:expr< MLast.PaStr $ln$ $str:s$ >>
+            | PaStr _ s -> <:expr< MLast.PaStr $ln$ $e_string s$ >>
 (*
             | PaTyc _ p t -> <:expr< MLast.PaTyc $ln$ $loop p$ $e_ctyp t$ >>
 *)
-            | PaUid _ s -> <:expr< MLast.PaUid $ln$ $str:s$ >>
+            | PaUid _ s -> <:expr< MLast.PaUid $ln$ $e_string s$ >>
             | x -> not_impl "e_patt" x ] ]
     ;
     value p_patt =
@@ -204,7 +218,7 @@ module Meta =
             | ExIfe _ e1 e2 e3 ->
                 <:expr< MLast.ExIfe $ln$ $loop e1$ $loop e2$ $loop e3$ >>
 *)
-            | ExInt _ s k -> <:expr< MLast.ExInt $ln$ $str:s$ $str:k$ >>
+            | ExInt _ s k -> <:expr< MLast.ExInt $ln$ $e_string s$ $str:k$ >>
 (*
             | ExFlo _ s -> <:expr< MLast.ExFlo $ln$ $e_string s$ >>
 *)
@@ -222,7 +236,7 @@ module Meta =
                   e_list (fun (p, e) -> <:expr< ($e_patt p$, $loop e$) >>) lpe
                 in
                 <:expr< MLast.ExLet $ln$ $rf$ $lpe$ $loop e$ >>
-            | ExLid _ s -> <:expr< MLast.ExLid $ln$ $str:s$ >>
+            | ExLid _ s -> <:expr< MLast.ExLid $ln$ $e_string s$ >>
 (*
             | ExMat _ e pwel ->
                 let pwel =
@@ -235,14 +249,14 @@ module Meta =
             | ExSeq _ el ->
                 <:expr< MLast.ExSeq $ln$ $e_list loop el$ >>
 *)
-            | ExStr _ s -> <:expr< MLast.ExStr $ln$ $str:s$ >>
+            | ExStr _ s -> <:expr< MLast.ExStr $ln$ $e_string s$ >>
             | ExTup _ [e :: el] ->
                 let el = <:expr< [$loop e$ :: $e_list loop el$] >> in
                 <:expr< MLast.ExTup $ln$ $el$ >>
 (*
             | ExTyc _ e t -> <:expr< MLast.ExTyc $ln$ $loop e$ $e_ctyp t$ >>
 *)
-            | ExUid _ s -> <:expr< MLast.ExUid $ln$ $str:s$ >>
+            | ExUid _ s -> <:expr< MLast.ExUid $ln$ $e_string s$ >>
             | x -> not_impl "e_expr" x ] ]
     ;
     value p_expr e =
@@ -273,9 +287,9 @@ module Meta =
                   p_list_p (fun (p, e) -> <:patt< ($p_patt p$, $loop e$) >>) lpe
                 in
                 <:patt< MLast.ExLet _ $rf$ $lpe$ $loop e$ >>
-            | ExLid _ s -> <:patt< MLast.ExLid _ $p_string s$ >>
 *)
-            | ExUid _ s -> <:patt< MLast.ExUid _ $str:s$ >>
+            | ExLid _ s -> <:patt< MLast.ExLid _ $p_string s$ >>
+            | ExUid _ s -> <:patt< MLast.ExUid _ $p_string s$ >>
             | x -> not_impl "p_expr" x ] ]
     ;
     value e_sig_item =
@@ -373,22 +387,12 @@ EXTEND
   str_item_eoi: [ [ x = Pcaml.str_item; EOI -> x ] ];
   module_expr_eoi: [ [ x = Pcaml.module_expr; EOI -> x ] ];
   Pcaml.expr: LAST
-    [ [ s = ANTIQUOT "" -> make_anti loc "" s
-      | s = ANTIQUOT "anti" -> make_anti loc "anti" s
-      | s = ANTIQUOT "chr" -> make_anti loc "chr" s
-      | s = ANTIQUOT "int" -> make_anti loc "int" s
-      | s = ANTIQUOT "lid" -> make_anti loc "lid" s
-      | s = ANTIQUOT "str" -> make_anti loc "str" s
-      | s = ANTIQUOT "uid" -> make_anti loc "uid" s ] ]
+    [ [ s = ANTIQUOT_LOC "" -> make_anti loc "" s
+      | s = ANTIQUOT_LOC "anti" -> make_anti loc "anti" s ] ]
   ;
   Pcaml.patt: LAST
-    [ [ s = ANTIQUOT "" -> make_anti loc "" s
-      | s = ANTIQUOT "anti" -> make_anti loc "anti" s
-      | s = ANTIQUOT "chr" -> make_anti loc "chr" s
-      | s = ANTIQUOT "int" -> make_anti loc "int" s
-      | s = ANTIQUOT "lid" -> make_anti loc "lid" s
-      | s = ANTIQUOT "str" -> make_anti loc "str" s
-      | s = ANTIQUOT "uid" -> make_anti loc "uid" s ] ]
+    [ [ s = ANTIQUOT_LOC -> make_anti loc "" s
+      | s = ANTIQUOT_LOC "anti" -> make_anti loc "anti" s ] ]
   ;
   ipatt: LAST
     [ [ s = ANTIQUOT "lid" -> make_anti loc "lid" s ] ]
@@ -419,6 +423,14 @@ EXTEND
   ;
 END;
 
+value check_anti s kind =
+  if String.length s > String.length kind then
+    if String.sub s 0 (String.length kind + 1) = kind ^ ":" then s
+    else raise Stream.Failure
+  else raise Stream.Failure
+;
+*)
+
 value check_anti_loc s kind =
   try
     let i = String.index s ':' in
@@ -432,57 +444,69 @@ value check_anti_loc s kind =
           | _ -> (i, 0) ]
     in
     if String.sub s (i + 1) len = kind then
-      sprintf "%s:%d:%s" (String.sub s 0 i) (j - i)
-        (String.sub s (j + 1) (String.length s - j - 1))
+      let loc =
+        let k = String.index s ',' in
+        let bp = int_of_string (String.sub s 0 k) in
+        let ep = int_of_string (String.sub s (k + 1) (i - k - 1)) in
+        Ploc.make_unlined (bp, ep)
+      in
+      (loc, String.sub s (j + 1) (String.length s - j - 1))
     else raise Stream.Failure
   with
-  [ Not_found -> raise Stream.Failure ]
-;
-
-value check_anti s kind =
-  if String.length s > String.length kind then
-    if String.sub s 0 (String.length kind + 1) = kind ^ ":" then s
-    else raise Stream.Failure
-  else raise Stream.Failure
+  [ Not_found | Failure _ -> raise Stream.Failure ]
 ;
 
 let lex = Grammar.glexer Pcaml.gram in
 let tok_match = lex.Plexing.tok_match in
 lex.Plexing.tok_match :=
   fun
-  [ (*("ANTIQUOT_LOC", "") ->
+  [("ANTIQUOT_LOC", p_prm) ->
       fun
-      [ ("ANTIQUOT_LOC", prm) -> check_anti_loc prm ""
-      | _ -> raise Stream.Failure ]
-  | ("ANTIQUOT_LOC", p_prm) ->
-      fun
-      [ ("ANTIQUOT_LOC", prm) -> check_anti_loc prm p_prm
+      [ ("ANTIQUOT_LOC", prm) -> snd (check_anti_loc prm p_prm)
       | _ -> raise Stream.Failure ]
   | ("INT", "") ->
       fun
       [ ("INT", prm) -> prm
-      | ("ANTIQUOT_LOC", prm) -> check_anti_loc prm "a_int"
+      | ("ANTIQUOT_LOC", prm) ->
+          let (loc, str) = check_anti_loc prm "int" in
+          make_anti loc "int" str
       | _ -> raise Stream.Failure ]
   | ("FLOAT", "") ->
       fun
       [ ("FLOAT", prm) -> prm
-      | ("ANTIQUOT_LOC", prm) -> check_anti_loc prm "a_flo"
+      | ("ANTIQUOT_LOC", prm) ->
+          let (loc, str) = check_anti_loc prm "flo" in
+          make_anti loc "flo" str
       | _ -> raise Stream.Failure ]
   | ("LIDENT", "") ->
       fun
       [ ("LIDENT", prm) -> prm
-      | ("ANTIQUOT_LOC", prm) -> check_anti_loc prm "a_lid"
+      | ("ANTIQUOT_LOC", prm) ->
+          let (loc, str) = check_anti_loc prm "lid" in
+          make_anti loc "lid" str
       | _ -> raise Stream.Failure ]
   | ("UIDENT", "") ->
       fun
       [ ("UIDENT", prm) -> prm
-      | ("ANTIQUOT_LOC", prm) -> check_anti_loc prm "a_uid"
+      | ("ANTIQUOT_LOC", prm) ->
+          let (loc, str) = check_anti_loc prm "uid" in
+          make_anti loc "uid" str
       | _ -> raise Stream.Failure ]
   | ("STRING", "") ->
       fun
       [ ("STRING", prm) -> prm
-      | ("ANTIQUOT_LOC", prm) -> check_anti_loc prm "a_str"
+      | ("ANTIQUOT_LOC", prm) ->
+          let (loc, str) = check_anti_loc prm "str" in
+          make_anti loc "str" str
       | _ -> raise Stream.Failure ]
+  | ("CHAR", "") ->
+      fun
+      [ ("CHAR", prm) -> prm
+      | ("ANTIQUOT_LOC", prm) ->
+          let (loc, str) = check_anti_loc prm "chr" in
+          make_anti loc "chr" str
+      | _ -> raise Stream.Failure ]
+(*
   | ("LIST", "") ->
       fun
       [ ("ANTIQUOT_LOC", prm) -> check_anti_loc prm "a_list"
@@ -503,11 +527,9 @@ lex.Plexing.tok_match :=
 Grammar.iter_entry Grammar.reinit_entry_functions
   (Grammar.Entry.obj Pcaml.expr);
 
-*)
-
 value apply_entry e me mp =
   let f s =
-    call_with Plexer.force_antiquot True
+    call_with Plexer.force_antiquot_loc True
       (Grammar.Entry.parse e) (Stream.of_string s)
   in
   let expr s = me (f s) in

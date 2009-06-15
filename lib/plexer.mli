@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.mli,v 1.14 2007/09/02 20:59:49 deraugla Exp $ *)
+(* $Id: plexer.mli,v 1.15 2007/09/03 09:49:06 deraugla Exp $ *)
 
 (** This module contains the lexer used for ocaml syntax (revised and
     normal). *)
@@ -83,4 +83,4 @@ value no_quotations : ref bool;
 
 (*** For system use *)
 
-value force_antiquot : ref bool;
+value force_antiquot_loc : ref bool;
