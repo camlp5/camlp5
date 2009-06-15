@@ -180,6 +180,8 @@ MLast.StDir (loc, Ploc.VaVal s, Ploc.VaVal oe);;
 MLast.StDir (loc, s, oe);;
 <:str_item< exception $s$ of $list:lt$ >>;;
 <:str_item< exception $_:s$ of $_list:lt$ >>;;
+<:str_item< exception $s$ = $list:ls$ >>;;
+<:str_item< exception $_:s$ = $_list:ls$ >>;;
 <:str_item< exception $s$ of $list:lt$ = $list:ls$ >>;;
 <:str_item< exception $_:s$ of $_list:lt$ = $_list:ls$ >>;;
 <:str_item< $exp:e$ >>;;

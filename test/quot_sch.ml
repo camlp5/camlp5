@@ -178,12 +178,14 @@
 <:str_item< (# $_lid:s$ $e$) >>
 (MLast.StDir loc (Ploc.VaVal s) (Ploc.VaVal oe))
 (MLast.StDir loc s oe)
-<:str_item< (exception $s$ $list:lt$) >>
-<:str_item< (exception $_:s$ $_list:lt$) >>
-; <:str_item< exception $s$ of $list:lt$ = $list:ls$ >>
-; <:str_item< exception $_:s$ of $_list:lt$ = $_list:ls$ >>
-; <:str_item< $exp:e$ >>
-; <:str_item< external $s$ : $t$ = $list:ls$ >>
+<:str_item< (exception $uid:s$ $list:lt$) >>
+<:str_item< (exception $_uid:s$ $_list:lt$) >>
+<:str_item< (exceptionrebind $uid:s$ $list:ls$) >>
+<:str_item< (exceptionrebind $_uid:s$ $_list:ls$) >>
+(MLast.StExc loc (Ploc.VaVal s) (Ploc.VaVal lt) (Ploc.VaVal ls))
+(MLast.StExc loc s lt ls)
+<:str_item< $exp:e$ >>
+<:str_item< (external $s$ $t$ $list:ls$) >>
 ; <:str_item< external $_:s$ : $t$ = $_list:ls$ >>
 ; <:str_item< include $me$ >>
 ; <:str_item< module $flag:b$ $list:lsme$ >>

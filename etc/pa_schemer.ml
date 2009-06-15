@@ -502,7 +502,7 @@ and str_item_se se =
         [ Suid _ c ->
             let s = rename_id c in
             <:vala< s >>
-        | Santi _ ("" | "_") s -> <:vala< $s$ >>
+        | Suidv _ s -> s
         | se -> error se "uident" ]
       in
       let tl =
@@ -511,10 +511,19 @@ and str_item_se se =
         | _ -> <:vala< (List.map ctyp_se sel) >> ]
       in
       <:str_item< exception $_:c$ of $_list:tl$ >>
-  | Sexpr loc [Slid _ "exceptionrebind"; Suid _ c; se] ->
-      let c = rename_id c in
-      let id = mod_ident_se se in
-      <:str_item< exception $uid:c$ = $id$ >>
+  | Sexpr loc [Slid _ "exceptionrebind"; se1; se2] ->
+      let c =
+        match se1 with
+        [ Suid _ c -> <:vala< (rename_id c) >>
+        | Suidv _ s -> s
+        | se -> error se "uident" ]
+      in
+      let id =
+        match se2 with
+        [ Santi _ ("list" | "_list") s -> <:vala< $s$ >>
+        | _ -> <:vala< (mod_ident_se se2) >> ]
+      in
+      <:str_item< exception $_uid:c$ = $_:id$ >>
   | Sexpr loc [Slid _ ("define" | "definerec" as r); se :: sel] ->
       let r = r = "definerec" in
       let (p, e) = fun_binding_se se (begin_se loc sel) in

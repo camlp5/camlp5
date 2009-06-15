@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.59 2007/10/08 16:35:12 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.60 2007/10/08 17:38:47 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -476,17 +476,25 @@
        ((c
          (match se
           ((Suid _ c) (let ((s (rename_id c))) <:vala< s >>))
-          ((Santi _ (or "" "_") s) <:vala< $s$ >>)
+          ((Suidv _ s) s)
           (se (error se "uident"))))
         (tl
          (match sel
           ([(Santi _ (or "list" "_list") s)] <:vala< $s$ >>)
           (_ <:vala< (List.map ctyp_se sel) >>))))
         <:str_item< exception $_:c$ of $_list:tl$ >>))
-     ((Sexpr loc [(Slid _ "exceptionrebind") (Suid _ c) se])
-      (let* ((c (rename_id c))
-             (id (mod_ident_se se)))
-         <:str_item< exception $uid:c$ = $id$ >>))
+     ((Sexpr loc [(Slid _ "exceptionrebind") se1 se2])
+      (let*
+       ((c
+         (match se1
+          ((Suid _ c) <:vala< (rename_id c) >>)
+          ((Suidv _ s) s)
+          (se (error se "uident"))))
+        (id
+         (match se2
+          ((Santi _ (or "list" "_list") s) <:vala< $s$ >>)
+          (_ <:vala< (mod_ident_se se2) >>))))
+         <:str_item< exception $_uid:c$ = $_:id$ >>))
      ((Sexpr loc [(Slid _ (as (or "define" "definerec") r)) se . sel])
       (let* ((r (= r "definerec"))
              ((values p e) (fun_binding_se se (begin_se loc sel))))

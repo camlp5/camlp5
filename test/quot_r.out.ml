@@ -180,6 +180,8 @@ MLast.StDir loc (Ploc.VaVal s) (Ploc.VaVal oe);
 MLast.StDir loc s oe;
 MLast.StExc loc (Ploc.VaVal s) (Ploc.VaVal lt) (Ploc.VaVal []);
 MLast.StExc loc s lt (Ploc.VaVal []);
+MLast.StExc loc (Ploc.VaVal s) (Ploc.VaVal []) (Ploc.VaVal ls);
+MLast.StExc loc s (Ploc.VaVal []) ls;
 MLast.StExc loc (Ploc.VaVal s) (Ploc.VaVal lt) (Ploc.VaVal ls);
 MLast.StExc loc s lt ls;
 MLast.StExp loc e;
