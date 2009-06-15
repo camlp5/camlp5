@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.59 2007/12/28 09:35:46 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.60 2007/12/28 10:05:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -328,7 +328,7 @@ value class_descr b pc cd =
          let list =
            [(fun pc ->
                match Pcaml.unvala (snd cd.MLast.ciPrm) with
-               [ [] -> sprintf "%s%s%s" pc.bef n pc.aft
+               [ [] -> pprintf pc "%s" n
                | tvl ->
                    plistb type_param 0 (paren pc n)
                      (List.map (fun tv -> (tv, "")) tvl) ],
@@ -337,12 +337,11 @@ value class_descr b pc cd =
          in
          let list =
            if Pcaml.unvala cd.MLast.ciVir then
-             [(fun pc -> sprintf "%svirtual%s" pc.bef pc.aft, "") ::
-              list]
+             [(fun pc -> pprintf pc "virtual", "") :: list]
            else list
          in
          if b = "" then list
-         else [(fun pc -> sprintf "%s%s%s" pc.bef b pc.aft, "") :: list]
+         else [(fun pc -> pprintf pc "%s" b, "") :: list]
        in
        plistf 0 (paren pc "") list)
 ;
