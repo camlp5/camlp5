@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.29 2007/07/16 19:35:43 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.30 2007/07/16 20:28:47 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -561,7 +561,7 @@ Stream.t char -> (Stream.t t * location_function)
 <h3>Using and removing tokens</h3>
 
 <p>Two extra functions, of type "<tt>Token.pattern -> unit</tt>" have
-  to be written, named <em>using</em> and <em>removing</em>
+  to be written: the <em>using</em> and <em>removing</em>
   functions.</p>
 
 <p>If you don't want to busy about them, is is acceptable, as a first
@@ -580,7 +580,7 @@ sources):</p>
 "external"; i = LIDENT; ":"; t = ctyp; "="; sl = LIST1 STRING
 </pre>
 
-<p>is written like this:</p>
+<p>is written, by error, like this:</p>
 
 <pre>
 "external"; i = LODENT; ":"; t = ctyp; "="; sl = LIST1 STRANG
@@ -588,10 +588,8 @@ sources):</p>
 
 <p>and if the "using" function does nothing, there is no check that
   LIDENT has been mispelled as LODENT, nor that STRING have been
-  mispelled as STRANG. In this case, the rule will never work.</p>
-
-<p>This problem of risk of mispelling tokens could also be checked by
-  the "match" function (see the section about this function).</p>
+  mispelled as STRANG. In this case, the rule will never work, but
+  nothing would have told you.</p>
 
 <p>The check is done while running the EXTEND statement. The system
   scans all rules, and calls the "using" function with all token and
@@ -615,6 +613,9 @@ answer:</p>
   <li>or raise the exception "<tt>Token.Error</tt>" with an error
     message to make the EXTEND statement fail.</li>
 </ul>
+
+<p>This problem of risk of mispelling tokens could also be checked by
+  the "match" function (see the section about this function).</p>
 
 <p>The "removing" function is called in case of the DELETE_RULE
   statement, for all token patterns found in the rule. It allows, for

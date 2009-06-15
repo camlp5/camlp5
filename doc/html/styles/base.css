@@ -1,4 +1,4 @@
-/* $Id: base.css,v 1.16 2007/07/16 19:35:43 deraugla Exp $ */
+/* $Id: base.css,v 1.17 2007/07/16 20:28:47 deraugla Exp $ */
 
 body { margin: 0 0 1px 0; background-color: rgb(189,225,255) }
 
@@ -10,6 +10,7 @@ body { margin: 0 0 1px 0; background-color: rgb(189,225,255) }
 
 #tableofcontents
   { border: 1px solid; display: table; padding-right: 5mm; margin: auto }
+#tableofcontents li { margin-left: 2mm }
 
 body { border: 0 }
 #menu { border-top: 1px solid; border-left: 1px solid }
@@ -36,7 +37,7 @@ h4:before {
 
 p { text-align: justify; margin: 1em 1cm }
 
-#menu li { margin-left: 1cm }
+li { margin-left: 1cm }
 
 pre {
   border-left: silver solid 3px; margin-bottom: 1.5em; margin-left: 1.5cm;
