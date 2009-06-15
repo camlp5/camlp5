@@ -31,5 +31,3 @@ quotation.cmi: mLast.cmi
 reloc.cmo: mLast.cmi reloc.cmi 
 reloc.cmx: mLast.cmi reloc.cmi 
 reloc.cmi: mLast.cmi 
-spretty.cmo: spretty.cmi 
-spretty.cmx: spretty.cmi 

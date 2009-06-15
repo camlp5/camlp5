@@ -8,8 +8,6 @@ pa_fstream.cmo: ../main/mLast.cmi ../main/pcaml.cmi
 pa_fstream.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
 pa_lefteval.cmo: ../main/mLast.cmi ../main/pcaml.cmi 
 pa_lefteval.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
-pa_lisp.cmo: ../main/mLast.cmi ../main/pcaml.cmi 
-pa_lisp.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
 pa_lispr.cmo: ../main/mLast.cmi ../main/pcaml.cmi 
 pa_lispr.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
 pa_o.cmo: ../main/mLast.cmi ../main/pcaml.cmi 
@@ -18,8 +16,6 @@ pa_oop.cmo: ../main/mLast.cmi ../main/pcaml.cmi
 pa_oop.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
 pa_op.cmo: ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi 
 pa_op.cmx: ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx 
-pa_scheme.cmo: ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi 
-pa_scheme.cmx: ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx 
 pa_schemer.cmo: ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi 
 pa_schemer.cmx: ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx 
 pa_sml.cmo: ../main/mLast.cmi ../main/pcaml.cmi 

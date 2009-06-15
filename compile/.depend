@@ -1,4 +1,2 @@
 compile.cmo: ../main/mLast.cmi ../main/pcaml.cmi 
 compile.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
-pa_o_fast.cmo: ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi 
-pa_o_fast.cmx: ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx 
