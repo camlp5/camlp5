@@ -1,11 +1,11 @@
 Version 4.0
 
-  Once this version of Camlp4 installed, if your files do not compile, it
+  Once this version of camlp5 installed, if your files do not compile, it
   be due to the new type 'location' which is now abstract. In particular,
   you can see it as first parameter of the exception 'Exc_located' raised
   by the function 'Stdpp.raise_with_loc'. If you handled that exception
   and looked at the 'location' by considering it is a couple of source
-  positions ('int' or 'Lexing.position' depending on the version of camlp4
+  positions ('int' or 'Lexing.position' depending on the version of camlp5
   you had before), it does not work any more.
 
     Look at the functions defined in 'stdpp.mli'.
@@ -16,13 +16,13 @@ Version 4.0
   also get the line number by the function 'Stdpp.line_nb'. Consider also
   using the function 'Stdpp.encl_loc'. See the other functions.
 
-    With this version of camlp4, when loading 'pa_macro.cmo', you get the
+    With this version of camlp5, when loading 'pa_macro.cmo', you get the
   identifier 'CAMLP4S' defined. If you want to make your sources compatible
-  with several versions of camlp4, you can add, in <expressions>, <patterns>,
+  with several versions of camlp5, you can add, in <expressions>, <patterns>,
   or toplevel definition (<structure items>), things like :
 
       IFDEF CAMLP4S THEN
-        <source compatible with this version of camlp4>
+        <source compatible with this version of camlp5>
       ELSE
-        <source compatible with other versions of camlp4>
+        <source compatible with other versions of camlp5>
       END

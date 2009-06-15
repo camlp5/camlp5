@@ -1,13 +1,12 @@
 OVERVIEW
 
-  This is an alternative version of camlp4 developped and distributed
-  independently of the ocaml compiler.
+  Camlp5 is a preprocessor-pretty-printer of ocaml.
 
   It is compatible with the following versions of ocaml:
     3.08.1, 3.08.2, 3.08.3, 3.08.4, 3.09.0, 3.09.1, 3.09.2, 3.09.3, 3.10,
     3.10.0, 3.11.
 
-  This camlp4 version is 4.04-exp.
+  This camlp5 version is 4.04-exp.
 
 INSTALL
 
@@ -16,12 +15,12 @@ INSTALL
 DEVELOPPERS
 
   The file DEVEL gives information for people who want to make changes
-  in camlp4, or who are just curious of how it is implemented.
+  in camlp5, or who are just curious of how it is implemented.
 
 PROBLEMS
 
   If you have problems to compile your source files with this version of
-  camlp4, the reason can be that there the new type 'location' is now
+  camlp5, the reason can be that there the new type 'location' is now
   abstract. Consider looking at the file UPGRADING.
 
 AUTHOR

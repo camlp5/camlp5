@@ -1,18 +1,18 @@
-# $Id: Makefile,v 1.10 2007/07/10 14:09:06 deraugla Exp $
+# $Id: Makefile,v 1.11 2007/07/11 09:46:18 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
 
-INCLUDES=-I ../camlp4 -I ../boot -I $(OTOP)/utils -I $(OTOP)/parsing -I $(OTOP)/typing -I $(OTOP)/toplevel
+INCLUDES=-I ../main -I ../boot -I $(OTOP)/utils -I $(OTOP)/parsing -I $(OTOP)/typing -I $(OTOP)/toplevel
 OCAMLCFLAGS=-warn-error A $(INCLUDES)
 
-CAMLP4_OBJS=$(OTOP)/utils/pconfig.cmo ../boot/stdpp.cmo ../boot/token.cmo ../boot/plexer.cmo ../boot/gramext.cmo ../boot/grammar.cmo ../boot/extfold.cmo ../boot/extfun.cmo ../boot/fstream.cmo ../camlp4/quotation.cmo ../camlp4/ast2pt.cmo ../camlp4/reloc.cmo ../camlp4/exparser.cmo ../camlp4/spretty.cmo ../camlp4/pcaml.cmo
+CAMLP4_OBJS=$(OTOP)/utils/pconfig.cmo ../boot/stdpp.cmo ../boot/token.cmo ../boot/plexer.cmo ../boot/gramext.cmo ../boot/grammar.cmo ../boot/extfold.cmo ../boot/extfun.cmo ../boot/fstream.cmo ../main/quotation.cmo ../main/ast2pt.cmo ../main/reloc.cmo ../main/exparser.cmo ../main/spretty.cmo ../main/pcaml.cmo
 CTOP=camlp4_top.cmo
 ROBJS=$(CAMLP4_OBJS) ../meta/pa_r.cmo ../meta/pa_rp.cmo rprint.cmo $(CTOP)
 OOBJS=$(CAMLP4_OBJS) ../etc/pa_o.cmo ../etc/pa_op.cmo $(CTOP)
 SOBJS=$(CAMLP4_OBJS) ../etc/pa_scheme.cmo $(CTOP)
 OOOBJS=$(CAMLP4_OBJS) ../etc/pa_o.cmo ../etc/pa_oop.cmo $(CTOP)
-OBJS=$(OTOP)/utils/pconfig.cmo ../camlp4/quotation.cmo ../camlp4/reloc.cmo ../camlp4/ast2pt.cmo ../camlp4/spretty.cmo ../camlp4/pcaml.cmo camlp4_top.cmo
+OBJS=$(OTOP)/utils/pconfig.cmo ../main/quotation.cmo ../main/reloc.cmo ../main/ast2pt.cmo ../main/spretty.cmo ../main/pcaml.cmo camlp4_top.cmo
 
 TARGET=$(NAME)o.cma $(NAME)r.cma $(NAME)sch.cma $(NAME)_top.cma
 
@@ -40,7 +40,7 @@ depend:
 	cp .depend .depend.bak
 	> .depend
 	@export LC_ALL=C; for i in $$(ls *.mli *.ml); do \
-	  ../tools/depend.sh $(INCLUDES) $$i | \
+	  NAME=$(NAME) ../tools/depend.sh $(INCLUDES) $$i | \
 	  sed -e 's| $(OTOP)| $$(OTOP)|g' >> .depend; \
 	done
 

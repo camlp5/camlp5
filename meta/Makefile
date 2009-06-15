@@ -1,9 +1,9 @@
-# $Id: Makefile,v 1.7 2007/07/11 03:13:56 deraugla Exp $
+# $Id: Makefile,v 1.8 2007/07/11 09:46:18 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
 
-INCLUDES=-I ../camlp4 -I $(TOP)/boot -I $(OTOP)/utils
+INCLUDES=-I ../main -I $(TOP)/boot -I $(OTOP)/utils
 OCAMLCFLAGS=-warn-error A $(INCLUDES)
 OBJS=q_MLast.cmo pa_r.cmo pa_rp.cmo pa_extend.cmo pa_extend_m.cmo pa_macro.cmo pr_dump.cmo pa_lex.cmo
 CAMLP4RM=pa_r.cmo pa_rp.cmo pr_dump.cmo
@@ -15,13 +15,13 @@ COPT=$(NAME)r.opt
 all: $(COUT)
 opt: $(COPT)
 
-$(NAME)r$(EXE): ../camlp4/$(NAME)$(EXE) $(CAMLP4RM)
+$(NAME)r$(EXE): ../main/$(NAME)$(EXE) $(CAMLP4RM)
 	rm -f $(NAME)r$(EXE)
-	cd ../camlp4; $(MAKE) OTOP=$(OTOP) CAMLP4=../meta/$(NAME)r$(EXE) CAMLP4M="-I ../meta $(CAMLP4RM)"
+	cd ../main; $(MAKE) OTOP=$(OTOP) CAMLP4=../meta/$(NAME)r$(EXE) CAMLP4M="-I ../meta $(CAMLP4RM)"
 
 $(NAME)r.opt: $(CAMLP4RMX)
 	rm -f $(NAME)r.opt
-	cd ../camlp4; $(MAKE) optp4 OTOP=$(OTOP) CAMLP4OPT=../meta/$(NAME)r.opt CAMLP4M="-I ../meta $(CAMLP4RMX)"
+	cd ../main; $(MAKE) optp4 OTOP=$(OTOP) CAMLP4OPT=../meta/$(NAME)r.opt CAMLP4M="-I ../meta $(CAMLP4RMX)"
 
 clean::
 	rm -f *.cm* *.pp[io] *.o *.bak .*.bak $(COUT) $(COPT)
@@ -30,7 +30,7 @@ depend:
 	cp .depend .depend.bak
 	> .depend
 	@export LC_ALL=C; for i in $$(ls *.ml); do \
-	  ../tools/depend.sh $(INCLUDES) $$i | \
+	  NAME=$(NAME) ../tools/depend.sh $(INCLUDES) $$i | \
 	  sed -e 's| $(OTOP)| $$(OTOP)|g' >> .depend; \
 	done
 

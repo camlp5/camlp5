@@ -1,8 +1,8 @@
-# $Id: Makefile,v 1.21 2007/07/10 14:40:11 deraugla Exp $
+# $Id: Makefile,v 1.22 2007/07/11 09:46:18 deraugla Exp $
 
 include ../config/Makefile
 
-INCLUDES=-I ../camlp4 -I ../boot
+INCLUDES=-I ../main -I ../boot
 OCAMLCFLAGS=-warn-error A $(INCLUDES)
 OBJS=pa_o.cmo pa_op.cmo pa_oop.cmo pa_sml.cmo pa_lisp.cmo pa_scheme.cmo pa_extfold.cmo pa_extfun.cmo pa_fstream.cmo pa_lefteval.cmo pa_pragma.cmo pr_r.cmo pr_ro.cmo pr_rp.cmo pr_o.cmo pr_op.cmo pr_scheme.cmo pr_schemep.cmo pr_extend.cmo pr_extfun.cmo pr_null.cmo pr_depend.cmo q_phony.cmo
 OLD_OBJS=pr_r_old.cmo pr_rp_old.cmo pr_o_old.cmo pr_op_old.cmo pr_extend_old.cmo pr_extfun_old.cmo
@@ -25,20 +25,20 @@ pr_op_old.cmo: parserify.cmo pr_op_main.cmo
 pr_schemep.cmo: parserify.cmo pr_schp_main.cmo
 	$(OCAMLC) parserify.cmo pr_schp_main.cmo -a -o $@
 
-$(NAME)o$(EXE): ../camlp4/$(NAME)$(EXE) $(CAMLP4OM)
+$(NAME)o$(EXE): ../main/$(NAME)$(EXE) $(CAMLP4OM)
 	rm -f $(NAME)o$(EXE)
-	cd ../camlp4; $(MAKE) CAMLP4=../etc/$(NAME)o$(EXE) CAMLP4M="-I ../etc $(CAMLP4OM)"
+	cd ../main; $(MAKE) CAMLP4=../etc/$(NAME)o$(EXE) CAMLP4M="-I ../etc $(CAMLP4OM)"
 
-$(NAME)sch$(EXE): ../camlp4/$(NAME)$(EXE) $(CAMLP4SCHM)
+$(NAME)sch$(EXE): ../main/$(NAME)$(EXE) $(CAMLP4SCHM)
 	rm -f $(NAME)sch$(EXE)
-	cd ../camlp4; $(MAKE) CAMLP4=../etc/$(NAME)sch$(EXE) CAMLP4M="-I ../etc $(CAMLP4SCHM)"
+	cd ../main; $(MAKE) CAMLP4=../etc/$(NAME)sch$(EXE) CAMLP4M="-I ../etc $(CAMLP4SCHM)"
 
 $(NAME)o.opt: $(CAMLP4OMX)
 	rm -f $(NAME)o.opt
-	cd ../camlp4; $(MAKE) optp4 CAMLP4OPT=../etc/$(NAME)o.opt CAMLP4M="-I ../etc $(CAMLP4OMX)"
+	cd ../main; $(MAKE) optp4 CAMLP4OPT=../etc/$(NAME)o.opt CAMLP4M="-I ../etc $(CAMLP4OMX)"
 
 mk$(NAME).sh: mkcamlp4.sh.tpl
-	sed -e "s!LIBDIR!$(LIBDIR)!g" -e "s/camlp4/$(NAME)/g" mkcamlp4.sh.tpl > mk$(NAME).sh
+	sed -e "s!LIBDIR!$(LIBDIR)!g" -e "s/camlp5/$(NAME)/g" mkcamlp4.sh.tpl > mk$(NAME).sh
 
 bootstrap_scheme:
 	@$(MAKE) bootstrap_l L=scheme | grep -v directory
@@ -66,7 +66,7 @@ depend:
 	cp .depend .depend.bak
 	> .depend
 	@export LC_ALL=C; for i in $$(ls *.mli *.ml); do \
-	  ../tools/depend.sh $(INCLUDES) $$i | \
+	  NAME=$(NAME) ../tools/depend.sh $(INCLUDES) $$i | \
 	  sed -e 's| $(OTOP)| $$(OTOP)|g' >> .depend; \
 	done
 

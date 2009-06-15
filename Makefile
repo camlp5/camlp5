@@ -1,12 +1,12 @@
-# $Id: Makefile,v 1.29 2007/07/11 08:56:53 deraugla Exp $
+# $Id: Makefile,v 1.30 2007/07/11 09:46:18 deraugla Exp $
 
 include config/Makefile
 
-DIRS=odyl camlp4 meta etc top ocpp lib man
-FDIRS=odyl camlp4 meta lib
-OPTDIRS=ocaml_stuff lib odyl camlp4 meta compile
+DIRS=odyl main meta etc top ocpp lib man
+FDIRS=odyl main meta lib
+OPTDIRS=ocaml_stuff lib odyl main meta compile
 SHELL=/bin/sh
-COLD_FILES=ocaml_src/camlp4/argl.ml ocaml_src/camlp4/ast2pt.ml ocaml_src/camlp4/ast2pt.mli ocaml_src/camlp4/mLast.mli ocaml_src/camlp4/pcaml.ml ocaml_src/camlp4/pcaml.mli ocaml_src/camlp4/quotation.ml ocaml_src/camlp4/quotation.mli ocaml_src/camlp4/reloc.ml ocaml_src/camlp4/reloc.mli ocaml_src/camlp4/spretty.ml ocaml_src/camlp4/spretty.mli ocaml_src/lib/extfun.ml ocaml_src/lib/extfun.mli ocaml_src/lib/fstream.ml ocaml_src/lib/fstream.mli ocaml_src/lib/gramext.ml ocaml_src/lib/gramext.mli ocaml_src/lib/grammar.ml ocaml_src/lib/grammar.mli ocaml_src/lib/plexer.ml ocaml_src/lib/plexer.mli ocaml_src/lib/stdpp.ml ocaml_src/lib/stdpp.mli ocaml_src/lib/token.ml ocaml_src/lib/token.mli ocaml_src/meta/pa_extend.ml ocaml_src/meta/pa_extend_m.ml ocaml_src/meta/pa_macro.ml ocaml_src/meta/pa_r.ml ocaml_src/meta/pa_rp.ml ocaml_src/meta/pr_dump.ml ocaml_src/meta/q_MLast.ml ocaml_src/odyl/odyl_main.ml ocaml_src/odyl/odyl_main.mli ocaml_src/odyl/odyl.ml
+COLD_FILES=ocaml_src/main/argl.ml ocaml_src/main/ast2pt.ml ocaml_src/main/ast2pt.mli ocaml_src/main/mLast.mli ocaml_src/main/pcaml.ml ocaml_src/main/pcaml.mli ocaml_src/main/quotation.ml ocaml_src/main/quotation.mli ocaml_src/main/reloc.ml ocaml_src/main/reloc.mli ocaml_src/main/spretty.ml ocaml_src/main/spretty.mli ocaml_src/lib/extfun.ml ocaml_src/lib/extfun.mli ocaml_src/lib/fstream.ml ocaml_src/lib/fstream.mli ocaml_src/lib/gramext.ml ocaml_src/lib/gramext.mli ocaml_src/lib/grammar.ml ocaml_src/lib/grammar.mli ocaml_src/lib/plexer.ml ocaml_src/lib/plexer.mli ocaml_src/lib/stdpp.ml ocaml_src/lib/stdpp.mli ocaml_src/lib/token.ml ocaml_src/lib/token.mli ocaml_src/meta/pa_extend.ml ocaml_src/meta/pa_extend_m.ml ocaml_src/meta/pa_macro.ml ocaml_src/meta/pa_r.ml ocaml_src/meta/pa_rp.ml ocaml_src/meta/pr_dump.ml ocaml_src/meta/q_MLast.ml ocaml_src/odyl/odyl_main.ml ocaml_src/odyl/odyl_main.mli ocaml_src/odyl/odyl.ml
 PR_O=pr_o.cmo
 DIFF_OPT=
 
@@ -22,7 +22,7 @@ opt:
 opt.opt:
 	set -e; for i in $(OPTDIRS); do cd $$i; $(MAKE) opt; cd ..; done
 
-ocaml_src/camlp4/ast2pt.ml:
+ocaml_src/main/ast2pt.ml:
 	@echo "Please run 'configure' first"; exit 2
 
 boot/$(NAME)$(EXE): $(COLD_FILES)
@@ -41,7 +41,7 @@ depend:
 
 install:
 	@test ! -d "$(LIBDIR)/$(NAME)/Camlp4Parsers" || \
-	 (/bin/rm -rf "$(LIBDIR)/ocamlp4"; \
+	 (/bin/rm -rf "$(LIBDIR)/omain"; \
 	  mv "$(LIBDIR)/$(NAME)" "$(LIBDIR)/o$(NAME)")
 	for i in $(DIRS) compile; do (cd $$i; $(MAKE) install); done
 
@@ -215,8 +215,8 @@ compare_sources:
 
 bootstrap_all_ast2pt:
 	cd etc; make $(PR_O)
-	@cd camlp4; \
-	for i in ../ocaml_src/camlp4/ast2pt.ml_*; do \
+	@cd main; \
+	for i in ../ocaml_src/main/ast2pt.ml_*; do \
 	  echo ============================================; \
 	  echo $$i; \
 	  j=$$(echo $$(basename $$i) | \
@@ -229,8 +229,8 @@ bootstrap_all_ast2pt:
 
 compare_all_ast2pt:
 	cd etc; make $(PR_O)
-	@cd camlp4; \
-	for i in ../ocaml_src/camlp4/ast2pt.ml_*; do \
+	@cd main; \
+	for i in ../ocaml_src/main/ast2pt.ml_*; do \
 	  echo ============================================; \
 	  echo $$i; \
 	  j=$$(echo $$(basename $$i) | \
@@ -257,7 +257,7 @@ promote_sources:
 		make mv_svn FROM=ocaml_src/$$i TO=ocaml_src.new/$$i; \
 	done
 	mv ocaml_src/tools ocaml_src.new/.
-	cd ocaml_src; for i in camlp4/ast2pt.ml_*; do \
+	cd ocaml_src; for i in main/ast2pt.ml_*; do \
 	  if [ ! -f ../ocaml_src.new/$$i ]; then \
 	    mv $$i ../ocaml_src.new/$$i; \
 	  fi; \

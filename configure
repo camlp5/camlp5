@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: configure,v 1.16 2007/07/11 08:56:53 deraugla Exp $
+# $Id: configure,v 1.17 2007/07/11 09:46:18 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -77,7 +77,7 @@ fi
 oversion=$(ocamlc -v | head -1 | sed 's/^.*version //')
 OVERSION=$(echo "$oversion" | sed -e 's/[ +].*$//')
 
-if [ -d "ocaml_stuff/$OVERSION" -a -f "ocaml_src/camlp4/ast2pt.ml_$OVERSION" ]
+if [ -d "ocaml_stuff/$OVERSION" -a -f "ocaml_src/main/ast2pt.ml_$OVERSION" ]
 then :
 else
   echo
@@ -157,7 +157,7 @@ cat config/Makefile.tpl > config/Makefile
 echo >> config/Makefile
 cat config/Makefile.cnf >> config/Makefile
 
-cd ocaml_src/camlp4
+cd ocaml_src/main
 cp "ast2pt.ml_$OVERSION" ast2pt.ml
 cd ../..
 

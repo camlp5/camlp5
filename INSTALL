@@ -10,7 +10,7 @@ INSTALL UNDER UNIX
 
     Alternatively, you can decompose the operations into:
        make
-    Then, to make camlp4 check itself:
+    Then, to make camlp5 check itself:
        make bootstrap
     Further, to make the native-code library:
        make opt

@@ -1,6 +1,7 @@
-Camlp4s Version 4.04:
+Camlp5 Version 4.04:
 ---------------------
 
+* [11 Jul 07] Renamed application as "camlp5".
 * [11 Jul 07] Fixed compilation problems with ocaml version 3.08.1.
 
 Camlp4s Version 4.03:

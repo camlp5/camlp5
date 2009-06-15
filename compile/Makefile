@@ -1,9 +1,9 @@
-# $Id: Makefile,v 1.10 2007/07/10 14:09:06 deraugla Exp $
+# $Id: Makefile,v 1.11 2007/07/11 09:46:18 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
 
-INCLUDES=-I ../camlp4 -I ../boot
+INCLUDES=-I ../main -I ../boot
 OCAMLCFLAGS=$(OCAMLC_W_Y) -warn-error A $(INCLUDES)
 SRC=../etc/pa_o.ml ../etc/pa_op.ml
 D=o
@@ -17,11 +17,11 @@ opt: $(NAME)$D.fast.opt
 
 $(NAME)$D.fast: pa_$D_fast.cmo
 	rm -f $(NAME)$D.fast
-	cd ../camlp4; $(MAKE) CAMLP4=../compile/$(NAME)$D.fast CAMLP4M="../compile/pa_$D_fast.cmo ../meta/pr_dump.cmo"
+	cd ../main; $(MAKE) CAMLP4=../compile/$(NAME)$D.fast CAMLP4M="../compile/pa_$D_fast.cmo ../meta/pr_dump.cmo"
 
 $(NAME)$D.fast.opt: pa_$D_fast.cmx
 	rm -f $(NAME)$D.fast.opt
-	cd ../camlp4; $(MAKE) optp4 CAMLP4OPT=../compile/$(NAME)$D.fast.opt CAMLP4M="../compile/pa_$D_fast.cmx ../meta/pr_dump.cmx"
+	cd ../main; $(MAKE) optp4 CAMLP4OPT=../compile/$(NAME)$D.fast.opt CAMLP4M="../compile/pa_$D_fast.cmx ../meta/pr_dump.cmx"
 
 pa_$D_fast.ml: comp_head.ml.tpl $D_fast.ml.tmp comp_trail.ml.tpl
 	cat $(SRC) | sed -e "s/Plexer.gmake ()/P.lexer/" -e "/EXTEND/,/END/d" -e "/Grammar.Entry.of_parser/d" -e "/Grammar.Entry.gcreate/d" -e "/Grammar.Entry.create/d" | cat comp_head.ml.tpl - $D_fast.ml.tmp comp_trail.ml.tpl > pa_$D_fast.ml
@@ -40,7 +40,7 @@ depend:
 	cp .depend .depend.bak
 	> .depend
 	@export LC_ALL=C; for i in *.ml; do \
-	  ../tools/depend.sh $(INCLUDES) $$i | \
+	  NAME=$(NAME) ../tools/depend.sh $(INCLUDES) $$i | \
 	  sed -e 's| $(OTOP)| $$(OTOP)|g' >> .depend; \
 	done
 

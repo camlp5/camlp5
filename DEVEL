@@ -2,16 +2,16 @@ Information for developpers
 
 OVERVIEW
 
-   Although the sources of camlp4 are written in camlp4 syntaxes, the
+   Although the sources of camlp5 are written in camlp5 syntaxes, the
    distribution contain no 'magic' binary file for the first compilation.
 
      This first compilation can be done thanks to a version of the core of
-   camlp4 written in pure ocaml syntax. Once this 'core' is compiled, all
+   camlp5 written in pure ocaml syntax. Once this 'core' is compiled, all
    sources in revised syntax with syntax extensions can be compiled.
 
 COMPATIBILITY
 
-   This distribution of camlp4 is compatible with several versions of
+   This distribution of camlp5 is compatible with several versions of
    ocaml. The problem is about the definition of ocaml syntax trees which
    may change from a version of ocaml to another. Since ocaml does not
    install the sources nor the compiled versions of its syntax tree, a
@@ -19,7 +19,7 @@ COMPATIBILITY
    ocaml compiler has been done in the directory 'ocaml_stuff', in
    subdirectories with the ocaml version number.
 
-     If the present distribution of camlp4 is not compatible with the
+     If the present distribution of camlp5 is not compatible with the
    version of ocaml you have (the command 'configure' tells you), it
    is possible to add it. For that, you need the sources of the ocaml
    distribution you have. Once done, after a 'configure' telling you
@@ -33,22 +33,22 @@ COMPATIBILITY
    are up-to-date (e.g. if this is the current ocaml developpement), do:
        make compare_stolen OCAML_SRC=<path-to-ocaml-sources>
 
-     The compatibility is done also with the file 'camlp4/ast2pt.ml',
-   which is the module converting camlp4 syntax tree into ocaml syntax tree.
+     The compatibility is done also with the file 'main/ast2pt.ml',
+   which is the module converting camlp5 syntax tree into ocaml syntax tree.
 
      In the directory 'ocaml_src' with containt the pure ocaml sources of
-   the camlp4 core (see chapter TREE STRUCTURE below), there are as versions
+   the camlp5 core (see chapter TREE STRUCTURE below), there are as versions
    of this files as version of ocaml. They are named 'ast2pt.ml_<version>'.
    If you are adding a new version of ocaml, you need this file. In a first
    step, make a copy from a close version:
-         cd ocaml_src/camlp4
+         cd ocaml_src/main
          cp ast2pt.ml_<close_version> ast2pt.ml_<version>
 
      Then, you can redo "configure" and do "make core". If the file
-   'ocaml_src/camlp4/ast2pt.ml' has a compilation problems, fix them and
+   'ocaml_src/main/ast2pt.ml' has a compilation problems, fix them and
    to 'make core' again.
 
-     Later, the same file 'camlp4/ast2pt.ml' in camlp4 syntax may have
+     Later, the same file 'main/ast2pt.ml' in camlp5 syntax may have
    similar compilation problem. This file is in one examplary, thanks to
    IFDEF used here or there.
 
@@ -59,26 +59,26 @@ COMPATIBILITY
    7.04.2+dev35, you can see in the compilation process of ast2pt.ml
    that OCAML_7_04_2 is defined, and you can add statements defined
    by the syntax extension 'pa_macro.cmo', for example IFDEF OCAML_7_04_2.
-   Add statements like that in 'camlp4/ast2pt.ml' to make it compile.
+   Add statements like that in 'main/ast2pt.ml' to make it compile.
 
 TREE STRUCTURE
 
    The directory 'ocaml_src' contains images in pure ocaml syntax of the
-   directories odyl lib camlp4 and meta. This allow to create a core version
-   of camlp4 from only the ocaml compiler installed.
+   directories odyl lib main and meta. This allow to create a core version
+   of camlp5 from only the ocaml compiler installed.
 
-     You can decompose the building of the camlp4 core into:
+     You can decompose the building of the camlp5 core into:
        1. make library_cold
             just makes the directory 'ocaml_src/lib' and copy the cmo and cmi
             files into the directory 'boot'
        2. make compile_cold
             makes the other directories of ocaml_src
        3. make promote_cold
-            copies the executables "camlp4", "camlp4r" and the syntax
+            copies the executables "camlp5", "camlp5r" and the syntax
             extensions (cmo files) into the directory 'boot'
 
-     From that point, the core camlp4 is in directory 'boot'. The real
-   sources in the top directories odyl lib camlp4 and meta, which are
+     From that point, the core camlp5 is in directory 'boot'. The real
+   sources in the top directories odyl lib main and meta, which are
    written in revised syntax with some syntax extensions (grammars,
    quotations) can be compiled. To achieve their compilation, you can
    do:
@@ -159,12 +159,12 @@ BEFORE COMMITTING YOUR CHANGES
        make promote_sources
        make clean_sources
 
-     If there are changes in the specific file 'camlp4/ast2pt.ml', do
+     If there are changes in the specific file 'main/ast2pt.ml', do
    also:
        make compare_all_ast2pt
    and possibly:
        make bootstrap_all_ast2pt
-   because this file, in 'ocaml_src/camlp4' directory has different
+   because this file, in 'ocaml_src/main' directory has different
    versions according to the ocaml version.
 
      After having rebuilt the pure ocaml sources, check they work by
