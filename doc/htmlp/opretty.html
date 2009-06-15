@@ -2,9 +2,9 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: opretty.html,v 1.23 2007/08/22 09:17:59 deraugla Exp $ -->
+  <!-- $Id: opretty.html,v 1.24 2007/08/22 09:23:33 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
-  <title>Pretty Printing ocaml programs</title>
+  <title>Pretty Printing OCaml programs</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <link rel="stylesheet" type="text/css" href="styles/base.css"
@@ -17,7 +17,7 @@
 
 <div id="content">
 
-<h1 class="top">Pretty printing ocaml programs</h1>
+<h1 class="top">Pretty printing OCaml programs</h1>
 
 <p>Camlp5 provides extensions kits to pretty print programs in revised
   syntax and normal syntax. Some other extensions kits also allow to
@@ -31,7 +31,7 @@
   system of extensible functions.</p>
 
 <p>This chapter is destinated to programmers who want to understand
-  how the pretty printing of ocaml programs work in Camlp5, want to
+  how the pretty printing of OCaml programs work in Camlp5, want to
   adapt, modify or debug it, or want to add their own pretty printing
   extensions.</p>
 
@@ -65,7 +65,7 @@ new ones. The main ones are:</p>
 
 <h3>Using module Pretty</h3>
 
-<p>All functions in ocaml pretty printing take a parameter named "the
+<p>All functions in OCaml pretty printing take a parameter named "the
 printing context" (variable <code>pc</code>). It is a record holding :</p>
 
 <ul>
@@ -102,7 +102,7 @@ module <code>Pretty</code> which controls whether the printed data
 holds in the line or not. They generally call, recursively, other
 pretty printing functions with the same behaviour.</p>
 
-<p>Let us see an example (fictive) of printing an ocaml
+<p>Let us see an example (fictive) of printing an OCaml
 application. Let us suppose we have an application expression
 "<code>e1 e2</code>" to pretty print where <code>e1</code>
 and <code>e2</code> are sub-expressions. If both expressions and their
@@ -208,7 +208,7 @@ of <code>e2</code>.</p>
 
 <p>These parameters, "<tt>curr</tt>" and "<tt>next</tt>", correspond
   to the pretty printing of, respectively, the current level and the
-  next level. Since the application in ocaml is left associative, the
+  next level. Since the application in OCaml is left associative, the
   first sub-expression is printed at the same (current) level and the
   second one is printed at the next level. We also see a call
   to <code>next</code> in the last (2nd) case of the function to treat

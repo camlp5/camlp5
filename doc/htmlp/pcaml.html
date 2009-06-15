@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: pcaml.html,v 1.10 2007/08/22 09:17:59 deraugla Exp $ -->
+  <!-- $Id: pcaml.html,v 1.11 2007/08/22 09:23:33 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Pcaml</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -125,7 +125,7 @@ t      (MLast.str_item * MLast.loc) * bool));</tt></dt>
     about the location and the boolean.</dd>
   <dt><tt>value top_phrase : Grammar.Entry.e (option
       MLast.str_item);</tt></dt>
-  <dd>Phrases of the ocaml interactive toplevel. Return "None" in case
+  <dd>Phrases of the OCaml interactive toplevel. Return "None" in case
     of end of file.</dd>
   <dt><tt>value use_file : Grammar.Entry.e (list MLast.str_item *
       bool);</tt></dt>
@@ -155,7 +155,7 @@ t      (MLast.str_item * MLast.loc) * bool));</tt></dt>
 
 <p>By default, these functions fail. The printer kit
   "<tt>pr_dump.cmo</tt>" (loaded by most Camlp5 commands) set them to
-  functions dumping the syntax tree in binary (for the ocaml
+  functions dumping the syntax tree in binary (for the OCaml
   compiler). The pretty printer kits, such as "<tt>pr_r.cmo</tt>" and
   "<tt>pr_o.cmo</tt>" set them to functions calling the predefined
   printers (see next section).</p>
@@ -302,7 +302,7 @@ t      (MLast.str_item * MLast.loc) * bool));</tt></dt>
   <dd>True if the current syntax does not generate constructor arity,
     which is the case of the normal syntax, and not of the revised
     one. This has an impact when converting Camlp5 syntax tree into
-    ocaml compiler syntax tree.</dd>
+    OCaml compiler syntax tree.</dd>
 </dl>
 
 <div class="trailer">

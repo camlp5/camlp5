@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: syntext.html,v 1.10 2007/08/22 08:57:47 deraugla Exp $ -->
+  <!-- $Id: syntext.html,v 1.11 2007/08/22 09:23:33 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>syntax extensions</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -19,7 +19,7 @@
 
 <h1 class="top">Syntax extensions</h1>
 
-<p>Camlp5 allows to extend the syntax of the ocaml language, and even
+<p>Camlp5 allows to extend the syntax of the OCaml language, and even
   change the whole syntax.</p>
 
 <p>It uses for that one of its parsing tools:
@@ -30,17 +30,17 @@
   extensible grammars), but we shall try to give some minimal
   explanations to allow the reader to follow them.</p>
 
-<p>A syntax extension is an ocaml object file (ending with ".cmo" or
-  ".cma") which is loaded inside camlp5. The source of this file uses
+<p>A syntax extension is an OCaml object file (ending with ".cmo" or
+  ".cma") which is loaded inside Camlp5. The source of this file uses
   calls to the specific statement EXTEND applied to entries defined in
-  the camlp5 module "<tt>Pcaml</tt>".</p>
+  the Camlp5 module "<tt>Pcaml</tt>".</p>
 
 <div id="tableofcontents">
 </div>
 
 <h2>Entries</h2>
 
-<p>The grammar of ocaml contains several entries, corresponding to the
+<p>The grammar of OCaml contains several entries, corresponding to the
   major notions of the language, which are modifiable this way, and
   even erasable. They are defined in this module "<tt>Pcaml</tt>".</p>
 
@@ -91,7 +91,7 @@
 <p>A grammar rule is a list of rule symbols followed by the semantic
   action, i.e. the result of the rule. This result is a syntax tree,
   whose type is the type of the extended entry. The description of the
-  types of the syntax tree are in the camlp5 module
+  types of the syntax tree are in the Camlp5 module
   "<tt>MLast</tt>".</p>
 
 <p>However, there is a simpler way to make values of these syntax tree
@@ -223,11 +223,11 @@
 <p>Notice that the ocamlc option "-c" means that we are interested
   only in generating the object file "foo.cmo", not achieving the
   compilation by creating an executable. Anyway the link would not
-  work because of usage of modules specific to camlp5.</p>
+  work because of usage of modules specific to Camlp5.</p>
 
 <h3>Testing</h3>
 
-<h4>In the ocaml toplevel</h4>
+<h4>In the OCaml toplevel</h4>
 
 <pre>
   ocaml -I +camlp5 camlp5r.cma
@@ -270,7 +270,7 @@
 </pre>
 
 <p>with a subtile difference: the loaded file must be "<tt>./foo.cmo</tt>"
-  and not just "<tt>foo.cmo</tt>" because camlp5 does not have, by default,
+  and not just "<tt>foo.cmo</tt>" because Camlp5 does not have, by default,
   the current directory in its path.</p>
 
 <p>The file can be compiled like this:</p>

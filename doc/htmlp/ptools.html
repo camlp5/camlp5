@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ptools.html,v 1.8 2007/08/22 09:17:59 deraugla Exp $ -->
+  <!-- $Id: ptools.html,v 1.9 2007/08/22 09:23:33 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>parsing and printing tools</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -31,7 +31,7 @@
 
 <p>The first parsing tool, the stream parsers, is the elementary
   system. It is pure syntactic sugar, i.e. the code is directly
-  converted into basic ocaml statements: essentially functions,
+  converted into basic OCaml statements: essentially functions,
   pattern matchings, try. A stream parser is just a function. But the
   system does not manage associativity, nor parsing level. Left
   recursion results on infinite loops, just like functions whose first
@@ -42,7 +42,7 @@
   look like grammars written with tools like "yacc". They take care of
   associativity, left recursion, and level of parsing. They are
   dynamically extensible, what allows the syntax extensions what
-  Camlp5 provides for ocaml syntax.</p>
+  Camlp5 provides for OCaml syntax.</p>
 
 <p>In both cases, the input data are streams.</p>
 
@@ -147,7 +147,7 @@
 <p>Since the internal system is stream parsers, extensible grammars
   use recursive descendant parsing.</p>
 
-<p>The parsers of the ocaml language in Camlp5 are written with
+<p>The parsers of the OCaml language in Camlp5 are written with
   extensible grammars.</p>
 
 <h2>Pretty module</h2>
@@ -188,7 +188,7 @@
   associativity into account by provided functions to call either the
   current level or the next level.</p>
 
-<p>The printers of the ocaml language are written with extensible
+<p>The printers of the OCaml language are written with extensible
   printers.</p>
 
 <div class="trailer">

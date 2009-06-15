@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: index.html,v 1.18 2007/08/22 09:17:59 deraugla Exp $ -->
+  <!-- $Id: index.html,v 1.19 2007/08/22 09:23:33 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Camlp5</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -19,7 +19,7 @@
 
 <h1 class="top">Introduction</h1>
 
-<p>Camlp5 is a preprocessor and pretty-printer for ocaml programs.</p>
+<p>Camlp5 is a preprocessor and pretty-printer for OCaml programs.</p>
 
 <p>As a preprocessor, it allows to:</p>
 
@@ -45,7 +45,7 @@
   <li>pretty print module</li>
 </ul>
 
-<p>It works as a shell command and can also be used in the ocaml
+<p>It works as a shell command and can also be used in the OCaml
   toplevel.</p>
 
 <div id="tableofcontents">
@@ -56,14 +56,14 @@
 <p>The main shell commands are:</p>
 
 <ul>
-  <li><tt>camlp5o</tt> : to treat files written in normal ocaml
+  <li><tt>camlp5o</tt> : to treat files written in normal OCaml
   syntax,</li>
   <li><tt>camlp5r</tt> : to treat files written in an original syntax
     named the <a href="revsynt.html"><em>revised syntax</em></a>.</li>
 </ul>
 
 <p>These commands can be given as parameters of the
-option <tt>-pp</tt> of the ocaml compiler. Examples:</p>
+option <tt>-pp</tt> of the OCaml compiler. Examples:</p>
 
 <pre>
   ocamlc -pp camlp5o foo.ml
@@ -72,7 +72,7 @@ option <tt>-pp</tt> of the ocaml compiler. Examples:</p>
 
 <p>This way, the parsing is done by Camlp5. In case of syntax errors,
 the parsing fails with an error message and the compilation is
-aborted. Otherwise, the ocaml compiler continues with the syntax tree
+aborted. Otherwise, the OCaml compiler continues with the syntax tree
 provided by Camlp5.</p>
 
 <p>In the toplevel, it is possible to preprocess the input phrases by
@@ -86,9 +86,9 @@ loading one of the files "<tt>camlp5o.cma</tt>" or
 
 <h2>Parsing and Printing kits</h2>
 
-<p>Parsing and printing extensions are ocaml object files, i.e. files
+<p>Parsing and printing extensions are OCaml object files, i.e. files
   with the extension "<tt>.cmo</tt>" or "<tt>.cma</tt>". They are the
-  result of the compilation of ocaml source files containing what is
+  result of the compilation of OCaml source files containing what is
   necessary to do the parsing or printing. These object files are
   named parsing and printing <em>kits</em>.</p>
 
@@ -100,12 +100,12 @@ loading one of the files "<tt>camlp5o.cma</tt>" or
   files.</p>
 
 <p>It is therefore important to compile the <em>kits</em> with the
-  option "<tt>-c</tt>" of the ocaml compiler (i.e. just compilation,
+  option "<tt>-c</tt>" of the OCaml compiler (i.e. just compilation,
   not producing an executable) and with the option "<tt>-I +camlp5</tt>"
   to inform the compiler to find module interfaces in installed Camlp5
   library.</p>
 
-<p>In the ocaml toplevel, it is possible to use a kit by simply
+<p>In the OCaml toplevel, it is possible to use a kit by simply
   loading it with the directive "<tt>#load</tt>".</p>
 
 <h2>Extending syntax</h2>
@@ -177,7 +177,7 @@ and then compile it simply like this:
 <h2>Note: the revised syntax</h2>
 
 <p>The <em>revised syntax</em> is a specific syntax whose aim is to
-  resolve some syntax problems and inconsistencies of the normal ocaml
+  resolve some syntax problems and inconsistencies of the normal OCaml
   syntax.  A chapter will explain the differences between the normal
   and the revised syntax.</p>
 

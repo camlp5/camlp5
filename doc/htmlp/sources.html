@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: sources.html,v 1.4 2007/08/22 09:17:59 deraugla Exp $ -->
+  <!-- $Id: sources.html,v 1.5 2007/08/22 09:23:33 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Camlp5 sources</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -29,7 +29,7 @@
 <p>The sources are composed of:</p>
 
 <ul>
-  <li>the ocaml stuff, copied from the ocaml compiler</li>
+  <li>the OCaml stuff, copied from the OCaml compiler</li>
   <li>the <em>kernel</em> composed of the directories:
     <ul>
       <li>odyl : the dynamic loading system</li>
@@ -48,53 +48,53 @@
 <p>The kernel is sufficient to make the core system work: it is possible
   to compile and bootstrap only it. All sources being in revised syntax,
   the first compilation of Camlp5 is done by a version of this kernel
-  in pure ocaml syntax, located in the directory ocaml_src.</p>
+  in pure OCaml syntax, located in the directory ocaml_src.</p>
 
-<p>These sources in pure ocaml syntax are not modified by hand. When
+<p>These sources in pure OCaml syntax are not modified by hand. When
   changes are done in the kernel, and when the check is done that it
-  correctly compiles and bootstraps, the kernel in pure ocaml syntax
+  correctly compiles and bootstraps, the kernel in pure OCaml syntax
   is rebuilt using Camlp5 pretty print. This is done by the command
   "make bootstrap_sources".</p>
 
 <h2>Compatibility</h2>
 
 <p>This distribution of Camlp5 is compatible with several versions of
-  ocaml. The problem is about the definition of ocaml syntax trees
-  which may change from a version of ocaml to another. Since ocaml
+  OCaml. The problem is about the definition of OCaml syntax trees
+  which may change from a version of OCaml to another. Since OCaml
   does not install the sources nor the compiled versions of its syntax
   tree, a copy of the necessary source files, borrowed from the source
-  of the ocaml compiler has been done in the directory 'ocaml_stuff',
-  in subdirectories with the ocaml version number.</p>
+  of the OCaml compiler has been done in the directory 'ocaml_stuff',
+  in subdirectories with the OCaml version number.</p>
 
 <p>If the present distribution of Camlp5 is not compatible with the
-  version of ocaml you have (the command 'configure' tells you), it
-  is possible to add it. For that, you need the sources of the ocaml
+  version of OCaml you have (the command 'configure' tells you), it
+  is possible to add it. For that, you need the sources of the OCaml
   distribution you have. Once done, after a 'configure' telling you
   that it is not compatible, do:</p>
 
 <pre>
-  make steal OCAML_SRC=&lt;path-to-ocaml-sources>
+  make steal OCAML_SRC=&lt;path-to-OCaml-sources>
 </pre>
 
 <p>This creates a new directory in 'ocaml_stuff' with sources of the
-  syntax tree of your ocaml compiler.</p>
+  syntax tree of your OCaml compiler.</p>
 
-<p>If you want to check that the sources of the syntax tree of ocaml
-  are up-to-date (e.g. if this is the current ocaml developpement),
+<p>If you want to check that the sources of the syntax tree of OCaml
+  are up-to-date (e.g. if this is the current OCaml developpement),
   do:</p>
 
 <pre>
-  make compare_stolen OCAML_SRC=&lt;path-to-ocaml-sources>
+  make compare_stolen OCAML_SRC=&lt;path-to-OCaml-sources>
 </pre>
 
 <p>The compatibility is done also with the file 'main/ast2pt.ml',
-  which is the module converting Camlp5 syntax tree into ocaml syntax
+  which is the module converting Camlp5 syntax tree into OCaml syntax
   tree.</p>
 
-<p>In the directory 'ocaml_src' with containt the pure ocaml sources of
+<p>In the directory 'ocaml_src' with containt the pure OCaml sources of
   the Camlp5 core (see chapter TREE STRUCTURE below), there are as versions
-  of this files as version of ocaml. They are named 'ast2pt.ml_&lt;version>'.
-  If you are adding a new version of ocaml, you need this file. In a first
+  of this files as version of OCaml. They are named 'ast2pt.ml_&lt;version>'.
+  If you are adding a new version of OCaml, you need this file. In a first
   step, make a copy from a close version:</p>
 
 <pre>
@@ -110,10 +110,10 @@
   similar compilation problem. This file is in one examplary, thanks
   to IFDEF used here or there.</p>
 
-<p>While compiling with some specific version of ocaml, this file is
+<p>While compiling with some specific version of OCaml, this file is
   compiled with 'OCAML_vers' defined where 'vers' is the version number
   form the beginning to the first space or charcter '+' with all dots
-  converted into underscores. For example, if you ocaml version is
+  converted into underscores. For example, if you OCaml version is
   7.04.2+dev35, you can see in the compilation process of ast2pt.ml
   that OCAML_7_04_2 is defined, and you can add statements defined
   by the syntax extension 'pa_macro.cmo', for example IFDEF OCAML_7_04_2.
@@ -121,9 +121,9 @@
 
 <h2>Tree structure</h2>
 
-<p>The directory 'ocaml_src' contains images in pure ocaml syntax of the
+<p>The directory 'ocaml_src' contains images in pure OCaml syntax of the
   directories odyl lib main and meta. This allow to create a core version
-  of Camlp5 from only the ocaml compiler installed.</p>
+  of Camlp5 from only the OCaml compiler installed.</p>
 
 <p>You can decompose the building of the Camlp5 core into:</p>
 
@@ -162,7 +162,7 @@
 
 <p>Notice that doing "make core" or "make all" from scratch (after a
   make clean), automatically starts by making the core files from
-  their pure ocaml versions.</p>
+  their pure OCaml versions.</p>
 
 <h2>Fast compilation from scratch</h2>
 
@@ -203,14 +203,14 @@
 
 <h2>Before committing your changes</h2>
 
-<p>Make sure that the cold start with pure ocaml sources work. For
+<p>Make sure that the cold start with pure OCaml sources work. For
   that, do:</p>
 
 <pre>
   make compare_sources | less
 </pre>
 
-<p>This shows you the changes that would be done in the ocaml pure sources
+<p>This shows you the changes that would be done in the OCaml pure sources
   of the directory ocaml_src.</p>
 
 <p>To make the new versions, do:</p>
@@ -220,12 +220,12 @@
   make promote_sources
 </pre>
 
-<p>Notice that these pure ocaml sources are not supposed to be modified
+<p>Notice that these pure OCaml sources are not supposed to be modified
   by hand, but only created by the above commands. Besides, their sources,
   although pretty printed, are sometimes not easy to read, particularly for
   expanded grammars (of the statement 'EXTEND').</p>
 
-<p>However, if these sources do not compile, due to changes in the ocaml
+<p>However, if these sources do not compile, due to changes in the OCaml
   compiler, it is possible to edit them. In this case, similar changes
   may have to be done in the normal sources in revised syntax.</p>
 
@@ -274,9 +274,9 @@
 </pre>
 
 <p>because this file, in 'ocaml_src/main' directory has different
-  versions according to the ocaml version.</p>
+  versions according to the OCaml version.</p>
 
-<p>After having rebuilt the pure ocaml sources, check they work by
+<p>After having rebuilt the pure OCaml sources, check they work by
   rebuilding everything from scratch, starting with "configure".</p>
 
 <h2>If you change the main parser</h2>
@@ -304,7 +304,7 @@
   possibly 'make coreboot' (one of several times) to check the
   correctness of the file.</p>
 
-<p>And don't forget, if you want to commit, to re-create the pure ocaml
+<p>And don't forget, if you want to commit, to re-create the pure OCaml
   sources like indicated above.</p>
 
 <div class="trailer">

@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: quot.html,v 1.14 2007/08/22 09:17:59 deraugla Exp $ -->
+  <!-- $Id: quot.html,v 1.15 2007/08/22 09:23:33 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>quotations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -21,9 +21,9 @@
 
 <p>The quotations are a syntax extension in Camlp5 allowing to build
   expressions and patterns in any syntax independant from the one of
-  ocaml. Quotations are <em>expanded</em>, i.e. transformed, at parse
+  OCaml. Quotations are <em>expanded</em>, i.e. transformed, at parse
   time to produce normal syntax trees, like the rest of the program.
-  Quotations <em>expanders</em> are normal ocaml functions writable by
+  Quotations <em>expanders</em> are normal OCaml functions writable by
   any programmer.</p>
 
 <p>The aim of quotations is to use concrete syntax for manipulating
@@ -57,7 +57,7 @@
 <p>The text between these particular parentheses can be any text. It
   may contain enclosing quotations and the characters "<tt>&lt;</tt>",
   "<tt>&gt;</tt>" and "<tt>\</tt>" can be escaped by
-  "<tt>\</tt>". Notice that possible double-quote, parentheses, ocaml
+  "<tt>\</tt>". Notice that possible double-quote, parentheses, OCaml
   comments do not have necessary to balance inside them.</p>
 
 <p>As far as the lexer is concerned, a quotation is just a kind of
@@ -103,7 +103,7 @@
   expanders for expressions and patterns.</p>
 
 <p>Then, after compilation of the source file (without linking, i.e.
-  using option "-c" of the ocaml compiler), an object file is created
+  using option "-c" of the OCaml compiler), an object file is created
   (ending with ".cmo"), which can be used as syntax
   extension <em>kit</em> of Camlp5.</p>
 
@@ -178,7 +178,7 @@
   set to the location of the quotation itself (if this resulting tree
   contains locations, they are overwritten with this
   location). Consequently, if there are semantic (typing) errors, the
-  ocaml compiler will underline the entire quotation.</p>
+  OCaml compiler will underline the entire quotation.</p>
 
 <p>But in antiquotations, since they can be inserted in the resulting
   syntax tree, it is interesting to keep their initial quotations. For
@@ -219,7 +219,7 @@
 
 <p>The quotation expander "<tt>expr</tt>" just takes the string
   parameter (the contents of the quotation), and returns the result
-  of the expression   parser of the ocaml language.</p>
+  of the expression   parser of the OCaml language.</p>
 
 <p>Compilation:</p>
 
@@ -262,7 +262,7 @@
 
 <p>Like above, the quotation expander "<tt>expr</tt>" takes the string
   parameter (the contents of the quotation) and applies the expression
-  parser of the ocaml language. But its result, instead of being
+  parser of the OCaml language. But its result, instead of being
   returned ast it is, is enclosed with the antiquotation node. (The
   location built is the location of the whole string.)</p>
 
@@ -320,7 +320,7 @@ type expander =
         system to create a syntax tree. Its boolean parameter tells
         whether the quotation is in position of an expression (True)
         or in position of a pattern (False). Quotations expanders
-        created this way may work for some particular ocaml syntax,
+        created this way may work for some particular OCaml syntax,
         and not for another one (e.g. may work when used with revised
         syntax and not when used with normal syntax, and
         conversely).</li>
@@ -363,7 +363,7 @@ type expander =
 
 <h3>q_MLast.cmo</h3>
 
-<p>This extension kit add quotations of ocaml syntax tree, allowing to
+<p>This extension kit add quotations of OCaml syntax tree, allowing to
   use concrete syntax to represent abstract syntax. See the chapter
   <a href="ml_ast.html">Syntax tree</a>.</p>
 
@@ -429,7 +429,7 @@ type expander =
 <p>Here is the code of the quotation expander, term.ml. The expander
   uses the <a href="grammars.html">extensible grammars</a>. It has its
   own lexer (using the <a href="lexers.html">stream lexers</a>)
-  because the lexer of ocaml programs ("<tt>Plexer.gmake ()</tt>"),
+  because the lexer of OCaml programs ("<tt>Plexer.gmake ()</tt>"),
   cannot recognize the backslashes alone.</p>
 
 <h3>Lexer</h3>
