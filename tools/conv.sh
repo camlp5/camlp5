@@ -3,7 +3,7 @@
 DIR=$(expr "$0" : "\(.*\)/.*" "|" ".")
 INCL=
 FILE=
-OPTS=
+OPTS="-mode T"
 PR_O=$1
 shift
 while test "" != "$1"; do
