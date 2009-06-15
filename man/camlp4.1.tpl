@@ -287,15 +287,11 @@ the OCaml module "str":
 .fi
 
 .SH "FILES"
-Camlp4 library directory in the present installation:
+Library directory of camlp4 in the present installation:
 .br
 LIBDIR/camlp4
 
 .SH "SEE ALSO"
-Camlp4 - tutorial
-.br
-Camlp4 - reference manual
-.br
 ocamlc(1), ocaml(1).
 
 .SH AUTHOR

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.19 2007/07/10 14:09:06 deraugla Exp $
+# $Id: Makefile,v 1.20 2007/07/10 14:40:10 deraugla Exp $
 
 include ../config/Makefile
 
@@ -38,7 +38,7 @@ $(NAME)o.opt: $(CAMLP4OMX)
 	cd ../camlp4; $(MAKE) optp4 CAMLP4OPT=../etc/$(NAME)o.opt CAMLP4M="-I ../etc $(CAMLP4OMX)"
 
 mk$(NAME).sh: mkcamlp4.sh.tpl
-	sed -e "s!LIBDIR!$(LIBDIR)!g" mkcamlp4.sh.tpl > mk$(NAME).sh
+	sed -e "s!LIBDIR!$(LIBDIR)!g" -e "s/camlp4/$(NAME)/g" mkcamlp4.sh.tpl > mk$(NAME).sh
 
 bootstrap_scheme:
 	@$(MAKE) bootstrap_l L=scheme | grep -v directory
