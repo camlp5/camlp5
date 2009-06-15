@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.55 2007/12/28 02:36:28 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.56 2007/12/28 03:17:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -299,17 +299,14 @@ value int_repr s =
 value with_constraint pc =
   fun
   [ <:with_constr< type $sl$ $list:tvl$ = $flag:pf$ $t$ >> ->
-      horiz_vertic
-        (fun () ->
-           let n = longident {(pc) with bef = ""; aft = ""} sl in
-           sprintf "%s(type%s %s %s)%s" pc.bef (if pf then "private" else "")
-             (match tvl with
-              [ [] -> n
-              | tvl ->
-                  sprintf "(%s %s)" n
-                    (hlist type_param {(pc) with bef = ""; aft = ""} tvl) ])
-             (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-        (fun () -> not_impl "with_constraint type vertic" pc 0)
+      pprintf pc "(type%s %p@;<1 1>%p)" (if pf then "private" else "")
+        (fun pc ->
+           fun
+           [ [] -> longident pc sl
+           | tvl ->
+               pprintf pc "(%p %p)" longident sl
+                 (hlist type_param) tvl ])
+        tvl ctyp t
   | wc -> not_impl "with_constraint" pc wc ]
 ;
 
@@ -1080,13 +1077,7 @@ EXTEND_PRINTER
                in
                sprintf "%s\n%s" s1 s2)
       | <:module_type< $mt$ with $list:wcl$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s(with %s %s)%s" pc.bef
-                 (curr {(pc) with bef = ""; aft = ""} mt)
-                 (hlist with_constraint {(pc) with bef = ""; aft = ""} wcl)
-                 pc.aft)
-            (fun () -> not_impl "module_type with vertic" pc 0)
+          pprintf pc "(with %p@;<1 1>%p)" curr mt (hlist with_constraint) wcl
       | <:module_type< $me1$ . $me2$ >> ->
            sprintf "%s.%s"
              (curr {(pc) with aft = ""} me1)
