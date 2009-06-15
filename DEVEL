@@ -129,7 +129,7 @@ BEFORE COMMITTING YOUR CHANGES
 
      Notice that these pure ocaml sources are not supposed to be modified
    by hand, but only created by the above commands. Besides, their sources,
-   although pretty printed, are often not easy to read, particularly for
+   although pretty printed, are sometimes not easy to read, particularly for
    expanded grammars (of the statement 'EXTEND').
      However, if these sources do not compile, due to changes in the ocaml
    compiler, it is possible to edit them. In this case, similar changes
@@ -158,6 +158,14 @@ BEFORE COMMITTING YOUR CHANGES
        make untouch_sources
        make promote_sources
        make clean_sources
+
+     If there are changes in the specific file 'camlp4/ast2pt.ml', do
+   also:
+       make compare_all_ast2pt
+   and possibly:
+       make bootstrap_all_ast2pt
+   because this file, in 'ocaml_src/camlp4' directory has different
+   versions according to the ocaml version.
 
      After having rebuilt the pure ocaml sources, check they work by
    rebuilding everything from scratch, starting with "configure".
