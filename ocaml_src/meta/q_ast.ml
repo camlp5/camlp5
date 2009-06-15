@@ -294,7 +294,8 @@ module Meta_make (C : MetaSig) =
       | SgMod (_, rf, lsmt) ->
           let lsmt =
             C.vala
-              (C.list (fun (s, mt) -> C.tuple [C.string s; module_type mt]))
+              (C.list
+                 (fun (s, mt) -> C.tuple [C.vala C.string s; module_type mt]))
               lsmt
           in
           C.node "SgMod" [C.vala C.bool rf; lsmt]
@@ -348,7 +349,8 @@ module Meta_make (C : MetaSig) =
       | StMod (_, rf, lsme) ->
           let lsme =
             C.vala
-              (C.list (fun (s, me) -> C.tuple [C.string s; module_expr me]))
+              (C.list
+                 (fun (s, me) -> C.tuple [C.vala C.string s; module_expr me]))
               lsme
           in
           C.node "StMod" [C.vala C.bool rf; lsme]

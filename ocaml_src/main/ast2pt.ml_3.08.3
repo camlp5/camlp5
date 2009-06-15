@@ -880,10 +880,11 @@ and sig_item s l =
   | SgMod (loc, rf, ntl) ->
       if not (uv rf) then
         List.fold_right
-          (fun (n, mt) l -> mksig loc (Psig_module (n, module_type mt)) :: l)
+          (fun (n, mt) l ->
+             mksig loc (Psig_module (uv n, module_type mt)) :: l)
           (uv ntl) l
       else
-        let ntl = List.map (fun (n, mt) -> n, module_type mt) (uv ntl) in
+        let ntl = List.map (fun (n, mt) -> uv n, module_type mt) (uv ntl) in
         mksig loc (Psig_recmodule ntl) :: l
   | SgMty (loc, n, mt) ->
       let si =
@@ -937,7 +938,8 @@ and str_item s l =
   | StMod (loc, rf, nel) ->
       if not (uv rf) then
         List.fold_right
-          (fun (n, me) l -> mkstr loc (Pstr_module (n, module_expr me)) :: l)
+          (fun (n, me) l ->
+             mkstr loc (Pstr_module (uv n, module_expr me)) :: l)
           (uv nel) l
       else
         let nel =
@@ -950,7 +952,7 @@ and str_item s l =
                      error (MLast.loc_of_module_expr me)
                        "module rec needs module types constraints"
                in
-               n, module_type mt, module_expr me)
+               uv n, module_type mt, module_expr me)
             (uv nel)
         in
         mkstr loc (Pstr_recmodule nel) :: l

@@ -701,12 +701,12 @@ Grammar.extend
     Grammar.Entry.obj (mod_binding : 'mod_binding Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm
-         (Grammar.Entry.obj (a_UIDENT : 'a_UIDENT Grammar.Entry.e));
+         (Grammar.Entry.obj (a_UIDENT2 : 'a_UIDENT2 Grammar.Entry.e));
        Gramext.Snterm
          (Grammar.Entry.obj
             (mod_fun_binding : 'mod_fun_binding Grammar.Entry.e))],
       Gramext.action
-        (fun (me : 'mod_fun_binding) (i : 'a_UIDENT) (loc : Ploc.t) ->
+        (fun (me : 'mod_fun_binding) (i : 'a_UIDENT2) (loc : Ploc.t) ->
            (Qast.Tuple [i; me] : 'mod_binding))]];
     Grammar.Entry.obj (mod_fun_binding : 'mod_fun_binding Grammar.Entry.e),
     None,
@@ -950,12 +950,12 @@ Grammar.extend
     None,
     [None, None,
      [[Gramext.Snterm
-         (Grammar.Entry.obj (a_UIDENT : 'a_UIDENT Grammar.Entry.e));
+         (Grammar.Entry.obj (a_UIDENT2 : 'a_UIDENT2 Grammar.Entry.e));
        Gramext.Snterm
          (Grammar.Entry.obj
             (module_declaration : 'module_declaration Grammar.Entry.e))],
       Gramext.action
-        (fun (mt : 'module_declaration) (i : 'a_UIDENT) (loc : Ploc.t) ->
+        (fun (mt : 'module_declaration) (i : 'a_UIDENT2) (loc : Ploc.t) ->
            (Qast.Tuple [i; mt] : 'mod_decl_binding))]];
     Grammar.Entry.obj
       (module_declaration : 'module_declaration Grammar.Entry.e),

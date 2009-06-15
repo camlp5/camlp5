@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.94 2007/09/18 03:08:04 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.95 2007/09/18 15:40:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -153,7 +153,7 @@ EXTEND
       | -> <:vala< [] >> ] ]
   ;
   mod_binding:
-    [ [ i = UIDENT; me = mod_fun_binding -> (i, me) ] ]
+    [ [ i = V UIDENT; me = mod_fun_binding -> (i, me) ] ]
   ;
   mod_fun_binding:
     [ RIGHTA
@@ -198,7 +198,7 @@ EXTEND
           <:sig_item< value $alid:i$ : $t$ >> ] ]
   ;
   mod_decl_binding:
-    [ [ i = UIDENT; mt = module_declaration -> (i, mt) ] ]
+    [ [ i = V UIDENT; mt = module_declaration -> (i, mt) ] ]
   ;
   module_declaration:
     [ RIGHTA

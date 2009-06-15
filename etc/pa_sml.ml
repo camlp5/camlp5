@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_sml.ml,v 1.21 2007/09/18 02:33:32 deraugla Exp $ *)
+(* $Id: pa_sml.ml,v 1.22 2007/09/18 15:40:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -108,8 +108,8 @@ value apply_bind loc e bl =
         loop_let e [(p1, e1)] list
     | [<:str_item< value rec $p1$ = $e1$ >> :: list] ->
         loop_letrec e [(p1, e1)] list
-    | [<:str_item< module $s$ = $me$ >> :: list] ->
-        let e = <:expr< let module $s$ = $me$ in $e$ >> in
+    | [<:str_item< module $uid:s$ = $me$ >> :: list] ->
+        let e = <:expr< let module $uid:s$ = $me$ in $e$ >> in
         loop e list
     | [si :: list] ->
         raise Exit ]
@@ -136,7 +136,7 @@ value make_local loc sl1 sl2 =
     let pl =
       List.map
         (fun
-         [ <:str_item< value $opt:_$ $p$ = $_$ >> -> p
+         [ <:str_item< value $flag:_$ $p$ = $_$ >> -> p
          | _ -> raise Exit ])
         sl2
       in
@@ -268,7 +268,7 @@ value record_expr loc x1 =
              | _ -> "" ]
            in
            let loc = MLast.loc_of_expr v in
-           <:class_str_item< value $id$ = $v$ >>)
+           <:class_str_item< value $lid:id$ = $v$ >>)
         x1
     in
     let list2 =
@@ -280,7 +280,7 @@ value record_expr loc x1 =
              | _ -> "" ]
            in
            let loc = MLast.loc_of_patt l in
-           <:class_str_item< method $id$ = $lid:id$ >>)
+           <:class_str_item< method $lid:id$ = $lid:id$ >>)
         x1
     in
     <:expr<
@@ -364,7 +364,8 @@ EXTEND
   phrase:
     [ [ x = str_item -> x
       | x = expr -> <:str_item< $exp:x$ >>
-      | "#"; n = LIDENT; dp = dir_param -> <:str_item< # $n$ $opt:dp$ >> ] ]
+      | "#"; n = LIDENT; dp = dir_param ->
+          <:str_item< # $lid:n$ $opt:dp$ >> ] ]
   ;
   dir_param:
     [ [ -> None

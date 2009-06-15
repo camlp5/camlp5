@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.55 2007/09/18 15:22:01 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.56 2007/09/18 15:40:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -374,20 +374,20 @@ EXTEND
       | "module"; r = FLAG "rec"; l = LIST1 mod_binding SEP "and" ->
           <:str_item< module $flag:r$ $list:l$ >>
       | "module"; "type"; i = UIDENT; "="; mt = module_type ->
-          <:str_item< module type $i$ = $mt$ >>
+          <:str_item< module type $uid:i$ = $mt$ >>
       | "open"; i = mod_ident -> <:str_item< open $i$ >>
       | "type"; tdl = LIST1 type_declaration SEP "and" ->
           <:str_item< type $list:tdl$ >>
       | "let"; r = FLAG "rec"; l = LIST1 let_binding SEP "and"; "in";
         x = expr ->
-          let e = <:expr< let $opt:r$ $list:l$ in $x$ >> in
+          let e = <:expr< let $flag:r$ $list:l$ in $x$ >> in
           <:str_item< $exp:e$ >>
       | "let"; r = FLAG "rec"; l = LIST1 let_binding SEP "and" ->
           match l with
           [ [(<:patt< _ >>, e)] -> <:str_item< $exp:e$ >>
           | _ -> <:str_item< value $flag:r$ $list:l$ >> ]
       | "let"; "module"; m = UIDENT; mb = mod_fun_binding; "in"; e = expr ->
-          <:str_item< let module $m$ = $mb$ in $e$ >>
+          <:str_item< let module $uid:m$ = $mb$ in $e$ >>
       | e = expr -> <:str_item< $exp:e$ >> ] ]
   ;
   rebind_exn:
@@ -395,12 +395,12 @@ EXTEND
       | -> [] ] ]
   ;
   mod_binding:
-    [ [ i = UIDENT; me = mod_fun_binding -> (i, me) ] ]
+    [ [ i = V UIDENT; me = mod_fun_binding -> (i, me) ] ]
   ;
   mod_fun_binding:
     [ RIGHTA
       [ "("; m = UIDENT; ":"; mt = module_type; ")"; mb = SELF ->
-          <:module_expr< functor ( $m$ : $mt$ ) -> $mb$ >>
+          <:module_expr< functor ( $uid:m$ : $mt$ ) -> $mb$ >>
       | ":"; mt = module_type; "="; me = module_expr ->
           <:module_expr< ( $me$ : $mt$ ) >>
       | "="; me = module_expr -> <:module_expr< $me$ >> ] ]
@@ -408,7 +408,7 @@ EXTEND
   (* Module types *)
   module_type:
     [ [ "functor"; "("; i = UIDENT; ":"; t = SELF; ")"; "->"; mt = SELF ->
-          <:module_type< functor ( $i$ : $t$ ) -> $mt$ >> ]
+          <:module_type< functor ( $uid:i$ : $t$ ) -> $mt$ >> ]
     | [ mt = SELF; "with"; wcl = LIST1 with_constr SEP "and" ->
           <:module_type< $mt$ with $list:wcl$ >> ]
     | [ "sig"; sg = LIST0 [ s = sig_item; OPT ";;" -> s ]; "end" ->
@@ -428,7 +428,7 @@ EXTEND
       [ "exception"; (_, c, tl) = constructor_declaration ->
           <:sig_item< exception $auid:c$ of $alist:tl$ >>
       | "external"; i = LIDENT; ":"; t = ctyp; "="; pd = LIST1 STRING ->
-          <:sig_item< external $i$ : $t$ = $list:pd$ >>
+          <:sig_item< external $lid:i$ : $t$ = $list:pd$ >>
       | "external"; "("; i = operator_rparen; ":"; t = ctyp; "=";
         pd = LIST1 STRING ->
           <:sig_item< external $i$ : $t$ = $list:pd$ >>
@@ -447,7 +447,7 @@ EXTEND
           <:sig_item< value $i$ : $t$ >> ] ]
   ;
   mod_decl_binding:
-    [ [ i = UIDENT; mt = module_declaration -> (i, mt) ] ]
+    [ [ i = V UIDENT; mt = module_declaration -> (i, mt) ] ]
   ;
   module_declaration:
     [ RIGHTA

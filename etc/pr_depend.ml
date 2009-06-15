@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.38 2007/09/18 15:22:01 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.39 2007/09/18 15:40:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open MLast;
@@ -98,7 +98,7 @@ value rec patt =
   | PaLab _ _ po -> option patt po
   | PaLid _ _ -> ()
   | <:patt< ?$_$: ($p$ = $e$) >> -> do { patt p; expr e }
-  | <:patt< ? $_$ >> -> ()
+  | <:patt< ?$_$ >> -> ()
   | <:patt< $p1$ | $p2$ >> -> do { patt p1; patt p2 }
   | <:patt< {$list:lpl$} >> -> list label_patt lpl
   | <:patt< $p1$ .. $p2$ >> -> do { patt p1; patt p2 }
@@ -124,7 +124,7 @@ and expr =
   | ExAss _ e1 e2 -> do { expr e1; expr e2 }
   | <:expr< $chr:_$ >> -> ()
   | ExCoe _ e t1 t2 -> do { expr e; option ctyp t1; ctyp t2 }
-  | <:expr< for $_$ = $e1$ $to:_$ $e2$ do { $list:el$ } >> -> do {
+  | <:expr< for $lid:_$ = $e1$ $to:_$ $e2$ do { $list:el$ } >> -> do {
       expr e1;
       expr e2;
       list expr el
@@ -140,7 +140,10 @@ and expr =
       expr e
     }
   | ExLid _ _ -> ()
-  | <:expr< let module $_$ = $me$ in $e$ >> -> do { module_expr me; expr e }
+  | <:expr< let module $uid:_$ = $me$ in $e$ >> -> do {
+      module_expr me;
+      expr e
+    }
   | <:expr< match $e$ with [ $list:pwel$ ] >> -> do {
       expr e;
       list match_case pwel
@@ -176,7 +179,7 @@ and match_case (p, w, e) = do { patt p; vala (option expr) w; expr e }
 and module_type =
   fun
   [ <:module_type< $uid:m$ . $_$ >> -> addmodule m
-  | <:module_type< functor ($_$ : $mt1$) -> $mt2$ >> -> do {
+  | <:module_type< functor ($uid:_$ : $mt1$) -> $mt2$ >> -> do {
       module_type mt1;
       module_type mt2
     }

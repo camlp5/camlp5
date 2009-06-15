@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.93 2007/09/18 03:08:04 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.94 2007/09/18 15:40:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -328,7 +328,7 @@ EXTEND
       | -> Qast.VaVal (Qast.List []) ] ]
   ;
   mod_binding:
-    [ [ i = a_UIDENT; me = mod_fun_binding -> Qast.Tuple [i; me] ] ]
+    [ [ i = a_UIDENT2; me = mod_fun_binding -> Qast.Tuple [i; me] ] ]
   ;
   mod_fun_binding:
     [ RIGHTA
@@ -380,7 +380,7 @@ EXTEND
           Qast.Node "SgVal" [Qast.Loc; i; t] ] ]
   ;
   mod_decl_binding:
-    [ [ i = a_UIDENT; mt = module_declaration -> Qast.Tuple [i; mt] ] ]
+    [ [ i = a_UIDENT2; mt = module_declaration -> Qast.Tuple [i; mt] ] ]
   ;
   module_declaration:
     [ RIGHTA

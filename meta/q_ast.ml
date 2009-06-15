@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: q_ast.ml,v 1.86 2007/09/18 03:08:04 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.87 2007/09/18 15:40:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* AST quotations with works by running the language parser (and its possible
@@ -328,7 +328,7 @@ module Meta_make (C : MetaSig) =
           let lsmt =
             C.vala
               (C.list
-                 (fun (s, mt) -> C.tuple [C.string s; module_type mt]))
+                 (fun (s, mt) -> C.tuple [C.vala C.string s; module_type mt]))
               lsmt
           in
           C.node "SgMod" [C.vala C.bool rf; lsmt]
@@ -391,7 +391,7 @@ module Meta_make (C : MetaSig) =
           let lsme =
             C.vala
               (C.list
-                 (fun (s, me) -> C.tuple [C.string s; module_expr me]))
+                 (fun (s, me) -> C.tuple [C.vala C.string s; module_expr me]))
               lsme
           in
           C.node "StMod" [C.vala C.bool rf; lsme]

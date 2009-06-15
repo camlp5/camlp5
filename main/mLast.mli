@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: mLast.mli,v 1.50 2007/09/18 03:08:04 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.51 2007/09/18 15:40:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Module [MLast]: abstract syntax tree.
@@ -142,7 +142,7 @@ and sig_item =
   | SgExc of loc and V string and V (list ctyp)
   | SgExt of loc and V string and ctyp and V (list string)
   | SgInc of loc and module_type
-  | SgMod of loc and V bool and V (list (string * module_type))
+  | SgMod of loc and V bool and V (list (V string * module_type))
   | SgMty of loc and V string and module_type
   | SgOpn of loc and V (list string)
   | SgTyp of loc and V (list type_decl)
@@ -173,7 +173,7 @@ and str_item =
   | StExp of loc and expr
   | StExt of loc and V string and ctyp and V (list string)
   | StInc of loc and module_expr
-  | StMod of loc and V bool and V (list (string * module_expr))
+  | StMod of loc and V bool and V (list (V string * module_expr))
   | StMty of loc and V string and module_type
   | StOpn of loc and V (list string)
   | StTyp of loc and V (list type_decl)

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.94 2007/09/18 15:22:01 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.95 2007/09/18 15:40:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -89,9 +89,9 @@ value rec get_defined_ident =
   | <:patt< $p1$ | $p2$ >> -> get_defined_ident p1 @ get_defined_ident p2
   | <:patt< $p1$ .. $p2$ >> -> get_defined_ident p1 @ get_defined_ident p2
   | <:patt< ($p$ : $_$) >> -> get_defined_ident p
-  | <:patt< ~ $_$ >> -> []
-  | <:patt< ~ $_$ : $p$ >> -> get_defined_ident p
-  | <:patt< ? $_$ >> -> []
+  | <:patt< ~$_$ >> -> []
+  | <:patt< ~$_$: $p$ >> -> get_defined_ident p
+  | <:patt< ?$_$ >> -> []
   | <:patt< ? $_$ : ($p$) >> -> get_defined_ident p
   | <:patt< ? $_$ : ($p$ = $e$) >> -> get_defined_ident p
   | <:patt< $anti:p$ >> -> get_defined_ident p

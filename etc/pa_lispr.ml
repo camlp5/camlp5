@@ -267,7 +267,7 @@ and expr_se =
       [ [Sexpr _ sel1 :: sel2] ->
           let lbs = List.map let_binding_se sel1 in
           let e = progn_se loc sel2 in
-          <:expr< let $opt:r$ $list:lbs$ in $e$ >>
+          <:expr< let $flag:r$ $list:lbs$ in $e$ >>
       | [se :: _] -> error se "let_binding"
       | _ -> error_loc loc "let_binding" ]
   | Sexpr loc [Satom _ Alid "let*" :: sel] ->
@@ -564,7 +564,7 @@ value top_phrase_se se =
       if s.[0] = '#' then
         let n = String.sub s 1 (String.length s - 1) in
         match sl with
-        [ [Satom _ Astring s] -> <:str_item< # $n$ $str:s$ >>
+        [ [Satom _ Astring s] -> <:str_item< # $lid:n$ $str:s$ >>
         | _ -> match () with [] ]
       else str_item_se se
   | Sexpr loc _ -> str_item_se se ]

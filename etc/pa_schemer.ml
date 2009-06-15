@@ -358,7 +358,7 @@ and module_type_se =
       let s = Pcaml.rename_id.val s in
       let mt1 = module_type_se se1 in
       let mt2 = module_type_se se2 in
-      <:module_type< functor ($s$ : $mt1$) -> $mt2$ >>
+      <:module_type< functor ($uid:s$ : $mt1$) -> $mt2$ >>
   | Sexpr loc [Slid _ "sig" :: sel] ->
       let sil = List.map sig_item_se sel in
       <:module_type< sig $list:sil$ end >>
@@ -383,16 +383,16 @@ and sig_item_se =
   | Sexpr loc [Slid _ "exception"; Suid _ c :: sel] ->
       let c = Pcaml.rename_id.val c in
       let tl = List.map ctyp_se sel in
-      <:sig_item< exception $c$ of $list:tl$ >>
+      <:sig_item< exception $uid:c$ of $list:tl$ >>
   | Sexpr loc [Slid _ "value"; Slid _ s; se] ->
       let s = Pcaml.rename_id.val s in
       let t = ctyp_se se in
-      <:sig_item< value $s$ : $t$ >>
+      <:sig_item< value $lid:s$ : $t$ >>
   | Sexpr loc [Slid _ "external"; Slid _ i; se :: sel] ->
       let i = Pcaml.rename_id.val i in
       let pd = List.map string_se sel in
       let t = ctyp_se se in
-      <:sig_item< external $i$ : $t$ = $list:pd$ >>
+      <:sig_item< external $lid:i$ : $t$ = $list:pd$ >>
   | Sexpr loc [Slid _ "module"; Suid _ s; se] ->
       let s = Pcaml.rename_id.val s in
       let mb = module_type_se se in

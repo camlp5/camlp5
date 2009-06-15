@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.44 2007/09/18 15:22:01 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.45 2007/09/18 15:40:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -188,7 +188,7 @@ value variant_decl pc pv =
   match pv with
   [ <:poly_variant< `$c$ >> ->
        sprintf "%s`%s%s" pc.bef c pc.aft
-  | <:poly_variant< `$c$ of $opt:ao$ $list:tl$ >> ->
+  | <:poly_variant< `$c$ of $flag:ao$ $list:tl$ >> ->
        horiz_vertic
          (fun () ->
             sprintf "%s`%s of %s%s%s" pc.bef c (if ao then "& " else "")
@@ -342,7 +342,7 @@ value sig_method_or_method_virtual pc virt priv s t =
 
 EXTEND_PRINTER
   pr_patt: LEVEL "simple"
-    [ [ <:patt< ? $s$ >> ->
+    [ [ <:patt< ?$s$ >> ->
           sprintf "%s?%s%s" pc.bef s pc.aft
       | <:patt< ? ($p$ $opt:eo$) >> ->
           horiz_vertic
@@ -355,7 +355,7 @@ EXTEND_PRINTER
                   | None -> "" ])
                  pc.aft)
             (fun () -> not_impl "patt ?(p=e) vertic" pc p)
-      | <:patt< ? $i$ : ($p$ $opt:eo$) >> ->
+      | <:patt< ?$i$: ($p$ $opt:eo$) >> ->
           horiz_vertic
             (fun () ->
                sprintf "%s?%s:(%s%s)%s" pc.bef i

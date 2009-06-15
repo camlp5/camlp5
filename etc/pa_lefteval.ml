@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: pa_lefteval.ml,v 1.10 2007/09/18 15:22:01 deraugla Exp $ *)
+(* $Id: pa_lefteval.ml,v 1.11 2007/09/18 15:40:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value not_impl name x =
@@ -159,14 +159,14 @@ value rec expr x =
   | <:expr< try $e$ with [ $list:pwel$ ] >> ->
       <:expr< try $expr e$ with [ $list:List.map match_assoc pwel$ ] >>
   | <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
-      <:expr< let $opt:rf$ $list:List.map let_binding pel$ in $expr e$ >>
-  | <:expr< let module $s$ = $me$ in $e$ >> ->
-      <:expr< let module $s$ = $module_expr me$ in $expr e$ >>
+      <:expr< let $flag:rf$ $list:List.map let_binding pel$ in $expr e$ >>
+  | <:expr< let module $uid:s$ = $me$ in $e$ >> ->
+      <:expr< let module $uid:s$ = $module_expr me$ in $expr e$ >>
   | <:expr< if $e1$ then $e2$ else $e3$ >> ->
       <:expr< if $expr e1$ then $expr e2$ else $expr e3$ >>
   | <:expr< while $e$ do { $list:el$ } >> ->
       <:expr< while $expr e$ do { $list:List.map expr el$ } >>
-  | <:expr< for $i$ = $e1$ $to:t$ $e2$ do { $list:el$ } >> ->
+  | <:expr< for $lid:i$ = $e1$ $to:t$ $e2$ do { $list:el$ } >> ->
       <:expr< for $i$ = $e1$ $to:t$ $e2$ do { $list:List.map expr el$ } >>
   | <:expr< do { $list:el$ } >> -> <:expr< do { $list:List.map expr el$ } >>
   | <:expr< $e$ # $s$ >> -> <:expr< $expr e$ # $s$ >>

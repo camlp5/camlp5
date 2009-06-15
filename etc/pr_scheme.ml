@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.19 2007/09/18 15:22:01 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.20 2007/09/18 15:40:03 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml.OldPrinters;
@@ -145,9 +145,9 @@ value rec is_irrefut_patt =
   | <:patt< ($p$ : $_$) >> -> is_irrefut_patt p
   | <:patt< ($list:pl$) >> -> List.for_all is_irrefut_patt pl
   | <:patt< ?$_$: ( $p$ ) >> -> is_irrefut_patt p
-  | <:patt< ? $_$ : ($p$ = $_$) >> -> is_irrefut_patt p
-  | <:patt< ~ $_$ >> -> True
-  | <:patt< ~ $_$ : $p$ >> -> is_irrefut_patt p
+  | <:patt< ?$_$: ($p$ = $_$) >> -> is_irrefut_patt p
+  | <:patt< ~$_$ >> -> True
+  | <:patt< ~$_$: $p$ >> -> is_irrefut_patt p
   | _ -> False ]
 ;
 
