@@ -1,15 +1,16 @@
-/* $Id: base.css,v 1.9 2007/07/12 09:14:56 deraugla Exp $ */
+/* $Id: base.css,v 1.10 2007/07/12 17:49:59 deraugla Exp $ */
 
-body { margin: 0; background-color: rgb(189,225,255) }
+body { margin: 0 0 1px 0; background-color: rgb(189,225,255) }
 
-#menu { width: 20%; position: fixed; top: 0; left: 0; float: left }
+#menu { width: 20%; position: fixed; top: 0; left: 0 }
 #menu ul { padding: 0 }
 #menu h1 { font-weight: normal }
 
 #content { margin-left: 20%; padding: 0 5mm; background-color: white }
 
-body { border: 1px solid }
-#content { border-left: 1px solid }
+body { border: 0 }
+#menu { border-top: 1px solid; border-left: 1px solid }
+#content { border: 1px solid }
 
 body { counter-reset: h2cnt }
 
