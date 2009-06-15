@@ -384,12 +384,14 @@ value get_symbol_after_dot =
 ;
 
 value close_item_set rules_of_nterm items =
+  let ht = Hashtbl.create 101 in
   let rclos =
     loop [] items where rec loop rclos =
       fun
       [ [((m, added, lh, dot, rh) as item) :: rest] ->
-          if List.mem item rclos then loop rclos rest
-          else
+          if Hashtbl.mem ht (m, dot) then loop rclos rest
+          else do {
+            Hashtbl.add ht (m, dot) ();
             let rest =
               match get_symbol_after_dot dot rh with
               [ Some (GS_nterm n) ->
@@ -402,6 +404,7 @@ value close_item_set rules_of_nterm items =
                   rest ]
             in
             loop [item :: rclos] rest
+          }
       | [] ->
           rclos ]
   in
