@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: conclusion.html,v 1.2 2007/08/18 19:14:24 deraugla Exp $ -->
+  <!-- $Id: conclusion.html,v 1.3 2007/08/18 20:58:29 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Conclusion</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -25,6 +25,23 @@
   satisfactory. Several implementations are possible, and
   compatibility with previous versions and user programs is a
   problem. We are continuing thinking of it.</p>
+
+<p>It is also planed to improve the <a href="pretty.html">pretty
+    printing</a> system and the <a href="printers.html">printers</a>,
+  so that the management of the lines (indentation, continuations)
+  be handled by the system. For the moment, the programmer has to
+  manage them using the "<tt>pc</tt>" variable.</p>
+
+<p>Extensible <a href="lexers.html">lexers</a> would be a interesting
+  extension, also. And possibly lexers using regular expressions
+  (extensible if possible, otherwise as a different module).</p>
+
+<p>The camlp5 lexer for ocaml programs (module Plexer) allow utf-8
+  characters. Perhaps a reflexion to add greek characters and/or real
+  utf-8 arrows in the syntax could be interesting.</p>
+
+<p>All these extensions will be done if there are good basic ideas for
+  their implementations.</p>
 
 <p>... to be continued ... </p>
 
