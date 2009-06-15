@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.57 2007/12/12 01:36:02 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.58 2007/12/12 11:33:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -130,31 +130,12 @@ value class_decl pc ci =
           else ([], gce)
       | ce -> ([], ce) ]
   in
-  horiz_vertic
-    (fun () ->
-       sprintf "%s%s%s%s%s = %s%s" pc.bef
-         (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
-            (Pcaml.unvala ci.MLast.ciNam)
-         (class_type_params {(pc) with bef = ""; aft = ""}
-            (Pcaml.unvala (snd ci.MLast.ciPrm)))
-         (if pl = [] then "" else
-          hlist patt {(pc) with bef = " "; aft = ""} pl)
-         (class_expr {(pc) with bef = ""; aft = ""} ce) pc.aft)
-    (fun () ->
-       let s1 =
-         sprintf "%s%s%s%s%s =" pc.bef
-           (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
-           (Pcaml.unvala ci.MLast.ciNam)
-           (class_type_params {(pc) with bef = ""; aft = ""}
-              (Pcaml.unvala (snd ci.MLast.ciPrm)))
-           (if pl = [] then ""
-            else hlist patt {(pc) with bef = " "; aft = ""} pl)
-       in
-       let s2 =
-         class_expr
-           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} ce
-       in
-       sprintf "%s\n%s" s1 s2)
+  pprintf pc "%s%s%p%s%p =@;%p"
+    (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
+    (Pcaml.unvala ci.MLast.ciNam)
+    class_type_params (Pcaml.unvala (snd ci.MLast.ciPrm))
+    (if pl = [] then "" else " ") (hlist patt) pl
+    class_expr ce
 ;
 
 value variant_decl pc pv =
