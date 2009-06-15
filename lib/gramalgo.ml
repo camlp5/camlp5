@@ -580,19 +580,44 @@ value make_first rl nterm_table nb_nterms = do {
     }
     else ()
   in
+  let rec add_first_in_rest rh =
+    match rh with
+    [ [s :: rest] -> do {
+        match s with
+        [ GS_nterm s ->
+            let m = Hashtbl.find nterm_table s in
+            List.iter
+              (fun s1 ->
+                 if s1 = "ε" then
+                   List.iter
+                     (fun s2 -> add_in_ht first_in_rule rh s2)
+                     (try Hashtbl.find first_in_rule rest with
+                      [ Not_found -> [] ])
+                 else add_in_arr first_in_nterm m s1)
+              first_in_nterm.(m)
+        | GS_term s ->
+            add_in_ht first_in_rule rh s ];
+        add_first_in_rest rest
+      }
+    | [] -> () ]
+  in
   let rec add_first m rh =
     match rh with
-    [ [GS_term s :: _] -> do {
-        add_in_ht first_in_rule rh s;
-        add_in_arr first_in_nterm m s;
+    [ [s :: rest] -> do {
+        match s with
+        [ GS_term s -> do {
+            add_in_ht first_in_rule rh s;
+            add_in_arr first_in_nterm m s;
+          }
+        | GS_nterm s ->
+            let m1 = Hashtbl.find nterm_table s in
+            List.iter
+              (fun s1 ->
+                 if s1 = "ε" then add_first m rest
+                 else add_in_arr first_in_nterm m s1)
+              first_in_nterm.(m1) ];
+        add_first_in_rest rest;
       }
-    | [GS_nterm s :: rest] ->
-        let m1 = Hashtbl.find nterm_table s in
-        List.iter
-          (fun s1 ->
-             if s1 = "ε" then add_first m rest
-             else add_in_arr first_in_nterm m s1)
-          first_in_nterm.(m1)
     | [] -> do {
         add_in_ht first_in_rule rh "ε";
         add_in_arr first_in_nterm m  "ε";
@@ -607,10 +632,10 @@ value make_first rl nterm_table nb_nterms = do {
       rl;
     if changes.val then loop () else ();
   };
-  first_in_nterm
+  (first_in_nterm, first_in_rule)
 };
 
-DEFINE TEST;
+(*DEFINE TEST;*)
 
 value lr0 entry lev = do {
   Printf.eprintf "LR(0) %s %d\n" entry.ename lev;
@@ -684,7 +709,7 @@ value lr0 entry lev = do {
   flush stderr;
 
   (* compute first *)
-  let first = make_first rl nterm_table nb_nterms in
+  let (first, first_in_rule) = make_first rl nterm_table nb_nterms in
   Printf.eprintf "\nFirst\n\n";
   Hashtbl.iter
     (fun s i -> do {
@@ -695,39 +720,58 @@ value lr0 entry lev = do {
     nterm_table;
   flush stderr;
 
-(*
   (* compute follow *)
   let follow = Array.create nb_nterms [] in
-  List.iter
-    (fun (_, lh, rh) ->
-       loop rh where rec loop =
-         fun
-         [ [GS_nterm s :: rest] -> do {
-let _ = do { Printf.eprintf "compute first_of \"%s\"\n" s; flush stderr; } in
-             match first_of rl rest with
-             [ [] ->
-let _ = do { Printf.eprintf "- first_of \"%s\" = []\n" s; flush stderr; } in
-                 ()
-             | first ->
-                 let j = Hashtbl.find nterm_table s in
-                 let first = first_of rl rest in
-let r = do {[
-                 follow.(j) := List.merge compare follow.(j) first ];
-} in
-let _ = do { Printf.eprintf "- first_of \"%s\" = [" s; let _ = List.fold_left (fun s x -> do { Printf.eprintf "%s%s" s x; "; " }) "" follow.(j) in (); Printf.eprintf "]\n"; flush stderr; } in
-List.hd r ];
-             loop rest
-           }
-         | [GS_term _ :: rest] -> loop rest
-         | [] -> () ])
-    rl;
-  Printf.eprintf "\nFollow\n\n";
-  for i = 0 to Array.length follow - 1 do {
-    Printf.eprintf "%d:" i;
-    List.iter (fun s -> Printf.eprintf " %s" s) follow.(i);
-    Printf.eprintf "\n";
+  let changed = ref False in
+  loop () where rec loop () = do {
+    changed.val := False;
+    List.iter
+      (fun (_, lh, rh) ->
+         loop rh where rec loop =
+           fun
+           [ [GS_nterm s :: rest] -> do {
+               let m = Hashtbl.find nterm_table s in
+               let fir =
+                 try Hashtbl.find first_in_rule rest with
+                 [ Not_found -> [] ]
+               in
+               List.iter
+                 (fun s ->
+                    if s = "ε" then ()
+                    else if not (List.mem s follow.(m)) then do {
+                      follow.(m) := [s :: follow.(m)];
+                      changed.val := True;
+                    }
+                    else ())
+                 fir;
+               if List.mem "ε" fir then
+                 let m1 = Hashtbl.find nterm_table lh in
+                 List.iter
+                   (fun s ->
+                      if s = "ε" then ()
+                      else if not (List.mem s follow.(m)) then do {
+                        follow.(m) := [s :: follow.(m)];
+                        changed.val := True;
+                      }
+                      else ())
+                   follow.(m1)
+               else ();
+               loop rest
+             }
+           | [GS_term _ :: rest] -> loop rest
+           | [] -> () ])
+      rl;
+    if changed.val then loop () else ();
   };
-*)
+  Printf.eprintf "\nFollow\n\n";
+  Hashtbl.iter
+    (fun s i -> do {
+       Printf.eprintf "  follow (%s) =" s;
+       List.iter (fun s -> Printf.eprintf " %s" s) follow.(i);
+       Printf.eprintf "\n";
+     })
+    nterm_table;
+  flush stderr;
 
   (* make goto table *)
   let goto_table =
