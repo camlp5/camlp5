@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo *)
-(* $Id: pcaml.ml,v 1.39 2007/10/11 10:47:26 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.40 2007/10/17 19:57:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value version = "5.02-exp";
@@ -24,7 +24,7 @@ value module_expr = Grammar.Entry.create gram "module_expr";
 value expr = Grammar.Entry.create gram "expr";
 value patt = Grammar.Entry.create gram "patt";
 value ipatt = Grammar.Entry.create gram "ipatt";
-value ctyp = Grammar.Entry.create gram "type";
+value ctyp = Grammar.Entry.create gram "ctyp";
 value let_binding = Grammar.Entry.create gram "let_binding";
 value type_declaration = Grammar.Entry.create gram "type_declaration";
 value match_case = Grammar.Entry.create gram "match_case";
@@ -141,8 +141,8 @@ value handle_quotation loc proj in_expr entry reloc (name, str) =
   reloc (fun _ -> loc) shift ast
 ;
 
-value expr_eoi = Grammar.Entry.create gram "expression";
-value patt_eoi = Grammar.Entry.create gram "pattern";
+value expr_eoi = Grammar.Entry.create gram "expr_eoi";
+value patt_eoi = Grammar.Entry.create gram "patt_eoi";
 EXTEND
   expr_eoi:
     [ [ x = expr; EOI -> x ] ]

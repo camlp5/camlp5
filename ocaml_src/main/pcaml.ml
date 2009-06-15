@@ -25,7 +25,7 @@ let module_expr = Grammar.Entry.create gram "module_expr";;
 let expr = Grammar.Entry.create gram "expr";;
 let patt = Grammar.Entry.create gram "patt";;
 let ipatt = Grammar.Entry.create gram "ipatt";;
-let ctyp = Grammar.Entry.create gram "type";;
+let ctyp = Grammar.Entry.create gram "ctyp";;
 let let_binding = Grammar.Entry.create gram "let_binding";;
 let type_declaration = Grammar.Entry.create gram "type_declaration";;
 let match_case = Grammar.Entry.create gram "match_case";;
@@ -139,8 +139,8 @@ let handle_quotation loc proj in_expr entry reloc (name, str) =
   reloc (fun _ -> loc) shift ast
 ;;
 
-let expr_eoi = Grammar.Entry.create gram "expression";;
-let patt_eoi = Grammar.Entry.create gram "pattern";;
+let expr_eoi = Grammar.Entry.create gram "expr_eoi";;
+let patt_eoi = Grammar.Entry.create gram "patt_eoi";;
 Grammar.extend
   [Grammar.Entry.obj (expr_eoi : 'expr_eoi Grammar.Entry.e), None,
    [None, None,

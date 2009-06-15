@@ -851,11 +851,15 @@ let start_parser_of_entry entry =
   | Dparser p -> fun levn strm -> p strm
 ;;
 
+let trace_lr0 = ref false;;
+
 (* Extend syntax *)
 
 let init_entry_functions entry =
   entry.estart <-
     (fun lev strm ->
+       if !(Gramalgo.trace) && !trace_lr0 then Gramalgo.lr0 entry lev;
+       trace_lr0 := false;
        let f = start_parser_of_entry entry in entry.estart <- f; f lev strm);
   entry.econtinue <-
     fun lev bp a strm ->
@@ -1050,6 +1054,7 @@ module Entry =
       Obj.magic (parse_parsable entry p : Obj.t)
     ;;
     let parse (entry : 'a e) cs : 'a =
+      let _ = trace_lr0 := true in
       let parsable = parsable entry.egram cs in parse_parsable entry parsable
     ;;
     let parse_token (entry : 'a e) ts : 'a =

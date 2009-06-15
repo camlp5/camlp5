@@ -171,19 +171,19 @@ module Qast =
   end
 ;;
 
-let sig_item = Grammar.Entry.create gram "signature item";;
-let str_item = Grammar.Entry.create gram "structure item";;
+let sig_item = Grammar.Entry.create gram "sig_item";;
+let str_item = Grammar.Entry.create gram "str_item";;
 let ctyp = Grammar.Entry.create gram "type";;
-let patt = Grammar.Entry.create gram "pattern";;
-let expr = Grammar.Entry.create gram "expression";;
+let patt = Grammar.Entry.create gram "patt";;
+let expr = Grammar.Entry.create gram "expr";;
 
-let module_type = Grammar.Entry.create gram "module type";;
-let module_expr = Grammar.Entry.create gram "module expression";;
+let module_type = Grammar.Entry.create gram "module_type";;
+let module_expr = Grammar.Entry.create gram "module_expr";;
 
-let class_type = Grammar.Entry.create gram "class type";;
-let class_expr = Grammar.Entry.create gram "class expr";;
-let class_sig_item = Grammar.Entry.create gram "class signature item";;
-let class_str_item = Grammar.Entry.create gram "class structure item";;
+let class_type = Grammar.Entry.create gram "class_type";;
+let class_expr = Grammar.Entry.create gram "class_expr";;
+let class_sig_item = Grammar.Entry.create gram "class_sig_item";;
+let class_str_item = Grammar.Entry.create gram "class_str_item";;
 
 let ipatt = Grammar.Entry.create gram "ipatt";;
 let let_binding = Grammar.Entry.create gram "let_binding";;
@@ -6127,19 +6127,19 @@ let apply_entry e q =
   let patt s = Qast.to_patt (m ()) (f s) in Quotation.ExAst (expr, patt)
 ;;
 
-let sig_item_eoi = Grammar.Entry.create gram "signature item" in
-let str_item_eoi = Grammar.Entry.create gram "structure item" in
-let ctyp_eoi = Grammar.Entry.create gram "type" in
-let patt_eoi = Grammar.Entry.create gram "pattern" in
-let expr_eoi = Grammar.Entry.create gram "expression" in
-let module_type_eoi = Grammar.Entry.create gram "module type" in
-let module_expr_eoi = Grammar.Entry.create gram "module expression" in
-let class_type_eoi = Grammar.Entry.create gram "class type" in
-let class_expr_eoi = Grammar.Entry.create gram "class expression" in
-let class_sig_item_eoi = Grammar.Entry.create gram "class signature item" in
-let class_str_item_eoi = Grammar.Entry.create gram "class structure item" in
-let with_constr_eoi = Grammar.Entry.create gram "with constr" in
-let poly_variant_eoi = Grammar.Entry.create gram "polymorphic variant" in
+let sig_item_eoi = Grammar.Entry.create gram "sig_item_eoi" in
+let str_item_eoi = Grammar.Entry.create gram "str_item_eoi" in
+let ctyp_eoi = Grammar.Entry.create gram "ctyp_eoi" in
+let patt_eoi = Grammar.Entry.create gram "patt_eoi" in
+let expr_eoi = Grammar.Entry.create gram "expr_eoi" in
+let module_type_eoi = Grammar.Entry.create gram "module_type_eoi" in
+let module_expr_eoi = Grammar.Entry.create gram "module_expr_eoi" in
+let class_type_eoi = Grammar.Entry.create gram "class_type_eoi" in
+let class_expr_eoi = Grammar.Entry.create gram "class_expr_eoi" in
+let class_sig_item_eoi = Grammar.Entry.create gram "class_sig_item_eoi" in
+let class_str_item_eoi = Grammar.Entry.create gram "class_str_item_eoi" in
+let with_constr_eoi = Grammar.Entry.create gram "with_constr_eoi" in
+let poly_variant_eoi = Grammar.Entry.create gram "poly_variant_eoi" in
 Grammar.extend
   [Grammar.Entry.obj (sig_item_eoi : 'sig_item_eoi Grammar.Entry.e), None,
    [None, None,

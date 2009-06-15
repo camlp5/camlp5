@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.119 2007/10/07 18:58:22 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.120 2007/10/17 19:57:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -125,19 +125,19 @@ module Qast =
   end
 ;
 
-value sig_item = Grammar.Entry.create gram "signature item";
-value str_item = Grammar.Entry.create gram "structure item";
+value sig_item = Grammar.Entry.create gram "sig_item";
+value str_item = Grammar.Entry.create gram "str_item";
 value ctyp = Grammar.Entry.create gram "type";
-value patt = Grammar.Entry.create gram "pattern";
-value expr = Grammar.Entry.create gram "expression";
+value patt = Grammar.Entry.create gram "patt";
+value expr = Grammar.Entry.create gram "expr";
 
-value module_type = Grammar.Entry.create gram "module type";
-value module_expr = Grammar.Entry.create gram "module expression";
+value module_type = Grammar.Entry.create gram "module_type";
+value module_expr = Grammar.Entry.create gram "module_expr";
 
-value class_type = Grammar.Entry.create gram "class type";
-value class_expr = Grammar.Entry.create gram "class expr";
-value class_sig_item = Grammar.Entry.create gram "class signature item";
-value class_str_item = Grammar.Entry.create gram "class structure item";
+value class_type = Grammar.Entry.create gram "class_type";
+value class_expr = Grammar.Entry.create gram "class_expr";
+value class_sig_item = Grammar.Entry.create gram "class_sig_item";
+value class_str_item = Grammar.Entry.create gram "class_str_item";
 
 value ipatt = Grammar.Entry.create gram "ipatt";
 value let_binding = Grammar.Entry.create gram "let_binding";
@@ -1287,19 +1287,19 @@ value apply_entry e q =
   Quotation.ExAst (expr, patt)
 ;
 
-let sig_item_eoi = Grammar.Entry.create gram "signature item" in
-let str_item_eoi = Grammar.Entry.create gram "structure item" in
-let ctyp_eoi = Grammar.Entry.create gram "type" in
-let patt_eoi = Grammar.Entry.create gram "pattern" in
-let expr_eoi = Grammar.Entry.create gram "expression" in
-let module_type_eoi = Grammar.Entry.create gram "module type" in
-let module_expr_eoi = Grammar.Entry.create gram "module expression" in
-let class_type_eoi = Grammar.Entry.create gram "class type" in
-let class_expr_eoi = Grammar.Entry.create gram "class expression" in
-let class_sig_item_eoi = Grammar.Entry.create gram "class signature item" in
-let class_str_item_eoi = Grammar.Entry.create gram "class structure item" in
-let with_constr_eoi = Grammar.Entry.create gram "with constr" in
-let poly_variant_eoi = Grammar.Entry.create gram "polymorphic variant" in
+let sig_item_eoi = Grammar.Entry.create gram "sig_item_eoi" in
+let str_item_eoi = Grammar.Entry.create gram "str_item_eoi" in
+let ctyp_eoi = Grammar.Entry.create gram "ctyp_eoi" in
+let patt_eoi = Grammar.Entry.create gram "patt_eoi" in
+let expr_eoi = Grammar.Entry.create gram "expr_eoi" in
+let module_type_eoi = Grammar.Entry.create gram "module_type_eoi" in
+let module_expr_eoi = Grammar.Entry.create gram "module_expr_eoi" in
+let class_type_eoi = Grammar.Entry.create gram "class_type_eoi" in
+let class_expr_eoi = Grammar.Entry.create gram "class_expr_eoi" in
+let class_sig_item_eoi = Grammar.Entry.create gram "class_sig_item_eoi" in
+let class_str_item_eoi = Grammar.Entry.create gram "class_str_item_eoi" in
+let with_constr_eoi = Grammar.Entry.create gram "with_constr_eoi" in
+let poly_variant_eoi = Grammar.Entry.create gram "poly_variant_eoi" in
 do {
   EXTEND
     sig_item_eoi: [ [ x = sig_item; EOI -> x ] ];
