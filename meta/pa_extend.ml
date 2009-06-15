@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.48 2007/09/09 08:35:08 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.49 2007/09/09 09:06:35 deraugla Exp $ *)
 
 value split_ext = ref False;
 
@@ -234,7 +234,8 @@ module MetaAction =
           <:expr< MLast.PaOrp $mloc$ $mpatt p1$ $mpatt p2$ >>
       | MLast.PaStr loc s ->
           <:expr< MLast.PaStr $mloc$ $str:String.escaped s$ >>
-      | MLast.PaTup loc pl -> <:expr< MLast.PaTup $mloc$ $mlist mpatt pl$ >>
+      | MLast.PaTup loc pl ->
+          <:expr< MLast.PaTup $mloc$ $mvala (mlist mpatt) pl$ >>
       | MLast.PaTyc loc p t ->
           <:expr< MLast.PaTyc $mloc$ $mpatt p$ $mctyp t$ >>
       | MLast.PaUid loc s -> <:expr< MLast.PaUid $mloc$ $str:s$ >>
@@ -363,22 +364,22 @@ value quotify_action psl act =
   List.fold_left
     (fun e ps ->
        match ps.pattern with
-       [ Some <:patt< ($p$, $list:pl$) >> ->
+       [ Some <:patt< ($list:pl$) >> ->
            let loc = Ploc.dummy in
-           let pname = pname_of_ptuple [p :: pl] in
+           let pname = pname_of_ptuple pl in
            let (pl1, el1) =
              let (l, _) =
                List.fold_left
                  (fun (l, cnt) _ ->
                     ([symgen ^ string_of_int cnt :: l], cnt + 1))
-                 ([], 1) [p :: pl]
+                 ([], 1) pl
              in
              let l = List.rev l in
              (List.map (fun s -> <:patt< $lid:s$ >>) l,
               List.map (fun s -> <:expr< $lid:s$ >>) l)
            in
            <:expr<
-              let ($p$, $list:pl$) =
+              let ($list:pl$) =
                 match $lid:pname$ with
                 [ Qast.Tuple $mklistpat loc pl1$ -> ($list:el1$)
                 | _ -> match () with [] ]

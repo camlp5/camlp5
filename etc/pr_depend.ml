@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.18 2007/09/09 08:35:08 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.19 2007/09/09 09:06:35 deraugla Exp $ *)
 
 open MLast;
 
@@ -82,10 +82,10 @@ value rec patt =
   | PaOrp _ p1 p2 -> do { patt p1; patt p2 }
   | PaRec _ lpl -> list label_patt lpl
   | PaRng _ p1 p2 -> do { patt p1; patt p2 }
-  | PaStr _ _ -> ()
-  | PaTup _ pl -> list patt pl
-  | PaTyc _ p t -> do { patt p; ctyp t }
-  | PaUid _ _ -> ()
+  | <:patt< $str:_$ >> -> ()
+  | <:patt< ($list:pl$) >> -> list patt pl
+  | <:patt< ($p$ : $t$) >> -> do { patt p; ctyp t }
+  | <:patt< $uid:_$ >> -> ()
   | PaVrn _ _ -> ()
   | x -> not_impl "patt" x ]
 and patt_module =

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.53 2007/09/09 08:35:08 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.54 2007/09/09 09:06:35 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -414,7 +414,9 @@ EXTEND
       | "("; p = SELF; ":"; t = ctyp; ")" -> <:patt< ($p$ : $t$) >>
       | "("; p = SELF; "as"; p2 = SELF; ")" -> <:patt< ($p$ as $p2$) >>
       | "("; p = SELF; ","; pl = LIST1 patt SEP ","; ")" ->
-          <:patt< ( $list:[p::pl]$) >>
+          <:patt< ($list:[p::pl]$) >>
+      | "("; pl = V LIST1 patt SEP ","; ")" ->
+          <:patt< ($alist:pl$) >>
       | "_" -> <:patt< _ >> ] ]
   ;
   cons_patt_opt:
@@ -438,7 +440,9 @@ EXTEND
       | "("; p = SELF; ":"; t = ctyp; ")" -> <:patt< ($p$ : $t$) >>
       | "("; p = SELF; "as"; p2 = SELF; ")" -> <:patt< ($p$ as $p2$) >>
       | "("; p = SELF; ","; pl = LIST1 ipatt SEP ","; ")" ->
-          <:patt< ( $list:[p::pl]$) >>
+          <:patt< ($list:[p::pl]$) >>
+      | "("; pl = V LIST1 patt SEP ","; ")" ->
+          <:patt< ( $alist:pl$) >>
       | s = V LIDENT -> <:patt< $alid:s$ >>
       | "_" -> <:patt< _ >> ] ]
   ;

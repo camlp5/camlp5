@@ -486,7 +486,7 @@ module MetaAction =
                   (loc, MLast.ExUid (loc, "MLast"),
                    MLast.ExUid (loc, "PaTup")),
                 mloc),
-             mlist mpatt pl)
+             mvala (mlist mpatt) pl)
       | MLast.PaTyc (loc, p, t) ->
           MLast.ExApp
             (loc,
@@ -820,15 +820,15 @@ let quotify_action psl act =
   List.fold_left
     (fun e ps ->
        match ps.pattern with
-         Some (MLast.PaTup (_, p :: pl)) ->
+         Some (MLast.PaTup (_, pl)) ->
            let loc = Ploc.dummy in
-           let pname = pname_of_ptuple (p :: pl) in
+           let pname = pname_of_ptuple pl in
            let (pl1, el1) =
              let (l, _) =
                List.fold_left
                  (fun (l, cnt) _ ->
                     (symgen ^ string_of_int cnt) :: l, cnt + 1)
-                 ([], 1) (p :: pl)
+                 ([], 1) pl
              in
              let l = List.rev l in
              List.map (fun s -> MLast.PaLid (loc, s)) l,
@@ -836,7 +836,7 @@ let quotify_action psl act =
            in
            MLast.ExLet
              (loc, false,
-              [MLast.PaTup (loc, p :: pl),
+              [MLast.PaTup (loc, pl),
                MLast.ExMat
                  (loc, MLast.ExLid (loc, pname),
                   [MLast.PaApp

@@ -114,7 +114,7 @@ let rec patt floc sh =
     | PaRec (loc, x1) ->
         PaRec (floc loc, List.map (fun (x1, x2) -> self x1, self x2) x1)
     | PaStr (loc, x1) -> PaStr (floc loc, x1)
-    | PaTup (loc, x1) -> PaTup (floc loc, List.map self x1)
+    | PaTup (loc, x1) -> PaTup (floc loc, vala_map (List.map self) x1)
     | PaTyc (loc, x1, x2) -> PaTyc (floc loc, self x1, ctyp floc sh x2)
     | PaTyp (loc, x1) -> PaTyp (floc loc, x1)
     | PaUid (loc, x1) -> PaUid (floc loc, x1)

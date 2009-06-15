@@ -1175,6 +1175,14 @@ Grammar.extend
      Some "simple", None,
      [[Gramext.Stoken ("", "_")],
       Gramext.action (fun _ (loc : Ploc.t) -> (MLast.PaAny loc : 'patt));
+      [Gramext.Stoken ("", "(");
+       Gramext.Slist1sep
+         (Gramext.Snterm (Grammar.Entry.obj (patt : 'patt Grammar.Entry.e)),
+          Gramext.Stoken ("", ","));
+       Gramext.Stoken ("", ")")],
+      Gramext.action
+        (fun _ (pl : 'patt list) _ (loc : Ploc.t) ->
+           (MLast.PaTup (loc, pl) : 'patt));
       [Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ",");
        Gramext.Slist1sep
          (Gramext.Snterm (Grammar.Entry.obj (patt : 'patt Grammar.Entry.e)),
@@ -1309,6 +1317,14 @@ Grammar.extend
       [Gramext.Stoken ("LIDENT", "")],
       Gramext.action
         (fun (s : string) (loc : Ploc.t) -> (MLast.PaLid (loc, s) : 'ipatt));
+      [Gramext.Stoken ("", "(");
+       Gramext.Slist1sep
+         (Gramext.Snterm (Grammar.Entry.obj (patt : 'patt Grammar.Entry.e)),
+          Gramext.Stoken ("", ","));
+       Gramext.Stoken ("", ")")],
+      Gramext.action
+        (fun _ (pl : 'patt list) _ (loc : Ploc.t) ->
+           (MLast.PaTup (loc, pl) : 'ipatt));
       [Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ",");
        Gramext.Slist1sep
          (Gramext.Snterm (Grammar.Entry.obj (ipatt : 'ipatt Grammar.Entry.e)),

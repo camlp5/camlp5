@@ -374,7 +374,7 @@ module Meta =
                     (loc, MLast.ExUid (loc, "MLast"),
                      MLast.ExUid (loc, "PaTup")),
                   ln),
-               e_list loop pl)
+               e_vala (e_list loop) pl)
         | PaTyc (_, p, t) ->
             MLast.ExApp
               (loc,
@@ -460,7 +460,7 @@ module Meta =
                     (loc, MLast.PaUid (loc, "MLast"),
                      MLast.PaUid (loc, "PaTup")),
                   MLast.PaAny loc),
-               p_list loop pl)
+               p_vala (p_list loop) pl)
         | x -> not_impl "p_patt" x
       in
       loop

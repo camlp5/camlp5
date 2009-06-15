@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: mLast.mli,v 1.20 2007/09/09 08:35:08 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.21 2007/09/09 09:06:35 deraugla Exp $ *)
 
 (* Module [MLast]: abstract syntax tree.
 
@@ -78,7 +78,7 @@ type patt =
   | PaRng of loc and patt and patt
   | PaRec of loc and list (patt * patt)
   | PaStr of loc and string
-  | PaTup of loc and list patt
+  | PaTup of loc and V (list patt)
   | PaTyc of loc and patt and ctyp
   | PaTyp of loc and list string
   | PaUid of loc and string

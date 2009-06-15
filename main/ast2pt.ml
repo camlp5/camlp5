@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.21 2007/09/09 08:35:08 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.22 2007/09/09 09:06:35 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -469,7 +469,7 @@ value rec patt =
   | PaRec loc lpl -> mkpat loc (Ppat_record (List.map mklabpat lpl))
   | PaStr loc s ->
       mkpat loc (Ppat_constant (Const_string (string_of_string_token loc s)))
-  | PaTup loc pl -> mkpat loc (Ppat_tuple (List.map patt pl))
+  | PaTup loc pl -> mkpat loc (Ppat_tuple (List.map patt (uv pl)))
   | PaTyc loc p t -> mkpat loc (Ppat_constraint (patt p) (ctyp t))
   | PaTyp loc sl -> mkpat loc (Ppat_type (long_id_of_string_list loc sl))
   | PaUid loc s ->

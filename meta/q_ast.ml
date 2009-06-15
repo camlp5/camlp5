@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.43 2007/09/09 08:35:08 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.44 2007/09/09 09:06:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -251,7 +251,7 @@ module Meta =
         | PaOrp _ p1 p2 -> <:expr< MLast.PaOrp $ln$ $loop p1$ $loop p2$ >>
         | PaRng _ p1 p2 -> <:expr< MLast.PaRng $ln$ $loop p1$ $loop p2$ >>
         | PaStr _ s -> <:expr< MLast.PaStr $ln$ $e_string s$ >>
-        | PaTup _ pl -> <:expr< MLast.PaTup $ln$ $e_list loop pl$ >>
+        | PaTup _ pl -> <:expr< MLast.PaTup $ln$ $e_vala (e_list loop) pl$ >>
         | PaTyc _ p t -> <:expr< MLast.PaTyc $ln$ $loop p$ $e_ctyp t$ >>
         | PaUid _ s -> <:expr< MLast.PaUid $ln$ $e_string s$ >>
         | IFDEF STRICT THEN
@@ -275,7 +275,7 @@ module Meta =
         | PaAli _ p1 p2 -> <:patt< MLast.PaAli _ $loop p1$ $loop p2$ >>
         | PaChr _ s -> <:patt< MLast.PaChr _ $p_string s$ >>
         | PaLid _ s -> <:patt< MLast.PaLid _ $p_vala p_string s$ >>
-        | PaTup _ pl -> <:patt< MLast.PaTup _ $p_list loop pl$ >>
+        | PaTup _ pl -> <:patt< MLast.PaTup _ $p_vala (p_list loop) pl$ >>
         | IFDEF STRICT THEN
             PaXtr loc s _ ->
               let asit = s.[0] = 'a' in
