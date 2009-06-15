@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.162 2007/12/26 00:53:56 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.163 2007/12/26 10:12:56 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1248,8 +1248,8 @@ EXTEND_PRINTER
                if has_cons_with_params vdl then sprintf "\n"
                else hlist2 cons_decl (bar_before cons_decl) pc vdl)
             (fun () ->
-               vlist2 cons_decl (bar_before cons_decl)
-                 {(pc) with bef = sprintf "%s  " pc.bef} vdl)
+               pprintf pc "  %p" (vlist2 cons_decl (bar_before cons_decl))
+                 vdl)
       | <:ctyp< $lid:t$ >> ->
           var_escaped pc t
       | <:ctyp< $uid:t$ >> ->
@@ -1379,7 +1379,8 @@ EXTEND_PRINTER
       [ <:module_expr< $x$ . $y$ >> ->
           pprintf pc "%p.%p" curr x curr y ]
     | "simple"
-      [ <:module_expr< $uid:s$ >> -> sprintf "%s%s%s" pc.bef s pc.aft
+      [ <:module_expr< $uid:s$ >> ->
+          pprintf pc "%s" s
       | <:module_expr< ($me$ : $mt$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" module_expr me module_type mt
       | <:module_expr< struct $list:_$ end >> as z ->
@@ -1645,13 +1646,11 @@ value class_type_decl pc ci =
 value class_type_decl_list pc cd =
   horiz_vertic
     (fun () ->
-       sprintf "%sclass type %s%s" pc.bef
-         (hlist2 class_type_decl (and_before class_type_decl)
-            {(pc) with bef = ""; aft = ""} cd)
-         pc.aft)
+       pprintf pc "class type %p"
+         (hlist2 class_type_decl (and_before class_type_decl)) cd)
     (fun () ->
-       vlist2 class_type_decl (and_before class_type_decl)
-         {(pc) with bef = sprintf "%sclass type " pc.bef} cd)
+       pprintf pc "class type %p"
+         (vlist2 class_type_decl (and_before class_type_decl)) cd)
 ;
 
 value class_decl pc ci =
@@ -1665,59 +1664,21 @@ value class_decl pc ci =
           else ([], gce)
       | ce -> ([], ce) ]
   in
-  horiz_vertic
-    (fun () ->
-       sprintf "%s%s%s%s%s = %s%s" pc.bef
-         (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
-         (class_type_params {(pc) with bef = ""; aft = ""}
-            (Pcaml.unvala (snd ci.MLast.ciPrm)))
-         (Pcaml.unvala ci.MLast.ciNam)
-         (if pl = [] then "" else
-          hlist patt {(pc) with bef = " "; aft = ""} pl)
-         (class_expr {(pc) with bef = ""; aft = ""} ce) pc.aft)
-    (fun () ->
-       let s1 =
-         sprintf "%s%s%s%s%s =" pc.bef
-           (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
-           (class_type_params {(pc) with bef = ""; aft = ""}
-              (Pcaml.unvala (snd ci.MLast.ciPrm)))
-           (Pcaml.unvala ci.MLast.ciNam)
-           (if pl = [] then ""
-            else hlist patt {(pc) with bef = " "; aft = ""} pl)
-       in
-       let s2 =
-         class_expr
-           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} ce
-       in
-       sprintf "%s\n%s" s1 s2)
+  pprintf pc "%s%p%s%s%p =@;%p"
+    (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
+    class_type_params (Pcaml.unvala (snd ci.MLast.ciPrm))
+    (Pcaml.unvala ci.MLast.ciNam) (if pl = [] then "" else " ")
+    (hlist patt) pl class_expr ce
 ;
 
 value variant_decl pc pv =
   match pv with
   [ <:poly_variant< `$c$ >> ->
-       sprintf "%s`%s%s" pc.bef c pc.aft
+       pprintf pc "`%s" c
   | <:poly_variant< `$c$ of $flag:ao$ $list:tl$ >> ->
-       horiz_vertic
-         (fun () ->
-            sprintf "%s`%s of %s%s%s" pc.bef c (if ao then "& " else "")
-              (hlist2 ctyp (amp_before ctyp)
-                 {(pc) with bef = ""; aft = ""} tl) pc.aft)
-         (fun () ->
-            let s1 =
-              sprintf "%s`%s of%s" pc.bef c (if ao then " &" else "")
-            in
-            let s2 =
-               horiz_vertic
-                 (fun () ->
-                    sprintf "%s%s%s" (tab (pc.ind + 6))
-                      (hlist2 ctyp (amp_before ctyp)
-                         {(pc) with bef = ""; aft = ""} tl) pc.aft)
-                 (fun () ->
-                    let tl = List.map (fun t -> (t, " &")) tl in
-                    plist ctyp 2
-                      {(pc) with ind = pc.ind + 6; bef = tab (pc.ind + 5)} tl)
-             in
-             sprintf "%s\n%s" s1 s2)
+       let tl = List.map (fun t -> (t, " &")) tl in
+       pprintf pc "`%s of%s@;<1 5>%p" c (if ao then " &" else "")
+         (plist ctyp 2) tl
   | <:poly_variant< $t$ >> ->
        ctyp pc t
   | IFDEF STRICT THEN
@@ -1760,13 +1721,7 @@ value field pc (s, t) =
        sprintf "%s\n%s" s1 s2)
 ;
 
-value field_expr pc (s, e) =
-  horiz_vertic
-    (fun () ->
-       sprintf "%s%s = %s%s" pc.bef s (expr {(pc) with bef = ""; aft = ""} e)
-         pc.aft)
-    (fun () -> not_impl "field expr vertic" pc s)
-;
+value field_expr pc (s, e) = pprintf pc "%s =@;%p" s expr e;
 
 value patt_tcon pc p =
   match p with
@@ -1802,17 +1757,10 @@ value class_object pc (csp, csl) =
          match csp with
          [ None -> sprintf "%sobject" pc.bef
          | Some p ->
-             horiz_vertic
-               (fun () ->
-                  sprintf "%sobject %s" pc.bef
-                    (match p with
-                     [ <:patt< ($_$ : $_$) >> ->
-                         patt {(pc) with bef = ""; aft = ""} p
-                     | p ->
-                         patt {(pc) with bef = "("; aft = ")"} p ]))
-               (fun () ->
-                  not_impl "class_type vertic 1" {(pc) with aft = ""}
-                    p) ]
+             let pc = {(pc) with aft = ""} in
+             match p with
+             [ <:patt< ($_$ : $_$) >> -> pprintf pc "object@;%p" patt p
+             | p -> pprintf pc "object@;(%p)" patt p ] ]
        in
        let s2 =
          vlist class_str_item_sep
@@ -2022,13 +1970,7 @@ EXTEND_PRINTER
   ;
   pr_ctyp: AFTER "top"
     [ "as"
-      [ <:ctyp< $t1$ as $t2$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s%s as %s%s" pc.bef
-                 (curr {(pc) with bef = ""; aft = ""} t1)
-                 (next {(pc) with bef = ""; aft = ""} t2) pc.aft)
-            (fun () -> not_impl "ctyp as vertic" pc t1) ]
+      [ <:ctyp< $t1$ as $t2$ >> -> pprintf pc "%p@[ as %p@]" curr t1 next t2 ]
     | "poly"
       [ <:ctyp< ! $list:_$ . $_$ >> as z -> poly_type pc z ] ]
   ;
@@ -2087,13 +2029,7 @@ EXTEND_PRINTER
       [ <:class_expr< $list:cl$ >> -> class_longident pc cl
       | <:class_expr< $list:cl$ [ $list:ctcl$ ] >> ->
           let ctcl = List.map (fun ct -> (ct, ",")) ctcl in
-          horiz_vertic
-            (fun  () ->
-               sprintf "%s[%s] %s%s" pc.bef
-                 (plist ctyp 0 {(pc) with bef = ""; aft = ""} ctcl)
-                 (class_longident {(pc) with bef = ""; aft = ""} cl)
-                 pc.aft)
-            (fun  () -> not_impl "class_expr c [t, t] vertic" pc cl)
+          pprintf pc "[%p]@;%p" (plist ctyp 0) ctcl class_longident cl
       | <:class_expr< object $opt:csp$ $list:csl$ end >> ->
           class_object pc (csp, csl)
       | <:class_expr< ($ce$ : $ct$) >> ->
@@ -2187,11 +2123,7 @@ EXTEND_PRINTER
   pr_class_sig_item:
     [ "top"
       [ <:class_sig_item< inherit $ct$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%sinherit %s%s" pc.bef
-                 (class_type {(pc) with bef = ""; aft = ""} ct) pc.aft)
-            (fun () -> not_impl "class_sig_item inherit vertic" pc ct)
+          pprintf pc "inherit@;%p" class_type ct
       | <:class_sig_item< method $flag:priv$ $lid:s$ : $t$ >> ->
           sig_method_or_method_virtual pc "" priv s t
       | <:class_sig_item< method virtual $flag:priv$ $lid:s$ : $t$ >> ->
@@ -2298,12 +2230,7 @@ EXTEND_PRINTER
                in
                sprintf "%s\n%s" s1 s2)
       | <:class_str_item< type $t1$ = $t2$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%sconstraint %s = %s%s" pc.bef
-                 (ctyp {(pc) with bef = ""; aft = ""} t1)
-                 (ctyp {(pc) with bef = ""; aft = ""} t2) pc.aft)
-            (fun () -> not_impl "class_str_item type vertic" pc t1)
+          pprintf pc "constraint %p =@;%p" ctyp t1 ctyp t2
       | <:class_str_item< value $flag:mf$ $lid:s$ = $e$ >> ->
           horiz_vertic
             (fun () ->
