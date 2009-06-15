@@ -46,7 +46,7 @@ value no_ident =
 value rec ident len =
   parser
   [ [: `x when not (List.mem x no_ident); s :] -> ident (Buff.store len x) s
-  | [: :] -> Buff.get len ]
+  | [: :] -> len ]
 ;
 
 value identifier kwt s =
@@ -131,7 +131,7 @@ value base_number kwt bp len =
   [ [: `'b' | 'B'; s :] -> digits binary bp (Buff.store len 'b') s
   | [: `'o' | 'O'; s :] -> digits octal bp (Buff.store len 'o') s
   | [: `'x' | 'X'; s :] -> digits hexa bp (Buff.store len 'x') s
-  | [: id = ident (Buff.store 0 '#') :] -> identifier kwt id ]
+  | [: len = ident (Buff.store 0 '#') :] -> identifier kwt (Buff.get len) ]
 ;
 
 value rec operator len =
@@ -149,7 +149,7 @@ value char_or_quote_id x =
           (Stream.Error "bad quote")
       else
         let len = Buff.store (Buff.store 0 ''') x in
-        let s = ident len s in
+        let s = Buff.get (ident len s) in
         ("LIDENT", s) ]
 ;
 
@@ -189,9 +189,11 @@ value rec lexer kwt =
   | [: `'?'; tok = question :] ep -> (tok, (bp, ep))
   | [: `('0'..'9' as c); tok = number (Buff.store 0 c) :] ep ->
       (tok, (bp, ep))
-  | [: `('+' | '*' | '/' as c); id = operator (Buff.store 0 c) :] ep ->
+  | [: `('+' | '*' | '/' as c); len = ident (Buff.store 0 c);
+       id = operator len :] ep ->
       (identifier kwt id, (bp, ep))
-  | [: `x; id = ident (Buff.store 0 x) :] ep -> (identifier kwt id, (bp, ep))
+  | [: `x; len = ident (Buff.store 0 x) :] ep ->
+      (identifier kwt (Buff.get len), (bp, ep))
   | [: :] -> (("EOI", ""), (bp, bp + 1)) ]
 and after_space kwt =
   parser
@@ -199,11 +201,13 @@ and after_space kwt =
   | [: x = lexer kwt :] -> x ]
 and tilde =
   parser
-  [ [: `('a'..'z' as c); s = ident (Buff.store 0 c) :] -> ("TILDEIDENT", s)
-  | [: :] -> ("LIDENT", "~") ]
+  [ [: `('a'..'z' as c); len = ident (Buff.store 0 c) :] ->
+      ("TILDEIDENT", Buff.get len)
+  | [: len = ident (Buff.store 0 '~') :] -> ("LIDENT", Buff.get len) ]
 and question =
   parser
-  [ [: `('a'..'z' as c); s = ident (Buff.store 0 c) :] -> ("QUESTIONIDENT", s)
+  [ [: `('a'..'z' as c); len = ident (Buff.store 0 c) :] ->
+      ("QUESTIONIDENT", Buff.get len)
   | [: :] -> ("LIDENT", "?") ]
 and sharp bp kwt =
   parser
@@ -213,12 +217,12 @@ and minus kwt =
   parser
   [ [: `'.' :] -> identifier kwt "-."
   | [: `('0'..'9' as c); n = number (Buff.store (Buff.store 0 '-') c) :] -> n
-  | [: id = ident (Buff.store 0 '-') :] -> identifier kwt id ]
+  | [: len = ident (Buff.store 0 '-') :] -> identifier kwt (Buff.get len) ]
 and less kwt =
   parser
   [ [: `':'; lab = label 0; `'<' ? "'<' expected"; q = quotation 0 :] ->
       ("QUOT", lab ^ ":" ^ q)
-  | [: id = ident (Buff.store 0 '<') :] -> identifier kwt id ]
+  | [: len = ident (Buff.store 0 '<') :] -> identifier kwt (Buff.get len) ]
 and label len =
   parser
   [ [: `('a'..'z' | 'A'..'Z' | '_' as c); s :] -> label (Buff.store len c) s
@@ -985,6 +989,7 @@ and ctyp_se =
       let t1 = ctyp_se se1 in
       let t2 = ctyp_se se2 in
       <:ctyp< $t1$ == $t2$ >>
+  | Sexpr loc [Slid _ "objectvar"] -> <:ctyp< < .. > >>
   | Sexpr loc [se :: sel] ->
       List.fold_left
         (fun t se ->

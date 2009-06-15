@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.40 2007/10/06 09:12:27 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.41 2007/10/06 11:40:47 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -35,7 +35,7 @@
 (definerec (ident len)
   (parser
    (((` x (not (List.mem x no_ident))) s) (ident (Buff.store len x) s))
-   (() (Buff.get len))))
+   (() len)))
 
 (define (identifier kwt s)
   (let ((con
@@ -117,7 +117,7 @@
    (((` (or 'b' 'B')) s) (digits binary bp (Buff.store len 'b') s))
    (((` (or 'o' 'O')) s) (digits octal bp (Buff.store len 'o') s))
    (((` (or 'x' 'X')) s) (digits hexa bp (Buff.store len 'x') s))
-   (((id (ident (Buff.store 0 '#')))) (identifier kwt id))))
+   (((len (ident (Buff.store 0 '#')))) (identifier kwt (Buff.get len)))))
 
 (definerec (operator len)
   (parser
@@ -132,7 +132,7 @@
         (Ploc.raise (Ploc.make_unlined (values (- ep 2) (- ep 1)))
          (Stream.Error "bad quote"))
         (let* ((len (Buff.store (Buff.store 0 ''') x))
-               (s (ident len s)))
+               (s (Buff.get (ident len s))))
           (values "LIDENT" s))))))
 
 (definerec (char len)
@@ -173,10 +173,12 @@
      (((` '?') (tok question)) ep (values tok (values bp ep)))
      (((` (as (range '0' '9') c)) (tok (number (Buff.store 0 c)))) ep
       (values tok (values bp ep)))
-     (((` (as (or '+' '*' '/') c)) (id (operator (Buff.store 0 c)))) ep
+     (((` (as (or '+' '*' '/') c)) (len (ident (Buff.store 0 c)))
+       (id (operator len)))
+      ep
       (values (identifier kwt id) (values bp ep)))
-     (((` x) (id (ident (Buff.store 0 x)))) ep
-      (values (identifier kwt id) (values bp ep)))
+     (((` x) (len (ident (Buff.store 0 x)))) ep
+      (values (identifier kwt (Buff.get len)) (values bp ep)))
      (() (values (values "EOI" "") (values bp (+ bp 1))))))
   ((after_space kwt)
     (parser
@@ -184,13 +186,13 @@
      (((x (lexer kwt))) x)))
   (tilde
     (parser
-     (((` (as (range 'a' 'z') c)) (s (ident (Buff.store 0 c))))
-      (values "TILDEIDENT" s))
-     (() (values "LIDENT" "~"))))
+     (((` (as (range 'a' 'z') c)) (len (ident (Buff.store 0 c))))
+      (values "TILDEIDENT" (Buff.get len)))
+     (((len (ident (Buff.store 0 '~')))) (values "LIDENT" (Buff.get len)))))
   (question
     (parser
-     (((` (as (range 'a' 'z') c)) (s (ident (Buff.store 0 c))))
-      (values "QUESTIONIDENT" s))
+     (((` (as (range 'a' 'z') c)) (len (ident (Buff.store 0 c))))
+      (values "QUESTIONIDENT" (Buff.get len)))
      (() (values "LIDENT" "?"))))
   ((sharp bp kwt)
    (parser
@@ -201,12 +203,12 @@
      (((` '.')) (identifier kwt "-."))
      (((` (as (range '0' '9') c))
       (n (number (Buff.store (Buff.store 0 '-') c)))) n)
-     (((id (ident (Buff.store 0 '-')))) (identifier kwt id))))
+     (((len (ident (Buff.store 0 '-')))) (identifier kwt (Buff.get len)))))
   ((less kwt)
     (parser
      (((` ':') (lab (label 0)) (? (` '<') "'<' expected") (q (quotation 0)))
       (values "QUOT" (^ lab ":" q)))
-     (((id (ident (Buff.store 0 '<')))) (identifier kwt id))))
+     (((len (ident (Buff.store 0 '<')))) (identifier kwt (Buff.get len)))))
   ((label len)
     (parser
      (((` (as (or (range 'a' 'z') (range 'A' 'Z') '_') c)) s)
@@ -937,6 +939,7 @@
      (let ((tl (List.map ctyp_se sel))) <:ctyp< ($list:tl$) >>))
     ((Sexpr loc [(Slid _ "==") se1 se2])
      (let* ((t1 (ctyp_se se1)) (t2 (ctyp_se se2))) <:ctyp< $t1$ == $t2$ >>))
+    ((Sexpr loc [(Slid _ "objectvar")]) <:ctyp< < .. > >>)
     ((Sexpr loc [se . sel])
      (List.fold_left
       (lambda (t se) (let ((t2 (ctyp_se se))) <:ctyp< $t$ $t2$ >>))

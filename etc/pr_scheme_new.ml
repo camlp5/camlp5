@@ -394,9 +394,13 @@ EXTEND_PRINTER
              aft = sprintf ")%s" pc.aft}
             [(t1, ""); (t2, "")]
       | <:ctyp< $t1$ . $t2$ >> ->
-           sprintf "%s.%s"
-             (curr {(pc) with aft = ""} t1)
-             (curr {(pc) with bef = ""} t2)
+          sprintf "%s.%s"
+            (curr {(pc) with aft = ""} t1)
+            (curr {(pc) with bef = ""} t2)
+      | <:ctyp< < $list:fl$ $flag:v$ > >> ->
+          let b = if v then "objectvar" else "object" in
+          if fl = [] then sprintf "%s(%s)%s" pc.bef b pc.aft
+          else not_impl "ty obj" pc 0
       | <:ctyp< $lid:s$ >> ->
           sprintf "%s%s%s" pc.bef (rename_id s) pc.aft
       | <:ctyp< $uid:s$ >> ->
