@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.43 2007/07/18 00:23:03 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.44 2007/07/18 01:59:46 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -444,16 +444,39 @@ instead of "<tt>loc</tt>".</p>
   list. When found, the rule is removed. If no rule is found, the
   exception "<tt>Not_found</tt>" is raised.</p>
 
-<h2>Machinery</h2>
+<h2>Grammar machinery</h2>
 
-<p>Each entry level contains internally two trees:</p>
+<p>At each entry level, the rules are separated into two trees:</p>
 
 <ul>
-  <li>A tree of the rules starting with the current entry name or by
-    the identifier "<tt>SELF</tt>",</li>
-  <li>A tree of the rules <em>not</em> starting with the current entry
+  <li>The tree of the rules <em>not</em> starting with the current entry
     name nor by "<tt>SELF</tt>".</li>
+  <li>The tree of the rules starting with the current entry name or by
+    the identifier "<tt>SELF</tt>",</li>
 </ul>
+
+<p>They determine two functions:</p>
+
+<ul>
+  <li>The function named "start", analyzing the first tree.</li>
+  <li>The function named "continue", taking, as parameter, a value
+    previously parsed, and analyzing the second tree.</li>
+</ul>
+
+<p>A call to an entry, using "<tt>Grammar.Entry.parse</tt>" correspond
+  to a call to the "start" function of the first level of the
+  entry.</p>
+
+<p>The "start" function tries its associated tree. If it works, it
+  calls the "continue" function of the same level, giving the result
+  of "start" as parameter. If it fails, it tries the "start" function
+  of the next level. If there is no more levels, the parsing
+  fails.</p>
+
+<p>The "continue" function first tries the "continue" function of the
+  next level. If it fails, or if it is the last level, it tries its
+  associated tree, then calls itself again, giving the result as
+  parameter.</p>
 
 <p>... to be completed ...</p>
 
