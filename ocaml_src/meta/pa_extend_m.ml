@@ -10,7 +10,8 @@ Grammar.extend
    [None, Some Gramext.NonA,
     [[Gramext.Stoken ("UIDENT", "SV"); Gramext.Stoken ("UIDENT", "")],
      Gramext.action
-       (fun (s : string) _ (loc : Ploc.t) -> (sstoken2 loc s : 'symbol));
+       (fun (s : string) _ (loc : Ploc.t) ->
+          (ss2_of_ss (sstoken loc s) : 'symbol));
      [Gramext.Stoken ("UIDENT", "SV"); Gramext.Stoken ("UIDENT", "FLAG");
       Gramext.Sself],
      Gramext.action

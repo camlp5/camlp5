@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: grammar.ml,v 1.48 2007/09/19 05:24:55 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.49 2007/09/19 20:19:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Gramext;
@@ -633,7 +633,7 @@ and parser_of_symbol entry nlevn =
             loop al where rec loop =
               fun
               [ [a :: al] ->
-                  let pa = parser_of_token entry ("V V", a) in
+                  let pa = parser_of_token entry ("V", a) in
                   let pal = loop al in
                   parser
                   [ [: a = pa :] -> a

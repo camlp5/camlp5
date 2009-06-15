@@ -1231,6 +1231,9 @@ let ss2_of_ss s =
           {prod = prod2; action = Some act2}
         in
         TXrules (loc, t, [r1; r2])
+    | TXnterm (loc, ({expr = MLast.ExLid (_, name)} as n), None) ->
+        let name = if !(Pcaml.strict_mode) then name ^ "2" else name in
+        TXnterm (loc, {n with expr = MLast.ExLid (loc, name)}, None)
     | _ -> assert false
   in
   {used = s.used; text = text; styp = s.styp}
@@ -1250,11 +1253,6 @@ let sstoken_aux loc name s =
 ;;
 
 let sstoken loc s = sstoken_aux loc s s;;
-
-let sstoken2 loc s =
-  let name = if !(Pcaml.strict_mode) then s ^ "2" else s in
-  sstoken_aux loc name s
-;;
 
 let sstoken_prm loc name prm =
   let name = try List.assoc name assoc_anti with Not_found -> name in
@@ -2050,7 +2048,7 @@ Grammar.extend
                 let text = TXtok (loc, x, MLast.ExStr (loc, "")) in
                 {used = []; text = text; styp = STlid (loc, "string")}
             in
-            if !quotify then sstoken2 loc x
+            if !quotify then ss2_of_ss s
             else
               let (text, styp) =
                 if not !(Pcaml.strict_mode) then s.text, s.styp

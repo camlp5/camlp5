@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.69 2007/09/19 16:22:18 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.70 2007/09/19 20:19:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -579,6 +579,9 @@ value ss2_of_ss s =
           {prod = prod2; action = Some act2}
         in
         TXrules loc t [r1; r2]
+    | TXnterm loc ({expr = <:expr< $lid:name$ >>} as n) None ->
+        let name = if Pcaml.strict_mode.val then name ^ "2" else name in
+        TXnterm loc {(n) with expr = <:expr< $lid:name$ >>} None
     | _ -> assert False ]
   in
   {used = s.used; text = text; styp = s.styp}
@@ -600,11 +603,6 @@ value sstoken_aux loc name s =
 
 value sstoken loc s =
   sstoken_aux loc s s
-;
-
-value sstoken2 loc s =
-  let name = if Pcaml.strict_mode.val then s ^ "2" else s in
-  sstoken_aux loc name s
 ;
 
 value sstoken_prm loc name prm =
@@ -957,7 +955,7 @@ EXTEND
               let text = TXtok loc x <:expr< "" >> in
               {used = []; text = text; styp = STlid loc "string"}
           in
-          if quotify.val then sstoken2 loc x
+          if quotify.val then ss2_of_ss s
           else
             let (text, styp) =
               if not Pcaml.strict_mode.val then (s.text, s.styp)

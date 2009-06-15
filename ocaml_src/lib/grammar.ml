@@ -686,7 +686,7 @@ and parser_of_symbol entry nlevn =
             let rec loop =
               function
                 a :: al ->
-                  let pa = parser_of_token entry ("V V", a) in
+                  let pa = parser_of_token entry ("V", a) in
                   let pal = loop al in
                   (fun (strm__ : _ Stream.t) ->
                      try pa strm__ with Stream.Failure -> pal strm__)

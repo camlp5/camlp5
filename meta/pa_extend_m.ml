@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo *)
-(* $Id: pa_extend_m.ml,v 1.22 2007/09/19 16:22:18 deraugla Exp $ *)
+(* $Id: pa_extend_m.ml,v 1.23 2007/09/19 20:19:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pa_extend;
@@ -24,6 +24,6 @@ EXTEND
           ss2_of_ss (sslist loc True sep s)
       | UIDENT "SV"; UIDENT "OPT"; s = SELF -> ss2_of_ss (ssopt loc s)
       | UIDENT "SV"; UIDENT "FLAG"; s = SELF -> ss2_of_ss (ssflag loc s)
-      | UIDENT "SV"; s = UIDENT -> sstoken2 loc s ] ]
+      | UIDENT "SV"; s = UIDENT -> ss2_of_ss (sstoken loc s) ] ]
   ;
 END;
