@@ -5,7 +5,7 @@ INSTALL UNDER UNIX
 1. Choose which compilation mode "transitional" or "strict" (see the
    file "MODE") and do either:
      ./configure --transitional
-   or
+   or:
      ./configure --strict
   
 2. Then, to make everything, do:

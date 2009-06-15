@@ -4,6 +4,10 @@ Internal, very small, undocumented, or invisible changes
 Camlp5 Version 5.01:
 ---------------------
 
+* [06 Oct 2007] Added Prtools.vlistf, Prtools.plistf and Prtools.plistbf,
+  same as their version without 'f', i.e. resp. Prtools.vlist, Prtools.plist
+  and Prtools.plistb, but with the list being a list of functions returning
+  a string allowing to use list of values of heterogen types.
 * [03 Oct 2007] Fixed bug in Prtools.plistb: if printing at least two
   elements, with the first one fitting in the line, a space was missing.
   E.g. using pr_r.cmo with "module M (N : P) (Q : R) = struct end".
