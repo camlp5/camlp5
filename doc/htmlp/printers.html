@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: printers.html,v 1.3 2007/08/17 02:43:40 deraugla Exp $ -->
+  <!-- $Id: printers.html,v 1.4 2007/08/17 08:43:54 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible printers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -26,8 +26,6 @@
   the extensible printers allow to define and extend printers of data
   or programs. A specific statement "<tt>EXTEND_PRINTER</tt>" define
   these extensions.</p>
-
-<p>... to be continued ...</p>
 
 <div id="tableofcontents">
 </div>
@@ -71,8 +69,166 @@
    extend-printers ::= extend-printer extend-printers
                      | &lt;nothing&gt;
     extend-printer ::= printer-name ":" position-opt "[" levels "]"
-  ...
+      position-opt ::= "FIRST"
+                     | "LAST"
+                     | "BEFORE" label
+                     | "AFTER" label
+                     | "LEVEL" label
+                     | &lt;nothing&gt;
+            levels ::= level "|" levels
+                     | level
+             level ::= label-opt "[" rules "]"
+         label-opt ::= label
+                     | &lt;nothing&gt;
+             rules ::= rule "|" rules
+                     | rule
+              rule ::= pattern "->" expression
+      printer-name ::= qualid
+            qualid ::= qualid "." qualid
+                     | uident
+                     | lident
+            uident ::= 'A'-'Z' ident
+            lident ::= ('a'-'z' | '_' | utf8-char) ident
+             ident ::= ident-char*
+        ident-char ::= ('a'-'a' | 'A'-'Z' | '0'-'9' | '_' | ''' | utf8-char)
+         utf8-char ::= '\128'-'\255'
 </pre>
+
+<h2>Semantics of EXTEND_PRINTER</h2>
+
+<h3>Printers definition list</h3>
+
+<p>All printers are extended according to their corresponding
+  definitions which start with an optional "position" and follow with
+  the "levels" definition".</p>
+
+<h4>Optional position</h4>
+
+<p>After the colon, it is possible to specify a where to insert the
+defined levels:</p>
+
+<ul>
+  <li>The identifier "<tt>FIRST</tt>" (resp. "<tt>LAST</tt>")
+    indicates that the level must be inserted before (resp. after) all
+    possibly existing levels of the entry. They become their first
+    (resp. last) levels.</li>
+  <li>The identifier "<tt>BEFORE</tt>" (resp. "<tt>AFTER</tt>")
+    followed by a level label (a string) indicates that the levels
+    must be inserted before (resp. after) that level, if it exists. If
+    it does not exist, the extend statement fails at run time.</li>
+  <li>The identifier "<tt>LEVEL</tt>" followed by a level label
+    indicates that the first level defined in the extend statement
+    must be inserted at the given level, extending and modifying
+    it. The other levels defined in the statement are inserted after
+    this level, and before the possible levels following this
+    level. If there is no level with this label, the extend statement
+    fails at run time.</li>
+  <li>By default, if the entry has no level, the levels defined in the
+    statement are inserted in the entry. Otherwise the first defined
+    level is inserted at the first level of the entry, extending or
+    modifying it. The other levels are inserted afterwards (before the
+    possible second level which may previously exist in the entry).</li>
+</ul>
+
+<h4>Levels</h4>
+
+<p>After the optional "position", the <em>level</em> list follow. The
+  levels are separated by vertical bars, the whole list being between
+  brackets.</p>
+
+<p>A level starts with an optional label, which corresponds to its
+  name. This label is useful to specify this level in case of future
+  extensions, using the <em>position</em> (see previous section) or
+  for possible direct calls to this specific level.</p>
+
+<h4>Rules</h4>
+
+<p>A level is a list of <em>rules</em> separated by vertical bars, the
+  whole list beiing between brackets.</p>
+
+<p>A rule is an usual pattern association (in a function or in the
+  "match" statement), i.e. a pattern, an arrow and an expression. The
+  expression is the semantic action which must be of type
+  "<tt>string</tt>".</p>
+
+<h3>Rules insertion</h3>
+
+<p>The rules are sorted by their patterns, according to the rules of
+  the <a href="extfun.html">extensible functions</a>.</p>
+
+<h3>Semantic action</h3>
+
+<p>The semantic action, i.e. the expression following the right arrow
+  in rules, contain in its environment the variables bound by the
+  pattern and three more variables:</p>
+
+<ul>
+  <li>The variable "<tt>curr</tt>" which is a function which can be called
+    to recursively call the printer to the current level,</li>
+  <li>The variable "<tt>next</tt>" which is a function which can be called
+    to call the printer to the next level,</li>
+  <li>The variable "<tt>pc</tt>" which contains the printing context
+    (see further), of type "<tt>pr_context</tt>".</li>
+</ul>
+
+<p>The variables "<tt>curr</tt>" and "<tt>next</tt>" are of type:</p>
+
+<pre>
+  pr_context -> t -> string
+</pre>
+
+<p>where "<tt>t</tt>" is the type of the printer (i.e. the type of its
+  patterns).</p>
+
+<p>The variable "<tt>curr</tt>", "<tt>next</tt>" and "<tt>pc</tt>"
+  have predefined names and can hide the possible identifiers having
+  the same names in the pattern or in the environment of the
+  "<tt>EXTEND_PRINTER</tt>" statement.</p>
+
+<h3>Printing context</h3>
+
+<p>All semantic actions use a printing context in the variable
+  "<tt>pc</tt>". Its type is defined as:</p>
+
+<pre>
+  type pr_context =
+    { ind : int;
+      bef : string;
+      aft : string;
+      dang : string }
+  ;
+</pre>
+
+<p>The fields are:</p>
+
+<ul>
+  <li>"<tt>ind</tt>" : the current indendation</li>
+  <li>"<tt>bef</tt>" : what has to be printed before, in the same line</li>
+  <li>"<tt>aft</tt>" : what has to be printed after, in the same line</li>
+  <li>"<tt>dang</tt>" : the dangling token to know whether parentheses
+    are necessary</li>
+</ul>
+
+<p>Notice that the printing context variable is just a convenience for
+  the programmer of the printer, he is not obliged to use it.</p>
+
+<h2>Examples</h2>
+
+<p>Complete examples of usage of extensible printers are the printers
+  in syntaxes and extended syntaxes provided by camlp5 in the pretty
+  printing <em>kits</em>:</p>
+
+<ul>
+  <li><tt>pr_r.cmo</tt>: pretty print in revised syntax</li>
+  <li><tt>pr_o.cmo</tt>: pretty print in normal syntax</li>
+  <li><tt>pr_rp.cmo</tt>: also pretty print the parsers in revised
+    syntax</li>
+  <li><tt>pr_op.cmo</tt>: also pretty print the parsers in normal
+    syntax</li>
+</ul>
+
+<p>See the chapter entitled "<a href="opretty.html">Printing
+  programs</a>".</p>
 
 <p>... to be continued ...</p>
 

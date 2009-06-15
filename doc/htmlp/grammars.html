@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: grammars.html,v 1.65 2007/07/28 11:50:04 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.66 2007/08/17 08:43:54 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -247,15 +247,16 @@ defined levels:</p>
 <h4>Levels</h4>
 
 <p>After the optional "position", the <em>level</em> list follow. The
-levels are separated by vertical bars, the whole list being between
-brackets.</p>
+  levels are separated by vertical bars, the whole list being between
+  brackets.</p>
 
-<p>A level starts with an optional label, which corresponds to its name.
-This label is useful to specify this level in case of future extension,
-using the <em>position</em> (see previous section).</p>
+<p>A level starts with an optional label, which corresponds to its
+  name. This label is useful to specify this level in case of future
+  extensions, using the <em>position</em> (see previous section) or
+  for possible direct calls to this specific level.</p>
 
 <p>The level continues with an optional associativity indicator, which
-can be:</p>
+  can be:</p>
 
 <ul>
   <li>LEFTA for left associativity (default),</li>
@@ -402,7 +403,7 @@ sources):</p>
 <h3>Semantic action</h3>
 
 <p>The semantic action, i.e. the expression following the right arrow
-in rules, contain in its environment:</p>
+  in rules, contain in its environment:</p>
 
 <ul>
   <li>the variables bound by the patterns of the symbols found in the
