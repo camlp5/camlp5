@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.44 2007/09/08 09:18:14 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.45 2007/09/08 11:24:43 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -1138,6 +1138,8 @@ EXTEND
     [ [ i = LIDENT; ":"; t = ctyp LEVEL "apply"; "->"; ct = SELF ->
           <:class_type< [ ~ $i$ : $t$ ] -> $ct$ >>
       | i = QUESTIONIDENTCOLON; t = ctyp LEVEL "apply"; "->"; ct = SELF ->
+          <:class_type< [ ? $i$ : $t$ ] -> $ct$ >>
+      | i = QUESTIONIDENT; ":"; t = ctyp LEVEL "apply"; "->"; ct = SELF ->
           <:class_type< [ ? $i$ : $t$ ] -> $ct$ >> ] ]
   ;
   class_fun_binding:
