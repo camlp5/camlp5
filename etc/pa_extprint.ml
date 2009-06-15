@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_extprint.ml,v 1.42 2007/12/20 14:09:49 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.43 2007/12/21 13:19:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -431,7 +431,16 @@ value expr_of_pformat loc fmt is_empty_bef is_empty_aft pc al fmt1 =
 value rec expr_of_tree_aux loc fmt is_empty_bef is_empty_aft pc al t =
   match t with
   [ Tempty -> (<:expr< Pretty.sprintf "%s%s" $pc$.bef $pc$.aft >>, al)
-  | Tlist _ _ _ -> not_impl "expr_of_tree_aux" 0
+  | Tlist t1 t2 [] ->
+      let (e1, al) =
+        expr_of_tree_aux loc fmt is_empty_bef False <:expr< pc >> al t1
+      in
+      let (e2, al) =
+        expr_of_tree_aux loc fmt True is_empty_aft pc al t2
+      in
+      let e = <:expr< let pc = {($pc$) with aft = $e2$} in $e1$ >> in
+      (e, al)
+  | Tlist t1 t2 tl -> not_impl "expr_of_tree_aux" 1
   | Tnode br t1 t2 ->
       let (e1, al) =
         expr_of_tree_aux loc fmt is_empty_bef True <:expr< pc >> al t1

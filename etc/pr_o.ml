@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.121 2007/12/21 12:07:39 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.122 2007/12/21 13:19:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -568,31 +568,11 @@ value flatten_sequ e =
   | None -> None ]
 ;
 
-value string pc s = sprintf "%s\"%s\"%s" pc.bef s pc.aft;
+value string pc s = pprintf pc "\"%s\"" s;
 
 value external_decl pc (n, t, sl) =
-  horiz_vertic
-    (fun () ->
-       sprintf "%sexternal %s : %s = %s%s" pc.bef
-         (var_escaped {(pc) with bef = ""; aft = ""} n)
-         (ctyp {(pc) with bef = ""; aft = ""} t)
-         (hlist string {(pc) with bef = ""; aft = ""} sl) pc.aft)
-    (fun () ->
-       let s1 =
-         var_escaped
-           {(pc) with bef = sprintf "%sexternal " pc.bef; aft = " :"} n
-       in
-       let s2 =
-         ctyp
-           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-            aft =
-              if sl = [] then pc.aft
-              else
-                sprintf " = %s%s"
-                  (hlist string {(pc) with bef = ""; aft = ""} sl) pc.aft}
-           t
-       in
-       sprintf "%s\n%s" s1 s2)
+  pprintf pc "external %p :@;%p@[ = %p@]" var_escaped n ctyp t
+    (hlist string) sl
 ;
 
 value exception_decl pc (e, tl, id) =
