@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.61 2007/08/16 16:07:42 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.62 2007/08/22 13:03:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -136,7 +136,7 @@ value not_impl name pc x =
 value var_escaped pc v =
   let x =
     if is_infix v || has_special_chars v then "\\" ^ v
-    else if is_keyword v then v ^ "__"
+    else if is_keyword v then "\\" ^ v
     else v
   in
   sprintf "%s%s%s" pc.bef x pc.aft

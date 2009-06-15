@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.82 2007/08/22 12:30:28 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.83 2007/08/22 13:03:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1965,8 +1965,16 @@ EXTEND_PRINTER
       | <:str_item< $exp:e$ >> ->
           if pc.aft = ";;" then expr pc e
           else
-            let loc = MLast.loc_of_expr e in
-            curr pc <:str_item< value _ = $e$ >>
+            horiz_vertic
+              (fun () ->
+                 sprintf "%slet _ = %s%s" pc.bef
+                   (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
+              (fun () ->
+                 let s =
+                   expr
+                     {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
+                 in
+                 sprintf "%slet _ =\n%s" pc.bef s)
       | <:str_item< class type $list:_$ >> | <:str_item< class $list:_$ >> ->
           failwith "classes and objects not pretty printed; add pr_ro.cmo" ] ]
   ;
