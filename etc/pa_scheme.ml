@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.89 2007/10/14 20:23:20 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.90 2007/10/15 02:45:06 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -1142,12 +1142,29 @@
     (let ((ce (class_expr_se se))) <:class_str_item< inherit $ce$ >>))
    ((Sexpr loc [(Slid _ "initializer") se])
     (let ((e (expr_se se))) <:class_str_item< initializer $e$ >>))
+
    ((Sexpr loc [(Slid _ "method") (Slid _ "virtual") (Slid _ n) se])
     (let ((t (ctyp_se se))) <:class_str_item< method virtual $n$ : $t$ >>))
-   ((Sexpr loc [(Slid _ "method") (Slid _ n) se])
-    (let ((e (expr_se se))) <:class_str_item< method $n$ = $e$ >>))
    ((Sexpr loc [(Slid _ "method") (Slid _ "private") (Slid _ n) se])
     (let ((e (expr_se se))) <:class_str_item< method private $n$ = $e$ >>))
+   ((Sexpr loc
+     [(Slid _ "method") (Slid _ "private") (Sexpr _ [(Slid _ n) . sel]) se])
+    (let
+     ((e
+       (List.fold_right
+        (lambda (se e) (let ((p (patt_se se))) <:expr< fun $p$ -> $e$ >>))
+        sel (expr_se se))))
+       <:class_str_item< method private $n$ = $e$ >>))
+   ((Sexpr loc [(Slid _ "method") (Slid _ n) se])
+    (let ((e (expr_se se))) <:class_str_item< method $n$ = $e$ >>))
+   ((Sexpr loc [(Slid _ "method") (Sexpr _ [(Slid _ n) . sel]) se])
+    (let
+     ((e
+       (List.fold_right
+        (lambda (se e) (let ((p (patt_se se))) <:expr< fun $p$ -> $e$ >>))
+        sel (expr_se se))))
+     <:class_str_item< method $n$ = $e$ >>))
+
    ((Sexpr loc [(Slid _ "value") (Slid _ "mutable") (Slid _ n) se])
     (let ((e (expr_se se))) <:class_str_item< value mutable $n$ = $e$ >>))
    ((Sexpr loc [(Slid _ "value") (Slid _ n) se])
@@ -1174,9 +1191,15 @@
    ((Sexpr loc [(Slid _ "let") (Sexpr _ sel) se])
     (let* ((lbl (anti_list_map let_binding_se sel)) (ce (class_expr_se se)))
      <:class_expr< let $_list:lbl$ in $ce$ >>))
-   ((Sexpr loc [(Slid _ "fun") se1 se2])
-    (let* ((p (patt_se se1)) (ce (class_expr_se se2)))
-     <:class_expr< fun $p$ -> $ce$ >>))
+   ((Sexpr loc [(Slid _ "lambda") se1 se2])
+    (let ((ce (class_expr_se se2)))
+     (match (ipatt_opt_se se1)
+      ((Left p) <:class_expr< fun $p$ -> $ce$ >>)
+      ((Right (values se sel))
+       (List.fold_right
+        (lambda (se ce)
+         (let ((p (ipatt_se se))) <:class_expr< fun $p$ -> $ce$ >>))
+        [se . sel] ce)))))
    ((Sexpr loc [(Slid _ "object") se . sel])
     (let*
      ((p (match se ((Sexpr _ []) None) (se (Some (patt_se se)))))
