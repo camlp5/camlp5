@@ -316,7 +316,7 @@ value lexer_gmake () =
 
 type sexpr =
   [ Sacc of MLast.loc and sexpr and sexpr
-  | Santi of MLast.loc and string
+  | Santi of MLast.loc and string and string
   | Sarr of MLast.loc and MLast.v (list sexpr)
   | Schar of MLast.loc and MLast.v string
   | Sexpr of MLast.loc and list sexpr
@@ -326,6 +326,7 @@ type sexpr =
   | Sint_n of MLast.loc and string
   | Sfloat of MLast.loc and MLast.v string
   | Slid of MLast.loc and string
+  | Slidv of MLast.loc and MLast.v string
   | Slist of MLast.loc and list sexpr
   | Sqid of MLast.loc and string
   | Squot of MLast.loc and string and string
@@ -337,10 +338,10 @@ type sexpr =
 
 value loc_of_sexpr =
   fun
-  [ Sacc loc _ _ | Santi loc _ | Sarr loc _ | Schar loc _ | Sexpr loc _ |
+  [ Sacc loc _ _ | Santi loc _ _ | Sarr loc _ | Schar loc _ | Sexpr loc _ |
     Sint loc _ | Sint_l loc _ | Sint_L loc _ | Sint_n loc _ | Sfloat loc _ |
-    Slid loc _ | Slist loc _ | Sqid loc _ | Squot loc _ _ | Srec loc _ |
-    Sstring loc _ | Stid loc _ | Suid loc _ ->
+    Slid loc _ | Slidv loc _ | Slist loc _ | Sqid loc _ | Squot loc _ _ |
+    Srec loc _ | Sstring loc _ | Stid loc _ | Suid loc _ ->
       loc ]
 ;
 value error_loc loc err = Ploc.raise loc (Stream.Error (err ^ " expected"));
@@ -533,6 +534,7 @@ and expr_se =
           let e2 = expr_se se2 in
           <:expr< $e1$ . $e2$ >> ]
   | Slid loc s -> lident_expr loc s
+  | Slidv loc s -> <:expr< $_lid:s$ >>
   | Suid loc s -> <:expr< $uid:(rename_id s)$ >>
   | Sint loc s -> <:expr< $_int:s$ >>
   | Sint_l loc s -> <:expr< $int32:s$ >>
@@ -606,18 +608,23 @@ and expr_se =
       let e = expr_se se in
       let el = List.map expr_se sel in
       <:expr< while $e$ do { $list:el$ } >>
-  | Sexpr loc [Slid _ "for"; Slid _ i; se1; se2 :: sel] ->
-      let i = rename_id i in
+  | Sexpr loc [Slid _ ("for" | "fordown" as d); sei; se1; se2 :: sel] ->
+      let i =
+        match sei with
+        [ Slid _ i -> <:vala< (rename_id i) >>
+        | Slidv _ i -> i
+        | _ -> error_loc loc "lid" ]
+      in
       let e1 = expr_se se1 in
       let e2 = expr_se se2 in
-      let el = List.map expr_se sel in
-      <:expr< for $lid:i$ = $e1$ to $e2$ do { $list:el$ } >>
-  | Sexpr loc [Slid _ "fordown"; Slid _ i; se1; se2 :: sel] ->
-      let i = rename_id i in
-      let e1 = expr_se se1 in
-      let e2 = expr_se se2 in
-      let el = List.map expr_se sel in
-      <:expr< for $lid:i$ = $e1$ downto $e2$ do { $list:el$ } >>
+      let dir = d = "for" in
+      let el =
+        match sel with
+        [ [Santi loc "list" s] -> <:vala< $s$ >>
+        | [Santi loc "_list" s] -> <:vala< $s$ >>
+        | _ -> <:vala< (List.map expr_se sel) >> ]
+      in
+      <:expr< for $_lid:i$ = $e1$ $to:dir$ $e2$ do { $_list:el$ } >>
   | Sexpr loc [Slid loc1 "lambda"] -> <:expr< fun [] >>
   | Sexpr loc [Slid loc1 "lambda"; sep :: sel] ->
       let e = begin_se loc1 sel in
@@ -761,7 +768,8 @@ and expr_se =
             let el = loop sel in
             <:expr< [$e$ :: $el$] >> ]
   | Squot loc typ txt -> Pcaml.handle_expr_quotation loc (typ, txt)
-  | Santi loc s -> <:expr< $xtr:s$ >> ]
+  | Santi loc "" s -> <:expr< $xtr:s$ >>
+  | Santi loc _ s -> failwith "expr_se" ]
 and begin_se loc =
   fun
   [ [] -> <:expr< () >>
@@ -877,6 +885,7 @@ and patt_se =
       <:patt< $p1$ . $p2$ >>
   | Slid loc "_" -> <:patt< _ >>
   | Slid loc s -> <:patt< $lid:(rename_id s)$ >>
+  | Slidv loc s -> Ploc.raise loc (Failure "Slidv")
   | Suid loc s -> <:patt< $uid:(rename_id s)$ >>
   | Sint loc s -> <:patt< $_int:s$ >>
   | Sint_l loc s -> <:patt< $int32:s$ >>
@@ -934,7 +943,8 @@ and patt_se =
             let pl = loop sel in
             <:patt< [$p$ :: $pl$] >> ]
   | Squot loc typ txt -> Pcaml.handle_patt_quotation loc (typ, txt)
-  | Santi loc s -> <:patt< $xtr:s$ >> ]
+  | Santi loc "" s -> <:patt< $xtr:s$ >>
+  | Santi loc _ s -> failwith "patt_se" ]
 and ipatt_se se =
   match ipatt_opt_se se with
   [ Left p -> p
@@ -1172,6 +1182,7 @@ EXTEND
       | "#("; sl = V (LIST0 sexpr); ")" -> Sarr loc sl
       | a = pa_extend_keyword -> Slid loc a
       | s = LIDENT -> Slid loc s
+      | s = V LIDENT -> Slidv loc s
       | s = UIDENT -> Suid loc s
       | s = TILDEIDENT -> Stid loc s
       | s = QUESTIONIDENT -> Sqid loc s
@@ -1188,7 +1199,9 @@ EXTEND
           let typ = String.sub s 0 i in
           let txt = String.sub s (i + 1) (String.length s - i - 1) in
           Squot loc typ txt
-      | s = ANTIQUOT_LOC -> Santi loc s
+      | s = ANTIQUOT_LOC -> Santi loc "" s
+      | s = ANTIQUOT_LOC "list" -> Santi loc "list" s
+      | s = ANTIQUOT_LOC "_list" -> Santi loc "_list" s
       | NL; s = SELF -> s
       | NL -> raise Stream.Failure ] ]
   ;

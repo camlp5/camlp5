@@ -15,8 +15,12 @@
 <:expr< $flo:s$ >>
 <:expr< $_flo:s$ >>
 <:expr< (for $lid:s$ $e1$ $e2$ $list:le$) >>
-; <:expr< for $_lid:s$ = $e1$ $_to:b$ $e2$ do { $_list:le$ } >>
-; <:expr< fun [ $list:lpwe$ ] >>
+<:expr< (for $_lid:s$ $e1$ $e2$ $_list:le$) >>
+<:expr< (fordown $lid:s$ $e1$ $e2$ $list:le$) >>
+<:expr< (fordown $_lid:s$ $e1$ $e2$ $_list:le$) >>
+(MLast.ExFor loc (Ploc.VaVal s) e1 e2 (Ploc.VaVal b) (Ploc.VaVal le))
+(MLast.ExFor loc s e1 e2 b le)
+; <:expr< (lambda ($list:lpwe$)) >>
 ; <:expr< fun [ $_list:lpwe$ ] >>
 ; <:expr< if $e1$ then $e2$ else $e3$ >>
 ; <:expr< $int:s$ >>

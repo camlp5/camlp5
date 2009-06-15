@@ -14,6 +14,10 @@
 <:expr< ($e$ :> $t2$) >>;;
 <:expr< $flo:s$ >>;;
 <:expr< $_flo:s$ >>;;
+<:expr< for $lid:s$ = $e1$ to $e2$ do $list:le$ done >>;;
+<:expr< for $_lid:s$ = $e1$ to $e2$ do $_list:le$ done >>;;
+<:expr< for $lid:s$ = $e1$ downto $e2$ do $list:le$ done >>;;
+<:expr< for $_lid:s$ = $e1$ downto $e2$ do $_list:le$ done >>;;
 <:expr< for $lid:s$ = $e1$ $to:b$ $e2$ do $list:le$ done >>;;
 <:expr< for $_lid:s$ = $e1$ $_to:b$ $e2$ do $_list:le$ done >>;;
 <:expr< function $list:lpwe$ >>;;
