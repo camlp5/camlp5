@@ -4,7 +4,7 @@
 <head>
   <!-- $Id$ -->
   <!-- Copyright (c) 2007 INRIA -->
-  <title>parsing tools</title>
+  <title>parsing and printing tools</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <link rel="shortcut icon" href="c4logo.png" />
@@ -17,7 +17,7 @@
 
 <div id="content">
 
-<h1 class="top">Parsing tools</h1>
+<h1 class="top">Parsing and Printing tools</h1>
 
 <p>Camlp5 provides two original parsing tools:</p>
 
@@ -29,22 +29,28 @@
 
 </ul>
 
-<p>The first one, the stream parsers, is the elementary system. It is
-pure syntactic sugar, i.e. the code is directly converted into basic
-ocaml statements: functions, pattern matchings, try. A parser of
-stream is a function. But the system does not take care of
-associativity, nor parsing level, and left recursion result on
+<p>The first parsing tool, the stream parsers, is the elementary
+system. It is pure syntactic sugar, i.e. the code is directly
+converted into basic ocaml statements: functions, pattern matchings,
+try. A parser of stream is a function. But the system does not take
+care of associativity, nor parsing level, and left recursion result on
 infinite loops, just like functions whose first action would be a call
 to itself.</p>
 
-<p>The second one, the extensible grammars, are more sophisticated. A
-grammar written with them is more readable, and look like with
-grammars written with tools like "yacc". They take care of
+<p>The second parsing tool, the extensible grammars, are more
+sophisticated. A grammar written with them is more readable, and look
+like grammars written with tools like "yacc". They take care of
 associativity, left recursion, and level of parsing. They are
 dynamically extensible, what allows the syntax extensions what camlp5
 provides for ocaml syntax.</p>
 
 <p>In both cases, the input data are streams.</p>
+
+<p>Camlp5 also provides a pretty printing tool, a module allowing to
+control the lines length.</p>
+
+<p>The next sections give an overview of the two parsing and the
+pretty tools.</p>
 
 <a id="Parsers"></a>
 <h2>Stream parsers</h2>
@@ -110,6 +116,37 @@ These parsers return a value of type "option", i.e either:</p>
 <p>In the imperative version, there exists also
 <a href="lexers.html">lexers</a>, a shorter syntax when the stream
 elements are of the specific type '<tt>char</tt>'.</p>
+
+<a id="Grammars"></a>
+<h2>Extensible grammars</h2>
+
+<a id="Pretty"></a>
+<h2>Pretty module</h2>
+
+<p>The "<tt>Pretty</tt>" module is an original tool allowing to
+control the displaying of lines. The user has to specify two functions
+where:</p>
+
+<ul>
+
+  <li>the data is printed in one only line</li>
+  <li>the data is printed in several lines</li>
+
+</ul>
+
+<p>The system first tries the first function. At any time, it the line
+overflows, i.e. if its size is greater than some "line length"
+specified in the module interface, or if it contains newlines, the
+function is aborted and control is given to the second function.</p>
+
+<p>This is a basic, but powerful, system. It supposes that the programmer
+takes care of the current indentation, and the beginning and the end of
+its lines.</p>
+
+<p>The module will be extended in the future to hide the management of
+indendations and line continuations, and by the supply of functions
+combinating the two cases above, in which the programmer can specify the
+possible places where newlines can be inserted.</p>
 
 <div class="trailer">
 
