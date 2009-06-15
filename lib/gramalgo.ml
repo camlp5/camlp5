@@ -665,8 +665,6 @@ value make_follow_tab rules first_tab nterm_derive_eps_tab = do {
   follow_tab
 };
 
-(*DEFINE TEST;*)
-
 type item = (int * bool * int * int * list (gram_symb int int));
 
 type lr0 =
@@ -677,6 +675,8 @@ type lr0 =
     term_shift_tab : array (list (int * int));
     nterm_shift_tab : array (list (int * int)) }
 ;
+
+(*DEFINE TEST;*)
 
 value basic_lr0 entry lev = do {
   IFDEF VERBOSE THEN do {
@@ -695,19 +695,19 @@ value basic_lr0 entry lev = do {
           [("E", [GS_term "1"; GS_nterm "E"]);
            ("E", [GS_term "1"])]
 *)
-(*
+(**)
           [("E", [GS_nterm "A"; GS_term "1"]);
            ("E", [GS_nterm "B"; GS_term "2"]);
            ("A", [GS_term "1"]);
            ("B", [GS_term "1"])]
-*)
 (**)
+(*
           [("E", [GS_nterm "E"; GS_term "*"; GS_nterm "B"]);
            ("E", [GS_nterm "E"; GS_term "+"; GS_nterm "B"]);
            ("E", [GS_nterm "B"]);
            ("B", [GS_term "0"]);
            ("B", [GS_term "1"])]
-(**)
+*)
         in
         (rl, "E")
       END
@@ -851,61 +851,9 @@ value basic_lr0 entry lev = do {
    term_shift_tab = term_shift_tab; nterm_shift_tab = nterm_shift_tab}
 };
 
-value lr0 entry lev = do {
-  let blr = basic_lr0 entry lev in
-  let nb_terms = Array.length blr.term_name_tab in
-  let nb_nterms = Array.length blr.nterm_name_tab in
+value make_goto_table blr = do {
   let nb_item_sets = Array.length blr.item_set_tab in
-  let term_n i = if i = -1 then "ε" else Array.get blr.term_name_tab i in
-  let nterm_n = Array.get blr.nterm_name_tab in
-  let nterm_derive_eps_tab = make_derive_eps_tab blr.rules nb_nterms in
-  IFDEF VERBOSE THEN do {
-    Printf.eprintf "\nDerive ε\n\n";
-    Printf.eprintf " ";
-    Array.iteri
-      (fun i derive_eps ->
-         if derive_eps then Printf.eprintf " %s" (nterm_n i) else ())
-      nterm_derive_eps_tab;
-    flush stderr;
-  }
-  ELSE () END;
-
-  (* compute first *)
-  let first_tab = make_first_tab blr.rules nterm_derive_eps_tab in
-  IFDEF VERBOSE THEN do {
-    let compare_terms i j = compare (term_n i) (term_n j) in
-    Printf.eprintf "\nFirst\n\n";
-    Array.iteri
-      (fun i s -> do {
-         Printf.eprintf "  first (%s) =" s;
-         List.iter (fun s -> Printf.eprintf " %s" (term_n s))
-           (List.sort compare_terms first_tab.(i));
-         Printf.eprintf "\n";
-       })
-      blr.nterm_name_tab;
-    flush stderr;
-  }
-  ELSE () END;
-
-  (* compute follow *)
-  let follow_tab = make_follow_tab blr.rules first_tab nterm_derive_eps_tab in
-  IFDEF VERBOSE THEN do {
-    let compare_terms i j = compare (term_n i) (term_n j) in
-    Printf.eprintf "\nFollow\n\n";
-    Array.iteri
-      (fun i s -> do {
-         Printf.eprintf "  follow (%s) =" s;
-         List.iter (fun s -> Printf.eprintf " %s" (term_n s))
-           (List.sort compare_terms follow_tab.(i));
-         Printf.eprintf "\n";
-       })
-      blr.nterm_name_tab;
-    flush stderr;
-  }
-  ELSE () END;
-  let _follow_tab = follow_tab in
-
-  (* make goto table *)
+  let nb_nterms = Array.length blr.nterm_name_tab in
   let goto_table =
     Array.init nb_item_sets (fun _ -> Array.create nb_nterms (-1))
   in
@@ -914,24 +862,20 @@ value lr0 entry lev = do {
        let line = goto_table.(i) in
        List.iter (fun (s, n) -> line.(s) := n) symb_cnt_assoc)
     blr.nterm_shift_tab;
-  IFDEF VERBOSE THEN do {
-    Printf.eprintf "\ngoto table\n\n";
-    if Array.length goto_table > 20 then
-      Printf.eprintf "  (big)\n"
-    else
-      for i = 0 to Array.length goto_table - 1 do {
-        Printf.eprintf "  state %d :" i;
-        let line = goto_table.(i) in
-        for j = 0 to Array.length line - 1 do {
-          if line.(j) = -1 then Printf.eprintf " -"
-          else Printf.eprintf " %d" line.(j);
-        };
-        Printf.eprintf "\n";
-      };
-    flush stderr;
-  }
-  ELSE () END;
-  (* make action table *)
+  goto_table
+};
+
+type algo =
+  [ LR0
+  | SLR of array (list int) ]
+;
+
+value make_action_table blr algo = do {
+  let nb_terms = Array.length blr.term_name_tab in
+  let nb_item_sets = Array.length blr.item_set_tab in
+  let term_n i = if i = -1 then "ε" else Array.get blr.term_name_tab i in
+  let nterm_n = Array.get blr.nterm_name_tab in
+  let compare_terms i j = compare (term_n i) (term_n j) in
   (* column size = number of terminals *)
   let action_table =
     Array.init nb_item_sets (fun _ -> Array.create nb_terms ActErr)
@@ -978,6 +922,22 @@ value lr0 entry lev = do {
                       eprint_rule term_n nterm_n m1 blr.rules.(m1);
                       Printf.eprintf "  reduce with rule ";
                       eprint_rule term_n nterm_n m blr.rules.(m);
+                      match algo with
+                      [ LR0 -> ()
+                      | SLR follow_tab -> do {
+                          let i = fst blr.rules.(m1) in
+                          Printf.eprintf "  follow (%s) =" (nterm_n i);
+                          List.iter
+                            (fun s -> Printf.eprintf " %s" (term_n s))
+                            (List.sort compare_terms follow_tab.(i));
+                          Printf.eprintf "\n";
+                          let i = fst blr.rules.(m) in
+                          Printf.eprintf "  follow (%s) =" (nterm_n i);
+                          List.iter
+                            (fun s -> Printf.eprintf " %s" (term_n s))
+                            (List.sort compare_terms follow_tab.(i));
+                          Printf.eprintf "\n"
+                        } ];
                       flush stderr;
                     }
                     ELSE () END;
@@ -996,6 +956,16 @@ value lr0 entry lev = do {
                               (term_n j);
                             Printf.eprintf "  reduce with rule ";
                             eprint_rule term_n nterm_n m blr.rules.(m);
+                            match algo with
+                            [ LR0 -> ()
+                            | SLR follow_tab -> do {
+                                let i = fst blr.rules.(m) in
+                                Printf.eprintf "  follow (%s) =" (nterm_n i);
+                                List.iter
+                                  (fun s -> Printf.eprintf " %s" (term_n s))
+                                  (List.sort compare_terms follow_tab.(i));
+                                Printf.eprintf "\n"
+                              } ];
                             flush stderr;
                           }
                           ELSE () END;
@@ -1006,11 +976,45 @@ value lr0 entry lev = do {
             else ())
          item_set)
     blr.item_set_tab;
+  action_table
+};
+
+value trace_goto_table blr goto_table =
+  IFDEF VERBOSE THEN do {
+    Printf.eprintf "\ngoto table\n\n";
+    if Array.length goto_table > 20 then
+      Printf.eprintf "  (big)\n"
+    else
+      Printf.eprintf "           ";
+      for i = 0 to Array.length blr.nterm_name_tab - 1 do {
+        Printf.eprintf " %s" blr.nterm_name_tab.(i);
+      };
+      Printf.eprintf "\n";
+      for i = 0 to Array.length goto_table - 1 do {
+        Printf.eprintf "  state %d :" i;
+        let line = goto_table.(i) in
+        for j = 0 to Array.length line - 1 do {
+          if line.(j) = -1 then Printf.eprintf " -"
+          else Printf.eprintf " %d" line.(j);
+        };
+        Printf.eprintf "\n";
+      };
+    flush stderr;
+  }
+  ELSE () END
+;
+
+value trace_action_table blr action_table =
   IFDEF VERBOSE THEN do {
     Printf.eprintf "\naction table\n\n";
     if Array.length action_table > 20 then
       Printf.eprintf "  (big)\n"
     else
+      Printf.eprintf "           ";
+      for i = 0 to Array.length blr.term_name_tab - 1 do {
+        Printf.eprintf " %4s" blr.term_name_tab.(i);
+      };
+      Printf.eprintf "\n";
       for i = 0 to Array.length action_table - 1 do {
         Printf.eprintf "  state %d :" i;
         let line = action_table.(i) in
@@ -1025,12 +1029,80 @@ value lr0 entry lev = do {
       };
     flush stderr;
   }
-  ELSE () END;
+  ELSE () END
+;
+
+value trace_nterm_derive_eps_tab blr nterm_derive_eps_tab =
+  IFDEF VERBOSE THEN do {
+    let nterm_n = Array.get blr.nterm_name_tab in
+    Printf.eprintf "\nDerive ε\n\n";
+    Printf.eprintf " ";
+    Array.iteri
+      (fun i derive_eps ->
+         if derive_eps then Printf.eprintf " %s" (nterm_n i) else ())
+      nterm_derive_eps_tab;
+    flush stderr;
+  }
+  ELSE () END
+;
+
+value trace_first_tab blr first_tab =
+  IFDEF VERBOSE THEN do {
+    let term_n i = if i = -1 then "ε" else Array.get blr.term_name_tab i in
+    let compare_terms i j = compare (term_n i) (term_n j) in
+    Printf.eprintf "\nFirst\n\n";
+    Array.iteri
+      (fun i s -> do {
+         Printf.eprintf "  first (%s) =" s;
+         List.iter (fun s -> Printf.eprintf " %s" (term_n s))
+           (List.sort compare_terms first_tab.(i));
+         Printf.eprintf "\n";
+       })
+      blr.nterm_name_tab;
+    flush stderr;
+  }
+  ELSE () END
+;
+
+value trace_follow_tab blr follow_tab =
+  IFDEF VERBOSE THEN do {
+    let term_n i = if i = -1 then "ε" else Array.get blr.term_name_tab i in
+    let compare_terms i j = compare (term_n i) (term_n j) in
+    Printf.eprintf "\nFollow\n\n";
+    Array.iteri
+      (fun i s -> do {
+         Printf.eprintf "  follow (%s) =" s;
+         List.iter (fun s -> Printf.eprintf " %s" (term_n s))
+           (List.sort compare_terms follow_tab.(i));
+         Printf.eprintf "\n";
+       })
+      blr.nterm_name_tab;
+    flush stderr;
+  }
+  ELSE () END
+;
+
+value lr0 entry lev = do {
+  let blr = basic_lr0 entry lev in
+  let goto_table = make_goto_table blr in
+  trace_goto_table blr goto_table;
+  let action_table = make_action_table blr LR0 in
+  trace_action_table blr action_table;
 };
 
 value slr entry lev = do {
-  Printf.eprintf "SLR %s %d\n" entry.ename lev;
-  flush stderr;
+  let blr = basic_lr0 entry lev in
+  let nb_nterms = Array.length blr.nterm_name_tab in
+  let nterm_derive_eps_tab = make_derive_eps_tab blr.rules nb_nterms in
+  trace_nterm_derive_eps_tab blr nterm_derive_eps_tab;
+  let first_tab = make_first_tab blr.rules nterm_derive_eps_tab in
+  trace_first_tab blr first_tab;
+  let follow_tab = make_follow_tab blr.rules first_tab nterm_derive_eps_tab in
+  trace_follow_tab blr follow_tab;
+  let goto_table = make_goto_table blr in
+  trace_goto_table blr goto_table;
+  let action_table = make_action_table blr (SLR follow_tab) in
+  trace_action_table blr action_table;
 };
 
 value f entry lev =
