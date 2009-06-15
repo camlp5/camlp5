@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.78 2007/10/13 01:36:38 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.79 2007/10/13 09:11:39 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -838,6 +838,8 @@
        (let ((e (expr_se se))) <:expr< lazy $e$ >>))
     ((Sexpr loc [(Slid _ "`") (Suid _ s)])
      <:expr< ` $s$ >>)
+    ((Sexpr loc [(Slid _ "send") se (Slid _ s)])
+     (let ((e (expr_se se))) <:expr< $e$ # $s$ >>))
     ((Sexpr loc [se . sel])
      (List.fold_left
       (lambda (e se) (let ((e1 (expr_se se))) <:expr< $e$ $e1$ >>))

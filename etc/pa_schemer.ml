@@ -880,6 +880,9 @@ and expr_se =
       let e = expr_se se in
       <:expr< lazy $e$ >>
   | Sexpr loc [Slid _ "`"; Suid _ s] -> <:expr< ` $s$ >>
+  | Sexpr loc [Slid _ "send"; se; Slid _ s] ->
+      let e = expr_se se in
+      <:expr< $e$ # $s$ >>
   | Sexpr loc [se :: sel] ->
       List.fold_left
         (fun e se ->
