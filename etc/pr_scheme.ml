@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.34 2007/10/13 00:31:18 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.35 2007/10/13 01:36:38 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -861,14 +861,12 @@ EXTEND_PRINTER
           sprintf "%s%s%s" pc.bef s pc.aft
       | <:expr< $uid:s$ >> ->
           sprintf "%s%s%s" pc.bef s pc.aft
-(*
-      | <:expr< ` $s$ >> ->
-          fun ppf curr next dg k -> fprintf ppf "`%s%t" s k
-*)
       | <:expr< $str:s$ >> ->
           sprintf "%s\"%s\"%s" pc.bef s pc.aft
       | <:expr< $chr:s$ >> ->
           sprintf "%s'%s'%s" pc.bef s pc.aft
+      | <:expr< ` $s$ >> ->
+          sprintf "%s(` %s)%s" pc.bef s pc.aft
       | x ->
           not_impl "expr" pc x ] ]
   ;

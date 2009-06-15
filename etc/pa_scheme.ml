@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.77 2007/10/13 00:31:18 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.78 2007/10/13 01:36:38 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -836,6 +836,8 @@
        (let ((e (expr_se se))) <:expr< assert $e$ >>))
     ((Sexpr loc [(Slid _ "lazy") se])
        (let ((e (expr_se se))) <:expr< lazy $e$ >>))
+    ((Sexpr loc [(Slid _ "`") (Suid _ s)])
+     <:expr< ` $s$ >>)
     ((Sexpr loc [se . sel])
      (List.fold_left
       (lambda (e se) (let ((e1 (expr_se se))) <:expr< $e$ $e1$ >>))
@@ -1000,6 +1002,7 @@
      (let* ((p1 (patt_se se1))
             (p2 (patt_se se2)))
        <:patt< ($p1$ as $p2$) >>))
+    ((Sexpr loc [(Slid _ "`") (Suid _ s)]) <:patt< ` $s$ >>)
     ((Sexpr loc [se . sel])
      (List.fold_left
       (lambda (p se) (let ((p1 (patt_se se))) <:patt< $p$ $p1$ >>))
@@ -1023,8 +1026,8 @@
     ((Santi loc _ s) (error_loc loc "patt"))))
   ((ipatt_se se)
    (match (ipatt_opt_se se)
-          ((Left p) p)
-          ((Right (values se _)) (error se "ipatt"))))
+    ((Left p) p)
+    ((Right _) (patt_se se))))
   (ipatt_opt_se
    (lambda_match
     ((Slid loc "_") (Left <:patt< _ >>))

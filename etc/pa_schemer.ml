@@ -879,6 +879,7 @@ and expr_se =
   | Sexpr loc [Slid _ "lazy"; se] ->
       let e = expr_se se in
       <:expr< lazy $e$ >>
+  | Sexpr loc [Slid _ "`"; Suid _ s] -> <:expr< ` $s$ >>
   | Sexpr loc [se :: sel] ->
       List.fold_left
         (fun e se ->
@@ -1056,6 +1057,7 @@ and patt_se =
       let p1 = patt_se se1 in
       let p2 = patt_se se2 in
       <:patt< ($p1$ as $p2$) >>
+  | Sexpr loc [Slid _ "`"; Suid _ s] -> <:patt< ` $s$ >>
   | Sexpr loc [se :: sel] ->
       List.fold_left
         (fun p se ->
@@ -1081,7 +1083,7 @@ and patt_se =
 and ipatt_se se =
   match ipatt_opt_se se with
   [ Left p -> p
-  | Right (se, _) -> error se "ipatt" ]
+  | Right _ -> patt_se se ]
 and ipatt_opt_se =
   fun
   [ Slid loc "_" -> Left <:patt< _ >>
