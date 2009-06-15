@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.33 2007/07/04 16:57:49 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.34 2007/07/04 17:16:36 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -383,25 +383,52 @@ value let_binding pc (p, e) =
   in
   let (pl, e) = expr_fun_args e in
   let pl = [p :: pl] in
+  let (e, tyo) =
+    match e with
+    [ <:expr< ($e$ : $t$) >>  -> (e, Some t)
+    | _ -> (e, None) ]
+  in
   let simple_patt = pr_patt.pr_fun "simple" in
   horiz_vertic
     (fun () ->
-       sprintf "%s%s = %s%s" pc.bef
+       sprintf "%s%s%s = %s%s" pc.bef
          (hlist simple_patt {(pc) with bef = ""; aft = ""} pl)
+         (match tyo with
+          [ Some t -> sprintf " : %s" (ctyp {(pc) with bef = ""; aft = ""} t)
+          | None -> "" ])
          (expr {(pc) with bef = ""; aft = ""} e)
          (if pc.aft then " in" else ""))
     (fun () ->
-       let s =
-         let s1 = hlist simple_patt {(pc) with aft = " ="} pl in
-         let s2 =
-           comm_expr expr
-             {ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = "";
-              dang = ""}
-             e
-          in
-         sprintf "%s\n%s" s1 s2
+       let patt_eq k =
+         horiz_vertic
+           (fun () ->
+              sprintf "%s%s%s =%s" pc.bef
+                (hlist simple_patt {(pc) with bef = ""; aft = ""} pl)
+                (match tyo with
+                 [ Some t ->
+                     sprintf " : %s" (ctyp {(pc) with bef = ""; aft = ""} t)
+                 | None -> "" ])
+                k)
+           (fun () ->
+              let patt_tycon tyo pc p =
+                match tyo with
+                [ Some t ->
+                    simple_patt
+                      {(pc) with aft = ctyp {(pc) with bef = " : "} t} p
+                | None -> simple_patt pc p ]
+              in
+              let pl = List.map (fun p -> (p, "")) pl in
+              plistl simple_patt (patt_tycon tyo) 4
+                {(pc) with aft = sprintf " =%s" k} pl)
        in
-       if pc.aft then sprintf "%s\n%sin" s (tab pc.ind) else s)
+       let s1 = patt_eq "" in
+       let s2 =
+         comm_expr expr
+           {ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""; dang = ""}
+           e
+       in
+       let s3 = if pc.aft then sprintf "\n%sin" (tab pc.ind) else "" in
+       sprintf "%s\n%s%s" s1 s2 s3)
 ;
 
 value match_assoc pc (p, w, e) =
@@ -2585,7 +2612,7 @@ Pcaml.add_option "-ss" (Arg.Set flag_semi_semi)
   "Print double semicolons (equivalent to -flag M).";
 
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.33 2007/07/04 16:57:49 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.34 2007/07/04 17:16:36 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
