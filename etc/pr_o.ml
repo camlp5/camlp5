@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.51 2007/07/06 10:53:59 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.52 2007/07/06 12:12:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -52,6 +52,7 @@ value rec is_irrefut_patt =
   | <:patt< ($p$ : $_$) >> -> is_irrefut_patt p
   | <:patt< ($list:pl$) >> -> List.for_all is_irrefut_patt pl
   | <:patt< ? $_$ : ($_$ = $_$) >> -> True
+  | <:patt< ? $_$ : ($_$) >> -> True
   | <:patt< ? $_$ >> -> True
   | <:patt< ~ $_$ >> -> True
   | <:patt< ~ $_$ : $_$ >> -> True
@@ -556,7 +557,7 @@ value label_decl pc (_, l, m, t) =
        sprintf "%s%s%s : %s%s" pc.bef (if m then "mutable " else "") l
          (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
     (fun () ->
-       let s1 = sprintf "%s%s%s :" pc.bef (if m then " mutable" else "") l in
+       let s1 = sprintf "%s%s%s :" pc.bef (if m then "mutable " else "") l in
        let s2 = ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t in
        sprintf "%s\n%s" s1 s2)
 ;
@@ -567,11 +568,15 @@ value cons_decl pc (_, c, tl) =
     let ctyp_apply = pr_ctyp.pr_fun "apply" in
     horiz_vertic
       (fun () ->
-         sprintf "%s%s of %s%s" pc.bef c
+         sprintf "%s%s of %s%s" pc.bef
+           (cons_escaped {(pc) with bef = ""; aft = ""} c)
            (hlist2 ctyp_apply (star_before ctyp_apply)
               {(pc) with bef = ""; aft = ("", "")} tl) pc.aft)
       (fun () ->
-         let s1 = sprintf "%s%s of" pc.bef c in
+         let s1 =
+           sprintf "%s%s of" pc.bef
+             (cons_escaped {(pc) with bef = ""; aft = ""} c)
+         in
          let s2 =
            horiz_vertic
              (fun () ->
@@ -785,10 +790,35 @@ value ctyp_simple =
       fun curr next pc -> not_impl "ctyp" pc z ]
 ;
 
+value flatten_sequ e =
+  let rec get_sequence =
+    fun
+    [ <:expr< do { $list:el$ } >> -> Some el
+    | _ -> None ]
+  in
+  match get_sequence e with
+  [ Some el ->
+      let rec list_of_sequence =
+        fun
+        [ [e :: el] ->
+            match get_sequence e with
+            [ Some el1 -> list_of_sequence (el1 @ el)
+            | None -> [e :: list_of_sequence el] ]
+        | [] -> [] ]
+      in
+      Some (list_of_sequence el)
+  | None -> None ]
+;
+
 value expr_top =
   extfun Extfun.empty with
-  [ <:expr< do { $list:el$ } >> ->
+  [ <:expr< do { $list:el$ } >> as ge ->
       fun curr next pc ->
+        let el =
+          match flatten_sequ ge with
+          [ Some el -> el
+          | None -> el ]
+        in
         horiz_vertic
           (fun () ->
              sprintf "%s%s%s" pc.bef
@@ -796,8 +826,8 @@ value expr_top =
                   {(pc) with bef = ""; aft = ""} el)
                pc.aft)
           (fun () ->
-             vlist2 expr_semi expr_semi {(pc) with aft = (None, Some pc.aft)}
-               el)
+             vlist2 expr_semi expr_semi
+               {(pc) with aft = (None, Some pc.aft)} el)
   | z -> fun curr next pc -> next pc z ] 
 ;
 
@@ -1584,7 +1614,7 @@ value expr_simple =
                pc.aft)
           (fun () ->
              let s =
-               vlistl (semi_after expr1) expr1
+               vlistl (semi_after (comm_expr expr1)) (comm_expr expr1)
                  {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
                   aft = ""}
                 el
@@ -1861,13 +1891,14 @@ value external_decl pc (n, t, sl) =
 ;
 
 value exception_decl pc (e, tl, id) =
+  let ctyp_apply = pr_ctyp.pr_fun "apply" in
   horiz_vertic
     (fun () ->
        sprintf "%sexception %s%s%s%s" pc.bef e
          (if tl = [] then ""
           else
             sprintf " of %s"
-              (hlist2 ctyp (star_before ctyp)
+              (hlist2 ctyp_apply (star_before ctyp_apply)
                  {(pc) with bef = ""; aft = ("", "")} tl))
          (if id = [] then ""
           else sprintf " = %s" (mod_ident {(pc) with bef = ""; aft = ""} id))
@@ -1881,7 +1912,7 @@ value exception_decl pc (e, tl, id) =
          else
            let tl = List.map (fun t -> (t, " *")) tl in
            sprintf "\n%s"
-             (plist ctyp 2
+             (plist ctyp_apply 2
                 {(pc) with bef = tab (pc.ind + 2);
                  aft = if id = [] then pc.aft else ""}
                 tl)
@@ -2741,18 +2772,14 @@ value variant_decl_list char pc pvl =
   horiz_vertic
     (fun () ->
        hlist2 variant_decl (bar_before variant_decl)
-         {(pc) with bef = sprintf "%s[ %c " pc.bef char;
+         {(pc) with bef = sprintf "%s[ %s" pc.bef char;
           aft = ("", sprintf " ]%s" pc.aft)}
          pvl)
     (fun () ->
-       let s1 = sprintf "%s[ %c" pc.bef char in
-       let s2 =
-         vlist2 variant_decl (bar_before variant_decl)
-           {(pc) with bef = tab (pc.ind + 2);
-            aft = ("", sprintf " ]%s" pc.aft)}
-           pvl
-       in
-       sprintf "%s\n%s" s1 s2)
+       vlist2 variant_decl (bar_before variant_decl)
+         {(pc) with bef = sprintf "%s[ %s" (tab (pc.ind + 2)) char;
+          aft = ("", sprintf " ]%s" pc.aft)}
+         pvl)
 ;
 
 value rec class_longident pc cl =
@@ -3016,11 +3043,11 @@ lev.pr_rules :=
       fun curr next pc ->
         class_longident {(pc) with bef = sprintf "%s#" pc.bef}  id
   | <:ctyp< [ = $list:pvl$ ] >> ->
-      fun curr next pc -> variant_decl_list '=' pc pvl
+      fun curr next pc -> variant_decl_list "" pc pvl
   | <:ctyp< [ > $list:pvl$ ] >> ->
-      fun curr next pc -> variant_decl_list '>' pc pvl
+      fun curr next pc -> variant_decl_list " >" pc pvl
   | <:ctyp< [ < $list:pvl$ ] >> ->
-      fun curr next pc -> variant_decl_list '<' pc pvl
+      fun curr next pc -> variant_decl_list " <" pc pvl
   | <:ctyp< [ < $list:pvl$ > $list:_$ ] >> ->
       fun curr next pc -> not_impl "variants 4" pc pvl
   | <:ctyp< $_$ as $_$ >> as z ->
@@ -3088,6 +3115,10 @@ value class_type_top =
              sprintf "%s\n%s" s1 s2)
   | <:class_type< object $opt:cst$ $list:csi$ end >> ->
       fun curr next pc ->
+        let class_sig_item_sep =
+          if flag_semi_semi.val then semi_semi_after class_sig_item
+          else class_sig_item
+        in
         horiz_vertic
           (fun () ->
              if alone_in_line pc then
@@ -3100,7 +3131,7 @@ value class_type_top =
                  [ Some t ->
                       sprintf " (%s)" (ctyp {(pc) with bef = ""; aft = ""} t)
                   | None -> "" ])
-                 (hlist (semi_after class_sig_item)
+                 (hlist class_sig_item_sep
                     {(pc) with bef = ""; aft = ""} csi) pc.aft)
           (fun () ->
              let s1 =
@@ -3116,7 +3147,7 @@ value class_type_top =
                           t) ]
              in
              let s2 =
-               vlist (semi_after class_sig_item)
+               vlist class_sig_item_sep
                  {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
                   aft = ""}
                  csi

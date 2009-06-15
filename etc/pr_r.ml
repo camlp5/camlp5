@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.44 2007/07/06 04:27:55 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.45 2007/07/06 12:12:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -55,6 +55,7 @@ value rec is_irrefut_patt =
   | <:patt< ($p$ : $_$) >> -> is_irrefut_patt p
   | <:patt< ($list:pl$) >> -> List.for_all is_irrefut_patt pl
   | <:patt< ? $_$ : ($_$ = $_$) >> -> True
+  | <:patt< ? $_$ : ($_$) >> -> True
   | <:patt< ? $_$ >> -> True
   | <:patt< ~ $_$ >> -> True
   | <:patt< ~ $_$ : $_$ >> -> True
@@ -661,11 +662,15 @@ value cons_decl pc (_, c, tl) =
   else
     horiz_vertic
       (fun () ->
-         sprintf "%s%s of %s%s" pc.bef c
+         sprintf "%s%s of %s%s" pc.bef
+           (cons_escaped {(pc) with bef = ""; aft = ""} c)
            (hlist2 ctyp (and_before ctyp)
               {(pc) with bef = ""; aft = ("", "")} tl) pc.aft)
       (fun () ->
-         let s1 = sprintf "%s%s of" pc.bef c in
+         let s1 =
+           sprintf "%s%s of" pc.bef
+             (cons_escaped {(pc) with bef = ""; aft = ""} c)
+         in
          let s2 =
            horiz_vertic
              (fun () ->

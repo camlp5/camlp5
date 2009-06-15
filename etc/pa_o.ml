@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.25 2007/07/06 09:38:42 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.26 2007/07/06 12:12:48 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -850,9 +850,14 @@ EXTEND
       | "-"; "'"; i = ident -> (i, (False, True)) ] ]
   ;
   constructor_declaration:
-    [ [ ci = UIDENT; "of"; cal = LIST1 (ctyp LEVEL "ctyp1") SEP "*" ->
+    [ [ ci = cons_ident; "of"; cal = LIST1 (ctyp LEVEL "ctyp1") SEP "*" ->
           (loc, ci, cal)
-      | ci = UIDENT -> (loc, ci, []) ] ]
+      | ci = cons_ident -> (loc, ci, []) ] ]
+  ;
+  cons_ident:
+    [ [ i = UIDENT -> i
+      | UIDENT "True" -> " True"
+      | UIDENT "False" -> " False" ] ]
   ;
   label_declarations:
     [ [ ld = label_declaration; ";"; ldl = SELF -> [ld :: ldl]
@@ -866,6 +871,9 @@ EXTEND
   (* Core types *)
   ctyp:
     [ [ t1 = SELF; "as"; "'"; i = ident -> <:ctyp< $t1$ as '$i$ >> ]
+    | LEFTA
+      [ "!"; pl = LIST1 typevar; "."; t = ctyp ->
+          <:ctyp< ! $list:pl$ . $t$ >> ]
     | "arrow" RIGHTA
       [ t1 = SELF; "->"; t2 = SELF -> <:ctyp< $t1$ -> $t2$ >> ]
     | "star"
