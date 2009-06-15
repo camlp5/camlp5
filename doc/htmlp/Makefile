@@ -1,7 +1,7 @@
-# $Id: Makefile,v 1.26 2007/08/29 12:12:22 deraugla Exp $
+# $Id: Makefile,v 1.27 2007/09/16 05:58:46 deraugla Exp $
 
 H=../html
-OBJS=$H/index.html $H/about.html $H/commands.html $H/conclusion.html $H/extfun.html $H/fparsers.html $H/grammars.html $H/lexers.html $H/library.html $H/locations.html $H/macros.html $H/ml_ast.html $H/opretty.html $H/parsers.html $H/pcaml.html $H/pragma.html $H/pretty.html $H/printers.html $H/ptools.html $H/quot.html $H/revsynt.html $H/scheme.html $H/sources.html $H/syntext.html
+OBJS=$H/index.html $H/about.html $H/commands.html $H/conclusion.html $H/extfun.html $H/fparsers.html $H/grammars.html $H/lexers.html $H/library.html $H/locations.html $H/macros.html $H/ml_ast.html $H/opretty.html $H/parsers.html $H/pcaml.html $H/pragma.html $H/pretty.html $H/printers.html $H/ptools.html $H/quot.html $H/revsynt.html $H/scheme.html $H/sources.html $H/strict.html $H/syntext.html
 INDEX=index.html
 
 all: $(OBJS)
