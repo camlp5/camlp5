@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.26 2007/07/16 17:22:14 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.27 2007/07/16 17:26:13 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -434,8 +434,8 @@ and the "match function", necessary to build the interface.</p>
 <h3>Token patterns</h3>
 
 <p>In grammar rules, the keywords and tokens symbols are internally
-represented by values of type "<tt>Token.pattern</tt>" defined like
-this:</p>
+represented by values of type "<tt>pattern</tt>" defined in the module
+"<tt>Token</tt>" like this:</p>
 
 <pre>
 type pattern = (string * string);
