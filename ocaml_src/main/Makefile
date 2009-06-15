@@ -53,11 +53,11 @@ compare:
 	done
 
 install:
-	-$(MKDIR) "$(BINDIR)"
-	-$(MKDIR) "$(LIBDIR)/$(NAME)"
-	cp $(CAMLP5) "$(BINDIR)/."
-	cp mLast.mli quotation.mli ast2pt.mli pcaml.mli prtools.mli "$(LIBDIR)/$(NAME)/."
-	cp mLast.cmi quotation.cmi ast2pt.cmi pcaml.cmi prtools.cmi "$(LIBDIR)/$(NAME)/."
-	cp $(NAME).cma "$(LIBDIR)/$(NAME)/."
+	-$(MKDIR) "$(DESTDIR)$(BINDIR)"
+	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(NAME)"
+	cp $(CAMLP5) "$(DESTDIR)$(BINDIR)/."
+	cp mLast.mli quotation.mli ast2pt.mli pcaml.mli prtools.mli "$(DESTDIR)$(LIBDIR)/$(NAME)/."
+	cp mLast.cmi quotation.cmi ast2pt.cmi pcaml.cmi prtools.cmi "$(DESTDIR)$(LIBDIR)/$(NAME)/."
+	cp $(NAME).cma "$(DESTDIR)$(LIBDIR)/$(NAME)/."
 
 include .depend

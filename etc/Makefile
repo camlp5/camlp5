@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.28 2007/08/16 09:50:12 deraugla Exp $
+# $Id: Makefile,v 1.29 2007/08/31 10:41:10 deraugla Exp $
 
 include ../config/Makefile
 
@@ -73,13 +73,11 @@ depend:
 get_promote:
 
 install:
-	-$(MKDIR) "$(LIBDIR)/$(NAME)" "$(BINDIR)"
-	cp $(OBJS) "$(LIBDIR)/$(NAME)/."
-	cp lib.sml "$(LIBDIR)/$(NAME)/."
-	cp $(NAME)o$(EXE) $(NAME)sch$(EXE) "$(BINDIR)/."
-	if test -f $(COPT); then cp $(COPT) "$(BINDIR)/."; fi
-#	cp mk$(NAME).sh "$(BINDIR)/mk$(NAME)"
-#	chmod a+x "$(BINDIR)/mk$(NAME)"
+	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(NAME)" "$(DESTDIR)$(BINDIR)"
+	cp $(OBJS) "$(DESTDIR)$(LIBDIR)/$(NAME)/."
+	cp lib.sml "$(DESTDIR)$(LIBDIR)/$(NAME)/."
+	cp $(NAME)o$(EXE) $(NAME)sch$(EXE) "$(DESTDIR)$(BINDIR)/."
+	if test -f $(COPT); then cp $(COPT) "$(DESTDIR)$(BINDIR)/."; fi
 
 pa_lisp.cmo: pa_lispr.cmo
 pa_scheme.cmo: pa_schemer.cmo

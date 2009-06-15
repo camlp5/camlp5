@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.8 2007/07/11 12:01:39 deraugla Exp $
+# $Id: Makefile,v 1.9 2007/08/31 10:41:10 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -52,7 +52,7 @@ promote:
 compare:
 
 install:
-	-$(MKDIR) "$(LIBDIR)/$(NAME)" "$(BINDIR)"
-	cp odyl.cmo odyl.cma "$(LIBDIR)/$(NAME)/."
+	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(NAME)" "$(DESTDIR)$(BINDIR)"
+	cp odyl.cmo odyl.cma "$(DESTDIR)$(LIBDIR)/$(NAME)/."
 
 include .depend

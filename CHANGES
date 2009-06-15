@@ -1,6 +1,9 @@
 Camlp5 Version 4.09:
 ---------------------
 
+* [31 Aug 07] For packagers: added DESTDIR in Makefiles to allow installation
+  in fake root directories. Usage: make install DESTDIR=fake-root-dir
+
 Camlp5 Version 4.08:
 ---------------------
 

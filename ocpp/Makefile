@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.4 2007/07/11 09:46:18 deraugla Exp $
+# $Id: Makefile,v 1.5 2007/08/31 10:41:10 deraugla Exp $
 
 include ../config/Makefile
 
@@ -18,8 +18,8 @@ clean::
 	rm -f *.cm[ioa] *.pp[io] *.o *.out *.bak .*.bak ocpp$(EXE)
 
 install:
-	-$(MKDIR) "$(LIBDIR)/$(NAME)" "$(BINDIR)"
-	cp $(OBJS) "$(LIBDIR)/$(NAME)/."
-	cp ocpp$(EXE) "$(BINDIR)/."
+	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(NAME)" "$(DESTDIR)$(BINDIR)"
+	cp $(OBJS) "$(DESTDIR)$(LIBDIR)/$(NAME)/."
+	cp ocpp$(EXE) "$(DESTDIR)$(BINDIR)/."
 
 depend:

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.6 2007/08/26 20:05:38 deraugla Exp $
+# $Id: Makefile,v 1.7 2007/08/31 10:41:10 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -53,11 +53,11 @@ compare:
 	done
 
 install:
-	-$(MKDIR) "$(BINDIR)"
-	-$(MKDIR) "$(LIBDIR)/$(NAME)"
-	cp $(CAMLP5) "$(BINDIR)/."
-	cp mLast.mli quotation.mli ast2pt.mli pcaml.mli prtools.mli "$(LIBDIR)/$(NAME)/."
-	cp mLast.cmi quotation.cmi ast2pt.cmi pcaml.cmi prtools.cmi "$(LIBDIR)/$(NAME)/."
-	cp $(NAME).cma "$(LIBDIR)/$(NAME)/."
+	-$(MKDIR) "$(DESTDIR)$(BINDIR)"
+	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(NAME)"
+	cp $(CAMLP5) "$(DESTDIR)$(BINDIR)/."
+	cp mLast.mli quotation.mli ast2pt.mli pcaml.mli prtools.mli "$(DESTDIR)$(LIBDIR)/$(NAME)/."
+	cp mLast.cmi quotation.cmi ast2pt.cmi pcaml.cmi prtools.cmi "$(DESTDIR)$(LIBDIR)/$(NAME)/."
+	cp $(NAME).cma "$(DESTDIR)$(LIBDIR)/$(NAME)/."
 
 include .depend

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.13 2007/08/16 04:11:44 deraugla Exp $
+# $Id: Makefile,v 1.14 2007/08/31 10:41:10 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -52,10 +52,10 @@ compare_q_MLast:
 	NAME=$(NAME) ./mk_q_MLast.sh | diff -c q_MLast.ml -
 
 install:
-	-$(MKDIR) "$(LIBDIR)/$(NAME)" "$(BINDIR)"
-	cp $(OBJS) "$(LIBDIR)/$(NAME)/."
-	cp pa_macro.cmi pa_extend.cmi "$(LIBDIR)/$(NAME)/."
-	cp $(NAME)r$(EXE) "$(BINDIR)/."
-	if test -f $(COPT); then cp $(COPT) "$(BINDIR)/."; fi
+	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(NAME)" "$(DESTDIR)$(BINDIR)"
+	cp $(OBJS) "$(DESTDIR)$(LIBDIR)/$(NAME)/."
+	cp pa_macro.cmi pa_extend.cmi "$(DESTDIR)$(LIBDIR)/$(NAME)/."
+	cp $(NAME)r$(EXE) "$(DESTDIR)$(BINDIR)/."
+	if test -f $(COPT); then cp $(COPT) "$(DESTDIR)$(BINDIR)/."; fi
 
 include .depend

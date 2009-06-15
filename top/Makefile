@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.13 2007/08/15 21:38:15 deraugla Exp $
+# $Id: Makefile,v 1.14 2007/08/31 10:41:10 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -47,7 +47,7 @@ depend:
 get_promote:
 
 install:
-	-$(MKDIR) "$(LIBDIR)/$(NAME)"
-	cp $(TARGET) "$(LIBDIR)/$(NAME)/."
+	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(NAME)"
+	cp $(TARGET) "$(DESTDIR)$(LIBDIR)/$(NAME)/."
 
 include .depend

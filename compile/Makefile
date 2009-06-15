@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.13 2007/08/16 04:11:44 deraugla Exp $
+# $Id: Makefile,v 1.14 2007/08/31 10:41:10 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -30,7 +30,9 @@ $D_fast.ml.tmp: compile.cmo $(SRC)
 	OTOP=$(OTOP) NAME=$(NAME) EXE=$(EXE) ./compile.sh $(COMP_OPT) $(SRC) > $D_fast.ml.tmp
 
 install:
-	if test -f $(NAME)o.fast.opt; then cp $(NAME)o.fast.opt "$(BINDIR)/$(NAME)o.opt"; fi
+	if test -f $(NAME)o.fast.opt; then \
+	  cp $(NAME)o.fast.opt "$(DESTDIR)$(BINDIR)/$(NAME)o.opt"; \
+	fi
 
 clean::
 	rm -f *.cm* *.pp[io] *.o *.bak .*.bak *.out *.opt

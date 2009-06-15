@@ -38,17 +38,20 @@ compare:
 	done
 
 install:
-	-$(MKDIR) "$(LIBDIR)/$(NAME)"
-	cp $(TARGET) *.mli "$(LIBDIR)/$(NAME)/."
-	cp *.cmi "$(LIBDIR)/$(NAME)/."
-	if test -f $(TARGET:.cma=.cmxa); then $(MAKE) installopt LIBDIR="$(LIBDIR)"; fi
+	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(NAME)"
+	cp $(TARGET) *.mli "$(DESTDIR)$(LIBDIR)/$(NAME)/."
+	cp *.cmi "$(DESTDIR)$(LIBDIR)/$(NAME)/."
+	if test -f $(TARGET:.cma=.cmxa); then \
+	  $(MAKE) installopt LIBDIR="$(LIBDIR)" DESTDIR=$(DESTDIR); \
+	fi
 
 installopt:
-	cp $(TARGET:.cma=.cmxa) *.cmx "$(LIBDIR)/$(NAME)/."
+	cp $(TARGET:.cma=.cmxa) *.cmx "$(DESTDIR)$(LIBDIR)/$(NAME)/."
 	if test -f $(TARGET:.cma=.lib); then \
-	  cp $(TARGET:.cma=.lib) "$(LIBDIR)/$(NAME)/."; \
+	  cp $(TARGET:.cma=.lib) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
 	else \
-	  tar cf - $(TARGET:.cma=.a) | (cd "$(LIBDIR)/$(NAME)/."; tar xf -); \
+	  tar cf - $(TARGET:.cma=.a) | \
+	  (cd "$(DESTDIR)$(LIBDIR)/$(NAME)/."; tar xf -); \
 	fi
 
 include .depend

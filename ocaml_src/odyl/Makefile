@@ -52,7 +52,7 @@ promote:
 compare:
 
 install:
-	-$(MKDIR) "$(LIBDIR)/$(NAME)" "$(BINDIR)"
-	cp odyl.cmo odyl.cma "$(LIBDIR)/$(NAME)/."
+	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(NAME)" "$(DESTDIR)$(BINDIR)"
+	cp odyl.cmo odyl.cma "$(DESTDIR)$(LIBDIR)/$(NAME)/."
 
 include .depend
