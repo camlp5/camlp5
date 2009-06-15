@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: ast2pt.ml,v 1.50 2007/09/18 01:19:17 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.51 2007/09/18 02:33:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open MLast;
@@ -727,15 +727,15 @@ and when_expr e =
 and mklabexp (lab, e) = (patt_label_long_id lab, expr e)
 and mkideexp (ide, e) = (ide, expr e)
 and mktype_decl td =
-  let priv = if td.tdPrv then Private else Public in
+  let priv = if uv td.tdPrv then Private else Public in
   let cl =
     List.map
       (fun (t1, t2) ->
          let loc = Ploc.encl (loc_of_ctyp t1) (loc_of_ctyp t2) in
          (ctyp t1, ctyp t2, mkloc loc))
-      td.tdCon
+      (uv td.tdCon)
   in
-  (snd td.tdNam, type_decl td.tdPrm priv cl td.tdDef)
+  (uv (snd td.tdNam), type_decl (uv td.tdPrm) priv cl td.tdDef)
 and module_type =
   fun
   [ MtAcc loc _ _ as f -> mkmty loc (Pmty_ident (module_type_long_id f))

@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.92 2007/09/17 23:32:31 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.93 2007/09/18 02:33:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -440,13 +440,13 @@ EXTEND
     [ [ i = patt_label_ident; "="; p = ipatt -> (i, p) ] ]
   ;
   type_declaration:
-    [ [ n = type_patt; tpl = LIST0 type_parameter; "="; pf = FLAG "private";
-        tk = ctyp; cl = LIST0 constrain ->
+    [ [ n = type_patt; tpl = V LIST0 type_parameter; "=";
+        pf = V FLAG "private"; tk = ctyp; cl = V LIST0 constrain ->
           {MLast.tdNam = n; MLast.tdPrm = tpl; MLast.tdPrv = pf;
            MLast.tdDef = tk; MLast.tdCon = cl} ] ]
   ;
   type_patt:
-    [ [ n = LIDENT -> (loc, n) ] ]
+    [ [ n = V LIDENT -> (loc, n) ] ]
   ;
   constrain:
     [ [ "constraint"; t1 = ctyp; "="; t2 = ctyp -> (t1, t2) ] ]

@@ -1,5 +1,5 @@
-(* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_sml.ml,v 1.20 2007/09/17 23:32:31 deraugla Exp $ *)
+(* camlp5r pa_extend.cmo q_MLast.cmo *)
+(* $Id: pa_sml.ml,v 1.21 2007/09/18 02:33:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -41,16 +41,13 @@ value get_seq =
   | e -> [e] ]
 ;
 
-value mem_tvar s tpl =
-  List.exists
-    (fun (t, _) ->
-       match t with
-       [ <:vala< t >> -> s = t
-       | IFDEF STRICT THEN
-           _ -> failwith "Pa_o.mem_tvar"
-         END ])
-    tpl
+value uv c =
+  match (c, "") with
+  [ (<:vala< c >>, "") -> c
+  | _ -> assert False ]
 ;
+
+value mem_tvar s tpl = List.exists (fun (t, _) -> uv t = s) tpl;
 
 value choose_tvar tpl =
   let rec find_alpha v =
@@ -188,9 +185,9 @@ value extract_label_types loc tn tal cdol =
              let new_tn = tn ^ "_" ^ c in
              let loc = MLast.loc_of_ctyp anon_record_type in
              let aux_def =
-               {MLast.tdNam = (loc, new_tn); MLast.tdPrm = [];
-                MLast.tdPrv = False; MLast.tdDef = anon_record_type;
-                MLast.tdCon = []}
+               {MLast.tdNam = (loc, <:vala< new_tn >>);
+                MLast.tdPrm = <:vala< [] >>; MLast.tdPrv = <:vala< False >>;
+                MLast.tdDef = anon_record_type; MLast.tdCon = <:vala< [] >>}
              in
              let tl = [<:ctyp< $lid:new_tn$ >>] in
              ([(loc, <:vala< c >>, <:vala< tl >>) :: cdl], [aux_def :: aux])
@@ -198,8 +195,9 @@ value extract_label_types loc tn tal cdol =
       cdol ([], [])
   in
   let td1 =
-    {MLast.tdNam = (loc, tn); MLast.tdPrm = tal; MLast.tdPrv = False;
-     MLast.tdDef = <:ctyp< [ $list:cdl$ ] >>; MLast.tdCon = []}
+    {MLast.tdNam = (loc, <:vala< tn >>); MLast.tdPrm = <:vala< tal >>;
+     MLast.tdPrv = <:vala< False >>; MLast.tdDef = <:ctyp< [ $list:cdl$ ] >>;
+     MLast.tdCon = <:vala< [] >>}
   in
   [td1 :: aux]
 ;
@@ -646,17 +644,18 @@ EXTEND
   ;
   tb:
     [ [ x1 = tyvars; x2 = idd; "="; x3 = ctyp ->
-          {MLast.tdNam = (loc, uncap x2); MLast.tdPrm = x1;
-           MLast.tdPrv =  False; MLast.tdDef = x3; MLast.tdCon = []}
+          {MLast.tdNam = (loc, <:vala< uncap x2 >>);
+           MLast.tdPrm = <:vala< x1 >>; MLast.tdPrv = <:vala< False >>;
+           MLast.tdDef = x3; MLast.tdCon = <:vala< [] >>}
       | x1 = tyvars; x2 = idd; "="; x3 = ctyp; "=="; x4 = dbrhs ->
           let x4 =
             List.map
               (fun (loc, c, tl, _) -> (loc, <:vala< c>>, <:vala< tl >>)) x4
           in
-          {MLast.tdNam = (loc, uncap x2); MLast.tdPrm = x1;
-           MLast.tdPrv =  False;
+          {MLast.tdNam = (loc, <:vala< uncap x2 >>);
+           MLast.tdPrm = <:vala< x1 >>; MLast.tdPrv = <:vala< False >>;
            MLast.tdDef = <:ctyp< $x3$ == [ $list:x4$ ] >>;
-           MLast.tdCon = []} ] ]
+           MLast.tdCon = <:vala< [] >>} ] ]
   ;
   tyvars:
     [ [ "'"; x1 = V LIDENT -> [(x1, (False, False))]
@@ -757,12 +756,14 @@ EXTEND
   ;
   tyspec:
     [ [ x1 = tyvars; x2 = idd ->
-          {MLast.tdNam = (loc, uncap x2); MLast.tdPrm = x1;
-           MLast.tdPrv = False; MLast.tdDef = <:ctyp< '$choose_tvar x1$ >>;
-           MLast.tdCon = []}
+          {MLast.tdNam = (loc, <:vala< uncap x2 >>);
+           MLast.tdPrm = <:vala< x1 >>; MLast.tdPrv = <:vala< False >>;
+           MLast.tdDef = <:ctyp< '$choose_tvar x1$ >>;
+           MLast.tdCon = <:vala< [] >>}
       | x1 = tyvars; x2 = idd; "="; x3 = ctyp ->
-          {MLast.tdNam = (loc, uncap x2); MLast.tdPrm = x1;
-           MLast.tdPrv = False; MLast.tdDef = x3; MLast.tdCon = []} ] ]
+          {MLast.tdNam = (loc, <:vala< uncap x2 >>);
+           MLast.tdPrm = <:vala< x1 >>; MLast.tdPrv = <:vala< False >>;
+           MLast.tdDef = x3; MLast.tdCon = <:vala< [] >>} ] ]
   ;
   valspec:
     [ [ x1 = op_op; x2 = ident; ":"; x3 = ctyp ->

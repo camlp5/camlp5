@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: mLast.mli,v 1.48 2007/09/18 01:19:17 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.49 2007/09/18 02:33:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Module [MLast]: abstract syntax tree.
@@ -183,11 +183,11 @@ and str_item =
       StXtr of loc and string and option (V str_item)
     END ]
 and type_decl =
-  { tdNam : (loc * string);
-    tdPrm : list type_var;
-    tdPrv : bool;
+  { tdNam : (loc * V string);
+    tdPrm : V (list type_var);
+    tdPrv : V bool;
     tdDef : ctyp;
-    tdCon : list (ctyp * ctyp) }
+    tdCon : V (list (ctyp * ctyp)) }
 and class_type =
   [ CtCon of loc and V (list string) and V (list ctyp)
   | CtFun of loc and ctyp and class_type

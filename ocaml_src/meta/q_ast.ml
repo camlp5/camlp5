@@ -363,12 +363,14 @@ module Meta_make (C : MetaSig) =
           C.node "StVal" [C.vala C.bool rf; lpe]
     and type_decl td =
       C.record
-        [record_label "tdNam", C.tuple [C.loc_v (); C.string (snd td.tdNam)];
-         record_label "tdPrm", C.list type_var td.tdPrm;
-         record_label "tdPrv", C.bool td.tdPrv;
+        [record_label "tdNam",
+         C.tuple [C.loc_v (); C.vala C.string (snd td.tdNam)];
+         record_label "tdPrm", C.vala (C.list type_var) td.tdPrm;
+         record_label "tdPrv", C.vala C.bool td.tdPrv;
          record_label "tdDef", ctyp td.tdDef;
          record_label "tdCon",
-         C.list (fun (t1, t2) -> C.tuple [ctyp t1; ctyp t2]) td.tdCon]
+         C.vala (C.list (fun (t1, t2) -> C.tuple [ctyp t1; ctyp t2]))
+           td.tdCon]
     and record_label lab =
       let loc = Ploc.dummy in
       MLast.PaAcc (loc, MLast.PaUid (loc, "MLast"), MLast.PaLid (loc, lab))

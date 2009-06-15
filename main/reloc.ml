@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: reloc.ml,v 1.33 2007/09/18 01:19:17 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.34 2007/09/18 02:33:32 deraugla Exp $ *)
 
 open MLast;
 
@@ -327,7 +327,9 @@ and type_decl floc sh td =
    tdNam = (floc (fst td.tdNam), snd td.tdNam);
    tdDef = ctyp floc sh td.tdDef;
    tdCon =
-     List.map (fun (x1, x2) -> (ctyp floc sh x1, ctyp floc sh x2)) td.tdCon}
+     vala_map
+       (List.map (fun (x1, x2) -> (ctyp floc sh x1, ctyp floc sh x2)))
+       td.tdCon}
 and class_type floc sh =
   self where rec self =
     fun

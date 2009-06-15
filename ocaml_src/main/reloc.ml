@@ -316,7 +316,8 @@ and type_decl floc sh td =
   {td with tdNam = floc (fst td.tdNam), snd td.tdNam;
    tdDef = ctyp floc sh td.tdDef;
    tdCon =
-     List.map (fun (x1, x2) -> ctyp floc sh x1, ctyp floc sh x2) td.tdCon}
+     vala_map (List.map (fun (x1, x2) -> ctyp floc sh x1, ctyp floc sh x2))
+       td.tdCon}
 and class_type floc sh =
   let rec self =
     function

@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.91 2007/09/17 23:32:31 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.92 2007/09/18 02:33:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -835,14 +835,14 @@ EXTEND
     [ [ i = patt_label_ident; "="; p = ipatt -> Qast.Tuple [i; p] ] ]
   ;
   type_declaration:
-    [ [ n = type_patt; tpl = SLIST0 type_parameter; "="; pf = SFLAG "private";
-        tk = ctyp; cl = SLIST0 constrain ->
+    [ [ n = type_patt; tpl = SV LIST0 type_parameter; "=";
+        pf = SV FLAG "private"; tk = ctyp; cl = SV LIST0 constrain ->
           Qast.Record
             [("tdNam", n); ("tdPrm", tpl); ("tdPrv", pf); ("tdDef", tk);
              ("tdCon", cl)] ] ]
   ;
   type_patt:
-    [ [ n = a_LIDENT -> Qast.Tuple [Qast.Loc; n] ] ]
+    [ [ n = a_LIDENT2 -> Qast.Tuple [Qast.Loc; n] ] ]
   ;
   constrain:
     [ [ "constraint"; t1 = ctyp; "="; t2 = ctyp -> Qast.Tuple [t1; t2] ] ]

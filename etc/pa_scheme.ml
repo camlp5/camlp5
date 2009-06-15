@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.21 2007/09/17 23:32:31 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.22 2007/09/18 02:33:32 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -814,9 +814,9 @@
                     (values n loc []))
                    ((se)
                     (error se "type declaration")))))
-       (let ((td {(MLast.tdNam (values loc1 n1)) (MLast.tdPrm tpl)
-                  (MLast.tdPrv False) (MLast.tdDef (ctyp_se se2))
-                  (MLast.tdCon [])}))
+       (let ((td {(MLast.tdNam (values loc1 <:vala< n1 >>))
+                  (MLast.tdPrm <:vala< tpl >>) (MLast.tdPrv <:vala< False >>)
+                  (MLast.tdDef (ctyp_se se2)) (MLast.tdCon <:vala< [] >>)}))
             [td . (type_declaration_list_se sel)])))
     ([] [])
     ([se . _] (error se "type_declaration"))))

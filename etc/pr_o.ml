@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.91 2007/09/17 23:32:31 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.92 2007/09/18 02:33:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -451,12 +451,15 @@ value rec make_patt_list =
   | x -> ([], Some x) ]
 ;
 
+value uv c =
+  match (c, "") with
+  [ (<:vala< c >>, "") -> c
+  | _ -> assert False ]
+;
+
 value type_var pc (tv, (p, m)) =
   sprintf "%s%s'%s%s" pc.bef (if p then "+" else if m then "-" else "")
-    (match tv with
-     [ <:vala< tv >> -> tv
-     | IFDEF STRICT THEN _ -> failwith "Pr_r.type_var" END ])
-    pc.aft
+    (uv tv) pc.aft
 ;
 
 value type_constraint pc (t1, t2) =
@@ -487,16 +490,7 @@ value type_constraint pc (t1, t2) =
     (fun () -> not_impl "type_constraint vertic" pc t1)
 ;
 
-value mem_tvar s tpl =
-  List.exists
-    (fun (t, _) ->
-       match t with
-       [ <:vala< t >> -> s = t
-       | IFDEF STRICT THEN
-           _ -> failwith "Pa_o.mem_tvar"
-         END ])
-    tpl
-;
+value mem_tvar s tpl = List.exists (fun (t, _) -> uv t = s) tpl;
 
 value type_decl pc td =
   let ((_, tn), tp, pf, te, cl) =
@@ -504,32 +498,32 @@ value type_decl pc td =
      td.MLast.tdCon)
   in
   match te with
-  [ <:ctyp< '$s$ >> when not (mem_tvar s tp) ->
+  [ <:ctyp< '$s$ >> when not (mem_tvar s (uv tp)) ->
       sprintf "%s%s%s%s" pc.bef
-        (type_params {(pc) with bef = ""; aft = ""} tp)
-        (var_escaped {(pc) with bef = ""; aft = ""} tn)
+        (type_params {(pc) with bef = ""; aft = ""} (uv tp))
+        (var_escaped {(pc) with bef = ""; aft = ""} (uv tn))
         pc.aft
   | _ ->
       horiz_vertic
         (fun () ->
            sprintf "%s%s%s = %s%s%s" pc.bef
-             (type_params {(pc) with bef = ""; aft = ""} tp)
-             (var_escaped {(pc) with bef = ""; aft = ""} tn)
+             (type_params {(pc) with bef = ""; aft = ""} (uv tp))
+             (var_escaped {(pc) with bef = ""; aft = ""} (uv tn))
              (ctyp {(pc) with bef = ""; aft = ""} te)
-             (hlist type_constraint {(pc) with bef = ""; aft = ""} cl)
+             (hlist type_constraint {(pc) with bef = ""; aft = ""} (uv cl))
              pc.aft)
         (fun () ->
            let s1 =
              horiz_vertic
                (fun () ->
                   sprintf "%s%s%s =" pc.bef
-                    (type_params {(pc) with bef = ""; aft = ""} tp)
-                    (var_escaped {(pc) with bef = ""; aft = ""} tn))
+                    (type_params {(pc) with bef = ""; aft = ""} (uv tp))
+                    (var_escaped {(pc) with bef = ""; aft = ""} (uv tn)))
                (fun () ->
                   not_impl "type_decl vertic 1" {(pc) with aft = ""} tn)
            in
            let s2 =
-             if cl = [] then
+             if uv cl = [] then
                ctyp
                  {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
                   aft = ""}
@@ -561,12 +555,6 @@ value label_decl pc (_, l, m, t) =
        let s1 = sprintf "%s%s%s :" pc.bef (if m then "mutable " else "") l in
        let s2 = ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t in
        sprintf "%s\n%s" s1 s2)
-;
-
-value uv c =
-  match (c, "") with
-  [ (<:vala< c >>, "") -> c
-  | _ -> assert False ]
 ;
 
 value cons_decl pc (_, c, tl) =

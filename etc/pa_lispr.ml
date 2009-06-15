@@ -512,8 +512,9 @@ and type_declaration_list_se =
         | se -> error se "type declaration" ]
       in
       let td =
-        {MLast.tdNam = (loc1, n1); MLast.tdPrm = tpl; MLast.tdPrv = False;
-         MLast.tdDef = ctyp_se se2; MLast.tdCon = []}
+        {MLast.tdNam = (loc1, <:vala< n1>>); MLast.tdPrm = <:vala< tpl >>;
+         MLast.tdPrv = <:vala< False >>; MLast.tdDef = ctyp_se se2;
+         MLast.tdCon = <:vala< [] >>}
       in
       [td :: type_declaration_list_se sel]
   | [] -> []

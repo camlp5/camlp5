@@ -1,5 +1,5 @@
-(* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.17 2007/09/17 23:32:31 deraugla Exp $ *)
+(* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
+(* $Id: pr_scheme.ml,v 1.18 2007/09/18 02:33:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml.OldPrinters;
@@ -711,9 +711,9 @@ pr_type_decl.pr_levels :=
                  if b <> "" then fprintf ppf "%s@ " b
                  else ())
               (fun ppf ->
-                 match tp with
-                 [ [] -> fprintf ppf "%s" tn
-                 | tp -> fprintf ppf "(%s%a)" tn type_params (tp, nok) ])
+                 match uv tp with
+                 [ [] -> fprintf ppf "%s" (uv tn)
+                 | tp -> fprintf ppf "(%s%a)" (uv tn) type_params (tp, nok) ])
                ctyp (te, k) ]}];
 
 pr_type_params.pr_levels :=
@@ -723,13 +723,7 @@ pr_type_params.pr_levels :=
       extfun Extfun.empty with
       [ [(s, vari) :: tpl] ->
           fun ppf curr next dg k ->
-            fprintf ppf "@ '%s%a"
-              (match s with
-               [ <:vala< tv >> -> tv
-               | IFDEF STRICT THEN _ ->
-                   failwith "Pr_scheme.pr_type_params"
-                 END ])
-              type_params (tpl, k)
+            fprintf ppf "@ '%s%a" (uv s) type_params (tpl, k)
       | [] ->
           fun ppf curr next dg k -> () ]}];
 

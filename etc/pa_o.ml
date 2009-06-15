@@ -1,5 +1,5 @@
-(* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.52 2007/09/17 23:32:31 deraugla Exp $ *)
+(* camlp5r pa_extend.cmo q_MLast.cmo *)
+(* $Id: pa_o.ml,v 1.53 2007/09/18 02:33:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -316,16 +316,13 @@ value get_seq =
   | e -> [e] ]
 ;
 
-value mem_tvar s tpl =
-  List.exists
-    (fun (t, _) ->
-       match t with
-       [ <:vala< t >> -> s = t
-       | IFDEF STRICT THEN
-           _ -> failwith "Pa_o.mem_tvar"
-         END ])
-    tpl
+value uv c =
+  match (c, "") with
+  [ (<:vala< c >>, "") -> c
+  | _ -> assert False ]
 ;
+
+value mem_tvar s tpl = List.exists (fun (t, _) -> uv t = s) tpl;
 
 value choose_tvar tpl =
   let rec find_alpha v =
@@ -762,16 +759,17 @@ EXTEND
   ;
   (* Type declaration *)
   type_declaration:
-    [ [ tpl = type_parameters; n = type_patt; "="; pf = OPT "private";
-        tk = type_kind; cl = LIST0 constrain ->
-          {MLast.tdNam = n; MLast.tdPrm = tpl; MLast.tdPrv = o2b pf;
-           MLast.tdDef = tk; MLast.tdCon = cl}
-      | tpl = type_parameters; n = type_patt; cl = LIST0 constrain ->
-          {MLast.tdNam = n; MLast.tdPrm = tpl; MLast.tdPrv = False;
+    [ [ tpl = type_parameters; n = type_patt; "="; pf = V FLAG "private";
+        tk = type_kind; cl = V LIST0 constrain ->
+          {MLast.tdNam = n; MLast.tdPrm = <:vala< tpl >>;
+           MLast.tdPrv = pf; MLast.tdDef = tk; MLast.tdCon = cl}
+      | tpl = type_parameters; n = type_patt; cl = V LIST0 constrain ->
+          {MLast.tdNam = n; MLast.tdPrm = <:vala< tpl >>;
+           MLast.tdPrv = <:vala< False >>;
            MLast.tdDef = <:ctyp< '$choose_tvar tpl$ >>; MLast.tdCon = cl} ] ]
   ;
   type_patt:
-    [ [ n = LIDENT -> (loc, n) ] ]
+    [ [ n = V LIDENT -> (loc, n) ] ]
   ;
   constrain:
     [ [ "constraint"; t1 = ctyp; "="; t2 = ctyp -> (t1, t2) ] ]
