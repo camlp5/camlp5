@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.119 2007/12/21 10:32:29 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.120 2007/12/21 11:45:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -452,17 +452,8 @@ value cons_decl pc (_, c, tl) =
   if tl = [] then cons_escaped pc c
   else
     let ctyp_apply = Eprinter.apply_level pr_ctyp "apply" in
-    if test.val then
-      let tl = List.map (fun t -> (t, " *")) tl in
-      pprintf pc "%p of@;<1 4>%p" cons_escaped c (plist ctyp_apply 2) tl
-    else
-    horiz_vertic
-      (fun () ->
-         pprintf pc "%p of %p" cons_escaped c
-           (hlist2 ctyp_apply (star_before ctyp_apply)) tl)
-      (fun () ->
-         let tl = List.map (fun t -> (t, " *")) tl in
-         pprintf pc "%p of@;<1 4>%p" cons_escaped c (plist ctyp_apply 2) tl)
+    let tl = List.map (fun t -> (t, " *")) tl in
+    pprintf pc "%p of@;<1 4>%p" cons_escaped c (plist ctyp_apply 2) tl
 ;
 
 value has_cons_with_params vdl =
