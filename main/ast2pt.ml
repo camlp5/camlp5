@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: ast2pt.ml,v 1.45 2007/09/14 16:03:54 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.46 2007/09/14 17:09:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open MLast;
@@ -215,7 +215,7 @@ value rec ctyp =
       in
       mktyp loc (Ptyp_variant catl clos sl)
   | IFDEF STRICT THEN
-      TyXtr loc _ _ -> error loc "bad ast"
+      TyXtr loc _ _ -> error loc "bad ast TyXtr"
     END ]
 and meth_list loc fl v =
   match fl with
@@ -478,7 +478,7 @@ value rec patt =
       mkpat loc (Ppat_construct (lident (conv_con (uv s))) None ca)
   | PaVrn loc s -> mkpat loc (Ppat_variant (uv s) None)
   | IFDEF STRICT THEN
-      PaXtr loc _ _ -> error loc "bad ast"
+      PaXtr loc _ _ -> error loc "bad ast PaXtr"
     END ]
 and mklabpat (lab, p) = (patt_label_long_id lab, patt p);
 
@@ -721,7 +721,7 @@ value rec expr =
       let e2 = <:expr< do { $list:uv el$ } >> in
       mkexp loc (Pexp_while (expr e1) (expr e2))
   | IFDEF STRICT THEN
-      ExXtr loc _ _ -> error loc "bad ast"
+      ExXtr loc _ _ -> error loc "bad ast ExXtr"
     END ]
 and label_expr =
   fun
@@ -760,7 +760,7 @@ and module_type =
   | MtWit loc mt wcl ->
       mkmty loc (Pmty_with (module_type mt) (List.map mkwithc (uv wcl)))
   | IFDEF STRICT THEN
-      MtXtr loc _ _ -> error loc "bad ast"
+      MtXtr loc _ _ -> error loc "bad ast MtXtr"
     END ]
 and sig_item s l =
   match s with
@@ -813,7 +813,7 @@ and module_expr =
       mkmod loc (Pmod_constraint (module_expr me) (module_type mt))
   | MeUid loc s -> mkmod loc (Pmod_ident (lident (uv s)))
   | IFDEF STRICT THEN
-      MeXtr loc _ _ -> error loc "bad ast"
+      MeXtr loc _ _ -> error loc "bad ast MeXtr"
     END ]
 and str_item s l =
   match s with
@@ -891,7 +891,7 @@ and class_type =
       let cil = List.fold_right class_sig_item (uv ctfl) [] in
       mkcty loc (Pcty_signature (ctyp t, cil))
   | IFDEF STRICT THEN
-      CtXtr loc _ _ -> error loc "bad ast"
+      CtXtr loc _ _ -> error loc "bad ast CtXtr"
     END ]
 and class_sig_item c l =
   match c with
@@ -943,7 +943,7 @@ and class_expr =
   | CeTyc loc ce ct ->
       mkpcl loc (Pcl_constraint (class_expr ce) (class_type ct))
   | IFDEF STRICT THEN
-      CeXtr loc _ _ -> error loc "bad ast"
+      CeXtr loc _ _ -> error loc "bad ast CeXtr"
     END ]
 and class_str_item c l =
   match c with

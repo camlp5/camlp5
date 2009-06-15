@@ -584,7 +584,13 @@ module Meta =
           e_node "CeCon" [c; e_vala (e_list e_ctyp) l]
       | CeFun (_, p, ce) -> e_node "CeFun" [e_patt p; e_class_expr ce]
       | CeLet (_, rf, lb, ce) ->
-          e_node "CeLet" [e_vala e_bool rf; e_class_expr ce]
+          e_node "CeLet"
+            [e_vala e_bool rf;
+             e_vala
+               (e_list
+                  (fun (p, e) -> MLast.ExTup (loc, [e_patt p; e_expr e])))
+               lb;
+             e_class_expr ce]
       | CeStr (_, ocsp, lcsi) ->
           let ocsp = e_vala (e_option e_patt) ocsp in
           let lcsi = e_vala (e_list e_class_str_item) lcsi in
@@ -916,19 +922,50 @@ List.iter (fun (q, f) -> Quotation.add q f)
    apply_entry class_sig_item_eoi Meta.e_class_sig_item
      Meta.p_class_sig_item];;
 
+let expr_eoi = Grammar.Entry.create Pcaml.gram "expr_eoi" in
+Grammar.extend
+  [Grammar.Entry.obj (expr_eoi : 'expr_eoi Grammar.Entry.e), None,
+   [None, None,
+    [[Gramext.Snterm
+        (Grammar.Entry.obj (Pcaml.expr : 'Pcaml__expr Grammar.Entry.e));
+      Gramext.Stoken ("EOI", "")],
+     Gramext.action
+       (fun _ (e : 'Pcaml__expr) (loc : Ploc.t) ->
+          (let loc = Ploc.make_unlined (0, 0) in
+           if !(Pcaml.strict_mode) then
+             MLast.ExApp
+               (loc,
+                MLast.ExAcc
+                  (loc, MLast.ExUid (loc, "Ploc"),
+                   MLast.ExUid (loc, "VaVal")),
+                MLast.ExAnt (loc, e))
+           else MLast.ExAnt (loc, e) :
+           'expr_eoi));
+     [Gramext.Stoken ("ANTIQUOT_LOC", ""); Gramext.Stoken ("EOI", "")],
+     Gramext.action
+       (fun _ (a : string) (loc : Ploc.t) ->
+          (let loc = Ploc.make_unlined (0, 0) in
+           if !(Pcaml.strict_mode) then
+             let a =
+               let i = String.index a ':' in
+               let i = String.index_from a (i + 1) ':' in
+               let a = String.sub a (i + 1) (String.length a - i - 1) in
+               Grammar.Entry.parse Pcaml.expr_eoi (Stream.of_string a)
+             in
+             MLast.ExApp
+               (loc,
+                MLast.ExAcc
+                  (loc, MLast.ExUid (loc, "Ploc"),
+                   MLast.ExUid (loc, "VaAnt")),
+                MLast.ExAnt (loc, a))
+           else
+             MLast.ExApp
+               (loc, MLast.ExLid (loc, "failwith"),
+                MLast.ExStr (loc, "antiquot")) :
+           'expr_eoi))]]];
 let expr s =
-  let e =
-    call_with Plexer.force_antiquot_loc true
-      (Grammar.Entry.parse Pcaml.expr_eoi) (Stream.of_string s)
-  in
-  let loc = Ploc.make_unlined (0, 0) in
-  if !(Pcaml.strict_mode) then
-    MLast.ExApp
-      (loc,
-       MLast.ExAcc
-         (loc, MLast.ExUid (loc, "Ploc"), MLast.ExUid (loc, "VaVal")),
-       MLast.ExAnt (loc, e))
-  else MLast.ExAnt (loc, e)
+  call_with Plexer.force_antiquot_loc true (Grammar.Entry.parse expr_eoi)
+    (Stream.of_string s)
 in
 let patt s =
   let p =
