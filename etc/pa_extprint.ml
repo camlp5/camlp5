@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_extprint.ml,v 1.41 2007/12/20 13:29:02 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.42 2007/12/20 14:09:49 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -151,7 +151,7 @@ type tree =
   | Tlist of tree and tree and list tree
   | Tnode of break and tree and tree
   | Tparen of paren_param and tree
-  | Tstring of string and list string ]
+  | Tstring of string and list (bool * string) ]
 ;
 
 value implode l =
@@ -178,9 +178,14 @@ value parse_int =
 
 value rec parse_pformat =
   fparser
-  [ [: `'%'; `'p'; (cl, sl) = parse_pformat :] -> ([], [implode cl :: sl])
-  | [: `c; (cl, sl) = parse_pformat :] -> ([c :: cl], sl)
-  | [: :] -> ([], []) ]
+  [ [: `'%'; `'p'; (cl, sl) = parse_pformat :] ->
+      ([], [(False, implode cl) :: sl])
+  | [: `'%'; `'q'; (cl, sl) = parse_pformat :] ->
+      ([], [(True, implode cl) :: sl])
+  | [: `c; (cl, sl) = parse_pformat :] ->
+      ([c :: cl], sl)
+  | [: :] ->
+      ([], []) ]
 ;
 
 value pformat_of_char_list cl =
@@ -268,7 +273,7 @@ and end_paren =
 ;
 
 value make_pc loc erase_bef erase_aft is_empty_bef is_empty_aft pc bef bef_al
-    aft aft_al =
+    aft aft_al a_dang =
   let lbl =
     if not erase_bef && bef = "" then []
     else
@@ -306,6 +311,11 @@ value make_pc loc erase_bef erase_aft is_empty_bef is_empty_aft pc bef bef_al
           <:expr< $e$ $pc$.aft >>
       in
       [(<:patt< aft >>, e) :: lbl]
+  in
+  let lbl =
+    match a_dang with
+    [ Some a -> [(<:patt< dang >>, a) :: lbl]
+    | None -> lbl ]
   in
   if lbl = [] then pc
   else <:expr< {($pc$) with $list:List.rev lbl$} >>
@@ -358,7 +368,7 @@ value expr_of_pformat loc fmt is_empty_bef is_empty_aft pc al fmt1 =
           if is_empty_aft then e else <:expr< $e$ $pc$.aft >>
       in
       (e, al)
-  | [fmt2 :: fmtl] ->
+  | [(with_dang, fmt2) :: fmtl] ->
       let (e, al) =
         let (bef_al, al) = get_assoc_args loc fmt1 al in
         let (f, a, al) =
@@ -366,12 +376,20 @@ value expr_of_pformat loc fmt is_empty_bef is_empty_aft pc al fmt1 =
           [ [f; a :: al] -> (f, a, al)
           | _ -> Ploc.raise loc (Stream.Error "Not enough parameters") ]
         in
+        let (a_dang, al) =
+          if with_dang then
+            match al with
+            [ [a :: al] -> (Some a, al)
+            | _ -> Ploc.raise loc (Stream.Error "Not enough parameters") ]
+          else (None, al)
+        in
         let (aft_al, al) = get_assoc_args loc fmt2 al in
         let pc =
           make_pc loc False (fmtl <> []) is_empty_bef is_empty_aft pc fmt1
-            bef_al fmt2 aft_al
+            bef_al fmt2 aft_al a_dang
         in
-        (<:expr< $f$ $pc$ $a$ >>, al)
+        let e = <:expr< $f$ $pc$ $a$ >> in
+        (e, al)
       in
       if fmtl = [] then (e, al)
       else
@@ -379,17 +397,26 @@ value expr_of_pformat loc fmt is_empty_bef is_empty_aft pc al fmt1 =
           loop "%s" [e] al fmtl where rec loop sfmt rev_el al =
             fun
             [ [] -> (sfmt, List.rev rev_el, al)
-            | [fmt :: fmtl] ->
+            | [(with_dang, fmt) :: fmtl] ->
                 let (f, a, al) =
                   match al with
                   [ [f; a :: al] -> (f, a, al)
                   | _ ->
                       Ploc.raise loc (Stream.Error "Not enough parameters") ]
                 in
+                let (a_dang, al) =
+                  if with_dang then
+                    match al with
+                    [ [a :: al] -> (Some a, al)
+                    | _ ->
+                        Ploc.raise loc
+                          (Stream.Error "Not enough parameters") ]
+                  else (None, al)
+                in
                 let (aft_al, al) = get_assoc_args loc fmt al in
                 let pc =
                   make_pc loc True (fmtl <> []) is_empty_bef is_empty_aft
-                    pc "" [] fmt aft_al
+                    pc "" [] fmt aft_al a_dang
                 in
                 let e = <:expr< $f$ $pc$ $a$ >> in
                 loop ("%s" ^ sfmt) [e :: rev_el] al fmtl ]
@@ -485,7 +512,11 @@ value rec expr_of_tree_aux loc fmt is_empty_bef is_empty_aft pc al t =
 
 value expr_of_tree loc fmt pc al t =
   let (e, al) = expr_of_tree_aux loc fmt False False pc al t in
-  e
+  match al with
+  [ [] -> e
+  | [a :: _] ->
+      let loc = MLast.loc_of_expr a in
+      Ploc.raise loc (Stream.Error "Too many parameters") ]
 ;
 
 value expand_pprintf loc pc fmt al =

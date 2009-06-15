@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.112 2007/12/20 03:42:32 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.113 2007/12/20 14:09:49 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -145,10 +145,7 @@ value rec mod_ident pc sl =
 ;
 
 value comma_after elem pc x = pprintf pc "%p," elem x;
-value semi_after elem pc x =
-  let pc = {(pc) with dang = ";"} in
-  pprintf pc "%p;" elem x
-;
+value semi_after elem pc x = pprintf pc "%q;" elem x ";";
 value semi_semi_after elem pc x = pprintf pc "%p;;" elem x;
 value star_after elem pc x = pprintf pc "%p *" elem x;
 value op_after elem pc (x, op) = pprintf pc "%p%s" elem x op;
@@ -240,8 +237,7 @@ value patt_as pc z =
 value binding elem pc (p, e) = pprintf pc "%p =@;%p" patt p elem e;
 
 value record_binding is_last pc (p, e) =
-  let pc = if is_last then pc else {(pc) with dang = ";"} in
-  pprintf pc "%p =@;%p" patt p expr1 e
+  pprintf pc "%p =@;%q" patt p expr1 e (if is_last then pc.dang else ";")
 ;
 
 pr_expr_fun_args.val :=
@@ -298,17 +294,17 @@ value let_binding pc (p, e) =
   let pc = {(pc) with dang = ""} in
   match pc.aft with
   [ "" ->
-      pprintf pc "%p =@;%p"
+      pprintf pc "%p =@;%q"
         (plistl simple_patt (patt_tycon tyo) 4) pl
-        expr_with_comm_except_if_sequence e
+        expr_with_comm_except_if_sequence e ""
   | "in" ->
-      pprintf pc "@[<a>%p =@;%p@ @]"
+      pprintf pc "@[<a>%p =@;%q@ @]"
         (plistl simple_patt (patt_tycon tyo) 4) pl
-        expr_with_comm_except_if_sequence e
+        expr_with_comm_except_if_sequence e ""
   | _ ->
-      pprintf pc "@[<a>%p =@;%p@;<0 0>@]"
+      pprintf pc "@[<a>%p =@;%q@;<0 0>@]"
         (plistl simple_patt (patt_tycon tyo) 4) pl
-        expr_with_comm_except_if_sequence e ]
+        expr_with_comm_except_if_sequence e "" ]
 ;
 
 value match_assoc force_vertic pc ((p, w, e), is_last) =
@@ -319,14 +315,13 @@ value match_assoc force_vertic pc ((p, w, e), is_last) =
     (fun () ->
        if force_vertic then sprintf "\n"
        else
-         sprintf "%s%s%s -> %s%s" pc.bef
-           (patt_as {(pc) with bef = ""; aft = ""} p)
-           (match w with
-            [ <:vala< Some e >> ->
-                sprintf " when %s" (expr {(pc) with bef = ""; aft = ""} e)
-            | _ -> "" ])
-           (comm_expr expr {(pc) with bef = ""; aft = ""; dang = pc_dang} e)
-           pc_aft)
+         pprintf pc "%p%p -> %q" patt_as p
+           (fun pc ->
+              fun
+              [ <:vala< Some e >> -> pprintf pc " when %p" expr e
+              | _ -> pprintf pc "" ])
+           w
+           (comm_expr expr) e pc_dang)
     (fun () ->
        let patt_arrow k =
          match w with
