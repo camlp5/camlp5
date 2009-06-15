@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.82 2007/10/14 09:53:23 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.83 2007/10/14 10:59:12 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -955,17 +955,26 @@
     ((Sexpr loc [(Slid _ "~") se1 se2])
      (let ((s (anti_lid_or_error se1)) (p (patt_se se2)))
       <:patt< ~$_:s$: $p$ >>))
+
     ((Sexpr loc [(Slid _ "?") se])
-     (let ((s (anti_lid_or_error se))) <:patt< ?$_:s$ >>))
+     (match se
+      ((Sexpr _ [se1 se2]) 
+       (let ((s (anti_lid_or_error se1)) (p (patt_se se2)))
+        <:patt< ?$_:s$: ($p$) >>))
+      (se
+       (let ((s (anti_lid_or_error se)))
+        <:patt< ?$_:s$ >>))))
+
     ((Sexpr loc [(Slid _ "?") se1 se2])
-     (let ((s (anti_lid_or_error se1)) (p (patt_se se2)))
-      <:patt< ?$_:s$: ($p$) >>))
-    ((Sexpr loc [(Slid _ "?") se1 (Slid _ "=") se2])
-     (let* ((p (patt_se se1)) (e (expr_se se2)))
-      <:patt< ? ($p$ = $e$) >>))
-    ((Sexpr loc [(Slid _ "?") se1 se2 se3])
-     (let* ((s (anti_lid_or_error se1)) (p (patt_se se2)) (e (expr_se se3)))
-      <:patt< ?$_:s$: ($p$ = $e$) >>))
+     (let ((e (expr_se se2)))
+      (match se1
+       ((Sexpr _ [se1 se2]) 
+        (let ((s (anti_lid_or_error se1)) (p (patt_se se2)))
+         <:patt< ?$_:s$: ($p$ = $e$) >>))
+       (se
+        (let ((s (anti_lid_or_error se)))
+         <:patt< ? ($_:s$ = $e$) >>)))))
+
     ((Srec loc sel)
      (let ((lpl (anti_list_map (label_patt_se loc) sel)))
         <:patt< { $_list:lpl$ } >>))
@@ -1019,16 +1028,26 @@
     ((Sexpr loc [(Slid _ "~") (Slid _ s)]) (Left <:patt< ~$s$ >>))
     ((Sexpr loc [(Slid _ "~") (Slid _ s) se])
      (let ((p (patt_se se))) (Left <:patt< ~$s$: $p$ >>)))
-    ((Sexpr loc [(Slid _ "?") (Slid _ s)])
-     (Left <:patt< ?$s$ >>))
-    ((Sexpr loc [(Slid _ "?") (Slid _ s) se])
-     (let ((p (patt_se se))) (Left <:patt< ?$s$: ($p$) >>)))
-    ((Sexpr loc [(Slid _ "?") se1 (Slid _ "=") se2])
-     (let* ((p (patt_se se1)) (e (expr_se se2)))
-      (Left <:patt< ? ($p$ = $e$) >>)))
-    ((Sexpr loc [(Slid _ "?") (Slid _ s) se1 se2])
-     (let* ((p (patt_se se1)) (e (expr_se se2)))
-      (Left <:patt< ?$s$: ($p$ = $e$) >>)))
+
+    ((Sexpr loc [(Slid _ "?") se])
+     (match se
+      ((Sexpr _ [se1 se2]) 
+       (let ((s (anti_lid_or_error se1)) (p (patt_se se2)))
+        (Left <:patt< ?$_:s$: ($p$) >>)))
+      (se
+       (let ((s (anti_lid_or_error se)))
+        (Left <:patt< ?$_:s$ >>)))))
+
+    ((Sexpr loc [(Slid _ "?") se1 se2])
+     (let ((e (expr_se se2)))
+      (match se1
+       ((Sexpr _ [se1 se2]) 
+        (let ((s (anti_lid_or_error se1)) (p (patt_se se2)))
+         (Left <:patt< ?$_:s$: ($p$ = $e$) >>)))
+       (se
+        (let ((s (anti_lid_or_error se)))
+         (Left <:patt< ? ($_:s$ = $e$) >>))))))
+
     ((Sexpr loc [(Slid _ ":") se1 se2])
      (let* ((p (ipatt_se se1)) (t (ctyp_se se2)))
         (Left <:patt< ($p$ : $t$) >>)))

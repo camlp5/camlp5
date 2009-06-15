@@ -107,10 +107,10 @@
 <:patt< $_lid:s$ >>
 <:patt< (? $s$) >>
 <:patt< (? $_:s$) >>
-<:patt< (? $s$ $p$) >>
-<:patt< (? $_:s$ $p$) >>
-<:patt< (? $s$ $p$ $e$) >>
-<:patt< (? $_:s$ $p$ $e$) >>
+<:patt< (? ($s$ $p$)) >>
+<:patt< (? ($_:s$ $p$)) >>
+<:patt< (? ($s$ $p$) $e$) >>
+<:patt< (? ($_:s$ $p$) $e$) >>
 <:patt< (or $p1$ $p2$) >>
 <:patt< (range $p1$ $p2$) >>
 <:patt< { $list:lpp$ } >>

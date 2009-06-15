@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.39 2007/10/14 09:53:23 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.40 2007/10/14 10:59:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1047,14 +1047,28 @@ EXTEND_PRINTER
           plistbf 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(?" pc.bef;
              aft = sprintf ")%s" pc.aft}
-            [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
-             (fun pc -> curr pc p, "")]
-      | <:patt< ? ($lid:x$ = $e$) >> ->
+            [(fun pc ->
+                plistbf 0
+                  {(pc) with ind = pc.ind + 1; bef = sprintf "%s(%s" pc.bef s;
+                   aft = sprintf ")%s" pc.aft}
+                  [(fun pc -> curr pc p, "")],
+              "")]
+      | <:patt< ? ($lid:s$ = $e$) >> ->
           plistbf 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(?" pc.bef;
              aft = sprintf ")%s" pc.aft}
-            [(fun pc -> sprintf "%s%s%s" pc.bef x pc.aft, "");
-             (fun pc -> sprintf "%s=%s" pc.bef pc.aft, "");
+            [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
+             (fun pc -> expr pc e, "")]
+      | <:patt< ?$s$: ($p$ = $e$) >> ->
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(?" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc ->
+               plistbf 0
+                 {(pc) with ind = pc.ind + 1; bef = sprintf "%s(%s" pc.bef s;
+                  aft = sprintf ")%s" pc.aft}
+                 [(fun pc -> curr pc p, "")],
+              "");
              (fun pc -> expr pc e, "")]
       | <:patt< ~$s$ >> ->
           plistbf 0
