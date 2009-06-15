@@ -33,22 +33,23 @@ value rec skip_to_eol =
   | [: `_; s :] -> skip_to_eol s ]
 ;
 
-value no_ident = ['('; ')'; '['; ']'; '{'; '}'; ' '; '\t'; '\n'; '\r'; ';'];
+value no_ident =
+  ['('; ')'; '['; ']'; '{'; '}'; ' '; '\t'; '\n'; '\r'; ';'; '.']
+;
 
 value rec ident len =
   parser
-  [ [: `'.' :] -> (Buff.get len, True)
-  | [: `x when not (List.mem x no_ident); s :] -> ident (Buff.store len x) s
-  | [: :] -> (Buff.get len, False) ]
+  [ [: `x when not (List.mem x no_ident); s :] -> ident (Buff.store len x) s
+  | [: :] -> Buff.get len ]
 ;
 
-value identifier kwt (s, dot) =
+value identifier kwt s =
   let con =
     try do { (Hashtbl.find kwt s : unit); "" } with
     [ Not_found ->
         match s.[0] with
-        [ 'A'..'Z' -> if dot then "UIDENTDOT" else "UIDENT"
-        | _ -> if dot then "LIDENTDOT" else "LIDENT" ] ]
+        [ 'A'..'Z' -> "UIDENT"
+        | _ -> "LIDENT" ] ]
   in
   (con, s)
 ;
@@ -136,8 +137,8 @@ value char_or_quote_id x =
           (Stream.Error "bad quote")
       else
         let len = Buff.store (Buff.store 0 ''') x in
-        let (s, dot) = ident len s in
-        (if dot then "LIDENTDOT" else "LIDENT", s) ]
+        let s = ident len s in
+        ("LIDENT", s) ]
 ;
 
 value rec char len =
@@ -152,35 +153,20 @@ value quote =
   | [: `x; s :] -> char_or_quote_id x s ]
 ;
 
-(* The system with LIDENTDOT and UIDENTDOT is not great (it would be *)
-(* better to have a token DOT (actually SPACEDOT and DOT)) but it is *)
-(* the only way (that I have found) to have a good behaviour in the *)
-(* toplevel (not expecting tokens after a phrase). Drawbacks: 1/ to be *)
-(* complete, we should have STRINGDOT, RIGHTPARENDOT, and so on 2/ the *)
-(* parser rule with dot is right associative and we have to reverse *)
-(* the resulting tree (using the function leftify). *)
-(* This is a complicated issue: the behaviour of the OCaml toplevel *)
-(* is strange, anyway. For example, even without Camlp5, The OCaml *)
-(* toplevel accepts that: *)
-(*     # let x = 32;; foo bar match let ) *)
-
-value rec lexer kwt = parser [: t = lexer0 kwt; _ = no_dot :] -> t
-and no_dot =
-  parser
-  [ [: `'.' :] ep ->
-      Ploc.raise (Ploc.make_unlined (ep - 1, ep)) (Stream.Error "bad dot")
-  | [: :] -> () ]
-and lexer0 kwt =
+value rec lexer kwt =
   parser bp
-  [ [: `'\t' | '\n' | '\r'; s :] -> lexer0 kwt s
+  [ [: `'\t' | '\r'; s :] -> lexer kwt s
   | [: `' '; s :] -> after_space kwt s
   | [: `';'; _ = skip_to_eol; s :] -> lexer kwt s
+  | [: `'\n'; s :] ->
+      if Sys.interactive.val then (("NL", ""), (bp, bp + 1)) else lexer kwt s
   | [: `'(' :] -> (("", "("), (bp, bp + 1))
-  | [: `')'; s :] ep -> (("", rparen s), (bp, ep))
+  | [: `')' :] -> (("", ")"), (bp, bp + 1))
   | [: `'[' :] -> (("", "["), (bp, bp + 1))
   | [: `']' :] -> (("", "]"), (bp, bp + 1))
   | [: `'{' :] -> (("", "{"), (bp, bp + 1))
   | [: `'}' :] -> (("", "}"), (bp, bp + 1))
+  | [: `'.' :] -> (("DOT", ""), (bp, bp + 1))
   | [: `'"'; s = string 0 :] ep -> (("STRING", s), (bp, ep))
   | [: `'''; tok = quote :] ep -> (tok, (bp, ep))
   | [: `'<'; tok = less kwt :] ep -> (tok, (bp, ep))
@@ -192,30 +178,24 @@ and lexer0 kwt =
   | [: `('0'..'9' as c); tok = number (Buff.store 0 c) :] ep ->
       (tok, (bp, ep))
   | [: `('+' | '*' | '/' as c); id = operator (Buff.store 0 c) :] ep ->
-      (identifier kwt (id, False), (bp, ep))
+      (identifier kwt id, (bp, ep))
   | [: `x; id = ident (Buff.store 0 x) :] ep -> (identifier kwt id, (bp, ep))
   | [: :] -> (("EOI", ""), (bp, bp + 1)) ]
-and rparen =
-  parser
-  [ [: `'.' :] -> ")."
-  | [: :] -> ")" ]
 and after_space kwt =
   parser
-  [ [: `'.' :] ep -> (("", "."), (ep - 1, ep))
-  | [: x = lexer0 kwt :] -> x ]
+  [ [: `'.' :] ep -> (("SPACEDOT", ""), (ep - 1, ep))
+  | [: x = lexer kwt :] -> x ]
 and tilde =
   parser
-  [ [: `('a'..'z' as c); (s, dot) = ident (Buff.store 0 c) :] ->
-      ("TILDEIDENT", s)
+  [ [: `('a'..'z' as c); s = ident (Buff.store 0 c) :] -> ("TILDEIDENT", s)
   | [: :] -> ("LIDENT", "~") ]
 and question =
   parser
-  [ [: `('a'..'z' as c); (s, dot) = ident (Buff.store 0 c) :] ->
-      ("QUESTIONIDENT", s)
+  [ [: `('a'..'z' as c); s = ident (Buff.store 0 c) :] -> ("QUESTIONIDENT", s)
   | [: :] -> ("LIDENT", "?") ]
 and minus kwt =
   parser
-  [ [: `'.' :] -> identifier kwt ("-.", False)
+  [ [: `'.' :] -> identifier kwt "-."
   | [: `('0'..'9' as c); n = number (Buff.store (Buff.store 0 '-') c) :] -> n
   | [: id = ident (Buff.store 0 '-') :] -> identifier kwt id ]
 and less kwt =
@@ -240,9 +220,9 @@ and quotation_greater len =
 
 value lexer_using kwt (con, prm) =
   match con with
-  [ "CHAR" | "EOI" | "INT" | "FLOAT" | "LIDENT" | "LIDENTDOT" |
-    "QUESTIONIDENT" | "QUOT" | "STRING" | "TILDEIDENT" | "UIDENT" |
-    "UIDENTDOT" ->
+  [ "CHAR" | "DOT" | "EOI" | "INT" | "FLOAT" | "LIDENT" | "NL" |
+    "QUESTIONIDENT" | "QUOT" | "SPACEDOT" | "STRING" | "TILDEIDENT" |
+    "UIDENT" ->
       ()
   | "ANTIQUOT" | "ANTIQUOT_LOC" -> ()
   | "" ->
@@ -339,7 +319,11 @@ value lident_expr loc s =
 
 value rec module_expr_se =
   fun
-  [ Sexpr loc [Slid _ "functor"; Suid _ s; se1; se2] ->
+  [ Sacc loc se1 se2 ->
+      let me1 = module_expr_se se1 in
+      let me2 = module_expr_se se2 in
+      <:module_expr< $me1$ . $me2$ >>
+  | Sexpr loc [Slid _ "functor"; Suid _ s; se1; se2] ->
       let s = Pcaml.rename_id.val s in
       let mt = module_type_se se1 in
       let me = module_expr_se se2 in
@@ -447,6 +431,10 @@ and str_item_se se =
       let s = Pcaml.rename_id.val s in
       let mt = module_type_se se in
       <:str_item< module type $uid:s$ = $mt$ >>
+  | Sexpr loc [Slid _ "#"; Slid _ s; se] ->
+      let s = Pcaml.rename_id.val s in
+      let e = expr_se se in
+      <:str_item< # $lid:s$ $e$ >>
   | _ ->
       let loc = loc_of_sexpr se in
       let e = expr_se se in
@@ -848,6 +836,10 @@ and ipatt_opt_se =
       let p = ipatt_se se1 in
       let t = ctyp_se se2 in
       Left <:patt< ($p$ : $t$) >>
+  | Sexpr loc [Slid _ "as"; se1; se2] ->
+      let p1 = ipatt_se se1 in
+      let p2 = ipatt_se se2 in
+      Left <:patt< ($p1$ as $p2$) >>
   | Sexpr loc [Slid _ "values" :: sel] ->
       let pl = List.map ipatt_se sel in
       Left <:patt< ( $list:pl$ ) >>
@@ -990,15 +982,6 @@ Pcaml.parse_implem.val := Grammar.Entry.parse implem;
 
 value sexpr = Grammar.Entry.create gram "sexpr";
 
-value rec leftify =
-  fun
-  [ Sacc loc1 se1 se2 ->
-      match leftify se2 with
-      [ Sacc loc2 se2 se3 -> Sacc loc1 (Sacc loc2 se1 se2) se3
-      | se2 -> Sacc loc1 se1 se2 ]
-  | x -> x ]
-;
-
 EXTEND
   GLOBAL: implem interf top_phrase use_file str_item sig_item expr patt sexpr;
   implem:
@@ -1052,10 +1035,8 @@ EXTEND
     [ [ se = sexpr -> patt_se se ] ]
   ;
   sexpr:
-    [ [ se1 = sexpr_dot; se2 = SELF -> leftify (Sacc loc se1 se2) ]
+    [ [ se1 = SELF; DOT; se2 = SELF -> Sacc loc se1 se2 ]
     | [ "("; sl = LIST0 sexpr; ")" -> Sexpr loc sl
-      | "("; sl = LIST0 sexpr; ")."; se = SELF ->
-          leftify (Sacc loc (Sexpr loc sl) se)
       | "["; sl = LIST0 sexpr; "]" -> Slist loc sl
       | "{"; sl = LIST0 sexpr; "}" -> Srec loc sl
       | a = pa_extend_keyword -> Slid loc a
@@ -1067,22 +1048,21 @@ EXTEND
       | s = FLOAT -> Sfloat loc s
       | s = CHAR -> Schar loc s
       | s = STRING -> Sstring loc s
+      | s = SPACEDOT -> Slid loc "."
       | s = QUOT ->
           let i = String.index s ':' in
           let typ = String.sub s 0 i in
           let txt = String.sub s (i + 1) (String.length s - i - 1) in
-          Squot loc typ txt ] ]
-  ;
-  sexpr_dot:
-    [ [ s = LIDENTDOT -> Slid loc s
-      | s = UIDENTDOT -> Suid loc s ] ]
+          Squot loc typ txt
+      | NL; s = SELF -> s
+      | NL -> raise Stream.Failure ] ]
   ;
   pa_extend_keyword:
     [ [ "_" -> "_"
       | "," -> ","
       | "=" -> "="
       | ":" -> ":"
-      | "." -> "."
-      | "/" -> "/" ] ]
+      | "/" -> "/"
+      | "#" -> "#" ] ]
   ;
 END;

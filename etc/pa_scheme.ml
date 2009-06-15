@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.31 2007/10/05 14:38:51 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.32 2007/10/05 14:59:56 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -141,7 +141,10 @@
      (((` (or '\t' '\r')) s) (lexer kwt s))
      (((` ' ') s) (after_space kwt s))
      (((` ';') (_ skip_to_eol) s) (lexer kwt s))
-     (((` '\n')) (values (values "NL" "") (values bp (+ bp 1))))
+     (((` '\n') s)
+      (if Sys.interactive.val
+       (values (values "NL" "") (values bp (+ bp 1)))
+       (lexer kwt s)))
      (((` '(')) (values (values "" "(") (values bp (+ bp 1))))
      (((` ')')) (values (values "" ")") (values bp (+ bp 1))))
      (((` '[')) (values (values "" "[") (values bp (+ bp 1))))
