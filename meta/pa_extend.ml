@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.20 2007/08/01 18:01:19 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.21 2007/08/02 10:57:44 deraugla Exp $ *)
 
 open Stdpp;
 
@@ -328,9 +328,9 @@ value rec quot_expr e =
   | <:expr< ($list:el$) >> ->
       let el = List.map quot_expr el in
       <:expr< Qast.Tuple $mklistexp loc el$ >>
-  | <:expr< let $opt:r$ $list:pel$ in $e$ >> ->
+  | <:expr< let $flag:r$ $list:pel$ in $e$ >> ->
       let pel = List.map (fun (p, e) -> (p, quot_expr e)) pel in
-      <:expr< let $opt:r$ $list:pel$ in $quot_expr e$ >>
+      <:expr< let $flag:r$ $list:pel$ in $quot_expr e$ >>
   | _ -> e ]
 ;
 

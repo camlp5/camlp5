@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.14 2007/07/30 12:57:32 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.15 2007/08/02 10:57:44 deraugla Exp $ *)
 
 (*
 Added statements:
@@ -90,9 +90,9 @@ value loc = Stdpp.dummy_loc;
 value subst mloc env =
   loop where rec loop =
     fun
-    [ <:expr< let $opt:rf$ $list:pel$ in $e$ >> ->
+    [ <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
         let pel = List.map (fun (p, e) -> (p, loop e)) pel in
-        <:expr< let $opt:rf$ $list:pel$ in $loop e$ >>
+        <:expr< let $flag:rf$ $list:pel$ in $loop e$ >>
     | <:expr< if $e1$ then $e2$ else $e3$ >> ->
         <:expr< if $loop e1$ then $loop e2$ else $loop e3$ >>
     | <:expr< $e1$ $e2$ >> -> <:expr< $loop e1$ $loop e2$ >>

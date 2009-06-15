@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: exparser.ml,v 1.4 2007/08/01 18:57:15 deraugla Exp $ *)
+(* $Id: exparser.ml,v 1.5 2007/08/02 10:57:44 deraugla Exp $ *)
 
 type spat_comp =
   [ SpTrm of MLast.loc and MLast.patt and option MLast.expr
@@ -101,8 +101,8 @@ value rec subst v e =
   | <:expr< $chr:_$ >> -> e
   | <:expr< $str:_$ >> -> e
   | <:expr< $_$ . $_$ >> -> e
-  | <:expr< let $opt:rf$ $list:pel$ in $e$ >> ->
-      <:expr< let $opt:rf$ $list:List.map (subst_pe v) pel$ in $subst v e$ >>
+  | <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
+      <:expr< let $flag:rf$ $list:List.map (subst_pe v) pel$ in $subst v e$ >>
   | <:expr< $e1$ $e2$ >> -> <:expr< $subst v e1$ $subst v e2$ >>
   | <:expr< ( $list:el$ ) >> -> <:expr< ( $list:List.map (subst v) el$ ) >>
   | _ -> raise Not_found ]

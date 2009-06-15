@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: prtools.ml,v 1.2 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: prtools.ml,v 1.3 2007/08/02 10:57:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -364,7 +364,7 @@ value flatten_sequence e =
   let rec get_sequence =
     fun
     [ <:expr< do { $list:el$ } >> -> Some el
-    | <:expr< let $opt:rf$ $list:pel$ in $e$ >> as se ->
+    | <:expr< let $flag:rf$ $list:pel$ in $e$ >> as se ->
         match get_sequence e with
         [ Some [e :: el] ->
             let e =
@@ -373,7 +373,7 @@ value flatten_sequence e =
                 let loc2 = MLast.loc_of_expr e in
                 Stdpp.encl_loc loc1 loc2
               in
-              <:expr< let $opt:rf$ $list:pel$ in $e$ >>
+              <:expr< let $flag:rf$ $list:pel$ in $e$ >>
             in
             Some [e :: el]
         | None | _ -> None ]
