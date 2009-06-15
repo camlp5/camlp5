@@ -1,16 +1,14 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: prtools.ml,v 1.5 2007/08/16 13:18:25 deraugla Exp $ *)
+(* $Id: prtools.ml,v 1.6 2007/08/16 16:01:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
 
-type gen_context 'bef 'aft =
-  Eprinter.gen_context 'bef 'aft ==
-    { ind : int; bef : 'bef; aft : 'aft; dang : string }
+type pr_context =
+  Eprinter.pr_context ==
+    { ind : int; bef : string; aft : string; dang : string }
 ;
-type pr_context = gen_context string string;
 
-type pr_gfun 'a 'b = gen_context string 'b -> 'a -> string;
 type pr_fun 'a = pr_context -> 'a -> string;
 
 value tab ind = String.make ind ' ';
@@ -56,13 +54,23 @@ value rec vlist elem pc xl =
 ;
 
 (* vertical list with different function from 2nd element on *)
-value rec vlist2 elem elem2 ({aft = (k0, k)} as pc) xl =
+value rec vlist2 elem elem2 pc xl =
   match xl with
   [ [] -> invalid_arg "vlist2"
-  | [x] -> elem {(pc) with aft = k} x
+  | [x] -> elem pc x
   | [x :: xl] ->
-      sprintf "%s\n%s" (elem {(pc) with aft = k0} x)
+      sprintf "%s\n%s" (elem {(pc) with aft = ""} x)
         (vlist2 elem2 elem2 {(pc) with bef = tab pc.ind} xl) ]
+;
+
+(* vertical list with different function from 2nd element on *)
+value rec vlist3 elem elem2 pc xl =
+  match xl with
+  [ [] -> invalid_arg "vlist2"
+  | [x] -> elem pc (x, True)
+  | [x :: xl] ->
+      sprintf "%s\n%s" (elem {(pc) with aft = ""} (x, False))
+        (vlist3 elem2 elem2 {(pc) with bef = tab pc.ind} xl) ]
 ;
 
 (* vertical list with different function for the last element *)

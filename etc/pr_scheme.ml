@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.10 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.11 2007/08/16 16:01:19 deraugla Exp $ *)
 
 open Pcaml.OldPrinters;
 open Format;
@@ -520,7 +520,8 @@ pr_patt.pr_levels :=
             fprintf ppf "(@[as@ %a@ %a@]" patt (p1, nok) patt (p2, ks ")" k)
       | <:patt< $p1$ .. $p2$ >> ->
           fun ppf curr next dg k ->
-            fprintf ppf "(@[range@ %a@ %a@]" patt (p1, nok) patt (p2, ks ")" k)
+            fprintf ppf "(@[range@ %a@ %a@]" patt (p1, nok) patt
+              (p2, ks ")" k)
       | <:patt< [$_$ :: $_$] >> as p ->
           fun ppf curr next dg k ->
             let (pl, c) =
@@ -558,11 +559,13 @@ pr_patt.pr_levels :=
             let record_binding ppf ((p1, p2), k) =
               fprintf ppf "(@[%a@ %a@]" patt (p1, nok) patt (p2, ks ")" k)
             in
-            fprintf ppf "(@[<hv>{}@ %a@]" (list record_binding) (fpl, ks ")" k)
+            fprintf ppf "(@[<hv>{}@ %a@]" (list record_binding)
+              (fpl, ks ")" k)
       | <:patt< ? $x$ >> ->
           fun ppf curr next dg k -> fprintf ppf "?%s%t" x k
       | <:patt< ? ($lid:x$ = $e$) >> ->
-          fun ppf curr next dg k -> fprintf ppf "(?%s@ %a" x expr (e, ks ")" k)
+          fun ppf curr next dg k ->
+            fprintf ppf "(?%s@ %a" x expr (e, ks ")" k)
       | <:patt< $p1$ . $p2$ >> ->
           fun ppf curr next dg k ->
             fprintf ppf "%a.%a" patt (p1, nok) patt (p2, k)
@@ -752,7 +755,11 @@ value input_source ic len =
   try
     let rec loop i =
       if i >= len then Buffer.contents buff
-      else do { let c = input_char ic in Buffer.add_char buff c; loop (i + 1) }
+      else do {
+        let c = input_char ic in
+        Buffer.add_char buff c;
+        loop (i + 1)
+      }
     in
     loop 0
   with

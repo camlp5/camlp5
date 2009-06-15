@@ -1815,7 +1815,11 @@ value input_source ic len =
   try
     let rec loop i =
       if i >= len then Buffer.contents buff
-      else do { let c = input_char ic in Buffer.add_char buff c; loop (i + 1) }
+      else do {
+        let c = input_char ic in
+        Buffer.add_char buff c;
+        loop (i + 1)
+      }
     in
     loop 0
   with

@@ -1,5 +1,5 @@
 ;; camlp5 ./pa_lispr.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-;; $Id: pa_lisp.ml,v 1.10 2007/08/01 18:57:15 deraugla Exp $
+;; $Id: pa_lisp.ml,v 1.11 2007/08/16 16:01:19 deraugla Exp $
 
 (open Pcaml)
 (open Stdpp)
@@ -69,7 +69,8 @@
 
 (value quote
        (parser
-        (((` '\\') (len (char (Buff.store 0 '\\')))) (, "CHAR" (Buff.get len)))
+        (((` '\\') (len (char (Buff.store 0 '\\'))))
+         (, "CHAR" (Buff.get len)))
         (((` x) s) (char_or_quote_id x s))))
 
 (value rec

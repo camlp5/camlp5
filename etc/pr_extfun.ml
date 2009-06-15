@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extfun.ml,v 1.11 2007/08/16 11:29:18 deraugla Exp $ *)
+(* $Id: pr_extfun.ml,v 1.12 2007/08/16 16:01:19 deraugla Exp $ *)
 
 (* heuristic to rebuild the extfun statement from the AST *)
 
@@ -129,8 +129,7 @@ value match_assoc_list pc pwel =
   if pwel = [] then sprintf "%s[]%s" pc.bef pc.aft
   else
     vlist2 match_assoc_sh (bar_before match_assoc_sh)
-      {(pc) with bef = sprintf "%s[ " pc.bef;
-       aft = ("", sprintf " ]%s" pc.aft)}
+      {(pc) with bef = sprintf "%s[ " pc.bef; aft = sprintf " ]%s" pc.aft}
       pwel
 ;
 

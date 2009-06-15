@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.38 2007/08/16 13:18:25 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.39 2007/08/16 16:01:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -130,8 +130,7 @@ value class_type_decl_list pc cd =
          pc.aft)
     (fun () ->
        vlist2 class_type_decl (and_before class_type_decl)
-         {(pc) with bef = sprintf "%sclass type " pc.bef; aft = ("", pc.aft)}
-         cd)
+         {(pc) with bef = sprintf "%sclass type " pc.bef} cd)
 ;
 
 value rec is_irrefut_patt =
@@ -220,8 +219,7 @@ value variant_decl_list char pc pvl =
        let s1 = sprintf "%s[ %c" pc.bef char in
        let s2 =
          vlist2 variant_decl (bar_before variant_decl)
-           {(pc) with bef = tab (pc.ind + 2);
-            aft = ("", sprintf " ]%s" pc.aft)}
+           {(pc) with bef = tab (pc.ind + 2); aft = sprintf " ]%s" pc.aft}
            pvl
        in
        sprintf "%s\n%s" s1 s2)
@@ -494,9 +492,7 @@ EXTEND_PRINTER
                  pc.aft)
             (fun () ->
                vlist2 class_def (and_before class_def)
-                 {(pc) with bef = sprintf "%sclass " pc.bef;
-                  aft = ("", pc.aft)}
-                 cd)
+                 {(pc) with bef = sprintf "%sclass " pc.bef} cd)
     | <:sig_item< class type $list:cd$ >> ->
         class_type_decl_list pc cd ] ]
   ;
@@ -510,8 +506,7 @@ EXTEND_PRINTER
                  pc.aft)
             (fun () ->
                vlist2 class_decl (and_before class_decl)
-                 {(pc) with bef = sprintf "%sclass " pc.bef;
-                  aft = ("", pc.aft)}
+                 {(pc) with bef = sprintf "%sclass " pc.bef}
                  cd)
       | <:str_item< class type $list:cd$ >> ->
           class_type_decl_list pc cd ] ]
@@ -538,7 +533,8 @@ EXTEND_PRINTER
                let s1 =
                  hlist2 (binding expr) (and_before (binding expr))
                    {(pc) with
-                    bef = sprintf "%slet %s" pc.bef (if rf then "rec " else "");
+                    bef =
+                      sprintf "%slet %s" pc.bef (if rf then "rec " else "");
                     aft = " in"}
                    pel
                in
@@ -548,8 +544,9 @@ EXTEND_PRINTER
                let s1 =
                  vlist2 (binding expr) (and_before (binding expr))
                    {(pc) with
-                    bef = sprintf "%slet %s" pc.bef (if rf then "rec " else "");
-                    aft = ("", " in")}
+                    bef =
+                      sprintf "%slet %s" pc.bef (if rf then "rec " else "");
+                    aft = " in"}
                    pel
                in
                let s2 = class_expr {(pc) with bef = tab pc.ind} ce in
@@ -626,7 +623,8 @@ EXTEND_PRINTER
                  sprintf "%sobject%s %s end%s" pc.bef
                    (match cst with
                    [ Some t ->
-                        sprintf " (%s)" (ctyp {(pc) with bef = ""; aft = ""} t)
+                        sprintf " (%s)"
+                          (ctyp {(pc) with bef = ""; aft = ""} t)
                     | None -> "" ])
                    (hlist (semi_after class_sig_item)
                       {(pc) with bef = ""; aft = ""} csi) pc.aft)
@@ -684,7 +682,8 @@ EXTEND_PRINTER
                  (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
             (fun () ->
                let s1 =
-                 sprintf "%svalue%s %s :" pc.bef (if mf then " mutable" else "")
+                 sprintf "%svalue%s %s :" pc.bef
+                   (if mf then " mutable" else "")
                    (var_escaped {(pc) with bef = ""; aft = ""} s)
                in
                let s2 =
@@ -779,8 +778,8 @@ EXTEND_PRINTER
                  (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
             (fun () ->
                let s1 =
-                 sprintf "%svalue%s %s =" pc.bef (if mf then " mutable" else "")
-                   s
+                 sprintf "%svalue%s %s =" pc.bef
+                   (if mf then " mutable" else "") s
                in
                let s2 =
                  expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e

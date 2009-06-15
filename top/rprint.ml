@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: rprint.ml,v 1.17 2007/07/31 04:55:54 deraugla Exp $ *)
+(* $Id: rprint.ml,v 1.18 2007/08/16 16:01:19 deraugla Exp $ *)
 
 open Format;
 open Outcometree;
@@ -157,8 +157,8 @@ and print_simple_out_type ppf =
       let print_fields ppf =
         fun
         [ Ovar_fields fields ->
-            print_list print_poly_variant (fun ppf -> fprintf ppf "@;<1 -2>| ")
-              ppf fields
+            print_list print_poly_variant
+              (fun ppf -> fprintf ppf "@;<1 -2>| ") ppf fields
         | Ovar_name id tyl ->
             fprintf ppf "@[%a%a@]" print_typargs tyl print_ident id ]
       in

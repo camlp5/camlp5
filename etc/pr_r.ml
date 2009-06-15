@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.59 2007/08/16 13:18:25 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.60 2007/08/16 16:01:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -299,8 +299,8 @@ value sequencify e =
             ...
           }
  *)
-value sequence_box pc expr el =
-  let s1 = pc.bef " do {" in
+value sequence_box pc bef expr el =
+  let s1 = bef " do {" in
   let s2 =
     vlistl (semi_after (comm_expr expr))
       (comm_expr expr)
@@ -362,11 +362,10 @@ value rec where_binding pc (p, e, body) =
            let expr_wh =
              if flag_where_in_sequences.val then expr_wh else expr
            in
-           sequence_box
-             {(pc) with
-              bef k =
+           sequence_box pc
+             (fun k ->
                 horiz_vertic (fun () -> horiz_where k)
-                  (fun () -> vertic_where k)}
+                  (fun () -> vertic_where k))
              expr_wh el
        | None ->
            let s1 =
@@ -385,9 +384,9 @@ and expr_wh pc e =
   | None -> expr pc e ]
 ;
 
-value sequence_box2 pc el =
+value sequence_box2 pc bef el =
   let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
-  sequence_box pc expr_wh el
+  sequence_box pc bef expr_wh el
 ;
 
 (* Pretty printing improvements (optional):
@@ -408,10 +407,8 @@ value record_binding pc (p, e) =
     (fun () ->
        match sequencify e with
        [ Some el ->
-           sequence_box2
-             {(pc) with
-              bef k = hlist patt {(pc) with aft = sprintf " =%s" k} pl}
-             el
+           sequence_box2 pc
+             (fun k -> hlist patt {(pc) with aft = sprintf " =%s" k} pl) el
        | None ->
            sprintf "%s\n%s" (hlist patt {(pc) with aft = " ="} pl)
              (expr_wh {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
@@ -484,7 +481,7 @@ value value_or_let_binding flag_where sequ pc (p, e) =
                 {(pc) with aft = sprintf " =%s" k} pl)
        in
        match sequencify e with
-       [ Some el -> sequ {(pc) with bef = patt_eq} el
+       [ Some el -> sequ pc patt_eq el
        | None ->
            let s1 = patt_eq "" in
            let s2 =
@@ -504,8 +501,8 @@ value value_binding pc pe =
 ;
 
 value let_binding pc pe =
-  let sequ pc el =
-    let s = sequence_box2 {(pc) with aft = ""} el in
+  let sequ pc bef el =
+    let s = sequence_box2 {(pc) with aft = ""} bef el in
     if pc.aft = "" then s else sprintf "%s\n%s%s" s (tab pc.ind) pc.aft
   in
   value_or_let_binding flag_where_after_let_eq sequ pc pe
@@ -553,10 +550,9 @@ value match_assoc pc (p, w, e) =
        in
        match sequencify e with
        [ Some el ->
-           sequence_box2
-             {(pc) with
-              bef k =
-                horiz_vertic (fun _ -> sprintf "\n") (fun () -> patt_arrow k)}
+           sequence_box2 pc
+             (fun k ->
+                horiz_vertic (fun _ -> sprintf "\n") (fun () -> patt_arrow k))
              el
        | None ->
            let s1 = patt_arrow "" in
@@ -574,8 +570,7 @@ value match_assoc_list pc pwel =
   if pwel = [] then sprintf "%s[]%s" pc.bef pc.aft
   else
     vlist2 match_assoc_sh (bar_before match_assoc_sh)
-      {(pc) with bef = sprintf "%s[ " pc.bef;
-       aft = ("", sprintf " ]%s" pc.aft)}
+      {(pc) with bef = sprintf "%s[ " pc.bef; aft = sprintf " ]%s" pc.aft}
       pwel
 ;
 
@@ -1051,12 +1046,10 @@ EXTEND_PRINTER
                       in
                       match sequencify e2 with
                       [ Some el ->
-                          sequence_box2
-                            {(pc) with
-                             bef k =
+                          sequence_box2 {(pc) with aft = ""}
+                            (fun k ->
                                horiz_vertic (fun () -> horiz_if_then k)
-                                 (fun () -> vertic_if_then k);
-                             aft = ""}
+                                 (fun () -> vertic_if_then k))
                             el
                       | None ->
                           let s1 =
@@ -1092,12 +1085,11 @@ EXTEND_PRINTER
                    (fun () ->
                       match sequencify e3 with
                       [ Some el ->
-                          sequence_box2
-                            {(pc) with
-                             bef k =
+                          sequence_box2 pc
+                            (fun k ->
                                horiz_vertic (fun () -> sprintf "\n")
                                  (fun () ->
-                                    sprintf "%selse%s" (tab pc.ind) k)}
+                                    sprintf "%selse%s" (tab pc.ind) k))
                             el
                       | None ->
                           let s =
@@ -1129,11 +1121,10 @@ EXTEND_PRINTER
                    in
                    match sequencify e1 with
                    [ Some el ->
-                       sequence_box2
-                         {(pc) with
-                          bef k =
+                       sequence_box2 pc
+                         (fun k ->
                             horiz_vertic (fun _ -> sprintf "\n")
-                              (fun () -> fun_arrow k)}
+                              (fun () -> fun_arrow k))
                          el
                    | None ->
                        let s1 = fun_arrow "" in
@@ -1192,11 +1183,8 @@ EXTEND_PRINTER
                        let s1 =
                          match sequencify e1 with
                          [ Some el ->
-                             sequence_box2
-                               {(pc) with
-                                bef k = sprintf "%s%s%s" pc.bef op k;
-                                aft = ""}
-                               el
+                             sequence_box2 {(pc) with aft = ""}
+                               (fun k -> sprintf "%s%s%s" pc.bef op k) el
                          | None ->
                              let s =
                                expr_wh
@@ -1229,13 +1217,11 @@ EXTEND_PRINTER
                           let s =
                             match sequencify e1 with
                             [ Some el ->
-                                sequence_box2
-                                  {(pc) with
-                                   bef k =
+                                sequence_box2 {(pc) with aft = ""}
+                                  (fun k ->
                                      horiz_vertic (fun _ -> sprintf "\n")
                                        (fun () ->
-                                          sprintf "%s%s%s" pc.bef op k);
-                                   aft = ""}
+                                          sprintf "%s%s%s" pc.bef op k))
                                   el
                             | None ->
                                 let s =
@@ -1274,7 +1260,7 @@ EXTEND_PRINTER
                         bef =
                           sprintf "%slet %s" pc.bef
                             (if rf then "rec " else "");
-                        aft = ("", "in")}
+                        aft = "in"}
                        pel
                    in
                    let s2 =
@@ -1894,7 +1880,7 @@ EXTEND_PRINTER
             (fun () ->
                vlist2 cons_decl (bar_before cons_decl)
                  {(pc) with bef = sprintf "%s[ " pc.bef;
-                  aft = ("", sprintf " ]%s" pc.aft)}
+                  aft = sprintf " ]%s" pc.aft}
                  vdl)
       | <:ctyp< ($list:tl$) >> ->
           horiz_vertic
@@ -1963,7 +1949,7 @@ EXTEND_PRINTER
           mod_ident {(pc) with bef = sprintf "%sopen " pc.bef} i
       | <:str_item< type $list:tdl$ >> ->
           vlist2 type_decl (and_before type_decl)
-            {(pc) with bef = sprintf "%stype " pc.bef; aft = ("", pc.aft)} tdl
+            {(pc) with bef = sprintf "%stype " pc.bef} tdl
       | <:str_item< value $opt:rf$ $list:pel$ >> ->
           horiz_vertic
             (fun () ->
@@ -1974,8 +1960,8 @@ EXTEND_PRINTER
                vlist2 value_binding (and_before value_binding)
                  {(pc) with
                   bef =
-                    sprintf "%svalue %s" pc.bef (if rf then "rec " else "");
-                  aft = ("", pc.aft)} pel)
+                    sprintf "%svalue %s" pc.bef (if rf then "rec " else "")}
+                 pel)
       | <:str_item< $exp:e$ >> ->
           expr pc e
       | <:str_item< class type $list:_$ >> | <:str_item< class $list:_$ >> ->
@@ -2015,7 +2001,7 @@ EXTEND_PRINTER
           mod_ident {(pc) with bef = sprintf "%sopen " pc.bef} i
       | <:sig_item< type $list:tdl$ >> ->
           vlist2 type_decl (and_before type_decl)
-            {(pc) with bef = sprintf "%stype " pc.bef; aft = ("", pc.aft)} tdl
+            {(pc) with bef = sprintf "%stype " pc.bef} tdl
       | <:sig_item< value $s$ : $t$ >> ->
           horiz_vertic
             (fun () ->

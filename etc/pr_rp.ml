@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_rp.ml,v 1.6 2007/08/16 11:29:18 deraugla Exp $ *)
+(* $Id: pr_rp.ml,v 1.7 2007/08/16 16:01:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Heuristic to rebuild parsers and streams from the AST *)
@@ -276,8 +276,8 @@ value stream pc e =
 
 (* Parsers *)
 
-value sequence_box pc expr el =
-  let s1 = pc.bef " do {" in
+value sequence_box pc bef expr el =
+  let s1 = bef " do {" in
   let s2 =
     vlistl (semi_after expr) expr
       {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""} el
@@ -401,9 +401,9 @@ value parser_case pc (sp, po, e) =
         (fun () ->
            match flatten_sequence e with
            [ Some el ->
-               sequence_box
-                 {(pc) with
-                  bef k = sprintf "%s[: :]%s ->%s" pc.bef (ident_option po) k}
+               sequence_box pc
+                 (fun k ->
+                    sprintf "%s[: :]%s ->%s" pc.bef (ident_option po) k)
                  expr el
            | None ->
                let s1 = sprintf "%s[: :]%s ->" pc.bef (ident_option po) in
@@ -420,13 +420,12 @@ value parser_case pc (sp, po, e) =
         (fun () ->
            match flatten_sequence e with
            [ Some el ->
-               sequence_box
-                 {(pc) with
-                  bef k =
+               sequence_box pc
+                 (fun k ->
                     stream_patt
                       {(pc) with bef = sprintf "%s[: " pc.bef;
                        aft = sprintf " :]%s ->%s" (ident_option po) k}
-                      sp}
+                      sp)
                  expr el
            | None ->
                let s1 =
@@ -473,7 +472,7 @@ value parser_body pc (po, spel) =
           let s2 =
             vlist2 parser_case_sh (bar_before parser_case_sh)
               {(pc) with bef = sprintf "%s[ " (tab pc.ind);
-               aft = ("", sprintf " ]%s" pc.aft)}
+               aft = sprintf " ]%s" pc.aft}
               spel
           in
           sprintf "%s%s\n%s" pc.bef s1 s2 ] ]

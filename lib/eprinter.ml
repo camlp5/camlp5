@@ -1,10 +1,6 @@
 (* camlp5r *)
-(* $Id: eprinter.ml,v 1.8 2007/08/16 11:14:04 deraugla Exp $ *)
+(* $Id: eprinter.ml,v 1.9 2007/08/16 16:01:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
-
-type gen_context 'bef 'aft =
-  { ind : int; bef : 'bef; aft : 'aft; dang : string }
-;
 
 type t 'a =
   { pr_name : string;
@@ -14,7 +10,7 @@ and pr_level 'a = { pr_label : string; pr_rules : mutable pr_rule 'a }
 and pr_rule 'a =
   Extfun.t 'a (pr_fun 'a -> pr_fun 'a -> pr_context -> string)
 and pr_fun 'a = pr_context -> 'a -> string
-and pr_context = gen_context string string;
+and pr_context = { ind : int; bef : string; aft : string; dang : string };
 
 type position =
   [ First

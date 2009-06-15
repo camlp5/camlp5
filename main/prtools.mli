@@ -1,14 +1,11 @@
 (* camlp5r *)
-(* $Id: prtools.mli,v 1.4 2007/08/16 13:18:25 deraugla Exp $ *)
+(* $Id: prtools.mli,v 1.5 2007/08/16 16:01:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
-type gen_context 'bef 'aft =
-  Eprinter.gen_context 'bef 'aft ==
-    { ind : int; bef : 'bef; aft : 'aft; dang : string }
+type pr_context =
+  Eprinter.pr_context ==
+    { ind : int; bef : string; aft : string; dang : string }
 ;
-type pr_context = gen_context string string;
-
-type pr_gfun 'a 'b = gen_context string 'b -> 'a -> string;
 type pr_fun 'a = pr_context -> 'a -> string;
 
 value tab : int -> string;
@@ -32,11 +29,11 @@ value vlist : pr_fun 'a -> pr_fun (list 'a);
        [vlist elem pc e] returns the vertically pretty printed string
        of a list of elements; elements are separated with newlines and
        indentations. *)
-value vlist2 : pr_gfun 'a 'b -> pr_gfun 'a 'b -> pr_gfun (list 'a) ('b * 'b);
-   (** vertical list with different function from 2nd element on.
-       In [vlist2 elem elem2 pc el], [pc.aft] is a couple where the first
-       element is given as [pc.aft] to all elements except the last one,
-       and the second element is given as [pc.aft] for the last one. *)
+value vlist2 : pr_fun 'a -> pr_fun 'a -> pr_fun (list 'a);
+   (** vertical list with different function from 2nd element on. *)
+value vlist3 : pr_fun ('a * bool) -> pr_fun ('a * bool) -> pr_fun (list 'a);
+   (** vertical list with different function from 2nd element on, the
+       boolean value being True if it is the last element of the list. *)
 value vlistl : pr_fun 'a -> pr_fun 'a -> pr_fun (list 'a);
    (** vertical list with different function for the last element *)
 

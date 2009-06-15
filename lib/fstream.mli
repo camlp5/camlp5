@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: fstream.mli,v 1.2 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: fstream.mli,v 1.3 2007/08/16 16:01:19 deraugla Exp $ *)
 
 (* Module [Fstream]: functional streams *)
 
@@ -8,7 +8,8 @@
 -     stream: [fstream [: ... :]]
 -     parser: [parser [ [: ... :] -> ... | ... ]]
 
-   Functional parsers are of type: [Fstream.t 'a -> option ('a * Fstream.t 'a)]
+   Functional parsers are of type:
+     [Fstream.t 'a -> option ('a * Fstream.t 'a)]
 
    They have limited backtrack, i.e if a rule fails, the next rule is tested
    with the initial stream; limited because when in case of a rule with two

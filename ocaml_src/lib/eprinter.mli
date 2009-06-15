@@ -3,11 +3,7 @@
 (* Copyright (c) INRIA 2007 *)
 
 type 'a t;;
-
-type ('bef, 'aft) gen_context =
-  { ind : int; bef : 'bef; aft : 'aft; dang : string }
-;;
-type pr_context = (string, string) gen_context;;
+type pr_context = { ind : int; bef : string; aft : string; dang : string };;
 
 val make : string -> 'a t;;
 

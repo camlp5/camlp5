@@ -8,7 +8,8 @@
 -     stream: [fstream [: ... :]]
 -     parser: [parser [ [: ... :] -> ... | ... ]]
 
-   Functional parsers are of type: [Fstream.t 'a -> option ('a * Fstream.t 'a)]
+   Functional parsers are of type:
+     [Fstream.t 'a -> option ('a * Fstream.t 'a)]
 
    They have limited backtrack, i.e if a rule fails, the next rule is tested
    with the initial stream; limited because when in case of a rule with two

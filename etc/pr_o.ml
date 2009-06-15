@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.79 2007/08/16 13:18:25 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.80 2007/08/16 16:01:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -281,11 +281,9 @@ pr_expr_fun_args.val :=
   | z -> ([], z) ]
 ;
 
-value expr_semi pc e =
+value expr_semi pc (e, is_last) =
   let (pc_aft, pc_dang) =
-    match pc.aft with
-    [ None -> (";", ";")
-    | Some aft -> (aft, pc.dang) ]
+    if not is_last then (";", ";") else (pc.aft, pc.dang)
   in
   comm_expr expr {(pc) with aft = pc_aft; dang = pc_dang} e
 ;
@@ -361,11 +359,9 @@ value let_binding pc (p, e) =
        sprintf "%s\n%s%s" s1 s2 s3)
 ;
 
-value match_assoc pc (p, w, e) =
+value match_assoc pc ((p, w, e), is_last) =
   let (pc_aft, pc_dang) =
-    match pc.aft with
-    [ None -> ("", "|")
-    | Some aft -> (aft, pc.dang) ]
+    if not is_last then ("", "|") else (pc.aft, pc.dang)
   in
   horiz_vertic
     (fun () ->
@@ -422,10 +418,8 @@ value match_assoc_sh pc pwe = match_assoc {(pc) with ind = pc.ind + 2} pwe;
 value match_assoc_list pc pwel =
   if pwel = [] then sprintf "%s[]%s" pc.bef pc.aft
   else
-    vlist2 match_assoc_sh (bar_before match_assoc_sh)
-      {(pc) with bef = sprintf "%s  " pc.bef;
-       aft = (None, Some pc.aft)}
-      pwel
+    vlist3 match_assoc_sh (bar_before match_assoc_sh)
+      {(pc) with bef = sprintf "%s  " pc.bef} pwel
 ;
 
 value raise_match_failure pc loc =
@@ -943,8 +937,7 @@ EXTEND_PRINTER
                     {(pc) with bef = ""; aft = ""} el)
                  pc.aft)
             (fun () ->
-               vlist2 expr_semi expr_semi
-                 {(pc) with aft = (None, Some pc.aft)} el) ]
+               vlist3 expr_semi expr_semi pc el) ]
     | "expr1"
       [ <:expr< if $e1$ then $e2$ else $e3$ >> as ge ->
           horiz_vertic
@@ -1144,8 +1137,8 @@ EXTEND_PRINTER
                    in
                    sprintf "%s%s %s with %s%s%s" pc.bef op_begin
                      (expr {(pc) with bef = ""; aft = ""; dang = ""} e1)
-                     (match_assoc {(pc) with bef = ""; aft = Some ""}
-                        (p, wo, e))
+                     (match_assoc {(pc) with bef = ""; aft = ""}
+                        ((p, wo, e), True))
                      op_end pc.aft)
                 (fun () ->
                    let (op_begin, pc_aft, op_end) =
@@ -1167,8 +1160,8 @@ EXTEND_PRINTER
                        let s2 =
                          match_assoc
                            {(pc) with ind = pc.ind + 2;
-                            bef = tab (pc.ind + 2); aft = Some pc_aft}
-                           (p, wo, e)
+                            bef = tab (pc.ind + 2); aft = pc_aft}
+                           ((p, wo, e), True)
                        in
                        let s3 = op_end in
                        sprintf "%s\n%s%s" s1 s2 s3
@@ -1185,8 +1178,8 @@ EXTEND_PRINTER
                        let s2 =
                          match_assoc
                            {(pc) with bef = sprintf "%swith " (tab pc.ind);
-                            aft = Some pc_aft}
-                           (p, wo, e)
+                            aft = pc_aft}
+                           ((p, wo, e), True)
                        in
                        let s3 = op_end in
                        sprintf "%s\n%s%s" s1 s2 s3 ])
@@ -1258,7 +1251,7 @@ EXTEND_PRINTER
                     bef =
                       sprintf "%s%slet %s" pc.bef begin_op
                         (if rf then "rec " else "");
-                    aft = ("", "in"); dang = ""}
+                    aft = "in"; dang = ""}
                    pel
                in
                let s2 =
@@ -1913,8 +1906,7 @@ EXTEND_PRINTER
                else hlist2 cons_decl (bar_before cons_decl) pc vdl)
             (fun () ->
                vlist2 cons_decl (bar_before cons_decl)
-                 {(pc) with bef = sprintf "%s  " pc.bef; aft = ("", pc.aft)}
-                 vdl)
+                 {(pc) with bef = sprintf "%s  " pc.bef} vdl)
       | <:ctyp< $lid:t$ >> ->
           var_escaped pc t
       | <:ctyp< $uid:t$ >> ->
@@ -1964,8 +1956,7 @@ EXTEND_PRINTER
           mod_ident {(pc) with bef = sprintf "%sopen " pc.bef} i
       | <:str_item< type $list:tdl$ >> ->
           vlist2 type_decl (and_before type_decl)
-            {(pc) with bef = sprintf "%stype " pc.bef; aft = ("", pc.aft)}
-            tdl
+            {(pc) with bef = sprintf "%stype " pc.bef} tdl
       | <:str_item< value $opt:rf$ $list:pel$ >> ->
           horiz_vertic
             (fun () ->
@@ -1975,8 +1966,8 @@ EXTEND_PRINTER
             (fun () ->
                vlist2 let_binding (and_before let_binding)
                  {(pc) with
-                  bef = sprintf "%slet %s" pc.bef (if rf then "rec " else "");
-                  aft = ("", pc.aft)} pel)
+                  bef = sprintf "%slet %s" pc.bef (if rf then "rec " else "")}
+                  pel)
       | <:str_item< $exp:e$ >> ->
           if pc.aft = ";;" then expr pc e
           else
@@ -2009,8 +2000,7 @@ EXTEND_PRINTER
           mod_ident {(pc) with bef = sprintf "%sopen " pc.bef} i
       | <:sig_item< type $list:tdl$ >> ->
           vlist2 type_decl (and_before type_decl)
-            {(pc) with bef = sprintf "%stype " pc.bef; aft = ("", pc.aft)}
-            tdl
+            {(pc) with bef = sprintf "%stype " pc.bef} tdl
       | <:sig_item< value $s$ : $t$ >> ->
           horiz_vertic
             (fun () ->
@@ -2396,8 +2386,7 @@ value class_type_decl_list pc cd =
          pc.aft)
     (fun () ->
        vlist2 class_type_decl (and_before class_type_decl)
-         {(pc) with bef = sprintf "%sclass type " pc.bef; aft = ("", pc.aft)}
-         cd)
+         {(pc) with bef = sprintf "%sclass type " pc.bef} cd)
 ;
 
 value class_decl pc ci =
@@ -2480,7 +2469,7 @@ value variant_decl_list char pc pvl =
       (fun () ->
          vlist2 variant_decl (bar_before variant_decl)
            {(pc) with bef = sprintf "%s[%s " (tab (pc.ind + 2)) char;
-            aft = ("", sprintf " ]%s" pc.aft)}
+            aft = sprintf " ]%s" pc.aft}
            pvl)
 ;
 
@@ -2715,8 +2704,7 @@ EXTEND_PRINTER
                  pc.aft)
             (fun () ->
                vlist2 class_def (and_before class_def)
-                 {(pc) with bef = sprintf "%sclass " pc.bef; aft = ("", pc.aft)}
-                 cd)
+                 {(pc) with bef = sprintf "%sclass " pc.bef} cd)
       | <:sig_item< class type $list:cd$ >> ->
           class_type_decl_list pc cd ] ]
   ;
@@ -2730,8 +2718,7 @@ EXTEND_PRINTER
                  pc.aft)
             (fun () ->
                vlist2 class_decl (and_before class_decl)
-                 {(pc) with bef = sprintf "%sclass " pc.bef; aft = ("", pc.aft)}
-                 cd)
+                 {(pc) with bef = sprintf "%sclass " pc.bef} cd)
       | <:str_item< class type $list:cd$ >> ->
           class_type_decl_list pc cd ] ]
   ;
@@ -2840,7 +2827,7 @@ EXTEND_PRINTER
                    {(pc) with
                     bef =
                       sprintf "%slet %s" pc.bef (if rf then "rec " else "");
-                    aft = ("", " in")}
+                    aft = " in"}
                    pel
                in
                let s2 = class_expr {(pc) with bef = tab pc.ind} ce in

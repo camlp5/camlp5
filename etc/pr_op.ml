@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_op.ml,v 1.9 2007/08/16 11:29:18 deraugla Exp $ *)
+(* $Id: pr_op.ml,v 1.10 2007/08/16 16:01:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Heuristic to rebuild parsers and streams from the AST *)
@@ -450,7 +450,7 @@ value parser_body pc (po, spel) =
       | _ ->
           let s2 =
             vlist2 parser_case_sh (bar_before parser_case_sh)
-              {(pc) with bef = sprintf "%s  " (tab pc.ind); aft = ("", pc.aft)}
+              {(pc) with bef = sprintf "%s  " (tab pc.ind); aft = pc.aft}
               spel
           in
           sprintf "%s%s\n%s" pc.bef s1 s2 ] ]

@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extend.ml,v 1.25 2007/08/16 13:18:25 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.26 2007/08/16 16:01:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -389,7 +389,7 @@ and simple_symbol pc sy =
             (fun () ->
                vlist2 rule (bar_before rule)
                  {(pc) with bef = sprintf "%s[ " pc.bef;
-                  aft = ("", sprintf " ]%s" pc.aft)}
+                  aft = sprintf " ]%s" pc.aft}
                  rl) ]
   | Stoken (Left ("", _) | Left (_, "")) -> symbol pc sy
   | Snterml _ _ | Slist0 _ | Slist0sep _ _ | Slist1 _ | Slist1sep _ _ ->
@@ -471,7 +471,7 @@ value level pc (lab, ass, rl) =
       else
         vlist2 rule (bar_before rule)
           {(pc) with ind = pc.ind + 2; bef = sprintf "%s[ " pc.bef;
-           aft = ("", sprintf " ]%s" pc.aft)}
+           aft = sprintf " ]%s" pc.aft}
           rl
   | _ ->
       let s1 =
@@ -487,7 +487,7 @@ value level pc (lab, ass, rl) =
           vlist2 rule (bar_before rule)
             {(pc) with ind = pc.ind + 2;
              bef = sprintf "%s[ " (tab (pc.ind + 2));
-             aft = ("", sprintf " ]%s" pc.aft)} rl
+             aft = sprintf " ]%s" pc.aft} rl
       in
       sprintf "%s\n%s" s1 s2 ]
 ;
@@ -498,7 +498,7 @@ value entry pc (e, pos, ll) =
     (position {(pc) with bef = ""; aft = ""} pos)
     (vlist2 level (bar_before level)
        {(pc) with ind = pc.ind + 2; bef = sprintf "%s[ " (tab (pc.ind + 2));
-        aft = ("", " ]")}
+        aft = " ]"}
         ll)
     (tab pc.ind) pc.aft
 ;

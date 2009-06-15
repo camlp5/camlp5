@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_sml.ml,v 1.10 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: pa_sml.ml,v 1.11 2007/08/16 16:01:19 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -524,7 +524,8 @@ EXTEND
       | "#"; x1 = selector; x2 = expr ->
           if ocaml_records.val then <:expr< $x2$ . $lid:x1$ >>
           else <:expr< $x2$ # $lid:x1$ >>
-      | x1 = expr; "ocaml_record_access"; x2 = expr -> <:expr< $x1$ . $x2$ >> ]
+      | x1 = expr; "ocaml_record_access"; x2 = expr ->
+          <:expr< $x1$ . $x2$ >> ]
     | [ "!"; x1 = expr -> <:expr< $x1$ . val >>
       | "~"; x1 = expr -> <:expr< - $x1$ >> ]
     | [ x1 = LIDENT ->
@@ -807,7 +808,8 @@ EXTEND
   ;
   module_expr:
     [ [ x1 = qid -> x1
-      | "struct"; x1 = strdecs; "end" -> <:module_expr< struct $list:x1$ end >>
+      | "struct"; x1 = strdecs; "end" ->
+          <:module_expr< struct $list:x1$ end >>
       | x1 = qid; x2 = arg_fct ->
           match x2 with
           [ Left [] -> x1
@@ -848,7 +850,8 @@ EXTEND
       | "datatype"; x1 = db -> <:str_item< type $list:x1$ >>
       | "datatype"; x1 = db; "withtype"; x2 = tb ->
           <:str_item< type $list:x1 @ [x2]$ >>
-      | "abstype"; x1 = db; "with"; x2 = ldecs; "end" -> not_impl loc "ldec 10"
+      | "abstype"; x1 = db; "with"; x2 = ldecs; "end" ->
+          not_impl loc "ldec 10"
       | "abstype"; x1 = db; "withtype"; x2 = tb; "with"; x3 = ldecs; "end" ->
           not_impl loc "ldec 11"
       | "exception"; x1 = LIST1 eb SEP "and" ->

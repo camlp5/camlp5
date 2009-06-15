@@ -203,7 +203,9 @@ value rec unlevel_list =
 
 value unentry =
   fun
-  [ <:expr< (Grammar.Entry.obj ($e$ : Grammar.Entry.e '$_$), $pos$, $ll$) >> ->
+  [ <:expr<
+      (Grammar.Entry.obj ($e$ : Grammar.Entry.e '$_$), $pos$, $ll$)
+    >> ->
       (e, unposition pos, unlevel_list ll)
   | _ -> raise Not_found ]
 ;
@@ -258,7 +260,9 @@ value ungextend_body e =
   [ <:expr< do { $list:el$ } >> ->
       List.map
         (fun
-         [ <:expr< $uid:_$.extend ($e$ : $uid:_$.Entry.e '$_$) $pos$ $ll$ >> ->
+         [ <:expr<
+             $uid:_$.extend ($e$ : $uid:_$.Entry.e '$_$) $pos$ $ll$
+           >> ->
              (e, unposition pos, unlevel_list ll)
          | _ -> raise Not_found ])
         el
