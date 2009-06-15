@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.142 2007/12/24 10:21:08 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.143 2007/12/24 10:32:20 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -908,13 +908,8 @@ EXTEND_PRINTER
           pprintf pc "@[<a>let module %s =@;%p@ in@]@ %p" s module_expr me
             curr e
       | <:expr< while $e1$ do { $list:el$ } >> ->
-          horiz_vertic
-            (fun () ->
-               pprintf pc "while %p do %p done" curr e1
-                 (hlistl (semi_after expr) curr) el)
-            (fun () ->
-               pprintf pc "@[<a>@[<a>while@;%p@ do@]@;%p@ done@]" curr e1
-                 (vlistl (semi_after expr) curr) el)
+          pprintf pc "@[<a>@[<a>while@;%p@ do@]@;%p@ done@]" curr e1
+            (hvlistl (semi_after expr) curr) el
       | <:expr< for $lid:v$ = $e1$ $to:d$ $e2$ do { $list:el$ } >> ->
           pprintf pc
             "@[<a>@[<a>for %s = %p %s@;<1 4>%p@ do@]@;%q@ done@]" v
