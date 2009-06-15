@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: pcaml.html,v 1.8 2007/08/21 17:50:22 deraugla Exp $ -->
+  <!-- $Id: pcaml.html,v 1.9 2007/08/22 08:57:47 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Pcaml</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -33,7 +33,7 @@
 <p>The two functions below are called when parsing an interface (.mli
   file) or an implementation (.ml file) to build the syntax tree; the
   returned list contains the phrases (signature items or structure
-  items) and their locations; the boolean tells that the parser has
+  items) and their locations; the boolean tells whether the parser has
   encountered a directive; in this case, since the directive may
   change the syntax, the parsing stops, the directive is evaluated,
   and this function is called again.<br/>These functions are
@@ -141,8 +141,8 @@ t      (MLast.str_item * MLast.loc) * bool));</tt></dt>
 <p>The two function below are called when printing an interface (.mli
   file) of an implementation (.ml file) from the syntax tree; the list
   is the result of the corresponding parsing function.<br/>These
-  functions are references, because they can be changed to use another
-  technology than the Camlp5 extended printers.</p>
+  functions are references, to allow using other technologies than the
+  Camlp5 extended printers.</p>
 
 <dl>
   <dt><tt>value print_interf : ref (list (MLast.sig_item * MLast.loc)

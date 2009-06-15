@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: syntext.html,v 1.9 2007/08/21 17:50:22 deraugla Exp $ -->
+  <!-- $Id: syntext.html,v 1.10 2007/08/22 08:57:47 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>syntax extensions</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -25,9 +25,10 @@
 <p>It uses for that one of its parsing tools:
   the <a href="grammars.html">extensible grammars</a>.</p>
 
-<p>To understand the whole syntax in the examples given in this chapter,
-  it is a good thing to know this parsing tool, but we shall try to give
-  some minimal explanations to allow the reader to follow them.</p>
+<p>To understand the whole syntax in the examples given in this
+  chapter, it is a good thing to know this parsing tool (the
+  extensible grammars), but we shall try to give some minimal
+  explanations to allow the reader to follow them.</p>
 
 <p>A syntax extension is an ocaml object file (ending with ".cmo" or
   ".cma") which is loaded inside camlp5. The source of this file uses
@@ -94,21 +95,24 @@
   "<tt>MLast</tt>".</p>
 
 <p>However, there is a simpler way to make values of these syntax tree
-  types: the system <a href="quot.html">quotations</a>. With this system,
-  it is possible to represent syntax tree in concrete syntax, between
-  specific parentheses.</p>
+  types: the system quotations (see chapters
+  about <a href="quot.html">quotations</a>
+  and <a href="ml_ast.html">syntax tree</a>). With this system, it is
+  possible to represent syntax tree in concrete syntax, between
+  specific parentheses, namely "<tt>&lt;&lt;</tt>" and
+  "<tt>&gt;&gt;</tt>", or between "<tt>&lt;:name&lt;</tt>" and
+  "<tt>&gt;&gt;</tt>".</p>
 
-<p>For example, the syntax node of the "if" statement, supposing you
-  know the meaning of the constructors of the "<tt>MLast</tt>" module
-  would be:</p>
+<p>For example, the syntax node of the "if" statement is, normally:</p>
 
 <pre>
   MLast.ExIfe loc e1 e2 e3
 </pre>
 
-<p>where loc is the source location, and e1, e2, e3 are the expressions
-  constituting the if statement. With quotations, we could write it like
-  this:</p>
+<p>where loc is the source location, and e1, e2, e3 are the
+  expressions constituting the if statement. With quotations, it is
+  possible to write it like this (which is stricly equivalent because
+  this is evaluated at parse time, not execution time):</p>
 
 <pre>
   &lt;:expr&lt; if $e1$ then $e2$ else $e3$ >>
@@ -182,14 +186,20 @@
   END;
 </pre>
 
-<p>The first "#load" in the code means that a syntax extension has been
-  used in the file, namely the "EXTEND" statement. The second "#load"
-  means that abstract tree <a href="quot.html">quotations</a> has been
-  used, namely the "<tt>&lt;:expr&lt; ... >></tt>".</p>
+<p>The first "<tt>#load</tt>" in the code (in both files) means that a
+  syntax extension has been used in the file, namely the "EXTEND"
+  statement. The second "<tt>#load</tt>" means that abstract
+  tree <a href="quot.html">quotations</a> has been used, namely the
+  "<tt>&lt;:expr&lt; ... >></tt>".</p>
 
-<p>The quotation in the second version is especially interesting. If
-  we wanted to write it with the abstract syntax tree, we would have to
-  write it like this:</p>
+<p>The quotation, found in the second version:</p>
+
+<pre>
+  &lt;:expr&lt; loop () where rec loop () = do { $list:el$ } >>
+</pre>
+
+<p>is especially interesting. Written with abstract syntax tree, it would
+  be:</p>
 
 <pre>
   MLast.ExLet loc True
@@ -198,7 +208,8 @@
     (MLast.ExApp loc (MLast.ExLid loc "loop") (MLast.ExUid loc "()"));
 </pre>
 
-<p>which is less easy for the programmer and less readable.</p>
+<p>This shows the interest of writing abstract syntax tree with quotations:
+  it is easier to program and to understand.</p>
 
 <h3>Compilation</h3>
 
@@ -211,8 +222,8 @@
 
 <p>Notice that the ocamlc option "-c" means that we are interested
   only in generating the object file "foo.cmo", not achieving the
-  compilation which, anyway, would not link because of usage of
-  modules specific to camlp5.</p>
+  compilation by creating an executable. Anyway the link would not
+  work because of usage of modules specific to camlp5.</p>
 
 <h3>Testing</h3>
 
@@ -273,6 +284,33 @@
 <pre>
   ocamlopt -pp camlp5r bar.ml
 </pre>
+
+<p>And it is possible to check the resulting program by typing:</p>
+
+<pre>
+  camlp5r pr_r.cmo bar.ml
+</pre>
+
+<p>whose displayed result is:</p>
+
+<pre>
+  #load "./foo.cmo";
+  value x = ref 42;
+  do {
+    print_int x.val;
+    print_endline "";
+    x.val := x.val + 3;
+    while not (x.val > 70) do {
+      print_int x.val;
+      print_endline "";
+      x.val := x.val + 3
+    }
+  };
+</pre>
+
+<p>See also the <a href="opretty.html#a:Example-:-repeat..until">same
+  example</a> pretty printed in its original syntax, using the
+  extendable <a href="opretty.html">programs printing</a>.</p>
 
 <div class="trailer">
 </div>
