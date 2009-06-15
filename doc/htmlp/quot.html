@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: quot.html,v 1.2 2007/07/24 17:48:59 deraugla Exp $ -->
+  <!-- $Id: quot.html,v 1.3 2007/07/24 20:54:29 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>quotations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -19,14 +19,113 @@
 
 <h1 class="top">Quotations</h1>
 
-<p>... to be written ...</p>
+<p>The quotations are a syntax extension in camlp5 allowing to build
+  expressions and patterns in any syntax independant from the one of
+  ocaml. Quotations are <em>expanded</em>, i.e. transformed, at parse
+  time to produce normal syntax trees, like the rest of the program.
+  Quotations <em>expanders</em> are normal ocaml functions writable by
+  any programmer.</p>
 
-<p>Just, for the moment, this section about antiquotations to answer
-  the remarks given in the chapter about <a href="ml_ast.html">syntax
-  tree quotations</a>. The rest of this chapter will follow later.</p>
+<p>The aim of quotations is to use concrete syntax for manipulating
+  abstract values, what make programs easier to write, read, modify,
+  and understand. Their drawback is that they are isolated from the
+  rest of the program, in opposition to <a href="syntext.html">syntax
+  extensions</a>, which are included in the language.</p>
 
 <div id="tableofcontents">
 </div>
+
+<h2>Introduction</h2>
+
+<p>A quotation is syntactically enclosed by specific quotes formed by
+  less (<tt>&lt;</tt>) and greater (<tt>&gt;</tt>) signs. Namely:</p>
+
+<ul>
+  <li>starting with either "<tt>&lt;&lt;</tt>" or "<tt>&lt;:ident&lt;</tt>"
+    where "<tt>ident</tt>" is the quotation name,</li>
+  <li>ending with "<tt>>></tt>"</li>
+</ul>
+
+<p>Examples:</p>
+
+<pre>
+  &lt;&lt; [x](x y) >>
+  &lt;:foo&lt; hello, world >>
+  &lt;:bar&lt; @#$%;* >>
+</pre>
+
+<p>The text between these particular parentheses can be any text. It
+  may contain enclosing quotations and the characters "<tt>&lt;</tt>",
+  "<tt>&gt;</tt>" and "<tt>\</tt>" can be escaped by
+  "<tt>\</tt>". Notice that possible double-quote, parentheses, ocaml
+  comments do not have necessary to balance inside them.</p>
+
+<p>As far as the lexer is concerned, a quotation is just a kind of
+  string.</p>
+
+<h2>Quotation expander</h2>
+
+<p>The quotations are treated at parse time. Each quotation name is
+  associated with a <em>quotation expander</em>, a function
+  transforming the content of the quotation into a syntax tree. There
+  are actually two expanding functions, depending on the fact that the
+  quotation is in the context of an expression or if it is in the
+  context of a pattern.</p>
+
+<p>If a quotation has no associated quotation expander, a parsing
+  error is displayed and the compilation fails.</p>
+
+<p>The quotation expander, or, rather, expanders, are functions taking
+  the quotation string as parameter and returning a syntax tree. There
+  is no constraint about which parsing technology is used. It can be
+  <a href="parsers.html">stream
+  parsers</a>, <a href="grammars.html">extensible grammars</a>, string
+  scanning, ocamllex and yacc, any.</p>
+
+<p>To build syntax trees, camlp5 provides a way to easily build them:n
+  see the <a href="ml_ast.html">chapter</a> about them: it is possible
+  to build abstract syntax through concrete syntax using,
+  precisely... quotations.</p>
+
+<h2>Defining a quotation</h2>
+
+<p>To define a quotation, it is necessary to program the quotation
+  expanders and to, finally, end the source code with a call to:</p>
+
+<pre>
+  Quotation.add name (Quotation.ExAst (f_expr, f_patt))
+</pre>
+
+<p>where "<tt>name</tt>" is the name of the quotation, and
+  "<tt>f_expr</tt>" and "<tt>f_patt</tt>" the respective quotations
+  expanders for expressions and patterns.</p>
+
+<p>Then, after compilation of the source file (without linking, i.e.
+  using option "-c" of the ocaml compiler), an object file is created
+  (ending with ".cmo"), which can be used as syntax
+  extension <em>kit</em> of camlp5.</p>
+
+<p>There is, actually, another way to program the expander: an alone
+  function which returns, not a syntax tree, but just a string which is
+  parsed, afterwards, by the system. This function takes a boolean as
+  first parameter telling whether the quotation is in position of
+  expression (True) or in position of a pattern (False).</p>
+
+<p>If using that way, the source file must end with:</p>
+
+<pre>
+  Quotation.add name (Quotation.ExStr f)
+</pre>
+
+<p>where "<tt>f</tt>" is that quotation expander. The advantage of
+  this second approach is that it is simple to understand and use.
+  The drawback is that there is no way to specify different source
+  locations for different parts of the quotation (what may be
+  important in semantic error messages).</p>
+
+<h2>An example</h2>
+
+<p>... to be continued ...</p>
 
 <h2>Antiquotations</h2>
 
@@ -105,7 +204,7 @@
 <p>Let us test it in the toplevel with a voluntary typing error:</p>
 
 <pre>
-  ocaml -I +camlp5 camlp5r.cma
+  $ ocaml -I +camlp5 camlp5r.cma
           Objective Caml version ...
 
           Camlp5 Parsing version ...
@@ -150,7 +249,7 @@
 <p>Now the same test gives:</p>
 
 <pre>
-  ocaml -I +camlp5 camlp5r.cma
+  $ ocaml -I +camlp5 camlp5r.cma
           Objective Caml version ...
 
           Camlp5 Parsing version ...
