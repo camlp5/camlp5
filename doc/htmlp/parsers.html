@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: parsers.html,v 1.3 2007/07/13 08:12:56 deraugla Exp $ -->
+  <!-- $Id: parsers.html,v 1.4 2007/07/13 22:55:12 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -38,7 +38,7 @@ type "Stream.t" has a type parameter, indicating the type of its
 elements. They differ from the lists that they are lazy (the elements
 are evaluated as long as the parser need them for its actions), and
 imperative (parsers deletes their first elements when they take their
-parsing decisions) : notice that pure functional parsers exist in
+parsing decisions): notice that pure functional parsers exist in
 Camlp5, where the corresponding streams are lazy and functional, the
 analyzed elements remaining in the initial stream and the semantic
 action returning the resulting stream together with the normal
@@ -47,7 +47,7 @@ that it is not easy to find the position of parsing errors when they
 happen.</p>
 
 <p>Parsers of lazy/imperative streams, which are described here, use a
-method named "recursive descendent" : they look at the first element,
+method named "recursive descendent": they look at the first element,
 they decide what to do in function of its value, and continue the
 parsing with the remaining elements. Parsers can call other parsers,
 and can be recursive, like normal functions.</p>
@@ -143,7 +143,7 @@ raised.</p>
 matches, all remaining stream pattern component of the stream pattern
 must match also. If one does not match, the parser return with the
 exception "<code>Stream.Error</code>" which has a parameter of type
-string : by default, this string is the empty string, but if the
+string: by default, this string is the empty string, but if the
 stream pattern component which does not match is followed by a
 question mark and an expression, this expression is evaluated and
 given as parameter to "<code>Stream.Error</code>".</p>
@@ -162,7 +162,7 @@ given as parameter to "<code>Stream.Error</code>".</p>
 
 <p>Fundamentally, the exception "<code>Stream.Failure</code>" means
 "this parser does not apply and no element have been removed from the
-initial stream". This is a normal case when parsing : the parser fails,
+initial stream". This is a normal case when parsing: the parser fails,
 but the parsing can continue.</p>
 
 <p>Conversely, the exception "<code>Stream.Error</code>" means that
