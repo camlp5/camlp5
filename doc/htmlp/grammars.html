@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: grammars.html,v 1.60 2007/07/27 01:25:53 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.61 2007/07/27 03:06:18 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -675,6 +675,20 @@ module Entry =
   <dt><tt>value of_entry : Entry.e 'a -> g;</tt></dt>
   <dd>Return the grammar associated with an entry.</dd>
 </dl>
+
+<h3>Printing grammar entries</h3>
+
+<p>The function "<tt>Grammar.Entry.print</tt>" displays the current
+  contents of an entry. Interesting for debugging, to look at the
+  result of a syntax extension, to see the names of the levels.</p>
+
+<p>The display does not include the patterns nor the semantic actions,
+  whose sources are not recorded in the grammar entries data.</p>
+
+<p>Moreover, the local entries (see the section about
+  the <a href="#b:GLOBAL-indicator">GLOBAL indicator</a>) are
+  indicated with a star ("<tt>*</tt>") to inform that they are not
+  directly accessible.</p>
 
 <h3>Clearing grammars and entries</h3>
 
