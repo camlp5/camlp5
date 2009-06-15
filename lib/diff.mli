@@ -1,5 +1,6 @@
 (* camlp5r *)
-(* $Id: diff.mli,v 1.1 2007/10/01 19:27:57 deraugla Exp $ *)
+(* $Id: diff.mli,v 1.2 2007/12/29 03:52:53 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2008 *)
 
 (** Differences between two arrays. *)
 
