@@ -46,7 +46,7 @@ Grammar.extend
      Gramext.action
        (fun (sep : 'e__4 option) (s : 'symbol) (min : 'e__3)
             (loc : Token.location) ->
-          (ssvala_list loc (if min then "LIST0" else "LIST1") min sep s :
+          (ssvala_list loc (if min then "LIST1" else "LIST0") min sep s :
            'symbol));
      [Gramext.srules
         [[Gramext.Stoken ("UIDENT", "SLIST1")],

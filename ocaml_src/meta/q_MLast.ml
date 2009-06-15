@@ -2316,7 +2316,7 @@ Grammar.extend
      [[Gramext.Stoken ("", "{");
        Gramext.srules
          [[Gramext.Svala
-             ("LIST0",
+             ("LIST1",
               Gramext.Slist1sep
                 (Gramext.Snterm
                    (Grammar.Entry.obj
