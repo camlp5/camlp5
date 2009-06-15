@@ -1,6 +1,6 @@
-/* $Id: base.css,v 1.5 2007/07/12 03:04:45 deraugla Exp $ */
+/* $Id: base.css,v 1.6 2007/07/12 04:01:39 deraugla Exp $ */
 
-body { margin: 0; background-color: rgb(228,214,189) }
+body { margin: 0; background-color: rgb(189,225,255) }
 
 #menu { width: 20%; position: fixed; top: 0; left: 0; float: left }
 #menu ul { padding: 0 }
@@ -8,12 +8,15 @@ body { margin: 0; background-color: rgb(228,214,189) }
 
 #content { margin-left: 20%; padding: 0 5mm; background-color: white }
 
+#menu { border: 1px solid; border-right: 0; border-bottom: 0 }
+#content { border: 1px solid }
+
 body { counter-reset: h2cnt }
 
 h1 { text-align: center }
 
 h2:before { content: counter(h2cnt) " - "; counter-increment: h2cnt }
-h2 { border: 1px solid; text-align: center; background: #9bf }
+h2 { border: 1px solid; text-align: center; background: rgb(189,225,255) }
 h2 { counter-reset: h3cnt }
 
 h3:before {
@@ -36,9 +39,7 @@ pre {
   padding-left: 1em; padding-right: 0.5em; line-height: 1.2
 }
 
-/* tt { font-weight: bold } */
-
-.top { margin-top: 0; padding-top: 1cm }
+.top { margin-top: 0; padding-top: 5mm }
 .bottom { margin-bottom: 0 }
 .trailer { margin-top: 3cm }
 
@@ -49,6 +50,6 @@ pre {
 @media print {
   body { background-color: white }
   #menu { display: none }
-  #content { margin: 0 }
+  #content { margin: 0; border: 0 }
   .trailer img { display: none }
 }
