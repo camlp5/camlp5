@@ -389,7 +389,7 @@ value item_set_closure rl items =
                    let rl = List.filter (fun (lh, rh) -> n = lh) rl in
                    let clos =
                      List.fold_left
-                       (fun clos (lh, rh) -> [(lh, dot, rh) :: clos])
+                       (fun clos (lh, rh) -> [(lh, 0, rh) :: clos])
                        clos rl
                    in
                    let to_process =
@@ -449,7 +449,7 @@ value lr0 entry lev = do {
     fun
     [ Some (s, item_set, rest) -> do {
         let item_set =
-          List.filter (fun (lh, dot, rh) -> dot < List.length rh) item_set
+          List.filter (fun (lh, dot, rh) -> dot <= List.length rh) item_set
         in
         Printf.eprintf "\n";
         Printf.eprintf "Item set %d (after %s)\n\n" item_set_cnt
@@ -474,7 +474,7 @@ value lr0 entry lev = do {
         in
         let item_set_and_rest =
           match s with
-          [ Some s ->
+          [ Some s -> do {
               let (item_set, rest) =
                 List.partition
                   (fun (lh, dot, rh) ->
@@ -486,8 +486,14 @@ value lr0 entry lev = do {
               let item_set =
                 List.map (fun (lh, dot, rh) -> (lh, dot + 1, rh)) item_set
               in
+              Printf.eprintf "\n";
+              Printf.eprintf "Item set initial %d (after %s)\n\n"
+                (item_set_cnt + 1) (sprint_symb s);
+              List.iter eprint_item item_set;
+              flush stderr;
               let item_set = item_set_closure rl item_set in
               Some (s, item_set, rest)
+            }
           | None -> None ]
         in
         if item_set_cnt > 1000 then () else
