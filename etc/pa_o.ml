@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.45 2007/09/08 11:24:43 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.46 2007/09/08 15:44:05 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -1058,7 +1058,8 @@ EXTEND
   ctyp: AFTER "arrow"
     [ NONA
       [ i = LIDENT; ":"; t = SELF -> <:ctyp< ~ $i$ : $t$ >>
-      | i = QUESTIONIDENTCOLON; t = SELF -> <:ctyp< ? $i$ : $t$ >> ] ]
+      | i = QUESTIONIDENTCOLON; t = SELF -> <:ctyp< ? $i$ : $t$ >>
+      | i = QUESTIONIDENT; ":"; t = SELF -> <:ctyp< ? $i$ : $t$ >> ] ]
   ;
   ctyp: LEVEL "simple"
     [ [ "["; OPT "|"; rfl = LIST1 poly_variant SEP "|"; "]" ->
