@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.17 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.18 2007/07/17 13:38:05 deraugla Exp $ *)
 
 open Stdpp;
 open Gramext;
@@ -717,7 +717,8 @@ type gen_parsable 'a =
     pa_loc_func : Token.location_function }
 ;
 
-value parse_parsable entry efun p = do {
+value parse_parsable entry p = do {
+  let efun = entry.estart 0 in
   let ts = p.pa_tok_strm in
   let cs = p.pa_chr_strm in
   let fun_loc = p.pa_loc_func in
@@ -761,10 +762,9 @@ value parse_parsable entry efun p = do {
     } ]
 };
 
-value wrap_parse entry efun cs =
-  let (ts, lf) = entry.egram.glexer.Token.tok_func cs in
-  let parsable = {pa_chr_strm = cs; pa_tok_strm = ts; pa_loc_func = lf} in
-  parse_parsable entry efun parsable
+value parsable_of_char_stream lex cs =
+  let (ts, lf) = lex.Token.tok_func cs in
+  {pa_chr_strm = cs; pa_tok_strm = ts; pa_loc_func = lf}
 ;
 
 value create_toktab () = Hashtbl.create 301;
@@ -920,7 +920,8 @@ module Entry =
        econtinue _ _ _ = parser []; edesc = Dlevels []}
     ;
     value parse (entry : e 'a) cs : 'a =
-      Obj.magic (wrap_parse entry (entry.estart 0) cs)
+      let parsable = parsable_of_char_stream entry.egram.glexer cs in
+      Obj.magic (parse_parsable entry parsable)
     ;
     value parse_token (entry : e 'a) ts : 'a = Obj.magic (entry.estart 0 ts);
     value name e = e.ename;
@@ -991,10 +992,7 @@ module GMake (L : GLexerType) =
     type te = L.te;
     type parsable = gen_parsable te;
     value gram = gcreate L.lexer;
-    value parsable cs =
-      let (ts, lf) = L.lexer.Token.tok_func cs in
-      {pa_chr_strm = cs; pa_tok_strm = ts; pa_loc_func = lf}
-    ;
+    value parsable = parsable_of_char_stream L.lexer;
     value tokens = tokens gram;
     value glexer = glexer gram;
     module Entry =
@@ -1005,9 +1003,7 @@ module GMake (L : GLexerType) =
            econtinue _ _ _ = parser []; edesc = Dlevels []}
         ;
         external obj : e 'a -> Gramext.g_entry te = "%identity";
-        value parse (e : e 'a) p : 'a =
-          Obj.magic (parse_parsable e (e.estart 0) p)
-        ;
+        value parse (e : e 'a) p : 'a = Obj.magic (parse_parsable e p);
         value parse_token (e : e 'a) ts : 'a = Obj.magic (e.estart 0 ts);
         value name e = e.ename;
         value of_parser n (p : Stream.t te -> 'a) : e 'a =

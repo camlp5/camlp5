@@ -768,7 +768,8 @@ type 'a gen_parsable =
     pa_loc_func : Token.location_function }
 ;;
 
-let parse_parsable entry efun p =
+let parse_parsable entry p =
+  let efun = entry.estart 0 in
   let ts = p.pa_tok_strm in
   let cs = p.pa_chr_strm in
   let fun_loc = p.pa_loc_func in
@@ -800,10 +801,9 @@ let parse_parsable entry efun p =
       restore (); raise_with_loc (make_loc loc) exc
 ;;
 
-let wrap_parse entry efun cs =
-  let (ts, lf) = entry.egram.glexer.Token.tok_func cs in
-  let parsable = {pa_chr_strm = cs; pa_tok_strm = ts; pa_loc_func = lf} in
-  parse_parsable entry efun parsable
+let parsable_of_char_stream lex cs =
+  let (ts, lf) = lex.Token.tok_func cs in
+  {pa_chr_strm = cs; pa_tok_strm = ts; pa_loc_func = lf}
 ;;
 
 let create_toktab () = Hashtbl.create 301;;
@@ -950,7 +950,8 @@ module Entry =
        edesc = Dlevels []}
     ;;
     let parse (entry : 'a e) cs : 'a =
-      Obj.magic (wrap_parse entry (entry.estart 0) cs)
+      let parsable = parsable_of_char_stream entry.egram.glexer cs in
+      Obj.magic (parse_parsable entry parsable)
     ;;
     let parse_token (entry : 'a e) ts : 'a = Obj.magic (entry.estart 0 ts);;
     let name e = e.ename;;
@@ -1021,10 +1022,7 @@ module GMake (L : GLexerType) =
     type te = L.te;;
     type parsable = te gen_parsable;;
     let gram = gcreate L.lexer;;
-    let parsable cs =
-      let (ts, lf) = L.lexer.Token.tok_func cs in
-      {pa_chr_strm = cs; pa_tok_strm = ts; pa_loc_func = lf}
-    ;;
+    let parsable = parsable_of_char_stream L.lexer;;
     let tokens = tokens gram;;
     let glexer = glexer gram;;
     module Entry =
@@ -1037,9 +1035,7 @@ module GMake (L : GLexerType) =
            edesc = Dlevels []}
         ;;
         external obj : 'a e -> te Gramext.g_entry = "%identity";;
-        let parse (e : 'a e) p : 'a =
-          Obj.magic (parse_parsable e (e.estart 0) p)
-        ;;
+        let parse (e : 'a e) p : 'a = Obj.magic (parse_parsable e p);;
         let parse_token (e : 'a e) ts : 'a = Obj.magic (e.estart 0 ts);;
         let name e = e.ename;;
         let of_parser n (p : te Stream.t -> 'a) : 'a e =
