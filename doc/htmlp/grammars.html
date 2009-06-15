@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.13 2007/07/15 15:22:48 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.14 2007/07/15 18:46:04 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -286,7 +286,12 @@ whose value is bound to the pattern if any.</p>
     character), optionally followed by a string: the input must match
     this token (any value if no string, or that string if a string
     follows the token name), the list of the available tokens
-    depending on the associated lexer,</li>
+    depending on the associated lexer (the list of tokens available
+    with "Plexer.gmake ()" is: LIDENT, UIDENT, TILDEIDENT,
+    TILDEIDENTCOLON, QUESTIONIDENT, INT, INT_l, INT_L, INT_n, FLOAT,
+    CHAR, STRING, QUOTATION, ANTIQUOT and EOI; other lexers may
+    propose other lists of tokens),
+</li>
   <li>an entry name, which correspond to a call to this entry,</li>
   <li>an entry name followed by the identifier "<tt>LEVEL</tt>" and a
     level label, which correspond to the call to this entry at that
@@ -366,11 +371,39 @@ symbols. They are:</p>
     nothing".</li>
 </ul>
 
+<h2>Machinery</h2>
+
+<p>Each entry level contains internally two trees:</p>
+
+<ul>
+  <li>A tree of the rules starting with the current entry name or by
+    the identifier "<tt>SELF</tt>",</li>
+  <li>A tree of the rules <em>not</em> starting with the current entry
+    name nor by "<tt>SELF</tt>".</li>
+</ul>
+
+<p>... to be completed ...</p>
+
 <h2>Kind of grammar</h2>
 
 <p>... to be completed ...</p>
 
 <h2>Interface with a lexer</h2>
+
+<p>The function which creates a grammar, "<tt>Grammar.gcreate</tt>",
+takes a lexer as parameter. This is a value of type "<tt>Token.glexer
+(string * string)</tt>".</p>
+
+<p>This type is a record type containing six fields:</p>
+
+<ul>
+  <li>tok_func</li>
+  <li>tok_using</li>
+  <li>tok_removing</li>
+  <li>tok_match</li>
+  <li>tok_text</li>
+  <li>tok_comm</li>
+</ul>
 
 <p>... to be completed ...</p>
 
