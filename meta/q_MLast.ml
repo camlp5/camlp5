@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_MLast.ml,v 1.28 2007/07/16 15:18:32 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.29 2007/07/20 15:12:37 deraugla Exp $ *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 
@@ -595,6 +595,8 @@ EXTEND
           Qast.Node "ExAre" [Qast.Loc; e1; e2]
       | e1 = SELF; "."; "["; e2 = SELF; "]" ->
           Qast.Node "ExSte" [Qast.Loc; e1; e2]
+      | e = SELF; "."; "{"; el = SLIST1 expr SEP ","; "}" ->
+          Qast.Node "ExBae" [Qast.Loc; e; el]
       | e1 = SELF; "."; e2 = SELF -> Qast.Node "ExAcc" [Qast.Loc; e1; e2] ]
     | "~-" NONA
       [ "~-"; e = SELF ->

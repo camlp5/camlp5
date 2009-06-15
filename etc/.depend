@@ -43,10 +43,10 @@ pr_o_old.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/spretty.cmi
 pr_o_old.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/spretty.cmx 
 pr_op.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi 
 pr_op.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx 
-pr_op_main.cmo: ../main/mLast.cmi parserify.cmi ../main/pcaml.cmi \
-    ../main/spretty.cmi 
-pr_op_main.cmx: ../main/mLast.cmi parserify.cmx ../main/pcaml.cmx \
-    ../main/spretty.cmx 
+pr_op_main.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/spretty.cmi \
+    parserify.cmi 
+pr_op_main.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/spretty.cmx \
+    parserify.cmx 
 pr_r.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi 
 pr_r.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx 
 pr_r_old.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/spretty.cmi 
@@ -55,15 +55,15 @@ pr_ro.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi
 pr_ro.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx 
 pr_rp.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi 
 pr_rp.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx 
-pr_rp_main.cmo: ../main/mLast.cmi parserify.cmi ../main/pcaml.cmi \
-    ../main/spretty.cmi 
-pr_rp_main.cmx: ../main/mLast.cmi parserify.cmx ../main/pcaml.cmx \
-    ../main/spretty.cmx 
+pr_rp_main.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/spretty.cmi \
+    parserify.cmi 
+pr_rp_main.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/spretty.cmx \
+    parserify.cmx 
 pr_scheme.cmo: ../main/mLast.cmi ../main/pcaml.cmi 
 pr_scheme.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
-pr_schp_main.cmo: ../main/mLast.cmi parserify.cmi ../main/pcaml.cmi \
+pr_schp_main.cmo: ../main/mLast.cmi ../main/pcaml.cmi parserify.cmi \
     pr_scheme.cmo 
-pr_schp_main.cmx: ../main/mLast.cmi parserify.cmx ../main/pcaml.cmx \
+pr_schp_main.cmx: ../main/mLast.cmi ../main/pcaml.cmx parserify.cmx \
     pr_scheme.cmx 
 q_phony.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi \
     ../main/quotation.cmi 

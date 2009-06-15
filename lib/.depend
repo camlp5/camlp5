@@ -1,18 +1,18 @@
-extfold.cmo: gramext.cmi grammar.cmi extfold.cmi 
-extfold.cmx: gramext.cmx grammar.cmx extfold.cmi 
+extfold.cmo: extfold.cmi gramext.cmi grammar.cmi 
+extfold.cmx: extfold.cmi gramext.cmx grammar.cmx 
 extfold.cmi: gramext.cmi 
 extfun.cmo: extfun.cmi 
 extfun.cmx: extfun.cmi 
 fstream.cmo: fstream.cmi 
 fstream.cmx: fstream.cmi 
-gramext.cmo: token.cmi gramext.cmi 
-gramext.cmx: token.cmx gramext.cmi 
+gramext.cmo: gramext.cmi token.cmi 
+gramext.cmx: gramext.cmi token.cmx 
 gramext.cmi: token.cmi 
-grammar.cmo: gramext.cmi stdpp.cmi token.cmi grammar.cmi 
-grammar.cmx: gramext.cmx stdpp.cmx token.cmx grammar.cmi 
-grammar.cmi: gramext.cmi token.cmi 
-plexer.cmo: stdpp.cmi token.cmi plexer.cmi 
-plexer.cmx: stdpp.cmx token.cmx plexer.cmi 
+grammar.cmo: gramext.cmi grammar.cmi stdpp.cmi token.cmi 
+grammar.cmx: gramext.cmx grammar.cmi stdpp.cmx token.cmx 
+grammar.cmi: token.cmi gramext.cmi 
+plexer.cmo: plexer.cmi stdpp.cmi token.cmi 
+plexer.cmx: plexer.cmi stdpp.cmx token.cmx 
 plexer.cmi: token.cmi 
 pretty.cmo: pretty.cmi 
 pretty.cmx: pretty.cmi 

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_depend.ml,v 1.12 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.13 2007/07/20 15:12:37 deraugla Exp $ *)
 
 open MLast;
 
@@ -303,6 +303,8 @@ value depend_str ast = do {
     else ([], [])
   in
   let (byt_deps, opt_deps) = StrSet.fold find_depend fset.val init_deps in
+  let byt_deps = List.sort compare byt_deps in
+  let opt_deps = List.sort compare opt_deps in
   print_depend (basename ^ ".cmo") byt_deps;
   print_depend (basename ^ ".cmx") opt_deps
 };

@@ -1,6 +1,8 @@
 Camlp5 Version 4.06:
 ---------------------
 
+* [20 Jul 07] Added revised syntax for bigarrays (same than normal syntax)
+  and pretty print them in their initial syntax.
 * [18 Jul 07] In Grammar.Entry.print, local entries are displayed with
   a star character "*".
 * [18 Jul 07] In Grammar module, added type 'parsable', functions 'parsable'

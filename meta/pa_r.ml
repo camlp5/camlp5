@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.26 2007/07/16 15:18:32 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.27 2007/07/20 15:12:37 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -308,6 +308,8 @@ EXTEND
     | "." LEFTA
       [ e1 = SELF; "."; "("; e2 = SELF; ")" -> <:expr< $e1$ .( $e2$ ) >>
       | e1 = SELF; "."; "["; e2 = SELF; "]" -> <:expr< $e1$ .[ $e2$ ] >>
+      | e = SELF; "."; "{"; el = LIST1 expr SEP ","; "}" ->
+          <:expr< $e$ . { $list:el$ } >>
       | e1 = SELF; "."; e2 = SELF -> <:expr< $e1$ . $e2$ >> ]
     | "~-" NONA
       [ "~-"; e = SELF -> <:expr< ~- $e$ >>

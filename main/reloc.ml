@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: reloc.ml,v 1.2 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.3 2007/07/20 15:12:37 deraugla Exp $ *)
 
 open MLast;
 
@@ -125,6 +125,7 @@ and expr floc sh =
         let nloc = floc loc in
         ExAsr nloc (self x1)
     | ExAss loc x1 x2 -> ExAss (floc loc) (self x1) (self x2)
+    | ExBae loc x1 x2 -> ExBae (floc loc) (self x1) (List.map self x2)
     | ExChr loc x1 -> ExChr (floc loc) x1
     | ExCoe loc x1 x2 x3 ->
         ExCoe (floc loc) (self x1) (option_map (ctyp floc sh) x2)

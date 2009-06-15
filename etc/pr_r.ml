@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.51 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.52 2007/07/20 15:12:37 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1432,6 +1432,13 @@ value expr_dot =
           {(pc) with bef = curr {(pc) with aft = ".["} x;
            aft = (sprintf "]%s" pc.aft)}
           y
+  | <:expr< $e$ .{ $list:el$ } >> ->
+      fun curr next pc ->
+        let el = List.map (fun e -> (e, ",")) el in
+        plist expr_short 0
+          {(pc) with bef = curr {(pc) with aft = ".{"} e;
+           aft = (sprintf "}%s" pc.aft)}
+          el
   | z ->
       fun curr next pc -> next pc z ]
 ;

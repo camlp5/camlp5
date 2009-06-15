@@ -1561,6 +1561,23 @@ Grammar.extend
       Gramext.action
         (fun (e2 : 'expr) _ (e1 : 'expr) (loc : Token.location) ->
            (Qast.Node ("ExAcc", [Qast.Loc; e1; e2]) : 'expr));
+      [Gramext.Sself; Gramext.Stoken ("", "."); Gramext.Stoken ("", "{");
+       Gramext.srules
+         [[Gramext.Slist1sep
+             (Gramext.Snterm
+                (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e)),
+              Gramext.Stoken ("", ","))],
+          Gramext.action
+            (fun (a : 'expr list) (loc : Token.location) ->
+               (Qast.List a : 'a_list));
+          [Gramext.Snterm
+             (Grammar.Entry.obj (a_list : 'a_list Grammar.Entry.e))],
+          Gramext.action
+            (fun (a : 'a_list) (loc : Token.location) -> (a : 'a_list))];
+       Gramext.Stoken ("", "}")],
+      Gramext.action
+        (fun _ (el : 'a_list) _ _ (e : 'expr) (loc : Token.location) ->
+           (Qast.Node ("ExBae", [Qast.Loc; e; el]) : 'expr));
       [Gramext.Sself; Gramext.Stoken ("", "."); Gramext.Stoken ("", "[");
        Gramext.Sself; Gramext.Stoken ("", "]")],
       Gramext.action

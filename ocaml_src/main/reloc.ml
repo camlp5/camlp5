@@ -127,6 +127,7 @@ and expr floc sh =
     | ExArr (loc, x1) -> ExArr (floc loc, List.map self x1)
     | ExAsr (loc, x1) -> let nloc = floc loc in ExAsr (nloc, self x1)
     | ExAss (loc, x1, x2) -> ExAss (floc loc, self x1, self x2)
+    | ExBae (loc, x1, x2) -> ExBae (floc loc, self x1, List.map self x2)
     | ExChr (loc, x1) -> ExChr (floc loc, x1)
     | ExCoe (loc, x1, x2, x3) ->
         ExCoe

@@ -85,6 +85,7 @@ and expr =
   | ExArr of loc * expr list
   | ExAsr of loc * expr
   | ExAss of loc * expr * expr
+  | ExBae of loc * expr * expr list
   | ExChr of loc * string
   | ExCoe of loc * expr * ctyp option * ctyp
   | ExFlo of loc * string

@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: revsynt.html,v 1.15 2007/07/20 13:47:26 deraugla Exp $ -->
+  <!-- $Id: revsynt.html,v 1.16 2007/07/20 15:12:37 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>revised syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -35,6 +35,17 @@
 
 <pre>
   camlp5r pr_o.cmo pr_op.cmo bar.ml
+</pre>
+
+<p>Even simpler, without creating a file:</p>
+
+<pre>
+  camlp5o pr_r.cmo pr_op.cmo -impl -
+  ... type in normal syntax ...
+  ... type control-C ...
+  camlp5r pr_o.cmo pr_rp.cmo -impl -
+  ... type in revised syntax ...
+  ... type control-C ...
 </pre>
 
 <div id="tableofcontents">
@@ -192,6 +203,38 @@
       <tr>
         <td><tt>x :: y :: z :: t</tt></td>
         <td><tt>[x; y; z :: t]</tt></td>
+      </tr>
+    </table>
+  </li>
+</ul>
+
+<h3>Records</h3>
+
+<ul>
+  <li>In record update, parentheses are required around the initial
+    expression:
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>{e with field = a}</tt></td>
+        <td><tt>{(e) with field = a}</tt></td>
+      </tr>
+    </table>
+  </li>
+
+  <li>It is authorized to use function binding syntax in record field
+    definitions:
+    <table width="75%" class="centered">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>{field = fun a -> e}</tt></td>
+        <td><tt>{field a = e}</tt></td>
       </tr>
     </table>
   </li>

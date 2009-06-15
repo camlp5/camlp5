@@ -2,30 +2,30 @@ argl.cmo: argl.cmi
 argl.cmx: argl.cmi 
 ast2pt.cmo: $(OTOP)/parsing/asttypes.cmi \
     $(OTOP)/parsing/location.cmi \
-    $(OTOP)/parsing/longident.cmi mLast.cmi \
+    $(OTOP)/parsing/longident.cmi \
     $(OTOP)/parsing/parsetree.cmi \
-    $(OTOP)/utils/pconfig.cmi ast2pt.cmi 
+    $(OTOP)/utils/pconfig.cmi ast2pt.cmi mLast.cmi 
 ast2pt.cmx: $(OTOP)/parsing/asttypes.cmi \
     $(OTOP)/parsing/location.cmi \
-    $(OTOP)/parsing/longident.cmi mLast.cmi \
+    $(OTOP)/parsing/longident.cmi \
     $(OTOP)/parsing/parsetree.cmi \
-    $(OTOP)/utils/pconfig.cmx ast2pt.cmi 
-ast2pt.cmi: $(OTOP)/parsing/location.cmi \
-    $(OTOP)/parsing/longident.cmi mLast.cmi \
-    $(OTOP)/parsing/parsetree.cmi 
-exparser.cmo: mLast.cmi exparser.cmi 
-exparser.cmx: mLast.cmi exparser.cmi 
+    $(OTOP)/utils/pconfig.cmx ast2pt.cmi mLast.cmi 
+ast2pt.cmi: $(OTOP)/parsing/parsetree.cmi mLast.cmi \
+    $(OTOP)/parsing/longident.cmi \
+    $(OTOP)/parsing/location.cmi 
+exparser.cmo: exparser.cmi mLast.cmi 
+exparser.cmx: exparser.cmi mLast.cmi 
 exparser.cmi: mLast.cmi 
-main.cmo: argl.cmi ast2pt.cmi mLast.cmi ../odyl/odyl_main.cmi pcaml.cmi \
-    $(OTOP)/utils/pconfig.cmi 
-main.cmx: argl.cmx ast2pt.cmx mLast.cmi ../odyl/odyl_main.cmx pcaml.cmx \
-    $(OTOP)/utils/pconfig.cmx 
-pcaml.cmo: ast2pt.cmi mLast.cmi quotation.cmi reloc.cmi spretty.cmi pcaml.cmi 
-pcaml.cmx: ast2pt.cmx mLast.cmi quotation.cmx reloc.cmx spretty.cmx pcaml.cmi 
-pcaml.cmi: mLast.cmi spretty.cmi 
+main.cmo: $(OTOP)/utils/pconfig.cmi ../odyl/odyl_main.cmi \
+    argl.cmi ast2pt.cmi mLast.cmi pcaml.cmi 
+main.cmx: $(OTOP)/utils/pconfig.cmx ../odyl/odyl_main.cmx \
+    argl.cmx ast2pt.cmx mLast.cmi pcaml.cmx 
+pcaml.cmo: ast2pt.cmi mLast.cmi pcaml.cmi quotation.cmi reloc.cmi spretty.cmi 
+pcaml.cmx: ast2pt.cmx mLast.cmi pcaml.cmi quotation.cmx reloc.cmx spretty.cmx 
+pcaml.cmi: spretty.cmi mLast.cmi 
 prtools.cmo: mLast.cmi pcaml.cmi prtools.cmi 
 prtools.cmx: mLast.cmi pcaml.cmx prtools.cmi 
-prtools.cmi: mLast.cmi pcaml.cmi 
+prtools.cmi: pcaml.cmi mLast.cmi 
 quotation.cmo: mLast.cmi quotation.cmi 
 quotation.cmx: mLast.cmi quotation.cmi 
 quotation.cmi: mLast.cmi 

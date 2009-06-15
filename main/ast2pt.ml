@@ -1,4 +1,4 @@
-(* camlp5r pa_macro.cmo *)
+(* camlp5r pa_macro.cmo q_MLast.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp5                                  *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.2 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.3 2007/07/20 15:12:37 deraugla Exp $ *)
 
 open Stdpp;
 open MLast;
@@ -519,6 +519,22 @@ value apply_with_var v x f =
   with e -> do { v.val := vx; raise e }
 ;
 
+value bigarray_get loc e el =
+  match el with
+  [ [c1] -> <:expr< Bigarray.Array1.get $e$ $c1$ >>
+  | [c1; c2] -> <:expr< Bigarray.Array2.get $e$ $c1$ $c2$ >>
+  | [c1; c2; c3] -> <:expr< Bigarray.Array3.get $e$ $c1$ $c2$ $c3$ >>
+  | _ -> <:expr< Bigarray.Genarray.get $e$ [| $list:el$ |] >> ]
+;
+
+value bigarray_set loc e el v =
+  match el with
+  [ [c1] -> <:expr< Bigarray.Array1.set $e$ $c1$ $v$ >>
+  | [c1; c2] -> <:expr< Bigarray.Array2.set $e$ $c1$ $c2$ $v$ >>
+  | [c1; c2; c3] -> <:expr< Bigarray.Array3.set $e$ $c1$ $c2$ $c3$ $v$ >>
+  | _ -> <:expr< Bigarray.Genarray.set $e$ [| $list:el$ |] $v$ >> ]
+;
+
 value rec expr =
   fun
   [ ExAcc loc x (ExLid _ "val") ->
@@ -578,28 +594,31 @@ value rec expr =
            [("", expr e1); ("", expr e2)])
   | ExArr loc el -> mkexp loc (Pexp_array (List.map expr el))
   | ExAss loc e v ->
-      let e =
-        match e with
-        [ ExAcc loc x (ExLid _ "val") ->
-            Pexp_apply (mkexp loc (Pexp_ident (Lident ":=")))
-              [("", expr x); ("", expr v)]
-        | ExAcc loc _ _ ->
-            match (expr e).pexp_desc with
-            [ Pexp_field e lab -> Pexp_setfield e lab (expr v)
-            | _ -> error loc "bad record access" ]
-        | ExAre _ e1 e2 ->
-            Pexp_apply (mkexp loc (Pexp_ident (array_function "Array" "set")))
-              [("", expr e1); ("", expr e2); ("", expr v)]
-        | ExLid _ lab -> Pexp_setinstvar lab (expr v)
-        | ExSte _ e1 e2 ->
-            Pexp_apply
-              (mkexp loc (Pexp_ident (array_function "String" "set")))
-              [("", expr e1); ("", expr e2); ("", expr v)]
-        | _ -> error loc "bad left part of assignment" ]
-      in
-      mkexp loc e
+      match e with
+      [ ExAcc loc x (ExLid _ "val") ->
+          mkexp loc
+            (Pexp_apply (mkexp loc (Pexp_ident (Lident ":=")))
+               [("", expr x); ("", expr v)])
+      | ExAcc loc _ _ ->
+          match (expr e).pexp_desc with
+          [ Pexp_field e lab -> mkexp loc (Pexp_setfield e lab (expr v))
+          | _ -> error loc "bad record access" ]
+      | ExAre _ e1 e2 ->
+          mkexp loc
+            (Pexp_apply
+               (mkexp loc (Pexp_ident (array_function "Array" "set")))
+               [("", expr e1); ("", expr e2); ("", expr v)])
+      | ExBae loc e el -> expr (bigarray_set loc e el v)
+      | ExLid _ lab -> mkexp loc (Pexp_setinstvar lab (expr v))
+      | ExSte _ e1 e2 ->
+          mkexp loc
+            (Pexp_apply
+               (mkexp loc (Pexp_ident (array_function "String" "set")))
+               [("", expr e1); ("", expr e2); ("", expr v)])
+      | _ -> error loc "bad left part of assignment" ]
   | ExAsr loc (ExUid _ "False") -> mkexp loc Pexp_assertfalse
   | ExAsr loc e -> mkexp loc (Pexp_assert (expr e))
+  | ExBae loc e el -> expr (bigarray_get loc e el)
   | ExChr loc s ->
       mkexp loc (Pexp_constant (Const_char (char_of_char_token loc s)))
   | ExCoe loc e t1 t2 ->

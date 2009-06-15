@@ -949,6 +949,14 @@ Grammar.extend
       Gramext.action
         (fun (e2 : 'expr) _ (e1 : 'expr) (loc : Token.location) ->
            (MLast.ExAcc (loc, e1, e2) : 'expr));
+      [Gramext.Sself; Gramext.Stoken ("", "."); Gramext.Stoken ("", "{");
+       Gramext.Slist1sep
+         (Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e)),
+          Gramext.Stoken ("", ","));
+       Gramext.Stoken ("", "}")],
+      Gramext.action
+        (fun _ (el : 'expr list) _ _ (e : 'expr) (loc : Token.location) ->
+           (MLast.ExBae (loc, e, el) : 'expr));
       [Gramext.Sself; Gramext.Stoken ("", "."); Gramext.Stoken ("", "[");
        Gramext.Sself; Gramext.Stoken ("", "]")],
       Gramext.action
