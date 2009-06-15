@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.138 2007/12/10 11:03:03 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.139 2007/12/10 13:11:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -699,14 +699,15 @@ value external_decl pc (n, t, sl) =
 value exception_decl pc (e, tl, id) =
   horiz_vertic
     (fun () ->
-       pprintf pc "exception %s%s%s" e
-         (if tl = [] then ""
-          else
-            sprintf " of %s"
-              (hlist2 ctyp (and_before ctyp)
-                 {(pc) with bef = ""; aft = ""} tl))
-         (if id = [] then ""
-          else sprintf " = %s" (mod_ident {(pc) with bef = ""; aft = ""} id)))
+       pprintf pc "exception %s%p%p" e
+         (fun pc tl ->
+            if tl = [] then pprintf pc ""
+            else pprintf pc " of %p" (hlist2 ctyp (and_before ctyp)) tl)
+         tl
+         (fun pc id ->
+            if id = [] then pprintf pc ""
+            else pprintf pc " = %p" mod_ident id)
+         id)
     (fun () ->
        let s1 =
          sprintf "%sexception %s%s" pc.bef e (if tl = [] then "" else " of")
