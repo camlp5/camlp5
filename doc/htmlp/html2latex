@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2latex,v 1.52 2007/08/26 20:46:41 deraugla Exp $
+# $Id: html2latex,v 1.53 2007/08/29 02:31:37 deraugla Exp $
 
 FILES1="index.html ptools.html"
 FILES2="parsers.html lexers.html fparsers.html grammars.html"
@@ -84,7 +84,7 @@ for i in $FILES; do
       -e 's|<tr><td[^>]*>|{|g' \
       -e 's|</td><td[^>]*>|} \& {|g' \
       -e 's|</td></tr>|} \\\\\n|g' \
-      -e 's|<br/>||g' \
+      -e 's|<br/>|\\\\|g' \
       -e 's/^ *<ul>/\\begin{itemize}/' -e 's|^ *</ul>|\\end{itemize}|' \
       -e 's/^ *<ol>/\\begin{enumerate}/' -e 's|^ *</ol>|\\end{enumerate}|' \
       -e 's/^ *<li>/\\item /' -e 's| *</li>||' \
