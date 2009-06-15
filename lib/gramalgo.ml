@@ -561,6 +561,35 @@ value compute_nb_symbols item_set_ht term_table nterm_table =
     item_set_ht (0, 0)
 ;
 
+value rec derive_eps rl =
+  fun
+  [ [] -> True
+  | [GS_term _ :: _] -> False
+  | [GS_nterm s :: rest] -> nterm_derive_eps rl s && derive_eps rl rest ]
+and nterm_derive_eps rl s =
+let _ = do { Printf.eprintf "test derive_eps \"%s\"\n" s; flush stderr; } in
+  List.exists (fun (_, lh, rh) -> if lh = s then derive_eps rl rh else False)
+    rl
+;
+
+value first_of rl w =
+  let rec first_of_symbols first =
+    fun
+    [ [] -> first
+    | [GS_term s :: _] -> [s :: first]
+    | [GS_nterm s :: rest] -> first_of_nterm first rest s ]
+  and first_of_nterm first kont s =
+    List.fold_left
+      (fun first (_, lh, rh) ->
+         if lh = s then
+           if derive_eps rl rh then first_of_symbols first kont
+           else first_of_symbols first rh
+         else first)
+      first rl
+  in
+  first_of_symbols [] w
+;
+
 (*DEFINE TEST;*)
 
 value lr0 entry lev = do {
@@ -632,6 +661,39 @@ value lr0 entry lev = do {
   Printf.eprintf "nb of terms %d\n" nb_terms;
   Printf.eprintf "nb of non-terms %d\n" nb_nterms;
   flush stderr;
+
+  (* compute follow *)
+  let follow = Array.create nb_nterms [] in
+  List.iter
+    (fun (_, lh, rh) ->
+       loop rh where rec loop =
+         fun
+         [ [GS_nterm s :: rest] -> do {
+let _ = do { Printf.eprintf "compute first_of \"%s\"\n" s; flush stderr; } in
+             match first_of rl rest with
+             [ [] ->
+let _ = do { Printf.eprintf "- first_of \"%s\" = []\n" s; flush stderr; } in
+                 ()
+             | first ->
+                 let j = Hashtbl.find nterm_table s in
+                 let first = first_of rl rest in
+let r = do {[
+                 follow.(j) := List.merge compare follow.(j) first ];
+} in
+let _ = do { Printf.eprintf "- first_of \"%s\" = [" s; let _ = List.fold_left (fun s x -> do { Printf.eprintf "%s%s" s x; "; " }) "" follow.(j) in (); Printf.eprintf "]\n"; flush stderr; } in
+List.hd r ];
+             loop rest
+           }
+         | [GS_term _ :: rest] -> loop rest
+         | [] -> () ])
+    rl;
+  Printf.eprintf "\nFollow\n\n";
+  for i = 0 to Array.length follow - 1 do {
+    Printf.eprintf "%d:" i;
+    List.iter (fun s -> Printf.eprintf " %s" s) follow.(i);
+    Printf.eprintf "\n";
+  };
+
   (* make goto table *)
   let goto_table =
     Array.init (item_set_cnt + 1) (fun _ -> Array.create nb_nterms (-1))
