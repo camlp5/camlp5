@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.126 2007/12/07 10:26:47 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.127 2007/12/07 15:35:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1131,29 +1131,17 @@ EXTEND_PRINTER
             (fun () ->
                if not flag_horiz_let_in.val then sprintf "\n"
                else
-                 sprintf "%slet %s%s %s%s" pc.bef (if rf then "rec " else "")
-                   (hlist2 let_binding (and_before let_binding)
-                      {(pc) with bef = ""; aft = "in"} pel)
-                   (curr {(pc) with bef = ""; aft = ""} e) pc.aft)
+                 pprintf pc "let %s%p in %p" (if rf then "rec " else "")
+                   (hlist2 let_binding (and_before let_binding)) pel curr e)
             (fun () ->
                match flatten_sequence ge with
                [ Some el ->
                    let loc = MLast.loc_of_expr ge in
                    curr pc <:expr< do { $list:el$ } >>
                | None ->
-                   let s1 =
-                     vlist2 let_binding (and_before let_binding)
-                       {(pc) with
-                        bef =
-                          sprintf "%slet %s" pc.bef
-                            (if rf then "rec " else "");
-                        aft = "in"}
-                       pel
-                   in
-                   let s2 =
-                     comm_expr expr_wh {(pc) with bef = tab pc.ind} e
-                   in
-                   sprintf "%s\n%s" s1 s2 ])
+                   pprintf pc "let %s%pin@ %p" (if rf then "rec " else "")
+                     (vlist2 let_binding (and_before let_binding)) pel
+                     (comm_expr expr_wh) e ])
       | <:expr< let module $uid:s$ = $me$ in $e$ >> ->
           horiz_vertic
             (fun () ->
