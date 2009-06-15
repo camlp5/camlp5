@@ -2103,6 +2103,17 @@ Grammar.extend
                   MLast.ExUid (loc, "Level")),
                string_of_a n) :
             'position));
+      [Gramext.Stoken ("UIDENT", "LIKE");
+       Gramext.Snterm (Grammar.Entry.obj (string : 'string Grammar.Entry.e))],
+      Gramext.action
+        (fun (n : 'string) _ (loc : Ploc.t) ->
+           (MLast.ExApp
+              (loc,
+               MLast.ExAcc
+                 (loc, MLast.ExUid (loc, "Gramext"),
+                  MLast.ExUid (loc, "Like")),
+               string_of_a n) :
+            'position));
       [Gramext.Stoken ("UIDENT", "AFTER");
        Gramext.Snterm (Grammar.Entry.obj (string : 'string Grammar.Entry.e))],
       Gramext.action

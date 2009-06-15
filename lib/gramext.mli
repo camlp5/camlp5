@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: gramext.mli,v 1.16 2007/09/22 05:20:28 deraugla Exp $ *)
+(* $Id: gramext.mli,v 1.17 2007/10/13 23:53:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 type grammar 'te =
@@ -53,6 +53,7 @@ type position =
   | Last
   | Before of string
   | After of string
+  | Like of string
   | Level of string ]
 ;
 

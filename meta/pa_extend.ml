@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.101 2007/10/11 08:56:09 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.102 2007/10/13 23:53:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -1053,6 +1053,8 @@ EXTEND
           <:expr< Gramext.Before $string_of_a n$ >>
       | UIDENT "AFTER"; n = string ->
           <:expr< Gramext.After $string_of_a n$ >>
+      | UIDENT "LIKE"; n = string ->
+          <:expr< Gramext.Like $string_of_a n$ >>
       | UIDENT "LEVEL"; n = string ->
           <:expr< Gramext.Level $string_of_a n$ >> ] ]
   ;

@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: grammars.html,v 1.83 2007/10/13 17:26:45 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.84 2007/10/13 23:53:29 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -106,6 +106,7 @@ to <em>extend</em> it, using a specific syntactic statement:
                  | "LAST"
                  | "BEFORE" label
                  | "AFTER" label
+                 | "LIKE" string
                  | "LEVEL" label
                  | &lt;nothing&gt;
         levels ::= level "|" levels
@@ -236,6 +237,13 @@ defined levels:</p>
     followed by a level label (a string) indicates that the levels
     must be inserted before (resp. after) that level, if it exists. If
     it does not exist, the extend statement fails at run time.</li>
+  <li>The identifier "<tt>LIKE</tt>" followed by a string indicates
+    that the first level defined in the extend statement must be
+    inserted in the first already existing level with a rule
+    containing this string as keyword or token name. For example,
+    "<tt>LIKE "match"</tt>" is the first level having "<tt>match</tt>"
+    as keyword. If there is no level with this string, the extend
+    statement fails at run time.</li>
   <li>The identifier "<tt>LEVEL</tt>" followed by a level label
     indicates that the first level defined in the extend statement
     must be inserted at the given level, extending and modifying

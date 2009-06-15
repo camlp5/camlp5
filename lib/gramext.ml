@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: gramext.ml,v 1.20 2007/09/22 05:20:28 deraugla Exp $ *)
+(* $Id: gramext.ml,v 1.21 2007/10/13 23:53:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Printf;
@@ -55,6 +55,7 @@ type position =
   | Last
   | Before of string
   | After of string
+  | Like of string
   | Level of string ]
 ;
 
@@ -189,6 +190,32 @@ value is_level_labelled n lev =
   | None -> False ]
 ;
 
+value rec token_exists_in_level f lev =
+  token_exists_in_tree f lev.lprefix || token_exists_in_tree f lev.lsuffix
+and token_exists_in_tree f =
+  fun
+  [ Node n ->
+      token_exists_in_symbol f n.node || token_exists_in_tree f n.brother ||
+      token_exists_in_tree f n.son
+  | LocAct _ _ | DeadEnd -> False ]
+and token_exists_in_symbol f =
+  fun
+  [ Sfacto sy -> token_exists_in_symbol f sy
+  | Smeta _ syl _ -> List.exists (token_exists_in_symbol f) syl
+  | Slist0 sy -> token_exists_in_symbol f sy
+  | Slist0sep sy sep ->
+      token_exists_in_symbol f sy || token_exists_in_symbol f sep
+  | Slist1 sy -> token_exists_in_symbol f sy
+  | Slist1sep sy sep ->
+      token_exists_in_symbol f sy || token_exists_in_symbol f sep
+  | Sopt sy -> token_exists_in_symbol f sy
+  | Sflag sy -> token_exists_in_symbol f sy
+  | Stoken tok -> f tok
+  | Stree t -> token_exists_in_tree f t
+  | Svala _ sy -> token_exists_in_symbol f sy
+  | Snterm _ | Snterml _ _ | Snext | Sself -> False ]
+;
+
 value insert_level entry_name e1 symbols action slev =
   match e1 with
   [ True ->
@@ -276,6 +303,20 @@ value get_level entry position levs =
           }
         | [lev :: levs] ->
             if is_level_labelled n lev then ([lev], empty_lev, levs)
+            else
+              let (levs1, rlev, levs2) = get levs in
+              ([lev :: levs1], rlev, levs2) ]
+  | Some (Like n) ->
+      let f (tok, prm) = n = tok || n = prm in
+      get levs where rec get =
+        fun
+        [ [] -> do {
+            eprintf "No level with \"%s\" in entry \"%s\"\n" n entry.ename;
+            flush stderr;
+            failwith "Grammar.extend"
+          }
+        | [lev :: levs] ->
+            if token_exists_in_level f lev then ([], change_lev lev n, levs)
             else
               let (levs1, rlev, levs2) = get levs in
               ([lev :: levs1], rlev, levs2) ]

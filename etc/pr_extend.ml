@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extend.ml,v 1.52 2007/10/07 10:07:02 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.53 2007/10/13 23:53:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -255,6 +255,9 @@ value position pc pos =
   | Some (Gramext.Before s) -> sprintf "%s BEFORE%s" pc.bef pc.aft
   | Some (Gramext.After s) ->
       sprintf "%s AFTER %s%s" pc.bef (string {(pc) with bef = ""; aft = ""} s)
+        pc.aft
+  | Some (Gramext.Like s) ->
+      sprintf "%s LIKE %s%s" pc.bef (string {(pc) with bef = ""; aft = ""} s)
         pc.aft
   | Some (Gramext.Level s) ->
       sprintf "%s LEVEL %s%s" pc.bef (string {(pc) with bef = ""; aft = ""} s)

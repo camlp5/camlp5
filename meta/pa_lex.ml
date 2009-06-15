@@ -213,7 +213,7 @@ value gcl = ref [];
 
 EXTEND
   GLOBAL: expr;
-  expr:
+  expr: LIKE "match"
     [ [ "lexer"; rl = rules ->
           let rl =
             match isolate_char_patt loc rl with

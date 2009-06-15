@@ -1,6 +1,11 @@
 Camlp5 Version 5.01:
 ---------------------
 
+* [14 Oct 07] In the EXTEND statement, added "LIKE s" as possible
+  level position to specify a level containing a rule containing "s"
+  in its keywords or tokens.
+* [14 Oct 07] Fixed a bug: in normal syntax, the syntax kit "pa_lex.cmo"
+  caused syntax errors when using the normal "match..with" statement.
 * [11 Oct 07] Rewritten parsers and printers in Scheme syntax. Deleted
   old module Spretty.
 * [06 Oct 07] Fixed bug in grammars: there was a parsing confusion with

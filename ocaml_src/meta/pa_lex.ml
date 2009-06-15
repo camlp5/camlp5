@@ -238,7 +238,8 @@ Grammar.extend
    and no_rec : 'no_rec Grammar.Entry.e = grammar_entry_create "no_rec"
    and err_kont : 'err_kont Grammar.Entry.e = grammar_entry_create "err_kont"
    and act : 'act Grammar.Entry.e = grammar_entry_create "act" in
-   [Grammar.Entry.obj (expr : 'expr Grammar.Entry.e), None,
+   [Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
+    Some (Gramext.Like "match"),
     [None, None,
      [[Gramext.Stoken ("", "match"); Gramext.Sself;
        Gramext.Stoken ("", "with"); Gramext.Stoken ("", "lexer");
