@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.39 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.40 2007/09/05 15:42:04 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -379,10 +379,10 @@ EXTEND
         x = expr ->
           let e = <:expr< let $opt:o2b r$ $list:l$ in $x$ >> in
           <:str_item< $exp:e$ >>
-      | "let"; r = OPT "rec"; l = LIST1 let_binding SEP "and" ->
+      | "let"; r = FLAG "rec"; l = LIST1 let_binding SEP "and" ->
           match l with
           [ [(<:patt< _ >>, e)] -> <:str_item< $exp:e$ >>
-          | _ -> <:str_item< value $opt:o2b r$ $list:l$ >> ]
+          | _ -> <:str_item< value $flag:r$ $list:l$ >> ]
       | "let"; "module"; m = UIDENT; mb = mod_fun_binding; "in"; e = expr ->
           <:str_item< let module $m$ = $mb$ in $e$ >>
       | e = expr -> <:str_item< $exp:e$ >> ] ]

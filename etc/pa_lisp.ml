@@ -1,5 +1,5 @@
 ;; camlp5 ./pa_lispr.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-;; $Id: pa_lisp.ml,v 1.13 2007/09/01 21:20:34 deraugla Exp $
+;; $Id: pa_lisp.ml,v 1.14 2007/09/05 15:42:04 deraugla Exp $
 
 (open Pcaml)
 
@@ -227,7 +227,7 @@
                           ((list (Satom _ Alid "rec") :: sel) (, True sel))
                           ((_) (, False sel))))
                   (lbs (value_binding_se sel)))
-             <:str_item< value $opt:r$ $list:lbs$ >>))
+             <:str_item< value $flag:r$ $list:lbs$ >>))
           ((Sexpr loc _)
            (let ((e (expr_se se)))
              <:str_item< $exp:e$ >>))))

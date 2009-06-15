@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.85 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.86 2007/09/05 15:42:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1951,7 +1951,7 @@ EXTEND_PRINTER
       | <:str_item< type $list:tdl$ >> ->
           vlist2 type_decl (and_before type_decl)
             {(pc) with bef = sprintf "%stype " pc.bef} tdl
-      | <:str_item< value $opt:rf$ $list:pel$ >> ->
+      | <:str_item< value $flag:rf$ $list:pel$ >> ->
           horiz_vertic
             (fun () ->
                sprintf "%slet %s%s" pc.bef (if rf then "rec " else "")

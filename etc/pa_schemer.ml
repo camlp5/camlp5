@@ -416,11 +416,11 @@ and str_item_se se =
   | Sexpr loc [Slid _ ("define" | "definerec" as r); se :: sel] ->
       let r = r = "definerec" in
       let (p, e) = fun_binding_se se (begin_se loc sel) in
-      <:str_item< value $opt:r$ $p$ = $e$ >>
+      <:str_item< value $flag:r$ $p$ = $e$ >>
   | Sexpr loc [Slid _ ("define*" | "definerec*" as r) :: sel] ->
       let r = r = "definerec*" in
       let lbs = List.map let_binding_se sel in
-      <:str_item< value $opt:r$ $list:lbs$ >>
+      <:str_item< value $flag:r$ $list:lbs$ >>
   | Sexpr loc [Slid _ "external"; Slid _ i; se :: sel] ->
       let i = Pcaml.rename_id.val i in
       let pd = List.map string_se sel in

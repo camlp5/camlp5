@@ -810,7 +810,7 @@ pr_str_item.pr_levels :=
           fun curr next dg k -> [: `S LR "include"; `module_expr me "" k :]
       | <:str_item< type $list:tdl$ >> ->
           fun curr next dg k -> [: `type_list [: `S LR "type" :] tdl "" k :]
-      | <:str_item< value $opt:rf$ $list:pel$ >> ->
+      | <:str_item< value $flag:rf$ $list:pel$ >> ->
           fun curr next dg k ->
             [: `bind_list
                   [: `S LR "let"; if rf then [: `S LR "rec" :] else [: :] :]

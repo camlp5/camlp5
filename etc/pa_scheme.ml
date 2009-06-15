@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.14 2007/09/01 21:20:34 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.15 2007/09/05 15:42:04 deraugla Exp $
 
 (open Pcaml)
 
@@ -400,11 +400,11 @@
      ((Sexpr loc [(Slid _ (as (or "define" "definerec") r)) se . sel])
       (let* ((r (= r "definerec"))
              ((values p e) (fun_binding_se se (begin_se loc sel))))
-         <:str_item< value $opt:r$ $p$ = $e$ >>))
+         <:str_item< value $flag:r$ $p$ = $e$ >>))
      ((Sexpr loc [(Slid _ (as (or "define*" "definerec*") r)) . sel])
       (let* ((r (= r "definerec*"))
              (lbs (List.map let_binding_se sel)))
-         <:str_item< value $opt:r$ $list:lbs$ >>))
+         <:str_item< value $flag:r$ $list:lbs$ >>))
      ((Sexpr loc [(Slid _ "external") (Slid _ i) se . sel])
       (let* ((i (Pcaml.rename_id.val i))
              (pd (List.map string_se sel))

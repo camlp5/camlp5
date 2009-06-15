@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.12 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.13 2007/09/05 15:42:04 deraugla Exp $ *)
 
 open Pcaml.OldPrinters;
 open Format;
@@ -649,7 +649,7 @@ pr_str_item.pr_levels :=
             | tl ->
                 fprintf ppf "(@[@[exception@ %s@]@ %a@]" c
                   (list ctyp) (tl, ks ")" k) ]
-      | <:str_item< value $opt:rf$ $list:pel$ >> ->
+      | <:str_item< value $flag:rf$ $list:pel$ >> ->
           fun ppf curr next dg k ->
             let b = if rf then "definerec" else "define" in
             match pel with
