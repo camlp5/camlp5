@@ -235,12 +235,12 @@ module Meta =
                          r)
                     in
                     MLast.ExAnt (loc, r)
-                | _ -> assert false
+                | None -> assert false
                 end
             | PaStr (_, s) ->
                 begin match eval_antiquot expr_eoi s with
                   Some (loc, r) -> MLast.ExAnt (loc, r)
-                | _ -> assert false
+                | None -> assert false
                 end
             | _ -> assert false
             end
@@ -369,12 +369,12 @@ module Meta =
                          r)
                     in
                     MLast.ExAnt (loc, r)
-                | _ -> assert false
+                | None -> assert false
                 end
             | ExStr (_, s) ->
                 begin match eval_antiquot expr_eoi s with
                   Some (loc, r) -> MLast.ExAnt (loc, r)
-                | _ -> assert false
+                | None -> assert false
                 end
             | _ -> assert false
             end
@@ -600,12 +600,12 @@ module Meta =
                          r)
                     in
                     MLast.PaAnt (loc, r)
-                | _ -> assert false
+                | None -> assert false
                 end
             | ExStr (_, s) ->
                 begin match eval_antiquot patt_eoi s with
                   Some (loc, r) -> MLast.PaAnt (loc, r)
-                | _ -> assert false
+                | None -> assert false
                 end
             | _ -> assert false
             end
@@ -667,6 +667,27 @@ module Meta =
                      MLast.ExUid (loc, "StDcl")),
                   ln),
                e_list loop lsi)
+        | StExc (_, s, lt, ls) ->
+            let ls =
+              match eval_antiquot_patch expr_eoi ls with
+                Some (loc, r) -> MLast.ExAnt (loc, r)
+              | None -> e_list e_string ls
+            in
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExApp
+                       (loc,
+                        MLast.ExAcc
+                          (loc, MLast.ExUid (loc, "MLast"),
+                           MLast.ExUid (loc, "StExc")),
+                        ln),
+                     e_string s),
+                  e_list e_type lt),
+               ls)
         | x -> not_impl "e_str_item" x
       in
       loop si
@@ -887,6 +908,16 @@ Grammar.extend
      Gramext.action
        (fun (s : string) (loc : Token.location) ->
           (MLast.MtUid (loc, s) : 'Pcaml__module_type))]]];;
+
+let mod_ident = Grammar.Entry.find Pcaml.str_item "mod_ident" in
+Grammar.extend
+  [Grammar.Entry.obj (mod_ident : 'mod_ident Grammar.Entry.e),
+   Some Gramext.First,
+   [None, None,
+    [[Gramext.Stoken ("ANTIQUOT_LOC", "")],
+     Gramext.action
+       (fun (s : string) (loc : Token.location) ->
+          (Obj.repr s : 'mod_ident))]]];;
 
 let eq_before_colon p e =
   let rec loop i =

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.10 2007/08/02 05:03:07 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.11 2007/08/02 13:07:04 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -134,11 +134,11 @@ module Meta =
                 [ Some (loc, r) ->
                     let r = <:expr< MLast.PaAnt $ln$ $r$ >> in
                     <:expr< $anti:r$ >>
-                | _ -> assert False ]
+                | None -> assert False ]
             | PaStr _ s ->
                 match eval_antiquot expr_eoi s with
                 [ Some (loc, r) -> <:expr< $anti:r$ >>
-                | _ -> assert False ]
+                | None -> assert False ]
             | _ -> assert False ]
         | PaAny _ -> <:expr< MLast.PaAny $ln$ >>
         | PaApp _ p1 p2 -> <:expr< MLast.PaApp $ln$ $loop p1$ $loop p2$ >>
@@ -166,11 +166,11 @@ module Meta =
                 [ Some (loc, r) ->
                     let r = <:expr< MLast.ExAnt $ln$ $r$ >> in
                     <:expr< $anti:r$ >>
-                | _ -> assert False ]
+                | None -> assert False ]
             | ExStr _ s ->
                 match eval_antiquot expr_eoi s with
                 [ Some (loc, r) -> <:expr< $anti:r$ >>
-                | _ -> assert False ]
+                | None -> assert False ]
             | _ -> assert False ]
         | ExApp _ e1 e2 -> <:expr< MLast.ExApp $ln$ $loop e1$ $loop e2$ >>
         | ExArr _ el ->
@@ -223,11 +223,11 @@ module Meta =
                 [ Some (loc, r) ->
                     let r = <:patt< MLast.ExAnt _ $r$ >> in
                     <:patt< $anti:r$ >>
-                | _ -> assert False ]
+                | None -> assert False ]
             | ExStr _ s ->
                 match eval_antiquot patt_eoi s with
                 [ Some (loc, r) -> <:patt< $anti:r$ >>
-                | _ -> assert False ]
+                | None -> assert False ]
             | _ -> assert False ]
         | ExInt _ s k -> <:patt< MLast.ExInt _ $p_string s$ $str:k$ >>
         | ExFlo _ s -> <:patt< MLast.ExFlo _ $p_string s$ >>
@@ -243,6 +243,13 @@ module Meta =
       loop si where rec loop =
         fun
         [ StDcl _ lsi -> <:expr< MLast.StDcl $ln$ $e_list loop lsi$ >>
+        | StExc _ s lt ls ->
+            let ls =
+              match eval_antiquot_patch expr_eoi ls with
+              [ Some (loc, r) -> <:expr< $anti:r$ >>
+              | None -> e_list e_string ls ]
+            in
+            <:expr< MLast.StExc $ln$ $e_string s$ $e_list e_type lt$ $ls$ >>
         | x -> not_impl "e_str_item" x ]
     ;
     value p_str_item =
@@ -308,6 +315,13 @@ EXTEND
   ;
   Pcaml.module_type: LEVEL "simple"
     [ [ s = ANTIQUOT_LOC -> MLast.MtUid loc s ] ]
+  ;
+END;
+
+let mod_ident = Grammar.Entry.find Pcaml.str_item "mod_ident" in
+EXTEND
+  mod_ident: FIRST
+    [ [ s = ANTIQUOT_LOC "" -> Obj.repr s ] ]
   ;
 END;
 
