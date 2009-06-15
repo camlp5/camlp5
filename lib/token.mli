@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: token.mli,v 1.18 2007/08/19 18:24:21 deraugla Exp $ *)
+(* $Id: token.mli,v 1.19 2007/08/19 19:22:35 deraugla Exp $ *)
 
 (** Lexing for Camlp5 grammars.
 
@@ -79,23 +79,18 @@ and location_function = int -> Stdpp.location;
   (**>The type of a function giving the location of a token in the
       source from the token number in the stream (starting from zero). *)
 
-type location = Stdpp.location;
-value make_loc : (int * int) -> location;
-value dummy_loc : location;
-  (** compatibility camlp5 distributed with ocaml *)
-
 value lexer_text : pattern -> string;
-   (** A simple [tok_text] function for lexers *)
+   (** A simple [tok_text] function. *)
 
 value default_match : pattern -> (string * string) -> string;
-   (** A simple [tok_match] function for lexers, appling to token type
+   (** A simple [tok_match] function, appling to the token type
        [(string * string)] *)
 
-(** {6 Lexers from char stream parsers or ocamllex function}
+(** {6 Lexers from parsers or ocamllex}
 
    The functions below create lexer functions either from a [char stream]
    parser or for an [ocamllex] function. With the returned function [f],
-   the simplest [Token.lexer] can be written:
+   it is possible to get a simple lexer (of the type [Token.glexer] above):
    {[
           { Token.tok_func = f;
             Token.tok_using = (fun _ -> ());
@@ -109,7 +104,8 @@ value default_match : pattern -> (string * string) -> string;
    as well. *)
 
 value lexer_func_of_parser :
-  ((Stream.t char * ref int * ref int) -> ('te * location)) -> lexer_func 'te;
+  ((Stream.t char * ref int * ref int) -> ('te * Stdpp.location)) ->
+     lexer_func 'te;
    (** A lexer function from a lexer written as a char stream parser
        returning the next token and its location. The two references
        with the char stream contain the current line number and the
@@ -117,18 +113,21 @@ value lexer_func_of_parser :
 value lexer_func_of_ocamllex : (Lexing.lexbuf -> 'te) -> lexer_func 'te;
    (** A lexer function from a lexer created by [ocamllex] *)
 
+(** {6 Function to build a stream and a location function} *)
+
 value make_stream_and_location :
-  (unit -> ('te * location)) -> (Stream.t 'te * location_function);
+  (unit -> ('te * Stdpp.location)) -> (Stream.t 'te * location_function);
    (** General function *)
 
 (** {6 Useful functions and values} *)
 
 value eval_char : string -> char;
-value eval_string : location -> string -> string;
+value eval_string : Stdpp.location -> string -> string;
    (** Convert a char or a string token, where the backslashes had not
        been interpreted into a real char or string; raise [Failure] if
        bad backslash sequence found; [Token.eval_char (Char.escaped c)]
-       returns [c] and [Token.eval_string (String.escaped s)] returns [s] *)
+       would return [c] and [Token.eval_string (String.escaped s)] would
+       return [s] *)
 
 value restore_lexing_info : ref (option (int * int));
 value line_nb : ref (ref int);
@@ -139,3 +138,11 @@ value bol_pos : ref (ref int);
        for directives (e.g. #load or #use) which interrupt the parsing.
        Without usage of these variables, locations after the directives
        can be wrong. *)
+
+(** {6 Backward compatibilities} *)
+
+(* deprecated since version 4.08 *)
+
+type location = Stdpp.location;
+value make_loc : (int * int) -> location;
+value dummy_loc : location;
