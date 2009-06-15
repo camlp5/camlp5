@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.104 2007/12/04 13:59:37 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.105 2007/12/04 14:37:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -617,9 +617,7 @@ value type_decl pc td =
 ;
 
 value label_decl pc (_, l, m, t) =
-  sprint_break 1 2 pc
-    (fun pc -> sprintf "%s%s :%s" pc.bef l (if m then " mutable" else ""))
-    (fun pc -> ctyp pc t)
+  pprintf pc "%s :%s@;%p" l (if m then " mutable" else "") ctyp t
 ;
 
 value cons_decl pc (_, c, tl) =
@@ -807,12 +805,12 @@ value str_module pref pc (m, me) =
        let s1 =
          match mto with
          [ Some mt ->
-             sprint_break 1 2 pc
-               (fun pc ->
-                  sprintf "%s%s %s%s :" pc.bef pref m
-                    (if mal = [] then "" else
-                     hlist module_arg {(pc) with bef = " "; aft = ""} mal))
-               (fun pc -> module_type {(pc) with aft = " ="} mt)
+             let pc = {(pc) with aft = ""} in
+             if mal = [] then
+               pprintf pc "%s %s :@;%p =" pref m module_type mt
+             else
+               pprintf pc "%s %s %p :@;%p =" pref m (hlist module_arg) mal
+                 module_type mt
          | None ->
              let mal = List.map (fun ma -> (ma, "")) mal in
              plistb module_arg 2
