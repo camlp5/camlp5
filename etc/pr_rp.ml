@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_rp.ml,v 1.20 2007/12/17 13:09:17 deraugla Exp $ *)
+(* $Id: pr_rp.ml,v 1.21 2007/12/19 11:41:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Parserify;
@@ -129,10 +129,6 @@ value parser_case force_vertic pc (sp, po, e) =
                     pprintf pc "[: %p :]%p ->" stream_patt sp ident_option po)
                  expr pc el
            | None ->
-               if Pr_r.test.val then
-               pprintf pc "[: %p :]%p ->@;%p" stream_patt sp
-                 ident_option po expr e
-               else
                pprintf pc "[: %p :]%s ->@;%p" stream_patt sp
                  (ident_option {(pc) with bef = ""; aft = ""} po)
                  expr e ]) ]
@@ -145,31 +141,24 @@ value parser_case_sh force_vertic pc spe =
 value flag_equilibrate_cases = Pcaml.flag_equilibrate_cases;
 
 value parser_body pc (po, spel) =
-  let s1 = ident_option {(pc) with bef = ""; aft = ""} po in
-  let s2o =
+  let s =
     match spel with
     [ [spe] ->
         horiz_vertic
           (fun () ->
              let s =
-               sprintf "%s%s %s%s" pc.bef s1
-                 (parser_case False {(pc) with bef = ""; aft = ""} spe) pc.aft
+               pprintf pc "%p %p" ident_option po (parser_case False) spe
              in
              Some s)
           (fun () -> None)
     | _ -> None ]
   in
-  match s2o with
+  match s with
   [ Some s -> s
   | None ->
       match spel with
-      [ [] -> sprintf "%s []%s" pc.bef pc.aft
-      | [spe] ->
-          let s2 =
-            parser_case False
-              {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} spe
-          in
-          sprintf "%s%s\n%s" pc.bef s1 s2
+      [ [] -> pprintf pc "%p []" ident_option po
+      | [spe] -> pprintf pc "%p@;%p" ident_option po (parser_case False) spe
       | _ ->
           let force_vertic =
             if flag_equilibrate_cases.val then
@@ -188,14 +177,10 @@ value parser_body pc (po, spel) =
               has_vertic
             else False
           in
-          let s2 =
-            vlist2 (parser_case_sh force_vertic)
-              (bar_before (parser_case_sh force_vertic))
-              {(pc) with bef = sprintf "%s[ " (tab pc.ind);
-               aft = sprintf " ]%s" pc.aft}
-              spel
-          in
-          sprintf "%s%s\n%s" pc.bef s1 s2 ] ]
+          pprintf pc "%p@ [ %p ]" ident_option po
+            (vlist2 (parser_case_sh force_vertic)
+               (bar_before (parser_case_sh force_vertic)))
+            spel ] ]
 ;
 
 value print_parser pc e =
