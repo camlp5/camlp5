@@ -1,10 +1,10 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extfun.ml,v 1.10 2007/08/16 09:50:12 deraugla Exp $ *)
+(* $Id: pr_extfun.ml,v 1.11 2007/08/16 11:29:18 deraugla Exp $ *)
 
 (* heuristic to rebuild the extfun statement from the AST *)
 
 open Pretty;
-open Pcaml.Printers;
+open Pcaml;
 open Prtools;
 
 value not_impl name pc x =

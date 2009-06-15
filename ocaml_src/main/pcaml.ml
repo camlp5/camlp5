@@ -321,22 +321,22 @@ let add_option name spec descr =
 
 (* Printers *)
 
-module Printers =
-  struct
-    let pr_expr = Eprinter.make "expr";;
-    let pr_patt = Eprinter.make "patt";;
-    let pr_ctyp = Eprinter.make "type";;
-    let pr_str_item = Eprinter.make "str_item";;
-    let pr_sig_item = Eprinter.make "sig_item";;
-    let pr_module_expr = Eprinter.make "module_expr";;
-    let pr_module_type = Eprinter.make "module_type";;
-    let pr_class_sig_item = Eprinter.make "class_sig_item";;
-    let pr_class_str_item = Eprinter.make "class_str_item";;
-    let pr_class_expr = Eprinter.make "class_expr";;
-    let pr_class_type = Eprinter.make "class_type";;
-    let pr_expr_fun_args = ref Extfun.empty;;
-  end
-;;
+let undef x = ref (fun _ -> failwith x);;
+let print_interf = undef "no printer";;
+let print_implem = undef "no printer";;
+
+let pr_expr = Eprinter.make "expr";;
+let pr_patt = Eprinter.make "patt";;
+let pr_ctyp = Eprinter.make "type";;
+let pr_str_item = Eprinter.make "str_item";;
+let pr_sig_item = Eprinter.make "sig_item";;
+let pr_module_expr = Eprinter.make "module_expr";;
+let pr_module_type = Eprinter.make "module_type";;
+let pr_class_sig_item = Eprinter.make "class_sig_item";;
+let pr_class_str_item = Eprinter.make "class_str_item";;
+let pr_class_expr = Eprinter.make "class_expr";;
+let pr_class_type = Eprinter.make "class_type";;
+let pr_expr_fun_args = ref Extfun.empty;;
 
 module OldPrinters =
   struct
@@ -450,10 +450,6 @@ module OldPrinters =
     let inter_phrases = ref None;;
   end
 ;;
-
-let undef x = ref (fun _ -> failwith x);;
-let print_interf = undef "no printer";;
-let print_implem = undef "no printer";;
 
 (* Directives *)
 

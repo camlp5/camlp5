@@ -83,25 +83,22 @@ val handle_patt_quotation : MLast.loc -> string * string -> MLast.patt;;
 
 val print_interf : ((MLast.sig_item * MLast.loc) list -> unit) ref;;
 val print_implem : ((MLast.str_item * MLast.loc) list -> unit) ref;;
+
+val pr_expr : MLast.expr Eprinter.t;;
+val pr_patt : MLast.patt Eprinter.t;;
+val pr_ctyp : MLast.ctyp Eprinter.t;;
+val pr_str_item : MLast.str_item Eprinter.t;;
+val pr_sig_item : MLast.sig_item Eprinter.t;;
+val pr_module_expr : MLast.module_expr Eprinter.t;;
+val pr_module_type : MLast.module_type Eprinter.t;;
+val pr_class_sig_item : MLast.class_sig_item Eprinter.t;;
+val pr_class_str_item : MLast.class_str_item Eprinter.t;;
+val pr_class_type : MLast.class_type Eprinter.t;;
+val pr_class_expr : MLast.class_expr Eprinter.t;;
    (** Some printers, set by [pr_dump.cmo], [pr_o.cmo] and [pr_r.cmo]. *)
 
-module Printers :
-  sig
-    val pr_expr : MLast.expr Eprinter.t;;
-    val pr_patt : MLast.patt Eprinter.t;;
-    val pr_ctyp : MLast.ctyp Eprinter.t;;
-    val pr_str_item : MLast.str_item Eprinter.t;;
-    val pr_sig_item : MLast.sig_item Eprinter.t;;
-    val pr_module_expr : MLast.module_expr Eprinter.t;;
-    val pr_module_type : MLast.module_type Eprinter.t;;
-    val pr_class_sig_item : MLast.class_sig_item Eprinter.t;;
-    val pr_class_str_item : MLast.class_str_item Eprinter.t;;
-    val pr_class_type : MLast.class_type Eprinter.t;;
-    val pr_class_expr : MLast.class_expr Eprinter.t;;
-    val pr_expr_fun_args :
-      (MLast.expr, MLast.patt list * MLast.expr) Extfun.t ref;;
-  end
-;;
+val pr_expr_fun_args :
+  (MLast.expr, MLast.patt list * MLast.expr) Extfun.t ref;;
 
 module OldPrinters :
   sig

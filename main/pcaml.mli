@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pcaml.mli,v 1.9 2007/08/16 11:14:04 deraugla Exp $ *)
+(* $Id: pcaml.mli,v 1.10 2007/08/16 11:29:18 deraugla Exp $ *)
 
 (** Language grammar, entries and printers.
 
@@ -83,25 +83,22 @@ value handle_patt_quotation : MLast.loc -> (string * string) -> MLast.patt;
 
 value print_interf : ref (list (MLast.sig_item * MLast.loc) -> unit);
 value print_implem : ref (list (MLast.str_item * MLast.loc) -> unit);
+
+value pr_expr : Eprinter.t MLast.expr;
+value pr_patt : Eprinter.t MLast.patt;
+value pr_ctyp : Eprinter.t MLast.ctyp;
+value pr_str_item : Eprinter.t MLast.str_item;
+value pr_sig_item : Eprinter.t MLast.sig_item;
+value pr_module_expr : Eprinter.t MLast.module_expr;
+value pr_module_type : Eprinter.t MLast.module_type;
+value pr_class_sig_item : Eprinter.t MLast.class_sig_item;
+value pr_class_str_item : Eprinter.t MLast.class_str_item;
+value pr_class_type : Eprinter.t MLast.class_type;
+value pr_class_expr : Eprinter.t MLast.class_expr;
    (** Some printers, set by [pr_dump.cmo], [pr_o.cmo] and [pr_r.cmo]. *)
 
-module Printers :
-  sig
-    value pr_expr : Eprinter.t MLast.expr;
-    value pr_patt : Eprinter.t MLast.patt;
-    value pr_ctyp : Eprinter.t MLast.ctyp;
-    value pr_str_item : Eprinter.t MLast.str_item;
-    value pr_sig_item : Eprinter.t MLast.sig_item;
-    value pr_module_expr : Eprinter.t MLast.module_expr;
-    value pr_module_type : Eprinter.t MLast.module_type;
-    value pr_class_sig_item : Eprinter.t MLast.class_sig_item;
-    value pr_class_str_item : Eprinter.t MLast.class_str_item;
-    value pr_class_type : Eprinter.t MLast.class_type;
-    value pr_class_expr : Eprinter.t MLast.class_expr;
-    value pr_expr_fun_args :
-      ref (Extfun.t MLast.expr (list MLast.patt * MLast.expr));
-  end
-;
+value pr_expr_fun_args :
+  ref (Extfun.t MLast.expr (list MLast.patt * MLast.expr));
 
 module OldPrinters :
   sig

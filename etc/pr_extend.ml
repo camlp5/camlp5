@@ -1,11 +1,11 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extend.ml,v 1.23 2007/08/16 09:50:12 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.24 2007/08/16 11:29:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
 
 open Pretty;
-open Pcaml.Printers;
+open Pcaml;
 open Prtools;
 
 value no_slist = ref False;

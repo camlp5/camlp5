@@ -1,9 +1,9 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.57 2007/08/16 09:13:39 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.58 2007/08/16 11:29:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
-open Pcaml.Printers;
+open Pcaml;
 open Prtools;
 
 value flag_expand_declare = ref False;

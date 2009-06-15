@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pcaml.ml,v 1.15 2007/08/16 11:14:04 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.16 2007/08/16 11:29:18 deraugla Exp $ *)
 
 value version = "4.08-exp";
 value syntax_name = ref "";
@@ -348,22 +348,22 @@ value add_option name spec descr =
 
 (* Printers *)
 
-module Printers =
-  struct
-    value pr_expr = Eprinter.make "expr";
-    value pr_patt = Eprinter.make "patt";
-    value pr_ctyp = Eprinter.make "type";
-    value pr_str_item = Eprinter.make "str_item";
-    value pr_sig_item = Eprinter.make "sig_item";
-    value pr_module_expr = Eprinter.make "module_expr";
-    value pr_module_type = Eprinter.make "module_type";
-    value pr_class_sig_item = Eprinter.make "class_sig_item";
-    value pr_class_str_item = Eprinter.make "class_str_item";
-    value pr_class_expr = Eprinter.make "class_expr";
-    value pr_class_type = Eprinter.make "class_type";
-    value pr_expr_fun_args = ref Extfun.empty;
-  end
-;
+value undef x = ref (fun _ -> failwith x);
+value print_interf = undef "no printer";
+value print_implem = undef "no printer";
+
+value pr_expr = Eprinter.make "expr";
+value pr_patt = Eprinter.make "patt";
+value pr_ctyp = Eprinter.make "type";
+value pr_str_item = Eprinter.make "str_item";
+value pr_sig_item = Eprinter.make "sig_item";
+value pr_module_expr = Eprinter.make "module_expr";
+value pr_module_type = Eprinter.make "module_type";
+value pr_class_sig_item = Eprinter.make "class_sig_item";
+value pr_class_str_item = Eprinter.make "class_str_item";
+value pr_class_expr = Eprinter.make "class_expr";
+value pr_class_type = Eprinter.make "class_type";
+value pr_expr_fun_args = ref Extfun.empty;
 
 module OldPrinters =
   struct
@@ -442,10 +442,6 @@ module OldPrinters =
     value inter_phrases = ref None;
   end
 ;
-
-value undef x = ref (fun _ -> failwith x);
-value print_interf = undef "no printer";
-value print_implem = undef "no printer";
 
 (* Directives *)
 

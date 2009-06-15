@@ -1,11 +1,11 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_rp.ml,v 1.5 2007/08/16 09:50:12 deraugla Exp $ *)
+(* $Id: pr_rp.ml,v 1.6 2007/08/16 11:29:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Heuristic to rebuild parsers and streams from the AST *)
 
 open Pretty;
-open Pcaml.Printers;
+open Pcaml;
 open Prtools;
 
 type spat_comp =

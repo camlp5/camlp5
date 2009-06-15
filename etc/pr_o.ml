@@ -1,9 +1,9 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.77 2007/08/16 08:45:24 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.78 2007/08/16 11:29:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
-open Pcaml.Printers;
+open Pcaml;
 open Prtools;
 
 value flag_horiz_let_in = ref True;
@@ -2347,82 +2347,12 @@ Pcaml.add_option "-ncip" (Arg.Unit (fun x -> x))
 
 (* Pretty printing extension for objects and labels *)
 
-open Pretty;
-open Pcaml.Printers;
-open Prtools;
-
-value not_impl name pc x =
-  let desc =
-    if Obj.tag (Obj.repr x) = Obj.tag (Obj.repr "") then
-      sprintf "\"%s\"" (Obj.magic x)
-    else if Obj.is_block (Obj.repr x) then
-      "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
-    else "int_val = " ^ string_of_int (Obj.magic x)
-  in
-  sprintf "%s\"pr_o, not impl: %s; %s\"%s" pc.bef name (String.escaped desc)
-    pc.aft
-;
-
-value is_infix = do {
-  let infixes = Hashtbl.create 73 in
-  List.iter (fun s -> Hashtbl.add infixes s True)
-    ["!="; "&&"; "*"; "**"; "*."; "+"; "+."; "-"; "-."; "/"; "/."; "<"; "<=";
-     "<>"; "="; "=="; ">"; ">="; "@"; "^"; "asr"; "land"; "lor"; "lsl"; "lsr";
-     "lxor"; "mod"; "or"; "||"; "~-"; "~-."];
-  fun s -> try Hashtbl.find infixes s with [ Not_found -> False ]
-};
-
-value is_keyword =
-  let keywords = ["value"] in
-  fun s -> List.mem s keywords
-;
-
-value has_special_chars s =
-  if String.length s = 0 then False
-  else
-    match s.[0] with
-    [ '0'..'9' | 'A'..'Z' | 'a'..'z' | '_' -> False
-    | _ -> True ]
-;
-
-value var_escaped pc v =
-  let x =
-    if is_infix v || has_special_chars v then "\\" ^ v
-    else if is_keyword v then v ^ "__"
-    else v
-  in
-  sprintf "%s%s%s" pc.bef x pc.aft
-;
-
-value alone_in_line pc =
-  (pc.aft = "" || pc.aft = ";") && pc.bef <> "" &&
-  loop 0 where rec loop i =
-    if i >= String.length pc.bef then True
-    else if pc.bef.[i] = ' ' then loop (i + 1)
-    else False
-;
-
 value class_expr = Eprinter.apply pr_class_expr;
 value class_type = Eprinter.apply pr_class_type;
 value class_str_item = Eprinter.apply pr_class_str_item;
 value class_sig_item = Eprinter.apply pr_class_sig_item;
 
-value rec mod_ident pc sl =
-  match sl with
-  [ [] -> sprintf "%s%s" pc.bef pc.aft
-  | [s] -> sprintf "%s%s%s" pc.bef s pc.aft
-  | [s :: sl] -> mod_ident {(pc) with bef = sprintf "%s%s." pc.bef s} sl ]
-;
-
-value semi_after elem pc x = elem {(pc) with aft = sprintf ";%s" pc.aft} x;
 value amp_before elem pc x = elem {(pc) with bef = sprintf "%s& " pc.bef} x;
-value and_before elem pc x = elem {(pc) with bef = sprintf "%sand " pc.bef} x;
-value bar_before elem pc x = elem {(pc) with bef = sprintf "%s| " pc.bef} x;
-
-value type_var pc (tv, (p, m)) =
-  sprintf "%s%s'%s%s" pc.bef (if p then "+" else if m then "-" else "") tv
-    pc.aft
-;
 
 value class_type_params pc ctp =
   if ctp = [] then sprintf "%s%s" pc.bef pc.aft
@@ -2562,16 +2492,6 @@ value rec class_longident pc cl =
   | [c] -> sprintf "%s%s%s" pc.bef c pc.aft
   | [c :: cl] ->
       sprintf "%s%s.%s" pc.bef c (class_longident {(pc) with bef = ""} cl) ]
-;
-
-value binding elem pc (p, e) =
-  horiz_vertic
-    (fun () ->
-       sprintf "%s %s%s" (patt {(pc) with aft = " ="} p)
-         (elem {(pc) with bef = ""; aft = ""} e) pc.aft)
-    (fun () ->
-       sprintf "%s\n%s" (patt {(pc) with aft = " ="} p)
-         (elem {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e))
 ;
 
 value field pc (s, t) =

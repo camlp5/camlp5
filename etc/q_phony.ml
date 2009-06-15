@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: q_phony.ml,v 1.13 2007/08/16 09:50:12 deraugla Exp $ *)
+(* $Id: q_phony.ml,v 1.14 2007/08/16 11:29:18 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "pa_extprint.cmo";
@@ -73,7 +73,7 @@ END;
 #load "pa_extfun.cmo";
 
 open Pretty;
-open Pcaml.Printers;
+open Pcaml;
 open Prtools;
 
 value expr = Eprinter.apply pr_expr;
