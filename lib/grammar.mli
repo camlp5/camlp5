@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.mli,v 1.14 2007/08/16 08:45:24 deraugla Exp $ *)
+(* $Id: grammar.mli,v 1.15 2007/08/20 09:16:18 deraugla Exp $ *)
 
 (** Extensible grammars.
 
@@ -181,7 +181,7 @@ value reinit_entry_functions : Gramext.g_entry 'te -> unit;
 
 (*** For system use *)
 
-value loc_of_token_interval : int -> int -> Token.location;
+value loc_of_token_interval : int -> int -> Stdpp.location;
 value extend :
   list
     (Gramext.g_entry 'te * option Gramext.position *

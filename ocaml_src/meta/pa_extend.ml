@@ -19,7 +19,7 @@ let split_ext = ref false;;
 Pcaml.add_option "-split_ext" (Arg.Set split_ext)
   "Split EXTEND by functions to turn around a PowerPC problem.";;
 
-type loc = Token.location;;
+type loc = Stdpp.location;;
 
 type 'e name = { expr : 'e; tvar : string; loc : loc };;
 
@@ -1051,7 +1051,7 @@ let text_of_action loc psl rtvar act tvar =
        [MLast.PaTyc
           (loc, locid,
            MLast.TyAcc
-             (loc, MLast.TyUid (loc, "Token"),
+             (loc, MLast.TyUid (loc, "Stdpp"),
               MLast.TyLid (loc, "location"))),
         None, MLast.ExTyc (loc, act, MLast.TyQuo (loc, rtvar))])
   in
@@ -1559,7 +1559,7 @@ Grammar.extend
             (gdelete_rule_body : 'gdelete_rule_body Grammar.Entry.e));
        Gramext.Stoken ("", "END")],
       Gramext.action
-        (fun _ (e : 'gdelete_rule_body) _ (loc : Token.location) ->
+        (fun _ (e : 'gdelete_rule_body) _ (loc : Stdpp.location) ->
            (e : 'expr));
       [Gramext.Stoken ("", "DELETE_RULE");
        Gramext.Snterm
@@ -1567,20 +1567,20 @@ Grammar.extend
             (delete_rule_body : 'delete_rule_body Grammar.Entry.e));
        Gramext.Stoken ("", "END")],
       Gramext.action
-        (fun _ (e : 'delete_rule_body) _ (loc : Token.location) ->
+        (fun _ (e : 'delete_rule_body) _ (loc : Stdpp.location) ->
            (e : 'expr));
       [Gramext.Stoken ("", "GEXTEND");
        Gramext.Snterm
          (Grammar.Entry.obj (gextend_body : 'gextend_body Grammar.Entry.e));
        Gramext.Stoken ("", "END")],
       Gramext.action
-        (fun _ (e : 'gextend_body) _ (loc : Token.location) -> (e : 'expr));
+        (fun _ (e : 'gextend_body) _ (loc : Stdpp.location) -> (e : 'expr));
       [Gramext.Stoken ("", "EXTEND");
        Gramext.Snterm
          (Grammar.Entry.obj (extend_body : 'extend_body Grammar.Entry.e));
        Gramext.Stoken ("", "END")],
       Gramext.action
-        (fun _ (e : 'extend_body) _ (loc : Token.location) -> (e : 'expr))]];
+        (fun _ (e : 'extend_body) _ (loc : Stdpp.location) -> (e : 'expr))]];
     Grammar.Entry.obj (extend_body : 'extend_body Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm
@@ -1595,10 +1595,10 @@ Grammar.extend
               Gramext.Snterm
                 (Grammar.Entry.obj (semi_sep : 'semi_sep Grammar.Entry.e))],
              Gramext.action
-               (fun _ (e : 'entry) (loc : Token.location) -> (e : 'e__1))])],
+               (fun _ (e : 'entry) (loc : Stdpp.location) -> (e : 'e__1))])],
       Gramext.action
         (fun (el : 'e__1 list) (sl : 'global option) (f : 'efunction)
-             (loc : Token.location) ->
+             (loc : Stdpp.location) ->
            (text_of_extend loc "Grammar" sl el f : 'extend_body))]];
     Grammar.Entry.obj (gextend_body : 'gextend_body Grammar.Entry.e), None,
     [None, None,
@@ -1613,10 +1613,10 @@ Grammar.extend
               Gramext.Snterm
                 (Grammar.Entry.obj (semi_sep : 'semi_sep Grammar.Entry.e))],
              Gramext.action
-               (fun _ (e : 'entry) (loc : Token.location) -> (e : 'e__2))])],
+               (fun _ (e : 'entry) (loc : Stdpp.location) -> (e : 'e__2))])],
       Gramext.action
         (fun (el : 'e__2 list) (sl : 'global option) (g : string)
-             (loc : Token.location) ->
+             (loc : Stdpp.location) ->
            (text_of_functorial_extend loc g sl el : 'gextend_body))]];
     Grammar.Entry.obj (delete_rule_body : 'delete_rule_body Grammar.Entry.e),
     None,
@@ -1629,7 +1629,7 @@ Grammar.extend
           Gramext.Snterm
             (Grammar.Entry.obj (semi_sep : 'semi_sep Grammar.Entry.e)))],
       Gramext.action
-        (fun (sl : 'symbol list) _ (n : 'name) (loc : Token.location) ->
+        (fun (sl : 'symbol list) _ (n : 'name) (loc : Stdpp.location) ->
            (let (e, b) = expr_of_delete_rule loc "Grammar" n sl in
             MLast.ExApp
               (loc,
@@ -1655,7 +1655,7 @@ Grammar.extend
             (Grammar.Entry.obj (semi_sep : 'semi_sep Grammar.Entry.e)))],
       Gramext.action
         (fun (sl : 'symbol list) _ (n : 'name) (g : string)
-             (loc : Token.location) ->
+             (loc : Stdpp.location) ->
            (let (e, b) = expr_of_delete_rule loc g n sl in
             MLast.ExApp
               (loc,
@@ -1671,7 +1671,7 @@ Grammar.extend
     [None, None,
      [[],
       Gramext.action
-        (fun (loc : Token.location) ->
+        (fun (loc : Stdpp.location) ->
            (MLast.ExAcc
               (loc, MLast.ExUid (loc, "Grammar"),
                MLast.ExLid (loc, "extend")) :
@@ -1681,7 +1681,7 @@ Grammar.extend
        Gramext.Snterm
          (Grammar.Entry.obj (semi_sep : 'semi_sep Grammar.Entry.e))],
       Gramext.action
-        (fun _ (f : 'qualid) _ _ (loc : Token.location) ->
+        (fun _ (f : 'qualid) _ _ (loc : Stdpp.location) ->
            (f : 'efunction))]];
     Grammar.Entry.obj (global : 'global Grammar.Entry.e), None,
     [None, None,
@@ -1691,7 +1691,7 @@ Grammar.extend
        Gramext.Snterm
          (Grammar.Entry.obj (semi_sep : 'semi_sep Grammar.Entry.e))],
       Gramext.action
-        (fun _ (sl : 'name list) _ _ (loc : Token.location) ->
+        (fun _ (sl : 'name list) _ _ (loc : Stdpp.location) ->
            (sl : 'global))]];
     Grammar.Entry.obj (entry : 'entry Grammar.Entry.e), None,
     [None, None,
@@ -1704,14 +1704,14 @@ Grammar.extend
          (Grammar.Entry.obj (level_list : 'level_list Grammar.Entry.e))],
       Gramext.action
         (fun (ll : 'level_list) (pos : 'position option) _ (n : 'name)
-             (loc : Token.location) ->
+             (loc : Stdpp.location) ->
            ({name = n; pos = pos; levels = ll} : 'entry))]];
     Grammar.Entry.obj (position : 'position Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("UIDENT", "LEVEL");
        Gramext.Snterm (Grammar.Entry.obj (string : 'string Grammar.Entry.e))],
       Gramext.action
-        (fun (n : 'string) _ (loc : Token.location) ->
+        (fun (n : 'string) _ (loc : Stdpp.location) ->
            (MLast.ExApp
               (loc,
                MLast.ExAcc
@@ -1722,7 +1722,7 @@ Grammar.extend
       [Gramext.Stoken ("UIDENT", "AFTER");
        Gramext.Snterm (Grammar.Entry.obj (string : 'string Grammar.Entry.e))],
       Gramext.action
-        (fun (n : 'string) _ (loc : Token.location) ->
+        (fun (n : 'string) _ (loc : Stdpp.location) ->
            (MLast.ExApp
               (loc,
                MLast.ExAcc
@@ -1733,7 +1733,7 @@ Grammar.extend
       [Gramext.Stoken ("UIDENT", "BEFORE");
        Gramext.Snterm (Grammar.Entry.obj (string : 'string Grammar.Entry.e))],
       Gramext.action
-        (fun (n : 'string) _ (loc : Token.location) ->
+        (fun (n : 'string) _ (loc : Stdpp.location) ->
            (MLast.ExApp
               (loc,
                MLast.ExAcc
@@ -1743,13 +1743,13 @@ Grammar.extend
             'position));
       [Gramext.Stoken ("UIDENT", "LAST")],
       Gramext.action
-        (fun _ (loc : Token.location) ->
+        (fun _ (loc : Stdpp.location) ->
            (MLast.ExAcc
               (loc, MLast.ExUid (loc, "Gramext"), MLast.ExUid (loc, "Last")) :
             'position));
       [Gramext.Stoken ("UIDENT", "FIRST")],
       Gramext.action
-        (fun _ (loc : Token.location) ->
+        (fun _ (loc : Stdpp.location) ->
            (MLast.ExAcc
               (loc, MLast.ExUid (loc, "Gramext"),
                MLast.ExUid (loc, "First")) :
@@ -1762,7 +1762,7 @@ Grammar.extend
           Gramext.Stoken ("", "|"));
        Gramext.Stoken ("", "]")],
       Gramext.action
-        (fun _ (ll : 'level list) _ (loc : Token.location) ->
+        (fun _ (ll : 'level list) _ (loc : Stdpp.location) ->
            (ll : 'level_list))]];
     Grammar.Entry.obj (level : 'level Grammar.Entry.e), None,
     [None, None,
@@ -1774,26 +1774,26 @@ Grammar.extend
          (Grammar.Entry.obj (rule_list : 'rule_list Grammar.Entry.e))],
       Gramext.action
         (fun (rules : 'rule_list) (ass : 'assoc option) (lab : string option)
-             (loc : Token.location) ->
+             (loc : Stdpp.location) ->
            ({label = lab; assoc = ass; rules = rules} : 'level))]];
     Grammar.Entry.obj (assoc : 'assoc Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("UIDENT", "NONA")],
       Gramext.action
-        (fun _ (loc : Token.location) ->
+        (fun _ (loc : Stdpp.location) ->
            (MLast.ExAcc
               (loc, MLast.ExUid (loc, "Gramext"), MLast.ExUid (loc, "NonA")) :
             'assoc));
       [Gramext.Stoken ("UIDENT", "RIGHTA")],
       Gramext.action
-        (fun _ (loc : Token.location) ->
+        (fun _ (loc : Stdpp.location) ->
            (MLast.ExAcc
               (loc, MLast.ExUid (loc, "Gramext"),
                MLast.ExUid (loc, "RightA")) :
             'assoc));
       [Gramext.Stoken ("UIDENT", "LEFTA")],
       Gramext.action
-        (fun _ (loc : Token.location) ->
+        (fun _ (loc : Stdpp.location) ->
            (MLast.ExAcc
               (loc, MLast.ExUid (loc, "Gramext"),
                MLast.ExUid (loc, "LeftA")) :
@@ -1806,10 +1806,10 @@ Grammar.extend
           Gramext.Stoken ("", "|"));
        Gramext.Stoken ("", "]")],
       Gramext.action
-        (fun _ (rules : 'rule list) _ (loc : Token.location) ->
+        (fun _ (rules : 'rule list) _ (loc : Stdpp.location) ->
            (retype_rule_list_without_patterns loc rules : 'rule_list));
       [Gramext.Stoken ("", "["); Gramext.Stoken ("", "]")],
-      Gramext.action (fun _ _ (loc : Token.location) -> ([] : 'rule_list))]];
+      Gramext.action (fun _ _ (loc : Stdpp.location) -> ([] : 'rule_list))]];
     Grammar.Entry.obj (rule : 'rule Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Slist0sep
@@ -1818,7 +1818,7 @@ Grammar.extend
           Gramext.Snterm
             (Grammar.Entry.obj (semi_sep : 'semi_sep Grammar.Entry.e)))],
       Gramext.action
-        (fun (psl : 'psymbol list) (loc : Token.location) ->
+        (fun (psl : 'psymbol list) (loc : Stdpp.location) ->
            ({prod = psl; action = None} : 'rule));
       [Gramext.Slist0sep
          (Gramext.Snterm
@@ -1828,20 +1828,20 @@ Grammar.extend
        Gramext.Stoken ("", "->");
        Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
       Gramext.action
-        (fun (act : 'expr) _ (psl : 'psymbol list) (loc : Token.location) ->
+        (fun (act : 'expr) _ (psl : 'psymbol list) (loc : Stdpp.location) ->
            ({prod = psl; action = Some act} : 'rule))]];
     Grammar.Entry.obj (psymbol : 'psymbol Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
       Gramext.action
-        (fun (s : 'symbol) (loc : Token.location) ->
+        (fun (s : 'symbol) (loc : Stdpp.location) ->
            ({pattern = None; symbol = s} : 'psymbol));
       [Gramext.Snterm
          (Grammar.Entry.obj (pattern : 'pattern Grammar.Entry.e));
        Gramext.Stoken ("", "=");
        Gramext.Snterm (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
       Gramext.action
-        (fun (s : 'symbol) _ (p : 'pattern) (loc : Token.location) ->
+        (fun (s : 'symbol) _ (p : 'pattern) (loc : Stdpp.location) ->
            ({pattern = Some p; symbol = s} : 'psymbol));
       [Gramext.Stoken ("LIDENT", "");
        Gramext.Sopt
@@ -1849,9 +1849,9 @@ Grammar.extend
             [[Gramext.Stoken ("UIDENT", "LEVEL");
               Gramext.Stoken ("STRING", "")],
              Gramext.action
-               (fun (s : string) _ (loc : Token.location) -> (s : 'e__3))])],
+               (fun (s : string) _ (loc : Stdpp.location) -> (s : 'e__3))])],
       Gramext.action
-        (fun (lev : 'e__3 option) (i : string) (loc : Token.location) ->
+        (fun (lev : 'e__3 option) (i : string) (loc : Stdpp.location) ->
            (let name = mk_name loc (MLast.ExLid (loc, i)) in
             let text = TXnterm (loc, name, lev) in
             let styp = STquo (loc, i) in
@@ -1861,14 +1861,14 @@ Grammar.extend
       [Gramext.Stoken ("LIDENT", ""); Gramext.Stoken ("", "=");
        Gramext.Snterm (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
       Gramext.action
-        (fun (s : 'symbol) _ (p : string) (loc : Token.location) ->
+        (fun (s : 'symbol) _ (p : string) (loc : Stdpp.location) ->
            ({pattern = Some (MLast.PaLid (loc, p)); symbol = s} :
             'psymbol))]];
     Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e), None,
     [Some "top", Some Gramext.NonA,
      [[Gramext.Stoken ("UIDENT", "FLAG"); Gramext.Sself],
       Gramext.action
-        (fun (s : 'symbol) _ (loc : Token.location) ->
+        (fun (s : 'symbol) _ (loc : Stdpp.location) ->
            (if !quotify then ssflag loc s
             else
               let styp = STlid (loc, "bool") in
@@ -1877,7 +1877,7 @@ Grammar.extend
             'symbol));
       [Gramext.Stoken ("UIDENT", "OPT"); Gramext.Sself],
       Gramext.action
-        (fun (s : 'symbol) _ (loc : Token.location) ->
+        (fun (s : 'symbol) _ (loc : Stdpp.location) ->
            (if !quotify then ssopt loc s
             else
               let styp = STapp (loc, STlid (loc, "option"), s.styp) in
@@ -1891,9 +1891,9 @@ Grammar.extend
               Gramext.Snterm
                 (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
              Gramext.action
-               (fun (t : 'symbol) _ (loc : Token.location) -> (t : 'e__5))])],
+               (fun (t : 'symbol) _ (loc : Stdpp.location) -> (t : 'e__5))])],
       Gramext.action
-        (fun (sep : 'e__5 option) (s : 'symbol) _ (loc : Token.location) ->
+        (fun (sep : 'e__5 option) (s : 'symbol) _ (loc : Stdpp.location) ->
            (if !quotify then sslist loc true sep s
             else
               let used =
@@ -1912,9 +1912,9 @@ Grammar.extend
               Gramext.Snterm
                 (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
              Gramext.action
-               (fun (t : 'symbol) _ (loc : Token.location) -> (t : 'e__4))])],
+               (fun (t : 'symbol) _ (loc : Stdpp.location) -> (t : 'e__4))])],
       Gramext.action
-        (fun (sep : 'e__4 option) (s : 'symbol) _ (loc : Token.location) ->
+        (fun (sep : 'e__4 option) (s : 'symbol) _ (loc : Stdpp.location) ->
            (if !quotify then sslist loc false sep s
             else
               let used =
@@ -1929,16 +1929,16 @@ Grammar.extend
      None, None,
      [[Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ")")],
       Gramext.action
-        (fun _ (s_t : 'symbol) _ (loc : Token.location) -> (s_t : 'symbol));
+        (fun _ (s_t : 'symbol) _ (loc : Stdpp.location) -> (s_t : 'symbol));
       [Gramext.Snterm (Grammar.Entry.obj (name : 'name Grammar.Entry.e));
        Gramext.Sopt
          (Gramext.srules
             [[Gramext.Stoken ("UIDENT", "LEVEL");
               Gramext.Stoken ("STRING", "")],
              Gramext.action
-               (fun (s : string) _ (loc : Token.location) -> (s : 'e__7))])],
+               (fun (s : string) _ (loc : Stdpp.location) -> (s : 'e__7))])],
       Gramext.action
-        (fun (lev : 'e__7 option) (n : 'name) (loc : Token.location) ->
+        (fun (lev : 'e__7 option) (n : 'name) (loc : Stdpp.location) ->
            ({used = [n.tvar]; text = TXnterm (loc, n, lev);
              styp = STquo (loc, n.tvar)} :
             'symbol));
@@ -1949,10 +1949,10 @@ Grammar.extend
             [[Gramext.Stoken ("UIDENT", "LEVEL");
               Gramext.Stoken ("STRING", "")],
              Gramext.action
-               (fun (s : string) _ (loc : Token.location) -> (s : 'e__6))])],
+               (fun (s : string) _ (loc : Stdpp.location) -> (s : 'e__6))])],
       Gramext.action
         (fun (lev : 'e__6 option) (e : 'qualid) _ (i : string)
-             (loc : Token.location) ->
+             (loc : Stdpp.location) ->
            (let n =
               mk_name loc (MLast.ExAcc (loc, MLast.ExUid (loc, i), e))
             in
@@ -1961,20 +1961,20 @@ Grammar.extend
             'symbol));
       [Gramext.Snterm (Grammar.Entry.obj (string : 'string Grammar.Entry.e))],
       Gramext.action
-        (fun (e : 'string) (loc : Token.location) ->
+        (fun (e : 'string) (loc : Stdpp.location) ->
            (let text = TXtok (loc, "", e) in
             {used = []; text = text; styp = STlid (loc, "string")} :
             'symbol));
       [Gramext.Stoken ("UIDENT", "");
        Gramext.Snterm (Grammar.Entry.obj (string : 'string Grammar.Entry.e))],
       Gramext.action
-        (fun (e : 'string) (x : string) (loc : Token.location) ->
+        (fun (e : 'string) (x : string) (loc : Stdpp.location) ->
            (let text = TXtok (loc, x, e) in
             {used = []; text = text; styp = STlid (loc, "string")} :
             'symbol));
       [Gramext.Stoken ("UIDENT", "")],
       Gramext.action
-        (fun (x : string) (loc : Token.location) ->
+        (fun (x : string) (loc : Stdpp.location) ->
            (let text =
               if !quotify then sstoken loc x
               else TXtok (loc, x, MLast.ExStr (loc, ""))
@@ -1987,7 +1987,7 @@ Grammar.extend
           Gramext.Stoken ("", "|"));
        Gramext.Stoken ("", "]")],
       Gramext.action
-        (fun _ (rl : 'rule list) _ (loc : Token.location) ->
+        (fun _ (rl : 'rule list) _ (loc : Stdpp.location) ->
            (let rl = retype_rule_list_without_patterns loc rl in
             let t = new_type_var () in
             {used = used_of_rule_list rl;
@@ -1996,12 +1996,12 @@ Grammar.extend
             'symbol));
       [Gramext.Stoken ("UIDENT", "NEXT")],
       Gramext.action
-        (fun _ (loc : Token.location) ->
+        (fun _ (loc : Stdpp.location) ->
            ({used = []; text = TXnext loc; styp = STself (loc, "NEXT")} :
             'symbol));
       [Gramext.Stoken ("UIDENT", "SELF")],
       Gramext.action
-        (fun _ (loc : Token.location) ->
+        (fun _ (loc : Stdpp.location) ->
            ({used = []; text = TXself loc; styp = STself (loc, "SELF")} :
             'symbol))]];
     Grammar.Entry.obj (pattern : 'pattern Grammar.Entry.e), None,
@@ -2013,17 +2013,17 @@ Grammar.extend
        Gramext.Stoken ("", ")")],
       Gramext.action
         (fun _ (pl : 'patterns_comma) _ (p : 'pattern) _
-             (loc : Token.location) ->
+             (loc : Stdpp.location) ->
            (MLast.PaTup (loc, p :: pl) : 'pattern));
       [Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ")")],
       Gramext.action
-        (fun _ (p : 'pattern) _ (loc : Token.location) -> (p : 'pattern));
+        (fun _ (p : 'pattern) _ (loc : Stdpp.location) -> (p : 'pattern));
       [Gramext.Stoken ("", "_")],
       Gramext.action
-        (fun _ (loc : Token.location) -> (MLast.PaAny loc : 'pattern));
+        (fun _ (loc : Stdpp.location) -> (MLast.PaAny loc : 'pattern));
       [Gramext.Stoken ("LIDENT", "")],
       Gramext.action
-        (fun (i : string) (loc : Token.location) ->
+        (fun (i : string) (loc : Stdpp.location) ->
            (MLast.PaLid (loc, i) : 'pattern))]];
     Grammar.Entry.obj (patterns_comma : 'patterns_comma Grammar.Entry.e),
     None,
@@ -2032,34 +2032,34 @@ Grammar.extend
        Gramext.Snterm
          (Grammar.Entry.obj (pattern : 'pattern Grammar.Entry.e))],
       Gramext.action
-        (fun (p : 'pattern) _ (pl : 'patterns_comma) (loc : Token.location) ->
+        (fun (p : 'pattern) _ (pl : 'patterns_comma) (loc : Stdpp.location) ->
            (pl @ [p] : 'patterns_comma))];
      None, None,
      [[Gramext.Snterm
          (Grammar.Entry.obj (pattern : 'pattern Grammar.Entry.e))],
       Gramext.action
-        (fun (p : 'pattern) (loc : Token.location) ->
+        (fun (p : 'pattern) (loc : Stdpp.location) ->
            ([p] : 'patterns_comma))]];
     Grammar.Entry.obj (name : 'name Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm (Grammar.Entry.obj (qualid : 'qualid Grammar.Entry.e))],
       Gramext.action
-        (fun (e : 'qualid) (loc : Token.location) ->
+        (fun (e : 'qualid) (loc : Stdpp.location) ->
            (mk_name loc e : 'name))]];
     Grammar.Entry.obj (qualid : 'qualid Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Sself; Gramext.Stoken ("", "."); Gramext.Sself],
       Gramext.action
-        (fun (e2 : 'qualid) _ (e1 : 'qualid) (loc : Token.location) ->
+        (fun (e2 : 'qualid) _ (e1 : 'qualid) (loc : Stdpp.location) ->
            (MLast.ExAcc (loc, e1, e2) : 'qualid))];
      None, None,
      [[Gramext.Stoken ("LIDENT", "")],
       Gramext.action
-        (fun (i : string) (loc : Token.location) ->
+        (fun (i : string) (loc : Stdpp.location) ->
            (MLast.ExLid (loc, i) : 'qualid));
       [Gramext.Stoken ("UIDENT", "")],
       Gramext.action
-        (fun (i : string) (loc : Token.location) ->
+        (fun (i : string) (loc : Stdpp.location) ->
            (MLast.ExUid (loc, i) : 'qualid))]];
     Grammar.Entry.obj (string : 'string Grammar.Entry.e), None,
     [None, None,
@@ -2067,10 +2067,10 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e));
        Gramext.Stoken ("", "$")],
       Gramext.action
-        (fun _ (e : 'expr) _ (loc : Token.location) -> (e : 'string));
+        (fun _ (e : 'expr) _ (loc : Stdpp.location) -> (e : 'string));
       [Gramext.Stoken ("STRING", "")],
       Gramext.action
-        (fun (s : string) (loc : Token.location) ->
+        (fun (s : string) (loc : Stdpp.location) ->
            (MLast.ExStr (loc, s) : 'string))]]]);;
 
 Pcaml.add_option "-quotify" (Arg.Set quotify) "Generate code for quotations";;

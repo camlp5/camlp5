@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.30 2007/07/11 09:46:18 deraugla Exp $
+# $Id: Makefile,v 1.31 2007/08/20 09:16:18 deraugla Exp $
 
 include config/Makefile
 
@@ -36,6 +36,7 @@ clean_hot:
 	for i in $(DIRS) compile; do (cd $$i; $(MAKE) clean); done
 
 depend:
+	cd etc; make pr_depend.cmo
 	cd ocaml_stuff; $(MAKE) depend
 	for i in $(DIRS) compile; do (cd $$i; $(MAKE) depend); done
 

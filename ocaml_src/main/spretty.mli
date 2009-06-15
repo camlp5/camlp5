@@ -39,9 +39,9 @@ type pretty =
   | Vbox of pretty Stream.t
   | BEbox of pretty Stream.t
   | BEVbox of pretty Stream.t
-  | LocInfo of Token.location * pretty
+  | LocInfo of Stdpp.location * pretty
 ;;
-type getcomm = Token.location -> int -> int -> string * int * int * int;;
+type getcomm = Stdpp.location -> int -> int -> string * int * int * int;;
 
 val print_pretty :
   (char -> unit) -> (string -> unit) -> (unit -> unit) -> string -> string ->

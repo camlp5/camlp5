@@ -13,7 +13,7 @@ gramext.cmx: gramext.cmi token.cmx
 gramext.cmi: token.cmi 
 grammar.cmo: gramext.cmi grammar.cmi stdpp.cmi token.cmi 
 grammar.cmx: gramext.cmx grammar.cmi stdpp.cmx token.cmx 
-grammar.cmi: token.cmi gramext.cmi 
+grammar.cmi: token.cmi stdpp.cmi gramext.cmi 
 plexer.cmo: plexer.cmi stdpp.cmi token.cmi 
 plexer.cmx: plexer.cmi stdpp.cmx token.cmx 
 plexer.cmi: token.cmi 

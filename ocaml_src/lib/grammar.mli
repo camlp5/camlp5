@@ -181,7 +181,7 @@ val reinit_entry_functions : 'te Gramext.g_entry -> unit;;
 
 (*** For system use *)
 
-val loc_of_token_interval : int -> int -> Token.location;;
+val loc_of_token_interval : int -> int -> Stdpp.location;;
 val extend :
   ('te Gramext.g_entry * Gramext.position option *
      (string option * Gramext.g_assoc option *

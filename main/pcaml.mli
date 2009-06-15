@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pcaml.mli,v 1.10 2007/08/16 11:29:18 deraugla Exp $ *)
+(* $Id: pcaml.mli,v 1.11 2007/08/20 09:16:18 deraugla Exp $ *)
 
 (** Language grammar, entries and printers.
 
@@ -145,7 +145,7 @@ value find_directive : string -> directive_fun;
 
 (* for system use *)
 
-value warning : ref (Token.location -> string -> unit);
+value warning : ref (Stdpp.location -> string -> unit);
 value expr_eoi : Grammar.Entry.e MLast.expr;
 value patt_eoi : Grammar.Entry.e MLast.patt;
 value arg_spec_list : unit -> list (string * Arg.spec * string);

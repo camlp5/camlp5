@@ -22,7 +22,7 @@ type pretty =
   | Vbox of Stream.t pretty
   | BEbox of Stream.t pretty
   | BEVbox of Stream.t pretty
-  | LocInfo of Token.location and pretty ]
+  | LocInfo of Stdpp.location and pretty ]
 ;
 type prettyL =
   [ SL of int and glue and string
@@ -35,7 +35,7 @@ type prettyL =
   | BV of list prettyL
   | LI of (string * int * int) and prettyL ]
 ;
-type getcomm = Token.location -> int -> int -> (string * int * int * int);
+type getcomm = Stdpp.location -> int -> int -> (string * int * int * int);
 
 value quiet = ref True;
 value maxl = ref 20;

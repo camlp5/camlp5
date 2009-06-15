@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.30 2007/08/14 11:19:09 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.31 2007/08/20 09:16:18 deraugla Exp $ *)
 
 open Stdpp;
 
@@ -19,7 +19,7 @@ value split_ext = ref False;
 Pcaml.add_option "-split_ext" (Arg.Set split_ext)
   "Split EXTEND by functions to turn around a PowerPC problem.";
 
-type loc = Token.location;
+type loc = Stdpp.location;
 
 type name 'e = { expr : 'e; tvar : string; loc : loc };
 
@@ -453,7 +453,7 @@ value text_of_action loc psl rtvar act tvar =
     | None -> <:expr< () >> ]
   in
   let e =
-    <:expr< fun [ ($locid$ : Token.location) -> ($act$ : '$rtvar$) ] >>
+    <:expr< fun [ ($locid$ : Stdpp.location) -> ($act$ : '$rtvar$) ] >>
   in
   let txt =
     List.fold_left

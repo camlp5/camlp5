@@ -1101,21 +1101,21 @@ Grammar.extend
         (Grammar.Entry.obj (Pcaml.expr : 'Pcaml__expr Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (x : 'Pcaml__expr) (loc : Token.location) -> (x : 'expr_eoi))]];
+       (fun _ (x : 'Pcaml__expr) (loc : Stdpp.location) -> (x : 'expr_eoi))]];
    Grammar.Entry.obj (patt_eoi : 'patt_eoi Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Snterm
         (Grammar.Entry.obj (Pcaml.patt : 'Pcaml__patt Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (x : 'Pcaml__patt) (loc : Token.location) -> (x : 'patt_eoi))]];
+       (fun _ (x : 'Pcaml__patt) (loc : Stdpp.location) -> (x : 'patt_eoi))]];
    Grammar.Entry.obj (ctyp_eoi : 'ctyp_eoi Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Snterm
         (Grammar.Entry.obj (Pcaml.ctyp : 'Pcaml__ctyp Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (x : 'Pcaml__ctyp) (loc : Token.location) -> (x : 'ctyp_eoi))]];
+       (fun _ (x : 'Pcaml__ctyp) (loc : Stdpp.location) -> (x : 'ctyp_eoi))]];
    Grammar.Entry.obj (sig_item_eoi : 'sig_item_eoi Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Snterm
@@ -1123,7 +1123,7 @@ Grammar.extend
            (Pcaml.sig_item : 'Pcaml__sig_item Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (x : 'Pcaml__sig_item) (loc : Token.location) ->
+       (fun _ (x : 'Pcaml__sig_item) (loc : Stdpp.location) ->
           (x : 'sig_item_eoi))]];
    Grammar.Entry.obj (str_item_eoi : 'str_item_eoi Grammar.Entry.e), None,
    [None, None,
@@ -1132,7 +1132,7 @@ Grammar.extend
            (Pcaml.str_item : 'Pcaml__str_item Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (x : 'Pcaml__str_item) (loc : Token.location) ->
+       (fun _ (x : 'Pcaml__str_item) (loc : Stdpp.location) ->
           (x : 'str_item_eoi))]];
    Grammar.Entry.obj (module_expr_eoi : 'module_expr_eoi Grammar.Entry.e),
    None,
@@ -1142,7 +1142,7 @@ Grammar.extend
            (Pcaml.module_expr : 'Pcaml__module_expr Grammar.Entry.e));
       Gramext.Stoken ("EOI", "")],
      Gramext.action
-       (fun _ (x : 'Pcaml__module_expr) (loc : Token.location) ->
+       (fun _ (x : 'Pcaml__module_expr) (loc : Stdpp.location) ->
           (x : 'module_expr_eoi))]];
    Grammar.Entry.obj (Pcaml.expr : 'Pcaml__expr Grammar.Entry.e), None,
    [None, None,
@@ -1153,43 +1153,43 @@ Grammar.extend
          Gramext.Stoken ("", ";"));
       Gramext.Stoken ("", "}")],
      Gramext.action
-       (fun _ (el : 'Pcaml__expr list) _ _ (loc : Token.location) ->
+       (fun _ (el : 'Pcaml__expr list) _ _ (loc : Stdpp.location) ->
           (MLast.ExSeq (loc, el) : 'Pcaml__expr))]];
    Grammar.Entry.obj (Pcaml.expr : 'Pcaml__expr Grammar.Entry.e),
    Some Gramext.Last,
    [None, None,
     [[Gramext.Stoken ("ANTIQUOT_LOC", "")],
      Gramext.action
-       (fun (s : string) (loc : Token.location) ->
+       (fun (s : string) (loc : Stdpp.location) ->
           (MLast.ExAnt (loc, MLast.ExStr (loc, s)) : 'Pcaml__expr));
      [Gramext.Stoken ("ANTIQUOT_LOC", "anti")],
      Gramext.action
-       (fun (s : string) (loc : Token.location) ->
+       (fun (s : string) (loc : Stdpp.location) ->
           (MLast.ExAnt (loc, MLast.ExLid (loc, s)) : 'Pcaml__expr))]];
    Grammar.Entry.obj (Pcaml.patt : 'Pcaml__patt Grammar.Entry.e),
    Some Gramext.Last,
    [None, None,
     [[Gramext.Stoken ("ANTIQUOT_LOC", "")],
      Gramext.action
-       (fun (s : string) (loc : Token.location) ->
+       (fun (s : string) (loc : Stdpp.location) ->
           (MLast.PaAnt (loc, MLast.PaStr (loc, s)) : 'Pcaml__patt));
      [Gramext.Stoken ("ANTIQUOT_LOC", "anti")],
      Gramext.action
-       (fun (s : string) (loc : Token.location) ->
+       (fun (s : string) (loc : Stdpp.location) ->
           (MLast.PaAnt (loc, MLast.PaLid (loc, s)) : 'Pcaml__patt))]];
    Grammar.Entry.obj (Pcaml.ctyp : 'Pcaml__ctyp Grammar.Entry.e),
    Some Gramext.Last,
    [None, None,
     [[Gramext.Stoken ("ANTIQUOT_LOC", "")],
      Gramext.action
-       (fun (s : string) (loc : Token.location) ->
+       (fun (s : string) (loc : Stdpp.location) ->
           (MLast.TyUid (loc, s) : 'Pcaml__ctyp))]];
    Grammar.Entry.obj (Pcaml.str_item : 'Pcaml__str_item Grammar.Entry.e),
    Some Gramext.Last,
    [None, None,
     [[Gramext.Stoken ("ANTIQUOT_LOC", "exp")],
      Gramext.action
-       (fun (s : string) (loc : Token.location) ->
+       (fun (s : string) (loc : Stdpp.location) ->
           (let e = MLast.ExAnt (loc, MLast.ExLid (loc, s)) in
            MLast.StExp (loc, e) :
            'Pcaml__str_item))]];
@@ -1199,7 +1199,7 @@ Grammar.extend
    [None, None,
     [[Gramext.Stoken ("ANTIQUOT_LOC", "")],
      Gramext.action
-       (fun (s : string) (loc : Token.location) ->
+       (fun (s : string) (loc : Stdpp.location) ->
           (MLast.MeUid (loc, s) : 'Pcaml__module_expr))]];
    Grammar.Entry.obj
      (Pcaml.module_type : 'Pcaml__module_type Grammar.Entry.e),
@@ -1207,7 +1207,7 @@ Grammar.extend
    [None, None,
     [[Gramext.Stoken ("ANTIQUOT_LOC", "")],
      Gramext.action
-       (fun (s : string) (loc : Token.location) ->
+       (fun (s : string) (loc : Stdpp.location) ->
           (MLast.MtUid (loc, s) : 'Pcaml__module_type))]]];;
 
 let mod_ident = Grammar.Entry.find Pcaml.str_item "mod_ident" in
@@ -1217,7 +1217,7 @@ Grammar.extend
    [None, None,
     [[Gramext.Stoken ("ANTIQUOT_LOC", "")],
      Gramext.action
-       (fun (s : string) (loc : Token.location) ->
+       (fun (s : string) (loc : Stdpp.location) ->
           (Obj.repr s : 'mod_ident))]]];;
 
 let check_anti_loc s kind =

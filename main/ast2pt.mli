@@ -10,12 +10,12 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.mli,v 1.2 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: ast2pt.mli,v 1.3 2007/08/20 09:16:18 deraugla Exp $ *)
 
 value fast : ref bool;
 value no_constructors_arity : ref bool;
-value mkloc : Token.location -> Location.t;
-value long_id_of_string_list : Token.location -> list string -> Longident.t;
+value mkloc : Stdpp.location -> Location.t;
+value long_id_of_string_list : Stdpp.location -> list string -> Longident.t;
 
 value str_item : MLast.str_item -> Parsetree.structure -> Parsetree.structure;
 value interf : string -> list MLast.sig_item -> Parsetree.signature;

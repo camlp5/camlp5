@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: library.html,v 1.7 2007/08/20 03:10:41 deraugla Exp $ -->
+  <!-- $Id: library.html,v 1.8 2007/08/20 09:16:18 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Library</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -432,14 +432,22 @@ value make_stream_and_location :
   entries types, the normal access being through the
   "<tt>Grammar</tt>" module where these types are abstract.</p>
 
-<p>... the following lines have to be structured ...</p>
-
-<pre>
+<pre style="border:0; margin-left: 1cm">
 type grammar 'te =
   { gtokens : Hashtbl.t Token.pattern (ref int);
     glexer : mutable Token.glexer 'te }
 ;
+</pre>
 
+<dl><dd>
+    The visible type of grammars, i.e. the implementation of the abstract
+    type "<tt>Grammar.g</tt>". It is also the implementation of an internal
+    grammar type used in the Grammar functorial interface.
+</dd></dl>
+
+<p>... the following lines have to be structured ...</p>
+
+<pre>
 type g_entry 'te =
   { egram : grammar 'te;
     ename : string;
