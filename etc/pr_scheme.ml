@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.32 2007/10/12 15:42:15 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.33 2007/10/12 18:31:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -303,7 +303,20 @@ value poly_variant_decl pc =
   [ <:poly_variant< `$s$ >> ->
       sprintf "%s(` %s)%s" pc.bef s pc.aft
   | <:poly_variant< `$s$ of $flag:a$ $list:tl$ >> ->
-      not_impl "poly_variant_decl cons 2" pc 0
+      let list =
+        let list =
+          [(fun pc -> plist ctyp 0 pc (List.map (fun t -> (t, "")) tl), "")]
+        in
+        let list =
+          if a then [(fun pc -> sprintf "%s&%s" pc.bef pc.aft, "") :: list]
+          else list
+        in
+        [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "") :: list]
+      in
+      plistbf 0
+        {(pc) with ind = pc.ind + 1; bef = sprintf "%s(`" pc.bef;
+         aft = sprintf ")%s" pc.aft}
+        list
   | <:poly_variant< $t$ >> ->
       not_impl "poly_variant_decl type" pc 0
   | IFDEF STRICT THEN

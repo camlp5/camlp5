@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.75 2007/10/12 15:31:11 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.76 2007/10/12 18:31:18 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -1165,6 +1165,14 @@
    (lambda_match
     ((Sexpr loc [(Slid _ "`") (Suid _ s)])
      <:poly_variant< ` $s$ >>)
+    ((Sexpr loc [(Slid _ "`") (Suid _ s) . sel])
+     (let*
+      (((values a sel)
+        (match sel
+         ([(Slid _ "&") . sel] (values True sel))
+         (sel (values False sel))))
+       (tl (List.map ctyp_se sel)))
+      <:poly_variant< ` $s$ of $flag:a$ $list:tl$ >>))
     (se
      (error se "variant_declaration"))))
   (label_declaration_se

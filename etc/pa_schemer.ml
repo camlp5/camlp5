@@ -1231,6 +1231,14 @@ and constructor_declaration_se =
 and variant_declaration_se =
   fun
   [ Sexpr loc [Slid _ "`"; Suid _ s] -> <:poly_variant< ` $s$ >>
+  | Sexpr loc [Slid _ "`"; Suid _ s :: sel] ->
+      let (a, sel) =
+        match sel with
+        [ [Slid _ "&" :: sel] -> (True, sel)
+        | sel -> (False, sel) ]
+      in
+      let tl = List.map ctyp_se sel in
+      <:poly_variant< ` $s$ of $flag:a$ $list:tl$ >>
   | se -> error se "variant_declaration" ]
 and label_declaration_se =
   fun
