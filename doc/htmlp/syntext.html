@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: syntext.html,v 1.5 2007/07/22 04:28:41 deraugla Exp $ -->
+  <!-- $Id: syntext.html,v 1.6 2007/07/22 10:15:44 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>syntax extensions</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -23,7 +23,7 @@
   change the whole syntax.</p>
 
 <p>It uses for that one of its parsing tools:
-  the <a href="grammars.html">extensible grammars</a>.
+  the <a href="grammars.html">extensible grammars</a>.</p>
 
 <p>To understand the whole syntax in the examples given in this chapter,
   it is a good thing to know this parsing tool, but we shall try to give
@@ -111,7 +111,7 @@
   this:</p>
 
 <pre>
-  &lt:expr&lt; if $e1$ then $e2$ else $e3$ >>
+  &lt;:expr&lt; if $e1$ then $e2$ else $e3$ >>
 </pre>
 
 <p>With quotations, it is possible to build pieces of program as
@@ -119,6 +119,158 @@
   about <a href="ml_ast.html">syntax trees</a>.</p>
 
 <h2>An example</h2>
+
+<p>A classical extension is the programmation of the "repeat" statement.
+  The "repeat" statement is like a "while" except that the loop is executed
+  at least one time and that the test is at the end of the loop and is
+  inverted. The equivalent of:</p>
+
+<pre>
+  repeat x; y; z until c
+</pre>
+
+<p>is:</p>
+
+<pre>
+  do {
+    x; y; z;
+    while not c do { x; y; z }
+  }
+</pre>
+
+<p>or, with a loop:</p>
+
+<pre>
+  loop () where rec loop () = do {
+    x; y; z;
+    if c then () else loop ()
+  }
+</pre>
+
+<h3>The code</h3>
+
+<p>This syntax extension could be written like this (see the detail of
+  syntax in the chapter about <a href="grammars.html">extensible
+  grammars</a> and the syntax tree quotations in the chapter
+  about <a href="ml_ast.html">them</a>):</p>
+
+<pre>
+  #load "pa_extend.cmo";
+  #load "q_MLast.cmo";
+  open Pcaml;
+  EXTEND
+    expr:
+      [ [ "repeat"; el = LIST1 expr SEP ";"; "until"; c = expr ->
+            let el = el @ [&lt;:expr&lt; while not $c$ do { $list:el$ } >>] in
+            &lt;:expr&lt; do { $list:el$ } >> ] ]
+    ;
+  END;
+</pre>
+
+<p>Alternatively, with the loop version:</p>
+
+<pre>
+  #load "pa_extend.cmo";
+  #load "q_MLast.cmo";
+  open Pcaml;
+  EXTEND
+    expr:
+      [ [ "repeat"; el = LIST1 expr SEP ";"; "until"; c = expr ->
+            let el = el @ [&lt;:expr&lt; if $c$ then () else loop () >>] in
+            &lt;:expr&lt; loop () where rec loop () = do { $list:el$ } >> ] ]
+    ;
+  END;
+</pre>
+
+<p>The first "#load" in the code means that a syntax extension has been
+  used in the file, namely the "EXTEND" statement. The second "#load"
+  means that abstract tree <a href="quot.html">quotations</a> has been
+  used, namely the "<tt>&lt;:expr&lt; ... >></tt>".</p>
+
+<p>The quotation in the second version is especially interesting. If
+  we wanted to write it with the abstract syntax tree, we would have to
+  write it like this:</p>
+
+<pre>
+  MLast.ExLet loc True
+    [(MLast.PaLid loc "loop",
+      MLast.ExFun loc [(MLast.PaUid loc "()", None, MLast.ExSeq loc el)])]
+    (MLast.ExApp loc (MLast.ExLid loc "loop") (MLast.ExUid loc "()"));
+</pre>
+
+<p>which is less easy for the programmer and less readable.</p>
+
+<h3>Compilation</h3>
+
+<p>If the file "foo.ml" contains one of these versions, it is possible to
+  compile it like this:</p>
+
+<pre>
+  ocamlc -pp camlp5r -I +camlp5 -c foo.ml
+</pre>
+
+<p>Notice that the ocamlc option "-c" means that we are interested
+  only in generating the object file "foo.cmo", not achieving the
+  compilation which, anyway, would not link because of usage of
+  modules specific to camlp5.</p>
+
+<h3>Testing</h3>
+
+<h4>In the ocaml toplevel</h4>
+
+<pre>
+  ocaml -I +camlp5 camlp5r.cma
+          Objective Caml version ...
+
+          Camlp5 Parsing version ...
+
+  # #load "foo.cmo";
+  # value x = ref 42;                                                     
+  value x : ref int = {val=42}
+  # repeat print_int x.val; print_endline ""; x.val := x.val + 3 until x.val > 70;
+  42
+  45
+  48
+  51
+  54
+  57
+  60
+  63
+  66
+  69
+  - : unit = ()
+</pre>
+
+<h4>In a file</h4>
+
+<p>The code, above, used in the toplevel, can be written in a file,
+  say "bar.ml":</p>
+
+<pre>
+  #load "./foo.cmo";
+  value x = ref 42;                                                  
+  repeat
+    print_int x.val;
+    print_endline "";
+    x.val := x.val + 3
+  until x.val > 70;
+</pre>
+
+<p>with a subtile difference: the loaded file must be "<tt>./foo.cmo</tt>"
+  and not just "<tt>foo.cmo</tt>" because camlp5 does not have, by default,
+  the current directory in its path.</p>
+
+<p>The file can be compiled like this:</p>
+
+<pre>
+  ocamlc -pp camlp5r bar.ml
+</pre>
+
+<p>or in native code:</p>
+
+<pre>
+  ocamlopt -pp camlp5r bar.ml
+</pre>
 
 <p>... work in progress ...</p>
 
