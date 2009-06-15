@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.67 2007/09/19 05:24:55 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.68 2007/09/19 12:47:10 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -967,8 +967,9 @@ EXTEND
           else
             let text = TXflag loc s.text in
             let styp = STlid loc "bool" in
-            {used = s.used; text = text; styp = styp}
-      | UIDENT "V"; UIDENT "LIST0"; s = SELF;
+            {used = s.used; text = text; styp = styp} ]
+    | "vala"
+      [ UIDENT "V"; UIDENT "LIST0"; s = SELF;
         sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
           if quotify.val then sslist2 loc False sep s
           else
@@ -1030,15 +1031,14 @@ EXTEND
               else (TXvala loc [] text, STvala loc styp)
             in
             {used = []; text = text; styp = styp}
-       | UIDENT "V"; n = name; al = LIST0 STRING ->
-          let text = TXnterm loc n None in
-          let styp = STquo loc n.tvar in
+       | UIDENT "V"; s = NEXT; al = LIST0 STRING ->
           let (text,  styp) =
-            if not Pcaml.strict_mode.val then (text, styp)
-            else (TXvala loc al text, STvala loc styp)
+            if not Pcaml.strict_mode.val then (s.text, s.styp)
+            else (TXvala loc al s.text, STvala loc s.styp)
           in
-          {used = [n.tvar]; text = text; styp = styp} ]
-    | [ UIDENT "SELF" ->
+          {used = s.used; text = text; styp = styp} ]
+    | "simple"
+      [ UIDENT "SELF" ->
           {used = []; text = TXself loc; styp = STself loc "SELF"}
       | UIDENT "NEXT" ->
           {used = []; text = TXnext loc; styp = STself loc "NEXT"}
@@ -1062,11 +1062,7 @@ EXTEND
           {used = []; text = text; styp = STlid loc "string"}
       | i = UIDENT; "."; e = qualid;
         lev = OPT [ UIDENT "LEVEL"; s = STRING -> s ] ->
-(**)
           let n = mk_name loc <:expr< $uid:i$ . $e$ >> in
-(*
-          let n = mk_name loc (MLast.ExAcc loc <:expr< $uid:i$ >> e) in
-*)
           {used = [n.tvar]; text = TXnterm loc n lev; styp = STquo loc n.tvar}
       | n = name; lev = OPT [ UIDENT "LEVEL"; s = STRING -> s ] ->
           {used = [n.tvar]; text = TXnterm loc n lev; styp = STquo loc n.tvar}

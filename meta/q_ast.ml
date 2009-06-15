@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: q_ast.ml,v 1.88 2007/09/18 18:47:44 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.89 2007/09/19 12:47:10 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* AST quotations with works by running the language parser (and its possible
@@ -747,6 +747,13 @@ lex.Plexing.tok_match :=
       [ ("ANTIQUOT_LOC", prm) ->
           let kind = check_anti_loc2 prm in
           if kind = p_prm then prm
+          else raise Stream.Failure
+      | _ -> raise Stream.Failure ]
+  | ("V V", p_prm) ->
+      fun
+      [ ("ANTIQUOT_LOC", prm) ->
+          let kind = check_anti_loc2 prm in
+          if kind = p_prm || kind = "a" ^ p_prm then prm
           else raise Stream.Failure
       | _ -> raise Stream.Failure ]
   | ("V INT", "") ->

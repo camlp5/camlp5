@@ -767,6 +767,13 @@ lex.Plexing.tok_match <-
            let kind = check_anti_loc2 prm in
            if kind = p_prm then prm else raise Stream.Failure
        | _ -> raise Stream.Failure)
+  | "V V", p_prm ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           let kind = check_anti_loc2 prm in
+           if kind = p_prm || kind = "a" ^ p_prm then prm
+           else raise Stream.Failure
+       | _ -> raise Stream.Failure)
   | "V INT", "" ->
       (function
          "ANTIQUOT_LOC", prm ->

@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extend.ml,v 1.39 2007/09/16 04:22:59 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.40 2007/09/19 12:47:10 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -168,7 +168,7 @@ and unsymbol =
   | <:expr< Gramext.Snext >> -> Snext
   | <:expr< Gramext.Stoken $e$ >> -> Stoken (untoken e)
   | <:expr< Gramext.srules $e$ >> -> Srules (unrule_list [] e)
-  | <:expr< Gramext.Svala $e$ >> -> Svala (unsymbol e)
+  | <:expr< Gramext.Svala $_$ $e$ >> -> Svala (unsymbol e)
   | _ -> raise Not_found ]
 ;
 

@@ -1990,18 +1990,76 @@ Grammar.extend
             'psymbol))]];
     Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e), None,
     [Some "top", Some Gramext.NonA,
-     [[Gramext.Stoken ("UIDENT", "V");
-       Gramext.Snterm (Grammar.Entry.obj (name : 'name Grammar.Entry.e));
+     [[Gramext.Stoken ("UIDENT", "FLAG"); Gramext.Sself],
+      Gramext.action
+        (fun (s : 'symbol) _ (loc : Ploc.t) ->
+           (if !quotify then ssflag loc s
+            else
+              let text = TXflag (loc, s.text) in
+              let styp = STlid (loc, "bool") in
+              {used = s.used; text = text; styp = styp} :
+            'symbol));
+      [Gramext.Stoken ("UIDENT", "OPT"); Gramext.Sself],
+      Gramext.action
+        (fun (s : 'symbol) _ (loc : Ploc.t) ->
+           (if !quotify then ssopt loc s
+            else
+              let text = TXopt (loc, s.text) in
+              let styp = STapp (loc, STlid (loc, "option"), s.styp) in
+              {used = s.used; text = text; styp = styp} :
+            'symbol));
+      [Gramext.Stoken ("UIDENT", "LIST1"); Gramext.Sself;
+       Gramext.Sopt
+         (Gramext.srules
+            [[Gramext.Stoken ("UIDENT", "SEP");
+              Gramext.Snterm
+                (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
+             Gramext.action
+               (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__5))])],
+      Gramext.action
+        (fun (sep : 'e__5 option) (s : 'symbol) _ (loc : Ploc.t) ->
+           (if !quotify then sslist loc true sep s
+            else
+              let used =
+                match sep with
+                  Some symb -> symb.used @ s.used
+                | None -> s.used
+              in
+              let text = slist loc true sep s in
+              let styp = STapp (loc, STlid (loc, "list"), s.styp) in
+              {used = used; text = text; styp = styp} :
+            'symbol));
+      [Gramext.Stoken ("UIDENT", "LIST0"); Gramext.Sself;
+       Gramext.Sopt
+         (Gramext.srules
+            [[Gramext.Stoken ("UIDENT", "SEP");
+              Gramext.Snterm
+                (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
+             Gramext.action
+               (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__4))])],
+      Gramext.action
+        (fun (sep : 'e__4 option) (s : 'symbol) _ (loc : Ploc.t) ->
+           (if !quotify then sslist loc false sep s
+            else
+              let used =
+                match sep with
+                  Some symb -> symb.used @ s.used
+                | None -> s.used
+              in
+              let text = slist loc false sep s in
+              let styp = STapp (loc, STlid (loc, "list"), s.styp) in
+              {used = used; text = text; styp = styp} :
+            'symbol))];
+     Some "vala", None,
+     [[Gramext.Stoken ("UIDENT", "V"); Gramext.Snext;
        Gramext.Slist0 (Gramext.Stoken ("STRING", ""))],
       Gramext.action
-        (fun (al : string list) (n : 'name) _ (loc : Ploc.t) ->
-           (let text = TXnterm (loc, n, None) in
-            let styp = STquo (loc, n.tvar) in
-            let (text, styp) =
-              if not !(Pcaml.strict_mode) then text, styp
-              else TXvala (loc, al, text), STvala (loc, styp)
+        (fun (al : string list) (s : 'symbol) _ (loc : Ploc.t) ->
+           (let (text, styp) =
+              if not !(Pcaml.strict_mode) then s.text, s.styp
+              else TXvala (loc, al, s.text), STvala (loc, s.styp)
             in
-            {used = [n.tvar]; text = text; styp = styp} :
+            {used = s.used; text = text; styp = styp} :
             'symbol));
       [Gramext.Stoken ("UIDENT", "V"); Gramext.Stoken ("UIDENT", "")],
       Gramext.action
@@ -2095,68 +2153,8 @@ Grammar.extend
                 else TXvala (loc, [], text), STvala (loc, styp)
               in
               {used = used; text = text; styp = styp} :
-            'symbol));
-      [Gramext.Stoken ("UIDENT", "FLAG"); Gramext.Sself],
-      Gramext.action
-        (fun (s : 'symbol) _ (loc : Ploc.t) ->
-           (if !quotify then ssflag loc s
-            else
-              let text = TXflag (loc, s.text) in
-              let styp = STlid (loc, "bool") in
-              {used = s.used; text = text; styp = styp} :
-            'symbol));
-      [Gramext.Stoken ("UIDENT", "OPT"); Gramext.Sself],
-      Gramext.action
-        (fun (s : 'symbol) _ (loc : Ploc.t) ->
-           (if !quotify then ssopt loc s
-            else
-              let text = TXopt (loc, s.text) in
-              let styp = STapp (loc, STlid (loc, "option"), s.styp) in
-              {used = s.used; text = text; styp = styp} :
-            'symbol));
-      [Gramext.Stoken ("UIDENT", "LIST1"); Gramext.Sself;
-       Gramext.Sopt
-         (Gramext.srules
-            [[Gramext.Stoken ("UIDENT", "SEP");
-              Gramext.Snterm
-                (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
-             Gramext.action
-               (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__5))])],
-      Gramext.action
-        (fun (sep : 'e__5 option) (s : 'symbol) _ (loc : Ploc.t) ->
-           (if !quotify then sslist loc true sep s
-            else
-              let used =
-                match sep with
-                  Some symb -> symb.used @ s.used
-                | None -> s.used
-              in
-              let text = slist loc true sep s in
-              let styp = STapp (loc, STlid (loc, "list"), s.styp) in
-              {used = used; text = text; styp = styp} :
-            'symbol));
-      [Gramext.Stoken ("UIDENT", "LIST0"); Gramext.Sself;
-       Gramext.Sopt
-         (Gramext.srules
-            [[Gramext.Stoken ("UIDENT", "SEP");
-              Gramext.Snterm
-                (Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e))],
-             Gramext.action
-               (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__4))])],
-      Gramext.action
-        (fun (sep : 'e__4 option) (s : 'symbol) _ (loc : Ploc.t) ->
-           (if !quotify then sslist loc false sep s
-            else
-              let used =
-                match sep with
-                  Some symb -> symb.used @ s.used
-                | None -> s.used
-              in
-              let text = slist loc false sep s in
-              let styp = STapp (loc, STlid (loc, "list"), s.styp) in
-              {used = used; text = text; styp = styp} :
             'symbol))];
-     None, None,
+     Some "simple", None,
      [[Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ")")],
       Gramext.action
         (fun _ (s_t : 'symbol) _ (loc : Ploc.t) -> (s_t : 'symbol));
@@ -2186,9 +2184,6 @@ Grammar.extend
            (let n =
               mk_name loc (MLast.ExAcc (loc, MLast.ExUid (loc, i), e))
             in
-            (*
-                      let n = mk_name loc (MLast.ExAcc loc <:expr< $uid:i$ >> e) in
-            *)
             {used = [n.tvar]; text = TXnterm (loc, n, lev);
              styp = STquo (loc, n.tvar)} :
             'symbol));
