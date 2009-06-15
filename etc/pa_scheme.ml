@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.69 2007/10/10 19:34:37 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.70 2007/10/10 20:06:58 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -259,7 +259,7 @@
      (((len (ident (Buff.store 0 '-')))) (identifier kwt (Buff.get len)))))
   ((less kwt)
     (parser
-     (((` ':') (lab (label 0)) (? (` '<') "'<' expected") (q (quotation 0)))
+     (((` ':') (lab (label 0)) (` '<') ? "'<' expected" (q (quotation 0)))
       (values "QUOT" (^ lab ":" q)))
      (((len (ident (Buff.store 0 '<')))) (identifier kwt (Buff.get len)))))
   ((label len)
@@ -918,9 +918,15 @@
     ([] [])))
   (stream_patt_kont_se
    (lambda_match
-    ([se ! . sel]
+    ([se (Slid _ "!") . sel]
      (let* ((spc (stream_patt_comp_se se)) (sp (stream_patt_kont_se sel)))
       [(values spc SpoBang) . sp]))
+    ([se1 (Slid _ "?") se2 . sel]
+     (let*
+      ((spc (stream_patt_comp_se se1))
+       (e (expr_se se2))
+       (sp (stream_patt_kont_se sel)))
+      [(values spc (SpoQues e)) . sp]))
     ([se . sel]
      (let* ((spc (stream_patt_comp_se se)) (sp (stream_patt_kont_se sel)))
       [(values spc SpoNoth) . sp]))
@@ -928,8 +934,10 @@
   (stream_patt_comp_se
    (lambda_match
     ((Sexpr loc [(Slid _ "`") se]) (SpTrm loc (patt_se se) <:vala< None >>))
+    ((Sexpr loc [(Slid _ "`") se1 se2])
+     (let ((e (expr_se se2))) (SpTrm loc (patt_se se1) <:vala< (Some e) >>)))
     ((Sexpr loc [se1 se2]) (SpNtr loc (patt_se se1) (expr_se se2)))
-    (se (error se "not_impl stream_patt_comp_se"))))
+    (se (SpStr (loc_of_sexpr se) (patt_se se)))))
   (patt_se
    (lambda_match
     ((Sacc loc se1 se2)

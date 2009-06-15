@@ -3,6 +3,7 @@
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
+open Exparser;
 
 type choice 'a 'b =
   [ Left of 'a
@@ -41,7 +42,7 @@ value rename_id s =
 value rec skip_to_eol =
   parser
   [ [: `'\n' | '\r' :] -> ()
-  | [: `_; s :] -> skip_to_eol s ]
+  | [: `_; a = skip_to_eol ! :] -> a ]
 ;
 
 value no_ident =
@@ -50,7 +51,8 @@ value no_ident =
 
 value rec ident len =
   parser
-  [ [: `x when not (List.mem x no_ident); s :] -> ident (Buff.store len x) s
+  [ [: `x when not (List.mem x no_ident); a = ident (Buff.store len x) ! :] ->
+      a
   | [: :] -> len ]
 ;
 
@@ -68,40 +70,44 @@ value identifier kwt s =
 value rec string len =
   parser
   [ [: `'"' :] -> Buff.get len
-  | [: `'\\'; `c; s :] -> string (Buff.store (Buff.store len '\\') c) s
-  | [: `x; s :] -> string (Buff.store len x) s ]
+  | [: `'\\'; `c; a = string (Buff.store (Buff.store len '\\') c) ! :] -> a
+  | [: `x; a = string (Buff.store len x) ! :] -> a ]
 ;
 
 value rec end_exponent_part_under len =
   parser
-  [ [: `('0'..'9' as c); s :] -> end_exponent_part_under (Buff.store len c) s
+  [ [: `('0'..'9' as c);
+       a = end_exponent_part_under (Buff.store len c) ! :] ->
+      a
   | [: :] -> ("FLOAT", Buff.get len) ]
 ;
 
 value end_exponent_part len =
   parser
-  [ [: `('0'..'9' as c); s :] -> end_exponent_part_under (Buff.store len c) s
+  [ [: `('0'..'9' as c);
+       a = end_exponent_part_under (Buff.store len c) ! :] ->
+      a
   | [: :] -> raise (Stream.Error "ill-formed floating-point constant") ]
 ;
 
 value exponent_part len =
   parser
-  [ [: `('+' | '-' as c); s :] -> end_exponent_part (Buff.store len c) s
+  [ [: `('+' | '-' as c); a = end_exponent_part (Buff.store len c) ! :] -> a
   | [: a = end_exponent_part len :] -> a ]
 ;
 
 value rec decimal_part len =
   parser
-  [ [: `('0'..'9' as c); s :] -> decimal_part (Buff.store len c) s
-  | [: `'e' | 'E'; s :] -> exponent_part (Buff.store len 'E') s
+  [ [: `('0'..'9' as c); a = decimal_part (Buff.store len c) ! :] -> a
+  | [: `'e' | 'E'; a = exponent_part (Buff.store len 'E') ! :] -> a
   | [: :] -> ("FLOAT", Buff.get len) ]
 ;
 
 value rec number len =
   parser
-  [ [: `('0'..'9' as c); s :] -> number (Buff.store len c) s
-  | [: `'.'; s :] -> decimal_part (Buff.store len '.') s
-  | [: `'e' | 'E'; s :] -> exponent_part (Buff.store len 'E') s
+  [ [: `('0'..'9' as c); a = number (Buff.store len c) ! :] -> a
+  | [: `'.'; a = decimal_part (Buff.store len '.') ! :] -> a
+  | [: `'e' | 'E'; a = exponent_part (Buff.store len 'E') ! :] -> a
   | [: `'l' :] -> ("INT_l", Buff.get len)
   | [: `'L' :] -> ("INT_L", Buff.get len)
   | [: `'n' :] -> ("INT_n", Buff.get len)
@@ -116,8 +122,8 @@ value hexa = parser [: `('0'..'9' | 'a'..'f' | 'A'..'F' as c) :] -> c;
 
 value rec digits_under kind len =
   parser
-  [ [: d = kind; s :] -> digits_under kind (Buff.store len d) s
-  | [: `'_'; s :] -> digits_under kind (Buff.store len '_') s
+  [ [: d = kind; a = digits_under kind (Buff.store len d) ! :] -> a
+  | [: `'_'; a = digits_under kind (Buff.store len '_') ! :] -> a
   | [: `'l' :] -> ("INT_l", Buff.get len)
   | [: `'L' :] -> ("INT_L", Buff.get len)
   | [: `'n' :] -> ("INT_n", Buff.get len)
@@ -126,7 +132,7 @@ value rec digits_under kind len =
 
 value digits kind bp len =
   parser
-  [ [: d = kind; tok = digits_under kind (Buff.store len d) :] -> tok
+  [ [: d = kind; a = digits_under kind (Buff.store len d) :] -> a
   | [: :] ep ->
       Ploc.raise (Ploc.make_unlined (bp, ep))
         (Failure "ill-formed integer constant") ]
@@ -134,9 +140,9 @@ value digits kind bp len =
 
 value base_number kwt bp len =
   parser
-  [ [: `'b' | 'B'; s :] -> digits binary bp (Buff.store len 'b') s
-  | [: `'o' | 'O'; s :] -> digits octal bp (Buff.store len 'o') s
-  | [: `'x' | 'X'; s :] -> digits hexa bp (Buff.store len 'x') s
+  [ [: `'b' | 'B'; a = digits binary bp (Buff.store len 'b') ! :] -> a
+  | [: `'o' | 'O'; a = digits octal bp (Buff.store len 'o') ! :] -> a
+  | [: `'x' | 'X'; a = digits hexa bp (Buff.store len 'x') ! :] -> a
   | [: len = ident (Buff.store 0 '#') :] -> identifier kwt (Buff.get len) ]
 ;
 
@@ -162,20 +168,20 @@ value char_or_quote_id x =
 value rec char len =
   parser
   [ [: `''' :] -> len
-  | [: `x; s :] -> char (Buff.store len x) s ]
+  | [: `x; a = char (Buff.store len x) ! :] -> a ]
 ;
 
 value quote =
   parser
   [ [: `'\\'; `c; len = char (Buff.store (Buff.store 0 '\\') c) :] ->
       ("CHAR", Buff.get len)
-  | [: `x; s :] -> char_or_quote_id x s ]
+  | [: `x; a = char_or_quote_id x ! :] -> a ]
 ;
 
 value rec antiquot_rest bp len =
   parser
   [ [: `'$' :] -> len
-  | [: `x; len = antiquot_rest bp (Buff.store len x) :] -> len
+  | [: `x; a = antiquot_rest bp (Buff.store len x) :] -> a
   | [: :] ep ->
       Ploc.raise (Ploc.make_unlined (bp, ep))
         (Failure "antiquotation not terminated") ]
@@ -187,8 +193,8 @@ value rec antiquot_loc bp len =
   parser
   [ [: `'$' :] ep -> antiloc bp ep (":" ^ Buff.get len)
   | [: `('a'..'z' | 'A'..'Z' | '0'..'9' | '_' as c);
-       r = antiquot_loc bp (Buff.store len c) :] ->
-      r
+       a = antiquot_loc bp (Buff.store len c) :] ->
+      a
   | [: `':'; len = antiquot_rest bp (Buff.store len ':') :] ep ->
       antiloc bp ep (Buff.get len)
   | [: `c; len = antiquot_rest bp (Buff.store len c) :] ep ->
@@ -200,9 +206,9 @@ value rec antiquot_loc bp len =
 
 value rec lexer kwt =
   parser bp
-  [ [: `'\t' | '\r'; s :] -> lexer kwt s
-  | [: `' '; s :] -> after_space kwt s
-  | [: `';'; _ = skip_to_eol; s :] -> lexer kwt s
+  [ [: `'\t' | '\r'; a = lexer kwt ! :] -> a
+  | [: `' '; a = after_space kwt ! :] -> a
+  | [: `';'; _ = skip_to_eol; a = lexer kwt ! :] -> a
   | [: `'\n'; s :] ->
       if Sys.interactive.val then (("NL", ""), (bp, bp + 1)) else lexer kwt s
   | [: `'(' :] -> (("", "("), (bp, bp + 1))
@@ -231,7 +237,7 @@ value rec lexer kwt =
 and after_space kwt =
   parser
   [ [: `'.' :] ep -> (("SPACEDOT", ""), (ep - 1, ep))
-  | [: x = lexer kwt :] -> x ]
+  | [: a = lexer kwt :] -> a ]
 and dollar bp kwt strm =
   if Plexer.force_antiquot_loc.val then
     ("ANTIQUOT_LOC", antiquot_loc bp 0 strm)
@@ -265,12 +271,12 @@ and question bp strm =
 and sharp bp kwt =
   parser
   [ [: `'(' :] -> ("", "#(")
-  | [: tok = base_number kwt bp (Buff.store 0 '0') :] -> tok ]
+  | [: a = base_number kwt bp (Buff.store 0 '0') :] -> a ]
 and minus bp kwt =
   parser
   [ [: `'.' :] -> identifier kwt "-."
-  | [: `('0'..'9' as c); n = number (Buff.store (Buff.store 0 '-') c) :] -> n
-  | [: `'#'; n = base_number kwt bp (Buff.mstore 0 "-0") :] -> n
+  | [: `('0'..'9' as c); a = number (Buff.store (Buff.store 0 '-') c) :] -> a
+  | [: `'#'; a = base_number kwt bp (Buff.mstore 0 "-0") :] -> a
   | [: len = ident (Buff.store 0 '-') :] -> identifier kwt (Buff.get len) ]
 and less kwt =
   parser
@@ -279,12 +285,13 @@ and less kwt =
   | [: len = ident (Buff.store 0 '<') :] -> identifier kwt (Buff.get len) ]
 and label len =
   parser
-  [ [: `('a'..'z' | 'A'..'Z' | '_' as c); s :] -> label (Buff.store len c) s
+  [ [: `('a'..'z' | 'A'..'Z' | '_' as c); a = label (Buff.store len c) ! :] ->
+      a
   | [: :] -> Buff.get len ]
 and quotation len =
   parser
-  [ [: `'>'; s :] -> quotation_greater len s
-  | [: `x; s :] -> quotation (Buff.store len x) s
+  [ [: `'>'; a = quotation_greater len ! :] -> a
+  | [: `x; a = quotation (Buff.store len x) ! :] -> a
   | [: :] -> failwith "quotation not terminated" ]
 and quotation_greater len =
   parser
@@ -800,31 +807,22 @@ and expr_se =
       in
       <:expr< match $e$ with [ $_list:pel$ ] >>
   | Sexpr loc [Slid _ "parser" :: sel] ->
-      let e =
-        match sel with
-        [ [(Slid _ _ as se) :: sel] ->
-            let p = patt_se se in
-            let pc = parser_cases_se loc sel in
-            <:expr< let $p$ = Stream.count $lid:strm_n$ in $pc$ >>
-        | _ -> parser_cases_se loc sel ]
-      in
-      <:expr< fun ($lid:strm_n$ : Stream.t _) -> $e$ >>
-  | Sexpr loc [Slid _ "match_with_parser"; se :: sel] ->
-      let me = expr_se se in
-      let (bpo, sel) =
+      let (po, sel) =
         match sel with
         [ [(Slid _ _ as se) :: sel] -> (Some (patt_se se), sel)
-        | _ -> (None, sel) ]
+        | sel -> (None, sel) ]
       in
-      let pc = parser_cases_se loc sel in
-      let e =
-        match bpo with
-        [ Some bp -> <:expr< let $bp$ = Stream.count $lid:strm_n$ in $pc$ >>
-        | None -> pc ]
+      let pcl = List.map parser_case_se sel in
+      Exparser.cparser loc po pcl
+  | Sexpr loc [Slid _ "match_with_parser"; se :: sel] ->
+      let e = expr_se se in
+      let (po, sel) =
+        match sel with
+        [ [(Slid _ _ as se) :: sel] -> (Some (patt_se se), sel)
+        | sel -> (None, sel) ]
       in
-      match me with
-      [ <:expr< $lid:x$ >> when x = strm_n -> e
-      | _ -> <:expr< let ($lid:strm_n$ : Stream.t _) = $me$ in $e$ >> ]
+      let pcl = List.map parser_case_se sel in
+      Exparser.cparser_match loc e po pcl
   | Sexpr loc [Slid _ "try"; se :: sel] ->
       let e = expr_se se in
       let pel =
@@ -941,59 +939,49 @@ and label_ipatt_se loc =
   fun
   [ Sexpr _ [se1; se2] -> (ipatt_se se1, ipatt_se se2)
   | se -> error se "label_ipatt" ]
-and parser_cases_se loc =
+and parser_case_se =
   fun
-  [ [] -> <:expr< raise Stream.Failure >>
-  | [Sexpr loc [Sexpr _ spsel :: act] :: sel] ->
-      let ekont _ = parser_cases_se loc sel in
-      let act =
-        match act with
-        [ [se] -> expr_se se
-        | [sep; se] ->
-            let p = patt_se sep in
-            let e = expr_se se in
-            <:expr< let $p$ = Stream.count $lid:strm_n$ in $e$ >>
-        | _ -> error_loc loc "parser_case" ]
-      in
-      stream_pattern_se loc act ekont spsel
-  | [se :: _] -> error se "parser_case" ]
-and stream_pattern_se loc act ekont =
+  [ Sexpr _ [Sexpr _ sel; se1; se2] ->
+      let sp = stream_patt_se sel in
+      let po = Some (ipatt_se se1) in
+      let e = expr_se se2 in
+      (sp, po, e)
+  | Sexpr _ [Sexpr _ sel; se] ->
+      let sp = stream_patt_se sel in
+      let e = expr_se se in
+      (sp, None, e)
+  | se -> error se "parser_case" ]
+and stream_patt_se =
   fun
-  [ [] -> act
+  [ [se :: sel] ->
+      let spc = stream_patt_comp_se se in
+      let sp = stream_patt_kont_se sel in
+      [(spc, SpoNoth) :: sp]
+  | [] -> [] ]
+and stream_patt_kont_se =
+  fun
+  [ [se; Slid _ "!" :: sel] ->
+      let spc = stream_patt_comp_se se in
+      let sp = stream_patt_kont_se sel in
+      [(spc, SpoBang) :: sp]
+  | [se1; Slid _ "?"; se2 :: sel] ->
+      let spc = stream_patt_comp_se se1 in
+      let e = expr_se se2 in
+      let sp = stream_patt_kont_se sel in
+      [(spc, SpoQues e) :: sp]
   | [se :: sel] ->
-      let ckont err = <:expr< raise (Stream.Error $err$) >> in
-      let skont = stream_pattern_se loc act ckont sel in
-      stream_pattern_component skont ekont <:expr< "" >> se ]
-and stream_pattern_component skont ekont err =
+      let spc = stream_patt_comp_se se in
+      let sp = stream_patt_kont_se sel in
+      [(spc, SpoNoth) :: sp]
+  | [] -> [] ]
+and stream_patt_comp_se =
   fun
-  [ Sexpr loc [Slid _ "`"; se :: wol] ->
-      let wo =
-        match wol with
-        [ [se] -> Some (expr_se se)
-        | [] -> None
-        | _ -> error_loc loc "stream_pattern_component" ]
-      in
-      let e = peek_fun loc in
-      let p = patt_se se in
-      let j = junk_fun loc in
-      let k = ekont err in
-      <:expr< match $e$ $lid:strm_n$ with
-               [ Some $p$ $opt:wo$ -> do { $j$ $lid:strm_n$ ; $skont$ }
-               | _ -> $k$ ] >>
-  | Sexpr loc [se1; se2] ->
-      let p = patt_se se1 in
-      let e =
-        let e = expr_se se2 in
-        <:expr< try Some ($e$ $lid:strm_n$) with [ Stream.Failure -> None ] >>
-      in
-      let k = ekont err in
-      <:expr< match $e$ with [ Some $p$ -> $skont$ | _ -> $k$ ] >>
-  | Sexpr loc [Slid _ "?"; se1; se2] ->
-      stream_pattern_component skont ekont (expr_se se2) se1
-  | Slid loc s ->
-      let s = rename_id s in
-      <:expr< let $lid:s$ = $lid:strm_n$ in $skont$ >>
-  | se -> error se "stream_pattern_component" ]
+  [ Sexpr loc [Slid _ "`"; se] -> SpTrm loc (patt_se se) <:vala< None >>
+  | Sexpr loc [Slid _ "`"; se1; se2] ->
+      let e = expr_se se2 in
+      SpTrm loc (patt_se se1) <:vala< (Some e) >>
+  | Sexpr loc [se1; se2] -> SpNtr loc (patt_se se1) (expr_se se2)
+  | se -> SpStr (loc_of_sexpr se) (patt_se se) ]
 and patt_se =
   fun
   [ Sacc loc se1 se2 ->
