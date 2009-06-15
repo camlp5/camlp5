@@ -18,10 +18,10 @@ pa_oop.cmo: ../main/mLast.cmi ../main/pcaml.cmi
 pa_oop.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
 pa_op.cmo: ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi 
 pa_op.cmx: ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx 
-pa_scheme.cmo: ../main/mLast.cmi ../main/pcaml.cmi 
-pa_scheme.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
-pa_schemer.cmo: ../main/mLast.cmi ../main/pcaml.cmi 
-pa_schemer.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
+pa_scheme.cmo: ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi 
+pa_scheme.cmx: ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx 
+pa_schemer.cmo: ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi 
+pa_schemer.cmx: ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx 
 pa_sml.cmo: ../main/mLast.cmi ../main/pcaml.cmi 
 pa_sml.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
 parserify.cmo: ../main/mLast.cmi parserify.cmi 
@@ -53,14 +53,16 @@ pr_rp_main.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/spretty.cmi \
     parserify.cmi 
 pr_rp_main.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/spretty.cmx \
     parserify.cmx 
-pr_scheme.cmo: ../main/mLast.cmi ../main/pcaml.cmi 
-pr_scheme.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
-pr_scheme_new.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi 
-pr_scheme_new.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx 
+pr_scheme.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi 
+pr_scheme.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx 
+pr_scheme_old.cmo: ../main/mLast.cmi ../main/pcaml.cmi 
+pr_scheme_old.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
+pr_schemep.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi 
+pr_schemep.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx 
 pr_schp_main.cmo: ../main/mLast.cmi ../main/pcaml.cmi parserify.cmi \
-    pr_scheme.cmo 
+    pr_scheme_old.cmo 
 pr_schp_main.cmx: ../main/mLast.cmi ../main/pcaml.cmx parserify.cmx \
-    pr_scheme.cmx 
+    pr_scheme_old.cmx 
 q_phony.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi \
     ../main/quotation.cmi 
 q_phony.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx \

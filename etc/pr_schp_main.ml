@@ -6,19 +6,19 @@ open Format;
 open Pcaml.OldPrinters;
 open Parserify;
 
-value nok = Pr_scheme.nok;
-value ks = Pr_scheme.ks;
-value patt = Pr_scheme.patt;
-value expr = Pr_scheme.expr;
-value find_pr_level = Pr_scheme.find_pr_level;
-value pr_expr = Pr_scheme.pr_expr;
-type printer_t 'a = Pr_scheme.printer_t 'a ==
-  { pr_fun : mutable string -> Pr_scheme.next 'a;
+value nok = Pr_scheme_old.nok;
+value ks = Pr_scheme_old.ks;
+value patt = Pr_scheme_old.patt;
+value expr = Pr_scheme_old.expr;
+value find_pr_level = Pr_scheme_old.find_pr_level;
+value pr_expr = Pr_scheme_old.pr_expr;
+type printer_t 'a = Pr_scheme_old.printer_t 'a ==
+  { pr_fun : mutable string -> Pr_scheme_old.next 'a;
     pr_levels : mutable list (pr_level 'a) }
-and pr_level 'a = Pr_scheme.pr_level 'a ==
+and pr_level 'a = Pr_scheme_old.pr_level 'a ==
   { pr_label : string;
     pr_box : formatter -> (formatter -> unit) -> 'a -> unit;
-    pr_rules : mutable Pr_scheme.pr_rule 'a }
+    pr_rules : mutable Pr_scheme_old.pr_rule 'a }
 ;
 
 (* extensions for rebuilding syntax of parsers *)

@@ -250,24 +250,26 @@ and tilde bp strm =
     [ [: `('a'..'z' as c); len = ident (Buff.store 0 c) :] ->
         ("TILDEIDENT", Buff.get len)
     | [: `'$'; s = antiquot_loc bp 0 :] -> ("ANTIQUOT_LOC", "~" ^ s)
-    | [: :] -> ("LIDENT", "?") ]
+    | [: len = ident (Buff.store 0 '~'); len = operator len :] ->
+        ("LIDENT", Buff.get len) ]
   else
     match strm with parser
     [ [: `('a'..'z' as c); len = ident (Buff.store 0 c) :] ->
         ("TILDEIDENT", Buff.get len)
-    | [: :] -> ("LIDENT", "?") ]
+    | [: len = ident (Buff.store 0 '~'); len = operator len :] ->
+        ("LIDENT", Buff.get len) ]
 and question bp strm =
   if Plexer.force_antiquot_loc.val then
     match strm with parser
     [ [: `('a'..'z' as c); len = ident (Buff.store 0 c) :] ->
         ("QUESTIONIDENT", Buff.get len)
     | [: `'$'; s = antiquot_loc bp 0 :] -> ("ANTIQUOT_LOC", "?" ^ s)
-    | [: :] -> ("LIDENT", "?") ]
+    | [: len = ident (Buff.store 0 '?') :] -> ("LIDENT", Buff.get len) ]
   else
     match strm with parser
     [ [: `('a'..'z' as c); len = ident (Buff.store 0 c) :] ->
         ("QUESTIONIDENT", Buff.get len)
-    | [: :] -> ("LIDENT", "?") ]
+    | [: len = ident (Buff.store 0 '?') :] -> ("LIDENT", Buff.get len) ]
 and sharp bp kwt =
   parser
   [ [: `'(' :] -> ("", "#(")

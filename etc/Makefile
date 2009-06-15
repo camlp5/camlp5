@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.35 2007/10/10 10:31:30 deraugla Exp $
+# $Id: Makefile,v 1.36 2007/10/11 04:03:52 deraugla Exp $
 
 include ../config/Makefile
 
@@ -9,7 +9,7 @@ CAMLP5OM=pa_o.cmo pa_op.cmo ../meta/pr_dump.cmo
 CAMLP5SCHM=pa_scheme.cmo ../meta/pr_dump.cmo
 CAMLP5OMX=pa_o.cmx pa_op.cmx ../meta/pr_dump.cmx
 SHELL=/bin/sh
-COUT=$(OBJS) $(NAME)o$(EXE) $(NAME)sch$(EXE) pr_scheme_new.cmo pr_schemep_new.cmo
+COUT=$(OBJS) $(NAME)o$(EXE) $(NAME)sch$(EXE) pr_scheme_old.cmo pr_schemep_old.cmo
 COPT=$(NAME)o.opt
 
 all: $(COUT) mk$(NAME).sh
@@ -21,7 +21,7 @@ pr_rp_old.cmo: parserify.cmo pr_rp_main.cmo
 pr_op_old.cmo: parserify.cmo pr_op_main.cmo
 	$(OCAMLC) parserify.cmo pr_op_main.cmo -a -o $@
 
-pr_schemep.cmo: parserify.cmo pr_schp_main.cmo
+pr_schemep_old.cmo: parserify.cmo pr_schp_main.cmo
 	$(OCAMLC) parserify.cmo pr_schp_main.cmo -a -o $@
 
 $(NAME)o$(EXE): ../main/$(NAME)$(EXE) $(CAMLP5OM)

@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.71 2007/10/10 20:34:23 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.72 2007/10/11 04:01:26 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -228,11 +228,13 @@
       (values "TILDEIDENT" (Buff.get len)))
      (((` '$') (s (antiquot_loc bp 0)))
       (values "ANTIQUOT_LOC" (^ "~" s)))
-     (() (values "LIDENT" "?")))
+     (((len (ident (Buff.store 0 '~'))) (len (operator len)))
+      (values "LIDENT" (Buff.get len))))
     (match_with_parser strm
      (((` (as (range 'a' 'z') c)) (len (ident (Buff.store 0 c))))
       (values "TILDEIDENT" (Buff.get len)))
-     (() (values "LIDENT" "?")))))
+     (((len (ident (Buff.store 0 '~'))) (len (operator len)))
+      (values "LIDENT" (Buff.get len))))))
   ((question bp strm)
    (if Plexer.force_antiquot_loc.val
     (match_with_parser strm
@@ -240,11 +242,11 @@
       (values "QUESTIONIDENT" (Buff.get len)))
      (((` '$') (s (antiquot_loc bp 0)))
       (values "ANTIQUOT_LOC" (^ "?" s)))
-     (() (values "LIDENT" "?")))
+     (((len (ident (Buff.store 0 '?')))) (values "LIDENT" (Buff.get len))))
     (match_with_parser strm
      (((` (as (range 'a' 'z') c)) (len (ident (Buff.store 0 c))))
       (values "QUESTIONIDENT" (Buff.get len)))
-     (() (values "LIDENT" "?")))))
+     (((len (ident (Buff.store 0 '?')))) (values "LIDENT" (Buff.get len))))))
   ((sharp bp kwt)
    (parser
      (((` '(')) (values "" "#("))
