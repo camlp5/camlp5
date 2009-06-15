@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.42 2007/10/14 16:42:52 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.43 2007/10/14 17:25:22 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1352,6 +1352,23 @@ EXTEND_PRINTER
             if pf then
               [(fun pc -> sprintf "%sprivate%s" pc.bef pc.aft, "") :: list]
             else list
+          in
+          plistbf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(method" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            list
+      | <:class_str_item< method virtual $flag:pf$ $s$ : $t$ >> ->
+          let list =
+            let list =
+              [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
+               (fun pc -> ctyp pc t, "")]
+            in
+            let list =
+              if pf then
+                [(fun pc -> sprintf "%sprivate%s" pc.bef pc.aft, "") :: list]
+              else list
+            in
+            [(fun pc -> sprintf "%svirtual%s" pc.bef pc.aft, "") :: list]
           in
           plistbf 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(method" pc.bef;

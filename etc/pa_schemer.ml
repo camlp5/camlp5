@@ -1289,6 +1289,9 @@ and class_str_item_se =
   | Sexpr loc [Slid _ "initializer"; se] ->
       let e = expr_se se in
       <:class_str_item< initializer $e$ >>
+  | Sexpr loc [Slid _ "method"; Slid _ "virtual"; Slid _ n; se] ->
+      let t = ctyp_se se in
+      <:class_str_item< method virtual $n$ : $t$ >>
   | Sexpr loc [Slid _ "method"; Slid _ n; se] ->
       let e = expr_se se in
       <:class_str_item< method $n$ = $e$ >>

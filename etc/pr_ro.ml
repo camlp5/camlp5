@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.51 2007/10/13 00:31:18 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.52 2007/10/14 17:25:22 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -325,7 +325,7 @@ value sig_method_or_method_virtual pc virt priv s t =
          (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
     (fun () ->
        let s1 =
-         sprintf "%smethod%s%s %s:" pc.bef virt
+         sprintf "%smethod%s%s %s :" pc.bef virt
            (if priv then " private" else "") s
        in
        let s2 =
@@ -733,12 +733,12 @@ EXTEND_PRINTER
             [ Some _ -> ([], e)
             | None -> expr_fun_args e ]
           in
-          let args =
-            if pl = [] then ""
-            else hlist patt {(pc) with bef = " "; aft = ""} pl
-          in
           horiz_vertic
             (fun () ->
+               let args =
+                 if pl = [] then ""
+                 else hlist patt {(pc) with bef = " "; aft = ""} pl
+               in
                sprintf "%smethod%s %s%s%s = %s%s" pc.bef
                  (if priv then " private" else "") s args
                  (match topt with
@@ -750,9 +750,24 @@ EXTEND_PRINTER
                let s1 =
                  match topt with
                  [ None ->
-                     sprintf "%smethod%s %s%s =" pc.bef
-                       (if priv then " private" else "") s args
+                     let list =
+                       let list =
+                         [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "") ::
+                          List.map (fun p -> (fun pc -> patt pc p, "")) pl]
+                       in
+                       if priv then
+                         [(fun pc -> sprintf "%sprivate%s" pc.bef pc.aft, "")
+                          :: list]
+                       else list
+                     in
+                     plistbf 2
+                       {(pc) with bef = sprintf "%smethod" pc.bef; aft = " ="}
+                       list
                  | Some t ->
+                     let args =
+                       if pl = [] then ""
+                       else hlist patt {(pc) with bef = " "; aft = ""} pl
+                     in
                      horiz_vertic
                        (fun () ->
                           sprintf "%smethod%s %s%s : %s =" pc.bef
