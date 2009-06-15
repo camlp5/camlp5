@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.35 2007/07/04 19:28:54 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.36 2007/07/04 19:42:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -326,8 +326,8 @@ value let_binding pc (p, e) =
   let (pl, e) = expr_fun_args e in
   let pl = [p :: pl] in
   let (e, tyo) =
-    match e with
-    [ <:expr< ($e$ : $t$) >>  -> (e, Some t)
+    match (p, e) with
+    [ (<:patt< $lid:_$ >>, <:expr< ($e$ : $t$) >>)  -> (e, Some t)
     | _ -> (e, None) ]
   in
   let simple_patt = pr_patt.pr_fun "simple" in
@@ -2555,7 +2555,7 @@ Pcaml.add_option "-ss" (Arg.Set flag_semi_semi)
   "Print double semicolons (equivalent to -flag M).";
 
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.35 2007/07/04 19:28:54 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.36 2007/07/04 19:42:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
