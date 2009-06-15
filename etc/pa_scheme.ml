@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.72 2007/10/11 04:01:26 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.73 2007/10/12 01:18:12 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -489,6 +489,13 @@
      (se (error se "with constr"))))
   (sig_item_se
     (lambda_match
+     ((Sexpr loc [(Slid _ "class") (Slid _ n) se])
+      (let*
+       ((cd
+         {(MLast.ciLoc loc) (MLast.ciVir <:vala< False >>)
+          (MLast.ciPrm (values loc <:vala< [] >>)) (MLast.ciNam <:vala< n >>)
+          (MLast.ciExp (class_type_se se))}))
+       <:sig_item< class $list:[cd]$ >>))
      ((Sexpr loc [(Slid _ "exception") se . sel])
       (let*
        ((c (anti_uid_or_error se))
@@ -1158,7 +1165,12 @@
     ((Sexpr loc [(Slid _ lab) se])
      (values loc (rename_id lab) False (ctyp_se se)))
     (se
-     (error se "label_declaration")))))
+     (error se "label_declaration"))))
+  (class_type_se
+   (lambda_match
+    ((Sexpr loc [(Slid _ "->") . sel])
+     (error_loc loc "class_type_se -> not impl"))
+    (se (error se "class_type_se")))))
 
 (define directive_se
   (lambda_match

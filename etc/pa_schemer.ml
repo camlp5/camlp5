@@ -523,7 +523,14 @@ and with_constr_se =
   | se -> error se "with constr" ]
 and sig_item_se =
   fun
-  [ Sexpr loc [Slid _ "exception"; se :: sel] ->
+  [ Sexpr loc [Slid _ "class"; Slid _ n; se] ->
+      let cd =
+        {MLast.ciLoc = loc; MLast.ciVir = <:vala< False >>;
+         MLast.ciPrm = (loc, <:vala< [] >>); MLast.ciNam = <:vala< n >>;
+         MLast.ciExp = class_type_se se}
+      in
+      <:sig_item< class $list:[cd]$ >>
+  | Sexpr loc [Slid _ "exception"; se :: sel] ->
       let c = anti_uid_or_error se in
       let tl = anti_list_map ctyp_se sel in
       <:sig_item< exception $_:c$ of $_list:tl$ >>
@@ -1224,6 +1231,11 @@ and label_declaration_se =
       (loc, rename_id lab, True, ctyp_se se)
   | Sexpr loc [Slid _ lab; se] -> (loc, rename_id lab, False, ctyp_se se)
   | se -> error se "label_declaration" ]
+and class_type_se =
+  fun
+  [ Sexpr loc [Slid _ "->" :: sel] ->
+      error_loc loc "class_type_se -> not impl"
+  | se -> error se "class_type_se" ]
 ;
 
 value directive_se =
