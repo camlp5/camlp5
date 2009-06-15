@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ml_ast.html,v 1.31 2007/09/17 10:22:31 deraugla Exp $ -->
+  <!-- $Id: ml_ast.html,v 1.32 2007/09/17 12:56:18 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Abstract tree in concrete syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -32,15 +32,86 @@
   items, and so on. Each node corresponds to a possible value of this
   type.</p>
 
-<p>Since Camlp5 4.09, the syntax tree definition has been different
-  according to the mode Camlp5 has been compiled. In
-  "<em>transitional</em>" mode, its definition is the same than the
-  previous Camlp5 versions. In "<em>strict</em>" mode, the nodes names
-  are the same but many of their parameters are enclosed by a specific
-  type "<tt>Ploc.Vala</tt>".</p>
-
 <div id="tableofcontents">
 </div>
+
+<h2>Preamble: transitional and strict modes</h2>
+
+<h3>nodes vs quotations</h3>
+
+<p>Since version 4.09 of Camlp5, the definition of the syntax tree has
+  been different according to the mode Camlp5 has been installed:</p>
+
+<ul>
+  <li>In "<em>transitional</em>" mode, this definition is the same
+    than in the previous Camlp5 versions, therefore compatible.</li>
+  <li>In "<em>strict</em>" mode, the nodes <em>names</em> are the same
+    but many of their parameters are enclosed by a specific type
+    "<tt>Ploc.Vala</tt>".</li>
+</ul>
+
+<p>For example, the node for the "let" statement is, in "transitional"
+  mode:</p>
+
+<pre>
+  ExLet of loc and bool and list (patt * expr) and expr
+</pre>
+
+<p>and in "strict" mode:</p>
+
+<pre>
+  ExLet of loc and Ploc.vala bool and Ploc.vala (list (patt * expr)) and expr
+</pre>
+
+<h3>quotations are better</h3>
+
+<p>The syntax tree quotations keep the same syntax. In "strict" mode,
+  the expansion is different to allow most programs
+  compatibilities.</p>
+
+<p>Consequently, programs using the Camlp5 syntax tree <em>with their
+  node form</em>, compiled with Camlp5 versions before 4.09, have to
+  be modified to be compilable in "strict" mode.</p>
+
+<p>On the other hand, if these programs use the Camlp5 syntax tree
+  <em>with their quotation form</em>, less things have to be changed,
+  the (classical) quotation of syntax trees, "<tt>q_MLast.cmo</tt>",
+  having been changed to preserve most compatibility.</p>
+
+<p>For example, programs using the syntax tree of the "let" statement
+  like this:</p>
+
+<pre>
+  MLast.ExLet loc rf pel e
+</pre>
+
+<p>should be changed, to be compilable in "strict" mode, into:</p>
+
+<pre>
+  MLast.ExLet loc (Ploc.VaVal rf) (Ploc.VaVal pel) e
+</pre>
+
+<p>But a better solution is to write it like this:</p>
+
+<pre>
+  &lt;:expr&lt; let $flag:rf$ $list:pel$ in $e$ >>
+</pre>
+
+<p>which:</p>
+
+<ul>
+  <li>is backward compatible: i.e. the program continues to be compilable
+    with previous Camlp5 versions</li>
+  <li>is compilable in "transitional" mode</li>
+  <li>is compilable in "strict" mode</li>
+</ul>
+
+<p>The quotation kit "<tt>q_ast.cmo</tt>", new in Camlp5 version 4.09,
+  works identically, except that the quotations have to be written in
+  the current syntax choosen by the user (normal syntax if using
+  normal syntax, revised syntax if using revised syntax, and all the
+  extensions added). It works fully in "strict" mode: in "transitional"
+  mode, the antiquotations do no work.</p>
 
 <h2>Introduction</h2>
 
@@ -48,7 +119,7 @@
   provided by Camlp5.</p>
 
 <p>For example, the syntax tree of the statement "<code>if</code>" can
-  be written:</p>
+  be written (in "transitional" mode):</p>
 
 <pre>
   MLast.ExIfe loc e1 e2 e3
