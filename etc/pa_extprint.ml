@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_extprint.ml,v 1.33 2007/12/18 11:49:46 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.34 2007/12/18 13:29:37 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -748,7 +748,7 @@ value expr_of_pformat loc fmt empty_bef empty_aft pc al =
         (e, al) ]
 ;
 
-value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc t al =
+value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc al t =
   match t with
   [ {fst = sl; flw = []} ->
       expr_of_pformat loc fmt empty_bef empty_aft pc al sl
@@ -780,10 +780,10 @@ value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc t al =
            ({fst = sl1; flw = []}, br, {fst = sl2; flw = t}) ]
       in
       let (e1, al) =
-        expr_of_tree_aux loc fmt empty_bef True <:expr< pc >> t1 al
+        expr_of_tree_aux loc fmt empty_bef True <:expr< pc >> al t1
       in
       let (e2, al) =
-        expr_of_tree_aux loc fmt True empty_aft <:expr< pc >> t2 al
+        expr_of_tree_aux loc fmt True empty_aft <:expr< pc >> al t2
       in
       let (soff, ssp) =
         let (off, sp) =
@@ -806,7 +806,7 @@ value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc t al =
         let soff = string_of_int off in
         <:expr< {($pc$) with ind = $pc$.ind + $int:soff$} >>
       in
-      let (e, al) = expr_of_tree_aux loc fmt False False <:expr< pc >> t al in
+      let (e, al) = expr_of_tree_aux loc fmt False False <:expr< pc >> al t in
       (<:expr< let pc = $pc$ in $e$ >>, al)
   | {fst = {hd = ""; tl = []};
      flw = [(Tsub (PPall b) {fst = sl; flw = tl}, {hd = ""; tl = []})]} ->
@@ -834,8 +834,8 @@ value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc t al =
           | [((Tsub _ _, sl) as t) :: tl] ->
               let (e, al) =
                 let t = {fst = {hd = ""; tl = []}; flw = [t]} in
-                expr_of_tree_aux loc fmt empty_bef empty_aft <:expr< pc >> t
-                  al
+                expr_of_tree_aux loc fmt empty_bef empty_aft <:expr< pc >> al
+                  t
               in
               let (el1, rev_el) =
                 match rev_el with
@@ -871,12 +871,12 @@ value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc t al =
       in
       (e, al)
   | {fst = {hd = ""; tl = []}; flw = [(Tsub PPnone t, {hd = ""; tl = []})]} ->
-      expr_of_tree_aux loc fmt empty_bef empty_aft pc t al
+      expr_of_tree_aux loc fmt empty_bef empty_aft pc al t
   | {fst = sl1; flw = [(Tsub pp t1, sl2) :: t]} ->
-      let (e1, al) = expr_of_pformat loc fmt empty_bef True pc al sl1 in
-      let (e, al) = expr_of_tree_aux loc fmt True True pc t1 al in
+      let (e1, al) = expr_of_pformat loc fmt empty_bef empty_aft pc al sl1 in
+      let (e, al) = expr_of_tree_aux loc fmt empty_bef empty_aft pc al t1 in
       let (e2, al) =
-        expr_of_pformat loc fmt True (t <> [] || empty_aft) pc al sl2
+        expr_of_tree_aux loc fmt empty_bef empty_aft pc al {fst = sl2; flw = t}
       in
       (<:expr< eee $str:fmt$ $e1$ $e$ $e2$ >>, al) ]
 ;
@@ -888,7 +888,7 @@ value expr_of_tree loc fmt pc t al =
 
 value expand_pprintf_2 loc pc fmt al =
   match parse_format (Fstream.of_string fmt) with
-  [ Some (t, _) -> expr_of_tree loc fmt pc t al
+  [ Some (t, _) -> expr_of_tree loc fmt pc al t
   | None -> assert False ]
 ;
 
