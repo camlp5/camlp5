@@ -31,18 +31,12 @@ pr_depend.cmo: ../main/mLast.cmi ../main/pcaml.cmi
 pr_depend.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
 pr_extend.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi 
 pr_extend.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx 
-pr_extend_old.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/spretty.cmi 
-pr_extend_old.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/spretty.cmx 
 pr_extfun.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi 
 pr_extfun.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx 
-pr_extfun_old.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/spretty.cmi 
-pr_extfun_old.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/spretty.cmx 
 pr_null.cmo: ../main/pcaml.cmi 
 pr_null.cmx: ../main/pcaml.cmx 
 pr_o.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi 
 pr_o.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx 
-pr_o_old.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/spretty.cmi 
-pr_o_old.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/spretty.cmx 
 pr_op.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi 
 pr_op.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx 
 pr_op_main.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/spretty.cmi \
@@ -51,8 +45,6 @@ pr_op_main.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/spretty.cmx \
     parserify.cmx 
 pr_r.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi 
 pr_r.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx 
-pr_r_old.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/spretty.cmi 
-pr_r_old.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/spretty.cmx 
 pr_ro.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi 
 pr_ro.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx 
 pr_rp.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi 
