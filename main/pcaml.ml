@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pcaml.ml,v 1.13 2007/08/16 04:02:25 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.14 2007/08/16 04:35:36 deraugla Exp $ *)
 
 value version = "4.08-exp";
 value syntax_name = ref "";
@@ -365,18 +365,17 @@ module Printers =
         bef : 'bef;
         aft : 'aft;
         dang : string };
-    value printer = Eprinter.make;
-    value pr_expr = printer "expr";
-    value pr_patt = printer "patt";
-    value pr_ctyp = printer "type";
-    value pr_str_item = printer "str_item";
-    value pr_sig_item = printer "sig_item";
-    value pr_module_expr = printer "module_expr";
-    value pr_module_type = printer "module_type";
-    value pr_class_sig_item = printer "class_sig_item";
-    value pr_class_str_item = printer "class_str_item";
-    value pr_class_expr = printer "class_expr";
-    value pr_class_type = printer "class_type";
+    value pr_expr = Eprinter.make "expr";
+    value pr_patt = Eprinter.make "patt";
+    value pr_ctyp = Eprinter.make "type";
+    value pr_str_item = Eprinter.make "str_item";
+    value pr_sig_item = Eprinter.make "sig_item";
+    value pr_module_expr = Eprinter.make "module_expr";
+    value pr_module_type = Eprinter.make "module_type";
+    value pr_class_sig_item = Eprinter.make "class_sig_item";
+    value pr_class_str_item = Eprinter.make "class_str_item";
+    value pr_class_expr = Eprinter.make "class_expr";
+    value pr_class_type = Eprinter.make "class_type";
     value rec find_pr_level lab =
       fun
       [ [] -> failwith ("level " ^ lab ^ " not found")

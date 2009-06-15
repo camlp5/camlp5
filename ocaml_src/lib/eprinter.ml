@@ -32,7 +32,7 @@ let add_lev (lab, extf) levs =
   let lev = {pr_label = lab; pr_rules = extf Extfun.empty} in lev :: levs
 ;;
 
-let extend_printer pr pos levs =
+let extend pr pos levs =
   match pos with
     None ->
       let levels = List.fold_right add_lev levs pr.pr_levels in
@@ -99,3 +99,5 @@ let make name =
 ;;
 
 let clear pr = pr.pr_levels <- []; pr.pr_fun <- pr_fun pr.pr_name pr;;
+
+let apply_level pr lname pc z = pr.pr_fun lname pc z;;

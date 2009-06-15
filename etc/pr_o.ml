@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.75 2007/08/16 04:02:25 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.76 2007/08/16 04:35:36 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -206,16 +206,16 @@ value right_operator pc sh unfold next x =
  * Extensible printers
  *)
 
-value expr pc z = pr_expr.pr_fun "top" pc z;
-value patt pc z = pr_patt.pr_fun "top" pc z;
-value ctyp pc z = pr_ctyp.pr_fun "top" pc z;
-value str_item pc z = pr_str_item.pr_fun "top" pc z;
-value sig_item pc z = pr_sig_item.pr_fun "top" pc z;
-value module_expr pc z = pr_module_expr.pr_fun "top" pc z;
-value module_type pc z = pr_module_type.pr_fun "top" pc z;
+value expr = Eprinter.apply_level pr_expr "top";
+value patt = Eprinter.apply_level pr_patt "top";
+value ctyp = Eprinter.apply_level pr_ctyp "top";
+value str_item = Eprinter.apply_level pr_str_item "top";
+value sig_item = Eprinter.apply_level pr_sig_item "top";
+value module_expr = Eprinter.apply_level pr_module_expr "top";
+value module_type = Eprinter.apply_level pr_module_type "top";
 value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
 
-value expr1 pc z = pr_expr.pr_fun "expr1" pc z;
+value expr1 = Eprinter.apply_level pr_expr "expr1";
 
 (* expression with adding the possible comment before *)
 value comm_expr expr pc z =
@@ -317,7 +317,7 @@ value let_binding pc (p, e) =
     [ (<:patt< $lid:_$ >>, <:expr< ($e$ : $t$) >>) -> (e, Some t)
     | _ -> (e, None) ]
   in
-  let simple_patt = pr_patt.pr_fun "simple" in
+  let simple_patt = Eprinter.apply_level pr_patt "simple" in
   horiz_vertic
     (fun () ->
        sprintf "%s%s%s = %s%s" pc.bef
@@ -442,7 +442,7 @@ value raise_match_failure pc loc =
            ($str:fname$, $int:string_of_int line$, $int:string_of_int char$))
     >>
   in
-  pr_expr.pr_fun "apply" pc e
+  Eprinter.apply_level pr_expr "apply" pc e
 ;
 
 value rec make_expr_list =
@@ -564,7 +564,7 @@ value label_decl pc (_, l, m, t) =
 value cons_decl pc (_, c, tl) =
   if tl = [] then cons_escaped pc c
   else
-    let ctyp_apply = pr_ctyp.pr_fun "apply" in
+    let ctyp_apply = Eprinter.apply_level pr_ctyp "apply" in
     horiz_vertic
       (fun () ->
          sprintf "%s%s of %s%s" pc.bef
@@ -697,7 +697,7 @@ value external_decl pc (n, t, sl) =
 ;
 
 value exception_decl pc (e, tl, id) =
-  let ctyp_apply = pr_ctyp.pr_fun "apply" in
+  let ctyp_apply = Eprinter.apply_level pr_ctyp "apply" in
   horiz_vertic
     (fun () ->
        sprintf "%sexception %s%s%s%s" pc.bef e
@@ -1063,7 +1063,7 @@ EXTEND_PRINTER
           [ [(p1, None, e1)] when is_irrefut_patt p1 ->
               let (pl, e1) = expr_fun_args e1 in
               let pl = [p1 :: pl] in
-              let simple_patt = pr_patt.pr_fun "simple" in
+              let simple_patt = Eprinter.apply_level pr_patt "simple" in
               horiz_vertic
                 (fun () ->
                    let (op_begin, op_end) =
@@ -1486,7 +1486,7 @@ EXTEND_PRINTER
             in
             match cons_args_opt with
             [ Some (e, ([_; _ :: _] as al)) ->
-                let expr_or = pr_expr.pr_fun "bar" in
+                let expr_or = Eprinter.apply_level pr_expr "bar" in
                 horiz_vertic
                   (fun () ->
                      sprintf "%s%s (%s)%s" pc.bef
@@ -1549,7 +1549,7 @@ EXTEND_PRINTER
             lxl
       | <:expr< {($e$) with $list:lel$} >> ->
           let lxl = List.map (fun lx -> (lx, ";")) lel in
-          let simple_expr = pr_expr.pr_fun "simple" in
+          let simple_expr = Eprinter.apply_level pr_expr "simple" in
           plistl (record_binding False) (record_binding True) 0
             {(pc) with ind = pc.ind + 1;
              bef =
@@ -1721,7 +1721,7 @@ EXTEND_PRINTER
                    in
                    sprintf "%s\n%s" s1 s2)
           | Some (p, pl) ->
-              let patt = pr_patt.pr_fun "range" in
+              let patt = Eprinter.apply_level pr_patt "range" in
               horiz_vertic
                 (fun () ->
                    sprintf "%s%s (%s)%s" pc.bef
@@ -2402,13 +2402,10 @@ value alone_in_line pc =
     else False
 ;
 
-value expr pc z = pr_expr.pr_fun "top" pc z;
-value patt pc z = pr_patt.pr_fun "top" pc z;
-value ctyp pc z = pr_ctyp.pr_fun "top" pc z;
-value class_expr pc z = pr_class_expr.pr_fun "top" pc z;
-value class_type pc z = pr_class_type.pr_fun "top" pc z;
-value class_str_item pc z = pr_class_str_item.pr_fun "top" pc z;
-value class_sig_item pc z = pr_class_sig_item.pr_fun "top" pc z;
+value class_expr = Eprinter.apply_level pr_class_expr "top";
+value class_type = Eprinter.apply_level pr_class_type "top";
+value class_str_item = Eprinter.apply_level pr_class_str_item "top";
+value class_sig_item = Eprinter.apply_level pr_class_sig_item "top";
 
 value rec mod_ident pc sl =
   match sl with
@@ -2868,8 +2865,8 @@ EXTEND_PRINTER
       | <:expr< ~ $s$ >> ->
           sprintf "%s~%s%s" pc.bef s pc.aft
       | <:expr< ~ $s$ : $e$ >> ->
-          pr_expr.pr_fun "dot" {(pc) with bef = sprintf "%s~%s:" pc.bef s}
-            e ] ]
+          Eprinter.apply_level pr_expr "dot"
+            {(pc) with bef = sprintf "%s~%s:" pc.bef s} e ] ]
   ;
   pr_ctyp: AFTER "top"
     [ "as"
@@ -2936,7 +2933,8 @@ EXTEND_PRINTER
             (fun () ->
                sprintf "%s%s %s%s" pc.bef
                  (curr {(pc) with bef = ""; aft = ""} ce)
-                 (pr_expr.pr_fun "label" {(pc) with bef = ""; aft = ""} e)
+                 (Eprinter.apply_level pr_expr "label"
+                    {(pc) with bef = ""; aft = ""} e)
                  pc.aft)
             (fun () -> not_impl "class_expr_apply" pc ce) ]
     | "simple"
@@ -3099,7 +3097,7 @@ EXTEND_PRINTER
             [ Some _ -> ([], e)
             | None -> expr_fun_args e ]
           in
-          let simple_patt = pr_patt.pr_fun "simple" in
+          let simple_patt = Eprinter.apply_level pr_patt "simple" in
           let args =
             if pl = [] then ""
             else hlist simple_patt {(pc) with bef = " "; aft = ""} pl

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_extprint.ml,v 1.4 2007/08/15 17:40:16 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.5 2007/08/16 04:35:36 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 #load "pa_extend.cmo";
@@ -134,7 +134,7 @@ value text_of_extprint loc el =
                 <:expr< [($lab$, $rules$) :: $levs$] >>)
              e.levels <:expr< [] >>
          in
-         <:expr< Eprinter.extend_printer $e.name$ $pos$ $levs$ >>)
+         <:expr< Eprinter.extend $e.name$ $pos$ $levs$ >>)
       el
   in
   match el with

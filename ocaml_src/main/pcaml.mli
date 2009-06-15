@@ -103,7 +103,6 @@ module Printers :
       ('bef, 'aft) Eprinter.pr_context =
         { ind : int; bef : 'bef; aft : 'aft; dang : string }
     ;;
-    val printer : string -> 'b printer_t;;
     val pr_expr : MLast.expr printer_t;;
     val pr_patt : MLast.patt printer_t;;
     val pr_ctyp : MLast.ctyp printer_t;;

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pcaml.mli,v 1.5 2007/08/16 04:02:25 deraugla Exp $ *)
+(* $Id: pcaml.mli,v 1.6 2007/08/16 04:35:36 deraugla Exp $ *)
 
 (** Language grammar, entries and printers.
 
@@ -102,7 +102,6 @@ module Printers :
         bef : 'bef;
         aft : 'aft;
         dang : string };
-    value printer : string -> printer_t 'b;
     value pr_expr : printer_t MLast.expr;
     value pr_patt : printer_t MLast.patt;
     value pr_ctyp : printer_t MLast.ctyp;

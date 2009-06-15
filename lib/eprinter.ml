@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: eprinter.ml,v 1.4 2007/08/16 04:02:25 deraugla Exp $ *)
+(* $Id: eprinter.ml,v 1.5 2007/08/16 04:35:36 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 type t 'a =
@@ -36,7 +36,7 @@ value add_lev (lab, extf) levs =
   [lev :: levs]
 ;
 
-value extend_printer pr pos levs =
+value extend pr pos levs =
   match pos with
   [ None ->
       let levels = List.fold_right add_lev levs pr.pr_levels in
@@ -102,3 +102,5 @@ value clear pr = do {
   pr.pr_levels := [];
   pr.pr_fun := pr_fun pr.pr_name pr;
 };
+
+value apply_level pr lname pc z = pr.pr_fun lname pc z;
