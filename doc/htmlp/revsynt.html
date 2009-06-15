@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: revsynt.html,v 1.32 2007/09/16 06:02:01 deraugla Exp $ -->
+  <!-- $Id: revsynt.html,v 1.33 2007/10/19 01:19:09 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>revised syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -104,7 +104,7 @@
     </table>
   </li>
 
-  <li>Functor application uses curryfication. Parentheses are not
+  <li>Functor application uses currying. Parentheses are not
     required for the parameters:
     <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
@@ -214,7 +214,7 @@
     </table>
   </li>
 
-  <li>The lists are always enclosed with brackets. A list is a left
+  <li>Lists are always enclosed with brackets. A list is a left
     bracket, followed by a list of elements separated with semicolons,
     optionally followed by colon-colon and an element, and ended by a
     right bracket. Warning: the colon-colon is not an infix but is
@@ -257,7 +257,7 @@
     </table>
   </li>
 
-  <li>It is authorized to use function binding syntax in record field
+  <li>It is allowable to use function binding syntax in record field
     definitions:
     <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
@@ -274,8 +274,8 @@
 
 <h3>Irrefutable patterns</h3>
 
-<p>An <em>irrefutable pattern</em> is a pattern where it is
-  syntactilly visible that it never fails. They are used in some
+<p>An <em>irrefutable pattern</em> is a pattern which is
+  syntactically visible and never fails. They are used in some
   syntactic constructions. It is either:</p>
 
 <ul>
@@ -295,8 +295,8 @@
 
 <ul>
   <li>The keyword "function" no longer exists. Only "fun" is used.</li>
-  <li>The pattern matchings, in constructions with "fun", "match" and
-    "try" are closed with brackets: an open bracket "[" before the
+  <li>The pattern matching, in constructions with "fun", "match" and
+    "try" is closed with brackets: an open bracket "[" before the
     first case, and a close bracket "]" after the last case:
     <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
@@ -316,7 +316,7 @@
         <td><tt>| p2 -> e2 ]</tt></td>
       </tr>
     </table>
-    But if there is only one case and if the pattern is irrefutable,
+    If there is only one case and if the pattern is irrefutable,
       the brackets are not required. These examples work identically
       in OCaml and in revised syntax:
     <table width="75%" class="centered" cellspacing="0" cellpadding="0">
@@ -334,10 +334,10 @@
       </tr>
     </table>
   </li>
-  <li>It is possible to write the empty function, raising the
-    exception "Match_failure" whichever parameter is applied, the
+  <li>It is possible to write the empty function which always raises the
+    exception "Match_failure" when a parameter is applied.  It is also possible to write and
     empty "match", raising "Match_failure" after having evaluated its
-    expression, and the empty "try", equivalent to its expression
+    expression and the empty "try", equivalent to its expression
     without try:
 <pre>
   fun []
@@ -488,7 +488,7 @@
   </li>
 
   <li>The operators with special characters are not automatically
-    infix. To define infixes, use the syntax extensions.
+    infix. To define infixes, use syntax extensions.
   </li>
 </ul>
 
@@ -517,7 +517,7 @@
     </table>
   </li>
 
-  <li>The abstract types are represented by a unbound type variable:
+  <li>The abstract types are represented by an unbound type variable:
     <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
@@ -547,7 +547,7 @@
     </table>
   </li>
 
-  <li>In declaration of a concrete type, brackets must enclose the
+  <li>In declarations of a concrete type, brackets must enclose the
     constructor declarations:
     <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
@@ -573,7 +573,7 @@
 
     The declaration of a data constructor with several parameters
     is done by separating the types with "and". In expressions and
-    patterns, this constructor parameters must be curryfied:
+    patterns, these constructor parameters must be curryfied:
     <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
@@ -591,7 +591,7 @@
 
     The declaration of a data constructor with one parameter of type
     tuple is done by using a tuple type. In expressions and patterns,
-    the parameter has not to be curryfied, since it is alone. In that
+    the parameter must not to be curryfied, since it is alone. In that
     case the syntax of constructor parameters is the same between the
     two syntaxes:
     <table width="75%" class="centered" cellspacing="0" cellpadding="0">
@@ -659,7 +659,7 @@
     </table>
   </li>
 
-  <li>Polymorph types start with "<tt>!</tt>":
+  <li>Polymorphic types start with "<tt>!</tt>":
     <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
@@ -683,7 +683,7 @@
   <li>The streams and the stream patterns are bracketed with "<tt>[:</tt>"
     and "<tt>:]</tt>" instead of "<tt>[&lt;</tt>" and "<tt>&gt;]</tt>".
   </li>
-  <li>The stream component "terminal" is written with a backquote
+  <li>The stream component "terminal" is written with a back-quote
     instead of a quote:
     <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
@@ -697,7 +697,7 @@
     </table>
    </li>
    <li>The cases of parsers are bracketed with "<tt>[</tt>" and
-     "<tt>]</tt>", like for "fun", "match" and "try". If there is one
+     "<tt>]</tt>", as with "fun", "match" and "try". If there is one
      case, the brackets are not required:
     <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
@@ -723,7 +723,7 @@
     </table>
   </li>
    <li>It is possible to write the empty parser raising the exception
-     "Stream.Failure" whichever parameter is applied, and the empty
+     "Stream.Failure" whatever parameter is applied, and the empty
      stream matching always raising "Stream.Failure":
 <pre>
   parser []
