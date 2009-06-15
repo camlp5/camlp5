@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.70 2007/10/10 20:06:58 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.71 2007/10/10 20:34:23 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -936,6 +936,8 @@
     ((Sexpr loc [(Slid _ "`") se]) (SpTrm loc (patt_se se) <:vala< None >>))
     ((Sexpr loc [(Slid _ "`") se1 se2])
      (let ((e (expr_se se2))) (SpTrm loc (patt_se se1) <:vala< (Some e) >>)))
+    ((Sexpr loc [(Slid _ "let") se1 se2])
+     (SpLet loc (ipatt_se se1) (expr_se se2)))
     ((Sexpr loc [se1 se2]) (SpNtr loc (patt_se se1) (expr_se se2)))
     (se (SpStr (loc_of_sexpr se) (patt_se se)))))
   (patt_se

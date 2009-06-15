@@ -980,6 +980,8 @@ and stream_patt_comp_se =
   | Sexpr loc [Slid _ "`"; se1; se2] ->
       let e = expr_se se2 in
       SpTrm loc (patt_se se1) <:vala< (Some e) >>
+  | Sexpr loc [Slid _ "let"; se1; se2] ->
+      SpLet loc (ipatt_se se1) (expr_se se2)
   | Sexpr loc [se1; se2] -> SpNtr loc (patt_se se1) (expr_se se2)
   | se -> SpStr (loc_of_sexpr se) (patt_se se) ]
 and patt_se =

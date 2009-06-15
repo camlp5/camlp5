@@ -289,7 +289,10 @@ value ident_option =
 value stream_patt_comp pc spc =
   match spc with
   [ SpTrm _ p <:vala< None >> ->
-      patt {(pc) with ind = pc.ind + 1; bef = sprintf "%s`" pc.bef} p
+      patt
+        {(pc) with ind = pc.ind + 1; bef = sprintf "%s(` " pc.bef;
+         aft = sprintf ")%s" pc.aft}
+        p
   | SpTrm _ p <:vala< Some e >> ->
       horiz_vertic
         (fun () ->
@@ -322,30 +325,28 @@ value stream_patt_comp pc spc =
            let s1 = patt {(pc) with bef = sprintf "%s(" pc.bef; aft = ""} p in
            let s2 =
              expr
-               {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+               {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
                 aft = sprintf ")%s" pc.aft}
                e
            in
            sprintf "%s\n%s" s1 s2)
   | SpLet _ p e ->
-      horiz_vertic (fun () -> sprintf "\n")
+      horiz_vertic
         (fun () ->
-           horiz_vertic
-             (fun () ->
-                sprintf "%slet %s = %s in%s" pc.bef
-                  (patt {(pc) with bef = ""; aft = ""} p)
-                  (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
-             (fun () ->
-                let s1 =
-                  patt {(pc) with bef = sprintf "%slet " pc.bef; aft = " ="} p
-                in
-                let s2 =
-                  expr
-                    {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                     aft = ""} e
-                in
-                let s3 = sprintf "%sin%s" (tab pc.ind) pc.aft in
-                sprintf "%s\n%s\n%s" s1 s2 s3))
+           sprintf "%s(let %s %s)%s" pc.bef
+             (patt {(pc) with bef = ""; aft = ""} p)
+             (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
+        (fun () ->
+           let s1 =
+             patt {(pc) with bef = sprintf "%s(let " pc.bef; aft = ""} p
+           in
+           let s2 =
+             expr
+               {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+                aft = sprintf ")%s" pc.aft}
+               e
+           in
+           sprintf "%s\n%s" s1 s2)
   | SpStr _ p -> patt pc p
   | _ -> not_impl "stream_patt_comp" pc spc ]
 ;
@@ -371,12 +372,6 @@ value stream_patt_comp_err pc (spc, err) =
            sprintf "%s\n%s" s1 s2) ]
 ;
 
-value spc_kont =
-  fun
-  [ (SpLet _ _ _, _) -> ""
-  | _ -> ";" ]
-;
-
 value stream_patt pc sp =
   horiz_vertic
     (fun () ->
@@ -384,8 +379,8 @@ value stream_patt pc sp =
          (hlist stream_patt_comp_err {(pc) with bef = ""; aft = ""} sp)
          pc.aft)
     (fun () ->
-       let sp = List.map (fun spc -> (spc, spc_kont spc)) sp in
-       plist stream_patt_comp_err 0 {(pc) with ind = pc.ind + 3} sp)
+       let sp = List.map (fun spc -> (spc, "")) sp in
+       plist stream_patt_comp_err 0 pc sp)
 ;
 
 value parser_case force_vertic pc (sp, po, e) =
@@ -398,9 +393,12 @@ value parser_case force_vertic pc (sp, po, e) =
              sprintf "%s(()%s %s)%s" pc.bef (ident_option po)
                (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
         (fun () ->
-           let s1 = sprintf "%s()%s" pc.bef (ident_option po) in
+           let s1 = sprintf "%s(()%s" pc.bef (ident_option po) in
            let s2 =
-             expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
+             expr
+               {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
+                aft = sprintf ")%s" pc.aft}
+               e
            in
            sprintf "%s\n%s" s1 s2)
   | _ ->
@@ -415,13 +413,13 @@ value parser_case force_vertic pc (sp, po, e) =
         (fun () ->
            let s1 =
              stream_patt
-               {(pc) with ind = pc.ind + 1; bef = sprintf "%s((" pc.bef;
+               {(pc) with ind = pc.ind + 2; bef = sprintf "%s((" pc.bef;
                 aft = sprintf ")%s" (ident_option po)}
                sp
            in
            let s2 =
              expr
-               {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
+               {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
                 aft = sprintf ")%s" pc.aft}
                e
            in
@@ -431,42 +429,26 @@ value parser_case force_vertic pc (sp, po, e) =
 value flag_equilibrate_cases = Pcaml.flag_equilibrate_cases;
 
 value parser_body pc spel =
-  let s2o =
-    match spel with
-    [ [spe] ->
-        horiz_vertic
-          (fun () ->
-             let s =
-               sprintf "%s%s%s" pc.bef
-                 (parser_case False {(pc) with bef = ""; aft = ""} spe) pc.aft
-             in
-             Some s)
-          (fun () -> None)
-    | _ -> None ]
-  in
-  match s2o with
-  [ Some s -> s
-  | None ->
-      match spel with
-      [ [] -> sprintf "%s%s" pc.bef pc.aft
-      | [spe] -> parser_case False pc spe
-      | _ ->
-          let force_vertic =
-            if flag_equilibrate_cases.val then
-              let has_vertic =
-                List.exists
-                  (fun spe ->
-                     horiz_vertic
-                       (fun () ->
-                          let _ : string = parser_case False pc spe in
-                          False)
-                       (fun () -> True))
-                  spel
-              in
-              has_vertic
-            else False
+  match spel with
+  [ [] -> sprintf "%s%s" pc.bef pc.aft
+  | [spe] -> parser_case False pc spe
+  | _ ->
+      let force_vertic =
+        if flag_equilibrate_cases.val then
+          let has_vertic =
+            List.exists
+              (fun spe ->
+                 horiz_vertic
+                   (fun () ->
+                      let _ : string = parser_case False pc spe in
+                      False)
+                   (fun () -> True))
+              spel
           in
-          vlist (parser_case force_vertic) pc spel ] ]
+          has_vertic
+        else False
+      in
+      vlist (parser_case force_vertic) pc spel ]
 ;
 
 value print_parser pc e =
