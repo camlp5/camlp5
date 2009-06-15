@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.49 2007/07/18 15:10:42 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.50 2007/07/18 18:20:11 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -565,6 +565,38 @@ instead of "<tt>loc</tt>".</p>
   the previous sections.</p>
 
 <h2>The Grammar module</h2>
+
+<p>The Grammar module contains all what is necessary to manipulate
+  grammars and entries. It contains:</p>
+
+<dl>
+  <dt><tt>type g = 'abstract;</tt></dt>
+  <dd>The type of grammars, holding entries,</dd>
+</dl>
+
+<dl>
+  <dt><tt>value gcreate : Token.glexer (string * string) -> g;</tt></dt>
+  <dd>Create a new grammar, without keywords, using the lexer given as
+    parameter.</dd>
+
+  <dt><tt>value tokens : g -> string -> list (string * int);</tt></dt>
+  <dd>
+       Given a grammar and a token pattern constructor, returns the list of
+       the corresponding values currently used in all entries of this grammar.
+       The integer is the number of times this pattern value is used.
+
+       Examples:
+       <ul>
+         <li>If the associated lexer uses ("", xxx) to represent a keyword
+           (what is represented by then simple string xxx in an [EXTEND]
+           statement rule), the call [Grammar.token g ""] returns the keywords
+           list.</li>
+         <li>The call [Grammar.token g "IDENT"] returns the list of
+           all usages of the pattern "IDENT" in the [EXTEND]
+           statements.</li>
+       </ul>
+  </dd>
+</dl>
 
 <p>... to be completed ...</p>
 
