@@ -1659,7 +1659,7 @@ pr_ctyp.pr_levels :=
             [: `HVbox
                   [: `HVbox [: :]; poly_variants [: `S LR "[<" :] rfl "" k1;
                      k :] :]
-      | MLast.TyCls _ id ->
+      | <:ctyp< # $list:id$ >> ->
           fun curr next dg k -> [: `S LO "#"; `class_longident id "" k :]
       | <:ctyp< < .. > >> ->
           fun curr next dg k -> [: `S LR "<>"; k :]

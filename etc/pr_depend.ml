@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.32 2007/09/13 17:54:32 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.33 2007/09/13 19:41:59 deraugla Exp $ *)
 
 open MLast;
 
@@ -47,7 +47,7 @@ value rec ctyp =
   | TyApp _ t1 t2 -> do { ctyp t1; ctyp t2 }
   | TyAny _ -> ()
   | TyArr _ t1 t2 -> do { ctyp t1; ctyp t2 }
-  | TyCls _ li -> longident li
+  | <:ctyp< # $list:li$ >> -> longident li
   | TyLab _ _ t -> ctyp t
   | TyLid _ _ -> ()
   | TyMan _ t1 t2 -> do { ctyp t1; ctyp t2 }

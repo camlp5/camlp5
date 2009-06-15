@@ -191,8 +191,16 @@ module Meta =
       | TyArr (_, t1, t2) -> e_node "TyArr" [e_ctyp t1; e_ctyp t2]
       | TyAny _ -> e_node "TyAny" []
       | TyApp (_, t1, t2) -> e_node "TyApp" [e_ctyp t1; e_ctyp t2]
+      | TyCls (_, ls) -> e_node "TyCls" [e_vala (e_list e_string) ls]
       | TyLid (_, s) -> e_node "TyLid" [e_vala e_string s]
       | TyMan (_, t1, t2) -> e_node "TyMan" [e_ctyp t1; e_ctyp t2]
+      | TyObj (_, lm, v) ->
+          e_node "TyObj"
+            [e_vala
+               (e_list
+                  (fun (s, t) -> MLast.ExTup (loc, [e_string s; e_ctyp t])))
+               lm;
+             e_vala e_bool v]
       | TyPol (_, lv, t) ->
           e_node "TyPol" [e_vala (e_list e_string) lv; e_ctyp t]
       | TyQuo (_, s) -> e_node "TyQuo" [e_vala e_string s]
@@ -327,6 +335,12 @@ module Meta =
           e_node "ExObj"
             [e_vala (e_option e_patt) op;
              e_vala (e_list e_class_str_item) lcsi]
+      | ExOvr (_, lse) ->
+          e_node "ExOvr"
+            [e_vala
+               (e_list
+                  (fun (s, e) -> MLast.ExTup (loc, [e_string s; e_expr e])))
+               lse]
       | ExRec (_, lpe, oe) ->
           let lpe =
             e_vala
@@ -335,6 +349,7 @@ module Meta =
           in
           let oe = e_option e_expr oe in e_node "ExRec" [lpe; oe]
       | ExSeq (_, el) -> e_node "ExSeq" [e_vala (e_list e_expr) el]
+      | ExSnd (_, e, s) -> e_node "ExSnd" [e_expr e; e_vala e_string s]
       | ExSte (_, e1, e2) -> e_node "ExSte" [e_expr e1; e_expr e2]
       | ExStr (_, s) -> e_node "ExStr" [e_vala e_string s]
       | ExTry (_, e, pwel) ->

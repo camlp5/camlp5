@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.81 2007/09/13 17:54:32 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.82 2007/09/13 19:41:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -655,22 +655,22 @@ EXTEND
           <:expr< object $aopt:cspo$ $alist:cf$ end >> ] ]
   ;
   expr: LEVEL "."
-    [ [ e = SELF; "#"; lab = label -> <:expr< $e$ # $lab$ >> ] ]
+    [ [ e = SELF; "#"; lab = label2 -> <:expr< $e$ # $alid:lab$ >> ] ]
   ;
   expr: LEVEL "simple"
     [ [ "("; e = SELF; ":"; t = ctyp; ":>"; t2 = ctyp; ")" ->
           <:expr< ($e$ : $t$ :> $t2$ ) >>
       | "("; e = SELF; ":>"; t = ctyp; ")" -> <:expr< ($e$ :> $t$) >>
-      | "{<"; fel = LIST0 field_expr SEP ";"; ">}" ->
-          <:expr< {< $list:fel$ >} >> ] ]
+      | "{<"; fel = V LIST0 field_expr SEP ";"; ">}" ->
+          <:expr< {< $alist:fel$ >} >> ] ]
   ;
   field_expr:
     [ [ l = label; "="; e = expr -> (l, e) ] ]
   ;
   ctyp: LEVEL "simple"
-    [ [ "#"; id = class_longident -> <:ctyp< # $list:id$ >>
-      | "<"; ml = LIST0 field SEP ";"; v = FLAG ".."; ">" ->
-          <:ctyp< < $list:ml$ $flag:v$ > >> ] ]
+    [ [ "#"; id = class_longident2 -> <:ctyp< # $alist:id$ >>
+      | "<"; ml = V LIST0 field SEP ";"; v = V FLAG ".."; ">" ->
+          <:ctyp< < $alist:ml$ $aflag:v$ > >> ] ]
   ;
   field:
     [ [ lab = LIDENT; ":"; t = ctyp -> (lab, t) ] ]

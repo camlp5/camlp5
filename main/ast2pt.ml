@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.41 2007/09/13 17:54:32 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.42 2007/09/13 19:41:59 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -163,7 +163,7 @@ value rec ctyp_long_id =
       (is_cls, Lapply li1 li2)
   | <:ctyp< $uid:s$ >> -> (False, lident s)
   | <:ctyp< $lid:s$ >> -> (False, lident s)
-  | TyCls loc sl -> (True, long_id_of_string_list loc sl)
+  | TyCls loc sl -> (True, long_id_of_string_list loc (uv sl))
   | t -> error (loc_of_ctyp t) "incorrect type" ]
 ;
 
@@ -196,9 +196,9 @@ value rec ctyp =
       in
       mktyp loc (Ptyp_arrow ("?" ^ lab) (ctyp t1) (ctyp t2))
   | TyArr loc t1 t2 -> mktyp loc (Ptyp_arrow "" (ctyp t1) (ctyp t2))
-  | TyObj loc fl v -> mktyp loc (Ptyp_object (meth_list loc fl v))
+  | TyObj loc fl v -> mktyp loc (Ptyp_object (meth_list loc (uv fl) v))
   | TyCls loc id ->
-      mktyp loc (Ptyp_class (long_id_of_string_list loc id) [] [])
+      mktyp loc (Ptyp_class (long_id_of_string_list loc (uv id)) [] [])
   | TyLab loc _ _ -> error loc "labeled type not allowed here"
   | TyLid loc s -> mktyp loc (Ptyp_constr (lident (uv s)) [])
   | TyMan loc _ _ -> error loc "type manifest not allowed here"
@@ -229,7 +229,7 @@ value rec ctyp =
     END ]
 and meth_list loc fl v =
   match fl with
-  [ [] -> if v then [mkfield loc Pfield_var] else []
+  [ [] -> if uv v then [mkfield loc Pfield_var] else []
   | [(lab, t) :: fl] ->
       [mkfield loc (Pfield lab (ctyp (mkpolytype t))) :: meth_list loc fl v] ]
 ;
@@ -693,7 +693,7 @@ value rec expr =
       let cil = List.fold_right class_str_item (uv cfl) [] in
       mkexp loc (Pexp_object (patt p, cil))
   | ExOlb loc _ _ -> error loc "labeled expression not allowed here"
-  | ExOvr loc iel -> mkexp loc (Pexp_override (List.map mkideexp iel))
+  | ExOvr loc iel -> mkexp loc (Pexp_override (List.map mkideexp (uv iel)))
   | ExRec loc lel eo ->
       let lel = uv lel in
       if lel = [] then error loc "empty record"
@@ -712,7 +712,7 @@ value rec expr =
         | [e :: el] ->
             let loc = Ploc.encl (loc_of_expr e) loc in
             mkexp loc (Pexp_sequence (expr e) (loop el)) ]
-  | ExSnd loc e s -> mkexp loc (Pexp_send (expr e) s)
+  | ExSnd loc e s -> mkexp loc (Pexp_send (expr e) (uv s))
   | ExSte loc e1 e2 ->
       mkexp loc
         (Pexp_apply (mkexp loc (Pexp_ident (array_function "String" "get")))

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: reloc.ml,v 1.29 2007/09/13 17:54:32 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.30 2007/09/13 19:41:59 deraugla Exp $ *)
 
 open MLast;
 
@@ -43,7 +43,8 @@ value rec ctyp floc sh =
     | TyLid loc x1 -> TyLid (floc loc) x1
     | TyMan loc x1 x2 -> TyMan (floc loc) (self x1) (self x2)
     | TyObj loc x1 x2 ->
-        TyObj (floc loc) (List.map (fun (x1, x2) -> (x1, self x2)) x1) x2
+        TyObj (floc loc)
+          (vala_map (List.map (fun (x1, x2) -> (x1, self x2))) x1) x2
     | TyOlb loc x1 x2 -> TyOlb (floc loc) x1 (self x2)
     | TyPol loc x1 x2 -> TyPol (floc loc) x1 (self x2)
     | TyQuo loc x1 -> TyQuo (floc loc) x1
@@ -196,7 +197,8 @@ and expr floc sh =
           (vala_map (List.map (class_str_item floc sh)) x2)
     | ExOlb loc x1 x2 -> ExOlb (floc loc) x1 (option_map self x2)
     | ExOvr loc x1 ->
-        ExOvr (floc loc) (List.map (fun (x1, x2) -> (x1, self x2)) x1)
+        ExOvr (floc loc)
+          (vala_map (List.map (fun (x1, x2) -> (x1, self x2))) x1)
     | ExRec loc x1 x2 ->
         ExRec (floc loc)
           (vala_map (List.map (fun (x1, x2) -> (patt floc sh x1, self x2)))

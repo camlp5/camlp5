@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: mLast.mli,v 1.41 2007/09/13 17:54:32 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.42 2007/09/13 19:41:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Module [MLast]: abstract syntax tree.
@@ -23,11 +23,11 @@ type ctyp =
   | TyAny of loc
   | TyApp of loc and ctyp and ctyp
   | TyArr of loc and ctyp and ctyp
-  | TyCls of loc and list string
+  | TyCls of loc and V (list string)
   | TyLab of loc and string and ctyp
   | TyLid of loc and V string
   | TyMan of loc and ctyp and ctyp
-  | TyObj of loc and list (string * ctyp) and bool
+  | TyObj of loc and V (list (string * ctyp)) and V bool
   | TyOlb of loc and string and ctyp
   | TyPol of loc and V (list string) and ctyp
   | TyQuo of loc and V string
@@ -104,10 +104,10 @@ and expr =
   | ExNew of loc and V (list string)
   | ExObj of loc and V (option patt) and V (list class_str_item)
   | ExOlb of loc and string and option expr
-  | ExOvr of loc and list (string * expr)
+  | ExOvr of loc and V (list (string * expr))
   | ExRec of loc and V (list (patt * expr)) and option expr
   | ExSeq of loc and V (list expr)
-  | ExSnd of loc and expr and string
+  | ExSnd of loc and expr and V string
   | ExSte of loc and expr and expr
   | ExStr of loc and V string
   | ExTry of loc and expr and V (list (patt * option expr * expr))

@@ -3415,9 +3415,9 @@ Grammar.extend
     Some (Gramext.Level "."),
     [None, None,
      [[Gramext.Sself; Gramext.Stoken ("", "#");
-       Gramext.Snterm (Grammar.Entry.obj (label : 'label Grammar.Entry.e))],
+       Gramext.Snterm (Grammar.Entry.obj (label2 : 'label2 Grammar.Entry.e))],
       Gramext.action
-        (fun (lab : 'label) _ (e : 'expr) (loc : Ploc.t) ->
+        (fun (lab : 'label2) _ (e : 'expr) (loc : Ploc.t) ->
            (Qast.Node ("ExSnd", [Qast.Loc; e; lab]) : 'expr))]];
     Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
     Some (Gramext.Level "simple"),
@@ -3431,13 +3431,14 @@ Grammar.extend
               Gramext.Stoken ("", ";"))],
           Gramext.action
             (fun (a : 'field_expr list) (loc : Ploc.t) ->
-               (Qast.List a : 'a_list));
+               (Qast.Vala (Qast.List a) : 'a_list2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_list : 'a_list Grammar.Entry.e))],
-          Gramext.action (fun (a : 'a_list) (loc : Ploc.t) -> (a : 'a_list))];
+             (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
+          Gramext.action
+            (fun (a : 'a_list2) (loc : Ploc.t) -> (a : 'a_list2))];
        Gramext.Stoken ("", ">}")],
       Gramext.action
-        (fun _ (fel : 'a_list) _ (loc : Ploc.t) ->
+        (fun _ (fel : 'a_list2) _ (loc : Ploc.t) ->
            (Qast.Node ("ExOvr", [Qast.Loc; fel]) : 'expr));
       [Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ":>");
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e));
@@ -3472,27 +3473,31 @@ Grammar.extend
                 (Grammar.Entry.obj (field : 'field Grammar.Entry.e)),
               Gramext.Stoken ("", ";"))],
           Gramext.action
-            (fun (a : 'field list) (loc : Ploc.t) -> (Qast.List a : 'a_list));
+            (fun (a : 'field list) (loc : Ploc.t) ->
+               (Qast.Vala (Qast.List a) : 'a_list2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_list : 'a_list Grammar.Entry.e))],
-          Gramext.action (fun (a : 'a_list) (loc : Ploc.t) -> (a : 'a_list))];
+             (Grammar.Entry.obj (a_list2 : 'a_list2 Grammar.Entry.e))],
+          Gramext.action
+            (fun (a : 'a_list2) (loc : Ploc.t) -> (a : 'a_list2))];
        Gramext.srules
          [[Gramext.Sflag (Gramext.Stoken ("", ".."))],
           Gramext.action
-            (fun (a : bool) (loc : Ploc.t) -> (Qast.Bool a : 'a_flag));
+            (fun (a : bool) (loc : Ploc.t) ->
+               (Qast.Vala (Qast.Bool a) : 'a_flag2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_flag : 'a_flag Grammar.Entry.e))],
-          Gramext.action (fun (a : 'a_flag) (loc : Ploc.t) -> (a : 'a_flag))];
+             (Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e))],
+          Gramext.action
+            (fun (a : 'a_flag2) (loc : Ploc.t) -> (a : 'a_flag2))];
        Gramext.Stoken ("", ">")],
       Gramext.action
-        (fun _ (v : 'a_flag) (ml : 'a_list) _ (loc : Ploc.t) ->
+        (fun _ (v : 'a_flag2) (ml : 'a_list2) _ (loc : Ploc.t) ->
            (Qast.Node ("TyObj", [Qast.Loc; ml; v]) : 'ctyp));
       [Gramext.Stoken ("", "#");
        Gramext.Snterm
          (Grammar.Entry.obj
-            (class_longident : 'class_longident Grammar.Entry.e))],
+            (class_longident2 : 'class_longident2 Grammar.Entry.e))],
       Gramext.action
-        (fun (id : 'class_longident) _ (loc : Ploc.t) ->
+        (fun (id : 'class_longident2) _ (loc : Ploc.t) ->
            (Qast.Node ("TyCls", [Qast.Loc; id]) : 'ctyp))]];
     Grammar.Entry.obj (field : 'field Grammar.Entry.e), None,
     [None, None,
@@ -4146,15 +4151,6 @@ Grammar.extend
      Gramext.action
        (fun (a : string) (loc : Ploc.t) ->
           (antiquot "" loc a : 'class_type))]];
-   Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
-   Some (Gramext.Level "simple"),
-   [None, None,
-    [[Gramext.Stoken ("", "{<");
-      Gramext.Snterm (Grammar.Entry.obj (a_list : 'a_list Grammar.Entry.e));
-      Gramext.Stoken ("", ">}")],
-     Gramext.action
-       (fun _ (fel : 'a_list) _ (loc : Ploc.t) ->
-          (Qast.Node ("ExOvr", [Qast.Loc; fel]) : 'expr))]];
    Grammar.Entry.obj (patt : 'patt Grammar.Entry.e),
    Some (Gramext.Level "simple"),
    [None, None,

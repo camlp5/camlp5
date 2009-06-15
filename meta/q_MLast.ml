@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.79 2007/09/13 17:54:32 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.80 2007/09/13 19:41:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -1092,22 +1092,23 @@ EXTEND
           Qast.Node "ExObj" [Qast.Loc; cspo; cf] ] ]
   ;
   expr: LEVEL "."
-    [ [ e = SELF; "#"; lab = label -> Qast.Node "ExSnd" [Qast.Loc; e; lab] ] ]
+    [ [ e = SELF; "#"; lab = label2 ->
+          Qast.Node "ExSnd" [Qast.Loc; e; lab] ] ]
   ;
   expr: LEVEL "simple"
     [ [ "("; e = SELF; ":"; t = ctyp; ":>"; t2 = ctyp; ")" ->
           Qast.Node "ExCoe" [Qast.Loc; e; Qast.Option (Some t); t2]
       | "("; e = SELF; ":>"; t = ctyp; ")" ->
           Qast.Node "ExCoe" [Qast.Loc; e; Qast.Option None; t]
-      | "{<"; fel = SLIST0 field_expr SEP ";"; ">}" ->
+      | "{<"; fel = SV LIST0 field_expr SEP ";"; ">}" ->
           Qast.Node "ExOvr" [Qast.Loc; fel] ] ]
   ;
   field_expr:
     [ [ l = label; "="; e = expr -> Qast.Tuple [l; e] ] ]
   ;
   ctyp: LEVEL "simple"
-    [ [ "#"; id = class_longident -> Qast.Node "TyCls" [Qast.Loc; id]
-      | "<"; ml = SLIST0 field SEP ";"; v = SFLAG ".."; ">" ->
+    [ [ "#"; id = class_longident2 -> Qast.Node "TyCls" [Qast.Loc; id]
+      | "<"; ml = SV LIST0 field SEP ";"; v = SV FLAG ".."; ">" ->
           Qast.Node "TyObj" [Qast.Loc; ml; v] ] ]
   ;
   field:
@@ -1314,9 +1315,6 @@ EXTEND
   ctyp: LEVEL "simple"
     [ [ a = ANTIQUOT "typ" -> antiquot "typ" loc a
       | a = ANTIQUOT -> antiquot "" loc a ] ]
-(*
-      | "("; tl = a_list; ")" -> Qast.Node "TyTup" [Qast.Loc; tl] ] ]
-*)
   ;
   class_expr: LEVEL "simple"
     [ [ a = ANTIQUOT -> antiquot "" loc a ] ]
@@ -1329,9 +1327,6 @@ EXTEND
   ;
   class_type:
     [ [ a = ANTIQUOT -> antiquot "" loc a ] ]
-  ;
-  expr: LEVEL "simple"
-    [ [ "{<"; fel = a_list; ">}" -> Qast.Node "ExOvr" [Qast.Loc; fel] ] ]
   ;
   patt: LEVEL "simple"
     [ [ "#"; a = a_list -> Qast.Node "PaTyp" [Qast.Loc; a] ] ]

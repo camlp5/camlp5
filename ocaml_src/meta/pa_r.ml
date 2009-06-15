@@ -2086,9 +2086,9 @@ Grammar.extend
     Some (Gramext.Level "."),
     [None, None,
      [[Gramext.Sself; Gramext.Stoken ("", "#");
-       Gramext.Snterm (Grammar.Entry.obj (label : 'label Grammar.Entry.e))],
+       Gramext.Snterm (Grammar.Entry.obj (label2 : 'label2 Grammar.Entry.e))],
       Gramext.action
-        (fun (lab : 'label) _ (e : 'expr) (loc : Ploc.t) ->
+        (fun (lab : 'label2) _ (e : 'expr) (loc : Ploc.t) ->
            (MLast.ExSnd (loc, e, lab) : 'expr))]];
     Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
     Some (Gramext.Level "simple"),
@@ -2138,9 +2138,9 @@ Grammar.extend
       [Gramext.Stoken ("", "#");
        Gramext.Snterm
          (Grammar.Entry.obj
-            (class_longident : 'class_longident Grammar.Entry.e))],
+            (class_longident2 : 'class_longident2 Grammar.Entry.e))],
       Gramext.action
-        (fun (id : 'class_longident) _ (loc : Ploc.t) ->
+        (fun (id : 'class_longident2) _ (loc : Ploc.t) ->
            (MLast.TyCls (loc, id) : 'ctyp))]];
     Grammar.Entry.obj (field : 'field Grammar.Entry.e), None,
     [None, None,
