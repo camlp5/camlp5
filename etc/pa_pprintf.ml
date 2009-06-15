@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_pprintf.ml,v 1.14 2007/12/06 08:56:49 deraugla Exp $ *)
+(* $Id: pa_pprintf.ml,v 1.15 2007/12/06 10:56:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* pprintf statement *)
@@ -13,7 +13,7 @@ value get_assoc_args loc str al =
         if str.[i] = '%' then
           let (rev_str_al, al) =
             match str.[i+1] with
-            [ 's' ->
+            [ 'c' | 's' ->
                 match al with
                 [ [a :: al] -> ([a :: rev_str_al], al)
                 | [] ->
@@ -202,7 +202,7 @@ value make_call loc (bef_is_empty, aft_is_empty) pc offset pcl =
       fun
       [ [(bef, bef_al, aft, aft_al, f_f_a_opt) :: pcl] ->
           let is_last = pcl = [] in
-          let add_pc_bef = not bef_is_empty && is_first in
+          let add_pc_bef = (* not bef_is_empty & *) is_first in
           let add_pc_aft = not aft_is_empty && is_last in
           let e =
             match f_f_a_opt with
