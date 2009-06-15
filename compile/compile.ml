@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: compile.ml,v 1.22 2007/09/07 13:24:52 deraugla Exp $ *)
+(* $Id: compile.ml,v 1.23 2007/09/11 06:04:37 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 
@@ -258,56 +258,7 @@ and parse_kont entry nlevn alevn act_kont s son =
       <:expr< try $p1$ with [ Stream.Failure -> $err$ ] >> ]
 and parse_symbol entry nlevn s rkont fkont ending_act =
   match s with
-  [ Slist0 s ->
-      let e = <:expr< P.list0 $symbol_parser entry nlevn s$ >> in
-      parse_symbol_no_failure e rkont fkont ending_act
-  | Slist1 s ->
-      let e = <:expr< P.list1 $symbol_parser entry nlevn s$ >> in
-      parse_standard_symbol e rkont fkont ending_act
-  | Slist0sep s sep ->
-      let e =
-        <:expr<
-          P.list0sep $symbol_parser entry nlevn s$
-            $symbol_parser entry nlevn sep$ >>
-      in
-      parse_symbol_no_failure e rkont fkont ending_act
-  | Slist1sep s sep ->
-      let e =
-        <:expr<
-           P.list1sep $symbol_parser entry nlevn s$
-             $symbol_parser entry nlevn sep$ >>
-      in
-      parse_standard_symbol e rkont fkont ending_act
-  | Sopt s ->
-      let e = <:expr< P.option $symbol_parser entry nlevn s$ >> in
-      parse_symbol_no_failure e rkont fkont ending_act
-  | Sflag s ->
-      let e = <:expr< P.bool $symbol_parser entry nlevn s$ >> in
-      parse_symbol_no_failure e rkont fkont ending_act
-  | Stree tree ->
-      let kont = <:expr< raise Stream.Failure >> in
-      let act_kont _ act = gen_let_loc loc (final_action act) in
-      let e = parse_tree phony_entry 0 0 (tree, True) act_kont kont in
-      parse_standard_symbol
-        <:expr< fun (strm__ : Stream.t _) -> $e$ >> rkont fkont
-        ending_act
-  | Snterm e ->
-      let n =
-        match e.edesc with
-        [ Dparser _ -> e.ename
-        | Dlevels _ -> e.ename ^ "_0" ]
-      in
-      parse_standard_symbol <:expr< $lid:n$ >> rkont fkont ending_act
-  | Snterml e l ->
-      let n = e.ename ^ "_" ^ string_of_int (level_number e l) in
-      parse_standard_symbol <:expr< $lid:n$ >> rkont fkont ending_act
-  | Sself ->
-      let n = entry.ename ^ "_0" in
-      parse_standard_symbol <:expr< $lid:n$ >> rkont fkont ending_act
-  | Snext ->
-      let n = entry.ename ^ "_" ^ string_of_int nlevn in
-      parse_standard_symbol <:expr< $lid:n$ >> rkont fkont ending_act
-  | Stoken tok ->
+  [ Stoken tok ->
       let patt = nth_patt_of_act ending_act in
       let p = patt_of_token patt tok in
       <:expr<
@@ -315,14 +266,44 @@ and parse_symbol entry nlevn s rkont fkont ending_act =
         [ Some $p$ -> do { Stream.junk strm__; $rkont$ }
         | _ -> $fkont$ ]
       >>
-  | _ -> parse_standard_symbol <:expr< not_impl >> rkont fkont ending_act ]
+  | s ->
+      let e = symbol_parser entry nlevn s in
+      match s with
+      [ Slist0 _ | Slist0sep _ _ | Sopt _ | Sflag _ ->
+          parse_symbol_no_failure e rkont fkont ending_act
+      | s ->
+          parse_standard_symbol e rkont fkont ending_act ] ]
 and symbol_parser entry nlevn =
   fun
-  [ Snterm e ->
-      let n = e.ename ^ "_0" in
+  [ Slist0 s -> <:expr< P.list0 $symbol_parser entry nlevn s$ >>
+  | Slist1 s -> <:expr< P.list1 $symbol_parser entry nlevn s$ >>
+  | Slist0sep s sep ->
+      <:expr<
+        P.list0sep $symbol_parser entry nlevn s$
+          $symbol_parser entry nlevn sep$ >>
+  | Slist1sep s sep ->
+      <:expr<
+         P.list1sep $symbol_parser entry nlevn s$
+           $symbol_parser entry nlevn sep$ >>
+  | Sopt s -> <:expr< P.option $symbol_parser entry nlevn s$ >>
+  | Sflag s -> <:expr< P.bool $symbol_parser entry nlevn s$ >>
+  | Stree tree ->
+      let kont = <:expr< raise Stream.Failure >> in
+      let act_kont _ act = gen_let_loc loc (final_action act) in
+      let e = parse_tree phony_entry 0 0 (tree, True) act_kont kont in
+      <:expr< fun (strm__ : Stream.t _) -> $e$ >>
+  | Snterm e ->
+      let n =
+        match e.edesc with
+        [ Dparser _ -> e.ename
+        | Dlevels _ -> e.ename ^ "_0" ]
+      in
       <:expr< $lid:n$ >>
   | Snterml e l ->
       let n = e.ename ^ "_" ^ string_of_int (level_number e l) in
+      <:expr< $lid:n$ >>
+  | Sself ->
+      let n = entry.ename ^ "_0" in
       <:expr< $lid:n$ >>
   | Snext ->
       let n = entry.ename ^ "_" ^ string_of_int nlevn in
@@ -339,13 +320,7 @@ and symbol_parser entry nlevn =
       let p_con = String.escaped (fst tok) in
       let p_prm = String.escaped (snd tok) in
       <:expr< P.token ($str:p_con$, $str:p_prm$) >>
-  | Stree tree ->
-      let kont = <:expr< raise Stream.Failure >> in
-      let act_kont _ act = final_action act in
-      <:expr<
-        fun (strm__ : Stream.t _) ->
-          $parse_tree phony_entry 0 0 (tree, True) act_kont kont$
-      >>
+  | Svala s -> <:expr< P.vala $symbol_parser entry nlevn s$ >>
   | _ -> <:expr< aaa >> ]
 ;
 

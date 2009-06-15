@@ -1,9 +1,10 @@
 (* camlp5r q_MLast.cmo pa_extend.cmo *)
-(* $Id: comp_head.ml.tpl,v 1.3 2007/08/01 18:01:19 deraugla Exp $ *)
+(* $Id: comp_head.ml.tpl,v 1.4 2007/09/11 06:04:37 deraugla Exp $ *)
 
 module P =
   struct
     value gloc bp strm = Grammar.loc_of_token_interval bp (Stream.count strm);
+    value vala symb = parser [: a = symb :] -> <:vala< a >>;
     value list0 symb =
       let rec loop al =
         parser
