@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.24 2007/07/04 00:47:28 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.25 2007/07/04 02:17:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1022,23 +1022,35 @@ value expr_expr1 =
                   (curr {(pc) with bef = ""; aft = ""} e3) pc.aft ])
          (fun () ->
             let (eel, e3) = get_else_if e3 in
-            let if_then pc e1 e2 =
+            let if_then pc else_b e1 e2 =
               horiz_vertic
                 (fun () ->
-                   sprintf "%s%s then %s%s" pc.bef
+                   sprintf "%s%sif %s then %s%s" pc.bef else_b
                      (curr {(pc) with bef = ""; aft = ""; dang = ""} e1)
                      (curr {(pc) with bef = ""; aft = ""} e2)
                      pc.aft)
                 (fun () ->
                    let horiz_if_then k =
-                     sprintf "%s%s then%s" pc.bef
+                     sprintf "%s%sif %s then%s" pc.bef else_b
                        (curr {(pc) with bef = ""; aft = ""} e1) k
                    in
                    let vertic_if_then k =
                      let s1 =
-                       curr
-                         {(pc) with ind = pc.ind + 3; aft = ""; dang = ""}
-                         e1
+                       if else_b = "" then
+                         curr
+                           {ind = pc.ind + 3;
+                            bef = sprintf "%s%sif " pc.bef else_b; aft = "";
+                            dang = ""}
+                           e1
+                       else
+                         let s1 = sprintf "%s%sif" pc.bef else_b in
+                         let s2 =
+                           curr
+                             {ind = pc.ind + 2; bef = tab (pc.ind + 2);
+                              aft = ""; dang = ""}
+                             e1
+                         in
+                         sprintf "%s\n%s" s1 s2
                      in
                      let s2 = sprintf "%sthen%s" (tab pc.ind) k in
                      sprintf "%s\n%s" s1 s2
@@ -1063,10 +1075,7 @@ value expr_expr1 =
                     [ ([], <:expr< () >>) -> ("", pc.aft)
                     | _ -> ("else", "") ]
                   in
-                  if_then
-                    {(pc) with bef = sprintf "%sif " pc.bef; aft = pc_aft;
-                     dang = pc_dang}
-                    e1 e2
+                  if_then {(pc) with aft = pc_aft; dang = pc_dang} "" e1 e2
                 in
                 let s2 =
                   loop eel where rec loop =
@@ -1079,10 +1088,9 @@ value expr_expr1 =
                         in
                         sprintf "\n%s%s"
                           (if_then
-                             {(pc) with
-                              bef = sprintf "%selse if " (tab pc.ind);
-                              aft = pc_aft; dang = pc_dang}
-                             e1 e2)
+                             {(pc) with bef = tab pc.ind; aft = pc_aft;
+                              dang = pc_dang}
+                             "else " e1 e2)
                           (loop eel)
                     | [] -> "" ]
                 in
@@ -2827,7 +2835,7 @@ Pcaml.add_option "-sep" (Arg.String (fun x -> sep.val := Some x))
 Pcaml.add_option "-ss" (Arg.Set flag_semi_semi) "Print double semicolons.";
 
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.24 2007/07/04 00:47:28 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.25 2007/07/04 02:17:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
