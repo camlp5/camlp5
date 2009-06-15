@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.106 2007/12/04 20:43:54 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.107 2007/12/05 02:33:57 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1501,11 +1501,7 @@ EXTEND_PRINTER
           let xl = List.map (fun x -> (x, ";")) xl in
           match y with
           [ Some y ->
-              let expr2 pc x =
-                sprint_break 1 0 pc
-                  (fun pc -> expr {(pc) with aft = " ::"} x)
-                  (fun pc -> expr {(pc) with aft = sprintf "]%s" pc.aft} y)
-              in
+              let expr2 pc x = pprintf pc "%p ::@ %p]" expr x expr y in
               plistl expr expr2 0
                 {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef} xl
           | None ->
@@ -1514,16 +1510,11 @@ EXTEND_PRINTER
                  aft = sprintf "]%s" pc.aft}
                 xl ]
       | <:expr< ($e$ : $t$) >> ->
-          sprint_break 1 0 {(pc) with ind = pc.ind + 1}
-            (fun pc ->
-               expr {(pc) with bef = sprintf "%s(" pc.bef; aft = " :"} e)
-            (fun pc ->
-               ctyp {(pc) with aft = sprintf ")%s" pc.aft} t)
+          let pc = {(pc) with ind = pc.ind + 1} in
+          pprintf pc "(%p :@ %p)" expr e ctyp t
       | <:expr< $int:s$ >> | <:expr< $flo:s$ >> ->
-          if String.length s > 0 && s.[0] = '-' then
-            sprintf "%s(%s)%s" pc.bef s pc.aft
-          else
-            sprintf "%s%s%s" pc.bef s pc.aft
+          if String.length s > 0 && s.[0] = '-' then pprintf pc "(%s)" s
+          else pprintf pc "%s" s
       | <:expr< $int32:s$ >> ->
           let s = s ^ "l" in
           if String.length s > 0 && s.[0] = '-' then

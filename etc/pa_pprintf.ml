@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_pprintf.ml,v 1.7 2007/12/04 13:59:37 deraugla Exp $ *)
+(* $Id: pa_pprintf.ml,v 1.8 2007/12/05 02:33:57 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* pprintf statement *)
@@ -70,10 +70,11 @@ value make_call loc (bef_is_empty, aft_is_empty) pc pcl =
     loop [] True pcl where rec loop rev_el is_first =
       fun
       [ [(bef, bef_al, aft, aft_al, f_f_a_opt) :: pcl] ->
+          let is_last = pcl = [] in
+          let add_pc_aft = not aft_is_empty && is_last in
           let e =
             match f_f_a_opt with
             [ Some (f, f_a) ->
-                let is_last = pcl = [] in
                 let lbl = [] in
                 let lbl =
                   if is_first && bef = "" then lbl
@@ -94,7 +95,6 @@ value make_call loc (bef_is_empty, aft_is_empty) pc pcl =
                   if is_last && aft = "" then lbl
                   else
                     let e =
-                      let add_pc_aft = not aft_is_empty && is_last in
                       if not add_pc_aft && aft_al = [] then <:expr< $str:aft$ >>
                       else if not add_pc_aft && aft = "%s" then
                         match aft_al with
@@ -119,12 +119,16 @@ value make_call loc (bef_is_empty, aft_is_empty) pc pcl =
             | None ->
                 if not is_first && bef_al = [] then <:expr< $str:bef$ >>
                 else
-                  let bef = if is_first then "%s" ^ bef else bef in
-                  let e = <:expr< sprintf $str:bef$ >> in
+                  let fmt = if is_first then "%s" ^ bef else bef in
+                  let fmt = if add_pc_aft then fmt ^ "%s" else fmt in
+                  let e = <:expr< sprintf $str:fmt$ >> in
                   let e =
                     if is_first then <:expr< $e$ $pc$.bef >> else e
                   in
-                  List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e bef_al ]
+                  let e =
+                    List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e bef_al
+                  in
+                  if add_pc_aft then <:expr< $e$ $pc$.aft >> else e ]
           in
           loop [e :: rev_el] False pcl
       | [] ->
