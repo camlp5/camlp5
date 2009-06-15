@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.40 2007/07/05 04:08:43 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.41 2007/07/05 04:24:11 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1090,10 +1090,16 @@ value expr_expr1 =
           (fun () ->
              if not flag_horiz_let_in.val then sprintf "\n"
              else
-               sprintf "%slet %s%s %s%s" pc.bef (if rf then "rec " else "")
+               let (begin_op, pc_aft, pc_dang, end_op) =
+                 if pc.dang = ";" then ("(", "", "", ")")
+                 else ("", pc.aft, pc.dang, "")
+               in
+               sprintf "%s%slet %s%s %s%s%s" pc.bef begin_op
+                 (if rf then "rec " else "")
                  (hlist2 let_binding (and_before let_binding)
                     {(pc) with bef = ""; aft = ("", "in")} pel)
-                 (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
+                 (expr {(pc) with bef = ""; aft = ""; dang = pc_dang} e)
+                 end_op pc_aft)
           (fun () ->
              let (begin_op, ind, pc_aft, pc_dang, end_op) =
                if pc.dang = ";" then
@@ -2546,7 +2552,7 @@ Pcaml.add_option "-ss" (Arg.Set flag_semi_semi)
   "Print double semicolons (equivalent to -flag M).";
 
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.40 2007/07/05 04:08:43 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.41 2007/07/05 04:24:11 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
