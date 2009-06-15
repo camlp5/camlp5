@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: fparsers.html,v 1.14 2007/11/26 09:20:52 deraugla Exp $ -->
+  <!-- $Id: fparsers.html,v 1.15 2007/12/01 04:35:08 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>functional parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -53,8 +53,10 @@
       stream-pattern ::= stream-patt-comp
                        | stream-patt-comp ";" stream-pattern
     stream-patt-comp ::= "`" pattern
+                       | "`" pattern "when" expression
                        | pattern "=" expression
                        | pattern
+                       | "when" expression
              pos-opt ::= pattern
                        | &lt;nothing&gt;
 </pre>

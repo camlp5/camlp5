@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: bparsers.html,v 1.2 2007/11/30 13:14:21 deraugla Exp $ -->
+  <!-- $Id: bparsers.html,v 1.3 2007/12/01 04:35:08 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>backtracking parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -55,8 +55,10 @@
       stream-pattern ::= stream-patt-comp
                        | stream-patt-comp ";" stream-pattern
     stream-patt-comp ::= "`" pattern
+                       | "`" pattern "when" expression
                        | pattern "=" expression
                        | pattern
+                       | "when" expression
              pos-opt ::= pattern
                        | &lt;nothing&gt;
 </pre>
