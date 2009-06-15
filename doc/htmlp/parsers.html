@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: parsers.html,v 1.18 2007/08/27 12:07:09 deraugla Exp $ -->
+  <!-- $Id: parsers.html,v 1.19 2007/08/28 01:44:12 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -27,8 +27,9 @@
 
 <p>Notice that the parsers have existed in OCaml since many years (the
   beginning of the 90ies), but some new features have been added in
-  2007 (lookahead, "no error" optimization, and let..in statement) in
-  Camlp5 distribution. This chapter describes them also.</p>
+  2007 (lookahead, "no error" optimization, let..in statement and left
+  factorization) in Camlp5 distribution. This chapter describes them
+  also.</p>
 
 <div id="tableofcontents">
 </div>
@@ -173,15 +174,16 @@
   "this parser encountered a syntax error". In this case, the parsing
   definitively fails.</p>
 
-<p>Like said above, when a parser case applies partially but not
-  completely, the exception "<code>Stream.Error</code>" is
-  raised. This means that if two parser cases start with the same
-  stream pattern components, only the first one have chances to
-  work. This is a limitation of this parsing method. To turn over this
-  limitation, one must factorize the rules to make both work. A
-  typical example is a language having a rule for the statement
-  "if..then..else" and a rule for the shorter "if..then". If written
-  that way:</p>
+<h3>Left factorization</h3>
+
+<p>In parsers, <em>consecutive</em> rules starting with the same
+  components are left factorized. It means that they are transformed
+  into one only rule starting with the common path, and continuing
+  with a call to a parser separating the two cases. The order is
+  kept, except that the possible empty rule is inserted at the
+  end.</p>
+
+<p>For example, the parser:</p>
 
 <pre>
   parser
@@ -189,34 +191,7 @@
   | [: `If; e1 = expr; `Then; e2 = expr :] -> g e1 e2 ]
 </pre>
 
-<p>the second pattern case cannot work.</p>
-
-<p>Indeed, if the input is a stream containg the syntax with
-  "if..then..else", the first pattern case apply and it is
-  ok. Conversely, if the input contains just "if..then", the matching
-  fails when arriving at the "<code>Else</code>" stream pattern
-  component above. Since it is not the first stream pattern component
-  of the parser case, the parser fails with
-  "<code>Stream.Error</code>".</p>
-
-<p>Reversing the parser cases like this does not help:</p>
-
-<pre>
-  parser
-  [ [: `If; e1 = expr; `Then; e2 = expr :] -> g e1 e2
-  | [: `If; e1 = expr; `Then; e2 = expr; `Else; e3 = expr :] -> f e1 e2 e3 ]
-</pre>
-
-<p>In this case, whatever the input, containing the "if..then"
-  construction, or the "if..then..else.." construction, the first
-  parser case applies. If the input is "if..then..else..", only the
-  part "if..then.." is removed from the stream and the part "else.."
-  remains.  When a parser case is applied, like for a function, the
-  next case will never apply.</p>
-
-<p>The solution, with this parsing technology, is to do a left
-factorization of the parsing cases, namely programming it like
-this:</p>
+<p>is transformed into:</p>
 
 <pre>
   parser
@@ -226,6 +201,43 @@ this:</p>
          [ [: `Else; e3 = expr :] -> f e1 e2 e3
          | [: :] -> g e1 e2 ] :] -> a
 </pre>
+
+<p>The version where rules are inverted:</p>
+
+<pre>
+  parser
+  [ [: `If; e1 = expr; `Then; e2 = expr :] -> g e1 e2
+  | [: `If; e1 = expr; `Then; e2 = expr; `Else; e3 = expr :] -> f e1 e2 e3 ]
+</pre>
+
+<p>is transformed into the same parser.</p>
+
+<p>Notice that:
+
+<ul>
+  <li>Only <em>consecutive</em> rules are left factorized. In the
+    following parser:
+<pre>
+  parser
+  [ [: `If; e1 = expr; `Then; e2 = expr; `Else; e3 = expr :] -> f e1 e2 e3
+  | [: a = b :] -> a
+  | [: `If; e1 = expr; `Then; e2 = expr :] -> g e1 e2 ]
+</pre>
+    the two rules starting with "<tt>If</tt>" are not left factorized,
+    and the second "<tt>If</tt>" rule will never work.
+  </li>
+  <li>The components which are not <em>identical</em> are not
+    factorized. In the following parser:
+<pre>
+  parser
+  [ [: `If; e1 = expr; `Then; e2 = expr; `Else; e3 = expr :] -> f e1 e2 e3
+  | [: `If; e4 = expr; `Then; e2 = expr :] -> g e4 e2 ]
+</pre>
+    only the first component, "<tt>If</tt>" is factorized, the second
+    one being different because of different patterns ("<tt>e1</tt>" and
+      "<tt>e4</tt>").
+  </li>
+</ul>
 
 <h3>Match with parser</h3>
 
