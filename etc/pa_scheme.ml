@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.43 2007/10/06 19:13:14 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.44 2007/10/07 01:31:00 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -16,6 +16,11 @@
         (:= buff.val (^ buff.val (String.create (String.length buff.val)))))
     (:= buff.val.[len] x)
     (succ len))
+  (define (mstore len s)
+   (letrec
+    (((add_rec len i)
+      (if (== i (String.length s)) len (add_rec (store len s.[i]) (succ i)))))
+    (add_rec len 0)))
   (define (get len) (String.sub buff.val 0 len))))
 
 (define (rename_id s)
@@ -100,6 +105,7 @@
 (definerec (digits_under kind len)
   (parser
    (((d kind) s) (digits_under kind (Buff.store len d) s))
+   (((` '_') s) (digits_under kind (Buff.store len '_') s))
    (((` 'l')) (values "INT_l" (Buff.get len)))
    (((` 'L')) (values "INT_L" (Buff.get len)))
    (((` 'n')) (values "INT_n" (Buff.get len)))
@@ -121,8 +127,8 @@
 
 (definerec (operator len)
   (parser
-   (((` '.')) (Buff.get (Buff.store len '.')))
-   (() (Buff.get len))))
+   (((` '.')) (Buff.store len '.'))
+   (() len)))
 
 (define (char_or_quote_id x)
   (parser
@@ -167,16 +173,16 @@
       (values (values "STRING" s) (values bp ep)))
      (((` ''') (tok quote)) ep (values tok (values bp ep)))
      (((` '<') (tok (less kwt))) ep (values tok (values bp ep)))
-     (((` '-') (tok (minus kwt))) ep (values tok (values bp ep)))
+     (((` '-') (tok (minus bp kwt))) ep (values tok (values bp ep)))
      (((` '#') (tok (sharp bp kwt))) ep (values tok (values bp ep)))
      (((` '~') (tok tilde)) ep (values tok (values bp ep)))
      (((` '?') (tok question)) ep (values tok (values bp ep)))
      (((` (as (range '0' '9') c)) (tok (number (Buff.store 0 c)))) ep
       (values tok (values bp ep)))
      (((` (as (or '+' '*' '/') c)) (len (ident (Buff.store 0 c)))
-       (id (operator len)))
+       (len (operator len)))
       ep
-      (values (identifier kwt id) (values bp ep)))
+      (values (identifier kwt (Buff.get len)) (values bp ep)))
      (((` x) (len (ident (Buff.store 0 x)))) ep
       (values (identifier kwt (Buff.get len)) (values bp ep)))
      (() (values (values "EOI" "") (values bp (+ bp 1))))))
@@ -188,7 +194,8 @@
     (parser
      (((` (as (range 'a' 'z') c)) (len (ident (Buff.store 0 c))))
       (values "TILDEIDENT" (Buff.get len)))
-     (((len (ident (Buff.store 0 '~')))) (values "LIDENT" (Buff.get len)))))
+     (((len (ident (Buff.store 0 '~'))) (len (operator len)))
+      (values "LIDENT" (Buff.get len)))))
   (question
     (parser
      (((` (as (range 'a' 'z') c)) (len (ident (Buff.store 0 c))))
@@ -198,11 +205,13 @@
    (parser
      (((` '(')) (values "" "#("))
      (((tok (base_number kwt bp (Buff.store 0 '0')))) tok)))
-  ((minus kwt)
+  ((minus bp kwt)
     (parser
      (((` '.')) (identifier kwt "-."))
      (((` (as (range '0' '9') c))
       (n (number (Buff.store (Buff.store 0 '-') c)))) n)
+     (((` '#')
+      (n (base_number kwt bp (Buff.mstore 0 "-0")))) n)
      (((len (ident (Buff.store 0 '-')))) (identifier kwt (Buff.get len)))))
   ((less kwt)
     (parser
@@ -473,6 +482,8 @@
     ((Sstring loc s) <:expr< $str:s$ >>)
     ((Stid loc s) <:expr< ~$(rename_id s)$ >>)
     ((Sqid loc s) <:expr< ?$(rename_id s)$ >>)
+    ((Sexpr loc [(Sqid _ s) se])
+     (let* ((s (rename_id s)) (e (expr_se se))) <:expr< ?$s$: $e$ >>))
     ((Sexpr loc []) <:expr< () >>)
     ((when (Sexpr loc [(Slid _ s) e1 . (as [_ . _] sel)])
      (List.mem s assoc_left_parsed_op_list))
@@ -875,7 +886,7 @@
      (let (((values n1 loc1 tpl)
             (match se1
                    ((Sexpr _ [(Slid loc n) . sel])
-                    (values (rename_id n) loc (type_param_list_se sel)))
+                    (values (rename_id n) loc (List.map type_param_se sel)))
                    ((Slid loc n)
                     (values (rename_id n) loc []))
                    ((se)
@@ -890,7 +901,7 @@
      (let (((values n1 loc1 tpl)
             (match se1
                    ((Sexpr _ [(Slid loc n) . sel])
-                    (values (rename_id n) loc (type_param_list_se sel)))
+                    (values (rename_id n) loc (List.map type_param_se sel)))
                    ((Slid loc n)
                     (values (rename_id n) loc []))
                    ((se)
@@ -901,22 +912,20 @@
             [td . (type_declaration_list_se sel)])))
     ([] [])
     ([se . _] (error se "type_declaration"))))
-  (type_param_list_se
-   (lambda_match
-    ([] [])
-    ([(Slid _ "+") se . sel]
-     [(values (type_param_se se) (values True False)) .
-      (type_param_list_se sel)])
-    ([(Slid _ "-") se . sel]
-     [(values (type_param_se se) (values False True)) .
-      (type_param_list_se sel)])
-    ([se . sel]
-     [(values (type_param_se se) (values False False)) .
-      (type_param_list_se sel)])))
-  (type_param_se
-   (lambda_match
+  ((type_param_se se)
+   (match se
     ((when (Slid _ s) (and (>= (String.length s) 2) (= s.[0] ''')))
-      (let ((s (String.sub s 1 (- (String.length s) 1)))) <:vala< s >>))
+      (let ((s (String.sub s 1 (- (String.length s) 1))))
+       (values <:vala< s >> (values False False))))
+    ((when (Slid _ s) (and (>= (String.length s) 3) (= s.[1] ''')))
+      (let
+       ((vara
+         (cond
+          ((= s.[0] '+') (values True False))
+          ((= s.[0] '-') (values False True))
+          (else (error se "type_param"))))
+        (s (String.sub s 2 (- (String.length s) 2))))
+       (values <:vala< s >> vara)))
     (se
      (error se "type_param"))))
   (ctyp_se

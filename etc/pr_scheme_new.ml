@@ -174,18 +174,24 @@ value value_binding b pc (p, e) =
          [ [] -> patt {(pc) with bef = ""; aft = ""} p
          | _ -> hlist patt {(pc) with bef = "("; aft = ")"} [p :: pl] ]
        in
-       sprintf "%s(%s%s %s)%s" pc.bef b s
+       sprintf "%s(%s%s %s)%s" pc.bef (if b = "" then "" else b ^ " ") s
          (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
     (fun () ->
        let s1 =
-         let pc =
-           {(pc) with ind = pc.ind + 1; bef = sprintf "%s(%s" pc.bef b;
-            aft = ""}
-         in
          match pl with
-         [ [] -> patt pc p
+         [ [] ->
+             let pc =
+               {(pc) with ind = pc.ind + 1;
+                bef = sprintf "%s(%s" pc.bef (if b = "" then "" else b ^ " ");
+                aft = ""}
+             in
+             patt pc p
          | _ ->
-             plistbf 0 pc
+             let pc =
+               {(pc) with ind = pc.ind + 1; bef = sprintf "%s(%s" pc.bef b;
+                aft = ""}
+             in
+             (if b = "" then plistf else plistbf) 0 pc
                [(fun pc ->
                    plist patt 0
                      {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
@@ -205,7 +211,7 @@ value value_binding b pc (p, e) =
 value value_binding_list pc (rf, pel) =
   let b = if rf then "definerec" else "define" in
   match pel with
-  [ [(p, e)] -> value_binding (b ^ " ") pc (p, e)
+  [ [(p, e)] -> value_binding b pc (p, e)
   | _ ->
       horiz_vertic
         (fun () ->
@@ -315,6 +321,12 @@ value int_repr s =
     [ 'b' | 'B' -> "#b" ^ String.sub s 2 (String.length s - 2)
     | 'o' | 'O' -> "#o" ^ String.sub s 2 (String.length s - 2)
     | 'x' | 'X' -> "#x" ^ String.sub s 2 (String.length s - 2)
+    | _ -> s ]
+  else if String.length s > 3 && s.[0] = '-' && s.[1] = '0' then
+    match s.[2] with
+    [ 'b' | 'B' -> "-#b" ^ String.sub s 3 (String.length s - 3)
+    | 'o' | 'O' -> "-#o" ^ String.sub s 3 (String.length s - 3)
+    | 'x' | 'X' -> "-#x" ^ String.sub s 3 (String.length s - 3)
     | _ -> s ]
   else s
 ;
@@ -671,11 +683,20 @@ EXTEND_PRINTER
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
              aft = sprintf ")%s" pc.aft}
             el
-(*
-      | <:expr< ~$s$: ($e$) >> ->
-          fun ppf curr next dg k ->
-            fprintf ppf "(~%s@ %a" s expr (e, ks ")" k)
-*)
+      | <:expr< ?$s$ >> ->
+          sprintf "%s?%s%s" pc.bef s pc.aft
+      | <:expr< ?$s$: $e$ >> ->
+          plistf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc -> sprintf "%s?%s%s" pc.bef s pc.aft, "");
+             (fun pc -> curr pc e, "")]
+      | <:expr< ~$s$: $e$ >> ->
+          plistf 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(fun pc -> sprintf "%s~%s%s" pc.bef s pc.aft, "");
+             (fun pc -> curr pc e, "")]
       | <:expr< $e1$ .[ $e2$ ] >> ->
           sprintf "%s%s.[%s]%s" pc.bef
             (curr {(pc) with bef = ""; aft = ""} e1)
@@ -772,6 +793,11 @@ EXTEND_PRINTER
                      List.rev_map (fun p -> (p, "")) [x :: List.rev pl]
                    in
                    plistl curr dot_patt 0 pc pl) ]
+      | <:patt< [| $list:pl$ |] >> ->
+          plist curr 0
+            {(pc) with ind = pc.ind + 2; bef = sprintf "%s#(" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            (List.map (fun p -> (p, "")) pl)
       | <:patt< $p1$ $p2$ >> ->
           let pl =
             loop [p2] p1 where rec loop pl =
@@ -797,20 +823,17 @@ EXTEND_PRINTER
             pl
       | <:patt< { $list:fpl$ } >> ->
           let record_binding pc (p1, p2) =
-            horiz_vertic
-              (fun () ->
-                 sprintf "%s(%s %s)%s" pc.bef
-                   (curr {(pc) with bef = ""; aft = ""} p1)
-                   (curr {(pc) with bef = ""; aft = ""} p2) pc.aft)
-              (fun () -> not_impl "record_binding vertic" pc 0)
+            plistf 0
+              {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+               aft = sprintf ")%s" pc.aft}
+              [(fun pc -> curr pc p1, ""); (fun pc -> curr pc p2, "")]
           in
-          let fpl = List.map (fun fp -> (fp, "")) fpl in
           plist record_binding 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s{" pc.bef;
              aft = sprintf "}%s" pc.aft}
-            fpl
-      | <:patt< ?$x$ >> ->
-          not_impl "?x" pc x
+            (List.map (fun fp -> (fp, "")) fpl)
+      | <:patt< ?$s$ >> ->
+          sprintf "%s?%s%s" pc.bef s pc.aft
       | <:patt< ? ($lid:x$ = $e$) >> ->
           plistf 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
@@ -822,7 +845,7 @@ EXTEND_PRINTER
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
              aft = sprintf ")%s" pc.aft}
             [(fun pc -> sprintf "%s~%s%s" pc.bef s pc.aft, "");
-             (fun pc -> patt pc p, "")]
+             (fun pc -> curr pc p, "")]
       | <:patt< $p1$ . $p2$ >> ->
            sprintf "%s.%s"
              (curr {(pc) with aft = ""} p1)
@@ -837,6 +860,12 @@ EXTEND_PRINTER
           sprintf "%s'%s'%s" pc.bef s pc.aft
       | <:patt< $int:s$ >> ->
           sprintf "%s%s%s" pc.bef (int_repr s) pc.aft
+      | <:patt< $int32:s$ >> ->
+          sprintf "%s%sl%s" pc.bef (int_repr s) pc.aft
+      | <:patt< $int64:s$ >> ->
+          sprintf "%s%sL%s" pc.bef (int_repr s) pc.aft
+      | <:patt< $nativeint:s$ >> ->
+          sprintf "%s%sn%s" pc.bef (int_repr s) pc.aft
 (*
       | <:patt< $flo:s$ >> ->
           fun ppf curr next dg k -> fprintf ppf "%s%t" s k

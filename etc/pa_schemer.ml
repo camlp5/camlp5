@@ -21,6 +21,11 @@ module Buff =
       buff.val.[len] := x;
       succ len
     };
+    value mstore len s =
+      add_rec len 0 where rec add_rec len i =
+        if i == String.length s then len
+        else add_rec (store len s.[i]) (succ i)
+    ;
     value get len = String.sub buff.val 0 len;
   end
 ;
@@ -112,6 +117,7 @@ value hexa = parser [: `('0'..'9' | 'a'..'f' | 'A'..'F' as c) :] -> c;
 value rec digits_under kind len =
   parser
   [ [: d = kind; s :] -> digits_under kind (Buff.store len d) s
+  | [: `'_'; s :] -> digits_under kind (Buff.store len '_') s
   | [: `'l' :] -> ("INT_l", Buff.get len)
   | [: `'L' :] -> ("INT_L", Buff.get len)
   | [: `'n' :] -> ("INT_n", Buff.get len)
@@ -136,8 +142,8 @@ value base_number kwt bp len =
 
 value rec operator len =
   parser
-  [ [: `'.' :] -> Buff.get (Buff.store len '.')
-  | [: :] -> Buff.get len ]
+  [ [: `'.' :] -> Buff.store len '.'
+  | [: :] -> len ]
 ;
 
 value char_or_quote_id x =
@@ -183,15 +189,15 @@ value rec lexer kwt =
   | [: `'"'; s = string 0 :] ep -> (("STRING", s), (bp, ep))
   | [: `'''; tok = quote :] ep -> (tok, (bp, ep))
   | [: `'<'; tok = less kwt :] ep -> (tok, (bp, ep))
-  | [: `'-'; tok = minus kwt :] ep -> (tok, (bp, ep))
+  | [: `'-'; tok = minus bp kwt :] ep -> (tok, (bp, ep))
   | [: `'#'; tok = sharp bp kwt :] ep -> (tok, (bp, ep))
   | [: `'~'; tok = tilde :] ep -> (tok, (bp, ep))
   | [: `'?'; tok = question :] ep -> (tok, (bp, ep))
   | [: `('0'..'9' as c); tok = number (Buff.store 0 c) :] ep ->
       (tok, (bp, ep))
   | [: `('+' | '*' | '/' as c); len = ident (Buff.store 0 c);
-       id = operator len :] ep ->
-      (identifier kwt id, (bp, ep))
+       len = operator len :] ep ->
+      (identifier kwt (Buff.get len), (bp, ep))
   | [: `x; len = ident (Buff.store 0 x) :] ep ->
       (identifier kwt (Buff.get len), (bp, ep))
   | [: :] -> (("EOI", ""), (bp, bp + 1)) ]
@@ -203,7 +209,8 @@ and tilde =
   parser
   [ [: `('a'..'z' as c); len = ident (Buff.store 0 c) :] ->
       ("TILDEIDENT", Buff.get len)
-  | [: len = ident (Buff.store 0 '~') :] -> ("LIDENT", Buff.get len) ]
+  | [: len = ident (Buff.store 0 '~'); len = operator len :] ->
+      ("LIDENT", Buff.get len) ]
 and question =
   parser
   [ [: `('a'..'z' as c); len = ident (Buff.store 0 c) :] ->
@@ -213,10 +220,11 @@ and sharp bp kwt =
   parser
   [ [: `'(' :] -> ("", "#(")
   | [: tok = base_number kwt bp (Buff.store 0 '0') :] -> tok ]
-and minus kwt =
+and minus bp kwt =
   parser
   [ [: `'.' :] -> identifier kwt "-."
   | [: `('0'..'9' as c); n = number (Buff.store (Buff.store 0 '-') c) :] -> n
+  | [: `'#'; n = base_number kwt bp (Buff.mstore 0 "-0") :] -> n
   | [: len = ident (Buff.store 0 '-') :] -> identifier kwt (Buff.get len) ]
 and less kwt =
   parser
@@ -501,6 +509,10 @@ and expr_se =
   | Sstring loc s -> <:expr< $str:s$ >>
   | Stid loc s -> <:expr< ~$(rename_id s)$ >>
   | Sqid loc s -> <:expr< ?$(rename_id s)$ >>
+  | Sexpr loc [Sqid _ s; se] ->
+      let s = rename_id s in
+      let e = expr_se se in
+      <:expr< ?$s$: $e$ >>
   | Sexpr loc [] -> <:expr< () >>
   | Sexpr loc [Slid _ s; e1 :: ([_ :: _] as sel)]
     when List.mem s assoc_left_parsed_op_list ->
@@ -928,7 +940,7 @@ and type_declaration_se =
       let (n1, loc1, tpl) =
         match se1 with
         [ Sexpr _ [Slid loc n :: sel] ->
-            (rename_id n, loc, type_param_list_se sel)
+            (rename_id n, loc, List.map type_param_se sel)
         | Slid loc n -> (rename_id n, loc, [])
         | se -> error se "type declaration" ]
       in
@@ -942,7 +954,7 @@ and type_declaration_list_se =
       let (n1, loc1, tpl) =
         match se1 with
         [ Sexpr _ [Slid loc n :: sel] ->
-            (rename_id n, loc, type_param_list_se sel)
+            (rename_id n, loc, List.map type_param_se sel)
         | Slid loc n -> (rename_id n, loc, [])
         | se -> error se "type declaration" ]
       in
@@ -954,20 +966,18 @@ and type_declaration_list_se =
       [td :: type_declaration_list_se sel]
   | [] -> []
   | [se :: _] -> error se "type_declaration" ]
-and type_param_list_se =
-  fun
-  [ [] -> []
-  | [Slid _ "+"; se :: sel] ->
-      [(type_param_se se, (True, False)) :: type_param_list_se sel]
-  | [Slid _ "-"; se :: sel] ->
-      [(type_param_se se, (False, True)) :: type_param_list_se sel]
-  | [se :: sel] ->
-      [(type_param_se se, (False, False)) :: type_param_list_se sel] ]
-and type_param_se =
-  fun
+and type_param_se se =
+  match se with
   [ Slid _ s when String.length s >= 2 && s.[0] = ''' ->
       let s = String.sub s 1 (String.length s - 1) in
-      <:vala< s >>
+      (<:vala< s >>, (False, False))
+  | Slid _ s when String.length s >= 3 && s.[1] = ''' ->
+      let vara =
+        if s.[0] = '+' then (True, False)
+        else if s.[0] = '-' then (False, True)
+        else error se "type_param"
+      and s = String.sub s 2 (String.length s - 2) in
+      (<:vala< s >>, vara)
   | se -> error se "type_param" ]
 and ctyp_se =
   fun
