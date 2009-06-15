@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.161 2007/12/25 19:07:11 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.162 2007/12/26 00:53:56 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1406,22 +1406,16 @@ EXTEND_PRINTER
       | <:module_type< $mt$ with $list:wcl$ >> ->
           horiz_vertic
             (fun () ->
-               sprintf "%s%s %s%s" pc.bef
-                 (module_type {(pc) with bef = ""; aft = ""} mt)
-                 (hlist with_constraint {(pc) with bef = ""; aft = ""} wcl)
-                    pc.aft)
+               pprintf pc "%p %p" module_type mt (hlist with_constraint) wcl)
             (fun () ->
-               let s1 = module_type {(pc) with aft = ""} mt in
-               let s2 =
-                 vlist with_constraint
-                   {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} wcl
-               in
-               sprintf "%s\n%s" s1 s2) ]
+               pprintf pc "%p@;%p" module_type mt (vlist with_constraint)
+                 wcl) ]
     | "dot"
       [ <:module_type< $x$ . $y$ >> ->
-          curr {(pc) with bef = curr {(pc) with aft = "."} x} y ]
+          pprintf pc "%p.%p" curr x curr y ]
     | "simple"
-      [ <:module_type< $uid:s$ >> -> sprintf "%s%s%s" pc.bef s pc.aft ] ]
+      [ <:module_type< $uid:s$ >> ->
+          pprintf pc "%s" s ] ]
   ;
 END;
 
@@ -1625,42 +1619,28 @@ value class_type = Eprinter.apply pr_class_type;
 value class_str_item = Eprinter.apply pr_class_str_item;
 value class_sig_item = Eprinter.apply pr_class_sig_item;
 
-value amp_before elem pc x = elem {(pc) with bef = sprintf "%s& " pc.bef} x;
+value amp_before elem pc x = pprintf pc "& %p" elem x;
 
 value class_type_params pc ctp =
-  if ctp = [] then sprintf "%s%s" pc.bef pc.aft
+  if ctp = [] then pprintf pc ""
   else
     let ctp = List.map (fun ct -> (ct, ",")) ctp in
-    plist type_var 1
-      {(pc) with bef = sprintf "%s[" pc.bef; aft = sprintf "] %s" pc.aft}
-      ctp
+    pprintf pc "[%p] " (plist type_var 1) ctp
 ;
 
-value class_def_or_type_decl char pc ci =
-  horiz_vertic
-    (fun () ->
-       sprintf "%s%s%s%s %c %s%s" pc.bef
-         (if Pcaml.unvala ci.MLast.ciVir then " virtual" else "")
-         (class_type_params {(pc) with bef = ""; aft = ""}
-            (Pcaml.unvala (snd ci.MLast.ciPrm)))
-         (Pcaml.unvala ci.MLast.ciNam) char
-         (class_type {(pc) with bef = ""; aft = ""} ci.MLast.ciExp) pc.aft)
-    (fun () ->
-       let s1 =
-         sprintf "%s%s%s%s %c" pc.bef
-           (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
-           (class_type_params {(pc) with bef = ""; aft = ""}
-              (Pcaml.unvala (snd ci.MLast.ciPrm)))
-           (Pcaml.unvala ci.MLast.ciNam) char
-       in
-       let s2 =
-         class_type {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)}
-           ci.MLast.ciExp
-       in
-       sprintf "%s\n%s" s1 s2)
+value class_def pc ci =
+  pprintf pc "%s%p%s :@;%p"
+    (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
+    class_type_params (Pcaml.unvala (snd ci.MLast.ciPrm))
+    (Pcaml.unvala ci.MLast.ciNam) class_type ci.MLast.ciExp
 ;
-value class_def = class_def_or_type_decl ':';
-value class_type_decl = class_def_or_type_decl '=';
+
+value class_type_decl pc ci =
+  pprintf pc "%s%p%s =@;%p"
+    (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
+    class_type_params (Pcaml.unvala (snd ci.MLast.ciPrm))
+    (Pcaml.unvala ci.MLast.ciNam) class_type ci.MLast.ciExp
+;
 
 value class_type_decl_list pc cd =
   horiz_vertic
