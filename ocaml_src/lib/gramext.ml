@@ -7,7 +7,7 @@ open Printf;;
 type 'a parser_t = 'a Stream.t -> Obj.t;;
 type 'a bparser_t = ('a, Obj.t) Fstream.bp;;
 
-type parse_algorithm = Imperative | Backtracking | DefaultAlgorithm;;
+type parse_algorithm = Predictive | Backtracking | DefaultAlgorithm;;
 
 type 'te grammar =
   { gtokens : (Plexing.pattern, int ref) Hashtbl.t;

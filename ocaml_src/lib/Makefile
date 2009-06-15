@@ -19,7 +19,8 @@ $(TARGET:.cma=.cmxa): $(OBJS:.cmo=.cmx)
 	$(OCAMLOPT) $(OBJS:.cmo=.cmx) -a -o $(TARGET:.cma=.cmxa)
 
 clean::
-	rm -f *.cm[ioax] *.cmxa *.pp[io] *.o *.a *.bak .*.bak $(TARGET)
+	rm -f *.cm[ioax] *.cmxa *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak
+	rm -f $(TARGET)
 
 depend:
 	cp .depend .depend.bak
@@ -50,7 +51,7 @@ installopt:
 	if test -f $(TARGET:.cma=.lib); then \
 	  cp $(TARGET:.cma=.lib) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
 	else \
-	  tar cf - $(TARGET:.cma=.a) | \
+	  tar cf - $(TARGET:.cma=$(EXT_LIB)) | \
 	  (cd "$(DESTDIR)$(LIBDIR)/$(NAME)/."; tar xf -); \
 	fi
 

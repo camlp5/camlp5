@@ -794,7 +794,7 @@ let rec next_token ctx buf (strm__ : _ Stream.t) =
       Stream.junk strm__;
       let s = strm__ in
       let ep = Stream.count strm__ in
-      incr !(Plexing.line_nb);
+      if c = '\n' then incr !(Plexing.line_nb);
       !(Plexing.bol_pos) := ep;
       ctx.set_line_nb ();
       ctx.after_space <- true;

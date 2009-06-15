@@ -33,7 +33,7 @@ $(NAME).cmxa: $(CAMLP5_XOBJS)
 	$(OCAMLOPT) $(LINKFLAGS) $(CAMLP5_XOBJS) -a -o $(NAME).cmxa
 
 clean::
-	rm -f *.cm* *.pp[io] *.[oa] *.bak .*.bak *.out *.opt
+	rm -f *.cm* *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak *.out *.opt
 	rm -f $(CAMLP5)
 
 depend:
@@ -61,7 +61,7 @@ install:
 	cp $(NAME).cma "$(DESTDIR)$(LIBDIR)/$(NAME)/."
 	if test -f $(NAME).cmxa; then \
 	  cp $(NAME).cmxa "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
-	  cp $(NAME).a "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	  cp $(NAME)$(EXT_LIB) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
 	fi
 
 include .depend
