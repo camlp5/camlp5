@@ -345,45 +345,36 @@ let get_symbol_after_dot =
 ;;
 
 let close_item_set rl items =
-  let processed = ref [] in
   let rclos =
-    List.fold_left
-      (fun clos (m, added, lh, dot, rh as item) ->
-         match get_symbol_after_dot dot rh with
-           Some (GS_nterm n) ->
-             processed := lh :: !processed;
-             let rec loop clos to_process =
-               match Fifo.get to_process with
-                 Some (n, to_process) ->
-                   if List.mem n !processed then loop clos to_process
-                   else
-                     begin
-                       processed := n :: !processed;
-                       let rl = List.filter (fun (_, lh, rh) -> n = lh) rl in
-                       let clos =
-                         List.fold_left
-                           (fun clos (m, lh, rh) ->
-                              (m, true, lh, 0, rh) :: clos)
-                           clos rl
-                       in
-                       let to_process =
-                         List.fold_left
-                           (fun to_process (_, lh, rh) ->
-                              match rh with
-                                [] -> to_process
-                              | s :: sl ->
-                                  match s with
-                                    GS_nterm n -> Fifo.add n to_process
-                                  | GS_term _ -> to_process)
-                           to_process rl
-                       in
-                       loop clos to_process
-                     end
-               | None -> clos
-             in
-             loop (item :: clos) (Fifo.single n)
-         | Some (GS_term _) | None -> item :: clos)
-      [] items
+    let rec loop rclos =
+      function
+        (m, added, lh, dot, rh as item) :: rest ->
+          if List.mem item rclos then loop rclos rest
+          else
+            let rest =
+              match get_symbol_after_dot dot rh with
+                Some (GS_nterm n) ->
+                  let rrest =
+                    let rec loop rrest =
+                      function
+                        (m, lh, rh) :: rest1 ->
+                          let rrest =
+                            if n = lh then
+                              let item = m, true, lh, 0, rh in item :: rrest
+                            else rrest
+                          in
+                          loop rrest rest1
+                      | [] -> rrest
+                    in
+                    loop [] rl
+                  in
+                  List.rev_append rrest rest
+              | Some (GS_term _) | None -> rest
+            in
+            loop (item :: rclos) rest
+      | [] -> rclos
+    in
+    loop [] items
   in
   List.rev rclos
 ;;
@@ -529,13 +520,13 @@ let compute_nb_symbols item_set_ht term_table nterm_table =
     item_set_ht (0, 0)
 ;;
 
-(* *)
+(*DEFINE TEST;*)
 
 let lr0 entry lev =
   Printf.eprintf "LR(0) %s %d\n" entry.ename lev;
   flush stderr;
   let (rl, entry_name) =
-    let rl = ["E", [GS_term "1"; GS_nterm "E"]; "E", [GS_term "1"]] in rl, "E"
+    let rl = flatten_gram entry lev in rl, name_of_entry entry lev
   in
   let rl =
     let (rrl, _) =
@@ -544,16 +535,16 @@ let lr0 entry lev =
     in
     List.rev rrl
   in
-  let item_set_0 =
-    let item = 0, false, "S", 0, [GS_nterm entry_name] in
-    close_item_set rl [item]
-  in
   Printf.eprintf "%d rules\n\n" (List.length rl);
   flush stderr;
   check_closed rl;
   List.iter eprint_rule rl;
   Printf.eprintf "\n";
   flush stderr;
+  let item_set_0 =
+    let item = 0, false, "S", 0, [GS_nterm entry_name] in
+    close_item_set rl [item]
+  in
   Printf.eprintf "\n";
   Printf.eprintf "Item set 0\n\n";
   List.iter eprint_item item_set_0;
@@ -596,16 +587,18 @@ let lr0 entry lev =
                 let i = Hashtbl.find nterm_table s in line.(i) <- n)
          symb_cnt_assoc)
     shift_assoc;
-  Printf.eprintf "\n\ngoto table\n\n";
-  for i = 0 to Array.length goto_table - 1 do
-    Printf.eprintf "state %d :" i;
-    let line = goto_table.(i) in
-    for j = 0 to Array.length line - 1 do
-      if line.(j) = -1 then Printf.eprintf " -"
-      else Printf.eprintf " %d" line.(j)
+  Printf.eprintf "\ngoto table\n\n";
+  if Array.length goto_table > 20 then Printf.eprintf "  (big)\n"
+  else
+    for i = 0 to Array.length goto_table - 1 do
+      Printf.eprintf "state %d :" i;
+      let line = goto_table.(i) in
+      for j = 0 to Array.length line - 1 do
+        if line.(j) = -1 then Printf.eprintf " -"
+        else Printf.eprintf " %d" line.(j)
+      done;
+      Printf.eprintf "\n"
     done;
-    Printf.eprintf "\n"
-  done;
   flush stderr;
   (* make action table *)
   (* size = number of terminals plus one for the 'end of input' *)
@@ -639,6 +632,7 @@ let lr0 entry lev =
   (* if an item set i contains an item of the form A → w • and A → w is
      rule m with m > 0 then the row for state i in the action table is
      completely filled with the reduce action rm. *)
+  let nl = ref true in
   Hashtbl.iter
     (fun item_set i ->
        List.iter
@@ -648,34 +642,56 @@ let lr0 entry lev =
                 let line = action_table.(i) in
                 match line.(0) with
                   ActReduce m1 ->
+                    if !nl then Printf.eprintf "\n";
+                    nl := false;
                     Printf.eprintf
                       "State %d: conflict reduce/reduce rules %d and %d\n" i
                       m1 m;
-                    flush stderr
+                    Printf.eprintf "  reduce with rule ";
+                    let r = List.find (fun (i, _, _) -> i = m) rl in
+                    eprint_rule r;
+                    Printf.eprintf "  reduce with rule ";
+                    let r = List.find (fun (i, _, _) -> i = m1) rl in
+                    eprint_rule r; flush stderr
                 | _ ->
                     for j = 0 to Array.length line - 1 do
                       match line.(j) with
                         ActShift n ->
+                          if !nl then Printf.eprintf "\n";
+                          nl := false;
                           Printf.eprintf "State %d: conflict shift/reduce" i;
                           Printf.eprintf " shift %d rule %d\n" n m;
-                          flush stderr
+                          let s =
+                            Hashtbl.fold
+                              (fun s k v -> if k = j then Some s else v)
+                              term_table None
+                          in
+                          Printf.eprintf "  shift with terminal %s\n"
+                            (match s with
+                               Some s -> s
+                             | None -> "...");
+                          Printf.eprintf "  reduce with rule ";
+                          let r = List.find (fun (i, _, _) -> i = m) rl in
+                          eprint_rule r; flush stderr
                       | _ -> line.(j) <- ActReduce m
                     done)
          item_set)
     item_set_ht;
-  Printf.eprintf "\n\naction table\n\n";
-  for i = 0 to Array.length action_table - 1 do
-    Printf.eprintf "state %d :" i;
-    let line = action_table.(i) in
-    for j = 0 to Array.length line - 1 do
-      match line.(j) with
-        ActShift n -> Printf.eprintf " %4s" (Printf.sprintf "s%d" n)
-      | ActReduce n -> Printf.eprintf " %4s" (Printf.sprintf "r%d" n)
-      | ActAcc -> Printf.eprintf "   acc"
-      | ActErr -> Printf.eprintf "    -"
+  Printf.eprintf "\naction table\n\n";
+  if Array.length action_table > 20 then Printf.eprintf "  (big)\n"
+  else
+    for i = 0 to Array.length action_table - 1 do
+      Printf.eprintf "state %d :" i;
+      let line = action_table.(i) in
+      for j = 0 to Array.length line - 1 do
+        match line.(j) with
+          ActShift n -> Printf.eprintf " %4s" (Printf.sprintf "s%d" n)
+        | ActReduce n -> Printf.eprintf " %4s" (Printf.sprintf "r%d" n)
+        | ActAcc -> Printf.eprintf "   acc"
+        | ActErr -> Printf.eprintf "    -"
+      done;
+      Printf.eprintf "\n"
     done;
-    Printf.eprintf "\n"
-  done;
   flush stderr
 ;;
 
