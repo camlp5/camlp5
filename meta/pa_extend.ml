@@ -1,4 +1,4 @@
-(* camlp5r pa_extend.cmo q_MLast.cmo pa_macro.cmo *)
+(* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
 (***********************************************************************)
 (*                                                                     *)
 (*                             Camlp5                                  *)
@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.37 2007/09/06 04:44:02 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.38 2007/09/06 04:58:13 deraugla Exp $ *)
 
 value split_ext = ref False;
 
