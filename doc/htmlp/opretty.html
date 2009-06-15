@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: opretty.html,v 1.26 2007/08/28 17:49:37 deraugla Exp $ -->
+  <!-- $Id: opretty.html,v 1.27 2007/10/18 04:57:54 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Extensions of printing</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -30,7 +30,7 @@
   output) and <a href="extfun.html">Extfun</a>, another original
   system of extensible functions.</p>
 
-<p>This chapter is destinated to programmers who want to understand
+<p>This chapter is designed for programmers that want to understand
   how the pretty printing of OCaml programs work in Camlp5, want to
   adapt, modify or debug it, or want to add their own pretty printing
   extensions.</p>
@@ -40,8 +40,8 @@
 
 <h2>Introduction</h2>
 
-<p>The files doing the pretty prints are located in Camlp5 sources
-in the directory "etc". Look at them if you are interested on creating
+<p>The files doing the pretty printings are located in Camlp5 sources
+in the directory "etc". Peruse them if you are interested in creating
 new ones. The main ones are:</p>
 
 <ul>
@@ -55,8 +55,9 @@ new ones. The main ones are:</p>
     syntax.</li>
 </ul>
 
-<p>We present here how this system work inside these files. First, the
-  general principles. Second, more details of the implementation.</p>
+<p>We present here how this system works inside these files. First,
+  the general principles. Second, more details of the
+  implementation.</p>
 
 <h2>Principles</h2>
 
@@ -67,18 +68,18 @@ printing context" (variable <code>pc</code>). It is a record holding :</p>
 
 <ul>
   <li>The current indendation : <code>pc.ind</code></li>
-  <li>What has to be printed before, in the same line
-    : <code>pc.bef</code></li>
-  <li>What has to be printed after, in the same line
+  <li>What should be printed before, in the same line
+  : <code>pc.bef</code></li>
+  <li>What should be printed after, in the same line
     : <code>pc.aft</code></li>
   <li>The dangling token, useful in normal syntax to know whether
     parentheses are necessary : <code>pc.dang</code></li>
 </ul>
 
 <p>A typical pretty printing function calls the
-function <code>horiz_vertic</code> of the library
-module <a href="pretty.html">Pretty</a>. This function takes two
-functions as parameter:</p>
+  function <code>horiz_vertic</code> of the library
+  module <a href="pretty.html">Pretty</a>. This function takes two
+  functions as parameter:</p>
 
 <ul>
   <li>The way to print the data in one only line (<i>horizontal</i>
@@ -88,24 +89,24 @@ functions as parameter:</p>
 </ul>
 
 <p>Both functions catenate the strings by using the
-function <code>sprintf</code> of the library
-module <code>Pretty</code> which controls whether the printed data
-holds in the line or not. They generally call, recursively, other
-pretty printing functions with the same behaviour.</p>
+  function <code>sprintf</code> of the library
+  module <code>Pretty</code> which controls whether the printed data
+  holds in the line or not. They generally call, recursively, other
+  pretty printing functions with the same behaviour.</p>
 
-<p>Let us see an example (fictive) of printing an OCaml
-application. Let us suppose we have an application expression
-"<code>e1 e2</code>" to pretty print where <code>e1</code>
-and <code>e2</code> are sub-expressions. If both expressions and their
-application holds on one only line, we want to see:</p>
+<p>Let us see an example (fictitious) of printing an OCaml
+  application. Let us suppose we have an application expression
+  "<code>e1 e2</code>" to pretty print where <code>e1</code>
+  and <code>e2</code> are sub-expressions. If both expressions and
+  their application holds on one only line, we want to see:</p>
 
 <pre>
   e1 e2
 </pre>
 
 <p>On the other hand, if they do not hold on one only line, we want to
-see <code>e2</code> in another line with, say, an indendation of 2
-spaces:</p>
+  see <code>e2</code> in another line with, say, an indendation of 2
+  spaces:</p>
 
 <pre>
   e1
@@ -137,31 +138,32 @@ print the sub-expressions <code>e1</code> and <code>e2</code>:</p>
 </pre>
 
 <p>The first function is the <i>horizontal</i> printing. It ends with a
-<code>sprintf</code> separating the printing of <code>e1</code>
-and <code>e2</code> by a space. The possible "before part"
-(<code>pc.bef</code>) and "after part" (<code>pc.aft</code>) are
-transmitted in the calls of the sub-functions.</p>
+  <code>sprintf</code> separating the printing of <code>e1</code>
+  and <code>e2</code> by a space. The possible "before part"
+  (<code>pc.bef</code>) and "after part" (<code>pc.aft</code>) are
+  transmitted in the calls of the sub-functions.</p>
 
 <p>The second function is the <i>vertical</i> printing. It ends with a
-<code>sprintf</code> separating the printing of <code>e1</code>
-and <code>e2</code> by a newline. The second line starts with an
-indendation, using the "before part" (<code>pc.bef</code>) of the
-second call to <code>expr</code>.</p>
+  <code>sprintf</code> separating the printing of <code>e1</code>
+  and <code>e2</code> by a newline. The second line starts with an
+  indendation, using the "before part" (<code>pc.bef</code>) of the
+  second call to <code>expr</code>.</p>
 
 <p>The pretty printing library
-function <code>Pretty.horiz_vertic</code> calls the first
-(<i>horizontal</i>) function, and if it fails (either
-because <code>s1</code> or <code>s2</code> are too long or hold
-newlines, or because the final string produced by <code>sprintf</code>
-is too long), calls the second (<i>vertical</i>) function.</p>
+  function <code>Pretty.horiz_vertic</code> calls the first
+  (<i>horizontal</i>) function, and if it fails (either
+  because <code>s1</code> or <code>s2</code> are too long or hold
+  newlines, or because the final string produced
+  by <code>sprintf</code> is too long), calls the second
+  (<i>vertical</i>) function.</p>
 
 <p>Notice that the parameter <code>pc</code> contains a
-field <code>pc.bef</code> (what has to be printed before in the same
-line), which in both cases is transmitted to the printing
-of <code>e1</code> (since the syntax <code>{(pc) with aft = ""}</code>
-is a record with <code>pc.bef</code> kept). Same for the
-field <code>pc.aft</code> transmitted to the printing
-of <code>e2</code>.</p>
+  field <code>pc.bef</code> (what should be printed before in the same
+  line), which in both cases is transmitted to the printing
+  of <code>e1</code> (since the syntax <code>{(pc) with aft =
+  ""}</code> is a record with <code>pc.bef</code> kept). Same for the
+  field <code>pc.aft</code> transmitted to the printing
+  of <code>e2</code>.</p>
 
 <h3>Using EXTEND_PRINTER statement</h3>
 
@@ -214,7 +216,7 @@ of <code>e2</code>.</p>
   that syntax). Three tokens may cause problems: the
   "<code>else</code>", the vertical bar "<code>|</code>" and the
   semicolon "<code>;</code>". Here are examples where the presence of
-  these tokens constraints the previous expression to be
+  these tokens constrains the previous expression to be
   parenthesized. In these three examples, removing
   the <span class="parenthesis">begin</span>..<span class="parenthesis">end</span>
   enclosers would change the meaning of the expression because the
@@ -250,19 +252,19 @@ of <code>e2</code>.</p>
 </pre>
 
 <p>The information is transmitted by the
-value <code>pc.dang</code>. In the first example above, while
-displaying the "<code>then</code>" part of the outer
-"<code>if</code>", the sub-expression is called with the
-value <code>pc.dang</code> set to
-<code>"else"</code> to inform the last sub-sub-expression that it is
-going to be followed by that token. When a "<code>if</code>"
-expression has to be displayed without "<code>else</code>" part,
-and that its "<code>pc.dang</code>" is "else", it has to be enclosed
-with spaces.</p>
+  value <code>pc.dang</code>. In the first example above, while
+  displaying the "<code>then</code>" part of the outer
+  "<code>if</code>", the sub-expression is called with the
+  value <code>pc.dang</code> set to
+  <code>"else"</code> to inform the last sub-sub-expression that it is
+  going to be followed by that token. When a "<code>if</code>"
+  expression should be displayed without "<code>else</code>" part, and
+  that its "<code>pc.dang</code>" is "else", it should be enclosed
+  with spaces.</p>
 
 <p>This problem does not exist in revised syntax. While pretty
-printing in revised syntax, the parameter <code>pc.dang</code> is not
-necessary and remains the empty string.</p>
+  printing in revised syntax, the parameter <code>pc.dang</code> is
+  not necessary and remains the empty string.</p>
 
 <h3>By level</h3>
 
@@ -294,8 +296,8 @@ necessary and remains the empty string.</p>
 <h2>The Prtools module</h2>
 
 <p>The Prtools module is defined inside Camlp5 for pretty printing
-  kits. It provides variables and functions to treat comments, and
-  meta-functions to treat lists (horizontally, vertically,
+  kits. It provides variables and functions to process comments, and
+  meta-functions to process lists (horizontally, vertically,
   paragraphly).</p>
 
 <h3>Comments</h3>
