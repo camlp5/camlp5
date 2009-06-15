@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.152 2007/12/25 06:53:48 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.153 2007/12/25 07:21:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1148,22 +1148,16 @@ EXTEND_PRINTER
               pprintf pc "%p@;@[<1>(%p)@]" next p (plist patt 0) al ] ]
     | "dot"
       [ <:patt< $x$ . $y$ >> ->
-          curr {(pc) with bef = curr {(pc) with aft = "."} x} y ]
+          pprintf pc "%p.%p" curr x curr y ]
     | "simple"
       [ <:patt< {$list:lpl$} >> ->
           let lxl = List.map (fun lx -> (lx, ";")) lpl in
-          plist (binding patt) 0
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s{" pc.bef;
-             aft = sprintf "}%s" pc.aft}
-            lxl
+          pprintf pc "@[<1>{%p}@]" (plist (binding patt) 0) lxl
       | <:patt< [| $list:pl$ |] >> ->
-          if pl = [] then sprintf "%s[| |]%s" pc.bef pc.aft
+          if pl = [] then pprintf pc "[| |]"
           else
             let pl = List.map (fun p -> (p, ";")) pl in
-            plist patt 0
-              {(pc) with ind = pc.ind + 3; bef = sprintf "%s[| " pc.bef;
-               aft = (sprintf " |]%s" pc.aft)}
-              pl
+            pprintf pc "@[<3>[| %p |]@]" (plist patt 0) pl
       | <:patt< [$_$ :: $_$] >> as z ->
           let (xl, y) = make_patt_list z in
           match y with
