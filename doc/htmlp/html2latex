@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2latex,v 1.5 2007/07/14 00:54:45 deraugla Exp $
+# $Id: html2latex,v 1.6 2007/07/14 01:34:58 deraugla Exp $
 
 FILES="index.html ptools.html parsers.html fparsers.html lexers.html grammars.html pretty.html opretty.html ml_ast.html pragma.html extfun.html"
 
@@ -34,11 +34,11 @@ echo "\
 for i in $FILES; do
   echo "======" 1>&2
   echo "$i" 1>&2
+  sed -e "{/<\/p>/N; s/\\n *//; /<\/p>/N; s/\\n *//; s|</p><p>|\\n\\n\\\\ \\n\\n\\\\noindent |; s/^ *<p>/\\\\noindent /; s|</p>|\\n\\n|}" $i |
   sed -e '0,/<div id="content">/d' \
     -e 's/^ *<h1[^>]*>/\\chapter{/' -e 's|</h1>|}|' \
     -e 's/^ *<h2>/\\section{/' -e 's|</h2>|}|' \
     -e 's/^ *<h3>/\\subsection{/' -e 's|</h3>|}|' \
-    -e 's/^ *<p>/\\noindent /' -e 's|</p>||' \
     -e 's/^ *<ul>/\\begin{itemize}/' -e 's|^ *</ul>|\\end{itemize}|' \
     -e 's/^ *<ol>/\\begin{enumerate}/' -e 's|^ *</ol>|\\end{enumerate}|' \
     -e 's/^ *<li>/\\item /' -e 's| *</li>||' \
@@ -54,8 +54,10 @@ for i in $FILES; do
     -e 's/#/\\#/g' \
     -e '/\\begin{verbatim}/,/\\end{verbatim}/s/\\_/_/g' \
     -e '/\\begin{verbatim}/,/\\end{verbatim}/s/\\#/#/g' \
-    -e '/<div class="trailer">/,$d' $i
+    -e '/<div class="trailer">/,$d'
 done
+
+#    -e 's/^ *<p>/\\noindent /' -e 's|</p>||' \
   
 echo "
 \\\\end{document}"

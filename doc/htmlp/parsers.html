@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: parsers.html,v 1.4 2007/07/13 22:55:12 deraugla Exp $ -->
+  <!-- $Id: parsers.html,v 1.5 2007/07/14 01:34:58 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -269,8 +269,7 @@ parser
      a =
        parser
        [ [: `Else; e3 = expr ? "expression expected" :] -> f e1 e2 e3
-       | [: :] -> g e1 e2 ] :] ->
-    a
+       | [: :] -> g e1 e2 ] :] -> a
 </pre>
 
 <p>Notice that the expression after the question mark is evaluated
@@ -397,8 +396,7 @@ parser
      e =
        parser
        [ [: f = g :] -> h c
-       | [: :] -> c ] :] ->
-    e
+       | [: :] -> c ] :] -> e
 </pre>
 
 <h3>Lookahead</h3>
@@ -444,8 +442,7 @@ parser
      e =
        parser
        [ [: `Minus; `Rparen :] -> minus_op
-       | [: e = expr; `Rparen :] -> e ] :] ->
-    e
+       | [: e = expr; `Rparen :] -> e ] :] -> e
 </pre>
 
 <p>does not help, because if the input is "<code>(-x+1)</code>" the
@@ -464,8 +461,7 @@ parser
      e =
        parser
        [ [: ?= [ _ Rparen ]; `Minus; `Rparen :] -> minus_op
-       | [: e = expr; `Rparen :] -> e ] :] ->
-    e
+       | [: e = expr; `Rparen :] -> e ] :] -> e
 </pre>
 
 <p>It is possible to put several lists of patterns separated by a
