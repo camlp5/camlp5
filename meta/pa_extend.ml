@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.92 2007/09/30 19:31:16 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.93 2007/09/30 21:41:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -44,7 +44,8 @@ and a_symbol 'e 'p =
   | ASself of loc
   | AStok of loc and string and option (a_string 'e)
   | ASvala of loc and a_symbol 'e 'p and list string
-  | ASvala2 of loc and a_symbol 'e 'p and list string ]
+  | ASvala2 of loc and a_symbol 'e 'p and list string
+      and option (string * 'e) ]
 and a_string 'e =
   [ ATstring of loc and string
   | ATexpr of loc and 'e ]
@@ -336,10 +337,33 @@ value anti_str psl =
   | _ -> "" ]
 ;
 
-value anti_anti n = "_" ^ n;
+value anti_anti n =
+  if n <> "" && (n.[0] = '~' || n.[0] = '?') then
+    String.make 1 n.[0] ^ "_" ^ String.sub n 1 (String.length n - 1)
+  else "_" ^ n
+;
+
 value is_anti_anti n =
   n <> "" && n.[0] = '_' ||
   String.length n > 1 && (n.[0] = '~' || n.[0] = '?') && n.[1] = '_'
+;
+
+value anti_of_tok =
+  fun
+  [ "CHAR" -> ["chr"]
+  | "FLOAT" -> ["flo"]
+  | "INT" -> ["int"]
+  | "INT_l" -> ["int32"]
+  | "INT_L" -> ["int64"]
+  | "INT_n" -> ["nativeint"]
+  | "LIDENT" -> ["lid"; ""]
+  | "QUESTIONIDENT" -> ["?"]
+  | "QUESTIONIDENTCOLON" -> ["?:"]
+  | "STRING" -> ["str"]
+  | "TILDEIDENT" -> ["~"]
+  | "TILDEIDENTCOLON" -> ["~:"]
+  | "UIDENT" -> ["uid"; ""]
+  | s -> [] ]
 ;
 
 value quot_expr psl e =
@@ -635,15 +659,6 @@ value sstoken_prm loc name prm =
   {used = []; text = text; styp = STlid loc "string"}
 ;
 
-value sstoken2 loc ls s =
-  let name = "a_" ^ s ^ "2" in
-  let text =
-    let n = {expr = <:expr< $lid:name$ >>; tvar = name; loc = loc} in
-    TXnterm loc n None
-  in
-  {used = [name]; text = text; styp = STquo loc name}
-;
-
 value ss_aux loc a_name r2 used2 =
   let rl =
     let r1 =
@@ -715,7 +730,7 @@ value ssflag loc s =
   ss_aux loc "a_flag" r s.used
 ;
 
-value ss2 loc ls s =
+value ss2 loc ls oe s =
   let qast_f a =
     match s.styp with
     [ STlid loc "bool" -> <:expr< Qast.Bool $a$ >>
@@ -733,6 +748,33 @@ value ss2 loc ls s =
   in
   let t = new_type_var () in
   let text =
+    let rl =
+      match oe with
+      [ Some (i, e) ->
+          let r =
+            let ps =
+              let text =
+                let name = mk_name2 (i, e) in
+                TXnterm loc name None
+              in
+              let styp = STquo loc i in
+              let s = {used = []; text = text; styp = styp} in
+              {pattern = Some <:patt< a >>; symbol = s}
+            in
+            let act = <:expr< a >> in
+            {prod = [ps]; action = Some act}
+          in
+          [r]
+      | None -> [] ]
+    in
+    let rl =
+      let r2 =
+        let ps = {pattern = Some <:patt< a >>; symbol = s} in
+        let act = <:expr< Qast.VaVal $qast_f <:expr< a >>$>> in
+        {prod = [ps]; action = Some act}
+      in
+      [r2 :: rl]
+    in
     let rl =
       List.fold_right
         (fun a rl ->
@@ -758,16 +800,16 @@ value ss2 loc ls s =
              {prod = [ps]; action = Some act}
            in
            [r1; r2 :: rl])
-        ls []
+        ls rl
     in
-    let r2 =
-      let ps = {pattern = Some <:patt< a >>; symbol = s} in
-      let act = <:expr< Qast.VaVal $qast_f <:expr< a >>$>> in
-      {prod = [ps]; action = Some act}
-    in
-    TXfacto loc (TXrules loc t (rl @ [r2]))
+    TXfacto loc (TXrules loc t rl)
   in
-  {used = s.used; text = text; styp = STquo loc t}
+  let used =
+    match oe with
+    [ Some e -> [fst e :: s.used]
+    | None -> s.used ]
+  in
+  {used = used; text = text; styp = STquo loc t}
 ;
 
 value string_of_a =
@@ -858,19 +900,30 @@ value rec symbol_of_a =
       if quotify.val then
         match s with
         [ AStok _ _ (Some _) -> symbol_of_a s
-        | AStok loc s None -> sstoken2 loc ls s
         | _ ->
             let ls =
+              if ls = [] then
+                match s with
+                [ ASflag _ _ -> ["flag"; "opt"]
+                | ASlist _ _ _ _ -> ["list"]
+                | ASopt _ _ -> ["opt"]
+                | AStok _ s _ -> anti_of_tok s
+                | _ -> [] ]
+              else ls
+            in
+            let oe =
               match s with
-              [ ASflag _ _ ->
-                  (* "opt" = compatibility; deprecated since version 4.07 *)
-                  if ls = [] then ["flag"; "opt"] else ls
-              | ASlist _ _ _ _ -> if ls = [] then ["list"] else ls
-              | ASopt _ _ -> if ls = [] then ["opt"] else ls
-              | _ -> ls ]
+              [ AStok _ s _ ->
+                  match s with
+                  [ "QUESTIONIDENT" -> Some ("a_qi", <:expr< a_qi >>)
+                  | "QUESTIONIDENTCOLON" -> Some ("a_qic", <:expr< a_qic >>)
+                  | "TILDEIDENT" -> Some ("a_ti", <:expr< a_ti >>)
+                  | "TILDEIDENTCOLON" -> Some ("a_tic", <:expr< a_tic >>)
+                  | _ -> None ]
+              | _ -> None ]
             in
             let s = Ploc.call_with quotify False symbol_of_a s in
-            ss2 loc ls s ]
+            ss2 loc ls oe s ]
       else
         let s = symbol_of_a s in
         let (text, styp) =
@@ -878,20 +931,22 @@ value rec symbol_of_a =
           else (TXvala loc ls s.text, STvala loc s.styp)
         in
         {used = s.used; text = text; styp = styp}
-  | ASvala2 loc s ls ->
+  | ASvala2 loc s ls oe ->
       match s with
       [ AStok _ _ (Some _) -> symbol_of_a s
-      | AStok loc s None -> sstoken2 loc ls s
       | s ->
           let ls =
-            match s with
-            [ ASflag _ _ -> if ls = [] then ["flag"] else ls
-            | ASlist _ _ _ _ -> if ls = [] then ["list"] else ls
-            | ASopt _ _ -> if ls = [] then ["opt"] else ls
-            | _ -> ls ]
+            if ls = [] then
+              match s with
+              [ ASflag _ _ -> ["flag"; "opt"]
+              | ASlist _ _ _ _ -> ["list"]
+              | ASopt _ _ -> ["opt"]
+              | AStok _ s _ -> anti_of_tok s
+              | _ -> [] ]
+            else ls
           in
           let s = symbol_of_a s in
-          ss2 loc ls s ] ]
+          ss2 loc ls oe s ] ]
 and psymbol_of_a ap =
   {pattern = ap.ap_patt; symbol = symbol_of_a ap.ap_symb}
 and rules_of_a au =

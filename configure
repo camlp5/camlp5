@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: configure,v 1.22 2007/09/28 00:09:14 deraugla Exp $
+# $Id: configure,v 1.23 2007/09/30 21:41:52 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -213,8 +213,8 @@ cat config/Makefile.cnf
 
 echo
 if [ "$mode" = "T" ]; then
-  echo "=== Transitional mode ==="
+  echo "=== transitional mode ==="
 else
-  echo "=== Strict mode ==="
+  echo "=== strict mode ==="
 fi
 echo

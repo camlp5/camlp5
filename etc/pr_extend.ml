@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extend.ml,v 1.49 2007/09/30 11:48:15 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.50 2007/09/30 21:41:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -41,7 +41,7 @@ type symbol =
   | Snext
   | Stoken of alt Plexing.pattern MLast.expr
   | Srules of list (list (option MLast.patt * symbol) * option MLast.expr)
-  | Svala of list string and symbol ]
+  | Svala of list string and option string and symbol ]
 and alt 'a 'b =
   [ Left of 'a
   | Right of 'b ]
@@ -185,7 +185,7 @@ and unsymbol =
   | <:expr< Gramext.Stoken $e$ >> -> Stoken (untoken e)
   | <:expr< Gramext.srules $e$ >> -> Srules (rev_unlist unrule [] e)
   | <:expr< Gramext.Svala $ls$ $e$ >> ->
-      Svala (unlist unstring ls) (unsymbol e)
+      Svala (unlist unstring ls) None (unsymbol e)
   | _ -> raise Not_found ]
 ;
 
@@ -284,7 +284,29 @@ value rec string_list =
   | [] -> "" ]
 ;
 
-value anti_anti n = "_" ^ n;
+value anti_anti n =
+  if n <> "" && (n.[0] = '~' || n.[0] = '?') then
+    String.make 1 n.[0] ^ "_" ^ String.sub n 1 (String.length n - 1)
+  else "_" ^ n
+;
+
+value anti_of_tok =
+  fun
+  [ "CHAR" -> ["chr"]
+  | "FLOAT" -> ["flo"]
+  | "INT" -> ["int"]
+  | "INT_l" -> ["int32"]
+  | "INT_L" -> ["int64"]
+  | "INT_n" -> ["nativeint"]
+  | "LIDENT" -> ["lid"; ""]
+  | "QUESTIONIDENT" -> ["?"]
+  | "QUESTIONIDENTCOLON" -> ["?:"]
+  | "STRING" -> ["str"]
+  | "TILDEIDENT" -> ["~"]
+  | "TILDEIDENTCOLON" -> ["~:"]
+  | "UIDENT" -> ["uid"; ""]
+  | s -> [] ]
+;
 
 value rec rule pc (sl, a) =
   match a with
@@ -388,7 +410,7 @@ and symbol pc sy =
       [ Some s -> s_symbol pc s
       | None -> simple_symbol pc sy ]
   | Stoken tok -> token pc tok
-  | Svala sl sy ->
+  | Svala sl _ sy ->
       sprintf "%sV %s%s%s" pc.bef (symbol {(pc) with bef = ""; aft = ""} sy)
         (string_list sl) pc.aft
   | sy -> simple_symbol pc sy ]
@@ -448,9 +470,12 @@ and s_symbol pc =
       sprintf "%sSOPT %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
   | Sflag sy ->
       sprintf "%sSFLAG %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
-  | Svala ls s ->
-      sprintf "%sSV %s%s%s" pc.bef
+  | Svala ls oe s ->
+      sprintf "%sSV %s%s%s%s" pc.bef
         (simple_symbol {(pc) with bef = ""; aft= ""} s) (string_list ls)
+        (match oe with
+         [ Some e -> " " ^ e
+         | None -> "" ])
         pc.aft
   | _ -> assert False ]
 and check_slist rl =
@@ -466,7 +491,7 @@ and check_slist rl =
        ([(Some <:patt< a >>,
           ((Slist0 _ | Slist1 _ | Slist0sep _ _ | Slist1sep _ _) as s))],
           Some <:expr< Qast.VaVal (Qast.List a) >>)] ->
-        Some (Svala [] s)
+        Some (Svala [] None s)
 
     | [([(Some <:patt< a >>, Snterm <:expr< a_opt >>)], Some <:expr< a >>);
        ([(Some <:patt< a >>, Sopt s)], Some <:expr< Qast.Option a >>)] ->
@@ -474,7 +499,7 @@ and check_slist rl =
     | [([(Some <:patt< a >>, Snterm <:expr< a_opt2 >>)], Some <:expr< a >>);
        ([(Some <:patt< a >>, (Sopt _ as s))],
           Some <:expr< Qast.VaVal (Qast.Option a) >>)] ->
-        Some (Svala [] s)
+        Some (Svala [] None s)
 
     | [([(Some <:patt< a >>, Snterm <:expr< a_flag >>)], Some <:expr< a >>);
        ([(Some <:patt< a >>, Sflag s)], Some <:expr< Qast.Bool a >>)] ->
@@ -482,7 +507,7 @@ and check_slist rl =
     | [([(Some <:patt< a >>, Snterm <:expr< a_flag2 >>)], Some <:expr< a >>);
        ([(Some <:patt< a >>, (Sflag _ as s))],
           Some <:expr< Qast.VaVal (Qast.Bool a) >>)] ->
-        Some (Svala [] s)
+        Some (Svala [] None s)
 
     | rl ->
         loop [] rl where rec loop ls =
@@ -494,14 +519,22 @@ and check_slist rl =
             when a_n = anti_anti n ->
               loop [n :: ls] rl
           | [([(Some <:patt< a >>, s)], Some <:expr< Qast.VaVal $_$ >>)] ->
+              let ls = List.rev ls in
               let ls =
                 match (s, ls) with
-                [ ((Slist0 _ | Slist0sep _ _), ["list"]) -> []
+                [ (Sflag _, ["flag"; "opt"]) -> []
+                | ((Slist0 _ | Slist0sep _ _), ["list"]) -> []
                 | ((Slist1 _ | Slist1sep _ _), ["list"]) -> []
                 | (Sopt _, ["opt"]) -> []
+                | (Stoken (Left (s, "")), _) ->
+                    if ls = anti_of_tok s then [] else ls
                 | _ -> ls ]                   
               in
-              Some (Svala (List.rev ls) s)
+              Some (Svala ls None s)
+          | [([(Some <:patt< a >>, s)], Some <:expr< Qast.VaVal $_$ >>);
+             ([(Some <:patt< a >>, Snterm <:expr< $lid:e$ >>)],
+              Some <:expr< a >>)] ->
+              Some (Svala ls (Some e) s)
           | _ -> None ] ]
 ;
 

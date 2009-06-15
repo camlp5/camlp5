@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.112 2007/09/25 05:20:51 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.113 2007/09/30 21:41:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -223,8 +223,8 @@ EXTEND
   ;
   expr:
     [ "top" RIGHTA
-      [ "let"; r = V (FLAG "rec") "flag" "opt";
-        l = V (LIST1 let_binding SEP "and"); "in"; x = SELF ->
+      [ "let"; r = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
+        x = SELF ->
           <:expr< let $_flag:r$ $_list:l$ in $x$ >>
       | "let"; "module"; m = V UIDENT; mb = mod_fun_binding; "in"; e = SELF ->
           <:expr< let module $_uid:m$ = $mb$ in $e$ >>
