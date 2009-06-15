@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2texi,v 1.8 2007/08/27 12:24:28 deraugla Exp $
+# $Id: html2texi,v 1.9 2007/08/27 18:25:38 deraugla Exp $
 
 FILES1="index.html ptools.html"
 FILES2="parsers.html lexers.html fparsers.html grammars.html"
@@ -103,32 +103,52 @@ for i in $FILES; do
     cat $i |
     sed \
       -e 's|</p>|\n</p>|' \
-      -e 's|\([^ ]\)</li>|\1\n</li>|g' |
+      -e 's|\([^ ]\)</li>|\1\n</li>|g' \
+      -e 's|\([^ ]\)</dd>|\1\n</dd>|g' |
     sed \
       -e '/<p>/,/<\/p>/s/^ *//' \
-      -e '/<li>/,/<\/li>/s/^ *//' |
+      -e '/<li>/,/^ <\/li>/s/^ *//' \
+      -e '/<dd>/,/<\/dd>/s/^ *//' \
+      -e '/<div[^>]*>/,/<\/div>/s/^ *//' |
+    sed \
+      -e '{/<table[^>]*>$/N; :b; /<tr>$/N; s/\n *//; tb; /<\/tr>$/N; s/\n *//; tb; /<\/th>$/N; s/\n *//; tb; /<\/td>$/N; s/\n *//; tb; /<thead>$/N; s/\n *//; tb; /<\/thead>$/N; s/\n *//; tb; /<tbody>$/N; s/\n *//; tb; /<\/tbody>$/N; s/\n *//; tb}' |
     sed \
       -e 's|@|@@|g' \
       -e 's|{|@{|g' -e 's|}|@}|g' \
       -e '/<div id="tableofcontents">/,/<\/div>/d' \
       -e '/<div class="trailer">/,$d' \
+      -e 's|<div[^>]*>|@noindent |' -e 's|</div>||' \
       -e '1,/<h1/d' \
       -e 's|<h2>|@section |' -e 's|</h2>||' \
       -e 's|<h3>|@subsection |' -e 's|</h3>||' \
       -e 's|<h4>|@subsubsection |' -e 's|</h4>||' \
       -e '/<pre>/,/<\/pre>/s/^  //' \
+      -e 's|<br/>|\n\n@noindent |g' \
       -e 's|^ *<p>|@noindent |' -e 's|</p>||' \
       -e 's|^ *<ul>|@itemize|' -e 's|^ *</ul>|@end itemize|' \
       -e 's|^ *<ol>|@enumerate|' -e 's|^ *</ol>|@end enumerate|' \
       -e 's|^ *<li>|@item |' -e '/<\/li>/d' \
+      -e 's|^ *<dl><dd>|@quotation |' -e 's|^ *</dd></dl>|@end quotation|' \
+      -e 's|^ *<dl>|@table @asis|' -e 's|^ *</dl>|@end table|' \
+      -e 's|^ *<dt>|@item |' -e 's|</dt>||' \
+      -e 's|^ *<dd>||' -e '/<\/dd>/d' \
       -e 's|<b>|@strong{|g' -e 's|</b>|}|g' \
       -e 's|<em>|@emph{|g' -e 's|</em>|}|g' \
       -e 's|<tt>|@code{|g' -e 's|</tt>|}|g' \
       -e 's|<code>|@code{|g' -e 's|</code>|}|g' \
       -e 's|<span [^>]*>|@emph{|g' -e 's|</span>|}|g' \
       -e 's|<a href=\"\([^.]*.html\)[^>]*>|(@pxref{\1}) |g' -e 's|</a>||g' \
-      -e 's|<pre.*>|@example|' -e 's|</pre>|@end example|' \
-      -e 's/&lt;/</g' -e 's/&gt;/>/g'
+      -e 's|<a [^>]*>||g' \
+      -e 's|<pre>|@exampleindent 5\n@example|' -e 's|</pre>|@end example|' \
+      -e 's|<pre [^>]*>|@exampleindent 0\n@example|' \
+      -e 's|<table border="1">|@multitable @columnfractions .35 .35 .23\n|' \
+      -e 's|<table[^>]*>|\n@multitable @columnfractions .50 .50\n|' \
+      -e 's|</table>|@end multitable|' \
+      -e 's|<tr><th[^>]*>|@headitem |g' -e 's|</th><th[^>]*>| @tab |g' \
+      -e 's|</th></tr>|\n|g' \
+      -e 's|<tr><td>|@item |g' -e 's|</td><td[^>]*>| @tab |g' \
+      -e 's|</td></tr>|\n|g' \
+      -e 's/&lt;/</g' -e 's/&gt;/>/g' -e 's/&nbsp;/ /g'
   fi
 done |
 sh ./tmp
