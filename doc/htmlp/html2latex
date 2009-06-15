@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2latex,v 1.8 2007/07/14 02:37:16 deraugla Exp $
+# $Id: html2latex,v 1.9 2007/07/14 04:37:17 deraugla Exp $
 
 FILES="index.html ptools.html parsers.html fparsers.html lexers.html grammars.html pretty.html opretty.html ml_ast.html pragma.html extfun.html"
 
@@ -35,10 +35,10 @@ for i in $FILES; do
   echo "======" 1>&2
   echo "$i" 1>&2
   cat $i |
-  sed -e '{/<\/p>/N; s/\\n *//; /<\/p>/N; s/\\n *//}' |
   sed \
-    -e 's|</p><p>|\\n\\n\\\\ \\n\\n\\\\noindent |g' \
-    -e '{s/^ *<p>/\\noindent /; s|</p>||}' |
+    -e '{:b; /<\/p>$/N; s|<\/p>\n *|<\/p>|g; tb}' \
+    -e 's|</p><p>|\n\n\\ \n\n\\noindent |g' \
+    -e '{s/^ *<p>/\\noindent /; s|</p>|\n\n|}' |
   sed \
     -e '0,/<div id="content">/d' \
     -e 's/^ *<h1[^>]*>/\\chapter{/' -e 's|</h1>|}|' \
