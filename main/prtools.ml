@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: prtools.ml,v 1.4 2007/08/16 11:14:04 deraugla Exp $ *)
+(* $Id: prtools.ml,v 1.5 2007/08/16 13:18:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -26,12 +26,12 @@ value rec hlist elem pc xl =
 ;
 
 (* horizontal list with different function from 2nd element on *)
-value rec hlist2 elem elem2 ({aft = (k0, k)} as pc) xl =
+value rec hlist2 elem elem2 pc xl =
   match xl with
   [ [] -> invalid_arg "hlist2"
-  | [x] -> elem {(pc) with aft = k} x
+  | [x] -> elem pc x
   | [x :: xl] ->
-      sprintf "%s %s" (elem {(pc) with aft = k0} x)
+      sprintf "%s %s" (elem {(pc) with aft = ""} x)
         (hlist2 elem2 elem2 {(pc) with bef = ""} xl) ]
 ;
 

@@ -22,8 +22,7 @@ val hlist : 'a pr_fun -> 'a list pr_fun;;
        of the module Printing, and if the line overflows or contains newlines,
        the function fails (the exception is catched by [horiz_vertic] for
        a vertical pretty print). *)
-val hlist2 :
-  ('a, 'b) pr_gfun -> ('a, 'b) pr_gfun -> ('a list, 'b * 'b) pr_gfun;;
+val hlist2 : 'a pr_fun -> 'a pr_fun -> 'a list pr_fun;;
    (** horizontal list with different function from 2nd element on *)
 val hlistl : 'a pr_fun -> 'a pr_fun -> 'a list pr_fun;;
    (** horizontal list with different function for the last element *)
@@ -74,7 +73,7 @@ val flatten_sequence : MLast.expr -> MLast.expr list option;;
 val source : string ref;;
    (** The initial source string, which must be set by the pretty printing
        kit. Used by [comm_bef] below. *)
-val comm_bef : (_, _) gen_context -> MLast.loc -> string;;
+val comm_bef : pr_context -> MLast.loc -> string;;
    (** [comm_bef pc loc] get the comment from the source (in the global
        variable [source] just before the given location [loc]. May be
        reindented using [pc.ind]. Returns the empty string if no comment

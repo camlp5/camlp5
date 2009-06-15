@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.78 2007/08/16 11:29:18 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.79 2007/08/16 13:18:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -570,7 +570,7 @@ value cons_decl pc (_, c, tl) =
          sprintf "%s%s of %s%s" pc.bef
            (cons_escaped {(pc) with bef = ""; aft = ""} c)
            (hlist2 ctyp_apply (star_before ctyp_apply)
-              {(pc) with bef = ""; aft = ("", "")} tl) pc.aft)
+              {(pc) with bef = ""; aft = ""} tl) pc.aft)
       (fun () ->
          let s1 =
            sprintf "%s%s of" pc.bef
@@ -581,7 +581,7 @@ value cons_decl pc (_, c, tl) =
              (fun () ->
                 sprintf "%s%s%s" (tab (pc.ind + 4))
                   (hlist2 ctyp_apply (star_before ctyp_apply)
-                     {(pc) with bef = ""; aft = ("", "")} tl) pc.aft)
+                     {(pc) with bef = ""; aft = ""} tl) pc.aft)
              (fun () ->
                 let tl = List.map (fun t -> (t, " *")) tl in
                 plist ctyp_apply 2
@@ -705,7 +705,7 @@ value exception_decl pc (e, tl, id) =
           else
             sprintf " of %s"
               (hlist2 ctyp_apply (star_before ctyp_apply)
-                 {(pc) with bef = ""; aft = ("", "")} tl))
+                 {(pc) with bef = ""; aft = ""} tl))
          (if id = [] then ""
           else sprintf " = %s" (mod_ident {(pc) with bef = ""; aft = ""} id))
          pc.aft)
@@ -1242,7 +1242,7 @@ EXTEND_PRINTER
                  sprintf "%s%slet %s%s %s%s%s" pc.bef begin_op
                    (if rf then "rec " else "")
                    (hlist2 let_binding (and_before let_binding)
-                      {(pc) with bef = ""; aft = ("", "in"); dang = ""} pel)
+                      {(pc) with bef = ""; aft = "in"; dang = ""} pel)
                    (expr {(pc) with bef = ""; aft = ""; dang = pc_dang} e)
                    end_op pc.aft)
             (fun () ->
@@ -1910,9 +1910,7 @@ EXTEND_PRINTER
           horiz_vertic
             (fun () ->
                if has_cons_with_params vdl then sprintf "\n"
-               else
-                 hlist2 cons_decl (bar_before cons_decl)
-                   {(pc) with aft = ("", pc.aft)} vdl)
+               else hlist2 cons_decl (bar_before cons_decl) pc vdl)
             (fun () ->
                vlist2 cons_decl (bar_before cons_decl)
                  {(pc) with bef = sprintf "%s  " pc.bef; aft = ("", pc.aft)}
@@ -1973,7 +1971,7 @@ EXTEND_PRINTER
             (fun () ->
                sprintf "%slet %s%s" pc.bef (if rf then "rec " else "")
                  (hlist2 let_binding (and_before let_binding)
-                    {(pc) with bef = ""; aft = ("", pc.aft)} pel))
+                    {(pc) with bef = ""} pel))
             (fun () ->
                vlist2 let_binding (and_before let_binding)
                  {(pc) with
@@ -2394,7 +2392,7 @@ value class_type_decl_list pc cd =
     (fun () ->
        sprintf "%sclass type %s%s" pc.bef
          (hlist2 class_type_decl (and_before class_type_decl)
-            {(pc) with bef = ""; aft = ("", "")} cd)
+            {(pc) with bef = ""; aft = ""} cd)
          pc.aft)
     (fun () ->
        vlist2 class_type_decl (and_before class_type_decl)
@@ -2449,7 +2447,7 @@ value variant_decl pc pv =
          (fun () ->
             sprintf "%s`%s of %s%s%s" pc.bef c (if ao then "& " else "")
               (hlist2 ctyp (amp_before ctyp)
-                 {(pc) with bef = ""; aft = ("", "")} tl) pc.aft)
+                 {(pc) with bef = ""; aft = ""} tl) pc.aft)
          (fun () ->
             let s1 =
               sprintf "%s`%s of%s" pc.bef c (if ao then " &" else "")
@@ -2459,7 +2457,7 @@ value variant_decl pc pv =
                  (fun () ->
                     sprintf "%s%s%s" (tab (pc.ind + 6))
                       (hlist2 ctyp (amp_before ctyp)
-                         {(pc) with bef = ""; aft = ("", "")} tl) pc.aft)
+                         {(pc) with bef = ""; aft = ""} tl) pc.aft)
                  (fun () ->
                     let tl = List.map (fun t -> (t, " &")) tl in
                     plist ctyp 2
@@ -2477,7 +2475,7 @@ value variant_decl_list char pc pvl =
       (fun () ->
          hlist2 variant_decl (bar_before variant_decl)
            {(pc) with bef = sprintf "%s[%s " pc.bef char;
-            aft = ("", sprintf " ]%s" pc.aft)}
+            aft = sprintf " ]%s" pc.aft}
            pvl)
       (fun () ->
          vlist2 variant_decl (bar_before variant_decl)
@@ -2713,7 +2711,7 @@ EXTEND_PRINTER
             (fun () ->
                sprintf "%sclass %s%s" pc.bef
                  (hlist2 class_def (and_before class_def)
-                    {(pc) with bef = ""; aft = ("", "")} cd)
+                    {(pc) with bef = ""; aft = ""} cd)
                  pc.aft)
             (fun () ->
                vlist2 class_def (and_before class_def)
@@ -2728,7 +2726,7 @@ EXTEND_PRINTER
             (fun () ->
                sprintf "%sclass %s%s" pc.bef
                  (hlist2 class_decl (and_before class_decl)
-                    {(pc) with bef = ""; aft = ("", "")} cd)
+                    {(pc) with bef = ""; aft = ""} cd)
                  pc.aft)
             (fun () ->
                vlist2 class_decl (and_before class_decl)
@@ -2831,7 +2829,7 @@ EXTEND_PRINTER
                    {(pc) with
                     bef =
                       sprintf "%slet %s" pc.bef (if rf then "rec " else "");
-                    aft = ("", " in")}
+                    aft = " in"}
                    pel
                in
                let s2 = class_expr {(pc) with bef = ""} ce in

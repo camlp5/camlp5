@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.58 2007/08/16 11:29:18 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.59 2007/08/16 13:18:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -679,7 +679,7 @@ value cons_decl pc (_, c, tl) =
          sprintf "%s%s of %s%s" pc.bef
            (cons_escaped {(pc) with bef = ""; aft = ""} c)
            (hlist2 ctyp (and_before ctyp)
-              {(pc) with bef = ""; aft = ("", "")} tl) pc.aft)
+              {(pc) with bef = ""; aft = ""} tl) pc.aft)
       (fun () ->
          let s1 =
            sprintf "%s%s of" pc.bef
@@ -690,7 +690,7 @@ value cons_decl pc (_, c, tl) =
              (fun () ->
                 sprintf "%s%s%s" (tab (pc.ind + 4))
                   (hlist2 ctyp (and_before ctyp)
-                     {(pc) with bef = ""; aft = ("", "")} tl) pc.aft)
+                     {(pc) with bef = ""; aft = ""} tl) pc.aft)
              (fun () ->
                 let tl = List.map (fun t -> (t, " and")) tl in
                 plist ctyp 2
@@ -795,7 +795,7 @@ value exception_decl pc (e, tl, id) =
           else
             sprintf " of %s"
               (hlist2 ctyp (and_before ctyp)
-                 {(pc) with bef = ""; aft = ("", "")} tl))
+                 {(pc) with bef = ""; aft = ""} tl))
          (if id = [] then ""
           else sprintf " = %s" (mod_ident {(pc) with bef = ""; aft = ""} id))
          pc.aft)
@@ -1260,7 +1260,7 @@ EXTEND_PRINTER
                else
                  sprintf "%slet %s%s %s%s" pc.bef (if rf then "rec " else "")
                    (hlist2 let_binding (and_before let_binding)
-                      {(pc) with bef = ""; aft = ("", "in")} pel)
+                      {(pc) with bef = ""; aft = "in"} pel)
                    (curr {(pc) with bef = ""; aft = ""} e) pc.aft)
             (fun () ->
                match flatten_sequence ge with
@@ -1889,7 +1889,7 @@ EXTEND_PRINTER
                else
                  hlist2 cons_decl (bar_before cons_decl)
                    {(pc) with bef = sprintf "%s[ " pc.bef;
-                    aft = ("", sprintf " ]%s" pc.aft)}
+                    aft = sprintf " ]%s" pc.aft}
                    vdl)
             (fun () ->
                vlist2 cons_decl (bar_before cons_decl)
@@ -1969,7 +1969,7 @@ EXTEND_PRINTER
             (fun () ->
                sprintf "%svalue %s%s" pc.bef (if rf then "rec " else "")
                  (hlist2 value_binding (and_before value_binding)
-                    {(pc) with bef = ""; aft = ("", pc.aft)} pel))
+                    {(pc) with bef = ""} pel))
             (fun () ->
                vlist2 value_binding (and_before value_binding)
                  {(pc) with

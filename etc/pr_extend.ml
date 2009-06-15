@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extend.ml,v 1.24 2007/08/16 11:29:18 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.25 2007/08/16 13:18:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -384,7 +384,7 @@ and simple_symbol pc sy =
             (fun () ->
                hlist2 rule (bar_before rule)
                  {(pc) with bef = sprintf "%s[ " pc.bef;
-                  aft = ("", sprintf " ]%s" pc.aft)}
+                  aft = sprintf " ]%s" pc.aft}
                  rl)
             (fun () ->
                vlist2 rule (bar_before rule)

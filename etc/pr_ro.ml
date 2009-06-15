@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.37 2007/08/16 11:29:18 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.38 2007/08/16 13:18:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -126,7 +126,7 @@ value class_type_decl_list pc cd =
     (fun () ->
        sprintf "%sclass type %s%s" pc.bef
          (hlist2 class_type_decl (and_before class_type_decl)
-            {(pc) with bef = ""; aft = ("", "")} cd)
+            {(pc) with bef = ""; aft = ""} cd)
          pc.aft)
     (fun () ->
        vlist2 class_type_decl (and_before class_type_decl)
@@ -188,7 +188,7 @@ value variant_decl pc pv =
          (fun () ->
             sprintf "%s`%s of %s%s%s" pc.bef c (if ao then "& " else "")
               (hlist2 ctyp (amp_before ctyp)
-                 {(pc) with bef = ""; aft = ("", "")} tl) pc.aft)
+                 {(pc) with bef = ""; aft = ""} tl) pc.aft)
          (fun () ->
             let s1 =
               sprintf "%s`%s of%s" pc.bef c (if ao then " &" else "")
@@ -198,7 +198,7 @@ value variant_decl pc pv =
                  (fun () ->
                     sprintf "%s%s%s" (tab (pc.ind + 6))
                       (hlist2 ctyp (amp_before ctyp)
-                         {(pc) with bef = ""; aft = ("", "")} tl) pc.aft)
+                         {(pc) with bef = ""; aft = ""} tl) pc.aft)
                  (fun () ->
                     let tl = List.map (fun t -> (t, " &")) tl in
                     plist ctyp 2
@@ -214,7 +214,7 @@ value variant_decl_list char pc pvl =
     (fun () ->
        hlist2 variant_decl (bar_before variant_decl)
          {(pc) with bef = sprintf "%s[ %c " pc.bef char;
-          aft = ("", sprintf " ]%s" pc.aft)}
+          aft = sprintf " ]%s" pc.aft}
          pvl)
     (fun () ->
        let s1 = sprintf "%s[ %c" pc.bef char in
@@ -490,7 +490,7 @@ EXTEND_PRINTER
             (fun () ->
                sprintf "%sclass %s%s" pc.bef
                  (hlist2 class_def (and_before class_def)
-                    {(pc) with bef = ""; aft = ("", "")} cd)
+                    {(pc) with bef = ""; aft = ""} cd)
                  pc.aft)
             (fun () ->
                vlist2 class_def (and_before class_def)
@@ -506,7 +506,7 @@ EXTEND_PRINTER
             (fun () ->
                sprintf "%sclass %s%s" pc.bef
                  (hlist2 class_decl (and_before class_decl)
-                    {(pc) with bef = ""; aft = ("", "")} cd)
+                    {(pc) with bef = ""; aft = ""} cd)
                  pc.aft)
             (fun () ->
                vlist2 class_decl (and_before class_decl)
@@ -539,7 +539,7 @@ EXTEND_PRINTER
                  hlist2 (binding expr) (and_before (binding expr))
                    {(pc) with
                     bef = sprintf "%slet %s" pc.bef (if rf then "rec " else "");
-                    aft = ("", " in")}
+                    aft = " in"}
                    pel
                in
                let s2 = class_expr {(pc) with bef = ""} ce in

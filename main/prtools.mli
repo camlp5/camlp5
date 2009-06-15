@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: prtools.mli,v 1.3 2007/08/16 11:14:04 deraugla Exp $ *)
+(* $Id: prtools.mli,v 1.4 2007/08/16 13:18:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 type gen_context 'bef 'aft =
@@ -22,7 +22,7 @@ value hlist : pr_fun 'a -> pr_fun (list 'a);
        of the module Printing, and if the line overflows or contains newlines,
        the function fails (the exception is catched by [horiz_vertic] for
        a vertical pretty print). *)
-value hlist2 : pr_gfun 'a 'b -> pr_gfun 'a 'b -> pr_gfun (list 'a) ('b * 'b);
+value hlist2 : pr_fun 'a -> pr_fun 'a -> pr_fun (list 'a);
    (** horizontal list with different function from 2nd element on *)
 value hlistl : pr_fun 'a -> pr_fun 'a -> pr_fun (list 'a);
    (** horizontal list with different function for the last element *)
@@ -72,7 +72,7 @@ value flatten_sequence : MLast.expr -> option (list MLast.expr);
 value source : ref string;
    (** The initial source string, which must be set by the pretty printing
        kit. Used by [comm_bef] below. *)
-value comm_bef : gen_context _ _ -> MLast.loc -> string;
+value comm_bef : pr_context -> MLast.loc -> string;
    (** [comm_bef pc loc] get the comment from the source (in the global
        variable [source] just before the given location [loc]. May be
        reindented using [pc.ind]. Returns the empty string if no comment
