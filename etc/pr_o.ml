@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.63 2007/07/20 15:12:37 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.64 2007/07/21 00:35:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -2054,28 +2054,35 @@ value sig_module_or_module_type typ defc pc m mt =
          in
          sprintf "%s\n%s" s1 s2)
   in
-  horiz_vertic
-    (fun () ->
-       sprintf "%smodule%s %s%s %c %s%s" pc.bef typ m
-         (if mal = [] then ""
-          else hlist module_arg {(pc) with bef = " "; aft = ""} mal)
-         defc (module_type {(pc) with bef = ""; aft = ""} mt) pc.aft)
-    (fun () ->
-       let s1 =
-         let mal = List.map (fun ma -> (ma, "")) mal in
-         plistb module_arg 2
-           {(pc) with bef = sprintf "%smodule%s %s" pc.bef typ m;
-            aft = sprintf " %c" defc}
-           mal
-       in
-       let s2 =
-         module_type
-           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""} mt
-       in
-       let s3 =
-         if pc.aft = "" then "" else sprintf "\n%s%s" (tab pc.ind) pc.aft
-       in
-       sprintf "%s\n%s%s" s1 s2 s3)
+  match mt with
+  [ <:module_type< ' $s$ >> ->
+      sprintf "%smodule%s %s%s%s" pc.bef typ m
+        (if mal = [] then ""
+         else hlist module_arg {(pc) with bef = " "; aft = ""} mal) pc.aft
+  | _ ->
+      horiz_vertic
+        (fun () ->
+           sprintf "%smodule%s %s%s %c %s%s" pc.bef typ m
+             (if mal = [] then ""
+              else hlist module_arg {(pc) with bef = " "; aft = ""} mal)
+             defc (module_type {(pc) with bef = ""; aft = ""} mt) pc.aft)
+        (fun () ->
+           let s1 =
+             let mal = List.map (fun ma -> (ma, "")) mal in
+             plistb module_arg 2
+               {(pc) with bef = sprintf "%smodule%s %s" pc.bef typ m;
+                aft = sprintf " %c" defc}
+               mal
+           in
+           let s2 =
+             module_type
+               {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""}
+               mt
+           in
+           let s3 =
+             if pc.aft = "" then "" else sprintf "\n%s%s" (tab pc.ind) pc.aft
+           in
+           sprintf "%s\n%s%s" s1 s2 s3) ]
 ;
 
 value str_or_sig_functor pc s mt module_expr_or_type met =
@@ -3375,17 +3382,17 @@ value class_sig_item_top =
   | z -> fun curr next pc -> not_impl "class_sig_item" pc z ]
 ;
 
-value poly_type bang pc =
+value poly_type pc =
   fun
   [ <:ctyp< ! $list:tpl$ . $t$ >> ->
       horiz_vertic
         (fun () ->
-           sprintf "%s%s%s . %s%s" pc.bef bang
+           sprintf "%s%s . %s%s" pc.bef
              (hlist typevar {(pc) with bef = ""; aft = ""} tpl)
              (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
         (fun () ->
            let s1 =
-             sprintf "%s%s%s ." pc.bef bang
+             sprintf "%s%s ." pc.bef
                (hlist typevar {(pc) with bef = ""; aft = ""} tpl)
            in
            let s2 =
@@ -3441,7 +3448,7 @@ value class_str_item_top =
                (match topt with
                 [ Some t ->
                     sprintf " : %s"
-                      (poly_type "" {(pc) with bef = ""; aft = ""} t)
+                      (poly_type {(pc) with bef = ""; aft = ""} t)
                 | None -> "" ])
                (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
           (fun () ->
@@ -3455,14 +3462,14 @@ value class_str_item_top =
                      (fun () ->
                         sprintf "%smethod%s %s%s : %s =" pc.bef
                           (if priv then " private" else "") s args
-                          (poly_type "" {(pc) with bef = ""; aft = ""} t))
+                          (poly_type {(pc) with bef = ""; aft = ""} t))
                      (fun () ->
                         let s1 =
                           sprintf "%smethod%s %s%s :" pc.bef
                             (if priv then " private" else "") s args
                         in
                         let s2 =
-                          poly_type ""
+                          poly_type
                             {(pc) with ind = pc.ind + 4;
                              bef = tab (pc.ind + 4); aft = " ="}
                             t
@@ -3516,7 +3523,7 @@ value ctyp_as =
 value ctyp_poly =
   extfun Extfun.empty with
   [ <:ctyp< ! $list:_$ . $_$ >> as z ->
-      fun curr next pc -> poly_type "! " pc z
+      fun curr next pc -> poly_type pc z
   | z -> fun curr next pc -> next pc z ]
 ;
 

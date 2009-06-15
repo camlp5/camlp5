@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.52 2007/07/20 15:12:37 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.53 2007/07/21 00:35:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -748,6 +748,42 @@ value ctyp_top =
   extfun Extfun.empty with
   [ <:ctyp< $x$ == $y$ >> ->
       fun curr next pc -> operator pc next next 2 "==" x y
+  | z -> fun curr next pc -> next pc z ]
+;
+
+value ctyp_as =
+  extfun Extfun.empty with
+  [ <:ctyp< $t1$ as $t2$ >> ->
+      fun curr next pc ->
+        horiz_vertic
+          (fun () ->
+             sprintf "%s%s as %s%s" pc.bef
+               (curr {(pc) with bef = ""; aft = ""} t1)
+               (next {(pc) with bef = ""; aft = ""} t2) pc.aft)
+          (fun () -> not_impl "ctyp as vertic" pc t1)
+  | z -> fun curr next pc -> next pc z ]
+;
+
+value typevar pc tv = sprintf "%s'%s%s" pc.bef tv pc.aft;
+
+value ctyp_poly =
+  extfun Extfun.empty with
+  [ <:ctyp< ! $list:pl$ . $t$ >> ->
+      fun curr next pc ->
+        horiz_vertic
+          (fun () ->
+             sprintf "%s! %s . %s%s" pc.bef
+               (hlist typevar {(pc) with bef = ""; aft = ""} pl)
+               (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
+          (fun () ->
+             let s1 =
+               sprintf "%s! %s ." pc.bef
+                 (hlist typevar {(pc) with bef = ""; aft = ""} pl)
+             in
+             let s2 =
+               ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t
+             in
+             sprintf "%s\n%s" s1 s2)
   | z -> fun curr next pc -> next pc z ]
 ;
 
@@ -2292,6 +2328,8 @@ value module_type_simple =
   extfun Extfun.empty with
   [ <:module_type< $uid:s$ >> ->
       fun curr next pc -> sprintf "%s%s%s" pc.bef s pc.aft
+  | <:module_type< ' $s$ >> ->
+      fun curr next pc -> sprintf "%s'%s%s" pc.bef s pc.aft
   | z -> fun curr next pc -> not_impl "module_type" pc z ]
 ;
 
@@ -2323,6 +2361,8 @@ pr_patt.pr_levels :=
 
 pr_ctyp.pr_levels :=
   [{pr_label = "top"; pr_rules = ctyp_top};
+   {pr_label = "as"; pr_rules = ctyp_as};
+   {pr_label = "poly"; pr_rules = ctyp_poly};
    {pr_label = "arrow"; pr_rules = ctyp_arrow};
    {pr_label = "apply"; pr_rules = ctyp_apply};
    {pr_label = "dot"; pr_rules = ctyp_dot};

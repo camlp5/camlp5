@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: revsynt.html,v 1.19 2007/07/20 19:08:50 deraugla Exp $ -->
+  <!-- $Id: revsynt.html,v 1.20 2007/07/21 00:35:21 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>revised syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -51,11 +51,11 @@
 <div id="tableofcontents">
 </div>
 
-<h2>Structure and signature items</h2>
+<h2>Modules, Structure and Signature items</h2>
 
 <ul>
   <li>Structure and signature items, objects items always end with a
-    single semicolon which is mandatory.</li>
+    single semicolon which is required.</li>
 
   <li>In structures, the declaration of a value is introduced by the
     keyword "value", instead of "let":
@@ -85,6 +85,38 @@
       <tr>
         <td><tt>val x : int;;&nbsp;&nbsp;</tt></td>
         <td><tt>value x : int;</tt></td>
+      </tr>
+    </table>
+  </li>
+
+  <li>In signatures, abstract module types are represented by a quote
+    and an (any) identifier:
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>module type MT;;</tt></td>
+        <td><tt>module type MT = 'a;</tt></td>
+      </tr>
+    </table>
+  </li>
+
+  <li>Functor application uses curryfication. Parentheses are not
+    required for the parameters:
+    <table width="75%" class="centered" cellspacing="0" cellpadding="0">
+      <tr>
+        <th align="left" class="half">OCaml</th>
+        <th align="left" class="half">Revised</th>
+      </tr>
+      <tr>
+        <td><tt>type t = Set.Make(M).t;;</tt></td>
+        <td><tt>type t = (Set.Make M).t;</tt></td>
+      </tr>
+      <tr>
+        <td><tt>module M = Mod.Make (M1) (M2);;</tt></td>
+        <td><tt>module M = Mod.Make M1 M2;</tt></td>
       </tr>
     </table>
   </li>
@@ -168,7 +200,7 @@
 <h3>Tuples and lists</h3>
 
 <ul>
-  <li>Parentheses are mandatory in tuples:
+  <li>Parentheses are required in tuples:
     <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
@@ -285,7 +317,7 @@
       </tr>
     </table>
     But if there is only one case and if the pattern is irrefutable,
-      the brackets are not mandatory. These examples work identically
+      the brackets are not required. These examples work identically
       in OCaml and in revised syntax:
     <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
@@ -373,7 +405,7 @@
 <h3>Miscellaneous</h3>
 
 <ul>
-  <li>The "<tt>else</tt>" is mandatory in the "<tt>if</tt>"
+  <li>The "<tt>else</tt>" is required in the "<tt>if</tt>"
     statement:
     <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
@@ -504,7 +536,7 @@
     </table>
   </li>
 
-  <li>Parentheses are mandatory in tuples of types:
+  <li>Parentheses are required in tuples of types:
     <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
@@ -628,25 +660,16 @@
       </tr>
     </table>
   </li>
-</ul>
 
-<h2>Modules</h2>
-
-<ul>
-  <li>Functor application uses curryfication. Parentheses are not
-    mandatory to apply them:
+  <li>Polymorph types start with "<tt>!</tt>":
     <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>
         <th align="left" class="half">Revised</th>
       </tr>
       <tr>
-        <td><tt>type t = Set.Make(M).t;;</tt></td>
-        <td><tt>type t = (Set.Make M).t;</tt></td>
-      </tr>
-      <tr>
-        <td><tt>module M = Mod.Make (M1) (M2);;</tt></td>
-        <td><tt>module M = Mod.Make M1 M2;</tt></td>
+        <td><tt>type t = { f : 'a . 'a list }</tt></td>
+        <td><tt>type t = { f : ! 'a . list 'a }</tt></td>
       </tr>
     </table>
   </li>
@@ -675,7 +698,7 @@
 
    <li>The cases of parsers are bracketed with "<tt>[</tt>" and
      "<tt>]</tt>", like for "fun", "match" and "try". If there is one
-     case, the brackets are not mandatory:
+     case, the brackets are not required:
     <table width="75%" class="centered" cellspacing="0" cellpadding="0">
       <tr>
         <th align="left" class="half">OCaml</th>

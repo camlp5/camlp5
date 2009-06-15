@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_ro.ml,v 1.33 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.34 2007/07/21 00:35:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -254,8 +254,6 @@ value patt_tcon pc p =
         (fun () -> not_impl "patt_tcon vertic" pc p)
   | p -> patt pc p ]
 ;
-
-value typevar pc tv = sprintf "%s'%s%s" pc.bef tv pc.aft;
 
 value class_object pc (csp, csl) =
   horiz_vertic
@@ -840,40 +838,6 @@ value class_str_item_top =
   | z -> fun curr next pc -> not_impl "class_str_item" pc z ]
 ;
 
-value ctyp_as =
-  extfun Extfun.empty with
-  [ <:ctyp< $t1$ as $t2$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s%s as %s%s" pc.bef
-               (curr {(pc) with bef = ""; aft = ""} t1)
-               (next {(pc) with bef = ""; aft = ""} t2) pc.aft)
-          (fun () -> not_impl "ctyp as vertic" pc t1)
-  | z -> fun curr next pc -> next pc z ]
-;
-
-value ctyp_poly =
-  extfun Extfun.empty with
-  [ <:ctyp< ! $list:pl$ . $t$ >> ->
-      fun curr next pc ->
-        horiz_vertic
-          (fun () ->
-             sprintf "%s! %s . %s%s" pc.bef
-               (hlist typevar {(pc) with bef = ""; aft = ""} pl)
-               (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-          (fun () ->
-             let s1 =
-               sprintf "%s! %s ." pc.bef
-                 (hlist typevar {(pc) with bef = ""; aft = ""} pl)
-             in
-             let s2 =
-               ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t
-             in
-             sprintf "%s\n%s" s1 s2)
-  | z -> fun curr next pc -> next pc z ]
-;
-
 pr_expr.pr_levels :=
   [find_pr_level "top" pr_expr.pr_levels;
    find_pr_level "ass" pr_expr.pr_levels;
@@ -889,16 +853,6 @@ pr_expr.pr_levels :=
    {pr_label = "label"; pr_rules = expr_label};
    find_pr_level "dot" pr_expr.pr_levels;
    find_pr_level "simple" pr_expr.pr_levels]
-;
-
-pr_ctyp.pr_levels :=
-  [find_pr_level "top" pr_ctyp.pr_levels;
-   {pr_label = "as"; pr_rules = ctyp_as};
-   {pr_label = "poly"; pr_rules = ctyp_poly};
-   find_pr_level "arrow" pr_ctyp.pr_levels;
-   find_pr_level "apply" pr_ctyp.pr_levels;
-   find_pr_level "dot" pr_ctyp.pr_levels;
-   find_pr_level "simple" pr_ctyp.pr_levels]
 ;
 
 pr_class_expr.pr_levels :=

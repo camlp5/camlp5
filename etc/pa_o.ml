@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.30 2007/07/20 15:12:37 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.31 2007/07/21 00:35:21 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -843,9 +843,6 @@ EXTEND
   (* Core types *)
   ctyp:
     [ [ t1 = SELF; "as"; "'"; i = ident -> <:ctyp< $t1$ as '$i$ >> ]
-    | LEFTA
-      [ "!"; pl = LIST1 typevar; "."; t = ctyp ->
-          <:ctyp< ! $list:pl$ . $t$ >> ]
     | "arrow" RIGHTA
       [ t1 = SELF; "->"; t2 = SELF -> <:ctyp< $t1$ -> $t2$ >> ]
     | "star"
