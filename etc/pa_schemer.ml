@@ -25,6 +25,12 @@ module Buff =
   end
 ;
 
+value rename_id s =
+  if String.length s > 0 && s.[String.length s - 1] = '#' then
+    String.sub s 0 (String.length s - 1)
+  else Pcaml.rename_id.val s
+;
+
 (* Lexer *)
 
 value rec skip_to_eol =
@@ -309,8 +315,8 @@ value string_se =
 value rec mod_ident_se =
   fun
   [ Sacc _ se1 se2 -> mod_ident_se se1 @ mod_ident_se se2
-  | Suid _ s -> [Pcaml.rename_id.val s]
-  | Slid _ s -> [Pcaml.rename_id.val s]
+  | Suid _ s -> [rename_id s]
+  | Slid _ s -> [rename_id s]
   | se -> error se "mod_ident" ]
 ;
 
@@ -318,13 +324,13 @@ value lident_expr loc s =
   if String.length s > 1 && s.[0] = '`' then
     let s = String.sub s 1 (String.length s - 1) in
     <:expr< ` $s$ >>
-  else <:expr< $lid:(Pcaml.rename_id.val s)$ >>
+  else <:expr< $lid:(rename_id s)$ >>
 ;
 
 value rec module_expr_se =
   fun
   [ Sexpr loc [Slid _ "functor"; Suid _ s; se1; se2] ->
-      let s = Pcaml.rename_id.val s in
+      let s = rename_id s in
       let mt = module_type_se se1 in
       let me = module_expr_se se2 in
       <:module_expr< functor ($uid:s$ : $mt$) -> $me$ >>
@@ -343,12 +349,12 @@ value rec module_expr_se =
       let me1 = module_expr_se se1 in
       let me2 = module_expr_se se2 in
       <:module_expr< $me1$ . $me2$ >>
-  | Suid loc s -> <:module_expr< $uid:(Pcaml.rename_id.val s)$ >>
+  | Suid loc s -> <:module_expr< $uid:(rename_id s)$ >>
   | se -> error se "module expr" ]
 and module_type_se =
   fun
   [ Sexpr loc [Slid _ "functor"; Suid _ s; se1; se2] ->
-      let s = Pcaml.rename_id.val s in
+      let s = rename_id s in
       let mt1 = module_type_se se1 in
       let mt2 = module_type_se se2 in
       <:module_type< functor ($uid:s$ : $mt1$) -> $mt2$ >>
@@ -363,7 +369,7 @@ and module_type_se =
       let mt1 = module_type_se se1 in
       let mt2 = module_type_se se2 in
       <:module_type< $mt1$ . $mt2$ >>
-  | Suid loc s -> <:module_type< $uid:(Pcaml.rename_id.val s)$ >>
+  | Suid loc s -> <:module_type< $uid:(rename_id s)$ >>
   | se -> error se "module type" ]
 and with_constr_se =
   fun
@@ -384,24 +390,24 @@ and sig_item_se =
       let tdl = List.map type_declaration_se sel in
       <:sig_item< type $list:tdl$ >>
   | Sexpr loc [Slid _ "exception"; Suid _ c :: sel] ->
-      let c = Pcaml.rename_id.val c in
+      let c = rename_id c in
       let tl = List.map ctyp_se sel in
       <:sig_item< exception $uid:c$ of $list:tl$ >>
   | Sexpr loc [Slid _ "value"; Slid _ s; se] ->
-      let s = Pcaml.rename_id.val s in
+      let s = rename_id s in
       let t = ctyp_se se in
       <:sig_item< value $lid:s$ : $t$ >>
   | Sexpr loc [Slid _ "external"; Slid _ i; se :: sel] ->
-      let i = Pcaml.rename_id.val i in
+      let i = rename_id i in
       let pd = List.map string_se sel in
       let t = ctyp_se se in
       <:sig_item< external $lid:i$ : $t$ = $list:pd$ >>
   | Sexpr loc [Slid _ "module"; Suid _ s; se] ->
-      let s = Pcaml.rename_id.val s in
+      let s = rename_id s in
       let mb = module_type_se se in
       <:sig_item< module $uid:s$ : $mb$ >>
   | Sexpr loc [Slid _ "moduletype"; Suid _ s; se] ->
-      let s = Pcaml.rename_id.val s in
+      let s = rename_id s in
       let mt = module_type_se se in
       <:sig_item< module type $uid:s$ = $mt$ >>
   | se -> error se "sig item" ]
@@ -417,11 +423,11 @@ and str_item_se se =
       let tdl = List.map type_declaration_se sel in
       <:str_item< type $list:tdl$ >>
   | Sexpr loc [Slid _ "exception"; Suid _ c :: sel] ->
-      let c = Pcaml.rename_id.val c in
+      let c = rename_id c in
       let tl = List.map ctyp_se sel in
       <:str_item< exception $uid:c$ of $list:tl$ >>
   | Sexpr loc [Slid _ "exceptionrebind"; Suid _ c; se] ->
-      let c = Pcaml.rename_id.val c in
+      let c = rename_id c in
       let id = mod_ident_se se in
       <:str_item< exception $uid:c$ = $id$ >>
   | Sexpr loc [Slid _ ("define" | "definerec" as r); se :: sel] ->
@@ -433,20 +439,20 @@ and str_item_se se =
       let lbs = List.map let_binding_se sel in
       <:str_item< value $flag:r$ $list:lbs$ >>
   | Sexpr loc [Slid _ "external"; Slid _ i; se :: sel] ->
-      let i = Pcaml.rename_id.val i in
+      let i = rename_id i in
       let pd = List.map string_se sel in
       let t = ctyp_se se in
       <:str_item< external $lid:i$ : $t$ = $list:pd$ >>
   | Sexpr loc [Slid _ "module"; Suid _ i; se] ->
-      let i = Pcaml.rename_id.val i in
+      let i = rename_id i in
       let mb = module_binding_se se in
       <:str_item< module $uid:i$ = $mb$ >>
   | Sexpr loc [Slid _ "moduletype"; Suid _ s; se] ->
-      let s = Pcaml.rename_id.val s in
+      let s = rename_id s in
       let mt = module_type_se se in
       <:str_item< module type $uid:s$ = $mt$ >>
   | Sexpr loc [Slid _ "#"; Slid _ s; se] ->
-      let s = Pcaml.rename_id.val s in
+      let s = rename_id s in
       let e = expr_se se in
       <:str_item< # $lid:s$ $e$ >>
   | _ ->
@@ -469,13 +475,13 @@ and expr_se =
           let e2 = expr_se se2 in
           <:expr< $e1$ . $e2$ >> ]
   | Slid loc s -> lident_expr loc s
-  | Suid loc s -> <:expr< $uid:(Pcaml.rename_id.val s)$ >>
+  | Suid loc s -> <:expr< $uid:(rename_id s)$ >>
   | Sint loc s -> <:expr< $int:s$ >>
   | Sfloat loc s -> <:expr< $flo:s$ >>
   | Schar loc s -> <:expr< $chr:s$ >>
   | Sstring loc s -> <:expr< $str:s$ >>
-  | Stid loc s -> <:expr< ~$(Pcaml.rename_id.val s)$ >>
-  | Sqid loc s -> <:expr< ?$(Pcaml.rename_id.val s)$ >>
+  | Stid loc s -> <:expr< ~$(rename_id s)$ >>
+  | Sqid loc s -> <:expr< ?$(rename_id s)$ >>
   | Sexpr loc [] -> <:expr< () >>
   | Sexpr loc [Slid _ s; e1 :: ([_ :: _] as sel)]
     when List.mem s assoc_left_parsed_op_list ->
@@ -533,13 +539,13 @@ and expr_se =
       let el = List.map expr_se sel in
       <:expr< while $e$ do { $list:el$ } >>
   | Sexpr loc [Slid _ "for"; Slid _ i; se1; se2 :: sel] ->
-      let i = Pcaml.rename_id.val i in
+      let i = rename_id i in
       let e1 = expr_se se1 in
       let e2 = expr_se se2 in
       let el = List.map expr_se sel in
       <:expr< for $lid:i$ = $e1$ to $e2$ do { $list:el$ } >>
   | Sexpr loc [Slid _ "fordown"; Slid _ i; se1; se2 :: sel] ->
-      let i = Pcaml.rename_id.val i in
+      let i = rename_id i in
       let e1 = expr_se se1 in
       let e2 = expr_se se2 in
       let el = List.map expr_se sel in
@@ -566,7 +572,7 @@ and expr_se =
           let e = begin_se loc sel2 in
           <:expr< let $flag:r$ $list:lbs$ in $e$ >>
       | [Slid _ n; Sexpr _ sl :: sel] ->
-          let n = Pcaml.rename_id.val n in
+          let n = rename_id n in
           let (pl, el) =
             List.fold_right
               (fun se (pl, el) ->
@@ -707,7 +713,7 @@ and fun_binding_se se e =
   match se with
   [ Sexpr _ [Slid _ "values" :: _] -> (ipatt_se se, e)
   | Sexpr _ [Slid loc s :: sel] ->
-      let s = Pcaml.rename_id.val s in
+      let s = rename_id s in
       let e =
         List.fold_right
           (fun se e ->
@@ -787,7 +793,7 @@ and stream_pattern_component skont ekont err =
   | Sexpr loc [Slid _ "?"; se1; se2] ->
       stream_pattern_component skont ekont (expr_se se2) se1
   | Slid loc s ->
-      let s = Pcaml.rename_id.val s in
+      let s = rename_id s in
       <:expr< let $lid:s$ = $lid:strm_n$ in $skont$ >>
   | se -> error se "stream_pattern_component" ]
 and patt_se =
@@ -797,8 +803,8 @@ and patt_se =
       let p2 = patt_se se2 in
       <:patt< $p1$ . $p2$ >>
   | Slid loc "_" -> <:patt< _ >>
-  | Slid loc s -> <:patt< $lid:(Pcaml.rename_id.val s)$ >>
-  | Suid loc s -> <:patt< $uid:(Pcaml.rename_id.val s)$ >>
+  | Slid loc s -> <:patt< $lid:(rename_id s)$ >>
+  | Suid loc s -> <:patt< $uid:(rename_id s)$ >>
   | Sint loc s -> <:patt< $int:s$ >>
   | Sfloat loc s -> <:patt< $flo:s$ >>
   | Schar loc s -> <:patt< $chr:s$ >>
@@ -859,11 +865,11 @@ and ipatt_se se =
 and ipatt_opt_se =
   fun
   [ Slid loc "_" -> Left <:patt< _ >>
-  | Slid loc s -> Left <:patt< $lid:(Pcaml.rename_id.val s)$ >>
-  | Stid loc s -> Left <:patt< ~$(Pcaml.rename_id.val s)$ >>
-  | Sqid loc s -> Left <:patt< ?$(Pcaml.rename_id.val s)$ >>
+  | Slid loc s -> Left <:patt< $lid:(rename_id s)$ >>
+  | Stid loc s -> Left <:patt< ~$(rename_id s)$ >>
+  | Sqid loc s -> Left <:patt< ?$(rename_id s)$ >>
   | Sexpr loc [Sqid _ s; se] ->
-      let s = Pcaml.rename_id.val s in
+      let s = rename_id s in
       let e = expr_se se in
       Left <:patt< ? ( $lid:s$ = $e$ ) >>
   | Sexpr loc [Slid _ ":"; se1; se2] ->
@@ -961,21 +967,19 @@ and ctyp_se =
       if s.[0] = ''' then
         let s = String.sub s 1 (String.length s - 1) in
         <:ctyp< '$s$ >>
-      else <:ctyp< $lid:(Pcaml.rename_id.val s)$ >>
-  | Suid loc s -> <:ctyp< $uid:(Pcaml.rename_id.val s)$ >>
+      else <:ctyp< $lid:(rename_id s)$ >>
+  | Suid loc s -> <:ctyp< $uid:(rename_id s)$ >>
   | se -> error se "ctyp" ]
 and constructor_declaration_se =
   fun
   [ Sexpr loc [Suid _ ci :: sel] ->
-      (loc, <:vala< (Pcaml.rename_id.val ci) >>,
-       <:vala< (List.map ctyp_se sel) >>)
+      (loc, <:vala< (rename_id ci) >>, <:vala< (List.map ctyp_se sel) >>)
   | se -> error se "constructor_declaration" ]
 and label_declaration_se =
   fun
   [ Sexpr loc [Slid _ lab; Slid _ "mutable"; se] ->
-      (loc, Pcaml.rename_id.val lab, True, ctyp_se se)
-  | Sexpr loc [Slid _ lab; se] ->
-      (loc, Pcaml.rename_id.val lab, False, ctyp_se se)
+      (loc, rename_id lab, True, ctyp_se se)
+  | Sexpr loc [Slid _ lab; se] -> (loc, rename_id lab, False, ctyp_se se)
   | se -> error se "label_declaration" ]
 ;
 

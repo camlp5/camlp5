@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.36 2007/10/06 02:24:13 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.37 2007/10/06 03:15:40 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -17,6 +17,11 @@
     (:= buff.val.[len] x)
     (succ len))
   (define (get len) (String.sub buff.val 0 len))))
+
+(define (rename_id s)
+  (if (&& (> (String.length s) 0) (= s.[(- (String.length s) 1)] '#'))
+    (String.sub s 0 (- (String.length s) 1))
+    (Pcaml.rename_id.val s)))
 
 ; Lexer
 
@@ -292,21 +297,20 @@
 (definerec mod_ident_se
   (lambda_match
    ((Sacc _ se1 se2) (@ (mod_ident_se se1) (mod_ident_se se2)))
-   ((Suid _ s) [(Pcaml.rename_id.val s)])
-   ((Slid _ s) [(Pcaml.rename_id.val s)])
+   ((Suid _ s) [(rename_id s)])
+   ((Slid _ s) [(rename_id s)])
    (se (error se "mod_ident"))))
 
 (define (lident_expr loc s)
   (if (&& (> (String.length s) 1) (= s.[0] '`'))
-     (let ((s (String.sub s 1 (- (String.length s) 1))))
-        <:expr< ` $s$ >>)
-     <:expr< $lid:(Pcaml.rename_id.val s)$ >>))
+     (let ((s (String.sub s 1 (- (String.length s) 1)))) <:expr< ` $s$ >>)
+     <:expr< $lid:(rename_id s)$ >>))
 
 (definerec*
   (module_expr_se
     (lambda_match
      ((Sexpr loc [(Slid _ "functor") (Suid _ s) se1 se2])
-      (let* ((s (Pcaml.rename_id.val s))
+      (let* ((s (rename_id s))
              (mt (module_type_se se1))
              (me (module_expr_se se2)))
          <:module_expr< functor ($uid:s$ : $mt$) -> $me$ >>))
@@ -325,12 +329,12 @@
       (let* ((me1 (module_expr_se se1))
              (me2 (module_expr_se se2)))
          <:module_expr< $me1$ . $me2$ >>))
-     ((Suid loc s) <:module_expr< $uid:(Pcaml.rename_id.val s)$ >>)
+     ((Suid loc s) <:module_expr< $uid:(rename_id s)$ >>)
      (se (error se "module expr"))))
   (module_type_se
     (lambda_match
      ((Sexpr loc [(Slid _ "functor") (Suid _ s) se1 se2])
-      (let* ((s (Pcaml.rename_id.val s))
+      (let* ((s (rename_id s))
              (mt1 (module_type_se se1))
              (mt2 (module_type_se se2)))
          <:module_type< functor ($uid:s$ : $mt1$) -> $mt2$ >>))
@@ -345,7 +349,7 @@
       (let* ((mt1 (module_type_se se1))
              (mt2 (module_type_se se2)))
          <:module_type< $mt1$ . $mt2$ >>))
-     ((Suid loc s) <:module_type< $uid:(Pcaml.rename_id.val s)$ >>)
+     ((Suid loc s) <:module_type< $uid:(rename_id s)$ >>)
      (se (error se "module type"))))
   (with_constr_se
     (lambda_match
@@ -365,24 +369,24 @@
       (let ((tdl (List.map type_declaration_se sel)))
          <:sig_item< type $list:tdl$ >>))
      ((Sexpr loc [(Slid _ "exception") (Suid _ c) . sel])
-      (let* ((c (Pcaml.rename_id.val c))
+      (let* ((c (rename_id c))
              (tl (List.map ctyp_se sel)))
          <:sig_item< exception $uid:c$ of $list:tl$ >>))
      ((Sexpr loc [(Slid _ "value") (Slid _ s) se])
-      (let* ((s (Pcaml.rename_id.val s))
+      (let* ((s (rename_id s))
              (t (ctyp_se se)))
          <:sig_item< value $lid:s$ : $t$ >>))
      ((Sexpr loc [(Slid _ "external") (Slid _ i) se . sel])
-      (let* ((i (Pcaml.rename_id.val i))
+      (let* ((i (rename_id i))
              (pd (List.map string_se sel))
              (t (ctyp_se se)))
          <:sig_item< external $lid:i$ : $t$ = $list:pd$ >>))
      ((Sexpr loc [(Slid _ "module") (Suid _ s) se])
-      (let* ((s (Pcaml.rename_id.val s))
+      (let* ((s (rename_id s))
              (mb (module_type_se se)))
          <:sig_item< module $uid:s$ : $mb$ >>))
      ((Sexpr loc [(Slid _ "moduletype") (Suid _ s) se])
-      (let* ((s (Pcaml.rename_id.val s))
+      (let* ((s (rename_id s))
              (mt (module_type_se se)))
          <:sig_item< module type $uid:s$ = $mt$ >>))
      (se (error se "sig item"))))
@@ -397,11 +401,11 @@
       (let ((tdl (List.map type_declaration_se sel)))
          <:str_item< type $list:tdl$ >>))
      ((Sexpr loc [(Slid _ "exception") (Suid _ c) . sel])
-      (let* ((c (Pcaml.rename_id.val c))
+      (let* ((c (rename_id c))
              (tl (List.map ctyp_se sel)))
          <:str_item< exception $uid:c$ of $list:tl$ >>))
      ((Sexpr loc [(Slid _ "exceptionrebind") (Suid _ c) se])
-      (let* ((c (Pcaml.rename_id.val c))
+      (let* ((c (rename_id c))
              (id (mod_ident_se se)))
          <:str_item< exception $uid:c$ = $id$ >>))
      ((Sexpr loc [(Slid _ (as (or "define" "definerec") r)) se . sel])
@@ -413,20 +417,20 @@
              (lbs (List.map let_binding_se sel)))
          <:str_item< value $flag:r$ $list:lbs$ >>))
      ((Sexpr loc [(Slid _ "external") (Slid _ i) se . sel])
-      (let* ((i (Pcaml.rename_id.val i))
+      (let* ((i (rename_id i))
              (pd (List.map string_se sel))
              (t (ctyp_se se)))
          <:str_item< external $lid:i$ : $t$ = $list:pd$ >>))
      ((Sexpr loc [(Slid _ "module") (Suid _ i) se])
-      (let* ((i (Pcaml.rename_id.val i))
+      (let* ((i (rename_id i))
              (mb (module_binding_se se)))
          <:str_item< module $uid:i$ = $mb$ >>))
      ((Sexpr loc [(Slid _ "moduletype") (Suid _ s) se])
-      (let* ((s (Pcaml.rename_id.val s))
+      (let* ((s (rename_id s))
              (mt (module_type_se se)))
          <:str_item< module type $uid:s$ = $mt$ >>))
      ((Sexpr loc [(Slid _ "#") (Slid _ s) se])
-      (let* ((s (Pcaml.rename_id.val s))
+      (let* ((s (rename_id s))
              (e (expr_se se)))
          <:str_item< # $lid:s$ $e$ >>))
      (_
@@ -445,13 +449,13 @@
           (let ((e2 (expr_se se2))) <:expr< $e1$ .( $e2$ ) >>))
          (_ (let ((e2 (expr_se se2))) <:expr< $e1$ . $e2$ >>)))))
     ((Slid loc s) (lident_expr loc s))
-    ((Suid loc s) <:expr< $uid:(Pcaml.rename_id.val s)$ >>)
+    ((Suid loc s) <:expr< $uid:(rename_id s)$ >>)
     ((Sint loc s) <:expr< $int:s$ >>)
     ((Sfloat loc s) <:expr< $flo:s$ >>)
     ((Schar loc s) <:expr< $chr:s$ >>)
     ((Sstring loc s) <:expr< $str:s$ >>)
-    ((Stid loc s) <:expr< ~$(Pcaml.rename_id.val s)$ >>)
-    ((Sqid loc s) <:expr< ?$(Pcaml.rename_id.val s)$ >>)
+    ((Stid loc s) <:expr< ~$(rename_id s)$ >>)
+    ((Sqid loc s) <:expr< ?$(rename_id s)$ >>)
     ((Sexpr loc []) <:expr< () >>)
     ((when (Sexpr loc [(Slid _ s) e1 . (as [_ . _] sel)])
      (List.mem s assoc_left_parsed_op_list))
@@ -466,8 +470,7 @@
      (letrec
       ((loop
          (lambda_match
-          ([]
-           (assert False))
+          ([] (assert False))
           ([e1] e1)
           ([e1 . el] (let ((e2 (loop el))) (op_apply loc e1 e2 s))))))
       (loop (List.map expr_se sel))))
@@ -514,13 +517,13 @@
             (el (List.map expr_se sel)))
         <:expr< while $e$ do { $list:el$ } >>))
     ((Sexpr loc [(Slid _ "for") (Slid _ i) se1 se2 . sel])
-     (let* ((i (Pcaml.rename_id.val i))
+     (let* ((i (rename_id i))
             (e1 (expr_se se1))
             (e2 (expr_se se2))
             (el (List.map expr_se sel)))
         <:expr< for $lid:i$ = $e1$ to $e2$ do { $list:el$ } >>))
     ((Sexpr loc [(Slid _ "fordown") (Slid _ i) se1 se2 . sel])
-     (let* ((i (Pcaml.rename_id.val i))
+     (let* ((i (rename_id i))
             (e1 (expr_se se1))
             (e2 (expr_se se2))
             (el (List.map expr_se sel)))
@@ -546,7 +549,7 @@
               (e (begin_se loc sel2)))
           <:expr< let $flag:r$ $list:lbs$ in $e$ >>))
       ([(Slid _ n) (Sexpr _ sl) . sel]
-       (let* ((n (Pcaml.rename_id.val n))
+       (let* ((n (rename_id n))
               ((values pl el)
                 (List.fold_right
                  (lambda (se (values pl el))
@@ -676,7 +679,7 @@
    (match se
           ((Sexpr _ [(Slid _ "values") . _]) (values (ipatt_se se) e))
           ((Sexpr _ [(Slid loc s) . sel])
-           (let* ((s (Pcaml.rename_id.val s))
+           (let* ((s (rename_id s))
                   (e
                    (List.fold_right
                     (lambda (se e)
@@ -753,7 +756,7 @@
     ((Sexpr loc [(Slid _ "?") se1 se2])
      (stream_pattern_component skont ekont (expr_se se2) se1))
     ((Slid loc s)
-     (let ((s (Pcaml.rename_id.val s)))
+     (let ((s (rename_id s)))
         <:expr< let $lid:s$ = $lid:strm_n$ in $skont$ >>))
     (se
      (error se "stream_pattern_component"))))
@@ -762,8 +765,8 @@
     ((Sacc loc se1 se2)
      (let* ((p1 (patt_se se1)) (p2 (patt_se se2))) <:patt< $p1$ . $p2$ >>))
     ((Slid loc "_") <:patt< _ >>)
-    ((Slid loc s) <:patt< $lid:(Pcaml.rename_id.val s)$ >>)
-    ((Suid loc s) <:patt< $uid:(Pcaml.rename_id.val s)$ >>)
+    ((Slid loc s) <:patt< $lid:(rename_id s)$ >>)
+    ((Suid loc s) <:patt< $uid:(rename_id s)$ >>)
     ((Sint loc s) <:patt< $int:s$ >>)
     ((Sfloat loc s) <:patt< $flo:s$ >>)
     ((Schar loc s) <:patt< $chr:s$ >>)
@@ -816,11 +819,11 @@
   (ipatt_opt_se
    (lambda_match
     ((Slid loc "_") (Left <:patt< _ >>))
-    ((Slid loc s) (Left <:patt< $lid:(Pcaml.rename_id.val s)$ >>))
-    ((Stid loc s) (Left <:patt< ~$(Pcaml.rename_id.val s)$ >>))
-    ((Sqid loc s) (Left <:patt< ?$(Pcaml.rename_id.val s)$ >>))
+    ((Slid loc s) (Left <:patt< $lid:(rename_id s)$ >>))
+    ((Stid loc s) (Left <:patt< ~$(rename_id s)$ >>))
+    ((Sqid loc s) (Left <:patt< ?$(rename_id s)$ >>))
     ((Sexpr loc [(Sqid _ s) se])
-     (let* ((s (Pcaml.rename_id.val s))
+     (let* ((s (rename_id s))
             (e (expr_se se)))
         (Left <:patt< ? ( $lid:s$ = $e$ ) >>)))
     ((Sexpr loc [(Slid _ ":") se1 se2])
@@ -911,22 +914,22 @@
      (if (= s.[0] ''')
          (let ((s (String.sub s 1 (- (String.length s) 1))))
            <:ctyp< '$s$ >>)
-         <:ctyp< $lid:(Pcaml.rename_id.val s)$ >>))
-    ((Suid loc s) <:ctyp< $uid:(Pcaml.rename_id.val s)$ >>)
+         <:ctyp< $lid:(rename_id s)$ >>))
+    ((Suid loc s) <:ctyp< $uid:(rename_id s)$ >>)
     (se (error se "ctyp"))))
   (constructor_declaration_se
    (lambda_match
     ((Sexpr loc [(Suid _ ci) . sel])
-     (values loc <:vala< (Pcaml.rename_id.val ci) >>
+     (values loc <:vala< (rename_id ci) >>
         <:vala< (List.map ctyp_se sel) >>))
     (se
      (error se "constructor_declaration"))))
   (label_declaration_se
    (lambda_match
     ((Sexpr loc [(Slid _ lab) (Slid _ "mutable") se])
-     (values loc (Pcaml.rename_id.val lab) True (ctyp_se se)))
+     (values loc (rename_id lab) True (ctyp_se se)))
     ((Sexpr loc [(Slid _ lab) se])
-     (values loc (Pcaml.rename_id.val lab) False (ctyp_se se)))
+     (values loc (rename_id lab) False (ctyp_se se)))
     (se
      (error se "label_declaration")))))
 

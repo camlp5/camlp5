@@ -36,6 +36,10 @@ value not_impl name pc x =
     (String.escaped desc) pc.aft
 ;
 
+value to_be_renamed = ["cond"];
+
+value rename_id s = if List.mem s to_be_renamed then s ^ "#" else s;
+
 value rec mod_ident pc sl =
   match sl with
   [ [] -> sprintf "%s%s" pc.bef pc.aft
@@ -677,7 +681,7 @@ EXTEND_PRINTER
           let s =
             match s with
             [ "~-" -> "-"
-            | s -> s ]
+            | s -> rename_id s ]
           in
           sprintf "%s%s%s" pc.bef s pc.aft
       | <:expr< $uid:s$ >> ->
@@ -794,7 +798,9 @@ EXTEND_PRINTER
            sprintf "%s.%s"
              (curr {(pc) with aft = ""} p1)
              (curr {(pc) with bef = ""} p2)
-      | <:patt< $lid:s$ >> | <:patt< $uid:s$ >> ->
+      | <:patt< $lid:s$ >> ->
+          sprintf "%s%s%s" pc.bef (rename_id s) pc.aft
+      | <:patt< $uid:s$ >> ->
           sprintf "%s%s%s" pc.bef s pc.aft
       | <:patt< $str:s$ >> ->
           sprintf "%s\"%s\"%s" pc.bef s pc.aft
