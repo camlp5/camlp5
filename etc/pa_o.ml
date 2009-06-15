@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.67 2007/09/23 00:10:13 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.68 2007/09/24 08:34:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -812,9 +812,9 @@ EXTEND
       | "("; tpl = LIST1 type_parameter SEP ","; ")" -> tpl ] ]
   ;
   type_parameter:
-    [ [ "'"; i = ident2 -> (i, (False, False))
-      | "+"; "'"; i = ident2 -> (i, (True, False))
-      | "-"; "'"; i = ident2 -> (i, (False, True)) ] ]
+    [ [ "'"; i = V ident "" -> (i, (False, False))
+      | "+"; "'"; i = V ident "" -> (i, (True, False))
+      | "-"; "'"; i = V ident "" -> (i, (False, True)) ] ]
   ;
   constructor_declaration:
     [ [ ci = cons_ident; "of"; cal = V (LIST1 (ctyp LEVEL "apply") SEP "*") ->
@@ -849,21 +849,16 @@ EXTEND
       [ t1 = SELF; "."; t2 = SELF -> <:ctyp< $t1$ . $t2$ >>
       | t1 = SELF; "("; t2 = SELF; ")" -> <:ctyp< $t1$ $t2$ >> ]
     | "simple"
-      [ "'"; i = ident -> <:ctyp< '$i$ >>
+      [ "'"; i = V ident "" -> <:ctyp< '$_:i$ >>
       | "_" -> <:ctyp< _ >>
-      | i = LIDENT -> <:ctyp< $lid:i$ >>
-      | i = UIDENT -> <:ctyp< $uid:i$ >>
+      | i = V LIDENT -> <:ctyp< $_lid:i$ >>
+      | i = V UIDENT -> <:ctyp< $_uid:i$ >>
       | "("; t = SELF; ","; tl = LIST1 ctyp SEP ","; ")";
         i = ctyp LEVEL "ctyp2" ->
           List.fold_left (fun c a -> <:ctyp< $c$ $a$ >>) i [t :: tl]
       | "("; t = SELF; ")" -> <:ctyp< $t$ >> ] ]
   ;
   (* Identifiers *)
-  ident2:
-    [ [ s = ANTIQUOT_LOC -> <:vala< $s$ >>
-      | s = ANTIQUOT_LOC "a" -> <:vala< $s$ >>
-      | i = ident -> <:vala< i >> ] ]
-  ;
   ident:
     [ [ i = LIDENT -> i
       | i = UIDENT -> i ] ]
@@ -1053,15 +1048,17 @@ EXTEND
   ;
   (* Core types *)
   ctyp: LEVEL "simple"
-    [ [ "#"; id = class_longident -> <:ctyp< # $list:id$ >>
-      | "<"; (ml, v) = meth_list; ">" -> <:ctyp< < $list:ml$ $flag:v$ > >>
-      | "<"; ">" -> <:ctyp< < > >> ] ]
+    [ [ "#"; id = V class_longident "list" ->
+         <:ctyp< # $_list:id$ >>
+      | "<"; ml = V meth_list "list"; v = V (FLAG ".."); ">" ->
+          <:ctyp< < $_list:ml$ $_flag:v$ > >>
+      | "<"; ">" ->
+          <:ctyp< < > >> ] ]
   ;
   meth_list:
-    [ [ f = field; ";"; (ml, v) = SELF -> ([f :: ml], v)
-      | f = field; ";" -> ([f], False)
-      | f = field -> ([f], False)
-      | ".." -> ([], True) ] ]
+    [ [ f = field; ";"; ml = SELF -> [f :: ml]
+      | f = field; ";" -> [f]
+      | f = field -> [f] ] ]
   ;
   field:
     [ [ lab = LIDENT; ":"; t = poly_type -> (lab, t) ] ]
@@ -1087,21 +1084,21 @@ EXTEND
   (* Labels *)
   ctyp: AFTER "arrow"
     [ NONA
-      [ i = LIDENT; ":"; t = SELF -> <:ctyp< ~$i$: $t$ >>
-      | i = questionidentcolon; t = SELF -> <:ctyp< ?$_:i$: $t$ >>
-      | i = questionident; ":"; t = SELF -> <:ctyp< ?$_:i$: $t$ >> ] ]
+      [ i = V LIDENT "lab"; ":"; t = SELF -> <:ctyp< ~$_:i$: $t$ >>
+      | i = V QUESTIONIDENTCOLON; t = SELF -> <:ctyp< ?$_:i$: $t$ >>
+      | i = V QUESTIONIDENT; ":"; t = SELF -> <:ctyp< ?$_:i$: $t$ >> ] ]
   ;
   ctyp: LEVEL "simple"
-    [ [ "["; OPT "|"; rfl = LIST1 poly_variant SEP "|"; "]" ->
-          <:ctyp< [ = $list:rfl$ ] >>
+    [ [ "["; OPT "|"; rfl = V (LIST1 poly_variant SEP "|"); "]" ->
+          <:ctyp< [ = $_list:rfl$ ] >>
       | "["; ">"; "]" -> <:ctyp< [ > $list:[]$ ] >>
-      | "["; ">"; OPT "|"; rfl = LIST1 poly_variant SEP "|"; "]" ->
-          <:ctyp< [ > $list:rfl$ ] >>
-      | "[<"; OPT "|"; rfl = LIST1 poly_variant SEP "|"; "]" ->
-          <:ctyp< [ < $list:rfl$ ] >>
-      | "[<"; OPT "|"; rfl = LIST1 poly_variant SEP "|"; ">";
-        ntl = LIST1 name_tag; "]" ->
-          <:ctyp< [ < $list:rfl$ > $list:ntl$ ] >> ] ]
+      | "["; ">"; OPT "|"; rfl = V (LIST1 poly_variant SEP "|"); "]" ->
+          <:ctyp< [ > $_list:rfl$ ] >>
+      | "[<"; OPT "|"; rfl = V (LIST1 poly_variant SEP "|"); "]" ->
+          <:ctyp< [ < $_list:rfl$ ] >>
+      | "[<"; OPT "|"; rfl = V (LIST1 poly_variant SEP "|"); ">";
+        ntl = V (LIST1 name_tag); "]" ->
+          <:ctyp< [ < $_list:rfl$ > $_list:ntl$ ] >> ] ]
   ;
   poly_variant:
     [ [ "`"; i = V ident "" -> <:poly_variant< ` $_:i$ >>
@@ -1117,30 +1114,10 @@ EXTEND
   ;
   expr: AFTER "apply"
     [ "label"
-      [ i = tildeidentcolon; e = SELF -> <:expr< ~$_:i$: $e$ >>
-      | i = tildeident -> <:expr< ~$_:i$ >>
-      | i = questionidentcolon; e = SELF -> <:expr< ?$_:i$: $e$ >>
-      | i = questionident -> <:expr< ?$_:i$ >> ] ]
-  ;
-  tildeident:
-    [ [ i = TILDEIDENT -> <:vala< i >>
-      | a = ANTIQUOT_LOC "~" -> <:vala< $a$ >>
-      | a = ANTIQUOT_LOC "~_" -> <:vala< $a$ >> ] ]
-  ;
-  tildeidentcolon:
-    [ [ i = TILDEIDENTCOLON -> <:vala< i >>
-      | a = ANTIQUOT_LOC "~:" -> <:vala< $a$ >>
-      | a = ANTIQUOT_LOC "~_:" -> <:vala< $a$ >> ] ]
-  ;
-  questionident:
-    [ [ i = QUESTIONIDENT -> <:vala< i >>
-      | a = ANTIQUOT_LOC "?" -> <:vala< $a$ >>
-      | a = ANTIQUOT_LOC "?_" -> <:vala< $a$ >> ] ]
-  ;
-  questionidentcolon:
-    [ [ i = QUESTIONIDENTCOLON -> <:vala< i >>
-      | a = ANTIQUOT_LOC "?:" -> <:vala< $a$ >>
-      | a = ANTIQUOT_LOC "?_:" -> <:vala< $a$ >> ] ]
+      [ i = V TILDEIDENTCOLON; e = SELF -> <:expr< ~$_:i$: $e$ >>
+      | i = V TILDEIDENT -> <:expr< ~$_:i$ >>
+      | i = V QUESTIONIDENTCOLON; e = SELF -> <:expr< ?$_:i$: $e$ >>
+      | i = V QUESTIONIDENT -> <:expr< ?$_:i$ >> ] ]
   ;
   expr: LEVEL "simple"
     [ [ "`"; s = V ident "" -> <:expr< ` $_:s$ >> ] ]
@@ -1157,26 +1134,26 @@ EXTEND
       | p = labeled_patt -> p ] ]
   ;
   labeled_patt:
-    [ [ i = tildeidentcolon; p = patt LEVEL "simple" ->
+    [ [ i = V TILDEIDENTCOLON; p = patt LEVEL "simple" ->
            <:patt< ~$_:i$: $p$ >>
-      | i = tildeident ->
+      | i = V TILDEIDENT ->
            <:patt< ~$_:i$ >>
       | "~"; "("; i = LIDENT; ")" ->
            <:patt< ~$i$ >>
       | "~"; "("; i = LIDENT; ":"; t = ctyp; ")" ->
            <:patt< ~$i$: ($lid:i$ : $t$) >>
-      | i = questionidentcolon; j = LIDENT ->
+      | i = V QUESTIONIDENTCOLON; j = LIDENT ->
            <:patt< ?$_:i$: ($lid:j$) >>
-      | i = questionidentcolon; "("; p = patt; "="; e = expr; ")" ->
+      | i = V QUESTIONIDENTCOLON; "("; p = patt; "="; e = expr; ")" ->
           <:patt< ?$_:i$: ( $p$ = $e$ ) >>
-      | i = questionidentcolon; "("; p = patt; ":"; t = ctyp; ")" ->
+      | i = V QUESTIONIDENTCOLON; "("; p = patt; ":"; t = ctyp; ")" ->
           <:patt< ?$_:i$: ( $p$ : $t$ ) >>
-      | i = questionidentcolon; "("; p = patt; ":"; t = ctyp; "=";
+      | i = V QUESTIONIDENTCOLON; "("; p = patt; ":"; t = ctyp; "=";
         e = expr; ")" ->
           <:patt< ?$_:i$: ( $p$ : $t$ = $e$ ) >>
-      | i = questionidentcolon; "("; p = patt; ")" ->
+      | i = V QUESTIONIDENTCOLON; "("; p = patt; ")" ->
           <:patt< ?$_:i$: ( $p$ ) >>
-      | i = questionident -> <:patt< ?$_:i$ >>
+      | i = V QUESTIONIDENT -> <:patt< ?$_:i$ >>
       | "?"; "("; i = LIDENT; "="; e = expr; ")" ->
           <:patt< ? ( $lid:i$ = $e$ ) >>
       | "?"; "("; i = LIDENT; ":"; t = ctyp; "="; e = expr; ")" ->
@@ -1189,9 +1166,9 @@ EXTEND
   class_type:
     [ [ i = LIDENT; ":"; t = ctyp LEVEL "apply"; "->"; ct = SELF ->
           <:class_type< [ ~$i$: $t$ ] -> $ct$ >>
-      | i = questionidentcolon; t = ctyp LEVEL "apply"; "->"; ct = SELF ->
+      | i = V QUESTIONIDENTCOLON; t = ctyp LEVEL "apply"; "->"; ct = SELF ->
           <:class_type< [ ?$_:i$: $t$ ] -> $ct$ >>
-      | i = questionident; ":"; t = ctyp LEVEL "apply"; "->"; ct = SELF ->
+      | i = V QUESTIONIDENT; ":"; t = ctyp LEVEL "apply"; "->"; ct = SELF ->
           <:class_type< [ ?$_:i$: $t$ ] -> $ct$ >> ] ]
   ;
   class_fun_binding:

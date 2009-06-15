@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.105 2007/09/23 07:27:29 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.106 2007/09/24 08:34:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -859,9 +859,9 @@ EXTEND
           Qast.Tuple [i; Qast.Tuple [Qast.Bool False; Qast.Bool True]] ] ]
   ;
   ctyp:
-    [ LEFTA
+    [ "top" LEFTA
       [ t1 = SELF; "=="; t2 = SELF -> Qast.Node "TyMan" [Qast.Loc; t1; t2] ]
-    | LEFTA
+    | "as" LEFTA
       [ t1 = SELF; "as"; t2 = SELF -> Qast.Node "TyAli" [Qast.Loc; t1; t2] ]
     | LEFTA
       [ "!"; pl = SV (LIST1 typevar); "."; t = SELF ->

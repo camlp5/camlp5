@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.106 2007/09/23 07:27:29 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.107 2007/09/24 08:34:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -134,12 +134,13 @@ EXTEND
           <:str_item< declare $_list:st$ end >>
       | "exception"; (_, c, tl) = constructor_declaration; b = rebind_exn ->
           <:str_item< exception $_uid:c$ of $_list:tl$ = $_:b$ >>
-      | "external"; i = V LIDENT; ":"; t = ctyp; "="; pd = V (LIST1 STRING) ->
+      | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
+        pd = V (LIST1 STRING) ->
           <:str_item< external $_lid:i$ : $t$ = $_list:pd$ >>
       | "include"; me = module_expr -> <:str_item< include $me$ >>
       | "module"; r = V (FLAG "rec"); l = V (LIST1 mod_binding SEP "and") ->
           <:str_item< module $_flag:r$ $_list:l$ >>
-      | "module"; "type"; i = V UIDENT; "="; mt = module_type ->
+      | "module"; "type"; i = V UIDENT "uid" ""; "="; mt = module_type ->
           <:str_item< module type $_uid:i$ = $mt$ >>
       | "open"; i = V mod_ident "list" "" -> <:str_item< open $_:i$ >>
       | "type"; tdl = V (LIST1 type_declaration SEP "and") ->
@@ -184,13 +185,14 @@ EXTEND
           <:sig_item< declare $_list:st$ end >>
       | "exception"; (_, c, tl) = constructor_declaration ->
           <:sig_item< exception $_uid:c$ of $_list:tl$ >>
-      | "external"; i = V LIDENT; ":"; t = ctyp; "="; pd = V (LIST1 STRING) ->
+      | "external"; i = V LIDENT "lid" ""; ":"; t = ctyp; "=";
+        pd = V (LIST1 STRING) ->
           <:sig_item< external $_lid:i$ : $t$ = $_list:pd$ >>
       | "include"; mt = module_type -> <:sig_item< include $mt$ >>
       | "module"; rf = V (FLAG "rec");
         l = V (LIST1 mod_decl_binding SEP "and") ->
           <:sig_item< module $_flag:rf$ $_list:l$ >>
-      | "module"; "type"; i = V UIDENT; "="; mt = module_type ->
+      | "module"; "type"; i = V UIDENT "uid" ""; "="; mt = module_type ->
           <:sig_item< module type $_uid:i$ = $mt$ >>
       | "open"; i = V mod_ident "list" "" -> <:sig_item< open $_:i$ >>
       | "type"; tdl = V (LIST1 type_declaration SEP "and") ->
@@ -455,9 +457,11 @@ EXTEND
       | "-"; "'"; i = V ident "" -> (i, (False, True)) ] ]
   ;
   ctyp:
-    [ LEFTA
+    [ "top"
+      LEFTA
       [ t1 = SELF; "=="; t2 = SELF -> <:ctyp< $t1$ == $t2$ >> ]
-    | LEFTA
+    | "as"
+      LEFTA
       [ t1 = SELF; "as"; t2 = SELF -> <:ctyp< $t1$ as $t2$ >> ]
     | LEFTA
       [ "!"; pl = V (LIST1 typevar); "."; t = ctyp ->
@@ -483,8 +487,10 @@ EXTEND
           <:ctyp< { $_list:ldl$ } >> ] ]
   ;
   constructor_declaration:
-    [ [ ci = V UIDENT; "of"; cal = V (LIST1 ctyp SEP "and") -> (loc, ci, cal)
-      | ci = V UIDENT -> (loc, ci, <:vala< [] >>) ] ]
+    [ [ ci = V UIDENT "uid" ""; "of"; cal = V (LIST1 ctyp SEP "and") ->
+          (loc, ci, cal)
+      | ci = V UIDENT "uid" "" ->
+          (loc, ci, <:vala< [] >>) ] ]
   ;
   label_declaration:
     [ [ i = LIDENT; ":"; mf = FLAG "mutable"; t = ctyp ->
@@ -762,18 +768,12 @@ END;
 EXTEND
   GLOBAL: str_item sig_item;
   str_item:
-    [ [ "#"; n = V LIDENT; dp = dir_param ->
+    [ [ "#"; n = V LIDENT ""; dp = V (OPT expr) ->
           <:str_item< # $_lid:n$ $_opt:dp$ >> ] ]
   ;
   sig_item:
-    [ [ "#"; n = V LIDENT; dp = dir_param ->
+    [ [ "#"; n = V LIDENT ""; dp = V (OPT expr) ->
           <:sig_item< # $_lid:n$ $_opt:dp$ >> ] ]
-  ;
-  dir_param:
-    [ [ a = ANTIQUOT_LOC "opt" -> <:vala< $a$ >>
-      | a = ANTIQUOT_LOC "_opt" -> <:vala< $a$ >>
-      | e = expr -> <:vala< Some e >>
-      | -> <:vala< None >> ] ]
   ;
 END;
 

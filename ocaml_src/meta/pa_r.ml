@@ -1412,12 +1412,12 @@ Grammar.extend
         (fun (i : 'ident) _ (loc : Ploc.t) ->
            (i, (false, false) : 'type_parameter))]];
     Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e), None,
-    [None, Some Gramext.LeftA,
+    [Some "top", Some Gramext.LeftA,
      [[Gramext.Sself; Gramext.Stoken ("", "=="); Gramext.Sself],
       Gramext.action
         (fun (t2 : 'ctyp) _ (t1 : 'ctyp) (loc : Ploc.t) ->
            (MLast.TyMan (loc, t1, t2) : 'ctyp))];
-     None, Some Gramext.LeftA,
+     Some "as", Some Gramext.LeftA,
      [[Gramext.Sself; Gramext.Stoken ("", "as"); Gramext.Sself],
       Gramext.action
         (fun (t2 : 'ctyp) _ (t1 : 'ctyp) (loc : Ploc.t) ->
@@ -2354,42 +2354,22 @@ Grammar.extend
 Grammar.extend
   (let _ = (str_item : 'str_item Grammar.Entry.e)
    and _ = (sig_item : 'sig_item Grammar.Entry.e) in
-   let grammar_entry_create s =
-     Grammar.create_local_entry (Grammar.of_entry str_item) s
-   in
-   let dir_param : 'dir_param Grammar.Entry.e =
-     grammar_entry_create "dir_param"
-   in
    [Grammar.Entry.obj (str_item : 'str_item Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "#"); Gramext.Stoken ("LIDENT", "");
-       Gramext.Snterm
-         (Grammar.Entry.obj (dir_param : 'dir_param Grammar.Entry.e))],
+       Gramext.Sopt
+         (Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e)))],
       Gramext.action
-        (fun (dp : 'dir_param) (n : string) _ (loc : Ploc.t) ->
+        (fun (dp : 'expr option) (n : string) _ (loc : Ploc.t) ->
            (MLast.StDir (loc, n, dp) : 'str_item))]];
     Grammar.Entry.obj (sig_item : 'sig_item Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "#"); Gramext.Stoken ("LIDENT", "");
-       Gramext.Snterm
-         (Grammar.Entry.obj (dir_param : 'dir_param Grammar.Entry.e))],
+       Gramext.Sopt
+         (Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e)))],
       Gramext.action
-        (fun (dp : 'dir_param) (n : string) _ (loc : Ploc.t) ->
-           (MLast.SgDir (loc, n, dp) : 'sig_item))]];
-    Grammar.Entry.obj (dir_param : 'dir_param Grammar.Entry.e), None,
-    [None, None,
-     [[], Gramext.action (fun (loc : Ploc.t) -> (None : 'dir_param));
-      [Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
-      Gramext.action
-        (fun (e : 'expr) (loc : Ploc.t) -> (Some e : 'dir_param));
-      [Gramext.Stoken ("ANTIQUOT_LOC", "_opt")],
-      Gramext.action
-        (fun (a : string) (loc : Ploc.t) ->
-           (failwith "antiquot" : 'dir_param));
-      [Gramext.Stoken ("ANTIQUOT_LOC", "opt")],
-      Gramext.action
-        (fun (a : string) (loc : Ploc.t) ->
-           (failwith "antiquot" : 'dir_param))]]]);;
+        (fun (dp : 'expr option) (n : string) _ (loc : Ploc.t) ->
+           (MLast.SgDir (loc, n, dp) : 'sig_item))]]]);;
 
 Grammar.extend
   (let _ = (interf : 'interf Grammar.Entry.e)

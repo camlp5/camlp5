@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.84 2007/09/23 00:10:13 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.85 2007/09/24 08:34:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -980,6 +980,9 @@ value rec symbol_of_a =
       | ASopt loc s ->
           let s = symbol_of_a s in
           ssopt2 loc ls s
+      | AStok loc s p ->
+          let p = option_map string_of_a p in
+          sstoken2 loc ls s p
       | _ -> Ploc.raise loc (Failure "not impl ASvala2") ] ]
 and psymbol_of_a ap =
   {pattern = ap.ap_patt; symbol = symbol_of_a ap.ap_symb}
