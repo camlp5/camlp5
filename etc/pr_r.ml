@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.27 2007/07/04 12:21:29 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.28 2007/07/04 15:35:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -428,13 +428,26 @@ value record_binding pc (p, e) =
    to this function to a call to "binding expr" above.
 *)
 value value_binding pc (p, e) =
+  let (p, e) =
+    if is_irrefut_patt p then (p, e)
+    else
+      let loc = MLast.loc_of_expr e in
+      let (p, e) =
+        loop p e where rec loop p =
+          fun
+          [ <:expr< fun $p1$ -> $e$ >> -> loop <:patt< $p$ $p1$ >> e
+          | e -> (p, e) ]
+      in
+      let (up, ue) = un_irrefut_patt p in
+      (up, <:expr< match $e$ with [ $p$ -> $ue$ ] >>)
+  in
   let (pl, e) = expr_fun_args e in
+  let pl = [p :: pl] in
   let (e, tyo) =
     match e with
     [ <:expr< ($e$ : $t$) >>  -> (e, Some t)
     | _ -> (e, None) ]
   in
-  let pl = [p :: pl] in
   let expr_wh = if flag_where_after_value_eq.val then expr_wh else expr in
   horiz_vertic
     (fun () ->
