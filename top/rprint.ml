@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 1.19 2007/10/01 04:44:09 deraugla Exp $ *)
+(* $Id: rprint.ml,v 1.20 2007/12/19 18:00:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Format;
@@ -286,7 +286,7 @@ and print_out_class_sig_item ppf =
         (if priv then "private " else "") (if virt then "virtual " else "")
         name Toploop.print_out_type.val ty
   | x ->
-      IFDEF OCAML_3_10 OR OCAML_3_10_0 OR OCAML_3_11 THEN
+      IFDEF OCAML_3_10 OR OCAML_3_10_0 OR OCAML_3_10_1 OR OCAML_3_11 THEN
         failwith "Rprint.print_out_class_sig_item: not impl"
       ELSE
         match x with
