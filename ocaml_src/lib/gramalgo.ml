@@ -8,6 +8,8 @@ let trace =
   ref (try let _ = Sys.getenv "GRAMTEST" in true with Not_found -> false)
 ;;
 
+(* *)
+
 (* LR(0) test (experiment) *)
 
 let not_impl name x =
@@ -37,9 +39,9 @@ module Fifo =
   end
 ;;
 
-type gram_symb =
-    GS_term of string
-  | GS_nterm of string
+type ('a, 'b) gram_symb =
+    GS_term of 'a
+  | GS_nterm of 'b
 ;;
 
 type action =
@@ -304,33 +306,36 @@ let flatten_gram entry levn =
   loop (Fifo.empty ()) [] [entry, levn]
 ;;
 
-let sprint_symb =
+let sprint_symb term_n nterm_n =
   function
-    GS_term s -> s
-  | GS_nterm s -> s
+    GS_term s -> term_n s
+  | GS_nterm s -> nterm_n s
 ;;
 
-let eprint_rule (i, n, sl) =
-  Printf.eprintf "%d : %s ->" i n;
+let eprint_rule term_n nterm_n i (n, sl) =
+  Printf.eprintf "%d : %s ->" i (nterm_n n);
   if sl = [] then Printf.eprintf " ε"
-  else List.iter (fun s -> Printf.eprintf " %s" (sprint_symb s)) sl;
+  else
+    List.iter (fun s -> Printf.eprintf " %s" (sprint_symb term_n nterm_n s))
+      sl;
   Printf.eprintf "\n"
 ;;
 
-let check_closed rl =
+let check_closed nterm_n rules =
   let ht = Hashtbl.create 1 in
-  List.iter (fun (_, e, rh) -> Hashtbl.replace ht e e) rl;
-  List.iter
-    (fun (i, e, rh) ->
+  Array.iter (fun (e, rh) -> Hashtbl.replace ht e e) rules;
+  Array.iteri
+    (fun i (e, rh) ->
        List.iter
          (function
             GS_term _ -> ()
           | GS_nterm s ->
               if Hashtbl.mem ht s then ()
               else
-                Printf.eprintf "Rule %d: missing non-terminal \"%s\"\n" i s)
+                Printf.eprintf "Rule %d: missing non-terminal \"%s\"\n" i
+                  (nterm_n s))
          rh)
-    rl;
+    rules;
   flush stderr
 ;;
 
@@ -344,34 +349,28 @@ let get_symbol_after_dot =
   loop
 ;;
 
-let close_item_set rl items =
+let close_item_set rules_of_nterm items =
+  let ht = Hashtbl.create 101 in
   let rclos =
     let rec loop rclos =
       function
         (m, added, lh, dot, rh as item) :: rest ->
-          if List.mem item rclos then loop rclos rest
+          if Hashtbl.mem ht (m, dot) then loop rclos rest
           else
-            let rest =
-              match get_symbol_after_dot dot rh with
-                Some (GS_nterm n) ->
-                  let rrest =
-                    let rec loop rrest =
-                      function
-                        (m, lh, rh) :: rest1 ->
-                          let rrest =
-                            if n = lh then
-                              let item = m, true, lh, 0, rh in item :: rrest
-                            else rrest
-                          in
-                          loop rrest rest1
-                      | [] -> rrest
+            begin
+              Hashtbl.add ht (m, dot) ();
+              let rest =
+                match get_symbol_after_dot dot rh with
+                  Some (GS_nterm n) ->
+                    let rrest =
+                      List.rev_map (fun (i, rh) -> i, true, n, 0, rh)
+                        (rules_of_nterm n)
                     in
-                    loop [] rl
-                  in
-                  List.rev_append rrest rest
-              | Some (GS_term _) | None -> rest
-            in
-            loop (item :: rclos) rest
+                    List.rev_append rrest rest
+                | Some (GS_term _) | None -> rest
+              in
+              loop (item :: rclos) rest
+            end
       | [] -> rclos
     in
     loop [] items
@@ -379,18 +378,21 @@ let close_item_set rl items =
   List.rev rclos
 ;;
 
-let eprint_item (m, added, lh, dot, rh) =
+let eprint_item term_n nterm_n (m, added, lh, dot, rh) =
   if added then Printf.eprintf "+ " else Printf.eprintf "  ";
-  Printf.eprintf "%s ->" lh;
+  Printf.eprintf "%s ->" (nterm_n lh);
   begin let rec loop dot rh =
     if dot = 0 then
       begin
         Printf.eprintf " •";
-        List.iter (fun s -> Printf.eprintf " %s" (sprint_symb s)) rh
+        List.iter
+          (fun s -> Printf.eprintf " %s" (sprint_symb term_n nterm_n s)) rh
       end
     else
       match rh with
-        s :: rh -> Printf.eprintf " %s" (sprint_symb s); loop (dot - 1) rh
+        s :: rh ->
+          Printf.eprintf " %s" (sprint_symb term_n nterm_n s);
+          loop (dot - 1) rh
       | [] -> Printf.eprintf "... algorithm error ..."
   in
     loop dot rh
@@ -398,7 +400,7 @@ let eprint_item (m, added, lh, dot, rh) =
   Printf.eprintf "\n"
 ;;
 
-let make_item_sets rl item_set_ht =
+let make_item_sets rules_of_nterm term_n nterm_n item_set_ht =
   let rec loop ini_item_set_cnt item_set_cnt shift_assoc item_set_ini =
     let item_set =
       List.map (fun (m, _, lh, dot, rh) -> m, false, lh, dot, rh) item_set_ini
@@ -425,7 +427,8 @@ let make_item_sets rl item_set_ht =
       begin
         Printf.eprintf "\nfrom item_set %d, symbols after dot:"
           ini_item_set_cnt;
-        List.iter (fun s -> Printf.eprintf " %s" (sprint_symb s)) sl;
+        List.iter
+          (fun s -> Printf.eprintf " %s" (sprint_symb term_n nterm_n s)) sl;
         Printf.eprintf "\n";
         flush stderr
       end;
@@ -447,7 +450,7 @@ let make_item_sets rl item_set_ht =
                item_set
            in
            (* complete by closure *)
-           let item_set = close_item_set rl item_set in
+           let item_set = close_item_set rules_of_nterm item_set in
            Printf.eprintf "\n";
            match
              try Some (Hashtbl.find item_set_ht item_set) with
@@ -455,14 +458,15 @@ let make_item_sets rl item_set_ht =
            with
              Some n ->
                Printf.eprintf "Item set (after %d and %s) = Item set %d\n"
-                 ini_item_set_cnt (sprint_symb s) n;
+                 ini_item_set_cnt (sprint_symb term_n nterm_n s) n;
                flush stderr;
                let symb_cnt_assoc = (s, n) :: symb_cnt_assoc in
                item_set_cnt, symb_cnt_assoc, shift_assoc
            | None ->
                Printf.eprintf "Item set %d (after %d and %s)\n\n"
-                 (item_set_cnt + 1) ini_item_set_cnt (sprint_symb s);
-               List.iter eprint_item item_set;
+                 (item_set_cnt + 1) ini_item_set_cnt
+                 (sprint_symb term_n nterm_n s);
+               List.iter (eprint_item term_n nterm_n) item_set;
                flush stderr;
                let item_set_cnt = item_set_cnt + 1 in
                Hashtbl.add item_set_ht item_set item_set_cnt;
@@ -479,45 +483,119 @@ let make_item_sets rl item_set_ht =
   loop 0 0 []
 ;;
 
-let compute_nb_symbols item_set_ht term_table nterm_table =
-  Hashtbl.fold
-    (fun item_set _ cnts ->
-       List.fold_left
-         (fun (terms_cnt, nterms_cnt) (_, _, lh, _, rh) ->
-            let nterms_cnt =
-              if Hashtbl.mem nterm_table lh then nterms_cnt
-              else
-                begin
-                  Hashtbl.add nterm_table lh nterms_cnt;
-                  nterms_cnt + 1
-                end
+let make_derive_eps_tab rules nb_nterms =
+  let nterm_derive_eps_tab = Array.create nb_nterms false in
+  let changes = ref false in
+  begin let rec loop () =
+    Array.iteri
+      (fun i (lh, rh) ->
+         let derive_eps =
+           List.for_all
+             (function
+                GS_term _ -> false
+              | GS_nterm i -> nterm_derive_eps_tab.(i))
+             rh
+         in
+         if derive_eps then
+           if not nterm_derive_eps_tab.(lh) then
+             begin nterm_derive_eps_tab.(lh) <- true; changes := true end)
+      rules;
+    if !changes then begin changes := false; loop () end
+  in
+    loop ()
+  end;
+  nterm_derive_eps_tab
+;;
+
+let set_first first_tab nterm_derive_eps_tab changes (lh, rh) =
+  let rec loop =
+    function
+      GS_term i :: _ ->
+        if not (List.mem i first_tab.(lh)) then
+          begin first_tab.(lh) <- i :: first_tab.(lh); changes := true end
+    | GS_nterm i :: rest ->
+        List.iter
+          (fun i ->
+             if not (List.mem i first_tab.(lh)) then
+               begin
+                 first_tab.(lh) <- i :: first_tab.(lh);
+                 changes := true
+               end)
+          first_tab.(i);
+        if nterm_derive_eps_tab.(i) then loop rest
+    | [] -> ()
+  in
+  loop rh
+;;
+
+let set_follow first_tab follow_tab nterm_derive_eps_tab changes (lh, rh) =
+  let rec loop =
+    function
+      s :: rest ->
+        begin match s with
+          GS_term _ -> ()
+        | GS_nterm i ->
+            let rec loop =
+              function
+                GS_term j :: _ ->
+                  if not (List.mem j follow_tab.(i)) then
+                    begin
+                      follow_tab.(i) <- j :: follow_tab.(i);
+                      changes := true
+                    end
+              | GS_nterm j :: rest ->
+                  List.iter
+                    (fun k ->
+                       if not (List.mem k follow_tab.(i)) then
+                         begin
+                           follow_tab.(i) <- k :: follow_tab.(i);
+                           changes := true
+                         end)
+                    first_tab.(j);
+                  if nterm_derive_eps_tab.(j) then loop rest
+              | [] ->
+                  List.iter
+                    (fun k ->
+                       if not (List.mem k follow_tab.(i)) then
+                         begin
+                           follow_tab.(i) <- k :: follow_tab.(i);
+                           changes := true
+                         end)
+                    follow_tab.(lh)
             in
-            List.fold_left
-              (fun (terms_cnt, nterms_cnt) ->
-                 function
-                   GS_term s ->
-                     let terms_cnt =
-                       if Hashtbl.mem term_table s then terms_cnt
-                       else
-                         begin
-                           Hashtbl.add term_table s terms_cnt;
-                           terms_cnt + 1
-                         end
-                     in
-                     terms_cnt, nterms_cnt
-                 | GS_nterm s ->
-                     let nterms_cnt =
-                       if Hashtbl.mem nterm_table s then nterms_cnt
-                       else
-                         begin
-                           Hashtbl.add nterm_table s nterms_cnt;
-                           nterms_cnt + 1
-                         end
-                     in
-                     terms_cnt, nterms_cnt)
-              (terms_cnt, nterms_cnt) rh)
-         cnts item_set)
-    item_set_ht (0, 0)
+            loop rest
+        end;
+        loop rest
+    | [] -> ()
+  in
+  loop rh
+;;
+
+let make_first_tab rules nterm_derive_eps_tab =
+  let nb_nterms = Array.length nterm_derive_eps_tab in
+  let first_tab = Array.create nb_nterms [] in
+  let changes = ref false in
+  begin let rec loop () =
+    Array.iter (set_first first_tab nterm_derive_eps_tab changes) rules;
+    if !changes then begin changes := false; loop () end
+  in
+    loop ()
+  end;
+  first_tab
+;;
+
+let make_follow_tab rules first_tab nterm_derive_eps_tab =
+  let nb_terms = Array.length nterm_derive_eps_tab in
+  let follow_tab = Array.create nb_terms [] in
+  let changes = ref false in
+  begin let rec loop () =
+    Array.iter (set_follow first_tab follow_tab nterm_derive_eps_tab changes)
+      rules;
+    if !changes then begin changes := false; loop () end
+  in
+    loop ()
+  end;
+  follow_tab
 ;;
 
 (*DEFINE TEST;*)
@@ -525,53 +603,140 @@ let compute_nb_symbols item_set_ht term_table nterm_table =
 let lr0 entry lev =
   Printf.eprintf "LR(0) %s %d\n" entry.ename lev;
   flush stderr;
-  let (rl, entry_name) =
-    let rl = flatten_gram entry lev in rl, name_of_entry entry lev
-  in
-  let rl =
-    let (rrl, _) =
-      List.fold_left (fun (rrl, i) (lh, rh) -> (i, lh, rh) :: rrl, i + 1)
-        ([], 1) rl
+  let (rules, term_name_tab, nterm_name_tab) =
+    let (rl, entry_name) =
+      let rl = flatten_gram entry lev in rl, name_of_entry entry lev
     in
-    List.rev rrl
+    let rl = ("S", [GS_nterm entry_name; GS_term "$"]) :: rl in
+    let term_ht = Hashtbl.create 1 in
+    let nterm_ht = Hashtbl.create 1 in
+    let (rrl, term_cnt, nterm_cnt) =
+      List.fold_left
+        (fun (rrl, term_cnt, nterm_cnt) (lh, rh) ->
+           let (lh, nterm_cnt) =
+             try Hashtbl.find nterm_ht lh, nterm_cnt with
+               Not_found ->
+                 Hashtbl.add nterm_ht lh nterm_cnt; nterm_cnt, nterm_cnt + 1
+           in
+           let (rrh, term_cnt, nterm_cnt) =
+             List.fold_left
+               (fun (rrh, term_cnt, nterm_cnt) s ->
+                  let (s, term_cnt, nterm_cnt) =
+                    match s with
+                      GS_term s ->
+                        let (s, term_cnt) =
+                          try Hashtbl.find term_ht s, term_cnt with
+                            Not_found ->
+                              Hashtbl.add term_ht s term_cnt;
+                              term_cnt, term_cnt + 1
+                        in
+                        GS_term s, term_cnt, nterm_cnt
+                    | GS_nterm s ->
+                        let (s, nterm_cnt) =
+                          try Hashtbl.find nterm_ht s, nterm_cnt with
+                            Not_found ->
+                              Hashtbl.add nterm_ht s nterm_cnt;
+                              nterm_cnt, nterm_cnt + 1
+                        in
+                        GS_nterm s, term_cnt, nterm_cnt
+                  in
+                  s :: rrh, term_cnt, nterm_cnt)
+               ([], term_cnt, nterm_cnt) rh
+           in
+           (lh, List.rev rrh) :: rrl, term_cnt, nterm_cnt)
+        ([], 0, 0) rl
+    in
+    let term_name_tab =
+      let t = Array.create term_cnt "" in
+      Hashtbl.iter (fun s i -> t.(i) <- s) term_ht; t
+    in
+    let nterm_name_tab =
+      let t = Array.create nterm_cnt "" in
+      Hashtbl.iter (fun s i -> t.(i) <- s) nterm_ht; t
+    in
+    Array.of_list (List.rev rrl), term_name_tab, nterm_name_tab
   in
-  Printf.eprintf "%d rules\n\n" (List.length rl);
+  let term_n i = if i = -1 then "ε" else Array.get term_name_tab i in
+  let nterm_n = Array.get nterm_name_tab in
+  Printf.eprintf "%d rules\n\n" (Array.length rules);
   flush stderr;
-  check_closed rl;
-  List.iter eprint_rule rl;
+  check_closed nterm_n rules;
+  Array.iteri (eprint_rule term_n nterm_n) rules;
   Printf.eprintf "\n";
   flush stderr;
+  let nb_terms = Array.length term_name_tab in
+  let nb_nterms = Array.length nterm_name_tab in
+  Printf.eprintf "\n";
+  Printf.eprintf "nb of terms %d\n" nb_terms;
+  Printf.eprintf "nb of non-terms %d\n" nb_nterms;
+  flush stderr;
+  let rules_of_nterm_tab = Array.create nb_nterms [] in
+  Array.iteri
+    (fun i (lh, rh) ->
+       rules_of_nterm_tab.(lh) <- (i, rh) :: rules_of_nterm_tab.(lh))
+    rules;
+  Array.iteri (fun i v -> rules_of_nterm_tab.(i) <- List.rev v)
+    rules_of_nterm_tab;
+  let rules_of_nterm = Array.get rules_of_nterm_tab in
   let item_set_0 =
-    let item = 0, false, "S", 0, [GS_nterm entry_name] in
-    close_item_set rl [item]
+    let item = 0, false, fst rules.(0), 0, snd rules.(0) in
+    close_item_set rules_of_nterm [item]
   in
   Printf.eprintf "\n";
   Printf.eprintf "Item set 0\n\n";
-  List.iter eprint_item item_set_0;
+  List.iter (eprint_item term_n nterm_n) item_set_0;
   flush stderr;
   let item_set_ht = Hashtbl.create 1 in
   let (item_set_cnt, shift_assoc) =
-    make_item_sets rl item_set_ht item_set_0
+    make_item_sets rules_of_nterm term_n nterm_n item_set_ht item_set_0
   in
   Printf.eprintf "\ntotal number of item sets %d\n" (item_set_cnt + 1);
   flush stderr;
   Printf.eprintf "\nshift:\n";
   List.iter
     (fun (i, symb_cnt_assoc) ->
-       Printf.eprintf "state %d:" i;
-       List.iter (fun (s, i) -> Printf.eprintf " %s->%d" (sprint_symb s) i)
+       Printf.eprintf "  state %d:" i;
+       List.iter
+         (fun (s, i) ->
+            Printf.eprintf " %s->%d" (sprint_symb term_n nterm_n s) i)
          (List.rev symb_cnt_assoc);
        Printf.eprintf "\n")
     (List.sort compare shift_assoc);
   flush stderr;
-  let term_table = Hashtbl.create 1 in
-  let nterm_table = Hashtbl.create 1 in
-  let (nb_terms, nb_nterms) =
-    compute_nb_symbols item_set_ht term_table nterm_table
-  in
-  Printf.eprintf "nb of terms %d\n" nb_terms;
-  Printf.eprintf "nb of non-terms %d\n" nb_nterms;
+  let nterm_derive_eps_tab = make_derive_eps_tab rules nb_nterms in
+  Printf.eprintf "\nDerive ε\n\n";
+  Printf.eprintf " ";
+  Array.iteri
+    (fun i derive_eps -> if derive_eps then Printf.eprintf " %s" (nterm_n i))
+    nterm_derive_eps_tab;
   flush stderr;
+  (* compute first *)
+  let first_tab = make_first_tab rules nterm_derive_eps_tab in
+  begin let compare_terms i j = compare (term_n i) (term_n j) in
+    Printf.eprintf "\nFirst\n\n";
+    Array.iteri
+      (fun i s ->
+         Printf.eprintf "  first (%s) =" s;
+         List.iter (fun s -> Printf.eprintf " %s" (term_n s))
+           (List.sort compare_terms first_tab.(i));
+         Printf.eprintf "\n")
+      nterm_name_tab;
+    flush stderr
+  end;
+  (* compute follow *)
+  let follow_tab = make_follow_tab rules first_tab nterm_derive_eps_tab in
+  begin let compare_terms i j = compare (term_n i) (term_n j) in
+    Printf.eprintf "\nFollow\n\n";
+    Array.iteri
+      (fun i s ->
+         Printf.eprintf "  follow (%s) =" s;
+         List.iter (fun s -> Printf.eprintf " %s" (term_n s))
+           (List.sort compare_terms follow_tab.(i));
+         Printf.eprintf "\n")
+      nterm_name_tab;
+    flush stderr
+  end;
+  let _follow_tab = follow_tab in
   (* make goto table *)
   let goto_table =
     Array.init (item_set_cnt + 1) (fun _ -> Array.create nb_nterms (-1))
@@ -583,15 +748,14 @@ let lr0 entry lev =
          (fun (s, n) ->
             match s with
               GS_term s -> ()
-            | GS_nterm s ->
-                let i = Hashtbl.find nterm_table s in line.(i) <- n)
+            | GS_nterm i -> line.(i) <- n)
          symb_cnt_assoc)
     shift_assoc;
   Printf.eprintf "\ngoto table\n\n";
   if Array.length goto_table > 20 then Printf.eprintf "  (big)\n"
   else
     for i = 0 to Array.length goto_table - 1 do
-      Printf.eprintf "state %d :" i;
+      Printf.eprintf "  state %d :" i;
       let line = goto_table.(i) in
       for j = 0 to Array.length line - 1 do
         if line.(j) = -1 then Printf.eprintf " -"
@@ -601,10 +765,9 @@ let lr0 entry lev =
     done;
   flush stderr;
   (* make action table *)
-  (* size = number of terminals plus one for the 'end of input' *)
+  (* column size = number of terminals *)
   let action_table =
-    Array.init (item_set_cnt + 1)
-      (fun _ -> Array.create (nb_terms + 1) ActErr)
+    Array.init (item_set_cnt + 1) (fun _ -> Array.create nb_terms ActErr)
   in
   (* the columns for the terminals are copied to the action table as shift
      actions *)
@@ -614,25 +777,25 @@ let lr0 entry lev =
        List.iter
          (fun (s, n) ->
             match s with
-              GS_term s ->
-                let i = Hashtbl.find term_table s in line.(i) <- ActShift n
+              GS_term i -> line.(i) <- ActShift n
             | GS_nterm s -> ())
          symb_cnt_assoc)
     shift_assoc;
-  (* an extra column for '$' (end of input) is added to the action table
-     that contains acc for every item set that contains S → w • *)
+  (* for every item set that contains S → w •, an 'acc' is added in the
+     column of the '$' terminal (end of input) *)
+  let eoi_pos = 0 in
   Hashtbl.iter
     (fun item_set n ->
        List.iter
          (fun (_, _, lh, dot, rh) ->
-            if lh = "S" && dot = List.length rh then
-              action_table.(n).(nb_terms) <- ActAcc)
+            if nterm_n lh = "S" && dot = List.length rh then
+              action_table.(n).(eoi_pos) <- ActAcc)
          item_set)
     item_set_ht;
   (* if an item set i contains an item of the form A → w • and A → w is
      rule m with m > 0 then the row for state i in the action table is
      completely filled with the reduce action rm. *)
-  let nl = ref true in
+  let _nl = ref true in
   Hashtbl.iter
     (fun item_set i ->
        List.iter
@@ -642,37 +805,29 @@ let lr0 entry lev =
                 let line = action_table.(i) in
                 match line.(0) with
                   ActReduce m1 ->
-                    if !nl then Printf.eprintf "\n";
-                    nl := false;
+                    if !_nl then Printf.eprintf "\n";
+                    _nl := false;
                     Printf.eprintf
                       "State %d: conflict reduce/reduce rules %d and %d\n" i
                       m1 m;
                     Printf.eprintf "  reduce with rule ";
-                    let r = List.find (fun (i, _, _) -> i = m) rl in
-                    eprint_rule r;
+                    eprint_rule term_n nterm_n m1 rules.(m1);
                     Printf.eprintf "  reduce with rule ";
-                    let r = List.find (fun (i, _, _) -> i = m1) rl in
-                    eprint_rule r; flush stderr
+                    eprint_rule term_n nterm_n m rules.(m);
+                    flush stderr
                 | _ ->
                     for j = 0 to Array.length line - 1 do
                       match line.(j) with
                         ActShift n ->
-                          if !nl then Printf.eprintf "\n";
-                          nl := false;
+                          if !_nl then Printf.eprintf "\n";
+                          _nl := false;
                           Printf.eprintf "State %d: conflict shift/reduce" i;
                           Printf.eprintf " shift %d rule %d\n" n m;
-                          let s =
-                            Hashtbl.fold
-                              (fun s k v -> if k = j then Some s else v)
-                              term_table None
-                          in
                           Printf.eprintf "  shift with terminal %s\n"
-                            (match s with
-                               Some s -> s
-                             | None -> "...");
+                            (term_n j);
                           Printf.eprintf "  reduce with rule ";
-                          let r = List.find (fun (i, _, _) -> i = m) rl in
-                          eprint_rule r; flush stderr
+                          eprint_rule term_n nterm_n m rules.(m);
+                          flush stderr
                       | _ -> line.(j) <- ActReduce m
                     done)
          item_set)
@@ -681,7 +836,7 @@ let lr0 entry lev =
   if Array.length action_table > 20 then Printf.eprintf "  (big)\n"
   else
     for i = 0 to Array.length action_table - 1 do
-      Printf.eprintf "state %d :" i;
+      Printf.eprintf "  state %d :" i;
       let line = action_table.(i) in
       for j = 0 to Array.length line - 1 do
         match line.(j) with

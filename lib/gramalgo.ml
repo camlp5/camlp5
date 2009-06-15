@@ -55,9 +55,7 @@ type action =
   | ActErr ]
 ;
 
-value name_of_entry entry lev =
-  entry.ename ^ "-" ^ string_of_int lev
-;
+value name_of_entry entry lev = entry.ename ^ "-" ^ string_of_int lev;
 
 value fold_rules_of_tree f init tree =
   let rec do_tree r accu =
@@ -247,8 +245,7 @@ value flatten_gram entry levn =
               let n =
                 match lev.assoc with
                 [ NonA | RightA -> do {
-                    to_treat_r.val :=
-                      [(entry, levn + 1) :: to_treat_r.val];
+                    to_treat_r.val := [(entry, levn + 1) :: to_treat_r.val];
                     levn + 1
                   }
                 | LeftA -> levn ]
@@ -352,8 +349,8 @@ value eprint_rule term_n nterm_n i (n, sl) = do {
   Printf.eprintf "%d : %s ->" i (nterm_n n);
   if sl = [] then Printf.eprintf " ε"
   else
-    List.iter
-      (fun s -> Printf.eprintf " %s" (sprint_symb term_n nterm_n s)) sl;
+    List.iter (fun s -> Printf.eprintf " %s" (sprint_symb term_n nterm_n s))
+      sl;
   Printf.eprintf "\n";
 };
 
@@ -417,8 +414,8 @@ value eprint_item term_n nterm_n (m, added, lh, dot, rh) = do {
   loop dot rh where rec loop dot rh =
     if dot = 0 then do {
       Printf.eprintf " •";
-      List.iter
-        (fun s -> Printf.eprintf " %s" (sprint_symb term_n nterm_n s)) rh
+      List.iter (fun s -> Printf.eprintf " %s" (sprint_symb term_n nterm_n s))
+        rh
     }
     else
       match rh with
@@ -443,17 +440,15 @@ value make_item_sets rules_of_nterm term_n nterm_n item_set_ht =
         (* terminals and non-terminals just after the dot *)
         List.fold_left
           (fun (rtl, rntl) (m, added, lh, dot, rh) ->
-              match get_symbol_after_dot dot rh with
-              [ Some s ->
-                  match s with
-                  [ GS_term _ ->
-                      (if List.mem s rtl then rtl else [s :: rtl],
-                       rntl)
-                  | GS_nterm _ ->
-                      (rtl,
-                       if List.mem s rntl then rntl else [s :: rntl]) ]
-              | None ->
-                  (rtl, rntl) ])
+             match get_symbol_after_dot dot rh with
+             [ Some s ->
+                 match s with
+                 [ GS_term _ ->
+                     (if List.mem s rtl then rtl else [s :: rtl], rntl)
+                 | GS_nterm _ ->
+                     (rtl, if List.mem s rntl then rntl else [s :: rntl]) ]
+             | None ->
+                 (rtl, rntl) ])
           ([], []) item_set
       in
       List.rev_append rtl (List.rev rntl)
@@ -463,8 +458,7 @@ value make_item_sets rules_of_nterm term_n nterm_n item_set_ht =
         Printf.eprintf "\nfrom item_set %d, symbols after dot:"
           ini_item_set_cnt;
         List.iter
-          (fun s -> Printf.eprintf " %s" (sprint_symb term_n nterm_n s))
-          sl;
+          (fun s -> Printf.eprintf " %s" (sprint_symb term_n nterm_n s)) sl;
         Printf.eprintf "\n";
         flush stderr;
       }
@@ -498,8 +492,7 @@ value make_item_sets rules_of_nterm term_n nterm_n item_set_ht =
            with
            [ Some n -> do {
                IFDEF VERBOSE THEN do {
-                 Printf.eprintf
-                   "Item set (after %d and %s) = Item set %d\n"
+                 Printf.eprintf "Item set (after %d and %s) = Item set %d\n"
                    ini_item_set_cnt (sprint_symb term_n nterm_n s) n;
                  flush stderr;
                }
@@ -527,9 +520,7 @@ value make_item_sets rules_of_nterm term_n nterm_n item_set_ht =
          })
         (item_set_cnt, [], shift_assoc) sl
       in
-      let shift_assoc =
-        [(ini_item_set_cnt, symb_cnt_assoc) :: shift_assoc]
-      in
+      let shift_assoc = [(ini_item_set_cnt, symb_cnt_assoc) :: shift_assoc] in
       (item_set_cnt, shift_assoc)
   }
 ;
@@ -541,11 +532,11 @@ value make_derive_eps_tab rules nb_nterms = do {
     Array.iteri
       (fun i (lh, rh) ->
          let derive_eps =
-            List.for_all
-              (fun
-               [ GS_term _ -> False
-               | GS_nterm i -> nterm_derive_eps_tab.(i) ])
-              rh
+           List.for_all
+             (fun
+              [ GS_term _ -> False
+              | GS_nterm i -> nterm_derive_eps_tab.(i) ])
+             rh
          in
          if derive_eps then
            if not nterm_derive_eps_tab.(lh) then do {
@@ -737,7 +728,7 @@ value lr0 entry lev = do {
                ([], term_cnt, nterm_cnt) rh
            in
            ([(lh, List.rev rrh) :: rrl], term_cnt, nterm_cnt))
-       ([], 0, 0) rl
+        ([], 0, 0) rl
     in
     let term_name_tab = do {
       let t = Array.create term_cnt "" in
@@ -946,12 +937,12 @@ value lr0 entry lev = do {
                       if _nl.val then Printf.eprintf "\n" else ();
                       _nl.val := False;
                       Printf.eprintf
-                        "State %d: conflict reduce/reduce rules %d and %d\n"
-                        i m1 m;
+                        "State %d: conflict reduce/reduce rules %d and %d\n" i
+                        m1 m;
                       Printf.eprintf "  reduce with rule ";
-                      eprint_rule term_n nterm_n m1 rules.(m1); 
+                      eprint_rule term_n nterm_n m1 rules.(m1);
                       Printf.eprintf "  reduce with rule ";
-                      eprint_rule term_n nterm_n m rules.(m); 
+                      eprint_rule term_n nterm_n m rules.(m);
                       flush stderr;
                     }
                     ELSE () END;
@@ -963,7 +954,8 @@ value lr0 entry lev = do {
                           IFDEF VERBOSE THEN do {
                             if _nl.val then Printf.eprintf "\n" else ();
                             _nl.val := False;
-                            Printf.eprintf "State %d: conflict shift/reduce" i;
+                            Printf.eprintf "State %d: conflict shift/reduce"
+                              i;
                             Printf.eprintf " shift %d rule %d\n" n m;
                             Printf.eprintf "  shift with terminal %s\n"
                               (term_n j);

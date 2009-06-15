@@ -1,5 +1,5 @@
 (* camlp5r -I . pa_extend.cmo pa_extprint.cmo q_MLast.cmo *)
-(* $Id: q_phony.ml,v 1.16 2007/09/15 19:35:16 deraugla Exp $ *)
+(* $Id: q_phony.ml,v 1.17 2007/10/23 08:43:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -38,10 +38,15 @@ EXTEND
   macro_def:
     [ [ "DEFINE"; i = UIDENT -> <:expr< DEFINE $uid:i$ >>
       | "IFDEF"; e = dexpr; "THEN"; d = expr_or_macro; "END" ->
-          <:expr< IFDEF $e$ $d$ >>
+          <:expr< if $e$ then $d$ else () >>
       | "IFDEF"; e = dexpr; "THEN"; d1 = expr_or_macro; "ELSE";
         d2 = expr_or_macro; "END" ->
-          <:expr< IFDEF $e$ $d1$ $d2$ >> ] ]
+          <:expr< if $e$ then $d1$ else $d2$ >>
+      | "IFNDEF"; e = dexpr; "THEN"; d = expr_or_macro; "END" ->
+          <:expr< if $e$ then $d$ else () >>
+      | "IFNDEF"; e = dexpr; "THEN"; d1 = expr_or_macro; "ELSE";
+        d2 = expr_or_macro; "END" ->
+          <:expr< if $e$ then $d1$ else $d2$ >> ] ]
   ;
   expr_or_macro:
     [ [ d = macro_def -> d
