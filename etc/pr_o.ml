@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.147 2007/12/24 17:11:30 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.148 2007/12/24 17:46:36 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1061,17 +1061,10 @@ EXTEND_PRINTER
       | <:expr< [$_$ :: $_$] >> as z ->
           let (xl, y) = make_expr_list z in
           match y with
-          [ Some _ ->
-              expr
-                {ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-                 aft = sprintf ")%s" pc.aft; dang = ""}
-                z
+          [ Some _ -> pprintf pc "@[<1>(%q)@]" expr z ""
           | None ->
               let xl = List.map (fun x -> (x, ";")) xl in
-              plist expr1 0
-                {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef;
-                 aft = sprintf "]%s" pc.aft}
-                xl ]
+              pprintf pc "@[<1>[%p]@]" (plist expr1 0) xl ]
       | <:expr< ($e$ : $t$) >> ->
           horiz_vertic
             (fun () ->
