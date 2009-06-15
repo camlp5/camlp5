@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_sml.ml,v 1.11 2007/08/16 16:01:19 deraugla Exp $ *)
+(* $Id: pa_sml.ml,v 1.12 2007/08/24 02:51:54 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -816,7 +816,7 @@ EXTEND
           | Left x2 -> <:module_expr< $x1$ (struct $list:x2$ end) >>
           | Right x2 -> <:module_expr< $x1$ $x2$ >> ]
       | "let"; x1 = strdecs; "in"; x2 = module_expr; "end" ->
-          not_impl loc "str 4"	
+          not_impl loc "str 4"
       | x1 = module_expr; ":"; x2 = module_type -> not_impl loc "str 5"
       | x1 = module_expr; x2 = ":>"; x3 = module_type ->
           not_impl loc "str 6" ] ]
