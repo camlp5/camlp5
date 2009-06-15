@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.128 2007/12/07 17:37:18 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.129 2007/12/07 18:11:22 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1153,18 +1153,20 @@ EXTEND_PRINTER
           in
           horiz_vertic
             (fun () ->
-               sprintf "%sdo {%s%s%s}%s" pc.bef " "
-                 (hlistl (semi_after (comm_expr curr)) (comm_expr curr)
-                    {(pc) with bef = ""; aft = ""} el)
-                 " " pc.aft)
+               pprintf pc "do { %p }"
+                 (hlistl (semi_after (comm_expr curr)) (comm_expr curr)) el)
             (fun () ->
-               sprintf "%sdo {%s%s%s}%s" pc.bef "\n"
-                 (vlistl (semi_after (comm_expr curr)) (comm_expr curr)
-                    {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                     aft = ""}
-                    el)
-                 ("\n" ^ tab pc.ind) pc.aft)
+               pprintf pc "@[<a>do {@;%p@ }@]"
+                 (vlistl (semi_after (comm_expr curr)) (comm_expr curr)) el)
       | <:expr< while $e1$ do { $list:el$ } >> ->
+          let el =
+            match el with
+            [ [e] ->
+                match sequencify e with
+                [ Some el -> el
+                | None -> el ]
+            | _ -> el ]
+          in
           horiz_vertic
             (fun () ->
                sprintf "%swhile %s do { %s }%s" pc.bef
