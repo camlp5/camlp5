@@ -689,7 +689,7 @@ and parser_of_symbol entry nlevn =
              | _ -> Obj.repr false)
   | Sflag2 s ->
       let ps = parser_of_symbol entry nlevn s in
-      let pa = parser_of_token entry ("FLAG2", "") in
+      let pa = parser_of_token entry ("FLAG", "") in
       (fun (strm__ : _ Stream.t) ->
          match try Some (pa strm__) with Stream.Failure -> None with
            Some a -> Obj.repr (Stdpp.VaAnt (Obj.magic a))

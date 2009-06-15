@@ -1155,24 +1155,6 @@ Grammar.extend
        (fun (s : string) (loc : Token.location) ->
           (Obj.repr s : 'mod_ident))]]];;
 
-let eq_before_colon p e =
-  let rec loop i =
-    if i == String.length e then
-      failwith "Internal error in Plexer: incorrect ANTIQUOT"
-    else if i == String.length p then e.[i] == ':'
-    else if p.[i] == e.[i] then loop (i + 1)
-    else false
-  in
-  loop 0
-;;
-
-let after_colon e =
-  try
-    let i = String.index e ':' in
-    String.sub e (i + 1) (String.length e - i - 1)
-  with Not_found -> ""
-;;
-
 let check_anti_loc s kind =
   try
     let i = String.index s ':' in
@@ -1244,10 +1226,6 @@ lex.Token.tok_match <-
            begin try check_anti_loc prm "flag" with
              Stream.Failure -> check_anti_loc prm "flag2"
            end
-       | _ -> raise Stream.Failure)
-  | "FLAG2", "" ->
-      (function
-         "ANTIQUOT_LOC", prm -> check_anti_loc prm "flag2"
        | _ -> raise Stream.Failure)
   | tok -> Token.default_match tok;;
 

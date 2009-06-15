@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.ml,v 1.28 2007/08/05 16:27:59 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.29 2007/08/05 16:51:29 deraugla Exp $ *)
 
 open Stdpp;
 open Gramext;
@@ -632,7 +632,7 @@ and parser_of_symbol entry nlevn =
       | [: :] -> Obj.repr False ]
   | Sflag2 s ->
       let ps = parser_of_symbol entry nlevn s in
-      let pa = parser_of_token entry ("FLAG2", "") in
+      let pa = parser_of_token entry ("FLAG", "") in
       parser
       [ [: a = pa :] -> Obj.repr (Stdpp.VaAnt (Obj.magic a))
       | [: _ = ps :] -> Obj.repr (Stdpp.VaVal True)
