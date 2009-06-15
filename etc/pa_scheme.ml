@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.74 2007/10/12 02:17:25 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.75 2007/10/12 15:31:11 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -1096,6 +1096,9 @@
     ((Sexpr loc [(Slid _ "sum") . sel])
      (let ((cdl (anti_list_map constructor_declaration_se sel)))
        <:ctyp< [ $_list:cdl$ ] >>))
+    ((Sexpr loc [(Slid _ "variants") . sel])
+     (let ((cdl (anti_list_map variant_declaration_se sel)))
+       <:ctyp< [ = $_list:cdl$ ] >>))
     ((Srec loc sel)
      (let ((ldl (anti_list_map label_declaration_se sel)))
        <:ctyp< { $_list:ldl$ } >>))
@@ -1158,6 +1161,12 @@
         <:vala< (List.map ctyp_se sel) >>))
     (se
      (error se "constructor_declaration"))))
+  (variant_declaration_se
+   (lambda_match
+    ((Sexpr loc [(Slid _ "`") (Suid _ s)])
+     <:poly_variant< ` $s$ >>)
+    (se
+     (error se "variant_declaration"))))
   (label_declaration_se
    (lambda_match
     ((Sexpr loc [(Slid _ lab) (Slid _ "mutable") se])

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.49 2007/09/26 07:10:43 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.50 2007/10/12 15:31:11 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -457,12 +457,15 @@ EXTEND_PRINTER
              aft = sprintf ")%s" pc.aft}
             z ] ]
   ;
-  pr_ctyp: LEVEL "simple"
-    [ [ <:ctyp< ?$i$: $t$ >> ->
+  pr_ctyp: AFTER "arrow"
+    [ "label"
+      [ <:ctyp< ?$i$: $t$ >> ->
           curr {(pc) with bef = sprintf "%s?%s:" pc.bef i} t
       | <:ctyp< ~$i$: $t$ >> ->
-          curr {(pc) with bef = sprintf "%s~%s:" pc.bef i} t
-      | <:ctyp< < $list:ml$ $flag:v$ > >> ->
+          curr {(pc) with bef = sprintf "%s~%s:" pc.bef i} t ] ]
+  ;
+  pr_ctyp: LEVEL "simple"
+    [ [ <:ctyp< < $list:ml$ $flag:v$ > >> ->
           if ml = [] then
             sprintf "%s<%s >%s" pc.bef (if v then " .." else "") pc.aft
           else
@@ -485,7 +488,9 @@ EXTEND_PRINTER
           ctyp
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
              aft = sprintf ")%s" pc.aft}
-            z ] ]
+            z
+      | z ->
+          not_impl "ctyp" pc z ] ]
   ;
   pr_sig_item: LEVEL "top"
     [ [ <:sig_item< class $list:cd$ >> ->

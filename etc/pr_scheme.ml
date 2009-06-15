@@ -1,5 +1,5 @@
-(* camlp5r q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.30 2007/10/12 02:23:03 deraugla Exp $ *)
+(* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
+(* $Id: pr_scheme.ml,v 1.31 2007/10/12 15:31:11 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -32,7 +32,7 @@ value not_impl name pc x =
       "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
     else "int_val = " ^ string_of_int (Obj.magic x)
   in
-  sprintf "%s\"pr_scheme_new, not impl: %s; %s\"%s" pc.bef name
+  sprintf "%s\"pr_scheme, not impl: %s; %s\"%s" pc.bef name
     (String.escaped desc) pc.aft
 ;
 
@@ -298,6 +298,19 @@ value constr_decl pc (_, c, tl) =
          List.map (fun t -> (fun pc -> ctyp pc t, "")) tl] ]
 ;
 
+value poly_variant_decl pc =
+  fun
+  [ <:poly_variant< `$s$ >> ->
+      sprintf "%s(` %s)%s" pc.bef s pc.aft
+  | <:poly_variant< `$s$ of $flag:a$ $list:tl$ >> ->
+      not_impl "poly_variant_decl cons 2" pc 0
+  | <:poly_variant< $t$ >> ->
+      not_impl "poly_variant_decl type" pc 0
+  | IFDEF STRICT THEN
+      _ -> not_impl "poly_variant_decl" pc 0
+    END ]
+;
+
 value label_decl pc (_, l, m, t) =
   let list = [(fun pc -> ctyp pc t, "")] in
   plistf 0
@@ -434,7 +447,17 @@ EXTEND_PRINTER
              aft = sprintf "}%s" pc.aft}
             cdl
       | <:ctyp< [ = $list:vl$ ] >> ->
-          not_impl "variants" pc 0
+          horiz_vertic
+            (fun () ->
+               sprintf "%s(variants %s)%s" pc.bef
+                 (hlist poly_variant_decl {(pc) with bef = ""; aft = ""} vl)
+                 pc.aft)
+            (fun () ->
+               vlistf
+                 {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+                  aft = sprintf ")%s" pc.aft}
+                 [fun pc -> sprintf "%svariants%s" pc.bef pc.aft ::
+                  List.map (fun cd pc -> poly_variant_decl pc cd) vl])
       | <:ctyp< ( $list:tl$ ) >> ->
           let tl = List.map (fun t -> (t, "")) tl in
           plistb curr 0

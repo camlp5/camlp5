@@ -1155,6 +1155,9 @@ and ctyp_se =
   [ Sexpr loc [Slid _ "sum" :: sel] ->
       let cdl = anti_list_map constructor_declaration_se sel in
       <:ctyp< [ $_list:cdl$ ] >>
+  | Sexpr loc [Slid _ "variants" :: sel] ->
+      let cdl = anti_list_map variant_declaration_se sel in
+      <:ctyp< [ = $_list:cdl$ ] >>
   | Srec loc sel ->
       let ldl = anti_list_map label_declaration_se sel in
       <:ctyp< { $_list:ldl$ } >>
@@ -1225,6 +1228,10 @@ and constructor_declaration_se =
   [ Sexpr loc [Suid _ ci :: sel] ->
       (loc, <:vala< (rename_id ci) >>, <:vala< (List.map ctyp_se sel) >>)
   | se -> error se "constructor_declaration" ]
+and variant_declaration_se =
+  fun
+  [ Sexpr loc [Slid _ "`"; Suid _ s] -> <:poly_variant< ` $s$ >>
+  | se -> error se "variant_declaration" ]
 and label_declaration_se =
   fun
   [ Sexpr loc [Slid _ lab; Slid _ "mutable"; se] ->
