@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: ml_ast.html,v 1.13 2007/07/23 14:52:55 deraugla Exp $ -->
+  <!-- $Id: ml_ast.html,v 1.14 2007/07/23 15:11:46 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Abstract tree in concrete syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -96,13 +96,35 @@
 <p>Instead of thinking of "a syntax tree", the programmer has to think
   of "a piece of program".</p>
 
+<h2>Antiquotations</h2>
+
+<p>The expressions or patterns between dollar ($) characters
+  are <em>antiquotations</em>. If the quotation is an expression, they
+  are expressions, if it is in a pattern, they are patterns.  Any
+  acceptable expression or pattern is allowed, except quotations
+  themselves.</p>
+
+<p>Examples of expressions:</p>
+
+<pre>
+  <:expr< [$e$ :: $loop False el$] >>
+  <:patt< ( $list:[p::pl]$) >>
+</pre>
+
+<p>Examples of patterns (in their contexts):</p>
+
+<pre>
+   fun [ <:expr< $lid:op$ $_$ $_$ >> -> op ]
+   match p with [ <:patt< $_$ | $_$ >> -> Some p ]
+</pre>
+
 <h2>Nodes</h2>
 
-<p>A way to know what the nodes represent it to read the source file
-  q_MLast.ml of the camlp5 distribution. It is a version of the
-  revised syntax grammar (pa_r.ml) where the semantic action contain
-  their explicit names. Otherwise, you can read the following
-  sections.</p>
+<p>This section describes all nodes defined in the module "MLast" of
+  camlp5 and how to write them with quotations. Notice that, inside
+  quotations, one is not restricted to these elementary cases, but
+  any complex value can be used, resulting on possibly complex combined
+  nodes.</p>
 
 <p>Variables names give information to their types:</p>
 
