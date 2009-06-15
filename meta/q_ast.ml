@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.29 2007/09/03 09:49:06 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.30 2007/09/03 10:13:13 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -145,11 +145,6 @@ module Meta =
             match typ with
             [ ""  -> r
             | "anti" -> <:expr< MLast.PaAnt $ln$ $r$ >>
-            | "chr" -> <:expr< MLast.PaChr $ln$ $r$ >>
-            | "int" -> <:expr< MLast.PaInt $ln$ $r$ "" >>
-            | "lid" -> <:expr< MLast.PaLid $ln$ $r$ >>
-            | "str" -> <:expr< MLast.PaStr $ln$ $r$ >>
-            | "uid" -> <:expr< MLast.PaUid $ln$ $r$ >>
             | x -> not_impl ("e_patt anti " ^ x) 0 ]
         | None ->
             match p with
@@ -182,12 +177,12 @@ module Meta =
             in
             match typ with
             [ "" -> r
-            | "chr" -> <:patt< MLast.PaChr _ $r$ >>
-            | "lid" -> <:patt< MLast.PaLid _ $r$ >>
             | x -> not_impl ("p_patt anti " ^ x) 0 ]
         | None ->
             match p with
             [ PaAli _ p1 p2 -> <:patt< MLast.PaAli _ $loop p1$ $loop p2$ >>
+            | PaChr _ s -> <:patt< MLast.PaChr _ $p_string s$ >>
+            | PaLid _ s -> <:patt< MLast.PaLid _ $p_string s$ >>
             | x -> not_impl "p_patt" x ] ]
     ;
     value rec e_expr e =
@@ -202,11 +197,6 @@ module Meta =
             match typ with
             [ "" -> r
             | "anti" -> <:expr< MLast.ExAnt $ln$ $r$ >>
-            | "chr" -> <:expr< MLast.ExChr $ln$ $r$ >>
-            | "int" -> <:expr< MLast.ExInt $ln$ $r$ "" >>
-            | "lid" -> <:expr< MLast.ExLid $ln$ $r$ >>
-            | "str" -> <:expr< MLast.ExStr $ln$ $r$ >>
-            | "uid" -> <:expr< MLast.ExUid $ln$ $r$ >>
             | x -> not_impl ("e_expr anti " ^ x) 0 ]
         | None ->
             match e with
@@ -215,6 +205,9 @@ module Meta =
 (*
             | ExArr _ el ->
                 <:expr< MLast.ExArr $ln$ $e_list loop el$ >>
+*)
+            | ExChr _ s -> <:expr< MLast.ExChr $ln$ $e_string s$ >>
+(*
             | ExIfe _ e1 e2 e3 ->
                 <:expr< MLast.ExIfe $ln$ $loop e1$ $loop e2$ $loop e3$ >>
 *)
