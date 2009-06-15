@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.134 2007/12/09 06:57:14 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.135 2007/12/09 11:05:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1509,32 +1509,26 @@ EXTEND_PRINTER
   pr_str_item:
     [ "top"
       [ <:str_item< # $lid:s$ $e$ >> ->
-          expr {(pc) with bef = sprintf "%s#%s " pc.bef s} e
+          pprintf pc "#%s %p" s expr e
       | <:str_item< declare $list:sil$ end >> ->
           if flag_expand_declare.val then
             if sil = [] then pc.bef
             else vlistl (semi_after str_item) str_item pc sil
-          else if sil = [] then sprintf "%sdeclare end%s" pc.bef pc.aft
+          else if sil = [] then pprintf pc "declare end"
           else
             horiz_vertic
               (fun () ->
-                 sprintf "%sdeclare%s%s%send%s" pc.bef " "
-                   (hlist (semi_after str_item) {(pc) with bef = ""; aft = ""}
-                      sil)
-                   " " pc.aft)
+                 pprintf pc "declare %p end"
+                   (hlist (semi_after str_item)) sil)
               (fun () ->
-                 sprintf "%sdeclare%s%s%send%s" pc.bef "\n"
-                   (vlist (semi_after str_item)
-                      {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                       aft = ""}
-                      sil)
-                   ("\n" ^ tab pc.ind) pc.aft)
+                 pprintf pc "@[<a>declare@;%p@ end"
+                   (vlist (semi_after str_item)) sil)
       | <:str_item< exception $uid:e$ of $list:tl$ = $id$ >> ->
           exception_decl pc (e, tl, id)
       | <:str_item< external $lid:n$ : $t$ = $list:sl$ >> ->
           external_decl pc (n, t, sl)
       | <:str_item< include $me$ >> ->
-          module_expr {(pc) with bef = sprintf "%sinclude " pc.bef} me
+          pprintf pc "include %p" module_expr me
       | <:str_item< module $flag:rf$ $list:mdl$ >> ->
           let mdl = List.map (fun (m, mt) -> (Pcaml.unvala m, mt)) mdl in
           let rf = if rf then " rec" else "" in
@@ -1543,10 +1537,9 @@ EXTEND_PRINTER
       | <:str_item< module type $uid:m$ = $mt$ >> ->
           sig_module_or_module_type "module type" '=' pc (m, mt)
       | <:str_item< open $i$ >> ->
-          mod_ident {(pc) with bef = sprintf "%sopen " pc.bef} i
+          pprintf pc "open %p" mod_ident i
       | <:str_item< type $list:tdl$ >> ->
-          vlist2 type_decl (and_before type_decl)
-            {(pc) with bef = sprintf "%stype " pc.bef} tdl
+          pprintf pc "type %p" (vlist2 type_decl (and_before type_decl)) tdl
       | <:str_item< value $flag:rf$ $list:pel$ >> ->
           horiz_vertic
             (fun () ->
