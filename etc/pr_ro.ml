@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.52 2007/10/14 17:25:22 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.53 2007/10/14 19:34:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -565,14 +565,18 @@ EXTEND_PRINTER
                sprintf "%s\n%s" s1 s2) ]
     | "apply"
       [ <:class_expr< $ce$ $e$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s%s %s%s" pc.bef
-                 (curr {(pc) with bef = ""; aft = ""} ce)
-                 (Eprinter.apply_level pr_expr "label"
-                    {(pc) with bef = ""; aft = ""} e)
-                 pc.aft)
-            (fun () -> not_impl "class_expr_apply" pc ce) ]
+          let (ce, el) =
+            loop [e] ce where rec loop el =
+              fun
+              [ <:class_expr< $ce$ $e$ >> -> loop [e :: el] ce
+              | ce -> (ce, el) ]
+          in
+          plistf 0 {(pc) with ind = pc.ind + 2}
+            [(fun pc -> curr pc ce, "") ::
+             List.map
+               (fun e ->
+                  (fun pc -> Eprinter.apply_level pr_expr "label" pc e, ""))
+               el] ]
     | "simple"
       [ <:class_expr< $list:cl$ >> ->
           class_longident pc cl

@@ -555,6 +555,10 @@ and str_item_se se =
   [ Sexpr loc [Slid _ "class"; Slid _ s; se] ->
       let ce = class_expr_se se in
       <:str_item< class $s$ = $ce$ >>
+  | Sexpr loc [Slid _ "class"; Sexpr _ [Slid _ s :: sel]; se] ->
+      let tpl = List.map type_param_se sel
+      and ce = class_expr_se se in
+      <:str_item< class $s$ [ $list:tpl$ ] = $ce$ >>
   | Sexpr loc [Slid _ ("define" | "definerec" as r); se :: sel] ->
       let r = r = "definerec" in
       let (p, e) = fun_binding_se se (begin_se loc sel) in
@@ -1295,6 +1299,9 @@ and class_str_item_se =
   | Sexpr loc [Slid _ "method"; Slid _ n; se] ->
       let e = expr_se se in
       <:class_str_item< method $n$ = $e$ >>
+  | Sexpr loc [Slid _ "method"; Slid _ "private"; Slid _ n; se] ->
+      let e = expr_se se in
+      <:class_str_item< method private $n$ = $e$ >>
   | Sexpr loc [Slid _ "value"; Slid _ "mutable"; Slid _ n; se] ->
       let e = expr_se se in
       <:class_str_item< value mutable $n$ = $e$ >>
@@ -1319,7 +1326,11 @@ and class_type_se =
   | se -> error se "class_type_se" ]
 and class_expr_se =
   fun
-  [ Sexpr loc [Slid _ "fun"; se1; se2] ->
+  [ Sexpr loc [Slid _ "let"; Sexpr _ sel; se] ->
+      let lbl = anti_list_map let_binding_se sel in
+      let ce = class_expr_se se in
+      <:class_expr< let $_list:lbl$ in $ce$ >>
+  | Sexpr loc [Slid _ "fun"; se1; se2] ->
       let p = patt_se se1 in
       let ce = class_expr_se se2 in
       <:class_expr< fun $p$ -> $ce$ >>
