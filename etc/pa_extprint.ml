@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_extprint.ml,v 1.38 2007/12/18 19:10:31 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.39 2007/12/19 02:49:49 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -338,7 +338,13 @@ value expr_of_pformat loc fmt empty_bef empty_aft pc al =
   [ {hd = fmt; tl = []} ->
       let (bef_al, al) = get_assoc_args loc fmt al in
       let e =
-        if empty_bef && empty_aft && bef_al = [] then <:expr< $str:fmt$ >>
+        if empty_bef && empty_aft then
+          match bef_al with
+          [ [] -> <:expr< $str:fmt$ >>
+          | [a] when fmt = "%s" -> a
+          | _ ->
+              let e = <:expr< Pretty.sprintf $str:fmt$ >> in
+              List.fold_left (fun f a -> <:expr< $f$ $a$ >>) e bef_al ]
         else
           let fmt = if empty_bef then fmt else "%s" ^ fmt in
           let fmt = if empty_aft then fmt else fmt ^ "%s" in
@@ -394,7 +400,7 @@ value expr_of_pformat loc fmt empty_bef empty_aft pc al =
 value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc al t =
   match t with
   [ Tlist [] -> (<:expr< Pretty.sprintf "%s%s" $pc$.bef $pc$.aft >>, al)
-  | Tlist tl -> (<:expr< aaa $str:fmt$ >>, al)
+  | Tlist tl -> not_impl "expr_of_tree_aux" 0
   | Tnode br t1 t2 ->
       let (e1, al) =
         expr_of_tree_aux loc fmt empty_bef True <:expr< pc >> al t1
