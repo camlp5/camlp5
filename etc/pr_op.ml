@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_op.ml,v 1.18 2007/12/14 20:27:26 deraugla Exp $ *)
+(* $Id: pr_op.ml,v 1.19 2007/12/27 09:13:47 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Parserify;
@@ -10,20 +10,19 @@ open Prtools;
 value not_impl name pc x =
   let desc =
     if Obj.tag (Obj.repr x) = Obj.tag (Obj.repr "") then
-      sprintf "\"%s\"" (Obj.magic x)
+      "\"" ^ Obj.magic x ^ "\""
     else if Obj.is_block (Obj.repr x) then
       "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
     else "int_val = " ^ string_of_int (Obj.magic x)
   in
-  sprintf "%s\"pr_op, not impl: %s; %s\"%s" pc.bef name (String.escaped desc)
-    pc.aft
+  pprintf pc "\"pr_op, not impl: %s; %s\"" name (String.escaped desc)
 ;
 
 value expr = Eprinter.apply pr_expr;
 value patt = Eprinter.apply pr_patt;
 
-value bar_before elem pc x = elem {(pc) with bef = sprintf "%s| " pc.bef} x;
-value semi_after elem pc x = elem {(pc) with aft = sprintf ";%s" pc.aft} x;
+value bar_before elem pc x = pprintf pc "| %p" elem x;
+value semi_after elem pc x = pprintf pc "%p;" elem x;
 
 value loc = Ploc.dummy;
 
@@ -45,16 +44,12 @@ value stream pc e =
   in
   let elem pc e =
     match e with
-    [ (True, e) -> expr {(pc) with bef = sprintf "%s'" pc.bef} e
+    [ (True, e) -> pprintf pc "'%p" expr e
     | (False, e) -> expr pc e ]
   in
   let el = List.map (fun e -> (e, ";")) (get e) in
-  if el = [] then sprintf "%s[< >]%s" pc.bef pc.aft
-  else
-    plist elem 0
-      {(pc) with ind = pc.ind + 3; bef = sprintf "%s[< " pc.bef;
-       aft = sprintf " >]%s" pc.aft}
-      el
+  if el = [] then pprintf pc "[< >]"
+  else pprintf pc "@[<3>[< %p >]@]" (plist elem 0) el
 ;
 
 (* Parsers *)
