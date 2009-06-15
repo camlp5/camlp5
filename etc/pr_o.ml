@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.167 2007/12/26 19:07:16 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.168 2007/12/26 19:40:08 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1778,40 +1778,16 @@ EXTEND_PRINTER
           pprintf pc "@[<a>(%p :@;<1 1>%p :>@;<1 1>%p)@]" expr e ctyp t
             ctyp t2
       | <:expr< ( $e$ :> $t$ ) >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s(%s :> %s)%s" pc.bef
-                 (expr {(pc) with bef = ""; aft = ""} e)
-                 (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-            (fun () ->
-               let s1 =
-                 expr
-                   {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-                    aft = " :>"}
-                   e
-               in
-               let s2 =
-                 ctyp
-                   {(pc) with ind = pc.ind + 1; bef = tab (pc.ind + 1);
-                    aft = sprintf ")%s" pc.aft}
-                   t
-               in
-               sprintf "%s\n%s" s1 s2)
+          pprintf pc "@[<1>(%p :>@ %p)@]" expr e ctyp t
       | <:expr< {< $list:fel$ >} >> ->
-          if fel = [] then sprintf "%s{< >}%s" pc.bef pc.aft
+          if fel = [] then pprintf pc "{< >}"
           else
             let fel = List.map (fun fe -> (fe, ";")) fel in
-            plist field_expr 3
-              {(pc) with bef = sprintf "%s{< " pc.bef;
-               aft = sprintf " >}%s" pc.aft}
-              fel
+            pprintf pc "{< %p >}" (plist field_expr 3) fel
       | <:expr< `$s$ >> ->
-          sprintf "%s`%s%s" pc.bef s pc.aft
+          pprintf pc "`%s" s
       | <:expr< new $list:_$ >> | <:expr< object $list:_$ end >> as z ->
-          expr
-            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-             aft = sprintf ")%s" pc.aft}
-            z ] ]
+          pprintf pc "@[<1>(%p)@]" expr z ] ]
   ;
   pr_ctyp: LEVEL "simple"
     [ [ <:ctyp< < $list:ml$ $flag:v$ > >> ->
