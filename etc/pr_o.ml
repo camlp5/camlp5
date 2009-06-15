@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.30 2007/07/04 09:03:55 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.31 2007/07/04 09:29:27 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -924,7 +924,7 @@ value expr_expr1 =
                 let s1 =
                   let (pc_dang, pc_aft) =
                     match (eel, e3) with
-                    [ ([], <:expr< () >>) -> ("", pc.aft)
+                    [ ([], <:expr< () >>) -> (pc.dang, pc.aft)
                     | _ -> ("else", "") ]
                   in
                   if_then {(pc) with aft = pc_aft; dang = pc_dang} "" e1 e2
@@ -935,7 +935,7 @@ value expr_expr1 =
                     [ [(e1, e2) :: eel] ->
                         let (pc_dang, pc_aft) =
                           match (eel, e3) with
-                          [ ([], <:expr< () >>) -> ("", pc.aft)
+                          [ ([], <:expr< () >>) -> (pc.dang, pc.aft)
                           | _ -> ("else", "") ]
                         in
                         sprintf "\n%s%s"
@@ -1148,11 +1148,11 @@ value expr_expr1 =
                     {(pc) with bef = ""; aft = (False, True)} pel)
                  (curr {(pc) with bef = ""; aft = ""} e) pc.aft)
           (fun () ->
-             let (begin_op, ind, pc_aft, end_op) =
+             let (begin_op, ind, pc_aft, pc_dang, end_op) =
                if pc.dang = ";" then
-                 ("begin ", pc.ind + 2, "",
+                 ("begin ", pc.ind + 2, "", "",
                   sprintf "\n%send%s" (tab pc.ind) pc.aft)
-               else ("", pc.ind, pc.aft, "")
+               else ("", pc.ind, pc.aft, pc.dang, "")
              in
              let s1 =
                vlist2 let_binding (and_before let_binding)
@@ -1165,7 +1165,7 @@ value expr_expr1 =
              in
              let s2 =
                expr_with_comm_except_if_sequence
-                 {(pc) with ind = ind; bef = tab ind; aft = pc_aft} e
+                 {ind = ind; bef = tab ind; aft = pc_aft; dang = pc_dang} e
              in
              let s3 = end_op in
              sprintf "%s\n%s%s" s1 s2 s3)
@@ -2609,7 +2609,7 @@ Pcaml.add_option "-ss" (Arg.Set flag_semi_semi)
   "Print double semicolons (equivalent to -flag M).";
 
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.30 2007/07/04 09:03:55 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.31 2007/07/04 09:29:27 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
