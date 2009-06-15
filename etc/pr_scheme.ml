@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.43 2007/10/14 17:25:22 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.44 2007/10/14 18:36:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1432,7 +1432,23 @@ EXTEND_PRINTER
           not_impl "class_type" pc x ] ]
   ;
   pr_class_expr:
-    [ [ <:class_expr< fun $p$ -> $ce$ >> ->
+    [ [ <:class_expr< let $flag:rf$ $list:lbl$ in $ce$ >> ->
+          let list =
+            [(fun pc ->
+                plistf 0
+                  {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+                   aft = sprintf ")%s" pc.aft}
+                  (List.map (fun lb -> (fun pc -> let_binding pc lb, ""))
+                     lbl),
+              "");
+             (fun pc -> curr pc ce, "")]
+          in
+          plistbf 0
+            {(pc) with ind = pc.ind + 1;
+             bef = sprintf "%s(let%s" pc.bef (if rf then "rec" else "");
+             aft = sprintf ")%s" pc.aft}
+            list
+      | <:class_expr< fun $p$ -> $ce$ >> ->
           plistbf 0
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(fun" pc.bef;
              aft = sprintf ")%s" pc.aft}
