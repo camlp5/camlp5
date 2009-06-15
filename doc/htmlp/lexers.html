@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: lexers.html,v 1.1 2007/07/12 09:11:39 deraugla Exp $ -->
+  <!-- $Id: lexers.html,v 1.2 2007/07/13 00:51:15 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>lexers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -13,41 +13,15 @@
 <body>
 
 <div id="menu">
-  <h1>- Camlp5 -</h1>
-  <ul>
-    <li><a href="index.html">presentation</a></li>
-  </ul>
-  <ul>
-    <li>Parsing
-      <ul>
-        <li><a href="parsers.html">parsers</a></li>
-        <li><a href="lexers.html">lexers</a></li>
-        <li><a href="fparsers.html">functional parsers</a></li>
-      </ul>
-    </li>
-    <li>Printing
-      <ul>
-        <li><a href="pretty.html">library module</a></li>
-        <li><a href="opretty.html">programs</a></li>
-      </ul>
-    </li>
-    <li>Other
-      <ul>
-        <li><a href="ml_ast.html">syntax tree</a></li>
-        <li><a href="pragma.html">pragma directive</a></li>
-        <li><a href="extfun.html">extensible functions</a></li>
-      </ul>
-    </li>
-  </ul>
 </div>
 
 <div id="content">
 
-<h1 class="top">Lexers of streams - pa_lex.cmo</h1>
+<h1 class="top">Lexers of streams</h1>
 
-<p>The file pa_lex.cmo is a Camlp5 syntax extension for parsers for
-streams of the type 'char'. This syntax is shorter in length and more
-readable than its equivalent version written
+<p>The file pa_lex.cmo is a Camlp5 syntax extension kit for parsers
+for streams of the type 'char'. This syntax is shorter in length and
+more readable than its equivalent version written
 with <a href="parsers.html">classical stream parsers</a>.  Like
 classical parsers, they use recursive descendant parsing. They are
 also pure syntax sugar, and each lexer written with this syntax can be
