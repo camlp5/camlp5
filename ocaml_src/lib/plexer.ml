@@ -404,7 +404,7 @@ let rec antiquot_rest ctx bp buf (strm__ : _ Stream.t) =
 let rec antiquot ctx bp buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some '$' -> Stream.junk strm__; "ANTIQUOT", ":" ^ B.get buf
-  | Some ('a'..'z' | 'A'..'Z' | '0'..'9' as c) ->
+  | Some ('a'..'z' | 'A'..'Z' | '0'..'9' | '_' as c) ->
       Stream.junk strm__; antiquot ctx bp (B.add c buf) strm__
   | Some ':' ->
       Stream.junk strm__;
@@ -432,7 +432,7 @@ let rec antiquot_loc ctx bp buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some '$' ->
       Stream.junk strm__; antiloc bp (Stream.count strm__) (B.get buf)
-  | Some ('a'..'z' | 'A'..'Z' | '0'..'9' as c) ->
+  | Some ('a'..'z' | 'A'..'Z' | '0'..'9' | '_' as c) ->
       Stream.junk strm__; antiquot_loc ctx bp (B.add c buf) strm__
   | Some ':' ->
       Stream.junk strm__;

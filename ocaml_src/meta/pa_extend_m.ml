@@ -18,7 +18,7 @@ Grammar.extend
   [Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e),
    Some (Gramext.Level "top"),
    [None, Some Gramext.NonA,
-    [[Gramext.Stoken ("UIDENT", "SFLAG2"); Gramext.Sself],
+    [[Gramext.Stoken ("UIDENT", "SA_FLAG"); Gramext.Sself],
      Gramext.action
        (fun (s : 'symbol) _ (loc : Token.location) ->
           (ssvala_flag loc "FLAG" s : 'symbol));
@@ -31,9 +31,9 @@ Grammar.extend
        (fun (s : 'symbol) _ (loc : Token.location) ->
           (ssopt loc s : 'symbol));
      [Gramext.srules
-        [[Gramext.Stoken ("UIDENT", "SLIST12")],
+        [[Gramext.Stoken ("UIDENT", "SA_LIST1")],
          Gramext.action (fun _ (loc : Token.location) -> (true : 'e__3));
-         [Gramext.Stoken ("UIDENT", "SLIST02")],
+         [Gramext.Stoken ("UIDENT", "SA_LIST0")],
          Gramext.action (fun _ (loc : Token.location) -> (false : 'e__3))];
       Gramext.Sself;
       Gramext.Sopt

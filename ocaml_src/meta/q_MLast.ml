@@ -3994,20 +3994,20 @@ Grammar.extend
      Gramext.action
        (fun (a : string) (loc : Token.location) ->
           (Qast.Node ("VaVal", [antiquot "list" loc a]) : 'a_list2));
-     [Gramext.Stoken ("ANTIQUOT", "list2")],
+     [Gramext.Stoken ("ANTIQUOT", "a_list")],
      Gramext.action
        (fun (a : string) (loc : Token.location) ->
-          (antiquot "list2" loc a : 'a_list2))]];
+          (antiquot "a_list" loc a : 'a_list2))]];
    Grammar.Entry.obj (a_flag2 : 'a_flag2 Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Stoken ("ANTIQUOT", "flag")],
      Gramext.action
        (fun (a : string) (loc : Token.location) ->
           (Qast.Node ("VaVal", [antiquot "flag" loc a]) : 'a_flag2));
-     [Gramext.Stoken ("ANTIQUOT", "flag2")],
+     [Gramext.Stoken ("ANTIQUOT", "a_flag")],
      Gramext.action
        (fun (a : string) (loc : Token.location) ->
-          (antiquot "flag2" loc a : 'a_flag2))]];
+          (antiquot "a_flag" loc a : 'a_flag2))]];
    Grammar.Entry.obj (a_opt : 'a_opt Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Stoken ("ANTIQUOT", "when")],

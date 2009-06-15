@@ -1989,7 +1989,7 @@ Grammar.extend
             'psymbol))]];
     Grammar.Entry.obj (symbol : 'symbol Grammar.Entry.e), None,
     [Some "top", Some Gramext.NonA,
-     [[Gramext.Stoken ("UIDENT", "FLAG2"); Gramext.Sself],
+     [[Gramext.Stoken ("UIDENT", "A_FLAG"); Gramext.Sself],
       Gramext.action
         (fun (s : 'symbol) _ (loc : Token.location) ->
            (if !quotify then ssvala_flag loc "FLAG" s
@@ -2024,7 +2024,7 @@ Grammar.extend
               let text = TXopt (loc, s.text) in
               {used = s.used; text = text; styp = styp} :
             'symbol));
-      [Gramext.Stoken ("UIDENT", "LIST12"); Gramext.Sself;
+      [Gramext.Stoken ("UIDENT", "A_LIST1"); Gramext.Sself;
        Gramext.Sopt
          (Gramext.srules
             [[Gramext.Stoken ("UIDENT", "SEP");

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend.ml,v 1.28 2007/08/07 19:31:18 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.29 2007/08/08 07:01:49 deraugla Exp $ *)
 
 open Stdpp;
 
@@ -933,7 +933,7 @@ EXTEND
             let styp = STapp loc (STlid loc "list") s.styp in
             let text = slist loc True sep s in
             {used = used; text = text; styp = styp}
-      | UIDENT "LIST12"; s = SELF;
+      | UIDENT "A_LIST1"; s = SELF;
         sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
           if quotify.val then ssvala_list loc "LIST1" True sep s
           else
@@ -960,7 +960,7 @@ EXTEND
             let styp = STlid loc "bool" in
             let text = TXflag loc s.text in
             {used = s.used; text = text; styp = styp}
-      | UIDENT "FLAG2"; s = SELF ->
+      | UIDENT "A_FLAG"; s = SELF ->
           if quotify.val then ssvala_flag loc "FLAG" s
           else
             let styp =

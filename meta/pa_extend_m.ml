@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_extend_m.ml,v 1.9 2007/08/07 19:31:18 deraugla Exp $ *)
+(* $Id: pa_extend_m.ml,v 1.10 2007/08/08 07:01:49 deraugla Exp $ *)
 
 open Pa_extend;
 
@@ -20,14 +20,14 @@ EXTEND
       [ min = [ UIDENT "SLIST0" -> False | UIDENT "SLIST1" -> True ];
         s = SELF; sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
           sslist loc min sep s
-      | min = [ UIDENT "SLIST02" -> False | UIDENT "SLIST12" -> True ];
+      | min = [ UIDENT "SA_LIST0" -> False | UIDENT "SA_LIST1" -> True ];
         s = SELF; sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
           ssvala_list loc (if min then "LIST0" else "LIST1") min sep s
       | UIDENT "SOPT"; s = SELF ->
           ssopt loc s
       | UIDENT "SFLAG"; s = SELF ->
           ssflag loc s
-      | UIDENT "SFLAG2"; s = SELF ->
+      | UIDENT "SA_FLAG"; s = SELF ->
           ssvala_flag loc "FLAG" s ] ]
   ;
 END;
