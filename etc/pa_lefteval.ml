@@ -1,5 +1,5 @@
-(* camlp5r q_MLast.cmo *)
-(* $Id: pa_lefteval.ml,v 1.8 2007/09/15 19:35:16 deraugla Exp $ *)
+(* camlp5r pa_macro.cmo q_MLast.cmo *)
+(* $Id: pa_lefteval.ml,v 1.9 2007/09/16 05:19:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value not_impl name x =
@@ -135,6 +135,14 @@ value map_option f =
   | None -> None ]
 ;
 
+value map_vala f =
+  fun
+  [ <:vala< x >> -> <:vala< f x >>
+  | IFDEF STRICT THEN
+      _ -> failwith "Pa_lefteval.map_vala"
+    END ]
+;
+
 value class_infos f ci =
   {MLast.ciLoc = ci.MLast.ciLoc; MLast.ciVir = ci.MLast.ciVir;
    MLast.ciPrm = ci.MLast.ciPrm; MLast.ciNam = ci.MLast.ciNam;
@@ -176,7 +184,7 @@ value rec expr x =
       x
   | x -> not_impl "expr" x ]
 and let_binding (p, e) = (p, expr e)
-and match_assoc (p, eo, e) = (p, map_option expr eo, expr e)
+and match_assoc (p, eo, e) = (p, map_vala (map_option expr) eo, expr e)
 and module_expr x =
   let loc = MLast.loc_of_module_expr x in
   match x with

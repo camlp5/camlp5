@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: mLast.mli,v 1.45 2007/09/16 03:59:45 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.46 2007/09/16 05:19:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Module [MLast]: abstract syntax tree.
@@ -95,7 +95,7 @@ and expr =
   | ExCoe of loc and expr and option ctyp and ctyp
   | ExFlo of loc and V string
   | ExFor of loc and V string and expr and expr and V bool and V (list expr)
-  | ExFun of loc and V (list (patt * option expr * expr))
+  | ExFun of loc and V (list (patt * V (option expr) * expr))
   | ExIfe of loc and expr and expr and expr
   | ExInt of loc and V string and string
   | ExLab of loc and V string and option expr
@@ -103,7 +103,7 @@ and expr =
   | ExLet of loc and V bool and V (list (patt * expr)) and expr
   | ExLid of loc and V string
   | ExLmd of loc and V string and module_expr and expr
-  | ExMat of loc and expr and V (list (patt * option expr * expr))
+  | ExMat of loc and expr and V (list (patt * V (option expr) * expr))
   | ExNew of loc and V (list string)
   | ExObj of loc and V (option patt) and V (list class_str_item)
   | ExOlb of loc and V string and option expr
@@ -113,7 +113,7 @@ and expr =
   | ExSnd of loc and expr and V string
   | ExSte of loc and expr and expr
   | ExStr of loc and V string
-  | ExTry of loc and expr and V (list (patt * option expr * expr))
+  | ExTry of loc and expr and V (list (patt * V (option expr) * expr))
   | ExTup of loc and V (list expr)
   | ExTyc of loc and expr and ctyp
   | ExUid of loc and V string

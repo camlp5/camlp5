@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.50 2007/09/14 03:16:58 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.51 2007/09/16 05:19:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -619,7 +619,7 @@ EXTEND
       | ":"; t = ctyp; "="; e = expr -> <:expr< ($e$ : $t$) >> ] ]
   ;
   match_case:
-    [ [ x1 = patt; w = OPT [ "when"; e = expr -> e ]; "->"; x2 = expr ->
+    [ [ x1 = patt; w = V OPT [ "when"; e = expr -> e ]; "->"; x2 = expr ->
           (x1, w, x2) ] ]
   ;
   lbl_expr_list:

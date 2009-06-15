@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: ast2pt.ml,v 1.46 2007/09/14 17:09:19 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.47 2007/09/16 05:19:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open MLast;
@@ -646,12 +646,12 @@ value rec expr =
       [ [(PaLab _ lab po, w, e)] ->
           mkexp loc
             (Pexp_function (uv lab) None
-               [(patt (patt_of_lab loc (uv lab) po), when_expr e w)])
+               [(patt (patt_of_lab loc (uv lab) po), when_expr e (uv w))])
       | [(PaOlb _ lab peoo, w, e)] ->
           let (lab, p, eo) = paolab loc (uv lab) peoo in
           mkexp loc
             (Pexp_function ("?" ^ lab) (option expr eo)
-               [(patt p, when_expr e w)])
+               [(patt p, when_expr e (uv w))])
       | pel -> mkexp loc (Pexp_function "" None (List.map mkpwe pel)) ]
   | ExIfe loc e1 e2 e3 ->
       mkexp loc (Pexp_ifthenelse (expr e1) (expr e2) (Some (expr e3)))
@@ -729,7 +729,7 @@ and label_expr =
   | ExOlb loc lab eo -> ("?" ^ uv lab, expr (expr_of_lab loc (uv lab) eo))
   | e -> ("", expr e) ]
 and mkpe (p, e) = (patt p, expr e)
-and mkpwe (p, w, e) = (patt p, when_expr e w)
+and mkpwe (p, w, e) = (patt p, when_expr e (uv w))
 and when_expr e =
   fun
   [ Some w -> mkexp (loc_of_expr e) (Pexp_when (expr w) (expr e))

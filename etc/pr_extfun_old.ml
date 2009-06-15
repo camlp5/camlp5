@@ -16,7 +16,7 @@ value rec un_extfun rpel =
       let (p, wo, e) =
         match pel with
         [ [(p, wo, <:expr< Some $e$ >>);
-           (<:patt< _ >>, None, <:expr< None >>)] ->
+           (<:patt< _ >>, <:vala< None >>, <:expr< None >>)] ->
             (p, wo, e)
         | [(p, wo, <:expr< Some $e$ >>)] -> (p, wo, e)
         | _ -> raise Not_found ]
@@ -64,7 +64,7 @@ and match_assoc b (p, w, e) k =
       | _ -> (p, [: :]) ]
     in
     match w with
-    [ Some e1 ->
+    [ <:vala< Some e1 >> ->
         [: `HVbox
               [: `HVbox [: :]; `patt p "" k;
                  `HVbox [: `S LR "when"; `expr e1 "" [: `S LR "->" :] :] :] :]

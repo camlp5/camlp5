@@ -403,7 +403,7 @@ and match_assoc b (p, w, e) k =
       | _ -> (p, [: :]) ]
     in
     match w with
-    [ Some e1 ->
+    [ <:vala< Some e1 >> ->
         [: `HVbox
               [: `HVbox [: :]; `patt p k;
                  `HVbox [: `S LR "when"; `expr e1 [: `S LR "->" :] :] :] :]
@@ -902,7 +902,7 @@ pr_expr.pr_levels :=
           fun curr next _ k ->
             match pel with
             [ [] -> [: `S LR "fun"; `S LR "[]"; k :]
-            | [(p, None, e)] ->
+            | [(p, <:vala< None >>, e)] ->
                 if is_irrefut_patt p then
                   let (pl, e) = expr_fun_args e in
                   [: `BEbox

@@ -45,7 +45,7 @@ val ctyp : MLast.ctyp Grammar.Entry.e;;
 val let_binding : (MLast.patt * MLast.expr) Grammar.Entry.e;;
 val type_declaration : MLast.type_decl Grammar.Entry.e;;
 val match_case :
-  (MLast.patt * MLast.expr option * MLast.expr) Grammar.Entry.e;;
+  (MLast.patt * MLast.expr option MLast.v * MLast.expr) Grammar.Entry.e;;
 val constructor_declaration :
   (MLast.loc * string MLast.v * MLast.ctyp list MLast.v) Grammar.Entry.e;;
 val with_constr : MLast.with_constr Grammar.Entry.e;;

@@ -1,9 +1,9 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: exparser.ml,v 1.9 2007/09/15 16:30:43 deraugla Exp $ *)
+(* $Id: exparser.ml,v 1.10 2007/09/16 05:19:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 type spat_comp =
-  [ SpTrm of MLast.loc and MLast.patt and option MLast.expr
+  [ SpTrm of MLast.loc and MLast.patt and MLast.v (option MLast.expr)
   | SpNtr of MLast.loc and MLast.patt and MLast.expr
   | SpLet of MLast.loc and MLast.patt and MLast.expr
   | SpLhd of MLast.loc and list (list MLast.patt)
@@ -54,7 +54,7 @@ value rec handle_failure e =
       handle_failure me &&
       List.for_all
         (fun
-         [ (_, None, e) -> handle_failure e
+         [ (_, <:vala< None >>, e) -> handle_failure e
          | _ -> False ])
         pel
   | <:expr< let $list:pel$ in $e$ >> ->
@@ -125,7 +125,7 @@ value stream_pattern_component skont ckont =
   fun
   [ SpTrm loc p wo ->
       <:expr< match $peek_fun loc$ $lid:strm_n$ with
-              [ Some $p$ $opt:wo$ ->
+              [ Some $p$ $aopt:wo$ ->
                   do { $junk_fun loc$ $lid:strm_n$; $skont$ }
               | _ -> $ckont$ ] >>
   | SpNtr loc p e ->
@@ -230,7 +230,7 @@ value stream_patterns_term loc ekont tspel =
          (p, w, e))
       tspel
   in
-  let pel = pel @ [(<:patt< _ >>, None, ekont ())] in
+  let pel = pel @ [(<:patt< _ >>, <:vala< None >>, ekont ())] in
   <:expr< match $peek_fun loc$ $lid:strm_n$ with [ $list:pel$ ] >>
 ;
 
@@ -297,7 +297,8 @@ value rec list_of_tree mk_node mk_leaf tl =
 
 value eq_spat_comp spc1 spc2 =
   match (spc1, spc2) with
-  [ (SpTrm _ p1 None, SpTrm _ p2 None) -> Reloc.eq_patt p1 p2
+  [ (SpTrm _ p1 <:vala< None >>, SpTrm _ p2 <:vala< None >>) ->
+      Reloc.eq_patt p1 p2
   | (SpNtr _ p1 e1, SpNtr _ p2 e2) ->
       Reloc.eq_patt p1 p2 && Reloc.eq_expr e1 e2
   | _ -> False ]

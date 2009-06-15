@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.67 2007/09/12 19:58:05 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.68 2007/09/16 05:19:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -515,14 +515,14 @@ value match_assoc pc (p, w, e) =
        sprintf "%s%s%s -> %s%s" pc.bef
          (patt_as {(pc) with bef = ""; aft = ""} p)
          (match w with
-          [ Some e ->
+          [ <:vala< Some e >> ->
               sprintf " when %s" (expr {(pc) with bef = ""; aft = ""} e)
-          | None -> "" ])
+          | _ -> "" ])
          (comm_expr expr {(pc) with bef = ""; aft = ""} e) pc.aft)
     (fun () ->
        let patt_arrow k =
          match w with
-         [ Some e ->
+         [ <:vala< Some e >> ->
              horiz_vertic
                (fun () ->
                   sprintf "%s%s when %s ->%s" pc.bef
@@ -546,7 +546,7 @@ value match_assoc pc (p, w, e) =
                          sprintf "%s\n%s" s1 s2)
                   in
                   sprintf "%s\n%s" s1 s2)
-         | None -> patt_as {(pc) with aft = sprintf " ->%s" k} p ]
+         | _ -> patt_as {(pc) with aft = sprintf " ->%s" k} p ]
        in
        match sequencify e with
        [ Some el ->
@@ -1121,7 +1121,7 @@ EXTEND_PRINTER
                sprintf "%s%s\n%s" s1 s2 s3)
       | <:expr< fun [ $list:pwel$ ] >> ->
           match pwel with
-          [ [(p1, None, e1)] when is_irrefut_patt p1 ->
+          [ [(p1, <:vala< None >>, e1)] when is_irrefut_patt p1 ->
               let (pl, e1) = expr_fun_args e1 in
               let pl = [p1 :: pl] in
               horiz_vertic
@@ -1184,9 +1184,9 @@ EXTEND_PRINTER
                                (expr_wh {(pc) with bef = ""; aft = ""} e1)
                                (patt {(pc) with bef = ""; aft = ""} p)
                                (match wo with
-                                [ Some e ->
+                                [ <:vala< Some e >> ->
                                     curr {(pc) with bef = " when"; aft = ""} e
-                                | None -> "" ])))
+                                | _ -> "" ])))
                         (fun () -> None)
                    with
                    [ Some s1 ->

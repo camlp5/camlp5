@@ -695,8 +695,8 @@ and fun_binding_se se e =
 and match_case loc =
   fun
   [ Sexpr loc [Sexpr _ [Slid _ "when"; se; sew] :: sel] ->
-      (patt_se se, Some (expr_se sew), begin_se loc sel)
-  | Sexpr loc [se :: sel] -> (patt_se se, None, begin_se loc sel)
+      (patt_se se, <:vala< Some (expr_se sew) >>, begin_se loc sel)
+  | Sexpr loc [se :: sel] -> (patt_se se, <:vala< None >>, begin_se loc sel)
   | se -> error se "match_case" ]
 and label_expr_se loc =
   fun

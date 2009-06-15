@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.15 2007/09/15 19:35:16 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.16 2007/09/16 05:19:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml.OldPrinters;
@@ -437,10 +437,10 @@ pr_match_assoc.pr_levels :=
             fprintf ppf "(@[%t@ %a@]"
               (fun ppf ->
                  match we with
-                 [ Some e ->
+                 [ <:vala< Some e >> ->
                      fprintf ppf "(when@ %a@ %a" patt (p, nok)
                        expr (e, ks ")" nok)
-                 | None -> patt ppf (p, nok) ])
+                 | _ -> patt ppf (p, nok) ])
               sequence (e, ks ")" k) ]}];
 
 pr_mod_ident.pr_levels :=

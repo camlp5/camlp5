@@ -60,7 +60,7 @@ value mk_lexer_match loc e rl =
 value isolate_char_patt_list =
   loop [] where rec loop pl =
     fun
-    [ [([(SpTrm _ p None, SpoNoth)], [_], None) :: rl] ->
+    [ [([(SpTrm _ p <:vala< None >>, SpoNoth)], [_], None) :: rl] ->
         let p =
           match p with
           [ <:patt< $chr:_$ >> -> p
@@ -89,7 +89,7 @@ value make_rules loc rl sl cl errk =
       let c = fresh_c cl in
       let s =
         let p = <:patt< ($p$ as $lid:c$) >> in
-        (SpTrm loc p None, errk)
+        (SpTrm loc p <:vala< None >>, errk)
       in
       ([s :: sl], [<:expr< $lid:c$ >> :: cl])
   | x ->
@@ -99,7 +99,7 @@ value make_rules loc rl sl cl errk =
             let r =
               let p = <:patt< ($p$ as c) >> in
               let e = <:expr< c >> in
-              ([(SpTrm loc p None, SpoNoth)], [e], None)
+              ([(SpTrm loc p <:vala< None >>, SpoNoth)], [e], None)
             in
             [r :: rl]
         | (None, rl) -> rl ]
@@ -133,7 +133,7 @@ value make_any loc norec sl cl errk =
       let c = fresh_c cl in
       (<:patt< $lid:c$ >>, [<:expr< $lid:c$ >> :: cl])
   in
-  let s = (SpTrm loc p None, errk) in
+  let s = (SpTrm loc p <:vala< None >>, errk) in
   ([s :: sl], cl)
 ;
 
@@ -178,7 +178,7 @@ value make_or_chars loc s norec sl cl errk =
   match pl with
   [ [] -> (sl, cl)
   | [<:patt< $chr:c$ >>] ->
-      let s = (SpTrm loc <:patt< $chr:c$ >> None, errk) in
+      let s = (SpTrm loc <:patt< $chr:c$ >> <:vala< None >>, errk) in
       let cl = if norec then cl else [<:expr< $chr:c$ >> :: cl] in
       ([s :: sl], cl)
   | pl ->
@@ -188,7 +188,7 @@ value make_or_chars loc s norec sl cl errk =
           let p = or_patt_of_patt_list loc pl in
           if norec then p else <:patt< ($p$ as $lid:c$) >>
         in
-        (SpTrm loc p None, errk)
+        (SpTrm loc p <:vala< None >>, errk)
       in
       let cl = if norec then cl else [<:expr< $lid:c$ >> :: cl] in
       ([s :: sl], cl) ]
@@ -220,7 +220,7 @@ EXTEND
             [ (Some p, rl) ->
                 let p = <:patt< ($p$ as c) >> in
                 let e = <:expr< c >> in
-                [([(SpTrm loc p None, SpoNoth)], [e], None) :: rl]
+                [([(SpTrm loc p <:vala< None >>, SpoNoth)], [e], None) :: rl]
             | (None, rl) -> rl ]
           in
           <:expr< fun $lid:var ()$ -> $mk_lexer loc rl$ >>

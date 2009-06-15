@@ -356,8 +356,9 @@ and let_binding_se =
   | se -> error se "let_binding" ]
 and match_case loc =
   fun
-  [ Sexpr _ [se1; se2] -> (patt_se se1, None, expr_se se2)
-  | Sexpr _ [se1; sew; se2] -> (patt_se se1, Some (expr_se sew), expr_se se2)
+  [ Sexpr _ [se1; se2] -> (patt_se se1, <:vala< None >>, expr_se se2)
+  | Sexpr _ [se1; sew; se2] ->
+      (patt_se se1, <:vala< Some (expr_se sew) >>, expr_se se2)
   | se -> error se "match_case" ]
 and label_expr_se loc =
   fun

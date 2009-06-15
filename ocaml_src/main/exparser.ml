@@ -3,7 +3,7 @@
 (* Copyright (c) INRIA 2007 *)
 
 type spat_comp =
-    SpTrm of MLast.loc * MLast.patt * MLast.expr option
+    SpTrm of MLast.loc * MLast.patt * MLast.expr option MLast.v
   | SpNtr of MLast.loc * MLast.patt * MLast.expr
   | SpLet of MLast.loc * MLast.patt * MLast.expr
   | SpLhd of MLast.loc * MLast.patt list list

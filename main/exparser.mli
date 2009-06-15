@@ -1,21 +1,11 @@
 (* camlp5r *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: exparser.mli,v 1.2 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: exparser.mli,v 1.3 2007/09/16 05:19:01 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 (* expand parser ast into normal one *)
 
 type spat_comp =
-  [ SpTrm of MLast.loc and MLast.patt and option MLast.expr
+  [ SpTrm of MLast.loc and MLast.patt and MLast.v (option MLast.expr)
   | SpNtr of MLast.loc and MLast.patt and MLast.expr
   | SpLet of MLast.loc and MLast.patt and MLast.expr
   | SpLhd of MLast.loc and list (list MLast.patt)

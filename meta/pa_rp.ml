@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_rp.ml,v 1.12 2007/09/15 19:15:19 deraugla Exp $ *)
+(* $Id: pa_rp.ml,v 1.13 2007/09/16 05:19:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Exparser;
@@ -43,7 +43,7 @@ EXTEND
       | spc = stream_patt_comp -> (spc, SpoNoth) ] ]
   ;
   stream_patt_comp:
-    [ [ "`"; p = patt; eo = OPT [ "when"; e = expr -> e ] -> SpTrm loc p eo
+    [ [ "`"; p = patt; eo = V OPT [ "when"; e = expr -> e ] -> SpTrm loc p eo
       | "?="; pll = LIST1 lookahead SEP "|" -> SpLhd loc pll
       | p = patt; "="; e = expr -> SpNtr loc p e
       | p = patt -> SpStr loc p ] ]

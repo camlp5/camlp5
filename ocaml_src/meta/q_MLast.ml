@@ -1070,7 +1070,8 @@ Grammar.extend
               ("ExTry",
                [Qast.Loc; e;
                 Qast.VaVal
-                  (Qast.List [Qast.Tuple [p1; Qast.Option None; e1]])]) :
+                  (Qast.List
+                     [Qast.Tuple [p1; Qast.VaVal (Qast.Option None); e1]])]) :
             'expr));
       [Gramext.Stoken ("", "try"); Gramext.Sself; Gramext.Stoken ("", "with");
        Gramext.Stoken ("", "[");
@@ -1101,7 +1102,8 @@ Grammar.extend
               ("ExMat",
                [Qast.Loc; e;
                 Qast.VaVal
-                  (Qast.List [Qast.Tuple [p1; Qast.Option None; e1]])]) :
+                  (Qast.List
+                     [Qast.Tuple [p1; Qast.VaVal (Qast.Option None); e1]])]) :
             'expr));
       [Gramext.Stoken ("", "match"); Gramext.Sself;
        Gramext.Stoken ("", "with"); Gramext.Stoken ("", "[");
@@ -1132,7 +1134,8 @@ Grammar.extend
               ("ExFun",
                [Qast.Loc;
                 Qast.VaVal
-                  (Qast.List [Qast.Tuple [p; Qast.Option None; e]])]) :
+                  (Qast.List
+                     [Qast.Tuple [p; Qast.VaVal (Qast.Option None); e]])]) :
             'expr));
       [Gramext.Stoken ("", "fun"); Gramext.Stoken ("", "[");
        Gramext.srules
@@ -1961,7 +1964,8 @@ Grammar.extend
               ("ExFun",
                [Qast.Loc;
                 Qast.VaVal
-                  (Qast.List [Qast.Tuple [p; Qast.Option None; e]])]) :
+                  (Qast.List
+                     [Qast.Tuple [p; Qast.VaVal (Qast.Option None); e]])]) :
             'fun_binding))]];
     Grammar.Entry.obj (match_case : 'match_case Grammar.Entry.e), None,
     [None, None,
@@ -1975,14 +1979,14 @@ Grammar.extend
                    (when_expr : 'when_expr Grammar.Entry.e)))],
           Gramext.action
             (fun (a : 'when_expr option) (loc : Ploc.t) ->
-               (Qast.Option a : 'a_opt));
+               (Qast.VaVal (Qast.Option a) : 'a_opt2));
           [Gramext.Snterm
-             (Grammar.Entry.obj (a_opt : 'a_opt Grammar.Entry.e))],
-          Gramext.action (fun (a : 'a_opt) (loc : Ploc.t) -> (a : 'a_opt))];
+             (Grammar.Entry.obj (a_opt2 : 'a_opt2 Grammar.Entry.e))],
+          Gramext.action (fun (a : 'a_opt2) (loc : Ploc.t) -> (a : 'a_opt2))];
        Gramext.Stoken ("", "->");
        Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
       Gramext.action
-        (fun (e : 'expr) _ (w : 'a_opt) (aso : 'as_patt_opt) (p : 'patt)
+        (fun (e : 'expr) _ (w : 'a_opt2) (aso : 'as_patt_opt) (p : 'patt)
              (loc : Ploc.t) ->
            (mkmatchcase Qast.Loc p aso w e : 'match_case))]];
     Grammar.Entry.obj (as_patt_opt : 'as_patt_opt Grammar.Entry.e), None,
@@ -2023,7 +2027,8 @@ Grammar.extend
               ("ExFun",
                [Qast.Loc;
                 Qast.VaVal
-                  (Qast.List [Qast.Tuple [p; Qast.Option None; e]])]) :
+                  (Qast.List
+                     [Qast.Tuple [p; Qast.VaVal (Qast.Option None); e]])]) :
             'fun_def))]];
     Grammar.Entry.obj (patt : 'patt Grammar.Entry.e), None,
     [None, Some Gramext.LeftA,

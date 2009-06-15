@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.57 2007/09/16 03:59:45 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.58 2007/09/16 05:19:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* expressions evaluated in the context of the preprocessor *)
@@ -1199,7 +1199,7 @@ and eval_match_assoc loc env t1 t2 (p, eo, e) param =
   match eval_patt env p t1 param with
   [ Some env ->
       let cond =
-        if eo = None then True
+        if eo = <:vala< None >> then True
         else not_impl loc "eval_match_assoc eo = Some..." p
       in
       if cond then

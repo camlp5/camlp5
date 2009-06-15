@@ -212,7 +212,7 @@ module Meta =
                 C.vala
                   (C.list
                      (fun (p, oe, e) ->
-                        C.tuple [patt p; C.option expr oe; expr e]))
+                        C.tuple [patt p; C.vala (C.option expr) oe; expr e]))
                   pwel
               in
               C.node "ExFun" [pwel]
@@ -234,7 +234,7 @@ module Meta =
                 C.vala
                   (C.list
                      (fun (p, oe, e) ->
-                        C.tuple [patt p; C.option expr oe; expr e]))
+                        C.tuple [patt p; C.vala (C.option expr) oe; expr e]))
                   pwel
               in
               C.node "ExMat" [expr e; pwel]
@@ -263,7 +263,7 @@ module Meta =
                 C.vala
                   (C.list
                      (fun (p, oe, e) ->
-                        C.tuple [patt p; C.option expr oe; expr e]))
+                        C.tuple [patt p; C.vala (C.option expr) oe; expr e]))
                   pwel
               in
               C.node "ExTry" [expr e; pwel]

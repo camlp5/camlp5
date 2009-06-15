@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extfun.ml,v 1.13 2007/09/15 19:35:16 deraugla Exp $ *)
+(* $Id: pr_extfun.ml,v 1.14 2007/09/16 05:19:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the extfun statement from the AST *)
@@ -29,7 +29,7 @@ value rec un_extfun rpel =
       let (p, wo, e) =
         match pel with
         [ [(p, wo, <:expr< Some $e$ >>);
-           (<:patt< _ >>, None, <:expr< None >>)] ->
+           (<:patt< _ >>, <:vala< None >>, <:expr< None >>)] ->
             (p, wo, e)
         | [(p, wo, <:expr< Some $e$ >>)] -> (p, wo, e)
         | _ -> raise Not_found ]
@@ -80,15 +80,15 @@ value match_assoc pc (p, w, e) =
        sprintf "%s%s%s -> %s%s" pc.bef
          (patt_as {(pc) with bef = ""; aft = ""} p)
          (match w with
-          [ Some e ->
+          [ <:vala< Some e >> ->
               sprintf " when %s" (expr {(pc) with bef = ""; aft = ""} e)
-          | None -> "" ])
+          | _ -> "" ])
          (comm_expr expr {(pc) with bef = ""; aft = ""; dang = pc_dang} e)
          pc.aft)
     (fun () ->
        let patt_arrow k =
          match w with
-         [ Some e ->
+         [ <:vala< Some e >> ->
              horiz_vertic
                (fun () ->
                   sprintf "%s%s when %s ->%s" pc.bef
@@ -112,7 +112,7 @@ value match_assoc pc (p, w, e) =
                          sprintf "%s\n%s" s1 s2)
                   in
                   sprintf "%s\n%s" s1 s2)
-         | None -> patt_as {(pc) with aft = sprintf " ->%s" k} p ]
+         | _ -> patt_as {(pc) with aft = sprintf " ->%s" k} p ]
        in
        let s1 = patt_arrow "" in
        let s2 =

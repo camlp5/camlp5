@@ -572,7 +572,7 @@ module MetaAction =
       | x -> not_impl "mctyp" x
     and mpe (p, e) = MLast.ExTup (loc, [mpatt p; mexpr e])
     and mpwe (p, w, e) =
-      MLast.ExTup (loc, [mpatt p; moption mexpr w; mexpr e])
+      MLast.ExTup (loc, [mpatt p; mvala (moption mexpr) w; mexpr e])
     ;;
   end
 ;;

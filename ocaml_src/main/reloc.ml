@@ -161,7 +161,7 @@ and expr floc sh =
            vala_map
              (List.map
                 (fun (x1, x2, x3) ->
-                   patt floc sh x1, option_map self x2, self x3))
+                   patt floc sh x1, vala_map (option_map self) x2, self x3))
              x1)
     | ExIfe (loc, x1, x2, x3) -> ExIfe (floc loc, self x1, self x2, self x3)
     | ExInt (loc, x1, x2) -> ExInt (floc loc, x1, x2)
@@ -181,7 +181,7 @@ and expr floc sh =
            vala_map
              (List.map
                 (fun (x1, x2, x3) ->
-                   patt floc sh x1, option_map self x2, self x3))
+                   patt floc sh x1, vala_map (option_map self) x2, self x3))
              x2)
     | ExNew (loc, x1) -> ExNew (floc loc, x1)
     | ExObj (loc, x1, x2) ->
@@ -206,7 +206,7 @@ and expr floc sh =
            vala_map
              (List.map
                 (fun (x1, x2, x3) ->
-                   patt floc sh x1, option_map self x2, self x3))
+                   patt floc sh x1, vala_map (option_map self) x2, self x3))
              x2)
     | ExTup (loc, x1) -> ExTup (floc loc, vala_map (List.map self) x1)
     | ExTyc (loc, x1, x2) -> ExTyc (floc loc, self x1, ctyp floc sh x2)

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.65 2007/09/16 04:22:59 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.66 2007/09/16 05:19:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -246,7 +246,8 @@ module MetaAction =
       | MLast.TyUid loc s -> <:expr< MLast.TyUid $mloc$ $mvala mstring s$ >>
       | x -> not_impl "mctyp" x ]
     and mpe (p, e) = <:expr< ($mpatt p$, $mexpr e$) >>
-    and mpwe (p, w, e) = <:expr< ($mpatt p$, $moption mexpr w$, $mexpr e$) >>;
+    and mpwe (p, w, e) =
+      <:expr< ($mpatt p$, $mvala (moption mexpr) w$, $mexpr e$) >>;
   end
 ;
 

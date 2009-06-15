@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pcaml.mli,v 1.20 2007/09/16 03:59:45 deraugla Exp $ *)
+(* $Id: pcaml.mli,v 1.21 2007/09/16 05:19:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (** Language grammar, entries and printers.
@@ -45,7 +45,7 @@ value ctyp : Grammar.Entry.e MLast.ctyp;
 value let_binding : Grammar.Entry.e (MLast.patt * MLast.expr);
 value type_declaration : Grammar.Entry.e MLast.type_decl;
 value match_case :
-  Grammar.Entry.e (MLast.patt * option MLast.expr * MLast.expr);
+  Grammar.Entry.e (MLast.patt * MLast.v (option MLast.expr) * MLast.expr);
 value constructor_declaration :
   Grammar.Entry.e (MLast.loc * MLast.v string * MLast.v (list MLast.ctyp));
 value with_constr : Grammar.Entry.e MLast.with_constr;

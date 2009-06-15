@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.34 2007/09/14 03:16:58 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.35 2007/09/16 05:19:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open MLast;
@@ -27,6 +27,12 @@ value option f =
   fun
   [ Some x -> f x
   | None -> () ]
+;
+
+value vala f =
+  fun
+  [ <:vala< x >> -> f x
+  | _ -> () ]
 ;
 
 value longident =
@@ -161,7 +167,7 @@ and expr_module =
   | e -> expr e ]
 and let_binding (p, e) = do { patt p; expr e }
 and label_expr (p, e) = do { patt p; expr e }
-and match_case (p, w, e) = do { patt p; option expr w; expr e }
+and match_case (p, w, e) = do { patt p; vala (option expr) w; expr e }
 and module_type =
   fun
   [ <:module_type< $uid:m$ . $_$ >> -> addmodule m

@@ -1,5 +1,5 @@
 ;; camlp5 ./pa_lispr.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-;; $Id: pa_lisp.ml,v 1.18 2007/09/15 19:35:16 deraugla Exp $
+;; $Id: pa_lisp.ml,v 1.19 2007/09/16 05:19:01 deraugla Exp $
 ;; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -367,9 +367,9 @@
  (lambda loc
    (lambda_match
     ((Sexpr _ (list se1 se2))
-     (, (patt_se se1) None (expr_se se2)))
+     (, (patt_se se1) <:vala< None >> (expr_se se2)))
     ((Sexpr _ (list se1 sew se2))
-     (, (patt_se se1) (Some (expr_se sew)) (expr_se se2)))
+     (, (patt_se se1) <:vala< (Some (expr_se sew)) >> (expr_se se2)))
     (se (error se "match_case"))))
  label_expr_se
  (lambda loc

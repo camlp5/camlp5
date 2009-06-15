@@ -392,7 +392,7 @@ and match_assoc_list loc pel dg k =
 and match_assoc b (p, w, e) dg k =
   let s =
     match w with
-    [ Some e1 ->
+    [ <:vala< Some e1 >> ->
         [: `HVbox
               [: `HVbox [: :]; `patt p "" [: :];
                  `HVbox [: `S LR "when"; `expr e1 "" [: `S LR "->" :] :] :] :]
@@ -933,7 +933,7 @@ pr_expr.pr_levels :=
               [ [] ->
                   [: `S LR "fun"; `S LR "_"; `S LR "->";
                      `raise_match_failure loc k :]
-              | [(p, None, e)] ->
+              | [(p, <:vala< None >>, e)] ->
                   let (pl, e) = expr_fun_args e in
                   [: `BEbox
                         [: `HOVbox
@@ -950,7 +950,7 @@ pr_expr.pr_levels :=
               [ [] ->
                   [: `S LR "(fun"; `S LR "_"; `S LR "->";
                      `raise_match_failure loc [: `S RO ")"; k :] :]
-              | [(p, None, e)] ->
+              | [(p, <:vala< None >>, e)] ->
                   if is_irrefut_patt p then
                     let (pl, e) = expr_fun_args e in
                     [: `S LO "(";

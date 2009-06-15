@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_sml.ml,v 1.18 2007/09/15 19:35:16 deraugla Exp $ *)
+(* $Id: pa_sml.ml,v 1.19 2007/09/16 05:19:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -224,7 +224,7 @@ value function_of_clause_list loc xl =
         if nbpat = 1 then
           let pwel =
             List.map
-              (fun (pl, e) -> (<:patt< $List.hd pl$ >>, None, e)) l
+              (fun (pl, e) -> (<:patt< $List.hd pl$ >>, <:vala< None >>, e)) l
           in
           <:expr< fun [ $list:pwel$ ] >>
         else
@@ -237,7 +237,8 @@ value function_of_clause_list loc xl =
             let el = List.map (fun s -> <:expr< $lid:s$ >>) sl in
             let pwel =
               List.map
-                (fun (pl, e) -> (<:patt< ($list:pl$) >>, None, e)) l
+                (fun (pl, e) -> (<:patt< ($list:pl$) >>, <:vala< None >>, e))
+                l
             in
             <:expr< match ($list:el$) with [ $list:pwel$ ] >>
           in
@@ -455,7 +456,7 @@ EXTEND
       | x1 = tycon -> x1 ] ]
   ;
   rule:
-    [ [ x1 = patt; "=>"; x2 = expr -> (x1, None, x2) ] ]
+    [ [ x1 = patt; "=>"; x2 = expr -> (x1, <:vala< None >>, x2) ] ]
   ;
   elabel:
     [ [ x1 = selector; "="; x2 = expr -> (<:patt< $lid:x1$ >>, x2) ] ]

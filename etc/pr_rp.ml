@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_rp.ml,v 1.9 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: pr_rp.ml,v 1.10 2007/09/16 05:19:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Heuristic to rebuild parsers and streams from the AST *)
@@ -9,7 +9,7 @@ open Pcaml;
 open Prtools;
 
 type spat_comp =
-  [ SpTrm of MLast.loc and MLast.patt and option MLast.expr
+  [ SpTrm of MLast.loc and MLast.patt and MLast.v (option MLast.expr)
   | SpNtr of MLast.loc and MLast.patt and MLast.expr
   | SpLet of MLast.loc and MLast.patt and MLast.expr
   | SpLhd of MLast.loc and list (list MLast.patt)
@@ -52,7 +52,7 @@ value rec handle_failure e =
       handle_failure e &&
       List.for_all
         (fun
-         [ (p, None, e) -> handle_failure e
+         [ (p, <:vala< None >>, e) -> handle_failure e
          | _ -> False ])
         pel
   | <:expr< raise $e$ >> ->
@@ -134,7 +134,7 @@ value rec unstream_pattern_kont =
       | _ -> raise (Stream.Error $e2$) ]
     >> ->
       let (sp, epo, e) = unstream_pattern_kont e in
-      let sp = [(SpTrm loc p None, err e2) :: sp] in
+      let sp = [(SpTrm loc p <:vala< None >>, err e2) :: sp] in
       (sp, epo, e)
   | <:expr< match Stream.peek strm__ with [ $list:_$ ] >> |
     <:expr<
@@ -179,7 +179,7 @@ value rec unparser_cases_list =
   | <:expr< match Stream.peek strm__ with [ $list:pel$ ] >> as ge ->
       loop [] pel where rec loop rev_spel =
         fun
-        [ [(<:patt< _ >>, None, e)] ->
+        [ [(<:patt< _ >>, <:vala< None >>, e)] ->
             List.rev_append rev_spel (unparser_cases_list e)
         | [(<:patt< Some $p$ >>, eo,
             <:expr< do { Stream.junk strm__; $e$ } >>) ::
@@ -294,9 +294,9 @@ value ident_option =
 
 value stream_patt_comp pc spc =
   match spc with
-  [ SpTrm _ p None ->
+  [ SpTrm _ p <:vala< None >> ->
       patt {(pc) with ind = pc.ind + 1; bef = sprintf "%s`" pc.bef} p
-  | SpTrm _ p (Some e) ->
+  | SpTrm _ p <:vala< Some e >> ->
       horiz_vertic
         (fun () ->
            sprintf "%s`%s when %s%s" pc.bef

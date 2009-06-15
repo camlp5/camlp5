@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.19 2007/09/15 19:35:16 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.20 2007/09/16 05:19:01 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -670,9 +670,9 @@
   ((match_case loc)
    (lambda_match
     ((Sexpr loc [(Sexpr _ [(Slid _ "when") se sew]) . sel])
-     (values (patt_se se) (Some (expr_se sew)) (begin_se loc sel)))
+     (values (patt_se se) <:vala< (Some (expr_se sew)) >> (begin_se loc sel)))
     ((Sexpr loc [se . sel])
-     (values (patt_se se) None (begin_se loc sel)))
+     (values (patt_se se) <:vala< None >> (begin_se loc sel)))
     (se (error se "match_case"))))
   ((label_expr_se loc)
    (lambda_match

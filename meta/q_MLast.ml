@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.88 2007/09/16 04:22:59 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.89 2007/09/16 05:19:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -419,20 +419,25 @@ EXTEND
       | "fun"; p = ipatt; e = fun_def ->
           Qast.Node "ExFun"
             [Qast.Loc;
-             Qast.VaVal (Qast.List [Qast.Tuple [p; Qast.Option None; e]])]
+             Qast.VaVal
+               (Qast.List [Qast.Tuple [p; Qast.VaVal (Qast.Option None); e]])]
       | "match"; e = SELF; "with"; "["; l = SV LIST0 match_case SEP "|";
         "]" ->
           Qast.Node "ExMat" [Qast.Loc; e; l]
       | "match"; e = SELF; "with"; p1 = ipatt; "->"; e1 = SELF ->
           Qast.Node "ExMat"
             [Qast.Loc; e;
-             Qast.VaVal (Qast.List [Qast.Tuple [p1; Qast.Option None; e1]])]
+             Qast.VaVal
+               (Qast.List
+                  [Qast.Tuple [p1; Qast.VaVal (Qast.Option None); e1]])]
       | "try"; e = SELF; "with"; "["; l = SV LIST0 match_case SEP "|"; "]" ->
           Qast.Node "ExTry" [Qast.Loc; e; l]
       | "try"; e = SELF; "with"; p1 = ipatt; "->"; e1 = SELF ->
           Qast.Node "ExTry"
             [Qast.Loc; e;
-             Qast.VaVal (Qast.List [Qast.Tuple [p1; Qast.Option None; e1]])]
+             Qast.VaVal
+               (Qast.List
+                  [Qast.Tuple [p1; Qast.VaVal (Qast.Option None); e1]])]
       | "if"; e1 = SELF; "then"; e2 = SELF; "else"; e3 = SELF ->
           Qast.Node "ExIfe" [Qast.Loc; e1; e2; e3]
       | "do"; "{"; seq = sequence2; "}" -> mksequence2 Qast.Loc seq
@@ -738,12 +743,13 @@ EXTEND
       [ p = ipatt; e = SELF ->
           Qast.Node "ExFun"
             [Qast.Loc;
-             Qast.VaVal (Qast.List [Qast.Tuple [p; Qast.Option None; e]])]
+             Qast.VaVal
+               (Qast.List [Qast.Tuple [p; Qast.VaVal (Qast.Option None); e]])]
       | "="; e = expr -> e
       | ":"; t = ctyp; "="; e = expr -> Qast.Node "ExTyc" [Qast.Loc; e; t] ] ]
   ;
   match_case:
-    [ [ p = patt; aso = as_patt_opt; w = SOPT when_expr; "->"; e = expr ->
+    [ [ p = patt; aso = as_patt_opt; w = SV OPT when_expr; "->"; e = expr ->
           mkmatchcase Qast.Loc p aso w e ] ]
   ;
   as_patt_opt:
@@ -761,7 +767,8 @@ EXTEND
       [ p = ipatt; e = SELF ->
           Qast.Node "ExFun"
             [Qast.Loc;
-             Qast.VaVal (Qast.List [Qast.Tuple [p; Qast.Option None; e]])]
+             Qast.VaVal
+               (Qast.List [Qast.Tuple [p; Qast.VaVal (Qast.Option None); e]])]
       | "->"; e = expr -> e ] ]
   ;
   patt:

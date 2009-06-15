@@ -184,10 +184,10 @@ value rewrite_parser =
           match pel with
           [ [(<:patt< Some $p$ >>, eo,
               <:expr< do { Stream.junk strm__; $sp_kont$ } >>);
-             (<:patt< _ >>, None, p_kont) :: _] ->
+             (<:patt< _ >>, <:vala< None >>, p_kont) :: _] ->
                <:expr<
                  match Stream.peek strm__ with
-                 [ Some $p$ $opt:eo$ ->
+                 [ Some $p$ $aopt:eo$ ->
                      do { Stream.junk strm__; $rewrite False sp_kont$ }
                  | _ -> $rewrite top p_kont$ ]
                >>
@@ -196,7 +196,7 @@ value rewrite_parser =
                let p_kont = iter pel in
                <:expr<
                  match Stream.peek strm__ with
-                 [ Some $p$ $opt:eo$ ->
+                 [ Some $p$ $aopt:eo$ ->
                      do { Stream.junk strm__; $rewrite False sp_kont$ }
                  | _ -> $p_kont$ ]
                >>
