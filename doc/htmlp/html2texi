@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2texi,v 1.2 2007/08/26 21:39:55 deraugla Exp $
+# $Id: html2texi,v 1.3 2007/08/27 03:26:42 deraugla Exp $
 
 FILES1="index.html ptools.html"
 FILES2="parsers.html lexers.html fparsers.html grammars.html"
@@ -7,7 +7,7 @@ FILES3="printers.html pretty.html"
 FILES4="locations.html ml_ast.html pcaml.html syntext.html opretty.html quot.html revsynt.html scheme.html macros.html pragma.html extfun.html"
 FILES5="conclusion.html"
 FILES6="commands.html library.html sources.html"
-FILES="$FILES1 $FILES2 $FILES3 $FILES4 $FILES5 $FILES6"
+FILES="$FILES1 1 $FILES2 2 $FILES3 3 $FILES4 4 $FILES5 5 $FILES6"
 VERSION="$(grep "value version =" ../../main/pcaml.ml | sed -e 's/^[^"]*"\([^"]*\).*$/\1/')"
 
 /bin/echo '\input texinfo   @c -*-texinfo-*-
@@ -27,30 +27,75 @@ VERSION="$(grep "value version =" ../../main/pcaml.ml | sed -e 's/^[^"]*"\([^"]*
 @top Camlp5: a preprocessor pretty printer for OCaml'
 
 /bin/echo '
-@menu
-* Overview::
-* Parsing Tools::
-* Printing Tools::
-* Language extensions::
-* Conclusion::
-* Appendix::
-@end menu'
+@menu'
+
+for i in $FILES; do
+  if [ "$i" = "1" ]; then
+    /bin/echo
+    /bin/echo 'Parsing Tools'
+    /bin/echo
+  elif [ "$i" = "2" ]; then
+    /bin/echo
+    /bin/echo 'Printing Tools'
+    /bin/echo
+  elif [ "$i" = "3" ]; then
+    /bin/echo
+    /bin/echo 'Language extensions'
+    /bin/echo
+  elif [ "$i" = "4" ]; then
+    /bin/echo
+    /bin/echo 'Conclusion'
+    /bin/echo
+  elif [ "$i" = "5" ]; then
+    /bin/echo
+    /bin/echo 'Appendix'
+    /bin/echo
+  else
+    N=$(grep '<h1' $i | sed -e 's|<h1[^>]*>||' -e 's|</h1>||')
+    /bin/echo "* $N::"
+  fi
+done
 
 /bin/echo '
-@node Overview
-@unnumbered Overview
-
-@menu
-* Introduction::
-* Parsing and Printing tools::
 @end menu'
 
-for i in $FILES1; do
-  N=$(grep '<h1' $i | sed -e 's|<h1[^>]*>||' -e 's|</h1>||')
-  /bin/echo "
+/bin/echo
+
+chapter=chapter
+
+for i in $FILES; do
+  if [ "$i" = "1" ]; then
+    :
+  elif [ "$i" = "2" ]; then
+    :
+  elif [ "$i" = "3" ]; then
+    :
+  elif [ "$i" = "4" ]; then
+    :
+  elif [ "$i" = "5" ]; then
+    chapter=appendix
+  else
+    N=$(grep '<h1' $i | sed -e 's|<h1[^>]*>||' -e 's|</h1>||')
+    /bin/echo "
 @node $N
-@chapter $N"
-  cat $i
+@$chapter $N"
+    cat $i |
+    sed \
+      -e '1,/<h1/d' \
+      -e 's|{| |g' -e 's|}| |g' \
+      -e 's|@| |g' \
+      -e '/<pre /,/<\/pre>/s/^/  /' \
+      -e 's|^ *<p>|@noindent |' -e 's|</p>||' \
+      -e 's|^ *<ul>|@itemize|' -e 's|</ul>|@end itemize|' \
+      -e 's|^ *<ol>|@enumerate|' -e 's|</ol>|@end enumerate|' \
+      -e 's|^ *<li>|@item |' -e 's|</li>||' \
+      -e '/<div id="tableofcontents">/,/<\/div>/d' \
+      -e 's|<h2>|@section |' -e 's|</h2>||' \
+      -e 's|<em>|@emph{|g' -e 's|</em>|}|g' \
+      -e 's|<tt>|@code{|g' -e 's|</tt>|}|g' \
+      -e 's|<a [^>]*>||g' -e 's|</a>||g' \
+      -e 's|<pre.*>|@example|' -e 's|</pre>|@end example|'
+  fi
 done
 
 /bin/echo '
