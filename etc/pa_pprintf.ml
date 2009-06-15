@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_pprintf.ml,v 1.15 2007/12/06 10:56:21 deraugla Exp $ *)
+(* $Id: pa_pprintf.ml,v 1.16 2007/12/06 11:00:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* pprintf statement *)
@@ -196,13 +196,13 @@ and read_simple_tree loc pc fmt al i =
     (pcl, al, i)
 ;
 
-value make_call loc (bef_is_empty, aft_is_empty) pc offset pcl =
+value make_call loc aft_is_empty pc offset pcl =
   let el =
     loop [] True pcl where rec loop rev_el is_first =
       fun
       [ [(bef, bef_al, aft, aft_al, f_f_a_opt) :: pcl] ->
           let is_last = pcl = [] in
-          let add_pc_bef = (* not bef_is_empty & *) is_first in
+          let add_pc_bef = is_first in
           let add_pc_aft = not aft_is_empty && is_last in
           let e =
             match f_f_a_opt with
@@ -280,10 +280,10 @@ value make_call loc (bef_is_empty, aft_is_empty) pc offset pcl =
   in
   match el with
   [ [] ->
-      let fmt = if not bef_is_empty then "%s" else "" in
+      let fmt = "%s" in
       let fmt = if not aft_is_empty then fmt ^ "%s" else fmt in
       let e = <:expr< sprintf $str:fmt$ >> in
-      let e = if not bef_is_empty then <:expr< $e$ $pc$.bef >> else e in
+      let e = <:expr< $e$ $pc$.bef >> in
       if not aft_is_empty then <:expr< $e$ $pc$.aft >> else e
   | [e] -> e
   | _ ->
@@ -300,18 +300,17 @@ value expand_pprintf loc pc fmt al =
       let loc = Ploc.encl (MLast.loc_of_expr a) (MLast.loc_of_expr last_a) in
       Ploc.raise loc (Stream.Error "too many parameters")
   | [] ->
-      loop pc 0 (False, False) tree
-      where rec loop pc offset (bef_is_empty, aft_is_empty) =
+      loop pc 0 False tree where rec loop pc offset aft_is_empty =
         fun
-        [ Leaf pcl -> make_call loc (bef_is_empty, aft_is_empty) pc offset pcl
+        [ Leaf pcl -> make_call loc aft_is_empty pc offset pcl
         | Node tree1 pp tree2 ->
             let (s, o) =
               match pp with
               [ PPbreak sp off -> (string_of_int sp, string_of_int off)
               | PPspace -> ("1", "0") ]
             in
-            let e1 = loop <:expr< pc >> 0 (bef_is_empty, True) tree1 in
-            let e2 = loop <:expr< pc >> 0 (True, aft_is_empty) tree2 in
+            let e1 = loop <:expr< pc >> 0 True tree1 in
+            let e2 = loop <:expr< pc >> 0 aft_is_empty tree2 in
             let pc =
               if offset > 0 then
                 let soff = string_of_int offset in
@@ -323,7 +322,7 @@ value expand_pprintf loc pc fmt al =
                 (fun pc -> $e2$)
             >>
         | Offset offset t ->
-            loop pc offset (bef_is_empty, aft_is_empty) t ] ]
+            loop pc offset aft_is_empty t ] ]
 ;
 
 EXTEND

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.121 2007/12/06 08:56:49 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.122 2007/12/06 10:56:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -378,9 +378,7 @@ value record_binding pc (p, e) =
       horiz_vertic
         (fun () -> pprintf pc "%p =@;%p" (hlist patt) pl expr_wh e)
         (fun () ->
-           sequence_box2 pc
-             (fun pc -> hlist patt {(pc) with aft = sprintf " =%s" pc.aft} pl)
-             el)
+           sequence_box2 pc (fun pc -> pprintf pc "%p =" (hlist patt) pl) el)
   | None ->
       pprintf pc "%p =@;%p" (hlist patt) pl expr_wh e ]
 ;
@@ -437,8 +435,7 @@ value value_or_let_binding flag_where sequ pc (p, e) =
            | None -> patt pc p ]
          in
          let pl = List.map (fun p -> (p, "")) pl in
-         plistl patt (patt_tycon tyo) 4
-           {(pc) with aft = sprintf " =%s" pc.aft} pl
+         pprintf pc "%p =" (plistl patt (patt_tycon tyo) 4) pl
        in
        match sequencify e with
        [ Some el -> sequ pc patt_eq el
@@ -781,14 +778,14 @@ value str_module pref pc (m, me) =
   in
   horiz_vertic
     (fun () ->
-       sprintf "%s%s %s%s%s = %s%s" pc.bef pref m
+       pprintf pc "%s %s%s%s = %s" pref m
          (if mal = [] then ""
           else hlist module_arg {(pc) with bef = " "; aft = ""} mal)
          (match mto with
           [ Some mt ->
               sprintf " : %s" (module_type {(pc) with bef = ""; aft = ""} mt)
           | None -> "" ])
-         (module_expr {(pc) with bef = ""; aft = ""} me) pc.aft)
+         (module_expr {(pc) with bef = ""; aft = ""} me))
     (fun () ->
        let s1 =
          match mto with
@@ -827,10 +824,10 @@ value sig_module_or_module_type pref defc pc (m, mt) =
   let module_arg pc (s, mt) = pprintf pc "(%s :@;<1 1>%p)" s module_type mt in
   horiz_vertic
     (fun () ->
-       sprintf "%s%s %s%s %c %s%s" pc.bef pref m
+       pprintf pc "%s %s%s %c %s" pref m
          (if mal = [] then ""
           else hlist module_arg {(pc) with bef = " "; aft = ""} mal)
-         defc (module_type {(pc) with bef = ""; aft = ""} mt) pc.aft)
+         defc (module_type {(pc) with bef = ""; aft = ""} mt))
     (fun () ->
        let s1 =
          let mal = List.map (fun ma -> (ma, "")) mal in
@@ -850,34 +847,8 @@ value sig_module_or_module_type pref defc pc (m, mt) =
 ;
 
 value str_or_sig_functor pc s mt module_expr_or_type met =
-  horiz_vertic
-    (fun () ->
-       sprintf "%sfunctor (%s : %s) -> %s%s" pc.bef s
-         (module_type {(pc) with bef = ""; aft = ""} mt)
-         (module_expr_or_type {(pc) with bef = ""; aft = ""} met) pc.aft)
-    (fun () ->
-       let s1 =
-         horiz_vertic
-           (fun () ->
-              sprintf "%sfunctor (%s : %s) ->" pc.bef s
-                (module_type {(pc) with bef = ""; aft = ""} mt))
-           (fun () ->
-              let s1 = sprintf "%sfunctor" pc.bef in
-              let s2 =
-                let pc =
-                  {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                   aft = ""}
-                in
-                pprintf pc "(%s :@;<1 3>%p)" s module_type mt
-              in
-              let s3 = sprintf "%s->" (tab pc.ind) in
-              sprintf "%s\n%s\n%s" s1 s2 s3)
-       in
-       let s2 =
-         module_expr_or_type
-           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} met
-       in
-       sprintf "%s\n%s" s1 s2)
+  pprintf pc "functor@;@[(%s :@;<1 1>%p)@]@ ->@;%p" s module_type mt
+    module_expr_or_type met
 ;
 
 value with_constraint pc wc =
