@@ -8,7 +8,7 @@ Added statements:
 
      DEFINE <uident>
      DEFINE <uident> = <expression>
-     DEFINE <uident> (<parameters>) = <expression>
+     DEFINE <uident> <parameters> = <expression>
      IFDEF <dexpr> THEN <structure_items> END
      IFDEF <dexpr> THEN <structure_items> ELSE <structure_items> END
      IFNDEF <dexpr> THEN <structure_items> END
@@ -18,7 +18,7 @@ Added statements:
 
      DEFINE <uident>
      DEFINE <uident> = <type>
-     DEFINE <uident> (<parameters>) = <type>
+     DEFINE <uident> <parameters> = <type>
      IFDEF <dexpr> THEN <signature_items> END
      IFDEF <dexpr> THEN <signature_items> ELSE <signature_items> END
      IFNDEF <dexpr> THEN <signature_items> END
@@ -523,13 +523,11 @@ Grammar.extend
       Gramext.action
         (fun (e : 'expr) _ (loc : Ploc.t) ->
            (MvExpr ([], e) : 'opt_macro_expr));
-      [Gramext.Stoken ("", "(");
-       Gramext.Slist1sep
-         (Gramext.Stoken ("LIDENT", ""), Gramext.Stoken ("", ","));
-       Gramext.Stoken ("", ")"); Gramext.Stoken ("", "=");
+      [Gramext.Slist1 (Gramext.Stoken ("LIDENT", ""));
+       Gramext.Stoken ("", "=");
        Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
       Gramext.action
-        (fun (e : 'expr) _ _ (pl : string list) _ (loc : Ploc.t) ->
+        (fun (e : 'expr) _ (pl : string list) (loc : Ploc.t) ->
            (MvExpr (pl, e) : 'opt_macro_expr))]];
     Grammar.Entry.obj (opt_macro_type : 'opt_macro_type Grammar.Entry.e),
     None,
@@ -540,13 +538,11 @@ Grammar.extend
       Gramext.action
         (fun (t : 'ctyp) _ (loc : Ploc.t) ->
            (MvType ([], t) : 'opt_macro_type));
-      [Gramext.Stoken ("", "(");
-       Gramext.Slist1sep
-         (Gramext.Stoken ("LIDENT", ""), Gramext.Stoken ("", ","));
-       Gramext.Stoken ("", ")"); Gramext.Stoken ("", "=");
+      [Gramext.Slist1 (Gramext.Stoken ("LIDENT", ""));
+       Gramext.Stoken ("", "=");
        Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e))],
       Gramext.action
-        (fun (t : 'ctyp) _ _ (pl : string list) _ (loc : Ploc.t) ->
+        (fun (t : 'ctyp) _ (pl : string list) (loc : Ploc.t) ->
            (MvType (pl, t) : 'opt_macro_type))]];
     Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
     Some (Gramext.Level "top"),
