@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_o.ml,v 1.58 2007/07/08 13:46:18 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.59 2007/07/08 17:59:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -2610,11 +2610,23 @@ Pcaml.add_option "-l" (Arg.Int (fun x -> Pretty.line_length.val := x))
   ("<length> Maximum line length for pretty printing (default " ^
      string_of_int Pretty.line_length.val ^ ")");
 
+Pcaml.add_option "-ss" (Arg.Set flag_semi_semi)
+  "(obsolete since version 4.02; use rather \"-flag M\").";
+
+Pcaml.add_option "-no_ss" (Arg.Clear flag_semi_semi)
+  "(obsolete since version 4.02; use rather \"-flag m\").";
+
+Pcaml.add_option "-sep_src" (Arg.Unit (fun () -> sep.val := None))
+  "Read source file for text between phrases (default).";
+
 Pcaml.add_option "-sep" (Arg.String (fun x -> sep.val := Some x))
   "<string> Use this string between phrases instead of reading source.";
 
-Pcaml.add_option "-ss" (Arg.Set flag_semi_semi)
-  "Print double semicolons (equivalent to -flag M).";
+Pcaml.add_option "-cip" (Arg.Unit (fun x -> x))
+  "(obsolete since version 4.02)";
+
+Pcaml.add_option "-ncip" (Arg.Unit (fun x -> x))
+  "(obsolete since version 4.02)";
 
 (* Pretty printing extension for objects and labels *)
 
