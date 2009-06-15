@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.87 2007/11/28 01:59:56 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.88 2007/11/28 08:08:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -671,7 +671,6 @@ value cons_decl pc (_, c, tl) =
       (fun pc ->
          let tl = List.map (fun t -> (t, " and")) tl in
          plist ctyp 2 pc tl)
-    else
 ;
 
 value has_cons_with_params vdl =
