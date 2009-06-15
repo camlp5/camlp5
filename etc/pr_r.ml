@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.35 2007/07/04 17:53:47 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.36 2007/07/04 18:01:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -418,6 +418,7 @@ value record_binding pc (p, e) =
    to this function to a call to "binding expr" above.
 *)
 value value_binding pc (p, e) =
+  let sequ pc el = sequence_box2 pc el in
   let expr_wh = if flag_where_after_value_eq.val then expr_wh else expr in
   let (p, e) =
     if is_irrefut_patt p then (p, e)
@@ -471,7 +472,7 @@ value value_binding pc (p, e) =
                 {(pc) with aft = sprintf " =%s" k} pl)
        in
        match sequencify e with
-       [ Some el -> sequence_box2 {(pc) with bef = patt_eq} el
+       [ Some el -> sequ {(pc) with bef = patt_eq} el
        | None ->
            let s1 = patt_eq "" in
            let s2 =
@@ -493,6 +494,10 @@ value value_binding pc (p, e) =
    to this function to a call to "binding expr" above.
 *)
 value let_binding pc (p, e) =
+  let sequ pc el =
+    let s = sequence_box2 {(pc) with aft = ""} el in
+    if pc.aft = "" then s else sprintf "%s\n%s%s" s (tab pc.ind) pc.aft
+  in
   let expr_wh = if flag_where_after_let_eq.val then expr_wh else expr in
   let (p, e) =
     if is_irrefut_patt p then (p, e)
@@ -546,9 +551,7 @@ value let_binding pc (p, e) =
                 {(pc) with aft = sprintf " =%s" k} pl)
        in
        match sequencify e with
-       [ Some el ->
-           let s = sequence_box2 {(pc) with bef = patt_eq; aft = ""} el in
-           if pc.aft = "" then s else sprintf "%s\n%s%s" s (tab pc.ind) pc.aft
+       [ Some el -> sequ {(pc) with bef = patt_eq} el
        | None ->
            let s1 = patt_eq "" in
            let s2 =
