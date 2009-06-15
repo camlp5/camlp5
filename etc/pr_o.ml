@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.157 2007/12/25 13:45:21 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.158 2007/12/25 16:06:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1294,32 +1294,17 @@ EXTEND_PRINTER
       | <:str_item< open $i$ >> ->
           pprintf pc "open %p" mod_ident i
       | <:str_item< type $list:tdl$ >> ->
-          vlist2 type_decl (and_before type_decl)
-            {(pc) with bef = sprintf "%stype " pc.bef} tdl
+          pprintf pc "type %p" (vlist2 type_decl (and_before type_decl)) tdl
       | <:str_item< value $flag:rf$ $list:pel$ >> ->
           horiz_vertic
             (fun () ->
-               sprintf "%slet %s%s" pc.bef (if rf then "rec " else "")
-                 (hlist2 let_binding (and_before let_binding)
-                    {(pc) with bef = ""} pel))
+               pprintf pc "let%s %p" (if rf then " rec" else "")
+                 (hlist2 let_binding (and_before let_binding)) pel)
             (fun () ->
-               vlist2 let_binding (and_before let_binding)
-                 {(pc) with
-                  bef = sprintf "%slet %s" pc.bef (if rf then "rec " else "")}
-                  pel)
+               pprintf pc "let%s %p" (if rf then " rec" else "")
+                 (vlist2 let_binding (and_before let_binding)) pel)
       | <:str_item< $exp:e$ >> ->
-          if pc.aft = ";;" then expr pc e
-          else
-            horiz_vertic
-              (fun () ->
-                 sprintf "%slet _ = %s%s" pc.bef
-                   (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
-              (fun () ->
-                 let s =
-                   expr
-                     {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
-                 in
-                 sprintf "%slet _ =\n%s" pc.bef s)
+          if pc.aft = ";;" then expr pc e else pprintf pc "let _ =@;%p" expr e
       | <:str_item< class type $list:_$ >> | <:str_item< class $list:_$ >> ->
           failwith "classes and objects not pretty printed; add pr_ro.cmo" ] ]
   ;
@@ -1330,9 +1315,9 @@ EXTEND_PRINTER
       | <:sig_item< external $lid:n$ : $t$ = $list:sl$ >> ->
           external_decl pc (n, t, sl)
       | <:sig_item< include $mt$ >> ->
-          module_type {(pc) with bef = sprintf "%sinclude " pc.bef} mt
+          pprintf pc "include %p" module_type mt
       | <:sig_item< declare $list:sil$ end >> ->
-          if sil = [] then sprintf "%s(* *)" pc.bef
+          if sil = [] then pprintf pc "(* *)"
           else
             let sig_item_sep =
               if flag_semi_semi.val then semi_semi_after sig_item
@@ -1347,25 +1332,11 @@ EXTEND_PRINTER
       | <:sig_item< module type $uid:m$ = $mt$ >> ->
           sig_module_or_module_type "module type" '=' pc (m, mt)
       | <:sig_item< open $i$ >> ->
-          mod_ident {(pc) with bef = sprintf "%sopen " pc.bef} i
+          pprintf pc "open %p" mod_ident i
       | <:sig_item< type $list:tdl$ >> ->
-          vlist2 type_decl (and_before type_decl)
-            {(pc) with bef = sprintf "%stype " pc.bef} tdl
+          pprintf pc "type %p" (vlist2 type_decl (and_before type_decl)) tdl
       | <:sig_item< value $lid:s$ : $t$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%sval %s : %s%s" pc.bef
-                 (var_escaped {(pc) with bef = ""; aft = ""} s)
-                 (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-            (fun () ->
-               let s1 =
-                 sprintf "%sval %s :" pc.bef
-                   (var_escaped {(pc) with bef = ""; aft = ""} s)
-               in
-               let s2 =
-                 ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t
-               in
-               sprintf "%s\n%s" s1 s2)
+          pprintf pc "val %p :@;%p" var_escaped s ctyp t
       | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->
           failwith "classes and objects not pretty printed; add pr_ro.cmo" ] ]
   ;
