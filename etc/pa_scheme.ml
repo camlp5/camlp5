@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.58 2007/10/08 11:01:09 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.59 2007/10/08 16:35:12 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -471,10 +471,18 @@
      ((Sexpr loc [(Slid _ "type*") . sel])
       (let ((tdl (List.map type_declaration_se sel)))
          <:str_item< type $list:tdl$ >>))
-     ((Sexpr loc [(Slid _ "exception") (Suid _ c) . sel])
-      (let* ((c (rename_id c))
-             (tl (List.map ctyp_se sel)))
-         <:str_item< exception $uid:c$ of $list:tl$ >>))
+     ((Sexpr loc [(Slid _ "exception") se . sel])
+      (let*
+       ((c
+         (match se
+          ((Suid _ c) (let ((s (rename_id c))) <:vala< s >>))
+          ((Santi _ (or "" "_") s) <:vala< $s$ >>)
+          (se (error se "uident"))))
+        (tl
+         (match sel
+          ([(Santi _ (or "list" "_list") s)] <:vala< $s$ >>)
+          (_ <:vala< (List.map ctyp_se sel) >>))))
+        <:str_item< exception $_:c$ of $_list:tl$ >>))
      ((Sexpr loc [(Slid _ "exceptionrebind") (Suid _ c) se])
       (let* ((c (rename_id c))
              (id (mod_ident_se se)))
@@ -508,10 +516,16 @@
         (let* ((loc (loc_of_sexpr se))
                (e (expr_se se)))
            <:str_item< $exp:e$ >>))))
-     ((Sexpr loc [(Slid _ "#") (Slid _ s) se])
-      (let* ((s (rename_id s))
-             (e (expr_se se)))
+     ((Sexpr loc [(Slid _ "#") se1 se2])
+      (match se1
+       ((Slid _ s)
+        (let* ((s (rename_id s)) (e (expr_se se2)))
          <:str_item< # $lid:s$ $e$ >>))
+       ((Slidv _ s)
+        (let ((e (expr_se se2))) <:str_item< # $_lid:s$ $e$ >>))
+       (_
+        (let* ((loc (loc_of_sexpr se)) (e (expr_se se)))
+         <:str_item< $exp:e$ >>))))
      (_
       (let* ((loc (loc_of_sexpr se))
              (e (expr_se se)))
@@ -784,7 +798,7 @@
           (loop sel)))
     ((Squot loc typ txt) (Pcaml.handle_expr_quotation loc (values typ txt)))
     ((Santi loc "" s) <:expr< $xtr:s$ >>)
-    ((Santi loc _ s) (error_loc loc "expr_se"))))
+    ((Santi loc _ s) (error_loc loc "expr"))))
   ((begin_se loc)
    (lambda_match
     ([] <:expr< () >>)
@@ -1252,6 +1266,7 @@ EXTEND
                  (txt (String.sub s (+ i 1) (- (- (String.length s) i) 1))))
             (Squot loc typ txt))
       | s = ANTIQUOT_LOC -> (Santi loc "" s)
+      | s = ANTIQUOT_LOC "_" -> (Santi loc "_" s)
       | s = ANTIQUOT_LOC "list" -> (Santi loc "list" s)
       | s = ANTIQUOT_LOC "_list" -> (Santi loc "_list" s)
       | NL / s = sexpr -> s

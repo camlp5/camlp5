@@ -174,12 +174,12 @@
 (MLast.StDcl loc lstri)
 <:str_item< (# $lid:s$) >>
 <:str_item< (# $_lid:s$) >>
-; <:str_item< # $s$ $e$ >>
-; <:str_item< # $_:s$ $e$ >>
-; <:str_item< # $s$ $opt:oe$ >>
-; <:str_item< # $_:s$ $_opt:oe$ >>
-; <:str_item< exception $s$ of $list:lt$ >>
-; <:str_item< exception $_:s$ of $_list:lt$ >>
+<:str_item< (# $lid:s$ $e$) >>
+<:str_item< (# $_lid:s$ $e$) >>
+(MLast.StDir loc (Ploc.VaVal s) (Ploc.VaVal oe))
+(MLast.StDir loc s oe)
+<:str_item< (exception $s$ $list:lt$) >>
+<:str_item< (exception $_:s$ $_list:lt$) >>
 ; <:str_item< exception $s$ of $list:lt$ = $list:ls$ >>
 ; <:str_item< exception $_:s$ of $_list:lt$ = $_list:ls$ >>
 ; <:str_item< $exp:e$ >>

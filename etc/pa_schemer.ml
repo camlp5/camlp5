@@ -496,10 +496,21 @@ and str_item_se se =
   | Sexpr loc [Slid _ "type*" :: sel] ->
       let tdl = List.map type_declaration_se sel in
       <:str_item< type $list:tdl$ >>
-  | Sexpr loc [Slid _ "exception"; Suid _ c :: sel] ->
-      let c = rename_id c in
-      let tl = List.map ctyp_se sel in
-      <:str_item< exception $uid:c$ of $list:tl$ >>
+  | Sexpr loc [Slid _ "exception"; se :: sel] ->
+      let c =
+        match se with
+        [ Suid _ c ->
+            let s = rename_id c in
+            <:vala< s >>
+        | Santi _ ("" | "_") s -> <:vala< $s$ >>
+        | se -> error se "uident" ]
+      in
+      let tl =
+        match sel with
+        [ [Santi _ ("list" | "_list") s] -> <:vala< $s$ >>
+        | _ -> <:vala< (List.map ctyp_se sel) >> ]
+      in
+      <:str_item< exception $_:c$ of $_list:tl$ >>
   | Sexpr loc [Slid _ "exceptionrebind"; Suid _ c; se] ->
       let c = rename_id c in
       let id = mod_ident_se se in
@@ -535,10 +546,19 @@ and str_item_se se =
           let loc = loc_of_sexpr se in
           let e = expr_se se in
           <:str_item< $exp:e$ >> ]
-  | Sexpr loc [Slid _ "#"; Slid _ s; se] ->
-      let s = rename_id s in
-      let e = expr_se se in
-      <:str_item< # $lid:s$ $e$ >>
+  | Sexpr loc [Slid _ "#"; se1; se2] ->
+      match se1 with
+      [ Slid _ s ->
+          let s = rename_id s in
+          let e = expr_se se2 in
+          <:str_item< # $lid:s$ $e$ >>
+      | Slidv _ s ->
+          let e = expr_se se2 in
+          <:str_item< # $_lid:s$ $e$ >>
+      | _ ->
+          let loc = loc_of_sexpr se in
+          let e = expr_se se in
+          <:str_item< $exp:e$ >> ]
   | _ ->
       let loc = loc_of_sexpr se in
       let e = expr_se se in
@@ -835,7 +855,7 @@ and expr_se =
             <:expr< [$e$ :: $el$] >> ]
   | Squot loc typ txt -> Pcaml.handle_expr_quotation loc (typ, txt)
   | Santi loc "" s -> <:expr< $xtr:s$ >>
-  | Santi loc _ s -> error_loc loc "expr_se" ]
+  | Santi loc _ s -> error_loc loc "expr" ]
 and begin_se loc =
   fun
   [ [] -> <:expr< () >>
@@ -1334,6 +1354,7 @@ EXTEND
           let txt = String.sub s (i + 1) (String.length s - i - 1) in
           Squot loc typ txt
       | s = ANTIQUOT_LOC -> Santi loc "" s
+      | s = ANTIQUOT_LOC "_" -> Santi loc "_" s
       | s = ANTIQUOT_LOC "list" -> Santi loc "list" s
       | s = ANTIQUOT_LOC "_list" -> Santi loc "_list" s
       | NL; s = SELF -> s
