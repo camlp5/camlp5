@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: ml_ast.html,v 1.15 2007/07/23 15:23:14 deraugla Exp $ -->
+  <!-- $Id: ml_ast.html,v 1.16 2007/07/23 17:17:06 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Abstract tree in concrete syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -107,15 +107,15 @@
 <p>Examples of expressions:</p>
 
 <pre>
-  <:expr< [$e$ :: $loop False el$] >>
-  <:patt< ( $list:[p::pl]$) >>
+  &lt;:expr&lt; [$e$ :: $loop False el$] >>
+  &lt;:patt&lt; ( $list:[p::pl]$) >>
 </pre>
 
 <p>Examples of patterns (in their contexts):</p>
 
 <pre>
-   fun [ <:expr< $lid:op$ $_$ $_$ >> -> op ]
-   match p with [ <:patt< $_$ | $_$ >> -> Some p ]
+   fun [ &lt;:expr&lt; $lid:op$ $_$ $_$ >> -> op ]
+   match p with [ &lt;:patt&lt; $_$ | $_$ >> -> Some p ]
 </pre>
 
 <h2>Nodes</h2>
@@ -535,6 +535,285 @@
 <h3>ctyp</h3>
 
 <p>Type expressions of the language.</p>
+
+<table border="1">
+  <tr>
+    <th>Node</th>
+    <th><tt>&lt;:ctyp&lt; ... >></tt></th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><tt>TyAcc loc t1 t2</tt></td>
+    <td align="center"><tt>$t1$ . $t2$</tt></td>
+    <td>dot</td>
+  </tr>
+  <tr>
+    <td><tt>TyAli loc t1 t2</tt></td>
+    <td align="center"><tt>$t1$ as $t2$</tt></td>
+    <td>alias</td>
+  </tr>
+  <tr>
+    <td><tt>TyAny loc</tt></td>
+    <td align="center"><tt>_</tt></td>
+    <td>wildcard</td>
+  </tr>
+  <tr>
+    <td><tt>TyApp loc t1 t2</tt></td>
+    <td align="center"><tt>$t1$ $t2$</tt></td>
+    <td>application</td>
+  </tr>
+  <tr>
+    <td><tt>TyArr loc t1 t2</tt></td>
+    <td align="center"><tt>$t1$ -> $t2$</tt></td>
+    <td>arrow</td>
+  </tr>
+  <tr>
+    <td><tt>TyCls loc ls</tt></td>
+    <td align="center"><tt># $list:ls$</tt></td>
+    <td>class</td>
+  </tr>
+  <tr>
+    <td><tt>TyLab loc s t</tt></td>
+    <td align="center"><tt>~ $s$ : $t$</tt></td>
+    <td>label</td>
+  </tr>
+  <tr>
+    <td><tt>TyLid loc s</tt></td>
+    <td align="center"><tt>$lid:s$</tt></td>
+    <td>lowercase identifier</td>
+  </tr>
+  <tr>
+    <td><tt>TyMan loc t1 t2</tt></td>
+    <td align="center"><tt>$t1$ == $t2$</tt></td>
+    <td>manifest</td>
+  </tr>
+  <tr>
+    <td><tt>TyObj loc lst False</tt></td>
+    <td align="center"><tt>&lt; $list:lst$ ></tt></td>
+    <td>object</td>
+  </tr>
+  <tr>
+    <td><tt>TyObj loc lst True</tt></td>
+    <td align="center"><tt>&lt; $list:lst$ .. ></tt></td>
+    <td>object</td>
+  </tr>
+  <tr>
+    <td><tt>TyOlb loc s t</tt></td>
+    <td align="center"><tt>? $s$ : $t$</tt></td>
+    <td>option label</td>
+  </tr>
+  <tr>
+    <td><tt>TyPol loc ls t</tt></td>
+    <td align="center"><tt>! $list:ls$ . $t$</tt></td>
+    <td>polymorph</td>
+  </tr>
+  <tr>
+    <td><tt>TyQuo loc s</tt></td>
+    <td align="center"><tt>' $s$</tt></td>
+    <td>variable</td>
+  </tr>
+  <tr>
+    <td><tt>TyRec loc llsbt</tt></td>
+    <td align="center"><tt>{ $list:llsbt$ }</tt></td>
+    <td>record</td>
+  </tr>
+  <tr>
+    <td><tt>TySum loc llslt</tt></td>
+    <td align="center"><tt>[ $list:llslt$ ]</tt></td>
+    <td>sum</td>
+  </tr>
+  <tr>
+    <td><tt>TyTup loc lt</tt></td>
+    <td align="center"><tt>( $list:lt$ )</tt></td>
+    <td>t-uple</td>
+  </tr>
+  <tr>
+    <td><tt>TyUid loc s</tt></td>
+    <td align="center"><tt>$uid:s$</tt></td>
+    <td>uppercase identifier</td>
+  </tr>
+  <tr>
+    <td><tt>TyVrn loc lpv None</tt></td>
+    <td align="center"><tt>[ = $list:lpv$ ]</tt></td>
+    <td>variant</td>
+  </tr>
+  <tr>
+    <td><tt>TyVrn loc lpv (Some None)</tt></td>
+    <td align="center"><tt>[ > $list:lpv$ ]</tt></td>
+    <td>variant</td>
+  </tr>
+  <tr>
+    <td><tt>TyVrn loc lpv (Some (Some []))</tt></td>
+    <td align="center"><tt>[ &lt; $list:lpv$ ]</tt></td>
+    <td>variant</td>
+  </tr>
+  <tr>
+    <td><tt>TyVrn loc lpv (Some (Some ls))</tt></td>
+    <td align="center"><tt>[ &lt; $list:lpv$ > $list:ls$ ]</tt></td>
+    <td>variant</td>
+  </tr>
+</table>
+
+<h3>str_item</h3>
+
+<p>Structure items, i.e. toplevel phrase in a ".ml" file or "struct"s
+  elements.</p>
+
+<table border="1">
+  <tr>
+    <th>Node</th>
+    <th><tt>&lt;:str_item&lt; ... >></tt></th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><tt>StCls loc lcie</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>StClt loc lcit</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>StDcl loc lstri</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>StDir loc s oe</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>StExc loc s lt ls</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>StExp loc e</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>StExt loc s t ls</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>StInc loc me</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>StMod loc b lsme</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>StMty loc s mt</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>StOpn loc ls</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>StTyp loc ltd</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>StUse loc s lstrib</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>StVal loc b lpe</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+</table>
+
+<h3>sig_item</h3>
+
+<p>Signature items, i.e. phrases at toplevel in a ".mli" file or
+  "sig"s elements.</p>
+
+<table border="1">
+  <tr>
+    <th>Node</th>
+    <th><tt>&lt;:sig_item&lt; ... >></tt></th>
+    <th>Comment</th>
+  </tr>
+  <tr>
+    <td><tt>SgCls loc lcit</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>SgClt loc lcit</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>SgDcl loc lsigi</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>SgDir loc s oe</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>SgExc loc s lt</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>SgExt loc s t ls</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>SgInc loc mt</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>SgMod loc b lsmt</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>SgMty loc s mt</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>SgOpn loc ls</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>SgTyp loc ltd</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>SgUse loc s lsigil</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td><tt>SgVal loc s t</tt></td>
+    <td align="center"><tt></tt></td>
+    <td></td>
+  </tr>
+</table>
 
 <p>...to be completed...</p>
 
