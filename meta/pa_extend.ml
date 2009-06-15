@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.88 2007/09/24 18:45:56 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.89 2007/09/24 20:29:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -722,6 +722,7 @@ value ss2 loc ls s =
   let qast_f a =
     match s.styp with
     [ STlid loc "bool" -> <:expr< Qast.Bool $a$ >>
+    | STlid loc "string" -> <:expr< Qast.Str $a$ >>
     | STapp loc (STlid _ "list") t ->
         let a =
           match t with
