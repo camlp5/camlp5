@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_op.ml,v 1.20 2007/12/27 10:00:24 deraugla Exp $ *)
+(* $Id: pr_op.ml,v 1.21 2007/12/27 10:20:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Parserify;
@@ -67,59 +67,21 @@ value stream_patt_comp pc spc =
   | SpTrm _ p <:vala< Some e >> ->
       pprintf pc "'%p@;<1 1>@[when@;%p@]" patt p expr e
   | SpNtr _ p e ->
-      horiz_vertic
-        (fun () ->
-           sprintf "%s%s = %s%s" pc.bef
-             (patt {(pc) with bef = ""; aft = ""} p)
-             (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
-        (fun () ->
-           let s1 = patt {(pc) with aft = " ="} p in
-           let s2 =
-             expr {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} e
-           in
-           sprintf "%s\n%s" s1 s2)
+      pprintf pc "%p =@;%p" patt p expr e
   | SpLet _ p e ->
       horiz_vertic (fun () -> sprintf "\n")
-        (fun () ->
-           horiz_vertic
-             (fun () ->
-                sprintf "%slet %s = %s in%s" pc.bef
-                  (patt {(pc) with bef = ""; aft = ""} p)
-                  (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
-             (fun () ->
-                let s1 =
-                  patt {(pc) with bef = sprintf "%slet " pc.bef; aft = " ="} p
-                in
-                let s2 =
-                  expr
-                    {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                     aft = ""} e
-                in
-                let s3 = sprintf "%sin%s" (tab pc.ind) pc.aft in
-                sprintf "%s\n%s\n%s" s1 s2 s3))
-  | SpStr _ p -> patt pc p
-  | _ -> not_impl "stream_patt_comp" pc spc ]
+        (fun () -> pprintf pc "@[<a>let %p =@;%p@ in@]" patt p expr e)
+  | SpStr _ p ->
+      patt pc p
+  | _ ->
+      not_impl "stream_patt_comp" pc spc ]
 ;
 
 value stream_patt_comp_err pc (spc, err) =
   match err with
   [ SpoNoth -> stream_patt_comp pc spc
-  | SpoBang -> stream_patt_comp {(pc) with aft = sprintf " ?!%s" pc.aft} spc
-  | SpoQues e ->
-      horiz_vertic
-        (fun () ->
-           sprintf "%s%s ?? %s%s" pc.bef
-             (stream_patt_comp {(pc) with bef = ""; aft = ""} spc)
-             (expr {(pc) with bef = ""; aft = ""} e) pc.aft)
-        (fun () ->
-           let s1 = stream_patt_comp {(pc) with aft = ""} spc in
-           let s2 =
-             expr
-               {(pc) with ind = pc.ind + 4;
-                bef = sprintf "%s?? " (tab (pc.ind + 2))}
-               e
-           in
-           sprintf "%s\n%s" s1 s2) ]
+  | SpoBang -> pprintf pc "%p ?!" stream_patt_comp spc
+  | SpoQues e -> pprintf pc "%p@;@[<2>?? %p@]" stream_patt_comp spc expr e ]
 ;
 
 value spc_kont =
@@ -129,14 +91,8 @@ value spc_kont =
 ;
 
 value stream_patt pc sp =
-  horiz_vertic
-    (fun () ->
-       sprintf "%s%s%s" pc.bef
-         (hlistl (semi_after stream_patt_comp_err) stream_patt_comp_err
-            {(pc) with bef = ""; aft = ""} sp) pc.aft)
-    (fun () ->
-       let sp = List.map (fun spc -> (spc, spc_kont spc)) sp in
-       plist stream_patt_comp_err 0 {(pc) with ind = pc.ind + 3} sp)
+  let sp = List.map (fun spc -> (spc, spc_kont spc)) sp in
+  pprintf pc "@[<3>%p@]" (plist stream_patt_comp_err 0) sp
 ;
 
 value parser_case force_vertic pc (sp, po, e) =
