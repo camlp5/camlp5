@@ -435,6 +435,24 @@ let dollar ctx bp buf strm =
     let buf = B.add '$' buf in let buf = ident2 buf strm__ in "", B.get buf
 ;;
 
+(* ANTIQUOT - specific case for QUESTIONIDENT and QUESTIONIDENTCOLON
+    input         expr        patt
+    -----         ----        ----
+    ?$abc:d$      ?abc:d      ?abc
+    ?$abc:d$:     ?abc:d:     ?abc:
+    ?$d$          ?:d         ?
+    ?$d$:         ?:d:        ?:
+*)
+
+(* ANTIQUOT_LOC - specific case for QUESTIONIDENT and QUESTIONIDENTCOLON
+    input         expr             patt
+    -----         ----             ----
+    ?$abc:d$      ?8,13:abc:d      ?abc
+    ?$abc:d$:     ?8,13:abc:d:     ?abc:
+    ?$d$          ?8,9::d          ?
+    ?$d$:         ?8,9::d:         ?:
+*)
+
 let question ctx bp buf strm =
   if ctx.dollar_for_antiquotation then
     let (strm__ : _ Stream.t) = strm in
@@ -446,8 +464,8 @@ let question ctx bp buf strm =
             Stream.Failure -> raise (Stream.Error "")
         in
         begin match Stream.peek strm__ with
-          Some ':' -> Stream.junk strm__; "QUESTIONANTIQUOTCOLON", s
-        | _ -> "QUESTIONANTIQUOT", s
+          Some ':' -> Stream.junk strm__; "ANTIQUOT", "?" ^ s ^ ":"
+        | _ -> "ANTIQUOT", "?" ^ s
         end
     | _ ->
         let (strm__ : _ Stream.t) = strm in
@@ -463,8 +481,8 @@ let question ctx bp buf strm =
             Stream.Failure -> raise (Stream.Error "")
         in
         begin match Stream.peek strm__ with
-          Some ':' -> Stream.junk strm__; "QUESTIONANTIQUOTCOLON_LOC", s
-        | _ -> "QUESTIONANTIQUOT_LOC", s
+          Some ':' -> Stream.junk strm__; "ANTIQUOT_LOC", "?" ^ s ^ ":"
+        | _ -> "ANTIQUOT_LOC", "?" ^ s
         end
     | _ ->
         let (strm__ : _ Stream.t) = strm in
@@ -904,9 +922,6 @@ let using_token kwd_table ident_table (p_con, p_prm) =
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
     "CHAR" | "STRING" | "QUOTATION" | "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
       ()
-  | "QUESTIONANTIQUOTCOLON" | "QUESTIONANTIQUOT" |
-    "QUESTIONANTIQUOTCOLON_LOC" | "QUESTIONANTIQUOT_LOC" ->
-      ()
   | "TILDEANTIQUOTCOLON" | "TILDEANTIQUOT" | "TILDEANTIQUOTCOLON_LOC" |
     "TILDEANTIQUOT_LOC" ->
       ()
@@ -961,22 +976,38 @@ let after_colon e =
   with Not_found -> ""
 ;;
 
+let after_colon_except_last e =
+  try
+    let i = String.index e ':' in
+    String.sub e (i + 1) (String.length e - i - 2)
+  with Not_found -> ""
+;;
+
 let tok_match =
   function
     "ANTIQUOT", p_prm ->
-      (function
-         "ANTIQUOT", prm when eq_before_colon p_prm prm -> after_colon prm
-       | _ -> raise Stream.Failure)
-  | "QUESTIONANTIQUOT", p_prm ->
-      (function
-         "QUESTIONANTIQUOT", prm when eq_before_colon p_prm prm ->
-           after_colon prm
-       | _ -> raise Stream.Failure)
-  | "QUESTIONANTIQUOTCOLON", p_prm ->
-      (function
-         "QUESTIONANTIQUOTCOLON", prm when eq_before_colon p_prm prm ->
-           after_colon prm
-       | _ -> raise Stream.Failure)
+      if p_prm <> "" && p_prm.[0] = '?' then
+        if p_prm.[String.length p_prm - 1] = ':' then
+          let p_prm = String.sub p_prm 0 (String.length p_prm - 1) in
+          function
+            "ANTIQUOT", prm ->
+              if prm <> "" && prm.[String.length prm - 1] = ':' then
+                if eq_before_colon p_prm prm then after_colon_except_last prm
+                else raise Stream.Failure
+              else raise Stream.Failure
+          | _ -> raise Stream.Failure
+        else
+          function
+            "ANTIQUOT", prm ->
+              if prm <> "" && prm.[String.length prm - 1] = ':' then
+                raise Stream.Failure
+              else if eq_before_colon p_prm prm then after_colon prm
+              else raise Stream.Failure
+          | _ -> raise Stream.Failure
+      else
+        (function
+           "ANTIQUOT", prm when eq_before_colon p_prm prm -> after_colon prm
+         | _ -> raise Stream.Failure)
   | "TILDEANTIQUOT", p_prm ->
       (function
          "TILDEANTIQUOT", prm when eq_before_colon p_prm prm ->
@@ -996,11 +1027,11 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-         (fun _ -> raise (Match_failure ("plexer.ml", 620, 25)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 620, 45)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 620, 68)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 621, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 621, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 653, 25)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 653, 45)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 653, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 654, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 654, 37)));
        tok_comm = None}
   in
   let glex =

@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.65 2007/09/22 14:44:35 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.66 2007/09/22 22:22:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -474,7 +474,7 @@ EXTEND
       [ e1 = SELF; ";"; e2 = SELF ->
           <:expr< do { $list:[e1 :: get_seq e2]$ } >>
       | e1 = SELF; ";" -> e1
-      | el = V phony "list" -> <:expr< do { $_list:el$ } >> ]
+      | el = V e_phony "list" -> <:expr< do { $_list:el$ } >> ]
     | "expr1"
       [ "let"; o = V (FLAG "rec"); l = V (LIST1 let_binding SEP "and"); "in";
         x = expr LEVEL "top" ->
@@ -606,7 +606,7 @@ EXTEND
           <:expr< { ($e$) with $_list:lel$ } >>
       | "("; ")" -> <:expr< () >>
       | "("; op = operator_rparen -> <:expr< $lid:op$ >>
-      | "("; el = V phony "list"; ")" -> <:expr< ($_list:el$) >>
+      | "("; el = V e_phony "list"; ")" -> <:expr< ($_list:el$) >>
       | "("; e = SELF; ":"; t = ctyp; ")" -> <:expr< ($e$ : $t$) >>
       | "("; e = SELF; ")" -> <:expr< $e$ >>
       | "begin"; e = SELF; "end" -> <:expr< $e$ >>
@@ -622,7 +622,7 @@ EXTEND
           in
           Pcaml.handle_expr_quotation loc x ] ]
   ;
-  phony:
+  e_phony:
     [ [ -> raise Stream.Failure ] ]
   ;
   let_binding:
@@ -714,8 +714,8 @@ EXTEND
     | LEFTA
       [ p1 = SELF; "."; p2 = SELF -> <:patt< $p1$ . $p2$ >> ]
     | "simple"
-      [ s = LIDENT -> <:patt< $lid:s$ >>
-      | s = UIDENT -> <:patt< $uid:s$ >>
+      [ s = V LIDENT -> <:patt< $_lid:s$ >>
+      | s = V UIDENT -> <:patt< $_uid:s$ >>
       | s = V INT -> <:patt< $_int:s$ >>
       | s = V INT_l -> <:patt< $_int32:s$ >>
       | s = V INT_L -> <:patt< $_int64:s$ >>
@@ -738,6 +738,7 @@ EXTEND
           <:patt< { $_list:lpl$ } >>
       | "("; ")" -> <:patt< () >>
       | "("; op = operator_rparen -> <:patt< $lid:op$ >>
+      | "("; pl = V p_phony "list"; ")" -> <:patt< ($_list:pl$) >>
       | "("; p = SELF; ":"; t = ctyp; ")" -> <:patt< ($p$ : $t$) >>
       | "("; p = SELF; ")" -> <:patt< $p$ >>
       | "_" -> <:patt< _ >>
@@ -751,6 +752,9 @@ EXTEND
             [ Not_found -> ("", x) ]
           in
           Pcaml.handle_patt_quotation loc x ] ]
+  ;
+  p_phony:
+    [ [ -> raise Stream.Failure ] ]
   ;
   patt_semi_list:
     [ [ p = patt; ";"; pl = SELF -> [p :: pl]
@@ -1084,8 +1088,8 @@ EXTEND
   ctyp: AFTER "arrow"
     [ NONA
       [ i = LIDENT; ":"; t = SELF -> <:ctyp< ~$i$: $t$ >>
-      | i = QUESTIONIDENTCOLON; t = SELF -> <:ctyp< ?$i$: $t$ >>
-      | i = QUESTIONIDENT; ":"; t = SELF -> <:ctyp< ?$i$: $t$ >> ] ]
+      | i = questionidentcolon; t = SELF -> <:ctyp< ?$_:i$: $t$ >>
+      | i = questionident; ":"; t = SELF -> <:ctyp< ?$_:i$: $t$ >> ] ]
   ;
   ctyp: LEVEL "simple"
     [ [ "["; OPT "|"; rfl = LIST1 poly_variant SEP "|"; "]" ->
@@ -1130,13 +1134,13 @@ EXTEND
   ;
   questionident:
     [ [ i = QUESTIONIDENT -> <:vala< i >>
-      | a = QUESTIONANTIQUOT_LOC -> <:vala< $a$ >>
-      | a = QUESTIONANTIQUOT_LOC "_" -> <:vala< $a$ >> ] ]
+      | a = ANTIQUOT_LOC "?" -> <:vala< $a$ >>
+      | a = ANTIQUOT_LOC "?_" -> <:vala< $a$ >> ] ]
   ;
   questionidentcolon:
     [ [ i = QUESTIONIDENTCOLON -> <:vala< i >>
-      | a = QUESTIONANTIQUOTCOLON_LOC -> <:vala< $a$ >>
-      | a = QUESTIONANTIQUOTCOLON_LOC "_" -> <:vala< $a$ >> ] ]
+      | a = ANTIQUOT_LOC "?:" -> <:vala< $a$ >>
+      | a = ANTIQUOT_LOC "?_:" -> <:vala< $a$ >> ] ]
   ;
   expr: LEVEL "simple"
     [ [ "`"; s = V ident "" -> <:expr< ` $_:s$ >> ] ]
@@ -1148,30 +1152,31 @@ EXTEND
     [ [ p = labeled_patt; e = SELF -> <:expr< fun $p$ -> $e$ >> ] ]
   ;
   patt: LEVEL "simple"
-    [ [ "`"; s = ident -> <:patt< ` $s$ >>
-      | "#"; t = mod_ident -> <:patt< # $list:t$ >> ] ]
+    [ [ "`"; s = V ident "" -> <:patt< ` $_:s$ >>
+      | "#"; t = V mod_ident "list" "" -> <:patt< # $_list:t$ >>
+      | p = labeled_patt -> p ] ]
   ;
   labeled_patt:
-    [ [ i = TILDEIDENTCOLON; p = patt LEVEL "simple" ->
-           <:patt< ~$i$: $p$ >>
-      | i = TILDEIDENT ->
-           <:patt< ~$i$ >>
+    [ [ i = tildeidentcolon; p = patt LEVEL "simple" ->
+           <:patt< ~$_:i$: $p$ >>
+      | i = tildeident ->
+           <:patt< ~$_:i$ >>
       | "~"; "("; i = LIDENT; ")" ->
            <:patt< ~$i$ >>
       | "~"; "("; i = LIDENT; ":"; t = ctyp; ")" ->
            <:patt< ~$i$: ($lid:i$ : $t$) >>
-      | i = QUESTIONIDENTCOLON; j = LIDENT ->
-           <:patt< ?$i$: ($lid:j$) >>
-      | i = QUESTIONIDENTCOLON; "("; p = patt; "="; e = expr; ")" ->
-          <:patt< ?$i$: ( $p$ = $e$ ) >>
-      | i = QUESTIONIDENTCOLON; "("; p = patt; ":"; t = ctyp; ")" ->
-          <:patt< ?$i$: ( $p$ : $t$ ) >>
-      | i = QUESTIONIDENTCOLON; "("; p = patt; ":"; t = ctyp; "=";
+      | i = questionidentcolon; j = LIDENT ->
+           <:patt< ?$_:i$: ($lid:j$) >>
+      | i = questionidentcolon; "("; p = patt; "="; e = expr; ")" ->
+          <:patt< ?$_:i$: ( $p$ = $e$ ) >>
+      | i = questionidentcolon; "("; p = patt; ":"; t = ctyp; ")" ->
+          <:patt< ?$_:i$: ( $p$ : $t$ ) >>
+      | i = questionidentcolon; "("; p = patt; ":"; t = ctyp; "=";
         e = expr; ")" ->
-          <:patt< ?$i$: ( $p$ : $t$ = $e$ ) >>
-      | i = QUESTIONIDENTCOLON; "("; p = patt; ")" ->
-          <:patt< ?$i$: ( $p$ ) >>
-      | i = QUESTIONIDENT -> <:patt< ?$i$ >>
+          <:patt< ?$_:i$: ( $p$ : $t$ = $e$ ) >>
+      | i = questionidentcolon; "("; p = patt; ")" ->
+          <:patt< ?$_:i$: ( $p$ ) >>
+      | i = questionident -> <:patt< ?$_:i$ >>
       | "?"; "("; i = LIDENT; "="; e = expr; ")" ->
           <:patt< ? ( $lid:i$ = $e$ ) >>
       | "?"; "("; i = LIDENT; ":"; t = ctyp; "="; e = expr; ")" ->
@@ -1184,10 +1189,10 @@ EXTEND
   class_type:
     [ [ i = LIDENT; ":"; t = ctyp LEVEL "apply"; "->"; ct = SELF ->
           <:class_type< [ ~$i$: $t$ ] -> $ct$ >>
-      | i = QUESTIONIDENTCOLON; t = ctyp LEVEL "apply"; "->"; ct = SELF ->
-          <:class_type< [ ?$i$: $t$ ] -> $ct$ >>
-      | i = QUESTIONIDENT; ":"; t = ctyp LEVEL "apply"; "->"; ct = SELF ->
-          <:class_type< [ ?$i$: $t$ ] -> $ct$ >> ] ]
+      | i = questionidentcolon; t = ctyp LEVEL "apply"; "->"; ct = SELF ->
+          <:class_type< [ ?$_:i$: $t$ ] -> $ct$ >>
+      | i = questionident; ":"; t = ctyp LEVEL "apply"; "->"; ct = SELF ->
+          <:class_type< [ ?$_:i$: $t$ ] -> $ct$ >> ] ]
   ;
   class_fun_binding:
     [ [ p = labeled_patt; cfb = SELF -> <:class_expr< fun $p$ -> $cfb$ >> ] ]

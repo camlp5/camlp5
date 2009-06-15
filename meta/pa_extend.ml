@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.82 2007/09/22 20:40:15 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.83 2007/09/22 22:22:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -329,9 +329,7 @@ value rec expr_fa al =
 
 value assoc_anti =
   [("ANTIQUOT_LOC", "ANTIQUOT"); ("TILDEANTIQUOT_LOC", "TILDEANTIQUOT");
-   ("TILDEANTIQUOTCOLON_LOC", "TILDEANTIQUOTCOLON");
-   ("QUESTIONANTIQUOT_LOC", "QUESTIONANTIQUOT");
-   ("QUESTIONANTIQUOTCOLON_LOC", "QUESTIONANTIQUOTCOLON")]
+   ("TILDEANTIQUOTCOLON_LOC", "TILDEANTIQUOTCOLON")]
 ;
 
 value anti_str psl =
@@ -342,7 +340,10 @@ value anti_str psl =
 ;
 
 value anti_anti n = "_" ^ n;
-value is_anti_anti n = String.length n > 0 && n.[0] = '_';
+value is_anti_anti n =
+  n <> "" && n.[0] = '_' ||
+  String.length n > 1 && n.[0] = '?' && n.[1] = '_'
+;
 
 value quot_expr psl e =
   loop e where rec loop e =

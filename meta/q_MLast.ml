@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.100 2007/09/22 05:20:28 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.101 2007/09/22 22:22:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -1109,13 +1109,13 @@ EXTEND
   ;
   questionident:
     [ [ i = a_QUESTIONIDENT -> Qast.VaVal i
-      | a = QUESTIONANTIQUOT -> Qast.VaVal (Qast.VaAnt "" loc a)
-      | a = QUESTIONANTIQUOT "_" -> Qast.VaAnt "_" loc a ] ]
+      | a = ANTIQUOT "?" -> Qast.VaVal (Qast.VaAnt "?" loc a)
+      | a = ANTIQUOT "?_" -> Qast.VaAnt "?_" loc a ] ]
   ;
   questionidentcolon:
     [ [ i = a_QUESTIONIDENTCOLON -> Qast.VaVal i
-      | a = QUESTIONANTIQUOTCOLON -> Qast.VaVal (Qast.VaAnt "" loc a)
-      | a = QUESTIONANTIQUOTCOLON "_" -> Qast.VaAnt "_" loc a ] ]
+      | a = ANTIQUOT "?:" -> Qast.VaVal (Qast.VaAnt "?:" loc a)
+      | a = ANTIQUOT "?_:" -> Qast.VaAnt "?_:" loc a ] ]
   ;
   ctyp: LEVEL "simple"
     [ [ "["; "="; rfl = poly_variant_list; "]" ->

@@ -1,5 +1,5 @@
 (* camlp5r pa_lex.cmo *)
-(* $Id: plexer.ml,v 1.96 2007/09/21 18:25:15 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.97 2007/09/22 22:22:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value no_quotations = ref False;
@@ -225,22 +225,40 @@ value dollar ctx bp buf strm =
     [ [ -> $add "$" ] ident2! -> ("", $buf) ]
 ;
 
+(* ANTIQUOT - specific case for QUESTIONIDENT and QUESTIONIDENTCOLON
+    input         expr        patt
+    -----         ----        ----
+    ?$abc:d$      ?abc:d      ?abc
+    ?$abc:d$:     ?abc:d:     ?abc:
+    ?$d$          ?:d         ?
+    ?$d$:         ?:d:        ?:
+*)
+
+(* ANTIQUOT_LOC - specific case for QUESTIONIDENT and QUESTIONIDENTCOLON
+    input         expr             patt
+    -----         ----             ----
+    ?$abc:d$      ?8,13:abc:d      ?abc
+    ?$abc:d$:     ?8,13:abc:d:     ?abc:
+    ?$d$          ?8,9::d          ?
+    ?$d$:         ?8,9::d:         ?:
+*)
+
 value question ctx bp buf strm =
   if ctx.dollar_for_antiquotation then
     match strm with parser
     [ [: `'$'; s = antiquot ctx bp $empty; `':' :] ->
-        ("QUESTIONANTIQUOTCOLON", s)
+        ("ANTIQUOT", "?" ^ s ^ ":")
     | [: `'$'; s = antiquot ctx bp $empty :] ->
-        ("QUESTIONANTIQUOT", s)
+        ("ANTIQUOT", "?" ^ s)
     | [: :] ->
         match strm with lexer
         [ ident2! -> keyword_or_error ctx (bp, $pos) $buf ] ]
   else if force_antiquot_loc.val then
     match strm with parser
     [ [: `'$'; s = antiquot_loc ctx bp $empty; `':' :] ->
-        ("QUESTIONANTIQUOTCOLON_LOC", s)
+        ("ANTIQUOT_LOC", "?" ^ s ^ ":")
     | [: `'$'; s = antiquot_loc ctx bp $empty :] ->
-        ("QUESTIONANTIQUOT_LOC", s)
+        ("ANTIQUOT_LOC", "?" ^ s)
     | [: :] ->
         match strm with lexer
         [ ident2! -> keyword_or_error ctx (bp, $pos) $buf ] ]
@@ -528,8 +546,6 @@ value using_token kwd_table ident_table (p_con, p_prm) =
     "CHAR" | "STRING" | "QUOTATION" |
     "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
       ()
-  | "QUESTIONANTIQUOTCOLON" | "QUESTIONANTIQUOT"
-  | "QUESTIONANTIQUOTCOLON_LOC" | "QUESTIONANTIQUOT_LOC" -> ()
   | "TILDEANTIQUOTCOLON" | "TILDEANTIQUOT"
   | "TILDEANTIQUOTCOLON_LOC" | "TILDEANTIQUOT_LOC" -> ()
   | _ ->
@@ -583,22 +599,39 @@ value after_colon e =
   [ Not_found -> "" ]
 ;
 
+value after_colon_except_last e =
+  try
+    let i = String.index e ':' in
+    String.sub e (i + 1) (String.length e - i - 2)
+  with
+  [ Not_found -> "" ]
+;
+
 value tok_match =
   fun
   [ ("ANTIQUOT", p_prm) ->
-      fun
-      [ ("ANTIQUOT", prm) when eq_before_colon p_prm prm -> after_colon prm
-      | _ -> raise Stream.Failure ]
-  | ("QUESTIONANTIQUOT", p_prm) ->
-      fun
-      [ ("QUESTIONANTIQUOT", prm) when eq_before_colon p_prm prm ->
-          after_colon prm
-      | _ -> raise Stream.Failure ]
-  | ("QUESTIONANTIQUOTCOLON", p_prm) ->
-      fun
-      [ ("QUESTIONANTIQUOTCOLON", prm) when eq_before_colon p_prm prm ->
-          after_colon prm
-      | _ -> raise Stream.Failure ]
+      if p_prm <> "" && p_prm.[0] = '?' then
+        if p_prm.[String.length p_prm - 1] = ':' then
+          let p_prm = String.sub p_prm 0 (String.length p_prm - 1) in
+          fun
+          [ ("ANTIQUOT", prm) ->
+              if prm <> "" && prm.[String.length prm - 1] = ':' then
+                if eq_before_colon p_prm prm then after_colon_except_last prm
+                else raise Stream.Failure
+              else raise Stream.Failure
+          | _ -> raise Stream.Failure ]
+        else
+          fun
+          [ ("ANTIQUOT", prm) ->
+              if prm <> "" && prm.[String.length prm - 1] = ':' then
+                raise Stream.Failure
+              else if eq_before_colon p_prm prm then after_colon prm
+              else raise Stream.Failure
+          | _ -> raise Stream.Failure ]
+      else
+        fun
+        [ ("ANTIQUOT", prm) when eq_before_colon p_prm prm -> after_colon prm
+        | _ -> raise Stream.Failure ]
   | ("TILDEANTIQUOT", p_prm) ->
       fun
       [ ("TILDEANTIQUOT", prm) when eq_before_colon p_prm prm ->

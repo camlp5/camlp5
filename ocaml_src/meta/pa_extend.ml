@@ -656,9 +656,7 @@ let rec expr_fa al =
 
 let assoc_anti =
   ["ANTIQUOT_LOC", "ANTIQUOT"; "TILDEANTIQUOT_LOC", "TILDEANTIQUOT";
-   "TILDEANTIQUOTCOLON_LOC", "TILDEANTIQUOTCOLON";
-   "QUESTIONANTIQUOT_LOC", "QUESTIONANTIQUOT";
-   "QUESTIONANTIQUOTCOLON_LOC", "QUESTIONANTIQUOTCOLON"]
+   "TILDEANTIQUOTCOLON_LOC", "TILDEANTIQUOTCOLON"]
 ;;
 
 let anti_str psl =
@@ -669,7 +667,9 @@ let anti_str psl =
 ;;
 
 let anti_anti n = "_" ^ n;;
-let is_anti_anti n = String.length n > 0 && n.[0] = '_';;
+let is_anti_anti n =
+  n <> "" && n.[0] = '_' || String.length n > 1 && n.[0] = '?' && n.[1] = '_'
+;;
 
 let quot_expr psl e =
   let rec loop e =

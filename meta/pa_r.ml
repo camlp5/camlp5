@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.100 2007/09/22 05:20:28 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.101 2007/09/22 22:22:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -693,13 +693,13 @@ EXTEND
   ;
   questionident:
     [ [ i = QUESTIONIDENT -> <:vala< i >>
-      | a = QUESTIONANTIQUOT_LOC -> <:vala< $a$ >>
-      | a = QUESTIONANTIQUOT_LOC "_" -> <:vala< $a$ >> ] ]
+      | a = ANTIQUOT_LOC "?" -> <:vala< $a$ >>
+      | a = ANTIQUOT_LOC "?_" -> <:vala< $a$ >> ] ]
   ;
   questionidentcolon:
     [ [ i = QUESTIONIDENTCOLON -> <:vala< i >>
-      | a = QUESTIONANTIQUOTCOLON_LOC -> <:vala< $a$ >>
-      | a = QUESTIONANTIQUOTCOLON_LOC "_" -> <:vala< $a$ >> ] ]
+      | a = ANTIQUOT_LOC "?:" -> <:vala< $a$ >>
+      | a = ANTIQUOT_LOC "?_:" -> <:vala< $a$ >> ] ]
   ;
   ctyp: LEVEL "simple"
     [ [ "["; "="; rfl = poly_variant_list; "]" ->

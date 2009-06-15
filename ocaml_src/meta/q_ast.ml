@@ -750,11 +750,39 @@ let tok_match = lex.Plexing.tok_match in
 lex.Plexing.tok_match <-
   function
     "ANTIQUOT_LOC", p_prm ->
-      (function
-         "ANTIQUOT_LOC", prm ->
-           let kind = check_anti_loc2 prm in
-           if kind = p_prm then prm else raise Stream.Failure
-       | _ -> raise Stream.Failure)
+      if p_prm <> "" && p_prm.[0] = '?' then
+        if p_prm.[String.length p_prm - 1] = ':' then
+          let p_prm = String.sub p_prm 1 (String.length p_prm - 2) in
+          function
+            "ANTIQUOT_LOC", prm ->
+              if prm <> "" && prm.[0] = '?' then
+                if prm.[String.length prm - 1] = ':' then
+                  let prm = String.sub prm 1 (String.length prm - 2) in
+                  let kind = check_anti_loc2 prm in
+                  if kind = p_prm || kind = anti_anti p_prm then prm
+                  else raise Stream.Failure
+                else raise Stream.Failure
+              else raise Stream.Failure
+          | _ -> raise Stream.Failure
+        else
+          let p_prm = String.sub p_prm 1 (String.length p_prm - 1) in
+          function
+            "ANTIQUOT_LOC", prm ->
+              if prm <> "" && prm.[0] = '?' then
+                if prm.[String.length prm - 1] = ':' then raise Stream.Failure
+                else
+                  let prm = String.sub prm 1 (String.length prm - 1) in
+                  let kind = check_anti_loc2 prm in
+                  if kind = p_prm || kind = anti_anti p_prm then prm
+                  else raise Stream.Failure
+              else raise Stream.Failure
+          | _ -> raise Stream.Failure
+      else
+        (function
+           "ANTIQUOT_LOC", prm ->
+             let kind = check_anti_loc2 prm in
+             if kind = p_prm then prm else raise Stream.Failure
+         | _ -> raise Stream.Failure)
   | "V", p_prm ->
       (function
          "ANTIQUOT_LOC", prm ->

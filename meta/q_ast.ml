@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: q_ast.ml,v 1.95 2007/09/22 20:40:15 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.96 2007/09/22 22:22:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* AST quotations with works by running the language parser (and its possible
@@ -746,12 +746,41 @@ let tok_match = lex.Plexing.tok_match in
 lex.Plexing.tok_match :=
   fun
   [("ANTIQUOT_LOC", p_prm) ->
-      fun
-      [ ("ANTIQUOT_LOC", prm) ->
-          let kind = check_anti_loc2 prm in
-          if kind = p_prm then prm
-          else raise Stream.Failure
-      | _ -> raise Stream.Failure ]
+      if p_prm <> "" && p_prm.[0] = '?' then
+        if p_prm.[String.length p_prm - 1] = ':' then
+          let p_prm = String.sub p_prm 1 (String.length p_prm - 2) in
+          fun
+          [ ("ANTIQUOT_LOC", prm) ->
+              if prm <> "" && prm.[0] = '?' then
+                if prm.[String.length prm - 1] = ':' then
+                  let prm = String.sub prm 1 (String.length prm - 2) in  
+                  let kind = check_anti_loc2 prm in
+                  if kind = p_prm || kind = anti_anti p_prm then prm
+                  else raise Stream.Failure
+                else raise Stream.Failure
+              else raise Stream.Failure
+          | _ -> raise Stream.Failure ]
+        else
+          let p_prm = String.sub p_prm 1 (String.length p_prm - 1) in
+          fun
+          [ ("ANTIQUOT_LOC", prm) ->
+              if prm <> "" && prm.[0] = '?' then
+                if prm.[String.length prm - 1] = ':' then
+                  raise Stream.Failure
+                else
+                  let prm = String.sub prm 1 (String.length prm - 1) in
+                  let kind = check_anti_loc2 prm in
+                  if kind = p_prm || kind = anti_anti p_prm then prm
+                  else raise Stream.Failure
+              else raise Stream.Failure
+          | _ -> raise Stream.Failure ]
+      else
+        fun
+        [ ("ANTIQUOT_LOC", prm) ->
+            let kind = check_anti_loc2 prm in
+            if kind = p_prm then prm
+            else raise Stream.Failure
+        | _ -> raise Stream.Failure ]
   | ("V", p_prm) ->
       fun
       [ ("ANTIQUOT_LOC", prm) ->
