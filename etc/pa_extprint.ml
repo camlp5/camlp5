@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_extprint.ml,v 1.20 2007/12/17 14:27:17 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.21 2007/12/17 15:06:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -669,9 +669,7 @@ value make_pc loc empty_bef empty_aft pc bef bef_al aft aft_al =
         else
           let aft = if empty_aft then aft else aft ^ "%s" in
           let e = <:expr< Pretty.sprintf $str:aft$ >> in
-          let e =
-            List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e aft_al
-          in
+          let e = List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e aft_al in
           if empty_aft then e else <:expr< $e$ $pc$.aft >>
       in
       [(<:patt< aft >>, e) :: lbl]
@@ -684,12 +682,16 @@ value expr_of_pformat loc empty_bef empty_aft pc al =
   fun
   [ [fmt] ->
       let (al, al_rest) = get_assoc_args loc fmt al in
-      let fmt = if empty_bef then fmt else "%s" ^ fmt in
-      let fmt = if empty_aft then fmt else fmt ^ "%s" in
-      let e = <:expr< Pretty.sprintf $str:fmt$ >> in
-      let e = if empty_bef then e else <:expr< $e$ $pc$.bef >> in
-      let e = List.fold_left (fun f a -> <:expr< $f$ $a$ >>) e al in
-      let e = if empty_aft then e else <:expr< $e$ $pc$.aft >> in
+      let e =
+        if empty_bef && empty_aft && al = [] then <:expr< $str:fmt$ >>
+        else
+          let fmt = if empty_bef then fmt else "%s" ^ fmt in
+          let fmt = if empty_aft then fmt else fmt ^ "%s" in
+          let e = <:expr< Pretty.sprintf $str:fmt$ >> in
+          let e = if empty_bef then e else <:expr< $e$ $pc$.bef >> in
+          let e = List.fold_left (fun f a -> <:expr< $f$ $a$ >>) e al in
+          if empty_aft then e else <:expr< $e$ $pc$.aft >>
+      in
       (e, al_rest)
   | [fmt1; fmt2] ->
       let (bef_al, al) = get_assoc_args loc fmt1 al in
