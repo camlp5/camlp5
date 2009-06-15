@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.27 2007/07/16 17:26:13 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.28 2007/07/16 18:41:41 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -398,6 +398,10 @@ camlp5r -loc foobar file.ml
 <p>the variable name, for the location will be "<tt>foobar</tt>"
 instead of "<tt>loc</tt>".</p>
 
+<h2>Syntax of the DELETE_RULE statement</h2>
+
+<h2>Semantics of the DELETE_RULE statement</h2>
+
 <h2>Machinery</h2>
 
 <p>Each entry level contains internally two trees:</p>
@@ -557,35 +561,52 @@ Stream.t char -> (Stream.t t * location_function)
 <h3>Using and removing tokens</h3>
 
 <p>Two extra functions, of type "<tt>Token.pattern -> unit</tt>" have
-  to be written. If you don't want to busy about them, functions doing
-  nothing, and just returning the unit value "<tt>()</tt>" are
-  acceptable in a first time. If you choose this option, you can
-  skip the rest of this section.</p>
+  to be written, named <em>using</em> and <em>removing</em>
+  functions.</p>
+
+<p>If you don't want to busy about them, is is acceptable, as a first
+  version, to write functions doing nothing, just returning the unit
+  value "<tt>()</tt>". If you choose this option, you can skip the
+  rest of this section.</p>
 
 <p>But there is then a little risk: if the EXTEND statement contain
   rules with mispelled token symbols, the system will not detect them,
-  and the grammar will not work.</p>
+  and the grammar may not work.</p>
 
-<p>Here are the justification of these functions.</p>
+<p>For example, if the following rule (example coming from camlp5
+sources):</p>
 
-<p>While running the EXTEND statement, the system scans all rules, and
-  has to check whether the tokens respect the lexer rules.</p>
+<pre>
+"external"; i = LIDENT; ":"; t = ctyp; "="; sl = LIST1 STRING
+</pre>
 
-<p>Indeed, a token is just an identifier starting with an uppercase
-  character. Except for the specific identifiers (like SELF,
-  LIST0...), any uppercase identifier is accepted in the EXTEND syntax
-  and the system has no way to check, statically, whether the used
-  symbol corresponds to a real token or not, in particular in case of
-  mispelling.</p>
+<p>is written like this:</p>
+
+<pre>
+"external"; i = LODENT; ":"; t = ctyp; "="; sl = LIST1 STRANG
+</pre>
+
+<p>and if the "using" function does nothing, there is no check that
+  LIDENT has been mispelled as LODENT, nor that STRING have been
+  mispelled as STRANG. In this case, the rule will never work.</p>
+
+<p>This problem of risk of mispelling tokens could also be checked by
+  the "match" function (see the section about this function).</p>
+
+<p>The check is done while running the EXTEND statement. The system
+  scans all rules, and calls the "using" function with all token and
+  keywords found in all rules.</p>
+
+<p>This "using" function can then check the correctness of the token
+  patterns with a simple pattern matching.</p>
 
 <p>Morevover, the keywords (whose syntax is just a string in the
-  EXTEND statement) may be accepted or not by your lexer. It is also
-  possible that your lexer accepts to add new keywords, as long as
-  they are found in the rules of the EXTEND statements.</p>
+  EXTEND statement) may be accepted or not by the lexer. It is also
+  possible that the lexer accepts to add new keywords, as long as they
+  are found in the rules of the EXTEND statements.</p>
 
-<p>Both questions are resolved by a call of a "using" function that
-  you have to write. This function takes a token pattern as parameter
-  and must answer:</p>
+<p>The "using" function takes a token pattern as parameter and must
+answer:</p>
 
 <ul>
   <li>either nothing (the unit value "<tt>()</tt>") to say: this token
@@ -595,8 +616,10 @@ Stream.t char -> (Stream.t t * location_function)
     message to make the EXTEND statement fail.</li>
 </ul>
 
-
-<p>... to be completed ...</p>
+<p>The "removing" function is called in case of the DELETE_RULE
+  statement, for all token patterns found in the rule. It allows, for
+  example, to possibly remove keywords (if a count of keywords usage
+  is maintained by the lexer).</p>
 
 <h3>...</h3>
 
