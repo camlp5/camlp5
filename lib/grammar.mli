@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.mli,v 1.8 2007/07/18 14:14:00 deraugla Exp $ *)
+(* $Id: grammar.mli,v 1.9 2007/07/18 19:11:15 deraugla Exp $ *)
 
 (** Extensible grammars.
 
@@ -41,9 +41,9 @@ value glexer : g -> Token.glexer token;
 
 type parsable = 'abstract;
 value parsable : g -> Stream.t char -> parsable;
-   (** Type and value allowing to keep the token stream for several calls
-       of entries of the same grammar, to prevent loss of tokens. To be
-       used with [Entry.parse_parsable] below *)
+   (** Type and value allowing to keep the same token stream between
+       several calls of entries of the same grammar, to prevent loss of
+       tokens. To be used with [Entry.parse_parsable] below *)
 
 module Entry :
   sig

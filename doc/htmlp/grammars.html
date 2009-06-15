@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.50 2007/07/18 18:20:11 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.51 2007/07/18 19:11:15 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -595,6 +595,21 @@ instead of "<tt>loc</tt>".</p>
            all usages of the pattern "IDENT" in the [EXTEND]
            statements.</li>
        </ul>
+  </dd>
+
+  <dt><tt>value glexer : g -> Token.glexer token;</tt></dt>
+  <dd>Return the lexer used by the grammar</dd>
+</dl>
+
+<dl>
+  <dt><tt>type parsable = 'abstract;</tt></dt>
+  <dd></dd>
+
+  <dt><tt>value parsable : g -> Stream.t char -> parsable;</tt></dt>
+  <dd>
+       Type and value allowing to keep the same token stream between several
+       calls of entries of the same grammar, to prevent loss of tokens. To
+       be used with [Entry.parse_parsable] below
   </dd>
 </dl>
 
