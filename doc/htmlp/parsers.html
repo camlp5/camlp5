@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: parsers.html,v 1.6 2007/07/14 01:50:12 deraugla Exp $ -->
+  <!-- $Id: parsers.html,v 1.7 2007/07/15 02:04:35 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -66,25 +66,25 @@ included in the command "camlp5r"), is the following:</p>
 
 <pre>
           expression ::= parser
-                       | match_with_parser
-              parser ::= "parser" pos_opt "[" parser_cases "]"
-                       | "parser" pos_opt parser_case
-   match_with_parser ::= "match" expression with "parser" pos_opt "[" parser_cases "]"
-                       | "match" expression with "parser" pos_opt parser_case
-        parser_cases ::= parser_cases parser_case
+                       | match-with-parser
+              parser ::= "parser" pos-opt "[" parser-cases "]"
+                       | "parser" pos-opt parser-case
+   match-with-parser ::= "match" expression with "parser" pos-opt "[" parser-cases "]"
+                       | "match" expression with "parser" pos-opt parser-case
+        parser-cases ::= parser-cases parser-case
                        | &lt;nothing&gt;
-         parser_case ::= "[:" stream_pattern ":]" pos_opt "->" expression
-      stream_pattern ::= stream_patt_comp
-                       | stream_patt_comp ";" stream_patt_cont
-                       | "let" LIDENT "=" expression "in" stream_pattern
+         parser-case ::= "[:" stream-pattern ":]" pos-opt "->" expression
+      stream-pattern ::= stream-patt-comp
+                       | stream-patt-comp ";" stream-patt-cont
+                       | "let" LIDENT "=" expression "in" stream-pattern
                        | &lt;nothing&gt;
-    stream_patt_cont ::= stream_patt_comp_err
-                       | stream_patt_comp_err ";" stream_patt_cont
-                       | "let" LIDENT "=" expression "in" stream_patt_cont
-stream_patt_comp_err ::= stream_patt_comp
-                       | stream_patt_comp "?" expression
-                       | stream_patt_comp "!"
-    stream_patt_comp ::= "`" pattern
+    stream-patt-cont ::= stream-patt-comp-err
+                       | stream-patt-comp-err ";" stream-patt-cont
+                       | "let" LIDENT "=" expression "in" stream-patt-cont
+stream-patt-comp-err ::= stream-patt-comp
+                       | stream-patt-comp "?" expression
+                       | stream-patt-comp "!"
+    stream-patt-comp ::= "`" pattern
                        | "`" pattern "when" expression
                        | "?=" lookaheads
                        | pattern "=" expression
@@ -94,7 +94,7 @@ stream_patt_comp_err ::= stream_patt_comp
            lookahead ::= "[" patterns "]"
             patterns ::= patterns pattern
                        | pattern
-             pos_opt ::= pattern
+             pos-opt ::= pattern
                        | &lt;nothing&gt;
 </pre>
 

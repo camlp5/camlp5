@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.5 2007/07/15 01:50:29 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.6 2007/07/15 02:04:35 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -146,6 +146,16 @@ is loaded. Its syntax is:</p>
           ident-char ::= ('a'-'a' | 'A'-'Z' | '0'-'9' | '_' | ''' | utf8-char)
            utf8-char ::= '\128'-'\255'
 </pre>
+
+<p>Other statements, "<tt>GEXTEND</tt>", "<tt>DELETE_RULE</tt>",
+"<tt>GDELETE_RULES</tt>" are also defined by the same syntax extension
+kit. See further.</p>
+
+<p>In the description above, ony "<tt>EXTEND</tt>" and "<tt>END</tt>"
+are new keywords (reserved words which cannot be used in variables,
+constructors or module names). The other strings
+(e.g. "<tt>GLOBAL</tt>", "<tt>LEVEL</tt>", "<tt>LIST0</tt>",
+"<tt>LEFTA</tt>", etc.) are not reserved.</p>
 
 <p>... to be completed ...</p>
 

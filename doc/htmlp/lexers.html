@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: lexers.html,v 1.2 2007/07/13 00:51:15 deraugla Exp $ -->
+  <!-- $Id: lexers.html,v 1.3 2007/07/15 02:04:35 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>lexers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -72,25 +72,25 @@ OCaml syntax is extended as follows:</p>
               rule ::= symbols [ "-&gt;" action ]
            symbols ::= symbols symbol err
                      | &lt;nothing&gt;
-            symbol ::= "_" no_record_opt
-                     | STRING no_record_opt
-                     | simple_expression
+            symbol ::= "_" no-record-opt
+                     | STRING no-record-opt
+                     | simple-expression
                      | "?=" "[" lookaheads "]"
                      | "[" rules "]"
-     no_record_opt ::= "/"
+     no-record-opt ::= "/"
                      | &lt;nothing&gt;
- simple_expression ::= LIDENT
+ simple-expression ::= LIDENT
                      | CHAR
                      | "(" &lt;expression&gt; ")"
-        lookaheads ::= lookaheads "|" lookahead_sequence
-                     | lookahead_sequence
-lookahead_sequence ::= lookahead_symbols
+        lookaheads ::= lookaheads "|" lookahead-sequence
+                     | lookahead-sequence
+lookahead-sequence ::= lookahead-symbols
                      | STRING
- lookahead_symbols ::= lookahead_symbols lookahead_symbol
-                     | lookahead_symbol
-  lookahead_symbol ::= CHAR
+ lookahead-symbols ::= lookahead-symbols lookahead-symbol
+                     | lookahead-symbol
+  lookahead-symbol ::= CHAR
                      | "_"
-               err ::= "?" simple_expression
+               err ::= "?" simple-expression
                      | "!"
                      | &lt;nothing&gt;
             action ::= expression

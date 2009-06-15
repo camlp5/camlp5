@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: fparsers.html,v 1.3 2007/07/13 08:12:56 deraugla Exp $ -->
+  <!-- $Id: fparsers.html,v 1.4 2007/07/15 02:04:35 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>purely functional stream parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -37,21 +37,21 @@ stream is s".</p>
 
 <pre>
           expression ::= fparser
-                       | match_with_fparser
-             fparser ::= "fparser" pos_opt "[" parser_cases "]"
-                       | "fparser" pos_opt parser_case
-  match_with_fparser ::= "match" expression with "fparser" pos_opt "[" parser_cases "]"
-                       | "match" expression with "fparser" pos_opt parser_case
-        parser_cases ::= parser_cases parser_case
+                       | match-with-fparser
+             fparser ::= "fparser" pos-opt "[" parser-cases "]"
+                       | "fparser" pos-opt parser-case
+  match-with-fparser ::= "match" expression with "fparser" pos-opt "[" parser-cases "]"
+                       | "match" expression with "fparser" pos-opt parser-case
+        parser-cases ::= parser-cases parser-case
                        | &lt;nothing&gt;
-         parser_case ::= "[:" stream_pattern ":]" pos_opt "->" expression
-                       | "[:" ":]" pos_opt "->" expression
-      stream_pattern ::= stream_patt_comp
-                       | stream_patt_comp ";" stream_pattern
-    stream_patt_comp ::= "`" pattern
+         parser-case ::= "[:" stream-pattern ":]" pos-opt "->" expression
+                       | "[:" ":]" pos-opt "->" expression
+      stream-pattern ::= stream-patt-comp
+                       | stream-patt-comp ";" stream-pattern
+    stream-patt-comp ::= "`" pattern
                        | pattern "=" expression
                        | pattern
-             pos_opt ::= pattern
+             pos-opt ::= pattern
                        | &lt;nothing&gt;
 </pre>
 
