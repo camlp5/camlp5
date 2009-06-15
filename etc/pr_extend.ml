@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extend.ml,v 1.37 2007/09/13 03:25:28 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.38 2007/09/13 13:21:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -429,6 +429,8 @@ and s_symbol pc =
       sprintf "%sSFLAG %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
   | Svala (Sflag sy) ->
       sprintf "%sSV FLAG %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
+  | Svala (Sopt sy) ->
+      sprintf "%sSV OPT %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
   | Svala (Slist0 sy) ->
       sprintf "%sSV LIST0 %s" pc.bef
         (simple_symbol {(pc) with bef = ""; aft = ""} sy)
@@ -467,6 +469,10 @@ and check_slist rl =
     | [([(Some <:patt< a >>, Snterm <:expr< a_flag2 >>)], Some <:expr< a >>);
        ([(Some <:patt< a >>, (Sflag _ as s))],
           Some <:expr< Qast.Node "Qast.Vala" [Qast.Bool a] >>)] ->
+        Some (Svala s)
+    | [([(Some <:patt< a >>, Snterm <:expr< a_opt2 >>)], Some <:expr< a >>);
+       ([(Some <:patt< a >>, (Sopt _ as s))],
+          Some <:expr< Qast.Node "Qast.Vala" [Qast.Option a] >>)] ->
         Some (Svala s)
     | _ -> None ]
 ;

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.66 2007/09/13 11:54:59 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.67 2007/09/13 13:21:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -541,14 +541,36 @@ module Meta =
             e_node "CeCon" [c; e_vala (e_list e_ctyp) l]
         | CeFun _ p ce -> e_node "CeFun" [e_patt p; loop ce]
         | CeLet _ rf lb ce -> e_node "CeLet" [e_vala e_bool rf; loop ce]
+        | CeStr _ ocsp lcsi ->
+            let ocsp = e_vala (e_option e_patt) ocsp in
+            let lcsi = e_vala (e_list e_class_str_item) lcsi in
+            e_node "CeStr" [ocsp; lcsi]
         | CeTyc _ ce ct -> e_node "CeTyc" [loop ce; e_class_type ct]
         | IFDEF STRICT THEN
             CeXtr loc s _ -> e_xtr loc s
-          END
-        | x -> not_impl "e_class_expr" x ]
+          END ]
     and p_class_expr =
       fun
       [ x -> not_impl "p_class_expr" x ]
+    and e_class_str_item x =
+      loop x where rec loop =
+        fun
+        [ CrCtr _ t1 t2 -> e_node "CrCtr" [e_ctyp t1; e_ctyp t2]
+        | CrDcl _ lcsi -> e_node "CrDcl" [e_vala (e_list loop) lcsi]
+        | CrInh _ ce os ->
+            e_node "CrInh" [e_class_expr ce; e_vala (e_option e_string) os]
+        | CrIni _ e -> e_node "CrIni" [e_expr e]
+        | CrMth _ s pf e ot ->
+            e_node "CrMth"
+              [e_vala e_string s; e_vala e_bool pf; e_expr e;
+               e_vala (e_option e_ctyp) ot]
+        | CrVal _ s rf e ->
+            e_node "CrVal" [e_vala e_string s; e_vala e_bool rf; e_expr e]
+        | CrVir _ s pf t ->
+            e_node "CrVir" [e_vala e_string s; e_vala e_bool pf; e_ctyp t] ]
+    and p_class_str_item =
+      fun
+      [ x -> not_impl "p_class_str_item" x ]
     ;
   end
 ;
@@ -563,6 +585,7 @@ value module_type_eoi = Grammar.Entry.create Pcaml.gram "module_type";
 value with_constr_eoi = Grammar.Entry.create Pcaml.gram "with_constr";
 value class_expr_eoi = Grammar.Entry.create Pcaml.gram "class_expr";
 value class_type_eoi = Grammar.Entry.create Pcaml.gram "class_type";
+value class_str_item_eoi = Grammar.Entry.create Pcaml.gram "class_str_item";
 
 EXTEND
   expr_eoi: [ [ x = Pcaml.expr; EOI -> x ] ];
@@ -575,6 +598,7 @@ EXTEND
   with_constr_eoi: [ [ x = Pcaml.with_constr; EOI -> x ] ];
   class_expr_eoi: [ [ x = Pcaml.class_expr; EOI -> x ] ];
   class_type_eoi: [ [ x = Pcaml.class_type; EOI -> x ] ];
+  class_str_item_eoi: [ [ x = Pcaml.class_str_item; EOI -> x ] ];
 END;
 
 IFDEF STRICT THEN
@@ -735,12 +759,13 @@ lex.Plexing.tok_match :=
           if kind = "alist" || kind = "list" then prm
           else raise Stream.Failure
       | _ -> raise Stream.Failure ]
-(*
-  | ("OPT", "") ->
+  | ("V OPT", "") ->
       fun
-      [ ("ANTIQUOT_LOC", prm) -> check_and_make_anti prm "opt"
+      [ ("ANTIQUOT_LOC", prm) ->
+          let kind = check_anti_loc2 prm in
+          if kind = "aopt" || kind = "opt" then prm
+          else raise Stream.Failure
       | _ -> raise Stream.Failure ]
-*)
   | ("V FLAG", "") ->
       fun
       [ ("ANTIQUOT_LOC", prm) ->
@@ -781,7 +806,10 @@ List.iter
    ("class_expr",
     apply_entry class_expr_eoi Meta.e_class_expr Meta.p_class_expr);
    ("class_type",
-    apply_entry class_type_eoi Meta.e_class_type Meta.p_class_type)]
+    apply_entry class_type_eoi Meta.e_class_type Meta.p_class_type);
+   ("class_str_item",
+    apply_entry class_str_item_eoi Meta.e_class_str_item
+      Meta.p_class_str_item)]
 ;
 
 let expr s =

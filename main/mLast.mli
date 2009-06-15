@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: mLast.mli,v 1.38 2007/09/13 11:54:59 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.39 2007/09/13 13:21:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Module [MLast]: abstract syntax tree.
@@ -198,19 +198,19 @@ and class_expr =
   | CeCon of loc and V (list string) and V (list ctyp)
   | CeFun of loc and patt and class_expr
   | CeLet of loc and V bool and V (list (patt * expr)) and class_expr
-  | CeStr of loc and option patt and list class_str_item
+  | CeStr of loc and V (option patt) and V (list class_str_item)
   | CeTyc of loc and class_expr and class_type
   | IFDEF STRICT THEN
       CeXtr of loc and string and option (V class_expr)
     END ]
 and class_str_item =
   [ CrCtr of loc and ctyp and ctyp
-  | CrDcl of loc and list class_str_item
-  | CrInh of loc and class_expr and option string
+  | CrDcl of loc and V (list class_str_item)
+  | CrInh of loc and class_expr and V (option string)
   | CrIni of loc and expr
-  | CrMth of loc and string and bool and expr and option ctyp
-  | CrVal of loc and string and bool and expr
-  | CrVir of loc and string and bool and ctyp ]
+  | CrMth of loc and V string and V bool and expr and V (option ctyp)
+  | CrVal of loc and V string and V bool and expr
+  | CrVir of loc and V string and V bool and ctyp ]
 ;
 
 external loc_of_ctyp : ctyp -> loc = "%field0";

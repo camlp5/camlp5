@@ -1,16 +1,6 @@
 (* camlp5r *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: grammar.ml,v 1.46 2007/09/10 08:09:09 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.47 2007/09/13 13:21:24 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 open Gramext;
 open Format;
@@ -362,7 +352,7 @@ value tree_failed entry prev_symb_result prev_symb tree = do {
         | _ ->
             let txt1 = name_of_symbol_failed entry sep in
             txt1 ^ " or " ^ txt ^ " expected" ]
-    | Sopt _ | Stree _ -> txt ^ " expected"
+    | Sopt _ | Sflag _ | Stree _ | Svala _ -> txt ^ " expected"
     | _ -> txt ^ " expected after " ^ name_of_symbol entry prev_symb ]
   in
   if error_verbose.val then do {
@@ -631,6 +621,7 @@ and parser_of_symbol entry nlevn =
         let t =
           match s with
           [ Sflag _ -> "V FLAG"
+          | Sopt _ -> "V OPT"
           | Slist0 _ | Slist0sep _ _ | Slist1 _ | Slist1sep _ _ -> "V LIST"
           | Stoken (con, "") -> "V " ^ con
           | _ -> failwith "Grammar: not impl Svala" ]

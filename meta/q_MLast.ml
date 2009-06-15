@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.76 2007/09/13 11:54:59 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.77 2007/09/13 13:21:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -185,6 +185,7 @@ value poly_variant = Grammar.Entry.create gram "poly_variant";
 value a_list = Grammar.Entry.create gram "a_list";
 value a_list2 = Grammar.Entry.create gram "a_list2";
 value a_opt = Grammar.Entry.create gram "a_opt";
+value a_opt2 = Grammar.Entry.create gram "a_opt2";
 value a_flag = Grammar.Entry.create gram "a_flag";
 value a_flag2 = Grammar.Entry.create gram "a_flag2";
 value a_UIDENT = Grammar.Entry.create gram "a_UIDENT";
@@ -989,12 +990,15 @@ EXTEND
           Qast.Node "CeCon" [Qast.Loc; ci; ctcl]
       | ci = class_longident2 ->
           Qast.Node "CeCon" [Qast.Loc; ci; Qast.VaVal (Qast.List [])]
-      | "object"; cspo = SOPT class_self_patt; cf = class_structure;
+      | "object"; cspo = SV OPT class_self_patt; cf = class_structure2;
         "end" ->
           Qast.Node "CeStr" [Qast.Loc; cspo; cf]
       | "("; ce = SELF; ":"; ct = class_type; ")" ->
           Qast.Node "CeTyc" [Qast.Loc; ce; ct]
       | "("; ce = SELF; ")" -> ce ] ]
+  ;
+  class_structure2:
+    [ [ cf = SV LIST0 [ cf = class_str_item; ";" -> cf ] -> cf ] ]
   ;
   class_structure:
     [ [ cf = SLIST0 [ cf = class_str_item; ";" -> cf ] -> cf ] ]
@@ -1005,15 +1009,16 @@ EXTEND
           Qast.Node "PaTyc" [Qast.Loc; p; t] ] ]
   ;
   class_str_item:
-    [ [ "declare"; st = SLIST0 [ s = class_str_item; ";" -> s ]; "end" ->
+    [ [ "declare"; st = SV LIST0 [ s = class_str_item; ";" -> s ]; "end" ->
           Qast.Node "CrDcl" [Qast.Loc; st]
-      | "inherit"; ce = class_expr; pb = SOPT as_lident ->
+      | "inherit"; ce = class_expr; pb = SV OPT as_lident ->
           Qast.Node "CrInh" [Qast.Loc; ce; pb]
-      | "value"; mf = SFLAG "mutable"; lab = label; e = cvalue_binding ->
+      | "value"; mf = SV FLAG "mutable"; lab = label2; e = cvalue_binding ->
           Qast.Node "CrVal" [Qast.Loc; lab; mf; e]
-      | "method"; "virtual"; pf = SFLAG "private"; l = label; ":"; t = ctyp ->
+      | "method"; "virtual"; pf = SV FLAG "private"; l = label2; ":";
+        t = ctyp ->
           Qast.Node "CrVir" [Qast.Loc; l; pf; t]
-      | "method"; pf = SFLAG "private"; l = label; topt = SOPT polyt;
+      | "method"; pf = SV FLAG "private"; l = label2; topt = SV OPT polyt;
         e = fun_binding ->
           Qast.Node "CrMth" [Qast.Loc; l; pf; e; topt]
       | "type"; t1 = ctyp; "="; t2 = ctyp ->
@@ -1033,6 +1038,9 @@ EXTEND
           Qast.Node "ExCoe" [Qast.Loc; e; Qast.Option (Some t); t2]
       | ":>"; t = ctyp; "="; e = expr ->
           Qast.Node "ExCoe" [Qast.Loc; e; Qast.Option None; t] ] ]
+  ;
+  label2:
+    [ [ i = a_LIDENT2 -> i ] ]
   ;
   label:
     [ [ i = a_LIDENT -> i ] ]
@@ -1333,6 +1341,10 @@ EXTEND
   ;
   a_opt:
     [ [ a = ANTIQUOT "opt" -> antiquot "opt" loc a ] ]
+  ;
+  a_opt2:
+    [ [ a = ANTIQUOT "opt" -> Qast.VaVal (antiquot "opt" loc a)
+      | a = ANTIQUOT "aopt" -> antiquot "aopt" loc a ] ]
   ;
   a_flag:
     [ [ a = ANTIQUOT "flag" -> antiquot "flag" loc a

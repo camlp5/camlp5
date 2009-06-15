@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.38 2007/09/13 11:54:59 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.39 2007/09/13 13:21:24 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -940,11 +940,11 @@ and class_expr =
         (class_expr ce))
   | CeStr loc po cfl ->
       let p =
-        match po with
+        match uv po with
         [ Some p -> p
         | None -> PaAny loc ]
       in
-      let cil = List.fold_right class_str_item cfl [] in
+      let cil = List.fold_right class_str_item (uv cfl) [] in
       mkpcl loc (Pcl_structure (patt p, cil))
   | CeTyc loc ce ct ->
       mkpcl loc (Pcl_constraint (class_expr ce) (class_type ct))
@@ -954,17 +954,18 @@ and class_expr =
 and class_str_item c l =
   match c with
   [ CrCtr loc t1 t2 -> [Pcf_cstr (ctyp t1, ctyp t2, mkloc loc) :: l]
-  | CrDcl loc cl -> List.fold_right class_str_item cl l
-  | CrInh loc ce pb -> [Pcf_inher (class_expr ce) pb :: l]
+  | CrDcl loc cl -> List.fold_right class_str_item (uv cl) l
+  | CrInh loc ce pb -> [Pcf_inher (class_expr ce) (uv pb) :: l]
   | CrIni loc e -> [Pcf_init (expr e) :: l]
   | CrMth loc s b e t ->
-      let t = option (fun t -> ctyp (mkpolytype t)) t in
+      let t = option (fun t -> ctyp (mkpolytype t)) (uv t) in
       let e = mkexp loc (Pexp_poly (expr e) t) in
-      [Pcf_meth (s, mkprivate b, e, mkloc loc) :: l]
+      [Pcf_meth (uv s, mkprivate (uv b), e, mkloc loc) :: l]
   | CrVal loc s b e ->
-      [Pcf_val (s, mkmutable b, expr e, mkloc loc) :: l]
+      [Pcf_val (uv s, mkmutable (uv b), expr e, mkloc loc) :: l]
   | CrVir loc s b t ->
-      [Pcf_virt (s, mkprivate b, ctyp (mkpolytype t), mkloc loc) :: l] ]
+      [Pcf_virt (uv s, mkprivate (uv b), ctyp (mkpolytype t), mkloc loc) ::
+         l] ]
 ;
 
 value interf fname ast = do {

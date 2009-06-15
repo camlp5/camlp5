@@ -1504,9 +1504,9 @@ pr_class_str_item.pr_levels :=
     pr_box s x = LocInfo (MLast.loc_of_class_str_item s) (HVbox x);
     pr_rules =
       extfun Extfun.empty with
-      [ MLast.CrDcl _ s ->
+      [ <:class_str_item< declare $list:s$ end >> ->
           fun curr next _ k -> [: `HVbox [: :]; list class_str_item s [: :] :]
-      | MLast.CrInh _ ce pb ->
+      | <:class_str_item< inherit $ce$ $opt:pb$ >> ->
           fun curr next _ k ->
             [: `S LR "inherit"; `class_expr ce [: :];
                match pb with
@@ -1579,7 +1579,7 @@ pr_class_expr.pr_levels :=
           fun curr next _ k ->
             [: `class_longident ci [: :]; `S LO "[";
                listws ctyp (S RO ",") ctcl [: `S RO "]"; k :] :]
-      | MLast.CeStr _ csp cf as ce ->
+      | <:class_expr< object $opt:csp$ $list:cf$ end >> as ce ->
           fun curr next _ k ->
             let loc = Ploc.after (MLast.loc_of_class_expr ce) 0 1 in
             [: `BEbox

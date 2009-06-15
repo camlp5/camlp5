@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.78 2007/09/13 11:54:59 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.79 2007/09/13 13:21:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -560,11 +560,14 @@ EXTEND
       [ ci = class_longident2; "["; ctcl = V LIST1 ctyp SEP ","; "]" ->
           <:class_expr< $alist:ci$ [ $alist:ctcl$ ] >>
       | ci = class_longident2 -> <:class_expr< $alist:ci$ >>
-      | "object"; cspo = OPT class_self_patt; cf = class_structure; "end" ->
-          <:class_expr< object $opt:cspo$ $list:cf$ end >>
+      | "object"; cspo = V OPT class_self_patt; cf = class_structure2; "end" ->
+          <:class_expr< object $aopt:cspo$ $alist:cf$ end >>
       | "("; ce = SELF; ":"; ct = class_type; ")" ->
           <:class_expr< ($ce$ : $ct$) >>
       | "("; ce = SELF; ")" -> ce ] ]
+  ;
+  class_structure2:
+    [ [ cf = V LIST0 [ cf = class_str_item; ";" -> cf ] -> cf ] ]
   ;
   class_structure:
     [ [ cf = LIST0 [ cf = class_str_item; ";" -> cf ] -> cf ] ]
@@ -574,17 +577,18 @@ EXTEND
       | "("; p = patt; ":"; t = ctyp; ")" -> <:patt< ($p$ : $t$) >> ] ]
   ;
   class_str_item:
-    [ [ "declare"; st = LIST0 [ s= class_str_item; ";" -> s ]; "end" ->
-          <:class_str_item< declare $list:st$ end >>
-      | "inherit"; ce = class_expr; pb = OPT as_lident ->
-          <:class_str_item< inherit $ce$ $opt:pb$ >>
-      | "value"; mf = FLAG "mutable"; lab = label; e = cvalue_binding ->
-          <:class_str_item< value $flag:mf$ $lab$ = $e$ >>
-      | "method"; "virtual"; pf = FLAG "private"; l = label; ":"; t = ctyp ->
-          <:class_str_item< method virtual $flag:pf$ $l$ : $t$ >>
-      | "method"; pf = FLAG "private"; l = label; topt = OPT polyt;
+    [ [ "declare"; st = V LIST0 [ s= class_str_item; ";" -> s ]; "end" ->
+          <:class_str_item< declare $alist:st$ end >>
+      | "inherit"; ce = class_expr; pb = V OPT as_lident ->
+          <:class_str_item< inherit $ce$ $aopt:pb$ >>
+      | "value"; mf = V FLAG "mutable"; lab = label2; e = cvalue_binding ->
+          <:class_str_item< value $aflag:mf$ $alid:lab$ = $e$ >>
+      | "method"; "virtual"; pf = V FLAG "private"; l = label2; ":";
+        t = ctyp ->
+          <:class_str_item< method virtual $aflag:pf$ $alid:l$ : $t$ >>
+      | "method"; pf = V FLAG "private"; l = label2; topt = V OPT polyt;
         e = fun_binding ->
-          <:class_str_item< method $flag:pf$ $l$ $opt:topt$ = $e$ >>
+          <:class_str_item< method $aflag:pf$ $alid:l$ $aopt:topt$ = $e$ >>
       | "type"; t1 = ctyp; "="; t2 = ctyp ->
           <:class_str_item< type $t1$ = $t2$ >>
       | "initializer"; se = expr -> <:class_str_item< initializer $se$ >> ] ]
@@ -601,6 +605,9 @@ EXTEND
       | ":"; t = ctyp; ":>"; t2 = ctyp; "="; e = expr ->
           <:expr< ($e$ : $t$ :> $t2$) >>
       | ":>"; t = ctyp; "="; e = expr -> <:expr< ($e$ :> $t$) >> ] ]
+  ;
+  label2:
+    [ [ i = V LIDENT -> i ] ]
   ;
   label:
     [ [ i = LIDENT -> i ] ]

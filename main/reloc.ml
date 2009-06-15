@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: reloc.ml,v 1.26 2007/09/13 11:54:59 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.27 2007/09/13 13:21:24 deraugla Exp $ *)
 
 open MLast;
 
@@ -353,8 +353,8 @@ and class_expr floc sh =
              x2)
           (self x3)
     | CeStr loc x1 x2 ->
-        CeStr (floc loc) (option_map (patt floc sh) x1)
-          (List.map (class_str_item floc sh) x2)
+        CeStr (floc loc) (vala_map (option_map (patt floc sh)) x1)
+          (vala_map (List.map (class_str_item floc sh)) x2)
     | CeTyc loc x1 x2 -> CeTyc (floc loc) (self x1) (class_type floc sh x2)
     | IFDEF STRICT THEN
         CeXtr loc x1 x2 -> CeXtr (floc loc) x1 (option_map (vala_map self) x2)
@@ -363,12 +363,13 @@ and class_str_item floc sh =
   self where rec self =
     fun
     [ CrCtr loc x1 x2 -> CrCtr (floc loc) (ctyp floc sh x1) (ctyp floc sh x2)
-    | CrDcl loc x1 -> CrDcl (floc loc) (List.map (class_str_item floc sh) x1)
+    | CrDcl loc x1 ->
+        CrDcl (floc loc) (vala_map (List.map (class_str_item floc sh)) x1)
     | CrInh loc x1 x2 -> CrInh (floc loc) (class_expr floc sh x1) x2
     | CrIni loc x1 -> CrIni (floc loc) (expr floc sh x1)
     | CrMth loc x1 x2 x3 x4 ->
         CrMth (floc loc) x1 x2 (expr floc sh x3)
-          (option_map (ctyp floc sh) x4)
+          (vala_map (option_map (ctyp floc sh)) x4)
     | CrVal loc x1 x2 x3 -> CrVal (floc loc) x1 x2 (expr floc sh x3)
     | CrVir loc x1 x2 x3 -> CrVir (floc loc) x1 x2 (ctyp floc sh x3) ]
 ;

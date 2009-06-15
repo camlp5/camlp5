@@ -518,11 +518,33 @@ module Meta =
             e_node "CeCon" [c; e_vala (e_list e_ctyp) l]
         | CeFun (_, p, ce) -> e_node "CeFun" [e_patt p; loop ce]
         | CeLet (_, rf, lb, ce) -> e_node "CeLet" [e_vala e_bool rf; loop ce]
+        | CeStr (_, ocsp, lcsi) ->
+            let ocsp = e_vala (e_option e_patt) ocsp in
+            let lcsi = e_vala (e_list e_class_str_item) lcsi in
+            e_node "CeStr" [ocsp; lcsi]
         | CeTyc (_, ce, ct) -> e_node "CeTyc" [loop ce; e_class_type ct]
-        | x -> not_impl "e_class_expr" x
       in
       loop x
-    and p_class_expr x = not_impl "p_class_expr" x;;
+    and p_class_expr x = not_impl "p_class_expr" x
+    and e_class_str_item x =
+      let rec loop =
+        function
+          CrCtr (_, t1, t2) -> e_node "CrCtr" [e_ctyp t1; e_ctyp t2]
+        | CrDcl (_, lcsi) -> e_node "CrDcl" [e_vala (e_list loop) lcsi]
+        | CrInh (_, ce, os) ->
+            e_node "CrInh" [e_class_expr ce; e_vala (e_option e_string) os]
+        | CrIni (_, e) -> e_node "CrIni" [e_expr e]
+        | CrMth (_, s, pf, e, ot) ->
+            e_node "CrMth"
+              [e_vala e_string s; e_vala e_bool pf; e_expr e;
+               e_vala (e_option e_ctyp) ot]
+        | CrVal (_, s, rf, e) ->
+            e_node "CrVal" [e_vala e_string s; e_vala e_bool rf; e_expr e]
+        | CrVir (_, s, pf, t) ->
+            e_node "CrVir" [e_vala e_string s; e_vala e_bool pf; e_ctyp t]
+      in
+      loop x
+    and p_class_str_item x = not_impl "p_class_str_item" x;;
   end
 ;;
 
@@ -536,6 +558,7 @@ let module_type_eoi = Grammar.Entry.create Pcaml.gram "module_type";;
 let with_constr_eoi = Grammar.Entry.create Pcaml.gram "with_constr";;
 let class_expr_eoi = Grammar.Entry.create Pcaml.gram "class_expr";;
 let class_type_eoi = Grammar.Entry.create Pcaml.gram "class_type";;
+let class_str_item_eoi = Grammar.Entry.create Pcaml.gram "class_str_item";;
 
 Grammar.extend
   [Grammar.Entry.obj (expr_eoi : 'expr_eoi Grammar.Entry.e), None,
@@ -622,7 +645,18 @@ Grammar.extend
       Gramext.Stoken ("EOI", "")],
      Gramext.action
        (fun _ (x : 'Pcaml__class_type) (loc : Ploc.t) ->
-          (x : 'class_type_eoi))]]];;
+          (x : 'class_type_eoi))]];
+   Grammar.Entry.obj
+     (class_str_item_eoi : 'class_str_item_eoi Grammar.Entry.e),
+   None,
+   [None, None,
+    [[Gramext.Snterm
+        (Grammar.Entry.obj
+           (Pcaml.class_str_item : 'Pcaml__class_str_item Grammar.Entry.e));
+      Gramext.Stoken ("EOI", "")],
+     Gramext.action
+       (fun _ (x : 'Pcaml__class_str_item) (loc : Ploc.t) ->
+          (x : 'class_str_item_eoi))]]];;
 
 (* *)
 
@@ -744,6 +778,12 @@ lex.Plexing.tok_match <-
            if kind = "alist" || kind = "list" then prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
+  | "V OPT", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           let kind = check_anti_loc2 prm in
+           if kind = "aopt" || kind = "opt" then prm else raise Stream.Failure
+       | _ -> raise Stream.Failure)
   | "V FLAG", "" ->
       (function
          "ANTIQUOT_LOC", prm ->
@@ -781,7 +821,10 @@ List.iter (fun (q, f) -> Quotation.add q f)
    "class_expr",
    apply_entry class_expr_eoi Meta.e_class_expr Meta.p_class_expr;
    "class_type",
-   apply_entry class_type_eoi Meta.e_class_type Meta.p_class_type];;
+   apply_entry class_type_eoi Meta.e_class_type Meta.p_class_type;
+   "class_str_item",
+   apply_entry class_str_item_eoi Meta.e_class_str_item
+     Meta.p_class_str_item];;
 
 let expr s =
   let e =
