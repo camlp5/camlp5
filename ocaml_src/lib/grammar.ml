@@ -479,8 +479,23 @@ let peek_nth n strm =
   loop list n
 ;;
 
-exception SkipItem;;
-let call_and_push ps al strm = try ps strm :: al with SkipItem -> al;;
+let item_skipped = ref false;;
+let skip_item a = item_skipped := true; a;;
+
+let call_and_push ps al strm =
+  item_skipped := false;
+  let a = ps strm in
+  let al = if !item_skipped then al else a :: al in item_skipped := false; al
+;;
+
+let fcall_and_push ps al strm =
+  item_skipped := false;
+  match ps strm with
+    Some (a, strm) ->
+      let al = if !item_skipped then al else a :: al in
+      item_skipped := false; Some (al, strm)
+  | None -> None
+;;
 
 let rec parser_of_tree entry nlevn alevn =
   function
@@ -863,14 +878,6 @@ let rec ftop_symb entry =
       | None -> None
       end
   | _ -> None
-;;
-
-let fcall_and_push ps al strm =
-  try
-    match ps strm with
-      Some (a, strm) -> Some (a :: al, strm)
-    | None -> None
-  with SkipItem -> Some (al, strm)
 ;;
 
 let rec fparser_of_tree entry nlevn alevn =

@@ -636,8 +636,7 @@ Grammar.extend
       Gramext.action
         (fun _ (x : 'constructor_declaration) _ (e : 'dexpr) _
              (loc : Ploc.t) ->
-           (if e then raise Grammar.SkipItem else x :
-            'constructor_declaration));
+           (if e then Grammar.skip_item x else x : 'constructor_declaration));
       [Gramext.Stoken ("", "IFDEF");
        Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
        Gramext.Stoken ("", "THEN"); Gramext.Sself;
@@ -654,7 +653,7 @@ Grammar.extend
       Gramext.action
         (fun _ (x : 'constructor_declaration) _ (e : 'dexpr) _
              (loc : Ploc.t) ->
-           (if e then x else raise Grammar.SkipItem :
+           (if e then x else Grammar.skip_item x :
             'constructor_declaration))]];
     Grammar.Entry.obj (match_case : 'match_case Grammar.Entry.e),
     Some Gramext.First,
@@ -674,7 +673,7 @@ Grammar.extend
        Gramext.Stoken ("", "END")],
       Gramext.action
         (fun _ (x : 'match_case) _ (e : 'dexpr) _ (loc : Ploc.t) ->
-           (if e then raise Grammar.SkipItem else x : 'match_case));
+           (if e then Grammar.skip_item x else x : 'match_case));
       [Gramext.Stoken ("", "IFDEF");
        Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
        Gramext.Stoken ("", "THEN"); Gramext.Sself;
@@ -690,7 +689,7 @@ Grammar.extend
        Gramext.Stoken ("", "END")],
       Gramext.action
         (fun _ (x : 'match_case) _ (e : 'dexpr) _ (loc : Ploc.t) ->
-           (if e then x else raise Grammar.SkipItem : 'match_case))]];
+           (if e then x else Grammar.skip_item x : 'match_case))]];
     Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Sself; Gramext.Stoken ("", "OR"); Gramext.Sself],

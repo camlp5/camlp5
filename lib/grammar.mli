@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: grammar.mli,v 1.23 2007/10/29 02:49:04 deraugla Exp $ *)
+(* $Id: grammar.mli,v 1.24 2007/10/29 03:33:27 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (** Extensible grammars.
@@ -144,10 +144,13 @@ module GMake (L : GLexerType) : S with type te = L.te;
 
 (** {6 Miscellaneous} *)
 
-exception SkipItem;
-   (** Can be raised in semantic actions to skip an item in a list.
-       To be used in entries called by the meta-symbols LIST0 and
-       LIST1. Allow conditional parsing. *)
+value skip_item : 'a -> 'a;
+   (** [Grammar.skip_item x] can be called in a semantic action of
+       a grammar rule to ask the grammar to skip that item if it
+       is called in a list (LIST0 or LIST1). The function returns
+       the item itself (for typing reasons) but its value is ignored.
+       This function is used to allow IFDEF and IFNDEF for cases of
+       constructor declarations and pattern matchings. *)
 
 value error_verbose : ref bool;
    (** Flag for displaying more information in case of parsing error;
@@ -161,8 +164,9 @@ value strict_parsing : ref bool;
        default = [False] *)
 
 value functional_parse : ref bool;
-   (** Parse with functional parsers, with limited backtrack;
-       default = [False] *)
+   (** Internally parse with functional parsers, with limited backtrack;
+       its default is [False] except if the environment variable FPARSE
+       exists and set to "t" *)
 
 value print_entry : Format.formatter -> Gramext.g_entry 'te -> unit;
    (** General printer for all kinds of entries (obj entries) *)

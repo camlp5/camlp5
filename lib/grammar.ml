@@ -1,5 +1,5 @@
 (* camlp5r pa_fstream.cmo *)
-(* $Id: grammar.ml,v 1.60 2007/10/29 02:49:04 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.61 2007/10/29 03:33:27 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Gramext;
@@ -470,8 +470,27 @@ value peek_nth n strm = do {
   loop list n
 };
 
-exception SkipItem;
-value call_and_push ps al strm = try [ps strm :: al] with [ SkipItem -> al ];
+value item_skipped = ref False;
+value skip_item a = do { item_skipped.val := True; a };
+
+value call_and_push ps al strm = do {
+  item_skipped.val := False;
+  let a = ps strm in
+  let al = if item_skipped.val then al else [a :: al] in
+  item_skipped.val := False;
+  al
+};
+
+value fcall_and_push ps al strm = do {
+  item_skipped.val := False;
+  match ps strm with
+  [ Some (a, strm) -> do {
+      let al = if item_skipped.val then al else [a :: al] in
+      item_skipped.val := False;
+      Some (al, strm)
+    }
+  | None -> None ]
+};
 
 value rec parser_of_tree entry nlevn alevn =
   fun
@@ -804,15 +823,6 @@ value rec ftop_symb entry =
       [ Some s -> Some (Slist1sep s sep)
       | None -> None ]
   | _ -> None ]
-;
-
-value fcall_and_push ps al strm =
-  try
-    match ps strm with
-    [ Some (a, strm) -> Some ([a :: al], strm)
-    | None -> None ]
-  with
-  [ SkipItem -> Some (al, strm) ]
 ;
 
 value rec fparser_of_tree entry nlevn alevn =

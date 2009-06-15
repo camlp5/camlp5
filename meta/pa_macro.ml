@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_macro.ml,v 1.33 2007/09/22 23:31:12 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.34 2007/10/29 03:33:27 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (*
@@ -378,21 +378,21 @@ EXTEND
   ;
   constructor_declaration: FIRST
     [ [ "IFDEF"; e = dexpr; "THEN"; x = SELF; "END" ->
-          if e then x else raise Grammar.SkipItem
+          if e then x else Grammar.skip_item x
       | "IFDEF"; e = dexpr; "THEN"; x = SELF; "ELSE"; y = SELF; "END" ->
           if e then x else y
       | "IFNDEF"; e = dexpr; "THEN"; x = SELF; "END" ->
-          if e then raise Grammar.SkipItem else x
+          if e then Grammar.skip_item x else x
       | "IFNDEF"; e = dexpr; "THEN"; x = SELF; "ELSE"; y = SELF; "END" ->
           if e then y else x ] ]
   ;
   match_case: FIRST
     [ [ "IFDEF"; e = dexpr; "THEN"; x = SELF; "END" ->
-          if e then x else raise Grammar.SkipItem
+          if e then x else Grammar.skip_item x
       | "IFDEF"; e = dexpr; "THEN"; x = SELF; "ELSE"; y = SELF; "END" ->
           if e then x else y
       | "IFNDEF"; e = dexpr; "THEN"; x = SELF; "END" ->
-          if e then raise Grammar.SkipItem else x
+          if e then Grammar.skip_item x else x
       | "IFNDEF"; e = dexpr; "THEN"; x = SELF; "ELSE"; y = SELF; "END" ->
           if e then y else x ] ]
   ;
