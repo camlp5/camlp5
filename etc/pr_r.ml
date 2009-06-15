@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.120 2007/12/06 02:23:13 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.121 2007/12/06 08:56:49 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -304,7 +304,7 @@ value sequence_box pc bef expr el =
       (comm_expr expr)
       {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""} el
   in
-  let s3 = pprintf pc "@-%s}" (tab pc.ind) in
+  let s3 = sprintf "%s}%s" (tab pc.ind) pc.aft in
   sprintf "%s\n%s\n%s" s1 s2 s3
 ;
 
