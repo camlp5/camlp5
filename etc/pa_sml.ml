@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_sml.ml,v 1.23 2007/09/18 18:20:50 deraugla Exp $ *)
+(* $Id: pa_sml.ml,v 1.24 2007/09/22 23:31:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -286,7 +286,7 @@ value record_expr loc x1 =
     <:expr<
       let module M =
         struct
-          class a = object $list:list1 @ list2$ end; 
+          class a = object $list:list1 @ list2$ end;
         end
       in
       new M.a

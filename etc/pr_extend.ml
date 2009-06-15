@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extend.ml,v 1.46 2007/09/22 05:20:28 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.47 2007/09/22 23:31:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -393,7 +393,7 @@ and symbol pc sy =
         (string_list sl) pc.aft
   | sy -> simple_symbol pc sy ]
 and simple_symbol pc sy =
-  match sy with  
+  match sy with
   [ Snterm <:expr< $lid:s$ >> -> sprintf "%s%s%s" pc.bef s pc.aft
   | Sself -> sprintf "%sSELF%s" pc.bef pc.aft
   | Snext -> sprintf "%sNEXT%s" pc.bef pc.aft

@@ -57,7 +57,7 @@ let mkmatchcase loc p aso w e =
   in
   p, w, e
 ;;
-      
+
 let neg_string n =
   let len = String.length n in
   if len > 0 && n.[0] = '-' then String.sub n 1 (len - 1) else "-" ^ n

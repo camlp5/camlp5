@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.47 2007/09/18 18:47:44 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.48 2007/09/22 23:31:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -583,7 +583,7 @@ EXTEND_PRINTER
                  pc.aft)
             (fun  () -> not_impl "class_expr c [t, t] vertic" pc cl)
       | <:class_expr< object $opt:csp$ $list:csl$ end >> ->
-          class_object pc (csp, csl)      
+          class_object pc (csp, csl)
       | <:class_expr< ($ce$ : $ct$) >> ->
           horiz_vertic
             (fun () ->

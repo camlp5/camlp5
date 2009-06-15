@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: q_ast.ml,v 1.97 2007/09/22 22:53:59 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.98 2007/09/22 23:31:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* AST quotations with works by running the language parser (and its possible
@@ -81,10 +81,10 @@ module type MetaSig =
 module Meta_make (C : MetaSig) =
   struct
     open MLast;
-    value rec ctyp = 
+    value rec ctyp =
       fun
       [ TyAcc _ t1 t2 -> C.node "TyAcc" [ctyp t1; ctyp t2]
-      | TyAli _ t1 t2 -> C.node "TyAli" [ctyp t1; ctyp t2] 
+      | TyAli _ t1 t2 -> C.node "TyAli" [ctyp t1; ctyp t2]
       | TyArr _ t1 t2 -> C.node "TyArr" [ctyp t1; ctyp t2]
       | TyAny _ -> C.node "TyAny" []
       | TyApp _ t1 t2 -> C.node "TyApp" [ctyp t1; ctyp t2]

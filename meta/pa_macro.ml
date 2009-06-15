@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_macro.ml,v 1.32 2007/09/22 05:20:28 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.33 2007/09/22 23:31:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (*
@@ -112,7 +112,7 @@ value defined =
 
 value is_defined i =
   (i = "STRICT" && Pcaml.strict_mode.val) ||
-  List.mem_assoc i defined.val 
+  List.mem_assoc i defined.val
 ;
 
 value print_defined () = do {

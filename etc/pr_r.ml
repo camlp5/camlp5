@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.73 2007/09/18 18:20:50 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.74 2007/09/22 23:31:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -119,7 +119,7 @@ value un_irrefut_patt p =
           il ([], [])
       in
       (<:patt< ($list:upl$) >>, <:expr< ($list:uel$) >>) ]
-;            
+;
 
 value not_impl name pc x =
   let desc =
@@ -2294,7 +2294,7 @@ value set_flags s =
 ;
 
 value default_flag () =
-  let flag_on b t f = if b then t else "" in 
+  let flag_on b t f = if b then t else "" in
   let flag_off b t f = if b then "" else f in
   let on_off flag =
     sprintf "%s%s%s"
@@ -2339,7 +2339,7 @@ value set_wflags s =
 ;
 
 value default_wflag () =
-  let flag_on b t f = if b then t else "" in 
+  let flag_on b t f = if b then t else "" in
   let flag_off b t f = if b then "" else f in
   let on_off flag =
     sprintf "%s%s%s%s%s%s%s%s%s"

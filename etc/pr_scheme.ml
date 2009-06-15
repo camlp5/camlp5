@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_scheme.ml,v 1.21 2007/09/18 18:20:50 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.22 2007/09/22 23:31:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml.OldPrinters;
@@ -177,7 +177,7 @@ value int_repr s =
     [ 'b' | 'o' | 'x' | 'B' | 'O' | 'X' ->
         "#" ^ String.sub s 1 (String.length s - 1)
     | _ -> s ]
-  else s  
+  else s
 ;
 
 value assoc_left_parsed_op_list = ["+"; "*"; "land"; "lor"; "lxor"];

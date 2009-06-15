@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.59 2007/09/21 19:11:06 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.60 2007/09/22 23:31:12 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* expressions evaluated in the context of the preprocessor *)
@@ -104,7 +104,6 @@ and str_of_ty3 loc t =
               ty_var_name_tab.val := [(s, n) :: ty_var_name_tab.val];
               n
             } ] ]
-              
   | <:ctyp< $lid:s$ >> -> s
   | <:ctyp< $uid:s$ >> -> s
   | <:ctyp< _ >> -> "_"
@@ -1245,7 +1244,7 @@ and eval_patt env p tp param =
           let t = type_of_ctyp t in
           if unify loc tp t then eval_patt env p (eval_type loc tp) param
           else bad_type loc tp t
-      | <:patt< ( $list:pl$ ) >> -> 
+      | <:patt< ( $list:pl$ ) >> ->
           let tpl = List.map (fun _ -> ty_var ()) pl in
           let exp_tp = <:ctyp< ($list:tpl$) >> in
           if unify loc exp_tp tp && Obj.is_block param && Obj.tag param = 0 &&

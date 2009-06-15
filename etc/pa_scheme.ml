@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.23 2007/09/19 16:22:18 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.24 2007/09/22 23:31:12 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -841,7 +841,7 @@
             (lambda_match
              ([] (assert False))
              ([se] (ctyp_se se))
-             ([se . sel] 
+             ([se . sel]
                (let* ((t1 (ctyp_se se))
                       (loc (Ploc.encl (loc_of_sexpr se) loc))
                       (t2 (loop sel)))
