@@ -351,7 +351,7 @@ and module_type_se =
   | Sexpr loc [Slid _ "sig" :: sel] ->
       let sil = List.map sig_item_se sel in
       <:module_type< sig $list:sil$ end >>
-  | Sexpr loc [Slid _ "with"; se; Sexpr _ sel] ->
+  | Sexpr loc [Slid _ "with"; se :: sel] ->
       let mt = module_type_se se in
       let wcl = List.map with_constr_se sel in
       <:module_type< $mt$ with $list:wcl$ >>
@@ -366,8 +366,14 @@ and with_constr_se =
   | se -> error se "with constr" ]
 and sig_item_se =
   fun
-  [ Sexpr loc [Slid _ "type" :: sel] ->
+  [ Sexpr loc [Slid _ "open"; se] ->
+      let s = mod_ident_se se in
+      <:sig_item< open $s$ >>
+  | Sexpr loc [Slid _ "type" :: sel] ->
       let tdl = type_declaration_list_se sel in
+      <:sig_item< type $list:tdl$ >>
+  | Sexpr loc [Slid _ "type*" :: sel] ->
+      let tdl = List.map type_declaration_se sel in
       <:sig_item< type $list:tdl$ >>
   | Sexpr loc [Slid _ "exception"; Suid _ c :: sel] ->
       let c = Pcaml.rename_id.val c in
@@ -524,6 +530,12 @@ and expr_se =
       let e2 = expr_se se2 in
       let el = List.map expr_se sel in
       <:expr< for $lid:i$ = $e1$ to $e2$ do { $list:el$ } >>
+  | Sexpr loc [Slid _ "fordown"; Slid _ i; se1; se2 :: sel] ->
+      let i = Pcaml.rename_id.val i in
+      let e1 = expr_se se1 in
+      let e2 = expr_se se2 in
+      let el = List.map expr_se sel in
+      <:expr< for $lid:i$ = $e1$ downto $e2$ do { $list:el$ } >>
   | Sexpr loc [Slid loc1 "lambda"] -> <:expr< fun [] >>
   | Sexpr loc [Slid loc1 "lambda"; sep :: sel] ->
       let e = begin_se loc1 sel in

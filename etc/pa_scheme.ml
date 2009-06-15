@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.33 2007/10/05 18:54:11 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.34 2007/10/06 00:59:02 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -349,6 +349,8 @@
      (se (error se "with constr"))))
   (sig_item_se
     (lambda_match
+     ((Sexpr loc [(Slid _ "open") se])
+      (let ((s (mod_ident_se se))) <:sig_item< open $s$ >>))
      ((Sexpr loc [(Slid _ "type") . sel])
       (let ((tdl (type_declaration_list_se sel)))
          <:sig_item< type $list:tdl$ >>))

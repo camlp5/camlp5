@@ -795,12 +795,10 @@ EXTEND_PRINTER
   pr_str_item:
     [ "top"
       [ <:str_item< open $i$ >> ->
-          horiz_vertic
-            (fun () ->
-               sprintf "%s(open %s)%s" pc.bef
-                 (mod_ident {(pc) with bef = ""; aft = ""} i) pc.aft)
-            (fun () ->
-               not_impl "str_item open vertic" pc i)
+          plistb mod_ident 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(open" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(i, "")]
       | <:str_item< type $list:tdl$ >> ->
           type_decl_list pc tdl
       | <:str_item< exception $uid:c$ of $list:tl$ >> ->
@@ -851,7 +849,12 @@ EXTEND_PRINTER
   ;
   pr_sig_item:
     [ "top"
-      [ <:sig_item< type $list:tdl$ >> ->
+      [ <:sig_item< open $i$ >> ->
+          plistb mod_ident 0
+            {(pc) with ind = pc.ind + 1; bef = sprintf "%s(open" pc.bef;
+             aft = sprintf ")%s" pc.aft}
+            [(i, "")]
+      | <:sig_item< type $list:tdl$ >> ->
           type_decl_list pc tdl
       | <:sig_item< exception $uid:c$ of $list:tl$ >> ->
           exception_decl pc (c, tl)
@@ -876,11 +879,10 @@ EXTEND_PRINTER
              (fun pc -> module_type pc mt, "")]
       | <:sig_item< module type $uid:s$ = $mt$ >> ->
           module_type_decl pc (s, mt)
+      | <:sig_item< declare $list:sil$ end >> ->
+          if sil = [] then sprintf "%s%s" pc.bef pc.aft
+          else vlist sig_item pc sil
 (*
-      | <:sig_item< declare $list:s$ end >> ->
-          fun ppf curr next dg k ->
-            if s = [] then fprintf ppf "; ..."
-            else fprintf ppf "%a" (list sig_item) (s, k)
       | MLast.SgUse _ _ _ ->
           fun ppf curr next dg k -> ()
 *)
