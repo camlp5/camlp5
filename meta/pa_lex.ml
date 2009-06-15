@@ -1,11 +1,8 @@
-(* camlp5r *)
+(* camlp5r pa_extend.cmo q_MLast.cmo *)
 (* $Id$ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Simplified syntax of parsers of characters streams *)
-
-#load "pa_extend.cmo";
-#load "q_MLast.cmo";
 
 open Pcaml;
 open Exparser;

@@ -1,8 +1,6 @@
-(* camlp5r *)
-(* $Id: pa_macro.ml,v 1.30 2007/09/12 14:12:30 deraugla Exp $ *)
-
-#load "pa_extend.cmo";
-#load "q_MLast.cmo";
+(* camlp5r pa_extend.cmo q_MLast.cmo *)
+(* $Id: pa_macro.ml,v 1.31 2007/09/15 16:30:43 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 (*
 Added statements:

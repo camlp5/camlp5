@@ -1,18 +1,18 @@
-# $Id: Makefile,v 1.18 2007/09/08 04:54:38 deraugla Exp $
+# $Id: Makefile,v 1.19 2007/09/15 16:30:43 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
 
 INCLUDES=-I ../main -I $(TOP)/boot -I $(OTOP)/utils
 OCAMLCFLAGS=-warn-error A $(INCLUDES)
-OBJS=q_MLast.cmo pa_r.cmo pa_rp.cmo pa_macro.cmo pa_extend.cmo pa_extend_m.cmo pr_dump.cmo pa_lex.cmo
+OBJS=q_MLast.cmo q_ast.cmo pa_r.cmo pa_rp.cmo pa_macro.cmo pa_extend.cmo pa_extend_m.cmo pr_dump.cmo pa_lex.cmo
 CAMLP5RM=pa_r.cmo pa_rp.cmo pr_dump.cmo
 CAMLP5RMX=pa_r.cmx pa_rp.cmx pr_dump.cmx
 SHELL=/bin/sh
 COUT=$(OBJS) $(NAME)r$(EXE)
 COPT=$(NAME)r.opt
 
-all: $(COUT) q_ast.cmo
+all: $(COUT)
 opt: $(COPT)
 
 $(NAME)r$(EXE): ../main/$(NAME)$(EXE) $(CAMLP5RM)

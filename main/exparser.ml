@@ -1,16 +1,6 @@
 (* camlp5r q_MLast.cmo *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: exparser.ml,v 1.8 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: exparser.ml,v 1.9 2007/09/15 16:30:43 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 type spat_comp =
   [ SpTrm of MLast.loc and MLast.patt and option MLast.expr

@@ -1,13 +1,10 @@
-(* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.75 2007/09/14 20:26:28 deraugla Exp $ *)
+(* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
+(* $Id: q_ast.ml,v 1.76 2007/09/15 16:30:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
    its possible extensions and meta-ifying the nodes. Antiquotations
    work only in "strict" mode. *)
-
-#load "pa_extend.cmo";
-#load "q_MLast.cmo";
 
 value not_impl f x =
   let desc =
@@ -118,7 +115,7 @@ module Meta =
         | Ploc.VaVal v -> <:patt< Ploc.VaVal $elem v$ >> ]
       END
     ;
-    value e_xtr loc s =
+    value e_xtr_or_anti loc f s =
       match get_anti_loc s with
       [ Some (loc, typ, str) ->
           match typ with
@@ -126,11 +123,31 @@ module Meta =
               let (loc, r) = eval_anti Pcaml.expr_eoi loc "" str in
               <:expr< $anti:r$ >>
           | "anti" ->
-              let (loc, r) =
-                eval_anti Pcaml.expr_eoi loc "anti" str
-              in
-              let r = <:expr< $anti:r$ >> in
-              <:expr< MLast.ExAnt loc $r$ >>
+              let (loc, r) = eval_anti Pcaml.expr_eoi loc "anti" str in
+              f <:expr< $anti:r$ >>
+          | _ -> assert False ]
+      | _ -> assert False ]
+    ;
+    value p_xtr_or_anti loc f s =
+      match get_anti_loc s with
+      [ Some (loc, typ, str) ->
+          match typ with
+          [ "" ->
+              let (loc, r) = eval_anti Pcaml.patt_eoi loc "" str in
+              <:patt< $anti:r$ >>
+          | "anti" ->
+              let (loc, r) = eval_anti Pcaml.patt_eoi loc "anti" str in
+              f <:patt< $anti:r$ >>
+          | _ -> assert False ]
+      | _ -> assert False ]
+    ;
+    value e_xtr loc s =
+      match get_anti_loc s with
+      [ Some (loc, typ, str) ->
+          match typ with
+          [ "" ->
+              let (loc, r) = eval_anti Pcaml.expr_eoi loc "" str in
+              <:expr< $anti:r$ >>
           | _ -> assert False ]
       | _ -> assert False ]
     ;
@@ -141,12 +158,6 @@ module Meta =
           [ "" ->
               let (loc, r) = eval_anti Pcaml.patt_eoi loc "" str in
               <:patt< $anti:r$ >>
-          | "anti" ->
-              let (loc, r) =
-                eval_anti Pcaml.patt_eoi loc "anti" str
-              in
-              let r = <:patt< $anti:r$ >> in
-              <:patt< MLast.PaAnt loc $r$ >>
           | _ -> assert False ]
       | _ -> assert False ]
     ;
@@ -298,7 +309,7 @@ module Meta =
       | PaUid _ s -> e_node "PaUid" [e_vala e_string s]
       | PaVrn _ s -> e_node "PaVrn" [e_vala e_string s]
       | IFDEF STRICT THEN
-          PaXtr loc s _ -> e_xtr loc s
+          PaXtr loc s _ -> e_xtr_or_anti loc (fun r -> e_node "PaAnt" [r]) s
         END
       | x -> not_impl "e_patt" x ]
     and p_patt =
@@ -309,7 +320,7 @@ module Meta =
       | PaLid _ s -> p_node "PaLid" [p_vala p_string s]
       | PaTup _ pl -> p_node "PaTup" [p_vala (p_list p_patt) pl]
       | IFDEF STRICT THEN
-          PaXtr loc s _ -> p_xtr loc s
+          PaXtr loc s _ -> p_xtr_or_anti loc (fun r -> p_node "PaAnt" [r]) s
         END
       | x -> not_impl "p_patt" x ]
     and e_expr =
@@ -404,7 +415,7 @@ module Meta =
       | ExVrn _ s -> e_node "ExVrn" [e_vala e_string s]
       | ExWhi _ e el -> e_node "ExWhi" [e_expr e; e_vala (e_list e_expr) el]
       | IFDEF STRICT THEN
-          ExXtr loc s _ -> e_xtr loc s
+          ExXtr loc s _ -> e_xtr_or_anti loc (fun r -> e_node "ExAnt" [r]) s
         END ]
     and p_expr =
       fun
@@ -432,7 +443,7 @@ module Meta =
       | ExTup _ el -> p_node "ExTup" [p_vala (p_list p_expr) el]
       | ExUid _ s -> p_node "ExUid" [p_vala p_string s]
       | IFDEF STRICT THEN
-          ExXtr loc s _ -> p_xtr loc s
+          ExXtr loc s _ -> p_xtr_or_anti loc (fun r -> p_node "ExAnt" [r]) s
         END
       | x -> not_impl "p_expr" x ]
     and e_module_type =
