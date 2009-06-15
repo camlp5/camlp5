@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.141 2007/12/10 18:44:48 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.142 2007/12/11 01:49:33 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -762,26 +762,16 @@ value sig_module_or_module_type pref defc pc (m, mt) =
   let module_arg pc (s, mt) = pprintf pc "(%s :@;<1 1>%p)" s module_type mt in
   horiz_vertic
     (fun () ->
-       pprintf pc "%s %s%s %c %s" pref m
-         (if mal = [] then ""
-          else hlist module_arg {(pc) with bef = " "; aft = ""} mal)
-         defc (module_type {(pc) with bef = ""; aft = ""} mt))
+       pprintf pc "%s %s%s%p %c %p" pref m (if mal = [] then "" else " ")
+         (hlist module_arg) mal defc module_type mt)
     (fun () ->
-       let s1 =
-         let mal = List.map (fun ma -> (ma, "")) mal in
-         plistb module_arg 2
-           {(pc) with bef = sprintf "%s%s %s" pc.bef pref m;
-            aft = sprintf " %c" defc}
-           mal
-       in
-       let s2 =
-         module_type
-           {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""} mt
-       in
-       let s3 =
-         if pc.aft = "" then "" else sprintf "\n%s%s" (tab pc.ind) pc.aft
-       in
-       sprintf "%s\n%s%s" s1 s2 s3)
+       let mal = List.map (fun ma -> (ma, "")) mal in
+       if pc.aft = "" then
+         pprintf pc "%s %s%p %c@;%p" pref m (plistb module_arg 2) mal defc
+           module_type mt
+       else
+         pprintf pc "@[<a>%s %s%p %c@;%p@ @]" pref m (plistb module_arg 2) mal
+           defc module_type mt)
 ;
 
 value str_or_sig_functor pc s mt module_expr_or_type met =
@@ -792,20 +782,10 @@ value str_or_sig_functor pc s mt module_expr_or_type met =
 value with_constraint pc wc =
   match wc with
   [ <:with_constr< type $sl$ $list:tpl$ = $flag:pf$ $t$ >> ->
-      let b =
-        let k = hlist type_var {(pc) with bef = ""; aft = " = "} tpl in
-        mod_ident {(pc) with bef = sprintf "%swith type " pc.bef; aft = k} sl
-      in
-      let pf = if pf then "private " else "" in
-      ctyp {(pc) with bef = sprintf "%s%s" b pf} t
+      pprintf pc "with type %p%p =%s %p" mod_ident sl (hlist type_var) tpl
+        (if pf then " private" else "") ctyp t
   | <:with_constr< module $sl$ = $me$ >> ->
-      module_expr
-        {(pc) with
-         bef =
-           mod_ident
-             {(pc) with bef = sprintf "%swith module " pc.bef; aft = " = "}
-             sl}
-        me
+      pprintf pc "with module %p = %p" mod_ident sl module_expr me
   | IFDEF STRICT THEN
       x -> not_impl "with_constraint" pc x
     END ]
@@ -1443,8 +1423,7 @@ EXTEND_PRINTER
       | <:str_item< module $flag:rf$ $list:mdl$ >> ->
           let mdl = List.map (fun (m, mt) -> (Pcaml.unvala m, mt)) mdl in
           let rf = if rf then " rec" else "" in
-          vlist2 (str_module ("module" ^ rf)) (str_module "and") pc
-            mdl
+          vlist2 (str_module ("module" ^ rf)) (str_module "and") pc mdl
       | <:str_item< module type $uid:m$ = $mt$ >> ->
           sig_module_or_module_type "module type" '=' pc (m, mt)
       | <:str_item< open $i$ >> ->
@@ -1454,15 +1433,11 @@ EXTEND_PRINTER
       | <:str_item< value $flag:rf$ $list:pel$ >> ->
           horiz_vertic
             (fun () ->
-               sprintf "%svalue %s%s" pc.bef (if rf then "rec " else "")
-                 (hlist2 value_binding (and_before value_binding)
-                    {(pc) with bef = ""} pel))
+               pprintf pc "value%s %p" (if rf then " rec" else "")
+                 (hlist2 value_binding (and_before value_binding)) pel)
             (fun () ->
-               vlist2 value_binding (and_before value_binding)
-                 {(pc) with
-                  bef =
-                    sprintf "%svalue %s" pc.bef (if rf then "rec " else "")}
-                 pel)
+               pprintf pc "value%s %p" (if rf then " rec" else "")
+                 (vlist2 value_binding (and_before value_binding)) pel)
       | <:str_item< $exp:e$ >> ->
           expr pc e
       | <:str_item< class type $list:_$ >> | <:str_item< class $list:_$ >> ->
