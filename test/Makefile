@@ -1,9 +1,9 @@
-# $Id: Makefile,v 1.6 2007/10/09 02:53:07 deraugla Exp $
+# $Id: Makefile,v 1.7 2007/12/27 02:41:54 deraugla Exp $
 # Copyright (c) INRIA 2007
 
 DEP=../etc/pr_r.cmo quot_r.out.ml
 
-all: quot_r.mlt quot_r.mlu quot_o.mlu quot_sch.mlu
+all: quot_r.mlt quot_r.mlu quot_o.mlu
 
 clean:
 	rm -f *.ml[tu]
