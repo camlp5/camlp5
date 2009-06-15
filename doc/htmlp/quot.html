@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: quot.html,v 1.22 2007/10/14 03:41:11 deraugla Exp $ -->
+  <!-- $Id: quot.html,v 1.23 2007/10/18 21:06:30 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>quotations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -19,7 +19,7 @@
 
 <h1 class="top">Quotations</h1>
 
-<p>The quotations are a syntax extension in Camlp5 allowing to build
+<p>Quotations are a syntax extension in Camlp5 to build
   expressions and patterns in any syntax independant from the one of
   OCaml. Quotations are <em>expanded</em>, i.e. transformed, at parse
   time to produce normal syntax trees, like the rest of the program.
@@ -27,8 +27,8 @@
   any programmer.</p>
 
 <p>The aim of quotations is to use concrete syntax for manipulating
-  abstract values, what make programs easier to write, read, modify,
-  and understand. Their drawback is that they are isolated from the
+  abstract values.  That makes programs easier to write, read, modify,
+  and understand. The drawback is that quotations are linguistically isolated from the
   rest of the program, in opposition to <a href="syntext.html">syntax
   extensions</a>, which are included in the language.</p>
 
@@ -58,17 +58,17 @@
   may contain enclosing quotations and the characters "<tt>&lt;</tt>",
   "<tt>&gt;</tt>" and "<tt>\</tt>" can be escaped by
   "<tt>\</tt>". Notice that possible double-quote, parentheses, OCaml
-  comments do not have necessary to balance inside them.</p>
+  comments do not necessarily have to balanced inside them.</p>
 
 <p>As far as the lexer is concerned, a quotation is just a kind of
   string.</p>
 
 <h2>Quotation expander</h2>
 
-<p>The quotations are treated at parse time. Each quotation name is
+<p>Quotations are treated at parse time. Each quotation name is
   associated with a <em>quotation expander</em>, a function
   transforming the content of the quotation into a syntax tree. There
-  are actually two expanding functions, depending on the fact that the
+  are actually two expanding functions, depending on whether the
   quotation is in the context of an expression or if it is in the
   context of a pattern.</p>
 
@@ -82,7 +82,7 @@
   parsers</a>, <a href="grammars.html">extensible grammars</a>, string
   scanning, ocamllex and yacc, any.</p>
 
-<p>To build syntax trees, Camlp5 provides a way to easily build them:n
+<p>To build syntax trees, Camlp5 provides a way to easily build them
   see the <a href="ml_ast.html">chapter</a> about them: it is possible
   to build abstract syntax through concrete syntax using,
   precisely... quotations.</p>
@@ -102,20 +102,20 @@
   "<tt>f_expr</tt>" and "<tt>f_patt</tt>" the respective quotations
   expanders for expressions and patterns.</p>
 
-<p>Then, after compilation of the source file (without linking, i.e.
+<p>After compilation of the source file (without linking, i.e.
   using option "-c" of the OCaml compiler), an object file is created
   (ending with ".cmo"), which can be used as syntax
   extension <em>kit</em> of Camlp5.</p>
 
 <h3>By string</h3>
 
-<p>There is, actually, another way to program the expander: an alone
-  function which returns, not a syntax tree, but just a string which is
+<p>There is another way to program the expander: a single
+  function which returns, not a syntax tree, but a string which is
   parsed, afterwards, by the system. This function takes a boolean as
   first parameter telling whether the quotation is in position of
   expression (True) or in position of a pattern (False).</p>
 
-<p>If using that way, the source file must end with:</p>
+<p>Used that way, the source file must end with:</p>
 
 <pre>
   Quotation.add name (Quotation.ExStr f);
@@ -160,7 +160,7 @@
   context of an expression, or "<tt>Pcaml.patt</tt>" if the quotation is
   in the context of a pattern.</p>
 
-<p>But it can be interesting to insert portions of expressions or
+<p>It can be interesting to insert portions of expressions or
   patterns of the enclosing context in its own quotations. For that,
   the syntax of the quotation must define a syntax
   for <em>antiquotations areas</em>. It can be, for example:</p>
@@ -260,10 +260,10 @@
   Quotation.add "b" (Quotation.ExAst (expr, fun []));
 </pre>
 
-<p>Like above, the quotation expander "<tt>expr</tt>" takes the string
+<p>As above, the quotation expander "<tt>expr</tt>" takes the string
   parameter (the contents of the quotation) and applies the expression
-  parser of the OCaml language. But its result, instead of being
-  returned ast it is, is enclosed with the antiquotation node. (The
+  parser of the OCaml language. Its result, instead of being
+  returned as it is, is enclosed with the antiquotation node. (The
   location built is the location of the whole string.)</p>
 
 <p>Compilation:</p>
@@ -451,7 +451,7 @@ type expander =
 </pre>
 
 <dl><dd>
-    It is the type for quotation expander kinds:
+    Is the type for quotation expander kinds:
     <ul>
       <li>"<tt>Quotation.ExStr exp</tt>" corresponds to an expander
         "<tt>exp</tt>" returning a string which is parsed by the
@@ -463,7 +463,7 @@ type expander =
         syntax and not when used with normal syntax, and
         conversely).</li>
       <li>"<tt>Quotation.ExAst (expr_exp, patt_exp)</tt>" corresponds
-        to expanders returning syntax trees, therefore not necessiting
+        to expanders returning syntax trees, therefore not necessitating
         to be parsed afterwards.  The function "<tt>expr_exp</tt>" is
         called when the quotation is in position of an expression, and
         "<tt>patt_exp</tt>" when the quotation is in position of a
@@ -507,7 +507,7 @@ type expander =
 
 <h3>q_ast.cmo</h3>
 
-<p>Like the previous quotation, this extension kit add quotations of
+<p>As with the previous quotation, this extension kit add quotations of
   OCaml syntax tree, but in the current user syntax with all
   extensions, the previous one being restricted to revised syntax
   without extension. See the chapters
@@ -517,12 +517,12 @@ type expander =
 
 <h3>q_phony.cmo</h3>
 
-<p>This extension kit is destinated to pretty printing and must be loaded
+<p>This extension kit is designed for pretty printing and must be loaded
   after a language pretty printing kit (in normal or in revised syntax).
-  It prevents the expansions of all the quotations, transforming them
-  into variables. The pretty printing keeps then their initial form.</p>
+  It prevents the expansions of quotations, transforming them
+  into variables. The pretty printing then keeps the initial (source) form.</p>
 
-<p>Moreover the <a href="macros.html">macros</a> (extension
+<p>The <a href="macros.html">macros</a> (extension
   "<tt>pa_macro.cmo</tt>") are also displayed in their initial form,
   instead of expanded.</p>
 
@@ -569,7 +569,7 @@ type expander =
 
 <p>which is a classic representation of lambda terms.</p>
 
-<p>Notice, in the definition of "<tt>omega</tt>", the usage of the
+<p>Notice, in the definition of "<tt>omega</tt>", the use of the
   caret ("<tt>^</tt>") sign to specify antiquotations. Notice also the
   simplicity of the representation of the expression defining
   "<tt>comb_s</tt>".</p>
