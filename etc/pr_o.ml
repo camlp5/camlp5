@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.114 2007/12/20 19:56:20 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.115 2007/12/21 03:10:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -338,7 +338,7 @@ value match_assoc_sh force_vertic pc pwe =
 ;
 
 value match_assoc_list pc pwel =
-  if pwel = [] then sprintf "%s[]%s" pc.bef pc.aft
+  if pwel = [] then pprintf pc "[]"
   else
     let force_vertic =
       if flag_equilibrate_cases.val then
@@ -357,9 +357,10 @@ value match_assoc_list pc pwel =
         has_vertic
       else False
     in
-    vlist3 (match_assoc_sh force_vertic)
-      (bar_before (match_assoc_sh force_vertic))
-      {(pc) with bef = sprintf "%s  " pc.bef} pwel
+    pprintf pc "  %p"
+      (vlist3 (match_assoc_sh force_vertic)
+         (bar_before (match_assoc_sh force_vertic)))
+      pwel
 ;
 
 value raise_match_failure pc loc =
@@ -398,17 +399,12 @@ value rec make_patt_list =
 ;
 
 value type_var pc (tv, (p, m)) =
-  sprintf "%s%s'%s%s" pc.bef (if p then "+" else if m then "-" else "")
-    (Pcaml.unvala tv) pc.aft
+  pprintf pc "%s'%s" (if p then "+" else if m then "-" else "")
+    (Pcaml.unvala tv)
 ;
 
 value type_constraint pc (t1, t2) =
-  horiz_vertic
-    (fun () ->
-       sprintf "%sconstraint %s = %s%s" pc.bef
-         (ctyp {(pc) with bef = ""; aft = ""} t1)
-         (ctyp {(pc) with bef = ""; aft = ""} t2) pc.aft)
-    (fun () -> not_impl "type_constraint vertic" pc t1)
+  pprintf pc " constraint %p =@;%p" ctyp t1 ctyp t2
 ;
 
 value type_params pc tvl =
@@ -419,15 +415,6 @@ value type_params pc tvl =
       hlistl (comma_after type_var) type_var
         {(pc) with bef = sprintf "%s(" pc.bef; aft = sprintf ") %s" pc.aft}
         tvl ]
-;
-
-value type_constraint pc (t1, t2) =
-  horiz_vertic
-    (fun () ->
-       sprintf "%s constraint %s = %s%s" pc.bef
-         (ctyp {(pc) with bef = ""; aft = ""} t1)
-         (ctyp {(pc) with bef = ""; aft = ""} t2) pc.aft)
-    (fun () -> not_impl "type_constraint vertic" pc t1)
 ;
 
 value mem_tvar s tpl = List.exists (fun (t, _) -> Pcaml.unvala t = s) tpl;
