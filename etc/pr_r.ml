@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.112 2007/12/05 10:11:06 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.113 2007/12/05 12:49:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1835,11 +1835,7 @@ EXTEND_PRINTER
           vlist2 type_decl (and_before type_decl)
             {(pc) with bef = sprintf "%stype " pc.bef} tdl
       | <:sig_item< value $lid:s$ : $t$ >> ->
-          sprint_break 1 2 pc
-            (fun pc ->
-               var_escaped
-                 {(pc) with bef = sprintf "%svalue " pc.bef; aft = " :"} s)
-            (fun pc -> ctyp pc t)
+          pprintf pc "value %p :@;%p" var_escaped s ctyp t
       | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->
           failwith "classes and objects not pretty printed; add pr_ro.cmo" ] ]
   ;
@@ -1881,11 +1877,7 @@ EXTEND_PRINTER
       [ <:module_expr< $uid:s$ >> ->
           sprintf "%s%s%s" pc.bef s pc.aft
       | <:module_expr< ($me$ : $mt$) >> ->
-          sprint_break 1 0 {(pc) with ind = pc.ind + 1}
-            (fun pc ->
-               module_expr {(pc) with bef = sprintf "%s(" pc.bef; aft = " :"}
-                 me)
-            (fun pc -> module_type {(pc) with aft = sprintf ")%s" pc.aft} mt)
+          pprintf pc "@[<1>(%p :@ %p)@]" module_expr me module_type mt
       | <:module_expr< struct $list:_$ end >> as z ->
           module_expr
             {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
@@ -1916,8 +1908,7 @@ EXTEND_PRINTER
                     sil)
                  ("\n" ^ tab pc.ind) pc.aft)
       | <:module_type< $mt$ with $list:wcl$ >> ->
-          sprint_break 1 2 pc (fun pc -> module_type pc mt)
-            (fun pc -> vlist with_constraint pc wcl) ]
+          pprintf pc "%p@;%p" module_type mt (vlist with_constraint) wcl ]
     | "dot"
       [ <:module_type< $x$ . $y$ >> ->
           curr {(pc) with bef = curr {(pc) with aft = "."} x} y ]
