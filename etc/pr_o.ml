@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.165 2007/12/26 12:37:00 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.166 2007/12/26 14:56:34 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -220,8 +220,7 @@ value comm_patt_any f pc z =
 
 value patt_as pc z =
   match z with
-  [ <:patt< ($x$ as $y$) >> ->
-      pprintf pc "%p as %s" patt x (patt {(pc) with bef = ""; aft = ""} y)
+  [ <:patt< ($x$ as $y$) >> -> pprintf pc "%p as %p" patt x patt y
   | z -> patt pc z ]
 ;
 
@@ -1711,17 +1710,11 @@ value field_expr pc (s, e) = pprintf pc "%s =@;%p" s expr e;
 
 value patt_tcon pc p =
   match p with
-  [ <:patt< ($p$ : $t$) >> ->
-      horiz_vertic
-        (fun () ->
-           sprintf "%s%s : %s%s" pc.bef
-             (patt {(pc) with bef = ""; aft = ""} p)
-             (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-        (fun () -> not_impl "patt_tcon vertic" pc p)
+  [ <:patt< ($p$ : $t$) >> -> pprintf pc "%p :@ %p" patt p ctyp t
   | p -> patt pc p ]
 ;
 
-value typevar pc tv = sprintf "%s'%s%s" pc.bef tv pc.aft;
+value typevar pc tv = pprintf pc "'%s" tv;
 
 value class_object pc (csp, csl) =
   let class_str_item_sep =
