@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.48 2007/12/03 09:57:52 deraugla Exp $
+# $Id: Makefile,v 1.49 2007/12/04 01:40:09 deraugla Exp $
 
 include ../config/Makefile
 
@@ -12,8 +12,12 @@ SHELL=/bin/sh
 COUT=$(OBJS) $(NAME)o$(EXE) $(NAME)sch$(EXE)
 COPT=$(OBJS:.cmo=.cmx) $(NAME)o.opt
 
-all: $(COUT) mk$(NAME).sh
+all: $(COUT) mk$(NAME).sh META
 opt: $(COPT) mk$(NAME).opt.sh
+
+META: META.tpl
+	sed -e  "s:@VERSION@:$(VERSION):" -e "s:@CAMLP5DIR@:$(LIBDIR)/camlp5:" META.tpl > META
+
 
 $(NAME)o$(EXE): ../main/$(NAME)$(EXE) $(CAMLP5OM)
 	rm -f $(NAME)o$(EXE)
@@ -54,6 +58,7 @@ compare_l:
 clean::
 	rm -f *.cm* *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak *.out *.opt
 	rm -f mk$(NAME).sh mk$(NAME).opt.sh $(NAME)o$(EXE) $(NAME)sch$(EXE)
+	rm -f META
 
 depend:
 	cp .depend .depend.bak

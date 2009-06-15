@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id: configure,v 1.24 2007/11/26 09:20:52 deraugla Exp $
+# $Id: configure,v 1.25 2007/12/04 01:40:09 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -186,6 +186,8 @@ else
     OPT=
 fi
 
+VERSION="$(grep "value version =" main/pcaml.ml | sed -e 's/^[^"]*"\([^"]*\).*$/\1/')"
+
 (
 echo NAME=$name
 echo MODE=$mode
@@ -194,6 +196,7 @@ echo OPT=$OPT
 echo EXT_OBJ=$EXT_OBJ
 echo EXT_LIB=$EXT_LIB
 echo OVERSION=$OVERSION
+echo VERSION=$VERSION
 echo "OTOP=\$(TOP)/ocaml_stuff/$OVERSION"
 if ocamlc -w y 2>/dev/null; then
   echo "OCAMLC_W_Y=\"-w y\""
