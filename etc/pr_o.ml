@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.134 2007/12/23 12:54:03 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.135 2007/12/23 16:03:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -841,46 +841,37 @@ EXTEND_PRINTER
                      pprintf pc "%s %p with %p" op expr e1
                        (match_assoc False) ((p, wo, e), True))
                 (fun () ->
-                   let (op_begin, pc_aft, op_end) =
-                     if List.mem pc.dang ["|"; ";"] then
-                       (sprintf "begin %s" op, "",
-                        sprintf "\n%send%s" (tab pc.ind) pc.aft)
-                     else (op, pc.aft, "")
-                   in
-                   match
-                     horiz_vertic
-                       (fun () ->
-                          let pc = {(pc) with aft = ""} in
-                          Some (pprintf pc "%s %q with" op_begin expr e1 ""))
-                       (fun () -> None)
-                   with
-                   [ Some s1 ->
-                       let s2 =
-                         match_assoc False
-                           {(pc) with ind = pc.ind + 2;
-                            bef = tab (pc.ind + 2); aft = pc_aft}
+                   if List.mem pc.dang ["|"; ";"] then
+                     match
+                       horiz_vertic
+                         (fun () ->
+                            let pc = {(pc) with aft = ""} in
+                            Some
+                              (pprintf pc "begin %s %q with" op expr e1 ""))
+                         (fun () -> None)
+                     with
+                     [ Some s1 ->
+                         let pc = {(pc) with bef = ""} in
+                         pprintf pc "%s@;%p@ end" s1 (match_assoc False)
                            ((p, wo, e), True)
-                       in
-                       let s3 = op_end in
-                       sprintf "%s\n%s%s" s1 s2 s3
-                   | None ->
-                       let s1 =
-                         let s =
-                           expr
-                             {ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                              aft = ""; dang = ""}
-                             e1
-                         in
-                         sprintf "%s%s\n%s" pc.bef op_begin s
-                       in
-                       let s2 =
-                         match_assoc False
-                           {(pc) with bef = sprintf "%swith " (tab pc.ind);
-                            aft = pc_aft}
+                     | None ->
+                         pprintf pc "@[<a>begin %s@;%q@ with %p@ end@]" op
+                           expr e1 "" (match_assoc False) ((p, wo, e), True) ]
+                   else
+                     match
+                       horiz_vertic
+                         (fun () ->
+                            let pc = {(pc) with aft = ""} in
+                            Some (pprintf pc "%s %q with" op expr e1 ""))
+                         (fun () -> None)
+                     with
+                     [ Some s1 ->
+                         let pc = {(pc) with bef = ""} in
+                         pprintf pc "%s@;%p" s1 (match_assoc False)
                            ((p, wo, e), True)
-                       in
-                       let s3 = op_end in
-                       sprintf "%s\n%s%s" s1 s2 s3 ])
+                     | None ->
+                         pprintf pc "@[<a>%s@;%q@ with %p@]" op expr e1 ""
+                           (match_assoc False) ((p, wo, e), True) ])
           | [] -> raise_match_failure pc (MLast.loc_of_expr e)
           | _ ->
               horiz_vertic
