@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_strict.html,v 1.13 2007/09/25 05:20:51 deraugla Exp $ -->
+  <!-- $Id: ast_strict.html,v 1.14 2007/09/25 10:08:04 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>AST - strict</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -1635,53 +1635,92 @@
 
 <h4>module_type</h4>
 
-<table border="1">
-  <tr>
-    <th>Node</th>
-    <th><tt>&lt;:module_type&lt; ... >></tt></th>
-    <th>Comment</th>
-  </tr>
-  <tr>
-    <td><tt>MtAcc loc mt1 mt2</tt></td>
-    <td align="center"><tt>$mt1$ . $mt2$</tt></td>
-    <td>dot</td>
-  </tr>
-  <tr>
-    <td><tt>MtApp loc mt1 mt2</tt></td>
-    <td align="center"><tt>$mt1$ $mt2$</tt></td>
-    <td>application</td>
-  </tr>
-  <tr>
-    <td><tt>MtFun loc s mt1 mt2</tt></td>
-    <td align="center"><tt>functor ( $s$ : $mt1$ ) -> $mt2$</tt></td>
-    <td>functor</td>
-  </tr>
-  <tr>
-    <td><tt>MtLid loc s</tt></td>
-    <td align="center"><tt>$lid:s$</tt></td>
-    <td>lowercase identifier</td>
-  </tr>
-  <tr>
-    <td><tt>MtQuo loc s</tt></td>
-    <td align="center"><tt>' $s$</tt></td>
-    <td>abstract</td>
-  </tr>
-  <tr>
-    <td><tt>MtSig loc lsigi</tt></td>
-    <td align="center"><tt>sig $list:lsigi$ end</tt></td>
-    <td>signature</td>
-  </tr>
-  <tr>
-    <td><tt>MtUid loc s</tt></td>
-    <td align="center"><tt>$uid:s$</tt></td>
-    <td>uppercase identifier</td>
-  </tr>
-  <tr>
-    <td><tt>MtWit loc mt lwc</tt></td>
-    <td align="center"><tt>$mt$ with $list:lwc$</tt></td>
-    <td>with construction</td>
-  </tr>
-</table>
+<dl class="nodelist">
+  <dt>- access</dt>
+  <dd>
+    <tt style="color:blue">&lt;:module_type&lt; $mt1$ . $mt2$ >></tt><br/>
+    <tt style="color:red">MLast.MtAcc loc mt1 mt2</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- application</dt>
+  <dd>
+    <tt style="color:blue">&lt;:module_type&lt; $mt1$ $mt2$ >></tt><br/>
+    <tt style="color:red">MLast.MtApp loc mt1 mt2</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- functor</dt>
+  <dd>
+    <tt style="color:blue">&lt;:module_type&lt; functor ($s$ : $mt1$) -> $mt2$ >></tt><br/>
+    <tt style="color:red">MLast.MtFun loc (Ploc.VaVal s) mt1 mt2</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:module_type&lt; functor ($_:s$ : $mt1$) -> $mt2$ >></tt><br/>
+    <tt style="color:red">MLast.MtFun loc s mt1 mt2</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- lowercase identifier</dt>
+  <dd>
+    <tt style="color:blue">&lt;:module_type&lt; $lid:s$ >></tt><br/>
+    <tt style="color:red">MLast.MtLid loc (Ploc.VaVal s)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:module_type&lt; $_lid:s$ >></tt><br/>
+    <tt style="color:red">MLast.MtLid loc s</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- abstract</dt>
+  <dd>
+    <tt style="color:blue">&lt;:module_type&lt; ' $s$ >></tt><br/>
+    <tt style="color:red">MLast.MtQuo loc (Ploc.VaVal s)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:module_type&lt; ' $_:s$ >></tt><br/>
+    <tt style="color:red">MLast.MtQuo loc s</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- signature</dt>
+  <dd>
+    <tt style="color:blue">&lt;:module_type&lt; sig $list:lsigi$ end >></tt><br/>
+    <tt style="color:red">MLast.MtSig loc (Ploc.VaVal lsigi)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:module_type&lt; sig $_list:lsigi$ end >></tt><br/>
+    <tt style="color:red">MLast.MtSig loc lsigi</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- uppercase identifier</dt>
+  <dd>
+    <tt style="color:blue">&lt;:module_type&lt; $uid:s$ >></tt><br/>
+    <tt style="color:red">MLast.MtUid loc (Ploc.VaVal s)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:module_type&lt; $_uid:s$ >></tt><br/>
+    <tt style="color:red">MLast.MtUid loc s</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- with construction</dt>
+  <dd>
+    <tt style="color:blue">&lt;:module_type&lt; $mt$ with $list:lwc$ >></tt><br/>
+    <tt style="color:red">MLast.MtWit loc mt (Ploc.VaVal lwc)</tt><br/>
+    <br/>
+    <tt style="color:blue">&lt;:module_type&lt; $mt$ with $_list:lwc$ >></tt><br/>
+    <tt style="color:red">MLast.MtWit loc mt lwc</tt>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- extra node <a href="#module_type_1">(1)</a></dt>
+  <dd>
+    <tt style="color:blue">... no representation ...</tt><br/>
+    <tt style="color:red">MLast.MtXtr loc s ot</tt>
+  </dd>
+</dl>
+
+<div id="module_type_1" style="margin: 5mm 0 0 1cm">(1)
+  Extra node internally used by the quotation kit "<tt>q_ast.cmo</tt>"
+    to build antiquotations of module types.
+</div>
 
 <h3>classes...</h3>
 

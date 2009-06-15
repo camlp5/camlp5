@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.71 2007/09/25 05:20:51 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.72 2007/09/25 10:08:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -416,12 +416,13 @@ EXTEND
   ;
   (* Module types *)
   module_type:
-    [ [ "functor"; "("; i = UIDENT; ":"; t = SELF; ")"; "->"; mt = SELF ->
-          <:module_type< functor ( $uid:i$ : $t$ ) -> $mt$ >> ]
-    | [ mt = SELF; "with"; wcl = LIST1 with_constr SEP "and" ->
-          <:module_type< $mt$ with $list:wcl$ >> ]
-    | [ "sig"; sg = LIST0 [ s = sig_item; OPT ";;" -> s ]; "end" ->
-          <:module_type< sig $list:sg$ end >>
+    [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = SELF; ")"; "->";
+        mt = SELF ->
+          <:module_type< functor ( $_uid:i$ : $t$ ) -> $mt$ >> ]
+    | [ mt = SELF; "with"; wcl = V (LIST1 with_constr SEP "and") ->
+          <:module_type< $mt$ with $_list:wcl$ >> ]
+    | [ "sig"; sg = V (LIST0 [ s = sig_item; OPT ";;" -> s ]); "end" ->
+          <:module_type< sig $_list:sg$ end >>
       | i = mod_type_ident -> i
       | "("; mt = SELF; ")" -> <:module_type< $mt$ >> ] ]
   ;
@@ -429,8 +430,8 @@ EXTEND
     [ LEFTA
       [ m1 = SELF; "."; m2 = SELF -> <:module_type< $m1$ . $m2$ >>
       | m1 = SELF; "("; m2 = SELF; ")" -> <:module_type< $m1$ $m2$ >> ]
-    | [ m = UIDENT -> <:module_type< $uid:m$ >>
-      | m = LIDENT -> <:module_type< $lid:m$ >> ] ]
+    | [ m = V UIDENT -> <:module_type< $_uid:m$ >>
+      | m = V LIDENT -> <:module_type< $_lid:m$ >> ] ]
   ;
   sig_item:
     [ "top"

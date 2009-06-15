@@ -226,3 +226,17 @@
 <:module_expr< ($me$ : $mt$) >>;
 <:module_expr< $uid:s$ >>;
 <:module_expr< $_uid:s$ >>;
+<:module_type< $mt1$ . $mt2$ >>;
+<:module_type< $mt1$ $mt2$ >>;
+<:module_type< functor ($s$ : $mt1$) -> $mt2$ >>;
+<:module_type< functor ($_:s$ : $mt1$) -> $mt2$ >>;
+<:module_type< $lid:s$ >>;
+<:module_type< $_lid:s$ >>;
+<:module_type< ' $s$ >>;
+<:module_type< ' $_:s$ >>;
+<:module_type< sig $list:lsigi$ end >>;
+<:module_type< sig $_list:lsigi$ end >>;
+<:module_type< $uid:s$ >>;
+<:module_type< $_uid:s$ >>;
+<:module_type< $mt$ with $list:lwc$ >>;
+<:module_type< $mt$ with $_list:lwc$ >>;
