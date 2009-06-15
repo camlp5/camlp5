@@ -31,10 +31,10 @@
 <:expr< $_int64:s$ >>
 <:expr< $nativeint:s$ >>
 <:expr< $_nativeint:s$ >>
-(MLast.ExLab loc (Ploc.VaVal s) None)
-(MLast.ExLab loc s None)
-(MLast.ExLab loc (Ploc.VaVal s) (Some e))
-(MLast.ExLab loc s (Some e))
+<:expr< ~$s$ >>
+<:expr< ~$_:s$ >>
+<:expr< (~$s$ $e$) >>
+<:expr< (~$_:s$ $e$) >>
 <:expr< (lazy $e$) >>
 <:expr< (let ($list:lpe$) $e$) >>
 <:expr< (let ($_list:lpe$) $e$) >>
@@ -46,16 +46,16 @@
 <:expr< $_lid:s$ >>
 <:expr< (letmodule $uid:s$ $me$ $e$) >>
 <:expr< (letmodule $_uid:s$ $me$ $e$) >>
-; <:expr< match $e$ with [ $list:lpwe$ ] >>
-; <:expr< match $e$ with [ $_list:lpwe$ ] >>
-; <:expr< new $list:ls$ >>
-; <:expr< new $_list:ls$ >>
-; <:expr< object $opt:op$ $list:lcstri$ end >>
-; <:expr< object $_opt:op$ $_list:lcstri$ end >>
-; <:expr< ?$s$ >>
-; <:expr< ?$_:s$ >>
-; <:expr< ?$s$: $e$ >>
-; <:expr< ?$_:s$: $e$ >>
+<:expr< (match $e$ ($list:lpwe$)) >>
+<:expr< (match $e$ ($_list:lpwe$)) >>
+(MLast.ExNew loc (Ploc.VaVal ls))
+(MLast.ExNew loc ls)
+(MLast.ExObj loc (Ploc.VaVal op) (Ploc.VaVal lcstri))
+(MLast.ExObj loc op lcstri)
+<:expr< ?$s$ >>
+<:expr< ?$_:s$ >>
+<:expr< (?$s$ $e$) >>
+<:expr< (?$_:s$ $e$) >>
 ; <:expr< {< $list:lse$ >} >>
 ; <:expr< {< $_list:lse$ >} >>
 ; <:expr< { $list:lpe$ } >>

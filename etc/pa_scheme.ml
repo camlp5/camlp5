@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.50 2007/10/07 18:58:22 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.51 2007/10/07 19:50:20 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -199,8 +199,8 @@
      (((` '<') (tok (less kwt))) ep (values tok (values bp ep)))
      (((` '-') (tok (minus bp kwt))) ep (values tok (values bp ep)))
      (((` '#') (tok (sharp bp kwt))) ep (values tok (values bp ep)))
-     (((` '~') (tok tilde)) ep (values tok (values bp ep)))
-     (((` '?') (tok question)) ep (values tok (values bp ep)))
+     (((` '~') (tok (tilde bp))) ep (values tok (values bp ep)))
+     (((` '?') (tok (question bp))) ep (values tok (values bp ep)))
      (((` (as (range '0' '9') c)) (tok (number (Buff.store 0 c)))) ep
       (values tok (values bp ep)))
      (((` (as (or '+' '*' '/') c)) (len (ident (Buff.store 0 c)))
@@ -220,17 +220,30 @@
     (values "ANTIQUOT_LOC" (antiquot_loc bp 0 strm))
     (match_with_parser strm
      (((len (ident (Buff.store 0 '$')))) (identifier kwt (Buff.get len))))))
-  (tilde
-    (parser
+  ((tilde bp strm)
+   (if Plexer.force_antiquot_loc.val
+    (match_with_parser strm
      (((` (as (range 'a' 'z') c)) (len (ident (Buff.store 0 c))))
       (values "TILDEIDENT" (Buff.get len)))
-     (((len (ident (Buff.store 0 '~'))) (len (operator len)))
-      (values "LIDENT" (Buff.get len)))))
-  (question
-    (parser
+     (((` '$') (s (antiquot_loc bp 0)))
+      (values "ANTIQUOT_LOC" (^ "~" s)))
+     (() (values "LIDENT" "?")))
+    (match_with_parser strm
+     (((` (as (range 'a' 'z') c)) (len (ident (Buff.store 0 c))))
+      (values "TILDEIDENT" (Buff.get len)))
+     (() (values "LIDENT" "?")))))
+  ((question bp strm)
+   (if Plexer.force_antiquot_loc.val
+    (match_with_parser strm
      (((` (as (range 'a' 'z') c)) (len (ident (Buff.store 0 c))))
       (values "QUESTIONIDENT" (Buff.get len)))
-     (() (values "LIDENT" "?"))))
+     (((` '$') (s (antiquot_loc bp 0)))
+      (values "ANTIQUOT_LOC" (^ "?" s)))
+     (() (values "LIDENT" "?")))
+    (match_with_parser strm
+     (((` (as (range 'a' 'z') c)) (len (ident (Buff.store 0 c))))
+      (values "QUESTIONIDENT" (Buff.get len)))
+     (() (values "LIDENT" "?")))))
   ((sharp bp kwt)
    (parser
      (((` '(')) (values "" "#("))
@@ -311,11 +324,11 @@
   (Slid MLast.loc string)
   (Slidv MLast.loc (MLast.v string))
   (Slist MLast.loc (list sexpr))
-  (Sqid MLast.loc string)
+  (Sqid MLast.loc (MLast.v string))
   (Squot MLast.loc string string)
   (Srec MLast.loc (list sexpr))
   (Sstring MLast.loc string)
-  (Stid MLast.loc string)
+  (Stid MLast.loc (MLast.v string))
   (Suid MLast.loc string)
   (Suidv MLast.loc (MLast.v string))))
 
@@ -517,10 +530,10 @@
     ((Sfloat loc s) <:expr< $_flo:s$ >>)
     ((Schar loc s) <:expr< $_chr:s$ >>)
     ((Sstring loc s) <:expr< $str:s$ >>)
-    ((Stid loc s) <:expr< ~$(rename_id s)$ >>)
-    ((Sqid loc s) <:expr< ?$(rename_id s)$ >>)
+    ((Stid loc s) <:expr< ~$_:s$ >>)
+    ((Sqid loc s) <:expr< ?$_:s$ >>)
     ((Sexpr loc [(Sqid _ s) se])
-     (let* ((s (rename_id s)) (e (expr_se se))) <:expr< ?$s$: $e$ >>))
+     (let* ((e (expr_se se))) <:expr< ?$_:s$: $e$ >>))
     ((Sexpr loc []) <:expr< () >>)
     ((when (Sexpr loc [(Slid _ s) e1 . (as [_ . _] sel)])
      (List.mem s assoc_left_parsed_op_list))
@@ -552,7 +565,7 @@
               <:expr< $a1$ && $a2$ >>)))))
       (loop (List.map expr_se sel))))
     ((Sexpr loc [(Stid _ s) se])
-     (let ((e (expr_se se))) <:expr< ~$s$: $e$ >>))
+     (let ((e (expr_se se))) <:expr< ~$_:s$: $e$ >>))
     ((Sexpr loc [(Slid _ "-") se])
      (let ((e (expr_se se))) <:expr< - $e$ >>))
     ((Sexpr loc [(Slid _ "-.") se])
@@ -666,8 +679,11 @@
         <:expr< let module $_:s$ = $me$ in $e$ >>))
     ((Sexpr loc [(Slid _ "match") se . sel])
      (let* ((e (expr_se se))
-            (pel (List.map (match_case loc) sel)))
-        <:expr< match $e$ with [ $list:pel$ ] >>))
+            (pel
+             (match sel
+              ([(Sexpr _ [(Santi _ (or "list" "_list") s)])] <:vala< $s$ >>)
+              (_ <:vala< (List.map (match_case loc) sel) >>))))
+        <:expr< match $e$ with [ $_list:pel$ ] >>))
     ((Sexpr loc [(Slid _ "parser") . sel])
      (let ((e
              (match sel
@@ -912,16 +928,12 @@
    (lambda_match
     ((Slid loc "_") (Left <:patt< _ >>))
     ((Slid loc s) (Left <:patt< $lid:(rename_id s)$ >>))
-    ((Stid loc s) (Left <:patt< ~$(rename_id s)$ >>))
-    ((Sqid loc s) (Left <:patt< ?$(rename_id s)$ >>))
+    ((Stid loc s) (Left <:patt< ~$_:s$ >>))
+    ((Sqid loc s) (Left <:patt< ?$_:s$ >>))
     ((Sexpr loc [(Sqid _ s) se])
-     (let* ((s (rename_id s))
-            (e (expr_se se)))
-        (Left <:patt< ? ( $lid:s$ = $e$ ) >>)))
+     (let ((e (expr_se se))) (Left <:patt< ? ( $_lid:s$ = $e$ ) >>)))
     ((Sexpr loc [(Stid _ s) se])
-     (let* ((s (rename_id s))
-            (p (patt_se se)))
-        (Left <:patt< ~$s$:$p$ >>)))
+     (let ((p (patt_se se))) (Left <:patt< ~$_:s$:$p$ >>)))
     ((Sexpr loc [(Slid _ ":") se1 se2])
      (let* ((p (ipatt_se se1)) (t (ctyp_se se2)))
         (Left <:patt< ($p$ : $t$) >>)))
@@ -1138,8 +1150,8 @@ EXTEND
       | s = V LIDENT -> (Slidv loc s)
       | s = UIDENT -> (Suid loc s)
       | s = V UIDENT -> (Suidv loc s)
-      | s = TILDEIDENT -> (Stid loc s)
-      | s = QUESTIONIDENT -> (Sqid loc s)
+      | s = V TILDEIDENT -> (Stid loc s)
+      | s = V QUESTIONIDENT -> (Sqid loc s)
       | s = V INT -> (Sint loc s)
       | s = V INT_l -> (Sint_l loc s)
       | s = V INT_L -> (Sint_L loc s)
