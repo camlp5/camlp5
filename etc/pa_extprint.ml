@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_extprint.ml,v 1.25 2007/12/17 20:32:03 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.26 2007/12/18 02:05:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -685,55 +685,61 @@ value make_pc loc erase_bef erase_aft is_empty_bef is_empty_aft pc bef bef_al
 
 value expr_of_pformat loc fmt empty_bef empty_aft pc al =
   fun
-  [ [fmt] ->
-      let (al, al_rest) = get_assoc_args loc fmt al in
+  [ [] -> assert False
+  | [fmt] ->
+      let (bef_al, al) = get_assoc_args loc fmt al in
       let e =
-        if empty_bef && empty_aft && al = [] then <:expr< $str:fmt$ >>
+        if empty_bef && empty_aft && bef_al = [] then <:expr< $str:fmt$ >>
         else
           let fmt = if empty_bef then fmt else "%s" ^ fmt in
           let fmt = if empty_aft then fmt else fmt ^ "%s" in
           let e = <:expr< Pretty.sprintf $str:fmt$ >> in
           let e = if empty_bef then e else <:expr< $e$ $pc$.bef >> in
-          let e = List.fold_left (fun f a -> <:expr< $f$ $a$ >>) e al in
+          let e = List.fold_left (fun f a -> <:expr< $f$ $a$ >>) e bef_al in
           if empty_aft then e else <:expr< $e$ $pc$.aft >>
       in
-      (e, al_rest)
-  | [fmt1; fmt2] ->
-      let (bef_al, al) = get_assoc_args loc fmt1 al in
-      let (f, a, al) =
-        match al with
-        [ [f; a :: al] -> (f, a, al)
-        | _ -> Ploc.raise loc (Stream.Error "Not enough parameters") ]
-      in
-      let (aft_al, al) = get_assoc_args loc fmt2 al in
-      let pc =
-        make_pc loc False False empty_bef empty_aft pc fmt1 bef_al fmt2 aft_al
-      in
-      let e = <:expr< $f$ $pc$ $a$ >> in
       (e, al)
-  | [fmt1; fmt2; fmt3] ->
-      let (bef_al, al) = get_assoc_args loc fmt1 al in
-      let (f1, a1, al) =
-        match al with
-        [ [f; a :: al] -> (f, a, al)
-        | _ -> Ploc.raise loc (Stream.Error "Not enough parameters") ]
+  | [fmt1; fmt2 :: fmtl] ->
+      let (e, al) =
+        let (bef_al, al) = get_assoc_args loc fmt1 al in
+        let (f, a, al) =
+          match al with
+          [ [f; a :: al] -> (f, a, al)
+          | _ -> Ploc.raise loc (Stream.Error "Not enough parameters") ]
+        in
+        let (aft_al, al) = get_assoc_args loc fmt2 al in
+        let pc =
+          make_pc loc False (fmtl <> []) empty_bef empty_aft pc fmt1 bef_al
+            fmt2 aft_al
+        in
+        (<:expr< $f$ $pc$ $a$ >>, al)
       in
-      let (aft_al, al) = get_assoc_args loc fmt2 al in
-      let pc1 =
-        make_pc loc False True False False pc fmt1 bef_al fmt2 aft_al
-      in
-      let e1 = <:expr< $f1$ $pc1$ $a1$ >> in
-      let (f2, a2, al) =
-        match al with
-        [ [f; a :: al] -> (f, a, al)
-        | _ -> Ploc.raise loc (Stream.Error "Not enough parameters") ]
-      in
-      let (aft2_al, al) = get_assoc_args loc fmt3 al in
-      let pc2 = make_pc loc True False False False pc "" [] fmt3 aft2_al in
-      let e2 = <:expr< $f2$ $pc2$ $a2$ >> in
-      (<:expr< Pretty.sprintf "%s%s" $e1$ $e2$ >>, al)
-  | _ ->
-      (<:expr< ccc $str:fmt$ >>, al) ]
+      if fmtl = [] then (e, al)
+      else
+        let (sfmt, el, al) =
+          loop "%s" [e] al fmtl where rec loop sfmt rev_el al =
+            fun
+            [ [] -> (sfmt, List.rev rev_el, al)
+            | [fmt :: fmtl] ->
+                let (f, a, al) =
+                  match al with
+                  [ [f; a :: al] -> (f, a, al)
+                  | _ ->
+                      Ploc.raise loc (Stream.Error "Not enough parameters") ]
+                in
+                let (aft_al, al) = get_assoc_args loc fmt al in
+                let pc =
+                  make_pc loc True (fmtl <> []) empty_bef empty_aft pc "" []
+                    fmt aft_al
+                in
+                let e = <:expr< $f$ $pc$ $a$ >> in
+                loop ("%s" ^ sfmt) [e :: rev_el] al fmtl ]
+        in
+        let e =
+          List.fold_left (fun f e -> <:expr< $f$ $e$ >>)
+            <:expr< Pretty.sprintf $str:sfmt$ >> el
+        in
+        (e, al) ]
 ;
 
 value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc t al =
