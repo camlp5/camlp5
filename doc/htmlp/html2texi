@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2texi,v 1.11 2007/08/28 03:22:04 deraugla Exp $
+# $Id: html2texi,v 1.12 2007/08/28 08:15:35 deraugla Exp $
 
 FILES1="index.html ptools.html"
 FILES2="parsers.html lexers.html fparsers.html grammars.html"
@@ -25,6 +25,8 @@ VERSION="$(grep "value version =" ../../main/pcaml.ml | sed -e 's/^[^"]*"\([^"]*
 /bin/echo '
 @node Top
 @top Camlp5: a preprocessor pretty printer for OCaml'
+
+/bin/echo "@noindent Version $VERSION"
 
 /bin/echo '
 @menu'
@@ -146,8 +148,8 @@ for i in $FILES; do
       -e 's|<table border="1">|@multitable @columnfractions .35 .35 .23\n|' \
       -e 's|<table[^>]*>|\n@multitable @columnfractions .50 .50\n|' \
       -e 's|</table>|@end multitable|' \
-      -e 's|<tr><th[^>]*>|@headitem |g' -e 's|</th><th[^>]*>| @tab |g' \
-      -e 's|</th></tr>|\n|g' \
+      -e 's|<tr><th[^>]*>|@item |g' -e 's|</th><th[^>]*>| @tab |g' \
+      -e 's|</th></tr>|\n@item\n|g' \
       -e 's|<tr><td>|@item |g' -e 's|</td><td[^>]*>| @tab |g' \
       -e 's|</td></tr>|\n|g' \
       -e 's/&lt;/</g' -e 's/&gt;/>/g' -e 's/&nbsp;/ /g' -e 's/&amp;/\&/g'
