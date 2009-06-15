@@ -279,7 +279,22 @@ let rec mstream_pattern loc m (spcl, epo, e) =
   | spc :: spcl ->
       let (p1, e1) = mstream_pattern_component m spc in
       let skont = mstream_pattern loc m (spcl, epo, e) in
-      let f = MLast.ExFun (loc, [p1, None, skont]) in
+      let f =
+        match p1, skont with
+          MLast.PaLid (_, a),
+          MLast.ExFun
+            (_,
+             [MLast.PaLid (_, b), None,
+              MLast.ExApp
+                (_, MLast.ExApp (_, e, MLast.ExLid (_, c)),
+                 MLast.ExLid (_, d))])
+          when a = c && b = d ->
+            (* optimization *)
+            e
+        | _ ->
+            (* normal case *)
+            MLast.ExFun (loc, [p1, None, skont])
+      in
       MLast.ExApp
         (loc,
          MLast.ExApp

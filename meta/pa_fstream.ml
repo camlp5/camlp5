@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_fstream.ml,v 1.7 2007/11/28 11:36:20 deraugla Exp $ *)
+(* $Id: pa_fstream.ml,v 1.8 2007/11/28 15:11:40 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -156,7 +156,16 @@ value rec mstream_pattern loc m (spcl, epo, e) =
   | [spc :: spcl] ->
       let (p1, e1) = mstream_pattern_component m spc in
       let skont = mstream_pattern loc m (spcl, epo, e) in
-      let f = <:expr< fun $p1$ -> $skont$ >> in
+      let f =
+        match (p1, skont) with
+        [ (<:patt< $lid:a$ >>, <:expr< fun $lid:b$ -> $e$ $lid:c$ $lid:d$ >>)
+          when a = c && b = d ->
+            (* optimization *)
+            e
+        | _ ->
+            (* normal case *)
+            <:expr< fun $p1$ -> $skont$ >> ]
+      in
       <:expr< $uid:m$.b_seq $e1$ $f$ >> ]
 ;
 
