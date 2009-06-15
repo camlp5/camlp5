@@ -1,4 +1,11 @@
-/* $Id: base.css,v 1.1 2007/07/08 15:54:17 deraugla Exp $ */
+/* $Id: base.css,v 1.2 2007/07/10 11:50:04 deraugla Exp $ */
+
+body { margin: 0; background-color: rgb(228,214,189) }
+
+#menu { width: 20%; position: fixed; top: 0; left: 0; float: left }
+#menu ul { padding: 0 }
+
+#content { margin-left: 20%; padding: 0 5mm; background-color: white }
 
 body { counter-reset: h2cnt }
 
@@ -30,6 +37,18 @@ pre {
 
 tt { font-weight: bold }
 
+.title { text-align: center; font-size: 200% }
+.top { margin-top: 0 }
+.bottom { margin-bottom: 0 }
+.trailer { margin-top: 3cm }
+
 .value { background: #0f0 }
 .dangling { color: red; background: lightgray }
 .parenthesis { color: blue }
+
+@media print {
+  body { background-color: white }
+  #menu { display: none }
+  #content { margin: 0 }
+  .trailer img { display: none }
+}
