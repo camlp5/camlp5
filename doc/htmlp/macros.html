@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: macros.html,v 1.8 2007/08/30 18:41:22 deraugla Exp $ -->
+  <!-- $Id: macros.html,v 1.9 2007/09/09 02:17:23 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>macros</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -36,45 +36,65 @@
   following grammar rules:</p>
 
 <pre>
-       str-item ::= str-macro-def
-       sig-item ::= sig-macro-def
-           expr ::= macro-expr
-           patt ::= macro-patt
-  str_macro-def ::= "DEFINE" uident
-                  | "DEFINE" uident "=" expr
-                  | "DEFINE" uident "(" params ")" "=" expr
-                  | "UNDEF" uident
-                  | "IFDEF" dexpr "THEN" st-or-mac "END"
-                  | "IFDEF" dexpr "THEN" st-or-mac "ELSE" st-or-mac "END"
-                  | "IFNDEF" dexpr "THEN" st-or-mac "END"
-                  | "IFNDEF" dexpr "THEN" st-or-mac "ELSE" st-or-mac "END"
-  sig_macro-def ::= "DEFINE" uident
-                  | "UNDEF" uident
-                  | "IFDEF" dexpr "THEN" sg-or-mac "END"
-                  | "IFDEF" dexpr "THEN" sg-or-mac "ELSE" sg-or-mac "END"
-                  | "IFNDEF" dexpr "THEN" sg-or-mac "END"
-                  | "IFNDEF" dexpr "THEN" sg-or-mac "ELSE" sg-or-mac "END"
-     macro-expr ::= "IFDEF" dexpr "THEN" expr "ELSE" expr "END"
-                  | "IFNDEF" dexpr "THEN" expr "ELSE" expr "END"
-                  | "__FILE__"
-                  | "__LOCATION__"
-     macro-patt ::= "IFDEF" dexpr "THEN" patt "ELSE" patt "END"
-                  | "IFNDEF" dexpr "THEN" patt "ELSE" patt "END"
-     st-or-mac ::= str_macro-def
-                  | str-item
-     sg-or-mac ::= sig-macro-def
-                  | sig-item
-         params ::= ident "," params
-                  | ident
-          dexpr ::= dexpr "OR" dexpr
-                  | dexpr "AND" dexpr
-                  | "NOT" dexpr
-                  | uident
-                  | "(" dexpr ")"
-         uident ::= 'A'-'Z' ident
-          ident ::= ident-char*
-     ident-char ::= ('a'-'a' | 'A'-'Z' | '0'-'9' | '_' | ''' | utf8-byte)
-      utf8-byte ::= '\128'-'\255'
+           str-item ::= str-macro-def
+           sig-item ::= sig-macro-def
+               expr ::= macro-expr
+               patt ::= macro-patt
+          cons-decl ::= macro-cons-decl
+        match-assoc ::= macro-match-assoc
+      str_macro-def ::= "DEFINE" uident
+                      | "DEFINE" uident "=" expr
+                      | "DEFINE" uident params "=" expr
+                      | "UNDEF" uident
+                      | "IFDEF" dexpr "THEN" st-or-mac "END"
+                      | "IFDEF" dexpr "THEN" st-or-mac
+                        "ELSE" st-or-mac "END"
+                      | "IFNDEF" dexpr "THEN" st-or-mac "END"
+                      | "IFNDEF" dexpr "THEN" st-or-mac
+                        "ELSE" st-or-mac "END"
+      sig_macro-def ::= "DEFINE" uident
+                      | "DEFINE" uident params "=" type
+                      | "UNDEF" uident
+                      | "IFDEF" dexpr "THEN" sg-or-mac "END"
+                      | "IFDEF" dexpr "THEN" sg-or-mac
+                        "ELSE" sg-or-mac "END"
+                      | "IFNDEF" dexpr "THEN" sg-or-mac "END"
+                      | "IFNDEF" dexpr "THEN" sg-or-mac
+                        "ELSE" sg-or-mac "END"
+         macro-expr ::= "IFDEF" dexpr "THEN" expr "ELSE" expr "END"
+                      | "IFNDEF" dexpr "THEN" expr "ELSE" expr "END"
+                      | "__FILE__"
+                      | "__LOCATION__"
+         macro-patt ::= "IFDEF" dexpr "THEN" patt "ELSE" patt "END"
+                      | "IFNDEF" dexpr "THEN" patt "ELSE" patt "END"
+    macro-cons-decl ::= "IFDEF" dexpr "THEN" cons-decl "END"
+                      | "IFDEF" dexpr "THEN" cons-decl
+                        "ELSE" cons-decl "END"
+                      | "IFNDEF" dexpr "THEN" cons-decl "END"
+                      | "IFNDEF" dexpr "THEN" cons-decl
+                        "ELSE" cons-decl "END"
+  macro-match-assoc ::= "IFDEF" dexpr "THEN" match_assoc "END"
+                      | "IFDEF" dexpr "THEN" match-assoc
+                        "ELSE" match-assoc "END"
+                      | "IFNDEF" dexpr "THEN" match-assoc "END"
+                      | "IFNDEF" dexpr "THEN" match-assoc
+                        "ELSE" match-assoc "END"
+          st-or-mac ::= str_macro-def
+                       | str-item
+          sg-or-mac ::= sig-macro-def
+                       | sig-item
+              params ::= ident params
+                       | ident
+               dexpr ::= dexpr "OR" dexpr
+                       | dexpr "AND" dexpr
+                       | "NOT" dexpr
+                       | uident
+                       | "(" dexpr ")"
+              uident ::= 'A'-'Z' ident
+               ident ::= ident-char*
+          ident-char ::= ('a'-'a' | 'A'-'Z' | '0'-'9' | '_' | ''' |
+                          utf8-byte)
+           utf8-byte ::= '\128'-'\255'
 </pre>
 
 <p>When a macro has been defined, as name e.g. "NAME", the expressions
@@ -119,15 +139,22 @@
 
 <h2>Semantics</h2>
 
-<p>The statement "<tt>DEFINE</tt>" defines a new macro with an
-  optional value. The macro name must start with an uppercase
-  letter.</p>
+<p>The statement "<tt>DEFINE</tt>" defines a new macro with optional
+  parameters and an optional value. The macro name must start with an
+  uppercase letter.</p>
 
-<p>The existence of the macro can be tested either in structure items,
-  in expressions or in patterns using the statement
-  "<tt>IFDEF</tt>". Its non-existence can be tested by
-  "<tt>IFNDEF</tt>".  In expressions and patterns, the "<tt>ELSE</tt>"
-  part is required, not in structure items.</p>
+<p>The test of a macro can be done either:
+  <ul>
+    <li>in structure items</li>
+    <li>in signature items</li>
+    <li>in expressions</li>
+    <li>in patterns</li>
+    <li>in a constructor declaration</li>
+    <li>in a match case</li>
+  </ul>
+  <p>using the statement "<tt>IFDEF</tt>". Its non-existence can be
+    tested by "<tt>IFNDEF</tt>".  In expressions and patterns, the
+    "<tt>ELSE</tt>" part is required, not in structure items.</p>
 
 <p>The expression behind the "<tt>IFDEF</tt>" or the "<tt>IFNDEF</tt>"
   statement may use the operators "<tt>OR</tt>", "<tt>AND</tt>" and
@@ -144,12 +171,11 @@
 
 <p>The statement "<tt>UNDEF</tt>" removes a macro definition.</p>
 
-<p>When associated with a value (only in structure items, not in
-  signature items), the "<tt>DEFINE</tt>" macro acts like a variable
-  (or like function call if it has parameters), except that the
-  parameters are evaluated at parse time and can also be used also in
-  pattern positions. Notice that this is a way to define constants by
-  name in patterns. For example:</p>
+<p>When associated with a value, the "<tt>DEFINE</tt>" macro acts like
+  a variable (or like function call if it has parameters), except that
+  the parameters are evaluated at parse time and can also be used also
+  in pattern positions. Notice that this is a way to define constants
+  by name in patterns. For example:</p>
 
 <pre>
   DEFINE WW1 = 1914;
@@ -162,10 +188,10 @@
   ;
 </pre>
 
-<p>Notice that in a definition of a macro, if the expression contains
-  an evaluation, the evaluation is not done by Camlp5 but just transmitted
-  as code. In this case, it does not work in pattern position. Example
-  in the toplevel:</p>
+<p>In a definition of a macro, if the expression contains an
+  evaluation, the evaluation is not done by Camlp5 but just
+  transmitted as code. In this case, it does not work in pattern
+  position. Example in the toplevel:</p>
 
 <pre>
   # DEFINE PLUS(x, y) = x + y;
@@ -195,6 +221,30 @@
 <p>The macro "<tt>__LOCATION__</tt>" is replaced by the the current location
   (two integers in number of characters from the beginning of the file,
   starting at zero) of the macro itself.</p>
+
+<p>In signatures, the macro definitions can return types which can be
+  used in type definitions.</p>
+
+<p>In constructor declarations and in match cases, it is possible to
+  conditionally define some cases by "<tt>IFDEF</tt>" or
+  "<tt>IFNDEF</tt>". For example:</p>
+
+<pre>
+  type t =
+    [ A of int
+    | IFNDEF FOO THEN
+        B of string
+      END
+    | C of bool ]
+  ;
+
+  match x with
+  [ A i -> j
+  | IFNDEF FOO THEN
+      B s -> toto
+    END
+  | C b -> e ];
+</pre>
 
 <h2>Predefined macros</h2>
 

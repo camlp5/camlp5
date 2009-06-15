@@ -1,4 +1,4 @@
-/* $Id: base.css,v 1.36 2007/08/29 03:29:37 deraugla Exp $ */
+/* $Id: base.css,v 1.37 2007/09/09 02:17:23 deraugla Exp $ */
 
 body { margin: 0 0 1px 0; background-color: rgb(189,225,255) }
 body { border: 0 }
@@ -12,11 +12,6 @@ body { border: 0 }
 #menu .subtitle { text-align: center; margin-top: 0; font-size: 80% }
 #menu .subtitle { text-transform: lowercase }
 
-#tableofcontents
-  { border: 1px solid; display: table; padding-right: 5mm; margin: auto }
-#tableofcontents ul { margin-left: 2mm }
-#tableofcontents li ul { margin-left: 0 }
-
 #content { margin-left: 21.1%; padding: 0 5mm; background-color: white }
 #content { border: 1px solid }
 #content ul { margin-left: 1cm }
@@ -26,6 +21,13 @@ body { border: 0 }
 #content p { text-align: justify }
 #content li { text-align: justify }
 #content dd { text-align: justify }
+
+#tableofcontents { display: table; margin: auto }
+#tableofcontents > ol { border: 1px solid; display: table-cell }
+#tableofcontents > ol { padding: 2mm 5mm 2mm 1cm }
+#tableofcontents ol { margin-left: 2mm }
+#tableofcontents li ul { margin-left: 0 }
+#tableofcontents li { text-align: left }
 
 #menu:target { position: relative; float: left }
 #menu:target { background-color: rgb(189,225,255) }
