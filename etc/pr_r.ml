@@ -1,5 +1,5 @@
 (* camlp4r q_MLast.cmo ./pa_extfun.cmo *)
-(* $Id: pr_r.ml,v 1.26 2007/07/04 09:03:55 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.27 2007/07/04 12:21:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -575,7 +575,7 @@ value match_assoc pc (p, w, e) =
          match w with
          [ Some e ->
              horiz_vertic
-               (fun () -> 
+               (fun () ->
                   sprintf "%s%s when %s ->%s" pc.bef
                     (patt_as {(pc) with bef = ""; aft = ""} p)
                     (expr {(pc) with bef = ""; aft = ""} e) k)
@@ -591,8 +591,7 @@ value match_assoc pc (p, w, e) =
                          let s2 =
                            expr
                              {(pc) with ind = pc.ind + 2;
-                              bef = (tab (pc.ind + 2));
-                              aft = sprintf " ->%s" k}
+                              bef = tab (pc.ind + 2); aft = sprintf " ->%s" k}
                              e
                          in
                          sprintf "%s\n%s" s1 s2)
