@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.32 2007/08/31 10:41:10 deraugla Exp $
+# $Id: Makefile,v 1.33 2007/09/06 12:48:52 deraugla Exp $
 
 include config/Makefile
 
@@ -120,6 +120,14 @@ world.opt:
 
 library:
 	cd lib; $(MAKE) all promote
+
+# After a change into TRANSITIONAL or STRICT compilation mode.
+
+changed_mode:
+	rm -f meta/pa_extend.cmo
+	$(MAKE) core
+	$(MAKE) coreboot
+	$(MAKE) coreboot
 
 # Cold start using pure Objective Caml sources
 
