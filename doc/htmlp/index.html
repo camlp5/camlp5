@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: index.html,v 1.2 2007/07/12 09:18:35 deraugla Exp $ -->
+  <!-- $Id: index.html,v 1.3 2007/07/12 12:43:39 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Camlp5</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -17,7 +17,7 @@
 
 <div id="content">
 
-<h1 class="top">Presentation</h1>
+<h1 class="top">Overview</h1>
 
 <p>Camlp5 is a preprocessor and pretty-printer for ocaml programs.</p>
 
@@ -45,14 +45,15 @@ toplevel.</p>
 
 <p>Camlp5 also provides some parsing and pretty printing tools.</p>
 
+<a id="Usage"></a>
 <h2>Usage</h2>
 
 <p>The main shell commands are:</p>
 
 <ul>
-  <li><tt>camlp5o</tt> : treating files written in normal ocaml
+  <li><tt>camlp5o</tt> : to treat files written in normal ocaml
   syntax,</li>
-  <li><tt>camlp5r</tt> : treating files written in an original syntax
+  <li><tt>camlp5r</tt> : to treat files written in an original syntax
     named the <em>revised syntax</em>.</li>
 </ul>
 
@@ -77,6 +78,78 @@ loading one of the files "<tt>camlp5o.cma</tt>" or
 ocaml -I +camlp5 camlp5o.cma
 ocaml -I +camlp5 camlp5r.cma
 </pre>
+
+<a id="ExtSynt"></a>
+<h2>Extending syntax</h2>
+
+<p>A syntax extension is an ocaml object file, i.e. a file with the
+extension "<tt>.cmo</tt>". It is a result of the compilation of an
+ocaml source file containing what is necessary to do the syntax
+extensions. These object files are named <em>parsing kits</em>.</p>
+
+<p>There are two ways to use a syntax extension:<p>
+
+<ul>
+
+  <li>Either by giving this object file as parameter to the camlp5
+    command. For example:
+
+<pre>
+ocamlc -pp "camlp5o ./myext.cmo" foo.ml
+</pre>
+
+  </li>
+
+  <li>Or by adding the directive "<tt>#load</tt>" in the source file:
+
+<pre>
+#load "./myext.cmo";;
+</pre>
+
+    <p>and compile it simply like this:</p>
+
+<pre>
+ocamlc -pp camlp5o foo.ml
+</pre>
+
+  </li>
+
+</ul>
+
+<p>Several syntax extensions can be used for a single file. The way to
+create syntax extensions are explained further.</p>
+
+<a id="PrettPr"></a>
+<h2>Pretty printing</h2>
+
+<p>Like for syntax extensions, <em>pretty printing kits</em> are ocaml
+object files. The main pretty printing kits provided by camlp5 are:</p>
+
+<ul>
+
+<li><tt>pr_o.cmo</tt>: to pretty print in normal syntax,</li>
+<li><tt>pr_r.cmo</tt>: to pretty print in revised syntax.</li>
+
+</ul>
+
+<p>Examples: if we have a file, <tt>foo.ml</tt>, written in normal
+syntax and and another one, <tt>bar.ml</tt>, written in revised
+syntax, here are the commands to pretty print them in their own
+syntax:</p>
+
+<pre>
+camlp5o pr_o.cmo foo.ml
+camlp5r pr_r.cmo bar.ml
+</pre>
+
+<p>And how to convert them into the other syntax:</p>
+
+<pre>
+camlp5o pr_r.cmo foo.ml
+camlp5r pr_o.cmo foo.ml
+</pre>
+
+<p>The way to create pretty printing extensions are explained further.</p>
 
 <div class="trailer">
 
