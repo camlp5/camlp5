@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pcaml.ml,v 1.6 2007/07/16 17:22:14 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.7 2007/07/22 21:24:13 deraugla Exp $ *)
 
 value version = "4.06-exp";
 value syntax_name = ref "";
@@ -148,8 +148,6 @@ value handle_quotation loc proj in_expr entry reloc (name, str) =
   reloc (fun _ -> loc) shift ast
 ;
 
-value expr_anti loc e = MLast.ExAnt loc e;
-value patt_anti loc p = MLast.PaAnt loc p;
 value expr_eoi = Grammar.Entry.create gram "expression";
 value patt_eoi = Grammar.Entry.create gram "pattern";
 EXTEND
