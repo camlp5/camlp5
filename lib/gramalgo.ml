@@ -55,7 +55,26 @@ type action =
   | ActErr ]
 ;
 
-value name_of_entry entry lev = entry.ename ^ "-" ^ string_of_int lev;
+value name_of_entry entry levn =
+  let lev_name =
+    match entry.edesc with
+    [ Dlevels levs ->
+       match try Some (List.nth levs levn) with [ Failure _ -> None ] with
+       [ Some {lname = Some n} ->
+           let good_ident_name =
+             loop 0 where rec loop i =
+               if i = String.length n then True
+               else
+                 match n.[i] with
+                 [ 'a'..'z' | 'A'..'Z' | '0'..'9' -> loop (i + 1)
+                 | _ -> False ]
+           in
+           if good_ident_name then n else string_of_int levn
+       | Some {lname = None} | None -> string_of_int levn ]
+    | Dparser _ -> string_of_int levn ]
+  in
+  entry.ename ^ "-" ^ lev_name
+;
 
 value fold_rules_of_tree f init tree =
   let rec do_tree r accu =
