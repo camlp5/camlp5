@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Camlp5</title>
+    <description>Camlp5 documentation</description>
+    <lastBuildDate>Mon Sep 17 05:18:59 CEST 2007</lastBuildDate>
+    <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
+    <item>
+      <title>Transitional and Strict</title>
+      <description>
+        Added chapter about "strict" and "transitional", allowing to
+        choose between backward compatibility and a new feature: the
+        syntax tree quotations in user syntax ("q_ast.cmo").
+      </description>
+      <pubDate>Mon Sep 17 05:28:48 CEST 2007</pubDate>
+      <link>../strict.html</link>
+    </item>
+  </channel>
+</rss>

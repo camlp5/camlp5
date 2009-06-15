@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: htmlp2html,v 1.14 2007/08/29 04:26:06 deraugla Exp $
+# $Id: htmlp2html,v 1.15 2007/09/17 03:43:04 deraugla Exp $
 
 FILE=$1
 VERSION="$(grep "value version =" ../../main/pcaml.ml | sed -e 's/^[^"]*"\([^"]*\).*$/\1/')"
@@ -23,6 +23,9 @@ VERSION="$(grep "value version =" ../../main/pcaml.ml | sed -e 's/^[^"]*"\([^"]*
 ) > toc.tmp
 
 cat $FILE |
+sed \
+  -e '/title="Normal"/a \
+  <link rel="alternate" type="application/rss+xml" title="Camlp5" href="rss/camlp5.rss">' |
 sed \
   -e '/<div id="menu">/i\aaa' \
   -e '/<div id="menu">/,/^<\/div>/d' |
