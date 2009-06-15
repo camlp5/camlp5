@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: index.html,v 1.22 2007/08/28 17:49:37 deraugla Exp $ -->
+  <!-- $Id: index.html,v 1.23 2007/10/09 03:24:12 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Camlp5</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -26,14 +26,14 @@
 
 <ul>
   <li>extend the syntax of OCaml,</li>
-  <li>and even redefine the whole syntax of the language.</li>
+  <li>redefine the whole syntax of the language.</li>
 </ul>
 
 <p>As a pretty printer, it allows to:</p>
 
 <ul>
   <li>display OCaml programs in an elegant way,</li>
-  <li>convert from a syntax to another,</li>
+  <li>convert from one syntax to another,</li>
   <li>check the results of syntax extensions.</li>
 </ul>
 
@@ -96,7 +96,7 @@ loading one of the files "<tt>camlp5o.cma</tt>" or
 <p>These files cannot be linked to produce executables because they
   generally call functions and use variables defined only in Camlp5
   core, typically belonging to the module "<tt>Pcaml</tt>". The kits
-  are destinated to be loaded by the Camlp5 commands, either through
+  are designed to be loaded by the Camlp5 commands, either through
   their command arguments or through directives in the source
   files.</p>
 
@@ -139,12 +139,11 @@ and then compile it simply like this:
 </ul>
 
 <p>Several syntax extensions can be used for a single file. The way to
-  create one's own syntax extensions is explained in the present
-  documentation.</p>
+  create one's own syntax extensions is explained in this document.</p>
 
 <h2>Pretty printing</h2>
 
-<p>Like for syntax extensions, the pretty printing is defined or
+<p>As for syntax extensions, the pretty printing is defined or
   extended through Camlp5 printing kits. Some pretty printing kits are
   provided by Camlp5, the main ones being:</p>
 
@@ -176,8 +175,8 @@ and then compile it simply like this:
 <h2>Note: the revised syntax</h2>
 
 <p>The <em>revised syntax</em> is a specific syntax whose aim is to
-  resolve some syntax problems and inconsistencies of the normal OCaml
-  syntax.  A chapter will explain the differences between the normal
+  resolve some problems and inconsistencies of the normal OCaml
+  syntax. A chapter will explain the differences between the normal
   and the revised syntax.</p>
 
 <p>All examples of this documentation are written in that revised
