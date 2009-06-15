@@ -437,13 +437,8 @@ value eprint_item (added, lh, dot, rh) = do {
 value lr0 entry lev = do {
   Printf.eprintf "LR(0) %s %d\n" entry.ename lev;
   flush stderr;
+(**)
   let rl = flatten_gram entry lev in
-  Printf.eprintf "%d rules\n\n" (List.length rl);
-  flush stderr;
-  check_closed rl;
-  List.iter eprint_rule rl;
-  Printf.eprintf "\n";
-  flush stderr;
   let item_set_and_rest =
     let item =
       (False, "start-symb", 0, [GS_nterm (name_of_entry entry lev)])
@@ -452,6 +447,27 @@ value lr0 entry lev = do {
       (GS_nterm "start-symb", close_item_set rl [item],
        List.map (fun (lh, rh) -> (False, lh, 0, rh)) rl)
   in
+(*
+  let rl =
+    [("E", [GS_nterm "E"; GS_term "*"; GS_nterm "B"]);
+     ("E", [GS_nterm "E"; GS_term "+"; GS_nterm "B"]);
+     ("E", [GS_nterm "B"]);
+     ("B", [GS_term "0"]);
+     ("B", [GS_term "1"])]
+  in
+  let item_set_and_rest =
+    let item = (False, "start-symb", 0, [GS_nterm "E"]) in
+    Some
+      (GS_nterm "start-symb", close_item_set rl [item],
+       List.map (fun (lh, rh) -> (False, lh, 0, rh)) rl)
+  in
+*)
+  Printf.eprintf "%d rules\n\n" (List.length rl);
+  flush stderr;
+  check_closed rl;
+  List.iter eprint_rule rl;
+  Printf.eprintf "\n";
+  flush stderr;
   loop 0 item_set_and_rest where rec loop item_set_cnt =
     fun
     [ Some (s, item_set, rest) -> do {
@@ -492,15 +508,15 @@ value lr0 entry lev = do {
                   (item_set @ rest)
               in
               let rlist =
-                List.fold_left
-                  (fun rlist item ->
-                     if List.mem item rlist then rlist else [item :: rlist])
-                  [] item_set
-              in
-              let item_set =
                 List.rev_map
                   (fun (_, lh, dot, rh) -> (False, lh, dot + 1, rh))
-                  rlist
+                  item_set
+              in
+              let item_set =
+                List.fold_left
+                  (fun list item ->
+                     if List.mem item list then list else [item :: list])
+                  [] rlist
               in
 (*
               Printf.eprintf "\n";
@@ -514,7 +530,9 @@ value lr0 entry lev = do {
             }
           | None -> None ]
         in
+(*
         if item_set_cnt > 2000 then () else
+*)
         loop (item_set_cnt + 1) item_set_and_rest
       }
     | None -> () ];
