@@ -154,29 +154,15 @@ EXTEND_PRINTER
           fun ppf curr next dg k ->
             fprintf ppf "(@[<hv>@[<b 2>try@ %a@]@ %a@]" expr (e, nok)
               (list match_assoc) (pwel, ks ")" k)
-      | <:expr< let $p1$ = $e1$ in $e2$ >> ->
-          fun ppf curr next dg k ->
-            let (pel, e) =
-              loop [(p1, e1)] e2 where rec loop pel =
-                fun
-                [ <:expr< let $p1$ = $e1$ in $e2$ >> ->
-                    loop [(p1, e1) :: pel] e2
-                | e -> (List.rev pel, e) ]
-            in
-            let b =
-              match pel with
-              [ [_] -> "let"
-              | _ -> "let*" ]
-            in
-            fprintf ppf "(@[@[%s (@[<v>%a@]@]@;<1 2>%a@]" b
-              (listwb "" let_binding) (pel, ks ")" nok)
-                 sequence (e, ks ")" k)
-      | <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
-          fun ppf curr next dg k ->
-            let b = if rf then "letrec" else "let" in
-            fprintf ppf "(@[<hv>%s@ (@[<hv>%a@]@ %a@]" b
-              (listwb "" let_binding) (pel, ks ")" nok) expr (e, ks ")" k)
 *)
+      | <:expr< let $p1$ = $e1$ in $e2$ >> ->
+          horiz_vertic
+            (fun () -> not_impl "let1 horiz" pc 0)
+            (fun () -> not_impl "let1 vertic" pc 0)
+      | <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
+          horiz_vertic
+            (fun () -> not_impl "let2 horiz" pc 0)
+            (fun () -> not_impl "let2 vertic" pc 0)
       | <:expr< if $e1$ then $e2$ else () >> ->
           not_impl "if else ()" pc 0
       | <:expr< if $e1$ then $e2$ else $e3$ >> ->
