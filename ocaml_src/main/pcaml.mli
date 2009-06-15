@@ -50,6 +50,7 @@ val match_case :
 val constructor_declaration :
   (MLast.loc * string * MLast.ctyp list) Grammar.Entry.e;;
 val with_constr : MLast.with_constr Grammar.Entry.e;;
+val poly_variant : MLast.poly_variant Grammar.Entry.e;;
 val class_sig_item : MLast.class_sig_item Grammar.Entry.e;;
 val class_str_item : MLast.class_str_item Grammar.Entry.e;;
 val class_expr : MLast.class_expr Grammar.Entry.e;;

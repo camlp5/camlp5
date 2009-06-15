@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.82 2007/09/13 19:41:59 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.83 2007/09/14 03:16:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -28,6 +28,7 @@ do {
   Grammar.Unsafe.clear_entry constructor_declaration;
   Grammar.Unsafe.clear_entry match_case;
   Grammar.Unsafe.clear_entry with_constr;
+  Grammar.Unsafe.clear_entry poly_variant;
   Grammar.Unsafe.clear_entry class_type;
   Grammar.Unsafe.clear_entry class_expr;
   Grammar.Unsafe.clear_entry class_sig_item;
@@ -109,7 +110,6 @@ value mklistpat loc last =
 value append_elem el e = el @ [e];
 
 value ipatt = Grammar.Entry.create gram "ipatt";
-value poly_variant = Grammar.Entry.create gram "poly_variant";
 
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr class_type
@@ -702,56 +702,83 @@ EXTEND
   (* Labels *)
   ctyp: AFTER "arrow"
     [ NONA
-      [ i = TILDEIDENTCOLON; t = SELF -> <:ctyp< ~ $i$ : $t$ >>
-      | i = QUESTIONIDENTCOLON; t = SELF -> <:ctyp< ? $i$ : $t$ >> ] ]
+      [ i = tildeidentcolon; t = SELF -> <:ctyp< ~ $a:i$ : $t$ >>
+      | i = questionidentcolon; t = SELF -> <:ctyp< ? $a:i$ : $t$ >> ] ]
+  ;
+  tildeident:
+    [ [ i = TILDEIDENT -> <:vala< i >>
+      | "~"; s = ANTIQUOT_LOC -> <:vala< $s$ >>
+      | "~"; s = ANTIQUOT_LOC "a" -> <:vala< $s$ >> ] ]
+  ;
+  tildeidentcolon:
+    [ [ i = TILDEIDENTCOLON -> <:vala< i >>
+      | "~"; s = ANTIQUOT_LOC; ":" -> <:vala< $s$ >>
+      | "~"; s = ANTIQUOT_LOC "a"; ":" -> <:vala< $s$ >> ] ]
+  ;
+  questionident:
+    [ [ i = QUESTIONIDENT -> <:vala< i >>
+(*
+      | "?"; s = ANTIQUOT_LOC -> <:vala< $s$ >>
+      | "?"; s = ANTIQUOT_LOC "a" -> <:vala< $s$ >>
+*)
+      ] ]
+  ;
+  questionidentcolon:
+    [ [ i = QUESTIONIDENTCOLON -> <:vala< i >>
+(*
+      | "?"; s = ANTIQUOT_LOC; ":" -> <:vala< $s$ >>
+      | "?"; s = ANTIQUOT_LOC "a"; ":" -> <:vala< $s$ >>
+*)
+      ] ]
   ;
   ctyp: LEVEL "simple"
     [ [ "["; "="; rfl = poly_variant_list; "]" ->
-          <:ctyp< [ = $list:rfl$ ] >>
+          <:ctyp< [ = $alist:rfl$ ] >>
       | "["; ">"; rfl = poly_variant_list; "]" ->
-          <:ctyp< [ > $list:rfl$ ] >>
+          <:ctyp< [ > $alist:rfl$ ] >>
       | "["; "<"; rfl = poly_variant_list; "]" ->
-          <:ctyp< [ < $list:rfl$ ] >>
-      | "["; "<"; rfl = poly_variant_list; ">"; ntl = LIST1 name_tag; "]" ->
-          <:ctyp< [ < $list:rfl$ > $list:ntl$ ] >> ] ]
+          <:ctyp< [ < $alist:rfl$ ] >>
+      | "["; "<"; rfl = poly_variant_list; ">"; ntl = V LIST1 name_tag; "]" ->
+          <:ctyp< [ < $alist:rfl$ > $alist:ntl$ ] >> ] ]
   ;
   poly_variant_list:
-    [ [ rfl = LIST0 poly_variant SEP "|" -> rfl ] ]
+    [ [ rfl = V LIST0 poly_variant SEP "|" -> rfl ] ]
   ;
   poly_variant:
-    [ [ "`"; i = ident -> <:poly_variant< ` $i$ >>
-      | "`"; i = ident; "of"; ao = FLAG "&"; l = LIST1 ctyp SEP "&" ->
-          <:poly_variant< ` $i$ of $flag:ao$ $list:l$ >>
+    [ [ "`"; i = ident2 -> <:poly_variant< ` $a:i$ >>
+      | "`"; i = ident2; "of"; ao = V FLAG "&"; l = V LIST1 ctyp SEP "&" ->
+          <:poly_variant< ` $a:i$ of $aflag:ao$ $alist:l$ >>
       | t = ctyp -> <:poly_variant< $t$ >> ] ]
   ;
   name_tag:
     [ [ "`"; i = ident -> i ] ]
   ;
   patt: LEVEL "simple"
-    [ [ "`"; s = ident -> <:patt< ` $s$ >>
-      | "#"; sl = mod_ident -> <:patt< # $list:sl$ >>
-      | i = TILDEIDENTCOLON; p = SELF -> <:patt< ~ $i$ : $p$ >>
-      | i = TILDEIDENT -> <:patt< ~ $i$ >>
-      | i = QUESTIONIDENTCOLON; "("; p = patt_tcon; eo = OPT eq_expr; ")" ->
-          <:patt< ? $i$ : ($p$ $opt:eo$) >>
-      | i = QUESTIONIDENT ->
-          <:patt< ? $i$ >>
-      | "?"; "("; p = patt_tcon; eo = OPT eq_expr; ")" ->
-          <:patt< ? ($p$ $opt:eo$) >> ] ]
+    [ [ "`"; s = ident2 -> <:patt< ` $a:s$ >>
+      | "#"; sl = mod_ident2 -> <:patt< # $a:sl$ >>
+      | i = tildeidentcolon; p = SELF -> <:patt< ~ $a:i$ : $p$ >>
+      | i = tildeident -> <:patt< ~ $a:i$ >>
+      | i = questionidentcolon; "("; p = patt_tcon; eo = V OPT eq_expr; ")" ->
+          <:patt< ? $a:i$ : ($p$ $aopt:eo$) >>
+      | i = questionident ->
+          <:patt< ? $a:i$ >>
+      | "?"; "("; p = patt_tcon; eo = V OPT eq_expr; ")" ->
+          <:patt< ? ($p$ $aopt:eo$) >> ] ]
   ;
   patt_tcon:
     [ [ p = patt; ":"; t = ctyp -> <:patt< ($p$ : $t$) >>
       | p = patt -> p ] ]
   ;
   ipatt:
-    [ [ i = TILDEIDENTCOLON; p = SELF -> <:patt< ~ $i$ : $p$ >>
-      | i = TILDEIDENT -> <:patt< ~ $i$ >>
-      | i = QUESTIONIDENTCOLON; "("; p = ipatt_tcon; eo = OPT eq_expr; ")" ->
-          <:patt< ? $i$ : ($p$ $opt:eo$) >>
-      | i = QUESTIONIDENT ->
-          <:patt< ? $i$ >>
-      | "?"; "("; p = ipatt_tcon; eo = OPT eq_expr; ")" ->
-          <:patt< ? ($p$ $opt:eo$) >> ] ]
+    [ [ i = tildeidentcolon; p = SELF -> <:patt< ~ $a:i$ : $p$ >>
+      | i = tildeident -> <:patt< ~ $a:i$ >>
+      | i = questionidentcolon; "("; p = ipatt_tcon;
+        eo = V OPT eq_expr; ")" ->
+          <:patt< ? $a:i$ : ($p$ $aopt:eo$) >>
+      | i = questionident ->
+          <:patt< ? $a:i$ >>
+      | "?"; "("; p = ipatt_tcon; eo = V OPT eq_expr; ")" ->
+          <:patt< ? ($p$ $aopt:eo$) >> ] ]
   ;
   ipatt_tcon:
     [ [ p = ipatt; ":"; t = ctyp -> <:patt< ($p$ : $t$) >>

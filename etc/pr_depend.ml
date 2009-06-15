@@ -1,5 +1,6 @@
-(* camlp5r q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.33 2007/09/13 19:41:59 deraugla Exp $ *)
+(* camlp5r pa_macro.cmo q_MLast.cmo *)
+(* $Id: pr_depend.ml,v 1.34 2007/09/14 03:16:58 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 open MLast;
 
@@ -56,14 +57,19 @@ value rec ctyp =
   | <:ctyp< { $list:ldl$ } >> -> list label_decl ldl
   | <:ctyp< [ $list:cdl$ ] >> -> list constr_decl cdl
   | <:ctyp< ( $list:tl$ ) >> -> list ctyp tl
-  | TyVrn _ sbtll _ -> list variant sbtll
+  | <:ctyp< [ = $list:sbtll$ ] >> -> list variant sbtll
+  | <:ctyp< [ > $list:sbtll$ ] >> -> list variant sbtll
+  | <:ctyp< [ < $list:sbtll$ > $list:_$ ] >> -> list variant sbtll
   | x -> not_impl "ctyp" x ]
 and constr_decl (_, _, tl) = list ctyp (uv tl)
 and label_decl (_, _, _, t) = ctyp t
 and variant =
   fun
-  [ PvTag _ _ tl -> list ctyp tl
-  | PvInh t -> ctyp t ]
+  [ <:poly_variant< ` $_$ of $flag:_$ $list:tl$ >> -> list ctyp tl
+  | PvInh t -> ctyp t
+  | IFDEF STRICT THEN
+      _ -> failwith "Pr_depend.variant"
+    END ]
 and ctyp_module =
   fun
   [ <:ctyp< $t$.$_$ >> -> ctyp_module t
@@ -83,8 +89,8 @@ value rec patt =
   | PaInt _ _ _ -> ()
   | PaLab _ _ po -> option patt po
   | PaLid _ _ -> ()
-  | PaOlb _ _ peoo ->
-      option (fun (p, eo) -> do { patt p; option expr eo }) peoo
+  | <:patt< ? $_$ : ($p$ = $e$) >> -> do { patt p; expr e }
+  | <:patt< ? $_$ >> -> ()
   | <:patt< $p1$ | $p2$ >> -> do { patt p1; patt p2 }
   | <:patt< {$list:lpl$} >> -> list label_patt lpl
   | <:patt< $p1$ .. $p2$ >> -> do { patt p1; patt p2 }

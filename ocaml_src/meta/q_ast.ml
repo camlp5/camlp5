@@ -192,6 +192,7 @@ module Meta =
       | TyAny _ -> e_node "TyAny" []
       | TyApp (_, t1, t2) -> e_node "TyApp" [e_ctyp t1; e_ctyp t2]
       | TyCls (_, ls) -> e_node "TyCls" [e_vala (e_list e_string) ls]
+      | TyLab (_, i, t) -> e_node "TyLab" [e_vala e_string i; e_ctyp t]
       | TyLid (_, s) -> e_node "TyLid" [e_vala e_string s]
       | TyMan (_, t1, t2) -> e_node "TyMan" [e_ctyp t1; e_ctyp t2]
       | TyObj (_, lm, v) ->
@@ -201,6 +202,7 @@ module Meta =
                   (fun (s, t) -> MLast.ExTup (loc, [e_string s; e_ctyp t])))
                lm;
              e_vala e_bool v]
+      | TyOlb (_, i, t) -> e_node "TyOlb" [e_vala e_string i; e_ctyp t]
       | TyPol (_, lv, t) ->
           e_node "TyPol" [e_vala (e_list e_string) lv; e_ctyp t]
       | TyQuo (_, s) -> e_node "TyQuo" [e_vala e_string s]
@@ -227,9 +229,11 @@ module Meta =
           e_node "TySum" [lcd]
       | TyTup (_, tl) -> e_node "TyTup" [e_vala (e_list e_ctyp) tl]
       | TyUid (_, s) -> e_node "TyUid" [e_vala e_string s]
-      | x -> not_impl "e_ctyp" x
-    ;;
-    let rec p_ctyp =
+      | TyVrn (_, lpv, ools) ->
+          e_node "TyVrn"
+            [e_vala (e_list e_poly_variant) lpv;
+             e_option (e_option (e_vala (e_list e_string))) ools]
+    and p_ctyp =
       function
         TyArr (_, t1, t2) -> p_node "TyArr" [p_ctyp t1; p_ctyp t2]
       | TyApp (_, t1, t2) -> p_node "TyApp" [p_ctyp t1; p_ctyp t2]
@@ -237,7 +241,31 @@ module Meta =
       | TyTup (_, tl) -> p_node "TyTup" [p_vala (p_list p_ctyp) tl]
       | TyUid (_, s) -> p_node "TyUid" [p_vala p_string s]
       | x -> not_impl "p_ctyp" x
-    ;;
+    and e_poly_variant =
+      function
+        PvTag (s, a, lt) ->
+          let s = e_vala e_string s in
+          let a = e_vala e_bool a in
+          let lt = e_vala (e_list e_ctyp) lt in
+          MLast.ExApp
+            (loc,
+             MLast.ExApp
+               (loc,
+                MLast.ExApp
+                  (loc,
+                   MLast.ExAcc
+                     (loc, MLast.ExUid (loc, "MLast"),
+                      MLast.ExUid (loc, "PvTag")),
+                   s),
+                a),
+             lt)
+      | PvInh t ->
+          MLast.ExApp
+            (loc,
+             MLast.ExAcc
+               (loc, MLast.ExUid (loc, "MLast"), MLast.ExUid (loc, "PvInh")),
+             e_ctyp t)
+    and p_poly_variant x = not_impl "p_poly_variant" x;;
     let e_class_infos a x = not_impl "e_class_infos" x;;
     let e_type_var x = not_impl "e_type_var" x;;
     let rec e_patt =
@@ -573,6 +601,7 @@ let sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";;
 let module_expr_eoi = Grammar.Entry.create Pcaml.gram "module_expr";;
 let module_type_eoi = Grammar.Entry.create Pcaml.gram "module_type";;
 let with_constr_eoi = Grammar.Entry.create Pcaml.gram "with_constr";;
+let poly_variant_eoi = Grammar.Entry.create Pcaml.gram "poly_variant";;
 let class_expr_eoi = Grammar.Entry.create Pcaml.gram "class_expr";;
 let class_type_eoi = Grammar.Entry.create Pcaml.gram "class_type";;
 let class_str_item_eoi = Grammar.Entry.create Pcaml.gram "class_str_item";;
@@ -646,6 +675,16 @@ Grammar.extend
      Gramext.action
        (fun _ (x : 'Pcaml__with_constr) (loc : Ploc.t) ->
           (x : 'with_constr_eoi))]];
+   Grammar.Entry.obj (poly_variant_eoi : 'poly_variant_eoi Grammar.Entry.e),
+   None,
+   [None, None,
+    [[Gramext.Snterm
+        (Grammar.Entry.obj
+           (Pcaml.poly_variant : 'Pcaml__poly_variant Grammar.Entry.e));
+      Gramext.Stoken ("EOI", "")],
+     Gramext.action
+       (fun _ (x : 'Pcaml__poly_variant) (loc : Ploc.t) ->
+          (x : 'poly_variant_eoi))]];
    Grammar.Entry.obj (class_expr_eoi : 'class_expr_eoi Grammar.Entry.e), None,
    [None, None,
     [[Gramext.Snterm
@@ -847,6 +886,8 @@ List.iter (fun (q, f) -> Quotation.add q f)
    apply_entry module_type_eoi Meta.e_module_type Meta.p_module_type;
    "with_constr",
    apply_entry with_constr_eoi Meta.e_with_constr Meta.p_with_constr;
+   "poly_variant",
+   apply_entry poly_variant_eoi Meta.e_poly_variant Meta.p_poly_variant;
    "class_expr",
    apply_entry class_expr_eoi Meta.e_class_expr Meta.p_class_expr;
    "class_type",

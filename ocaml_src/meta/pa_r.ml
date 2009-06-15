@@ -27,6 +27,7 @@ Grammar.Unsafe.clear_entry type_declaration;
 Grammar.Unsafe.clear_entry constructor_declaration;
 Grammar.Unsafe.clear_entry match_case;
 Grammar.Unsafe.clear_entry with_constr;
+Grammar.Unsafe.clear_entry poly_variant;
 Grammar.Unsafe.clear_entry class_type;
 Grammar.Unsafe.clear_entry class_expr;
 Grammar.Unsafe.clear_entry class_sig_item;
@@ -108,7 +109,6 @@ let mklistpat loc last =
 let append_elem el e = el @ [e];;
 
 let ipatt = Grammar.Entry.create gram "ipatt";;
-let poly_variant = Grammar.Entry.create gram "poly_variant";;
 
 Grammar.extend
   (let _ = (sig_item : 'sig_item Grammar.Entry.e)
@@ -222,6 +222,14 @@ Grammar.extend
      grammar_entry_create "class_longident2"
    and class_longident : 'class_longident Grammar.Entry.e =
      grammar_entry_create "class_longident"
+   and tildeident : 'tildeident Grammar.Entry.e =
+     grammar_entry_create "tildeident"
+   and tildeidentcolon : 'tildeidentcolon Grammar.Entry.e =
+     grammar_entry_create "tildeidentcolon"
+   and questionident : 'questionident Grammar.Entry.e =
+     grammar_entry_create "questionident"
+   and questionidentcolon : 'questionidentcolon Grammar.Entry.e =
+     grammar_entry_create "questionidentcolon"
    and poly_variant_list : 'poly_variant_list Grammar.Entry.e =
      grammar_entry_create "poly_variant_list"
    and name_tag : 'name_tag Grammar.Entry.e = grammar_entry_create "name_tag"
@@ -2219,14 +2227,60 @@ Grammar.extend
     Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e),
     Some (Gramext.After "arrow"),
     [None, Some Gramext.NonA,
-     [[Gramext.Stoken ("QUESTIONIDENTCOLON", ""); Gramext.Sself],
+     [[Gramext.Snterm
+         (Grammar.Entry.obj
+            (questionidentcolon : 'questionidentcolon Grammar.Entry.e));
+       Gramext.Sself],
       Gramext.action
-        (fun (t : 'ctyp) (i : string) (loc : Ploc.t) ->
+        (fun (t : 'ctyp) (i : 'questionidentcolon) (loc : Ploc.t) ->
            (MLast.TyOlb (loc, i, t) : 'ctyp));
-      [Gramext.Stoken ("TILDEIDENTCOLON", ""); Gramext.Sself],
+      [Gramext.Snterm
+         (Grammar.Entry.obj
+            (tildeidentcolon : 'tildeidentcolon Grammar.Entry.e));
+       Gramext.Sself],
       Gramext.action
-        (fun (t : 'ctyp) (i : string) (loc : Ploc.t) ->
+        (fun (t : 'ctyp) (i : 'tildeidentcolon) (loc : Ploc.t) ->
            (MLast.TyLab (loc, i, t) : 'ctyp))]];
+    Grammar.Entry.obj (tildeident : 'tildeident Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Stoken ("", "~"); Gramext.Stoken ("ANTIQUOT_LOC", "a")],
+      Gramext.action
+        (fun (s : string) _ (loc : Ploc.t) ->
+           (failwith "antiquot" : 'tildeident));
+      [Gramext.Stoken ("", "~"); Gramext.Stoken ("ANTIQUOT_LOC", "")],
+      Gramext.action
+        (fun (s : string) _ (loc : Ploc.t) ->
+           (failwith "antiquot" : 'tildeident));
+      [Gramext.Stoken ("TILDEIDENT", "")],
+      Gramext.action (fun (i : string) (loc : Ploc.t) -> (i : 'tildeident))]];
+    Grammar.Entry.obj (tildeidentcolon : 'tildeidentcolon Grammar.Entry.e),
+    None,
+    [None, None,
+     [[Gramext.Stoken ("", "~"); Gramext.Stoken ("ANTIQUOT_LOC", "a");
+       Gramext.Stoken ("", ":")],
+      Gramext.action
+        (fun _ (s : string) _ (loc : Ploc.t) ->
+           (failwith "antiquot" : 'tildeidentcolon));
+      [Gramext.Stoken ("", "~"); Gramext.Stoken ("ANTIQUOT_LOC", "");
+       Gramext.Stoken ("", ":")],
+      Gramext.action
+        (fun _ (s : string) _ (loc : Ploc.t) ->
+           (failwith "antiquot" : 'tildeidentcolon));
+      [Gramext.Stoken ("TILDEIDENTCOLON", "")],
+      Gramext.action
+        (fun (i : string) (loc : Ploc.t) -> (i : 'tildeidentcolon))]];
+    Grammar.Entry.obj (questionident : 'questionident Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Stoken ("QUESTIONIDENT", "")],
+      Gramext.action
+        (fun (i : string) (loc : Ploc.t) -> (i : 'questionident))]];
+    Grammar.Entry.obj
+      (questionidentcolon : 'questionidentcolon Grammar.Entry.e),
+    None,
+    [None, None,
+     [[Gramext.Stoken ("QUESTIONIDENTCOLON", "")],
+      Gramext.action
+        (fun (i : string) (loc : Ploc.t) -> (i : 'questionidentcolon))]];
     Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e),
     Some (Gramext.Level "simple"),
     [None, None,
@@ -2285,18 +2339,18 @@ Grammar.extend
       Gramext.action
         (fun (t : 'ctyp) (loc : Ploc.t) -> (MLast.PvInh t : 'poly_variant));
       [Gramext.Stoken ("", "`");
-       Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e));
+       Gramext.Snterm (Grammar.Entry.obj (ident2 : 'ident2 Grammar.Entry.e));
        Gramext.Stoken ("", "of"); Gramext.Sflag (Gramext.Stoken ("", "&"));
        Gramext.Slist1sep
          (Gramext.Snterm (Grammar.Entry.obj (ctyp : 'ctyp Grammar.Entry.e)),
           Gramext.Stoken ("", "&"))],
       Gramext.action
-        (fun (l : 'ctyp list) (ao : bool) _ (i : 'ident) _ (loc : Ploc.t) ->
+        (fun (l : 'ctyp list) (ao : bool) _ (i : 'ident2) _ (loc : Ploc.t) ->
            (MLast.PvTag (i, ao, l) : 'poly_variant));
       [Gramext.Stoken ("", "`");
-       Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
+       Gramext.Snterm (Grammar.Entry.obj (ident2 : 'ident2 Grammar.Entry.e))],
       Gramext.action
-        (fun (i : 'ident) _ (loc : Ploc.t) ->
+        (fun (i : 'ident2) _ (loc : Ploc.t) ->
            (MLast.PvTag (i, true, []) : 'poly_variant))]];
     Grammar.Entry.obj (name_tag : 'name_tag Grammar.Entry.e), None,
     [None, None,
@@ -2316,11 +2370,16 @@ Grammar.extend
       Gramext.action
         (fun _ (eo : 'eq_expr option) (p : 'patt_tcon) _ _ (loc : Ploc.t) ->
            (MLast.PaOlb (loc, "", Some (p, eo)) : 'patt));
-      [Gramext.Stoken ("QUESTIONIDENT", "")],
+      [Gramext.Snterm
+         (Grammar.Entry.obj
+            (questionident : 'questionident Grammar.Entry.e))],
       Gramext.action
-        (fun (i : string) (loc : Ploc.t) ->
+        (fun (i : 'questionident) (loc : Ploc.t) ->
            (MLast.PaOlb (loc, i, None) : 'patt));
-      [Gramext.Stoken ("QUESTIONIDENTCOLON", ""); Gramext.Stoken ("", "(");
+      [Gramext.Snterm
+         (Grammar.Entry.obj
+            (questionidentcolon : 'questionidentcolon Grammar.Entry.e));
+       Gramext.Stoken ("", "(");
        Gramext.Snterm
          (Grammar.Entry.obj (patt_tcon : 'patt_tcon Grammar.Entry.e));
        Gramext.Sopt
@@ -2328,27 +2387,31 @@ Grammar.extend
             (Grammar.Entry.obj (eq_expr : 'eq_expr Grammar.Entry.e)));
        Gramext.Stoken ("", ")")],
       Gramext.action
-        (fun _ (eo : 'eq_expr option) (p : 'patt_tcon) _ (i : string)
-             (loc : Ploc.t) ->
+        (fun _ (eo : 'eq_expr option) (p : 'patt_tcon) _
+             (i : 'questionidentcolon) (loc : Ploc.t) ->
            (MLast.PaOlb (loc, i, Some (p, eo)) : 'patt));
-      [Gramext.Stoken ("TILDEIDENT", "")],
+      [Gramext.Snterm
+         (Grammar.Entry.obj (tildeident : 'tildeident Grammar.Entry.e))],
       Gramext.action
-        (fun (i : string) (loc : Ploc.t) ->
+        (fun (i : 'tildeident) (loc : Ploc.t) ->
            (MLast.PaLab (loc, i, None) : 'patt));
-      [Gramext.Stoken ("TILDEIDENTCOLON", ""); Gramext.Sself],
+      [Gramext.Snterm
+         (Grammar.Entry.obj
+            (tildeidentcolon : 'tildeidentcolon Grammar.Entry.e));
+       Gramext.Sself],
       Gramext.action
-        (fun (p : 'patt) (i : string) (loc : Ploc.t) ->
+        (fun (p : 'patt) (i : 'tildeidentcolon) (loc : Ploc.t) ->
            (MLast.PaLab (loc, i, Some p) : 'patt));
       [Gramext.Stoken ("", "#");
        Gramext.Snterm
-         (Grammar.Entry.obj (mod_ident : 'mod_ident Grammar.Entry.e))],
+         (Grammar.Entry.obj (mod_ident2 : 'mod_ident2 Grammar.Entry.e))],
       Gramext.action
-        (fun (sl : 'mod_ident) _ (loc : Ploc.t) ->
+        (fun (sl : 'mod_ident2) _ (loc : Ploc.t) ->
            (MLast.PaTyp (loc, sl) : 'patt));
       [Gramext.Stoken ("", "`");
-       Gramext.Snterm (Grammar.Entry.obj (ident : 'ident Grammar.Entry.e))],
+       Gramext.Snterm (Grammar.Entry.obj (ident2 : 'ident2 Grammar.Entry.e))],
       Gramext.action
-        (fun (s : 'ident) _ (loc : Ploc.t) ->
+        (fun (s : 'ident2) _ (loc : Ploc.t) ->
            (MLast.PaVrn (loc, s) : 'patt))]];
     Grammar.Entry.obj (patt_tcon : 'patt_tcon Grammar.Entry.e), None,
     [None, None,
@@ -2372,11 +2435,16 @@ Grammar.extend
       Gramext.action
         (fun _ (eo : 'eq_expr option) (p : 'ipatt_tcon) _ _ (loc : Ploc.t) ->
            (MLast.PaOlb (loc, "", Some (p, eo)) : 'ipatt));
-      [Gramext.Stoken ("QUESTIONIDENT", "")],
+      [Gramext.Snterm
+         (Grammar.Entry.obj
+            (questionident : 'questionident Grammar.Entry.e))],
       Gramext.action
-        (fun (i : string) (loc : Ploc.t) ->
+        (fun (i : 'questionident) (loc : Ploc.t) ->
            (MLast.PaOlb (loc, i, None) : 'ipatt));
-      [Gramext.Stoken ("QUESTIONIDENTCOLON", ""); Gramext.Stoken ("", "(");
+      [Gramext.Snterm
+         (Grammar.Entry.obj
+            (questionidentcolon : 'questionidentcolon Grammar.Entry.e));
+       Gramext.Stoken ("", "(");
        Gramext.Snterm
          (Grammar.Entry.obj (ipatt_tcon : 'ipatt_tcon Grammar.Entry.e));
        Gramext.Sopt
@@ -2384,16 +2452,20 @@ Grammar.extend
             (Grammar.Entry.obj (eq_expr : 'eq_expr Grammar.Entry.e)));
        Gramext.Stoken ("", ")")],
       Gramext.action
-        (fun _ (eo : 'eq_expr option) (p : 'ipatt_tcon) _ (i : string)
-             (loc : Ploc.t) ->
+        (fun _ (eo : 'eq_expr option) (p : 'ipatt_tcon) _
+             (i : 'questionidentcolon) (loc : Ploc.t) ->
            (MLast.PaOlb (loc, i, Some (p, eo)) : 'ipatt));
-      [Gramext.Stoken ("TILDEIDENT", "")],
+      [Gramext.Snterm
+         (Grammar.Entry.obj (tildeident : 'tildeident Grammar.Entry.e))],
       Gramext.action
-        (fun (i : string) (loc : Ploc.t) ->
+        (fun (i : 'tildeident) (loc : Ploc.t) ->
            (MLast.PaLab (loc, i, None) : 'ipatt));
-      [Gramext.Stoken ("TILDEIDENTCOLON", ""); Gramext.Sself],
+      [Gramext.Snterm
+         (Grammar.Entry.obj
+            (tildeidentcolon : 'tildeidentcolon Grammar.Entry.e));
+       Gramext.Sself],
       Gramext.action
-        (fun (p : 'ipatt) (i : string) (loc : Ploc.t) ->
+        (fun (p : 'ipatt) (i : 'tildeidentcolon) (loc : Ploc.t) ->
            (MLast.PaLab (loc, i, Some p) : 'ipatt))]];
     Grammar.Entry.obj (ipatt_tcon : 'ipatt_tcon Grammar.Entry.e), None,
     [None, None,

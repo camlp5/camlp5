@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.42 2007/09/13 19:41:59 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.43 2007/09/14 03:16:58 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -188,13 +188,13 @@ value rec ctyp =
       if is_cls then mktyp loc (Ptyp_class li (List.map ctyp al) [])
       else mktyp loc (Ptyp_constr li (List.map ctyp al))
   | TyArr loc (TyLab loc1 lab t1) t2 ->
-      mktyp loc (Ptyp_arrow lab (ctyp t1) (ctyp t2))
+      mktyp loc (Ptyp_arrow (uv lab) (ctyp t1) (ctyp t2))
   | TyArr loc (TyOlb loc1 lab t1) t2 ->
       let t1 =
         let loc = loc1 in
         <:ctyp< option $t1$ >>
       in
-      mktyp loc (Ptyp_arrow ("?" ^ lab) (ctyp t1) (ctyp t2))
+      mktyp loc (Ptyp_arrow ("?" ^ uv lab) (ctyp t1) (ctyp t2))
   | TyArr loc t1 t2 -> mktyp loc (Ptyp_arrow "" (ctyp t1) (ctyp t2))
   | TyObj loc fl v -> mktyp loc (Ptyp_object (meth_list loc (uv fl) v))
   | TyCls loc id ->
@@ -213,15 +213,15 @@ value rec ctyp =
       let catl =
         List.map
           (fun
-           [ PvTag c a t -> Rtag c a (List.map ctyp t)
+           [ PvTag c a t -> Rtag (uv c) (uv a) (List.map ctyp (uv t))
            | PvInh t -> Rinherit (ctyp t) ])
-          catl
+          (uv catl)
       in
       let (clos, sl) =
         match ool with
         [ None -> (True, None)
         | Some None -> (False, None)
-        | Some (Some sl) -> (True, Some sl) ]
+        | Some (Some sl) -> (True, Some (uv sl)) ]
       in
       mktyp loc (Ptyp_variant catl clos sl)
   | IFDEF STRICT THEN
@@ -309,7 +309,7 @@ value paolab loc lab peoo =
   in
   let (p, eo) =
     match peoo with
-    [ Some peo -> peo
+    [ Some (p, eo) -> (p, uv eo)
     | None -> (<:patt< $lid:lab$ >>, None) ]
   in
   (lab, p, eo)
@@ -482,11 +482,11 @@ value rec patt =
         (Ppat_constant (Const_string (string_of_string_token loc (uv s))))
   | PaTup loc pl -> mkpat loc (Ppat_tuple (List.map patt (uv pl)))
   | PaTyc loc p t -> mkpat loc (Ppat_constraint (patt p) (ctyp t))
-  | PaTyp loc sl -> mkpat loc (Ppat_type (long_id_of_string_list loc sl))
+  | PaTyp loc sl -> mkpat loc (Ppat_type (long_id_of_string_list loc (uv sl)))
   | PaUid loc s ->
       let ca = not no_constructors_arity.val in
       mkpat loc (Ppat_construct (lident (conv_con (uv s))) None ca)
-  | PaVrn loc s -> mkpat loc (Ppat_variant s None)
+  | PaVrn loc s -> mkpat loc (Ppat_variant (uv s) None)
   | IFDEF STRICT THEN
       PaXtr loc _ _ -> error loc "bad ast"
     END ]
@@ -655,10 +655,10 @@ value rec expr =
       match uv pel with
       [ [(PaLab _ lab po, w, e)] ->
           mkexp loc
-            (Pexp_function lab None
-               [(patt (patt_of_lab loc lab po), when_expr e w)])
+            (Pexp_function (uv lab) None
+               [(patt (patt_of_lab loc (uv lab) po), when_expr e w)])
       | [(PaOlb _ lab peoo, w, e)] ->
-          let (lab, p, eo) = paolab loc lab peoo in
+          let (lab, p, eo) = paolab loc (uv lab) peoo in
           mkexp loc
             (Pexp_function ("?" ^ lab) (option expr eo)
                [(patt p, when_expr e w)])
@@ -884,13 +884,13 @@ and class_type =
         (Pcty_constr (long_id_of_string_list loc (uv id))
            (List.map ctyp (uv tl)))
   | CtFun loc (TyLab _ lab t) ct ->
-      mkcty loc (Pcty_fun lab (ctyp t) (class_type ct))
+      mkcty loc (Pcty_fun (uv lab) (ctyp t) (class_type ct))
   | CtFun loc (TyOlb loc1 lab t) ct ->
       let t =
         let loc = loc1 in
         <:ctyp< option $t$ >>
       in
-      mkcty loc (Pcty_fun ("?" ^ lab) (ctyp t) (class_type ct))
+      mkcty loc (Pcty_fun ("?" ^ uv lab) (ctyp t) (class_type ct))
   | CtFun loc t ct -> mkcty loc (Pcty_fun "" (ctyp t) (class_type ct))
   | CtSig loc t_o ctfl ->
       let t =
@@ -932,9 +932,10 @@ and class_expr =
            (List.map ctyp (uv tl)))
   | CeFun loc (PaLab _ lab po) ce ->
       mkpcl loc
-        (Pcl_fun lab None (patt (patt_of_lab loc lab po)) (class_expr ce))
+        (Pcl_fun (uv lab) None (patt (patt_of_lab loc (uv lab) po))
+           (class_expr ce))
   | CeFun loc (PaOlb _ lab peoo) ce ->
-      let (lab, p, eo) = paolab loc lab peoo in
+      let (lab, p, eo) = paolab loc (uv lab) peoo in
       mkpcl loc
         (Pcl_fun ("?" ^ lab) (option expr eo) (patt p) (class_expr ce))
   | CeFun loc p ce -> mkpcl loc (Pcl_fun "" None (patt p) (class_expr ce))

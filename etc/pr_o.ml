@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_o.ml,v 1.88 2007/09/12 19:58:05 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.89 2007/09/14 03:16:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -2474,7 +2474,10 @@ value variant_decl pc pv =
              in
              sprintf "%s\n%s" s1 s2)
   | <:poly_variant< $t$ >> ->
-       ctyp pc t ]
+       ctyp pc t
+  | IFDEF STRICT THEN
+      _ -> failwith "Pr_ro.variant_decl"
+    END ]
 ;
 
 value variant_decl_list char pc pvl =

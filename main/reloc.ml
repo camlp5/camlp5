@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: reloc.ml,v 1.30 2007/09/13 19:41:59 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.31 2007/09/14 03:16:58 deraugla Exp $ *)
 
 open MLast;
 
@@ -63,13 +63,13 @@ value rec ctyp floc sh =
     | TyTup loc x1 -> TyTup (floc loc) (vala_map (List.map self) x1)
     | TyUid loc x1 -> TyUid (floc loc) x1
     | TyVrn loc x1 x2 ->
-        TyVrn (floc loc) (List.map (poly_variant floc sh) x1) x2
+        TyVrn (floc loc) (vala_map (List.map (poly_variant floc sh)) x1) x2
     | IFDEF STRICT THEN
         TyXtr loc x1 x2 -> TyXtr (floc loc) x1 (option_map (vala_map self) x2)
       END ]
 and poly_variant floc sh =
   fun
-  [ PvTag x1 x2 x3 -> PvTag x1 x2 (List.map (ctyp floc sh) x3)
+  [ PvTag x1 x2 x3 -> PvTag x1 x2 (vala_map (List.map (ctyp floc sh)) x3)
   | PvInh x1 -> PvInh (ctyp floc sh x1) ]
 ;
 
@@ -126,7 +126,8 @@ value rec patt floc sh =
     | PaOlb loc x1 x2 ->
         PaOlb (floc loc) x1
           (option_map
-             (fun (x1, x2) -> (self x1, option_map (expr floc sh) x2)) x2)
+             (fun (x1, x2) ->
+                (self x1, vala_map (option_map (expr floc sh)) x2)) x2)
     | PaOrp loc x1 x2 -> PaOrp (floc loc) (self x1) (self x2)
     | PaRng loc x1 x2 -> PaRng (floc loc) (self x1) (self x2)
     | PaRec loc x1 ->

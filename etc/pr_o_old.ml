@@ -1,16 +1,6 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
 (* $Id$ *)
+(* Copyright (c) INRIA 2007 *)
 
 open Pcaml.OldPrinters;
 open Spretty;
@@ -261,7 +251,10 @@ and poly_variant b rf _ k =
           HVbox
             [: b;
                `HOVbox [: `S LR c; `S LR "of"; ao; ctyp_list tl "" k :] :] ]
-  | <:poly_variant< $t$ >> -> HVbox [: b; `ctyp t "" k :] ]
+  | <:poly_variant< $t$ >> -> HVbox [: b; `ctyp t "" k :]
+  | IFDEF STRICT THEN
+      _ -> failwith "Pr_r_old.poly_variant"
+    END ]
 ;
 
 value rec get_type_args t tl =

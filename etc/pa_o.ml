@@ -1,16 +1,6 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: pa_o.ml,v 1.49 2007/09/13 04:04:32 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.50 2007/09/14 03:16:58 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
 
@@ -38,6 +28,7 @@ do {
   Grammar.Unsafe.clear_entry constructor_declaration;
   Grammar.Unsafe.clear_entry match_case;
   Grammar.Unsafe.clear_entry with_constr;
+  Grammar.Unsafe.clear_entry poly_variant;
   Grammar.Unsafe.clear_entry class_type;
   Grammar.Unsafe.clear_entry class_expr;
   Grammar.Unsafe.clear_entry class_sig_item;
@@ -344,7 +335,7 @@ value choose_tvar tpl =
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr class_type
     class_expr class_sig_item class_str_item let_binding type_declaration
-    constructor_declaration match_case with_constr;
+    constructor_declaration match_case with_constr poly_variant;
   module_expr:
     [ [ "functor"; "("; i = UIDENT; ":"; t = module_type; ")"; "->";
         me = SELF ->

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: mLast.mli,v 1.42 2007/09/13 19:41:59 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.43 2007/09/14 03:16:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Module [MLast]: abstract syntax tree.
@@ -24,23 +24,24 @@ type ctyp =
   | TyApp of loc and ctyp and ctyp
   | TyArr of loc and ctyp and ctyp
   | TyCls of loc and V (list string)
-  | TyLab of loc and string and ctyp
+  | TyLab of loc and V string and ctyp
   | TyLid of loc and V string
   | TyMan of loc and ctyp and ctyp
   | TyObj of loc and V (list (string * ctyp)) and V bool
-  | TyOlb of loc and string and ctyp
+  | TyOlb of loc and V string and ctyp
   | TyPol of loc and V (list string) and ctyp
   | TyQuo of loc and V string
   | TyRec of loc and V (list (loc * string * bool * ctyp))
   | TySum of loc and V (list (loc * V string * V (list ctyp)))
   | TyTup of loc and V (list ctyp)
   | TyUid of loc and V string
-  | TyVrn of loc and list poly_variant and option (option (list string))
+  | TyVrn of loc and V (list poly_variant) and
+      option (option (V (list string)))
   | IFDEF STRICT THEN
       TyXtr of loc and string and option (V ctyp)
     END ]
 and poly_variant =
-  [ PvTag of string and bool and list ctyp
+  [ PvTag of V string and V bool and V (list ctyp)
   | PvInh of ctyp ]
 ;
 
@@ -64,18 +65,18 @@ type patt =
   | PaChr of loc and V string
   | PaInt of loc and V string and string
   | PaFlo of loc and V string
-  | PaLab of loc and string and option patt
+  | PaLab of loc and V string and option patt
   | PaLid of loc and V string
-  | PaOlb of loc and string and option (patt * option expr)
+  | PaOlb of loc and V string and option (patt * V (option expr))
   | PaOrp of loc and patt and patt
   | PaRng of loc and patt and patt
   | PaRec of loc and V (list (patt * patt))
   | PaStr of loc and V string
   | PaTup of loc and V (list patt)
   | PaTyc of loc and patt and ctyp
-  | PaTyp of loc and list string
+  | PaTyp of loc and V (list string)
   | PaUid of loc and V string
-  | PaVrn of loc and string
+  | PaVrn of loc and V string
   | IFDEF STRICT THEN
       PaXtr of loc and string and option (V patt)
     END ]

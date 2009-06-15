@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.70 2007/09/13 19:41:59 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.71 2007/09/14 03:16:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -192,6 +192,7 @@ module Meta =
       | TyAny _ -> e_node "TyAny" []
       | TyApp _ t1 t2 -> e_node "TyApp" [e_ctyp t1; e_ctyp t2]
       | TyCls _ ls -> e_node "TyCls" [e_vala (e_list e_string) ls]
+      | TyLab _ i t -> e_node "TyLab" [e_vala e_string i; e_ctyp t]
       | TyLid _ s -> e_node "TyLid" [e_vala e_string s]
       | TyMan _ t1 t2 -> e_node "TyMan" [e_ctyp t1; e_ctyp t2]
       | TyObj _ lm v ->
@@ -200,6 +201,7 @@ module Meta =
                (e_list (fun (s, t) -> <:expr< ($e_string s$, $e_ctyp t$) >>))
                lm;
              e_vala e_bool v]
+      | TyOlb _ i t -> e_node "TyOlb" [e_vala e_string i; e_ctyp t]
       | TyPol _ lv t -> e_node "TyPol" [e_vala (e_list e_string) lv; e_ctyp t]
       | TyQuo _ s -> e_node "TyQuo" [e_vala e_string s]
       | TyRec _ lld ->
@@ -223,12 +225,14 @@ module Meta =
           e_node "TySum" [lcd]
       | TyTup _ tl -> e_node "TyTup" [e_vala (e_list e_ctyp) tl]
       | TyUid _ s -> e_node "TyUid" [e_vala e_string s]
+      | TyVrn _ lpv ools ->
+          e_node "TyVrn"
+            [e_vala (e_list e_poly_variant) lpv;
+             e_option (e_option (e_vala (e_list e_string))) ools]
       | IFDEF STRICT THEN
           TyXtr loc s _ -> e_xtr loc s
-        END
-      | x -> not_impl "e_ctyp" x ]
-    ;
-    value rec p_ctyp =
+        END ]
+    and p_ctyp =
       fun
       [ TyArr _ t1 t2 -> p_node "TyArr" [p_ctyp t1; p_ctyp t2]
       | TyApp _ t1 t2 -> p_node "TyApp" [p_ctyp t1; p_ctyp t2]
@@ -239,6 +243,18 @@ module Meta =
           TyXtr loc s _ -> p_xtr loc s
         END
       | x -> not_impl "p_ctyp" x ]
+    and e_poly_variant =
+      fun
+      [ PvTag s a lt ->
+          let s = e_vala e_string s in
+          let a = e_vala e_bool a in
+          let lt = e_vala (e_list e_ctyp) lt in
+          <:expr< MLast.PvTag $s$ $a$ $lt$ >>
+      | PvInh t ->
+          <:expr< MLast.PvInh $e_ctyp t$ >> ]
+    and p_poly_variant =
+      fun
+      [ x -> not_impl "p_poly_variant" x ]
     ;
     value e_class_infos a =
       fun
@@ -618,6 +634,7 @@ value sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";
 value module_expr_eoi = Grammar.Entry.create Pcaml.gram "module_expr";
 value module_type_eoi = Grammar.Entry.create Pcaml.gram "module_type";
 value with_constr_eoi = Grammar.Entry.create Pcaml.gram "with_constr";
+value poly_variant_eoi = Grammar.Entry.create Pcaml.gram "poly_variant";
 value class_expr_eoi = Grammar.Entry.create Pcaml.gram "class_expr";
 value class_type_eoi = Grammar.Entry.create Pcaml.gram "class_type";
 value class_str_item_eoi = Grammar.Entry.create Pcaml.gram "class_str_item";
@@ -632,6 +649,7 @@ EXTEND
   module_expr_eoi: [ [ x = Pcaml.module_expr; EOI -> x ] ];
   module_type_eoi: [ [ x = Pcaml.module_type; EOI -> x ] ];
   with_constr_eoi: [ [ x = Pcaml.with_constr; EOI -> x ] ];
+  poly_variant_eoi: [ [ x = Pcaml.poly_variant; EOI -> x ] ];
   class_expr_eoi: [ [ x = Pcaml.class_expr; EOI -> x ] ];
   class_type_eoi: [ [ x = Pcaml.class_type; EOI -> x ] ];
   class_str_item_eoi: [ [ x = Pcaml.class_str_item; EOI -> x ] ];
@@ -840,6 +858,8 @@ List.iter
     apply_entry module_type_eoi Meta.e_module_type Meta.p_module_type);
    ("with_constr",
     apply_entry with_constr_eoi Meta.e_with_constr Meta.p_with_constr);
+   ("poly_variant",
+    apply_entry poly_variant_eoi Meta.e_poly_variant Meta.p_poly_variant);
    ("class_expr",
     apply_entry class_expr_eoi Meta.e_class_expr Meta.p_class_expr);
    ("class_type",
