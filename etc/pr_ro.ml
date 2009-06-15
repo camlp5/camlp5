@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_ro.ml,v 1.60 2007/12/12 20:12:53 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.61 2007/12/13 01:06:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Pretty printing extension for objects and labels *)
@@ -172,35 +172,12 @@ value rec class_longident pc cl =
 ;
 
 value binding elem pc (p, e) = pprintf pc "%p =@;%p" patt p expr e;
-
-value field pc (s, t) =
-  horiz_vertic
-    (fun () ->
-       sprintf "%s%s : %s%s" pc.bef s (ctyp {(pc) with bef = ""; aft = ""} t)
-         pc.aft)
-    (fun () ->
-       let s1 = sprintf "%s%s :" pc.bef s in
-       let s2 = ctyp {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} t in
-       sprintf "%s\n%s" s1 s2)
-;
-
-value field_expr pc (s, e) =
-  horiz_vertic
-    (fun () ->
-       sprintf "%s%s = %s%s" pc.bef s (expr {(pc) with bef = ""; aft = ""} e)
-         pc.aft)
-    (fun () -> not_impl "field expr vertic" pc s)
-;
+value field pc (s, t) = pprintf pc "%s :@;%p" s ctyp t;
+value field_expr pc (s, e) = pprintf pc "%s =@;%p" s expr e;
 
 value patt_tcon pc p =
   match p with
-  [ <:patt< ($p$ : $t$) >> ->
-      horiz_vertic
-        (fun () ->
-           sprintf "%s%s : %s%s" pc.bef
-             (patt {(pc) with bef = ""; aft = ""} p)
-             (ctyp {(pc) with bef = ""; aft = ""} t) pc.aft)
-        (fun () -> not_impl "patt_tcon vertic" pc p)
+  [ <:patt< ($p$ : $t$) >> -> pprintf pc "%p :@ %p" patt p ctyp t
   | p -> patt pc p ]
 ;
 
