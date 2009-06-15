@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_r.ml,v 1.29 2007/08/01 18:57:15 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.30 2007/08/02 05:03:07 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -130,7 +130,7 @@ EXTEND
   module_expr:
     [ [ "functor"; "("; i = UIDENT; ":"; t = module_type; ")"; "->";
         me = SELF ->
-          <:module_expr< functor ( $i$ : $t$ ) -> $me$ >>
+          <:module_expr< functor ( $uid:i$ : $t$ ) -> $me$ >>
       | "struct"; st = LIST0 [ s = str_item; ";" -> s ]; "end" ->
           <:module_expr< struct $list:st$ end >> ]
     | [ me1 = SELF; me2 = SELF -> <:module_expr< $me1$ $me2$ >> ]
