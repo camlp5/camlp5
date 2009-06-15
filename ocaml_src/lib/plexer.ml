@@ -431,7 +431,7 @@ let antiloc bp ep buf =
 let rec antiquot_loc ctx bp buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
     Some '$' ->
-      Stream.junk strm__; antiloc bp (Stream.count strm__) (B.get buf)
+      Stream.junk strm__; antiloc bp (Stream.count strm__) (":" ^ B.get buf)
   | Some ('a'..'z' | 'A'..'Z' | '0'..'9' as c) ->
       Stream.junk strm__; antiquot_loc ctx bp (B.add c buf) strm__
   | Some ':' ->
@@ -444,12 +444,12 @@ let rec antiquot_loc ctx bp buf (strm__ : _ Stream.t) =
         try any ctx buf strm__ with Stream.Failure -> raise (Stream.Error "")
       in
       let buf = antiquot_rest ctx bp buf strm__ in
-      antiloc bp (Stream.count strm__) (B.get buf)
+      antiloc bp (Stream.count strm__) (":" ^ B.get buf)
   | _ ->
       match try Some (any ctx buf strm__) with Stream.Failure -> None with
         Some buf ->
           let buf = antiquot_rest ctx bp buf strm__ in
-          antiloc bp (Stream.count strm__) (B.get buf)
+          antiloc bp (Stream.count strm__) (":" ^ B.get buf)
       | _ -> err ctx (bp, Stream.count strm__) "antiquotation not terminated"
 ;;
 
@@ -850,7 +850,7 @@ let using_token kwd_table ident_table (p_con, p_prm) =
         end
   | "TILDEIDENT" | "TILDEIDENTCOLON" | "QUESTIONIDENT" |
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
-    "CHAR" | "STRING" | "QUOTATION" | "ANTIQUOT" | "EOI" ->
+    "CHAR" | "STRING" | "QUOTATION" | "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
       ()
   | _ ->
       raise

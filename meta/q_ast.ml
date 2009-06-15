@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.5 2007/08/01 05:37:37 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.6 2007/08/01 06:22:35 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -51,11 +51,6 @@ value eval_antiquot kind e s =
 value expr_eoi = Grammar.Entry.create Pcaml.gram "expr";
 value patt_eoi = Grammar.Entry.create Pcaml.gram "patt";
 value sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";
-EXTEND
-  expr_eoi: [ [ x = Pcaml.expr; EOI -> x ] ];
-  patt_eoi: [ [ x = Pcaml.patt; EOI -> x ] ];
-  sig_item_eoi: [ [ x = Pcaml.sig_item; EOI -> x ] ];
-END;
 
 module Meta =
   struct
@@ -111,10 +106,8 @@ module Meta =
       loop e where rec loop =
         fun
         [ ExAcc _ e1 e2 -> <:expr< MLast.ExAcc $ln$ $loop e1$ $loop e2$ >>
-        | ExAnt _ <:expr< ("", $e$) >> -> e
+        | ExAnt _ _ as e -> e
         | ExApp _ e1 e2 -> <:expr< MLast.ExApp $ln$ $loop e1$ $loop e2$ >>
-        | ExArr _ [ExAnt _ <:expr< ("list", $e$) >>] ->
-            <:expr< MLast.ExArr $ln$ $e$ >>
         | ExArr _ el ->
             <:expr< MLast.ExArr $ln$ $e_list loop el$ >>
         | ExIfe _ e1 e2 e3 ->
@@ -125,21 +118,14 @@ module Meta =
             let pwel =
               e_list
                 (fun (p, eo, e) ->
-                   <:expr<
-                     ($e_patt p$, $e_option loop eo$, $loop e$)
-                   >>)
+                   <:expr< ($e_patt p$, $e_option loop eo$, $loop e$) >>)
                 pwel
             in
             <:expr< MLast.ExFun $ln$ $pwel$ >>
-        | ExLet _ rf [(<:patt< _ >>, ExAnt _ <:expr< ("list", $e1$) >>)] e ->
-            let rf = e_bool rf in
-            let pel = e1 in
-            <:expr< MLast.ExLet $ln$ $rf$ $pel$ $loop e$ >>
         | ExLet _ rf pel e ->
             let rf = e_bool rf in
             let pel =
-              e_list
-                (fun (p, e) -> <:expr< ($e_patt p$, $loop e$) >>) pel
+              e_list (fun (p, e) -> <:expr< ($e_patt p$, $loop e$) >>) pel
             in
             <:expr< MLast.ExLet $ln$ $rf$ $pel$ $loop e$ >>
         | ExLid _ s ->
@@ -206,6 +192,18 @@ value check_anti_loc s kind =
   [ Not_found -> raise Stream.Failure ]
 ;
 
+EXTEND
+  expr_eoi: [ [ x = Pcaml.expr; EOI -> x ] ];
+  patt_eoi: [ [ x = Pcaml.patt; EOI -> x ] ];
+  sig_item_eoi: [ [ x = Pcaml.sig_item; EOI -> x ] ];
+  Pcaml.expr: LEVEL "simple"
+    [ [ s = ANTIQUOT_LOC ->
+          match eval_antiquot "" expr_eoi s with
+          [ Some (loc, r) -> <:expr< $anti:r$ >>
+          | None -> assert False ] ] ]
+  ;
+END;
+
 value eq_before_colon p e =
   loop 0 where rec loop i =
     if i == String.length e then
@@ -229,6 +227,10 @@ lex.Token.tok_match :=
   [ ("ANTIQUOT", p_prm) ->
       fun
       [ ("ANTIQUOT", prm) when eq_before_colon p_prm prm -> after_colon prm
+      | _ -> raise Stream.Failure ]
+  | ("ANTIQUOT_LOC", "") ->
+      fun
+      [ ("ANTIQUOT_LOC", prm) -> check_anti_loc prm ""
       | _ -> raise Stream.Failure ]
   | ("LIDENT", "") ->
       fun

@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: plexer.ml,v 1.83 2007/07/31 23:48:22 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.84 2007/08/01 06:22:35 deraugla Exp $ *)
 
 open Token;
 
@@ -221,11 +221,11 @@ value antiloc bp ep buf =
 
 value rec antiquot_loc ctx bp =
   lexer
-  [ "$"/ -> antiloc bp $pos $buf
+  [ "$"/ -> antiloc bp $pos (":" ^ $buf)
   | "a..zA..Z0..9" (antiquot_loc ctx bp)!
   | ":" (antiquot_rest ctx bp)! -> antiloc bp $pos $buf
-  | "\\"/ (any ctx) (antiquot_rest ctx bp)! -> antiloc bp $pos $buf
-  | (any ctx) (antiquot_rest ctx bp)! -> antiloc bp $pos $buf
+  | "\\"/ (any ctx) (antiquot_rest ctx bp)! -> antiloc bp $pos (":" ^ $buf)
+  | (any ctx) (antiquot_rest ctx bp)! -> antiloc bp $pos (":" ^ $buf)
   | -> err ctx (bp, $pos) "antiquotation not terminated" ]
 ;
 
@@ -487,7 +487,7 @@ value using_token kwd_table ident_table (p_con, p_prm) =
   | "TILDEIDENT" | "TILDEIDENTCOLON" | "QUESTIONIDENT" |
     "QUESTIONIDENTCOLON" | "INT" | "INT_l" | "INT_L" | "INT_n" | "FLOAT" |
     "CHAR" | "STRING" | "QUOTATION" |
-    "ANTIQUOT" | "EOI" ->
+    "ANTIQUOT" | "ANTIQUOT_LOC" | "EOI" ->
       ()
   | _ ->
       raise

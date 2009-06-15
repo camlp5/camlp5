@@ -44,30 +44,6 @@ let eval_antiquot kind e s =
 let expr_eoi = Grammar.Entry.create Pcaml.gram "expr";;
 let patt_eoi = Grammar.Entry.create Pcaml.gram "patt";;
 let sig_item_eoi = Grammar.Entry.create Pcaml.gram "sig_item";;
-Grammar.extend
-  [Grammar.Entry.obj (expr_eoi : 'expr_eoi Grammar.Entry.e), None,
-   [None, None,
-    [[Gramext.Snterm
-        (Grammar.Entry.obj (Pcaml.expr : 'Pcaml__expr Grammar.Entry.e));
-      Gramext.Stoken ("EOI", "")],
-     Gramext.action
-       (fun _ (x : 'Pcaml__expr) (loc : Token.location) -> (x : 'expr_eoi))]];
-   Grammar.Entry.obj (patt_eoi : 'patt_eoi Grammar.Entry.e), None,
-   [None, None,
-    [[Gramext.Snterm
-        (Grammar.Entry.obj (Pcaml.patt : 'Pcaml__patt Grammar.Entry.e));
-      Gramext.Stoken ("EOI", "")],
-     Gramext.action
-       (fun _ (x : 'Pcaml__patt) (loc : Token.location) -> (x : 'patt_eoi))]];
-   Grammar.Entry.obj (sig_item_eoi : 'sig_item_eoi Grammar.Entry.e), None,
-   [None, None,
-    [[Gramext.Snterm
-        (Grammar.Entry.obj
-           (Pcaml.sig_item : 'Pcaml__sig_item Grammar.Entry.e));
-      Gramext.Stoken ("EOI", "")],
-     Gramext.action
-       (fun _ (x : 'Pcaml__sig_item) (loc : Token.location) ->
-          (x : 'sig_item_eoi))]]];;
 
 module Meta =
   struct
@@ -218,7 +194,7 @@ module Meta =
                      ln),
                   loop e1),
                loop e2)
-        | ExAnt (_, MLast.ExTup (_, [MLast.ExStr (_, ""); e])) -> e
+        | ExAnt (_, _) as e -> e
         | ExApp (_, e1, e2) ->
             MLast.ExApp
               (loc,
@@ -232,17 +208,6 @@ module Meta =
                      ln),
                   loop e1),
                loop e2)
-        | ExArr
-            (_, [ExAnt (_, MLast.ExTup (_, [MLast.ExStr (_, "list"); e]))]) ->
-            MLast.ExApp
-              (loc,
-               MLast.ExApp
-                 (loc,
-                  MLast.ExAcc
-                    (loc, MLast.ExUid (loc, "MLast"),
-                     MLast.ExUid (loc, "ExArr")),
-                  ln),
-               e)
         | ExArr (_, el) ->
             MLast.ExApp
               (loc,
@@ -298,28 +263,6 @@ module Meta =
                      MLast.ExUid (loc, "ExFun")),
                   ln),
                pwel)
-        | ExLet
-            (_, rf,
-             [MLast.PaAny _,
-              ExAnt (_, MLast.ExTup (_, [MLast.ExStr (_, "list"); e1]))],
-             e) ->
-            let rf = e_bool rf in
-            let pel = e1 in
-            MLast.ExApp
-              (loc,
-               MLast.ExApp
-                 (loc,
-                  MLast.ExApp
-                    (loc,
-                     MLast.ExApp
-                       (loc,
-                        MLast.ExAcc
-                          (loc, MLast.ExUid (loc, "MLast"),
-                           MLast.ExUid (loc, "ExLet")),
-                        ln),
-                     rf),
-                  pel),
-               loop e)
         | ExLet (_, rf, pel, e) ->
             let rf = e_bool rf in
             let pel =
@@ -453,6 +396,41 @@ let check_anti_loc s kind =
   with Not_found -> raise Stream.Failure
 ;;
 
+Grammar.extend
+  [Grammar.Entry.obj (expr_eoi : 'expr_eoi Grammar.Entry.e), None,
+   [None, None,
+    [[Gramext.Snterm
+        (Grammar.Entry.obj (Pcaml.expr : 'Pcaml__expr Grammar.Entry.e));
+      Gramext.Stoken ("EOI", "")],
+     Gramext.action
+       (fun _ (x : 'Pcaml__expr) (loc : Token.location) -> (x : 'expr_eoi))]];
+   Grammar.Entry.obj (patt_eoi : 'patt_eoi Grammar.Entry.e), None,
+   [None, None,
+    [[Gramext.Snterm
+        (Grammar.Entry.obj (Pcaml.patt : 'Pcaml__patt Grammar.Entry.e));
+      Gramext.Stoken ("EOI", "")],
+     Gramext.action
+       (fun _ (x : 'Pcaml__patt) (loc : Token.location) -> (x : 'patt_eoi))]];
+   Grammar.Entry.obj (sig_item_eoi : 'sig_item_eoi Grammar.Entry.e), None,
+   [None, None,
+    [[Gramext.Snterm
+        (Grammar.Entry.obj
+           (Pcaml.sig_item : 'Pcaml__sig_item Grammar.Entry.e));
+      Gramext.Stoken ("EOI", "")],
+     Gramext.action
+       (fun _ (x : 'Pcaml__sig_item) (loc : Token.location) ->
+          (x : 'sig_item_eoi))]];
+   Grammar.Entry.obj (Pcaml.expr : 'Pcaml__expr Grammar.Entry.e),
+   Some (Gramext.Level "simple"),
+   [None, None,
+    [[Gramext.Stoken ("ANTIQUOT_LOC", "")],
+     Gramext.action
+       (fun (s : string) (loc : Token.location) ->
+          (match eval_antiquot "" expr_eoi s with
+             Some (loc, r) -> MLast.ExAnt (loc, r)
+           | None -> assert false :
+           'Pcaml__expr))]]];;
+
 let eq_before_colon p e =
   let rec loop i =
     if i == String.length e then
@@ -477,6 +455,10 @@ lex.Token.tok_match <-
     "ANTIQUOT", p_prm ->
       (function
          "ANTIQUOT", prm when eq_before_colon p_prm prm -> after_colon prm
+       | _ -> raise Stream.Failure)
+  | "ANTIQUOT_LOC", "" ->
+      (function
+         "ANTIQUOT_LOC", prm -> check_anti_loc prm ""
        | _ -> raise Stream.Failure)
   | "LIDENT", "" ->
       (function
