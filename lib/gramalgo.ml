@@ -456,9 +456,9 @@ value lr0 entry lev = do {
      ("B", [GS_term "1"])]
   in
   let item_set_and_rest =
-    let item = (False, "start-symb", 0, [GS_nterm "E"]) in
+    let item = (False, "S", 0, [GS_nterm "E"]) in
     Some
-      (GS_nterm "start-symb", close_item_set rl [item],
+      (GS_nterm "S", close_item_set rl [item],
        List.map (fun (lh, rh) -> (False, lh, 0, rh)) rl)
   in
 *)
