@@ -4,7 +4,7 @@
 <head>
   <!-- $Id$ -->
   <!-- Copyright (c) 2007 INRIA -->
-  <title>pragma</title>
+  <title>Preprocessor</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <meta http-equiv="Content-Style-Type" content="text/css" />
   <link rel="shortcut icon" href="c4logo.png" />
@@ -48,47 +48,48 @@
 
 <div id="content">
 
-<h1 class="top">Directive #pragma</h1>
+<h1 class="top">Preprocessor</h1>
 
-<p>The directive "<code>#pragma</code>" allows to evaluate expressions
-at parse time, useful, for example, to test syntax extensions by the
-statement EXTEND without having to compile it in a separate file.</p>
+<p>The camlp5 shell command takes a file as parameter. This file is parsed
+according to parsing kits. In case of syntax errors, the command fails with
+an error message.</p>
 
-<p>To use it, add the syntax extension "<code>pa_pragma.cmo</code>" in
-the camlp5 command line. It add the ability to use this directive.</p>
+<p>Parsing kits are compiled ocaml objects. When encountered, they are
+loaded in camlp5 core. This way, they can change the grammar of the
+language, by extensions added or deleted, or redefinition of the language
+grammar from scratch.</p>
 
-<p>Example in a file, adding a syntax for the statement 'repeat' and
-using it just after:</p>
+<p>There are two ways to specify a parser kit:<p>
+
+<ul>
+
+<li>either by giving it as parameter of the camlp5 command</li>
+
+<li>or by using the directive "<code>#load</code>" in the source file</li>
+
+</ul>
+
+<p>The command <code>camlp5</code> alone does not have any default
+parsing kit. Its initial grammar is empty and, by default, all source
+files fail when parsed. The two main parsers kits are:</p>
+
+<ul>
+
+<li><code>"pa_o.cmo"</code> for the normal syntax the ocaml language,
+compatible with the default parser of the ocaml compiler.</li>
+
+<li><code>"pa_r.cmo"</code> for a syntax named
+"the <a href="revised.html">revised syntax</a>".</li>
+
+</ul>
+
+<p>Two extra commands are provided, "camlp5o" and "camlp5r", which are
+shortcuts of, respectively:</p>
 
 <pre>
-#pragma
-  EXTEND
-    GLOBAL: expr;
-    expr: LEVEL "top"
-      [ [ "repeat"; e1 = sequence; "until"; e2 = SELF ->
-            &lt;:expr&lt; do { $e1$; while not $e2$ do { $e1$ } } &gt;&gt; ] ]
-    ;
-    sequence:
-      [ [ el = LIST1 expr_semi -> &lt;:expr&lt; do { $list:el$ } &gt;&gt;  ] ]
-    ;
-    expr_semi:
-      [ [ e = expr; ";" -> e ] ]
-    ;
-  END;
-
-let i = ref 1 in
-repeat print_int i.val; print_endline ""; incr i; until i.val = 10;
+camlp5 pa_o.cmo
+camlp5 pa_r.cmo
 </pre>
-
-<p>The compilation of this example (naming it "foo.ml") can be done with
-the command:</p>
-
-<pre>
-ocamlc -pp "camlp5r q_MLast.cmo pa_extend.cmo pa_pragma.cmo" -I +camlp5 foo.ml
-</pre>
-
-<p>Notice that it is still experimental and probably incomplete, for the
-moment.</p>
 
 <div class="trailer">
 
