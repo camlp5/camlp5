@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.29 2007/09/10 22:46:41 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.30 2007/09/11 12:59:09 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -830,7 +830,7 @@ and str_item s l =
   | StDir loc _ _ -> l
   | StExc loc n tl sl ->
       let si =
-        match (uv tl, sl) with
+        match (uv tl, uv sl) with
         [ (tl, []) -> Pstr_exception (uv n) (List.map ctyp tl)
         | ([], sl) -> Pstr_exn_rebind (uv n) (long_id_of_string_list loc sl)
         | _ -> error loc "bad exception declaration" ]

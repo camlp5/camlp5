@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.66 2007/09/10 22:46:41 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.67 2007/09/11 12:59:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -344,8 +344,13 @@ EXTEND
       | e = expr -> Qast.Node "StExp" [Qast.Loc; e] ] ]
   ;
   rebind_exn:
-    [ [ "="; sl = mod_ident -> sl
-      | -> Qast.List [] ] ]
+    [ [ "="; sl = mod_ident -> Qast.VaVal sl
+      | "="; a = a_antiquot -> a
+      | -> Qast.VaVal (Qast.List []) ] ]
+  ;
+  a_antiquot:
+    [ [ s = ANTIQUOT -> Qast.VaVal (antiquot "" loc s)
+      | s = ANTIQUOT "a" -> antiquot "a" loc s ] ]
   ;
   mod_binding:
     [ [ i = a_UIDENT; me = mod_fun_binding -> Qast.Tuple [i; me] ] ]

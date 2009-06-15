@@ -1,16 +1,6 @@
 (* camlp5r pa_macro.cmo *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: mLast.mli,v 1.29 2007/09/10 22:46:41 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.30 2007/09/11 12:59:09 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007 *)
 
 (* Module [MLast]: abstract syntax tree.
 
@@ -173,7 +163,7 @@ and str_item =
   | StClt of loc and list (class_infos class_type)
   | StDcl of loc and V (list str_item)
   | StDir of loc and string and option expr
-  | StExc of loc and V string and V (list ctyp) and list string
+  | StExc of loc and V string and V (list ctyp) and V (list string)
   | StExp of loc and expr
   | StExt of loc and string and ctyp and list string
   | StInc of loc and module_expr

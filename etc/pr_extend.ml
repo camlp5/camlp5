@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extend.ml,v 1.35 2007/09/10 17:19:30 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.36 2007/09/11 12:59:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -431,6 +431,9 @@ and s_symbol pc =
       sprintf "%sSV FLAG %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
   | Svala (Slist0 sy) ->
       sprintf "%sSV LIST0 %s" pc.bef
+        (simple_symbol {(pc) with bef = ""; aft = ""} sy)
+  | Svala (Slist1 sy) ->
+      sprintf "%sSV LIST1 %s" pc.bef
         (simple_symbol {(pc) with bef = ""; aft = ""} sy)
   | Svala (Slist1sep sy sep) ->
       sprintf "%sSV LIST1 %s SEP %s" pc.bef

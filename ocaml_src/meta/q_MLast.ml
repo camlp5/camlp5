@@ -396,6 +396,8 @@ Grammar.extend
    in
    let rebind_exn : 'rebind_exn Grammar.Entry.e =
      grammar_entry_create "rebind_exn"
+   and a_antiquot : 'a_antiquot Grammar.Entry.e =
+     grammar_entry_create "a_antiquot"
    and mod_binding : 'mod_binding Grammar.Entry.e =
      grammar_entry_create "mod_binding"
    and mod_fun_binding : 'mod_fun_binding Grammar.Entry.e =
@@ -703,12 +705,30 @@ Grammar.extend
            (Qast.Node ("StDcl", [Qast.Loc; st]) : 'str_item))]];
     Grammar.Entry.obj (rebind_exn : 'rebind_exn Grammar.Entry.e), None,
     [None, None,
-     [[], Gramext.action (fun (loc : Ploc.t) -> (Qast.List [] : 'rebind_exn));
+     [[],
+      Gramext.action
+        (fun (loc : Ploc.t) -> (Qast.VaVal (Qast.List []) : 'rebind_exn));
+      [Gramext.Stoken ("", "=");
+       Gramext.Snterm
+         (Grammar.Entry.obj (a_antiquot : 'a_antiquot Grammar.Entry.e))],
+      Gramext.action
+        (fun (a : 'a_antiquot) _ (loc : Ploc.t) -> (a : 'rebind_exn));
       [Gramext.Stoken ("", "=");
        Gramext.Snterm
          (Grammar.Entry.obj (mod_ident : 'mod_ident Grammar.Entry.e))],
       Gramext.action
-        (fun (sl : 'mod_ident) _ (loc : Ploc.t) -> (sl : 'rebind_exn))]];
+        (fun (sl : 'mod_ident) _ (loc : Ploc.t) ->
+           (Qast.VaVal sl : 'rebind_exn))]];
+    Grammar.Entry.obj (a_antiquot : 'a_antiquot Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Stoken ("ANTIQUOT", "a")],
+      Gramext.action
+        (fun (s : string) (loc : Ploc.t) ->
+           (antiquot "a" loc s : 'a_antiquot));
+      [Gramext.Stoken ("ANTIQUOT", "")],
+      Gramext.action
+        (fun (s : string) (loc : Ploc.t) ->
+           (Qast.VaVal (antiquot "" loc s) : 'a_antiquot))]];
     Grammar.Entry.obj (mod_binding : 'mod_binding Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Snterm
@@ -928,7 +948,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 384, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 389, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
