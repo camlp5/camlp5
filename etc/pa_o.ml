@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: pa_o.ml,v 1.36 2007/08/16 08:45:24 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.37 2007/08/20 10:48:26 deraugla Exp $ *)
 
 open Stdpp;
 open Pcaml;
@@ -118,6 +118,11 @@ value operator_rparen =
        | _ -> raise Stream.Failure ])
 ;
 
+(*
+  Not necessary, since the grammar system is LL(n) for rules starting
+  with n terminals, but necessary even so, because it is used in native
+  code version in directory ../compile:
+*)
 value lident_colon =
   Grammar.Entry.of_parser gram "lident_colon"
     (fun strm ->
