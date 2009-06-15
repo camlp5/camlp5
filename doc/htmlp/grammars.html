@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.21 2007/07/16 11:39:33 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.22 2007/07/16 13:20:48 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -392,8 +392,10 @@ symbols. They are:</p>
 
 <h2>Interface with the lexer</h2>
 
-<p>To see how the interface with the lexer works, it is important to
-understand the notion of "token patterns".</p>
+<p>To create one's lexer, and interface it with the extensible
+grammars, it is necessary to follow some steps. This section explains
+the notions of "token pattern", "token" and the "match function",
+necessary to build the interface.</p>
 
 <h3>Token patterns</h3>
 
@@ -409,11 +411,11 @@ type pattern = (string * string);
 <ol>
   <li>The <em>constructor name</em>, an identifier starting with an
     uppercase character,</li>
-  <li>The possible <em>value</em> to match with, if any.</li>
+  <li>The possible <em>parameter</em> to match with, if any.</li>
 </ol>
 
 <p>The empty constructor name corresponds to a keyword. The empty
-value corresponds to a match to any value of the symbol.</p>
+parameter corresponds to a match to any value of the symbol.</p>
 
 <p>For example, in the rule containing:</p>
 
@@ -449,6 +451,53 @@ by the token pattern:</p>
 of the EXTEND syntax: it does not correspond to a token pattern and is
 represented differently. A token constructor name must not belong to
 the specific symbols: SELF, NEXT, LIST0, LIST1 and OPT.</p>
+
+<h3>Match function</h3>
+
+<p>When one writes a lexer, one generally creates a type for the
+tokens that the lexer returns. Any type is possible. One has to
+provide a function telling how a token (type defined by the
+programmer) is matched against a token pattern (predefined type, see
+above).</p>
+
+<p>If you don't want to busy about that, you can choose the type
+"<tt>(string * string)</tt>" for your token type (just like the token
+pattern type) and use the default match function provided in camlp5:
+"<tt>Token.default_match</tt>". If you chose that solution, you can
+skip the rest of this section.</p>
+
+<p>Otherwise, if you want to use your own specific token type (or if
+you don't have the choice), you have to write your specific match
+function.</p>
+
+<p>This function takes a token pattern and return a function matching
+a token, returning the matched string or raising the exception
+"<tt>Stream.Failure</tt>" if the token does not match.</p>
+
+<p>Example:</p>
+
+<pre>
+type mytoken = [ Ident of string | Int of int | Comma | Equal | Keyw of string ];
+value mymatch =
+  fun
+  [ ("IDENT", "") -> fun [ Ident s -> s | _ -> raise Stream.Failure ]
+  | ("INT", "") -> fun [ Int i -> string_of_int i | _ -> raise Stream.Failure ]
+  | ("", ",") -> fun [ Comma -> "" | _ -> raise Stream.Failure ]
+  | ("", "=") -> fun [ Equal -> "" | _ -> raise Stream.Failure ]
+  | ("", s) ->
+      fun
+      [ Keyw k -> if k = s then "" else raise Stream.Failure
+      | _ -> raise Stream.Failure ] ]
+;
+</pre>
+
+<p>Notice that, for efficiency, it is necessary to write this function
+like above, as a match of token patterns returning, for each case, the
+function which matches the token, <em>not</em> a function matching the
+token pattern and the token together and returning a string for each
+case.</p>
+
+<p>... to be completed ...</p>
 
 <h3>Grammar.gcreate</h3>
 
