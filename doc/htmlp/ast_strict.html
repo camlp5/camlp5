@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_strict.html,v 1.2 2007/09/18 14:17:28 deraugla Exp $ -->
+  <!-- $Id: ast_strict.html,v 1.3 2007/09/18 20:30:18 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>AST - strict</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -86,8 +86,8 @@
              (MLast.PaUid _ (Ploc.VaVal "Failure")),
             Ploc.VaVal None, MLast.ExUid _ (Ploc.VaVal "None"))]))
     (Ploc.VaVal
-       [(MLast.PaApp _ (MLast.PaUid _ (Ploc.VaVal "Some")) p, Ploc.VaVal None,
-         e);
+       [(MLast.PaApp _ (MLast.PaUid _ (Ploc.VaVal "Some")) p,
+         Ploc.VaVal None, e);
         (MLast.PaAny _, Ploc.VaVal None,
          MLast.ExApp _ (MLast.ExLid _ (Ploc.VaVal "raise"))
            (MLast.ExApp _
@@ -352,228 +352,227 @@
 
 <p>Expressions of the language.</p>
 
-<table border="1">
-  <tr>
-    <th>Node</th>
-    <th><tt>&lt;:expr&lt; ... >></tt></th>
-    <th>Comment</th>
-  </tr>
-  <tr>
-    <td><tt>ExAcc loc e1 e2</tt></td>
-    <td align="center"><tt>$e1$ . $e2$</tt></td>
-    <td>dot</td>
-  </tr>
-  <tr>
-    <td><tt>ExAnt loc e</tt></td>
-    <td align="center"><tt>$anti:e$</tt></td>
-    <td>antiquotation <a href="#expr_1">(1)</a></td>
-  </tr>
-  <tr>
-    <td><tt>ExApp loc e1 e2</tt></td>
-    <td align="center"><tt>$e1$ $e2$</tt></td>
-    <td>application</td>
-  </tr>
-  <tr>
-    <td><tt>ExAre loc e1 e2</tt></td>
-    <td align="center"><tt>$e1$ .( $e2$ )</tt></td>
-    <td>array access</td>
-  </tr>
-  <tr>
-    <td><tt>ExArr loc le</tt></td>
-    <td align="center"><tt>[| $list:le$ |]</tt></td>
-    <td>array</td>
-  </tr>
-  <tr>
-    <td><tt>ExAsr loc e</tt></td>
-    <td align="center"><tt>assert $e$</tt></td>
-    <td>assert</td>
-  </tr>
-  <tr>
-    <td><tt>ExAss loc e1 e2</tt></td>
-    <td align="center"><tt>$e1$ := $e2$</tt></td>
-    <td>assignment</td>
-  </tr>
-  <tr>
-    <td><tt>ExBae loc e le</tt></td>
-    <td align="center"><tt>$e$ .{ $le$ }</tt></td>
-    <td>big array access</td>
-  </tr>
-  <tr>
-    <td><tt>ExChr loc s</tt></td>
-    <td align="center"><tt>$chr:s$</tt></td>
-    <td>character constant</td>
-  </tr>
-  <tr>
-    <td><tt>ExCoe loc e (Some t1) t2</tt></td>
-    <td align="center"><tt>($e1$ : $t1$ :> $t2$)</tt></td>
-    <td>coercion</td>
-  </tr>
-  <tr>
-    <td><tt>ExCoe loc e None t2</tt></td>
-    <td align="center"><tt>($e1$ :> $t2$)</tt></td>
-    <td>coercion</td>
-  </tr>
-  <tr>
-    <td><tt>ExFlo loc s</tt></td>
-    <td align="center"><tt>$flo:s$</tt></td>
-    <td>float constant</td>
-  </tr>
-  <tr>
-    <td><tt>ExFor loc s e1 e2 b le</tt></td>
-    <td align="center"><tt>for $s$ = $e1$ $to:b$ $e2$ do { $list:le$ }</tt></td>
-    <td>for</td>
-  </tr>
-  <tr>
-    <td><tt>ExFun loc lopee</tt></td>
-    <td align="center"><tt>fun [ $list:lpoee$ ]</tt></td>
-    <td>function <a href="#expr_2">(2)</a></td>
-  </tr>
-  <tr>
-    <td><tt>ExIfe loc e1 e2 e3</tt></td>
-    <td align="center"><tt>if $e1$ then $e2$ else $e3$</tt></td>
-    <td>if</td>
-  </tr>
-  <tr>
-    <td><tt>ExInt loc s ""</tt></td>
-    <td align="center"><tt>$int:s$</tt></td>
-    <td>integer constant</td>
-  </tr>
-  <tr>
-    <td><tt>ExInt loc s "l"</tt></td>
-    <td align="center"><tt>$int32:s$</tt></td>
-    <td>integer 32 bits</td>
-  </tr>
-  <tr>
-    <td><tt>ExInt loc s "L"</tt></td>
-    <td align="center"><tt>$int64:s$</tt></td>
-    <td>integer 64 bits</td>
-  </tr>
-  <tr>
-    <td><tt>ExInt loc s "n"</tt></td>
-    <td align="center"><tt>$nativeint:s$</tt></td>
-    <td>native integer</td>
-  </tr>
-  <tr>
-    <td><tt>ExLab loc s None</tt></td>
-    <td align="center"><tt>~ $s$</tt></td>
-    <td>label</td>
-  </tr>
-  <tr>
-    <td><tt>ExLab loc s (Some e)</tt></td>
-    <td align="center"><tt>~ $s$ : $e$</tt></td>
-    <td>label</td>
-  </tr>
-  <tr>
-    <td><tt>ExLaz loc e</tt></td>
-    <td align="center"><tt>lazy $e$</tt></td>
-    <td>lazy</td>
-  </tr>
-  <tr>
-    <td><tt>ExLet loc b lpe e</tt></td>
-    <td align="center"><tt>let $opt:b$ $list:lpe$ in $e$</tt></td>
-    <td>let binding</td>
-  </tr>
-  <tr>
-    <td><tt>ExLid loc s</tt></td>
-    <td align="center"><tt>$lid:s$</tt></td>
-    <td>lowercase identifier</td>
-  </tr>
-  <tr>
-    <td><tt>ExLmd loc s me e</tt></td>
-    <td align="center"><tt>let module $s$ = $me$ in $e$</tt></td>
-    <td>let module</td>
-  </tr>
-  <tr>
-    <td><tt>ExMat loc e lpoee</tt></td>
-    <td align="center"><tt>match $e$ with [ $list:lpoee$ ]</tt></td>
-    <td>match <a href="#expr_2">(2)</a></td>
-  </tr>
-  <tr>
-    <td><tt>ExNew loc ls</tt></td>
-    <td align="center"><tt>new $list:ls$</tt></td>
-    <td>new</td>
-  </tr>
-  <tr>
-    <td><tt>ExObj loc op lcstri</tt></td>
-    <td align="center"><tt>object ($opt:op$) $list:lcstri$ end</tt></td>
-    <td>object expression</td>
-  </tr>
-  <tr>
-    <td><tt>ExOlb loc s None</tt></td>
-    <td align="center"><tt>? $s$</tt></td>
-    <td>option label</td>
-  </tr>
-  <tr>
-    <td><tt>ExOlb loc s (Some e)</tt></td>
-    <td align="center"><tt>? $s$ : $e$</tt></td>
-    <td>option label</td>
-  </tr>
-  <tr>
-    <td><tt>ExOvr loc lse</tt></td>
-    <td align="center"><tt>{&lt; $lse$ >}</tt></td>
-    <td>override</td>
-  </tr>
-  <tr>
-    <td><tt>ExRec loc lpe None</tt></td>
-    <td align="center"><tt>{ $list:lpe$ }</tt></td>
-    <td>record</td>
-  </tr>
-  <tr>
-    <td><tt>ExRec loc lpe (Some e)</tt></td>
-    <td align="center"><tt>{ ($e$) with $list:lpe$ }</tt></td>
-    <td>record</td>
-  </tr>
-  <tr>
-    <td><tt>ExSeq loc le</tt></td>
-    <td align="center"><tt>do { $list:le$ }</tt></td>
-    <td>sequence</td>
-  </tr>
-  <tr>
-    <td><tt>ExSnd loc e s</tt></td>
-    <td align="center"><tt>$e$ # $s$</tt></td>
-    <td>method call</td>
-  </tr>
-  <tr>
-    <td><tt>ExSte loc e1 e2</tt></td>
-    <td align="center"><tt>$e1$ .[ $e2$ ]</tt></td>
-    <td>string element</td>
-  </tr>
-  <tr>
-    <td><tt>ExStr loc s</tt></td>
-    <td align="center"><tt>$str:s$</tt></td>
-    <td>string</td>
-  </tr>
-  <tr>
-    <td><tt>ExTry loc e lpoee</tt></td>
-    <td align="center"><tt>try $e$ with [ $list:lpoee$ ]</tt></td>
-    <td>try <a href="#expr_2">(2)</a></td>
-  </tr>
-  <tr>
-    <td><tt>ExTup loc le</tt></td>
-    <td align="center"><tt>($list:le$)</tt></td>
-    <td>t-uple</td>
-  </tr>
-  <tr>
-    <td><tt>ExTyc loc e t</tt></td>
-    <td align="center"><tt>($e$ : $t$)</tt></td>
-    <td>type constraint</td>
-  </tr>
-  <tr>
-    <td><tt>ExUid loc s</tt></td>
-    <td align="center"><tt>$uid:s$</tt></td>
-    <td>uppercase identifier</td>
-  </tr>
-  <tr>
-    <td><tt>ExVrn loc s</tt></td>
-    <td align="center"><tt>` $s$</tt></td>
-    <td>variant</td>
-  </tr>
-  <tr>
-    <td><tt>ExWhi loc e le</tt></td>
-    <td align="center"><tt>while $e$ do { $list:le$ }</tt></td>
-    <td>while</td>
-  </tr>
-</table>
+<dl>
+  <dt>- dot</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; $e1$ . $e2$ >></tt><br/>
+    <tt style="color:red">ExAcc loc e1 e2</tt>
+  </dd>
+  <dt>- antiquotation <a href="#expr_1">(1)</a></dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; $anti:e$ >></tt><br/>
+    <tt style="color:red">ExAnt loc e</tt>
+  </dd>
+  <dt>- application</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; $e1$ $e2$ >></tt><br/>
+    <tt style="color:red">ExApp loc e1 e2</tt>
+  </dd>
+  <dt>- array access</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; $e1$ .( $e2$ ) >></tt><br/>
+    <tt style="color:red">ExAre loc e1 e2</tt>
+  </dd>
+  <dt>- array</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; [| $list:le$ |] >></tt><br/>
+    <tt style="color:red">ExArr loc (Ploc.VaVal le)</tt><br/><br/>
+    <tt style="color:blue">&lt;:expr&lt; [| $alist:le$ |] >></tt><br/>
+    <tt style="color:red">ExArr loc le</tt>
+  </dd>
+  <dt>- assert</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; assert $e$ >></tt><br/>
+    <tt style="color:red">ExAsr loc e</tt>
+  </dd>
+  <dt>- assignment</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; $e1$ := $e2$ >></tt><br/>
+    <tt style="color:red">ExAss loc e1 e2</tt>
+  </dd>
+  <dt>- big array access</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; $e$ .{ $le$ } >></tt><br/>
+    <tt style="color:red">ExBae loc e le</tt>
+  </dd>
+  <dt>- character constant</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; $chr:s$ >></tt><br/>
+    <tt style="color:red">ExChr loc (Ploc.VaVal s)</tt><br/><br/>
+    <tt style="color:blue">&lt;:expr&lt; $achr:s$ >></tt><br/>
+    <tt style="color:red">ExChr loc s</tt>
+  </dd>
+  <dt>- coercion</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; ($e1$ : $t1$ :> $t2$) >></tt><br/>
+    <tt style="color:red">ExCoe loc e (Some t1) t2</tt>
+  </dd>
+  <dt>- coercion</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; ($e1$ :> $t2$) >></tt><br/>
+    <tt style="color:red">ExCoe loc e None t2</tt>
+  </dd>
+  <dt>- float constant</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; $flo:s$ >></tt><br/>
+    <tt style="color:red">ExFlo loc s</tt>
+  </dd>
+  <dt>- for</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; for $s$ = $e1$ $to:b$ $e2$ do { $list:le$ } >></tt><br/>
+    <tt style="color:red">ExFor loc s e1 e2 b le</tt>
+  </dd>
+  <dt>- function <a href="#expr_2">(2)</a></dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; fun [ $list:lpoee$ ] >></tt><br/>
+    <tt style="color:red">ExFun loc lopee</tt>
+  </dd>
+  <dt>- if</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; if $e1$ then $e2$ else $e3$ >></tt><br/>
+    <tt style="color:red">ExIfe loc e1 e2 e3</tt>
+  </dd>
+  <dt>- integer constant</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; $int:s$ >></tt><br/>
+    <tt style="color:red">ExInt loc s ""</tt>
+  </dd>
+  <dt>- integer 32 bits</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; $int32:s$ >></tt><br/>
+    <tt style="color:red">ExInt loc s "l"</tt>
+  </dd>
+  <dt>- integer 64 bits</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; $int64:s$ >></tt><br/>
+    <tt style="color:red">ExInt loc s "L"</tt>
+  </dd>
+  <dt>- native integer</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; $nativeint:s$ >></tt><br/>
+    <tt style="color:red">ExInt loc s "n"</tt>
+  </dd>
+  <dt>- label</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; ~ $s$ >></tt><br/>
+    <tt style="color:red">ExLab loc s None</tt>
+  </dd>
+  <dt>- label</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; ~ $s$ : $e$ >></tt><br/>
+    <tt style="color:red">ExLab loc s (Some e)</tt>
+  </dd>
+  <dt>- lazy</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; lazy $e$ >></tt><br/>
+    <tt style="color:red">ExLaz loc e</tt>
+  </dd>
+  <dt>- let binding</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; let $opt:b$ $list:lpe$ in $e$ >></tt><br/>
+    <tt style="color:red">ExLet loc b lpe e</tt>
+  </dd>
+  <dt>- lowercase identifier</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; $lid:s$ >></tt><br/>
+    <tt style="color:red">ExLid loc s</tt>
+  </dd>
+  <dt>- let module</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; let module $s$ = $me$ in $e$ >></tt><br/>
+    <tt style="color:red">ExLmd loc s me e</tt>
+  </dd>
+  <dt>- match <a href="#expr_2">(2)</a></dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; match $e$ with [ $list:lpoee$ ] >></tt><br/>
+    <tt style="color:red">ExMat loc e lpoee</tt>
+  </dd>
+  <dt>- new</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; new $list:ls$ >></tt><br/>
+    <tt style="color:red">ExNew loc ls</tt>
+  </dd>
+  <dt>- object expression</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; object ($opt:op$) $list:lcstri$ end >></tt><br/>
+    <tt style="color:red">ExObj loc op lcstri</tt>
+  </dd>
+  <dt>- option label</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; ? $s$ >></tt><br/>
+    <tt style="color:red">ExOlb loc s None</tt>
+  </dd>
+  <dt>- option label</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; ? $s$ : $e$ >></tt><br/>
+    <tt style="color:red">ExOlb loc s (Some e)</tt>
+  </dd>
+  <dt>- override</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; {&lt; $lse$ >} >></tt><br/>
+    <tt style="color:red">ExOvr loc lse</tt>
+  </dd>
+  <dt>- record</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; { $list:lpe$ } >></tt><br/>
+    <tt style="color:red">ExRec loc lpe None</tt>
+  </dd>
+  <dt>- record</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; { ($e$) with $list:lpe$ } >></tt><br/>
+    <tt style="color:red">ExRec loc lpe (Some e)</tt>
+  </dd>
+  <dt>- sequence</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; do { $list:le$ } >></tt><br/>
+    <tt style="color:red">ExSeq loc le</tt>
+  </dd>
+  <dt>- method call</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; $e$ # $s$ >></tt><br/>
+    <tt style="color:red">ExSnd loc e s</tt>
+  </dd>
+  <dt>- string element</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; $e1$ .[ $e2$ ] >></tt><br/>
+    <tt style="color:red">ExSte loc e1 e2</tt>
+  </dd>
+  <dt>- string</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; $str:s$ >></tt><br/>
+    <tt style="color:red">ExStr loc s</tt>
+  </dd>
+  <dt>- try <a href="#expr_2">(2)</a></dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; try $e$ with [ $list:lpoee$ ] >></tt><br/>
+    <tt style="color:red">ExTry loc e lpoee</tt>
+  </dd>
+  <dt>- t-uple</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; ($list:le$) >></tt><br/>
+    <tt style="color:red">ExTup loc le</tt>
+  </dd>
+  <dt>- type constraint</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; ($e$ : $t$) >></tt><br/>
+    <tt style="color:red">ExTyc loc e t</tt>
+  </dd>
+  <dt>- uppercase identifier</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; $uid:s$ >></tt><br/>
+    <tt style="color:red">ExUid loc s</tt>
+  </dd>
+  <dt>- variant</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; ` $s$ >></tt><br/>
+    <tt style="color:red">ExVrn loc s</tt>
+  </dd>
+  <dt>- while</dt>
+  <dd>
+    <tt style="color:blue">&lt;:expr&lt; while $e$ do { $list:le$ } >></tt><br/>
+    <tt style="color:red">ExWhi loc e le</tt>
+  </dd>
+</dl>
 
 <div id="expr_1" style="margin: 5mm 0 0 1cm">(1)
   <p>Node used in the quotation expanders to tells at conversion to
