@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_pprintf.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_r.ml,v 1.129 2007/12/07 18:11:22 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.130 2007/12/08 01:12:23 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -1169,36 +1169,11 @@ EXTEND_PRINTER
           in
           horiz_vertic
             (fun () ->
-               sprintf "%swhile %s do { %s }%s" pc.bef
-                 (curr {(pc) with bef = ""; aft = ""} e1)
-                 (hlistl (semi_after expr) curr {(pc) with bef = ""; aft = ""}
-                    el)
-                 pc.aft)
+               pprintf pc "while %p do { %p }" curr e1
+                 (hlistl (semi_after expr) curr) el)
             (fun () ->
-               let s1 =
-                 horiz_vertic
-                   (fun () ->
-                      sprintf "%swhile %s do {" pc.bef
-                        (curr {(pc) with bef = ""; aft = ""} e1))
-                   (fun () ->
-                      let s1 = sprintf "%swhile" pc.bef in
-                      let s2 =
-                        curr
-                          {(pc) with ind = pc.ind + 2;
-                           bef = tab (pc.ind + 2); aft = ""}
-                          e1
-                      in
-                      let s3 = sprintf "%sdo {" (tab pc.ind) in
-                      sprintf "%s\n%s\n%s" s1 s2 s3)
-               in
-               let s2 =
-                 vlistl (semi_after expr) curr
-                   {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2);
-                    aft = ""}
-                   el
-               in
-               let s3 = sprintf "%s}%s" (tab pc.ind) pc.aft in
-               sprintf "%s\n%s\n%s" s1 s2 s3)
+               pprintf pc "@[<a>while@;%p@ do {@]@;%p@ }" curr e1
+                 (vlistl (semi_after expr) curr) el)
       | <:expr< for $lid:v$ = $e1$ $to:d$ $e2$ do { $list:el$ } >> ->
           let el =
             match el with
