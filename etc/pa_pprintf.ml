@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_pprintf.ml,v 1.5 2007/12/03 17:45:06 deraugla Exp $ *)
+(* $Id: pa_pprintf.ml,v 1.6 2007/12/04 09:07:23 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* pprintf statement *)
@@ -158,56 +158,53 @@ value parse_pp_param =
   fparser [: `'<'; nsp = parse_int; `' '; off = parse_int :] -> (nsp, off)
 ;
 
-value expand_pprintf loc pc fmt al =
-  let (pclcl, pcl, al) =
-    loop [] al 0 0 where rec loop rev_pclcl al i_beg i =
-      if i + 1 < String.length fmt then
-        if fmt.[i] = '@' then
-          match fmt.[i+1] with
-          [ ';' ->
-              let fmt1 = String.sub fmt i_beg (i - i_beg) in
-              let (pcl, al) = expand_item loc pc fmt1 al in
-              let (pp, i) =
-                let (nspaces, offset, i) =
-                  let s =
-                    String.sub fmt (i + 2) (String.length fmt - i - 2)
-                  in
-                  match parse_pp_param (Fstream.of_string s) with
-                  [ Some ((nspaces, noffset), strm) ->
-                      (nspaces, noffset, i + 2 + Fstream.count strm + 1)
-                  | None -> (1, 2, i + 2) ]
+value next_item loc pc fmt al i =
+  loop al i i where rec loop al i_beg i =
+    if i + 1 < String.length fmt then
+      if fmt.[i] = '@' then
+        match fmt.[i+1] with
+        [ ';' ->
+            let fmt1 = String.sub fmt i_beg (i - i_beg) in
+            let (pcl, al) = expand_item loc pc fmt1 al in
+            let (pp, i) =
+              let (nspaces, offset, i) =
+                let s =
+                  String.sub fmt (i + 2) (String.length fmt - i - 2)
                 in
-                (PPbreak nspaces offset, i)
+                match parse_pp_param (Fstream.of_string s) with
+                [ Some ((nspaces, noffset), strm) ->
+                    (nspaces, noffset, i + 2 + Fstream.count strm + 1)
+                | None -> (1, 2, i + 2) ]
               in
-              loop [(pcl, pp) :: rev_pclcl] al i i
-          | ' ' ->
-              let fmt1 = String.sub fmt i_beg (i - i_beg) in
-              let (pcl, al) = expand_item loc pc fmt1 al in
-              loop [(pcl, PPspace) :: rev_pclcl] al (i + 2) (i + 2)
-          | _ ->
-              loop rev_pclcl al i_beg (i + 1) ]
-        else loop rev_pclcl al i_beg (i + 1)
-      else
-        let (pcl, al) =
-          let fmt1 = String.sub fmt i_beg (String.length fmt - i_beg) in
-          expand_item loc pc fmt1 al
-        in
-        (List.rev rev_pclcl, pcl, al)
-  in
-  (* [(x1, c1); (x2, c2) ... (xn, cn)], x ->
-     x1, [(c1, x2); (c2, x3) ... (cn, x)] *)
-  let (pcl, pclcl) =
-    match pclcl with
-    [ [(pcl1, c1) :: pclcl] ->
-        let pclcl =
-          loop c1 pclcl where rec loop c =
-            fun
-            [ [(pcl2, c1) :: pclcl] -> [(c, pcl2) :: loop c1 pclcl]
-            | [] -> [(c, pcl)] ]
-        in
-        (pcl1, pclcl)
-    | [] ->
-        (pcl, []) ]
+              (PPbreak nspaces offset, i)
+            in
+            (pcl, al, Some (pp, i))
+        | ' ' ->
+            let fmt1 = String.sub fmt i_beg (i - i_beg) in
+            let (pcl, al) = expand_item loc pc fmt1 al in
+            (pcl, al, Some (PPspace, i + 2))
+        | _ ->
+            loop al i_beg (i + 1) ]
+      else loop al i_beg (i + 1)
+    else
+      let (pcl, al) =
+        let fmt1 = String.sub fmt i_beg (String.length fmt - i_beg) in
+        expand_item loc pc fmt1 al
+      in
+      (pcl, al, None)
+
+;
+
+value expand_pprintf loc pc fmt al =
+  let (pcl, al, rest) = next_item loc pc fmt al 0 in
+  let (pccll, al) =
+    loop [] al rest where rec loop rev_pccll al =
+      fun
+      [ Some (pp, i) ->
+          let (pcl, al, rest) = next_item loc pc fmt al i in
+          loop [(pp, pcl) :: rev_pccll] al rest
+      | None ->
+          (List.rev rev_pccll, al) ]
   in
   match al with
   [ [a :: _] ->
@@ -215,9 +212,9 @@ value expand_pprintf loc pc fmt al =
       let loc = Ploc. encl (MLast.loc_of_expr a) (MLast.loc_of_expr last_a) in
       Ploc.raise loc (Stream.Error "too many parameters")
   | [] ->
-      if pclcl = [] then make_call loc (False, False) pc pcl
+      if pccll = [] then make_call loc (False, False) pc pcl
       else
-        loop (make_call loc (False, True) <:expr< pc >> pcl) pclcl
+        loop (make_call loc (False, True) <:expr< pc >> pcl) pccll
         where rec loop e =
           fun
           [ [(c, pcl1) :: pclcl] ->
