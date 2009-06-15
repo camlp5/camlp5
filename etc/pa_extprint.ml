@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_extprint.ml,v 1.15 2007/12/16 22:43:50 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.16 2007/12/17 05:18:20 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -705,6 +705,13 @@ value rec expr_of_tree_aux loc fmt empty_bef empty_aft pc t al =
   match t with
   [ (Pf sl, []) -> expr_of_pformat loc empty_bef empty_aft pc al sl
   | (Pf sl1, [(Tbreak br, Pf sl2) :: t]) -> (<:expr< ddd >>, al)
+  | (Pf [""], [(Tsub (PPoffset off) t, Pf [""])]) ->
+      let pc =
+        let soff = string_of_int off in
+        <:expr< {($pc$) with ind = $pc$.ind + $int:soff$} >>
+      in
+      let (e, al) = expr_of_tree_aux loc fmt False False <:expr< pc >> t al in
+      (<:expr< let pc = $pc$ in $e$ >>, al)
   | (Pf sl1, [(Tsub pp t1, Pf sl2) :: t]) ->
       let (e1, al) = expr_of_pformat loc empty_bef True pc al sl1 in
       let (e, al) = expr_of_tree_aux loc fmt True True pc t1 al in
