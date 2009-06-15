@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.74 2007/09/21 01:01:47 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.75 2007/09/21 01:50:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -724,13 +724,12 @@ value ss_aux loc a_name r2 used2 =
 ;
 
 value sslist loc min sep s =
-  let vala loc x = x in
   let r =
     let prod =
       [mk_psymbol <:patt< a >> (slist loc min sep s)
          (STapp loc (STlid loc "list") s.styp)]
     in
-    let act = vala loc <:expr< Qast.List a >> in
+    let act = <:expr< Qast.List a >> in
     {prod = prod; action = Some act}
   in
   let used =
@@ -742,7 +741,6 @@ value sslist loc min sep s =
 ;
 
 value ssopt loc s =
-  let vala loc x = x in
   let r =
     let s =
       match s.text with
@@ -759,21 +757,20 @@ value ssopt loc s =
       [mk_psymbol <:patt< a >> (TXopt loc s.text)
          (STapp loc (STlid loc "option") s.styp)]
     in
-    let act = vala loc <:expr< Qast.Option a >> in
+    let act = <:expr< Qast.Option a >> in
     {prod = prod; action = Some act}
   in
   ss_aux loc "a_opt" r s.used
 ;
 
 value ssflag loc s =
-  let vala loc x = x in
   let r =
     let prod =
       let styp = STlid loc "bool" in
       let text = TXflag loc s.text in
       [mk_psymbol <:patt< a >> text styp]
     in
-    let act = vala loc <:expr< Qast.Bool a >> in
+    let act = <:expr< Qast.Bool a >> in
     {prod = prod; action = Some act}
   in
   ss_aux loc "a_flag" r s.used
@@ -789,9 +786,11 @@ value rec symbol_of_a =
   fun
   [ ASflag loc s ->
       let s = symbol_of_a s in
-      let text = TXflag loc s.text in
-      let styp = STlid loc "bool" in
-      {used = s.used; text = text; styp = styp}
+      if quotify.val then ssflag loc s
+      else
+        let text = TXflag loc s.text in
+        let styp = STlid loc "bool" in
+        {used = s.used; text = text; styp = styp}
   | ASfold loc n foldfun f e s sep ->
       let s = symbol_of_a s in
       match sep with
@@ -803,20 +802,24 @@ value rec symbol_of_a =
   | ASlist loc min s sep ->
       let s = symbol_of_a s in
       let sep = option_map symbol_of_a sep in
-      let used =
-        match sep with
-        [ Some symb -> symb.used @ s.used
-        | None -> s.used ]
-      in
-      let text = slist loc min sep s in
-      let styp = STapp loc (STlid loc "list") s.styp in
-      {used = used; text = text; styp = styp}
+      if quotify.val then sslist loc min sep s
+      else
+        let used =
+          match sep with
+          [ Some symb -> symb.used @ s.used
+          | None -> s.used ]
+        in
+        let text = slist loc min sep s in
+        let styp = STapp loc (STlid loc "list") s.styp in
+        {used = used; text = text; styp = styp}
   | ASnext loc -> {used = []; text = TXnext loc; styp = STself loc "NEXT"}
   | ASopt loc s ->
       let s = symbol_of_a s in
-      let text = TXopt loc s.text in
-      let styp = STapp loc (STlid loc "option") s.styp in
-      {used = s.used; text = text; styp = styp}
+      if quotify.val then ssopt loc s
+      else
+        let text = TXopt loc s.text in
+        let styp = STapp loc (STlid loc "option") s.styp in
+        {used = s.used; text = text; styp = styp}
   | ASquot loc s ->
       match s with
       [ ASflag loc s ->
@@ -845,17 +848,24 @@ value rec symbol_of_a =
       let styp = STquo loc i in
       {used = [i]; text = text; styp = styp}
   | AStok loc s p ->
-      match p with
-      [ Some e ->
-          let text = TXtok loc s (string_of_a e) in
-          {used = []; text = text; styp = STlid loc "string"}
-      | None ->
-          let text = TXtok loc s <:expr< "" >> in
-          {used = []; text = text; styp = STlid loc "string"} ]
-  | ASvala loc s ls ->
-      let s = symbol_of_a s in
-      if quotify.val then ss2_of_ss loc ls s
+      if quotify.val then
+        match p with
+        [ Some e -> sstoken_prm loc s (string_of_a e)
+        | None -> sstoken loc s ]
       else
+        let e =
+          match p with
+          [ Some e -> string_of_a e
+          | None -> <:expr< "" >> ]
+        in
+        let text = TXtok loc s e in
+        {used = []; text = text; styp = STlid loc "string"}
+  | ASvala loc s ls ->
+      if quotify.val then
+        let s = symbol_of_a s in
+        ss2_of_ss loc ls s
+      else
+        let s = symbol_of_a s in
         let (text, styp) =
           if not Pcaml.strict_mode.val then (s.text, s.styp)
           else (TXvala loc ls s.text, STvala loc s.styp)
@@ -863,13 +873,13 @@ value rec symbol_of_a =
         {used = s.used; text = text; styp = styp}
   | ASvala2 loc s ls ->
       match s with
-      [ ASlist loc min s sep ->
+      [ ASflag loc s ->
+          let s = symbol_of_a s in
+          ss2_of_ss loc [] (ssflag loc s)
+      | ASlist loc min s sep ->
           let s = symbol_of_a s in
           let sep = option_map symbol_of_a sep in
           ss2_of_ss loc [] (sslist loc min sep s)
-      | ASflag loc s ->
-          let s = symbol_of_a s in
-          ss2_of_ss loc [] (ssflag loc s)
       | ASopt loc s ->
           let s = symbol_of_a s in
           ss2_of_ss loc [] (ssopt loc s)
@@ -1138,24 +1148,17 @@ EXTEND
     [ "top" NONA
       [ UIDENT "LIST0"; s = SELF;
         sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
-          if quotify.val then ASquot loc (ASlist loc False s sep)
-          else ASlist loc False s  sep
+          ASlist loc False s sep
       | UIDENT "LIST1"; s = SELF;
         sep = OPT [ UIDENT "SEP"; t = symbol -> t ] ->
-          if quotify.val then ASquot loc (ASlist loc True s sep)
-          else ASlist loc True s  sep
+          ASlist loc True s sep
       | UIDENT "OPT"; s = SELF ->
-          if quotify.val then ASquot loc (ASopt loc s)
-          else ASopt loc s
+          ASopt loc s
       | UIDENT "FLAG"; s = SELF ->
-          if quotify.val then ASquot loc (ASflag loc s)
-          else ASflag loc s ]
+          ASflag loc s ]
     | "vala"
       [ UIDENT "V"; x = UIDENT; al = LIST0 STRING ->
-          let s =
-            if quotify.val then ASquot loc (AStok loc x None)
-            else AStok loc x None
-          in
+          let s = AStok loc x None in
           ASvala loc s al
       | UIDENT "V"; s = NEXT; al = LIST0 STRING ->
           ASvala loc s al ]
@@ -1167,11 +1170,9 @@ EXTEND
       | "["; rl = LIST0 rule SEP "|"; "]" ->
           ASrules loc {au_loc = loc; au_rules = rl}
       | x = UIDENT ->
-          if quotify.val then ASquot loc (AStok loc x None)
-          else AStok loc x None
+          AStok loc x None
       | x = UIDENT; e = string ->
-          if quotify.val then ASquot loc (AStok loc x (Some e))
-          else AStok loc x (Some e)
+          AStok loc x (Some e)
       | e = string ->
           ASkeyw loc e
       | i = UIDENT; "."; e = qualid;
@@ -1194,12 +1195,15 @@ EXTEND
     | [ p = pattern -> [p] ] ]
   ;
   name:
-    [ [ e = qualid -> (* mk_name loc *) e ] ]
+    [ [ e = qualid -> e ] ]
   ;
   qualid:
-    [ [ e1 = SELF; "."; e2 = SELF -> (fst e2, <:expr< $snd e1$ . $snd e2$ >>) ]
-    | [ i = UIDENT -> (i, <:expr< $uid:i$ >>)
-      | i = LIDENT -> (i, <:expr< $lid:i$ >>) ] ]
+    [ [ e1 = SELF; "."; e2 = SELF ->
+          (fst e2, <:expr< $snd e1$ . $snd e2$ >>) ]
+    | [ i = UIDENT ->
+          (i, <:expr< $uid:i$ >>)
+      | i = LIDENT ->
+          (i, <:expr< $lid:i$ >>) ] ]
   ;
   string:
     [ [ s = STRING -> ATstring loc s

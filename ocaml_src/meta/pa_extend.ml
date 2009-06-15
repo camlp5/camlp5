@@ -1469,19 +1469,17 @@ let ss_aux loc a_name r2 used2 =
 ;;
 
 let sslist loc min sep s =
-  let vala loc x = x in
   let r =
     let prod =
       [mk_psymbol (MLast.PaLid (loc, "a")) (slist loc min sep s)
          (STapp (loc, STlid (loc, "list"), s.styp))]
     in
     let act =
-      vala loc
-        (MLast.ExApp
-           (loc,
-            MLast.ExAcc
-              (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "List")),
-            MLast.ExLid (loc, "a")))
+      MLast.ExApp
+        (loc,
+         MLast.ExAcc
+           (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "List")),
+         MLast.ExLid (loc, "a"))
     in
     {prod = prod; action = Some act}
   in
@@ -1494,7 +1492,6 @@ let sslist loc min sep s =
 ;;
 
 let ssopt loc s =
-  let vala loc x = x in
   let r =
     let s =
       match s.text with
@@ -1519,12 +1516,11 @@ let ssopt loc s =
          (STapp (loc, STlid (loc, "option"), s.styp))]
     in
     let act =
-      vala loc
-        (MLast.ExApp
-           (loc,
-            MLast.ExAcc
-              (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Option")),
-            MLast.ExLid (loc, "a")))
+      MLast.ExApp
+        (loc,
+         MLast.ExAcc
+           (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Option")),
+         MLast.ExLid (loc, "a"))
     in
     {prod = prod; action = Some act}
   in
@@ -1532,7 +1528,6 @@ let ssopt loc s =
 ;;
 
 let ssflag loc s =
-  let vala loc x = x in
   let r =
     let prod =
       let styp = STlid (loc, "bool") in
@@ -1540,12 +1535,11 @@ let ssflag loc s =
       [mk_psymbol (MLast.PaLid (loc, "a")) text styp]
     in
     let act =
-      vala loc
-        (MLast.ExApp
-           (loc,
-            MLast.ExAcc
-              (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Bool")),
-            MLast.ExLid (loc, "a")))
+      MLast.ExApp
+        (loc,
+         MLast.ExAcc
+           (loc, MLast.ExUid (loc, "Qast"), MLast.ExUid (loc, "Bool")),
+         MLast.ExLid (loc, "a"))
     in
     {prod = prod; action = Some act}
   in
@@ -1562,9 +1556,11 @@ let rec symbol_of_a =
   function
     ASflag (loc, s) ->
       let s = symbol_of_a s in
-      let text = TXflag (loc, s.text) in
-      let styp = STlid (loc, "bool") in
-      {used = s.used; text = text; styp = styp}
+      if !quotify then ssflag loc s
+      else
+        let text = TXflag (loc, s.text) in
+        let styp = STlid (loc, "bool") in
+        {used = s.used; text = text; styp = styp}
   | ASfold (loc, n, foldfun, f, e, s, sep) ->
       let s = symbol_of_a s in
       begin match sep with
@@ -1577,20 +1573,24 @@ let rec symbol_of_a =
   | ASlist (loc, min, s, sep) ->
       let s = symbol_of_a s in
       let sep = option_map symbol_of_a sep in
-      let used =
-        match sep with
-          Some symb -> symb.used @ s.used
-        | None -> s.used
-      in
-      let text = slist loc min sep s in
-      let styp = STapp (loc, STlid (loc, "list"), s.styp) in
-      {used = used; text = text; styp = styp}
+      if !quotify then sslist loc min sep s
+      else
+        let used =
+          match sep with
+            Some symb -> symb.used @ s.used
+          | None -> s.used
+        in
+        let text = slist loc min sep s in
+        let styp = STapp (loc, STlid (loc, "list"), s.styp) in
+        {used = used; text = text; styp = styp}
   | ASnext loc -> {used = []; text = TXnext loc; styp = STself (loc, "NEXT")}
   | ASopt (loc, s) ->
       let s = symbol_of_a s in
-      let text = TXopt (loc, s.text) in
-      let styp = STapp (loc, STlid (loc, "option"), s.styp) in
-      {used = s.used; text = text; styp = styp}
+      if !quotify then ssopt loc s
+      else
+        let text = TXopt (loc, s.text) in
+        let styp = STapp (loc, STlid (loc, "option"), s.styp) in
+        {used = s.used; text = text; styp = styp}
   | ASquot (loc, s) ->
       begin match s with
         ASflag (loc, s) -> let s = symbol_of_a s in ssflag loc s
@@ -1616,18 +1616,22 @@ let rec symbol_of_a =
       let text = TXnterm (loc, name, lev) in
       let styp = STquo (loc, i) in {used = [i]; text = text; styp = styp}
   | AStok (loc, s, p) ->
-      begin match p with
-        Some e ->
-          let text = TXtok (loc, s, string_of_a e) in
-          {used = []; text = text; styp = STlid (loc, "string")}
-      | None ->
-          let text = TXtok (loc, s, MLast.ExStr (loc, "")) in
-          {used = []; text = text; styp = STlid (loc, "string")}
-      end
-  | ASvala (loc, s, ls) ->
-      let s = symbol_of_a s in
-      if !quotify then ss2_of_ss loc ls s
+      if !quotify then
+        match p with
+          Some e -> sstoken_prm loc s (string_of_a e)
+        | None -> sstoken loc s
       else
+        let e =
+          match p with
+            Some e -> string_of_a e
+          | None -> MLast.ExStr (loc, "")
+        in
+        let text = TXtok (loc, s, e) in
+        {used = []; text = text; styp = STlid (loc, "string")}
+  | ASvala (loc, s, ls) ->
+      if !quotify then let s = symbol_of_a s in ss2_of_ss loc ls s
+      else
+        let s = symbol_of_a s in
         let (text, styp) =
           if not !(Pcaml.strict_mode) then s.text, s.styp
           else TXvala (loc, ls, s.text), STvala (loc, s.styp)
@@ -1635,12 +1639,12 @@ let rec symbol_of_a =
         {used = s.used; text = text; styp = styp}
   | ASvala2 (loc, s, ls) ->
       match s with
-        ASlist (loc, min, s, sep) ->
+        ASflag (loc, s) ->
+          let s = symbol_of_a s in ss2_of_ss loc [] (ssflag loc s)
+      | ASlist (loc, min, s, sep) ->
           let s = symbol_of_a s in
           let sep = option_map symbol_of_a sep in
           ss2_of_ss loc [] (sslist loc min sep s)
-      | ASflag (loc, s) ->
-          let s = symbol_of_a s in ss2_of_ss loc [] (ssflag loc s)
       | ASopt (loc, s) ->
           let s = symbol_of_a s in ss2_of_ss loc [] (ssopt loc s)
       | _ -> Ploc.raise loc (Failure "not impl ASvala2")
@@ -2293,16 +2297,10 @@ Grammar.extend
     [Some "top", Some Gramext.NonA,
      [[Gramext.Stoken ("UIDENT", "FLAG"); Gramext.Sself],
       Gramext.action
-        (fun (s : 'symbol) _ (loc : Ploc.t) ->
-           (if !quotify then ASquot (loc, ASflag (loc, s))
-            else ASflag (loc, s) :
-            'symbol));
+        (fun (s : 'symbol) _ (loc : Ploc.t) -> (ASflag (loc, s) : 'symbol));
       [Gramext.Stoken ("UIDENT", "OPT"); Gramext.Sself],
       Gramext.action
-        (fun (s : 'symbol) _ (loc : Ploc.t) ->
-           (if !quotify then ASquot (loc, ASopt (loc, s))
-            else ASopt (loc, s) :
-            'symbol));
+        (fun (s : 'symbol) _ (loc : Ploc.t) -> (ASopt (loc, s) : 'symbol));
       [Gramext.Stoken ("UIDENT", "LIST1"); Gramext.Sself;
        Gramext.Sopt
          (Gramext.srules
@@ -2313,9 +2311,7 @@ Grammar.extend
                (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__5))])],
       Gramext.action
         (fun (sep : 'e__5 option) (s : 'symbol) _ (loc : Ploc.t) ->
-           (if !quotify then ASquot (loc, ASlist (loc, true, s, sep))
-            else ASlist (loc, true, s, sep) :
-            'symbol));
+           (ASlist (loc, true, s, sep) : 'symbol));
       [Gramext.Stoken ("UIDENT", "LIST0"); Gramext.Sself;
        Gramext.Sopt
          (Gramext.srules
@@ -2326,9 +2322,7 @@ Grammar.extend
                (fun (t : 'symbol) _ (loc : Ploc.t) -> (t : 'e__4))])],
       Gramext.action
         (fun (sep : 'e__4 option) (s : 'symbol) _ (loc : Ploc.t) ->
-           (if !quotify then ASquot (loc, ASlist (loc, false, s, sep))
-            else ASlist (loc, false, s, sep) :
-            'symbol))];
+           (ASlist (loc, false, s, sep) : 'symbol))];
      Some "vala", None,
      [[Gramext.Stoken ("UIDENT", "V"); Gramext.Snext;
        Gramext.Slist0 (Gramext.Stoken ("STRING", ""))],
@@ -2339,12 +2333,7 @@ Grammar.extend
        Gramext.Slist0 (Gramext.Stoken ("STRING", ""))],
       Gramext.action
         (fun (al : string list) (x : string) _ (loc : Ploc.t) ->
-           (let s =
-              if !quotify then ASquot (loc, AStok (loc, x, None))
-              else AStok (loc, x, None)
-            in
-            ASvala (loc, s, al) :
-            'symbol))];
+           (let s = AStok (loc, x, None) in ASvala (loc, s, al) : 'symbol))];
      Some "simple", None,
      [[Gramext.Stoken ("", "("); Gramext.Sself; Gramext.Stoken ("", ")")],
       Gramext.action
@@ -2380,15 +2369,10 @@ Grammar.extend
        Gramext.Snterm (Grammar.Entry.obj (string : 'string Grammar.Entry.e))],
       Gramext.action
         (fun (e : 'string) (x : string) (loc : Ploc.t) ->
-           (if !quotify then ASquot (loc, AStok (loc, x, Some e))
-            else AStok (loc, x, Some e) :
-            'symbol));
+           (AStok (loc, x, Some e) : 'symbol));
       [Gramext.Stoken ("UIDENT", "")],
       Gramext.action
-        (fun (x : string) (loc : Ploc.t) ->
-           (if !quotify then ASquot (loc, AStok (loc, x, None))
-            else AStok (loc, x, None) :
-            'symbol));
+        (fun (x : string) (loc : Ploc.t) -> (AStok (loc, x, None) : 'symbol));
       [Gramext.Stoken ("", "[");
        Gramext.Slist0sep
          (Gramext.Snterm (Grammar.Entry.obj (rule : 'rule Grammar.Entry.e)),
