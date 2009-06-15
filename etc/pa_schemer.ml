@@ -620,8 +620,7 @@ and expr_se =
       let dir = d = "for" in
       let el =
         match sel with
-        [ [Santi loc "list" s] -> <:vala< $s$ >>
-        | [Santi loc "_list" s] -> <:vala< $s$ >>
+        [ [Santi loc ("list" | "_list") s] -> <:vala< $s$ >>
         | _ -> <:vala< (List.map expr_se sel) >> ]
       in
       <:expr< for $_lid:i$ = $e1$ $to:dir$ $e2$ do { $_list:el$ } >>
@@ -637,8 +636,12 @@ and expr_se =
                <:expr< fun $p$ -> $e$ >>)
             [se :: sel] e ]
   | Sexpr loc [Slid _ "lambda_match" :: sel] ->
-      let pel = List.map (match_case loc) sel in
-      <:expr< fun [ $list:pel$ ] >>
+      let pel =
+        match sel with
+        [ [Sexpr _ [Santi loc ("list" | "_list") s]] -> <:vala< $s$ >>
+        | _ -> <:vala< (List.map (match_case loc) sel) >> ]
+      in
+      <:expr< fun [ $_list:pel$ ] >>
   | Sexpr loc [Slid _ ("let" | "letrec" as r) :: sel] ->
       match sel with
       [ [Sexpr _ sel1 :: sel2] ->

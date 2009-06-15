@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.48 2007/10/07 16:45:21 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.49 2007/10/07 18:13:30 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
@@ -590,8 +590,7 @@
             (dir (= d "for"))
             (el
              (match sel
-              (([(Santi loc "list" s)]) <:vala< $s$ >>)
-              (([(Santi loc "_list" s)]) <:vala< $s$ >>)
+              (([(Santi loc (or "list" "_list") s)]) <:vala< $s$ >>)
               (_ <:vala< (List.map expr_se sel) >>))))
         <:expr< for $_lid:i$ = $e1$ $to:dir$ $e2$ do { $_list:el$ } >>))
     ((Sexpr loc [(Slid loc1 "lambda")]) <:expr< fun [] >>)
@@ -605,8 +604,11 @@
              (let ((p (ipatt_se se))) <:expr< fun $p$ -> $e$ >>))
            [se . sel] e)))))
     ((Sexpr loc [(Slid _ "lambda_match") . sel])
-     (let ((pel (List.map (match_case loc) sel)))
-        <:expr< fun [ $list:pel$ ] >>))
+     (let ((pel
+            (match sel
+             ([(Sexpr _ [(Santi loc (or "list" "_list") s)])] <:vala< $s$ >>)
+             (_ <:vala< (List.map (match_case loc) sel) >>))))
+        <:expr< fun [ $_list:pel$ ] >>))
     ((Sexpr loc [(Slid _ (as (or "let" "letrec") r)) . sel])
      (match sel
       ([(Sexpr _ sel1) . sel2]
