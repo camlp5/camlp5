@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.28 2007/07/10 14:09:06 deraugla Exp $
+# $Id: Makefile,v 1.29 2007/07/11 08:56:53 deraugla Exp $
 
 include config/Makefile
 
@@ -64,13 +64,13 @@ bootstrap: backup promote clean_hot all compare
 
 backup:
 	mkdir boot.new
-	make mv_cvs FROM=boot TO=boot.new
+	make mv_svn FROM=boot TO=boot.new
 	mv boot boot.new/SAVED
 	mv boot.new boot
 
 restore:
 	mv boot/SAVED boot.new
-	make mv_cvs FROM=boot TO=boot.new
+	make mv_svn FROM=boot TO=boot.new
 	rm -rf boot
 	mv boot.new boot
 
@@ -252,9 +252,9 @@ untouch_sources:
 	done
 
 promote_sources:
-	make mv_cvs FROM=ocaml_src TO=ocaml_src.new
+	make mv_svn FROM=ocaml_src TO=ocaml_src.new
 	for i in $(FDIRS); do \
-		make mv_cvs FROM=ocaml_src/$$i TO=ocaml_src.new/$$i; \
+		make mv_svn FROM=ocaml_src/$$i TO=ocaml_src.new/$$i; \
 	done
 	mv ocaml_src/tools ocaml_src.new/.
 	cd ocaml_src; for i in camlp4/ast2pt.ml_*; do \
@@ -270,9 +270,9 @@ unpromote_sources:
 	mv ocaml_src.new/SAVED ocaml_src
 	mv ocaml_src.new/tools ocaml_src/.
 	for i in $(FDIRS); do \
-		make mv_cvs FROM=ocaml_src.new/$$i TO=ocaml_src/$$i; \
+		make mv_svn FROM=ocaml_src.new/$$i TO=ocaml_src/$$i; \
 	done
-	make mv_cvs FROM=ocaml_src.new TO=ocaml_src
+	make mv_svn FROM=ocaml_src.new TO=ocaml_src
 
 clean_sources:
 	rm -rf ocaml_src/SAVED/SAVED
@@ -282,8 +282,8 @@ printer:
 
 # Utility
 
-mv_cvs:
-	test ! -d $(FROM)/CVS || mv $(FROM)/CVS $(TO)/.
+mv_svn:
+	test ! -d $(FROM)/.svn || mv $(FROM)/.svn $(TO)/.
 	test ! -f $(FROM)/.cvsignore || mv $(FROM)/.cvsignore $(TO)/.
 
 .PHONY: install

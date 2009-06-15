@@ -1,11 +1,11 @@
 #!/bin/bash
-# $Id: configure,v 1.15 2007/07/10 14:09:06 deraugla Exp $
+# $Id: configure,v 1.16 2007/07/11 08:56:53 deraugla Exp $
 
 prefix=''
 bindir=''
 libdir=''
 mandir=''
-name=camlp4
+name=camlp5
 
 # a local which command for sh
 which () {
