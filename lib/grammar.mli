@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: grammar.mli,v 1.11 2007/07/19 01:27:36 deraugla Exp $ *)
+(* $Id: grammar.mli,v 1.12 2007/07/19 03:48:24 deraugla Exp $ *)
 
 (** Extensible grammars.
 
@@ -82,9 +82,9 @@ module Unsafe :
 ;
    (** Module for clearing grammars and entries. To be manipulated with
        care, because: 1) reinitializing a grammar destroys all tokens
-       and there may have problems with the associated lexer if it has
-       a notion of keywords; 2) clearing an entry does not destroy the
-       tokens used only by itself.
+       and there may have problems with the associated lexer if there
+       are keywords; 2) clearing an entry does not destroy the tokens
+       used only by itself.
 -      [Unsafe.reinit_gram g lex] removes the tokens of the grammar
 -      and sets [lex] as a new lexer for [g]. Warning: the lexer
 -      itself is not reinitialized.

@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html>
 <head>
-  <!-- $Id: grammars.html,v 1.55 2007/07/19 02:26:13 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.56 2007/07/19 03:48:24 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -569,6 +569,8 @@ instead of "<tt>loc</tt>".</p>
 <p>The Grammar module contains all what is necessary to manipulate
   grammars and entries. It contains:</p>
 
+<h3>Main types and values</h3>
+
 <dl>
   <dt><tt>type g = 'abstract;</tt></dt>
   <dd><br/>
@@ -660,7 +662,159 @@ module Entry =
     </ul>
 </dd></dl>
 
-<p>... to be completed ...</p>
+<dl>
+  <dt><tt>value of_entry : Entry.e 'a -> g;</tt></dt>
+  <dd><br/>Return the grammar associated with an entry.</dd>
+</dl>
+
+<h3>Clearing grammars and entries</h3>
+
+<pre style="border:0; margin-left: 1cm">
+module Unsafe :
+  sig
+    value gram_reinit : g -> Token.glexer token -> unit;
+    value clear_entry : Entry.e 'a -> unit;
+  end;
+</pre>
+
+<dl><dd>
+   Module for clearing grammars and entries. To be manipulated
+   with care, because: 1) reinitializing a grammar destroys all tokens
+   and there may have problems with the associated lexer if there are
+   keywords; 2) clearing an entry does not destroy the tokens used
+   only by itself.
+   <ul>
+     <li>/Unsafe.reinit_gram g lex/ removes the tokens of the grammar
+       and sets [lex] as a new lexer for [g]. Warning: the lexer
+       itself is not reinitialized.</li>
+     <li>/Unsafe.clear_entry e/ removes all rules of the entry [e].</li>
+   </ul>
+</dd></dl>
+
+<h3>Functorial interface</h3>
+
+<p>Alternative for grammars use. Grammars are no more Ocaml values:
+  there is no type for them. Modules generated preserve the rule "an
+  entry cannot call an entry of another grammar" by normal OCaml
+  typing.</p>
+
+<pre style="border:0; margin-left: 1cm">
+module type GLexerType =
+  sig
+    type te = 'x;
+    value lexer : Token.glexer te;
+  end;
+</pre>
+
+<dl><dd>
+    The input signature for the functor [Grammar.GMake]: [te] is the
+    type of the tokens.
+</dd></dl>
+
+<pre style="border:0; margin-left: 1cm">
+module type S =
+  sig
+    type te = 'x;
+    type parsable = 'x;
+    value parsable : Stream.t char -> parsable;
+    value tokens : string -> list (string * int);
+    value glexer : Token.glexer te;
+    module Entry :
+      sig
+        type e 'a = 'y;
+        value create : string -> e 'a;
+        value parse : e 'a -> parsable -> 'a;
+        value parse_token : e 'a -> Stream.t te -> 'a;
+        value name : e 'a -> string;
+        value of_parser : string -> (Stream.t te -> 'a) -> e 'a;
+        value print : e 'a -> unit;
+        external obj : e 'a -> Gramext.g_entry te = "%identity";
+      end;
+    module Unsafe :
+      sig
+        value gram_reinit : Token.glexer te -> unit;
+        value clear_entry : Entry.e 'a -> unit;
+      end;
+    value extend :
+      Entry.e 'a -> option Gramext.position ->
+        list
+          (option string * option Gramext.g_assoc *
+           list (list (Gramext.g_symbol te) * Gramext.g_action)) ->
+        unit;
+    value delete_rule : Entry.e 'a -> list (Gramext.g_symbol te) -> unit;
+  end;
+</pre>
+
+<dl><dd>
+    Signature type of the functor [Grammar.GMake]. The types and
+    functions are almost the same than in generic interface, but:
+    <ul>
+      <li>Grammars are not values. Functions holding a grammar as
+         parameter do not have this parameter yet.</li>
+      <li>The type [parsable] is used in function [parse] instead of
+         the char stream, avoiding the possible loss of tokens.</li>
+      <li>The type of tokens (expressions and patterns) can be any
+         type (instead of (string * string)); the module parameter
+         must specify a way to show them as (string * string).</li>
+    </ul>
+</dd></dl>
+
+<dl>
+  <dt><tt>module GMake (L : GLexerType) : S with type te = L.te;</tt></dt>
+  <dd><br/></dd>
+</dl>
+
+<h3>Miscellaneous</h3>
+
+<dl>
+  <dt><tt>value error_verbose : ref bool;</tt></dt>
+  <dd><br/>
+    Flag for displaying more information in case of parsing error;
+    default = [False].
+  </dd>
+</dl>
+
+<dl>
+  <dt><tt>value warning_verbose : ref bool;</tt></dt>
+  <dd><br/>
+    Flag for displaying warnings while extension; default = [True].
+  </dd>
+</dl>
+
+<dl>
+  <dt><tt>value strict_parsing : ref bool;</tt></dt>
+  <dd><br/>
+    Flag to apply strict parsing, without trying to recover errors;
+    default = [False].
+  </dd>
+</dl>
+
+<dl>
+  <dt><tt>value print_entry : Format.formatter -> Gramext.g_entry 'te -> unit;</tt></dt>
+  <dd><br/>
+    General printer for all kinds of entries (obj entries).
+  </dd>
+</dl>
+
+<dl>
+  <dt><tt>value iter_entry : (Gramext.g_entry 'te -> unit) -> Gramext.g_entry 'te -> unit;</tt></dt>
+  <dd><br/>
+    [Grammar.iter_entry f e] applies [f] to the entry [e] and
+    transitively all entries called by [e]. The order in which
+    the entries are passed to [f] is the order they appear in
+    each entry. Each entry is passed only once. *)
+  </dd>
+</dl>
+
+<dl>
+  <dt><tt>value fold_entry : (Gramext.g_entry 'te -> 'a -> 'a) -> Gramext.g_entry 'te -> 'a -> 'a;</tt></dt>
+  <dd><br/>
+    [Grammar.fold_entry f e init] computes [(f eN .. (f e2 (f e1 init)))],
+    where [e1 .. eN] are [e] and transitively all entries called by [e].
+    The order in which the entries are passed to [f] is the order they
+    appear in each entry. Each entry is passed only once. *)
+  </dd>
+</dl>
 
 <h2>Interface with the lexer</h2>
 
