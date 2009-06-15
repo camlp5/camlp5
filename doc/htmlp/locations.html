@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: locations.html,v 1.6 2007/09/01 20:12:37 deraugla Exp $ -->
+  <!-- $Id: locations.html,v 1.7 2007/10/14 08:06:01 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Locations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -19,8 +19,8 @@
 
 <h1 class="top">Locations</h1>
 
-<p>The location is a concept often used in Camlp5, bound to know where
-  the errors occur in the source. The basic type is "<tt>Ploc.t</tt>"
+<p>The location is a concept often used in Camlp5, bound to where
+  errors occur in the source. The basic type is "<tt>Ploc.t</tt>"
   which is an abstract type.</p>
 
 <div id="tableofcontents">
@@ -28,7 +28,7 @@
 
 <h2>Definitions</h2>
 
-<p>A location is internally a couple of source <em>positions</em>: the
+<p>Internally a location is a pair of source <em>positions</em>: the
   beginning and the end of an element in the source (file or
   interactive).  A located element can be a character (the end is just
   the beginning plus one), a token, or a longer sequence generally
@@ -48,9 +48,9 @@
   actions: it is the location of the associated rule. Since
   the <a href="ml_ast.html">syntax tree quotations</a> generate nodes
   with "<tt>loc</tt>" as location part, this allow to generate
-  grammars without having to think about source locations.</p>
+  grammars without having to consider source locations.</p>
 
-<p>It is possible to change the name "<tt>loc</tt>" into another name,
+<p>It is possible to change the name "<tt>loc</tt>" to another name,
   through the parameter "<tt>-loc</tt>" of the Camlp5 commands.</p>
 
 <p>Remark: the reason why the type "<tt>location</tt>" is abstract is
@@ -66,7 +66,7 @@
 
 <p>First, "<tt>Ploc.dummy</tt>" is a dummy location used when the
   element does not correspond to any source, or if the programmer does
-  not want to busy about locations.</p>
+  not want to worry about locations.</p>
 
 <p>The function "<tt>Ploc.make</tt>" builds a location from three
   parameters:</p>
@@ -83,8 +83,8 @@
   "<tt>Ploc.make_unlined</tt>" taking only the couple of positions of
   the location. In this case, error messages may indicate the first
   line and a big count of characters from this line (actually from the
-  beginning of the file). With a good text editor, it is possible,
-  anyway to find the good location, anyway.</p>
+  beginning of the file). With a good text editor, it is possible, to
+  find the good location, anyway.</p>
 
 <p>If the location is built with "<tt>Ploc.make_unlined</tt>", and if
   your program displays a source location itself, it is possible to
@@ -95,19 +95,19 @@
 
 <h2>Raising with a location</h2>
 
-<p>The function "<tt>Ploc.raise</tt>" allows to raise an exception
-  together with a location. It is the case of all exceptions raised in
-  the <a href="grammars.html">extensible grammars</a>. The raised
-  exception is "<tt>Ploc.Exc</tt>" with two parameters: the location
-  and the exception itself.</p>
+<p>The function "<tt>Ploc.raise</tt>" allows one to raise an exception
+  together with a location. All exceptions raised in
+  the <a href="grammars.html">extensible grammars</a> use
+  "<tt>Ploc.raise</tt>". The raised exception is "<tt>Ploc.Exc</tt>"
+  with two parameters: the location and the exception itself.</p>
 
 <p>Notice that "<tt>raise_with_loc</tt>" just reraises the exception
-  if it is already the exception "<tt>Exc_located</tt>", ignoring then
+  if it is already the exception "<tt>Ploc.Exc</tt>", ignoring then
   the new given location.</p>
 
-<p>A good usage to print exceptions possibly enclosed by
-  "<tt>Exc_located</tt>" is to write the "<tt>try..with</tt>"
-  statement like this:</p>
+<p>A paradigm to print exceptions possibly enclosed by
+  "<tt>Ploc.Exc</tt>" is to write the "<tt>try..with</tt>" statement
+  like this:</p>
 
 <pre>
   try ... with exn ->
