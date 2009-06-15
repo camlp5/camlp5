@@ -1,20 +1,11 @@
 #!/bin/sh
-# $Id: html2latex,v 1.33 2007/07/21 20:48:58 deraugla Exp $
+# $Id: html2latex,v 1.34 2007/07/23 13:07:49 deraugla Exp $
 
 FILES="index.html ptools.html syntext.html revsynt.html quot.html parsers.html fparsers.html lexers.html grammars.html pretty.html opretty.html ml_ast.html pragma.html extfun.html"
 
 /bin/echo '\documentclass[twoside]{report}
 \usepackage{fullpage}
-
-\def\tableau#1#2#3{%
-\begin{center}
-\begin{tabular}{#1}
-\hline
-\makebox[5.5cm][l]{#2} & \makebox[5.5cm][l]{#3} \\
-\hline
-}
-\def\endtableau{\hline\end{tabular}\end{center}}
-\def\entree#1#2{{\verb~#1~} & {\verb~#2~} \\}
+\usepackage{longtable}
 
 \begin{document}
 '
@@ -50,9 +41,9 @@ for i in $FILES; do
   sed \
     -e '{:b; /<\/p>$/N; s|<\/p>\n *|<\/p>|g; tb}' \
     -e 's|</p><p>|\n\n\\\n\n\\noindent |g' \
-    -e '{s/^ *<p>/\\noindent /; s|</p>|\n\n|}' \
-    -e '{/<tr>/N; s/^ *<tr>\n *<th/<th/}' \
-    -e '{/<\/tr>/N; s|^ *</tr>\n||}' |
+    -e '{s/^ *<p>/\\noindent /; s|</p>|\n\n|}' |
+  sed \
+    -e '{/<table[^>]*>$/N; :b; /<tr>$/N; s/\n *//; tb; /<\/tr>$/N; s/\n *//; tb; /<\/th>$/N; s/\n *//; tb; /<\/td>$/N; s/\n *//; tb}' |
   sed \
     -e 's/{/\\{/g' -e 's/}/\\}/g' \
     -e '0,/<div id="content">/d' \
@@ -61,11 +52,18 @@ for i in $FILES; do
     -e 's/^ *<h2>/\\section{/' -e 's|</h2>|}|' \
     -e 's/^ *<h3>/\\subsection{/' -e 's|</h3>|}|' \
     -e 's/^ *<h4>/\\subsubsection{/' -e 's|</h4>|}|' \
-    -e 's/^ *<table[^>]*">/\\begin{tableau}{|l|l|}/' \
-    -e 's|^ *</table>|\\end{tableau}|' \
-    -e 's/^ *<th align="left" class="half">/  {/' -e 's|</th>|}|' \
-    -e 's|^ *<tr>|  \\entree|' -e 's|^ *</tr>||' \
-    -e 's| *<td>|    {|' -e 's|</td>|}|' \
+    -e 's| *<table width[^>]*>\(.*\)</table>|\\begin{center}\n\\begin{tabular}\1\\hline\n\\end{tabular}\n\\end{center}|' \
+    -e 's| *<table[^>]*>\(.*\)</table>|\\begin{center}\n\\begin{longtable}\1\\hline\n\\end{longtable}\n\\end{center}|' \
+    -e 's/<tr>\(<th[^>]*>.*<th[^>]*>.*<th[^>]*>\)/{|l|l|l|}\ntr\1/' \
+    -e 's/<tr>\(<th[^>]*>.*<th[^>]*>\)/{|l|l|}\ntr\1/' \
+    -e 's/tr<th/\\hline\n<th/' \
+    -e 's|</th><th|} \& <th|g' \
+    -e 's/<th[^>]*class="half"[^>]*>/\\makebox[5.5cm][l]{/g' \
+    -e 's/<th[^>]*>/\\makebox[1cm][l]{/g' \
+    -e 's|</th></tr>|} \\\\\n\\hline\n|g' \
+    -e 's|<tr><td>|{|g' \
+    -e 's|</td><td>|} \& {|g' \
+    -e 's|</td></tr>|} \\\\\n|g' \
     -e 's|<br/>||g' \
     -e 's/^ *<ul>/\\begin{itemize}/' -e 's|^ *</ul>|\\end{itemize}|' \
     -e 's/^ *<ol>/\\begin{enumerate}/' -e 's|^ *</ol>|\\end{enumerate}|' \
