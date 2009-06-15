@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: library.html,v 1.15 2007/08/20 19:34:26 deraugla Exp $ -->
+  <!-- $Id: library.html,v 1.16 2007/08/20 20:43:10 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Library</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -929,11 +929,42 @@ module type S =
 
 <h2>Extfold module</h2>
 
-<p>... to be written ...</p>
+<p>Module internally used to make the
+  symbols <a href="grammars.html#a:Extensions-FOLD0-and-FOLD1">FOLD0
+  and FOLD1</a> work in the EXTEND statement + extension
+  "<tt>pa_extfold.cmo</tt>".</p>
 
 <h2>Extfun module</h2>
 
-<p>... to be written ...</p>
+<p>Extensible functions.</p>
+
+<p>This module implements pattern matching extensible functions which
+  works with the parsing kit "<tt>pa_extfun.cmo</tt>", the syntax of
+  an extensible function being:</p>
+
+<pre>
+  extfun e with [ pattern_matching ]
+</pre>
+
+<p>See chapter : <a href="extfun.html">Extensible functions</a>.</p>
+
+<dl>
+  <dt><tt>type t 'a 'b = 'x;</tt></dt>
+  <dd>The type of the extensible functions of type <tt>'a ->
+      'b</tt>.</dd>
+</dl>
+
+<dl>
+  <dt><tt>value empty : t 'a 'b;</tt></dt>
+  <dd>Empty extensible function.</dd>
+  <dt><tt>value apply : t 'a 'b -> 'a -> 'b;</tt></dt>
+  <dd>Apply an extensible function.</dd>
+  <dt><tt>exception Failure;</tt></dt>
+  <dd>Match failure while applying an extensible function.</dd>
+  <dt><tt>value print : t 'a 'b -> unit;</tt></dt>
+  <dd>Print patterns in the order they are recorded in the data
+    structure.</ddt>
+</dl>
 
 <h2>Eprinter module</h2>
 
