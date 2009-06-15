@@ -1,6 +1,8 @@
 Camlp5 Version 5.03:
 --------------------
 
+* [28 Oct 07] Fixed bug in pa_fstream.cmo (functional parsers): the
+  keyword after "match with" was "parser" instead of "fparser".
 * [27 Oct 07] Added a default lexing buffer (in module [Plexing]) for
   pa_lexer.cmo: then, the programmer does not need to write it any
   more.

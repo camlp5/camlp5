@@ -127,10 +127,10 @@ EXTEND
           <:expr< $cparser loc po pcl$ >>
       | "fparser"; po = OPT ipatt; pc = parser_case ->
           <:expr< $cparser loc po [pc]$ >>
-      | "match"; e = SELF; "with"; "parser"; po = OPT ipatt; "[";
+      | "match"; e = SELF; "with"; "fparser"; po = OPT ipatt; "[";
         pcl = LIST0 parser_case SEP "|"; "]" ->
           <:expr< $cparser_match loc e po pcl$ >>
-      | "match"; e = SELF; "with"; "parser"; po = OPT ipatt;
+      | "match"; e = SELF; "with"; "fparser"; po = OPT ipatt;
         pc = parser_case ->
           <:expr< $cparser_match loc e po [pc]$ >> ] ]
   ;
