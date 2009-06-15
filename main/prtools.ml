@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: prtools.ml,v 1.10 2007/10/04 09:36:59 deraugla Exp $ *)
+(* $Id: prtools.ml,v 1.11 2007/10/06 08:07:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pretty;
@@ -81,6 +81,16 @@ value rec vlistl elem eleml pc xl =
   | [x :: xl] ->
       sprintf "%s\n%s" (elem {(pc) with aft = ""; dang = ""} x)
         (vlistl elem eleml {(pc) with bef = tab pc.ind} xl) ]
+;
+
+(* vertical list applied to a list of functions *)
+value rec vlistf pc fl =
+  match fl with
+  [ [] -> sprintf "%s%s" pc.bef pc.aft
+  | [f] -> f pc
+  | [f :: fl] ->
+      sprintf "%s\n%s" (f {(pc) with aft = ""; dang = ""})
+        (vlistf {(pc) with bef = tab pc.ind} fl) ]
 ;
 
 value rise_string ind sh b s =

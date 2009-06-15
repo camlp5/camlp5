@@ -36,7 +36,7 @@ value not_impl name pc x =
     (String.escaped desc) pc.aft
 ;
 
-value to_be_renamed = ["cond"];
+value to_be_renamed = ["cond"; "sum"];
 
 value rename_id s = if List.mem s to_be_renamed then s ^ "#" else s;
 
@@ -108,7 +108,7 @@ value type_param pc (s, vari) =
 ;
 
 value type_decl b pc td =
-  let n = Pcaml.unvala (snd td.MLast.tdNam) in
+  let n = rename_id (Pcaml.unvala (snd td.MLast.tdNam)) in
   horiz_vertic
     (fun () ->
        sprintf "%s(%s%s %s)%s" pc.bef b
@@ -342,14 +342,15 @@ EXTEND_PRINTER
             (fun () ->
                if has_cons_with_params cdl then sprintf "\n"
                else
-                 sprintf "%s[%s]%s" pc.bef
+                 sprintf "%s(sum %s)%s" pc.bef
                    (hlist constr_decl {(pc) with bef = ""; aft = ""} cdl)
                    pc.aft)
             (fun () ->
-               vlist constr_decl
-                 {(pc) with ind = pc.ind + 1; bef = sprintf "%s[" pc.bef;
-                  aft = sprintf "]%s" pc.aft}
-                 cdl)
+               vlistf
+                 {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+                  aft = sprintf ")%s" pc.aft}
+                 [fun pc -> sprintf "%ssum%s" pc.bef pc.aft ::
+                  List.map (fun cd pc -> constr_decl pc cd) cdl])
       | <:ctyp< { $list:cdl$ } >> ->
           let cdl = List.map (fun cd -> (cd, "")) cdl in
           plist label_decl 0
@@ -394,7 +395,9 @@ EXTEND_PRINTER
            sprintf "%s.%s"
              (curr {(pc) with aft = ""} t1)
              (curr {(pc) with bef = ""} t2)
-      | <:ctyp< $lid:s$ >> | <:ctyp< $uid:s$ >> ->
+      | <:ctyp< $lid:s$ >> ->
+          sprintf "%s%s%s" pc.bef (rename_id s) pc.aft
+      | <:ctyp< $uid:s$ >> ->
           sprintf "%s%s%s" pc.bef s pc.aft
       | <:ctyp< ' $s$ >> ->
           sprintf "%s'%s%s" pc.bef s pc.aft

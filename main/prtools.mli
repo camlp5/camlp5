@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: prtools.mli,v 1.7 2007/10/04 06:06:29 deraugla Exp $ *)
+(* $Id: prtools.mli,v 1.8 2007/10/06 08:07:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 type pr_context =
@@ -51,6 +51,10 @@ value vlist3 : pr_fun ('a * bool) -> pr_fun ('a * bool) -> pr_fun (list 'a);
        boolean value being True if it is the last element of the list. *)
 value vlistl : pr_fun 'a -> pr_fun 'a -> pr_fun (list 'a);
    (** vertical list with different function for the last element *)
+
+value vlistf : pr_fun (list (pr_context -> string));
+   (** [vlistf pc fl] acts like [vlist] except that the list is a
+       list of functions returning the pretty printed string. *)
 
 value plist : pr_fun 'a -> int -> pr_fun (list ('a * string));
    (** paragraph list

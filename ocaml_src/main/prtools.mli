@@ -52,6 +52,10 @@ val vlist3 : ('a * bool) pr_fun -> ('a * bool) pr_fun -> 'a list pr_fun;;
 val vlistl : 'a pr_fun -> 'a pr_fun -> 'a list pr_fun;;
    (** vertical list with different function for the last element *)
 
+val vlistf : (pr_context -> string) list pr_fun;;
+   (** [vlistf pc fl] acts like [vlist] except that the list is a
+       list of functions returning the pretty printed string. *)
+
 val plist : 'a pr_fun -> int -> ('a * string) list pr_fun;;
    (** paragraph list
        [plist elem sh pc el] returns the pretty printed string of a list

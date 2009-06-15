@@ -1,10 +1,10 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.38 2007/10/06 04:26:25 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.39 2007/10/06 08:07:17 deraugla Exp $
 ; Copyright (c) INRIA 2007
 
 (open Pcaml)
 
-(type (choice 'a 'b) [(Left 'a) (Right 'b)])
+(type (choice 'a 'b) (sum (Left 'a) (Right 'b)))
 
 ; Buffer
 
@@ -250,20 +250,21 @@
 ; Building AST
 
 (type sexpr
-  [(Sacc MLast.loc sexpr sexpr)
-   (Sarr MLast.loc (list sexpr))
-   (Schar MLast.loc string)
-   (Sexpr MLast.loc (list sexpr))
-   (Sint MLast.loc string)
-   (Sfloat MLast.loc string)
-   (Slid MLast.loc string)
-   (Slist MLast.loc (list sexpr))
-   (Sqid MLast.loc string)
-   (Squot MLast.loc string string)
-   (Srec MLast.loc (list sexpr))
-   (Sstring MLast.loc string)
-   (Stid MLast.loc string)
-   (Suid MLast.loc string)])
+ (sum
+  (Sacc MLast.loc sexpr sexpr)
+  (Sarr MLast.loc (list sexpr))
+  (Schar MLast.loc string)
+  (Sexpr MLast.loc (list sexpr))
+  (Sint MLast.loc string)
+  (Sfloat MLast.loc string)
+  (Slid MLast.loc string)
+  (Slist MLast.loc (list sexpr))
+  (Sqid MLast.loc string)
+  (Squot MLast.loc string string)
+  (Srec MLast.loc (list sexpr))
+  (Sstring MLast.loc string)
+  (Stid MLast.loc string)
+  (Suid MLast.loc string)))
 
 (define loc_of_sexpr
   (lambda_match
@@ -852,9 +853,10 @@
      (let (((values n1 loc1 tpl)
             (match se1
                    ((Sexpr _ [(Slid loc n) . sel])
-                    (values n loc (List.map type_parameter_se sel)))
+                    (values (rename_id n) loc
+                     (List.map type_parameter_se sel)))
                    ((Slid loc n)
-                    (values n loc []))
+                    (values (rename_id n) loc []))
                    ((se)
                     (error se "type declaration")))))
        {(MLast.tdNam (values loc1 <:vala< n1 >>))
@@ -867,9 +869,10 @@
      (let (((values n1 loc1 tpl)
             (match se1
                    ((Sexpr _ [(Slid loc n) . sel])
-                    (values n loc (List.map type_parameter_se sel)))
+                    (values (rename_id n) loc
+                     (List.map type_parameter_se sel)))
                    ((Slid loc n)
-                    (values n loc []))
+                    (values (rename_id n) loc []))
                    ((se)
                     (error se "type declaration")))))
        (let ((td {(MLast.tdNam (values loc1 <:vala< n1 >>))
@@ -887,7 +890,7 @@
      (error se "type_parameter"))))
   (ctyp_se
    (lambda_match
-    ((Slist loc sel)
+    ((Sexpr loc [(Slid _ "sum") . sel])
      (let ((cdl (List.map constructor_declaration_se sel)))
        <:ctyp< [ $list:cdl$ ] >>))
     ((Srec loc sel)

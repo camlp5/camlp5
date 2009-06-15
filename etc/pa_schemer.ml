@@ -155,7 +155,8 @@ value rec char len =
 
 value quote =
   parser
-  [ [: `'\\'; len = char (Buff.store 0 '\\') :] -> ("CHAR", Buff.get len)
+  [ [: `'\\'; `c; len = char (Buff.store (Buff.store 0 '\\') c) :] ->
+      ("CHAR", Buff.get len)
   | [: `x; s :] -> char_or_quote_id x s ]
 ;
 
@@ -514,6 +515,9 @@ and expr_se =
   | Sexpr loc [Slid _ "-"; se] ->
       let e = expr_se se in
       <:expr< - $e$ >>
+  | Sexpr loc [Slid _ "-."; se] ->
+      let e = expr_se se in
+      <:expr< -. $e$ >>
   | Sexpr loc [Slid _ "if"; se; se1] ->
       let e = expr_se se in
       let e1 = expr_se se1 in
@@ -809,7 +813,7 @@ and patt_se =
   | Sfloat loc s -> <:patt< $flo:s$ >>
   | Schar loc s -> <:patt< $chr:s$ >>
   | Sstring loc s -> <:patt< $str:s$ >>
-  | Stid loc _ -> error_loc loc "patt"
+  | Stid loc s -> error_loc loc "patt"
   | Sqid loc _ -> error_loc loc "patt"
   | Srec loc sel ->
       let lpl = List.map (label_patt_se loc) sel in
@@ -872,6 +876,10 @@ and ipatt_opt_se =
       let s = rename_id s in
       let e = expr_se se in
       Left <:patt< ? ( $lid:s$ = $e$ ) >>
+  | Sexpr loc [Stid _ s; se] ->
+      let s = rename_id s in
+      let p = patt_se se in
+      Left <:patt< ~$s$:$p$ >>
   | Sexpr loc [Slid _ ":"; se1; se2] ->
       let p = ipatt_se se1 in
       let t = ctyp_se se2 in
@@ -895,8 +903,8 @@ and type_declaration_se =
       let (n1, loc1, tpl) =
         match se1 with
         [ Sexpr _ [Slid loc n :: sel] ->
-            (n, loc, List.map type_parameter_se sel)
-        | Slid loc n -> (n, loc, [])
+            (rename_id n, loc, List.map type_parameter_se sel)
+        | Slid loc n -> (rename_id n, loc, [])
         | se -> error se "type declaration" ]
       in
       {MLast.tdNam = (loc1, <:vala< n1 >>); MLast.tdPrm = <:vala< tpl >>;
@@ -909,8 +917,8 @@ and type_declaration_list_se =
       let (n1, loc1, tpl) =
         match se1 with
         [ Sexpr _ [Slid loc n :: sel] ->
-            (n, loc, List.map type_parameter_se sel)
-        | Slid loc n -> (n, loc, [])
+            (rename_id n, loc, List.map type_parameter_se sel)
+        | Slid loc n -> (rename_id n, loc, [])
         | se -> error se "type declaration" ]
       in
       let td =
@@ -929,7 +937,7 @@ and type_parameter_se =
   | se -> error se "type_parameter" ]
 and ctyp_se =
   fun
-  [ Slist loc sel ->
+  [ Sexpr loc [Slid _ "sum" :: sel] ->
       let cdl = List.map constructor_declaration_se sel in
       <:ctyp< [ $list:cdl$ ] >>
   | Srec loc sel ->

@@ -83,6 +83,16 @@ let rec vlistl elem eleml pc xl =
         (vlistl elem eleml {pc with bef = tab pc.ind} xl)
 ;;
 
+(* vertical list applied to a list of functions *)
+let rec vlistf pc fl =
+  match fl with
+    [] -> sprintf "%s%s" pc.bef pc.aft
+  | [f] -> f pc
+  | f :: fl ->
+      sprintf "%s\n%s" (f {pc with aft = ""; dang = ""})
+        (vlistf {pc with bef = tab pc.ind} fl)
+;;
+
 let rise_string ind sh b s =
   (* hack for "plistl" (below): if s is a "string" (i.e. starting with
      double-quote) which contains newlines, attempt to concat its first
