@@ -348,7 +348,10 @@ value mkwithc =
   fun
   [ WcTyp loc id tpl pf ct ->
       let (params, variance) = List.split tpl in
-      let tk = if pf then Ptype_private else Ptype_abstract in
+      let tk =
+        IFDEF OCAML_3_08 THEN Ptype_abstract
+        ELSE if pf then Ptype_private else Ptype_abstract END
+      in
       (long_id_of_string_list loc id,
        Pwith_type
          {ptype_params = params; ptype_cstrs = []; ptype_kind = tk;

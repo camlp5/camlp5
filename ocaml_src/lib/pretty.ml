@@ -15,7 +15,7 @@ let after_print s =
   else s
 ;;
 
-let sprintf fmt = Printf.ksprintf after_print fmt;;
+let sprintf fmt = Printf.kprintf after_print fmt;;
 
 let call_with r v f a =
   let saved = !r in

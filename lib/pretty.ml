@@ -1,5 +1,5 @@
 (* camlp4r *)
-(* $Id: pretty.ml,v 1.1 2007/06/16 07:44:17 deraugla Exp $ *)
+(* $Id: pretty.ml,v 1.2 2007/07/11 02:53:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 exception GiveUp;
@@ -15,7 +15,7 @@ value after_print s =
   else s
 ;
 
-value sprintf fmt = Printf.ksprintf after_print fmt;
+value sprintf fmt = Printf.kprintf after_print fmt;
 
 value call_with r v f a =
   let saved = r.val in
