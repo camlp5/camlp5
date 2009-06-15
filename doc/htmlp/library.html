@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: library.html,v 1.22 2007/08/28 17:49:37 deraugla Exp $ -->
+  <!-- $Id: library.html,v 1.23 2007/08/30 10:35:21 deraugla Exp $ -->
   <!-- Copyright (c) 2007 INRIA -->
   <title>Library</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -88,13 +88,13 @@
   <dt><tt>value line_nb : location -> int;</tt></dt>
   <dd>"<tt>line_nb loc</tt>" returns the line number of the location
     or "<tt>-1</tt>" if the location does not contain a line number
-    (i.e. built the old way with "<tt>make_loc</tt>" above.</dd>
+    (i.e. built with "<tt>make_loc</tt>" above).</dd>
   <dt><tt>value bol_pos : location -> int;</tt></dt>
   <dd>"<tt>line_nb loc</tt>" returns the position of the beginning of
     the line of the location in number of characters since the
     beginning of the stream, or "<tt>0</tt>" if the location does not
-    contain a line number (i.e. built the old with with
-    "<tt>make_loc</tt>" above.</dd>
+    contain a line number (i.e. built the with "<tt>make_loc</tt>"
+    above).</dd>
 </dl>
 
 <h3>combining locations</h3>
