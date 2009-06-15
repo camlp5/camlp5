@@ -198,11 +198,11 @@ These files are installed in the directory LIBDIR/camlp4.
 Parsing files:
 .nf
 .ta 1c
-	pa_o.cmo: syntax of OCaml
-	pa_op.cmo: streams and parsers
-	pa_oop.cmo: streams and parsers (without code optimization)
 	pa_r.cmo: revised syntax
 	pa_rp.cmo: streams and parsers
+	pa_o.cmo: normal syntax
+	pa_op.cmo: streams and parsers
+	pa_oop.cmo: streams and parsers (without code optimization)
 	pa_scheme.cmo: scheme syntax
 	pa_extend.cmo: syntax extension for grammars
 	pa_extfold.cmo: extension of pa_extend with FOLD0 and FOLD1
@@ -216,12 +216,11 @@ Parsing files:
 Printing files:
 .nf
 .ta 1c
-	pr_o.cmo: syntax of OCaml
-	pr_op.cmo: try to rebuild streams and parsers syntax
-	pr_r.cmo: revised syntax
+	pr_r.cmo: revised syntax without objects and labels
+	pr_ro.cmo: revised syntax for objects and labels
 	pr_rp.cmo: try to rebuild streams and parsers syntax
-	pr_scheme.cmo: scheme syntax
-	pr_schemep.cmo: try to rebuild streams and parsers syntax
+	pr_o.cmo: normal syntax
+	pr_op.cmo: try to rebuild streams and parsers syntax
 	pr_extend.cmo: try to rebuild EXTEND statements
 	pr_extfun.cmo: try to rebuild extfun statements
 	pr_dump.cmo: syntax tree
