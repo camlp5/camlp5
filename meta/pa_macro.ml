@@ -1,5 +1,8 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.28 2007/09/10 01:17:54 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.29 2007/09/10 13:39:52 deraugla Exp $ *)
+
+#load "pa_extend.cmo";
+#load "q_MLast.cmo";
 
 (*
 Added statements:
@@ -70,9 +73,6 @@ Added statements:
   The expression __LOCATION__ returns the current location of itself.
 
 *)
-
-#load "pa_extend.cmo";
-#load "q_MLast.cmo";
 
 open Pcaml;
 

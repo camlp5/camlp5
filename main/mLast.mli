@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: mLast.mli,v 1.25 2007/09/09 19:34:16 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.26 2007/09/10 13:39:52 deraugla Exp $ *)
 
 (* Module [MLast]: abstract syntax tree.
 
@@ -71,7 +71,7 @@ type patt =
   | PaAny of loc
   | PaApp of loc and patt and patt
   | PaArr of loc and list patt
-  | PaChr of loc and string
+  | PaChr of loc and V string
   | PaInt of loc and string and string
   | PaFlo of loc and string
   | PaLab of loc and string and option patt
@@ -84,7 +84,7 @@ type patt =
   | PaTup of loc and V (list patt)
   | PaTyc of loc and patt and ctyp
   | PaTyp of loc and list string
-  | PaUid of loc and string
+  | PaUid of loc and V string
   | PaVrn of loc and string
   | IFDEF STRICT THEN
       PaXtr of loc and string and option (V patt)
@@ -98,7 +98,7 @@ and expr =
   | ExAsr of loc and expr
   | ExAss of loc and expr and expr
   | ExBae of loc and expr and list expr
-  | ExChr of loc and string
+  | ExChr of loc and V string
   | ExCoe of loc and expr and option ctyp and ctyp
   | ExFlo of loc and string
   | ExFor of loc and string and expr and expr and bool and V (list expr)

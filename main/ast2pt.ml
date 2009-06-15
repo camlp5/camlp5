@@ -10,7 +10,7 @@
 (*                                                                     *)
 (***********************************************************************)
 
-(* $Id: ast2pt.ml,v 1.25 2007/09/09 15:25:09 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.26 2007/09/10 13:39:52 deraugla Exp $ *)
 
 open MLast;
 open Parsetree;
@@ -394,7 +394,7 @@ value rec mkrangepat loc c1 c2 =
 
 value rec patt_long_id il =
   fun
-  [ PaAcc _ p (PaUid _ i) -> patt_long_id [i :: il] p
+  [ <:patt< $p$.$uid:i$ >> -> patt_long_id [i :: il] p
   | p -> (p, il) ]
 ;
 
@@ -412,9 +412,9 @@ value rec patt =
   [ PaAcc loc p1 p2 ->
       let p =
         match patt_long_id [] p1 with
-        [ (PaUid _ i, il) ->
+        [ (<:patt< $uid:i$ >>, il) ->
             match p2 with
-            [ PaUid _ s ->
+            [ <:patt< $uid:s$ >> ->
                 Ppat_construct (mkli (conv_con s) [i :: il]) None
                   (not no_constructors_arity.val)
             | _ -> error (loc_of_patt p2) "uppercase identifier expected" ]
@@ -458,7 +458,7 @@ value rec patt =
             "this is not a constructor, it cannot be applied in a pattern" ]
   | PaArr loc pl -> mkpat loc (Ppat_array (List.map patt pl))
   | PaChr loc s ->
-      mkpat loc (Ppat_constant (Const_char (char_of_char_token loc s)))
+      mkpat loc (Ppat_constant (Const_char (char_of_char_token loc (uv s))))
   | PaInt loc s "" -> mkpat loc (Ppat_constant (Const_int (int_of_string s)))
   | PaInt loc _ _ -> error loc "special int not impl in patt"
   | PaFlo loc s -> mkpat loc (Ppat_constant (Const_float s))
@@ -469,8 +469,8 @@ value rec patt =
   | PaRng loc p1 p2 ->
       match (p1, p2) with
       [ (PaChr loc1 c1, PaChr loc2 c2) ->
-          let c1 = char_of_char_token loc1 c1 in
-          let c2 = char_of_char_token loc2 c2 in
+          let c1 = char_of_char_token loc1 (uv c1) in
+          let c2 = char_of_char_token loc2 (uv c2) in
           mkrangepat loc c1 c2
       | _ -> error loc "range pattern allowed only for characters" ]
   | PaRec loc lpl -> mkpat loc (Ppat_record (List.map mklabpat lpl))
@@ -481,7 +481,7 @@ value rec patt =
   | PaTyp loc sl -> mkpat loc (Ppat_type (long_id_of_string_list loc sl))
   | PaUid loc s ->
       let ca = not no_constructors_arity.val in
-      mkpat loc (Ppat_construct (lident (conv_con s)) None ca)
+      mkpat loc (Ppat_construct (lident (conv_con (uv s))) None ca)
   | PaVrn loc s -> mkpat loc (Ppat_variant s None)
   | IFDEF STRICT THEN
       PaXtr loc _ _ -> error loc "bad ast"
@@ -639,7 +639,7 @@ value rec expr =
   | ExAsr loc e -> mkexp loc (Pexp_assert (expr e))
   | ExBae loc e el -> expr (bigarray_get loc e el)
   | ExChr loc s ->
-      mkexp loc (Pexp_constant (Const_char (char_of_char_token loc s)))
+      mkexp loc (Pexp_constant (Const_char (char_of_char_token loc (uv s))))
   | ExCoe loc e t1 t2 ->
       mkexp loc (Pexp_constraint (expr e) (option ctyp t1) (Some (ctyp t2)))
   | ExFlo loc s -> mkexp loc (Pexp_constant (Const_float s))

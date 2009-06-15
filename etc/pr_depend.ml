@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.21 2007/09/09 15:25:09 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.22 2007/09/10 13:39:52 deraugla Exp $ *)
 
 open MLast;
 
@@ -90,13 +90,13 @@ value rec patt =
   | x -> not_impl "patt" x ]
 and patt_module =
   fun
-  [ PaUid _ m -> addmodule m
-  | PaAcc _ p _ -> patt_module p
+  [ <:patt< $uid:m$ >> -> addmodule m
+  | <:patt< $p$.$_$ >> -> patt_module p
   | x -> not_impl "patt_module" x ]
 and label_patt (p1, p2) = do { patt p1; patt p2 }
 and expr =
   fun
-  [ ExAcc _ e1 e2 -> do { expr_module e1; expr e2 }
+  [ <:expr< $e1$.$e2$ >> -> do { expr_module e1; expr e2 }
   | ExApp _ e1 e2 -> do { expr e1; expr e2 }
   | ExAre _ e1 e2 -> do { expr e1; expr e2 }
   | ExArr _ el -> list expr el

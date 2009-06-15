@@ -374,7 +374,7 @@ let rec mkrangepat loc c1 c2 =
 
 let rec patt_long_id il =
   function
-    PaAcc (_, p, PaUid (_, i)) -> patt_long_id (i :: il) p
+    MLast.PaAcc (_, p, MLast.PaUid (_, i)) -> patt_long_id (i :: il) p
   | p -> p, il
 ;;
 
@@ -393,9 +393,9 @@ let rec patt =
     PaAcc (loc, p1, p2) ->
       let p =
         match patt_long_id [] p1 with
-          PaUid (_, i), il ->
+          MLast.PaUid (_, i), il ->
             begin match p2 with
-              PaUid (_, s) ->
+              MLast.PaUid (_, s) ->
                 Ppat_construct
                   (mkli (conv_con s) (i :: il), None,
                    not !no_constructors_arity)
@@ -442,7 +442,7 @@ let rec patt =
       end
   | PaArr (loc, pl) -> mkpat loc (Ppat_array (List.map patt pl))
   | PaChr (loc, s) ->
-      mkpat loc (Ppat_constant (Const_char (char_of_char_token loc s)))
+      mkpat loc (Ppat_constant (Const_char (char_of_char_token loc (uv s))))
   | PaInt (loc, s, "") ->
       mkpat loc (Ppat_constant (Const_int (int_of_string s)))
   | PaInt (loc, _, _) -> error loc "special int not impl in patt"
@@ -454,8 +454,8 @@ let rec patt =
   | PaRng (loc, p1, p2) ->
       begin match p1, p2 with
         PaChr (loc1, c1), PaChr (loc2, c2) ->
-          let c1 = char_of_char_token loc1 c1 in
-          let c2 = char_of_char_token loc2 c2 in mkrangepat loc c1 c2
+          let c1 = char_of_char_token loc1 (uv c1) in
+          let c2 = char_of_char_token loc2 (uv c2) in mkrangepat loc c1 c2
       | _ -> error loc "range pattern allowed only for characters"
       end
   | PaRec (loc, lpl) -> mkpat loc (Ppat_record (List.map mklabpat lpl))
@@ -466,7 +466,7 @@ let rec patt =
   | PaTyp (loc, sl) -> mkpat loc (Ppat_type (long_id_of_string_list loc sl))
   | PaUid (loc, s) ->
       let ca = not !no_constructors_arity in
-      mkpat loc (Ppat_construct (lident (conv_con s), None, ca))
+      mkpat loc (Ppat_construct (lident (conv_con (uv s)), None, ca))
   | PaVrn (loc, s) -> mkpat loc (Ppat_variant (s, None))
 and mklabpat (lab, p) = patt_label_long_id lab, patt p;;
 
@@ -747,7 +747,7 @@ let rec expr =
   | ExAsr (loc, e) -> mkexp loc (Pexp_assert (expr e))
   | ExBae (loc, e, el) -> expr (bigarray_get loc e el)
   | ExChr (loc, s) ->
-      mkexp loc (Pexp_constant (Const_char (char_of_char_token loc s)))
+      mkexp loc (Pexp_constant (Const_char (char_of_char_token loc (uv s))))
   | ExCoe (loc, e, t1, t2) ->
       mkexp loc (Pexp_constraint (expr e, option ctyp t1, Some (ctyp t2)))
   | ExFlo (loc, s) -> mkexp loc (Pexp_constant (Const_float s))

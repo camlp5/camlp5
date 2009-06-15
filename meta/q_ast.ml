@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: q_ast.ml,v 1.49 2007/09/10 08:09:09 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.50 2007/09/10 13:39:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 (* Experimental AST quotations while running the normal parser and
@@ -243,7 +243,7 @@ module Meta =
         | PaAli _ p1 p2 -> <:expr< MLast.PaAli $ln$ $loop p1$ $loop p2$ >>
         | PaAny _ -> <:expr< MLast.PaAny $ln$ >>
         | PaApp _ p1 p2 -> <:expr< MLast.PaApp $ln$ $loop p1$ $loop p2$ >>
-        | PaChr _ s -> <:expr< MLast.PaChr $ln$ $e_string s$ >>
+        | PaChr _ s -> <:expr< MLast.PaChr $ln$ $e_vala e_string s$ >>
         | PaInt _ s k -> <:expr< MLast.PaInt $ln$ $e_string s$ $str:k$ >>
 (*
         | PaFlo _ s -> <:expr< MLast.PaFlo $ln$ $e_string s$ >>
@@ -254,7 +254,7 @@ module Meta =
         | PaStr _ s -> <:expr< MLast.PaStr $ln$ $e_string s$ >>
         | PaTup _ pl -> <:expr< MLast.PaTup $ln$ $e_vala (e_list loop) pl$ >>
         | PaTyc _ p t -> <:expr< MLast.PaTyc $ln$ $loop p$ $e_ctyp t$ >>
-        | PaUid _ s -> <:expr< MLast.PaUid $ln$ $e_string s$ >>
+        | PaUid _ s -> <:expr< MLast.PaUid $ln$ $e_vala e_string s$ >>
         | IFDEF STRICT THEN
             PaXtr loc s _ ->
               let asit = s.[0] = 'a' in
@@ -274,7 +274,7 @@ module Meta =
         fun
         [ PaAcc _ p1 p2 -> <:patt< MLast.PaAcc _ $loop p1$ $loop p2$ >>
         | PaAli _ p1 p2 -> <:patt< MLast.PaAli _ $loop p1$ $loop p2$ >>
-        | PaChr _ s -> <:patt< MLast.PaChr _ $p_string s$ >>
+        | PaChr _ s -> <:patt< MLast.PaChr _ $p_vala p_string s$ >>
         | PaLid _ s -> <:patt< MLast.PaLid _ $p_vala p_string s$ >>
         | PaTup _ pl -> <:patt< MLast.PaTup _ $p_vala (p_list loop) pl$ >>
         | IFDEF STRICT THEN
@@ -300,11 +300,9 @@ module Meta =
 (*
         | ExArr _ el -> <:expr< MLast.ExArr $ln$ $e_list loop el$ >>
 *)
-        | ExChr _ s -> <:expr< MLast.ExChr $ln$ $e_string s$ >>
-(*
+        | ExChr _ s -> <:expr< MLast.ExChr $ln$ $e_vala e_string s$ >>
         | ExIfe _ e1 e2 e3 ->
             <:expr< MLast.ExIfe $ln$ $loop e1$ $loop e2$ $loop e3$ >>
-*)
         | ExInt _ s k -> <:expr< MLast.ExInt $ln$ $e_string s$ $str:k$ >>
 (*
         | ExFlo _ s -> <:expr< MLast.ExFlo $ln$ $e_string s$ >>
@@ -364,9 +362,9 @@ module Meta =
         fun
         [ ExAcc _ e1 e2 -> <:patt< MLast.ExAcc _ $loop e1$ $loop e2$ >>
         | ExApp _ e1 e2 -> <:patt< MLast.ExApp _ $loop e1$ $loop e2$ >>
-(*
         | ExIfe _ e1 e2 e3 ->
             <:patt< MLast.ExIfe _ $loop e1$ $loop e2$ $loop e3$ >>
+(*
         | ExInt _ s k -> <:patt< MLast.ExInt _ $p_string s$ $str:k$ >>
         | ExFlo _ s -> <:patt< MLast.ExFlo _ $p_string s$ >>
 *)
@@ -648,12 +646,15 @@ lex.Plexing.tok_match :=
           else if kind = "str" then "b" ^ prm
           else raise Stream.Failure
       | _ -> raise Stream.Failure ]
-(*
-  | ("CHAR", "") ->
+  | ("V CHAR", "") ->
       fun
-      [ ("CHAR", prm) -> prm
-      | ("ANTIQUOT_LOC", prm) -> check_and_make_anti prm "chr"
+      [ ("ANTIQUOT_LOC", prm) ->
+          let kind = check_anti_loc2 prm in
+          if kind = "achr" then "a" ^ prm
+          else if kind = "chr" then "b" ^ prm
+          else raise Stream.Failure
       | _ -> raise Stream.Failure ]
+(*
   | ("V SELF", "") ->
       fun
       [ ("ANTIQUOT_LOC", prm) ->

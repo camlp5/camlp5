@@ -203,7 +203,7 @@ module MetaAction =
                   (loc, MLast.ExUid (loc, "MLast"),
                    MLast.ExUid (loc, "ExChr")),
                 mloc),
-             MLast.ExStr (loc, s))
+             mvala mstring s)
       | MLast.ExFun (loc, pwel) ->
           MLast.ExApp
             (loc,
@@ -499,7 +499,7 @@ module MetaAction =
                   (loc, MLast.ExUid (loc, "MLast"),
                    MLast.ExUid (loc, "PaUid")),
                 mloc),
-             MLast.ExStr (loc, s))
+             mvala mstring s)
       | x -> not_impl "mpatt" x
     and mctyp =
       function

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.55 2007/09/10 08:09:09 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.56 2007/09/10 13:39:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 value split_ext = ref False;
@@ -182,7 +182,7 @@ module MetaAction =
           <:expr< MLast.ExAcc $mloc$ $mexpr e1$ $mexpr e2$ >>
       | MLast.ExApp loc e1 e2 ->
           <:expr< MLast.ExApp $mloc$ $mexpr e1$ $mexpr e2$ >>
-      | MLast.ExChr loc s -> <:expr< MLast.ExChr $mloc$ $str:s$ >>
+      | MLast.ExChr loc s -> <:expr< MLast.ExChr $mloc$ $mvala mstring s$ >>
       | MLast.ExFun loc pwel ->
           <:expr< MLast.ExFun $mloc$ $mlist mpwe pwel$ >>
       | MLast.ExIfe loc e1 e2 e3 ->
@@ -229,7 +229,7 @@ module MetaAction =
           <:expr< MLast.PaTup $mloc$ $mvala (mlist mpatt) pl$ >>
       | MLast.PaTyc loc p t ->
           <:expr< MLast.PaTyc $mloc$ $mpatt p$ $mctyp t$ >>
-      | MLast.PaUid loc s -> <:expr< MLast.PaUid $mloc$ $str:s$ >>
+      | MLast.PaUid loc s -> <:expr< MLast.PaUid $mloc$ $mvala mstring s$ >>
       | x -> not_impl "mpatt" x ]
     and mctyp =
       fun

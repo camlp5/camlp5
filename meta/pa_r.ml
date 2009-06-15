@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.62 2007/09/10 08:09:09 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.63 2007/09/10 13:39:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007 *)
 
 open Pcaml;
@@ -309,7 +309,7 @@ EXTEND
       | s = INT_n -> <:expr< $nativeint:s$ >>
       | s = FLOAT -> <:expr< $flo:s$ >>
       | s = V STRING -> <:expr< $astr:s$ >>
-      | s = CHAR -> <:expr< $chr:s$ >>
+      | s = V CHAR -> <:expr< $achr:s$ >>
       | i = V LIDENT -> <:expr< $alid:i$ >>
       | i = V UIDENT -> <:expr< $auid:i$ >>
       | "["; "]" -> <:expr< [] >>
@@ -386,14 +386,14 @@ EXTEND
       [ p1 = SELF; "."; p2 = SELF -> <:patt< $p1$ . $p2$ >> ]
     | "simple"
       [ s = V LIDENT -> <:patt< $alid:s$ >>
-      | s = UIDENT -> <:patt< $uid:s$ >>
+      | s = V UIDENT -> <:patt< $auid:s$ >>
       | s = INT -> <:patt< $int:s$ >>
       | s = INT_l -> <:patt< $int32:s$ >>
       | s = INT_L -> <:patt< $int64:s$ >>
       | s = INT_n -> <:patt< $nativeint:s$ >>
       | s = FLOAT -> <:patt< $flo:s$ >>
       | s = STRING -> <:patt< $str:s$ >>
-      | s = CHAR -> <:patt< $chr:s$ >>
+      | s = V CHAR -> <:patt< $achr:s$ >>
       | "-"; s = INT -> mkuminpat loc "-" True s
       | "-"; s = FLOAT -> mkuminpat loc "-" False s
       | "["; "]" -> <:patt< [] >>
@@ -423,7 +423,7 @@ EXTEND
     [ LEFTA
       [ p1 = SELF; "."; p2 = SELF -> <:patt< $p1$ . $p2$ >> ]
     | "simple" RIGHTA
-      [ i = UIDENT -> <:patt< $uid:i$ >>
+      [ i = V UIDENT -> <:patt< $auid:i$ >>
       | i = V LIDENT -> <:patt< $alid:i$ >> ] ]
   ;
   ipatt:

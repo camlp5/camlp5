@@ -297,7 +297,7 @@ module Meta =
                     (loc, MLast.ExUid (loc, "MLast"),
                      MLast.ExUid (loc, "PaChr")),
                   ln),
-               e_string s)
+               e_vala e_string s)
         | PaInt (_, s, k) ->
             MLast.ExApp
               (loc,
@@ -389,7 +389,7 @@ module Meta =
                     (loc, MLast.ExUid (loc, "MLast"),
                      MLast.ExUid (loc, "PaUid")),
                   ln),
-               e_string s)
+               e_vala e_string s)
         | x -> not_impl "e_patt" x
       in
       loop p
@@ -432,7 +432,7 @@ module Meta =
                     (loc, MLast.PaUid (loc, "MLast"),
                      MLast.PaUid (loc, "PaChr")),
                   MLast.PaAny loc),
-               p_string s)
+               p_vala p_string s)
         | PaLid (_, s) ->
             MLast.PaApp
               (loc,
@@ -496,7 +496,23 @@ module Meta =
                     (loc, MLast.ExUid (loc, "MLast"),
                      MLast.ExUid (loc, "ExChr")),
                   ln),
-               e_string s)
+               e_vala e_string s)
+        | ExIfe (_, e1, e2, e3) ->
+            MLast.ExApp
+              (loc,
+               MLast.ExApp
+                 (loc,
+                  MLast.ExApp
+                    (loc,
+                     MLast.ExApp
+                       (loc,
+                        MLast.ExAcc
+                          (loc, MLast.ExUid (loc, "MLast"),
+                           MLast.ExUid (loc, "ExIfe")),
+                        ln),
+                     loop e1),
+                  loop e2),
+               loop e3)
         | ExInt (_, s, k) ->
             MLast.ExApp
               (loc,
@@ -682,6 +698,22 @@ module Meta =
                      MLast.PaAny loc),
                   loop e1),
                loop e2)
+        | ExIfe (_, e1, e2, e3) ->
+            MLast.PaApp
+              (loc,
+               MLast.PaApp
+                 (loc,
+                  MLast.PaApp
+                    (loc,
+                     MLast.PaApp
+                       (loc,
+                        MLast.PaAcc
+                          (loc, MLast.PaUid (loc, "MLast"),
+                           MLast.PaUid (loc, "ExIfe")),
+                        MLast.PaAny loc),
+                     loop e1),
+                  loop e2),
+               loop e3)
         | ExLet (_, rf, lpe, e) ->
             let rf = p_vala p_bool rf in
             let lpe =
@@ -961,6 +993,14 @@ lex.Plexing.tok_match <-
            let kind = check_anti_loc2 prm in
            if kind = "astr" then "a" ^ prm
            else if kind = "str" then "b" ^ prm
+           else raise Stream.Failure
+       | _ -> raise Stream.Failure)
+  | "V CHAR", "" ->
+      (function
+         "ANTIQUOT_LOC", prm ->
+           let kind = check_anti_loc2 prm in
+           if kind = "achr" then "a" ^ prm
+           else if kind = "chr" then "b" ^ prm
            else raise Stream.Failure
        | _ -> raise Stream.Failure)
   | "V LIST", "" ->
