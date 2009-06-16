@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: quot.html,v 1.28 2007/12/28 13:43:03 deraugla Exp $ -->
+  <!-- $Id: quot.html,v 1.29 2008/02/21 10:35:06 deraugla Exp $ -->
   <!-- Copyright (c) 2007-2008 INRIA -->
   <title>quotations</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -664,7 +664,12 @@ type expander =
     | -> raise (Stream.Error "lexing error: bad character") ]
   ;
 
-  value rec skip_spaces = lexer [ " \n\r"/ skip_spaces! | ];
+  value rec skip_spaces =
+    lexer
+    [ " "/ skip_spaces!
+    | "\n"/ skip_spaces!
+    | "\r"/ skip_spaces! | ]
+  ;
 
   value record_loc loct i (bp, ep) = do {
     if i >= Array.length loct.val then do {
@@ -685,7 +690,7 @@ type expander =
     let ts =
       Stream.from
         (fun i -> do {
-           ignore (skip_spaces $empty cs : list char);
+           ignore (skip_spaces $empty cs : Plexing.Lexbuf.t);
            let bp = Stream.count cs in
            let r = next_tok $empty cs in
            let ep = Stream.count cs in
@@ -693,7 +698,10 @@ type expander =
            Some r
          })
     in
-    (ts, fun i -> loct.val.(i))
+    let locf i =
+      if i < Array.length loct.val then loct.val.(i) else Ploc.dummy
+    in
+    (ts, locf)
   ;
 
   value lam_lex =

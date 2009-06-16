@@ -6,6 +6,15 @@
     <lastBuildDate>Mon Sep 17 15:10:47 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
     <item>
+      <title>quotation example</title>
+      <description>
+        Fixed example in chapter "Quotations" about lambda terms. Did not
+        work because using an old version of the "lexer" syntax extension.
+      </description>
+      <pubDate>Fri Dec 28 23:05:19 CET 2007</pubDate>
+      <link>../quot.html</link>
+    </item>
+    <item>
       <title>pprintf</title>
       <description>
         Added chapter about the new statement "pprintf".
