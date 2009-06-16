@@ -1,5 +1,5 @@
-(* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extend.ml,v 1.54 2007/12/27 10:30:24 deraugla Exp $ *)
+(* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
+(* $Id: pr_extend.ml,v 1.55 2008/01/03 03:40:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -11,20 +11,24 @@ open Prtools;
 value no_slist = ref False;
 Pcaml.strict_mode.val := True;
 
+(**)
+value test = ref False;
+Pcaml.add_option "-test" (Arg.Set test) " test";
+(**)
+
 value not_impl name pc x =
   let desc =
     if Obj.tag (Obj.repr x) = Obj.tag (Obj.repr "") then
-      sprintf "\"%s\"" (Obj.magic x)
+      "\"" ^ Obj.magic x ^ "\""
     else if Obj.is_block (Obj.repr x) then
       "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
     else "int_val = " ^ string_of_int (Obj.magic x)
   in
-  sprintf "%s\"pr_extend, not impl: %s; %s\"%s" pc.bef name
-    (String.escaped desc) pc.aft
+  pprintf pc "\"pr_extend, not impl: %s; %s\"" name (String.escaped desc)
 ;
 
-value bar_before elem pc x = elem {(pc) with bef = sprintf "%s| " pc.bef} x;
-value semi_after elem pc x = elem {(pc) with aft = sprintf ";%s" pc.aft} x;
+value bar_before elem pc x = pprintf pc "| %p" elem x;
+value semi_after elem pc x = pprintf pc "%p;" elem x;
 
 (* Extracting *)
 
@@ -72,6 +76,7 @@ value unposition =
   | <:expr< Some Gramext.Last >> -> Some Gramext.Last
   | <:expr< Some (Gramext.Before $str:s$) >> -> Some (Gramext.Before s)
   | <:expr< Some (Gramext.After $str:s$) >> -> Some (Gramext.After s)
+  | <:expr< Some (Gramext.Like $str:s$) >> -> Some (Gramext.Like s)
   | <:expr< Some (Gramext.Level $str:s$) >> -> Some (Gramext.Level s)
   | _ -> raise Not_found ]
 ;
@@ -245,23 +250,17 @@ value flag_equilibrate_cases = Pcaml.flag_equilibrate_cases;
 value expr = Eprinter.apply pr_expr;
 value patt = Eprinter.apply pr_patt;
 
-value string pc s = sprintf "%s\"%s\"%s" pc.bef s pc.aft;
+value string pc s = pprintf pc "\"%s\"" s;
 
 value position pc pos =
   match pos with
-  [ None -> sprintf "%s%s" pc.bef pc.aft
-  | Some Gramext.First -> sprintf "%s FIRST%s" pc.bef pc.aft
-  | Some Gramext.Last -> sprintf "%s LAST%s" pc.bef pc.aft
-  | Some (Gramext.Before s) -> sprintf "%s BEFORE%s" pc.bef pc.aft
-  | Some (Gramext.After s) ->
-      sprintf "%s AFTER %s%s" pc.bef (string {(pc) with bef = ""; aft = ""} s)
-        pc.aft
-  | Some (Gramext.Like s) ->
-      sprintf "%s LIKE %s%s" pc.bef (string {(pc) with bef = ""; aft = ""} s)
-        pc.aft
-  | Some (Gramext.Level s) ->
-      sprintf "%s LEVEL %s%s" pc.bef (string {(pc) with bef = ""; aft = ""} s)
-        pc.aft ]
+  [ None -> pprintf pc ""
+  | Some Gramext.First -> pprintf pc " FIRST"
+  | Some Gramext.Last -> pprintf pc " LAST"
+  | Some (Gramext.Before s) -> pprintf pc " BEFORE"
+  | Some (Gramext.After s) -> pprintf pc " AFTER %p" string s
+  | Some (Gramext.Like s) -> pprintf pc " LIKE %p" string s
+  | Some (Gramext.Level s) -> pprintf pc " LEVEL %p" string s ]
 ;
 
 value action expr pc a = expr pc a;

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_o.ml,v 1.177 2007/12/28 12:58:30 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.178 2008/01/03 03:40:45 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -99,11 +99,6 @@ value rec get_defined_ident =
   | <:patt< $anti:p$ >> -> get_defined_ident p
   | _ -> [] ]
 ;
-
-(**)
-value test = ref False;
-Pcaml.add_option "-test" (Arg.Set test) " test";
-(**)
 
 value not_impl name pc x =
   let desc =
