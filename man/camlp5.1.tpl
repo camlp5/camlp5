@@ -215,6 +215,7 @@ Parsing files:
 	pa_extfold.cmo: extension of pa_extend with FOLD0 and FOLD1
 	pa_extfun.cmo: syntax extension for extensible functions
 	pa_extprint.cmo: syntax extensions for extensible printers
+	pa_pprintf.cmo: syntax extension for pprintf statement
 	pa_fstream.cmo: syntax extension for functional streams
 	pa_macro.cmo: add macros (ifdef, define) like in C
 	pa_lefteval.cmo: left-to-right evaluation of parameters

@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
+ "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <!-- $Id: pprintf.html,v 1.1 2007/12/28 13:43:58 deraugla Exp $ -->
+  <!-- Copyright (c) 2007-2008 INRIA -->
+  <title>pprintf</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <link rel="stylesheet" type="text/css" href="styles/base.css"
+        title="Normal" />
+</head>
+<body>
+
+<div id="menu">
+</div>
+
+<div id="content">
+
+<h1 class="top">Pprintf</h1>
+
+<p>This chapter describes "pprintf", a statement to pretty print data.
+  It looks like the "sprintf" function of the OCaml library, and
+  borrows some ideas of the Format OCaml library.</p>
+
+<div id="tableofcontents">
+</div>
+
+<h2>Syntax of the pprintf statement</h2>
+
+<p>Notice that, in opposition to "printf", "fprintf", "sprintf", and
+  all its variants, which are functions, this "pprintf" is a
+  <em>statement</em>, not a function: "pprintf" is a keyword and the
+  expander analyzes its string format parameter to generate specific
+  statements. In particular, it cannot be used alone and has no type
+  by itself.</p>
+
+<pre>
+        expression ::= pprintf-statement
+ pprintf-statement ::= "pprintf" qualid format expressions
+            qualid ::= qualid "." qualid
+                     | uident
+                     | lident
+            format ::= string
+       expressions ::= expression expressions
+                     | &lt;nothing&gt;
+</pre>
+
+<h2>Semantics of pprintf</h2>
+
+<p>The "pprintf" statement takes as first parameter, a value of type
+  "pr_context" defined below. Its second parameter is an extended
+  format kind. It can take other parameters, depending on the format,
+  just like "printf".</p>
+
+<h3>Printing context</h3>
+
+<p>All semantic actions use a printing context in the variable
+  "<tt>pc</tt>". Its type is defined as:</p>
+
+<pre>
+  type pr_context =
+    { ind : int;
+      bef : string;
+      aft : string;
+      dang : string }
+  ;
+</pre>
+
+<p>The fields are:</p>
+
+<ul>
+  <li>"<tt>ind</tt>" : the current indendation</li>
+  <li>"<tt>bef</tt>" : what should be printed before, in the same line</li>
+  <li>"<tt>aft</tt>" : what should be printed after, in the same line</li>
+  <li>"<tt>dang</tt>" : the dangling token to know whether parentheses
+    are necessary</li>
+</ul>
+
+<h3>Extended format</h3>
+
+<p>The extended format used by "pprintf" may contain any strings and
+  conversion specifications allowed by the "printf" function (see
+  module "Printf" of the OCaml library"), plus:</p>
+
+<ul>
+  <li>the conversion specification: "<tt>%p</tt>",</li>
+  <li>the pretty printing annotations introduced by, "<tt>@</tt>"
+    and followed by:
+    <ul>
+      <li>the character ";" (semicolon), optionally followed by
+        "&lt;", two numbers and "&gt;",</li>
+      <li>the character " " (space),</li>
+      <li>the character "[", optionally followed by the character "&lt;"
+        and either:
+        <ul>
+          <li>the character "a"</li>
+          <li>the character "b"</li>
+          <li>a number</li>
+        </ul>
+        and the character "&gt;", then followed by format string, and
+        ended with "@]"</li>
+    </ul>
+  </li>
+</ul>
+
+<p>The format string is applied like in the "printf" function. Specific
+  actions are done for the extended features. The result is a string like
+  for the "sprintf" function. The "string before" and "string after" defined
+  by the fields "bef" and "aft" of the printing context are taken into
+  account and it is not necessary to add them in the format.</p>
+
+<p>Example:</p>
+
+<pre>
+  pprintf pc "hello, world"
+</pre>
+
+<p>generates:</p>
+
+<pre>
+  Pretty.sprintf "%shello, world%s" pc.bef pc.aft;
+</pre>
+
+<p>An empty format:</p>
+
+<pre>
+  pprintf pc "";
+</pre>
+
+<p>just prints the "before" and "after" strings:</p>
+
+<pre>
+  Pretty.sprintf "%s%s" pc.bef pc.aft;
+</pre>
+
+<h3>The conversion specification "p"</h3>
+
+<p>The "%p" conversion specification works like the "%a" of the printf
+  statement. It takes two arguments and applies the first one to the
+  printing context and to the second argument. The first argument must
+  therefore have type "<tt>pr_context -> 'a -> unit</tt>" and the
+  second one "'a".</p>
+
+<p>Notice that this function can be called twice: one to test whether
+  the resulting string holds in the line, and another one to possibly
+  recall this function to print it in several lines. In the two cases,
+  the printing context given as parameter is different.</p>
+
+<p>It uses the functions defined in the
+  "<a href="pretty.html">Pretty</a>" module.
+
+<p>Example: the following statement:</p>
+
+<pre>
+  pprintf pc "hello, %p, world" f x
+</pre>
+
+<p>is equivalent to:</p>
+
+<pre>
+  f {(pc) with
+     bef = Pretty.sprintf "%shello, " pc.bef;
+     aft = Pretty.sprintf ", world%s" pc.aft}
+    x
+</pre>
+
+<h3>The pretty printing annotations</h3>
+
+<p>...to be completed...</p>
+
+<h2>The Pprintf module</h2>
+
+<p>See its <a href="library.html#a:Pprintf-module">section</a> in the
+  chapter "Library".</p>
+
+<div class="trailer">
+</div>
+
+</div>
+
+</body>
+</html>
