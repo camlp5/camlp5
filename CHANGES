@@ -1,6 +1,9 @@
 Camlp5 Version 5.09:
 --------------------
 
+* [02 Jan 08] Added compatibility with OCaml 3.10.3.
+
+
 Camlp5 Version 5.08:
 --------------------
 
