@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo -I . pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_extprint.ml,v 1.3 2008/01/05 11:36:32 deraugla Exp $ *)
+(* $Id: pr_extprint.ml,v 1.4 2008/01/05 12:51:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 (* heuristic to rebuild the EXTEND_PRINTER statement from the AST *)
@@ -7,9 +7,12 @@
 open Pcaml;
 open Prtools;
 
-(* Extracting *)
+(**)
+value test = ref False;
+Pcaml.add_option "-test" (Arg.Set test) " test";
+(**)
 
-value loc = Ploc.dummy;
+(* Extracting *)
 
 value unrules =
   loop where rec loop =
@@ -101,18 +104,20 @@ value patt_as pc z =
   | z -> patt pc z ]
 ;
 
-value rule pc (p, wo, e) =
+value rule pc ((p, wo, e), is_last) =
   match wo with
   [ Some e1 ->
-      pprintf pc "@[<2>%p@ @[when@;%p ->@]@;%p@]" patt_as p expr e1 expr e
+      pprintf pc "@[<2>%p@ @[when@;%p ->@]@;%q@]" patt_as p expr e1 expr e
+        (if is_last then "" else "|")
   | None ->
-      pprintf pc "@[<2>%p ->@;%p@]" patt_as p expr e ]
+      pprintf pc "@[<2>%p ->@;%q@]" patt_as p expr e
+        (if is_last then "" else "|") ]
 ;
 
 value rule_list pc =
   fun
   [ [] -> pprintf pc "[ ]"
-  | rules -> pprintf pc "[ %p ]" (vlist2 rule (bar_before rule)) rules ]
+  | rules -> pprintf pc "[ %p ]" (vlist3 rule (bar_before rule)) rules ]
 ;
 
 value level pc (lab, rules) =
@@ -128,12 +133,14 @@ value level_list pc =
 ;
 
 value extend_body pc exl =
-  vlist 
+  vlist
     (fun pc (pr, pos, ll) ->
        pprintf pc "@[<b>%p:%p@;%p@ ;@]" expr pr opt_position pos
          level_list ll)
     pc exl
 ;
+
+value rebuild = ref True;
 
 value extend pc =
   fun
@@ -146,7 +153,7 @@ value extend pc =
           let expr = Eprinter.apply_level pr_expr "dot" in
           pprintf pc "Eprinter.extend@;%p@ %p@ %p@" expr pr expr pos
             expr body ]
-  | <:expr< do { $list:el$ } >> ->
+  | <:expr< do { $list:el$ } >> as e ->
       try
         let exl =
           List.map
@@ -160,11 +167,12 @@ value extend pc =
         pprintf pc "EXTEND_PRINTER@;%p@ END" extend_body exl
       with
       [ Not_found ->
-          pprintf pc "not impl do {} not extend" ]
+          Ploc.call_with rebuild False (fun () -> expr pc e) () ]
   | e -> expr pc e ]
 ;
 
 value is_extend el =
+  rebuild.val &&
   List.for_all
     (fun
      [ <:expr< Eprinter.extend $_$ $_$ $_$ >> -> True
