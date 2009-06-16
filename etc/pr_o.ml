@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_o.ml,v 1.184 2008/01/23 03:00:41 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.185 2008/01/23 12:46:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -1227,13 +1227,15 @@ EXTEND_PRINTER
           pprintf pc "@[<a>@[<2>{ %p }@]@]"
             (hvlistl (semi_after label_decl) label_decl) ltl
       | <:ctyp< [ $list:vdl$ ] >> ->
-          horiz_vertic
-            (fun () ->
-               if has_cons_with_params vdl then sprintf "\n"
-               else hlist2 cons_decl (bar_before cons_decl) pc vdl)
-            (fun () ->
-               pprintf pc "  %p" (vlist2 cons_decl (bar_before cons_decl))
-                 vdl)
+          if vdl = [] then pprintf pc "[]"
+          else
+            horiz_vertic
+              (fun () ->
+                 if has_cons_with_params vdl then sprintf "\n"
+                 else hlist2 cons_decl (bar_before cons_decl) pc vdl)
+              (fun () ->
+                 pprintf pc "  %p" (vlist2 cons_decl (bar_before cons_decl))
+                   vdl)
       | <:ctyp< $lid:t$ >> ->
           var_escaped pc t
       | <:ctyp< $uid:t$ >> ->
