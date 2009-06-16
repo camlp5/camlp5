@@ -1,5 +1,5 @@
 (* camlp5r -I . pa_macro.cmo q_MLast.cmo pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.172 2008/01/06 20:37:54 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.173 2008/01/06 20:39:07 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -644,7 +644,7 @@ value rec loop_else_if force_vertic curr pc =
   | [] -> pprintf pc "" ]
 ;
 
-value last_else force_vertic curr pc e3 =
+value ending_else force_vertic curr pc e3 =
   let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
   horiz_vertic_if force_vertic
     (fun () ->
@@ -852,7 +852,7 @@ EXTEND_PRINTER
                pprintf pc "@[<b>%p%p@ %p@]"
                  (if_then force_vertic curr) (e1, e2)
                  (loop_else_if force_vertic curr) eel
-                 (last_else force_vertic curr) e3)
+                 (ending_else force_vertic curr) e3)
       | <:expr< fun [ $list:pwel$ ] >> ->
           match pwel with
           [ [(p1, <:vala< None >>, e1)] when is_irrefut_patt p1 ->
