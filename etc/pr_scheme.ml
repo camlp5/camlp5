@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_scheme.ml,v 1.62 2007/12/29 04:24:52 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.63 2007/12/29 04:26:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -361,10 +361,7 @@ value class_descr_list pc =
   [ [cd] -> class_descr "class" pc cd
   | cdl ->
       horiz_vertic
-        (fun () ->
-           sprintf "%s(class* %s)%s" pc.bef
-             (hlist (class_descr "") {(pc) with bef = ""; aft = ""} cdl)
-             pc.aft)
+        (fun () -> pprintf pc "(class* %p)" (hlist (class_descr "")) cdl)
         (fun () ->
            let s1 = sprintf "%s(class*" pc.bef in
            let s2 =
