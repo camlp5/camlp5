@@ -36,12 +36,26 @@ EXTEND_PRINTER
         when is_pprintf fmt bef aft ->
           let fmt = String.sub fmt 2 (String.length fmt - 4) in
           pprintf pc "@[<2>pprintf@ %s@ \"%s\"@]" (pc_of bef) fmt
+
       | <:expr<
-           $f$
-             {($lid:pc1$) with
-              Pprintf.bef =
-                Pretty.sprintf $str:fmt$ $lid:pc2$.Pprintf.bef $e$}
-             $a$
+          $f$
+            {($lid:pc1$) with
+             Pprintf.bef = Pretty.sprintf $str:fmt$ $lid:pc2$.Pprintf.bef}
+            $a$
+        >>
+        when
+          pc1 = pc2 &&
+          String.length fmt > 1 && fmt.[0] = '%' && fmt.[1] = 's'
+        ->
+          let fmt = String.sub fmt 2 (String.length fmt - 2) ^ "%p" in
+          pprintf pc "@[<2>pprintf@ %s@ \"%s\"@ %p@ %p@]" pc1 fmt
+            next f next a
+      | <:expr<
+          $f$
+            {($lid:pc1$) with
+             Pprintf.bef =
+               Pretty.sprintf $str:fmt$ $lid:pc2$.Pprintf.bef $e$}
+            $a$
         >>
         when
           pc1 = pc2 &&
@@ -50,6 +64,7 @@ EXTEND_PRINTER
           let fmt = String.sub fmt 2 (String.length fmt - 2) ^ "%p" in
           pprintf pc "@[<2>pprintf@ %s@ \"%s\"@ %p@ %p@ %p@]" pc1 fmt
             next e next f next a
+
       | <:expr<
           $f$
             {($lid:pc1$) with
@@ -61,8 +76,37 @@ EXTEND_PRINTER
           String.length fmt > 1 && fmt.[String.length fmt - 2] = '%' &&
           fmt.[String.length fmt - 1] = 's'
         ->
-         let fmt = "%p" ^ String.sub fmt 0 (String.length fmt - 2) in
-         pprintf pc "@[<2>pprintf@ %s@ \"%s\"@ %p@ %p@]" pc1 fmt
-            next f next a ] ]
-  ;
+          let fmt = "%p" ^ String.sub fmt 0 (String.length fmt - 2) in
+          pprintf pc "@[<2>pprintf@ %s@ \"%s\"@ %p@ %p@]" pc1 fmt
+            next f next a
+      |  <:expr<
+           $f$
+             {($lid:pc1$) with
+              Pprintf.aft =
+                Pretty.sprintf $str:fmt$ $e$ $lid:pc2$.Pprintf.aft} $a$
+         >>
+        when
+          pc1 = pc2 &&
+          String.length fmt > 1 && fmt.[String.length fmt - 2] = '%' &&
+          fmt.[String.length fmt - 1] = 's'
+        ->
+          let fmt = "%p" ^ String.sub fmt 0 (String.length fmt - 2) in
+          pprintf pc "@[<2>pprintf@ %s@ \"%s\"@ %p@ %p@ %p@]" pc1 fmt
+            next f next a next e
+
+      | <:expr<
+          Pprintf.sprint_break $int:sp$ $int:off$ $lid:pc1$
+            (fun pc -> $f1$ {(pc) with Pprintf.aft = $e$} $a1$)
+            (fun pc -> $f2$ pc $a2$)
+        >> ->
+          let fmt =
+            let s =
+              if sp = "1" && off = "2" then ""
+              else Printf.sprintf "<%s %s>" sp off
+            in
+            "%p%s@;" ^ s ^ "%p"
+          in
+          pprintf pc "@[<2>pprintf@ %s@ \"%s\"@ %p@ %p@ %p@ %p@ %p"
+            pc1 fmt next f1 next a1 next e next f2 next a2 ] ]
+ ;
 END;
