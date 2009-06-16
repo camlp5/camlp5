@@ -1,3 +1,9 @@
+Camlp5 Version 5.13:
+--------------------
+
+* [08 Jun 09] Fixed bug: missing case "#use" in pr_r.cmo for structure and
+  signature items.
+
 Camlp5 Version 5.12:
 --------------------
 

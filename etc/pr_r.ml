@@ -1,5 +1,5 @@
 (* camlp5r -I . pa_macro.cmo q_MLast.cmo pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.181 2008/01/23 12:46:58 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.182 2009/06/08 02:15:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -1341,7 +1341,10 @@ EXTEND_PRINTER
       | <:str_item< $exp:e$ >> ->
           expr pc e
       | <:str_item< class type $list:_$ >> | <:str_item< class $list:_$ >> ->
-          failwith "classes and objects not pretty printed; add pr_ro.cmo" ] ]
+          failwith "classes and objects not pretty printed; add pr_ro.cmo"
+      | MLast.StUse _ fn sl ->
+          let pc = {(pc) with aft = ""} in
+          pprintf pc "" ] ]
   ;
   pr_sig_item:
     [ "top"
@@ -1378,7 +1381,10 @@ EXTEND_PRINTER
       | <:sig_item< value $lid:s$ : $t$ >> ->
           pprintf pc "value %p :@;%p" var_escaped s ctyp t
       | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->
-          failwith "classes and objects not pretty printed; add pr_ro.cmo" ] ]
+          failwith "classes and objects not pretty printed; add pr_ro.cmo"
+      | MLast.SgUse _ fn sl ->
+          let pc = {(pc) with aft = ""} in
+          pprintf pc "" ] ]
   ;
   pr_module_expr:
     [ "top"

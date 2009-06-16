@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.122 2007/12/27 19:50:50 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.123 2009/06/08 02:15:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -145,6 +145,8 @@ value type_declaration = Grammar.Entry.create gram "type_declaration";
 value match_case = Grammar.Entry.create gram "match_case";
 value constructor_declaration =
   Grammar.Entry.create gram "constructor_declaration";
+value label_declaration =
+  Grammar.Entry.create gram "label_declaration";
 
 value with_constr = Grammar.Entry.create gram "with_constr";
 value poly_variant = Grammar.Entry.create gram "poly_variant";
@@ -260,7 +262,8 @@ value mkident i = Qast.Str i;
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr class_type
     class_expr class_sig_item class_str_item let_binding type_declaration
-    constructor_declaration match_case ipatt with_constr poly_variant;
+    constructor_declaration label_declaration match_case ipatt with_constr
+    poly_variant;
   module_expr:
     [ [ "functor"; "("; i = SV UIDENT; ":"; t = module_type; ")"; "->";
         me = SELF ->

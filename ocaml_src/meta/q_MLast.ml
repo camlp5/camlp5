@@ -192,6 +192,7 @@ let match_case = Grammar.Entry.create gram "match_case";;
 let constructor_declaration =
   Grammar.Entry.create gram "constructor_declaration"
 ;;
+let label_declaration = Grammar.Entry.create gram "label_declaration";;
 
 let with_constr = Grammar.Entry.create gram "with_constr";;
 let poly_variant = Grammar.Entry.create gram "poly_variant";;
@@ -333,6 +334,7 @@ Grammar.extend
    and _ = (type_declaration : 'type_declaration Grammar.Entry.e)
    and _ =
      (constructor_declaration : 'constructor_declaration Grammar.Entry.e)
+   and _ = (label_declaration : 'label_declaration Grammar.Entry.e)
    and _ = (match_case : 'match_case Grammar.Entry.e)
    and _ = (ipatt : 'ipatt Grammar.Entry.e)
    and _ = (with_constr : 'with_constr Grammar.Entry.e)
@@ -381,8 +383,6 @@ Grammar.extend
      grammar_entry_create "constrain"
    and type_parameter : 'type_parameter Grammar.Entry.e =
      grammar_entry_create "type_parameter"
-   and label_declaration : 'label_declaration Grammar.Entry.e =
-     grammar_entry_create "label_declaration"
    and ident : 'ident Grammar.Entry.e = grammar_entry_create "ident"
    and mod_ident : 'mod_ident Grammar.Entry.e =
      grammar_entry_create "mod_ident"
@@ -817,7 +817,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 287, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 290, 19))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -1375,7 +1375,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 345, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 348, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
