@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: pprintf.html,v 1.5 2007/12/29 11:59:45 deraugla Exp $ -->
+  <!-- $Id: pprintf.html,v 1.6 2007/12/29 12:07:22 deraugla Exp $ -->
   <!-- Copyright (c) 2007-2008 INRIA -->
   <title>pprintf</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -542,10 +542,11 @@
 <p>Notice that, with "pprintf", it is always possible to know the
   current indentation (it is the field "ind" of the "pr_context"
   variable) and it is therefore possible to take decisions before
-  printing. For example, it is possible, in a printer of OCaml
-  statements, to decide to print all match cases symmetrically,
-  i.e. all with one line for each case or all with a newline after the
-  pattern.</p>
+  printing.</p>
+
+<p>For example, it is possible, in a printer of OCaml statements, to
+  decide to print all match cases symmetrically, i.e. all with one
+  line for each case or all with newlines after the patterns.</p>
 
 <p>It is what is done in the option "<tt>-flag E</tt>" added by the
   pretty printing kits "pr_r.cmo" (pretty print in revised syntax) and
