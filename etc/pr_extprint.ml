@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo -I . pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_extprint.ml,v 1.5 2008/01/05 21:59:38 deraugla Exp $ *)
+(* $Id: pr_extprint.ml,v 1.6 2008/01/06 03:20:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 (* heuristic to rebuild the EXTEND_PRINTER statement from the AST *)
@@ -10,7 +10,7 @@ open Prtools;
 (* Extracting *)
 
 value unrules =
-  loop where rec loop =
+  loop [] where rec loop r =
     fun
     [ <:expr< [$rule$ :: $rules$] >> ->
         let (p, wo, e) =
@@ -31,8 +31,10 @@ value unrules =
           [ <:expr< fun curr next pc -> $e$ >> -> e
           | _ -> raise Not_found ]
         in
-        [(p, wo, e) ::  loop rules]
-    | <:expr< [] >> -> []
+        match (p, wo, e, rules) with
+        [ (<:patt< z >>, None, <:expr< next pc z >>, <:expr< [] >>) -> r
+        | _ -> loop [(p, wo, e) ::  r] rules ]
+    | <:expr< [] >> -> r
     | _ -> raise Not_found ]
 ;
 
