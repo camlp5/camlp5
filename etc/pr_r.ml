@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.158 2007/12/29 14:58:44 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.159 2007/12/29 20:13:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -845,9 +845,8 @@ EXTEND_PRINTER
                    (fun () ->
                       if force_vertic then sprintf "\n"
                       else
-                        sprintf "%selse %s%s" (tab pc.ind)
-                          (comm_expr curr {(pc) with bef = ""; aft = ""} e3)
-                             pc.aft)
+                        let pc = {(pc) with bef = tab pc.ind} in
+                        pprintf pc "else %p" (comm_expr curr) e3)
                    (fun () ->
                       match sequencify e3 with
                       [ Some el ->
@@ -855,16 +854,12 @@ EXTEND_PRINTER
                             (fun pc () ->
                                horiz_vertic (fun () -> sprintf "\n")
                                  (fun () ->
-                                    sprintf "%selse%s" (tab pc.ind) pc.aft))
+                                    let pc = {(pc) with bef = tab pc.ind} in
+                                    pprintf pc "else"))
                             pc el
                       | None ->
-                          let s =
-                            comm_expr expr_wh
-                              {(pc) with ind = pc.ind + 2;
-                               bef = tab (pc.ind + 2)}
-                              e3
-                          in
-                          sprintf "%selse\n%s" (tab pc.ind) s ])
+                          let pc = {(pc) with bef = tab pc.ind} in
+                          pprintf pc "else@;%p" (comm_expr expr_wh) e3 ])
                in
                sprintf "%s%s\n%s" s1 s2 s3)
       | <:expr< fun [ $list:pwel$ ] >> ->
