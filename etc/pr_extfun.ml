@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_extfun.ml,v 1.19 2008/01/05 02:45:13 deraugla Exp $ *)
+(* $Id: pr_extfun.ml,v 1.20 2008/01/07 17:53:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 (* heuristic to rebuild the extfun statement from the AST *)
@@ -44,6 +44,10 @@ value rec un_extfun rpel =
 ;
 
 value bar_before elem pc x = pprintf pc "| %p" elem x;
+
+value comm_bef pc loc =
+  if flag_comments_in_phrases.val then Prtools.comm_bef pc loc else ""
+;
 
 value comm_expr expr pc z =
   let ccc = comm_bef pc.ind (MLast.loc_of_expr z) in

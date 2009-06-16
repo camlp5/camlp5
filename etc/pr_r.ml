@@ -1,12 +1,12 @@
 (* camlp5r -I . pa_macro.cmo q_MLast.cmo pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.176 2008/01/07 03:50:52 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.177 2008/01/07 17:53:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
 open Pcaml;
 open Prtools;
 
-value flag_comments_in_phrases = ref True;
+value flag_comments_in_phrases = Pcaml.flag_comments_in_phrases;
 value flag_expand_declare = ref False;
 value flag_horiz_let_in = ref False;
 value flag_sequ_begin_at_eol = ref True;
