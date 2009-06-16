@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_extend.ml,v 1.59 2008/01/04 10:47:55 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.60 2008/01/04 11:40:27 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -398,18 +398,12 @@ and simple_symbol pc sy =
   | sy -> not_impl "simple_symbol" pc sy ]
 and s_symbol pc =
   fun
-  [ Slist0 sy ->
-      sprintf "%sSLIST0 %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
-  | Slist1 sy ->
-      sprintf "%sSLIST1 %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
+  [ Slist0 sy -> pprintf pc "SLIST0@;%p" simple_symbol sy
+  | Slist1 sy -> pprintf pc "SLIST1@;%p" simple_symbol sy
   | Slist0sep sy sep ->
-      sprintf "%sSLIST0 %s SEP %s" pc.bef
-        (simple_symbol {(pc) with bef = ""; aft = ""} sy)
-        (simple_symbol {(pc) with bef = ""} sep)
+      pprintf pc "SLIST0@;%p@ @[SEP@;%p@]" simple_symbol sy simple_symbol sep
   | Slist1sep sy sep ->
-      sprintf "%sSLIST1 %s SEP %s" pc.bef
-        (simple_symbol {(pc) with bef = ""; aft = ""} sy)
-        (simple_symbol {(pc) with bef = ""} sep)
+      pprintf pc "SLIST1@;%p@ @[SEP@;%p@]" simple_symbol sy simple_symbol sep
   | Sopt s ->
       let sy =
         match s with
@@ -419,9 +413,9 @@ and s_symbol pc =
             Stoken (Left ("", str))
         | s -> s ]
       in
-      sprintf "%sSOPT %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
+      pprintf pc "SOPT@;%p" simple_symbol sy
   | Sflag sy ->
-      sprintf "%sSFLAG %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
+      pprintf pc "SFLAG@;%p" simple_symbol sy
   | Svala ls oe s ->
       pprintf pc "SV@;%p%p%s" simple_symbol s string_list ls
         (match oe with
@@ -488,46 +482,37 @@ and check_slist rl =
           | _ -> None ] ]
 ;
 
-value label =
+value label pc =
   fun
-  [ Some s -> sprintf "\"%s\"" s
-  | None -> "" ]
+  [ Some s -> pprintf pc "\"%s\"" s
+  | None -> pprintf pc "" ]
 ;
 
-value assoc =
+value assoc pc =
   fun
-  [ Some Gramext.NonA -> "NONA"
-  | Some Gramext.LeftA -> "LEFTA"
-  | Some Gramext.RightA -> "RIGHTA"
-  | None -> "" ]
+  [ Some Gramext.NonA -> pprintf pc "NONA"
+  | Some Gramext.LeftA -> pprintf pc "LEFTA"
+  | Some Gramext.RightA -> pprintf pc "RIGHTA"
+  | None -> pprintf pc "" ]
 ;
 
 value level force_vertic pc (lab, ass, rl) =
   match (lab, ass) with
   [ (None, None) ->
-      if rl = [] then sprintf "%s[ ]%s" pc.bef pc.aft
+      if rl = [] then pprintf pc "[ ]"
       else
-        vlist2 (rule force_vertic) (bar_before (rule force_vertic))
-          {(pc) with ind = pc.ind + 2; bef = sprintf "%s[ " pc.bef;
-           aft = sprintf " ]%s" pc.aft}
-          rl
+        pprintf pc "@[<2>[ %p ]@]"
+          (vlist2 (rule force_vertic) (bar_before (rule force_vertic))) rl
   | _ ->
-      let s1 =
-        match (lab, ass) with
-        [ (Some _, None) -> sprintf "%s%s" pc.bef (label lab)
-        | (None, Some _) -> sprintf "%s%s" pc.bef (assoc ass)
-        | (Some _, Some _) -> sprintf "%s%s %s" pc.bef (label lab) (assoc ass)
-        | _ -> assert False ]
-      in
-      let s2 =
-        if rl = [] then not_impl "level" {(pc) with bef = ""} rl
-        else
-          vlist2 (rule force_vertic) (bar_before (rule force_vertic))
-            {(pc) with ind = pc.ind + 2;
-             bef = sprintf "%s[ " (tab (pc.ind + 2));
-             aft = sprintf " ]%s" pc.aft} rl
-      in
-      sprintf "%s\n%s" s1 s2 ]
+      pprintf pc "@[<b>%p@;[ %p ]@]"
+        (fun pc ->
+           fun
+           [ (Some _, None) -> label pc lab
+           | (None, Some _) -> assoc pc ass
+            | (Some _, Some _) -> pprintf pc "%p %p" label lab assoc ass
+            | _ -> assert False ])
+        (lab, ass)
+        (vlist2 (rule force_vertic) (bar_before (rule force_vertic))) rl ]
 ;
 
 value entry pc (e, pos, ll) =
