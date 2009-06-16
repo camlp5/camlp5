@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.163 2007/12/30 02:05:33 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.164 2007/12/30 10:34:07 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -966,7 +966,7 @@ EXTEND_PRINTER
                 | None -> el ]
             | _ -> el ]
           in
-          pprintf pc "@[<a>whole@;%p@ do {@]@;%p@ }" curr e1
+          pprintf pc "@[<a>while@;%p@ do {@]@;%p@ }" curr e1
             (vlistl (semi_after expr) curr) el
       | <:expr< for $lid:v$ = $e1$ $to:d$ $e2$ do { $list:el$ } >> ->
           let el =
