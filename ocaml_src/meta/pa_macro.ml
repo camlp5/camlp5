@@ -42,7 +42,7 @@ Added statements:
      IFDEF <dexpr> THEN <type> ELSE <type> END
      IFNDEF <dexpr> THEN <type> ELSE <type> END
 
-  In constructors declarations and in match cases:
+  In constructors declarations, record label declarations and in match cases:
 
      IFDEF <dexpr> THEN <item> ELSE <item> END
      IFNDEF <dexpr> THEN <item> ELSE <item> END
@@ -310,7 +310,8 @@ Grammar.extend
    and _ = (sig_item : 'sig_item Grammar.Entry.e)
    and _ =
      (constructor_declaration : 'constructor_declaration Grammar.Entry.e)
-   and _ = (match_case : 'match_case Grammar.Entry.e) in
+   and _ = (match_case : 'match_case Grammar.Entry.e)
+   and _ = (label_declaration : 'label_declaration Grammar.Entry.e) in
    let grammar_entry_create s =
      Grammar.create_local_entry (Grammar.of_entry expr) s
    in
@@ -655,6 +656,42 @@ Grammar.extend
              (loc : Ploc.t) ->
            (if e then x else Grammar.skip_item x :
             'constructor_declaration))]];
+    Grammar.Entry.obj
+      (label_declaration : 'label_declaration Grammar.Entry.e),
+    Some Gramext.First,
+    [None, None,
+     [[Gramext.Stoken ("", "IFNDEF");
+       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
+       Gramext.Stoken ("", "THEN"); Gramext.Sself;
+       Gramext.Stoken ("", "ELSE"); Gramext.Sself;
+       Gramext.Stoken ("", "END")],
+      Gramext.action
+        (fun _ (y : 'label_declaration) _ (x : 'label_declaration) _
+             (e : 'dexpr) _ (loc : Ploc.t) ->
+           (if e then y else x : 'label_declaration));
+      [Gramext.Stoken ("", "IFNDEF");
+       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
+       Gramext.Stoken ("", "THEN"); Gramext.Sself;
+       Gramext.Stoken ("", "END")],
+      Gramext.action
+        (fun _ (x : 'label_declaration) _ (e : 'dexpr) _ (loc : Ploc.t) ->
+           (if e then Grammar.skip_item x else x : 'label_declaration));
+      [Gramext.Stoken ("", "IFDEF");
+       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
+       Gramext.Stoken ("", "THEN"); Gramext.Sself;
+       Gramext.Stoken ("", "ELSE"); Gramext.Sself;
+       Gramext.Stoken ("", "END")],
+      Gramext.action
+        (fun _ (y : 'label_declaration) _ (x : 'label_declaration) _
+             (e : 'dexpr) _ (loc : Ploc.t) ->
+           (if e then x else y : 'label_declaration));
+      [Gramext.Stoken ("", "IFDEF");
+       Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
+       Gramext.Stoken ("", "THEN"); Gramext.Sself;
+       Gramext.Stoken ("", "END")],
+      Gramext.action
+        (fun _ (x : 'label_declaration) _ (e : 'dexpr) _ (loc : Ploc.t) ->
+           (if e then x else Grammar.skip_item x : 'label_declaration))]];
     Grammar.Entry.obj (match_case : 'match_case Grammar.Entry.e),
     Some Gramext.First,
     [None, None,

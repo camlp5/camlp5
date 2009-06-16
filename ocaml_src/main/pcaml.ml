@@ -32,6 +32,7 @@ let match_case = Grammar.Entry.create gram "match_case";;
 let constructor_declaration =
   Grammar.Entry.create gram "constructor_declaration"
 ;;
+let label_declaration = Grammar.Entry.create gram "label_declaration";;
 let with_constr = Grammar.Entry.create gram "with_constr";;
 let poly_variant = Grammar.Entry.create gram "poly_variant";;
 

@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_macro.ml,v 1.35 2007/12/27 10:30:24 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.36 2008/12/31 11:01:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 (*
@@ -42,7 +42,7 @@ Added statements:
      IFDEF <dexpr> THEN <type> ELSE <type> END
      IFNDEF <dexpr> THEN <type> ELSE <type> END
 
-  In constructors declarations and in match cases:
+  In constructors declarations, record label declarations and in match cases:
 
      IFDEF <dexpr> THEN <item> ELSE <item> END
      IFNDEF <dexpr> THEN <item> ELSE <item> END
@@ -290,7 +290,8 @@ value undef x =
 ;
 
 EXTEND
-  GLOBAL: expr patt str_item sig_item constructor_declaration match_case;
+  GLOBAL: expr patt str_item sig_item constructor_declaration match_case
+    label_declaration;
   str_item: FIRST
     [ [ x = str_macro_def ->
           match x with
@@ -377,6 +378,16 @@ EXTEND
           if e then p2 else p1 ] ]
   ;
   constructor_declaration: FIRST
+    [ [ "IFDEF"; e = dexpr; "THEN"; x = SELF; "END" ->
+          if e then x else Grammar.skip_item x
+      | "IFDEF"; e = dexpr; "THEN"; x = SELF; "ELSE"; y = SELF; "END" ->
+          if e then x else y
+      | "IFNDEF"; e = dexpr; "THEN"; x = SELF; "END" ->
+          if e then Grammar.skip_item x else x
+      | "IFNDEF"; e = dexpr; "THEN"; x = SELF; "ELSE"; y = SELF; "END" ->
+          if e then y else x ] ]
+  ;
+  label_declaration: FIRST
     [ [ "IFDEF"; e = dexpr; "THEN"; x = SELF; "END" ->
           if e then x else Grammar.skip_item x
       | "IFDEF"; e = dexpr; "THEN"; x = SELF; "ELSE"; y = SELF; "END" ->

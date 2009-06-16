@@ -6,6 +6,14 @@
     <lastBuildDate>Mon Sep 17 15:10:47 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
     <item>
+      <title>Macros</title>
+      <description>
+        Added ability to use IFDEF and IFNDEF for record labels declarations.
+      </description>
+      <pubDate>Wed Dec 31 11:51:33 CET 2008</pubDate>
+      <link>../macros.html</link>
+    </item>
+    <item>
       <title>Plexer</title>
       <description>
         Added flag "Plexer.utf8_lexing" to specify that the lexer

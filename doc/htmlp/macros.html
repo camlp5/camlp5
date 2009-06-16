@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: macros.html,v 1.12 2008/08/02 02:32:13 deraugla Exp $ -->
+  <!-- $Id: macros.html,v 1.13 2008/12/31 11:01:18 deraugla Exp $ -->
   <!-- Copyright (c) 2007-2008 INRIA -->
   <title>macros</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -41,6 +41,7 @@
                expr ::= macro-expr
                patt ::= macro-patt
           cons-decl ::= macro-cons-decl
+       rec-lab-decl ::= macro-rec-lab-decl
         match-assoc ::= macro-match-assoc
       str_macro-def ::= "DEFINE" uident
                       | "DEFINE" uident "=" expr
@@ -73,6 +74,12 @@
                       | "IFNDEF" dexpr "THEN" cons-decl "END"
                       | "IFNDEF" dexpr "THEN" cons-decl
                         "ELSE" cons-decl "END"
+ macro-rec-lab-decl ::= "IFDEF" dexpr "THEN" rec-lab-decl "END"
+                      | "IFDEF" dexpr "THEN" rec-lab-decl
+                        "ELSE" rec-lab-decl "END"
+                      | "IFNDEF" dexpr "THEN" rec-lab-decl "END"
+                      | "IFNDEF" dexpr "THEN" rec-lab-decl
+                        "ELSE" rec-lab-decl "END"
   macro-match-assoc ::= "IFDEF" dexpr "THEN" match_assoc "END"
                       | "IFDEF" dexpr "THEN" match-assoc
                         "ELSE" match-assoc "END"

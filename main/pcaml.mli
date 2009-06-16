@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: pcaml.mli,v 1.29 2008/01/07 17:53:24 deraugla Exp $ *)
+(* $Id: pcaml.mli,v 1.30 2008/12/31 11:01:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 (** Language grammar, entries and printers.
@@ -48,6 +48,8 @@ value match_case :
   Grammar.Entry.e (MLast.patt * MLast.v (option MLast.expr) * MLast.expr);
 value constructor_declaration :
   Grammar.Entry.e (MLast.loc * MLast.v string * MLast.v (list MLast.ctyp));
+value label_declaration :
+  Grammar.Entry.e (MLast.loc * string * bool * MLast.ctyp);
 value with_constr : Grammar.Entry.e MLast.with_constr;
 value poly_variant : Grammar.Entry.e MLast.poly_variant;
 value class_sig_item : Grammar.Entry.e MLast.class_sig_item;

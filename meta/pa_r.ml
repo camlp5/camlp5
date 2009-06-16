@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.118 2007/12/27 19:50:50 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.119 2008/12/31 11:01:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pcaml;
@@ -27,6 +27,7 @@ do {
   Grammar.Unsafe.clear_entry let_binding;
   Grammar.Unsafe.clear_entry type_declaration;
   Grammar.Unsafe.clear_entry constructor_declaration;
+  Grammar.Unsafe.clear_entry label_declaration;
   Grammar.Unsafe.clear_entry match_case;
   Grammar.Unsafe.clear_entry with_constr;
   Grammar.Unsafe.clear_entry poly_variant;
@@ -119,7 +120,8 @@ value mkident i : string = i;
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr class_type
     class_expr class_sig_item class_str_item let_binding type_declaration
-    constructor_declaration match_case ipatt with_constr poly_variant;
+    constructor_declaration label_declaration match_case ipatt with_constr
+    poly_variant;
   module_expr:
     [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = module_type; ")";
         "->"; me = SELF ->

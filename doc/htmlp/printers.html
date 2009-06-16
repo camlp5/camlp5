@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: printers.html,v 1.20 2008/08/02 02:32:13 deraugla Exp $ -->
+  <!-- $Id: printers.html,v 1.21 2008/12/31 11:01:18 deraugla Exp $ -->
   <!-- Copyright (c) 2007-2008 INRIA -->
   <title>extensible printers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -249,7 +249,7 @@
   END;
 
   value parse s = Grammar.Entry.parse pa_e (Stream.of_string s);
-  value print e = Eprinter.apply pr_e Eprinter.empty_pc e;
+  value print e = Eprinter.apply pr_e Pprintf.empty_pc e;
 
   if Sys.interactive.val then ()
   else print_endline (print (parse Sys.argv.(1)));
