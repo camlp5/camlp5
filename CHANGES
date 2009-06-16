@@ -1,6 +1,8 @@
 Camlp5 Version 5.08:
 --------------------
 
+* [08 Feb 08] Fixed bug in normal syntax: a.{x,y} (access to big array) was
+  interpreted as a.{(x,y)}.
 * [22 Jan 08] Added missing cases in printers pr_o and pr_r which displayed
   the message "unable to print ...".
 * [02 Jan 08] Added compatibility with OCaml 3.09.4 and 3.10.2.
