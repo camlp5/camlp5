@@ -6,17 +6,6 @@
 
 open Pcaml;
 
-(**)
-value test = ref False;
-Pcaml.add_option "-test" (Arg.Set test) " test";
-(**)
-
-(* Extracting *)
-
-(* Printing *)
-
-(* Finding *)
-
 value is_pprintf fmt bef aft =
   match (bef, aft) with
   [ (<:expr< $lid:pc1$.Pprintf.bef >>, <:expr< $lid:pc2$.Pprintf.aft >>) ->
