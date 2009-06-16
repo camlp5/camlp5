@@ -507,7 +507,6 @@ let adjust_comment_indentation ind s nl_bef ind_bef =
 ;;
 
 let comm_bef ind loc =
-  let ind = ind.ind in
   let bp = Ploc.first_pos loc in
   let ep = Ploc.last_pos loc in
   let (s, nl_bef, ind_bef) = rev_read_comment_in_file bp ep in

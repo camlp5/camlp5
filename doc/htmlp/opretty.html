@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: opretty.html,v 1.29 2007/12/28 13:43:03 deraugla Exp $ -->
+  <!-- $Id: opretty.html,v 1.30 2008/01/03 19:20:44 deraugla Exp $ -->
   <!-- Copyright (c) 2007-2008 INRIA -->
   <title>Extensions of printing</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -303,10 +303,11 @@ print the sub-expressions <code>e1</code> and <code>e2</code>:</p>
 <h3>Comments</h3>
 
 <dl>
-  <dt><tt>value comm_bef : pr_context -> MLast.loc -> string;</tt></dt>
-  <dd>[comm_bef pc loc] get the comment from the source just before
-    the given location [loc]. This comment may be reindented using
-    [pc.ind]. Returns the empty string if no comment found.</dd>
+  <dt><tt>value comm_bef : int -> MLast.loc -> string;</tt></dt>
+  <dd>"<tt>comm_bef ind loc</tt>" get the comment from the source just
+    before the given location "<tt>loc</tt>". This comment may be
+    reindented using "<tt>ind</tt>". Returns the empty string if no
+    comment found.</dd>
 </dl>
 
 <dl>

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_o.ml,v 1.178 2008/01/03 03:40:45 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.179 2008/01/03 19:20:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -203,13 +203,13 @@ value comm_bef pc loc =
 
 (* expression with adding the possible comment before *)
 value comm_expr expr pc z =
-  let ccc = comm_bef pc (MLast.loc_of_expr z) in
+  let ccc = comm_bef pc.ind (MLast.loc_of_expr z) in
   sprintf "%s%s" ccc (expr pc z)
 ;
 
 (* couple pattern/anytype with adding the possible comment before *)
 value comm_patt_any f pc z =
-  let ccc = comm_bef pc (MLast.loc_of_patt (fst z)) in
+  let ccc = comm_bef pc.ind (MLast.loc_of_patt (fst z)) in
   sprintf "%s%s" ccc (f pc z)
 ;
 

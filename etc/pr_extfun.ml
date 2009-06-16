@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extfun.ml,v 1.15 2007/12/27 10:30:24 deraugla Exp $ *)
+(* $Id: pr_extfun.ml,v 1.16 2008/01/03 19:20:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 (* heuristic to rebuild the extfun statement from the AST *)
@@ -60,7 +60,7 @@ value rec un_extfun rpel =
 value bar_before elem pc x = elem {(pc) with bef = sprintf "%s| " pc.bef} x;
 
 value comm_expr expr pc z =
-  let ccc = comm_bef pc (MLast.loc_of_expr z) in
+  let ccc = comm_bef pc.ind (MLast.loc_of_expr z) in
   sprintf "%s%s" ccc (expr pc z)
 ;
 

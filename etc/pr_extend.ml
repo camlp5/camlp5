@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_extend.ml,v 1.56 2008/01/03 13:45:33 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.57 2008/01/03 19:20:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -306,57 +306,38 @@ value anti_of_tok =
   | s -> [] ]
 ;
 
+value comment pc loc = pprintf pc "%s" (Prtools.comm_bef pc.ind loc);
+
 value rec rule force_vertic pc (sl, a) =
   match a with
   [ None -> not_impl "rule 1" pc sl
   | Some a ->
       if sl = [] then
-        action expr
-          {(pc) with ind = pc.ind + 4;
-           bef =
-             sprintf "%s->%s " pc.bef (comm_bef pc (MLast.loc_of_expr a));
-           dang = "|"}
-          a
+        pprintf pc "@[<4>->%p %q@]" comment (MLast.loc_of_expr a)
+          (action expr) a "|"
       else
         match
           horiz_vertic
             (fun () ->
                let s =
-                 hlistl (semi_after psymbol) psymbol
-                   {(pc) with bef = ""; aft = ""} sl
+                 let pc = {(pc) with aft = ""} in
+                 pprintf pc "%p ->" (hlistl (semi_after psymbol) psymbol) sl
                in
-               Some (sprintf "%s%s ->" pc.bef s))
+               Some s)
             (fun () -> None)
         with
         [ Some s1 ->
+            let pc = {(pc) with bef = ""} in
             horiz_vertic
               (fun () ->
                  if force_vertic then sprintf "\n"
-                 else
-                   sprintf "%s %s%s" s1
-                     (action expr {(pc) with bef = ""; aft = ""; dang = "|"}
-                        a)
-                     pc.aft)
+                 else pprintf pc "%s %q" s1 (action expr) a "|")
               (fun () ->
-                 let s2 =
-                   action expr
-                     {(pc) with ind = pc.ind + 4; bef = tab (pc.ind + 4);
-                      dang = "|"}
-                     a
-                 in
-                 sprintf "%s\n%s" s1 s2)
+                 pprintf pc "%s@;<1 4>%q" s1 (action expr) a "|")
         | None ->
             let sl = List.map (fun s -> (s, ";")) sl in
-            let s1 =
-              plist psymbol 0 {(pc) with ind = pc.ind + 2; aft = " ->"} sl
-            in
-            let s2 =
-              action expr
-                {(pc) with ind = pc.ind + 4; bef = tab (pc.ind + 4);
-                 dang = "|"}
-                a
-            in
-            sprintf "%s\n%s" s1 s2 ] ]
+            pprintf pc "@[<2>%p ->@;%q@]" (plist psymbol 0) sl
+              (action expr) a "|" ] ]
 and psymbol pc (p, s) =
   match p with
   [ None -> symbol pc s
@@ -604,8 +585,8 @@ value entry pc (e, pos, ll) =
       has_vertic
     else False
   in
-  sprintf "%s%s%s:%s\n%s\n%s;%s" (comm_bef pc (MLast.loc_of_expr e)) pc.bef
-    (expr {(pc) with bef = ""; aft = ""} e)
+  sprintf "%s%s%s:%s\n%s\n%s;%s" (comm_bef pc.ind (MLast.loc_of_expr e))
+    pc.bef (expr {(pc) with bef = ""; aft = ""} e)
     (position {(pc) with bef = ""; aft = ""} pos)
     (vlist2 (level force_vertic) (bar_before (level force_vertic))
        {(pc) with ind = pc.ind + 2; bef = sprintf "%s[ " (tab (pc.ind + 2));

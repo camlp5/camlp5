@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: prtools.ml,v 1.15 2007/12/28 12:58:30 deraugla Exp $ *)
+(* $Id: prtools.ml,v 1.16 2008/01/03 19:20:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -474,7 +474,6 @@ value adjust_comment_indentation ind s nl_bef ind_bef =
 ;
 
 value comm_bef ind loc =
-  let ind = ind.ind in
   let bp = Ploc.first_pos loc in
   let ep = Ploc.last_pos loc in
   let (s, nl_bef, ind_bef) = rev_read_comment_in_file bp ep in

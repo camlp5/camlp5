@@ -9,9 +9,9 @@ type pr_context =
 
 (* comments *)
 
-val comm_bef : pr_context -> MLast.loc -> string;;
-   (** [comm_bef pc loc] get the comment from the source just before the
-       given location [loc]. May be reindented using [pc.ind]. Returns the
+val comm_bef : int -> MLast.loc -> string;;
+   (** [comm_bef ind loc] get the comment from the source just before the
+       given location [loc]. May be reindented using [ind]. Returns the
        empty string if no comment found. *)
 
 val source : string ref;;

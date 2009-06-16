@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: prtools.mli,v 1.11 2007/12/28 12:58:30 deraugla Exp $ *)
+(* $Id: prtools.mli,v 1.12 2008/01/03 19:20:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 type pr_context =
@@ -9,9 +9,9 @@ type pr_context =
 
 (* comments *)
 
-value comm_bef : pr_context -> MLast.loc -> string;
-   (** [comm_bef pc loc] get the comment from the source just before the
-       given location [loc]. May be reindented using [pc.ind]. Returns the
+value comm_bef : int -> MLast.loc -> string;
+   (** [comm_bef ind loc] get the comment from the source just before the
+       given location [loc]. May be reindented using [ind]. Returns the
        empty string if no comment found. *)
 
 value source : ref string;
