@@ -1,7 +1,9 @@
 Camlp5 Version 5.08:
 --------------------
 
-* [2 Jan 08] Added compatibility with OCaml 3.09.4 and 3.10.2.
+* [22 Jan 08] Fixed bug in pr_o and pr_r: "f (let module ...)" displayed
+  "unable to print expr".
+* [02 Jan 08] Added compatibility with OCaml 3.09.4 and 3.10.2.
 * [21 Jan 08] Fixed bug under windows: the file META could not be build
   if the library path name contained colons.
 * [13 Jan 08] Added missing man page for camlp5sch (link to the same man

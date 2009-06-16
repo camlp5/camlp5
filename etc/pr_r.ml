@@ -1,5 +1,5 @@
 (* camlp5r -I . pa_macro.cmo q_MLast.cmo pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.178 2008/01/09 13:28:20 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.179 2008/01/22 20:20:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -1141,6 +1141,7 @@ EXTEND_PRINTER
         <:expr< for $lid:_$ = $_$ $to:_$ $_$ do { $list:_$ } >> |
         <:expr< while $_$ do { $list:_$ } >> |
         <:expr< let $flag:_$ $list:_$ in $_$ >> |
+        <:expr< let module $uid:_$ = $_$ in $_$ >> |
         <:expr< match $_$ with [ $list:_$ ] >> |
         <:expr< try $_$ with [ $list:_$ ] >> as z ->
           let expr_wh =

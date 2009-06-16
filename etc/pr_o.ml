@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_o.ml,v 1.182 2008/01/07 17:53:24 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.183 2008/01/22 20:20:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -1097,6 +1097,7 @@ EXTEND_PRINTER
         <:expr< for $lid:_$ = $_$ $to:_$ $_$ do { $list:_$ } >> |
         <:expr< while $_$ do { $list:_$ } >> |
         <:expr< let $flag:_$ $list:_$ in $_$ >> |
+        <:expr< let module $uid:_$ = $_$ in $_$ >> |
         <:expr< match $_$ with [ $list:_$ ] >> |
         <:expr< try $_$ with [ $list:_$ ] >> as z ->
           pprintf pc "@[<1>(%q)@]" expr z "" ] ]
