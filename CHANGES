@@ -1,6 +1,8 @@
 Camlp5 Version 5.08:
 --------------------
 
+* [21 Jan 08] Fixed bug under windows: the file META could not be build
+  if the library path name contained colons.
 * [13 Jan 08] Added missing man page for camlp5sch (link to the same man
   page as camlp5).
 * [10 Jan 08] Added compatibility with OCaml 3.09.4

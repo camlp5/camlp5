@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.57 2008/01/06 16:06:03 deraugla Exp $
+# $Id: Makefile,v 1.58 2008/01/21 14:21:56 deraugla Exp $
 
 include ../config/Makefile
 
@@ -16,7 +16,7 @@ all: $(COUT) mk$(NAME).sh META
 opt: $(COPT) mk$(NAME).opt.sh
 
 META: META.tpl
-	sed -e  "s:@VERSION@:$(VERSION):" -e "s:@CAMLP5DIR@:$(LIBDIR)/camlp5:" META.tpl > META
+	sed -e "s|@VERSION@|$(VERSION)|" -e "s|@CAMLP5DIR@|$(LIBDIR)/camlp5|" META.tpl > META
 
 
 $(NAME)o$(EXE): ../main/$(NAME)$(EXE) $(CAMLP5OM)
