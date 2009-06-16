@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: commands.html,v 1.23 2007/12/29 11:59:45 deraugla Exp $ -->
+  <!-- $Id: commands.html,v 1.24 2008/01/05 12:03:05 deraugla Exp $ -->
   <!-- Copyright (c) 2007-2008 INRIA -->
   <title>Commands and Files</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -82,7 +82,7 @@
   <dd>Add stream lexers.</dd>
 </dl>
 
-<h4>parsing extension</h4>
+<h4>extensible grammars</h4>
 
 <dl>
   <dt><tt>pa_extend.cmo</tt></dt>
@@ -102,18 +102,16 @@
     statement.</dd>
 </dl>
 
-<h4>printing extension</h4>
-
-<dl>
-  <dt><tt>pa_extprint.cmo</tt></dt>
-  <dd>Add the EXTEND_PRINTER statement.</dd>
-</dl>
-
-<h4>extensible functions</h4>
+<h4>extensible functions and printers</h4>
 
 <dl>
   <dt><tt>pa_extfun.cmo</tt></dt>
   <dd>Add the extensible function ("extfun" statement).</dd>
+</dl>
+
+<dl>
+  <dt><tt>pa_extprint.cmo</tt></dt>
+  <dd>Add the EXTEND_PRINTER statement.</dd>
 </dl>
 
 <h4>functional parsers</h4>
@@ -165,7 +163,8 @@
     <dl>
       <dt><tt>-flag &lt;str&gt;</tt></dt>
       <dd>
-        Change pretty printing behaviour according to "<tt>&lt;str&gt;</tt>":<br/>
+        Change pretty printing behaviour according to
+        "<tt>&lt;str&gt;</tt>":<br/>
         A/a enable/disable all flags<br/>
         C/c enable/disable comments in phrases<br/>
         D/d enable/disable allowing expanding 'declare'<br/>
@@ -202,7 +201,8 @@
   <dd>Display in normal syntax. Added options:
     <dl>
       <dt><tt>-flag &lt;str&gt;</tt></dt>
-      <dd>Change pretty printing behaviour according to <tt>&lt;str&gt;</tt>:<br/>
+      <dd>Change pretty printing behaviour according to
+        <tt>&lt;str&gt;</tt>:<br/>
         A/a enable/disable all flags<br/>
         C/c enable/disable comments in phrases<br/>
         E/e enable/disable equilibrate cases<br/>
@@ -221,12 +221,31 @@
   <dd>Add displaying parsers with their (normal) syntax.</dd>
 </dl>
 
-<h4>extensible functions</h4>
+<h4>extensible parsers</h4>
+
+<dl>
+  <dt><tt>pr_extend.cmo</tt></dt>
+  <dd>Add the displaying of EXTEND statements in their initial
+    syntax.Option added:
+    <dl>
+      <dt><tt>-no_slist</tt></dt>
+      <dd>Don't reconstruct SLIST, SOPT, SFLAG</dd>
+    </dl>
+  </dd>
+</dl>
+
+<h4>extensible functions and printers</h4>
 
 <dl>
   <dt><tt>pr_extfun.cmo</tt></dt>
   <dd>Add displaying extensible functions ("extfun" statement) in
     their initial syntax.</dd>
+</dl>
+
+<dl>
+  <dt><tt>pr_extprint.cmo</tt></dt>
+  <dd>Add displaying extensible printers ("EXTEND_PRINTER" statement)
+    in their initial syntax.</dd>
 </dl>
 
 <h4>other language</h4>
@@ -248,14 +267,6 @@
 <h4>other printing kits</h4>
 
 <dl>
-  <dt><tt>pr_extend.cmo</tt></dt>
-  <dd>Add the displaying of EXTEND statements in their initial
-    syntax.Option added:
-    <dl>
-      <dt><tt>-no_slist</tt></dt>
-      <dd>Don't reconstruct SLIST, SOPT, SFLAG</dd>
-    </dl>
-  </dd>
   <dt><tt>pr_depend.cmo</tt></dt>
   <dd>Display dependencies. Option added:
     <dl>
