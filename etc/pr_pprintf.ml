@@ -99,14 +99,32 @@ EXTEND_PRINTER
             (fun pc -> $f1$ {(pc) with Pprintf.aft = $e$} $a1$)
             (fun pc -> $f2$ pc $a2$)
         >> ->
+          let sp_off =
+            if sp = "1" && off = "2" then ""
+            else Printf.sprintf "<%s %s>" sp off
+          in
+          match e with
+          [ <:expr< $str:s$ >> ->
+              let fmt = "%p" ^ s ^ "@;" ^ sp_off ^ "%p" in
+              pprintf pc "@[<2>pprintf@ %s@ \"%s\"@ %p@ %p@ %p@ %p"
+                pc1 fmt next f1 next a1 next f2 next a2
+          | _ ->
+              let fmt = "%p%s@;" ^ sp_off ^ "%p" in
+              pprintf pc "@[<2>pprintf@ %s@ \"%s\"@ %p@ %p@ %p@ %p@ %p"
+                pc1 fmt next f1 next a1 next e next f2 next a2 ]
+      | <:expr<
+          Pprintf.sprint_break $int:sp$ $int:off$ $lid:pc1$
+            (fun pc -> $f1$ pc $a1$)
+            (fun pc -> $f2$ pc $a2$)
+        >> ->
           let fmt =
             let s =
               if sp = "1" && off = "2" then ""
               else Printf.sprintf "<%s %s>" sp off
             in
-            "%p%s@;" ^ s ^ "%p"
+            "%p@;" ^ s ^ "%p"
           in
-          pprintf pc "@[<2>pprintf@ %s@ \"%s\"@ %p@ %p@ %p@ %p@ %p"
-            pc1 fmt next f1 next a1 next e next f2 next a2 ] ]
+          pprintf pc "@[<2>pprintf@ %s@ \"%s\"@ %p@ %p@ %p@ %p@]"
+            pc1 fmt next f1 next a1 next f2 next a2 ] ]
  ;
 END;
