@@ -352,6 +352,7 @@ let pr_class_expr = Eprinter.make "class_expr";;
 let pr_class_type = Eprinter.make "class_type";;
 let pr_expr_fun_args = ref Extfun.empty;;
 
+let flag_comments_in_phrases = ref true;;
 let flag_equilibrate_cases = ref false;;
 
 let inter_phrases = ref None;;

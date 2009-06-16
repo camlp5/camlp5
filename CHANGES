@@ -1,6 +1,7 @@
 Camlp5 Version 5.08:
 --------------------
 
+* [10 Jan 08] Added compatibility with OCaml 3.09.4
 * [05 Jan 08] Added "pr_extprint.cmo", printer rebuilding EXTEND_PRINTER
   statements in their original syntax.
 * [05 Jan 08] Fixed bug in EXTEND_PRINTER statement: the match cases with
