@@ -1,6 +1,8 @@
 Camlp5 Version 5.08:
 --------------------
 
+* [13 Jan 08] Added missing man page for camlp5sch (link to the same man
+  page as camlp5).
 * [10 Jan 08] Added compatibility with OCaml 3.09.4
 * [05 Jan 08] Added "pr_extprint.cmo", printer rebuilding EXTEND_PRINTER
   statements in their original syntax.
