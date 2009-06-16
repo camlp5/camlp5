@@ -1,5 +1,5 @@
 (* camlp5r pa_lexer.cmo *)
-(* $Id: plexer.ml,v 1.105 2007/12/27 10:30:24 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.106 2008/03/31 12:43:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 value no_quotations = ref False;
@@ -329,6 +329,7 @@ value next_token_after_spaces ctx bp =
   | [ '!' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' ] ident2! ->
       keyword_or_error ctx (bp, $pos) $buf
   | "~"/ 'a'-'z' ident! tildeident!
+  | "~"/ '_' ident! tildeident!
   | "~" (tilde ctx bp)
   | "?"/ 'a'-'z' ident! questionident!
   | "?" (question ctx bp)!

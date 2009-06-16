@@ -640,6 +640,10 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
             Stream.junk strm__;
             let buf = ident (Plexing.Lexbuf.add c buf) strm__ in
             tildeident buf strm__
+        | Some '_' ->
+            Stream.junk strm__;
+            let buf = ident (Plexing.Lexbuf.add '_' buf) strm__ in
+            tildeident buf strm__
         | _ -> tilde ctx bp (Plexing.Lexbuf.add '~' buf) strm__
       with Stream.Failure -> raise (Stream.Error "")
       end
@@ -1179,11 +1183,11 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-         (fun _ -> raise (Match_failure ("plexer.ml", 659, 25)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 659, 45)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 659, 68)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 660, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 660, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 660, 25)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 660, 45)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 660, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 661, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 661, 37)));
        tok_comm = None}
   in
   let glex =

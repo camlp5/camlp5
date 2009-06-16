@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.80 2008/02/08 19:09:42 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.81 2008/03/31 12:43:25 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pcaml;
@@ -149,7 +149,7 @@ value infixop0 =
     (parser
        [: `("", x)
            when
-             not (List.mem x excl) && String.length x >= 2 &&
+             not (List.mem x excl) && (x = "$" || String.length x >= 2) &&
              List.mem x.[0] list && symbolchar x 1 :] ->
          x)
 ;

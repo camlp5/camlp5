@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.16 2007/11/26 09:20:52 deraugla Exp $
+# $Id: Makefile,v 1.17 2008/03/31 12:43:25 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -34,7 +34,7 @@ install:
 	  cp $(NAME)o.fast.opt "$(DESTDIR)$(BINDIR)/$(NAME)o.opt"; \
 	fi
 	if test -f pa_o_fast.cmx; then \
-	  cp pa_o_fast.cmx "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	  cp pa_o_fast.{cmx,o} "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
 	fi
 
 clean::
