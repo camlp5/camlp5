@@ -1,16 +1,11 @@
 (* camlp5r q_MLast.cmo -I . pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_extprint.ml,v 1.4 2008/01/05 12:51:40 deraugla Exp $ *)
+(* $Id: pr_extprint.ml,v 1.5 2008/01/05 21:59:38 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 (* heuristic to rebuild the EXTEND_PRINTER statement from the AST *)
 
 open Pcaml;
 open Prtools;
-
-(**)
-value test = ref False;
-Pcaml.add_option "-test" (Arg.Set test) " test";
-(**)
 
 (* Extracting *)
 
