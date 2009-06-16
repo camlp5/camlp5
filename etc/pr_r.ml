@@ -1,5 +1,5 @@
 (* camlp5r -I . pa_macro.cmo q_MLast.cmo pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.175 2008/01/06 22:03:48 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.176 2008/01/07 03:50:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -641,7 +641,8 @@ value rec loop_else_if force_vertic curr pc =
   [ [(e1, e2) :: eel] ->
       pprintf pc "@[<b>@ %p%p@]" (else_if_then force_vertic curr) (e1, e2)
         (loop_else_if force_vertic curr) eel
-  | [] -> pprintf pc "" ]
+  | [] ->
+      pprintf pc "" ]
 ;
 
 value ending_else force_vertic curr pc e3 =

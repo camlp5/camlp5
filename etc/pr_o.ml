@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_o.ml,v 1.180 2008/01/06 22:03:48 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.181 2008/01/07 03:50:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -532,32 +532,26 @@ value else_if_then force_vertic curr pc (e1, e2) =
          (comm_expr expr1) e2)
 ;
 
-value loop_else_if force_vertic curr pc (eel, e3) =
-  loop eel where rec loop =
+value loop_else_if_no_else force_vertic curr pc eel =
+  loop pc eel where rec loop pc =
     fun
-    [ [(e1, e2) :: eel] ->
-        let (pc_dang, pc_aft) =
-          match (eel, e3) with
-          [ ([], <:expr< () >>) -> (pc.dang, pc.aft)
-          | _ -> ("else", "") ]
-        in
-        sprintf "\n%s%s"
-          (else_if_then force_vertic curr
-             {(pc) with bef = tab pc.ind; aft = pc_aft; dang = pc_dang}
-             (e1, e2))
-          (loop eel)
-    | [] -> "" ]
+    [ [(e1, e2)] ->
+        pprintf pc "@[<b>@ %p@]" (else_if_then force_vertic curr) (e1, e2)
+    | [(e1, e2) :: eel] ->
+        pprintf pc "@[<b>@ %q%p@]"
+          (else_if_then force_vertic curr) (e1, e2) "else" loop eel
+    | [] ->
+        pprintf pc "" ]
 ;
 
-value ending_else curr pc =
-  fun
-  [ <:expr< () >> -> ""
-  | e3 ->
-      let s =
-        let pc = {(pc) with bef = tab pc.ind} in
-        pprintf pc "else@;%p" (comm_expr curr) e3
-      in
-      sprintf "\n%s" s ]
+value loop_else_if_and_else force_vertic curr pc (eel, e3) =
+  loop pc eel where rec loop pc =
+    fun
+    [ [(e1, e2) :: eel] ->
+        pprintf pc "@[<b>@ %q%p@]"
+          (else_if_then force_vertic curr) (e1, e2) "else" loop eel
+    | [] ->
+        pprintf pc "@[<b>@ @[else@;%p@]@]" (comm_expr curr) e3 ]
 ;
 
 value if_case_has_vertic curr pc e1 e2 eel e3 =
@@ -790,20 +784,17 @@ EXTEND_PRINTER
                    (False, eel, e3)
                in
                match e3 with
-               [ <:expr< () >> when pc.dang = "else" -> next pc ge
+               [ <:expr< () >> ->
+                   if pc.dang = "else" then next pc ge
+                   else if eel = [] then if_then force_vertic curr pc (e1, e2)
+                   else
+                     pprintf pc "%q%p"
+                       (if_then force_vertic curr) (e1, e2) "else"
+                       (loop_else_if_no_else force_vertic curr) eel
                | _ ->
-                   let s1 =
-                     let (pc_dang, pc_aft) =
-                       match (eel, e3) with
-                       [ ([], <:expr< () >>) -> (pc.dang, pc.aft)
-                       | _ -> ("else", "") ]
-                     in
-                     if_then force_vertic curr
-                       {(pc) with aft = pc_aft; dang = pc_dang} (e1, e2)
-                   in
-                   sprintf "%s%s%s" s1
-                     (loop_else_if force_vertic curr pc (eel, e3))
-                     (ending_else curr pc e3) ])
+                   pprintf pc "%q%p"
+                     (if_then force_vertic curr) (e1, e2) "else"
+                     (loop_else_if_and_else force_vertic curr) (eel, e3) ])
       | <:expr< fun [ $list:pwel$ ] >> as ge ->
           match pwel with
           [ [(p1, <:vala< None >>, e1)] when is_irrefut_patt p1 ->
