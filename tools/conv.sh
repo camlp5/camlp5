@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 
-DIR=$(expr "$0" : "\(.*\)/.*" "|" ".")
+DIR=`expr "$0" : "\(.*\)/.*" "|" "."`
 INCL=
 FILE=
 OPTS="-mode T"
@@ -16,15 +16,16 @@ while test "" != "$1"; do
 	shift
 done
 
-set - $(head -1 $FILE)
+set - `head -1 $FILE`
 if test "$2" = "camlp5r" -o "$2" = "camlp5"; then
-	WHAT="$(echo $2 | sed -e "s/camlp5/$NAME/")"
+	WHAT=`echo $2 | sed -e "s/camlp5/$NAME/"`
 	COMM="ocamlrun $DIR/../boot/$WHAT -nolib -I $DIR/../boot $INCL $DIR/../etc/$PR_O"
-        if test "$(basename "$(dirname $OTOP)")" != "ocaml_stuff"; then
+        dir=`dirname $OTOP`
+        if test "`basename $dir`" != "ocaml_stuff"; then
             COMM="$OTOP/boot/$COMM"
         fi
 	shift; shift
-	ARGS=$(echo $* | sed -e "s/[()*]//g")
+	ARGS=`echo $* | sed -e "s/[()*]//g"`
 	$COMM $ARGS $OPTS -ss $FILE
 else
 	cat $FILE

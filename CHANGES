@@ -1,6 +1,9 @@
 Camlp5 Version 5.09:
 --------------------
 
+* [05 Jun 08] Changed all '#!/bin/bash" in shells scripts into '#!/bin/sh'
+  and changed all $(...) into `...` because there are compatibilities
+  problems according to Unix versions.
 * [31 Mar 08] Fixed bug: "let f ~_x () = ()" generated syntax error.
 * [31 Mar 08] Fixed bug: "x $ y" generated syntax error (normal syntax).
 * [02 Jan 08] Added compatibility with OCaml 3.10.3.
