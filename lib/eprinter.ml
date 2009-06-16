@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: eprinter.ml,v 1.14 2007/12/28 12:58:30 deraugla Exp $ *)
+(* $Id: eprinter.ml,v 1.15 2008/01/23 03:00:41 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 type t 'a =
@@ -78,8 +78,8 @@ value pr_fun name pr lab =
     [ [] ->
         fun pc z ->
           failwith
-            (Printf.sprintf "unable to print %s%s" name
-               (if lab = "" then "" else " \"" ^ lab ^ "\""))
+            (Printf.sprintf "cannot print %s%s; probably a missing case"
+               name (if lab = "" then "" else " \"" ^ lab ^ "\""))
     | [lev :: levl] ->
         if lab = "" || app || lev.pr_label = lab then
           let next = loop True levl in

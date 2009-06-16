@@ -1,5 +1,5 @@
 (* camlp5r -I . pa_macro.cmo q_MLast.cmo pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.179 2008/01/22 20:20:24 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.180 2008/01/23 03:00:41 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -1407,7 +1407,9 @@ EXTEND_PRINTER
           pprintf pc "%s" s
       | <:module_expr< ($me$ : $mt$) >> ->
           pprintf pc "@[<1>(%p :@ %p)@]" module_expr me module_type mt
-      | <:module_expr< struct $list:_$ end >> as z ->
+      | <:module_expr< functor ($uid:_$ : $_$) -> $_$ >> |
+        <:module_expr< struct $list:_$ end >> | <:module_expr< $_$ . $_$ >> |
+        <:module_expr< $_$ $_$ >> as z ->
           pprintf pc "@[<1>(%p)@]" module_expr z ] ]
   ;
   pr_module_type:

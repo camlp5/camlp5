@@ -77,7 +77,7 @@ let pr_fun name pr lab =
       [] ->
         (fun pc z ->
            failwith
-             (Printf.sprintf "unable to print %s%s" name
+             (Printf.sprintf "cannot print %s%s; probably a missing case" name
                 (if lab = "" then "" else " \"" ^ lab ^ "\"")))
     | lev :: levl ->
         if lab = "" || app || lev.pr_label = lab then
