@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: ast2pt.ml,v 1.57 2007/12/27 10:30:24 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.58 2008/01/22 17:32:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open MLast;
@@ -11,6 +11,12 @@ IFDEF
   OCAML_3_08_0 OR OCAML_3_08_1 OR OCAML_3_08_2 OR OCAML_3_08_3 OR OCAML_3_08_4
 THEN
   DEFINE OCAML_3_08
+END;
+
+IFDEF
+  OCAML_3_10 OR OCAML_3_10_0 OR OCAML_3_10_1 OR OCAML_3_10_2 OR OCAML_3_11 
+THEN
+  DEFINE AFTER_OCAML_3_10
 END;
 
 let ov = Sys.ocaml_version in
@@ -934,7 +940,7 @@ and class_sig_item c l =
       [Pctf_meth (uv s, mkprivate (uv pf), ctyp (mkpolytype t), mkloc loc) ::
        l]
   | CgVal loc s b t ->
-      IFDEF OCAML_3_10 OR OCAML_3_10_0 OR OCAML_3_10_1 OR OCAML_3_11 THEN
+      IFDEF AFTER_OCAML_3_10 THEN
         [Pctf_val (uv s, mkmutable (uv b), Concrete, ctyp t, mkloc loc) :: l]
       ELSE
         [Pctf_val (uv s, mkmutable (uv b), Some (ctyp t), mkloc loc) :: l]

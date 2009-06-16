@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 1.21 2007/12/27 10:30:24 deraugla Exp $ *)
+(* $Id: rprint.ml,v 1.22 2008/01/22 17:32:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Format;
@@ -9,6 +9,12 @@ IFDEF
   OCAML_3_08_0 OR OCAML_3_08_1 OR OCAML_3_08_2 OR OCAML_3_08_3 OR OCAML_3_08_4
 THEN
   DEFINE OCAML_3_08
+END;
+
+IFDEF
+  OCAML_3_10 OR OCAML_3_10_0 OR OCAML_3_10_1 OR OCAML_3_10_2 OR OCAML_3_11 
+THEN
+  DEFINE AFTER_OCAML_3_10
 END;
 
 exception Ellipsis;
@@ -286,7 +292,7 @@ and print_out_class_sig_item ppf =
         (if priv then "private " else "") (if virt then "virtual " else "")
         name Toploop.print_out_type.val ty
   | x ->
-      IFDEF OCAML_3_10 OR OCAML_3_10_0 OR OCAML_3_10_1 OR OCAML_3_11 THEN
+      IFDEF AFTER_OCAML_3_10 THEN
         failwith "Rprint.print_out_class_sig_item: not impl"
       ELSE
         match x with
