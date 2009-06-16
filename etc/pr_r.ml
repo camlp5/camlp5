@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.157 2007/12/28 12:58:30 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.158 2007/12/29 14:58:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -122,6 +122,11 @@ value un_irrefut_patt p =
       in
       (<:patt< ($list:upl$) >>, <:expr< ($list:uel$) >>) ]
 ;
+
+(**)
+value test = ref False;
+Pcaml.add_option "-test" (Arg.Set test) " test";
+(**)
 
 value not_impl name pc x =
   let desc =
@@ -974,13 +979,8 @@ EXTEND_PRINTER
             [ Some el -> el
             | None -> el ]
           in
-          horiz_vertic
-            (fun () ->
-               pprintf pc "do { %p }"
-                 (hlistl (semi_after (comm_expr curr)) (comm_expr curr)) el)
-            (fun () ->
-               pprintf pc "@[<a>do {@;%p@ }@]"
-                 (vlistl (semi_after (comm_expr curr)) (comm_expr curr)) el)
+          pprintf pc "@[<a>do {@;%p@ }@]"
+            (hvlistl (semi_after (comm_expr curr)) (comm_expr curr)) el
       | <:expr< while $e1$ do { $list:el$ } >> ->
           let el =
             match el with
@@ -990,13 +990,8 @@ EXTEND_PRINTER
                 | None -> el ]
             | _ -> el ]
           in
-          horiz_vertic
-            (fun () ->
-               pprintf pc "while %p do { %p }" curr e1
-                 (hlistl (semi_after expr) curr) el)
-            (fun () ->
-               pprintf pc "@[<a>while@;%p@ do {@]@;%p@ }" curr e1
-                 (vlistl (semi_after expr) curr) el)
+          pprintf pc "@[<a>whole@;%p@ do {@]@;%p@ }" curr e1
+            (vlistl (semi_after expr) curr) el
       | <:expr< for $lid:v$ = $e1$ $to:d$ $e2$ do { $list:el$ } >> ->
           let el =
             match el with
