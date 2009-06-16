@@ -1,13 +1,12 @@
 #!/bin/sh
-# $Id: html2texi,v 1.32 2008/01/03 13:05:00 deraugla Exp $
+# $Id: html2texi,v 1.33 2008/01/11 03:14:31 deraugla Exp $
 
 FILES1="index.html strict.html ptools.html"
 FILES2="parsers.html lexers.html fparsers.html bparsers.html grammars.html"
 FILES3="printers.html pprintf.html pretty.html"
 FILES4="locations.html ml_ast.html ast_transi.html ast_strict.html q_ast.html pcaml.html syntext.html opretty.html quot.html revsynt.html scheme.html macros.html pragma.html extfun.html"
-FILES5="conclusion.html"
-FILES6="commands.html library.html sources.html about.html"
-FILES="$FILES1 1 $FILES2 2 $FILES3 3 $FILES4 4 $FILES5 5 $FILES6"
+FILES5="commands.html library.html sources.html about.html"
+FILES="$FILES1 1 $FILES2 2 $FILES3 3 $FILES4 4 $FILES5"
 VERSION="$(grep "value version =" ../../main/pcaml.ml | sed -e 's/^[^"]*"\([^"]*\).*$/\1/')"
 
 /bin/echo '\input texinfo   @c -*-texinfo-*-
@@ -66,10 +65,6 @@ for i in $FILES; do
     /bin/echo 'Language extensions'
     /bin/echo
   elif [ "$i" = "4" ]; then
-    /bin/echo
-    /bin/echo 'Conclusion'
-    /bin/echo
-  elif [ "$i" = "5" ]; then
     /bin/echo
     /bin/echo 'Appendix'
     /bin/echo

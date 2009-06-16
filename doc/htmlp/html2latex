@@ -1,15 +1,14 @@
 #!/bin/sh
-# $Id: html2latex,v 1.70 2007/12/29 03:47:05 deraugla Exp $
+# $Id: html2latex,v 1.71 2008/01/11 03:14:31 deraugla Exp $
 
 FILES1="index.html strict.html ptools.html"
 FILES2="parsers.html lexers.html fparsers.html bparsers.html grammars.html"
 FILES3="printers.html pprintf.html pretty.html"
 FILES4="locations.html ml_ast.html ast_transi.html ast_strict.html q_ast.html pcaml.html syntext.html opretty.html quot.html revsynt.html scheme.html macros.html pragma.html extfun.html"
-FILES5="conclusion.html"
-FILES6="commands.html library.html sources.html about.html"
+FILES5="commands.html library.html sources.html about.html"
 VERSION="$(grep "value version =" ../../main/pcaml.ml | sed -e 's/^[^"]*"\([^"]*\).*$/\1/')"
 
-FILES="$FILES1 1 $FILES2 2 $FILES3 3 $FILES4 4 $FILES5 5 $FILES6"
+FILES="$FILES1 1 $FILES2 2 $FILES3 3 $FILES4 4 $FILES5"
 
 /bin/echo '\documentclass[twoside]{report}
 \marginparwidth 0pt \oddsidemargin 0pt \evensidemargin 0pt \marginparsep 0pt
@@ -56,8 +55,6 @@ for i in $FILES; do
   elif [ "$i" = "3" ]; then
     /bin/echo '\part{Language extensions}'
   elif [ "$i" = "4" ]; then
-    /bin/echo '\part{Conclusion}'
-  elif [ "$i" = "5" ]; then
     /bin/echo '\part{Appendix}'
     /bin/echo '\appendix{}'
   else
