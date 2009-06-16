@@ -1,5 +1,5 @@
-(* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_extfun.ml,v 1.16 2008/01/03 19:20:44 deraugla Exp $ *)
+(* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
+(* $Id: pr_extfun.ml,v 1.17 2008/01/04 14:35:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 (* heuristic to rebuild the extfun statement from the AST *)
@@ -7,18 +7,6 @@
 open Pretty;
 open Pcaml;
 open Prtools;
-
-value not_impl name pc x =
-  let desc =
-    if Obj.tag (Obj.repr x) = Obj.tag (Obj.repr "") then
-      sprintf "\"%s\"" (Obj.magic x)
-    else if Obj.is_block (Obj.repr x) then
-      "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
-    else "int_val = " ^ string_of_int (Obj.magic x)
-  in
-  sprintf "%s\"pr_extfun, not impl: %s; %s\"%s" pc.bef name
-    (String.escaped desc) pc.aft
-;
 
 value expr = Eprinter.apply pr_expr;
 value patt = Eprinter.apply pr_patt;
@@ -55,9 +43,12 @@ value rec un_extfun rpel =
   | _ -> raise Not_found ]
 ;
 
-(* copied from pr_r.cmo ; begin *)
+(**)
+value test = ref False;
+Pcaml.add_option "-test" (Arg.Set test) " test";
+(**)
 
-value bar_before elem pc x = elem {(pc) with bef = sprintf "%s| " pc.bef} x;
+value bar_before elem pc x = pprintf pc "| %p" elem x;
 
 value comm_expr expr pc z =
   let ccc = comm_bef pc.ind (MLast.loc_of_expr z) in
@@ -66,10 +57,7 @@ value comm_expr expr pc z =
 
 value patt_as pc z =
   match z with
-  [ <:patt< ($x$ as $y$) >> ->
-      let p1 = patt {(pc) with aft = ""} x in
-      let p2 = patt {(pc) with bef = ""} y in
-      sprintf "%s as %s" p1 p2
+  [ <:patt< ($x$ as $y$) >> -> pprintf pc "%p as @[%p@]" patt x patt y
   | z -> patt pc z ]
 ;
 
@@ -133,8 +121,6 @@ value match_assoc_list pc pwel =
       {(pc) with bef = sprintf "%s[ " pc.bef; aft = sprintf " ]%s" pc.aft}
       pwel
 ;
-
-(* copied from pr_r.cmo ; end *)
 
 EXTEND_PRINTER
   pr_expr: LEVEL "top"
