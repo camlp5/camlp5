@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_extend.ml,v 1.58 2008/01/04 03:35:34 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.59 2008/01/04 10:47:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -360,15 +360,13 @@ and symbol pc sy =
   | Slist0sep sy sep ->
       pprintf pc "LIST0@;%p@ @[SEP@;%p@]" simple_symbol sy simple_symbol sep
   | Slist1 sy ->
-      sprintf "%sLIST1 %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
+      pprintf pc "LIST1@;%p" simple_symbol sy
   | Slist1sep sy sep ->
-      sprintf "%sLIST1 %s SEP %s" pc.bef
-        (simple_symbol {(pc) with bef = ""; aft = ""} sy)
-        (simple_symbol {(pc) with bef = ""} sep)
+      pprintf pc "LIST1@;%p@ @[SEP@;%p@]" simple_symbol sy simple_symbol sep
   | Sopt sy ->
-      sprintf "%sOPT %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
+      pprintf pc "OPT@;%p" simple_symbol sy
   | Sflag sy ->
-      sprintf "%sFLAG %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
+      pprintf pc "FLAG@;%p" simple_symbol sy
   | Srules rl ->
       match check_slist rl with
       [ Some s -> s_symbol pc s
@@ -379,34 +377,24 @@ and symbol pc sy =
   | sy -> simple_symbol pc sy ]
 and simple_symbol pc sy =
   match sy with
-  [ Snterm <:expr< $lid:s$ >> -> sprintf "%s%s%s" pc.bef s pc.aft
-  | Sself -> sprintf "%sSELF%s" pc.bef pc.aft
-  | Snext -> sprintf "%sNEXT%s" pc.bef pc.aft
+  [ Snterm <:expr< $lid:s$ >> -> pprintf pc "%s" s
+  | Sself -> pprintf pc "SELF"
+  | Snext -> pprintf pc "NEXT"
   | Srules rl ->
       match check_slist rl with
-      [ Some _ ->
-          symbol
-            {(pc) with bef = sprintf "%s(" pc.bef; aft = sprintf ")%s" pc.aft}
-            sy
+      [ Some _ -> pprintf pc "(%p)" symbol sy
       | None ->
           horiz_vertic
             (fun () ->
-               hlist2 (rule False) (bar_before (rule False))
-                 {(pc) with bef = sprintf "%s[ " pc.bef;
-                  aft = sprintf " ]%s" pc.aft}
-                 rl)
+               pprintf pc "[ %p ]"
+                 (hlist2 (rule False) (bar_before (rule False))) rl)
             (fun () ->
-               vlist2 (rule False) (bar_before (rule False))
-                 {(pc) with bef = sprintf "%s[ " pc.bef;
-                  aft = sprintf " ]%s" pc.aft}
-                 rl) ]
+               pprintf pc "[ %p ]"
+                 (vlist2 (rule False) (bar_before (rule False))) rl) ]
   | Stoken (Left ("", _) | Left (_, "")) -> symbol pc sy
   | Snterml _ _ | Slist0 _ | Slist0sep _ _ | Slist1 _ | Slist1sep _ _ |
     Sflag _ | Sopt _ ->
-      symbol
-        {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-         aft = sprintf ")%s" pc.aft}
-        sy
+      pprintf pc "@[<1>(%p)@]" symbol sy
   | sy -> not_impl "simple_symbol" pc sy ]
 and s_symbol pc =
   fun
