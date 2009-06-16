@@ -1,5 +1,5 @@
 (* camlp5r -I . pa_macro.cmo q_MLast.cmo pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.168 2008/01/05 21:59:38 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.169 2008/01/06 19:59:53 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -126,6 +126,11 @@ value un_irrefut_patt p =
       in
       (<:patt< ($list:upl$) >>, <:expr< ($list:uel$) >>) ]
 ;
+
+(**)
+value test = ref False;
+Pcaml.add_option "-test" (Arg.Set test) " test";
+(**)
 
 value not_impl name pc x =
   let desc =
@@ -602,6 +607,86 @@ value are_close f x1 x2 =
   | _ -> False ]
 ;
 
+value if_then force_vertic curr else_b pc (e1, e2) =
+  let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
+  horiz_vertic_if force_vertic
+    (fun () ->
+       pprintf pc "%sif %p then %p" else_b curr e1 curr e2)
+    (fun () ->
+       let if_e1_then pc () =
+         if else_b = "" then
+           pprintf pc "@[<3>if %p@]@ then" curr e1
+         else
+           pprintf pc "@[<a>%sif@;%p@ then@]" else_b curr e1
+       in
+       match sequencify e2 with
+       [ Some el ->
+           pprintf pc "%p do {@;%p@ }" if_e1_then ()
+             sequence el
+       | None ->
+           pprintf pc "%p@;%p" if_e1_then ()
+             (comm_expr expr_wh) e2 ])
+;
+
+value rec loop_else_if force_vertic curr pc =
+  fun
+  [ [(e1, e2) :: eel] ->
+      pprintf pc "@[<b>@ %p%p@]"
+        (if_then force_vertic curr "else ") (e1, e2)
+        (loop_else_if force_vertic curr) eel
+  | [] -> pprintf pc "" ]
+;
+
+value last_else force_vertic curr pc e3 =
+  let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
+  horiz_vertic_if force_vertic
+    (fun () ->
+       pprintf pc "else %p" (comm_expr curr) e3)
+    (fun () ->
+       match sequencify e3 with
+       [ Some el ->
+           sequence_box
+             (fun pc () ->
+                horiz_vertic (fun () -> sprintf "\n")
+                  (fun () -> pprintf pc "else"))
+             pc el
+       | None ->
+           pprintf pc "else@;%p" (comm_expr expr_wh) e3 ])
+;
+
+value if_case_has_vertic curr pc e1 e2 eel e3 =
+  horiz_vertic
+    (fun () ->
+       let _ : string =
+         if_then False curr "" {(pc) with aft = ""}
+           (e1, e2)
+       in
+       False)
+    (fun () -> True) ||
+  List.exists
+    (fun (e1, e2) ->
+       horiz_vertic
+         (fun () ->
+            let _ : string =
+              if_then False curr "else "
+                {(pc) with bef = tab pc.ind; aft = ""}
+                (e1, e2)
+            in
+            False)
+         (fun () -> True))
+    eel ||
+  horiz_vertic
+    (fun () ->
+       let _ : string =
+         sprintf "%selse %s%s" (tab pc.ind)
+           (comm_expr curr {(pc) with bef = ""; aft = ""}
+              e3)
+           pc.aft
+       in
+       False)
+    (fun () -> True)
+;
+
 (* Expressions displayed without spaces separating elements; special
    for expressions as strings or arrays indexes (x.[...] or x.(...)).
    Applied only if only containing +, -, *, /, integers and variables. *)
@@ -738,30 +823,10 @@ EXTEND_PRINTER
   pr_expr:
     [ "top"
       [ <:expr< if $e1$ then $e2$ else $e3$ >> ->
-          let expr_wh = if flag_where_after_then.val then expr_wh else expr in
           horiz_vertic
             (fun () ->
                pprintf pc "if %p then %p else %p" curr e1 curr e2 curr e3)
             (fun () ->
-               let if_then force_vertic pc else_b e1 e2 =
-                 horiz_vertic_if force_vertic
-                   (fun () ->
-                      pprintf pc "%sif %p then %p" else_b curr e1 curr e2)
-                   (fun () ->
-                      let if_e1_then pc () =
-                        if else_b = "" then
-                          pprintf pc "@[<3>if %p@]@ then" curr e1
-                        else
-                          pprintf pc "@[<a>%sif@;%p@ then@]" else_b curr e1
-                      in
-                      match sequencify e2 with
-                      [ Some el ->
-                          pprintf pc "%p do {@;%p@ }" if_e1_then ()
-                            sequence el
-                      | None ->
-                          pprintf pc "%p@;%p" if_e1_then ()
-                            (comm_expr expr_wh) e2 ])
-               in
                let (force_vertic, eel, e3) =
                  if flag_equilibrate_cases.val then
                    let (eel, e3) =
@@ -775,74 +840,16 @@ EXTEND_PRINTER
                      else get_else_if e3
                    in
                    (* if a case does not fit on line, all cases must be cut *)
-                   let has_vertic =
-                     horiz_vertic
-                       (fun () ->
-                          let _ : string =
-                            if_then False {(pc) with aft = ""} "" e1 e2
-                          in
-                          False)
-                       (fun () -> True) ||
-                     List.exists
-                       (fun (e1, e2) ->
-                          horiz_vertic
-                            (fun () ->
-                               let _ : string =
-                                 if_then False
-                                   {(pc) with bef = tab pc.ind; aft = ""}
-                                   "else " e1 e2
-                               in
-                               False)
-                            (fun () -> True))
-                       eel ||
-                     horiz_vertic
-                       (fun () ->
-                          let _ : string =
-                            sprintf "%selse %s%s" (tab pc.ind)
-                              (comm_expr curr {(pc) with bef = ""; aft = ""}
-                                 e3)
-                              pc.aft
-                          in
-                          False)
-                       (fun () -> True)
-                   in
+                   let has_vertic = if_case_has_vertic curr pc e1 e2 eel e3 in
                    (has_vertic, eel, e3)
                  else
                    let (eel, e3) = get_else_if e3 in
                    (False, eel, e3)
                in
-               let s1 = if_then force_vertic {(pc) with aft = ""} "" e1 e2 in
-               let s2 =
-                 loop eel where rec loop =
-                   fun
-                   [ [(e1, e2) :: eel] ->
-                       sprintf "\n%s%s"
-                         (if_then force_vertic
-                            {(pc) with bef = tab pc.ind; aft = ""}
-                            "else " e1 e2)
-                         (loop eel)
-                   | [] -> "" ]
-               in
-               let s3 =
-                 horiz_vertic_if force_vertic
-                   (fun () ->
-                      let pc = {(pc) with bef = tab pc.ind} in
-                      pprintf pc "else %p" (comm_expr curr) e3)
-                   (fun () ->
-                      match sequencify e3 with
-                      [ Some el ->
-                          sequence_box
-                            (fun pc () ->
-                               horiz_vertic (fun () -> sprintf "\n")
-                                 (fun () ->
-                                    let pc = {(pc) with bef = tab pc.ind} in
-                                    pprintf pc "else"))
-                            pc el
-                      | None ->
-                          let pc = {(pc) with bef = tab pc.ind} in
-                          pprintf pc "else@;%p" (comm_expr expr_wh) e3 ])
-               in
-               sprintf "%s%s\n%s" s1 s2 s3)
+               pprintf pc "@[<b>%p%p@ %p@]"
+                 (if_then force_vertic curr "") (e1, e2)
+                 (loop_else_if force_vertic curr) eel
+                 (last_else force_vertic curr) e3)
       | <:expr< fun [ $list:pwel$ ] >> ->
           match pwel with
           [ [(p1, <:vala< None >>, e1)] when is_irrefut_patt p1 ->
