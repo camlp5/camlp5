@@ -1,5 +1,5 @@
 (* camlp5r -I . pa_macro.cmo q_MLast.cmo pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.177 2008/01/07 17:53:24 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.178 2008/01/09 13:28:20 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -302,16 +302,9 @@ value rec where_binding pc (p, e, body) =
   let pl = [p :: pl] in
   match sequencify body with
   [ Some el ->
-      horiz_vertic
-        (fun () ->
-           pprintf pc "%p@ where rec %p =@;%p" expr e (hlist patt) pl
-             (comm_expr expr) body)
-        (fun () ->
-           let expr_wh =
-             if flag_where_in_sequences.val then expr_wh else expr
-           in
-           pprintf pc "%p@ where rec %p = do {@;%p@ }" expr e (hlist patt) pl
-             (vlistl (semi_after (comm_expr expr_wh)) (comm_expr expr_wh)) el)
+      let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
+      pprintf pc "%p@ where rec %p = do {@;%p@ }" expr e (hlist patt) pl
+        (hvlistl (semi_after (comm_expr expr_wh)) (comm_expr expr_wh)) el
   | None ->
       pprintf pc "%p@ where rec %p =@;%p" expr e (hlist patt) pl
         (comm_expr expr) body ]
@@ -932,8 +925,14 @@ EXTEND_PRINTER
           let expr_wh = if flag_where_after_in.val then expr_wh else curr in
           horiz_vertic_if (not flag_horiz_let_in.val)
             (fun () ->
-               pprintf pc "let %s%p in %p" (if rf then "rec " else "")
-                 (hlist2 let_binding (and_before let_binding)) pel curr e)
+               match flatten_sequence ge with
+               [ Some el ->
+                   let loc = MLast.loc_of_expr ge in
+                   curr pc <:expr< do { $list:el$ } >>
+               | None ->
+                   pprintf pc "let %s%p in %p" (if rf then "rec " else "")
+                     (hlist2 let_binding (and_before let_binding)) pel
+                     curr e ])
             (fun () ->
                match flatten_sequence ge with
                [ Some el ->
