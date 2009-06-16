@@ -1,5 +1,5 @@
 (* camlp5r -I . pa_macro.cmo q_MLast.cmo pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.173 2008/01/06 20:39:07 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.174 2008/01/06 21:37:56 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -651,14 +651,8 @@ value ending_else force_vertic curr pc e3 =
        pprintf pc "else %p" (comm_expr curr) e3)
     (fun () ->
        match sequencify e3 with
-       [ Some el ->
-           sequence_box
-             (fun pc () ->
-                horiz_vertic (fun () -> sprintf "\n")
-                  (fun () -> pprintf pc "else"))
-             pc el
-       | None ->
-           pprintf pc "else@;%p" (comm_expr expr_wh) e3 ])
+       [ Some el -> pprintf pc "else do {@;%p@ }" sequence el
+       | None -> pprintf pc "else@;%p" (comm_expr expr_wh) e3 ])
 ;
 
 value if_case_has_vertic curr pc e1 e2 eel e3 =
