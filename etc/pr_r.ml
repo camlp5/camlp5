@@ -1,5 +1,5 @@
 (* camlp5r -I . pa_macro.cmo q_MLast.cmo pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.171 2008/01/06 20:07:48 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.172 2008/01/06 20:37:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -609,32 +609,37 @@ value rec get_else_if =
   | e -> ([], e) ]
 ;
 
-value if_then force_vertic curr else_b pc (e1, e2) =
+value if_then force_vertic curr pc (e1, e2) =
+  let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
+  horiz_vertic_if force_vertic
+    (fun () -> pprintf pc "if %p then %p" curr e1 curr e2)
+    (fun () ->
+       let if_e1_then pc () = pprintf pc "@[<3>if %p@]@ then" curr e1 in
+       match sequencify e2 with
+       [ Some el ->
+           pprintf pc "%p do {@;%p@ }" if_e1_then () sequence el
+       | None ->
+           pprintf pc "%p@;%p" if_e1_then () (comm_expr expr_wh) e2 ])
+;
+
+value else_if_then force_vertic curr pc (e1, e2) =
   let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
   horiz_vertic_if force_vertic
     (fun () ->
-       pprintf pc "%sif %p then %p" else_b curr e1 curr e2)
+       pprintf pc "else if %p then %p" curr e1 curr e2)
     (fun () ->
-       let if_e1_then pc () =
-         if else_b = "" then
-           pprintf pc "@[<3>if %p@]@ then" curr e1
-         else
-           pprintf pc "@[<a>%sif@;%p@ then@]" else_b curr e1
-       in
+       let if_e1_then pc () = pprintf pc "@[<a>else if@;%p@ then@]" curr e1 in
        match sequencify e2 with
        [ Some el ->
-           pprintf pc "%p do {@;%p@ }" if_e1_then ()
-             sequence el
+           pprintf pc "%p do {@;%p@ }" if_e1_then () sequence el
        | None ->
-           pprintf pc "%p@;%p" if_e1_then ()
-             (comm_expr expr_wh) e2 ])
+           pprintf pc "%p@;%p" if_e1_then () (comm_expr expr_wh) e2 ])
 ;
 
 value rec loop_else_if force_vertic curr pc =
   fun
   [ [(e1, e2) :: eel] ->
-      pprintf pc "@[<b>@ %p%p@]"
-        (if_then force_vertic curr "else ") (e1, e2)
+      pprintf pc "@[<b>@ %p%p@]" (else_if_then force_vertic curr) (e1, e2)
         (loop_else_if force_vertic curr) eel
   | [] -> pprintf pc "" ]
 ;
@@ -659,10 +664,7 @@ value last_else force_vertic curr pc e3 =
 value if_case_has_vertic curr pc e1 e2 eel e3 =
   horiz_vertic
     (fun () ->
-       let _ : string =
-         if_then False curr "" {(pc) with aft = ""}
-           (e1, e2)
-       in
+       let _ : string = if_then False curr {(pc) with aft = ""} (e1, e2) in
        False)
     (fun () -> True) ||
   List.exists
@@ -670,8 +672,7 @@ value if_case_has_vertic curr pc e1 e2 eel e3 =
        horiz_vertic
          (fun () ->
             let _ : string =
-              if_then False curr "else "
-                {(pc) with bef = tab pc.ind; aft = ""}
+              else_if_then False curr {(pc) with bef = tab pc.ind; aft = ""}
                 (e1, e2)
             in
             False)
@@ -849,7 +850,7 @@ EXTEND_PRINTER
                    (False, eel, e3)
                in
                pprintf pc "@[<b>%p%p@ %p@]"
-                 (if_then force_vertic curr "") (e1, e2)
+                 (if_then force_vertic curr) (e1, e2)
                  (loop_else_if force_vertic curr) eel
                  (last_else force_vertic curr) e3)
       | <:expr< fun [ $list:pwel$ ] >> ->
