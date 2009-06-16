@@ -1,7 +1,9 @@
 Camlp5 Version 5.13:
 --------------------
 
-* [08 Jun 09] Fixed bug: missing case "#use" in pr_r.cmo for structure and
+* [09 Jun 09] Fixed bug in pr_r.cmo: did not always break after "in" (in
+  "let..in" statements) even with -flag l.
+* [08 Jun 09] Fixed bug in pr_r.cmo: missing case "#use" for structure and
   signature items.
 
 Camlp5 Version 5.12:

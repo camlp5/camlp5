@@ -1,5 +1,5 @@
 (* camlp5r -I . pa_macro.cmo q_MLast.cmo pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.182 2009/06/08 02:15:43 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.183 2009/06/09 09:18:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -939,9 +939,15 @@ EXTEND_PRINTER
                    let loc = MLast.loc_of_expr ge in
                    curr pc <:expr< do { $list:el$ } >>
                | None ->
-                   pprintf pc "let %s%pin@ %p" (if rf then "rec " else "")
-                     (vlist2 let_binding (and_before let_binding)) pel
-                     (comm_expr expr_wh) e ])
+                   if flag_horiz_let_in.val then
+                     pprintf pc "let %s%pin@ %p" (if rf then "rec " else "")
+                       (vlist2 let_binding (and_before let_binding)) pel
+                       (comm_expr expr_wh) e
+                   else
+                     pprintf pc "@[<b>let %s%pin@ %p@]"
+                       (if rf then "rec " else "")
+                       (vlist2 let_binding (and_before let_binding)) pel
+                       (comm_expr expr_wh) e ])
       | <:expr< let module $uid:s$ = $me$ in $e$ >> ->
           pprintf pc "@[<a>let module %s =@;%p@ in@]@ %p" s module_expr me
             curr e
