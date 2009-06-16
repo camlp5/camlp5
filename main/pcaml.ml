@@ -1,8 +1,8 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo *)
-(* $Id: pcaml.ml,v 1.62 2008/10/16 13:01:36 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.63 2008/12/19 15:42:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
-value version = "5.11-exp";
+value version = "5.11";
 value syntax_name = ref "";
 
 value gram =
