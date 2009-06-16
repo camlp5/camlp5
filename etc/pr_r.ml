@@ -1,5 +1,5 @@
 (* camlp5r -I . pa_macro.cmo q_MLast.cmo pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.170 2008/01/06 20:00:28 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.171 2008/01/06 20:07:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -557,14 +557,6 @@ value has_cons_with_params vdl =
     vdl
 ;
 
-value rec get_else_if =
-  fun
-  [ <:expr< if $e1$ then $e2$ else $e3$ >> ->
-      let (eel, e3) = get_else_if e3 in
-      ([(e1, e2) :: eel], e3)
-  | e -> ([], e) ]
-;
-
 value alone_in_line pc =
   (pc.aft = "" || pc.aft = ";") && pc.bef <> "" &&
   loop 0 where rec loop i =
@@ -608,6 +600,14 @@ value are_close f x1 x2 =
 ;
 
 (* if statement *)
+
+value rec get_else_if =
+  fun
+  [ <:expr< if $e1$ then $e2$ else $e3$ >> ->
+      let (eel, e3) = get_else_if e3 in
+      ([(e1, e2) :: eel], e3)
+  | e -> ([], e) ]
+;
 
 value if_then force_vertic curr else_b pc (e1, e2) =
   let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
