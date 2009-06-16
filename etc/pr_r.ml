@@ -1,5 +1,5 @@
 (* camlp5r -I . pa_macro.cmo q_MLast.cmo pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.174 2008/01/06 21:37:56 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.175 2008/01/06 22:03:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -675,10 +675,8 @@ value if_case_has_vertic curr pc e1 e2 eel e3 =
   horiz_vertic
     (fun () ->
        let _ : string =
-         sprintf "%selse %s%s" (tab pc.ind)
-           (comm_expr curr {(pc) with bef = ""; aft = ""}
-              e3)
-           pc.aft
+         let pc = {(pc) with bef = tab pc.ind} in
+         pprintf pc "else %p" (comm_expr curr) e3
        in
        False)
     (fun () -> True)
