@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: pprintf.html,v 1.3 2007/12/28 18:04:42 deraugla Exp $ -->
+  <!-- $Id: pprintf.html,v 1.4 2007/12/28 22:08:59 deraugla Exp $ -->
   <!-- Copyright (c) 2007-2008 INRIA -->
   <title>pprintf</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -56,10 +56,12 @@
   format kind. It can take other parameters, depending on the format,
   just like "printf".</p>
 
+<p>The result of "pprintf" is a string.</p>
+
 <h3>Printing context</h3>
 
-<p>All semantic actions use a printing context in the variable
-  "<tt>pc</tt>". Its type is defined as:</p>
+<p>The "pprintf" statement needs, as first parameter, a printing context.
+  It is a value of the following type:</p>
 
 <pre>
   type pr_context =
@@ -138,6 +140,12 @@
   Pretty.sprintf "%s%s" pc.bef pc.aft;
 </pre>
 
+<h3>Line length</h3>
+
+<p>The function "pprintf" uses the Camlp5 "Pretty" module. The line
+  length can be set by changing the value of the reference
+  "Pretty.line_length".</p>
+
 <h3>The conversion specifications "p" and "q"</h3>
 
 <p>The "%p" conversion specification works like the "%a" of the printf
@@ -193,7 +201,267 @@
 
 <h3>The pretty printing annotations</h3>
 
-<p>...to be completed...</p>
+<h4>Breaks</h4>
+
+<p>The pretty printing annotations allow to indicate places where
+  lines can be broken. They all start with the "at" sign "@". The main
+  ones are called <em>breaks</em> and are:<p>
+
+<ul>
+  <li>"<tt>@;</tt>" specifying: <em>write a space or a newline and an
+      indentation incremented by 2 spaces</em></li>
+  <li>"<tt>@&nbsp;</tt>" specifying: <em>write a space or a newline
+      and the indentation</em></li>
+</ul>
+
+<p>Example - where "pc" is a variable of type "pr_context", for
+  example "Pprintf.empty_pc":</p>
+
+<pre>
+  pprintf pc "hello,@;world"
+</pre>
+
+<p>builds the string, if it holds in the line:</p>
+
+<pre>
+  hello, world
+</pre>
+
+<p>If it does not:</p>
+
+<pre>
+  hello,
+    world
+</pre>
+
+<p>The second form:</p>
+
+<pre>
+  pprintf pc "hello,@ world"
+</pre>
+
+<p>is printed the same way, if it holds in the line, and if it does
+  not, as:</p>
+
+<pre>
+  hello,
+  world
+</pre>
+
+<p>The general form is:</p>
+
+<ul>
+  <li>"<tt>@;&lt;s o></tt>" is a break with "<tt>s</tt>" spaces if the
+    string holds in the line, or an indentation offset (incrementation
+    of the indentation) of "<tt>o</tt>" spces if the string does not
+    hold in the line.</li>
+</ul>
+
+<p>The break "<tt>@;</tt>" is therefore equivalent to "<tt>@;&lt;1
+  2></tt>" and "<tt>@&nbsp;</tt>" is equivalent to "<tt>@;&lt;1
+  0></tt>".</p>
+
+<h4>Parentheses</h4>
+
+<p>A second form of the pretty printing annotations is the
+  parenthesization of format strings possibly containing other pretty
+  printing annotations. They start with "<tt>@[</tt>" and end with
+  "<tt>@]</tt>".</p>
+
+<p>It allows to change the associativity of the breaks. For example:</p>
+
+<pre>
+  pprintf pc "@[the quick brown fox@;jumps@]@;over the lazy dog"
+</pre>
+
+<p>If the whole string does not hold on the line, but "the quick brow
+  fox jumps" does, it is printed:</p>
+
+<pre>
+  the quick brown fox jumps
+    over the lazy dog
+</pre>
+
+<p>If the string "the quick brown fox jumps" does not hold on the line,
+  the whole string is printed:</p>
+
+<pre>
+  the quick brown fox
+    jumps
+    over the lazy dog
+</pre>
+
+<p>Conversely, if the code is right associated:</p>
+
+<pre>
+  pprintf pc "the quick brown fox@;@[jumps@;over the lazy dog@]"
+</pre>
+
+<p>It can be printed:</p>
+
+<pre>
+  the quick brown fox
+    jumps over the lazy dog
+</pre>
+
+<p>or:</p>
+
+<pre>
+  the quick brown fox
+    jumps
+      over the lazy dog
+</pre>
+
+<p>The default is left associativity: without parentheses, it is
+  printed like in the first example.</p>
+
+<h4>Incrementation of indentation</h4>
+
+<p>The open parenthesis of the parenthesized form, "<tt>@[</tt>" can
+  be followed by "<tt>&lt;n></tt>" where "<tt>n</tt>" is a number. It
+  increments the current indentation (for possible newlines in the
+  parenthesized text) with this number.</p>
+
+<p>Example:</p>
+
+<pre>
+  pprintf pc "@[&lt;4>Incrementation@;actually of six characters@]"
+</pre>
+
+<p>makes the string (if not holding in the line):</p>
+
+<pre>
+  Incrementation
+        actually of six characters
+</pre>
+
+<h4>Break all or nothing</h4>
+
+<p>The open parenthesis of the parenthesized form, "<tt>@[</tt>" can
+  be followed by "<tt>&lt;a></tt>". It specifies that if the string
+  does not hold in the line, all breaks between the parentheses (at
+  one only level) are printed in two lines, even if sub-strings could
+  hold on the line. For example:</p>
+
+<pre>
+  pprintf pc "@[&lt;a>the quick brown fox@;jumps@;over the lazy dog@]"
+</pre>
+
+<p>can be printed only as:</p>
+
+<pre>
+  the quick brown fox jumps over the lazy dog
+</pre>
+
+<p>or:</p>
+
+<pre>
+  the quick brown fox
+    jumps
+    over the lazy dog
+</pre>
+
+<h4>Break all</h4>
+
+<p>The open parenthesis of the parenthesized form, "<tt>@[</tt>" can
+  be followed by "<tt>&lt;b></tt>". It specifies that all breaks are
+  always printed in two lines. For example:</p>
+
+<pre>
+  pprintf pc "@[&lt;b>the quick brown fox@;jumps@;over the lazy dog@]"
+</pre>
+
+<p>is printed in all circumstances:</p>
+
+<pre>
+  the quick brown fox
+    jumps
+    over the lazy dog
+</pre>
+
+<h4>Parentheses not enclosed with breaks</h4>
+
+<p>When the parentheses "<tt>@[</tt>" and "<tt>@]</tt>" are not
+  preceeded or followed by the string begin nor end, nor preceeded or
+  followed by breaks, they are considered as the "bef" or "aft" part
+  of the neighbour string. For example:</p>
+
+<pre>
+  pprintf pc "the quick brown fox jumps over"
+</pre>
+
+<p>being equivalent to:</p>
+
+<pre>
+   Pretty.sprintf "%sthe quick brown fox jumps over%s" pc.bef pc.aft
+</pre>
+
+<p>The following forms:</p>
+
+<pre>
+  pprintf pc "the quick brown fox@[ jumps over@]"
+</pre>
+
+<p>and:</p>
+
+<pre>
+  pprintf pc "@[the quick brown fox @]jumps over"
+</pre>
+
+<p>are respectively equivalent to:</p>
+
+<pre>
+  let pc = {(pc) with aft = sprintf " jumps over%s" pc.aft} in
+  Pretty.sprintf "%sthe quick brown fox%s" pc.bef pc.aft
+</pre>
+
+<p>and:</p>
+
+<pre>
+  let pc = {(pc) with bef = sprintf "%sthe quick brown fox" pc.bef} in
+  Pretty.sprintf "%sjumps over%s" pc.bef pc.aft
+</pre>
+
+<p>In these examples, the results are identical, but it can be
+  important if the non-parenthesized part contain one or several
+  "%p". In this case, the corresponding function receives the "bef" or
+  "aft" part in its pr_context variable and can take it into account
+  when printing its data.</p>
+
+<h2>Comparison with the OCaml modules Printf and Format</h2>
+
+<p>The statement "pprintf" acts like the function
+  "Printf.sprintf". But since it requires this extra parameter of type
+  "pr_context" and needs the "%p" and "%q" conversions specifications
+  (which do not exist in "Printf"), it was not possible to use the
+  "Printf" machinery directly. A new statement had to be added.</p>
+
+<p>The pretty printing annotations look like the ones of the OCaml
+  module Format. Actually, they have different semantics. They do not
+  use <em>boxes</em> like "Format" does. In "pprintf" statement, the
+  machinery uses only changes of indentation.</p>
+
+<p>Notice that, with "pprintf", it is always possible to know the
+  current indentation (it is a field of the "pr_context" variable) and
+  it is therefore possible to take decisions before printing. For
+  example, it is possible, while printing OCaml statements, to decide
+  to print all match cases symmetrically, i.e. all with one line for
+  each case or all with a newline after the pattern.</p>
+
+<p>Another difference is that the internal behaviour of this printing
+  system is accessible, and it is always possible to use the basic
+  functions of the "Pretty" module ("horiz_vertic" and "sprintf") if
+  the behaviour of "pprintf" is not what is desired by the
+  programmer.</p>
+
+<h2>Relation with the Camlp5 extensible printers</h2>
+
+<p>The extensible printers of Camlp5 (see its
+  corresponding <a href="printers.html">chapter</a>) use the type
+  "<tt>pr_context</tt>" of "pprintf". It is therefore possible to use
+  "pprintf" in the semantic actions of the extensible printers.  But
+  it is not mandatory. An extensible printer can just use the "Pretty"
+  module or even neither "pprintf" nor "Pretty".</p>
 
 <h2>The Pprintf module</h2>
 

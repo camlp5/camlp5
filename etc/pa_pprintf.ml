@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_pprintf.ml,v 1.22 2007/12/28 12:58:30 deraugla Exp $ *)
+(* $Id: pa_pprintf.ml,v 1.23 2007/12/28 22:08:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pcaml;
@@ -164,7 +164,7 @@ value make_pc loc erase_bef erase_aft is_empty_bef is_empty_aft pc bef bef_al
           let e = <:expr< $e$ $pc$.bef >> in
           List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e bef_al
       in
-      [(<:patt< bef >>, e)]
+      [(<:patt< Pprintf.bef >>, e)]
   in
   let lbl =
     if not erase_aft && aft = "" then lbl
@@ -181,13 +181,13 @@ value make_pc loc erase_bef erase_aft is_empty_bef is_empty_aft pc bef bef_al
           let aft = aft ^ "%s" in
           let e = <:expr< Pretty.sprintf $str:aft$ >> in
           let e = List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e aft_al in
-          <:expr< $e$ $pc$.aft >>
+          <:expr< $e$ $pc$.Pprintf.aft >>
       in
-      [(<:patt< aft >>, e) :: lbl]
+      [(<:patt< Pprintf.aft >>, e) :: lbl]
   in
   let lbl =
     match a_dang with
-    [ Some a -> [(<:patt< dang >>, a) :: lbl]
+    [ Some a -> [(<:patt< Pprintf.dang >>, a) :: lbl]
     | None -> lbl ]
   in
   if lbl = [] then pc
@@ -262,9 +262,11 @@ value expr_of_pformat loc fmt is_empty_bef is_empty_aft pc al fmt1 =
           let fmt1 = if is_empty_bef then fmt1 else "%s" ^ fmt1 in
           let fmt1 = if is_empty_aft then fmt1 else fmt1 ^ "%s" in
           let e = <:expr< Pretty.sprintf $str:fmt1$ >> in
-          let e = if is_empty_bef then e else <:expr< $e$ $pc$.bef >> in
+          let e =
+            if is_empty_bef then e else <:expr< $e$ $pc$.Pprintf.bef >>
+          in
           let e = List.fold_left (fun f a -> <:expr< $f$ $a$ >>) e bef_al in
-          if is_empty_aft then e else <:expr< $e$ $pc$.aft >>
+          if is_empty_aft then e else <:expr< $e$ $pc$.Pprintf.aft >>
       in
       (e, al)
   | [(with_dang, fmt2) :: fmtl] ->
@@ -329,7 +331,8 @@ value expr_of_pformat loc fmt is_empty_bef is_empty_aft pc al fmt1 =
 
 value rec expr_of_tree_aux loc fmt is_empty_bef is_empty_aft pc al t =
   match t with
-  [ Tempty -> (<:expr< Pretty.sprintf "%s%s" $pc$.bef $pc$.aft >>, al)
+  [ Tempty ->
+      (<:expr< Pretty.sprintf "%s%s" $pc$.Pprintf.bef $pc$.Pprintf.aft >>, al)
   | Tlist t1 (Tparen _ _ as t2) [] ->
       let (e1, al) =
         expr_of_tree_aux loc fmt is_empty_bef False <:expr< pc >> al t1
@@ -337,7 +340,7 @@ value rec expr_of_tree_aux loc fmt is_empty_bef is_empty_aft pc al t =
       let (e2, al) =
         expr_of_tree_aux loc fmt True is_empty_aft pc al t2
       in
-      let e = <:expr< let pc = {($pc$) with aft = $e2$} in $e1$ >> in
+      let e = <:expr< let pc = {($pc$) with Pprintf.aft = $e2$} in $e1$ >> in
       (e, al)
   | Tlist (Tparen _ _ as t1) t2 [] ->
       let (e1, al) =
@@ -346,7 +349,7 @@ value rec expr_of_tree_aux loc fmt is_empty_bef is_empty_aft pc al t =
       let (e2, al) =
         expr_of_tree_aux loc fmt False is_empty_aft <:expr< pc >> al t2
       in
-      let e = <:expr< let pc = {($pc$) with bef = $e1$} in $e2$ >> in
+      let e = <:expr< let pc = {($pc$) with Pprintf.bef = $e1$} in $e2$ >> in
       (e, al)
   | Tlist t1 t2 tl -> not_impl "expr_of_tree_aux" 1
   | Tnode br t1 t2 ->
@@ -374,7 +377,7 @@ value rec expr_of_tree_aux loc fmt is_empty_bef is_empty_aft pc al t =
   | Tparen (PPoffset off) t ->
       let pc =
         let soff = string_of_int off in
-        <:expr< {($pc$) with ind = $pc$.ind + $int:soff$} >>
+        <:expr< {($pc$) with Pprintf.ind = $pc$.Pprintf.ind + $int:soff$} >>
       in
       let (e, al) =
         expr_of_tree_aux loc fmt is_empty_bef is_empty_aft <:expr< pc >> al t

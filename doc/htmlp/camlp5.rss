@@ -6,6 +6,14 @@
     <lastBuildDate>Mon Sep 17 15:10:47 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
     <item>
+      <title>pprintf</title>
+      <description>
+        Added chapter about the new statement "pprintf".
+      </description>
+      <pubDate>Fri Dec 28 23:05:19 CET 2007</pubDate>
+      <link>../pprintf.html</link>
+    </item>
+    <item>
       <title>Grammar.Entry.parse_all</title>
       <description>
         Added function "Grammar.Entry.parse_all".
