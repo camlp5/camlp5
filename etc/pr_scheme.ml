@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_scheme.ml,v 1.61 2007/12/28 12:58:30 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.62 2007/12/29 04:24:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -116,6 +116,11 @@ value bracket pc b =
 value brace pc b =
   {(pc) with ind = pc.ind + 1; bef = sprintf "%s{%s" pc.bef b;
    aft = sprintf "}%s" pc.aft}
+;
+
+value braceless pc b =
+  {(pc) with ind = pc.ind + 1; bef = sprintf "%s{<%s" pc.bef b;
+   aft = sprintf ">}%s" pc.aft}
 ;
 
 value type_param pc (s, (pl, mi)) =
@@ -278,6 +283,11 @@ value module_type_decl pc (s, mt) =
   plistbf 0 (paren pc "moduletype")
     [(fun pc -> pprintf pc "%s" s, "");
      (fun pc -> module_type pc mt, "")]
+;
+
+value field_expr pc (l, e) =
+  plistf 0 (paren pc "")
+    [(fun pc -> pprintf pc "%s" l, ""); (fun pc -> expr pc e, "")]
 ;
 
 value string pc s = pprintf pc "\"%s\"" s;
@@ -868,6 +878,9 @@ EXTEND_PRINTER
           sprintf "%s'%s'%s" pc.bef s pc.aft
       | <:expr< ` $s$ >> ->
           sprintf "%s(` %s)%s" pc.bef s pc.aft
+      | <:expr< {< $list:fel$ >} >> ->
+          let fel = List.map (fun fel -> (fel, "")) fel in
+          plist field_expr 0 (braceless pc "") fel
       | <:expr< object $opt:cst$ $list:csl$ end >> ->
           horiz_vertic
             (fun () ->
