@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_extfun.ml,v 1.18 2008/01/04 19:33:01 deraugla Exp $ *)
+(* $Id: pr_extfun.ml,v 1.19 2008/01/05 02:45:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 (* heuristic to rebuild the extfun statement from the AST *)
@@ -42,11 +42,6 @@ value rec un_extfun rpel =
   | <:expr< [] >> -> List.rev rpel
   | _ -> raise Not_found ]
 ;
-
-(**)
-value test = ref False;
-Pcaml.add_option "-test" (Arg.Set test) " test";
-(**)
 
 value bar_before elem pc x = pprintf pc "| %p" elem x;
 

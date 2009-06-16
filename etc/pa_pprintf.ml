@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_pprintf.ml,v 1.24 2008/01/04 03:35:34 deraugla Exp $ *)
+(* $Id: pa_pprintf.ml,v 1.25 2008/01/05 02:45:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pcaml;
@@ -161,7 +161,7 @@ value make_pc loc erase_bef erase_aft is_empty_bef is_empty_aft pc bef bef_al
         else
           let bef = "%s" ^ bef in
           let e = <:expr< Pretty.sprintf $str:bef$ >> in
-          let e = <:expr< $e$ $pc$.bef >> in
+          let e = <:expr< $e$ $pc$.Pprintf.bef >> in
           List.fold_left (fun f e -> <:expr< $f$ $e$ >>) e bef_al
       in
       [(<:patt< Pprintf.bef >>, e)]
