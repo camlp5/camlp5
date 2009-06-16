@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.159 2007/12/29 20:13:09 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.160 2007/12/29 20:49:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -338,6 +338,11 @@ value sequence_box bef pc el =
     (vlistl (semi_after (comm_expr expr_wh)) (comm_expr expr_wh)) el
 ;
 
+value sequence pc el =
+  let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
+  vlistl (semi_after (comm_expr expr_wh)) (comm_expr expr_wh) pc el
+;
+
 (* Pretty printing improvements (optional):
    - prints "field x = e" instead of "field = fun x -> e" in a record
    - if vertical and "e" is a sequence, put the "do {" at after the "="
@@ -352,9 +357,7 @@ value record_binding pc (p, e) =
   [ Some el ->
       horiz_vertic
         (fun () -> pprintf pc "%p =@;%p" (hlist patt) pl expr_wh e)
-        (fun () ->
-           sequence_box (fun pc () -> pprintf pc "%p =" (hlist patt) pl) pc
-             el)
+        (fun () -> pprintf pc "%p = do {@;%p@ }" (hlist patt) pl sequence el)
   | None ->
       pprintf pc "%p =@;%p" (hlist patt) pl expr_wh e ]
 ;
@@ -445,11 +448,7 @@ value match_assoc force_vertic pc (p, w, e) =
     (fun () ->
        match sequencify e with
        [ Some el ->
-           sequence_box
-             (fun pc () ->
-                horiz_vertic (fun _ -> sprintf "\n")
-                  (fun () -> patt_arrow pc (p, w)))
-             pc el
+           pprintf pc "%p do {@;%p@ }" patt_arrow (p, w) sequence el
        | None ->
            pprintf pc "%p@;%p" patt_arrow (p, w) (comm_expr expr_wh) e ])
 ;
@@ -873,10 +872,8 @@ EXTEND_PRINTER
                    let pl = List.map (fun p -> (p, "")) pl in
                    match sequencify e1 with
                    [ Some el ->
-                       sequence_box
-                         (fun pc () ->
-                            pprintf pc "fun %p ->" (plist patt 4) pl)
-                         pc el
+                       pprintf pc "fun %p -> do {@;%p@ }" (plist patt 4) pl
+                         sequence el
                    | None ->
                        pprintf pc "fun %p ->@;%p" (plist patt 4) pl curr e1 ])
           | [] -> pprintf pc "fun []"
@@ -917,9 +914,7 @@ EXTEND_PRINTER
                    | None ->
                        match sequencify e1 with
                        [ Some el ->
-                           pprintf pc "%p@ with %p"
-                             (sequence_box (fun pc () -> pprintf pc "%s" op))
-                             el
+                           pprintf pc "%s do {@;%p@ }@ with %p" op sequence el
                              (match_assoc False) (p, wo, e)
                        | None ->
                            pprintf pc "@[<a>%s@;%p@ with %p@]" op expr_wh e1
