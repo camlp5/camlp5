@@ -1,5 +1,5 @@
-(* camlp5r -I . pa_extend.cmo pa_extprint.cmo q_MLast.cmo *)
-(* $Id: q_phony.ml,v 1.18 2007/12/27 10:30:24 deraugla Exp $ *)
+(* camlp5r -I . pa_extend.cmo pa_extprint.cmo q_MLast.cmo pa_pprintf.cmo *)
+(* $Id: q_phony.ml,v 1.19 2008/01/04 21:07:57 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pcaml;
@@ -71,10 +71,7 @@ value expr = Eprinter.apply pr_expr;
 
 value rec dexpr pc =
   fun
-  [ <:expr< $x$ || $y$ >> ->
-      sprintf "%s%s OR %s%s" pc.bef
-        (dexpr {(pc) with bef = ""; aft = ""} x)
-        (dexpr1 {(pc) with bef = ""; aft = ""} y) pc.aft
+  [ <:expr< $x$ || $y$ >> -> pprintf pc "%p OR %p" dexpr x dexpr1 y
   | z -> dexpr1 pc z ]
 and dexpr1 pc =
   fun
@@ -84,55 +81,23 @@ and dexpr2 pc =
   [ z -> dexpr3 pc z ]
 and dexpr3 pc =
   fun
-  [ <:expr< $uid:i$ >> -> sprintf "%s%s%s" pc.bef i pc.aft
-  | _ -> sprintf "%sdexpr not impl%s" pc.bef pc.aft ]
+  [ <:expr< $uid:i$ >> -> pprintf pc "%s" i
+  | _ -> pprintf pc "dexpr not impl" ]
 ;
 
 value expr_or_macro pc =
   fun
-  [ <:expr< DEFINE $uid:i$ >> -> sprintf "%sDEFINE %s%s" pc.bef i pc.aft
+  [ <:expr< DEFINE $uid:i$ >> -> pprintf pc "DEFINE %s" i
   | e -> expr pc e ]
 ;
 
 value macro_def pc =
   fun
   [ <:expr< IFDEF $e$ $d$ >> ->
-      horiz_vertic
-        (fun () ->
-           sprintf "%sIFDEF %s THEN %s END%s" pc.bef
-             (dexpr {(pc) with bef = ""; aft = ""} e)
-             (expr_or_macro {(pc) with bef = ""; aft = ""} d) pc.aft)
-        (fun () ->
-           let s1 =
-             sprintf "%sIFDEF %s THEN" pc.bef
-               (dexpr {(pc) with bef = ""; aft = ""} e)
-           in
-           let s2 =
-             expr_or_macro {(pc) with bef = tab (pc.ind + 2); aft = ""} d
-           in
-           let s3 = sprintf "%sEND%s" (tab pc.ind) pc.aft in
-           sprintf "%s\n%s\n%s" s1 s2 s3)
+      pprintf pc "@[<a>IFDEF %p THEN@;%p@ END@]" dexpr e expr_or_macro d
   | <:expr< IFDEF $e$ $d1$ $d2$ >> ->
-      horiz_vertic
-        (fun () ->
-           sprintf "%sIFDEF %s THEN %s ELSE %s END%s" pc.bef
-             (dexpr {(pc) with bef = ""; aft = ""} e)
-             (expr_or_macro {(pc) with bef = ""; aft = ""} d1)
-             (expr_or_macro {(pc) with bef = ""; aft = ""} d2) pc.aft)
-        (fun () ->
-           let s1 =
-             sprintf "%sIFDEF %s THEN" pc.bef
-               (dexpr {(pc) with bef = ""; aft = ""} e)
-           in
-           let s2 =
-             expr_or_macro {(pc) with bef = tab (pc.ind + 2); aft = ""} d1
-           in
-           let s3 = sprintf "%sELSE" (tab pc.ind) in
-           let s4 =
-             expr_or_macro {(pc) with bef = tab (pc.ind + 2); aft = ""} d2
-           in
-           let s5 = sprintf "%sEND%s" (tab pc.ind) pc.aft in
-           sprintf "%s\n%s\n%s\n%s\n%s" s1 s2 s3 s4 s5)
+      pprintf pc "@[<a>IFDEF %p THEN@;%p@ ELSE@;%p@ END@]" dexpr e
+        expr_or_macro d1 expr_or_macro d2
   | _ -> assert False ]
 ;
 
