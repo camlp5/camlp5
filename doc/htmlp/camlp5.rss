@@ -6,6 +6,16 @@
     <lastBuildDate>Mon Sep 17 15:10:47 CEST 2007</lastBuildDate>
     <link>http://pauillac.inria.fr/~ddr/camlp5/doc/html/</link>
     <item>
+      <title>Plexer</title>
+      <description>
+        Added flag "Plexer.utf8_lexing" to specify that the lexer
+        built by "Plexer.gmake ()" should take utf8 punctuation
+        characters into account.
+      </description>
+      <pubDate>Mon Dec 24 11:24:34 CET 2007</pubDate>
+      <link>../opretty.html</link>
+    </item>
+    <item>
       <title>quotation example</title>
       <description>
         Fixed example in chapter "Quotations" about lambda terms. Did not

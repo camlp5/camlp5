@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: macros.html,v 1.11 2007/12/28 13:43:03 deraugla Exp $ -->
+  <!-- $Id: macros.html,v 1.12 2008/08/02 02:32:13 deraugla Exp $ -->
   <!-- Copyright (c) 2007-2008 INRIA -->
   <title>macros</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -93,8 +93,8 @@
               uident ::= 'A'-'Z' ident
                ident ::= ident-char*
           ident-char ::= ('a'-'a' | 'A'-'Z' | '0'-'9' | '_' | ''' |
-                          utf8-byte)
-           utf8-byte ::= '\128'-'\255'
+                          misc-byte)
+           misc-byte ::= '\128'-'\255'
 </pre>
 
 <p>When a macro has been defined, as name e.g. "NAME", the expressions

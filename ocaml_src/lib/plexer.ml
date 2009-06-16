@@ -41,19 +41,74 @@ let stream_peek_nth n strm =
   loop n (Stream.npeek n strm)
 ;;
 
+let utf8_lexing = ref false;;
+
+let misc_letter buf strm =
+  if !utf8_lexing then
+    let (strm__ : _ Stream.t) = strm in
+    match Stream.peek strm__ with
+      Some ('\128'..'\225' as c) ->
+        Stream.junk strm__; Plexing.Lexbuf.add c buf
+    | Some ('\227'..'\255' as c) ->
+        Stream.junk strm__; Plexing.Lexbuf.add c buf
+    | _ -> raise Stream.Failure
+  else
+    let (strm__ : _ Stream.t) = strm in
+    match Stream.peek strm__ with
+      Some ('\128'..'\255' as c) ->
+        Stream.junk strm__; Plexing.Lexbuf.add c buf
+    | _ -> raise Stream.Failure
+;;
+
+let misc_punct buf strm =
+  if !utf8_lexing then
+    let (strm__ : _ Stream.t) = strm in
+    match Stream.peek strm__ with
+      Some '\226' ->
+        Stream.junk strm__;
+        begin match Stream.peek strm__ with
+          Some c ->
+            Stream.junk strm__;
+            begin match Stream.peek strm__ with
+              Some c1 ->
+                Stream.junk strm__;
+                Plexing.Lexbuf.add c1
+                  (Plexing.Lexbuf.add c (Plexing.Lexbuf.add '\226' buf))
+            | _ -> raise (Stream.Error "")
+            end
+        | _ -> raise (Stream.Error "")
+        end
+    | _ -> raise Stream.Failure
+  else let (_ : _ Stream.t) = strm in raise Stream.Failure
+;;
+
 let rec ident buf (strm__ : _ Stream.t) =
-  match Stream.peek strm__ with
-    Some
-      ('A'..'Z' | 'a'..'z' | '0'..'9' | '_' | '\'' | '\128'..'\255' as c) ->
-      Stream.junk strm__; ident (Plexing.Lexbuf.add c buf) strm__
+  match
+    try
+      Some
+        (match Stream.peek strm__ with
+           Some ('A'..'Z' | 'a'..'z' | '0'..'9' | '_' | '\'' as c) ->
+             Stream.junk strm__; Plexing.Lexbuf.add c buf
+         | _ -> misc_letter buf strm__)
+    with Stream.Failure -> None
+  with
+    Some buf -> ident buf strm__
   | _ -> buf
 ;;
+
 let rec ident2 buf (strm__ : _ Stream.t) =
-  match Stream.peek strm__ with
-    Some
-      ('!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' |
-       '.' | ':' | '<' | '>' | '|' | '$' as c) ->
-      Stream.junk strm__; ident2 (Plexing.Lexbuf.add c buf) strm__
+  match
+    try
+      Some
+        (match Stream.peek strm__ with
+           Some
+             ('!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' |
+              '/' | '%' | '.' | ':' | '<' | '>' | '|' | '$' as c) ->
+             Stream.junk strm__; Plexing.Lexbuf.add c buf
+         | _ -> misc_punct buf strm__)
+    with Stream.Failure -> None
+  with
+    Some buf -> ident2 buf strm__
   | _ -> buf
 ;;
 
@@ -592,214 +647,250 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
       let buf = ident (Plexing.Lexbuf.add c buf) strm__ in
       let id = Plexing.Lexbuf.get buf in
       (try "", ctx.find_kwd id with Not_found -> "UIDENT", id)
-  | Some ('a'..'z' | '_' | '\128'..'\255' as c) ->
-      Stream.junk strm__;
-      let buf = ident (Plexing.Lexbuf.add c buf) strm__ in
-      let id = Plexing.Lexbuf.get buf in
-      (try "", ctx.find_kwd id with Not_found -> "LIDENT", id)
-  | Some ('1'..'9' as c) ->
-      Stream.junk strm__; number (Plexing.Lexbuf.add c buf) strm__
-  | Some '0' ->
-      Stream.junk strm__;
-      begin match Stream.peek strm__ with
-        Some ('o' | 'O' as c) ->
-          Stream.junk strm__;
-          digits octal (Plexing.Lexbuf.add c (Plexing.Lexbuf.add '0' buf))
-            strm__
-      | Some ('x' | 'X' as c) ->
-          Stream.junk strm__;
-          digits hexa (Plexing.Lexbuf.add c (Plexing.Lexbuf.add '0' buf))
-            strm__
-      | Some ('b' | 'B' as c) ->
-          Stream.junk strm__;
-          digits binary (Plexing.Lexbuf.add c (Plexing.Lexbuf.add '0' buf))
-            strm__
-      | _ -> number (Plexing.Lexbuf.add '0' buf) strm__
-      end
-  | Some '\'' ->
-      Stream.junk strm__;
-      begin match
-        (try Some (char ctx bp buf strm__) with Stream.Failure -> None)
-      with
-        Some buf -> "CHAR", Plexing.Lexbuf.get buf
-      | _ -> keyword_or_error ctx (bp, Stream.count strm__) "'"
-      end
-  | Some '\"' ->
-      Stream.junk strm__;
-      let buf = string ctx bp buf strm__ in "STRING", Plexing.Lexbuf.get buf
-  | Some '$' -> Stream.junk strm__; dollar ctx bp buf strm__
-  | Some ('!' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' as c) ->
-      Stream.junk strm__;
-      let buf = ident2 (Plexing.Lexbuf.add c buf) strm__ in
-      keyword_or_error ctx (bp, Stream.count strm__) (Plexing.Lexbuf.get buf)
-  | Some '~' ->
-      Stream.junk strm__;
-      begin try
-        match Stream.peek strm__ with
-          Some ('a'..'z' as c) ->
-            Stream.junk strm__;
-            let buf = ident (Plexing.Lexbuf.add c buf) strm__ in
-            tildeident buf strm__
-        | Some '_' ->
-            Stream.junk strm__;
-            let buf = ident (Plexing.Lexbuf.add '_' buf) strm__ in
-            tildeident buf strm__
-        | _ -> tilde ctx bp (Plexing.Lexbuf.add '~' buf) strm__
-      with Stream.Failure -> raise (Stream.Error "")
-      end
-  | Some '?' ->
-      Stream.junk strm__;
-      begin match Stream.peek strm__ with
-        Some ('a'..'z' as c) ->
-          Stream.junk strm__;
-          let buf = ident (Plexing.Lexbuf.add c buf) strm__ in
-          questionident buf strm__
-      | _ -> question ctx bp (Plexing.Lexbuf.add '?' buf) strm__
-      end
-  | Some '<' -> Stream.junk strm__; less ctx bp buf strm__
-  | Some ':' ->
-      Stream.junk strm__;
-      begin match Stream.peek strm__ with
-        Some ']' ->
-          Stream.junk strm__;
-          keyword_or_error ctx (bp, Stream.count strm__)
-            (Plexing.Lexbuf.get
-               (Plexing.Lexbuf.add ']' (Plexing.Lexbuf.add ':' buf)))
-      | Some ':' ->
-          Stream.junk strm__;
-          keyword_or_error ctx (bp, Stream.count strm__)
-            (Plexing.Lexbuf.get
-               (Plexing.Lexbuf.add ':' (Plexing.Lexbuf.add ':' buf)))
-      | Some '=' ->
-          Stream.junk strm__;
-          keyword_or_error ctx (bp, Stream.count strm__)
-            (Plexing.Lexbuf.get
-               (Plexing.Lexbuf.add '=' (Plexing.Lexbuf.add ':' buf)))
-      | Some '>' ->
-          Stream.junk strm__;
-          keyword_or_error ctx (bp, Stream.count strm__)
-            (Plexing.Lexbuf.get
-               (Plexing.Lexbuf.add '>' (Plexing.Lexbuf.add ':' buf)))
-      | _ ->
-          keyword_or_error ctx (bp, Stream.count strm__)
-            (Plexing.Lexbuf.get (Plexing.Lexbuf.add ':' buf))
-      end
-  | Some '>' ->
-      Stream.junk strm__;
-      begin match Stream.peek strm__ with
-        Some ']' ->
-          Stream.junk strm__;
-          keyword_or_error ctx (bp, Stream.count strm__)
-            (Plexing.Lexbuf.get
-               (Plexing.Lexbuf.add ']' (Plexing.Lexbuf.add '>' buf)))
-      | Some '}' ->
-          Stream.junk strm__;
-          keyword_or_error ctx (bp, Stream.count strm__)
-            (Plexing.Lexbuf.get
-               (Plexing.Lexbuf.add '}' (Plexing.Lexbuf.add '>' buf)))
-      | _ ->
-          let buf = ident2 (Plexing.Lexbuf.add '>' buf) strm__ in
-          keyword_or_error ctx (bp, Stream.count strm__)
-            (Plexing.Lexbuf.get buf)
-      end
-  | Some '|' ->
-      Stream.junk strm__;
-      begin match Stream.peek strm__ with
-        Some ']' ->
-          Stream.junk strm__;
-          keyword_or_error ctx (bp, Stream.count strm__)
-            (Plexing.Lexbuf.get
-               (Plexing.Lexbuf.add ']' (Plexing.Lexbuf.add '|' buf)))
-      | Some '}' ->
-          Stream.junk strm__;
-          keyword_or_error ctx (bp, Stream.count strm__)
-            (Plexing.Lexbuf.get
-               (Plexing.Lexbuf.add '}' (Plexing.Lexbuf.add '|' buf)))
-      | _ ->
-          let buf = ident2 (Plexing.Lexbuf.add '|' buf) strm__ in
-          keyword_or_error ctx (bp, Stream.count strm__)
-            (Plexing.Lexbuf.get buf)
-      end
-  | Some '[' ->
-      Stream.junk strm__;
-      begin match Stream.npeek 2 strm__ with
-        ['<'; '<'] | ['<'; ':'] ->
-          keyword_or_error ctx (bp, Stream.count strm__)
-            (Plexing.Lexbuf.get (Plexing.Lexbuf.add '[' buf))
-      | _ ->
-          match Stream.peek strm__ with
-            Some '|' ->
-              Stream.junk strm__;
-              keyword_or_error ctx (bp, Stream.count strm__)
-                (Plexing.Lexbuf.get
-                   (Plexing.Lexbuf.add '|' (Plexing.Lexbuf.add '[' buf)))
-          | Some '<' ->
-              Stream.junk strm__;
-              keyword_or_error ctx (bp, Stream.count strm__)
-                (Plexing.Lexbuf.get
-                   (Plexing.Lexbuf.add '<' (Plexing.Lexbuf.add '[' buf)))
-          | Some ':' ->
-              Stream.junk strm__;
-              keyword_or_error ctx (bp, Stream.count strm__)
-                (Plexing.Lexbuf.get
-                   (Plexing.Lexbuf.add ':' (Plexing.Lexbuf.add '[' buf)))
-          | _ ->
-              keyword_or_error ctx (bp, Stream.count strm__)
-                (Plexing.Lexbuf.get (Plexing.Lexbuf.add '[' buf))
-      end
-  | Some '{' ->
-      Stream.junk strm__;
-      begin match Stream.npeek 2 strm__ with
-        ['<'; '<'] | ['<'; ':'] ->
-          keyword_or_error ctx (bp, Stream.count strm__)
-            (Plexing.Lexbuf.get (Plexing.Lexbuf.add '{' buf))
-      | _ ->
-          match Stream.peek strm__ with
-            Some '|' ->
-              Stream.junk strm__;
-              keyword_or_error ctx (bp, Stream.count strm__)
-                (Plexing.Lexbuf.get
-                   (Plexing.Lexbuf.add '|' (Plexing.Lexbuf.add '{' buf)))
-          | Some '<' ->
-              Stream.junk strm__;
-              keyword_or_error ctx (bp, Stream.count strm__)
-                (Plexing.Lexbuf.get
-                   (Plexing.Lexbuf.add '<' (Plexing.Lexbuf.add '{' buf)))
-          | Some ':' ->
-              Stream.junk strm__;
-              keyword_or_error ctx (bp, Stream.count strm__)
-                (Plexing.Lexbuf.get
-                   (Plexing.Lexbuf.add ':' (Plexing.Lexbuf.add '{' buf)))
-          | _ ->
-              keyword_or_error ctx (bp, Stream.count strm__)
-                (Plexing.Lexbuf.get (Plexing.Lexbuf.add '{' buf))
-      end
-  | Some '.' ->
-      Stream.junk strm__;
-      begin match Stream.peek strm__ with
-        Some '.' ->
-          Stream.junk strm__;
-          keyword_or_error ctx (bp, Stream.count strm__) ".."
-      | _ ->
-          let id =
-            if ctx.specific_space_dot && ctx.after_space then " ." else "."
-          in
-          keyword_or_error ctx (bp, Stream.count strm__) id
-      end
-  | Some ';' ->
-      Stream.junk strm__;
-      begin match Stream.peek strm__ with
-        Some ';' ->
-          Stream.junk strm__;
-          keyword_or_error ctx (bp, Stream.count strm__) ";;"
-      | _ -> keyword_or_error ctx (bp, Stream.count strm__) ";"
-      end
-  | Some '\\' ->
-      Stream.junk strm__;
-      let buf = ident3 buf strm__ in "LIDENT", Plexing.Lexbuf.get buf
   | _ ->
-      let buf = any ctx buf strm__ in
-      keyword_or_error ctx (bp, Stream.count strm__) (Plexing.Lexbuf.get buf)
+      match
+        try
+          Some
+            (match Stream.peek strm__ with
+               Some ('a'..'z' | '_' as c) ->
+                 Stream.junk strm__; Plexing.Lexbuf.add c buf
+             | _ -> misc_letter buf strm__)
+        with Stream.Failure -> None
+      with
+        Some buf ->
+          let buf = ident buf strm__ in
+          let id = Plexing.Lexbuf.get buf in
+          (try "", ctx.find_kwd id with Not_found -> "LIDENT", id)
+      | _ ->
+          match Stream.peek strm__ with
+            Some ('1'..'9' as c) ->
+              Stream.junk strm__; number (Plexing.Lexbuf.add c buf) strm__
+          | Some '0' ->
+              Stream.junk strm__;
+              begin match Stream.peek strm__ with
+                Some ('o' | 'O' as c) ->
+                  Stream.junk strm__;
+                  digits octal
+                    (Plexing.Lexbuf.add c (Plexing.Lexbuf.add '0' buf)) strm__
+              | Some ('x' | 'X' as c) ->
+                  Stream.junk strm__;
+                  digits hexa
+                    (Plexing.Lexbuf.add c (Plexing.Lexbuf.add '0' buf)) strm__
+              | Some ('b' | 'B' as c) ->
+                  Stream.junk strm__;
+                  digits binary
+                    (Plexing.Lexbuf.add c (Plexing.Lexbuf.add '0' buf)) strm__
+              | _ -> number (Plexing.Lexbuf.add '0' buf) strm__
+              end
+          | Some '\'' ->
+              Stream.junk strm__;
+              begin match
+                begin try Some (char ctx bp buf strm__) with
+                  Stream.Failure -> None
+                end
+              with
+                Some buf -> "CHAR", Plexing.Lexbuf.get buf
+              | _ -> keyword_or_error ctx (bp, Stream.count strm__) "'"
+              end
+          | Some '\"' ->
+              Stream.junk strm__;
+              let buf = string ctx bp buf strm__ in
+              "STRING", Plexing.Lexbuf.get buf
+          | Some '$' -> Stream.junk strm__; dollar ctx bp buf strm__
+          | Some
+              ('!' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' |
+               '%' as c) ->
+              Stream.junk strm__;
+              let buf = ident2 (Plexing.Lexbuf.add c buf) strm__ in
+              keyword_or_error ctx (bp, Stream.count strm__)
+                (Plexing.Lexbuf.get buf)
+          | Some '~' ->
+              Stream.junk strm__;
+              begin try
+                match Stream.peek strm__ with
+                  Some ('a'..'z' as c) ->
+                    Stream.junk strm__;
+                    let buf = ident (Plexing.Lexbuf.add c buf) strm__ in
+                    tildeident buf strm__
+                | Some '_' ->
+                    Stream.junk strm__;
+                    let buf = ident (Plexing.Lexbuf.add '_' buf) strm__ in
+                    tildeident buf strm__
+                | _ -> tilde ctx bp (Plexing.Lexbuf.add '~' buf) strm__
+              with Stream.Failure -> raise (Stream.Error "")
+              end
+          | Some '?' ->
+              Stream.junk strm__;
+              begin match Stream.peek strm__ with
+                Some ('a'..'z' as c) ->
+                  Stream.junk strm__;
+                  let buf = ident (Plexing.Lexbuf.add c buf) strm__ in
+                  questionident buf strm__
+              | _ -> question ctx bp (Plexing.Lexbuf.add '?' buf) strm__
+              end
+          | Some '<' -> Stream.junk strm__; less ctx bp buf strm__
+          | Some ':' ->
+              Stream.junk strm__;
+              begin match Stream.peek strm__ with
+                Some ']' ->
+                  Stream.junk strm__;
+                  keyword_or_error ctx (bp, Stream.count strm__)
+                    (Plexing.Lexbuf.get
+                       (Plexing.Lexbuf.add ']' (Plexing.Lexbuf.add ':' buf)))
+              | Some ':' ->
+                  Stream.junk strm__;
+                  keyword_or_error ctx (bp, Stream.count strm__)
+                    (Plexing.Lexbuf.get
+                       (Plexing.Lexbuf.add ':' (Plexing.Lexbuf.add ':' buf)))
+              | Some '=' ->
+                  Stream.junk strm__;
+                  keyword_or_error ctx (bp, Stream.count strm__)
+                    (Plexing.Lexbuf.get
+                       (Plexing.Lexbuf.add '=' (Plexing.Lexbuf.add ':' buf)))
+              | Some '>' ->
+                  Stream.junk strm__;
+                  keyword_or_error ctx (bp, Stream.count strm__)
+                    (Plexing.Lexbuf.get
+                       (Plexing.Lexbuf.add '>' (Plexing.Lexbuf.add ':' buf)))
+              | _ ->
+                  keyword_or_error ctx (bp, Stream.count strm__)
+                    (Plexing.Lexbuf.get (Plexing.Lexbuf.add ':' buf))
+              end
+          | Some '>' ->
+              Stream.junk strm__;
+              begin match Stream.peek strm__ with
+                Some ']' ->
+                  Stream.junk strm__;
+                  keyword_or_error ctx (bp, Stream.count strm__)
+                    (Plexing.Lexbuf.get
+                       (Plexing.Lexbuf.add ']' (Plexing.Lexbuf.add '>' buf)))
+              | Some '}' ->
+                  Stream.junk strm__;
+                  keyword_or_error ctx (bp, Stream.count strm__)
+                    (Plexing.Lexbuf.get
+                       (Plexing.Lexbuf.add '}' (Plexing.Lexbuf.add '>' buf)))
+              | _ ->
+                  let buf = ident2 (Plexing.Lexbuf.add '>' buf) strm__ in
+                  keyword_or_error ctx (bp, Stream.count strm__)
+                    (Plexing.Lexbuf.get buf)
+              end
+          | Some '|' ->
+              Stream.junk strm__;
+              begin match Stream.peek strm__ with
+                Some ']' ->
+                  Stream.junk strm__;
+                  keyword_or_error ctx (bp, Stream.count strm__)
+                    (Plexing.Lexbuf.get
+                       (Plexing.Lexbuf.add ']' (Plexing.Lexbuf.add '|' buf)))
+              | Some '}' ->
+                  Stream.junk strm__;
+                  keyword_or_error ctx (bp, Stream.count strm__)
+                    (Plexing.Lexbuf.get
+                       (Plexing.Lexbuf.add '}' (Plexing.Lexbuf.add '|' buf)))
+              | _ ->
+                  let buf = ident2 (Plexing.Lexbuf.add '|' buf) strm__ in
+                  keyword_or_error ctx (bp, Stream.count strm__)
+                    (Plexing.Lexbuf.get buf)
+              end
+          | Some '[' ->
+              Stream.junk strm__;
+              begin match Stream.npeek 2 strm__ with
+                ['<'; '<'] | ['<'; ':'] ->
+                  keyword_or_error ctx (bp, Stream.count strm__)
+                    (Plexing.Lexbuf.get (Plexing.Lexbuf.add '[' buf))
+              | _ ->
+                  match Stream.peek strm__ with
+                    Some '|' ->
+                      Stream.junk strm__;
+                      keyword_or_error ctx (bp, Stream.count strm__)
+                        (Plexing.Lexbuf.get
+                           (Plexing.Lexbuf.add '|'
+                              (Plexing.Lexbuf.add '[' buf)))
+                  | Some '<' ->
+                      Stream.junk strm__;
+                      keyword_or_error ctx (bp, Stream.count strm__)
+                        (Plexing.Lexbuf.get
+                           (Plexing.Lexbuf.add '<'
+                              (Plexing.Lexbuf.add '[' buf)))
+                  | Some ':' ->
+                      Stream.junk strm__;
+                      keyword_or_error ctx (bp, Stream.count strm__)
+                        (Plexing.Lexbuf.get
+                           (Plexing.Lexbuf.add ':'
+                              (Plexing.Lexbuf.add '[' buf)))
+                  | _ ->
+                      keyword_or_error ctx (bp, Stream.count strm__)
+                        (Plexing.Lexbuf.get (Plexing.Lexbuf.add '[' buf))
+              end
+          | Some '{' ->
+              Stream.junk strm__;
+              begin match Stream.npeek 2 strm__ with
+                ['<'; '<'] | ['<'; ':'] ->
+                  keyword_or_error ctx (bp, Stream.count strm__)
+                    (Plexing.Lexbuf.get (Plexing.Lexbuf.add '{' buf))
+              | _ ->
+                  match Stream.peek strm__ with
+                    Some '|' ->
+                      Stream.junk strm__;
+                      keyword_or_error ctx (bp, Stream.count strm__)
+                        (Plexing.Lexbuf.get
+                           (Plexing.Lexbuf.add '|'
+                              (Plexing.Lexbuf.add '{' buf)))
+                  | Some '<' ->
+                      Stream.junk strm__;
+                      keyword_or_error ctx (bp, Stream.count strm__)
+                        (Plexing.Lexbuf.get
+                           (Plexing.Lexbuf.add '<'
+                              (Plexing.Lexbuf.add '{' buf)))
+                  | Some ':' ->
+                      Stream.junk strm__;
+                      keyword_or_error ctx (bp, Stream.count strm__)
+                        (Plexing.Lexbuf.get
+                           (Plexing.Lexbuf.add ':'
+                              (Plexing.Lexbuf.add '{' buf)))
+                  | _ ->
+                      keyword_or_error ctx (bp, Stream.count strm__)
+                        (Plexing.Lexbuf.get (Plexing.Lexbuf.add '{' buf))
+              end
+          | Some '.' ->
+              Stream.junk strm__;
+              begin match Stream.peek strm__ with
+                Some '.' ->
+                  Stream.junk strm__;
+                  keyword_or_error ctx (bp, Stream.count strm__) ".."
+              | _ ->
+                  let id =
+                    if ctx.specific_space_dot && ctx.after_space then " ."
+                    else "."
+                  in
+                  keyword_or_error ctx (bp, Stream.count strm__) id
+              end
+          | Some ';' ->
+              Stream.junk strm__;
+              begin match Stream.peek strm__ with
+                Some ';' ->
+                  Stream.junk strm__;
+                  keyword_or_error ctx (bp, Stream.count strm__) ";;"
+              | _ -> keyword_or_error ctx (bp, Stream.count strm__) ";"
+              end
+          | _ ->
+              match
+                try Some (misc_punct buf strm__) with Stream.Failure -> None
+              with
+                Some buf ->
+                  let buf = ident2 buf strm__ in
+                  keyword_or_error ctx (bp, Stream.count strm__)
+                    (Plexing.Lexbuf.get buf)
+              | _ ->
+                  match Stream.peek strm__ with
+                    Some '\\' ->
+                      Stream.junk strm__;
+                      let buf = ident3 buf strm__ in
+                      "LIDENT", Plexing.Lexbuf.get buf
+                  | _ ->
+                      let buf = any ctx buf strm__ in
+                      keyword_or_error ctx (bp, Stream.count strm__)
+                        (Plexing.Lexbuf.get buf)
 ;;
 
 let rec next_token ctx buf (strm__ : _ Stream.t) =
@@ -924,116 +1015,145 @@ let rec check_keyword_stream (strm__ : _ Stream.t) =
   in
   true
 and check buf (strm__ : _ Stream.t) =
-  match Stream.peek strm__ with
-    Some ('A'..'Z' | 'a'..'z' | '\128'..'\255' as c) ->
-      Stream.junk strm__; check_ident (Plexing.Lexbuf.add c buf) strm__
-  | Some
-      ('!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' |
-       '.' as c) ->
-      Stream.junk strm__; check_ident2 (Plexing.Lexbuf.add c buf) strm__
-  | Some '$' ->
-      Stream.junk strm__; check_ident2 (Plexing.Lexbuf.add '$' buf) strm__
-  | Some '<' ->
-      Stream.junk strm__;
-      begin match Stream.npeek 1 strm__ with
-        [':'] | ['<'] -> Plexing.Lexbuf.add '<' buf
-      | _ -> check_ident2 (Plexing.Lexbuf.add '<' buf) strm__
-      end
-  | Some ':' ->
-      Stream.junk strm__;
-      begin match Stream.peek strm__ with
-        Some ']' ->
+  match
+    try
+      Some
+        (match Stream.peek strm__ with
+           Some ('A'..'Z' | 'a'..'z' as c) ->
+             Stream.junk strm__; Plexing.Lexbuf.add c buf
+         | _ -> misc_letter buf strm__)
+    with Stream.Failure -> None
+  with
+    Some buf -> check_ident buf strm__
+  | _ ->
+      match Stream.peek strm__ with
+        Some
+          ('!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' |
+           '%' | '.' as c) ->
+          Stream.junk strm__; check_ident2 (Plexing.Lexbuf.add c buf) strm__
+      | Some '$' ->
+          Stream.junk strm__; check_ident2 (Plexing.Lexbuf.add '$' buf) strm__
+      | Some '<' ->
           Stream.junk strm__;
-          Plexing.Lexbuf.add ']' (Plexing.Lexbuf.add ':' buf)
+          begin match Stream.npeek 1 strm__ with
+            [':'] | ['<'] -> Plexing.Lexbuf.add '<' buf
+          | _ -> check_ident2 (Plexing.Lexbuf.add '<' buf) strm__
+          end
       | Some ':' ->
           Stream.junk strm__;
-          Plexing.Lexbuf.add ':' (Plexing.Lexbuf.add ':' buf)
-      | Some '=' ->
-          Stream.junk strm__;
-          Plexing.Lexbuf.add '=' (Plexing.Lexbuf.add ':' buf)
+          begin match Stream.peek strm__ with
+            Some ']' ->
+              Stream.junk strm__;
+              Plexing.Lexbuf.add ']' (Plexing.Lexbuf.add ':' buf)
+          | Some ':' ->
+              Stream.junk strm__;
+              Plexing.Lexbuf.add ':' (Plexing.Lexbuf.add ':' buf)
+          | Some '=' ->
+              Stream.junk strm__;
+              Plexing.Lexbuf.add '=' (Plexing.Lexbuf.add ':' buf)
+          | Some '>' ->
+              Stream.junk strm__;
+              Plexing.Lexbuf.add '>' (Plexing.Lexbuf.add ':' buf)
+          | _ -> Plexing.Lexbuf.add ':' buf
+          end
       | Some '>' ->
           Stream.junk strm__;
-          Plexing.Lexbuf.add '>' (Plexing.Lexbuf.add ':' buf)
-      | _ -> Plexing.Lexbuf.add ':' buf
-      end
-  | Some '>' ->
-      Stream.junk strm__;
-      begin match Stream.peek strm__ with
-        Some ']' ->
+          begin match Stream.peek strm__ with
+            Some ']' ->
+              Stream.junk strm__;
+              Plexing.Lexbuf.add ']' (Plexing.Lexbuf.add '>' buf)
+          | Some '}' ->
+              Stream.junk strm__;
+              Plexing.Lexbuf.add '}' (Plexing.Lexbuf.add '>' buf)
+          | _ -> check_ident2 (Plexing.Lexbuf.add '>' buf) strm__
+          end
+      | Some '|' ->
           Stream.junk strm__;
-          Plexing.Lexbuf.add ']' (Plexing.Lexbuf.add '>' buf)
-      | Some '}' ->
+          begin match Stream.peek strm__ with
+            Some ']' ->
+              Stream.junk strm__;
+              Plexing.Lexbuf.add ']' (Plexing.Lexbuf.add '|' buf)
+          | Some '}' ->
+              Stream.junk strm__;
+              Plexing.Lexbuf.add '}' (Plexing.Lexbuf.add '|' buf)
+          | _ -> check_ident2 (Plexing.Lexbuf.add '|' buf) strm__
+          end
+      | Some '[' ->
           Stream.junk strm__;
-          Plexing.Lexbuf.add '}' (Plexing.Lexbuf.add '>' buf)
-      | _ -> check_ident2 (Plexing.Lexbuf.add '>' buf) strm__
-      end
-  | Some '|' ->
-      Stream.junk strm__;
-      begin match Stream.peek strm__ with
-        Some ']' ->
+          begin match Stream.npeek 2 strm__ with
+            ['<'; '<'] | ['<'; ':'] -> Plexing.Lexbuf.add '[' buf
+          | _ ->
+              match Stream.peek strm__ with
+                Some '|' ->
+                  Stream.junk strm__;
+                  Plexing.Lexbuf.add '|' (Plexing.Lexbuf.add '[' buf)
+              | Some '<' ->
+                  Stream.junk strm__;
+                  Plexing.Lexbuf.add '<' (Plexing.Lexbuf.add '[' buf)
+              | Some ':' ->
+                  Stream.junk strm__;
+                  Plexing.Lexbuf.add ':' (Plexing.Lexbuf.add '[' buf)
+              | _ -> Plexing.Lexbuf.add '[' buf
+          end
+      | Some '{' ->
           Stream.junk strm__;
-          Plexing.Lexbuf.add ']' (Plexing.Lexbuf.add '|' buf)
-      | Some '}' ->
+          begin match Stream.npeek 2 strm__ with
+            ['<'; '<'] | ['<'; ':'] -> Plexing.Lexbuf.add '{' buf
+          | _ ->
+              match Stream.peek strm__ with
+                Some '|' ->
+                  Stream.junk strm__;
+                  Plexing.Lexbuf.add '|' (Plexing.Lexbuf.add '{' buf)
+              | Some '<' ->
+                  Stream.junk strm__;
+                  Plexing.Lexbuf.add '<' (Plexing.Lexbuf.add '{' buf)
+              | Some ':' ->
+                  Stream.junk strm__;
+                  Plexing.Lexbuf.add ':' (Plexing.Lexbuf.add '{' buf)
+              | _ -> Plexing.Lexbuf.add '{' buf
+          end
+      | Some ';' ->
           Stream.junk strm__;
-          Plexing.Lexbuf.add '}' (Plexing.Lexbuf.add '|' buf)
-      | _ -> check_ident2 (Plexing.Lexbuf.add '|' buf) strm__
-      end
-  | Some '[' ->
-      Stream.junk strm__;
-      begin match Stream.npeek 2 strm__ with
-        ['<'; '<'] | ['<'; ':'] -> Plexing.Lexbuf.add '[' buf
+          begin match Stream.peek strm__ with
+            Some ';' ->
+              Stream.junk strm__;
+              Plexing.Lexbuf.add ';' (Plexing.Lexbuf.add ';' buf)
+          | _ -> Plexing.Lexbuf.add ';' buf
+          end
       | _ ->
-          match Stream.peek strm__ with
-            Some '|' ->
-              Stream.junk strm__;
-              Plexing.Lexbuf.add '|' (Plexing.Lexbuf.add '[' buf)
-          | Some '<' ->
-              Stream.junk strm__;
-              Plexing.Lexbuf.add '<' (Plexing.Lexbuf.add '[' buf)
-          | Some ':' ->
-              Stream.junk strm__;
-              Plexing.Lexbuf.add ':' (Plexing.Lexbuf.add '[' buf)
-          | _ -> Plexing.Lexbuf.add '[' buf
-      end
-  | Some '{' ->
-      Stream.junk strm__;
-      begin match Stream.npeek 2 strm__ with
-        ['<'; '<'] | ['<'; ':'] -> Plexing.Lexbuf.add '{' buf
-      | _ ->
-          match Stream.peek strm__ with
-            Some '|' ->
-              Stream.junk strm__;
-              Plexing.Lexbuf.add '|' (Plexing.Lexbuf.add '{' buf)
-          | Some '<' ->
-              Stream.junk strm__;
-              Plexing.Lexbuf.add '<' (Plexing.Lexbuf.add '{' buf)
-          | Some ':' ->
-              Stream.junk strm__;
-              Plexing.Lexbuf.add ':' (Plexing.Lexbuf.add '{' buf)
-          | _ -> Plexing.Lexbuf.add '{' buf
-      end
-  | Some ';' ->
-      Stream.junk strm__;
-      begin match Stream.peek strm__ with
-        Some ';' ->
-          Stream.junk strm__;
-          Plexing.Lexbuf.add ';' (Plexing.Lexbuf.add ';' buf)
-      | _ -> Plexing.Lexbuf.add ';' buf
-      end
-  | Some c -> Stream.junk strm__; Plexing.Lexbuf.add c buf
-  | _ -> raise Stream.Failure
+          match
+            try Some (misc_punct buf strm__) with Stream.Failure -> None
+          with
+            Some buf -> check_ident2 buf strm__
+          | _ ->
+              match Stream.peek strm__ with
+                Some c -> Stream.junk strm__; Plexing.Lexbuf.add c buf
+              | _ -> raise Stream.Failure
 and check_ident buf (strm__ : _ Stream.t) =
-  match Stream.peek strm__ with
-    Some
-      ('A'..'Z' | 'a'..'z' | '0'..'9' | '_' | '\'' | '\128'..'\255' as c) ->
-      Stream.junk strm__; check_ident (Plexing.Lexbuf.add c buf) strm__
+  match
+    try
+      Some
+        (match Stream.peek strm__ with
+           Some ('A'..'Z' | 'a'..'z' | '0'..'9' | '_' | '\'' as c) ->
+             Stream.junk strm__; Plexing.Lexbuf.add c buf
+         | _ -> misc_letter buf strm__)
+    with Stream.Failure -> None
+  with
+    Some buf -> check_ident buf strm__
   | _ -> buf
 and check_ident2 buf (strm__ : _ Stream.t) =
-  match Stream.peek strm__ with
-    Some
-      ('!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' |
-       '.' | ':' | '<' | '>' | '|' as c) ->
-      Stream.junk strm__; check_ident2 (Plexing.Lexbuf.add c buf) strm__
+  match
+    try
+      Some
+        (match Stream.peek strm__ with
+           Some
+             ('!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' |
+              '/' | '%' | '.' | ':' | '<' | '>' | '|' as c) ->
+             Stream.junk strm__; Plexing.Lexbuf.add c buf
+         | _ -> misc_punct buf strm__)
+    with Stream.Failure -> None
+  with
+    Some buf -> check_ident2 buf strm__
   | _ -> buf
 ;;
 
@@ -1183,11 +1303,11 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-         (fun _ -> raise (Match_failure ("plexer.ml", 660, 25)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 660, 45)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 660, 68)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 661, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 661, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 679, 25)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 679, 45)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 679, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 680, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 680, 37)));
        tok_comm = None}
   in
   let glex =

@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: grammars.html,v 1.88 2007/12/28 13:43:03 deraugla Exp $ -->
+  <!-- $Id: grammars.html,v 1.89 2008/08/02 02:32:13 deraugla Exp $ -->
   <!-- Copyright (c) 2007-2008 INRIA -->
   <title>extensible grammars</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -154,10 +154,10 @@ to <em>extend</em> it, using a specific syntactic statement:
                  | uident
                  | lident
         uident ::= 'A'-'Z' ident
-        lident ::= ('a'-'z' | '_' | utf8-byte) ident
+        lident ::= ('a'-'z' | '_' | misc-letter) ident
          ident ::= ident-char*
-    ident-char ::= ('a'-'a' | 'A'-'Z' | '0'-'9' | '_' | ''' | utf8-byte)
-     utf8-byte ::= '\128'-'\255'
+    ident-char ::= ('a'-'a' | 'A'-'Z' | '0'-'9' | '_' | ''' | misc-letter)
+   misc-letter ::= '\128'-'\255'
 </pre>
 
 <p>Other statements, "<tt>GEXTEND</tt>", "<tt>DELETE_RULE</tt>",

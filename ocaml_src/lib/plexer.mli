@@ -71,6 +71,11 @@ val no_quotations : bool ref;;
    (** When True, all lexers built by [Plexer.gmake ()] do not lex the
        quotation syntax. Default is False (quotations are lexed). *)
 
+val utf8_lexing : bool ref;;
+   (** When True, all lexers built by [Plexer.gmake ()] use utf-8 encoding
+       to specify letters and punctuation marks. Default is False (all
+       characters between '\128' and '\255' are considered as letters) *)
+
 (*** For system use *)
 
 val force_antiquot_loc : bool ref;;

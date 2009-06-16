@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: plexer.mli,v 1.16 2007/12/29 03:40:22 deraugla Exp $ *)
+(* $Id: plexer.mli,v 1.17 2008/08/02 02:32:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 (** This module contains the lexer used for ocaml syntax (revised and
@@ -70,6 +70,11 @@ value specific_space_dot : ref bool;
 value no_quotations : ref bool;
    (** When True, all lexers built by [Plexer.gmake ()] do not lex the
        quotation syntax. Default is False (quotations are lexed). *)
+
+value utf8_lexing : ref bool;
+   (** When True, all lexers built by [Plexer.gmake ()] use utf-8 encoding
+       to specify letters and punctuation marks. Default is False (all
+       characters between '\128' and '\255' are considered as letters) *)
 
 (*** For system use *)
 

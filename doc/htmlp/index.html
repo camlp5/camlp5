@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: index.html,v 1.24 2007/12/28 13:43:03 deraugla Exp $ -->
+  <!-- $Id: index.html,v 1.25 2008/08/02 02:32:13 deraugla Exp $ -->
   <!-- Copyright (c) 2007-2008 INRIA -->
   <title>Camlp5</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -85,6 +85,35 @@ loading one of the files "<tt>camlp5o.cma</tt>" or
   ocaml -I +camlp5 camlp5r.cma
 </pre>
 
+<p>It is possible that, in your installation, the Camlp5 library is
+  not in the OCaml directory. In this case, the commands must be:</p>
+
+<pre>
+  ocaml -I `camlp5 -where` camlp5o.cma
+  ocaml -I `camlp5 -where` camlp5r.cma
+</pre>
+
+<p>In general, in this documentation, when a command requires:</p>
+
+<pre>
+  -I +camlp5
+</pre>
+
+<p>it can be replaced by:</p>
+
+<pre>
+  -I `camlp5 -where`
+</pre>
+
+<p>or, by:</p>
+
+<pre>
+  -I &lt;directory&gt;
+</pre>
+
+<p>where &lt;directory&gt; is the directory path where the Camlp5 library
+  files are installed.</p>
+
 <h2>Parsing and Printing kits</h2>
 
 <p>Parsing and printing extensions are OCaml object files, i.e. files
@@ -102,9 +131,9 @@ loading one of the files "<tt>camlp5o.cma</tt>" or
 
 <p>It is therefore important to compile the <em>kits</em> with the
   option "<tt>-c</tt>" of the OCaml compiler (i.e. just compilation,
-  not producing an executable) and with the option "<tt>-I +camlp5</tt>"
-  to inform the compiler to find module interfaces in installed Camlp5
-  library.</p>
+  not producing an executable) and with the option "<tt>-I
+  +camlp5</tt>" (or "<tt>-I `camlp5 -where`</tt>") to inform the
+  compiler to find module interfaces in installed Camlp5 library.</p>
 
 <p>In the OCaml toplevel, it is possible to use a kit by simply
   loading it with the directive "<tt>#load</tt>".</p>

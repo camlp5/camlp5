@@ -1,5 +1,5 @@
 (* camlp5r pa_lexer.cmo *)
-(* $Id: plexer.ml,v 1.106 2008/03/31 12:43:25 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.107 2008/08/02 02:32:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 value no_quotations = ref False;
@@ -40,14 +40,31 @@ value stream_peek_nth n strm =
     | [_ :: l] -> loop (n - 1) l ]
 ;
 
+value utf8_lexing = ref False;
+
+value misc_letter buf strm =
+  if utf8_lexing.val then
+    match strm with lexer [ '\128'-'\225' | '\227'-'\255' ]
+  else
+    match strm with lexer [ '\128'-'\255' ]
+;
+
+value misc_punct buf strm =
+  if utf8_lexing.val then
+    match strm with lexer [ '\226' _ _ ]
+  else
+    match strm with parser []
+;
+
 value rec ident =
   lexer
-  [ [ 'A'-'Z' | 'a'-'z' | '0'-'9' | '_' | ''' | '\128'-'\255' ] ident! | ]
+  [ [ 'A'-'Z' | 'a'-'z' | '0'-'9' | '_' | ''' | misc_letter ] ident! | ]
 ;
+
 value rec ident2 =
   lexer
   [ [ '!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' |
-      '%' | '.' | ':' | '<' | '>' | '|' | '$' ]
+      '%' | '.' | ':' | '<' | '>' | '|' | '$' | misc_punct ]
       ident2!
   | ]
 ;
@@ -314,7 +331,7 @@ value next_token_after_spaces ctx bp =
   [ 'A'-'Z' ident! ->
       let id = $buf in
       try ("", ctx.find_kwd id) with [ Not_found -> ("UIDENT", id) ]
-  | [ 'a'-'z' | '_' | '\128'-'\255' ] ident! ->
+  | [ 'a'-'z' | '_' | misc_letter ] ident! ->
       let id = $buf in
       try ("", ctx.find_kwd id) with [ Not_found -> ("LIDENT", id) ]
   | '1'-'9' number!
@@ -363,6 +380,7 @@ value next_token_after_spaces ctx bp =
       keyword_or_error ctx (bp, $pos) id
   | ";;" -> keyword_or_error ctx (bp, $pos) ";;"
   | ";" -> keyword_or_error ctx (bp, $pos) ";"
+  | misc_punct ident2! -> keyword_or_error ctx (bp, $pos) $buf
   | "\\"/ ident3! -> ("LIDENT", $buf)
   | (any ctx) -> keyword_or_error ctx (bp, $pos) $buf ]
 ;
@@ -469,7 +487,7 @@ value rec check_keyword_stream =
   parser [: _ = check $empty; _ = Stream.empty :] -> True
 and check =
   lexer
-  [ [ 'A'-'Z' | 'a'-'z' | '\128'-'\255' ] check_ident!
+  [ [ 'A'-'Z' | 'a'-'z' | misc_letter ] check_ident!
   | [ '!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' |
       '.' ]
       check_ident2!
@@ -499,15 +517,16 @@ and check =
   | "{"
   | ";;"
   | ";"
+  | misc_punct check_ident2!
   | _ ]
 and check_ident =
   lexer
-  [ [ 'A'-'Z' | 'a'-'z' | '0'-'9' | '_' | ''' | '\128'-'\255' ]
+  [ [ 'A'-'Z' | 'a'-'z' | '0'-'9' | '_' | ''' | misc_letter ]
     check_ident! | ]
 and check_ident2 =
   lexer
   [ [ '!' | '?' | '~' | '=' | '@' | '^' | '&' | '+' | '-' | '*' | '/' | '%' |
-      '.' | ':' | '<' | '>' | '|' ]
+      '.' | ':' | '<' | '>' | '|' | misc_punct ]
     check_ident2! | ]
 ;
 

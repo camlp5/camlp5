@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: commands.html,v 1.24 2008/01/05 12:03:05 deraugla Exp $ -->
+  <!-- $Id: commands.html,v 1.25 2008/08/02 02:32:13 deraugla Exp $ -->
   <!-- Copyright (c) 2007-2008 INRIA -->
   <title>Commands and Files</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -352,11 +352,12 @@
 
 <h2>OCaml toplevel files</h2>
 
-<p>These object files can be loaded in the OCaml toplevel to make Camlp5
-  parse the input. It is possible to load them either by putting them
-  as parameters of the toplevel, or by using the directive "load". The
-  option "<tt>-I +camlp5</tt>" must be added to the "<tt>ocaml</tt>"
-  command (the OCaml toplevel).</p>
+<p>These object files can be loaded in the OCaml toplevel to make
+  Camlp5 parse the input. It is possible to load them either by
+  putting them as parameters of the toplevel, or by using the
+  directive "load". The option "<tt>-I +camlp5</tt>" (or "<tt>-I
+  `camlp5 -where`</tt>") must be added to the "<tt>ocaml</tt>" command
+  (the OCaml toplevel).</p>
 
 <dl>
   <dt><tt>camlp5r.cma</tt></dt>

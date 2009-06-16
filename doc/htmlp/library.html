@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: library.html,v 1.38 2007/12/28 13:43:03 deraugla Exp $ -->
+  <!-- $Id: library.html,v 1.39 2008/08/02 02:32:13 deraugla Exp $ -->
   <!-- Copyright (c) 2007-2008 INRIA -->
   <title>Library</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -449,9 +449,17 @@ value make_stream_and_location :
 
 <dl>
   <dt><tt>value no_quotations : ref bool;</tt></dt>
-  <dd>When "<tt>True</tt>", all lexers built by "<tt>Plexer.make
+  <dd>When "<tt>True</tt>", all lexers built by "<tt>Plexer.gmake
       ()</tt>" do not lex the quotation syntax. Default is
       "<tt>False</tt>" (quotations are lexed).</dd>
+</dl>
+
+<dl>
+  <dt><tt>value utf8_lexing : ref bool;</tt></dt>
+  <dd>When "<tt>True</tt>", all lexers built by "<tt>Plexer.gmake
+       ()]</tt>" use utf-8 encoding to specify letters and punctuation
+       marks. Default is False (all characters between '\128' and
+       '\255' are considered as letters).</dd>
 </dl>
 
 <h2>Gramext module</h2>

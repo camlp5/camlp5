@@ -1,3 +1,9 @@
+Camlp5 Version 5.10:
+--------------------
+
+* [01 Aug 08] Added flag "Plexer.utf8_lexing" to specify that the lexers
+  built by "Plexer.gmake ()" must consider the input as utf-8 encoded.
+
 Camlp5 Version 5.09:
 --------------------
 
