@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_pprintf.ml,v 1.23 2007/12/28 22:08:59 deraugla Exp $ *)
+(* $Id: pa_pprintf.ml,v 1.24 2008/01/04 03:35:34 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pcaml;
@@ -338,7 +338,15 @@ value rec expr_of_tree_aux loc fmt is_empty_bef is_empty_aft pc al t =
         expr_of_tree_aux loc fmt is_empty_bef False <:expr< pc >> al t1
       in
       let (e2, al) =
-        expr_of_tree_aux loc fmt True is_empty_aft pc al t2
+        let pc = if is_empty_bef then pc else <:expr< pc >> in
+        let (e2, al) =
+          expr_of_tree_aux loc fmt True is_empty_aft pc al t2
+        in
+        let e2 =
+          if is_empty_bef then e2
+          else <:expr< let pc = {($pc$) with Pprintf.bef = ""} in $e2$ >>
+        in
+        (e2, al)
       in
       let e = <:expr< let pc = {($pc$) with Pprintf.aft = $e2$} in $e1$ >> in
       (e, al)

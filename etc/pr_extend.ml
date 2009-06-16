@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_extend.ml,v 1.57 2008/01/03 19:20:44 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.58 2008/01/04 03:35:34 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -341,42 +341,24 @@ value rec rule force_vertic pc (sl, a) =
 and psymbol pc (p, s) =
   match p with
   [ None -> symbol pc s
-  | Some p ->
-      horiz_vertic
-        (fun () ->
-           sprintf "%s%s = %s%s" pc.bef
-             (pattern {(pc) with bef = ""; aft = ""} p)
-             (symbol {(pc) with bef = ""; aft = ""} s) pc.aft)
-        (fun () ->
-           let s1 = pattern {(pc) with aft = " ="} p in
-           let s2 =
-             symbol {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2)} s
-           in
-           sprintf "%s\n%s" s1 s2) ]
+  | Some p -> pprintf pc "%p =@;%p" pattern p symbol s ]
 and pattern pc p =
   match p with
-  [ <:patt< $lid:i$ >> -> sprintf "%s%s%s" pc.bef i pc.aft
-  | <:patt< _ >> -> sprintf "%s_%s" pc.bef pc.aft
+  [ <:patt< $lid:i$ >> -> pprintf pc "%s" i
+  | <:patt< _ >> -> pprintf pc "_"
   | <:patt< ($list:pl$) >> ->
       let pl = List.map (fun p -> (p, ",")) pl in
-      plist patt 1
-        {(pc) with bef = sprintf "%s(" pc.bef; aft = sprintf ")%s" pc.aft}
-        pl
+      pprintf pc "(%p)" (plist patt 1) pl
   | p ->
-      patt
-        {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
-         aft = sprintf ")%s" pc.aft}
-        p ]
+      pprintf pc "@[<1>(%p)@]" patt p ]
 and symbol pc sy =
   match sy with
   [ Snterm e -> expr pc e
-  | Snterml e s -> expr {(pc) with aft = sprintf " LEVEL \"%s\"%s" s pc.aft} e
+  | Snterml e s -> pprintf pc "%p LEVEL \"%s\"" expr e s
   | Slist0 sy ->
-      sprintf "%sLIST0 %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
+      pprintf pc "LIST0@;%p" simple_symbol sy
   | Slist0sep sy sep ->
-      sprintf "%sLIST0 %s SEP %s" pc.bef
-        (simple_symbol {(pc) with bef = ""; aft = ""} sy)
-        (simple_symbol {(pc) with bef = ""} sep)
+      pprintf pc "LIST0@;%p@ @[SEP@;%p@]" simple_symbol sy simple_symbol sep
   | Slist1 sy ->
       sprintf "%sLIST1 %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
   | Slist1sep sy sep ->
@@ -393,10 +375,7 @@ and symbol pc sy =
       | None -> simple_symbol pc sy ]
   | Stoken tok -> token pc tok
   | Svala sl _ sy ->
-      sprintf "%sV %s%s%s" pc.bef
-        (simple_symbol {(pc) with bef = ""; aft = ""} sy)
-        (string_list {(pc) with bef = ""; aft = ""} sl)
-        pc.aft
+      pprintf pc "V @[<2>%p%p@]" simple_symbol sy string_list sl
   | sy -> simple_symbol pc sy ]
 and simple_symbol pc sy =
   match sy with
@@ -425,7 +404,8 @@ and simple_symbol pc sy =
   | Snterml _ _ | Slist0 _ | Slist0sep _ _ | Slist1 _ | Slist1sep _ _ |
     Sflag _ | Sopt _ ->
       symbol
-        {(pc) with bef = sprintf "%s(" pc.bef; aft = sprintf ")%s" pc.aft}
+        {(pc) with ind = pc.ind + 1; bef = sprintf "%s(" pc.bef;
+         aft = sprintf ")%s" pc.aft}
         sy
   | sy -> not_impl "simple_symbol" pc sy ]
 and s_symbol pc =
@@ -455,13 +435,10 @@ and s_symbol pc =
   | Sflag sy ->
       sprintf "%sSFLAG %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
   | Svala ls oe s ->
-      sprintf "%sSV %s%s%s%s" pc.bef
-        (simple_symbol {(pc) with bef = ""; aft= ""} s)
-        (string_list {(pc) with bef = ""; aft = ""} ls)
+      pprintf pc "SV@;%p%p%s" simple_symbol s string_list ls
         (match oe with
          [ Some e -> " " ^ e
          | None -> "" ])
-        pc.aft
   | _ -> assert False ]
 and check_slist rl =
   if no_slist.val then None
