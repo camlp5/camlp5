@@ -1,6 +1,9 @@
 Camlp5 Version 5.08:
 --------------------
 
+* [05 Jan 08] Fixed bug in EXTEND_PRINTER statement: the match cases with
+  "when" did not work.
+
 Camlp5 Version 5.07:
 --------------------
 
