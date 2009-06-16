@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_extend.ml,v 1.60 2008/01/04 11:40:27 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.61 2008/01/04 13:53:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -10,11 +10,6 @@ open Prtools;
 
 value no_slist = ref False;
 Pcaml.strict_mode.val := True;
-
-(**)
-value test = ref False;
-Pcaml.add_option "-test" (Arg.Set test) " test";
-(**)
 
 value not_impl name pc x =
   let desc =
@@ -535,14 +530,9 @@ value entry pc (e, pos, ll) =
       has_vertic
     else False
   in
-  sprintf "%s%s%s:%s\n%s\n%s;%s" (comm_bef pc.ind (MLast.loc_of_expr e))
-    pc.bef (expr {(pc) with bef = ""; aft = ""} e)
-    (position {(pc) with bef = ""; aft = ""} pos)
-    (vlist2 (level force_vertic) (bar_before (level force_vertic))
-       {(pc) with ind = pc.ind + 2; bef = sprintf "%s[ " (tab (pc.ind + 2));
-        aft = " ]"}
-        ll)
-    (tab pc.ind) pc.aft
+  comm_bef pc.ind (MLast.loc_of_expr e) ^
+  pprintf pc "@[<b>%p:%p@;[ %p ]@ ;@]" expr e position pos
+    (vlist2 (level force_vertic) (bar_before (level force_vertic))) ll
 ;
 
 value extend_body pc (globals, entries) =
@@ -550,12 +540,8 @@ value extend_body pc (globals, entries) =
   [ [] -> vlist entry pc entries
   | _ ->
       let globals = List.map (fun g -> (g, "")) globals in
-      let s1 =
-        plist expr 2 {(pc) with bef = sprintf "%sGLOBAL: " pc.bef; aft = ";"}
-          globals
-      in
-      let s2 = vlist entry {(pc) with bef = tab pc.ind} entries in
-      sprintf "%s\n%s" s1 s2 ]
+      pprintf pc "@[<b>GLOBAL: %p;@ %p@]" (plist expr 2) globals
+        (vlist entry) entries ]
 ;
 
 value extend pc e =
@@ -563,19 +549,9 @@ value extend pc e =
   [ <:expr< Grammar.extend $e$ >> ->
       try
         let ex = unextend_body e in
-        let s =
-          extend_body
-            {(pc) with ind = pc.ind + 2; bef = tab (pc.ind + 2); aft = ""} ex
-        in
-        sprintf "%sEXTEND\n%s\n%sEND%s" pc.bef s (tab pc.ind) pc.aft
+        pprintf pc "EXTEND@;%p@ END" extend_body ex
       with
-      [ Not_found ->
-          sprintf "%sGrammar.extend\n%s" pc.bef
-            (expr
-               {(pc) with ind = pc.ind + 2;
-                bef = sprintf "%s(" (tab (pc.ind + 2));
-                aft = sprintf ")%s" pc.aft}
-               e) ]
+      [ Not_found -> pprintf pc "Grammar.extend@;@[<1>(%p)@]" expr e ]
   | e -> expr pc e ]
 ;
 

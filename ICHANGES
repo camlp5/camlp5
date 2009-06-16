@@ -4,6 +4,8 @@ Internal, very small, undocumented, or invisible changes
 Camlp5 Version 5.08:
 ---------------------
 
+* [04 Jan 08] Converted "pr_extend.ml" into usage of "pprintf".
+
 Camlp5 Version 5.07:
 ---------------------
 
