@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: ast2pt.ml,v 1.62 2009/05/23 08:56:21 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.63 2009/06/09 12:34:47 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open MLast;
@@ -465,7 +465,7 @@ value rec patt =
             [ <:patt< $uid:s$ >> ->
                 Ppat_construct (mkli (conv_con s) [i :: il]) None
                   (not no_constructors_arity.val)
-            | _ -> error (loc_of_patt p2) "uppercase identifier expected" ]
+            | _ -> error (loc_of_patt p2) "bad access pattern" ]
         | _ -> error (loc_of_patt p2) "bad pattern" ]
       in
       mkpat loc p

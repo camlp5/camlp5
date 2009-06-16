@@ -67,6 +67,11 @@ Added statements:
   the macro cannot be used as a pattern, there is an error message if
   it is used in a pattern.
 
+  If the expression body of a DEFINE contains the identifier EVAL, the
+  expression is evaluated at compile time. Only some kinds of expressions
+  are interpreted (Char.chr, Char.code, binary + and -, characters,
+  integers).
+
   The expression __FILE__ returns the current compiled file name.
   The expression __LOCATION__ returns the current location of itself.
 
@@ -167,6 +172,8 @@ let substp mloc env =
           Not_found -> MLast.PaUid (loc, x)
         end
     | MLast.ExInt (_, x, "") -> MLast.PaInt (loc, x, "")
+    | MLast.ExChr (_, x) -> MLast.PaChr (loc, x)
+    | MLast.ExStr (_, x) -> MLast.PaStr (loc, x)
     | MLast.ExTup (_, x) -> MLast.PaTup (loc, List.map loop x)
     | MLast.ExRec (_, pel, None) ->
         let ppl = List.map (fun (p, e) -> p, loop e) pel in
@@ -192,6 +199,62 @@ let substt mloc env =
   loop
 ;;
 
+let cannot_eval e =
+  let loc = MLast.loc_of_expr e in Ploc.raise loc (Stream.Error "can't eval")
+;;
+
+let rec eval =
+  function
+    MLast.ExApp
+      (_, MLast.ExAcc (_, MLast.ExUid (_, "Char"), MLast.ExLid (_, "chr")),
+       e) ->
+      begin match eval e with
+        MLast.ExInt (_, i, "") ->
+          let c = Char.escaped (Char.chr (int_of_string i)) in
+          MLast.ExChr (loc, c)
+      | e -> cannot_eval e
+      end
+  | MLast.ExApp
+      (_, MLast.ExAcc (_, MLast.ExUid (_, "Char"), MLast.ExLid (_, "code")),
+       e) ->
+      begin match eval e with
+        MLast.ExChr (_, c) ->
+          let i = string_of_int (Char.code (Token.eval_char c)) in
+          MLast.ExInt (loc, i, "")
+      | e -> cannot_eval e
+      end
+  | MLast.ExApp (_, MLast.ExApp (_, op, x), y) ->
+      let f = eval op in
+      let x = eval x in
+      let y = eval y in
+      begin match x, y with
+        MLast.ExInt (_, x, ""), MLast.ExInt (_, y, "") ->
+          let x = int_of_string x in
+          let y = int_of_string y in
+          begin match f with
+            MLast.ExLid (_, "+") ->
+              MLast.ExInt (loc, string_of_int (x + y), "")
+          | MLast.ExLid (_, "-") ->
+              MLast.ExInt (loc, string_of_int (x - y), "")
+          | MLast.ExLid (_, "lor") ->
+              let s = Printf.sprintf "0o%o" (x lor y) in
+              MLast.ExInt (loc, s, "")
+          | _ -> cannot_eval op
+          end
+      | _ -> cannot_eval op
+      end
+  | MLast.ExUid (_, x) as e ->
+      (try (match List.assoc x !defined with _ -> e) with Not_found -> e)
+  | MLast.ExChr (_, _) | MLast.ExInt (_, _, "") | MLast.ExLid (_, _) as e -> e
+  | e -> cannot_eval e
+;;
+
+let may_eval =
+  function
+    MLast.ExApp (_, MLast.ExUid (_, "EVAL"), e) -> eval e
+  | e -> e
+;;
+
 let incorrect_number loc l1 l2 =
   Ploc.raise loc
     (Failure
@@ -209,7 +272,7 @@ let define eo x =
           [[Gramext.Stoken ("UIDENT", x)],
            Gramext.action
              (fun _ (loc : Ploc.t) ->
-                (Reloc.expr (fun _ -> loc) 0 e : 'expr))]];
+                (may_eval (Reloc.expr (fun _ -> loc) 0 e) : 'expr))]];
          Grammar.Entry.obj (patt : 'patt Grammar.Entry.e),
          Some (Gramext.Level "simple"),
          [None, None,
@@ -233,7 +296,8 @@ let define eo x =
                  in
                  if List.length el = List.length sl then
                    let env = List.combine sl el in
-                   let e = subst loc env e in Reloc.expr (fun _ -> loc) 0 e
+                   let e = subst loc env e in
+                   may_eval (Reloc.expr (fun _ -> loc) 0 e)
                  else incorrect_number loc el sl :
                  'expr))]];
          Grammar.Entry.obj (patt : 'patt Grammar.Entry.e),
@@ -248,6 +312,7 @@ let define eo x =
                    | p -> [p]
                  in
                  if List.length pl = List.length sl then
+                   let e = may_eval (Reloc.expr (fun _ -> loc) 0 e) in
                    let env = List.combine sl pl in
                    let p = substp loc env e in Reloc.patt (fun _ -> loc) 0 p
                  else incorrect_number loc pl sl :
@@ -327,6 +392,8 @@ Grammar.extend
      grammar_entry_create "opt_macro_expr"
    and opt_macro_type : 'opt_macro_type Grammar.Entry.e =
      grammar_entry_create "opt_macro_type"
+   and macro_param : 'macro_param Grammar.Entry.e =
+     grammar_entry_create "macro_param"
    and dexpr : 'dexpr Grammar.Entry.e = grammar_entry_create "dexpr"
    and uident : 'uident Grammar.Entry.e = grammar_entry_create "uident" in
    [Grammar.Entry.obj (str_item : 'str_item Grammar.Entry.e),
@@ -544,11 +611,12 @@ Grammar.extend
       Gramext.action
         (fun (e : 'expr) _ (loc : Ploc.t) ->
            (MvExpr ([], e) : 'opt_macro_expr));
-      [Gramext.Slist1 (Gramext.Stoken ("LIDENT", ""));
+      [Gramext.Snterm
+         (Grammar.Entry.obj (macro_param : 'macro_param Grammar.Entry.e));
        Gramext.Stoken ("", "=");
        Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
       Gramext.action
-        (fun (e : 'expr) _ (pl : string list) (loc : Ploc.t) ->
+        (fun (e : 'expr) _ (pl : 'macro_param) (loc : Ploc.t) ->
            (MvExpr (pl, e) : 'opt_macro_expr))]];
     Grammar.Entry.obj (opt_macro_type : 'opt_macro_type Grammar.Entry.e),
     None,
@@ -565,6 +633,17 @@ Grammar.extend
       Gramext.action
         (fun (t : 'ctyp) _ (pl : string list) (loc : Ploc.t) ->
            (MvType (pl, t) : 'opt_macro_type))]];
+    Grammar.Entry.obj (macro_param : 'macro_param Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Stoken ("", "(");
+       Gramext.Slist1sep
+         (Gramext.Stoken ("LIDENT", ""), Gramext.Stoken ("", ","));
+       Gramext.Stoken ("", ")")],
+      Gramext.action
+        (fun _ (sl : string list) _ (loc : Ploc.t) -> (sl : 'macro_param));
+      [Gramext.Slist1 (Gramext.Stoken ("LIDENT", ""))],
+      Gramext.action
+        (fun (sl : string list) (loc : Ploc.t) -> (sl : 'macro_param))]];
     Grammar.Entry.obj (expr : 'expr Grammar.Entry.e),
     Some (Gramext.Level "top"),
     [None, None,

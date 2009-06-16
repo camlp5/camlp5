@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_macro.ml,v 1.36 2008/12/31 11:01:18 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.37 2009/06/09 12:34:47 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 (*
@@ -66,6 +66,11 @@ Added statements:
   can use it in expressions *and* in patterns. If the expression defining
   the macro cannot be used as a pattern, there is an error message if
   it is used in a pattern.
+
+  If the expression body of a DEFINE contains the identifier EVAL, the
+  expression is evaluated at compile time. Only some kinds of expressions
+  are interpreted (Char.chr, Char.code, binary + and -, characters,
+  integers).
 
   The expression __FILE__ returns the current compiled file name.
   The expression __LOCATION__ returns the current location of itself.
@@ -165,6 +170,8 @@ value substp mloc env =
         try <:patt< $anti:List.assoc x env$ >> with
         [ Not_found -> <:patt< $uid:x$ >> ]
     | <:expr< $int:x$ >> -> <:patt< $int:x$ >>
+    | <:expr< $chr:x$ >> -> <:patt< $chr:x$ >>
+    | <:expr< $str:x$ >> -> <:patt< $str:x$ >>
     | <:expr< ($list:x$) >> -> <:patt< ($list:List.map loop x$) >>
     | <:expr< { $list:pel$ } >> ->
         let ppl = List.map (fun (p, e) -> (p, loop e)) pel in
@@ -186,6 +193,58 @@ value substt mloc env =
     | t -> t ]
 ;
 
+value cannot_eval e =
+  let loc = MLast.loc_of_expr e in
+  Ploc.raise loc (Stream.Error "can't eval")
+;
+
+value rec eval =
+  fun
+  [ <:expr< Char.chr $e$ >> ->
+      match eval e with
+      [ <:expr< $int:i$ >> ->
+          let c = Char.escaped (Char.chr (int_of_string i)) in
+         <:expr< $chr:c$ >>
+      | e -> cannot_eval e ]
+  | <:expr< Char.code $e$ >> ->
+      match eval e with
+      [ <:expr< $chr:c$ >> ->
+          let i = string_of_int (Char.code (Token.eval_char c)) in
+          <:expr< $int:i$ >>
+      | e ->
+          cannot_eval e ]
+  | <:expr< $op$ $x$ $y$ >> ->
+      let f = eval op in
+      let x = eval x in
+      let y = eval y in
+      match (x, y) with
+      [ (<:expr< $int:x$ >>, <:expr< $int:y$ >>) ->
+          let x = int_of_string x in
+          let y = int_of_string y in
+          match f with
+          [ <:expr< $lid:"+"$ >> -> <:expr< $int:string_of_int (x + y)$ >>
+          | <:expr< $lid:"-"$ >> -> <:expr< $int:string_of_int (x - y)$ >>
+          | <:expr< $lid:"lor"$ >> ->
+              let s = Printf.sprintf "0o%o" (x lor y) in
+              <:expr< $int:s$ >>
+          | _ -> cannot_eval op ]
+      | _ -> cannot_eval op ]
+  | <:expr< $uid:x$ >> as e ->
+      try
+        match List.assoc x defined.val with
+        [ _ -> e ]
+      with
+      [ Not_found -> e ]
+  | <:expr< $chr:_$ >> | <:expr< $int:_$ >> | <:expr< $lid:_$ >> as e -> e
+  | e -> cannot_eval e ]
+;
+
+value may_eval =
+  fun
+  [ <:expr< EVAL $e$ >> -> eval e
+  | e -> e ]
+;
+
 value incorrect_number loc l1 l2 =
   Ploc.raise loc
     (Failure
@@ -198,7 +257,7 @@ value define eo x = do {
   [ MvExpr [] e ->
       EXTEND
         expr: LEVEL "simple"
-          [ [ UIDENT $x$ -> Reloc.expr (fun _ -> loc) 0 e ] ]
+          [ [ UIDENT $x$ -> may_eval (Reloc.expr (fun _ -> loc) 0 e) ] ]
         ;
         patt: LEVEL "simple"
           [ [ UIDENT $x$ ->
@@ -218,7 +277,7 @@ value define eo x = do {
                 if List.length el = List.length sl then
                   let env = List.combine sl el in
                   let e = subst loc env e in
-                  Reloc.expr (fun _ -> loc) 0 e
+                  may_eval (Reloc.expr (fun _ -> loc) 0 e)
                 else
                   incorrect_number loc el sl ] ]
         ;
@@ -230,6 +289,7 @@ value define eo x = do {
                   | p -> [p] ]
                 in
                 if List.length pl = List.length sl then
+                  let e = may_eval (Reloc.expr (fun _ -> loc) 0 e) in
                   let env = List.combine sl pl in
                   let p = substp loc env e in
                   Reloc.patt (fun _ -> loc) 0 p
@@ -349,7 +409,7 @@ EXTEND
       | si = LIST1 sig_item -> SdStr si ] ]
   ;
   opt_macro_expr:
-    [ [ pl = LIST1 LIDENT; "="; e = expr -> MvExpr pl e
+    [ [ pl = macro_param; "="; e = expr -> MvExpr pl e
       | "="; e = expr -> MvExpr [] e
       | -> MvNone ] ]
   ;
@@ -357,6 +417,10 @@ EXTEND
     [ [ pl = LIST1 LIDENT; "="; t = ctyp -> MvType pl t
       | "="; t = ctyp -> MvType [] t
       | -> MvNone ] ]
+  ;
+  macro_param:
+    [ [ sl = LIST1 LIDENT -> sl
+      | "("; sl = LIST1 LIDENT SEP ","; ")" -> sl ] ]
   ;
   expr: LEVEL "top"
     [ [ "IFDEF"; e = dexpr; "THEN"; e1 = SELF; "ELSE"; e2 = SELF; "END" ->

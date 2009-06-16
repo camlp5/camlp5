@@ -404,7 +404,7 @@ let rec patt =
                 Ppat_construct
                   (mkli (conv_con s) (i :: il), None,
                    not !no_constructors_arity)
-            | _ -> error (loc_of_patt p2) "uppercase identifier expected"
+            | _ -> error (loc_of_patt p2) "bad access pattern"
             end
         | _ -> error (loc_of_patt p2) "bad pattern"
       in
