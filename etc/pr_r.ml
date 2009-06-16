@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.162 2007/12/30 01:47:24 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.163 2007/12/30 02:05:33 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -754,10 +754,7 @@ EXTEND_PRINTER
                    (fun () ->
                       pprintf pc "%sif %p then %p" else_b curr e1 curr e2)
                    (fun () ->
-                      let horiz_if_then pc =
-                        pprintf pc "%sif %p then" else_b curr e1
-                      in
-                      let vertic_if_then pc =
+                      let if_e1_then pc () =
                         if else_b = "" then
                           pprintf pc "@[<3>if %p@]@ then" curr e1
                         else
@@ -765,17 +762,11 @@ EXTEND_PRINTER
                       in
                       match sequencify e2 with
                       [ Some el ->
-                          sequence_box
-                            (fun pc () ->
-                               horiz_vertic (fun () -> horiz_if_then pc)
-                                 (fun () -> vertic_if_then pc))
-                            pc el
+                          pprintf pc "%p do {@;%p@ }" if_e1_then ()
+                            sequence el
                       | None ->
-                          pprintf pc "%p@;%p"
-                            (fun pc () ->
-                               horiz_vertic (fun () -> horiz_if_then pc)
-                                  (fun () -> vertic_if_then pc))
-                            () (comm_expr expr_wh) e2 ])
+                          pprintf pc "%p@;%p" if_e1_then ()
+                            (comm_expr expr_wh) e2 ])
                in
                let (force_vertic, eel, e3) =
                  if flag_equilibrate_cases.val then
