@@ -1,5 +1,5 @@
 (* camlp5r -I . pa_macro.cmo q_MLast.cmo pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.169 2008/01/06 19:59:53 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.170 2008/01/06 20:00:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -606,6 +606,8 @@ value are_close f x1 x2 =
       r1 >= equality_threshold && r2 >= equality_threshold
   | _ -> False ]
 ;
+
+(* if statement *)
 
 value if_then force_vertic curr else_b pc (e1, e2) =
   let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
