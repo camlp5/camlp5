@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo -I . pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_extprint.ml,v 1.6 2008/01/06 03:20:30 deraugla Exp $ *)
+(* $Id: pr_extprint.ml,v 1.7 2008/01/07 15:09:37 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 (* heuristic to rebuild the EXTEND_PRINTER statement from the AST *)
@@ -83,6 +83,12 @@ value expr = Eprinter.apply pr_expr;
 value patt = Eprinter.apply pr_patt;
 value bar_before elem pc x = pprintf pc "| %p" elem x;
 
+(* expression with adding the possible comment before *)
+value comm_expr expr pc z =
+  let ccc = comm_bef pc.ind (MLast.loc_of_expr z) in
+  Pretty.sprintf "%s%s" ccc (expr pc z)
+;
+
 value opt_position pc =
   fun
   [ Some p ->
@@ -107,7 +113,7 @@ value rule pc ((p, wo, e), is_last) =
       pprintf pc "@[<2>%p@ @[when@;%p ->@]@;%q@]" patt_as p expr e1 expr e
         (if is_last then "" else "|")
   | None ->
-      pprintf pc "@[<2>%p ->@;%q@]" patt_as p expr e
+      pprintf pc "@[<2>%p ->@;%q@]" patt_as p (comm_expr expr) e
         (if is_last then "" else "|") ]
 ;
 
