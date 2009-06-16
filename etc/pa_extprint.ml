@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_extprint.ml,v 1.47 2007/12/28 12:58:30 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.48 2008/01/05 11:36:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pcaml;
@@ -90,7 +90,8 @@ value conv loc (p, wo, e) =
     if wo = None && catch_any p then <:expr< fun $p$ -> Some $e$ >>
     else <:expr< fun [ $p$ $opt:wo$ -> Some $e$ | _ -> None ] >>
   in
-  <:expr< ($tst$, False, $e$) >>
+  let has_when = if wo <> None then <:expr< True >> else <:expr< False >> in
+  <:expr< ($tst$, $has_when$, $e$) >>
 ;
 
 value text_of_extprint loc el =

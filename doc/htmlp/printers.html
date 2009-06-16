@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: printers.html,v 1.18 2007/12/28 13:43:03 deraugla Exp $ -->
+  <!-- $Id: printers.html,v 1.19 2008/01/05 11:36:32 deraugla Exp $ -->
   <!-- Copyright (c) 2007-2008 INRIA -->
   <title>extensible printers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -83,6 +83,7 @@
              rules ::= rule "|" rules
                      | rule
               rule ::= pattern "->" expression
+                     | pattern "when" expression "->" expression
       printer-name ::= qualid
             qualid ::= qualid "." qualid
                      | uident

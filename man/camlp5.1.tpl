@@ -234,6 +234,7 @@ Printing files:
 	pr_schemep.cmo: try to rebuild streams and parsers syntax
 	pr_extend.cmo: try to rebuild EXTEND statements
 	pr_extfun.cmo: try to rebuild extfun statements
+	pr_extprint.cmo: try to rebuild EXTEND_PRINTER statements
 	pr_dump.cmo: dump syntax tree for ocaml compiler
 	pr_depend.cmo: file dependencies
 	pr_null.cmo: no output

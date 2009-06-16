@@ -32,6 +32,8 @@ pr_extend.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi
 pr_extend.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx 
 pr_extfun.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi 
 pr_extfun.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx 
+pr_extprint.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi 
+pr_extprint.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/prtools.cmx 
 pr_null.cmo: ../main/pcaml.cmi 
 pr_null.cmx: ../main/pcaml.cmx 
 pr_o.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/prtools.cmi 

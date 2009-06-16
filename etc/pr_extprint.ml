@@ -1,27 +1,11 @@
 (* camlp5r q_MLast.cmo -I . pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_extprint.ml,v 1.2 2008/01/05 10:11:47 deraugla Exp $ *)
+(* $Id: pr_extprint.ml,v 1.3 2008/01/05 11:36:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 (* heuristic to rebuild the EXTEND_PRINTER statement from the AST *)
 
 open Pcaml;
 open Prtools;
-
-value not_impl name pc x =
-  let desc =
-    if Obj.tag (Obj.repr x) = Obj.tag (Obj.repr "") then
-      "\"" ^ Obj.magic x ^ "\""
-    else if Obj.is_block (Obj.repr x) then
-      "tag = " ^ string_of_int (Obj.tag (Obj.repr x))
-    else "int_val = " ^ string_of_int (Obj.magic x)
-  in
-  pprintf pc "\"pr_extprint, not impl: %s; %s\"" name (String.escaped desc)
-;
-
-(**)
-value test = ref False;
-Pcaml.add_option "-test" (Arg.Set test) " test";
-(**)
 
 (* Extracting *)
 
@@ -33,7 +17,7 @@ value unrules =
     [ <:expr< [$rule$ :: $rules$] >> ->
         let (p, wo, e) =
           match rule with
-          [ <:expr< ($_$, False, $e$) >> ->
+          [ <:expr< ($_$, $_$, $e$) >> ->
               match e with
               [ <:expr< fun [ $p$ $opt:wo$ -> Some $e$ | _ -> None ] >> ->
                   (p, wo, e)
@@ -117,7 +101,13 @@ value patt_as pc z =
   | z -> patt pc z ]
 ;
 
-value rule pc (p, wo, e) = pprintf pc "@[<2>%p ->@;%p@]" patt_as p expr e;
+value rule pc (p, wo, e) =
+  match wo with
+  [ Some e1 ->
+      pprintf pc "@[<2>%p@ @[when@;%p ->@]@;%p@]" patt_as p expr e1 expr e
+  | None ->
+      pprintf pc "@[<2>%p ->@;%p@]" patt_as p expr e ]
+;
 
 value rule_list pc =
   fun
@@ -137,32 +127,60 @@ value level_list pc =
   | ll -> pprintf pc "[ %p ]" (vlist2 level (bar_before level)) ll ]
 ;
 
-value extend_body pc (pr, pos, ll) =
-  pprintf pc "@[<b>%p:%p@;%p@]" expr pr opt_position pos level_list ll
+value extend_body pc exl =
+  vlist 
+    (fun pc (pr, pos, ll) ->
+       pprintf pc "@[<b>%p:%p@;%p@ ;@]" expr pr opt_position pos
+         level_list ll)
+    pc exl
 ;
 
 value extend pc =
   fun
   [ <:expr< Eprinter.extend $pr$ $pos$ $body$ >> ->
-      if test.val then
-      pprintf pc "test"
-      else
       try
         let ex = unextend_body pr pos body in
-        pprintf pc "EXTEND_PRINTER@;%p@ END" extend_body ex
+        pprintf pc "EXTEND_PRINTER@;%p@ END" extend_body [ex]
       with
       [ Not_found ->
           let expr = Eprinter.apply_level pr_expr "dot" in
           pprintf pc "Eprinter.extend@;%p@ %p@ %p@" expr pr expr pos
             expr body ]
+  | <:expr< do { $list:el$ } >> ->
+      try
+        let exl =
+          List.map
+            (fun
+             [ <:expr< Eprinter.extend $pr$ $pos$ $body$ >> ->
+                 unextend_body pr pos body
+             | _ ->
+                 assert False ])
+            el
+        in
+        pprintf pc "EXTEND_PRINTER@;%p@ END" extend_body exl
+      with
+      [ Not_found ->
+          pprintf pc "not impl do {} not extend" ]
   | e -> expr pc e ]
 ;
 
+value is_extend el =
+  List.for_all
+    (fun
+     [ <:expr< Eprinter.extend $_$ $_$ $_$ >> -> True
+     | _ -> False ])
+    el
+;
+
 EXTEND_PRINTER
+  pr_expr: LEVEL "top"
+    [ [ <:expr< do { $list:el$ } >> as e when is_extend el -> next pc e ] ]
+  ;
   pr_expr: LEVEL "apply"
     [ [ <:expr< Eprinter.extend $_$ $_$ $_$ >> as e -> next pc e ] ]
   ;
   pr_expr: LEVEL "simple"
-    [ [ <:expr< Eprinter.extend $_$ $_$ $_$ >> as e -> extend pc e ] ]
+    [ [ <:expr< Eprinter.extend $_$ $_$ $_$ >> as e -> extend pc e
+      | <:expr< do { $list:el$ } >> as e when is_extend el -> extend pc e ] ]
   ;
 END;
