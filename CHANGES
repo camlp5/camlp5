@@ -5,7 +5,6 @@ Camlp5 Version 5.09:
 * [31 Mar 08] Fixed bug: "x $ y" generated syntax error (normal syntax).
 * [02 Jan 08] Added compatibility with OCaml 3.10.3.
 
-
 Camlp5 Version 5.08:
 --------------------
 
