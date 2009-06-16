@@ -1,16 +1,6 @@
 (* camlp5r *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: ocpp.ml,v 1.7 2007/09/01 19:42:28 deraugla Exp $ *)
+(* $Id: ocpp.ml,v 1.8 2007/12/29 03:40:22 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2008 *)
 
 value buff = ref (String.create 80);
 value store len x =

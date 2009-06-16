@@ -1,16 +1,6 @@
 (* camlp5r *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: plexer.mli,v 1.15 2007/09/03 09:49:06 deraugla Exp $ *)
+(* $Id: plexer.mli,v 1.16 2007/12/29 03:40:22 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2008 *)
 
 (** This module contains the lexer used for ocaml syntax (revised and
     normal). *)

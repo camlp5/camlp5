@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: parsers.html,v 1.28 2007/12/28 13:43:03 deraugla Exp $ -->
+  <!-- $Id: parsers.html,v 1.29 2007/12/29 03:40:22 deraugla Exp $ -->
   <!-- Copyright (c) 2007-2008 INRIA -->
   <title>parsers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -316,10 +316,10 @@
         "<code>True</code>", the stream pattern component matches, and
         the first element of the stream is removed.</li>
       <li>The character "question mark" followed by the character
-        "equal" (new feature 2007) and a lookahead expression (see
-        further), meaning: if the lookahead applies, the stream
-        pattern component matches. The lookahead may unfreeze one or
-        several elements on the stream, but does not remove them.</li>
+        "equal" and a lookahead expression (see further), meaning: if
+        the lookahead applies, the stream pattern component
+        matches. The lookahead may unfreeze one or several elements on
+        the stream, but does not remove them.</li>
     </ol>
   </li>
   <li>A pattern followed by the "equal" sign and an expression of type
@@ -351,10 +351,9 @@
             "<code>string</code>"), the expression is evaluated and
             given as parameter of the exception
             "<tt>Stream.Error</tt>".</li>
-          <li>If the expression is followed by an "exclamation mark"
-            (new feature 2007), the test and conversion from
-            "<code>Stream.Failure</code>" to
-            "<code>Stream.Error</code>" is not done, and the parser
+          <li>If the expression is followed by an "exclamation mark",
+            the test and conversion from "<code>Stream.Failure</code>"
+            to "<code>Stream.Error</code>" is not done, and the parser
             just raises "<code>Stream.Failure</code>" again. This is
             an optimization which must be assumed by the programmer,
             in general when he knows that the sub-parser called never
@@ -375,11 +374,11 @@
 <h3>Let statement</h3>
 
 <p>Between stream pattern components, it is possible to use the
-  "let..in" construction (new feature 2007). This is not considered as
-  a real stream pattern component, in the fact that is is not tested
-  against the exception "<code>Stream.Failure</code>" it may raise. It
-  can be useful for intermediate computation. In particular, it is
-  used internally by the lexers (see chapter
+  "let..in" construction. This is not considered as a real stream
+  pattern component, in the fact that is is not tested against the
+  exception "<code>Stream.Failure</code>" it may raise. It can be
+  useful for intermediate computation. In particular, it is used
+  internally by the lexers (see chapter
   about <a href="lexers.html">lexers</a> as character stream
   parsers).</p>
 
@@ -471,12 +470,12 @@
 
 <h3>No error optimization</h3>
 
-<p>The "no error optimization" is a new feature 2007. This is the fact
-  to end a stream pattern component of kind "non-terminal" ("pattern"
-  "equal" "expression") by the character "exclamation mark". Like said
-  above, this inhibits the transformation of the exception
-  "<code>Stream.Failure</code>", possibly raised by the called parser,
-  into the exception "<code>Stream.Error</code>".</p>
+<p>The "no error optimization" is the fact to end a stream pattern
+  component of kind "non-terminal" ("pattern" "equal" "expression") by
+  the character "exclamation mark". Like said above, this inhibits the
+  transformation of the exception "<code>Stream.Failure</code>",
+  possibly raised by the called parser, into the exception
+  "<code>Stream.Error</code>".</p>
 
 <p>The code:</p>
 

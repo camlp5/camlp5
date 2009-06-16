@@ -1,16 +1,6 @@
 (* camlp5r *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: quotation.mli,v 1.3 2007/07/29 00:48:19 deraugla Exp $ *)
+(* $Id: quotation.mli,v 1.4 2007/12/29 03:40:22 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2008 *)
 
 (** Quotation operations. *)
 

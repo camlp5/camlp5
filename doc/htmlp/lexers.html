@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: lexers.html,v 1.24 2007/12/28 13:43:03 deraugla Exp $ -->
+  <!-- $Id: lexers.html,v 1.25 2007/12/29 03:40:22 deraugla Exp $ -->
   <!-- Copyright (c) 2007-2008 INRIA -->
   <title>lexers</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -206,8 +206,8 @@
     raised with that string as parameter. Without this indicator, it
     is raised with the empty string. This is the same behaviour than
     with classical <a href="parsers.html">stream parsers</a>.</li>
-  <li>The character <tt>!</tt> (exclamation mark), which is just
-    an indicator to let the syntax expander optimize the code. If the
+  <li>The character <tt>!</tt> (exclamation mark), which is just an
+    indicator to let the syntax expander optimize the code. If the
     programmer is sure that the symbol never fails (i.e. never
     raises <tt>Stream.Failure</tt>), in particular if this symbol
     recognizes the empty rule, he can add this exclamation mark. If it
@@ -215,8 +215,7 @@
     identical as without the <tt>!</tt>, except that the code is
     shorter and faster, and can sometimes be tail recursive. If the
     indication is not correct, the behaviour of the lexer is
-    undefined. This feature exists also in classical stream parsers
-    (it is a new feature added in 2007).</li>
+    undefined.</li>
 </ul>
 
 <h3>Specific expressions</h3>

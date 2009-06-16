@@ -1,16 +1,6 @@
 (* camlp5r *)
-(***********************************************************************)
-(*                                                                     *)
-(*                             Camlp5                                  *)
-(*                                                                     *)
-(*                Daniel de Rauglaudre, INRIA Rocquencourt             *)
-(*                                                                     *)
-(*  Copyright 2007 Institut National de Recherche en Informatique et   *)
-(*  Automatique.  Distributed only by permission.                      *)
-(*                                                                     *)
-(***********************************************************************)
-
-(* $Id: reloc.mli,v 1.4 2007/08/26 20:05:38 deraugla Exp $ *)
+(* $Id: reloc.mli,v 1.5 2007/12/29 03:40:22 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2008 *)
 
 value expr : (MLast.loc -> MLast.loc) -> int -> MLast.expr -> MLast.expr;
 value patt : (MLast.loc -> MLast.loc) -> int -> MLast.patt -> MLast.patt;
