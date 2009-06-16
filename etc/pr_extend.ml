@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_extend.ml,v 1.55 2008/01/03 03:40:45 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.56 2008/01/03 13:45:33 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -269,23 +269,17 @@ value token pc tok =
   match tok with
   [ Left (con, prm) ->
       if con = "" then string pc prm
-      else if prm = "" then sprintf "%s%s%s" pc.bef con pc.aft
-      else
-        sprintf "%s%s %s%s" pc.bef con
-          (string {(pc) with bef = ""; aft = ""} prm) pc.aft
-  | Right <:expr< ("", $x$) >> ->
-      sprintf "%s$%s$%s" pc.bef (expr {(pc) with bef = ""; aft = ""} x)
-        pc.aft
-  | Right <:expr< ($str:con$, $x$) >> ->
-      sprintf "%s%s $%s$%s" pc.bef con (expr {(pc) with bef = ""; aft = ""} x)
-        pc.aft
+      else if prm = "" then pprintf pc "%s" con
+      else pprintf pc "%s %p" con string prm
+  | Right <:expr< ("", $x$) >> -> pprintf pc "$%p$" expr x
+  | Right <:expr< ($str:con$, $x$) >> -> pprintf pc "%s $%p$" con expr x
   | Right _ -> assert False ]
 ;
 
-value rec string_list =
+value rec string_list pc =
   fun
-  [ [s :: sl] -> sprintf " \"%s\"%s" s (string_list sl)
-  | [] -> "" ]
+  [ [s :: sl] -> pprintf pc " \"%s\"%p" s string_list sl
+  | [] -> pprintf pc "" ]
 ;
 
 value anti_anti n =
@@ -419,7 +413,8 @@ and symbol pc sy =
   | Stoken tok -> token pc tok
   | Svala sl _ sy ->
       sprintf "%sV %s%s%s" pc.bef
-        (simple_symbol {(pc) with bef = ""; aft = ""} sy) (string_list sl)
+        (simple_symbol {(pc) with bef = ""; aft = ""} sy)
+        (string_list {(pc) with bef = ""; aft = ""} sl)
         pc.aft
   | sy -> simple_symbol pc sy ]
 and simple_symbol pc sy =
@@ -480,7 +475,8 @@ and s_symbol pc =
       sprintf "%sSFLAG %s" pc.bef (simple_symbol {(pc) with bef = ""} sy)
   | Svala ls oe s ->
       sprintf "%sSV %s%s%s%s" pc.bef
-        (simple_symbol {(pc) with bef = ""; aft= ""} s) (string_list ls)
+        (simple_symbol {(pc) with bef = ""; aft= ""} s)
+        (string_list {(pc) with bef = ""; aft = ""} ls)
         (match oe with
          [ Some e -> " " ^ e
          | None -> "" ])
