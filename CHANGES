@@ -1,6 +1,7 @@
 Camlp5 Version 5.10:
 --------------------
 
+* [16 Oct 08] Added compatibility with OCaml 3.11.0.
 * [01 Aug 08] Added flag "Plexer.utf8_lexing" to specify that the lexers
   built by "Plexer.gmake ()" must consider the input as utf-8 encoded.
 

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: ast2pt.ml,v 1.59 2008/03/07 10:29:46 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.60 2008/10/16 10:26:08 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open MLast;
@@ -14,8 +14,14 @@ THEN
 END;
 
 IFDEF
+  OCAML_3_11 OR OCAML_3_11_0
+THEN
+  DEFINE AFTER_OCAML_3_11
+END;
+
+IFDEF
   OCAML_3_10 OR OCAML_3_10_0 OR OCAML_3_10_1 OR OCAML_3_10_2 OR
-  OCAML_3_10_3 OR OCAML_3_11
+  OCAML_3_10_3 OR AFTER_OCAML_3_11
 THEN
   DEFINE AFTER_OCAML_3_10
 END;
@@ -233,7 +239,7 @@ and meth_list loc fl v =
       [mkfield loc (Pfield lab (ctyp (mkpolytype t))) :: meth_list loc fl v] ]
 ;
 
-IFDEF OCAML_3_11 THEN
+IFDEF AFTER_OCAML_3_11 THEN
   value mktype loc tl cl tk pf tm =
     let (params, variance) = List.split tl in
     {ptype_params = List.map uv params; ptype_cstrs = cl; ptype_kind = tk;
@@ -265,7 +271,7 @@ value mkvariant (loc, c, tl) =
 value type_decl tl priv cl =
   fun
   [ TyMan loc t <:ctyp< { $list:ltl$ } >> ->
-      IFDEF OCAML_3_11 THEN
+      IFDEF AFTER_OCAML_3_11 THEN
         mktype loc tl cl (Ptype_record (List.map mktrecord ltl)) priv
           (Some (ctyp t))
       ELSE
@@ -273,7 +279,7 @@ value type_decl tl priv cl =
           (Some (ctyp t))
       END
   | TyMan loc t <:ctyp< [ $list:ctl$ ] >> ->
-      IFDEF OCAML_3_11 THEN
+      IFDEF AFTER_OCAML_3_11 THEN
         mktype loc tl cl (Ptype_variant (List.map mkvariant ctl)) priv
           (Some (ctyp t))
       ELSE
@@ -281,7 +287,7 @@ value type_decl tl priv cl =
           (Some (ctyp t))
       END
   | TyRec loc ltl ->
-      IFDEF OCAML_3_11 THEN
+      IFDEF AFTER_OCAML_3_11 THEN
         mktype loc tl cl (Ptype_record (List.map mktrecord (uv ltl))) priv
           None
       ELSE
@@ -289,7 +295,7 @@ value type_decl tl priv cl =
           None
       END
   | TySum loc ctl ->
-      IFDEF OCAML_3_11 THEN
+      IFDEF AFTER_OCAML_3_11 THEN
         mktype loc tl cl (Ptype_variant (List.map mkvariant (uv ctl))) priv
           None
       ELSE
@@ -304,7 +310,7 @@ value type_decl tl priv cl =
             else None
         | _ -> Some (ctyp t) ]
       in
-      IFDEF OCAML_3_11 THEN
+      IFDEF AFTER_OCAML_3_11 THEN
         mktype (loc_of_ctyp t) tl cl Ptype_abstract priv m
       ELSE
         mktype (loc_of_ctyp t) tl cl Ptype_abstract m
@@ -397,11 +403,11 @@ value mkwithc =
   [ WcTyp loc id tpl pf ct ->
       let (params, variance) = List.split (uv tpl) in
       let tk =
-        IFDEF OCAML_3_08 OR OCAML_3_11 THEN Ptype_abstract
+        IFDEF OCAML_3_08 OR AFTER_OCAML_3_11 THEN Ptype_abstract
         ELSE if uv pf then Ptype_private else Ptype_abstract END
       in
       (long_id_of_string_list loc (uv id),
-       IFDEF OCAML_3_11 THEN
+       IFDEF AFTER_OCAML_3_11 THEN
          let pf = if uv pf then Private else Public in
          Pwith_type
            {ptype_params = List.map uv params; ptype_cstrs = [];
