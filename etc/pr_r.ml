@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.161 2007/12/29 21:34:28 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.162 2007/12/30 01:47:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -769,9 +769,8 @@ EXTEND_PRINTER
                             (fun pc () ->
                                horiz_vertic (fun () -> horiz_if_then pc)
                                  (fun () -> vertic_if_then pc))
-                            {(pc) with aft = ""} el
+                            pc el
                       | None ->
-                          let pc = {(pc) with aft = ""} in
                           pprintf pc "%p@;%p"
                             (fun pc () ->
                                horiz_vertic (fun () -> horiz_if_then pc)
