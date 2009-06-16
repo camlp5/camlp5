@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.160 2007/12/29 20:49:16 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.161 2007/12/29 21:34:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -37,6 +37,10 @@ do {
 };
 
 (* general functions *)
+
+value horiz_vertic_if force_vertic f g =
+  horiz_vertic (fun () -> if force_vertic then sprintf "\n" else f ()) g
+;
 
 value is_infix = do {
   let infixes = Hashtbl.create 73 in
@@ -441,10 +445,8 @@ value match_assoc force_vertic pc (p, w, e) =
     | _ ->
         pprintf pc "%p ->" patt_as p ]
   in
-  horiz_vertic
-    (fun () ->
-       if force_vertic then sprintf "\n"
-       else pprintf pc "%p %p" patt_arrow (p, w) (comm_expr expr) e)
+  horiz_vertic_if force_vertic
+    (fun () -> pprintf pc "%p %p" patt_arrow (p, w) (comm_expr expr) e)
     (fun () ->
        match sequencify e with
        [ Some el ->
@@ -748,11 +750,9 @@ EXTEND_PRINTER
                pprintf pc "if %p then %p else %p" curr e1 curr e2 curr e3)
             (fun () ->
                let if_then force_vertic pc else_b e1 e2 =
-                 horiz_vertic
+                 horiz_vertic_if force_vertic
                    (fun () ->
-                      if force_vertic then sprintf "\n"
-                      else
-                        pprintf pc "%sif %p then %p" else_b curr e1 curr e2)
+                      pprintf pc "%sif %p then %p" else_b curr e1 curr e2)
                    (fun () ->
                       let horiz_if_then pc =
                         pprintf pc "%sif %p then" else_b curr e1
@@ -840,12 +840,10 @@ EXTEND_PRINTER
                    | [] -> "" ]
                in
                let s3 =
-                 horiz_vertic
+                 horiz_vertic_if force_vertic
                    (fun () ->
-                      if force_vertic then sprintf "\n"
-                      else
-                        let pc = {(pc) with bef = tab pc.ind} in
-                        pprintf pc "else %p" (comm_expr curr) e3)
+                      let pc = {(pc) with bef = tab pc.ind} in
+                      pprintf pc "else %p" (comm_expr curr) e3)
                    (fun () ->
                       match sequencify e3 with
                       [ Some el ->
@@ -945,12 +943,10 @@ EXTEND_PRINTER
                          match_assoc_list pwel ]) ]
       | <:expr< let $flag:rf$ $list:pel$ in $e$ >> as ge ->
           let expr_wh = if flag_where_after_in.val then expr_wh else curr in
-          horiz_vertic
+          horiz_vertic_if (not flag_horiz_let_in.val)
             (fun () ->
-               if not flag_horiz_let_in.val then sprintf "\n"
-               else
-                 pprintf pc "let %s%p in %p" (if rf then "rec " else "")
-                   (hlist2 let_binding (and_before let_binding)) pel curr e)
+               pprintf pc "let %s%p in %p" (if rf then "rec " else "")
+                 (hlist2 let_binding (and_before let_binding)) pel curr e)
             (fun () ->
                match flatten_sequence ge with
                [ Some el ->
@@ -1286,12 +1282,10 @@ EXTEND_PRINTER
                pprintf pc "@[<2>{ %p }@]"
                  (vlistl (semi_after label_decl) label_decl) ltl)
       | <:ctyp< [ $list:vdl$ ] >> ->
-          horiz_vertic
+          horiz_vertic_if (has_cons_with_params vdl)
             (fun () ->
-               if has_cons_with_params vdl then sprintf "\n"
-               else
-                 pprintf pc "[ %p ]" (hlist2 cons_decl (bar_before cons_decl))
-                   vdl)
+               pprintf pc "[ %p ]" (hlist2 cons_decl (bar_before cons_decl))
+                 vdl)
             (fun () ->
                pprintf pc "[ %p ]" (vlist2 cons_decl (bar_before cons_decl))
                  vdl)
@@ -1402,14 +1396,11 @@ EXTEND_PRINTER
       [ <:module_expr< functor ($uid:s$ : $mt$) -> $me$ >> ->
           str_or_sig_functor pc s mt module_expr me
       | <:module_expr< struct $list:sil$ end >> ->
-          horiz_vertic
+          (* Heuristic : I don't like to print structs horizontally
+             when alone in a line. *)
+          horiz_vertic_if (alone_in_line pc)
             (fun () ->
-               if alone_in_line pc then
-                 (* Heuristic : I don't like to print structs horizontally
-                    when alone in a line. *)
-                 sprintf "\n"
-               else
-                 pprintf pc "struct %p end" (hlist (semi_after str_item)) sil)
+               pprintf pc "struct %p end" (hlist (semi_after str_item)) sil)
             (fun () ->
                pprintf pc "@[<b>struct@;%p@ end@]"
                  (vlist (semi_after str_item)) sil) ]
@@ -1437,14 +1428,11 @@ EXTEND_PRINTER
       [ <:module_type< functor ($uid:s$ : $mt1$) -> $mt2$ >> ->
           str_or_sig_functor pc s mt1 module_type mt2
       | <:module_type< sig $list:sil$ end >> ->
-          horiz_vertic
+         (* Heuristic : I don't like to print sigs horizontally
+            when alone in a line. *)
+          horiz_vertic_if (alone_in_line pc)
             (fun () ->
-               if alone_in_line pc then
-                 (* Heuristic : I don't like to print sigs horizontally
-                    when alone in a line. *)
-                 sprintf "\n"
-               else
-                 pprintf pc "sig %p end" (hlist (semi_after sig_item)) sil)
+               pprintf pc "sig %p end" (hlist (semi_after sig_item)) sil)
             (fun () ->
                pprintf pc "@[<b>sig@;%p@ end@]"
                  (vlist (semi_after sig_item)) sil)
