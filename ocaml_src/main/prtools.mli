@@ -3,7 +3,7 @@
 (* Copyright (c) INRIA 2007-2008 *)
 
 type pr_context =
-  Eprinter.pr_context =
+  Pprintf.pr_context =
     { ind : int; bef : string; aft : string; dang : string }
 ;;
 

@@ -5,7 +5,7 @@
 open Pretty;;
 
 type pr_context =
-  Eprinter.pr_context =
+  Pprintf.pr_context =
     { ind : int; bef : string; aft : string; dang : string }
 ;;
 

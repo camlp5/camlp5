@@ -9,7 +9,10 @@ type 'a t =
 and 'a pr_level = { pr_label : string; mutable pr_rules : 'a pr_rule }
 and 'a pr_rule = ('a, 'a pr_fun -> 'a pr_fun -> pr_context -> string) Extfun.t
 and 'a pr_fun = pr_context -> 'a -> string
-and pr_context = { ind : int; bef : string; aft : string; dang : string };;
+and pr_context =
+  Pprintf.pr_context =
+    { ind : int; bef : string; aft : string; dang : string }
+;;
 
 type position =
     First
@@ -88,7 +91,7 @@ let pr_fun name pr lab =
 let make name =
   let pr =
     {pr_name = name;
-     pr_fun = (fun _ -> raise (Match_failure ("eprinter.ml", 89, 37)));
+     pr_fun = (fun _ -> raise (Match_failure ("eprinter.ml", 92, 37)));
      pr_levels = []}
   in
   pr.pr_fun <- pr_fun name pr; pr
@@ -99,8 +102,6 @@ let clear pr = pr.pr_levels <- []; pr.pr_fun <- pr_fun pr.pr_name pr;;
 let apply_level pr lname pc z = pr.pr_fun lname pc z;;
 let apply pr pc z = pr.pr_fun "" pc z;;
 
-let empty_pc = {ind = 0; bef = ""; aft = ""; dang = ""};;
-
 let print pr =
   List.iter
     (fun lev ->
@@ -108,54 +109,4 @@ let print pr =
        Extfun.print lev.pr_rules;
        flush stdout)
     pr.pr_levels
-;;
-
-let tab ind = String.make ind ' ';;
-
-let sprint_break nspaces offset pc f g =
-  Pretty.horiz_vertic
-    (fun () ->
-       let sp = String.make nspaces ' ' in
-       Pretty.sprintf "%s%s%s" (f {pc with aft = ""}) sp
-         (g {pc with bef = ""}))
-    (fun () ->
-       let s1 = f {pc with aft = ""} in
-       let s2 =
-         g {pc with ind = pc.ind + offset; bef = tab (pc.ind + offset)}
-       in
-       Pretty.sprintf "%s\n%s" s1 s2)
-;;
-
-let sprint_break_all force_newlines pc f fl =
-  Pretty.horiz_vertic
-    (fun () ->
-       if force_newlines then Pretty.sprintf "\n"
-       else
-         let rec loop s =
-           function
-             (sp, off, f) :: fl ->
-               let s =
-                 Pretty.sprintf "%s%s%s" s (String.make sp ' ')
-                   (f
-                      {pc with bef = "";
-                       aft = if fl = [] then pc.aft else ""})
-               in
-               loop s fl
-           | [] -> s
-         in
-         loop (f (if fl = [] then pc else {pc with aft = ""})) fl)
-    (fun () ->
-       let rec loop s =
-         function
-           (sp, off, f) :: fl ->
-             let s =
-               Pretty.sprintf "%s\n%s" s
-                 (f
-                    {pc with ind = pc.ind + off; bef = tab (pc.ind + off);
-                     aft = if fl = [] then pc.aft else ""})
-             in
-             loop s fl
-         | [] -> s
-       in
-       loop (f (if fl = [] then pc else {pc with aft = ""})) fl)
 ;;

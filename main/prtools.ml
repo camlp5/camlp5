@@ -1,11 +1,11 @@
 (* camlp5r q_MLast.cmo *)
-(* $Id: prtools.ml,v 1.14 2007/12/27 10:30:24 deraugla Exp $ *)
+(* $Id: prtools.ml,v 1.15 2007/12/28 12:58:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
 
 type pr_context =
-  Eprinter.pr_context ==
+  Pprintf.pr_context ==
     { ind : int; bef : string; aft : string; dang : string }
 ;
 

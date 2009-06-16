@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: eprinter.ml,v 1.13 2007/12/27 10:30:24 deraugla Exp $ *)
+(* $Id: eprinter.ml,v 1.14 2007/12/28 12:58:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 type t 'a =
@@ -10,7 +10,10 @@ and pr_level 'a = { pr_label : string; pr_rules : mutable pr_rule 'a }
 and pr_rule 'a =
   Extfun.t 'a (pr_fun 'a -> pr_fun 'a -> pr_context -> string)
 and pr_fun 'a = pr_context -> 'a -> string
-and pr_context = { ind : int; bef : string; aft : string; dang : string };
+and pr_context =
+  Pprintf.pr_context ==
+    { ind : int; bef : string; aft : string; dang : string }
+;
 
 type position =
   [ First
@@ -99,8 +102,6 @@ value clear pr = do {
 value apply_level pr lname pc z = pr.pr_fun lname pc z;
 value apply pr pc z = pr.pr_fun "" pc z;
 
-value empty_pc = {ind = 0; bef = ""; aft = ""; dang = ""};
-
 value print pr =
   List.iter
     (fun lev -> do {
@@ -109,50 +110,4 @@ value print pr =
        flush stdout;
      })
     pr.pr_levels
-;
-
-value tab ind = String.make ind ' ';
-
-value sprint_break nspaces offset pc f g =
-  Pretty.horiz_vertic
-    (fun () ->
-       let sp = String.make nspaces ' ' in
-       Pretty.sprintf "%s%s%s" (f {(pc) with aft = ""}) sp
-         (g {(pc) with bef = ""}))
-    (fun () ->
-       let s1 = f {(pc) with aft = ""} in
-       let s2 =
-         g {(pc) with ind = pc.ind + offset; bef = tab (pc.ind + offset)}
-       in
-       Pretty.sprintf "%s\n%s" s1 s2)
-;
-
-value sprint_break_all force_newlines pc f fl =
-  Pretty.horiz_vertic
-    (fun () ->
-       if force_newlines then Pretty.sprintf "\n"
-       else
-         loop (f (if fl = [] then pc else {(pc) with aft = ""})) fl
-         where rec loop s =
-           fun
-           [ [(sp, off, f) :: fl] ->
-               let s =
-                 Pretty.sprintf "%s%s%s" s (String.make sp ' ')
-                   (f {(pc) with bef = "";
-                       aft = if fl = [] then pc.aft else ""})
-               in
-               loop s fl
-           | [] -> s ])
-    (fun () ->
-       loop (f (if fl = [] then pc else {(pc) with aft = ""})) fl
-       where rec loop s =
-         fun
-         [ [(sp, off, f) :: fl] ->
-             let s =
-               Pretty.sprintf "%s\n%s" s
-                 (f {(pc) with ind = pc.ind + off; bef = tab (pc.ind + off);
-                     aft = if fl = [] then pc.aft else ""})
-             in
-             loop s fl
-         | [] -> s ])
 ;

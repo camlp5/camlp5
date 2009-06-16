@@ -1,8 +1,8 @@
 diff.cmo: diff.cmi 
 diff.cmx: diff.cmi 
-eprinter.cmo: eprinter.cmi extfun.cmi pretty.cmi 
-eprinter.cmx: eprinter.cmi extfun.cmx pretty.cmx 
-eprinter.cmi: extfun.cmi 
+eprinter.cmo: eprinter.cmi extfun.cmi pprintf.cmi 
+eprinter.cmx: eprinter.cmi extfun.cmx pprintf.cmx 
+eprinter.cmi: pprintf.cmi extfun.cmi 
 extfold.cmo: extfold.cmi gramext.cmi grammar.cmi 
 extfold.cmx: extfold.cmi gramext.cmx grammar.cmx 
 extfold.cmi: gramext.cmi 
@@ -24,6 +24,8 @@ plexing.cmx: plexing.cmi ploc.cmx
 plexing.cmi: ploc.cmi 
 ploc.cmo: ploc.cmi 
 ploc.cmx: ploc.cmi 
+pprintf.cmo: pprintf.cmi pretty.cmi 
+pprintf.cmx: pprintf.cmi pretty.cmx 
 pretty.cmo: ploc.cmi pretty.cmi 
 pretty.cmx: ploc.cmx pretty.cmi 
 stdpp.cmo: ploc.cmi stdpp.cmi 

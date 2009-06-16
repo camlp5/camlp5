@@ -1,10 +1,10 @@
-# $Id: Makefile,v 1.50 2007/12/11 18:21:52 deraugla Exp $
+# $Id: Makefile,v 1.51 2007/12/28 12:58:30 deraugla Exp $
 
 include ../config/Makefile
 
 INCLUDES=-I ../main -I ../boot
 OCAMLCFLAGS=-warn-error A $(INCLUDES)
-OBJS=pa_o.cmo pa_op.cmo pa_oop.cmo pa_sml.cmo pa_lisp.cmo pa_scheme.cmo pa_extfold.cmo pa_extfun.cmo pa_extprint.cmo pa_lefteval.cmo pa_pragma.cmo pr_r.cmo pr_ro.cmo pr_rp.cmo pr_o.cmo pr_op.cmo pr_scheme.cmo pr_schemep.cmo pr_extend.cmo pr_extfun.cmo pr_null.cmo pr_depend.cmo q_phony.cmo
+OBJS=pa_o.cmo pa_op.cmo pa_oop.cmo pa_sml.cmo pa_lisp.cmo pa_scheme.cmo pa_extfold.cmo pa_extfun.cmo pa_extprint.cmo pa_lefteval.cmo pa_pprintf.cmo pa_pragma.cmo pr_r.cmo pr_ro.cmo pr_rp.cmo pr_o.cmo pr_op.cmo pr_scheme.cmo pr_schemep.cmo pr_extend.cmo pr_extfun.cmo pr_null.cmo pr_depend.cmo q_phony.cmo
 CAMLP5OM=pa_o.cmo pa_op.cmo ../meta/pr_dump.cmo
 CAMLP5SCHM=pa_scheme.cmo ../meta/pr_dump.cmo
 CAMLP5OMX=pa_o.cmx pa_op.cmx ../meta/pr_dump.cmx
@@ -89,11 +89,11 @@ install:
 pa_lisp.cmo: pa_lispr.cmo
 pa_scheme.cmo: pa_schemer.cmo
 pr_extend.cmo: pa_extfun.cmo pa_extprint.cmo
-pr_o.cmo: pa_extfun.cmo pa_extprint.cmo
-pr_op.cmo: pa_extfun.cmo pa_extprint.cmo
-pr_r.cmo: pa_extfun.cmo pa_extprint.cmo
-pr_ro.cmo: pa_extfun.cmo pa_extprint.cmo
-pr_rp.cmo: pa_extfun.cmo pa_extprint.cmo
+pr_o.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
+pr_op.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
+pr_r.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
+pr_ro.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
+pr_rp.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
 q_phony.cmo: pa_extfun.cmo pa_extprint.cmo
 
 include .depend

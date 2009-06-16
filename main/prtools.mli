@@ -1,9 +1,9 @@
 (* camlp5r *)
-(* $Id: prtools.mli,v 1.10 2007/12/27 10:30:24 deraugla Exp $ *)
+(* $Id: prtools.mli,v 1.11 2007/12/28 12:58:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 type pr_context =
-  Eprinter.pr_context ==
+  Pprintf.pr_context ==
     { ind : int; bef : string; aft : string; dang : string }
 ;
 

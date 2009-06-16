@@ -1,5 +1,5 @@
-(* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_rp.ml,v 1.24 2007/12/27 10:30:24 deraugla Exp $ *)
+(* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
+(* $Id: pr_rp.ml,v 1.25 2007/12/28 12:58:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Parserify;
