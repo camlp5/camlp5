@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: ast2pt.ml,v 1.64 2009/07/30 09:02:55 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.65 2009/07/30 09:25:46 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open MLast;
@@ -512,7 +512,12 @@ value rec patt =
   | PaInt loc _ _ -> error loc "special int not impl in patt"
   | PaFlo loc s -> mkpat loc (Ppat_constant (Const_float (uv s)))
   | PaLab loc _ _ -> error loc "labeled pattern not allowed here"
-  | PaLaz loc p -> mkpat loc (Ppat_lazy (patt p))
+  | PaLaz loc p ->
+      IFDEF AFTER_OCAML_3_11 THEN
+        mkpat loc (Ppat_lazy (patt p))
+      ELSE
+        error loc "lazy patterns not in this version"
+      END
   | PaLid loc s -> mkpat loc (Ppat_var (uv s))
   | PaOlb loc _ _ -> error loc "labeled pattern not allowed here"
   | PaOrp loc p1 p2 -> mkpat loc (Ppat_or (patt p1) (patt p2))
