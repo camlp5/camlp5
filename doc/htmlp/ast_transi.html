@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_transi.html,v 1.6 2007/12/28 13:43:03 deraugla Exp $ -->
+  <!-- $Id: ast_transi.html,v 1.7 2009/07/30 09:46:27 deraugla Exp $ -->
   <!-- Copyright (c) 2007-2008 INRIA -->
   <title>AST - transitional</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -545,6 +545,11 @@
     <td><tt>PaLab loc s (Some p)</tt></td>
     <td align="center"><tt>~ $s$ : $p$</tt></td>
     <td>label</td>
+  </tr>
+  <tr>
+    <td><tt>PaLaz loc s None</tt></td>
+    <td align="center"><tt>lazy $s$</tt></td>
+    <td>lazy</td>
   </tr>
   <tr>
     <td><tt>PaLid loc s</tt></td>

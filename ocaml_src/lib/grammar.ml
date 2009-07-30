@@ -5,6 +5,8 @@
 open Gramext;;
 open Format;;
 
+let stderr = Pervasives.stderr;;
+
 let rec flatten_tree =
   function
     DeadEnd -> []

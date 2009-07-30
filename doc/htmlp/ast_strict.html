@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_strict.html,v 1.18 2007/12/28 13:43:03 deraugla Exp $ -->
+  <!-- $Id: ast_strict.html,v 1.19 2009/07/30 09:46:27 deraugla Exp $ -->
   <!-- Copyright (c) 2007-2008 INRIA -->
   <title>AST - strict</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -883,6 +883,13 @@
     <br/>
     <tt style="color:blue">&lt;:patt&lt; ~$_s$: $p$ >></tt><br/>
     <tt style="color:red">MLast.PaLab loc s (Some p)</tt><br/>
+  </dd>
+</dl>
+<dl class="nodelist">
+  <dt>- lazy</dt>
+  <dd>
+    <tt style="color:blue">&lt;:patt&lt; lazy $p$ >></tt><br/>
+    <tt style="color:red">MLast.PaLaz loc p</tt>
   </dd>
 </dl>
 <dl class="nodelist">

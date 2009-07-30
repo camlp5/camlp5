@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.82 2008/12/31 11:01:18 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.83 2009/07/30 09:42:08 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pcaml;
@@ -714,7 +714,8 @@ EXTEND
               match p2 with
               [ <:patt< ( $list:pl$ ) >> ->
                   List.fold_left (fun p1 p2 -> <:patt< $p1$ $p2$ >>) p1 pl
-              | _ -> <:patt< $p1$ $p2$ >> ] ] ]
+              | _ -> <:patt< $p1$ $p2$ >> ] ]
+      | "lazy"; p = SELF -> <:patt< lazy $p$ >> ]
     | LEFTA
       [ p1 = SELF; "."; p2 = SELF -> <:patt< $p1$ . $p2$ >> ]
     | "simple"

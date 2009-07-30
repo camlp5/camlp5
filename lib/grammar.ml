@@ -1,9 +1,11 @@
 (* camlp5r pa_fstream.cmo *)
-(* $Id: grammar.ml,v 1.73 2008/02/01 15:57:40 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.74 2009/07/30 09:39:27 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Gramext;
 open Format;
+
+value stderr = Pervasives.stderr;
 
 value rec flatten_tree =
   fun
