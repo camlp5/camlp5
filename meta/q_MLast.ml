@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.123 2009/06/08 02:15:43 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.124 2009/07/30 09:02:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -750,7 +750,8 @@ EXTEND
     | NONA
       [ p1 = SELF; ".."; p2 = SELF -> Qast.Node "PaRng" [Qast.Loc; p1; p2] ]
     | LEFTA
-      [ p1 = SELF; p2 = SELF -> Qast.Node "PaApp" [Qast.Loc; p1; p2] ]
+      [ p1 = SELF; p2 = SELF -> Qast.Node "PaApp" [Qast.Loc; p1; p2]
+      | "lazy"; p = SELF -> Qast.Node "PaLaz" [Qast.Loc; p] ]
     | LEFTA
       [ p1 = SELF; "."; p2 = SELF -> Qast.Node "PaAcc" [Qast.Loc; p1; p2] ]
     | "simple"

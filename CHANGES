@@ -1,6 +1,7 @@
 Camlp5 Version 5.13:
 --------------------
 
+* [30 Jul 09] Added 'lazy' patterns (for OCaml 3.12).
 * [09 Jun 09] Fixed bug in pr_r.cmo: did not always break after "in" (in
   "let..in" statements) even with -flag l.
 * [08 Jun 09] Fixed bug in pr_r.cmo: missing case "#use" for structure and

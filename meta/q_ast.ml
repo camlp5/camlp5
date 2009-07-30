@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: q_ast.ml,v 1.102 2007/12/27 10:30:24 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.103 2009/07/30 09:02:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 (* AST quotations with works by running the language parser (and its possible
@@ -167,8 +167,8 @@ module Meta_make (C : MetaSig) =
       | PaChr _ s -> C.node "PaChr" [C.vala C.string s]
       | PaInt _ s k -> C.node "PaInt" [C.vala C.string s; C.string k]
       | PaFlo _ s -> C.node "PaFlo" [C.vala C.string s]
-      | PaLab _ s p ->
-          C.node "PaLab" [C.vala C.string s; C.option patt p]
+      | PaLab _ s p -> C.node "PaLab" [C.vala C.string s; C.option patt p]
+      | PaLaz _ p -> C.node "PaLaz" [patt p]
       | PaLid _ s -> C.node "PaLid" [C.vala C.string s]
       | PaOlb _ s opeo ->
           C.node "PaOlb"

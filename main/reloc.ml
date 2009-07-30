@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: reloc.ml,v 1.36 2007/12/27 10:30:24 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.37 2009/07/30 09:02:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open MLast;
@@ -112,6 +112,7 @@ value rec patt floc sh =
     | PaInt loc x1 x2 -> PaInt (floc loc) x1 x2
     | PaFlo loc x1 -> PaFlo (floc loc) x1
     | PaLab loc x1 x2 -> PaLab (floc loc) x1 (option_map self x2)
+    | PaLaz loc x1 -> PaLaz (floc loc) (self x1)
     | PaLid loc x1 -> PaLid (floc loc) x1
     | PaOlb loc x1 x2 ->
         PaOlb (floc loc) x1

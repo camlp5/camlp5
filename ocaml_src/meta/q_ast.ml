@@ -157,6 +157,7 @@ module Meta_make (C : MetaSig) =
       | PaInt (_, s, k) -> C.node "PaInt" [C.vala C.string s; C.string k]
       | PaFlo (_, s) -> C.node "PaFlo" [C.vala C.string s]
       | PaLab (_, s, p) -> C.node "PaLab" [C.vala C.string s; C.option patt p]
+      | PaLaz (_, p) -> C.node "PaLaz" [patt p]
       | PaLid (_, s) -> C.node "PaLid" [C.vala C.string s]
       | PaOlb (_, s, opeo) ->
           C.node "PaOlb"

@@ -60,6 +60,7 @@ type patt =
   | PaInt of loc * string * string
   | PaFlo of loc * string
   | PaLab of loc * string * patt option
+  | PaLaz of loc * patt
   | PaLid of loc * string
   | PaOlb of loc * string * (patt * expr option) option
   | PaOrp of loc * patt * patt

@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: sources.html,v 1.11 2007/12/28 13:43:03 deraugla Exp $ -->
+  <!-- $Id: sources.html,v 1.12 2009/07/30 09:02:55 deraugla Exp $ -->
   <!-- Copyright (c) 2007-2008 INRIA -->
   <title>Camlp5 sources</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -337,6 +337,61 @@
 
 <p>And don't forget, if you want to commit, to re-create the pure OCaml
   sources like indicated above.</p>
+
+<h2>Adding new nodes to the syntax tree</h2>
+
+<p>If new nodes are necessary in the syntax tree, for example because
+  the OCaml language added itself new nodes, the steps are the
+  following (with the example of adding the "lazy" pattern node).</p>
+
+<ul>
+  <li>Add the node in the file 'main/mLast.mli'. Please respect the design
+    of the nodes by looking at the other nodes. Example:
+    <pre>
+      PaLaz of loc and patt
+    </pre>
+  </li>
+  <li>Try to compile (do 'make' in the main directory). You are going to
+    have some errors in files telling you that nodes are missing in some
+    pattern matchings. Add them, according to the new nodes of OCaml or
+    looking at other nodes.</li>
+  <li>Once the compilation is done, try a 'make bootstrap' to be sure
+    everything is OK.</li>
+  <li>When it is, add the possible concrete syntax in the revised syntax,
+    i.e. in 'meta/pa_r.ml'. Since the quotation is not yet implemented,
+    put it in syntax without quotation. Example:
+<pre>
+  "lazy"; p = SELF -> MLast.PaLaz loc p
+</pre>
+  </li>
+  <li>Do 'make bootstrap' again.</li>
+  <li>Go to the directory 'meta' and type:
+<pre>
+  make compare_q_MLast
+</pre>
+    This command try to compare what should be the AST quotation if it
+    perfectly matched the syntax. If this comparison seems reasonable,
+    change the file 'q_MLast.ml' by typing:
+<pre>
+  make bootstrap_q_MLast
+</pre>
+  </li>
+  <li>Do a 'make bootstrap' again to check everything is OK. If it is
+    change the line of 'meta/pa_r.ml'. In the example, from:
+<pre>
+  "lazy"; p = SELF -> MLast.PaLaz loc p
+</pre>
+    to:
+<pre>
+  "lazy"; p = SELF -> <:patt< lazy $p$ >>
+</pre>
+  </li>
+  <li>The new syntax should work now in revised syntax. You can complete
+    the compilation, do a 'make install' and check with the toplevel that
+    it works. Complete with the rest like said above.</li>
+  <li>You can then complete the other syntaxes (the 'normal' syntax, for
+    example in 'etc/pa_o.ml') and the pretty printers.</li>
+</ul>
 
 <h2>Switching between transitional and strict mode</h2>
 

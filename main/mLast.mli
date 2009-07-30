@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: mLast.mli,v 1.53 2007/12/28 09:53:30 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.54 2009/07/30 09:02:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 (* Module [MLast]: abstract syntax tree.
@@ -68,6 +68,7 @@ type patt =
   | PaInt of loc and V string and string
   | PaFlo of loc and V string
   | PaLab of loc and V string and option patt
+  | PaLaz of loc and patt
   | PaLid of loc and V string
   | PaOlb of loc and V string and option (patt * V (option expr))
   | PaOrp of loc and patt and patt

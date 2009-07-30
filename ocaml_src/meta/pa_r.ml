@@ -1157,7 +1157,10 @@ Grammar.extend
         (fun (p2 : 'patt) _ (p1 : 'patt) (loc : Ploc.t) ->
            (MLast.PaRng (loc, p1, p2) : 'patt))];
      None, Some Gramext.LeftA,
-     [[Gramext.Sself; Gramext.Sself],
+     [[Gramext.Stoken ("", "lazy"); Gramext.Sself],
+      Gramext.action
+        (fun (p : 'patt) _ (loc : Ploc.t) -> (MLast.PaLaz (loc, p) : 'patt));
+      [Gramext.Sself; Gramext.Sself],
       Gramext.action
         (fun (p2 : 'patt) (p1 : 'patt) (loc : Ploc.t) ->
            (MLast.PaApp (loc, p1, p2) : 'patt))];

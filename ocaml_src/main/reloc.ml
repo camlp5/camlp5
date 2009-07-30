@@ -101,6 +101,7 @@ let rec patt floc sh =
     | PaInt (loc, x1, x2) -> PaInt (floc loc, x1, x2)
     | PaFlo (loc, x1) -> PaFlo (floc loc, x1)
     | PaLab (loc, x1, x2) -> PaLab (floc loc, x1, option_map self x2)
+    | PaLaz (loc, x1) -> PaLaz (floc loc, self x1)
     | PaLid (loc, x1) -> PaLid (floc loc, x1)
     | PaOlb (loc, x1, x2) ->
         PaOlb
