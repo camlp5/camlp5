@@ -3,4 +3,5 @@ camlp5o
 camlp5sch
 camlp5o.opt
 mkcamlp5.sh
-mkcamlp5.mpw
+mkcamlp5.opt.sh
+META
