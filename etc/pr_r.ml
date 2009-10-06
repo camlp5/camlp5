@@ -1,5 +1,5 @@
 (* camlp5r -I . pa_macro.cmo q_MLast.cmo pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.183 2009/06/09 09:18:00 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.184 2009/10/06 05:53:37 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -605,7 +605,7 @@ value rec get_else_if =
 value if_then force_vertic curr pc (e1, e2) =
   let expr_wh = if flag_where_in_sequences.val then expr_wh else expr in
   horiz_vertic_if force_vertic
-    (fun () -> pprintf pc "if %p then %p" curr e1 curr e2)
+    (fun () -> pprintf pc "if %p then %p" curr e1 (comm_expr curr) e2)
     (fun () ->
        let if_e1_then pc () = pprintf pc "@[<3>if %p@]@ then" curr e1 in
        match sequencify e2 with
