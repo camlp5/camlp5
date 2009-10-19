@@ -1,5 +1,5 @@
 (* camlp5r -I . pa_macro.cmo q_MLast.cmo pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.184 2009/10/06 05:53:37 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.185 2009/10/19 11:36:27 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open Pretty;
@@ -355,7 +355,7 @@ value record_binding pc (p, e) =
         (fun () -> pprintf pc "%p =@;%p" (hlist patt) pl expr_wh e)
         (fun () -> pprintf pc "%p = do {@;%p@ }" (hlist patt) pl sequence el)
   | None ->
-      pprintf pc "%p =@;%p" (hlist patt) pl expr_wh e ]
+      pprintf pc "%p =@;%p" (hlist patt) pl (comm_expr expr_wh) e ]
 ;
 
 (* Pretty printing improvements (optional):
