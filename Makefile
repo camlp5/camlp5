@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.43 2009/11/02 14:08:43 deraugla Exp $
+# $Id: Makefile,v 1.44 2009/11/02 15:08:24 deraugla Exp $
 
 include config/Makefile
 
@@ -170,6 +170,8 @@ new_sources:
 	   cp ../../$$i/.depend .); \
 	 done
 	@-mkdir ocaml_src.new/main/ast2pt
+	@-(cd ocaml_src/main/ast2pt; \
+	   cp *.ml ../../../ocaml_src.new/main/ast2pt/.)
 	@-for i in $(FDIRS); do \
 	  (cd $$i; \
 	   for j in *.ml*; do \
@@ -246,7 +248,7 @@ compare_all_ast2pt:
 
 untouch_sources:
 	@-cd ocaml_src; \
-	for i in $(FDIRS); do \
+	for i in $(FDIRS) main/ast2pt; do \
 	  for j in $$i/*.ml* $$i/Makefile*; do \
 	    if cmp -s $$j ../ocaml_src.new/$$j 2>/dev/null; then \
 	      cp -p $$j ../ocaml_src.new/$$j; \
@@ -261,11 +263,6 @@ promote_sources:
 	done
 	mv ocaml_src/main/ast2pt/CVS ocaml_src.new/main/ast2pt/.
 	mv ocaml_src/tools ocaml_src.new/.
-	cd ocaml_src; for i in main/ast2pt/*.ml; do \
-	  if [ ! -f ../ocaml_src.new/$$i ]; then \
-	    mv $$i ../ocaml_src.new/$$i; \
-	  fi; \
-	done
 	mv ocaml_src ocaml_src.new/SAVED
 	mv ocaml_src.new ocaml_src
 
