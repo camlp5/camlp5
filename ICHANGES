@@ -4,6 +4,8 @@ Internal, very small, undocumented, or invisible changes
 Camlp5 Version 5.13:
 ---------------------
 
+* [02 Nov 09] Moved all files ocaml_src/main/ast2pt.ml_<version> into new
+  subdirectory ocaml_src/main/ast2p as "<version>.ml".
 * [2009] Returned repository to CVS (was SVN).
 
 Camlp5 Version 5.08:

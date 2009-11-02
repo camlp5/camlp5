@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.41 2009/07/30 09:02:55 deraugla Exp $
+# $Id: Makefile,v 1.42 2009/11/02 14:00:49 deraugla Exp $
 
 include config/Makefile
 
@@ -169,6 +169,7 @@ new_sources:
 	   echo ocaml_src.new/$$i/.depend; \
 	   cp ../../$$i/.depend .); \
 	 done
+	@-mkdir ocaml_src.new/main/ast2pt
 	@-for i in $(FDIRS); do \
 	  (cd $$i; \
 	   for j in *.ml*; do \
@@ -176,7 +177,7 @@ new_sources:
 	       k=$$j; \
 	       opt=; \
 	       if [ "$$k" = "ast2pt.ml" ]; then \
-	         k=ast2pt.ml_$(OVERSION); \
+	         k=ast2pt/$(OVERSION).ml; \
 	       fi; \
 	       echo ============================================; \
 	       echo ocaml_src.new/$$i/$$k; \
@@ -206,7 +207,7 @@ compare_sources:
 	       k=$$j; \
 	       opt=; \
 	       if [ "$$k" = "ast2pt.ml" ]; then \
-	         k=ast2pt.ml_$(OVERSION); \
+	         k=ast2pt/$(OVERSION).ml; \
 	       fi; \
 	       echo ============================================; \
 	       echo ocaml_src/$$i/$$k; \
@@ -220,13 +221,12 @@ compare_sources:
 bootstrap_all_ast2pt:
 	cd etc; $(MAKE) $(PR_O)
 	@cd main; \
-	for i in ../ocaml_src/main/ast2pt.ml_*; do \
+	for i in ../ocaml_src/main/ast2pt/*.ml; do \
 	  echo ============================================; \
 	  echo $$i; \
 	  j=$$(echo $$(basename $$i) | \
-	       sed -e 's/ast2pt.ml/OCAML/' -e 's/\./_/g'); \
-	  k=$$(echo OCAML_$(OVERSION) | \
-	       sed -e 's/ast2pt.ml/OCAML/' -e 's/\./_/g'); \
+	       sed -e 's/^/OCAML/;s/.ml//' -e 's/\./_/g'); \
+	  k=$$(echo OCAML_$(OVERSION) | sed -e 's/\./_/g'); \
 	  OTOP=$(OTOP) NAME=$(NAME) ../tools/conv.sh $(PR_O) -U$$k -D$$j ast2pt.ml | \
 	  sed -e 's/\$$Id.*\$$/$(TXTGEN)/' > $$i -; \
 	done
@@ -234,13 +234,12 @@ bootstrap_all_ast2pt:
 compare_all_ast2pt:
 	cd etc; $(MAKE) $(PR_O)
 	@cd main; \
-	for i in ../ocaml_src/main/ast2pt.ml_*; do \
+	for i in ../ocaml_src/main/ast2pt/*.ml; do \
 	  echo ============================================; \
 	  echo $$i; \
 	  j=$$(echo $$(basename $$i) | \
-	       sed -e 's/ast2pt.ml/OCAML/' -e 's/\./_/g'); \
-	  k=$$(echo OCAML_$(OVERSION) | \
-	       sed -e 's/ast2pt.ml/OCAML/' -e 's/\./_/g'); \
+	       sed -e 's/^/OCAML_/;s/.ml//' -e 's/\./_/g'); \
+	  k=$$(echo OCAML_$(OVERSION) | sed -e 's/\./_/g'); \
 	  OTOP=$(OTOP) NAME=$(NAME) ../tools/conv.sh $(PR_O) -U$$k -D$$j ast2pt.ml | \
 	  sed -e 's/\$$Id.*\$$/$(TXTGEN)/' | diff $$i -; \
 	done
@@ -261,7 +260,7 @@ promote_sources:
 		$(MAKE) mv_cvs FROM=ocaml_src/$$i TO=ocaml_src.new/$$i; \
 	done
 	mv ocaml_src/tools ocaml_src.new/.
-	cd ocaml_src; for i in main/ast2pt.ml_*; do \
+	cd ocaml_src; for i in main/ast2pt/*.ml; do \
 	  if [ ! -f ../ocaml_src.new/$$i ]; then \
 	    mv $$i ../ocaml_src.new/$$i; \
 	  fi; \
