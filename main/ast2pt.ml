@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: ast2pt.ml,v 1.66 2009/11/02 12:42:59 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.67 2009/11/02 13:23:27 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open MLast;
@@ -20,7 +20,7 @@ THEN
 END;
 
 IFDEF
-  OCAML_3_11 OR OCAML_3_11_0 OR OCAML_3_11_1 OR OCAML_3_12_0
+  OCAML_3_11 OR OCAML_3_11_0 OR OCAML_3_11_1 OR AFTER_OCAML_3_12
 THEN
   DEFINE AFTER_OCAML_3_11
 END;
