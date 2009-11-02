@@ -1,6 +1,7 @@
 Camlp5 Version 5.13:
 --------------------
 
+* [02 Nov 09] Added compatibility with OCaml 3.11.2.
 * [02 Nov 09] Updated compatibility with OCaml 3.12.0.
 * [30 Jul 09] Added 'lazy' patterns (added in OCaml version 3.11).
 * [09 Jun 09] Fixed bug in pr_r.cmo: did not always break after "in" (in
