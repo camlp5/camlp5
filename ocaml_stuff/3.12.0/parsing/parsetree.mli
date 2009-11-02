@@ -33,6 +33,9 @@ and core_type_desc =
   | Ptyp_alias of core_type * string
   | Ptyp_variant of row_field list * bool * label list option
   | Ptyp_poly of string list * core_type
+  | Ptyp_package of package_type
+
+and package_type = Longident.t * (string * core_type) list
 
 and core_field_type =
   { pfield_desc: core_field_desc;
@@ -46,7 +49,7 @@ and row_field =
     Rtag of label * bool * core_type list
   | Rinherit of core_type
 
-(* XXX Type expressions for the class language *)
+(* Type expressions for the class language *)
 
 type 'a class_infos =
   { pci_virt: virtual_flag;
@@ -70,7 +73,7 @@ and pattern_desc =
   | Ppat_tuple of pattern list
   | Ppat_construct of Longident.t * pattern option * bool
   | Ppat_variant of label * pattern option
-  | Ppat_record of (Longident.t * pattern) list
+  | Ppat_record of (Longident.t * pattern) list * closed_flag
   | Ppat_array of pattern list
   | Ppat_or of pattern * pattern
   | Ppat_constraint of pattern * core_type
@@ -112,6 +115,9 @@ and expression_desc =
   | Pexp_lazy of expression
   | Pexp_poly of expression * core_type option
   | Pexp_object of class_structure
+  | Pexp_newtype of string * expression
+  | Pexp_pack of module_expr * package_type
+  | Pexp_open of Longident.t * expression
 
 (* Value descriptions *)
 
@@ -240,6 +246,7 @@ and module_expr_desc =
   | Pmod_functor of string * module_type * module_expr
   | Pmod_apply of module_expr * module_expr
   | Pmod_constraint of module_expr * module_type
+  | Pmod_unpack of expression * package_type
 
 and structure = structure_item list
 

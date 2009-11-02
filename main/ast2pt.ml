@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: ast2pt.ml,v 1.65 2009/07/30 09:25:46 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.66 2009/11/02 12:42:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open MLast;
@@ -11,6 +11,12 @@ IFDEF
   OCAML_3_08_0 OR OCAML_3_08_1 OR OCAML_3_08_2 OR OCAML_3_08_3 OR OCAML_3_08_4
 THEN
   DEFINE OCAML_3_08
+END;
+
+IFDEF
+  OCAML_3_12_0
+THEN
+  DEFINE AFTER_OCAML_3_12
 END;
 
 IFDEF
@@ -528,7 +534,12 @@ value rec patt =
           let c2 = char_of_char_token loc2 (uv c2) in
           mkrangepat loc c1 c2
       | _ -> error loc "range pattern allowed only for characters" ]
-  | PaRec loc lpl -> mkpat loc (Ppat_record (List.map mklabpat (uv lpl)))
+  | PaRec loc lpl ->
+      IFDEF AFTER_OCAML_3_12 THEN
+        mkpat loc (Ppat_record (List.map mklabpat (uv lpl)) Closed)
+      ELSE
+        mkpat loc (Ppat_record (List.map mklabpat (uv lpl)))
+      END
   | PaStr loc s ->
       mkpat loc
         (Ppat_constant (Const_string (string_of_string_token loc (uv s))))
