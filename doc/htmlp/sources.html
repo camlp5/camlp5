@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: sources.html,v 1.12 2009/07/30 09:02:55 deraugla Exp $ -->
+  <!-- $Id: sources.html,v 1.13 2009/11/02 15:14:50 deraugla Exp $ -->
   <!-- Copyright (c) 2007-2008 INRIA -->
   <title>Camlp5 sources</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -91,19 +91,20 @@
   which is the module converting Camlp5 syntax tree into OCaml syntax
   tree.</p>
 
-<p>In the directory 'ocaml_src' which contains the pure OCaml sources of
-  the Camlp5 core (see chapter TREE STRUCTURE below), there are as many versions
-  of this files as versions of OCaml. They are named 'ast2pt.ml_&lt;version>'.
-  If you are adding a new version of OCaml, you need this file. As a first
-  step, make a copy from a close version:</p>
+<p>In the directory 'ocaml_src' which contains the pure OCaml sources
+  of the Camlp5 core (see chapter TREE STRUCTURE below), there are as
+  many versions of this files as versions of OCaml. They are named
+  '&lt;version>.ml' in the directory 'main/ast2pt'. If you are adding
+  a new version of OCaml, you need this file. As a first step, make a
+  copy from a close version:</p>
 
 <pre>
   cd ocaml_src/main
-  cp ast2pt.ml_&lt;close_version> ast2pt.ml_&lt;version>
+  cp ast2pt/&lt;close_version>.ml ast2pt/&lt;version>.ml
 </pre>
 
 <p>Then, you can rerun "configure" and do "make core". If the file
-  'ocaml_src/main/ast2pt.ml' has a compilation problems, fix them and
+  'ocaml_src/main/ast2pt.ml' has compilation problems, fix them and
   to 'make core' again.</p>
 
 <p>Later, the same file 'main/ast2pt.ml' in Camlp5 syntax may have
