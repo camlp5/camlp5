@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.42 2009/11/02 14:00:49 deraugla Exp $
+# $Id: Makefile,v 1.43 2009/11/02 14:08:43 deraugla Exp $
 
 include config/Makefile
 
@@ -257,8 +257,9 @@ untouch_sources:
 promote_sources:
 	$(MAKE) mv_cvs FROM=ocaml_src TO=ocaml_src.new
 	for i in $(FDIRS); do \
-		$(MAKE) mv_cvs FROM=ocaml_src/$$i TO=ocaml_src.new/$$i; \
+	  $(MAKE) mv_cvs FROM=ocaml_src/$$i TO=ocaml_src.new/$$i; \
 	done
+	mv ocaml_src/main/ast2pt/CVS ocaml_src.new/main/ast2pt/.
 	mv ocaml_src/tools ocaml_src.new/.
 	cd ocaml_src; for i in main/ast2pt/*.ml; do \
 	  if [ ! -f ../ocaml_src.new/$$i ]; then \
@@ -273,8 +274,9 @@ unpromote_sources:
 	mv ocaml_src.new/SAVED ocaml_src
 	mv ocaml_src.new/tools ocaml_src/.
 	for i in $(FDIRS); do \
-		$(MAKE) mv_cvs FROM=ocaml_src.new/$$i TO=ocaml_src/$$i; \
+	  $(MAKE) mv_cvs FROM=ocaml_src.new/$$i TO=ocaml_src/$$i; \
 	done
+	mv ocaml_src.new/main/ast2pt/CVS ocaml_src/main/ast2pt/.
 	$(MAKE) mv_cvs FROM=ocaml_src.new TO=ocaml_src
 
 clean_sources:
