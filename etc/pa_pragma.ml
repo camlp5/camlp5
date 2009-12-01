@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo -qmod ctyp,Type *)
-(* $Id: pa_pragma.ml,v 1.61 2007/12/27 10:30:24 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.62 2009/12/01 09:25:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 (* expressions evaluated in the context of the preprocessor *)
@@ -629,7 +629,10 @@ value val_tab = do {
      ("MLast.ExLid",
       fun loc ->
         let t1 = <:ctyp< MLast.loc >> in
-        let t2 = <:ctyp< string >> in
+        let t2 =
+          IFDEF STRICT THEN <:ctyp< Ploc.vala string >>
+          ELSE <:ctyp< string >> END
+        in
         {ctyp = <:ctyp< $t1$ -> $t2$ -> MLast.expr >>;
          expr = Obj.repr (fun loc s -> MLast.ExLid loc s);
          patt eval_patt env pl param =
@@ -893,6 +896,12 @@ value val_tab = do {
       fun loc ->
         {ctyp = <:ctyp< Ploc.t -> exn -> _ >>;
          expr = Obj.repr Ploc.raise;
+         patt = no_patt loc});
+     ("Ploc.VaVal",
+      fun loc ->
+        let ta = ty_var () in
+        {ctyp = <:ctyp< $ta$ -> Ploc.vala $ta$ >>;
+         expr = Obj.repr (fun x -> Ploc.VaVal x);
          patt = no_patt loc});
      ("prerr_endline",
       fun loc ->
