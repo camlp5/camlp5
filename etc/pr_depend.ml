@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.44 2007/12/27 10:30:24 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.45 2010/01/26 10:29:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2008 *)
 
 open MLast;
@@ -221,6 +221,7 @@ and str_item =
   | <:str_item< open $[s :: _]$ >> -> addmodule s
   | <:str_item< type $list:tdl$ >> -> list type_decl tdl
   | <:str_item< value $flag:_$ $list:pel$ >> -> list let_binding pel
+  | StUse _ _ _ -> ()
   | x -> not_impl "str_item" x ]
 and type_decl td = ctyp td.MLast.tdDef
 and class_expr =
