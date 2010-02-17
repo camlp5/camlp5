@@ -51,7 +51,7 @@ installopt:
 	if test -f $(TARGET:.cma=.lib); then \
 	  cp $(TARGET:.cma=.lib) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
 	else \
-	  tar cf - $(TARGET:.cma=$(EXT_LIB)) | \
+	  tar cf - $(TARGET:.cma="")$(EXT_LIB) | \
 	  (cd "$(DESTDIR)$(LIBDIR)/$(NAME)/."; tar xf -); \
 	fi
 

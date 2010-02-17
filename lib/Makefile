@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.24 2007/12/28 12:58:30 deraugla Exp $
+# $Id: Makefile,v 1.25 2010/02/17 15:31:29 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -51,7 +51,7 @@ installopt:
 	if test -f $(TARGET:.cma=.lib); then \
 	  cp $(TARGET:.cma=.lib) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
 	else \
-	  tar cf - $(TARGET:.cma=$(EXT_LIB)) | \
+	  tar cf - $(TARGET:.cma="")$(EXT_LIB) | \
 	  (cd "$(DESTDIR)$(LIBDIR)/$(NAME)/."; tar xf -); \
 	fi
 

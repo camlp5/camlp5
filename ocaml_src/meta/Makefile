@@ -61,7 +61,9 @@ install:
 	fi
 	if test -f pa_r.cmx; then \
 	  cp $(OBJS:.cmo=.cmx) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
-	  cp $(OBJS:.cmo=$(EXT_OBJ)) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	  for i in $(OBJS:.cmo=); do \
+	     cp $$i$(EXT_OBJ) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	  done; \
 	fi
 
 include .depend

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.58 2008/01/21 14:21:56 deraugla Exp $
+# $Id: Makefile,v 1.59 2010/02/17 15:31:29 deraugla Exp $
 
 include ../config/Makefile
 
@@ -80,7 +80,9 @@ install:
 	chmod a+x "$(DESTDIR)$(BINDIR)/mk$(NAME)"
 	if test -f pa_o.cmx; then \
 	  cp $(OBJS:.cmo=.cmx) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
-	  cp $(OBJS:.cmo=$(EXT_OBJ)) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	  for i in $(OBJS:.cmo=); do \
+	    cp $$i$(EXT_OBJ) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	  done; \
 	  cp $(NAME)o.opt "$(DESTDIR)$(BINDIR)/."; \
 	  cp mk$(NAME).opt.sh "$(DESTDIR)$(BINDIR)/mk$(NAME).opt"; \
 	  chmod a+x "$(DESTDIR)$(BINDIR)/mk$(NAME).opt"; \
