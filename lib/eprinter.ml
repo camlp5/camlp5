@@ -1,6 +1,6 @@
 (* camlp5r *)
-(* $Id: eprinter.ml,v 1.15 2008/01/23 03:00:41 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2008 *)
+(* $Id: eprinter.ml,v 1.16 2010/02/19 09:06:37 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2010 *)
 
 type t 'a =
   { pr_name : string;

@@ -1,6 +1,6 @@
 (* camlp5r *)
-(* $Id: pr_dump.ml,v 1.7 2007/12/29 03:40:22 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2008 *)
+(* $Id: pr_dump.ml,v 1.8 2010/02/19 09:06:38 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2010 *)
 
 value open_out_file () =
   match Pcaml.output_file.val with

@@ -1,6 +1,6 @@
 (* camlp5r *)
-(* $Id: fstream.ml,v 1.11 2007/12/29 03:52:53 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2008 *)
+(* $Id: fstream.ml,v 1.12 2010/02/19 09:06:37 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2010 *)
 
 type t 'a = { count : int; data : Lazy.t (data 'a) }
 and data 'a =

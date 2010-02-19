@@ -1,6 +1,6 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: q_ast.ml,v 1.103 2009/07/30 09:02:55 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2008 *)
+(* $Id: q_ast.ml,v 1.104 2010/02/19 09:06:38 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2010 *)
 
 (* AST quotations with works by running the language parser (and its possible
    extensions) and meta-ifying the nodes. Works completely only in "strict"

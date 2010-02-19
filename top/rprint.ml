@@ -1,6 +1,6 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 1.27 2009/11/02 15:42:57 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2008 *)
+(* $Id: rprint.ml,v 1.28 2010/02/19 09:06:41 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2010 *)
 
 open Format;
 open Outcometree;

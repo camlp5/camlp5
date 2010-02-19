@@ -1,6 +1,6 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: mLast.mli,v 1.54 2009/07/30 09:02:55 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2008 *)
+(* $Id: mLast.mli,v 1.55 2010/02/19 09:06:37 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2010 *)
 
 (* Module [MLast]: abstract syntax tree.
 

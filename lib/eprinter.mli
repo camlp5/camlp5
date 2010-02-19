@@ -1,6 +1,6 @@
 (* camlp5r *)
-(* $Id: eprinter.mli,v 1.8 2007/12/28 12:58:30 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2008 *)
+(* $Id: eprinter.mli,v 1.9 2010/02/19 09:06:37 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2010 *)
 
 (** Extensible printers.
 

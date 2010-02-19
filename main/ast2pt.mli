@@ -1,6 +1,6 @@
 (* camlp5r *)
-(* $Id: ast2pt.mli,v 1.7 2007/12/27 10:30:24 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2008 *)
+(* $Id: ast2pt.mli,v 1.8 2010/02/19 09:06:37 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2010 *)
 
 (** Conversion between Camlp5 AST into OCaml AST *)
 

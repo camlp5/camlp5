@@ -1,6 +1,6 @@
 (* camlp5r *)
-(* $Id: ocpp.ml,v 1.8 2007/12/29 03:40:22 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2008 *)
+(* $Id: ocpp.ml,v 1.9 2010/02/19 09:06:41 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2010 *)
 
 value buff = ref (String.create 80);
 value store len x =

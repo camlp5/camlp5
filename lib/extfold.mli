@@ -1,6 +1,6 @@
 (* camlp5r *)
-(* $Id: extfold.mli,v 1.3 2007/12/29 03:52:53 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2008 *)
+(* $Id: extfold.mli,v 1.4 2010/02/19 09:06:37 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2010 *)
 
 type t 'te 'a 'b =
   Gramext.g_entry 'te -> list (Gramext.g_symbol 'te) ->

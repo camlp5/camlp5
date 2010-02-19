@@ -1,6 +1,6 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_extend.ml,v 1.61 2008/01/04 13:53:50 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2008 *)
+(* $Id: pr_extend.ml,v 1.62 2010/02/19 09:06:35 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2010 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
 

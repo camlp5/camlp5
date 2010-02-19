@@ -1,6 +1,6 @@
 (* camlp5r *)
-(* $Id: plexing.mli,v 1.4 2007/12/27 10:30:24 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2008 *)
+(* $Id: plexing.mli,v 1.5 2010/02/19 09:06:37 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2010 *)
 
 (** Lexing for Camlp5 grammars.
 

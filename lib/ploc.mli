@@ -1,6 +1,6 @@
 (* camlp5r *)
-(* $Id: ploc.mli,v 1.5 2007/12/27 10:30:24 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2008 *)
+(* $Id: ploc.mli,v 1.6 2010/02/19 09:06:37 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2010 *)
 
 (** Locations and some pervasive type and value. *)
 

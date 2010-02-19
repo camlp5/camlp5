@@ -1,6 +1,6 @@
 (* camlp5r q_MLast.cmo -I . pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_extprint.ml,v 1.8 2008/01/07 17:53:24 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2008 *)
+(* $Id: pr_extprint.ml,v 1.9 2010/02/19 09:06:35 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2010 *)
 
 (* heuristic to rebuild the EXTEND_PRINTER statement from the AST *)
 

@@ -1,6 +1,6 @@
 (* camlp5r *)
-(* $Id: quotation.ml,v 1.3 2007/12/29 03:40:22 deraugla Exp $ *)
-(* Copyright (c) INRIA 2007-2008 *)
+(* $Id: quotation.ml,v 1.4 2010/02/19 09:06:38 deraugla Exp $ *)
+(* Copyright (c) INRIA 2007-2010 *)
 
 type expander =
   [ ExStr of bool -> string -> string
