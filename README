@@ -9,7 +9,7 @@ OVERVIEW
 
   This Camlp5 version is 5.13.
 
-  Camlp5 must be compiler either in "transitional mode" or in "strict mode".
+  Camlp5 must be compiled either in "transitional mode" or in "strict mode".
   See the file MODE for information.
 
 INSTALL
