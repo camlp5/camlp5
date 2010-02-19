@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.40 2010/02/19 09:21:58 deraugla Exp $
+# $Id: Makefile,v 1.41 2010/02/19 09:31:10 deraugla Exp $
 
 H=../html
 OBJS=$H/index.html $H/about.html $H/ast_strict.html $H/ast_transi.html $H/bparsers.html $H/commands.html $H/conclusion.html $H/extfun.html $H/fparsers.html $H/grammars.html $H/lexers.html $H/library.html $H/locations.html $H/macros.html $H/ml_ast.html $H/opretty.html $H/parsers.html $H/pcaml.html $H/pprintf.html $H/pragma.html $H/pretty.html $H/printers.html $H/ptools.html $H/q_ast.html $H/quot.html $H/revsynt.html $H/scheme.html $H/sources.html $H/strict.html $H/syntext.html
@@ -13,6 +13,12 @@ info:
 tex:
 	@$(MAKE) --no-print-directory camlp5.dvi H=.
 
+ps:
+	@$(MAKE) --no-print-directory camlp5.ps H=.
+
+pdf:
+	@$(MAKE) --no-print-directory camlp5.pdf H=.
+
 camlp5.info: html2texi $(OBJS)
 	./html2texi > camlp5.texi
 	makeinfo --force camlp5.texi
@@ -24,6 +30,12 @@ camlp5.dvi: camlp5.tex
 
 camlp5.tex: html2latex $(OBJS)
 	./html2latex > camlp5.tex
+
+camlp5.ps: camlp5.dvi
+	dvips -f- camlp5.dvi > camlp5.ps
+
+camlp5.pdf: camlp5.ps
+	ps2pdf camlp5.ps > camlp5.pdf
 
 clean:
 	rm -f $(OBJS) $(RSS)
