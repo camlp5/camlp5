@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_o.ml,v 1.186 2010/02/19 09:06:35 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.187 2010/03/31 11:34:21 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Pretty;
@@ -1295,7 +1295,10 @@ EXTEND_PRINTER
       | <:str_item< $exp:e$ >> ->
           if pc.aft = ";;" then expr pc e else pprintf pc "let _ =@;%p" expr e
       | <:str_item< class type $list:_$ >> | <:str_item< class $list:_$ >> ->
-          failwith "classes and objects not pretty printed; add pr_ro.cmo" ] ]
+          failwith "classes and objects not pretty printed; add pr_ro.cmo"
+      | MLast.StUse _ fn sl ->
+          let pc = {(pc) with aft = ""} in
+          pprintf pc "" ] ]
   ;
   pr_sig_item:
     [ "top"

@@ -1,6 +1,9 @@
 Camlp5 Version 5.14:
 --------------------
 
+* [31 Mar 10] Fixed bug in pr_o.cmo: error message when using "#use"
+
+
 Camlp5 Version 5.13:
 --------------------
 
