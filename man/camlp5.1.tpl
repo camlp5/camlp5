@@ -107,7 +107,7 @@ object files (ending with .cmo or .cma). Several usage of these options
 are authorized. They must precede the other options.
 
 .LP
-An optionnal
+An optional
 .B \-\-
 may end the load options.
 
@@ -300,7 +300,7 @@ the command line as ".cmi" files. For example, how to add the the
 OCaml module "str":
 .nf
 .ta 1c
-	mkcamlp5 -custom str.cmi str.cma -cclib -lstr -o camlp5str
+	mkcamlp5 \-custom str.cmi str.cma \-cclib \-lstr \-o camlp5str
 .fi
 .LP
 
