@@ -27,7 +27,7 @@ type t =
   | Statement_type                          (* 10 *)
   | Unused_match                            (* 11 *)
   | Unused_pat                              (* 12 *)
-  | Instance_variable_override of string    (* 13 *)
+  | Instance_variable_override of string list (* 13 *)
   | Illegal_backslash                       (* 14 *)
   | Implicit_public_methods of string list  (* 15 *)
   | Unerasable_optional_argument            (* 16 *)
@@ -37,11 +37,13 @@ type t =
   | Unused_argument                         (* 20 *)
   | Nonreturning_statement                  (* 21 *)
   | Camlp4 of string                        (* 22 *)
-  | All_clauses_guarded                     (* 23 *)
-  | Useless_record_with                     (* 24 *)
-  | Bad_module_name of string               (* 25 *)
+  | Useless_record_with                     (* 23 *)
+  | Bad_module_name of string               (* 24 *)
+  | All_clauses_guarded                     (* 25 *)
   | Unused_var of string                    (* 26 *)
   | Unused_var_strict of string             (* 27 *)
+  | Wildcard_arg_to_constant_constr         (* 28 *)
+  | Eol_in_string                           (* 29 *)
 ;;
 
 val parse_options : bool -> string -> unit;;

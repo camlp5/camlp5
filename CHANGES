@@ -1,6 +1,7 @@
 Camlp5 Version 5.14:
 --------------------
 
+* [28 Apr 10] Updated compatibility for OCaml current version 3.12.0.
 * [31 Mar 10] Fixed bug in pr_o.cmo: error message when using "#use"
 
 

@@ -4,6 +4,8 @@ Internal, very small, undocumented, or invisible changes
 Camlp5 Version 5.14:
 ---------------------
 
+* [28 Apr 10] Fixed bug in "make boostrap_all_ast2pt".
+
 Camlp5 Version 5.13:
 ---------------------
 

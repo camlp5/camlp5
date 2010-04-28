@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.44 2009/11/02 15:08:24 deraugla Exp $
+# $Id: Makefile,v 1.45 2010/04/28 17:00:42 deraugla Exp $
 
 include config/Makefile
 
@@ -227,7 +227,7 @@ bootstrap_all_ast2pt:
 	  echo ============================================; \
 	  echo $$i; \
 	  j=$$(echo $$(basename $$i) | \
-	       sed -e 's/^/OCAML/;s/.ml//' -e 's/\./_/g'); \
+	       sed -e 's/^/OCAML_/;s/.ml//' -e 's/\./_/g'); \
 	  k=$$(echo OCAML_$(OVERSION) | sed -e 's/\./_/g'); \
 	  OTOP=$(OTOP) NAME=$(NAME) ../tools/conv.sh $(PR_O) -U$$k -D$$j ast2pt.ml | \
 	  sed -e 's/\$$Id.*\$$/$(TXTGEN)/' > $$i -; \

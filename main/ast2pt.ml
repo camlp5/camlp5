@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: ast2pt.ml,v 1.69 2010/02/19 09:06:37 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.70 2010/04/28 17:00:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open MLast;
@@ -1012,14 +1012,26 @@ and class_str_item c l =
   match c with
   [ CrCtr loc t1 t2 -> [Pcf_cstr (ctyp t1, ctyp t2, mkloc loc) :: l]
   | CrDcl loc cl -> List.fold_right class_str_item (uv cl) l
-  | CrInh loc ce pb -> [Pcf_inher (class_expr ce) (uv pb) :: l]
+  | IFDEF AFTER_OCAML_3_12 THEN
+      CrInh loc ce pb -> [Pcf_inher Fresh (class_expr ce) (uv pb) :: l]
+    ELSE
+      CrInh loc ce pb -> [Pcf_inher (class_expr ce) (uv pb) :: l]
+    END
   | CrIni loc e -> [Pcf_init (expr e) :: l]
   | CrMth loc s b e t ->
       let t = option (fun t -> ctyp (mkpolytype t)) (uv t) in
       let e = mkexp loc (Pexp_poly (expr e) t) in
-      [Pcf_meth (uv s, mkprivate (uv b), e, mkloc loc) :: l]
+      IFDEF AFTER_OCAML_3_12 THEN
+        [Pcf_meth (uv s, mkprivate (uv b), Fresh, e, mkloc loc) :: l]
+      ELSE
+        [Pcf_meth (uv s, mkprivate (uv b), e, mkloc loc) :: l]
+      END
   | CrVal loc s b e ->
-      [Pcf_val (uv s, mkmutable (uv b), expr e, mkloc loc) :: l]
+      IFDEF AFTER_OCAML_3_12 THEN
+        [Pcf_val (uv s, mkmutable (uv b), Fresh, expr e, mkloc loc) :: l]
+      ELSE
+        [Pcf_val (uv s, mkmutable (uv b), expr e, mkloc loc) :: l]
+      END
   | CrVir loc s b t ->
       [Pcf_virt (uv s, mkprivate (uv b), ctyp (mkpolytype t), mkloc loc) ::
          l] ]
