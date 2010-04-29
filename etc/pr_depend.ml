@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.46 2010/02/19 09:06:35 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.47 2010/04/29 03:46:27 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open MLast;
@@ -104,7 +104,8 @@ and patt_module =
 and label_patt (p1, p2) = do { patt p1; patt p2 }
 and expr =
   fun
-  [ <:expr< $e1$.$e2$ >> -> do { expr_module e1; expr e2 }
+  [ <:expr< $lid:s$.$e2$ >> -> do { expr_module e2 }
+  | <:expr< $e1$.$e2$ >> -> do { expr_module e1; expr e2 }
   | ExApp _ e1 e2 -> do { expr e1; expr e2 }
   | ExAre _ e1 e2 -> do { expr e1; expr e2 }
   | <:expr< [| $list:el$ |] >> -> list expr el
