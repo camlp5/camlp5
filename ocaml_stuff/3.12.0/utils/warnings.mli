@@ -44,6 +44,7 @@ type t =
   | Unused_var_strict of string             (* 27 *)
   | Wildcard_arg_to_constant_constr         (* 28 *)
   | Eol_in_string                           (* 29 *)
+  | Duplicate_definitions of string * string * string * string (*30 *)
 ;;
 
 val parse_options : bool -> string -> unit;;
@@ -61,3 +62,5 @@ val print : formatter -> t -> int;;
 exception Errors of int;;
 
 val check_fatal : unit -> unit;;
+
+val help_warnings: unit -> unit
