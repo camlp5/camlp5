@@ -1,6 +1,7 @@
 Camlp5 Version 5.15:
 --------------------
 
+* [21 Jun 10] Added compatibility for OCaml trunk version 3.13.0.
 * [29 Apr 10] Fixed bug in pr_depend.cmo: a.B.c did not add module B.
 
 Camlp5 Version 5.14:
