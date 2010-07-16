@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_lexer.ml,v 1.4 2010/02/19 09:06:38 deraugla Exp $ *)
+(* $Id: pa_lexer.ml,v 1.5 2010/07/16 18:08:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 (* Simplified syntax of parsers of characters streams *)
@@ -176,41 +176,6 @@ value make_range loc c1 c2 norec sl cl errk =
   in
   let cl = if norec then cl else [<:expr< $lid:c$ >> :: cl] in
   ([s :: sl], cl)
-;
-
-value make_or_chars loc s norec sl cl errk =
-  let pl =
-    loop 0 where rec loop i =
-      if i = String.length s then []
-      else
-        let (c, i) = next_char s i in
-        let p = <:patt< $chr:c$ >> in
-        let (p, i) =
-          if i < String.length s - 2 && s.[i] = '.' && s.[i+1] = '.' then
-            let (c, i) = next_char s (i + 2) in
-            (<:patt< $p$ .. $chr:c$ >>, i)
-          else
-            (p, i)
-        in
-        [p :: loop i]
-  in
-  match pl with
-  [ [] -> (sl, cl)
-  | [<:patt< $chr:c$ >>] ->
-      let s = (SpTrm loc <:patt< $chr:c$ >> <:vala< None >>, errk) in
-      let cl = if norec then cl else [<:expr< $chr:c$ >> :: cl] in
-      ([s :: sl], cl)
-  | pl ->
-      let c = fresh_c cl in
-      let s =
-        let p =
-          let p = or_patt_of_patt_list loc pl in
-          if norec then p else <:patt< ($p$ as $lid:c$) >>
-        in
-        (SpTrm loc p <:vala< None >>, errk)
-      in
-      let cl = if norec then cl else [<:expr< $lid:c$ >> :: cl] in
-      ([s :: sl], cl) ]
 ;
 
 value make_sub_lexer loc f sl cl errk =

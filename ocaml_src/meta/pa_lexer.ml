@@ -200,40 +200,6 @@ let make_range loc c1 c2 norec sl cl errk =
   let cl = if norec then cl else MLast.ExLid (loc, c) :: cl in s :: sl, cl
 ;;
 
-let make_or_chars loc s norec sl cl errk =
-  let pl =
-    let rec loop i =
-      if i = String.length s then []
-      else
-        let (c, i) = next_char s i in
-        let p = MLast.PaChr (loc, c) in
-        let (p, i) =
-          if i < String.length s - 2 && s.[i] = '.' && s.[i+1] = '.' then
-            let (c, i) = next_char s (i + 2) in
-            MLast.PaRng (loc, p, MLast.PaChr (loc, c)), i
-          else p, i
-        in
-        p :: loop i
-    in
-    loop 0
-  in
-  match pl with
-    [] -> sl, cl
-  | [MLast.PaChr (_, c)] ->
-      let s = SpTrm (loc, MLast.PaChr (loc, c), None), errk in
-      let cl = if norec then cl else MLast.ExChr (loc, c) :: cl in s :: sl, cl
-  | pl ->
-      let c = fresh_c cl in
-      let s =
-        let p =
-          let p = or_patt_of_patt_list loc pl in
-          if norec then p else MLast.PaAli (loc, p, MLast.PaLid (loc, c))
-        in
-        SpTrm (loc, p, None), errk
-      in
-      let cl = if norec then cl else MLast.ExLid (loc, c) :: cl in s :: sl, cl
-;;
-
 let make_sub_lexer loc f sl cl errk =
   let s =
     let buf = accum_chars loc cl in
