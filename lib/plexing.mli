@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: plexing.mli,v 1.5 2010/02/19 09:06:37 deraugla Exp $ *)
+(* $Id: plexing.mli,v 1.6 2010/07/16 17:38:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 (** Lexing for Camlp5 grammars.
@@ -87,7 +87,8 @@ value default_match : pattern -> (string * string) -> string;
             Plexing.tok_using = (fun _ -> ());
             Plexing.tok_removing = (fun _ -> ());
             Plexing.tok_match = Plexing.default_match;
-            Plexing.tok_text = Plexing.lexer_text }
+            Plexing.tok_text = Plexing.lexer_text;
+            Plexing.tok_comm = None }
    ]}
    Note that a better [tok_using] function should check the used tokens
    and raise [Plexing.Error] for incorrect ones. The other functions
