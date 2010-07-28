@@ -18,7 +18,8 @@ INSTALL
 
 DOCUMENTATION
 
-  The directory doc/html contains the full documentation.
+  The directory doc/html contains the full documentation. To build it,
+  go to the directory doc/htmlp and type 'make'.
 
 DEVELOPPERS
 
