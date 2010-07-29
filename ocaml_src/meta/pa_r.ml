@@ -2376,6 +2376,16 @@ Grammar.extend
       [Gramext.Stoken ("", "to")],
       Gramext.action (fun _ (loc : Ploc.t) -> (true : 'direction_flag))]]]);;
 
+let quotation_content s =
+  let rec loop i =
+    if i = String.length s then "", s
+    else if s.[i] = ':' || s.[i] = '@' then
+      let i = i + 1 in String.sub s 0 i, String.sub s i (String.length s - i)
+    else loop (i + 1)
+  in
+  loop 0
+;;
+
 Grammar.extend
   (let _ = (interf : 'interf Grammar.Entry.e)
    and _ = (implem : 'implem Grammar.Entry.e)
@@ -2485,14 +2495,8 @@ Grammar.extend
      [[Gramext.Stoken ("QUOTATION", "")],
       Gramext.action
         (fun (x : string) (loc : Ploc.t) ->
-           (let x =
-              try
-                let i = String.index x ':' in
-                String.sub x 0 i,
-                String.sub x (i + 1) (String.length x - i - 1)
-              with Not_found -> "", x
-            in
-            Pcaml.handle_expr_quotation loc x :
+           (let con = quotation_content x in
+            Pcaml.handle_expr_quotation loc con :
             'expr))]];
     Grammar.Entry.obj (patt : 'patt Grammar.Entry.e),
     Some (Gramext.Level "simple"),
@@ -2500,12 +2504,6 @@ Grammar.extend
      [[Gramext.Stoken ("QUOTATION", "")],
       Gramext.action
         (fun (x : string) (loc : Ploc.t) ->
-           (let x =
-              try
-                let i = String.index x ':' in
-                String.sub x 0 i,
-                String.sub x (i + 1) (String.length x - i - 1)
-              with Not_found -> "", x
-            in
-            Pcaml.handle_patt_quotation loc x :
+           (let con = quotation_content x in
+            Pcaml.handle_patt_quotation loc con :
             'patt))]]]);;

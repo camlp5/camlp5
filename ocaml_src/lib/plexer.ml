@@ -385,6 +385,8 @@ let rec quotation ctx bp buf (strm__ : _ Stream.t) =
       | _ -> err ctx (bp, Stream.count strm__) "quotation not terminated"
 ;;
 
+let less_expected = "character '<' expected";;
+
 let less ctx bp buf strm =
   if !no_quotations then
     let (strm__ : _ Stream.t) = strm in
@@ -404,16 +406,33 @@ let less ctx bp buf strm =
     | Some ':' ->
         Stream.junk strm__;
         let buf = ident buf strm__ in
-        let buf = Plexing.Lexbuf.add ':' buf in
-        begin match Stream.peek strm__ with
-          Some '<' ->
-            Stream.junk strm__;
-            let buf =
-              try quotation ctx bp buf strm__ with
-                Stream.Failure -> raise (Stream.Error "")
-            in
-            "QUOTATION", Plexing.Lexbuf.get buf
-        | _ -> raise (Stream.Error "character '<' expected")
+        begin try
+          match Stream.peek strm__ with
+            Some '<' ->
+              Stream.junk strm__;
+              let buf = Plexing.Lexbuf.add ':' buf in
+              let buf =
+                try quotation ctx bp buf strm__ with
+                  Stream.Failure -> raise (Stream.Error "")
+              in
+              "QUOTATION", Plexing.Lexbuf.get buf
+          | _ ->
+              match Stream.peek strm__ with
+                Some ':' ->
+                  Stream.junk strm__;
+                  begin match Stream.peek strm__ with
+                    Some '<' ->
+                      Stream.junk strm__;
+                      let buf = Plexing.Lexbuf.add '@' buf in
+                      let buf =
+                        try quotation ctx bp buf strm__ with
+                          Stream.Failure -> raise (Stream.Error "")
+                      in
+                      "QUOTATION", Plexing.Lexbuf.get buf
+                  | _ -> raise (Stream.Error less_expected)
+                  end
+              | _ -> raise Stream.Failure
+        with Stream.Failure -> raise (Stream.Error "")
         end
     | _ ->
         let buf = Plexing.Lexbuf.add '<' buf in
@@ -1303,11 +1322,11 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-         (fun _ -> raise (Match_failure ("plexer.ml", 679, 25)));
-       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 679, 45)));
-       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 679, 68)));
-       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 680, 18)));
-       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 680, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 682, 25)));
+       tok_using = (fun _ -> raise (Match_failure ("plexer.ml", 682, 45)));
+       tok_removing = (fun _ -> raise (Match_failure ("plexer.ml", 682, 68)));
+       tok_match = (fun _ -> raise (Match_failure ("plexer.ml", 683, 18)));
+       tok_text = (fun _ -> raise (Match_failure ("plexer.ml", 683, 37)));
        tok_comm = None}
   in
   let glex =

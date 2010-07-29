@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.125 2010/02/19 09:06:38 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.126 2010/07/29 15:30:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 value gram = Grammar.gcreate (Plexer.gmake ());
@@ -42,6 +42,7 @@ module Qast =
       | Apply of string and list t
       | Record of list (string * t)
       | Loc
+      | TrueLoc
       | VaAnt of string and MLast.loc and string
       | VaVal of t ]
     ;
@@ -72,7 +73,7 @@ module Qast =
           List.fold_left (fun e a -> <:expr< $e$ $to_expr m a$ >>)
             <:expr< $lid:f$ >> al
       | Record lal -> <:expr< {$list:List.map (to_expr_label m) lal$} >>
-      | Loc -> <:expr< $lid:Ploc.name.val$ >>
+      | Loc | TrueLoc -> <:expr< $lid:Ploc.name.val$ >>
       | VaAnt k loc x ->
           let (loc, e) = antiquot k loc x Pcaml.expr_eoi in
           <:expr< $anti:e$ >>
@@ -107,6 +108,7 @@ module Qast =
       | Apply _ _ -> failwith "bad pattern"
       | Record lal -> <:patt< {$list:List.map (to_patt_label m) lal$} >>
       | Loc -> <:patt< _ >>
+      | TrueLoc -> <:patt< $lid:Ploc.name.val$ >>
       | VaAnt k loc x ->
           let (loc, e) = antiquot k loc x Pcaml.patt_eoi in
           <:patt< $anti:e$ >>
@@ -1281,14 +1283,34 @@ Pcaml.add_option "-qmod"
   "<q>,<m> Set quotation module <m> for quotation <q>."
 ;
 
+value separate_locate s =
+  let len = String.length s in
+  if len > 0 && s.[0] = '@' then (String.sub s 1 (len - 1), True)
+  else (s, False)
+;
+
 value apply_entry e q =
   let f s = Grammar.Entry.parse e (Stream.of_string s) in
   let m () =
     try List.assoc q quot_mod.val with
     [ Not_found -> any_quot_mod.val ]
   in
-  let expr s = Qast.to_expr (m ()) (f s) in
-  let patt s = Qast.to_patt (m ()) (f s) in
+  let expr s =
+    let (s, locate) = separate_locate s in
+    Qast.to_expr (m ()) (f s)
+  in
+  let patt s =
+    let (s, locate) = separate_locate s in
+    let qast =
+      let qast = f s in
+      if locate then
+        match qast with
+        [ Qast.Node n [Qast.Loc :: nl] -> Qast.Node n [Qast.TrueLoc :: nl]
+        | x -> x ]
+      else qast
+    in
+    Qast.to_patt (m ()) qast
+  in
   Quotation.ExAst (expr, patt)
 ;
 

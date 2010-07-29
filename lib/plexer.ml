@@ -1,5 +1,5 @@
 (* camlp5r pa_lexer.cmo *)
-(* $Id: plexer.ml,v 1.108 2010/02/19 09:06:37 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.109 2010/07/29 15:30:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 value no_quotations = ref False;
@@ -172,6 +172,8 @@ value rec quotation ctx bp =
   | -> err ctx (bp, $pos) "quotation not terminated" ]
 ;
 
+value less_expected = "character '<' expected";
+
 value less ctx bp buf strm =
   if no_quotations.val then
     match strm with lexer
@@ -179,8 +181,9 @@ value less ctx bp buf strm =
   else
     match strm with lexer
     [ "<"/ (quotation ctx bp) -> ("QUOTATION", ":" ^ $buf)
-    | ":"/ ident! [ -> $add ":" ]! "<"/ ? "character '<' expected"
-      (quotation ctx bp) ->
+    | ":"/ ident! "<"/ ? less_expected [ -> $add ":" ]! (quotation ctx bp) ->
+        ("QUOTATION", $buf)
+    | ":"/ ident! ":<"/ ? less_expected [ -> $add "@" ]! (quotation ctx bp) ->
         ("QUOTATION", $buf)
     | [ -> $add "<" ] ident2! -> keyword_or_error ctx (bp, $pos) $buf ]
 ;

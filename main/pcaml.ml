@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo *)
-(* $Id: pcaml.ml,v 1.72 2010/04/29 03:46:27 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.73 2010/07/29 15:30:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 value version = "5.15-exp";
@@ -143,10 +143,21 @@ value parse_quotation_result entry loc shift name str =
 ;
 
 value handle_quotation loc proj proj2 in_expr entry reloc (name, str) =
+  let (name, locate) =
+    let len = String.length name in
+    if len = 0 then (name, False)
+    else if name.[len-1] = ':' then (String.sub name 0 (len - 1), False)
+    else if name.[len-1] = '@' then (String.sub name 0 (len - 1), True)
+    else (name, False)
+  in
   let shift =
     match name with
     [ "" -> String.length "<<"
-    | _ -> String.length "<:" + String.length name + String.length "<" ]
+    | _ ->
+        if locate then
+          String.length "<:" + String.length name + String.length ":<"
+        else
+          String.length "<:" + String.length name + String.length "<" ]
   in
   let expander =
     try Quotation.find name with exc ->
@@ -159,6 +170,7 @@ value handle_quotation loc proj proj2 in_expr entry reloc (name, str) =
         let new_str = expand_quotation loc (f in_expr) shift name str in
         parse_quotation_result entry loc shift name new_str
     | Quotation.ExAst fe_fp ->
+        let str = if locate then "@" ^ str else str in
         expand_quotation loc (proj fe_fp) shift name str ]
   in
   reloc (fun _ -> loc) shift ast

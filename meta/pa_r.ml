@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.121 2010/02/19 09:06:38 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.122 2010/07/29 15:30:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Pcaml;
@@ -777,6 +777,15 @@ EXTEND
   ;
 END;
 
+value quotation_content s = do {
+  loop 0 where rec loop i =
+    if i = String.length s then ("", s)
+    else if s.[i] = ':' || s.[i] = '@' then
+      let i = i + 1 in
+      (String.sub s 0 i, String.sub s i (String.length s - i))
+    else loop (i + 1)
+};
+
 EXTEND
   GLOBAL: interf implem use_file top_phrase expr patt;
   interf:
@@ -814,26 +823,12 @@ EXTEND
   ;
   expr: LEVEL "simple"
     [ [ x = QUOTATION ->
-          let x =
-            try
-              let i = String.index x ':' in
-              (String.sub x 0 i,
-               String.sub x (i + 1) (String.length x - i - 1))
-            with
-            [ Not_found -> ("", x) ]
-          in
-          Pcaml.handle_expr_quotation loc x ] ]
+          let con = quotation_content x in
+          Pcaml.handle_expr_quotation loc con ] ]
   ;
   patt: LEVEL "simple"
     [ [ x = QUOTATION ->
-          let x =
-            try
-              let i = String.index x ':' in
-              (String.sub x 0 i,
-               String.sub x (i + 1) (String.length x - i - 1))
-            with
-            [ Not_found -> ("", x) ]
-          in
-          Pcaml.handle_patt_quotation loc x ] ]
+          let con = quotation_content x in
+          Pcaml.handle_patt_quotation loc con ] ]
   ;
 END;

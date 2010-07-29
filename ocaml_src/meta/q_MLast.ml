@@ -40,6 +40,7 @@ module Qast =
       | Apply of string * t list
       | Record of (string * t) list
       | Loc
+      | TrueLoc
       | VaAnt of string * MLast.loc * string
       | VaVal of t
     ;;
@@ -80,7 +81,7 @@ module Qast =
           List.fold_left (fun e a -> MLast.ExApp (loc, e, to_expr m a))
             (MLast.ExLid (loc, f)) al
       | Record lal -> MLast.ExRec (loc, List.map (to_expr_label m) lal, None)
-      | Loc -> MLast.ExLid (loc, !(Ploc.name))
+      | Loc | TrueLoc -> MLast.ExLid (loc, !(Ploc.name))
       | VaAnt (k, loc, x) ->
           let (loc, e) = antiquot k loc x Pcaml.expr_eoi in
           MLast.ExAnt (loc, e)
@@ -138,6 +139,7 @@ module Qast =
       | Apply (_, _) -> failwith "bad pattern"
       | Record lal -> MLast.PaRec (loc, List.map (to_patt_label m) lal)
       | Loc -> MLast.PaAny loc
+      | TrueLoc -> MLast.PaLid (loc, !(Ploc.name))
       | VaAnt (k, loc, x) ->
           let (loc, e) = antiquot k loc x Pcaml.patt_eoi in
           MLast.PaAnt (loc, e)
@@ -817,7 +819,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 290, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 292, 19))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -1375,7 +1377,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 348, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 350, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));
@@ -6126,11 +6128,30 @@ Pcaml.add_option "-qmod"
         | None -> any_quot_mod := s))
   "<q>,<m> Set quotation module <m> for quotation <q>.";;
 
+let separate_locate s =
+  let len = String.length s in
+  if len > 0 && s.[0] = '@' then String.sub s 1 (len - 1), true else s, false
+;;
+
 let apply_entry e q =
   let f s = Grammar.Entry.parse e (Stream.of_string s) in
   let m () = try List.assoc q !quot_mod with Not_found -> !any_quot_mod in
-  let expr s = Qast.to_expr (m ()) (f s) in
-  let patt s = Qast.to_patt (m ()) (f s) in Quotation.ExAst (expr, patt)
+  let expr s =
+    let (s, locate) = separate_locate s in Qast.to_expr (m ()) (f s)
+  in
+  let patt s =
+    let (s, locate) = separate_locate s in
+    let qast =
+      let qast = f s in
+      if locate then
+        match qast with
+          Qast.Node (n, Qast.Loc :: nl) -> Qast.Node (n, Qast.TrueLoc :: nl)
+        | x -> x
+      else qast
+    in
+    Qast.to_patt (m ()) qast
+  in
+  Quotation.ExAst (expr, patt)
 ;;
 
 let sig_item_eoi = Grammar.Entry.create gram "sig_item_eoi" in

@@ -1,6 +1,17 @@
 Camlp5 Version 5.15:
 --------------------
 
+* [29 Jul 10] Added ability to write AST quotations with a colon before
+  the '<' (e.g. "<:expr:< foo >>") which, in pattern position, generates
+  a binding to the variable "loc" at the top node:
+    1/ normal usage (still working):
+         "fun [ <:expr< x >> -> 0 ]"
+       which is equivalent to:
+         "fun [ MLast.ExLid _ (Ploc.VaVal "x") -> 0 ]
+    2/ new usage:
+         "fun [ <:expr:< x >> -> 0 ]"
+       which is equivalent to:
+        "fun [ MLast.ExLid loc (Ploc.VaVal "x") -> 0 ]
 * [21 Jun 10] Added compatibility for OCaml trunk version 3.13.0.
 * [29 Apr 10] Fixed bug in pr_depend.cmo: a.B.c did not add module B.
 

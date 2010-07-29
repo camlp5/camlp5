@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_o.ml,v 1.84 2010/02/19 09:06:35 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.85 2010/07/29 15:30:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Pcaml;
@@ -339,6 +339,15 @@ value choose_tvar tpl =
   | None -> make_n 1 ]
 ;
 
+value quotation_content s = do {
+  loop 0 where rec loop i =
+    if i = String.length s then ("", s)
+    else if s.[i] = ':' || s.[i] = '@' then
+      let i = i + 1 in
+      (String.sub s 0 i, String.sub s i (String.length s - i))
+    else loop (i + 1)
+};
+
 EXTEND
   GLOBAL: sig_item str_item ctyp patt expr module_type module_expr class_type
     class_expr class_sig_item class_str_item let_binding type_declaration
@@ -619,15 +628,8 @@ EXTEND
       | "begin"; e = SELF; "end" -> <:expr< $e$ >>
       | "begin"; "end" -> <:expr< () >>
       | x = QUOTATION ->
-          let x =
-            try
-              let i = String.index x ':' in
-              (String.sub x 0 i,
-               String.sub x (i + 1) (String.length x - i - 1))
-            with
-            [ Not_found -> ("", x) ]
-          in
-          Pcaml.handle_expr_quotation loc x ] ]
+          let con = quotation_content x in
+          Pcaml.handle_expr_quotation loc con ] ]
   ;
   let_binding:
     [ [ p = val_ident; e = fun_binding -> (p, e)
@@ -748,15 +750,8 @@ EXTEND
       | "("; p = SELF; ")" -> <:patt< $p$ >>
       | "_" -> <:patt< _ >>
       | x = QUOTATION ->
-          let x =
-            try
-              let i = String.index x ':' in
-              (String.sub x 0 i,
-               String.sub x (i + 1) (String.length x - i - 1))
-            with
-            [ Not_found -> ("", x) ]
-          in
-          Pcaml.handle_patt_quotation loc x ] ]
+          let con = quotation_content x in
+          Pcaml.handle_patt_quotation loc con ] ]
   ;
   patt_semi_list:
     [ [ p = patt; ";"; pl = SELF -> [p :: pl]

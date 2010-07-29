@@ -134,10 +134,20 @@ let parse_quotation_result entry loc shift name str =
 ;;
 
 let handle_quotation loc proj proj2 in_expr entry reloc (name, str) =
+  let (name, locate) =
+    let len = String.length name in
+    if len = 0 then name, false
+    else if name.[len-1] = ':' then String.sub name 0 (len - 1), false
+    else if name.[len-1] = '@' then String.sub name 0 (len - 1), true
+    else name, false
+  in
   let shift =
     match name with
       "" -> String.length "<<"
-    | _ -> String.length "<:" + String.length name + String.length "<"
+    | _ ->
+        if locate then
+          String.length "<:" + String.length name + String.length ":<"
+        else String.length "<:" + String.length name + String.length "<"
   in
   let expander =
     try Quotation.find name with
@@ -151,6 +161,7 @@ let handle_quotation loc proj proj2 in_expr entry reloc (name, str) =
         let new_str = expand_quotation loc (f in_expr) shift name str in
         parse_quotation_result entry loc shift name new_str
     | Quotation.ExAst fe_fp ->
+        let str = if locate then "@" ^ str else str in
         expand_quotation loc (proj fe_fp) shift name str
   in
   reloc (fun _ -> loc) shift ast
