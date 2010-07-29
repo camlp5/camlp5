@@ -3,7 +3,7 @@ Camlp5 Version 5.15:
 
 * [29 Jul 10] Added ability to write AST quotations with a colon before
   the '<' (e.g. "<:expr:< foo >>") which, in pattern position, generates
-  a binding to the variable "loc" at the top node:
+  a binding of the variable "loc" at the top node:
     1/ normal usage (still working):
          "fun [ <:expr< x >> -> 0 ]"
        which is equivalent to:

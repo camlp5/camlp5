@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: ast_strict.html,v 1.20 2010/02/19 09:06:34 deraugla Exp $ -->
+  <!-- $Id: ast_strict.html,v 1.21 2010/07/29 15:39:39 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>AST - strict</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -156,6 +156,22 @@
 
 <pre>
   MLast.SgVal _ (Ploc.VaVal "foo")
+    (MLast.TyArr _ (MLast.TyLid _ (Ploc.VaVal "int"))
+       (MLast.TyLid _ (Ploc.VaVal "bool")))
+</pre>
+
+<p>However, it is possible to generate a binding of the variable
+  "<tt>loc</tt>" on the top node by writing a colon before the "&lt;"
+  in the quotation. The same example:</p>
+
+<pre>
+  &lt;:sig_item:&lt; value foo : int -> bool >>
+</pre>
+
+<p>(notice the ":&lt" instead of "&lt;") is equivalent to:</p>
+
+<pre>
+  MLast.SgVal loc (Ploc.VaVal "foo")
     (MLast.TyArr _ (MLast.TyLid _ (Ploc.VaVal "int"))
        (MLast.TyLid _ (Ploc.VaVal "bool")))
 </pre>
