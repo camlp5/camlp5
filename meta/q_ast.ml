@@ -1,8 +1,8 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: q_ast.ml,v 1.104 2010/02/19 09:06:38 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.105 2010/07/29 08:51:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
-(* AST quotations with works by running the language parser (and its possible
+(* AST quotations that works by running the language parser (and its possible
    extensions) and meta-ifying the nodes. Works completely only in "strict"
    mode. In "transitional" mode, not all antiquotations are available. *)
 
