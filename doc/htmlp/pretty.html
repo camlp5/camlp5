@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: pretty.html,v 1.18 2010/02/19 09:06:34 deraugla Exp $ -->
+  <!-- $Id: pretty.html,v 1.19 2010/07/31 02:23:27 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>Pretty print</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -39,8 +39,8 @@
 
 <p>The function "horiz_vertic" takes two functions as parameters. When
   invoked, it calls its first function. If that function fails with
-  some internal error that the function "<code>sprintf</code>" below
-  may raise, the second function is called.</p>
+  some specific internal error (that the function "<code>sprintf</code>"
+  below may raise), the second function is called.</p>
 
 <p>The type of "horiz_vertic" is:</p>
 
@@ -207,11 +207,11 @@
 <p>The module "Pretty" is intended to be basic, a "kernel" module to
   pretty print data. It presumes that the user takes care of the
   indentation. Programs using "Pretty" are not as short as the ones
-  using "Format" of the OCaml library, but are more flexible. Later,
-  it is planed to find a way to extend "Pretty" with functions
-  allowing to use a short syntax similar to the "@" convention of the
-  function "printf" of "Format", and taking care of the indentation
-  for the user, resulting on shorter programs.</p>
+  using "Format" of the OCaml library, but are more flexible. To
+  pretty print with a shorter syntax like in the OCaml module "Format"
+  (with the "@" convention), see statement
+  "<a href="pprintf.html">pprintf</a>" (which internally uses the
+  module "Pretty").</p>
 
 <h3>Strings vs Channels</h3>
 

@@ -1,4 +1,4 @@
-/* $Id: base.css,v 1.37 2007/09/09 02:17:23 deraugla Exp $ */
+/* $Id: base.css,v 1.38 2010/07/31 02:23:26 deraugla Exp $ */
 
 body { margin: 0 0 1px 0; background-color: rgb(189,225,255) }
 body { border: 0 }
@@ -18,6 +18,7 @@ body { border: 0 }
 #content ul ul { margin-left: 2mm }
 #content dl ul { margin-left: 2mm }
 #content dl p { margin-left: 0 }
+#content ol { margin-left: 1cm }
 #content p { text-align: justify }
 #content li { text-align: justify }
 #content dd { text-align: justify }
