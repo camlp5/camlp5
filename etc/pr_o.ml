@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_o.ml,v 1.187 2010/03/31 11:34:21 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.188 2010/07/31 02:01:24 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Pretty;
@@ -215,7 +215,7 @@ value comm_patt_any f pc z =
 
 value patt_as pc z =
   match z with
-  [ <:patt< ($x$ as $y$) >> -> pprintf pc "%p as %p" patt x patt y
+  [ <:patt< ($x$ as $y$) >> -> pprintf pc "%p@[ as %p@]" patt x patt y
   | z -> patt pc z ]
 ;
 
