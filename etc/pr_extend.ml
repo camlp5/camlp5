@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_extend.ml,v 1.62 2010/02/19 09:06:35 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.63 2010/08/02 13:10:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 (* heuristic to rebuild the EXTEND statement from the AST *)
@@ -467,7 +467,7 @@ and check_slist rl =
                 | (Sopt _, ["opt"]) -> []
                 | (Stoken (Left (s, "")), _) ->
                     if ls = anti_of_tok s then [] else ls
-                | _ -> ls ]                   
+                | _ -> ls ]
               in
               Some (Svala ls None s)
           | [([(Some <:patt< a >>, s)], Some <:expr< Qast.VaVal $_$ >>);

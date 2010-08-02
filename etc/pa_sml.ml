@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_sml.ml,v 1.27 2010/02/19 09:06:35 deraugla Exp $ *)
+(* $Id: pa_sml.ml,v 1.28 2010/08/02 13:10:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Pcaml;
@@ -669,7 +669,7 @@ EXTEND
           List.fold_right (fun td tdl -> td @ tdl) x1 [] ] ]
   ;
   dbrhs:
-    [ [ x1 = LIST1 constr SEP "|"  -> x1
+    [ [ x1 = LIST1 constr SEP "|" -> x1
       | "datatype"; x1 = tycon -> not_impl loc "dbrhs 2" ] ]
   ;
   constr:

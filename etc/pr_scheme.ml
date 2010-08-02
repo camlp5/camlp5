@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extprint.cmo ./pa_extfun.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_scheme.ml,v 1.64 2010/02/19 09:06:36 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.65 2010/08/02 13:10:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Pretty;
@@ -659,7 +659,7 @@ EXTEND_PRINTER
       | <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
           let b = if rf then "letrec" else "let" in
           let_binding_list pc (b, pel, e)
-      | <:expr< let module $s$ = $me$ in $e$  >> ->
+      | <:expr< let module $s$ = $me$ in $e$ >> ->
           plistbf 0 (paren pc "letmodule")
             [(fun pc -> sprintf "%s%s%s" pc.bef s pc.aft, "");
              (fun pc -> module_expr pc me, "");
@@ -1381,7 +1381,7 @@ EXTEND_PRINTER
       | <:class_expr< $list:sl$ >> ->
           longident pc sl
       | <:class_expr< $list:sl$ [ $list:ctcl$ ] >> ->
-          not_impl  "CeCon" pc sl
+          not_impl "CeCon" pc sl
       | x ->
           not_impl "class_expr" pc x ] ]
   ;

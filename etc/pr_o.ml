@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_o.ml,v 1.190 2010/08/02 12:59:42 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.191 2010/08/02 13:10:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Pretty;
@@ -1164,7 +1164,7 @@ EXTEND_PRINTER
               let xl = List.map (fun x -> (x, ";")) xl in
               pprintf pc "@[<1>[%p]@]" (plist patt 0) xl ]
       | <:patt< ($p$ : $t$) >> ->
-          pprintf pc "(%p :@;<1 1>%p)"  patt p ctyp t
+          pprintf pc "(%p :@;<1 1>%p)" patt p ctyp t
       | <:patt< $int:s$ >> | <:patt< $flo:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%s)" s
           else pprintf pc "%s" s

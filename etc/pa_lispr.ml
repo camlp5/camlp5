@@ -367,7 +367,7 @@ and label_expr_se loc =
 and expr_ident_se loc s =
   if s.[0] = '<' then <:expr< $lid:s$ >>
   else
-    loop 0 0 where rec loop ibeg i =
+    let rec loop ibeg i =
       if i = String.length s then
         if i > ibeg then expr_id loc (String.sub s ibeg (i - ibeg))
         else
@@ -380,6 +380,8 @@ and expr_ident_se loc s =
         else
           Ploc.raise (Ploc.sub loc (i - 1) 1) (Stream.Error "expr expected")
       else loop ibeg (i + 1)
+    in
+    loop 0 0
 and parser_cases_se loc =
   fun
   [ [] -> <:expr< raise Stream.Failure >>

@@ -1,5 +1,5 @@
 (* camlp5r q_MLast.cmo -I . pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_extprint.ml,v 1.9 2010/02/19 09:06:35 deraugla Exp $ *)
+(* $Id: pr_extprint.ml,v 1.10 2010/08/02 13:10:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 (* heuristic to rebuild the EXTEND_PRINTER statement from the AST *)
@@ -33,7 +33,7 @@ value unrules =
         in
         match (p, wo, e, rules) with
         [ (<:patt< z >>, None, <:expr< next pc z >>, <:expr< [] >>) -> r
-        | _ -> loop [(p, wo, e) ::  r] rules ]
+        | _ -> loop [(p, wo, e) :: r] rules ]
     | <:expr< [] >> -> r
     | _ -> raise Not_found ]
 ;

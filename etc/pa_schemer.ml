@@ -240,8 +240,7 @@ and dollar bp kwt strm =
   if Plexer.force_antiquot_loc.val then
     ("ANTIQUOT_LOC", antiquot_loc bp 0 strm)
   else
-    match strm with parser
-      [: len = ident (Buff.store 0 '$') :] -> identifier kwt (Buff.get len)
+    match strm with parser [: len = ident (Buff.store 0 '$') :] -> identifier kwt (Buff.get len)
 and sharp bp kwt =
   parser
   [ [: `'(' :] -> ("", "#(")

@@ -1,5 +1,5 @@
 (* camlp5r -I . pa_macro.cmo q_MLast.cmo pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.186 2010/02/19 09:06:36 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.187 2010/08/02 13:10:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Pretty;
@@ -1197,7 +1197,7 @@ EXTEND_PRINTER
           let (xl, y) = make_patt_list z in
           let xl = List.map (fun x -> (x, ";")) xl in
           match y with
-          [ Some  y ->
+          [ Some y ->
               let patt2 pc x = pprintf pc "%p ::@ %p" patt x patt y in
               pprintf pc "@[<1>[%p]@]" (plistl patt patt2 0) xl
           | None ->

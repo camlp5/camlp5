@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: q_ast.ml,v 1.105 2010/07/29 08:51:48 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.106 2010/08/02 13:10:53 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 (* AST quotations that works by running the language parser (and its possible
@@ -502,7 +502,7 @@ module Meta_E =
        ;
        value node_no_loc con el =
          List.fold_left (fun e1 e2 -> <:expr< $e1$ $e2$ >>)
-           <:expr< MLast.$uid:con$  >> el
+           <:expr< MLast.$uid:con$ >> el
        ;
        value list elem el =
          loop el where rec loop el =

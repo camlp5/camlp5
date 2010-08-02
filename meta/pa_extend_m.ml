@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend_m.ml,v 1.34 2010/02/19 09:06:38 deraugla Exp $ *)
+(* $Id: pa_extend_m.ml,v 1.35 2010/08/02 13:10:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Pa_extend;
@@ -33,6 +33,6 @@ EXTEND
           ASvala2 loc s al oe ] ]
   ;
   name:
-    [ [ i = LIDENT  -> (i, <:expr< $lid:i$ >>) ] ]
+    [ [ i = LIDENT -> (i, <:expr< $lid:i$ >>) ] ]
   ;
 END;

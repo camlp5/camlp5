@@ -1,5 +1,5 @@
 ;; camlp5 ./pa_lispr.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-;; $Id: pa_lisp.ml,v 1.25 2010/02/19 09:06:35 deraugla Exp $
+;; $Id: pa_lisp.ml,v 1.26 2010/08/02 13:07:03 deraugla Exp $
 ;; Copyright (c) INRIA 2007-2010
 
 (open Pcaml)
@@ -103,7 +103,7 @@
  (parser
   (((` ':') (lab (label 0)) (? (` '<') "'<' expected") (q (quotation 0)))
    (, "QUOT" (^ lab (^ ":" q))))
-  (()  (, "LIDENT" "<")))
+  (() (, "LIDENT" "<")))
  label
  (lambda len
    (parser

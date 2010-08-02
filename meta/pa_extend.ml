@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.105 2010/02/19 09:06:38 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.106 2010/08/02 13:10:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 value split_ext = ref False;
@@ -390,7 +390,7 @@ value quot_expr psl e =
     | <:expr< Qast.VaVal $_$ >> -> e
     | <:expr< [] >> -> <:expr< Qast.List [] >>
     | <:expr< [$e$] >> -> <:expr< Qast.List [$loop e$] >>
-    | <:expr< [$e1$ :: $e2$] >> -> <:expr< Qast.Cons $loop e1$  $loop e2$ >>
+    | <:expr< [$e1$ :: $e2$] >> -> <:expr< Qast.Cons $loop e1$ $loop e2$ >>
     | <:expr< $_$ $_$ >> ->
         let (f, al) = expr_fa [] e in
         match f with

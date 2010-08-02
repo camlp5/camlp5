@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: gramext.ml,v 1.30 2010/02/19 09:06:37 deraugla Exp $ *)
+(* $Id: gramext.ml,v 1.31 2010/08/02 13:10:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Printf;
@@ -113,7 +113,7 @@ value rec eq_symbol s1 s2 =
             eq_symbol n1.node n2.node && eq_tree n1.son n2.son &&
             eq_tree n1.brother n2.brother
         | (LocAct _ _, LocAct _ _) -> True
-        | (DeadEnd,  DeadEnd) -> True
+        | (DeadEnd, DeadEnd) -> True
         | _ -> False ]
   | _ -> s1 = s2 ]
 ;

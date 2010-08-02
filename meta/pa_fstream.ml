@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_fstream.ml,v 1.13 2007/12/27 19:50:50 deraugla Exp $ *)
+(* $Id: pa_fstream.ml,v 1.14 2010/08/02 13:10:52 deraugla Exp $ *)
 
 open Pcaml;
 
@@ -276,7 +276,7 @@ EXTEND
     [ [ "`"; p = patt; eo = OPT [ "when"; e = expr -> e ] -> SpTrm loc p eo
       | p = patt; "="; e = expr -> SpNtr loc p e
       | p = patt -> SpStr loc p
-      | "when"; e = expr  -> SpWhn loc e ] ]
+      | "when"; e = expr -> SpWhn loc e ] ]
   ;
   ipatt:
     [ [ i = LIDENT -> <:patt< $lid:i$ >> ] ]
