@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_o.ml,v 1.189 2010/08/02 08:44:05 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.190 2010/08/02 12:59:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Pretty;
@@ -149,7 +149,7 @@ value and_before elem pc x = pprintf pc "and %p" elem x;
 value bar_before elem pc x = pprintf pc "| %p" elem x;
 value star_before elem pc x = pprintf pc "* %p" elem x;
 
-value operator pc left right sh op x y =
+value operator pc left right sh (loc, op) x y =
   let op = if op = "" then "" else " " ^ op in
   pprintf pc "%p%s@;%p" left x op right y
 ;
@@ -215,7 +215,7 @@ value comm_patt_any f pc z =
 
 value patt_as pc z =
   match z with
-  [ <:patt< ($x$ as $y$) >> -> pprintf pc "%p@[ as %p@]" patt x patt y
+  [ <:patt:< ($x$ as $y$) >> -> pprintf pc "%p@[ as %p@]" patt x patt y
   | z -> patt pc z ]
 ;
 
@@ -417,7 +417,7 @@ value type_decl pc td =
   in
   match te with
   [ <:ctyp:< '$s$ >> when not (mem_tvar s (Pcaml.unvala tp)) ->
-      pprintf pc "%p%p" type_params  (Pcaml.unvala tp)
+      pprintf pc "%p%p" type_params (Pcaml.unvala tp)
         var_escaped (loc, Pcaml.unvala tn)
   | _ ->
       let loc = MLast.loc_of_ctyp te in
@@ -915,8 +915,8 @@ EXTEND_PRINTER
           let el = List.map (fun e -> (e, ",")) el in
           plist next 0 pc el ]
     | "assign"
-      [ <:expr< $x$.val := $y$ >> -> operator pc next expr 2 ":=" x y
-      | <:expr< $x$ := $y$ >> -> operator pc next expr 2 "<-" x y ]
+      [ <:expr:< $x$.val := $y$ >> -> operator pc next expr 2 (loc, ":=") x y
+      | <:expr:< $x$ := $y$ >> -> operator pc next expr 2 (loc, "<-") x y ]
     | "or"
       [ z ->
           let unfold =
@@ -936,10 +936,10 @@ EXTEND_PRINTER
           in
           right_operator pc 0 unfold next z ]
     | "less"
-      [ <:expr< $lid:op$ $x$ $y$ >> as z ->
+      [ <:expr:< $lid:op$ $x$ $y$ >> as z ->
           match op with
           [ "!=" | "<" | "<=" | "<>" | "=" | "==" | ">" | ">=" ->
-              operator pc next next 0 op x y
+              operator pc next next 0 (loc, op) x y
           | _ -> next pc z ] ]
     | "concat"
       [ z ->
@@ -1194,7 +1194,7 @@ EXTEND_PRINTER
   ;
   pr_ctyp:
     [ "top"
-      [ <:ctyp< $x$ == $y$ >> -> operator pc next next 2 "=" x y ]
+      [ <:ctyp:< $x$ == $y$ >> -> operator pc next next 2 (loc, "=") x y ]
     | "arrow"
       [ <:ctyp< $_$ -> $_$ >> as z ->
           let unfold =
