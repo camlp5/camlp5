@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_o.ml,v 1.188 2010/07/31 02:01:24 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.189 2010/08/02 08:44:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Pretty;
@@ -111,7 +111,7 @@ value not_impl name pc x =
   pprintf pc "\"pr_o, not impl: %s; %s\"" name (String.escaped desc)
 ;
 
-value var_escaped pc v =
+value var_escaped pc (loc, v) =
   let x =
     if v.[0] = '*' || v.[String.length v - 1] = '*' then "( " ^ v ^ " )"
     else if is_infix v || has_special_chars v then "(" ^ v ^ ")"
@@ -120,7 +120,7 @@ value var_escaped pc v =
   pprintf pc "%s" x
 ;
 
-value cons_escaped pc v =
+value cons_escaped pc (loc, v) =
   let x =
     match v with
     [ "True" -> "true"
@@ -132,11 +132,11 @@ value cons_escaped pc v =
   pprintf pc "%s" x
 ;
 
-value rec mod_ident pc sl =
+value rec mod_ident pc (loc, sl) =
   match sl with
   [ [] -> pprintf pc ""
-  | [s] -> var_escaped pc s
-  | [s :: sl] -> pprintf pc "%s.%p" s mod_ident sl ]
+  | [s] -> var_escaped pc (loc, s)
+  | [s :: sl] -> pprintf pc "%s.%p" s mod_ident (loc, sl) ]
 ;
 
 value comma_after elem pc x = pprintf pc "%p," elem x;
@@ -416,23 +416,24 @@ value type_decl pc td =
      td.MLast.tdCon)
   in
   match te with
-  [ <:ctyp< '$s$ >> when not (mem_tvar s (Pcaml.unvala tp)) ->
+  [ <:ctyp:< '$s$ >> when not (mem_tvar s (Pcaml.unvala tp)) ->
       pprintf pc "%p%p" type_params  (Pcaml.unvala tp)
-        var_escaped (Pcaml.unvala tn)
+        var_escaped (loc, Pcaml.unvala tn)
   | _ ->
+      let loc = MLast.loc_of_ctyp te in
       if pc.aft = "" then
         pprintf pc "%p%p =@;%p%p" type_params (Pcaml.unvala tp)
-          var_escaped (Pcaml.unvala tn) ctyp te
+          var_escaped (loc, Pcaml.unvala tn) ctyp te
           (hlist type_constraint) (Pcaml.unvala cl)
       else
         horiz_vertic
           (fun () ->
              pprintf pc "%p%p = %p%p" type_params (Pcaml.unvala tp)
-               var_escaped (Pcaml.unvala tn) ctyp te
+               var_escaped (loc, Pcaml.unvala tn) ctyp te
                (hlist type_constraint) (Pcaml.unvala cl))
           (fun () ->
              pprintf pc "@[<a>%p%p =@;%p%p@ @]" type_params (Pcaml.unvala tp)
-               var_escaped (Pcaml.unvala tn) ctyp te
+               var_escaped (loc, Pcaml.unvala tn) ctyp te
                (hlist type_constraint) (Pcaml.unvala cl)) ]
 ;
 
@@ -440,14 +441,14 @@ value label_decl pc (_, l, m, t) =
   pprintf pc "%s%s :@;%p" (if m then "mutable " else "") l ctyp t
 ;
 
-value cons_decl pc (_, c, tl) =
+value cons_decl pc (loc, c, tl) =
   let c = Pcaml.unvala c in
   let tl = Pcaml.unvala tl in
-  if tl = [] then cons_escaped pc c
+  if tl = [] then cons_escaped pc (loc, c)
   else
     let ctyp_apply = Eprinter.apply_level pr_ctyp "apply" in
     let tl = List.map (fun t -> (t, " *")) tl in
-    pprintf pc "%p of@;<1 4>%p" cons_escaped c (plist ctyp_apply 2) tl
+    pprintf pc "%p of@;<1 4>%p" cons_escaped (loc, c) (plist ctyp_apply 2) tl
 ;
 
 value has_cons_with_params vdl =
@@ -599,9 +600,9 @@ value expr_short pc x =
     | _ -> expr3 pc z ]
   and expr3 pc z =
     match z with
-    [ <:expr< $lid:v$ >> ->
+    [ <:expr:< $lid:v$ >> ->
         if is_infix v || has_special_chars v then raise Exit
-        else var_escaped pc v
+        else var_escaped pc (loc, v)
     | <:expr< $int:s$ >> -> pprintf pc "%s" s
     | <:expr< $lid:op$ $_$ $_$ >> ->
         if List.mem op ["+"; "-"; "*"; "/"] then pprintf pc "(%p)" expr1 z
@@ -636,12 +637,12 @@ value flatten_sequ e =
 
 value string pc s = pprintf pc "\"%s\"" s;
 
-value external_decl pc (n, t, sl) =
-  pprintf pc "external %p :@;%p@[ = %p@]" var_escaped n ctyp t
+value external_decl pc (loc, n, t, sl) =
+  pprintf pc "external %p :@;%p@[ = %p@]" var_escaped (loc, n) ctyp t
     (hlist string) sl
 ;
 
-value exception_decl pc (e, tl, id) =
+value exception_decl pc (loc, e, tl, id) =
   let ctyp_apply = Eprinter.apply_level pr_ctyp "apply" in
   match id with
   [ [] ->
@@ -652,11 +653,11 @@ value exception_decl pc (e, tl, id) =
           pprintf pc "exception %s of@;%p" e (plist ctyp_apply 2) tl ]
   | id ->
       match tl with
-      [ [] -> pprintf pc "exception %s =@;%p" e mod_ident id
+      [ [] -> pprintf pc "exception %s =@;%p" e mod_ident (loc, id)
       | tl ->
           let tl = List.map (fun t -> (t, " *")) tl in
           pprintf pc "exception %s of@;%p =@;%p" e
-            (plist ctyp_apply 2) tl mod_ident id ] ]
+            (plist ctyp_apply 2) tl mod_ident (loc, id) ] ]
 ;
 
 value str_module pref pc (m, me) =
@@ -727,11 +728,11 @@ value str_or_sig_functor pc s mt module_expr_or_type met =
 
 value with_constraint pc wc =
   match wc with
-  [ <:with_constr< type $sl$ $list:tpl$ = $flag:pf$ $t$ >> ->
-      pprintf pc "with type %p%p =%s %p" mod_ident sl (hlist type_var) tpl
-        (if pf then " private" else "") ctyp t
-  | <:with_constr< module $sl$ = $me$ >> ->
-      pprintf pc "with module %p = %p" mod_ident sl module_expr me
+  [ <:with_constr:< type $sl$ $list:tpl$ = $flag:pf$ $t$ >> ->
+      pprintf pc "with type %p%p =%s %p" mod_ident (loc, sl) (hlist type_var)
+        tpl (if pf then " private" else "") ctyp t
+  | <:with_constr:< module $sl$ = $me$ >> ->
+      pprintf pc "with module %p = %p" mod_ident (loc, sl) module_expr me
   | IFDEF STRICT THEN
       x -> not_impl "with_constraint" pc x
     END ]
@@ -860,10 +861,9 @@ EXTEND_PRINTER
                             Some (pprintf pc "%s %q with" op expr e1 ""))
                          (fun () -> None)
                      with
-                     [ Some s1 ->
-                         let pc = {(pc) with bef = ""} in
-                         pprintf pc "%s@;%p" s1 (match_assoc False)
-                           ((p, wo, e), True)
+                     [ Some _ ->
+                         pprintf pc "%s %q with@;%p" op expr e1 ""
+                           (match_assoc False) ((p, wo, e), True)
                      | None ->
                          pprintf pc "@[<a>%s@;%q@ with %p@]" op expr e1 ""
                            (match_assoc False) ((p, wo, e), True) ])
@@ -873,8 +873,8 @@ EXTEND_PRINTER
                 pprintf pc "@[<a>begin %s@;%p@ with@]@ %q@ end" op expr e1
                   match_assoc_list pwel ""
               else
-                pprintf pc "@[<a>%s@;%p@ with@]@ %p" op expr e1
-                  match_assoc_list pwel ]
+                 pprintf pc "@[<a>%s@;%p@ with@]@ %p" op expr e1
+                   match_assoc_list pwel ]
       | <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
           horiz_vertic
             (fun () ->
@@ -1076,8 +1076,8 @@ EXTEND_PRINTER
       | <:expr< $nativeint:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sn)" s
           else pprintf pc "%s" s
-      | <:expr< $lid:s$ >> -> var_escaped pc s
-      | <:expr< $uid:s$ >> -> cons_escaped pc s
+      | <:expr:< $lid:s$ >> -> var_escaped pc (loc, s)
+      | <:expr:< $uid:s$ >> -> cons_escaped pc (loc, s)
       | <:expr< `$s$ >> ->
           failwith "variants not pretty printed (in expr); add pr_ro.cmo"
       | <:expr< $str:s$ >> ->
@@ -1177,8 +1177,8 @@ EXTEND_PRINTER
       | <:patt< $nativeint:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sn)" s
           else pprintf pc "%sn" s
-      | <:patt< $lid:s$ >> -> var_escaped pc s
-      | <:patt< $uid:s$ >> -> cons_escaped pc s
+      | <:patt:< $lid:s$ >> -> var_escaped pc (loc, s)
+      | <:patt:< $uid:s$ >> -> cons_escaped pc (loc, s)
       | <:patt< $chr:s$ >> -> pprintf pc "'%s'" (ocaml_char s)
       | <:patt< $str:s$ >> -> pprintf pc "\"%s\"" s
       | <:patt< _ >> -> pprintf pc "_"
@@ -1236,12 +1236,12 @@ EXTEND_PRINTER
               (fun () ->
                  pprintf pc "  %p" (vlist2 cons_decl (bar_before cons_decl))
                    vdl)
-      | <:ctyp< $lid:t$ >> ->
-          var_escaped pc t
+      | <:ctyp:< $lid:t$ >> ->
+          var_escaped pc (loc, t)
       | <:ctyp< $uid:t$ >> ->
           pprintf pc "%s"t
-      | <:ctyp< ' $s$ >> ->
-          pprintf pc "'%p" var_escaped s
+      | <:ctyp:< ' $s$ >> ->
+          pprintf pc "'%p" var_escaped (loc, s)
       | <:ctyp< _ >> ->
           pprintf pc "_"
       | <:ctyp< ?$_$: $_$ >> | <:ctyp< ~$_$: $_$ >> ->
@@ -1268,10 +1268,10 @@ EXTEND_PRINTER
               else str_item
             in
             vlistl str_item_sep str_item pc sil
-      | <:str_item< exception $uid:e$ of $list:tl$ = $id$ >> ->
-          exception_decl pc (e, tl, id)
-      | <:str_item< external $lid:n$ : $t$ = $list:sl$ >> ->
-          external_decl pc (n, t, sl)
+      | <:str_item:< exception $uid:e$ of $list:tl$ = $id$ >> ->
+          exception_decl pc (loc, e, tl, id)
+      | <:str_item:< external $lid:n$ : $t$ = $list:sl$ >> ->
+          external_decl pc (loc, n, t, sl)
       | <:str_item< include $me$ >> ->
           pprintf pc "include %p" module_expr me
       | <:str_item< module $flag:rf$ $list:mdl$ >> ->
@@ -1280,8 +1280,8 @@ EXTEND_PRINTER
           vlist2 (str_module ("module" ^ rf)) (str_module "and") pc mdl
       | <:str_item< module type $uid:m$ = $mt$ >> ->
           sig_module_or_module_type "module type" '=' pc (m, mt)
-      | <:str_item< open $i$ >> ->
-          pprintf pc "open %p" mod_ident i
+      | <:str_item:< open $i$ >> ->
+          pprintf pc "open %p" mod_ident (loc, i)
       | <:str_item< type $list:tdl$ >> ->
           pprintf pc "type %p" (vlist2 type_decl (and_before type_decl)) tdl
       | <:str_item< value $flag:rf$ $list:pel$ >> ->
@@ -1302,10 +1302,10 @@ EXTEND_PRINTER
   ;
   pr_sig_item:
     [ "top"
-      [ <:sig_item< exception $uid:e$ of $list:tl$ >> ->
-          exception_decl pc (e, tl, [])
-      | <:sig_item< external $lid:n$ : $t$ = $list:sl$ >> ->
-          external_decl pc (n, t, sl)
+      [ <:sig_item:< exception $uid:e$ of $list:tl$ >> ->
+          exception_decl pc (loc, e, tl, [])
+      | <:sig_item:< external $lid:n$ : $t$ = $list:sl$ >> ->
+          external_decl pc (loc, n, t, sl)
       | <:sig_item< include $mt$ >> ->
           pprintf pc "include %p" module_type mt
       | <:sig_item< declare $list:sil$ end >> ->
@@ -1325,12 +1325,12 @@ EXTEND_PRINTER
             (sig_module_or_module_type "and" ':') pc mdl
       | <:sig_item< module type $uid:m$ = $mt$ >> ->
           sig_module_or_module_type "module type" '=' pc (m, mt)
-      | <:sig_item< open $i$ >> ->
-          pprintf pc "open %p" mod_ident i
+      | <:sig_item:< open $i$ >> ->
+          pprintf pc "open %p" mod_ident (loc, i)
       | <:sig_item< type $list:tdl$ >> ->
           pprintf pc "type %p" (vlist2 type_decl (and_before type_decl)) tdl
-      | <:sig_item< value $lid:s$ : $t$ >> ->
-          pprintf pc "val %p :@;%p" var_escaped s ctyp t
+      | <:sig_item:< value $lid:s$ : $t$ >> ->
+          pprintf pc "val %p :@;%p" var_escaped (loc, s) ctyp t
       | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->
           failwith "classes and objects not pretty printed; add pr_ro.cmo" ] ]
   ;
@@ -1758,8 +1758,8 @@ EXTEND_PRINTER
           pprintf pc "~%s:%p" s curr p
       | <:patt< `$s$ >> ->
           pprintf pc "`%s" s
-      | <:patt< # $list:sl$ >> ->
-          pprintf pc "#%p" mod_ident sl ] ]
+      | <:patt:< # $list:sl$ >> ->
+          pprintf pc "#%p" mod_ident (loc, sl) ] ]
   ;
   pr_expr: LEVEL "apply"
     [ [ <:expr< new $list:cl$ >> ->
@@ -1938,9 +1938,9 @@ EXTEND_PRINTER
           sig_method_or_method_virtual pc "" priv s t
       | <:class_sig_item< method virtual $flag:priv$ $lid:s$ : $t$ >> ->
           sig_method_or_method_virtual pc " virtual" priv s t
-      | <:class_sig_item< value $flag:mf$ $lid:s$ : $t$ >> ->
+      | <:class_sig_item:< value $flag:mf$ $lid:s$ : $t$ >> ->
           pprintf pc "val%s %p :@;%p" (if mf then " mutable" else "")
-            var_escaped s ctyp t ] ]
+            var_escaped (loc, s) ctyp t ] ]
   ;
   pr_class_str_item:
     [ "top"
