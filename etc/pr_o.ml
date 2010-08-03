@@ -1,11 +1,12 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_o.ml,v 1.192 2010/08/03 09:16:42 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.193 2010/08/03 09:29:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Pretty;
 open Pcaml;
 open Prtools;
 
+value flag_add_locations = ref False;
 value flag_comments_in_phrases = Pcaml.flag_comments_in_phrases;
 value flag_equilibrate_cases = Pcaml.flag_equilibrate_cases;
 value flag_horiz_let_in = ref True;
@@ -110,6 +111,49 @@ value not_impl name pc x =
   in
   pprintf pc "\"pr_o, not impl: %s; %s\"" name (String.escaped desc)
 ;
+
+(* for 'flag_add_locations' *)
+
+value ploc_from_file fname loc =
+  let line = Ploc.line_nb loc in
+  if line < 0 then Ploc.from_file fname loc
+  else do {
+    let bol = Ploc.bol_pos loc in
+    (fname, line, Ploc.first_pos loc - bol, Ploc.last_pos loc - bol)
+  }
+;
+
+value second_line fname ep0 (line, bp) ep = do {
+  let ic = open_in fname in
+  seek_in ic bp;
+  loop line bp bp where rec loop line bol p =
+    if p = ep then do {
+      close_in ic;
+      if bol = bp then (line, ep0)
+      else (line, ep - bol)
+    }
+    else do {
+      let (line, bol) =
+        match input_char ic with
+        [ '\n' -> (line + 1, p + 1)
+        | _ -> (line, bol) ]
+      in
+      loop line bol (p + 1)
+    }
+};
+
+value add_loc pc loc f =
+  if flag_add_locations.val then
+    let (fname, line, bp, ep) = ploc_from_file Pcaml.input_file.val loc in
+    let bp1 = Ploc.first_pos loc in
+    let ep1 = Ploc.last_pos loc in
+    let (eline, eep) = second_line Pcaml.input_file.val ep (line, bp1) ep1 in
+    pprintf pc "@[(*loc: [\"%s\": %d:%d-%d %d-%d] *)@ %p@]" fname line bp
+      ep eline eep (fun pc () -> f pc) ()
+  else f pc
+;
+
+(* end *)
 
 value var_escaped pc (loc, v) =
   let x =
@@ -1563,6 +1607,7 @@ value set_flags s =
       | 'E' | 'e' -> flag_equilibrate_cases.val := is_uppercase s.[i]
       | 'L' | 'l' -> flag_horiz_let_in.val := is_uppercase s.[i]
       | 'M' | 'm' -> flag_semi_semi.val := is_uppercase s.[i]
+      | 'O' | 'o' -> flag_add_locations.val := is_uppercase s.[i]
       | c -> failwith ("bad flag " ^ String.make 1 c) ];
       loop (i + 1)
     }
