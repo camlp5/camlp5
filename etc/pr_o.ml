@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_o.ml,v 1.191 2010/08/02 13:10:52 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.192 2010/08/03 09:16:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Pretty;
@@ -139,15 +139,15 @@ value rec mod_ident pc (loc, sl) =
   | [s :: sl] -> pprintf pc "%s.%p" s mod_ident (loc, sl) ]
 ;
 
-value comma_after elem pc x = pprintf pc "%p," elem x;
-value semi_after elem pc x = pprintf pc "%q;" elem x ";";
+value comma_after loc elem pc x = pprintf pc "%p," elem x;
+value semi_after loc elem pc x = pprintf pc "%q;" elem x ";";
 value semi_semi_after elem pc x = pprintf pc "%p;;" elem x;
-value star_after elem pc x = pprintf pc "%p *" elem x;
+value star_after loc elem pc x = pprintf pc "%p *" elem x;
 value op_after elem pc (x, op) = pprintf pc "%p%s" elem x op;
 
 value and_before elem pc x = pprintf pc "and %p" elem x;
 value bar_before elem pc x = pprintf pc "| %p" elem x;
-value star_before elem pc x = pprintf pc "* %p" elem x;
+value star_before loc elem pc x = pprintf pc "* %p" elem x;
 
 value operator pc left right sh (loc, op) x y =
   let op = if op = "" then "" else " " ^ op in
@@ -338,7 +338,7 @@ value match_assoc_list pc pwel =
       if flag_equilibrate_cases.val then
         let has_vertic =
           List.exists
-            (fun pwe ->
+            (fun ((p, w, e) as pwe) ->
                horiz_vertic
                  (fun () ->
                     let _ : string =
@@ -392,7 +392,7 @@ value rec make_patt_list =
   | x -> ([], Some x) ]
 ;
 
-value type_var pc (tv, (p, m)) =
+value type_var pc (loc, (tv, (p, m))) =
   pprintf pc "%s'%s" (if p then "+" else if m then "-" else "")
     (Pcaml.unvala tv)
 ;
@@ -401,11 +401,13 @@ value type_constraint pc (t1, t2) =
   pprintf pc " constraint %p =@;%p" ctyp t1 ctyp t2
 ;
 
-value type_params pc tvl =
+value type_params pc (loc, tvl) =
   match tvl with
   [ [] -> pprintf pc ""
-  | [tv] -> pprintf pc "%p " type_var tv
-  | _ -> pprintf pc "(%p) " (hlistl (comma_after type_var) type_var) tvl ]
+  | [tv] -> pprintf pc "%p " type_var (loc, tv)
+  | _ ->
+      let tvl = List.map (fun tv -> (loc, tv)) tvl in
+      pprintf pc "(%p) " (hlistl (comma_after loc type_var) type_var) tvl ]
 ;
 
 value mem_tvar s tpl = List.exists (fun (t, _) -> Pcaml.unvala t = s) tpl;
@@ -417,24 +419,24 @@ value type_decl pc td =
   in
   match te with
   [ <:ctyp:< '$s$ >> when not (mem_tvar s (Pcaml.unvala tp)) ->
-      pprintf pc "%p%p" type_params (Pcaml.unvala tp)
+      pprintf pc "%p%p" type_params (loc, Pcaml.unvala tp)
         var_escaped (loc, Pcaml.unvala tn)
   | _ ->
       let loc = MLast.loc_of_ctyp te in
       if pc.aft = "" then
-        pprintf pc "%p%p =@;%p%p" type_params (Pcaml.unvala tp)
+        pprintf pc "%p%p =@;%p%p" type_params (loc, Pcaml.unvala tp)
           var_escaped (loc, Pcaml.unvala tn) ctyp te
           (hlist type_constraint) (Pcaml.unvala cl)
       else
         horiz_vertic
           (fun () ->
-             pprintf pc "%p%p = %p%p" type_params (Pcaml.unvala tp)
+             pprintf pc "%p%p = %p%p" type_params (loc, Pcaml.unvala tp)
                var_escaped (loc, Pcaml.unvala tn) ctyp te
                (hlist type_constraint) (Pcaml.unvala cl))
           (fun () ->
-             pprintf pc "@[<a>%p%p =@;%p%p@ @]" type_params (Pcaml.unvala tp)
-               var_escaped (loc, Pcaml.unvala tn) ctyp te
-               (hlist type_constraint) (Pcaml.unvala cl)) ]
+             pprintf pc "@[<a>%p%p =@;%p%p@ @]" type_params
+               (loc, Pcaml.unvala tp) var_escaped (loc, Pcaml.unvala tn) ctyp
+               te (hlist type_constraint) (Pcaml.unvala cl)) ]
 ;
 
 value label_decl pc (_, l, m, t) =
@@ -729,6 +731,7 @@ value str_or_sig_functor pc s mt module_expr_or_type met =
 value with_constraint pc wc =
   match wc with
   [ <:with_constr:< type $sl$ $list:tpl$ = $flag:pf$ $t$ >> ->
+      let tpl = List.map (fun tp -> (loc, tp)) tpl in
       pprintf pc "with type %p%p =%s %p" mod_ident (loc, sl) (hlist type_var)
         tpl (if pf then " private" else "") ctyp t
   | <:with_constr:< module $sl$ = $me$ >> ->
@@ -741,7 +744,7 @@ value with_constraint pc wc =
 EXTEND_PRINTER
   pr_expr:
     [ "top"
-      [ <:expr< do { $list:el$ } >> as ge ->
+      [ <:expr:< do { $list:el$ } >> as ge ->
           let el =
             match flatten_sequ ge with
             [ Some el -> el
@@ -750,7 +753,8 @@ EXTEND_PRINTER
           horiz_vertic
             (fun () ->
                pprintf pc "%p"
-                 (hlistl (semi_after (comm_expr expr)) (comm_expr expr)) el)
+                 (hlistl (semi_after loc (comm_expr expr)) (comm_expr expr))
+                    el)
             (fun () ->
                vlist3 expr_semi expr_semi pc el) ]
     | "expr1"
@@ -902,14 +906,14 @@ EXTEND_PRINTER
       | <:expr< let module $uid:s$ = $me$ in $e$ >> ->
           pprintf pc "@[<a>let module %s =@;%p@ in@]@ %p" s module_expr me
             curr e
-      | <:expr< while $e1$ do { $list:el$ } >> ->
+      | <:expr:< while $e1$ do { $list:el$ } >> ->
           pprintf pc "@[<a>@[<a>while@;%p@ do@]@;%p@ done@]" curr e1
-            (hvlistl (semi_after expr) curr) el
-      | <:expr< for $lid:v$ = $e1$ $to:d$ $e2$ do { $list:el$ } >> ->
+            (hvlistl (semi_after loc expr) curr) el
+      | <:expr:< for $lid:v$ = $e1$ $to:d$ $e2$ do { $list:el$ } >> ->
           pprintf pc
             "@[<a>@[<a>for %s = %p %s@;<1 4>%p@ do@]@;%q@ done@]" v
             curr e1 (if d then "to" else "downto") curr e2
-            (hvlistl (semi_after curr) curr) el "" ]
+            (hvlistl (semi_after loc curr) curr) el "" ]
     | "tuple"
       [ <:expr< ($list:el$) >> ->
           let el = List.map (fun e -> (e, ",")) el in
@@ -1086,9 +1090,9 @@ EXTEND_PRINTER
           pprintf pc "'%s'" (ocaml_char s)
       | <:expr< ?$_$ >> | <:expr< ~$_$ >> | <:expr< ~$_$: $_$ >> ->
           failwith "labels not pretty printed (in expr); add pr_ro.cmo"
-      | <:expr< do { $list:el$ } >> ->
+      | <:expr:< do { $list:el$ } >> ->
           pprintf pc "@[<a>begin@;%p@ end@]"
-            (hvlistl (semi_after (comm_expr expr1)) (comm_expr expr1)) el
+            (hvlistl (semi_after loc (comm_expr expr1)) (comm_expr expr1)) el
       | <:expr< $_$ $_$ >> | <:expr< $_$ . $_$ >> | <:expr< $_$ .( $_$ ) >> |
         <:expr< $_$ .[ $_$ ] >> | <:expr< $_$ .{ $_$ } >> |
         <:expr< assert $_$ >> | <:expr< lazy $_$ >> | <:expr< ($list:_$) >> |
@@ -1208,7 +1212,7 @@ EXTEND_PRINTER
           let tl = List.map (fun t -> (t, " *")) tl in
           plist next 2 pc tl ]
     | "apply"
-      [ <:ctyp< $_$ $_$ >> as z ->
+      [ <:ctyp:< $_$ $_$ >> as z ->
           let (t, tl) =
             loop [] z where rec loop args =
               fun
@@ -1218,14 +1222,14 @@ EXTEND_PRINTER
           match tl with
           [ [t2] -> pprintf pc "%p@;%p" curr t2 next t
           | _ ->
-              pprintf pc "(%p)@;%p" (hlistl (comma_after ctyp) ctyp)
+              pprintf pc "(%p)@;%p" (hlistl (comma_after loc ctyp) ctyp)
                 tl curr t ] ]
     | "dot"
       [ <:ctyp< $x$ . $y$ >> -> pprintf pc "%p.%p" curr x curr y ]
     | "simple"
-      [ <:ctyp< { $list:ltl$ } >> ->
+      [ <:ctyp:< { $list:ltl$ } >> ->
           pprintf pc "@[<a>@[<2>{ %p }@]@]"
-            (hvlistl (semi_after label_decl) label_decl) ltl
+            (hvlistl (semi_after loc label_decl) label_decl) ltl
       | <:ctyp< [ $list:vdl$ ] >> ->
           if vdl = [] then pprintf pc "[]"
           else
@@ -1340,7 +1344,8 @@ EXTEND_PRINTER
           str_or_sig_functor pc s mt module_expr me
       | <:module_expr< struct $list:sil$ end >> ->
           let str_item_sep =
-            if flag_semi_semi.val then semi_semi_after str_item else str_item
+            if flag_semi_semi.val then semi_semi_after str_item
+            else str_item
           in
           horiz_vertic
             (fun () ->
@@ -1388,7 +1393,8 @@ EXTEND_PRINTER
           str_or_sig_functor pc s mt1 module_type mt2
       | <:module_type< sig $list:sil$ end >> ->
           let sig_item_sep =
-            if flag_semi_semi.val then semi_semi_after sig_item else sig_item
+            if flag_semi_semi.val then semi_semi_after sig_item
+            else sig_item
           in
           horiz_vertic
             (fun () ->
@@ -1618,24 +1624,24 @@ value class_sig_item = Eprinter.apply pr_class_sig_item;
 
 value amp_before elem pc x = pprintf pc "& %p" elem x;
 
-value class_type_params pc ctp =
+value class_type_params pc (loc, ctp) =
   if ctp = [] then pprintf pc ""
   else
-    let ctp = List.map (fun ct -> (ct, ",")) ctp in
+    let ctp = List.map (fun ct -> ((loc, ct), ",")) ctp in
     pprintf pc "[%p] " (plist type_var 1) ctp
 ;
 
 value class_def pc ci =
   pprintf pc "%s%p%s :@;%p"
     (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
-    class_type_params (Pcaml.unvala (snd ci.MLast.ciPrm))
+    class_type_params (ci.MLast.ciLoc, Pcaml.unvala (snd ci.MLast.ciPrm))
     (Pcaml.unvala ci.MLast.ciNam) class_type ci.MLast.ciExp
 ;
 
 value class_type_decl pc ci =
   pprintf pc "%s%p%s =@;%p"
     (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
-    class_type_params (Pcaml.unvala (snd ci.MLast.ciPrm))
+    class_type_params (ci.MLast.ciLoc, Pcaml.unvala (snd ci.MLast.ciPrm))
     (Pcaml.unvala ci.MLast.ciNam) class_type ci.MLast.ciExp
 ;
 
@@ -1662,7 +1668,7 @@ value class_decl pc ci =
   in
   pprintf pc "%s%p%s%s%p =@;%p"
     (if Pcaml.unvala ci.MLast.ciVir then "virtual " else "")
-    class_type_params (Pcaml.unvala (snd ci.MLast.ciPrm))
+    class_type_params (ci.MLast.ciLoc, Pcaml.unvala (snd ci.MLast.ciPrm))
     (Pcaml.unvala ci.MLast.ciNam) (if pl = [] then "" else " ")
     (hlist patt) pl class_expr ce
 ;
