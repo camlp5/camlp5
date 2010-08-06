@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_o.ml,v 1.193 2010/08/03 09:29:32 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.194 2010/08/06 18:53:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Pretty;
@@ -185,11 +185,11 @@ value rec mod_ident pc (loc, sl) =
 
 value comma_after loc elem pc x = pprintf pc "%p," elem x;
 value semi_after loc elem pc x = pprintf pc "%q;" elem x ";";
-value semi_semi_after elem pc x = pprintf pc "%p;;" elem x;
+value semi_semi_after loc elem pc x = pprintf pc "%p;;" elem x;
 value star_after loc elem pc x = pprintf pc "%p *" elem x;
-value op_after elem pc (x, op) = pprintf pc "%p%s" elem x op;
+value op_after loc elem pc (x, op) = pprintf pc "%p%s" elem x op;
 
-value and_before elem pc x = pprintf pc "and %p" elem x;
+value and_before loc elem pc x = pprintf pc "and %p" elem x;
 value bar_before elem pc x = pprintf pc "| %p" elem x;
 value star_before loc elem pc x = pprintf pc "* %p" elem x;
 
@@ -198,7 +198,7 @@ value operator pc left right sh (loc, op) x y =
   pprintf pc "%p%s@;%p" left x op right y
 ;
 
-value left_operator pc sh unfold next x =
+value left_operator pc loc sh unfold next x =
   let xl =
     loop [] x "" where rec loop xl x op =
       match unfold x with
@@ -208,11 +208,11 @@ value left_operator pc sh unfold next x =
   match xl with
   [ [(x, _)] -> next pc x
   | _ ->
-      horiz_vertic (fun () -> hlist (op_after next) pc xl)
+      horiz_vertic (fun () -> hlist (op_after loc next) pc xl)
         (fun () -> plist next sh pc xl) ]
 ;
 
-value right_operator pc sh unfold next x =
+value right_operator pc loc sh unfold next x =
   let xl =
     loop [] x where rec loop xl x =
       match unfold x with
@@ -222,7 +222,7 @@ value right_operator pc sh unfold next x =
   match xl with
   [ [(x, _)] -> next pc x
   | _ ->
-      horiz_vertic (fun () -> hlist (op_after next) pc xl)
+      horiz_vertic (fun () -> hlist (op_after loc next) pc xl)
         (fun () -> plist next sh pc xl) ]
 ;
 
@@ -923,29 +923,29 @@ EXTEND_PRINTER
               else
                  pprintf pc "@[<a>%s@;%p@ with@]@ %p" op expr e1
                    match_assoc_list pwel ]
-      | <:expr< let $flag:rf$ $list:pel$ in $e$ >> ->
+      | <:expr:< let $flag:rf$ $list:pel$ in $e$ >> ->
           horiz_vertic
             (fun () ->
                if not flag_horiz_let_in.val then sprintf "\n"
                else if pc.dang = ";" then
                  pprintf pc "(let%s %q in %q)"
                    (if rf then " rec" else "")
-                   (hlist2 let_binding (and_before let_binding)) pel ""
+                   (hlist2 let_binding (and_before loc let_binding)) pel ""
                    expr e ""
                else
                  pprintf pc "let%s %q in %p"
                    (if rf then " rec" else "")
-                   (hlist2 let_binding (and_before let_binding)) pel ""
+                   (hlist2 let_binding (and_before loc let_binding)) pel ""
                    expr e)
             (fun () ->
                if pc.dang = ";" then
                  pprintf pc "@[<a>begin let%s %qin@;%q@ end@]"
                    (if rf then " rec" else "")
-                   (vlist2 let_binding (and_before let_binding)) pel ""
+                   (vlist2 let_binding (and_before loc let_binding)) pel ""
                    expr_with_comm_except_if_sequence e ""
                else
                  pprintf pc "let%s %qin@ %p" (if rf then " rec" else "")
-                   (vlist2 let_binding (and_before let_binding)) pel ""
+                   (vlist2 let_binding (and_before loc let_binding)) pel ""
                    expr_with_comm_except_if_sequence e)
       | <:expr< let module $uid:s$ = $me$ in $e$ >> ->
           pprintf pc "@[<a>let module %s =@;%p@ in@]@ %p" s module_expr me
@@ -973,7 +973,8 @@ EXTEND_PRINTER
                 if List.mem op ["||"; "or"] then Some (x, " ||", y) else None
             | _ -> None ]
           in
-          right_operator pc 0 unfold next z ]
+          let loc = MLast.loc_of_expr z in
+          right_operator pc loc 0 unfold next z ]
     | "and"
       [ z ->
           let unfold =
@@ -982,7 +983,8 @@ EXTEND_PRINTER
                 if List.mem op ["&&"; "&"] then Some (x, " &&", y) else None
             | _ -> None ]
           in
-          right_operator pc 0 unfold next z ]
+          let loc = MLast.loc_of_expr z in
+          right_operator pc loc 0 unfold next z ]
     | "less"
       [ <:expr:< $lid:op$ $x$ $y$ >> as z ->
           match op with
@@ -997,7 +999,8 @@ EXTEND_PRINTER
                 if List.mem op ["^"; "@"] then Some (x, " " ^ op, y) else None
             | _ -> None ]
           in
-          right_operator pc 0 unfold next z ]
+          let loc = MLast.loc_of_expr z in
+          right_operator pc loc 0 unfold next z ]
     | "cons"
       [ <:expr< [$_$ :: $_$] >> as z ->
           let (xl, y) = make_expr_list z in
@@ -1015,7 +1018,8 @@ EXTEND_PRINTER
                 if List.mem op ops then Some (x, " " ^ op, y) else None
             | _ -> None ]
           in
-          left_operator pc 0 unfold next z ]
+          let loc = MLast.loc_of_expr z in
+          left_operator pc loc 0 unfold next z ]
     | "mul"
       [ z ->
           let ops = ["*"; "*."; "/"; "/."; "land"; "lor"; "lxor"; "mod"] in
@@ -1025,7 +1029,8 @@ EXTEND_PRINTER
                 if List.mem op ops then Some (x, " " ^ op, y) else None
             | _ -> None ]
           in
-          left_operator pc 0 unfold next z ]
+          let loc = MLast.loc_of_expr z in
+          left_operator pc loc 0 unfold next z ]
     | "pow"
       [ z ->
           let ops = ["**"; "asr"; "lsl"; "lsr"] in
@@ -1035,7 +1040,8 @@ EXTEND_PRINTER
                 if List.mem op ops then Some (x, " " ^ op, y) else None
             | _ -> None ]
           in
-          right_operator pc 0 unfold next z ]
+          let loc = MLast.loc_of_expr z in
+          right_operator pc loc 0 unfold next z ]
     | "unary"
       [ <:expr< ~- $x$ >> -> pprintf pc "-%p" curr x
       | <:expr< ~-. $x$ >> -> pprintf pc "-.%p" curr x
@@ -1045,7 +1051,7 @@ EXTEND_PRINTER
           pprintf pc "assert@;%p" next e
       | <:expr< lazy $e$ >> ->
           pprintf pc "lazy@;%p" next e
-      | <:expr< $_$ $_$ >> as z ->
+      | <:expr:< $_$ $_$ >> as z ->
           let inf =
             match z with
             [ <:expr< $lid:n$ $_$ $_$ >> -> is_infix n
@@ -1073,7 +1079,7 @@ EXTEND_PRINTER
                   [ <:expr< $x$ $y$ >> -> Some (x, "", y)
                   | e -> None ]
                 in
-                left_operator pc 2 unfold next z ] ]
+                left_operator pc loc 2 unfold next z ] ]
     | "dot"
       [ <:expr< $x$ . val >> -> pprintf pc "!%p" next x
       | <:expr< $x$ . $y$ >> -> pprintf pc "%p.@;<0 0>%p" curr x curr y
@@ -1154,13 +1160,13 @@ EXTEND_PRINTER
     [ "top"
       [ <:patt< ($x$ as $y$) >> -> pprintf pc "%p@[ as %p@]" patt x patt y ]
     | "or"
-      [ <:patt< $_$ | $_$ >> as z ->
+      [ <:patt:< $_$ | $_$ >> as z ->
           let unfold =
             fun
             [ <:patt< $x$ | $y$ >> -> Some (x, " |", y)
             | _ -> None ]
           in
-          left_operator pc 0 unfold next z ]
+          left_operator pc loc 0 unfold next z ]
     | "tuple"
       [ <:patt< ($list:pl$) >> ->
           let pl = List.map (fun p -> (p, ",")) pl in
@@ -1244,13 +1250,13 @@ EXTEND_PRINTER
     [ "top"
       [ <:ctyp:< $x$ == $y$ >> -> operator pc next next 2 (loc, "=") x y ]
     | "arrow"
-      [ <:ctyp< $_$ -> $_$ >> as z ->
+      [ <:ctyp:< $_$ -> $_$ >> as z ->
           let unfold =
             fun
             [ <:ctyp< $x$ -> $y$ >> -> Some (x, " ->", y)
             | _ -> None ]
           in
-          right_operator pc 2 unfold next z ]
+          right_operator pc loc 2 unfold next z ]
     | "star"
       [ <:ctyp< ($list:tl$) >> ->
           let tl = List.map (fun t -> (t, " *")) tl in
@@ -1306,13 +1312,13 @@ EXTEND_PRINTER
       [ <:str_item< # $lid:s$ $e$ >> ->
           let pc = {(pc) with aft = ""} in
           pprintf pc "(* #%s %p *)" s expr e
-      | <:str_item< declare $list:sil$ end >> ->
+      | <:str_item:< declare $list:sil$ end >> ->
           if sil = [] then
             let pc = {(pc) with aft = ""} in
             pprintf pc "(* *)"
           else
             let str_item_sep =
-              if flag_semi_semi.val then semi_semi_after str_item
+              if flag_semi_semi.val then semi_semi_after loc str_item
               else str_item
             in
             vlistl str_item_sep str_item pc sil
@@ -1330,16 +1336,17 @@ EXTEND_PRINTER
           sig_module_or_module_type "module type" '=' pc (m, mt)
       | <:str_item:< open $i$ >> ->
           pprintf pc "open %p" mod_ident (loc, i)
-      | <:str_item< type $list:tdl$ >> ->
-          pprintf pc "type %p" (vlist2 type_decl (and_before type_decl)) tdl
-      | <:str_item< value $flag:rf$ $list:pel$ >> ->
+      | <:str_item:< type $list:tdl$ >> ->
+          pprintf pc "type %p"
+            (vlist2 type_decl (and_before loc type_decl)) tdl
+      | <:str_item:< value $flag:rf$ $list:pel$ >> ->
           horiz_vertic
             (fun () ->
                pprintf pc "let%s %p" (if rf then " rec" else "")
-                 (hlist2 let_binding (and_before let_binding)) pel)
+                 (hlist2 let_binding (and_before loc let_binding)) pel)
             (fun () ->
                pprintf pc "let%s %p" (if rf then " rec" else "")
-                 (vlist2 let_binding (and_before let_binding)) pel)
+                 (vlist2 let_binding (and_before loc let_binding)) pel)
       | <:str_item< $exp:e$ >> ->
           if pc.aft = ";;" then expr pc e else pprintf pc "let _ =@;%p" expr e
       | <:str_item< class type $list:_$ >> | <:str_item< class $list:_$ >> ->
@@ -1356,13 +1363,13 @@ EXTEND_PRINTER
           external_decl pc (loc, n, t, sl)
       | <:sig_item< include $mt$ >> ->
           pprintf pc "include %p" module_type mt
-      | <:sig_item< declare $list:sil$ end >> ->
+      | <:sig_item:< declare $list:sil$ end >> ->
           if sil = [] then
             let pc = {(pc) with aft = ""} in
             pprintf pc "(* *)"
           else
             let sig_item_sep =
-              if flag_semi_semi.val then semi_semi_after sig_item
+              if flag_semi_semi.val then semi_semi_after loc sig_item
               else sig_item
             in
             vlistl sig_item_sep sig_item pc sil
@@ -1375,8 +1382,9 @@ EXTEND_PRINTER
           sig_module_or_module_type "module type" '=' pc (m, mt)
       | <:sig_item:< open $i$ >> ->
           pprintf pc "open %p" mod_ident (loc, i)
-      | <:sig_item< type $list:tdl$ >> ->
-          pprintf pc "type %p" (vlist2 type_decl (and_before type_decl)) tdl
+      | <:sig_item:< type $list:tdl$ >> ->
+          pprintf pc "type %p"
+            (vlist2 type_decl (and_before loc type_decl)) tdl
       | <:sig_item:< value $lid:s$ : $t$ >> ->
           pprintf pc "val %p :@;%p" var_escaped (loc, s) ctyp t
       | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->
@@ -1386,9 +1394,9 @@ EXTEND_PRINTER
     [ "top"
       [ <:module_expr< functor ($uid:s$ : $mt$) -> $me$ >> ->
           str_or_sig_functor pc s mt module_expr me
-      | <:module_expr< struct $list:sil$ end >> ->
+      | <:module_expr:< struct $list:sil$ end >> ->
           let str_item_sep =
-            if flag_semi_semi.val then semi_semi_after str_item
+            if flag_semi_semi.val then semi_semi_after loc str_item
             else str_item
           in
           horiz_vertic
@@ -1435,9 +1443,9 @@ EXTEND_PRINTER
     [ "top"
       [ <:module_type< functor ($uid:s$ : $mt1$) -> $mt2$ >> ->
           str_or_sig_functor pc s mt1 module_type mt2
-      | <:module_type< sig $list:sil$ end >> ->
+      | <:module_type:< sig $list:sil$ end >> ->
           let sig_item_sep =
-            if flag_semi_semi.val then semi_semi_after sig_item
+            if flag_semi_semi.val then semi_semi_after loc sig_item
             else sig_item
           in
           horiz_vertic
@@ -1690,14 +1698,14 @@ value class_type_decl pc ci =
     (Pcaml.unvala ci.MLast.ciNam) class_type ci.MLast.ciExp
 ;
 
-value class_type_decl_list pc cd =
+value class_type_decl_list pc loc cd =
   horiz_vertic
     (fun () ->
        pprintf pc "class type %p"
-         (hlist2 class_type_decl (and_before class_type_decl)) cd)
+         (hlist2 class_type_decl (and_before loc class_type_decl)) cd)
     (fun () ->
        pprintf pc "class type %p"
-         (vlist2 class_type_decl (and_before class_type_decl)) cd)
+         (vlist2 class_type_decl (and_before loc class_type_decl)) cd)
 ;
 
 value class_decl pc ci =
@@ -1764,9 +1772,9 @@ value patt_tcon pc p =
 
 value typevar pc tv = pprintf pc "'%s" tv;
 
-value class_object pc (csp, csl) =
+value class_object loc pc (csp, csl) =
   let class_str_item_sep =
-    if flag_semi_semi.val then semi_semi_after class_str_item
+    if flag_semi_semi.val then semi_semi_after loc class_str_item
     else class_str_item
   in
   horiz_vertic
@@ -1815,8 +1823,8 @@ EXTEND_PRINTER
   pr_expr: LEVEL "apply"
     [ [ <:expr< new $list:cl$ >> ->
           pprintf pc "new@;%p" class_longident cl
-      | <:expr< object $opt:csp$ $list:csl$ end >> ->
-          class_object pc (csp, csl) ] ]
+      | <:expr:< object $opt:csp$ $list:csl$ end >> ->
+          class_object loc pc (csp, csl) ] ]
   ;
   pr_expr: LEVEL "dot"
     [ [ <:expr< $e$ # $lid:s$ >> -> pprintf pc "%p#@;<0 0>%s" curr e s ] ]
@@ -1858,28 +1866,28 @@ EXTEND_PRINTER
           pprintf pc "@[<1>(%p)@]" ctyp z ] ]
   ;
   pr_sig_item: LEVEL "top"
-    [ [ <:sig_item< class $list:cd$ >> ->
+    [ [ <:sig_item:< class $list:cd$ >> ->
           horiz_vertic
             (fun () ->
                pprintf pc "class %p"
-                 (hlist2 class_def (and_before class_def)) cd)
+                 (hlist2 class_def (and_before loc class_def)) cd)
             (fun () ->
                pprintf pc "class %p"
-                 (vlist2 class_def (and_before class_def)) cd)
-      | <:sig_item< class type $list:cd$ >> ->
-          class_type_decl_list pc cd ] ]
+                 (vlist2 class_def (and_before loc class_def)) cd)
+      | <:sig_item:< class type $list:cd$ >> ->
+          class_type_decl_list pc loc cd ] ]
   ;
   pr_str_item: LEVEL "top"
-    [ [ <:str_item< class $list:cd$ >> ->
+    [ [ <:str_item:< class $list:cd$ >> ->
           horiz_vertic
             (fun () ->
                pprintf pc "class %p"
-                 (hlist2 class_decl (and_before class_decl)) cd)
+                 (hlist2 class_decl (and_before loc class_decl)) cd)
             (fun () ->
                pprintf pc "class %p"
-                 (vlist2 class_decl (and_before class_decl)) cd)
-      | <:str_item< class type $list:cd$ >> ->
-          class_type_decl_list pc cd ] ]
+                 (vlist2 class_decl (and_before loc class_decl)) cd)
+      | <:str_item:< class type $list:cd$ >> ->
+          class_type_decl_list pc loc cd ] ]
   ;
 END;
 
@@ -1922,15 +1930,15 @@ EXTEND_PRINTER
     [ "top"
       [ <:class_expr< fun $p$ -> $ce$ >> ->
           pprintf pc "fun %p ->@;%p" patt p curr ce
-      | <:class_expr< let $flag:rf$ $list:pel$ in $ce$ >> ->
+      | <:class_expr:< let $flag:rf$ $list:pel$ in $ce$ >> ->
           horiz_vertic
             (fun () ->
                pprintf pc "let%s %p in %p" (if rf then " rec" else "")
-                 (hlist2 (binding expr) (and_before (binding expr))) pel
+                 (hlist2 (binding expr) (and_before loc (binding expr))) pel
                  class_expr ce)
             (fun () ->
                pprintf pc "let%s %p in@ %p" (if rf then " rec" else "")
-                 (vlist2 (binding expr) (and_before (binding expr))) pel
+                 (vlist2 (binding expr) (and_before loc (binding expr))) pel
                  class_expr ce) ]
     | "apply"
       [ <:class_expr< $ce$ $e$ >> ->
@@ -1941,8 +1949,8 @@ EXTEND_PRINTER
       | <:class_expr< $list:cl$ [ $list:ctcl$ ] >> ->
           let ctcl = List.map (fun ct -> (ct, ",")) ctcl in
           pprintf pc "[%p]@;%p" (plist ctyp 0) ctcl class_longident cl
-      | <:class_expr< object $opt:csp$ $list:csl$ end >> ->
-          class_object pc (csp, csl)
+      | <:class_expr:< object $opt:csp$ $list:csl$ end >> ->
+          class_object loc pc (csp, csl)
       | <:class_expr< ($ce$ : $ct$) >> ->
           pprintf pc "(%p :@;<1 1>%p)" curr ce class_type ct ] ]
   ;
@@ -1950,9 +1958,9 @@ EXTEND_PRINTER
     [ "top"
       [ <:class_type< [ $t$ ] -> $ct$ >> ->
           pprintf pc "%p ->@;%p" ctyp t curr ct
-      | <:class_type< object $opt:cst$ $list:csi$ end >> ->
+      | <:class_type:< object $opt:cst$ $list:csi$ end >> ->
           let class_sig_item_sep =
-            if flag_semi_semi.val then semi_semi_after class_sig_item
+            if flag_semi_semi.val then semi_semi_after loc class_sig_item
             else class_sig_item
           in
           horiz_vertic
