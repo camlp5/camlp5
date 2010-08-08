@@ -1,5 +1,5 @@
 (* camlp5r -I . pa_macro.cmo q_MLast.cmo pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.187 2010/08/02 13:10:52 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.188 2010/08/08 07:52:10 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Pretty;
@@ -359,7 +359,7 @@ value record_binding pc (p, e) =
 ;
 
 (* Pretty printing improvements (optional):
-   - prints "let x = e" instead of "let = fun x -> e"
+   - prints "let f x = e" instead of "let f = fun x -> e"
    - if vertical and "e" is a sequence, put the "do {" at after the "="
    - the expression after '=' is displayed with the 'where' statement if
      possible (expr_wh)

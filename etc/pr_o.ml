@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_o.ml,v 1.195 2010/08/07 18:57:42 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.196 2010/08/08 07:52:10 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Pretty;
@@ -300,7 +300,7 @@ value expr_with_comm_except_if_sequence pc e =
 ;
 
 (* Pretty printing improvements (optional):
-   - prints "let x = e" instead of "let = fun x -> e"
+   - prints "let f x = e" instead of "let f = fun x -> e"
    - if "e" is a type constraint, put the constraint after the params. E.g.
         let f x y = (e : t)
      is displayed:
