@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 1.29 2010/06/21 16:04:35 deraugla Exp $ *)
+(* $Id: rprint.ml,v 1.30 2010/08/09 16:15:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Format;
@@ -12,7 +12,7 @@ THEN
 END;
 
 IFDEF
-  OCAML_3_12_0 OR OCAML_3_13_0
+  OCAML_3_12_0 OR OCAML_3_12_1 OR OCAML_3_13_0
 THEN
   DEFINE AFTER_OCAML_3_12
 END;

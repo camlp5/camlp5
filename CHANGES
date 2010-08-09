@@ -1,6 +1,8 @@
 Camlp5 Version 5.15:
 --------------------
 
+* [09 Aug 10] Updated compatibility for OCaml current version 3.12.1.
+* [09 Aug 10] Upgraded compatibility for OCaml released version 3.12.0.
 * [29 Jul 10] Added ability to write AST quotations with a colon before
   the '<' (e.g. "<:expr:< foo >>") which, in pattern position, generates
   a binding of the variable "loc" at the top node:
