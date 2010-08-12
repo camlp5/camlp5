@@ -413,4 +413,4 @@ add_option "-pmode"
         else Printf.eprintf "transitional\n";
         flush stderr;
         exit 0))
-  "Print the current mode and exit";;
+  "Print the current mode and exit.";;

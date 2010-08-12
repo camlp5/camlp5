@@ -1,6 +1,9 @@
 Camlp5 Version 5.16:
 --------------------
 
+* [12 Aug 10] Added a new chapter in the documentation "Redefining
+  OCaml syntax".
+
 Camlp5 Version 5.15:
 --------------------
 

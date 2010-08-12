@@ -1,6 +1,9 @@
-(* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_r.ml,v 1.122 2010/07/29 15:30:28 deraugla Exp $ *)
+(* camlp5r *)
+(* $Id: pa_r.ml,v 1.123 2010/08/12 11:39:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
+
+#load "pa_extend.cmo";
+#load "q_MLast.cmo";
 
 open Pcaml;
 
@@ -39,6 +42,10 @@ do {
 
 Pcaml.parse_interf.val := Grammar.Entry.parse interf;
 Pcaml.parse_implem.val := Grammar.Entry.parse implem;
+
+Pcaml.add_option "-ignloaddir"
+  (Arg.Unit (fun _ -> add_directive "load" (fun _ -> ())))
+  "Ignore the #load directives in the input file.";
 
 value mksequence2 loc =
   fun

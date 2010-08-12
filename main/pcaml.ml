@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo pa_extend.cmo *)
-(* $Id: pcaml.ml,v 1.75 2010/08/09 17:22:40 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.76 2010/08/12 11:39:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 value version = "5.16-exp";
@@ -466,4 +466,4 @@ add_option "-pmode"
         flush stderr;
         exit 0
       }))
-  "Print the current mode and exit";
+  "Print the current mode and exit.";
