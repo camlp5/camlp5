@@ -1,0 +1,131 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
+ "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <!-- $Id: redef.html,v 1.1 2010/08/12 11:33:35 deraugla Exp $ -->
+  <!-- Copyright (c) INRIA 2010 -->
+  <title>Redefining OCaml syntax</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <link rel="stylesheet" type="text/css" href="styles/base.css"
+        title="Normal" />
+</head>
+<body>
+
+<div id="menu">
+</div>
+
+<div id="content">
+
+<h1 class="top">Redefining OCaml syntax</h1>
+
+<p>Better than just <a href="syntext.html">syntax extensions</a>, it is
+  possible to redefine the whole syntax of the language. For example,
+  for:<p>
+
+<ul>
+<li>defining your own syntax, like the <a href="revsynt.html">revised
+  syntax</a> does,</li>
+<li>having a version whose keywords are translated in your native
+  language,</li>
+<li>restricting the OCaml language,</li>
+<li>interpret XML (or other languages) as OCaml source,</li>
+<li>and so on...</li>
+</ul>
+
+<div id="tableofcontents">
+</div>
+
+<h2>Starting with an example</h2>
+
+<p>A way to start doing this is to take, in Camlp5 sources, one of the
+  files "etc/pa_o.ml" or file "meta/pa_r.ml". The first one defines
+  the OCaml standard syntax and the second one the revised syntax.</p>
+
+<p>Let's say you want to take the normal syntax and make some
+  readjustments. You first make a copy of "etc/pa_o.ml" naming it,
+  e.g., "mysyntax.ml" (the example below works similarly if you
+  take "meta/pa_r.ml" instead):</p>
+
+<p>To test, you can compile it with the command:</p>
+
+<pre>
+    ocamlc -pp camlp5r -I $(camlp5 -where) -c mysyntax.ml 
+</pre>
+
+<p>This produces the file "mysyntax.cmo". Now you can compile one of
+  your files, e.g. "foo.ml", if written in this syntax, i.e. the
+  normal OCaml syntax if you made no changes in "mysyntax.ml":</p>
+
+<pre>
+    ocamlc -pp 'camlp5 ./mysyntax.cmo pr_dump.cmo' -c foo.ml 
+</pre>
+
+<p>If there si no changes in "mysyntax.ml" from "pa_o.ml", this is
+  just a compilation with the normal OCaml syntax. To make changes,
+  you can edit the file "mysyntax.ml" and recompile it. As an
+  exercice, try to translate some keywords in your native language
+  (or another language if it is not English).</p>
+
+<p>Reading the way Camlp5 <a href="grammars.html">extensible
+  grammars</a> and <a href="ast_strict.html">syntax tree</a> work
+  (both used in "pa_o.ml" and "pa_r.ml"), you can make more
+  complicated changes or change everything, if you want.</p>
+
+<h2>A file for an OCaml syntax</h2>
+
+<p>This is what you can find in the files "pa_o.ml" and "pa_r.ml".</p>
+
+<p>An OCaml syntax files uses the Camlp5 library
+  module <a href="pcaml.html">Pcaml</a>. All grammar entries are
+  defined there. The first thing is the reinitialization of the
+  grammar (which clear all tokens and define a lexer) and all grammar
+  entries, to be sure that no possible previous loaded grammars
+  remain.</p>
+
+<p>If using the same lexer (provided in Camlp5 library
+  module <a href="library.html#a:Plexer-module">Plexer</a>), it is
+  done by:</p>
+
+<pre>
+    Grammar.Unsafe.gram_reinit Pcaml.gram (Plexer.gmake ())
+</pre>
+
+<p>The cleanup of all grammar entries are done by calls to the function
+  "Grammar.Unsafe.clear_entry". The main entries are Pcaml.interf, for
+  compiling an interface (a ".mli" file) and Pcaml.implem, for compiling
+  an implementation (a ".ml" file). And all other grammars entries you
+  want to use must be cleared:</p>
+
+<pre>
+    Grammar.Unsafe.clear_entry Pcaml.interf;
+    Grammar.Unsafe.clear_entry Pcaml.implem;
+    Grammar.Unsafe.clear_entry Pcaml.expr;
+    Grammar.Unsafe.clear_entry Pcaml.patt;
+    ...
+</pre>
+
+<p>Actually, the camlp5 command can compile the input file with other
+  ways than using the Camlp5 grammars. The variables "Pcaml.parse_interf"
+  and "Pcaml.parse_implem" are references to the functions called by
+  camlp5. By default, it is the Camlp5 grammar syntax, but to be sure
+  it goes on using it (if a previous load changed that), the following
+  statement are added:</p>
+
+<pre>
+    Pcaml.parse_interf.val := Pcaml.Grammar.Entry.parse interf;
+    Pcaml.parse_implem.val := Pcaml.Grammar.Entry.parse implem;
+</pre>
+
+<p>In the files "pa_o.ml" and "pa_r.ml", some local functions follow,
+  which are themselves followed by a call to the big statement
+  "EXTEND", the main statement of the Camlp5 extensible grammars
+  system.</p>
+
+<div class="trailer">
+</div>
+
+</div>
+
+</body>
+</html>

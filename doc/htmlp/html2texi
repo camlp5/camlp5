@@ -1,10 +1,10 @@
 #!/bin/sh
-# $Id: html2texi,v 1.33 2008/01/11 03:14:31 deraugla Exp $
+# $Id: html2texi,v 1.34 2010/08/12 11:33:35 deraugla Exp $
 
 FILES1="index.html strict.html ptools.html"
 FILES2="parsers.html lexers.html fparsers.html bparsers.html grammars.html"
 FILES3="printers.html pprintf.html pretty.html"
-FILES4="locations.html ml_ast.html ast_transi.html ast_strict.html q_ast.html pcaml.html syntext.html opretty.html quot.html revsynt.html scheme.html macros.html pragma.html extfun.html"
+FILES4="locations.html ml_ast.html ast_transi.html ast_strict.html q_ast.html pcaml.html syntext.html opretty.html redef.html quot.html revsynt.html scheme.html macros.html pragma.html extfun.html"
 FILES5="commands.html library.html sources.html about.html"
 FILES="$FILES1 1 $FILES2 2 $FILES3 3 $FILES4 4 $FILES5"
 VERSION="$(grep "value version =" ../../main/pcaml.ml | sed -e 's/^[^"]*"\([^"]*\).*$/\1/')"
