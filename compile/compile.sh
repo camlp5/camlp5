@@ -15,7 +15,7 @@ while test "" != "$1"; do
 	shift
 done
 
-cat $FILES | sed -e 's/Pcaml.parse_i.*$//' > tmp.ml
+cat $FILES | sed -e 's/Pcaml.parse_i.*$//' | grep -v '#load' > tmp.ml
 echo "Compile.entries.val := [$ENTRIES];" >> tmp.ml
 > tmp.mli
 echo "ocamlc -I $OTOP/boot -c tmp.mli" 1>&2
