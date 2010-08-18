@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ploc.mli,v 1.6 2010/02/19 09:06:37 deraugla Exp $ *)
+(* $Id: ploc.mli,v 1.7 2010/08/18 08:30:47 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 (** Locations and some pervasive type and value. *)
@@ -42,7 +42,7 @@ value first_pos : t -> int;
        in number of characters since the beginning of the stream. *)
 value last_pos : t -> int;
    (** [Ploc.last_pos loc] returns the position of the first character not
-       of the location in number of characters since the beginning of the
+       in the location in number of characters since the beginning of the
        stream. *)
 value line_nb : t -> int;
    (** [Ploc.line_nb loc] returns the line number of the location or [-1] if
