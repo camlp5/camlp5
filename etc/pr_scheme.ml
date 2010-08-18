@@ -1,7 +1,8 @@
-(* camlp5r -I . *)
-(* $Id: pr_scheme.ml,v 1.66 2010/08/18 16:37:42 deraugla Exp $ *)
+(* camlp5r *)
+(* $Id: pr_scheme.ml,v 1.67 2010/08/18 19:17:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
+#directory ".";
 #load "pa_macro.cmo";
 #load "q_MLast.cmo";
 #load "pa_extprint.cmo";

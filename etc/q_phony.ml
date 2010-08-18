@@ -1,7 +1,8 @@
-(* camlp5r -I . *)
-(* $Id: q_phony.ml,v 1.21 2010/08/18 16:39:37 deraugla Exp $ *)
+(* camlp5r *)
+(* $Id: q_phony.ml,v 1.22 2010/08/18 19:17:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
+#directory ".";
 #load "pa_extend.cmo";
 #load "pa_extprint.cmo";
 #load "q_MLast.cmo";
