@@ -6121,16 +6121,19 @@ Grammar.extend
 let quot_mod = ref [];;
 let any_quot_mod = ref "MLast";;
 
-Pcaml.add_option "-qmod"
-  (Arg.String
-     (fun s ->
-        match try Some (String.index s ',') with Not_found -> None with
-          Some i ->
-            let q = String.sub s 0 i in
-            let m = String.sub s (i + 1) (String.length s - i - 1) in
-            quot_mod := (q, m) :: !quot_mod
-        | None -> any_quot_mod := s))
-  "<q>,<m> Set quotation module <m> for quotation <q>.";;
+let set_qmod s =
+  match try Some (String.index s ',') with Not_found -> None with
+    Some i ->
+      let q = String.sub s 0 i in
+      let m = String.sub s (i + 1) (String.length s - i - 1) in
+      quot_mod := (q, m) :: !quot_mod
+  | None -> any_quot_mod := s
+;;
+
+Pcaml.add_directive "qmod"
+  (function
+     Some (MLast.ExStr (_, s)) -> set_qmod s
+   | Some _ | None -> failwith "bad directive 1");;
 
 let separate_locate s =
   let len = String.length s in

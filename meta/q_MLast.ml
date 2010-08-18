@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 1.127 2010/08/18 16:26:26 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.128 2010/08/18 17:19:22 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -1274,17 +1274,20 @@ END;
 value quot_mod = ref [];
 value any_quot_mod = ref "MLast";
 
-Pcaml.add_option "-qmod"
-  (Arg.String
-     (fun s ->
-        match try Some (String.index s ',') with [ Not_found -> None ] with
-        [ Some i ->
-            let q = String.sub s 0 i in
-            let m = String.sub s (i + 1) (String.length s - i - 1) in
-            quot_mod.val := [(q, m) :: quot_mod.val]
-        | None ->
-            any_quot_mod.val := s ]))
-  "<q>,<m> Set quotation module <m> for quotation <q>."
+value set_qmod s = do {
+  match try Some (String.index s ',') with [ Not_found -> None ] with
+  [ Some i ->
+      let q = String.sub s 0 i in
+      let m = String.sub s (i + 1) (String.length s - i - 1) in
+      quot_mod.val := [(q, m) :: quot_mod.val]
+  | None ->
+      any_quot_mod.val := s ]
+};
+
+Pcaml.add_directive "qmod"
+  (fun
+   [ Some <:expr< $str:s$ >> -> set_qmod s
+   | Some _ | None -> failwith "bad directive 1" ])
 ;
 
 value separate_locate s =
