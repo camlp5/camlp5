@@ -1,6 +1,9 @@
-(* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: pr_depend.ml,v 1.47 2010/04/29 03:46:27 deraugla Exp $ *)
+(* camlp5r *)
+(* $Id: pr_depend.ml,v 1.48 2010/08/18 16:37:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
+
+#load "pa_macro.cmo";
+#load "q_MLast.cmo";
 
 open MLast;
 

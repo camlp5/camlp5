@@ -1,6 +1,9 @@
-(* camlp5r pa_macro.cmo q_MLast.cmo *)
-(* $Id: camlp5_top.ml,v 1.7 2010/02/19 09:06:41 deraugla Exp $ *)
+(* camlp5r *)
+(* $Id: camlp5_top.ml,v 1.8 2010/08/18 16:37:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
+
+#load "pa_macro.cmo";
+#load "q_MLast.cmo";
 
 open Parsetree;
 open Lexing;

@@ -1,6 +1,11 @@
-(* camlp5r -I . pa_extend.cmo pa_extprint.cmo q_MLast.cmo pa_pprintf.cmo *)
-(* $Id: q_phony.ml,v 1.20 2010/02/19 09:06:36 deraugla Exp $ *)
+(* camlp5r -I . *)
+(* $Id: q_phony.ml,v 1.21 2010/08/18 16:39:37 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
+
+#load "pa_extend.cmo";
+#load "pa_extprint.cmo";
+#load "q_MLast.cmo";
+#load "pa_pprintf.cmo";
 
 open Pcaml;
 

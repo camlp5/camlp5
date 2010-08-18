@@ -1,6 +1,10 @@
-(* camlp5r q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo *)
-(* $Id: pr_schemep.ml,v 1.6 2010/02/19 09:06:36 deraugla Exp $ *)
+(* camlp5r -I . *)
+(* $Id: pr_schemep.ml,v 1.7 2010/08/18 16:37:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
+
+#load "q_MLast.cmo";
+#load "pa_extfun.cmo";
+#load "pa_extprint.cmo";
 
 open Parserify;
 open Pcaml;
