@@ -1,6 +1,10 @@
-(* camlp5r pa_extend.cmo pa_fstream.cmo q_MLast.cmo *)
-(* $Id: pa_pprintf.ml,v 1.29 2010/08/18 11:04:52 deraugla Exp $ *)
+(* camlp5r *)
+(* $Id: pa_pprintf.ml,v 1.30 2010/08/18 16:26:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
+
+#load "pa_extend.cmo";
+#load "pa_fstream.cmo";
+#load "q_MLast.cmo";
 
 open Pcaml;
 

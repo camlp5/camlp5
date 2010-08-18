@@ -1,5 +1,8 @@
-(* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extfold.ml,v 1.5 2007/09/20 19:31:19 deraugla Exp $ *)
+(* camlp5r *)
+(* $Id: pa_extfold.ml,v 1.6 2010/08/18 16:26:25 deraugla Exp $ *)
+
+#load "pa_extend.cmo";
+#load "q_MLast.cmo";
 
 open Pcaml;
 open Pa_extend;

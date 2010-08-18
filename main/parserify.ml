@@ -1,6 +1,8 @@
-(* camlp5r q_MLast.cmo *)
-(* $Id: parserify.ml,v 1.3 2010/02/19 09:06:38 deraugla Exp $ *)
+(* camlp5r *)
+(* $Id: parserify.ml,v 1.4 2010/08/18 16:26:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
+
+#load "q_MLast.cmo";
 
 (* Heuristic to rebuild parsers and streams from the AST *)
 

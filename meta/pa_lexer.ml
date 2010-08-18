@@ -1,6 +1,9 @@
-(* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_lexer.ml,v 1.5 2010/07/16 18:08:04 deraugla Exp $ *)
+(* camlp5r *)
+(* $Id: pa_lexer.ml,v 1.6 2010/08/18 16:26:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
+
+#load "pa_extend.cmo";
+#load "q_MLast.cmo";
 
 (* Simplified syntax of parsers of characters streams *)
 

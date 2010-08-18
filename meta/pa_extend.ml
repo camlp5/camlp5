@@ -1,6 +1,10 @@
-(* camlp5r pa_macro.cmo pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_extend.ml,v 1.106 2010/08/02 13:10:52 deraugla Exp $ *)
+(* camlp5r *)
+(* $Id: pa_extend.ml,v 1.107 2010/08/18 16:26:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
+
+#load "pa_macro.cmo";
+#load "pa_extend.cmo";
+#load "q_MLast.cmo";
 
 value split_ext = ref False;
 

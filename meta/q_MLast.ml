@@ -1,6 +1,10 @@
-(* camlp5r pa_extend.cmo pa_extend_m.cmo q_MLast.cmo *)
-(* $Id: q_MLast.ml,v 1.126 2010/07/29 15:30:28 deraugla Exp $ *)
+(* camlp5r *)
+(* $Id: q_MLast.ml,v 1.127 2010/08/18 16:26:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
+
+#load "pa_extend.cmo";
+#load "pa_extend_m.cmo";
+#load "q_MLast.cmo";
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 

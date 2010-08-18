@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.19 2010/08/12 11:50:44 deraugla Exp $
+# $Id: Makefile,v 1.20 2010/08/18 16:26:25 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -24,7 +24,7 @@ $(NAME)$D.fast.opt: pa_$D_fast.cmx
 	cd ../main; $(MAKE) optp5 CAMLP5OPT=../compile/$(NAME)$D.fast.opt CAMLP5M="../compile/pa_$D_fast.cmx ../meta/pr_dump.cmx"
 
 pa_$D_fast.ml: comp_head.ml.tpl $D_fast.ml.tmp comp_trail.ml.tpl
-	cat $(SRC) | sed -e "s/Plexer.gmake ()/P.lexer/" -e "/EXTEND/,/END/d" -e "/Grammar.Entry.of_parser/d" -e "/Grammar.Entry.gcreate/d" -e "/Grammar.Entry.create/d" | cat comp_head.ml.tpl - $D_fast.ml.tmp comp_trail.ml.tpl | grep -v '#load' > pa_$D_fast.ml
+	cat $(SRC) | sed -e "s/Plexer.gmake ()/P.lexer/" -e "/EXTEND/,/END/d" -e "/Grammar.Entry.of_parser/d" -e "/Grammar.Entry.gcreate/d" -e "/Grammar.Entry.create/d" | grep -v '#load' | cat comp_head.ml.tpl - $D_fast.ml.tmp comp_trail.ml.tpl > pa_$D_fast.ml
 
 $D_fast.ml.tmp: compile.cmo $(SRC)
 	OTOP=$(OTOP) NAME=$(NAME) EXE=$(EXE) ./compile.sh $(COMP_OPT) $(SRC) > $D_fast.ml.tmp

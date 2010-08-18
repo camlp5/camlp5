@@ -1,6 +1,8 @@
-(* camlp5r q_MLast.cmo *)
-(* $Id: pa_lefteval.ml,v 1.15 2010/02/19 09:06:35 deraugla Exp $ *)
+(* camlp5r *)
+(* $Id: pa_lefteval.ml,v 1.16 2010/08/18 16:26:26 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
+
+#load "q_MLast.cmo";
 
 value not_impl name x =
   let desc =
