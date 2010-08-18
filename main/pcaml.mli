@@ -1,6 +1,8 @@
-(* camlp5r pa_macro.cmo *)
-(* $Id: pcaml.mli,v 1.31 2010/02/19 09:06:38 deraugla Exp $ *)
+(* camlp5r *)
+(* $Id: pcaml.mli,v 1.32 2010/08/18 16:57:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
+
+#load "pa_macro.cmo";
 
 (** Language grammar, entries and printers.
 

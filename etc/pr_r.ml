@@ -1,5 +1,5 @@
 (* camlp5r -I . *)
-(* $Id: pr_r.ml,v 1.190 2010/08/18 13:55:52 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.191 2010/08/18 16:57:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -1373,7 +1373,10 @@ EXTEND_PRINTER
   ;
   pr_sig_item:
     [ "top"
-      [ <:sig_item< declare $list:sil$ end >> ->
+      [ <:sig_item< # $lid:s$ $e$ >> ->
+          let pc = {(pc) with aft = ""} in
+          pprintf pc "(* #%s %p *)" s expr e
+      | <:sig_item< declare $list:sil$ end >> ->
           if flag_expand_declare.val then
             if sil = [] then pc.bef
             else vlistl (semi_after sig_item) sig_item pc sil

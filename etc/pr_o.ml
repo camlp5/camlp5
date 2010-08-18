@@ -1,5 +1,5 @@
 (* camlp5r -I . *)
-(* $Id: pr_o.ml,v 1.198 2010/08/18 13:55:52 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.199 2010/08/18 16:57:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -1328,7 +1328,10 @@ EXTEND_PRINTER
   ;
   pr_sig_item:
     [ "top"
-      [ <:sig_item:< exception $uid:e$ of $list:tl$ >> ->
+      [ <:sig_item< # $lid:s$ $e$ >> ->
+          let pc = {(pc) with aft = ""} in
+          pprintf pc "(* #%s %p *)" s expr e
+      | <:sig_item:< exception $uid:e$ of $list:tl$ >> ->
           exception_decl pc (loc, e, tl, [])
       | <:sig_item:< external $lid:n$ : $t$ = $list:sl$ >> ->
           external_decl pc (loc, n, t, sl)
