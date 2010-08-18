@@ -1,12 +1,12 @@
-(* camlp5r *)
-(* $Id: pr_o.ml,v 1.197 2010/08/18 11:04:52 deraugla Exp $ *)
+(* camlp5r -I . *)
+(* $Id: pr_o.ml,v 1.198 2010/08/18 13:55:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
 #load "q_MLast.cmo";
-#load "./pa_extfun.cmo";
-#load "./pa_extprint.cmo";
-#load "./pa_pprintf.cmo";
+#load "pa_extfun.cmo";
+#load "pa_extprint.cmo";
+#load "pa_pprintf.cmo";
 
 open Pretty;
 open Pcaml;

@@ -3,7 +3,7 @@ Camlp5 Version 5.16:
 
 * [18 Aug 10] Added function "get" in library module "Ploc", and a
   statement "lprintf" similar to "pprintf" added by the syntax
-  extention kit "pa_pprintf.cmo".
+  extension kit "pa_pprintf.cmo".
 * [12 Aug 10] Added a new chapter in the documentation "Redefining
   OCaml syntax".
 
