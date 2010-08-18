@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ploc.ml,v 1.7 2010/02/19 09:06:37 deraugla Exp $ *)
+(* $Id: ploc.ml,v 1.8 2010/08/18 11:04:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 type t =
@@ -96,6 +96,39 @@ value from_file fname loc =
   with
   [ Sys_error _ -> (fname, 1, bp, ep) ]
 ;
+
+value second_line fname ep0 (line, bp) ep = do {
+  let ic = open_in fname in
+  seek_in ic bp;
+  loop line bp bp where rec loop line bol p =
+    if p = ep then do {
+      close_in ic;
+      if bol = bp then (line, ep0)
+      else (line, ep - bol)
+    }
+    else do {
+      let (line, bol) =
+        match input_char ic with
+        [ '\n' -> (line + 1, p + 1)
+        | _ -> (line, bol) ]
+      in
+      loop line bol (p + 1)
+    }
+};
+
+value get fname loc = do {
+  if fname = "" || fname = "-" then do {
+    (loc.line_nb, loc.bp - loc.bol_pos, loc.line_nb, loc.ep - loc.bol_pos,
+     loc.ep - loc.bp)
+  }
+  else do {
+    let (bl, bc, ec) =
+      (loc.line_nb, loc.bp - loc.bol_pos, loc.ep - loc.bol_pos)
+    in
+    let (el, eep) = second_line fname ec (bl, loc.bp) loc.ep in
+    (bl, bc, el, eep, ec - bc)
+  }
+};
 
 value call_with r v f a =
   let saved = r.val in

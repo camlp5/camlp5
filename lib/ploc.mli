@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ploc.mli,v 1.7 2010/08/18 08:30:47 deraugla Exp $ *)
+(* $Id: ploc.mli,v 1.8 2010/08/18 11:04:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 (** Locations and some pervasive type and value. *)
@@ -79,6 +79,13 @@ value name : ref string;
    (** [Ploc.name.val] is the name of the location variable used in grammars
        and in the predefined quotations for OCaml syntax trees. Default:
        ["loc"] *)
+
+value get : string -> t -> (int * int * int * int * int);
+   (** [Ploc.get fname loc] returns in order: 1/ the line number of
+       the begin of the location, 2/ its column, 3/ the line number
+       of the first character not in the location, 4/ its column and
+       5/ the length of the location. The parameter [fname] is the
+       file where the location occurs. *)
 
 value from_file : string -> t -> (string * int * int * int);
    (** [Ploc.from_file fname loc] reads the file [fname] up to the

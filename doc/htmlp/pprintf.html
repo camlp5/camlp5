@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: pprintf.html,v 1.8 2010/02/19 09:06:34 deraugla Exp $ -->
+  <!-- $Id: pprintf.html,v 1.9 2010/08/18 11:04:52 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>pprintf</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -21,7 +21,9 @@
 
 <p>This chapter describes "pprintf", a statement to pretty print data.
   It looks like the "sprintf" function of the OCaml library, and
-  borrows some ideas of the Format OCaml library.</p>
+  borrows some ideas of the Format OCaml library. Another statement,
+  "lprintf", is a slightly different version of "pprintf" handling
+  with locations.</p>
 
 <div id="tableofcontents">
 </div>
@@ -517,6 +519,27 @@
   "%p". In this case, the corresponding function receives the "bef" or
   "aft" part in its pr_context variable and can take it into account
   when printing its data.</p>
+
+<h3>Lprintf</h3>
+
+<p>"Lprintf" is like "pprintf" with the same parameters. It is equivalent
+  to an call to the function "expand_lprintf":</p>
+
+<pre>
+   lprintf pc "..."
+</pre>
+
+<p>is equivalent to:</p>
+
+<pre>
+   expand_lprintf pc loc (fun pc -&lt; pprintf pc "...")
+</pre>
+
+<p>The function "expand_lprintf" and the variable "loc" must be
+  defined by the user in the environment where "lprintf" is used.</p>
+
+<p>"Lprintf" is used in predefined printers "pr_r.ml" and "pr_o.ml" to
+  allow optional insertions of location comments in the output.</p>
 
 <h2>Comparison with the OCaml modules Printf and Format</h2>
 

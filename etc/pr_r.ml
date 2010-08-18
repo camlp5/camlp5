@@ -1,11 +1,18 @@
-(* camlp5r -I . pa_macro.cmo q_MLast.cmo pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo *)
-(* $Id: pr_r.ml,v 1.188 2010/08/08 07:52:10 deraugla Exp $ *)
+(* camlp5r *)
+(* $Id: pr_r.ml,v 1.189 2010/08/18 11:04:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
+
+#load "pa_macro.cmo";
+#load "q_MLast.cmo";
+#load "./pa_extfun.cmo";
+#load "./pa_extprint.cmo";
+#load "./pa_pprintf.cmo";
 
 open Pretty;
 open Pcaml;
 open Prtools;
 
+value flag_add_locations = ref False;
 value flag_comments_in_phrases = Pcaml.flag_comments_in_phrases;
 value flag_expand_declare = ref False;
 value flag_horiz_let_in = ref False;
@@ -143,13 +150,24 @@ value not_impl name pc x =
   pprintf pc "\"pr_r, not impl: %s; %s\"" name (String.escaped desc)
 ;
 
-value var_escaped pc v =
+(* for 'lprintf' statement  *)
+
+value expand_lprintf pc loc f =
+  if flag_add_locations.val then do {
+    let (bl, bc, el, ec, len) = Ploc.get Pcaml.input_file.val loc in
+    pprintf pc "@[(*loc: [\"%s\": %d:%d-%d %d-%d] *)@ %p@]"
+      Pcaml.input_file.val bl bc (bc + len) el ec (fun pc () -> f pc) ()
+  }
+  else f pc
+;
+
+value var_escaped pc (loc, v) =
   let x =
     if is_infix v || has_special_chars v then "\\" ^ v
     else if is_keyword v then "\\" ^ v
     else v
   in
-  pprintf pc "%s" x
+  lprintf pc "%s" x
 ;
 
 value cons_escaped pc v =
@@ -162,11 +180,11 @@ value cons_escaped pc v =
   pprintf pc "%s" x
 ;
 
-value rec mod_ident pc sl =
+value rec mod_ident pc (loc, sl) =
   match sl with
   [ [] -> pprintf pc ""
-  | [s] -> var_escaped pc s
-  | [s :: sl] -> pprintf pc "%s.%p" s mod_ident sl ]
+  | [s] -> var_escaped pc (loc, s)
+  | [s :: sl] -> pprintf pc "%s.%p" s mod_ident (loc, sl) ]
 ;
 
 value semi_after elem pc x = pprintf pc "%p;" elem x;
@@ -509,21 +527,22 @@ value type_decl pc td =
     (td.MLast.tdNam, td.MLast.tdPrm, td.MLast.tdPrv, td.MLast.tdDef,
      td.MLast.tdCon)
   in
+  let loc = MLast.loc_of_ctyp te in
   horiz_vertic
     (fun () ->
-       pprintf pc "%p%s%p = %p%p" var_escaped (Pcaml.unvala tn)
+       pprintf pc "%p%s%p = %p%p" var_escaped (loc, Pcaml.unvala tn)
          (if Pcaml.unvala tp = [] then "" else " ")
          (hlist type_var) (Pcaml.unvala tp) ctyp te
          (hlist type_constraint) (Pcaml.unvala cl))
     (fun () ->
        if pc.aft = "" then
-         pprintf pc "%p%s%p =@;%p%p" var_escaped (Pcaml.unvala tn)
+         pprintf pc "%p%s%p =@;%p%p" var_escaped (loc, Pcaml.unvala tn)
            (if Pcaml.unvala tp = [] then "" else " ")
            (hlist type_var) (Pcaml.unvala tp) ctyp te
            (hlist type_constraint) (Pcaml.unvala cl)
        else
-         pprintf pc "@[<a>%p%s%p =@;%p%p@ @]" var_escaped (Pcaml.unvala tn)
-           (if Pcaml.unvala tp = [] then "" else " ")
+         pprintf pc "@[<a>%p%s%p =@;%p%p@ @]" var_escaped
+           (loc, Pcaml.unvala tn) (if Pcaml.unvala tp = [] then "" else " ")
            (hlist type_var) (Pcaml.unvala tp) ctyp te
            (hlist type_constraint) (Pcaml.unvala cl))
 ;
@@ -694,9 +713,9 @@ value expr_short pc x =
     | _ -> expr3 pc z ]
   and expr3 pc z =
     match z with
-    [ <:expr< $lid:v$ >> ->
+    [ <:expr:< $lid:v$ >> ->
         if is_infix v || has_special_chars v then raise Exit
-        else var_escaped pc v
+        else var_escaped pc (loc, v)
     | <:expr< $int:s$ >> -> pprintf pc "%s" s
     | <:expr< $lid:op$ $_$ $_$ >> ->
         if List.mem op ["+"; "-"; "*"; "/"] then pprintf pc "(%p)" expr1 z
@@ -713,12 +732,12 @@ value typevar pc tv = pprintf pc "'%s" tv;
 
 value string pc s = pprintf pc "\"%s\"" s;
 
-value external_decl pc (n, t, sl) =
-  pprintf pc "external %p :@;%p = %s" var_escaped n ctyp t
+value external_decl pc (loc, n, t, sl) =
+  pprintf pc "external %p :@;%p = %s" var_escaped (loc, n) ctyp t
     (hlist string {(pc) with bef = ""; aft = ""} sl)
 ;
 
-value exception_decl pc (e, tl, id) =
+value exception_decl pc (loc, e, tl, id) =
   match id with
   [ [] ->
       match tl with
@@ -728,11 +747,11 @@ value exception_decl pc (e, tl, id) =
           pprintf pc "exception %s of@;%p" e (plist ctyp 0) tl ]
   | id ->
       match tl with
-      [ [] -> pprintf pc "exception %s@;= %p" e mod_ident id
+      [ [] -> pprintf pc "exception %s@;= %p" e mod_ident (loc, id)
       | tl ->
           let tl = List.map (fun t -> (t, " and")) tl in
           pprintf pc "exception %s of@;%p@;= %p" e (plist ctyp 0) tl
-            mod_ident id ] ]
+            mod_ident (loc, id) ] ]
 ;
 
 value str_module pref pc (m, me) =
@@ -798,11 +817,11 @@ value str_or_sig_functor pc s mt module_expr_or_type met =
 
 value with_constraint pc wc =
   match wc with
-  [ <:with_constr< type $sl$ $list:tpl$ = $flag:pf$ $t$ >> ->
-      pprintf pc "with type %p%p =%s %p" mod_ident sl (hlist type_var) tpl
-        (if pf then " private" else "") ctyp t
-  | <:with_constr< module $sl$ = $me$ >> ->
-      pprintf pc "with module %p = %p" mod_ident sl module_expr me
+  [ <:with_constr:< type $sl$ $list:tpl$ = $flag:pf$ $t$ >> ->
+      pprintf pc "with type %p%p =%s %p" mod_ident (loc, sl) (hlist type_var)
+        tpl (if pf then " private" else "") ctyp t
+  | <:with_constr:< module $sl$ = $me$ >> ->
+      pprintf pc "with module %p = %p" mod_ident (loc, sl) module_expr me
   | IFDEF STRICT THEN
       x -> not_impl "with_constraint" pc x
     END ]
@@ -1127,8 +1146,8 @@ EXTEND_PRINTER
       | <:expr< $nativeint:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sn)" s
           else pprintf pc "%sn" s
-      | <:expr< $lid:s$ >> ->
-          var_escaped pc s
+      | <:expr:< $lid:s$ >> ->
+          var_escaped pc (loc, s)
       | <:expr< $uid:s$ >> ->
           cons_escaped pc s
       | <:expr< `$s$ >> ->
@@ -1216,8 +1235,8 @@ EXTEND_PRINTER
       | <:patt< $nativeint:s$ >> ->
           if String.length s > 0 && s.[0] = '-' then pprintf pc "(%sn)" s
           else pprintf pc "%sn" s
-      | <:patt< $lid:s$ >> ->
-          var_escaped pc s
+      | <:patt:< $lid:s$ >> ->
+          var_escaped pc (loc, s)
       | <:patt< $uid:s$ >> ->
           cons_escaped pc s
       | <:patt< $chr:s$ >> ->
@@ -1287,12 +1306,12 @@ EXTEND_PRINTER
       | <:ctyp< ($list:tl$) >> ->
           let tl = List.map (fun t -> (t, " *")) tl in
           pprintf pc "@[<1>(%p)@]" (plist ctyp 0) tl
-      | <:ctyp< $lid:t$ >> ->
-          var_escaped pc t
+      | <:ctyp:< $lid:t$ >> ->
+          var_escaped pc (loc, t)
       | <:ctyp< $uid:t$ >> ->
           pprintf pc "%s" t
-      | <:ctyp< ' $s$ >> ->
-          pprintf pc "'%p" var_escaped s
+      | <:ctyp:< ' $s$ >> ->
+          pprintf pc "'%p" var_escaped (loc, s)
       | <:ctyp< _ >> ->
           pprintf pc "_"
       | <:ctyp< ?$i$: $t$ >> | <:ctyp< ~$_$: $t$ >> ->
@@ -1320,10 +1339,10 @@ EXTEND_PRINTER
               (fun () ->
                  pprintf pc "@[<a>declare@;%p@ end@]"
                    (vlist (semi_after str_item)) sil)
-      | <:str_item< exception $uid:e$ of $list:tl$ = $id$ >> ->
-          exception_decl pc (e, tl, id)
-      | <:str_item< external $lid:n$ : $t$ = $list:sl$ >> ->
-          external_decl pc (n, t, sl)
+      | <:str_item:< exception $uid:e$ of $list:tl$ = $id$ >> ->
+          exception_decl pc (loc, e, tl, id)
+      | <:str_item:< external $lid:n$ : $t$ = $list:sl$ >> ->
+          external_decl pc (loc, n, t, sl)
       | <:str_item< include $me$ >> ->
           pprintf pc "include %p" module_expr me
       | <:str_item< module $flag:rf$ $list:mdl$ >> ->
@@ -1332,8 +1351,8 @@ EXTEND_PRINTER
           vlist2 (str_module ("module" ^ rf)) (str_module "and") pc mdl
       | <:str_item< module type $uid:m$ = $mt$ >> ->
           sig_module_or_module_type "module type" '=' pc (m, mt)
-      | <:str_item< open $i$ >> ->
-          pprintf pc "open %p" mod_ident i
+      | <:str_item:< open $i$ >> ->
+          pprintf pc "open %p" mod_ident (loc, i)
       | <:str_item< type $list:tdl$ >> ->
           pprintf pc "type %p" (vlist2 type_decl (and_before type_decl)) tdl
       | <:str_item< value $flag:rf$ $list:pel$ >> ->
@@ -1367,10 +1386,10 @@ EXTEND_PRINTER
               (fun () ->
                  pprintf pc "@[<a>declare@;%p@ end@]"
                    (vlist (semi_after sig_item)) sil)
-      | <:sig_item< exception $uid:e$ of $list:tl$ >> ->
-          exception_decl pc (e, tl, [])
-      | <:sig_item< external $lid:n$ : $t$ = $list:sl$ >> ->
-          external_decl pc (n, t, sl)
+      | <:sig_item:< exception $uid:e$ of $list:tl$ >> ->
+          exception_decl pc (loc, e, tl, [])
+      | <:sig_item:< external $lid:n$ : $t$ = $list:sl$ >> ->
+          external_decl pc (loc, n, t, sl)
       | <:sig_item< include $mt$ >> ->
           pprintf pc "include %p" module_type mt
       | <:sig_item< module $flag:rf$ $list:mdl$ >> ->
@@ -1380,12 +1399,12 @@ EXTEND_PRINTER
             (sig_module_or_module_type "and" ':') pc mdl
       | <:sig_item< module type $uid:m$ = $mt$ >> ->
           sig_module_or_module_type "module type" '=' pc (m, mt)
-      | <:sig_item< open $i$ >> ->
-          pprintf pc "open %p" mod_ident i
+      | <:sig_item:< open $i$ >> ->
+          pprintf pc "open %p" mod_ident (loc, i)
       | <:sig_item< type $list:tdl$ >> ->
           pprintf pc "type %p" (vlist2 type_decl (and_before type_decl)) tdl
-      | <:sig_item< value $lid:s$ : $t$ >> ->
-          pprintf pc "value %p :@;%p" var_escaped s ctyp t
+      | <:sig_item:< value $lid:s$ : $t$ >> ->
+          pprintf pc "value %p :@;%p" var_escaped (loc, s) ctyp t
       | <:sig_item< class type $list:_$ >> | <:sig_item< class $list:_$ >> ->
           failwith "classes and objects not pretty printed; add pr_ro.cmo"
       | MLast.SgUse _ fn sl ->
@@ -1593,6 +1612,7 @@ value set_flags s =
       | 'D' | 'd' -> flag_expand_declare.val := is_uppercase s.[i]
       | 'E' | 'e' -> flag_equilibrate_cases.val := is_uppercase s.[i]
       | 'L' | 'l' -> flag_horiz_let_in.val := is_uppercase s.[i]
+      | 'O' | 'o' -> flag_add_locations.val := is_uppercase s.[i]
       | 'S' | 's' -> flag_sequ_begin_at_eol.val := is_uppercase s.[i]
       | c -> failwith ("bad flag " ^ String.make 1 c) ];
       loop (i + 1)
@@ -1603,11 +1623,12 @@ value default_flag () =
   let flag_on b t f = if b then t else "" in
   let flag_off b t f = if b then "" else f in
   let on_off flag =
-    Printf.sprintf "%s%s%s%s%s"
+    Printf.sprintf "%s%s%s%s%s%s"
       (flag flag_comments_in_phrases.val "C" "c")
       (flag flag_expand_declare.val "D" "d")
       (flag flag_equilibrate_cases.val "E" "e")
       (flag flag_horiz_let_in.val "L" "l")
+      (flag flag_add_locations.val "O" "o")
       (flag flag_sequ_begin_at_eol.val "S" "s")
   in
   let on = on_off flag_on in
@@ -1674,6 +1695,7 @@ Pcaml.add_option "-flag" (Arg.String set_flags)
        D/d enable/disable allowing expanding 'declare'
        E/e enable/disable equilibrate cases
        L/l enable/disable allowing printing 'let..in' horizontally
+       O/o enable/disable adding location comments
        S/s enable/disable printing sequences beginners at end of lines
        default setting is \"" ^ default_flag () ^ "\".");
 

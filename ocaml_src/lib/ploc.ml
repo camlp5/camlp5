@@ -103,6 +103,35 @@ let from_file fname loc =
   with Sys_error _ -> fname, 1, bp, ep
 ;;
 
+let second_line fname ep0 (line, bp) ep =
+  let ic = open_in fname in
+  seek_in ic bp;
+  let rec loop line bol p =
+    if p = ep then
+      begin close_in ic; if bol = bp then line, ep0 else line, ep - bol end
+    else
+      let (line, bol) =
+        match input_char ic with
+          '\n' -> line + 1, p + 1
+        | _ -> line, bol
+      in
+      loop line bol (p + 1)
+  in
+  loop line bp bp
+;;
+
+let get fname loc =
+  if fname = "" || fname = "-" then
+    loc.line_nb, loc.bp - loc.bol_pos, loc.line_nb, loc.ep - loc.bol_pos,
+    loc.ep - loc.bp
+  else
+    let (bl, bc, ec) =
+      loc.line_nb, loc.bp - loc.bol_pos, loc.ep - loc.bol_pos
+    in
+    let (el, eep) = second_line fname ec (bl, loc.bp) loc.ep in
+    bl, bc, el, eep, ec - bc
+;;
+
 let call_with r v f a =
   let saved = !r in
   try r := v; let b = f a in r := saved; b with e -> r := saved; raise e

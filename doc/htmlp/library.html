@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: library.html,v 1.41 2010/07/31 02:30:34 deraugla Exp $ -->
+  <!-- $Id: library.html,v 1.42 2010/08/18 11:04:52 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>Library</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -130,6 +130,12 @@
 </dl>
 
 <dl>
+  <dt><tt>value get : string -> t -> (int * int * int * int * int);</tt></dt>
+  <dd>"<tt>Ploc.get fname loc</tt>" returns in order: 1/ the line
+       number of the begin of the location, 2/ its column, 3/ the line
+       number of the first character not in the location, 4/ its
+       column and 5/ the length of the location. The parameter
+       "<tt>fname</tt>" is the file where the location occurs.</dd>
   <dt><tt>value from_file : string -> t -> (string * int * int * int);</tt></dt>
   <dd>"<tt>Ploc.from_file fname loc</tt>" reads the file
     "<tt>fname</tt>" up to the location "<tt>loc</tt>" and returns the

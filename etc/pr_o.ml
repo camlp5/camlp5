@@ -1,6 +1,12 @@
-(* camlp5r pa_macro.cmo q_MLast.cmo ./pa_extfun.cmo ./pa_extprint.cmo ./pa_pprintf.cmo *)
-(* $Id: pr_o.ml,v 1.196 2010/08/08 07:52:10 deraugla Exp $ *)
+(* camlp5r *)
+(* $Id: pr_o.ml,v 1.197 2010/08/18 11:04:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
+
+#load "pa_macro.cmo";
+#load "q_MLast.cmo";
+#load "./pa_extfun.cmo";
+#load "./pa_extprint.cmo";
+#load "./pa_pprintf.cmo";
 
 open Pretty;
 open Pcaml;
@@ -112,48 +118,16 @@ value not_impl name pc x =
   pprintf pc "\"pr_o, not impl: %s; %s\"" name (String.escaped desc)
 ;
 
-(* for 'flag_add_locations' *)
+(* for 'lprintf' statement  *)
 
-value ploc_from_file fname loc =
-  let line = Ploc.line_nb loc in
-  if line < 0 then Ploc.from_file fname loc
-  else do {
-    let bol = Ploc.bol_pos loc in
-    (fname, line, Ploc.first_pos loc - bol, Ploc.last_pos loc - bol)
+value expand_lprintf pc loc f =
+  if flag_add_locations.val then do {
+    let (bl, bc, el, ec, len) = Ploc.get Pcaml.input_file.val loc in
+    pprintf pc "@[(*loc: [\"%s\": %d:%d-%d %d-%d] *)@ %p@]"
+      Pcaml.input_file.val bl bc (bc + len) el ec (fun pc () -> f pc) ()
   }
-;
-
-value second_line fname ep0 (line, bp) ep = do {
-  let ic = open_in fname in
-  seek_in ic bp;
-  loop line bp bp where rec loop line bol p =
-    if p = ep then do {
-      close_in ic;
-      if bol = bp then (line, ep0)
-      else (line, ep - bol)
-    }
-    else do {
-      let (line, bol) =
-        match input_char ic with
-        [ '\n' -> (line + 1, p + 1)
-        | _ -> (line, bol) ]
-      in
-      loop line bol (p + 1)
-    }
-};
-
-value add_loc pc loc f =
-  if flag_add_locations.val then
-    let (fname, line, bp, ep) = ploc_from_file Pcaml.input_file.val loc in
-    let bp1 = Ploc.first_pos loc in
-    let ep1 = Ploc.last_pos loc in
-    let (eline, eep) = second_line Pcaml.input_file.val ep (line, bp1) ep1 in
-    pprintf pc "@[(*loc: [\"%s\": %d:%d-%d %d-%d] *)@ %p@]" fname line bp
-      ep eline eep (fun pc () -> f pc) ()
   else f pc
 ;
-
-(* end *)
 
 value var_escaped pc (loc, v) =
   let x =
@@ -161,7 +135,7 @@ value var_escaped pc (loc, v) =
     else if is_infix v || has_special_chars v then "(" ^ v ^ ")"
     else v
   in
-  pprintf pc "%s" x
+  lprintf pc "%s" x
 ;
 
 value cons_escaped pc (loc, v) =
@@ -1622,11 +1596,12 @@ value default_flag () =
   let flag_on b t f = if b then t else "" in
   let flag_off b t f = if b then "" else f in
   let on_off flag =
-    sprintf "%s%s%s%s"
+    sprintf "%s%s%s%s%s"
       (flag flag_comments_in_phrases.val "C" "c")
       (flag flag_equilibrate_cases.val "E" "e")
       (flag flag_horiz_let_in.val "L" "l")
       (flag flag_semi_semi.val "M" "m")
+      (flag flag_add_locations.val "O" "o")
   in
   let on = on_off flag_on in
   let off = on_off flag_off in
@@ -1641,6 +1616,7 @@ Pcaml.add_option "-flag" (Arg.String set_flags)
        E/e enable/disable equilibrate cases
        L/l enable/disable allowing printing 'let..in' horizontally
        M/m enable/disable printing double semicolons
+       O/o enable/disable adding location comments
        default setting is \"" ^ default_flag () ^ "\".");
 
 Pcaml.add_option "-l" (Arg.Int (fun x -> Pretty.line_length.val := x))

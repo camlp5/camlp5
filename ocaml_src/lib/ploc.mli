@@ -42,7 +42,7 @@ val first_pos : t -> int;;
        in number of characters since the beginning of the stream. *)
 val last_pos : t -> int;;
    (** [Ploc.last_pos loc] returns the position of the first character not
-       of the location in number of characters since the beginning of the
+       in the location in number of characters since the beginning of the
        stream. *)
 val line_nb : t -> int;;
    (** [Ploc.line_nb loc] returns the line number of the location or [-1] if
@@ -79,6 +79,13 @@ val name : string ref;;
    (** [Ploc.name.val] is the name of the location variable used in grammars
        and in the predefined quotations for OCaml syntax trees. Default:
        ["loc"] *)
+
+val get : string -> t -> int * int * int * int * int;;
+   (** [Ploc.get fname loc] returns in order: 1/ the line number of
+       the begin of the location, 2/ its column, 3/ the line number
+       of the first character not in the location, 4/ its column and
+       5/ the length of the location. The parameter [fname] is the
+       file where the location occurs. *)
 
 val from_file : string -> t -> string * int * int * int;;
    (** [Ploc.from_file fname loc] reads the file [fname] up to the
