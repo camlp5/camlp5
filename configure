@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: configure,v 1.27 2009/11/02 14:00:49 deraugla Exp $
+# $Id: configure,v 1.28 2010/08/19 10:37:57 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -16,7 +16,7 @@ fi
 which () {
 IFS=":" # set words separator in PATH to be ':' (it allows spaces in dirnames)
 for i in $PATH; do
-  if test -z "$i"; then $i=.; fi 
+  if test -z "$i"; then $i=.; fi
   if [ -f "$i/$1" ] ; then
 	IFS=" "
         echo $i/$1
@@ -62,7 +62,7 @@ while : ; do
         echo "  -transitional, --transitional"
         echo "        compile in transitional mode"
         echo "  -strict, --strict"
-        echo "        compile in strict mode" 
+        echo "        compile in strict mode"
         echo "  -help, --help"
         echo "        this message"
        exit 0;;

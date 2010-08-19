@@ -3,7 +3,7 @@ Internal, very small, undocumented, or invisible changes
 
 Camlp5 Version 5.16:
 --------------------
-# [18 Aug 10] Removed option "-qmod" (internal usage) from q_MLast.cmo.
+* [18 Aug 10] Removed option "-qmod" (internal usage) from q_MLast.cmo.
 * [18 Aug 10] Changed sources to put '#load' instead of normalized comments.
 * [12 Aug 10] Added option "-ignloaddir" in "pa_r.ml".
 

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_scheme.ml,v 1.67 2010/08/18 19:17:42 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.68 2010/08/19 10:36:39 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -706,7 +706,7 @@ EXTEND_PRINTER
                     aft = sprintf ")%s" pc.aft}
                    e3
                in
-               sprintf "%s\n%s\n%s" s1 s2 s3) 
+               sprintf "%s\n%s\n%s" s1 s2 s3)
      | <:expr< do { $list:el$ } >> ->
           horiz_vertic
             (fun () ->

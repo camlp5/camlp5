@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: html2latex,v 1.73 2010/08/12 11:33:35 deraugla Exp $
+# $Id: html2latex,v 1.74 2010/08/19 10:42:27 deraugla Exp $
 
 FILES1="index.html strict.html ptools.html"
 FILES2="parsers.html lexers.html fparsers.html bparsers.html grammars.html"
@@ -12,7 +12,7 @@ FILES="$FILES1 1 $FILES2 2 $FILES3 3 $FILES4 4 $FILES5"
 
 /bin/echo '\documentclass[twoside]{report}
 \marginparwidth 0pt \oddsidemargin 0pt \evensidemargin 0pt \marginparsep 0pt
-\topmargin 0pt \textwidth 6.5in \textheight 8.5 in 
+\topmargin 0pt \textwidth 6.5in \textheight 8.5 in
 \usepackage{longtable}
 \usepackage{fancyhdr}
 \fancyhead{}

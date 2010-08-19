@@ -1,24 +1,24 @@
-pa_extend.cmo: ../main/mLast.cmi ../main/pcaml.cmi 
-pa_extend.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
-pa_extend_m.cmo: ../main/mLast.cmi pa_extend.cmo 
-pa_extend_m.cmx: ../main/mLast.cmi pa_extend.cmx 
-pa_fstream.cmo: ../main/mLast.cmi ../main/pcaml.cmi 
-pa_fstream.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
-pa_lexer.cmo: ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi 
-pa_lexer.cmx: ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx 
+pa_extend.cmo: ../main/mLast.cmi ../main/pcaml.cmi
+pa_extend.cmx: ../main/mLast.cmi ../main/pcaml.cmx
+pa_extend_m.cmo: ../main/mLast.cmi pa_extend.cmo
+pa_extend_m.cmx: ../main/mLast.cmi pa_extend.cmx
+pa_fstream.cmo: ../main/mLast.cmi ../main/pcaml.cmi
+pa_fstream.cmx: ../main/mLast.cmi ../main/pcaml.cmx
+pa_lexer.cmo: ../main/exparser.cmi ../main/mLast.cmi ../main/pcaml.cmi
+pa_lexer.cmx: ../main/exparser.cmx ../main/mLast.cmi ../main/pcaml.cmx
 pa_macro.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/reloc.cmi \
-    $(OTOP)/utils/pconfig.cmi 
+    $(OTOP)/utils/pconfig.cmi
 pa_macro.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/reloc.cmx \
-    $(OTOP)/utils/pconfig.cmx 
-pa_r.cmo: ../main/mLast.cmi ../main/pcaml.cmi 
-pa_r.cmx: ../main/mLast.cmi ../main/pcaml.cmx 
-pa_rp.cmo: ../main/exparser.cmi ../main/pcaml.cmi 
-pa_rp.cmx: ../main/exparser.cmx ../main/pcaml.cmx 
+    $(OTOP)/utils/pconfig.cmx
+pa_r.cmo: ../main/mLast.cmi ../main/pcaml.cmi
+pa_r.cmx: ../main/mLast.cmi ../main/pcaml.cmx
+pa_rp.cmo: ../main/exparser.cmi ../main/pcaml.cmi
+pa_rp.cmx: ../main/exparser.cmx ../main/pcaml.cmx
 pr_dump.cmo: ../main/ast2pt.cmi ../main/pcaml.cmi \
-    $(OTOP)/utils/pconfig.cmi 
+    $(OTOP)/utils/pconfig.cmi
 pr_dump.cmx: ../main/ast2pt.cmx ../main/pcaml.cmx \
-    $(OTOP)/utils/pconfig.cmx 
-q_MLast.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/quotation.cmi 
-q_MLast.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/quotation.cmx 
-q_ast.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/quotation.cmi 
-q_ast.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/quotation.cmx 
+    $(OTOP)/utils/pconfig.cmx
+q_MLast.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/quotation.cmi
+q_MLast.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/quotation.cmx
+q_ast.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/quotation.cmi
+q_ast.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/quotation.cmx

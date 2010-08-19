@@ -1,8 +1,8 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: opretty.html,v 1.31 2010/02/19 09:06:34 deraugla Exp $ -->
+  <!-- $Id: opretty.html,v 1.32 2010/08/19 10:40:44 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>Extensions of printing</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -482,7 +482,7 @@ print the sub-expressions <code>e1</code> and <code>e2</code>:</p>
 <h3>Compilation</h3>
 
 <pre>
-  ocamlc -pp camlp5r -I +camlp5 -c pr_repeat.ml 
+  ocamlc -pp camlp5r -I +camlp5 -c pr_repeat.ml
 </pre>
 
 <h3>Testing</h3>
@@ -493,7 +493,7 @@ print the sub-expressions <code>e1</code> and <code>e2</code>:</p>
 <pre>
   $ cat bar.ml
   #load "./foo.cmo";
-  value x = ref 42;                                                  
+  value x = ref 42;
   repeat
     print_int x.val;
     print_endline "";
@@ -508,7 +508,7 @@ print the sub-expressions <code>e1</code> and <code>e2</code>:</p>
 <pre>
   $ camlp5r pr_r.cmo bar.ml
   #load "./foo.cmo";
-  value x = ref 42;                                                  
+  value x = ref 42;
   do {
     print_int x.val;
     print_endline "";
@@ -526,7 +526,7 @@ print the sub-expressions <code>e1</code> and <code>e2</code>:</p>
 <pre>
   $ camlp5r pr_r.cmo ./pr_repeat.cmo bar.ml -l 75
   #load "./foo.cmo";
-  value x = ref 42;                                                  
+  value x = ref 42;
   repeat
     print_int x.val;
     print_endline "";

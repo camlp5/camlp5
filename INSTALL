@@ -7,7 +7,7 @@ INSTALL UNDER UNIX
      ./configure --transitional
    or:
      ./configure --strict
-  
+
 2. Then, to make everything, do:
      make world.opt
 

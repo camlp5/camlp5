@@ -1,4 +1,4 @@
-(* $Id: lib.sml,v 1.1 2006/09/29 04:45:49 deraugla Exp $ *)
+(* $Id: lib.sml,v 1.2 2010/08/19 10:44:24 deraugla Exp $ *)
 
 datatype 'a option = SOME of 'a | NONE
 exception Fail of string
@@ -289,7 +289,7 @@ type substring = Substring.substring
 structure StringCvt =
   struct
     datatype radix = BIN | OCT | DEC | HEX
-    type ('a, 'b) reader = 'b -> ('a * 'b) option 
+    type ('a, 'b) reader = 'b -> ('a * 'b) option
   end
 
 structure ListPair =

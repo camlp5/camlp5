@@ -1,8 +1,8 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: redef.html,v 1.2 2010/08/12 11:37:31 deraugla Exp $ -->
+  <!-- $Id: redef.html,v 1.3 2010/08/19 10:40:45 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2010 -->
   <title>Redefining OCaml syntax</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -50,7 +50,7 @@
 <p>To test, you can compile it with the command:</p>
 
 <pre>
-    ocamlc -pp camlp5r -I $(camlp5 -where) -c mysyntax.ml 
+    ocamlc -pp camlp5r -I $(camlp5 -where) -c mysyntax.ml
 </pre>
 
 <p>This produces the file "mysyntax.cmo". Now you can compile one of
@@ -58,7 +58,7 @@
   normal OCaml syntax if you made no changes in "mysyntax.ml":</p>
 
 <pre>
-    ocamlc -pp 'camlp5 ./mysyntax.cmo pr_dump.cmo' -c foo.ml 
+    ocamlc -pp 'camlp5 ./mysyntax.cmo pr_dump.cmo' -c foo.ml
 </pre>
 
 <p>If there si no changes in "mysyntax.ml" from "pa_o.ml", this is

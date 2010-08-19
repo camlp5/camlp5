@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_depend.ml,v 1.48 2010/08/18 16:37:42 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.49 2010/08/19 10:24:11 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -317,13 +317,13 @@ value print_depend target_file deps =
         | [dep :: rem] ->
             if pos + String.length dep <= 77 then do {
               print_string dep;
-              print_string " ";
+              if rem <> [] then print_string " " else ();
               print_items (pos + String.length dep + 1) rem
             }
             else do {
               print_string escaped_eol;
               print_string dep;
-              print_string " ";
+              if rem <> [] then print_string " " else ();
               print_items (String.length dep + 5) rem
             } ]
       in
