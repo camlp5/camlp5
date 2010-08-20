@@ -1,14 +1,15 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 1.30 2010/08/09 16:15:17 deraugla Exp $ *)
+(* $Id: rprint.ml,v 1.31 2010/08/20 17:13:47 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Format;
 open Outcometree;
 
 IFDEF
+  OCAML_3_07 OR
   OCAML_3_08_0 OR OCAML_3_08_1 OR OCAML_3_08_2 OR OCAML_3_08_3 OR OCAML_3_08_4
 THEN
-  DEFINE OCAML_3_08
+  DEFINE OCAML_3_08_OR_BEFORE
 END;
 
 IFDEF
@@ -19,7 +20,7 @@ END;
 
 IFDEF
   OCAML_3_11 OR OCAML_3_11_0 OR OCAML_3_11_1 OR OCAML_3_11_2 OR
-  AFTER_OCAML_3_12
+  OCAML_3_11_3 OR AFTER_OCAML_3_12
 THEN
   DEFINE AFTER_OCAML_3_11
 END;
@@ -192,7 +193,7 @@ and print_simple_out_type ppf =
   | Otyp_arrow _ _ _ | Otyp_constr _ [_ :: _] as ty ->
       fprintf ppf "@[<1>(%a)@]" print_out_type ty
   | x ->
-      IFDEF OCAML_3_08 THEN
+      IFDEF OCAML_3_08_OR_BEFORE THEN
         match x with
         [ Otyp_sum constrs _ ->
             fprintf ppf "@[<hv>[ %a ]@]"
@@ -344,12 +345,25 @@ and print_out_sig_item ppf =
   | Osig_modtype name mty ->
       fprintf ppf "@[<2>module type %s =@ %a@]" name
         Toploop.print_out_module_type.val mty
-  | Osig_module name mty _ ->
-      fprintf ppf "@[<2>module %s :@ %a@]" name
-        Toploop.print_out_module_type.val mty
-  | Osig_type td rs ->
-      print_out_type_decl (if rs = Orec_next then "and" else "type" )
-        ppf td
+  | IFDEF OCAML_3_07 THEN
+      Osig_module name mty ->
+        fprintf ppf "@[<2>module %s :@ %a@]" name
+          Toploop.print_out_module_type.val mty
+    ELSE
+      Osig_module name mty _ ->
+        fprintf ppf "@[<2>module %s :@ %a@]" name
+          Toploop.print_out_module_type.val mty
+    END
+  | IFDEF OCAML_3_07 THEN
+      Osig_type tdl -> do {
+        print_out_type_decl "type" ppf (List.hd tdl);
+        List.iter (print_out_type_decl "and" ppf) (List.tl tdl);
+      }
+    ELSE
+      Osig_type td rs ->
+        print_out_type_decl (if rs = Orec_next then "and" else "type" )
+          ppf td
+    END
   | Osig_value name ty prims ->
       let kwd = if prims = [] then "value" else "external" in
       let pr_prims ppf =
@@ -364,7 +378,7 @@ and print_out_sig_item ppf =
       fprintf ppf "@[<2>%s %a :@ %a%a@]" kwd value_ident name
         Toploop.print_out_type.val ty pr_prims prims
   | x ->
-      IFDEF OCAML_3_08 THEN
+      IFDEF OCAML_3_08_OR_BEFORE THEN
         failwith "Rprint.print_out_sig_item: not implemented case"
       ELSE
         match x with
@@ -380,7 +394,7 @@ and print_out_sig_item ppf =
       END ]
 and print_out_type_decl kwd ppf x =
   let (name, args, ty, priv, constraints) =
-    IFDEF OCAML_3_08 THEN
+    IFDEF OCAML_3_08_OR_BEFORE THEN
       let (name, args, ty, priv) = x in
       (name, args, ty, priv, [])
     ELSE

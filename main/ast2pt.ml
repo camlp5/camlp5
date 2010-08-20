@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: ast2pt.ml,v 1.73 2010/08/18 17:00:04 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.74 2010/08/20 17:13:33 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -10,9 +10,10 @@ open Longident;
 open Asttypes;
 
 IFDEF
+  OCAML_3_07 OR
   OCAML_3_08_0 OR OCAML_3_08_1 OR OCAML_3_08_2 OR OCAML_3_08_3 OR OCAML_3_08_4
 THEN
-  DEFINE OCAML_3_08
+  DEFINE OCAML_3_08_OR_BEFORE
 END;
 
 IFDEF
@@ -23,7 +24,7 @@ END;
 
 IFDEF
   OCAML_3_11 OR OCAML_3_11_0 OR OCAML_3_11_1 OR OCAML_3_11_2 OR
-  AFTER_OCAML_3_12
+  OCAML_3_11_3 OR AFTER_OCAML_3_12
 THEN
   DEFINE AFTER_OCAML_3_11
 END;
@@ -263,14 +264,14 @@ END;
 value mkmutable m = if m then Mutable else Immutable;
 value mkprivate m = if m then Private else Public;
 value mktrecord (loc, n, m, t) =
-  IFDEF OCAML_3_08 THEN
+  IFDEF OCAML_3_08_OR_BEFORE THEN
     (n, mkmutable m, ctyp (mkpolytype t))
   ELSE
     (n, mkmutable m, ctyp (mkpolytype t), mkloc loc)
   END
 ;
 value mkvariant (loc, c, tl) =
-  IFDEF OCAML_3_08 THEN
+  IFDEF OCAML_3_08_OR_BEFORE THEN
     (conv_con (uv c), List.map ctyp (uv tl))
   ELSE
     (conv_con (uv c), List.map ctyp (uv tl), mkloc loc)
@@ -412,7 +413,7 @@ value mkwithc =
   [ WcTyp loc id tpl pf ct ->
       let (params, variance) = List.split (uv tpl) in
       let tk =
-        IFDEF OCAML_3_08 OR AFTER_OCAML_3_11 THEN Ptype_abstract
+        IFDEF OCAML_3_08_OR_BEFORE OR AFTER_OCAML_3_11 THEN Ptype_abstract
         ELSE if uv pf then Ptype_private else Ptype_abstract END
       in
       (long_id_of_string_list loc (uv id),
@@ -732,13 +733,17 @@ value rec expr =
       mkexp loc (Pexp_match (expr e) (List.map mkpwe (uv pel)))
   | ExNew loc id -> mkexp loc (Pexp_new (long_id_of_string_list loc (uv id)))
   | ExObj loc po cfl ->
-      let p =
-        match uv po with
-        [ Some p -> p
-        | None -> PaAny loc ]
-      in
-      let cil = List.fold_right class_str_item (uv cfl) [] in
-      mkexp loc (Pexp_object (patt p, cil))
+      IFDEF OCAML_3_07 THEN
+        error loc "no object in this ocaml version"
+      ELSE
+        let p =
+          match uv po with
+          [ Some p -> p
+          | None -> PaAny loc ]
+        in
+        let cil = List.fold_right class_str_item (uv cfl) [] in
+        mkexp loc (Pexp_object (patt p, cil))
+      END
   | ExOlb loc _ _ -> error loc "labeled expression not allowed here"
   | ExOvr loc iel -> mkexp loc (Pexp_override (List.map mkideexp (uv iel)))
   | ExRec loc lel eo ->

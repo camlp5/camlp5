@@ -1,6 +1,7 @@
 Camlp5 Version 5.16:
 --------------------
 
+* [20 Aug 10] Updated compatibility for OCaml version 3.11.3.
 * [18 Aug 10] Added function "get" in library module "Ploc", and a
   statement "lprintf" similar to "pprintf" added by the syntax
   extension kit "pa_pprintf.cmo".
