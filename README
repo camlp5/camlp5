@@ -18,8 +18,13 @@ INSTALL
 
 DOCUMENTATION
 
-  The directory doc/html contains the full documentation. To build it,
-  go to the directory doc/htmlp and type 'make'.
+  The directory doc/htmlp contains the sources of the full documentation.
+  To build it, cd doc/htmlp, and:
+  - for its html version, type "make", result in directory ../html
+  - for its latex version, type "make tex", result camlp5.tex
+  - for its ps version, type "make ps", result camlp5.ps
+  - for its pdf version, type "make pdf", result camlp5.pdf
+  - for its info version, type "make info", result camlp5.info*
 
 DEVELOPPERS
 
