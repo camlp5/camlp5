@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: configure,v 1.28 2010/08/19 10:37:57 deraugla Exp $
+# $Id: configure,v 1.29 2010/08/20 08:19:02 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -186,6 +186,12 @@ else
     OPT=
 fi
 
+if [ "$(ocamlc -w y 2>&1)" = "" ]; then
+  OCAMLC_W_Y="-w y"
+else
+  OCAMLC_W_Y=""
+fi
+
 VERSION="$(grep "value version =" main/pcaml.ml | sed -e 's/^[^"]*"\([^"]*\).*$/\1/')"
 
 (
@@ -198,11 +204,7 @@ echo EXT_LIB=$EXT_LIB
 echo OVERSION=$OVERSION
 echo VERSION=$VERSION
 echo "OTOP=\$(TOP)/ocaml_stuff/$OVERSION"
-if ocamlc -w y 2>/dev/null; then
-  echo "OCAMLC_W_Y=\"-w y\""
-else
-  echo "OCAMLC_W_Y="
-fi
+echo OCAMLC_W_Y=\"$OCAMLC_W_Y\"
 echo OLIBDIR=$OLIBDIR
 if test "$prefix" != ""; then
   echo PREFIX=$prefix
