@@ -11,6 +11,7 @@ while test "" != "$1"; do
 	-I) INCL="$INCL -I $2"; shift;;
 	-D*) OPTS="$OPTS $1";;
 	-U*) OPTS="$OPTS $1";;
+        -flag) OPTS="$OPTS -flag $2"; shift;;
 	*) FILE=$1;;
 	esac
 	shift

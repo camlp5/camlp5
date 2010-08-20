@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.200 2010/08/18 19:17:42 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.201 2010/08/20 20:38:20 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -16,6 +16,7 @@ open Prtools;
 value flag_add_locations = ref False;
 value flag_comments_in_phrases = Pcaml.flag_comments_in_phrases;
 value flag_equilibrate_cases = Pcaml.flag_equilibrate_cases;
+value flag_expand_module_prefix_in_records = ref False;
 value flag_horiz_let_in = ref True;
 value flag_semi_semi = ref False;
 
@@ -1064,6 +1065,28 @@ EXTEND_PRINTER
           pprintf pc "%p.{%p}" curr e (plist expr_short 0) el ]
     | "simple"
       [ <:expr< {$list:lel$} >> ->
+          let lel =
+            if flag_expand_module_prefix_in_records.val then do {
+              match lel with
+              [ [((<:patt< $uid:m$.$_$ >> as p), e) :: rest] -> do {
+                  loop [(p, e)] rest where rec loop rev_lel =
+                    fun
+                    [ [(p, e) :: rest] -> do {
+                        let p =
+                          match p with
+                          [ <:patt< $uid:_$.$_$ >> -> p
+                          | _ ->
+                              let loc = MLast.loc_of_patt p in
+                              <:patt< $uid:m$.$p$ >> ]
+                        in
+                        loop [(p, e) :: rev_lel] rest
+                      }
+                    | [] -> List.rev rev_lel ]
+                }
+              | _ -> lel ]
+            }
+            else lel
+          in
           let lxl = List.map (fun lx -> (lx, ";")) lel in
           pprintf pc "@[<1>{%p}@]"
             (plistl (comm_patt_any (record_binding False))
@@ -1578,19 +1601,20 @@ value set_flags s =
   loop 0 where rec loop i =
     if i = String.length s then ()
     else do {
+      let is_upp = is_uppercase s.[i] in
       match s.[i] with
       [ 'A' | 'a' -> do {
-          let v = is_uppercase s.[i] in
-          flag_comments_in_phrases.val := v;
-          flag_equilibrate_cases.val := v;
-          flag_horiz_let_in.val := v;
-          flag_semi_semi.val := v;
+          flag_comments_in_phrases.val := is_upp;
+          flag_equilibrate_cases.val := is_upp;
+          flag_horiz_let_in.val := is_upp;
+          flag_semi_semi.val := is_upp;
         }
-      | 'C' | 'c' -> flag_comments_in_phrases.val := is_uppercase s.[i]
-      | 'E' | 'e' -> flag_equilibrate_cases.val := is_uppercase s.[i]
-      | 'L' | 'l' -> flag_horiz_let_in.val := is_uppercase s.[i]
-      | 'M' | 'm' -> flag_semi_semi.val := is_uppercase s.[i]
-      | 'O' | 'o' -> flag_add_locations.val := is_uppercase s.[i]
+      | 'C' | 'c' -> flag_comments_in_phrases.val := is_upp
+      | 'E' | 'e' -> flag_equilibrate_cases.val := is_upp
+      | 'L' | 'l' -> flag_horiz_let_in.val := is_upp
+      | 'M' | 'm' -> flag_semi_semi.val := is_upp
+      | 'O' | 'o' -> flag_add_locations.val := is_upp
+      | 'R' | 'r' -> flag_expand_module_prefix_in_records.val := is_upp
       | c -> failwith ("bad flag " ^ String.make 1 c) ];
       loop (i + 1)
     }
@@ -1600,12 +1624,13 @@ value default_flag () =
   let flag_on b t f = if b then t else "" in
   let flag_off b t f = if b then "" else f in
   let on_off flag =
-    sprintf "%s%s%s%s%s"
+    sprintf "%s%s%s%s%s%s"
       (flag flag_comments_in_phrases.val "C" "c")
       (flag flag_equilibrate_cases.val "E" "e")
       (flag flag_horiz_let_in.val "L" "l")
       (flag flag_semi_semi.val "M" "m")
       (flag flag_add_locations.val "O" "o")
+      (flag flag_expand_module_prefix_in_records.val "R" "r")
   in
   let on = on_off flag_on in
   let off = on_off flag_off in
@@ -1621,6 +1646,7 @@ Pcaml.add_option "-flag" (Arg.String set_flags)
        L/l enable/disable allowing printing 'let..in' horizontally
        M/m enable/disable printing double semicolons
        O/o enable/disable adding location comments
+       R/R enable/disable expand module prefix in records
        default setting is \"" ^ default_flag () ^ "\".");
 
 Pcaml.add_option "-l" (Arg.Int (fun x -> Pretty.line_length.val := x))

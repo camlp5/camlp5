@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.45 2010/04/28 17:00:42 deraugla Exp $
+# $Id: Makefile,v 1.46 2010/08/20 20:38:20 deraugla Exp $
 
 include config/Makefile
 
@@ -177,7 +177,7 @@ new_sources:
 	   for j in *.ml*; do \
 	     if [ "$$j" != "odyl_config.ml" ]; then \
 	       k=$$j; \
-	       opt=; \
+	       opt="-flag R"; \
 	       if [ "$$k" = "ast2pt.ml" ]; then \
 	         k=ast2pt/$(OVERSION).ml; \
 	       fi; \
@@ -207,7 +207,7 @@ compare_sources:
 	   for j in *.ml*; do \
 	     if [ "$$j" != "odyl_config.ml" ]; then \
 	       k=$$j; \
-	       opt=; \
+	       opt="-flag R"; \
 	       if [ "$$k" = "ast2pt.ml" ]; then \
 	         k=ast2pt/$(OVERSION).ml; \
 	       fi; \
@@ -229,7 +229,8 @@ bootstrap_all_ast2pt:
 	  j=$$(echo $$(basename $$i) | \
 	       sed -e 's/^/OCAML_/;s/.ml//' -e 's/\./_/g'); \
 	  k=$$(echo OCAML_$(OVERSION) | sed -e 's/\./_/g'); \
-	  OTOP=$(OTOP) NAME=$(NAME) ../tools/conv.sh $(PR_O) -U$$k -D$$j ast2pt.ml | \
+	  opt="-U$$k -D$$j -flag R"; \
+	  OTOP=$(OTOP) NAME=$(NAME) ../tools/conv.sh $(PR_O) $$opt ast2pt.ml | \
 	  sed -e 's/\$$Id.*\$$/$(TXTGEN)/' > $$i -; \
 	done
 
@@ -242,7 +243,8 @@ compare_all_ast2pt:
 	  j=$$(echo $$(basename $$i) | \
 	       sed -e 's/^/OCAML_/;s/.ml//' -e 's/\./_/g'); \
 	  k=$$(echo OCAML_$(OVERSION) | sed -e 's/\./_/g'); \
-	  OTOP=$(OTOP) NAME=$(NAME) ../tools/conv.sh $(PR_O) -U$$k -D$$j ast2pt.ml | \
+	  opt="-U$$k -D$$j -flag R"; \
+	  OTOP=$(OTOP) NAME=$(NAME) ../tools/conv.sh $(PR_O) $$opt ast2pt.ml | \
 	  sed -e 's/\$$Id.*\$$/$(TXTGEN)/' | diff $$i -; \
 	done
 
