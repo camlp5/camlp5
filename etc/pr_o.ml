@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.201 2010/08/20 20:38:20 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.202 2010/08/20 21:20:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -759,6 +759,22 @@ value with_constraint pc wc =
     END ]
 ;
 
+value expand_module_prefix m =
+  loop where rec loop rev_lel =
+    fun
+    [ [(p, e) :: rest] -> do {
+        let p =
+          match p with
+          [ <:patt< $uid:_$.$_$ >> -> p
+          | _ ->
+              let loc = MLast.loc_of_patt p in
+              <:patt< $uid:m$.$p$ >> ]
+        in
+        loop [(p, e) :: rev_lel] rest
+      }
+  | [] -> List.rev rev_lel ]
+;
+
 EXTEND_PRINTER
   pr_expr:
     [ "top"
@@ -1069,19 +1085,7 @@ EXTEND_PRINTER
             if flag_expand_module_prefix_in_records.val then do {
               match lel with
               [ [((<:patt< $uid:m$.$_$ >> as p), e) :: rest] -> do {
-                  loop [(p, e)] rest where rec loop rev_lel =
-                    fun
-                    [ [(p, e) :: rest] -> do {
-                        let p =
-                          match p with
-                          [ <:patt< $uid:_$.$_$ >> -> p
-                          | _ ->
-                              let loc = MLast.loc_of_patt p in
-                              <:patt< $uid:m$.$p$ >> ]
-                        in
-                        loop [(p, e) :: rev_lel] rest
-                      }
-                    | [] -> List.rev rev_lel ]
+                  expand_module_prefix m [(p, e)] rest
                 }
               | _ -> lel ]
             }

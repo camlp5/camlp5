@@ -229,12 +229,8 @@ let mktype loc tl cl tk tm =
 ;;
 let mkmutable m = if m then Mutable else Immutable;;
 let mkprivate m = if m then Private else Public;;
-let mktrecord (loc, n, m, t) =
-  n, mkmutable m, ctyp (mkpolytype t), mkloc loc
-;;
-let mkvariant (loc, c, tl) =
-  conv_con (uv c), List.map ctyp (uv tl), mkloc loc
-;;
+let mktrecord (loc, n, m, t) = n, mkmutable m, ctyp (mkpolytype t);;
+let mkvariant (loc, c, tl) = conv_con (uv c), List.map ctyp (uv tl);;
 
 let type_decl tl priv cl =
   function
@@ -353,7 +349,7 @@ let mkwithc =
   function
     WcTyp (loc, id, tpl, pf, ct) ->
       let (params, variance) = List.split (uv tpl) in
-      let tk = if uv pf then Ptype_private else Ptype_abstract in
+      let tk = Ptype_abstract in
       long_id_of_string_list loc (uv id),
       Pwith_type
         {ptype_params = List.map uv params; ptype_cstrs = []; ptype_kind = tk;
@@ -654,7 +650,22 @@ let bigarray_set loc e el v =
          v)
 ;;
 
-(* *)
+let expand_module_prefix m =
+  let rec loop rev_lel =
+    function
+      (p, e) :: rest ->
+        let p =
+          match p with
+            MLast.PaAcc (_, MLast.PaUid (_, _), _) -> p
+          | _ ->
+              let loc = MLast.loc_of_patt p in
+              MLast.PaAcc (loc, MLast.PaUid (loc, m), p)
+        in
+        loop ((p, e) :: rev_lel) rest
+    | [] -> List.rev rev_lel
+  in
+  loop
+;;
 
 let rec expr =
   function
@@ -790,21 +801,19 @@ let rec expr =
       mkexp loc (Pexp_match (expr e, List.map mkpwe (uv pel)))
   | ExNew (loc, id) ->
       mkexp loc (Pexp_new (long_id_of_string_list loc (uv id)))
-  | ExObj (loc, po, cfl) ->
-      let p =
-        match uv po with
-          Some p -> p
-        | None -> PaAny loc
-      in
-      let cil = List.fold_right class_str_item (uv cfl) [] in
-      mkexp loc (Pexp_object (patt p, cil))
+  | ExObj (loc, po, cfl) -> error loc "no object in this ocaml version"
   | ExOlb (loc, _, _) -> error loc "labeled expression not allowed here"
   | ExOvr (loc, iel) -> mkexp loc (Pexp_override (List.map mkideexp (uv iel)))
   | ExRec (loc, lel, eo) ->
       let lel = uv lel in
       if lel = [] then error loc "empty record"
       else
-        let lel = lel in
+        let lel =
+          match lel with
+            ((PaAcc (_, PaUid (_, m), _) as p), e) :: rest ->
+              expand_module_prefix (uv m) [p, e] rest
+          | _ -> lel
+        in
         let eo =
           match eo with
             Some e -> Some (expr e)

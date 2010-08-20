@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: ast2pt.ml,v 1.74 2010/08/20 17:13:33 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.75 2010/08/20 21:20:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -606,6 +606,23 @@ value bigarray_set loc e el v =
   | _ -> <:expr< Bigarray.Genarray.set $e$ [| $list:el$ |] $v$ >> ]
 ;
 
+IFDEF OCAML_3_07 THEN
+  value expand_module_prefix m =
+    loop where rec loop rev_lel =
+      fun
+      [ [(p, e) :: rest] -> do {
+          let p =
+            match p with
+            [ <:patt< $uid:_$.$_$ >> -> p
+            | _ ->
+                let loc = MLast.loc_of_patt p in
+                <:patt< $uid:m$.$p$ >> ]
+          in
+          loop [(p, e) :: rev_lel] rest
+        }
+    | [] -> List.rev rev_lel ]
+END;
+
 value rec expr =
   fun
   [ ExAcc loc x <:expr< val >> ->
@@ -750,6 +767,14 @@ value rec expr =
       let lel = uv lel in
       if lel = [] then error loc "empty record"
       else
+        let lel =
+          IFDEF OCAML_3_07 THEN
+            match lel with
+            [ [((PaAcc _ (PaUid _ m) _ as p), e) :: rest] ->
+                expand_module_prefix (uv m) [(p, e)] rest
+            | _ -> lel ]
+          ELSE lel END
+        in
         let eo =
           match eo with
           [ Some e -> Some (expr e)

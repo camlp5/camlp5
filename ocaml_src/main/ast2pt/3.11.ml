@@ -656,6 +656,8 @@ let bigarray_set loc e el v =
          v)
 ;;
 
+(* *)
+
 let rec expr =
   function
     ExAcc (loc, x, MLast.ExLid (_, "val")) ->
@@ -804,6 +806,7 @@ let rec expr =
       let lel = uv lel in
       if lel = [] then error loc "empty record"
       else
+        let lel = lel in
         let eo =
           match eo with
             Some e -> Some (expr e)

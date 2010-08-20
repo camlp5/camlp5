@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.46 2010/08/20 20:38:20 deraugla Exp $
+# $Id: Makefile,v 1.47 2010/08/20 21:20:08 deraugla Exp $
 
 include config/Makefile
 
@@ -177,7 +177,7 @@ new_sources:
 	   for j in *.ml*; do \
 	     if [ "$$j" != "odyl_config.ml" ]; then \
 	       k=$$j; \
-	       opt="-flag R"; \
+	       opt=; \
 	       if [ "$$k" = "ast2pt.ml" ]; then \
 	         k=ast2pt/$(OVERSION).ml; \
 	       fi; \
@@ -207,7 +207,7 @@ compare_sources:
 	   for j in *.ml*; do \
 	     if [ "$$j" != "odyl_config.ml" ]; then \
 	       k=$$j; \
-	       opt="-flag R"; \
+	       opt=""; \
 	       if [ "$$k" = "ast2pt.ml" ]; then \
 	         k=ast2pt/$(OVERSION).ml; \
 	       fi; \
