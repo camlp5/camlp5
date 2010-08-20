@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: camlp5_top.ml,v 1.8 2010/08/18 16:37:42 deraugla Exp $ *)
+(* $Id: camlp5_top.ml,v 1.9 2010/08/20 08:11:43 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -99,7 +99,7 @@ value first_phrase = ref True;
 value toplevel_phrase cs = do {
   if Sys.interactive.val && first_phrase.val then do {
     first_phrase.val := False;
-    Printf.eprintf "\tCamlp5 Parsing version %s\n\n" Pcaml.version;
+    Printf.eprintf "\tCamlp5 parsing version %s\n\n" Pcaml.version;
     flush stderr
   }
   else ();
@@ -174,6 +174,7 @@ Toploop.parse_use_file.val :=
 ;
 
 IFDEF
+  OCAML_3_07 OR
   OCAML_3_08_0 OR OCAML_3_08_1 OR OCAML_3_08_2 OR OCAML_3_08_3 OR OCAML_3_08_4
 THEN
   DEFINE OCAML_3_08
