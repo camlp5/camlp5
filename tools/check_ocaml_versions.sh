@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 1.2 2010/08/20 17:34:09 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 1.3 2010/08/21 04:20:09 deraugla Exp $
 
 TOP=$HOME/work
 OCAMLSDIR=$TOP/ocaml/release
@@ -10,7 +10,6 @@ cd $TOP
 PATH=$(pwd)/usr/bin:$PATH
 
 cd $OCAMLSDIR
-dirs=$(ls | grep -v '^[1|2]' | grep -v '^3.0[0-7]' | grep -v csl)
 dirs=$(ls | grep -v '^[1|2]' | grep -v '^3.0[0-6]' | grep -v csl)
 echo =====================
 echo $dirs
@@ -27,8 +26,14 @@ for i in $dirs; do
   echo "+++++ ./configure -bindir $TOP/usr/bin -libdir $TOP/usr/lib/ocaml -mandir $TOP/usr/man"
   ./configure -bindir $TOP/usr/bin -libdir $TOP/usr/lib/ocaml -mandir $TOP/usr/man
   sed -e 's/ graph//' config/Makefile > tmp; mv tmp config/Makefile
-  echo "+++++ time make world.opt"
-  time make world.opt
+  if [ "$i" = "3.06" ]; then
+    echo "+++++ time make world"
+    time make world
+    rm -f $TOP/usr/bin/*.opt $TOP/usr/bin/ocamlopt
+  else
+    echo "+++++ time make world.opt"
+    time make world.opt
+  fi
   echo "+++++ make install"
   make install
   echo "+++++ make clean"
