@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: argl.ml,v 1.2 2007/07/11 12:01:39 deraugla Exp $ *)
+(* $Id: argl.ml,v 1.3 2010/08/23 07:44:25 deraugla Exp $ *)
 
 open Printf;
 
@@ -15,12 +15,6 @@ value action_arg s sl =
         [ [s :: sl] -> do { f s; Some sl }
         | [] -> None ]
       else do { f s; Some sl }
-  | Arg.Set_string r ->
-      if s = "" then
-        match sl with
-        [ [s :: sl] -> do { r.val := s; Some sl }
-        | [] -> None ]
-      else do { r.val := s; Some sl }
   | Arg.Int f ->
       if s = "" then
         match sl with
@@ -31,6 +25,18 @@ value action_arg s sl =
       else
         try do { f (int_of_string s); Some sl } with
         [ Failure "int_of_string" -> None ]
+  | Arg.Float f ->
+      if s = "" then
+        match sl with
+        [ [s :: sl] -> do { f (float_of_string s); Some sl }
+        | [] -> None ]
+      else do { f (float_of_string s); Some sl }
+  | Arg.Set_string r ->
+      if s = "" then
+        match sl with
+        [ [s :: sl] -> do { r.val := s; Some sl }
+        | [] -> None ]
+      else do { r.val := s; Some sl }
   | Arg.Set_int r ->
       if s = "" then
         match sl with
@@ -41,12 +47,6 @@ value action_arg s sl =
       else
         try do { r.val := int_of_string s; Some sl } with
         [ Failure "int_of_string" -> None ]
-  | Arg.Float f ->
-      if s = "" then
-        match sl with
-        [ [s :: sl] -> do { f (float_of_string s); Some sl }
-        | [] -> None ]
-      else do { f (float_of_string s); Some sl }
   | Arg.Set_float r ->
       if s = "" then
         match sl with

@@ -15,12 +15,6 @@ let action_arg s sl =
           s :: sl -> f s; Some sl
         | [] -> None
       else begin f s; Some sl end
-  | Arg.Set_string r ->
-      if s = "" then
-        match sl with
-          s :: sl -> r := s; Some sl
-        | [] -> None
-      else begin r := s; Some sl end
   | Arg.Int f ->
       if s = "" then
         match sl with
@@ -33,6 +27,18 @@ let action_arg s sl =
         begin try f (int_of_string s); Some sl with
           Failure "int_of_string" -> None
         end
+  | Arg.Float f ->
+      if s = "" then
+        match sl with
+          s :: sl -> f (float_of_string s); Some sl
+        | [] -> None
+      else begin f (float_of_string s); Some sl end
+  | Arg.Set_string r ->
+      if s = "" then
+        match sl with
+          s :: sl -> r := s; Some sl
+        | [] -> None
+      else begin r := s; Some sl end
   | Arg.Set_int r ->
       if s = "" then
         match sl with
@@ -45,12 +51,6 @@ let action_arg s sl =
         begin try r := int_of_string s; Some sl with
           Failure "int_of_string" -> None
         end
-  | Arg.Float f ->
-      if s = "" then
-        match sl with
-          s :: sl -> f (float_of_string s); Some sl
-        | [] -> None
-      else begin f (float_of_string s); Some sl end
   | Arg.Set_float r ->
       if s = "" then
         match sl with
