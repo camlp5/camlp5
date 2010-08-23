@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.47 2010/08/20 21:20:08 deraugla Exp $
+# $Id: Makefile,v 1.48 2010/08/23 08:57:29 deraugla Exp $
 
 include config/Makefile
 
@@ -16,7 +16,7 @@ DESTDIR=
 
 all: out
 
-out: boot/$(NAME)$(EXE)
+out: boot/camlp5$(EXE)
 	cd ocaml_stuff; $(MAKE)
 	set -e; for i in $(DIRS); do cd $$i; $(MAKE) all; cd ..; done
 
@@ -29,7 +29,7 @@ opt.opt:
 ocaml_src/main/ast2pt.ml:
 	@echo "Please run 'configure' first"; exit 2
 
-boot/$(NAME)$(EXE): $(COLD_FILES)
+boot/camlp5$(EXE): $(COLD_FILES)
 	cd ocaml_stuff; $(MAKE)
 	$(MAKE) clean_cold library_cold compile_cold
 	$(MAKE) promote_cold
@@ -50,12 +50,12 @@ install:
 	done
 
 uninstall:
-	rm -rf "$(LIBDIR)/$(NAME)"
-	cd "$(BINDIR)"; rm -f *$(NAME)* odyl ocpp
+	rm -rf "$(LIBDIR)/camlp5"
+	cd "$(BINDIR)"; rm -f *camlp5* odyl ocpp
 
 clean::
 	$(MAKE) clean_hot clean_cold
-	rm -f boot/*.cm[oi] boot/$(NAME)*
+	rm -f boot/*.cm[oi] boot/camlp5*
 	rm -rf boot/SAVED
 
 scratch: clean
@@ -98,7 +98,7 @@ cleanboot:
 
 coreboot: backup promote clean_hot core compare
 
-core: boot/$(NAME)$(EXE)
+core: boot/camlp5$(EXE)
 	cd ocaml_stuff; $(MAKE) all
 	set -e; for i in $(FDIRS); do cd $$i; $(MAKE) all; cd ..; done
 
@@ -183,7 +183,7 @@ new_sources:
 	       fi; \
 	       echo ============================================; \
 	       echo ocaml_src.new/$$i/$$k; \
-	       OTOP=$(OTOP) NAME=$(NAME) ../tools/conv.sh $(PR_O) $$opt $$j | \
+	       OTOP=$(OTOP) ../tools/conv.sh $(PR_O) $$opt $$j | \
 	       sed 's/$$Id.*\$$/$(TXTGEN)/' > \
 	       ../ocaml_src.new/$$i/$$k; \
 	     fi; \
@@ -213,7 +213,7 @@ compare_sources:
 	       fi; \
 	       echo ============================================; \
 	       echo ocaml_src/$$i/$$k; \
-	       OTOP=$(OTOP) NAME=$(NAME) ../tools/conv.sh $(PR_O) $$opt $$j | \
+	       OTOP=$(OTOP) ../tools/conv.sh $(PR_O) $$opt $$j | \
 	       sed 's/$$Id.*\$$/$(TXTGEN)/' | \
 	       diff $(DIFF_OPT) ../ocaml_src/$$i/$$k -; \
 	     fi; \
@@ -230,7 +230,7 @@ bootstrap_all_ast2pt:
 	       sed -e 's/^/OCAML_/;s/.ml//' -e 's/\./_/g'); \
 	  k=$$(echo OCAML_$(OVERSION) | sed -e 's/\./_/g'); \
 	  opt="-U$$k -D$$j -flag R"; \
-	  OTOP=$(OTOP) NAME=$(NAME) ../tools/conv.sh $(PR_O) $$opt ast2pt.ml | \
+	  OTOP=$(OTOP) ../tools/conv.sh $(PR_O) $$opt ast2pt.ml | \
 	  sed -e 's/\$$Id.*\$$/$(TXTGEN)/' > $$i -; \
 	done
 
@@ -244,7 +244,7 @@ compare_all_ast2pt:
 	       sed -e 's/^/OCAML_/;s/.ml//' -e 's/\./_/g'); \
 	  k=$$(echo OCAML_$(OVERSION) | sed -e 's/\./_/g'); \
 	  opt="-U$$k -D$$j -flag R"; \
-	  OTOP=$(OTOP) NAME=$(NAME) ../tools/conv.sh $(PR_O) $$opt ast2pt.ml | \
+	  OTOP=$(OTOP) ../tools/conv.sh $(PR_O) $$opt ast2pt.ml | \
 	  sed -e 's/\$$Id.*\$$/$(TXTGEN)/' | diff $$i -; \
 	done
 

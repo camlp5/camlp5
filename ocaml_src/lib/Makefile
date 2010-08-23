@@ -26,7 +26,7 @@ depend:
 	cp .depend .depend.bak
 	> .depend
 	@export LC_ALL=C; for i in $$(ls *.mli *.ml); do \
-	  NAME=$(NAME) ../tools/depend.sh $(INCLUDES) $$i | \
+	  ../tools/depend.sh $(INCLUDES) $$i | \
 	  sed -e 's| $(OTOP)| $$(OTOP)|g' >> .depend; \
 	done
 
@@ -39,20 +39,20 @@ compare:
 	done
 
 install:
-	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(NAME)"
-	cp $(TARGET) *.mli "$(DESTDIR)$(LIBDIR)/$(NAME)/."
-	cp *.cmi "$(DESTDIR)$(LIBDIR)/$(NAME)/."
+	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/camlp5"
+	cp $(TARGET) *.mli "$(DESTDIR)$(LIBDIR)/camlp5/."
+	cp *.cmi "$(DESTDIR)$(LIBDIR)/camlp5/."
 	if test -f $(TARGET:.cma=.cmxa); then \
 	  $(MAKE) installopt LIBDIR="$(LIBDIR)" DESTDIR=$(DESTDIR); \
 	fi
 
 installopt:
-	cp $(TARGET:.cma=.cmxa) *.cmx "$(DESTDIR)$(LIBDIR)/$(NAME)/."
+	cp $(TARGET:.cma=.cmxa) *.cmx "$(DESTDIR)$(LIBDIR)/camlp5/."
 	if test -f $(TARGET:.cma=.lib); then \
-	  cp $(TARGET:.cma=.lib) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	  cp $(TARGET:.cma=.lib) "$(DESTDIR)$(LIBDIR)/camlp5/."; \
 	else \
 	  tar cf - $(TARGET:.cma="")$(EXT_LIB) | \
-	  (cd "$(DESTDIR)$(LIBDIR)/$(NAME)/."; tar xf -); \
+	  (cd "$(DESTDIR)$(LIBDIR)/camlp5/."; tar xf -); \
 	fi
 
 include .depend

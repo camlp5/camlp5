@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: camlp5_comm.sh,v 1.10 2008/06/05 11:56:12 deraugla Exp $
+# $Id: camlp5_comm.sh,v 1.11 2010/08/23 08:57:30 deraugla Exp $
 
 ARGS1="-mode $MODE"
 FILE=
@@ -17,7 +17,7 @@ head -1 $FILE >/dev/null || exit 1
 
 set - `head -1 $FILE`
 if test "$2" = "camlp5r" -o "$2" = "camlp5"; then
-	WHAT=`echo $2 | sed -e "s/camlp5/$NAME/"`
+	WHAT="$2"
 	COMM="ocamlrun$EXE ../boot/$WHAT$EXE -nolib -I ../boot"
         dir=`dirname $OTOP`
         if test "`basename $dir`" != "ocaml_stuff"; then

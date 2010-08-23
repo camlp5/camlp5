@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.29 2010/02/17 15:31:29 deraugla Exp $
+# $Id: Makefile,v 1.30 2010/08/23 08:57:30 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -9,19 +9,19 @@ OBJS=q_MLast.cmo q_ast.cmo pa_r.cmo pa_rp.cmo pa_macro.cmo pa_fstream.cmo pa_ext
 CAMLP5RM=pa_r.cmo pa_rp.cmo pr_dump.cmo
 CAMLP5RMX=pa_r.cmx pa_rp.cmx pr_dump.cmx
 SHELL=/bin/sh
-COUT=$(OBJS) $(NAME)r$(EXE)
-COPT=$(OBJS:.cmo=.cmx) $(NAME)r.opt
+COUT=$(OBJS) camlp5r$(EXE)
+COPT=$(OBJS:.cmo=.cmx) camlp5r.opt
 
 all: $(COUT)
 opt: $(COPT)
 
-$(NAME)r$(EXE): ../main/$(NAME)$(EXE) $(CAMLP5RM)
-	rm -f $(NAME)r$(EXE)
-	cd ../main; $(MAKE) OTOP=$(OTOP) CAMLP5=../meta/$(NAME)r$(EXE) CAMLP5M="-I ../meta $(CAMLP5RM)"
+camlp5r$(EXE): ../main/camlp5$(EXE) $(CAMLP5RM)
+	rm -f camlp5r$(EXE)
+	cd ../main; $(MAKE) OTOP=$(OTOP) CAMLP5=../meta/camlp5r$(EXE) CAMLP5M="-I ../meta $(CAMLP5RM)"
 
-$(NAME)r.opt: $(CAMLP5RMX)
-	rm -f $(NAME)r.opt
-	cd ../main; $(MAKE) optp5 OTOP=$(OTOP) CAMLP5OPT=../meta/$(NAME)r.opt CAMLP5M="-I ../meta $(CAMLP5RMX)"
+camlp5r.opt: $(CAMLP5RMX)
+	rm -f camlp5r.opt
+	cd ../main; $(MAKE) optp5 OTOP=$(OTOP) CAMLP5OPT=../meta/camlp5r.opt CAMLP5M="-I ../meta $(CAMLP5RMX)"
 
 clean::
 	rm -f *.cm* *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak $(COUT) $(COPT)
@@ -30,7 +30,7 @@ depend:
 	cp .depend .depend.bak
 	> .depend
 	@export LC_ALL=C; for i in $$(ls *.ml); do \
-	  NAME=$(NAME) ../tools/depend.sh $(INCLUDES) $$i | \
+	  ../tools/depend.sh $(INCLUDES) $$i | \
 	  sed -e 's| $(OTOP)| $$(OTOP)|g' >> .depend; \
 	done
 
@@ -44,25 +44,25 @@ compare:
 
 bootstrap_q_MLast:
 	cd ../etc; $(MAKE) pr_r.cmo pr_extend.cmo
-	NAME=$(NAME) ./mk_q_MLast.sh > tmp
+	./mk_q_MLast.sh > tmp
 	mv tmp q_MLast.ml
 
 compare_q_MLast:
 	cd ../etc; $(MAKE) pr_r.cmo pr_extend.cmo
-	NAME=$(NAME) ./mk_q_MLast.sh | diff -c q_MLast.ml -
+	./mk_q_MLast.sh | diff -c q_MLast.ml -
 
 install:
-	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(NAME)" "$(DESTDIR)$(BINDIR)"
-	cp $(OBJS) "$(DESTDIR)$(LIBDIR)/$(NAME)/."
-	cp pa_macro.cmi pa_extend.cmi "$(DESTDIR)$(LIBDIR)/$(NAME)/."
-	cp $(NAME)r$(EXE) "$(DESTDIR)$(BINDIR)/."
-	if test -f $(NAME)r.opt; then \
-	  cp $(NAME)r.opt "$(DESTDIR)$(BINDIR)/."; \
+	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/camlp5" "$(DESTDIR)$(BINDIR)"
+	cp $(OBJS) "$(DESTDIR)$(LIBDIR)/camlp5/."
+	cp pa_macro.cmi pa_extend.cmi "$(DESTDIR)$(LIBDIR)/camlp5/."
+	cp camlp5r$(EXE) "$(DESTDIR)$(BINDIR)/."
+	if test -f camlp5r.opt; then \
+	  cp camlp5r.opt "$(DESTDIR)$(BINDIR)/."; \
 	fi
 	if test -f pa_r.cmx; then \
-	  cp $(OBJS:.cmo=.cmx) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	  cp $(OBJS:.cmo=.cmx) "$(DESTDIR)$(LIBDIR)/camlp5/."; \
 	  for i in $(OBJS:.cmo=); do \
-	     cp $$i$(EXT_OBJ) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	     cp $$i$(EXT_OBJ) "$(DESTDIR)$(LIBDIR)/camlp5/."; \
 	  done; \
 	fi
 

@@ -20,12 +20,12 @@ echo "Compile.entries.val := [$ENTRIES];" >> tmp.ml
 > tmp.mli
 echo "ocamlc -I $OTOP/boot -c tmp.mli" 1>&2
 ocamlc -I $OTOP/boot -c tmp.mli
-echo "ocamlrun$EXE ../meta/${NAME}r$EXE -nolib -I ../meta pa_macro.cmo pa_extend.cmo q_MLast.cmo -meta_action tmp.ml -o tmp.ppo" 1>&2
-ocamlrun$EXE ../meta/${NAME}r$EXE -nolib -I ../meta pa_macro.cmo pa_extend.cmo q_MLast.cmo -meta_action tmp.ml -o tmp.ppo
+echo "ocamlrun$EXE ../meta/camlp5r$EXE -nolib -I ../meta pa_macro.cmo pa_extend.cmo q_MLast.cmo -meta_action tmp.ml -o tmp.ppo" 1>&2
+ocamlrun$EXE ../meta/camlp5r$EXE -nolib -I ../meta pa_macro.cmo pa_extend.cmo q_MLast.cmo -meta_action tmp.ml -o tmp.ppo
 echo "ocamlc -I $OTOP/boot -I ../lib -I ../main -c -impl tmp.ppo" 1>&2
 ocamlc -I $OTOP/boot -I ../lib -I ../main -c -impl tmp.ppo
 echo "rm tmp.ppo" 1>&2
 rm tmp.ppo
-echo "ocamlrun$EXE ../main/${NAME}$EXE ./compile.cmo ./tmp.cmo ../etc/pr_r.cmo ../etc/pr_rp.cmo $ARGS -sep "\n\n" -impl - < /dev/null" 1>&2
-ocamlrun$EXE ../main/${NAME}$EXE ./compile.cmo ./tmp.cmo ../etc/pr_r.cmo ../etc/pr_rp.cmo $ARGS -sep "\n\n" -impl - < /dev/null
+echo "ocamlrun$EXE ../main/camlp5$EXE ./compile.cmo ./tmp.cmo ../etc/pr_r.cmo ../etc/pr_rp.cmo $ARGS -sep "\n\n" -impl - < /dev/null" 1>&2
+ocamlrun$EXE ../main/camlp5$EXE ./compile.cmo ./tmp.cmo ../etc/pr_r.cmo ../etc/pr_rp.cmo $ARGS -sep "\n\n" -impl - < /dev/null
 rm tmp.*

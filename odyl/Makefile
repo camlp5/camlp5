@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.13 2007/11/26 09:20:52 deraugla Exp $
+# $Id: Makefile,v 1.14 2010/08/23 08:57:30 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -32,7 +32,7 @@ odyl_main.cmx: odyl_main.ml
 odyl_config.ml:
 	echo "let standard_library =" > odyl_config.ml
 	echo "  try Sys.getenv \"CAMLP5LIB\" with" >> odyl_config.ml
-	echo "    Not_found -> \"$(LIBDIR)/$(NAME)\"" | \
+	echo "    Not_found -> \"$(LIBDIR)/camlp5\"" | \
 	sed -e 's|\\|/|g' >> odyl_config.ml
 
 clean::
@@ -43,7 +43,7 @@ depend:
 	cp .depend .depend.bak
 	> .depend
 	@export LC_ALL=C; for i in $$(ls *.mli *.ml); do \
-	  NAME=$(NAME) ../tools/depend.sh $(INCLUDES) $$i | \
+	  ../tools/depend.sh $(INCLUDES) $$i | \
 	  sed -e 's| $(OTOP)| $$(OTOP)|g' >> .depend; \
 	done
 
@@ -52,11 +52,11 @@ promote:
 compare:
 
 install:
-	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(NAME)" "$(DESTDIR)$(BINDIR)"
-	cp odyl.cmo odyl.cma "$(DESTDIR)$(LIBDIR)/$(NAME)/."
+	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/camlp5" "$(DESTDIR)$(BINDIR)"
+	cp odyl.cmo odyl.cma "$(DESTDIR)$(LIBDIR)/camlp5/."
 	if test -f odyl.cmxa; then \
-	  cp odyl.cmxa odyl.cmx "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
-	  cp odyl$(EXT_LIB) odyl$(EXT_OBJ) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	  cp odyl.cmxa odyl.cmx "$(DESTDIR)$(LIBDIR)/camlp5/."; \
+	  cp odyl$(EXT_LIB) odyl$(EXT_OBJ) "$(DESTDIR)$(LIBDIR)/camlp5/."; \
 	fi
 
 include .depend

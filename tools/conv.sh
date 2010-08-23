@@ -18,7 +18,7 @@ done
 
 set - `head -1 $FILE`
 if test "$2" = "camlp5r" -o "$2" = "camlp5"; then
-	WHAT=`echo $2 | sed -e "s/camlp5/$NAME/"`
+	WHAT="$2"
 	COMM="ocamlrun $DIR/../boot/$WHAT -nolib -I $DIR/../boot $INCL $DIR/../etc/$PR_O"
         dir=`dirname $OTOP`
         if test "`basename $dir`" != "ocaml_stuff"; then

@@ -1,12 +1,11 @@
 #!/bin/sh
-# $Id: configure,v 1.29 2010/08/20 08:19:02 deraugla Exp $
+# $Id: configure,v 1.30 2010/08/23 08:57:29 deraugla Exp $
 
 prefix=''
 bindir=''
 libdir=''
 mandir=''
 mode=T
-name=camlp5
 
 if [ -f myconfig ]; then
   . ./myconfig
@@ -30,8 +29,6 @@ done
 while : ; do
   case "$1" in
     "") break;;
-    -name|--name)
-        name=$2; shift;;
     -prefix|--prefix)
         prefix=$2; shift;;
     -bindir|--bindir)
@@ -195,7 +192,6 @@ fi
 VERSION="$(grep "value version =" main/pcaml.ml | sed -e 's/^[^"]*"\([^"]*\).*$/\1/')"
 
 (
-echo NAME=$name
 echo MODE=$mode
 echo EXE=$EXE
 echo OPT=$OPT

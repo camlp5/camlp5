@@ -1,6 +1,6 @@
-# $Id: Makefile.tpl,v 1.8 2007/09/07 11:49:03 deraugla Exp $
+# $Id: Makefile.tpl,v 1.9 2010/08/23 08:57:30 deraugla Exp $
 
-CAMLP5_COMM=OTOP=$(OTOP) NAME=$(NAME) OPT=$(OPT) EXE=$(EXE) MODE=$(MODE) ../tools/camlp5_comm.sh
+CAMLP5_COMM=OTOP=$(OTOP) OPT=$(OPT) EXE=$(EXE) MODE=$(MODE) ../tools/camlp5_comm.sh
 OCAMLC=@OTOP=$(OTOP) OPT=$(OPT) EXE=$(EXE) ../tools/ocamlc.sh
 OCAMLOPT=@OTOP=$(OTOP) OPT=$(OPT) EXE=$(EXE) ../tools/ocamlopt.sh
 OCAMLCFLAGS=

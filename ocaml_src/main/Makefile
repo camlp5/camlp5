@@ -10,10 +10,10 @@ OCAMLCFLAGS=-warn-error A $(INCLUDES)
 LINKFLAGS=$(INCLUDES)
 CAMLP5_OBJS=$(TOP)/boot/ploc.cmo $(TOP)/boot/plexing.cmo $(TOP)/boot/plexer.cmo $(TOP)/boot/fstream.cmo $(TOP)/boot/gramext.cmo $(TOP)/boot/grammar.cmo $(TOP)/boot/diff.cmo $(TOP)/boot/extfold.cmo $(TOP)/boot/extfun.cmo $(TOP)/boot/pretty.cmo $(TOP)/boot/pprintf.cmo $(TOP)/boot/eprinter.cmo $(OTOP)/utils/pconfig.cmo quotation.cmo ast2pt.cmo reloc.cmo pcaml.cmo exparser.cmo prtools.cmo parserify.cmo argl.cmo $(TOP)/boot/stdpp.cmo $(TOP)/boot/token.cmo main.cmo
 CAMLP5_XOBJS=../lib/ploc.cmx ../lib/plexing.cmx ../lib/plexer.cmx ../lib/fstream.cmx ../lib/gramext.cmx ../lib/grammar.cmx ../lib/diff.cmx ../lib/extfold.cmx ../lib/extfun.cmx ../lib/pretty.cmx ../lib/pprintf.cmx ../lib/eprinter.cmx $(OTOP)/utils/pconfig.cmx quotation.cmx ast2pt.cmx reloc.cmx pcaml.cmx exparser.cmx prtools.cmx parserify.cmx argl.cmx ../lib/stdpp.cmx ../lib/token.cmx main.cmx
-OBJS=../odyl/odyl.cma $(NAME).cma
+OBJS=../odyl/odyl.cma camlp5.cma
 CAMLP5M=
 
-CAMLP5=$(NAME)$(EXE)
+CAMLP5=camlp5$(EXE)
 CAMLP5OPT=phony
 
 all: $(CAMLP5)
@@ -26,11 +26,11 @@ $(CAMLP5): $(OBJS) ../odyl/odyl.cmo
 $(CAMLP5OPT): $(OBJS:.cma=.cmxa) ../odyl/odyl.cmx
 	$(OCAMLOPT) $(OBJS:.cma=.cmxa) $(CAMLP5M) ../odyl/odyl.cmx -linkall -o $(CAMLP5OPT)
 
-$(NAME).cma: $(CAMLP5_OBJS)
-	$(OCAMLC) $(LINKFLAGS) $(CAMLP5_OBJS) -a -o $(NAME).cma
+camlp5.cma: $(CAMLP5_OBJS)
+	$(OCAMLC) $(LINKFLAGS) $(CAMLP5_OBJS) -a -o camlp5.cma
 
-$(NAME).cmxa: $(CAMLP5_XOBJS)
-	$(OCAMLOPT) $(LINKFLAGS) $(CAMLP5_XOBJS) -a -o $(NAME).cmxa
+camlp5.cmxa: $(CAMLP5_XOBJS)
+	$(OCAMLOPT) $(LINKFLAGS) $(CAMLP5_XOBJS) -a -o camlp5.cmxa
 
 clean::
 	rm -f *.cm* *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak *.out *.opt
@@ -40,7 +40,7 @@ depend:
 	cp .depend .depend.bak
 	> .depend
 	@export LC_ALL=C; for i in $$(ls *.mli *.ml); do \
-	  NAME=$(NAME) ../tools/depend.sh $(INCLUDES) $$i | \
+	  ../tools/depend.sh $(INCLUDES) $$i | \
 	  sed -e 's| $(OTOP)| $$(OTOP)|g' >> .depend; \
 	done
 
@@ -54,14 +54,14 @@ compare:
 
 install:
 	-$(MKDIR) "$(DESTDIR)$(BINDIR)"
-	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(NAME)"
+	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/camlp5"
 	cp $(CAMLP5) "$(DESTDIR)$(BINDIR)/."
-	cp mLast.mli quotation.mli ast2pt.mli pcaml.mli prtools.mli "$(DESTDIR)$(LIBDIR)/$(NAME)/."
-	cp mLast.cmi quotation.cmi ast2pt.cmi pcaml.cmi prtools.cmi "$(DESTDIR)$(LIBDIR)/$(NAME)/."
-	cp $(NAME).cma "$(DESTDIR)$(LIBDIR)/$(NAME)/."
-	if test -f $(NAME).cmxa; then \
-	  cp $(NAME).cmxa "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
-	  cp $(NAME)$(EXT_LIB) "$(DESTDIR)$(LIBDIR)/$(NAME)/."; \
+	cp mLast.mli quotation.mli ast2pt.mli pcaml.mli prtools.mli "$(DESTDIR)$(LIBDIR)/camlp5/."
+	cp mLast.cmi quotation.cmi ast2pt.cmi pcaml.cmi prtools.cmi "$(DESTDIR)$(LIBDIR)/camlp5/."
+	cp camlp5.cma "$(DESTDIR)$(LIBDIR)/camlp5/."
+	if test -f camlp5.cmxa; then \
+	  cp camlp5.cmxa "$(DESTDIR)$(LIBDIR)/camlp5/."; \
+	  cp camlp5$(EXT_LIB) "$(DESTDIR)$(LIBDIR)/camlp5/."; \
 	fi
 
 include .depend

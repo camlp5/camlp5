@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.25 2008/01/05 11:36:32 deraugla Exp $
+# $Id: Makefile,v 1.26 2010/08/23 08:57:30 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -14,24 +14,24 @@ SOBJS=$(CAMLP5_OBJS) ../etc/pa_scheme.cmo $(CTOP)
 OOOBJS=$(CAMLP5_OBJS) ../etc/pa_o.cmo ../etc/pa_oop.cmo $(CTOP)
 OBJS=$(OTOP)/utils/pconfig.cmo ../main/quotation.cmo ../main/reloc.cmo ../main/ast2pt.cmo ../main/pcaml.cmo camlp5_top.cmo
 
-TARGET=$(NAME)o.cma $(NAME)r.cma $(NAME)sch.cma $(NAME)_top.cma
+TARGET=camlp5o.cma camlp5r.cma camlp5sch.cma camlp5_top.cma
 
 all: $(TARGET)
 
-$(NAME)oo.cma: $(OOOBJS)
-	$(OCAMLC) $(OOOBJS) -linkall -a -o $(NAME)oo.cma
+camlp5oo.cma: $(OOOBJS)
+	$(OCAMLC) $(OOOBJS) -linkall -a -o camlp5oo.cma
 
-$(NAME)o.cma: $(OOBJS)
-	$(OCAMLC) $(OOBJS) -linkall -a -o $(NAME)o.cma
+camlp5o.cma: $(OOBJS)
+	$(OCAMLC) $(OOBJS) -linkall -a -o camlp5o.cma
 
-$(NAME)r.cma: $(ROBJS)
-	$(OCAMLC) $(ROBJS) -linkall -a -o $(NAME)r.cma
+camlp5r.cma: $(ROBJS)
+	$(OCAMLC) $(ROBJS) -linkall -a -o camlp5r.cma
 
-$(NAME)sch.cma: $(SOBJS)
-	$(OCAMLC) $(SOBJS) -linkall -a -o $(NAME)sch.cma
+camlp5sch.cma: $(SOBJS)
+	$(OCAMLC) $(SOBJS) -linkall -a -o camlp5sch.cma
 
-$(NAME)_top.cma: $(OBJS)
-	$(OCAMLC) $(OBJS) -a -o $(NAME)_top.cma
+camlp5_top.cma: $(OBJS)
+	$(OCAMLC) $(OBJS) -a -o camlp5_top.cma
 
 clean::
 	rm -f *.cm[ioa] *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak $(TARGET)
@@ -40,14 +40,14 @@ depend:
 	cp .depend .depend.bak
 	> .depend
 	@export LC_ALL=C; for i in $$(ls *.mli *.ml); do \
-	  NAME=$(NAME) ../tools/depend.sh $(INCLUDES) $$i | \
+	  ../tools/depend.sh $(INCLUDES) $$i | \
 	  sed -e 's| $(OTOP)| $$(OTOP)|g' >> .depend; \
 	done
 
 get_promote:
 
 install:
-	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/$(NAME)"
-	cp $(TARGET) "$(DESTDIR)$(LIBDIR)/$(NAME)/."
+	-$(MKDIR) "$(DESTDIR)$(LIBDIR)/camlp5"
+	cp $(TARGET) "$(DESTDIR)$(LIBDIR)/camlp5/."
 
 include .depend
