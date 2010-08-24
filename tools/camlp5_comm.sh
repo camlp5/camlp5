@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: camlp5_comm.sh,v 1.12 2010/08/24 00:36:07 deraugla Exp $
+# $Id: camlp5_comm.sh,v 1.13 2010/08/24 15:06:48 deraugla Exp $
 
 ARGS1="-mode $MODE"
 FILE=
@@ -18,11 +18,16 @@ head -1 $FILE >/dev/null || exit 1
 set - `head -1 $FILE`
 if test "$2" = "camlp5r" -o "$2" = "camlp5"; then
   WHAT="$2"
-  COMM="ocamlrun$EXE ../boot/$WHAT$EXE -nolib -I ../boot"
-  dir=`dirname $OTOP`
-  if test "`basename $dir`" != "ocaml_stuff"; then
-    COMM="$OTOP/boot/$COMM"
-  fi
+  case "$COMPWITH/$WHAT" in
+  old/*)
+    COMM="ocamlrun$EXE ../boot/$WHAT$EXE -nolib -I ../boot";;
+  new/camlp5)
+    COMM="ocamlrun$EXE ../main/$WHAT$EXE -nolib -I ../meta -I ../etc";;
+  new/camlp5r)
+    COMM="ocamlrun$EXE ../meta/$WHAT$EXE -nolib -I ../meta -I ../etc";;
+  *)
+    echo "internal error: bad value of COMPWITH/WHAT" 1>&2; exit 2;;
+  esac
   shift; shift
   ARGS2=`echo $* | sed -e "s/[()*]//g"`
   if test "$QUIET" = "no"; then echo $COMM $ARGS2 $ARGS1 $FILE; fi

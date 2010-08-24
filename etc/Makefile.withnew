@@ -1,0 +1,23 @@
+# $Id: Makefile.withnew,v 1.1 2010/08/24 15:06:48 deraugla Exp $
+
+include ../config/Makefile
+
+INCLUDES=-I ../main -I ../meta -I ../lib
+OCAMLCFLAGS=-warn-error A $(INCLUDES)
+COMPWITH=new
+
+all:
+
+pa_lisp.cmo: pa_lispr.cmo
+pa_scheme.cmo: pa_schemer.cmo
+pr_extend.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
+pr_extfun.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
+pr_extprint.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
+pr_o.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
+pr_op.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
+pr_r.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
+pr_ro.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
+pr_rp.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
+q_phony.cmo: pa_extfun.cmo pa_extprint.cmo pa_pprintf.cmo
+
+include .depend

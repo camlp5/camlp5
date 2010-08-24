@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: apply.sh,v 1.10 2007/12/16 21:46:19 deraugla Exp $
+# $Id: apply.sh,v 1.11 2010/08/24 15:06:48 deraugla Exp $
 
 ARGS1=
 ARGS2=
@@ -28,6 +28,4 @@ else
 	ARGS1=
 fi
 
-OTOP=../..
-# echo ocamlrun $COMM $ARGS1 $ARGS2 $ARGS3 $FILE 1>&2
 ocamlrun $COMM $ARGS1 $ARGS2 $ARGS3 $FILE

@@ -1,11 +1,12 @@
-# $Id: Makefile.tpl,v 1.9 2010/08/23 08:57:30 deraugla Exp $
+# $Id: Makefile.tpl,v 1.10 2010/08/24 15:06:48 deraugla Exp $
 
-CAMLP5_COMM=OTOP=$(OTOP) OPT=$(OPT) EXE=$(EXE) MODE=$(MODE) ../tools/camlp5_comm.sh
+CAMLP5_COMM=OTOP=$(OTOP) OPT=$(OPT) EXE=$(EXE) MODE=$(MODE) COMPWITH=$(COMPWITH) ../tools/camlp5_comm.sh
 OCAMLC=@OTOP=$(OTOP) OPT=$(OPT) EXE=$(EXE) ../tools/ocamlc.sh
 OCAMLOPT=@OTOP=$(OTOP) OPT=$(OPT) EXE=$(EXE) ../tools/ocamlopt.sh
 OCAMLCFLAGS=
 MKDIR=mkdir -p
 TEST_DIR=test `basename "$<"` = "$<" || { echo "File \"$<\" needs to be recompiled."; echo "Please run 'make' in directory '$$(dirname "$<")' first."; exit 1; }
+COMPWITH=old
 
 .SUFFIXES: .cmx .cmo .cmi .ml .mli
 
@@ -26,4 +27,3 @@ TEST_DIR=test `basename "$<"` = "$<" || { echo "File \"$<\" needs to be recompil
 	@$(CAMLP5_COMM) $< -o $*.ppo
 	$(OCAMLOPT) $(OCAMLCFLAGS) -c -impl $*.ppo
 	rm -f $*.ppo
-

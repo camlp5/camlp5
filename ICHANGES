@@ -4,6 +4,8 @@ Internal, very small, undocumented, or invisible changes
 Camlp5 Version 5.16:
 --------------------
 
+* [24 Aug 10] Added Makefile.withnew in directory etc for compilations
+  that must be done with the new created camlp5.
 * [23 Aug 10] Changed variable 'NAME' into 'camlp5' in Makefiles and scripts.
 * [20 Aug 10] Added compatibility for OCaml version 3.07.
 * [18 Aug 10] Removed option "-qmod" (internal usage) from q_MLast.cmo.
