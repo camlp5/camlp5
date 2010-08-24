@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.9 2007/12/21 09:54:32 deraugla Exp $
+# $Id: Makefile,v 1.10 2010/08/24 15:26:53 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -6,23 +6,19 @@ include ../config/Makefile
 DIRS=$(OVERSION)/utils $(OVERSION)/parsing
 
 all:
-	if test "$(OTOP)" = "../ocaml_stuff/$(OVERSION)"; then \
-	  set -e; \
-	  for i in $(DIRS); do \
-	    cd $$i; $(MAKE) all EXE=$(EXE); cd ../..; \
-          done; \
-	fi
+	set -e; \
+	for i in $(DIRS); do \
+	  cd $$i; $(MAKE) all EXE=$(EXE); cd ../..; \
+        done
 
 opt:
 	cd $(OVERSION)/utils; $(MAKE) opt
 
 clean:
-	if test "$(OTOP)" = "../ocaml_stuff/$(OVERSION)"; then \
-	  set -e; \
-	  for i in $(DIRS); do \
-	    cd $$i; $(MAKE) clean EXE=$(EXE); cd ../..; \
-	  done; \
-	fi
+	set -e; \
+	for i in $(DIRS); do \
+	  cd $$i; $(MAKE) clean EXE=$(EXE); cd ../..; \
+	done
 
 depend:
 	set -e; for i in $(DIRS); do cd $$i; $(MAKE) depend; cd ../..; done
