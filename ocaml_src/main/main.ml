@@ -6,17 +6,18 @@
 
 open Printf;;
 
-let loc_fmt =
+let string_of_loc fname line bp ep =
   match Sys.os_type with
     "MacOS" ->
-      format_of_string "File \"%s\"; line %d; characters %d to %d\n### "
-  | _ -> format_of_string "File \"%s\", line %d, characters %d-%d:\n"
+      sprintf "File \"%s\"; line %d; characters %d to %d\n### " fname line bp
+        ep
+  | _ -> sprintf "File \"%s\", line %d, characters %d-%d:\n" fname line bp ep
 ;;
 
 let print_location loc =
   if !(Pcaml.input_file) <> "-" then
     let (fname, line, bp, ep) = Ploc.from_file !(Pcaml.input_file) loc in
-    eprintf loc_fmt fname line bp ep
+    eprintf "%s" (string_of_loc fname line bp ep)
   else
     let bp = Ploc.first_pos loc in
     let ep = Ploc.last_pos loc in eprintf "At location %d-%d\n" bp ep

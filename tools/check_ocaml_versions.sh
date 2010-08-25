@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 1.4 2010/08/21 04:25:11 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 1.5 2010/08/25 09:02:40 deraugla Exp $
 
 TOP=$HOME/work
 OCAMLSDIR=$TOP/ocaml/release
@@ -26,8 +26,13 @@ for i in $dirs; do
   echo "+++++ ./configure -bindir $TOP/usr/bin -libdir $TOP/usr/lib/ocaml -mandir $TOP/usr/man"
   ./configure -bindir $TOP/usr/bin -libdir $TOP/usr/lib/ocaml -mandir $TOP/usr/man
   sed -e 's/ graph//' config/Makefile > tmp; mv tmp config/Makefile
-  echo "+++++ time make world.opt"
-  time make world.opt
+  if [ "$i" = "3.06" ]; then
+    echo "+++++ time make world"
+    time make world
+  else
+    echo "+++++ time make world.opt"
+    time make world.opt
+  fi
   echo "+++++ make install"
   make install
   echo "+++++ make clean"
@@ -36,8 +41,13 @@ for i in $dirs; do
   cd $CAMLP5DIR
   echo "+++++ make clean"
   make clean
-  echo "+++++ ./configure $MODE"
-  ./configure $MODE
+  if [ "$i" = "3.06" ]; then
+    echo "+++++ ./configure $MODE -no-opt"
+    ./configure $MODE --no-opt
+  else
+    echo "+++++ ./configure $MODE"
+    ./configure $MODE
+  fi
   echo "+++++ time make world.opt"
   time make world.opt
   echo "+++++ make install"

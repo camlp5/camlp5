@@ -17,11 +17,11 @@ opt: $(COPT)
 
 camlp5r$(EXE): ../main/camlp5$(EXE) $(CAMLP5RM)
 	rm -f camlp5r$(EXE)
-	cd ../main; $(MAKE) OTOP=$(OTOP) CAMLP5=../meta/camlp5r$(EXE) CAMLP5M="-I ../meta $(CAMLP5RM)"
+	cd ../main; $(MAKE) CAMLP5=../meta/camlp5r$(EXE) CAMLP5M="-I ../meta $(CAMLP5RM)"
 
 camlp5r.opt: $(CAMLP5RMX)
 	rm -f camlp5r.opt
-	cd ../main; $(MAKE) optp5 OTOP=$(OTOP) CAMLP5OPT=../meta/camlp5r.opt CAMLP5M="-I ../meta $(CAMLP5RMX)"
+	cd ../main; $(MAKE) optp5 CAMLP5OPT=../meta/camlp5r.opt CAMLP5M="-I ../meta $(CAMLP5RMX)"
 
 clean::
 	rm -f *.cm* *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak $(COUT) $(COPT)

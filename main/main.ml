@@ -1,23 +1,24 @@
 (* camlp5r *)
-(* $Id: main.ml,v 1.12 2010/08/18 16:26:26 deraugla Exp $ *)
+(* $Id: main.ml,v 1.13 2010/08/25 09:02:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
 
 open Printf;
 
-value loc_fmt =
+value string_of_loc fname line bp ep =
   match Sys.os_type with
   [ "MacOS" ->
-      format_of_string "File \"%s\"; line %d; characters %d to %d\n### "
+      sprintf "File \"%s\"; line %d; characters %d to %d\n### " fname line
+        bp ep
   | _ ->
-      format_of_string "File \"%s\", line %d, characters %d-%d:\n" ]
+      sprintf "File \"%s\", line %d, characters %d-%d:\n" fname line bp ep ]
 ;
 
 value print_location loc =
   if Pcaml.input_file.val <> "-" then
     let (fname, line, bp, ep) = Ploc.from_file Pcaml.input_file.val loc in
-    eprintf loc_fmt fname line bp ep
+    eprintf "%s" (string_of_loc fname line bp ep)
   else
     let bp = Ploc.first_pos loc in
     let ep = Ploc.last_pos loc in

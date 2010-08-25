@@ -1,9 +1,11 @@
 (* camlp5r *)
-(* $Id: pcaml.ml,v 1.77 2010/08/18 16:26:26 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.78 2010/08/25 09:02:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
 #load "pa_extend.cmo";
+
+open Printf;
 
 value version = "5.16-exp";
 value syntax_name = ref "";
@@ -59,7 +61,7 @@ value output_file = ref None;
 
 value warning_default_function loc txt = do {
   let (bp, ep) = (Ploc.first_pos loc, Ploc.last_pos loc) in
-  Printf.eprintf "<W> loc %d %d: %s\n" bp ep txt;
+  eprintf "<W> loc %d %d: %s\n" bp ep txt;
   flush stderr
 };
 
@@ -212,19 +214,20 @@ value find_line loc str =
     else find (succ i) line (succ col)
 ;
 
-value loc_fmt =
+value string_of_loc fname line bp ep =
   match Sys.os_type with
   [ "MacOS" ->
-      format_of_string "File \"%s\"; line %d; characters %d to %d\n### "
+      sprintf "File \"%s\"; line %d; characters %d to %d\n### " fname line
+        bp ep
   | _ ->
-      format_of_string "File \"%s\", line %d, characters %d-%d:\n" ]
+      sprintf "File \"%s\", line %d, characters %d-%d:\n" fname line bp ep ]
 ;
 
 value report_quotation_error name ctx = do {
   let name = if name = "" then Quotation.default.val else name in
   Format.print_flush ();
   Format.open_hovbox 2;
-  Printf.eprintf "While %s \"%s\":"
+  eprintf "While %s \"%s\":"
     (match ctx with
      [ Finding -> "finding quotation"
      | Expanding -> "expanding quotation"
@@ -234,7 +237,7 @@ value report_quotation_error name ctx = do {
   [ ParsingResult loc str ->
       match quotation_dump_file.val with
       [ Some dump_file -> do {
-          Printf.eprintf " dumping result...\n";
+          eprintf " dumping result...\n";
           flush stderr;
           try do {
             let (line, c1, c2) = find_line loc str in
@@ -243,24 +246,23 @@ value report_quotation_error name ctx = do {
             output_string oc "\n";
             flush oc;
             close_out oc;
-            Printf.eprintf loc_fmt dump_file line c1 c2;
+            eprintf "%s" (string_of_loc dump_file line c1 c2);
             flush stderr
           }
           with _ -> do {
-            Printf.eprintf "Error while dumping result in file \"%s\""
-              dump_file;
-            Printf.eprintf "; dump aborted.\n";
+            eprintf "Error while dumping result in file \"%s\"" dump_file;
+            eprintf "; dump aborted.\n";
             flush stderr
           }
         }
       | None -> do {
           if input_file.val = "" then
-            Printf.eprintf
+            eprintf
               "\n(consider setting variable Pcaml.quotation_dump_file)\n"
-          else Printf.eprintf " (consider using option -QD)\n";
+          else eprintf " (consider using option -QD)\n";
           flush stderr
         } ]
-  | _ -> do { Printf.eprintf "\n"; flush stderr } ]
+  | _ -> do { eprintf "\n"; flush stderr } ]
 };
 
 value print_format str = do {
@@ -464,8 +466,8 @@ add_option "-mode"
 add_option "-pmode"
   (Arg.Unit
      (fun () -> do {
-        if strict_mode.val then Printf.eprintf "strict\n"
-        else Printf.eprintf "transitional\n";
+        if strict_mode.val then eprintf "strict\n"
+        else eprintf "transitional\n";
         flush stderr;
         exit 0
       }))

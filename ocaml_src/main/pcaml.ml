@@ -5,6 +5,8 @@
 (* #load "pa_macro.cmo" *)
 (* #load "pa_extend.cmo" *)
 
+open Printf;;
+
 let version = "5.16-exp";;
 let syntax_name = ref "";;
 
@@ -13,7 +15,7 @@ let gram =
     {Plexing.tok_func = (fun _ -> failwith "no loaded parsing module");
      Plexing.tok_using = (fun _ -> ()); Plexing.tok_removing = (fun _ -> ());
      Plexing.tok_match =
-       (fun _ -> raise (Match_failure ("pcaml.ml", 15, 25)));
+       (fun _ -> raise (Match_failure ("pcaml.ml", 17, 25)));
      Plexing.tok_text = (fun _ -> ""); Plexing.tok_comm = None}
 ;;
 
@@ -60,7 +62,7 @@ let output_file = ref None;;
 
 let warning_default_function loc txt =
   let (bp, ep) = Ploc.first_pos loc, Ploc.last_pos loc in
-  Printf.eprintf "<W> loc %d %d: %s\n" bp ep txt; flush stderr
+  eprintf "<W> loc %d %d: %s\n" bp ep txt; flush stderr
 ;;
 
 let warning = ref warning_default_function;;
@@ -208,18 +210,19 @@ let find_line loc str =
   find 0 1 0
 ;;
 
-let loc_fmt =
+let string_of_loc fname line bp ep =
   match Sys.os_type with
     "MacOS" ->
-      format_of_string "File \"%s\"; line %d; characters %d to %d\n### "
-  | _ -> format_of_string "File \"%s\", line %d, characters %d-%d:\n"
+      sprintf "File \"%s\"; line %d; characters %d to %d\n### " fname line bp
+        ep
+  | _ -> sprintf "File \"%s\", line %d, characters %d-%d:\n" fname line bp ep
 ;;
 
 let report_quotation_error name ctx =
   let name = if name = "" then !(Quotation.default) else name in
   Format.print_flush ();
   Format.open_hovbox 2;
-  Printf.eprintf "While %s \"%s\":"
+  eprintf "While %s \"%s\":"
     (match ctx with
        Finding -> "finding quotation"
      | Expanding -> "expanding quotation"
@@ -229,7 +232,7 @@ let report_quotation_error name ctx =
     ParsingResult (loc, str) ->
       begin match !quotation_dump_file with
         Some dump_file ->
-          Printf.eprintf " dumping result...\n";
+          eprintf " dumping result...\n";
           flush stderr;
           begin try
             let (line, c1, c2) = find_line loc str in
@@ -238,22 +241,21 @@ let report_quotation_error name ctx =
             output_string oc "\n";
             flush oc;
             close_out oc;
-            Printf.eprintf loc_fmt dump_file line c1 c2;
+            eprintf "%s" (string_of_loc dump_file line c1 c2);
             flush stderr
           with _ ->
-            Printf.eprintf "Error while dumping result in file \"%s\""
-              dump_file;
-            Printf.eprintf "; dump aborted.\n";
+            eprintf "Error while dumping result in file \"%s\"" dump_file;
+            eprintf "; dump aborted.\n";
             flush stderr
           end
       | None ->
           if !input_file = "" then
-            Printf.eprintf
+            eprintf
               "\n(consider setting variable Pcaml.quotation_dump_file)\n"
-          else Printf.eprintf " (consider using option -QD)\n";
+          else eprintf " (consider using option -QD)\n";
           flush stderr
       end
-  | _ -> Printf.eprintf "\n"; flush stderr
+  | _ -> eprintf "\n"; flush stderr
 ;;
 
 let print_format str =
@@ -412,8 +414,7 @@ add_option "-mode"
 add_option "-pmode"
   (Arg.Unit
      (fun () ->
-        if !strict_mode then Printf.eprintf "strict\n"
-        else Printf.eprintf "transitional\n";
+        if !strict_mode then eprintf "strict\n" else eprintf "transitional\n";
         flush stderr;
         exit 0))
   "Print the current mode and exit.";;

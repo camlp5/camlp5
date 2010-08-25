@@ -1,11 +1,12 @@
 #!/bin/sh
-# $Id: configure,v 1.30 2010/08/23 08:57:29 deraugla Exp $
+# $Id: configure,v 1.31 2010/08/25 09:02:40 deraugla Exp $
 
 prefix=''
 bindir=''
 libdir=''
 mandir=''
 mode=T
+noopt=0
 
 if [ -f myconfig ]; then
   . ./myconfig
@@ -33,8 +34,10 @@ while : ; do
         prefix=$2; shift;;
     -bindir|--bindir)
         bindir=$2; shift;;
-    -libdir|--libdir)
-        libdir=$2; shift;;
+    -no-opt|--no-opt)
+        noopt=1;;
+    -mandir|--mandir)
+        mandir=$2; shift;;
     -mandir|--mandir)
         mandir=$2; shift;;
     -transitional|--transitional)
@@ -56,6 +59,8 @@ while : ; do
         echo "  -prefix <dir>, --prefix <dir>"
         echo "        Set bindir, libdir and mandir respectively to"
         echo "        <dir>/bin, <dir>/lib/ocaml, <dir>/man."
+        echo "  -no-opt, --no-opt"
+        echo "        do not use .opt versions of ocaml compilers"
         echo "  -transitional, --transitional"
         echo "        compile in transitional mode"
         echo "  -strict, --strict"
@@ -177,7 +182,9 @@ else
     MANDIR=$(dirname "$BINDIR")/man
 fi
 
-if ocamlc.opt > /dev/null 2>&1 && ocamlopt.opt > /dev/null 2>&1; then
+if [ "$noopt" = "0" ] && ocamlc.opt > /dev/null 2>&1 &&
+   ocamlopt.opt > /dev/null 2>&1
+then
     OPT=.opt
 else
     OPT=
