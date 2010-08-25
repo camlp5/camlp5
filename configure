@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: configure,v 1.32 2010/08/25 11:28:59 deraugla Exp $
+# $Id: configure,v 1.33 2010/08/25 16:30:25 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -182,12 +182,14 @@ else
     MANDIR=$(dirname "$BINDIR")/man
 fi
 
+OPT=
 if [ "$noopt" = "0" ] && ocamlc.opt > /dev/null 2>&1 &&
    ocamlopt.opt > /dev/null 2>&1
 then
-    OPT=.opt
-else
-    OPT=
+    oversion_opt=$(ocamlopt.opt -v | head -1 | sed 's/^.*version //')
+    if [ "$oversion" = "$oversion_opt" ]; then
+      OPT=.opt
+    fi
 fi
 
 if [ "$(ocamlc -w y 2>&1)" = "" ]; then
