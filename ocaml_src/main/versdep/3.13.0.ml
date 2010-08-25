@@ -1100,11 +1100,11 @@ let phrase =
 
 module Ast2pt =
   struct
-    let interf = interf
-    let implem = implem
-    let phrase = phrase
-    let mkloc = mkloc
-    let fast = fast
-    let no_constructors_arity = no_constructors_arity
+    let interf = interf;;
+    let implem = implem;;
+    let phrase = phrase;;
+    let mkloc = mkloc;;
+    let fast = fast;;
+    let no_constructors_arity = no_constructors_arity;;
   end
 ;;

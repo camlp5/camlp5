@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: sources.html,v 1.16 2010/08/19 10:40:45 deraugla Exp $ -->
+  <!-- $Id: sources.html,v 1.17 2010/08/25 11:39:34 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>Camlp5 sources</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -87,29 +87,29 @@
   make compare_stolen OCAML_SRC=&lt;path-to-OCaml-sources>
 </pre>
 
-<p>The compatibility is also done with the file 'main/ast2pt.ml',
+<p>The compatibility is also done with the file 'main/versdep.ml',
   which is the module converting Camlp5 syntax tree into OCaml syntax
   tree.</p>
 
 <p>In the directory 'ocaml_src' which contains the pure OCaml sources
   of the Camlp5 core (see chapter TREE STRUCTURE below), there are as
   many versions of this files as versions of OCaml. They are named
-  '&lt;version>.ml' in the directory 'main/ast2pt'. If you are adding
+  'version.ml' in the directory 'main/versdep'. If you are adding
   a new version of OCaml, you need this file. As a first step, make a
   copy from a close version:</p>
 
 <pre>
-  cd ocaml_src/main/ast2pt
+  cd ocaml_src/main/versdep
   cp &lt;close_version>.ml &lt;version>.ml
 </pre>
 
 <p>Then, you can rerun "configure" and do "make core". If the file
-  'ocaml_src/main/ast2pt.ml' has compilation problems, fix them 'make
+  'ocaml_src/main/versdep.ml' has compilation problems, fix them 'make
   core' again. When it compiles, copy it into the subdirectory
-  'ast2pt' as '&lt;version>.ml', overwriting the version you copied
+  'versdep' as '&lt;version>.ml', overwriting the version you copied
   from the close version.</p>
 
-<p>Later, the same file 'main/ast2pt.ml' in Camlp5 syntax may have
+<p>Later, the same file 'main/versdep.ml' in Camlp5 syntax may have
   similar compilation problems. There is only a single version of this file, thanks
   to IFDEF constructs used here or there.</p>
 
@@ -117,10 +117,10 @@
   compiled with 'OCAML_vers' defined where 'vers' is the version number
   form the beginning to the first space or charcter '+' with all dots
   converted into underscores. For example, if your OCaml version is
-  7.04.2+dev35, you can see in the compilation process of ast2pt.ml
+  7.04.2+dev35, you can see in the compilation process of versdep.ml
   that OCAML_7_04_2 is defined, and you can add statements defined
   by the syntax extension 'pa_macro.cmo', for example IFDEF OCAML_7_04_2.
-  Add statements like that in 'main/ast2pt.ml' to make it compile successfully.</p>
+  Add statements like that in 'main/versdep.ml' to make it compile successfully.</p>
 
 <h2>Tree structure</h2>
 
@@ -294,17 +294,17 @@
   make clean_sources
 </pre>
 
-<p>If there are changes in the specific file 'main/ast2pt.ml', do
+<p>If there are changes in the specific file 'main/versdep.ml', do
   also:</p>
 
 <pre>
-  make compare_all_ast2pt
+  make compare_all_versdep
 </pre>
 
 <p>and possibly:</p>
 
 <pre>
-  make bootstrap_all_ast2pt
+  make bootstrap_all_versdep
 </pre>
 
 <p>because this file, in 'ocaml_src/main' directory has different

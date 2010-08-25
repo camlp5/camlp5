@@ -33,22 +33,23 @@ COMPATIBILITY
    are up-to-date (e.g. if this is the current ocaml developpement), do:
        make compare_stolen OCAML_SRC=<path-to-ocaml-sources>
 
-     The compatibility is done also with the file 'main/ast2pt.ml',
+     The compatibility is done also with the file 'main/versdep.ml',
    which is the module converting camlp5 syntax tree into ocaml syntax tree.
 
-     In the directory 'ocaml_src' with containt the pure ocaml sources of
-   the camlp5 core (see chapter TREE STRUCTURE below), there are as versions
-   of this files as version of ocaml. They are named 'ast2pt.ml_<version>'.
-   If you are adding a new version of ocaml, you need this file. In a first
-   step, make a copy from a close version:
+     In the directory 'ocaml_src' which contains the pure OCaml sources
+   of the Camlp5 core (see chapter TREE STRUCTURE below), there are as
+   many versions of this files as versions of OCaml. They are named
+   '<version>.ml' in the directory 'main/versdep'. If you are adding
+   a new version of OCaml, you need this file. As a first step, make a
+   copy from a close version:
          cd ocaml_src/main
-         cp ast2pt.ml_<close_version> ast2pt.ml_<version>
+         cp versdep.ml_<close_version> versdep.ml_<version>
 
      Then, you can redo "configure" and do "make core". If the file
-   'ocaml_src/main/ast2pt.ml' has a compilation problems, fix them and
+   'ocaml_src/main/versdep.ml' has a compilation problems, fix them and
    to 'make core' again.
 
-     Later, the same file 'main/ast2pt.ml' in camlp5 syntax may have
+     Later, the same file 'main/versdep.ml' in camlp5 syntax may have
    similar compilation problem. This file is in one examplary, thanks to
    IFDEF used here or there.
 
@@ -56,10 +57,10 @@ COMPATIBILITY
    compiled with 'OCAML_vers' defined where 'vers' is the version number
    form the beginning to the first space or charcter '+' with all dots
    converted into underscores. For example, if you ocaml version is
-   7.04.2+dev35, you can see in the compilation process of ast2pt.ml
+   7.04.2+dev35, you can see in the compilation process of versdep.ml
    that OCAML_7_04_2 is defined, and you can add statements defined
    by the syntax extension 'pa_macro.cmo', for example IFDEF OCAML_7_04_2.
-   Add statements like that in 'main/ast2pt.ml' to make it compile.
+   Add statements like that in 'main/versdep.ml' to make it compile.
 
 TREE STRUCTURE
 
@@ -175,11 +176,11 @@ BEFORE COMMITTING YOUR CHANGES
        make promote_sources
        make clean_sources
 
-     If there are changes in the specific file 'main/ast2pt.ml', do
+     If there are changes in the specific file 'main/versdep.ml', do
    also:
-       make compare_all_ast2pt
+       make compare_all_versdep
    and possibly:
-       make bootstrap_all_ast2pt
+       make bootstrap_all_versdep
    because this file, in 'ocaml_src/main' directory has different
    versions according to the ocaml version.
 

@@ -1,29 +1,17 @@
 argl.cmo: argl.cmi
 argl.cmx: argl.cmi
-versdep.cmo: $(OTOP)/parsing/asttypes.cmi \
-    $(OTOP)/parsing/location.cmi \
-    $(OTOP)/parsing/longident.cmi \
-    $(OTOP)/parsing/parsetree.cmi \
-    $(OTOP)/utils/pconfig.cmi versdep.cmi mLast.cmi
-versdep.cmx: $(OTOP)/parsing/asttypes.cmi \
-    $(OTOP)/parsing/location.cmi \
-    $(OTOP)/parsing/longident.cmi \
-    $(OTOP)/parsing/parsetree.cmi \
-    $(OTOP)/utils/pconfig.cmx versdep.cmi mLast.cmi
-versdep.cmi: $(OTOP)/parsing/parsetree.cmi mLast.cmi \
-    $(OTOP)/parsing/location.cmi
 exparser.cmo: exparser.cmi mLast.cmi reloc.cmi
 exparser.cmx: exparser.cmi mLast.cmi reloc.cmx
 exparser.cmi: mLast.cmi
 main.cmo: $(OTOP)/utils/pconfig.cmi ../odyl/odyl_main.cmi \
-    argl.cmi versdep.cmi mLast.cmi pcaml.cmi
+    argl.cmi mLast.cmi pcaml.cmi versdep.cmi
 main.cmx: $(OTOP)/utils/pconfig.cmx ../odyl/odyl_main.cmx \
-    argl.cmx versdep.cmx mLast.cmi pcaml.cmx
+    argl.cmx mLast.cmi pcaml.cmx versdep.cmx
 parserify.cmo: mLast.cmi parserify.cmi prtools.cmi
 parserify.cmx: mLast.cmi parserify.cmi prtools.cmx
 parserify.cmi: mLast.cmi
-pcaml.cmo: versdep.cmi mLast.cmi pcaml.cmi quotation.cmi reloc.cmi
-pcaml.cmx: versdep.cmx mLast.cmi pcaml.cmi quotation.cmx reloc.cmx
+pcaml.cmo: mLast.cmi pcaml.cmi quotation.cmi reloc.cmi versdep.cmi
+pcaml.cmx: mLast.cmi pcaml.cmi quotation.cmx reloc.cmx versdep.cmx
 pcaml.cmi: mLast.cmi
 prtools.cmo: mLast.cmi prtools.cmi
 prtools.cmx: mLast.cmi prtools.cmi
@@ -34,3 +22,15 @@ quotation.cmi: mLast.cmi
 reloc.cmo: mLast.cmi reloc.cmi
 reloc.cmx: mLast.cmi reloc.cmi
 reloc.cmi: mLast.cmi
+versdep.cmo: $(OTOP)/parsing/asttypes.cmi \
+    $(OTOP)/parsing/location.cmi \
+    $(OTOP)/parsing/longident.cmi \
+    $(OTOP)/parsing/parsetree.cmi \
+    $(OTOP)/utils/pconfig.cmi mLast.cmi versdep.cmi
+versdep.cmx: $(OTOP)/parsing/asttypes.cmi \
+    $(OTOP)/parsing/location.cmi \
+    $(OTOP)/parsing/longident.cmi \
+    $(OTOP)/parsing/parsetree.cmi \
+    $(OTOP)/utils/pconfig.cmx mLast.cmi versdep.cmi
+versdep.cmi: $(OTOP)/parsing/parsetree.cmi mLast.cmi \
+    $(OTOP)/parsing/location.cmi
