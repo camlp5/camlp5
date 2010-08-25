@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.2 2010/08/25 14:29:35 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.3 2010/08/25 15:31:51 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -1151,4 +1151,83 @@ module Ast2pt =
     value fast = fast;
     value no_constructors_arity = no_constructors_arity;
   end
+;
+
+value action_arg s sl =
+  fun
+  [ Arg.Unit f -> if s = "" then do { f (); Some sl } else None
+  | Arg.Set r -> if s = "" then do { r.val := True; Some sl } else None
+  | Arg.Clear r -> if s = "" then do { r.val := False; Some sl } else None
+  | Arg.Rest f -> do { List.iter f [s :: sl]; Some [] }
+  | Arg.String f ->
+      if s = "" then
+        match sl with
+        [ [s :: sl] -> do { f s; Some sl }
+        | [] -> None ]
+      else do { f s; Some sl }
+  | Arg.Int f ->
+      if s = "" then
+        match sl with
+        [ [s :: sl] ->
+            try do { f (int_of_string s); Some sl } with
+            [ Failure "int_of_string" -> None ]
+        | [] -> None ]
+      else
+        try do { f (int_of_string s); Some sl } with
+        [ Failure "int_of_string" -> None ]
+  | Arg.Float f ->
+      if s = "" then
+        match sl with
+        [ [s :: sl] -> do { f (float_of_string s); Some sl }
+        | [] -> None ]
+      else do { f (float_of_string s); Some sl }
+  | IFNDEF OCAML_3_06 THEN
+      Arg.Set_string r ->
+          if s = "" then
+            match sl with
+            [ [s :: sl] -> do { r.val := s; Some sl }
+            | [] -> None ]
+          else do { r.val := s; Some sl }
+      END
+  | IFNDEF OCAML_3_06 THEN
+      Arg.Set_int r ->
+        if s = "" then
+          match sl with
+          [ [s :: sl] ->
+              try do { r.val := int_of_string s; Some sl } with
+              [ Failure "int_of_string" -> None ]
+          | [] -> None ]
+        else
+          try do { r.val := int_of_string s; Some sl } with
+          [ Failure "int_of_string" -> None ]
+    END
+  | IFNDEF OCAML_3_06 THEN
+      Arg.Set_float r ->
+        if s = "" then
+          match sl with
+          [ [s :: sl] -> do { r.val := float_of_string s; Some sl }
+          | [] -> None ]
+        else do { r.val := float_of_string s; Some sl }
+    END
+  | IFNDEF OCAML_3_06 THEN
+      Arg.Symbol syms f ->
+        match if s = "" then sl else [s :: sl] with
+        [ [s :: sl] when List.mem s syms -> do { f s; Some sl }
+        | _ -> None ]
+    END
+  | IFNDEF OCAML_3_06 THEN
+      Arg.Tuple _ -> failwith "Arg.Tuple not implemented"
+    END
+  | IFNDEF OCAML_3_06 THEN
+      Arg.Bool _ -> failwith "Arg.Bool not implemented"
+    END ]
+;
+
+value arg_symbol =
+  IFDEF OCAML_3_06 THEN fun _ -> None
+  ELSE
+    fun
+    [ Arg.Symbol symbs _ -> Some symbs
+    | _ -> None ]
+  END
 ;

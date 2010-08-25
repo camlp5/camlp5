@@ -1,65 +1,9 @@
 (* camlp5r *)
-(* $Id: argl.ml,v 1.3 2010/08/23 07:44:25 deraugla Exp $ *)
+(* $Id: argl.ml,v 1.4 2010/08/25 15:31:51 deraugla Exp $ *)
 
 open Printf;
 
-value action_arg s sl =
-  fun
-  [ Arg.Unit f -> if s = "" then do { f (); Some sl } else None
-  | Arg.Set r -> if s = "" then do { r.val := True; Some sl } else None
-  | Arg.Clear r -> if s = "" then do { r.val := False; Some sl } else None
-  | Arg.Rest f -> do { List.iter f [s :: sl]; Some [] }
-  | Arg.String f ->
-      if s = "" then
-        match sl with
-        [ [s :: sl] -> do { f s; Some sl }
-        | [] -> None ]
-      else do { f s; Some sl }
-  | Arg.Int f ->
-      if s = "" then
-        match sl with
-        [ [s :: sl] ->
-            try do { f (int_of_string s); Some sl } with
-            [ Failure "int_of_string" -> None ]
-        | [] -> None ]
-      else
-        try do { f (int_of_string s); Some sl } with
-        [ Failure "int_of_string" -> None ]
-  | Arg.Float f ->
-      if s = "" then
-        match sl with
-        [ [s :: sl] -> do { f (float_of_string s); Some sl }
-        | [] -> None ]
-      else do { f (float_of_string s); Some sl }
-  | Arg.Set_string r ->
-      if s = "" then
-        match sl with
-        [ [s :: sl] -> do { r.val := s; Some sl }
-        | [] -> None ]
-      else do { r.val := s; Some sl }
-  | Arg.Set_int r ->
-      if s = "" then
-        match sl with
-        [ [s :: sl] ->
-            try do { r.val := int_of_string s; Some sl } with
-            [ Failure "int_of_string" -> None ]
-        | [] -> None ]
-      else
-        try do { r.val := int_of_string s; Some sl } with
-        [ Failure "int_of_string" -> None ]
-  | Arg.Set_float r ->
-      if s = "" then
-        match sl with
-        [ [s :: sl] -> do { r.val := float_of_string s; Some sl }
-        | [] -> None ]
-      else do { r.val := float_of_string s; Some sl }
-  | Arg.Symbol syms f ->
-      match if s = "" then sl else [s :: sl] with
-      [ [s :: sl] when List.mem s syms -> do { f s; Some sl }
-      | _ -> None ]
-  | Arg.Tuple _ -> failwith "Arg.Tuple not implemented"
-  | Arg.Bool _ -> failwith "Arg.Bool not implemented" ]
-;
+value action_arg = Versdep.action_arg;
 
 value common_start s1 s2 =
   loop 0 where rec loop i =
@@ -127,12 +71,13 @@ value make_symlist l =
 value print_usage_list l =
   List.iter
     (fun (key, spec, doc) ->
-       match spec with
-       [ Arg.Symbol symbs _ ->
+       match Versdep.arg_symbol spec with
+       [ Some symbs ->
            let s = make_symlist symbs in
            let synt = key ^ " " ^ s in
            eprintf "  %s %s\n" synt (align_doc synt doc)
-       | _ -> eprintf "  %s %s\n" key (align_doc key doc) ])
+       | None ->
+           eprintf "  %s %s\n" key (align_doc key doc) ])
     l
 ;
 

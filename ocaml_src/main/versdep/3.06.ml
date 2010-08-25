@@ -1087,3 +1087,37 @@ module Ast2pt =
     let no_constructors_arity = no_constructors_arity;;
   end
 ;;
+
+let action_arg s sl =
+  function
+    Arg.Unit f -> if s = "" then begin f (); Some sl end else None
+  | Arg.Set r -> if s = "" then begin r := true; Some sl end else None
+  | Arg.Clear r -> if s = "" then begin r := false; Some sl end else None
+  | Arg.Rest f -> List.iter f (s :: sl); Some []
+  | Arg.String f ->
+      if s = "" then
+        match sl with
+          s :: sl -> f s; Some sl
+        | [] -> None
+      else begin f s; Some sl end
+  | Arg.Int f ->
+      if s = "" then
+        match sl with
+          s :: sl ->
+            begin try f (int_of_string s); Some sl with
+              Failure "int_of_string" -> None
+            end
+        | [] -> None
+      else
+        begin try f (int_of_string s); Some sl with
+          Failure "int_of_string" -> None
+        end
+  | Arg.Float f ->
+      if s = "" then
+        match sl with
+          s :: sl -> f (float_of_string s); Some sl
+        | [] -> None
+      else begin f (float_of_string s); Some sl end
+;;
+
+let arg_symbol _ = None;;
