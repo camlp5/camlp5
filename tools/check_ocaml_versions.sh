@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 1.5 2010/08/25 09:02:40 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 1.6 2010/08/25 14:29:36 deraugla Exp $
 
 TOP=$HOME/work
 OCAMLSDIR=$TOP/ocaml/release
@@ -10,7 +10,7 @@ cd $TOP
 PATH=$(pwd)/usr/bin:$PATH
 
 cd $OCAMLSDIR
-dirs=$(ls | grep -v '^[1|2]' | grep -v '^3.0[0-6]' | grep -v csl)
+dirs=$(ls | grep -v '^[1|2]' | grep -v '^3.0[0-5]' | grep -v csl)
 echo =====================
 echo $dirs
 for i in $dirs; do

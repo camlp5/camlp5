@@ -63,10 +63,10 @@ let string_of_string_token loc s =
 let glob_fname = ref "";;
 
 let mkloc loc =
-  let lnum = Ploc.line_nb loc in
-  let bolp = Ploc.bol_pos loc in
   let bp = Ploc.first_pos loc in
   let ep = Ploc.last_pos loc in
+  let lnum = Ploc.line_nb loc in
+  let bolp = Ploc.bol_pos loc in
   let loc_at n =
     {Lexing.pos_fname = if lnum = -1 then "" else !glob_fname;
      Lexing.pos_lnum = lnum; Lexing.pos_bol = bolp; Lexing.pos_cnum = n}

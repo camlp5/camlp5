@@ -63,10 +63,10 @@ let string_of_string_token loc s =
 let glob_fname = ref "";;
 
 let mkloc loc =
-  let lnum = Ploc.line_nb loc in
-  let bolp = Ploc.bol_pos loc in
   let bp = Ploc.first_pos loc in
   let ep = Ploc.last_pos loc in
+  let lnum = Ploc.line_nb loc in
+  let bolp = Ploc.bol_pos loc in
   let loc_at n =
     {Lexing.pos_fname = if lnum = -1 then "" else !glob_fname;
      Lexing.pos_lnum = lnum; Lexing.pos_bol = bolp; Lexing.pos_cnum = n}
@@ -1089,4 +1089,15 @@ let phrase =
   function
     StDir (loc, d, dp) -> Ptop_dir (uv d, directive loc (uv dp))
   | si -> Ptop_def (str_item si [])
+;;
+
+module Ast2pt =
+  struct
+    let interf = interf;;
+    let implem = implem;;
+    let phrase = phrase;;
+    let mkloc = mkloc;;
+    let fast = fast;;
+    let no_constructors_arity = no_constructors_arity;;
+  end
 ;;

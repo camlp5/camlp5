@@ -63,8 +63,6 @@ let string_of_string_token loc s =
 let glob_fname = ref "";;
 
 let mkloc loc =
-  let lnum = Ploc.line_nb loc in
-  let bolp = Ploc.bol_pos loc in
   let bp = Ploc.first_pos loc in
   let ep = Ploc.last_pos loc in
   {Location.loc_start = bp; Location.loc_end = ep;
@@ -231,16 +229,14 @@ let mkvariant (loc, c, tl) = conv_con (uv c), List.map ctyp (uv tl);;
 let type_decl tl priv cl =
   function
     TyMan (loc, t, MLast.TyRec (_, ltl)) ->
-      mktype loc tl cl (Ptype_record (List.map mktrecord ltl))
-        (Some (ctyp t))
+      mktype loc tl cl (Ptype_record (List.map mktrecord ltl)) (Some (ctyp t))
   | TyMan (loc, t, MLast.TySum (_, ctl)) ->
       mktype loc tl cl (Ptype_variant (List.map mkvariant ctl))
         (Some (ctyp t))
   | TyRec (loc, ltl) ->
       mktype loc tl cl (Ptype_record (List.map mktrecord (uv ltl))) None
   | TySum (loc, ctl) ->
-      mktype loc tl cl (Ptype_variant (List.map mkvariant (uv ctl)))
-        None
+      mktype loc tl cl (Ptype_variant (List.map mkvariant (uv ctl))) None
   | t ->
       let m =
         match t with
@@ -901,8 +897,7 @@ and sig_item s l =
           (fun (n, mt) l ->
              mksig loc (Psig_module (uv n, module_type mt)) :: l)
           (uv ntl) l
-      else
-        error loc "no recursive module in this ocaml version"
+      else error loc "no recursive module in this ocaml version"
   | SgMty (loc, n, mt) ->
       let si =
         match mt with
@@ -958,8 +953,7 @@ and str_item s l =
           (fun (n, me) l ->
              mkstr loc (Pstr_module (uv n, module_expr me)) :: l)
           (uv nel) l
-      else
-        error loc "no recursive module in this ocaml version"
+      else error loc "no recursive module in this ocaml version"
   | StMty (loc, n, mt) -> mkstr loc (Pstr_modtype (uv n, module_type mt)) :: l
   | StOpn (loc, id) ->
       mkstr loc (Pstr_open (long_id_of_string_list loc (uv id))) :: l
@@ -1081,4 +1075,15 @@ let phrase =
   function
     StDir (loc, d, dp) -> Ptop_dir (uv d, directive loc (uv dp))
   | si -> Ptop_def (str_item si [])
+;;
+
+module Ast2pt =
+  struct
+    let interf = interf;;
+    let implem = implem;;
+    let phrase = phrase;;
+    let mkloc = mkloc;;
+    let fast = fast;;
+    let no_constructors_arity = no_constructors_arity;;
+  end
 ;;
