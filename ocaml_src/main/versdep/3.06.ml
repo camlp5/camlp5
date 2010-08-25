@@ -67,11 +67,7 @@ let mkloc loc =
   let bolp = Ploc.bol_pos loc in
   let bp = Ploc.first_pos loc in
   let ep = Ploc.last_pos loc in
-  let loc_at n =
-    {Lexing.pos_fname = if lnum = -1 then "" else !glob_fname;
-     Lexing.pos_lnum = lnum; Lexing.pos_bol = bolp; Lexing.pos_cnum = n}
-  in
-  {Location.loc_start = loc_at bp; Location.loc_end = loc_at ep;
+  {Location.loc_start = bp; Location.loc_end = ep;
    Location.loc_ghost = bp = 0 && ep = 0}
 ;;
 
@@ -222,33 +218,29 @@ and meth_list loc fl v =
       mkfield loc (Pfield (lab, ctyp (mkpolytype t))) :: meth_list loc fl v
 ;;
 
-let mktype loc tl cl tk pf tm =
+let mktype loc tl cl tk tm =
   let (params, variance) = List.split tl in
   {ptype_params = List.map uv params; ptype_cstrs = cl; ptype_kind = tk;
-   ptype_private = pf; ptype_manifest = tm; ptype_loc = mkloc loc;
-   ptype_variance = variance}
+   ptype_manifest = tm; ptype_loc = mkloc loc; ptype_variance = variance}
 ;;
 let mkmutable m = if m then Mutable else Immutable;;
 let mkprivate m = if m then Private else Public;;
-let mktrecord (loc, n, m, t) =
-  n, mkmutable m, ctyp (mkpolytype t), mkloc loc
-;;
-let mkvariant (loc, c, tl) =
-  conv_con (uv c), List.map ctyp (uv tl), mkloc loc
-;;
+let mktrecord (loc, n, m, t) = n, mkmutable m, ctyp (mkpolytype t);;
+let mkvariant (loc, c, tl) = conv_con (uv c), List.map ctyp (uv tl);;
 
 let type_decl tl priv cl =
   function
     TyMan (loc, t, MLast.TyRec (_, ltl)) ->
-      mktype loc tl cl (Ptype_record (List.map mktrecord ltl)) priv
+      mktype loc tl cl (Ptype_record (List.map mktrecord ltl))
         (Some (ctyp t))
   | TyMan (loc, t, MLast.TySum (_, ctl)) ->
-      mktype loc tl cl (Ptype_variant (List.map mkvariant ctl)) priv
+      mktype loc tl cl (Ptype_variant (List.map mkvariant ctl))
         (Some (ctyp t))
   | TyRec (loc, ltl) ->
-      mktype loc tl cl (Ptype_record (List.map mktrecord (uv ltl))) priv None
+      mktype loc tl cl (Ptype_record (List.map mktrecord (uv ltl))) None
   | TySum (loc, ctl) ->
-      mktype loc tl cl (Ptype_variant (List.map mkvariant (uv ctl))) priv None
+      mktype loc tl cl (Ptype_variant (List.map mkvariant (uv ctl)))
+        None
   | t ->
       let m =
         match t with
@@ -257,7 +249,7 @@ let type_decl tl priv cl =
             else None
         | _ -> Some (ctyp t)
       in
-      mktype (loc_of_ctyp t) tl cl Ptype_abstract priv m
+      mktype (loc_of_ctyp t) tl cl Ptype_abstract m
 ;;
 
 let mkvalue_desc t p = {pval_type = ctyp t; pval_prim = p};;
@@ -355,12 +347,10 @@ let mkwithc =
       let (params, variance) = List.split (uv tpl) in
       let tk = Ptype_abstract in
       long_id_of_string_list loc (uv id),
-      (let pf = if uv pf then Private else Public in
-       Pwith_type
-         {ptype_params = List.map uv params; ptype_cstrs = [];
-          ptype_kind = tk; ptype_private = pf;
-          ptype_manifest = Some (ctyp ct); ptype_loc = mkloc loc;
-          ptype_variance = variance})
+      Pwith_type
+        {ptype_params = List.map uv params; ptype_cstrs = []; ptype_kind = tk;
+         ptype_manifest = Some (ctyp ct); ptype_loc = mkloc loc;
+         ptype_variance = variance}
   | WcMod (loc, id, m) ->
       long_id_of_string_list loc (uv id), Pwith_module (module_expr_long_id m)
 ;;
@@ -457,7 +447,7 @@ let rec patt =
   | PaInt (loc, _, _) -> error loc "special int not impl in patt"
   | PaFlo (loc, s) -> mkpat loc (Ppat_constant (Const_float (uv s)))
   | PaLab (loc, _, _) -> error loc "labeled pattern not allowed here"
-  | PaLaz (loc, p) -> mkpat loc (Ppat_lazy (patt p))
+  | PaLaz (loc, p) -> error loc "lazy patterns not in this version"
   | PaLid (loc, s) -> mkpat loc (Ppat_var (uv s))
   | PaOlb (loc, _, _) -> error loc "labeled pattern not allowed here"
   | PaOrp (loc, p1, p2) -> mkpat loc (Ppat_or (patt p1, patt p2))
@@ -468,8 +458,7 @@ let rec patt =
           let c2 = char_of_char_token loc2 (uv c2) in mkrangepat loc c1 c2
       | _ -> error loc "range pattern allowed only for characters"
       end
-  | PaRec (loc, lpl) ->
-      mkpat loc (Ppat_record (List.map mklabpat (uv lpl), Closed))
+  | PaRec (loc, lpl) -> mkpat loc (Ppat_record (List.map mklabpat (uv lpl)))
   | PaStr (loc, s) ->
       mkpat loc
         (Ppat_constant (Const_string (string_of_string_token loc (uv s))))
@@ -657,7 +646,22 @@ let bigarray_set loc e el v =
          v)
 ;;
 
-(* *)
+let expand_module_prefix m =
+  let rec loop rev_lel =
+    function
+      (p, e) :: rest ->
+        let p =
+          match p with
+            MLast.PaAcc (_, MLast.PaUid (_, _), _) -> p
+          | _ ->
+              let loc = MLast.loc_of_patt p in
+              MLast.PaAcc (loc, MLast.PaUid (loc, m), p)
+        in
+        loop ((p, e) :: rev_lel) rest
+    | [] -> List.rev rev_lel
+  in
+  loop
+;;
 
 let rec expr =
   function
@@ -775,12 +779,9 @@ let rec expr =
       mkexp loc (Pexp_ifthenelse (expr e1, expr e2, Some (expr e3)))
   | ExInt (loc, s, "") ->
       mkexp loc (Pexp_constant (Const_int (int_of_string (uv s))))
-  | ExInt (loc, s, "l") ->
-      mkexp loc (Pexp_constant (Const_int32 (Int32.of_string (uv s))))
-  | ExInt (loc, s, "L") ->
-      mkexp loc (Pexp_constant (Const_int64 (Int64.of_string (uv s))))
-  | ExInt (loc, s, "n") ->
-      mkexp loc (Pexp_constant (Const_nativeint (Nativeint.of_string (uv s))))
+  | ExInt (loc, s, "l") -> error loc "no int32 in this ocaml version"
+  | ExInt (loc, s, "L") -> error loc "no int64 in this ocaml version"
+  | ExInt (loc, s, "n") -> error loc "no nativeint in this ocaml version"
   | ExInt (loc, _, _) -> error loc "special int not implemented"
   | ExLab (loc, _, _) -> error loc "labeled expression not allowed here"
   | ExLaz (loc, e) -> mkexp loc (Pexp_lazy (expr e))
@@ -793,21 +794,19 @@ let rec expr =
       mkexp loc (Pexp_match (expr e, List.map mkpwe (uv pel)))
   | ExNew (loc, id) ->
       mkexp loc (Pexp_new (long_id_of_string_list loc (uv id)))
-  | ExObj (loc, po, cfl) ->
-      let p =
-        match uv po with
-          Some p -> p
-        | None -> PaAny loc
-      in
-      let cil = List.fold_right class_str_item (uv cfl) [] in
-      mkexp loc (Pexp_object (patt p, cil))
+  | ExObj (loc, po, cfl) -> error loc "no object in this ocaml version"
   | ExOlb (loc, _, _) -> error loc "labeled expression not allowed here"
   | ExOvr (loc, iel) -> mkexp loc (Pexp_override (List.map mkideexp (uv iel)))
   | ExRec (loc, lel, eo) ->
       let lel = uv lel in
       if lel = [] then error loc "empty record"
       else
-        let lel = lel in
+        let lel =
+          match lel with
+            ((PaAcc (_, PaUid (_, m), _) as p), e) :: rest ->
+              expand_module_prefix (uv m) [p, e] rest
+          | _ -> lel
+        in
         let eo =
           match eo with
             Some e -> Some (expr e)
@@ -903,8 +902,7 @@ and sig_item s l =
              mksig loc (Psig_module (uv n, module_type mt)) :: l)
           (uv ntl) l
       else
-        let ntl = List.map (fun (n, mt) -> uv n, module_type mt) (uv ntl) in
-        mksig loc (Psig_recmodule ntl) :: l
+        error loc "no recursive module in this ocaml version"
   | SgMty (loc, n, mt) ->
       let si =
         match mt with
@@ -961,20 +959,7 @@ and str_item s l =
              mkstr loc (Pstr_module (uv n, module_expr me)) :: l)
           (uv nel) l
       else
-        let nel =
-          List.map
-            (fun (n, me) ->
-               let (me, mt) =
-                 match me with
-                   MeTyc (_, me, mt) -> me, mt
-                 | _ ->
-                     error (MLast.loc_of_module_expr me)
-                       "module rec needs module types constraints"
-               in
-               uv n, module_type mt, module_expr me)
-            (uv nel)
-        in
-        mkstr loc (Pstr_recmodule nel) :: l
+        error loc "no recursive module in this ocaml version"
   | StMty (loc, n, mt) -> mkstr loc (Pstr_modtype (uv n, module_type mt)) :: l
   | StOpn (loc, id) ->
       mkstr loc (Pstr_open (long_id_of_string_list loc (uv id))) :: l
@@ -1015,7 +1000,7 @@ and class_sig_item c l =
   | CgMth (loc, s, pf, t) ->
       Pctf_meth (uv s, mkprivate (uv pf), ctyp (mkpolytype t), mkloc loc) :: l
   | CgVal (loc, s, b, t) ->
-      Pctf_val (uv s, mkmutable (uv b), Concrete, ctyp t, mkloc loc) :: l
+      Pctf_val (uv s, mkmutable (uv b), Some (ctyp t), mkloc loc) :: l
   | CgVir (loc, s, b, t) ->
       Pctf_virt (uv s, mkprivate (uv b), ctyp (mkpolytype t), mkloc loc) :: l
 and class_expr =
@@ -1054,14 +1039,14 @@ and class_str_item c l =
   match c with
     CrCtr (loc, t1, t2) -> Pcf_cstr (ctyp t1, ctyp t2, mkloc loc) :: l
   | CrDcl (loc, cl) -> List.fold_right class_str_item (uv cl) l
-  | CrInh (loc, ce, pb) -> Pcf_inher (Fresh, class_expr ce, uv pb) :: l
+  | CrInh (loc, ce, pb) -> Pcf_inher (class_expr ce, uv pb) :: l
   | CrIni (loc, e) -> Pcf_init (expr e) :: l
   | CrMth (loc, s, b, e, t) ->
       let t = option (fun t -> ctyp (mkpolytype t)) (uv t) in
       let e = mkexp loc (Pexp_poly (expr e, t)) in
-      Pcf_meth (uv s, mkprivate (uv b), Fresh, e, mkloc loc) :: l
+      Pcf_meth (uv s, mkprivate (uv b), e, mkloc loc) :: l
   | CrVal (loc, s, b, e) ->
-      Pcf_val (uv s, mkmutable (uv b), Fresh, expr e, mkloc loc) :: l
+      Pcf_val (uv s, mkmutable (uv b), expr e, mkloc loc) :: l
   | CrVir (loc, s, b, t) ->
       Pcf_virt (uv s, mkprivate (uv b), ctyp (mkpolytype t), mkloc loc) :: l
 ;;

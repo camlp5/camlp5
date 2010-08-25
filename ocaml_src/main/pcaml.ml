@@ -6,6 +6,7 @@
 (* #load "pa_extend.cmo" *)
 
 open Printf;;
+open Versdep;;
 
 let version = "5.16-exp";;
 let syntax_name = ref "";;
@@ -15,7 +16,7 @@ let gram =
     {Plexing.tok_func = (fun _ -> failwith "no loaded parsing module");
      Plexing.tok_using = (fun _ -> ()); Plexing.tok_removing = (fun _ -> ());
      Plexing.tok_match =
-       (fun _ -> raise (Match_failure ("pcaml.ml", 17, 25)));
+       (fun _ -> raise (Match_failure ("pcaml.ml", 18, 25)));
      Plexing.tok_text = (fun _ -> ""); Plexing.tok_comm = None}
 ;;
 

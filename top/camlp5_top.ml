@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: camlp5_top.ml,v 1.9 2010/08/20 08:11:43 deraugla Exp $ *)
+(* $Id: camlp5_top.ml,v 1.10 2010/08/25 11:29:01 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -7,6 +7,7 @@
 
 open Parsetree;
 open Lexing;
+open Versdep;
 
 value highlight_locations lb loc1 loc2 =
   let loc1 = (Ploc.first_pos loc1, Ploc.last_pos loc1) in

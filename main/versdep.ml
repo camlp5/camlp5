@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: ast2pt.ml,v 1.75 2010/08/20 21:20:09 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.1 2010/08/25 11:28:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -1102,4 +1102,15 @@ value phrase =
   fun
   [ StDir loc d dp -> Ptop_dir (uv d) (directive loc (uv dp))
   | si -> Ptop_def (str_item si []) ]
+;
+
+module Ast2pt =
+  struct
+    value interf = interf;
+    value implem = implem;
+    value phrase = phrase;
+    value mkloc = mkloc;
+    value fast = fast;
+    value no_constructors_arity = no_constructors_arity;
+  end
 ;

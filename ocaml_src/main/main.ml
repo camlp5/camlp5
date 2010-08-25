@@ -5,6 +5,7 @@
 (* #load "q_MLast.cmo" *)
 
 open Printf;;
+open Versdep;;
 
 let string_of_loc fname line bp ep =
   match Sys.os_type with

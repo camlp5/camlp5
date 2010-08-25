@@ -14,9 +14,9 @@ pa_r.cmo: ../main/mLast.cmi ../main/pcaml.cmi
 pa_r.cmx: ../main/mLast.cmi ../main/pcaml.cmx
 pa_rp.cmo: ../main/exparser.cmi ../main/pcaml.cmi
 pa_rp.cmx: ../main/exparser.cmx ../main/pcaml.cmx
-pr_dump.cmo: ../main/ast2pt.cmi ../main/pcaml.cmi \
+pr_dump.cmo: ../main/pcaml.cmi ../main/versdep.cmi \
     $(OTOP)/utils/pconfig.cmi
-pr_dump.cmx: ../main/ast2pt.cmx ../main/pcaml.cmx \
+pr_dump.cmx: ../main/pcaml.cmx ../main/versdep.cmx \
     $(OTOP)/utils/pconfig.cmx
 q_MLast.cmo: ../main/mLast.cmi ../main/pcaml.cmi ../main/quotation.cmi
 q_MLast.cmx: ../main/mLast.cmi ../main/pcaml.cmx ../main/quotation.cmx
