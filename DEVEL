@@ -33,8 +33,10 @@ COMPATIBILITY
    are up-to-date (e.g. if this is the current ocaml developpement), do:
        make compare_stolen OCAML_SRC=<path-to-ocaml-sources>
 
-     The compatibility is done also with the file 'main/versdep.ml',
-   which is the module converting camlp5 syntax tree into ocaml syntax tree.
+     The compatibility is also done with the file 'main/versdep.ml',
+   which is a module containing miscellaneous features depending to
+   the version of OCaml, in particular the conversion from Camlp5
+   syntax tree into OCaml syntax tree.
 
      In the directory 'ocaml_src' which contains the pure OCaml sources
    of the Camlp5 core (see chapter TREE STRUCTURE below), there are as

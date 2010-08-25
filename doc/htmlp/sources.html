@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: sources.html,v 1.17 2010/08/25 11:39:34 deraugla Exp $ -->
+  <!-- $Id: sources.html,v 1.18 2010/08/25 15:37:27 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>Camlp5 sources</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -59,12 +59,12 @@
 <h2>Compatibility</h2>
 
 <p>This distribution of Camlp5 is compatible with several versions of
-  OCaml. The definition of OCaml syntax trees
-  may change from OCaml version to version, which can be a problem.  Since OCaml
-  does not install the sources nor the compiled versions of its syntax
-  tree, a copy of the necessary source files, borrowed from the source
-  of the OCaml compiler is in the directory 'ocaml_stuff',
-  in subdirectories with the OCaml version number.</p>
+  OCaml. The definition of OCaml syntax trees may change from OCaml
+  version to version, which can be a problem.  Since OCaml does not
+  install the sources nor the compiled versions of its syntax tree, a
+  copy of the necessary source files, borrowed from the source of the
+  OCaml compiler is in the directory 'ocaml_stuff', in subdirectories
+  with the OCaml version number.</p>
 
 <p>If the present distribution of Camlp5 is not compatible with the
   version of OCaml you have (the command 'configure' tells you), it
@@ -88,8 +88,9 @@
 </pre>
 
 <p>The compatibility is also done with the file 'main/versdep.ml',
-  which is the module converting Camlp5 syntax tree into OCaml syntax
-  tree.</p>
+  which is a module containing miscellaneous features depending to
+  the version of OCaml, in particular the conversion from Camlp5
+  syntax tree into OCaml syntax tree.</p>
 
 <p>In the directory 'ocaml_src' which contains the pure OCaml sources
   of the Camlp5 core (see chapter TREE STRUCTURE below), there are as
@@ -110,8 +111,8 @@
   from the close version.</p>
 
 <p>Later, the same file 'main/versdep.ml' in Camlp5 syntax may have
-  similar compilation problems. There is only a single version of this file, thanks
-  to IFDEF constructs used here or there.</p>
+  similar compilation problems. There is only a single version of this file,
+  thanks to IFDEF constructs used here or there.</p>
 
 <p>While compiling with some specific version of OCaml, this file is
   compiled with 'OCAML_vers' defined where 'vers' is the version number
