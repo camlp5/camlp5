@@ -3,7 +3,68 @@
 
 open Printf;;
 
-let action_arg = Versdep.action_arg;;
+let action_arg s sl =
+  function
+    Arg.Unit f -> if s = "" then begin f (); Some sl end else None
+  | Arg.Set r -> if s = "" then begin r := true; Some sl end else None
+  | Arg.Clear r -> if s = "" then begin r := false; Some sl end else None
+  | Arg.Rest f -> List.iter f (s :: sl); Some []
+  | Arg.String f ->
+      if s = "" then
+        match sl with
+          s :: sl -> f s; Some sl
+        | [] -> None
+      else begin f s; Some sl end
+  | Arg.Int f ->
+      if s = "" then
+        match sl with
+          s :: sl ->
+            begin try f (int_of_string s); Some sl with
+              Failure "int_of_string" -> None
+            end
+        | [] -> None
+      else
+        begin try f (int_of_string s); Some sl with
+          Failure "int_of_string" -> None
+        end
+  | Arg.Float f ->
+      if s = "" then
+        match sl with
+          s :: sl -> f (float_of_string s); Some sl
+        | [] -> None
+      else begin f (float_of_string s); Some sl end
+  | Arg.Set_string r ->
+      if s = "" then
+        match sl with
+          s :: sl -> r := s; Some sl
+        | [] -> None
+      else begin r := s; Some sl end
+  | Arg.Set_int r ->
+      if s = "" then
+        match sl with
+          s :: sl ->
+            begin try r := int_of_string s; Some sl with
+              Failure "int_of_string" -> None
+            end
+        | [] -> None
+      else
+        begin try r := int_of_string s; Some sl with
+          Failure "int_of_string" -> None
+        end
+  | Arg.Set_float r ->
+      if s = "" then
+        match sl with
+          s :: sl -> r := float_of_string s; Some sl
+        | [] -> None
+      else begin r := float_of_string s; Some sl end
+  | Arg.Symbol (syms, f) ->
+      begin match if s = "" then sl else s :: sl with
+        s :: sl when List.mem s syms -> f s; Some sl
+      | _ -> None
+      end
+  | Arg.Tuple _ -> failwith "Arg.Tuple not implemented"
+  | Arg.Bool _ -> failwith "Arg.Bool not implemented"
+;;
 
 let common_start s1 s2 =
   let rec loop i =
@@ -79,12 +140,12 @@ let make_symlist l =
 let print_usage_list l =
   List.iter
     (fun (key, spec, doc) ->
-       match Versdep.arg_symbol spec with
-         Some symbs ->
+       match spec with
+         Arg.Symbol (symbs, _) ->
            let s = make_symlist symbs in
            let synt = key ^ " " ^ s in
            eprintf "  %s %s\n" synt (align_doc synt doc)
-       | None -> eprintf "  %s %s\n" key (align_doc key doc))
+       | _ -> eprintf "  %s %s\n" key (align_doc key doc))
     l
 ;;
 

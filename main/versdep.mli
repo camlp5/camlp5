@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: versdep.mli,v 1.2 2010/08/25 15:31:51 deraugla Exp $ *)
+(* $Id: versdep.mli,v 1.3 2010/08/25 20:50:51 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 module Ast2pt :
@@ -23,6 +23,3 @@ module Ast2pt :
            revised syntax). Default: False. *)
    end
 ;
-
-value action_arg : string -> list string -> Arg.spec -> option (list string);
-value arg_symbol : Arg.spec -> option (list string);

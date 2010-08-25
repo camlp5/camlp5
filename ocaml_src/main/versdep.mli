@@ -12,6 +12,3 @@ module Ast2pt :
     val no_constructors_arity : bool ref;;
   end
 ;;
-
-val action_arg : string -> string list -> Arg.spec -> string list option;;
-val arg_symbol : Arg.spec -> string list option;;
