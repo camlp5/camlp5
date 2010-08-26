@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.4 2010/08/25 20:50:51 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.5 2010/08/26 19:08:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -10,7 +10,13 @@ open Longident;
 open Asttypes;
 
 IFDEF
-  OCAML_3_07 OR
+  OCAML_3_02 OR OCAML_3_04 OR OCAML_3_05 OR OCAML_3_06
+THEN
+  DEFINE OCAML_3_06_OR_BEFORE
+END;
+
+IFDEF
+  OCAML_3_06_OR_BEFORE OR OCAML_3_07 OR
   OCAML_3_08_0 OR OCAML_3_08_1 OR OCAML_3_08_2 OR OCAML_3_08_3 OR OCAML_3_08_4
 THEN
   DEFINE OCAML_3_08_OR_BEFORE
@@ -84,14 +90,19 @@ value glob_fname = ref "";
 value mkloc loc =
   let bp = Ploc.first_pos loc in
   let ep = Ploc.last_pos loc in
-  let lnum = Ploc.line_nb loc in
-  let bolp = Ploc.bol_pos loc in
-  let loc_at n =
-    {Lexing.pos_fname = if lnum = -1 then "" else glob_fname.val;
-     Lexing.pos_lnum = lnum; Lexing.pos_bol = bolp; Lexing.pos_cnum = n}
-  in
-  {Location.loc_start = loc_at bp; Location.loc_end = loc_at ep;
-   Location.loc_ghost = bp = 0 && ep = 0}
+  IFDEF OCAML_3_06_OR_BEFORE THEN
+    {Location.loc_start = bp; Location.loc_end = ep;
+     Location.loc_ghost = bp = 0 && ep = 0}
+  ELSE
+    let lnum = Ploc.line_nb loc in
+    let bolp = Ploc.bol_pos loc in
+    let loc_at n =
+      {Lexing.pos_fname = if lnum = -1 then "" else glob_fname.val;
+       Lexing.pos_lnum = lnum; Lexing.pos_bol = bolp; Lexing.pos_cnum = n}
+    in
+    {Location.loc_start = loc_at bp; Location.loc_end = loc_at ep;
+     Location.loc_ghost = bp = 0 && ep = 0}
+  END
 ;
 
 value mktyp loc d = {ptyp_desc = d; ptyp_loc = mkloc loc};
@@ -284,34 +295,44 @@ value type_decl tl priv cl =
       IFDEF AFTER_OCAML_3_11 THEN
         mktype loc tl cl (Ptype_record (List.map mktrecord ltl)) priv
           (Some (ctyp t))
+      ELSE IFDEF OCAML_3_06_OR_BEFORE THEN
+        mktype loc tl cl (Ptype_record (List.map mktrecord ltl))
+          (Some (ctyp t))
       ELSE
         mktype loc tl cl (Ptype_record (List.map mktrecord ltl) priv)
           (Some (ctyp t))
-      END
+      END END
   | TyMan loc t <:ctyp< [ $list:ctl$ ] >> ->
       IFDEF AFTER_OCAML_3_11 THEN
         mktype loc tl cl (Ptype_variant (List.map mkvariant ctl)) priv
           (Some (ctyp t))
+      ELSE IFDEF OCAML_3_06_OR_BEFORE THEN
+        mktype loc tl cl (Ptype_variant (List.map mkvariant ctl))
+          (Some (ctyp t))
       ELSE
         mktype loc tl cl (Ptype_variant (List.map mkvariant ctl) priv)
           (Some (ctyp t))
-      END
+      END END
   | TyRec loc ltl ->
       IFDEF AFTER_OCAML_3_11 THEN
         mktype loc tl cl (Ptype_record (List.map mktrecord (uv ltl))) priv
           None
+      ELSE IFDEF OCAML_3_06_OR_BEFORE THEN
+        mktype loc tl cl (Ptype_record (List.map mktrecord (uv ltl))) None
       ELSE
         mktype loc tl cl (Ptype_record (List.map mktrecord (uv ltl)) priv)
           None
-      END
+      END END
   | TySum loc ctl ->
       IFDEF AFTER_OCAML_3_11 THEN
         mktype loc tl cl (Ptype_variant (List.map mkvariant (uv ctl))) priv
           None
+      ELSE IFDEF OCAML_3_06_OR_BEFORE THEN
+        mktype loc tl cl (Ptype_variant (List.map mkvariant (uv ctl))) None
       ELSE
         mktype loc tl cl (Ptype_variant (List.map mkvariant (uv ctl)) priv)
           None
-      END
+      END END
   | t ->
       let m =
         match t with
@@ -606,7 +627,7 @@ value bigarray_set loc e el v =
   | _ -> <:expr< Bigarray.Genarray.set $e$ [| $list:el$ |] $v$ >> ]
 ;
 
-IFDEF OCAML_3_07 THEN
+IFDEF OCAML_3_06_OR_BEFORE OR OCAML_3_07 THEN
   value expand_module_prefix m =
     loop where rec loop rev_lel =
       fun
@@ -733,11 +754,24 @@ value rec expr =
   | ExInt loc s "" ->
       mkexp loc (Pexp_constant (Const_int (int_of_string (uv s))))
   | ExInt loc s "l" ->
-      mkexp loc (Pexp_constant (Const_int32 (Int32.of_string (uv s))))
+      IFDEF OCAML_3_06_OR_BEFORE THEN
+        error loc "no int32 in this ocaml version"
+      ELSE
+        mkexp loc (Pexp_constant (Const_int32 (Int32.of_string (uv s))))
+      END
   | ExInt loc s "L" ->
-      mkexp loc (Pexp_constant (Const_int64 (Int64.of_string (uv s))))
+      IFDEF OCAML_3_06_OR_BEFORE THEN
+        error loc "no int64 in this ocaml version"
+      ELSE
+        mkexp loc (Pexp_constant (Const_int64 (Int64.of_string (uv s))))
+      END
   | ExInt loc s "n" ->
-      mkexp loc (Pexp_constant (Const_nativeint (Nativeint.of_string (uv s))))
+      IFDEF OCAML_3_06_OR_BEFORE THEN
+        error loc "no nativeint in this ocaml version"
+      ELSE
+        mkexp loc
+          (Pexp_constant (Const_nativeint (Nativeint.of_string (uv s))))
+      END
   | ExInt loc _ _ -> error loc "special int not implemented"
   | ExLab loc _ _ -> error loc "labeled expression not allowed here"
   | ExLaz loc e -> mkexp loc (Pexp_lazy (expr e))
@@ -750,7 +784,7 @@ value rec expr =
       mkexp loc (Pexp_match (expr e) (List.map mkpwe (uv pel)))
   | ExNew loc id -> mkexp loc (Pexp_new (long_id_of_string_list loc (uv id)))
   | ExObj loc po cfl ->
-      IFDEF OCAML_3_07 THEN
+      IFDEF OCAML_3_06_OR_BEFORE OR OCAML_3_07 THEN
         error loc "no object in this ocaml version"
       ELSE
         let p =
@@ -768,7 +802,7 @@ value rec expr =
       if lel = [] then error loc "empty record"
       else
         let lel =
-          IFDEF OCAML_3_07 THEN
+          IFDEF OCAML_3_06_OR_BEFORE OR OCAML_3_07 THEN
             match lel with
             [ [((PaAcc _ (PaUid _ m) _ as p), e) :: rest] ->
                 expand_module_prefix (uv m) [(p, e)] rest
@@ -870,8 +904,14 @@ and sig_item s l =
              [mksig loc (Psig_module (uv n) (module_type mt)) :: l])
           (uv ntl) l
       else
-        let ntl = List.map (fun (n, mt) -> (uv n, module_type mt)) (uv ntl) in
-        [mksig loc (Psig_recmodule ntl) :: l]
+        IFDEF OCAML_3_06_OR_BEFORE THEN
+          error loc "no recursive module in this ocaml version"
+        ELSE
+          let ntl =
+            List.map (fun (n, mt) -> (uv n, module_type mt)) (uv ntl)
+          in
+          [mksig loc (Psig_recmodule ntl) :: l]
+        END
   | SgMty loc n mt ->
       let si =
         match mt with
@@ -935,20 +975,24 @@ and str_item s l =
              [mkstr loc (Pstr_module (uv n) (module_expr me)) :: l])
           (uv nel) l
       else
-        let nel =
-          List.map
-            (fun (n, me) ->
-               let (me, mt) =
-                 match me with
-                 [ MeTyc _ me mt -> (me, mt)
-                 | _ ->
-                     error (MLast.loc_of_module_expr me)
-                       "module rec needs module types constraints" ]
-               in
-               (uv n, module_type mt, module_expr me))
-            (uv nel)
-        in
-        [mkstr loc (Pstr_recmodule nel) :: l]
+        IFDEF OCAML_3_06_OR_BEFORE THEN
+          error loc "no recursive module in this ocaml version"
+        ELSE
+          let nel =
+            List.map
+              (fun (n, me) ->
+                 let (me, mt) =
+                   match me with
+                   [ MeTyc _ me mt -> (me, mt)
+                   | _ ->
+                       error (MLast.loc_of_module_expr me)
+                         "module rec needs module types constraints" ]
+                 in
+                 (uv n, module_type mt, module_expr me))
+              (uv nel)
+          in
+          [mkstr loc (Pstr_recmodule nel) :: l]
+        END
   | StMty loc n mt -> [mkstr loc (Pstr_modtype (uv n) (module_type mt)) :: l]
   | StOpn loc id ->
       [mkstr loc (Pstr_open (long_id_of_string_list loc (uv id))) :: l]
@@ -1113,4 +1157,83 @@ module Ast2pt =
     value fast = fast;
     value no_constructors_arity = no_constructors_arity;
   end
+;
+
+value action_arg s sl =
+  fun
+  [ Arg.Unit f -> if s = "" then do { f (); Some sl } else None
+  | Arg.Set r -> if s = "" then do { r.val := True; Some sl } else None
+  | Arg.Clear r -> if s = "" then do { r.val := False; Some sl } else None
+  | Arg.Rest f -> do { List.iter f [s :: sl]; Some [] }
+  | Arg.String f ->
+      if s = "" then
+        match sl with
+        [ [s :: sl] -> do { f s; Some sl }
+        | [] -> None ]
+      else do { f s; Some sl }
+  | Arg.Int f ->
+      if s = "" then
+        match sl with
+        [ [s :: sl] ->
+            try do { f (int_of_string s); Some sl } with
+            [ Failure "int_of_string" -> None ]
+        | [] -> None ]
+      else
+        try do { f (int_of_string s); Some sl } with
+        [ Failure "int_of_string" -> None ]
+  | Arg.Float f ->
+      if s = "" then
+        match sl with
+        [ [s :: sl] -> do { f (float_of_string s); Some sl }
+        | [] -> None ]
+      else do { f (float_of_string s); Some sl }
+  | IFNDEF OCAML_3_06_OR_BEFORE THEN
+      Arg.Set_string r ->
+          if s = "" then
+            match sl with
+            [ [s :: sl] -> do { r.val := s; Some sl }
+            | [] -> None ]
+          else do { r.val := s; Some sl }
+      END
+  | IFNDEF OCAML_3_06_OR_BEFORE THEN
+      Arg.Set_int r ->
+        if s = "" then
+          match sl with
+          [ [s :: sl] ->
+              try do { r.val := int_of_string s; Some sl } with
+              [ Failure "int_of_string" -> None ]
+          | [] -> None ]
+        else
+          try do { r.val := int_of_string s; Some sl } with
+          [ Failure "int_of_string" -> None ]
+    END
+  | IFNDEF OCAML_3_06_OR_BEFORE THEN
+      Arg.Set_float r ->
+        if s = "" then
+          match sl with
+          [ [s :: sl] -> do { r.val := float_of_string s; Some sl }
+          | [] -> None ]
+        else do { r.val := float_of_string s; Some sl }
+    END
+  | IFNDEF OCAML_3_06_OR_BEFORE THEN
+      Arg.Symbol syms f ->
+        match if s = "" then sl else [s :: sl] with
+        [ [s :: sl] when List.mem s syms -> do { f s; Some sl }
+        | _ -> None ]
+    END
+  | IFNDEF OCAML_3_06_OR_BEFORE THEN
+      Arg.Tuple _ -> failwith "Arg.Tuple not implemented"
+    END
+  | IFNDEF OCAML_3_06_OR_BEFORE THEN
+      Arg.Bool _ -> failwith "Arg.Bool not implemented"
+    END ]
+;
+
+value arg_symbol =
+  IFDEF OCAML_3_06_OR_BEFORE THEN fun _ -> None
+  ELSE
+    fun
+    [ Arg.Symbol symbs _ -> Some symbs
+    | _ -> None ]
+  END
 ;

@@ -8,12 +8,14 @@ while test "" != "$1"; do
 	shift
 done
 
-CP="ln -sf"
-CP=cp
 if test "`basename $FILE .mli`.mli" = "$FILE"; then
-  echo $CP $FILE `basename $FILE .mli`.ppi
-  $CP $FILE `basename $FILE .mli`.ppi
+  OFILE=`basename $FILE .mli`.ppi
+  echo "# 1 \"$FILE\"" > $OFILE
+  echo cat $FILE ">>" $OFILE
+  cat $FILE >> $OFILE
 else
-  echo $CP $FILE `basename $FILE .ml`.ppo
-  $CP $FILE `basename $FILE .ml`.ppo
+  OFILE=`basename $FILE .ml`.ppo
+  echo "# 1 \"$FILE\"" > $OFILE
+  echo cat $FILE ">>" $OFILE
+  cat $FILE >> $OFILE
 fi

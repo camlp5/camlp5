@@ -1,8 +1,34 @@
 (* camlp5r *)
-(* $Id: fstream.ml,v 1.12 2010/02/19 09:06:37 deraugla Exp $ *)
+(* $Id: fstream.ml,v 1.13 2010/08/26 19:08:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
-type t 'a = { count : int; data : Lazy.t (data 'a) }
+type mlazy_c 'a =
+  [ Lfun of unit -> 'a
+  | Lval of 'a ]
+;
+type mlazy 'a =
+  [ Cval of 'a
+  | Clazy of ref (mlazy_c 'a) ]
+;
+value mlazy f = Clazy (ref (Lfun f));
+value mlazy_force l =
+  match l with
+  [ Cval v -> v
+  | Clazy l ->
+      match l.val with
+      [ Lfun f -> do { let x = f () in l.val := Lval x; x }
+      | Lval v -> v ] ]
+;
+value mlazy_is_val l =
+  match l with
+  [ Cval _ -> True
+  | Clazy l ->
+      match l.val with
+      [ Lval _ -> True
+      | Lfun _ -> False ] ]
+;
+
+type t 'a = { count : int; data : mlazy (data 'a) }
 and data 'a =
   [ Nil
   | Cons of 'a and t 'a
@@ -13,20 +39,22 @@ value from f =
   loop 0 where rec loop i =
     {count = 0;
      data =
-       lazy
-         (match f i with
-          [ Some x -> Cons x (loop (i + 1))
-          | None -> Nil ])}
+       mlazy
+         (fun () ->
+            match f i with
+            [ Some x -> Cons x (loop (i + 1))
+            | None -> Nil ])}
 ;
 
 value rec next s =
   let count = s.count + 1 in
-  match Lazy.force s.data with
+  match mlazy_force s.data with
   [ Nil -> None
   | Cons a s -> Some (a, {count = count; data = s.data})
   | App s1 s2 ->
       match next s1 with
-      [ Some (a, s1) -> Some (a, {count = count; data = lazy (App s1 s2)})
+      [ Some (a, s1) ->
+          Some (a, {count = count; data = mlazy (fun () -> App s1 s2)})
       | None ->
           match next s2 with
           [ Some (a, s2) -> Some (a, {count = count; data = s2.data})
@@ -39,10 +67,10 @@ value empty s =
   | None -> Some ((), s) ]
 ;
 
-value nil = {count = 0; data = lazy Nil};
+value nil = {count = 0; data = Cval Nil};
 value cons a s = Cons a s;
 value app s1 s2 = App s1 s2;
-value flazy f = {count = 0; data = Lazy.lazy_from_fun f};
+value flazy f = {count = 0; data = mlazy f};
 
 value of_list l =
   List.fold_right (fun x s -> flazy (fun () -> cons x s)) l nil
@@ -69,8 +97,8 @@ value count s = s.count;
 
 value count_unfrozen s =
   loop 0 s where rec loop cnt s =
-    if Lazy.lazy_is_val s.data then
-      match Lazy.force s.data with
+    if mlazy_is_val s.data then
+      match mlazy_force s.data with
       [ Cons _ s -> loop (cnt + 1) s
       | _ -> cnt ]
     else cnt

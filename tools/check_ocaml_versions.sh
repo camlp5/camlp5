@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 1.11 2010/08/26 09:34:21 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 1.12 2010/08/26 19:08:33 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
@@ -19,7 +19,7 @@ for i in $dirs; do
   echo =====================
   echo date: $(date) version: $i
   DOOPT=$DEFDOOPT
-  if [ "$i" = "3.02" ]; then DOOPT=0; fi
+  if [ "$i" = "3.04" ]; then DOOPT=0; fi
   echo "+++++ cd $OCAMLSDIR/$i"
   cd $OCAMLSDIR/$i
   sed -e 's/ camlp4o[a-z]* / /g' Makefile | grep -v partial-install.sh |

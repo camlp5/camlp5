@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.23 2010/08/25 11:28:59 deraugla Exp $
+# $Id: Makefile,v 1.24 2010/08/26 19:08:32 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -8,7 +8,7 @@ SHELL=/bin/sh
 INCLUDES=-I ../odyl -I $(TOP)/boot -I $(OTOP)/utils -I $(OTOP)/parsing
 OCAMLCFLAGS=-warn-error A $(INCLUDES)
 LINKFLAGS=$(INCLUDES)
-CAMLP5_OBJS=$(TOP)/boot/ploc.cmo $(TOP)/boot/plexing.cmo $(TOP)/boot/plexer.cmo $(TOP)/boot/fstream.cmo $(TOP)/boot/gramext.cmo $(TOP)/boot/grammar.cmo $(TOP)/boot/diff.cmo $(TOP)/boot/extfold.cmo $(TOP)/boot/extfun.cmo $(TOP)/boot/pretty.cmo $(TOP)/boot/pprintf.cmo $(TOP)/boot/eprinter.cmo $(OTOP)/utils/pconfig.cmo quotation.cmo versdep.cmo reloc.cmo pcaml.cmo exparser.cmo prtools.cmo parserify.cmo argl.cmo $(TOP)/boot/stdpp.cmo $(TOP)/boot/token.cmo main.cmo
+CAMLP5_OBJS=$(TOP)/boot/ploc.cmo $(TOP)/boot/plexing.cmo $(TOP)/boot/plexer.cmo $(TOP)/boot/fstream.cmo $(TOP)/boot/gramext.cmo $(TOP)/boot/grammar.cmo $(TOP)/boot/diff.cmo $(TOP)/boot/extfold.cmo $(TOP)/boot/extfun.cmo $(TOP)/boot/pretty.cmo $(TOP)/boot/pprintf.cmo $(TOP)/boot/eprinter.cmo $(OTOP)/utils/pconfig.cmo quotation.cmo versdep.cmo reloc.cmo pcaml.cmo exparser.cmo prtools.cmo parserify.cmo argl.cmo $(TOP)/boot/stdpp.cmo $(TOP)/boot/token.cmo crc.cmo main.cmo
 CAMLP5_XOBJS=../lib/ploc.cmx ../lib/plexing.cmx ../lib/plexer.cmx ../lib/fstream.cmx ../lib/gramext.cmx ../lib/grammar.cmx ../lib/diff.cmx ../lib/extfold.cmx ../lib/extfun.cmx ../lib/pretty.cmx ../lib/pprintf.cmx ../lib/eprinter.cmx $(OTOP)/utils/pconfig.cmx quotation.cmx versdep.cmx reloc.cmx pcaml.cmx exparser.cmx prtools.cmx parserify.cmx argl.cmx ../lib/stdpp.cmx ../lib/token.cmx main.cmx
 OBJS=../odyl/odyl.cma camlp5.cma
 CAMLP5M=
@@ -32,9 +32,15 @@ camlp5.cma: $(CAMLP5_OBJS)
 camlp5.cmxa: $(CAMLP5_XOBJS)
 	$(OCAMLOPT) $(LINKFLAGS) $(CAMLP5_XOBJS) -a -o camlp5.cmxa
 
+crc.cmo: crc.tmp
+	$(OCAMLC) -c -impl $<
+
+crc.tmp:
+	OTOP=$(OTOP) OVERSION=$(OVERSION) OLIBDIR=$(OLIBDIR) ../tools/mkcrc.sh
+
 clean::
 	rm -f *.cm* *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak *.out *.opt
-	rm -f $(CAMLP5)
+	rm -f $(CAMLP5) crc.tmp
 
 depend:
 	cp .depend .depend.bak
