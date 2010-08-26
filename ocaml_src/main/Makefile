@@ -32,11 +32,9 @@ camlp5.cma: $(CAMLP5_OBJS)
 camlp5.cmxa: $(CAMLP5_XOBJS)
 	$(OCAMLOPT) $(LINKFLAGS) $(CAMLP5_XOBJS) -a -o camlp5.cmxa
 
-crc.cmo: crc.tmp
-	$(OCAMLC) -c -impl $<
-
-crc.tmp:
+crc.cmo:
 	OTOP=$(OTOP) OVERSION=$(OVERSION) OLIBDIR=$(OLIBDIR) ../tools/mkcrc.sh
+	$(OCAMLC) -c -impl crc.tmp
 
 clean::
 	rm -f *.cm* *.pp[io] *.[ao] *.obj *.lib *.bak .*.bak *.out *.opt
