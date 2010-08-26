@@ -104,7 +104,7 @@ let rec backslash s i =
     | 't' -> '\t', i + 1
     | 'b' -> '\b', i + 1
     | '\\' -> '\\', i + 1
-    | '\"' -> '\"', i + 1
+    | '"' -> '"', i + 1
     | '\'' -> '\'', i + 1
     | '0'..'9' as c -> backslash1 (valch c) s (i + 1)
     | 'x' -> backslash1h s (i + 1)
@@ -172,7 +172,7 @@ let eval_string loc s =
         if s.[i] = '\\' then
           let i = i + 1 in
           if i = String.length s then failwith "invalid string token"
-          else if s.[i] = '\"' then store len '\"', i + 1
+          else if s.[i] = '"' then store len '"', i + 1
           else
             match s.[i] with
               '\010' -> len, skip_indent s (i + 1)

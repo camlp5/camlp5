@@ -107,7 +107,7 @@ let rise_string ind sh b s =
            hello, world"
      what "saves" one line.
    *)
-  if String.length s > ind + sh && s.[ind+sh] = '\"' then
+  if String.length s > ind + sh && s.[ind+sh] = '"' then
     match try Some (String.index s '\n') with Not_found -> None with
       Some i ->
         let t = String.sub s (ind + sh) (String.length s - ind - sh) in
@@ -373,13 +373,13 @@ let rev_extract_comment strm =
         find_star_bef_rparen_in_comm (Buff.store len ')') strm__
     | Some '*' ->
         Stream.junk strm__; find_lparen_aft_star (Buff.store len '*') strm__
-    | Some '\"' ->
-        Stream.junk strm__; insert_string (Buff.store len '\"') strm__
+    | Some '"' ->
+        Stream.junk strm__; insert_string (Buff.store len '"') strm__
     | Some x -> Stream.junk strm__; insert (Buff.store len x) strm__
     | _ -> len
   and insert_string len (strm__ : _ Stream.t) =
     match Stream.peek strm__ with
-      Some '\"' -> Stream.junk strm__; insert (Buff.store len '\"') strm__
+      Some '"' -> Stream.junk strm__; insert (Buff.store len '"') strm__
     | Some x -> Stream.junk strm__; insert_string (Buff.store len x) strm__
     | _ -> len
   and find_star_bef_rparen_in_comm len (strm__ : _ Stream.t) =

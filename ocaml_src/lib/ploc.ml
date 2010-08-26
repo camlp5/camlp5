@@ -57,7 +57,7 @@ let from_file fname loc =
       in
       let rec check_string str n col (strm__ : _ Stream.t) =
         match Stream.peek strm__ with
-          Some '\"' ->
+          Some '"' ->
             Stream.junk strm__;
             let col =
               try spaces (col + 1) strm__ with
@@ -71,7 +71,7 @@ let from_file fname loc =
       in
       let check_quote n col (strm__ : _ Stream.t) =
         match Stream.peek strm__ with
-          Some '\"' -> Stream.junk strm__; check_string "" n (col + 1) strm__
+          Some '"' -> Stream.junk strm__; check_string "" n (col + 1) strm__
         | _ -> not_a_line_dir col strm__
       in
       let rec check_num n col (strm__ : _ Stream.t) =

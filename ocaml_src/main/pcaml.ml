@@ -321,9 +321,9 @@ let print_exn =
               Format.print_int (Obj.magic arg : int)
             else if Obj.tag arg = Obj.tag (Obj.repr "a") then
               begin
-                Format.print_char '\"';
+                Format.print_char '"';
                 Format.print_string (Obj.magic arg : string);
-                Format.print_char '\"'
+                Format.print_char '"'
               end
             else Format.print_char '_'
           done;

@@ -650,7 +650,7 @@ and linedir_digits n s =
 and linedir_quote n s =
   match stream_peek_nth n s with
     Some (' ' | '\t') -> linedir_quote (n + 1) s
-  | Some '\"' -> true
+  | Some '"' -> true
   | _ -> false
 ;;
 

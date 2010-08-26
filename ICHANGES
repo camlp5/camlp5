@@ -4,6 +4,7 @@ Internal, very small, undocumented, or invisible changes
 Camlp5 Version 5.16:
 --------------------
 
+* [26 Aug 10] Printer pr_o.cmo now prints '"' instead of '\"'.
 * [25 Aug 10] Changed module Ast2pt into Versdep.Ast2pt.
 * [24 Aug 10] Added Makefile.withnew in directory etc for compilations
   that must be done with the new created camlp5.

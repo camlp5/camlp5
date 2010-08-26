@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.202 2010/08/20 21:20:09 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.203 2010/08/26 09:22:08 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -56,7 +56,6 @@ value has_special_chars s =
 value ocaml_char =
   fun
   [ "'" -> "\\'"
-  | "\"" -> "\\\""
   | "\\" -> "\\\\"
   | c -> c ]
 ;
