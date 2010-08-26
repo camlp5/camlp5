@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_lexer.ml,v 1.6 2010/08/18 16:26:26 deraugla Exp $ *)
+(* $Id: pa_lexer.ml,v 1.7 2010/08/26 14:32:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -133,26 +133,12 @@ value make_any loc norec sl cl errk =
   ([s :: sl], cl)
 ;
 
-value next_char s i =
-  if i = String.length s then invalid_arg "next_char"
-  else if s.[i] = '\\' then
-    if i + 1 = String.length s then ("\\", i + 1)
-    else
-      match s.[i+1] with
-      [ '0'..'9' ->
-          if i + 3 < String.length s then
-            (Printf.sprintf "\\%c%c%c" s.[i+1] s.[i+2] s.[i+3], i + 4)
-          else ("\\", i + 1)
-      | c -> ("\\" ^ String.make 1 c, i + 2) ]
-  else (String.make 1 s.[i], i + 1)
-;
-
 value fold_string_chars f s a =
   loop 0 a where rec loop i a =
     if i = String.length s then a
     else
-      let (c, i) = next_char s i in
-      loop i (f c a)
+      let c = Char.escaped s.[i] in
+      loop (i + 1) (f c a)
 ;
 
 value make_char loc c norec sl cl errk =
@@ -162,12 +148,13 @@ value make_char loc c norec sl cl errk =
 ;
 
 value make_chars loc s norec sl cl errk =
+  let s = Plexing.eval_string loc s in
   loop 0 sl cl where rec loop i sl cl =
     if i = String.length s then (sl, cl)
     else
-      let (c, i) = next_char s i in
+      let c = Char.escaped s.[i] in
       let (sl, cl) = make_char loc c norec sl cl errk in
-      loop i sl cl
+      loop (i + 1) sl cl
 ;
 
 value make_range loc c1 c2 norec sl cl errk =
@@ -217,11 +204,12 @@ EXTEND
   ;
   expr: LEVEL "simple"
     [ [ "$"; LIDENT "add"; s = STRING ->
+          let s = Plexing.eval_string loc s in
           loop (accum_chars loc gcl.val) 0 where rec loop v i =
             if i = String.length s then v
             else
-              let (c, i) = next_char s i in
-              loop (add_char loc <:expr< $chr:c$ >> v) i
+              let c = Char.escaped s.[i] in
+              loop (add_char loc <:expr< $chr:c$ >> v) (i + 1)
       | "$"; LIDENT "add"; e = simple_expr ->
           add_char loc e (accum_chars loc gcl.val)
       | "$"; LIDENT "buf" ->
@@ -261,6 +249,7 @@ EXTEND
   lookahead:
     [ [ pl = LIST1 lookahead_char -> pl
       | s = STRING ->
+          let s = Plexing.eval_string loc s in
           List.rev
             (fold_string_chars (fun c pl -> [<:patt< $chr:c$ >> :: pl]) s
                []) ] ]

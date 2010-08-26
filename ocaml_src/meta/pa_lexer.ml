@@ -156,24 +156,10 @@ let make_any loc norec sl cl errk =
   let s = SpTrm (loc, p, None), errk in s :: sl, cl
 ;;
 
-let next_char s i =
-  if i = String.length s then invalid_arg "next_char"
-  else if s.[i] = '\\' then
-    if i + 1 = String.length s then "\\", i + 1
-    else
-      match s.[i+1] with
-        '0'..'9' ->
-          if i + 3 < String.length s then
-            Printf.sprintf "\\%c%c%c" s.[i+1] s.[i+2] s.[i+3], i + 4
-          else "\\", i + 1
-      | c -> "\\" ^ String.make 1 c, i + 2
-  else String.make 1 s.[i], i + 1
-;;
-
 let fold_string_chars f s a =
   let rec loop i a =
     if i = String.length s then a
-    else let (c, i) = next_char s i in loop i (f c a)
+    else let c = Char.escaped s.[i] in loop (i + 1) (f c a)
   in
   loop 0 a
 ;;
@@ -184,11 +170,12 @@ let make_char loc c norec sl cl errk =
 ;;
 
 let make_chars loc s norec sl cl errk =
+  let s = Plexing.eval_string loc s in
   let rec loop i sl cl =
     if i = String.length s then sl, cl
     else
-      let (c, i) = next_char s i in
-      let (sl, cl) = make_char loc c norec sl cl errk in loop i sl cl
+      let c = Char.escaped s.[i] in
+      let (sl, cl) = make_char loc c norec sl cl errk in loop (i + 1) sl cl
   in
   loop 0 sl cl
 ;;
@@ -291,11 +278,12 @@ Grammar.extend
        Gramext.Stoken ("STRING", "")],
       Gramext.action
         (fun (s : string) _ _ (loc : Ploc.t) ->
-           (let rec loop v i =
+           (let s = Plexing.eval_string loc s in
+            let rec loop v i =
               if i = String.length s then v
               else
-                let (c, i) = next_char s i in
-                loop (add_char loc (MLast.ExChr (loc, c)) v) i
+                let c = Char.escaped s.[i] in
+                loop (add_char loc (MLast.ExChr (loc, c)) v) (i + 1)
             in
             loop (accum_chars loc !gcl) 0 :
             'expr))]];
@@ -393,7 +381,8 @@ Grammar.extend
      [[Gramext.Stoken ("STRING", "")],
       Gramext.action
         (fun (s : string) (loc : Ploc.t) ->
-           (List.rev
+           (let s = Plexing.eval_string loc s in
+            List.rev
               (fold_string_chars (fun c pl -> MLast.PaChr (loc, c) :: pl) s
                  []) :
             'lookahead));

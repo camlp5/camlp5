@@ -277,7 +277,7 @@ let any ctx buf (strm__ : _ Stream.t) =
 
 let rec string ctx bp buf (strm__ : _ Stream.t) =
   match Stream.peek strm__ with
-    Some '\"' -> Stream.junk strm__; buf
+    Some '"' -> Stream.junk strm__; buf
   | Some '\\' ->
       Stream.junk strm__;
       let buf =
@@ -314,10 +314,10 @@ let comment ctx bp =
             comment buf strm__
         | _ -> comment (Plexing.Lexbuf.add '(' buf) strm__
         end
-    | Some '\"' ->
+    | Some '"' ->
         Stream.junk strm__;
-        let buf = string ctx bp (Plexing.Lexbuf.add '\"' buf) strm__ in
-        let buf = Plexing.Lexbuf.add '\"' buf in comment buf strm__
+        let buf = string ctx bp (Plexing.Lexbuf.add '"' buf) strm__ in
+        let buf = Plexing.Lexbuf.add '"' buf in comment buf strm__
     | Some '\'' ->
         Stream.junk strm__;
         begin match
@@ -713,7 +713,7 @@ let next_token_after_spaces ctx bp buf (strm__ : _ Stream.t) =
                 Some buf -> "CHAR", Plexing.Lexbuf.get buf
               | _ -> keyword_or_error ctx (bp, Stream.count strm__) "'"
               end
-          | Some '\"' ->
+          | Some '"' ->
               Stream.junk strm__;
               let buf = string ctx bp buf strm__ in
               "STRING", Plexing.Lexbuf.get buf

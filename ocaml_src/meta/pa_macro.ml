@@ -222,7 +222,7 @@ let rec eval =
        e) ->
       begin match eval e with
         MLast.ExChr (_, c) ->
-          let i = string_of_int (Char.code (Token.eval_char c)) in
+          let i = string_of_int (Char.code (Plexing.eval_char c)) in
           MLast.ExInt (loc, i, "")
       | e -> cannot_eval e
       end

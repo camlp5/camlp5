@@ -1,6 +1,7 @@
 Camlp5 Version 5.16:
 --------------------
 
+* [26 Aug 10] Fixed wrong behaviour: char '"' was printed '\"'.
 * [25 Aug 10] Added option -no-opt in configure, not to use .opt versions
   of OCaml compilers.
 * [20 Aug 10] Added compatibility for OCaml version 3.11.3.

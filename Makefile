@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.49 2010/08/25 11:28:59 deraugla Exp $
+# $Id: Makefile,v 1.50 2010/08/26 14:32:50 deraugla Exp $
 
 include config/Makefile
 
@@ -183,7 +183,7 @@ new_sources:
 	       fi; \
 	       echo ============================================; \
 	       echo ocaml_src.new/$$i/$$k; \
-	       OTOP=$(OTOP) ../tools/conv.sh $(PR_O) $$opt $$j | \
+	       ../tools/conv.sh $(PR_O) $$opt $$j | \
 	       sed 's/$$Id.*\$$/$(TXTGEN)/' > \
 	       ../ocaml_src.new/$$i/$$k; \
 	     fi; \
@@ -213,7 +213,7 @@ compare_sources:
 	       fi; \
 	       echo ============================================; \
 	       echo ocaml_src/$$i/$$k; \
-	       OTOP=$(OTOP) ../tools/conv.sh $(PR_O) $$opt $$j | \
+	       ../tools/conv.sh $(PR_O) $$opt $$j | \
 	       sed 's/$$Id.*\$$/$(TXTGEN)/' | \
 	       diff $(DIFF_OPT) ../ocaml_src/$$i/$$k -; \
 	     fi; \
@@ -230,7 +230,7 @@ bootstrap_all_versdep:
 	       sed -e 's/^/OCAML_/;s/.ml//' -e 's/\./_/g'); \
 	  k=$$(echo OCAML_$(OVERSION) | sed -e 's/\./_/g'); \
 	  opt="-U$$k -D$$j -flag R"; \
-	  OTOP=$(OTOP) ../tools/conv.sh $(PR_O) $$opt versdep.ml | \
+	  ../tools/conv.sh $(PR_O) $$opt versdep.ml | \
 	  sed -e 's/\$$Id.*\$$/$(TXTGEN)/' > $$i -; \
 	done
 
@@ -244,7 +244,7 @@ compare_all_versdep:
 	       sed -e 's/^/OCAML_/;s/.ml//' -e 's/\./_/g'); \
 	  k=$$(echo OCAML_$(OVERSION) | sed -e 's/\./_/g'); \
 	  opt="-U$$k -D$$j -flag R"; \
-	  OTOP=$(OTOP) ../tools/conv.sh $(PR_O) $$opt versdep.ml | \
+	  ../tools/conv.sh $(PR_O) $$opt versdep.ml | \
 	  sed -e 's/\$$Id.*\$$/$(TXTGEN)/' | diff $$i -; \
 	done
 
