@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.39 2010/08/18 16:26:26 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.40 2010/08/26 13:41:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -212,7 +212,7 @@ value rec eval =
   | <:expr< Char.code $e$ >> ->
       match eval e with
       [ <:expr< $chr:c$ >> ->
-          let i = string_of_int (Char.code (Token.eval_char c)) in
+          let i = string_of_int (Char.code (Plexing.eval_char c)) in
           <:expr< $int:i$ >>
       | e ->
           cannot_eval e ]
