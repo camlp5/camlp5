@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 1.8 2010/08/25 17:29:10 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 1.9 2010/08/26 08:50:31 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
@@ -27,6 +27,13 @@ for i in $dirs; do
   echo "+++++ ./configure -bindir $TOP/usr/bin -libdir $TOP/usr/lib/ocaml -mandir $TOP/usr/man"
   ./configure -bindir $DEST/bin -libdir $DEST/lib/ocaml -mandir $DEST/man
   sed -e 's/ graph//' config/Makefile > tmp; mv tmp config/Makefile
+  if [ "$i" = "3.02" ]; then
+    echo "+++++ time make world"
+    time make world
+  else
+    echo "+++++ time make world.opt"
+    time make world.opt
+  fi
   echo "+++++ make install"
   make install
   echo "+++++ make clean"
