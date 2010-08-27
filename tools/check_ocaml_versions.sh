@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 1.18 2010/08/27 20:29:29 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 1.19 2010/08/27 20:58:44 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
@@ -12,7 +12,11 @@ cd $DEST
 PATH=$(pwd)/bin:$PATH
 
 cd $OCAMLSDIR
-dirs=$(ls | grep -v '^[1|2]' | grep -v '^3.0[0-4]' | grep -v csl)
+# warning: on 64 bits arch use this:
+dirs=$(ls | grep -v '^[1|2]' | grep -v '^3.0[0-6]' | grep -v csl)
+# instead of this:
+# dirs=$(ls | grep -v '^[1|2]' | grep -v '^3.0[0-4]' | grep -v csl)
+
 echo =====================
 echo $dirs
 for i in $dirs; do
