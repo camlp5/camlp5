@@ -19,7 +19,9 @@ open Asttypes;;
 
 (* *)
 
-let ov = Sys.ocaml_version in
+let sys_ocaml_version = Sys.ocaml_version;;
+
+let ov = sys_ocaml_version in
 let oi =
   let rec loop i =
     if i = String.length ov then i
@@ -36,7 +38,7 @@ if ov <> Pconfig.ocaml_version then
     flush stdout;
     Printf.eprintf "\n";
     Printf.eprintf "This ocaml and this camlp5 are not compatible:\n";
-    Printf.eprintf "- OCaml version is %s\n" Sys.ocaml_version;
+    Printf.eprintf "- OCaml version is %s\n" sys_ocaml_version;
     Printf.eprintf "- Camlp5 compiled with ocaml %s\n" Pconfig.ocaml_version;
     Printf.eprintf "\n";
     Printf.eprintf "You need to recompile camlp5.\n";
@@ -92,6 +94,7 @@ let mkpolytype t =
     MLast.TyPol (_, _, _) -> t
   | _ -> let loc = MLast.loc_of_ctyp t in MLast.TyPol (loc, [], t)
 ;;
+let mklazy loc e = mkexp loc (Pexp_lazy e);;
 
 let lident s = Lident s;;
 let ldot l s = Ldot (l, s);;
@@ -778,7 +781,7 @@ let rec expr =
       mkexp loc (Pexp_constant (Const_nativeint (Nativeint.of_string (uv s))))
   | ExInt (loc, _, _) -> error loc "special int not implemented"
   | ExLab (loc, _, _) -> error loc "labeled expression not allowed here"
-  | ExLaz (loc, e) -> mkexp loc (Pexp_lazy (expr e))
+  | ExLaz (loc, e) -> mklazy loc (expr e)
   | ExLet (loc, rf, pel, e) ->
       mkexp loc (Pexp_let (mkrf (uv rf), List.map mkpe (uv pel), expr e))
   | ExLid (loc, s) -> mkexp loc (Pexp_ident (lident (uv s)))
@@ -1052,8 +1055,10 @@ and class_str_item c l =
   | CrInh (loc, ce, pb) -> Pcf_inher (class_expr ce, uv pb) :: l
   | CrIni (loc, e) -> Pcf_init (expr e) :: l
   | CrMth (loc, s, b, e, t) ->
-      let t = option (fun t -> ctyp (mkpolytype t)) (uv t) in
-      let e = mkexp loc (Pexp_poly (expr e, t)) in
+      let e =
+        let t = option (fun t -> ctyp (mkpolytype t)) (uv t) in
+        mkexp loc (Pexp_poly (expr e, t))
+      in
       Pcf_meth (uv s, mkprivate (uv b), e, mkloc loc) :: l
   | CrVal (loc, s, b, e) ->
       Pcf_val (uv s, mkmutable (uv b), expr e, mkloc loc) :: l

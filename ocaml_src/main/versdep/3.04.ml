@@ -19,7 +19,7 @@ open Asttypes;;
 
 (* *)
 
-let sys_ocaml_version = Sys.ocaml_version;;
+let sys_ocaml_version = "3.04";;
 
 let ov = sys_ocaml_version in
 let oi =
@@ -69,13 +69,7 @@ let glob_fname = ref "";;
 let mkloc loc =
   let bp = Ploc.first_pos loc in
   let ep = Ploc.last_pos loc in
-  let lnum = Ploc.line_nb loc in
-  let bolp = Ploc.bol_pos loc in
-  let loc_at n =
-    {Lexing.pos_fname = if lnum = -1 then "" else !glob_fname;
-     Lexing.pos_lnum = lnum; Lexing.pos_bol = bolp; Lexing.pos_cnum = n}
-  in
-  {Location.loc_start = loc_at bp; Location.loc_end = loc_at ep;
+  {Location.loc_start = bp; Location.loc_end = ep;
    Location.loc_ghost = bp = 0 && ep = 0}
 ;;
 
@@ -89,12 +83,17 @@ let mkstr loc d = {pstr_desc = d; pstr_loc = mkloc loc};;
 let mkfield loc d = {pfield_desc = d; pfield_loc = mkloc loc};;
 let mkcty loc d = {pcty_desc = d; pcty_loc = mkloc loc};;
 let mkpcl loc d = {pcl_desc = d; pcl_loc = mkloc loc};;
-let mkpolytype t =
-  match t with
-    MLast.TyPol (_, _, _) -> t
-  | _ -> let loc = MLast.loc_of_ctyp t in MLast.TyPol (loc, [], t)
+let mkpolytype t = t;;
+let mklazy loc e =
+  let ghpat = mkpat loc in
+  let ghexp = mkexp loc in
+  let void_pat = ghpat (Ppat_construct (Lident "()", None, false)) in
+  let f = ghexp (Pexp_function ("", None, [void_pat, e])) in
+  let delayed = Ldot (Lident "Lazy", "Delayed") in
+  let df = ghexp (Pexp_construct (delayed, Some f, false)) in
+  let r = ghexp (Pexp_ident (Ldot (Lident "Pervasives", "ref"))) in
+  ghexp (Pexp_apply (r, ["", df]))
 ;;
-let mklazy loc e = mkexp loc (Pexp_lazy e);;
 
 let lident s = Lident s;;
 let ldot l s = Ldot (l, s);;
@@ -199,7 +198,7 @@ let rec ctyp =
   | TyLid (loc, s) -> mktyp loc (Ptyp_constr (lident (uv s), []))
   | TyMan (loc, _, _) -> error loc "type manifest not allowed here"
   | TyOlb (loc, lab, _) -> error loc "labeled type not allowed here"
-  | TyPol (loc, pl, t) -> mktyp loc (Ptyp_poly (uv pl, ctyp t))
+  | TyPol (loc, pl, t) -> error loc "no poly types in that ocaml version"
   | TyQuo (loc, s) -> mktyp loc (Ptyp_var (uv s))
   | TyRec (loc, _) -> error loc "record type not allowed here"
   | TySum (loc, _) -> error loc "sum type not allowed here"
@@ -240,16 +239,14 @@ let mkvariant (loc, c, tl) = conv_con (uv c), List.map ctyp (uv tl);;
 let type_decl tl priv cl =
   function
     TyMan (loc, t, MLast.TyRec (_, ltl)) ->
-      mktype loc tl cl (Ptype_record (List.map mktrecord ltl, priv))
-        (Some (ctyp t))
+      mktype loc tl cl (Ptype_record (List.map mktrecord ltl)) (Some (ctyp t))
   | TyMan (loc, t, MLast.TySum (_, ctl)) ->
-      mktype loc tl cl (Ptype_variant (List.map mkvariant ctl, priv))
+      mktype loc tl cl (Ptype_variant (List.map mkvariant ctl))
         (Some (ctyp t))
   | TyRec (loc, ltl) ->
-      mktype loc tl cl (Ptype_record (List.map mktrecord (uv ltl), priv)) None
+      mktype loc tl cl (Ptype_record (List.map mktrecord (uv ltl))) None
   | TySum (loc, ctl) ->
-      mktype loc tl cl (Ptype_variant (List.map mkvariant (uv ctl), priv))
-        None
+      mktype loc tl cl (Ptype_variant (List.map mkvariant (uv ctl))) None
   | t ->
       let m =
         match t with
@@ -788,12 +785,9 @@ let rec expr =
       mkexp loc (Pexp_ifthenelse (expr e1, expr e2, Some (expr e3)))
   | ExInt (loc, s, "") ->
       mkexp loc (Pexp_constant (Const_int (int_of_string (uv s))))
-  | ExInt (loc, s, "l") ->
-      mkexp loc (Pexp_constant (Const_int32 (Int32.of_string (uv s))))
-  | ExInt (loc, s, "L") ->
-      mkexp loc (Pexp_constant (Const_int64 (Int64.of_string (uv s))))
-  | ExInt (loc, s, "n") ->
-      mkexp loc (Pexp_constant (Const_nativeint (Nativeint.of_string (uv s))))
+  | ExInt (loc, s, "l") -> error loc "no int32 in this ocaml version"
+  | ExInt (loc, s, "L") -> error loc "no int64 in this ocaml version"
+  | ExInt (loc, s, "n") -> error loc "no nativeint in this ocaml version"
   | ExInt (loc, _, _) -> error loc "special int not implemented"
   | ExLab (loc, _, _) -> error loc "labeled expression not allowed here"
   | ExLaz (loc, e) -> mklazy loc (expr e)
@@ -913,9 +907,7 @@ and sig_item s l =
           (fun (n, mt) l ->
              mksig loc (Psig_module (uv n, module_type mt)) :: l)
           (uv ntl) l
-      else
-        let ntl = List.map (fun (n, mt) -> uv n, module_type mt) (uv ntl) in
-        mksig loc (Psig_recmodule ntl) :: l
+      else error loc "no recursive module in this ocaml version"
   | SgMty (loc, n, mt) ->
       let si =
         match mt with
@@ -971,21 +963,7 @@ and str_item s l =
           (fun (n, me) l ->
              mkstr loc (Pstr_module (uv n, module_expr me)) :: l)
           (uv nel) l
-      else
-        let nel =
-          List.map
-            (fun (n, me) ->
-               let (me, mt) =
-                 match me with
-                   MeTyc (_, me, mt) -> me, mt
-                 | _ ->
-                     error (MLast.loc_of_module_expr me)
-                       "module rec needs module types constraints"
-               in
-               uv n, module_type mt, module_expr me)
-            (uv nel)
-        in
-        mkstr loc (Pstr_recmodule nel) :: l
+      else error loc "no recursive module in this ocaml version"
   | StMty (loc, n, mt) -> mkstr loc (Pstr_modtype (uv n, module_type mt)) :: l
   | StOpn (loc, id) ->
       mkstr loc (Pstr_open (long_id_of_string_list loc (uv id))) :: l
@@ -1069,8 +1047,8 @@ and class_str_item c l =
   | CrIni (loc, e) -> Pcf_init (expr e) :: l
   | CrMth (loc, s, b, e, t) ->
       let e =
-        let t = option (fun t -> ctyp (mkpolytype t)) (uv t) in
-        mkexp loc (Pexp_poly (expr e, t))
+        if uv t = None then expr e
+        else error loc "no method with label in this ocaml version"
       in
       Pcf_meth (uv s, mkprivate (uv b), e, mkloc loc) :: l
   | CrVal (loc, s, b, e) ->
@@ -1152,41 +1130,6 @@ let action_arg s sl =
           s :: sl -> f (float_of_string s); Some sl
         | [] -> None
       else begin f (float_of_string s); Some sl end
-  | Arg.Set_string r ->
-      if s = "" then
-        match sl with
-          s :: sl -> r := s; Some sl
-        | [] -> None
-      else begin r := s; Some sl end
-  | Arg.Set_int r ->
-      if s = "" then
-        match sl with
-          s :: sl ->
-            begin try r := int_of_string s; Some sl with
-              Failure "int_of_string" -> None
-            end
-        | [] -> None
-      else
-        begin try r := int_of_string s; Some sl with
-          Failure "int_of_string" -> None
-        end
-  | Arg.Set_float r ->
-      if s = "" then
-        match sl with
-          s :: sl -> r := float_of_string s; Some sl
-        | [] -> None
-      else begin r := float_of_string s; Some sl end
-  | Arg.Symbol (syms, f) ->
-      begin match if s = "" then sl else s :: sl with
-        s :: sl when List.mem s syms -> f s; Some sl
-      | _ -> None
-      end
-  | Arg.Tuple _ -> failwith "Arg.Tuple not implemented"
-  | Arg.Bool _ -> failwith "Arg.Bool not implemented"
 ;;
 
-let arg_symbol =
-  function
-    Arg.Symbol (symbs, _) -> Some symbs
-  | _ -> None
-;;
+let arg_symbol _ = None;;

@@ -819,7 +819,7 @@ Grammar.extend
      [[Gramext.Sself; Gramext.Stoken ("", "AND"); Gramext.Sself],
       Gramext.action
         (fun (y : 'dexpr) _ (x : 'dexpr) (loc : Ploc.t) ->
-           (y && y : 'dexpr))];
+           (x && y : 'dexpr))];
      None, None,
      [[Gramext.Stoken ("", "NOT"); Gramext.Sself],
       Gramext.action (fun (x : 'dexpr) _ (loc : Ploc.t) -> (not x : 'dexpr))];

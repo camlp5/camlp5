@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.5 2010/08/26 19:08:32 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.6 2010/08/27 20:18:49 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -42,7 +42,11 @@ THEN
   DEFINE AFTER_OCAML_3_10
 END;
 
-let ov = Sys.ocaml_version in
+value sys_ocaml_version =
+  IFDEF OCAML_3_04 THEN "3.04" ELSE Sys.ocaml_version END
+;
+
+let ov = sys_ocaml_version in
 let oi =
   loop 0 where rec loop i =
     if i = String.length ov then i
@@ -56,7 +60,7 @@ if ov <> Pconfig.ocaml_version then do {
   flush stdout;
   Printf.eprintf "\n";
   Printf.eprintf "This ocaml and this camlp5 are not compatible:\n";
-  Printf.eprintf "- OCaml version is %s\n" Sys.ocaml_version;
+  Printf.eprintf "- OCaml version is %s\n" sys_ocaml_version;
   Printf.eprintf "- Camlp5 compiled with ocaml %s\n" Pconfig.ocaml_version;
   Printf.eprintf "\n";
   Printf.eprintf "You need to recompile camlp5.\n";
@@ -116,11 +120,26 @@ value mkfield loc d = {pfield_desc = d; pfield_loc = mkloc loc};
 value mkcty loc d = {pcty_desc = d; pcty_loc = mkloc loc};
 value mkpcl loc d = {pcl_desc = d; pcl_loc = mkloc loc};
 value mkpolytype t =
-  match t with
-  [ <:ctyp< ! $list:_$ . $_$ >> -> t
-  | _ ->
-      let loc = MLast.loc_of_ctyp t in
-      <:ctyp< ! $list:[]$ . $t$ >> ]
+  IFDEF OCAML_3_04 THEN t
+  ELSE
+    match t with
+    [ <:ctyp< ! $list:_$ . $_$ >> -> t
+    | _ ->
+        let loc = MLast.loc_of_ctyp t in
+        <:ctyp< ! $list:[]$ . $t$ >> ]
+  END
+;
+value mklazy loc e =
+  IFDEF OCAML_3_04 THEN
+    let ghpat = mkpat loc in
+    let ghexp = mkexp loc in
+    let void_pat = ghpat (Ppat_construct (Lident "()") None False) in
+    let f = ghexp (Pexp_function "" None [(void_pat, e)]) in
+    let delayed = Ldot (Lident "Lazy") "Delayed" in
+    let df = ghexp (Pexp_construct delayed (Some f) False) in
+    let r = ghexp (Pexp_ident (Ldot (Lident "Pervasives") "ref")) in
+    ghexp (Pexp_apply r [("", df)])
+  ELSE mkexp loc (Pexp_lazy e) END
 ;
 
 value lident s = Lident s;
@@ -229,7 +248,9 @@ value rec ctyp =
   | TyLid loc s -> mktyp loc (Ptyp_constr (lident (uv s)) [])
   | TyMan loc _ _ -> error loc "type manifest not allowed here"
   | TyOlb loc lab _ -> error loc "labeled type not allowed here"
-  | TyPol loc pl t -> mktyp loc (Ptyp_poly (uv pl) (ctyp t))
+  | TyPol loc pl t ->
+       IFDEF OCAML_3_04 THEN error loc "no poly types in that ocaml version"
+       ELSE mktyp loc (Ptyp_poly (uv pl) (ctyp t)) END
   | TyQuo loc s -> mktyp loc (Ptyp_var (uv s))
   | TyRec loc _ -> error loc "record type not allowed here"
   | TySum loc _ -> error loc "sum type not allowed here"
@@ -774,7 +795,7 @@ value rec expr =
       END
   | ExInt loc _ _ -> error loc "special int not implemented"
   | ExLab loc _ _ -> error loc "labeled expression not allowed here"
-  | ExLaz loc e -> mkexp loc (Pexp_lazy (expr e))
+  | ExLaz loc e -> mklazy loc (expr e)
   | ExLet loc rf pel e ->
       mkexp loc (Pexp_let (mkrf (uv rf)) (List.map mkpe (uv pel)) (expr e))
   | ExLid loc s -> mkexp loc (Pexp_ident (lident (uv s)))
@@ -1095,8 +1116,15 @@ and class_str_item c l =
     END
   | CrIni loc e -> [Pcf_init (expr e) :: l]
   | CrMth loc s b e t ->
-      let t = option (fun t -> ctyp (mkpolytype t)) (uv t) in
-      let e = mkexp loc (Pexp_poly (expr e) t) in
+      let e =
+        IFDEF OCAML_3_04 THEN
+          if uv t = None then expr e
+          else error loc "no method with label in this ocaml version"
+        ELSE
+          let t = option (fun t -> ctyp (mkpolytype t)) (uv t) in
+          mkexp loc (Pexp_poly (expr e) t)
+        END
+      in
       IFDEF AFTER_OCAML_3_12 THEN
         [Pcf_meth (uv s, mkprivate (uv b), Fresh, e, mkloc loc) :: l]
       ELSE

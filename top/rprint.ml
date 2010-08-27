@@ -1,11 +1,11 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 1.33 2010/08/27 18:03:35 deraugla Exp $ *)
+(* $Id: rprint.ml,v 1.34 2010/08/27 20:18:50 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Format;
 open Outcometree;
 
-IFDEF OCAML_3_05 OR OCAML_3_06 THEN
+IFDEF OCAML_3_04 OR OCAML_3_05 OR OCAML_3_06 THEN
   DEFINE OCAML_3_06_OR_BEFORE
 END;
 
@@ -199,9 +199,12 @@ and print_simple_out_type ppf =
   | Otyp_manifest ty1 ty2 ->
       fprintf ppf "@[<2>%a ==@ %a@]" print_out_type ty1 print_out_type ty2
   | Otyp_abstract -> fprintf ppf "'abstract"
-  | Otyp_alias _ _ | Otyp_poly _ _
-  | Otyp_arrow _ _ _ | Otyp_constr _ [_ :: _] as ty ->
+  | Otyp_alias _ _ | Otyp_arrow _ _ _ | Otyp_constr _ [_ :: _] as ty ->
       fprintf ppf "@[<1>(%a)@]" print_out_type ty
+  | IFNDEF OCAML_3_04 THEN
+      Otyp_poly _ _ as ty ->
+        fprintf ppf "@[<1>(%a)@]" print_out_type ty
+    END
   | x ->
       IFDEF OCAML_3_08_OR_BEFORE AND NOT OCAML_3_06_OR_BEFORE THEN
         match x with
@@ -333,8 +336,7 @@ value rec print_out_module_type ppf =
   fun
   [ Omty_ident id -> fprintf ppf "%a" print_ident id
   | Omty_signature sg ->
-      fprintf ppf "@[<hv 2>sig@ %a@;<1 -2>end@]"
-        Toploop.print_out_signature.val sg
+      fprintf ppf "@[<hv 2>sig@ %a@;<1 -2>end@]" print_out_signature sg
   | Omty_functor name mty_arg mty_res ->
       fprintf ppf "@[<2>functor@ (%s : %a) ->@ %a@]" name
         print_out_module_type mty_arg print_out_module_type mty_res
@@ -353,12 +355,10 @@ and print_out_sig_item ppf =
   | Osig_modtype name Omty_abstract ->
       fprintf ppf "@[<2>module type %s@]" name
   | Osig_modtype name mty ->
-      fprintf ppf "@[<2>module type %s =@ %a@]" name
-        Toploop.print_out_module_type.val mty
+      fprintf ppf "@[<2>module type %s =@ %a@]" name print_out_module_type mty
   | IFDEF OCAML_3_06_OR_BEFORE OR OCAML_3_07 THEN
       Osig_module name mty ->
-        fprintf ppf "@[<2>module %s :@ %a@]" name
-          Toploop.print_out_module_type.val mty
+        fprintf ppf "@[<2>module %s :@ %a@]" name print_out_module_type mty
     ELSE
       Osig_module name mty _ ->
         fprintf ppf "@[<2>module %s :@ %a@]" name
@@ -470,8 +470,12 @@ value print_out_phrase ppf =
 
 Toploop.print_out_value.val := print_out_value;
 Toploop.print_out_type.val := print_out_type;
-Toploop.print_out_class_type.val := print_out_class_type;
-Toploop.print_out_module_type.val := print_out_module_type;
+IFNDEF OCAML_3_04 THEN
+  declare
+    Toploop.print_out_class_type.val := print_out_class_type;
+    Toploop.print_out_module_type.val := print_out_module_type;
+    Toploop.print_out_signature.val := print_out_signature;
+  end
+END;
 Toploop.print_out_sig_item.val := print_out_sig_item;
-Toploop.print_out_signature.val := print_out_signature;
 Toploop.print_out_phrase.val := print_out_phrase;

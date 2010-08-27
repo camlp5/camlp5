@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.40 2010/08/26 13:41:00 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.41 2010/08/27 20:18:49 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -476,7 +476,7 @@ EXTEND
   ;
   dexpr:
     [ [ x = SELF; "OR"; y = SELF -> x || y ]
-    | [ x = SELF; "AND"; y = SELF -> y && y ]
+    | [ x = SELF; "AND"; y = SELF -> x && y ]
     | [ "NOT"; x = SELF -> not x ]
     | [ i = uident -> is_defined i
       | "("; x = SELF; ")" -> x ] ]

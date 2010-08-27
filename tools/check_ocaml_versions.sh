@@ -1,25 +1,24 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 1.16 2010/08/27 18:03:35 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 1.17 2010/08/27 20:18:50 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
 OCAMLSDIR=$TOP/ocaml/release
 CAMLP5DIR=$TOP/camlp5
 MODE=--strict
-DEFDOOPT=1
+DOOPT=1
 
 cd $DEST
 PATH=$(pwd)/bin:$PATH
 
 cd $OCAMLSDIR
 dirs=$(ls | grep -v '^[1|2]' | grep -v '^3.0[0-4]' | grep -v csl)
+dirs=3.12.0
 echo =====================
 echo $dirs
 for i in $dirs; do
   echo =====================
   echo date: $(date) version: $i
-  DOOPT=$DEFDOOPT
-  if [ "$i" = "3.04" ]; then DOOPT=0; fi
   echo "+++++ cd $OCAMLSDIR/$i"
   cd $OCAMLSDIR/$i
   sed -e 's/ camlp4o[a-z]* / /g' Makefile | grep -v partial-install.sh |
@@ -33,6 +32,9 @@ for i in $dirs; do
   if [ "$DOOPT" = "0" ]; then
     echo "+++++ time make world"
     time make world
+  elif [ "$i" = "3.04" ]; then
+    echo "+++++ time make world opt opt.opt"
+    time make world opt opt.opt
   else
     echo "+++++ time make world.opt"
     time make world.opt
