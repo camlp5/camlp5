@@ -1,9 +1,9 @@
-# $Id: Makefile,v 1.50 2010/08/26 14:32:50 deraugla Exp $
+# $Id: Makefile,v 1.51 2010/08/27 17:47:46 deraugla Exp $
 
 include config/Makefile
 
-DIRS=odyl main meta etc top ocpp lib man
-FDIRS=odyl main meta lib
+DIRS=lib odyl main meta etc top ocpp man
+FDIRS=lib odyl main meta
 OPTDIRS=ocaml_stuff lib odyl main meta etc
 OPTOPTDIRS=compile
 SHELL=/bin/sh
