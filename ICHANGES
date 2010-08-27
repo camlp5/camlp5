@@ -4,6 +4,8 @@ Internal, very small, undocumented, or invisible changes
 Camlp5 Version 5.16:
 --------------------
 
+* [27 Aug 10] Added compatibility for OCaml versions 3.05 and 3.06 (but does
+  not work in 64 bits architecture due to OCaml bug of that time).
 * [25 Aug 10] Changed module Ast2pt into Versdep.Ast2pt.
 * [24 Aug 10] Added Makefile.withnew in directory etc for compilations
   that must be done with the new created camlp5.

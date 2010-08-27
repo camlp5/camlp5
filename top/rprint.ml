@@ -1,12 +1,16 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 1.32 2010/08/27 17:47:47 deraugla Exp $ *)
+(* $Id: rprint.ml,v 1.33 2010/08/27 18:03:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Format;
 open Outcometree;
 
+IFDEF OCAML_3_05 OR OCAML_3_06 THEN
+  DEFINE OCAML_3_06_OR_BEFORE
+END;
+
 IFDEF
-  OCAML_3_06 OR OCAML_3_07 OR
+  OCAML_3_06_OR_BEFORE OR OCAML_3_07 OR
   OCAML_3_08_0 OR OCAML_3_08_1 OR OCAML_3_08_2 OR OCAML_3_08_3 OR OCAML_3_08_4
 THEN
   DEFINE OCAML_3_08_OR_BEFORE
@@ -70,13 +74,13 @@ value print_out_value ppf tree =
   and print_simple_tree ppf =
     fun
     [ Oval_int i -> fprintf ppf "%i" i
-    | IFNDEF OCAML_3_06 THEN
+    | IFNDEF OCAML_3_06_OR_BEFORE THEN
         Oval_int32 i -> fprintf ppf "%lil" i
       END
-    | IFNDEF OCAML_3_06 THEN
+    | IFNDEF OCAML_3_06_OR_BEFORE THEN
         Oval_int64 i -> fprintf ppf "%LiL" i
       END
-    | IFNDEF OCAML_3_06 THEN
+    | IFNDEF OCAML_3_06_OR_BEFORE THEN
         Oval_nativeint i -> fprintf ppf "%nin" i
       END
     | Oval_float f -> fprintf ppf "%.12g" f
@@ -199,7 +203,7 @@ and print_simple_out_type ppf =
   | Otyp_arrow _ _ _ | Otyp_constr _ [_ :: _] as ty ->
       fprintf ppf "@[<1>(%a)@]" print_out_type ty
   | x ->
-      IFDEF OCAML_3_08_OR_BEFORE AND NOT OCAML_3_06 THEN
+      IFDEF OCAML_3_08_OR_BEFORE AND NOT OCAML_3_06_OR_BEFORE THEN
         match x with
         [ Otyp_sum constrs _ ->
             fprintf ppf "@[<hv>[ %a ]@]"
@@ -351,7 +355,7 @@ and print_out_sig_item ppf =
   | Osig_modtype name mty ->
       fprintf ppf "@[<2>module type %s =@ %a@]" name
         Toploop.print_out_module_type.val mty
-  | IFDEF OCAML_3_06 OR OCAML_3_07 THEN
+  | IFDEF OCAML_3_06_OR_BEFORE OR OCAML_3_07 THEN
       Osig_module name mty ->
         fprintf ppf "@[<2>module %s :@ %a@]" name
           Toploop.print_out_module_type.val mty
@@ -360,7 +364,7 @@ and print_out_sig_item ppf =
         fprintf ppf "@[<2>module %s :@ %a@]" name
           Toploop.print_out_module_type.val mty
     END
-  | IFDEF OCAML_3_06 OR OCAML_3_07 THEN
+  | IFDEF OCAML_3_06_OR_BEFORE OR OCAML_3_07 THEN
       Osig_type tdl -> do {
         print_out_type_decl "type" ppf (List.hd tdl);
         List.iter (print_out_type_decl "and" ppf) (List.tl tdl);
