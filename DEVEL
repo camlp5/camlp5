@@ -33,36 +33,35 @@ COMPATIBILITY
    are up-to-date (e.g. if this is the current ocaml developpement), do:
        make compare_stolen OCAML_SRC=<path-to-ocaml-sources>
 
-     The compatibility is also done with the file 'main/versdep.ml',
+     The compatibility is also done with the file 'lib/versdep.ml',
    which is a module containing miscellaneous features depending to
-   the version of OCaml, in particular the conversion from Camlp5
-   syntax tree into OCaml syntax tree.
+   the version of OCaml.
 
      In the directory 'ocaml_src' which contains the pure OCaml sources
    of the Camlp5 core (see chapter TREE STRUCTURE below), there are as
    many versions of this files as versions of OCaml. They are named
-   '<version>.ml' in the directory 'main/versdep'. If you are adding
+   '<version>.ml' in the directory 'lib/versdep'. If you are adding
    a new version of OCaml, you need this file. As a first step, make a
    copy from a close version:
-         cd ocaml_src/main
-         cp versdep.ml_<close_version> versdep.ml_<version>
+         cd ocaml_src/lib/versdep
+         cp <close_version>.ml <version>.ml
 
      Then, you can redo "configure" and do "make core". If the file
-   'ocaml_src/main/versdep.ml' has a compilation problems, fix them and
+   'ocaml_src/lib/versdep.ml' has a compilation problems, fix them and
    to 'make core' again.
 
-     Later, the same file 'main/versdep.ml' in camlp5 syntax may have
+     Later, the same file 'lib/versdep.ml' in camlp5 syntax may have
    similar compilation problem. This file is in one examplary, thanks to
    IFDEF used here or there.
 
      While compiling with some specific version of ocaml, this file is
    compiled with 'OCAML_vers' defined where 'vers' is the version number
    form the beginning to the first space or charcter '+' with all dots
-   converted into underscores. For example, if you ocaml version is
+   converted into underscores. For example, if your ocaml version is
    7.04.2+dev35, you can see in the compilation process of versdep.ml
    that OCAML_7_04_2 is defined, and you can add statements defined
    by the syntax extension 'pa_macro.cmo', for example IFDEF OCAML_7_04_2.
-   Add statements like that in 'main/versdep.ml' to make it compile.
+   Add statements like that in 'lib/versdep.ml' to make it compile.
 
 TREE STRUCTURE
 
@@ -178,12 +177,12 @@ BEFORE COMMITTING YOUR CHANGES
        make promote_sources
        make clean_sources
 
-     If there are changes in the specific file 'main/versdep.ml', do
+     If there are changes in the specific file 'lib/versdep.ml', do
    also:
        make compare_all_versdep
    and possibly:
        make bootstrap_all_versdep
-   because this file, in 'ocaml_src/main' directory has different
+   because this file, in 'ocaml_src/lib/versdep' directory has different
    versions according to the ocaml version.
 
      After having rebuilt the pure ocaml sources, check they work by
