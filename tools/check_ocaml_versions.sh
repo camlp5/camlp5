@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 1.21 2010/08/28 12:55:20 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 1.22 2010/08/28 16:55:56 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
@@ -26,7 +26,10 @@ for i in $dirs; do
   echo "+++++ cd $OCAMLSDIR/$i"
   cd $OCAMLSDIR/$i
   sed -e 's/ camlp4o[a-z]* / /g' Makefile | grep -v partial-install.sh |
-  grep -v 'cd ocamldoc' | grep -v 'cd camlp4' > tmp; mv tmp Makefile
+  grep -v 'cd ocamldoc' | grep -v 'cd camlp4' |
+  sed -e 's/ ocamlbuild.byte / /g' |  sed -e 's/ ocamlbuild.native / /g' |
+  grep -v '$(MAKE) ocamlbuildlib.native'  > tmp
+  mv tmp Makefile
   touch config/Makefile
   echo "+++++ make clean"
   make clean

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.8 2010/08/28 12:55:19 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.9 2010/08/28 16:55:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -151,18 +151,6 @@ value ocaml_pexp_lazy =
   IFDEF OCAML_3_04 THEN None ELSE Some (fun e -> Pexp_lazy e) END
 ;
 
-value ocaml_ppat_lazy =
-  IFDEF AFTER_OCAML_3_11 THEN Some (fun p -> Ppat_lazy p) ELSE None END
-;
-
-value ocaml_ppat_record lpl =
-  IFDEF AFTER_OCAML_3_12 THEN Ppat_record lpl Closed ELSE Ppat_record lpl END
-;
-
-value module_prefix_can_be_in_first_record_label_only =
-  IFDEF OCAML_3_06_OR_BEFORE OR OCAML_3_07 THEN False ELSE True END
-;
-
 value ocaml_const_int32 =
   IFDEF OCAML_3_06_OR_BEFORE THEN None
   ELSE Some (fun s -> Const_int32 (Int32.of_string s)) END
@@ -176,6 +164,56 @@ value ocaml_const_int64 =
 value ocaml_const_nativeint =
   IFDEF OCAML_3_06_OR_BEFORE THEN None
   ELSE Some (fun s -> Const_nativeint (Nativeint.of_string s)) END
+;
+
+value ocaml_pexp_object =
+  IFDEF OCAML_3_06_OR_BEFORE OR OCAML_3_07 THEN None
+  ELSE Some (fun cs -> Pexp_object cs) END
+;
+
+value module_prefix_can_be_in_first_record_label_only =
+  IFDEF OCAML_3_06_OR_BEFORE OR OCAML_3_07 THEN False ELSE True END
+;
+
+value ocaml_ppat_lazy =
+  IFDEF AFTER_OCAML_3_11 THEN Some (fun p -> Ppat_lazy p) ELSE None END
+;
+
+value ocaml_ppat_record lpl =
+  IFDEF AFTER_OCAML_3_12 THEN Ppat_record lpl Closed ELSE Ppat_record lpl END
+;
+
+value ocaml_psig_recmodule =
+  IFDEF OCAML_3_06_OR_BEFORE THEN None
+  ELSE Some (fun ntl -> Psig_recmodule ntl) END
+;
+
+value ocaml_pstr_recmodule =
+  IFDEF OCAML_3_06_OR_BEFORE THEN None
+  ELSE Some (fun nel -> Pstr_recmodule nel) END
+;
+
+value ocaml_pctf_val (s, b, t, loc) =
+  IFDEF AFTER_OCAML_3_10 THEN Pctf_val (s, b, Concrete, t, loc)
+  ELSE Pctf_val (s, b, Some t, loc) END
+;
+
+value ocaml_pcf_inher ce pb =
+  IFDEF AFTER_OCAML_3_12 THEN Pcf_inher Fresh ce pb ELSE Pcf_inher ce pb END
+;
+
+value ocaml_pcf_meth (s, b, e, loc) =
+  IFDEF AFTER_OCAML_3_12 THEN Pcf_meth (s, b, Fresh, e, loc) 
+  ELSE Pcf_meth (s, b, e, loc) END
+;
+
+value ocaml_pcf_val (s, b, e, loc) =
+  IFDEF AFTER_OCAML_3_12 THEN Pcf_val (s, b, Fresh, e, loc)
+  ELSE Pcf_val (s, b, e,  loc) END
+;
+
+value ocaml_pexp_poly =
+  IFDEF OCAML_3_04 THEN None ELSE Some (fun e t -> Pexp_poly e t) END
 ;
 
 (**)
@@ -850,17 +888,16 @@ value rec expr =
       mkexp loc (Pexp_match (expr e) (List.map mkpwe (uv pel)))
   | ExNew loc id -> mkexp loc (Pexp_new (long_id_of_string_list loc (uv id)))
   | ExObj loc po cfl ->
-      IFDEF OCAML_3_06_OR_BEFORE OR OCAML_3_07 THEN
-        error loc "no object in this ocaml version"
-      ELSE
-        let p =
-          match uv po with
-          [ Some p -> p
-          | None -> PaAny loc ]
-        in
-        let cil = List.fold_right class_str_item (uv cfl) [] in
-        mkexp loc (Pexp_object (patt p, cil))
-      END
+      match ocaml_pexp_object with
+      [ Some pexp_object ->
+          let p =
+            match uv po with
+            [ Some p -> p
+            | None -> PaAny loc ]
+          in
+          let cil = List.fold_right class_str_item (uv cfl) [] in
+          mkexp loc (pexp_object (patt p, cil))
+      | None -> error loc "no object in this ocaml version" ]
   | ExOlb loc _ _ -> error loc "labeled expression not allowed here"
   | ExOvr loc iel -> mkexp loc (Pexp_override (List.map mkideexp (uv iel)))
   | ExRec loc lel eo ->
@@ -971,14 +1008,13 @@ and sig_item s l =
              [mksig loc (Psig_module (uv n) (module_type mt)) :: l])
           (uv ntl) l
       else
-        IFDEF OCAML_3_06_OR_BEFORE THEN
-          error loc "no recursive module in this ocaml version"
-        ELSE
-          let ntl =
-            List.map (fun (n, mt) -> (uv n, module_type mt)) (uv ntl)
-          in
-          [mksig loc (Psig_recmodule ntl) :: l]
-        END
+        match ocaml_psig_recmodule with
+        [ Some psig_recmodule ->
+            let ntl =
+              List.map (fun (n, mt) -> (uv n, module_type mt)) (uv ntl)
+            in
+            [mksig loc (psig_recmodule ntl) :: l]
+        | None -> error loc "no recursive module in this ocaml version" ]
   | SgMty loc n mt ->
       let si =
         match mt with
@@ -1042,24 +1078,23 @@ and str_item s l =
              [mkstr loc (Pstr_module (uv n) (module_expr me)) :: l])
           (uv nel) l
       else
-        IFDEF OCAML_3_06_OR_BEFORE THEN
-          error loc "no recursive module in this ocaml version"
-        ELSE
-          let nel =
-            List.map
-              (fun (n, me) ->
-                 let (me, mt) =
-                   match me with
-                   [ MeTyc _ me mt -> (me, mt)
-                   | _ ->
-                       error (MLast.loc_of_module_expr me)
-                         "module rec needs module types constraints" ]
-                 in
-                 (uv n, module_type mt, module_expr me))
-              (uv nel)
-          in
-          [mkstr loc (Pstr_recmodule nel) :: l]
-        END
+        match ocaml_pstr_recmodule with
+        [ Some pstr_recmodule ->
+            let nel =
+              List.map
+                (fun (n, me) ->
+                   let (me, mt) =
+                     match me with
+                     [ MeTyc _ me mt -> (me, mt)
+                     | _ ->
+                         error (MLast.loc_of_module_expr me)
+                           "module rec needs module types constraints" ]
+                   in
+                   (uv n, module_type mt, module_expr me))
+                (uv nel)
+            in
+            [mkstr loc (pstr_recmodule nel) :: l]
+        | None -> error loc "no recursive module in this ocaml version" ]
   | StMty loc n mt -> [mkstr loc (Pstr_modtype (uv n) (module_type mt)) :: l]
   | StOpn loc id ->
       [mkstr loc (Pstr_open (long_id_of_string_list loc (uv id))) :: l]
@@ -1108,11 +1143,7 @@ and class_sig_item c l =
       [Pctf_meth (uv s, mkprivate (uv pf), ctyp (mkpolytype t), mkloc loc) ::
        l]
   | CgVal loc s b t ->
-      IFDEF AFTER_OCAML_3_10 THEN
-        [Pctf_val (uv s, mkmutable (uv b), Concrete, ctyp t, mkloc loc) :: l]
-      ELSE
-        [Pctf_val (uv s, mkmutable (uv b), Some (ctyp t), mkloc loc) :: l]
-      END
+      [ocaml_pctf_val (uv s, mkmutable (uv b), ctyp t, mkloc loc) :: l]
   | CgVir loc s b t ->
       [Pctf_virt (uv s, mkprivate (uv b), ctyp (mkpolytype t), mkloc loc) ::
        l] ]
@@ -1155,33 +1186,21 @@ and class_str_item c l =
   match c with
   [ CrCtr loc t1 t2 -> [Pcf_cstr (ctyp t1, ctyp t2, mkloc loc) :: l]
   | CrDcl loc cl -> List.fold_right class_str_item (uv cl) l
-  | IFDEF AFTER_OCAML_3_12 THEN
-      CrInh loc ce pb -> [Pcf_inher Fresh (class_expr ce) (uv pb) :: l]
-    ELSE
-      CrInh loc ce pb -> [Pcf_inher (class_expr ce) (uv pb) :: l]
-    END
+  | CrInh loc ce pb -> [ocaml_pcf_inher (class_expr ce) (uv pb) :: l]
   | CrIni loc e -> [Pcf_init (expr e) :: l]
   | CrMth loc s b e t ->
       let e =
-        IFDEF OCAML_3_04 THEN
-          if uv t = None then expr e
-          else error loc "no method with label in this ocaml version"
-        ELSE
-          let t = option (fun t -> ctyp (mkpolytype t)) (uv t) in
-          mkexp loc (Pexp_poly (expr e) t)
-        END
+        match ocaml_pexp_poly with
+        [ Some pexp_poly ->
+            let t = option (fun t -> ctyp (mkpolytype t)) (uv t) in
+            mkexp loc (pexp_poly (expr e) t)
+        | None ->
+            if uv t = None then expr e
+            else error loc "no method with label in this ocaml version" ]
       in
-      IFDEF AFTER_OCAML_3_12 THEN
-        [Pcf_meth (uv s, mkprivate (uv b), Fresh, e, mkloc loc) :: l]
-      ELSE
-        [Pcf_meth (uv s, mkprivate (uv b), e, mkloc loc) :: l]
-      END
+      [ocaml_pcf_meth (uv s, mkprivate (uv b), e, mkloc loc) :: l]
   | CrVal loc s b e ->
-      IFDEF AFTER_OCAML_3_12 THEN
-        [Pcf_val (uv s, mkmutable (uv b), Fresh, expr e, mkloc loc) :: l]
-      ELSE
-        [Pcf_val (uv s, mkmutable (uv b), expr e, mkloc loc) :: l]
-      END
+      [ocaml_pcf_val (uv s, mkmutable (uv b), expr e, mkloc loc) :: l]
   | CrVir loc s b t ->
       [Pcf_virt (uv s, mkprivate (uv b), ctyp (mkpolytype t), mkloc loc) ::
          l] ]

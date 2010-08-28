@@ -74,17 +74,33 @@ let ocaml_pwith_type params tk pf ct variance loc =
 
 let ocaml_pexp_lazy = Some (fun e -> Pexp_lazy e);;
 
-let ocaml_ppat_lazy = None;;
-
-let ocaml_ppat_record lpl = Ppat_record lpl;;
-
-let module_prefix_can_be_in_first_record_label_only = false;;
-
 let ocaml_const_int32 = None;;
 
 let ocaml_const_int64 = None;;
 
 let ocaml_const_nativeint = None;;
+
+let ocaml_pexp_object = None;;
+
+let module_prefix_can_be_in_first_record_label_only = false;;
+
+let ocaml_ppat_lazy = None;;
+
+let ocaml_ppat_record lpl = Ppat_record lpl;;
+
+let ocaml_psig_recmodule = None;;
+
+let ocaml_pstr_recmodule = None;;
+
+let ocaml_pctf_val (s, b, t, loc) = Pctf_val (s, b, Some t, loc);;
+
+let ocaml_pcf_inher ce pb = Pcf_inher (ce, pb);;
+
+let ocaml_pcf_meth (s, b, e, loc) = Pcf_meth (s, b, e, loc);;
+
+let ocaml_pcf_val (s, b, e, loc) = Pcf_val (s, b, e, loc);;
+
+let ocaml_pexp_poly = Some (fun e t -> Pexp_poly (e, t));;
 
 (**)
 
@@ -892,7 +908,18 @@ let rec expr =
       mkexp loc (Pexp_match (expr e, List.map mkpwe (uv pel)))
   | ExNew (loc, id) ->
       mkexp loc (Pexp_new (long_id_of_string_list loc (uv id)))
-  | ExObj (loc, po, cfl) -> error loc "no object in this ocaml version"
+  | ExObj (loc, po, cfl) ->
+      begin match ocaml_pexp_object with
+        Some pexp_object ->
+          let p =
+            match uv po with
+              Some p -> p
+            | None -> PaAny loc
+          in
+          let cil = List.fold_right class_str_item (uv cfl) [] in
+          mkexp loc (pexp_object (patt p, cil))
+      | None -> error loc "no object in this ocaml version"
+      end
   | ExOlb (loc, _, _) -> error loc "labeled expression not allowed here"
   | ExOvr (loc, iel) -> mkexp loc (Pexp_override (List.map mkideexp (uv iel)))
   | ExRec (loc, lel, eo) ->
@@ -1001,7 +1028,15 @@ and sig_item s l =
           (fun (n, mt) l ->
              mksig loc (Psig_module (uv n, module_type mt)) :: l)
           (uv ntl) l
-      else error loc "no recursive module in this ocaml version"
+      else
+        begin match ocaml_psig_recmodule with
+          Some psig_recmodule ->
+            let ntl =
+              List.map (fun (n, mt) -> uv n, module_type mt) (uv ntl)
+            in
+            mksig loc (psig_recmodule ntl) :: l
+        | None -> error loc "no recursive module in this ocaml version"
+        end
   | SgMty (loc, n, mt) ->
       let si =
         match mt with
@@ -1057,7 +1092,25 @@ and str_item s l =
           (fun (n, me) l ->
              mkstr loc (Pstr_module (uv n, module_expr me)) :: l)
           (uv nel) l
-      else error loc "no recursive module in this ocaml version"
+      else
+        begin match ocaml_pstr_recmodule with
+          Some pstr_recmodule ->
+            let nel =
+              List.map
+                (fun (n, me) ->
+                   let (me, mt) =
+                     match me with
+                       MeTyc (_, me, mt) -> me, mt
+                     | _ ->
+                         error (MLast.loc_of_module_expr me)
+                           "module rec needs module types constraints"
+                   in
+                   uv n, module_type mt, module_expr me)
+                (uv nel)
+            in
+            mkstr loc (pstr_recmodule nel) :: l
+        | None -> error loc "no recursive module in this ocaml version"
+        end
   | StMty (loc, n, mt) -> mkstr loc (Pstr_modtype (uv n, module_type mt)) :: l
   | StOpn (loc, id) ->
       mkstr loc (Pstr_open (long_id_of_string_list loc (uv id))) :: l
@@ -1098,7 +1151,7 @@ and class_sig_item c l =
   | CgMth (loc, s, pf, t) ->
       Pctf_meth (uv s, mkprivate (uv pf), ctyp (mkpolytype t), mkloc loc) :: l
   | CgVal (loc, s, b, t) ->
-      Pctf_val (uv s, mkmutable (uv b), Some (ctyp t), mkloc loc) :: l
+      ocaml_pctf_val (uv s, mkmutable (uv b), ctyp t, mkloc loc) :: l
   | CgVir (loc, s, b, t) ->
       Pctf_virt (uv s, mkprivate (uv b), ctyp (mkpolytype t), mkloc loc) :: l
 and class_expr =
@@ -1137,16 +1190,21 @@ and class_str_item c l =
   match c with
     CrCtr (loc, t1, t2) -> Pcf_cstr (ctyp t1, ctyp t2, mkloc loc) :: l
   | CrDcl (loc, cl) -> List.fold_right class_str_item (uv cl) l
-  | CrInh (loc, ce, pb) -> Pcf_inher (class_expr ce, uv pb) :: l
+  | CrInh (loc, ce, pb) -> ocaml_pcf_inher (class_expr ce) (uv pb) :: l
   | CrIni (loc, e) -> Pcf_init (expr e) :: l
   | CrMth (loc, s, b, e, t) ->
       let e =
-        let t = option (fun t -> ctyp (mkpolytype t)) (uv t) in
-        mkexp loc (Pexp_poly (expr e, t))
+        match ocaml_pexp_poly with
+          Some pexp_poly ->
+            let t = option (fun t -> ctyp (mkpolytype t)) (uv t) in
+            mkexp loc (pexp_poly (expr e) t)
+        | None ->
+            if uv t = None then expr e
+            else error loc "no method with label in this ocaml version"
       in
-      Pcf_meth (uv s, mkprivate (uv b), e, mkloc loc) :: l
+      ocaml_pcf_meth (uv s, mkprivate (uv b), e, mkloc loc) :: l
   | CrVal (loc, s, b, e) ->
-      Pcf_val (uv s, mkmutable (uv b), expr e, mkloc loc) :: l
+      ocaml_pcf_val (uv s, mkmutable (uv b), expr e, mkloc loc) :: l
   | CrVir (loc, s, b, t) ->
       Pcf_virt (uv s, mkprivate (uv b), ctyp (mkpolytype t), mkloc loc) :: l
 ;;
