@@ -1,8 +1,8 @@
 #!/bin/sh -e
-# $Id: mkcrc.sh,v 1.5 2010/08/27 20:18:50 deraugla Exp $
+# $Id: mkcrc.sh,v 1.6 2010/08/28 18:10:56 deraugla Exp $
 
 MOD_OLIB="arg array buffer char format hashtbl lexing list obj pervasives printf stream string sys"
-MOD_MAIN="exparser mLast parserify pcaml prtools quotation reloc versdep"
+MOD_MAIN="ast2pt exparser mLast parserify pcaml prtools quotation reloc versdep"
 MOD_5LIB="diff eprinter extfun fstream gramext grammar plexer plexing ploc pprintf pretty"
 MOD_PARS="asttypes location longident parsetree"
 MOD_UTIL="pconfig warnings"

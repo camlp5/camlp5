@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: versdep.mli,v 1.5 2010/08/28 17:22:20 deraugla Exp $ *)
+(* $Id: versdep.mli,v 1.6 2010/08/28 18:10:56 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -15,9 +15,10 @@ value ocaml_type_declaration :
     type_kind -> private_flag -> option core_type -> Location.t ->
     list (bool * bool) -> type_declaration;
 value ocaml_ptype_record :
-  list (string * mutable_flag * core_type * Location.t) -> 'a -> type_kind;
+  list (string * mutable_flag * core_type * Location.t) -> private_flag ->
+    type_kind;
 value ocaml_ptype_variant :
-  list (string * list core_type * Location.t) -> 'a -> type_kind;
+  list (string * list core_type * Location.t) -> private_flag -> type_kind;
 value ocaml_ptype_private : type_kind;
 value ocaml_pwith_type :
   list string -> type_kind -> bool -> option core_type ->

@@ -15,9 +15,10 @@ val ocaml_type_declaration :
     private_flag -> core_type option -> Location.t -> (bool * bool) list ->
     type_declaration;;
 val ocaml_ptype_record :
-  (string * mutable_flag * core_type * Location.t) list -> 'a -> type_kind;;
+  (string * mutable_flag * core_type * Location.t) list -> private_flag ->
+    type_kind;;
 val ocaml_ptype_variant :
-  (string * core_type list * Location.t) list -> 'a -> type_kind;;
+  (string * core_type list * Location.t) list -> private_flag -> type_kind;;
 val ocaml_ptype_private : type_kind;;
 val ocaml_pwith_type :
   string list -> type_kind -> bool -> core_type option ->
