@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 1.20 2010/08/28 12:11:29 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 1.21 2010/08/28 12:55:20 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
@@ -16,6 +16,7 @@ cd $OCAMLSDIR
 dirs=$(ls | grep -v '^[1|2]' | grep -v '^3.0[0-6]' | grep -v csl)
 # instead of this:
 # dirs=$(ls | grep -v '^[1|2]' | grep -v '^3.0[0-3]' | grep -v csl)
+# dirs="3.04 3.05 3.06 3.07 3.08.4 3.09.3 3.10.2 3.11.2 3.12.0"
 
 echo =====================
 echo $dirs

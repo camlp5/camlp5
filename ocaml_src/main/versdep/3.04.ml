@@ -49,8 +49,6 @@ let ocaml_location (fname, lnum, bolp, bp, ep) =
    Location.loc_ghost = bp = 0 && ep = 0}
 ;;
 
-let ocaml_pexp_lazy = None;;
-
 let ocaml_ptyp_poly = None;;
 
 let ocaml_type_declaration params cl tk pf tm loc variance =
@@ -73,6 +71,20 @@ let ocaml_pwith_type params tk pf ct variance loc =
     {ptype_params = params; ptype_cstrs = []; ptype_kind = tk;
      ptype_manifest = ct; ptype_variance = variance; ptype_loc = loc}
 ;;
+
+let ocaml_pexp_lazy = None;;
+
+let ocaml_ppat_lazy = None;;
+
+let ocaml_ppat_record lpl = Ppat_record lpl;;
+
+let module_prefix_can_be_in_first_record_label_only = false;;
+
+let ocaml_const_int32 = None;;
+
+let ocaml_const_int64 = None;;
+
+let ocaml_const_nativeint = None;;
 
 (**)
 
@@ -516,7 +528,11 @@ let rec patt =
   | PaInt (loc, _, _) -> error loc "special int not impl in patt"
   | PaFlo (loc, s) -> mkpat loc (Ppat_constant (Const_float (uv s)))
   | PaLab (loc, _, _) -> error loc "labeled pattern not allowed here"
-  | PaLaz (loc, p) -> error loc "lazy patterns not in this version"
+  | PaLaz (loc, p) ->
+      begin match ocaml_ppat_lazy with
+        Some ppat_lazy -> mkpat loc (ppat_lazy (patt p))
+      | None -> error loc "lazy patterns not in this version"
+      end
   | PaLid (loc, s) -> mkpat loc (Ppat_var (uv s))
   | PaOlb (loc, _, _) -> error loc "labeled pattern not allowed here"
   | PaOrp (loc, p1, p2) -> mkpat loc (Ppat_or (patt p1, patt p2))
@@ -527,7 +543,8 @@ let rec patt =
           let c2 = char_of_char_token loc2 (uv c2) in mkrangepat loc c1 c2
       | _ -> error loc "range pattern allowed only for characters"
       end
-  | PaRec (loc, lpl) -> mkpat loc (Ppat_record (List.map mklabpat (uv lpl)))
+  | PaRec (loc, lpl) ->
+      mkpat loc (ocaml_ppat_record (List.map mklabpat (uv lpl)))
   | PaStr (loc, s) ->
       mkpat loc
         (Ppat_constant (Const_string (string_of_string_token loc (uv s))))
@@ -848,9 +865,21 @@ let rec expr =
       mkexp loc (Pexp_ifthenelse (expr e1, expr e2, Some (expr e3)))
   | ExInt (loc, s, "") ->
       mkexp loc (Pexp_constant (Const_int (int_of_string (uv s))))
-  | ExInt (loc, s, "l") -> error loc "no int32 in this ocaml version"
-  | ExInt (loc, s, "L") -> error loc "no int64 in this ocaml version"
-  | ExInt (loc, s, "n") -> error loc "no nativeint in this ocaml version"
+  | ExInt (loc, s, "l") ->
+      begin match ocaml_const_int32 with
+        Some const_int32 -> mkexp loc (Pexp_constant (const_int32 (uv s)))
+      | None -> error loc "no int32 in this ocaml version"
+      end
+  | ExInt (loc, s, "L") ->
+      begin match ocaml_const_int64 with
+        Some const_int64 -> mkexp loc (Pexp_constant (const_int64 (uv s)))
+      | None -> error loc "no int64 in this ocaml version"
+      end
+  | ExInt (loc, s, "n") ->
+      begin match ocaml_const_nativeint with
+        Some const_nat -> mkexp loc (Pexp_constant (const_nat (uv s)))
+      | None -> error loc "no nativeint in this ocaml version"
+      end
   | ExInt (loc, _, _) -> error loc "special int not implemented"
   | ExLab (loc, _, _) -> error loc "labeled expression not allowed here"
   | ExLaz (loc, e) -> mklazy loc (expr e)
@@ -871,10 +900,12 @@ let rec expr =
       if lel = [] then error loc "empty record"
       else
         let lel =
-          match lel with
-            ((PaAcc (_, PaUid (_, m), _) as p), e) :: rest ->
-              expand_module_prefix (uv m) [p, e] rest
-          | _ -> lel
+          if module_prefix_can_be_in_first_record_label_only then lel
+          else
+            match lel with
+              ((PaAcc (_, PaUid (_, m), _) as p), e) :: rest ->
+                expand_module_prefix (uv m) [p, e] rest
+            | _ -> lel
         in
         let eo =
           match eo with
