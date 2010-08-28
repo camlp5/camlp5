@@ -1,10 +1,7 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.6 2010/08/27 20:18:49 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.7 2010/08/28 12:11:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
-#load "q_MLast.cmo";
-
-open MLast;
 open Parsetree;
 open Longident;
 open Asttypes;
@@ -70,6 +67,96 @@ if ov <> Pconfig.ocaml_version then do {
 }
 else ();
 
+value ocaml_location (fname, lnum, bolp, bp, ep) =
+  IFDEF OCAML_3_06_OR_BEFORE THEN
+    {Location.loc_start = bp; Location.loc_end = ep;
+     Location.loc_ghost = bp = 0 && ep = 0}
+  ELSE
+    let loc_at n =
+      {Lexing.pos_fname = if lnum = -1 then "" else fname;
+       Lexing.pos_lnum = lnum; Lexing.pos_bol = bolp; Lexing.pos_cnum = n}
+    in
+    {Location.loc_start = loc_at bp; Location.loc_end = loc_at ep;
+     Location.loc_ghost = bp = 0 && ep = 0}
+  END
+;
+
+value ocaml_pexp_lazy =
+  IFDEF OCAML_3_04 THEN None ELSE Some (fun e -> Pexp_lazy e) END
+;
+
+value ocaml_ptyp_poly =
+  IFDEF OCAML_3_04 THEN None ELSE Some (fun cl t -> Ptyp_poly cl t) END
+;
+
+value ocaml_type_declaration params cl tk pf tm loc variance =
+  IFDEF AFTER_OCAML_3_11 THEN
+    {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
+     ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
+     ptype_variance = variance}
+  ELSE
+    {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
+     ptype_manifest = tm; ptype_loc = loc; ptype_variance = variance}
+  END
+;
+
+value ocaml_ptype_record ltl priv =
+  IFDEF OCAML_3_08_OR_BEFORE THEN
+    let ltl = List.map (fun (n, m, t, _) -> (n, m, t)) ltl in
+    IFDEF OCAML_3_06_OR_BEFORE THEN
+      Ptype_record ltl
+    ELSE
+      Ptype_record ltl priv
+    END
+  ELSE IFDEF AFTER_OCAML_3_11 THEN
+    Ptype_record ltl
+  ELSE
+    Ptype_record ltl priv
+  END END
+;
+
+value ocaml_ptype_variant ctl priv =
+  IFDEF OCAML_3_08_OR_BEFORE THEN
+    let ctl = List.map (fun (c, tl, _) -> (c, tl)) ctl in
+    IFDEF OCAML_3_06_OR_BEFORE THEN
+      Ptype_variant ctl
+    ELSE
+      Ptype_variant ctl priv
+    END
+  ELSE IFDEF AFTER_OCAML_3_11 THEN
+    Ptype_variant ctl
+  ELSE
+    Ptype_variant ctl priv
+  END END
+;
+
+value ocaml_ptype_private =
+  IFDEF OCAML_3_08_OR_BEFORE OR AFTER_OCAML_3_11 THEN Ptype_abstract
+  ELSE Ptype_private END
+;
+
+value ocaml_pwith_type params tk pf ct variance loc =
+  IFDEF AFTER_OCAML_3_11 THEN
+    let pf = if pf then Private else Public in
+    Pwith_type
+      {ptype_params = params; ptype_cstrs = [];
+       ptype_kind = tk; ptype_private = pf;
+       ptype_manifest = ct; ptype_variance = variance;
+       ptype_loc = loc}
+  ELSE
+    Pwith_type
+      {ptype_params = params; ptype_cstrs = [];
+       ptype_kind = tk; ptype_manifest = ct;
+       ptype_variance = variance; ptype_loc = loc}
+  END
+;
+
+(**)
+
+#load "q_MLast.cmo";
+
+open MLast;
+
 value fast = ref False;
 value no_constructors_arity = ref False;
 
@@ -94,19 +181,9 @@ value glob_fname = ref "";
 value mkloc loc =
   let bp = Ploc.first_pos loc in
   let ep = Ploc.last_pos loc in
-  IFDEF OCAML_3_06_OR_BEFORE THEN
-    {Location.loc_start = bp; Location.loc_end = ep;
-     Location.loc_ghost = bp = 0 && ep = 0}
-  ELSE
-    let lnum = Ploc.line_nb loc in
-    let bolp = Ploc.bol_pos loc in
-    let loc_at n =
-      {Lexing.pos_fname = if lnum = -1 then "" else glob_fname.val;
-       Lexing.pos_lnum = lnum; Lexing.pos_bol = bolp; Lexing.pos_cnum = n}
-    in
-    {Location.loc_start = loc_at bp; Location.loc_end = loc_at ep;
-     Location.loc_ghost = bp = 0 && ep = 0}
-  END
+  let lnum = Ploc.line_nb loc in
+  let bolp = Ploc.bol_pos loc in
+  ocaml_location (glob_fname.val, lnum, bolp, bp, ep)
 ;
 
 value mktyp loc d = {ptyp_desc = d; ptyp_loc = mkloc loc};
@@ -120,26 +197,27 @@ value mkfield loc d = {pfield_desc = d; pfield_loc = mkloc loc};
 value mkcty loc d = {pcty_desc = d; pcty_loc = mkloc loc};
 value mkpcl loc d = {pcl_desc = d; pcl_loc = mkloc loc};
 value mkpolytype t =
-  IFDEF OCAML_3_04 THEN t
-  ELSE
+  if sys_ocaml_version = "3.04" then t
+  else
     match t with
     [ <:ctyp< ! $list:_$ . $_$ >> -> t
     | _ ->
         let loc = MLast.loc_of_ctyp t in
         <:ctyp< ! $list:[]$ . $t$ >> ]
-  END
 ;
 value mklazy loc e =
-  IFDEF OCAML_3_04 THEN
-    let ghpat = mkpat loc in
-    let ghexp = mkexp loc in
-    let void_pat = ghpat (Ppat_construct (Lident "()") None False) in
-    let f = ghexp (Pexp_function "" None [(void_pat, e)]) in
-    let delayed = Ldot (Lident "Lazy") "Delayed" in
-    let df = ghexp (Pexp_construct delayed (Some f) False) in
-    let r = ghexp (Pexp_ident (Ldot (Lident "Pervasives") "ref")) in
-    ghexp (Pexp_apply r [("", df)])
-  ELSE mkexp loc (Pexp_lazy e) END
+  match ocaml_pexp_lazy with
+  [ Some pexp_lazy -> mkexp loc (pexp_lazy e)
+  | None -> do {
+      let ghpat = mkpat loc in
+      let ghexp = mkexp loc in
+      let void_pat = ghpat (Ppat_construct (Lident "()") None False) in
+      let f = ghexp (Pexp_function "" None [(void_pat, e)]) in
+      let delayed = Ldot (Lident "Lazy") "Delayed" in
+      let df = ghexp (Pexp_construct delayed (Some f) False) in
+      let r = ghexp (Pexp_ident (Ldot (Lident "Pervasives") "ref")) in
+      ghexp (Pexp_apply r [("", df)])
+    } ]
 ;
 
 value lident s = Lident s;
@@ -249,8 +327,9 @@ value rec ctyp =
   | TyMan loc _ _ -> error loc "type manifest not allowed here"
   | TyOlb loc lab _ -> error loc "labeled type not allowed here"
   | TyPol loc pl t ->
-       IFDEF OCAML_3_04 THEN error loc "no poly types in that ocaml version"
-       ELSE mktyp loc (Ptyp_poly (uv pl) (ctyp t)) END
+       match ocaml_ptyp_poly with
+       [ Some ptyp_poly -> mktyp loc (ptyp_poly (uv pl) (ctyp t))
+       | None -> error loc "no poly types in that ocaml version" ]
   | TyQuo loc s -> mktyp loc (Ptyp_var (uv s))
   | TyRec loc _ -> error loc "record type not allowed here"
   | TySum loc _ -> error loc "sum type not allowed here"
@@ -281,79 +360,49 @@ and meth_list loc fl v =
       [mkfield loc (Pfield lab (ctyp (mkpolytype t))) :: meth_list loc fl v] ]
 ;
 
-IFDEF AFTER_OCAML_3_11 THEN
-  value mktype loc tl cl tk pf tm =
-    let (params, variance) = List.split tl in
-    {ptype_params = List.map uv params; ptype_cstrs = cl; ptype_kind = tk;
-     ptype_private = pf; ptype_manifest = tm; ptype_loc = mkloc loc;
-     ptype_variance = variance}
-ELSE
-  value mktype loc tl cl tk tm =
-    let (params, variance) = List.split tl in
-    {ptype_params = List.map uv params; ptype_cstrs = cl; ptype_kind = tk;
-     ptype_manifest = tm; ptype_loc = mkloc loc; ptype_variance = variance}
-END;
+value mktype loc tl cl tk pf tm =
+  let (params, variance) = List.split tl in
+  let params = List.map uv params in
+  let loc = mkloc loc in
+  ocaml_type_declaration params cl tk pf tm loc variance
+;
+
 value mkmutable m = if m then Mutable else Immutable;
 value mkprivate m = if m then Private else Public;
-value mktrecord (loc, n, m, t) =
-  IFDEF OCAML_3_08_OR_BEFORE THEN
-    (n, mkmutable m, ctyp (mkpolytype t))
-  ELSE
-    (n, mkmutable m, ctyp (mkpolytype t), mkloc loc)
-  END
+
+value mktrecord ltl priv =
+  let ltl =
+    List.map
+      (fun (loc, n, m, t) ->
+         let loc = mkloc loc in
+         let m = mkmutable m in
+         let t = ctyp (mkpolytype t) in
+         (n, m, t, loc))
+      ltl
+  in
+  ocaml_ptype_record ltl priv
 ;
-value mkvariant (loc, c, tl) =
-  IFDEF OCAML_3_08_OR_BEFORE THEN
-    (conv_con (uv c), List.map ctyp (uv tl))
-  ELSE
-    (conv_con (uv c), List.map ctyp (uv tl), mkloc loc)
-  END
+
+value mktvariant ctl priv =
+  let ctl =
+    List.map
+      (fun (loc, c, tl) ->
+         (conv_con (uv c), List.map ctyp (uv tl), mkloc loc))
+      ctl
+  in
+  ocaml_ptype_variant ctl priv
 ;
 
 value type_decl tl priv cl =
   fun
   [ TyMan loc t <:ctyp< { $list:ltl$ } >> ->
-      IFDEF AFTER_OCAML_3_11 THEN
-        mktype loc tl cl (Ptype_record (List.map mktrecord ltl)) priv
-          (Some (ctyp t))
-      ELSE IFDEF OCAML_3_06_OR_BEFORE THEN
-        mktype loc tl cl (Ptype_record (List.map mktrecord ltl))
-          (Some (ctyp t))
-      ELSE
-        mktype loc tl cl (Ptype_record (List.map mktrecord ltl) priv)
-          (Some (ctyp t))
-      END END
+      mktype loc tl cl (mktrecord ltl priv) priv (Some (ctyp t))
   | TyMan loc t <:ctyp< [ $list:ctl$ ] >> ->
-      IFDEF AFTER_OCAML_3_11 THEN
-        mktype loc tl cl (Ptype_variant (List.map mkvariant ctl)) priv
-          (Some (ctyp t))
-      ELSE IFDEF OCAML_3_06_OR_BEFORE THEN
-        mktype loc tl cl (Ptype_variant (List.map mkvariant ctl))
-          (Some (ctyp t))
-      ELSE
-        mktype loc tl cl (Ptype_variant (List.map mkvariant ctl) priv)
-          (Some (ctyp t))
-      END END
+      mktype loc tl cl (mktvariant ctl priv) priv (Some (ctyp t))
   | TyRec loc ltl ->
-      IFDEF AFTER_OCAML_3_11 THEN
-        mktype loc tl cl (Ptype_record (List.map mktrecord (uv ltl))) priv
-          None
-      ELSE IFDEF OCAML_3_06_OR_BEFORE THEN
-        mktype loc tl cl (Ptype_record (List.map mktrecord (uv ltl))) None
-      ELSE
-        mktype loc tl cl (Ptype_record (List.map mktrecord (uv ltl)) priv)
-          None
-      END END
+      mktype loc tl cl (mktrecord (uv ltl) priv) priv None
   | TySum loc ctl ->
-      IFDEF AFTER_OCAML_3_11 THEN
-        mktype loc tl cl (Ptype_variant (List.map mkvariant (uv ctl))) priv
-          None
-      ELSE IFDEF OCAML_3_06_OR_BEFORE THEN
-        mktype loc tl cl (Ptype_variant (List.map mkvariant (uv ctl))) None
-      ELSE
-        mktype loc tl cl (Ptype_variant (List.map mkvariant (uv ctl)) priv)
-          None
-      END END
+      mktype loc tl cl (mktvariant (uv ctl) priv) priv None
   | t ->
       let m =
         match t with
@@ -362,11 +411,7 @@ value type_decl tl priv cl =
             else None
         | _ -> Some (ctyp t) ]
       in
-      IFDEF AFTER_OCAML_3_11 THEN
-        mktype (loc_of_ctyp t) tl cl Ptype_abstract priv m
-      ELSE
-        mktype (loc_of_ctyp t) tl cl Ptype_abstract m
-      END ]
+      mktype (loc_of_ctyp t) tl cl Ptype_abstract priv m ]
 ;
 
 value mkvalue_desc t p = {pval_type = ctyp t; pval_prim = p};
@@ -454,24 +499,11 @@ value mkwithc =
   fun
   [ WcTyp loc id tpl pf ct ->
       let (params, variance) = List.split (uv tpl) in
-      let tk =
-        IFDEF OCAML_3_08_OR_BEFORE OR AFTER_OCAML_3_11 THEN Ptype_abstract
-        ELSE if uv pf then Ptype_private else Ptype_abstract END
-      in
+      let params = List.map uv params in
+      let ct = Some (ctyp ct) in
+      let tk = if uv pf then ocaml_ptype_private else Ptype_abstract in
       (long_id_of_string_list loc (uv id),
-       IFDEF AFTER_OCAML_3_11 THEN
-         let pf = if uv pf then Private else Public in
-         Pwith_type
-           {ptype_params = List.map uv params; ptype_cstrs = [];
-            ptype_kind = tk; ptype_private = pf;
-            ptype_manifest = Some (ctyp ct); ptype_loc = mkloc loc;
-            ptype_variance = variance}
-       ELSE
-         Pwith_type
-           {ptype_params = List.map uv params; ptype_cstrs = [];
-            ptype_kind = tk; ptype_manifest = Some (ctyp ct);
-            ptype_loc = mkloc loc; ptype_variance = variance}
-       END)
+       ocaml_pwith_type params tk (uv pf) ct variance (mkloc loc))
   | WcMod loc id m ->
       (long_id_of_string_list loc (uv id),
        Pwith_module (module_expr_long_id m)) ]
