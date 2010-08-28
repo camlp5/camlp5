@@ -87,3 +87,5 @@ let arg_symbol _ = None;;
 let arg_tuple _ = None;;
 
 let arg_bool _ = None;;
+
+let printf_ksprintf = Printf.kprintf;;

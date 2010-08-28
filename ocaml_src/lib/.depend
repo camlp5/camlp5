@@ -26,8 +26,8 @@ ploc.cmo: ploc.cmi
 ploc.cmx: ploc.cmi
 pprintf.cmo: pprintf.cmi pretty.cmi
 pprintf.cmx: pprintf.cmi pretty.cmx
-pretty.cmo: ploc.cmi pretty.cmi
-pretty.cmx: ploc.cmx pretty.cmi
+pretty.cmo: ploc.cmi pretty.cmi versdep.cmi
+pretty.cmx: ploc.cmx pretty.cmi versdep.cmx
 stdpp.cmo: ploc.cmi stdpp.cmi
 stdpp.cmx: ploc.cmx stdpp.cmi
 stdpp.cmi: ploc.cmi

@@ -113,3 +113,5 @@ let arg_bool =
     Arg.Bool f -> Some f
   | _ -> None
 ;;
+
+let printf_ksprintf = Printf.kprintf;;

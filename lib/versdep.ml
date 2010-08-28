@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.1 2010/08/28 20:30:18 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.2 2010/08/28 21:02:20 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -227,3 +227,33 @@ value arg_bool =
   [ IFNDEF OCAML_3_06_OR_BEFORE THEN Arg.Bool f -> Some f END
   | _ -> None ]
 ;
+
+IFDEF OCAML_3_04 THEN
+  declare
+    value scan_format fmt i kont =
+      match fmt.[i+1] with
+      [ 'c' -> Obj.magic (fun (c : char) -> kont (String.make 1 c) (i + 2))
+      | 'd' -> Obj.magic (fun (d : int) -> kont (string_of_int d) (i + 2))
+      | 's' -> Obj.magic (fun (s : string) -> kont s (i + 2))
+      | c ->
+          failwith
+            (Printf.sprintf "Pretty.sprintf \"%s\" '%%%c' not impl" fmt c) ]
+    ;
+    value printf_ksprintf kont fmt =
+      let fmt = (Obj.magic fmt : string) in
+      let len = String.length fmt in
+      doprn [] 0 where rec doprn rev_sl i =
+        if i >= len then do {
+          let s = String.concat "" (List.rev rev_sl) in
+          Obj.magic (kont s)
+        }
+        else do {
+          match fmt.[i] with
+          [ '%' -> scan_format fmt i (fun s -> doprn [s :: rev_sl])
+          | c -> doprn [String.make 1 c :: rev_sl] (i + 1)  ]
+        }
+    ;
+  end
+ELSE
+  value printf_ksprintf = Printf.kprintf
+END;

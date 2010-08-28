@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: versdep.mli,v 1.1 2010/08/28 20:30:18 deraugla Exp $ *)
+(* $Id: versdep.mli,v 1.2 2010/08/28 21:02:20 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -56,3 +56,5 @@ value arg_set_float : Arg.spec -> option (ref float);
 value arg_symbol : Arg.spec -> option (list string * (string -> unit));
 value arg_tuple : Arg.spec -> option (list Arg.spec);
 value arg_bool : Arg.spec -> option (bool -> unit);
+
+value printf_ksprintf : (string -> string) -> format 'a unit string -> 'a;

@@ -17,28 +17,7 @@ let after_print s =
   else s
 ;;
 
-let scan_format fmt i kont =
-  match fmt.[i+1] with
-    'c' -> Obj.magic (fun (c : char) -> kont (String.make 1 c) (i + 2))
-  | 'd' -> Obj.magic (fun (d : int) -> kont (string_of_int d) (i + 2))
-  | 's' -> Obj.magic (fun (s : string) -> kont s (i + 2))
-  | c ->
-      failwith (Printf.sprintf "Pretty.sprintf \"%s\" '%%%c' not impl" fmt c)
-;;
-let printf_kprintf kont fmt =
-  let fmt : string = Obj.magic fmt in
-  let len = String.length fmt in
-  let rec doprn rev_sl i =
-    if i >= len then
-      let s = String.concat "" (List.rev rev_sl) in Obj.magic (kont s)
-    else
-      match fmt.[i] with
-        '%' -> scan_format fmt i (fun s i -> doprn (s :: rev_sl) i)
-      | c -> doprn (String.make 1 c :: rev_sl) (i + 1)
-  in
-  doprn [] 0
-;;
-let sprintf fmt = printf_kprintf after_print fmt;;
+let sprintf fmt = Versdep.printf_ksprintf after_print fmt;;
 
 let horiz_vertic horiz vertic =
   try Ploc.call_with horiz_ctx true horiz () with
