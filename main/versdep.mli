@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: versdep.mli,v 1.6 2010/08/28 18:10:56 deraugla Exp $ *)
+(* $Id: versdep.mli,v 1.7 2010/08/28 19:46:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -50,5 +50,9 @@ value ocaml_pcf_val :
 value ocaml_pexp_poly :
   option (expression -> option core_type -> expression_desc);
 
-value action_arg : string -> list string -> Arg.spec -> option (list string);
-value arg_symbol : Arg.spec -> option (list string);
+value arg_set_string : Arg.spec -> option (ref string);
+value arg_set_int : Arg.spec -> option (ref int);
+value arg_set_float : Arg.spec -> option (ref float);
+value arg_symbol : Arg.spec -> option (list string * (string -> unit));
+value arg_tuple : Arg.spec -> option (list Arg.spec);
+value arg_bool : Arg.spec -> option (bool -> unit);

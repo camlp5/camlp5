@@ -50,5 +50,9 @@ val ocaml_pcf_val :
 val ocaml_pexp_poly :
   (expression -> core_type option -> expression_desc) option;;
 
-val action_arg : string -> string list -> Arg.spec -> string list option;;
-val arg_symbol : Arg.spec -> string list option;;
+val arg_set_string : Arg.spec -> string ref option;;
+val arg_set_int : Arg.spec -> int ref option;;
+val arg_set_float : Arg.spec -> float ref option;;
+val arg_symbol : Arg.spec -> (string list * (string -> unit)) option;;
+val arg_tuple : Arg.spec -> Arg.spec list option;;
+val arg_bool : Arg.spec -> (bool -> unit) option;;

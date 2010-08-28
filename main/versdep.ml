@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.11 2010/08/28 18:28:40 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.12 2010/08/28 19:46:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -192,83 +192,38 @@ value ocaml_pexp_poly =
   IFDEF OCAML_3_04 THEN None ELSE Some (fun e t -> Pexp_poly e t) END
 ;
 
-(**)
-
-value action_arg s sl =
+value arg_set_string =
   fun
-  [ Arg.Unit f -> if s = "" then do { f (); Some sl } else None
-  | Arg.Set r -> if s = "" then do { r.val := True; Some sl } else None
-  | Arg.Clear r -> if s = "" then do { r.val := False; Some sl } else None
-  | Arg.Rest f -> do { List.iter f [s :: sl]; Some [] }
-  | Arg.String f ->
-      if s = "" then
-        match sl with
-        [ [s :: sl] -> do { f s; Some sl }
-        | [] -> None ]
-      else do { f s; Some sl }
-  | Arg.Int f ->
-      if s = "" then
-        match sl with
-        [ [s :: sl] ->
-            try do { f (int_of_string s); Some sl } with
-            [ Failure "int_of_string" -> None ]
-        | [] -> None ]
-      else
-        try do { f (int_of_string s); Some sl } with
-        [ Failure "int_of_string" -> None ]
-  | Arg.Float f ->
-      if s = "" then
-        match sl with
-        [ [s :: sl] -> do { f (float_of_string s); Some sl }
-        | [] -> None ]
-      else do { f (float_of_string s); Some sl }
-  | IFNDEF OCAML_3_06_OR_BEFORE THEN
-      Arg.Set_string r ->
-          if s = "" then
-            match sl with
-            [ [s :: sl] -> do { r.val := s; Some sl }
-            | [] -> None ]
-          else do { r.val := s; Some sl }
-      END
-  | IFNDEF OCAML_3_06_OR_BEFORE THEN
-      Arg.Set_int r ->
-        if s = "" then
-          match sl with
-          [ [s :: sl] ->
-              try do { r.val := int_of_string s; Some sl } with
-              [ Failure "int_of_string" -> None ]
-          | [] -> None ]
-        else
-          try do { r.val := int_of_string s; Some sl } with
-          [ Failure "int_of_string" -> None ]
-    END
-  | IFNDEF OCAML_3_06_OR_BEFORE THEN
-      Arg.Set_float r ->
-        if s = "" then
-          match sl with
-          [ [s :: sl] -> do { r.val := float_of_string s; Some sl }
-          | [] -> None ]
-        else do { r.val := float_of_string s; Some sl }
-    END
-  | IFNDEF OCAML_3_06_OR_BEFORE THEN
-      Arg.Symbol syms f ->
-        match if s = "" then sl else [s :: sl] with
-        [ [s :: sl] when List.mem s syms -> do { f s; Some sl }
-        | _ -> None ]
-    END
-  | IFNDEF OCAML_3_06_OR_BEFORE THEN
-      Arg.Tuple _ -> failwith "Arg.Tuple not implemented"
-    END
-  | IFNDEF OCAML_3_06_OR_BEFORE THEN
-      Arg.Bool _ -> failwith "Arg.Bool not implemented"
-    END ]
+  [ IFNDEF OCAML_3_06_OR_BEFORE THEN Arg.Set_string r -> Some r END
+  | _ -> None ]
+;
+
+value arg_set_int =
+  fun
+  [ IFNDEF OCAML_3_06_OR_BEFORE THEN Arg.Set_int r -> Some r END
+  | _ -> None ]
+;
+
+value arg_set_float =
+  fun
+  [ IFNDEF OCAML_3_06_OR_BEFORE THEN Arg.Set_float r -> Some r END
+  | _ -> None ]
 ;
 
 value arg_symbol =
-  IFDEF OCAML_3_06_OR_BEFORE THEN fun _ -> None
-  ELSE
-    fun
-    [ Arg.Symbol symbs _ -> Some symbs
-    | _ -> None ]
-  END
+  fun
+  [ IFNDEF OCAML_3_06_OR_BEFORE THEN Arg.Symbol s f -> Some (s, f) END
+  | _ -> None ]
+;
+
+value arg_tuple =
+  fun
+  [ IFNDEF OCAML_3_06_OR_BEFORE THEN Arg.Tuple t -> Some t END
+  | _ -> None ]
+;
+
+value arg_bool =
+  fun
+  [ IFNDEF OCAML_3_06_OR_BEFORE THEN Arg.Bool f -> Some f END
+  | _ -> None ]
 ;
