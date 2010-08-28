@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.77 2010/08/28 17:22:20 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.78 2010/08/28 18:28:40 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -10,6 +10,30 @@ open Asttypes;
 open Versdep;
 
 open MLast;
+
+let ov = sys_ocaml_version in
+let oi =
+  loop 0 where rec loop i =
+    if i = String.length ov then i
+    else
+      match ov.[i] with
+      [ ' ' | '+' -> i
+      | _ -> loop (i + 1) ]
+in
+let ov = String.sub ov 0 oi in
+if ov <> Pconfig.ocaml_version then do {
+  flush stdout;
+  Printf.eprintf "\n";
+  Printf.eprintf "This ocaml and this camlp5 are not compatible:\n";
+  Printf.eprintf "- OCaml version is %s\n" sys_ocaml_version;
+  Printf.eprintf "- Camlp5 compiled with ocaml %s\n" Pconfig.ocaml_version;
+  Printf.eprintf "\n";
+  Printf.eprintf "You need to recompile camlp5.\n";
+  Printf.eprintf "\n";
+  flush stderr;
+  failwith "bad version"
+}
+else ();
 
 value fast = ref False;
 value no_constructors_arity = ref False;

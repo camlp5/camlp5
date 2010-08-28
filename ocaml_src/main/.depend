@@ -2,12 +2,12 @@ argl.cmo: argl.cmi versdep.cmi
 argl.cmx: argl.cmi versdep.cmx
 ast2pt.cmo: $(OTOP)/parsing/asttypes.cmi \
     $(OTOP)/parsing/longident.cmi \
-    $(OTOP)/parsing/parsetree.cmi ast2pt.cmi mLast.cmi \
-    versdep.cmi
+    $(OTOP)/parsing/parsetree.cmi \
+    $(OTOP)/utils/pconfig.cmi ast2pt.cmi mLast.cmi versdep.cmi
 ast2pt.cmx: $(OTOP)/parsing/asttypes.cmi \
     $(OTOP)/parsing/longident.cmi \
-    $(OTOP)/parsing/parsetree.cmi ast2pt.cmi mLast.cmi \
-    versdep.cmx
+    $(OTOP)/parsing/parsetree.cmi \
+    $(OTOP)/utils/pconfig.cmx ast2pt.cmi mLast.cmi versdep.cmx
 ast2pt.cmi: $(OTOP)/parsing/parsetree.cmi mLast.cmi \
     $(OTOP)/parsing/location.cmi
 exparser.cmo: exparser.cmi mLast.cmi reloc.cmi
@@ -35,13 +35,11 @@ reloc.cmi: mLast.cmi
 versdep.cmo: $(OTOP)/parsing/asttypes.cmi \
     $(OTOP)/parsing/location.cmi \
     $(OTOP)/parsing/longident.cmi \
-    $(OTOP)/parsing/parsetree.cmi \
-    $(OTOP)/utils/pconfig.cmi versdep.cmi
+    $(OTOP)/parsing/parsetree.cmi versdep.cmi
 versdep.cmx: $(OTOP)/parsing/asttypes.cmi \
     $(OTOP)/parsing/location.cmi \
     $(OTOP)/parsing/longident.cmi \
-    $(OTOP)/parsing/parsetree.cmi \
-    $(OTOP)/utils/pconfig.cmx versdep.cmi
+    $(OTOP)/parsing/parsetree.cmi versdep.cmi
 versdep.cmi: $(OTOP)/parsing/parsetree.cmi \
     $(OTOP)/parsing/longident.cmi \
     $(OTOP)/parsing/location.cmi \
