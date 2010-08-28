@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pretty.ml,v 1.9 2010/08/27 21:35:56 deraugla Exp $ *)
+(* $Id: pretty.ml,v 1.10 2010/08/28 04:19:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -17,21 +17,13 @@ value after_print s =
   else s
 ;
 
-IFNDEF OCAML_3_04 THEN
-  value sprintf fmt = Printf.kprintf after_print fmt
-ELSE
+IFDEF OCAML_3_04 THEN
   declare
-    value scan_format rev_sl fmt i doprn =
+    value scan_format fmt i kont =
       match fmt.[i+1] with
-      [ 'c' ->
-          Obj.magic
-            (fun (c : char) -> doprn [String.make 1 c :: rev_sl] (i + 2))
-      | 'd' ->
-          Obj.magic
-            (fun (d : int) -> doprn [string_of_int d :: rev_sl] (i + 2))
-      | 's' ->
-          Obj.magic
-            (fun (s : string) -> doprn [s :: rev_sl] (i + 2))
+      [ 'c' -> Obj.magic (fun (c : char) -> kont (String.make 1 c) (i + 2))
+      | 'd' -> Obj.magic (fun (d : int) -> kont (string_of_int d) (i + 2))
+      | 's' -> Obj.magic (fun (s : string) -> kont s (i + 2))
       | c ->
           failwith
             (Printf.sprintf "Pretty.sprintf \"%s\" '%%%c' not impl" fmt c) ]
@@ -46,12 +38,14 @@ ELSE
         }
         else do {
           match fmt.[i] with
-          [ '%' -> scan_format rev_sl fmt i doprn
+          [ '%' -> scan_format fmt i (fun s -> doprn [s :: rev_sl])
           | c -> doprn [String.make 1 c :: rev_sl] (i + 1)  ]
         }
     ;
-    value sprintf fmt =	printf_kprintf	after_print fmt;
+    value sprintf fmt =	printf_kprintf after_print fmt;
   end
+ELSE
+  value sprintf fmt = Printf.kprintf after_print fmt
 END;
 
 value horiz_vertic horiz vertic =
