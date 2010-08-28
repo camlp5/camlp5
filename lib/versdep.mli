@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: versdep.mli,v 1.7 2010/08/28 19:46:06 deraugla Exp $ *)
+(* $Id: versdep.mli,v 1.1 2010/08/28 20:30:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;

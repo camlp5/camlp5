@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.51 2010/08/27 17:47:46 deraugla Exp $
+# $Id: Makefile,v 1.52 2010/08/28 20:30:17 deraugla Exp $
 
 include config/Makefile
 
@@ -7,7 +7,7 @@ FDIRS=lib odyl main meta
 OPTDIRS=ocaml_stuff lib odyl main meta etc
 OPTOPTDIRS=compile
 SHELL=/bin/sh
-COLD_FILES=ocaml_src/main/argl.ml ocaml_src/main/versdep.ml ocaml_src/main/versdep.mli ocaml_src/main/mLast.mli ocaml_src/main/pcaml.ml ocaml_src/main/pcaml.mli ocaml_src/main/quotation.ml ocaml_src/main/quotation.mli ocaml_src/main/reloc.ml ocaml_src/main/reloc.mli ocaml_src/lib/extfun.ml ocaml_src/lib/extfun.mli ocaml_src/lib/fstream.ml ocaml_src/lib/fstream.mli ocaml_src/lib/gramext.ml ocaml_src/lib/gramext.mli ocaml_src/lib/grammar.ml ocaml_src/lib/grammar.mli ocaml_src/lib/plexer.ml ocaml_src/lib/plexer.mli ocaml_src/lib/stdpp.ml ocaml_src/lib/stdpp.mli ocaml_src/lib/token.ml ocaml_src/lib/token.mli ocaml_src/meta/pa_extend.ml ocaml_src/meta/pa_extend_m.ml ocaml_src/meta/pa_macro.ml ocaml_src/meta/pa_r.ml ocaml_src/meta/pa_rp.ml ocaml_src/meta/pr_dump.ml ocaml_src/meta/q_MLast.ml ocaml_src/odyl/odyl_main.ml ocaml_src/odyl/odyl_main.mli ocaml_src/odyl/odyl.ml
+COLD_FILES=ocaml_src/main/argl.ml ocaml_src/main/mLast.mli ocaml_src/main/pcaml.ml ocaml_src/main/pcaml.mli ocaml_src/main/quotation.ml ocaml_src/main/quotation.mli ocaml_src/main/reloc.ml ocaml_src/main/reloc.mli ocaml_src/lib/extfun.ml ocaml_src/lib/extfun.mli ocaml_src/lib/fstream.ml ocaml_src/lib/fstream.mli ocaml_src/lib/gramext.ml ocaml_src/lib/gramext.mli ocaml_src/lib/grammar.ml ocaml_src/lib/grammar.mli ocaml_src/lib/plexer.ml ocaml_src/lib/plexer.mli ocaml_src/lib/stdpp.ml ocaml_src/lib/stdpp.mli ocaml_src/lib/token.ml ocaml_src/lib/token.mli ocaml_src/lib/versdep.ml ocaml_src/lib/versdep.mli ocaml_src/meta/pa_extend.ml ocaml_src/meta/pa_extend_m.ml ocaml_src/meta/pa_macro.ml ocaml_src/meta/pa_r.ml ocaml_src/meta/pa_rp.ml ocaml_src/meta/pr_dump.ml ocaml_src/meta/q_MLast.ml ocaml_src/odyl/odyl_main.ml ocaml_src/odyl/odyl_main.mli ocaml_src/odyl/odyl.ml
 PR_O=pr_o.cmo
 DIFF_OPT=
 # For possible installation in a fake root directory
@@ -26,7 +26,7 @@ opt:
 opt.opt:
 	cd compile; $(MAKE) opt
 
-ocaml_src/main/versdep.ml:
+ocaml_src/lib/versdep.ml:
 	@echo "Please run 'configure' first"; exit 2
 
 boot/camlp5$(EXE): $(COLD_FILES)
@@ -117,6 +117,7 @@ world.opt:
 	$(MAKE) coreboot all opt opt.opt
 
 library:
+	cd ocaml_stuff; $(MAKE)
 	cd lib; $(MAKE) all promote
 
 # Cold start using pure Objective Caml sources
@@ -169,9 +170,9 @@ new_sources:
 	   echo ocaml_src.new/$$i/.depend; \
 	   cp ../../$$i/.depend .); \
 	 done
-	@-mkdir ocaml_src.new/main/versdep
-	@-(cd ocaml_src/main/versdep; \
-	   cp *.ml ../../../ocaml_src.new/main/versdep/.)
+	@-mkdir ocaml_src.new/lib/versdep
+	@-(cd ocaml_src/lib/versdep; \
+	   cp *.ml ../../../ocaml_src.new/lib/versdep/.)
 	@-for i in $(FDIRS); do \
 	  (cd $$i; \
 	   for j in *.ml*; do \
@@ -222,8 +223,8 @@ compare_sources:
 
 bootstrap_all_versdep:
 	cd etc; $(MAKE) $(PR_O)
-	@cd main; \
-	for i in ../ocaml_src/main/versdep/*.ml; do \
+	@cd lib; \
+	for i in ../ocaml_src/lib/versdep/*.ml; do \
 	  echo ============================================; \
 	  echo $$i; \
 	  j=$$(echo $$(basename $$i) | \
@@ -236,8 +237,8 @@ bootstrap_all_versdep:
 
 compare_all_versdep:
 	cd etc; $(MAKE) $(PR_O)
-	@cd main; \
-	for i in ../ocaml_src/main/versdep/*.ml; do \
+	@cd lib; \
+	for i in ../ocaml_src/lib/versdep/*.ml; do \
 	  echo ============================================; \
 	  echo $$i; \
 	  j=$$(echo $$(basename $$i) | \
@@ -250,7 +251,7 @@ compare_all_versdep:
 
 untouch_sources:
 	@-cd ocaml_src; \
-	for i in $(FDIRS) main/versdep; do \
+	for i in $(FDIRS) lib/versdep; do \
 	  for j in $$i/*.ml* $$i/Makefile*; do \
 	    if cmp -s $$j ../ocaml_src.new/$$j 2>/dev/null; then \
 	      cp -p $$j ../ocaml_src.new/$$j; \
@@ -263,7 +264,7 @@ promote_sources:
 	for i in $(FDIRS); do \
 	  $(MAKE) mv_cvs FROM=ocaml_src/$$i TO=ocaml_src.new/$$i; \
 	done
-	mv ocaml_src/main/versdep/CVS ocaml_src.new/main/versdep/.
+	mv ocaml_src/lib/versdep/CVS ocaml_src.new/lib/versdep/.
 	mv ocaml_src/tools ocaml_src.new/.
 	mv ocaml_src ocaml_src.new/SAVED
 	mv ocaml_src.new ocaml_src
@@ -275,7 +276,7 @@ unpromote_sources:
 	for i in $(FDIRS); do \
 	  $(MAKE) mv_cvs FROM=ocaml_src.new/$$i TO=ocaml_src/$$i; \
 	done
-	mv ocaml_src.new/main/versdep/CVS ocaml_src/main/versdep/.
+	mv ocaml_src.new/lib/versdep/CVS ocaml_src/lib/versdep/.
 	$(MAKE) mv_cvs FROM=ocaml_src.new TO=ocaml_src
 
 clean_sources:

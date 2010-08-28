@@ -34,3 +34,15 @@ stdpp.cmi: ploc.cmi
 token.cmo: plexing.cmi ploc.cmi token.cmi
 token.cmx: plexing.cmx ploc.cmx token.cmi
 token.cmi: ploc.cmi plexing.cmi
+versdep.cmo: $(OTOP)/parsing/asttypes.cmi \
+    $(OTOP)/parsing/location.cmi \
+    $(OTOP)/parsing/longident.cmi \
+    $(OTOP)/parsing/parsetree.cmi versdep.cmi
+versdep.cmx: $(OTOP)/parsing/asttypes.cmi \
+    $(OTOP)/parsing/location.cmi \
+    $(OTOP)/parsing/longident.cmi \
+    $(OTOP)/parsing/parsetree.cmi versdep.cmi
+versdep.cmi: $(OTOP)/parsing/parsetree.cmi \
+    $(OTOP)/parsing/longident.cmi \
+    $(OTOP)/parsing/location.cmi \
+    $(OTOP)/parsing/asttypes.cmi
