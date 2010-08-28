@@ -1,11 +1,10 @@
 (* camlp5r *)
-(* $Id: main.ml,v 1.14 2010/08/25 11:28:59 deraugla Exp $ *)
+(* $Id: main.ml,v 1.15 2010/08/28 17:22:20 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
 
 open Printf;
-open Versdep;
 
 value string_of_loc fname line bp ep =
   match Sys.os_type with
