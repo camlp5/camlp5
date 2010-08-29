@@ -1,9 +1,14 @@
 (* camlp5r *)
-(* $Id: versdep.mli,v 1.2 2010/08/28 21:02:20 deraugla Exp $ *)
+(* $Id: versdep.mli,v 1.3 2010/08/29 04:50:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
 open Asttypes;
+
+type choice 'a 'b =
+  [ Left of 'a
+  | Right of 'b ]
+;
 
 value sys_ocaml_version : string;
 
@@ -19,6 +24,9 @@ value ocaml_ptype_record :
     type_kind;
 value ocaml_ptype_variant :
   list (string * list core_type * Location.t) -> private_flag -> type_kind;
+value ocaml_ptyp_variant :
+  list (choice (label * bool * list core_type) core_type) -> bool ->
+    option (list label) -> option core_type_desc;
 value ocaml_ptype_private : type_kind;
 value ocaml_pwith_type :
   list string -> type_kind -> bool -> option core_type ->

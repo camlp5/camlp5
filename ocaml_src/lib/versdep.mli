@@ -5,6 +5,11 @@
 open Parsetree;;
 open Asttypes;;
 
+type ('a, 'b) choice =
+    Left of 'a
+  | Right of 'b
+;;
+
 val sys_ocaml_version : string;;
 
 val ocaml_location : string * int * int * int * int -> Location.t;;
@@ -19,6 +24,9 @@ val ocaml_ptype_record :
     type_kind;;
 val ocaml_ptype_variant :
   (string * core_type list * Location.t) list -> private_flag -> type_kind;;
+val ocaml_ptyp_variant :
+  (label * bool * core_type list, core_type) choice list -> bool ->
+    label list option -> core_type_desc option;;
 val ocaml_ptype_private : type_kind;;
 val ocaml_pwith_type :
   string list -> type_kind -> bool -> core_type option ->

@@ -13,6 +13,11 @@ open Asttypes;;
 (* *)
 (* *)
 
+type ('a, 'b) choice =
+    Left of 'a
+  | Right of 'b
+;;
+
 let sys_ocaml_version = Sys.ocaml_version;;
 
 let ocaml_location (fname, lnum, bolp, bp, ep) =
@@ -35,6 +40,17 @@ let ocaml_type_declaration params cl tk pf tm loc variance =
 let ocaml_ptype_record ltl priv = Ptype_record ltl;;
 
 let ocaml_ptype_variant ctl priv = Ptype_variant ctl;;
+
+let ocaml_ptyp_variant catl clos sl_opt =
+  let catl =
+    List.map
+      (function
+         Left (c, a, tl) -> Rtag (c, a, tl)
+       | Right t -> Rinherit t)
+      catl
+  in
+  Some (Ptyp_variant (catl, clos, sl_opt))
+;;
 
 let ocaml_ptype_private = Ptype_abstract;;
 

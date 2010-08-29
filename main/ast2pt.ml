@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.79 2010/08/29 02:39:35 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.80 2010/08/29 04:50:05 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -208,8 +208,8 @@ value rec ctyp =
       let catl =
         List.map
           (fun
-           [ PvTag c a t -> Rtag (uv c) (uv a) (List.map ctyp (uv t))
-           | PvInh t -> Rinherit (ctyp t) ])
+           [ PvTag c a t -> Left (uv c, uv a, List.map ctyp (uv t))
+           | PvInh t -> Right (ctyp t) ])
           (uv catl)
       in
       let (clos, sl) =
@@ -218,7 +218,9 @@ value rec ctyp =
         | Some None -> (False, None)
         | Some (Some sl) -> (True, Some (uv sl)) ]
       in
-      mktyp loc (Ptyp_variant catl clos sl)
+      match ocaml_ptyp_variant catl clos sl with
+      [ Some t -> mktyp loc t
+      | None -> error loc "no inherit in this ocaml version" ]
   | IFDEF STRICT THEN
       TyXtr loc _ _ -> error loc "bad ast TyXtr"
     END ]

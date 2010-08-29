@@ -1,6 +1,8 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 1.35 2010/08/29 02:39:37 deraugla Exp $ *)
+(* $Id: rprint.ml,v 1.36 2010/08/29 04:50:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
+
+IFNDEF OCAML_3_02 THEN declare
 
 open Format;
 open Outcometree;
@@ -8,31 +10,26 @@ open Outcometree;
 IFDEF OCAML_3_03 OR OCAML_3_04 THEN
   DEFINE OCAML_3_04_OR_BEFORE
 END;
-
 IFDEF OCAML_3_04_OR_BEFORE OR OCAML_3_05 OR OCAML_3_06 THEN
   DEFINE OCAML_3_06_OR_BEFORE
 END;
-
 IFDEF
   OCAML_3_06_OR_BEFORE OR OCAML_3_07 OR
   OCAML_3_08_0 OR OCAML_3_08_1 OR OCAML_3_08_2 OR OCAML_3_08_3 OR OCAML_3_08_4
 THEN
   DEFINE OCAML_3_08_OR_BEFORE
 END;
-
 IFDEF
   OCAML_3_12_0 OR OCAML_3_12_1 OR OCAML_3_13_0
 THEN
   DEFINE OCAML_3_12_OR_AFTER
 END;
-
 IFDEF
   OCAML_3_11 OR OCAML_3_11_0 OR OCAML_3_11_1 OR OCAML_3_11_2 OR
   OCAML_3_11_3 OR OCAML_3_12_OR_AFTER
 THEN
   DEFINE OCAML_3_11_OR_AFTER
 END;
-
 IFDEF
   OCAML_3_10 OR OCAML_3_10_0 OR OCAML_3_10_1 OR OCAML_3_10_2 OR
   OCAML_3_10_3 OR OCAML_3_11_OR_AFTER
@@ -366,7 +363,7 @@ and print_out_sig_item ppf =
     ELSE
       Osig_module name mty _ ->
         fprintf ppf "@[<2>module %s :@ %a@]" name
-          print_out_module_type.val mty
+          print_out_module_type mty
     END
   | IFDEF OCAML_3_06_OR_BEFORE OR OCAML_3_07 THEN
       Osig_type tdl -> do {
@@ -399,7 +396,7 @@ and print_out_sig_item ppf =
         [ Osig_class vir_flag name params clt _ ->
             fprintf ppf "@[<2>class%s@ %a%s@ :@ %a@]"
               (if vir_flag then " virtual" else "") print_out_class_params
-              params name print_out_class_type.val clt
+              params name print_out_class_type clt
         | Osig_class_type vir_flag name params clt _ ->
             fprintf ppf "@[<2>class type%s@ %a%s@ =@ %a@]"
               (if vir_flag then " virtual" else "") print_out_class_params
@@ -483,3 +480,5 @@ IFNDEF OCAML_3_04_OR_BEFORE THEN
 END;
 Toploop.print_out_sig_item.val := print_out_sig_item;
 Toploop.print_out_phrase.val := print_out_phrase;
+
+end END;

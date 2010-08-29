@@ -205,8 +205,8 @@ let rec ctyp =
       let catl =
         List.map
           (function
-             PvTag (c, a, t) -> Rtag (uv c, uv a, List.map ctyp (uv t))
-           | PvInh t -> Rinherit (ctyp t))
+             PvTag (c, a, t) -> Left (uv c, uv a, List.map ctyp (uv t))
+           | PvInh t -> Right (ctyp t))
           (uv catl)
       in
       let (clos, sl) =
@@ -215,7 +215,9 @@ let rec ctyp =
         | Some None -> false, None
         | Some (Some sl) -> true, Some (uv sl)
       in
-      mktyp loc (Ptyp_variant (catl, clos, sl))
+      match ocaml_ptyp_variant catl clos sl with
+        Some t -> mktyp loc t
+      | None -> error loc "no inherit in this ocaml version"
 and meth_list loc fl v =
   match fl with
     [] -> if uv v then [mkfield loc Pfield_var] else []
