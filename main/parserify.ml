@@ -1,8 +1,9 @@
 (* camlp5r *)
-(* $Id: parserify.ml,v 1.4 2010/08/18 16:26:26 deraugla Exp $ *)
+(* $Id: parserify.ml,v 1.5 2010/08/29 13:25:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
+#load "pa_macro.cmo";
 
 (* Heuristic to rebuild parsers and streams from the AST *)
 
@@ -70,7 +71,8 @@ value err =
 
 value rec unstream_pattern_kont =
   fun
-  [ <:expr<
+  [ IFNDEF OCAML_3_01 THEN
+    <:expr<
       let $p$ =
         try $f$ with [ Stream.Failure -> raise (Stream.Error $e2$) ]
       in
@@ -88,6 +90,42 @@ value rec unstream_pattern_kont =
       in
       let (sp, epo, e) = unstream_pattern_kont e in
       ([(SpNtr loc p f, err e2) :: sp], epo, e)
+    END
+  | IFDEF OCAML_3_01 THEN
+    (* separations in two (1/2) because of bug in OCaml 3.01 on
+       or-patterns containing variable bindings (symptom: segmentation
+       faults) *)
+    <:expr<
+      let $p$ =
+        try $f$ with [ Stream.Failure -> raise (Stream.Error $e2$) ]
+      in
+      $e$
+    >> ->
+      let f =
+        match f with
+        [ <:expr< $f$ strm__ >> -> f
+        | _ -> <:expr< fun (strm__ : Stream.t _) -> $f$ >> ]
+      in
+      let (sp, epo, e) = unstream_pattern_kont e in
+      ([(SpNtr loc p f, err e2) :: sp], epo, e)
+    END
+  | IFDEF OCAML_3_01 THEN
+    (* separations in two (2/2) because of bug in OCaml 3.01 on
+       or-patterns containing variable bindings (symptom: segmentation
+       faults) *)
+    <:expr<
+      match try Some $f$ with [ Stream.Failure -> None ] with
+      [ Some $p$ -> $e$
+      | _ -> raise (Stream.Error $e2$) ]
+    >> ->
+      let f =
+        match f with
+        [ <:expr< $f$ strm__ >> -> f
+        | _ -> <:expr< fun (strm__ : Stream.t _) -> $f$ >> ]
+      in
+      let (sp, epo, e) = unstream_pattern_kont e in
+      ([(SpNtr loc p f, err e2) :: sp], epo, e)
+    END
   | <:expr< let $lid:p$ = Stream.count strm__ in $e$ >> ->
       ([], Some p, e)
   | <:expr< let $p$ = strm__ in $e$ >> ->

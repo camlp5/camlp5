@@ -4,9 +4,9 @@ Internal, very small, undocumented, or invisible changes
 Camlp5 Version 5.16:
 --------------------
 
-* [29 Aug 10] Added compatibility for OCaml versions 3.02, 3.03, 3.04, 3.05
-  and 3.06 (but do not work in 64 bits architecture due to OCaml bug about
-  input_value/output_value of 64 bits architectures of that time).
+* [29 Aug 10] Added compatibility for OCaml versions 3.06, 3.05, 3.04, 3.03
+  3.02 and 3.01 (but do not work on 64 bits architectures due to OCaml bug
+  about input_value/output_value of that time).
 * [28 Aug 10] Re-added module Ast2pt (file main/ast2pt.ml). Created file
   lib/versdep.ml and directory ocaml_src/lib/versdep for ocaml versions
   dependance.
