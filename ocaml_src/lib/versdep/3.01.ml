@@ -19,7 +19,7 @@ type ('a, 'b) choice =
   | Right of 'b
 ;;
 
-let sys_ocaml_version = "3.03";;
+let sys_ocaml_version = "3.01";;
 
 let ocaml_location (fname, lnum, bolp, bp, ep) =
   {Location.loc_start = bp; Location.loc_end = ep;
@@ -42,14 +42,21 @@ let ocaml_ptype_variant ctl priv =
 ;;
 
 let ocaml_ptyp_variant catl clos sl_opt =
-  let catl =
-    List.map
-      (function
-         Left (c, a, tl) -> Rtag (c, a, tl)
-       | Right t -> Rinherit t)
-      catl
-  in
-  Some (Ptyp_variant (catl, clos, sl_opt))
+  try
+    let catl =
+      List.map
+        (function
+           Left (c, a, tl) -> c, a, tl
+         | Right t -> raise Exit)
+        catl
+    in
+    let sl =
+      match sl_opt with
+        Some sl -> sl
+      | None -> []
+    in
+    Some (Ptyp_variant (catl, clos, sl))
+  with Exit -> None
 ;;
 
 let ocaml_ptype_private = Ptype_abstract;;

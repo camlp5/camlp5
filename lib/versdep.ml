@@ -1,12 +1,15 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.4 2010/08/29 04:50:05 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.5 2010/08/29 05:23:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
 open Longident;
 open Asttypes;
 
-IFDEF OCAML_3_02 OR OCAML_3_03 OR OCAML_3_04 THEN
+IFDEF OCAML_3_01 OR OCAML_3_02 THEN
+  DEFINE OCAML_3_02_OR_BEFORE
+END;
+IFDEF OCAML_3_02_OR_BEFORE OR OCAML_3_03 OR OCAML_3_04 THEN
   DEFINE OCAML_3_04_OR_BEFORE
 END;
 IFDEF OCAML_3_04_OR_BEFORE OR OCAML_3_05 OR OCAML_3_06 THEN
@@ -40,10 +43,11 @@ type choice 'a 'b =
 ;
 
 value sys_ocaml_version =
-  IFDEF OCAML_3_02 THEN "3.02"
+  IFDEF OCAML_3_01 THEN "3.01"
+  ELSE IFDEF OCAML_3_02 THEN "3.02"
   ELSE IFDEF OCAML_3_03 THEN "3.03"
   ELSE IFDEF OCAML_3_04 THEN "3.04"
-  ELSE Sys.ocaml_version END END END
+  ELSE Sys.ocaml_version END END END END
 ;
 
 value ocaml_location (fname, lnum, bolp, bp, ep) =
@@ -107,7 +111,7 @@ value ocaml_ptype_variant ctl priv =
 ;
 
 value ocaml_ptyp_variant catl clos sl_opt =
-  IFDEF OCAML_3_02 THEN
+  IFDEF OCAML_3_02_OR_BEFORE THEN
     try
       let catl =
         List.map

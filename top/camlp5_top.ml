@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: camlp5_top.ml,v 1.16 2010/08/29 04:50:06 deraugla Exp $ *)
+(* $Id: camlp5_top.ml,v 1.17 2010/08/29 05:23:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -174,8 +174,8 @@ Toploop.parse_use_file.val :=
 ;
 
 IFDEF
-  OCAML_3_02 OR OCAML_3_03 OR OCAML_3_04 OR OCAML_3_05 OR OCAML_3_06 OR
-  OCAML_3_07 OR OCAML_3_08_0 OR OCAML_3_08_1 OR OCAML_3_08_2 OR
+  OCAML_3_01 OR OCAML_3_02 OR OCAML_3_03 OR OCAML_3_04 OR OCAML_3_05 OR
+  OCAML_3_06 OR OCAML_3_07 OR OCAML_3_08_0 OR OCAML_3_08_1 OR OCAML_3_08_2 OR
   OCAML_3_08_3 OR OCAML_3_08_4
 THEN
   DEFINE OCAML_3_08_OR_BEFORE
