@@ -74,13 +74,6 @@ let mkstr loc d = {pstr_desc = d; pstr_loc = mkloc loc};;
 let mkfield loc d = {pfield_desc = d; pfield_loc = mkloc loc};;
 let mkcty loc d = {pcty_desc = d; pcty_loc = mkloc loc};;
 let mkpcl loc d = {pcl_desc = d; pcl_loc = mkloc loc};;
-let mkpolytype t =
-  if sys_ocaml_version = "3.04" then t
-  else
-    match t with
-      MLast.TyPol (_, _, _) -> t
-    | _ -> let loc = MLast.loc_of_ctyp t in MLast.TyPol (loc, [], t)
-;;
 let mklazy loc e =
   match ocaml_pexp_lazy with
     Some pexp_lazy -> mkexp loc (pexp_lazy e)
@@ -227,7 +220,16 @@ and meth_list loc fl v =
   match fl with
     [] -> if uv v then [mkfield loc Pfield_var] else []
   | (lab, t) :: fl ->
-      mkfield loc (Pfield (lab, ctyp (mkpolytype t))) :: meth_list loc fl v
+      mkfield loc (Pfield (lab, add_polytype t)) :: meth_list loc fl v
+and add_polytype t =
+  match ocaml_ptyp_poly with
+    Some ptyp_poly ->
+      begin match t with
+        MLast.TyPol (loc, pl, t) -> mktyp loc (ptyp_poly (uv pl) (ctyp t))
+      | _ ->
+          let loc = MLast.loc_of_ctyp t in mktyp loc (ptyp_poly [] (ctyp t))
+      end
+  | None -> ctyp t
 ;;
 
 let mktype loc tl cl tk pf tm =
@@ -245,7 +247,7 @@ let mktrecord ltl priv =
     List.map
       (fun (loc, n, m, t) ->
          let loc = mkloc loc in
-         let m = mkmutable m in let t = ctyp (mkpolytype t) in n, m, t, loc)
+         let m = mkmutable m in let t = add_polytype t in n, m, t, loc)
       ltl
   in
   ocaml_ptype_record ltl priv
@@ -1078,11 +1080,11 @@ and class_sig_item c l =
   | CgDcl (loc, cl) -> List.fold_right class_sig_item (uv cl) l
   | CgInh (loc, ct) -> Pctf_inher (class_type ct) :: l
   | CgMth (loc, s, pf, t) ->
-      Pctf_meth (uv s, mkprivate (uv pf), ctyp (mkpolytype t), mkloc loc) :: l
+      Pctf_meth (uv s, mkprivate (uv pf), add_polytype t, mkloc loc) :: l
   | CgVal (loc, s, b, t) ->
       ocaml_pctf_val (uv s, mkmutable (uv b), ctyp t, mkloc loc) :: l
   | CgVir (loc, s, b, t) ->
-      Pctf_virt (uv s, mkprivate (uv b), ctyp (mkpolytype t), mkloc loc) :: l
+      Pctf_virt (uv s, mkprivate (uv b), add_polytype t, mkloc loc) :: l
 and class_expr =
   function
     CeApp (loc, _, _) as c ->
@@ -1125,7 +1127,7 @@ and class_str_item c l =
       let e =
         match ocaml_pexp_poly with
           Some pexp_poly ->
-            let t = option (fun t -> ctyp (mkpolytype t)) (uv t) in
+            let t = option (fun t -> add_polytype t) (uv t) in
             mkexp loc (pexp_poly (expr e) t)
         | None ->
             if uv t = None then expr e
@@ -1135,7 +1137,7 @@ and class_str_item c l =
   | CrVal (loc, s, b, e) ->
       ocaml_pcf_val (uv s, mkmutable (uv b), expr e, mkloc loc) :: l
   | CrVir (loc, s, b, t) ->
-      Pcf_virt (uv s, mkprivate (uv b), ctyp (mkpolytype t), mkloc loc) :: l
+      Pcf_virt (uv s, mkprivate (uv b), add_polytype t, mkloc loc) :: l
 ;;
 
 let interf fname ast = glob_fname := fname; List.fold_right sig_item ast [];;

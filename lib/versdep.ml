@@ -1,46 +1,43 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.2 2010/08/28 21:02:20 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.3 2010/08/29 02:39:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
 open Longident;
 open Asttypes;
 
-IFDEF
-  OCAML_3_02 OR OCAML_3_04 OR OCAML_3_05 OR OCAML_3_06
-THEN
+IFDEF OCAML_3_02 OR OCAML_3_03 OR OCAML_3_04 THEN
+  DEFINE OCAML_3_04_OR_BEFORE
+END;
+IFDEF OCAML_3_04_OR_BEFORE OR OCAML_3_05 OR OCAML_3_06 THEN
   DEFINE OCAML_3_06_OR_BEFORE
 END;
-
 IFDEF
   OCAML_3_06_OR_BEFORE OR OCAML_3_07 OR
   OCAML_3_08_0 OR OCAML_3_08_1 OR OCAML_3_08_2 OR OCAML_3_08_3 OR OCAML_3_08_4
 THEN
   DEFINE OCAML_3_08_OR_BEFORE
 END;
-
-IFDEF
-  OCAML_3_12_0 OR OCAML_3_12_1 OR OCAML_3_13_0
-THEN
-  DEFINE AFTER_OCAML_3_12
+IFDEF OCAML_3_12_0 OR OCAML_3_12_1 OR OCAML_3_13_0 THEN
+  DEFINE OCAML_3_12_OR_AFTER
 END;
-
 IFDEF
   OCAML_3_11 OR OCAML_3_11_0 OR OCAML_3_11_1 OR OCAML_3_11_2 OR
-  OCAML_3_11_3 OR AFTER_OCAML_3_12
+  OCAML_3_11_3 OR OCAML_3_12_OR_AFTER
 THEN
-  DEFINE AFTER_OCAML_3_11
+  DEFINE OCAML_3_11_OR_AFTER
 END;
-
 IFDEF
   OCAML_3_10 OR OCAML_3_10_0 OR OCAML_3_10_1 OR OCAML_3_10_2 OR
-  OCAML_3_10_3 OR AFTER_OCAML_3_11
+  OCAML_3_10_3 OR OCAML_3_11_OR_AFTER
 THEN
-  DEFINE AFTER_OCAML_3_10
+  DEFINE OCAML_3_10_OR_AFTER
 END;
 
 value sys_ocaml_version =
-  IFDEF OCAML_3_04 THEN "3.04" ELSE Sys.ocaml_version END
+  IFDEF OCAML_3_03 THEN "3.03"
+  ELSE IFDEF OCAML_3_04 THEN "3.04"
+  ELSE Sys.ocaml_version END END
 ;
 
 value ocaml_location (fname, lnum, bolp, bp, ep) =
@@ -58,11 +55,12 @@ value ocaml_location (fname, lnum, bolp, bp, ep) =
 ;
 
 value ocaml_ptyp_poly =
-  IFDEF OCAML_3_04 THEN None ELSE Some (fun cl t -> Ptyp_poly cl t) END
+  IFDEF OCAML_3_04_OR_BEFORE THEN None
+  ELSE Some (fun cl t -> Ptyp_poly cl t) END
 ;
 
 value ocaml_type_declaration params cl tk pf tm loc variance =
-  IFDEF AFTER_OCAML_3_11 THEN
+  IFDEF OCAML_3_11_OR_AFTER THEN
     {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
      ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
      ptype_variance = variance}
@@ -80,7 +78,7 @@ value ocaml_ptype_record ltl priv =
     ELSE
       Ptype_record ltl priv
     END
-  ELSE IFDEF AFTER_OCAML_3_11 THEN
+  ELSE IFDEF OCAML_3_11_OR_AFTER THEN
     Ptype_record ltl
   ELSE
     Ptype_record ltl priv
@@ -95,7 +93,7 @@ value ocaml_ptype_variant ctl priv =
     ELSE
       Ptype_variant ctl priv
     END
-  ELSE IFDEF AFTER_OCAML_3_11 THEN
+  ELSE IFDEF OCAML_3_11_OR_AFTER THEN
     Ptype_variant ctl
   ELSE
     Ptype_variant ctl priv
@@ -103,12 +101,12 @@ value ocaml_ptype_variant ctl priv =
 ;
 
 value ocaml_ptype_private =
-  IFDEF OCAML_3_08_OR_BEFORE OR AFTER_OCAML_3_11 THEN Ptype_abstract
+  IFDEF OCAML_3_08_OR_BEFORE OR OCAML_3_11_OR_AFTER THEN Ptype_abstract
   ELSE Ptype_private END
 ;
 
 value ocaml_pwith_type params tk pf ct variance loc =
-  IFDEF AFTER_OCAML_3_11 THEN
+  IFDEF OCAML_3_11_OR_AFTER THEN
     let pf = if pf then Private else Public in
     Pwith_type
       {ptype_params = params; ptype_cstrs = [];
@@ -124,7 +122,7 @@ value ocaml_pwith_type params tk pf ct variance loc =
 ;
 
 value ocaml_pexp_lazy =
-  IFDEF OCAML_3_04 THEN None ELSE Some (fun e -> Pexp_lazy e) END
+  IFDEF OCAML_3_04_OR_BEFORE THEN None ELSE Some (fun e -> Pexp_lazy e) END
 ;
 
 value ocaml_const_int32 =
@@ -152,11 +150,12 @@ value module_prefix_can_be_in_first_record_label_only =
 ;
 
 value ocaml_ppat_lazy =
-  IFDEF AFTER_OCAML_3_11 THEN Some (fun p -> Ppat_lazy p) ELSE None END
+  IFDEF OCAML_3_11_OR_AFTER THEN Some (fun p -> Ppat_lazy p) ELSE None END
 ;
 
 value ocaml_ppat_record lpl =
-  IFDEF AFTER_OCAML_3_12 THEN Ppat_record lpl Closed ELSE Ppat_record lpl END
+  IFDEF OCAML_3_12_OR_AFTER THEN Ppat_record lpl Closed
+  ELSE Ppat_record lpl END
 ;
 
 value ocaml_psig_recmodule =
@@ -170,26 +169,28 @@ value ocaml_pstr_recmodule =
 ;
 
 value ocaml_pctf_val (s, b, t, loc) =
-  IFDEF AFTER_OCAML_3_10 THEN Pctf_val (s, b, Concrete, t, loc)
+  IFDEF OCAML_3_10_OR_AFTER THEN Pctf_val (s, b, Concrete, t, loc)
   ELSE Pctf_val (s, b, Some t, loc) END
 ;
 
 value ocaml_pcf_inher ce pb =
-  IFDEF AFTER_OCAML_3_12 THEN Pcf_inher Fresh ce pb ELSE Pcf_inher ce pb END
+  IFDEF OCAML_3_12_OR_AFTER THEN Pcf_inher Fresh ce pb
+  ELSE Pcf_inher ce pb END
 ;
 
 value ocaml_pcf_meth (s, b, e, loc) =
-  IFDEF AFTER_OCAML_3_12 THEN Pcf_meth (s, b, Fresh, e, loc) 
+  IFDEF OCAML_3_12_OR_AFTER THEN Pcf_meth (s, b, Fresh, e, loc) 
   ELSE Pcf_meth (s, b, e, loc) END
 ;
 
 value ocaml_pcf_val (s, b, e, loc) =
-  IFDEF AFTER_OCAML_3_12 THEN Pcf_val (s, b, Fresh, e, loc)
+  IFDEF OCAML_3_12_OR_AFTER THEN Pcf_val (s, b, Fresh, e, loc)
   ELSE Pcf_val (s, b, e,  loc) END
 ;
 
 value ocaml_pexp_poly =
-  IFDEF OCAML_3_04 THEN None ELSE Some (fun e t -> Pexp_poly e t) END
+  IFDEF OCAML_3_04_OR_BEFORE THEN None
+  ELSE Some (fun e t -> Pexp_poly e t) END
 ;
 
 value arg_set_string =
@@ -228,7 +229,7 @@ value arg_bool =
   | _ -> None ]
 ;
 
-IFDEF OCAML_3_04 THEN
+IFDEF OCAML_3_04_OR_BEFORE THEN
   declare
     value scan_format fmt i kont =
       match fmt.[i+1] with

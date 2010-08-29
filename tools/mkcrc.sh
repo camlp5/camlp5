@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: mkcrc.sh,v 1.7 2010/08/28 21:24:36 deraugla Exp $
+# $Id: mkcrc.sh,v 1.8 2010/08/29 02:39:37 deraugla Exp $
 
 MOD_OLIB="arg array buffer char format hashtbl lexing list obj pervasives printf stream string sys"
 MOD_MAIN="ast2pt exparser mLast parserify pcaml prtools quotation reloc"
@@ -10,7 +10,7 @@ OFILE=crc.tmp
 
 > $OFILE
 V=$OVERSION
-if [ "$V" = "3.04" -o "$V" = "3.05" -o "$V" = "3.06" ]; then
+if [ "$V" = "3.03" -o "$V" = "3.04" -o "$V" = "3.05" -o "$V" = "3.06" ]; then
   (cd $OLIBDIR; $OLIBDIR/extract_crc $MOD_OLIB) >> $OFILE
   echo "in Dynlink.add_available_units crc_unit_list;;" >> $OFILE
   (cd ../main; $OLIBDIR/extract_crc $MOD_MAIN) >> $OFILE

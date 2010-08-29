@@ -1,11 +1,15 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 1.34 2010/08/27 20:18:50 deraugla Exp $ *)
+(* $Id: rprint.ml,v 1.35 2010/08/29 02:39:37 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Format;
 open Outcometree;
 
-IFDEF OCAML_3_04 OR OCAML_3_05 OR OCAML_3_06 THEN
+IFDEF OCAML_3_03 OR OCAML_3_04 THEN
+  DEFINE OCAML_3_04_OR_BEFORE
+END;
+
+IFDEF OCAML_3_04_OR_BEFORE OR OCAML_3_05 OR OCAML_3_06 THEN
   DEFINE OCAML_3_06_OR_BEFORE
 END;
 
@@ -19,21 +23,21 @@ END;
 IFDEF
   OCAML_3_12_0 OR OCAML_3_12_1 OR OCAML_3_13_0
 THEN
-  DEFINE AFTER_OCAML_3_12
+  DEFINE OCAML_3_12_OR_AFTER
 END;
 
 IFDEF
   OCAML_3_11 OR OCAML_3_11_0 OR OCAML_3_11_1 OR OCAML_3_11_2 OR
-  OCAML_3_11_3 OR AFTER_OCAML_3_12
+  OCAML_3_11_3 OR OCAML_3_12_OR_AFTER
 THEN
-  DEFINE AFTER_OCAML_3_11
+  DEFINE OCAML_3_11_OR_AFTER
 END;
 
 IFDEF
   OCAML_3_10 OR OCAML_3_10_0 OR OCAML_3_10_1 OR OCAML_3_10_2 OR
-  OCAML_3_10_3 OR AFTER_OCAML_3_11
+  OCAML_3_10_3 OR OCAML_3_11_OR_AFTER
 THEN
-  DEFINE AFTER_OCAML_3_10
+  DEFINE OCAML_3_10_OR_AFTER
 END;
 
 exception Ellipsis;
@@ -201,7 +205,7 @@ and print_simple_out_type ppf =
   | Otyp_abstract -> fprintf ppf "'abstract"
   | Otyp_alias _ _ | Otyp_arrow _ _ _ | Otyp_constr _ [_ :: _] as ty ->
       fprintf ppf "@[<1>(%a)@]" print_out_type ty
-  | IFNDEF OCAML_3_04 THEN
+  | IFNDEF OCAML_3_04_OR_BEFORE THEN
       Otyp_poly _ _ as ty ->
         fprintf ppf "@[<1>(%a)@]" print_out_type ty
     END
@@ -295,16 +299,16 @@ value rec print_out_class_type ppf =
         [ [] -> ()
         | tyl ->
             fprintf ppf "@[<1>[%a]@]@ "
-              (print_typlist Toploop.print_out_type.val ",") tyl ]
+              (print_typlist print_out_type ",") tyl ]
       in
       fprintf ppf "@[%a%a@]" pr_tyl tyl print_ident id
   | Octy_fun lab ty cty ->
       fprintf ppf "@[%s[ %a ] ->@ %a@]" (if lab <> "" then lab ^ ":" else "")
-        Toploop.print_out_type.val ty print_out_class_type cty
+        print_out_type ty print_out_class_type cty
   | Octy_signature self_ty csil ->
       let pr_param ppf =
         fun
-        [ Some ty -> fprintf ppf "@ @[(%a)@]" Toploop.print_out_type.val ty
+        [ Some ty -> fprintf ppf "@ @[(%a)@]" print_out_type ty
         | None -> () ]
       in
       fprintf ppf "@[<hv 2>@[<2>object%a@]@ %a@;<1 -2>end@]" pr_param self_ty
@@ -313,21 +317,21 @@ value rec print_out_class_type ppf =
 and print_out_class_sig_item ppf =
   fun
   [ Ocsg_constraint ty1 ty2 ->
-      fprintf ppf "@[<2>type %a =@ %a;@]" Toploop.print_out_type.val ty1
-        Toploop.print_out_type.val ty2
+      fprintf ppf "@[<2>type %a =@ %a;@]" print_out_type ty1
+        print_out_type ty2
   | Ocsg_method name priv virt ty ->
       fprintf ppf "@[<2>method %s%s%s :@ %a;@]"
         (if priv then "private " else "") (if virt then "virtual " else "")
-        name Toploop.print_out_type.val ty
+        name print_out_type ty
   | x ->
-      IFDEF AFTER_OCAML_3_10 THEN
+      IFDEF OCAML_3_10_OR_AFTER THEN
         failwith "Rprint.print_out_class_sig_item: not impl"
       ELSE
         match x with
         [ Ocsg_value name mut ty ->
             fprintf ppf "@[<2>value %s%s :@ %a;@]"
                (if mut then "mutable " else "") name
-               Toploop.print_out_type.val ty
+               print_out_type ty
         | _ -> assert False ]
       END ]
 ;
@@ -344,9 +348,9 @@ value rec print_out_module_type ppf =
 and print_out_signature ppf =
   fun
   [ [] -> ()
-  | [item] -> fprintf ppf "%a;" Toploop.print_out_sig_item.val item
+  | [item] -> fprintf ppf "%a;" print_out_sig_item item
   | [item :: items] ->
-      fprintf ppf "%a;@ %a" Toploop.print_out_sig_item.val item
+      fprintf ppf "%a;@ %a" print_out_sig_item item
         print_out_signature items ]
 and print_out_sig_item ppf =
   fun
@@ -362,7 +366,7 @@ and print_out_sig_item ppf =
     ELSE
       Osig_module name mty _ ->
         fprintf ppf "@[<2>module %s :@ %a@]" name
-          Toploop.print_out_module_type.val mty
+          print_out_module_type.val mty
     END
   | IFDEF OCAML_3_06_OR_BEFORE OR OCAML_3_07 THEN
       Osig_type tdl -> do {
@@ -386,7 +390,7 @@ and print_out_sig_item ppf =
             } ]
       in
       fprintf ppf "@[<2>%s %a :@ %a%a@]" kwd value_ident name
-        Toploop.print_out_type.val ty pr_prims prims
+        print_out_type ty pr_prims prims
   | x ->
       IFDEF OCAML_3_08_OR_BEFORE THEN
         failwith "Rprint.print_out_sig_item: not implemented case"
@@ -395,11 +399,11 @@ and print_out_sig_item ppf =
         [ Osig_class vir_flag name params clt _ ->
             fprintf ppf "@[<2>class%s@ %a%s@ :@ %a@]"
               (if vir_flag then " virtual" else "") print_out_class_params
-              params name Toploop.print_out_class_type.val clt
+              params name print_out_class_type.val clt
         | Osig_class_type vir_flag name params clt _ ->
             fprintf ppf "@[<2>class type%s@ %a%s@ =@ %a@]"
               (if vir_flag then " virtual" else "") print_out_class_params
-              params name Toploop.print_out_class_type.val clt
+              params name print_out_class_type clt
         | _ -> assert False ]
       END ]
 and print_out_type_decl kwd ppf x =
@@ -412,8 +416,8 @@ and print_out_type_decl kwd ppf x =
     END
   in
   let constrain ppf (ty, ty') =
-    fprintf ppf "@ @[<2>constraint %a =@ %a@]" Toploop.print_out_type.val ty
-      Toploop.print_out_type.val ty'
+    fprintf ppf "@ @[<2>constraint %a =@ %a@]" print_out_type ty
+      print_out_type ty'
   in
   let print_constraints ppf params = List.iter (constrain ppf) params in
   let type_parameter ppf (ty, (co, cn)) =
@@ -429,7 +433,7 @@ and print_out_type_decl kwd ppf x =
           (print_list type_parameter (fun ppf -> fprintf ppf "@ ")) args ]
   in
   fprintf ppf "@[<2>@[<hv 2>@[%s %t@] =@ %a@]%a@]" kwd type_defined
-    Toploop.print_out_type.val ty print_constraints constraints
+    print_out_type ty print_constraints constraints
 ;
 
 (* Phrases *)
@@ -441,7 +445,7 @@ value print_out_exception ppf exn outv =
   | Stack_overflow ->
       fprintf ppf "Stack overflow during evaluation (looping recursion?).@."
   | _ ->
-      fprintf ppf "@[Exception:@ %a.@]@." Toploop.print_out_value.val outv ]
+      fprintf ppf "@[Exception:@ %a.@]@." print_out_value outv ]
 ;
 
 value rec print_items ppf =
@@ -451,9 +455,9 @@ value rec print_items ppf =
       do {
         match valopt with
         [ Some v ->
-            fprintf ppf "@[<2>%a =@ %a@]" Toploop.print_out_sig_item.val tree
-              Toploop.print_out_value.val v
-        | None -> fprintf ppf "@[%a@]" Toploop.print_out_sig_item.val tree ];
+            fprintf ppf "@[<2>%a =@ %a@]" print_out_sig_item tree
+              print_out_value v
+        | None -> fprintf ppf "@[%a@]" print_out_sig_item tree ];
         if items <> [] then fprintf ppf "@ %a" print_items items else ()
       } ]
 ;
@@ -461,8 +465,8 @@ value rec print_items ppf =
 value print_out_phrase ppf =
   fun
   [ Ophr_eval outv ty ->
-      fprintf ppf "@[- : %a@ =@ %a@]@." Toploop.print_out_type.val ty
-        Toploop.print_out_value.val outv
+      fprintf ppf "@[- : %a@ =@ %a@]@." print_out_type ty print_out_value
+        outv
   | Ophr_signature [] -> ()
   | Ophr_signature items -> fprintf ppf "@[<v>%a@]@." print_items items
   | Ophr_exception (exn, outv) -> print_out_exception ppf exn outv ]
@@ -470,7 +474,7 @@ value print_out_phrase ppf =
 
 Toploop.print_out_value.val := print_out_value;
 Toploop.print_out_type.val := print_out_type;
-IFNDEF OCAML_3_04 THEN
+IFNDEF OCAML_3_04_OR_BEFORE THEN
   declare
     Toploop.print_out_class_type.val := print_out_class_type;
     Toploop.print_out_module_type.val := print_out_module_type;
