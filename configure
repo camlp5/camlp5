@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: configure,v 1.34 2010/08/28 20:30:17 deraugla Exp $
+# $Id: configure,v 1.35 2010/08/29 17:46:32 deraugla Exp $
 
 prefix=''
 bindir=''
@@ -138,7 +138,12 @@ fi
 
 # Evaluate installation directories
 
-x=$(ocamlc -where)
+ocamlc_where=$(ocamlc -where 2>/dev/null)
+if [ "$?" != "0" ]; then
+  ocamlc_where=$(ocamlc -v | tail -1 | sed -e 's/^.*: //')
+fi
+
+x=$ocamlc_where
 y=$(echo $x | sed -e 's|\\\\|/|g')
 x="$(echo 'Sys.os_type;;' | ocaml | egrep 'Win32|Cygwin')"
 if test "$x" = ""; then win=false; else win=true; fi
@@ -172,7 +177,7 @@ if test "$libdir" != ""; then
 elif test "$prefix" != ""; then
     LIBDIR='$(PREFIX)/lib/ocaml'
 else
-    LIBDIR=$(ocamlc -where)
+    LIBDIR=$ocamlc_where
 fi
 if test "$mandir" != ""; then
     MANDIR=$mandir
@@ -198,6 +203,12 @@ else
   OCAMLC_W_Y=""
 fi
 
+if [ "$(ocamlc -warn-error A 2>&1)" = "" ]; then
+  OCAMLC_WARNERR="-warn-error A"
+else
+  OCAMLC_WARNERR=""
+fi
+
 VERSION="$(grep "value version =" main/pcaml.ml | sed -e 's/^[^"]*"\([^"]*\).*$/\1/')"
 
 (
@@ -210,6 +221,7 @@ echo OVERSION=$OVERSION
 echo VERSION=$VERSION
 echo "OTOP=\$(TOP)/ocaml_stuff/$OVERSION"
 echo OCAMLC_W_Y=\"$OCAMLC_W_Y\"
+echo OCAMLC_WARNERR=\"$OCAMLC_WARNERR\"
 echo OLIBDIR=$OLIBDIR
 if test "$prefix" != ""; then
   echo PREFIX=$prefix
