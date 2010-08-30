@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 1.32 2010/08/30 12:38:30 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 1.33 2010/08/30 19:26:36 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
@@ -36,11 +36,15 @@ for i in $dirs; do
   echo "+++++ ./configure -bindir $TOP/usr/bin -libdir $TOP/usr/lib/ocaml -mandir $TOP/usr/man"
   ./configure -bindir $DEST/bin -libdir $DEST/lib/ocaml -mandir $DEST/man
   sed -i -e 's/ graph//' -e 's/ labltk//' -e 's/ num / /' config/Makefile
+  sed -i -e 's/define HAS_MEMMOVE/undef HAS_MEMMOVE/' config/s.h
   if [ "$DOOPT" = "0" ]; then
     echo "+++++ time make world"
     time make world
-  elif [ "$i" = "3.00" -o "$i" = "3.01" -o "$i" = "3.02" -o \
-         "$i" = "3.03-alpha" -o "$i" = "3.04" ]
+  elif [ "$i" = "3.00" ]; then
+    echo "+++++ time make world opt"
+    time make world opt
+  elif [ "$i" = "3.01" -o "$i" = "3.02" -o "$i" = "3.03-alpha" -o \
+         "$i" = "3.04" ]
   then
     echo "+++++ time make world opt opt.opt"
     time make world opt opt.opt
