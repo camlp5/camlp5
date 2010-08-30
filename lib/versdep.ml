@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.6 2010/08/29 23:59:53 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.7 2010/08/30 00:45:14 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -44,11 +44,11 @@ type choice 'a 'b =
 
 value sys_ocaml_version =
   IFDEF OCAML_3_00 THEN "3.00"
-  ELSE IFDEF OCAML_3_01 THEN "3.01"
-  ELSE IFDEF OCAML_3_02 THEN "3.02"
-  ELSE IFDEF OCAML_3_03 THEN "3.03"
-  ELSE IFDEF OCAML_3_04 THEN "3.04"
-  ELSE Sys.ocaml_version END END END END END
+  ELSIFDEF OCAML_3_01 THEN "3.01"
+  ELSIFDEF OCAML_3_02 THEN "3.02"
+  ELSIFDEF OCAML_3_03 THEN "3.03"
+  ELSIFDEF OCAML_3_04 THEN "3.04"
+  ELSE Sys.ocaml_version END
 ;
 
 value ocaml_location (fname, lnum, bolp, bp, ep) =
@@ -75,13 +75,13 @@ value ocaml_type_declaration params cl tk pf tm loc variance =
     {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
      ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
      ptype_variance = variance}
-  ELSE IFDEF OCAML_3_00 THEN
+  ELSIFDEF OCAML_3_00 THEN
     {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
      ptype_manifest = tm; ptype_loc = loc}
   ELSE
     {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
      ptype_manifest = tm; ptype_loc = loc; ptype_variance = variance}
-  END END
+  END
 ;
 
 value ocaml_ptype_record ltl priv =
@@ -92,11 +92,11 @@ value ocaml_ptype_record ltl priv =
     ELSE
       Ptype_record ltl priv
     END
-  ELSE IFDEF OCAML_3_11_OR_AFTER THEN
+  ELSIFDEF OCAML_3_11_OR_AFTER THEN
     Ptype_record ltl
   ELSE
     Ptype_record ltl priv
-  END END
+  END
 ;
 
 value ocaml_ptype_variant ctl priv =
@@ -107,11 +107,11 @@ value ocaml_ptype_variant ctl priv =
     ELSE
       Ptype_variant ctl priv
     END
-  ELSE IFDEF OCAML_3_11_OR_AFTER THEN
+  ELSIFDEF OCAML_3_11_OR_AFTER THEN
     Ptype_variant ctl
   ELSE
     Ptype_variant ctl priv
-  END END
+  END
 ;
 
 value ocaml_ptyp_variant catl clos sl_opt =

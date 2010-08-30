@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.41 2010/08/27 20:18:49 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.42 2010/08/30 00:45:14 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -13,27 +13,40 @@ Added statements:
      DEFINE <uident>
      DEFINE <uident> = <expression>
      DEFINE <uident> <parameters> = <expression>
-     IFDEF <dexpr> THEN <structure_items> END
-     IFDEF <dexpr> THEN <structure_items> ELSE <structure_items> END
-     IFNDEF <dexpr> THEN <structure_items> END
-     IFNDEF <dexpr> THEN <structure_items> ELSE <structure_items> END
+     IFDEF <dexpr> THEN <structure_item> <else> END
+     IFNDEF <dexpr> THEN <structure_item> <else> END
+
+     where <else> is either:
+        ELSIFDEF <dexpr> THEN <structure_item> <else>
+        ELSIFNDEF <dexpr> THEN <structure_item> <else>
+        ELSE <structure_item>
+        <nothing>
 
   In signature items:
 
      DEFINE <uident>
      DEFINE <uident> = <type>
      DEFINE <uident> <parameters> = <type>
-     IFDEF <dexpr> THEN <signature_items> END
-     IFDEF <dexpr> THEN <signature_items> ELSE <signature_items> END
-     IFNDEF <dexpr> THEN <signature_items> END
-     IFNDEF <dexpr> THEN <signature_items> ELSE <signature_items> END
+     IFDEF <dexpr> THEN <signature_item> <else> END
+     IFNDEF <dexpr> THEN <signature_item> <else> END
+
+     where <else> is either:
+        ELSIFDEF <dexpr> THEN <signature_item> <else>
+        ELSIFNDEF <dexpr> THEN <signature_item> <else>
+        ELSE <signature_item>
+        <nothing>
 
   In expressions:
 
-     IFDEF <dexpr> THEN <expression> ELSE <expression> END
-     IFNDEF <dexpr> THEN <expression> ELSE <expression> END
+     IFDEF <dexpr> THEN <expression> <else> END
+     IFNDEF <dexpr> THEN <expression> <else> END
      __FILE__
      __LOCATION__
+
+     where <else> is either:
+        ELSIFDEF <dexpr> THEN <expression> <else>
+        ELSIFNDEF <dexpr> THEN <expression> <else>
+        ELSE <expression>
 
   In patterns:
 
@@ -377,31 +390,40 @@ EXTEND
     [ [ "DEFINE"; i = uident; def = opt_macro_expr -> SdDef i def
       | "DEFINE_TYPE"; i = uident; def = opt_macro_type -> SdDef i def
       | "UNDEF"; i = uident -> SdUnd i
-      | "IFDEF"; e = dexpr; "THEN"; d = str_item_or_macro; "END" ->
-          if e then d else SdNop
-      | "IFDEF"; e = dexpr; "THEN"; d1 = str_item_or_macro; "ELSE";
-        d2 = str_item_or_macro; "END" ->
+      | "IFDEF"; e = dexpr; "THEN"; d1 = str_item_or_macro;
+        d2 = else_str; "END" ->
           if e then d1 else d2
-      | "IFNDEF"; e = dexpr; "THEN"; d = str_item_or_macro; "END" ->
-          if e then SdNop else d
-      | "IFNDEF"; e = dexpr; "THEN"; d1 = str_item_or_macro; "ELSE";
-        d2 = str_item_or_macro; "END" ->
-          if e then d2 else d1 ] ]
+      | "IFNDEF"; e = dexpr; "THEN"; d1 = str_item_or_macro;
+        d2 = else_str; "END" ->
+          if not e then d1 else d2 ] ]
+  ;
+  else_str:
+    [ [ "ELSIFDEF"; e = dexpr; "THEN"; d1 = str_item_or_macro;
+        d2 = else_str -> if e then d1 else d2
+      | "ELSIFNDEF"; e = dexpr; "THEN"; d1 = str_item_or_macro;
+        d2 = else_str -> if not e then d1 else d2
+      | "ELSE"; d1 = str_item_or_macro -> d1
+      | -> SdNop ] ]
   ;
   sig_macro_def:
     [ [ "DEFINE"; i = uident; def = opt_macro_type -> SdDef i def
       | "DEFINE_TYPE"; i = uident; def = opt_macro_type -> SdDef i def
       | "UNDEF"; i = uident -> SdUnd i
-      | "IFDEF"; e = dexpr; "THEN"; d = sig_item_or_macro; "END" ->
-          if e then d else SdNop
-      | "IFDEF"; e = dexpr; "THEN"; d1 = sig_item_or_macro; "ELSE";
-        d2 = sig_item_or_macro; "END" ->
+
+      | "IFDEF"; e = dexpr; "THEN"; d1 = sig_item_or_macro;
+        d2 = else_sig; "END" ->
           if e then d1 else d2
-      | "IFNDEF"; e = dexpr; "THEN"; d = sig_item_or_macro; "END" ->
-          if e then SdNop else d
-      | "IFNDEF"; e = dexpr; "THEN"; d1 = sig_item_or_macro; "ELSE";
-        d2 = sig_item_or_macro; "END" ->
-          if e then d2 else d1 ] ]
+      | "IFNDEF"; e = dexpr; "THEN"; d1 = sig_item_or_macro;
+        d2 = else_sig; "END" ->
+          if not e then d1 else d2 ] ]
+  ;
+  else_sig:
+    [ [ "ELSIFDEF"; e = dexpr; "THEN"; d1 = sig_item_or_macro;
+        d2 = else_sig -> if e then d1 else d2
+      | "ELSIFNDEF"; e = dexpr; "THEN"; d1 = sig_item_or_macro;
+        d2 = else_sig -> if not e then d1 else d2
+      | "ELSE"; d1 = sig_item_or_macro -> d1
+      | -> SdNop ] ]
   ;
   str_item_or_macro:
     [ [ d = str_macro_def -> d
@@ -426,10 +448,17 @@ EXTEND
       | "("; sl = LIST1 LIDENT SEP ","; ")" -> sl ] ]
   ;
   expr: LEVEL "top"
-    [ [ "IFDEF"; e = dexpr; "THEN"; e1 = SELF; "ELSE"; e2 = SELF; "END" ->
+    [ [ "IFDEF"; e = dexpr; "THEN"; e1 = SELF; e2 = else_expr; "END" ->
           if e then e1 else e2
-      | "IFNDEF"; e = dexpr; "THEN"; e1 = SELF; "ELSE"; e2 = SELF; "END" ->
-          if e then e2 else e1 ] ]
+      | "IFNDEF"; e = dexpr; "THEN"; e1 = SELF; e2 = else_expr; "END" ->
+          if not e then e1 else e2 ] ]
+  ;
+  else_expr:
+    [ [ "ELSIFDEF"; e = dexpr; "THEN"; e1 = expr; e2 = else_expr ->
+          if e then e1 else e2
+      | "ELSIFNDEF"; e = dexpr; "THEN"; e1 = expr; e2 = else_expr ->
+          if not e then e1 else e2
+      | "ELSE"; e = expr -> e ] ]
   ;
   expr: LEVEL "simple"
     [ [ LIDENT "__FILE__" -> <:expr< $str:Pcaml.input_file.val$ >>

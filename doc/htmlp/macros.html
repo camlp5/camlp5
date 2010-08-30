@@ -2,7 +2,7 @@
  "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: macros.html,v 1.15 2010/08/19 10:40:44 deraugla Exp $ -->
+  <!-- $Id: macros.html,v 1.16 2010/08/30 00:45:14 deraugla Exp $ -->
   <!-- Copyright (c) INRIA 2007-2010 -->
   <title>macros</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -47,25 +47,28 @@
                       | "DEFINE" uident "=" expr
                       | "DEFINE" uident params "=" expr
                       | "UNDEF" uident
-                      | "IFDEF" dexpr "THEN" st-or-mac "END"
-                      | "IFDEF" dexpr "THEN" st-or-mac
-                        "ELSE" st-or-mac "END"
-                      | "IFNDEF" dexpr "THEN" st-or-mac "END"
-                      | "IFNDEF" dexpr "THEN" st-or-mac
-                        "ELSE" st-or-mac "END"
+                      | "IFDEF" dexpr "THEN" st-or-mac else-str "END"
+                      | "IFNDEF" dexpr "THEN" st-or-mac else-str "END"
+           else-str ::= "ELSIFDEF" dexpr "THEN" st-or-mac else-str
+                      | "ELSIFNDEF" dexpr "THEN" st-or-mac else-str
+                      | "ELSE" st-or-mac else-str
+                      | &lt;nothing&gt;
       sig_macro-def ::= "DEFINE" uident
                       | "DEFINE" uident params "=" type
                       | "UNDEF" uident
-                      | "IFDEF" dexpr "THEN" sg-or-mac "END"
-                      | "IFDEF" dexpr "THEN" sg-or-mac
-                        "ELSE" sg-or-mac "END"
-                      | "IFNDEF" dexpr "THEN" sg-or-mac "END"
-                      | "IFNDEF" dexpr "THEN" sg-or-mac
-                        "ELSE" sg-or-mac "END"
-         macro-expr ::= "IFDEF" dexpr "THEN" expr "ELSE" expr "END"
-                      | "IFNDEF" dexpr "THEN" expr "ELSE" expr "END"
+                      | "IFDEF" dexpr "THEN" sg-or-mac else-sig "END"
+                      | "IFNDEF" dexpr "THEN" sg-or-mac else-sig "END"
+           else-sig ::= "ELSIFDEF" dexpr "THEN" sg-or-mac else-sig
+                      | "ELSIFNDEF" dexpr "THEN" sg-or-mac else-sig
+                      | "ELSE" st-or-mac else-sig
+                      | &lt;nothing&gt;
+         macro-expr ::= "IFDEF" dexpr "THEN" expr else-expr "END"
+                      | "IFNDEF" dexpr "THEN" expr else-expr "END"
                       | "__FILE__"
                       | "__LOCATION__"
+          else-expr ::= "ELSIFDEF" dexpr "THEN" expr else-expr
+                      | "ELSIFNDEF" dexpr "THEN" expr else-expr
+                      | "ELSE" expr else-expr
          macro-patt ::= "IFDEF" dexpr "THEN" patt "ELSE" patt "END"
                       | "IFNDEF" dexpr "THEN" patt "ELSE" patt "END"
     macro-cons-decl ::= "IFDEF" dexpr "THEN" cons-decl "END"
@@ -87,21 +90,21 @@
                       | "IFNDEF" dexpr "THEN" match-assoc
                         "ELSE" match-assoc "END"
           st-or-mac ::= str_macro-def
-                       | str-item
+                      | str-item
           sg-or-mac ::= sig-macro-def
-                       | sig-item
-              params ::= ident params
-                       | ident
-               dexpr ::= dexpr "OR" dexpr
-                       | dexpr "AND" dexpr
-                       | "NOT" dexpr
-                       | uident
-                       | "(" dexpr ")"
-              uident ::= 'A'-'Z' ident
-               ident ::= ident-char*
-          ident-char ::= ('a'-'a' | 'A'-'Z' | '0'-'9' | '_' | ''' |
-                          misc-byte)
-           misc-byte ::= '\128'-'\255'
+                      | sig-item
+             params ::= ident params
+                      | ident
+              dexpr ::= dexpr "OR" dexpr
+                      | dexpr "AND" dexpr
+                      | "NOT" dexpr
+                      | uident
+                      | "(" dexpr ")"
+             uident ::= 'A'-'Z' ident
+              ident ::= ident-char*
+         ident-char ::= ('a'-'a' | 'A'-'Z' | '0'-'9' | '_' | ''' |
+                         misc-byte)
+          misc-byte ::= '\128'-'\255'
 </pre>
 
 <p>When a macro has been defined, as name e.g. "NAME", the expressions
