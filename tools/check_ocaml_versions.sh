@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 1.31 2010/08/30 12:18:49 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 1.32 2010/08/30 12:38:30 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
@@ -35,7 +35,7 @@ for i in $dirs; do
   make clean
   echo "+++++ ./configure -bindir $TOP/usr/bin -libdir $TOP/usr/lib/ocaml -mandir $TOP/usr/man"
   ./configure -bindir $DEST/bin -libdir $DEST/lib/ocaml -mandir $DEST/man
-  sed -i -e 's/ graph//' -e 's/ labltk//' config/Makefile
+  sed -i -e 's/ graph//' -e 's/ labltk//' -e 's/ num / /' config/Makefile
   if [ "$DOOPT" = "0" ]; then
     echo "+++++ time make world"
     time make world
