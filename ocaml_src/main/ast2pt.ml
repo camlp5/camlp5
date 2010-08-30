@@ -306,10 +306,8 @@ let patt_of_lab loc lab =
 let paolab loc lab peoo =
   let lab =
     match lab, peoo with
-      "",
-      Some
-        ((MLast.PaLid (_, i) | MLast.PaTyc (_, MLast.PaLid (_, i), _)), _) ->
-        i
+      "", Some (MLast.PaLid (_, i), _) -> i
+    | "", Some (MLast.PaTyc (_, MLast.PaLid (_, i), _), _) -> i
     | "", _ -> error loc "bad ast"
     | _ -> lab
   in
@@ -379,8 +377,10 @@ let mkwithc =
       let params = List.map uv params in
       let ct = Some (ctyp ct) in
       let tk = if uv pf then ocaml_ptype_private else Ptype_abstract in
+      let pf = if uv pf then Private else Public in
       long_id_of_string_list loc (uv id),
-      ocaml_pwith_type params tk (uv pf) ct variance (mkloc loc)
+      Pwith_type
+        (ocaml_type_declaration params [] tk pf ct (mkloc loc) variance)
   | WcMod (loc, id, m) ->
       long_id_of_string_list loc (uv id), Pwith_module (module_expr_long_id m)
 ;;
@@ -533,10 +533,9 @@ let rec sep_expr_acc l =
 
 let class_info class_expr ci =
   let (params, variance) = List.split (uv (snd ci.ciPrm)) in
-  {pci_virt = if uv ci.ciVir then Virtual else Concrete;
-   pci_params = List.map uv params, mkloc (fst ci.ciPrm);
-   pci_name = uv ci.ciNam; pci_expr = class_expr ci.ciExp;
-   pci_loc = mkloc ci.ciLoc; pci_variance = variance}
+  ocaml_class_infos (if uv ci.ciVir then Virtual else Concrete)
+    (List.map uv params, mkloc (fst ci.ciPrm)) (uv ci.ciNam)
+    (class_expr ci.ciExp) (mkloc ci.ciLoc) variance
 ;;
 
 let bigarray_get loc e el =
@@ -784,8 +783,10 @@ let rec expr =
                 ["", expr e1; "", expr e2; "", expr v]))
       | _ -> error loc "bad left part of assignment"
       end
-  | ExAsr (loc, MLast.ExUid (_, "False")) -> mkexp loc Pexp_assertfalse
-  | ExAsr (loc, e) -> mkexp loc (Pexp_assert (expr e))
+  | ExAsr (loc, MLast.ExUid (_, "False")) ->
+      mkexp loc (ocaml_pexp_assertfalse !glob_fname (mkloc loc))
+  | ExAsr (loc, e) ->
+      mkexp loc (ocaml_pexp_assert !glob_fname (mkloc loc) (expr e))
   | ExBae (loc, e, el) -> expr (bigarray_get loc e (uv el))
   | ExChr (loc, s) ->
       mkexp loc (Pexp_constant (Const_char (char_of_char_token loc (uv s))))
@@ -1018,7 +1019,11 @@ and str_item s l =
   | StExp (loc, e) -> mkstr loc (Pstr_eval (expr e)) :: l
   | StExt (loc, n, t, p) ->
       mkstr loc (Pstr_primitive (uv n, mkvalue_desc t (uv p))) :: l
-  | StInc (loc, me) -> mkstr loc (Pstr_include (module_expr me)) :: l
+  | StInc (loc, me) ->
+      begin match ocaml_pstr_include with
+        Some pstr_include -> mkstr loc (pstr_include (module_expr me)) :: l
+      | None -> error loc "no include in this ocaml version"
+      end
   | StMod (loc, rf, nel) ->
       if not (uv rf) then
         List.fold_right
@@ -1157,10 +1162,10 @@ let directive loc =
       let sl =
         let rec loop =
           function
-            MLast.ExLid (_, i) | MLast.ExUid (_, i) -> [i]
-          | MLast.ExAcc (_, e, MLast.ExLid (_, i)) |
-            MLast.ExAcc (_, e, MLast.ExUid (_, i)) ->
-              loop e @ [i]
+            MLast.ExLid (_, i) -> [i]
+          | MLast.ExUid (_, i) -> [i]
+          | MLast.ExAcc (_, e, MLast.ExLid (_, i)) -> loop e @ [i]
+          | MLast.ExAcc (_, e, MLast.ExUid (_, i)) -> loop e @ [i]
           | e -> Ploc.raise (loc_of_expr e) (Failure "bad ast")
         in
         loop e

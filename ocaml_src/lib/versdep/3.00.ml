@@ -19,7 +19,7 @@ type ('a, 'b) choice =
   | Right of 'b
 ;;
 
-let sys_ocaml_version = "3.01";;
+let sys_ocaml_version = "3.00";;
 
 let ocaml_location (fname, lnum, bolp, bp, ep) =
   {Location.loc_start = bp; Location.loc_end = ep;
@@ -30,7 +30,7 @@ let ocaml_ptyp_poly = None;;
 
 let ocaml_type_declaration params cl tk pf tm loc variance =
   {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
-   ptype_manifest = tm; ptype_loc = loc; ptype_variance = variance}
+   ptype_manifest = tm; ptype_loc = loc}
 ;;
 
 let ocaml_ptype_record ltl priv =
@@ -63,12 +63,45 @@ let ocaml_ptype_private = Ptype_abstract;;
 
 let ocaml_class_infos virt params name expr loc variance =
   {pci_virt = virt; pci_params = params; pci_name = name; pci_expr = expr;
-   pci_loc = loc; pci_variance = variance}
+   pci_loc = loc}
 ;;
 
-let ocaml_pexp_assertfalse fname loc = Pexp_assertfalse;;
+let ocaml_pexp_assertfalse fname loc =
+  let ghexp d = {pexp_desc = d; pexp_loc = loc} in
+  let triple =
+    ghexp
+      (Pexp_tuple
+         [ghexp (Pexp_constant (Const_string fname));
+          ghexp (Pexp_constant (Const_int loc.Location.loc_start));
+          ghexp (Pexp_constant (Const_int loc.Location.loc_end))])
+  in
+  let excep = Ldot (Lident "Pervasives", "Assert_failure") in
+  let bucket = ghexp (Pexp_construct (excep, Some triple, false)) in
+  let raise_ = ghexp (Pexp_ident (Ldot (Lident "Pervasives", "raise"))) in
+  Pexp_apply (raise_, ["", bucket])
+;;
 
-let ocaml_pexp_assert fname loc e = Pexp_assert e;;
+let ocaml_pexp_assert fname loc e =
+  let ghexp d = {pexp_desc = d; pexp_loc = loc} in
+  let ghpat d = {ppat_desc = d; ppat_loc = loc} in
+  let triple =
+    ghexp
+      (Pexp_tuple
+         [ghexp (Pexp_constant (Const_string fname));
+          ghexp (Pexp_constant (Const_int loc.Location.loc_start));
+          ghexp (Pexp_constant (Const_int loc.Location.loc_end))])
+  in
+  let excep = Ldot (Lident "Pervasives", "Assert_failure") in
+  let bucket = ghexp (Pexp_construct (excep, Some triple, false)) in
+  let raise_ = ghexp (Pexp_ident (Ldot (Lident "Pervasives", "raise"))) in
+  let raise_af = ghexp (Pexp_apply (raise_, ["", bucket])) in
+  let under = ghpat Ppat_any in
+  let false_ = ghexp (Pexp_construct (Lident "false", None, false)) in
+  let try_e = ghexp (Pexp_try (e, [under, false_])) in
+  let not_ = ghexp (Pexp_ident (Ldot (Lident "Pervasives", "not"))) in
+  let not_try_e = ghexp (Pexp_apply (not_, ["", try_e])) in
+  Pexp_ifthenelse (not_try_e, raise_af, None)
+;;
 
 let ocaml_pexp_lazy = None;;
 
@@ -88,7 +121,7 @@ let ocaml_ppat_record lpl = Ppat_record lpl;;
 
 let ocaml_psig_recmodule = None;;
 
-let ocaml_pstr_include = Some (fun me -> Pstr_include me);;
+let ocaml_pstr_include = None;;
 
 let ocaml_pstr_recmodule = None;;
 

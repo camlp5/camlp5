@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: versdep.mli,v 1.3 2010/08/29 04:50:05 deraugla Exp $ *)
+(* $Id: versdep.mli,v 1.4 2010/08/29 23:59:53 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -28,12 +28,16 @@ value ocaml_ptyp_variant :
   list (choice (label * bool * list core_type) core_type) -> bool ->
     option (list label) -> option core_type_desc;
 value ocaml_ptype_private : type_kind;
-value ocaml_pwith_type :
-  list string -> type_kind -> bool -> option core_type ->
-    list (bool * bool) -> Location.t -> with_constraint;
+value ocaml_class_infos :
+  virtual_flag -> (list string * Location.t) ->
+    string -> 'a -> Location.t -> list (bool * bool) -> class_infos 'a;
 
 value module_prefix_can_be_in_first_record_label_only : bool;
 
+value ocaml_pexp_assertfalse :
+  string -> Location.t -> expression_desc;
+value ocaml_pexp_assert :
+  string -> Location.t -> expression -> expression_desc;
 value ocaml_pexp_lazy : option (expression -> expression_desc);
 value ocaml_const_int32 : option (string -> constant);
 value ocaml_const_int64 : option (string -> constant);
@@ -45,6 +49,7 @@ value ocaml_ppat_record : list (Longident.t * pattern) -> pattern_desc;
 
 value ocaml_psig_recmodule :
   option (list (string * module_type) -> signature_item_desc);
+value ocaml_pstr_include : option (module_expr -> structure_item_desc);
 value ocaml_pstr_recmodule :
   option (list (string * module_type * module_expr) -> structure_item_desc);
 

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: grammar.ml,v 1.76 2010/08/18 16:26:26 deraugla Exp $ *)
+(* $Id: grammar.ml,v 1.77 2010/08/29 23:59:53 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_fstream.cmo";
@@ -142,9 +142,14 @@ value iter_entry f e =
     fun
     [ Sfacto s -> do_symbol s
     | Smeta _ sl _ -> List.iter do_symbol sl
-    | Snterm e | Snterml e _ -> do_entry e
-    | Slist0 s | Slist1 s | Sopt s | Sflag s -> do_symbol s
-    | Slist0sep s1 s2 | Slist1sep s1 s2 -> do { do_symbol s1; do_symbol s2 }
+    | Snterm e -> do_entry e
+    | Snterml e _ -> do_entry e
+    | Slist0 s -> do_symbol s
+    | Slist1 s -> do_symbol s
+    | Sopt s -> do_symbol s
+    | Sflag s -> do_symbol s
+    | Slist0sep s1 s2 -> do { do_symbol s1; do_symbol s2 }
+    | Slist1sep s1 s2 -> do { do_symbol s1; do_symbol s2 }
     | Stree t -> do_tree t
     | Svala _ s -> do_symbol s
     | Sself | Snext | Stoken _ -> () ]
@@ -178,11 +183,14 @@ value fold_entry f e init =
     fun
     [ Sfacto s -> do_symbol accu s
     | Smeta _ sl _ -> List.fold_left do_symbol accu sl
-    | Snterm e | Snterml e _ -> do_entry accu e
-    | Slist0 s | Slist1 s | Sopt s | Sflag s -> do_symbol accu s
-    | Slist0sep s1 s2 | Slist1sep s1 s2 ->
-        let accu = do_symbol accu s1 in
-        do_symbol accu s2
+    | Snterm e -> do_entry accu e
+    | Snterml e _ -> do_entry accu e
+    | Slist0 s -> do_symbol accu s
+    | Slist1 s -> do_symbol accu s
+    | Sopt s -> do_symbol accu s
+    | Sflag s -> do_symbol accu s
+    | Slist0sep s1 s2 -> do_symbol (do_symbol accu s1) s2
+    | Slist1sep s1 s2 -> do_symbol (do_symbol accu s1) s2
     | Stree t -> do_tree accu t
     | Svala _ s -> do_symbol accu s
     | Sself | Snext | Stoken _ -> accu ]
@@ -229,7 +237,8 @@ value rec name_of_symbol_failed entry =
   | Slist0sep s _ -> name_of_symbol_failed entry s
   | Slist1 s -> name_of_symbol_failed entry s
   | Slist1sep s _ -> name_of_symbol_failed entry s
-  | Sopt s | Sflag s -> name_of_symbol_failed entry s
+  | Sopt s -> name_of_symbol_failed entry s
+  | Sflag s -> name_of_symbol_failed entry s
   | Stree t -> name_of_tree_failed entry t
   | Svala _ s -> name_of_symbol_failed entry s
   | Smeta _ [s :: _] _ -> name_of_symbol_failed entry s

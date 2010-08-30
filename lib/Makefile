@@ -1,10 +1,10 @@
-# $Id: Makefile,v 1.30 2010/08/29 17:46:32 deraugla Exp $
+# $Id: Makefile,v 1.31 2010/08/29 23:59:53 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
 
 INCLUDES=-I $(OTOP)/parsing
-OCAMLCFLAGS=$(OCAMLC_WARNERR) $(INCLUDES)
+OCAMLCFLAGS=$(WARNERR) $(INCLUDES)
 OBJS=versdep.cmo ploc.cmo plexing.cmo plexer.cmo fstream.cmo gramext.cmo grammar.cmo diff.cmo extfold.cmo extfun.cmo pretty.cmo pprintf.cmo eprinter.cmo stdpp.cmo token.cmo
 SHELL=/bin/sh
 TARGET=gramlib.cma

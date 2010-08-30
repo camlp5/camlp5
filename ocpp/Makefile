@@ -1,11 +1,11 @@
-# $Id: Makefile,v 1.9 2010/08/23 08:57:30 deraugla Exp $
+# $Id: Makefile,v 1.10 2010/08/29 23:59:54 deraugla Exp $
 
 include ../config/Makefile
 
 SHELL=/bin/sh
 
 INCLUDES=-I ../main -I ../boot -I ../odyl
-OCAMLCFLAGS=-warn-error A $(INCLUDES)
+OCAMLCFLAGS=$(WARNERR) $(INCLUDES)
 LINKFLAGS=$(INCLUDES)
 OBJS=ocpp.cmo
 

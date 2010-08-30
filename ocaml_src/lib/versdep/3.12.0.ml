@@ -55,13 +55,14 @@ let ocaml_ptyp_variant catl clos sl_opt =
 
 let ocaml_ptype_private = Ptype_abstract;;
 
-let ocaml_pwith_type params tk pf ct variance loc =
-  let pf = if pf then Private else Public in
-  Pwith_type
-    {ptype_params = params; ptype_cstrs = []; ptype_kind = tk;
-     ptype_private = pf; ptype_manifest = ct; ptype_variance = variance;
-     ptype_loc = loc}
+let ocaml_class_infos virt params name expr loc variance =
+  {pci_virt = virt; pci_params = params; pci_name = name; pci_expr = expr;
+   pci_loc = loc; pci_variance = variance}
 ;;
+
+let ocaml_pexp_assertfalse fname loc = Pexp_assertfalse;;
+
+let ocaml_pexp_assert fname loc e = Pexp_assert e;;
 
 let ocaml_pexp_lazy = Some (fun e -> Pexp_lazy e);;
 
@@ -82,6 +83,8 @@ let ocaml_ppat_lazy = Some (fun p -> Ppat_lazy p);;
 let ocaml_ppat_record lpl = Ppat_record (lpl, Closed);;
 
 let ocaml_psig_recmodule = Some (fun ntl -> Psig_recmodule ntl);;
+
+let ocaml_pstr_include = Some (fun me -> Pstr_include me);;
 
 let ocaml_pstr_recmodule = Some (fun nel -> Pstr_recmodule nel);;
 

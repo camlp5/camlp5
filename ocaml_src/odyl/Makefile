@@ -6,7 +6,7 @@ include $(TOP)/config/Makefile
 SHELL=/bin/sh
 
 INCLUDES=
-OCAMLCFLAGS=-warn-error A $(INCLUDES)
+OCAMLCFLAGS=$(WARNERR) $(INCLUDES)
 LINKFLAGS=$(INCLUDES)
 
 OBJS=odyl_config.cmo odyl_main.cmo

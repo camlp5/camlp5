@@ -28,12 +28,15 @@ val ocaml_ptyp_variant :
   (label * bool * core_type list, core_type) choice list -> bool ->
     label list option -> core_type_desc option;;
 val ocaml_ptype_private : type_kind;;
-val ocaml_pwith_type :
-  string list -> type_kind -> bool -> core_type option ->
-    (bool * bool) list -> Location.t -> with_constraint;;
+val ocaml_class_infos :
+  virtual_flag -> string list * Location.t -> string -> 'a -> Location.t ->
+    (bool * bool) list -> 'a class_infos;;
 
 val module_prefix_can_be_in_first_record_label_only : bool;;
 
+val ocaml_pexp_assertfalse : string -> Location.t -> expression_desc;;
+val ocaml_pexp_assert :
+  string -> Location.t -> expression -> expression_desc;;
 val ocaml_pexp_lazy : (expression -> expression_desc) option;;
 val ocaml_const_int32 : (string -> constant) option;;
 val ocaml_const_int64 : (string -> constant) option;;
@@ -45,6 +48,7 @@ val ocaml_ppat_record : (Longident.t * pattern) list -> pattern_desc;;
 
 val ocaml_psig_recmodule :
   ((string * module_type) list -> signature_item_desc) option;;
+val ocaml_pstr_include : (module_expr -> structure_item_desc) option;;
 val ocaml_pstr_recmodule :
   ((string * module_type * module_expr) list -> structure_item_desc) option;;
 

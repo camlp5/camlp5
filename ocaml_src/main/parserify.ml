@@ -3,6 +3,7 @@
 (* Copyright (c) INRIA 2007-2010 *)
 
 (* #load "q_MLast.cmo" *)
+(* #load "pa_macro.cmo" *)
 
 (* Heuristic to rebuild parsers and streams from the AST *)
 

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.14 2010/08/23 08:57:30 deraugla Exp $
+# $Id: Makefile,v 1.15 2010/08/29 23:59:54 deraugla Exp $
 
 TOP=..
 include $(TOP)/config/Makefile
@@ -6,7 +6,7 @@ include $(TOP)/config/Makefile
 SHELL=/bin/sh
 
 INCLUDES=
-OCAMLCFLAGS=-warn-error A $(INCLUDES)
+OCAMLCFLAGS=$(WARNERR) $(INCLUDES)
 LINKFLAGS=$(INCLUDES)
 
 OBJS=odyl_config.cmo odyl_main.cmo

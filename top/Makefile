@@ -1,10 +1,10 @@
-# $Id: Makefile,v 1.29 2010/08/28 20:30:19 deraugla Exp $
+# $Id: Makefile,v 1.30 2010/08/29 23:59:54 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
 
 INCLUDES=-I ../main -I ../boot -I $(OTOP)/utils -I $(OTOP)/parsing -I $(OTOP)/typing -I $(OTOP)/toplevel
-OCAMLCFLAGS=-warn-error A $(INCLUDES)
+OCAMLCFLAGS=$(WARNERR) $(INCLUDES)
 
 CAMLP5_OBJS=$(OTOP)/utils/pconfig.cmo ../boot/ploc.cmo ../boot/plexing.cmo ../boot/plexer.cmo ../boot/fstream.cmo ../boot/gramext.cmo ../boot/grammar.cmo ../boot/diff.cmo ../boot/extfold.cmo ../boot/extfun.cmo ../boot/versdep.cmo ../boot/pretty.cmo ../boot/pprintf.cmo ../boot/eprinter.cmo ../main/quotation.cmo ../main/reloc.cmo ../main/exparser.cmo ../main/ast2pt.cmo ../main/pcaml.cmo ../main/prtools.cmo ../boot/stdpp.cmo ../boot/token.cmo
 CTOP=camlp5_top.cmo

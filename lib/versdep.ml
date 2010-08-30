@@ -1,12 +1,12 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.5 2010/08/29 05:23:17 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.6 2010/08/29 23:59:53 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
 open Longident;
 open Asttypes;
 
-IFDEF OCAML_3_01 OR OCAML_3_02 THEN
+IFDEF OCAML_3_00 OR OCAML_3_01 OR OCAML_3_02 THEN
   DEFINE OCAML_3_02_OR_BEFORE
 END;
 IFDEF OCAML_3_02_OR_BEFORE OR OCAML_3_03 OR OCAML_3_04 THEN
@@ -43,11 +43,12 @@ type choice 'a 'b =
 ;
 
 value sys_ocaml_version =
-  IFDEF OCAML_3_01 THEN "3.01"
+  IFDEF OCAML_3_00 THEN "3.00"
+  ELSE IFDEF OCAML_3_01 THEN "3.01"
   ELSE IFDEF OCAML_3_02 THEN "3.02"
   ELSE IFDEF OCAML_3_03 THEN "3.03"
   ELSE IFDEF OCAML_3_04 THEN "3.04"
-  ELSE Sys.ocaml_version END END END END
+  ELSE Sys.ocaml_version END END END END END
 ;
 
 value ocaml_location (fname, lnum, bolp, bp, ep) =
@@ -74,10 +75,13 @@ value ocaml_type_declaration params cl tk pf tm loc variance =
     {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
      ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
      ptype_variance = variance}
+  ELSE IFDEF OCAML_3_00 THEN
+    {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
+     ptype_manifest = tm; ptype_loc = loc}
   ELSE
     {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
      ptype_manifest = tm; ptype_loc = loc; ptype_variance = variance}
-  END
+  END END
 ;
 
 value ocaml_ptype_record ltl priv =
@@ -141,20 +145,54 @@ value ocaml_ptype_private =
   ELSE Ptype_private END
 ;
 
-value ocaml_pwith_type params tk pf ct variance loc =
-  IFDEF OCAML_3_11_OR_AFTER THEN
-    let pf = if pf then Private else Public in
-    Pwith_type
-      {ptype_params = params; ptype_cstrs = [];
-       ptype_kind = tk; ptype_private = pf;
-       ptype_manifest = ct; ptype_variance = variance;
-       ptype_loc = loc}
+value ocaml_class_infos virt params name expr loc variance =
+  IFDEF OCAML_3_00 THEN
+    {pci_virt = virt; pci_params = params; pci_name = name; pci_expr = expr;
+     pci_loc = loc}
   ELSE
-    Pwith_type
-      {ptype_params = params; ptype_cstrs = [];
-       ptype_kind = tk; ptype_manifest = ct;
-       ptype_variance = variance; ptype_loc = loc}
+    {pci_virt = virt; pci_params = params; pci_name = name; pci_expr = expr;
+     pci_loc = loc; pci_variance = variance}
   END
+;
+
+value ocaml_pexp_assertfalse fname loc =
+  IFDEF OCAML_3_00 THEN
+    let ghexp d = {pexp_desc = d; pexp_loc = loc} in
+    let triple =
+      ghexp (Pexp_tuple
+             [ghexp (Pexp_constant (Const_string fname));
+              ghexp (Pexp_constant (Const_int loc.Location.loc_start));
+              ghexp (Pexp_constant (Const_int loc.Location.loc_end))])
+    in
+    let excep = Ldot (Lident "Pervasives", "Assert_failure") in
+    let bucket = ghexp (Pexp_construct (excep, Some triple, false)) in
+    let raise_ = ghexp (Pexp_ident (Ldot (Lident "Pervasives", "raise"))) in
+    Pexp_apply (raise_, [("", bucket)])
+  ELSE Pexp_assertfalse END
+;
+
+value ocaml_pexp_assert fname loc e =
+  IFDEF OCAML_3_00 THEN
+    let ghexp d = {pexp_desc = d; pexp_loc = loc} in
+    let ghpat d = {ppat_desc = d; ppat_loc = loc} in
+    let triple =
+      ghexp (Pexp_tuple
+             [ghexp (Pexp_constant (Const_string fname));
+              ghexp (Pexp_constant (Const_int loc.Location.loc_start));
+              ghexp (Pexp_constant (Const_int loc.Location.loc_end))])
+    in
+    let excep = Ldot (Lident "Pervasives", "Assert_failure") in
+    let bucket = ghexp (Pexp_construct (excep, Some triple, false)) in
+    let raise_ = ghexp (Pexp_ident (Ldot (Lident "Pervasives", "raise"))) in
+    let raise_af = ghexp (Pexp_apply (raise_, [("", bucket)])) in
+    let under = ghpat Ppat_any in
+    let false_ = ghexp (Pexp_construct (Lident "false", None, false)) in
+    let try_e = ghexp (Pexp_try (e, [(under, false_)])) in
+
+    let not_ = ghexp (Pexp_ident (Ldot (Lident "Pervasives", "not"))) in
+    let not_try_e = ghexp (Pexp_apply (not_, [("", try_e)])) in
+    Pexp_ifthenelse (not_try_e, raise_af, None)
+  ELSE Pexp_assert e END
 ;
 
 value ocaml_pexp_lazy =
@@ -197,6 +235,10 @@ value ocaml_ppat_record lpl =
 value ocaml_psig_recmodule =
   IFDEF OCAML_3_06_OR_BEFORE THEN None
   ELSE Some (fun ntl -> Psig_recmodule ntl) END
+;
+
+value ocaml_pstr_include =
+  IFDEF OCAML_3_00 THEN None ELSE Some (fun me -> Pstr_include me) END
 ;
 
 value ocaml_pstr_recmodule =
