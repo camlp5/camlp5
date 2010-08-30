@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.7 2010/08/30 00:45:14 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.8 2010/08/30 19:37:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -164,10 +164,10 @@ value ocaml_pexp_assertfalse fname loc =
               ghexp (Pexp_constant (Const_int loc.Location.loc_start));
               ghexp (Pexp_constant (Const_int loc.Location.loc_end))])
     in
-    let excep = Ldot (Lident "Pervasives", "Assert_failure") in
-    let bucket = ghexp (Pexp_construct (excep, Some triple, false)) in
-    let raise_ = ghexp (Pexp_ident (Ldot (Lident "Pervasives", "raise"))) in
-    Pexp_apply (raise_, [("", bucket)])
+    let excep = Ldot (Lident "Pervasives") "Assert_failure" in
+    let bucket = ghexp (Pexp_construct excep (Some triple) False) in
+    let raise_ = ghexp (Pexp_ident (Ldot (Lident "Pervasives") "raise")) in
+    Pexp_apply raise_ [("", bucket)]
   ELSE Pexp_assertfalse END
 ;
 
@@ -181,17 +181,17 @@ value ocaml_pexp_assert fname loc e =
               ghexp (Pexp_constant (Const_int loc.Location.loc_start));
               ghexp (Pexp_constant (Const_int loc.Location.loc_end))])
     in
-    let excep = Ldot (Lident "Pervasives", "Assert_failure") in
-    let bucket = ghexp (Pexp_construct (excep, Some triple, false)) in
-    let raise_ = ghexp (Pexp_ident (Ldot (Lident "Pervasives", "raise"))) in
-    let raise_af = ghexp (Pexp_apply (raise_, [("", bucket)])) in
+    let excep = Ldot (Lident "Pervasives") "Assert_failure" in
+    let bucket = ghexp (Pexp_construct excep (Some triple) False) in
+    let raise_ = ghexp (Pexp_ident (Ldot (Lident "Pervasives") "raise")) in
+    let raise_af = ghexp (Pexp_apply raise_ [("", bucket)]) in
     let under = ghpat Ppat_any in
-    let false_ = ghexp (Pexp_construct (Lident "false", None, false)) in
-    let try_e = ghexp (Pexp_try (e, [(under, false_)])) in
+    let false_ = ghexp (Pexp_construct (Lident "false") None False) in
+    let try_e = ghexp (Pexp_try e [(under, false_)]) in
 
-    let not_ = ghexp (Pexp_ident (Ldot (Lident "Pervasives", "not"))) in
-    let not_try_e = ghexp (Pexp_apply (not_, [("", try_e)])) in
-    Pexp_ifthenelse (not_try_e, raise_af, None)
+    let not_ = ghexp (Pexp_ident (Ldot (Lident "Pervasives") "not")) in
+    let not_try_e = ghexp (Pexp_apply not_ [("", try_e)]) in
+    Pexp_ifthenelse not_try_e raise_af None
   ELSE Pexp_assert e END
 ;
 
