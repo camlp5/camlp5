@@ -697,6 +697,50 @@ let expand_module_prefix m =
   loop
 ;;
 
+let do_split_or_patterns_with_bindings =
+  let rec loop rev_pel =
+    function
+      (p, wo, e) :: pel ->
+        let (rev_pel, pel) =
+          let (p, as_opt) =
+            match p with
+              PaAli (loc, p1, p2) -> p1, (fun p -> PaAli (loc, p, p2))
+            | _ -> p, (fun p -> p)
+          in
+          match p with
+            PaOrp (loc, p1, p2) ->
+              let has_bindings =
+                let rec loop =
+                  function
+                    PaLid (_, _) -> true
+                  | PaApp (_, p1, p2) -> loop p1 || loop p2
+                  | _ -> false
+                in
+                loop p2
+              in
+              if has_bindings then
+                let pl =
+                  let rec loop pl =
+                    function
+                      PaOrp (loc, p1, p2) -> loop (p2 :: pl) p1
+                    | p -> p :: pl
+                  in
+                  loop [] p
+                in
+                let rev_pel =
+                  List.fold_left
+                    (fun rev_pel p -> (as_opt p, wo, e) :: rev_pel) rev_pel pl
+                in
+                rev_pel, pel
+              else (as_opt p, wo, e) :: rev_pel, pel
+          | _ -> (as_opt p, wo, e) :: rev_pel, pel
+        in
+        loop rev_pel pel
+    | [] -> List.rev rev_pel
+  in
+  loop []
+;;
+
 let rec expr =
   function
     ExAcc (loc, x, MLast.ExLid (_, "val")) ->
@@ -809,7 +853,13 @@ let rec expr =
           mkexp loc
             (Pexp_function
                ("?" ^ lab, option expr eo, [patt p, when_expr e (uv w)]))
-      | pel -> mkexp loc (Pexp_function ("", None, List.map mkpwe pel))
+      | pel ->
+          let pel =
+            if split_or_patterns_with_bindings then
+              do_split_or_patterns_with_bindings pel
+            else pel
+          in
+          mkexp loc (Pexp_function ("", None, List.map mkpwe pel))
       end
   | ExIfe (loc, e1, e2, e3) ->
       mkexp loc (Pexp_ifthenelse (expr e1, expr e2, Some (expr e3)))
@@ -839,7 +889,13 @@ let rec expr =
   | ExLmd (loc, i, me, e) ->
       mkexp loc (Pexp_letmodule (uv i, module_expr me, expr e))
   | ExMat (loc, e, pel) ->
-      mkexp loc (Pexp_match (expr e, List.map mkpwe (uv pel)))
+      let pel = uv pel in
+      let pel =
+        if split_or_patterns_with_bindings then
+          do_split_or_patterns_with_bindings pel
+        else pel
+      in
+      mkexp loc (Pexp_match (expr e, List.map mkpwe pel))
   | ExNew (loc, id) ->
       mkexp loc (Pexp_new (long_id_of_string_list loc (uv id)))
   | ExObj (loc, po, cfl) ->

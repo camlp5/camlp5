@@ -1,12 +1,15 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.8 2010/08/30 19:37:59 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.9 2010/08/30 22:48:33 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
 open Longident;
 open Asttypes;
 
-IFDEF OCAML_3_00 OR OCAML_3_01 OR OCAML_3_02 THEN
+IFDEF OCAML_3_00 OR OCAML_3_01 THEN
+  DEFINE OCAML_3_01_OR_BEFORE
+END;
+IFDEF OCAML_3_01_OR_BEFORE OR OCAML_3_02 THEN
   DEFINE OCAML_3_02_OR_BEFORE
 END;
 IFDEF OCAML_3_02_OR_BEFORE OR OCAML_3_03 OR OCAML_3_04 THEN
@@ -155,6 +158,14 @@ value ocaml_class_infos virt params name expr loc variance =
   END
 ;
 
+value module_prefix_can_be_in_first_record_label_only =
+  IFDEF OCAML_3_06_OR_BEFORE OR OCAML_3_07 THEN False ELSE True END
+;
+
+value split_or_patterns_with_bindings =
+  IFDEF OCAML_3_01_OR_BEFORE THEN True ELSE False END
+;
+
 value ocaml_pexp_assertfalse fname loc =
   IFDEF OCAML_3_00 THEN
     let ghexp d = {pexp_desc = d; pexp_loc = loc} in
@@ -217,10 +228,6 @@ value ocaml_const_nativeint =
 value ocaml_pexp_object =
   IFDEF OCAML_3_06_OR_BEFORE OR OCAML_3_07 THEN None
   ELSE Some (fun cs -> Pexp_object cs) END
-;
-
-value module_prefix_can_be_in_first_record_label_only =
-  IFDEF OCAML_3_06_OR_BEFORE OR OCAML_3_07 THEN False ELSE True END
 ;
 
 value ocaml_ppat_lazy =

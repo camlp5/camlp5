@@ -33,10 +33,12 @@ val ocaml_class_infos :
     (bool * bool) list -> 'a class_infos;;
 
 val module_prefix_can_be_in_first_record_label_only : bool;;
+val split_or_patterns_with_bindings : bool;;
 
 val ocaml_pexp_assertfalse : string -> Location.t -> expression_desc;;
 val ocaml_pexp_assert :
   string -> Location.t -> expression -> expression_desc;;
+
 val ocaml_pexp_lazy : (expression -> expression_desc) option;;
 val ocaml_const_int32 : (string -> constant) option;;
 val ocaml_const_int64 : (string -> constant) option;;

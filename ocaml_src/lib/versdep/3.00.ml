@@ -13,6 +13,7 @@ open Asttypes;;
 (* *)
 (* *)
 (* *)
+(* *)
 
 type ('a, 'b) choice =
     Left of 'a
@@ -66,6 +67,10 @@ let ocaml_class_infos virt params name expr loc variance =
    pci_loc = loc}
 ;;
 
+let module_prefix_can_be_in_first_record_label_only = false;;
+
+let split_or_patterns_with_bindings = true;;
+
 let ocaml_pexp_assertfalse fname loc =
   let ghexp d = {pexp_desc = d; pexp_loc = loc} in
   let triple =
@@ -112,8 +117,6 @@ let ocaml_const_int64 = None;;
 let ocaml_const_nativeint = None;;
 
 let ocaml_pexp_object = None;;
-
-let module_prefix_can_be_in_first_record_label_only = false;;
 
 let ocaml_ppat_lazy = None;;
 

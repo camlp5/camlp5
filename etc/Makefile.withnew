@@ -1,9 +1,9 @@
-# $Id: Makefile.withnew,v 1.1 2010/08/24 15:06:48 deraugla Exp $
+# $Id: Makefile.withnew,v 1.2 2010/08/30 22:48:33 deraugla Exp $
 
 include ../config/Makefile
 
 INCLUDES=-I ../main -I ../meta -I ../lib
-OCAMLCFLAGS=-warn-error A $(INCLUDES)
+OCAMLCFLAGS=$(WARNERR) $(INCLUDES)
 COMPWITH=new
 
 all:

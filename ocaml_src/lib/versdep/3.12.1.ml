@@ -13,6 +13,7 @@ open Asttypes;;
 (* *)
 (* *)
 (* *)
+(* *)
 
 type ('a, 'b) choice =
     Left of 'a
@@ -60,6 +61,10 @@ let ocaml_class_infos virt params name expr loc variance =
    pci_loc = loc; pci_variance = variance}
 ;;
 
+let module_prefix_can_be_in_first_record_label_only = true;;
+
+let split_or_patterns_with_bindings = false;;
+
 let ocaml_pexp_assertfalse fname loc = Pexp_assertfalse;;
 
 let ocaml_pexp_assert fname loc e = Pexp_assert e;;
@@ -75,8 +80,6 @@ let ocaml_const_nativeint =
 ;;
 
 let ocaml_pexp_object = Some (fun cs -> Pexp_object cs);;
-
-let module_prefix_can_be_in_first_record_label_only = true;;
 
 let ocaml_ppat_lazy = Some (fun p -> Ppat_lazy p);;
 

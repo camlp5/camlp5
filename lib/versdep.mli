@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: versdep.mli,v 1.4 2010/08/29 23:59:53 deraugla Exp $ *)
+(* $Id: versdep.mli,v 1.5 2010/08/30 22:48:33 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -33,11 +33,13 @@ value ocaml_class_infos :
     string -> 'a -> Location.t -> list (bool * bool) -> class_infos 'a;
 
 value module_prefix_can_be_in_first_record_label_only : bool;
+value split_or_patterns_with_bindings : bool;
 
 value ocaml_pexp_assertfalse :
   string -> Location.t -> expression_desc;
 value ocaml_pexp_assert :
   string -> Location.t -> expression -> expression_desc;
+
 value ocaml_pexp_lazy : option (expression -> expression_desc);
 value ocaml_const_int32 : option (string -> constant);
 value ocaml_const_int64 : option (string -> constant);

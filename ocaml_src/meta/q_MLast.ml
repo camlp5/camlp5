@@ -242,7 +242,13 @@ let mkumin _ f arg =
       Qast.Node ("ExFlo", [Qast.Loc; Qast.VaVal (Qast.Str n)])
   | _ ->
       match f with
-        Qast.VaVal (Qast.Str f) | Qast.Str f ->
+        Qast.VaVal (Qast.Str f) ->
+          let f = "~" ^ f in
+          Qast.Node
+            ("ExApp",
+             [Qast.Loc;
+              Qast.Node ("ExLid", [Qast.Loc; Qast.VaVal (Qast.Str f)]); arg])
+      | Qast.Str f ->
           let f = "~" ^ f in
           Qast.Node
             ("ExApp",

@@ -3,7 +3,6 @@
 (* Copyright (c) INRIA 2007-2010 *)
 
 (* #load "q_MLast.cmo" *)
-(* #load "pa_macro.cmo" *)
 
 (* Heuristic to rebuild parsers and streams from the AST *)
 
@@ -94,8 +93,26 @@ let rec unstream_pattern_kont =
                   MLast.ExAcc
                     (_, MLast.ExUid (_, "Stream"), MLast.ExUid (_, "Error")),
                   e2))])],
-       e) |
-    MLast.ExMat
+       e) ->
+      let f =
+        match f with
+          MLast.ExApp (_, f, MLast.ExLid (_, "strm__")) -> f
+        | _ ->
+            MLast.ExFun
+              (loc,
+               [MLast.PaTyc
+                  (loc, MLast.PaLid (loc, "strm__"),
+                   MLast.TyApp
+                     (loc,
+                      MLast.TyAcc
+                        (loc, MLast.TyUid (loc, "Stream"),
+                         MLast.TyLid (loc, "t")),
+                      MLast.TyAny loc)),
+                None, f])
+      in
+      let (sp, epo, e) = unstream_pattern_kont e in
+      (SpNtr (loc, p, f), err e2) :: sp, epo, e
+  | MLast.ExMat
       (_,
        MLast.ExTry
          (_, MLast.ExApp (_, MLast.ExUid (_, "Some"), f),
