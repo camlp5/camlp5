@@ -25,9 +25,12 @@ val ocaml_ptype_record :
 
 val ocaml_ptype_variant :
   (string * core_type list * Location.t) list -> private_flag -> type_kind;;
+val ocaml_ptyp_arrow : string -> core_type -> core_type -> core_type_desc;;
 val ocaml_ptyp_variant :
-  (label * bool * core_type list, core_type) choice list -> bool ->
-    label list option -> core_type_desc option;;
+  (string * bool * core_type list, core_type) choice list -> bool ->
+    string list option -> core_type_desc option;;
+val ocaml_ptyp_class :
+  Longident.t -> core_type list -> string list -> core_type_desc;;
 val ocaml_ptype_private : type_kind;;
 val ocaml_class_infos :
   virtual_flag -> string list * Location.t -> string -> 'a -> Location.t ->
@@ -40,15 +43,26 @@ val ocaml_pexp_assertfalse : string -> Location.t -> expression_desc;;
 val ocaml_pexp_assert :
   string -> Location.t -> expression -> expression_desc;;
 
+val ocaml_pexp_function :
+  string -> expression option -> (pattern * expression) list ->
+    expression_desc;;
+val ocaml_pexp_apply :
+  expression -> (string * expression) list -> expression_desc;;
 val ocaml_pexp_lazy : (expression -> expression_desc) option;;
 val ocaml_const_int32 : (string -> constant) option;;
 val ocaml_const_int64 : (string -> constant) option;;
 val ocaml_const_nativeint : (string -> constant) option;;
 val ocaml_pexp_object : (class_structure -> expression_desc) option;;
+val ocaml_pexp_variant :
+  ((expression_desc -> (string * expression option) option) *
+   (string * expression option -> expression_desc)) option;;
 
 val ocaml_ppat_lazy : (pattern -> pattern_desc) option;;
 val ocaml_ppat_record : (Longident.t * pattern) list -> pattern_desc;;
 val ocaml_ppat_type : (Longident.t -> pattern_desc) option;;
+val ocaml_ppat_variant :
+  ((pattern_desc -> (string * pattern option) option) *
+   (string * pattern option -> pattern_desc)) option;;
 
 val ocaml_psig_recmodule :
   ((string * module_type) list -> signature_item_desc) option;;
@@ -61,6 +75,13 @@ val ocaml_pstr_recmodule :
 
 val ocaml_pctf_val :
   string * mutable_flag * core_type * Location.t -> class_type_field;;
+val ocaml_pcty_fun : string * core_type * class_type -> class_type_desc;;
+
+val ocaml_pcl_fun :
+  string * expression option * pattern * class_expr -> class_expr_desc;;
+val ocaml_pcl_apply :
+  class_expr * (string * expression) list -> class_expr_desc;;
+
 val ocaml_pcf_inher : class_expr -> string option -> class_field;;
 val ocaml_pcf_meth :
   string * private_flag * expression * Location.t -> class_field;;
@@ -68,6 +89,8 @@ val ocaml_pcf_val :
   string * mutable_flag * expression * Location.t -> class_field;;
 val ocaml_pexp_poly :
   (expression -> core_type option -> expression_desc) option;;
+
+val ocaml_pdir_bool : (bool -> directive_argument) option;;
 
 val arg_set_string : Arg.spec -> string ref option;;
 val arg_set_int : Arg.spec -> int ref option;;

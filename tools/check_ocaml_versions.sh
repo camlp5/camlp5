@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 1.36 2010/08/31 13:15:47 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 1.37 2010/08/31 15:07:12 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
@@ -14,6 +14,7 @@ PATH=$(pwd)/bin:$PATH
 cd $OCAMLSDIR
 
 dirs=$(ls | grep -v csl | grep -v '^1' | grep -v '^2.0')
+dirs=2.04
 
 # WARNING: on 64 bits arch, rather use this:
 # dirs=$(ls | grep -v csl | grep -v '^[1|2]' | grep -v '^3.0[0-6]')
@@ -40,7 +41,7 @@ for i in $dirs; do
   if [ "$DOOPT" = "0" ]; then
     echo "+++++ time make world"
     time make world
-  elif [ "$i" = "2.99" -o "$i" = "3.00" ]; then
+  elif [ "$i" = "2.04" -o "$i" = "2.99" -o "$i" = "3.00" ]; then
     echo "+++++ time make world opt"
     time make world opt
   elif [ "$i" = "3.01" -o "$i" = "3.02" -o "$i" = "3.03-alpha" -o \
