@@ -15,6 +15,7 @@ open Asttypes;;
 (* *)
 (* *)
 (* *)
+(* *)
 
 type ('a, 'b) choice =
     Left of 'a
@@ -60,7 +61,7 @@ let module_prefix_can_be_in_first_record_label_only = false;;
 
 let split_or_patterns_with_bindings = true;;
 
-let ocaml_pexp_apply (f, lel) = Pexp_apply (f, List.map snd lel);;
+let ocaml_pexp_apply f lel = Pexp_apply (f, List.map snd lel);;
 
 let ocaml_pexp_assertfalse fname loc =
   let ghexp d = {pexp_desc = d; pexp_loc = loc} in
@@ -74,7 +75,7 @@ let ocaml_pexp_assertfalse fname loc =
   let excep = Ldot (Lident "Pervasives", "Assert_failure") in
   let bucket = ghexp (Pexp_construct (excep, Some triple, false)) in
   let raise_ = ghexp (Pexp_ident (Ldot (Lident "Pervasives", "raise"))) in
-  ocaml_pexp_apply (raise_, ["", bucket])
+  ocaml_pexp_apply raise_ ["", bucket]
 ;;
 
 let ocaml_pexp_assert fname loc e =
@@ -90,18 +91,16 @@ let ocaml_pexp_assert fname loc e =
   let excep = Ldot (Lident "Pervasives", "Assert_failure") in
   let bucket = ghexp (Pexp_construct (excep, Some triple, false)) in
   let raise_ = ghexp (Pexp_ident (Ldot (Lident "Pervasives", "raise"))) in
-  let raise_af = ghexp (Pexp_apply (raise_, [bucket])) in
+  let raise_af = ghexp (ocaml_pexp_apply raise_ ["", bucket]) in
   let under = ghpat Ppat_any in
   let false_ = ghexp (Pexp_construct (Lident "false", None, false)) in
   let try_e = ghexp (Pexp_try (e, [under, false_])) in
   let not_ = ghexp (Pexp_ident (Ldot (Lident "Pervasives", "not"))) in
-  let not_try_e = ghexp (Pexp_apply (not_, [try_e])) in
+  let not_try_e = ghexp (ocaml_pexp_apply not_ ["", try_e]) in
   Pexp_ifthenelse (not_try_e, raise_af, None)
 ;;
 
 let ocaml_pexp_function lab eo pel = Pexp_function pel;;
-
-let ocaml_pexp_apply x lel = Pexp_apply (x, List.map snd lel);;
 
 let ocaml_pexp_lazy = None;;
 

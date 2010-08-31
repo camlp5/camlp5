@@ -1,9 +1,20 @@
 (* camlp5r *)
-(* $Id: camlp5_top.ml,v 1.19 2010/08/31 13:03:35 deraugla Exp $ *)
+(* $Id: camlp5_top.ml,v 1.20 2010/08/31 17:54:41 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
 #load "q_MLast.cmo";
+
+IFDEF OCAML_2_04 OR OCAML_2_99 THEN
+  DEFINE OCAML_2_99_OR_BEFORE
+END;
+IFDEF
+  OCAML_3_00 OR OCAML_3_01 OR OCAML_3_02 OR OCAML_3_03 OR OCAML_3_04 OR
+  OCAML_3_05 OR OCAML_3_06 OR OCAML_3_07 OR OCAML_3_08_0 OR OCAML_3_08_1 OR
+  OCAML_3_08_2 OR OCAML_3_08_3 OR OCAML_3_08_4
+THEN
+  DEFINE OCAML_3_08_OR_BEFORE
+END;
 
 open Parsetree;
 open Lexing;
@@ -51,7 +62,7 @@ value print_location lb loc =
   if String.length Toploop.input_name.val = 0 then
     highlight_locations lb loc (-1, -1)
   else
-    IFDEF OCAML_2_99 THEN
+    IFDEF OCAML_2_99_OR_BEFORE THEN
       Toploop.print_location (Ast2pt.mkloc loc)
     ELSE
       Toploop.print_location Format.err_formatter (Ast2pt.mkloc loc)
@@ -116,7 +127,7 @@ value toplevel_phrase cs = do {
 Pcaml.add_directive "load"
   (fun
    [ Some <:expr< $str:s$ >> ->
-       IFDEF OCAML_2_99 THEN Topdirs.dir_load s
+       IFDEF OCAML_2_99_OR_BEFORE THEN Topdirs.dir_load s
        ELSE Topdirs.dir_load Format.std_formatter s END
    | Some _ | None -> raise Not_found ]);
 
@@ -180,17 +191,9 @@ Toploop.parse_use_file.val :=
   wrap use_file (fun lb -> lb.lex_curr_pos - lb.lex_start_pos)
 ;
 
-IFDEF
-  OCAML_3_00 OR OCAML_3_01 OR OCAML_3_02 OR OCAML_3_03 OR OCAML_3_04 OR
-  OCAML_3_05 OR OCAML_3_06 OR OCAML_3_07 OR OCAML_3_08_0 OR OCAML_3_08_1 OR
-  OCAML_3_08_2 OR OCAML_3_08_3 OR OCAML_3_08_4
-THEN
-  DEFINE OCAML_3_08_OR_BEFORE
-END;
-
 Pcaml.warning.val :=
   fun loc txt ->
-    IFDEF OCAML_2_99 THEN
+    IFDEF OCAML_2_99_OR_BEFORE THEN
       Toploop.print_warning (Ast2pt.mkloc loc) (Warnings.Other txt)
     ELSE
       Toploop.print_warning (Ast2pt.mkloc loc) Format.err_formatter

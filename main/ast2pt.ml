@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.86 2010/08/31 15:37:29 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.87 2010/08/31 17:54:40 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -219,7 +219,7 @@ value rec ctyp =
       in
       match ocaml_ptyp_variant catl clos sl with
       [ Some t -> mktyp loc t
-      | None -> error loc "no inherit in this ocaml version" ]
+      | None -> error loc "no variant type or inherit in this ocaml version" ]
   | IFDEF STRICT THEN
       TyXtr loc _ _ -> error loc "bad ast TyXtr"
     END ]

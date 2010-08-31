@@ -216,7 +216,7 @@ let rec ctyp =
       in
       match ocaml_ptyp_variant catl clos sl with
         Some t -> mktyp loc t
-      | None -> error loc "variant type or inherit not in this ocaml version"
+      | None -> error loc "no variant type or inherit in this ocaml version"
 and meth_list loc fl v =
   match fl with
     [] -> if uv v then [mkfield loc Pfield_var] else []
@@ -475,7 +475,8 @@ let rec patt =
               end
           | None ->
               error (loc_of_patt f)
-                "this is not a constructor, it cannot be applied in a pattern"
+                ("this is not a constructor, " ^
+                 "it cannot be applied in a pattern")
       end
   | PaArr (loc, pl) -> mkpat loc (Ppat_array (List.map patt (uv pl)))
   | PaChr (loc, s) ->
@@ -699,8 +700,7 @@ let rec expr =
   function
     ExAcc (loc, x, MLast.ExLid (_, "val")) ->
       mkexp loc
-        (ocaml_pexp_apply (mkexp loc (Pexp_ident (Lident "!")))
-           ["", expr x])
+        (ocaml_pexp_apply (mkexp loc (Pexp_ident (Lident "!"))) ["", expr x])
   | ExAcc (loc, _, _) as e ->
       let (e, l) =
         match sep_expr_acc [] e with
@@ -760,15 +760,14 @@ let rec expr =
       mkexp loc
         (ocaml_pexp_apply
            (mkexp loc (Pexp_ident (array_function "Array" "get")))
-            ["", expr e1; "", expr e2])
+           ["", expr e1; "", expr e2])
   | ExArr (loc, el) -> mkexp loc (Pexp_array (List.map expr (uv el)))
   | ExAss (loc, e, v) ->
       begin match e with
         ExAcc (loc, x, MLast.ExLid (_, "val")) ->
           mkexp loc
-            (ocaml_pexp_apply
-               (mkexp loc (Pexp_ident (Lident ":=")))
-                ["", expr x; "", expr v])
+            (ocaml_pexp_apply (mkexp loc (Pexp_ident (Lident ":=")))
+               ["", expr x; "", expr v])
       | ExAcc (loc, _, _) ->
           begin match (expr e).pexp_desc with
             Pexp_field (e, lab) -> mkexp loc (Pexp_setfield (e, lab, expr v))
@@ -778,14 +777,14 @@ let rec expr =
           mkexp loc
             (ocaml_pexp_apply
                (mkexp loc (Pexp_ident (array_function "Array" "set")))
-                ["", expr e1; "", expr e2; "", expr v])
+               ["", expr e1; "", expr e2; "", expr v])
       | ExBae (loc, e, el) -> expr (bigarray_set loc e (uv el) v)
       | MLast.ExLid (_, lab) -> mkexp loc (Pexp_setinstvar (lab, expr v))
       | ExSte (_, e1, e2) ->
           mkexp loc
             (ocaml_pexp_apply
                (mkexp loc (Pexp_ident (array_function "String" "set")))
-                ["", expr e1; "", expr e2; "", expr v])
+               ["", expr e1; "", expr e2; "", expr v])
       | _ -> error loc "bad left part of assignment"
       end
   | ExAsr (loc, MLast.ExUid (_, "False")) ->
@@ -806,14 +805,13 @@ let rec expr =
       begin match uv pel with
         [PaLab (_, lab, po), w, e] ->
           mkexp loc
-            (ocaml_pexp_function
-               (uv lab) None
-                [patt (patt_of_lab loc (uv lab) po), when_expr e (uv w)])
+            (ocaml_pexp_function (uv lab) None
+               [patt (patt_of_lab loc (uv lab) po), when_expr e (uv w)])
       | [PaOlb (_, lab, peoo), w, e] ->
           let (lab, p, eo) = paolab loc (uv lab) peoo in
           mkexp loc
-            (ocaml_pexp_function
-               ("?" ^ lab) (option expr eo) [patt p, when_expr e (uv w)])
+            (ocaml_pexp_function ("?" ^ lab) (option expr eo)
+               [patt p, when_expr e (uv w)])
       | pel ->
           let pel =
             if split_or_patterns_with_bindings then
@@ -906,7 +904,7 @@ let rec expr =
       mkexp loc
         (ocaml_pexp_apply
            (mkexp loc (Pexp_ident (array_function "String" "get")))
-            ["", expr e1; "", expr e2])
+           ["", expr e1; "", expr e2])
   | ExStr (loc, s) ->
       mkexp loc
         (Pexp_constant (Const_string (string_of_string_token loc (uv s))))

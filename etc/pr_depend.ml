@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_depend.ml,v 1.51 2010/08/31 13:03:35 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.52 2010/08/31 17:59:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -18,7 +18,7 @@ value not_impl name x = do {
 };
 
 value list_sort f l =
-  IFDEF OCAML_2_99 THEN Sort.list (fun x y -> f x y < 0) l
+  IFDEF OCAML_2_04 OR OCAML_2_99 THEN Sort.list (fun x y -> f x y < 0) l
   ELSE List.sort f l END
 ;
 

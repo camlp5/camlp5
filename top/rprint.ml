@@ -1,8 +1,9 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 1.39 2010/08/31 13:03:35 deraugla Exp $ *)
+(* $Id: rprint.ml,v 1.40 2010/08/31 17:54:41 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
-IFNDEF OCAML_2_99 OR OCAML_3_00 OR OCAML_3_01 OR OCAML_3_02 THEN declare
+IFNDEF OCAML_2_04 OR OCAML_2_99 OR OCAML_3_00 OR OCAML_3_01 OR OCAML_3_02 THEN
+declare
 
 open Format;
 open Outcometree;

@@ -15,6 +15,7 @@ open Asttypes;;
 (* *)
 (* *)
 (* *)
+(* *)
 
 type ('a, 'b) choice =
     Left of 'a
@@ -54,6 +55,10 @@ let ocaml_ptyp_variant catl clos sl_opt =
   Some (Ptyp_variant (catl, clos, sl_opt))
 ;;
 
+let ocaml_ptyp_arrow lab t1 t2 = Ptyp_arrow (lab, t1, t2);;
+
+let ocaml_ptyp_class li tl ll = Ptyp_class (li, tl, ll);;
+
 let ocaml_ptype_private = Ptype_abstract;;
 
 let ocaml_class_infos virt params name expr loc variance =
@@ -65,9 +70,13 @@ let module_prefix_can_be_in_first_record_label_only = false;;
 
 let split_or_patterns_with_bindings = false;;
 
+let ocaml_pexp_apply f lel = Pexp_apply (f, lel);;
+
 let ocaml_pexp_assertfalse fname loc = Pexp_assertfalse;;
 
 let ocaml_pexp_assert fname loc e = Pexp_assert e;;
+
+let ocaml_pexp_function lab eo pel = Pexp_function (lab, eo, pel);;
 
 let ocaml_pexp_lazy = None;;
 
@@ -79,11 +88,31 @@ let ocaml_const_nativeint = None;;
 
 let ocaml_pexp_object = None;;
 
+let ocaml_pexp_variant =
+  let pexp_variant_pat =
+    function
+      Pexp_variant (lab, eo) -> Some (lab, eo)
+    | _ -> None
+  in
+  let pexp_variant (lab, eo) = Pexp_variant (lab, eo) in
+  Some (pexp_variant_pat, pexp_variant)
+;;
+
 let ocaml_ppat_lazy = None;;
 
 let ocaml_ppat_record lpl = Ppat_record lpl;;
 
 let ocaml_ppat_type = Some (fun sl -> Ppat_type sl);;
+
+let ocaml_ppat_variant =
+  let ppat_variant_pat =
+    function
+      Ppat_variant (lab, po) -> Some (lab, po)
+    | _ -> None
+  in
+  let ppat_variant (lab, po) = Ppat_variant (lab, po) in
+  Some (ppat_variant_pat, ppat_variant)
+;;
 
 let ocaml_psig_recmodule = None;;
 
@@ -95,6 +124,12 @@ let ocaml_pstr_recmodule = None;;
 
 let ocaml_pctf_val (s, b, t, loc) = Pctf_val (s, b, Some t, loc);;
 
+let ocaml_pcty_fun (lab, t, ct) = Pcty_fun (lab, t, ct);;
+
+let ocaml_pcl_fun (lab, ceo, p, ce) = Pcl_fun (lab, ceo, p, ce);;
+
+let ocaml_pcl_apply (ce, lel) = Pcl_apply (ce, lel);;
+
 let ocaml_pcf_inher ce pb = Pcf_inher (ce, pb);;
 
 let ocaml_pcf_meth (s, b, e, loc) = Pcf_meth (s, b, e, loc);;
@@ -102,6 +137,8 @@ let ocaml_pcf_meth (s, b, e, loc) = Pcf_meth (s, b, e, loc);;
 let ocaml_pcf_val (s, b, e, loc) = Pcf_val (s, b, e, loc);;
 
 let ocaml_pexp_poly = None;;
+
+let ocaml_pdir_bool = Some (fun b -> Pdir_bool b);;
 
 let arg_set_string _ = None;;
 

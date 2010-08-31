@@ -55,14 +55,16 @@ val ocaml_const_nativeint : (string -> constant) option;;
 val ocaml_pexp_object : (class_structure -> expression_desc) option;;
 val ocaml_pexp_variant :
   ((expression_desc -> (string * expression option) option) *
-   (string * expression option -> expression_desc)) option;;
+     (string * expression option -> expression_desc))
+    option;;
 
 val ocaml_ppat_lazy : (pattern -> pattern_desc) option;;
 val ocaml_ppat_record : (Longident.t * pattern) list -> pattern_desc;;
 val ocaml_ppat_type : (Longident.t -> pattern_desc) option;;
 val ocaml_ppat_variant :
   ((pattern_desc -> (string * pattern option) option) *
-   (string * pattern option -> pattern_desc)) option;;
+     (string * pattern option -> pattern_desc))
+    option;;
 
 val ocaml_psig_recmodule :
   ((string * module_type) list -> signature_item_desc) option;;

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.12 2010/08/31 15:37:29 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.13 2010/08/31 17:54:40 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -152,6 +152,14 @@ value ocaml_ptyp_variant catl clos sl_opt =
   END
 ;
 
+value ocaml_ptyp_arrow lab t1 t2 =
+  IFDEF OCAML_2_04 THEN Ptyp_arrow t1 t2 ELSE Ptyp_arrow lab t1 t2 END
+;
+
+value ocaml_ptyp_class li tl ll =
+  IFDEF OCAML_2_04 THEN Ptyp_class li tl ELSE Ptyp_class li tl ll END
+;
+
 value ocaml_ptype_private =
   IFDEF OCAML_3_08_OR_BEFORE OR OCAML_3_11_OR_AFTER THEN Ptype_abstract
   ELSE Ptype_private END
@@ -175,7 +183,7 @@ value split_or_patterns_with_bindings =
   IFDEF OCAML_3_01_OR_BEFORE THEN True ELSE False END
 ;
 
-value ocaml_pexp_apply (f, lel) =
+value ocaml_pexp_apply f lel =
   IFDEF OCAML_2_04 THEN Pexp_apply f (List.map snd lel)
   ELSE Pexp_apply f lel END
 ;
@@ -192,7 +200,7 @@ value ocaml_pexp_assertfalse fname loc =
     let excep = Ldot (Lident "Pervasives") "Assert_failure" in
     let bucket = ghexp (Pexp_construct excep (Some triple) False) in
     let raise_ = ghexp (Pexp_ident (Ldot (Lident "Pervasives") "raise")) in
-    ocaml_pexp_apply (raise_, [("", bucket)])
+    ocaml_pexp_apply raise_ [("", bucket)]
   ELSE Pexp_assertfalse END
 ;
 
@@ -209,15 +217,19 @@ value ocaml_pexp_assert fname loc e =
     let excep = Ldot (Lident "Pervasives") "Assert_failure" in
     let bucket = ghexp (Pexp_construct excep (Some triple) False) in
     let raise_ = ghexp (Pexp_ident (Ldot (Lident "Pervasives") "raise")) in
-    let raise_af = ghexp (ocaml_pexp_apply (raise_, [("", bucket)])) in
+    let raise_af = ghexp (ocaml_pexp_apply raise_ [("", bucket)]) in
     let under = ghpat Ppat_any in
     let false_ = ghexp (Pexp_construct (Lident "false") None False) in
     let try_e = ghexp (Pexp_try e [(under, false_)]) in
 
     let not_ = ghexp (Pexp_ident (Ldot (Lident "Pervasives") "not")) in
-    let not_try_e = ghexp (ocaml_pexp_apply (not_, [("", try_e)])) in
+    let not_try_e = ghexp (ocaml_pexp_apply not_ [("", try_e)]) in
     Pexp_ifthenelse not_try_e raise_af None
   ELSE Pexp_assert e END
+;
+
+value ocaml_pexp_function lab eo pel =
+  IFDEF OCAML_2_04 THEN Pexp_function pel ELSE Pexp_function lab eo pel END
 ;
 
 value ocaml_pexp_lazy =
@@ -244,6 +256,19 @@ value ocaml_pexp_object =
   ELSE Some (fun cs -> Pexp_object cs) END
 ;
 
+value ocaml_pexp_variant =
+  IFDEF OCAML_2_04 THEN None
+  ELSE
+    let pexp_variant_pat =
+      fun
+      [ Pexp_variant lab eo -> Some (lab, eo)
+      | _ -> None ]
+    in
+    let pexp_variant (lab, eo) = Pexp_variant lab eo in
+    Some (pexp_variant_pat, pexp_variant)
+  END
+;
+
 value ocaml_ppat_lazy =
   IFDEF OCAML_3_11_OR_AFTER THEN Some (fun p -> Ppat_lazy p) ELSE None END
 ;
@@ -256,6 +281,19 @@ value ocaml_ppat_record lpl =
 value ocaml_ppat_type =
   IFDEF OCAML_2_99_OR_BEFORE THEN None
   ELSE Some (fun sl -> Ppat_type sl) END
+;
+
+value ocaml_ppat_variant =
+  IFDEF OCAML_2_04 THEN None
+  ELSE
+    let ppat_variant_pat =
+      fun
+      [ Ppat_variant lab po -> Some (lab, po)
+      | _ -> None ]
+    in
+    let ppat_variant (lab, po) = Ppat_variant lab po in
+    Some (ppat_variant_pat, ppat_variant)
+  END
 ;
 
 value ocaml_psig_recmodule =
@@ -283,6 +321,19 @@ value ocaml_pctf_val (s, b, t, loc) =
   ELSE Pctf_val (s, b, Some t, loc) END
 ;
 
+value ocaml_pcty_fun (lab, t, ct) =
+  IFDEF OCAML_2_04 THEN Pcty_fun t ct ELSE Pcty_fun lab t ct END
+;
+
+value ocaml_pcl_fun (lab, ceo, p, ce) =
+  IFDEF OCAML_2_04 THEN Pcl_fun p ce ELSE Pcl_fun lab ceo p ce END
+;
+
+value ocaml_pcl_apply (ce, lel) =
+  IFDEF OCAML_2_04 THEN Pcl_apply ce (List.map snd lel)
+  ELSE Pcl_apply ce lel END
+;
+
 value ocaml_pcf_inher ce pb =
   IFDEF OCAML_3_12_OR_AFTER THEN Pcf_inher Fresh ce pb
   ELSE Pcf_inher ce pb END
@@ -301,6 +352,10 @@ value ocaml_pcf_val (s, b, e, loc) =
 value ocaml_pexp_poly =
   IFDEF OCAML_3_04_OR_BEFORE THEN None
   ELSE Some (fun e t -> Pexp_poly e t) END
+;
+
+value ocaml_pdir_bool =
+  IFDEF OCAML_2_04 THEN None ELSE Some (fun b -> Pdir_bool b) END
 ;
 
 value arg_set_string =
