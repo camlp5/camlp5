@@ -21,7 +21,7 @@ type ('a, 'b) choice =
   | Right of 'b
 ;;
 
-let sys_ocaml_version = "3.00";;
+let sys_ocaml_version = "2.99";;
 
 let ocaml_location (fname, lnum, bolp, bp, ep) =
   {Location.loc_start = bp; Location.loc_end = ep;
@@ -123,7 +123,7 @@ let ocaml_ppat_lazy = None;;
 
 let ocaml_ppat_record lpl = Ppat_record lpl;;
 
-let ocaml_ppat_type = Some (fun sl -> Ppat_type sl);;
+let ocaml_ppat_type = None;;
 
 let ocaml_psig_recmodule = None;;
 

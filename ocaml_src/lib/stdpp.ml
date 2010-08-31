@@ -4,7 +4,7 @@
 
 type location = Ploc.t;;
 
-exception Exc_located = Ploc.Exc;;
+exception Exc_located of location * exn;;
 let raise_with_loc = Ploc.raise;;
 
 let make_lined_loc = Ploc.make;;

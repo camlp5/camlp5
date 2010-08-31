@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.82 2010/08/30 22:48:33 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.83 2010/08/31 10:29:48 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -500,7 +500,11 @@ value rec patt =
         (Ppat_constant (Const_string (string_of_string_token loc (uv s))))
   | PaTup loc pl -> mkpat loc (Ppat_tuple (List.map patt (uv pl)))
   | PaTyc loc p t -> mkpat loc (Ppat_constraint (patt p) (ctyp t))
-  | PaTyp loc sl -> mkpat loc (Ppat_type (long_id_of_string_list loc (uv sl)))
+  | PaTyp loc sl ->
+      match ocaml_ppat_type with
+      [ Some ppat_type ->
+          mkpat loc (ppat_type (long_id_of_string_list loc (uv sl)))
+      | None -> error loc "no #type in this ocaml version" ]
   | PaUid loc s ->
       let ca = not no_constructors_arity.val in
       mkpat loc (Ppat_construct (lident (conv_con (uv s))) None ca)
@@ -932,7 +936,12 @@ and str_item s l =
       let si =
         match (uv tl, uv sl) with
         [ (tl, []) -> Pstr_exception (uv n) (List.map ctyp tl)
-        | ([], sl) -> Pstr_exn_rebind (uv n) (long_id_of_string_list loc sl)
+        | ([], sl) ->
+            match ocaml_pstr_exn_rebind with
+            [ Some pstr_exn_rebind ->
+                pstr_exn_rebind (uv n) (long_id_of_string_list loc sl)
+            | None ->
+                error loc "no exception renaming in this ocaml version" ]
         | _ -> error loc "bad exception declaration" ]
       in
       [mkstr loc si :: l]

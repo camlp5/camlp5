@@ -1,12 +1,15 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.9 2010/08/30 22:48:33 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.10 2010/08/31 10:29:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
 open Longident;
 open Asttypes;
 
-IFDEF OCAML_3_00 OR OCAML_3_01 THEN
+IFDEF OCAML_2_99 OR OCAML_3_00 THEN
+  DEFINE OCAML_3_00_OR_BEFORE
+END;
+IFDEF OCAML_3_01 OR OCAML_3_00_OR_BEFORE THEN
   DEFINE OCAML_3_01_OR_BEFORE
 END;
 IFDEF OCAML_3_01_OR_BEFORE OR OCAML_3_02 THEN
@@ -46,7 +49,8 @@ type choice 'a 'b =
 ;
 
 value sys_ocaml_version =
-  IFDEF OCAML_3_00 THEN "3.00"
+  IFDEF OCAML_2_99 THEN "2.99"
+  ELSIFDEF OCAML_3_00 THEN "3.00"
   ELSIFDEF OCAML_3_01 THEN "3.01"
   ELSIFDEF OCAML_3_02 THEN "3.02"
   ELSIFDEF OCAML_3_03 THEN "3.03"
@@ -78,7 +82,7 @@ value ocaml_type_declaration params cl tk pf tm loc variance =
     {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
      ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
      ptype_variance = variance}
-  ELSIFDEF OCAML_3_00 THEN
+  ELSIFDEF OCAML_3_00_OR_BEFORE THEN
     {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
      ptype_manifest = tm; ptype_loc = loc}
   ELSE
@@ -149,7 +153,7 @@ value ocaml_ptype_private =
 ;
 
 value ocaml_class_infos virt params name expr loc variance =
-  IFDEF OCAML_3_00 THEN
+  IFDEF OCAML_3_00_OR_BEFORE THEN
     {pci_virt = virt; pci_params = params; pci_name = name; pci_expr = expr;
      pci_loc = loc}
   ELSE
@@ -167,7 +171,7 @@ value split_or_patterns_with_bindings =
 ;
 
 value ocaml_pexp_assertfalse fname loc =
-  IFDEF OCAML_3_00 THEN
+  IFDEF OCAML_3_00_OR_BEFORE THEN
     let ghexp d = {pexp_desc = d; pexp_loc = loc} in
     let triple =
       ghexp (Pexp_tuple
@@ -183,7 +187,7 @@ value ocaml_pexp_assertfalse fname loc =
 ;
 
 value ocaml_pexp_assert fname loc e =
-  IFDEF OCAML_3_00 THEN
+  IFDEF OCAML_3_00_OR_BEFORE THEN
     let ghexp d = {pexp_desc = d; pexp_loc = loc} in
     let ghpat d = {ppat_desc = d; ppat_loc = loc} in
     let triple =
@@ -239,13 +243,18 @@ value ocaml_ppat_record lpl =
   ELSE Ppat_record lpl END
 ;
 
+value ocaml_ppat_type =
+  IFDEF OCAML_2_99 THEN None ELSE Some (fun sl -> Ppat_type sl) END
+;
+
 value ocaml_psig_recmodule =
   IFDEF OCAML_3_06_OR_BEFORE THEN None
   ELSE Some (fun ntl -> Psig_recmodule ntl) END
 ;
 
 value ocaml_pstr_include =
-  IFDEF OCAML_3_00 THEN None ELSE Some (fun me -> Pstr_include me) END
+  IFDEF OCAML_3_00_OR_BEFORE THEN None
+  ELSE Some (fun me -> Pstr_include me) END
 ;
 
 value ocaml_pstr_recmodule =

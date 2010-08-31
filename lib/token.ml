@@ -1,10 +1,16 @@
 (* camlp5r *)
-(* $Id: token.ml,v 1.21 2010/02/19 09:06:37 deraugla Exp $ *)
+(* $Id: token.ml,v 1.22 2010/08/31 10:29:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
+
+#load "pa_macro.cmo";
 
 type pattern = Plexing.pattern;
 
-exception Error = Plexing.Error;
+IFDEF OCAML_2_99 THEN
+  exception Error of string
+ELSE
+  exception Error = Plexing.Error
+END;
 
 type location = Ploc.t;
 type location_function = int -> location;

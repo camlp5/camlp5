@@ -22,6 +22,7 @@ val ocaml_type_declaration :
 val ocaml_ptype_record :
   (string * mutable_flag * core_type * Location.t) list -> private_flag ->
     type_kind;;
+
 val ocaml_ptype_variant :
   (string * core_type list * Location.t) list -> private_flag -> type_kind;;
 val ocaml_ptyp_variant :
@@ -47,9 +48,13 @@ val ocaml_pexp_object : (class_structure -> expression_desc) option;;
 
 val ocaml_ppat_lazy : (pattern -> pattern_desc) option;;
 val ocaml_ppat_record : (Longident.t * pattern) list -> pattern_desc;;
+val ocaml_ppat_type : (Longident.t -> pattern_desc) option;;
 
 val ocaml_psig_recmodule :
   ((string * module_type) list -> signature_item_desc) option;;
+
+val ocaml_pstr_exn_rebind :
+  (string -> Longident.t -> structure_item_desc) option;;
 val ocaml_pstr_include : (module_expr -> structure_item_desc) option;;
 val ocaml_pstr_recmodule :
   ((string * module_type * module_expr) list -> structure_item_desc) option;;

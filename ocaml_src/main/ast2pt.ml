@@ -500,7 +500,11 @@ let rec patt =
   | PaTup (loc, pl) -> mkpat loc (Ppat_tuple (List.map patt (uv pl)))
   | PaTyc (loc, p, t) -> mkpat loc (Ppat_constraint (patt p, ctyp t))
   | PaTyp (loc, sl) ->
-      mkpat loc (Ppat_type (long_id_of_string_list loc (uv sl)))
+      begin match ocaml_ppat_type with
+        Some ppat_type ->
+          mkpat loc (ppat_type (long_id_of_string_list loc (uv sl)))
+      | None -> error loc "no #type in this ocaml version"
+      end
   | PaUid (loc, s) ->
       let ca = not !no_constructors_arity in
       mkpat loc (Ppat_construct (lident (conv_con (uv s)), None, ca))
@@ -1068,7 +1072,11 @@ and str_item s l =
       let si =
         match uv tl, uv sl with
           tl, [] -> Pstr_exception (uv n, List.map ctyp tl)
-        | [], sl -> Pstr_exn_rebind (uv n, long_id_of_string_list loc sl)
+        | [], sl ->
+            begin match ocaml_pstr_exn_rebind with
+              Some f -> f (uv n) (long_id_of_string_list loc sl)
+            | None -> error loc "no exception renaming in this ocaml version"
+            end
         | _ -> error loc "bad exception declaration"
       in
       mkstr loc si :: l

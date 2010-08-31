@@ -1,10 +1,16 @@
 (* camlp5r *)
-(* $Id: stdpp.ml,v 1.20 2010/02/19 09:06:37 deraugla Exp $ *)
+(* $Id: stdpp.ml,v 1.21 2010/08/31 10:29:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
+
+#load "pa_macro.cmo";
 
 type location = Ploc.t;
 
-exception Exc_located = Ploc.Exc;
+IFDEF OCAML_2_99 THEN
+  exception Exc_located of location and exn
+ELSE
+  exception Exc_located = Ploc.Exc
+END;
 value raise_with_loc = Ploc.raise;
 
 value make_lined_loc = Ploc.make;

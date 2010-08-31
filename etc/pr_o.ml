@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.204 2010/08/31 06:42:52 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.205 2010/08/31 10:36:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -756,61 +756,6 @@ value with_constraint pc wc =
   | IFDEF STRICT THEN
       x -> not_impl "with_constraint" pc x
     END ]
-;
-
-value expand_module_prefix m =
-  loop where rec loop rev_lel =
-    fun
-    [ [(p, e) :: rest] -> do {
-        let p =
-          match p with
-          [ <:patt< $uid:_$.$_$ >> -> p
-          | _ ->
-              let loc = MLast.loc_of_patt p in
-              <:patt< $uid:m$.$p$ >> ]
-        in
-        loop [(p, e) :: rev_lel] rest
-      }
-  | [] -> List.rev rev_lel ]
-;
-
-value do_split_or_patterns_with_bindings =
-  loop [] where rec loop rev_pel =
-    fun
-    [ [(p, wo, e) :: pel] ->
-        let (rev_pel, pel) =
-          let (p, as_opt) =
-            match p with
-            [ MLast.PaAli loc p1 p2 -> (p1, fun p -> MLast.PaAli loc p p2)
-            | _ -> (p, fun p -> p) ]
-          in
-          match p with
-          [ MLast.PaOrp loc p1 p2 ->
-              let has_bindings =
-                loop p2 where rec loop =
-                  fun
-                  [ MLast.PaLid _ _ -> True
-                  | MLast.PaApp _ p1 p2 -> loop p1 || loop p2
-                  | _ -> False ]
-              in
-              if has_bindings then
-                let pl =
-                  loop [] p where rec loop pl =
-                    fun
-                    [ MLast.PaOrp loc p1 p2 -> loop [p2 :: pl] p1
-                    | p -> [p :: pl] ]
-                in
-                let rev_pel =
-                  List.fold_left
-                    (fun rev_pel p -> [(as_opt p, wo, e) :: rev_pel]) rev_pel
-                    pl
-                in
-                (rev_pel, pel)
-              else ([(as_opt p, wo, e) :: rev_pel], pel)
-          | _ -> ([(as_opt p, wo, e) :: rev_pel], pel) ]
-        in
-        loop rev_pel pel
-    | [] -> List.rev rev_pel ]
 ;
 
 EXTEND_PRINTER

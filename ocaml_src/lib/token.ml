@@ -4,7 +4,7 @@
 
 type pattern = Plexing.pattern;;
 
-exception Error = Plexing.Error;;
+exception Error of string;;
 
 type location = Ploc.t;;
 type location_function = int -> location;;
