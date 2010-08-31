@@ -21,7 +21,7 @@ type ('a, 'b) choice =
   | Right of 'b
 ;;
 
-let sys_ocaml_version = "2.99";;
+let sys_ocaml_version = "2.04";;
 
 let ocaml_location (fname, lnum, bolp, bp, ep) =
   {Location.loc_start = bp; Location.loc_end = ep;
@@ -43,23 +43,11 @@ let ocaml_ptype_variant ctl priv =
   let ctl = List.map (fun (c, tl, _) -> c, tl) ctl in Ptype_variant ctl
 ;;
 
-let ocaml_ptyp_variant catl clos sl_opt =
-  try
-    let catl =
-      List.map
-        (function
-           Left (c, a, tl) -> c, a, tl
-         | Right t -> raise Exit)
-        catl
-    in
-    let sl =
-      match sl_opt with
-        Some sl -> sl
-      | None -> []
-    in
-    Some (Ptyp_variant (catl, clos, sl))
-  with Exit -> None
-;;
+let ocaml_ptyp_variant catl clos sl_opt = None;;
+
+let ocaml_ptyp_arrow lab t1 t2 = Ptyp_arrow (t1, t2);;
+
+let ocaml_ptyp_class li tl ll = Ptyp_class (li, tl);;
 
 let ocaml_ptype_private = Ptype_abstract;;
 
@@ -72,7 +60,7 @@ let module_prefix_can_be_in_first_record_label_only = false;;
 
 let split_or_patterns_with_bindings = true;;
 
-let ocaml_pexp_apply (f, lel) = Pexp_apply (f, lel);;
+let ocaml_pexp_apply (f, lel) = Pexp_apply (f, List.map snd lel);;
 
 let ocaml_pexp_assertfalse fname loc =
   let ghexp d = {pexp_desc = d; pexp_loc = loc} in
@@ -102,14 +90,18 @@ let ocaml_pexp_assert fname loc e =
   let excep = Ldot (Lident "Pervasives", "Assert_failure") in
   let bucket = ghexp (Pexp_construct (excep, Some triple, false)) in
   let raise_ = ghexp (Pexp_ident (Ldot (Lident "Pervasives", "raise"))) in
-  let raise_af = ghexp (Pexp_apply (raise_, ["", bucket])) in
+  let raise_af = ghexp (Pexp_apply (raise_, [bucket])) in
   let under = ghpat Ppat_any in
   let false_ = ghexp (Pexp_construct (Lident "false", None, false)) in
   let try_e = ghexp (Pexp_try (e, [under, false_])) in
   let not_ = ghexp (Pexp_ident (Ldot (Lident "Pervasives", "not"))) in
-  let not_try_e = ghexp (Pexp_apply (not_, ["", try_e])) in
+  let not_try_e = ghexp (Pexp_apply (not_, [try_e])) in
   Pexp_ifthenelse (not_try_e, raise_af, None)
 ;;
+
+let ocaml_pexp_function lab eo pel = Pexp_function pel;;
+
+let ocaml_pexp_apply x lel = Pexp_apply (x, List.map snd lel);;
 
 let ocaml_pexp_lazy = None;;
 
@@ -121,11 +113,15 @@ let ocaml_const_nativeint = None;;
 
 let ocaml_pexp_object = None;;
 
+let ocaml_pexp_variant = None;;
+
 let ocaml_ppat_lazy = None;;
 
 let ocaml_ppat_record lpl = Ppat_record lpl;;
 
 let ocaml_ppat_type = None;;
+
+let ocaml_ppat_variant = None;;
 
 let ocaml_psig_recmodule = None;;
 
@@ -137,6 +133,12 @@ let ocaml_pstr_recmodule = None;;
 
 let ocaml_pctf_val (s, b, t, loc) = Pctf_val (s, b, Some t, loc);;
 
+let ocaml_pcty_fun (lab, t, ct) = Pcty_fun (t, ct);;
+
+let ocaml_pcl_fun (lab, ceo, p, ce) = Pcl_fun (p, ce);;
+
+let ocaml_pcl_apply (ce, lel) = Pcl_apply (ce, List.map snd lel);;
+
 let ocaml_pcf_inher ce pb = Pcf_inher (ce, pb);;
 
 let ocaml_pcf_meth (s, b, e, loc) = Pcf_meth (s, b, e, loc);;
@@ -144,6 +146,8 @@ let ocaml_pcf_meth (s, b, e, loc) = Pcf_meth (s, b, e, loc);;
 let ocaml_pcf_val (s, b, e, loc) = Pcf_val (s, b, e, loc);;
 
 let ocaml_pexp_poly = None;;
+
+let ocaml_pdir_bool = None;;
 
 let arg_set_string _ = None;;
 

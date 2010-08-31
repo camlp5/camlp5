@@ -1,15 +1,18 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.11 2010/08/31 10:44:23 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.12 2010/08/31 15:37:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
 open Longident;
 open Asttypes;
 
-IFDEF OCAML_2_99 OR OCAML_3_00 THEN
+IFDEF OCAML_2_04 OR OCAML_2_99 THEN
+  DEFINE OCAML_2_99_OR_BEFORE
+END;
+IFDEF OCAML_2_99_OR_BEFORE OR OCAML_3_00 THEN
   DEFINE OCAML_3_00_OR_BEFORE
 END;
-IFDEF OCAML_3_01 OR OCAML_3_00_OR_BEFORE THEN
+IFDEF OCAML_3_00_OR_BEFORE OR OCAML_3_01 THEN
   DEFINE OCAML_3_01_OR_BEFORE
 END;
 IFDEF OCAML_3_01_OR_BEFORE OR OCAML_3_02 THEN
@@ -49,7 +52,8 @@ type choice 'a 'b =
 ;
 
 value sys_ocaml_version =
-  IFDEF OCAML_2_99 THEN "2.99"
+  IFDEF OCAML_2_04 THEN "2.04"
+  ELSIFDEF OCAML_2_99 THEN "2.99"
   ELSIFDEF OCAML_3_00 THEN "3.00"
   ELSIFDEF OCAML_3_01 THEN "3.01"
   ELSIFDEF OCAML_3_02 THEN "3.02"
@@ -122,7 +126,8 @@ value ocaml_ptype_variant ctl priv =
 ;
 
 value ocaml_ptyp_variant catl clos sl_opt =
-  IFDEF OCAML_3_02_OR_BEFORE THEN
+  IFDEF OCAML_2_04 THEN None
+  ELSIFDEF OCAML_3_02_OR_BEFORE THEN
     try
       let catl =
         List.map
@@ -170,6 +175,11 @@ value split_or_patterns_with_bindings =
   IFDEF OCAML_3_01_OR_BEFORE THEN True ELSE False END
 ;
 
+value ocaml_pexp_apply (f, lel) =
+  IFDEF OCAML_2_04 THEN Pexp_apply f (List.map snd lel)
+  ELSE Pexp_apply f lel END
+;
+
 value ocaml_pexp_assertfalse fname loc =
   IFDEF OCAML_3_00_OR_BEFORE THEN
     let ghexp d = {pexp_desc = d; pexp_loc = loc} in
@@ -182,7 +192,7 @@ value ocaml_pexp_assertfalse fname loc =
     let excep = Ldot (Lident "Pervasives") "Assert_failure" in
     let bucket = ghexp (Pexp_construct excep (Some triple) False) in
     let raise_ = ghexp (Pexp_ident (Ldot (Lident "Pervasives") "raise")) in
-    Pexp_apply raise_ [("", bucket)]
+    ocaml_pexp_apply (raise_, [("", bucket)])
   ELSE Pexp_assertfalse END
 ;
 
@@ -199,13 +209,13 @@ value ocaml_pexp_assert fname loc e =
     let excep = Ldot (Lident "Pervasives") "Assert_failure" in
     let bucket = ghexp (Pexp_construct excep (Some triple) False) in
     let raise_ = ghexp (Pexp_ident (Ldot (Lident "Pervasives") "raise")) in
-    let raise_af = ghexp (Pexp_apply raise_ [("", bucket)]) in
+    let raise_af = ghexp (ocaml_pexp_apply (raise_, [("", bucket)])) in
     let under = ghpat Ppat_any in
     let false_ = ghexp (Pexp_construct (Lident "false") None False) in
     let try_e = ghexp (Pexp_try e [(under, false_)]) in
 
     let not_ = ghexp (Pexp_ident (Ldot (Lident "Pervasives") "not")) in
-    let not_try_e = ghexp (Pexp_apply not_ [("", try_e)]) in
+    let not_try_e = ghexp (ocaml_pexp_apply (not_, [("", try_e)])) in
     Pexp_ifthenelse not_try_e raise_af None
   ELSE Pexp_assert e END
 ;
@@ -244,7 +254,8 @@ value ocaml_ppat_record lpl =
 ;
 
 value ocaml_ppat_type =
-  IFDEF OCAML_2_99 THEN None ELSE Some (fun sl -> Ppat_type sl) END
+  IFDEF OCAML_2_99_OR_BEFORE THEN None
+  ELSE Some (fun sl -> Ppat_type sl) END
 ;
 
 value ocaml_psig_recmodule =
@@ -253,7 +264,8 @@ value ocaml_psig_recmodule =
 ;
 
 value ocaml_pstr_exn_rebind =
-  IFDEF OCAML_2_99 THEN None ELSE Some (fun s sl -> Pstr_exn_rebind s sl) END
+  IFDEF OCAML_2_99_OR_BEFORE THEN None
+  ELSE Some (fun s sl -> Pstr_exn_rebind s sl) END
 ;
 
 value ocaml_pstr_include =
