@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: camlp5_top.ml,v 1.18 2010/08/30 22:48:34 deraugla Exp $ *)
+(* $Id: camlp5_top.ml,v 1.19 2010/08/31 13:03:35 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -50,7 +50,12 @@ value highlight_locations lb loc1 loc2 =
 value print_location lb loc =
   if String.length Toploop.input_name.val = 0 then
     highlight_locations lb loc (-1, -1)
-  else Toploop.print_location Format.err_formatter (Ast2pt.mkloc loc)
+  else
+    IFDEF OCAML_2_99 THEN
+      Toploop.print_location (Ast2pt.mkloc loc)
+    ELSE
+      Toploop.print_location Format.err_formatter (Ast2pt.mkloc loc)
+    END
 ;
 
 value wrap f shfn lb =
@@ -110,7 +115,9 @@ value toplevel_phrase cs = do {
 
 Pcaml.add_directive "load"
   (fun
-   [ Some <:expr< $str:s$ >> -> Topdirs.dir_load Format.std_formatter s
+   [ Some <:expr< $str:s$ >> ->
+       IFDEF OCAML_2_99 THEN Topdirs.dir_load s
+       ELSE Topdirs.dir_load Format.std_formatter s END
    | Some _ | None -> raise Not_found ]);
 
 Pcaml.add_directive "directory"
@@ -183,6 +190,10 @@ END;
 
 Pcaml.warning.val :=
   fun loc txt ->
-    Toploop.print_warning (Ast2pt.mkloc loc) Format.err_formatter
-      (IFDEF OCAML_3_08_OR_BEFORE THEN Warnings.Other txt
-       ELSE Warnings.Camlp4 txt END);
+    IFDEF OCAML_2_99 THEN
+      Toploop.print_warning (Ast2pt.mkloc loc) (Warnings.Other txt)
+    ELSE
+      Toploop.print_warning (Ast2pt.mkloc loc) Format.err_formatter
+        (IFDEF OCAML_3_08_OR_BEFORE THEN Warnings.Other txt
+         ELSE Warnings.Camlp4 txt END)
+    END;
