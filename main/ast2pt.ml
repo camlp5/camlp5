@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.83 2010/08/31 10:29:48 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.84 2010/08/31 10:36:06 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -560,60 +560,6 @@ value bigarray_set loc e el v =
   | _ -> <:expr< Bigarray.Genarray.set $e$ [| $list:el$ |] $v$ >> ]
 ;
 
-value expand_module_prefix m =
-  loop where rec loop rev_lel =
-    fun
-    [ [(p, e) :: rest] -> do {
-        let p =
-          match p with
-          [ <:patt< $uid:_$.$_$ >> -> p
-          | _ ->
-              let loc = MLast.loc_of_patt p in
-              <:patt< $uid:m$.$p$ >> ]
-        in
-        loop [(p, e) :: rev_lel] rest
-      }
-  | [] -> List.rev rev_lel ]
-;
-
-value do_split_or_patterns_with_bindings =
-  loop [] where rec loop rev_pel =
-    fun
-    [ [(p, wo, e) :: pel] ->
-        let (rev_pel, pel) =
-          let (p, as_opt) =
-            match p with
-            [ PaAli loc p1 p2 -> (p1, fun p -> PaAli loc p p2)
-            | _ -> (p, fun p -> p) ]
-          in
-          match p with
-          [ PaOrp loc p1 p2 ->
-              let has_bindings =
-                loop p2 where rec loop =
-                  fun
-                  [ PaLid _ _ -> True
-                  | PaApp _ p1 p2 -> loop p1 || loop p2
-                  | _ -> False ]
-              in
-              if has_bindings then
-                let pl =
-                  loop [] p where rec loop pl =
-                    fun
-                    [ PaOrp loc p1 p2 -> loop [p2 :: pl] p1
-                    | p -> [p :: pl] ]
-                in
-                let rev_pel =
-                  List.fold_left
-                    (fun rev_pel p -> [(as_opt p, wo, e) :: rev_pel]) rev_pel pl
-                in
-                (rev_pel, pel)
-              else ([(as_opt p, wo, e) :: rev_pel], pel)
-          | _ -> ([(as_opt p, wo, e) :: rev_pel], pel) ]
-        in
-        loop rev_pel pel
-    | [] -> List.rev rev_pel ]
-;
-
 value rec expr =
   fun
   [ ExAcc loc x <:expr< val >> ->
@@ -723,7 +669,7 @@ value rec expr =
       | pel ->
           let pel =
             if split_or_patterns_with_bindings then
-              do_split_or_patterns_with_bindings pel
+              Prtools.do_split_or_patterns_with_bindings pel
             else pel
           in
           mkexp loc (Pexp_function "" None (List.map mkpwe pel)) ]
@@ -755,7 +701,7 @@ value rec expr =
       let pel = uv pel in
       let pel =
         if split_or_patterns_with_bindings then
-          do_split_or_patterns_with_bindings pel
+          Prtools.do_split_or_patterns_with_bindings pel
         else pel
       in
       mkexp loc (Pexp_match (expr e) (List.map mkpwe pel))
@@ -782,7 +728,7 @@ value rec expr =
           else do {
             match lel with
             [ [((PaAcc _ (PaUid _ m) _ as p), e) :: rest] ->
-                expand_module_prefix (uv m) [(p, e)] rest
+                Prtools.expand_module_prefix (uv m) [(p, e)] rest
             | _ -> lel ]
           }
         in

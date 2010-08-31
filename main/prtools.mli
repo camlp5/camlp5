@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: prtools.mli,v 1.13 2010/02/19 09:06:38 deraugla Exp $ *)
+(* $Id: prtools.mli,v 1.14 2010/08/31 10:36:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 type pr_context =
@@ -98,3 +98,10 @@ value flatten_sequence : MLast.expr -> option (list MLast.expr);
        first expression of the sequence. If [e] is a let..in sequence, it
        works the same way. If [e] is not a sequence nor a let..in sequence,
        return None. *)
+
+value expand_module_prefix :
+  string -> list (MLast.patt * 'a) -> list (MLast.patt * 'a) ->
+    list (MLast.patt * 'a);
+
+value do_split_or_patterns_with_bindings :
+  list (MLast.patt * 'a * 'b) -> list (MLast.patt * 'a * 'b);

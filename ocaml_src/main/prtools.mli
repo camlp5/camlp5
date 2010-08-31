@@ -98,3 +98,10 @@ val flatten_sequence : MLast.expr -> MLast.expr list option;;
        first expression of the sequence. If [e] is a let..in sequence, it
        works the same way. If [e] is not a sequence nor a let..in sequence,
        return None. *)
+
+val expand_module_prefix :
+  string -> (MLast.patt * 'a) list -> (MLast.patt * 'a) list ->
+    (MLast.patt * 'a) list;;
+
+val do_split_or_patterns_with_bindings :
+  (MLast.patt * 'a * 'b) list -> (MLast.patt * 'a * 'b) list;;

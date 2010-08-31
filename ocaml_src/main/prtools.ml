@@ -95,6 +95,11 @@ let rec vlistf pc fl =
         (vlistf {pc with bef = tab pc.ind} fl)
 ;;
 
+let hvlistl elem eleml pc xl =
+  if Pretty.horizontally () then hlistl elem eleml pc xl
+  else vlistl elem eleml pc xl
+;;
+
 let rise_string ind sh b s =
   (* hack for "plistl" (below): if s is a "string" (i.e. starting with
      double-quote) which contains newlines, attempt to concat its first
@@ -555,7 +560,64 @@ let flatten_sequence e =
   | None -> None
 ;;
 
-let hvlistl elem eleml pc xl =
-  if Pretty.horizontally () then hlistl elem eleml pc xl
-  else vlistl elem eleml pc xl
+let expand_module_prefix m =
+  let rec loop rev_lel =
+    function
+      (p, e) :: rest ->
+        let p =
+          match p with
+            MLast.PaAcc (_, MLast.PaUid (_, _), _) -> p
+          | _ ->
+              let loc = MLast.loc_of_patt p in
+              MLast.PaAcc (loc, MLast.PaUid (loc, m), p)
+        in
+        loop ((p, e) :: rev_lel) rest
+    | [] -> List.rev rev_lel
+  in
+  loop
+;;
+
+let do_split_or_patterns_with_bindings pel =
+  let rec loop rev_pel =
+    function
+      (p, wo, e) :: pel ->
+        let (rev_pel, pel) =
+          let (p, as_opt) =
+            match p with
+              MLast.PaAli (loc, p1, p2) ->
+                p1, (fun p -> MLast.PaAli (loc, p, p2))
+            | _ -> p, (fun p -> p)
+          in
+          match p with
+            MLast.PaOrp (loc, p1, p2) ->
+              let has_bindings =
+                let rec loop =
+                  function
+                    MLast.PaLid (_, _) -> true
+                  | MLast.PaApp (_, p1, p2) -> loop p1 || loop p2
+                  | _ -> false
+                in
+                loop p2
+              in
+              if has_bindings then
+                let pl =
+                  let rec loop pl =
+                    function
+                      MLast.PaOrp (loc, p1, p2) -> loop (p2 :: pl) p1
+                    | p -> p :: pl
+                  in
+                  loop [] p
+                in
+                let rev_pel =
+                  List.fold_left
+                    (fun rev_pel p -> (as_opt p, wo, e) :: rev_pel) rev_pel pl
+                in
+                rev_pel, pel
+              else (as_opt p, wo, e) :: rev_pel, pel
+          | _ -> (as_opt p, wo, e) :: rev_pel, pel
+        in
+        loop rev_pel pel
+    | [] -> List.rev rev_pel
+  in
+  loop [] pel
 ;;

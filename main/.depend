@@ -3,11 +3,11 @@ argl.cmx: argl.cmi
 ast2pt.cmo: $(OTOP)/parsing/asttypes.cmi \
     $(OTOP)/parsing/longident.cmi \
     $(OTOP)/parsing/parsetree.cmi \
-    $(OTOP)/utils/pconfig.cmi ast2pt.cmi mLast.cmi
+    $(OTOP)/utils/pconfig.cmi ast2pt.cmi mLast.cmi prtools.cmi
 ast2pt.cmx: $(OTOP)/parsing/asttypes.cmi \
     $(OTOP)/parsing/longident.cmi \
     $(OTOP)/parsing/parsetree.cmi \
-    $(OTOP)/utils/pconfig.cmx ast2pt.cmi mLast.cmi
+    $(OTOP)/utils/pconfig.cmx ast2pt.cmi mLast.cmi prtools.cmx
 ast2pt.cmi: $(OTOP)/parsing/parsetree.cmi mLast.cmi \
     $(OTOP)/parsing/location.cmi
 exparser.cmo: exparser.cmi mLast.cmi reloc.cmi

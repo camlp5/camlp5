@@ -14,7 +14,6 @@ open Asttypes;;
 (* *)
 (* *)
 (* *)
-(* *)
 
 type ('a, 'b) choice =
     Left of 'a
@@ -126,6 +125,8 @@ let ocaml_ppat_record lpl = Ppat_record lpl;;
 let ocaml_ppat_type = None;;
 
 let ocaml_psig_recmodule = None;;
+
+let ocaml_pstr_exn_rebind = None;;
 
 let ocaml_pstr_include = None;;
 
