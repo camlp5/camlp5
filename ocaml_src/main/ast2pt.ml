@@ -1013,7 +1013,8 @@ and str_item s l =
           tl, [] -> Pstr_exception (uv n, List.map ctyp tl)
         | [], sl ->
             begin match ocaml_pstr_exn_rebind with
-              Some f -> f (uv n) (long_id_of_string_list loc sl)
+              Some pstr_exn_rebind ->
+                pstr_exn_rebind (uv n) (long_id_of_string_list loc sl)
             | None -> error loc "no exception renaming in this ocaml version"
             end
         | _ -> error loc "bad exception declaration"

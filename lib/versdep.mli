@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: versdep.mli,v 1.5 2010/08/30 22:48:33 deraugla Exp $ *)
+(* $Id: versdep.mli,v 1.6 2010/08/31 12:17:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -22,6 +22,7 @@ value ocaml_type_declaration :
 value ocaml_ptype_record :
   list (string * mutable_flag * core_type * Location.t) -> private_flag ->
     type_kind;
+
 value ocaml_ptype_variant :
   list (string * list core_type * Location.t) -> private_flag -> type_kind;
 value ocaml_ptyp_variant :
@@ -48,9 +49,13 @@ value ocaml_pexp_object : option (class_structure -> expression_desc);
 
 value ocaml_ppat_lazy : option (pattern -> pattern_desc);
 value ocaml_ppat_record : list (Longident.t * pattern) -> pattern_desc;
+value ocaml_ppat_type : option (Longident.t -> pattern_desc);
 
 value ocaml_psig_recmodule :
   option (list (string * module_type) -> signature_item_desc);
+
+value ocaml_pstr_exn_rebind :
+  option (string -> Longident.t -> structure_item_desc);
 value ocaml_pstr_include : option (module_expr -> structure_item_desc);
 value ocaml_pstr_recmodule :
   option (list (string * module_type * module_expr) -> structure_item_desc);
