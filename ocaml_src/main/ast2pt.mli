@@ -15,7 +15,3 @@ val mkloc : Ploc.t -> Location.t;;
    (** Convert a Camlp5 location into an OCaml location. *)
 val fast : bool ref;;
    (** Flag to generate fast (unsafe) access to arrays. Default: False. *)
-val no_constructors_arity : bool ref;;
-   (** Flag to generate nodes telling that constructor arity is not taken
-       into account in the AST (e.g. True for normal syntax, False for
-       revised syntax). Default: False. *)

@@ -342,7 +342,7 @@ let report_error exn =
   | e -> print_exn exn
 ;;
 
-let no_constructors_arity = Ast2pt.no_constructors_arity;;
+let no_constructors_arity = Prtools.no_constructors_arity;;
 
 let arg_spec_list_ref = ref [];;
 let arg_spec_list () = !arg_spec_list_ref;;

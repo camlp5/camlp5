@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 1.34 2010/08/31 07:57:37 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 1.35 2010/08/31 12:40:09 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
@@ -40,7 +40,7 @@ for i in $dirs; do
   if [ "$DOOPT" = "0" ]; then
     echo "+++++ time make world"
     time make world
-  elif [ "$i" = "3.00" ]; then
+  elif [ "$i" = "2.99" -o "$i" = "3.00" ]; then
     echo "+++++ time make world opt"
     time make world opt
   elif [ "$i" = "3.01" -o "$i" = "3.02" -o "$i" = "3.03-alpha" -o \

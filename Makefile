@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.53 2010/08/31 10:29:48 deraugla Exp $
+# $Id: Makefile,v 1.54 2010/08/31 12:34:38 deraugla Exp $
 
 include config/Makefile
 
@@ -33,7 +33,7 @@ boot/camlp5$(EXE): $(COLD_FILES)
 	cd ocaml_stuff; $(MAKE)
 	$(MAKE) clean_cold library_cold compile_cold
 	$(MAKE) promote_cold
-	$(MAKE) clean_cold clean_hot
+	$(MAKE) clean_cold clean_hot library
 
 clean_hot:
 	cd ocaml_stuff; $(MAKE) clean
@@ -118,7 +118,7 @@ world.opt:
 
 library:
 	cd ocaml_stuff; $(MAKE)
-	cd lib; $(MAKE) all
+	cd lib; $(MAKE) all promote
 
 # Cold start using pure Objective Caml sources
 

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.mli,v 1.11 2010/08/31 06:42:52 deraugla Exp $ *)
+(* $Id: ast2pt.mli,v 1.12 2010/08/31 12:39:31 deraugla Exp $ *)
 
 (** Conversion between Camlp5 AST into OCaml AST *)
 
@@ -15,7 +15,3 @@ value mkloc : Ploc.t -> Location.t;
    (** Convert a Camlp5 location into an OCaml location. *)
 value fast : ref bool;
    (** Flag to generate fast (unsafe) access to arrays. Default: False. *)
-value no_constructors_arity : ref bool;
-   (** Flag to generate nodes telling that constructor arity is not taken
-       into account in the AST (e.g. True for normal syntax, False for
-       revised syntax). Default: False. *)

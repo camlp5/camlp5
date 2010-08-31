@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: prtools.ml,v 1.19 2010/08/31 10:36:06 deraugla Exp $ *)
+(* $Id: prtools.ml,v 1.20 2010/08/31 12:39:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -488,6 +488,8 @@ value comm_bef ind loc =
   let (s, nl_bef, ind_bef) = rev_read_comment_in_file bp ep in
   adjust_comment_indentation ind s nl_bef ind_bef
 ;
+
+value no_constructors_arity = ref False;
 
 (* For pretty printing improvement:
    - if e is a "sequence" or a "let..in sequence", get "the list of its

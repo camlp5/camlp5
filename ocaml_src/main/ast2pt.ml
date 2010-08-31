@@ -38,7 +38,6 @@ if ov <> Pconfig.ocaml_version then
   end;;
 
 let fast = ref false;;
-let no_constructors_arity = ref false;;
 
 let get_tag x =
   if Obj.is_block (Obj.repr x) then Obj.tag (Obj.repr x) else Obj.magic x
@@ -427,7 +426,7 @@ let rec patt =
               MLast.PaUid (_, s) ->
                 Ppat_construct
                   (mkli (conv_con s) (i :: il), None,
-                   not !no_constructors_arity)
+                   not !(Prtools.no_constructors_arity))
             | _ -> error (loc_of_patt p2) "bad access pattern"
             end
         | _ -> error (loc_of_patt p2) "bad pattern"
@@ -448,7 +447,7 @@ let rec patt =
       let al = List.map patt al in
       begin match (patt f).ppat_desc with
         Ppat_construct (li, None, _) ->
-          if !no_constructors_arity then
+          if !(Prtools.no_constructors_arity) then
             let a =
               match al with
                 [a] -> a
@@ -506,7 +505,7 @@ let rec patt =
       | None -> error loc "no #type in this ocaml version"
       end
   | PaUid (loc, s) ->
-      let ca = not !no_constructors_arity in
+      let ca = not !(Prtools.no_constructors_arity) in
       mkpat loc (Ppat_construct (lident (conv_con (uv s)), None, ca))
   | PaVrn (loc, s) -> mkpat loc (Ppat_variant (uv s, None))
 and mklabpat (lab, p) = patt_label_long_id lab, patt p;;
@@ -693,7 +692,7 @@ let rec expr =
       let (e, l) =
         match sep_expr_acc [] e with
           (loc, ml, MLast.ExUid (_, s)) :: l ->
-            let ca = not !no_constructors_arity in
+            let ca = not !(Prtools.no_constructors_arity) in
             mkexp loc (Pexp_construct (mkli s ml, None, ca)), l
         | (loc, ml, MLast.ExLid (_, s)) :: l ->
             mkexp loc (Pexp_ident (mkli s ml)), l
@@ -718,7 +717,7 @@ let rec expr =
       begin match (expr f).pexp_desc with
         Pexp_construct (li, None, _) ->
           let al = List.map snd al in
-          if !no_constructors_arity then
+          if !(Prtools.no_constructors_arity) then
             let a =
               match al with
                 [a] -> a
@@ -898,7 +897,7 @@ let rec expr =
   | ExTyc (loc, e, t) ->
       mkexp loc (Pexp_constraint (expr e, Some (ctyp t), None))
   | ExUid (loc, s) ->
-      let ca = not !no_constructors_arity in
+      let ca = not !(Prtools.no_constructors_arity) in
       mkexp loc (Pexp_construct (lident (conv_con (uv s)), None, ca))
   | ExVrn (loc, s) -> mkexp loc (Pexp_variant (uv s, None))
   | ExWhi (loc, e1, el) ->

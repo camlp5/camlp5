@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.84 2010/08/31 10:36:06 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.85 2010/08/31 12:39:31 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -36,7 +36,6 @@ if ov <> Pconfig.ocaml_version then do {
 else ();
 
 value fast = ref False;
-value no_constructors_arity = ref False;
 
 value get_tag x =
   if Obj.is_block (Obj.repr x) then Obj.tag (Obj.repr x) else Obj.magic x
@@ -431,7 +430,7 @@ value rec patt =
             match p2 with
             [ <:patt< $uid:s$ >> ->
                 Ppat_construct (mkli (conv_con s) [i :: il]) None
-                  (not no_constructors_arity.val)
+                  (not Prtools.no_constructors_arity.val)
             | _ -> error (loc_of_patt p2) "bad access pattern" ]
         | _ -> error (loc_of_patt p2) "bad pattern" ]
       in
@@ -451,7 +450,7 @@ value rec patt =
       let al = List.map patt al in
       match (patt f).ppat_desc with
       [ Ppat_construct li None _ ->
-          if no_constructors_arity.val then
+          if Prtools.no_constructors_arity.val then
             let a =
               match al with
               [ [a] -> a
@@ -506,7 +505,7 @@ value rec patt =
           mkpat loc (ppat_type (long_id_of_string_list loc (uv sl)))
       | None -> error loc "no #type in this ocaml version" ]
   | PaUid loc s ->
-      let ca = not no_constructors_arity.val in
+      let ca = not Prtools.no_constructors_arity.val in
       mkpat loc (Ppat_construct (lident (conv_con (uv s))) None ca)
   | PaVrn loc s -> mkpat loc (Ppat_variant (uv s) None)
   | IFDEF STRICT THEN
@@ -569,7 +568,7 @@ value rec expr =
       let (e, l) =
         match sep_expr_acc [] e with
         [ [(loc, ml, <:expr< $uid:s$ >>) :: l] ->
-            let ca = not no_constructors_arity.val in
+            let ca = not Prtools.no_constructors_arity.val in
             (mkexp loc (Pexp_construct (mkli s ml) None ca), l)
         | [(loc, ml, <:expr< $lid:s$ >>) :: l] ->
             (mkexp loc (Pexp_ident (mkli s ml)), l)
@@ -594,7 +593,7 @@ value rec expr =
       match (expr f).pexp_desc with
       [ Pexp_construct li None _ ->
           let al = List.map snd al in
-          if no_constructors_arity.val then
+          if Prtools.no_constructors_arity.val then
             let a =
               match al with
               [ [a] -> a
@@ -758,7 +757,7 @@ value rec expr =
   | ExTup loc el -> mkexp loc (Pexp_tuple (List.map expr (uv el)))
   | ExTyc loc e t -> mkexp loc (Pexp_constraint (expr e) (Some (ctyp t)) None)
   | ExUid loc s ->
-      let ca = not no_constructors_arity.val in
+      let ca = not Prtools.no_constructors_arity.val in
       mkexp loc (Pexp_construct (lident (conv_con (uv s))) None ca)
   | ExVrn loc s -> mkexp loc (Pexp_variant (uv s) None)
   | ExWhi loc e1 el ->

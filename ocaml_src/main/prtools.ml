@@ -520,6 +520,8 @@ let comm_bef ind loc =
   adjust_comment_indentation ind s nl_bef ind_bef
 ;;
 
+let no_constructors_arity = ref false;;
+
 (* For pretty printing improvement:
    - if e is a "sequence" or a "let..in sequence", get "the list of its
      expressions", which is flattened (merging sequences inside sequences

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pcaml.ml,v 1.80 2010/08/28 17:22:20 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.81 2010/08/31 12:39:31 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -373,7 +373,7 @@ value report_error exn =
   | e -> print_exn exn ]
 ;
 
-value no_constructors_arity = Ast2pt.no_constructors_arity;
+value no_constructors_arity = Prtools.no_constructors_arity;
 
 value arg_spec_list_ref = ref [];
 value arg_spec_list () = arg_spec_list_ref.val;

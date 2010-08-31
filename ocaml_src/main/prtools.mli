@@ -105,3 +105,8 @@ val expand_module_prefix :
 
 val do_split_or_patterns_with_bindings :
   (MLast.patt * 'a * 'b) list -> (MLast.patt * 'a * 'b) list;;
+
+val no_constructors_arity : bool ref;;
+   (** Flag to generate nodes telling that constructor arity is not taken
+       into account in the AST (e.g. True for normal syntax, False for
+       revised syntax). Default: False. *)
