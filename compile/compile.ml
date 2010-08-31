@@ -1,8 +1,9 @@
 (* camlp5r *)
-(* $Id: compile.ml,v 1.30 2010/08/18 16:26:25 deraugla Exp $ *)
+(* $Id: compile.ml,v 1.31 2010/08/31 12:47:15 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
+#load "pa_macro.cmo";
 
 open Gramext;
 
@@ -578,6 +579,8 @@ value rec expr_list =
   | [x :: l] -> <:expr< [$str:String.escaped x$ :: $expr_list l$] >> ]
 ;
 
+value list_sort = IFDEF OCAML_2_99 THEN Sort.list ELSE List.sort END;
+
 value compile () =
   let _ = keywords.val := [] in
   let list = List.fold_left all_entries_in_graph [] entries.val in
@@ -597,7 +600,7 @@ value compile () =
   let pel = List.flatten pell in
   let si1 = <:str_item< value rec $list:pel$ >> in
   let si2 =
-    let list = List.sort compare keywords.val in
+    let list = list_sort compare keywords.val in
     <:str_item<
       List.iter (fun kw -> P.lexer.Plexing.tok_using ("", kw))
         $expr_list list$

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_depend.ml,v 1.49 2010/08/19 10:24:11 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.50 2010/08/31 12:47:15 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -16,6 +16,8 @@ value not_impl name x = do {
   Printf.eprintf "pr_depend: not impl: %s; %s\n" name desc;
   flush stderr
 };
+
+value list_sort = IFDEF OCAML_2_99 THEN Sort.list ELSE List.sort END;
 
 module StrSet =
   Set.Make (struct type t = string; value compare = compare; end)
@@ -360,8 +362,8 @@ value depend_str ast = do {
     else ([], [])
   in
   let (byt_deps, opt_deps) = StrSet.fold find_depend fset.val init_deps in
-  let byt_deps = List.sort compare byt_deps in
-  let opt_deps = List.sort compare opt_deps in
+  let byt_deps = list_sort compare byt_deps in
+  let opt_deps = list_sort compare opt_deps in
   print_depend (basename ^ ".cmo") byt_deps;
   print_depend (basename ^ ".cmx") opt_deps
 };
