@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.203 2010/08/26 09:22:08 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.204 2010/08/31 06:42:52 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -16,7 +16,7 @@ open Prtools;
 value flag_add_locations = ref False;
 value flag_comments_in_phrases = Pcaml.flag_comments_in_phrases;
 value flag_equilibrate_cases = Pcaml.flag_equilibrate_cases;
-value flag_expand_module_prefix_in_records = ref False;
+value flag_compatible_old_versions_of_ocaml = ref False;
 value flag_horiz_let_in = ref True;
 value flag_semi_semi = ref False;
 
@@ -774,6 +774,45 @@ value expand_module_prefix m =
   | [] -> List.rev rev_lel ]
 ;
 
+value do_split_or_patterns_with_bindings =
+  loop [] where rec loop rev_pel =
+    fun
+    [ [(p, wo, e) :: pel] ->
+        let (rev_pel, pel) =
+          let (p, as_opt) =
+            match p with
+            [ MLast.PaAli loc p1 p2 -> (p1, fun p -> MLast.PaAli loc p p2)
+            | _ -> (p, fun p -> p) ]
+          in
+          match p with
+          [ MLast.PaOrp loc p1 p2 ->
+              let has_bindings =
+                loop p2 where rec loop =
+                  fun
+                  [ MLast.PaLid _ _ -> True
+                  | MLast.PaApp _ p1 p2 -> loop p1 || loop p2
+                  | _ -> False ]
+              in
+              if has_bindings then
+                let pl =
+                  loop [] p where rec loop pl =
+                    fun
+                    [ MLast.PaOrp loc p1 p2 -> loop [p2 :: pl] p1
+                    | p -> [p :: pl] ]
+                in
+                let rev_pel =
+                  List.fold_left
+                    (fun rev_pel p -> [(as_opt p, wo, e) :: rev_pel]) rev_pel
+                    pl
+                in
+                (rev_pel, pel)
+              else ([(as_opt p, wo, e) :: rev_pel], pel)
+          | _ -> ([(as_opt p, wo, e) :: rev_pel], pel) ]
+        in
+        loop rev_pel pel
+    | [] -> List.rev rev_pel ]
+;
+
 EXTEND_PRINTER
   pr_expr:
     [ "top"
@@ -833,6 +872,11 @@ EXTEND_PRINTER
                      (if_then force_vertic curr) (e1, e2) "else"
                      (loop_else_if_and_else force_vertic curr) (eel, e3) ])
       | <:expr:< fun [ $list:pwel$ ] >> as ge ->
+          let pwel =
+            if flag_compatible_old_versions_of_ocaml.val then
+              do_split_or_patterns_with_bindings pwel
+            else pwel
+          in
           match pwel with
           [ [(p1, <:vala< None >>, e1)] when is_irrefut_patt p1 ->
               let (pl, e1) = expr_fun_args e1 in
@@ -861,6 +905,11 @@ EXTEND_PRINTER
             match e with
             [ <:expr< try $_$ with [ $list:_$ ] >> -> "try"
             | _ -> "match" ]
+          in
+          let pwel =
+            if flag_compatible_old_versions_of_ocaml.val then
+              do_split_or_patterns_with_bindings pwel
+            else pwel
           in
           match pwel with
           [ [(p, wo, e)] ->
@@ -1081,7 +1130,7 @@ EXTEND_PRINTER
     | "simple"
       [ <:expr< {$list:lel$} >> ->
           let lel =
-            if flag_expand_module_prefix_in_records.val then do {
+            if flag_compatible_old_versions_of_ocaml.val then do {
               match lel with
               [ [((<:patt< $uid:m$.$_$ >> as p), e) :: rest] -> do {
                   expand_module_prefix m [(p, e)] rest
@@ -1617,7 +1666,7 @@ value set_flags s =
       | 'L' | 'l' -> flag_horiz_let_in.val := is_upp
       | 'M' | 'm' -> flag_semi_semi.val := is_upp
       | 'O' | 'o' -> flag_add_locations.val := is_upp
-      | 'R' | 'r' -> flag_expand_module_prefix_in_records.val := is_upp
+      | 'Z' | 'z' -> flag_compatible_old_versions_of_ocaml.val := is_upp
       | c -> failwith ("bad flag " ^ String.make 1 c) ];
       loop (i + 1)
     }
@@ -1633,7 +1682,7 @@ value default_flag () =
       (flag flag_horiz_let_in.val "L" "l")
       (flag flag_semi_semi.val "M" "m")
       (flag flag_add_locations.val "O" "o")
-      (flag flag_expand_module_prefix_in_records.val "R" "r")
+      (flag flag_compatible_old_versions_of_ocaml.val "Z" "z")
   in
   let on = on_off flag_on in
   let off = on_off flag_off in
@@ -1649,7 +1698,7 @@ Pcaml.add_option "-flag" (Arg.String set_flags)
        L/l enable/disable allowing printing 'let..in' horizontally
        M/m enable/disable printing double semicolons
        O/o enable/disable adding location comments
-       R/R enable/disable expand module prefix in records
+       Z/z enable/disable compatibility with old versions of OCaml
        default setting is \"" ^ default_flag () ^ "\".");
 
 Pcaml.add_option "-l" (Arg.Int (fun x -> Pretty.line_length.val := x))

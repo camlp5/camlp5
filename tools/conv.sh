@@ -26,7 +26,7 @@ if test "$2" = "camlp5r" -o "$2" = "camlp5"; then
   esac
   shift; shift
   ARGS=`echo $* | sed -e "s/[()*]//g"`
-  $COMM $ARGS $OPTS -flag MR $FILE
+  $COMM $ARGS $OPTS -flag MZ $FILE
 else
   cat $FILE
 fi
