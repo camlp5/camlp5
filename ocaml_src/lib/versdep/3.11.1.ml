@@ -90,6 +90,8 @@ let ocaml_ppat_type = Some (fun sl -> Ppat_type sl);;
 
 let ocaml_psig_recmodule = Some (fun ntl -> Psig_recmodule ntl);;
 
+let ocaml_pstr_exn_rebind = Some (fun s sl -> Pstr_exn_rebind (s, sl));;
+
 let ocaml_pstr_include = Some (fun me -> Pstr_include me);;
 
 let ocaml_pstr_recmodule = Some (fun nel -> Pstr_recmodule nel);;

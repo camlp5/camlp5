@@ -127,6 +127,8 @@ let ocaml_ppat_type = Some (fun sl -> Ppat_type sl);;
 
 let ocaml_psig_recmodule = None;;
 
+let ocaml_pstr_exn_rebind = Some (fun s sl -> Pstr_exn_rebind (s, sl));;
+
 let ocaml_pstr_include = None;;
 
 let ocaml_pstr_recmodule = None;;

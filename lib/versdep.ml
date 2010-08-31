@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.10 2010/08/31 10:29:48 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.11 2010/08/31 10:44:23 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -250,6 +250,10 @@ value ocaml_ppat_type =
 value ocaml_psig_recmodule =
   IFDEF OCAML_3_06_OR_BEFORE THEN None
   ELSE Some (fun ntl -> Psig_recmodule ntl) END
+;
+
+value ocaml_pstr_exn_rebind =
+  IFDEF OCAML_2_99 THEN None ELSE Some (fun s sl -> Pstr_exn_rebind s sl) END
 ;
 
 value ocaml_pstr_include =
