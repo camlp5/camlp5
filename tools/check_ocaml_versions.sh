@@ -1,12 +1,12 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 1.41 2010/09/01 09:32:12 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 1.42 2010/09/01 13:07:21 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
 OCAMLSDIR=$TOP/ocaml/release
 CAMLP5DIR=$TOP/camlp5
 MODE=--strict
-DOOPT=0
+DOOPT=1
 
 cd $DEST
 PATH=$(pwd)/bin:$PATH

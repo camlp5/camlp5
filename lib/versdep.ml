@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.15 2010/09/01 09:31:14 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.16 2010/09/01 13:04:23 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -443,5 +443,14 @@ value list_rev_map =
         | [] -> r ]
   ELSE
     List.rev_map
+  END
+;
+
+value char_escaped =
+  IFDEF OCAML_3_11_OR_AFTER THEN Char.escaped
+  ELSE
+    fun
+    [ '\r' -> "\\r"
+    | c -> Char.escaped c ]
   END
 ;

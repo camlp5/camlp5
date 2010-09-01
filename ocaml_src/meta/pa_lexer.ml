@@ -174,7 +174,7 @@ let make_chars loc s norec sl cl errk =
   let rec loop i sl cl =
     if i = String.length s then sl, cl
     else
-      let c = Char.escaped s.[i] in
+      let c = Versdep.char_escaped s.[i] in
       let (sl, cl) = make_char loc c norec sl cl errk in loop (i + 1) sl cl
   in
   loop 0 sl cl

@@ -190,3 +190,9 @@ let list_rev_map f =
   in
   loop []
 ;;
+
+let char_escaped =
+  function
+    '\r' -> "\\r"
+  | c -> Char.escaped c
+;;

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_lexer.ml,v 1.7 2010/08/26 14:32:50 deraugla Exp $ *)
+(* $Id: pa_lexer.ml,v 1.8 2010/09/01 13:04:23 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -152,7 +152,7 @@ value make_chars loc s norec sl cl errk =
   loop 0 sl cl where rec loop i sl cl =
     if i = String.length s then (sl, cl)
     else
-      let c = Char.escaped s.[i] in
+      let c = Versdep.char_escaped s.[i] in
       let (sl, cl) = make_char loc c norec sl cl errk in
       loop (i + 1) sl cl
 ;

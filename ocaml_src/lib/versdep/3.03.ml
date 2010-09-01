@@ -176,3 +176,9 @@ let printf_ksprintf kont fmt =
 ;;
 
 let list_rev_map = List.rev_map;;
+
+let char_escaped =
+  function
+    '\r' -> "\\r"
+  | c -> Char.escaped c
+;;

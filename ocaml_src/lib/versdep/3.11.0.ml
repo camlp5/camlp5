@@ -183,3 +183,5 @@ let arg_bool =
 let printf_ksprintf = Printf.kprintf;;
 
 let list_rev_map = List.rev_map;;
+
+let char_escaped = Char.escaped;;

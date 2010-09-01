@@ -156,3 +156,9 @@ let arg_bool _ = None;;
 let printf_ksprintf = Printf.kprintf;;
 
 let list_rev_map = List.rev_map;;
+
+let char_escaped =
+  function
+    '\r' -> "\\r"
+  | c -> Char.escaped c
+;;
