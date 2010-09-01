@@ -2,7 +2,7 @@ diff.cmo: diff.cmi
 diff.cmx: diff.cmi
 eprinter.cmo: eprinter.cmi extfun.cmi pprintf.cmi
 eprinter.cmx: eprinter.cmi extfun.cmx pprintf.cmx
-eprinter.cmi: pprintf.cmi extfun.cmi
+eprinter.cmi: extfun.cmi pprintf.cmi
 extfold.cmo: extfold.cmi gramext.cmi grammar.cmi
 extfold.cmx: extfold.cmi gramext.cmx grammar.cmx
 extfold.cmi: gramext.cmi
@@ -12,12 +12,12 @@ fstream.cmo: fstream.cmi
 fstream.cmx: fstream.cmi
 gramext.cmo: fstream.cmi gramext.cmi plexing.cmi
 gramext.cmx: fstream.cmx gramext.cmi plexing.cmx
-gramext.cmi: plexing.cmi fstream.cmi
+gramext.cmi: fstream.cmi plexing.cmi
 grammar.cmo: fstream.cmi gramext.cmi grammar.cmi plexing.cmi ploc.cmi
 grammar.cmx: fstream.cmx gramext.cmx grammar.cmi plexing.cmx ploc.cmx
-grammar.cmi: ploc.cmi plexing.cmi gramext.cmi
-plexer.cmo: plexer.cmi plexing.cmi ploc.cmi
-plexer.cmx: plexer.cmi plexing.cmx ploc.cmx
+grammar.cmi: gramext.cmi plexing.cmi ploc.cmi
+plexer.cmo: plexer.cmi plexing.cmi ploc.cmi versdep.cmi
+plexer.cmx: plexer.cmi plexing.cmx ploc.cmx versdep.cmx
 plexer.cmi: plexing.cmi
 plexing.cmo: plexing.cmi ploc.cmi
 plexing.cmx: plexing.cmi ploc.cmx
@@ -33,7 +33,7 @@ stdpp.cmx: ploc.cmx stdpp.cmi
 stdpp.cmi: ploc.cmi
 token.cmo: plexing.cmi ploc.cmi token.cmi
 token.cmx: plexing.cmx ploc.cmx token.cmi
-token.cmi: ploc.cmi plexing.cmi
+token.cmi: plexing.cmi ploc.cmi
 versdep.cmo: $(OTOP)/parsing/asttypes.cmi \
     $(OTOP)/parsing/location.cmi \
     $(OTOP)/parsing/longident.cmi \
@@ -42,7 +42,7 @@ versdep.cmx: $(OTOP)/parsing/asttypes.cmi \
     $(OTOP)/parsing/location.cmi \
     $(OTOP)/parsing/longident.cmi \
     $(OTOP)/parsing/parsetree.cmi versdep.cmi
-versdep.cmi: $(OTOP)/parsing/parsetree.cmi \
-    $(OTOP)/parsing/longident.cmi \
+versdep.cmi: $(OTOP)/parsing/asttypes.cmi \
     $(OTOP)/parsing/location.cmi \
-    $(OTOP)/parsing/asttypes.cmi
+    $(OTOP)/parsing/longident.cmi \
+    $(OTOP)/parsing/parsetree.cmi

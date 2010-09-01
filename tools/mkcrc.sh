@@ -1,11 +1,11 @@
 #!/bin/sh -e
-# $Id: mkcrc.sh,v 1.17 2010/09/01 16:34:57 deraugla Exp $
+# $Id: mkcrc.sh,v 1.18 2010/09/01 16:44:47 deraugla Exp $
 
 V=$OVERSION
 
 MOD_OLIB="arg array"
 if [ "$V" != "2.01" ]; then MOD_OLIB="$MOD_OLIB buffer"; fi
-MOD_OLIB="$MOD_OLIB char format hashtbl lexing list obj pervasives printf stream string sys"
+MOD_OLIB="$MOD_OLIB char filename format hashtbl lexing list obj pervasives printf set sort stream string sys"
 MOD_MAIN="ast2pt exparser mLast parserify pcaml prtools quotation reloc"
 MOD_5LIB="diff eprinter extfun fstream gramext grammar plexer plexing ploc pprintf pretty versdep"
 MOD_PARS="asttypes location longident parsetree"
