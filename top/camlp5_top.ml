@@ -1,11 +1,11 @@
 (* camlp5r *)
-(* $Id: camlp5_top.ml,v 1.21 2010/09/01 02:24:59 deraugla Exp $ *)
+(* $Id: camlp5_top.ml,v 1.22 2010/09/01 09:31:15 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
 #load "q_MLast.cmo";
 
-IFDEF OCAML_2_03 OR OCAML_2_04 OR OCAML_2_99 THEN
+IFDEF OCAML_2_02 OR OCAML_2_03 OR OCAML_2_04 OR OCAML_2_99 THEN
   DEFINE OCAML_2_99_OR_BEFORE
 END;
 IFDEF
