@@ -1,12 +1,15 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.13 2010/08/31 17:54:40 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.14 2010/09/01 02:24:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
 open Longident;
 open Asttypes;
 
-IFDEF OCAML_2_04 OR OCAML_2_99 THEN
+IFDEF OCAML_2_03 OR OCAML_2_04 THEN
+  DEFINE OCAML_2_04_OR_BEFORE
+END;
+IFDEF OCAML_2_04_OR_BEFORE OR OCAML_2_99 THEN
   DEFINE OCAML_2_99_OR_BEFORE
 END;
 IFDEF OCAML_2_99_OR_BEFORE OR OCAML_3_00 THEN
@@ -52,7 +55,8 @@ type choice 'a 'b =
 ;
 
 value sys_ocaml_version =
-  IFDEF OCAML_2_04 THEN "2.04"
+  IFDEF OCAML_2_03 THEN "2.03"
+  ELSIFDEF OCAML_2_04 THEN "2.04"
   ELSIFDEF OCAML_2_99 THEN "2.99"
   ELSIFDEF OCAML_3_00 THEN "3.00"
   ELSIFDEF OCAML_3_01 THEN "3.01"
@@ -126,7 +130,7 @@ value ocaml_ptype_variant ctl priv =
 ;
 
 value ocaml_ptyp_variant catl clos sl_opt =
-  IFDEF OCAML_2_04 THEN None
+  IFDEF OCAML_2_04_OR_BEFORE THEN None
   ELSIFDEF OCAML_3_02_OR_BEFORE THEN
     try
       let catl =
@@ -153,11 +157,13 @@ value ocaml_ptyp_variant catl clos sl_opt =
 ;
 
 value ocaml_ptyp_arrow lab t1 t2 =
-  IFDEF OCAML_2_04 THEN Ptyp_arrow t1 t2 ELSE Ptyp_arrow lab t1 t2 END
+  IFDEF OCAML_2_04_OR_BEFORE THEN Ptyp_arrow t1 t2
+  ELSE Ptyp_arrow lab t1 t2 END
 ;
 
 value ocaml_ptyp_class li tl ll =
-  IFDEF OCAML_2_04 THEN Ptyp_class li tl ELSE Ptyp_class li tl ll END
+  IFDEF OCAML_2_04_OR_BEFORE THEN Ptyp_class li tl
+  ELSE Ptyp_class li tl ll END
 ;
 
 value ocaml_ptype_private =
@@ -184,7 +190,7 @@ value split_or_patterns_with_bindings =
 ;
 
 value ocaml_pexp_apply f lel =
-  IFDEF OCAML_2_04 THEN Pexp_apply f (List.map snd lel)
+  IFDEF OCAML_2_04_OR_BEFORE THEN Pexp_apply f (List.map snd lel)
   ELSE Pexp_apply f lel END
 ;
 
@@ -229,7 +235,8 @@ value ocaml_pexp_assert fname loc e =
 ;
 
 value ocaml_pexp_function lab eo pel =
-  IFDEF OCAML_2_04 THEN Pexp_function pel ELSE Pexp_function lab eo pel END
+  IFDEF OCAML_2_04_OR_BEFORE THEN Pexp_function pel
+  ELSE Pexp_function lab eo pel END
 ;
 
 value ocaml_pexp_lazy =
@@ -257,7 +264,7 @@ value ocaml_pexp_object =
 ;
 
 value ocaml_pexp_variant =
-  IFDEF OCAML_2_04 THEN None
+  IFDEF OCAML_2_04_OR_BEFORE THEN None
   ELSE
     let pexp_variant_pat =
       fun
@@ -284,7 +291,7 @@ value ocaml_ppat_type =
 ;
 
 value ocaml_ppat_variant =
-  IFDEF OCAML_2_04 THEN None
+  IFDEF OCAML_2_04_OR_BEFORE THEN None
   ELSE
     let ppat_variant_pat =
       fun
@@ -322,15 +329,15 @@ value ocaml_pctf_val (s, b, t, loc) =
 ;
 
 value ocaml_pcty_fun (lab, t, ct) =
-  IFDEF OCAML_2_04 THEN Pcty_fun t ct ELSE Pcty_fun lab t ct END
+  IFDEF OCAML_2_04_OR_BEFORE THEN Pcty_fun t ct ELSE Pcty_fun lab t ct END
 ;
 
 value ocaml_pcl_fun (lab, ceo, p, ce) =
-  IFDEF OCAML_2_04 THEN Pcl_fun p ce ELSE Pcl_fun lab ceo p ce END
+  IFDEF OCAML_2_04_OR_BEFORE THEN Pcl_fun p ce ELSE Pcl_fun lab ceo p ce END
 ;
 
 value ocaml_pcl_apply (ce, lel) =
-  IFDEF OCAML_2_04 THEN Pcl_apply ce (List.map snd lel)
+  IFDEF OCAML_2_04_OR_BEFORE THEN Pcl_apply ce (List.map snd lel)
   ELSE Pcl_apply ce lel END
 ;
 
@@ -355,7 +362,7 @@ value ocaml_pexp_poly =
 ;
 
 value ocaml_pdir_bool =
-  IFDEF OCAML_2_04 THEN None ELSE Some (fun b -> Pdir_bool b) END
+  IFDEF OCAML_2_04_OR_BEFORE THEN None ELSE Some (fun b -> Pdir_bool b) END
 ;
 
 value arg_set_string =

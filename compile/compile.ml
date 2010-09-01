@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: compile.ml,v 1.32 2010/08/31 13:03:35 deraugla Exp $ *)
+(* $Id: compile.ml,v 1.33 2010/09/01 02:24:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -580,7 +580,8 @@ value rec expr_list =
 ;
 
 value list_sort f l =
-  IFDEF OCAML_2_99 THEN Sort.list (fun x y -> f x y < 0) l
+  IFDEF OCAML_2_03 OR OCAML_2_04 OR OCAML_2_99 THEN
+    Sort.list (fun x y -> f x y < 0) l
   ELSE List.sort f l END
 ;
 
