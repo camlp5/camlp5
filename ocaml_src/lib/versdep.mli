@@ -102,3 +102,4 @@ val arg_tuple : Arg.spec -> Arg.spec list option;;
 val arg_bool : Arg.spec -> (bool -> unit) option;;
 
 val printf_ksprintf : (string -> string) -> ('a, unit, string) format -> 'a;;
+val list_rev_map : ('a -> 'b) -> 'a list -> 'b list;;

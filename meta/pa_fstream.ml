@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_fstream.ml,v 1.15 2010/08/18 16:26:26 deraugla Exp $ *)
+(* $Id: pa_fstream.ml,v 1.16 2010/09/01 09:31:14 deraugla Exp $ *)
 
 #load "pa_extend.cmo";
 #load "q_MLast.cmo";
@@ -194,7 +194,7 @@ value rec mstream_pattern loc m (spcl, epo, e) =
 ;
 
 value mparser_cases loc m spel =
-  let rel = List.rev_map (mstream_pattern loc m) spel in
+  let rel = Versdep.list_rev_map (mstream_pattern loc m) spel in
   match rel with
   [ [e] -> e
   | [e :: rel] ->

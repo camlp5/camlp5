@@ -1,12 +1,12 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.14 2010/09/01 02:24:58 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.15 2010/09/01 09:31:14 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
 open Longident;
 open Asttypes;
 
-IFDEF OCAML_2_03 OR OCAML_2_04 THEN
+IFDEF OCAML_2_02 OR OCAML_2_03 OR OCAML_2_04 THEN
   DEFINE OCAML_2_04_OR_BEFORE
 END;
 IFDEF OCAML_2_04_OR_BEFORE OR OCAML_2_99 THEN
@@ -55,7 +55,8 @@ type choice 'a 'b =
 ;
 
 value sys_ocaml_version =
-  IFDEF OCAML_2_03 THEN "2.03"
+  IFDEF OCAML_2_02 THEN "2.02"
+  ELSIFDEF OCAML_2_03 THEN "2.03"
   ELSIFDEF OCAML_2_04 THEN "2.04"
   ELSIFDEF OCAML_2_99 THEN "2.99"
   ELSIFDEF OCAML_3_00 THEN "3.00"
@@ -67,7 +68,9 @@ value sys_ocaml_version =
 ;
 
 value ocaml_location (fname, lnum, bolp, bp, ep) =
-  IFDEF OCAML_3_06_OR_BEFORE THEN
+  IFDEF OCAML_2_02 THEN
+    {Location.loc_start = bp; Location.loc_end = ep}
+  ELSIFDEF OCAML_3_06_OR_BEFORE THEN
     {Location.loc_start = bp; Location.loc_end = ep;
      Location.loc_ghost = bp = 0 && ep = 0}
   ELSE
@@ -430,3 +433,15 @@ IFDEF OCAML_3_04_OR_BEFORE THEN
 ELSE
   value printf_ksprintf = Printf.kprintf
 END;
+
+value list_rev_map =
+  IFDEF OCAML_2_02 THEN
+    fun f ->
+      loop [] where rec loop r =
+        fun
+        [ [x :: l] -> loop [f x :: r] l
+        | [] -> r ]
+  ELSE
+    List.rev_map
+  END
+;

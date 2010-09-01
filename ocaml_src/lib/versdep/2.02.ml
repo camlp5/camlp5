@@ -23,11 +23,10 @@ type ('a, 'b) choice =
   | Right of 'b
 ;;
 
-let sys_ocaml_version = "2.99";;
+let sys_ocaml_version = "2.02";;
 
 let ocaml_location (fname, lnum, bolp, bp, ep) =
-  {Location.loc_start = bp; Location.loc_end = ep;
-   Location.loc_ghost = bp = 0 && ep = 0}
+  {Location.loc_start = bp; Location.loc_end = ep}
 ;;
 
 let ocaml_ptyp_poly = None;;
@@ -45,27 +44,11 @@ let ocaml_ptype_variant ctl priv =
   let ctl = List.map (fun (c, tl, _) -> c, tl) ctl in Ptype_variant ctl
 ;;
 
-let ocaml_ptyp_variant catl clos sl_opt =
-  try
-    let catl =
-      List.map
-        (function
-           Left (c, a, tl) -> c, a, tl
-         | Right t -> raise Exit)
-        catl
-    in
-    let sl =
-      match sl_opt with
-        Some sl -> sl
-      | None -> []
-    in
-    Some (Ptyp_variant (catl, clos, sl))
-  with Exit -> None
-;;
+let ocaml_ptyp_variant catl clos sl_opt = None;;
 
-let ocaml_ptyp_arrow lab t1 t2 = Ptyp_arrow (lab, t1, t2);;
+let ocaml_ptyp_arrow lab t1 t2 = Ptyp_arrow (t1, t2);;
 
-let ocaml_ptyp_class li tl ll = Ptyp_class (li, tl, ll);;
+let ocaml_ptyp_class li tl ll = Ptyp_class (li, tl);;
 
 let ocaml_ptype_private = Ptype_abstract;;
 
@@ -78,7 +61,7 @@ let module_prefix_can_be_in_first_record_label_only = false;;
 
 let split_or_patterns_with_bindings = true;;
 
-let ocaml_pexp_apply f lel = Pexp_apply (f, lel);;
+let ocaml_pexp_apply f lel = Pexp_apply (f, List.map snd lel);;
 
 let ocaml_pexp_assertfalse fname loc =
   let ghexp d = {pexp_desc = d; pexp_loc = loc} in
@@ -117,7 +100,7 @@ let ocaml_pexp_assert fname loc e =
   Pexp_ifthenelse (not_try_e, raise_af, None)
 ;;
 
-let ocaml_pexp_function lab eo pel = Pexp_function (lab, eo, pel);;
+let ocaml_pexp_function lab eo pel = Pexp_function pel;;
 
 let ocaml_pexp_lazy = None;;
 
@@ -129,15 +112,7 @@ let ocaml_const_nativeint = None;;
 
 let ocaml_pexp_object = None;;
 
-let ocaml_pexp_variant =
-  let pexp_variant_pat =
-    function
-      Pexp_variant (lab, eo) -> Some (lab, eo)
-    | _ -> None
-  in
-  let pexp_variant (lab, eo) = Pexp_variant (lab, eo) in
-  Some (pexp_variant_pat, pexp_variant)
-;;
+let ocaml_pexp_variant = None;;
 
 let ocaml_ppat_lazy = None;;
 
@@ -145,15 +120,7 @@ let ocaml_ppat_record lpl = Ppat_record lpl;;
 
 let ocaml_ppat_type = None;;
 
-let ocaml_ppat_variant =
-  let ppat_variant_pat =
-    function
-      Ppat_variant (lab, po) -> Some (lab, po)
-    | _ -> None
-  in
-  let ppat_variant (lab, po) = Ppat_variant (lab, po) in
-  Some (ppat_variant_pat, ppat_variant)
-;;
+let ocaml_ppat_variant = None;;
 
 let ocaml_psig_recmodule = None;;
 
@@ -165,11 +132,11 @@ let ocaml_pstr_recmodule = None;;
 
 let ocaml_pctf_val (s, b, t, loc) = Pctf_val (s, b, Some t, loc);;
 
-let ocaml_pcty_fun (lab, t, ct) = Pcty_fun (lab, t, ct);;
+let ocaml_pcty_fun (lab, t, ct) = Pcty_fun (t, ct);;
 
-let ocaml_pcl_fun (lab, ceo, p, ce) = Pcl_fun (lab, ceo, p, ce);;
+let ocaml_pcl_fun (lab, ceo, p, ce) = Pcl_fun (p, ce);;
 
-let ocaml_pcl_apply (ce, lel) = Pcl_apply (ce, lel);;
+let ocaml_pcl_apply (ce, lel) = Pcl_apply (ce, List.map snd lel);;
 
 let ocaml_pcf_inher ce pb = Pcf_inher (ce, pb);;
 
@@ -179,7 +146,7 @@ let ocaml_pcf_val (s, b, e, loc) = Pcf_val (s, b, e, loc);;
 
 let ocaml_pexp_poly = None;;
 
-let ocaml_pdir_bool = Some (fun b -> Pdir_bool b);;
+let ocaml_pdir_bool = None;;
 
 let arg_set_string _ = None;;
 
@@ -215,4 +182,11 @@ let printf_ksprintf kont fmt =
   doprn [] 0
 ;;
 
-let list_rev_map = List.rev_map;;
+let list_rev_map f =
+  let rec loop r =
+    function
+      x :: l -> loop (f x :: r) l
+    | [] -> r
+  in
+  loop []
+;;

@@ -154,3 +154,5 @@ let arg_tuple _ = None;;
 let arg_bool _ = None;;
 
 let printf_ksprintf = Printf.kprintf;;
+
+let list_rev_map = List.rev_map;;

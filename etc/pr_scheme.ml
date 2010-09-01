@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_scheme.ml,v 1.68 2010/08/19 10:36:39 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.69 2010/09/01 09:31:13 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -783,7 +783,8 @@ EXTEND_PRINTER
                 (fun () -> hlistl curr dot_expr pc (el @ [x]))
                 (fun () ->
                    let el =
-                     List.rev_map (fun e -> (e, "")) [x :: List.rev el]
+                     Versdep.list_rev_map (fun e -> (e, ""))
+                       [x :: List.rev el]
                    in
                    plistl curr dot_expr 0 pc el) ]
       | <:expr< [| $list:el$ |] >> ->
@@ -955,7 +956,8 @@ EXTEND_PRINTER
                 (fun () -> hlistl curr dot_patt pc (pl @ [x]))
                 (fun () ->
                    let pl =
-                     List.rev_map (fun p -> (p, "")) [x :: List.rev pl]
+                     Versdep.list_rev_map (fun p -> (p, ""))
+                       [x :: List.rev pl]
                    in
                    plistl curr dot_patt 0 pc pl) ]
       | <:patt< [| $list:pl$ |] >> ->

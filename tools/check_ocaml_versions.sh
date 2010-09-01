@@ -1,12 +1,12 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 1.39 2010/09/01 02:24:59 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 1.40 2010/09/01 09:31:15 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
 OCAMLSDIR=$TOP/ocaml/release
 CAMLP5DIR=$TOP/camlp5
 MODE=--strict
-DOOPT=1
+DOOPT=0
 
 cd $DEST
 PATH=$(pwd)/bin:$PATH
@@ -14,6 +14,7 @@ PATH=$(pwd)/bin:$PATH
 cd $OCAMLSDIR
 
 dirs=$(ls | grep -v csl | grep -v '^1' | grep -v '^2.[0-2]')
+dirs=2.02
 
 # WARNING: on 64 bits arch, rather use this:
 # dirs=$(ls | grep -v csl | grep -v '^[1|2]' | grep -v '^3.0[0-6]')

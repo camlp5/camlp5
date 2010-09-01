@@ -181,3 +181,5 @@ let printf_ksprintf kont fmt =
   in
   doprn [] 0
 ;;
+
+let list_rev_map = List.rev_map;;
