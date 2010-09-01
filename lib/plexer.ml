@@ -1,8 +1,10 @@
 (* camlp5r *)
-(* $Id: plexer.ml,v 1.110 2010/08/18 16:26:26 deraugla Exp $ *)
+(* $Id: plexer.ml,v 1.111 2010/09/01 16:34:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_lexer.cmo";
+
+open Versdep;
 
 value no_quotations = ref False;
 value error_on_unknown_keywords = ref False;
@@ -559,9 +561,9 @@ value error_ident_and_keyword p_con p_prm =
 value using_token kwd_table ident_table (p_con, p_prm) =
   match p_con with
   [ "" ->
-      if not (Hashtbl.mem kwd_table p_prm) then
+      if not (hashtbl_mem kwd_table p_prm) then
         if check_keyword p_prm then
-          if Hashtbl.mem ident_table p_prm then
+          if hashtbl_mem ident_table p_prm then
             error_ident_and_keyword (Hashtbl.find ident_table p_prm) p_prm
           else Hashtbl.add kwd_table p_prm p_prm
         else error_no_respect_rules p_con p_prm
@@ -572,7 +574,7 @@ value using_token kwd_table ident_table (p_con, p_prm) =
         match p_prm.[0] with
         [ 'A'..'Z' -> error_no_respect_rules p_con p_prm
         | _ ->
-            if Hashtbl.mem kwd_table p_prm then
+            if hashtbl_mem kwd_table p_prm then
               error_ident_and_keyword p_con p_prm
             else Hashtbl.add ident_table p_prm p_con ]
   | "UIDENT" ->
@@ -581,7 +583,7 @@ value using_token kwd_table ident_table (p_con, p_prm) =
         match p_prm.[0] with
         [ 'a'..'z' -> error_no_respect_rules p_con p_prm
         | _ ->
-            if Hashtbl.mem kwd_table p_prm then
+            if hashtbl_mem kwd_table p_prm then
               error_ident_and_keyword p_con p_prm
             else Hashtbl.add ident_table p_prm p_con ]
   | "TILDEIDENT" | "TILDEIDENTCOLON" | "QUESTIONIDENT" |

@@ -11,7 +11,8 @@ let horiz_ctx = ref false;;
 
 let after_print s =
   if !horiz_ctx then
-    if String.contains s '\n' || String.length s > !line_length then
+    if s <> "" && String.contains s '\n' || String.length s > !line_length
+    then
       raise GiveUp
     else s
   else s

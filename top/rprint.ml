@@ -1,10 +1,10 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 1.42 2010/09/01 09:31:15 deraugla Exp $ *)
+(* $Id: rprint.ml,v 1.43 2010/09/01 16:34:58 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 IFNDEF
-  OCAML_2_02 OR OCAML_2_03 OR OCAML_2_04 OR OCAML_2_99 OR OCAML_3_00 OR
-  OCAML_3_01 OR OCAML_3_02
+  OCAML_2_01 OR OCAML_2_02 OR OCAML_2_03 OR OCAML_2_04 OR OCAML_2_99 OR
+  OCAML_3_00 OR OCAML_3_01 OR OCAML_3_02
 THEN
 declare
 

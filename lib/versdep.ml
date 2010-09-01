@@ -1,12 +1,15 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.17 2010/09/01 13:39:19 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.18 2010/09/01 16:34:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
 open Longident;
 open Asttypes;
 
-IFDEF OCAML_2_02 OR OCAML_2_03 OR OCAML_2_04 THEN
+IFDEF OCAML_2_01 OR OCAML_2_02 THEN
+  DEFINE OCAML_2_02_OR_BEFORE
+END;
+IFDEF OCAML_2_02_OR_BEFORE OR OCAML_2_03 OR OCAML_2_04 THEN
   DEFINE OCAML_2_04_OR_BEFORE
 END;
 IFDEF OCAML_2_04_OR_BEFORE OR OCAML_2_99 THEN
@@ -55,7 +58,8 @@ type choice 'a 'b =
 ;
 
 value sys_ocaml_version =
-  IFDEF OCAML_2_02 THEN "2.02"
+  IFDEF OCAML_2_01 THEN "2.01"
+  ELSIFDEF OCAML_2_02 THEN "2.02"
   ELSIFDEF OCAML_2_03 THEN "2.03"
   ELSIFDEF OCAML_2_04 THEN "2.04"
   ELSIFDEF OCAML_2_99 THEN "2.99"
@@ -68,7 +72,7 @@ value sys_ocaml_version =
 ;
 
 value ocaml_location (fname, lnum, bolp, bp, ep) =
-  IFDEF OCAML_2_02 THEN
+  IFDEF OCAML_2_02_OR_BEFORE THEN
     {Location.loc_start = bp; Location.loc_end = ep}
   ELSIFDEF OCAML_3_06_OR_BEFORE THEN
     {Location.loc_start = bp; Location.loc_end = ep;
@@ -413,8 +417,17 @@ value char_escaped =
   END
 ;
 
+value hashtbl_mem =
+  IFDEF OCAML_2_01 THEN
+    fun ht a ->
+      try let _ = Hashtbl.find ht a in True with [ Not_found -> False ]
+  ELSE
+    Hashtbl.mem
+  END
+;
+
 value list_rev_map =
-  IFDEF OCAML_2_02 THEN
+  IFDEF OCAML_2_02_OR_BEFORE THEN
     fun f ->
       loop [] where rec loop r =
         fun

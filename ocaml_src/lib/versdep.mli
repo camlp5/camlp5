@@ -105,5 +105,6 @@ val arg_tuple : Arg.spec -> Arg.spec list option;;
 val arg_bool : Arg.spec -> (bool -> unit) option;;
 
 val char_escaped : char -> string;;
+val hashtbl_mem : ('a, 'b) Hashtbl.t -> 'a -> bool;;
 val list_rev_map : ('a -> 'b) -> 'a list -> 'b list;;
 val printf_ksprintf : (string -> string) -> ('a, unit, string) format -> 'a;;

@@ -17,6 +17,7 @@ open Asttypes;;
 (* *)
 (* *)
 (* *)
+(* *)
 
 type ('a, 'b) choice =
     Left of 'a
@@ -198,6 +199,8 @@ let char_escaped =
     '\r' -> "\\r"
   | c -> Char.escaped c
 ;;
+
+let hashtbl_mem = Hashtbl.mem;;
 
 let list_rev_map = List.rev_map;;
 

@@ -4,6 +4,8 @@
 
 (* #load "pa_lexer.cmo" *)
 
+open Versdep;;
+
 let no_quotations = ref false;;
 let error_on_unknown_keywords = ref false;;
 
@@ -1202,9 +1204,9 @@ let error_ident_and_keyword p_con p_prm =
 let using_token kwd_table ident_table (p_con, p_prm) =
   match p_con with
     "" ->
-      if not (Hashtbl.mem kwd_table p_prm) then
+      if not (hashtbl_mem kwd_table p_prm) then
         if check_keyword p_prm then
-          if Hashtbl.mem ident_table p_prm then
+          if hashtbl_mem ident_table p_prm then
             error_ident_and_keyword (Hashtbl.find ident_table p_prm) p_prm
           else Hashtbl.add kwd_table p_prm p_prm
         else error_no_respect_rules p_con p_prm
@@ -1214,7 +1216,7 @@ let using_token kwd_table ident_table (p_con, p_prm) =
         begin match p_prm.[0] with
           'A'..'Z' -> error_no_respect_rules p_con p_prm
         | _ ->
-            if Hashtbl.mem kwd_table p_prm then
+            if hashtbl_mem kwd_table p_prm then
               error_ident_and_keyword p_con p_prm
             else Hashtbl.add ident_table p_prm p_con
         end
@@ -1224,7 +1226,7 @@ let using_token kwd_table ident_table (p_con, p_prm) =
         begin match p_prm.[0] with
           'a'..'z' -> error_no_respect_rules p_con p_prm
         | _ ->
-            if Hashtbl.mem kwd_table p_prm then
+            if hashtbl_mem kwd_table p_prm then
               error_ident_and_keyword p_con p_prm
             else Hashtbl.add ident_table p_prm p_con
         end
@@ -1324,15 +1326,15 @@ let gmake () =
   let glexr =
     ref
       {Plexing.tok_func =
-         (fun _ -> raise (Match_failure ("plexer.ml", 684, 25)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 686, 25)));
        Plexing.tok_using =
-         (fun _ -> raise (Match_failure ("plexer.ml", 684, 45)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 686, 45)));
        Plexing.tok_removing =
-         (fun _ -> raise (Match_failure ("plexer.ml", 684, 68)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 686, 68)));
        Plexing.tok_match =
-         (fun _ -> raise (Match_failure ("plexer.ml", 685, 18)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 687, 18)));
        Plexing.tok_text =
-         (fun _ -> raise (Match_failure ("plexer.ml", 685, 37)));
+         (fun _ -> raise (Match_failure ("plexer.ml", 687, 37)));
        Plexing.tok_comm = None}
   in
   let glex =
