@@ -108,3 +108,4 @@ val char_escaped : char -> string;;
 val hashtbl_mem : ('a, 'b) Hashtbl.t -> 'a -> bool;;
 val list_rev_map : ('a -> 'b) -> 'a list -> 'b list;;
 val printf_ksprintf : (string -> string) -> ('a, unit, string) format -> 'a;;
+val string_contains : string -> char -> bool;;

@@ -4,6 +4,8 @@
 
 (* #load "pa_macro.cmo" *)
 
+open Versdep;;
+
 exception GiveUp;;
 
 let line_length = ref 78;;
@@ -11,8 +13,7 @@ let horiz_ctx = ref false;;
 
 let after_print s =
   if !horiz_ctx then
-    if s <> "" && String.contains s '\n' || String.length s > !line_length
-    then
+    if string_contains s '\n' || String.length s > !line_length then
       raise GiveUp
     else s
   else s

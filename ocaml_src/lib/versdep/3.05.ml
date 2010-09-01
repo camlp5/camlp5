@@ -165,3 +165,5 @@ let hashtbl_mem = Hashtbl.mem;;
 let list_rev_map = List.rev_map;;
 
 let printf_ksprintf = Printf.kprintf;;
+
+let string_contains = String.contains;;

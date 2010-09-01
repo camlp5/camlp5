@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: versdep.mli,v 1.12 2010/09/01 16:34:55 deraugla Exp $ *)
+(* $Id: versdep.mli,v 1.13 2010/09/01 18:13:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -108,3 +108,4 @@ value char_escaped : char -> string;
 value hashtbl_mem : Hashtbl.t 'a 'b -> 'a -> bool;
 value list_rev_map : ('a -> 'b) -> list 'a -> list 'b;
 value printf_ksprintf : (string -> string) -> format 'a unit string -> 'a;
+value string_contains : string -> char -> bool;

@@ -201,3 +201,12 @@ let printf_ksprintf kont fmt =
   in
   doprn [] 0
 ;;
+
+let string_contains s c =
+  let rec loop i =
+    if i = String.length s then false
+    else if s.[i] = c then true
+    else loop (i + 1)
+  in
+  loop 0
+;;

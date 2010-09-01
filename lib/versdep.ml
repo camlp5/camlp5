@@ -1,12 +1,12 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.18 2010/09/01 16:34:55 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.19 2010/09/01 18:13:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
 open Longident;
 open Asttypes;
 
-IFDEF OCAML_2_01 OR OCAML_2_02 THEN
+IFDEF OCAML_2_00 OR OCAML_2_01 OR OCAML_2_02 THEN
   DEFINE OCAML_2_02_OR_BEFORE
 END;
 IFDEF OCAML_2_02_OR_BEFORE OR OCAML_2_03 OR OCAML_2_04 THEN
@@ -58,7 +58,8 @@ type choice 'a 'b =
 ;
 
 value sys_ocaml_version =
-  IFDEF OCAML_2_01 THEN "2.01"
+  IFDEF OCAML_2_00 THEN "2.00"
+  ELSIFDEF OCAML_2_01 THEN "2.01"
   ELSIFDEF OCAML_2_02 THEN "2.02"
   ELSIFDEF OCAML_2_03 THEN "2.03"
   ELSIFDEF OCAML_2_04 THEN "2.04"
@@ -418,7 +419,7 @@ value char_escaped =
 ;
 
 value hashtbl_mem =
-  IFDEF OCAML_2_01 THEN
+  IFDEF OCAML_2_00 OR OCAML_2_01 THEN
     fun ht a ->
       try let _ = Hashtbl.find ht a in True with [ Not_found -> False ]
   ELSE
@@ -467,3 +468,17 @@ IFDEF OCAML_3_04_OR_BEFORE THEN
 ELSE
   value printf_ksprintf = Printf.kprintf
 END;
+
+value string_contains =
+  IFDEF OCAML_2_00 THEN
+    fun s c ->
+      loop 0 where rec loop i =
+        if i = String.length s then False
+        else if s.[i] = c then True
+        else loop (i + 1)
+  ELSIFDEF OCAML_2_01 THEN
+    fun s c -> s <> "" && String.contains s c
+  ELSE
+    String.contains
+  END
+;

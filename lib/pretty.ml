@@ -1,8 +1,10 @@
 (* camlp5r *)
-(* $Id: pretty.ml,v 1.12 2010/09/01 16:34:55 deraugla Exp $ *)
+(* $Id: pretty.ml,v 1.13 2010/09/01 18:13:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
+
+open Versdep;
 
 exception GiveUp;
 
@@ -11,8 +13,7 @@ value horiz_ctx = ref False;
 
 value after_print s =
   if horiz_ctx.val then
-    if s <> "" && String.contains s '\n' || String.length s > line_length.val
-    then
+    if string_contains s '\n' || String.length s > line_length.val then
       raise GiveUp
     else s
   else s

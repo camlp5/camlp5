@@ -201,3 +201,5 @@ let printf_ksprintf kont fmt =
   in
   doprn [] 0
 ;;
+
+let string_contains s c = s <> "" && String.contains s c;;
