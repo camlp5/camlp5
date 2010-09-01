@@ -8,8 +8,8 @@ ast2pt.cmx: $(OTOP)/parsing/asttypes.cmi \
     $(OTOP)/parsing/longident.cmi \
     $(OTOP)/parsing/parsetree.cmi \
     $(OTOP)/utils/pconfig.cmx ast2pt.cmi mLast.cmi prtools.cmx
-ast2pt.cmi: $(OTOP)/parsing/parsetree.cmi mLast.cmi \
-    $(OTOP)/parsing/location.cmi
+ast2pt.cmi: $(OTOP)/parsing/location.cmi \
+    $(OTOP)/parsing/parsetree.cmi mLast.cmi
 exparser.cmo: exparser.cmi mLast.cmi reloc.cmi
 exparser.cmx: exparser.cmi mLast.cmi reloc.cmx
 exparser.cmi: mLast.cmi

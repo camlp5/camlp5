@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_depend.ml,v 1.55 2010/09/01 16:34:55 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.56 2010/09/01 17:07:42 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -345,7 +345,8 @@ value depend_sig ast = do {
   fset.val := StrSet.empty;
   List.iter (fun (si, _) -> sig_item si) ast;
   let basename = Filename.chop_suffix Pcaml.input_file.val ".mli" in
-  let (byt_deps, opt_deps) = StrSet.fold find_depend fset.val ([], []) in
+  let (byt_deps, _) = StrSet.fold find_depend fset.val ([], []) in
+  let byt_deps = list_sort compare byt_deps in
   print_depend (basename ^ ".cmi") byt_deps
 };
 

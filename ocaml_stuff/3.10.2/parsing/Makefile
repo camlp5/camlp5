@@ -9,7 +9,7 @@ clean:
 	rm -f *.cmi
 
 depend:
-	ocamldep $(INCL) *.ml* > .depend
+	ocamldep $(INCL) *.ml* | sed -e 's/  *$$//' > .depend
 
 .SUFFIXES: .mli .cmi
 
