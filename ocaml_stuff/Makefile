@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.10 2010/08/24 15:26:53 deraugla Exp $
+# $Id: Makefile,v 1.11 2010/09/01 17:32:17 deraugla Exp $
 
 TOP=..
 include ../config/Makefile
@@ -51,7 +51,9 @@ real_steal:
 	$(MAKE) copy_steal FILE=parsing/parsetree.mli
 
 copy_steal:
-	sed 's/\$$Id.*\$$/Id/' $(OCAML_SRC)/$(FILE) > $(OVERSION)/$(FILE)
+	if [ -f "$(OCAML_SRC)/$(FILE)" ]; then \
+	  sed 's/\$$Id.*\$$/Id/' $(OCAML_SRC)/$(FILE); \
+	fi > $(OVERSION)/$(FILE)
 
 compare_stolen:
 	@if test "$(OCAML_SRC)" = ""; then \
@@ -61,9 +63,10 @@ compare_stolen:
 
 real_compare_stolen:
 	@echo =================================================
-	@echo warnings.ml
-	@sed 's/\$$Id.*\$$/Id/' $(OCAML_SRC)/utils/warnings.mli | \
-	diff $(OVERSION)/utils/warnings.mli -; exit 0
+	@echo warnings.mli
+	@if [ -f "$(OCAML_SRC)/utils/warnings.mli" ]; then \
+           sed 's/\$$Id.*\$$/Id/' $(OCAML_SRC)/utils/warnings.mli | \
+	   diff $(OVERSION)/utils/warnings.mli -; exit 0; fi
 	@echo =================================================
 	@echo pconfig.ml
 	@(echo "let ocaml_version = \"$(OVERSION)\""; \
