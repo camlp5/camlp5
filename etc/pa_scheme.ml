@@ -1,5 +1,5 @@
 ; camlp5 ./pa_schemer.cmo pa_extend.cmo q_MLast.cmo pr_dump.cmo
-; $Id: pa_scheme.ml,v 1.95 2010/08/18 19:17:42 deraugla Exp $
+; $Id: pa_scheme.ml,v 1.96 2010/09/01 09:54:59 deraugla Exp $
 ; Copyright (c) INRIA 2007-2010
 
 (open Pcaml)
@@ -161,7 +161,7 @@
    (Ploc.raise (Ploc.make_unlined (values bp ep))
     (Failure "antiquotation not terminated")))))
 
-(define antiloc (Printf.sprintf "%d,%d:%s"))
+(define (antiloc d1 d2 s) (Printf.sprintf "%d,%d:%s" d1 d2 s))
 
 (definerec (antiquot_loc bp len)
  (parser

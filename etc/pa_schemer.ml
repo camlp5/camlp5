@@ -187,7 +187,7 @@ value rec antiquot_rest bp len =
         (Failure "antiquotation not terminated") ]
 ;
 
-value antiloc = Printf.sprintf "%d,%d:%s";
+value antiloc d1 d2 s = Printf.sprintf "%d,%d:%s" d1 d2 s;
 
 value rec antiquot_loc bp len =
   parser
