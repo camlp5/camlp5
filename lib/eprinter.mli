@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: eprinter.mli,v 1.9 2010/02/19 09:06:37 deraugla Exp $ *)
+(* $Id: eprinter.mli,v 1.10 2010/09/01 12:03:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 (** Extensible printers.
@@ -45,7 +45,7 @@ type position =
   | Level of string ]
 ;
 
-type pr_fun 'a = pr_context -> 'a -> string;
+type pr_fun 'a = Pprintf.pr_fun 'a;
 
 type pr_rule 'a =
   Extfun.t 'a (pr_fun 'a -> pr_fun 'a -> pr_context -> string)

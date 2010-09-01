@@ -1,11 +1,13 @@
 (* camlp5r *)
-(* $Id: prtools.mli,v 1.15 2010/08/31 12:39:31 deraugla Exp $ *)
+(* $Id: prtools.mli,v 1.16 2010/09/01 12:03:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 type pr_context =
   Pprintf.pr_context ==
     { ind : int; bef : string; aft : string; dang : string }
 ;
+
+type pr_fun 'a = Pprintf.pr_fun 'a;
 
 (* comments *)
 
@@ -22,8 +24,6 @@ value set_comm_min_pos : int -> unit;
        (to prevent possible duplication of comments). *)
 
 (* meta functions to treat lists *)
-
-type pr_fun 'a = pr_context -> 'a -> string;
 
 value hlist : pr_fun 'a -> pr_fun (list 'a);
    (** horizontal list

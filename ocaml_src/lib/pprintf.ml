@@ -3,6 +3,7 @@
 (* Copyright (c) INRIA 2007-2010 *)
 
 type pr_context = { ind : int; bef : string; aft : string; dang : string };;
+type 'a pr_fun = pr_context -> 'a -> string;;
 
 let tab ind = String.make ind ' ';;
 let empty_pc = {ind = 0; bef = ""; aft = ""; dang = ""};;

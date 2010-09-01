@@ -7,6 +7,8 @@ type pr_context =
     { ind : int; bef : string; aft : string; dang : string }
 ;;
 
+type 'a pr_fun = 'a Pprintf.pr_fun;;
+
 (* comments *)
 
 val comm_bef : int -> MLast.loc -> string;;
@@ -22,8 +24,6 @@ val set_comm_min_pos : int -> unit;;
        (to prevent possible duplication of comments). *)
 
 (* meta functions to treat lists *)
-
-type 'a pr_fun = pr_context -> 'a -> string;;
 
 val hlist : 'a pr_fun -> 'a list pr_fun;;
    (** horizontal list

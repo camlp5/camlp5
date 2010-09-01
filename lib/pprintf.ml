@@ -1,8 +1,9 @@
 (* camlp5r *)
-(* $Id: pprintf.ml,v 1.2 2010/02/19 09:06:37 deraugla Exp $ *)
+(* $Id: pprintf.ml,v 1.3 2010/09/01 12:03:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 type pr_context = { ind : int; bef : string; aft : string; dang : string };
+type pr_fun 'a = pr_context -> 'a -> string;
 
 value tab ind = String.make ind ' ';
 value empty_pc = {ind = 0; bef = ""; aft = ""; dang = ""};

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pprintf.mli,v 1.3 2010/02/19 09:06:37 deraugla Exp $ *)
+(* $Id: pprintf.mli,v 1.4 2010/09/01 12:03:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 (** Definitions for pprintf statement.
@@ -13,6 +13,8 @@ type pr_context = { ind : int; bef : string; aft : string; dang : string };
     - "bef" : what should be printed before, in the same line
     - "aft" : what should be printed after, in the same line
     - "dang" : the dangling token to know whether parentheses are necessary *)
+
+type pr_fun 'a = pr_context -> 'a -> string;
 
 value empty_pc : pr_context;
    (** Empty printer context, equal to:

@@ -14,6 +14,8 @@ type pr_context = { ind : int; bef : string; aft : string; dang : string };;
     - "aft" : what should be printed after, in the same line
     - "dang" : the dangling token to know whether parentheses are necessary *)
 
+type 'a pr_fun = pr_context -> 'a -> string;;
+
 val empty_pc : pr_context;;
    (** Empty printer context, equal to:
        [{ind = 0; bef = ""; aft = ""; dang = ""}] *)
