@@ -11,7 +11,7 @@ clean:
 	rm -f *.cm[oix] *.o
 
 depend:
-	ocamldep $(INCL) *.ml* > .depend
+	ocamldep $(INCL) *.ml* | sed -e 's/  *$$//' > .depend
 
 .SUFFIXES: .mli .cmi .ml .cmo .cmx
 

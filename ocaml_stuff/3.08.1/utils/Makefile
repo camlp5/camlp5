@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.1 2006/12/05 11:10:05 deraugla Exp $
+# Id
 
 FILES=warnings.cmi pconfig.cmo
 INCL=
@@ -11,7 +11,7 @@ clean:
 	rm -f *.cm[oix] *.o
 
 depend:
-	ocamldep $(INCL) *.ml* > .depend
+	ocamldep $(INCL) *.ml* | sed -e 's/  *$$//' > .depend
 
 .SUFFIXES: .mli .cmi .ml .cmo .cmx
 
