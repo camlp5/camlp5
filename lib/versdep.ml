@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.16 2010/09/01 13:04:23 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.17 2010/09/01 13:39:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -83,11 +83,6 @@ value ocaml_location (fname, lnum, bolp, bp, ep) =
   END
 ;
 
-value ocaml_ptyp_poly =
-  IFDEF OCAML_3_04_OR_BEFORE THEN None
-  ELSE Some (fun cl t -> Ptyp_poly cl t) END
-;
-
 value ocaml_type_declaration params cl tk pf tm loc variance =
   IFDEF OCAML_3_11_OR_AFTER THEN
     {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
@@ -100,6 +95,11 @@ value ocaml_type_declaration params cl tk pf tm loc variance =
     {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
      ptype_manifest = tm; ptype_loc = loc; ptype_variance = variance}
   END
+;
+
+value ocaml_ptype_private =
+  IFDEF OCAML_3_08_OR_BEFORE OR OCAML_3_11_OR_AFTER THEN Ptype_abstract
+  ELSE Ptype_private END
 ;
 
 value ocaml_ptype_record ltl priv =
@@ -132,6 +132,21 @@ value ocaml_ptype_variant ctl priv =
   END
 ;
 
+value ocaml_ptyp_arrow lab t1 t2 =
+  IFDEF OCAML_2_04_OR_BEFORE THEN Ptyp_arrow t1 t2
+  ELSE Ptyp_arrow lab t1 t2 END
+;
+
+value ocaml_ptyp_class li tl ll =
+  IFDEF OCAML_2_04_OR_BEFORE THEN Ptyp_class li tl
+  ELSE Ptyp_class li tl ll END
+;
+
+value ocaml_ptyp_poly =
+  IFDEF OCAML_3_04_OR_BEFORE THEN None
+  ELSE Some (fun cl t -> Ptyp_poly cl t) END
+;
+
 value ocaml_ptyp_variant catl clos sl_opt =
   IFDEF OCAML_2_04_OR_BEFORE THEN None
   ELSIFDEF OCAML_3_02_OR_BEFORE THEN
@@ -159,37 +174,19 @@ value ocaml_ptyp_variant catl clos sl_opt =
   END
 ;
 
-value ocaml_ptyp_arrow lab t1 t2 =
-  IFDEF OCAML_2_04_OR_BEFORE THEN Ptyp_arrow t1 t2
-  ELSE Ptyp_arrow lab t1 t2 END
+value ocaml_const_int32 =
+  IFDEF OCAML_3_06_OR_BEFORE THEN None
+  ELSE Some (fun s -> Const_int32 (Int32.of_string s)) END
 ;
 
-value ocaml_ptyp_class li tl ll =
-  IFDEF OCAML_2_04_OR_BEFORE THEN Ptyp_class li tl
-  ELSE Ptyp_class li tl ll END
+value ocaml_const_int64 =
+  IFDEF OCAML_3_06_OR_BEFORE THEN None
+  ELSE Some (fun s -> Const_int64 (Int64.of_string s)) END
 ;
 
-value ocaml_ptype_private =
-  IFDEF OCAML_3_08_OR_BEFORE OR OCAML_3_11_OR_AFTER THEN Ptype_abstract
-  ELSE Ptype_private END
-;
-
-value ocaml_class_infos virt params name expr loc variance =
-  IFDEF OCAML_3_00_OR_BEFORE THEN
-    {pci_virt = virt; pci_params = params; pci_name = name; pci_expr = expr;
-     pci_loc = loc}
-  ELSE
-    {pci_virt = virt; pci_params = params; pci_name = name; pci_expr = expr;
-     pci_loc = loc; pci_variance = variance}
-  END
-;
-
-value module_prefix_can_be_in_first_record_label_only =
-  IFDEF OCAML_3_06_OR_BEFORE OR OCAML_3_07 THEN False ELSE True END
-;
-
-value split_or_patterns_with_bindings =
-  IFDEF OCAML_3_01_OR_BEFORE THEN True ELSE False END
+value ocaml_const_nativeint =
+  IFDEF OCAML_3_06_OR_BEFORE THEN None
+  ELSE Some (fun s -> Const_nativeint (Nativeint.of_string s)) END
 ;
 
 value ocaml_pexp_apply f lel =
@@ -246,24 +243,14 @@ value ocaml_pexp_lazy =
   IFDEF OCAML_3_04_OR_BEFORE THEN None ELSE Some (fun e -> Pexp_lazy e) END
 ;
 
-value ocaml_const_int32 =
-  IFDEF OCAML_3_06_OR_BEFORE THEN None
-  ELSE Some (fun s -> Const_int32 (Int32.of_string s)) END
-;
-
-value ocaml_const_int64 =
-  IFDEF OCAML_3_06_OR_BEFORE THEN None
-  ELSE Some (fun s -> Const_int64 (Int64.of_string s)) END
-;
-
-value ocaml_const_nativeint =
-  IFDEF OCAML_3_06_OR_BEFORE THEN None
-  ELSE Some (fun s -> Const_nativeint (Nativeint.of_string s)) END
-;
-
 value ocaml_pexp_object =
   IFDEF OCAML_3_06_OR_BEFORE OR OCAML_3_07 THEN None
   ELSE Some (fun cs -> Pexp_object cs) END
+;
+
+value ocaml_pexp_poly =
+  IFDEF OCAML_3_04_OR_BEFORE THEN None
+  ELSE Some (fun e t -> Pexp_poly e t) END
 ;
 
 value ocaml_pexp_variant =
@@ -326,22 +313,14 @@ value ocaml_pstr_recmodule =
   ELSE Some (fun nel -> Pstr_recmodule nel) END
 ;
 
-value ocaml_pctf_val (s, b, t, loc) =
-  IFDEF OCAML_3_10_OR_AFTER THEN Pctf_val (s, b, Concrete, t, loc)
-  ELSE Pctf_val (s, b, Some t, loc) END
-;
-
-value ocaml_pcty_fun (lab, t, ct) =
-  IFDEF OCAML_2_04_OR_BEFORE THEN Pcty_fun t ct ELSE Pcty_fun lab t ct END
-;
-
-value ocaml_pcl_fun (lab, ceo, p, ce) =
-  IFDEF OCAML_2_04_OR_BEFORE THEN Pcl_fun p ce ELSE Pcl_fun lab ceo p ce END
-;
-
-value ocaml_pcl_apply (ce, lel) =
-  IFDEF OCAML_2_04_OR_BEFORE THEN Pcl_apply ce (List.map snd lel)
-  ELSE Pcl_apply ce lel END
+value ocaml_class_infos virt params name expr loc variance =
+  IFDEF OCAML_3_00_OR_BEFORE THEN
+    {pci_virt = virt; pci_params = params; pci_name = name; pci_expr = expr;
+     pci_loc = loc}
+  ELSE
+    {pci_virt = virt; pci_params = params; pci_name = name; pci_expr = expr;
+     pci_loc = loc; pci_variance = variance}
+  END
 ;
 
 value ocaml_pcf_inher ce pb =
@@ -359,13 +338,34 @@ value ocaml_pcf_val (s, b, e, loc) =
   ELSE Pcf_val (s, b, e,  loc) END
 ;
 
-value ocaml_pexp_poly =
-  IFDEF OCAML_3_04_OR_BEFORE THEN None
-  ELSE Some (fun e t -> Pexp_poly e t) END
+value ocaml_pcl_apply ce lel =
+  IFDEF OCAML_2_04_OR_BEFORE THEN Pcl_apply ce (List.map snd lel)
+  ELSE Pcl_apply ce lel END
+;
+
+value ocaml_pcl_fun lab ceo p ce =
+  IFDEF OCAML_2_04_OR_BEFORE THEN Pcl_fun p ce ELSE Pcl_fun lab ceo p ce END
+;
+
+value ocaml_pctf_val (s, b, t, loc) =
+  IFDEF OCAML_3_10_OR_AFTER THEN Pctf_val (s, b, Concrete, t, loc)
+  ELSE Pctf_val (s, b, Some t, loc) END
+;
+
+value ocaml_pcty_fun lab t ct =
+  IFDEF OCAML_2_04_OR_BEFORE THEN Pcty_fun t ct ELSE Pcty_fun lab t ct END
 ;
 
 value ocaml_pdir_bool =
   IFDEF OCAML_2_04_OR_BEFORE THEN None ELSE Some (fun b -> Pdir_bool b) END
+;
+
+value module_prefix_can_be_in_first_record_label_only =
+  IFDEF OCAML_3_06_OR_BEFORE OR OCAML_3_07 THEN False ELSE True END
+;
+
+value split_or_patterns_with_bindings =
+  IFDEF OCAML_3_01_OR_BEFORE THEN True ELSE False END
 ;
 
 value arg_set_string =
@@ -404,6 +404,27 @@ value arg_bool =
   | _ -> None ]
 ;
 
+value char_escaped =
+  IFDEF OCAML_3_11_OR_AFTER THEN Char.escaped
+  ELSE
+    fun
+    [ '\r' -> "\\r"
+    | c -> Char.escaped c ]
+  END
+;
+
+value list_rev_map =
+  IFDEF OCAML_2_02 THEN
+    fun f ->
+      loop [] where rec loop r =
+        fun
+        [ [x :: l] -> loop [f x :: r] l
+        | [] -> r ]
+  ELSE
+    List.rev_map
+  END
+;
+
 IFDEF OCAML_3_04_OR_BEFORE THEN
   declare
     value scan_format fmt i kont =
@@ -433,24 +454,3 @@ IFDEF OCAML_3_04_OR_BEFORE THEN
 ELSE
   value printf_ksprintf = Printf.kprintf
 END;
-
-value list_rev_map =
-  IFDEF OCAML_2_02 THEN
-    fun f ->
-      loop [] where rec loop r =
-        fun
-        [ [x :: l] -> loop [f x :: r] l
-        | [] -> r ]
-  ELSE
-    List.rev_map
-  END
-;
-
-value char_escaped =
-  IFDEF OCAML_3_11_OR_AFTER THEN Char.escaped
-  ELSE
-    fun
-    [ '\r' -> "\\r"
-    | c -> Char.escaped c ]
-  END
-;

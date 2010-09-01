@@ -34,17 +34,23 @@ let ocaml_location (fname, lnum, bolp, bp, ep) =
    Location.loc_ghost = bp = 0 && ep = 0}
 ;;
 
-let ocaml_ptyp_poly = Some (fun cl t -> Ptyp_poly (cl, t));;
-
 let ocaml_type_declaration params cl tk pf tm loc variance =
   {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
    ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
    ptype_variance = variance}
 ;;
 
+let ocaml_ptype_private = Ptype_abstract;;
+
 let ocaml_ptype_record ltl priv = Ptype_record ltl;;
 
 let ocaml_ptype_variant ctl priv = Ptype_variant ctl;;
+
+let ocaml_ptyp_arrow lab t1 t2 = Ptyp_arrow (lab, t1, t2);;
+
+let ocaml_ptyp_class li tl ll = Ptyp_class (li, tl, ll);;
+
+let ocaml_ptyp_poly = Some (fun cl t -> Ptyp_poly (cl, t));;
 
 let ocaml_ptyp_variant catl clos sl_opt =
   let catl =
@@ -57,20 +63,13 @@ let ocaml_ptyp_variant catl clos sl_opt =
   Some (Ptyp_variant (catl, clos, sl_opt))
 ;;
 
-let ocaml_ptyp_arrow lab t1 t2 = Ptyp_arrow (lab, t1, t2);;
+let ocaml_const_int32 = Some (fun s -> Const_int32 (Int32.of_string s));;
 
-let ocaml_ptyp_class li tl ll = Ptyp_class (li, tl, ll);;
+let ocaml_const_int64 = Some (fun s -> Const_int64 (Int64.of_string s));;
 
-let ocaml_ptype_private = Ptype_abstract;;
-
-let ocaml_class_infos virt params name expr loc variance =
-  {pci_virt = virt; pci_params = params; pci_name = name; pci_expr = expr;
-   pci_loc = loc; pci_variance = variance}
+let ocaml_const_nativeint =
+  Some (fun s -> Const_nativeint (Nativeint.of_string s))
 ;;
-
-let module_prefix_can_be_in_first_record_label_only = true;;
-
-let split_or_patterns_with_bindings = false;;
 
 let ocaml_pexp_apply f lel = Pexp_apply (f, lel);;
 
@@ -82,15 +81,9 @@ let ocaml_pexp_function lab eo pel = Pexp_function (lab, eo, pel);;
 
 let ocaml_pexp_lazy = Some (fun e -> Pexp_lazy e);;
 
-let ocaml_const_int32 = Some (fun s -> Const_int32 (Int32.of_string s));;
-
-let ocaml_const_int64 = Some (fun s -> Const_int64 (Int64.of_string s));;
-
-let ocaml_const_nativeint =
-  Some (fun s -> Const_nativeint (Nativeint.of_string s))
-;;
-
 let ocaml_pexp_object = Some (fun cs -> Pexp_object cs);;
+
+let ocaml_pexp_poly = Some (fun e t -> Pexp_poly (e, t));;
 
 let ocaml_pexp_variant =
   let pexp_variant_pat =
@@ -126,13 +119,10 @@ let ocaml_pstr_include = Some (fun me -> Pstr_include me);;
 
 let ocaml_pstr_recmodule = Some (fun nel -> Pstr_recmodule nel);;
 
-let ocaml_pctf_val (s, b, t, loc) = Pctf_val (s, b, Concrete, t, loc);;
-
-let ocaml_pcty_fun (lab, t, ct) = Pcty_fun (lab, t, ct);;
-
-let ocaml_pcl_fun (lab, ceo, p, ce) = Pcl_fun (lab, ceo, p, ce);;
-
-let ocaml_pcl_apply (ce, lel) = Pcl_apply (ce, lel);;
+let ocaml_class_infos virt params name expr loc variance =
+  {pci_virt = virt; pci_params = params; pci_name = name; pci_expr = expr;
+   pci_loc = loc; pci_variance = variance}
+;;
 
 let ocaml_pcf_inher ce pb = Pcf_inher (ce, pb);;
 
@@ -140,9 +130,19 @@ let ocaml_pcf_meth (s, b, e, loc) = Pcf_meth (s, b, e, loc);;
 
 let ocaml_pcf_val (s, b, e, loc) = Pcf_val (s, b, e, loc);;
 
-let ocaml_pexp_poly = Some (fun e t -> Pexp_poly (e, t));;
+let ocaml_pcl_apply ce lel = Pcl_apply (ce, lel);;
+
+let ocaml_pcl_fun lab ceo p ce = Pcl_fun (lab, ceo, p, ce);;
+
+let ocaml_pctf_val (s, b, t, loc) = Pctf_val (s, b, Concrete, t, loc);;
+
+let ocaml_pcty_fun lab t ct = Pcty_fun (lab, t, ct);;
 
 let ocaml_pdir_bool = Some (fun b -> Pdir_bool b);;
+
+let module_prefix_can_be_in_first_record_label_only = true;;
+
+let split_or_patterns_with_bindings = false;;
 
 let arg_set_string =
   function
@@ -180,8 +180,8 @@ let arg_bool =
   | _ -> None
 ;;
 
-let printf_ksprintf = Printf.kprintf;;
+let char_escaped = Char.escaped;;
 
 let list_rev_map = List.rev_map;;
 
-let char_escaped = Char.escaped;;
+let printf_ksprintf = Printf.kprintf;;

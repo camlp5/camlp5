@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: versdep.mli,v 1.10 2010/09/01 13:17:42 deraugla Exp $ *)
+(* $Id: versdep.mli,v 1.11 2010/09/01 13:39:19 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -75,30 +75,34 @@ value ocaml_pstr_recmodule :
 value ocaml_class_infos :
   virtual_flag -> (list string * Location.t) -> string -> 'a -> Location.t ->
     list (bool * bool) -> class_infos 'a;
+
 value ocaml_pcf_inher : class_expr -> option string -> class_field;
 value ocaml_pcf_meth :
   (string * private_flag * expression * Location.t) -> class_field;
 value ocaml_pcf_val :
   (string * mutable_flag * expression * Location.t) -> class_field;
+
 value ocaml_pcl_apply :
-  (class_expr * list (string * expression)) -> class_expr_desc;
+  class_expr -> list (string * expression) -> class_expr_desc;
 value ocaml_pcl_fun :
-  (string * option expression * pattern * class_expr) -> class_expr_desc;
+  string -> option expression -> pattern -> class_expr -> class_expr_desc;
+
 value ocaml_pctf_val :
   (string * mutable_flag * core_type * Location.t) -> class_type_field;
-value ocaml_pcty_fun : (string * core_type * class_type) -> class_type_desc;
+
+value ocaml_pcty_fun : string -> core_type -> class_type -> class_type_desc;
 
 value ocaml_pdir_bool : option (bool -> directive_argument);
 
 value module_prefix_can_be_in_first_record_label_only : bool;
 value split_or_patterns_with_bindings : bool;
 
-value arg_bool : Arg.spec -> option (bool -> unit);
-value arg_set_float : Arg.spec -> option (ref float);
-value arg_set_int : Arg.spec -> option (ref int);
 value arg_set_string : Arg.spec -> option (ref string);
+value arg_set_int : Arg.spec -> option (ref int);
+value arg_set_float : Arg.spec -> option (ref float);
 value arg_symbol : Arg.spec -> option (list string * string -> unit);
 value arg_tuple : Arg.spec -> option (list Arg.spec);
+value arg_bool : Arg.spec -> option (bool -> unit);
 
 value char_escaped : char -> string;
 value list_rev_map : ('a -> 'b) -> list 'a -> list 'b;

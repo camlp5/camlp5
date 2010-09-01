@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.87 2010/08/31 17:54:40 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.88 2010/09/01 13:39:19 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -965,14 +965,14 @@ and class_type =
         (Pcty_constr (long_id_of_string_list loc (uv id))
            (List.map ctyp (uv tl)))
   | CtFun loc (TyLab _ lab t) ct ->
-      mkcty loc (ocaml_pcty_fun (uv lab, ctyp t, class_type ct))
+      mkcty loc (ocaml_pcty_fun (uv lab) (ctyp t) (class_type ct))
   | CtFun loc (TyOlb loc1 lab t) ct ->
       let t =
         let loc = loc1 in
         <:ctyp< option $t$ >>
       in
-      mkcty loc (ocaml_pcty_fun ("?" ^ uv lab, ctyp t, class_type ct))
-  | CtFun loc t ct -> mkcty loc (ocaml_pcty_fun ("", ctyp t, class_type ct))
+      mkcty loc (ocaml_pcty_fun ("?" ^ uv lab) (ctyp t) (class_type ct))
+  | CtFun loc t ct -> mkcty loc (ocaml_pcty_fun "" (ctyp t) (class_type ct))
   | CtSig loc t_o ctfl ->
       let t =
         match uv t_o with
@@ -1002,21 +1002,21 @@ and class_expr =
   [ CeApp loc _ _ as c ->
       let (ce, el) = class_expr_fa [] c in
       let el = List.map label_expr el in
-      mkpcl loc (ocaml_pcl_apply (class_expr ce, el))
+      mkpcl loc (ocaml_pcl_apply (class_expr ce) el)
   | CeCon loc id tl ->
       mkpcl loc
         (Pcl_constr (long_id_of_string_list loc (uv id))
            (List.map ctyp (uv tl)))
   | CeFun loc (PaLab _ lab po) ce ->
       mkpcl loc
-        (ocaml_pcl_fun
-           (uv lab, None, patt (patt_of_lab loc (uv lab) po), class_expr ce))
+        (ocaml_pcl_fun (uv lab) None
+           (patt (patt_of_lab loc (uv lab) po)) (class_expr ce))
   | CeFun loc (PaOlb _ lab peoo) ce ->
       let (lab, p, eo) = paolab loc (uv lab) peoo in
       mkpcl loc
-        (ocaml_pcl_fun ("?" ^ lab, option expr eo, patt p, class_expr ce))
+        (ocaml_pcl_fun ("?" ^ lab) (option expr eo) (patt p) (class_expr ce))
   | CeFun loc p ce ->
-      mkpcl loc (ocaml_pcl_fun ("", None, patt p, class_expr ce))
+      mkpcl loc (ocaml_pcl_fun "" None (patt p) (class_expr ce))
   | CeLet loc rf pel ce ->
       mkpcl loc (Pcl_let (mkrf (uv rf)) (List.map mkpe (uv pel))
         (class_expr ce))
