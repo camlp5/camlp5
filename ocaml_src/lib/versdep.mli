@@ -14,45 +14,42 @@ val sys_ocaml_version : string;;
 
 val ocaml_location : string * int * int * int * int -> Location.t;;
 
-val ocaml_ptyp_poly : (string list -> core_type -> core_type_desc) option;;
 val ocaml_type_declaration :
   string list -> (core_type * core_type * Location.t) list -> type_kind ->
     private_flag -> core_type option -> Location.t -> (bool * bool) list ->
     type_declaration;;
+
+val ocaml_ptype_private : type_kind;;
 val ocaml_ptype_record :
   (string * mutable_flag * core_type * Location.t) list -> private_flag ->
     type_kind;;
-
 val ocaml_ptype_variant :
   (string * core_type list * Location.t) list -> private_flag -> type_kind;;
+
 val ocaml_ptyp_arrow : string -> core_type -> core_type -> core_type_desc;;
+val ocaml_ptyp_class :
+  Longident.t -> core_type list -> string list -> core_type_desc;;
+val ocaml_ptyp_poly : (string list -> core_type -> core_type_desc) option;;
 val ocaml_ptyp_variant :
   (string * bool * core_type list, core_type) choice list -> bool ->
     string list option -> core_type_desc option;;
-val ocaml_ptyp_class :
-  Longident.t -> core_type list -> string list -> core_type_desc;;
-val ocaml_ptype_private : type_kind;;
-val ocaml_class_infos :
-  virtual_flag -> string list * Location.t -> string -> 'a -> Location.t ->
-    (bool * bool) list -> 'a class_infos;;
 
-val module_prefix_can_be_in_first_record_label_only : bool;;
-val split_or_patterns_with_bindings : bool;;
-
-val ocaml_pexp_assertfalse : string -> Location.t -> expression_desc;;
-val ocaml_pexp_assert :
-  string -> Location.t -> expression -> expression_desc;;
-
-val ocaml_pexp_function :
-  string -> expression option -> (pattern * expression) list ->
-    expression_desc;;
-val ocaml_pexp_apply :
-  expression -> (string * expression) list -> expression_desc;;
-val ocaml_pexp_lazy : (expression -> expression_desc) option;;
 val ocaml_const_int32 : (string -> constant) option;;
 val ocaml_const_int64 : (string -> constant) option;;
 val ocaml_const_nativeint : (string -> constant) option;;
+
+val ocaml_pexp_apply :
+  expression -> (string * expression) list -> expression_desc;;
+val ocaml_pexp_assertfalse : string -> Location.t -> expression_desc;;
+val ocaml_pexp_assert :
+  string -> Location.t -> expression -> expression_desc;;
+val ocaml_pexp_function :
+  string -> expression option -> (pattern * expression) list ->
+    expression_desc;;
+val ocaml_pexp_lazy : (expression -> expression_desc) option;;
 val ocaml_pexp_object : (class_structure -> expression_desc) option;;
+val ocaml_pexp_poly :
+  (expression -> core_type option -> expression_desc) option;;
 val ocaml_pexp_variant :
   ((expression_desc -> (string * expression option) option) *
      (string * expression option -> expression_desc))
@@ -75,32 +72,34 @@ val ocaml_pstr_include : (module_expr -> structure_item_desc) option;;
 val ocaml_pstr_recmodule :
   ((string * module_type * module_expr) list -> structure_item_desc) option;;
 
-val ocaml_pctf_val :
-  string * mutable_flag * core_type * Location.t -> class_type_field;;
-val ocaml_pcty_fun : string * core_type * class_type -> class_type_desc;;
-
-val ocaml_pcl_fun :
-  string * expression option * pattern * class_expr -> class_expr_desc;;
-val ocaml_pcl_apply :
-  class_expr * (string * expression) list -> class_expr_desc;;
-
+val ocaml_class_infos :
+  virtual_flag -> string list * Location.t -> string -> 'a -> Location.t ->
+    (bool * bool) list -> 'a class_infos;;
 val ocaml_pcf_inher : class_expr -> string option -> class_field;;
 val ocaml_pcf_meth :
   string * private_flag * expression * Location.t -> class_field;;
 val ocaml_pcf_val :
   string * mutable_flag * expression * Location.t -> class_field;;
-val ocaml_pexp_poly :
-  (expression -> core_type option -> expression_desc) option;;
+val ocaml_pcl_apply :
+  class_expr * (string * expression) list -> class_expr_desc;;
+val ocaml_pcl_fun :
+  string * expression option * pattern * class_expr -> class_expr_desc;;
+val ocaml_pctf_val :
+  string * mutable_flag * core_type * Location.t -> class_type_field;;
+val ocaml_pcty_fun : string * core_type * class_type -> class_type_desc;;
 
 val ocaml_pdir_bool : (bool -> directive_argument) option;;
 
-val arg_set_string : Arg.spec -> string ref option;;
-val arg_set_int : Arg.spec -> int ref option;;
+val module_prefix_can_be_in_first_record_label_only : bool;;
+val split_or_patterns_with_bindings : bool;;
+
+val arg_bool : Arg.spec -> (bool -> unit) option;;
 val arg_set_float : Arg.spec -> float ref option;;
+val arg_set_int : Arg.spec -> int ref option;;
+val arg_set_string : Arg.spec -> string ref option;;
 val arg_symbol : Arg.spec -> (string list * (string -> unit)) option;;
 val arg_tuple : Arg.spec -> Arg.spec list option;;
-val arg_bool : Arg.spec -> (bool -> unit) option;;
 
-val printf_ksprintf : (string -> string) -> ('a, unit, string) format -> 'a;;
-val list_rev_map : ('a -> 'b) -> 'a list -> 'b list;;
 val char_escaped : char -> string;;
+val list_rev_map : ('a -> 'b) -> 'a list -> 'b list;;
+val printf_ksprintf : (string -> string) -> ('a, unit, string) format -> 'a;;
