@@ -37,11 +37,11 @@ token.cmi: plexing.cmi ploc.cmi
 versdep.cmo: $(OTOP)/parsing/asttypes.cmi \
     $(OTOP)/parsing/location.cmi \
     $(OTOP)/parsing/longident.cmi \
-    $(OTOP)/parsing/parsetree.cmi versdep.cmi
+    $(OTOP)/parsing/parsetree.cmi
 versdep.cmx: $(OTOP)/parsing/asttypes.cmi \
     $(OTOP)/parsing/location.cmi \
     $(OTOP)/parsing/longident.cmi \
-    $(OTOP)/parsing/parsetree.cmi versdep.cmi
+    $(OTOP)/parsing/parsetree.cmi
 versdep.cmi: $(OTOP)/parsing/asttypes.cmi \
     $(OTOP)/parsing/location.cmi \
     $(OTOP)/parsing/longident.cmi \

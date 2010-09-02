@@ -31,6 +31,10 @@ let add_lev (lab, extf) levs =
   let lev = {pr_label = lab; pr_rules = extf Extfun.empty} in lev :: levs
 ;;
 
+let with_pr_rules lev pr_rules =
+  {pr_label = lev.pr_label; pr_rules = pr_rules}
+;;
+
 let extend pr pos levs =
   match pos with
     None ->
@@ -44,7 +48,7 @@ let extend pr pos levs =
               if lab = pr_lev.pr_label then
                 match levs with
                   (_, extf) :: levs ->
-                    let lev = {pr_lev with pr_rules = extf pr_lev.pr_rules} in
+                    let lev = with_pr_rules pr_lev (extf pr_lev.pr_rules) in
                     let levs = List.fold_right add_lev levs pr_levs in
                     lev :: levs
                 | [] -> pr_lev :: pr_levs

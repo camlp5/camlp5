@@ -17,12 +17,16 @@ let last_pos loc = loc.ep;;
 let line_nb loc = loc.line_nb;;
 let bol_pos loc = loc.bol_pos;;
 
-let encl loc1 loc2 =
-  {loc1 with bp = min loc1.bp loc2.bp; ep = max loc1.ep loc2.ep}
+let t_with_bp_ep l bp ep =
+  {line_nb = l.line_nb; bol_pos = l.bol_pos; bp = bp; ep = ep}
 ;;
-let shift sh loc = {loc with bp = sh + loc.bp; ep = sh + loc.ep};;
-let sub loc sh len = {loc with bp = loc.bp + sh; ep = loc.bp + sh + len};;
-let after loc sh len = {loc with bp = loc.ep + sh; ep = loc.ep + sh + len};;
+
+let encl loc1 loc2 =
+  t_with_bp_ep loc1 (min loc1.bp loc2.bp) (max loc1.ep loc2.ep)
+;;
+let shift sh loc = t_with_bp_ep loc (sh + loc.bp) (sh + loc.ep);;
+let sub loc sh len = t_with_bp_ep loc (loc.bp + sh) (loc.bp + sh + len);;
+let after loc sh len = t_with_bp_ep loc (loc.ep + sh) (loc.ep + sh + len);;
 
 let name = ref "loc";;
 
