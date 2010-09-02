@@ -132,7 +132,10 @@ let defined =
 ;;
 
 let is_defined i =
-  i = "STRICT" && !(Pcaml.strict_mode) || List.mem_assoc i !defined
+  i = "STRICT" && !(Pcaml.strict_mode) ||
+  i = "COMPATIBLE_WITH_OLD_OCAML" &&
+  !(Pcaml.flag_compatible_old_versions_of_ocaml) ||
+  List.mem_assoc i !defined
 ;;
 
 let print_defined () =

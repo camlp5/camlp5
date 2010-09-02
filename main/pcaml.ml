@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pcaml.ml,v 1.81 2010/08/31 12:39:31 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.82 2010/09/02 14:18:38 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -402,6 +402,7 @@ value pr_expr_fun_args = ref Extfun.empty;
 
 value flag_comments_in_phrases = ref True;
 value flag_equilibrate_cases = ref False;
+value flag_compatible_old_versions_of_ocaml = ref False;
 
 value inter_phrases = ref None;
 

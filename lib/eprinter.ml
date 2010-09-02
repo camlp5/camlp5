@@ -1,6 +1,8 @@
 (* camlp5r *)
-(* $Id: eprinter.ml,v 1.16 2010/02/19 09:06:37 deraugla Exp $ *)
+(* $Id: eprinter.ml,v 1.17 2010/09/02 14:18:38 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
+
+#load "pa_macro.cmo";
 
 type t 'a =
   { pr_name : string;
@@ -32,6 +34,12 @@ value add_lev (lab, extf) levs =
   let lev = {pr_label = lab; pr_rules = extf Extfun.empty} in
   [lev :: levs]
 ;
+
+IFDEF COMPATIBLE_WITH_OLD_OCAML THEN
+  value with_pr_rules lev pr_rules =
+    {pr_label = lev.pr_label; pr_rules = pr_rules}
+  ;
+END;
 
 value extend pr pos levs =
   match pos with

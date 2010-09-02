@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pcaml.mli,v 1.32 2010/08/18 16:57:59 deraugla Exp $ *)
+(* $Id: pcaml.mli,v 1.33 2010/09/02 14:18:38 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -163,3 +163,4 @@ value expr_reloc :
 value rename_id : ref (string -> string);
 value flag_comments_in_phrases : ref bool;
 value flag_equilibrate_cases : ref bool;
+value flag_compatible_old_versions_of_ocaml : ref bool;

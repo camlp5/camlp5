@@ -1,6 +1,8 @@
 (* camlp5r *)
-(* $Id: ploc.ml,v 1.8 2010/08/18 11:04:52 deraugla Exp $ *)
+(* $Id: ploc.ml,v 1.9 2010/09/02 14:18:38 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
+
+#load "pa_macro.cmo";
 
 type t =
   { line_nb : int;
@@ -21,6 +23,12 @@ value first_pos loc = loc.bp;
 value last_pos loc = loc.ep;
 value line_nb loc = loc.line_nb;
 value bol_pos loc = loc.bol_pos;
+
+IFDEF COMPATIBLE_WITH_OLD_OCAML THEN
+  value with_bp_ep l bp ep =
+    {line_nb = l.line_nb; bol_pos = l.bol_pos; bp = bp; ep = ep}
+  ;
+END;
 
 value encl loc1 loc2 =
   {(loc1) with bp = min loc1.bp loc2.bp; ep = max loc1.ep loc2.ep}

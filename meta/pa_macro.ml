@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.43 2010/09/02 03:39:59 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.44 2010/09/02 14:18:38 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -133,6 +133,8 @@ value defined =
 
 value is_defined i =
   (i = "STRICT" && Pcaml.strict_mode.val) ||
+  (i = "COMPATIBLE_WITH_OLD_OCAML" &&
+   Pcaml.flag_compatible_old_versions_of_ocaml.val) ||
   List.mem_assoc i defined.val
 ;
 

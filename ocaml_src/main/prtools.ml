@@ -3,6 +3,7 @@
 (* Copyright (c) INRIA 2007-2010 *)
 
 (* #load "q_MLast.cmo" *)
+(* #load "pa_macro.cmo" *)
 
 open Pretty;;
 
@@ -16,19 +17,15 @@ type 'a pr_fun = pr_context -> 'a -> string;;
 let with_ind_bef pc ind bef =
   {ind = ind; bef = bef; aft = pc.aft; dang = pc.dang}
 ;;
-
 let with_bef pc bef =
   {ind = pc.ind; bef = bef; aft = pc.aft; dang = pc.dang}
 ;;
-
 let with_bef_aft_dang pc bef aft dang =
   {ind = pc.ind; bef = bef; aft = aft; dang = dang}
 ;;
-
 let with_aft pc aft =
   {ind = pc.ind; bef = pc.bef; aft = aft; dang = pc.dang}
 ;;
-
 let with_aft_dang pc aft dang =
   {ind = pc.ind; bef = pc.bef; aft = aft; dang = dang}
 ;;
@@ -168,8 +165,7 @@ and plistl_two_parts elem eleml sh pc xl =
           (fun () -> None)
       in
       match s with
-        Some b ->
-          plistl_kont_same_line elem eleml sh (with_bef pc b) xl, None
+        Some b -> plistl_kont_same_line elem eleml sh (with_bef pc b) xl, None
       | None ->
           let s1 = elem (with_aft_dang pc sep sep) x in
           let s2 =
@@ -292,8 +288,7 @@ and plistf_kont_same_line sh pc xl =
       let s =
         horiz_vertic
           (fun () ->
-             Some
-               (x (with_bef_aft_dang pc (sprintf "%s " pc.bef) sep sep)))
+             Some (x (with_bef_aft_dang pc (sprintf "%s " pc.bef) sep sep)))
           (fun () -> None)
       in
       match s with
@@ -325,8 +320,7 @@ let rec plistbf sh pc xl =
       let s =
         horiz_vertic
           (fun () ->
-             Some
-               (x (with_bef_aft_dang pc (sprintf "%s " pc.bef) sep sep)))
+             Some (x (with_bef_aft_dang pc (sprintf "%s " pc.bef) sep sep)))
           (fun () -> None)
       in
       match s with

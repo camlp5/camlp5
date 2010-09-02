@@ -1,8 +1,9 @@
 (* camlp5r *)
-(* $Id: prtools.ml,v 1.20 2010/08/31 12:39:31 deraugla Exp $ *)
+(* $Id: prtools.ml,v 1.21 2010/09/02 14:18:38 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
+#load "pa_macro.cmo";
 
 open Pretty;
 
@@ -12,6 +13,24 @@ type pr_context =
 ;
 
 type pr_fun 'a = pr_context -> 'a -> string;
+
+IFDEF COMPATIBLE_WITH_OLD_OCAML THEN
+  value with_ind_bef pc ind bef =
+    {ind = ind; bef = bef; aft = pc.aft; dang = pc.dang}
+  ;
+  value with_bef pc bef =
+    {ind = pc.ind; bef = bef; aft = pc.aft; dang = pc.dang}
+  ;
+  value with_bef_aft_dang pc bef aft dang =
+    {ind = pc.ind; bef = bef; aft = aft; dang = dang}
+  ;
+  value with_aft pc aft =
+    {ind = pc.ind; bef = pc.bef; aft = aft; dang = pc.dang}
+  ;
+  value with_aft_dang pc aft dang =
+    {ind = pc.ind; bef = pc.bef; aft = aft; dang = dang}
+  ;
+END;
 
 value tab ind = String.make ind ' ';
 

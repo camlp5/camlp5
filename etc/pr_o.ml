@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.205 2010/08/31 10:36:06 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.206 2010/09/02 14:18:38 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -16,7 +16,9 @@ open Prtools;
 value flag_add_locations = ref False;
 value flag_comments_in_phrases = Pcaml.flag_comments_in_phrases;
 value flag_equilibrate_cases = Pcaml.flag_equilibrate_cases;
-value flag_compatible_old_versions_of_ocaml = ref False;
+value flag_compatible_old_versions_of_ocaml =
+  Pcaml.flag_compatible_old_versions_of_ocaml
+;
 value flag_horiz_let_in = ref True;
 value flag_semi_semi = ref False;
 
@@ -990,7 +992,25 @@ EXTEND_PRINTER
           [ Some y ->
               let xl = List.map (fun x -> (x, " ::")) (xl @ [y]) in
               plist next 0 pc xl
-          | None -> next pc z ] ]
+          | None -> next pc z ]
+      | <:expr:< {($e$) with $list:lel$} >>
+        when flag_compatible_old_versions_of_ocaml.val -> do {
+          let name =
+            let sl =
+              List.map
+                (fun
+                 [ (<:patt< $lid:lab$ >>, _) -> lab
+                 | _ -> failwith "cannot convert record" ])
+                lel
+            in
+            String.concat "_" ["with" :: sl]
+          in
+          let e =
+            List.fold_left (fun e1 (_, e2) -> <:expr< $e1$ $e2$ >>)
+              <:expr< $lid:name$ $e$ >> lel
+          in
+          pprintf pc "@[%p@]" next e
+        } ]
     | "add"
       [ z ->
           let ops = ["+"; "+."; "-"; "-."] in
@@ -1089,13 +1109,19 @@ EXTEND_PRINTER
             (plistl (comm_patt_any (record_binding False))
                (comm_patt_any (record_binding True)) 0)
             lxl
-      | <:expr< {($e$) with $list:lel$} >> ->
-          let lxl = List.map (fun lx -> (lx, ";")) lel in
-          let dot_expr = Eprinter.apply_level pr_expr "dot" in
-          pprintf pc "@[<1>@[{%p with @]%p}@]" dot_expr e
-            (plistl (comm_patt_any (record_binding False))
-               (comm_patt_any (record_binding True)) 0)
-            lxl
+      | <:expr< {($e$) with $list:lel$} >> as z -> do {
+          if flag_compatible_old_versions_of_ocaml.val then do {
+            pprintf pc "@[<1>(%q)@]" expr z ""
+          }
+          else do {
+            let dot_expr = Eprinter.apply_level pr_expr "dot" in
+            let lxl = List.map (fun lx -> (lx, ";")) lel in
+            pprintf pc "@[<1>@[{%p with @]%p}@]" dot_expr e
+              (plistl (comm_patt_any (record_binding False))
+                 (comm_patt_any (record_binding True)) 0)
+              lxl
+          }
+        }
       | <:expr< [| $list:el$ |] >> ->
           if el = [] then pprintf pc "[| |]"
           else

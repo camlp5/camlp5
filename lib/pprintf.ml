@@ -1,12 +1,32 @@
 (* camlp5r *)
-(* $Id: pprintf.ml,v 1.3 2010/09/01 12:03:48 deraugla Exp $ *)
+(* $Id: pprintf.ml,v 1.4 2010/09/02 14:18:38 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
+
+#load "pa_macro.cmo";
 
 type pr_context = { ind : int; bef : string; aft : string; dang : string };
 type pr_fun 'a = pr_context -> 'a -> string;
 
 value tab ind = String.make ind ' ';
 value empty_pc = {ind = 0; bef = ""; aft = ""; dang = ""};
+
+IFDEF COMPATIBLE_WITH_OLD_OCAML THEN
+  value with_ind_bef pc ind bef =
+    {ind = ind; bef = bef; aft = pc.aft; dang = pc.dang}
+  ;
+  value with_ind_bef_aft pc ind bef aft =
+    {ind = ind; bef = bef; aft = aft; dang = pc.dang}
+  ;
+  value with_bef pc bef =
+    {ind = pc.ind; bef = bef; aft = pc.aft; dang = pc.dang}
+  ;
+  value with_bef_aft pc bef aft =
+    {ind = pc.ind; bef = bef; aft = aft; dang = pc.dang}
+  ;
+  value with_aft pc aft =
+    {ind = pc.ind; bef = pc.bef; aft = aft; dang = pc.dang}
+  ;
+END;
 
 value sprint_break nspaces offset pc f g =
   Pretty.horiz_vertic
