@@ -549,9 +549,12 @@ let rec sep_expr_acc l =
 
 let class_info class_expr ci =
   let (params, variance) = List.split (uv (snd ci.ciPrm)) in
-  ocaml_class_infos (if uv ci.ciVir then Virtual else Concrete)
-    (List.map uv params, mkloc (fst ci.ciPrm)) (uv ci.ciNam)
-    (class_expr ci.ciExp) (mkloc ci.ciLoc) variance
+  match ocaml_class_infos with
+    Some class_infos ->
+      class_infos (if uv ci.ciVir then Virtual else Concrete)
+        (List.map uv params, mkloc (fst ci.ciPrm)) (uv ci.ciNam)
+        (class_expr ci.ciExp) (mkloc ci.ciLoc) variance
+  | None -> error ci.ciLoc "no class_info in this ocaml version"
 ;;
 
 let bigarray_get loc e el =
@@ -1090,14 +1093,26 @@ and class_type =
         (Pcty_constr
            (long_id_of_string_list loc (uv id), List.map ctyp (uv tl)))
   | CtFun (loc, TyLab (_, lab, t), ct) ->
-      mkcty loc (ocaml_pcty_fun (uv lab) (ctyp t) (class_type ct))
+      begin match ocaml_pcty_fun with
+        Some pcty_fun ->
+          mkcty loc (pcty_fun (uv lab) (ctyp t) (class_type ct))
+      | None -> error loc "no class type desc in this ocaml version"
+      end
   | CtFun (loc, TyOlb (loc1, lab, t), ct) ->
-      let t =
-        let loc = loc1 in MLast.TyApp (loc, MLast.TyLid (loc, "option"), t)
-      in
-      mkcty loc (ocaml_pcty_fun ("?" ^ uv lab) (ctyp t) (class_type ct))
+      begin match ocaml_pcty_fun with
+        Some pcty_fun ->
+          let t =
+            let loc = loc1 in
+            MLast.TyApp (loc, MLast.TyLid (loc, "option"), t)
+          in
+          mkcty loc (pcty_fun ("?" ^ uv lab) (ctyp t) (class_type ct))
+      | None -> error loc "no class type desc in this ocaml version"
+      end
   | CtFun (loc, t, ct) ->
-      mkcty loc (ocaml_pcty_fun "" (ctyp t) (class_type ct))
+      begin match ocaml_pcty_fun with
+        Some pcty_fun -> mkcty loc (pcty_fun "" (ctyp t) (class_type ct))
+      | None -> error loc "no class type desc in this ocaml version"
+      end
   | CtSig (loc, t_o, ctfl) ->
       let t =
         match uv t_o with
@@ -1120,23 +1135,38 @@ and class_sig_item c l =
 and class_expr =
   function
     CeApp (loc, _, _) as c ->
-      let (ce, el) = class_expr_fa [] c in
-      let el = List.map label_expr el in
-      mkpcl loc (ocaml_pcl_apply (class_expr ce) el)
+      begin match ocaml_pcl_apply with
+        Some pcl_apply ->
+          let (ce, el) = class_expr_fa [] c in
+          let el = List.map label_expr el in
+          mkpcl loc (pcl_apply (class_expr ce) el)
+      | None -> error loc "no class expr desc in this ocaml version"
+      end
   | CeCon (loc, id, tl) ->
       mkpcl loc
         (Pcl_constr
            (long_id_of_string_list loc (uv id), List.map ctyp (uv tl)))
   | CeFun (loc, PaLab (_, lab, po), ce) ->
-      mkpcl loc
-        (ocaml_pcl_fun (uv lab) None (patt (patt_of_lab loc (uv lab) po))
-           (class_expr ce))
+      begin match ocaml_pcl_fun with
+        Some pcl_fun ->
+          mkpcl loc
+            (pcl_fun (uv lab) None (patt (patt_of_lab loc (uv lab) po))
+               (class_expr ce))
+      | None -> error loc "no class expr desc in this ocaml version"
+      end
   | CeFun (loc, PaOlb (_, lab, peoo), ce) ->
-      let (lab, p, eo) = paolab loc (uv lab) peoo in
-      mkpcl loc
-        (ocaml_pcl_fun ("?" ^ lab) (option expr eo) (patt p) (class_expr ce))
+      begin match ocaml_pcl_fun with
+        Some pcl_fun ->
+          let (lab, p, eo) = paolab loc (uv lab) peoo in
+          mkpcl loc
+            (pcl_fun ("?" ^ lab) (option expr eo) (patt p) (class_expr ce))
+      | None -> error loc "no class expr desc in this ocaml version"
+      end
   | CeFun (loc, p, ce) ->
-      mkpcl loc (ocaml_pcl_fun "" None (patt p) (class_expr ce))
+      begin match ocaml_pcl_fun with
+        Some pcl_fun -> mkpcl loc (pcl_fun "" None (patt p) (class_expr ce))
+      | None -> error loc "no class expr desc in this ocaml version"
+      end
   | CeLet (loc, rf, pel, ce) ->
       mkpcl loc
         (Pcl_let (mkrf (uv rf), List.map mkpe (uv pel), class_expr ce))

@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 1.50 2010/09/02 09:54:59 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 1.51 2010/09/02 17:54:05 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
@@ -48,8 +48,9 @@ while getopts ":d:hntv:" name; do
   esac
 done
 
-if [ "${!OPTIND}" != "" ]; then
-  echo "Don't know what to do with '${!OPTIND}'"
+if [ $(($OPTIND-1)) -ne $# ]; then
+  shift $(($OPTIND-1))
+  echo "Don't know what to do with '$1'"
   exit 2
 fi
 

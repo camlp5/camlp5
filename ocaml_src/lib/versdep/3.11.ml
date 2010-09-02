@@ -120,9 +120,11 @@ let ocaml_pstr_include = Some (fun me -> Pstr_include me);;
 
 let ocaml_pstr_recmodule = Some (fun nel -> Pstr_recmodule nel);;
 
-let ocaml_class_infos virt params name expr loc variance =
-  {pci_virt = virt; pci_params = params; pci_name = name; pci_expr = expr;
-   pci_loc = loc; pci_variance = variance}
+let ocaml_class_infos =
+  Some
+    (fun virt params name expr loc variance ->
+       {pci_virt = virt; pci_params = params; pci_name = name;
+        pci_expr = expr; pci_loc = loc; pci_variance = variance})
 ;;
 
 let ocaml_pcf_inher ce pb = Pcf_inher (ce, pb);;
@@ -131,13 +133,13 @@ let ocaml_pcf_meth (s, b, e, loc) = Pcf_meth (s, b, e, loc);;
 
 let ocaml_pcf_val (s, b, e, loc) = Pcf_val (s, b, e, loc);;
 
-let ocaml_pcl_apply ce lel = Pcl_apply (ce, lel);;
+let ocaml_pcl_apply = Some (fun ce lel -> Pcl_apply (ce, lel));;
 
-let ocaml_pcl_fun lab ceo p ce = Pcl_fun (lab, ceo, p, ce);;
+let ocaml_pcl_fun = Some (fun lab ceo p ce -> Pcl_fun (lab, ceo, p, ce));;
 
 let ocaml_pctf_val (s, b, t, loc) = Pctf_val (s, b, Concrete, t, loc);;
 
-let ocaml_pcty_fun lab t ct = Pcty_fun (lab, t, ct);;
+let ocaml_pcty_fun = Some (fun lab t ct -> Pcty_fun (lab, t, ct));;
 
 let ocaml_pdir_bool = Some (fun b -> Pdir_bool b);;
 
