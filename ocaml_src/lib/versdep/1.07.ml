@@ -112,6 +112,12 @@ let ocaml_pexp_object = None;;
 
 let ocaml_pexp_poly = None;;
 
+let ocaml_pexp_record lel =
+  function
+    Some _ -> None
+  | None -> Some (Pexp_record lel)
+;;
+
 let ocaml_pexp_variant = None;;
 
 let ocaml_ppat_array = None;;

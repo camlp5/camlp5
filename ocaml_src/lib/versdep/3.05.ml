@@ -89,6 +89,8 @@ let ocaml_pexp_object = None;;
 
 let ocaml_pexp_poly = Some (fun e t -> Pexp_poly (e, t));;
 
+let ocaml_pexp_record lel eo = Some (Pexp_record (lel, eo));;
+
 let ocaml_pexp_variant =
   let pexp_variant_pat =
     function

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.24 2010/09/02 18:41:14 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.25 2010/09/02 19:06:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -272,6 +272,14 @@ value ocaml_pexp_object =
 value ocaml_pexp_poly =
   IFDEF OCAML_3_04_OR_BEFORE THEN None
   ELSE Some (fun e t -> Pexp_poly e t) END
+;
+
+value ocaml_pexp_record lel =
+  IFDEF OCAML_1_07 THEN
+    fun
+    [ Some _ -> None
+    | None -> Some (Pexp_record lel) ]
+  ELSE fun eo -> Some (Pexp_record lel eo) END
 ;
 
 value ocaml_pexp_variant =

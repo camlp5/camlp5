@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.92 2010/09/02 18:41:14 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.93 2010/09/02 19:06:32 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -773,7 +773,9 @@ value rec expr =
           [ Some e -> Some (expr e)
           | None -> None ]
         in
-        mkexp loc (Pexp_record (List.map mklabexp lel) eo)
+        match ocaml_pexp_record (List.map mklabexp lel) eo with
+        [ Some e -> mkexp loc e
+        | None -> error loc "no record with 'with' in this ocaml version" ]
   | ExSeq loc el ->
       loop (uv el) where rec loop =
         fun

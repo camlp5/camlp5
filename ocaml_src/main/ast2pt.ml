@@ -907,7 +907,10 @@ let rec expr =
             Some e -> Some (expr e)
           | None -> None
         in
-        mkexp loc (Pexp_record (List.map mklabexp lel, eo))
+        begin match ocaml_pexp_record (List.map mklabexp lel) eo with
+          Some e -> mkexp loc e
+        | None -> error loc "no record with 'with' in this ocaml version"
+        end
   | ExSeq (loc, el) ->
       let rec loop =
         function
