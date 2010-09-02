@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: main.ml,v 1.15 2010/08/28 17:22:20 deraugla Exp $ *)
+(* $Id: main.ml,v 1.16 2010/09/02 03:39:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -188,6 +188,31 @@ value anon_fun x = do {
   file_kind.val := file_kind_of_name x
 };
 
+value parse_options sl = do {
+  let ext_spec_list = Pcaml.arg_spec_list () in
+  let arg_spec_list = initial_spec_list @ ext_spec_list in
+  match Argl.parse arg_spec_list anon_fun sl with
+  [ [] -> None
+  | ["-help"] -> do {
+      Argl.usage initial_spec_list ext_spec_list;
+      Some 0
+    }
+  | [s :: sl] -> do {
+      eprintf "%s: unknown or misused option\n" s;
+      eprintf "Use option -help for usage\n";
+      Some 2
+    } ]
+};
+
+Pcaml.add_directive "option"
+  (fun
+   [ Some <:expr< $str:s$ >> ->
+       match parse_options [s] with
+       [ Some 0 | None -> ()
+       | Some x -> failwith "bad option" ]
+   | Some _ | None -> raise Not_found ])
+;
+
 value remaining_args =
   let rec loop l i =
     if i == Array.length Sys.argv then l else loop [Sys.argv.(i) :: l] (i + 1)
@@ -196,20 +221,10 @@ value remaining_args =
 ;
 
 value go () = do {
-  let ext_spec_list = Pcaml.arg_spec_list () in
-  let arg_spec_list = initial_spec_list @ ext_spec_list in
   try
-    match Argl.parse arg_spec_list anon_fun remaining_args with
-    [ [] -> ()
-    | ["-help" :: sl] -> do {
-        Argl.usage initial_spec_list ext_spec_list;
-        exit 0
-      }
-    | [s :: sl] -> do {
-        eprintf "%s: unknown or misused option\n" s;
-        eprintf "Use option -help for usage\n";
-        exit 2
-      } ]
+    match parse_options remaining_args with
+    [ Some code -> exit code
+    | None -> () ]
   with
   [ Arg.Bad s -> do {
       eprintf "Error: %s\n" s;

@@ -1,10 +1,15 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 1.128 2010/08/18 17:19:22 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.129 2010/09/02 03:39:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
 #load "pa_extend_m.cmo";
 #load "q_MLast.cmo";
+#load "pa_macro.cmo";
+
+IFDEF OCAML_2_02 THEN
+  #option "-split_ext";
+END;
 
 value gram = Grammar.gcreate (Plexer.gmake ());
 

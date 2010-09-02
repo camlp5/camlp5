@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.107 2010/08/18 16:26:26 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.108 2010/09/02 03:39:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -700,7 +700,7 @@ IFDEF STRICT THEN
     Pcaml.class_type: LAST
       [ [ s = ANTIQUOT_LOC -> MLast.CtXtr loc s None ] ]
     ;
-  END
+  END;
 END;
 
 value check_anti_loc s kind =

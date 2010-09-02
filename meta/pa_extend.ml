@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_extend.ml,v 1.107 2010/08/18 16:26:26 deraugla Exp $ *)
+(* $Id: pa_extend.ml,v 1.108 2010/09/02 03:39:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -9,7 +9,7 @@
 value split_ext = ref False;
 
 Pcaml.add_option "-split_ext" (Arg.Set split_ext)
-  "Split EXTEND by functions to turn around a PowerPC problem.";
+  "Split EXTEND by using functions.";
 
 type loc = Ploc.t;
 

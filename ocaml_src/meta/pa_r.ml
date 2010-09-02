@@ -2410,7 +2410,8 @@ Grammar.extend
    and phrase : 'phrase Grammar.Entry.e = grammar_entry_create "phrase" in
    [Grammar.Entry.obj (interf : 'interf Grammar.Entry.e), None,
     [None, None,
-     [[Gramext.Stoken ("EOI", "")],
+     [[], Gramext.action (fun (loc : Ploc.t) -> ([], true : 'interf));
+      [Gramext.Stoken ("EOI", "")],
       Gramext.action (fun _ (loc : Ploc.t) -> ([], false : 'interf));
       [Gramext.Snterm
          (Grammar.Entry.obj (sig_item_semi : 'sig_item_semi Grammar.Entry.e));
@@ -2435,7 +2436,8 @@ Grammar.extend
            (si, loc : 'sig_item_semi))]];
     Grammar.Entry.obj (implem : 'implem Grammar.Entry.e), None,
     [None, None,
-     [[Gramext.Stoken ("EOI", "")],
+     [[], Gramext.action (fun (loc : Ploc.t) -> ([], true : 'implem));
+      [Gramext.Stoken ("EOI", "")],
       Gramext.action (fun _ (loc : Ploc.t) -> ([], false : 'implem));
       [Gramext.Snterm
          (Grammar.Entry.obj (str_item_semi : 'str_item_semi Grammar.Entry.e));

@@ -163,6 +163,27 @@ let initial_spec_list =
 
 let anon_fun x = Pcaml.input_file := x; file_kind := file_kind_of_name x;;
 
+let parse_options sl =
+  let ext_spec_list = Pcaml.arg_spec_list () in
+  let arg_spec_list = initial_spec_list @ ext_spec_list in
+  match Argl.parse arg_spec_list anon_fun sl with
+    [] -> None
+  | ["-help"] -> Argl.usage initial_spec_list ext_spec_list; Some 0
+  | s :: sl ->
+      eprintf "%s: unknown or misused option\n" s;
+      eprintf "Use option -help for usage\n";
+      Some 2
+;;
+
+Pcaml.add_directive "option"
+  (function
+     Some (MLast.ExStr (_, s)) ->
+       begin match parse_options [s] with
+         Some 0 | None -> ()
+       | Some x -> failwith "bad option"
+       end
+   | Some _ | None -> raise Not_found);;
+
 let remaining_args =
   let rec loop l i =
     if i == Array.length Sys.argv then l else loop (Sys.argv.(i) :: l) (i + 1)
@@ -171,16 +192,10 @@ let remaining_args =
 ;;
 
 let go () =
-  let ext_spec_list = Pcaml.arg_spec_list () in
-  let arg_spec_list = initial_spec_list @ ext_spec_list in
   begin try
-    match Argl.parse arg_spec_list anon_fun remaining_args with
-      [] -> ()
-    | "-help" :: sl -> Argl.usage initial_spec_list ext_spec_list; exit 0
-    | s :: sl ->
-        eprintf "%s: unknown or misused option\n" s;
-        eprintf "Use option -help for usage\n";
-        exit 2
+    match parse_options remaining_args with
+      Some code -> exit code
+    | None -> ()
   with Arg.Bad s ->
     eprintf "Error: %s\n" s;
     eprintf "Use option -help for usage\n";

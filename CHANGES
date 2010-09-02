@@ -1,6 +1,15 @@
 Camlp5 Version 5.16:
 --------------------
 
+* [02 Sep 10] Added directive "#option" (in files, not in toplevel).
+* [02 Sep 10] pa_macro.cmo: phrases inside IFDEF statements now are
+  implementation or interface items, which means:
+    - ability to use directives which are, therefore, conditional.
+    - in revised syntax must end with semicolon (incompatibility with
+      previous versions of Camlp5 where these semicolons are syntax
+      errors).
+    - in revised syntax, ability to put several phrases without having
+      to use "declare .. end".
 * [30 Aug 10] pa_macro.cmo: added ability to use ELSIFDEF and ELSIFNDEF
   in expressions, structure items and signature items.
 * [27 Aug 10] Fixed bug in pa_macro.cmo A AND B computed B AND B = B.

@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 1.43 2010/09/01 16:34:58 deraugla Exp $ *)
+(* $Id: rprint.ml,v 1.44 2010/09/02 03:40:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 IFNDEF
@@ -480,9 +480,9 @@ IFNDEF OCAML_3_04_OR_BEFORE THEN
     Toploop.print_out_class_type.val := print_out_class_type;
     Toploop.print_out_module_type.val := print_out_module_type;
     Toploop.print_out_signature.val := print_out_signature;
-  end
+  end;
 END;
 Toploop.print_out_sig_item.val := print_out_sig_item;
 Toploop.print_out_phrase.val := print_out_phrase;
 
-end END;
+end; END;

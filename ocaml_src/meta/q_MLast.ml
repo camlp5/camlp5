@@ -5,6 +5,9 @@
 (* #load "pa_extend.cmo" *)
 (* #load "pa_extend_m.cmo" *)
 (* #load "q_MLast.cmo" *)
+(* #load "pa_macro.cmo" *)
+
+(* *)
 
 let gram = Grammar.gcreate (Plexer.gmake ());;
 
@@ -829,7 +832,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 296, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 301, 19))
             in
             Qast.Node ("StExc", [Qast.Loc; c; tl; b]) :
             'str_item));
@@ -1387,7 +1390,7 @@ Grammar.extend
            (let (_, c, tl) =
               match ctl with
                 Qast.Tuple [xx1; xx2; xx3] -> xx1, xx2, xx3
-              | _ -> raise (Match_failure ("q_MLast.ml", 354, 19))
+              | _ -> raise (Match_failure ("q_MLast.ml", 359, 19))
             in
             Qast.Node ("SgExc", [Qast.Loc; c; tl]) :
             'sig_item));

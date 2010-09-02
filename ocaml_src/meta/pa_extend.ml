@@ -9,7 +9,7 @@
 let split_ext = ref false;;
 
 Pcaml.add_option "-split_ext" (Arg.Set split_ext)
-  "Split EXTEND by functions to turn around a PowerPC problem.";;
+  "Split EXTEND by using functions.";;
 
 type loc = Ploc.t;;
 

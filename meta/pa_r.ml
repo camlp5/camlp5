@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 1.123 2010/08/12 11:39:42 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.124 2010/09/02 03:39:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -799,7 +799,8 @@ EXTEND
     [ [ "#"; n = V LIDENT; dp = OPT expr; ";" ->
           ([(<:sig_item< # $_lid:n$ $opt:dp$ >>, loc)], True)
       | si = sig_item_semi; (sil, stopped) = SELF -> ([si :: sil], stopped)
-      | EOI -> ([], False) ] ]
+      | EOI -> ([], False)
+      | -> ([], True) ] ]
   ;
   sig_item_semi:
     [ [ si = sig_item; ";" -> (si, loc) ] ]
@@ -808,7 +809,8 @@ EXTEND
     [ [ "#"; n = V LIDENT; dp = OPT expr; ";" ->
           ([(<:str_item< # $_lid:n$ $opt:dp$ >>, loc)], True)
       | si = str_item_semi; (sil, stopped) = SELF -> ([si :: sil], stopped)
-      | EOI -> ([], False) ] ]
+      | EOI -> ([], False)
+      | -> ([], True) ] ]
   ;
   str_item_semi:
     [ [ si = str_item; ";" -> (si, loc) ] ]

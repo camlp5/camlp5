@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.42 2010/08/30 00:45:14 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.43 2010/09/02 03:39:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -371,8 +371,18 @@ EXTEND
   str_item: FIRST
     [ [ x = str_macro_def ->
           match x with
-          [ SdStr [si] -> si
-          | SdStr sil -> <:str_item< declare $list:sil$ end >>
+          [ SdStr (sil, stopped) -> do {
+              if stopped then do {
+                match List.rev sil with
+                [ [MLast.StDir loc n dp :: _] ->
+                    Pcaml.find_directive (Pcaml.unvala n) (Pcaml.unvala dp)
+                | _ -> () ];
+              }
+              else ();
+              match sil with
+              [ [si] -> si
+              | sil -> <:str_item< declare $list:sil$ end >> ]
+            }
           | SdDef x eo -> do { define eo x; <:str_item< declare end >> }
           | SdUnd x -> do { undef x; <:str_item< declare end >> }
           | SdNop -> <:str_item< declare end >> ] ] ]
@@ -380,8 +390,18 @@ EXTEND
   sig_item: FIRST
     [ [ x = sig_macro_def ->
           match x with
-          [ SdStr [si] -> si
-          | SdStr sil -> <:sig_item< declare $list:sil$ end >>
+          [ SdStr (sil, stopped) -> do {
+              if stopped then do {
+                match List.rev sil with
+                [ [MLast.SgDir loc n dp :: _] ->
+                    Pcaml.find_directive (Pcaml.unvala n) (Pcaml.unvala dp)
+                | _ -> () ];
+              }
+              else ();
+              match sil with
+              [ [si] -> si
+              | sil -> <:sig_item< declare $list:sil$ end >> ]
+            }
           | SdDef x eo -> do { define eo x; <:sig_item< declare end >> }
           | SdUnd x -> do { undef x; <:sig_item< declare end >> }
           | SdNop -> <:sig_item< declare end >> ] ] ]
@@ -427,11 +447,11 @@ EXTEND
   ;
   str_item_or_macro:
     [ [ d = str_macro_def -> d
-      | si = LIST1 str_item -> SdStr si ] ]
+      | (sil, stopped) = implem -> SdStr (List.map fst sil, stopped) ] ]
   ;
   sig_item_or_macro:
     [ [ d = sig_macro_def -> d
-      | si = LIST1 sig_item -> SdStr si ] ]
+      | (sil, stopped) = interf -> SdStr (List.map fst sil, stopped) ] ]
   ;
   opt_macro_expr:
     [ [ pl = macro_param; "="; e = expr -> MvExpr pl e

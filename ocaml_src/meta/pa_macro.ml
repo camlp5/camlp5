@@ -427,8 +427,17 @@ Grammar.extend
       Gramext.action
         (fun (x : 'str_macro_def) (loc : Ploc.t) ->
            (match x with
-              SdStr [si] -> si
-            | SdStr sil -> MLast.StDcl (loc, sil)
+              SdStr (sil, stopped) ->
+                if stopped then
+                  begin match List.rev sil with
+                    MLast.StDir (loc, n, dp) :: _ ->
+                      Pcaml.find_directive (Pcaml.unvala n) (Pcaml.unvala dp)
+                  | _ -> ()
+                  end;
+                begin match sil with
+                  [si] -> si
+                | sil -> MLast.StDcl (loc, sil)
+                end
             | SdDef (x, eo) -> define eo x; MLast.StDcl (loc, [])
             | SdUnd x -> undef x; MLast.StDcl (loc, [])
             | SdNop -> MLast.StDcl (loc, []) :
@@ -442,8 +451,17 @@ Grammar.extend
       Gramext.action
         (fun (x : 'sig_macro_def) (loc : Ploc.t) ->
            (match x with
-              SdStr [si] -> si
-            | SdStr sil -> MLast.SgDcl (loc, sil)
+              SdStr (sil, stopped) ->
+                if stopped then
+                  begin match List.rev sil with
+                    MLast.SgDir (loc, n, dp) :: _ ->
+                      Pcaml.find_directive (Pcaml.unvala n) (Pcaml.unvala dp)
+                  | _ -> ()
+                  end;
+                begin match sil with
+                  [si] -> si
+                | sil -> MLast.SgDcl (loc, sil)
+                end
             | SdDef (x, eo) -> define eo x; MLast.SgDcl (loc, [])
             | SdUnd x -> undef x; MLast.SgDcl (loc, [])
             | SdNop -> MLast.SgDcl (loc, []) :
@@ -610,12 +628,10 @@ Grammar.extend
       (str_item_or_macro : 'str_item_or_macro Grammar.Entry.e),
     None,
     [None, None,
-     [[Gramext.Slist1
-         (Gramext.Snterm
-            (Grammar.Entry.obj (str_item : 'str_item Grammar.Entry.e)))],
+     [[Gramext.Snterm (Grammar.Entry.obj (implem : 'implem Grammar.Entry.e))],
       Gramext.action
-        (fun (si : 'str_item list) (loc : Ploc.t) ->
-           (SdStr si : 'str_item_or_macro));
+        (fun (sil, stopped : 'implem) (loc : Ploc.t) ->
+           (SdStr (List.map fst sil, stopped) : 'str_item_or_macro));
       [Gramext.Snterm
          (Grammar.Entry.obj
             (str_macro_def : 'str_macro_def Grammar.Entry.e))],
@@ -626,12 +642,10 @@ Grammar.extend
       (sig_item_or_macro : 'sig_item_or_macro Grammar.Entry.e),
     None,
     [None, None,
-     [[Gramext.Slist1
-         (Gramext.Snterm
-            (Grammar.Entry.obj (sig_item : 'sig_item Grammar.Entry.e)))],
+     [[Gramext.Snterm (Grammar.Entry.obj (interf : 'interf Grammar.Entry.e))],
       Gramext.action
-        (fun (si : 'sig_item list) (loc : Ploc.t) ->
-           (SdStr si : 'sig_item_or_macro));
+        (fun (sil, stopped : 'interf) (loc : Ploc.t) ->
+           (SdStr (List.map fst sil, stopped) : 'sig_item_or_macro));
       [Gramext.Snterm
          (Grammar.Entry.obj
             (sig_macro_def : 'sig_macro_def Grammar.Entry.e))],
