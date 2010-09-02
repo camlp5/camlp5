@@ -76,7 +76,11 @@ let mkcty loc d =
     Some class_type -> class_type d (mkloc loc)
   | None -> error loc "no class type in this ocaml version"
 ;;
-let mkpcl loc d = {pcl_desc = d; pcl_loc = mkloc loc};;
+let mkpcl loc d =
+  match ocaml_class_expr with
+    Some class_expr -> class_expr d (mkloc loc)
+  | None -> error loc "no class expr in this ocaml version"
+;;
 let mklazy loc e =
   match ocaml_pexp_lazy with
     Some pexp_lazy -> mkexp loc (pexp_lazy e)
@@ -482,7 +486,11 @@ let rec patt =
                 ("this is not a constructor, " ^
                  "it cannot be applied in a pattern")
       end
-  | PaArr (loc, pl) -> mkpat loc (Ppat_array (List.map patt (uv pl)))
+  | PaArr (loc, pl) ->
+      begin match ocaml_ppat_array with
+        Some ppat_array -> mkpat loc (ppat_array (List.map patt (uv pl)))
+      | None -> error loc "no array patterns in this ocaml version"
+      end
   | PaChr (loc, s) ->
       mkpat loc (Ppat_constant (Const_char (char_of_char_token loc (uv s))))
   | PaInt (loc, s, "") ->
@@ -853,7 +861,11 @@ let rec expr =
       mkexp loc (Pexp_let (mkrf (uv rf), List.map mkpe (uv pel), expr e))
   | ExLid (loc, s) -> mkexp loc (Pexp_ident (lident (uv s)))
   | ExLmd (loc, i, me, e) ->
-      mkexp loc (Pexp_letmodule (uv i, module_expr me, expr e))
+      begin match ocaml_pexp_letmodule with
+        Some pexp_letmodule ->
+          mkexp loc (pexp_letmodule (uv i) (module_expr me) (expr e))
+      | None -> error loc "no 'let module' in this ocaml version"
+      end
   | ExMat (loc, e, pel) ->
       let pel = uv pel in
       let pel =

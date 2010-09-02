@@ -37,6 +37,8 @@ let ocaml_type_declaration params cl tk pf tm loc variance =
 
 let ocaml_class_type = None;;
 
+let ocaml_class_expr = None;;
+
 let ocaml_ptype_private = Ptype_abstract;;
 
 let ocaml_ptype_record ltl priv =
@@ -104,11 +106,15 @@ let ocaml_pexp_function lab eo pel = Pexp_function pel;;
 
 let ocaml_pexp_lazy = None;;
 
+let ocaml_pexp_letmodule = None;;
+
 let ocaml_pexp_object = None;;
 
 let ocaml_pexp_poly = None;;
 
 let ocaml_pexp_variant = None;;
+
+let ocaml_ppat_array = None;;
 
 let ocaml_ppat_lazy = None;;
 

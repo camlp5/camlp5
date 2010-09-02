@@ -42,6 +42,8 @@ let ocaml_type_declaration params cl tk pf tm loc variance =
 
 let ocaml_class_type = Some (fun d loc -> {pcty_desc = d; pcty_loc = loc});;
 
+let ocaml_class_expr = Some (fun d loc -> {pcl_desc = d; pcl_loc = loc});;
+
 let ocaml_ptype_private = Ptype_abstract;;
 
 let ocaml_ptype_record ltl priv =
@@ -89,6 +91,8 @@ let ocaml_pexp_function lab eo pel = Pexp_function (lab, eo, pel);;
 
 let ocaml_pexp_lazy = Some (fun e -> Pexp_lazy e);;
 
+let ocaml_pexp_letmodule = Some (fun i me e -> Pexp_letmodule (i, me, e));;
+
 let ocaml_pexp_object = None;;
 
 let ocaml_pexp_poly = Some (fun e t -> Pexp_poly (e, t));;
@@ -102,6 +106,8 @@ let ocaml_pexp_variant =
   let pexp_variant (lab, eo) = Pexp_variant (lab, eo) in
   Some (pexp_variant_pat, pexp_variant)
 ;;
+
+let ocaml_ppat_array = Some (fun pl -> Ppat_array pl);;
 
 let ocaml_ppat_lazy = None;;
 

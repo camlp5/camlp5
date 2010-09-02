@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.91 2010/09/02 18:17:04 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.92 2010/09/02 18:41:14 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -76,7 +76,11 @@ value mkcty loc d =
   [ Some class_type -> class_type d (mkloc loc)
   | None -> error loc "no class type in this ocaml version" ]
 ;
-value mkpcl loc d = {pcl_desc = d; pcl_loc = mkloc loc};
+value mkpcl loc d =
+  match ocaml_class_expr with
+  [ Some class_expr -> class_expr d (mkloc loc)
+  | None -> error loc "no class expr in this ocaml version" ]
+;
 value mklazy loc e =
   match ocaml_pexp_lazy with
   [ Some pexp_lazy -> mkexp loc (pexp_lazy e)
@@ -483,7 +487,10 @@ value rec patt =
               error (loc_of_patt f)
                 ("this is not a constructor, " ^
                  "it cannot be applied in a pattern") ] ]
-  | PaArr loc pl -> mkpat loc (Ppat_array (List.map patt (uv pl)))
+  | PaArr loc pl ->
+      match ocaml_ppat_array with
+      [ Some ppat_array -> mkpat loc (ppat_array (List.map patt (uv pl)))
+      | None -> error loc "no array patterns in this ocaml version" ]
   | PaChr loc s ->
       mkpat loc (Ppat_constant (Const_char (char_of_char_token loc (uv s))))
   | PaInt loc s "" ->
@@ -722,7 +729,10 @@ value rec expr =
       mkexp loc (Pexp_let (mkrf (uv rf)) (List.map mkpe (uv pel)) (expr e))
   | ExLid loc s -> mkexp loc (Pexp_ident (lident (uv s)))
   | ExLmd loc i me e ->
-      mkexp loc (Pexp_letmodule (uv i) (module_expr me) (expr e))
+      match ocaml_pexp_letmodule with
+      [ Some pexp_letmodule ->
+          mkexp loc (pexp_letmodule (uv i) (module_expr me) (expr e))
+      | None -> error loc "no 'let module' in this ocaml version" ]
   | ExMat loc e pel ->
       let pel = uv pel in
       let pel =

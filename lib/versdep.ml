@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.23 2010/09/02 18:17:04 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.24 2010/09/02 18:41:14 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -106,6 +106,11 @@ value ocaml_type_declaration params cl tk pf tm loc variance =
 value ocaml_class_type =
   IFDEF OCAML_1_07 THEN None
   ELSE Some (fun d loc -> {pcty_desc = d; pcty_loc = loc}) END
+;
+
+value ocaml_class_expr =
+  IFDEF OCAML_1_07 THEN None
+  ELSE Some (fun d loc -> {pcl_desc = d; pcl_loc = loc}) END
 ;
 
 value ocaml_ptype_private =
@@ -254,6 +259,11 @@ value ocaml_pexp_lazy =
   IFDEF OCAML_3_04_OR_BEFORE THEN None ELSE Some (fun e -> Pexp_lazy e) END
 ;
 
+value ocaml_pexp_letmodule =
+  IFDEF OCAML_1_07 THEN None
+  ELSE Some (fun i me e -> Pexp_letmodule i me e) END
+;
+
 value ocaml_pexp_object =
   IFDEF OCAML_3_06_OR_BEFORE OR OCAML_3_07 THEN None
   ELSE Some (fun cs -> Pexp_object cs) END
@@ -275,6 +285,10 @@ value ocaml_pexp_variant =
     let pexp_variant (lab, eo) = Pexp_variant lab eo in
     Some (pexp_variant_pat, pexp_variant)
   END
+;
+
+value ocaml_ppat_array =
+  IFDEF OCAML_1_07 THEN None ELSE Some (fun pl -> Ppat_array pl) END
 ;
 
 value ocaml_ppat_lazy =
