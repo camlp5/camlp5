@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.88 2010/09/01 13:39:19 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.89 2010/09/02 15:12:47 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -550,9 +550,12 @@ value rec sep_expr_acc l =
 
 value class_info class_expr ci =
   let (params, variance) = List.split (uv (snd ci.ciPrm)) in
-  ocaml_class_infos (if uv ci.ciVir then Virtual else Concrete)
-    (List.map uv params, mkloc (fst ci.ciPrm)) (uv ci.ciNam)
-    (class_expr ci.ciExp) (mkloc ci.ciLoc) variance
+  match ocaml_class_infos with
+  [ Some class_infos ->
+      class_infos (if uv ci.ciVir then Virtual else Concrete)
+        (List.map uv params, mkloc (fst ci.ciPrm)) (uv ci.ciNam)
+        (class_expr ci.ciExp) (mkloc ci.ciLoc) variance
+  | None -> error ci.ciLoc "no class_info in this ocaml version" ]
 ;
 
 value bigarray_get loc e el =

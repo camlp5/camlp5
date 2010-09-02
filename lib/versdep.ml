@@ -1,12 +1,12 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.21 2010/09/02 14:38:09 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.22 2010/09/02 15:12:47 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
 open Longident;
 open Asttypes;
 
-IFDEF OCAML_2_00 OR OCAML_2_01 OR OCAML_2_02 THEN
+IFDEF OCAML_1_07 OR OCAML_2_00 OR OCAML_2_01 OR OCAML_2_02 THEN
   DEFINE OCAML_2_02_OR_BEFORE
 END;
 IFDEF OCAML_2_02_OR_BEFORE OR OCAML_2_03 OR OCAML_2_04 THEN
@@ -58,7 +58,8 @@ type choice 'a 'b =
 ;
 
 value sys_ocaml_version =
-  IFDEF OCAML_2_00 THEN "2.00"
+  IFDEF OCAML_1_07 THEN "1.07"
+  ELSIFDEF OCAML_2_00 THEN "2.00"
   ELSIFDEF OCAML_2_01 THEN "2.01"
   ELSIFDEF OCAML_2_02 THEN "2.02"
   ELSIFDEF OCAML_2_03 THEN "2.03"
@@ -318,19 +319,29 @@ value ocaml_pstr_recmodule =
   ELSE Some (fun nel -> Pstr_recmodule nel) END
 ;
 
-value ocaml_class_infos virt params name expr loc variance =
-  IFDEF OCAML_3_00_OR_BEFORE THEN
-    {pci_virt = virt; pci_params = params; pci_name = name; pci_expr = expr;
-     pci_loc = loc}
+value ocaml_class_infos =
+  IFDEF OCAML_1_07 THEN None
+  ELSIFDEF OCAML_3_00_OR_BEFORE THEN
+    Some
+      (fun virt params name expr loc variance ->
+         {pci_virt = virt; pci_params = params; pci_name = name;
+          pci_expr = expr; pci_loc = loc})
   ELSE
-    {pci_virt = virt; pci_params = params; pci_name = name; pci_expr = expr;
-     pci_loc = loc; pci_variance = variance}
+    Some
+      (fun virt params name expr loc variance ->
+        {pci_virt = virt; pci_params = params; pci_name = name;
+         pci_expr = expr; pci_loc = loc; pci_variance = variance})
   END
 ;
 
-value ocaml_pcf_inher ce pb =
-  IFDEF OCAML_3_12_OR_AFTER THEN Pcf_inher Fresh ce pb
-  ELSE Pcf_inher ce pb END
+value ocaml_pcf_inher =
+  IFDEF OCAML_1_07 THEN
+    fun (id, cl, el, loc) pb -> Pcf_inher (id, cl, el, pb, loc)
+  ELSIFDEF OCAML_3_12_OR_AFTER THEN
+    fun ce pb -> Pcf_inher Fresh ce pb
+  ELSE
+    fun ce pb -> Pcf_inher ce pb
+  END
 ;
 
 value ocaml_pcf_meth (s, b, e, loc) =
@@ -339,26 +350,36 @@ value ocaml_pcf_meth (s, b, e, loc) =
 ;
 
 value ocaml_pcf_val (s, b, e, loc) =
-  IFDEF OCAML_3_12_OR_AFTER THEN Pcf_val (s, b, Fresh, e, loc)
+  IFDEF OCAML_1_07 THEN Pcf_val (s, b, Immutable, e, loc)
+  ELSIFDEF OCAML_3_12_OR_AFTER THEN Pcf_val (s, b, Fresh, e, loc)
   ELSE Pcf_val (s, b, e,  loc) END
 ;
 
-value ocaml_pcl_apply ce lel =
-  IFDEF OCAML_2_04_OR_BEFORE THEN Pcl_apply ce (List.map snd lel)
-  ELSE Pcl_apply ce lel END
+value ocaml_pcl_apply =
+  IFDEF OCAML_1_07 THEN None
+  ELSIFDEF OCAML_2_04_OR_BEFORE THEN
+    Some (fun ce lel -> Pcl_apply ce (List.map snd lel))
+  ELSE
+    Some (fun ce lel -> Pcl_apply ce lel)
+  END
 ;
 
-value ocaml_pcl_fun lab ceo p ce =
-  IFDEF OCAML_2_04_OR_BEFORE THEN Pcl_fun p ce ELSE Pcl_fun lab ceo p ce END
+value ocaml_pcl_fun =
+  IFDEF OCAML_1_07 THEN None
+  ELSIFDEF OCAML_2_04_OR_BEFORE THEN Some (fun lab ceo p ce -> Pcl_fun p ce)
+  ELSE Some (fun lab ceo p ce -> Pcl_fun lab ceo p ce) END
 ;
 
 value ocaml_pctf_val (s, b, t, loc) =
-  IFDEF OCAML_3_10_OR_AFTER THEN Pctf_val (s, b, Concrete, t, loc)
+  IFDEF OCAML_1_07 THEN Pctf_val (s, b, Immutable, Some t, loc)
+  ELSIFDEF OCAML_3_10_OR_AFTER THEN Pctf_val (s, b, Concrete, t, loc)
   ELSE Pctf_val (s, b, Some t, loc) END
 ;
 
-value ocaml_pcty_fun lab t ct =
-  IFDEF OCAML_2_04_OR_BEFORE THEN Pcty_fun t ct ELSE Pcty_fun lab t ct END
+value ocaml_pcty_fun =
+  IFDEF OCAML_1_07 THEN None
+  ELSIFDEF OCAML_2_04_OR_BEFORE THEN Some (fun lab t ct -> Pcty_fun t ct)
+  ELSE Some (fun lab t ct -> Pcty_fun lab t ct) END
 ;
 
 value ocaml_pdir_bool =
@@ -425,7 +446,7 @@ value char_escaped =
 ;
 
 value hashtbl_mem =
-  IFDEF OCAML_2_00 OR OCAML_2_01 THEN
+  IFDEF OCAML_1_07 OR OCAML_2_00 OR OCAML_2_01 THEN
     fun ht a ->
       try let _ = Hashtbl.find ht a in True with [ Not_found -> False ]
   ELSE
@@ -487,7 +508,7 @@ ELSE
 END;
 
 value string_contains =
-  IFDEF OCAML_2_00 THEN
+  IFDEF OCAML_1_07 OR OCAML_2_00 THEN
     fun s c ->
       loop 0 where rec loop i =
         if i = String.length s then False
