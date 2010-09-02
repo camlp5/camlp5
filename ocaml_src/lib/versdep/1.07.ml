@@ -31,8 +31,19 @@ let ocaml_location (fname, lnum, bolp, bp, ep) =
 ;;
 
 let ocaml_type_declaration params cl tk pf tm loc variance =
-  {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
-   ptype_manifest = tm; ptype_loc = loc}
+  try
+    let cl =
+      List.map
+        (fun (t1, t2, loc) ->
+           match t1.ptyp_desc with
+             Ptyp_var s -> s, t2, loc
+           | _ -> raise Exit)
+        cl
+    in
+    Some
+      {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
+       ptype_manifest = tm; ptype_loc = loc}
+  with Exit -> None
 ;;
 
 let ocaml_class_type = None;;

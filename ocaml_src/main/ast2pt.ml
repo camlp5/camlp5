@@ -244,8 +244,9 @@ and add_polytype t =
 let mktype loc tl cl tk pf tm =
   let (params, variance) = List.split tl in
   let params = List.map uv params in
-  let loc = mkloc loc in
-  ocaml_type_declaration params cl tk pf tm loc variance
+  match ocaml_type_declaration params cl tk pf tm (mkloc loc) variance with
+    Some td -> td
+  | None -> error loc "no such type declaration in this ocaml version"
 ;;
 
 let mkmutable m = if m then Mutable else Immutable;;
@@ -386,8 +387,11 @@ let mkwithc =
       let tk = if uv pf then ocaml_ptype_private else Ptype_abstract in
       let pf = if uv pf then Private else Public in
       long_id_of_string_list loc (uv id),
-      Pwith_type
-        (ocaml_type_declaration params [] tk pf ct (mkloc loc) variance)
+      (match
+         ocaml_type_declaration params [] tk pf ct (mkloc loc) variance
+       with
+         Some td -> Pwith_type td
+       | None -> error loc "no such with constraint in this ocaml version")
   | WcMod (loc, id, m) ->
       long_id_of_string_list loc (uv id), Pwith_module (module_expr_long_id m)
 ;;

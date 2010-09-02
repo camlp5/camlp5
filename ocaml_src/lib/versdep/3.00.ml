@@ -32,8 +32,9 @@ let ocaml_location (fname, lnum, bolp, bp, ep) =
 ;;
 
 let ocaml_type_declaration params cl tk pf tm loc variance =
-  {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
-   ptype_manifest = tm; ptype_loc = loc}
+  Some
+    {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
+     ptype_manifest = tm; ptype_loc = loc}
 ;;
 
 let ocaml_class_type = Some (fun d loc -> {pcty_desc = d; pcty_loc = loc});;

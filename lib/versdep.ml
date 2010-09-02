@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.25 2010/09/02 19:06:32 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.26 2010/09/02 19:51:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -90,16 +90,34 @@ value ocaml_location (fname, lnum, bolp, bp, ep) =
 ;
 
 value ocaml_type_declaration params cl tk pf tm loc variance =
-  IFDEF OCAML_3_11_OR_AFTER THEN
-    {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
-     ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
-     ptype_variance = variance}
+  IFDEF OCAML_1_07 THEN
+    try
+      let cl =
+        List.map
+          (fun (t1, t2, loc) ->
+             match t1.ptyp_desc with
+             [ Ptyp_var s -> (s, t2, loc)
+             | _ -> raise Exit ])
+          cl
+      in
+      Some
+        {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
+         ptype_manifest = tm; ptype_loc = loc}
+     with
+     [ Exit -> None ]
+  ELSIFDEF OCAML_3_11_OR_AFTER THEN
+    Some
+      {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
+       ptype_private = pf; ptype_manifest = tm; ptype_loc = loc;
+       ptype_variance = variance}
   ELSIFDEF OCAML_3_00_OR_BEFORE THEN
-    {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
-     ptype_manifest = tm; ptype_loc = loc}
+    Some
+      {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
+       ptype_manifest = tm; ptype_loc = loc}
   ELSE
-    {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
-     ptype_manifest = tm; ptype_loc = loc; ptype_variance = variance}
+    Some
+      {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
+       ptype_manifest = tm; ptype_loc = loc; ptype_variance = variance}
   END
 ;
 
