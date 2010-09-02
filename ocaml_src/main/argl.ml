@@ -8,7 +8,6 @@ let action_arg s sl =
   function
     Arg.Set r -> if s = "" then begin r := true; Some sl end else None
   | Arg.Clear r -> if s = "" then begin r := false; Some sl end else None
-  | Arg.Rest f -> List.iter f (s :: sl); Some []
   | Arg.String f ->
       if s = "" then
         match sl with
@@ -34,54 +33,57 @@ let action_arg s sl =
         | [] -> None
       else begin f (float_of_string s); Some sl end
   | a ->
-      match arg_set_string a with
-        Some r ->
-          if s = "" then
-            match sl with
-              s :: sl -> r := s; Some sl
-            | [] -> None
-          else begin r := s; Some sl end
+      match arg_rest a with
+        Some f -> List.iter f (s :: sl); Some []
       | None ->
-          match arg_set_int a with
+          match arg_set_string a with
             Some r ->
               if s = "" then
                 match sl with
-                  s :: sl ->
-                    begin try r := int_of_string s; Some sl with
-                      Failure "int_of_string" -> None
-                    end
+                  s :: sl -> r := s; Some sl
                 | [] -> None
-              else
-                begin try r := int_of_string s; Some sl with
-                  Failure "int_of_string" -> None
-                end
+              else begin r := s; Some sl end
           | None ->
-              match arg_set_float a with
+              match arg_set_int a with
                 Some r ->
                   if s = "" then
                     match sl with
-                      s :: sl -> r := float_of_string s; Some sl
+                      s :: sl ->
+                        begin try r := int_of_string s; Some sl with
+                          Failure "int_of_string" -> None
+                        end
                     | [] -> None
-                  else begin r := float_of_string s; Some sl end
+                  else
+                    begin try r := int_of_string s; Some sl with
+                      Failure "int_of_string" -> None
+                    end
               | None ->
-                  match arg_symbol a with
-                    Some (syms, f) ->
-                      begin match if s = "" then sl else s :: sl with
-                        s :: sl when List.mem s syms -> f s; Some sl
-                      | _ -> None
-                      end
+                  match arg_set_float a with
+                    Some r ->
+                      if s = "" then
+                        match sl with
+                          s :: sl -> r := float_of_string s; Some sl
+                        | [] -> None
+                      else begin r := float_of_string s; Some sl end
                   | None ->
-                      match arg_tuple a with
-                        Some _ -> failwith "Arg.Tuple not implemented"
+                      match arg_symbol a with
+                        Some (syms, f) ->
+                          begin match if s = "" then sl else s :: sl with
+                            s :: sl when List.mem s syms -> f s; Some sl
+                          | _ -> None
+                          end
                       | None ->
-                          match arg_bool a with
-                            Some _ -> failwith "Arg.Bool not implemented"
+                          match arg_tuple a with
+                            Some _ -> failwith "Arg.Tuple not implemented"
                           | None ->
-                              match a with
-                                Arg.Unit f ->
-                                  if s = "" then begin f (); Some sl end
-                                  else None
-                              | _ -> assert false
+                              match arg_bool a with
+                                Some _ -> failwith "Arg.Bool not implemented"
+                              | None ->
+                                  match a with
+                                    Arg.Unit f ->
+                                      if s = "" then begin f (); Some sl end
+                                      else None
+                                  | _ -> assert false
 ;;
 
 let common_start s1 s2 =

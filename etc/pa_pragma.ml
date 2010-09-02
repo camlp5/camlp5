@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_pragma.ml,v 1.65 2010/08/18 17:19:22 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.66 2010/09/02 14:52:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -10,6 +10,7 @@
 (* syntax at toplevel: #pragma <expr> *)
 
 open Printf;
+open Versdep;
 
 value string_of_obj_tag x =
   if Obj.is_block (Obj.repr x) then
@@ -1140,7 +1141,7 @@ and eval_let loc env rf pel e =
             loop extra_env pel
         | [] -> extra_env ]
     in
-    let new_env = List.rev_append extra_env env in
+    let new_env = list_rev_append extra_env env in
     List.iter
       (fun (s, bv) -> bv.valu := eval_expr new_env (Obj.magic bv.valu))
       extra_env;

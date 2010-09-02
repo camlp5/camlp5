@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: argl.ml,v 1.7 2010/08/28 19:46:06 deraugla Exp $ *)
+(* $Id: argl.ml,v 1.8 2010/09/02 14:52:17 deraugla Exp $ *)
 
 open Printf;
 open Versdep;
@@ -8,7 +8,6 @@ value action_arg s sl =
   fun
   [ Arg.Set r -> if s = "" then do { r.val := True; Some sl } else None
   | Arg.Clear r -> if s = "" then do { r.val := False; Some sl } else None
-  | Arg.Rest f -> do { List.iter f [s :: sl]; Some [] }
   | Arg.String f ->
       if s = "" then
         match sl with
@@ -32,6 +31,9 @@ value action_arg s sl =
         | [] -> None ]
       else do { f (float_of_string s); Some sl }
   | a ->
+      match arg_rest a with
+      [ Some f -> do { List.iter f [s :: sl]; Some [] }
+      | None ->
       match arg_set_string a with
       [ Some r ->
           if s = "" then
@@ -74,7 +76,7 @@ value action_arg s sl =
       | None ->
       match a with
       [ Arg.Unit f -> if s = "" then do { f (); Some sl } else None
-      | _ -> assert False ] ] ] ] ] ] ] ]
+      | _ -> assert False ] ] ] ] ] ] ] ] ]
 ;
 
 value common_start s1 s2 =

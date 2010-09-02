@@ -1,10 +1,11 @@
 (* camlp5r *)
-(* $Id: main.ml,v 1.16 2010/09/02 03:39:59 deraugla Exp $ *)
+(* $Id: main.ml,v 1.17 2010/09/02 14:52:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
 
 open Printf;
+open Versdep;
 
 value string_of_loc fname line bp ep =
   match Sys.os_type with
@@ -86,7 +87,7 @@ value rec parse_file pa getdir useast = do {
             [ Some x ->
                 match x with
                 [ (loc1, "use", Some <:expr< $str:s$ >>) ->
-                    List.rev_append rpl
+                    list_rev_append rpl
                       [(useast loc1 s (use_file pa getdir useast s), loc1)]
                 | (loc, x, eo) -> do {
                     try

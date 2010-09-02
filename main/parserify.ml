@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: parserify.ml,v 1.6 2010/08/30 22:48:33 deraugla Exp $ *)
+(* $Id: parserify.ml,v 1.7 2010/09/02 14:52:17 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -8,6 +8,7 @@
 
 open Pretty;
 open Prtools;
+open Versdep;
 
 type spat_comp =
   [ SpTrm of MLast.loc and MLast.patt and MLast.v (option MLast.expr)
@@ -161,7 +162,7 @@ value rec unparser_cases_list =
       loop [] pel where rec loop rev_spel =
         fun
         [ [(<:patt< _ >>, <:vala< None >>, e)] ->
-            List.rev_append rev_spel (unparser_cases_list e)
+            list_rev_append rev_spel (unparser_cases_list e)
         | [(<:patt< Some $p$ >>, eo,
             <:expr< do { Stream.junk strm__; $e$ } >>) ::
            pel] ->

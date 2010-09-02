@@ -16,7 +16,7 @@ gramext.cmi: fstream.cmi plexing.cmi
 grammar.cmo: fstream.cmi gramext.cmi grammar.cmi plexing.cmi ploc.cmi
 grammar.cmx: fstream.cmx gramext.cmx grammar.cmi plexing.cmx ploc.cmx
 grammar.cmi: gramext.cmi plexing.cmi ploc.cmi
-plexer.cmo: plexer.cmi plexing.cmi ploc.cmi versdep.cmi
+plexer.cmo: plexer.cmi plexing.cmi ploc.cmi versdep.cmo
 plexer.cmx: plexer.cmi plexing.cmx ploc.cmx versdep.cmx
 plexer.cmi: plexing.cmi
 plexing.cmo: plexing.cmi ploc.cmi
@@ -26,7 +26,7 @@ ploc.cmo: ploc.cmi
 ploc.cmx: ploc.cmi
 pprintf.cmo: pprintf.cmi pretty.cmi
 pprintf.cmx: pprintf.cmi pretty.cmx
-pretty.cmo: ploc.cmi pretty.cmi versdep.cmi
+pretty.cmo: ploc.cmi pretty.cmi versdep.cmo
 pretty.cmx: ploc.cmx pretty.cmi versdep.cmx
 stdpp.cmo: ploc.cmi stdpp.cmi
 stdpp.cmx: ploc.cmx stdpp.cmi
@@ -37,12 +37,8 @@ token.cmi: plexing.cmi ploc.cmi
 versdep.cmo: $(OTOP)/parsing/asttypes.cmi \
     $(OTOP)/parsing/location.cmi \
     $(OTOP)/parsing/longident.cmi \
-    $(OTOP)/parsing/parsetree.cmi versdep.cmi
+    $(OTOP)/parsing/parsetree.cmi
 versdep.cmx: $(OTOP)/parsing/asttypes.cmi \
-    $(OTOP)/parsing/location.cmi \
-    $(OTOP)/parsing/longident.cmi \
-    $(OTOP)/parsing/parsetree.cmi versdep.cmi
-versdep.cmi: $(OTOP)/parsing/asttypes.cmi \
     $(OTOP)/parsing/location.cmi \
     $(OTOP)/parsing/longident.cmi \
     $(OTOP)/parsing/parsetree.cmi

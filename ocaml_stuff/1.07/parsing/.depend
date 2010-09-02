@@ -1,4 +1,2 @@
-asttypes.cmi:
 location.cmi: ../utils/warnings.cmi
-longident.cmi:
 parsetree.cmi: longident.cmi location.cmi asttypes.cmi
