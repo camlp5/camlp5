@@ -71,7 +71,11 @@ let mksig loc d = {psig_desc = d; psig_loc = mkloc loc};;
 let mkmod loc d = {pmod_desc = d; pmod_loc = mkloc loc};;
 let mkstr loc d = {pstr_desc = d; pstr_loc = mkloc loc};;
 let mkfield loc d = {pfield_desc = d; pfield_loc = mkloc loc};;
-let mkcty loc d = {pcty_desc = d; pcty_loc = mkloc loc};;
+let mkcty loc d =
+  match ocaml_class_type with
+    Some class_type -> class_type d (mkloc loc)
+  | None -> error loc "no class type in this ocaml version"
+;;
 let mkpcl loc d = {pcl_desc = d; pcl_loc = mkloc loc};;
 let mklazy loc e =
   match ocaml_pexp_lazy with

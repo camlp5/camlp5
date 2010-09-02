@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.22 2010/09/02 15:12:47 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.23 2010/09/02 18:17:04 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -101,6 +101,11 @@ value ocaml_type_declaration params cl tk pf tm loc variance =
     {ptype_params = params; ptype_cstrs = cl; ptype_kind = tk;
      ptype_manifest = tm; ptype_loc = loc; ptype_variance = variance}
   END
+;
+
+value ocaml_class_type =
+  IFDEF OCAML_1_07 THEN None
+  ELSE Some (fun d loc -> {pcty_desc = d; pcty_loc = loc}) END
 ;
 
 value ocaml_ptype_private =

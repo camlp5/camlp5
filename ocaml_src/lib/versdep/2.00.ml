@@ -35,6 +35,8 @@ let ocaml_type_declaration params cl tk pf tm loc variance =
    ptype_manifest = tm; ptype_loc = loc}
 ;;
 
+let ocaml_class_type = Some (fun d loc -> {pcty_desc = d; pcty_loc = loc});;
+
 let ocaml_ptype_private = Ptype_abstract;;
 
 let ocaml_ptype_record ltl priv =

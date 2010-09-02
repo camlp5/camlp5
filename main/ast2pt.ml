@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.90 2010/09/02 17:19:34 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.91 2010/09/02 18:17:04 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -71,7 +71,11 @@ value mksig loc d = {psig_desc = d; psig_loc = mkloc loc};
 value mkmod loc d = {pmod_desc = d; pmod_loc = mkloc loc};
 value mkstr loc d = {pstr_desc = d; pstr_loc = mkloc loc};
 value mkfield loc d = {pfield_desc = d; pfield_loc = mkloc loc};
-value mkcty loc d = {pcty_desc = d; pcty_loc = mkloc loc};
+value mkcty loc d =
+  match ocaml_class_type with
+  [ Some class_type -> class_type d (mkloc loc)
+  | None -> error loc "no class type in this ocaml version" ]
+;
 value mkpcl loc d = {pcl_desc = d; pcl_loc = mkloc loc};
 value mklazy loc e =
   match ocaml_pexp_lazy with
