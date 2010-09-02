@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 1.48 2010/09/02 08:47:33 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 1.49 2010/09/02 08:50:36 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
@@ -35,6 +35,7 @@ usage () {
     echo "Available versions: $vers"
   fi
 }
+getvers
 versopt=""
 while getopts ":d:hntv:" name; do
   case "$name" in
