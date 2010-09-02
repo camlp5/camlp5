@@ -8,6 +8,7 @@
 
 open Pretty;;
 open Prtools;;
+open Versdep;;
 
 type spat_comp =
     SpTrm of MLast.loc * MLast.patt * MLast.expr option MLast.v
@@ -340,7 +341,7 @@ let rec unparser_cases_list =
       let rec loop rev_spel =
         function
           [MLast.PaAny _, None, e] ->
-            List.rev_append rev_spel (unparser_cases_list e)
+            list_rev_append rev_spel (unparser_cases_list e)
         | (MLast.PaApp (_, MLast.PaUid (_, "Some"), p), eo,
            MLast.ExSeq
              (_,

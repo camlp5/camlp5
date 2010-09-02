@@ -8,7 +8,6 @@ let action_arg s sl =
   function
     Arg.Set r -> if s = "" then begin r := true; Some sl end else None
   | Arg.Clear r -> if s = "" then begin r := false; Some sl end else None
-  | Arg.Rest f -> List.iter f (s :: sl); Some []
   | Arg.String f ->
       if s = "" then
         match sl with
@@ -34,6 +33,9 @@ let action_arg s sl =
         | [] -> None
       else begin f (float_of_string s); Some sl end
   | a ->
+      match arg_rest a with
+        Some f -> List.iter f (s :: sl); Some []
+      | None ->
       match arg_set_string a with
         Some r ->
           if s = "" then

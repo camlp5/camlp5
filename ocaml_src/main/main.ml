@@ -5,6 +5,7 @@
 (* #load "q_MLast.cmo" *)
 
 open Printf;;
+open Versdep;;
 
 let string_of_loc fname line bp ep =
   match Sys.os_type with
@@ -76,7 +77,7 @@ let rec parse_file pa getdir useast =
               Some x ->
                 begin match x with
                   loc1, "use", Some (MLast.ExStr (_, s)) ->
-                    List.rev_append rpl
+                    list_rev_append rpl
                       [useast loc1 s (use_file pa getdir useast s), loc1]
                 | loc, x, eo ->
                     begin try let f = Pcaml.find_directive x in f eo with
