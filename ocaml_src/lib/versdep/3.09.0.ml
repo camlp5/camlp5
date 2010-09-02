@@ -144,6 +144,12 @@ let module_prefix_can_be_in_first_record_label_only = true;;
 
 let split_or_patterns_with_bindings = false;;
 
+let arg_rest =
+  function
+    Arg.Rest r -> Some r
+  | _ -> None
+;;
+
 let arg_set_string =
   function
     Arg.Set_string r -> Some r
@@ -187,6 +193,8 @@ let char_escaped =
 ;;
 
 let hashtbl_mem = Hashtbl.mem;;
+
+let list_rev_append = List.rev_append;;
 
 let list_rev_map = List.rev_map;;
 

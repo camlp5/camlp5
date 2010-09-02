@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.20 2010/09/02 03:39:59 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.21 2010/09/02 14:38:09 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -373,6 +373,12 @@ value split_or_patterns_with_bindings =
   IFDEF OCAML_3_01_OR_BEFORE THEN True ELSE False END
 ;
 
+value arg_rest =
+  fun
+  [ IFNDEF OCAML_1_07 THEN Arg.Rest r -> Some r END
+  | _ -> None ]
+;
+
 value arg_set_string =
   fun
   [ IFNDEF OCAML_3_06_OR_BEFORE THEN Arg.Set_string r -> Some r END
@@ -424,6 +430,17 @@ value hashtbl_mem =
       try let _ = Hashtbl.find ht a in True with [ Not_found -> False ]
   ELSE
     Hashtbl.mem
+  END
+;
+
+value list_rev_append =
+  IFDEF OCAML_1_07 THEN
+    loop where rec loop accu =
+      fun
+      [ [x :: l] -> loop [x :: accu] l
+      | [] -> accu ]
+  ELSE
+    List.rev_append
   END
 ;
 
