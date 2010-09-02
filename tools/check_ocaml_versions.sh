@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 1.49 2010/09/02 08:50:36 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 1.50 2010/09/02 09:54:59 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
@@ -13,9 +13,9 @@ PATH=$(pwd)/bin:$PATH
 
 getvers () {
   cd "$OCAMLSDIR"
-  vers=$(ls | grep -v csl | grep -v '^1' | grep -v '^2.0[0-2]')
+  vers="$(ls | grep -v csl | grep -v '^1')"
   # WARNING: on 64 bits arch, rather use this:
-  # vers=$(ls | grep -v csl | grep -v '^[1|2]' | grep -v '^3.0[0-6])
+  # vers="$(ls | grep -v csl | grep -v '^[1|2]' | grep -v '^3.0[0-6])"
   vers=$(echo $vers | tr '\n' ' ')
 }
 
@@ -77,8 +77,8 @@ for i in $vers; do
   if [ "$DOOPT" = "0" ]; then
     echo "+++++ time make world"
     time make world
-  elif [ "$i" = "2.01" -o "$i" = "2.02" -o "$i" = "2.03" -o "$i" = "2.04" -o \
-         "$i" = "2.99" -o "$i" = "3.00" ]
+  elif [ "$i" = "2.00" -o "$i" = "2.01" -o "$i" = "2.02" -o "$i" = "2.03" -o \
+         "$i" = "2.04" -o "$i" = "2.99" -o "$i" = "3.00" ]
   then
     echo "+++++ time make world opt"
     time make world opt

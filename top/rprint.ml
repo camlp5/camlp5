@@ -1,12 +1,11 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 1.44 2010/09/02 03:40:00 deraugla Exp $ *)
+(* $Id: rprint.ml,v 1.45 2010/09/02 09:55:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 IFNDEF
-  OCAML_2_01 OR OCAML_2_02 OR OCAML_2_03 OR OCAML_2_04 OR OCAML_2_99 OR
-  OCAML_3_00 OR OCAML_3_01 OR OCAML_3_02
+  OCAML_2_00 OR OCAML_2_01 OR OCAML_2_02 OR OCAML_2_03 OR OCAML_2_04 OR
+  OCAML_2_99 OR OCAML_3_00 OR OCAML_3_01 OR OCAML_3_02
 THEN
-declare
 
 open Format;
 open Outcometree;
@@ -476,13 +475,11 @@ value print_out_phrase ppf =
 Toploop.print_out_value.val := print_out_value;
 Toploop.print_out_type.val := print_out_type;
 IFNDEF OCAML_3_04_OR_BEFORE THEN
-  declare
-    Toploop.print_out_class_type.val := print_out_class_type;
-    Toploop.print_out_module_type.val := print_out_module_type;
-    Toploop.print_out_signature.val := print_out_signature;
-  end;
+  Toploop.print_out_class_type.val := print_out_class_type;
+  Toploop.print_out_module_type.val := print_out_module_type;
+  Toploop.print_out_signature.val := print_out_signature;
 END;
 Toploop.print_out_sig_item.val := print_out_sig_item;
 Toploop.print_out_phrase.val := print_out_phrase;
 
-end; END;
+END;

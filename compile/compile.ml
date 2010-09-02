@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: compile.ml,v 1.34 2010/09/01 19:47:48 deraugla Exp $ *)
+(* $Id: compile.ml,v 1.35 2010/09/02 09:54:59 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -579,20 +579,31 @@ value rec expr_list =
   | [x :: l] -> <:expr< [$str:String.escaped x$ :: $expr_list l$] >> ]
 ;
 
-value list_sort f l =
+value list_sort =
   IFDEF
-    OCAML_2_01 OR OCAML_2_02 OR OCAML_2_03 OR OCAML_2_04 OR OCAML_2_99
+    OCAML_2_00 OR OCAML_2_01 OR OCAML_2_02 OR OCAML_2_03 OR OCAML_2_04 OR
+    OCAML_2_99
   THEN
-    Sort.list (fun x y -> f x y < 0) l
-  ELSE List.sort f l END
+    fun f l -> Sort.list (fun x y -> f x y < 0) l
+  ELSE List.sort END
+;
+
+value list_filter =
+  IFDEF OCAML_2_00 OR OCAML_2_01 THEN
+    fun f ->
+      loop [] where rec loop accu =
+        fun
+        [ [x :: l] -> loop (if f x then [x :: accu] else accu) l
+        | [] -> List.rev accu ]
+  ELSE List.filter END
 ;
 
 value compile () =
   let _ = keywords.val := [] in
   let list = List.fold_left all_entries_in_graph [] entries.val in
   let list =
-    List.filter (fun e -> List.memq e list) entries.val @
-    List.filter (fun e -> not (List.memq e entries.val)) list
+    list_filter (fun e -> List.memq e list) entries.val @
+    list_filter (fun e -> not (List.memq e entries.val)) list
   in
   let list =
     let set = ref [] in
