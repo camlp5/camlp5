@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.94 2010/09/02 19:51:04 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.95 2010/09/03 00:28:18 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -857,8 +857,12 @@ and sig_item s l =
   [ SgCls loc cd ->
       [mksig loc (Psig_class (List.map (class_info class_type) (uv cd))) :: l]
   | SgClt loc ctd ->
-      [mksig loc (Psig_class_type (List.map (class_info class_type) (uv ctd)))
-       :: l]
+      match ocaml_psig_class_type with
+      [ Some psig_class_type ->
+          [mksig loc
+             (psig_class_type (List.map (class_info class_type) (uv ctd)))
+           :: l]
+      | None -> error loc "no class type in this ocaml version" ]
   | SgDcl loc sl -> List.fold_right sig_item (uv sl) l
   | SgDir loc _ _ -> l
   | SgExc loc n tl ->
@@ -919,9 +923,12 @@ and str_item s l =
   [ StCls loc cd ->
       [mkstr loc (Pstr_class (List.map (class_info class_expr) (uv cd))) :: l]
   | StClt loc ctd ->
-      [mkstr loc
-         (Pstr_class_type (List.map (class_info class_type) (uv ctd))) ::
-       l]
+      match ocaml_pstr_class_type with
+      [ Some pstr_class_type ->
+          [mkstr loc
+             (pstr_class_type (List.map (class_info class_type) (uv ctd))) ::
+             l]
+      | None -> error loc "no class type in this ocaml version" ]
   | StDcl loc sl -> List.fold_right str_item (uv sl) l
   | StDir loc _ _ -> l
   | StExc loc n tl sl ->
@@ -984,9 +991,12 @@ and str_item s l =
 and class_type =
   fun
   [ CtCon loc id tl ->
-      mkcty loc
-        (Pcty_constr (long_id_of_string_list loc (uv id))
-           (List.map ctyp (uv tl)))
+      match ocaml_pcty_constr with
+      [ Some pcty_constr ->
+          mkcty loc
+            (pcty_constr
+               (long_id_of_string_list loc (uv id)) (List.map ctyp (uv tl)))
+      | None -> error loc "no class type desc in this ocaml version" ]
   | CtFun loc (TyLab _ lab t) ct ->
       match ocaml_pcty_fun with
       [ Some pcty_fun ->
@@ -1006,19 +1016,25 @@ and class_type =
       [ Some pcty_fun -> mkcty loc (pcty_fun "" (ctyp t) (class_type ct))
       | None -> error loc "no class type desc in this ocaml version" ]
   | CtSig loc t_o ctfl ->
-      let t =
-        match uv t_o with
-        [ Some t -> t
-        | None -> TyAny loc ]
-      in
-      let cil = List.fold_right class_sig_item (uv ctfl) [] in
-      mkcty loc (Pcty_signature (ctyp t, cil))
+      match ocaml_pcty_signature with
+      [ Some pcty_signature ->
+          let t =
+            match uv t_o with
+            [ Some t -> t
+            | None -> TyAny loc ]
+          in
+          let cil = List.fold_right class_sig_item (uv ctfl) [] in
+          mkcty loc (pcty_signature (ctyp t, cil))
+      | None -> error loc "no class type desc in this ocaml version" ]
   | IFDEF STRICT THEN
       CtXtr loc _ _ -> error loc "bad ast CtXtr"
     END ]
 and class_sig_item c l =
   match c with
-  [ CgCtr loc t1 t2 -> [Pctf_cstr (ctyp t1, ctyp t2, mkloc loc) :: l]
+  [ CgCtr loc t1 t2 ->
+      match ocaml_pctf_cstr with
+      [ Some pctf_cstr ->  [pctf_cstr (ctyp t1, ctyp t2, mkloc loc) :: l]
+      | None -> error loc "no class constraint in this ocaml version" ]
   | CgDcl loc cl -> List.fold_right class_sig_item (uv cl) l
   | CgInh loc ct -> [Pctf_inher (class_type ct) :: l]
   | CgMth loc s pf t ->
@@ -1039,9 +1055,12 @@ and class_expr =
           mkpcl loc (pcl_apply (class_expr ce) el)
       | None -> error loc "no class expr desc in this ocaml version" ]
   | CeCon loc id tl ->
-      mkpcl loc
-        (Pcl_constr (long_id_of_string_list loc (uv id))
-           (List.map ctyp (uv tl)))
+      match ocaml_pcl_constr with
+      [ Some pcl_constr ->
+          mkpcl loc
+            (pcl_constr
+               (long_id_of_string_list loc (uv id)) (List.map ctyp (uv tl)))
+      | None -> error loc "no class expr desc in this ocaml version" ]
   | CeFun loc (PaLab _ lab po) ce ->
       match ocaml_pcl_fun with
       [ Some pcl_fun ->

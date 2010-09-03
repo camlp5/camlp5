@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.26 2010/09/02 19:51:04 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.27 2010/09/03 00:28:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -344,9 +344,17 @@ value ocaml_ppat_variant =
   END
 ;
 
+value ocaml_psig_class_type =
+  IFDEF OCAML_1_07 THEN None ELSE Some (fun ctl -> Psig_class_type ctl) END
+;
+
 value ocaml_psig_recmodule =
   IFDEF OCAML_3_06_OR_BEFORE THEN None
   ELSE Some (fun ntl -> Psig_recmodule ntl) END
+;
+
+value ocaml_pstr_class_type =
+  IFDEF OCAML_1_07 THEN None ELSE Some (fun ctl -> Pstr_class_type ctl) END
 ;
 
 value ocaml_pstr_exn_rebind =
@@ -409,22 +417,40 @@ value ocaml_pcl_apply =
   END
 ;
 
+value ocaml_pcl_constr =
+  IFDEF OCAML_1_07 THEN None ELSE Some (fun li ctl -> Pcl_constr li ctl) END
+;
+
+value ocaml_pctf_cstr =
+  IFDEF OCAML_1_07 THEN None
+  ELSE Some (fun (t1, t2, loc) -> Pctf_cstr (t1, t2, loc)) END
+;
+
 value ocaml_pcl_fun =
   IFDEF OCAML_1_07 THEN None
   ELSIFDEF OCAML_2_04_OR_BEFORE THEN Some (fun lab ceo p ce -> Pcl_fun p ce)
   ELSE Some (fun lab ceo p ce -> Pcl_fun lab ceo p ce) END
 ;
 
-value ocaml_pctf_val (s, b, t, loc) =
-  IFDEF OCAML_1_07 THEN Pctf_val (s, b, Immutable, Some t, loc)
-  ELSIFDEF OCAML_3_10_OR_AFTER THEN Pctf_val (s, b, Concrete, t, loc)
-  ELSE Pctf_val (s, b, Some t, loc) END
+value ocaml_pctf_val (s, mf, t, loc) =
+  IFDEF OCAML_1_07 THEN Pctf_val (s, b, mf, Some t, loc)
+  ELSIFDEF OCAML_3_10_OR_AFTER THEN Pctf_val (s, mf, Concrete, t, loc)
+  ELSE Pctf_val (s, mf, Some t, loc) END
+;
+
+value ocaml_pcty_constr =
+  IFDEF OCAML_1_07 THEN None ELSE Some (fun li ltl -> Pcty_constr li ltl) END
 ;
 
 value ocaml_pcty_fun =
   IFDEF OCAML_1_07 THEN None
   ELSIFDEF OCAML_2_04_OR_BEFORE THEN Some (fun lab t ct -> Pcty_fun t ct)
   ELSE Some (fun lab t ct -> Pcty_fun lab t ct) END
+;
+
+value ocaml_pcty_signature =
+  IFDEF OCAML_1_07 THEN None
+  ELSE Some (fun (t, cil) -> Pcty_signature (t, cil)) END
 ;
 
 value ocaml_pdir_bool =

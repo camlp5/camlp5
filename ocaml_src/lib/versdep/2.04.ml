@@ -128,7 +128,11 @@ let ocaml_ppat_type = None;;
 
 let ocaml_ppat_variant = None;;
 
+let ocaml_psig_class_type = Some (fun ctl -> Psig_class_type ctl);;
+
 let ocaml_psig_recmodule = None;;
+
+let ocaml_pstr_class_type = Some (fun ctl -> Pstr_class_type ctl);;
 
 let ocaml_pstr_exn_rebind = None;;
 
@@ -151,11 +155,19 @@ let ocaml_pcf_val (s, b, e, loc) = Pcf_val (s, b, e, loc);;
 
 let ocaml_pcl_apply = Some (fun ce lel -> Pcl_apply (ce, List.map snd lel));;
 
+let ocaml_pcl_constr = Some (fun li ctl -> Pcl_constr (li, ctl));;
+
+let ocaml_pctf_cstr = Some (fun (t1, t2, loc) -> Pctf_cstr (t1, t2, loc));;
+
 let ocaml_pcl_fun = Some (fun lab ceo p ce -> Pcl_fun (p, ce));;
 
-let ocaml_pctf_val (s, b, t, loc) = Pctf_val (s, b, Some t, loc);;
+let ocaml_pctf_val (s, mf, t, loc) = Pctf_val (s, mf, Some t, loc);;
+
+let ocaml_pcty_constr = Some (fun li ltl -> Pcty_constr (li, ltl));;
 
 let ocaml_pcty_fun = Some (fun lab t ct -> Pcty_fun (t, ct));;
+
+let ocaml_pcty_signature = Some (fun (t, cil) -> Pcty_signature (t, cil));;
 
 let ocaml_pdir_bool = None;;
 

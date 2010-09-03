@@ -141,7 +141,11 @@ let ocaml_ppat_type = None;;
 
 let ocaml_ppat_variant = None;;
 
+let ocaml_psig_class_type = None;;
+
 let ocaml_psig_recmodule = None;;
+
+let ocaml_pstr_class_type = None;;
 
 let ocaml_pstr_exn_rebind = None;;
 
@@ -159,11 +163,19 @@ let ocaml_pcf_val (s, b, e, loc) = Pcf_val (s, b, Immutable, e, loc);;
 
 let ocaml_pcl_apply = None;;
 
+let ocaml_pcl_constr = None;;
+
+let ocaml_pctf_cstr = None;;
+
 let ocaml_pcl_fun = None;;
 
-let ocaml_pctf_val (s, b, t, loc) = Pctf_val (s, b, Immutable, Some t, loc);;
+let ocaml_pctf_val (s, mf, t, loc) = Pctf_val (s, b, mf, Some t, loc);;
+
+let ocaml_pcty_constr = None;;
 
 let ocaml_pcty_fun = None;;
+
+let ocaml_pcty_signature = None;;
 
 let ocaml_pdir_bool = None;;
 
