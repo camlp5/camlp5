@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 1.130 2010/09/02 09:54:59 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.131 2010/09/03 16:11:32 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -7,7 +7,7 @@
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
 
-IFDEF OCAML_2_00 OR OCAML_2_01 OR OCAML_2_02 THEN
+IFDEF OCAML_1_07 OR OCAML_2_00 OR OCAML_2_01 OR OCAML_2_02 THEN
   #option "-split_ext";
 END;
 
