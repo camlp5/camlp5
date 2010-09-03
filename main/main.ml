@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: main.ml,v 1.17 2010/09/02 14:52:17 deraugla Exp $ *)
+(* $Id: main.ml,v 1.18 2010/09/03 14:12:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -76,8 +76,8 @@ value rec parse_file pa getdir useast = do {
   let phr =
     try
       loop () where rec loop () =
-        let (pl, stopped_at_directive) = pa cs in
-        if stopped_at_directive then do {
+        let (pl, stopped) = pa cs in
+        if stopped then do {
           let lexing_info =
             (Plexing.line_nb.val.val, Plexing.bol_pos.val.val)
           in

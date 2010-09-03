@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_op.ml,v 1.28 2010/09/03 13:21:28 deraugla Exp $ *)
+(* $Id: pr_op.ml,v 1.29 2010/09/03 14:12:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -29,35 +29,11 @@ value expr = Eprinter.apply pr_expr;
 value patt = Eprinter.apply pr_patt;
 
 IFDEF OCAML_1_07 THEN
-  value with_Pprintf_ind pc ind =
-    {ind = ind; bef = pc.bef; aft = pc.aft; dang = pc.dang}
-  ;
-  value with_Pprintf_bef pc bef =
-    {ind = pc.ind; bef = bef; aft = pc.aft; dang = pc.dang}
-  ;
-  value with_Pprintf_bef_aft pc bef aft =
-    {ind = pc.ind; bef = bef; aft = aft; dang = pc.dang}
-  ;
-  value with_Pprintf_bef_aft_dang pc bef aft dang =
-    {ind = pc.ind; bef = bef; aft = aft; dang = dang}
-  ;
-  value with_Pprintf_bef_dang pc bef dang =
-    {ind = pc.ind; bef = bef; aft = pc.aft; dang = dang}
-  ;
-  value with_Pprintf_aft pc aft =
-    {ind = pc.ind; bef = pc.bef; aft = aft; dang = pc.dang}
-  ;
-  value with_Pprintf_aft_dang pc aft dang =
-    {ind = pc.ind; bef = pc.bef; aft = aft; dang = dang}
-  ;
-  value with_Pprintf_dang pc dang =
-    {ind = pc.ind; bef = pc.bef; aft = pc.aft; dang = dang}
-  ;
-  value with_ind = with_Pprintf_ind;
-  value with_bef = with_Pprintf_bef;
-  value with_bef_aft = with_Pprintf_bef_aft;
-  value with_aft = with_Pprintf_aft;
-  value with_dang = with_Pprintf_dang;
+  value with_ind = Pprintf.with_ind;
+  value with_bef = Pprintf.with_bef;
+  value with_bef_aft = Pprintf.with_bef_aft;
+  value with_aft = Pprintf.with_aft;
+  value with_dang = Pprintf.with_dang;
 END;
 
 value bar_before elem pc x = pprintf pc "| %p" elem x;

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pprintf.ml,v 1.5 2010/09/03 13:21:29 deraugla Exp $ *)
+(* $Id: pprintf.ml,v 1.6 2010/09/03 14:12:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -11,6 +11,9 @@ value tab ind = String.make ind ' ';
 value empty_pc = {ind = 0; bef = ""; aft = ""; dang = ""};
 
 IFDEF OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
+  value with_ind pc ind =
+    {ind = ind; bef = pc.bef; aft = pc.aft; dang = pc.dang}
+  ;
   value with_ind_bef pc ind bef =
     {ind = ind; bef = bef; aft = pc.aft; dang = pc.dang}
   ;
@@ -23,8 +26,20 @@ IFDEF OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
   value with_bef_aft pc bef aft =
     {ind = pc.ind; bef = bef; aft = aft; dang = pc.dang}
   ;
+  value with_bef_aft_dang pc bef aft dang =
+    {ind = pc.ind; bef = bef; aft = aft; dang = dang}
+  ;
+  value with_bef_dang pc bef dang =
+    {ind = pc.ind; bef = bef; aft = pc.aft; dang = dang}
+  ;
   value with_aft pc aft =
     {ind = pc.ind; bef = pc.bef; aft = aft; dang = pc.dang}
+  ;
+  value with_aft_dang pc aft dang =
+    {ind = pc.ind; bef = pc.bef; aft = aft; dang = dang}
+  ;
+  value with_dang pc dang =
+    {ind = pc.ind; bef = pc.bef; aft = pc.aft; dang = dang}
   ;
 END;
 

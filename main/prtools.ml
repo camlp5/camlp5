@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: prtools.ml,v 1.22 2010/09/03 13:21:29 deraugla Exp $ *)
+(* $Id: prtools.ml,v 1.23 2010/09/03 14:12:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -606,7 +606,7 @@ value do_split_or_patterns_with_bindings pel =
 
 value record_without_with loc e lel =
   try
-    let name =
+    let (m, name) =
       let (m, sl) =
         List.fold_right
           (fun (p, _) (m, sl) ->
@@ -616,12 +616,15 @@ value record_without_with loc e lel =
               | _ -> raise Exit ])
           lel ("", [])
       in
-      let sl = if m = "" then sl else [m :: sl] in
-      String.concat "_" ["with" :: sl]
+      (m, String.concat "_" ["with" :: sl])
+    in
+    let f =
+      let f = <:expr< $lid:name$ >> in
+      if m = "" then f else <:expr< $uid:m$.$f$ >>
     in
     let e =
       List.fold_left (fun e1 (_, e2) -> <:expr< $e1$ $e2$ >>)
-        <:expr< $lid:name$ $e$ >> lel
+        <:expr< $f$ $e$ >> lel
     in
     Some e
   with

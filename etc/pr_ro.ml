@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_ro.ml,v 1.85 2010/09/03 13:21:29 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.86 2010/09/03 14:12:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -74,22 +74,10 @@ value class_sig_item = Eprinter.apply pr_class_sig_item;
 value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
 
 IFDEF OCAML_1_07 THEN
-  value with_Pprintf_ind pc ind =
-    {ind = ind; bef = pc.bef; aft = pc.aft; dang = pc.dang}
-  ;
-  value with_Pprintf_bef pc bef =
-    {ind = pc.ind; bef = bef; aft = pc.aft; dang = pc.dang}
-  ;
-  value with_Pprintf_bef_aft pc bef aft =
-    {ind = pc.ind; bef = bef; aft = aft; dang = pc.dang}
-  ;
-  value with_Pprintf_aft pc aft =
-    {ind = pc.ind; bef = pc.bef; aft = aft; dang = pc.dang}
-  ;
-  value with_ind = with_Pprintf_ind;
-  value with_bef = with_Pprintf_bef;
-  value with_bef_aft = with_Pprintf_bef_aft;
-  value with_aft = with_Pprintf_aft;
+  value with_ind = Pprintf.with_ind;
+  value with_bef = Pprintf.with_bef;
+  value with_bef_aft = Pprintf.with_bef_aft;
+  value with_aft = Pprintf.with_aft;
 END;
 
 value rec mod_ident pc sl =

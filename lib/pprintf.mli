@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pprintf.mli,v 1.4 2010/09/01 12:03:48 deraugla Exp $ *)
+(* $Id: pprintf.mli,v 1.5 2010/09/03 14:12:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 (** Definitions for pprintf statement.
@@ -47,3 +47,20 @@ value sprint_break_all :
        the [pprintf] statement according to its parameters when the format
        contains parenthesized parts with "break all" like "@[<a>" and "@]",
        or "@[<b>" and "@]". *)
+
+#load "pa_macro.cmo";
+
+IFDEF OCAML_1_07 THEN
+  value with_ind : pr_context -> int -> pr_context;
+  value with_ind_bef : pr_context -> int -> string -> pr_context;
+  value with_ind_bef_aft :
+    pr_context -> int -> string -> string -> pr_context;
+  value with_bef : pr_context -> string -> pr_context;
+  value with_bef_aft : pr_context -> string -> string -> pr_context;
+  value with_bef_aft_dang :
+    pr_context -> string -> string -> string -> pr_context;
+  value with_bef_dang : pr_context -> string -> string -> pr_context;
+  value with_aft : pr_context -> string -> pr_context;
+  value with_aft_dang : pr_context -> string -> string -> pr_context;
+  value with_dang : pr_context -> string -> pr_context;
+END;

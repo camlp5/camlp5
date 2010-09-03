@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_schemep.ml,v 1.9 2010/09/03 13:21:29 deraugla Exp $ *)
+(* $Id: pr_schemep.ml,v 1.10 2010/09/03 14:12:00 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -69,21 +69,11 @@ value ident_option =
 ;
 
 IFDEF OCAML_1_07 THEN
-  value with_ind pc ind =
-    {ind = ind; bef = pc.bef; aft = pc.aft; dang = pc.dang}
-  ;
-  value with_ind_bef pc ind bef =
-    {ind = ind; bef = bef; aft = pc.aft; dang = pc.dang}
-  ;
-  value with_ind_bef_aft pc ind bef aft =
-    {ind = ind; bef = bef; aft = aft; dang = pc.dang}
-  ;
-  value with_bef_aft pc bef aft =
-    {ind = pc.ind; bef = bef; aft = aft; dang = pc.dang}
-  ;
-  value with_aft pc aft =
-    {ind = pc.ind; bef = pc.bef; aft = aft; dang = pc.dang}
-  ;
+  value with_ind = Pprintf.with_ind;
+  value with_ind_bef = Pprintf.with_ind_bef;
+  value with_ind_bef_aft = Pprintf.with_ind_bef_aft;
+  value with_bef_aft = Pprintf.with_bef_aft;
+  value with_aft = Pprintf.with_aft;
 END;
 
 value stream_patt_comp pc spc =
