@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.27 2010/09/03 00:28:18 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.28 2010/09/03 09:49:48 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -387,6 +387,11 @@ value ocaml_class_infos =
   END
 ;
 
+value ocaml_pcf_cstr =
+  IFDEF OCAML_1_07 THEN None
+  ELSE Some (fun (t1, t2, loc) -> Pcf_cstr (t1, t2, loc)) END
+;
+
 value ocaml_pcf_inher =
   IFDEF OCAML_1_07 THEN
     fun (id, cl, el, loc) pb -> Pcf_inher (id, cl, el, pb, loc)
@@ -397,15 +402,19 @@ value ocaml_pcf_inher =
   END
 ;
 
+value ocaml_pcf_init =
+  IFDEF OCAML_1_07 THEN None ELSE Some (fun e -> Pcf_init e) END
+;
+
 value ocaml_pcf_meth (s, b, e, loc) =
   IFDEF OCAML_3_12_OR_AFTER THEN Pcf_meth (s, b, Fresh, e, loc) 
   ELSE Pcf_meth (s, b, e, loc) END
 ;
 
-value ocaml_pcf_val (s, b, e, loc) =
-  IFDEF OCAML_1_07 THEN Pcf_val (s, b, Immutable, e, loc)
-  ELSIFDEF OCAML_3_12_OR_AFTER THEN Pcf_val (s, b, Fresh, e, loc)
-  ELSE Pcf_val (s, b, e,  loc) END
+value ocaml_pcf_val (s, mf, e, loc) =
+  IFDEF OCAML_1_07 THEN Pcf_val (s, Public, mf, Some e, loc)
+  ELSIFDEF OCAML_3_12_OR_AFTER THEN Pcf_val (s, mf, Fresh, e, loc)
+  ELSE Pcf_val (s, mf, e,  loc) END
 ;
 
 value ocaml_pcl_apply =
@@ -421,9 +430,9 @@ value ocaml_pcl_constr =
   IFDEF OCAML_1_07 THEN None ELSE Some (fun li ctl -> Pcl_constr li ctl) END
 ;
 
-value ocaml_pctf_cstr =
+value ocaml_pcl_constraint =
   IFDEF OCAML_1_07 THEN None
-  ELSE Some (fun (t1, t2, loc) -> Pctf_cstr (t1, t2, loc)) END
+  ELSE Some (fun ce ct -> Pcl_constraint ce ct) END
 ;
 
 value ocaml_pcl_fun =
@@ -432,8 +441,23 @@ value ocaml_pcl_fun =
   ELSE Some (fun lab ceo p ce -> Pcl_fun lab ceo p ce) END
 ;
 
+value ocaml_pcl_let =
+  IFDEF OCAML_1_07 THEN None
+  ELSE Some (fun rf pel ce -> Pcl_let rf pel ce) END
+;
+
+value ocaml_pcl_structure =
+  IFDEF OCAML_1_07 THEN None
+  ELSE Some (fun cs -> Pcl_structure cs) END
+;
+
+value ocaml_pctf_cstr =
+  IFDEF OCAML_1_07 THEN None
+  ELSE Some (fun (t1, t2, loc) -> Pctf_cstr (t1, t2, loc)) END
+;
+
 value ocaml_pctf_val (s, mf, t, loc) =
-  IFDEF OCAML_1_07 THEN Pctf_val (s, b, mf, Some t, loc)
+  IFDEF OCAML_1_07 THEN Pctf_val (s, Public, mf, Some t, loc)
   ELSIFDEF OCAML_3_10_OR_AFTER THEN Pctf_val (s, mf, Concrete, t, loc)
   ELSE Pctf_val (s, mf, Some t, loc) END
 ;

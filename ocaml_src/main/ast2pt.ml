@@ -1214,24 +1214,43 @@ and class_expr =
       | None -> error loc "no class expr desc in this ocaml version"
       end
   | CeLet (loc, rf, pel, ce) ->
-      mkpcl loc
-        (Pcl_let (mkrf (uv rf), List.map mkpe (uv pel), class_expr ce))
+      begin match ocaml_pcl_let with
+        Some pcl_let ->
+          mkpcl loc
+            (pcl_let (mkrf (uv rf)) (List.map mkpe (uv pel)) (class_expr ce))
+      | None -> error loc "no class expr desc in this ocaml version"
+      end
   | CeStr (loc, po, cfl) ->
-      let p =
-        match uv po with
-          Some p -> p
-        | None -> PaAny loc
-      in
-      let cil = List.fold_right class_str_item (uv cfl) [] in
-      mkpcl loc (Pcl_structure (patt p, cil))
+      begin match ocaml_pcl_structure with
+        Some pcl_structure ->
+          let p =
+            match uv po with
+              Some p -> p
+            | None -> PaAny loc
+          in
+          let cil = List.fold_right class_str_item (uv cfl) [] in
+          mkpcl loc (pcl_structure (patt p, cil))
+      | None -> error loc "no class expr desc in this ocaml version"
+      end
   | CeTyc (loc, ce, ct) ->
-      mkpcl loc (Pcl_constraint (class_expr ce, class_type ct))
+      match ocaml_pcl_constraint with
+        Some pcl_constraint ->
+          mkpcl loc (pcl_constraint (class_expr ce) (class_type ct))
+      | None -> error loc "no class expr desc in this ocaml version"
 and class_str_item c l =
   match c with
-    CrCtr (loc, t1, t2) -> Pcf_cstr (ctyp t1, ctyp t2, mkloc loc) :: l
+    CrCtr (loc, t1, t2) ->
+      begin match ocaml_pcf_cstr with
+        Some pcf_cstr -> pcf_cstr (ctyp t1, ctyp t2, mkloc loc) :: l
+      | None -> error loc "no constraint in this ocaml version"
+      end
   | CrDcl (loc, cl) -> List.fold_right class_str_item (uv cl) l
   | CrInh (loc, ce, pb) -> ocaml_pcf_inher (class_expr ce) (uv pb) :: l
-  | CrIni (loc, e) -> Pcf_init (expr e) :: l
+  | CrIni (loc, e) ->
+      begin match ocaml_pcf_init with
+        Some pcf_init -> pcf_init (expr e) :: l
+      | None -> error loc "no initializer in this ocaml version"
+      end
   | CrMth (loc, s, b, e, t) ->
       let e =
         match ocaml_pexp_poly with

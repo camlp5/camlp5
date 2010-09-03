@@ -155,21 +155,31 @@ let ocaml_pstr_recmodule = None;;
 
 let ocaml_class_infos = None;;
 
+let ocaml_pcf_cstr = None;;
+
 let ocaml_pcf_inher (id, cl, el, loc) pb = Pcf_inher (id, cl, el, pb, loc);;
+
+let ocaml_pcf_init = None;;
 
 let ocaml_pcf_meth (s, b, e, loc) = Pcf_meth (s, b, e, loc);;
 
-let ocaml_pcf_val (s, b, e, loc) = Pcf_val (s, b, Immutable, e, loc);;
+let ocaml_pcf_val (s, mf, e, loc) = Pcf_val (s, Public, mf, Some e, loc);;
 
 let ocaml_pcl_apply = None;;
 
 let ocaml_pcl_constr = None;;
 
-let ocaml_pctf_cstr = None;;
+let ocaml_pcl_constraint = None;;
 
 let ocaml_pcl_fun = None;;
 
-let ocaml_pctf_val (s, mf, t, loc) = Pctf_val (s, b, mf, Some t, loc);;
+let ocaml_pcl_let = None;;
+
+let ocaml_pcl_structure = None;;
+
+let ocaml_pctf_cstr = None;;
+
+let ocaml_pctf_val (s, mf, t, loc) = Pctf_val (s, Public, mf, Some t, loc);;
 
 let ocaml_pcty_constr = None;;
 

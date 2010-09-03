@@ -139,19 +139,29 @@ let ocaml_class_infos =
         pci_expr = expr; pci_loc = loc; pci_variance = variance})
 ;;
 
+let ocaml_pcf_cstr = Some (fun (t1, t2, loc) -> Pcf_cstr (t1, t2, loc));;
+
 let ocaml_pcf_inher ce pb = Pcf_inher (ce, pb);;
+
+let ocaml_pcf_init = Some (fun e -> Pcf_init e);;
 
 let ocaml_pcf_meth (s, b, e, loc) = Pcf_meth (s, b, e, loc);;
 
-let ocaml_pcf_val (s, b, e, loc) = Pcf_val (s, b, e, loc);;
+let ocaml_pcf_val (s, mf, e, loc) = Pcf_val (s, mf, e, loc);;
 
 let ocaml_pcl_apply = Some (fun ce lel -> Pcl_apply (ce, lel));;
 
 let ocaml_pcl_constr = Some (fun li ctl -> Pcl_constr (li, ctl));;
 
-let ocaml_pctf_cstr = Some (fun (t1, t2, loc) -> Pctf_cstr (t1, t2, loc));;
+let ocaml_pcl_constraint = Some (fun ce ct -> Pcl_constraint (ce, ct));;
 
 let ocaml_pcl_fun = Some (fun lab ceo p ce -> Pcl_fun (lab, ceo, p, ce));;
+
+let ocaml_pcl_let = Some (fun rf pel ce -> Pcl_let (rf, pel, ce));;
+
+let ocaml_pcl_structure = Some (fun cs -> Pcl_structure cs);;
+
+let ocaml_pctf_cstr = Some (fun (t1, t2, loc) -> Pctf_cstr (t1, t2, loc));;
 
 let ocaml_pctf_val (s, mf, t, loc) = Pctf_val (s, mf, Some t, loc);;
 

@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 1.51 2010/09/02 17:54:05 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 1.52 2010/09/03 09:50:15 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
@@ -15,7 +15,7 @@ getvers () {
   cd "$OCAMLSDIR"
   vers="$(ls | grep -v csl | grep -v '^1')"
   # WARNING: on 64 bits arch, rather use this:
-  # vers="$(ls | grep -v csl | grep -v '^[1|2]' | grep -v '^3.0[0-6])"
+  # vers="$(ls | grep -v csl | grep -v '^[1|2]' | grep -v '^3.0[0-6]')"
   vers=$(echo $vers | tr '\n' ' ')
 }
 

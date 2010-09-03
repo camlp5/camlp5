@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.55 2010/09/02 12:47:42 deraugla Exp $
+# $Id: Makefile,v 1.56 2010/09/03 09:49:48 deraugla Exp $
 
 include config/Makefile
 
@@ -204,22 +204,24 @@ compare_sources:
 	   diff $(DIFF_OPT) . ../../$$i/.depend); \
 	 done
 	@-for i in $(FDIRS); do \
-	  (cd $$i; \
-	   for j in *.ml*; do \
-	     if [ "$$j" != "odyl_config.ml" ]; then \
-	       k=$$j; \
-	       opt=""; \
-	       if [ "$$k" = "versdep.ml" ]; then \
-	         k=versdep/$(OVERSION).ml; \
-	       fi; \
-	       echo ============================================; \
-	       echo ocaml_src/$$i/$$k; \
-	       ../tools/conv.sh $(PR_O) $$opt $$j | \
-	       sed 's/$$Id.*\$$/$(TXTGEN)/' | \
-	       diff $(DIFF_OPT) ../ocaml_src/$$i/$$k -; \
-	     fi; \
-	   done); \
+          files="$$(cd $$i; ls *.ml*)"; \
+	  for j in $$files; do \
+	    if [ "$$j" != "odyl_config.ml" ]; then \
+	      $(MAKE) --no-print-directory compare_source DIR=$$i FILE=$$j; \
+            fi; \
+	  done; \
 	done
+
+compare_source:
+	@cd $$DIR; k=$$FILE; opt=""; \
+	if [ "$$k" = "versdep.ml" ]; then \
+	  k=versdep/$(OVERSION).ml; \
+	fi; \
+	echo ============================================; \
+	echo ocaml_src/$$DIR/$$k; \
+	../tools/conv.sh $(PR_O) $$opt $$FILE | \
+	sed 's/$$Id.*\$$/$(TXTGEN)/' | \
+	diff $(DIFF_OPT) ../ocaml_src/$$DIR/$$k - || :
 
 bootstrap_all_versdep:
 	cd etc; $(MAKE) $(PR_O)
