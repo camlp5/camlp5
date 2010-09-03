@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_rp.ml,v 1.30 2010/09/03 14:12:00 deraugla Exp $ *)
+(* $Id: pr_rp.ml,v 1.31 2010/09/03 15:58:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -30,9 +30,7 @@ value patt = Eprinter.apply pr_patt;
 
 IFDEF OCAML_1_07 THEN
   value with_ind = Pprintf.with_ind;
-  value with_bef = Pprintf.with_bef;
   value with_bef_aft = Pprintf.with_bef_aft;
-  value with_aft = Pprintf.with_aft;
 END;
 
 value bar_before elem pc x = pprintf pc "| %p" elem x;

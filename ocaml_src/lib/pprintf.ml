@@ -10,6 +10,9 @@ type 'a pr_fun = pr_context -> 'a -> string;;
 let tab ind = String.make ind ' ';;
 let empty_pc = {ind = 0; bef = ""; aft = ""; dang = ""};;
 
+let with_ind pc ind =
+  {ind = ind; bef = pc.bef; aft = pc.aft; dang = pc.dang}
+;;
 let with_ind_bef pc ind bef =
   {ind = ind; bef = bef; aft = pc.aft; dang = pc.dang}
 ;;
@@ -22,8 +25,20 @@ let with_bef pc bef =
 let with_bef_aft pc bef aft =
   {ind = pc.ind; bef = bef; aft = aft; dang = pc.dang}
 ;;
+let with_bef_aft_dang pc bef aft dang =
+  {ind = pc.ind; bef = bef; aft = aft; dang = dang}
+;;
+let with_bef_dang pc bef dang =
+  {ind = pc.ind; bef = bef; aft = pc.aft; dang = dang}
+;;
 let with_aft pc aft =
   {ind = pc.ind; bef = pc.bef; aft = aft; dang = pc.dang}
+;;
+let with_aft_dang pc aft dang =
+  {ind = pc.ind; bef = pc.bef; aft = aft; dang = dang}
+;;
+let with_dang pc dang =
+  {ind = pc.ind; bef = pc.bef; aft = pc.aft; dang = dang}
 ;;
 
 let sprint_break nspaces offset pc f g =

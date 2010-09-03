@@ -47,3 +47,17 @@ val sprint_break_all :
        the [pprintf] statement according to its parameters when the format
        contains parenthesized parts with "break all" like "@[<a>" and "@]",
        or "@[<b>" and "@]". *)
+
+(* #load "pa_macro.cmo" *)
+
+val with_ind : pr_context -> int -> pr_context;;
+val with_ind_bef : pr_context -> int -> string -> pr_context;;
+val with_ind_bef_aft : pr_context -> int -> string -> string -> pr_context;;
+val with_bef : pr_context -> string -> pr_context;;
+val with_bef_aft : pr_context -> string -> string -> pr_context;;
+val with_bef_aft_dang :
+  pr_context -> string -> string -> string -> pr_context;;
+val with_bef_dang : pr_context -> string -> string -> pr_context;;
+val with_aft : pr_context -> string -> pr_context;;
+val with_aft_dang : pr_context -> string -> string -> pr_context;;
+val with_dang : pr_context -> string -> pr_context;;

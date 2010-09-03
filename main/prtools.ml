@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: prtools.ml,v 1.23 2010/09/03 14:12:00 deraugla Exp $ *)
+(* $Id: prtools.ml,v 1.24 2010/09/03 15:58:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -15,21 +15,11 @@ type pr_context =
 type pr_fun 'a = pr_context -> 'a -> string;
 
 IFDEF OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
-  value with_ind_bef pc ind bef =
-    {ind = ind; bef = bef; aft = pc.aft; dang = pc.dang}
-  ;
-  value with_bef pc bef =
-    {ind = pc.ind; bef = bef; aft = pc.aft; dang = pc.dang}
-  ;
-  value with_bef_aft_dang pc bef aft dang =
-    {ind = pc.ind; bef = bef; aft = aft; dang = dang}
-  ;
-  value with_aft pc aft =
-    {ind = pc.ind; bef = pc.bef; aft = aft; dang = pc.dang}
-  ;
-  value with_aft_dang pc aft dang =
-    {ind = pc.ind; bef = pc.bef; aft = aft; dang = dang}
-  ;
+  value with_ind_bef = Pprintf.with_ind_bef;
+  value with_bef = Pprintf.with_bef;
+  value with_bef_aft_dang = Pprintf.with_bef_aft_dang;
+  value with_aft = Pprintf.with_aft;
+  value with_aft_dang = Pprintf.with_aft_dang;
 END;
 
 value tab ind = String.make ind ' ';

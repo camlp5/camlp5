@@ -68,8 +68,8 @@ let rec parse_file pa getdir useast =
   let phr =
     try
       let rec loop () =
-        let (pl, stopped_at_directive) = pa cs in
-        if stopped_at_directive then
+        let (pl, stopped) = pa cs in
+        if stopped then
           let lexing_info = !(!(Plexing.line_nb)), !(!(Plexing.bol_pos)) in
           let pl =
             let rpl = List.rev pl in

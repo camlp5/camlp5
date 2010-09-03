@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_extend.ml,v 1.67 2010/09/03 14:12:00 deraugla Exp $ *)
+(* $Id: pr_extend.ml,v 1.68 2010/09/03 15:58:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -31,12 +31,8 @@ value not_impl name pc x =
 
 IFDEF OCAML_1_07 THEN
   value with_ind = Pprintf.with_ind;
-  value with_ind_bef = Pprintf.with_ind_bef;
-  value with_ind_bef_aft = Pprintf.with_ind_bef_aft;
   value with_bef = Pprintf.with_bef;
-  value with_bef_aft = Pprintf.with_bef_aft;
   value with_aft = Pprintf.with_aft;
-  value with_dang = Pprintf.with_dang;
 END;
 
 value bar_before elem pc x = pprintf pc "| %p" elem x;

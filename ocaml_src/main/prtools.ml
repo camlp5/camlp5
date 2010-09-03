@@ -14,21 +14,11 @@ type pr_context =
 
 type 'a pr_fun = pr_context -> 'a -> string;;
 
-let with_ind_bef pc ind bef =
-  {ind = ind; bef = bef; aft = pc.aft; dang = pc.dang}
-;;
-let with_bef pc bef =
-  {ind = pc.ind; bef = bef; aft = pc.aft; dang = pc.dang}
-;;
-let with_bef_aft_dang pc bef aft dang =
-  {ind = pc.ind; bef = bef; aft = aft; dang = dang}
-;;
-let with_aft pc aft =
-  {ind = pc.ind; bef = pc.bef; aft = aft; dang = pc.dang}
-;;
-let with_aft_dang pc aft dang =
-  {ind = pc.ind; bef = pc.bef; aft = aft; dang = dang}
-;;
+let with_ind_bef = Pprintf.with_ind_bef;;
+let with_bef = Pprintf.with_bef;;
+let with_bef_aft_dang = Pprintf.with_bef_aft_dang;;
+let with_aft = Pprintf.with_aft;;
+let with_aft_dang = Pprintf.with_aft_dang;;
 
 let tab ind = String.make ind ' ';;
 
@@ -632,7 +622,7 @@ let do_split_or_patterns_with_bindings pel =
 
 let record_without_with loc e lel =
   try
-    let name =
+    let (m, name) =
       let (m, sl) =
         List.fold_right
           (fun (p, _) (m, sl) ->
@@ -643,12 +633,15 @@ let record_without_with loc e lel =
              | _ -> raise Exit)
           lel ("", [])
       in
-      let sl = if m = "" then sl else m :: sl in
-      String.concat "_" ("with" :: sl)
+      m, String.concat "_" ("with" :: sl)
+    in
+    let f =
+      let f = MLast.ExLid (loc, name) in
+      if m = "" then f else MLast.ExAcc (loc, MLast.ExUid (loc, m), f)
     in
     let e =
       List.fold_left (fun e1 (_, e2) -> MLast.ExApp (loc, e1, e2))
-        (MLast.ExApp (loc, MLast.ExLid (loc, name), e)) lel
+        (MLast.ExApp (loc, f, e)) lel
     in
     Some e
   with Exit -> None

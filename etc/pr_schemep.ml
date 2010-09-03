@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_schemep.ml,v 1.10 2010/09/03 14:12:00 deraugla Exp $ *)
+(* $Id: pr_schemep.ml,v 1.11 2010/09/03 15:58:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -69,7 +69,6 @@ value ident_option =
 ;
 
 IFDEF OCAML_1_07 THEN
-  value with_ind = Pprintf.with_ind;
   value with_ind_bef = Pprintf.with_ind_bef;
   value with_ind_bef_aft = Pprintf.with_ind_bef_aft;
   value with_bef_aft = Pprintf.with_bef_aft;

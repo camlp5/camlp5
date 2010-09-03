@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_phony.ml,v 1.24 2010/09/03 14:12:00 deraugla Exp $ *)
+(* $Id: q_phony.ml,v 1.25 2010/09/03 15:58:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -7,7 +7,6 @@
 #load "pa_extprint.cmo";
 #load "q_MLast.cmo";
 #load "pa_pprintf.cmo";
-#load "pa_macro.cmo";
 
 open Pcaml;
 
@@ -75,16 +74,6 @@ open Pcaml;
 open Prtools;
 
 value expr = Eprinter.apply pr_expr;
-
-IFDEF OCAML_1_07 THEN
-  value with_ind = Pprintf.with_ind;
-  value with_ind_bef = Pprintf.with_ind_bef;
-  value with_ind_bef_aft = Pprintf.with_ind_bef_aft;
-  value with_bef = Pprintf.with_bef;
-  value with_bef_aft = Pprintf.with_bef_aft;
-  value with_aft = Pprintf.with_aft;
-  value with_dang = Pprintf.with_dang;
-END;
 
 value rec dexpr pc =
   fun

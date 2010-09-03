@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_op.ml,v 1.29 2010/09/03 14:12:00 deraugla Exp $ *)
+(* $Id: pr_op.ml,v 1.30 2010/09/03 15:58:18 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -7,7 +7,6 @@
 #load "pa_extfun.cmo";
 #load "pa_extprint.cmo";
 #load "pa_pprintf.cmo";
-#load "pa_macro.cmo";
 
 open Parserify;
 open Pcaml;
@@ -27,14 +26,6 @@ value not_impl name pc x =
 
 value expr = Eprinter.apply pr_expr;
 value patt = Eprinter.apply pr_patt;
-
-IFDEF OCAML_1_07 THEN
-  value with_ind = Pprintf.with_ind;
-  value with_bef = Pprintf.with_bef;
-  value with_bef_aft = Pprintf.with_bef_aft;
-  value with_aft = Pprintf.with_aft;
-  value with_dang = Pprintf.with_dang;
-END;
 
 value bar_before elem pc x = pprintf pc "| %p" elem x;
 value semi_after elem pc x = pprintf pc "%p;" elem x;
