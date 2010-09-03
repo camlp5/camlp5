@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.28 2010/09/03 09:49:48 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.29 2010/09/03 13:21:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -295,9 +295,9 @@ value ocaml_pexp_poly =
 value ocaml_pexp_record lel =
   IFDEF OCAML_1_07 THEN
     fun
-    [ Some _ -> None
-    | None -> Some (Pexp_record lel) ]
-  ELSE fun eo -> Some (Pexp_record lel eo) END
+    [ Some _ -> invalid_arg "ocaml_pexp_record"
+    | None -> Pexp_record lel ]
+  ELSE fun eo -> Pexp_record lel eo END
 ;
 
 value ocaml_pexp_variant =
@@ -489,6 +489,10 @@ value split_or_patterns_with_bindings =
   IFDEF OCAML_3_01_OR_BEFORE THEN True ELSE False END
 ;
 
+value has_records_with_with =
+  IFDEF OCAML_1_07 THEN False ELSE True END
+;
+
 value arg_rest =
   fun
   [ IFNDEF OCAML_1_07 THEN Arg.Rest r -> Some r END
@@ -570,6 +574,10 @@ value list_rev_map =
   ELSE
     List.rev_map
   END
+;
+
+value pervasives_set_binary_mode_out =
+  IFDEF OCAML_1_07 THEN fun _ _ -> () ELSE Pervasives.set_binary_mode_out END
 ;
 
 IFDEF OCAML_3_04_OR_BEFORE THEN

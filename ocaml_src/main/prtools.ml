@@ -629,3 +629,27 @@ let do_split_or_patterns_with_bindings pel =
   in
   loop [] pel
 ;;
+
+let record_without_with loc e lel =
+  try
+    let name =
+      let (m, sl) =
+        List.fold_right
+          (fun (p, _) (m, sl) ->
+             match p with
+               MLast.PaLid (_, lab) -> m, lab :: sl
+             | MLast.PaAcc (_, MLast.PaUid (_, m), MLast.PaLid (_, lab)) ->
+                 m, lab :: sl
+             | _ -> raise Exit)
+          lel ("", [])
+      in
+      let sl = if m = "" then sl else m :: sl in
+      String.concat "_" ("with" :: sl)
+    in
+    let e =
+      List.fold_left (fun e1 (_, e2) -> MLast.ExApp (loc, e1, e2))
+        (MLast.ExApp (loc, MLast.ExLid (loc, name), e)) lel
+    in
+    Some e
+  with Exit -> None
+;;

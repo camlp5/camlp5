@@ -1,11 +1,13 @@
 (* camlp5r *)
-(* $Id: pr_dump.ml,v 1.10 2010/08/28 17:22:20 deraugla Exp $ *)
+(* $Id: pr_dump.ml,v 1.11 2010/09/03 13:21:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
+
+open Versdep;
 
 value open_out_file () =
   match Pcaml.output_file.val with
   [ Some f -> open_out_bin f
-  | None -> do { set_binary_mode_out stdout True; stdout } ]
+  | None -> do { pervasives_set_binary_mode_out stdout True; stdout } ]
 ;
 
 value interf ast = do {

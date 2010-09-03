@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_extprint.ml,v 1.50 2010/08/18 16:26:25 deraugla Exp $ *)
+(* $Id: pa_extprint.ml,v 1.51 2010/09/03 13:21:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -129,8 +129,11 @@ value text_of_extprint loc el =
                 in
                 let rules =
                   List.fold_right
-                    (fun pe rules ->
-                       let rule = conv loc pe in
+                    (fun (p, wo, e) rules ->
+                       let loc =
+                         Ploc.encl (MLast.loc_of_patt p) (MLast.loc_of_expr e)
+                       in
+                       let rule = conv loc (p, wo, e) in
                        <:expr< [$rule$ :: $rules$] >>)
                     rules <:expr< [] >>
                 in

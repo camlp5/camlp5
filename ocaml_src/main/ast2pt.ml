@@ -897,6 +897,14 @@ let rec expr =
   | ExRec (loc, lel, eo) ->
       let lel = uv lel in
       if lel = [] then error loc "empty record"
+      else if eo <> None && not has_records_with_with then
+        match eo with
+          Some e ->
+            begin match Prtools.record_without_with loc e lel with
+              Some e -> expr e
+            | None -> error loc "cannot convert record"
+            end
+        | None -> assert false
       else
         let lel =
           if module_prefix_can_be_in_first_record_label_only then lel
@@ -911,10 +919,7 @@ let rec expr =
             Some e -> Some (expr e)
           | None -> None
         in
-        begin match ocaml_pexp_record (List.map mklabexp lel) eo with
-          Some e -> mkexp loc e
-        | None -> error loc "no record with 'with' in this ocaml version"
-        end
+        mkexp loc (ocaml_pexp_record (List.map mklabexp lel) eo)
   | ExSeq (loc, el) ->
       let rec loop =
         function

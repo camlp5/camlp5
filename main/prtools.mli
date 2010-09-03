@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: prtools.mli,v 1.16 2010/09/01 12:03:48 deraugla Exp $ *)
+(* $Id: prtools.mli,v 1.17 2010/09/03 13:21:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 type pr_context =
@@ -105,6 +105,9 @@ value expand_module_prefix :
 
 value do_split_or_patterns_with_bindings :
   list (MLast.patt * 'a * 'b) -> list (MLast.patt * 'a * 'b);
+
+value record_without_with :
+  Ploc.t -> MLast.expr -> list (MLast.patt * MLast.expr) -> option MLast.expr;
 
 value no_constructors_arity : ref bool;
    (** Flag to generate nodes telling that constructor arity is not taken

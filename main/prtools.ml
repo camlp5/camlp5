@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: prtools.ml,v 1.21 2010/09/02 14:18:38 deraugla Exp $ *)
+(* $Id: prtools.ml,v 1.22 2010/09/03 13:21:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -14,7 +14,7 @@ type pr_context =
 
 type pr_fun 'a = pr_context -> 'a -> string;
 
-IFDEF COMPATIBLE_WITH_OLD_OCAML THEN
+IFDEF OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
   value with_ind_bef pc ind bef =
     {ind = ind; bef = bef; aft = pc.aft; dang = pc.dang}
   ;
@@ -602,4 +602,28 @@ value do_split_or_patterns_with_bindings pel =
         in
         loop rev_pel pel
     | [] -> List.rev rev_pel ]
+;
+
+value record_without_with loc e lel =
+  try
+    let name =
+      let (m, sl) =
+        List.fold_right
+          (fun (p, _) (m, sl) ->
+             match p with
+              [ <:patt< $lid:lab$ >> -> (m, [lab :: sl])
+              | <:patt< $uid:m$.$lid:lab$ >> -> (m, [lab :: sl])
+              | _ -> raise Exit ])
+          lel ("", [])
+      in
+      let sl = if m = "" then sl else [m :: sl] in
+      String.concat "_" ["with" :: sl]
+    in
+    let e =
+      List.fold_left (fun e1 (_, e2) -> <:expr< $e1$ $e2$ >>)
+        <:expr< $lid:name$ $e$ >> lel
+    in
+    Some e
+  with
+  [ Exit -> None ]
 ;

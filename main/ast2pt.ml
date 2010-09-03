@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.96 2010/09/03 09:49:48 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.97 2010/09/03 13:21:29 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -762,6 +762,13 @@ value rec expr =
   | ExRec loc lel eo ->
       let lel = uv lel in
       if lel = [] then error loc "empty record"
+      else if eo <> None && not has_records_with_with then
+        match eo with
+        [ Some e ->
+            match Prtools.record_without_with loc e lel with
+            [ Some e -> expr e
+            | None -> error loc "cannot convert record" ]
+        | None -> assert False ]
       else
         let lel =
           if module_prefix_can_be_in_first_record_label_only then lel
@@ -777,9 +784,7 @@ value rec expr =
           [ Some e -> Some (expr e)
           | None -> None ]
         in
-        match ocaml_pexp_record (List.map mklabexp lel) eo with
-        [ Some e -> mkexp loc e
-        | None -> error loc "no record with 'with' in this ocaml version" ]
+        mkexp loc (ocaml_pexp_record (List.map mklabexp lel) eo)
   | ExSeq loc el ->
       loop (uv el) where rec loop =
         fun

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_r.ml,v 1.192 2010/08/18 19:17:42 deraugla Exp $ *)
+(* $Id: pr_r.ml,v 1.193 2010/09/03 13:21:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -12,6 +12,7 @@
 open Pretty;
 open Pcaml;
 open Prtools;
+open Versdep;
 
 value flag_add_locations = ref False;
 value flag_comments_in_phrases = Pcaml.flag_comments_in_phrases;
@@ -180,6 +181,24 @@ value cons_escaped pc v =
   in
   pprintf pc "%s" x
 ;
+
+IFDEF OCAML_1_07 THEN
+  value with_Pprintf_ind pc ind =
+    {ind = ind; bef = pc.bef; aft = pc.aft; dang = pc.dang}
+  ;
+  value with_Pprintf_bef pc bef =
+    {ind = pc.ind; bef = bef; aft = pc.aft; dang = pc.dang}
+  ;
+  value with_Pprintf_bef_aft pc bef aft =
+    {ind = pc.ind; bef = bef; aft = aft; dang = pc.dang}
+  ;
+  value with_Pprintf_aft pc aft =
+    {ind = pc.ind; bef = pc.bef; aft = aft; dang = pc.dang}
+  ;
+  value with_bef = with_Pprintf_bef;
+  value with_bef_aft = with_Pprintf_bef_aft;
+  value with_aft = with_Pprintf_aft;
+END;
 
 value rec mod_ident pc (loc, sl) =
   match sl with
@@ -1563,7 +1582,7 @@ value apply_printer f ast = do {
   let oc =
     match Pcaml.output_file.val with
     [ Some f -> open_out_bin f
-    | None -> do { set_binary_mode_out stdout True; stdout } ]
+    | None -> do { pervasives_set_binary_mode_out stdout True; stdout } ]
   in
   let cleanup () =
     match Pcaml.output_file.val with

@@ -125,8 +125,8 @@ let ocaml_pexp_poly = None;;
 
 let ocaml_pexp_record lel =
   function
-    Some _ -> None
-  | None -> Some (Pexp_record lel)
+    Some _ -> invalid_arg "ocaml_pexp_record"
+  | None -> Pexp_record lel
 ;;
 
 let ocaml_pexp_variant = None;;
@@ -193,6 +193,8 @@ let module_prefix_can_be_in_first_record_label_only = false;;
 
 let split_or_patterns_with_bindings = true;;
 
+let has_records_with_with = false;;
+
 let arg_rest _ = None;;
 
 let arg_set_string _ = None;;
@@ -234,6 +236,8 @@ let list_rev_map f =
   in
   loop []
 ;;
+
+let pervasives_set_binary_mode_out _ _ = ();;
 
 let scan_format fmt i kont =
   match fmt.[i+1] with

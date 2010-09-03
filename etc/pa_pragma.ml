@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_pragma.ml,v 1.66 2010/09/02 14:52:16 deraugla Exp $ *)
+(* $Id: pa_pragma.ml,v 1.67 2010/09/03 13:21:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -1018,6 +1018,10 @@ value val_tab = do {
          patt = no_patt loc})];
   ht
 };
+
+IFDEF OCAML_1_07 THEN
+  value with_ctyp e t = {ctyp = t; expr = e.expr; patt = e.patt};
+END;
 
 value rec eval_expr env e =
   let loc = MLast.loc_of_expr e in

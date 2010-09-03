@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_op.ml,v 1.27 2010/08/18 19:17:42 deraugla Exp $ *)
+(* $Id: pr_op.ml,v 1.28 2010/09/03 13:21:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -7,6 +7,7 @@
 #load "pa_extfun.cmo";
 #load "pa_extprint.cmo";
 #load "pa_pprintf.cmo";
+#load "pa_macro.cmo";
 
 open Parserify;
 open Pcaml;
@@ -26,6 +27,38 @@ value not_impl name pc x =
 
 value expr = Eprinter.apply pr_expr;
 value patt = Eprinter.apply pr_patt;
+
+IFDEF OCAML_1_07 THEN
+  value with_Pprintf_ind pc ind =
+    {ind = ind; bef = pc.bef; aft = pc.aft; dang = pc.dang}
+  ;
+  value with_Pprintf_bef pc bef =
+    {ind = pc.ind; bef = bef; aft = pc.aft; dang = pc.dang}
+  ;
+  value with_Pprintf_bef_aft pc bef aft =
+    {ind = pc.ind; bef = bef; aft = aft; dang = pc.dang}
+  ;
+  value with_Pprintf_bef_aft_dang pc bef aft dang =
+    {ind = pc.ind; bef = bef; aft = aft; dang = dang}
+  ;
+  value with_Pprintf_bef_dang pc bef dang =
+    {ind = pc.ind; bef = bef; aft = pc.aft; dang = dang}
+  ;
+  value with_Pprintf_aft pc aft =
+    {ind = pc.ind; bef = pc.bef; aft = aft; dang = pc.dang}
+  ;
+  value with_Pprintf_aft_dang pc aft dang =
+    {ind = pc.ind; bef = pc.bef; aft = aft; dang = dang}
+  ;
+  value with_Pprintf_dang pc dang =
+    {ind = pc.ind; bef = pc.bef; aft = pc.aft; dang = dang}
+  ;
+  value with_ind = with_Pprintf_ind;
+  value with_bef = with_Pprintf_bef;
+  value with_bef_aft = with_Pprintf_bef_aft;
+  value with_aft = with_Pprintf_aft;
+  value with_dang = with_Pprintf_dang;
+END;
 
 value bar_before elem pc x = pprintf pc "| %p" elem x;
 value semi_after elem pc x = pprintf pc "%p;" elem x;

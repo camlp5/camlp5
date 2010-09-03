@@ -98,7 +98,7 @@ let ocaml_pexp_object = Some (fun cs -> Pexp_object cs);;
 
 let ocaml_pexp_poly = Some (fun e t -> Pexp_poly (e, t));;
 
-let ocaml_pexp_record lel eo = Some (Pexp_record (lel, eo));;
+let ocaml_pexp_record lel eo = Pexp_record (lel, eo);;
 
 let ocaml_pexp_variant =
   let pexp_variant_pat =
@@ -185,6 +185,8 @@ let module_prefix_can_be_in_first_record_label_only = true;;
 
 let split_or_patterns_with_bindings = false;;
 
+let has_records_with_with = true;;
+
 let arg_rest =
   function
     Arg.Rest r -> Some r
@@ -238,6 +240,8 @@ let hashtbl_mem = Hashtbl.mem;;
 let list_rev_append = List.rev_append;;
 
 let list_rev_map = List.rev_map;;
+
+let pervasives_set_binary_mode_out = Pervasives.set_binary_mode_out;;
 
 let printf_ksprintf = Printf.kprintf;;
 

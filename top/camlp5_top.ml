@@ -1,13 +1,13 @@
 (* camlp5r *)
-(* $Id: camlp5_top.ml,v 1.24 2010/09/02 09:55:00 deraugla Exp $ *)
+(* $Id: camlp5_top.ml,v 1.25 2010/09/03 13:21:30 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
 #load "q_MLast.cmo";
 
 IFDEF
-   OCAML_2_00 OR OCAML_2_01 OR OCAML_2_02 OR OCAML_2_03 OR OCAML_2_04 OR
-   OCAML_2_99
+   OCAML_1_07 OR OCAML_2_00 OR OCAML_2_01 OR OCAML_2_02 OR OCAML_2_03 OR
+   OCAML_2_04 OR OCAML_2_99
 THEN
   DEFINE OCAML_2_99_OR_BEFORE
 END;
@@ -196,7 +196,7 @@ Toploop.parse_use_file.val :=
 
 Pcaml.warning.val :=
   fun loc txt ->
-    IFDEF OCAML_2_00 THEN
+    IFDEF OCAML_1_07 OR OCAML_2_00 THEN
       Toploop.print_warning (Ast2pt.mkloc loc) txt
     ELSIFDEF OCAML_2_99_OR_BEFORE THEN
       Toploop.print_warning (Ast2pt.mkloc loc) (Warnings.Other txt)

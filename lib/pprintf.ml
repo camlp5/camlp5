@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pprintf.ml,v 1.4 2010/09/02 14:18:38 deraugla Exp $ *)
+(* $Id: pprintf.ml,v 1.5 2010/09/03 13:21:29 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -10,7 +10,7 @@ type pr_fun 'a = pr_context -> 'a -> string;
 value tab ind = String.make ind ' ';
 value empty_pc = {ind = 0; bef = ""; aft = ""; dang = ""};
 
-IFDEF COMPATIBLE_WITH_OLD_OCAML THEN
+IFDEF OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
   value with_ind_bef pc ind bef =
     {ind = ind; bef = bef; aft = pc.aft; dang = pc.dang}
   ;
