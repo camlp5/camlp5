@@ -8,7 +8,10 @@ Camlp5 Version 5.16:
   3.03, 3.02, 3.01, 3.00, 2.99, 2.04, 2.03, 2.02, 2.01, 2.00 and 1.07
   (but do not work on 64 bits architectures due to OCaml bug about
   input_value/output_value of that time: these versions can be used
-  only on 32 bits architectures).
+  only on 32 bits architectures). Sometimes (but not always), some of
+  the very old versions of OCaml (1.07, 2.00, 2.01) do not work, typically
+  by raising Stack_overflow in the compiler or failing with segmentation
+  faults in camlp5.
 * [28 Aug 10] Re-added module Ast2pt (file main/ast2pt.ml). Created file
   lib/versdep.ml and directory ocaml_src/lib/versdep for ocaml versions
   dependance.
