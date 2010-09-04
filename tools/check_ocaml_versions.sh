@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 1.54 2010/09/04 11:15:29 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 1.55 2010/09/04 11:19:56 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
@@ -13,7 +13,7 @@ PATH=$(pwd)/bin:$PATH
 
 getvers () {
   cd "$OCAMLSDIR"
-  vers="$(ls | grep -v csl | grep -v '^1')"
+  vers="$(ls | grep -v csl | grep -v '^1.0[0-5]')"
   # WARNING: on 64 bits arch, rather use this:
   # vers="$(ls | grep -v csl | grep -v '^[1|2]' | grep -v '^3.0[0-6]')"
   vers=$(echo $vers | tr '\n' ' ')
@@ -22,7 +22,7 @@ getvers () {
 usage () {
   echo "Usage: check_ocaml_versions.sh <options>"
   echo "<options> are:"
-  echo "  -d <dir>    Set directory of versions"
+  echo "  -d <dir>    Change directory of versions"
   echo "  -h          Display this list of options"
   echo "  -n          No opt (only bytecode)"
   echo "  -t          Camlp5 transitional mode"

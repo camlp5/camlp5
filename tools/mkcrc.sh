@@ -1,10 +1,11 @@
 #!/bin/sh -e
-# $Id: mkcrc.sh,v 1.20 2010/09/03 13:21:30 deraugla Exp $
+# $Id: mkcrc.sh,v 1.21 2010/09/04 11:15:29 deraugla Exp $
 
 V=$OVERSION
 
 MOD_OLIB="arg array"
-if [ "$V" != "1.07" -a "$V" != "2.00" -a "$V" != "2.01" ]; then
+if [ "$V" != "1.06" -a "$V" != "1.07" -a "$V" != "2.00" -a "$V" != "2.01" ]
+then
   MOD_OLIB="$MOD_OLIB buffer"
 fi
 MOD_OLIB="$MOD_OLIB char filename format hashtbl lexing list obj pervasives printf set sort stream string sys"
@@ -15,7 +16,7 @@ MOD_UTIL="pconfig warnings"
 OFILE=crc.tmp
 
 in_add_available_units () {
-  if [ "$V" = "1.07" ]; then
+  if [ "$V" = "1.06" -o "$V" = "1.07" ]; then
     echo "in Dynlink.add_available_units (List.map (fun (m, s) -> (String.capitalize m, s)) crc_unit_list);;"
   else
     echo "in Dynlink.add_available_units crc_unit_list;;"
@@ -23,10 +24,10 @@ in_add_available_units () {
 }
 
 > $OFILE
-if [ "$V" = "1.07" -o "$V" = "2.00" -o "$V" = "2.01" -o "$V" = "2.02" -o \
-     "$V" = "2.03" -o "$V" = "2.04" -o "$V" = "2.99" -o "$V" = "3.00" -o \
-     "$V" = "3.01" -o "$V" = "3.02" -o "$V" = "3.03" -o "$V" = "3.04" -o \
-     "$V" = "3.05" -o "$V" = "3.06" ]
+if [ "$V" = "1.06" -o "$V" = "1.07" -o "$V" = "2.00" -o "$V" = "2.01" -o \
+     "$V" = "2.02" -o "$V" = "2.03" -o "$V" = "2.04" -o "$V" = "2.99" -o \
+     "$V" = "3.00" -o "$V" = "3.01" -o "$V" = "3.02" -o "$V" = "3.03" -o \
+     "$V" = "3.04" -o "$V" = "3.05" -o "$V" = "3.06" ]
 then
   (cd $OLIBDIR; $OLIBDIR/extract_crc $MOD_OLIB) >> $OFILE
   in_add_available_units >> $OFILE
