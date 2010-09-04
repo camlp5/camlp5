@@ -206,13 +206,10 @@ let hashtbl_mem ht a =
   try let _ = Hashtbl.find ht a in true with Not_found -> false
 ;;
 
-let list_rev_append =
-  let rec loop accu =
-    function
-      x :: l -> loop (x :: accu) l
-    | [] -> accu
-  in
-  loop
+let rec list_rev_append l1 l2 =
+  match l1 with
+    x :: l -> list_rev_append l (x :: l2)
+  | [] -> l2
 ;;
 
 let list_rev_map f =

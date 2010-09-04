@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.33 2010/09/04 17:42:44 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.34 2010/09/04 18:17:06 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -527,16 +527,15 @@ value hashtbl_mem =
   END
 ;
 
-value list_rev_append =
-  IFDEF OCAML_VERSION <= OCAML_1_07 THEN
-    loop where rec loop accu =
-      fun
-      [ [x :: l] -> loop [x :: accu] l
-      | [] -> accu ]
-  ELSE
-    List.rev_append
-  END
-;
+IFDEF OCAML_VERSION <= OCAML_1_07 THEN
+  value rec list_rev_append l1 l2 =
+    match l1 with
+    [ [x :: l] -> list_rev_append l [x :: l2]
+    | [] -> l2 ]
+  ;
+ELSE
+  value list_rev_append = List.rev_append;
+END;
 
 value list_rev_map =
   IFDEF OCAML_VERSION <= OCAML_2_02 THEN
