@@ -1,45 +1,11 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 1.47 2010/09/04 11:15:29 deraugla Exp $ *)
+(* $Id: rprint.ml,v 1.48 2010/09/04 12:38:55 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
-IFNDEF
-  OCAML_1_06 OR OCAML_1_07 OR OCAML_2_00 OR OCAML_2_01 OR OCAML_2_02 OR
-  OCAML_2_03 OR OCAML_2_04 OR OCAML_2_99 OR OCAML_3_00 OR OCAML_3_01 OR
-  OCAML_3_02
-THEN
+IFNDEF OCAML_VERSION <= OCAML_3_02 THEN
 
 open Format;
 open Outcometree;
-
-IFDEF OCAML_3_03 OR OCAML_3_04 THEN
-  DEFINE OCAML_3_04_OR_BEFORE
-END;
-IFDEF OCAML_3_04_OR_BEFORE OR OCAML_3_05 OR OCAML_3_06 THEN
-  DEFINE OCAML_3_06_OR_BEFORE
-END;
-IFDEF
-  OCAML_3_06_OR_BEFORE OR OCAML_3_07 OR
-  OCAML_3_08_0 OR OCAML_3_08_1 OR OCAML_3_08_2 OR OCAML_3_08_3 OR OCAML_3_08_4
-THEN
-  DEFINE OCAML_3_08_OR_BEFORE
-END;
-IFDEF
-  OCAML_3_12_0 OR OCAML_3_12_1 OR OCAML_3_13_0
-THEN
-  DEFINE OCAML_3_12_OR_AFTER
-END;
-IFDEF
-  OCAML_3_11 OR OCAML_3_11_0 OR OCAML_3_11_1 OR OCAML_3_11_2 OR
-  OCAML_3_11_3 OR OCAML_3_12_OR_AFTER
-THEN
-  DEFINE OCAML_3_11_OR_AFTER
-END;
-IFDEF
-  OCAML_3_10 OR OCAML_3_10_0 OR OCAML_3_10_1 OR OCAML_3_10_2 OR
-  OCAML_3_10_3 OR OCAML_3_11_OR_AFTER
-THEN
-  DEFINE OCAML_3_10_OR_AFTER
-END;
 
 exception Ellipsis;
 value cautious f ppf arg =
@@ -79,13 +45,13 @@ value print_out_value ppf tree =
   and print_simple_tree ppf =
     fun
     [ Oval_int i -> fprintf ppf "%i" i
-    | IFNDEF OCAML_3_06_OR_BEFORE THEN
+    | IFNDEF OCAML_VERSION <= OCAML_3_06 THEN
         Oval_int32 i -> fprintf ppf "%lil" i
       END
-    | IFNDEF OCAML_3_06_OR_BEFORE THEN
+    | IFNDEF OCAML_VERSION <= OCAML_3_06 THEN
         Oval_int64 i -> fprintf ppf "%LiL" i
       END
-    | IFNDEF OCAML_3_06_OR_BEFORE THEN
+    | IFNDEF OCAML_VERSION <= OCAML_3_06 THEN
         Oval_nativeint i -> fprintf ppf "%nin" i
       END
     | Oval_float f -> fprintf ppf "%.12g" f
@@ -206,12 +172,12 @@ and print_simple_out_type ppf =
   | Otyp_abstract -> fprintf ppf "'abstract"
   | Otyp_alias _ _ | Otyp_arrow _ _ _ | Otyp_constr _ [_ :: _] as ty ->
       fprintf ppf "@[<1>(%a)@]" print_out_type ty
-  | IFNDEF OCAML_3_04_OR_BEFORE THEN
+  | IFNDEF OCAML_VERSION <= OCAML_3_04 THEN
       Otyp_poly _ _ as ty ->
         fprintf ppf "@[<1>(%a)@]" print_out_type ty
     END
   | x ->
-      IFDEF OCAML_3_08_OR_BEFORE AND NOT OCAML_3_06_OR_BEFORE THEN
+      IFDEF OCAML_VERSION > OCAML_3_06 AND OCAML_VERSION <= OCAML_3_08_4 THEN
         match x with
         [ Otyp_sum constrs _ ->
             fprintf ppf "@[<hv>[ %a ]@]"
@@ -325,7 +291,7 @@ and print_out_class_sig_item ppf =
         (if priv then "private " else "") (if virt then "virtual " else "")
         name print_out_type ty
   | x ->
-      IFDEF OCAML_3_10_OR_AFTER THEN
+      IFDEF OCAML_VERSION >= OCAML_3_10 THEN
         failwith "Rprint.print_out_class_sig_item: not impl"
       ELSE
         match x with
@@ -361,7 +327,7 @@ and print_out_sig_item ppf =
       fprintf ppf "@[<2>module type %s@]" name
   | Osig_modtype name mty ->
       fprintf ppf "@[<2>module type %s =@ %a@]" name print_out_module_type mty
-  | IFDEF OCAML_3_06_OR_BEFORE OR OCAML_3_07 THEN
+  | IFDEF OCAML_VERSION <= OCAML_3_07 THEN
       Osig_module name mty ->
         fprintf ppf "@[<2>module %s :@ %a@]" name print_out_module_type mty
     ELSE
@@ -369,7 +335,7 @@ and print_out_sig_item ppf =
         fprintf ppf "@[<2>module %s :@ %a@]" name
           print_out_module_type mty
     END
-  | IFDEF OCAML_3_06_OR_BEFORE OR OCAML_3_07 THEN
+  | IFDEF OCAML_VERSION <= OCAML_3_07 THEN
       Osig_type tdl -> do {
         print_out_type_decl "type" ppf (List.hd tdl);
         List.iter (print_out_type_decl "and" ppf) (List.tl tdl);
@@ -393,7 +359,7 @@ and print_out_sig_item ppf =
       fprintf ppf "@[<2>%s %a :@ %a%a@]" kwd value_ident name
         print_out_type ty pr_prims prims
   | x ->
-      IFDEF OCAML_3_08_OR_BEFORE THEN
+      IFDEF OCAML_VERSION <= OCAML_3_08_4 THEN
         failwith "Rprint.print_out_sig_item: not implemented case"
       ELSE
         match x with
@@ -409,7 +375,7 @@ and print_out_sig_item ppf =
       END ]
 and print_out_type_decl kwd ppf x =
   let (name, args, ty, priv, constraints) =
-    IFDEF OCAML_3_08_OR_BEFORE THEN
+    IFDEF OCAML_VERSION <= OCAML_3_08_4 THEN
       let (name, args, ty, priv) = x in
       (name, args, ty, priv, [])
     ELSE
@@ -475,7 +441,7 @@ value print_out_phrase ppf =
 
 Toploop.print_out_value.val := print_out_value;
 Toploop.print_out_type.val := print_out_type;
-IFNDEF OCAML_3_04_OR_BEFORE THEN
+IFNDEF OCAML_VERSION <= OCAML_3_04 THEN
   Toploop.print_out_class_type.val := print_out_class_type;
   Toploop.print_out_module_type.val := print_out_module_type;
   Toploop.print_out_signature.val := print_out_signature;

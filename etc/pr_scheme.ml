@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_scheme.ml,v 1.74 2010/09/04 11:15:27 deraugla Exp $ *)
+(* $Id: pr_scheme.ml,v 1.75 2010/09/04 12:38:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -50,7 +50,7 @@ value to_be_renamed = ["cond"; "sum"];
 
 value rename_id s = if List.mem s to_be_renamed then s ^ "#" else s;
 
-IFDEF OCAML_1_06 OR OCAML_1_07 THEN
+IFDEF OCAML_VERSION <= OCAML_1_07 THEN
   value with_ind_bef = Pprintf.with_ind_bef;
   value with_ind_bef_aft = Pprintf.with_ind_bef_aft;
   value with_bef = Pprintf.with_bef;

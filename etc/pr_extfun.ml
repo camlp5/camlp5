@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_extfun.ml,v 1.27 2010/09/04 11:15:27 deraugla Exp $ *)
+(* $Id: pr_extfun.ml,v 1.28 2010/09/04 12:38:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -50,7 +50,7 @@ value rec un_extfun rpel =
   | _ -> raise Not_found ]
 ;
 
-IFDEF OCAML_1_06 OR OCAML_1_07 THEN
+IFDEF OCAML_VERSION <= OCAML_1_07 THEN
   value with_ind = Pprintf.with_ind;
 END;
 

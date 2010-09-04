@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: prtools.ml,v 1.25 2010/09/04 11:15:28 deraugla Exp $ *)
+(* $Id: prtools.ml,v 1.26 2010/09/04 12:38:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -14,7 +14,7 @@ type pr_context =
 
 type pr_fun 'a = pr_context -> 'a -> string;
 
-IFDEF OCAML_1_06 OR OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
+IFDEF OCAML_VERSION <= OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
   value with_ind_bef = Pprintf.with_ind_bef;
   value with_bef = Pprintf.with_bef;
   value with_bef_aft_dang = Pprintf.with_bef_aft_dang;

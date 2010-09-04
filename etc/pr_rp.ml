@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_rp.ml,v 1.32 2010/09/04 11:15:27 deraugla Exp $ *)
+(* $Id: pr_rp.ml,v 1.33 2010/09/04 12:38:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -28,7 +28,7 @@ value not_impl name pc x =
 value expr = Eprinter.apply pr_expr;
 value patt = Eprinter.apply pr_patt;
 
-IFDEF OCAML_1_06 OR OCAML_1_07 THEN
+IFDEF OCAML_VERSION <= OCAML_1_07 THEN
   value with_ind = Pprintf.with_ind;
   value with_bef_aft = Pprintf.with_bef_aft;
 END;

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_ro.ml,v 1.88 2010/09/04 11:15:27 deraugla Exp $ *)
+(* $Id: pr_ro.ml,v 1.89 2010/09/04 12:38:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -73,7 +73,7 @@ value class_str_item = Eprinter.apply pr_class_str_item;
 value class_sig_item = Eprinter.apply pr_class_sig_item;
 value expr_fun_args ge = Extfun.apply pr_expr_fun_args.val ge;
 
-IFDEF OCAML_1_06 OR OCAML_1_07 THEN
+IFDEF OCAML_VERSION <= OCAML_1_07 THEN
   value with_ind = Pprintf.with_ind;
   value with_bef_aft = Pprintf.with_bef_aft;
 END;

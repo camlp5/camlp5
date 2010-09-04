@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.31 2010/09/04 12:24:15 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.32 2010/09/04 12:38:54 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -242,7 +242,7 @@ value ocaml_pexp_letmodule =
 ;
 
 value ocaml_pexp_object =
-  IFDEF OCAML_VERSION <= OCAML_3_06 OR OCAML_3_07 THEN None
+  IFDEF OCAML_VERSION <= OCAML_3_07 THEN None
   ELSE Some (fun cs -> Pexp_object cs) END
 ;
 
@@ -456,7 +456,7 @@ value ocaml_pdir_bool =
 ;
 
 value module_prefix_can_be_in_first_record_label_only =
-  IFDEF OCAML_VERSION <= OCAML_3_06 OR OCAML_3_07 THEN False ELSE True END
+  IFDEF OCAML_VERSION <= OCAML_3_07 THEN False ELSE True END
 ;
 
 value split_or_patterns_with_bindings =
