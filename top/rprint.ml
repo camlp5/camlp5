@@ -1,8 +1,8 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: rprint.ml,v 1.48 2010/09/04 12:38:55 deraugla Exp $ *)
+(* $Id: rprint.ml,v 1.49 2010/09/04 19:18:47 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
-IFNDEF OCAML_VERSION <= OCAML_3_02 THEN
+IFDEF OCAML_VERSION >= OCAML_3_03 THEN
 
 open Format;
 open Outcometree;
@@ -45,13 +45,13 @@ value print_out_value ppf tree =
   and print_simple_tree ppf =
     fun
     [ Oval_int i -> fprintf ppf "%i" i
-    | IFNDEF OCAML_VERSION <= OCAML_3_06 THEN
+    | IFDEF OCAML_VERSION >= OCAML_3_07 THEN
         Oval_int32 i -> fprintf ppf "%lil" i
       END
-    | IFNDEF OCAML_VERSION <= OCAML_3_06 THEN
+    | IFDEF OCAML_VERSION >= OCAML_3_07 THEN
         Oval_int64 i -> fprintf ppf "%LiL" i
       END
-    | IFNDEF OCAML_VERSION <= OCAML_3_06 THEN
+    | IFDEF OCAML_VERSION >= OCAML_3_07 THEN
         Oval_nativeint i -> fprintf ppf "%nin" i
       END
     | Oval_float f -> fprintf ppf "%.12g" f
@@ -172,7 +172,7 @@ and print_simple_out_type ppf =
   | Otyp_abstract -> fprintf ppf "'abstract"
   | Otyp_alias _ _ | Otyp_arrow _ _ _ | Otyp_constr _ [_ :: _] as ty ->
       fprintf ppf "@[<1>(%a)@]" print_out_type ty
-  | IFNDEF OCAML_VERSION <= OCAML_3_04 THEN
+  | IFDEF OCAML_VERSION >= OCAML_3_05 THEN
       Otyp_poly _ _ as ty ->
         fprintf ppf "@[<1>(%a)@]" print_out_type ty
     END
@@ -441,7 +441,7 @@ value print_out_phrase ppf =
 
 Toploop.print_out_value.val := print_out_value;
 Toploop.print_out_type.val := print_out_type;
-IFNDEF OCAML_VERSION <= OCAML_3_04 THEN
+IFDEF OCAML_VERSION >= OCAML_3_05 THEN
   Toploop.print_out_class_type.val := print_out_class_type;
   Toploop.print_out_module_type.val := print_out_module_type;
   Toploop.print_out_signature.val := print_out_signature;

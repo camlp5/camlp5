@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.34 2010/09/04 18:17:06 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.35 2010/09/04 19:18:47 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -469,43 +469,43 @@ value has_records_with_with =
 
 value arg_rest =
   fun
-  [ IFNDEF OCAML_VERSION <= OCAML_1_07 THEN Arg.Rest r -> Some r END
+  [ IFDEF OCAML_VERSION >= OCAML_2_00 THEN Arg.Rest r -> Some r END
   | _ -> None ]
 ;
 
 value arg_set_string =
   fun
-  [ IFNDEF OCAML_VERSION <= OCAML_3_06 THEN Arg.Set_string r -> Some r END
+  [ IFDEF OCAML_VERSION >= OCAML_3_07 THEN Arg.Set_string r -> Some r END
   | _ -> None ]
 ;
 
 value arg_set_int =
   fun
-  [ IFNDEF OCAML_VERSION <= OCAML_3_06 THEN Arg.Set_int r -> Some r END
+  [ IFDEF OCAML_VERSION >= OCAML_3_07 THEN Arg.Set_int r -> Some r END
   | _ -> None ]
 ;
 
 value arg_set_float =
   fun
-  [ IFNDEF OCAML_VERSION <= OCAML_3_06 THEN Arg.Set_float r -> Some r END
+  [ IFDEF OCAML_VERSION >= OCAML_3_07 THEN Arg.Set_float r -> Some r END
   | _ -> None ]
 ;
 
 value arg_symbol =
   fun
-  [ IFNDEF OCAML_VERSION <= OCAML_3_06 THEN Arg.Symbol s f -> Some (s, f) END
+  [ IFDEF OCAML_VERSION >= OCAML_3_07 THEN Arg.Symbol s f -> Some (s, f) END
   | _ -> None ]
 ;
 
 value arg_tuple =
   fun
-  [ IFNDEF OCAML_VERSION <= OCAML_3_06 THEN Arg.Tuple t -> Some t END
+  [ IFDEF OCAML_VERSION >= OCAML_3_07 THEN Arg.Tuple t -> Some t END
   | _ -> None ]
 ;
 
 value arg_bool =
   fun
-  [ IFNDEF OCAML_VERSION <= OCAML_3_06 THEN Arg.Bool f -> Some f END
+  [ IFDEF OCAML_VERSION >= OCAML_3_07 THEN Arg.Bool f -> Some f END
   | _ -> None ]
 ;
 
