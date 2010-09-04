@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 1.55 2010/09/04 11:19:56 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 1.56 2010/09/04 16:59:22 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
@@ -8,6 +8,7 @@ CAMLP5DIR=$TOP/camlp5
 MODE=--strict
 DOOPT=1
 
+wd=$(pwd)
 cd $DEST
 PATH=$(pwd)/bin:$PATH
 
@@ -39,7 +40,7 @@ getvers
 versopt=""
 while getopts ":d:hntv:" name; do
   case "$name" in
-  'd') D="$OPTARG"; OCAMLSDIR=$(cd "$D"; pwd); getvers;;
+  'd') D="$OPTARG"; OCAMLSDIR=$(cd "$wd"; cd "$D"; pwd); getvers;;
   'h') usage; exit 0;;
   'n') DOOPT=0;;
   't') MODE="--transitional";;
@@ -69,8 +70,8 @@ for i in $vers; do
   grep -v '$(MAKE) ocamlbuildlib.native'  > tmp
   mv tmp Makefile
   touch config/Makefile
-  if [ "$i" = "1.06" ]; then
-    cp ../1.07/byterun/floats.c byterun/floats.c
+  if [ "$i" = "1.05" -o "$i" = "1.06" ]; then
+    sed -i -e '/fpu_control.h/d;/setfpucw/d' byterun/floats.c
   fi
   echo "+++++ make clean"
   make clean
