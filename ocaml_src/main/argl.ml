@@ -196,7 +196,7 @@ Other options:
 
 let parse spec_list anon_fun remaining_args =
   let spec_list =
-    Sort.list (fun (k1, _, _) (k2, _, _) -> k1 >= k2) spec_list
+    list_sort (fun (k1, _, _) (k2, _, _) -> compare k2 k1) spec_list
   in
   parse_aux spec_list anon_fun remaining_args
 ;;

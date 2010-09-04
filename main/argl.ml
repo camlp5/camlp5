@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: argl.ml,v 1.8 2010/09/02 14:52:17 deraugla Exp $ *)
+(* $Id: argl.ml,v 1.9 2010/09/04 17:42:44 deraugla Exp $ *)
 
 open Printf;
 open Versdep;
@@ -182,7 +182,7 @@ Other options:
 
 value parse spec_list anon_fun remaining_args =
   let spec_list =
-    Sort.list (fun (k1, _, _) (k2, _, _) -> k1 >= k2) spec_list
+    list_sort (fun (k1, _, _) (k2, _, _) -> compare k2 k1) spec_list
   in
   parse_aux spec_list anon_fun remaining_args
 ;

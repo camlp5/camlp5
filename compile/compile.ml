@@ -1,11 +1,12 @@
 (* camlp5r *)
-(* $Id: compile.ml,v 1.38 2010/09/04 17:42:44 deraugla Exp $ *)
+(* $Id: compile.ml,v 1.39 2010/09/04 17:45:36 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
 
 open Gramext;
+open Versdep;
 
 value strict_parsing = ref False;
 value keywords = ref [];

@@ -1,11 +1,12 @@
 (* camlp5r *)
-(* $Id: pr_depend.ml,v 1.60 2010/09/04 12:38:54 deraugla Exp $ *)
+(* $Id: pr_depend.ml,v 1.61 2010/09/04 17:42:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
 #load "q_MLast.cmo";
 
 open MLast;
+open Versdep;
 
 value not_impl name x = do {
   let desc =
@@ -16,12 +17,6 @@ value not_impl name x = do {
   Printf.eprintf "pr_depend: not impl: %s; %s\n" name desc;
   flush stderr
 };
-
-value list_sort f l =
-  IFDEF OCAML_VERSION <= OCAML_2_99 THEN
-    Sort.list (fun x y -> f x y < 0) l
-  ELSE List.sort f l END
-;
 
 module StrSet =
   Set.Make (struct type t = string; value compare = compare; end)

@@ -212,6 +212,8 @@ let list_rev_map f =
   loop []
 ;;
 
+let list_sort f l = Sort.list (fun x y -> f x y <= 0) l;;
+
 let pervasives_set_binary_mode_out = Pervasives.set_binary_mode_out;;
 
 let scan_format fmt i kont =

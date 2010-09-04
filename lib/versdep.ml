@@ -1,5 +1,5 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.32 2010/09/04 12:38:54 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.33 2010/09/04 17:42:44 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
@@ -548,6 +548,12 @@ value list_rev_map =
   ELSE
     List.rev_map
   END
+;
+
+value list_sort =
+  IFDEF OCAML_VERSION <= OCAML_2_99 THEN
+    fun f l -> Sort.list (fun x y -> f x y <= 0) l
+  ELSE List.sort END
 ;
 
 value pervasives_set_binary_mode_out =
