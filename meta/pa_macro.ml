@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.45 2010/09/04 08:46:05 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.46 2010/09/04 12:24:15 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -130,6 +130,18 @@ value defined =
   ref
     [("CAMLP5", MvNone); ("CAMLP5_4_02", MvNone); ("CAMLP5_5_00", MvNone);
      ("OCAML_" ^ oversion, MvNone)]
+;
+
+value defined_version loc =
+  let s = "OCAML_" in
+  loop (List.rev defined.val) where rec loop =
+    fun
+    [ [(d, _) :: l] ->
+        if String.length d > String.length s &&
+           String.sub d 0 (String.length s) = s
+        then d
+        else loop l
+    | [] -> Ploc.raise loc (Failure "no defined version") ]
 ;
 
 value is_defined i =
@@ -538,9 +550,17 @@ EXTEND
   dexpr:
     [ [ x = SELF; "OR"; y = SELF -> x || y ]
     | [ x = SELF; "AND"; y = SELF -> x && y ]
+    | [ "OCAML_VERSION"; f = op; y = uident -> f (defined_version loc) y ]
     | [ "NOT"; x = SELF -> not x ]
     | [ i = uident -> is_defined i
       | "("; x = SELF; ")" -> x ] ]
+  ;
+  op:
+    [ [ "<=" -> \<=
+      | "<" -> \<
+      | "=" -> \=
+      | ">" -> \>
+      | ">=" -> \>= ] ]
   ;
   uident:
     [ [ i = UIDENT -> i ] ]

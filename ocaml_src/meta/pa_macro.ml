@@ -132,6 +132,21 @@ let defined =
      "OCAML_" ^ oversion, MvNone]
 ;;
 
+let defined_version loc =
+  let s = "OCAML_" in
+  let rec loop =
+    function
+      (d, _) :: l ->
+        if String.length d > String.length s &&
+           String.sub d 0 (String.length s) = s
+        then
+          d
+        else loop l
+    | [] -> Ploc.raise loc (Failure "no defined version")
+  in
+  loop (List.rev !defined)
+;;
+
 let is_defined i =
   i = "STRICT" && !(Pcaml.strict_mode) ||
   i = "COMPATIBLE_WITH_OLD_OCAML" &&
@@ -429,6 +444,7 @@ Grammar.extend
    and else_expr : 'else_expr Grammar.Entry.e =
      grammar_entry_create "else_expr"
    and dexpr : 'dexpr Grammar.Entry.e = grammar_entry_create "dexpr"
+   and op : 'op Grammar.Entry.e = grammar_entry_create "op"
    and uident : 'uident Grammar.Entry.e = grammar_entry_create "uident" in
    [Grammar.Entry.obj (str_item : 'str_item Grammar.Entry.e),
     Some Gramext.First,
@@ -907,6 +923,13 @@ Grammar.extend
         (fun (y : 'dexpr) _ (x : 'dexpr) (loc : Ploc.t) ->
            (x && y : 'dexpr))];
      None, None,
+     [[Gramext.Stoken ("", "OCAML_VERSION");
+       Gramext.Snterm (Grammar.Entry.obj (op : 'op Grammar.Entry.e));
+       Gramext.Snterm (Grammar.Entry.obj (uident : 'uident Grammar.Entry.e))],
+      Gramext.action
+        (fun (y : 'uident) (f : 'op) _ (loc : Ploc.t) ->
+           (f (defined_version loc) y : 'dexpr))];
+     None, None,
      [[Gramext.Stoken ("", "NOT"); Gramext.Sself],
       Gramext.action (fun (x : 'dexpr) _ (loc : Ploc.t) -> (not x : 'dexpr))];
      None, None,
@@ -915,6 +938,18 @@ Grammar.extend
       [Gramext.Snterm (Grammar.Entry.obj (uident : 'uident Grammar.Entry.e))],
       Gramext.action
         (fun (i : 'uident) (loc : Ploc.t) -> (is_defined i : 'dexpr))]];
+    Grammar.Entry.obj (op : 'op Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Stoken ("", ">=")],
+      Gramext.action (fun _ (loc : Ploc.t) -> ((>=) : 'op));
+      [Gramext.Stoken ("", ">")],
+      Gramext.action (fun _ (loc : Ploc.t) -> ((>) : 'op));
+      [Gramext.Stoken ("", "=")],
+      Gramext.action (fun _ (loc : Ploc.t) -> ((=) : 'op));
+      [Gramext.Stoken ("", "<")],
+      Gramext.action (fun _ (loc : Ploc.t) -> ((<) : 'op));
+      [Gramext.Stoken ("", "<=")],
+      Gramext.action (fun _ (loc : Ploc.t) -> ((<=) : 'op))]];
     Grammar.Entry.obj (uident : 'uident Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("UIDENT", "")],
