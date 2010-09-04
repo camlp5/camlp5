@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pprintf.mli,v 1.5 2010/09/03 14:12:00 deraugla Exp $ *)
+(* $Id: pprintf.mli,v 1.6 2010/09/04 08:46:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 (** Definitions for pprintf statement.
@@ -50,7 +50,7 @@ value sprint_break_all :
 
 #load "pa_macro.cmo";
 
-IFDEF OCAML_1_07 THEN
+IFDEF OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
   value with_ind : pr_context -> int -> pr_context;
   value with_ind_bef : pr_context -> int -> string -> pr_context;
   value with_ind_bef_aft :

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_MLast.ml,v 1.131 2010/09/03 16:11:32 deraugla Exp $ *)
+(* $Id: q_MLast.ml,v 1.132 2010/09/04 08:46:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -145,6 +145,9 @@ value expr = Grammar.Entry.create gram "expr";
 value module_type = Grammar.Entry.create gram "module_type";
 value module_expr = Grammar.Entry.create gram "module_expr";
 
+value structure = Grammar.Entry.create gram "structure";
+value signature = Grammar.Entry.create gram "signature";
+
 value class_type = Grammar.Entry.create gram "class_type";
 value class_expr = Grammar.Entry.create gram "class_expr";
 value class_sig_item = Grammar.Entry.create gram "class_sig_item";
@@ -271,16 +274,15 @@ value mklabdecl _ i mf t = Qast.Tuple [Qast.Loc; Qast.Str i; Qast.Bool mf; t];
 value mkident i = Qast.Str i;
 
 EXTEND
-  GLOBAL: sig_item str_item ctyp patt expr module_type module_expr class_type
-    class_expr class_sig_item class_str_item let_binding type_declaration
-    constructor_declaration label_declaration match_case ipatt with_constr
-    poly_variant;
+  GLOBAL: sig_item str_item ctyp patt expr module_type module_expr signature
+    structure class_type class_expr class_sig_item class_str_item let_binding
+    type_declaration constructor_declaration label_declaration match_case
+    ipatt with_constr poly_variant;
   module_expr:
     [ [ "functor"; "("; i = SV UIDENT; ":"; t = module_type; ")"; "->";
         me = SELF ->
           Qast.Node "MeFun" [Qast.Loc; i; t; me]
-      | "struct"; st = SV (LIST0 [ s = str_item; ";" -> s ]); "end" ->
-          Qast.Node "MeStr" [Qast.Loc; st] ]
+      | "struct"; st = structure; "end" -> Qast.Node "MeStr" [Qast.Loc; st] ]
     | [ me1 = SELF; me2 = SELF -> Qast.Node "MeApp" [Qast.Loc; me1; me2] ]
     | [ me1 = SELF; "."; me2 = SELF ->
           Qast.Node "MeAcc" [Qast.Loc; me1; me2] ]
@@ -289,6 +291,9 @@ EXTEND
       | "("; me = SELF; ":"; mt = module_type; ")" ->
           Qast.Node "MeTyc" [Qast.Loc; me; mt]
       | "("; me = SELF; ")" -> me ] ]
+  ;
+  structure:
+    [ [ st = SV (LIST0 [ s = str_item; ";" -> s ]) -> st ] ]
   ;
   str_item:
     [ "top"
@@ -338,8 +343,7 @@ EXTEND
           Qast.Node "MtFun" [Qast.Loc; i; t; mt] ]
     | [ mt = SELF; "with"; wcl = SV (LIST1 with_constr SEP "and") ->
           Qast.Node "MtWit" [Qast.Loc; mt; wcl] ]
-    | [ "sig"; sg = SV (LIST0 [ s = sig_item; ";" -> s ]); "end" ->
-          Qast.Node "MtSig" [Qast.Loc; sg] ]
+    | [ "sig"; sg = signature; "end" -> Qast.Node "MtSig" [Qast.Loc; sg] ]
     | [ m1 = SELF; m2 = SELF -> Qast.Node "MtApp" [Qast.Loc; m1; m2] ]
     | [ m1 = SELF; "."; m2 = SELF -> Qast.Node "MtAcc" [Qast.Loc; m1; m2] ]
     | "simple"
@@ -347,6 +351,9 @@ EXTEND
       | i = SV LIDENT -> Qast.Node "MtLid" [Qast.Loc; i]
       | "'"; i = SV ident "" -> Qast.Node "MtQuo" [Qast.Loc; i]
       | "("; mt = SELF; ")" -> mt ] ]
+  ;
+  signature:
+    [ [ st = SV (LIST0 [ s = sig_item; ";" -> s ]) -> st ] ]
   ;
   sig_item:
     [ "top"

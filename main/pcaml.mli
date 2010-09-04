@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pcaml.mli,v 1.33 2010/09/02 14:18:38 deraugla Exp $ *)
+(* $Id: pcaml.mli,v 1.34 2010/09/04 08:46:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -38,6 +38,8 @@ value top_phrase : Grammar.Entry.e (option MLast.str_item);
 value use_file : Grammar.Entry.e (list MLast.str_item * bool);
 value module_type : Grammar.Entry.e MLast.module_type;
 value module_expr : Grammar.Entry.e MLast.module_expr;
+value signature : Grammar.Entry.e (MLast.v (list MLast.sig_item));
+value structure : Grammar.Entry.e (MLast.v (list MLast.str_item));
 value sig_item : Grammar.Entry.e MLast.sig_item;
 value str_item : Grammar.Entry.e MLast.str_item;
 value expr : Grammar.Entry.e MLast.expr;

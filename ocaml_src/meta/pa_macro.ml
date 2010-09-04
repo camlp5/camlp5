@@ -94,6 +94,7 @@ Added statements:
 *)
 
 open Pcaml;;
+open Printf;;
 
 type macro_value =
     MvExpr of string list * MLast.expr
@@ -258,8 +259,7 @@ let rec eval =
           | MLast.ExLid (_, "-") ->
               MLast.ExInt (loc, string_of_int (x - y), "")
           | MLast.ExLid (_, "lor") ->
-              let s = Printf.sprintf "0o%o" (x lor y) in
-              MLast.ExInt (loc, s, "")
+              let s = sprintf "0o%o" (x lor y) in MLast.ExInt (loc, s, "")
           | _ -> cannot_eval op
           end
       | _ -> cannot_eval op
@@ -279,7 +279,7 @@ let may_eval =
 let incorrect_number loc l1 l2 =
   Ploc.raise loc
     (Failure
-       (Printf.sprintf "expected %d parameters; found %d" (List.length l2)
+       (sprintf "expected %d parameters; found %d" (List.length l2)
           (List.length l1)))
 ;;
 
@@ -389,6 +389,15 @@ let undef x =
   with Not_found -> ()
 ;;
 
+let apply_directive loc n dp =
+  let n = Pcaml.unvala n in
+  match try Some (Pcaml.find_directive n) with Not_found -> None with
+    Some f -> f (Pcaml.unvala dp)
+  | None ->
+      let msg = sprintf "unknown directive #%s" n in
+      Ploc.raise loc (Stream.Error msg)
+;;
+
 Grammar.extend
   (let _ = (expr : 'expr Grammar.Entry.e)
    and _ = (patt : 'patt Grammar.Entry.e)
@@ -407,10 +416,10 @@ Grammar.extend
    and sig_macro_def : 'sig_macro_def Grammar.Entry.e =
      grammar_entry_create "sig_macro_def"
    and else_sig : 'else_sig Grammar.Entry.e = grammar_entry_create "else_sig"
-   and str_item_or_macro : 'str_item_or_macro Grammar.Entry.e =
-     grammar_entry_create "str_item_or_macro"
-   and sig_item_or_macro : 'sig_item_or_macro Grammar.Entry.e =
-     grammar_entry_create "sig_item_or_macro"
+   and structure_or_macro : 'structure_or_macro Grammar.Entry.e =
+     grammar_entry_create "structure_or_macro"
+   and signature_or_macro : 'signature_or_macro Grammar.Entry.e =
+     grammar_entry_create "signature_or_macro"
    and opt_macro_expr : 'opt_macro_expr Grammar.Entry.e =
      grammar_entry_create "opt_macro_expr"
    and opt_macro_type : 'opt_macro_type Grammar.Entry.e =
@@ -430,13 +439,13 @@ Grammar.extend
       Gramext.action
         (fun (x : 'str_macro_def) (loc : Ploc.t) ->
            (match x with
-              SdStr (sil, stopped) ->
-                if stopped then
-                  begin match List.rev sil with
-                    MLast.StDir (loc, n, dp) :: _ ->
-                      Pcaml.find_directive (Pcaml.unvala n) (Pcaml.unvala dp)
-                  | _ -> ()
-                  end;
+              SdStr sil ->
+                let sil = Pcaml.unvala sil in
+                List.iter
+                  (function
+                     MLast.StDir (loc, n, dp) -> apply_directive loc n dp
+                   | _ -> ())
+                  sil;
                 begin match sil with
                   [si] -> si
                 | sil -> MLast.StDcl (loc, sil)
@@ -454,13 +463,13 @@ Grammar.extend
       Gramext.action
         (fun (x : 'sig_macro_def) (loc : Ploc.t) ->
            (match x with
-              SdStr (sil, stopped) ->
-                if stopped then
-                  begin match List.rev sil with
-                    MLast.SgDir (loc, n, dp) :: _ ->
-                      Pcaml.find_directive (Pcaml.unvala n) (Pcaml.unvala dp)
-                  | _ -> ()
-                  end;
+              SdStr sil ->
+                let sil = Pcaml.unvala sil in
+                List.iter
+                  (function
+                     MLast.SgDir (loc, n, dp) -> apply_directive loc n dp
+                   | _ -> ())
+                  sil;
                 begin match sil with
                   [si] -> si
                 | sil -> MLast.SgDcl (loc, sil)
@@ -476,12 +485,12 @@ Grammar.extend
        Gramext.Stoken ("", "THEN");
        Gramext.Snterm
          (Grammar.Entry.obj
-            (str_item_or_macro : 'str_item_or_macro Grammar.Entry.e));
+            (structure_or_macro : 'structure_or_macro Grammar.Entry.e));
        Gramext.Snterm
          (Grammar.Entry.obj (else_str : 'else_str Grammar.Entry.e));
        Gramext.Stoken ("", "END")],
       Gramext.action
-        (fun _ (d2 : 'else_str) (d1 : 'str_item_or_macro) _ (e : 'dexpr) _
+        (fun _ (d2 : 'else_str) (d1 : 'structure_or_macro) _ (e : 'dexpr) _
              (loc : Ploc.t) ->
            (if not e then d1 else d2 : 'str_macro_def));
       [Gramext.Stoken ("", "IFDEF");
@@ -489,12 +498,12 @@ Grammar.extend
        Gramext.Stoken ("", "THEN");
        Gramext.Snterm
          (Grammar.Entry.obj
-            (str_item_or_macro : 'str_item_or_macro Grammar.Entry.e));
+            (structure_or_macro : 'structure_or_macro Grammar.Entry.e));
        Gramext.Snterm
          (Grammar.Entry.obj (else_str : 'else_str Grammar.Entry.e));
        Gramext.Stoken ("", "END")],
       Gramext.action
-        (fun _ (d2 : 'else_str) (d1 : 'str_item_or_macro) _ (e : 'dexpr) _
+        (fun _ (d2 : 'else_str) (d1 : 'structure_or_macro) _ (e : 'dexpr) _
              (loc : Ploc.t) ->
            (if e then d1 else d2 : 'str_macro_def));
       [Gramext.Stoken ("", "UNDEF");
@@ -523,18 +532,18 @@ Grammar.extend
       [Gramext.Stoken ("", "ELSE");
        Gramext.Snterm
          (Grammar.Entry.obj
-            (str_item_or_macro : 'str_item_or_macro Grammar.Entry.e))],
+            (structure_or_macro : 'structure_or_macro Grammar.Entry.e))],
       Gramext.action
-        (fun (d1 : 'str_item_or_macro) _ (loc : Ploc.t) -> (d1 : 'else_str));
+        (fun (d1 : 'structure_or_macro) _ (loc : Ploc.t) -> (d1 : 'else_str));
       [Gramext.Stoken ("", "ELSIFNDEF");
        Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
        Gramext.Stoken ("", "THEN");
        Gramext.Snterm
          (Grammar.Entry.obj
-            (str_item_or_macro : 'str_item_or_macro Grammar.Entry.e));
+            (structure_or_macro : 'structure_or_macro Grammar.Entry.e));
        Gramext.Sself],
       Gramext.action
-        (fun (d2 : 'else_str) (d1 : 'str_item_or_macro) _ (e : 'dexpr) _
+        (fun (d2 : 'else_str) (d1 : 'structure_or_macro) _ (e : 'dexpr) _
              (loc : Ploc.t) ->
            (if not e then d1 else d2 : 'else_str));
       [Gramext.Stoken ("", "ELSIFDEF");
@@ -542,10 +551,10 @@ Grammar.extend
        Gramext.Stoken ("", "THEN");
        Gramext.Snterm
          (Grammar.Entry.obj
-            (str_item_or_macro : 'str_item_or_macro Grammar.Entry.e));
+            (structure_or_macro : 'structure_or_macro Grammar.Entry.e));
        Gramext.Sself],
       Gramext.action
-        (fun (d2 : 'else_str) (d1 : 'str_item_or_macro) _ (e : 'dexpr) _
+        (fun (d2 : 'else_str) (d1 : 'structure_or_macro) _ (e : 'dexpr) _
              (loc : Ploc.t) ->
            (if e then d1 else d2 : 'else_str))]];
     Grammar.Entry.obj (sig_macro_def : 'sig_macro_def Grammar.Entry.e), None,
@@ -555,12 +564,12 @@ Grammar.extend
        Gramext.Stoken ("", "THEN");
        Gramext.Snterm
          (Grammar.Entry.obj
-            (sig_item_or_macro : 'sig_item_or_macro Grammar.Entry.e));
+            (signature_or_macro : 'signature_or_macro Grammar.Entry.e));
        Gramext.Snterm
          (Grammar.Entry.obj (else_sig : 'else_sig Grammar.Entry.e));
        Gramext.Stoken ("", "END")],
       Gramext.action
-        (fun _ (d2 : 'else_sig) (d1 : 'sig_item_or_macro) _ (e : 'dexpr) _
+        (fun _ (d2 : 'else_sig) (d1 : 'signature_or_macro) _ (e : 'dexpr) _
              (loc : Ploc.t) ->
            (if not e then d1 else d2 : 'sig_macro_def));
       [Gramext.Stoken ("", "IFDEF");
@@ -568,12 +577,12 @@ Grammar.extend
        Gramext.Stoken ("", "THEN");
        Gramext.Snterm
          (Grammar.Entry.obj
-            (sig_item_or_macro : 'sig_item_or_macro Grammar.Entry.e));
+            (signature_or_macro : 'signature_or_macro Grammar.Entry.e));
        Gramext.Snterm
          (Grammar.Entry.obj (else_sig : 'else_sig Grammar.Entry.e));
        Gramext.Stoken ("", "END")],
       Gramext.action
-        (fun _ (d2 : 'else_sig) (d1 : 'sig_item_or_macro) _ (e : 'dexpr) _
+        (fun _ (d2 : 'else_sig) (d1 : 'signature_or_macro) _ (e : 'dexpr) _
              (loc : Ploc.t) ->
            (if e then d1 else d2 : 'sig_macro_def));
       [Gramext.Stoken ("", "UNDEF");
@@ -602,18 +611,18 @@ Grammar.extend
       [Gramext.Stoken ("", "ELSE");
        Gramext.Snterm
          (Grammar.Entry.obj
-            (sig_item_or_macro : 'sig_item_or_macro Grammar.Entry.e))],
+            (signature_or_macro : 'signature_or_macro Grammar.Entry.e))],
       Gramext.action
-        (fun (d1 : 'sig_item_or_macro) _ (loc : Ploc.t) -> (d1 : 'else_sig));
+        (fun (d1 : 'signature_or_macro) _ (loc : Ploc.t) -> (d1 : 'else_sig));
       [Gramext.Stoken ("", "ELSIFNDEF");
        Gramext.Snterm (Grammar.Entry.obj (dexpr : 'dexpr Grammar.Entry.e));
        Gramext.Stoken ("", "THEN");
        Gramext.Snterm
          (Grammar.Entry.obj
-            (sig_item_or_macro : 'sig_item_or_macro Grammar.Entry.e));
+            (signature_or_macro : 'signature_or_macro Grammar.Entry.e));
        Gramext.Sself],
       Gramext.action
-        (fun (d2 : 'else_sig) (d1 : 'sig_item_or_macro) _ (e : 'dexpr) _
+        (fun (d2 : 'else_sig) (d1 : 'signature_or_macro) _ (e : 'dexpr) _
              (loc : Ploc.t) ->
            (if not e then d1 else d2 : 'else_sig));
       [Gramext.Stoken ("", "ELSIFDEF");
@@ -621,40 +630,42 @@ Grammar.extend
        Gramext.Stoken ("", "THEN");
        Gramext.Snterm
          (Grammar.Entry.obj
-            (sig_item_or_macro : 'sig_item_or_macro Grammar.Entry.e));
+            (signature_or_macro : 'signature_or_macro Grammar.Entry.e));
        Gramext.Sself],
       Gramext.action
-        (fun (d2 : 'else_sig) (d1 : 'sig_item_or_macro) _ (e : 'dexpr) _
+        (fun (d2 : 'else_sig) (d1 : 'signature_or_macro) _ (e : 'dexpr) _
              (loc : Ploc.t) ->
            (if e then d1 else d2 : 'else_sig))]];
     Grammar.Entry.obj
-      (str_item_or_macro : 'str_item_or_macro Grammar.Entry.e),
+      (structure_or_macro : 'structure_or_macro Grammar.Entry.e),
     None,
     [None, None,
-     [[Gramext.Snterm (Grammar.Entry.obj (implem : 'implem Grammar.Entry.e))],
+     [[Gramext.Snterm
+         (Grammar.Entry.obj (structure : 'structure Grammar.Entry.e))],
       Gramext.action
-        (fun (sil, stopped : 'implem) (loc : Ploc.t) ->
-           (SdStr (List.map fst sil, stopped) : 'str_item_or_macro));
+        (fun (sil : 'structure) (loc : Ploc.t) ->
+           (SdStr sil : 'structure_or_macro));
       [Gramext.Snterm
          (Grammar.Entry.obj
             (str_macro_def : 'str_macro_def Grammar.Entry.e))],
       Gramext.action
         (fun (d : 'str_macro_def) (loc : Ploc.t) ->
-           (d : 'str_item_or_macro))]];
+           (d : 'structure_or_macro))]];
     Grammar.Entry.obj
-      (sig_item_or_macro : 'sig_item_or_macro Grammar.Entry.e),
+      (signature_or_macro : 'signature_or_macro Grammar.Entry.e),
     None,
     [None, None,
-     [[Gramext.Snterm (Grammar.Entry.obj (interf : 'interf Grammar.Entry.e))],
+     [[Gramext.Snterm
+         (Grammar.Entry.obj (signature : 'signature Grammar.Entry.e))],
       Gramext.action
-        (fun (sil, stopped : 'interf) (loc : Ploc.t) ->
-           (SdStr (List.map fst sil, stopped) : 'sig_item_or_macro));
+        (fun (sil : 'signature) (loc : Ploc.t) ->
+           (SdStr sil : 'signature_or_macro));
       [Gramext.Snterm
          (Grammar.Entry.obj
             (sig_macro_def : 'sig_macro_def Grammar.Entry.e))],
       Gramext.action
         (fun (d : 'sig_macro_def) (loc : Ploc.t) ->
-           (d : 'sig_item_or_macro))]];
+           (d : 'signature_or_macro))]];
     Grammar.Entry.obj (opt_macro_expr : 'opt_macro_expr Grammar.Entry.e),
     None,
     [None, None,

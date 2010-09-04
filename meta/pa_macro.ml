@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_macro.ml,v 1.44 2010/09/02 14:18:38 deraugla Exp $ *)
+(* $Id: pa_macro.ml,v 1.45 2010/09/04 08:46:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -94,6 +94,7 @@ Added statements:
 *)
 
 open Pcaml;
+open Printf;
 
 type macro_value =
   [ MvExpr of list string and MLast.expr
@@ -243,7 +244,7 @@ value rec eval =
           [ <:expr< $lid:"+"$ >> -> <:expr< $int:string_of_int (x + y)$ >>
           | <:expr< $lid:"-"$ >> -> <:expr< $int:string_of_int (x - y)$ >>
           | <:expr< $lid:"lor"$ >> ->
-              let s = Printf.sprintf "0o%o" (x lor y) in
+              let s = sprintf "0o%o" (x lor y) in
               <:expr< $int:s$ >>
           | _ -> cannot_eval op ]
       | _ -> cannot_eval op ]
@@ -266,7 +267,7 @@ value may_eval =
 value incorrect_number loc l1 l2 =
   Ploc.raise loc
     (Failure
-       (Printf.sprintf "expected %d parameters; found %d" (List.length l2)
+       (sprintf "expected %d parameters; found %d" (List.length l2)
           (List.length l1)))
 ;
 
@@ -367,20 +368,31 @@ value undef x =
   [ Not_found -> () ]
 ;
 
+value apply_directive loc n dp =
+  let n = Pcaml.unvala n in
+  match
+    try Some (Pcaml.find_directive n) with
+    [ Not_found -> None ]
+  with
+  [ Some f -> f (Pcaml.unvala dp)
+  | None ->
+      let msg = sprintf "unknown directive #%s" n in 
+      Ploc.raise loc (Stream.Error msg) ]
+;
+
 EXTEND
   GLOBAL: expr patt str_item sig_item constructor_declaration match_case
     label_declaration;
   str_item: FIRST
     [ [ x = str_macro_def ->
           match x with
-          [ SdStr (sil, stopped) -> do {
-              if stopped then do {
-                match List.rev sil with
-                [ [MLast.StDir loc n dp :: _] ->
-                    Pcaml.find_directive (Pcaml.unvala n) (Pcaml.unvala dp)
-                | _ -> () ];
-              }
-              else ();
+          [ SdStr sil -> do {
+              let sil = Pcaml.unvala sil in
+              List.iter
+                (fun
+                 [ MLast.StDir loc n dp -> apply_directive loc n dp
+                 | _ -> () ])
+                sil;
               match sil with
               [ [si] -> si
               | sil -> <:str_item< declare $list:sil$ end >> ]
@@ -392,14 +404,13 @@ EXTEND
   sig_item: FIRST
     [ [ x = sig_macro_def ->
           match x with
-          [ SdStr (sil, stopped) -> do {
-              if stopped then do {
-                match List.rev sil with
-                [ [MLast.SgDir loc n dp :: _] ->
-                    Pcaml.find_directive (Pcaml.unvala n) (Pcaml.unvala dp)
-                | _ -> () ];
-              }
-              else ();
+          [ SdStr sil -> do {
+              let sil = Pcaml.unvala sil in
+              List.iter
+                (fun
+                 [ MLast.SgDir loc n dp -> apply_directive loc n dp
+                 | _ -> () ])
+                sil;
               match sil with
               [ [si] -> si
               | sil -> <:sig_item< declare $list:sil$ end >> ]
@@ -412,48 +423,47 @@ EXTEND
     [ [ "DEFINE"; i = uident; def = opt_macro_expr -> SdDef i def
       | "DEFINE_TYPE"; i = uident; def = opt_macro_type -> SdDef i def
       | "UNDEF"; i = uident -> SdUnd i
-      | "IFDEF"; e = dexpr; "THEN"; d1 = str_item_or_macro;
+      | "IFDEF"; e = dexpr; "THEN"; d1 = structure_or_macro;
         d2 = else_str; "END" ->
           if e then d1 else d2
-      | "IFNDEF"; e = dexpr; "THEN"; d1 = str_item_or_macro;
+      | "IFNDEF"; e = dexpr; "THEN"; d1 = structure_or_macro;
         d2 = else_str; "END" ->
           if not e then d1 else d2 ] ]
   ;
   else_str:
-    [ [ "ELSIFDEF"; e = dexpr; "THEN"; d1 = str_item_or_macro;
+    [ [ "ELSIFDEF"; e = dexpr; "THEN"; d1 = structure_or_macro;
         d2 = else_str -> if e then d1 else d2
-      | "ELSIFNDEF"; e = dexpr; "THEN"; d1 = str_item_or_macro;
+      | "ELSIFNDEF"; e = dexpr; "THEN"; d1 = structure_or_macro;
         d2 = else_str -> if not e then d1 else d2
-      | "ELSE"; d1 = str_item_or_macro -> d1
+      | "ELSE"; d1 = structure_or_macro -> d1
       | -> SdNop ] ]
   ;
   sig_macro_def:
     [ [ "DEFINE"; i = uident; def = opt_macro_type -> SdDef i def
       | "DEFINE_TYPE"; i = uident; def = opt_macro_type -> SdDef i def
       | "UNDEF"; i = uident -> SdUnd i
-
-      | "IFDEF"; e = dexpr; "THEN"; d1 = sig_item_or_macro;
+      | "IFDEF"; e = dexpr; "THEN"; d1 = signature_or_macro;
         d2 = else_sig; "END" ->
           if e then d1 else d2
-      | "IFNDEF"; e = dexpr; "THEN"; d1 = sig_item_or_macro;
+      | "IFNDEF"; e = dexpr; "THEN"; d1 = signature_or_macro;
         d2 = else_sig; "END" ->
           if not e then d1 else d2 ] ]
   ;
   else_sig:
-    [ [ "ELSIFDEF"; e = dexpr; "THEN"; d1 = sig_item_or_macro;
+    [ [ "ELSIFDEF"; e = dexpr; "THEN"; d1 = signature_or_macro;
         d2 = else_sig -> if e then d1 else d2
-      | "ELSIFNDEF"; e = dexpr; "THEN"; d1 = sig_item_or_macro;
+      | "ELSIFNDEF"; e = dexpr; "THEN"; d1 = signature_or_macro;
         d2 = else_sig -> if not e then d1 else d2
-      | "ELSE"; d1 = sig_item_or_macro -> d1
+      | "ELSE"; d1 = signature_or_macro -> d1
       | -> SdNop ] ]
   ;
-  str_item_or_macro:
+  structure_or_macro:
     [ [ d = str_macro_def -> d
-      | (sil, stopped) = implem -> SdStr (List.map fst sil, stopped) ] ]
+      | sil = structure -> SdStr sil ] ]
   ;
-  sig_item_or_macro:
+  signature_or_macro:
     [ [ d = sig_macro_def -> d
-      | (sil, stopped) = interf -> SdStr (List.map fst sil, stopped) ] ]
+      | sil = signature -> SdStr sil ] ]
   ;
   opt_macro_expr:
     [ [ pl = macro_param; "="; e = expr -> MvExpr pl e

@@ -38,6 +38,8 @@ val top_phrase : MLast.str_item option Grammar.Entry.e;;
 val use_file : (MLast.str_item list * bool) Grammar.Entry.e;;
 val module_type : MLast.module_type Grammar.Entry.e;;
 val module_expr : MLast.module_expr Grammar.Entry.e;;
+val signature : MLast.sig_item list MLast.v Grammar.Entry.e;;
+val structure : MLast.str_item list MLast.v Grammar.Entry.e;;
 val sig_item : MLast.sig_item Grammar.Entry.e;;
 val str_item : MLast.str_item Grammar.Entry.e;;
 val expr : MLast.expr Grammar.Entry.e;;

@@ -22,6 +22,8 @@ Grammar.Unsafe.clear_entry module_type;
 Grammar.Unsafe.clear_entry module_expr;
 Grammar.Unsafe.clear_entry sig_item;
 Grammar.Unsafe.clear_entry str_item;
+Grammar.Unsafe.clear_entry signature;
+Grammar.Unsafe.clear_entry structure;
 Grammar.Unsafe.clear_entry expr;
 Grammar.Unsafe.clear_entry patt;
 Grammar.Unsafe.clear_entry ipatt;
@@ -131,6 +133,8 @@ Grammar.extend
    and _ = (expr : 'expr Grammar.Entry.e)
    and _ = (module_type : 'module_type Grammar.Entry.e)
    and _ = (module_expr : 'module_expr Grammar.Entry.e)
+   and _ = (signature : 'signature Grammar.Entry.e)
+   and _ = (structure : 'structure Grammar.Entry.e)
    and _ = (class_type : 'class_type Grammar.Entry.e)
    and _ = (class_expr : 'class_expr Grammar.Entry.e)
    and _ = (class_sig_item : 'class_sig_item Grammar.Entry.e)
@@ -237,16 +241,11 @@ Grammar.extend
    [Grammar.Entry.obj (module_expr : 'module_expr Grammar.Entry.e), None,
     [None, None,
      [[Gramext.Stoken ("", "struct");
-       Gramext.Slist0
-         (Gramext.srules
-            [[Gramext.Snterm
-                (Grammar.Entry.obj (str_item : 'str_item Grammar.Entry.e));
-              Gramext.Stoken ("", ";")],
-             Gramext.action
-               (fun _ (s : 'str_item) (loc : Ploc.t) -> (s : 'e__1))]);
+       Gramext.Snterm
+         (Grammar.Entry.obj (structure : 'structure Grammar.Entry.e));
        Gramext.Stoken ("", "end")],
       Gramext.action
-        (fun _ (st : 'e__1 list) _ (loc : Ploc.t) ->
+        (fun _ (st : 'structure) _ (loc : Ploc.t) ->
            (MLast.MeStr (loc, st) : 'module_expr));
       [Gramext.Stoken ("", "functor"); Gramext.Stoken ("", "(");
        Gramext.Stoken ("UIDENT", ""); Gramext.Stoken ("", ":");
@@ -282,6 +281,17 @@ Grammar.extend
       Gramext.action
         (fun (i : string) (loc : Ploc.t) ->
            (MLast.MeUid (loc, i) : 'module_expr))]];
+    Grammar.Entry.obj (structure : 'structure Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Slist0
+         (Gramext.srules
+            [[Gramext.Snterm
+                (Grammar.Entry.obj (str_item : 'str_item Grammar.Entry.e));
+              Gramext.Stoken ("", ";")],
+             Gramext.action
+               (fun _ (s : 'str_item) (loc : Ploc.t) -> (s : 'e__1))])],
+      Gramext.action
+        (fun (st : 'e__1 list) (loc : Ploc.t) -> (st : 'structure))]];
     Grammar.Entry.obj (str_item : 'str_item Grammar.Entry.e), None,
     [Some "top", None,
      [[Gramext.Snterm (Grammar.Entry.obj (expr : 'expr Grammar.Entry.e))],
@@ -435,16 +445,11 @@ Grammar.extend
            (MLast.MtWit (loc, mt, wcl) : 'module_type))];
      None, None,
      [[Gramext.Stoken ("", "sig");
-       Gramext.Slist0
-         (Gramext.srules
-            [[Gramext.Snterm
-                (Grammar.Entry.obj (sig_item : 'sig_item Grammar.Entry.e));
-              Gramext.Stoken ("", ";")],
-             Gramext.action
-               (fun _ (s : 'sig_item) (loc : Ploc.t) -> (s : 'e__3))]);
+       Gramext.Snterm
+         (Grammar.Entry.obj (signature : 'signature Grammar.Entry.e));
        Gramext.Stoken ("", "end")],
       Gramext.action
-        (fun _ (sg : 'e__3 list) _ (loc : Ploc.t) ->
+        (fun _ (sg : 'signature) _ (loc : Ploc.t) ->
            (MLast.MtSig (loc, sg) : 'module_type))];
      None, None,
      [[Gramext.Sself; Gramext.Sself],
@@ -473,6 +478,17 @@ Grammar.extend
       Gramext.action
         (fun (i : string) (loc : Ploc.t) ->
            (MLast.MtUid (loc, i) : 'module_type))]];
+    Grammar.Entry.obj (signature : 'signature Grammar.Entry.e), None,
+    [None, None,
+     [[Gramext.Slist0
+         (Gramext.srules
+            [[Gramext.Snterm
+                (Grammar.Entry.obj (sig_item : 'sig_item Grammar.Entry.e));
+              Gramext.Stoken ("", ";")],
+             Gramext.action
+               (fun _ (s : 'sig_item) (loc : Ploc.t) -> (s : 'e__3))])],
+      Gramext.action
+        (fun (st : 'e__3 list) (loc : Ploc.t) -> (st : 'signature))]];
     Grammar.Entry.obj (sig_item : 'sig_item Grammar.Entry.e), None,
     [Some "top", None,
      [[Gramext.Stoken ("", "#"); Gramext.Stoken ("LIDENT", "");
@@ -2410,8 +2426,7 @@ Grammar.extend
    and phrase : 'phrase Grammar.Entry.e = grammar_entry_create "phrase" in
    [Grammar.Entry.obj (interf : 'interf Grammar.Entry.e), None,
     [None, None,
-     [[], Gramext.action (fun (loc : Ploc.t) -> ([], true : 'interf));
-      [Gramext.Stoken ("EOI", "")],
+     [[Gramext.Stoken ("EOI", "")],
       Gramext.action (fun _ (loc : Ploc.t) -> ([], false : 'interf));
       [Gramext.Snterm
          (Grammar.Entry.obj (sig_item_semi : 'sig_item_semi Grammar.Entry.e));
@@ -2436,8 +2451,7 @@ Grammar.extend
            (si, loc : 'sig_item_semi))]];
     Grammar.Entry.obj (implem : 'implem Grammar.Entry.e), None,
     [None, None,
-     [[], Gramext.action (fun (loc : Ploc.t) -> ([], true : 'implem));
-      [Gramext.Stoken ("EOI", "")],
+     [[Gramext.Stoken ("EOI", "")],
       Gramext.action (fun _ (loc : Ploc.t) -> ([], false : 'implem));
       [Gramext.Snterm
          (Grammar.Entry.obj (str_item_semi : 'str_item_semi Grammar.Entry.e));

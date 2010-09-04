@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: main.ml,v 1.18 2010/09/03 14:12:00 deraugla Exp $ *)
+(* $Id: main.ml,v 1.19 2010/09/04 08:46:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "q_MLast.cmo";
@@ -90,12 +90,14 @@ value rec parse_file pa getdir useast = do {
                     list_rev_append rpl
                       [(useast loc1 s (use_file pa getdir useast s), loc1)]
                 | (loc, x, eo) -> do {
-                    try
-                      let f = Pcaml.find_directive x in
-                      f eo
+                    match
+                      try Some (Pcaml.find_directive x) with
+                      [ Not_found -> None ]
                     with
-                    [ Not_found ->
-                        Ploc.raise loc (Stream.Error "bad directive") ];
+                    [ Some f -> f eo
+                    | None ->
+                        let msg = sprintf "unknown directive #%s" x in
+                        Ploc.raise loc (Stream.Error msg) ];
                     pl
                   } ]
             | None -> pl ]

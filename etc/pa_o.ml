@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 1.86 2010/08/12 11:39:42 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.87 2010/09/04 08:46:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -23,6 +23,8 @@ do {
   Grammar.Unsafe.clear_entry module_expr;
   Grammar.Unsafe.clear_entry sig_item;
   Grammar.Unsafe.clear_entry str_item;
+  Grammar.Unsafe.clear_entry signature;
+  Grammar.Unsafe.clear_entry structure;
   Grammar.Unsafe.clear_entry expr;
   Grammar.Unsafe.clear_entry patt;
   Grammar.Unsafe.clear_entry ctyp;
@@ -352,21 +354,24 @@ value quotation_content s = do {
 };
 
 EXTEND
-  GLOBAL: sig_item str_item ctyp patt expr module_type module_expr class_type
-    class_expr class_sig_item class_str_item let_binding type_declaration
-    constructor_declaration label_declaration match_case with_constr
-    poly_variant;
+  GLOBAL: sig_item str_item ctyp patt expr module_type module_expr
+    signature structure class_type class_expr class_sig_item class_str_item
+    let_binding type_declaration constructor_declaration label_declaration
+    match_case with_constr poly_variant;
   module_expr:
     [ [ "functor"; "("; i = V UIDENT "uid" ""; ":"; t = module_type; ")";
         "->"; me = SELF ->
           <:module_expr< functor ( $_uid:i$ : $t$ ) -> $me$ >>
-      | "struct"; st = V (LIST0 [ s = str_item; OPT ";;" -> s ]); "end" ->
+      | "struct"; st = structure; "end" ->
           <:module_expr< struct $_list:st$ end >> ]
     | [ me1 = SELF; me2 = SELF -> <:module_expr< $me1$ $me2$ >> ]
     | [ i = mod_expr_ident -> i
       | "("; me = SELF; ":"; mt = module_type; ")" ->
           <:module_expr< ( $me$ : $mt$ ) >>
       | "("; me = SELF; ")" -> <:module_expr< $me$ >> ] ]
+  ;
+  structure:
+    [ [ st = V (LIST0 [ s = str_item; OPT ";;" -> s ]) -> st ] ]
   ;
   mod_expr_ident:
     [ LEFTA
@@ -429,10 +434,13 @@ EXTEND
           <:module_type< functor ( $_uid:i$ : $t$ ) -> $mt$ >> ]
     | [ mt = SELF; "with"; wcl = V (LIST1 with_constr SEP "and") ->
           <:module_type< $mt$ with $_list:wcl$ >> ]
-    | [ "sig"; sg = V (LIST0 [ s = sig_item; OPT ";;" -> s ]); "end" ->
+    | [ "sig"; sg = signature; "end" ->
           <:module_type< sig $_list:sg$ end >>
       | i = mod_type_ident -> i
       | "("; mt = SELF; ")" -> <:module_type< $mt$ >> ] ]
+  ;
+  signature:
+    [ [ sg = V (LIST0 [ s = sig_item; OPT ";;" -> s ]) -> sg ] ]
   ;
   mod_type_ident:
     [ LEFTA

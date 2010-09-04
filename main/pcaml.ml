@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pcaml.ml,v 1.82 2010/09/02 14:18:38 deraugla Exp $ *)
+(* $Id: pcaml.ml,v 1.83 2010/09/04 08:46:05 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -22,6 +22,8 @@ value interf = Grammar.Entry.create gram "interf";
 value implem = Grammar.Entry.create gram "implem";
 value top_phrase = Grammar.Entry.create gram "top_phrase";
 value use_file = Grammar.Entry.create gram "use_file";
+value signature = Grammar.Entry.create gram "signature";
+value structure = Grammar.Entry.create gram "structure";
 value sig_item = Grammar.Entry.create gram "sig_item";
 value str_item = Grammar.Entry.create gram "str_item";
 value module_type = Grammar.Entry.create gram "module_type";
