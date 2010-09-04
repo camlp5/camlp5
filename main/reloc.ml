@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: reloc.ml,v 1.41 2010/09/03 13:21:29 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.42 2010/09/04 11:15:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -73,7 +73,7 @@ value class_infos a floc sh x =
    ciNam = x.ciNam; ciExp = a floc sh x.ciExp}
 ;
 
-IFDEF OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
+IFDEF OCAML_1_06 OR OCAML_1_07 OR COMPATIBLE_WITH_OLD_OCAML THEN
   value with_tdNam_tdDef_tdCon td tdNam tdDef tdCon =
     {tdNam = tdNam; tdPrm = td.tdPrm; tdPrv = td.tdPrv; tdDef = tdDef;
      tdCon = tdCon}

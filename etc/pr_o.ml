@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pr_o.ml,v 1.208 2010/09/03 14:12:00 deraugla Exp $ *)
+(* $Id: pr_o.ml,v 1.209 2010/09/04 11:15:27 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #directory ".";
@@ -154,7 +154,7 @@ value cons_escaped pc (loc, v) =
   pprintf pc "%s" x
 ;
 
-IFDEF OCAML_1_07 THEN
+IFDEF OCAML_1_06 OR OCAML_1_07 THEN
   value with_ind = Pprintf.with_ind;
   value with_bef = Pprintf.with_bef;
   value with_bef_aft = Pprintf.with_bef_aft;

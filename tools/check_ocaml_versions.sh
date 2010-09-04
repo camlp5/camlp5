@@ -1,5 +1,5 @@
 #!/bin/sh -e
-# $Id: check_ocaml_versions.sh,v 1.53 2010/09/03 16:11:32 deraugla Exp $
+# $Id: check_ocaml_versions.sh,v 1.54 2010/09/04 11:15:29 deraugla Exp $
 
 TOP=$HOME/work
 DEST=$TOP/usr
@@ -69,6 +69,9 @@ for i in $vers; do
   grep -v '$(MAKE) ocamlbuildlib.native'  > tmp
   mv tmp Makefile
   touch config/Makefile
+  if [ "$i" = "1.06" ]; then
+    cp ../1.07/byterun/floats.c byterun/floats.c
+  fi
   echo "+++++ make clean"
   make clean
   echo "+++++ ./configure -bindir $TOP/usr/bin -libdir $TOP/usr/lib/ocaml -mandir $TOP/usr/man"
@@ -78,8 +81,9 @@ for i in $vers; do
   if [ "$DOOPT" = "0" ]; then
     echo "+++++ time make world"
     time make world
-  elif [ "$i" = "1.07" -o "$i" = "2.00" -o "$i" = "2.01" -o "$i" = "2.02" -o \
-         "$i" = "2.03" -o "$i" = "2.04" -o "$i" = "2.99" -o "$i" = "3.00" ]
+  elif [ "$i" = "1.06" -o "$i" = "1.07" -o "$i" = "2.00" -o "$i" = "2.01" -o \
+         "$i" = "2.02" -o "$i" = "2.03" -o "$i" = "2.04" -o "$i" = "2.99" -o \
+         "$i" = "3.00" ]
   then
     echo "+++++ time make world opt"
     time make world opt

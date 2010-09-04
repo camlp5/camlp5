@@ -1,12 +1,15 @@
 (* camlp5r pa_macro.cmo *)
-(* $Id: versdep.ml,v 1.29 2010/09/03 13:21:29 deraugla Exp $ *)
+(* $Id: versdep.ml,v 1.30 2010/09/04 11:15:28 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 open Parsetree;
 open Longident;
 open Asttypes;
 
-IFDEF OCAML_1_07 OR OCAML_2_00 OR OCAML_2_01 OR OCAML_2_02 THEN
+IFDEF OCAML_1_06 OR OCAML_1_07 THEN
+  DEFINE OCAML_1_07_OR_BEFORE
+END;
+IFDEF OCAML_1_07_OR_BEFORE OR OCAML_2_00 OR OCAML_2_01 OR OCAML_2_02 THEN
   DEFINE OCAML_2_02_OR_BEFORE
 END;
 IFDEF OCAML_2_02_OR_BEFORE OR OCAML_2_03 OR OCAML_2_04 THEN
@@ -58,7 +61,8 @@ type choice 'a 'b =
 ;
 
 value sys_ocaml_version =
-  IFDEF OCAML_1_07 THEN "1.07"
+  IFDEF OCAML_1_06 THEN "1.06"
+  ELSIFDEF OCAML_1_07 THEN "1.07"
   ELSIFDEF OCAML_2_00 THEN "2.00"
   ELSIFDEF OCAML_2_01 THEN "2.01"
   ELSIFDEF OCAML_2_02 THEN "2.02"
@@ -90,7 +94,7 @@ value ocaml_location (fname, lnum, bolp, bp, ep) =
 ;
 
 value ocaml_type_declaration params cl tk pf tm loc variance =
-  IFDEF OCAML_1_07 THEN
+  IFDEF OCAML_1_07_OR_BEFORE THEN
     try
       let cl =
         List.map
@@ -122,12 +126,12 @@ value ocaml_type_declaration params cl tk pf tm loc variance =
 ;
 
 value ocaml_class_type =
-  IFDEF OCAML_1_07 THEN None
+  IFDEF OCAML_1_07_OR_BEFORE THEN None
   ELSE Some (fun d loc -> {pcty_desc = d; pcty_loc = loc}) END
 ;
 
 value ocaml_class_expr =
-  IFDEF OCAML_1_07 THEN None
+  IFDEF OCAML_1_07_OR_BEFORE THEN None
   ELSE Some (fun d loc -> {pcl_desc = d; pcl_loc = loc}) END
 ;
 
@@ -278,7 +282,7 @@ value ocaml_pexp_lazy =
 ;
 
 value ocaml_pexp_letmodule =
-  IFDEF OCAML_1_07 THEN None
+  IFDEF OCAML_1_07_OR_BEFORE THEN None
   ELSE Some (fun i me e -> Pexp_letmodule i me e) END
 ;
 
@@ -293,7 +297,7 @@ value ocaml_pexp_poly =
 ;
 
 value ocaml_pexp_record lel =
-  IFDEF OCAML_1_07 THEN
+  IFDEF OCAML_1_07_OR_BEFORE THEN
     fun
     [ Some _ -> invalid_arg "ocaml_pexp_record"
     | None -> Pexp_record lel ]
@@ -314,7 +318,7 @@ value ocaml_pexp_variant =
 ;
 
 value ocaml_ppat_array =
-  IFDEF OCAML_1_07 THEN None ELSE Some (fun pl -> Ppat_array pl) END
+  IFDEF OCAML_1_07_OR_BEFORE THEN None ELSE Some (fun pl -> Ppat_array pl) END
 ;
 
 value ocaml_ppat_lazy =
@@ -345,7 +349,8 @@ value ocaml_ppat_variant =
 ;
 
 value ocaml_psig_class_type =
-  IFDEF OCAML_1_07 THEN None ELSE Some (fun ctl -> Psig_class_type ctl) END
+  IFDEF OCAML_1_07_OR_BEFORE THEN None
+  ELSE Some (fun ctl -> Psig_class_type ctl) END
 ;
 
 value ocaml_psig_recmodule =
@@ -354,7 +359,8 @@ value ocaml_psig_recmodule =
 ;
 
 value ocaml_pstr_class_type =
-  IFDEF OCAML_1_07 THEN None ELSE Some (fun ctl -> Pstr_class_type ctl) END
+  IFDEF OCAML_1_07_OR_BEFORE THEN None
+  ELSE Some (fun ctl -> Pstr_class_type ctl) END
 ;
 
 value ocaml_pstr_exn_rebind =
@@ -373,7 +379,7 @@ value ocaml_pstr_recmodule =
 ;
 
 value ocaml_class_infos =
-  IFDEF OCAML_1_07 THEN None
+  IFDEF OCAML_1_07_OR_BEFORE THEN None
   ELSIFDEF OCAML_3_00_OR_BEFORE THEN
     Some
       (fun virt params name expr loc variance ->
@@ -388,12 +394,12 @@ value ocaml_class_infos =
 ;
 
 value ocaml_pcf_cstr =
-  IFDEF OCAML_1_07 THEN None
+  IFDEF OCAML_1_07_OR_BEFORE THEN None
   ELSE Some (fun (t1, t2, loc) -> Pcf_cstr (t1, t2, loc)) END
 ;
 
 value ocaml_pcf_inher =
-  IFDEF OCAML_1_07 THEN
+  IFDEF OCAML_1_07_OR_BEFORE THEN
     fun (id, cl, el, loc) pb -> Pcf_inher (id, cl, el, pb, loc)
   ELSIFDEF OCAML_3_12_OR_AFTER THEN
     fun ce pb -> Pcf_inher Fresh ce pb
@@ -403,7 +409,7 @@ value ocaml_pcf_inher =
 ;
 
 value ocaml_pcf_init =
-  IFDEF OCAML_1_07 THEN None ELSE Some (fun e -> Pcf_init e) END
+  IFDEF OCAML_1_07_OR_BEFORE THEN None ELSE Some (fun e -> Pcf_init e) END
 ;
 
 value ocaml_pcf_meth (s, b, e, loc) =
@@ -412,13 +418,13 @@ value ocaml_pcf_meth (s, b, e, loc) =
 ;
 
 value ocaml_pcf_val (s, mf, e, loc) =
-  IFDEF OCAML_1_07 THEN Pcf_val (s, Public, mf, Some e, loc)
+  IFDEF OCAML_1_07_OR_BEFORE THEN Pcf_val (s, Public, mf, Some e, loc)
   ELSIFDEF OCAML_3_12_OR_AFTER THEN Pcf_val (s, mf, Fresh, e, loc)
   ELSE Pcf_val (s, mf, e,  loc) END
 ;
 
 value ocaml_pcl_apply =
-  IFDEF OCAML_1_07 THEN None
+  IFDEF OCAML_1_07_OR_BEFORE THEN None
   ELSIFDEF OCAML_2_04_OR_BEFORE THEN
     Some (fun ce lel -> Pcl_apply ce (List.map snd lel))
   ELSE
@@ -427,53 +433,55 @@ value ocaml_pcl_apply =
 ;
 
 value ocaml_pcl_constr =
-  IFDEF OCAML_1_07 THEN None ELSE Some (fun li ctl -> Pcl_constr li ctl) END
+  IFDEF OCAML_1_07_OR_BEFORE THEN None
+  ELSE Some (fun li ctl -> Pcl_constr li ctl) END
 ;
 
 value ocaml_pcl_constraint =
-  IFDEF OCAML_1_07 THEN None
+  IFDEF OCAML_1_07_OR_BEFORE THEN None
   ELSE Some (fun ce ct -> Pcl_constraint ce ct) END
 ;
 
 value ocaml_pcl_fun =
-  IFDEF OCAML_1_07 THEN None
+  IFDEF OCAML_1_07_OR_BEFORE THEN None
   ELSIFDEF OCAML_2_04_OR_BEFORE THEN Some (fun lab ceo p ce -> Pcl_fun p ce)
   ELSE Some (fun lab ceo p ce -> Pcl_fun lab ceo p ce) END
 ;
 
 value ocaml_pcl_let =
-  IFDEF OCAML_1_07 THEN None
+  IFDEF OCAML_1_07_OR_BEFORE THEN None
   ELSE Some (fun rf pel ce -> Pcl_let rf pel ce) END
 ;
 
 value ocaml_pcl_structure =
-  IFDEF OCAML_1_07 THEN None
+  IFDEF OCAML_1_07_OR_BEFORE THEN None
   ELSE Some (fun cs -> Pcl_structure cs) END
 ;
 
 value ocaml_pctf_cstr =
-  IFDEF OCAML_1_07 THEN None
+  IFDEF OCAML_1_07_OR_BEFORE THEN None
   ELSE Some (fun (t1, t2, loc) -> Pctf_cstr (t1, t2, loc)) END
 ;
 
 value ocaml_pctf_val (s, mf, t, loc) =
-  IFDEF OCAML_1_07 THEN Pctf_val (s, Public, mf, Some t, loc)
+  IFDEF OCAML_1_07_OR_BEFORE THEN Pctf_val (s, Public, mf, Some t, loc)
   ELSIFDEF OCAML_3_10_OR_AFTER THEN Pctf_val (s, mf, Concrete, t, loc)
   ELSE Pctf_val (s, mf, Some t, loc) END
 ;
 
 value ocaml_pcty_constr =
-  IFDEF OCAML_1_07 THEN None ELSE Some (fun li ltl -> Pcty_constr li ltl) END
+  IFDEF OCAML_1_07_OR_BEFORE THEN None
+  ELSE Some (fun li ltl -> Pcty_constr li ltl) END
 ;
 
 value ocaml_pcty_fun =
-  IFDEF OCAML_1_07 THEN None
+  IFDEF OCAML_1_07_OR_BEFORE THEN None
   ELSIFDEF OCAML_2_04_OR_BEFORE THEN Some (fun lab t ct -> Pcty_fun t ct)
   ELSE Some (fun lab t ct -> Pcty_fun lab t ct) END
 ;
 
 value ocaml_pcty_signature =
-  IFDEF OCAML_1_07 THEN None
+  IFDEF OCAML_1_07_OR_BEFORE THEN None
   ELSE Some (fun (t, cil) -> Pcty_signature (t, cil)) END
 ;
 
@@ -490,12 +498,12 @@ value split_or_patterns_with_bindings =
 ;
 
 value has_records_with_with =
-  IFDEF OCAML_1_07 THEN False ELSE True END
+  IFDEF OCAML_1_07_OR_BEFORE THEN False ELSE True END
 ;
 
 value arg_rest =
   fun
-  [ IFNDEF OCAML_1_07 THEN Arg.Rest r -> Some r END
+  [ IFNDEF OCAML_1_07_OR_BEFORE THEN Arg.Rest r -> Some r END
   | _ -> None ]
 ;
 
@@ -545,7 +553,7 @@ value char_escaped =
 ;
 
 value hashtbl_mem =
-  IFDEF OCAML_1_07 OR OCAML_2_00 OR OCAML_2_01 THEN
+  IFDEF OCAML_1_07_OR_BEFORE OR OCAML_2_00 OR OCAML_2_01 THEN
     fun ht a ->
       try let _ = Hashtbl.find ht a in True with [ Not_found -> False ]
   ELSE
@@ -554,7 +562,7 @@ value hashtbl_mem =
 ;
 
 value list_rev_append =
-  IFDEF OCAML_1_07 THEN
+  IFDEF OCAML_1_07_OR_BEFORE THEN
     loop where rec loop accu =
       fun
       [ [x :: l] -> loop [x :: accu] l
@@ -577,7 +585,8 @@ value list_rev_map =
 ;
 
 value pervasives_set_binary_mode_out =
-  IFDEF OCAML_1_07 THEN fun _ _ -> () ELSE Pervasives.set_binary_mode_out END
+  IFDEF OCAML_1_07_OR_BEFORE THEN fun _ _ -> ()
+  ELSE Pervasives.set_binary_mode_out END
 ;
 
 IFDEF OCAML_3_04_OR_BEFORE THEN
@@ -611,7 +620,7 @@ ELSE
 END;
 
 value string_contains =
-  IFDEF OCAML_1_07 OR OCAML_2_00 THEN
+  IFDEF OCAML_1_07_OR_BEFORE OR OCAML_2_00 THEN
     fun s c ->
       loop 0 where rec loop i =
         if i = String.length s then False
