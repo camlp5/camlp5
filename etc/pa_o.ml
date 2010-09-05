@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_o.ml,v 1.90 2010/09/05 18:07:13 deraugla Exp $ *)
+(* $Id: pa_o.ml,v 1.91 2010/09/05 18:18:08 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -965,13 +965,15 @@ EXTEND
           <:class_str_item< method virtual private $_lid:l$ : $t$ >>
       | "method"; "virtual"; l = V label "lid" ""; ":"; t = poly_type ->
           <:class_str_item< method virtual $_lid:l$ : $t$ >>
-      | "method"; "private"; l = V label "lid" ""; ":"; t = poly_type; "=";
-        e = expr ->
-          <:class_str_item< method private $_lid:l$ : $t$ = $e$ >>
-      | "method"; "private"; l = V label "lid" ""; sb = fun_binding ->
-          <:class_str_item< method private $_lid:l$ = $sb$ >>
-      | "method"; l = V label "lid" ""; ":"; t = poly_type; "="; e = expr ->
-          <:class_str_item< method $_lid:l$ : $t$ = $e$ >>
+      | "method"; ov = V (FLAG "!"); "private"; l = V label "lid" ""; ":";
+        t = poly_type; "="; e = expr ->
+          <:class_str_item< method $_!:ov$ private $_lid:l$ : $t$ = $e$ >>
+      | "method"; ov = V (FLAG "!"); "private"; l = V label "lid" "";
+        sb = fun_binding ->
+          <:class_str_item< method $_!:ov$ private $_lid:l$ = $sb$ >>
+      | "method"; ov = V (FLAG "!"); l = V label "lid" ""; ":";
+        t = poly_type; "="; e = expr ->
+          <:class_str_item< method $_!:ov$ $_lid:l$ : $t$ = $e$ >>
       | "method"; ovr = V (FLAG "!"); l = V label "lid" "";
         sb = fun_binding ->
           <:class_str_item< method $_!:ovr$ $_lid:l$ = $sb$ >>
