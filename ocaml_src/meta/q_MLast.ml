@@ -3722,6 +3722,12 @@ Grammar.extend
       Gramext.action
         (fun _ (tl : 'ctyp list) _ (t : 'ctyp) _ (loc : Ploc.t) ->
            (mktuptyp Qast.Loc t tl : 'ctyp));
+      [Gramext.Stoken ("", "module");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e))],
+      Gramext.action
+        (fun (mt : 'module_type) _ (loc : Ploc.t) ->
+           (Qast.Node ("TyPck", [Qast.Loc; mt]) : 'ctyp));
       [Gramext.Sfacto
          (Gramext.srules
             [[Gramext.Stoken ("UIDENT", "")],

@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: pa_r.ml,v 1.129 2010/09/05 18:33:12 deraugla Exp $ *)
+(* $Id: pa_r.ml,v 1.130 2010/09/05 19:11:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_extend.cmo";
@@ -509,6 +509,7 @@ EXTEND
       | "_" -> <:ctyp< _ >>
       | i = V LIDENT -> <:ctyp< $_lid:i$ >>
       | i = V UIDENT -> <:ctyp< $_uid:i$ >>
+      | "module"; mt = module_type -> <:ctyp< module $mt$ >>
       | "("; t = SELF; "*"; tl = LIST1 ctyp SEP "*"; ")" -> mktuptyp loc t tl
       | "("; t = SELF; ")" -> <:ctyp< $t$ >>
       | "("; tl = V (LIST1 ctyp SEP "*"); ")" -> <:ctyp< ( $_list:tl$ ) >>

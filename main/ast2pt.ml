@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: ast2pt.ml,v 1.101 2010/09/05 18:33:12 deraugla Exp $ *)
+(* $Id: ast2pt.ml,v 1.102 2010/09/05 19:11:16 deraugla Exp $ *)
 
 #load "q_MLast.cmo";
 #load "pa_macro.cmo";
@@ -202,6 +202,7 @@ value rec ctyp =
   | TyLid loc s -> mktyp loc (Ptyp_constr (lident (uv s)) [])
   | TyMan loc _ _ -> error loc "type manifest not allowed here"
   | TyOlb loc lab _ -> error loc "labeled type not allowed here"
+  | TyPck loc mt -> error loc "type 'module' not impl"
   | TyPol loc pl t ->
        match ocaml_ptyp_poly with
        [ Some ptyp_poly -> mktyp loc (ptyp_poly (uv pl) (ctyp t))

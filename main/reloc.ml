@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: reloc.ml,v 1.47 2010/09/05 18:33:12 deraugla Exp $ *)
+(* $Id: reloc.ml,v 1.48 2010/09/05 19:11:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -20,49 +20,6 @@ value vala_map f =
     [ Ploc.VaAnt s -> Ploc.VaAnt s
     | Ploc.VaVal x -> Ploc.VaVal (f x) ]
   END
-;
-
-value rec ctyp floc sh =
-  self where rec self =
-    fun
-    [ TyAcc loc x1 x2 -> TyAcc (floc loc) (self x1) (self x2)
-    | TyAli loc x1 x2 -> TyAli (floc loc) (self x1) (self x2)
-    | TyAny loc -> TyAny (floc loc)
-    | TyApp loc x1 x2 -> TyApp (floc loc) (self x1) (self x2)
-    | TyArr loc x1 x2 -> TyArr (floc loc) (self x1) (self x2)
-    | TyCls loc x1 -> TyCls (floc loc) x1
-    | TyLab loc x1 x2 -> TyLab (floc loc) x1 (self x2)
-    | TyLid loc x1 -> TyLid (floc loc) x1
-    | TyMan loc x1 x2 -> TyMan (floc loc) (self x1) (self x2)
-    | TyObj loc x1 x2 ->
-        TyObj (floc loc)
-          (vala_map (List.map (fun (x1, x2) -> (x1, self x2))) x1) x2
-    | TyOlb loc x1 x2 -> TyOlb (floc loc) x1 (self x2)
-    | TyPol loc x1 x2 -> TyPol (floc loc) x1 (self x2)
-    | TyQuo loc x1 -> TyQuo (floc loc) x1
-    | TyRec loc x1 ->
-        TyRec (floc loc)
-          (vala_map
-             (List.map (fun (loc, x1, x2, x3) -> (floc loc, x1, x2, self x3)))
-             x1)
-    | TySum loc x1 ->
-        TySum (floc loc)
-          (vala_map
-             (List.map
-                (fun (loc, x1, x2) ->
-                   (floc loc, x1, vala_map (List.map self) x2)))
-             x1)
-    | TyTup loc x1 -> TyTup (floc loc) (vala_map (List.map self) x1)
-    | TyUid loc x1 -> TyUid (floc loc) x1
-    | TyVrn loc x1 x2 ->
-        TyVrn (floc loc) (vala_map (List.map (poly_variant floc sh)) x1) x2
-    | IFDEF STRICT THEN
-        TyXtr loc x1 x2 -> TyXtr (floc loc) x1 (option_map (vala_map self) x2)
-      END ]
-and poly_variant floc sh =
-  fun
-  [ PvTag x1 x2 x3 -> PvTag x1 x2 (vala_map (List.map (ctyp floc sh)) x3)
-  | PvInh x1 -> PvInh (ctyp floc sh x1) ]
 ;
 
 value class_infos a floc sh x =
@@ -106,7 +63,49 @@ value anti_loc qloc sh loc loc1 =
       (sh2 + Ploc.first_pos loc1, sh2 + Ploc.last_pos loc1)
 ;
 
-value rec patt floc sh =
+value rec ctyp floc sh =
+  self where rec self =
+    fun
+    [ TyAcc loc x1 x2 -> TyAcc (floc loc) (self x1) (self x2)
+    | TyAli loc x1 x2 -> TyAli (floc loc) (self x1) (self x2)
+    | TyAny loc -> TyAny (floc loc)
+    | TyApp loc x1 x2 -> TyApp (floc loc) (self x1) (self x2)
+    | TyArr loc x1 x2 -> TyArr (floc loc) (self x1) (self x2)
+    | TyCls loc x1 -> TyCls (floc loc) x1
+    | TyLab loc x1 x2 -> TyLab (floc loc) x1 (self x2)
+    | TyLid loc x1 -> TyLid (floc loc) x1
+    | TyMan loc x1 x2 -> TyMan (floc loc) (self x1) (self x2)
+    | TyObj loc x1 x2 ->
+        TyObj (floc loc)
+          (vala_map (List.map (fun (x1, x2) -> (x1, self x2))) x1) x2
+    | TyOlb loc x1 x2 -> TyOlb (floc loc) x1 (self x2)
+    | TyPck loc x1 -> TyPck (floc loc) (module_type floc sh x1)
+    | TyPol loc x1 x2 -> TyPol (floc loc) x1 (self x2)
+    | TyQuo loc x1 -> TyQuo (floc loc) x1
+    | TyRec loc x1 ->
+        TyRec (floc loc)
+          (vala_map
+             (List.map (fun (loc, x1, x2, x3) -> (floc loc, x1, x2, self x3)))
+             x1)
+    | TySum loc x1 ->
+        TySum (floc loc)
+          (vala_map
+             (List.map
+                (fun (loc, x1, x2) ->
+                   (floc loc, x1, vala_map (List.map self) x2)))
+             x1)
+    | TyTup loc x1 -> TyTup (floc loc) (vala_map (List.map self) x1)
+    | TyUid loc x1 -> TyUid (floc loc) x1
+    | TyVrn loc x1 x2 ->
+        TyVrn (floc loc) (vala_map (List.map (poly_variant floc sh)) x1) x2
+    | IFDEF STRICT THEN
+        TyXtr loc x1 x2 -> TyXtr (floc loc) x1 (option_map (vala_map self) x2)
+      END ]
+and poly_variant floc sh =
+  fun
+  [ PvTag x1 x2 x3 -> PvTag x1 x2 (vala_map (List.map (ctyp floc sh)) x3)
+  | PvInh x1 -> PvInh (ctyp floc sh x1) ]
+and patt floc sh =
   self where rec self =
     fun
     [ PaAcc loc x1 x2 -> PaAcc (floc loc) (self x1) (self x2)

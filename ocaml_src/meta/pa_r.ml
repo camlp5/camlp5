@@ -1547,6 +1547,12 @@ Grammar.extend
       Gramext.action
         (fun _ (tl : 'ctyp list) _ (t : 'ctyp) _ (loc : Ploc.t) ->
            (mktuptyp loc t tl : 'ctyp));
+      [Gramext.Stoken ("", "module");
+       Gramext.Snterm
+         (Grammar.Entry.obj (module_type : 'module_type Grammar.Entry.e))],
+      Gramext.action
+        (fun (mt : 'module_type) _ (loc : Ploc.t) ->
+           (MLast.TyPck (loc, mt) : 'ctyp));
       [Gramext.Stoken ("UIDENT", "")],
       Gramext.action
         (fun (i : string) (loc : Ploc.t) -> (MLast.TyUid (loc, i) : 'ctyp));

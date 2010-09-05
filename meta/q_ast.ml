@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: q_ast.ml,v 1.112 2010/09/05 18:33:12 deraugla Exp $ *)
+(* $Id: q_ast.ml,v 1.113 2010/09/05 19:11:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -85,6 +85,22 @@ module type MetaSig =
 module Meta_make (C : MetaSig) =
   struct
     open MLast;
+    value type_var (s, (plus, minus)) =
+      C.tuple [C.vala C.string s; C.tuple [C.bool plus; C.bool minus]]
+    ;
+    value record_label lab =
+      let loc = Ploc.dummy in
+      <:patt< MLast.$lid:lab$ >>
+    ;
+    value class_infos f ci =
+      C.record
+        [(record_label "ciLoc", C.loc_v ());
+         (record_label "ciVir", C.vala C.bool ci.ciVir);
+         (record_label "ciPrm",
+          C.tuple [C.loc_v (); C.vala (C.list type_var) (snd ci.ciPrm)]);
+         (record_label "ciNam", C.vala C.string ci.ciNam);
+         (record_label "ciExp", f ci.ciExp)]
+    ;
     value rec ctyp =
       fun
       [ TyAcc _ t1 t2 -> C.node "TyAcc" [ctyp t1; ctyp t2]
@@ -102,6 +118,7 @@ module Meta_make (C : MetaSig) =
                lm;
              C.vala C.bool v]
       | TyOlb _ i t -> C.node "TyOlb" [C.vala C.string i; ctyp t]
+      | TyPck _ mt -> C.node "TyPck" [module_type mt]
       | TyPol _ lv t ->
           C.node "TyPol" [C.vala (C.list C.string) lv; ctyp t]
       | TyQuo _ s -> C.node "TyQuo" [C.vala C.string s]
@@ -143,24 +160,7 @@ module Meta_make (C : MetaSig) =
           C.node_no_loc "PvTag" [s; a; lt]
       | PvInh t ->
           C.node_no_loc "PvInh" [ctyp t] ]
-    ;
-    value type_var (s, (plus, minus)) =
-      C.tuple [C.vala C.string s; C.tuple [C.bool plus; C.bool minus]]
-    ;
-    value record_label lab =
-      let loc = Ploc.dummy in
-      <:patt< MLast.$lid:lab$ >>
-    ;
-    value class_infos f ci =
-      C.record
-        [(record_label "ciLoc", C.loc_v ());
-         (record_label "ciVir", C.vala C.bool ci.ciVir);
-         (record_label "ciPrm",
-          C.tuple [C.loc_v (); C.vala (C.list type_var) (snd ci.ciPrm)]);
-         (record_label "ciNam", C.vala C.string ci.ciNam);
-         (record_label "ciExp", f ci.ciExp)]
-    ;
-    value rec patt =
+    and patt =
       fun
       [ PaAcc _ p1 p2 -> C.node "PaAcc" [patt p1; patt p2]
       | PaAli _ p1 p2 -> C.node "PaAli" [patt p1; patt p2]

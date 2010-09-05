@@ -17,6 +17,16 @@ type loc = Ploc.t;;
 
 type 'a v = 'a;;
 
+type type_var = string * (bool * bool);;
+
+type 'a class_infos =
+  { ciLoc : loc;
+    ciVir : bool;
+    ciPrm : loc * type_var list;
+    ciNam : string;
+    ciExp : 'a }
+;;
+
 type ctyp =
     TyAcc of loc * ctyp * ctyp
   | TyAli of loc * ctyp * ctyp
@@ -29,6 +39,7 @@ type ctyp =
   | TyMan of loc * ctyp * ctyp
   | TyObj of loc * (string * ctyp) list * bool
   | TyOlb of loc * string * ctyp
+  | TyPck of loc * module_type
   | TyPol of loc * string list * ctyp
   | TyQuo of loc * string
   | TyRec of loc * (loc * string * bool * ctyp) list
@@ -39,19 +50,7 @@ type ctyp =
 and poly_variant =
     PvTag of string * bool * ctyp list
   | PvInh of ctyp
-;;
-
-type type_var = string * (bool * bool);;
-
-type 'a class_infos =
-  { ciLoc : loc;
-    ciVir : bool;
-    ciPrm : loc * type_var list;
-    ciNam : string;
-    ciExp : 'a }
-;;
-
-type patt =
+and patt =
     PaAcc of loc * patt * patt
   | PaAli of loc * patt * patt
   | PaAnt of loc * patt

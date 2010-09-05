@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: mLast.mli,v 1.60 2010/09/05 18:33:12 deraugla Exp $ *)
+(* $Id: mLast.mli,v 1.61 2010/09/05 19:11:16 deraugla Exp $ *)
 (* Copyright (c) INRIA 2007-2010 *)
 
 #load "pa_macro.cmo";
@@ -21,6 +21,16 @@ END;
 
 type v 'a = V 'a;
 
+type type_var = (V string * (bool * bool));
+
+type class_infos 'a =
+  { ciLoc : loc;
+    ciVir : V bool;
+    ciPrm : (loc * V (list type_var));
+    ciNam : V string;
+    ciExp : 'a }
+;
+
 type ctyp =
   [ TyAcc of loc and ctyp and ctyp
   | TyAli of loc and ctyp and ctyp
@@ -33,6 +43,7 @@ type ctyp =
   | TyMan of loc and ctyp and ctyp
   | TyObj of loc and V (list (string * ctyp)) and V bool
   | TyOlb of loc and V string and ctyp
+  | TyPck of loc and module_type
   | TyPol of loc and V (list string) and ctyp
   | TyQuo of loc and V string
   | TyRec of loc and V (list (loc * string * bool * ctyp))
@@ -47,19 +58,7 @@ type ctyp =
 and poly_variant =
   [ PvTag of V string and V bool and V (list ctyp)
   | PvInh of ctyp ]
-;
-
-type type_var = (V string * (bool * bool));
-
-type class_infos 'a =
-  { ciLoc : loc;
-    ciVir : V bool;
-    ciPrm : (loc * V (list type_var));
-    ciNam : V string;
-    ciExp : 'a }
-;
-
-type patt =
+and patt =
   [ PaAcc of loc and patt and patt
   | PaAli of loc and patt and patt
   | PaAnt of loc and patt
